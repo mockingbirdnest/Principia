@@ -58,9 +58,9 @@
       <Project>{5b53b487-092c-43a0-97cb-765f89c8b7c8}</Project>
       <Name>Integrators</Name>
     </ProjectReference>
-    <ProjectReference Include="..\NewtonianGravitation\NewtonianGravitation.csproj">
+    <ProjectReference Include="..\NewtonianGravitation\Simulator.csproj">
       <Project>{b6c66955-9c00-4949-880e-a1b2bf0946c7}</Project>
-      <Name>NewtonianGravitation</Name>
+      <Name>Simulator</Name>
     </ProjectReference>
   </ItemGroup>
   <Choose>
