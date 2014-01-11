@@ -5,7 +5,7 @@ using System;
 namespace IntegratorTests {
 
   [TestClass]
-  public class SPRK {
+  public class SPRKTest {
 
     [TestMethod]
     public void HarmonicOscillator() {

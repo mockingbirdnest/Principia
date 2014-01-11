@@ -50,7 +50,7 @@
     </Otherwise>
   </Choose>
   <ItemGroup>
-    <Compile Include="NBodySystem.cs" />
+    <Compile Include="NBodySystemTest.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -58,9 +58,9 @@
       <Project>{5b53b487-092c-43a0-97cb-765f89c8b7c8}</Project>
       <Name>Integrators</Name>
     </ProjectReference>
-    <ProjectReference Include="..\Simulator\Simulator.csproj">
-      <Project>{91879378-0c8e-4db3-9678-8d7a488dc30c}</Project>
-      <Name>Simulator</Name>
+    <ProjectReference Include="..\NewtonianGravitation\NewtonianGravitation.csproj">
+      <Project>{8b9cab5b-e69c-42f6-8ea9-45645b41b5a8}</Project>
+      <Name>NewtonianGravitation</Name>
     </ProjectReference>
   </ItemGroup>
   <Choose>
