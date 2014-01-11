@@ -10,9 +10,9 @@ namespace GravitationTests {
     public void CircularOrbit() {
       double[] m = { 100000, 1 };
       double[] q0 = { 0, 0, 0, 1, 0, 0 };
-      double vNorm = Math.Sqrt(NewtonianGravitation.NBodySystem.G * m[0]);
+      double vNorm = Math.Sqrt(Simulator.NBodySystem.G * m[0]);
       double[] v0 = { 0, 0, 0, 0, vNorm / Math.Sqrt(2), -vNorm / Math.Sqrt(2) };
-      NewtonianGravitation.NBodySystem system = new NewtonianGravitation.NBodySystem(m, q0, v0);
+      Simulator.NBodySystem system = new Simulator.NBodySystem(m, q0, v0);
       Integrators.SymplecticPartitionedRungeKutta.Solution simulation = system.Simulate(100000, 1, 1);
       double rmin = double.PositiveInfinity;
       double rmax = 0;
