@@ -1,5 +1,5 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
-using NewtonianGravitation;
+using NewtonianPhysics;
 using System;
 
 namespace GravitationTests {

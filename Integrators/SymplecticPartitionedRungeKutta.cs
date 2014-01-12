@@ -27,7 +27,9 @@ namespace Integrators {
                       double t0, double tmax,
                       double Δt,
                       double[][] coefficients,
-                      int samplingPeriod) {
+                      int samplingPeriod,
+                      double[] pError = null,
+                      double[] qError = null) {
       double[] a = coefficients[0];
       double[] b = coefficients[1];
       int stages = b.Length;
@@ -39,8 +41,12 @@ namespace Integrators {
         c[j] = c[j - 1] + b[j - 1];
       }
 
-      double[] pError = new double[dimension];
-      double[] qError = new double[dimension];
+      if (pError == null) {
+        pError = new double[dimension];
+      }
+      if (qError == null) {
+        qError = new double[dimension];
+      }
       double tError = 0;
 
       double[][] Δpstages = new double[stages + 1][];

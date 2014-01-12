@@ -11,9 +11,9 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GravitationTests", "Gravita
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Simulator", "Simulator\Simulator.csproj", "{91879378-0C8E-4DB3-9678-8D7A488DC30C}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NewtonianGravitation", "NewtonianGravitation\NewtonianGravitation.csproj", "{8B9CAB5B-E69C-42F6-8EA9-45645B41B5A8}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Principia", "Principia\Principia.csproj", "{D9D6C2A0-6939-4A32-9CCD-CBCF4119821A}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NewtonianPhysics", "NewtonianPhysics\NewtonianPhysics.csproj", "{C88F8CCF-7163-4AEF-B9AE-CDDBFA991722}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -37,14 +37,14 @@ Global
 		{91879378-0C8E-4DB3-9678-8D7A488DC30C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{91879378-0C8E-4DB3-9678-8D7A488DC30C}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{91879378-0C8E-4DB3-9678-8D7A488DC30C}.Release|Any CPU.Build.0 = Release|Any CPU
-		{8B9CAB5B-E69C-42F6-8EA9-45645B41B5A8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{8B9CAB5B-E69C-42F6-8EA9-45645B41B5A8}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{8B9CAB5B-E69C-42F6-8EA9-45645B41B5A8}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{8B9CAB5B-E69C-42F6-8EA9-45645B41B5A8}.Release|Any CPU.Build.0 = Release|Any CPU
 		{D9D6C2A0-6939-4A32-9CCD-CBCF4119821A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{D9D6C2A0-6939-4A32-9CCD-CBCF4119821A}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D9D6C2A0-6939-4A32-9CCD-CBCF4119821A}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{D9D6C2A0-6939-4A32-9CCD-CBCF4119821A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C88F8CCF-7163-4AEF-B9AE-CDDBFA991722}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C88F8CCF-7163-4AEF-B9AE-CDDBFA991722}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C88F8CCF-7163-4AEF-B9AE-CDDBFA991722}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C88F8CCF-7163-4AEF-B9AE-CDDBFA991722}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

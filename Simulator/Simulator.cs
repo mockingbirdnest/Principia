@@ -1,4 +1,4 @@
-﻿using NewtonianGravitation;
+﻿using NewtonianPhysics;
 using System;
 using System.Collections.Generic;
 using System.IO;
