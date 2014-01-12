@@ -16,16 +16,16 @@ namespace IntegratorTests {
            q0: new double[] { 1 },
            p0: new double[] { 0 },
            t0: 0, tmax: 1000, Δt: .0001,
-           coefficients: SymplecticPartitionedRungeKutta.Order5Coefficients,
+           coefficients: SymplecticPartitionedRungeKutta.Order5Optimal,
            samplingPeriod: 1
          );
       double qError = 0;
       double pError = 0;
-      for (int i = 0; i < solution.Time.Length; ++i) {
+      for (int i = 0; i < solution.time.Length; ++i) {
         qError = Math.Max(qError,
-          Math.Abs(solution.Position[i][0] - Math.Cos(solution.Time[i])));
+          Math.Abs(solution.position[i][0] - Math.Cos(solution.time[i])));
         pError = Math.Max(pError,
-          Math.Abs(solution.Momentum[i][0] + Math.Sin(solution.Time[i])));
+          Math.Abs(solution.momentum[i][0] + Math.Sin(solution.time[i])));
       }
       Console.WriteLine("qError = " + qError + ";");
       Console.WriteLine("pError = " + pError + ";");

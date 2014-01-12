@@ -5,22 +5,22 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace Integrators {
-
   public static class SymplecticPartitionedRungeKutta {
-
-    public class Solution {
-
-      public Solution(double[][] position, double[][] momentum, double[] time) {
-        Position = position;
-        Momentum = momentum;
-        Time = time;
-      }
-
-      public readonly double[][] Position;
-      public readonly double[][] Momentum;
-      public readonly double[] Time;
-    }
-
+    // From "The accuracy of symplectic integrators", Robert I. McLachlan and
+    // Pau Atela (1992).
+    public static double[][] Order5Optimal = {
+      new double[] { 0.339839625839110000,
+                    -0.088601336903027329,
+                     0.5858564768259621188,
+                     -0.603039356536491888,
+                     0.3235807965546976394,
+                     0.4423637942197494587 },
+      new double[] { 0.1193900292875672758,
+                     0.6989273703824752308,
+                    -0.1713123582716007754,
+                     0.4012695022513534480,
+                     0.0107050818482359840,
+                    -0.0589796254980311632 } };
     public static Solution IncrementSPRK(ComputeRightHandSide computeForce,
                       ComputeAutonomousRightHandSide computeVelocity,
                       double[] q0, double[] p0,
@@ -28,8 +28,9 @@ namespace Integrators {
                       double Δt,
                       double[][] coefficients,
                       int samplingPeriod,
+                      double[] qError = null,
                       double[] pError = null,
-                      double[] qError = null) {
+                      double tError = 0) {
       double[] a = coefficients[0];
       double[] b = coefficients[1];
       int stages = b.Length;
@@ -47,7 +48,6 @@ namespace Integrators {
       if (qError == null) {
         qError = new double[dimension];
       }
-      double tError = 0;
 
       double[][] Δpstages = new double[stages + 1][];
       double[][] Δqstages = new double[stages + 1][];
@@ -57,9 +57,15 @@ namespace Integrators {
       }
 
       // Result goes here.
-      List<double[]> q = new List<double[]>((int)Math.Ceiling((((tmax - t0) / Δt) + 1) / samplingPeriod) + 1);
-      List<double[]> p = new List<double[]>((int)Math.Ceiling((((tmax - t0) / Δt) + 1) / samplingPeriod) + 1);
-      List<double> t = new List<double>((int)Math.Ceiling((((tmax - t0) / Δt) + 1) / samplingPeriod) + 1);
+      List<double[]> q = new List<double[]>(
+          (int)Math.Ceiling((((tmax - t0) / Δt) + 1) / samplingPeriod) + 1
+        );
+      List<double[]> p = new List<double[]>(
+          (int)Math.Ceiling((((tmax - t0) / Δt) + 1) / samplingPeriod) + 1
+        );
+      List<double> t = new List<double>(
+          (int)Math.Ceiling((((tmax - t0) / Δt) + 1) / samplingPeriod) + 1
+        );
       q.Add(q0);
       p.Add(p0);
       t.Add(t0);
@@ -122,44 +128,46 @@ namespace Integrators {
         tError = (tLast - tn) + δt;
         tLast = tn;
 
-        if (samplingPhase % samplingPeriod == 0) {
-          t.Add(tn);
-          p.Add((double[])pStage.Clone());
-          q.Add((double[])qStage.Clone());
+        if (samplingPeriod != 0) {
+          if (samplingPhase % samplingPeriod == 0) {
+            t.Add(tn);
+            p.Add((double[])pStage.Clone());
+            q.Add((double[])qStage.Clone());
+          }
+          ++samplingPhase;
         }
-        ++samplingPhase;
 
 #if TRACE
         runningTime += DateTime.Now.Ticks;
         if (Math.Floor(tn / tmax * 100) > percentage) {
-          Console.WriteLine("SPRK: " + percentage + "%\ttn = " + tn + "\tRunning time: " + runningTime / 10000 + " ms");
+          Console.WriteLine("SPRK: " + percentage + "%\ttn = " + tn +
+            "\tRunning time: " + runningTime / 10000 + " ms");
           ++percentage;
         }
         runningTime -= DateTime.Now.Ticks;
 #endif
       }
-
-      return new Solution(q.ToArray(), p.ToArray(), t.ToArray());
+      if (samplingPeriod == 0) {
+        t.Add(tn);
+        p.Add((double[])pStage.Clone());
+        q.Add((double[])qStage.Clone());
+      }
+      return new Solution {
+        momentum = p.ToArray(),
+        momentumError = (double[])pError.Clone(),
+        position = q.ToArray(),
+        positionError = (double[])qError.Clone(),
+        time = t.ToArray(),
+        timeError = tError
+      };
     }
-
-    // From "The accuracy of symplectic integrators", Robert I. McLachlan and
-    // Pau Atela (1992).
-    public static double[][] Order5Coefficients = {
-      new double[] { 0.339839625839110000,
-                    -0.088601336903027329,
-                     0.5858564768259621188,
-                     -0.603039356536491888,
-                     0.3235807965546976394,
-                     0.4423637942197494587 },
-      new double[] { 0.1193900292875672758,
-                     0.6989273703824752308,
-                    -0.1713123582716007754,
-                     0.4012695022513534480,
-                     0.0107050818482359840,
-                    -0.0589796254980311632 } };
-
-    #region private
-
-    #endregion private
+    public struct Solution {
+      public double[][] momentum;
+      public double[] momentumError;
+      public double[][] position;
+      public double[] positionError;
+      public double[] time;
+      public double timeError;
+    }
   }
 }
