@@ -57,18 +57,16 @@ namespace Integrators {
       }
 
       // Result goes here.
-      List<double[]> q = new List<double[]>(
-          (int)Math.Ceiling((((tmax - t0) / Δt) + 1) / samplingPeriod) + 1
-        );
-      List<double[]> p = new List<double[]>(
-          (int)Math.Ceiling((((tmax - t0) / Δt) + 1) / samplingPeriod) + 1
-        );
-      List<double> t = new List<double>(
-          (int)Math.Ceiling((((tmax - t0) / Δt) + 1) / samplingPeriod) + 1
-        );
-      q.Add(q0);
-      p.Add(p0);
-      t.Add(t0);
+      int capacity = samplingPeriod == 0 ?
+        1 : (int)Math.Ceiling((((tmax - t0) / Δt) + 1) / samplingPeriod) + 1;
+      List<double[]> q = new List<double[]>(capacity);
+      List<double[]> p = new List<double[]>(capacity);
+      List<double> t = new List<double>(capacity);
+      if (samplingPeriod != 0) {
+        q.Add(q0);
+        p.Add(p0);
+        t.Add(t0);
+      }
 
       double[] qLast = (double[])q0.Clone();
       double[] pLast = (double[])p0.Clone();
@@ -89,7 +87,7 @@ namespace Integrators {
 
       // Integration.
       while (tn < tmax) {
-        // TODO: choose timestep here.
+        // TODO(robin): choose timestep here.
 
         // Increment SPRK step from "'SymplecticPartitionedRungeKutta' Method
         // for NDSolve", algorithm 3.

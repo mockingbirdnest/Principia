@@ -9,27 +9,32 @@ namespace NewtonianPhysics {
   public class NBodySystem {
     public const double G = 6.67384E-11;
     public Body[] bodies;
-    public NBodySystem(Body[] bodies) {
+    public NBodySystem(Body[] bodies, double t0, double tError = 0) {
       this.bodies = bodies;
       dimension = bodies.Length * 3;
       q = new double[dimension];
       v = new double[dimension];
       qError = new double[dimension];
       vError = new double[dimension];
+      t = t0;
+      this.tError = tError;
       updateState();
     }
-    public void Evolve(double duration, double timestep) {
+    public void Evolve(double tmax, double maxTimestep) {
       SymplecticPartitionedRungeKutta.Solution solution
         = Integrators.SymplecticPartitionedRungeKutta.IncrementSPRK(
             computeForce: computeAccelerations,
             computeVelocity: computeVelocities,
-            q0: q, p0: v, t0: t, tmax: t + duration,
-            Δt: duration / Math.Ceiling(duration / timestep),
+            q0: q, p0: v, t0: t, tmax: tmax,
+            Δt: (tmax - t) / Math.Ceiling((tmax - t) / maxTimestep),
             coefficients: SymplecticPartitionedRungeKutta.Order5Optimal,
             samplingPeriod: 0, qError: qError, pError: vError, tError: tError);
       q = solution.position[0];
       v = solution.momentum[0];
       t = solution.time[0];
+      qError = solution.positionError;
+      vError = solution.momentumError;
+      tError = solution.timeError;
       updateBodies();
     }
 
@@ -85,34 +90,34 @@ namespace NewtonianPhysics {
     }
     private void updateBodies() {
       for (int b = 0; b < bodies.Length; ++b) {
-        q[3 * b] = bodies[b].qx;
-        q[3 * b + 1] = bodies[b].qy;
-        q[3 * b + 2] = bodies[b].qz;
-        v[3 * b] = bodies[b].vx;
-        v[3 * b + 1] = bodies[b].vy;
-        v[3 * b + 2] = bodies[b].vz;
-        qError[3 * b] = bodies[b].qErrorx;
-        qError[3 * b + 1] = bodies[b].qErrory;
-        qError[3 * b + 2] = bodies[b].qErrorz;
-        vError[3 * b] = bodies[b].vErrorx;
-        vError[3 * b + 1] = bodies[b].vErrory;
-        vError[3 * b + 2] = bodies[b].vErrorz;
+        bodies[b].q.x = q[3 * b];
+        bodies[b].q.y = q[3 * b + 1];
+        bodies[b].q.z = q[3 * b + 2];
+        bodies[b].v.x = v[3 * b];
+        bodies[b].v.y = v[3 * b + 1];
+        bodies[b].v.z = v[3 * b + 2];
+        bodies[b].qError.x = qError[3 * b];
+        bodies[b].qError.y = qError[3 * b + 1];
+        bodies[b].qError.z = qError[3 * b + 2];
+        bodies[b].vError.x = vError[3 * b];
+        bodies[b].vError.y = vError[3 * b + 1];
+        bodies[b].vError.z = vError[3 * b + 2];
       }
     }
     private void updateState() {
       for (int b = 0; b < bodies.Length; ++b) {
-        bodies[b].qx = q[3 * b];
-        bodies[b].qy = q[3 * b + 1];
-        bodies[b].qz = q[3 * b + 2];
-        bodies[b].vx = v[3 * b];
-        bodies[b].vy = v[3 * b + 1];
-        bodies[b].vz = v[3 * b + 2];
-        bodies[b].qErrorx = qError[3 * b];
-        bodies[b].qErrory = qError[3 * b + 1];
-        bodies[b].qErrorz = qError[3 * b + 2];
-        bodies[b].vErrorx = vError[3 * b];
-        bodies[b].vErrory = vError[3 * b + 1];
-        bodies[b].vErrorz = vError[3 * b + 2];
+        q[3 * b] = bodies[b].q.x;
+        q[3 * b + 1] = bodies[b].q.y;
+        q[3 * b + 2] = bodies[b].q.z;
+        v[3 * b] = bodies[b].v.x;
+        v[3 * b + 1] = bodies[b].v.y;
+        v[3 * b + 2] = bodies[b].v.z;
+        qError[3 * b] = bodies[b].qError.x;
+        qError[3 * b + 1] = bodies[b].qError.y;
+        qError[3 * b + 2] = bodies[b].qError.z;
+        vError[3 * b] = bodies[b].vError.x;
+        vError[3 * b + 1] = bodies[b].vError.y;
+        vError[3 * b + 2] = bodies[b].vError.z;
       }
     }
 

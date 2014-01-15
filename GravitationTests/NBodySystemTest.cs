@@ -3,39 +3,42 @@ using NewtonianPhysics;
 using System;
 
 namespace GravitationTests {
-
   [TestClass]
   public class NBodySystemTest {
-
     [TestMethod]
     public void CircularOrbit() {
-      double[] m = { 100000, 1 };
+      double m0 = 100000;
+      double m1 = 1;
+      double vNorm = Math.Sqrt(NBodySystem.G * m0);
+      Body[] bodies = new Body[] {
+        new Body { gravitationalParameter = m0 * NBodySystem.G },
+        new Body { q= new Coordinates{x = 1},
+          gravitationalParameter = m1 * NBodySystem.G ,
+          v=new Coordinates{y= vNorm / Math.Sqrt(2) ,z = -vNorm / Math.Sqrt(2)} }};
       double[] q0 = { 0, 0, 0, 1, 0, 0 };
-      double vNorm = Math.Sqrt(NBodySystem.G * m[0]);
-      double[] v0 = { 0, 0, 0, 0, vNorm / Math.Sqrt(2), -vNorm / Math.Sqrt(2) };
-      NBodySystem system = new NBodySystem(m, q0, v0);
-      Integrators.SymplecticPartitionedRungeKutta.Solution simulation = system.Simulate(100000, 1, 1);
-      double rmin = double.PositiveInfinity;
-      double rmax = 0;
-      double Δvmax = 0;
-      for (int i = 0; i < simulation.position.Length; ++i) {
-        double Δq0 = simulation.position[i][0] - simulation.position[i][3];
-        double Δq1 = simulation.position[i][1] - simulation.position[i][4];
-        double Δq2 = simulation.position[i][2] - simulation.position[i][5];
-        double Δv0 = simulation.momentum[i][0] - simulation.momentum[0][0];
-        double Δv1 = simulation.momentum[i][1] - simulation.momentum[0][1];
-        double Δv2 = simulation.momentum[i][2] - simulation.momentum[0][2];
-        double Δv = Math.Sqrt(Δv0 * Δv0 + Δv1 * Δv1 + Δv2 * Δv2);
-        double r = Math.Sqrt(Δq0 * Δq0 + Δq1 * Δq1 + Δq2 * Δq2);
-        rmin = Math.Min(r, rmin);
-        rmax = Math.Max(r, rmax);
-        Δvmax = Math.Max(Δv, Δvmax);
-      }
-      Console.WriteLine("Δvmax = " + Δvmax + ";");
-      Console.WriteLine("rmin = " + rmin + ";");
-      Console.WriteLine("rmax = " + rmax + ";");
-      Assert.AreEqual(1, rmax);
-      Assert.AreEqual(.999980000400022, rmin, 1E-15);
+      // r = 1, v0 = 0, v1^2 =  G m0, so U = - G m0 m1, T = 1/2 G m0 m1
+      double Estart = -(NBodySystem.G * m0 * m1) / 2;
+      NBodySystem system = new NBodySystem(bodies, 0);
+      system.Evolve(100000, 1);
+      double Δqx = bodies[0].q.x - bodies[1].q.x;
+      double Δqy = bodies[0].q.y - bodies[1].q.y;
+      double Δqz = bodies[0].q.z - bodies[1].q.z;
+      double r = Math.Sqrt(Δqx * Δqx + Δqy * +Δqy + Δqz * Δqz);
+      double v0Squared = bodies[0].v.x * bodies[0].v.x
+                       + bodies[0].v.y * bodies[0].v.y
+                       + bodies[0].v.z * bodies[0].v.z;
+      double v1Squared = bodies[1].v.x * bodies[1].v.x
+                       + bodies[1].v.y * bodies[1].v.y
+                       + bodies[1].v.z * bodies[1].v.z;
+      double Eend = -NBodySystem.G * m0 * m1 / r
+                  + (m0 * v0Squared + m1 * v1Squared) / 2;
+      double Eerror = Math.Abs((Eend - Estart) / Estart);
+      Console.WriteLine("v0^2 = " + v0Squared + ";");
+      Console.WriteLine("v1^2 = " + v1Squared + ";");
+      Console.WriteLine("r = " + r + ";");
+      Console.WriteLine("ΔE/E0 = " + Eerror + ";");
+      Assert.IsTrue(Eerror < 1E-15);
+      Assert.IsTrue(Eerror > 1E-16);
     }
   }
 }
