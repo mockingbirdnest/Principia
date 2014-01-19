@@ -12,9 +12,9 @@ namespace GravitationTests {
       double vNorm = Math.Sqrt(NBodySystem.G * m0);
       Body[] bodies = new Body[] {
         new Body { gravitationalParameter = m0 * NBodySystem.G },
-        new Body { q= new Coordinates{x = 1},
+        new Body { q= new SpatialCoordinates{x = 1},
           gravitationalParameter = m1 * NBodySystem.G ,
-          v=new Coordinates{y= vNorm / Math.Sqrt(2) ,z = -vNorm / Math.Sqrt(2)} }};
+          v=new SpatialCoordinates{y= vNorm / Math.Sqrt(2) ,z = -vNorm / Math.Sqrt(2)} }};
       double[] q0 = { 0, 0, 0, 1, 0, 0 };
       // r = 1, v0 = 0, v1^2 =  G m0, so U = - G m0 m1, T = 1/2 G m0 m1
       double Estart = -(NBodySystem.G * m0 * m1) / 2;

@@ -8,7 +8,13 @@ using UnityEngine;
 
 namespace Principia {
   public static class Utilities {
-    public const double g0 = 9.81; // m s^-2
+    public const double g0 = 9.81;
+    public static SpatialCoordinates nullVector = new SpatialCoordinates {
+      x = 0.0,
+      y = 0.0,
+      z = 0.0
+    };
+    // m s^-2
     public static Vector3d AbsoluteInertialPosition(this Orbit orbit) {
       double UT = Planetarium.GetUniversalTime();
       return (QuaternionD.Inverse(Planetarium.Rotation)
@@ -38,9 +44,9 @@ namespace Principia {
       Vector3d q = vessel.orbit.AbsoluteInertialPosition();
       Vector3d v = vessel.orbit.AbsoluteInertialVelocity();
       return new Body {
-        qError = Coordinates.nullVector,
+        qError = nullVector,
         q = q.ToCoordinates(),
-        vError = Coordinates.nullVector,
+        vError = nullVector,
         v = v.ToCoordinates(),
         gravitationalParameter = 0
       };
@@ -63,17 +69,17 @@ namespace Principia {
         v = body.orbit.AbsoluteInertialVelocity();
       }
       return new Body {
-        qError = Coordinates.nullVector,
+        qError = nullVector,
         q = q.ToCoordinates(),
-        vError = Coordinates.nullVector,
+        vError = nullVector,
         v = v.ToCoordinates(),
         gravitationalParameter = body.GeeASL * g0 * body.Radius * body.Radius
       };
     }
-    public static Coordinates ToCoordinates(this Vector3d v) {
-      return new Coordinates { x = v.x, y = v.y, z = v.z };
+    public static SpatialCoordinates ToCoordinates(this Vector3d v) {
+      return new SpatialCoordinates { x = v.x, y = v.y, z = v.z };
     }
-    public static Vector3d ToVector(this Coordinates v) {
+    public static Vector3d ToVector(this SpatialCoordinates v) {
       return new Vector3d { x = v.x, y = v.y, z = v.z };
     }
   }

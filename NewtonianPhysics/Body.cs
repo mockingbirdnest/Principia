@@ -5,17 +5,12 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace NewtonianPhysics {
-  public struct Coordinates {
-    public const Coordinates nullVector = new Coordinates {
-      x = 0.0,
-      y = 0.0,
-      z = 0.0
-    };
-    public double x, y, z;
-  }
   public struct Event {
-    public Coordinates q;
+    public SpatialCoordinates q;
     public double t;
+  }
+  public struct SpatialCoordinates {
+    public double x, y, z;
   }
   public class Body {
     // We use the gravitational parameter μ = G M in order not to accumulate
@@ -25,18 +20,19 @@ namespace NewtonianPhysics {
     // level as M = g0 r^2 / G. This is silly (and introduces an---admittedly
     // tiny---error), so the gravitational parameter should ideally be computed
     // by the user as μ = g0 r^2. The generally accepted value for g0 in KSP
-    // seems to be 9.81 m / s^2.
+    // seems to be 9.81 m/s^2.
     public double gravitationalParameter;
 
+    public List<Event> predictedTrajectory = new List<Event>();
     // We don't use KSP's Vector3d for the following reasons:
     // 1. Sloppy numerics (there are places which explicitly underflow values
-    // below 1E-6, angles are constantly converted to degrees, etc.)
+    // below 1E-6, angles are constantly converted to and from degrees, etc.)
     // 2. We want the NewtonianPhysics assembly to be independent from Unity and
     // KSP (the Simulator is a standalone application and should not require KSP
     // to run).
-    public Coordinates q, v;
+    public SpatialCoordinates q, v;
     // Errors from compensated summation.
-    public Coordinates qError, vError;
+    public SpatialCoordinates qError, vError;
     public bool massless {
       get { return gravitationalParameter == 0; }
     }

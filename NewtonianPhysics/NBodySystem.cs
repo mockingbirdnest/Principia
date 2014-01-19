@@ -37,6 +37,34 @@ namespace NewtonianPhysics {
       tError = solution.timeError;
       updateBodies();
     }
+    public void RecalculateAllPredictions(double tmax,
+                                         double maxTimestep,
+                                         int samplingPeriod) {
+      SymplecticPartitionedRungeKutta.Solution solution
+        = Integrators.SymplecticPartitionedRungeKutta.IncrementSPRK(
+            computeForce: computeAccelerations,
+            computeVelocity: computeVelocities,
+            q0: q, p0: v, t0: t, tmax: tmax,
+            Δt: (tmax - t) / Math.Ceiling((tmax - t) / maxTimestep),
+            coefficients: SymplecticPartitionedRungeKutta.Order5Optimal,
+            samplingPeriod: samplingPeriod, qError: qError, pError: vError,
+            tError: tError);
+      for (int b = 0; b < bodies.Length; ++b) {
+        bodies[b].predictedTrajectory.Clear();
+      }
+      for (int i = 0; i < solution.position.Length; ++i) {
+        for (int b = 0; b < bodies.Length; ++b) {
+          bodies[b].predictedTrajectory.Add(new Event {
+            q = new SpatialCoordinates {
+              x = solution.position[i][3 * b],
+              y = solution.position[i][3 * b + 1],
+              z = solution.position[i][3 * b + 2]
+            },
+            t = solution.time[i]
+          });
+        }
+      }
+    }
 
     #region private
 
