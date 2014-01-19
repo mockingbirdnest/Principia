@@ -13,8 +13,6 @@ namespace Principia {
     protected Rect windowPos;
     private Vector3d a;
     private Dictionary<string, Body> bodies;
-    private LineRenderer line;
-    private GameObject lineObject = new GameObject("Line");
     private bool predictTrajectories = false;
     private Vector3d q;
     private bool simulate = false;
@@ -119,21 +117,23 @@ namespace Principia {
         if (MapView.MapIsEnabled) {
           PlanetariumCamera camera = (PlanetariumCamera)
             GameObject.FindObjectOfType(typeof(PlanetariumCamera));
-          Vessel vessel = FlightGlobals.ActiveVessel;
-          if (vessel.situation != Vessel.Situations.LANDED &&
-            vessel.situation != Vessel.Situations.SPLASHED &&
-            vessel.situation != Vessel.Situations.PRELAUNCH) {
-            Body body, sun;
-            bodies.TryGetValue(vessel.id.ToString(), out body);
-            bodies.TryGetValue("Sun", out sun);
-            line.SetVertexCount(body.predictedTrajectory.Count);
-            line.enabled = true;
-            print("Trajectory length: " + body.predictedTrajectory.Count);
-            for (int i = 0; i < body.predictedTrajectory.Count; ++i) {
-              line.SetPosition(i, ScaledSpace.LocalToScaledSpace(
-                FlightGlobals.Bodies[i % FlightGlobals.Bodies.Count]
-                  .getPositionAtUT(UT)));
-              line.SetWidth(10, 10);
+          foreach (Vessel vessel in FlightGlobals.Vessels) {
+            if (vessel.situation != Vessel.Situations.LANDED &&
+              vessel.situation != Vessel.Situations.SPLASHED &&
+              vessel.situation != Vessel.Situations.PRELAUNCH) {
+              LineRenderer line;
+              Body body;
+              trajectories.TryGetValue(vessel.id.ToString(), out line);
+              bodies.TryGetValue(vessel.id.ToString(), out body);
+              line.SetVertexCount(body.predictedTrajectory.Count);
+              line.enabled = true;
+              for (int i = 0; i < body.predictedTrajectory.Count; ++i) {
+                line.SetPosition(i, ScaledSpace.LocalToScaledSpace(
+                  body.predictedTrajectory[i].q.ToVector()
+                  - body.q.ToVector() + vessel.GetWorldPos3D()));
+                line.SetWidth((0.01f * camera.Distance),
+                              (0.01f * camera.Distance));
+              }
             }
           }
         }
@@ -151,12 +151,6 @@ namespace Principia {
       if ((windowPos.x == 0) && (windowPos.y == 0)) {
         windowPos = new Rect(Screen.width / 2, Screen.height / 2, 10, 10);
       }
-      lineObject.layer = 9;
-      line = lineObject.AddComponent<LineRenderer>();
-      line.transform.parent = null;
-      line.material = MapView.fetch.orbitLinesMaterial;
-      line.SetColors(Color.blue, Color.red);
-      line.useWorldSpace = true;
     }
     private void WindowGUI(int windowID) {
       GUIStyle mySty = new GUIStyle(GUI.skin.button);
@@ -219,6 +213,14 @@ namespace Principia {
               vessel.situation == Vessel.Situations.ORBITING ||
               vessel.situation == Vessel.Situations.SUB_ORBITAL) {
             print("Adding vessel " + vessel.name + " trajectory...");
+            GameObject lineObject = new GameObject("Line");
+            lineObject.layer = 9;
+            LineRenderer line = lineObject.AddComponent<LineRenderer>();
+            line.transform.parent = null;
+            line.material = MapView.fetch.orbitLinesMaterial;
+            line.SetColors(Color.blue, Color.red);
+            line.useWorldSpace = true;
+            trajectories.Add(vessel.id.ToString(), line);
           }
         }
       }
