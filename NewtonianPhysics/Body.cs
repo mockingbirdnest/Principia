@@ -33,6 +33,7 @@ namespace NewtonianPhysics {
     public SpatialCoordinates q, v;
     // Errors from compensated summation.
     public SpatialCoordinates qError, vError;
+    public SpatialCoordinates qErrorTrajectory, vErrorTrajectory;
     public bool massless {
       get { return gravitationalParameter == 0; }
     }

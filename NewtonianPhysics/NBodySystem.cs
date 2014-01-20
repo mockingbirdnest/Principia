@@ -71,10 +71,14 @@ namespace NewtonianPhysics {
     private int dimension;
     private double[] q;
     private double[] qError;
+    private double[] qPredicted;
+    private double[] qPredictedError;
     private double t;
     private double tError;
     private double[] v;
     private double[] vError;
+    private double[] vPredicted;
+    private double[] vPredictedError;
     private void computeAccelerations(double[] q,
                                       double t,
                                       ref double[] result) {
