@@ -11,6 +11,12 @@ namespace Principia {
   [KSPAddon(KSPAddon.Startup.Flight, false)]
   public class Core : MonoBehaviour {
     protected Rect windowPos;
+    private const double Day = 24 * Hour;
+    private const double Hour = 60 * Minute;
+    private const double Minute = 60 * Second;
+    private const double PredictionLength = 1 * Day;
+    private const double Second = 1;
+    private const double Year = 365.25 * Day;
     private Vector3d a;
     private Dictionary<string, Body> bodies;
     private bool predictTrajectories = false;
@@ -112,8 +118,9 @@ namespace Principia {
         }
       }
       if (predictTrajectories) {
-        system.RecalculateAllPredictions(
-          UT + 3600, 10, 10);
+        system.AdvancePredictions(tmax: UT + 1 * Day,
+                                  maxTimestep: 10 * Second,
+                                  samplingPeriod: 100);
         if (MapView.MapIsEnabled) {
           PlanetariumCamera camera = (PlanetariumCamera)
             GameObject.FindObjectOfType(typeof(PlanetariumCamera));
@@ -129,8 +136,8 @@ namespace Principia {
               line.enabled = true;
               for (int i = 0; i < body.predictedTrajectory.Count; ++i) {
                 line.SetPosition(i, ScaledSpace.LocalToScaledSpace(
-                  body.predictedTrajectory[i].q.ToVector()
-                  - body.q.ToVector() + vessel.GetWorldPos3D()));
+                  body.predictedTrajectory[i].q.ToVector().xzy
+                  - body.q.ToVector().xzy + vessel.GetWorldPos3D()));
                 line.SetWidth((0.01f * camera.Distance),
                               (0.01f * camera.Distance));
               }
@@ -184,7 +191,7 @@ namespace Principia {
                          + Planetarium.Rotation.y.ToString("F5") + " j + "
                          + Planetarium.Rotation.z.ToString("F5") + " k",
                          GUILayout.ExpandWidth(true));
-      if (GUILayout.Button(simulate ? "Unlock" : "Lock",
+      if (GUILayout.Button(simulate ? "Switch to Keplerian" : "Switch to Newtonian",
                            mySty, GUILayout.ExpandWidth(true))) {
         simulate = !simulate;
         double UT = Planetarium.GetUniversalTime();
@@ -207,21 +214,27 @@ namespace Principia {
                     predictTrajectories ? "Stop Plotting" : "Plot Trajectories",
                     mySty, GUILayout.ExpandWidth(true))) {
         predictTrajectories = !predictTrajectories;
-        trajectories.Clear();
-        foreach (Vessel vessel in FlightGlobals.Vessels) {
-          if (vessel.situation == Vessel.Situations.ESCAPING ||
-              vessel.situation == Vessel.Situations.ORBITING ||
-              vessel.situation == Vessel.Situations.SUB_ORBITAL) {
-            print("Adding vessel " + vessel.name + " trajectory...");
-            GameObject lineObject = new GameObject("Line");
-            lineObject.layer = 9;
-            LineRenderer line = lineObject.AddComponent<LineRenderer>();
-            line.transform.parent = null;
-            line.material = MapView.fetch.orbitLinesMaterial;
-            line.SetColors(Color.blue, Color.red);
-            line.useWorldSpace = true;
-            trajectories.Add(vessel.id.ToString(), line);
+        double UT = Planetarium.GetUniversalTime();
+        if (predictTrajectories) {
+          trajectories.Clear();
+          foreach (Vessel vessel in FlightGlobals.Vessels) {
+            if (vessel.situation == Vessel.Situations.ESCAPING ||
+                vessel.situation == Vessel.Situations.ORBITING ||
+                vessel.situation == Vessel.Situations.SUB_ORBITAL) {
+              print("Adding vessel " + vessel.name + " trajectory...");
+              GameObject lineObject = new GameObject("Line");
+              lineObject.layer = 31;
+              LineRenderer line = lineObject.AddComponent<LineRenderer>();
+              line.transform.parent = null;
+              line.material = MapView.fetch.orbitLinesMaterial;
+              line.SetColors(Color.blue, Color.red);
+              line.useWorldSpace = true;
+              trajectories.Add(vessel.id.ToString(), line);
+            }
           }
+          system.RecalculatePredictions(tmax: UT + 1 * Day,
+                                        maxTimestep: 10 * Second,
+                                        samplingPeriod: 100);
         }
       }
       if (simulate) {

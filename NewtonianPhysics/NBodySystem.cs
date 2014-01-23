@@ -20,6 +20,40 @@ namespace NewtonianPhysics {
       this.tError = tError;
       updateState();
     }
+    public void AdvancePredictions(double tmax,
+                                   double maxTimestep,
+                                   int samplingPeriod) {
+      if (samplingPeriod * maxTimestep > tmax - tPredicted) { return; }
+      SymplecticPartitionedRungeKutta.Solution solution
+        = Integrators.SymplecticPartitionedRungeKutta.IncrementSPRK(
+                    computeForce: computeAccelerations,
+                    computeVelocity: computeVelocities,
+                    q0: qPredicted, p0: vPredicted, t0: tPredicted,
+                    tmax: tmax, Δt: maxTimestep,
+                    coefficients: SymplecticPartitionedRungeKutta.Order5Optimal,
+                    samplingPeriod: samplingPeriod,
+                    qError: qPredictedError,
+                    pError: vPredictedError,
+                    tError: tPredictedError);
+      qPredicted = solution.position.Last();
+      vPredicted = solution.momentum.Last();
+      tPredicted = solution.time.Last();
+      qPredictedError = solution.positionError;
+      vPredictedError = solution.momentumError;
+      tPredictedError = solution.timeError;
+      for (int i = 0; i < solution.position.Length; ++i) {
+        for (int b = 0; b < bodies.Length; ++b) {
+          bodies[b].predictedTrajectory.Add(new Event {
+            q = new SpatialCoordinates {
+              x = solution.position[i][3 * b],
+              y = solution.position[i][3 * b + 1],
+              z = solution.position[i][3 * b + 2]
+            },
+            t = solution.time[i]
+          });
+        }
+      }
+    }
     public void Evolve(double tmax, double maxTimestep) {
       SymplecticPartitionedRungeKutta.Solution solution
         = Integrators.SymplecticPartitionedRungeKutta.IncrementSPRK(
@@ -37,33 +71,19 @@ namespace NewtonianPhysics {
       tError = solution.timeError;
       updateBodies();
     }
-    public void RecalculateAllPredictions(double tmax,
+    public void RecalculatePredictions(double tmax,
                                          double maxTimestep,
                                          int samplingPeriod) {
-      SymplecticPartitionedRungeKutta.Solution solution
-        = Integrators.SymplecticPartitionedRungeKutta.IncrementSPRK(
-            computeForce: computeAccelerations,
-            computeVelocity: computeVelocities,
-            q0: q, p0: v, t0: t, tmax: tmax,
-            Δt: (tmax - t) / Math.Ceiling((tmax - t) / maxTimestep),
-            coefficients: SymplecticPartitionedRungeKutta.Order5Optimal,
-            samplingPeriod: samplingPeriod, qError: qError, pError: vError,
-            tError: tError);
+      qPredicted = (double[])q.Clone();
+      qPredictedError = (double[])qError.Clone();
+      vPredicted = (double[])v.Clone();
+      vPredictedError = (double[])vError.Clone();
+      tPredicted = t;
+      tPredictedError = tError;
       for (int b = 0; b < bodies.Length; ++b) {
         bodies[b].predictedTrajectory.Clear();
       }
-      for (int i = 0; i < solution.position.Length; ++i) {
-        for (int b = 0; b < bodies.Length; ++b) {
-          bodies[b].predictedTrajectory.Add(new Event {
-            q = new SpatialCoordinates {
-              x = solution.position[i][3 * b],
-              y = solution.position[i][3 * b + 1],
-              z = solution.position[i][3 * b + 2]
-            },
-            t = solution.time[i]
-          });
-        }
-      }
+      AdvancePredictions(tmax, maxTimestep, samplingPeriod);
     }
 
     #region private
@@ -75,6 +95,8 @@ namespace NewtonianPhysics {
     private double[] qPredictedError;
     private double t;
     private double tError;
+    private double tPredicted;
+    private double tPredictedError;
     private double[] v;
     private double[] vError;
     private double[] vPredicted;
