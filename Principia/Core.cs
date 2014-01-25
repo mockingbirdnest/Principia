@@ -121,29 +121,6 @@ namespace Principia {
         system.AdvancePredictions(tmax: UT + 1 * Day,
                                   maxTimestep: 10 * Second,
                                   samplingPeriod: 100);
-        if (MapView.MapIsEnabled) {
-          PlanetariumCamera camera = (PlanetariumCamera)
-            GameObject.FindObjectOfType(typeof(PlanetariumCamera));
-          foreach (Vessel vessel in FlightGlobals.Vessels) {
-            if (vessel.situation != Vessel.Situations.LANDED &&
-              vessel.situation != Vessel.Situations.SPLASHED &&
-              vessel.situation != Vessel.Situations.PRELAUNCH) {
-              LineRenderer line;
-              Body body;
-              trajectories.TryGetValue(vessel.id.ToString(), out line);
-              bodies.TryGetValue(vessel.id.ToString(), out body);
-              line.SetVertexCount(body.predictedTrajectory.Count);
-              line.enabled = true;
-              for (int i = 0; i < body.predictedTrajectory.Count; ++i) {
-                line.SetPosition(i, ScaledSpace.LocalToScaledSpace(
-                  body.predictedTrajectory[i].q.ToVector().xzy
-                  - body.q.ToVector().xzy + vessel.GetWorldPos3D()));
-                line.SetWidth((0.01f * camera.Distance),
-                              (0.01f * camera.Distance));
-              }
-            }
-          }
-        }
       }
     }
     private void OnDestroy() {
@@ -216,6 +193,9 @@ namespace Principia {
         predictTrajectories = !predictTrajectories;
         double UT = Planetarium.GetUniversalTime();
         if (predictTrajectories) {
+          foreach (LineRenderer line in trajectories.Values) {
+            Destroy(line);
+          }
           trajectories.Clear();
           foreach (Vessel vessel in FlightGlobals.Vessels) {
             if (vessel.situation == Vessel.Situations.ESCAPING ||
@@ -249,8 +229,32 @@ namespace Principia {
                                        + kerbin.v.z);
       }
       GUILayout.EndVertical();
+      if (MapView.MapIsEnabled && predictTrajectories) {
+        QuaternionD rotation = Planetarium.Rotation;
+        PlanetariumCamera camera = (PlanetariumCamera)
+          GameObject.FindObjectOfType(typeof(PlanetariumCamera));
+        foreach (Vessel vessel in FlightGlobals.Vessels) {
+          if (vessel.situation != Vessel.Situations.LANDED &&
+            vessel.situation != Vessel.Situations.SPLASHED &&
+            vessel.situation != Vessel.Situations.PRELAUNCH) {
+            LineRenderer line;
+            Body body;
+            trajectories.TryGetValue(vessel.id.ToString(), out line);
+            bodies.TryGetValue(vessel.id.ToString(), out body);
+            line.SetVertexCount(body.predictedTrajectory.Count);
+            line.enabled = true;
+            for (int i = 0; i < body.predictedTrajectory.Count; ++i) {
+              line.SetPosition(i, ScaledSpace.LocalToScaledSpace(
+                rotation * (body.predictedTrajectory[i].q.ToVector().xzy
+                            - body.q.ToVector().xzy + vessel.GetWorldPos3D())));
+              line.SetWidth((0.01f * camera.Distance),
+                            (0.01f * camera.Distance));
+            }
+          }
+        }
+      }
 
-      GUI.DragWindow(new Rect(0, 0, 10000, 20));
+      GUI.DragWindow(new Rect(left: 0f, top: 0f, width: 10000f, height: 20f));
     }
   }
 }
