@@ -223,7 +223,7 @@ namespace Principia {
                 vessel.situation == Vessel.Situations.SUB_ORBITAL) {
               print("Adding vessel " + vessel.name + " trajectory...");
               GameObject lineObject = new GameObject("Line");
-              lineObject.layer = 31;
+              lineObject.layer = 9;
               LineRenderer line = lineObject.AddComponent<LineRenderer>();
               line.transform.parent = null;
               line.material = MapView.fetch.orbitLinesMaterial;
