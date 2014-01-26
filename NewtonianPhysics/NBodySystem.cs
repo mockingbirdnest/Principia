@@ -23,7 +23,7 @@ namespace NewtonianPhysics {
     public void AdvancePredictions(double tmax,
                                    double maxTimestep,
                                    int samplingPeriod) {
-      if (samplingPeriod * maxTimestep > tmax - tPredicted) { return; }
+      if (2 * samplingPeriod * maxTimestep > tmax - tPredicted) { return; }
       SymplecticPartitionedRungeKutta.Solution solution
         = Integrators.SymplecticPartitionedRungeKutta.IncrementSPRK(
                     computeForce: computeAccelerations,

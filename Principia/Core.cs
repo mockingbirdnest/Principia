@@ -10,7 +10,8 @@ using UnityEngine;
 namespace Principia {
   [KSPAddon(KSPAddon.Startup.Flight, false)]
   public class Core : MonoBehaviour {
-    protected Rect windowPos;
+    protected Rect mainWindowPosition;
+    protected Rect referenceFrameWindowPosition;
     private const double Day = 24 * Hour;
     private const double Hour = 60 * Minute;
     private const double Minute = 60 * Second;
@@ -21,18 +22,14 @@ namespace Principia {
     private Dictionary<string, Body> bodies;
     private bool predictTrajectories = false;
     private Vector3d q;
+    private CelestialBody referenceBody;
     private bool simulate = false;
     private NBodySystem system;
     private Dictionary<string, LineRenderer> trajectories;
     private Vector3d v;
-    private void drawGUI() {
-      GUI.skin = HighLogic.Skin;
-      windowPos = GUILayout.Window(1,
-                                   windowPos,
-                                   WindowGUI,
-                                   "Traces of Various Descriptions",
-                                   GUILayout.MinWidth(500));
-    }
+
+    #region Unity Methods
+
     private void FixedUpdate() {
       if (!FlightGlobals.ready) {
         return;
@@ -124,19 +121,40 @@ namespace Principia {
       }
     }
     private void OnDestroy() {
-      RenderingManager.RemoveFromPostDrawQueue(3, new Callback(drawGUI));
+      RenderingManager.RemoveFromPostDrawQueue(3, new Callback(DrawGUI));
     }
-
     private void Start() {
       print("Principia: Start!");
       bodies = new Dictionary<string, Body>();
       trajectories = new Dictionary<string, LineRenderer>();
-      RenderingManager.AddToPostDrawQueue(3, new Callback(drawGUI));
-      if ((windowPos.x == 0) && (windowPos.y == 0)) {
-        windowPos = new Rect(Screen.width / 2, Screen.height / 2, 10, 10);
+      referenceBody = Planetarium.fetch.Sun;
+      RenderingManager.AddToPostDrawQueue(3, new Callback(DrawGUI));
+      if ((mainWindowPosition.x == 0) && (mainWindowPosition.y == 0)) {
+        mainWindowPosition = new Rect(Screen.width / 2, Screen.height / 2, 10, 10);
       }
     }
-    private void WindowGUI(int windowID) {
+
+    #endregion Unity Methods
+
+    #region GUI
+
+    private void DrawGUI() {
+      GUI.skin = HighLogic.Skin;
+      mainWindowPosition = GUILayout.Window(1,
+                                   mainWindowPosition,
+                                   MainWindow,
+                                   "Traces of Various Descriptions",
+                                   GUILayout.MinWidth(500));
+      referenceFrameWindowPosition = GUILayout.Window(1,
+                                     referenceFrameWindowPosition,
+                                     ReferenceFrameWindow,
+                                     "Traces of Various Descriptions",
+                                     GUILayout.MinWidth(500));
+      if (MapView.MapIsEnabled && predictTrajectories) {
+        DrawTrajectories();
+      }
+    }
+    private void MainWindow(int windowID) {
       GUIStyle mySty = new GUIStyle(GUI.skin.button);
       mySty.normal.textColor = mySty.focused.textColor = Color.white;
       mySty.hover.textColor = mySty.active.textColor = Color.yellow;
@@ -193,10 +211,6 @@ namespace Principia {
         predictTrajectories = !predictTrajectories;
         double UT = Planetarium.GetUniversalTime();
         if (predictTrajectories) {
-          foreach (LineRenderer line in trajectories.Values) {
-            Destroy(line);
-          }
-          trajectories.Clear();
           foreach (Vessel vessel in FlightGlobals.Vessels) {
             if (vessel.situation == Vessel.Situations.ESCAPING ||
                 vessel.situation == Vessel.Situations.ORBITING ||
@@ -215,6 +229,11 @@ namespace Principia {
           system.RecalculatePredictions(tmax: UT + 1 * Day,
                                         maxTimestep: 10 * Second,
                                         samplingPeriod: 100);
+        } else {
+          foreach (LineRenderer line in trajectories.Values) {
+            Destroy(line);
+          }
+          trajectories.Clear();
         }
       }
       if (simulate) {
@@ -229,32 +248,60 @@ namespace Principia {
                                        + kerbin.v.z);
       }
       GUILayout.EndVertical();
-      if (MapView.MapIsEnabled && predictTrajectories) {
-        QuaternionD rotation = Planetarium.Rotation;
-        PlanetariumCamera camera = (PlanetariumCamera)
-          GameObject.FindObjectOfType(typeof(PlanetariumCamera));
-        foreach (Vessel vessel in FlightGlobals.Vessels) {
-          if (vessel.situation != Vessel.Situations.LANDED &&
-            vessel.situation != Vessel.Situations.SPLASHED &&
-            vessel.situation != Vessel.Situations.PRELAUNCH) {
-            LineRenderer line;
-            Body body;
-            trajectories.TryGetValue(vessel.id.ToString(), out line);
-            bodies.TryGetValue(vessel.id.ToString(), out body);
-            line.SetVertexCount(body.predictedTrajectory.Count);
-            line.enabled = true;
-            for (int i = 0; i < body.predictedTrajectory.Count; ++i) {
-              line.SetPosition(i, ScaledSpace.LocalToScaledSpace(
-                rotation * (body.predictedTrajectory[i].q.ToVector().xzy
-                            - body.q.ToVector().xzy + vessel.GetWorldPos3D())));
-              line.SetWidth((0.01f * camera.Distance),
-                            (0.01f * camera.Distance));
-            }
+
+      GUI.DragWindow(new Rect(left: 0f, top: 0f, width: 10000f, height: 20f));
+    }
+    private void ReferenceFrameWindow(int windowID) {
+      GUIStyle mySty = new GUIStyle(GUI.skin.button);
+      mySty.normal.textColor = mySty.focused.textColor = Color.white;
+      mySty.hover.textColor = mySty.active.textColor = Color.yellow;
+      mySty.onNormal.textColor
+        = mySty.onFocused.textColor
+        = mySty.onHover.textColor
+        = mySty.onActive.textColor = Color.green;
+      mySty.padding = new RectOffset(8, 8, 8, 8);
+
+      GUILayout.BeginHorizontal();
+      GUILayout.BeginVertical();
+      foreach (CelestialBody body in FlightGlobals.Bodies) {
+        if (GUILayout.Toggle(referenceBody.name == body.name,
+                             body.name,
+                             GUILayout.ExpandWidth(true))
+            && referenceBody.name != body.name) {
+          referenceBody = body;
+        }
+      }
+      GUILayout.EndVertical();
+      GUILayout.EndHorizontal();
+
+      GUI.DragWindow(new Rect(left: 0f, top: 0f, width: 10000f, height: 20f));
+    }
+
+    #endregion GUI
+
+    private void DrawTrajectories() {
+      QuaternionD rotation = Planetarium.Rotation;
+      PlanetariumCamera camera = (PlanetariumCamera)
+        GameObject.FindObjectOfType(typeof(PlanetariumCamera));
+      foreach (Vessel vessel in FlightGlobals.Vessels) {
+        if (vessel.situation != Vessel.Situations.LANDED &&
+          vessel.situation != Vessel.Situations.SPLASHED &&
+          vessel.situation != Vessel.Situations.PRELAUNCH) {
+          LineRenderer line;
+          Body body;
+          trajectories.TryGetValue(vessel.id.ToString(), out line);
+          bodies.TryGetValue(vessel.id.ToString(), out body);
+          line.SetVertexCount(body.predictedTrajectory.Count);
+          line.enabled = true;
+          for (int i = 0; i < body.predictedTrajectory.Count; ++i) {
+            line.SetPosition(i, ScaledSpace.LocalToScaledSpace(
+              rotation * (body.predictedTrajectory[i].q.ToVector().xzy
+                          - body.q.ToVector().xzy + vessel.GetWorldPos3D())));
+            line.SetWidth((0.01f * camera.Distance),
+                          (0.01f * camera.Distance));
           }
         }
       }
-
-      GUI.DragWindow(new Rect(left: 0f, top: 0f, width: 10000f, height: 20f));
     }
   }
 }
