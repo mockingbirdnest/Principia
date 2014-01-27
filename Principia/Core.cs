@@ -2,6 +2,7 @@
 using NewtonianPhysics;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -23,10 +24,19 @@ namespace Principia {
     private bool predictTrajectories = false;
     private Vector3d q;
     private CelestialBody referenceBody;
+    private ReferenceFrameType referenceFrameType;
     private bool simulate = false;
     private NBodySystem system;
     private Dictionary<string, LineRenderer> trajectories;
     private Vector3d v;
+    private enum ReferenceFrameType {
+      [Description("Body-Centric Inertial")]
+      Inertial,
+      [Description("Body-Centric Rotating")]
+      Surface,
+      [Description("Barycentric Co-Rotating")]
+      CoRotating
+    }
 
     #region Unity Methods
 
@@ -269,6 +279,17 @@ namespace Principia {
                              GUILayout.ExpandWidth(true))
             && referenceBody.name != body.name) {
           referenceBody = body;
+        }
+      }
+      GUILayout.EndVertical();
+      GUILayout.BeginVertical();
+      foreach (ReferenceFrameType type in
+               Enum.GetValues(typeof(ReferenceFrameType))) {
+        if (GUILayout.Toggle(referenceFrameType == type,
+                             type.Description(),
+                             GUILayout.ExpandWidth(true))
+            && referenceFrameType != type) {
+          referenceFrameType = type;
         }
       }
       GUILayout.EndVertical();

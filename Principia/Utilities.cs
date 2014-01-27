@@ -1,7 +1,9 @@
 ﻿using NewtonianPhysics;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using UnityEngine;
@@ -39,6 +41,18 @@ namespace Principia {
              y = 10,
              z = 10
            });
+    }
+    public static string Description<TEnum>(this TEnum source) {
+      FieldInfo fieldInfo = source.GetType().GetField(source.ToString());
+
+      DescriptionAttribute[] attributes = (DescriptionAttribute[])fieldInfo
+        .GetCustomAttributes(typeof(DescriptionAttribute), false);
+
+      if (attributes != null && attributes.Length > 0) {
+        return attributes[0].Description;
+      } else {
+        return source.ToString();
+      }
     }
     public static Body ToBody(this Vessel vessel) {
       Vector3d q = vessel.orbit.AbsoluteInertialPosition();
