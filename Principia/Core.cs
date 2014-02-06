@@ -20,12 +20,17 @@ namespace Principia {
     private const double Second = 1;
     private const double Year = 365.25 * Day;
     private Vector3d a;
+    private LineRenderer[] axes = new LineRenderer[3];
+    private Color[] axisColours = { Color.red, Color.green, Color.blue };
     private Dictionary<string, Body> bodies;
     private bool predictTrajectories = false;
     private Vector3d q;
     private CelestialBody referenceBody;
     private ReferenceFrameType referenceFrameType;
     private bool simulate = false;
+    private Vector3d[] standardBasis = { new Vector3d { x = 1, y = 0, z = 0 },
+                                         new Vector3d { x = 0, y = 1, z = 0 },
+                                         new Vector3d { x = 0, y = 0, z = 1 } };
     private NBodySystem system;
     private Dictionary<string, LineRenderer> trajectories;
     private Vector3d v;
@@ -134,13 +139,27 @@ namespace Principia {
       RenderingManager.RemoveFromPostDrawQueue(3, new Callback(DrawGUI));
     }
     private void Start() {
-      print("Principia: Start!");
+      print("Principia: Starting...");
       bodies = new Dictionary<string, Body>();
       trajectories = new Dictionary<string, LineRenderer>();
       referenceBody = Planetarium.fetch.Sun;
+      referenceFrameType = ReferenceFrameType.Inertial;
       RenderingManager.AddToPostDrawQueue(3, new Callback(DrawGUI));
       if ((mainWindowPosition.x == 0) && (mainWindowPosition.y == 0)) {
         mainWindowPosition = new Rect(Screen.width / 2, Screen.height / 2, 10, 10);
+      }
+      if ((referenceFrameWindowPosition.x == 0) && (referenceFrameWindowPosition.y == 0)) {
+        referenceFrameWindowPosition = new Rect(Screen.width / 3, Screen.height / 3, 10, 10);
+      }
+      print("Principia: Started.");
+      for (int i = 0; i < axes.Length; ++i) {
+        GameObject lineObject = new GameObject("Axis");
+        lineObject.layer = 9;
+        axes[i] = lineObject.AddComponent<LineRenderer>();
+        axes[i].transform.parent = null;
+        axes[i].material = MapView.fetch.orbitLinesMaterial;
+        axes[i].SetColors(axisColours[i], axisColours[i]);
+        axes[i].useWorldSpace = true;
       }
     }
 
@@ -155,14 +174,15 @@ namespace Principia {
                                    MainWindow,
                                    "Traces of Various Descriptions",
                                    GUILayout.MinWidth(500));
-      referenceFrameWindowPosition = GUILayout.Window(1,
+      referenceFrameWindowPosition = GUILayout.Window(2,
                                      referenceFrameWindowPosition,
                                      ReferenceFrameWindow,
-                                     "Traces of Various Descriptions",
+                                     "Reference Frame",
                                      GUILayout.MinWidth(500));
       if (MapView.MapIsEnabled && predictTrajectories) {
         DrawTrajectories();
       }
+      DrawAxes();
     }
     private void MainWindow(int windowID) {
       GUIStyle mySty = new GUIStyle(GUI.skin.button);
@@ -250,12 +270,16 @@ namespace Principia {
         GUILayout.TextArea("Simulating n-body physics...");
         Body kerbin;
         bodies.TryGetValue("Kerbin", out kerbin);
+        CelestialBody minmus = FlightGlobals.Bodies[3];
         GUILayout.TextArea("qKerbin: " + kerbin.q.x + ", "
                                        + kerbin.q.y + ", "
                                        + kerbin.q.z);
         GUILayout.TextArea("vKerbin: " + kerbin.v.x + ", "
                                        + kerbin.v.y + ", "
                                        + kerbin.v.z);
+        GUILayout.TextArea("ωMinmus: " + minmus.angularVelocity.x + ", "
+                                       + minmus.angularVelocity.y + ", "
+                                       + minmus.angularVelocity.z);
       }
       GUILayout.EndVertical();
 
@@ -272,23 +296,23 @@ namespace Principia {
       mySty.padding = new RectOffset(8, 8, 8, 8);
 
       GUILayout.BeginHorizontal();
-      GUILayout.BeginVertical();
+      GUILayout.BeginVertical(GUILayout.Width(250));
       foreach (CelestialBody body in FlightGlobals.Bodies) {
         if (GUILayout.Toggle(referenceBody.name == body.name,
-                             body.name,
-                             GUILayout.ExpandWidth(true))
+                             body.name)
             && referenceBody.name != body.name) {
           referenceBody = body;
         }
       }
       GUILayout.EndVertical();
-      GUILayout.BeginVertical();
+      GUILayout.BeginVertical(GUILayout.ExpandWidth(true));
       foreach (ReferenceFrameType type in
                Enum.GetValues(typeof(ReferenceFrameType))) {
         if (GUILayout.Toggle(referenceFrameType == type,
                              type.Description(),
                              GUILayout.ExpandWidth(true))
-            && referenceFrameType != type) {
+            && referenceFrameType != type
+            && referenceBody.name != "Sun") {
           referenceFrameType = type;
         }
       }
@@ -300,27 +324,94 @@ namespace Principia {
 
     #endregion GUI
 
+    private void DrawAxes() {
+      PlanetariumCamera camera = (PlanetariumCamera)
+        GameObject.FindObjectOfType(typeof(PlanetariumCamera));
+      for (int i = 0; i < axes.Length; ++i) {
+        axes[i].enabled = true;
+        axes[i].SetVertexCount(2);
+        axes[i].SetPosition(0, ScaledSpace.LocalToScaledSpace(Vector3d.zero));
+        axes[i].SetPosition(1,
+          ScaledSpace.LocalToScaledSpace(1000000 * standardBasis[i]));
+        axes[i].SetWidth((0.05f * camera.Distance), (0.01f * camera.Distance));
+      }
+    }
     private void DrawTrajectories() {
       QuaternionD rotation = Planetarium.Rotation;
       PlanetariumCamera camera = (PlanetariumCamera)
         GameObject.FindObjectOfType(typeof(PlanetariumCamera));
-      foreach (Vessel vessel in FlightGlobals.Vessels) {
-        if (vessel.situation != Vessel.Situations.LANDED &&
-          vessel.situation != Vessel.Situations.SPLASHED &&
-          vessel.situation != Vessel.Situations.PRELAUNCH) {
+      double UT = Planetarium.GetUniversalTime();
+      foreach (Vessel v in FlightGlobals.Vessels) {
+        if (v.situation != Vessel.Situations.LANDED &&
+          v.situation != Vessel.Situations.SPLASHED &&
+          v.situation != Vessel.Situations.PRELAUNCH) {
           LineRenderer line;
-          Body body;
-          trajectories.TryGetValue(vessel.id.ToString(), out line);
-          bodies.TryGetValue(vessel.id.ToString(), out body);
-          line.SetVertexCount(body.predictedTrajectory.Count);
-          line.enabled = true;
-          for (int i = 0; i < body.predictedTrajectory.Count; ++i) {
-            line.SetPosition(i, ScaledSpace.LocalToScaledSpace(
-              rotation * (body.predictedTrajectory[i].q.ToVector().xzy
-                          - body.q.ToVector().xzy + vessel.GetWorldPos3D())));
-            line.SetWidth((0.01f * camera.Distance),
-                          (0.01f * camera.Distance));
+          Body vessel;
+          Body reference;
+          Body primary = null;              // The silly language forbids the
+          CelestialBody primaryBody = null; // use of 'unassigned' variables.
+          trajectories.TryGetValue(v.id.ToString(), out line);
+          bodies.TryGetValue(v.id.ToString(), out vessel);
+          bodies.TryGetValue(referenceBody.name, out reference);
+          if (referenceFrameType == ReferenceFrameType.CoRotating) {
+            primaryBody = referenceBody.orbit.referenceBody;
+            bodies.TryGetValue(primaryBody.name, out primary);
           }
+          line.SetVertexCount(vessel.predictedTrajectory.Count);
+          line.enabled = true;
+          Vector3d currentVesselPosition = v.GetWorldPos3D();
+          line.SetWidth((0.01f * camera.Distance), (0.01f * camera.Distance));
+#pragma warning disable 618 // Obsolete.
+          // Quaternion.AxisAngle uses radians (which we want, like and use)
+          // and is deprecated because of that for some mindbogglingly stupid
+          // reason. We use it nonetheless.
+          // We also use Quaternion rather than QuaternionD because KSP's
+          // QuaternionD seems broken.
+          // TODO(robin): Make a quaternion.
+          for (int i = 0; i < vessel.predictedTrajectory.Count; ++i) {
+            switch (referenceFrameType) {
+              case ReferenceFrameType.CoRotating:
+                Vector3d predictedBarycenter =
+                  (reference.predictedTrajectory[i].q.ToVector().xzy
+                  * referenceBody.Mass
+                  + primary.predictedTrajectory[i].q.ToVector().xzy
+                  * primaryBody.Mass) / (referenceBody.Mass + primaryBody.Mass);
+                Vector3d currentBarycenter =
+                  (reference.q.ToVector().xzy * referenceBody.Mass
+                  + primary.q.ToVector().xzy * primaryBody.Mass)
+                  / (referenceBody.Mass + primaryBody.Mass);
+                line.SetPosition(i, ScaledSpace.LocalToScaledSpace(
+                  rotation * (
+                  Quaternion.FromToRotation(
+                    reference.predictedTrajectory[i].q.ToVector().xzy
+                      - predictedBarycenter,
+                    reference.q.ToVector().xzy - currentBarycenter)
+                  * (vessel.predictedTrajectory[i].q.ToVector().xzy
+                    - predictedBarycenter) + currentBarycenter
+                  - vessel.q.ToVector().xzy)) + currentVesselPosition);
+                break;
+              case ReferenceFrameType.Inertial:
+                line.SetPosition(i, ScaledSpace.LocalToScaledSpace(
+                  rotation * (vessel.predictedTrajectory[i].q.ToVector().xzy
+                             - reference.predictedTrajectory[i].q.ToVector().xzy
+                             + reference.q.ToVector().xzy
+                             - vessel.q.ToVector().xzy)
+                  + currentVesselPosition));
+                break;
+              case ReferenceFrameType.Surface:
+                line.SetPosition(i, ScaledSpace.LocalToScaledSpace(
+                  rotation * (
+                  Quaternion.AxisAngle(referenceBody.angularVelocity, (float)(
+                                       referenceBody.angularV * (UT -
+                                              vessel.predictedTrajectory[i].t)))
+                    * (vessel.predictedTrajectory[i].q.ToVector().xzy
+                      - reference.predictedTrajectory[i].q.ToVector().xzy)
+                    + reference.q.ToVector().xzy - vessel.q.ToVector().xzy)
+                  + currentVesselPosition));
+                break;
+            }
+          }
+#pragma warning restore 618
         }
       }
     }

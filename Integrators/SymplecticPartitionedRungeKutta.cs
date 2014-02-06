@@ -87,8 +87,6 @@ namespace Integrators {
 
       // Integration.
       while (tn < tmax) {
-        // TODO(robin): choose timestep here.
-
         // Increment SPRK step from "'SymplecticPartitionedRungeKutta' Method
         // for NDSolve", algorithm 3.
         for (int k = 0; k < dimension; ++k) {

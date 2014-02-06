@@ -23,7 +23,8 @@ namespace NewtonianPhysics {
     public void AdvancePredictions(double tmax,
                                    double maxTimestep,
                                    int samplingPeriod) {
-      if (2 * samplingPeriod * maxTimestep > tmax - tPredicted) { return; }
+      // Make sure we're predicting at least a point.
+      if (samplingPeriod * maxTimestep > tmax - tPredicted) { return; }
       SymplecticPartitionedRungeKutta.Solution solution
         = Integrators.SymplecticPartitionedRungeKutta.IncrementSPRK(
                     computeForce: computeAccelerations,
@@ -41,7 +42,9 @@ namespace NewtonianPhysics {
       qPredictedError = solution.positionError;
       vPredictedError = solution.momentumError;
       tPredictedError = solution.timeError;
-      for (int i = 0; i < solution.position.Length; ++i) {
+      // We start at i = 1 because i = 0 is just the initial conditions.
+      // Duplicating these leads to weird artifacts in the rendered trajectory.
+      for (int i = 1; i < solution.position.Length; ++i) {
         for (int b = 0; b < bodies.Length; ++b) {
           bodies[b].predictedTrajectory.Add(new Event {
             q = new SpatialCoordinates {
