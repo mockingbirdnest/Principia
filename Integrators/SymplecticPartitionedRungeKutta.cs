@@ -21,8 +21,8 @@ namespace Integrators {
                      0.4012695022513534480,
                      0.0107050818482359840,
                     -0.0589796254980311632 } };
-    public static Solution IncrementSPRK(ComputeRightHandSide computeForce,
-                      ComputeAutonomousRightHandSide computeVelocity,
+    public static Solution IncrementSPRK(RightHandSideComputation computeForce,
+                      AutonomousRightHandSideComputation computeVelocity,
                       double[] q0, double[] p0,
                       double t0, double tmax,
                       double Δt,

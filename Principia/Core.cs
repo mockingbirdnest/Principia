@@ -21,6 +21,7 @@ namespace Principia {
     private const double Year = 365.25 * Day;
     private Vector3d a;
     private Dictionary<string, Body> bodies;
+    private MapRenderer mapRenderer;
     private bool predictTrajectories = false;
     private Vector3d q;
     private CelestialBody referenceBody;
@@ -136,9 +137,6 @@ namespace Principia {
     private void OnDestroy() {
       RenderingManager.RemoveFromPostDrawQueue(3, new Callback(DrawGUI));
     }
-    private void OnPreCull() {
-      DrawTrajectories();
-    }
     private void Start() {
       print("Principia: Starting...");
       bodies = new Dictionary<string, Body>();
@@ -158,6 +156,7 @@ namespace Principia {
                                                 Screen.height / 3,
                                                 10, 10);
       }
+      mapRenderer = MapRenderer.CreateAndAttach(DrawTrajectories);
       print("Principia: Started.");
     }
     private void Update() {
@@ -245,7 +244,9 @@ namespace Principia {
                 vessel.situation == Vessel.Situations.SUB_ORBITAL) {
               print("Adding vessel " + vessel.name + " trajectory...");
               GameObject lineObject = new GameObject("Line");
-              lineObject.layer = 31;
+              // TODO(robin): Switch to layer 31, use a mesh, draw the lines in
+              // 2D if MapView.Draw3DLines is false (needs a MapViewLine class).
+              lineObject.layer = 9;
               LineRenderer line = lineObject.AddComponent<LineRenderer>();
               line.transform.parent = null;
               line.material = MapView.fetch.orbitLinesMaterial;
@@ -333,7 +334,7 @@ namespace Principia {
         foreach (Vessel v in FlightGlobals.Vessels) {
           // TODO(robin): There are too many nested expressions here, and I've
           // caught quite a few bugs from misplaced parentheses. Declare more
-          // variables.
+          // variables so this part is at least vaguely readable.
           if (v.situation != Vessel.Situations.LANDED &&
             v.situation != Vessel.Situations.SPLASHED &&
             v.situation != Vessel.Situations.PRELAUNCH) {
@@ -360,7 +361,8 @@ namespace Principia {
             // We also use Quaternion rather than QuaternionD because KSP's
             // QuaternionD seems broken (maybe it doesn't implement deprecated
             // functions).
-            // TODO(robin): Make a versor.
+            // TODO(robin): Make a versor; I don't want to trust Unity with a
+            // calculation.
             for (int i = 0; i < vessel.predictedTrajectory.Count; ++i) {
               switch (referenceFrameType) {
                 case ReferenceFrameType.CoRotating:
