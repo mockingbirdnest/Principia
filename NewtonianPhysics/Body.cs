@@ -12,6 +12,8 @@ namespace NewtonianPhysics {
   public struct SpatialCoordinates {
     public double x, y, z;
   }
+
+  // TODO(robin): Find a better identifier.
   public class Body {
     // We use the gravitational parameter μ = G M in order not to accumulate
     // unit roundoffs from repeated multiplications by G. Note that in KSP, the

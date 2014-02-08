@@ -11,6 +11,8 @@ using UnityEngine;
 namespace Principia {
   [KSPAddon(KSPAddon.Startup.Flight, false)]
   public class Core : MonoBehaviour {
+    // TODO(robin): This class is a mess. The calculations, both for renderering
+    // and moving vessels around, should be done elsewhere.
     protected Rect mainWindowPosition;
     protected Rect referenceFrameWindowPosition;
     private const double Day = 24 * Hour;
@@ -282,6 +284,15 @@ namespace Principia {
       }
       GUILayout.TextArea("MapView.Draw3DLines: "
                          + MapView.Draw3DLines.ToString());
+      GUILayout.TextArea("ActiveVessel.GetWorldPos3D: " +
+                     FlightGlobals.ActiveVessel.GetWorldPos3D().ToString("F5"));
+      GUILayout.TextArea("Krakensbane.GetFrameVelocity: " +
+                         Krakensbane.GetFrameVelocity().ToString("F5"));
+      GUILayout.TextArea("FlightGlobals.ActiveVessel.rb_velocity: "
+           + ((Vector3d)FlightGlobals.ActiveVessel.rb_velocity).ToString("F5"));
+      GUILayout.TextArea("FlightGlobals.ActiveVessel.rootPart.rb.velocity: "
+        + ((Vector3d)FlightGlobals.ActiveVessel.rootPart.rb.velocity)
+                                                               .ToString("F5"));
       GUILayout.EndVertical();
 
       GUI.DragWindow(new Rect(left: 0f, top: 0f, width: 10000f, height: 20f));

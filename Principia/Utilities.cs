@@ -10,6 +10,7 @@ using UnityEngine;
 
 namespace Principia {
   public static class Utilities {
+    // TODO(robin): Many things in this class belong somewhere else.
     public const double g0 = 9.81;
     public static SpatialCoordinates nullVector = new SpatialCoordinates {
       x = 0.0,
@@ -92,6 +93,12 @@ namespace Principia {
     }
     public static SpatialCoordinates ToCoordinates(this Vector3d v) {
       return new SpatialCoordinates { x = v.x, y = v.y, z = v.z };
+    }
+
+    public static string ToString(this Vector3d v, string format) {
+      return "(" + v.x.ToString(format) + ", "
+                 + v.y.ToString(format) + ", "
+                 + v.z.ToString(format) + ")";
     }
     public static Vector3d ToVector(this SpatialCoordinates v) {
       return new Vector3d { x = v.x, y = v.y, z = v.z };
