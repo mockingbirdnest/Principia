@@ -272,15 +272,9 @@ namespace Principia {
         Body kerbin;
         bodies.TryGetValue("Kerbin", out kerbin);
         CelestialBody minmus = FlightGlobals.Bodies[3];
-        GUILayout.TextArea("qKerbin: " + kerbin.q.x + ", "
-                                       + kerbin.q.y + ", "
-                                       + kerbin.q.z);
-        GUILayout.TextArea("vKerbin: " + kerbin.v.x + ", "
-                                       + kerbin.v.y + ", "
-                                       + kerbin.v.z);
-        GUILayout.TextArea("ωMinmus: " + minmus.angularVelocity.x + ", "
-                                       + minmus.angularVelocity.y + ", "
-                                       + minmus.angularVelocity.z);
+        GUILayout.TextArea("qKerbin: " + kerbin.q.ToVector().ToString("F5"));
+        GUILayout.TextArea("vKerbin: " + kerbin.v.ToVector().ToString("F5"));
+        GUILayout.TextArea("ωMinmus: " + minmus.angularVelocity.ToString("F5"));
       }
       GUILayout.TextArea("MapView.Draw3DLines: "
                          + MapView.Draw3DLines.ToString());
@@ -293,6 +287,12 @@ namespace Principia {
       GUILayout.TextArea("FlightGlobals.ActiveVessel.rootPart.rb.velocity: "
         + ((Vector3d)FlightGlobals.ActiveVessel.rootPart.rb.velocity)
                                                                .ToString("F5"));
+      GUILayout.TextArea("FlightGlobals.ActiveVessel.perturbation: "
+          + ((Vector3d)FlightGlobals.ActiveVessel.perturbation).ToString("F5"));
+      GUILayout.TextArea("FlightGlobals.ActiveVessel.geeForce: "
+                          + FlightGlobals.ActiveVessel.geeForce.ToString());
+      GUILayout.TextArea("FlightGlobals.ActiveVessel.geeForce_immediate: "
+                + FlightGlobals.ActiveVessel.geeForce_immediate.ToString());
       GUILayout.EndVertical();
 
       GUI.DragWindow(new Rect(left: 0f, top: 0f, width: 10000f, height: 20f));
