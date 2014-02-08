@@ -361,8 +361,8 @@ namespace Principia {
             // We also use Quaternion rather than QuaternionD because KSP's
             // QuaternionD seems broken (maybe it doesn't implement deprecated
             // functions).
-            // TODO(robin): Make a versor; I don't want to trust Unity with a
-            // calculation.
+            // TODO(robin): Make a versor; I wouldn't want to trust Unity with a
+            // calculation even if it were done in double precision.
             for (int i = 0; i < vessel.predictedTrajectory.Count; ++i) {
               switch (referenceFrameType) {
                 case ReferenceFrameType.CoRotating:
