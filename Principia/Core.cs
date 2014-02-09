@@ -22,12 +22,16 @@ namespace Principia {
     private const double Second = 1;
     private const double Year = 365.25 * Day;
     private Vector3d a;
+    private Vector3d activeVesselForce;
+    private double[] activeVesselForces = new double[100];
+    private Vector3d activeVesselMomentum;
     private Dictionary<string, Body> bodies;
     private MapRenderer mapRenderer;
     private bool predictTrajectories = false;
     private Vector3d q;
     private CelestialBody referenceBody;
     private ReferenceFrameType referenceFrameType;
+    private int samplingIndex;
     private bool simulate = false;
     private Vector3d[] standardBasis = { new Vector3d { x = 1, y = 0, z = 0 },
                                          new Vector3d { x = 0, y = 1, z = 0 },
@@ -51,25 +55,33 @@ namespace Principia {
         return;
       }
       Vessel activeVessel = FlightGlobals.ActiveVessel;
-      if (activeVessel != null) {
-        a = new Vector3d {
-          x = activeVessel.acceleration.x,
-          y = activeVessel.acceleration.y,
-          z = activeVessel.acceleration.z
-        };
-        q = new Vector3d {
-          x = activeVessel.orbit.pos.x,
-          y = activeVessel.orbit.pos.y,
-          z = activeVessel.orbit.pos.z
-        };
-        v = new Vector3d {
-          x = activeVessel.orbit.vel.x,
-          y = activeVessel.orbit.vel.y,
-          z = activeVessel.orbit.vel.z
-        };
-      }
+      a = new Vector3d {
+        x = activeVessel.acceleration.x,
+        y = activeVessel.acceleration.y,
+        z = activeVessel.acceleration.z
+      };
+      q = new Vector3d {
+        x = activeVessel.orbit.pos.x,
+        y = activeVessel.orbit.pos.y,
+        z = activeVessel.orbit.pos.z
+      };
+      v = new Vector3d {
+        x = activeVessel.orbit.vel.x,
+        y = activeVessel.orbit.vel.y,
+        z = activeVessel.orbit.vel.z
+      };
       double UT = Planetarium.GetUniversalTime();
+      Vector3d newMomentum = Vector3d.zero;
+      foreach (Part part in activeVessel.parts) {
+        newMomentum += (Krakensbane.GetFrameVelocity()
+          + (Vector3d)part.rb.velocity) * (double)part.rb.mass;
+      }
+      activeVesselForce = (newMomentum - activeVesselMomentum)
+                          / TimeWarp.fixedDeltaTime;
       QuaternionD rotation = Planetarium.Rotation;
+      activeVesselMomentum = newMomentum;
+      activeVesselForces[samplingIndex] = activeVesselForce.magnitude;
+      samplingIndex = (samplingIndex + 1) % activeVesselForces.Length;
       if (simulate) {
 #if TRACE
         print("Initiating simulation step...");
@@ -115,18 +127,25 @@ namespace Principia {
           if (vessel.situation != Vessel.Situations.LANDED &&
             vessel.situation != Vessel.Situations.SPLASHED &&
             vessel.situation != Vessel.Situations.PRELAUNCH) {
+            if (!vessel.loaded) {
 #if TRACE
             print("Updating " + vessel.name + "...");
 #endif
-            Body secondary, primary;
-            bodies.TryGetValue(vessel.id.ToString(), out secondary);
-            bodies.TryGetValue(vessel.orbit.referenceBody.name, out primary);
-            Vector3d position = secondary.q.ToVector() - primary.q.ToVector();
-            Vector3d velocity = secondary.v.ToVector() - primary.v.ToVector();
-            vessel.orbit.UpdateFromStateVectors((rotation * position.xzy).xzy,
-                                                (rotation * velocity.xzy).xzy,
-                                                vessel.orbit.referenceBody,
-                                                UT);
+              Body secondary, primary;
+              bodies.TryGetValue(vessel.id.ToString(), out secondary);
+              bodies.TryGetValue(vessel.orbit.referenceBody.name,
+                                 out primary);
+              Vector3d position = secondary.q.ToVector()
+                                  - primary.q.ToVector();
+              Vector3d velocity = secondary.v.ToVector()
+                                  - primary.v.ToVector();
+              vessel.orbit.UpdateFromStateVectors(
+                (rotation * position.xzy).xzy,
+                (rotation * velocity.xzy).xzy,
+                vessel.orbit.referenceBody, UT);
+            } else {
+              // TODO(robin): move the ship around.
+            }
           }
         }
       }
@@ -293,6 +312,9 @@ namespace Principia {
                           + FlightGlobals.ActiveVessel.geeForce.ToString());
       GUILayout.TextArea("FlightGlobals.ActiveVessel.geeForce_immediate: "
                 + FlightGlobals.ActiveVessel.geeForce_immediate.ToString());
+      GUILayout.TextArea("Force: " + activeVesselForce.ToString("F9"));
+      GUILayout.TextArea("Peak Force: "
+        + activeVesselForces.Max().ToString("F9"));
       GUILayout.EndVertical();
 
       GUI.DragWindow(new Rect(left: 0f, top: 0f, width: 10000f, height: 20f));

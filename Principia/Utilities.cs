@@ -95,10 +95,14 @@ namespace Principia {
       return new SpatialCoordinates { x = v.x, y = v.y, z = v.z };
     }
 
-    public static string ToString(this Vector3d v, string format) {
-      return "(" + v.x.ToString(format) + ", "
-                 + v.y.ToString(format) + ", "
-                 + v.z.ToString(format) + ")";
+    public static string ToString(this Vector3d v,
+                                  string format,
+                                  bool norm = true) {
+      return (norm ? "||" : "")
+        + "(" + v.x.ToString(format) + ", "
+        + v.y.ToString(format) + ", "
+        + v.z.ToString(format) + ")"
+        + (norm ? "|| = " + v.magnitude.ToString(format) : "");
     }
     public static Vector3d ToVector(this SpatialCoordinates v) {
       return new Vector3d { x = v.x, y = v.y, z = v.z };
