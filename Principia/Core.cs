@@ -22,10 +22,11 @@ namespace Principia {
     private const double Second = 1;
     private const double Year = 365.25 * Day;
     private Vector3d a;
-    private Vector3d activeVesselForce;
-    private double[] activeVesselForces = new double[100];
-    private Vector3d activeVesselMomentum;
+    private Vector3d activeVesselAcceleration;
+    private double[] activeVesselAccelerations = new double[100];
+    private Vector3d activeVesselVelocity;
     private Dictionary<string, Body> bodies;
+    private Vector3d fictitiousAccelerations;
     private MapRenderer mapRenderer;
     private bool predictTrajectories = false;
     private Vector3d q;
@@ -71,17 +72,34 @@ namespace Principia {
         z = activeVessel.orbit.vel.z
       };
       double UT = Planetarium.GetUniversalTime();
-      Vector3d newMomentum = Vector3d.zero;
-      foreach (Part part in activeVessel.parts) {
-        newMomentum += (Krakensbane.GetFrameVelocity()
-          + (Vector3d)part.rb.velocity) * (double)part.rb.mass;
-      }
-      activeVesselForce = (newMomentum - activeVesselMomentum)
-                          / TimeWarp.fixedDeltaTime;
       QuaternionD rotation = Planetarium.Rotation;
-      activeVesselMomentum = newMomentum;
-      activeVesselForces[samplingIndex] = activeVesselForce.magnitude;
-      samplingIndex = (samplingIndex + 1) % activeVesselForces.Length;
+      // We compute the total momentum and velocity ourselves in order to make
+      // sure the accumulation is done using double-precision.
+      {
+        Vector3d newVelocity = Vector3d.zero;
+        double totalMass = 0;
+        foreach (Part part in activeVessel.parts) {
+          newVelocity += (Krakensbane.GetFrameVelocity()
+            + (Vector3d)part.rb.velocity) * (double)part.rb.mass;
+          totalMass += (double)part.rb.mass;
+        }
+        newVelocity /= totalMass;
+        activeVesselAcceleration = (newVelocity - activeVesselVelocity)
+          / TimeWarp.fixedDeltaTime - fictitiousAccelerations;
+        Vector3d vesselPosition = activeVessel.findLocalCenterOfMass();
+        Vector3d vesselVelocity =
+          ((Vector3d)activeVessel.rootPart.rb.GetPointVelocity(vesselPosition))
+          + Krakensbane.GetFrameVelocity();
+        CelestialBody primary = activeVessel.rootPart.orbit.referenceBody;
+        fictitiousAccelerations =
+          FlightGlobals.getGeeForceAtPosition(vesselPosition)
+          + FlightGlobals.getCoriolisAcc(vesselVelocity, primary)
+          + FlightGlobals.getCentrifugalAcc(vesselPosition, primary);
+        activeVesselVelocity = newVelocity;
+        activeVesselAccelerations[samplingIndex]
+          = activeVesselAcceleration.magnitude;
+        samplingIndex = (samplingIndex + 1) % activeVesselAccelerations.Length;
+      }
       if (simulate) {
 #if TRACE
         print("Initiating simulation step...");
@@ -129,7 +147,7 @@ namespace Principia {
             vessel.situation != Vessel.Situations.PRELAUNCH) {
             if (!vessel.loaded) {
 #if TRACE
-            print("Updating " + vessel.name + "...");
+              print("Updating " + vessel.name + "...");
 #endif
               Body secondary, primary;
               bodies.TryGetValue(vessel.id.ToString(), out secondary);
@@ -312,9 +330,14 @@ namespace Principia {
                           + FlightGlobals.ActiveVessel.geeForce.ToString());
       GUILayout.TextArea("FlightGlobals.ActiveVessel.geeForce_immediate: "
                 + FlightGlobals.ActiveVessel.geeForce_immediate.ToString());
-      GUILayout.TextArea("Force: " + activeVesselForce.ToString("F9"));
+      GUILayout.TextArea("Force: " + activeVesselAcceleration.ToString("F9"));
       GUILayout.TextArea("Peak Force: "
-        + activeVesselForces.Max().ToString("F9"));
+        + activeVesselAccelerations.Max().ToString("F9"));
+      string integrators = "";
+      foreach (Part part in FlightGlobals.ActiveVessel.parts) {
+        integrators += part.partName + ": "
+          + (part.flightIntegrator == null ? "null; " : "not null; ");
+      }
       GUILayout.EndVertical();
 
       GUI.DragWindow(new Rect(left: 0f, top: 0f, width: 10000f, height: 20f));

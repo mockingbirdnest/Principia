@@ -9,10 +9,18 @@ namespace NewtonianPhysics {
     public SpatialCoordinates q;
     public double t;
   }
+
+  // TODO(robin): Find a better identifier.
   public struct SpatialCoordinates {
     public double x, y, z;
   }
 
+  // We don't use KSP's Vector3d for the following reasons:
+  // 1. Sloppy numerics (there are places which explicitly underflow values
+  // below 1E-6, angles are constantly converted to and from degrees, etc.)
+  // 2. We want the NewtonianPhysics assembly to be independent from Unity and
+  // KSP (the Simulator is a standalone application and should not require KSP
+  // to run).
   // TODO(robin): Find a better identifier.
   public class Body {
     // We use the gravitational parameter μ = G M in order not to accumulate
@@ -26,12 +34,6 @@ namespace NewtonianPhysics {
     public double gravitationalParameter;
 
     public List<Event> predictedTrajectory = new List<Event>();
-    // We don't use KSP's Vector3d for the following reasons:
-    // 1. Sloppy numerics (there are places which explicitly underflow values
-    // below 1E-6, angles are constantly converted to and from degrees, etc.)
-    // 2. We want the NewtonianPhysics assembly to be independent from Unity and
-    // KSP (the Simulator is a standalone application and should not require KSP
-    // to run).
     public SpatialCoordinates q, v;
     // Errors from compensated summation.
     public SpatialCoordinates qError, vError;
