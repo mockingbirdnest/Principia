@@ -338,6 +338,7 @@ namespace Principia {
         integrators += part.partName + ": "
           + (part.flightIntegrator == null ? "null; " : "not null; ");
       }
+      GUILayout.TextArea(integrators);
       GUILayout.EndVertical();
 
       GUI.DragWindow(new Rect(left: 0f, top: 0f, width: 10000f, height: 20f));
