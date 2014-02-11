@@ -26,7 +26,7 @@ namespace Principia {
     private double[] activeVesselProperAccelerations = new double[100];
     private Vector3d activeVesselVelocity;
     private Dictionary<string, Body> bodies;
-    private Vector3d geometricAccelerations;
+    private Vector3d geometricAcceleration;
     private MapRenderer mapRenderer;
     private bool predictTrajectories = false;
     private Vector3d q;
@@ -73,7 +73,7 @@ namespace Principia {
       };
       double UT = Planetarium.GetUniversalTime();
       QuaternionD rotation = Planetarium.Rotation;
-      // We compute the total momentum and velocity ourselves in order to make
+      // We compute the total momentum ourselves in order to make
       // sure the accumulation is done using double-precision.
       {
         Vector3d newVelocity = Vector3d.zero;
@@ -85,15 +85,15 @@ namespace Principia {
         }
         newVelocity /= totalMass;
         activeVesselProperAcceleration = (newVelocity - activeVesselVelocity)
-          / TimeWarp.fixedDeltaTime - geometricAccelerations;
+          / TimeWarp.fixedDeltaTime - geometricAcceleration;
         Vector3d vesselPosition = activeVessel.findLocalCenterOfMass();
         Vector3d vesselVelocity =
           ((Vector3d)activeVessel.rootPart.rb.GetPointVelocity(vesselPosition))
           + Krakensbane.GetFrameVelocity();
-        CelestialBody primary = activeVessel.rootPart.orbit.referenceBody;
-        geometricAccelerations =
+        CelestialBody primary = activeVessel.orbit.referenceBody;
+        geometricAcceleration =
           FlightGlobals.getGeeForceAtPosition(vesselPosition)
-          + FlightGlobals.getCoriolisAcc(vesselVelocity, primary) / 2
+          + FlightGlobals.getCoriolisAcc(vesselVelocity, primary)
           + FlightGlobals.getCentrifugalAcc(vesselPosition, primary);
         activeVesselVelocity = newVelocity;
         activeVesselProperAccelerations[samplingIndex]
@@ -167,7 +167,7 @@ namespace Principia {
       if (predictTrajectories) {
         system.AdvancePredictions(tmax: UT + 1 * Day,
                                   maxTimestep: 10 * Second,
-                                  samplingPeriod: 1);
+                                  samplingPeriod: 10);
       }
     }
     private void OnDestroy() {
@@ -293,7 +293,7 @@ namespace Principia {
           }
           system.RecalculatePredictions(tmax: UT + 1 * Day,
                                         maxTimestep: 10 * Second,
-                                        samplingPeriod: 1);
+                                        samplingPeriod: 10);
         } else {
           foreach (LineRenderer line in trajectories.Values) {
             Destroy(line);
