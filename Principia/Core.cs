@@ -22,11 +22,11 @@ namespace Principia {
     private const double Second = 1;
     private const double Year = 365.25 * Day;
     private Vector3d a;
-    private Vector3d activeVesselAcceleration;
-    private double[] activeVesselAccelerations = new double[100];
+    private Vector3d activeVesselProperAcceleration;
+    private double[] activeVesselProperAccelerations = new double[100];
     private Vector3d activeVesselVelocity;
     private Dictionary<string, Body> bodies;
-    private Vector3d fictitiousAccelerations;
+    private Vector3d geometricAccelerations;
     private MapRenderer mapRenderer;
     private bool predictTrajectories = false;
     private Vector3d q;
@@ -84,21 +84,22 @@ namespace Principia {
           totalMass += (double)part.rb.mass;
         }
         newVelocity /= totalMass;
-        activeVesselAcceleration = (newVelocity - activeVesselVelocity)
-          / TimeWarp.fixedDeltaTime - fictitiousAccelerations;
+        activeVesselProperAcceleration = (newVelocity - activeVesselVelocity)
+          / TimeWarp.fixedDeltaTime - geometricAccelerations;
         Vector3d vesselPosition = activeVessel.findLocalCenterOfMass();
         Vector3d vesselVelocity =
           ((Vector3d)activeVessel.rootPart.rb.GetPointVelocity(vesselPosition))
           + Krakensbane.GetFrameVelocity();
         CelestialBody primary = activeVessel.rootPart.orbit.referenceBody;
-        fictitiousAccelerations =
+        geometricAccelerations =
           FlightGlobals.getGeeForceAtPosition(vesselPosition)
-          + FlightGlobals.getCoriolisAcc(vesselVelocity, primary)
+          + FlightGlobals.getCoriolisAcc(vesselVelocity, primary) / 2
           + FlightGlobals.getCentrifugalAcc(vesselPosition, primary);
         activeVesselVelocity = newVelocity;
-        activeVesselAccelerations[samplingIndex]
-          = activeVesselAcceleration.magnitude;
-        samplingIndex = (samplingIndex + 1) % activeVesselAccelerations.Length;
+        activeVesselProperAccelerations[samplingIndex]
+          = activeVesselProperAcceleration.magnitude;
+        samplingIndex = (samplingIndex + 1)
+          % activeVesselProperAccelerations.Length;
       }
       if (simulate) {
 #if TRACE
@@ -145,32 +146,28 @@ namespace Principia {
           if (vessel.situation != Vessel.Situations.LANDED &&
             vessel.situation != Vessel.Situations.SPLASHED &&
             vessel.situation != Vessel.Situations.PRELAUNCH) {
-            if (!vessel.loaded) {
 #if TRACE
               print("Updating " + vessel.name + "...");
 #endif
-              Body secondary, primary;
-              bodies.TryGetValue(vessel.id.ToString(), out secondary);
-              bodies.TryGetValue(vessel.orbit.referenceBody.name,
-                                 out primary);
-              Vector3d position = secondary.q.ToVector()
-                                  - primary.q.ToVector();
-              Vector3d velocity = secondary.v.ToVector()
-                                  - primary.v.ToVector();
-              vessel.orbit.UpdateFromStateVectors(
-                (rotation * position.xzy).xzy,
-                (rotation * velocity.xzy).xzy,
-                vessel.orbit.referenceBody, UT);
-            } else {
-              // TODO(robin): move the ship around.
-            }
+            Body secondary, primary;
+            bodies.TryGetValue(vessel.id.ToString(), out secondary);
+            bodies.TryGetValue(vessel.orbit.referenceBody.name,
+                               out primary);
+            Vector3d position = secondary.q.ToVector()
+                                - primary.q.ToVector();
+            Vector3d velocity = secondary.v.ToVector()
+                                - primary.v.ToVector();
+            vessel.orbit.UpdateFromStateVectors(
+              (rotation * position.xzy).xzy,
+              (rotation * velocity.xzy).xzy,
+              vessel.orbit.referenceBody, UT);
           }
         }
       }
       if (predictTrajectories) {
         system.AdvancePredictions(tmax: UT + 1 * Day,
                                   maxTimestep: 10 * Second,
-                                  samplingPeriod: 100);
+                                  samplingPeriod: 1);
       }
     }
     private void OnDestroy() {
@@ -296,7 +293,7 @@ namespace Principia {
           }
           system.RecalculatePredictions(tmax: UT + 1 * Day,
                                         maxTimestep: 10 * Second,
-                                        samplingPeriod: 100);
+                                        samplingPeriod: 1);
         } else {
           foreach (LineRenderer line in trajectories.Values) {
             Destroy(line);
@@ -330,9 +327,10 @@ namespace Principia {
                           + FlightGlobals.ActiveVessel.geeForce.ToString());
       GUILayout.TextArea("FlightGlobals.ActiveVessel.geeForce_immediate: "
                 + FlightGlobals.ActiveVessel.geeForce_immediate.ToString());
-      GUILayout.TextArea("Force: " + activeVesselAcceleration.ToString("F9"));
-      GUILayout.TextArea("Peak Force: "
-        + activeVesselAccelerations.Max().ToString("F9"));
+      GUILayout.TextArea("Proper Acceleration: "
+        + activeVesselProperAcceleration.ToString("F9"));
+      GUILayout.TextArea("Peak Proper Acceleration: "
+        + activeVesselProperAccelerations.Max().ToString("F9"));
       string integrators = "";
       foreach (Part part in FlightGlobals.ActiveVessel.parts) {
         integrators += part.partName + ": "
