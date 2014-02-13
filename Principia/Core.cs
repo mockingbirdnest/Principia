@@ -75,22 +75,29 @@ namespace Principia {
       QuaternionD rotation = Planetarium.Rotation;
       // We compute the total momentum ourselves in order to make
       // sure the accumulation is done using double-precision.
+      // We then try to use the fact that physics engines de facto use
+      // Euler's method to extract the proper acceleration.
       {
         Vector3d newVelocity = Vector3d.zero;
         double totalMass = 0;
         foreach (Part part in activeVessel.parts) {
-          newVelocity += (Krakensbane.GetFrameVelocity()
-            + (Vector3d)part.rb.velocity) * (double)part.rb.mass;
+          newVelocity += ((Vector3d)part.rb.velocity) * (double)part.rb.mass;
           totalMass += (double)part.rb.mass;
         }
-        newVelocity /= totalMass;
-        activeVesselProperAcceleration = (newVelocity - activeVesselVelocity)
-          / TimeWarp.fixedDeltaTime - geometricAcceleration;
         Vector3d vesselPosition = activeVessel.findLocalCenterOfMass();
         Vector3d vesselVelocity =
           ((Vector3d)activeVessel.rootPart.rb.GetPointVelocity(vesselPosition))
           + Krakensbane.GetFrameVelocity();
         CelestialBody primary = activeVessel.orbit.referenceBody;
+        newVelocity /= totalMass;
+        newVelocity += Krakensbane.GetFrameVelocity()
+          + (Planetarium.FrameIsRotating() ?
+             activeVessel.orbit.GetRotFrameVel(primary) :
+             Vector3d.zero);
+        activeVesselProperAcceleration = (newVelocity - activeVesselVelocity)
+          / TimeWarp.fixedDeltaTime - geometricAcceleration;
+        // Now we compute the geometric acceleration which will be applied by
+        // Unity over the next Euler step.
         geometricAcceleration =
           FlightGlobals.getGeeForceAtPosition(vesselPosition)
           + FlightGlobals.getCoriolisAcc(vesselVelocity, primary)

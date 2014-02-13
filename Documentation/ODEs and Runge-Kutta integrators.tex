@@ -12,7 +12,7 @@ An Introduction to Runge-Kutta Integrators}%
 \author{Robin~Leroy (eggrobin)}
 \begin{document}
 \maketitle
-In this post I shall assume understanding of the concepts described in chapter~8 (Motion) as well as  chapter~11 (Vectors) of Richard Feynmann's \emph{Lectures on Physics}.
+In this post I shall assume understanding of the concepts described in chapter~8 (Motion) as well as sections 11--4 and 11--5 (Vectors and Vector algebra) of chapter~11 of Richard Feynmann's \emph{Lectures on Physics}.
 
 \section{Motivation}
 We want to be able to predict the position $\vs\of t$ as a function of time of a spacecraft (without engines) around a fixed planet of mass $M$. In order to do this, we recall that the velocity is given by
@@ -46,7 +46,7 @@ So we have gotten rid of that second derivative.
 
 \section{Ordinary differential equations}
 We are interested computing solutions to equations of the form
-\[\deriv t \vy = \vf\of{\vy,t}\text.\]
+\[\deriv t \vy = \vf\of{t,\vy}\text.\]
 Such an equation is called an \emph{ordinary differential equation} (\textsc{ode}). The function $\vf$ is called the \emph{right-hand side} (\textsc{rhs}).
 
 Recall that if the right-hand side didn't depend on $\vy$, the answer would be the integral,
@@ -61,32 +61,98 @@ y\of{t_0} = y_0\text.
 The \textsc{ode} together with the initial conditions form the \emph{initial value problem} (\textsc{ivp})
 \[
 \begin{cases}
-\deriv t \vy = \vf\of{\vy,t} \\
-y\of{t_0} = y_0[
+\deriv t \vy = \vf\of{t,\vy} \\
+y\of{t_0} = y_0
 \end{cases}\text.
 \]
 \section{Euler's method}
 As we want to actually store the solution in a computer, we can't compute $\vy\of t$ for all values of $t$. Instead we approximate $\vy\of{t}$ at discrete time steps.
 
-How do we compute the first point $\vy_1$, the approximation for $\vy\of{t_1}$? By definition of the derivative, we get \[
-\lim_{\conv{\increment t}{0}} \frac{\vy\of{t_0+\increment t}}{\increment t} =  \vf\of{\vy_0,t_0}\text.
+How do we compute the first point $\vy_1$, the approximation for $\vy\of{t_0 + \increment t}$? By definition of the derivative, we get \[
+\lim_{\conv{\increment t}{0}} \frac{\vy\of{t_0+\increment t}-\vy\of{t_0}}{\increment t} =  \vf\of{t_0,\vy_0}\text.
 \]
-This means that if we take a sufficiently small $\increment t$, set $t_1 = t_0 + \increment t$, we have
+This means that if we take a sufficiently small $\increment t$, we have
 \[
-\frac{\vy\of{t_1}}{\increment t} \approx \vf\of{\vy_0,t_0}\text,
+\frac{\vy\of{t_0 + \increment t}-\vy\of{t_0}}{\increment t} \approx \vf\of{t_0,\vy_0}\text,
 \]
 where the approximation gets better as $\increment t$ gets smaller.
 Our first method for approxmimating the solution is therefore to compute\[
-y_1 = \vf\of{\vy_0,t_0} \increment t\text.\]
+\vy_1 = \vy\of{t_0} + \increment t \vf\of{t_0,\vy_0} \text.\]
 For the rest of the solution, we just repeat the same method, yielding \[
-y_{n+1} = \vf\of{\vy_n,t_n} \increment t\text.\]
-This is called \emph{Euler's method}, after Swiss mathematician Leonhard Euler (1707--1783).
+\vy_{n+1} =\vy\of{t_n} + \increment t\vf\of{t_n,\vy_n}\text.\]
+This is called \emph{Euler's method}, after Swiss mathematician Leonhard Euler (1707--1783). A good visualisation of this method, as well as a geometric interpretation, can be found on \emph{Wikipedia}.
 
-We are want to know two things: how good our approximation is, and how much we need to reduce $\increment t$ in order to make it better.
+We want to know two things: how good our approximation is, and how much we need to reduce $\increment t$ in order to make it better.
 In order to do that, we use Taylor's theorem.
 
-\paragraph*{Taylor's theorem}
-Recall that if $\deriv t \vy=\TimeDerivative\vy\of t$ is constant, $\vy\of{t+\increment t} = \vy\of{t_0} + \SecondTimeDerivative\vy\of{t_0}$. If $\deriv[2] t \vy=\TimeDerivative\vy\of t$
+\subsection*{Taylor's theorem}
+Recall that if $\deriv t \vy$ is constant, \[\vy\of{t_0+\increment t} = \vy\of{t_0} + \increment t \deriv t \vy \of{t_0}\text.\]
+If $\deriv[2] t \vy $ is constant, \[\vy\of{t_0+\increment t} = \vy\of{t_0} + \increment t \deriv t \vy\of{t_0} + \frac{\increment t^2 }{2} \deriv[2] t \vy\of{t_0}\text.\]
+In general, if you assume the $n$th derivative is constant,\[
+\vy\of{t_0+\increment t}=\vy\of{t_0} + \sum{j=1}[n] \frac{\increment t^j}{\Factorial j} \deriv[j] t \vy \of{t_0}\text,\]
+where $\Factorial j = 1 \times 2 \times 3 \times \dotsb \times j$ is the factorial of $j$.
 
+Taylor's theorem roughly states that this is a good approximation, which gets better as $n$ gets higher. Formally, if $\vy$ is differentiable $n$ times, for sufficiently small $\increment t$, 
+\begin{equation}
+\vy\of{t_0+\increment t}=\vy\of{t_0} + \sum{j=1}[n] \frac{\increment t^j}{\Factorial j}  \deriv[j] t \vy \of{t_0} +  \increment t ^ n \vr\of{\increment t} \text, \label{EulerStepError}
+\end{equation}
+where\[
+\lim_{\conv{\increment t}{0}}\vr\of{\increment t} = 0\text.
+\]
+A proof can be found on \emph{Wikipedia}.
+
+We shall always assume that the solution to our \textsc{ivp} is sufficiently differentiable.
+\subsection*{Error analysis}
+Armed with this theorem, we can look back at Euler's method. We computed the approximation for $\vy\of{t_0 + \increment t}$ as \[
+\vy_1 = \vy\of{t_0} + \increment t \vf\of{t_0,\vy_0} = \vy\of{t_0} + \increment t \deriv t \vy\of{t_0} \text.\]
+In order to compute the magnitude of the error, we'll use Taylor's theorem for $n=2$. We have, for sufficiently small $\increment t$, \begin{align*}
+\norm{\vy\of{t_0+\increment t} - \vy_1}
+&= \norm{\vy\of{t_0} + \increment t \deriv t \vy\of{t_0} + \frac{\increment t^2}{2}  \deriv[2] t \vy\of{t_0} + \increment t^2 \vr\of{\increment t} - \vy_1} \\
+&=  \norm{\frac{\increment t^2}{2}  \deriv[2] t \vy\of{t_0} + \increment t^2 \vr\of{\increment t}}\\
+&= \norm{\pa{\frac{1}{2} \deriv[2] t \vy\of{t_0} + \vr\of{\increment t} } \increment t^2}
+\leq K \increment t^2
+\end{align*}
+for some constant $K$ which only depends on $t_0$. This means that the error on \emph{one step} behaves as the square of the time step: it is divided by four when the time step is halved.
+
+We should remember however that when we reduce the time step, we need more steps to compute the solution over the same duration. What is the error when we reach some $t_{\text{end}}$? There are obviously $\frac{t_{\text{end}} - t_0}{\increment t}$ steps, so intuitively, the error should behave as $\frac{t_{\text{end}} - t_0}{\increment t} \increment t^2 = \pa{t_{\text{end}} - t_0} \increment t$, and indeed this is the case. In order to properly show that, some additional assumptions must be made, the description of which is beyond the scope of this introduction.\footnote{For the advanced reader: the solution has to be Lipschitz continuous and its second derivative has to be bounded.}
+
+The conclusion about Euler is then that when computing the solution over a fixed duration $t_{\text{end}} - t_0$, the error behaves like $\increment t$---linearly: halving the time step will halve the error. We say Euler's method is a first order method.
+
+Can we do better? In order to answer that question, we note that the reason why the error of Euler's method was linear for a fixed duration is that it was quadratic for a fixed timestep. The reason why it was quadratic for a fixed timestep is that our approximation matched the first derivative term in the Taylor expansion. If we could match higher-order terms in the expansion, we would get a higher-order method. Specifically, if our approximation matches the Taylor expansion up to and including the $k$th derivative, we'll get a $k$th order method.
+
+\section{The midpoint method}
+How do we match the higher derivatives? We don't know what they are: the first derivative is given to us by the problem (it's $\vf\of{t, \vy\of t}$ at time $t$), the other ones are not. 
+However, if we look at $\vg\of t = \vf\of{t, \vy\of t}$ as a function of $t$,
+we have 
+\begin{align*}
+\vg &= \deriv t \vy \\
+\deriv t \vg &= \deriv[2] t \vy\text.
+\end{align*}
+Of course, we can't directly compute the derivative of $\vg$, because we don't even know what $\vg$ itself looks like: that would entail knowing $\vy$, which is what we are trying to compute.
+
+However, let us assume for a moment that we could compute $\vg\of{t_0 + \frac{\increment t}{2}}$. Using Taylor's theorem on $\vg$,
+\[
+\vg\of{t_0 + \frac{\increment t}{2}} = \vg\of{t_0} + \frac{\increment t}{2} \deriv t \vg\of{t_0} + \frac{\increment t^2}{8}  \deriv[2] t \vy\of{t_0} + \frac{\increment t^2}{4} \vr\of{\increment t}\text.\]
+Let's absorb the second order terms in a constant again, and expand.\begin{align*}
+\vg\of{t_0 + \frac{\increment t}{2}} 
+& = \vg\of{t_0} + \frac{\increment t}{2} \deriv t \vg\of{t_0} + K\prime\frac{\increment t^2} \\
+& = \deriv t y \of{t_0} + \frac{\increment t}{2} \deriv[2] t \vy\of{t_0} + K\prime\frac{\increment t^2} \\
+\end{align*}
+This looks like the first and second derivative terms in the Taylor expansion of $\vy$. This means if we could compute it, \[
+\vy_1 = \vy_0 + \increment t \vg\of{t_0 + \frac{\increment t}{2}}  =  \vy_0 + \increment t \vf\of{t_0 + \frac{\increment t}{2}, \vy\of{t_0 + \frac{\increment t}{2}}}\]
+would yield a second-order method. The problem is we can't compute $\vy\of{t_0 + \frac{\increment t}{2}}$ exactly. Instead, we try using a second-order approximation for it, computed one step of Euler's method, namely\[
+\vy_0 + \frac{\increment t}{2} \vf\of{t_0, \vy_0} = \vy\of{t_0 + \frac{\increment t}{2}} + \BigO\of{\increment t^2} \text,
+\]
+where $\BigO\of{\increment t^2}$ means ``some function whose magnitude is smaller than $K \increment t^2$ for some constant $K$''; this follows from inequality (\ref{EulerStepError}).
+
+This yields the following value for our approximation step $\vy_1$.\[
+\vy_1 = \vy_0 + \increment t \vf\of{t_0 + \frac{\increment t}{2}, \vy_0 + \frac{\increment t}{2} \vf\of{t_0, \vy_0}}
+\]
+
+In order to show that the half Euler step was good enough, use our error bound on that step and compute the Taylor expansion of $\vf$ in its second argument,
+\begin{align*}
+\vf\of{t_0 + \frac{\increment t}{2}, \vy_0 + \frac{\increment t}{2} \vf\of{t_0, \vy_0}} &= \vf\of{t_0 + \frac{\increment t}{2}, \vy\of{t_0 + \frac{\increment t}{2}} + \BigO\of{\increment t^2}}\\
+&= \vf\of{t_0 + \frac{\increment t}{2}, \vy\of{t_0 + \frac{\increment t}{2}}}
+\end{align*}
 \end{document}
 
