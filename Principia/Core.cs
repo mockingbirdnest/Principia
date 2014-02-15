@@ -84,29 +84,26 @@ namespace Principia {
           newVelocity += ((Vector3d)part.rb.velocity) * (double)part.rb.mass;
           totalMass += (double)part.rb.mass;
         }
-        Vector3d vesselPosition = activeVessel.findLocalCenterOfMass();
-        Vector3d vesselVelocity =
-          ((Vector3d)activeVessel.rootPart.rb.GetPointVelocity(vesselPosition))
-          + Krakensbane.GetFrameVelocity();
         CelestialBody primary = activeVessel.orbit.referenceBody;
         newVelocity /= totalMass;
-        newVelocity += Krakensbane.GetFrameVelocity()
-          + (Planetarium.FrameIsRotating() ?
-             activeVessel.orbit.GetRotFrameVel(primary) :
-             Vector3d.zero);
+        newVelocity += Krakensbane.GetFrameVelocity();
         activeVesselProperAcceleration = (newVelocity - activeVesselVelocity)
           / TimeWarp.fixedDeltaTime - geometricAcceleration;
-        // Now we compute the geometric acceleration which will be applied by
-        // Unity over the next Euler step.
-        geometricAcceleration =
-          FlightGlobals.getGeeForceAtPosition(vesselPosition)
-          + FlightGlobals.getCoriolisAcc(vesselVelocity, primary)
-          + FlightGlobals.getCentrifugalAcc(vesselPosition, primary);
         activeVesselVelocity = newVelocity;
         activeVesselProperAccelerations[samplingIndex]
           = activeVesselProperAcceleration.magnitude;
         samplingIndex = (samplingIndex + 1)
           % activeVesselProperAccelerations.Length;
+        // Now we compute the geometric acceleration which will be applied by
+        // Unity over the next Euler step.
+        Vector3d vesselPosition = activeVessel.findLocalCenterOfMass();
+        Vector3d vesselVelocity =
+          ((Vector3d)activeVessel.rootPart.rb.GetPointVelocity(vesselPosition))
+          + Krakensbane.GetFrameVelocity();
+        geometricAcceleration =
+          FlightGlobals.getGeeForceAtPosition(vesselPosition)
+          + FlightGlobals.getCoriolisAcc(vesselVelocity, primary)
+          + FlightGlobals.getCentrifugalAcc(vesselPosition, primary);
       }
       if (simulate) {
 #if TRACE
