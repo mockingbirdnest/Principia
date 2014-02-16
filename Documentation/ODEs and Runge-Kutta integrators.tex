@@ -169,6 +169,7 @@ Substituting yields
 &=  \vy_0 + \increment t \deriv t \vy \of{t_0} + \frac{\increment t^2}{2} \deriv[2] t \vy\of{t_0} + \BigO\of{\increment t^3} \\
 &= \vy\of{t + \increment t} + \BigO\of{\increment t^3}\text.
 \end{align*}
+The method is third-order on a single step, so it is a second order method.
 The idea here was to say that the derivative at $t_0$ is not a good enough approximation for the behaviour between $t_0$ and $t_0 + \increment t$, and to compute the derivative halfway through $\vg\of{t_0 + \frac{\increment t}{2}}$ instead. In order to do that, we had to use a lower-order method (our Euler half-step).
 
 A good visualisation of this method, as well as a geometric interpretation, can be found on \emph{Wikipedia}.
@@ -208,26 +209,150 @@ a_{s1} & \cdots & a_{ss}
 \end{pmatrix}
 \text.
 \]
-It is typically written as a \emph{Butcher tableau},\[
+It is typically written as a \emph{Butcher tableau}:\[
+\begin{array}{c | c c c c c}
+c_1    &  a_{11} &  \cdots &  a_{1s} \\
+\vdots &  \vdots &  \ddots &  \vdots \\
+c_s    &  a_{s1} &  \cdots &  a_{ss} \\
+\hline
+       &  b_{1}  &  \cdots &  b_{s}
+\end{array}
+\]
+We will only consider \emph{explicit} Runge-Kutta methods, \emph{i.e.}, those where $\matA$ is strictly lower triangular, so that the Butcher tableau is as follows (blank spaces in $\matA$ are zeros).\[
 \begin{array}{l | c c c c c}
-\rule{0pt}{2,3ex} c_1    \quad & \quad a_{11} & \quad \cdots & \quad a_{1s} \\
-\rule{0pt}{2,3ex} \vdots \quad & \quad \vdots & \quad \ddots & \quad \vdots \\
-\rule{0pt}{2,3ex} c_s    \quad & \quad a_{s1} & \quad \cdots & \quad a_{ss} \\
-[2,0ex] \hline
-\rule{0pt}{3,3ex}              & \quad b_{1}  & \quad \cdots & \quad b_{s}
+0      &        &         &        &           &   \\
+c_2    & a_{21} &         &        &           &   \\
+c_3    & a_{31} & a_{32}  &        &           &   \\
+\vdots & \vdots & \vdots  & \ddots &           &   \\
+c_s    & a_{s1} & a_{s2}  & \cdots & a_{s,s-1} &   \\
+\hline
+       & b_{1}  & b_{2}   & \cdots & b_{s-1}   & b_{s}
 \end{array}
 \]
 
-FOO BAR BAZ explicit method:
-\[
-\begin{array}{l | c c c c c}
-\rule{0pt}{2,3ex} 0      \quad &              &               &              &                 &   \\
-\rule{0pt}{2,3ex} c_2    \quad & \quad a_{21} &               &              &                 &   \\
-\rule{0pt}{2,3ex} c_3    \quad & \quad a_{31} & \quad a_{32}  &              &                 &   \\
-\rule{0pt}{2,3ex} \vdots \quad & \quad \vdots & \quad \vdots  & \quad \ddots &                 &   \\
-\rule{0pt}{2,3ex} c_s    \quad & \quad a_{s1} & \quad a_{s2}  & \quad \cdots & \quad a_{s,s-1} & \\[2,0ex] \hline
-\rule{0pt}{3,3ex}              & \quad b_{1}  & \quad b_{2}   & \quad \cdots & \quad b_{s-1}   & \quad b_{s}
+The step is computed using the weighted sum of the increments as a linear approximation,\[
+\vy_1 = \vy_0 + \increment t \pa{b_1\vk_1 + b_2\vk_2 + \dotsb + b_s\vk_s}\text,
+\]
+where the increments are computed in $s$ \emph{stages} as follows:\footnote{\emph{Caveat lector}: $\vk_i$ is often defined as $\increment t\vf\of{t_0 + c_i\increment t, y_0 + \increment t \pa{a_{i1}\vk_1 + a_{i2}\vk_2 + \dotsb + a_{i,i-1}\vk_{i-1}}}$. In this case it is an approximation of the increment using the derivative at $t_0 + c_i\increment t$ rather than an approximation of the derivative itself.}
+\begin{align*}
+\vk_1 &= \vf\of{t_0, y_0} \\
+\vk_2 &= \vf\of{t_0 + c_2\increment t, y_0 + \increment t a_{21}\vk_1 } \\
+\vk_3 &= \vf\of{t_0 + c_3\increment t, y_0 + \increment t \pa{a_{31}\vk_1 + a_{32}\vk_2} } \\
+      &\vdots\\
+\vk_i &= \vf\of{t_0 + c_i\increment t, y_0 + \increment t \pa{a_{i1}\vk_1 + a_{i2}\vk_2 + \dotsb + a_{i,i-1}\vk_{i-1}}} \\
+      &\vdots\\
+\vk_s &= \vf\of{t_0 + c_s\increment t, y_0 + \increment t \pa{a_{s1}\vk_1 + a_{s2}\vk_2 + \dotsb + a_{s,s-1}\vk_{s-1}}}\text.
+\end{align*}
+Here $\vk_i$ is an approximation for $\vg\of{t_0 + c_i\increment t}$, the derivative of $\vy$ at $t_0 + c_i\increment t$.
+
+Note that all of the methods described above were Runge-Kutta methods:
+Euler's method has Butcher tableau\[
+\begin{array}{c | c}
+0    &    \\
+\hline
+     &  1  
+\end{array}\text,
+\]
+The midpoint method is described by\[
+\begin{array}{c | c c}
+0           &                \\
+\frac 1 2   &  \frac 1 2   & \\
+\hline
+            &  0           & 1  
 \end{array}
 \]
+and Heun's method by\[
+\begin{array}{c | c c}
+0           &                \\
+1           &  1           & \\
+\hline
+            &  \frac 1 2   & \frac 1 2
+\end{array}\text.
+\]
+\section{Example: Kutta's third-order method}
+We will now consider the Runge-Kutta method given by the following Butcher tableau.\[
+\begin{array}{c | c c c}
+0           &                  \\
+\frac 1 2   & \frac 1 2    &   \\
+1           & -1           & 2 \\
+\hline
+            &  \frac 1 6   & \frac 2 3 & \frac 1 6
+\end{array}
+\]
+For convenience, we will look at the case of a $1$-dimensional \textsc{ode}, so that $y$ is a scalar.\footnote{This is just so that we don't need to define multivariate calculus, things work equally well in the multidimensional case.}
+We have \[
+y_1 = y_0 + \increment t \pa{\frac{k_1}{6} + \frac{2k_2}{3} + \frac{k_3}{6}}\text.
+\]
+This is an approximation for
+\begin{align*}
+& y_0 + \increment t \pa{\frac{g\of{t_0}}{6} 
+          + \frac{2g\of{t_0 + \frac{\increment t}{2}}}{3} + \frac{g\of{t_0 + \increment t}}{6}}\\
+&= y_0 + \increment t \frac{1}{6}\deriv t y \of{t_0} \\
+ & \quad + \increment t \frac{2}{3}\pa{\deriv t y \of{t_0} + \frac{\increment t}{2} \deriv[2] t y \of{t_0} + \frac{\increment t^2}{8} \deriv[3] t y \of{t_0}} \\
+ & \quad + \increment t \frac{1}{6}\pa{\deriv t y \of{t_0} + \increment t \deriv[2] t y \of{t_0} + \frac{\increment t^2}{2} \deriv[3] t y \of{t_0}} \\
+ &\quad  + \increment t \BigO\of{\increment t^3} \\
+&= y_0 + \increment t \deriv t y \of{t_0} + \frac{\increment t^2}{2} \deriv[2] t y \of{t_0} + \frac{\increment t^3}{6} \deriv[3] t y \of{t_0} + \BigO\of{\increment t^4} \\
+&= y\of{t_0 + \increment t} + \BigO\of{\increment t^4}\text,
+\end{align*}
+so it looks like this could be a third-order method (the error on one step is fourth-order).
+
+In order for that to work however, we need the difference between \[
+\frac{g\of{t_0}}{6} + \frac{2g\of{t_0 + \frac{\increment t}{2}}}{3} + \frac{g\of{t_0 + \increment t}}{6}
+\]and\[
+\frac{k_1}{6} + \frac{2k_2}{3} + \frac{k_3}{6}
+\]to be $\BigO\of{t^3}$.
+
+We have $k_1=g\of{t_0}$.
+If we look at the way $k_2$ is computed,\begin{align*}
+k_2 &= f\of{t_0 + \frac{\increment t}{2}, y_0 + \frac{\increment t}{2} k_1} \\
+    &= f\of{t_0 + \frac{\increment t}{2}, y_0 + \frac{\increment t}{2} \deriv t y \of{t_0}} \\
+    &= f\of{t_0 + \frac{\increment t}{2}, y\of{t_0 + \frac{\increment t}{2}} - \frac{\increment t^2}{8} \deriv[2] t y\of{t_0} + \BigO\of{\increment t^3} } \\
+    &= f\of{t_0 + \frac{\increment t}{2}, y\of{t_0 + \frac{\increment t}{2}} } - \frac{\increment t^2}{8} \deriv[2] t y\of{t_0} \pderiv y f \of{t_0 + \frac{\increment t}{2}, y\of{t_0 + \frac{\increment t}{2}} } + \BigO\of{\increment t^3} \\
+    &= f\of{t_0 + \frac{\increment t}{2}, y\of{t_0 + \frac{\increment t}{2}} } - \frac{\increment t^2}{8} \deriv[2] t y\of{t_0} \pderiv y f \of{t_0, y\of{t_0}} + \BigO\of{\increment t^3} \\
+    &= g\of{t_0 +\increment t} - \frac{\increment t^2}{8} \deriv[2] t y\of{t_0} \pderiv y f \of{t_0, y\of{t_0}} + \BigO\of{\increment t^3}  \text,
+\end{align*}
+Here we used Taylor's theorem on $f\of{t,y}$ as a function of $y$, yielding the partial derivative $\pderiv y f$.
+We see that the error is too big. In order for the method to be third-order, we need this error to be compensated by the error in $k_3$. We have \begin{align*}
+k_3 &= f\of{t_0 + \increment t, y_0 - \increment t k_1 + 2 \increment k_2} \\
+    &= f\of{t_0 + \increment t, y_0 - \increment t \deriv t y \of{t_0} + 2\increment t f\of{t_0 + \frac{\increment t}{2}, y\of{t_0 + \frac{\increment t}{2}} }  + \BigO\of{\increment t^3} } \\
+    &= f\of{t_0 +\increment t, y_0 - \increment t \deriv t y \of{t_0} + 2\increment t \deriv t y\of{t_0 + \frac{\increment t}{2}}  + \BigO\of{\increment t^3} }  \\
+    &= f\of{t_0 +\increment t, y_0 - \increment t \deriv t y \of{t_0} + 2\increment t \deriv t y\of{t_0}  + \increment t^2 \deriv[2] t y\of{t_0}  + \BigO\of{\increment t^3} } \\
+    &= f\of{t_0 +\increment t, y_0  + \increment t \deriv t y\of{t_0}  + \increment t^2 \deriv[2] t y\of{t_0}  + \BigO\of{\increment t^3} } \\
+    &= f\of{t_0 +\increment t, y\of{t_0 + \increment t}  + \frac{\increment t^2}{2} \deriv[2] t y\of{t_0}  + \BigO\of{\increment t^3} } \\
+    &= f\of{t_0 +\increment t, y\of{t_0 + \increment t} } + \frac{\increment t^2}{2} \deriv[2] t y\of{t_0} \pderiv y f \of{t_0, y\of{t_0}} + \BigO\of{\increment t^3} \\
+    &= g\of{t_0 +\increment t} + \frac{\increment t^2}{2} \deriv[2] t y\of{t_0} \pderiv y f \of{t_0, y\of{t_0}} + \BigO\of{\increment t^3}  \text.
+\end{align*}
+It follows that for the whole step,\begin{align*}
+y_1 &= y_0 + \increment t \pa{\frac{k_1}{6} + \frac{2k_2}{3} + \frac{k_3}{6}} \\
+    &= y_0 + \increment t \bigg( \frac{g\of{t_0}}{6} \\
+    &\quad + \frac{2g\of{t_0 + \frac{\increment t}{2}}}{3} - \frac{2}{3}\frac{\increment t^2}{8} \deriv[2] t y\of{t_0} \pderiv y f \of{t_0, y\of{t_0}} \\
+    &\quad + \frac{g\of{t_0 + \increment t}}{6} + \frac{1}{6} \frac{\increment t^2}{2} \deriv[2] t y\of{t_0} \pderiv y f \of{t_0, y\of{t_0}} + \BigO\of{\increment t ^ 3} \bigg)\\
+    &= y_0 + \increment t \pa{\frac{g\of{t_0}}{6} + \frac{2g\of{t_0 + \frac{\increment t}{2}}}{3} + \frac{g\of{t_0 + \increment t}}{6}} + \BigO\of{\increment t ^ 4} \\
+    &= y\of{t_0 + \increment t} + \BigO\of{\increment t^4}\text.
+\end{align*}
+The error on the step is fourth-order and thus the method third-order accurate.
+
+Fiddling with Taylor's theorem in order to find a high-order method by trying to make low-order terms cancel out is hard and involves a lot of guesswork. This is where the Runge-Kutta formulation shines: one can check the order of the method by seeing whether the coefficients $\matA$, $\vb$, $\vc$ satisfy the corresponding \emph{order conditions}.
+
+A method has order $1$ if and only if it satisfies\[
+\sum{i=1}[s]b_i =1\text.\]
+It has order $2$ if and only if, in addition to the above equation, it satisfies\[
+\sum{i=1}[s]b_ic_i =\frac 1 2 \text.\]
+It has order $3$ if and only if, in addition to satisfying the above two equations, it satisfies\[
+\begin{cases}
+\sum{i=1}[s]b_ic_i^2 =\frac 1 3 \\
+\sum{i=1}[s]\sum{j=1}[s]b_ia_{ij}c_j =\frac 1 6 
+\end{cases}\text.
+\]
+It has order $4$ if and only if, in addition to satisfying the above four equations, it satisfies\[
+\begin{cases}
+\sum{i=1}[s]b_ic_i^3 =\frac 1 4 \\
+\sum{i=1}[s]\sum{j=1}[s]b_ic_ia_{ij}c_j =\frac 1 8 \\
+\sum{i=1}[s]\sum{j=1}[s]b_ia_{ij}c_j^2 =\frac {1} {12} \\
+\sum{i=1}[s]\sum{j=1}[s]a_{ij}\sum{k=1}[s]b_ia_{jk}c_k =\frac {1} {24} \\
+\end{cases}\text.
+\]
+The number of order conditions explodes with increasing order, and they are not easy to solve. There are cases where only numerical values are known for the coefficients.
+
+We leave the following as an exercise to the reader: characterise all explicit second-order methods with two stages ($s=2$). Check your result by computing Taylor expansions.
 \end{document}
-
