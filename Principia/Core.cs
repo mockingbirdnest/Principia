@@ -26,9 +26,10 @@ namespace Principia {
     private Vector3d activeVesselProperAcceleration;
     private Vector3d activeVesselProperAcceleration2;
     private double[] activeVesselProperAccelerations = new double[100];
-    private Vector3d activeVesselProperObtAcceleration;
-    private Vector3d activeVesselVelocity, activeVesselObtVelocity;
+    private Vector3d activeVesselProperSecondDerivative;
+    private Vector3d activeVesselVelocity;
     private Dictionary<string, Body> bodies;
+    private Vector3d CoMPosition1, CoMPosition2, CoMPosition3;
     private Vector3d coriolis, gravity, centrifugal;
     private Vector3d geometricAcceleration;
     private Vector3d geometricAcceleration2;
@@ -95,10 +96,21 @@ namespace Principia {
           + FlightGlobals.getCoriolisAcc(vesselVelocity, primary)
           + FlightGlobals.getCentrifugalAcc(vesselPosition, primary);
 
-        activeVesselProperObtAcceleration
-          = (activeVessel.obt_velocity - activeVesselObtVelocity)
-          / TimeWarp.fixedDeltaTime - (gravity + coriolis / 2 + centrifugal);
-        activeVesselObtVelocity = activeVessel.obt_velocity;
+        // Let's try computing the acceleration by taking the second derivative
+        // of the position...
+        CoMPosition1 = CoMPosition2;
+        CoMPosition2 = CoMPosition3;
+        CoMPosition3 = Vector3d.zero;
+        foreach (Part part in activeVessel.parts) {
+          CoMPosition3 += (Vector3d)part.rb.worldCenterOfMass
+                          * (double)part.rb.mass;
+        }
+        CoMPosition3 /= totalMass;
+        CoMPosition3 -= primary.position;
+        activeVesselProperSecondDerivative =
+          (CoMPosition3 - 2 * CoMPosition2 + CoMPosition1)
+          / (TimeWarp.fixedDeltaTime * TimeWarp.fixedDeltaTime)
+          - geometricAcceleration2;
 
         Vector3d newVelocity =
           activeVessel.rootPart.rb.GetPointVelocity(activeVessel.orbitDriver.driverTransform.TransformPoint(activeVessel.orbitDriver.localCoM));
@@ -357,19 +369,18 @@ namespace Principia {
         + activeVesselProperAccelerations.Max().ToString("F9"));
       GUILayout.TextArea("Proper Acceleration 2: "
         + activeVesselProperAcceleration2.ToString("F9"));
-      GUILayout.TextArea("Proper Obt Acceleration: "
-        + activeVesselProperObtAcceleration.ToString("F9"));
+      GUILayout.TextArea("Proper Second Derivative: "
+        + activeVesselProperSecondDerivative.ToString("F9"));
 
       GUILayout.TextArea("Root velocity: "
         + activeVesselVelocity.ToString("F9"));
       GUILayout.TextArea("Accumulated velocity: "
         + activeVesselAccumulatedVelocity.ToString("F9"));
-      GUILayout.TextArea("obt_velocity: "
-        + activeVesselObtVelocity.ToString("F9"));
 
       GUILayout.TextArea("gravity: " + gravity.ToString("F9"));
       GUILayout.TextArea("centrifugal: " + centrifugal.ToString("F9"));
       GUILayout.TextArea("coriolis: " + coriolis.ToString("F9"));
+
       string integrators = "";
       foreach (Part part in FlightGlobals.ActiveVessel.parts) {
         integrators += part.partName + ": "
