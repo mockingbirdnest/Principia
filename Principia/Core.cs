@@ -81,12 +81,13 @@ namespace Principia {
         Vector3d newVelocity = Vector3d.zero;
         double totalMass = 0;
         foreach (Part part in activeVessel.parts) {
-          newVelocity += ((Vector3d)part.rb.velocity) * (double)part.rb.mass;
+          newVelocity += (Vector3d)part.rb.velocity * (double)part.rb.mass;
           totalMass += (double)part.rb.mass;
         }
         CelestialBody primary = activeVessel.orbit.referenceBody;
         newVelocity /= totalMass;
         newVelocity += Krakensbane.GetFrameVelocity();
+        newVelocity = activeVessel.obt_velocity;
         activeVesselProperAcceleration = (newVelocity - activeVesselVelocity)
                               / TimeWarp.fixedDeltaTime - geometricAcceleration;
         activeVesselVelocity = newVelocity;
@@ -102,7 +103,7 @@ namespace Principia {
           + Krakensbane.GetFrameVelocity();
         geometricAcceleration =
           FlightGlobals.getGeeForceAtPosition(vesselPosition)
-          + FlightGlobals.getCoriolisAcc(vesselVelocity, primary)
+          + FlightGlobals.getCoriolisAcc(vesselVelocity, primary) / 2
           + FlightGlobals.getCentrifugalAcc(vesselPosition, primary);
       }
       if (simulate) {
