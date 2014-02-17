@@ -24,10 +24,13 @@ namespace Principia {
     private Vector3d a;
     private Vector3d activeVesselAccumulatedVelocity;
     private Vector3d activeVesselProperAcceleration;
+    private Vector3d activeVesselProperAcceleration2;
     private double[] activeVesselProperAccelerations = new double[100];
     private Vector3d activeVesselVelocity;
     private Dictionary<string, Body> bodies;
+    private Vector3d coriolis, gravity, centrifugal;
     private Vector3d geometricAcceleration;
+    private Vector3d geometricAcceleration2;
     private MapRenderer mapRenderer;
     private bool predictTrajectories = false;
     private Vector3d q;
@@ -85,11 +88,24 @@ namespace Principia {
         activeVesselAccumulatedVelocity /= totalMass;
         activeVesselAccumulatedVelocity += Krakensbane.GetFrameVelocity();
 
+        // Yet another geometric acceleration.
+        CelestialBody primary = activeVessel.orbit.referenceBody;
+        Vector3d vesselPosition = activeVessel.findLocalCenterOfMass();
+        Vector3d vesselVelocity =
+          ((Vector3d)activeVessel.rootPart.rb.GetPointVelocity(vesselPosition))
+          + Krakensbane.GetFrameVelocity();
+        geometricAcceleration2 =
+          FlightGlobals.getGeeForceAtPosition(vesselPosition)
+          + FlightGlobals.getCoriolisAcc(vesselVelocity, primary)
+          + FlightGlobals.getCentrifugalAcc(vesselPosition, primary);
+
         Vector3d newVelocity =
           activeVessel.rootPart.rb.GetPointVelocity(activeVessel.orbitDriver.driverTransform.TransformPoint(activeVessel.orbitDriver.localCoM));
         newVelocity += Krakensbane.GetFrameVelocity();
         activeVesselProperAcceleration = (newVelocity - activeVesselVelocity)
                               / TimeWarp.fixedDeltaTime - geometricAcceleration;
+        activeVesselProperAcceleration2 = (newVelocity - activeVesselVelocity)
+                             / TimeWarp.fixedDeltaTime - geometricAcceleration2;
         activeVesselVelocity = newVelocity;
         activeVesselProperAccelerations[samplingIndex]
           = activeVesselProperAcceleration.magnitude;
@@ -97,15 +113,14 @@ namespace Principia {
           % activeVesselProperAccelerations.Length;
         // Now we compute the geometric acceleration which will be applied by
         // Unity over the next Euler step.
-        CelestialBody primary = activeVessel.orbit.referenceBody;
-        Vector3d vesselPosition = activeVessel.findLocalCenterOfMass();
-        Vector3d vesselVelocity =
-          ((Vector3d)activeVessel.rootPart.rb.GetPointVelocity(vesselPosition))
-          + Krakensbane.GetFrameVelocity();
         geometricAcceleration =
           FlightGlobals.getGeeForceAtPosition(vesselPosition)
           + FlightGlobals.getCoriolisAcc(vesselVelocity, primary)
           + FlightGlobals.getCentrifugalAcc(vesselPosition, primary);
+
+        gravity = FlightGlobals.getGeeForceAtPosition(vesselPosition);
+        coriolis = FlightGlobals.getCoriolisAcc(vesselVelocity, primary);
+        centrifugal = FlightGlobals.getCentrifugalAcc(vesselPosition, primary);
       }
       if (simulate) {
 #if TRACE
@@ -337,11 +352,17 @@ namespace Principia {
         + activeVesselProperAcceleration.ToString("F9"));
       GUILayout.TextArea("Peak Proper Acceleration: "
         + activeVesselProperAccelerations.Max().ToString("F9"));
+      GUILayout.TextArea("Proper Acceleration 2: "
+        + activeVesselProperAcceleration2.ToString("F9"));
 
       GUILayout.TextArea("Root velocity: "
         + activeVesselVelocity.ToString("F9"));
       GUILayout.TextArea("Accumulated velocity: "
         + activeVesselAccumulatedVelocity.ToString("F9"));
+
+      GUILayout.TextArea("gravity: " + gravity.ToString("F9"));
+      GUILayout.TextArea("centrifugal: " + centrifugal.ToString("F9"));
+      GUILayout.TextArea("coriolis: " + coriolis.ToString("F9"));
       string integrators = "";
       foreach (Part part in FlightGlobals.ActiveVessel.parts) {
         integrators += part.partName + ": "
