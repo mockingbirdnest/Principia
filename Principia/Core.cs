@@ -86,7 +86,7 @@ namespace Principia {
         activeVesselAccumulatedVelocity += Krakensbane.GetFrameVelocity();
 
         Vector3d newVelocity =
-          activeVessel.rootPart.rb.GetPointVelocity(activeVessel.CoM);
+          activeVessel.rootPart.rb.GetPointVelocity(activeVessel.orbitDriver.driverTransform.TransformPoint(activeVessel.orbitDriver.localCoM));
         newVelocity += Krakensbane.GetFrameVelocity();
         activeVesselProperAcceleration = (newVelocity - activeVesselVelocity)
                               / TimeWarp.fixedDeltaTime - geometricAcceleration;
