@@ -107,8 +107,12 @@ namespace NewtonianPhysics {
     private void computeAccelerations(double[] q,
                                       double t,
                                       ref double[] result) {
-      for (int k = 0; k < dimension; ++k) {
-        result[k] = 0;
+      for (int b = 0; b < bodies.Length; ++b) {
+        // Proper acceleration.
+        // TODO(robin): optimise data structures.
+        result[3 * b] = bodies[b].properAcceleration.x;
+        result[3 * b + 1] = bodies[b].properAcceleration.y;
+        result[3 * b + 2] = bodies[b].properAcceleration.z;
       }
 
       for (int b1 = 0; b1 < bodies.Length; ++b1) {
