@@ -87,6 +87,15 @@ namespace Principia {
         CelestialBody primary = activeVessel.orbit.referenceBody;
         newVelocity /= totalMass;
         newVelocity += Krakensbane.GetFrameVelocity();
+        activeVesselProperAcceleration = (newVelocity - activeVesselVelocity)
+                              / TimeWarp.fixedDeltaTime - geometricAcceleration;
+        activeVesselVelocity = newVelocity;
+        activeVesselProperAccelerations[samplingIndex]
+          = activeVesselProperAcceleration.magnitude;
+        samplingIndex = (samplingIndex + 1)
+          % activeVesselProperAccelerations.Length;
+        // Now we compute the geometric acceleration which will be applied by
+        // Unity over the next Euler step.
         Vector3d vesselPosition = activeVessel.findLocalCenterOfMass();
         Vector3d vesselVelocity =
           ((Vector3d)activeVessel.rootPart.rb.GetPointVelocity(vesselPosition))
@@ -95,13 +104,6 @@ namespace Principia {
           FlightGlobals.getGeeForceAtPosition(vesselPosition)
           + FlightGlobals.getCoriolisAcc(vesselVelocity, primary)
           + FlightGlobals.getCentrifugalAcc(vesselPosition, primary);
-        activeVesselProperAcceleration = (newVelocity - activeVesselVelocity)
-          / TimeWarp.fixedDeltaTime - geometricAcceleration;
-        activeVesselVelocity = newVelocity;
-        activeVesselProperAccelerations[samplingIndex]
-          = activeVesselProperAcceleration.magnitude;
-        samplingIndex = (samplingIndex + 1)
-          % activeVesselProperAccelerations.Length;
       }
       if (simulate) {
 #if TRACE
@@ -149,7 +151,7 @@ namespace Principia {
             vessel.situation != Vessel.Situations.SPLASHED &&
             vessel.situation != Vessel.Situations.PRELAUNCH) {
 #if TRACE
-              print("Updating " + vessel.name + "...");
+            print("Updating " + vessel.name + "...");
 #endif
             Body secondary, primary;
             bodies.TryGetValue(vessel.id.ToString(), out secondary);
