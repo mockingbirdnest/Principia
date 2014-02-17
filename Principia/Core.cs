@@ -65,7 +65,7 @@ namespace Principia {
       };
       double UT = Planetarium.GetUniversalTime();
       QuaternionD rotation = Planetarium.Rotation;
-      {
+      if (activeVessel.loaded) {
         // We compute the velocity ourselves so that we only deal with Unity's
         // and not with KSP's calculations. This also ensures that the
         // accumulation is done in double precision.
@@ -92,12 +92,19 @@ namespace Principia {
         // We now extract the proper acceleration computed by Unity.
         activeVesselProperAcceleration = (newVelocity - activeVesselVelocity)
                               / TimeWarp.fixedDeltaTime - geometricAcceleration;
-        activeVesselVelocity = newVelocity;
+      } else {
+        activeVesselProperAcceleration = Vector3d.zero;
       }
       if (simulate) {
 #if TRACE
         print("Initiating simulation step...");
 #endif
+        {
+          Body vessel;
+          bodies.TryGetValue(activeVessel.id.ToString(), out vessel);
+          vessel.properAcceleration = (QuaternionD.Inverse(rotation)
+            * activeVesselProperAcceleration).xzy.ToCoordinates();
+        }
         system.Evolve(UT, 10);
         foreach (CelestialBody body in FlightGlobals.Bodies) {
           if (body.name != "Sun") {
@@ -150,13 +157,35 @@ namespace Principia {
                                 - primary.q.ToVector();
             Vector3d velocity = secondary.v.ToVector()
                                 - primary.v.ToVector();
-            vessel.orbit.UpdateFromStateVectors(
-              (rotation * position.xzy).xzy,
-              (rotation * velocity.xzy).xzy,
-              vessel.orbit.referenceBody, UT);
+            if (vessel.isActiveVessel) {
+              vessel.SetPosition(rotation * position.xzy
+                + vessel.orbit.referenceBody.position);
+              vessel.SetWorldVelocity(rotation * velocity.xzy
+                - Krakensbane.GetFrameVelocity());
+            } else {
+              vessel.orbit.UpdateFromStateVectors(
+                (rotation * position.xzy).xzy,
+                (rotation * velocity.xzy).xzy,
+                vessel.orbit.referenceBody, UT);
+            }
           }
         }
       }
+
+      if (activeVessel.loaded) {
+        // Compute the velocity used to extract the proper acceleration in the
+        // next step.
+        activeVesselVelocity = Vector3d.zero;
+        double totalMass = 0;
+        foreach (Part part in activeVessel.parts) {
+          activeVesselVelocity += (Vector3d)part.rb.velocity
+            * (double)part.rb.mass;
+          totalMass += (double)part.rb.mass;
+        }
+        activeVesselVelocity /= totalMass;
+        activeVesselVelocity += Krakensbane.GetFrameVelocity();
+      }
+
       if (predictTrajectories) {
         system.AdvancePredictions(tmax: UT + 1 * Day,
                                   maxTimestep: 10 * Second,
