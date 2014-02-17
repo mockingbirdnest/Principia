@@ -22,23 +22,14 @@ namespace Principia {
     private const double Second = 1;
     private const double Year = 365.25 * Day;
     private Vector3d a;
-    private Vector3d activeVesselAccumulatedVelocity;
     private Vector3d activeVesselProperAcceleration;
-    private Vector3d activeVesselProperAcceleration2;
-    private double[] activeVesselProperAccelerations = new double[100];
-    private Vector3d activeVesselProperSecondDerivative;
     private Vector3d activeVesselVelocity;
     private Dictionary<string, Body> bodies;
-    private Vector3d CoMPosition1, CoMPosition2, CoMPosition3;
-    private Vector3d coriolis, gravity, centrifugal;
-    private Vector3d geometricAcceleration;
-    private Vector3d geometricAcceleration2;
     private MapRenderer mapRenderer;
     private bool predictTrajectories = false;
     private Vector3d q;
     private CelestialBody referenceBody;
     private ReferenceFrameType referenceFrameType;
-    private int samplingIndex;
     private bool simulate = false;
     private Vector3d[] standardBasis = { new Vector3d { x = 1, y = 0, z = 0 },
                                          new Vector3d { x = 0, y = 1, z = 0 },
@@ -75,67 +66,33 @@ namespace Principia {
       double UT = Planetarium.GetUniversalTime();
       QuaternionD rotation = Planetarium.Rotation;
       {
-        activeVesselAccumulatedVelocity = Vector3d.zero;
+        // We compute the velocity ourselves so that we only deal with Unity's
+        // and not with KSP's calculations. This also ensures that the
+        // accumulation is done in double precision.
+        Vector3d newVelocity = Vector3d.zero;
         double totalMass = 0;
         foreach (Part part in activeVessel.parts) {
-          activeVesselAccumulatedVelocity +=
-            (Vector3d)part.rb.velocity * (double)part.rb.mass;
+          newVelocity += (Vector3d)part.rb.velocity * (double)part.rb.mass;
           totalMass += (double)part.rb.mass;
         }
-        activeVesselAccumulatedVelocity /= totalMass;
-        activeVesselAccumulatedVelocity += Krakensbane.GetFrameVelocity();
+        newVelocity /= totalMass;
+        newVelocity += Krakensbane.GetFrameVelocity();
 
-        // Yet another geometric acceleration.
+        // We compute the geometric acceleration as applied by KSP.
         CelestialBody primary = activeVessel.orbit.referenceBody;
         Vector3d vesselPosition = activeVessel.findLocalCenterOfMass();
         Vector3d vesselVelocity =
           ((Vector3d)activeVessel.rootPart.rb.GetPointVelocity(vesselPosition))
           + Krakensbane.GetFrameVelocity();
-        geometricAcceleration2 =
+        Vector3d geometricAcceleration =
           FlightGlobals.getGeeForceAtPosition(vesselPosition)
           + FlightGlobals.getCoriolisAcc(vesselVelocity, primary)
           + FlightGlobals.getCentrifugalAcc(vesselPosition, primary);
 
-        // Let's try computing the acceleration by taking the second derivative
-        // of the position...
-        CoMPosition1 = CoMPosition2;
-        CoMPosition2 = CoMPosition3;
-        CoMPosition3 = Vector3d.zero;
-        foreach (Part part in activeVessel.parts) {
-          CoMPosition3 += (Vector3d)part.rb.worldCenterOfMass
-                          * (double)part.rb.mass;
-        }
-        CoMPosition3 /= totalMass;
-        CoMPosition3 -= primary.position;
-        activeVesselProperSecondDerivative =
-          (CoMPosition3 - 2 * CoMPosition2 + CoMPosition1)
-          / (TimeWarp.fixedDeltaTime * TimeWarp.fixedDeltaTime)
-          - geometricAcceleration2;
-
-        Vector3d newVelocity =
-          activeVessel.rootPart.rb.GetPointVelocity(activeVessel.orbitDriver.driverTransform.TransformPoint(activeVessel.orbitDriver.localCoM));
-        newVelocity += Krakensbane.GetFrameVelocity();
+        // We now extract the proper acceleration computed by Unity.
         activeVesselProperAcceleration = (newVelocity - activeVesselVelocity)
                               / TimeWarp.fixedDeltaTime - geometricAcceleration;
-        activeVesselProperAcceleration2 = (newVelocity - activeVesselVelocity)
-                             / TimeWarp.fixedDeltaTime - geometricAcceleration2;
         activeVesselVelocity = newVelocity;
-        activeVesselProperAccelerations[samplingIndex]
-          = activeVesselProperAcceleration.magnitude;
-        samplingIndex = (samplingIndex + 1)
-          % activeVesselProperAccelerations.Length;
-        // Now we compute the geometric acceleration which will be applied by
-        // Unity over the next Euler step.
-        geometricAcceleration =
-          FlightGlobals.getGeeForceAtPosition(vesselPosition)
-          + FlightGlobals.getCoriolisAcc(vesselVelocity, primary)
-          + FlightGlobals.getCentrifugalAcc(vesselPosition, primary);
-
-        gravity = FlightGlobals.getGeeForceAtPosition(vesselPosition);
-        coriolis = FlightGlobals.getCoriolisAcc(vesselVelocity, primary);
-        centrifugal = FlightGlobals.getCentrifugalAcc(vesselPosition, primary);
-
-        q = primary.position - vesselPosition;
       }
       if (simulate) {
 #if TRACE
@@ -365,21 +322,6 @@ namespace Principia {
                 + FlightGlobals.ActiveVessel.geeForce_immediate.ToString());
       GUILayout.TextArea("Proper Acceleration: "
         + activeVesselProperAcceleration.ToString("F9"));
-      GUILayout.TextArea("Peak Proper Acceleration: "
-        + activeVesselProperAccelerations.Max().ToString("F9"));
-      GUILayout.TextArea("Proper Acceleration 2: "
-        + activeVesselProperAcceleration2.ToString("F9"));
-      GUILayout.TextArea("Proper Second Derivative: "
-        + activeVesselProperSecondDerivative.ToString("F9"));
-
-      GUILayout.TextArea("Root velocity: "
-        + activeVesselVelocity.ToString("F9"));
-      GUILayout.TextArea("Accumulated velocity: "
-        + activeVesselAccumulatedVelocity.ToString("F9"));
-
-      GUILayout.TextArea("gravity: " + gravity.ToString("F9"));
-      GUILayout.TextArea("centrifugal: " + centrifugal.ToString("F9"));
-      GUILayout.TextArea("coriolis: " + coriolis.ToString("F9"));
 
       string integrators = "";
       foreach (Part part in FlightGlobals.ActiveVessel.parts) {

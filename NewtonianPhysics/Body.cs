@@ -34,6 +34,7 @@ namespace NewtonianPhysics {
     public double gravitationalParameter;
 
     public List<Event> predictedTrajectory = new List<Event>();
+    public SpatialCoordinates properAcceleration;
     public SpatialCoordinates q, v;
     // Errors from compensated summation.
     public SpatialCoordinates qError, vError;
