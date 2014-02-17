@@ -26,7 +26,8 @@ namespace Principia {
     private Vector3d activeVesselProperAcceleration;
     private Vector3d activeVesselProperAcceleration2;
     private double[] activeVesselProperAccelerations = new double[100];
-    private Vector3d activeVesselVelocity;
+    private Vector3d activeVesselProperObtAcceleration;
+    private Vector3d activeVesselVelocity, activeVesselObtVelocity;
     private Dictionary<string, Body> bodies;
     private Vector3d coriolis, gravity, centrifugal;
     private Vector3d geometricAcceleration;
@@ -65,11 +66,6 @@ namespace Principia {
         y = activeVessel.acceleration.y,
         z = activeVessel.acceleration.z
       };
-      q = new Vector3d {
-        x = activeVessel.orbit.pos.x,
-        y = activeVessel.orbit.pos.y,
-        z = activeVessel.orbit.pos.z
-      };
       v = new Vector3d {
         x = activeVessel.orbit.vel.x,
         y = activeVessel.orbit.vel.y,
@@ -99,6 +95,11 @@ namespace Principia {
           + FlightGlobals.getCoriolisAcc(vesselVelocity, primary)
           + FlightGlobals.getCentrifugalAcc(vesselPosition, primary);
 
+        activeVesselProperObtAcceleration
+          = (activeVessel.obt_velocity - activeVesselObtVelocity)
+          / TimeWarp.fixedDeltaTime - (gravity + coriolis / 2 + centrifugal);
+        activeVesselObtVelocity = activeVessel.obt_velocity;
+
         Vector3d newVelocity =
           activeVessel.rootPart.rb.GetPointVelocity(activeVessel.orbitDriver.driverTransform.TransformPoint(activeVessel.orbitDriver.localCoM));
         newVelocity += Krakensbane.GetFrameVelocity();
@@ -121,6 +122,8 @@ namespace Principia {
         gravity = FlightGlobals.getGeeForceAtPosition(vesselPosition);
         coriolis = FlightGlobals.getCoriolisAcc(vesselVelocity, primary);
         centrifugal = FlightGlobals.getCentrifugalAcc(vesselPosition, primary);
+
+        q = primary.position - vesselPosition;
       }
       if (simulate) {
 #if TRACE
@@ -354,11 +357,15 @@ namespace Principia {
         + activeVesselProperAccelerations.Max().ToString("F9"));
       GUILayout.TextArea("Proper Acceleration 2: "
         + activeVesselProperAcceleration2.ToString("F9"));
+      GUILayout.TextArea("Proper Obt Acceleration: "
+        + activeVesselProperObtAcceleration.ToString("F9"));
 
       GUILayout.TextArea("Root velocity: "
         + activeVesselVelocity.ToString("F9"));
       GUILayout.TextArea("Accumulated velocity: "
         + activeVesselAccumulatedVelocity.ToString("F9"));
+      GUILayout.TextArea("obt_velocity: "
+        + activeVesselObtVelocity.ToString("F9"));
 
       GUILayout.TextArea("gravity: " + gravity.ToString("F9"));
       GUILayout.TextArea("centrifugal: " + centrifugal.ToString("F9"));
