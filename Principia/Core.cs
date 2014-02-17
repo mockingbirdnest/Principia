@@ -73,10 +73,6 @@ namespace Principia {
       };
       double UT = Planetarium.GetUniversalTime();
       QuaternionD rotation = Planetarium.Rotation;
-      // We compute the total momentum ourselves in order to make
-      // sure the accumulation is done using double-precision.
-      // We then try to use the fact that physics engines de facto use
-      // Euler's method to extract the proper acceleration.
       {
         Vector3d newVelocity = Vector3d.zero;
         double totalMass = 0;
@@ -87,7 +83,7 @@ namespace Principia {
         CelestialBody primary = activeVessel.orbit.referenceBody;
         newVelocity /= totalMass;
         newVelocity += Krakensbane.GetFrameVelocity();
-        newVelocity = activeVessel.obt_velocity;
+        newVelocity = activeVessel.obt_velocity; // TODO: get a better velocity.
         activeVesselProperAcceleration = (newVelocity - activeVesselVelocity)
                               / TimeWarp.fixedDeltaTime - geometricAcceleration;
         activeVesselVelocity = newVelocity;
@@ -103,7 +99,7 @@ namespace Principia {
           + Krakensbane.GetFrameVelocity();
         geometricAcceleration =
           FlightGlobals.getGeeForceAtPosition(vesselPosition)
-          + FlightGlobals.getCoriolisAcc(vesselVelocity, primary) / 2
+          + FlightGlobals.getCoriolisAcc(vesselVelocity, primary) / 2 //TODO:WTF
           + FlightGlobals.getCentrifugalAcc(vesselPosition, primary);
       }
       if (simulate) {
