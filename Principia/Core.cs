@@ -66,8 +66,7 @@ namespace Principia {
       };
       double UT = Planetarium.GetUniversalTime();
       QuaternionD rotation = Planetarium.Rotation;
-      if (activeVessel.loaded
-          && TimeWarp.CurrentRate < TimeWarp.MaxPhysicsRate) {
+      if (activeVessel.loaded && !activeVessel.packed) {
         // We compute the velocity ourselves so that we only deal with Unity's
         // and not with KSP's calculations. This also ensures that the
         // accumulation is done in double precision.
@@ -166,8 +165,7 @@ namespace Principia {
             Vector3d relativeVelocity
               = secondary.v.ToVector() - primary.v.ToVector();
             if (vessel.isActiveVessel &&
-                vessel.loaded
-                && TimeWarp.CurrentRate < TimeWarp.MaxPhysicsRate) {
+                !vessel.packed) {
               Vector3d worldPosition = rotation * relativePosition.xzy
                                        + vessel.orbit.referenceBody.position;
               vessel.SetPosition(worldPosition);
@@ -189,8 +187,7 @@ namespace Principia {
         }
       }
 
-      if (activeVessel.loaded
-          && TimeWarp.CurrentRate < TimeWarp.MaxPhysicsRate) {
+      if (activeVessel.loaded && !activeVessel.packed) {
         // Compute the velocity used to extract the proper acceleration in the
         // next step.
         activeVesselVelocity = Vector3d.zero;
