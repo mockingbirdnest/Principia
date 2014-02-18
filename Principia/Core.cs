@@ -153,21 +153,30 @@ namespace Principia {
             bodies.TryGetValue(vessel.id.ToString(), out secondary);
             bodies.TryGetValue(vessel.orbit.referenceBody.name,
                                out primary);
-            Vector3d position = secondary.q.ToVector()
-                                - primary.q.ToVector();
-            Vector3d velocity = secondary.v.ToVector()
-                                - primary.v.ToVector();
-            if (vessel.isActiveVessel) {
-              vessel.SetPosition(rotation * position.xzy
-                + vessel.orbit.referenceBody.position);
-              vessel.SetWorldVelocity(rotation * velocity.xzy
-                - Krakensbane.GetFrameVelocity());
-            } else {
-              vessel.orbit.UpdateFromStateVectors(
-                (rotation * position.xzy).xzy,
-                (rotation * velocity.xzy).xzy,
-                vessel.orbit.referenceBody, UT);
+            Vector3d relativePosition
+              = secondary.q.ToVector() - primary.q.ToVector();
+            Vector3d relativeVelocity
+              = secondary.v.ToVector() - primary.v.ToVector();
+            if (vessel.isActiveVessel &&
+                vessel.loaded
+                && TimeWarp.fixedDeltaTime > TimeWarp.MaxPhysicsRate) {
+              Vector3d worldPosition = rotation * relativePosition.xzy
+                                       + vessel.orbit.referenceBody.position;
+              vessel.SetPosition(worldPosition);
+              // We change the velocity ourselves so that we are sure the change
+              // is done *now*, and affects the total momentum correctly without
+              // changing the relative velocities.
+              Vector3d Δv = rotation * relativeVelocity.xzy
+                - vessel.orbit.referenceBody.getRFrmVel(worldPosition)
+                - activeVesselVelocity;
+              foreach (Part part in vessel.parts) {
+                part.rb.velocity += Δv;
+              }
             }
+            vessel.orbit.UpdateFromStateVectors(
+              (rotation * relativePosition.xzy).xzy,
+              (rotation * relativeVelocity.xzy).xzy,
+              vessel.orbit.referenceBody, UT);
           }
         }
       }
