@@ -25,6 +25,7 @@ namespace Principia {
     private Vector3d activeVesselProperAcceleration;
     private Vector3d activeVesselVelocity;
     private Dictionary<string, Body> bodies;
+    private bool lastFrameWasPhysical = false;
     private MapRenderer mapRenderer;
     private bool predictTrajectories = false;
     private Vector3d q;
@@ -65,7 +66,8 @@ namespace Principia {
       };
       double UT = Planetarium.GetUniversalTime();
       QuaternionD rotation = Planetarium.Rotation;
-      if (activeVessel.loaded) {
+      if (activeVessel.loaded
+          && TimeWarp.CurrentRate < TimeWarp.MaxPhysicsRate) {
         // We compute the velocity ourselves so that we only deal with Unity's
         // and not with KSP's calculations. This also ensures that the
         // accumulation is done in double precision.
@@ -89,10 +91,16 @@ namespace Principia {
           + FlightGlobals.getCoriolisAcc(vesselVelocity, primary)
           + FlightGlobals.getCentrifugalAcc(vesselPosition, primary);
 
-        // We now extract the proper acceleration computed by Unity.
-        activeVesselProperAcceleration = (newVelocity - activeVesselVelocity)
+        if (lastFrameWasPhysical) {
+          // We now extract the proper acceleration computed by Unity.
+          activeVesselProperAcceleration = (newVelocity - activeVesselVelocity)
                               / TimeWarp.fixedDeltaTime - geometricAcceleration;
+        } else {
+          lastFrameWasPhysical = true;
+          activeVesselProperAcceleration = Vector3d.zero;
+        }
       } else {
+        lastFrameWasPhysical = false;
         activeVesselProperAcceleration = Vector3d.zero;
       }
       if (simulate) {
@@ -159,7 +167,7 @@ namespace Principia {
               = secondary.v.ToVector() - primary.v.ToVector();
             if (vessel.isActiveVessel &&
                 vessel.loaded
-                && TimeWarp.fixedDeltaTime > TimeWarp.MaxPhysicsRate) {
+                && TimeWarp.CurrentRate < TimeWarp.MaxPhysicsRate) {
               Vector3d worldPosition = rotation * relativePosition.xzy
                                        + vessel.orbit.referenceBody.position;
               vessel.SetPosition(worldPosition);
@@ -181,7 +189,8 @@ namespace Principia {
         }
       }
 
-      if (activeVessel.loaded) {
+      if (activeVessel.loaded
+          && TimeWarp.CurrentRate < TimeWarp.MaxPhysicsRate) {
         // Compute the velocity used to extract the proper acceleration in the
         // next step.
         activeVesselVelocity = Vector3d.zero;
