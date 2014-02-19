@@ -89,7 +89,7 @@ namespace Principia {
           lastFrameWasPhysical = true;
           activeVesselProperAcceleration = Vector3d.zero;
         }
-        // We compute the geometric acceleration will be applied by KSP.
+        // We compute the geometric acceleration which will be applied by KSP.
         CelestialBody primary = activeVessel.orbit.referenceBody;
         Vector3d vesselPosition = activeVessel.findLocalCenterOfMass();
         Vector3d vesselVelocity =
@@ -155,44 +155,40 @@ namespace Principia {
           }
         }
         foreach (Vessel vessel in FlightGlobals.Vessels) {
-          if (vessel.situation != Vessel.Situations.LANDED &&
-            vessel.situation != Vessel.Situations.SPLASHED &&
-            vessel.situation != Vessel.Situations.PRELAUNCH) {
 #if TRACE
             print("Updating " + vessel.name + "...");
 #endif
-            Body secondary, primary;
-            bodies.TryGetValue(vessel.id.ToString(), out secondary);
-            bodies.TryGetValue(vessel.orbit.referenceBody.name,
-                               out primary);
-            Vector3d relativePosition
-              = secondary.q.ToVector() - primary.q.ToVector();
-            Vector3d relativeVelocity
-              = secondary.v.ToVector() - primary.v.ToVector();
-            if (vessel.isActiveVessel &&
-                !vessel.packed) {
-              Vector3d worldPosition = rotation * relativePosition.xzy
-                                       + vessel.orbit.referenceBody.position;
-              vessel.SetPosition(worldPosition);
-              // We change the velocity ourselves so that we are sure the change
-              // is done *now*, and affects the total momentum correctly without
-              // changing the relative velocities.
-              Vector3d frameVelocity =
-                vessel.orbit.referenceBody.inverseRotation ?
-                  vessel.orbit.referenceBody.getRFrmVel(worldPosition) :
-                  Vector3d.zero;
-              Vector3d Δv = rotation * relativeVelocity.xzy
-                - frameVelocity
-                - activeVesselVelocity;
-              foreach (Part part in vessel.parts) {
-                part.rb.velocity += Δv;
-              }
+          Body secondary, primary;
+          bodies.TryGetValue(vessel.id.ToString(), out secondary);
+          bodies.TryGetValue(vessel.orbit.referenceBody.name,
+                             out primary);
+          Vector3d relativePosition
+            = secondary.q.ToVector() - primary.q.ToVector();
+          Vector3d relativeVelocity
+            = secondary.v.ToVector() - primary.v.ToVector();
+          if (vessel.isActiveVessel &&
+              !vessel.packed) {
+            Vector3d worldPosition = rotation * relativePosition.xzy
+                                     + vessel.orbit.referenceBody.position;
+            vessel.SetPosition(worldPosition);
+            // We change the velocity ourselves so that we are sure the change
+            // is done *now*, and affects the total momentum correctly without
+            // changing the relative velocities.
+            Vector3d frameVelocity =
+              vessel.orbit.referenceBody.inverseRotation ?
+                vessel.orbit.referenceBody.getRFrmVel(worldPosition) :
+                Vector3d.zero;
+            Vector3d Δv = rotation * relativeVelocity.xzy
+              - frameVelocity
+              - activeVesselVelocity;
+            foreach (Part part in vessel.parts) {
+              part.rb.velocity += Δv;
             }
-            vessel.orbit.UpdateFromStateVectors(
-              (rotation * relativePosition.xzy).xzy,
-              (rotation * relativeVelocity.xzy).xzy,
-              vessel.orbit.referenceBody, UT);
           }
+          vessel.orbit.UpdateFromStateVectors(
+            (rotation * relativePosition.xzy).xzy,
+            (rotation * relativeVelocity.xzy).xzy,
+            vessel.orbit.referenceBody, UT);
         }
       }
 
@@ -446,80 +442,76 @@ namespace Principia {
           // TODO(robin): There are too many nested expressions here, and I've
           // caught quite a few bugs from misplaced parentheses. Declare more
           // variables so this part is at least vaguely readable.
-          if (v.situation != Vessel.Situations.LANDED &&
-            v.situation != Vessel.Situations.SPLASHED &&
-            v.situation != Vessel.Situations.PRELAUNCH) {
-            LineRenderer line;
-            Body vessel;
-            Body reference;
-            Body primary = null;              // The silly language forbids the
-            CelestialBody primaryBody = null; // use of 'unassigned' variables.
-            trajectories.TryGetValue(v.id.ToString(), out line);
-            bodies.TryGetValue(v.id.ToString(), out vessel);
-            bodies.TryGetValue(referenceBody.name, out reference);
-            if (referenceFrameType == ReferenceFrameType.CoRotating) {
-              primaryBody = referenceBody.orbit.referenceBody;
-              bodies.TryGetValue(primaryBody.name, out primary);
-            }
-            line.SetVertexCount(vessel.predictedTrajectory.Count);
-            line.enabled = true;
-            Vector3d currentVesselPosition = v.GetWorldPos3D();
-            line.SetWidth((0.01f * camera.Distance), (0.01f * camera.Distance));
-#pragma warning disable 618 // Obsolete.
-            // Quaternion.AxisAngle uses radians (which we want, like and use)
-            // and is deprecated because of that for some mindbogglingly stupid
-            // reason. We use it nonetheless.
-            // We also use Quaternion rather than QuaternionD because KSP's
-            // QuaternionD seems broken (maybe it doesn't implement deprecated
-            // functions).
-            // TODO(robin): Make a versor; I wouldn't want to trust Unity with a
-            // calculation even if it were done in double precision.
-            for (int i = 0; i < vessel.predictedTrajectory.Count; ++i) {
-              switch (referenceFrameType) {
-                case ReferenceFrameType.CoRotating:
-                  Vector3d predictedBarycenter =
-                    (reference.predictedTrajectory[i].q.ToVector().xzy
-                    * referenceBody.Mass
-                    + primary.predictedTrajectory[i].q.ToVector().xzy
-                    * primaryBody.Mass)
-                  / (referenceBody.Mass + primaryBody.Mass);
-                  Vector3d currentBarycenter =
-                    (reference.q.ToVector().xzy * referenceBody.Mass
-                    + primary.q.ToVector().xzy * primaryBody.Mass)
-                    / (referenceBody.Mass + primaryBody.Mass);
-                  line.SetPosition(i, ScaledSpace.LocalToScaledSpace(
-                    rotation * (
-                    Quaternion.FromToRotation(
-                      reference.predictedTrajectory[i].q.ToVector().xzy
-                        - predictedBarycenter,
-                      reference.q.ToVector().xzy - currentBarycenter)
-                    * (vessel.predictedTrajectory[i].q.ToVector().xzy
-                      - predictedBarycenter) + currentBarycenter
-                    - vessel.q.ToVector().xzy) + currentVesselPosition));
-                  break;
-                case ReferenceFrameType.Inertial:
-                  line.SetPosition(i, ScaledSpace.LocalToScaledSpace(
-                    rotation * (vessel.predictedTrajectory[i].q.ToVector().xzy
-                             - reference.predictedTrajectory[i].q.ToVector().xzy
-                             + reference.q.ToVector().xzy
-                             - vessel.q.ToVector().xzy)
-                    + currentVesselPosition));
-                  break;
-                case ReferenceFrameType.Surface:
-                  line.SetPosition(i, ScaledSpace.LocalToScaledSpace(
-                    rotation * (
-                    Quaternion.AxisAngle(referenceBody.angularVelocity, (float)(
-                                         referenceBody.angularV * (UT -
-                                              vessel.predictedTrajectory[i].t)))
-                      * (vessel.predictedTrajectory[i].q.ToVector().xzy
-                        - reference.predictedTrajectory[i].q.ToVector().xzy)
-                      + reference.q.ToVector().xzy - vessel.q.ToVector().xzy)
-                    + currentVesselPosition));
-                  break;
-              }
-            }
-#pragma warning restore 618
+          LineRenderer line;
+          Body vessel;
+          Body reference;
+          Body primary = null;              // The silly language forbids the
+          CelestialBody primaryBody = null; // use of 'unassigned' variables.
+          trajectories.TryGetValue(v.id.ToString(), out line);
+          bodies.TryGetValue(v.id.ToString(), out vessel);
+          bodies.TryGetValue(referenceBody.name, out reference);
+          if (referenceFrameType == ReferenceFrameType.CoRotating) {
+            primaryBody = referenceBody.orbit.referenceBody;
+            bodies.TryGetValue(primaryBody.name, out primary);
           }
+          line.SetVertexCount(vessel.predictedTrajectory.Count);
+          line.enabled = true;
+          Vector3d currentVesselPosition = v.GetWorldPos3D();
+          line.SetWidth((0.01f * camera.Distance), (0.01f * camera.Distance));
+#pragma warning disable 618 // Obsolete.
+          // Quaternion.AxisAngle uses radians (which we want, like and use)
+          // and is deprecated because of that for some mindbogglingly stupid
+          // reason. We use it nonetheless.
+          // We also use Quaternion rather than QuaternionD because KSP's
+          // QuaternionD seems broken (maybe it doesn't implement deprecated
+          // functions).
+          // TODO(robin): Make a versor; I wouldn't want to trust Unity with a
+          // calculation even if it were done in double precision.
+          for (int i = 0; i < vessel.predictedTrajectory.Count; ++i) {
+            switch (referenceFrameType) {
+              case ReferenceFrameType.CoRotating:
+                Vector3d predictedBarycenter =
+                  (reference.predictedTrajectory[i].q.ToVector().xzy
+                  * referenceBody.Mass
+                  + primary.predictedTrajectory[i].q.ToVector().xzy
+                  * primaryBody.Mass)
+                / (referenceBody.Mass + primaryBody.Mass);
+                Vector3d currentBarycenter =
+                  (reference.q.ToVector().xzy * referenceBody.Mass
+                  + primary.q.ToVector().xzy * primaryBody.Mass)
+                  / (referenceBody.Mass + primaryBody.Mass);
+                line.SetPosition(i, ScaledSpace.LocalToScaledSpace(
+                  rotation * (
+                  Quaternion.FromToRotation(
+                    reference.predictedTrajectory[i].q.ToVector().xzy
+                      - predictedBarycenter,
+                    reference.q.ToVector().xzy - currentBarycenter)
+                  * (vessel.predictedTrajectory[i].q.ToVector().xzy
+                    - predictedBarycenter) + currentBarycenter
+                  - vessel.q.ToVector().xzy) + currentVesselPosition));
+                break;
+              case ReferenceFrameType.Inertial:
+                line.SetPosition(i, ScaledSpace.LocalToScaledSpace(
+                  rotation * (vessel.predictedTrajectory[i].q.ToVector().xzy
+                           - reference.predictedTrajectory[i].q.ToVector().xzy
+                           + reference.q.ToVector().xzy
+                           - vessel.q.ToVector().xzy)
+                  + currentVesselPosition));
+                break;
+              case ReferenceFrameType.Surface:
+                line.SetPosition(i, ScaledSpace.LocalToScaledSpace(
+                  rotation * (
+                  Quaternion.AxisAngle(referenceBody.angularVelocity, (float)(
+                                       referenceBody.angularV * (UT -
+                                            vessel.predictedTrajectory[i].t)))
+                    * (vessel.predictedTrajectory[i].q.ToVector().xzy
+                      - reference.predictedTrajectory[i].q.ToVector().xzy)
+                    + reference.q.ToVector().xzy - vessel.q.ToVector().xzy)
+                  + currentVesselPosition));
+                break;
+            }
+          }
+#pragma warning restore 618
         }
       }
     }
