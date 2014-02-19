@@ -312,12 +312,8 @@ namespace Principia {
           bodies.Add(body.name, body.ToBody());
         }
         foreach (Vessel vessel in FlightGlobals.Vessels) {
-          if (vessel.situation == Vessel.Situations.ESCAPING ||
-              vessel.situation == Vessel.Situations.ORBITING ||
-              vessel.situation == Vessel.Situations.SUB_ORBITAL) {
-            print("Adding vessel " + vessel.name + "...");
-            bodies.Add(vessel.id.ToString(), vessel.ToBody());
-          }
+          print("Adding vessel " + vessel.name + "...");
+          bodies.Add(vessel.id.ToString(), vessel.ToBody());
         }
         system = new NBodySystem(bodies.Values.ToArray(), UT);
       }
@@ -328,21 +324,17 @@ namespace Principia {
         double UT = Planetarium.GetUniversalTime();
         if (predictTrajectories) {
           foreach (Vessel vessel in FlightGlobals.Vessels) {
-            if (vessel.situation == Vessel.Situations.ESCAPING ||
-                vessel.situation == Vessel.Situations.ORBITING ||
-                vessel.situation == Vessel.Situations.SUB_ORBITAL) {
-              print("Adding vessel " + vessel.name + " trajectory...");
-              GameObject lineObject = new GameObject("Line");
-              // TODO(robin): Switch to layer 31, use a mesh, draw the lines in
-              // 2D if MapView.Draw3DLines is false (needs a MapViewLine class).
-              lineObject.layer = 9;
-              LineRenderer line = lineObject.AddComponent<LineRenderer>();
-              line.transform.parent = null;
-              line.material = MapView.fetch.orbitLinesMaterial;
-              line.SetColors(Color.blue, Color.red);
-              line.useWorldSpace = true;
-              trajectories.Add(vessel.id.ToString(), line);
-            }
+            print("Adding vessel " + vessel.name + " trajectory...");
+            GameObject lineObject = new GameObject("Line");
+            // TODO(robin): Switch to layer 31, use a mesh, draw the lines in
+            // 2D if MapView.Draw3DLines is false (needs a MapViewLine class).
+            lineObject.layer = 9;
+            LineRenderer line = lineObject.AddComponent<LineRenderer>();
+            line.transform.parent = null;
+            line.material = MapView.fetch.orbitLinesMaterial;
+            line.SetColors(Color.blue, Color.red);
+            line.useWorldSpace = true;
+            trajectories.Add(vessel.id.ToString(), line);
           }
           system.RecalculatePredictions(tmax: UT + 1 * Day,
                                         maxTimestep: 10 * Second,
