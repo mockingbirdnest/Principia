@@ -29,6 +29,7 @@ namespace Principia {
     private bool lastFrameWasPhysical = false;
     private MapRenderer mapRenderer;
     private bool predictTrajectories = false;
+    private LineRenderer properAccelerationVisualisation;
     private Vector3d q;
     private CelestialBody referenceBody;
     private ReferenceFrameType referenceFrameType;
@@ -102,6 +103,10 @@ namespace Principia {
         lastFrameWasPhysical = false;
         activeVesselProperAcceleration = Vector3d.zero;
       }
+
+      properAccelerationVisualisation.SetPosition(0, activeVessel.GetWorldPos3D());
+      properAccelerationVisualisation.SetPosition(1, activeVessel.GetWorldPos3D() + activeVesselProperAcceleration * 100);
+
       if (simulate) {
 #if TRACE
         print("Initiating simulation step...");
@@ -233,6 +238,17 @@ namespace Principia {
                                                 Screen.height / 3,
                                                 10, 10);
       }
+      GameObject gameObject = new GameObject("Line");
+      properAccelerationVisualisation = gameObject.AddComponent<LineRenderer>();
+      properAccelerationVisualisation.transform.parent = transform;
+      properAccelerationVisualisation.useWorldSpace = true;
+      properAccelerationVisualisation.transform.localPosition = Vector3.zero;
+      properAccelerationVisualisation.transform.localEulerAngles = Vector3.zero;
+      properAccelerationVisualisation.material = new Material(Shader.Find("Particles/Additive"));
+      properAccelerationVisualisation.SetColors(Color.yellow, Color.green);
+      properAccelerationVisualisation.SetWidth(1, 0);
+      properAccelerationVisualisation.SetVertexCount(2);
+
       mapRenderer = MapRenderer.CreateAndAttach(DrawTrajectories);
       print("Principia: Started.");
     }
