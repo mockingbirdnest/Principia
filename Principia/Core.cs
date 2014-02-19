@@ -104,8 +104,8 @@ namespace Principia {
         activeVesselProperAcceleration = Vector3d.zero;
       }
 
-      properAccelerationVisualisation.SetPosition(0, activeVessel.GetWorldPos3D());
-      properAccelerationVisualisation.SetPosition(1, activeVessel.GetWorldPos3D() + activeVesselProperAcceleration * 100);
+      properAccelerationVisualisation.SetPosition(0, activeVessel.rootPart.rb.worldCenterOfMass);
+      properAccelerationVisualisation.SetPosition(1, activeVessel.rootPart.rb.worldCenterOfMass + activeVesselProperAcceleration * 100);
 
       if (simulate) {
 #if TRACE
