@@ -25,6 +25,7 @@ namespace Principia {
     private Vector3d activeVesselProperAcceleration;
     private Vector3d activeVesselVelocity;
     private Dictionary<string, Body> bodies;
+    private Vector3d geometricAcceleration;
     private bool lastFrameWasPhysical = false;
     private MapRenderer mapRenderer;
     private bool predictTrajectories = false;
@@ -79,17 +80,6 @@ namespace Principia {
         newVelocity /= totalMass;
         newVelocity += Krakensbane.GetFrameVelocity();
 
-        // We compute the geometric acceleration as applied by KSP.
-        CelestialBody primary = activeVessel.orbit.referenceBody;
-        Vector3d vesselPosition = activeVessel.findLocalCenterOfMass();
-        Vector3d vesselVelocity =
-          ((Vector3d)activeVessel.rootPart.rb.GetPointVelocity(vesselPosition))
-          + Krakensbane.GetFrameVelocity();
-        Vector3d geometricAcceleration =
-          FlightGlobals.getGeeForceAtPosition(vesselPosition)
-          + FlightGlobals.getCoriolisAcc(vesselVelocity, primary)
-          + FlightGlobals.getCentrifugalAcc(vesselPosition, primary);
-
         if (lastFrameWasPhysical) {
           // We now extract the proper acceleration computed by Unity.
           activeVesselProperAcceleration = (newVelocity - activeVesselVelocity)
@@ -98,6 +88,16 @@ namespace Principia {
           lastFrameWasPhysical = true;
           activeVesselProperAcceleration = Vector3d.zero;
         }
+        // We compute the geometric acceleration will be applied by KSP.
+        CelestialBody primary = activeVessel.orbit.referenceBody;
+        Vector3d vesselPosition = activeVessel.findLocalCenterOfMass();
+        Vector3d vesselVelocity =
+          ((Vector3d)activeVessel.rootPart.rb.GetPointVelocity(vesselPosition))
+          + Krakensbane.GetFrameVelocity();
+        geometricAcceleration =
+          FlightGlobals.getGeeForceAtPosition(vesselPosition)
+          + FlightGlobals.getCoriolisAcc(vesselVelocity, primary)
+          + FlightGlobals.getCentrifugalAcc(vesselPosition, primary);
       } else {
         lastFrameWasPhysical = false;
         activeVesselProperAcceleration = Vector3d.zero;
@@ -172,8 +172,12 @@ namespace Principia {
               // We change the velocity ourselves so that we are sure the change
               // is done *now*, and affects the total momentum correctly without
               // changing the relative velocities.
+              Vector3d frameVelocity =
+                vessel.orbit.referenceBody.inverseRotation ?
+                  vessel.orbit.referenceBody.getRFrmVel(worldPosition) :
+                  Vector3d.zero;
               Vector3d Δv = rotation * relativeVelocity.xzy
-                - vessel.orbit.referenceBody.getRFrmVel(worldPosition)
+                - frameVelocity
                 - activeVesselVelocity;
               foreach (Part part in vessel.parts) {
                 part.rb.velocity += Δv;
