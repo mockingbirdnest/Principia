@@ -170,7 +170,7 @@ namespace Principia {
               !vessel.packed) {
             Vector3d worldPosition = rotation * relativePosition.xzy
                                      + vessel.orbit.referenceBody.position;
-            vessel.SetPosition(worldPosition);
+            vessel.Translate(worldPosition - vessel.findWorldCenterOfMass());
             // We change the velocity ourselves so that we are sure the change
             // is done *now*, and affects the total momentum correctly without
             // changing the relative velocities.

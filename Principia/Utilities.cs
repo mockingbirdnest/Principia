@@ -56,7 +56,10 @@ namespace Principia {
       }
     }
     public static Body ToBody(this Vessel vessel) {
-      Vector3d q = vessel.orbit.AbsoluteInertialPosition();
+      Vector3d q = (QuaternionD.Inverse(Planetarium.Rotation)
+        * (vessel.findWorldCenterOfMass()
+        - vessel.orbit.referenceBody.position)).xzy
+        + vessel.orbit.referenceBody.ToBody().q.ToVector();
       Vector3d v = vessel.orbit.AbsoluteInertialVelocity();
       return new Body {
         qError = nullVector,
