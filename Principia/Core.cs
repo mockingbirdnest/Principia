@@ -21,7 +21,6 @@ namespace Principia {
     private const double PredictionLength = 1 * Day;
     private const double Second = 1;
     private const double Year = 365.25 * Day;
-    private Vector3d a;
     private Vector3d activeVesselProperAcceleration;
     private Vector3d activeVesselVelocity;
     private Dictionary<string, Body> bodies;
@@ -30,7 +29,6 @@ namespace Principia {
     private MapRenderer mapRenderer;
     private bool predictTrajectories = false;
     private LineRenderer properAccelerationVisualisation;
-    private Vector3d q;
     private CelestialBody referenceBody;
     private ReferenceFrameType referenceFrameType;
     private bool simulate = false;
@@ -39,7 +37,8 @@ namespace Principia {
                                          new Vector3d { x = 0, y = 0, z = 1 } };
     private NBodySystem system;
     private Dictionary<string, LineRenderer> trajectories;
-    private Vector3d v;
+    private Vector3d Δq;
+    private Vector3d Δv;
     private enum ReferenceFrameType {
       [Description("Body-Centric Inertial")]
       Inertial,
@@ -56,16 +55,6 @@ namespace Principia {
         return;
       }
       Vessel activeVessel = FlightGlobals.ActiveVessel;
-      a = new Vector3d {
-        x = activeVessel.acceleration.x,
-        y = activeVessel.acceleration.y,
-        z = activeVessel.acceleration.z
-      };
-      v = new Vector3d {
-        x = activeVessel.orbit.vel.x,
-        y = activeVessel.orbit.vel.y,
-        z = activeVessel.orbit.vel.z
-      };
       double UT = Planetarium.GetUniversalTime();
       QuaternionD rotation = Planetarium.Rotation;
       if (activeVessel.loaded && !activeVessel.packed) {
@@ -170,7 +159,8 @@ namespace Principia {
               !vessel.packed) {
             Vector3d worldPosition = rotation * relativePosition.xzy
                                      + vessel.orbit.referenceBody.position;
-            vessel.Translate(worldPosition - vessel.findWorldCenterOfMass());
+            Δq = worldPosition - vessel.findWorldCenterOfMass();
+            vessel.Translate(Δq);
             // We change the velocity ourselves so that we are sure the change
             // is done *now*, and affects the total momentum correctly without
             // changing the relative velocities.
@@ -178,9 +168,8 @@ namespace Principia {
               vessel.orbit.referenceBody.inverseRotation ?
                 vessel.orbit.referenceBody.getRFrmVel(worldPosition) :
                 Vector3d.zero;
-            Vector3d Δv = rotation * relativeVelocity.xzy
-              - frameVelocity
-              - activeVesselVelocity;
+            Δv = rotation * relativeVelocity.xzy
+              - frameVelocity - activeVesselVelocity;
             foreach (Part part in vessel.parts) {
               part.rb.velocity += Δv;
             }
@@ -280,21 +269,6 @@ namespace Principia {
       mySty.padding = new RectOffset(8, 8, 8, 8);
 
       GUILayout.BeginVertical();
-      GUILayout.TextArea("q: " + q.x.ToString("F3") + ", "
-                               + q.y.ToString("F3") + ", "
-                               + q.z.ToString("F3") + " ("
-                               + q.magnitude.ToString("F3") + ")",
-                               GUILayout.ExpandWidth(true));
-      GUILayout.TextArea("v: " + v.x.ToString("F3") + ", "
-                               + v.y.ToString("F3") + ", "
-                               + v.z.ToString("F3") + " ("
-                               + v.magnitude.ToString("F3") + ")",
-                               GUILayout.ExpandWidth(true));
-      GUILayout.TextArea("a: " + a.x.ToString("F3") + ", "
-                               + a.y.ToString("F3") + ", "
-                               + a.z.ToString("F3") + " ("
-                               + a.magnitude.ToString("F3") + ")",
-                               GUILayout.ExpandWidth(true));
       GUILayout.TextArea("Planetarium rotation: "
                          + Planetarium.Rotation.w.ToString("F5") + " + "
                          + Planetarium.Rotation.x.ToString("F5") + " i + "
@@ -374,7 +348,8 @@ namespace Principia {
                 + FlightGlobals.ActiveVessel.geeForce_immediate.ToString());
       GUILayout.TextArea("Proper Acceleration: "
         + activeVesselProperAcceleration.ToString("F9"));
-
+      GUILayout.TextArea("Δq: " + Δq.ToString("E13"));
+      GUILayout.TextArea("Δv: " + Δv.ToString("E13"));
       string integrators = "";
       foreach (Part part in FlightGlobals.ActiveVessel.parts) {
         integrators += part.partName + ": "
