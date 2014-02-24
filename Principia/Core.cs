@@ -88,6 +88,7 @@ namespace Principia {
           FlightGlobals.getGeeForceAtPosition(vesselPosition)
           + FlightGlobals.getCoriolisAcc(vesselVelocity, primary)
           + FlightGlobals.getCentrifugalAcc(vesselPosition, primary);
+        activeVesselVelocity = newVelocity;
       } else {
         lastFrameWasPhysical = false;
         activeVesselProperAcceleration = Vector3d.zero;
@@ -147,37 +148,44 @@ namespace Principia {
 #if TRACE
             print("Updating " + vessel.name + "...");
 #endif
-          Body secondary, primary;
+          Body secondary, primary, sun;
           bodies.TryGetValue(vessel.id.ToString(), out secondary);
           bodies.TryGetValue(vessel.orbit.referenceBody.name,
                              out primary);
+          bodies.TryGetValue("Sun", out sun);
           Vector3d relativePosition
             = secondary.q.ToVector() - primary.q.ToVector();
           Vector3d relativeVelocity
             = secondary.v.ToVector() - primary.v.ToVector();
           if (vessel.isActiveVessel &&
               !vessel.packed) {
-            Vector3d worldPosition = rotation * relativePosition.xzy
-                                     + vessel.orbit.referenceBody.position;
-            Δq = worldPosition - vessel.findWorldCenterOfMass();
+            Vector3d worldRelativePosition = rotation * relativePosition.xzy;
+            Vector3d actualRelativePosition = vessel.orbit.getRelativePositionAtUT(UT).xzy;
+            Δq = worldRelativePosition - actualRelativePosition;
             vessel.Translate(Δq);
             // We change the velocity ourselves so that we are sure the change
             // is done *now*, and affects the total momentum correctly without
             // changing the relative velocities.
             Vector3d frameVelocity =
               vessel.orbit.referenceBody.inverseRotation ?
-                vessel.orbit.referenceBody.getRFrmVel(worldPosition) :
+                vessel.orbit.referenceBody.getRFrmVel(vessel.orbit.pos) :
                 Vector3d.zero;
-            Δv = rotation * relativeVelocity.xzy
-              - frameVelocity - activeVesselVelocity;
+            Δv = rotation * relativeVelocity.xzy - vessel.orbit.getOrbitalVelocityAtUT(UT).xzy;
+            Vector3d Δqplanet =
+              rotation * (primary.q.ToVector() - sun.q.ToVector()).xzy
+              - vessel.orbit.referenceBody.orbit.getRelativePositionAtUT(UT).xzy;
+            print("{" + Δq.ToMathematica() + ","
+                      + Δv.ToMathematica() + ","
+                      + Δqplanet.ToMathematica() + "}, ");
             foreach (Part part in vessel.parts) {
               part.rb.velocity += Δv;
             }
+          } else {
+            vessel.orbit.UpdateFromStateVectors(
+              (rotation * relativePosition.xzy).xzy,
+              (rotation * relativeVelocity.xzy).xzy,
+              vessel.orbit.referenceBody, UT);
           }
-          vessel.orbit.UpdateFromStateVectors(
-            (rotation * relativePosition.xzy).xzy,
-            (rotation * relativeVelocity.xzy).xzy,
-            vessel.orbit.referenceBody, UT);
         }
       }
 

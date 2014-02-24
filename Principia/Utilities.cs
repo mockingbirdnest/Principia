@@ -56,10 +56,7 @@ namespace Principia {
       }
     }
     public static Body ToBody(this Vessel vessel) {
-      Vector3d q = (QuaternionD.Inverse(Planetarium.Rotation)
-        * (vessel.findWorldCenterOfMass()
-        - vessel.orbit.referenceBody.position)).xzy
-        + vessel.orbit.referenceBody.ToBody().q.ToVector();
+      Vector3d q = vessel.orbit.AbsoluteInertialPosition();
       Vector3d v = vessel.orbit.AbsoluteInertialVelocity();
       return new Body {
         qError = nullVector,
@@ -98,6 +95,11 @@ namespace Principia {
       return new SpatialCoordinates { x = v.x, y = v.y, z = v.z };
     }
 
+    public static string ToMathematica(this Vector3d v) {
+      return "{" + v.x.ToString("F10") + ", "
+        + v.y.ToString("F10") + ", "
+        + v.z.ToString("F10") + "}";
+    }
     public static string ToString(this Vector3d v,
                                   string format,
                                   bool norm = true) {
