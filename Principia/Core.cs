@@ -159,9 +159,8 @@ namespace Principia {
             = secondary.v.ToVector() - primary.v.ToVector();
           if (vessel.isActiveVessel &&
               !vessel.packed) {
-            vessel.orbitDriver.UpdateOrbit();
             Vector3d worldRelativePosition = rotation * relativePosition.xzy;
-            Vector3d actualRelativePosition = vessel.orbit.getRelativePositionAtUT(UT).xzy;
+            Vector3d actualRelativePosition = vessel.orbit.pos.xzy;
             Δq = worldRelativePosition - actualRelativePosition;
             vessel.Translate(Δq);
             // We change the velocity ourselves so that we are sure the change
@@ -171,10 +170,10 @@ namespace Principia {
               vessel.orbit.referenceBody.inverseRotation ?
                 vessel.orbit.referenceBody.getRFrmVel(vessel.orbit.pos) :
                 Vector3d.zero;
-            Δv = rotation * relativeVelocity.xzy - vessel.orbit.getOrbitalVelocityAtUT(UT).xzy;
+            Δv = rotation * relativeVelocity.xzy - vessel.orbit.vel.xzy;
             Vector3d Δqplanet =
               rotation * (primary.q.ToVector() - sun.q.ToVector()).xzy
-              - vessel.orbit.referenceBody.orbit.getRelativePositionAtUT(UT).xzy;
+              - vessel.orbit.referenceBody.orbit.pos.xzy;
             print("{" + Δq.ToMathematica() + ","
                       + Δv.ToMathematica() + ","
                       + Δqplanet.ToMathematica() + "}, ");

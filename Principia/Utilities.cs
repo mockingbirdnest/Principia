@@ -21,7 +21,7 @@ namespace Principia {
     public static Vector3d AbsoluteInertialPosition(this Orbit orbit) {
       double UT = Planetarium.GetUniversalTime();
       return (QuaternionD.Inverse(Planetarium.Rotation)
-           * orbit.getRelativePositionAtUT(UT).xzy).xzy
+           * orbit.pos.xzy).xzy
         // TODO(robin): Explicit references to "Sun" EVERYWHERE.
            + (orbit.referenceBody.name != "Sun"
            ? orbit.referenceBody.orbit.AbsoluteInertialPosition()
@@ -34,7 +34,7 @@ namespace Principia {
     public static Vector3d AbsoluteInertialVelocity(this Orbit orbit) {
       double UT = Planetarium.GetUniversalTime();
       return (QuaternionD.Inverse(Planetarium.Rotation)
-           * orbit.getOrbitalVelocityAtUT(UT).xzy).xzy
+           * orbit.vel.xzy).xzy
            + (orbit.referenceBody.name != "Sun"
            ? orbit.referenceBody.orbit.AbsoluteInertialVelocity()
            : new Vector3d {
