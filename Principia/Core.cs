@@ -159,6 +159,7 @@ namespace Principia {
             = secondary.v.ToVector() - primary.v.ToVector();
           if (vessel.isActiveVessel &&
               !vessel.packed) {
+            vessel.orbitDriver.UpdateOrbit();
             Vector3d worldRelativePosition = rotation * relativePosition.xzy;
             Vector3d actualRelativePosition = vessel.orbit.getRelativePositionAtUT(UT).xzy;
             Δq = worldRelativePosition - actualRelativePosition;
