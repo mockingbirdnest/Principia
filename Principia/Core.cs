@@ -113,6 +113,8 @@ namespace Principia {
 #if TRACE
             print("Updating " + body.name + "...");
 #endif
+            // TODO(robin): Find out what this mess actually does; remove the
+            // extraneous redundant stuff.
             Body secondary, primary;
             bodies.TryGetValue(body.name, out secondary);
             bodies.TryGetValue(body.referenceBody.name, out primary);
@@ -142,6 +144,10 @@ namespace Principia {
             body.orbit.Init();
             body.orbit.UpdateFromUT(UT);
             body.CBUpdate();
+            body.orbit.UpdateFromStateVectors((rotation * position.xzy).xzy,
+                                              (rotation * velocity.xzy).xzy,
+                                              copy.referenceBody,
+                                              UT);
           }
         }
         foreach (Vessel vessel in FlightGlobals.Vessels) {
@@ -157,10 +163,14 @@ namespace Principia {
             = secondary.q.ToVector() - primary.q.ToVector();
           Vector3d relativeVelocity
             = secondary.v.ToVector() - primary.v.ToVector();
+          vessel.orbit.UpdateFromStateVectors(
+            (rotation * relativePosition.xzy).xzy,
+            (rotation * relativeVelocity.xzy).xzy,
+            vessel.orbit.referenceBody, UT);
           if (vessel.isActiveVessel &&
               !vessel.packed) {
             Vector3d worldRelativePosition = rotation * relativePosition.xzy;
-            Vector3d actualRelativePosition = vessel.orbit.pos.xzy;
+            Vector3d actualRelativePosition = ((Vector3d)(vessel.orbitDriver.driverTransform.position + vessel.orbitDriver.driverTransform.rotation * vessel.findLocalCenterOfMass()) - vessel.orbit.referenceBody.position);
             Δq = worldRelativePosition - actualRelativePosition;
             vessel.Translate(Δq);
             // We change the velocity ourselves so that we are sure the change
@@ -170,7 +180,9 @@ namespace Principia {
               vessel.orbit.referenceBody.inverseRotation ?
                 vessel.orbit.referenceBody.getRFrmVel(vessel.orbit.pos) :
                 Vector3d.zero;
-            Δv = rotation * relativeVelocity.xzy - vessel.orbit.vel.xzy;
+            Vector3d worldRelativeVelocity = rotation * relativeVelocity.xzy;
+            Vector3d actualRelativeVelocity = (((Vector3d)vessel.rootPart.rb.GetPointVelocity(vessel.orbitDriver.driverTransform.TransformPoint(vessel.localCoM)) + Krakensbane.GetFrameVelocity()).xzy + vessel.orbit.GetRotFrameVel(vessel.orbitDriver.referenceBody)).xzy;
+            Δv = worldRelativeVelocity - actualRelativeVelocity;
             Vector3d Δqplanet =
               rotation * (primary.q.ToVector() - sun.q.ToVector()).xzy
               - vessel.orbit.referenceBody.orbit.pos.xzy;
@@ -180,11 +192,6 @@ namespace Principia {
             foreach (Part part in vessel.parts) {
               part.rb.velocity += Δv;
             }
-          } else {
-            vessel.orbit.UpdateFromStateVectors(
-              (rotation * relativePosition.xzy).xzy,
-              (rotation * relativeVelocity.xzy).xzy,
-              vessel.orbit.referenceBody, UT);
           }
         }
       }
@@ -358,6 +365,7 @@ namespace Principia {
         + activeVesselProperAcceleration.ToString("F9"));
       GUILayout.TextArea("Δq: " + Δq.ToString("E13"));
       GUILayout.TextArea("Δv: " + Δv.ToString("E13"));
+      GUILayout.TextArea("Kerbin CoM offset: " + ((Vector3d)FlightGlobals.Bodies[1].orbitDriver.CoMoffset).ToString("E13"));
       string integrators = "";
       foreach (Part part in FlightGlobals.ActiveVessel.parts) {
         integrators += part.partName + ": "
