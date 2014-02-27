@@ -40,7 +40,6 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Body.cs" />
-    <Compile Include="Geometry.cs" />
     <Compile Include="NBodySystem.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
