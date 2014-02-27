@@ -9,7 +9,6 @@ namespace NewtonianPhysics {
     public SpatialCoordinates q;
     public double t;
   }
-
   // TODO(robin): Find a better identifier.
   public struct SpatialCoordinates {
     public double x, y, z;
