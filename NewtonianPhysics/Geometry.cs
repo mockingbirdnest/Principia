@@ -10,11 +10,8 @@ using System.Threading.Tasks;
 // C++), but is not a high priority. It would make the management of physical
 // quantities easier and more systematic.
 namespace NewtonianPhysics.Geometry {
-
-  #region Linear Algebra
-
   // Structs for strong typing in a three dimensional real inner product space
-  // and its Grassmann algebra.
+  // and its Grassmann algebra, as well as an affine space.
   // Double-precision floating point numbers, representing reals, are wrapped in
   // the struct Scalar to ensure strong typing. Three-dimensional data is stored
   // as R3Element.
@@ -52,48 +49,13 @@ namespace NewtonianPhysics.Geometry {
   // We choose to use operators for the vector space operations, thus keeping
   // the enclosing space implicit, i.e., v + w rather than [k]Vector.Plus(v, w).
   // The left action a . v of a bivector a on v is a.ActOn(v).
-  // The right action v* . a is v.ActedUpon(a). The commutator is
+  // The right action v* . a is v.ActedUponBy(a). The commutator is
   // Bivector.Commutator(a, b).
 
-  public struct Bivector {
-    public R3Element coordinates;
-    public static Bivector Commutator(Bivector left, Bivector right) {
-      return new Bivector {
-        coordinates = left.coordinates.Cross(right.coordinates)
-      };
-    }
-    public static Scalar InnerProduct(Bivector left, Bivector right) {
-      return left.coordinates.Dot(right.coordinates);
-    }
-    public static Bivector operator -(Bivector v) {
-      return new Bivector { coordinates = -v.coordinates };
-    }
-    public static Bivector operator -(Bivector left, Bivector right) {
-      return new Bivector { coordinates = left.coordinates - right.coordinates };
-    }
-    public static Bivector operator *(Scalar left, Bivector right) {
-      return new Bivector { coordinates = left * right.coordinates };
-    }
-    public static Bivector operator *(Bivector left, Scalar right) {
-      return new Bivector { coordinates = left.coordinates * right };
-    }
-    public static Bivector operator /(Bivector left, Scalar right) {
-      return new Bivector { coordinates = left.coordinates / right };
-    }
-    public static Bivector operator +(Bivector left, Bivector right) {
-      return new Bivector { coordinates = left.coordinates + right.coordinates };
-    }
-    public Vector ActOn(Vector right) {
-      return new Vector {
-        coordinates = this.coordinates.Cross(right.coordinates)
-      };
-    }
-    public TriVector Wedge(Vector right) {
-      return new TriVector {
-        coordinate = this.coordinates.Dot(right.coordinates)
-      };
-    }
-  }
+  public interface IReferenceFrame { };
+
+  #region Underlying weakly-typed vector
+
   public struct R3Element {
     public Scalar x, y, z;
     public static R3Element operator -(R3Element v) {
@@ -145,26 +107,38 @@ namespace NewtonianPhysics.Geometry {
       return this.x * right.x + this.y * right.y + this.z * right.z;
     }
   }
+
+  #endregion Underlying weakly-typed vector
+
+  #region Grassman algebra
+
   public struct Scalar : IComparable, IComparable<Scalar>, IEquatable<Scalar> {
     private double value;
+    public static Scalar Cos(Scalar angle) {
+      return (Scalar)Math.Cos((double)angle);
+    }
+    public static implicit operator Scalar(int x) { return (Scalar)x; }
     public static explicit operator double(Scalar x) { return x.value; }
-    public static implicit operator Scalar(double x) {
+    public static explicit operator Scalar(double x) {
       return new Scalar { value = x };
     }
+    public static Scalar operator -(Scalar x) {
+      return (Scalar)(-(double)x);
+    }
     public static Scalar operator -(Scalar x, Scalar y) {
-      return (double)x - (double)y;
+      return (Scalar)((double)x - (double)y);
     }
     public static bool operator !=(Scalar x, Scalar y) {
       return (double)x != (double)y;
     }
     public static Scalar operator *(Scalar x, Scalar y) {
-      return (double)x * (double)y;
+      return (Scalar)((double)x * (double)y);
     }
     public static Scalar operator /(Scalar x, Scalar y) {
-      return (double)x / (double)y;
+      return (Scalar)((double)x / (double)y);
     }
     public static Scalar operator +(Scalar x, Scalar y) {
-      return (double)x + (double)y;
+      return (Scalar)((double)x + (double)y);
     }
     public static bool operator <(Scalar x, Scalar y) {
       return (double)x < (double)y;
@@ -180,6 +154,15 @@ namespace NewtonianPhysics.Geometry {
     }
     public static bool operator >=(Scalar x, Scalar y) {
       return (double)x >= (double)y;
+    }
+    public static Scalar Sin(Scalar angle) {
+      return (Scalar)Math.Sin((double)angle);
+    }
+    public static Scalar Sqrt(Scalar angle) {
+      return (Scalar)Math.Sqrt((double)angle);
+    }
+    public static Scalar Tan(Scalar angle) {
+      return (Scalar)Math.Tan((double)angle);
     }
     public int CompareTo(object obj) {
       if (obj == null) {
@@ -209,9 +192,6 @@ namespace NewtonianPhysics.Geometry {
       return this.value.GetHashCode();
     }
   }
-  public struct TriVector {
-    public Scalar coordinate;
-  }
   public struct Vector {
     public R3Element coordinates;
     public static Scalar InnerProduct(Vector left, Vector right) {
@@ -235,9 +215,17 @@ namespace NewtonianPhysics.Geometry {
     public static Vector operator +(Vector left, Vector right) {
       return new Vector { coordinates = left.coordinates + right.coordinates };
     }
-    public Vector ActedUpon(Bivector right) {
+    public static Vector ToFrom(Point left, Point right) {
+      return new Vector { coordinates = left.coordinates - right.coordinates };
+    }
+    public Vector ActedUponBy(Bivector right) {
       return new Vector {
         coordinates = this.coordinates.Cross(right.coordinates)
+      };
+    }
+    public Point Translate(Point right) {
+      return new Point {
+        coordinates = this.coordinates + right.coordinates
       };
     }
     public Bivector Wedge(Vector right) {
@@ -251,8 +239,149 @@ namespace NewtonianPhysics.Geometry {
       };
     }
   }
+  public struct Bivector {
+    public R3Element coordinates;
+    public static Bivector Commutator(Bivector left, Bivector right) {
+      return new Bivector {
+        coordinates = left.coordinates.Cross(right.coordinates)
+      };
+    }
+    public static Rotation Exp(Bivector infinitesimalRotation) {
+      Scalar angle = Scalar.Sqrt(Bivector.InnerProduct(infinitesimalRotation,
+                                                       infinitesimalRotation));
+      return new Rotation {
+        realPart = Scalar.Cos(angle / 2),
+        imaginaryPart = infinitesimalRotation.coordinates / angle
+                        * Scalar.Sin(angle / 2)
+      };
+    }
+    public static Scalar InnerProduct(Bivector left, Bivector right) {
+      return left.coordinates.Dot(right.coordinates);
+    }
+    public static Bivector operator -(Bivector v) {
+      return new Bivector { coordinates = -v.coordinates };
+    }
+    public static Bivector operator -(Bivector left, Bivector right) {
+      return new Bivector {
+        coordinates = left.coordinates - right.coordinates
+      };
+    }
+    public static Bivector operator *(Scalar left, Bivector right) {
+      return new Bivector { coordinates = left * right.coordinates };
+    }
+    public static Bivector operator *(Bivector left, Scalar right) {
+      return new Bivector { coordinates = left.coordinates * right };
+    }
+    public static Bivector operator /(Bivector left, Scalar right) {
+      return new Bivector { coordinates = left.coordinates / right };
+    }
+    public static Bivector operator +(Bivector left, Bivector right) {
+      return new Bivector {
+        coordinates = left.coordinates + right.coordinates
+      };
+    }
+    public Vector ActOn(Vector right) {
+      return new Vector {
+        coordinates = this.coordinates.Cross(right.coordinates)
+      };
+    }
+    public TriVector Wedge(Vector right) {
+      return new TriVector {
+        coordinate = this.coordinates.Dot(right.coordinates)
+      };
+    }
+  }
+  public struct TriVector {
+    public Scalar coordinate;
+  }
 
-  #endregion Linear Algebra
+  #endregion Grassman algebra
 
-  public interface IReferenceFrame { };
+  #region Affine space
+
+  public struct Point {
+    public R3Element coordinates;
+    // A convex combination of positions is a position.
+    public static Point Barycenter(Point q1, Scalar λ1, Point q2, Scalar λ2) {
+      return new Point {
+        coordinates = (q1.coordinates * λ1 + q2.coordinates * λ2) / (λ1 + λ2)
+      };
+    }
+  }
+
+  #endregion Affine space
+
+  #region Transformations
+
+  public struct Rotation {
+    public Scalar realPart;
+    public R3Element imaginaryPart;
+    public Rotation Inverse {
+      get {
+        return new Rotation {
+          realPart = realPart,
+          imaginaryPart = -imaginaryPart
+        };
+      }
+    }
+    public static Rotation operator *(Rotation left, Rotation right) {
+      return new Rotation {
+        realPart = left.realPart * right.realPart
+                   - left.imaginaryPart.Dot(right.imaginaryPart),
+        imaginaryPart = left.realPart * right.imaginaryPart
+                        + right.realPart * left.imaginaryPart
+                        + left.imaginaryPart.Cross(right.imaginaryPart)
+      };
+    }
+    public static R3Element operator *(Rotation left,
+                                       R3Element right) {
+      return left.specialOrthogonalPart * (left.determinant * right);
+    }
+  }
+  public struct OrthogonalTransformation {
+    // The orthogonal transformation is modeled as a rotoinversion.
+    public Sign determinant;
+    public Rotation specialOrthogonalPart;
+    public static OrthogonalTransformation operator *(
+      OrthogonalTransformation left,
+      OrthogonalTransformation right) {
+      return new OrthogonalTransformation {
+        determinant = left.determinant * right.determinant,
+        specialOrthogonalPart = left.specialOrthogonalPart
+                                * right.specialOrthogonalPart
+      };
+    }
+    public static R3Element operator *(OrthogonalTransformation left,
+                                      R3Element right) {
+      return left.specialOrthogonalPart * (left.determinant * right);
+    }
+  }
+  public struct EuclideanTransformation {
+    public OrthogonalTransformation linearPart;
+    public Vector translation;
+    public static EuclideanTransformation operator *(
+      EuclideanTransformation left,
+      EuclideanTransformation right) {
+      return new EuclideanTransformation {
+        linearPart = left.linearPart * right.linearPart,
+        translation = left.translation
+                      + left.linearPart.ActOn(right.translation)
+      };
+    }
+  }
+
+  public struct Sign {
+    public bool positive;
+    public static explicit operator Sign(Scalar x) {
+      return new Sign { positive = x > 0 };
+    }
+    public static implicit operator Scalar(Sign sgn) {
+      return sgn.positive ? 1 : -1;
+    }
+    public static Sign operator *(Sign left, Sign right) {
+      return new Sign { positive = (left.positive == right.positive) };
+    }
+  }
+
+  #endregion Transformations
 }
