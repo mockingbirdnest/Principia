@@ -54,6 +54,19 @@ namespace NewtonianPhysics.Geometry {
 
   public interface IReferenceFrame { };
 
+  public struct Sign {
+    public bool positive;
+    public static explicit operator Sign(Scalar x) {
+      return new Sign { positive = x > (Scalar)0 };
+    }
+    public static implicit operator Scalar(Sign sgn) {
+      return sgn.positive ? (Scalar)1 : (Scalar)(-1);
+    }
+    public static Sign operator *(Sign left, Sign right) {
+      return new Sign { positive = (left.positive == right.positive) };
+    }
+  }
+
   #region Underlying weakly-typed vector
 
   public struct R3Element {
@@ -117,7 +130,6 @@ namespace NewtonianPhysics.Geometry {
     public static Scalar Cos(Scalar angle) {
       return (Scalar)Math.Cos((double)angle);
     }
-    public static implicit operator Scalar(int x) { return (Scalar)x; }
     public static explicit operator double(Scalar x) { return x.value; }
     public static explicit operator Scalar(double x) {
       return new Scalar { value = x };
@@ -250,9 +262,9 @@ namespace NewtonianPhysics.Geometry {
       Scalar angle = Scalar.Sqrt(Bivector.InnerProduct(infinitesimalRotation,
                                                        infinitesimalRotation));
       return new Rotation {
-        realPart = Scalar.Cos(angle / 2),
+        realPart = Scalar.Cos(angle / (Scalar)2),
         imaginaryPart = infinitesimalRotation.coordinates / angle
-                        * Scalar.Sin(angle / 2)
+                        * Scalar.Sin(angle / (Scalar)2)
       };
     }
     public static Scalar InnerProduct(Bivector left, Bivector right) {
@@ -314,6 +326,7 @@ namespace NewtonianPhysics.Geometry {
   #region Transformations
 
   public struct Rotation {
+    // The rotation is modeled as a quaternion.
     public Scalar realPart;
     public R3Element imaginaryPart;
     public Rotation Inverse {
@@ -335,51 +348,56 @@ namespace NewtonianPhysics.Geometry {
     }
     public static R3Element operator *(Rotation left,
                                        R3Element right) {
-      return left.specialOrthogonalPart * (left.determinant * right);
+      return (left
+              * new Rotation { realPart = 0, imaginaryPart = right }
+              * left.Inverse).imaginaryPart;
+    }
+    public Vector ActOn(Vector right) {
+      return new Vector { coordinates = this * right.coordinates };
     }
   }
   public struct OrthogonalTransformation {
     // The orthogonal transformation is modeled as a rotoinversion.
     public Sign determinant;
-    public Rotation specialOrthogonalPart;
+    public Rotation specialOrthogonalMap;
     public static OrthogonalTransformation operator *(
       OrthogonalTransformation left,
       OrthogonalTransformation right) {
       return new OrthogonalTransformation {
         determinant = left.determinant * right.determinant,
-        specialOrthogonalPart = left.specialOrthogonalPart
-                                * right.specialOrthogonalPart
+        specialOrthogonalMap = left.specialOrthogonalMap
+                               * right.specialOrthogonalMap
       };
     }
     public static R3Element operator *(OrthogonalTransformation left,
                                       R3Element right) {
-      return left.specialOrthogonalPart * (left.determinant * right);
+      return left.specialOrthogonalMap * (left.determinant * right);
+    }
+    public Vector ActOn(Vector right) {
+      return new Vector { coordinates = this * right.coordinates };
+    }
+    public Bivector ActOn(Bivector right) {
+      return new Bivector {
+        coordinates = this.specialOrthogonalMap * right.coordinates
+      };
+    }
+    public TriVector ActOn(TriVector right) {
+      return new TriVector {
+        coordinate = this.determinant * right.coordinate
+      };
     }
   }
   public struct EuclideanTransformation {
-    public OrthogonalTransformation linearPart;
+    public OrthogonalTransformation orthogonalMap;
     public Vector translation;
     public static EuclideanTransformation operator *(
       EuclideanTransformation left,
       EuclideanTransformation right) {
       return new EuclideanTransformation {
-        linearPart = left.linearPart * right.linearPart,
+        orthogonalMap = left.orthogonalMap * right.orthogonalMap,
         translation = left.translation
-                      + left.linearPart.ActOn(right.translation)
+                      + left.orthogonalMap.ActOn(right.translation)
       };
-    }
-  }
-
-  public struct Sign {
-    public bool positive;
-    public static explicit operator Sign(Scalar x) {
-      return new Sign { positive = x > 0 };
-    }
-    public static implicit operator Scalar(Sign sgn) {
-      return sgn.positive ? 1 : -1;
-    }
-    public static Sign operator *(Sign left, Sign right) {
-      return new Sign { positive = (left.positive == right.positive) };
     }
   }
 
