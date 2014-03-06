@@ -349,7 +349,7 @@ namespace NewtonianPhysics.Geometry {
     public static R3Element operator *(Rotation left,
                                        R3Element right) {
       return (left
-              * new Rotation { realPart = 0, imaginaryPart = right }
+              * new Rotation { realPart = (Scalar)0, imaginaryPart = right }
               * left.Inverse).imaginaryPart;
     }
     public Vector ActOn(Vector right) {
