@@ -52,7 +52,7 @@ namespace NewtonianPhysics.Geometry {
   // The right action v* . a is v.ActedUponBy(a). The commutator is
   // Bivector.Commutator(a, b).
 
-  public interface ISpace { };
+  public interface IAffineSpace { };
 
   public struct Sign {
     public bool positive;
@@ -204,112 +204,112 @@ namespace NewtonianPhysics.Geometry {
       return this.value.GetHashCode();
     }
   }
-  public struct Vector<V> where V : ISpace {
+  public struct Vector<A> where A : IAffineSpace {
     public R3Element coordinates;
-    public static Scalar InnerProduct(Vector<V> left, Vector<V> right) {
+    public static Scalar InnerProduct(Vector<A> left, Vector<A> right) {
       return left.coordinates.Dot(right.coordinates);
     }
-    public static Vector<V> operator -(Vector<V> v) {
-      return new Vector<V> { coordinates = -v.coordinates };
+    public static Vector<A> operator -(Vector<A> v) {
+      return new Vector<A> { coordinates = -v.coordinates };
     }
-    public static Vector<V> operator -(Vector<V> left, Vector<V> right) {
-      return new Vector<V> {
+    public static Vector<A> operator -(Vector<A> left, Vector<A> right) {
+      return new Vector<A> {
         coordinates = left.coordinates - right.coordinates
       };
     }
-    public static Vector<V> operator *(Scalar left, Vector<V> right) {
-      return new Vector<V> { coordinates = left * right.coordinates };
+    public static Vector<A> operator *(Scalar left, Vector<A> right) {
+      return new Vector<A> { coordinates = left * right.coordinates };
     }
-    public static Vector<V> operator *(Vector<V> left, Scalar right) {
-      return new Vector<V> { coordinates = left.coordinates * right };
+    public static Vector<A> operator *(Vector<A> left, Scalar right) {
+      return new Vector<A> { coordinates = left.coordinates * right };
     }
-    public static Vector<V> operator /(Vector<V> left, Scalar right) {
-      return new Vector<V> { coordinates = left.coordinates / right };
+    public static Vector<A> operator /(Vector<A> left, Scalar right) {
+      return new Vector<A> { coordinates = left.coordinates / right };
     }
-    public static Vector<V> operator +(Vector<V> left, Vector<V> right) {
-      return new Vector<V> {
+    public static Vector<A> operator +(Vector<A> left, Vector<A> right) {
+      return new Vector<A> {
         coordinates = left.coordinates + right.coordinates
       };
     }
-    public static Vector<V> ToFrom(Point<V> left, Point<V> right) {
-      return new Vector<V> {
+    public static Vector<A> ToFrom(Point<A> left, Point<A> right) {
+      return new Vector<A> {
         coordinates = left.coordinates - right.coordinates
       };
     }
-    public Vector<V> ActedUponBy(BiVector<V> right) {
-      return new Vector<V> {
+    public Vector<A> ActedUponBy(BiVector<A> right) {
+      return new Vector<A> {
         coordinates = this.coordinates.Cross(right.coordinates)
       };
     }
-    public Point<V> Translate(Point<V> right) {
-      return new Point<V> {
+    public Point<A> Translate(Point<A> right) {
+      return new Point<A> {
         coordinates = this.coordinates + right.coordinates
       };
     }
-    public BiVector<V> Wedge(Vector<V> right) {
-      return new BiVector<V> {
+    public BiVector<A> Wedge(Vector<A> right) {
+      return new BiVector<A> {
         coordinates = this.coordinates.Cross(right.coordinates)
       };
     }
-    public TriVector<V> Wedge(BiVector<V> right) {
-      return new TriVector<V> {
+    public TriVector<A> Wedge(BiVector<A> right) {
+      return new TriVector<A> {
         coordinate = this.coordinates.Dot(right.coordinates)
       };
     }
   }
-  public struct BiVector<V> where V : ISpace {
+  public struct BiVector<A> where A : IAffineSpace {
     public R3Element coordinates;
-    public static BiVector<V> Commutator(BiVector<V> left, BiVector<V> right) {
-      return new BiVector<V> {
+    public static BiVector<A> Commutator(BiVector<A> left, BiVector<A> right) {
+      return new BiVector<A> {
         coordinates = left.coordinates.Cross(right.coordinates)
       };
     }
-    public static Rotation<V, V> Exp(BiVector<V> infinitesimalRotation) {
-      Scalar angle = Scalar.Sqrt(BiVector<V>.InnerProduct(infinitesimalRotation,
+    public static Rotation<A, A> Exp(BiVector<A> infinitesimalRotation) {
+      Scalar angle = Scalar.Sqrt(BiVector<A>.InnerProduct(infinitesimalRotation,
                                                        infinitesimalRotation));
-      return new Rotation<V, V> {
+      return new Rotation<A, A> {
         realPart = Scalar.Cos(angle / (Scalar)2),
         imaginaryPart = infinitesimalRotation.coordinates / angle
                         * Scalar.Sin(angle / (Scalar)2)
       };
     }
-    public static Scalar InnerProduct(BiVector<V> left, BiVector<V> right) {
+    public static Scalar InnerProduct(BiVector<A> left, BiVector<A> right) {
       return left.coordinates.Dot(right.coordinates);
     }
-    public static BiVector<V> operator -(BiVector<V> v) {
-      return new BiVector<V> { coordinates = -v.coordinates };
+    public static BiVector<A> operator -(BiVector<A> v) {
+      return new BiVector<A> { coordinates = -v.coordinates };
     }
-    public static BiVector<V> operator -(BiVector<V> left, BiVector<V> right) {
-      return new BiVector<V> {
+    public static BiVector<A> operator -(BiVector<A> left, BiVector<A> right) {
+      return new BiVector<A> {
         coordinates = left.coordinates - right.coordinates
       };
     }
-    public static BiVector<V> operator *(Scalar left, BiVector<V> right) {
-      return new BiVector<V> { coordinates = left * right.coordinates };
+    public static BiVector<A> operator *(Scalar left, BiVector<A> right) {
+      return new BiVector<A> { coordinates = left * right.coordinates };
     }
-    public static BiVector<V> operator *(BiVector<V> left, Scalar right) {
-      return new BiVector<V> { coordinates = left.coordinates * right };
+    public static BiVector<A> operator *(BiVector<A> left, Scalar right) {
+      return new BiVector<A> { coordinates = left.coordinates * right };
     }
-    public static BiVector<V> operator /(BiVector<V> left, Scalar right) {
-      return new BiVector<V> { coordinates = left.coordinates / right };
+    public static BiVector<A> operator /(BiVector<A> left, Scalar right) {
+      return new BiVector<A> { coordinates = left.coordinates / right };
     }
-    public static BiVector<V> operator +(BiVector<V> left, BiVector<V> right) {
-      return new BiVector<V> {
+    public static BiVector<A> operator +(BiVector<A> left, BiVector<A> right) {
+      return new BiVector<A> {
         coordinates = left.coordinates + right.coordinates
       };
     }
-    public Vector<V> ActOn(Vector<V> right) {
-      return new Vector<V> {
+    public Vector<A> ActOn(Vector<A> right) {
+      return new Vector<A> {
         coordinates = this.coordinates.Cross(right.coordinates)
       };
     }
-    public TriVector<V> Wedge(Vector<V> right) {
-      return new TriVector<V> {
+    public TriVector<A> Wedge(Vector<A> right) {
+      return new TriVector<A> {
         coordinate = this.coordinates.Dot(right.coordinates)
       };
     }
   }
-  public struct TriVector<V> where V : ISpace {
+  public struct TriVector<A> where A : IAffineSpace {
     public Scalar coordinate;
   }
 
@@ -317,12 +317,12 @@ namespace NewtonianPhysics.Geometry {
 
   #region Affine space
 
-  public struct Point<V> where V : ISpace {
+  public struct Point<A> where A : IAffineSpace {
     public R3Element coordinates;
     // A convex combination of positions is a position.
-    public static Point<V> Barycenter(Point<V> q1, Scalar λ1,
-                                      Point<V> q2, Scalar λ2) {
-      return new Point<V> {
+    public static Point<A> Barycenter(Point<A> q1, Scalar λ1,
+                                      Point<A> q2, Scalar λ2) {
+      return new Point<A> {
         coordinates = (q1.coordinates * λ1 + q2.coordinates * λ2) / (λ1 + λ2)
       };
     }
@@ -332,63 +332,63 @@ namespace NewtonianPhysics.Geometry {
 
   #region Maps between base spaces
 
-  public struct Rotation<V, W>
-    where V : ISpace
-    where W : ISpace {
+  public struct Rotation<A, B>
+    where A : IAffineSpace
+    where B : IAffineSpace {
     // The rotation is modeled as a quaternion.
     public Scalar realPart;
     public R3Element imaginaryPart;
-    public Rotation<W, V> Inverse {
+    public Rotation<B, A> Inverse {
       get {
-        return new Rotation<W, V> {
+        return new Rotation<B, A> {
           realPart = realPart,
           imaginaryPart = -imaginaryPart
         };
       }
     }
-    public static R3Element operator *(Rotation<V, W> left,
+    public static R3Element operator *(Rotation<A, B> left,
                                        R3Element right) {
       // TODO(egg): Optimise.
-      return Maps.Compose<W, V, W>(
-        Maps.Compose<V, V, W>(
+      return Maps.Compose<B, A, B>(
+        Maps.Compose<A, A, B>(
           left,
-          new Rotation<V, V> { realPart = (Scalar)0, imaginaryPart = right }),
+          new Rotation<A, A> { realPart = (Scalar)0, imaginaryPart = right }),
         left.Inverse).imaginaryPart;
     }
-    public Vector<W> ActOn(Vector<V> right) {
-      return new Vector<W> { coordinates = this * right.coordinates };
+    public Vector<B> ActOn(Vector<A> right) {
+      return new Vector<B> { coordinates = this * right.coordinates };
     }
   }
-  public struct OrthogonalTransformation<V, W>
-    where V : ISpace
-    where W : ISpace {
+  public struct OrthogonalTransformation<A, B>
+    where A : IAffineSpace
+    where B : IAffineSpace {
     // The orthogonal transformation is modeled as a rotoinversion.
     public Sign determinant;
-    public Rotation<V, W> specialOrthogonalMap;
+    public Rotation<A, B> specialOrthogonalMap;
 
-    public static R3Element operator *(OrthogonalTransformation<V, W> left,
+    public static R3Element operator *(OrthogonalTransformation<A, B> left,
                                       R3Element right) {
       return left.specialOrthogonalMap * (left.determinant * right);
     }
-    public Vector<W> ActOn(Vector<V> right) {
-      return new Vector<W> { coordinates = this * right.coordinates };
+    public Vector<B> ActOn(Vector<A> right) {
+      return new Vector<B> { coordinates = this * right.coordinates };
     }
-    public BiVector<V> ActOn(BiVector<V> right) {
-      return new BiVector<V> {
+    public BiVector<A> ActOn(BiVector<A> right) {
+      return new BiVector<A> {
         coordinates = this.specialOrthogonalMap * right.coordinates
       };
     }
-    public TriVector<V> ActOn(TriVector<V> right) {
-      return new TriVector<V> {
+    public TriVector<A> ActOn(TriVector<A> right) {
+      return new TriVector<A> {
         coordinate = this.determinant * right.coordinate
       };
     }
   }
-  public struct EuclideanTransformation<V, W>
-    where V : ISpace
-    where W : ISpace {
-    public OrthogonalTransformation<V, W> orthogonalMap;
-    public Vector<W> translation;
+  public struct EuclideanTransformation<A, B>
+    where A : IAffineSpace
+    where B : IAffineSpace {
+    public OrthogonalTransformation<A, B> orthogonalMap;
+    public Vector<B> translation;
   }
 
   #endregion Maps between base spaces
@@ -396,12 +396,12 @@ namespace NewtonianPhysics.Geometry {
   #region Methods for the composition of maps
 
   public static class Maps {
-    public static Rotation<V, X> Compose<V, W, X>(Rotation<W, X> left,
-                                                  Rotation<V, W> right)
-      where V : ISpace
-      where W : ISpace
-      where X : ISpace {
-      return new Rotation<V, X> {
+    public static Rotation<A, C> Compose<A, B, C>(Rotation<B, C> left,
+                                                  Rotation<A, B> right)
+      where A : IAffineSpace
+      where B : IAffineSpace
+      where C : IAffineSpace {
+      return new Rotation<A, C> {
         realPart = left.realPart * right.realPart
                    - left.imaginaryPart.Dot(right.imaginaryPart),
         imaginaryPart = left.realPart * right.imaginaryPart
@@ -409,26 +409,26 @@ namespace NewtonianPhysics.Geometry {
                         + left.imaginaryPart.Cross(right.imaginaryPart)
       };
     }
-    public static OrthogonalTransformation<V, X> Compose<V, W, X>(
-  OrthogonalTransformation<W, X> left,
-  OrthogonalTransformation<V, W> right)
-      where V : ISpace
-      where W : ISpace
-      where X : ISpace {
-      return new OrthogonalTransformation<V, X> {
+    public static OrthogonalTransformation<A, C> Compose<A, B, C>(
+  OrthogonalTransformation<B, C> left,
+  OrthogonalTransformation<A, B> right)
+      where A : IAffineSpace
+      where B : IAffineSpace
+      where C : IAffineSpace {
+      return new OrthogonalTransformation<A, C> {
         determinant = left.determinant * right.determinant,
-        specialOrthogonalMap = Compose<V, W, X>(left.specialOrthogonalMap,
+        specialOrthogonalMap = Compose<A, B, C>(left.specialOrthogonalMap,
                                                 right.specialOrthogonalMap)
       };
     }
-    public static EuclideanTransformation<V, X> Compose<V, W, X>(
-  EuclideanTransformation<W, X> left,
-  EuclideanTransformation<V, W> right)
-      where V : ISpace
-      where W : ISpace
-      where X : ISpace {
-      return new EuclideanTransformation<V, X> {
-        orthogonalMap = Compose<V, W, X>(left.orthogonalMap,
+    public static EuclideanTransformation<A, C> Compose<A, B, C>(
+  EuclideanTransformation<B, C> left,
+  EuclideanTransformation<A, B> right)
+      where A : IAffineSpace
+      where B : IAffineSpace
+      where C : IAffineSpace {
+      return new EuclideanTransformation<A, C> {
+        orthogonalMap = Compose<A, B, C>(left.orthogonalMap,
                                          right.orthogonalMap),
         translation = left.translation
                       + left.orthogonalMap.ActOn(right.translation)
