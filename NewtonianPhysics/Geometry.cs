@@ -16,7 +16,7 @@ namespace NewtonianPhysics.Geometry {
   // the struct Scalar to ensure strong typing. Three-dimensional data is stored
   // as R3Element.
   // We use the Grassman algebra in order to avoid the confusion between pseudo-
-  // Vector<V>s and Vector<V>s and between pseudoscalars and scalars. This allows for
+  // vectors and vectors and between pseudoscalars and scalars. This allows for
   // handling of indirect changes of coordinates. As a result, there is no cross
   // product except for the underlying data type R3Element.
   // We treat the isomorphism between a space and its dual as implicit, as we
@@ -25,32 +25,32 @@ namespace NewtonianPhysics.Geometry {
   // reference frames.
   // A reminder of the equivalents in the Grassman algebra of the cross
   // product; We identify V ^ V with the Lie algebra so(V).
-  // . pseudoVector<V> = Vector<V> x Vector<V>, as in L = r x p, becomes the wedge
+  // . pseudovector = vector x vector, as in L = r x p, becomes the wedge
   //   product,
-  //   biVector<V> = Vector<V> ^ Vector<V>, L = r ^ p.
-  // . Vector<V> = pseudoVector<V> x Vector<V>, as in a_Coriolis = 2 Ω x v, becomes
-  //   the left action of the biVector<V>,
-  //   Vector<V> = biVector<V> . Vector<V>,  a_Coriolis = 2 Ω . v.
-  // . Vector<V> = Vector<V> x pseudoVector<V>, as in F = q v x B, becomes
+  //   bivector = vector ^ vector, L = r ^ p.
+  // . vector = pseudovector x vector, as in a_Coriolis = 2 Ω x v, becomes
+  //   the left action of the bivector,
+  //   vector = bivector . vector,  a_Coriolis = 2 Ω . v.
+  // . vector = vector x pseudovector, as in F = q v x B, becomes
   //   the dual action,
-  //   Vector<V> = biVector<V> . Vector<V>,  F* = q v* . B.
-  // . pseudoVector<V> = pseudoVector<V> x pseudoVector<V>, as in the composition of
-  //   rotation Vector<V>s Θ12 = α Θ1 + β Θ2 + γ Θ1 x Θ2, becomes the Lie bracket
+  //   vector = bivector . vector,  F* = q v* . B.
+  // . pseudovector = pseudovector x pseudovector, as in the composition of
+  //   rotation vectors Θ12 = α Θ1 + β Θ2 + γ Θ1 x Θ2, becomes the Lie bracket
   //   of so(V).
-  //   biVector<V> = [biVector<V>, biVector<V>], Θ12 = α Θ1 + β Θ2 + γ [Θ1, Θ2].
-  // . pseudoscalar = (pseudoVector<V>|Vector<V>), as in Φ = (B|S), becomes the wedge
+  //   bivector = [bivector, bivector], Θ12 = α Θ1 + β Θ2 + γ [Θ1, Θ2].
+  // . pseudoscalar = (pseudovector|vector), as in Φ = (B|S), becomes the wedge
   //   product,
-  //   triVector<V> = biVector<V> ^ Vector<V>, Φ = B ^ S.
+  //   trivector = bivector ^ vector, Φ = B ^ S.
   // NOTATION:
-  // For k-Vector<V>s v, w, the inner product (v|w) is [k]Vector<V>.InnerProduct(v, w)
+  // For k-vectors v, w, the inner product (v|w) is [k]vector.InnerProduct(v, w)
   // rather than v.InnerProduct(w) so that the enclosing space is explicit.
-  // Compare with the notation v.Wedge(w) for the exterior product of a k-Vector<V>
-  // v and a l-Vector<V> w.
-  // We choose to use operators for the Vector<V> space operations, thus keeping
-  // the enclosing space implicit, i.e., v + w rather than [k]Vector<V>.Plus(v, w).
-  // The left action a . v of a biVector<V> a on v is a.ActOn(v).
+  // Compare with the notation v.Wedge(w) for the exterior product of a k-vector
+  // v and a l-vector w.
+  // We choose to use operators for the vector space operations, thus keeping
+  // the enclosing space implicit, i.e., v + w rather than [k]vector.Plus(v, w).
+  // The left action a . v of a bivector a on v is a.ActOn(v).
   // The right action v* . a is v.ActedUponBy(a). The commutator is
-  // BiVector<V>.Commutator(a, b).
+  // Bivector.Commutator(a, b).
 
   public interface ISpace { };
 
@@ -67,7 +67,7 @@ namespace NewtonianPhysics.Geometry {
     }
   }
 
-  #region Underlying weakly-typed Vector<V>
+  #region Underlying weakly-typed vector
 
   public struct R3Element {
     public Scalar x, y, z;
@@ -121,7 +121,7 @@ namespace NewtonianPhysics.Geometry {
     }
   }
 
-  #endregion Underlying weakly-typed Vector<V>
+  #endregion Underlying weakly-typed vector
 
   #region Grassman algebra
 
@@ -213,7 +213,9 @@ namespace NewtonianPhysics.Geometry {
       return new Vector<V> { coordinates = -v.coordinates };
     }
     public static Vector<V> operator -(Vector<V> left, Vector<V> right) {
-      return new Vector<V> { coordinates = left.coordinates - right.coordinates };
+      return new Vector<V> {
+        coordinates = left.coordinates - right.coordinates
+      };
     }
     public static Vector<V> operator *(Scalar left, Vector<V> right) {
       return new Vector<V> { coordinates = left * right.coordinates };
@@ -225,10 +227,14 @@ namespace NewtonianPhysics.Geometry {
       return new Vector<V> { coordinates = left.coordinates / right };
     }
     public static Vector<V> operator +(Vector<V> left, Vector<V> right) {
-      return new Vector<V> { coordinates = left.coordinates + right.coordinates };
+      return new Vector<V> {
+        coordinates = left.coordinates + right.coordinates
+      };
     }
     public static Vector<V> ToFrom(Point<V> left, Point<V> right) {
-      return new Vector<V> { coordinates = left.coordinates - right.coordinates };
+      return new Vector<V> {
+        coordinates = left.coordinates - right.coordinates
+      };
     }
     public Vector<V> ActedUponBy(BiVector<V> right) {
       return new Vector<V> {
