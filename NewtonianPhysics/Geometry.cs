@@ -56,7 +56,9 @@ namespace NewtonianPhysics.Geometry {
 
   public struct Sign {
     public bool positive;
-    public static explicit operator Sign(int x);
+    public static explicit operator Sign(int x) {
+      return new Sign { positive = x > 0 };
+    }
     public static explicit operator Sign(Scalar x) {
       return new Sign { positive = x > (Scalar)0 };
     }
@@ -387,6 +389,68 @@ namespace NewtonianPhysics.Geometry {
           return new R3Element { };
       }
     }
+    public OrthogonalTransformation<A, B> Forget() {
+      Rotation<A, B> specialOrthogonalMap;
+      switch (BasisImage) {
+        case CoordinatePermutation.XYZ:
+          specialOrthogonalMap.RealPart = (Scalar)1;
+          specialOrthogonalMap.ImaginaryPart = new R3Element {
+            X = (Scalar)0,
+            Y = (Scalar)0,
+            Z = (Scalar)0
+          };
+          break;
+        case CoordinatePermutation.YZX:
+          specialOrthogonalMap.RealPart = (Scalar)(-.5);
+          specialOrthogonalMap.ImaginaryPart = new R3Element {
+            X = (Scalar).5,
+            Y = (Scalar).5,
+            Z = (Scalar).5
+          };
+          break;
+        case CoordinatePermutation.ZXY:
+          specialOrthogonalMap.RealPart = (Scalar).5;
+          specialOrthogonalMap.ImaginaryPart = new R3Element {
+            X = (Scalar).5,
+            Y = (Scalar).5,
+            Z = (Scalar).5
+          };
+          break;
+        case CoordinatePermutation.XZY:
+          specialOrthogonalMap.RealPart = (Scalar)0;
+          specialOrthogonalMap.ImaginaryPart = new R3Element {
+            X = (Scalar)0,
+            Y = -Scalar.Sqrt((Scalar)2) / (Scalar)2,
+            Z = Scalar.Sqrt((Scalar)2) / (Scalar)2
+          };
+          break;
+        case CoordinatePermutation.YXZ:
+          specialOrthogonalMap.RealPart = (Scalar)0;
+          specialOrthogonalMap.ImaginaryPart = new R3Element {
+            X = -Scalar.Sqrt((Scalar)2) / (Scalar)2,
+            Y = Scalar.Sqrt((Scalar)2) / (Scalar)2,
+            Z = (Scalar)0
+          };
+          break;
+        case CoordinatePermutation.ZYX:
+          specialOrthogonalMap.RealPart = (Scalar)0;
+          specialOrthogonalMap.ImaginaryPart = new R3Element {
+            X = -Scalar.Sqrt((Scalar)2) / (Scalar)2,
+            Y = (Scalar)0,
+            Z = Scalar.Sqrt((Scalar)2) / (Scalar)2
+          };
+          break;
+        default:
+          // Stupid language.
+          Console.WriteLine("CoordinatePermutation.BasisImage "
+                            + "was out of scope.");
+          return new OrthogonalTransformation<A, B>();
+      }
+      return new OrthogonalTransformation<A, B> {
+        Determinant = this.Determinant,
+        SpecialOrthogonalMap = specialOrthogonalMap
+      };
+    }
     public Vector<B> ActOn(Vector<A> right) {
       return new Vector<B> { Coordinates = this * right.Coordinates };
     }
@@ -424,6 +488,12 @@ namespace NewtonianPhysics.Geometry {
           left,
           new Rotation<A, A> { RealPart = (Scalar)0, ImaginaryPart = right }),
         left.Inverse).ImaginaryPart;
+    }
+    public OrthogonalTransformation<A, B> Forget() {
+      return new OrthogonalTransformation<A, B> {
+        Determinant = (Sign)1,
+        SpecialOrthogonalMap = this
+      };
     }
     public Vector<B> ActOn(Vector<A> right) {
       return new Vector<B> { Coordinates = this * right.Coordinates };
