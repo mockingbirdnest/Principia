@@ -5,12 +5,43 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace Geometry {
-  // A permutation of the coordinates. Obviously not coordinate-free, but
-  // practical. There are no precision losses when composing or applying a
-  // coordinate permutation.
-  public struct Permutation<A, B>
+  // The linear maps between base spaces induce unique maps between Grassmann
+  // algebras.
+  public interface ILinearMap<A, B>
     where A : ISpace
     where B : ISpace {
+    Vector<B> ActOn(Vector<A> right);
+    BiVector<B> ActOn(BiVector<A> right);
+    TriVector<B> ActOn(TriVector<A> right);
+  }
+  // A permutation of the coordinates. Obviously not coordinate-free, but
+  // practical. There are no precision losses when composing or applying
+  // permutations.
+  public struct Permutation<A, B> : ILinearMap<A, B>
+    where A : ISpace
+    where B : ISpace {
+    public static Permutation<A, B> Identity = new Permutation<A, B> {
+      BasisImage = CoordinatePermutation.XYZ
+    };
+
+    #region ILinearMap implementation
+
+    public Vector<B> ActOn(Vector<A> right) {
+      return new Vector<B> { Coordinates = this * right.Coordinates };
+    }
+    public BiVector<B> ActOn(BiVector<A> right) {
+      return new BiVector<B> {
+        Coordinates = this.Determinant * (this * right.Coordinates)
+      };
+    }
+    public TriVector<B> ActOn(TriVector<A> right) {
+      return new TriVector<B> {
+        Coordinate = this.Determinant * right.Coordinate
+      };
+    }
+
+    #endregion ILinearMap implementation
+
     public CoordinatePermutation BasisImage;
     public enum CoordinatePermutation {
       XYZ = 1, YZX = 2, ZXY = 3,
@@ -121,25 +152,35 @@ namespace Geometry {
         SpecialOrthogonalMap = specialOrthogonalMap
       };
     }
-    public Vector<B> ActOn(Vector<A> right) {
-      return new Vector<B> { Coordinates = this * right.Coordinates };
-    }
-    public BiVector<A> ActOn(BiVector<A> right) {
-      return new BiVector<A> {
-        Coordinates = this.Determinant * (this * right.Coordinates)
-      };
-    }
-    public TriVector<A> ActOn(TriVector<A> right) {
-      return new TriVector<A> {
-        Coordinate = this.Determinant * right.Coordinate
-      };
-    }
   }
 
   // The rotation is modeled as a quaternion.
-  public struct Rotation<A, B>
+  public struct Rotation<A, B> : ILinearMap<A, B>
     where A : ISpace
     where B : ISpace {
+    public static Rotation<A, B> Identity = new Rotation<A, B> {
+      RealPart = (Scalar)1,
+      ImaginaryPart = new R3Element {
+        X = (Scalar)0,
+        Y = (Scalar)0,
+        Z = (Scalar)0
+      }
+    };
+
+    #region ILinearMap implementation
+
+    public Vector<B> ActOn(Vector<A> right) {
+      return new Vector<B> { Coordinates = this * right.Coordinates };
+    }
+    public BiVector<B> ActOn(BiVector<A> right) {
+      return new BiVector<B> { Coordinates = this * right.Coordinates };
+    }
+    public TriVector<B> ActOn(TriVector<A> right) {
+      return new TriVector<B> { Coordinate = right.Coordinate };
+    }
+
+    #endregion ILinearMap implementation
+
     public Scalar RealPart;
     public R3Element ImaginaryPart;
     public Rotation<B, A> Inverse {
@@ -165,14 +206,17 @@ namespace Geometry {
         SpecialOrthogonalMap = this
       };
     }
-    public Vector<B> ActOn(Vector<A> right) {
-      return new Vector<B> { Coordinates = this * right.Coordinates };
-    }
   }
-  public struct OrthogonalTransformation<A, B>
+
+  // The orthogonal transformation is modeled as a rotoinversion.
+  public struct OrthogonalTransformation<A, B> : ILinearMap<A, B>
     where A : ISpace
     where B : ISpace {
-    // The orthogonal transformation is modeled as a rotoinversion.
+    public static OrthogonalTransformation<A, B> Identity
+      = new OrthogonalTransformation<A, B> {
+        Determinant = (Sign)1,
+        SpecialOrthogonalMap = Rotation<A, B>.Identity
+      };
     public Sign Determinant;
     public Rotation<A, B> SpecialOrthogonalMap;
 
@@ -180,18 +224,23 @@ namespace Geometry {
                                       R3Element right) {
       return left.SpecialOrthogonalMap * (left.Determinant * right);
     }
+
+    #region ILinearMap implementation
+
     public Vector<B> ActOn(Vector<A> right) {
       return new Vector<B> { Coordinates = this * right.Coordinates };
     }
-    public BiVector<A> ActOn(BiVector<A> right) {
-      return new BiVector<A> {
+    public BiVector<B> ActOn(BiVector<A> right) {
+      return new BiVector<B> {
         Coordinates = this.SpecialOrthogonalMap * right.Coordinates
       };
     }
-    public TriVector<A> ActOn(TriVector<A> right) {
-      return new TriVector<A> {
+    public TriVector<B> ActOn(TriVector<A> right) {
+      return new TriVector<B> {
         Coordinate = this.Determinant * right.Coordinate
       };
     }
+
+    #endregion ILinearMap implementation
   }
 }

@@ -40,10 +40,10 @@ namespace Geometry {
       where B : ISpace
       where C : ISpace {
       return new EuclideanTransformation<A, C> {
-        orthogonalMap = Compose<A, B, C>(left.orthogonalMap,
-                                         right.orthogonalMap),
-        translation = left.translation
-                      + left.orthogonalMap.ActOn(right.translation)
+        OrthogonalMap = Compose<A, B, C>(left.OrthogonalMap,
+                                         right.OrthogonalMap),
+        Translation = left.Translation
+                      + left.OrthogonalMap.ActOn(right.Translation)
       };
     }
     public static RigidTransformation<A, C> Compose<A, B, C>(
@@ -53,10 +53,10 @@ namespace Geometry {
       where B : ISpace
       where C : ISpace {
       return new RigidTransformation<A, C> {
-        orthogonalMap = Compose<A, B, C>(left.orthogonalMap,
-                                         right.orthogonalMap),
-        translation = left.translation
-                      + left.orthogonalMap.ActOn(right.translation)
+        SpecialOrthogonalMap = Compose<A, B, C>(left.SpecialOrthogonalMap,
+                                         right.SpecialOrthogonalMap),
+        Translation = left.Translation
+                      + left.SpecialOrthogonalMap.ActOn(right.Translation)
       };
     }
   }
