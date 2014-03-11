@@ -39,8 +39,15 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Geometry.cs" />
+    <Compile Include="AffineSpace.cs" />
+    <Compile Include="EuclideanMaps.cs" />
+    <Compile Include="Maps.cs" />
+    <Compile Include="Grassmann.cs" />
+    <Compile Include="OrthogonalMaps.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="R3Element.cs" />
+    <Compile Include="Scalar.cs" />
+    <Compile Include="Sign.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
