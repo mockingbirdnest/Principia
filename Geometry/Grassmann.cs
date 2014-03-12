@@ -50,64 +50,54 @@ using System.Threading.Tasks;
 
 namespace Geometry {
   public struct Vector<A> where A : ISpace {
-    public R3Element Coordinates;
+    public readonly R3Element Coordinates;
+    public Vector(R3Element coordinates) {
+      Coordinates = coordinates;
+    }
     public static Scalar InnerProduct(Vector<A> left, Vector<A> right) {
       return left.Coordinates.Dot(right.Coordinates);
     }
     public static Vector<A> operator -(Vector<A> v) {
-      return new Vector<A> { Coordinates = -v.Coordinates };
+      return new Vector<A>(-v.Coordinates);
     }
     public static Vector<A> operator -(Vector<A> left, Vector<A> right) {
-      return new Vector<A> {
-        Coordinates = left.Coordinates - right.Coordinates
-      };
+      return new Vector<A>(left.Coordinates - right.Coordinates);
     }
     public static Vector<A> operator *(Scalar left, Vector<A> right) {
-      return new Vector<A> { Coordinates = left * right.Coordinates };
+      return new Vector<A>(left * right.Coordinates);
     }
     public static Vector<A> operator *(Vector<A> left, Scalar right) {
-      return new Vector<A> { Coordinates = left.Coordinates * right };
+      return new Vector<A>(left.Coordinates * right);
     }
     public static Vector<A> operator /(Vector<A> left, Scalar right) {
-      return new Vector<A> { Coordinates = left.Coordinates / right };
+      return new Vector<A>(left.Coordinates / right);
     }
     public static Vector<A> operator +(Vector<A> left, Vector<A> right) {
-      return new Vector<A> {
-        Coordinates = left.Coordinates + right.Coordinates
-      };
+      return new Vector<A>(left.Coordinates + right.Coordinates);
     }
-    public static Vector<A> ToFrom(Point<A> left, Point<A> right) {
-      return new Vector<A> {
-        Coordinates = left.Coordinates - right.Coordinates
-      };
+    public static Vector<A> ToFrom(Point<A> to, Point<A> from) {
+      return new Vector<A>(to.Coordinates - from.Coordinates);
     }
     public Vector<A> ActedUponBy(BiVector<A> right) {
-      return new Vector<A> {
-        Coordinates = this.Coordinates.Cross(right.Coordinates)
-      };
+      return new Vector<A>(this.Coordinates.Cross(right.Coordinates));
     }
     public Point<A> Translate(Point<A> right) {
-      return new Point<A> {
-        Coordinates = this.Coordinates + right.Coordinates
-      };
+      return new Point<A>(this.Coordinates + right.Coordinates);
     }
     public BiVector<A> Wedge(Vector<A> right) {
-      return new BiVector<A> {
-        Coordinates = this.Coordinates.Cross(right.Coordinates)
-      };
+      return new BiVector<A>(this.Coordinates.Cross(right.Coordinates));
     }
     public TriVector<A> Wedge(BiVector<A> right) {
-      return new TriVector<A> {
-        Coordinate = this.Coordinates.Dot(right.Coordinates)
-      };
+      return new TriVector<A>(this.Coordinates.Dot(right.Coordinates));
     }
   }
   public struct BiVector<A> where A : ISpace {
-    public R3Element Coordinates;
+    public readonly R3Element Coordinates;
+    public BiVector(R3Element coordinates) {
+      Coordinates = coordinates;
+    }
     public static BiVector<A> Commutator(BiVector<A> left, BiVector<A> right) {
-      return new BiVector<A> {
-        Coordinates = left.Coordinates.Cross(right.Coordinates)
-      };
+      return new BiVector<A>(left.Coordinates.Cross(right.Coordinates));
     }
     public static Rotation<A, A> Exp(BiVector<A> infinitesimalRotation) {
       Scalar angle = Scalar.Sqrt(BiVector<A>.InnerProduct(infinitesimalRotation,
@@ -122,39 +112,34 @@ namespace Geometry {
       return left.Coordinates.Dot(right.Coordinates);
     }
     public static BiVector<A> operator -(BiVector<A> v) {
-      return new BiVector<A> { Coordinates = -v.Coordinates };
+      return new BiVector<A>(-v.Coordinates);
     }
     public static BiVector<A> operator -(BiVector<A> left, BiVector<A> right) {
-      return new BiVector<A> {
-        Coordinates = left.Coordinates - right.Coordinates
-      };
+      return new BiVector<A>(left.Coordinates - right.Coordinates);
     }
     public static BiVector<A> operator *(Scalar left, BiVector<A> right) {
-      return new BiVector<A> { Coordinates = left * right.Coordinates };
+      return new BiVector<A>(left * right.Coordinates);
     }
     public static BiVector<A> operator *(BiVector<A> left, Scalar right) {
-      return new BiVector<A> { Coordinates = left.Coordinates * right };
+      return new BiVector<A>(left.Coordinates * right);
     }
     public static BiVector<A> operator /(BiVector<A> left, Scalar right) {
-      return new BiVector<A> { Coordinates = left.Coordinates / right };
+      return new BiVector<A>(left.Coordinates / right);
     }
     public static BiVector<A> operator +(BiVector<A> left, BiVector<A> right) {
-      return new BiVector<A> {
-        Coordinates = left.Coordinates + right.Coordinates
-      };
+      return new BiVector<A>(left.Coordinates + right.Coordinates);
     }
     public Vector<A> ActOn(Vector<A> right) {
-      return new Vector<A> {
-        Coordinates = this.Coordinates.Cross(right.Coordinates)
-      };
+      return new Vector<A>(this.Coordinates.Cross(right.Coordinates));
     }
     public TriVector<A> Wedge(Vector<A> right) {
-      return new TriVector<A> {
-        Coordinate = this.Coordinates.Dot(right.Coordinates)
-      };
+      return new TriVector<A>(this.Coordinates.Dot(right.Coordinates));
     }
   }
   public struct TriVector<A> where A : ISpace {
-    public Scalar Coordinate;
+    public readonly Scalar Coordinate;
+    public TriVector(Scalar coordinate) {
+      Coordinate = coordinate;
+    }
   }
 }

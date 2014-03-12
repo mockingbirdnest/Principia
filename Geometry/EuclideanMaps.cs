@@ -19,10 +19,8 @@ namespace Geometry {
     #region IAffineMap implementation
 
     public Point<B> ActOn(Point<A> right) {
-      return Translation.Translate(
-        new Point<B> {
-          Coordinates = SpecialOrthogonalMap * right.Coordinates
-        });
+      return Translation.Translate(new Point<B>(SpecialOrthogonalMap
+                                                * right.Coordinates));
     }
 
     #endregion IAffineMap implementation
@@ -43,10 +41,8 @@ namespace Geometry {
     #region IAffineMap implementation
 
     public Point<B> ActOn(Point<A> right) {
-      return Translation.Translate(
-        new Point<B> {
-          Coordinates = OrthogonalMap * right.Coordinates
-        });
+      return Translation.Translate(new Point<B>(OrthogonalMap
+                                                * right.Coordinates));
     }
 
     #endregion IAffineMap implementation

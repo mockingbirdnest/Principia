@@ -20,24 +20,20 @@ namespace Geometry {
   public struct Permutation<A, B> : ILinearMap<A, B>
     where A : ISpace
     where B : ISpace {
-    public static Permutation<A, B> Identity = new Permutation<A, B> {
+    public static readonly Permutation<A, B> Identity = new Permutation<A, B> {
       BasisImage = CoordinatePermutation.XYZ
     };
 
     #region ILinearMap implementation
 
     public Vector<B> ActOn(Vector<A> right) {
-      return new Vector<B> { Coordinates = this * right.Coordinates };
+      return new Vector<B>(this * right.Coordinates);
     }
     public BiVector<B> ActOn(BiVector<A> right) {
-      return new BiVector<B> {
-        Coordinates = this.Determinant * (this * right.Coordinates)
-      };
+      return new BiVector<B>(this.Determinant * (this * right.Coordinates));
     }
     public TriVector<B> ActOn(TriVector<A> right) {
-      return new TriVector<B> {
-        Coordinate = this.Determinant * right.Coordinate
-      };
+      return new TriVector<B>(this.Determinant * right.Coordinate);
     }
 
     #endregion ILinearMap implementation
@@ -54,35 +50,15 @@ namespace Geometry {
         case CoordinatePermutation.XYZ:
           return right;
         case CoordinatePermutation.XZY:
-          return new R3Element {
-            X = right.X,
-            Y = right.Z,
-            Z = right.Y
-          };
+          return new R3Element(right.X, right.Z, right.Y);
         case CoordinatePermutation.YXZ:
-          return new R3Element {
-            X = right.Y,
-            Y = right.X,
-            Z = right.Z
-          };
+          return new R3Element(right.Y, right.X, right.Z);
         case CoordinatePermutation.YZX:
-          return new R3Element {
-            X = right.Y,
-            Y = right.Z,
-            Z = right.X
-          };
+          return new R3Element(right.Y, right.Z, right.X);
         case CoordinatePermutation.ZXY:
-          return new R3Element {
-            X = right.Z,
-            Y = right.X,
-            Z = right.Y
-          };
+          return new R3Element(right.Z, right.X, right.Y);
         case CoordinatePermutation.ZYX:
-          return new R3Element {
-            X = right.Z,
-            Y = right.Y,
-            Z = right.X
-          };
+          return new R3Element(right.Z, right.Y, right.X);
         default:
           // Stupid language.
           Console.WriteLine("CoordinatePermutation.BasisImage "
@@ -95,51 +71,42 @@ namespace Geometry {
       switch (BasisImage) {
         case CoordinatePermutation.XYZ:
           specialOrthogonalMap.RealPart = (Scalar)1;
-          specialOrthogonalMap.ImaginaryPart = new R3Element {
-            X = (Scalar)0,
-            Y = (Scalar)0,
-            Z = (Scalar)0
-          };
+          specialOrthogonalMap.ImaginaryPart = new R3Element((Scalar)0,
+                                                             (Scalar)0,
+                                                             (Scalar)0);
           break;
         case CoordinatePermutation.YZX:
           specialOrthogonalMap.RealPart = (Scalar)(-.5);
-          specialOrthogonalMap.ImaginaryPart = new R3Element {
-            X = (Scalar).5,
-            Y = (Scalar).5,
-            Z = (Scalar).5
-          };
+          specialOrthogonalMap.ImaginaryPart = new R3Element((Scalar).5,
+                                                             (Scalar).5,
+                                                             (Scalar).5);
           break;
         case CoordinatePermutation.ZXY:
           specialOrthogonalMap.RealPart = (Scalar).5;
-          specialOrthogonalMap.ImaginaryPart = new R3Element {
-            X = (Scalar).5,
-            Y = (Scalar).5,
-            Z = (Scalar).5
-          };
+          specialOrthogonalMap.ImaginaryPart = new R3Element((Scalar).5,
+                                                             (Scalar).5,
+                                                             (Scalar).5);
           break;
         case CoordinatePermutation.XZY:
           specialOrthogonalMap.RealPart = (Scalar)0;
-          specialOrthogonalMap.ImaginaryPart = new R3Element {
-            X = (Scalar)0,
-            Y = -Scalar.Sqrt((Scalar)2) / (Scalar)2,
-            Z = Scalar.Sqrt((Scalar)2) / (Scalar)2
-          };
+          specialOrthogonalMap.ImaginaryPart
+            = new R3Element((Scalar)0,
+                            -Scalar.Sqrt((Scalar).5),
+                            Scalar.Sqrt((Scalar).5));
           break;
         case CoordinatePermutation.YXZ:
           specialOrthogonalMap.RealPart = (Scalar)0;
-          specialOrthogonalMap.ImaginaryPart = new R3Element {
-            X = -Scalar.Sqrt((Scalar)2) / (Scalar)2,
-            Y = Scalar.Sqrt((Scalar)2) / (Scalar)2,
-            Z = (Scalar)0
-          };
+          specialOrthogonalMap.ImaginaryPart
+            = new R3Element(-Scalar.Sqrt((Scalar).5),
+                            Scalar.Sqrt((Scalar).5),
+                            (Scalar)0);
           break;
         case CoordinatePermutation.ZYX:
           specialOrthogonalMap.RealPart = (Scalar)0;
-          specialOrthogonalMap.ImaginaryPart = new R3Element {
-            X = -Scalar.Sqrt((Scalar)2) / (Scalar)2,
-            Y = (Scalar)0,
-            Z = Scalar.Sqrt((Scalar)2) / (Scalar)2
-          };
+          specialOrthogonalMap.ImaginaryPart
+            = new R3Element(-Scalar.Sqrt((Scalar).5),
+                            (Scalar)0,
+                            Scalar.Sqrt((Scalar).5));
           break;
         default:
           // Stupid language.
@@ -158,25 +125,21 @@ namespace Geometry {
   public struct Rotation<A, B> : ILinearMap<A, B>
     where A : ISpace
     where B : ISpace {
-    public static Rotation<A, B> Identity = new Rotation<A, B> {
+    public static readonly Rotation<A, B> Identity = new Rotation<A, B> {
       RealPart = (Scalar)1,
-      ImaginaryPart = new R3Element {
-        X = (Scalar)0,
-        Y = (Scalar)0,
-        Z = (Scalar)0
-      }
+      ImaginaryPart = new R3Element((Scalar)0, (Scalar)0, (Scalar)0)
     };
 
     #region ILinearMap implementation
 
     public Vector<B> ActOn(Vector<A> right) {
-      return new Vector<B> { Coordinates = this * right.Coordinates };
+      return new Vector<B>(this * right.Coordinates);
     }
     public BiVector<B> ActOn(BiVector<A> right) {
-      return new BiVector<B> { Coordinates = this * right.Coordinates };
+      return new BiVector<B>(this * right.Coordinates);
     }
     public TriVector<B> ActOn(TriVector<A> right) {
-      return new TriVector<B> { Coordinate = right.Coordinate };
+      return new TriVector<B>(right.Coordinate);
     }
 
     #endregion ILinearMap implementation
@@ -212,7 +175,7 @@ namespace Geometry {
   public struct OrthogonalTransformation<A, B> : ILinearMap<A, B>
     where A : ISpace
     where B : ISpace {
-    public static OrthogonalTransformation<A, B> Identity
+    public static readonly OrthogonalTransformation<A, B> Identity
       = new OrthogonalTransformation<A, B> {
         Determinant = (Sign)1,
         SpecialOrthogonalMap = Rotation<A, B>.Identity
@@ -228,17 +191,13 @@ namespace Geometry {
     #region ILinearMap implementation
 
     public Vector<B> ActOn(Vector<A> right) {
-      return new Vector<B> { Coordinates = this * right.Coordinates };
+      return new Vector<B>(this * right.Coordinates);
     }
     public BiVector<B> ActOn(BiVector<A> right) {
-      return new BiVector<B> {
-        Coordinates = this.SpecialOrthogonalMap * right.Coordinates
-      };
+      return new BiVector<B>(this.SpecialOrthogonalMap * right.Coordinates);
     }
     public TriVector<B> ActOn(TriVector<A> right) {
-      return new TriVector<B> {
-        Coordinate = this.Determinant * right.Coordinate
-      };
+      return new TriVector<B>(this.Determinant * right.Coordinate);
     }
 
     #endregion ILinearMap implementation

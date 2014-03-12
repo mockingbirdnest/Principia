@@ -6,17 +6,14 @@ using System.Threading.Tasks;
 
 namespace Geometry {
   public struct Scalar : IComparable, IComparable<Scalar>, IEquatable<Scalar> {
-    private double value;
+    private readonly double value;
+    private Scalar(double x) { value = x; }
     public static Scalar Cos(Scalar angle) {
       return (Scalar)Math.Cos((double)angle);
     }
     public static explicit operator double(Scalar x) { return x.value; }
-    public static explicit operator Scalar(double x) {
-      return new Scalar { value = x };
-    }
-    public static Scalar operator -(Scalar x) {
-      return (Scalar)(-(double)x);
-    }
+    public static explicit operator Scalar(double x) { return new Scalar(x); }
+    public static Scalar operator -(Scalar x) { return (Scalar)(-(double)x); }
     public static Scalar operator -(Scalar x, Scalar y) {
       return (Scalar)((double)x - (double)y);
     }

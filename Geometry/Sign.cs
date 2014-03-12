@@ -6,18 +6,19 @@ using System.Threading.Tasks;
 
 namespace Geometry {
   public struct Sign {
-    public bool positive;
+    public readonly bool Positive;
+    private Sign(bool positive) { Positive = positive; }
     public static explicit operator Sign(int x) {
-      return new Sign { positive = x > 0 };
+      return new Sign(x > 0);
     }
     public static explicit operator Sign(Scalar x) {
-      return new Sign { positive = x > (Scalar)0 };
+      return new Sign(x > (Scalar)0);
     }
-    public static implicit operator Scalar(Sign sgn) {
-      return sgn.positive ? (Scalar)1 : (Scalar)(-1);
+    public static implicit operator Scalar(Sign sign) {
+      return sign.Positive ? (Scalar)1 : (Scalar)(-1);
     }
     public static Sign operator *(Sign left, Sign right) {
-      return new Sign { positive = (left.positive == right.positive) };
+      return new Sign(left.Positive == right.Positive);
     }
   }
 }
