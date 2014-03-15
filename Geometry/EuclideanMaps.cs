@@ -13,14 +13,17 @@ namespace Geometry {
   public struct RigidTransformation<A, B> : IAffineMap<A, B>
     where A : ISpace
     where B : ISpace {
-    public readonly Rotation<A, B> SpecialOrthogonalMap;
-    public readonly Vector<B> Translation;
-
+    private readonly Vector<B> translation;
+    private readonly Rotation<A, B> specialOrthogonalMap;
     public RigidTransformation(Rotation<A, B> specialOrthogonalMap,
                                Vector<B> translation) {
-      SpecialOrthogonalMap = specialOrthogonalMap;
-      Translation = translation;
+      this.specialOrthogonalMap = specialOrthogonalMap;
+      this.translation = translation;
     }
+    public Rotation<A, B> SpecialOrthogonalMap {
+      get { return specialOrthogonalMap; }
+    }
+    public Vector<B> Translation { get { return translation; } }
 
     #region IAffineMap implementation
 
@@ -39,13 +42,17 @@ namespace Geometry {
   public struct EuclideanTransformation<A, B> : IAffineMap<A, B>
     where A : ISpace
     where B : ISpace {
-    public readonly OrthogonalTransformation<A, B> OrthogonalMap;
-    public readonly Vector<B> Translation;
+    private readonly OrthogonalTransformation<A, B> orthogonalMap;
+    private readonly Vector<B> translation;
     public EuclideanTransformation(OrthogonalTransformation<A, B> orthogonalMap,
                                    Vector<B> translation) {
-      OrthogonalMap = orthogonalMap;
-      Translation = translation;
+      this.orthogonalMap = orthogonalMap;
+      this.translation = translation;
     }
+    public OrthogonalTransformation<A, B> OrthogonalMap {
+      get { return orthogonalMap; }
+    }
+    public Vector<B> Translation { get { return translation; } }
 
     #region IAffineMap implementation
 

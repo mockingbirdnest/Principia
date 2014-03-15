@@ -102,11 +102,9 @@ namespace Geometry {
     public static Rotation<A, A> Exp(BiVector<A> infinitesimalRotation) {
       Scalar angle = Scalar.Sqrt(BiVector<A>.InnerProduct(infinitesimalRotation,
                                                        infinitesimalRotation));
-      return new Rotation<A, A> {
-        RealPart = Scalar.Cos(angle / (Scalar)2),
-        ImaginaryPart = infinitesimalRotation.Coordinates / angle
-                        * Scalar.Sin(angle / (Scalar)2)
-      };
+      return new Rotation<A, A>(Scalar.Cos(angle / (Scalar)2),
+                                infinitesimalRotation.Coordinates / angle *
+                                Scalar.Sin(angle / (Scalar)2));
     }
     public static Scalar InnerProduct(BiVector<A> left, BiVector<A> right) {
       return left.Coordinates.Dot(right.Coordinates);

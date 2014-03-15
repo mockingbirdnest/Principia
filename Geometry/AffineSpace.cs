@@ -6,9 +6,12 @@ using System.Threading.Tasks;
 
 namespace Geometry {
   public struct Point<A> where A : ISpace {
-    public readonly R3Element Coordinates;
+    private readonly R3Element coordinates;
     public Point(R3Element coordinates) {
-      Coordinates = coordinates;
+      this.coordinates = coordinates;
+    }
+    public R3Element Coordinates {
+      get { return coordinates; }
     }
     // A convex combination of positions is a position.
     public static Point<A> Barycenter(Point<A> q1, Scalar λ1,

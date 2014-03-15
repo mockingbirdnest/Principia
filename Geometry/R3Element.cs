@@ -6,17 +6,20 @@ using System.Threading.Tasks;
 
 namespace Geometry {
   public struct R3Element {
-    public Scalar X, Y, Z;
-    public R3Element(Scalar x, Scalar y, Scalar z) {
+    public R3Element(Scalar x, Scalar y, Scalar z)
+      : this() {
       X = x; Y = y; Z = z;
     }
+    public Scalar X { get; set; }
+    public Scalar Y { get; set; }
+    public Scalar Z { get; set; }
     public Scalar this[int i] {
       get {
-        switch (i % 3) {
+        switch (i) {
           case 0: return X;
           case 1: return Y;
           case 2: return Z;
-          default: return (Scalar)0; // Stupid language.
+          default: throw new ArgumentOutOfRangeException("i");
         }
       }
       set {

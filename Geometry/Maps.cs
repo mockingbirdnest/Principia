@@ -13,13 +13,13 @@ namespace Geometry {
       where A : ISpace
       where B : ISpace
       where C : ISpace {
-      return new Rotation<A, C> {
-        RealPart = left.RealPart * right.RealPart
+      return new Rotation<A, C>(
+         left.RealPart * right.RealPart
                    - left.ImaginaryPart.Dot(right.ImaginaryPart),
-        ImaginaryPart = left.RealPart * right.ImaginaryPart
+         left.RealPart * right.ImaginaryPart
                         + right.RealPart * left.ImaginaryPart
                         + left.ImaginaryPart.Cross(right.ImaginaryPart)
-      };
+      );
     }
     public static OrthogonalTransformation<A, C> Compose<A, B, C>(
       OrthogonalTransformation<B, C> left,
@@ -27,11 +27,10 @@ namespace Geometry {
       where A : ISpace
       where B : ISpace
       where C : ISpace {
-      return new OrthogonalTransformation<A, C> {
-        Determinant = left.Determinant * right.Determinant,
-        SpecialOrthogonalMap = Compose<A, B, C>(left.SpecialOrthogonalMap,
-                                                right.SpecialOrthogonalMap)
-      };
+      return new OrthogonalTransformation<A, C>(
+        left.Determinant * right.Determinant,
+        Compose<A, B, C>(left.SpecialOrthogonalMap, right.SpecialOrthogonalMap)
+      );
     }
     public static EuclideanTransformation<A, C> Compose<A, B, C>(
       EuclideanTransformation<B, C> left,

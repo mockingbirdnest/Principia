@@ -8,7 +8,7 @@ namespace Integrators {
   public static class SymplecticPartitionedRungeKutta {
     // From "The accuracy of symplectic integrators", Robert I. McLachlan and
     // Pau Atela (1992).
-    public static double[][] Order5Optimal = {
+    public static readonly double[][] Order5Optimal = {
       new double[] { 0.339839625839110000,
                     -0.088601336903027329,
                      0.5858564768259621188,
