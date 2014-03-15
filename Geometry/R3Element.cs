@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Geometry {
   public struct R3Element {
-    public readonly Scalar X, Y, Z;
+    public Scalar X, Y, Z;
     public R3Element(Scalar x, Scalar y, Scalar z) {
       X = x; Y = y; Z = z;
     }
@@ -17,6 +17,13 @@ namespace Geometry {
           case 1: return Y;
           case 2: return Z;
           default: return (Scalar)0; // Stupid language.
+        }
+      }
+      set {
+        switch (i % 3) {
+          case 0: X = value; break;
+          case 1: Y = value; break;
+          case 2: Z = value; break;
         }
       }
     }
