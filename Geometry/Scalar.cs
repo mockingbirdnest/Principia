@@ -8,26 +8,21 @@ namespace Geometry {
   public struct Scalar : IComparable, IComparable<Scalar>, IEquatable<Scalar> {
     private readonly double value;
     private Scalar(double x) { value = x; }
-    public static Scalar Cos(Scalar angle) {
-      return (Scalar)Math.Cos((double)angle);
-    }
+
+    #region Conversions
+
     public static explicit operator double(Scalar x) { return x.value; }
     public static explicit operator Scalar(double x) { return new Scalar(x); }
-    public static Scalar operator -(Scalar x) { return (Scalar)(-(double)x); }
-    public static Scalar operator -(Scalar x, Scalar y) {
-      return (Scalar)((double)x - (double)y);
+
+    #endregion Conversions
+
+    #region Total order
+
+    public static bool operator ==(Scalar x, Scalar y) {
+      return (double)x == (double)y;
     }
     public static bool operator !=(Scalar x, Scalar y) {
       return (double)x != (double)y;
-    }
-    public static Scalar operator *(Scalar x, Scalar y) {
-      return (Scalar)((double)x * (double)y);
-    }
-    public static Scalar operator /(Scalar x, Scalar y) {
-      return (Scalar)((double)x / (double)y);
-    }
-    public static Scalar operator +(Scalar x, Scalar y) {
-      return (Scalar)((double)x + (double)y);
     }
     public static bool operator <(Scalar x, Scalar y) {
       return (double)x < (double)y;
@@ -35,24 +30,58 @@ namespace Geometry {
     public static bool operator <=(Scalar x, Scalar y) {
       return (double)x <= (double)y;
     }
-    public static bool operator ==(Scalar x, Scalar y) {
-      return (double)x == (double)y;
-    }
     public static bool operator >(Scalar x, Scalar y) {
       return (double)x > (double)y;
     }
     public static bool operator >=(Scalar x, Scalar y) {
       return (double)x >= (double)y;
     }
+
+    #endregion Total order
+
+    #region Field operations
+
+    public static Scalar operator -(Scalar x) { return (Scalar)(-(double)x); }
+    public static Scalar operator +(Scalar x, Scalar y) {
+      return (Scalar)((double)x + (double)y);
+    }
+    public static Scalar operator -(Scalar x, Scalar y) {
+      return (Scalar)((double)x - (double)y);
+    }
+    public static Scalar operator *(Scalar x, Scalar y) {
+      return (Scalar)((double)x * (double)y);
+    }
+    public static Scalar operator /(Scalar x, Scalar y) {
+      return (Scalar)((double)x / (double)y);
+    }
+
+    #endregion Field operations
+
+    #region Elementary functions
+
     public static Scalar Sin(Scalar angle) {
       return (Scalar)Math.Sin((double)angle);
     }
-    public static Scalar Sqrt(Scalar angle) {
-      return (Scalar)Math.Sqrt((double)angle);
+    public static Scalar Cos(Scalar angle) {
+      return (Scalar)Math.Cos((double)angle);
     }
     public static Scalar Tan(Scalar angle) {
       return (Scalar)Math.Tan((double)angle);
     }
+    public static Scalar Sqrt(Scalar angle) {
+      return (Scalar)Math.Sqrt((double)angle);
+    }
+    public bool Equals(Scalar x) {
+      return this == x;
+    }
+    public override int GetHashCode() {
+      return this.value.GetHashCode();
+    }
+
+    #endregion Elementary functions
+
+    #region IComparable, IComparable<Scalar> and IEquatable<Scalar> implementations
+
     public int CompareTo(object obj) {
       if (obj == null) {
         // MSDN: By definition, any object compares greater than (or follows)
@@ -74,11 +103,7 @@ namespace Geometry {
         return this == (Scalar)obj;
       }
     }
-    public bool Equals(Scalar x) {
-      return this == x;
-    }
-    public override int GetHashCode() {
-      return this.value.GetHashCode();
-    }
+
+    #endregion IComparable, IComparable<Scalar> and IEquatable<Scalar> implementations
   }
 }
