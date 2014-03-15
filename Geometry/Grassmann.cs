@@ -34,9 +34,9 @@ using System.Threading.Tasks;
 //   rotation vectors Θ12 = α Θ1 + β Θ2 + γ Θ1 x Θ2, becomes the Lie bracket
 //   of so(V).
 //   bivector = [bivector, bivector], Θ12 = α Θ1 + β Θ2 + γ [Θ1, Θ2].
-// . pseudoscalar = (pseudovector|vector), as in Φ = (B|S), becomes the wedge
+// . pseudoscalar = (pseudovector|vector), as in dΦ = (B|dS), becomes the wedge
 //   product,
-//   trivector = bivector ^ vector, Φ = B ^ S.
+//   trivector = bivector ^ vector, dΦ = B ^ dS.
 // NOTATION:
 // For k-vectors v, w over the underlying space V, the inner product (v|w) is
 // [k]vector<V>.InnerProduct(v, w) rather than v.InnerProduct(w) so that the
