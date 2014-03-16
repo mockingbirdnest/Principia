@@ -17,6 +17,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NewtonianPhysics", "Newtoni
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Geometry", "Geometry\Geometry.csproj", "{E17C45ED-CAC9-4755-9E00-0B825E21C3AC}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Geometry Tests", "Geometry Tests\Geometry Tests.vcxproj", "{9757CB21-B840-49A6-B057-9F322E543DD6}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{4F787E5E-3F93-4F90-9AA6-8E046A25AD29}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -95,8 +99,24 @@ Global
 		{E17C45ED-CAC9-4755-9E00-0B825E21C3AC}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
 		{E17C45ED-CAC9-4755-9E00-0B825E21C3AC}.Release|Mixed Platforms.Build.0 = Release|Any CPU
 		{E17C45ED-CAC9-4755-9E00-0B825E21C3AC}.Release|Win32.ActiveCfg = Release|Any CPU
+		{9757CB21-B840-49A6-B057-9F322E543DD6}.Debug|Any CPU.ActiveCfg = Debug|Win32
+		{9757CB21-B840-49A6-B057-9F322E543DD6}.Debug|Mixed Platforms.ActiveCfg = Debug|Win32
+		{9757CB21-B840-49A6-B057-9F322E543DD6}.Debug|Mixed Platforms.Build.0 = Debug|Win32
+		{9757CB21-B840-49A6-B057-9F322E543DD6}.Debug|Win32.ActiveCfg = Debug|Win32
+		{9757CB21-B840-49A6-B057-9F322E543DD6}.Debug|Win32.Build.0 = Debug|Win32
+		{9757CB21-B840-49A6-B057-9F322E543DD6}.Release|Any CPU.ActiveCfg = Release|Win32
+		{9757CB21-B840-49A6-B057-9F322E543DD6}.Release|Any CPU.Build.0 = Release|Win32
+		{9757CB21-B840-49A6-B057-9F322E543DD6}.Release|Mixed Platforms.ActiveCfg = Release|Win32
+		{9757CB21-B840-49A6-B057-9F322E543DD6}.Release|Mixed Platforms.Build.0 = Release|Win32
+		{9757CB21-B840-49A6-B057-9F322E543DD6}.Release|Win32.ActiveCfg = Release|Win32
+		{9757CB21-B840-49A6-B057-9F322E543DD6}.Release|Win32.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{3D6E953D-9D92-43A8-8B9C-81726AB22602} = {4F787E5E-3F93-4F90-9AA6-8E046A25AD29}
+		{A34DC232-3550-4181-A885-9F90636324F5} = {4F787E5E-3F93-4F90-9AA6-8E046A25AD29}
+		{9757CB21-B840-49A6-B057-9F322E543DD6} = {4F787E5E-3F93-4F90-9AA6-8E046A25AD29}
 	EndGlobalSection
 EndGlobal
