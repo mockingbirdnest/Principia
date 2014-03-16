@@ -15,17 +15,18 @@ namespace GeometryTests {
     ref class A : ISpace {};
 
 #pragma warning(disable:4395)
+    double const ε = 1e-13;
     template<typename Vector>
     void AssertNullVector(Vector v) {
-      Assert::IsTrue((double)v.Coordinates.X == 0.0 &&
-                     (double)v.Coordinates.Y == 0.0 &&
-                     (double)v.Coordinates.Z == 0.0);
+      Assert::AreEqual((double)v.Coordinates.X, 0.0, ε);
+      Assert::AreEqual((double)v.Coordinates.Y, 0.0, ε);
+      Assert::AreEqual((double)v.Coordinates.Z, 0.0, ε);
     }
     template<typename Vector>
     void AssertNotNullVector(Vector v) {
-      Assert::IsTrue((double)v.Coordinates.X != 0.0 &&
-                     (double)v.Coordinates.Y != 0.0 &&
-                     (double)v.Coordinates.Z != 0.0);
+      Assert::AreNotEqual((double)v.Coordinates.X, 0.0, ε);
+      Assert::AreNotEqual((double)v.Coordinates.Y, 0.0, ε);
+      Assert::AreNotEqual((double)v.Coordinates.Z, 0.0, ε);
     }
 #pragma warning(default:4395)
 
@@ -81,6 +82,50 @@ namespace GeometryTests {
       Assert::AreEqual(Vector::InnerProduct(k, i), (Scalar)0.0);
     }
 
+    void TestSO3() {
+      Vector<A^> v = Vector<A^>(R3Element((Scalar)1.0, (Scalar)(-2.0), (Scalar)3.0));
+      BiVector<A^> x = BiVector<A^>(R3Element((Scalar)1.0, (Scalar)(-3.0), (Scalar) 2.0));
+      BiVector<A^> y = BiVector<A^>(R3Element((Scalar)6.0, (Scalar)(-2.7), (Scalar)5.0));
+      BiVector<A^> z = BiVector<A^>(R3Element((Scalar)(-10.0), (Scalar)0.0, (Scalar)(-.025)));
+      Scalar λ = (Scalar)12.345;
+      // Nontriviality of the commutator.
+      AssertNotNullVector(BiVector<A^>::Commutator(x, y));
+      // Linearity of the commutator in the first argument.
+      AssertVectorsEqual(BiVector<A^>::Commutator(λ * x + z, y),
+                         λ * BiVector<A^>::Commutator(x, y)
+                         + BiVector<A^>::Commutator(z, y));
+      // Anticommutativity of the commutator.
+      AssertVectorsEqual(BiVector<A^>::Commutator(x, y),
+                         -BiVector<A^>::Commutator(y, x));
+      AssertNullVector(BiVector<A^>::Commutator(x, x));
+      // Jacobi identity.
+      AssertNullVector(
+        BiVector<A^>::Commutator(x, BiVector<A^>::Commutator(y, z))
+        + BiVector<A^>::Commutator(y, BiVector<A^>::Commutator(z, x))
+        + BiVector<A^>::Commutator(z, BiVector<A^>::Commutator(x, y)));
+      // Left and right actions.
+      AssertVectorsEqual(v.ActedUponBy(x), -x.ActOn(v));
+      AssertVectorsNotEqual(v.ActedUponBy(x), x.ActOn(v));
+      // Orthogonality of the commutator.
+      Assert::AreEqual(
+        BiVector<A^>::InnerProduct(BiVector<A^>::Commutator(x, y), x),
+        (Scalar)0.0);
+      Assert::AreEqual(
+        BiVector<A^>::InnerProduct(BiVector<A^>::Commutator(x, y), y),
+        (Scalar)0.0);
+      // Exponential map.
+      AssertVectorsEqual(
+        BiVector<A^>::Exp(
+          BiVector<A^>(R3Element((Scalar)0.0, (Scalar)0.0, (Scalar)0.0))
+          ).ActOn(v),
+        v);
+      AssertVectorsEqual(BiVector<A^>::Exp(-x).ActOn(v),
+                         BiVector<A^>::Exp(x).Inverse().ActOn(v));
+      AssertVectorsEqual(
+        BiVector<A^>::Exp(x + λ * x).ActOn(v),
+        Maps::Compose(BiVector<A^>::Exp(x), BiVector<A^>::Exp(λ * x)).ActOn(v));
+    }
+
   public:
     /// <summary>
     ///Gets or sets the test context which provides
@@ -122,6 +167,7 @@ namespace GeometryTests {
     void GrassmannAlgebra() {
       TestInnerProductSpaceOperations<Vector<A^>>();
       TestInnerProductSpaceOperations<BiVector<A^>>();
+      TestSO3();
     };
   };
 }
