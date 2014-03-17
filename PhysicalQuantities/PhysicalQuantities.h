@@ -186,28 +186,25 @@ namespace PhysicalQuantities {
     return Newtons(number) / (Metre * Metre);
   }
   const Pressure Pascal = Pascals(1.0);
-  const Volume Litres = Dimensionless(1e-3) * Metre * Metre * Metre;
+  const Volume Litre = Dimensionless(1e-3) * Metre * Metre * Metre;
 #pragma endregion
 #pragma endregion
 #pragma region Constants
   const Entropy BoltzmannConstant = Joules(1.3806488e-23) / Kelvin;
 #pragma endregion
-  public ref class foo {
-    double test() {
-      Mass m = Kilograms(5.0);
-      Speed v = Metres(1.2) / Seconds(4.0) - MetresPerSecond(3.14);
-      v += Metres(42.0) / Second;
-      v *= Dimensionless(5.2);
-      v /= Dimensionless(0.7);
-      Momentum p = m * v;
-      Energy E = Dimensionless(.5) * m * v * v;
-      Force F = Newtons(1000.0);
-      double numberOfKelvins = Value((Kelvins(3) - Celsius(5)) / Kelvin);
-      DimensionlessNumber N = Dimensionless(1e23);
-      Volume V = Metres(3) * Metre * Metre;
-      Temperature T = Kelvins(3);
-      Pressure P = N * BoltzmannConstant * T / V;
-      return Value(P / Pascal);
-    }
-  };
+  void test() {
+    Mass m = Kilograms(5.0);
+    Speed v = Metres(1.2) / Seconds(4.0) - MetresPerSecond(3.14);
+    v += Metres(42.0) / Second;
+    v *= Dimensionless(5.2);
+    v /= Dimensionless(0.7);
+    Momentum p = m * v;
+    Energy E = Dimensionless(.5) * m * v * v;
+    Force F = Newtons(1000.0);
+    double numberOfKelvins = Value((Kelvins(3) - Celsius(5)) / Kelvin);
+    DimensionlessNumber N = Dimensionless(1e23);
+    Volume V = Metres(3) * Metre * Metre + Litre;
+    Temperature T = Kelvins(3);
+    Pressure P = N * BoltzmannConstant * T / V;
+  }
 }
