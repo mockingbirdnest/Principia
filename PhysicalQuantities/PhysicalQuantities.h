@@ -23,7 +23,7 @@ namespace PhysicalQuantities {
   using Quotient = typename QuotientGenerator<Left, Right>::ResultType;
   template<typename Left, typename Right>
   using Product = typename ProductGenerator<Left, Right>::ResultType;
-  template<typename D>  class Quantity;
+  template<typename D> class Quantity;
 #pragma region Base quantities
   typedef Quantity<Dimensions<0, 0, 0, 0>> DimensionlessNumber;
   typedef Quantity<Dimensions<1, 0, 0, 0>> Length;
