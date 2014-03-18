@@ -6,6 +6,9 @@ using namespace System;
 using namespace PhysicalQuantities;
 
 namespace Geometry {
-  template<F>
-  struct Scalar {};
+  template<D>
+  struct R3Element {
+  public:
+  private:
+  };
 }
