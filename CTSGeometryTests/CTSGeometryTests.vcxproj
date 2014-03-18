@@ -17,6 +17,7 @@
     <ProjectGUID>{9757CB21-B840-49A6-B057-9F322E543DD6}</ProjectGUID>
     <Keyword>ManagedCProj</Keyword>
     <RootNamespace>GeometryTests</RootNamespace>
+    <ProjectName>CTSGeometryTests</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
@@ -100,7 +101,7 @@
     <Image Include="app.ico" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Geometry\Geometry.csproj">
+    <ProjectReference Include="..\CTSGeometry\CTSGeometry.csproj">
       <Project>{e17c45ed-cac9-4755-9e00-0b825e21c3ac}</Project>
     </ProjectReference>
   </ItemGroup>

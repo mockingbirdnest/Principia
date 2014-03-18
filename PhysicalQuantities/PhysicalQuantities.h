@@ -1,10 +1,14 @@
 // PhysicalQuantities.h
+#include <functional>
 
 #pragma once
 
 using namespace System;
 
 namespace PhysicalQuantities {
+#pragma region Metaprogramming
+  template <typename T> using static_not = std::integral_constant<bool, !T::value>;
+#pragma endregion
   template<int LengthExponent,
            int TimeExponent,
            int MassExponent,
@@ -18,45 +22,52 @@ namespace PhysicalQuantities {
     };
   };
   template<typename Left, typename Right> struct ProductGenerator;
-  template<typename Left, typename Right>  struct QuotientGenerator;
+  template<typename Left, typename Right> struct QuotientGenerator;
   template<typename Left, typename Right>
   using Quotient = typename QuotientGenerator<Left, Right>::ResultType;
   template<typename Left, typename Right>
   using Product = typename ProductGenerator<Left, Right>::ResultType;
-  template<typename D> class Quantity;
+  template<typename D> struct ScalarQuantity;
 #pragma region Base quantities
-  typedef Quantity<Dimensions<0, 0, 0, 0>> DimensionlessNumber;
-  typedef Quantity<Dimensions<1, 0, 0, 0>> Length;
-  typedef Quantity<Dimensions<0, 1, 0, 0>> Time;
-  typedef Quantity<Dimensions<0, 0, 1, 0>> Mass;
-  typedef Quantity<Dimensions<0, 0, 0, 1>> Temperature;
+  typedef ScalarQuantity<Dimensions<0, 0, 0, 0>> Dimensionless;
+  typedef ScalarQuantity<Dimensions<1, 0, 0, 0>> Length;
+  typedef ScalarQuantity<Dimensions<0, 1, 0, 0>> Time;
+  typedef ScalarQuantity<Dimensions<0, 0, 1, 0>> Mass;
+  typedef ScalarQuantity<Dimensions<0, 0, 0, 1>> Temperature;
 #pragma endregion
   template<typename D>
-  class Quantity {
+  struct ScalarQuantity {
   public:
-    Quantity() {};
+    ScalarQuantity() = default;
     typedef typename D Dimensions;
-    friend double Value(DimensionlessNumber);
-    friend DimensionlessNumber Dimensionless(double);
+    template <typename Dummy = std::enable_if<std::is_same<ScalarQuantity<D>, Dimensionless>::value, double>::type>
+    ScalarQuantity(double magnitude) : magnitude_(magnitude) {}
+    friend double Value(Dimensionless);
     friend Length Metres(double);
     friend Time Seconds(double);
     friend Mass Kilograms(double);
     friend Temperature Kelvins(double);
-    template<typename D> friend Quantity<D> operator+ (Quantity<D> right);
-    template<typename D> friend Quantity<D> operator- (Quantity<D> right);
+    template<typename D> friend ScalarQuantity<D> operator+ (ScalarQuantity<D>);
+    template<typename D> friend ScalarQuantity<D> operator- (ScalarQuantity<D>);
     template<typename D>
-    friend Quantity<D> operator+ (Quantity<D> left, Quantity<D> right);
+    friend ScalarQuantity<D> operator+ (ScalarQuantity<D>, ScalarQuantity<D>);
     template<typename D>
-    friend Quantity<D> operator- (Quantity<D> left, Quantity<D> right);
+    friend ScalarQuantity<D> operator- (ScalarQuantity<D>, ScalarQuantity<D>);
     template<typename D_Left, typename D_Right>
-    friend Product<typename Quantity<D_Left>, typename Quantity <D_Right>>
-      operator *(Quantity<D_Left> left, Quantity<D_Right> right);
+    friend Product<typename ScalarQuantity<D_Left>, typename ScalarQuantity <D_Right>>
+      operator *(ScalarQuantity<D_Left>, ScalarQuantity<D_Right>);
+    template<typename D_Right>
+    friend ScalarQuantity<D_Right> operator *(double, ScalarQuantity<D_Right>);
+    template<typename D_Left>
+    friend ScalarQuantity<D_Left> operator *(ScalarQuantity<D_Left>, double);
+    template<typename D_Left>
+    friend ScalarQuantity<D_Left> operator /(ScalarQuantity<D_Left>, double);
     template<typename D_Left, typename D_Right>
-    friend Quotient<typename Quantity<D_Left>, typename Quantity <D_Right>>
-      operator /(Quantity<D_Left> left, Quantity<D_Right> right);
+    friend Quotient<typename ScalarQuantity<D_Left>, typename ScalarQuantity <D_Right>>
+      operator /(ScalarQuantity<D_Left>, ScalarQuantity<D_Right>);
   private:
-    explicit Quantity(double m) : _magnitude(m) {};
-    double   _magnitude;
+    explicit ScalarQuantity(double magnitude) : magnitude_(magnitude) {};
+    double   magnitude_;
   };
 #pragma region Type generators
   template<typename Left, typename Right>
@@ -67,7 +78,7 @@ namespace PhysicalQuantities {
       Mass = Left::Dimensions::Mass + Right::Dimensions::Mass,
       Temperature = Left::Dimensions::Temperature + Right::Dimensions::Temperature
     };
-    typedef Quantity<Dimensions<Length, Time, Mass, Temperature>> ResultType;
+    typedef ScalarQuantity<Dimensions<Length, Time, Mass, Temperature>> ResultType;
   };
   template<typename Left, typename Right>
   struct QuotientGenerator {
@@ -77,63 +88,75 @@ namespace PhysicalQuantities {
       Mass = Left::Dimensions::Mass - Right::Dimensions::Mass,
       Temperature = Left::Dimensions::Temperature - Right::Dimensions::Temperature
     };
-    typedef Quantity<Dimensions<Length, Time, Mass, Temperature>> ResultType;
+    typedef ScalarQuantity<Dimensions<Length, Time, Mass, Temperature>> ResultType;
   };
 #pragma endregion
 #pragma region Additive group
   template<typename D>
-  inline Quantity<D> operator +(Quantity<D> right) {
-    return Quantity<D>(+right._magnitude);
+  inline ScalarQuantity<D> operator +(ScalarQuantity<D> right) {
+    return ScalarQuantity<D>(+right.magnitude_);
   }
   template<typename D>
-  inline Quantity<D> operator -(Quantity<D> right) {
-    return Quantity<D>(-right._magnitude);
+  inline ScalarQuantity<D> operator -(ScalarQuantity<D> right) {
+    return ScalarQuantity<D>(-right.magnitude_);
   }
   template<typename D>
-  inline Quantity<D> operator +(Quantity<D> left, Quantity<D> right) {
-    return Quantity<D>(left._magnitude + right._magnitude);
+  inline ScalarQuantity<D> operator +(ScalarQuantity<D> left,
+                                      ScalarQuantity<D> right) {
+    return ScalarQuantity<D>(left.magnitude_ + right.magnitude_);
   }
   template<typename D>
-  inline Quantity<D> operator -(Quantity<D> left, Quantity<D> right) {
-    return Quantity<D>(left._magnitude + right._magnitude);
+  inline ScalarQuantity<D> operator -(ScalarQuantity<D> left,
+                                      ScalarQuantity<D> right) {
+    return ScalarQuantity<D>(left.magnitude_ + right.magnitude_);
   }
 #pragma endregion
 #pragma region Multiplicative group
   template<typename D_Left, typename D_Right>
-  inline Product<typename Quantity<D_Left>, typename Quantity <D_Right>>
-    operator *(Quantity<D_Left> left, Quantity<D_Right> right) {
-      return Product<typename Quantity<D_Left>, typename Quantity<D_Right>>(left._magnitude * right._magnitude);
+  inline Product < typename ScalarQuantity<D_Left>,
+                   typename ScalarQuantity <D_Right> >
+    operator *(ScalarQuantity<D_Left> left, ScalarQuantity<D_Right> right) {
+      return Product<typename ScalarQuantity<D_Left>, typename ScalarQuantity<D_Right>>(left.magnitude_ * right.magnitude_);
     }
   template<typename D_Left, typename D_Right>
-  inline Quotient<typename Quantity<D_Left>, typename Quantity <D_Right>>
-    operator /(Quantity<D_Left> left, Quantity<D_Right> right) {
-      return Quotient<typename Quantity<D_Left>, typename Quantity<D_Right>>(left._magnitude / right._magnitude);
+  inline Quotient<typename ScalarQuantity<D_Left>, typename ScalarQuantity <D_Right>>
+    operator /(ScalarQuantity<D_Left> left, ScalarQuantity<D_Right> right) {
+      return Quotient<typename ScalarQuantity<D_Left>, typename ScalarQuantity<D_Right>>(left.magnitude_ / right.magnitude_);
     }
+  template<typename D_Right>
+  inline ScalarQuantity<D_Right> operator *(double left, ScalarQuantity<D_Right> right) {
+    return ScalarQuantity<D_Right>(left * right.magnitude_);
+  }
+  template<typename D_Left>
+  inline ScalarQuantity<D_Left> operator *(ScalarQuantity<D_Left> left, double right) {
+    return ScalarQuantity<D_Right>(left.magnitude_ * right)
+  }
+  template<typename D_Left>
+  inline ScalarQuantity<D_Left> operator /(ScalarQuantity<D_Left> left, double right) {
+    return ScalarQuantity<D_Right>(left.magnitude_ / right)
+  }
 #pragma endregion
 #pragma region Assigment operators
   template<typename D>
-  inline void operator += (Quantity<D> left, Quantity<D> right) {
+  inline void operator += (ScalarQuantity<D> left, ScalarQuantity<D> right) {
     left = left + right;
   }
   template<typename D>
-  inline void operator -= (Quantity<D> left, Quantity<D> right) {
+  inline void operator -= (ScalarQuantity<D> left, ScalarQuantity<D> right) {
     left = left - right;
   }
   template<typename D>
-  inline void operator *= (Quantity<D> left, DimensionlessNumber right) {
+  inline void operator *= (ScalarQuantity<D> left, Dimensionless right) {
     left = left * right;
   }
   template<typename D>
-  inline void operator /= (Quantity<D> left, DimensionlessNumber right) {
+  inline void operator /= (ScalarQuantity<D> left, Dimensionless right) {
     left = left / right;
   }
 #pragma endregion
 #pragma region Dimensionless numbers
-  inline DimensionlessNumber Dimensionless(double value) {
-    return DimensionlessNumber(value);
-  }
-  inline double Value(DimensionlessNumber number) {
-    return number._magnitude;
+  inline double Value(Dimensionless number) {
+    return number.magnitude_;
   }
 #pragma endregion
 #pragma region Common quantities
@@ -168,43 +191,31 @@ namespace PhysicalQuantities {
   }
 #pragma endregion
 #pragma region General mechanics
-  inline Speed MetresPerSecond(double number) {
-    return Metres(number) / Seconds(1.0);
-  }
-  inline Acceleration MetresPerSquaredSecond(double number) {
-    return MetresPerSecond(number) / Seconds(1.0);
-  }
   const Force Newton = Metre * Kilogram / (Second * Second);
-  inline Force Newtons(double number) {
-    return MetresPerSquaredSecond(number) * Kilograms(1.0);
-  }
   const Energy Joule = Newton * Metre;
-  inline Energy Joules(double number) { return Dimensionless(number) * Joule; }
 #pragma endregion
 #pragma region Thermodynamics
-  inline Pressure Pascals(double number) {
-    return Newtons(number) / (Metre * Metre);
-  }
-  const Pressure Pascal = Pascals(1.0);
-  const Volume Litre = Dimensionless(1e-3) * Metre * Metre * Metre;
+  const Pressure Pascal = Newton / (Metre * Metre);
+  const Volume Litre = 1e-3 * Metre * Metre * Metre;
 #pragma endregion
 #pragma endregion
 #pragma region Constants
-  const Entropy BoltzmannConstant = Joules(1.3806488e-23) / Kelvin;
+  const Entropy BoltzmannConstant = 1.3806488e-23 * Joule / Kelvin;
 #pragma endregion
   void test() {
     Mass m = Kilograms(5.0);
-    Speed v = Metres(1.2) / Seconds(4.0) - MetresPerSecond(3.14);
-    v += Metres(42.0) / Second;
-    v *= Dimensionless(5.2);
-    v /= Dimensionless(0.7);
+    Speed v = 1.2 * Metre / Second;
+    v += 43 * Metre / Second;
+    v *= 5.2;
+    v /= 0.7;
+    Dimensionless x = 3.0;
     Momentum p = m * v;
-    Energy E = Dimensionless(.5) * m * v * v;
-    Force F = Newtons(1000.0);
-    double numberOfKelvins = Value((Kelvins(3) - Celsius(5)) / Kelvin);
-    DimensionlessNumber N = Dimensionless(1e23);
-    Volume V = Metres(3) * Metre * Metre + Litre;
-    Temperature T = Kelvins(3);
+    Energy E = .5 * m * v * v;
+    Force F = 1000.0 * Newton;
+    double numberOfKelvins = Value((9.8 * Kelvin - Celsius(14)) / Kelvin);
+    Dimensionless N = 1e23;
+    Volume V = 5 * Metre * Metre * Metre + 2 * Litre;
+    Temperature T = 3 * Kelvin;
     Pressure P = N * BoltzmannConstant * T / V;
   }
 }
