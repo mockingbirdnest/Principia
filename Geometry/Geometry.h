@@ -1,13 +1,11 @@
 // Geometry.h
-
+#include "..\PhysicalQuantities\PhysicalQuantities.h";
+#include <string>;
 #pragma once
-
 using namespace System;
+using namespace PhysicalQuantities;
 
 namespace Geometry {
-
-	public ref class Class1
-	{
-		// TODO: Add your methods for this class here.
-	};
+  template<F>
+  struct Scalar {};
 }

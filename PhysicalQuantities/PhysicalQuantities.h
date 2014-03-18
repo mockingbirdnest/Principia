@@ -1,4 +1,5 @@
 // PhysicalQuantities.h
+#include <functional>
 
 #pragma once
 
@@ -18,7 +19,7 @@ namespace PhysicalQuantities {
     };
   };
   template<typename Left, typename Right> struct ProductGenerator;
-  template<typename Left, typename Right>  struct QuotientGenerator;
+  template<typename Left, typename Right> struct QuotientGenerator;
   template<typename Left, typename Right>
   using Quotient = typename QuotientGenerator<Left, Right>::ResultType;
   template<typename Left, typename Right>
@@ -36,26 +37,33 @@ namespace PhysicalQuantities {
   public:
     Quantity() {};
     typedef typename D Dimensions;
+    template <typename Dummy = std::enable_if<std::is_same<Quantity<D>, DimensionlessNumber>::value, double>::type>
+    Quantity(double magnitude) : _magnitude(magnitude) {}
     friend double Value(DimensionlessNumber);
-    friend DimensionlessNumber Dimensionless(double);
     friend Length Metres(double);
     friend Time Seconds(double);
     friend Mass Kilograms(double);
     friend Temperature Kelvins(double);
-    template<typename D> friend Quantity<D> operator+ (Quantity<D> right);
-    template<typename D> friend Quantity<D> operator- (Quantity<D> right);
+    template<typename D> friend Quantity<D> operator+ (Quantity<D>);
+    template<typename D> friend Quantity<D> operator- (Quantity<D>);
     template<typename D>
-    friend Quantity<D> operator+ (Quantity<D> left, Quantity<D> right);
+    friend Quantity<D> operator+ (Quantity<D>, Quantity<D>);
     template<typename D>
-    friend Quantity<D> operator- (Quantity<D> left, Quantity<D> right);
+    friend Quantity<D> operator- (Quantity<D>, Quantity<D>);
     template<typename D_Left, typename D_Right>
     friend Product<typename Quantity<D_Left>, typename Quantity <D_Right>>
-      operator *(Quantity<D_Left> left, Quantity<D_Right> right);
+      operator *(Quantity<D_Left>, Quantity<D_Right>);
+    template<typename D_Right>
+    friend Quantity<D_Right> operator *(double, Quantity<D_Right>);
+    template<typename D_Left>
+    friend Quantity<D_Left> operator *(Quantity<D_Left>, double);
+    template<typename D_Left>
+    friend Quantity<D_Left> operator /(Quantity<D_Left>, double);
     template<typename D_Left, typename D_Right>
     friend Quotient<typename Quantity<D_Left>, typename Quantity <D_Right>>
-      operator /(Quantity<D_Left> left, Quantity<D_Right> right);
+      operator /(Quantity<D_Left>, Quantity<D_Right>);
   private:
-    explicit Quantity(double m) : _magnitude(m) {};
+    explicit Quantity(double magnitude) : _magnitude(magnitude) {};
     double   _magnitude;
   };
 #pragma region Type generators
@@ -109,6 +117,18 @@ namespace PhysicalQuantities {
     operator /(Quantity<D_Left> left, Quantity<D_Right> right) {
       return Quotient<typename Quantity<D_Left>, typename Quantity<D_Right>>(left._magnitude / right._magnitude);
     }
+  template<typename D_Right>
+  inline Quantity<D_Right> operator *(double left, Quantity<D_Right> right) {
+    return Quantity<D_Right>(left * right._magnitude);
+  }
+  template<typename D_Left>
+  inline Quantity<D_Left> operator *(Quantity<D_Left> left, double right) {
+    return Quantity<D_Right>(left._magnitude * right)
+  }
+  template<typename D_Left>
+  inline Quantity<D_Left> operator /(Quantity<D_Left> left, double right) {
+    return Quantity<D_Right>(left._magnitude / right)
+  }
 #pragma endregion
 #pragma region Assigment operators
   template<typename D>
@@ -129,9 +149,6 @@ namespace PhysicalQuantities {
   }
 #pragma endregion
 #pragma region Dimensionless numbers
-  inline DimensionlessNumber Dimensionless(double value) {
-    return DimensionlessNumber(value);
-  }
   inline double Value(DimensionlessNumber number) {
     return number._magnitude;
   }
@@ -168,43 +185,31 @@ namespace PhysicalQuantities {
   }
 #pragma endregion
 #pragma region General mechanics
-  inline Speed MetresPerSecond(double number) {
-    return Metres(number) / Seconds(1.0);
-  }
-  inline Acceleration MetresPerSquaredSecond(double number) {
-    return MetresPerSecond(number) / Seconds(1.0);
-  }
   const Force Newton = Metre * Kilogram / (Second * Second);
-  inline Force Newtons(double number) {
-    return MetresPerSquaredSecond(number) * Kilograms(1.0);
-  }
   const Energy Joule = Newton * Metre;
-  inline Energy Joules(double number) { return Dimensionless(number) * Joule; }
 #pragma endregion
 #pragma region Thermodynamics
-  inline Pressure Pascals(double number) {
-    return Newtons(number) / (Metre * Metre);
-  }
-  const Pressure Pascal = Pascals(1.0);
-  const Volume Litre = Dimensionless(1e-3) * Metre * Metre * Metre;
+  const Pressure Pascal = Newton / (Metre * Metre);
+  const Volume Litre = 1e-3 * Metre * Metre * Metre;
 #pragma endregion
 #pragma endregion
 #pragma region Constants
-  const Entropy BoltzmannConstant = Joules(1.3806488e-23) / Kelvin;
+  const Entropy BoltzmannConstant = 1.3806488e-23 * Joule / Kelvin;
 #pragma endregion
   void test() {
     Mass m = Kilograms(5.0);
-    Speed v = Metres(1.2) / Seconds(4.0) - MetresPerSecond(3.14);
-    v += Metres(42.0) / Second;
-    v *= Dimensionless(5.2);
-    v /= Dimensionless(0.7);
+    Speed v = 1.2 * Metre / Second;
+    v += 43 * Metre / Second;
+    v *= 5.2;
+    v /= 0.7;
+    DimensionlessNumber x = 3.0;
     Momentum p = m * v;
-    Energy E = Dimensionless(.5) * m * v * v;
-    Force F = Newtons(1000.0);
-    double numberOfKelvins = Value((Kelvins(3) - Celsius(5)) / Kelvin);
-    DimensionlessNumber N = Dimensionless(1e23);
-    Volume V = Metres(3) * Metre * Metre + Litre;
-    Temperature T = Kelvins(3);
+    Energy E = .5 * m * v * v;
+    Force F = 1000.0 * Newton;
+    double numberOfKelvins = Value((9.8 * Kelvin - Celsius(14)) / Kelvin);
+    DimensionlessNumber N = 1e23;
+    Volume V = 5 * Metre * Metre * Metre + Litre;
+    Temperature T = 3 * Kelvin;
     Pressure P = N * BoltzmannConstant * T / V;
   }
 }
