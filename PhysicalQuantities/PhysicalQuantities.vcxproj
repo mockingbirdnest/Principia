@@ -76,6 +76,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="PhysicalQuantities-body-inl.h" />
     <ClInclude Include="PhysicalQuantities.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="Stdafx.h" />
