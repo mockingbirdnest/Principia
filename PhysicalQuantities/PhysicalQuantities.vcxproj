@@ -76,10 +76,12 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Constants.h" />
     <ClInclude Include="PhysicalQuantities-body-inl.h" />
     <ClInclude Include="PhysicalQuantities.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="Stdafx.h" />
+    <ClInclude Include="Units.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="AssemblyInfo.cpp" />
