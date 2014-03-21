@@ -6,14 +6,7 @@ namespace PhysicalQuantities {
 template<int LengthExponent, int TimeExponent, int MassExponent,
          int TemperatureExponent>
 struct Dimensions;
-template<typename Left, typename Right> struct ProductGenerator;
-template<typename Left, typename Right> struct QuotientGenerator;
-template<typename Left, typename Right> 
-using Quotient = typename QuotientGenerator<Left, Right>::ResultType;
-template<typename Left, typename Right> 
-using Product = typename ProductGenerator<Left, Right>::ResultType;
 template<typename D> struct Quantity;
-template<typename Q> struct Unit;
 #pragma region Base quantities
 typedef Quantity<Dimensions<0, 0, 0, 0>> DimensionlessScalar;
 typedef Quantity<Dimensions<1, 0, 0, 0>> Length;
@@ -21,6 +14,13 @@ typedef Quantity<Dimensions<0, 1, 0, 0>> Time;
 typedef Quantity<Dimensions<0, 0, 1, 0>> Mass;
 typedef Quantity<Dimensions<0, 0, 0, 1>> Temperature;
 #pragma endregion
+template<typename Left, typename Right> struct ProductGenerator;
+template<typename Left, typename Right> struct QuotientGenerator;
+template<typename Left, typename Right>
+using Quotient = typename QuotientGenerator<Left, Right>::ResultType;
+template<typename Left, typename Right>
+using Product = typename ProductGenerator<Left, Right>::ResultType;
+template<typename Q> using Inverse = Quotient<DimensionlessScalar, Q>;
 template<typename D>
 struct Quantity {
 public:
