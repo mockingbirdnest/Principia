@@ -64,6 +64,7 @@
       <WarningLevel>Level3</WarningLevel>
       <PreprocessorDefinitions>WIN32;NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <PrecompiledHeader>Use</PrecompiledHeader>
+      <Optimization>Full</Optimization>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -76,13 +77,19 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Constants.h" />
+    <ClInclude Include="NamedQuantities.h" />
+    <ClInclude Include="PhysicalQuantities-body-inl.h" />
     <ClInclude Include="PhysicalQuantities.h" />
     <ClInclude Include="resource.h" />
+    <ClInclude Include="StaticTest.h" />
     <ClInclude Include="Stdafx.h" />
+    <ClInclude Include="Units.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="AssemblyInfo.cpp" />
     <ClCompile Include="PhysicalQuantities.cpp" />
+    <ClCompile Include="StaticTest.cpp" />
     <ClCompile Include="Stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
