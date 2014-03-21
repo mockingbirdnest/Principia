@@ -8,5 +8,5 @@
 
 namespace PhysicalQuantities {
 
-const Entropy BoltzmannConstant = 1.3806488e-23 * (Joule / Kelvin);
+Entropy const BoltzmannConstant = 1.3806488e-23 * (Joule / Kelvin);
 }
