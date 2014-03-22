@@ -27,4 +27,6 @@ void test() {
   Volume V = 5 * (Metre * Metre * Metre) + 2 * Litre;
   Temperature T = 3 * Kelvin;
   Pressure P = N * BoltzmannConstant * T / V;
+  MomentOfInertia I = (1 * (Metre * Metre)) * (4 * Kilogram);
+  AngularMomentum L = I * (4 * (Radian / Second));
 }

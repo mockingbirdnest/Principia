@@ -20,7 +20,6 @@ template<typename Left, typename Right>
 using Quotient = typename QuotientGenerator<Left, Right>::ResultType;
 template<typename Left, typename Right>
 using Product = typename ProductGenerator<Left, Right>::ResultType;
-template<typename Q> using Inverse = Quotient<DimensionlessScalar, Q>;
 template<typename D>
 struct Quantity {
 public:
