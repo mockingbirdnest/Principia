@@ -68,10 +68,4 @@ typedef Quotient<MagneticFlux, Current> Inductance;
 typedef Quotient<LuminousIntensity, SolidAngle> LuminousFlux;
 typedef Quotient<LuminousFlux, Surface>         Illuminance;
 #pragma endregion Photometry
-#pragma region Radiometry
-// What a mess... I refuse to even attempt to find a way to properly type this.
-typedef Quotient<DimensionlessScalar, Time> Radioactivity;
-typedef Quotient<Energy, Mass>              AbsorbedDose;
-typedef Quotient<Energy, Mass>              EquivalentDose;
-#pragma endregion Radiometry
 }
