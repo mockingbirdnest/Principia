@@ -6,20 +6,21 @@
 #include "NamedQuantities.h"
 
 namespace PhysicalQuantities {
-
 #pragma region Base SI units
-const Unit<Length> Metre = Unit<Length>(Metres(1.0));
-const Unit<Time> Second = Unit<Time>(Seconds(1.0));
-const Unit<Mass> Kilogram = Unit<Mass>(Kilograms(1.0));
-const Unit<Temperature> Kelvin = Unit<Temperature>(Kelvins(1.0));
+Unit<Length>      const Metre     = Unit<Length>(Metres(1));
+Unit<Time>        const Second    = Unit<Time>(Seconds(1));
+Unit<Mass>        const Kilogram  = Unit<Mass>(Kilograms(1));
+Unit<Temperature> const Kelvin    = Unit<Temperature>(Kelvins(1));
+// Former supplementary units.
+Unit<Angle>       const Radian    = Unit<Angle>(Dimensionless(1));
+Unit<SolidAngle>  const Steradian = Unit<SolidAngle>(Dimensionless(1));
 #pragma endregion
 #pragma region General mechanics
-const Unit<Force> Newton = Metre * Kilogram / (Second * Second);
-const Unit<Energy> Joule = Newton * Metre;
+Unit<Force>  const Newton = Metre * Kilogram / (Second * Second);
+Unit<Energy> const Joule  = Newton * Metre;
 #pragma endregion
 #pragma region Thermodynamics
-const Unit<Pressure> Pascal = Newton / (Metre * Metre);
-const Unit<Volume> Litre = Unit<Volume>(1e-3 * (Metre * Metre * Metre));
+Unit<Pressure> const Pascal = Newton / (Metre * Metre);
+Unit<Volume>   const Litre  = Unit<Volume>(1e-3 * (Metre * Metre * Metre));
 #pragma endregion
-
 }
