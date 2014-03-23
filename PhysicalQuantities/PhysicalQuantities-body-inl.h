@@ -2,38 +2,55 @@
 
 #pragma once
 
-template<int LengthExponent,
-         int TimeExponent,
-         int MassExponent,
-         int TemperatureExponent>
+template<int LengthExponent, int MassExponent, int TimeExponent,
+         int CurrentExponent, int TemperatureExponent, int AmountExponent,
+         int LuminousIntensityExponent, int WindingExponent>
 struct Dimensions {
   enum {
-    Length      = LengthExponent,
-    Time        = TimeExponent,
-    Mass        = MassExponent,
-    Temperature = TemperatureExponent
+    Length            = LengthExponent,
+    Mass              = MassExponent,
+    Time              = TimeExponent,
+    Current           = CurrentExponent,
+    Temperature       = TemperatureExponent,
+    Amount            = AmountExponent,
+    LuminousIntensity = LuminousIntensityExponent,
+    Winding           = WindingExponent
   };
 };
 #pragma region Type generators
 template<typename Left, typename Right>
 struct ProductGenerator {
   enum {
-    Length      = Left::Dimensions::Length + Right::Dimensions::Length,
-    Time        = Left::Dimensions::Time + Right::Dimensions::Time,
-    Mass        = Left::Dimensions::Mass + Right::Dimensions::Mass,
-    Temperature = Left::Dimensions::Temperature + Right::Dimensions::Temperature
+    Length            = Left::Dimensions::Length + Right::Dimensions::Length,
+    Mass              = Left::Dimensions::Mass + Right::Dimensions::Mass,
+    Time              = Left::Dimensions::Time + Right::Dimensions::Time,
+    Current           = Left::Dimensions::Current + Right::Dimensions::Current,
+    Temperature       = Left::Dimensions::Temperature +
+                        Right::Dimensions::Temperature,
+    Amount            = Left::Dimensions::Amount + Right::Dimensions::Amount,
+    LuminousIntensity = Left::Dimensions::LuminousIntensity +
+                        Right:: Dimensions::LuminousIntensity,
+    Winding           = Left::Dimensions::Winding + Right::Dimensions::Winding
   };
-  typedef Quantity<Dimensions<Length, Time, Mass, Temperature>> ResultType;
+  typedef Quantity<Dimensions<Length, Mass, Time, Current, Temperature, Amount,
+                              LuminousIntensity, Winding>> ResultType;
 };
 template<typename Left, typename Right>
 struct QuotientGenerator {
   enum {
-    Length      = Left::Dimensions::Length - Right::Dimensions::Length,
-    Time        = Left::Dimensions::Time - Right::Dimensions::Time,
-    Mass        = Left::Dimensions::Mass - Right::Dimensions::Mass,
-    Temperature = Left::Dimensions::Temperature - Right::Dimensions::Temperature
+    Length            = Left::Dimensions::Length - Right::Dimensions::Length,
+    Mass              = Left::Dimensions::Mass - Right::Dimensions::Mass,
+    Time              = Left::Dimensions::Time - Right::Dimensions::Time,
+    Current           = Left::Dimensions::Current - Right::Dimensions::Current,
+    Temperature       = Left::Dimensions::Temperature -
+                        Right::Dimensions::Temperature,
+    Amount            = Left::Dimensions::Amount - Right::Dimensions::Amount,
+    LuminousIntensity = Left::Dimensions::LuminousIntensity -
+                        Right:: Dimensions::LuminousIntensity,
+    Winding           = Left::Dimensions::Winding - Right::Dimensions::Winding
   };
-  typedef Quantity<Dimensions<Length, Time, Mass, Temperature>> ResultType;
+  typedef Quantity<Dimensions<Length, Mass, Time, Current, Temperature, Amount,
+                              LuminousIntensity, Winding>> ResultType;
 };
 #pragma endregion
 #pragma region Additive group
