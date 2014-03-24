@@ -55,33 +55,37 @@ struct QuotientGenerator {
 #pragma endregion
 #pragma region Additive group
 template<typename D>
-inline Quantity<D> operator+(Quantity<D> const right) {
+inline Quantity<D> operator+(Quantity<D> const& right) {
   return Quantity<D>(+right.magnitude_);
 }
 template<typename D>
-inline Quantity<D> operator-(Quantity<D> const right) {
+inline Quantity<D> operator-(Quantity<D> const& right) {
   return Quantity<D>(-right.magnitude_);
 }
 template<typename D>
-inline Quantity<D> operator+(Quantity<D> const left, Quantity<D> const right) {
+inline Quantity<D> operator+(Quantity<D> const& left,
+                             Quantity<D> const& right) {
   return Quantity<D>(left.magnitude_ + right.magnitude_);
 }
 template<typename D>
-inline Quantity<D> operator-(Quantity<D> const left, Quantity<D> const right) {
+inline Quantity<D> operator-(Quantity<D> const& left,
+                             Quantity<D> const& right) {
   return Quantity<D>(left.magnitude_ + right.magnitude_);
 }
 #pragma endregion
 #pragma region Multiplicative group
 template<typename D_Left, typename D_Right>
 inline Product <typename Quantity<D_Left>, typename Quantity <D_Right>>
-operator*(Quantity<D_Left> const left, Quantity<D_Right> const right) {
+operator*(Quantity<D_Left> const& left,
+          Quantity<D_Right> const& right) {
   return Product<typename Quantity<D_Left>, 
                  typename Quantity<D_Right>>(left.magnitude_ * 
                                              right.magnitude_);
 }
 template<typename D_Left, typename D_Right>
 inline Quotient<typename Quantity<D_Left>, typename Quantity <D_Right>> 
-operator/(Quantity<D_Left> const left, Quantity<D_Right> const right) {
+operator/(Quantity<D_Left> const& left,
+          Quantity<D_Right> const& right) {
   return Quotient<typename Quantity<D_Left>,
                   typename Quantity<D_Right>>(left.magnitude_ /
                                               right.magnitude_);
@@ -89,42 +93,44 @@ operator/(Quantity<D_Left> const left, Quantity<D_Right> const right) {
 #pragma endregion
 #pragma region Assigment operators
 template<typename D>
-inline void operator+=(Quantity<D> left, Quantity<D> const right) {
+inline void operator+=(Quantity<D>& left, Quantity<D> const& right) {
   left = left + right;
 }
 template<typename D>
-inline void operator-=(Quantity<D> left, Quantity<D> const right) {
+inline void operator-=(Quantity<D>& left, Quantity<D> const& right) {
   left = left - right;
 }
 template<typename D>
-inline void operator*=(Quantity<D> left, DimensionlessScalar const right) {
+inline void operator*=(Quantity<D>& left, DimensionlessScalar const& right) {
   left = left * right;
 }
 template<typename D>
-inline void operator/=(Quantity<D> left, DimensionlessScalar const right) {
+inline void operator/=(Quantity<D>& left, DimensionlessScalar const& right) {
   left = left / right;
 }
 #pragma endregion
-#pragma region Dimensionless scalars
-inline DimensionlessScalar Dimensionless(double value) {
-  return DimensionlessScalar(value);
-}
-inline double Value(DimensionlessScalar const number) {
-  return number.magnitude_; 
-}
+#pragma region Operators on units
 template<typename Q>
-inline Q operator*(double const left, Unit<Q> const right) {
+inline Q operator*(double const left, Unit<Q> const& right) {
   return Q(Dimensionless(left) * right.value_);
 }
 template<typename Q_Left, typename Q_Right>
-inline Unit<Product<Q_Left, Q_Right>> operator*(Unit<Q_Left> const left,
-                                                Unit<Q_Right> const right) {
+inline Unit<Product<Q_Left, Q_Right>> operator*(Unit<Q_Left> const& left,
+                                                Unit<Q_Right> const& right) {
   return Unit<Product<Q_Left, Q_Right>>(left.value_ * right.value_);
 }
 template<typename Q_Left, typename Q_Right>
-inline Unit<Quotient<Q_Left, Q_Right>> operator/(Unit<Q_Left> const left, 
-                                                 Unit<Q_Right> const right) {
+inline Unit<Quotient<Q_Left, Q_Right>> operator/(Unit<Q_Left> const& left, 
+                                                 Unit<Q_Right> const& right) {
   return Unit<Quotient<Q_Left, Q_Right>>(left.value_ / right.value_);
+}
+#pragma endregion
+#pragma region Base quantities
+inline DimensionlessScalar Dimensionless(double const value) {
+  return DimensionlessScalar(value);
+}
+inline double Value(DimensionlessScalar const &number) {
+  return number.magnitude_;
 }
 inline Length Metres(double const number) { return Length(number); }
 inline Mass Kilograms(double const number) { return Mass(number); }
@@ -133,7 +139,8 @@ inline Current Amperes(double const number) { return Current(number); }
 inline Temperature Kelvins(double const number) { return Temperature(number); }
 inline Amount Moles(double const number) { return Amount(number); }
 inline LuminousIntensity Candelas(double const number) {
- return LuminousIntensity(number); 
+ return LuminousIntensity(number);
 }
-inline Winding Cycles(double const number) { return Winding(number); }
+inline Winding Cycles(double const number) { return Winding(number); };
+// The final semicolon is unneeded, but IntelliSense likes it.
 #pragma endregion

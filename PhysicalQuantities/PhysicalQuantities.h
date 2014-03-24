@@ -32,7 +32,7 @@ struct Quantity {
 public:
   Quantity() = default;
   typedef typename D Dimensions;
-  friend double              Value(DimensionlessScalar const);
+  friend double              Value(DimensionlessScalar const&);
   friend DimensionlessScalar Dimensionless(double const);
   friend Length              Metres(double const);
   friend Mass                Kilograms(double const);
@@ -42,42 +42,42 @@ public:
   friend Amount              Moles(double const);
   friend LuminousIntensity   Candelas(double const);
   friend Winding             Cycles(double const);
-  template<typename D> friend Quantity<D> operator+(Quantity<D> const);
-  template<typename D> friend Quantity<D> operator-(Quantity<D> const);
-  template<typename D> friend Quantity<D> operator+(Quantity<D> const, 
-                                                    Quantity<D> const);
-  template<typename D> friend Quantity<D> operator-(Quantity<D> const, 
-                                                    Quantity<D> const);
+  template<typename D> friend Quantity<D> operator+(Quantity<D> const&);
+  template<typename D> friend Quantity<D> operator-(Quantity<D> const&);
+  template<typename D> friend Quantity<D> operator+(Quantity<D> const&, 
+                                                    Quantity<D> const&);
+  template<typename D> friend Quantity<D> operator-(Quantity<D> const&, 
+                                                    Quantity<D> const&);
   template<typename D_Left, typename D_Right>
   friend Product<typename Quantity<D_Left>, typename Quantity <D_Right>> 
-    operator*(Quantity<D_Left> const, Quantity<D_Right> const);
+    operator*(Quantity<D_Left> const&, Quantity<D_Right> const&);
   template<typename D_Left, typename D_Right>
   friend Quotient<typename Quantity<D_Left>, typename Quantity <D_Right>> 
-    operator/(Quantity<D_Left> const, Quantity<D_Right> const);
+    operator/(Quantity<D_Left> const&, Quantity<D_Right> const&);
 private:
   explicit Quantity(double const magnitude) : magnitude_(magnitude) {};
   double   magnitude_;
 };
 template<typename D>
-void operator+=(Quantity<D>, Quantity<D> const);
+void operator+=(Quantity<D>&, Quantity<D> const&);
 template<typename D>
-inline void operator-=(Quantity<D>, Quantity<D> const);
+inline void operator-=(Quantity<D>&, Quantity<D> const&);
 template<typename D>
-inline void operator*=(Quantity<D>, DimensionlessScalar const);
+inline void operator*=(Quantity<D>&, DimensionlessScalar const&);
 template<typename D>
-inline void operator/=(Quantity<D>, DimensionlessScalar const);
+inline void operator/=(Quantity<D>&, DimensionlessScalar const&);
 
 template<typename Q>
 struct Unit {
 public:
-  explicit Unit(Q const value) : value_(value) {};
-  template<typename Q> friend Q operator*(double const, Unit<Q> const);
+  explicit Unit(Q const& value) : value_(value) {};
+  template<typename Q> friend Q operator*(double const, Unit<Q> const&);
   template<typename Q_Left, typename Q_Right>
-  friend Unit<Product<Q_Left, Q_Right>> operator*(Unit<Q_Left> const,
-                                                  Unit<Q_Right> const);
+  friend Unit<Product<Q_Left, Q_Right>> operator*(Unit<Q_Left> const&,
+                                                  Unit<Q_Right> const&);
   template<typename Q_Left, typename Q_Right>
-  friend Unit<Quotient<Q_Left, Q_Right>> operator/(Unit<Q_Left> const,
-                                                   Unit<Q_Right> const);
+  friend Unit<Quotient<Q_Left, Q_Right>> operator/(Unit<Q_Left> const&,
+                                                   Unit<Q_Right> const&);
 private:
   Q const value_;
 };
