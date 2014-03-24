@@ -37,17 +37,6 @@ class Quantity {
 public:
   Quantity() = default;
   typedef typename D Dimensions;
-  friend double              Value(DimensionlessScalar const&);
-  friend DimensionlessScalar Dimensionless(double const);
-  friend Length              Metres(double const);
-  friend Mass                Kilograms(double const);
-  friend Time                Seconds(double const);
-  friend Current             Amperes(double const);
-  friend Temperature         Kelvins(double const);
-  friend Amount              Moles(double const);
-  friend LuminousIntensity   Candelas(double const);
-  friend Winding             Cycles(double const);
-  friend Wrapping            Globes(double const);
   template<typename D> friend Quantity<D> operator+(Quantity<D> const&);
   template<typename D> friend Quantity<D> operator-(Quantity<D> const&);
   template<typename D> friend Quantity<D> operator+(Quantity<D> const&, 
@@ -63,7 +52,29 @@ public:
 private:
   explicit Quantity(double const magnitude) : magnitude_(magnitude) {};
   double   magnitude_;
+  friend double              Value(DimensionlessScalar const&);
+  friend DimensionlessScalar Dimensionless(double const);
+  friend Length              Metres(double const);
+  friend Mass                Kilograms(double const);
+  friend Time                Seconds(double const);
+  friend Current             Amperes(double const);
+  friend Temperature         Kelvins(double const);
+  friend Amount              Moles(double const);
+  friend LuminousIntensity   Candelas(double const);
+  friend Winding             Cycles(double const);
+  friend Wrapping            Globes(double const);
 };
+double              Value(DimensionlessScalar const&);
+DimensionlessScalar Dimensionless(double const);
+Length              Metres(double const);
+Mass                Kilograms(double const);
+Time                Seconds(double const);
+Current             Amperes(double const);
+Temperature         Kelvins(double const);
+Amount              Moles(double const);
+LuminousIntensity   Candelas(double const);
+Winding             Cycles(double const);
+Wrapping            Globes(double const);
 template<typename D>
 void operator+=(Quantity<D>&, Quantity<D> const&);
 template<typename D>
