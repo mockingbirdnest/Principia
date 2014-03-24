@@ -5,21 +5,25 @@
 namespace PhysicalQuantities {
 template<int LengthExponent, int MassExponent, int TimeExponent,
          int CurrentExponent, int TemperatureExponent, int AmountExponent,
-         int LuminousIntensityExponent, int WindingExponent>
+         int LuminousIntensityExponent, int WindingExponent,
+         int WrappingExponent>
 struct Dimensions;
-template<typename D> struct Quantity;
+template<typename D> class Quantity;
 #pragma region Base quantities
-typedef Quantity<Dimensions<0, 0, 0, 0, 0, 0, 0, 0>> DimensionlessScalar;
-typedef Quantity<Dimensions<1, 0, 0, 0, 0, 0, 0, 0>> Length;
-typedef Quantity<Dimensions<0, 1, 0, 0, 0, 0, 0, 0>> Mass;
-typedef Quantity<Dimensions<0, 0, 1, 0, 0, 0, 0, 0>> Time;
-typedef Quantity<Dimensions<0, 0, 0, 1, 0, 0, 0, 0>> Current;
-typedef Quantity<Dimensions<0, 0, 0, 0, 1, 0, 0, 0>> Temperature;
-typedef Quantity<Dimensions<0, 0, 0, 0, 0, 1, 0, 0>> Amount;
-typedef Quantity<Dimensions<0, 0, 0, 0, 0, 0, 1, 0>> LuminousIntensity;
-// Nonstandard; this is a dimensionless quantity counting cycles, in order 
-// to strongly type the distinction between Hz = cycle/s and rad/s.
-typedef Quantity<Dimensions<0, 0, 0, 0, 0, 0, 0, 1>> Winding;
+typedef Quantity<Dimensions<0, 0, 0, 0, 0, 0, 0, 0, 0>> DimensionlessScalar;
+typedef Quantity<Dimensions<1, 0, 0, 0, 0, 0, 0, 0, 0>> Length;
+typedef Quantity<Dimensions<0, 1, 0, 0, 0, 0, 0, 0, 0>> Mass;
+typedef Quantity<Dimensions<0, 0, 1, 0, 0, 0, 0, 0, 0>> Time;
+typedef Quantity<Dimensions<0, 0, 0, 1, 0, 0, 0, 0, 0>> Current;
+typedef Quantity<Dimensions<0, 0, 0, 0, 1, 0, 0, 0, 0>> Temperature;
+typedef Quantity<Dimensions<0, 0, 0, 0, 0, 1, 0, 0, 0>> Amount;
+typedef Quantity<Dimensions<0, 0, 0, 0, 0, 0, 1, 0, 0>> LuminousIntensity;
+// Nonstandard; winding is a dimensionless quantity counting cycles, in order to
+// strongly type the distinction between Hz = cycle/s and rad/s; wrapping is a
+// quantity counting globes, in order to strongly type the distinction between
+// 1 lm = 1 cd*sr/globe = 1 cd/globe and 1 cd (or between 1 W/globe and 1 W/sr).
+typedef Quantity<Dimensions<0, 0, 0, 0, 0, 0, 0, 1, 0>> Winding;
+typedef Quantity<Dimensions<0, 0, 0, 0, 0, 0, 0, 0, 1>> Wrapping;
 #pragma endregion
 template<typename Left, typename Right> struct ProductGenerator;
 template<typename Left, typename Right> struct QuotientGenerator;
@@ -29,7 +33,7 @@ template<typename Left, typename Right>
 using Product = typename ProductGenerator<Left, Right>::ResultType;
 template<typename Q> using Inverse = Quotient<DimensionlessScalar, Q>;
 template<typename D>
-struct Quantity {
+class Quantity {
 public:
   Quantity() = default;
   typedef typename D Dimensions;
@@ -43,6 +47,7 @@ public:
   friend Amount              Moles(double const);
   friend LuminousIntensity   Candelas(double const);
   friend Winding             Cycles(double const);
+  friend Wrapping            Globes(double const);
   template<typename D> friend Quantity<D> operator+(Quantity<D> const&);
   template<typename D> friend Quantity<D> operator-(Quantity<D> const&);
   template<typename D> friend Quantity<D> operator+(Quantity<D> const&, 
@@ -69,7 +74,7 @@ template<typename D>
 inline void operator/=(Quantity<D>&, DimensionlessScalar const&);
 
 template<typename Q>
-struct Unit {
+class Unit {
 public:
   explicit Unit(Q const& value) : value_(value) {};
   template<typename Q> friend Q operator*(double const, Unit<Q> const&);

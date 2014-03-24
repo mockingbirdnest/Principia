@@ -4,7 +4,8 @@
 
 template<int LengthExponent, int MassExponent, int TimeExponent,
          int CurrentExponent, int TemperatureExponent, int AmountExponent,
-         int LuminousIntensityExponent, int WindingExponent>
+         int LuminousIntensityExponent, int WindingExponent,
+         int WrappingExponent>
 struct Dimensions {
   enum {
     Length            = LengthExponent,
@@ -14,7 +15,8 @@ struct Dimensions {
     Temperature       = TemperatureExponent,
     Amount            = AmountExponent,
     LuminousIntensity = LuminousIntensityExponent,
-    Winding           = WindingExponent
+    Winding           = WindingExponent,
+    Wrapping          = WrappingExponent
   };
 };
 #pragma region Type generators
@@ -30,10 +32,11 @@ struct ProductGenerator {
     Amount            = Left::Dimensions::Amount + Right::Dimensions::Amount,
     LuminousIntensity = Left::Dimensions::LuminousIntensity +
                         Right:: Dimensions::LuminousIntensity,
-    Winding           = Left::Dimensions::Winding + Right::Dimensions::Winding
+    Winding           = Left::Dimensions::Winding + Right::Dimensions::Winding,
+    Wrapping          = Left::Dimensions::Wrapping + Right::Dimensions::Wrapping
   };
   typedef Quantity<Dimensions<Length, Mass, Time, Current, Temperature, Amount,
-                              LuminousIntensity, Winding>> ResultType;
+                              LuminousIntensity, Winding, Wrapping>> ResultType;
 };
 template<typename Left, typename Right>
 struct QuotientGenerator {
@@ -47,10 +50,11 @@ struct QuotientGenerator {
     Amount            = Left::Dimensions::Amount - Right::Dimensions::Amount,
     LuminousIntensity = Left::Dimensions::LuminousIntensity -
                         Right:: Dimensions::LuminousIntensity,
-    Winding           = Left::Dimensions::Winding - Right::Dimensions::Winding
+    Winding           = Left::Dimensions::Winding - Right::Dimensions::Winding,
+    Wrapping          = Left::Dimensions::Wrapping - Right::Dimensions::Wrapping
   };
   typedef Quantity<Dimensions<Length, Mass, Time, Current, Temperature, Amount,
-                              LuminousIntensity, Winding>> ResultType;
+                              LuminousIntensity, Winding, Wrapping>> ResultType;
 };
 #pragma endregion
 #pragma region Additive group
@@ -141,6 +145,7 @@ inline Amount Moles(double const number) { return Amount(number); }
 inline LuminousIntensity Candelas(double const number) {
  return LuminousIntensity(number);
 }
-inline Winding Cycles(double const number) { return Winding(number); };
+inline Winding Cycles(double const number) { return Winding(number); }
+inline Wrapping Globes(double const number) { return Wrapping(number); };
 // The final semicolon is unneeded, but IntelliSense likes it.
 #pragma endregion
