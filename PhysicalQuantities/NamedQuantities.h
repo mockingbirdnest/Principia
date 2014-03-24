@@ -8,8 +8,8 @@ namespace PhysicalQuantities {
 #pragma region Dimensionless quantities
 // There is no good way of strongly typing angles vs. dimensionless scalars
 // because angles *are* dimensionless scalars. These are just convenient names.
-typedef DimensionlessScalar Angle;
-typedef DimensionlessScalar SolidAngle;
+typedef Dimensionless Angle;
+typedef Dimensionless SolidAngle;
 #pragma endregion
 #pragma region General mechanics
 #pragma region Linear motion

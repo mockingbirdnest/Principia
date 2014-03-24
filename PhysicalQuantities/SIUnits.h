@@ -30,8 +30,8 @@ Unit<Wrapping>          const Globe    = Unit<Wrapping>(Globes(1));
 
 // The uno was proposed but never accepted. We use it because it is better than 
 // writing radians / mole.
-Unit<DimensionlessScalar> const Uno =
-  Unit<DimensionlessScalar>(Dimensionless(1));
+Unit<Dimensionless> const Uno =
+  Unit<Dimensionless>(Dimensionless(1));
 // The radian and steradian are mostly useless, but we keep them in case their
 // can improve readability.
 Unit<Angle>      const Radian    = Unit<Angle>(Dimensionless(1));
@@ -50,7 +50,6 @@ Unit<Conductance>         const Siemens = Ampere / Volt;
 Unit<MagneticFlux>        const Weber   = Volt * Second;
 Unit<MagneticFluxDensity> const Tesla   = Weber / (Metre * Metre);
 Unit<Inductance>          const Henry   = Weber / Ampere;
-// TODO(robin): this stinks. Do we need something like the cycle for spheres?
 Unit<LuminousFlux>        const Lumen   = Candela / Globe;
 Unit<CatalyticActivity>   const Katal   = Mole / Second;
 #pragma endregion

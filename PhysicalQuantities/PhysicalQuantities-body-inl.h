@@ -105,11 +105,11 @@ inline void operator-=(Quantity<D>& left, Quantity<D> const& right) {
   left = left - right;
 }
 template<typename D>
-inline void operator*=(Quantity<D>& left, DimensionlessScalar const& right) {
+inline void operator*=(Quantity<D>& left, Dimensionless const& right) {
   left = left * right;
 }
 template<typename D>
-inline void operator/=(Quantity<D>& left, DimensionlessScalar const& right) {
+inline void operator/=(Quantity<D>& left, Dimensionless const& right) {
   left = left / right;
 }
 #pragma endregion
@@ -130,11 +130,9 @@ inline Unit<Quotient<Q_Left, Q_Right>> operator/(Unit<Q_Left> const& left,
 }
 #pragma endregion
 #pragma region Base quantities
-inline DimensionlessScalar Dimensionless(double const value) {
-  return DimensionlessScalar(value);
-}
-inline double Value(DimensionlessScalar const &number) {
-  return number.magnitude_;
+// Quantity<NoDimensions>::Quantity(double const magnitude) : magnitude_(magnitude) {};
+inline double Dimensionless::Value() const {
+  return magnitude_;
 }
 inline Length Metres(double const number) { return Length(number); }
 inline Mass Kilograms(double const number) { return Mass(number); }

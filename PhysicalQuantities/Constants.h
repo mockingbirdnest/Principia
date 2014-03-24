@@ -23,6 +23,6 @@ Mass   const ElectronMass     = 9.10938291e-31 * Kilogram;
 Mass   const ProtonMass       = 1.672621777e-27 * Kilogram;
 Charge const ElementaryCharge = 1.602176565e-19 * Coulomb;
 
-DimensionlessScalar const FineStructureConstant = 
+Dimensionless const FineStructureConstant = 
   Dimensionless(7.2973525698e-3);
 }

@@ -18,21 +18,22 @@ public ref class staticTest {
     Mass m = 5.0 * Kilogram;
     Speed v = 1.2 * (Metre / Second);
     v += 43 * (Metre / Second);
-    v *= Dimensionless(5.2);
-    v /= Dimensionless(0.7);
-    DimensionlessScalar x = Dimensionless(3.0);
+    v *= 5.2;
+    v /= 0.7;
+    Dimensionless x = 3.0;
     Momentum p = m * v;
+    Mass M = 5.0 * m;
     Energy E = Dimensionless(.5) * m * v * v;
     Force F = 1000.0 * Newton;
     double numberOfKelvins
-      = Value((9.8 * Kelvin - 12 * Joule / BoltzmannConstant) / (1.0 * Kelvin));
-    DimensionlessScalar N = Dimensionless(1e23);
+      = ((9.8 * Kelvin - 12 * Joule / BoltzmannConstant) / (1.0 * Kelvin)).Value();
+    Dimensionless N = 1e23;
     Volume V = 5 * (Metre * Metre * Metre) + 2 * Litre;
     Temperature T = 3 * Kelvin;
     Pressure P = N * BoltzmannConstant * T / V;
     MomentOfInertia I = (1 * (Metre * Metre)) * (4 * Kilogram);
     AngularMomentum L = I * (4 * (Radian / Second));
-    return Value(m / (1 * Kilogram) + E / (1 * Joule) + P / (1 * Pascal)) 
+    return (m / (1 * Kilogram) + E / (1 * Joule) + P / (1 * Pascal)).Value()
       + numberOfKelvins;
   }
 };
