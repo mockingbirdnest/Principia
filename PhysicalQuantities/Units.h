@@ -1,4 +1,4 @@
-// Units.h
+﻿// Units.h
 
 #pragma once
 
@@ -45,11 +45,23 @@ Unit<Conductance>         const Siemens = Ampere / Volt;
 Unit<MagneticFlux>        const Weber   = Volt * Second;
 Unit<MagneticFluxDensity> const Tesla   = Weber / (Metre * Metre);
 Unit<Inductance>          const Henry   = Weber / Ampere;
+// TODO(robin): this stinks. Do we need something like the cycle for spheres?
 Unit<LuminousFlux>        const Lumen   = Candela / Steradian;
 Unit<CatalyticActivity>   const Katal   = Mole / Second;
 #pragma endregion
 #pragma region Non-SI units accepted for use with the SI
 // From the BIPM's SI brochure 8, section 4.1, table 6,
-Unit<Volume>   const Litre  = Unit<Volume>(1e-3 * (Metre * Metre * Metre));
+// http://www.bipm.org/en/si/si_brochure/chapter4/table6.html
+Unit<Time> const Minute = Unit<Time>(60 * Second);
+Unit<Time> const Hour = Unit<Time>(60 * Minute);
+Unit<Time> const Day = Unit<Time>(24 * Hour);
+// TODO(robin): Move this declaration somewhere else.
+double π = 3.14159265358979323846264338327950288419716939937511;
+Unit<Angle>  const Degree    = Unit<Angle>(π / 180 * Radian);
+Unit<Angle>  const ArcMinute = Unit<Angle>(π / 10800 * Radian);
+Unit<Angle>  const ArcSecond = Unit<Angle>(π / 648000 * Radian);
+Unit<Area>   const Hectare   = Unit<Area>(1e4 * (Metre * Metre));
+Unit<Volume> const Litre     = Unit<Volume>(1e-3 * (Metre * Metre * Metre));
+Unit<Mass>   const Tonne     = Unit<Mass>(1e3 * Kilogram);
 #pragma endregion
 }

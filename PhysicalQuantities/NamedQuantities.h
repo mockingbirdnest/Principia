@@ -30,9 +30,9 @@ typedef Quotient<Energy, Time> Power;
 typedef Product<Energy, Time>  Action;
 #pragma endregion
 #pragma region Thermodynamics
-typedef Product<Length, Length>       Surface;
-typedef Product<Surface, Length>      Volume;
-typedef Quotient<Force, Surface>      Pressure;
+typedef Product<Length, Length>       Area;
+typedef Product<Area, Length>         Volume;
+typedef Quotient<Force, Area>         Pressure;
 typedef Quotient<Energy, Temperature> Entropy;
 typedef Quotient<Mass, Volume>        Density;
 typedef Quotient<Volume, Mass>        SpecificVolume;
@@ -61,11 +61,11 @@ typedef Quotient<Charge, Voltage>       Capacitance;
 typedef Quotient<Voltage, Current>      Resistance;
 typedef Quotient<Current, Voltage>      Conductance;
 typedef Quotient<Energy, Current>       MagneticFlux;
-typedef Quotient<MagneticFlux, Surface> MagneticFluxDensity;
+typedef Quotient<MagneticFlux, Area>    MagneticFluxDensity;
 typedef Quotient<MagneticFlux, Current> Inductance;
 #pragma endregion
 #pragma region Photometry
 typedef Quotient<LuminousIntensity, SolidAngle> LuminousFlux;
-typedef Quotient<LuminousFlux, Surface>         Illuminance;
+typedef Quotient<LuminousFlux, Area>            Illuminance;
 #pragma endregion
 }

@@ -127,7 +127,13 @@ inline Unit<Quotient<Q_Left, Q_Right>> operator/(Unit<Q_Left> const left,
   return Unit<Quotient<Q_Left, Q_Right>>(left.value_ / right.value_);
 }
 inline Length Metres(double const number) { return Length(number); }
-inline Time Seconds(double const number) { return Time(number); }
 inline Mass Kilograms(double const number) { return Mass(number); }
+inline Time Seconds(double const number) { return Time(number); }
+inline Current Amperes(double const number) { return Current(number); }
 inline Temperature Kelvins(double const number) { return Temperature(number); }
+inline Amount Moles(double const number) { return Amount(number); }
+inline LuminousIntensity Candelas(double const number) {
+ return LuminousIntensity(number); 
+}
+inline Winding Cycles(double const number) { return Winding(number); }
 #pragma endregion
