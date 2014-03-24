@@ -27,6 +27,10 @@ Unit<Winding>           const Cycle    = Unit<Winding>(Cycles(1));
 // care of here.
 // Note the nonstandard definition of the Hertz, with a dimensionful cycle.
 
+// The uno was proposed but never accepted. We use it because it is better than 
+// writing radians / mole.
+Unit<DimensionlessScalar> const Uno =
+  Unit<DimensionlessScalar>(Dimensionless(1));
 // The radian and steradian are mostly useless, but we keep them in case their
 // can improve readability.
 Unit<Angle>      const Radian    = Unit<Angle>(Dimensionless(1));

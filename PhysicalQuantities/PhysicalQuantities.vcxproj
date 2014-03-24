@@ -84,7 +84,7 @@
     <ClInclude Include="resource.h" />
     <ClInclude Include="StaticTest.h" />
     <ClInclude Include="Stdafx.h" />
-    <ClInclude Include="Units.h" />
+    <ClInclude Include="SIUnits.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="AssemblyInfo.cpp" />
