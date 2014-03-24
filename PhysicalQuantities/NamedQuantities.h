@@ -66,8 +66,20 @@ typedef Quotient<MagneticFlux, Current> Inductance;
 typedef Quotient<Inductance, Length>    Permeability;
 typedef Quotient<Capacitance, Length>   Permittivity;
 #pragma endregion
+#pragma region Radiometry
+typedef Quotient<Power, SolidAngle>      RadiantIntensity;
+typedef Quotient<RadiantIntensity, Area> Radiance;
+typedef Quotient<Power, Wrapping>        RadiantFlux;
+typedef Product<RadiantFlux, Time>       RadiantEnergy;
+typedef Quotient<RadiantFlux, Area>      Irradiance;
+typedef Product<Irradiance, Time>        RadiantExposure;
+#pragma endregion
 #pragma region Photometry
-typedef Quotient<LuminousIntensity, SolidAngle> LuminousFlux;
-typedef Quotient<LuminousFlux, Area>            Illuminance;
+typedef Quotient<LuminousIntensity, Area>     Luminance;
+typedef Quotient<LuminousIntensity, Wrapping> LuminousFlux;
+typedef Product<LuminousFlux, Time>           LuminousEnergy;
+typedef Quotient<LuminousFlux, Area>          Illuminance;
+typedef Product<Illuminance, Time>            LuminousExposure;
+typedef Quotient<LuminousFlux, RadiantFlux>   LuminousEfficacy;
 #pragma endregion
 }

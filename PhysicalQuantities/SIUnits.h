@@ -18,6 +18,7 @@ Unit<Amount>            const Mole     = Unit<Amount>(Moles(1));
 Unit<LuminousIntensity> const Candela  = Unit<LuminousIntensity>(Candelas(1));
 // Nonstandard.
 Unit<Winding>           const Cycle    = Unit<Winding>(Cycles(1));
+Unit<Wrapping>          const Globe    = Unit<Wrapping>(Globes(1));
 #pragma endregion
 #pragma region Coherent derived units in the SI with special names and symbols
 // From the BIPM's SI brochure 8, section 2.2.2, table 3,
@@ -50,7 +51,7 @@ Unit<MagneticFlux>        const Weber   = Volt * Second;
 Unit<MagneticFluxDensity> const Tesla   = Weber / (Metre * Metre);
 Unit<Inductance>          const Henry   = Weber / Ampere;
 // TODO(robin): this stinks. Do we need something like the cycle for spheres?
-Unit<LuminousFlux>        const Lumen   = Candela / Steradian;
+Unit<LuminousFlux>        const Lumen   = Candela / Globe;
 Unit<CatalyticActivity>   const Katal   = Mole / Second;
 #pragma endregion
 #pragma region Non-SI units accepted for use with the SI
