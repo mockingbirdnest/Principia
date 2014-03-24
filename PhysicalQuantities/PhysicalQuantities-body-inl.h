@@ -55,33 +55,33 @@ struct QuotientGenerator {
 #pragma endregion
 #pragma region Additive group
 template<typename D>
-inline Quantity<D> operator +(Quantity<D> const right) {
+inline Quantity<D> operator+(Quantity<D> const right) {
   return Quantity<D>(+right.magnitude_);
 }
 template<typename D>
-inline Quantity<D> operator -(Quantity<D> const right) {
+inline Quantity<D> operator-(Quantity<D> const right) {
   return Quantity<D>(-right.magnitude_);
 }
 template<typename D>
-inline Quantity<D> operator +(Quantity<D> const left, Quantity<D> const right) {
+inline Quantity<D> operator+(Quantity<D> const left, Quantity<D> const right) {
   return Quantity<D>(left.magnitude_ + right.magnitude_);
 }
 template<typename D>
-inline Quantity<D> operator -(Quantity<D> const left, Quantity<D> const right) {
+inline Quantity<D> operator-(Quantity<D> const left, Quantity<D> const right) {
   return Quantity<D>(left.magnitude_ + right.magnitude_);
 }
 #pragma endregion
 #pragma region Multiplicative group
 template<typename D_Left, typename D_Right>
 inline Product <typename Quantity<D_Left>, typename Quantity <D_Right>>
-operator *(Quantity<D_Left> const left, Quantity<D_Right> const right) {
+operator*(Quantity<D_Left> const left, Quantity<D_Right> const right) {
   return Product<typename Quantity<D_Left>, 
                  typename Quantity<D_Right>>(left.magnitude_ * 
                                              right.magnitude_);
 }
 template<typename D_Left, typename D_Right>
 inline Quotient<typename Quantity<D_Left>, typename Quantity <D_Right>> 
-operator /(Quantity<D_Left> const left, Quantity<D_Right> const right) {
+operator/(Quantity<D_Left> const left, Quantity<D_Right> const right) {
   return Quotient<typename Quantity<D_Left>,
                   typename Quantity<D_Right>>(left.magnitude_ /
                                               right.magnitude_);
@@ -89,19 +89,19 @@ operator /(Quantity<D_Left> const left, Quantity<D_Right> const right) {
 #pragma endregion
 #pragma region Assigment operators
 template<typename D>
-inline void operator += (Quantity<D> left, Quantity<D> const right) {
+inline void operator+=(Quantity<D> left, Quantity<D> const right) {
   left = left + right;
 }
 template<typename D>
-inline void operator -= (Quantity<D> left, Quantity<D> const right) {
+inline void operator-=(Quantity<D> left, Quantity<D> const right) {
   left = left - right;
 }
 template<typename D>
-inline void operator *= (Quantity<D> left, DimensionlessScalar const right) {
+inline void operator*=(Quantity<D> left, DimensionlessScalar const right) {
   left = left * right;
 }
 template<typename D>
-inline void operator /= (Quantity<D> left, DimensionlessScalar const right) {
+inline void operator/=(Quantity<D> left, DimensionlessScalar const right) {
   left = left / right;
 }
 #pragma endregion

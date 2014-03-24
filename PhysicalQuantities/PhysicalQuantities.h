@@ -42,30 +42,30 @@ public:
   friend Amount              Moles(double const);
   friend LuminousIntensity   Candelas(double const);
   friend Winding             Cycles(double const);
-  template<typename D> friend Quantity<D> operator+ (Quantity<D> const);
-  template<typename D> friend Quantity<D> operator- (Quantity<D> const);
-  template<typename D> friend Quantity<D> operator+ (Quantity<D> const, 
-                                                     Quantity<D> const);
-  template<typename D> friend Quantity<D> operator- (Quantity<D> const, 
-                                                     Quantity<D> const);
+  template<typename D> friend Quantity<D> operator+(Quantity<D> const);
+  template<typename D> friend Quantity<D> operator-(Quantity<D> const);
+  template<typename D> friend Quantity<D> operator+(Quantity<D> const, 
+                                                    Quantity<D> const);
+  template<typename D> friend Quantity<D> operator-(Quantity<D> const, 
+                                                    Quantity<D> const);
   template<typename D_Left, typename D_Right>
   friend Product<typename Quantity<D_Left>, typename Quantity <D_Right>> 
-    operator *(Quantity<D_Left> const, Quantity<D_Right> const);
+    operator*(Quantity<D_Left> const, Quantity<D_Right> const);
   template<typename D_Left, typename D_Right>
   friend Quotient<typename Quantity<D_Left>, typename Quantity <D_Right>> 
-    operator /(Quantity<D_Left> const, Quantity<D_Right> const);
+    operator/(Quantity<D_Left> const, Quantity<D_Right> const);
 private:
   explicit Quantity(double const magnitude) : magnitude_(magnitude) {};
   double   magnitude_;
 };
 template<typename D>
-void operator += (Quantity<D>, Quantity<D> const);
+void operator+=(Quantity<D>, Quantity<D> const);
 template<typename D>
-inline void operator -= (Quantity<D>, Quantity<D> const);
+inline void operator-=(Quantity<D>, Quantity<D> const);
 template<typename D>
-inline void operator *= (Quantity<D>, DimensionlessScalar const);
+inline void operator*=(Quantity<D>, DimensionlessScalar const);
 template<typename D>
-inline void operator /= (Quantity<D>, DimensionlessScalar const);
+inline void operator/=(Quantity<D>, DimensionlessScalar const);
 
 template<typename Q>
 struct Unit {
