@@ -21,6 +21,7 @@ public ref class staticTest {
     v *= 5.2;
     v /= 0.7;
     Dimensionless x = 3.0;
+    Dimensionless xx = 5 * x;
     Momentum p = m * v;
     Mass M = 5.0 * m;
     Energy E = Dimensionless(.5) * m * v * v;

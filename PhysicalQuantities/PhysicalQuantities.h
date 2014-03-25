@@ -49,9 +49,10 @@ class Quantity {
  public:
   Quantity() = default;
   typedef typename D Dimensions;
-  friend Quantity<D> operator*(Dimensionless const& left, Quantity<D> const& right) {
+  friend Quantity<D> operator*(Dimensionless const& left,
+                               Quantity<D> const& right) {
     return Quantity<D>(left.Value() * right.magnitude_);
-  }
+  };
  private:
   explicit Quantity(double const magnitude) : magnitude_(magnitude) {}
   double   magnitude_;
@@ -124,7 +125,7 @@ template<typename Q>
 class Unit {
 public:
   explicit Unit(Q const& value) : value_(value) {};
-  template<typename Q> friend Q operator*(double const, Unit<Q> const&);
+  template<typename Q> friend Q operator*(Dimensionless const&, Unit<Q> const&);
   template<typename Q_Left, typename Q_Right>
   friend Unit<Product<Q_Left, Q_Right>> operator*(Unit<Q_Left> const&,
                                                   Unit<Q_Right> const&);

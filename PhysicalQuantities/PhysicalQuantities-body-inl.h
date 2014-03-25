@@ -78,20 +78,20 @@ inline Quantity<D> operator-(Quantity<D> const& left,
 }
 #pragma endregion
 #pragma region Multiplicative group
-template<typename D_Left, typename D_Right>
-inline Product <typename Quantity<D_Left>, typename Quantity <D_Right>>
-operator*(Quantity<D_Left> const& left,
-          Quantity<D_Right> const& right) {
-  return Product<typename Quantity<D_Left>, 
-                 typename Quantity<D_Right>>(left.magnitude_ * 
+template<typename DLeft, typename DRight>
+inline Product <typename Quantity<DLeft>, typename Quantity <DRight>>
+operator*(Quantity<DLeft> const& left,
+          Quantity<DRight> const& right) {
+  return Product<typename Quantity<DLeft>, 
+                 typename Quantity<DRight>>(left.magnitude_ * 
                                              right.magnitude_);
 }
-template<typename D_Left, typename D_Right>
-inline Quotient<typename Quantity<D_Left>, typename Quantity <D_Right>> 
-operator/(Quantity<D_Left> const& left,
-          Quantity<D_Right> const& right) {
-  return Quotient<typename Quantity<D_Left>,
-                  typename Quantity<D_Right>>(left.magnitude_ /
+template<typename DLeft, typename DRight>
+inline Quotient<typename Quantity<DLeft>, typename Quantity <DRight>> 
+operator/(Quantity<DLeft> const& left,
+          Quantity<DRight> const& right) {
+  return Quotient<typename Quantity<DLeft>,
+                  typename Quantity<DRight>>(left.magnitude_ /
                                               right.magnitude_);
 }
 #pragma endregion
@@ -115,8 +115,8 @@ inline void operator/=(Quantity<D>& left, Dimensionless const& right) {
 #pragma endregion
 #pragma region Operators on units
 template<typename Q>
-inline Q operator*(double const left, Unit<Q> const& right) {
-  return Q(Dimensionless(left) * right.value_);
+inline Q operator*(Dimensionless const& left, Unit<Q> const& right) {
+  return Q(left * right.value_);
 }
 template<typename Q_Left, typename Q_Right>
 inline Unit<Product<Q_Left, Q_Right>> operator*(Unit<Q_Left> const& left,
