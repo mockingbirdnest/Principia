@@ -115,5 +115,6 @@ public:
 private:
   Q const value_;
 };
-#include "PhysicalQuantities-body-inl.h"
 }
+
+#include "PhysicalQuantities.ipp"

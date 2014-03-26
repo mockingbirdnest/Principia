@@ -78,10 +78,10 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Constants.h" />
-    <ClInclude Include="Dimensionless-body-inl.h" />
+    <ClInclude Include="Dimensionless.ipp" />
     <ClInclude Include="Dimensionless.h" />
     <ClInclude Include="NamedQuantities.h" />
-    <ClInclude Include="PhysicalQuantities-body-inl.h" />
+    <ClInclude Include="PhysicalQuantities.ipp" />
     <ClInclude Include="PhysicalQuantities.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="StaticTest.h" />

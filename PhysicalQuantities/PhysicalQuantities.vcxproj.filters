@@ -24,9 +24,6 @@
     <ClInclude Include="resource.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="PhysicalQuantities-body-inl.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="Constants.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -42,7 +39,10 @@
     <ClInclude Include="Dimensionless.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Dimensionless-body-inl.h">
+    <ClInclude Include="Dimensionless.ipp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="PhysicalQuantities.ipp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

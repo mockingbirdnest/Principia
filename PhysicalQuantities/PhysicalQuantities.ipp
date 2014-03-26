@@ -1,6 +1,8 @@
-// PhysicalQuantities-body-inl.h
+// PhysicalQuantities.ipp
 
 #pragma once
+
+namespace PhysicalQuantities {
 
 template<int LengthExponent, int MassExponent, int TimeExponent,
          int CurrentExponent, int TemperatureExponent, int AmountExponent,
@@ -201,3 +203,5 @@ inline Winding Cycles(Dimensionless const& number) { return Winding(number); }
 inline Wrapping Globes(Dimensionless const& number) { return Wrapping(number); };
 // The final semicolon is unneeded, but IntelliSense likes it.
 #pragma endregion
+
+}
