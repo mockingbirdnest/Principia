@@ -78,6 +78,8 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Constants.h" />
+    <ClInclude Include="Dimensionless-body-inl.h" />
+    <ClInclude Include="Dimensionless.h" />
     <ClInclude Include="NamedQuantities.h" />
     <ClInclude Include="PhysicalQuantities-body-inl.h" />
     <ClInclude Include="PhysicalQuantities.h" />

@@ -39,6 +39,12 @@
     <ClInclude Include="SIUnits.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Dimensionless.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Dimensionless-body-inl.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="PhysicalQuantities.cpp">

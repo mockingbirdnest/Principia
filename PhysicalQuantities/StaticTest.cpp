@@ -15,6 +15,9 @@ namespace PhysicalQuantitiesTest {
 public ref class staticTest {
   public:
   double test() {
+    Dimensionless z = 42;
+    Dimensionless y = 75;
+    Dimensionless aoeu = z * y;
     Mass m = 5.0 * Kilogram;
     Speed v = 1.2 * (Metre / Second);
     v += 43 * (Metre / Second);

@@ -2,6 +2,8 @@
 
 #pragma once
 
+#include "Dimensionless.h"
+
 namespace PhysicalQuantities {
 template<int LengthExponent, int MassExponent, int TimeExponent,
          int CurrentExponent, int TemperatureExponent, int AmountExponent,
@@ -11,7 +13,6 @@ struct Dimensions;
 template<typename D> class Quantity;
 typedef Dimensions<0, 0, 0, 0, 0, 0, 0, 0, 0> NoDimensions;
 #pragma region Base quantities
-typedef Quantity<NoDimensions> Dimensionless;
 typedef Quantity<Dimensions<1, 0, 0, 0, 0, 0, 0, 0, 0>> Length;
 typedef Quantity<Dimensions<0, 1, 0, 0, 0, 0, 0, 0, 0>> Mass;
 typedef Quantity<Dimensions<0, 0, 1, 0, 0, 0, 0, 0, 0>> Time;
@@ -32,40 +33,36 @@ template<typename Left, typename Right>
 using Quotient = typename QuotientGenerator<Left, Right>::ResultType;
 template<typename Left, typename Right>
 using Product = typename ProductGenerator<Left, Right>::ResultType;
-template<typename Q> using Inverse = Quotient<Dimensionless, Q>;
 
-Length              Metres(double const);
-Mass                Kilograms(double const);
-Time                Seconds(double const);
-Current             Amperes(double const);
-Temperature         Kelvins(double const);
-Amount              Moles(double const);
-LuminousIntensity   Candelas(double const);
-Winding             Cycles(double const);
-Wrapping            Globes(double const);
+Length            Metres(Dimensionless const);
+Mass              Kilograms(Dimensionless const);
+Time              Seconds(Dimensionless const);
+Current           Amperes(Dimensionless const);
+Temperature       Kelvins(Dimensionless const);
+Amount            Moles(Dimensionless const);
+LuminousIntensity Candelas(Dimensionless const);
+Winding           Cycles(Dimensionless const);
+Wrapping          Globes(Dimensionless const);
 
 template<typename D>
 class Quantity {
  public:
   Quantity() = default;
   typedef typename D Dimensions;
-  friend Quantity<D> operator*(Dimensionless const& left,
-                               Quantity<D> const& right) {
-    return Quantity<D>(left.Value() * right.magnitude_);
-  };
  private:
-  explicit Quantity(double const magnitude) : magnitude_(magnitude) {}
-  double   magnitude_;
+  explicit Quantity(Dimensionless const magnitude) : magnitude_(magnitude) {}
+  Dimensionless magnitude_;
 
-  friend Length            Metres(double const);
-  friend Mass              Kilograms(double const);
-  friend Time              Seconds(double const);
-  friend Current           Amperes(double const);
-  friend Temperature       Kelvins(double const);
-  friend Amount            Moles(double const);
-  friend LuminousIntensity Candelas(double const);
-  friend Winding           Cycles(double const);
-  friend Wrapping          Globes(double const);
+  friend Length            Metres(Dimensionless const);
+  friend Mass              Kilograms(Dimensionless const);
+  friend Time              Seconds(Dimensionless const);
+  friend Current           Amperes(Dimensionless const);
+  friend Temperature       Kelvins(Dimensionless const);
+  friend Amount            Moles(Dimensionless const);
+  friend LuminousIntensity Candelas(Dimensionless const);
+  friend Winding           Cycles(Dimensionless const);
+  friend Wrapping          Globes(Dimensionless const);
+
   template<typename D>
   friend Quantity<D> operator+(Quantity<D> const&);
   template<typename D> 
@@ -82,34 +79,6 @@ class Quantity {
   friend Quotient<typename Quantity<DLeft>,
                   typename Quantity<DRight>> operator/(Quantity<DLeft> const&, 
                                                        Quantity<DRight> const&);
-};
-
-template<>
-class Quantity<NoDimensions> {
-public:
-  typedef NoDimensions Dimensions;
-  Quantity() = delete;
-  Quantity(double const magnitude) : magnitude_(magnitude) {}
-  double Value() const;
-private:
-  double magnitude_;
-
-  template<typename D>
-  friend Quantity<D> operator+(Quantity<D> const&);
-  template<typename D>
-  friend Quantity<D> operator-(Quantity<D> const&);
-  template<typename D>
-  friend Quantity<D> operator+(Quantity<D> const&, Quantity<D> const&);
-  template<typename D>
-  friend Quantity<D> operator-(Quantity<D> const&, Quantity<D> const&);
-  template<typename DLeft, typename DRight>
-  friend Product<typename Quantity<DLeft>,
-    typename Quantity<DRight>> operator*(Quantity<DLeft> const&,
-    Quantity<DRight> const&);
-  template<typename DLeft, typename DRight>
-  friend Quotient<typename Quantity<DLeft>,
-    typename Quantity<DRight>> operator/(Quantity<DLeft> const&,
-    Quantity<DRight> const&);
 };
 
 template<typename D>

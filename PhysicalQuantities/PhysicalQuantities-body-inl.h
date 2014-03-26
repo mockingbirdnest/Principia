@@ -19,6 +19,7 @@ struct Dimensions {
     Wrapping          = WrappingExponent
   };
 };
+
 #pragma region Type generators
 template<typename Left, typename Right>
 struct ProductGenerator {
