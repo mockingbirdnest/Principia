@@ -29,25 +29,25 @@ inline Dimensionless operator/(Dimensionless const& left,
 inline void operator+=(Dimensionless& left, Dimensionless const& right) {
   left = left + right;
 }
-void operator-=(Dimensionless& left, Dimensionless const& right) {
+inline void operator-=(Dimensionless& left, Dimensionless const& right) {
   left = left - right;
 }
-void operator*=(Dimensionless& left, Dimensionless const& right) {
+inline void operator*=(Dimensionless& left, Dimensionless const& right) {
   left = left * right;
 }
-void operator/=(Dimensionless& left, Dimensionless const& right) {
+inline void operator/=(Dimensionless& left, Dimensionless const& right) {
   left = left / right;
 }
 
-bool operator>(Dimensionless const& left, Dimensionless const& right) {
-  return left > right;
+inline bool operator>(Dimensionless const& left, Dimensionless const& right) {
+  return left.Value() > right.Value();
 }
-bool operator<(Dimensionless const& left, Dimensionless const& right) {
-  return left < right;
+inline bool operator<(Dimensionless const& left, Dimensionless const& right) {
+  return left.Value() < right.Value();
 }
-bool operator>=(Dimensionless const& left, Dimensionless const& right) {
-  return left >= right;
+inline bool operator>=(Dimensionless const& left, Dimensionless const& right) {
+  return left.Value() >= right.Value();
 }
-bool operator<=(Dimensionless const& left, Dimensionless const& right) {
-  return left <= right;
+inline bool operator<=(Dimensionless const& left, Dimensionless const& right) {
+  return left.Value() <= right.Value();
 }

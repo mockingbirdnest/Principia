@@ -33,8 +33,8 @@ template<typename Left, typename Right>
 using Quotient = typename QuotientGenerator<Left, Right>::ResultType;
 template<typename Left, typename Right>
 using Product = typename ProductGenerator<Left, Right>::ResultType;
-template<typename Q>
-using Inverse = typename
+template<typename Right>
+using Inverse = Quotient<Dimensionless, Right>;
 
 Length            Metres(Dimensionless const&);
 Mass              Kilograms(Dimensionless const&);
@@ -85,8 +85,11 @@ class Quantity {
   friend Quantity<D> operator*(Quantity<D> const&, Dimensionless const&);
   template<typename D>
   friend Quantity<D> operator*(Dimensionless const&, Quantity<D> const&);
+  template<typename D>
   friend Quantity<D> operator/(Quantity<D> const&, Dimensionless const&);
-  friend Quantity<D> operator/(Dimensionless const&, Quantity<D> const&);
+  template<typename D>
+  friend Inverse<Quantity<D>> operator/(Dimensionless const&,
+                                        Quantity<D> const&);
 };
 
 template<typename D>

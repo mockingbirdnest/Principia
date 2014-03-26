@@ -21,6 +21,10 @@ struct Dimensions {
 };
 
 #pragma region Type generators
+template<typename Q>
+struct Collapse { typedef Q ResultType; };
+template<>
+struct Collapse<Quantity<NoDimensions>> { typedef Dimensionless ResultType; };
 template<typename Left, typename Right>
 struct ProductGenerator {
   enum {
@@ -36,8 +40,9 @@ struct ProductGenerator {
     Winding           = Left::Dimensions::Winding + Right::Dimensions::Winding,
     Wrapping          = Left::Dimensions::Wrapping + Right::Dimensions::Wrapping
   };
-  typedef Quantity<Dimensions<Length, Mass, Time, Current, Temperature, Amount,
-                              LuminousIntensity, Winding, Wrapping>> ResultType;
+  typedef typename Collapse<Quantity<Dimensions<Length, Mass, Time, Current, Temperature,
+                                       Amount, LuminousIntensity, Winding,
+                                       Wrapping>>>::ResultType ResultType;
 };
 template<typename Left>
 struct ProductGenerator<Left, Dimensionless> { typedef Left ResultType; };
@@ -62,8 +67,9 @@ struct QuotientGenerator {
     Winding           = Left::Dimensions::Winding - Right::Dimensions::Winding,
     Wrapping          = Left::Dimensions::Wrapping - Right::Dimensions::Wrapping
   };
-  typedef Quantity<Dimensions<Length, Mass, Time, Current, Temperature, Amount,
-                              LuminousIntensity, Winding, Wrapping>> ResultType;
+  typedef typename Collapse<Quantity<Dimensions<Length, Mass, Time, Current, Temperature,
+                                       Amount, LuminousIntensity, Winding,
+                                       Wrapping >> >::ResultType ResultType;
 };
 template<typename Left>
 struct QuotientGenerator<Left, Dimensionless> { typedef Left ResultType; };
@@ -85,7 +91,7 @@ struct QuotientGenerator<Dimensionless, Right> {
     Wrapping          = -Right::Dimensions::Wrapping
   };
   typedef Quantity<Dimensions<Length, Mass, Time, Current, Temperature, Amount,
-    LuminousIntensity, Winding, Wrapping >> ResultType;
+                              LuminousIntensity, Winding, Wrapping>> ResultType;
 };
 
 #pragma endregion

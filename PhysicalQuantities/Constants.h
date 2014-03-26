@@ -9,8 +9,7 @@
 namespace PhysicalQuantities {
 Speed const SpeedOfLight = 299792458 * (Metre / Second);
 Permeability const MagneticConstant = 4e-7 * π * (Henry / Metre);
-Permittivity const ElectricConstant = 
-  Dimensionless(1) / (MagneticConstant * SpeedOfLight * SpeedOfLight);
+Permittivity const ElectricConstant = 1 / (MagneticConstant * SpeedOfLight * SpeedOfLight);
 // We use the 2010 CODATA recommended values. We do not support uncertainties.
 Action const ReducedPlanckConstant = 1.054571726e-34 * (Joule * Second);
 auto const GravitationalConstant = 
