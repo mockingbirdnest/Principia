@@ -35,7 +35,7 @@ public ref class staticTest {
     Volume V = 5 * (Metre * Metre * Metre) + 2 * Litre;
     Temperature T = 3 * Kelvin;
     Pressure P = N * BoltzmannConstant * T / V;
-    MomentOfInertia I = (1 * (Metre * Metre)) * (4 * Kilogram);
+    MomentOfInertia I = 1 * Metre * Metre * 4 * Kilogram / (Radian * Radian);
     AngularMomentum L = I * (4 * (Radian / Second));
     return (m / (1 * Kilogram) + E / (1 * Joule) + P / (1 * Pascal)).Value()
       + numberOfKelvins;

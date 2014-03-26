@@ -102,21 +102,6 @@ template<typename D>
 inline void operator*=(Quantity<D>&, Dimensionless const&);
 template<typename D>
 inline void operator/=(Quantity<D>&, Dimensionless const&);
-
-template<typename Q>
-class Unit {
-public:
-  explicit Unit(Q const& value) : value_(value) {};
-  template<typename Q> friend Q operator*(Dimensionless const&, Unit<Q> const&);
-  template<typename Q_Left, typename Q_Right>
-  friend Unit<Product<Q_Left, Q_Right>> operator*(Unit<Q_Left> const&,
-                                                  Unit<Q_Right> const&);
-  template<typename Q_Left, typename Q_Right>
-  friend Unit<Quotient<Q_Left, Q_Right>> operator/(Unit<Q_Left> const&,
-                                                   Unit<Q_Right> const&);
-private:
-  Q const value_;
-};
 }
 
 #include "PhysicalQuantities.ipp"

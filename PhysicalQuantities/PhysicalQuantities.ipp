@@ -182,22 +182,6 @@ inline void operator/=(Quantity<D>& left, Dimensionless const& right) {
   left = left / right;
 }
 #pragma endregion
-#pragma region Operators on units
-template<typename Q>
-inline Q operator*(Dimensionless const& left, Unit<Q> const& right) {
-  return Q(left * right.value_);
-}
-template<typename Q_Left, typename Q_Right>
-inline Unit<Product<Q_Left, Q_Right>> operator*(Unit<Q_Left> const& left,
-                                                Unit<Q_Right> const& right) {
-  return Unit<Product<Q_Left, Q_Right>>(left.value_ * right.value_);
-}
-template<typename Q_Left, typename Q_Right>
-inline Unit<Quotient<Q_Left, Q_Right>> operator/(Unit<Q_Left> const& left, 
-                                                 Unit<Q_Right> const& right) {
-  return Unit<Quotient<Q_Left, Q_Right>>(left.value_ / right.value_);
-}
-#pragma endregion
 #pragma region Base quantities
 inline Length Metres(Dimensionless const& number) { return Length(number); }
 inline Mass Kilograms(Dimensionless const& number) { return Mass(number); }

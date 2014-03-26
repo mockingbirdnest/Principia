@@ -6,22 +6,20 @@
 
 namespace PhysicalQuantities {
 #pragma region General mechanics
-#pragma region Linear motion
 typedef Quotient<Length, Time>   Speed;
 typedef Quotient<Speed, Time>    Acceleration;
 typedef Product<Mass, Speed>     Momentum;
 typedef Quotient<Momentum, Time> Force;
-#pragma endregion
-#pragma region Rotational motion
-typedef Quotient<Angle, Time>                 AngularFrequency;
-typedef Quotient<AngularFrequency, Time>      AngularAcceleration;
-typedef Product<Length, Momentum>             AngularMomentum;
-typedef Quotient<AngularMomentum, Time>       Torque;
-typedef Quotient<Torque, AngularAcceleration> MomentOfInertia;
-#pragma endregion
+
 typedef Product<Force, Length> Energy;
 typedef Quotient<Energy, Time> Power;
 typedef Product<Energy, Time>  Action;
+
+typedef Quotient<Angle, Time>                 AngularFrequency;
+typedef Quotient<AngularFrequency, Time>      AngularAcceleration;
+typedef Quotient<Action, Angle>               AngularMomentum;
+typedef Quotient<AngularMomentum, Time>       Torque;
+typedef Quotient<Torque, AngularAcceleration> MomentOfInertia;
 #pragma endregion
 #pragma region Thermodynamics
 typedef Product<Length, Length>       Area;
