@@ -1,10 +1,6 @@
-// Dimensionless.cpp
+// Dimensionless-body-inl.h
 
-#include "stdafx.h"
-
-#include "Dimensionless.h"
-
-namespace PhysicalQuantities {
+#pragma once
 
 inline Dimensionless::Dimensionless(double value) : value_(value) {}
 inline double Dimensionless::Value() const { return value_; }
@@ -54,6 +50,4 @@ inline bool operator>=(Dimensionless const& left, Dimensionless const& right) {
 }
 inline bool operator<=(Dimensionless const& left, Dimensionless const& right) {
   return left.Value() <= right.Value();
-}
-
 }
