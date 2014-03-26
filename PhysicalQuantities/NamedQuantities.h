@@ -5,12 +5,6 @@
 #include "PhysicalQuantities.h"
 
 namespace PhysicalQuantities {
-#pragma region Dimensionless quantities
-// There is no good way of strongly typing angles vs. dimensionless scalars
-// because angles *are* dimensionless scalars. These are just convenient names.
-typedef Dimensionless Angle;
-typedef Dimensionless SolidAngle;
-#pragma endregion
 #pragma region General mechanics
 #pragma region Linear motion
 typedef Quotient<Length, Time>   Speed;
@@ -69,17 +63,17 @@ typedef Quotient<Capacitance, Length>   Permittivity;
 #pragma region Radiometry
 typedef Quotient<Power, SolidAngle>      RadiantIntensity;
 typedef Quotient<RadiantIntensity, Area> Radiance;
-typedef Quotient<Power, Wrapping>        RadiantFlux;
+typedef Power                            RadiantFlux;
 typedef Product<RadiantFlux, Time>       RadiantEnergy;
 typedef Quotient<RadiantFlux, Area>      Irradiance;
 typedef Product<Irradiance, Time>        RadiantExposure;
 #pragma endregion
 #pragma region Photometry
-typedef Quotient<LuminousIntensity, Area>     Luminance;
-typedef Quotient<LuminousIntensity, Wrapping> LuminousFlux;
-typedef Product<LuminousFlux, Time>           LuminousEnergy;
-typedef Quotient<LuminousFlux, Area>          Illuminance;
-typedef Product<Illuminance, Time>            LuminousExposure;
-typedef Quotient<LuminousFlux, RadiantFlux>   LuminousEfficacy;
+typedef Quotient<LuminousIntensity, Area>      Luminance;
+typedef Product<LuminousIntensity, SolidAngle> LuminousFlux;
+typedef Product<LuminousFlux, Time>            LuminousEnergy;
+typedef Quotient<LuminousFlux, Area>           Illuminance;
+typedef Product<Illuminance, Time>             LuminousExposure;
+typedef Quotient<LuminousFlux, RadiantFlux>    LuminousEfficacy;
 #pragma endregion
 }

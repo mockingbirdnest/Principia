@@ -8,24 +8,24 @@ namespace PhysicalQuantities {
 template<int LengthExponent, int MassExponent, int TimeExponent,
          int CurrentExponent, int TemperatureExponent, int AmountExponent,
          int LuminousIntensityExponent, int WindingExponent,
-         int WrappingExponent>
+         int AngleExponent, int SolidAngleExponent>
 struct Dimensions;
 template<typename D> class Quantity;
-typedef Dimensions<0, 0, 0, 0, 0, 0, 0, 0, 0> NoDimensions;
+typedef Dimensions<0, 0, 0, 0, 0, 0, 0, 0, 0, 0> NoDimensions;
 #pragma region Base quantities
-typedef Quantity<Dimensions<1, 0, 0, 0, 0, 0, 0, 0, 0>> Length;
-typedef Quantity<Dimensions<0, 1, 0, 0, 0, 0, 0, 0, 0>> Mass;
-typedef Quantity<Dimensions<0, 0, 1, 0, 0, 0, 0, 0, 0>> Time;
-typedef Quantity<Dimensions<0, 0, 0, 1, 0, 0, 0, 0, 0>> Current;
-typedef Quantity<Dimensions<0, 0, 0, 0, 1, 0, 0, 0, 0>> Temperature;
-typedef Quantity<Dimensions<0, 0, 0, 0, 0, 1, 0, 0, 0>> Amount;
-typedef Quantity<Dimensions<0, 0, 0, 0, 0, 0, 1, 0, 0>> LuminousIntensity;
+typedef Quantity<Dimensions<1, 0, 0, 0, 0, 0, 0, 0, 0, 0>> Length;
+typedef Quantity<Dimensions<0, 1, 0, 0, 0, 0, 0, 0, 0, 0>> Mass;
+typedef Quantity<Dimensions<0, 0, 1, 0, 0, 0, 0, 0, 0, 0>> Time;
+typedef Quantity<Dimensions<0, 0, 0, 1, 0, 0, 0, 0, 0, 0>> Current;
+typedef Quantity<Dimensions<0, 0, 0, 0, 1, 0, 0, 0, 0, 0>> Temperature;
+typedef Quantity<Dimensions<0, 0, 0, 0, 0, 1, 0, 0, 0, 0>> Amount;
+typedef Quantity<Dimensions<0, 0, 0, 0, 0, 0, 1, 0, 0, 0>> LuminousIntensity;
 // Nonstandard; winding is a dimensionless quantity counting cycles, in order to
-// strongly type the distinction between Hz = cycle/s and rad/s; wrapping is a
-// quantity counting globes, in order to strongly type the distinction between
-// 1 lm = 1 cd*sr/globe = 1 cd/globe and 1 cd (or between 1 W/globe and 1 W/sr).
-typedef Quantity<Dimensions<0, 0, 0, 0, 0, 0, 0, 1, 0>> Winding;
-typedef Quantity<Dimensions<0, 0, 0, 0, 0, 0, 0, 0, 1>> Wrapping;
+// strongly type the distinction between Frequency = Winding/Time and 
+// AngularFrequency = Angle/Time. We also strongly type angles.
+typedef Quantity<Dimensions<0, 0, 0, 0, 0, 0, 0, 1, 0, 0>> Winding;
+typedef Quantity<Dimensions<0, 0, 0, 0, 0, 0, 0, 0, 1, 0>> Angle;
+typedef Quantity<Dimensions<0, 0, 0, 0, 0, 0, 0, 0, 0, 1>> SolidAngle;
 #pragma endregion
 template<typename Left, typename Right> struct ProductGenerator;
 template<typename Left, typename Right> struct QuotientGenerator;
@@ -44,7 +44,8 @@ Temperature       Kelvins(Dimensionless const&);
 Amount            Moles(Dimensionless const&);
 LuminousIntensity Candelas(Dimensionless const&);
 Winding           Cycles(Dimensionless const&);
-Wrapping          Globes(Dimensionless const&);
+Angle             Radians(Dimensionless const&);
+SolidAngle        Steradians(Dimensionless const&);
 
 template<typename D>
 class Quantity {
@@ -63,7 +64,8 @@ class Quantity {
   friend Amount            Moles(Dimensionless const&);
   friend LuminousIntensity Candelas(Dimensionless const&);
   friend Winding           Cycles(Dimensionless const&);
-  friend Wrapping          Globes(Dimensionless const&);
+  friend Angle             Radians(Dimensionless const&);
+  friend SolidAngle        Steradians(Dimensionless const&);
 
   template<typename D>
   friend Quantity<D> operator+(Quantity<D> const&);

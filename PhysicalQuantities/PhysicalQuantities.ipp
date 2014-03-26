@@ -7,7 +7,7 @@ namespace PhysicalQuantities {
 template<int LengthExponent, int MassExponent, int TimeExponent,
          int CurrentExponent, int TemperatureExponent, int AmountExponent,
          int LuminousIntensityExponent, int WindingExponent,
-         int WrappingExponent>
+         int AngleExponent, int SolidAngleExponent>
 struct Dimensions {
   enum {
     Length            = LengthExponent,
@@ -18,7 +18,8 @@ struct Dimensions {
     Amount            = AmountExponent,
     LuminousIntensity = LuminousIntensityExponent,
     Winding           = WindingExponent,
-    Wrapping          = WrappingExponent
+    Angle             = AngleExponent,
+    SolidAngle        = SolidAngleExponent
   };
 };
 
@@ -40,11 +41,14 @@ struct ProductGenerator {
     LuminousIntensity = Left::Dimensions::LuminousIntensity +
                         Right:: Dimensions::LuminousIntensity,
     Winding           = Left::Dimensions::Winding + Right::Dimensions::Winding,
-    Wrapping          = Left::Dimensions::Wrapping + Right::Dimensions::Wrapping
+    Angle             = Left::Dimensions::Angle + Right::Dimensions::Angle,
+    SolidAngle        = Left::Dimensions::SolidAngle +
+                        Right::Dimensions::SolidAngle
   };
-  typedef typename Collapse<Quantity<Dimensions<Length, Mass, Time, Current, Temperature,
-                                       Amount, LuminousIntensity, Winding,
-                                       Wrapping>>>::ResultType ResultType;
+  typedef typename Collapse<
+      Quantity<Dimensions<Length, Mass, Time, Current, Temperature, Amount,
+                          LuminousIntensity, Winding, Angle,
+                          SolidAngle>>>::ResultType ResultType;
 };
 template<typename Left>
 struct ProductGenerator<Left, Dimensionless> { typedef Left ResultType; };
@@ -67,11 +71,14 @@ struct QuotientGenerator {
     LuminousIntensity = Left::Dimensions::LuminousIntensity -
                         Right:: Dimensions::LuminousIntensity,
     Winding           = Left::Dimensions::Winding - Right::Dimensions::Winding,
-    Wrapping          = Left::Dimensions::Wrapping - Right::Dimensions::Wrapping
+    Angle             = Left::Dimensions::Angle - Right::Dimensions::Angle,
+    SolidAngle        = Left::Dimensions::SolidAngle -
+                        Right::Dimensions::SolidAngle
   };
-  typedef typename Collapse<Quantity<Dimensions<Length, Mass, Time, Current, Temperature,
-                                       Amount, LuminousIntensity, Winding,
-                                       Wrapping >> >::ResultType ResultType;
+  typedef typename Collapse<
+      Quantity<Dimensions<Length, Mass, Time, Current, Temperature, Amount,
+                          LuminousIntensity, Winding, Angle,
+                          SolidAngle>>>::ResultType ResultType;
 };
 template<typename Left>
 struct QuotientGenerator<Left, Dimensionless> { typedef Left ResultType; };
@@ -90,10 +97,12 @@ struct QuotientGenerator<Dimensionless, Right> {
     Amount            = -Right::Dimensions::Amount,
     LuminousIntensity = -Right::Dimensions::LuminousIntensity,
     Winding           = -Right::Dimensions::Winding,
-    Wrapping          = -Right::Dimensions::Wrapping
+    Angle             = -Right::Dimensions::Angle,
+    SolidAngle        = -Right::Dimensions::SolidAngle
   };
-  typedef Quantity<Dimensions<Length, Mass, Time, Current, Temperature, Amount,
-                              LuminousIntensity, Winding, Wrapping>> ResultType;
+  typedef Quantity<
+      Dimensions<Length, Mass, Time, Current, Temperature, Amount,
+                 LuminousIntensity, Winding, Angle, SolidAngle>> ResultType;
 };
 
 #pragma endregion
@@ -200,8 +209,10 @@ inline LuminousIntensity Candelas(Dimensionless const& number) {
  return LuminousIntensity(number);
 }
 inline Winding Cycles(Dimensionless const& number) { return Winding(number); }
-inline Wrapping Globes(Dimensionless const& number) { return Wrapping(number); };
-// The final semicolon is unneeded, but IntelliSense likes it.
+inline Angle Radians(Dimensionless const& number) { return Angle(number); }
+inline SolidAngle Steradians(Dimensionless const& number) { 
+  return SolidAngle(number);
+}
 #pragma endregion
 
 }

@@ -9,16 +9,19 @@ namespace PhysicalQuantities {
 #pragma region SI base units
 // From the BIPM's SI brochure 8, section 2.1.2, table 1,
 // http://www.bipm.org/en/si/si_brochure/chapter2/2-1/.
-Unit<Length>            const Metre    = Unit<Length>(Metres(1));
-Unit<Mass>              const Kilogram = Unit<Mass>(Kilograms(1));
-Unit<Time>              const Second   = Unit<Time>(Seconds(1));
-Unit<Current>           const Ampere   = Unit<Current>(Amperes(1));
-Unit<Temperature>       const Kelvin   = Unit<Temperature>(Kelvins(1));
-Unit<Amount>            const Mole     = Unit<Amount>(Moles(1));
-Unit<LuminousIntensity> const Candela  = Unit<LuminousIntensity>(Candelas(1));
+Unit<Length>            const Metre     = Unit<Length>(Metres(1));
+Unit<Mass>              const Kilogram  = Unit<Mass>(Kilograms(1));
+Unit<Time>              const Second    = Unit<Time>(Seconds(1));
+Unit<Current>           const Ampere    = Unit<Current>(Amperes(1));
+Unit<Temperature>       const Kelvin    = Unit<Temperature>(Kelvins(1));
+Unit<Amount>            const Mole      = Unit<Amount>(Moles(1));
+Unit<LuminousIntensity> const Candela   = Unit<LuminousIntensity>(Candelas(1));
 // Nonstandard.
-Unit<Winding>           const Cycle    = Unit<Winding>(Cycles(1));
-Unit<Wrapping>          const Globe    = Unit<Wrapping>(Globes(1));
+Unit<Winding>           const Cycle     = Unit<Winding>(Cycles(1));
+// Not base units in the SI. We make these quantities rather than units as they
+// are natural.
+Angle                   const Radian    = Radians(1);
+SolidAngle              const Steradian = Steradians(1);
 #pragma endregion
 #pragma region Coherent derived units in the SI with special names and symbols
 // From the BIPM's SI brochure 8, section 2.2.2, table 3,
@@ -28,14 +31,10 @@ Unit<Wrapping>          const Globe    = Unit<Wrapping>(Globes(1));
 // care of here.
 // Note the nonstandard definition of the Hertz, with a dimensionful cycle.
 
-// The uno was proposed but never accepted. We use it because it is better than 
-// writing radians / mole.
+// The uno was proposed but never accepted. We use it because uno/mol is better 
+// than writing rad/mol and allowing 1/mol is complicated.
 Unit<Dimensionless> const Uno =
   Unit<Dimensionless>(Dimensionless(1));
-// The radian and steradian are mostly useless, but we keep them in case their
-// can improve readability.
-Unit<Angle>      const Radian    = Unit<Angle>(Dimensionless(1));
-Unit<SolidAngle> const Steradian = Unit<SolidAngle>(Dimensionless(1));
 // Dimensionful units.
 Unit<Frequency>           const Hertz   = Cycle / Second;
 Unit<Force>               const Newton  = Metre * Kilogram / (Second * Second);
@@ -50,7 +49,7 @@ Unit<Conductance>         const Siemens = Ampere / Volt;
 Unit<MagneticFlux>        const Weber   = Volt * Second;
 Unit<MagneticFluxDensity> const Tesla   = Weber / (Metre * Metre);
 Unit<Inductance>          const Henry   = Weber / Ampere;
-Unit<LuminousFlux>        const Lumen   = Candela / Globe;
+Unit<LuminousFlux>        const Lumen   = Candela * Steradian;
 Unit<CatalyticActivity>   const Katal   = Mole / Second;
 #pragma endregion
 #pragma region Non-SI units accepted for use with the SI
