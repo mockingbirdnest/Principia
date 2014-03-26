@@ -15,7 +15,7 @@ inline Dimensionless operator+(Dimensionless const& left,
 }
 inline Dimensionless operator-(Dimensionless const& left,
                                Dimensionless const& right) {
-  return left.Value() - right.Value;
+  return left.Value() - right.Value();
 }
 inline Dimensionless operator*(Dimensionless const& left,
                                Dimensionless const& right) {
@@ -32,10 +32,10 @@ inline void operator+=(Dimensionless& left, Dimensionless const& right) {
 void operator-=(Dimensionless& left, Dimensionless const& right) {
   left = left - right;
 }
-void operator*=(Dimensionless&, Dimensionless const&) {
+void operator*=(Dimensionless& left, Dimensionless const& right) {
   left = left * right;
 }
-void operator/=(Dimensionless&, Dimensionless const&) {
+void operator/=(Dimensionless& left, Dimensionless const& right) {
   left = left / right;
 }
 

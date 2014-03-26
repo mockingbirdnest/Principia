@@ -39,6 +39,14 @@ struct ProductGenerator {
   typedef Quantity<Dimensions<Length, Mass, Time, Current, Temperature, Amount,
                               LuminousIntensity, Winding, Wrapping>> ResultType;
 };
+template<typename Left>
+struct ProductGenerator<Left, Dimensionless> { typedef Left ResultType; };
+template<typename Right>
+struct ProductGenerator<Dimensionless, Right> { typedef Right ResultType; };
+template<>
+struct ProductGenerator<Dimensionless, Dimensionless> {
+ typedef Dimensionless ResultType;
+};
 template<typename Left, typename Right>
 struct QuotientGenerator {
   enum {
@@ -57,6 +65,29 @@ struct QuotientGenerator {
   typedef Quantity<Dimensions<Length, Mass, Time, Current, Temperature, Amount,
                               LuminousIntensity, Winding, Wrapping>> ResultType;
 };
+template<typename Left>
+struct QuotientGenerator<Left, Dimensionless> { typedef Left ResultType; };
+template<>
+struct QuotientGenerator<Dimensionless, Dimensionless> {
+  typedef Dimensionless ResultType;
+};
+template<typename Right>
+struct QuotientGenerator<Dimensionless, Right> {
+  enum {
+    Length            = -Right::Dimensions::Length,
+    Mass              = -Right::Dimensions::Mass,
+    Time              = -Right::Dimensions::Time,
+    Current           = -Right::Dimensions::Current,
+    Temperature       = -Right::Dimensions::Temperature,
+    Amount            = -Right::Dimensions::Amount,
+    LuminousIntensity = -Right::Dimensions::LuminousIntensity,
+    Winding           = -Right::Dimensions::Winding,
+    Wrapping          = -Right::Dimensions::Wrapping
+  };
+  typedef Quantity<Dimensions<Length, Mass, Time, Current, Temperature, Amount,
+    LuminousIntensity, Winding, Wrapping >> ResultType;
+};
+
 #pragma endregion
 #pragma region Additive group
 template<typename D>
@@ -131,20 +162,16 @@ inline Unit<Quotient<Q_Left, Q_Right>> operator/(Unit<Q_Left> const& left,
 }
 #pragma endregion
 #pragma region Base quantities
-// Quantity<NoDimensions>::Quantity(double const magnitude) : magnitude_(magnitude) {};
-inline double Dimensionless::Value() const {
-  return magnitude_;
-}
-inline Length Metres(double const number) { return Length(number); }
-inline Mass Kilograms(double const number) { return Mass(number); }
-inline Time Seconds(double const number) { return Time(number); }
-inline Current Amperes(double const number) { return Current(number); }
-inline Temperature Kelvins(double const number) { return Temperature(number); }
-inline Amount Moles(double const number) { return Amount(number); }
-inline LuminousIntensity Candelas(double const number) {
+inline Length Metres(Dimensionless const& number) { return Length(number); }
+inline Mass Kilograms(Dimensionless const& number) { return Mass(number); }
+inline Time Seconds(Dimensionless const& number) { return Time(number); }
+inline Current Amperes(Dimensionless const& number) { return Current(number); }
+inline Temperature Kelvins(Dimensionless const& number) { return Temperature(number); }
+inline Amount Moles(Dimensionless const& number) { return Amount(number); }
+inline LuminousIntensity Candelas(Dimensionless const& number) {
  return LuminousIntensity(number);
 }
-inline Winding Cycles(double const number) { return Winding(number); }
-inline Wrapping Globes(double const number) { return Wrapping(number); };
+inline Winding Cycles(Dimensionless const& number) { return Winding(number); }
+inline Wrapping Globes(Dimensionless const& number) { return Wrapping(number); };
 // The final semicolon is unneeded, but IntelliSense likes it.
 #pragma endregion

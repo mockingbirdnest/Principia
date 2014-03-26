@@ -33,16 +33,18 @@ template<typename Left, typename Right>
 using Quotient = typename QuotientGenerator<Left, Right>::ResultType;
 template<typename Left, typename Right>
 using Product = typename ProductGenerator<Left, Right>::ResultType;
+template<typename Q>
+using Inverse = typename
 
-Length            Metres(Dimensionless const);
-Mass              Kilograms(Dimensionless const);
-Time              Seconds(Dimensionless const);
-Current           Amperes(Dimensionless const);
-Temperature       Kelvins(Dimensionless const);
-Amount            Moles(Dimensionless const);
-LuminousIntensity Candelas(Dimensionless const);
-Winding           Cycles(Dimensionless const);
-Wrapping          Globes(Dimensionless const);
+Length            Metres(Dimensionless const&);
+Mass              Kilograms(Dimensionless const&);
+Time              Seconds(Dimensionless const&);
+Current           Amperes(Dimensionless const&);
+Temperature       Kelvins(Dimensionless const&);
+Amount            Moles(Dimensionless const&);
+LuminousIntensity Candelas(Dimensionless const&);
+Winding           Cycles(Dimensionless const&);
+Wrapping          Globes(Dimensionless const&);
 
 template<typename D>
 class Quantity {
@@ -53,15 +55,15 @@ class Quantity {
   explicit Quantity(Dimensionless const magnitude) : magnitude_(magnitude) {}
   Dimensionless magnitude_;
 
-  friend Length            Metres(Dimensionless const);
-  friend Mass              Kilograms(Dimensionless const);
-  friend Time              Seconds(Dimensionless const);
-  friend Current           Amperes(Dimensionless const);
-  friend Temperature       Kelvins(Dimensionless const);
-  friend Amount            Moles(Dimensionless const);
-  friend LuminousIntensity Candelas(Dimensionless const);
-  friend Winding           Cycles(Dimensionless const);
-  friend Wrapping          Globes(Dimensionless const);
+  friend Length            Metres(Dimensionless const&);
+  friend Mass              Kilograms(Dimensionless const&);
+  friend Time              Seconds(Dimensionless const&);
+  friend Current           Amperes(Dimensionless const&);
+  friend Temperature       Kelvins(Dimensionless const&);
+  friend Amount            Moles(Dimensionless const&);
+  friend LuminousIntensity Candelas(Dimensionless const&);
+  friend Winding           Cycles(Dimensionless const&);
+  friend Wrapping          Globes(Dimensionless const&);
 
   template<typename D>
   friend Quantity<D> operator+(Quantity<D> const&);
@@ -79,6 +81,12 @@ class Quantity {
   friend Quotient<typename Quantity<DLeft>,
                   typename Quantity<DRight>> operator/(Quantity<DLeft> const&, 
                                                        Quantity<DRight> const&);
+  template<typename D>
+  friend Quantity<D> operator*(Quantity<D> const&, Dimensionless const&);
+  template<typename D>
+  friend Quantity<D> operator*(Dimensionless const&, Quantity<D> const&);
+  friend Quantity<D> operator/(Quantity<D> const&, Dimensionless const&);
+  friend Quantity<D> operator/(Dimensionless const&, Quantity<D> const&);
 };
 
 template<typename D>
