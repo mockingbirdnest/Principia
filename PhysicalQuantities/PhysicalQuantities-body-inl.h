@@ -132,6 +132,26 @@ operator/(Quantity<DLeft> const& left,
                   typename Quantity<DRight>>(left.magnitude_ /
                                               right.magnitude_);
 }
+template<typename D>
+inline Quantity<D> operator*(Quantity<D> const& left, 
+                             Dimensionless const& right) {
+  return Quantity<D>(left.magnitude_ * right);
+}
+template<typename D>
+inline Quantity<D> operator*(Dimensionless const& left, 
+                             Quantity<D> const& right) {
+  return Quantity<D>(left * right.magnitude_);
+}
+template<typename D>
+inline Quantity<D> operator/(Quantity<D> const& left,
+                             Dimensionless const& right) {
+  return Quantity<D>(left.magnitude_ / right);
+}
+template<typename D>
+inline Inverse<Quantity<D>> operator/(Dimensionless const& left,
+                                      Quantity<D> const& right) {
+  return Inverse<Quantity<D>>(left / right.magnitude_);
+}
 #pragma endregion
 #pragma region Assigment operators
 template<typename D>
