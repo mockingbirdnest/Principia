@@ -28,6 +28,4 @@ bool operator>(Dimensionless const&, Dimensionless const&);
 bool operator<(Dimensionless const&, Dimensionless const&);
 bool operator>=(Dimensionless const&, Dimensionless const&);
 bool operator<=(Dimensionless const&, Dimensionless const&);
-
-#include "Dimensionless-body-inl.h"
 }

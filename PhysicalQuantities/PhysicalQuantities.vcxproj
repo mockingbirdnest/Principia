@@ -78,7 +78,6 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Constants.h" />
-    <ClInclude Include="Dimensionless-body-inl.h" />
     <ClInclude Include="Dimensionless.h" />
     <ClInclude Include="NamedQuantities.h" />
     <ClInclude Include="PhysicalQuantities-body-inl.h" />
@@ -90,6 +89,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="AssemblyInfo.cpp" />
+    <ClCompile Include="Dimensionless.cpp" />
     <ClCompile Include="PhysicalQuantities.cpp" />
     <ClCompile Include="StaticTest.cpp" />
     <ClCompile Include="Stdafx.cpp">
