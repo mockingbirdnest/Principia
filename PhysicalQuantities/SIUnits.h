@@ -16,6 +16,21 @@ template<D> Quantity<D> Tera(Quantity<D>);
 template<D> Quantity<D> Giga(Quantity<D>);
 template<D> Quantity<D> Mega(Quantity<D>);
 template<D> Quantity<D> Kilo(Quantity<D>);
+
+template<D> Quantity<D> Hecto(Quantity<D>);
+template<D> Quantity<D> Deca(Quantity<D>);
+
+template<D> Quantity<D> Deci(Quantity<D>);
+template<D> Quantity<D> Centi(Quantity<D>);
+
+template<D> Quantity<D> Milli(Quantity<D>);
+template<D> Quantity<D> Micro(Quantity<D>);
+template<D> Quantity<D> Nano(Quantity<D>);
+template<D> Quantity<D> Pico(Quantity<D>);
+template<D> Quantity<D> Femto(Quantity<D>);
+template<D> Quantity<D> Atto(Quantity<D>);
+template<D> Quantity<D> Zepto(Quantity<D>);
+template<D> Quantity<D> Yocto(Quantity<D>);
 #pragma endregion
 
 #pragma region SI base units
