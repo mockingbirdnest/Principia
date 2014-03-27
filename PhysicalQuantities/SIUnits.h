@@ -8,29 +8,29 @@
 
 namespace PhysicalQuantities {
 #pragma region Prefixes
-template<D> Quantity<D> Yotta(Quantity<D>);
-template<D> Quantity<D> Zetta(Quantity<D>);
-template<D> Quantity<D> Exa(Quantity<D>);
-template<D> Quantity<D> Peta(Quantity<D>);
-template<D> Quantity<D> Tera(Quantity<D>);
-template<D> Quantity<D> Giga(Quantity<D>);
-template<D> Quantity<D> Mega(Quantity<D>);
-template<D> Quantity<D> Kilo(Quantity<D>);
+template<typename D> Quantity<D> Yotta(Quantity<D>);
+template<typename D> Quantity<D> Zetta(Quantity<D>);
+template<typename D> Quantity<D> Exa(Quantity<D>);
+template<typename D> Quantity<D> Peta(Quantity<D>);
+template<typename D> Quantity<D> Tera(Quantity<D>);
+template<typename D> Quantity<D> Giga(Quantity<D>);
+template<typename D> Quantity<D> Mega(Quantity<D>);
+template<typename D> Quantity<D> Kilo(Quantity<D>);
 
-template<D> Quantity<D> Hecto(Quantity<D>);
-template<D> Quantity<D> Deca(Quantity<D>);
+template<typename D> Quantity<D> Hecto(Quantity<D>);
+template<typename D> Quantity<D> Deca(Quantity<D>);
 
-template<D> Quantity<D> Deci(Quantity<D>);
-template<D> Quantity<D> Centi(Quantity<D>);
+template<typename D> Quantity<D> Deci(Quantity<D>);
+template<typename D> Quantity<D> Centi(Quantity<D>);
 
-template<D> Quantity<D> Milli(Quantity<D>);
-template<D> Quantity<D> Micro(Quantity<D>);
-template<D> Quantity<D> Nano(Quantity<D>);
-template<D> Quantity<D> Pico(Quantity<D>);
-template<D> Quantity<D> Femto(Quantity<D>);
-template<D> Quantity<D> Atto(Quantity<D>);
-template<D> Quantity<D> Zepto(Quantity<D>);
-template<D> Quantity<D> Yocto(Quantity<D>);
+template<typename D> Quantity<D> Milli(Quantity<D>);
+template<typename D> Quantity<D> Micro(Quantity<D>);
+template<typename D> Quantity<D> Nano(Quantity<D>);
+template<typename D> Quantity<D> Pico(Quantity<D>);
+template<typename D> Quantity<D> Femto(Quantity<D>);
+template<typename D> Quantity<D> Atto(Quantity<D>);
+template<typename D> Quantity<D> Zepto(Quantity<D>);
+template<typename D> Quantity<D> Yocto(Quantity<D>);
 #pragma endregion
 
 #pragma region SI base units
@@ -89,7 +89,7 @@ Angle  const Degree    = π / 180 * Radian;
 Angle  const ArcMinute = π / 10800 * Radian;
 Angle  const ArcSecond = π / 648000 * Radian;
 Area   const Hectare   = 1e4 * Metre * Metre;
-Volume const Litre     = 1e-3 * Metre * Metre * Metre;
+Volume const Litre     = 1e-3 * Metre.Pow<3>();
 Mass   const Tonne     = 1e3 * Kilogram;
 #pragma endregion
 }

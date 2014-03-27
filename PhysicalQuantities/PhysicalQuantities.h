@@ -29,12 +29,16 @@ typedef Quantity<Dimensions<0, 0, 0, 0, 0, 0, 0, 0, 0, 1>> SolidAngle;
 #pragma endregion
 template<typename Left, typename Right> struct ProductGenerator;
 template<typename Left, typename Right> struct QuotientGenerator;
+template<bool> struct Range;
+template<typename Q, int Exponent, typename = Range<true>> struct PowerGenerator;
 template<typename Left, typename Right>
 using Quotient = typename QuotientGenerator<Left, Right>::ResultType;
 template<typename Left, typename Right>
 using Product = typename ProductGenerator<Left, Right>::ResultType;
 template<typename Right>
 using Inverse = Quotient<Dimensionless, Right>;
+template<typename Left, int Exponent>
+using Exponentiation = typename PowerGenerator<Left, Exponent>::ResultType;
 
 namespace Factories {
 Length            Metres(Dimensionless const&);
@@ -54,6 +58,8 @@ class Quantity {
  public:
   typedef typename D Dimensions;
   Quantity() = default;
+  template<int Exponent>
+  Exponentiation<Quantity<D>, Exponent> Pow() const;
  private:
   explicit Quantity(Dimensionless const magnitude) : magnitude_(magnitude) {}
   Dimensionless magnitude_;

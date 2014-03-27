@@ -104,7 +104,22 @@ struct QuotientGenerator<Dimensionless, Right> {
       Dimensions<Length, Mass, Time, Current, Temperature, Amount,
                  LuminousIntensity, Winding, Angle, SolidAngle>> ResultType;
 };
-
+template<typename Q, int Exponent, typename>
+struct PowerGenerator {};
+template<typename Q, int Exponent>
+struct PowerGenerator<Q, Exponent, Range<(Exponent > 1)>> {
+  typedef Product<
+      typename PowerGenerator<Q, Exponent - 1>::ResultType, Q> ResultType;
+};
+template<typename Q, int Exponent>
+struct PowerGenerator<Q, Exponent, Range<(Exponent < 1)>>{
+  typedef Quotient<
+      typename PowerGenerator<Q, Exponent + 1>::ResultType, Q> ResultType;
+};
+template<typename Q, int Exponent>
+struct PowerGenerator<Q, Exponent, Range<(Exponent == 1)>>{
+  typedef Q ResultType;
+};
 #pragma endregion
 #pragma region Additive group
 template<typename D>
