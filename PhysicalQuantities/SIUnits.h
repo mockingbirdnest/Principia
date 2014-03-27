@@ -7,6 +7,17 @@
 #include "MathematicalConstants.h"
 
 namespace PhysicalQuantities {
+#pragma region Prefixes
+template<D> Quantity<D> Yotta(Quantity<D>);
+template<D> Quantity<D> Zetta(Quantity<D>);
+template<D> Quantity<D> Exa(Quantity<D>);
+template<D> Quantity<D> Peta(Quantity<D>);
+template<D> Quantity<D> Tera(Quantity<D>);
+template<D> Quantity<D> Giga(Quantity<D>);
+template<D> Quantity<D> Mega(Quantity<D>);
+template<D> Quantity<D> Kilo(Quantity<D>);
+#pragma endregion
+
 #pragma region SI base units
 // From the BIPM's SI brochure 8, section 2.1.2, table 1,
 // http://www.bipm.org/en/si/si_brochure/chapter2/2-1/.
