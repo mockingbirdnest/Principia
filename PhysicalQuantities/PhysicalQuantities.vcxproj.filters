@@ -76,4 +76,9 @@
       <Filter>Resource Files</Filter>
     </Image>
   </ItemGroup>
+  <ItemGroup>
+    <None Include="SIUnits.ipp">
+      <Filter>Header Files</Filter>
+    </None>
+  </ItemGroup>
 </Project>

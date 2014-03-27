@@ -93,3 +93,5 @@ Volume const Litre     = 1e-3 * Metre.Pow<3>();
 Mass   const Tonne     = 1e3 * Kilogram;
 #pragma endregion
 }
+
+#include "SIUnits.ipp"

@@ -23,7 +23,7 @@ struct Dimensions {
   };
 };
 
-#pragma region Type generators
+namespace TypeGenerators {
 template<typename Q>
 struct Collapse { typedef Q ResultType; };
 template<>
@@ -120,7 +120,25 @@ template<typename Q, int Exponent>
 struct PowerGenerator<Q, Exponent, Range<(Exponent == 1)>>{
   typedef Q ResultType;
 };
-#pragma endregion
+}
+namespace Factories {
+inline Length Metres(Dimensionless const& number) { return Length(number); }
+inline Mass Kilograms(Dimensionless const& number) { return Mass(number); }
+inline Time Seconds(Dimensionless const& number) { return Time(number); }
+inline Current Amperes(Dimensionless const& number) { return Current(number); }
+inline Temperature Kelvins(Dimensionless const& number) { 
+  return Temperature(number); 
+}
+inline Amount Moles(Dimensionless const& number) { return Amount(number); }
+inline LuminousIntensity Candelas(Dimensionless const& number) {
+ return LuminousIntensity(number);
+}
+inline Winding Cycles(Dimensionless const& number) { return Winding(number); }
+inline Angle Radians(Dimensionless const& number) { return Angle(number); }
+inline SolidAngle Steradians(Dimensionless const& number) { 
+  return SolidAngle(number);
+}
+}
 #pragma region Additive group
 template<typename D>
 inline Quantity<D> operator+(Quantity<D> const& right) {
@@ -195,22 +213,6 @@ inline void operator*=(Quantity<D>& left, Dimensionless const& right) {
 template<typename D>
 inline void operator/=(Quantity<D>& left, Dimensionless const& right) {
   left = left / right;
-}
-#pragma endregion
-#pragma region Base quantities
-inline Length Factories::Metres(Dimensionless const& number) { return Length(number); }
-inline Mass Factories::Kilograms(Dimensionless const& number) { return Mass(number); }
-inline Time Factories::Seconds(Dimensionless const& number) { return Time(number); }
-inline Current Factories::Amperes(Dimensionless const& number) { return Current(number); }
-inline Temperature Factories::Kelvins(Dimensionless const& number) { return Temperature(number); }
-inline Amount Factories::Moles(Dimensionless const& number) { return Amount(number); }
-inline LuminousIntensity Factories::Candelas(Dimensionless const& number) {
- return LuminousIntensity(number);
-}
-inline Winding Factories::Cycles(Dimensionless const& number) { return Winding(number); }
-inline Angle Factories::Radians(Dimensionless const& number) { return Angle(number); }
-inline SolidAngle Factories::Steradians(Dimensionless const& number) { 
-  return SolidAngle(number);
 }
 #pragma endregion
 
