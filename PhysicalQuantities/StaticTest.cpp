@@ -8,10 +8,8 @@
 #include "NamedQuantities.h"
 #include "SIUnits.h"
 #include "Constants.h"
-
-using namespace PhysicalQuantities;
-
 namespace PhysicalQuantitiesTest {
+using namespace PhysicalQuantities;
 public ref class staticTest {
   public:
   double test() {
