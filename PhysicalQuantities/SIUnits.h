@@ -7,10 +7,6 @@
 #include "MathematicalConstants.h"
 
 namespace PhysicalQuantities {
-
-using MathematicalConstants::π;
-
-namespace SI {
 #pragma region SI base units
 // From the BIPM's SI brochure 8, section 2.1.2, table 1,
 // http://www.bipm.org/en/si/si_brochure/chapter2/2-1/.
@@ -28,6 +24,7 @@ Winding           const Cycle     = Factories::Cycles(1);
 Angle             const Radian    = Factories::Radians(1);
 SolidAngle        const Steradian = Factories::Steradians(1);
 #pragma endregion
+
 #pragma region Coherent derived units in the SI with special names and symbols
 // From the BIPM's SI brochure 8, section 2.2.2, table 3,
 // http://www.bipm.org/en/si/si_brochure/chapter2/2-2/table3.html.
@@ -54,10 +51,7 @@ Inductance          const Henry   = Weber / Ampere;
 LuminousFlux        const Lumen   = Candela * Steradian;
 CatalyticActivity   const Katal   = Mole / Second;
 #pragma endregion
-}
 
-namespace AcceptedUnits {
-using namespace SI;
 #pragma region Non-SI units accepted for use with the SI
 // From the BIPM's SI brochure 8, section 4.1, table 6,
 // http://www.bipm.org/en/si/si_brochure/chapter4/table6.html
@@ -72,5 +66,4 @@ Area   const Hectare   = 1e4 * Metre * Metre;
 Volume const Litre     = 1e-3 * Metre * Metre * Metre;
 Mass   const Tonne     = 1e3 * Kilogram;
 #pragma endregion
-}
 }

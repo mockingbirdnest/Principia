@@ -55,8 +55,9 @@ typedef Quotient<Current, Voltage>      Conductance;
 typedef Quotient<Energy, Current>       MagneticFlux;
 typedef Quotient<MagneticFlux, Area>    MagneticFluxDensity;
 typedef Quotient<MagneticFlux, Current> Inductance;
-typedef Quotient<Inductance, Length>    Permeability;
-typedef Quotient<Capacitance, Length>   Permittivity;
+
+typedef Product<Quotient<Inductance, Length>, SolidAngle>   Permeability;
+typedef Quotient<Quotient<Capacitance, Length>, SolidAngle> Permittivity;
 #pragma endregion
 #pragma region Radiometry
 typedef Quotient<Power, SolidAngle>      RadiantIntensity;
