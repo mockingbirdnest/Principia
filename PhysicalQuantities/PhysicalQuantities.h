@@ -52,8 +52,8 @@ SolidAngle        Steradians(Dimensionless const&);
 template<typename D>
 class Quantity {
  public:
-  Quantity() = default;
   typedef typename D Dimensions;
+  Quantity() = default;
  private:
   explicit Quantity(Dimensionless const magnitude) : magnitude_(magnitude) {}
   Dimensionless magnitude_;
