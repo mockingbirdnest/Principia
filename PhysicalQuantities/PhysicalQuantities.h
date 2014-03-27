@@ -36,6 +36,7 @@ using Product = typename ProductGenerator<Left, Right>::ResultType;
 template<typename Right>
 using Inverse = Quotient<Dimensionless, Right>;
 
+namespace Factories {
 Length            Metres(Dimensionless const&);
 Mass              Kilograms(Dimensionless const&);
 Time              Seconds(Dimensionless const&);
@@ -46,6 +47,7 @@ LuminousIntensity Candelas(Dimensionless const&);
 Winding           Cycles(Dimensionless const&);
 Angle             Radians(Dimensionless const&);
 SolidAngle        Steradians(Dimensionless const&);
+}
 
 template<typename D>
 class Quantity {
@@ -56,16 +58,16 @@ class Quantity {
   explicit Quantity(Dimensionless const magnitude) : magnitude_(magnitude) {}
   Dimensionless magnitude_;
 
-  friend Length            Metres(Dimensionless const&);
-  friend Mass              Kilograms(Dimensionless const&);
-  friend Time              Seconds(Dimensionless const&);
-  friend Current           Amperes(Dimensionless const&);
-  friend Temperature       Kelvins(Dimensionless const&);
-  friend Amount            Moles(Dimensionless const&);
-  friend LuminousIntensity Candelas(Dimensionless const&);
-  friend Winding           Cycles(Dimensionless const&);
-  friend Angle             Radians(Dimensionless const&);
-  friend SolidAngle        Steradians(Dimensionless const&);
+  friend Length            Factories::Metres(Dimensionless const&);
+  friend Mass              Factories::Kilograms(Dimensionless const&);
+  friend Time              Factories::Seconds(Dimensionless const&);
+  friend Current           Factories::Amperes(Dimensionless const&);
+  friend Temperature       Factories::Kelvins(Dimensionless const&);
+  friend Amount            Factories::Moles(Dimensionless const&);
+  friend LuminousIntensity Factories::Candelas(Dimensionless const&);
+  friend Winding           Factories::Cycles(Dimensionless const&);
+  friend Angle             Factories::Radians(Dimensionless const&);
+  friend SolidAngle        Factories::Steradians(Dimensionless const&);
 
   template<typename D>
   friend Quantity<D> operator+(Quantity<D> const&);
