@@ -139,6 +139,12 @@ inline SolidAngle Steradians(Dimensionless const& number) {
   return SolidAngle(number);
 }
 }
+template<typename D>
+template<int Exponent>
+Exponentiation<Quantity<D>, Exponent> Quantity<D>::Pow() const {
+  return Exponentiation<Quantity<D>, 
+                        Exponent>(Exponentiate(magnitude_, Exponent));
+}
 #pragma region Additive group
 template<typename D>
 inline Quantity<D> operator+(Quantity<D> const& right) {

@@ -5,6 +5,21 @@
 namespace PhysicalQuantities {
 inline Dimensionless::Dimensionless(double value) : value_(value) {}
 inline double Dimensionless::Value() const { return value_; }
+// TODO(robin): This should not be inlined.
+inline Dimensionless Exponentiate(Dimensionless const& base, 
+                                  int const exponent) {
+  if (exponent < 0) {
+    return Exponentiate(1 / base, -exponent);
+  } else if (exponent == 0) { 
+    return 1;
+  } else if (exponent == 1) {
+    return base;
+  } else if (exponent % 2 == 0) {
+    return Exponentiate(base * base, exponent / 2);
+  } else {
+    return base * Exponentiate(base * base, (exponent - 1) / 2);
+  }
+}
 
 inline Dimensionless operator+(Dimensionless const& right) { return right; }
 inline Dimensionless operator-(Dimensionless const& right) {

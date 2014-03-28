@@ -12,6 +12,8 @@ private:
   double value_;
 };
 
+Dimensionless Exponentiate(Dimensionless const&, int const);
+
 Dimensionless operator+(Dimensionless const&);
 Dimensionless operator-(Dimensionless const&);
 Dimensionless operator+(Dimensionless const&, Dimensionless const&);

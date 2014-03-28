@@ -82,6 +82,8 @@ class Quantity {
   friend SolidAngle        Factories::Steradians(Dimensionless const&);
 
   template<typename D>
+  friend class Quantity;
+  template<typename D>
   friend Quantity<D> operator+(Quantity<D> const&);
   template<typename D> 
   friend Quantity<D> operator-(Quantity<D> const&);
