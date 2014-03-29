@@ -27,6 +27,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "CTSGeometryTests", "CTSGeom
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "QuantitiesTests", "QuantitiesTests\QuantitiesTests.vcxproj", "{C05FAD7A-BD75-4C1E-B072-5BE1569146E2}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Quantities", "Quantities\Quantities.vcxproj", "{273987F9-5E73-43E6-868E-E9D3C137F01A}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -151,6 +153,16 @@ Global
 		{C05FAD7A-BD75-4C1E-B072-5BE1569146E2}.Release|Mixed Platforms.Build.0 = Release|Win32
 		{C05FAD7A-BD75-4C1E-B072-5BE1569146E2}.Release|Win32.ActiveCfg = Release|Win32
 		{C05FAD7A-BD75-4C1E-B072-5BE1569146E2}.Release|Win32.Build.0 = Release|Win32
+		{273987F9-5E73-43E6-868E-E9D3C137F01A}.Debug|Any CPU.ActiveCfg = Debug|Win32
+		{273987F9-5E73-43E6-868E-E9D3C137F01A}.Debug|Mixed Platforms.ActiveCfg = Debug|Win32
+		{273987F9-5E73-43E6-868E-E9D3C137F01A}.Debug|Mixed Platforms.Build.0 = Debug|Win32
+		{273987F9-5E73-43E6-868E-E9D3C137F01A}.Debug|Win32.ActiveCfg = Debug|Win32
+		{273987F9-5E73-43E6-868E-E9D3C137F01A}.Debug|Win32.Build.0 = Debug|Win32
+		{273987F9-5E73-43E6-868E-E9D3C137F01A}.Release|Any CPU.ActiveCfg = Release|Win32
+		{273987F9-5E73-43E6-868E-E9D3C137F01A}.Release|Mixed Platforms.ActiveCfg = Release|Win32
+		{273987F9-5E73-43E6-868E-E9D3C137F01A}.Release|Mixed Platforms.Build.0 = Release|Win32
+		{273987F9-5E73-43E6-868E-E9D3C137F01A}.Release|Win32.ActiveCfg = Release|Win32
+		{273987F9-5E73-43E6-868E-E9D3C137F01A}.Release|Win32.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
