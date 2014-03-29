@@ -17,8 +17,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NewtonianPhysics", "Newtoni
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{4F787E5E-3F93-4F90-9AA6-8E046A25AD29}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "PhysicalQuantities", "PhysicalQuantities\PhysicalQuantities.vcxproj", "{ADF49FDE-DFF4-4768-AD4D-00ADD9A4B5AF}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CTSGeometry", "CTSGeometry\CTSGeometry.csproj", "{E17C45ED-CAC9-4755-9E00-0B825E21C3AC}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Geometry", "Geometry\Geometry.vcxproj", "{B3B7F5AA-9506-4007-8D42-9EC443033AE3}"
@@ -97,18 +95,6 @@ Global
 		{C88F8CCF-7163-4AEF-B9AE-CDDBFA991722}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
 		{C88F8CCF-7163-4AEF-B9AE-CDDBFA991722}.Release|Mixed Platforms.Build.0 = Release|Any CPU
 		{C88F8CCF-7163-4AEF-B9AE-CDDBFA991722}.Release|Win32.ActiveCfg = Release|Any CPU
-		{ADF49FDE-DFF4-4768-AD4D-00ADD9A4B5AF}.Debug|Any CPU.ActiveCfg = Debug|Win32
-		{ADF49FDE-DFF4-4768-AD4D-00ADD9A4B5AF}.Debug|Any CPU.Build.0 = Debug|Win32
-		{ADF49FDE-DFF4-4768-AD4D-00ADD9A4B5AF}.Debug|Mixed Platforms.ActiveCfg = Debug|Win32
-		{ADF49FDE-DFF4-4768-AD4D-00ADD9A4B5AF}.Debug|Mixed Platforms.Build.0 = Debug|Win32
-		{ADF49FDE-DFF4-4768-AD4D-00ADD9A4B5AF}.Debug|Win32.ActiveCfg = Debug|Win32
-		{ADF49FDE-DFF4-4768-AD4D-00ADD9A4B5AF}.Debug|Win32.Build.0 = Debug|Win32
-		{ADF49FDE-DFF4-4768-AD4D-00ADD9A4B5AF}.Release|Any CPU.ActiveCfg = Release|Win32
-		{ADF49FDE-DFF4-4768-AD4D-00ADD9A4B5AF}.Release|Any CPU.Build.0 = Release|Win32
-		{ADF49FDE-DFF4-4768-AD4D-00ADD9A4B5AF}.Release|Mixed Platforms.ActiveCfg = Release|Win32
-		{ADF49FDE-DFF4-4768-AD4D-00ADD9A4B5AF}.Release|Mixed Platforms.Build.0 = Release|Win32
-		{ADF49FDE-DFF4-4768-AD4D-00ADD9A4B5AF}.Release|Win32.ActiveCfg = Release|Win32
-		{ADF49FDE-DFF4-4768-AD4D-00ADD9A4B5AF}.Release|Win32.Build.0 = Release|Win32
 		{E17C45ED-CAC9-4755-9E00-0B825E21C3AC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{E17C45ED-CAC9-4755-9E00-0B825E21C3AC}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{E17C45ED-CAC9-4755-9E00-0B825E21C3AC}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU

@@ -80,7 +80,7 @@ inline Dimensionless Abs(Dimensionless const& number) {
 
 inline std::wstring ToString(Dimensionless const& number) {
   wchar_t result[50];
-  std::swprintf(result, L"%.16e", number.Value());
+  std::swprintf(result, 49, L"%.16e", number.Value());
   return result;
 }
 }

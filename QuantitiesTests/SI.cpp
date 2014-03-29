@@ -1,7 +1,7 @@
 ﻿#include "stdafx.h"
 #include "CppUnitTest.h"
 
-#include "..\PhysicalQuantities\Quantities.h"
+#include "..\Quantities\Quantities.h"
 #include "..\Quantities\NamedQuantities.h"
 #include "..\Quantities\SIUnits.h"
 #include "..\Quantities\Constants.h"

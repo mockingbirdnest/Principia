@@ -76,8 +76,14 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Constants.h" />
+    <ClInclude Include="Dimensionless.h" />
+    <ClInclude Include="MathematicalConstants.h" />
+    <ClInclude Include="NamedQuantities.h" />
     <ClInclude Include="Quantities.h" />
     <ClInclude Include="resource.h" />
+    <ClInclude Include="SIUnits.h" />
+    <ClInclude Include="StaticTest.h" />
     <ClInclude Include="Stdafx.h" />
   </ItemGroup>
   <ItemGroup>
@@ -96,6 +102,11 @@
   </ItemGroup>
   <ItemGroup>
     <Image Include="app.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Dimensionless.ipp" />
+    <None Include="Quantities.ipp" />
+    <None Include="SIUnits.ipp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
