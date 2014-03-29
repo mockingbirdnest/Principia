@@ -4,6 +4,8 @@
 
 #include "Dimensionless.h"
 
+#include "string"
+
 namespace PhysicalQuantities {
 template<int LengthExponent, int MassExponent, int TimeExponent,
          int CurrentExponent, int TemperatureExponent, int AmountExponent,
@@ -108,6 +110,24 @@ class Quantity {
   template<typename D>
   friend Inverse<Quantity<D>> operator/(Dimensionless const&,
                                         Quantity<D> const&);
+  template<typename D>
+  friend bool operator>(Quantity<D> const&, Quantity<D> const&);
+  template<typename D>
+  friend bool operator<(Quantity<D> const&, Quantity<D> const&);
+  template<typename D>
+  friend bool operator>=(Quantity<D> const&, Quantity<D> const&);
+  template<typename D>
+  friend bool operator<=(Quantity<D> const&, Quantity<D> const&);
+  template<typename D>
+  friend bool operator==(Quantity<D> const&, Quantity<D> const&);
+  template<typename D>
+  friend bool operator!=(Quantity<D> const&, Quantity<D> const&);
+
+  template<typename D>
+  friend Quantity<D> Abs(Quantity<D> const&);
+
+  template<typename D>
+  friend std::wstring ToString(Quantity<D> const&);
 };
 
 template<typename D>

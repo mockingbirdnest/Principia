@@ -221,5 +221,54 @@ inline void operator/=(Quantity<D>& left, Dimensionless const& right) {
   left = left / right;
 }
 #pragma endregion
+#pragma region Comparison operators
+template<typename D>
+inline bool operator>(Quantity<D> const& left, Quantity<D> const& right) {
+  return left.magnitude_ > right.magnitude_;
+}
+template<typename D>
+inline bool operator<(Quantity<D> const& left, Quantity<D> const& right) {
+  return left.magnitude_ < right.magnitude_;
+}
+template<typename D>
+inline bool operator>=(Quantity<D> const& left, Quantity<D> const& right) {
+  return left.magnitude_ >= right.magnitude_;
+}
+template<typename D>
+inline bool operator<=(Quantity<D> const& left, Quantity<D> const& right) {
+  return left.magnitude_ <= right.magnitude_;
+}
+template<typename D>
+inline bool operator==(Quantity<D> const& left, Quantity<D> const& right) {
+  return left.magnitude_ == right.magnitude_;
+}
+template<typename D>
+inline bool operator!=(Quantity<D> const& left, Quantity<D> const& right) {
+  return left.magnitude_ != right.magnitude_;
+}
+#pragma endregion
 
+template<typename D>
+inline Quantity<D> Abs(Quantity<D> const& quantity) {
+  return Quantity<D>(Abs(quantity.magnitude_));
+}
+
+template<typename D>
+inline std::wstring ToString(Quantity<D> const& quantity) {
+  return ToString(quantity.magnitude_) +
+    (D::Length            != 0 ? L" m^" + std::to_wstring(D::Length) : L"") +
+    (D::Mass              != 0 ? L" kg^" + std::to_wstring(D::Mass) : L"") +
+    (D::Time              != 0 ? L" s^" + std::to_wstring(D::Time) : L"") +
+    (D::Current           != 0 ? L" A^" + std::to_wstring(D::Current) : L"") +
+    (D::Temperature       != 0 ? L" K^" + std::to_wstring(D::Temperature) 
+                               : L"") +
+    (D::Amount            != 0 ? L" mol^" + std::to_wstring(D::Amount) : L"") +
+    (D::LuminousIntensity != 0 ? L" cd^" + std::to_wstring(D::LuminousIntensity) 
+                               : L"") +
+    (D::Winding           != 0 ? L" cycle^" + std::to_wstring(D::Winding) 
+                               : L"") +
+    (D::Angle             != 0 ? L" rad^" + std::to_wstring(D::Angle) : L"") +
+    (D::SolidAngle        != 0 ? L" sr^" + std::to_wstring(D::SolidAngle) 
+                               : L"");
+}
 }

@@ -67,4 +67,20 @@ inline bool operator>=(Dimensionless const& left, Dimensionless const& right) {
 inline bool operator<=(Dimensionless const& left, Dimensionless const& right) {
   return left.Value() <= right.Value();
 }
+inline bool operator==(Dimensionless const& left, Dimensionless const& right) {
+  return left.Value() == right.Value();
+}
+inline bool operator!=(Dimensionless const& left, Dimensionless const& right) {
+  return left.Value() != right.Value();
+}
+
+inline Dimensionless Abs(Dimensionless const& number) {
+  return std::abs(number.Value());
+}
+
+inline std::wstring ToString(Dimensionless const& number) {
+  wchar_t result[50];
+  std::swprintf(result, L"%.16e", number.Value());
+  return result;
+}
 }

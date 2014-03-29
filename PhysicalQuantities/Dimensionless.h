@@ -2,6 +2,8 @@
 
 #pragma once
 
+#include<string>
+
 namespace PhysicalQuantities {
 // A double by any other name...
 class Dimensionless {
@@ -30,6 +32,12 @@ bool operator>(Dimensionless const&, Dimensionless const&);
 bool operator<(Dimensionless const&, Dimensionless const&);
 bool operator>=(Dimensionless const&, Dimensionless const&);
 bool operator<=(Dimensionless const&, Dimensionless const&);
+bool operator==(Dimensionless const&, Dimensionless const&);
+bool operator!=(Dimensionless const&, Dimensionless const&);
+
+Dimensionless Abs(Dimensionless const&);
+
+std::wstring ToString(Dimensionless const&);
 }
 
 #include "Dimensionless.ipp"
