@@ -140,4 +140,4 @@ template<typename D>
 inline void operator/=(Quantity<D>&, Dimensionless const&);
 }
 
-#include "Quantities.ipp"
+#include "Quantities.inl"

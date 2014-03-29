@@ -94,4 +94,4 @@ Mass   const Tonne     = 1e3 * Kilogram;
 #pragma endregion
 }
 
-#include "SIUnits.ipp"
+#include "SIUnits.inl"

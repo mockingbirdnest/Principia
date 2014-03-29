@@ -40,4 +40,4 @@ Dimensionless Abs(Dimensionless const&);
 std::wstring ToString(Dimensionless const&);
 }
 
-#include "Dimensionless.ipp"
+#include "Dimensionless.inl"

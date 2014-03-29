@@ -104,9 +104,9 @@
     <Image Include="app.ico" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="Dimensionless.ipp" />
-    <None Include="Quantities.ipp" />
-    <None Include="SIUnits.ipp" />
+    <None Include="Dimensionless.inl" />
+    <None Include="Quantities.inl" />
+    <None Include="SIUnits.inl" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
