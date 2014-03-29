@@ -3,7 +3,7 @@
 
 #include "..\PhysicalQuantities\PhysicalQuantities.h"
 #include "..\PhysicalQuantities\NamedQuantities.h"
-#include "..\PhysicalQuantities\Units.h"
+#include "..\PhysicalQuantities\SIUnits.h"
 #include "..\PhysicalQuantities\Constants.h"
 #include <string>
 

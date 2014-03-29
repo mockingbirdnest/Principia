@@ -24,12 +24,6 @@
     <ClInclude Include="resource.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="PhysicalQuantities-body-inl.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Units.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="Constants.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -37,6 +31,21 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="StaticTest.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="SIUnits.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Dimensionless.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Dimensionless.ipp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="PhysicalQuantities.ipp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="MathematicalConstants.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -66,5 +75,10 @@
     <Image Include="app.ico">
       <Filter>Resource Files</Filter>
     </Image>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="SIUnits.ipp">
+      <Filter>Header Files</Filter>
+    </None>
   </ItemGroup>
 </Project>
