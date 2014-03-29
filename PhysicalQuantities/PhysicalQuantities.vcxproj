@@ -82,8 +82,8 @@
     <ClInclude Include="Dimensionless.h" />
     <ClInclude Include="MathematicalConstants.h" />
     <ClInclude Include="NamedQuantities.h" />
-    <ClInclude Include="PhysicalQuantities.ipp" />
-    <ClInclude Include="PhysicalQuantities.h" />
+    <ClInclude Include="Quantities.ipp" />
+    <ClInclude Include="Quantities.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="StaticTest.h" />
     <ClInclude Include="Stdafx.h" />
@@ -91,7 +91,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="AssemblyInfo.cpp" />
-    <ClCompile Include="PhysicalQuantities.cpp" />
+    <ClCompile Include="Quantities.cpp" />
     <ClCompile Include="StaticTest.cpp" />
     <ClCompile Include="Stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>

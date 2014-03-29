@@ -2,7 +2,7 @@
 
 #pragma once
 
-namespace PhysicalQuantities {
+namespace Quantities {
   template<typename D>
   inline Quantity<D> Yotta(Quantity<D> base) {
     return 1e24 * base;

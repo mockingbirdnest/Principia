@@ -4,12 +4,12 @@
 
 #include "StaticTest.h"
 
-#include "PhysicalQuantities.h"
+#include "Quantities.h"
 #include "NamedQuantities.h"
 #include "SIUnits.h"
 #include "Constants.h"
 namespace PhysicalQuantitiesTest {
-using namespace PhysicalQuantities;
+using namespace Quantities;
 public ref class staticTest {
   public:
   double test() {

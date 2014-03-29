@@ -2,11 +2,11 @@
 
 #pragma once
 
-#include "PhysicalQuantities.h"
+#include "Quantities.h"
 #include "NamedQuantities.h"
 #include "MathematicalConstants.h"
 
-namespace PhysicalQuantities {
+namespace Quantities {
 #pragma region Prefixes
 template<typename D> Quantity<D> Yotta(Quantity<D>);
 template<typename D> Quantity<D> Zetta(Quantity<D>);

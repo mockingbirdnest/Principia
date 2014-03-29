@@ -2,11 +2,11 @@
 
 #pragma once
 
-#include "PhysicalQuantities.h"
+#include "Quantities.h"
 #include "NamedQuantities.h"
 #include "SIUnits.h"
 
-namespace PhysicalQuantities {
+namespace Quantities {
 Speed const SpeedOfLight = 299792458 * (Metre / Second);
 Permeability const MagneticConstant = 4 * π * Steradian * 1e-7 * Henry / Metre;
 Permittivity const ElectricConstant = 1 /

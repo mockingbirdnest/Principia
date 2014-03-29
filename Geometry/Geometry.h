@@ -1,14 +1,14 @@
 // Geometry.h
 #pragma once
 
-#include "..\PhysicalQuantities\PhysicalQuantities.h"
-#include "..\PhysicalQuantities\NamedQuantities.h"
-#include "..\PhysicalQuantities\SIUnits.h"
-#include "..\PhysicalQuantities\Constants.h"
+#include "..\Quantities\Quantities.h"
+#include "..\Quantities\NamedQuantities.h"
+#include "..\Quantities\SIUnits.h"
+#include "..\Quantities\Constants.h"
 #include <string>
 
 using namespace System;
-using namespace PhysicalQuantities;
+using namespace Quantities;
 
 namespace Geometry {
   template<typename D>

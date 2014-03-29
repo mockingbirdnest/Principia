@@ -4,7 +4,7 @@
 
 #include<string>
 
-namespace PhysicalQuantities {
+namespace Quantities {
 // A double by any other name...
 class Dimensionless {
 public:

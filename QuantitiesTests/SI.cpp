@@ -1,15 +1,15 @@
 ﻿#include "stdafx.h"
 #include "CppUnitTest.h"
 
-#include "..\PhysicalQuantities\PhysicalQuantities.h"
-#include "..\PhysicalQuantities\NamedQuantities.h"
-#include "..\PhysicalQuantities\SIUnits.h"
-#include "..\PhysicalQuantities\Constants.h"
+#include "..\PhysicalQuantities\Quantities.h"
+#include "..\Quantities\NamedQuantities.h"
+#include "..\Quantities\SIUnits.h"
+#include "..\Quantities\Constants.h"
 #include <stdio.h>
 
 using namespace Microsoft::VisualStudio::CppUnitTestFramework;
 
-using namespace PhysicalQuantities;
+using namespace Quantities;
 
 namespace QuantitiesTests {		
 TEST_CLASS(UnitTest1) {

@@ -15,9 +15,6 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="PhysicalQuantities.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="Stdafx.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -42,17 +39,17 @@
     <ClInclude Include="Dimensionless.ipp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="PhysicalQuantities.ipp">
+    <ClInclude Include="MathematicalConstants.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="MathematicalConstants.h">
+    <ClInclude Include="Quantities.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Quantities.ipp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="PhysicalQuantities.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="AssemblyInfo.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -60,6 +57,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="StaticTest.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Quantities.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

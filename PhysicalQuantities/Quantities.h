@@ -1,4 +1,4 @@
-// PhysicalQuantities.h
+// Quantities.h
 
 #pragma once
 
@@ -6,7 +6,7 @@
 
 #include "string"
 
-namespace PhysicalQuantities {
+namespace Quantities {
 template<int LengthExponent, int MassExponent, int TimeExponent,
          int CurrentExponent, int TemperatureExponent, int AmountExponent,
          int LuminousIntensityExponent, int WindingExponent,
@@ -140,4 +140,4 @@ template<typename D>
 inline void operator/=(Quantity<D>&, Dimensionless const&);
 }
 
-#include "PhysicalQuantities.ipp"
+#include "Quantities.ipp"

@@ -1,8 +1,8 @@
-// PhysicalQuantities.ipp
+// Quantities.ipp
 
 #pragma once
 
-namespace PhysicalQuantities {
+namespace Quantities {
 
 template<int LengthExponent, int MassExponent, int TimeExponent,
          int CurrentExponent, int TemperatureExponent, int AmountExponent,

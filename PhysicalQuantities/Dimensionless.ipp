@@ -2,7 +2,7 @@
 
 #pragma once
 
-namespace PhysicalQuantities {
+namespace Quantities {
 inline Dimensionless::Dimensionless(double value) : value_(value) {}
 inline double Dimensionless::Value() const { return value_; }
 // TODO(robin): This should not be inlined.

@@ -2,9 +2,9 @@
 
 #pragma once
 
-#include "PhysicalQuantities.h"
+#include "Quantities.h"
 
-namespace PhysicalQuantities {
+namespace Quantities {
 #pragma region General mechanics
 typedef Quotient<Length, Time>   Speed;
 typedef Quotient<Speed, Time>    Acceleration;
