@@ -83,7 +83,6 @@
     <ClInclude Include="Quantities.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="SI.h" />
-    <ClInclude Include="StaticTest.h" />
     <ClInclude Include="Stdafx.h" />
   </ItemGroup>
   <ItemGroup>

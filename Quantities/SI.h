@@ -6,6 +6,7 @@
 #include "NamedQuantities.h"
 #include "Numbers.h"
 
+namespace Principia {
 namespace SI {
 #pragma region Prefixes
 template<typename D> Quantities::Quantity<D> Yotta(Quantities::Quantity<D>);
@@ -52,6 +53,9 @@ Quantities::Angle      const Radian    = Quantities::Factories::Radians(1);
 Quantities::SolidAngle const Steradian = Quantities::Factories::Steradians(1);
 #pragma endregion
 
+// Gram, for use with prefixes.
+Quantities::Mass const Gram = 1e-3 * Kilogram;
+
 #pragma region Coherent derived units in the SI with special names and symbols
 // From the BIPM's SI brochure 8, section 2.2.2, table 3,
 // http://www.bipm.org/en/si/si_brochure/chapter2/2-2/table3.html.
@@ -94,6 +98,7 @@ Quantities::Area   const Hectare = 1e4 * Metre * Metre;
 Quantities::Volume const Litre = Deci(Metre).Pow<3>();
 Quantities::Mass   const Tonne = 1e3 * Kilogram;
 #pragma endregion
+}
 }
 
 #include "SI.inl"

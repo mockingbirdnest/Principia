@@ -6,12 +6,13 @@
 #include "NamedQuantities.h"
 #include "SI.h"
 
+namespace Principia {
 namespace Quantities {
 Speed const SpeedOfLight = 299792458 * (SI::Metre / SI::Second);
-Permeability const MagneticConstant = 4e-7 * Numbers::π *
-                                      SI::Steradian * SI::Henry / SI::Metre;
-Permittivity const ElectricConstant = 1 /
-  (MagneticConstant * SpeedOfLight * SpeedOfLight);
+Permeability const VacuumPermeability = 4e-7 * Numbers::π *
+                                        SI::Steradian * SI::Henry / SI::Metre;
+Permittivity const VacuumPermittivity =
+  1 / (VacuumPermeability * SpeedOfLight.Pow<2>());
 // We use the 2010 CODATA recommended values. We do not support uncertainties.
 Action const ReducedPlanckConstant = 1.054571726e-34 * (SI::Joule * SI::Second);
 auto const GravitationalConstant =
@@ -25,4 +26,7 @@ Mass   const ProtonMass       = 1.672621777e-27 * SI::Kilogram;
 Charge const ElementaryCharge = 1.602176565e-19 * SI::Coulomb;
 
 Dimensionless const FineStructureConstant = 7.2973525698e-3;
+
+Acceleration const StandardGravity = 9.80665 * SI::Metre / SI::Second.Pow<2>();
+}
 }

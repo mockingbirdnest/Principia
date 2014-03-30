@@ -2,6 +2,7 @@
 
 #pragma once
 
+namespace Principia {
 namespace Quantities {
 
 template<int LengthExponent, int MassExponent, int TimeExponent,
@@ -270,5 +271,6 @@ inline std::wstring ToString(Quantity<D> const& quantity) {
     (D::Angle             != 0 ? L" rad^" + std::to_wstring(D::Angle) : L"") +
     (D::SolidAngle        != 0 ? L" sr^" + std::to_wstring(D::SolidAngle) 
                                : L"");
+}
 }
 }

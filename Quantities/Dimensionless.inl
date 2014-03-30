@@ -2,6 +2,7 @@
 
 #pragma once
 
+namespace Principia {
 namespace Quantities {
 inline Dimensionless::Dimensionless(double value) : value_(value) {}
 inline double Dimensionless::Value() const { return value_; }
@@ -82,5 +83,6 @@ inline std::wstring ToString(Dimensionless const& number) {
   wchar_t result[50];
   std::swprintf(result, 49, L"%.16e", number.Value());
   return result;
+}
 }
 }

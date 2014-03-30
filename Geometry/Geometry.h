@@ -7,13 +7,12 @@
 #include "..\Quantities\Constants.h"
 #include <string>
 
-using namespace System;
-using namespace Quantities;
-
+namespace Principia {
 namespace Geometry {
   template<typename D>
   struct R3Element {
   public:
   private:
   };
+}
 }

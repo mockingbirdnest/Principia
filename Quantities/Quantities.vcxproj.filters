@@ -33,9 +33,6 @@
     <ClInclude Include="NamedQuantities.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="StaticTest.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="SI.h">
       <Filter>Header Files</Filter>
     </ClInclude>

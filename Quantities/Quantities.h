@@ -5,7 +5,7 @@
 #include "Dimensionless.h"
 
 #include "string"
-
+namespace Principia {
 namespace Quantities {
 template<int LengthExponent, int MassExponent, int TimeExponent,
          int CurrentExponent, int TemperatureExponent, int AmountExponent,
@@ -138,6 +138,7 @@ template<typename D>
 inline void operator*=(Quantity<D>&, Dimensionless const&);
 template<typename D>
 inline void operator/=(Quantity<D>&, Dimensionless const&);
+}
 }
 
 #include "Quantities.inl"

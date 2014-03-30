@@ -2,6 +2,7 @@
 
 #pragma once
 
+namespace Principia {
 namespace SI {
   template<typename D>
   inline Quantities::Quantity<D> Yotta(Quantities::Quantity<D> base) {
@@ -82,4 +83,5 @@ namespace SI {
   inline Quantities::Quantity<D> Yocto(Quantities::Quantity<D> base) {
     return 1e-24 * base;
   }
+}
 }
