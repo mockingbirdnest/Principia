@@ -6,19 +6,22 @@ namespace Principia {
 namespace Quantities {
 inline Dimensionless::Dimensionless(double value) : value_(value) {}
 inline double Dimensionless::Value() const { return value_; }
+template<int Exponent>
+inline Dimensionless Dimensionless::Pow() const {
+  return this->Pow(Exponent);
+}
 // TODO(robin): This should not be inlined.
-inline Dimensionless Exponentiate(Dimensionless const& base, 
-                                  int const exponent) {
+inline Dimensionless Dimensionless::Pow(int const exponent) const {
   if (exponent < 0) {
-    return Exponentiate(1 / base, -exponent);
+    return (1 / *this).Pow(-exponent);
   } else if (exponent == 0) { 
     return 1;
   } else if (exponent == 1) {
-    return base;
+    return *this;
   } else if (exponent % 2 == 0) {
-    return Exponentiate(base * base, exponent / 2);
+    return (*this * *this).Pow(exponent / 2);
   } else {
-    return base * Exponentiate(base * base, (exponent - 1) / 2);
+    return *this * (*this * *this).Pow((exponent - 1) / 2);
   }
 }
 
@@ -79,9 +82,11 @@ inline Dimensionless Abs(Dimensionless const& number) {
   return std::abs(number.Value());
 }
 
-inline std::wstring ToString(Dimensionless const& number) {
+inline std::wstring ToString(Dimensionless const& number,
+                             unsigned char const precision) {
   wchar_t result[50];
-  std::swprintf(result, 49, L"%.16e", number.Value());
+  std::swprintf(result, 49, (L"%."+ std::to_wstring(precision) + L"e").c_str(),
+                number.Value());
   return result;
 }
 }

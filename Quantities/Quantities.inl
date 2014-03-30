@@ -144,7 +144,7 @@ template<typename D>
 template<int Exponent>
 Exponentiation<Quantity<D>, Exponent> Quantity<D>::Pow() const {
   return Exponentiation<Quantity<D>, 
-                        Exponent>(Exponentiate(magnitude_, Exponent));
+                        Exponent>(magnitude_.Pow(Exponent));
 }
 #pragma region Additive group
 template<typename D>
@@ -255,8 +255,9 @@ inline Quantity<D> Abs(Quantity<D> const& quantity) {
 }
 
 template<typename D>
-inline std::wstring ToString(Quantity<D> const& quantity) {
-  return ToString(quantity.magnitude_) +
+inline std::wstring ToString(Quantity<D> const& quantity, 
+                             unsigned char const precision) {
+  return ToString(quantity.magnitude_, precision) +
     (D::Length            != 0 ? L" m^" + std::to_wstring(D::Length) : L"") +
     (D::Mass              != 0 ? L" kg^" + std::to_wstring(D::Mass) : L"") +
     (D::Time              != 0 ? L" s^" + std::to_wstring(D::Time) : L"") +

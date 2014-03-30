@@ -62,6 +62,10 @@ SolidAngle        Steradians(Dimensionless const&);
 }
 
 template<typename D>
+std::wstring ToString(Quantity<D> const& quantity,
+                      unsigned char const precision = 16);
+
+template<typename D>
 class Quantity {
  public:
   typedef typename D Dimensions;
@@ -127,7 +131,7 @@ class Quantity {
   friend Quantity<D> Abs(Quantity<D> const&);
 
   template<typename D>
-  friend std::wstring ToString(Quantity<D> const&);
+  friend std::wstring ToString(Quantity<D> const&, unsigned char const);
 };
 
 template<typename D>
