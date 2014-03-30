@@ -18,8 +18,7 @@ using namespace Principia::Astronomy;
 
 namespace QuantitiesTests {
 
-// TODO(robin): move the logging functions somewhere else, they are generally
-// useful.
+// TODO(robin): move all these utilities somewhere else.
 
 // The Microsoft equivalent only takes a wchar_t*.
 void Log(std::wstring const& message) {
@@ -88,23 +87,53 @@ void AssertNotEqual(Dimensionless const& left,
   AssertNotEqualWithin(left, right, ε);
 }
 
+template<typename T>
+void TestOrder(T low, T high) {
+  LogLine(L"Testing ordering of " + ToString(low) + L" < " +
+          ToString(high) + L"...");
+  Assert(low == low, L"low == low was false.");
+  Assert(high == high, L"high == high was false.");
+  Assert(high != low, L"high != low was false.");
+  Assert(low != high, L"low != high was false.");
+  Assert(high > low, L"high > low was false.");
+  Assert(low < high, L"low < high was false.");
+  Assert(low >= low, L"low >= low was false.");
+  Assert(low <= low, L"low <= low was false.");
+  Assert(high >= high, L"high >= high was false.");
+  Assert(high <= high, L"high <= high was false.");
+  Assert(high >= low, L"high >= low was false.");
+  Assert(low <= high, L"low <= high was false.");
+
+  LogLine(L"> True comparisons passed!");
+
+  Assert(!(high == low), L"high == low was true.");
+  Assert(!(low == high), L"low == high was true.");
+  Assert(!(low != low), L"low != low was true.");
+  Assert(!(high != high), L"high != high was true.");
+  Assert(!(low > low), L"low > low was true.");
+  Assert(!(low < low), L"low < low was true.");
+  Assert(!(high > high), L"high > high was true.");
+  Assert(!(high < high), L"high < high was true.");
+  Assert(!(low > high), L"low > high was true.");
+  Assert(!(high < low), L"high < low was true.");
+  Assert(!(low >= high), L"low >= high was true.");
+  Assert(!(high <= low), L"high <= low was true.");
+
+  LogLine(L"> False comparisons passed!");
+}
+
 TEST_CLASS(QuantitiesTests) {
 public:
   TEST_METHOD(DimensionlessComparisons) {
-    Dimensionless zero = 0;
-    Assert(0 == zero, L"0 == zero was false.");
-    Assert(1 != zero, L"1 != zero was false.");
-    Assert(1 > zero, L"1 > zero was false.");
-    Assert(-1 < zero, L"-1 < zero was false.");
-    Assert(zero >= 0, L"zero >= 0 was false.");
-    Assert(0 <= zero, L"0 <= zero was false.");
-
-    Assert(!(1 == zero), L"1 == zero was true.");
-    Assert(!(0 != zero), L"0 != zero was true.");
-    Assert(!(0 > zero), L"0 > zero was true.");
-    Assert(!(0 < zero), L"0 < zero was true.");
-    Assert(!(zero >= 1), L"zero >= 1 was true.");
-    Assert(!(1 <= zero), L"1 <= zero was true.");
+    TestOrder(Dimensionless(0), Dimensionless(1));
+    TestOrder(Dimensionless(-1), Dimensionless(0));
+    TestOrder(Dimensionless(3), Dimensionless(π));
+  }
+  TEST_METHOD(DimensionfulComparisons) {
+    TestOrder(EarthMass, JupiterMass);
+    TestOrder(LightYear, Parsec);
+    TestOrder(-SpeedOfLight, SpeedOfLight);
+    TestOrder(SpeedOfLight * Day, LightYear);
   }
   TEST_METHOD(DimensionlessOperations) {
     Dimensionless const number = 1729;
