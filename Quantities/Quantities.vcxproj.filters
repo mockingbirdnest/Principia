@@ -30,16 +30,16 @@
     <ClInclude Include="Dimensionless.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="MathematicalConstants.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="NamedQuantities.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="SIUnits.h">
+    <ClInclude Include="StaticTest.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="StaticTest.h">
+    <ClInclude Include="SI.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Numbers.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -68,13 +68,13 @@
     </Image>
   </ItemGroup>
   <ItemGroup>
-    <None Include="SIUnits.inl">
-      <Filter>Header Files</Filter>
-    </None>
     <None Include="Quantities.inl">
       <Filter>Header Files</Filter>
     </None>
     <None Include="Dimensionless.inl">
+      <Filter>Header Files</Filter>
+    </None>
+    <None Include="SI.inl">
       <Filter>Header Files</Filter>
     </None>
   </ItemGroup>

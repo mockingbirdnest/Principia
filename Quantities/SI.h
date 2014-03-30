@@ -4,7 +4,7 @@
 
 #include "Quantities.h"
 #include "NamedQuantities.h"
-#include "MathematicalConstants.h"
+#include "Numbers.h"
 
 namespace Quantities {
 #pragma region Prefixes
@@ -94,4 +94,4 @@ Mass   const Tonne     = 1e3 * Kilogram;
 #pragma endregion
 }
 
-#include "SIUnits.inl"
+#include "SI.inl"

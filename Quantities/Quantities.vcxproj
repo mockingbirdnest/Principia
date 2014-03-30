@@ -78,11 +78,11 @@
   <ItemGroup>
     <ClInclude Include="Constants.h" />
     <ClInclude Include="Dimensionless.h" />
-    <ClInclude Include="MathematicalConstants.h" />
+    <ClInclude Include="Numbers.h" />
     <ClInclude Include="NamedQuantities.h" />
     <ClInclude Include="Quantities.h" />
     <ClInclude Include="resource.h" />
-    <ClInclude Include="SIUnits.h" />
+    <ClInclude Include="SI.h" />
     <ClInclude Include="StaticTest.h" />
     <ClInclude Include="Stdafx.h" />
   </ItemGroup>
@@ -106,7 +106,7 @@
   <ItemGroup>
     <None Include="Dimensionless.inl" />
     <None Include="Quantities.inl" />
-    <None Include="SIUnits.inl" />
+    <None Include="SI.inl" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -4,7 +4,7 @@
 
 #include "Quantities.h"
 #include "NamedQuantities.h"
-#include "SIUnits.h"
+#include "SI.h"
 
 namespace Quantities {
 Speed const SpeedOfLight = 299792458 * (Metre / Second);
