@@ -76,6 +76,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="BIPM.h" />
     <ClInclude Include="CGS.h" />
     <ClInclude Include="Constants.h" />
     <ClInclude Include="Dimensionless.h" />

@@ -67,22 +67,22 @@ Quantities::Mass const Gram = 1e-3 * Kilogram;
 
 // The uno was proposed but never accepted.
 Quantities::Dimensionless       const Uno = 1;
-Quantities::Frequency           const Hertz = Cycle / Second;
-Quantities::Force               const Newton = Metre * Kilogram / 
-                                               (Second * Second);
-Quantities::Pressure            const Pascal = Newton / (Metre * Metre);
-Quantities::Energy              const Joule = Newton * Metre;
-Quantities::Power               const Watt = Joule / Second;
+Quantities::Frequency           const Hertz   = Cycle / Second;
+Quantities::Force               const Newton  = Metre * Kilogram / 
+                                                (Second * Second);
+Quantities::Pressure            const Pascal  = Newton / (Metre * Metre);
+Quantities::Energy              const Joule   = Newton * Metre;
+Quantities::Power               const Watt    = Joule / Second;
 Quantities::Charge              const Coulomb = Ampere * Second;
-Quantities::Voltage             const Volt = Watt / Ampere;
-Quantities::Capacitance         const Farad = Coulomb / Volt;
-Quantities::Resistance          const Ohm = Volt / Ampere;
+Quantities::Voltage             const Volt    = Watt / Ampere;
+Quantities::Capacitance         const Farad   = Coulomb / Volt;
+Quantities::Resistance          const Ohm     = Volt / Ampere;
 Quantities::Conductance         const Siemens = Ampere / Volt;
-Quantities::MagneticFlux        const Weber = Volt * Second;
-Quantities::MagneticFluxDensity const Tesla = Weber / (Metre * Metre);
-Quantities::Inductance          const Henry = Weber / Ampere;
-Quantities::LuminousFlux        const Lumen = Candela * Steradian;
-Quantities::CatalyticActivity   const Katal = Mole / Second;
+Quantities::MagneticFlux        const Weber   = Volt * Second;
+Quantities::MagneticFluxDensity const Tesla   = Weber / (Metre * Metre);
+Quantities::Inductance          const Henry   = Weber / Ampere;
+Quantities::LuminousFlux        const Lumen   = Candela * Steradian;
+Quantities::CatalyticActivity   const Katal   = Mole / Second;
 #pragma endregion
 
 #pragma region Non-SI units accepted for use with the SI
@@ -92,13 +92,19 @@ Quantities::Time const Minute = 60 * Second;
 Quantities::Time const Hour = 60 * Minute;
 Quantities::Time const Day = 24 * Hour;
 
-Quantities::Angle  const Degree = π / 180 * Radian;
+Quantities::Angle  const Degree    = π / 180 * Radian;
 Quantities::Angle  const ArcMinute = π / 10800 * Radian;
 Quantities::Angle  const ArcSecond = π / 648000 * Radian;
-Quantities::Area   const Hectare = 1e4 * Metre * Metre;
-Quantities::Volume const Litre = Deci(Metre).Pow<3>();
-Quantities::Mass   const Tonne = 1e3 * Kilogram;
+Quantities::Area   const Hectare   = 1e4 * Metre * Metre;
+Quantities::Volume const Litre     = Deci(Metre).Pow<3>();
+Quantities::Mass   const Tonne     = 1e3 * Kilogram;
 #pragma endregion
+#pragma region Non-SI units whose values must be obtained experimentally
+// From the BIPM's SI brochure 8, section 4.1, table 7,
+// Units accepted for use with the SI.
+Quantities::Energy const ElectronVolt     = 1.602176565e-19 * Joule;
+Quantities::Mass   const Dalton           = 1.660538921e-27 * Kilogram;
+Quantities::Length const AstronomicalUnit = 149597870700 * SI::Metre;
 }
 }
 
