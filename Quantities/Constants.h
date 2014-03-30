@@ -8,7 +8,8 @@
 
 namespace Quantities {
 Speed const SpeedOfLight = 299792458 * (Metre / Second);
-Permeability const MagneticConstant = 4 * π * Steradian * 1e-7 * Henry / Metre;
+Permeability const MagneticConstant = 
+  4 * Numbers::π * Steradian * 1e-7 * Henry / Metre;
 Permittivity const ElectricConstant = 1 /
   (MagneticConstant * SpeedOfLight * SpeedOfLight);
 // We use the 2010 CODATA recommended values. We do not support uncertainties.

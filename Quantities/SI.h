@@ -85,9 +85,9 @@ Time const Minute = 60 * Second;
 Time const Hour = 60 * Minute;
 Time const Day = 24 * Hour;
 
-Angle  const Degree    = π / 180 * Radian;
-Angle  const ArcMinute = π / 10800 * Radian;
-Angle  const ArcSecond = π / 648000 * Radian;
+Angle  const Degree    = Numbers::π / 180 * Radian;
+Angle  const ArcMinute = Numbers::π / 10800 * Radian;
+Angle  const ArcSecond = Numbers::π / 648000 * Radian;
 Area   const Hectare   = 1e4 * Metre * Metre;
 Volume const Litre     = 1e-3 * Metre.Pow<3>();
 Mass   const Tonne     = 1e3 * Kilogram;
