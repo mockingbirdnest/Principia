@@ -76,10 +76,13 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Astronomy.h" />
+    <ClInclude Include="Avoirdupois.h" />
     <ClInclude Include="BIPM.h" />
     <ClInclude Include="CGS.h" />
     <ClInclude Include="Constants.h" />
     <ClInclude Include="Dimensionless.h" />
+    <ClInclude Include="Imperial.h" />
     <ClInclude Include="Numbers.h" />
     <ClInclude Include="NamedQuantities.h" />
     <ClInclude Include="Quantities.h" />

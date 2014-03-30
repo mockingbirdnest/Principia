@@ -13,6 +13,9 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
+    <Filter Include="Header Files\Units">
+      <UniqueIdentifier>{c4ec061d-1396-4424-b0eb-1533aa389a46}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Stdafx.h">
@@ -33,17 +36,26 @@
     <ClInclude Include="NamedQuantities.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="SI.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="Numbers.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="CGS.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="BIPM.h">
-      <Filter>Header Files</Filter>
+      <Filter>Header Files\Units</Filter>
+    </ClInclude>
+    <ClInclude Include="CGS.h">
+      <Filter>Header Files\Units</Filter>
+    </ClInclude>
+    <ClInclude Include="SI.h">
+      <Filter>Header Files\Units</Filter>
+    </ClInclude>
+    <ClInclude Include="Astronomy.h">
+      <Filter>Header Files\Units</Filter>
+    </ClInclude>
+    <ClInclude Include="Avoirdupois.h">
+      <Filter>Header Files\Units</Filter>
+    </ClInclude>
+    <ClInclude Include="Imperial.h">
+      <Filter>Header Files\Units</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
