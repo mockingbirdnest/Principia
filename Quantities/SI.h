@@ -1,6 +1,4 @@
-﻿// Units.h
-
-#pragma once
+﻿#pragma once
 
 #include "Quantities.h"
 #include "NamedQuantities.h"
@@ -94,9 +92,9 @@ Quantities::Time const Minute = 60 * Second;
 Quantities::Time const Hour = 60 * Minute;
 Quantities::Time const Day = 24 * Hour;
 
-Quantities::Angle  const Degree = Numbers::π / 180 * Radian;
-Quantities::Angle  const ArcMinute = Numbers::π / 10800 * Radian;
-Quantities::Angle  const ArcSecond = Numbers::π / 648000 * Radian;
+Quantities::Angle  const Degree = π / 180 * Radian;
+Quantities::Angle  const ArcMinute = π / 10800 * Radian;
+Quantities::Angle  const ArcSecond = π / 648000 * Radian;
 Quantities::Area   const Hectare = 1e4 * Metre * Metre;
 Quantities::Volume const Litre = Deci(Metre).Pow<3>();
 Quantities::Mass   const Tonne = 1e3 * Kilogram;

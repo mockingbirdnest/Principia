@@ -9,8 +9,8 @@
 namespace Principia {
 namespace Quantities {
 Speed const SpeedOfLight = 299792458 * (SI::Metre / SI::Second);
-Permeability const VacuumPermeability = 4e-7 * Numbers::π *
-                                        SI::Steradian * SI::Henry / SI::Metre;
+Permeability const VacuumPermeability =
+  4e-7 * π * SI::Steradian * SI::Henry / SI::Metre;
 Permittivity const VacuumPermittivity =
   1 / (VacuumPermeability * SpeedOfLight.Pow<2>());
 // We use the 2010 CODATA recommended values. We do not support uncertainties.
