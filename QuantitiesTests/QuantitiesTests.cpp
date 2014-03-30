@@ -33,7 +33,7 @@ void LogLine(std::wstring const& message) {
   NewLine();
 }
 // The Microsoft equivalent only takes a wchar_t*.
-void Assert(bool const test, std::wstring const& message) {
+void Assert(bool const test, std::wstring const& message = L"") {
   Assert::IsTrue(test, message.c_str());
 }
 
@@ -88,7 +88,7 @@ void AssertNotEqual(Dimensionless const& left,
   AssertNotEqualWithin(left, right, ε);
 }
 
-TEST_CLASS(QuantitiesTest) {
+TEST_CLASS(QuantitiesTests) {
 public:
   TEST_METHOD(DimensionlessComparisons) {
     Dimensionless zero = 0;
@@ -129,14 +129,36 @@ public:
       AssertEqual(number.Pow(-i), negativePowers);
     }
   }
+  TEST_METHOD(Formatting) {
+    auto const allTheUnits = 1 * Metre * Kilogram * Second * Ampere * Kelvin /
+                             (Mole * Candela * Cycle * Radian * Steradian);
+    std::wstring const expected = std::wstring(L"1e+000 m^1 kg^1 s^1") + 
+                                  L" A^1 K^1 mol^-1 cd^-1 cycle^-1 rad^-1" +
+                                  L" sr^-1";
+    std::wstring const actual = ToString(allTheUnits, 0);
+    Assert(actual.compare(expected) == 0);
+    std::wstring π16 = L"3.1415926535897931e+000";
+    Assert(ToString(π).compare(π16) == 0);
+  }
   TEST_METHOD(PhysicalConstants) {
     AssertEqual(1 / SpeedOfLight.Pow<2>(),
                 VacuumPermittivity * VacuumPermeability);
-    // The Keplerian approximation for the mass of the sun
+    // The Keplerian approximation for the mass of the Sun
     // is fairly accurate.
     AssertEqual(4 * π.Pow<2>() * AstronomicalUnit.Pow<3>() /
                  (GravitationalConstant * JulianYear.Pow<2>()),
                SolarMass, 1e-4);
+    AssertEqual(1 * Parsec, 3.26156 * LightYear, 1e-5);
+    // The Keplerian approximation for the mass of the Earth
+    // is pretty bad, but the error is still only 1%.
+    AssertEqual(4 * π.Pow<2>() * LunarDistance.Pow<3>() /
+                (GravitationalConstant * (27.321582 * Day).Pow<2>()),
+                EarthMass, 1e-2);
+    AssertEqual(1 * SolarMass, 1047 * JupiterMass, 1e-3);
+    // Delambre & Méchain.
+    AssertEqual(GravitationalConstant * EarthMass /
+                  (40 * Mega(Metre) / (2 * π)).Pow<2>(),
+                StandardGravity, 1e-2);
   }
 };
 }

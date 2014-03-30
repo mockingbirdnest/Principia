@@ -3,8 +3,8 @@
 #pragma once
 
 #include "Dimensionless.h"
+#include <string>
 
-#include "string"
 namespace Principia {
 namespace Quantities {
 template<int LengthExponent, int MassExponent, int TimeExponent,

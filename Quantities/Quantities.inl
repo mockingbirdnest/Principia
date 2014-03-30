@@ -1,5 +1,3 @@
-// Quantities.ipp
-
 #pragma once
 
 namespace Principia {

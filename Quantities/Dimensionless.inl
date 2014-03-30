@@ -18,10 +18,10 @@ inline Dimensionless Dimensionless::Pow(int const exponent) const {
     return 1;
   } else if (exponent == 1) {
     return *this;
-  } else if (exponent % 2 == 0) {
-    return (*this * *this).Pow(exponent / 2);
-  } else {
+  } else if (exponent & 1) {
     return *this * (*this * *this).Pow((exponent - 1) / 2);
+  } else {
+    return (*this * *this).Pow(exponent / 2);
   }
 }
 
