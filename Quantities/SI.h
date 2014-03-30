@@ -7,6 +7,9 @@
 #include "Numbers.h"
 
 namespace Principia {
+// This namespace contains the units and prefixes of the SI (except the
+// Becquerel, Gray and Sievert), as well as the Non-SI units accepted for use
+// with the SI.
 namespace SI {
 #pragma region Prefixes
 template<typename D> Quantities::Quantity<D> Yotta(Quantities::Quantity<D>);
