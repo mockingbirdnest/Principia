@@ -15,9 +15,10 @@ Quantities::Mass const Ounce  = Pound / 16;
 Quantities::Mass const Drachm = Pound / 256;
 Quantities::Mass const Grain  = Pound / 7000;
 
-// Imperial stone, quarter, hundredweight and pound, yielding the 'long ton'.
+Quantities::Mass const Stone = 14 * Pound;
+
+// Imperial quarter, hundredweight and pound, yielding the 'long ton'.
 namespace Imperial {
-Quantities::Mass const Stone         = 14 * Pound;
 Quantities::Mass const Quarter       = 2 * Stone;
 Quantities::Mass const Hundredweight = 4 * Quarter;
 Quantities::Mass const Ton           = 20 * Hundredweight;
