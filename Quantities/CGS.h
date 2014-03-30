@@ -17,7 +17,9 @@ Quantities::Time   const Second     = SI::Second;
 Quantities::Energy const Erg  = 1e-7 * SI::Joule;
 Quantities::Force  const Dyne = 1e-5 * SI::Newton;
 
-Quantities::DynamicViscosity const Poise = Dyne * Second / Centimetre.Pow<2>();
+Quantities::Pressure const Barye = 1 * Dyne / Centimetre.Pow<2>();
+
+Quantities::DynamicViscosity const Poise = Barye * Second;
 Quantities::KinematicViscosity const Stokes = Centimetre.Pow<2>() / Second;
 
 Quantities::Luminance   const Stilb = SI::Candela * Centimetre.Pow<-2>();
@@ -29,5 +31,7 @@ Quantities::MagneticFluxDensity const Gauss   = 1e-4 * SI::Tesla;
 Quantities::MagneticFlux        const Maxwell = Gauss * Centimetre.Pow<2>();
 Quantities::MagneticField       const Œrsted  = 1e3 / (4 * π * SI::Steradian) *
                                                 SI::Ampere / SI::Metre;
+
+Quantities::SpectroscopicWavenumber const Kayser = SI::Cycle / Centimetre;
 }
 }

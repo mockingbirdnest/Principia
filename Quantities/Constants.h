@@ -7,7 +7,7 @@
 #include "SI.h"
 
 namespace Principia {
-namespace PhysicalConstants {
+namespace Constants {
 auto const SpeedOfLight       = 299792458 * (SI::Metre / SI::Second);
 auto const VacuumPermeability = 4e-7*π * SI::Steradian * SI::Henry / SI::Metre;
 auto const VacuumPermittivity = 1 / (VacuumPermeability*SpeedOfLight.Pow<2>());
