@@ -158,8 +158,19 @@ void TestVectorSpace(Vector const& nullVector, Vector const& u, Vector const& v,
   TestAdditiveGroup(nullVector, u, v, w);
   AssertEqual((α * β) * v, α * (β * v));
   AssertEqual(unit * w, w);
+  AssertEqual(u / unit, u);
   AssertEqual(zero * u, nullVector);
-  AssertEqual(zero * u, nullVector);
+  AssertEqual(β * (u + v), β * u + v * β);
+  AssertEqual((w + v) / α, w / α + v / α);
+  AssertEqual((α + β) * w, α * w + β * w);
+  AssertEqual(v * (α + β), α * v + β * v);
+  Vector vector = u;
+  vector *= α;
+  AssertEqual(α * u, vector);
+  vector /= α;
+  AssertEqual(u, vector);
+  vector *= zero;
+  AssertEqual(vector, zero);
 }
 
 TEST_CLASS(QuantitiesTests) {
