@@ -153,6 +153,33 @@ void TestAdditiveGroup(T const& zero, T const& a, T const& b, T const& c) {
   AssertEqual(accumulator, a + b - c);
 }
 
+template<typename T>
+void TestMultiplicativeGroup(T const& one, T const& a, T const& b, T const& c) {
+  AssertEqual(a * one, a);
+  AssertEqual(one * b, b);
+  AssertEqual(a / a, one);
+  AssertEqual((1 / a) / b, 1 / (a * b));
+  AssertEqual((a * b) * c, a * (b * c));
+  AssertEqual(a / b / c, a / (b * c));
+  AssertEqual(a * b, b * a);
+  T accumulator = one;
+  accumulator *= a;
+  accumulator *= b;
+  accumulator /= c;
+  AssertEqual(accumulator, a * b / c);
+}
+
+template<typename Map, typename Scalar, typename U, typename V>
+void TestBilinearMap(Map const& map, U const& u1, U const& u2, V const& v1,
+                     V const& v2, Scalar const& λ) {
+  AssertEqual(map(u1 + u2, v1), map(u1, v1) + map(u2, v1));
+  AssertEqual(map(u1, v1 + v2), map(u1, v1) + map(u1, v2));
+  AssertEqual(map(λ * u1, v1), map(u1, λ * v1));
+  AssertEqual(λ * map(u1, v1), map(u1, λ * v1));
+  AssertEqual(map(u2 * λ, v2), map(u2, v2 * λ));
+  AssertEqual(map(u2, v2) * λ, map(u2 * λ, v2));
+}
+
 template<typename Vector, typename Scalar>
 void TestVectorSpace(Vector const& nullVector, Vector const& u, Vector const& v,
                      Vector const& w, Scalar const& zero, Scalar const& unit,
@@ -175,12 +202,25 @@ void TestVectorSpace(Vector const& nullVector, Vector const& u, Vector const& v,
   AssertEqual(vector, nullVector);
 }
 
+template<typename T>
+void TestField(T const& zero, T const& one, T const& a, T const& b,
+               T const& c, T const& x, T const& y) {
+  TestAdditiveGroup(zero, a, b, c);
+  TestMultiplicativeGroup(one, c, x, y);
+  TestVectorSpace(zero, a, b, c, zero, one, x, y);
+}
+
 TEST_CLASS(QuantitiesTests) {
 public:
+  TEST_METHOD(AbsoluteValue) {
+    Assert::AreEqual(Abs(-1729), Dimensionless(1729));
+    Assert::AreEqual(Abs(1729), Dimensionless(1729));
+  }
   TEST_METHOD(DimensionlessComparisons) {
     TestOrder(Dimensionless(0), Dimensionless(1));
     TestOrder(Dimensionless(-1), Dimensionless(0));
-    TestOrder(Dimensionless(3), Dimensionless(π));
+    TestOrder(-e, e);
+    TestOrder(Dimensionless(3), π);
     TestOrder(Dimensionless(42), Dimensionless(1729));
   }
   TEST_METHOD(DimensionfulComparisons) {
@@ -190,11 +230,23 @@ public:
     TestOrder(SpeedOfLight * Day, LightYear);
   }
   TEST_METHOD(DimensionlessOperations) {
-    Dimensionless zero = 0;
-    Dimensionless one = 1;
-    Dimensionless taxi = 1729;
+    Dimensionless const zero    = 0;
+    Dimensionless const one     = 1;
+    Dimensionless const taxi    = 1729;
+    Dimensionless const answer  = 42;
+    Dimensionless const heegner = 163;
+    TestField(zero, one, taxi, 4 * π / 3, heegner, answer, -e);
+  }
+  TEST_METHOD(DimensionlfulOperations) {
+    Dimensionless const zero = 0;
+    Dimensionless const one = 1;
+    Dimensionless const taxi = 1729;
     TestVectorSpace(0 * Metre / Second, SpeedOfLight, 88 * Mile / Hour,
                     -340.29 * Metre / Second, zero, one, -2 * π, taxi);
+    auto multiply = [](Mass left, Speed right) { return left * right; };
+    // Dimensionful multiplication is a tensor product, see [Tao 2012].
+    TestBilinearMap(multiply, SolarMass, ElectronMass, SpeedOfLight,
+                    1 * Furlong / JulianYear, -e);
   }
   TEST_METHOD(DimensionlessExponentiation) {
     Dimensionless const number   = π - 42;
