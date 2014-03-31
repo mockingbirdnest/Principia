@@ -2,9 +2,9 @@
 
 #pragma once
 
-#include "Quantities.h"
-#include "NamedQuantities.h"
-#include "SI.h"
+#include "Quantities.hpp"
+#include "NamedQuantities.hpp"
+#include "SI.hpp"
 
 namespace Principia {
 namespace Constants {

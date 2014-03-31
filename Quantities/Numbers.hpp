@@ -2,7 +2,7 @@
 
 #pragma once
 
-#include "Dimensionless.h"
+#include "Dimensionless.hpp"
 
 namespace Principia {
 Quantities::Dimensionless π =

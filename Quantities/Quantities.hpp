@@ -2,7 +2,7 @@
 
 #pragma once
 
-#include "Dimensionless.h"
+#include "Dimensionless.hpp"
 #include <string>
 
 namespace Principia {
@@ -145,4 +145,4 @@ inline void operator/=(Quantity<D>&, Dimensionless const&);
 }
 }
 
-#include "Quantities.inl"
+#include "Quantities-inl.hpp"
