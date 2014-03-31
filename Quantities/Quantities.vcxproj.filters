@@ -57,6 +57,12 @@
     <ClInclude Include="SI-inl.hpp">
       <Filter>Header Files\Units</Filter>
     </ClInclude>
+    <ClInclude Include="ElementaryFunctions.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ElementaryFunctions-inl.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="AssemblyInfo.cpp">

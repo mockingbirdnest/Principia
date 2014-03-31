@@ -79,6 +79,8 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Astronomy.hpp" />
+    <ClInclude Include="ElementaryFunctions-inl.hpp" />
+    <ClInclude Include="ElementaryFunctions.hpp" />
     <ClInclude Include="SI-inl.hpp" />
     <ClInclude Include="UK.hpp" />
     <ClInclude Include="BIPM.hpp" />
