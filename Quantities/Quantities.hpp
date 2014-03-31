@@ -103,7 +103,7 @@ class Quantity {
                                                       Quantity<DRight> const&);
   template<typename DLeft, typename DRight>
   friend Quotient<typename Quantity<DLeft>,
-                  typename Quantity<DRight>> operator/(Quantity<DLeft> const&, 
+                  typename Quantity<DRight>> operator/(Quantity<DLeft> const&,
                                                        Quantity<DRight> const&);
   template<typename D>
   friend Quantity<D> operator*(Quantity<D> const&, Dimensionless const&);
