@@ -24,7 +24,12 @@ namespace TypeGenerators {
   template<bool> struct Condition;
   template<typename Q, typename = Condition<true>> struct SquareRootGenerator;
 }
+template<typename Q>
+using SquareRoot = typename TypeGenerators::SquareRootGenerator<Q>::ResultType;
 
-Dimensionless Sqrt(Dimensionless const& x);
+template<typename D>
+SquareRoot<Quantity<D>> Sqrt(Quantity<D> const& x);
 }
 }
+
+#include "ElementaryFunctions-inl.hpp"
