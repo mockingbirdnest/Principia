@@ -88,13 +88,30 @@ void AssertNotEqual(Dimensionless const& left,
 }
 
 template<typename T>
-void TestOrder(T low, T high) {
-  LogLine(L"Testing ordering of " + ToString(low) + L" < " +
+void TestEquality(T const& low, T const& high) {
+  LogLine(L"Testing equality on " + ToString(low) + L" ≠ " +
           ToString(high) + L"...");
   Assert(low == low, L"low == low was false.");
   Assert(high == high, L"high == high was false.");
   Assert(high != low, L"high != low was false.");
   Assert(low != high, L"low != high was false.");
+
+  LogLine(L"> True comparisons passed!");
+
+  Assert(!(high == low), L"high == low was true.");
+  Assert(!(low == high), L"low == high was true.");
+  Assert(!(low != low), L"low != low was true.");
+  Assert(!(high != high), L"high != high was true.");
+
+  LogLine(L"> False comparisons passed!");
+}
+
+template<typename T>
+void TestOrder(T const& low, T const& high) {
+  TestEquality(low, high);
+
+  LogLine(L"Testing ordering of " + ToString(low) + L" < " +
+          ToString(high) + L"...");
   Assert(high > low, L"high > low was false.");
   Assert(low < high, L"low < high was false.");
   Assert(low >= low, L"low >= low was false.");
@@ -106,10 +123,6 @@ void TestOrder(T low, T high) {
 
   LogLine(L"> True comparisons passed!");
 
-  Assert(!(high == low), L"high == low was true.");
-  Assert(!(low == high), L"low == high was true.");
-  Assert(!(low != low), L"low != low was true.");
-  Assert(!(high != high), L"high != high was true.");
   Assert(!(low > low), L"low > low was true.");
   Assert(!(low < low), L"low < low was true.");
   Assert(!(high > high), L"high > high was true.");
@@ -120,6 +133,33 @@ void TestOrder(T low, T high) {
   Assert(!(high <= low), L"high <= low was true.");
 
   LogLine(L"> False comparisons passed!");
+}
+
+template<typename T>
+void TestAdditiveGroup(T const& zero, T const& a, T const& b, T const& c) {
+  AssertEqual(a + zero, a);
+  AssertEqual(zero + b, b);
+  AssertEqual(a - a, zero);
+  AssertEqual(-a - b, -(a + b));
+  AssertEqual((a + b) + c, a + (b + c));
+  AssertEqual(a - b - c, a - (b + c));
+  AssertEqual(a + b, b + a);
+  T accumulator = zero;
+  T accumulator += a;
+  T accumulator += b;
+  T accumulator -= c;
+  AssertEqual(accumulator, a + b - c);
+}
+
+template<typename Vector, typename Scalar>
+void TestVectorSpace(Vector const& nullVector, Vector const& u, Vector const& v,
+                     Vector const& w, Scalar const& zero, Scalar const& unit,
+                     Scalar const& α, Scalar const& β) {
+  TestAdditiveGroup(nullVector, u, v, w);
+  AssertEqual((α * β) * v, α * (β * v));
+  AssertEqual(unit * w, w);
+  AssertEqual(zero * u, nullVector);
+  AssertEqual(zero * u, nullVector);
 }
 
 TEST_CLASS(QuantitiesTests) {
