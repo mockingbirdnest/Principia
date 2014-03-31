@@ -1,5 +1,3 @@
-// Quantities.h
-
 #pragma once
 
 #include "Dimensionless.hpp"
