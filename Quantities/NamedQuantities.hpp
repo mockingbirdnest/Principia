@@ -2,7 +2,7 @@
 
 #pragma once
 
-#include "Quantities.h"
+#include "Quantities.hpp"
 
 namespace Principia {
 namespace Quantities {

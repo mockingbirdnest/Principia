@@ -1,10 +1,10 @@
 // Geometry.h
 #pragma once
 
-#include "..\Quantities\Quantities.h"
-#include "..\Quantities\NamedQuantities.h"
-#include "..\Quantities\SI.h"
-#include "..\Quantities\Constants.h"
+#include "..\Quantities\Quantities.hpp"
+#include "..\Quantities\NamedQuantities.hpp"
+#include "..\Quantities\SI.hpp"
+#include "..\Quantities\Constants.hpp"
 #include <string>
 
 namespace Principia {

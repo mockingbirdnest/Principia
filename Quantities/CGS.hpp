@@ -1,9 +1,9 @@
 ﻿#pragma once
 
-#include "Quantities.h"
-#include "NamedQuantities.h"
-#include "Numbers.h"
-#include "SI.h"
+#include "Quantities.hpp"
+#include "NamedQuantities.hpp"
+#include "Numbers.hpp"
+#include "SI.hpp"
 
 namespace Principia {
 // This namespace contains the non-SI units associated with the CGS and the CGS-

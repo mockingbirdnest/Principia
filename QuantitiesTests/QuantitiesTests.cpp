@@ -1,12 +1,12 @@
 ﻿#include "stdafx.h"
 #include "CppUnitTest.h"
 
-#include "..\Quantities\Quantities.h"
-#include "..\Quantities\NamedQuantities.h"
-#include "..\Quantities\SI.h"
-#include "..\Quantities\UK.h"
-#include "..\Quantities\Constants.h"
-#include "..\Quantities\Astronomy.h"
+#include "..\Quantities\Quantities.hpp"
+#include "..\Quantities\NamedQuantities.hpp"
+#include "..\Quantities\SI.hpp"
+#include "..\Quantities\UK.hpp"
+#include "..\Quantities\Constants.hpp"
+#include "..\Quantities\Astronomy.hpp"
 #include <stdio.h>
 
 using namespace Microsoft::VisualStudio::CppUnitTestFramework;

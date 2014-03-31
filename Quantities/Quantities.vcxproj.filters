@@ -18,43 +18,40 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Stdafx.h">
+    <ClInclude Include="Constants.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="resource.h">
+    <ClInclude Include="Dimensionless.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Quantities.h">
+    <ClInclude Include="NamedQuantities.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Constants.h">
+    <ClInclude Include="Numbers.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Dimensionless.h">
+    <ClInclude Include="Quantities.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="NamedQuantities.h">
+    <ClInclude Include="resource.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Numbers.h">
+    <ClInclude Include="Stdafx.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="BIPM.h">
+    <ClInclude Include="Astronomy.hpp">
       <Filter>Header Files\Units</Filter>
     </ClInclude>
-    <ClInclude Include="CGS.h">
+    <ClInclude Include="BIPM.hpp">
       <Filter>Header Files\Units</Filter>
     </ClInclude>
-    <ClInclude Include="SI.h">
+    <ClInclude Include="CGS.hpp">
       <Filter>Header Files\Units</Filter>
     </ClInclude>
-    <ClInclude Include="Astronomy.h">
+    <ClInclude Include="SI.hpp">
       <Filter>Header Files\Units</Filter>
     </ClInclude>
-    <ClInclude Include="Imperial.h">
-      <Filter>Header Files\Units</Filter>
-    </ClInclude>
-    <ClInclude Include="UK.h">
+    <ClInclude Include="UK.hpp">
       <Filter>Header Files\Units</Filter>
     </ClInclude>
   </ItemGroup>
