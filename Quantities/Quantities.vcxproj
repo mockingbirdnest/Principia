@@ -79,9 +79,9 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Astronomy.hpp" />
-    <ClInclude Include="ElementaryFunctions-inl.hpp" />
+    <ClInclude Include="ElementaryFunctions-body.hpp" />
     <ClInclude Include="ElementaryFunctions.hpp" />
-    <ClInclude Include="SI-inl.hpp" />
+    <ClInclude Include="SI-body.hpp" />
     <ClInclude Include="UK.hpp" />
     <ClInclude Include="BIPM.hpp" />
     <ClInclude Include="CGS.hpp" />
@@ -112,8 +112,8 @@
     <Image Include="app.ico" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="Dimensionless-inl.hpp" />
-    <None Include="Quantities-inl.hpp" />
+    <None Include="Dimensionless-body.hpp" />
+    <None Include="Quantities-body.hpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -32,4 +32,4 @@ SquareRoot<Quantity<D>> Sqrt(Quantity<D> const& x);
 }
 }
 
-#include "ElementaryFunctions-inl.hpp"
+#include "ElementaryFunctions-body.hpp"

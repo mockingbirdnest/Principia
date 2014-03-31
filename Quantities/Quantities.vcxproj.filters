@@ -54,13 +54,13 @@
     <ClInclude Include="UK.hpp">
       <Filter>Header Files\Units</Filter>
     </ClInclude>
-    <ClInclude Include="SI-inl.hpp">
-      <Filter>Header Files\Units</Filter>
-    </ClInclude>
     <ClInclude Include="ElementaryFunctions.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="ElementaryFunctions-inl.hpp">
+    <ClInclude Include="SI-body.hpp">
+      <Filter>Header Files\Units</Filter>
+    </ClInclude>
+    <ClInclude Include="ElementaryFunctions-body.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -89,10 +89,10 @@
     </Image>
   </ItemGroup>
   <ItemGroup>
-    <None Include="Dimensionless-inl.hpp">
+    <None Include="Dimensionless-body.hpp">
       <Filter>Header Files</Filter>
     </None>
-    <None Include="Quantities-inl.hpp">
+    <None Include="Quantities-body.hpp">
       <Filter>Header Files</Filter>
     </None>
   </ItemGroup>
