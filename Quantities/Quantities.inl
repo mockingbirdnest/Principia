@@ -1,8 +1,7 @@
-// PhysicalQuantities.ipp
-
 #pragma once
 
-namespace PhysicalQuantities {
+namespace Principia {
+namespace Quantities {
 
 template<int LengthExponent, int MassExponent, int TimeExponent,
          int CurrentExponent, int TemperatureExponent, int AmountExponent,
@@ -143,7 +142,7 @@ template<typename D>
 template<int Exponent>
 Exponentiation<Quantity<D>, Exponent> Quantity<D>::Pow() const {
   return Exponentiation<Quantity<D>, 
-                        Exponent>(Exponentiate(magnitude_, Exponent));
+                        Exponent>(magnitude_.Pow(Exponent));
 }
 #pragma region Additive group
 template<typename D>
@@ -162,7 +161,7 @@ inline Quantity<D> operator+(Quantity<D> const& left,
 template<typename D>
 inline Quantity<D> operator-(Quantity<D> const& left,
                              Quantity<D> const& right) {
-  return Quantity<D>(left.magnitude_ + right.magnitude_);
+  return Quantity<D>(left.magnitude_ - right.magnitude_);
 }
 #pragma endregion
 #pragma region Multiplicative group
@@ -254,8 +253,9 @@ inline Quantity<D> Abs(Quantity<D> const& quantity) {
 }
 
 template<typename D>
-inline std::wstring ToString(Quantity<D> const& quantity) {
-  return ToString(quantity.magnitude_) +
+inline std::wstring ToString(Quantity<D> const& quantity, 
+                             unsigned char const precision) {
+  return ToString(quantity.magnitude_, precision) +
     (D::Length            != 0 ? L" m^" + std::to_wstring(D::Length) : L"") +
     (D::Mass              != 0 ? L" kg^" + std::to_wstring(D::Mass) : L"") +
     (D::Time              != 0 ? L" s^" + std::to_wstring(D::Time) : L"") +
@@ -270,5 +270,6 @@ inline std::wstring ToString(Quantity<D> const& quantity) {
     (D::Angle             != 0 ? L" rad^" + std::to_wstring(D::Angle) : L"") +
     (D::SolidAngle        != 0 ? L" sr^" + std::to_wstring(D::SolidAngle) 
                                : L"");
+}
 }
 }

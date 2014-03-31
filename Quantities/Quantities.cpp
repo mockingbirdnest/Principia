@@ -2,5 +2,5 @@
 
 #include "stdafx.h"
 
-#include "PhysicalQuantities.h"
+#include "Quantities.h"
 

@@ -2,9 +2,10 @@
 
 #pragma once
 
-#include "PhysicalQuantities.h"
+#include "Quantities.h"
 
-namespace PhysicalQuantities {
+namespace Principia {
+namespace Quantities {
 #pragma region General mechanics
 typedef Quotient<Length, Time>   Speed;
 typedef Quotient<Speed, Time>    Acceleration;
@@ -30,6 +31,10 @@ typedef Quotient<Mass, Volume>        Density;
 typedef Quotient<Volume, Mass>        SpecificVolume;
 typedef Quotient<Volume, Amount>      MolarVolume;
 #pragma endregion
+#pragma region Fluid dynamics
+typedef Product<Pressure, Time> DynamicViscosity;
+typedef Quotient<Area, Time>    KinematicViscosity;
+#pragma endregion
 #pragma region Chemistry
 typedef Quotient<Amount, Volume> Concentration;
 typedef Quotient<Mass, Amount>   MolarMass;
@@ -46,7 +51,7 @@ typedef Quotient<Winding, Time>   Frequency;
 typedef Quotient<Length, Winding> Wavelength;
 typedef Quotient<Winding, Length> SpectroscopicWavenumber;
 #pragma endregion
-#pragma region Electricity
+#pragma region Electromagnetism
 typedef Product<Current, Time>          Charge;
 typedef Quotient<Energy, Charge>        Voltage;
 typedef Quotient<Charge, Voltage>       Capacitance;
@@ -55,9 +60,13 @@ typedef Quotient<Current, Voltage>      Conductance;
 typedef Quotient<Energy, Current>       MagneticFlux;
 typedef Quotient<MagneticFlux, Area>    MagneticFluxDensity;
 typedef Quotient<MagneticFlux, Current> Inductance;
+typedef Quotient<Force, Charge>         ElectricField;
 
 typedef Product<Quotient<Inductance, Length>, SolidAngle>   Permeability;
 typedef Quotient<Quotient<Capacitance, Length>, SolidAngle> Permittivity;
+
+typedef Product<ElectricField, Permittivity> ElectricDisplacementField;
+typedef Quotient<MagneticFluxDensity, Permeability> MagneticField;
 #pragma endregion
 #pragma region Radiometry
 typedef Quotient<Power, SolidAngle>      RadiantIntensity;
@@ -75,4 +84,5 @@ typedef Quotient<LuminousFlux, Area>           Illuminance;
 typedef Product<Illuminance, Time>             LuminousExposure;
 typedef Quotient<LuminousFlux, RadiantFlux>    LuminousEfficacy;
 #pragma endregion
+}
 }

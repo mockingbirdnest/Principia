@@ -13,53 +13,59 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
+    <Filter Include="Header Files\Units">
+      <UniqueIdentifier>{c4ec061d-1396-4424-b0eb-1533aa389a46}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="PhysicalQuantities.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="Stdafx.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="resource.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Quantities.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="Constants.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="NamedQuantities.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="StaticTest.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="SIUnits.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Dimensionless.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Dimensionless.ipp">
+    <ClInclude Include="NamedQuantities.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="PhysicalQuantities.ipp">
+    <ClInclude Include="Numbers.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="MathematicalConstants.h">
-      <Filter>Header Files</Filter>
+    <ClInclude Include="BIPM.h">
+      <Filter>Header Files\Units</Filter>
+    </ClInclude>
+    <ClInclude Include="CGS.h">
+      <Filter>Header Files\Units</Filter>
+    </ClInclude>
+    <ClInclude Include="SI.h">
+      <Filter>Header Files\Units</Filter>
+    </ClInclude>
+    <ClInclude Include="Astronomy.h">
+      <Filter>Header Files\Units</Filter>
+    </ClInclude>
+    <ClInclude Include="Imperial.h">
+      <Filter>Header Files\Units</Filter>
+    </ClInclude>
+    <ClInclude Include="UK.h">
+      <Filter>Header Files\Units</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="PhysicalQuantities.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="AssemblyInfo.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Stdafx.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="StaticTest.cpp">
+    <ClCompile Include="Quantities.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -77,7 +83,13 @@
     </Image>
   </ItemGroup>
   <ItemGroup>
-    <None Include="SIUnits.ipp">
+    <None Include="Quantities.inl">
+      <Filter>Header Files</Filter>
+    </None>
+    <None Include="Dimensionless.inl">
+      <Filter>Header Files</Filter>
+    </None>
+    <None Include="SI.inl">
       <Filter>Header Files</Filter>
     </None>
   </ItemGroup>

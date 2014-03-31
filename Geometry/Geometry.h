@@ -1,19 +1,18 @@
 // Geometry.h
 #pragma once
 
-#include "..\PhysicalQuantities\PhysicalQuantities.h"
-#include "..\PhysicalQuantities\NamedQuantities.h"
-#include "..\PhysicalQuantities\SIUnits.h"
-#include "..\PhysicalQuantities\Constants.h"
+#include "..\Quantities\Quantities.h"
+#include "..\Quantities\NamedQuantities.h"
+#include "..\Quantities\SI.h"
+#include "..\Quantities\Constants.h"
 #include <string>
 
-using namespace System;
-using namespace PhysicalQuantities;
-
+namespace Principia {
 namespace Geometry {
   template<typename D>
   struct R3Element {
   public:
   private:
   };
+}
 }

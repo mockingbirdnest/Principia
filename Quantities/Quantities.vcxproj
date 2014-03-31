@@ -11,10 +11,10 @@
     </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{ADF49FDE-DFF4-4768-AD4D-00ADD9A4B5AF}</ProjectGuid>
+    <ProjectGuid>{273987F9-5E73-43E6-868E-E9D3C137F01A}</ProjectGuid>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <Keyword>ManagedCProj</Keyword>
-    <RootNamespace>PhysicalQuantities</RootNamespace>
+    <RootNamespace>Quantities</RootNamespace>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
@@ -64,7 +64,6 @@
       <WarningLevel>Level3</WarningLevel>
       <PreprocessorDefinitions>WIN32;NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <PrecompiledHeader>Use</PrecompiledHeader>
-      <Optimization>Full</Optimization>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -77,22 +76,23 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Astronomy.h" />
+    <ClInclude Include="UK.h" />
+    <ClInclude Include="BIPM.h" />
+    <ClInclude Include="CGS.h" />
     <ClInclude Include="Constants.h" />
-    <ClInclude Include="Dimensionless.ipp" />
     <ClInclude Include="Dimensionless.h" />
-    <ClInclude Include="MathematicalConstants.h" />
+    <ClInclude Include="Imperial.h" />
+    <ClInclude Include="Numbers.h" />
     <ClInclude Include="NamedQuantities.h" />
-    <ClInclude Include="PhysicalQuantities.ipp" />
-    <ClInclude Include="PhysicalQuantities.h" />
+    <ClInclude Include="Quantities.h" />
     <ClInclude Include="resource.h" />
-    <ClInclude Include="StaticTest.h" />
+    <ClInclude Include="SI.h" />
     <ClInclude Include="Stdafx.h" />
-    <ClInclude Include="SIUnits.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="AssemblyInfo.cpp" />
-    <ClCompile Include="PhysicalQuantities.cpp" />
-    <ClCompile Include="StaticTest.cpp" />
+    <ClCompile Include="Quantities.cpp" />
     <ClCompile Include="Stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
@@ -108,7 +108,9 @@
     <Image Include="app.ico" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="SIUnits.ipp" />
+    <None Include="Dimensionless.inl" />
+    <None Include="Quantities.inl" />
+    <None Include="SI.inl" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

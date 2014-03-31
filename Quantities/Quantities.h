@@ -1,12 +1,12 @@
-// PhysicalQuantities.h
+// Quantities.h
 
 #pragma once
 
 #include "Dimensionless.h"
+#include <string>
 
-#include "string"
-
-namespace PhysicalQuantities {
+namespace Principia {
+namespace Quantities {
 template<int LengthExponent, int MassExponent, int TimeExponent,
          int CurrentExponent, int TemperatureExponent, int AmountExponent,
          int LuminousIntensityExponent, int WindingExponent,
@@ -60,6 +60,10 @@ Winding           Cycles(Dimensionless const&);
 Angle             Radians(Dimensionless const&);
 SolidAngle        Steradians(Dimensionless const&);
 }
+
+template<typename D>
+std::wstring ToString(Quantity<D> const& quantity,
+                      unsigned char const precision = 16);
 
 template<typename D>
 class Quantity {
@@ -127,7 +131,7 @@ class Quantity {
   friend Quantity<D> Abs(Quantity<D> const&);
 
   template<typename D>
-  friend std::wstring ToString(Quantity<D> const&);
+  friend std::wstring ToString(Quantity<D> const&, unsigned char const);
 };
 
 template<typename D>
@@ -139,5 +143,6 @@ inline void operator*=(Quantity<D>&, Dimensionless const&);
 template<typename D>
 inline void operator/=(Quantity<D>&, Dimensionless const&);
 }
+}
 
-#include "PhysicalQuantities.ipp"
+#include "Quantities.inl"

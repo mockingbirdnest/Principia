@@ -26,7 +26,7 @@
     <ClCompile Include="stdafx.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="SI.cpp">
+    <ClCompile Include="QuantitiesTests.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
