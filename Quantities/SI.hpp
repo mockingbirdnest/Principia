@@ -108,4 +108,4 @@ Quantities::Length const AstronomicalUnit = 149597870700 * SI::Metre;
 }
 }
 
-#include "SI.inl"
+#include "SI.ipp"
