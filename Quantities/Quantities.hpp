@@ -143,4 +143,4 @@ inline void operator/=(Quantity<D>&, Dimensionless const&);
 }
 }
 
-#include "Quantities-inl.hpp"
+#include "Quantities-body.hpp"
