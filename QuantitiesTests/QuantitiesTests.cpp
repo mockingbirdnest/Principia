@@ -4,6 +4,7 @@
 #include "..\Quantities\Quantities.h"
 #include "..\Quantities\NamedQuantities.h"
 #include "..\Quantities\SI.h"
+#include "..\Quantities\UK.h"
 #include "..\Quantities\Constants.h"
 #include "..\Quantities\Astronomy.h"
 #include <stdio.h>
@@ -15,6 +16,7 @@ using namespace Principia::Quantities;
 using namespace Principia::Constants;
 using namespace Principia::SI;
 using namespace Principia::Astronomy;
+using namespace Principia::UK;
 
 namespace QuantitiesTests {
 
@@ -145,9 +147,9 @@ void TestAdditiveGroup(T const& zero, T const& a, T const& b, T const& c) {
   AssertEqual(a - b - c, a - (b + c));
   AssertEqual(a + b, b + a);
   T accumulator = zero;
-  T accumulator += a;
-  T accumulator += b;
-  T accumulator -= c;
+  accumulator += a;
+  accumulator += b;
+  accumulator -= c;
   AssertEqual(accumulator, a + b - c);
 }
 
@@ -170,7 +172,7 @@ void TestVectorSpace(Vector const& nullVector, Vector const& u, Vector const& v,
   vector /= α;
   AssertEqual(u, vector);
   vector *= zero;
-  AssertEqual(vector, zero);
+  AssertEqual(vector, nullVector);
 }
 
 TEST_CLASS(QuantitiesTests) {
@@ -179,6 +181,7 @@ public:
     TestOrder(Dimensionless(0), Dimensionless(1));
     TestOrder(Dimensionless(-1), Dimensionless(0));
     TestOrder(Dimensionless(3), Dimensionless(π));
+    TestOrder(Dimensionless(42), Dimensionless(1729));
   }
   TEST_METHOD(DimensionfulComparisons) {
     TestOrder(EarthMass, JupiterMass);
@@ -187,15 +190,11 @@ public:
     TestOrder(SpeedOfLight * Day, LightYear);
   }
   TEST_METHOD(DimensionlessOperations) {
-    Dimensionless const number = 1729;
-    Dimensionless accumulator = 0;
-    AssertNotEqual(1, 0);
-    for (int i = 1; i < 10; ++i) {
-      accumulator += number;
-      AssertEqual(accumulator, i * number);
-    }
-    for (int i = 1; i < 10; ++i) { accumulator -= number; }
-    AssertEqual(accumulator, 0);
+    Dimensionless zero = 0;
+    Dimensionless one = 1;
+    Dimensionless taxi = 1729;
+    TestVectorSpace(0 * Metre / Second, SpeedOfLight, 88 * Mile / Hour,
+                    -340.29 * Metre / Second, zero, one, -2 * π, taxi);
   }
   TEST_METHOD(DimensionlessExponentiation) {
     Dimensionless const number   = π - 42;

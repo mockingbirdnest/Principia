@@ -51,10 +51,10 @@
     <ClInclude Include="Astronomy.h">
       <Filter>Header Files\Units</Filter>
     </ClInclude>
-    <ClInclude Include="Avoirdupois.h">
+    <ClInclude Include="Imperial.h">
       <Filter>Header Files\Units</Filter>
     </ClInclude>
-    <ClInclude Include="Imperial.h">
+    <ClInclude Include="UK.h">
       <Filter>Header Files\Units</Filter>
     </ClInclude>
   </ItemGroup>

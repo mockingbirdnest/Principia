@@ -77,7 +77,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Astronomy.h" />
-    <ClInclude Include="Avoirdupois.h" />
+    <ClInclude Include="UK.h" />
     <ClInclude Include="BIPM.h" />
     <ClInclude Include="CGS.h" />
     <ClInclude Include="Constants.h" />

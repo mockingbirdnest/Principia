@@ -161,7 +161,7 @@ inline Quantity<D> operator+(Quantity<D> const& left,
 template<typename D>
 inline Quantity<D> operator-(Quantity<D> const& left,
                              Quantity<D> const& right) {
-  return Quantity<D>(left.magnitude_ + right.magnitude_);
+  return Quantity<D>(left.magnitude_ - right.magnitude_);
 }
 #pragma endregion
 #pragma region Multiplicative group
