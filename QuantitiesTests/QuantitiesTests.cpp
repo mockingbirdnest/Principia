@@ -1,4 +1,4 @@
-﻿#include "stdafx.h"
+﻿#include "stdafx.hpp"
 #include "CppUnitTest.h"
 
 #include "..\Quantities\Quantities.hpp"
