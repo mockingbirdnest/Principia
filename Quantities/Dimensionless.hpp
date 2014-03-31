@@ -46,4 +46,4 @@ std::wstring ToString(Dimensionless const& number,
 }
 }
 
-#include "Dimensionless.inl"
+#include "Dimensionless-inl.hpp"

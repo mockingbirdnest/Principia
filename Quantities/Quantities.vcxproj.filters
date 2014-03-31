@@ -54,6 +54,9 @@
     <ClInclude Include="UK.hpp">
       <Filter>Header Files\Units</Filter>
     </ClInclude>
+    <ClInclude Include="SI-inl.hpp">
+      <Filter>Header Files\Units</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="AssemblyInfo.cpp">
@@ -80,13 +83,10 @@
     </Image>
   </ItemGroup>
   <ItemGroup>
-    <None Include="Quantities.inl">
+    <None Include="Dimensionless-inl.hpp">
       <Filter>Header Files</Filter>
     </None>
-    <None Include="Dimensionless.inl">
-      <Filter>Header Files</Filter>
-    </None>
-    <None Include="SI.inl">
+    <None Include="Quantities-inl.hpp">
       <Filter>Header Files</Filter>
     </None>
   </ItemGroup>
