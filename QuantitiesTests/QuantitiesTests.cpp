@@ -7,6 +7,7 @@
 #include "..\Quantities\UK.hpp"
 #include "..\Quantities\Constants.hpp"
 #include "..\Quantities\Astronomy.hpp"
+#include "..\Quantities\ElementaryFunctions.hpp"
 #include <stdio.h>
 
 using namespace Microsoft::VisualStudio::CppUnitTestFramework;
@@ -290,6 +291,8 @@ public:
     AssertEqual(GravitationalConstant * EarthMass /
                   (40 * Mega(Metre) / (2 * π)).Pow<2>(),
                 StandardGravity, 1e-2);
+    AssertEqual(2 * π * Sqrt(1 * Metre / StandardGravity),
+                1 * Second, 1e-2);
   }
 };
 }
