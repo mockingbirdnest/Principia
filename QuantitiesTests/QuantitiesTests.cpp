@@ -90,6 +90,15 @@ void AssertNotEqual(Dimensionless const& left,
   AssertNotEqualWithin(left, right, ε);
 }
 
+void AssertEqualAbsolute(Dimensionless const& left,
+                 Dimensionless const& right,
+                 Dimensionless const& ε = 1e-16) {
+  std::wstring message = L"Should be equal within " + ToString(ε, 3) +
+                         L"(absolute):" + ToString(left) + L" and " +
+                         ToString(right) + L".";
+  Assert(Abs(left - right) < ε);
+}
+
 template<typename T>
 void TestEquality(T const& low, T const& high) {
   LogLine(L"Testing equality on " + ToString(low) + L" ≠ " +
@@ -294,6 +303,20 @@ public:
     // Talleyrand.
     AssertEqual(π * Sqrt(1 * Metre / StandardGravity),
                 1 * Second, 1e-2);
+  }
+  TEST_METHOD(TrigonometricFunctions) {
+    AssertEqual(Cos(0 * Degree), 1);
+    AssertEqual(Sin(0 * Degree), 0);
+    AssertEqual(Cos(90 * Degree), 0);
+    AssertEqual(Sin(90 * Degree), 1);
+    AssertEqual(Cos(180 * Degree), -1);
+    AssertEqual(Sin(180 * Degree), 0);
+    AssertEqual(Cos(-90 * Degree), 0);
+    AssertEqual(Sin(-90 * Degree), -1);
+    for (int k = 0; k < 360; ++k) {
+      AssertEqual(Cos((k + 90) * Degree), Sin(k * Degree));
+      AssertEqual(Sin(k * Degree) / Cos(k * Degree), Tan(k * Degree));
+    }
   }
 };
 }
