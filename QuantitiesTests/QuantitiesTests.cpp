@@ -322,13 +322,17 @@ public:
       AssertEqual(((k + 179) % 360 - 179) * Degree,
                   ArcTan(Sin(k * Degree), Cos(k * Degree)),
                   1e-13);
+      AssertEqual(((k + 179) % 360 - 179) * Degree,
+                  ArcTan(Sin(k * Degree) * AstronomicalUnit,
+                  Cos(k * Degree) * AstronomicalUnit),
+                  1e-13);
       AssertEqualAbsolute(Cos(ArcCos(Cos(k * Degree))), Cos(k * Degree));
       AssertEqualAbsolute(Sin(ArcSin(Sin(k * Degree))), Sin(k * Degree));
       AssertEqual(Sin(k * Degree).Pow(2), (1 - Cos(2 * k * Degree)) / 2, 1e-13);
       AssertEqual(Cos(k * Degree).Pow(2), (1 + Cos(2 * k * Degree)) / 2, 1e-13);
     }
     // Horribly conditioned near 0, so not in the loop above.
-    AssertEqual(Tan(ArcTan(Tan(-42 * Degree))), Tan(-42 * Degree), 1e-13);
+    AssertEqual(Tan(ArcTan(Tan(-42 * Degree))), Tan(-42 * Degree));
   }
 };
 }
