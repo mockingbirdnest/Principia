@@ -291,7 +291,8 @@ public:
     AssertEqual(GravitationalConstant * EarthMass /
                   (40 * Mega(Metre) / (2 * π)).Pow<2>(),
                 StandardGravity, 1e-2);
-    AssertEqual(2 * π * Sqrt(1 * Metre / StandardGravity),
+    // Talleyrand.
+    AssertEqual(π * Sqrt(1 * Metre / StandardGravity),
                 1 * Second, 1e-2);
   }
 };

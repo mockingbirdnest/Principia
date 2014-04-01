@@ -33,6 +33,8 @@ template<typename Left, typename Right> struct QuotientGenerator;
 template<bool> struct Range;
 template<typename Q, int Exponent, typename = Range<true>> 
 struct PowerGenerator;
+template<bool> struct Condition;
+template<typename Q, typename = Condition<true>> struct SquareRootGenerator;
 }
 template<typename Left, typename Right>
 using Quotient = typename TypeGenerators::QuotientGenerator<Left,
@@ -43,6 +45,8 @@ using Product = typename TypeGenerators::ProductGenerator<Left,
 template<typename Left, int Exponent>
 using Exponentiation =
   typename TypeGenerators::PowerGenerator<Left, Exponent>::ResultType;
+template<typename Q>
+using SquareRoot = typename TypeGenerators::SquareRootGenerator<Q>::ResultType;
 template<typename Right>
 using Inverse = Quotient<Dimensionless, Right>;
 
@@ -127,6 +131,9 @@ class Quantity {
 
   template<typename D>
   friend Quantity<D> Abs(Quantity<D> const&);
+
+  template<typename D>
+  friend SquareRoot<Quantity<D>> Sqrt(Quantity<D> const& x);
 
   template<typename D>
   friend std::wstring ToString(Quantity<D> const&, unsigned char const);

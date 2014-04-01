@@ -20,13 +20,6 @@ Angle ArcCos(Dimensionless const& x);
 Angle ArcTan(Dimensionless const& y, Dimensionless const& x = 1);
 Angle ArcCot(Dimensionless const& x, Dimensionless const& y = 1);
 
-namespace TypeGenerators {
-  template<bool> struct Condition;
-  template<typename Q, typename = Condition<true>> struct SquareRootGenerator;
-}
-template<typename Q>
-using SquareRoot = typename TypeGenerators::SquareRootGenerator<Q>::ResultType;
-
 template<typename D>
 SquareRoot<Quantity<D>> Sqrt(Quantity<D> const& x);
 }

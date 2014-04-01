@@ -34,5 +34,27 @@ struct SquareRootGenerator<
 };
 }
 
+
+
+inline Dimensionless Sqrt(Dimensionless const& x) {
+  return std::sqrt(x.Value());
+}
+inline Dimensionless Log(Dimensionless const& x) {
+  return std::log(x.Value());
+}
+inline Dimensionless Log(Dimensionless const& base, Dimensionless const& x) {
+  if (base == 2) { return std::log2(x.Value()); }
+  else if (base == 10) { return std::log10(x.Value()); }
+  else { return Log(x) / Log(base); }
+}
+inline Dimensionless Exp(Dimensionless const& x) {
+  return std::exp(x.Value());
+}
+
+template<typename D>
+inline SquareRoot<Quantity<D>> Sqrt(Quantity<D> const& x) {
+  return SquareRoot<Quantity<D>>(Sqrt(x.magnitude_));
+}
+
 }
 }
