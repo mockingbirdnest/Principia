@@ -1,4 +1,6 @@
-#pragma once
+﻿#pragma once
+
+#include "SI.hpp"
 
 namespace Principia {
 namespace Quantities {
@@ -49,6 +51,32 @@ inline Dimensionless Log(Dimensionless const& base, Dimensionless const& x) {
 }
 inline Dimensionless Exp(Dimensionless const& x) {
   return std::exp(x.Value());
+}
+
+inline Dimensionless Sin(Angle const& α) {
+  return std::sin((α / SI::Radian).Value());
+}
+inline Dimensionless Cos(Angle const& α) {
+  return std::cos((α / SI::Radian).Value());
+}
+inline Dimensionless Tan(Angle const& α) {
+  return std::tan((α / SI::Radian).Value());
+}
+inline Dimensionless Cot(Angle const& α) {
+  return Tan(π / 2 * SI::Radian - α);
+}
+
+inline Angle ArcSin(Dimensionless const& x) {
+  return std::asin(x.Value()) * SI::Radian;
+}
+inline Angle ArcCos(Dimensionless const& x) {
+  return std::acos(x.Value()) * SI::Radian;
+}
+inline Angle ArcTan(Dimensionless const& y, Dimensionless const& x) {
+  return std::atan2(y.Value(), x.Value()) * SI::Radian;
+}
+Angle ArcCot(Dimensionless const& x, Dimensionless const& y) {
+  return ArcTan(y, x);
 }
 
 template<typename D>
