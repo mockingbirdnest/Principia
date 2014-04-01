@@ -78,25 +78,28 @@ void AssertNotEqual(Quantity<D> const& left,
   AssertNotEqualWithin(left, right, ε);
 }
 
+void AssertEqualAbsolute(Dimensionless const& left,
+                         Dimensionless const& right,
+                         Dimensionless const& ε = 1e-15) {
+  std::wstring message = L"Should be equal within " + ToString(ε, 3) +
+    L" (absolute): " + ToString(left) + L" and " +
+    ToString(right) + L".";
+  LogLine(message);
+  Assert(Abs(left - right) < ε, message);
+  LogLine(L"> Passed!");
+}
+
 void AssertEqual(Dimensionless const& left,
                  Dimensionless const& right,
                  Dimensionless const& ε = 1e-15) {
-  AssertEqualWithin(left, right, ε);
+  if (left == 0 || right == 0) { AssertEqualAbsolute(left, right, ε); }
+  else {AssertEqualWithin(left, right, ε); }
 }
 
 void AssertNotEqual(Dimensionless const& left,
                     Dimensionless const& right,
                     Dimensionless const& ε = 1e-15) {
   AssertNotEqualWithin(left, right, ε);
-}
-
-void AssertEqualAbsolute(Dimensionless const& left,
-                 Dimensionless const& right,
-                 Dimensionless const& ε = 1e-16) {
-  std::wstring message = L"Should be equal within " + ToString(ε, 3) +
-                         L"(absolute):" + ToString(left) + L" and " +
-                         ToString(right) + L".";
-  Assert(Abs(left - right) < ε);
 }
 
 template<typename T>
@@ -314,9 +317,18 @@ public:
     AssertEqual(Cos(-90 * Degree), 0);
     AssertEqual(Sin(-90 * Degree), -1);
     for (int k = 0; k < 360; ++k) {
-      AssertEqual(Cos((k + 90) * Degree), Sin(k * Degree));
+      AssertEqualAbsolute(Cos((90 - k) * Degree), Sin(k * Degree));
       AssertEqual(Sin(k * Degree) / Cos(k * Degree), Tan(k * Degree));
+      AssertEqual(((k + 179) % 360 - 179) * Degree,
+                  ArcTan(Sin(k * Degree), Cos(k * Degree)),
+                  1e-13);
+      AssertEqualAbsolute(Cos(ArcCos(Cos(k * Degree))), Cos(k * Degree));
+      AssertEqualAbsolute(Sin(ArcSin(Sin(k * Degree))), Sin(k * Degree));
+      AssertEqual(Sin(k * Degree).Pow(2), (1 - Cos(2 * k * Degree)) / 2, 1e-13);
+      AssertEqual(Cos(k * Degree).Pow(2), (1 + Cos(2 * k * Degree)) / 2, 1e-13);
     }
+    // Horribly conditioned near 0, so not in the loop above.
+    AssertEqual(Tan(ArcTan(Tan(-42 * Degree))), Tan(-42 * Degree), 1e-13);
   }
 };
 }
