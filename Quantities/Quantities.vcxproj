@@ -11,10 +11,10 @@
     </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{B3B7F5AA-9506-4007-8D42-9EC443033AE3}</ProjectGuid>
+    <ProjectGuid>{273987F9-5E73-43E6-868E-E9D3C137F01A}</ProjectGuid>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <Keyword>ManagedCProj</Keyword>
-    <RootNamespace>Geometry</RootNamespace>
+    <RootNamespace>Quantities</RootNamespace>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
@@ -78,13 +78,25 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Geometry.hpp" />
+    <ClInclude Include="Astronomy.hpp" />
+    <ClInclude Include="ElementaryFunctions-body.hpp" />
+    <ClInclude Include="ElementaryFunctions.hpp" />
+    <ClInclude Include="SI-body.hpp" />
+    <ClInclude Include="UK.hpp" />
+    <ClInclude Include="BIPM.hpp" />
+    <ClInclude Include="CGS.hpp" />
+    <ClInclude Include="Constants.hpp" />
+    <ClInclude Include="Dimensionless.hpp" />
+    <ClInclude Include="Numbers.hpp" />
+    <ClInclude Include="NamedQuantities.hpp" />
+    <ClInclude Include="Quantities.hpp" />
     <ClInclude Include="resource.hpp" />
+    <ClInclude Include="SI.hpp" />
     <ClInclude Include="Stdafx.hpp" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="AssemblyInfo.cpp" />
-    <ClCompile Include="Geometry.cpp" />
+    <ClCompile Include="Quantities.cpp" />
     <ClCompile Include="Stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
@@ -98,6 +110,10 @@
   </ItemGroup>
   <ItemGroup>
     <Image Include="app.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Dimensionless-body.hpp" />
+    <None Include="Quantities-body.hpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

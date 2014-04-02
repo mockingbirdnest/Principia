@@ -1,4 +1,4 @@
-#include "stdafx.h"
+#include "stdafx.hpp"
 
 using namespace System::Reflection;
 using namespace System::Runtime::CompilerServices;

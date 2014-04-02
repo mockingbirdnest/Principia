@@ -1,4 +1,4 @@
-#include "stdafx.h"
+#include "stdafx.hpp"
 
 using namespace System;
 using namespace System::Reflection;
@@ -11,11 +11,11 @@ using namespace System::Security::Permissions;
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
 //
-[assembly:AssemblyTitleAttribute(L"PhysicalQuantities")];
+[assembly:AssemblyTitleAttribute(L"Quantities")];
 [assembly:AssemblyDescriptionAttribute(L"")];
 [assembly:AssemblyConfigurationAttribute(L"")];
 [assembly:AssemblyCompanyAttribute(L"")];
-[assembly:AssemblyProductAttribute(L"PhysicalQuantities")];
+[assembly:AssemblyProductAttribute(L"Quantities")];
 [assembly:AssemblyCopyrightAttribute(L"Copyright (c)  2014")];
 [assembly:AssemblyTrademarkAttribute(L"")];
 [assembly:AssemblyCultureAttribute(L"")];
