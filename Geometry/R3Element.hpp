@@ -19,8 +19,8 @@ namespace Geometry {
     Scalar y;
     Scalar z;
   };
-template<typename T>
 
+template<typename T>
 R3Element<T> operator+ (R3Element<T> const& right);
 template<typename T>
 R3Element<T> operator- (R3Element<T> const& right);
