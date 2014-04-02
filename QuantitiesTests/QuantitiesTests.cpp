@@ -351,7 +351,9 @@ public:
   }
   TEST_METHOD(ExpLogAndSqrt) {
     AssertEqual(Exp(1), e);
-    AssertEqual(Exp(Log(42) + Log(1729)), 42 * 1729, 1e-14);
+    AssertEqual(Exp(Log(4.2) + Log(1.729)), 4.2 * 1.729, 1e-14);
+    AssertEqual(Exp(Log(2) * Log2(1.729)), 1.729);
+    AssertEqual(Exp(Log(10) * Log10(1.729)), 1.729);
     AssertEqual(Exp(Log(2) / 2), Sqrt(2));
     AssertEqual(Exp(Log(Rood / Foot.Pow<2>()) / 2) * Foot, Sqrt(Rood));
   }
