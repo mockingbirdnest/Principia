@@ -24,14 +24,14 @@ namespace QuantitiesTests {
 // TODO(robin): move all these utilities somewhere else.
 
 // The Microsoft equivalent only takes a wchar_t*.
-void Log(std::wstring const& message) {
+void WriteLog(std::wstring const& message) {
   Logger::WriteMessage(message.c_str());
 }
 void NewLine() {
   Logger::WriteMessage(L"\n");
 }
 void LogLine(std::wstring const& message) {
-  Log(message);
+  WriteLog(message);
   NewLine();
 }
 // The Microsoft equivalent only takes a wchar_t*.
@@ -333,6 +333,27 @@ public:
     }
     // Horribly conditioned near 0, so not in the loop above.
     AssertEqual(Tan(ArcTan(Tan(-42 * Degree))), Tan(-42 * Degree));
+  }
+  TEST_METHOD(HyperbolicFunctions) {
+    AssertEqual(Sinh(0 * Radian), 0);
+    AssertEqual(Cosh(0 * Radian), 1);
+    AssertEqual(Tanh(0 * Radian), 0);
+    // Limits:
+    AssertEqual(Sinh(20 * Radian), Cosh(20 * Radian));
+    AssertEqual(Tanh(20 * Radian), 1);
+    AssertEqual(Sinh(-20 * Radian), -Cosh(-20 * Radian));
+    AssertEqual(Tanh(-20 * Radian), -1);
+    
+    AssertEqual(Sinh(2 * Radian) / Cosh(2 * Radian), Tanh(2 * Radian));
+    AssertEqual(ArcSinh(Sinh(-10 * Degree)), -10 * Degree);
+    AssertEqual(ArcCosh(Cosh(-10 * Degree)), 10 * Degree, 1e-14);
+    AssertEqual(ArcTanh(Tanh(-10 * Degree)), -10 * Degree);
+  }
+  TEST_METHOD(ExpLogAndSqrt) {
+    AssertEqual(Exp(1), e);
+    AssertEqual(Exp(Log(42) + Log(1729)), 42 * 1729, 1e-14);
+    AssertEqual(Exp(Log(2) / 2), Sqrt(2));
+    AssertEqual(Exp(Log(Rood / Foot.Pow<2>()) / 2) * Foot, Sqrt(Rood));
   }
 };
 }
