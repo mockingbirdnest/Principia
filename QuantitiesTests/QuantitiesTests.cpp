@@ -24,14 +24,14 @@ namespace QuantitiesTests {
 // TODO(robin): move all these utilities somewhere else.
 
 // The Microsoft equivalent only takes a wchar_t*.
-void Log(std::wstring const& message) {
+void WriteLog(std::wstring const& message) {
   Logger::WriteMessage(message.c_str());
 }
 void NewLine() {
   Logger::WriteMessage(L"\n");
 }
 void LogLine(std::wstring const& message) {
-  Log(message);
+  WriteLog(message);
   NewLine();
 }
 // The Microsoft equivalent only takes a wchar_t*.
@@ -78,10 +78,22 @@ void AssertNotEqual(Quantity<D> const& left,
   AssertNotEqualWithin(left, right, ε);
 }
 
+void AssertEqualAbsolute(Dimensionless const& left,
+                         Dimensionless const& right,
+                         Dimensionless const& ε = 1e-15) {
+  std::wstring message = L"Should be equal within " + ToString(ε, 3) +
+    L" (absolute): " + ToString(left) + L" and " +
+    ToString(right) + L".";
+  LogLine(message);
+  Assert(Abs(left - right) < ε, message);
+  LogLine(L"> Passed!");
+}
+
 void AssertEqual(Dimensionless const& left,
                  Dimensionless const& right,
                  Dimensionless const& ε = 1e-15) {
-  AssertEqualWithin(left, right, ε);
+  if (left == 0 || right == 0) { AssertEqualAbsolute(left, right, ε); }
+  else {AssertEqualWithin(left, right, ε); }
 }
 
 void AssertNotEqual(Dimensionless const& left,
@@ -294,6 +306,56 @@ public:
     // Talleyrand.
     AssertEqual(π * Sqrt(1 * Metre / StandardGravity),
                 1 * Second, 1e-2);
+  }
+  TEST_METHOD(TrigonometricFunctions) {
+    AssertEqual(Cos(0 * Degree), 1);
+    AssertEqual(Sin(0 * Degree), 0);
+    AssertEqual(Cos(90 * Degree), 0);
+    AssertEqual(Sin(90 * Degree), 1);
+    AssertEqual(Cos(180 * Degree), -1);
+    AssertEqual(Sin(180 * Degree), 0);
+    AssertEqual(Cos(-90 * Degree), 0);
+    AssertEqual(Sin(-90 * Degree), -1);
+    for (int k = 0; k < 360; ++k) {
+      AssertEqualAbsolute(Cos((90 - k) * Degree), Sin(k * Degree));
+      AssertEqual(Sin(k * Degree) / Cos(k * Degree), Tan(k * Degree));
+      AssertEqual(((k + 179) % 360 - 179) * Degree,
+                  ArcTan(Sin(k * Degree), Cos(k * Degree)),
+                  1e-13);
+      AssertEqual(((k + 179) % 360 - 179) * Degree,
+                  ArcTan(Sin(k * Degree) * AstronomicalUnit,
+                  Cos(k * Degree) * AstronomicalUnit),
+                  1e-13);
+      AssertEqualAbsolute(Cos(ArcCos(Cos(k * Degree))), Cos(k * Degree));
+      AssertEqualAbsolute(Sin(ArcSin(Sin(k * Degree))), Sin(k * Degree));
+      AssertEqual(Sin(k * Degree).Pow(2), (1 - Cos(2 * k * Degree)) / 2, 1e-13);
+      AssertEqual(Cos(k * Degree).Pow(2), (1 + Cos(2 * k * Degree)) / 2, 1e-13);
+    }
+    // Horribly conditioned near 0, so not in the loop above.
+    AssertEqual(Tan(ArcTan(Tan(-42 * Degree))), Tan(-42 * Degree));
+  }
+  TEST_METHOD(HyperbolicFunctions) {
+    AssertEqual(Sinh(0 * Radian), 0);
+    AssertEqual(Cosh(0 * Radian), 1);
+    AssertEqual(Tanh(0 * Radian), 0);
+    // Limits:
+    AssertEqual(Sinh(20 * Radian), Cosh(20 * Radian));
+    AssertEqual(Tanh(20 * Radian), 1);
+    AssertEqual(Sinh(-20 * Radian), -Cosh(-20 * Radian));
+    AssertEqual(Tanh(-20 * Radian), -1);
+    
+    AssertEqual(Sinh(2 * Radian) / Cosh(2 * Radian), Tanh(2 * Radian));
+    AssertEqual(ArcSinh(Sinh(-10 * Degree)), -10 * Degree);
+    AssertEqual(ArcCosh(Cosh(-10 * Degree)), 10 * Degree, 1e-14);
+    AssertEqual(ArcTanh(Tanh(-10 * Degree)), -10 * Degree);
+  }
+  TEST_METHOD(ExpLogAndSqrt) {
+    AssertEqual(Exp(1), e);
+    AssertEqual(Exp(Log(4.2) + Log(1.729)), 4.2 * 1.729, 1e-14);
+    AssertEqual(Exp(Log(2) * Log2(1.729)), 1.729);
+    AssertEqual(Exp(Log(10) * Log10(1.729)), 1.729);
+    AssertEqual(Exp(Log(2) / 2), Sqrt(2));
+    AssertEqual(Exp(Log(Rood / Foot.Pow<2>()) / 2) * Foot, Sqrt(Rood));
   }
 };
 }

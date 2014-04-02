@@ -44,10 +44,11 @@ inline Dimensionless Sqrt(Dimensionless const& x) {
 inline Dimensionless Log(Dimensionless const& x) {
   return std::log(x.Value());
 }
-inline Dimensionless Log(Dimensionless const& base, Dimensionless const& x) {
-  if (base == 2) { return std::log2(x.Value()); }
-  else if (base == 10) { return std::log10(x.Value()); }
-  else { return Log(x) / Log(base); }
+inline Dimensionless Log2(Dimensionless const& x) {
+  return std::log2(x.Value());
+}
+inline Dimensionless Log10(Dimensionless const& x) {
+  return std::log10(x.Value());
 }
 inline Dimensionless Exp(Dimensionless const& x) {
   return std::exp(x.Value());
@@ -62,9 +63,6 @@ inline Dimensionless Cos(Angle const& α) {
 inline Dimensionless Tan(Angle const& α) {
   return std::tan((α / SI::Radian).Value());
 }
-inline Dimensionless Cot(Angle const& α) {
-  return Tan(π / 2 * SI::Radian - α);
-}
 
 inline Angle ArcSin(Dimensionless const& x) {
   return std::asin(x.Value()) * SI::Radian;
@@ -75,8 +73,29 @@ inline Angle ArcCos(Dimensionless const& x) {
 inline Angle ArcTan(Dimensionless const& y, Dimensionless const& x) {
   return std::atan2(y.Value(), x.Value()) * SI::Radian;
 }
-Angle ArcCot(Dimensionless const& x, Dimensionless const& y) {
-  return ArcTan(y, x);
+template<typename D>
+inline Angle ArcTan(Quantity<D> const& y, Quantity<D> const& x) {
+  return std::atan2(y.magnitude_.Value(), x.magnitude_.Value()) * SI::Radian;
+}
+
+inline Dimensionless Sinh(Angle const& α) {
+  return std::sinh((α / SI::Radian).Value());
+}
+inline Dimensionless Cosh(Angle const& α) {
+  return std::cosh((α / SI::Radian).Value());
+}
+inline Dimensionless Tanh(Angle const& α) {
+  return std::tanh((α / SI::Radian).Value());
+}
+
+inline Angle ArcSinh(Dimensionless const& x) {
+  return std::asinh(x.Value()) * SI::Radian;
+}
+inline Angle ArcCosh(Dimensionless const& x) {
+  return std::acosh(x.Value()) * SI::Radian;
+}
+inline Angle ArcTanh(Dimensionless const& x) {
+  return std::atanh(x.Value()) * SI::Radian;
 }
 
 template<typename D>

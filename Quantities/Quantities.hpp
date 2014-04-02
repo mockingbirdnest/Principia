@@ -134,6 +134,8 @@ class Quantity {
 
   template<typename D>
   friend SquareRoot<Quantity<D>> Sqrt(Quantity<D> const& x);
+  template<typename D>
+  friend Angle ArcTan(Quantity<D> const& y, Quantity<D> const& x);
 
   template<typename D>
   friend std::wstring ToString(Quantity<D> const&, unsigned char const);
