@@ -24,6 +24,9 @@
     <ClInclude Include="R3Element.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Grassmann.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="AssemblyInfo.cpp">

@@ -78,6 +78,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Grassmann.hpp" />
     <ClInclude Include="R3Element.hpp" />
     <ClInclude Include="resource.hpp" />
     <ClInclude Include="Stdafx.hpp" />
