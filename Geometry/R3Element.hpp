@@ -6,6 +6,10 @@
 
 namespace Principia {
 namespace Geometry {
+  // R3Element is an element of a 3-dimensional dimensionful vector space on the
+  // field R, represented by Dimensionless. It is the underlying data type for
+  // the more advanced strongly typed structures of the Grassmann algebras and
+  // affine spaces.
   template<typename Scalar>
   struct R3Element {
    public:
@@ -40,6 +44,8 @@ template<typename T>
 R3Element<T> operator/ (R3Element<T> const& left,
                         Quantities::Dimensionless const& right);
 
+// These operations are actually tensor products with dimensionful 1-dimensional
+// vectors, see [Tao 2012].
 template<typename T, typename U>
 R3Element<Quantities::Product<U, T>> operator* (U const& left,
                                                 R3Element<T> const& right);
