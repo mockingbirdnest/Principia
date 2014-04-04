@@ -2,36 +2,36 @@
 
 namespace Principia {
 namespace Geometry {
-template<typename Scalar, typename Space, unsigned int Rank>
+template<typename Scalar, typename Frame, unsigned int Rank>
 class Multivector;
 
-template<typename T, typename Space, unsigned int Rank>
-Multivector<T, Space,
-            Rank> operator+ (Multivector<T, Space, Rank> const& right);
-template<typename T, typename Space, unsigned int Rank>
-Multivector<T, Space,
-            Rank> operator- (Multivector<T, Space, Rank> const& right);
-template<typename T, typename Space, unsigned int Rank>
+template<typename T, typename Frame, unsigned int Rank>
+Multivector<T, Frame,
+            Rank> operator+ (Multivector<T, Frame, Rank> const& right);
+template<typename T, typename Frame, unsigned int Rank>
+Multivector<T, Frame,
+            Rank> operator- (Multivector<T, Frame, Rank> const& right);
+template<typename T, typename Frame, unsigned int Rank>
 
-Multivector<T, Space,
-            Rank> operator+ (Multivector<T, Space, Rank> const& left,
-                             Multivector<T, Space, Rank> const& right);
-template<typename T, typename Space, unsigned int Rank>
-Multivector<T, Space,
-            Rank> operator- (Multivector<T, Space, Rank> const& left,
-                             Multivector<T, Space, Rank> const& right);
+Multivector<T, Frame,
+            Rank> operator+ (Multivector<T, Frame, Rank> const& left,
+                             Multivector<T, Frame, Rank> const& right);
+template<typename T, typename Frame, unsigned int Rank>
+Multivector<T, Frame,
+            Rank> operator- (Multivector<T, Frame, Rank> const& left,
+                             Multivector<T, Frame, Rank> const& right);
 
-template<typename T, typename Space, unsigned int Rank>
-Multivector<T, Space,
+template<typename T, typename Frame, unsigned int Rank>
+Multivector<T, Frame,
             Rank> operator* (Quantities::Dimensionless const& left,
-                             Multivector<T, Space, Rank> const& right);
-template<typename T, typename Space, unsigned int Rank>
-Multivector<T, Space,
-            Rank> operator* (Multivector<T, Space, Rank> const& left,
+                             Multivector<T, Frame, Rank> const& right);
+template<typename T, typename Frame, unsigned int Rank>
+Multivector<T, Frame,
+            Rank> operator* (Multivector<T, Frame, Rank> const& left,
                              Quantities::Dimensionless const& right);
-template<typename T, typename Space, unsigned int Rank>
-Multivector<T, Space,
-            Rank> operator/ (Multivector<T, Space, Rank> const& left,
+template<typename T, typename Frame, unsigned int Rank>
+Multivector<T, Frame,
+            Rank> operator/ (Multivector<T, Frame, Rank> const& left,
                              Quantities::Dimensionless const& right);
 }
 }
