@@ -2,11 +2,12 @@
 
 #include "..\Quantities\Dimensionless.hpp"
 #include "..\Quantities\Quantities.hpp"
+#include "R3Element.hpp"
 
 namespace Principia {
 namespace Geometry {
 template<typename Scalar, typename Frame, unsigned int Rank>
-class Multivector;
+struct Multivector;
 
 template<typename T, typename Frame, unsigned int Rank>
 Multivector<T, Frame,
@@ -49,5 +50,32 @@ template<typename T, typename U, typename Frame, unsigned int Rank>
 Multivector<Quotient<T, U>, Frame,
             Rank> operator/ (Multivector<T, Frame, Rank> const& left,
                              Quantities::Dimensionless const& right);
+
+template<typename Scalar, typename Frame>
+struct Multivector<Scalar, Frame, 1> {
+  Multivector(R3Element coordinates) : coordinates(coordinates);
+  R3Element coordinates;
+};
+
+template<typename Scalar, typename Frame>
+struct Multivector<Scalar, Frame, 2> {
+  Multivector(R3Element coordinates) : coordinates(coordinates);
+  R3Element Coordinates;
+};
+
+template<typename Scalar, typename Frame>
+struct Multivector<Scalar, Frame, 3> {
+  Multivector(Scalar coordinates) : coordinates(coordinates);
+  Scalar Coordinates;
+};
+
+template<typename Scalar, typename Frame>
+using Vector = Multivector<Scalar, Frame, 1>;
+
+template<typename Scalar, typename Frame>
+using Bivector = Multivector<Scalar, Frame, 2>;
+
+template<typename Scalar, typename Frame>
+using Trivector = Multivector<Scalar, Frame, 3>;
 }
 }
