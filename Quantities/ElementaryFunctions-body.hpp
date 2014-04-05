@@ -75,7 +75,7 @@ inline Angle ArcTan(Dimensionless const& y, Dimensionless const& x) {
 }
 template<typename D>
 inline Angle ArcTan(Quantity<D> const& y, Quantity<D> const& x) {
-  return std::atan2(y.magnitude_.Value(), x.magnitude_.Value()) * SI::Radian;
+  return ArcTan(y.magnitude_, x.magnitude_);
 }
 
 inline Dimensionless Sinh(Angle const& α) {
