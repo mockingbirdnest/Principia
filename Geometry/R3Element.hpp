@@ -13,11 +13,10 @@ namespace Geometry {
   template<typename Scalar>
   struct R3Element {
    public:
-    R3Element(Scalar const& x, Scalar const& y, Scalar const& z) :
-      x(x), y(y), z(z) {};
+    R3Element(Scalar const& x, Scalar const& y, Scalar const& z);
 
     Scalar&       operator[] (int const index);
-    Scalar& const operator[] (int const index) const;
+    Scalar const& operator[] (int const index) const;
 
     Scalar x;
     Scalar y;
@@ -57,15 +56,15 @@ R3Element<Quantities::Quotient<T, U>> operator/ (R3Element<T> const& left,
                                                  U const& right);
 
 template<typename T>
-R3Element<T> operator+= (R3Element<T>& left, R3Element<T> const& right);
+void operator+= (R3Element<T>& left, R3Element<T> const& right);
 template<typename T>
-R3Element<T> operator-= (R3Element<T>& left, R3Element<T> const& right);
+void operator-= (R3Element<T>& left, R3Element<T> const& right);
 
 template<typename T>
-R3Element<T> operator*= (R3Element<T>& left,
+void operator*= (R3Element<T>& left,
                          Quantities::Dimensionless const& right);
 template<typename T>
-R3Element<T> operator/= (R3Element<T>& left,
+void operator/= (R3Element<T>& left,
                          Quantities::Dimensionless const& right);
 
 template<typename T, typename U>
@@ -76,3 +75,5 @@ Quantities::Product<T, U> Dot(R3Element<T> const& left,
                               R3Element<U> const& right);
 }
 }
+
+#include "R3Element-body.hpp"
