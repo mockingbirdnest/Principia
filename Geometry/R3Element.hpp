@@ -62,10 +62,10 @@ void operator-= (R3Element<T>& left, R3Element<T> const& right);
 
 template<typename T>
 void operator*= (R3Element<T>& left,
-                         Quantities::Dimensionless const& right);
+                 Quantities::Dimensionless const& right);
 template<typename T>
 void operator/= (R3Element<T>& left,
-                         Quantities::Dimensionless const& right);
+                 Quantities::Dimensionless const& right);
 
 template<typename T, typename U>
 R3Element<Quantities::Product<T, U>> Cross(R3Element<T> const& left,

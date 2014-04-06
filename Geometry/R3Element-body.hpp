@@ -65,21 +65,34 @@ inline void operator+= (R3Element<T>& left, R3Element<T> const& right) {
   left = left + right;
 }
 template<typename T>
-inline void operator-= (R3Element<T>& left, R3Element<T> const& right);
+inline void operator-= (R3Element<T>& left, R3Element<T> const& right) {
+  right = left - right;
+}
 
 template<typename T>
 inline void operator*= (R3Element<T>& left,
-                         Quantities::Dimensionless const& right);
+                        Quantities::Dimensionless const& right) {
+  left = left * right;
+}
 template<typename T>
 inline void operator/= (R3Element<T>& left,
-                         Quantities::Dimensionless const& right);
+                        Quantities::Dimensionless const& right) {
+  left = left / right;
+}
 
 template<typename T, typename U>
 inline R3Element<Quantities::Product<T, U>> Cross(R3Element<T> const& left,
-                                                  R3Element<U> const& right);
+                                                  R3Element<U> const& right) {
+  return R3Element<Quantities::Product<T, U>>(
+      left.y * right.z - left.z * right.y,
+      left.z * right.x - left.x * right.z,
+      left.x * right.y - left.y * right.x);
+}
 template<typename T, typename U>
 inline Quantities::Product<T, U> Dot(R3Element<T> const& left,
-                                     R3Element<U> const& right);
+                                     R3Element<U> const& right) {
+  return left.x * right.x + left.y * right.y + left.z * right.z;
+}
 
 }
 }
