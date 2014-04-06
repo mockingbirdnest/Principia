@@ -75,7 +75,7 @@ class Quantity {
   template<int Exponent>
   Exponentiation<Quantity<D>, Exponent> Pow() const;
  private:
-  explicit Quantity(Dimensionless const magnitude) : magnitude_(magnitude) {}
+  explicit Quantity(Dimensionless const& magnitude);
   Dimensionless magnitude_;
 
   friend Length            Factories::Metres(Dimensionless const&);

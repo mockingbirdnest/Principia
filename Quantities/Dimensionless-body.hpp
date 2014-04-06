@@ -4,7 +4,7 @@
 
 namespace Principia {
 namespace Quantities {
-inline Dimensionless::Dimensionless(double value) : value_(value) {}
+inline Dimensionless::Dimensionless(double const value) : value_(value) {}
 inline double Dimensionless::Value() const { return value_; }
 template<int Exponent>
 inline Dimensionless Dimensionless::Pow() const {

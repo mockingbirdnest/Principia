@@ -144,6 +144,10 @@ Exponentiation<Quantity<D>, Exponent> Quantity<D>::Pow() const {
   return Exponentiation<Quantity<D>, 
                         Exponent>(magnitude_.Pow(Exponent));
 }
+
+template<typename D>
+inline Quantity<D>::Quantity(Dimensionless const& magnitude) : magnitude_(magnitude) {}
+
 #pragma region Additive group
 template<typename D>
 inline Quantity<D> operator+(Quantity<D> const& right) {

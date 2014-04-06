@@ -9,7 +9,7 @@ namespace Quantities {
 // A double by any other name...
 class Dimensionless {
 public:
-  Dimensionless(double value);
+  Dimensionless(double const value);
   double Value() const;
   Dimensionless Pow(int const) const;
   // This function calls Pow(Exponent), its purpose is to provide consistency
