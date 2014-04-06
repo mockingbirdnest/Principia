@@ -146,7 +146,8 @@ Exponentiation<Quantity<D>, Exponent> Quantity<D>::Pow() const {
 }
 
 template<typename D>
-inline Quantity<D>::Quantity(Dimensionless const& magnitude) : magnitude_(magnitude) {}
+inline Quantity<D>::Quantity(Dimensionless const& magnitude)
+    : magnitude_(magnitude) {}
 
 #pragma region Additive group
 template<typename D>
