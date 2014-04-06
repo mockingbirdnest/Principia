@@ -10,7 +10,6 @@ template<int Exponent>
 inline Dimensionless Dimensionless::Pow() const {
   return this->Pow(Exponent);
 }
-// TODO(robin): This should not be inlined.
 inline Dimensionless Dimensionless::Pow(int const exponent) const {
   if (exponent < 0) {
     return (1 / *this).Pow(-exponent);
@@ -25,7 +24,9 @@ inline Dimensionless Dimensionless::Pow(int const exponent) const {
   }
 }
 
-inline Dimensionless operator+(Dimensionless const& right) { return right; }
+inline Dimensionless operator+(Dimensionless const& right) {
+  return +right.Value();
+}
 inline Dimensionless operator-(Dimensionless const& right) {
   return -right.Value();
 }
