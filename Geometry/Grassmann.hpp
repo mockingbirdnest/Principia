@@ -47,6 +47,18 @@ template<typename Scalar, typename Frame>
 Scalar InnerProduct(Trivector<Scalar, Frame> left,
                     Trivector<Scalar, Frame> right);
 
+template<typename Scalar, typename Frame>
+Bivector<Scalar, Frame> Wedge(Vector<Scalar, Frame> Left,
+                              Vector<Scalar, Frame> right);
+
+template<typename Scalar, typename Frame>
+Trivector<Scalar, Frame> Wedge(Bivector<Scalar, Frame> Left,
+                               Vector<Scalar, Frame> right);
+
+template<typename Scalar, typename Frame>
+Trivector<Scalar, Frame> Wedge(Vector<Scalar, Frame> Left,
+                               Bivector<Scalar, Frame> right);
+
 template<typename T, typename Frame, unsigned int Rank>
 Multivector<T, Frame,
             Rank> operator+ (Multivector<T, Frame, Rank> const& right);
