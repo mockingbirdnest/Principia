@@ -14,7 +14,7 @@ using namespace Geometry;
 using namespace Quantities;
 using namespace SI;
 
-TEST_CLASS(QuantitiesTest)
+TEST_CLASS(GeometryTest)
 {
 public:
   
