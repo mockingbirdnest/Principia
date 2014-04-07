@@ -70,27 +70,21 @@ inline void operator+=(Multivector<T, Frame, Rank>& left,
                        Multivector<T, Frame, Rank> const& right) {
   left.coordinates += right.coordinates;
 }
-
 template<typename T, typename Frame, unsigned int Rank>
 inline void operator-=(Multivector<T, Frame, Rank>& left,
                        Multivector<T, Frame, Rank> const& right) {
   left.coordinates -= right.coordinates;
 }
-
-
 template<typename T, typename Frame, unsigned int Rank>
 inline void operator*=(Multivector<T, Frame, Rank>& left,
                        Quantities::Dimensionless const& right) {
   left.coordinates *= right;
 }
-
-
 template<typename T, typename Frame, unsigned int Rank>
 inline void operator/=(Multivector<T, Frame, Rank>& left,
                        Quantities::Dimensionless const& right) {
   left.coordinates /= right;
 }
-
 
 }
 }
