@@ -18,13 +18,13 @@ struct Multivector<Scalar, Frame, 1> {
 template<typename Scalar, typename Frame>
 struct Multivector<Scalar, Frame, 2> {
   Multivector(R3Element<Scalar> coordinates) : coordinates(coordinates) {};
-  R3Element<Scalar> Coordinates;
+  R3Element<Scalar> coordinates;
 };
 
 template<typename Scalar, typename Frame>
 struct Multivector<Scalar, Frame, 3> {
   Multivector(Scalar coordinates) : coordinates(coordinates) {};
-  Scalar Coordinates;
+  Scalar coordinates;
 };
 
 template<typename Scalar, typename Frame>
