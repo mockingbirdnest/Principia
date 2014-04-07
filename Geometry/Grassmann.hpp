@@ -62,45 +62,45 @@ Trivector<Scalar, Frame> Wedge(Vector<Scalar, Frame> const& Left,
 
 template<typename T, typename Frame, unsigned int Rank>
 Multivector<T, Frame,
-            Rank> operator+ (Multivector<T, Frame, Rank> const& right);
+            Rank> operator+(Multivector<T, Frame, Rank> const& right);
 template<typename T, typename Frame, unsigned int Rank>
 Multivector<T, Frame,
-            Rank> operator- (Multivector<T, Frame, Rank> const& right);
+            Rank> operator-(Multivector<T, Frame, Rank> const& right);
 template<typename T, typename Frame, unsigned int Rank>
 
 Multivector<T, Frame,
-            Rank> operator+ (Multivector<T, Frame, Rank> const& left,
-                             Multivector<T, Frame, Rank> const& right);
+            Rank> operator+(Multivector<T, Frame, Rank> const& left,
+                            Multivector<T, Frame, Rank> const& right);
 template<typename T, typename Frame, unsigned int Rank>
 Multivector<T, Frame,
-            Rank> operator- (Multivector<T, Frame, Rank> const& left,
-                             Multivector<T, Frame, Rank> const& right);
+            Rank> operator-(Multivector<T, Frame, Rank> const& left,
+                            Multivector<T, Frame, Rank> const& right);
 
 template<typename T, typename Frame, unsigned int Rank>
 Multivector<T, Frame,
-            Rank> operator* (Quantities::Dimensionless const& left,
-                             Multivector<T, Frame, Rank> const& right);
+            Rank> operator*(Quantities::Dimensionless const& left,
+                            Multivector<T, Frame, Rank> const& right);
 template<typename T, typename Frame, unsigned int Rank>
 Multivector<T, Frame,
-            Rank> operator* (Multivector<T, Frame, Rank> const& left,
-                             Quantities::Dimensionless const& right);
+            Rank> operator*(Multivector<T, Frame, Rank> const& left,
+                            Quantities::Dimensionless const& right);
 template<typename T, typename Frame, unsigned int Rank>
 Multivector<T, Frame,
-            Rank> operator/ (Multivector<T, Frame, Rank> const& left,
-                             Quantities::Dimensionless const& right);
+            Rank> operator/(Multivector<T, Frame, Rank> const& left,
+                            Quantities::Dimensionless const& right);
 
 template<typename T, typename U, typename Frame, unsigned int Rank>
 Multivector<Quantities::Product<U, T> , Frame,
-            Rank> operator* (U const& left,
-                             Multivector<T, Frame, Rank> const& right);
+            Rank> operator*(U const& left,
+                            Multivector<T, Frame, Rank> const& right);
 template<typename T, typename U, typename Frame, unsigned int Rank>
 Multivector<Quantities::Product<T, U>, Frame,
-            Rank> operator* (Multivector<T, Frame, Rank> const& left,
-                             Quantities::Dimensionless const& right);
+            Rank> operator*(Multivector<T, Frame, Rank> const& left,
+                            Quantities::Dimensionless const& right);
 template<typename T, typename U, typename Frame, unsigned int Rank>
 Multivector<Quantities::Quotient<T, U>, Frame,
-            Rank> operator/ (Multivector<T, Frame, Rank> const& left,
-                             Quantities::Dimensionless const& right);
+            Rank> operator/(Multivector<T, Frame, Rank> const& left,
+                            Quantities::Dimensionless const& right);
 
 }
 }
