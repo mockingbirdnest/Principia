@@ -29,36 +29,36 @@ struct Multivector<Scalar, Frame, 3> {
 
 template<typename Scalar, typename Frame>
 using Vector = Multivector<Scalar, Frame, 1>;
-
 template<typename Scalar, typename Frame>
 using Bivector = Multivector<Scalar, Frame, 2>;
-
 template<typename Scalar, typename Frame>
 using Trivector = Multivector<Scalar, Frame, 3>;
 
-template<typename Scalar, typename Frame>
-Scalar InnerProduct(Vector<Scalar, Frame> const& left,
-                    Vector<Scalar, Frame> const& right);
+template<typename LeftScalar, typename RightScalar, typename Frame>
+Quantities::Product<LeftScalar, RightScalar> InnerProduct(
+    Vector<LeftScalar, Frame> const& left,
+    Vector<RightScalar, Frame> const& right);
+template<typename LeftScalar, typename RightScalar, typename Frame>
+Quantities::Product<LeftScalar, RightScalar> InnerProduct(
+    Bivector<LeftScalar, Frame> const& left,
+    Bivector<RightScalar, Frame> const& right);
+template<typename LeftScalar, typename RightScalar, typename Frame>
+Quantities::Product<LeftScalar, RightScalar> InnerProduct(
+    Trivector<LeftScalar, Frame> const& left,
+    Trivector<RightScalar, Frame> const& right);
 
-template<typename Scalar, typename Frame>
-Scalar InnerProduct(Bivector<Scalar, Frame> const& left,
-                    Bivector<Scalar, Frame> const& right);
-
-template<typename Scalar, typename Frame>
-Scalar InnerProduct(Trivector<Scalar, Frame> const& left,
-                    Trivector<Scalar, Frame> const& right);
-
-template<typename Scalar, typename Frame>
-Bivector<Scalar, Frame> Wedge(Vector<Scalar, Frame> const& Left,
-                              Vector<Scalar, Frame> const& right);
-
-template<typename Scalar, typename Frame>
-Trivector<Scalar, Frame> Wedge(Bivector<Scalar, Frame> const& Left,
-                               Vector<Scalar, Frame> const& right);
-
-template<typename Scalar, typename Frame>
-Trivector<Scalar, Frame> Wedge(Vector<Scalar, Frame> const& Left,
-                               Bivector<Scalar, Frame> const& right);
+template<typename LeftScalar, typename RightScalar, typename Frame>
+Bivector<Quantities::Product<LeftScalar, RightScalar>,
+         Frame> Wedge(Vector<LeftScalar, Frame> const& left,
+                      Vector<RightScalar, Frame> const& right);
+template<typename LeftScalar, typename RightScalar, typename Frame>
+Trivector<Quantities::Product<LeftScalar, RightScalar>,
+          Frame> Wedge(Bivector<LeftScalar, Frame> const& left,
+                       Vector<RightScalar, Frame> const& right);
+template<typename LeftScalar, typename RightScalar, typename Frame>
+Trivector<Quantities::Product<LeftScalar, RightScalar>,
+          Frame> Wedge(Vector<LeftScalar, Frame> const& left,
+                       Bivector<RightScalar, Frame> const& right);
 
 template<typename T, typename Frame, unsigned int Rank>
 Multivector<T, Frame,
@@ -105,15 +105,12 @@ Multivector<Quantities::Quotient<T, U>, Frame,
 template<typename T, typename Frame, unsigned int Rank>
 void operator+=(Multivector<T, Frame, Rank>& left,
                 Multivector<T, Frame, Rank> const& right);
-
 template<typename T, typename Frame, unsigned int Rank>
 void operator-=(Multivector<T, Frame, Rank>& left,
                 Multivector<T, Frame, Rank> const& right);
-
 template<typename T, typename Frame, unsigned int Rank>
 void operator*=(Multivector<T, Frame, Rank>& left,
                 Quantities::Dimensionless const& right);
-
 template<typename T, typename Frame, unsigned int Rank>
 void operator/=(Multivector<T, Frame, Rank>& left,
                 Quantities::Dimensionless const& right);
