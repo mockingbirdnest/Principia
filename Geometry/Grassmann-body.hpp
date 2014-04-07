@@ -86,5 +86,5 @@ inline void operator/=(Multivector<T, Frame, Rank>& left,
   left.coordinates /= right;
 }
 
-}
-}
+}  // namespace Geometry
+}  // namespace Principia

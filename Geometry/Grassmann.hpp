@@ -118,7 +118,7 @@ template<typename T, typename Frame, unsigned int Rank>
 void operator/=(Multivector<T, Frame, Rank>& left,
                 Quantities::Dimensionless const& right);
 
-}
-}
+}  // namespace Geometry
+}  // namespace Principia
 
 #include "Grassmann-body.hpp"
