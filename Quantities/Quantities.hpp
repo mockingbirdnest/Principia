@@ -35,7 +35,7 @@ template<typename Q, int Exponent, typename = Range<true>>
 struct PowerGenerator;
 template<bool> struct Condition;
 template<typename Q, typename = Condition<true>> struct SquareRootGenerator;
-}
+}  // namespace TypeGenerators
 template<typename Left, typename Right>
 using Quotient = typename TypeGenerators::QuotientGenerator<Left,
                                                             Right>::ResultType;
@@ -61,7 +61,7 @@ LuminousIntensity Candelas(Dimensionless const&);
 Winding           Cycles(Dimensionless const&);
 Angle             Radians(Dimensionless const&);
 SolidAngle        Steradians(Dimensionless const&);
-}
+}  // namespace Factories
 
 template<typename D>
 std::wstring ToString(Quantity<D> const& quantity,
@@ -149,7 +149,7 @@ template<typename D>
 inline void operator*=(Quantity<D>&, Dimensionless const&);
 template<typename D>
 inline void operator/=(Quantity<D>&, Dimensionless const&);
-}
-}
+}  // namespace Quantities
+}  // namespace Principia
 
 #include "Quantities-body.hpp"

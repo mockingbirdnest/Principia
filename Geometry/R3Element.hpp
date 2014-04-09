@@ -73,7 +73,7 @@ R3Element<Quantities::Product<T, U>> Cross(R3Element<T> const& left,
 template<typename T, typename U>
 Quantities::Product<T, U> Dot(R3Element<T> const& left,
                               R3Element<U> const& right);
-}
-}
+}  // namespace Geometry
+}  // namespace Principia
 
 #include "R3Element-body.hpp"

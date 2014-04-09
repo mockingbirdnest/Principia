@@ -84,5 +84,5 @@ typedef Quotient<LuminousFlux, Area>           Illuminance;
 typedef Product<Illuminance, Time>             LuminousExposure;
 typedef Quotient<LuminousFlux, RadiantFlux>    LuminousEfficacy;
 #pragma endregion
-}
-}
+}  // namespace Quantities
+}  // namespace Principia

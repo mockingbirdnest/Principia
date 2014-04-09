@@ -43,7 +43,7 @@ Dimensionless Abs(Dimensionless const&);
 
 std::wstring ToString(Dimensionless const& number, 
                       unsigned char const precision = 16);
-}
-}
+}  // namespace Quantities
+}  // namespace Principia
 
 #include "Dimensionless-body.hpp"

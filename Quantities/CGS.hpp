@@ -33,5 +33,5 @@ Quantities::MagneticField       const Œrsted  = 1e3 / (4 * π * SI::Steradian) 
                                                 SI::Ampere / SI::Metre;
 
 Quantities::SpectroscopicWavenumber const Kayser = SI::Cycle / Centimetre;
-}
-}
+}  // namespace CGS
+}  // namespace Principia

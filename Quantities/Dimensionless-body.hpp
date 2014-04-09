@@ -90,5 +90,5 @@ inline std::wstring ToString(Dimensionless const& number,
                 number.Value());
   return result;
 }
-}
-}
+}  // namespace Quantities
+}  // namespace Principia

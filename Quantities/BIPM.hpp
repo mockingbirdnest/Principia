@@ -16,5 +16,5 @@ Quantities::Length   Ångström            = 1e-10 * SI::Metre;
 Quantities::Length   NauticalMile        = 1852 * SI::Metre;
 Quantities::Area     Barn                = 100 * SI::Femto(SI::Metre).Pow<2>();
 Quantities::Speed    Knot                = 1 * NauticalMile / Hour;
-}
-}
+}  // namespace BIPM
+}  // namespace Principia

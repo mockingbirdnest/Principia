@@ -119,7 +119,7 @@ template<typename Q, int Exponent>
 struct PowerGenerator<Q, Exponent, Range<(Exponent == 1)>>{
   typedef Q ResultType;
 };
-}
+}  // namespace TypeGenerators
 namespace Factories {
 inline Length Metres(Dimensionless const& number) { return Length(number); }
 inline Mass Kilograms(Dimensionless const& number) { return Mass(number); }
@@ -137,7 +137,7 @@ inline Angle Radians(Dimensionless const& number) { return Angle(number); }
 inline SolidAngle Steradians(Dimensionless const& number) {
   return SolidAngle(number);
 }
-}
+}  // namespace Factories
 template<typename D>
 template<int Exponent>
 Exponentiation<Quantity<D>, Exponent> Quantity<D>::Pow() const {
@@ -276,5 +276,5 @@ inline std::wstring ToString(Quantity<D> const& quantity,
     (D::SolidAngle        != 0 ? L" sr^" + std::to_wstring(D::SolidAngle)
                                : L"");
 }
-}
-}
+}  // namespace Quantities
+}  // namespace Principia

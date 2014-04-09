@@ -95,5 +95,5 @@ inline Quantities::Product<T, U> Dot(R3Element<T> const& left,
   return left.x * right.x + left.y * right.y + left.z * right.z;
 }
 
-}
-}
+}  // namespace Geometry
+}  // namespace Principia

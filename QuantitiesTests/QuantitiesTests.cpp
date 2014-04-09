@@ -358,4 +358,4 @@ public:
     AssertEqual(Exp(Log(Rood / Foot.Pow<2>()) / 2) * Foot, Sqrt(Rood));
   }
 };
-}
+}  // namespace QuantitiesTests
