@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 #include "..\Quantities\Dimensionless.hpp"
 #include "..\Quantities\Quantities.hpp"
@@ -59,6 +59,24 @@ template<typename LeftScalar, typename RightScalar, typename Frame>
 Trivector<Quantities::Product<LeftScalar, RightScalar>,
           Frame> Wedge(Vector<LeftScalar, Frame> const& left,
                        Bivector<RightScalar, Frame> const& right);
+
+// Lie bracket on V Λ V = so(V).
+template<typename LeftScalar, typename RightScalar, typename Frame>
+Bivector<Quantities::Product<LeftScalar, RightScalar>,
+         Frame> Commutator(Bivector<LeftScalar, Frame> const& left,
+                           Bivector<RightScalar, Frame> const& right);
+
+// Left action of V Λ V = so(V) on V.
+template<typename LeftScalar, typename RightScalar, typename Frame>
+Vector<Quantities::Product<LeftScalar, RightScalar>,
+       Frame> operator*(Bivector<LeftScalar, Frame> const& left,
+                        Vector<RightScalar, Frame> const& right);
+
+// Right action of V Λ V = so(V) on V* = V.
+template<typename LeftScalar, typename RightScalar, typename Frame>
+Vector<Quantities::Product<LeftScalar, RightScalar>,
+       Frame> operator*(Vector<LeftScalar, Frame> const& left,
+                        Bivector<RightScalar, Frame> const& right);
 
 template<typename T, typename Frame, unsigned int Rank>
 Multivector<T, Frame,
