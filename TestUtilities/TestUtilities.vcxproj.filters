@@ -24,11 +24,14 @@
     <ClInclude Include="TestUtilities.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Algebra.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="QuantityComparisons.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="TestUtilities.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="AssemblyInfo.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
