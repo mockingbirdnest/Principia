@@ -19,7 +19,7 @@ TEST_CLASS(GeometryTest)
 {
 public:
   
-  TEST_METHOD(MessyMiscellaneousTests)
+  TEST_METHOD(VectorSpaceTests)
   {
     struct World;
     Vector<Length, World> v(R3Element<Length>(0 * Metre, 0 * Metre, 0 * Metre));
