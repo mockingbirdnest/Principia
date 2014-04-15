@@ -1,7 +1,17 @@
-#include "stdafx.hpp"
+﻿#include "stdafx.hpp"
+
 #include "CppUnitTest.h"
+#include "..\TestUtilities\TestUtilities.hpp"
+#include "..\TestUtilities\QuantityComparisons.hpp"
+#include "..\TestUtilities\Algebra.hpp"
+
+#include "..\Quantities\Dimensionless.hpp"
 #include "..\Quantities\Quantities.hpp"
 #include "..\Quantities\SI.hpp"
+#include "..\Quantities\Constants.hpp"
+#include "..\Quantities\UK.hpp"
+#include "..\Quantities\BIPM.hpp"
+#include "..\Quantities\Astronomy.hpp"
 #include "..\Geometry\R3Element.hpp"
 #include "..\Geometry\Grassmann.hpp"
 #include "..\Quantities\ElementaryFunctions.hpp"
@@ -14,18 +24,62 @@ namespace GeometryTests
 using namespace Geometry;
 using namespace Quantities;
 using namespace SI;
+using namespace UK;
+using namespace BIPM;
+using namespace Astronomy;
+using namespace TestUtilities;
+using namespace Constants;
+
+template<typename Scalar, typename Frame, unsigned int Rank>
+void AssertEqual(Multivector<Scalar, Frame, Rank> left,
+                 Multivector<Scalar, Frame, Rank> right) {
+  AssertEqual(left.coordinates, right.coordinates);
+}
+
+template<typename Scalar>
+void AssertEqual(R3Element<Scalar> left, R3Element<Scalar> right) {
+  TestUtilities::AssertEqual(left.x, right.x);
+  TestUtilities::AssertEqual(left.y, right.y);
+  TestUtilities::AssertEqual(left.z, right.z);
+}
 
 TEST_CLASS(GeometryTest)
 {
 public:
-  
-  TEST_METHOD(VectorSpaceTests)
-  {
+  TEST_METHOD(R3ElementTest) {
+    R3Element<Speed> nullVector(0 * Metre / Second,
+                                0 * Metre / Second,
+                                0 * Metre / Second);
+    R3Element<Speed> u(1 * Metre / Second,
+                       120 * Kilo(Metre) / Hour,
+                       -SpeedOfLight);
+    R3Element<Speed> v(-20 * Knot,
+                       2 * π * AstronomicalUnit / JulianYear,
+                       1 * Admiralty::NauticalMile / Hour);
+    R3Element<Speed> w(-1 * Mile / Hour, -2 * Foot / Second, -3 * Knot);
+    auto k = 2 * w;
+    AssertEqual((e * Dimensionless(42)) * v, e * (Dimensionless(42) * v));
+    TestVectorSpace<R3Element<Speed>,
+                    Dimensionless>(nullVector, u, v, w, Dimensionless(0),
+                                   Dimensionless(1), e, Dimensionless(42));
+  }
+
+  TEST_METHOD(VectorSpaceTests) {
     struct World;
-    Vector<Length, World> v(R3Element<Length>(0 * Metre, 0 * Metre, 0 * Metre));
-    Vector<Length, World> w = -v;
-    Length norm = Sqrt(InnerProduct(v, v));
-    Bivector<Area, World> s = Wedge(v, w);
+    Vector<Length, World> nullWorldDisplacement(R3Element<Length>(0 * Metre,
+                                                                  0 * Metre,
+                                                                  0 * Metre));
+    Vector<Length, World> u(R3Element<Length>(3 * Metre, 
+                                              -42 * Metre,
+                                              0 * Metre));
+    Vector<Length, World> v(R3Element<Length>(-π * Metre,
+                                              -e * Metre,
+                                              -1 * Metre));
+    Vector<Length, World> w(R3Element<Length>(2 * Metre,
+                                              2 * Metre,
+                                              2 * Metre));
+    //TestVectorSpace(nullWorldDisplacement, u, v, w, Dimensionless(0),
+      //              Dimensionless(1), Sqrt(163), -Sqrt(2));
   }
 
 };

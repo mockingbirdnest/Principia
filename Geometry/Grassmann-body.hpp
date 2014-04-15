@@ -92,7 +92,7 @@ template<typename T, typename Frame, unsigned int Rank>
 inline Multivector<T, Frame,
                    Rank> operator-(Multivector<T, Frame, Rank> const& left,
                                    Multivector<T, Frame, Rank> const& right) {
-  return Multivector<T, Frame, Rank>(left.coordinates + left.coordinates);
+  return Multivector<T, Frame, Rank>(left.coordinates - left.coordinates);
 }
 
 template<typename T, typename Frame, unsigned int Rank>

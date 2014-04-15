@@ -11,8 +11,8 @@ namespace Principia {
 // table 9, http://www.bipm.org/en/si/si_brochure/chapter4/table9.html.
 namespace CGS {
 Quantities::Length const Centimetre = SI::Centi(SI::Metre);
-Quantities::Mass   const Gram       = SI::Gram;
-Quantities::Time   const Second     = SI::Second;
+using SI::Gram;
+using SI::Second;
 
 Quantities::Energy const Erg  = 1e-7 * SI::Joule;
 Quantities::Force  const Dyne = 1e-5 * SI::Newton;

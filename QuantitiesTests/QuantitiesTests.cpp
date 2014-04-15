@@ -9,6 +9,7 @@
 #include "..\Quantities\NamedQuantities.hpp"
 #include "..\Quantities\SI.hpp"
 #include "..\Quantities\UK.hpp"
+#include "..\Quantities\CGS.hpp"
 #include "..\Quantities\Constants.hpp"
 #include "..\Quantities\Astronomy.hpp"
 #include "..\Quantities\ElementaryFunctions.hpp"
@@ -24,6 +25,7 @@ using namespace Principia::Constants;
 using namespace Principia::SI;
 using namespace Principia::Astronomy;
 using namespace Principia::UK;
+using namespace Principia::CGS;
 
 namespace QuantitiesTests {
 

@@ -22,7 +22,7 @@ namespace Geometry {
     Scalar y;
     Scalar z;
   };
-
+  /*
 template<typename T>
 R3Element<T> operator+ (R3Element<T> const& right);
 template<typename T>
@@ -72,7 +72,7 @@ R3Element<Quantities::Product<T, U>> Cross(R3Element<T> const& left,
                                            R3Element<U> const& right);
 template<typename T, typename U>
 Quantities::Product<T, U> Dot(R3Element<T> const& left,
-                              R3Element<U> const& right);
+                              R3Element<U> const& right);*/
 }  // namespace Geometry
 }  // namespace Principia
 

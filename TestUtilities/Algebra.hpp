@@ -97,7 +97,7 @@ void TestBilinearMap(Map const& map, U const& u1, U const& u2, V const& v1,
 }
 
 template<typename Vector, typename Scalar>
-void TestVectorSpace(Vector const& nullVector, Vector const& u, Vector const& v,
+inline void TestVectorSpace(Vector const& nullVector, Vector const& u, Vector const& v,
                      Vector const& w, Scalar const& zero, Scalar const& unit,
                      Scalar const& α, Scalar const& β) {
   TestAdditiveGroup(nullVector, u, v, w);
