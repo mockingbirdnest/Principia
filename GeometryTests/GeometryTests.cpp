@@ -3,6 +3,7 @@
 #include "CppUnitTest.h"
 #include "..\TestUtilities\TestUtilities.hpp"
 #include "..\TestUtilities\QuantityComparisons.hpp"
+#include "..\TestUtilities\GeometryComparisons.hpp"
 #include "..\TestUtilities\Algebra.hpp"
 
 #include "..\Quantities\Dimensionless.hpp"
@@ -27,21 +28,8 @@ using namespace SI;
 using namespace UK;
 using namespace BIPM;
 using namespace Astronomy;
-using namespace TestUtilities;
 using namespace Constants;
-
-template<typename Scalar, typename Frame, unsigned int Rank>
-void AssertEqual(Multivector<Scalar, Frame, Rank> left,
-                 Multivector<Scalar, Frame, Rank> right) {
-  AssertEqual(left.coordinates, right.coordinates);
-}
-
-template<typename Scalar>
-void AssertEqual(R3Element<Scalar> left, R3Element<Scalar> right) {
-  TestUtilities::AssertEqual(left.x, right.x);
-  TestUtilities::AssertEqual(left.y, right.y);
-  TestUtilities::AssertEqual(left.z, right.z);
-}
+using namespace TestUtilities;
 
 TEST_CLASS(GeometryTest)
 {

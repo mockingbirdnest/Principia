@@ -81,6 +81,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Algebra.hpp" />
+    <ClInclude Include="GeometryComparisons.hpp" />
     <ClInclude Include="QuantityComparisons.hpp" />
     <ClInclude Include="resource.hpp" />
     <ClInclude Include="Stdafx.hpp" />

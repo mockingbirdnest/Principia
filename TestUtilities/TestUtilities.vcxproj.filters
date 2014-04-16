@@ -30,6 +30,9 @@
     <ClInclude Include="QuantityComparisons.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="GeometryComparisons.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="AssemblyInfo.cpp">
