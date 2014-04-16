@@ -66,8 +66,8 @@ public:
     Vector<Length, World> w(R3Element<Length>(2 * Metre,
                                               2 * Metre,
                                               2 * Metre));
-    //TestVectorSpace(nullWorldDisplacement, u, v, w, Dimensionless(0),
-      //              Dimensionless(1), Sqrt(163), -Sqrt(2));
+    TestVectorSpace(nullWorldDisplacement, u, v, w, Dimensionless(0),
+                    Dimensionless(1), Sqrt(163), -Sqrt(2));
   }
 
 };

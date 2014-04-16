@@ -22,57 +22,78 @@ namespace Geometry {
     Scalar y;
     Scalar z;
   };
-  /*
-template<typename T>
-R3Element<T> operator+ (R3Element<T> const& right);
-template<typename T>
-R3Element<T> operator- (R3Element<T> const& right);
-template<typename T>
 
-R3Element<T> operator+ (R3Element<T> const& left, R3Element<T> const& right);
-template<typename T>
-R3Element<T> operator- (R3Element<T> const& left, R3Element<T> const& right);
-template<typename T>
+template<typename D>
+R3Element<Quantities::Quantity<D>> operator+(
+    R3Element<Quantities::Quantity<D>> const& right);
+template<typename D>
+R3Element<Quantities::Quantity<D>> operator-(
+    R3Element<Quantities::Quantity<D>> const& right);
 
-R3Element<T> operator* (Quantities::Dimensionless const& left,
-                        R3Element<T> const& right);
-template<typename T>
-R3Element<T> operator* (R3Element<T> const& left,
-                        Quantities::Dimensionless const& right);
-template<typename T>
-R3Element<T> operator/ (R3Element<T> const& left,
-                        Quantities::Dimensionless const& right);
+template<typename D>
+R3Element<Quantities::Quantity<D>> operator+(
+    R3Element<Quantities::Quantity<D>> const& left,
+    R3Element<Quantities::Quantity<D>> const& right);
+template<typename D>
+R3Element<Quantities::Quantity<D>> operator-(
+    R3Element<Quantities::Quantity<D>> const& left,
+    R3Element<Quantities::Quantity<D>> const& right);
 
-// These operations are actually tensor products with dimensionful 1-dimensional
-// vectors, see [Tao 2012].
-template<typename T, typename U>
-R3Element<Quantities::Product<U, T>> operator* (U const& left,
-                                                R3Element<T> const& right);
-template<typename T, typename U>
-R3Element<Quantities::Product<T, U>> operator* (R3Element<T> const& left,
-                                                U const& right);
-template<typename T, typename U>
-R3Element<Quantities::Quotient<T, U>> operator/ (R3Element<T> const& left,
-                                                 U const& right);
+template<typename D>
+R3Element<Quantities::Quantity<D>> operator*(
+    Quantities::Dimensionless const& left,
+    R3Element<Quantities::Quantity<D>> const& right);
+template<typename D>
+R3Element<Quantities::Quantity<D>> operator*(
+    R3Element<Quantities::Quantity<D>> const& left,
+    Quantities::Dimensionless const& right);
+template<typename D>
+R3Element<Quantities::Quantity<D>> operator/(
+    R3Element<Quantities::Quantity<D>> const& left,
+    Quantities::Dimensionless const& right);
 
-template<typename T>
-void operator+= (R3Element<T>& left, R3Element<T> const& right);
-template<typename T>
-void operator-= (R3Element<T>& left, R3Element<T> const& right);
+template<typename DLeft, typename DRight>
+R3Element<Quantities::Product<Quantities::Quantity<DLeft>,
+                              Quantities::Quantity<DRight>>> operator*(
+    Quantities::Quantity<DRight> const& left,
+    R3Element<Quantities::Quantity<DRight>> const& right);
+template<typename DLeft, typename DRight>
+R3Element<Quantities::Product<Quantities::Quantity<DLeft>,
+                              Quantities::Quantity<DRight>>> operator*(
+    R3Element<Quantities::Quantity<DLeft>> const& left,
+    Quantities::Quantity<DRight> const& right);
+template<typename DLeft, typename DRight>
+R3Element<Quantities::Quotient<Quantities::Quantity<DLeft>,
+                               Quantities::Quantity<DRight>>> operator/(
+    R3Element<Quantities::Quantity<DLeft>> const& left,
+    Quantities::Quantity<DRight> const& right);
 
-template<typename T>
-void operator*= (R3Element<T>& left,
-                 Quantities::Dimensionless const& right);
-template<typename T>
-void operator/= (R3Element<T>& left,
-                 Quantities::Dimensionless const& right);
+template<typename D>
+void operator+=(R3Element<Quantities::Quantity<D>>& left,
+                R3Element<Quantities::Quantity<D>> const& right);
+template<typename D>
+void operator-=(R3Element<Quantities::Quantity<D>>& left,
+                R3Element<Quantities::Quantity<D>> const& right);
 
-template<typename T, typename U>
-R3Element<Quantities::Product<T, U>> Cross(R3Element<T> const& left,
-                                           R3Element<U> const& right);
-template<typename T, typename U>
-Quantities::Product<T, U> Dot(R3Element<T> const& left,
-                              R3Element<U> const& right);*/
+template<typename D>
+void operator*=(R3Element<Quantities::Quantity<D>>& left,
+                Quantities::Dimensionless const& right);
+template<typename D>
+void operator/=(R3Element<Quantities::Quantity<D>>& left,
+                Quantities::Dimensionless const& right);
+
+template<typename DLeft, typename DRight>
+R3Element<Quantities::Product<Quantities::Quantity<DLeft>,
+                              Quantities::Quantity<DRight>>> Cross(
+    R3Element<Quantities::Quantity<DLeft>> const& left,
+    R3Element<Quantities::Quantity<DRight>> const& right);
+
+template<typename DLeft, typename DRight>
+Quantities::Product<Quantities::Quantity<DLeft>,
+                    Quantities::Quantity<DRight>> Dot(
+    R3Element<Quantities::Quantity<DLeft>> const& left,
+    R3Element<Quantities::Quantity<DRight>> const& right);
+
 }  // namespace Geometry
 }  // namespace Principia
 

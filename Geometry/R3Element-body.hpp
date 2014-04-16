@@ -9,64 +9,100 @@ inline R3Element<Scalar>::R3Element(Scalar const& x,
 
 
 template<typename D>
-inline R3Element<Quantities::Quantity<D>> operator+(R3Element<Quantities::Quantity<D>> const& right) {
+inline R3Element<Quantities::Quantity<D>> operator+(
+    R3Element<Quantities::Quantity<D>> const& right) {
   return R3Element<Quantities::Quantity<D>>(+right.x, +right.y, +right.z);
 }
 template<typename D>
-inline R3Element<Quantities::Quantity<D>> operator-(R3Element<Quantities::Quantity<D>> const& right) {
+inline R3Element<Quantities::Quantity<D>> operator-(
+    R3Element<Quantities::Quantity<D>> const& right) {
   return R3Element<Quantities::Quantity<D>>(-right.x, -right.y, -right.z);
 }
 
 template<typename D>
-inline R3Element<Quantities::Quantity<D>> operator+(R3Element<Quantities::Quantity<D>> const& left,
-                              R3Element<Quantities::Quantity<D>> const& right) {
-  return R3Element<Quantities::Quantity<D>>(left.x + right.x, left.y + right.y, left.z + right.z);
+inline R3Element<Quantities::Quantity<D>> operator+(
+    R3Element<Quantities::Quantity<D>> const& left,
+    R3Element<Quantities::Quantity<D>> const& right) {
+  return R3Element<Quantities::Quantity<D>>(left.x + right.x,
+                                            left.y + right.y,
+                                            left.z + right.z);
 }
 template<typename D>
-inline R3Element<Quantities::Quantity<D>> operator-(R3Element<Quantities::Quantity<D>> const& left,
-                              R3Element<Quantities::Quantity<D>> const& right) {
-  return R3Element<Quantities::Quantity<D>>(left.x - right.x, left.y - right.y, left.z - right.z);
+inline R3Element<Quantities::Quantity<D>> operator-(
+    R3Element<Quantities::Quantity<D>> const& left,
+    R3Element<Quantities::Quantity<D>> const& right) {
+  return R3Element<Quantities::Quantity<D>>(left.x - right.x,
+                                            left.y - right.y,
+                                            left.z - right.z);
 }
 
 template<typename D>
-inline R3Element<Quantities::Quantity<D>> operator*(Quantities::Dimensionless const& left,
-                              R3Element<Quantities::Quantity<D>> const& right) {
-  return R3Element<Quantities::Quantity<D>>(left * right.x, left * right.y, left * right.z);
+inline R3Element<Quantities::Quantity<D>> operator*(
+    Quantities::Dimensionless const& left,
+    R3Element<Quantities::Quantity<D>> const& right) {
+  return R3Element<Quantities::Quantity<D>>(left * right.x,
+                                            left * right.y,
+                                            left * right.z);
 }
 template<typename D>
-inline R3Element<Quantities::Quantity<D>> operator*(R3Element<Quantities::Quantity<D>> const& left,
-                              Quantities::Dimensionless const& right) {
-  return R3Element<Quantities::Quantity<D>>(left.x * right, left.y * right, left.z * right);
+inline R3Element<Quantities::Quantity<D>> operator*(
+    R3Element<Quantities::Quantity<D>> const& left,
+    Quantities::Dimensionless const& right) {
+  return R3Element<Quantities::Quantity<D>>(left.x * right,
+                                            left.y * right,
+                                            left.z * right);
 }
 template<typename D>
-inline R3Element<Quantities::Quantity<D>> operator/(R3Element<Quantities::Quantity<D>> const& left,
-                              Quantities::Dimensionless const& right) {
-  return R3Element<Quantities::Quantity<D>>(left.x / right, left.y / right, left.z / right);
+inline R3Element<Quantities::Quantity<D>> operator/(
+    R3Element<Quantities::Quantity<D>> const& left,
+    Quantities::Dimensionless const& right) {
+  return R3Element<Quantities::Quantity<D>>(left.x / right,
+                                            left.y / right,
+                                            left.z / right);
 }
 
 template<typename DLeft, typename DRight>
-inline R3Element<Quantities::Product<Quantities::Quantity<DLeft>, Quantities::Quantity<DRight>>> operator*(
+inline R3Element<Quantities::Product<Quantities::Quantity<DLeft>,
+                                     Quantities::Quantity<DRight>>> operator*(
     Quantities::Quantity<DRight> const& left,
     R3Element<Quantities::Quantity<DRight>> const& right) {
-  return R3Element<Quantities::Product<Quantities::Quantity<DLeft>, Quantities::Quantity<DRight>>>(left * right.x, left * right. y, left * right.z);
+  return R3Element<Quantities::Product<Quantities::Quantity<DLeft>,
+                                       Quantities::Quantity<DRight>>>(
+      left * right.x,
+      left * right. y,
+      left * right.z);
 }
 template<typename DLeft, typename DRight>
-inline R3Element<Quantities::Product<Quantities::Quantity<DLeft>, Quantities::Quantity<DRight>>> operator*(R3Element<Quantities::Quantity<DLeft>> const& left,
-                                                      Quantities::Quantity<DRight> const& right) {
-  return R3Element<Quantities::Product<Quantities::Quantity<DLeft>, Quantities::Quantity<DRight>>>(left.x * right, left.y * right, left.z * right);
+inline R3Element<Quantities::Product<Quantities::Quantity<DLeft>,
+                                     Quantities::Quantity<DRight>>> operator*(
+    R3Element<Quantities::Quantity<DLeft>> const& left,
+    Quantities::Quantity<DRight> const& right) {
+  return R3Element<Quantities::Product<Quantities::Quantity<DLeft>,
+                                       Quantities::Quantity<DRight>>>(
+      left.x * right,
+      left.y * right,
+      left.z * right);
 }
 template<typename DLeft, typename DRight>
-inline R3Element<Quantities::Quotient<Quantities::Quantity<DLeft>, Quantities::Quantity<DRight>>> operator/(R3Element<Quantities::Quantity<DLeft>> const& left,
-                                                       Quantities::Quantity<DRight> const& right) {
-  return R3Element<Quantities::Quotient<Quantities::Quantity<DLeft>, Quantities::Quantity<DRight>>(left.x / right, left.y / right, left.z / right);
+inline R3Element<Quantities::Quotient<Quantities::Quantity<DLeft>,
+                                      Quantities::Quantity<DRight>>> operator/(
+    R3Element<Quantities::Quantity<DLeft>> const& left,
+    Quantities::Quantity<DRight> const& right) {
+  return R3Element<Quantities::Quotient<Quantities::Quantity<DLeft>,
+                                        Quantities::Quantity<DRight>>(
+      left.x / right,
+      left.y / right,
+      left.z / right);
 }
 
 template<typename D>
-inline void operator+=(R3Element<Quantities::Quantity<D>>& left, R3Element<Quantities::Quantity<D>> const& right) {
+inline void operator+=(R3Element<Quantities::Quantity<D>>& left,
+                       R3Element<Quantities::Quantity<D>> const& right) {
   left = left + right;
 }
 template<typename D>
-inline void operator-=(R3Element<Quantities::Quantity<D>>& left, R3Element<Quantities::Quantity<D>> const& right) {
+inline void operator-=(R3Element<Quantities::Quantity<D>>& left,
+                       R3Element<Quantities::Quantity<D>> const& right) {
   left = left - right;
 }
 
@@ -92,6 +128,7 @@ inline R3Element<Quantities::Product<Quantities::Quantity<DLeft>,
       left.z * right.x - left.x * right.z,
       left.x * right.y - left.y * right.x);
 }
+
 template<typename DLeft, typename DRight>
 inline Quantities::Product<Quantities::Quantity<DLeft>,
                            Quantities::Quantity<DRight>> Dot(

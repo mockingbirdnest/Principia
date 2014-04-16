@@ -44,7 +44,7 @@ inline Trivector<Quantities::Product<LeftScalar, RightScalar>,
                    Frame>(Dot(left.coordinates, right.coordinates));
 }
 
-// Lie bracket on V Λ V = so(V).
+// Lie bracket on V ^ V = so(V).
 template<typename LeftScalar, typename RightScalar, typename Frame>
 inline Bivector<Quantities::Product<LeftScalar, RightScalar>,
                 Frame> Commutator(Bivector<LeftScalar, Frame> const& left,
@@ -53,7 +53,7 @@ inline Bivector<Quantities::Product<LeftScalar, RightScalar>,
                   Frame>(Cross(left.coordinates, right.coordinates));
 }
 
-// Left action of V Λ V = so(V) on V.
+// Left action of V ^ V = so(V) on V.
 template<typename LeftScalar, typename RightScalar, typename Frame>
 inline Vector<Quantities::Product<LeftScalar, RightScalar>,
               Frame> operator*(Bivector<LeftScalar, Frame> const& left,
@@ -62,7 +62,7 @@ inline Vector<Quantities::Product<LeftScalar, RightScalar>,
                 Frame>(Cross(left.coordinates, right.coordinates));
 }
 
-// Right action of V Λ V = so(V) on V* = V.
+// Right action of V ^ V = so(V) on V* = V.
 template<typename LeftScalar, typename RightScalar, typename Frame>
 inline Vector<Quantities::Product<LeftScalar, RightScalar>,
               Frame> operator*(Vector<LeftScalar, Frame> const& left,
@@ -92,7 +92,7 @@ template<typename T, typename Frame, unsigned int Rank>
 inline Multivector<T, Frame,
                    Rank> operator-(Multivector<T, Frame, Rank> const& left,
                                    Multivector<T, Frame, Rank> const& right) {
-  return Multivector<T, Frame, Rank>(left.coordinates - left.coordinates);
+  return Multivector<T, Frame, Rank>(left.coordinates - right.coordinates);
 }
 
 template<typename T, typename Frame, unsigned int Rank>
