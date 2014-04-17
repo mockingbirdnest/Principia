@@ -50,8 +50,10 @@ public:
     TestVectorSpace<R3Element<Speed>,
                     Dimensionless>(nullVector, u, v, w, Dimensionless(0),
                                    Dimensionless(1), e, Dimensionless(42));
-    TestBilinearMap(Cross<Speed::Dimensions, Speed::Dimensions>, u, v, w, a,
-                    Dimensionless(42));
+    TestAlternatingBilinearMap(Cross<Speed::Dimensions, Speed::Dimensions>, u,
+                               v, w, a, Dimensionless(42));
+    TestSymmetricBilinearMap(Dot<Speed::Dimensions, Speed::Dimensions>, u,
+                             v, w, a, Dimensionless(42));
   }
 
   TEST_METHOD(VectorSpaceTests) {

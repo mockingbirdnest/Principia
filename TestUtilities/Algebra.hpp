@@ -96,6 +96,24 @@ void TestBilinearMap(Map const& map, U const& u1, U const& u2, V const& v1,
   AssertEqual(map(u2, v2) * λ, map(u2 * λ, v2));
 }
 
+template<typename Map, typename Scalar, typename U>
+void TestSymmetricBilinearMap(Map const& map, U const& u1, U const& u2,
+                               U const& v1, U const& v2, Scalar const& λ) {
+  TestBilinearMap(map, u1, u2, v1, v2, λ);
+  AssertEqual(map(u1, v1), map(v1, u1));
+  AssertEqual(map(u2, v2), map(v2, u2));
+}
+
+template<typename Map, typename Scalar, typename U>
+void TestAlternatingBilinearMap(Map const& map, U const& u1, U const& u2,
+                                U const& v1, U const& v2, Scalar const& λ) {
+  TestBilinearMap(map, u1, u2, v1, v2, λ);
+  auto zero = map(u1, u1) - map(u1, u1);
+  AssertEqual(map(u1, u1), zero);
+  AssertEqual(map(u2, u2), zero);
+  AssertEqual(map(v1, v2), -map(v2, v1));
+}
+
 template<typename Vector, typename Scalar>
 void TestVectorSpace(Vector const& nullVector, Vector const& u, Vector const& v,
                      Vector const& w, Scalar const& zero, Scalar const& unit,
