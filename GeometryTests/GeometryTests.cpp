@@ -45,11 +45,13 @@ public:
                        2 * π * AstronomicalUnit / JulianYear,
                        1 * Admiralty::NauticalMile / Hour);
     R3Element<Speed> w(-1 * Mile / Hour, -2 * Foot / Second, -3 * Knot);
-    auto k = 2 * w;
+    R3Element<Speed> a(88 * Mile / Hour, 300 * Metre / Second, 46 * Knot);
     AssertEqual((e * Dimensionless(42)) * v, e * (Dimensionless(42) * v));
     TestVectorSpace<R3Element<Speed>,
                     Dimensionless>(nullVector, u, v, w, Dimensionless(0),
                                    Dimensionless(1), e, Dimensionless(42));
+    TestBilinearMap(Cross<Speed::Dimensions, Speed::Dimensions>, u, v, w, a,
+                    Dimensionless(42));
   }
 
   TEST_METHOD(VectorSpaceTests) {
