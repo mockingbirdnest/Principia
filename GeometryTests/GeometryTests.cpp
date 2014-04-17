@@ -33,7 +33,7 @@ using namespace TestUtilities;
 
 TEST_CLASS(GeometryTest)
 {
-public:
+ public:
   TEST_METHOD(R3ElementTest) {
     R3Element<Speed> nullVector(0 * Metre / Second,
                                 0 * Metre / Second,
@@ -58,19 +58,23 @@ public:
 
   TEST_METHOD(VectorSpaceTests) {
     struct World;
-    Vector<Length, World> nullWorldDisplacement(R3Element<Length>(0 * Metre,
-                                                                  0 * Metre,
-                                                                  0 * Metre));
-    Vector<Length, World> u(R3Element<Length>(3 * Metre, 
-                                              -42 * Metre,
-                                              0 * Metre));
-    Vector<Length, World> v(R3Element<Length>(-π * Metre,
-                                              -e * Metre,
-                                              -1 * Metre));
-    Vector<Length, World> w(R3Element<Length>(2 * Metre,
-                                              2 * Metre,
-                                              2 * Metre));
-    TestVectorSpace(nullWorldDisplacement, u, v, w, Dimensionless(0),
+    R3Element<Length> nullDisplacement(0 * Metre, 0 * Metre, 0 * Metre);
+    R3Element<Length> u(3 * Metre, -42 * Metre, 0 * Metre);
+    R3Element<Length> v(-π * Metre, -e * Metre, -1 * Metre);
+    R3Element<Length> w(2 * Metre, 2 * Metre, 2 * Metre);
+    R3Element<Length> a(1 * Inch, 2 * Foot, 3 * Admiralty::Fathom);
+    TestVectorSpace(Vector<Length, World>(nullDisplacement),
+                    Vector<Length, World>(u), Vector<Length, World>(v),
+                    Vector<Length, World>(w), Dimensionless(0),
+                    Dimensionless(1), Sqrt(163), -Sqrt(2));
+    TestVectorSpace(Bivector<Length, World>(nullDisplacement),
+                    Bivector<Length, World>(u), Bivector<Length, World>(v),
+                    Bivector<Length, World>(w), Dimensionless(0),
+                    Dimensionless(1), Sqrt(163), -Sqrt(2));
+    TestVectorSpace(Trivector<Length, World>(nullDisplacement.x),
+                    Trivector<Length, World>(u.x),
+                    Trivector<Length, World>(v.x),
+                    Trivector<Length, World>(w.x), Dimensionless(0),
                     Dimensionless(1), Sqrt(163), -Sqrt(2));
   }
 

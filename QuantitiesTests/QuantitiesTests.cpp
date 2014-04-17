@@ -30,7 +30,7 @@ using namespace Principia::CGS;
 namespace QuantitiesTests {
 
 TEST_CLASS(QuantitiesTests) {
-public:
+ public:
   TEST_METHOD(AbsoluteValue) {
     Assert::AreEqual(Abs(-1729), Dimensionless(1729));
     Assert::AreEqual(Abs(1729), Dimensionless(1729));

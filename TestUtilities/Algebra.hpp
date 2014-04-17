@@ -136,6 +136,16 @@ void TestVectorSpace(Vector const& nullVector, Vector const& u, Vector const& v,
   AssertEqual(vector, nullVector);
 }
 
+template<typename Vector, typename Scalar, typename Map>
+void TestInnerProductSpace(Map const& map, Vector const& nullVector,
+                           Vector const& u, Vector const& v, Vector const& w,
+                           Vector const& a, Scalar const& zero,
+                           Scalar const& unit, Scalar const& α,
+                           Scalar const& β) {
+  TestVectorSpace(nullVector, u, v, w, zero, unit, α, β);
+  TestSymmetricBilinearMap(map, u, v, w, a, α);
+}
+
 template<typename T>
 void TestField(T const& zero, T const& one, T const& a, T const& b,
                T const& c, T const& x, T const& y) {
