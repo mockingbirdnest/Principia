@@ -1,5 +1,7 @@
 ﻿#include "stdafx.hpp"
 
+#include <functional>
+
 #include "CppUnitTest.h"
 #include "..\TestUtilities\TestUtilities.hpp"
 #include "..\TestUtilities\QuantityComparisons.hpp"
@@ -63,19 +65,43 @@ TEST_CLASS(GeometryTest)
     R3Element<Length> v(-π * Metre, -e * Metre, -1 * Metre);
     R3Element<Length> w(2 * Metre, 2 * Metre, 2 * Metre);
     R3Element<Length> a(1 * Inch, 2 * Foot, 3 * Admiralty::Fathom);
-    TestVectorSpace(Vector<Length, World>(nullDisplacement),
-                    Vector<Length, World>(u), Vector<Length, World>(v),
-                    Vector<Length, World>(w), Dimensionless(0),
-                    Dimensionless(1), Sqrt(163), -Sqrt(2));
-    TestVectorSpace(Bivector<Length, World>(nullDisplacement),
-                    Bivector<Length, World>(u), Bivector<Length, World>(v),
-                    Bivector<Length, World>(w), Dimensionless(0),
-                    Dimensionless(1), Sqrt(163), -Sqrt(2));
-    TestVectorSpace(Trivector<Length, World>(nullDisplacement.x),
-                    Trivector<Length, World>(u.x),
-                    Trivector<Length, World>(v.x),
-                    Trivector<Length, World>(w.x), Dimensionless(0),
-                    Dimensionless(1), Sqrt(163), -Sqrt(2));
+    std::function<Area(Vector<Length, World>,
+                       Vector<Length, World>)> vectorInnerProduct =
+    [](Vector<Length, World> a, Vector<Length, World> b) {
+      return InnerProduct(a, b);
+    };
+    std::function<Area(Bivector<Length, World>,
+                       Bivector<Length, World>)> bivectorInnerProduct =
+    [](Bivector<Length, World> a, Bivector<Length, World> b) {
+      return InnerProduct(a, b);
+    };
+    std::function<Area(Trivector<Length, World>,
+                       Trivector<Length, World>)> trivectorInnerProduct =
+    [](Trivector<Length, World> a, Trivector<Length, World> b) {
+      return InnerProduct(a, b);
+    };
+    TestInnerProductSpace(vectorInnerProduct,
+                          Vector<Length, World>(nullDisplacement),
+                          Vector<Length, World>(u), Vector<Length, World>(v),
+                          Vector<Length, World>(w), Vector<Length, World>(a),
+                          Dimensionless(0), Dimensionless(1), Sqrt(163),
+                          -Sqrt(2));
+    TestInnerProductSpace(bivectorInnerProduct,
+                          Bivector<Length, World>(nullDisplacement),
+                          Bivector<Length, World>(u),
+                          Bivector<Length, World>(v),
+                          Bivector<Length, World>(w),
+                          Bivector<Length, World>(a),
+                          Dimensionless(0), Dimensionless(1), Sqrt(163),
+                          -Sqrt(2));
+    TestInnerProductSpace(trivectorInnerProduct,
+                          Trivector<Length, World>(nullDisplacement.x),
+                          Trivector<Length, World>(u.y),
+                          Trivector<Length, World>(v.z),
+                          Trivector<Length, World>(w.x),
+                          Trivector<Length, World>(a.y),
+                          Dimensionless(0), Dimensionless(1), Sqrt(163),
+                          -Sqrt(2));
   }
 
 };

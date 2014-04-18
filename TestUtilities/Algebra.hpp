@@ -103,7 +103,17 @@ void TestSymmetricBilinearMap(Map const& map, U const& u1, U const& u2,
   AssertEqual(map(u1, v1), map(v1, u1));
   AssertEqual(map(u2, v2), map(v2, u2));
 }
-
+template<typename Map, typename Scalar, typename U>
+void TestSymmetricPositiveDefiniteBilinearMap(Map const& map, U const& u1,
+                                              U const& u2, U const& v1,
+                                              U const& v2, Scalar const& λ) {
+  TestSymmetricBilinearMap(map, u1, u2, v1, v2, λ);
+  auto zero = map(u1, u1) - map(u1, u1);
+  AssertTrue(map(u1, u1) > zero);
+  AssertTrue(map(u2, u2) > zero);
+  AssertTrue(map(v1, v1) > zero);
+  AssertTrue(map(v2, v2) > zero);
+}
 template<typename Map, typename Scalar, typename U>
 void TestAlternatingBilinearMap(Map const& map, U const& u1, U const& u2,
                                 U const& v1, U const& v2, Scalar const& λ) {
@@ -143,7 +153,7 @@ void TestInnerProductSpace(Map const& map, Vector const& nullVector,
                            Scalar const& unit, Scalar const& α,
                            Scalar const& β) {
   TestVectorSpace(nullVector, u, v, w, zero, unit, α, β);
-  TestSymmetricBilinearMap(map, u, v, w, a, α);
+  TestSymmetricPositiveDefiniteBilinearMap(map, u, v, w, a, α);
 }
 
 template<typename T>
