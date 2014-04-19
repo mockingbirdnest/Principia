@@ -54,8 +54,9 @@ TEST_CLASS(GeometryTest)
                                    Dimensionless(1), e, Dimensionless(42));
     TestAlternatingBilinearMap(Cross<Speed::Dimensions, Speed::Dimensions>, u,
                                v, w, a, Dimensionless(42));
-    TestSymmetricBilinearMap(Dot<Speed::Dimensions, Speed::Dimensions>, u,
-                             v, w, a, Dimensionless(42));
+    TestSymmetricPositiveDefiniteBilinearMap(Dot<Speed::Dimensions,
+                                                 Speed::Dimensions>,
+                                             u, v, w, a, Dimensionless(42));
   }
 
   TEST_METHOD(VectorSpaceTests) {
