@@ -52,11 +52,24 @@ TEST_CLASS(GeometryTest)
     TestVectorSpace<R3Element<Speed>,
                     Dimensionless>(nullVector, u, v, w, Dimensionless(0),
                                    Dimensionless(1), e, Dimensionless(42));
-    TestAlternatingBilinearMap(Cross<Speed::Dimensions, Speed::Dimensions>, u,
+    TestAlternatingBilinearMap(Cross<Speed, Speed>, u,
                                v, w, a, Dimensionless(42));
     TestSymmetricPositiveDefiniteBilinearMap(Dot<Speed::Dimensions,
                                                  Speed::Dimensions>,
                                              u, v, w, a, Dimensionless(42));
+  }
+
+  TEST_METHOD(SpecialOrthogonalLieAlgebraTests) {
+    struct World;
+    R3Element<Dimensionless> u(3, -42, 0);
+    R3Element<Dimensionless> v(-π, -e, -1);
+    R3Element<Dimensionless> w(2, 2, 2);
+    R3Element<Dimensionless> a(1.2, 2.3, 3.4);
+    TestLieBracket(Commutator<Dimensionless, Dimensionless, World>,
+                   Bivector<Dimensionless, World>(u),
+                   Bivector<Dimensionless, World>(v),
+                   Bivector<Dimensionless, World>(w),
+                   Bivector<Dimensionless, World>(a), Dimensionless(0.42));
   }
 
   TEST_METHOD(VectorSpaceTests) {

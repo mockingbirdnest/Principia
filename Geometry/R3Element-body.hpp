@@ -117,13 +117,11 @@ inline void operator/=(R3Element<Quantities::Quantity<D>>& left,
   left = left / right;
 }
 
-template<typename DLeft, typename DRight>
-inline R3Element<Quantities::Product<Quantities::Quantity<DLeft>,
-                                     Quantities::Quantity<DRight>>> Cross(
-    R3Element<Quantities::Quantity<DLeft>> const& left,
-    R3Element<Quantities::Quantity<DRight>> const& right) {
-  return R3Element<Quantities::Product<Quantities::Quantity<DLeft>,
-                                       Quantities::Quantity<DRight>>>(
+template<typename Left, typename Right>
+inline R3Element<Quantities::Product<Left, Right>> Cross(
+    R3Element<Left> const& left,
+    R3Element<Right> const& right) {
+  return R3Element<Quantities::Product<Left, Right>>(
       left.y * right.z - left.z * right.y,
       left.z * right.x - left.x * right.z,
       left.x * right.y - left.y * right.x);

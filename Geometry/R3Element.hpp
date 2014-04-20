@@ -82,11 +82,10 @@ template<typename D>
 void operator/=(R3Element<Quantities::Quantity<D>>& left,
                 Quantities::Dimensionless const& right);
 
-template<typename DLeft, typename DRight>
-R3Element<Quantities::Product<Quantities::Quantity<DLeft>,
-                              Quantities::Quantity<DRight>>> Cross(
-    R3Element<Quantities::Quantity<DLeft>> const& left,
-    R3Element<Quantities::Quantity<DRight>> const& right);
+template<typename Left, typename Right>
+R3Element<Quantities::Product<Left, Right>> Cross(
+    R3Element<Left> const& left,
+    R3Element<Right> const& right);
 
 template<typename DLeft, typename DRight>
 Quantities::Product<Quantities::Quantity<DLeft>,
