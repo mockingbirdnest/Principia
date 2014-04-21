@@ -23,34 +23,27 @@ namespace Geometry {
     Scalar z;
   };
 
-template<typename D>
-R3Element<Quantities::Quantity<D>> operator+(
-    R3Element<Quantities::Quantity<D>> const& right);
-template<typename D>
-R3Element<Quantities::Quantity<D>> operator-(
-    R3Element<Quantities::Quantity<D>> const& right);
+template<typename Scalar>
+R3Element<Scalar> operator+(R3Element<Scalar> const& right);
+template<typename Scalar>
+R3Element<Scalar> operator-(R3Element<Scalar> const& right);
 
-template<typename D>
-R3Element<Quantities::Quantity<D>> operator+(
-    R3Element<Quantities::Quantity<D>> const& left,
-    R3Element<Quantities::Quantity<D>> const& right);
-template<typename D>
-R3Element<Quantities::Quantity<D>> operator-(
-    R3Element<Quantities::Quantity<D>> const& left,
-    R3Element<Quantities::Quantity<D>> const& right);
+template<typename Scalar>
+R3Element<Scalar> operator+(R3Element<Scalar> const& left,
+                            R3Element<Scalar> const& right);
+template<typename Scalar>
+R3Element<Scalar> operator-(R3Element<Scalar> const& left,
+                            R3Element<Scalar> const& right);
 
-template<typename D>
-R3Element<Quantities::Quantity<D>> operator*(
-    Quantities::Dimensionless const& left,
-    R3Element<Quantities::Quantity<D>> const& right);
-template<typename D>
-R3Element<Quantities::Quantity<D>> operator*(
-    R3Element<Quantities::Quantity<D>> const& left,
-    Quantities::Dimensionless const& right);
-template<typename D>
-R3Element<Quantities::Quantity<D>> operator/(
-    R3Element<Quantities::Quantity<D>> const& left,
-    Quantities::Dimensionless const& right);
+template<typename Scalar>
+R3Element<Scalar> operator*(Quantities::Dimensionless const& left,
+                            R3Element<Scalar> const& right);
+template<typename Scalar>
+R3Element<Scalar> operator*(R3Element<Scalar> const& left,
+                            Quantities::Dimensionless const& right);
+template<typename Scalar>
+R3Element<Scalar> operator/(R3Element<Scalar> const& left,
+                            Quantities::Dimensionless const& right);
 
 template<typename DLeft, typename DRight>
 R3Element<Quantities::Product<Quantities::Quantity<DLeft>,
