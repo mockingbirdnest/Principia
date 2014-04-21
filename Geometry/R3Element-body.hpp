@@ -27,13 +27,13 @@ inline R3Element<Quantities::Quantity<D>> operator+(
                                             left.y + right.y,
                                             left.z + right.z);
 }
-template<typename D>
-inline R3Element<Quantities::Quantity<D>> operator-(
-    R3Element<Quantities::Quantity<D>> const& left,
-    R3Element<Quantities::Quantity<D>> const& right) {
-  return R3Element<Quantities::Quantity<D>>(left.x - right.x,
-                                            left.y - right.y,
-                                            left.z - right.z);
+template<typename Scalar>
+inline R3Element<Scalar> operator-(
+    R3Element<Scalar> const& left,
+    R3Element<Scalar> const& right) {
+  return R3Element<Scalar>(left.x - right.x,
+                           left.y - right.y,
+                           left.z - right.z);
 }
 
 template<typename D>
