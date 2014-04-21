@@ -8,24 +8,22 @@ inline R3Element<Scalar>::R3Element(Scalar const& x,
                                     Scalar const& z) : x(x), y(y), z(z) {};
 
 
-template<typename D>
-inline R3Element<Quantities::Quantity<D>> operator+(
-    R3Element<Quantities::Quantity<D>> const& right) {
-  return R3Element<Quantities::Quantity<D>>(+right.x, +right.y, +right.z);
+template<typename Scalar>
+inline R3Element<Scalar> operator+(R3Element<Scalar> const& right) {
+  return R3Element<Scalar>(+right.x, +right.y, +right.z);
 }
-template<typename D>
-inline R3Element<Quantities::Quantity<D>> operator-(
-    R3Element<Quantities::Quantity<D>> const& right) {
-  return R3Element<Quantities::Quantity<D>>(-right.x, -right.y, -right.z);
+template<typename Scalar>
+inline R3Element<Scalar> operator-(R3Element<Scalar> const& right) {
+  return R3Element<Scalar>(-right.x, -right.y, -right.z);
 }
 
-template<typename D>
-inline R3Element<Quantities::Quantity<D>> operator+(
-    R3Element<Quantities::Quantity<D>> const& left,
-    R3Element<Quantities::Quantity<D>> const& right) {
-  return R3Element<Quantities::Quantity<D>>(left.x + right.x,
-                                            left.y + right.y,
-                                            left.z + right.z);
+template<typename Scalar>
+inline R3Element<Scalar> operator+(
+    R3Element<Scalar> const& left,
+    R3Element<Scalar> const& right) {
+  return R3Element<Scalar>(left.x + right.x,
+                           left.y + right.y,
+                           left.z + right.z);
 }
 template<typename Scalar>
 inline R3Element<Scalar> operator-(
@@ -36,29 +34,26 @@ inline R3Element<Scalar> operator-(
                            left.z - right.z);
 }
 
-template<typename D>
-inline R3Element<Quantities::Quantity<D>> operator*(
-    Quantities::Dimensionless const& left,
-    R3Element<Quantities::Quantity<D>> const& right) {
-  return R3Element<Quantities::Quantity<D>>(left * right.x,
-                                            left * right.y,
-                                            left * right.z);
+template<typename Scalar>
+inline R3Element<Scalar> operator*(Quantities::Dimensionless const& left,
+                                   R3Element<Scalar> const& right) {
+  return R3Element<Scalar>(left * right.x,
+                           left * right.y,
+                           left * right.z);
 }
-template<typename D>
-inline R3Element<Quantities::Quantity<D>> operator*(
-    R3Element<Quantities::Quantity<D>> const& left,
-    Quantities::Dimensionless const& right) {
-  return R3Element<Quantities::Quantity<D>>(left.x * right,
-                                            left.y * right,
-                                            left.z * right);
+template<typename Scalar>
+inline R3Element<Scalar> operator*(R3Element<Scalar> const& left,
+                                   Quantities::Dimensionless const& right) {
+  return R3Element<Scalar>(left.x * right,
+                           left.y * right,
+                           left.z * right);
 }
-template<typename D>
-inline R3Element<Quantities::Quantity<D>> operator/(
-    R3Element<Quantities::Quantity<D>> const& left,
-    Quantities::Dimensionless const& right) {
-  return R3Element<Quantities::Quantity<D>>(left.x / right,
-                                            left.y / right,
-                                            left.z / right);
+template<typename Scalar>
+inline R3Element<Scalar> operator/(R3Element<Scalar> const& left,
+                                   Quantities::Dimensionless const& right) {
+  return R3Element<Scalar>(left.x / right,
+                           left.y / right,
+                           left.z / right);
 }
 
 template<typename DLeft, typename DRight>
