@@ -33,10 +33,11 @@ using namespace Astronomy;
 using namespace Constants;
 using namespace TestUtilities;
 
-TEST_CLASS(GeometryTest)
+TEST_CLASS(GeometryTests)
 {
  public:
-  TEST_METHOD(R3ElementTest) {
+  struct World;
+  TEST_METHOD(Dumb3Vector) {
     R3Element<Speed> nullVector(0 * Metre / Second,
                                 0 * Metre / Second,
                                 0 * Metre / Second);
@@ -58,8 +59,7 @@ TEST_CLASS(GeometryTest)
                                              u, v, w, a, Dimensionless(42));
   }
 
-  TEST_METHOD(SpecialOrthogonalLieAlgebraTests) {
-    struct World;
+  TEST_METHOD(SpecialOrthogonalLieAlgebra) {
     R3Element<Dimensionless> u(3, -42, 0);
     R3Element<Dimensionless> v(-π, -e, -1);
     R3Element<Dimensionless> w(2, 2, 2);
@@ -71,8 +71,7 @@ TEST_CLASS(GeometryTest)
                    Bivector<Dimensionless, World>(a), Dimensionless(0.42));
   }
 
-  TEST_METHOD(VectorSpaceTests) {
-    struct World;
+  TEST_METHOD(VectorSpaces) {
     R3Element<Length> nullDisplacement(0 * Metre, 0 * Metre, 0 * Metre);
     R3Element<Length> u(3 * Metre, -42 * Metre, 0 * Metre);
     R3Element<Length> v(-π * Metre, -e * Metre, -1 * Metre);
