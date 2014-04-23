@@ -45,34 +45,31 @@ template<typename Scalar>
 R3Element<Scalar> operator/(R3Element<Scalar> const& left,
                             Quantities::Dimensionless const& right);
 
-template<typename DLeft, typename DRight>
-R3Element<Quantities::Product<Quantities::Quantity<DLeft>,
-                              Quantities::Quantity<DRight>>> operator*(
-    Quantities::Quantity<DRight> const& left,
-    R3Element<Quantities::Quantity<DRight>> const& right);
-template<typename DLeft, typename DRight>
-R3Element<Quantities::Product<Quantities::Quantity<DLeft>,
-                              Quantities::Quantity<DRight>>> operator*(
-    R3Element<Quantities::Quantity<DLeft>> const& left,
+template<typename DLeft, typename Right>
+R3Element<Quantities::Product<Quantities::Quantity<DLeft>, Right>> operator*(
+    Quantities::Quantity<DLeft> const& left,
+    R3Element<Right> const& right);
+template<typename Left, typename DRight>
+R3Element<Quantities::Product<Left, Quantities::Quantity<DRight>>> operator*(
+    R3Element<Left> const& left,
     Quantities::Quantity<DRight> const& right);
-template<typename DLeft, typename DRight>
-R3Element<Quantities::Quotient<Quantities::Quantity<DLeft>,
-                               Quantities::Quantity<DRight>>> operator/(
-    R3Element<Quantities::Quantity<DLeft>> const& left,
+template<typename Left, typename DRight>
+R3Element<Quantities::Quotient<Left, Quantities::Quantity<DRight>>> operator/(
+    R3Element<Left> const& left,
     Quantities::Quantity<DRight> const& right);
 
-template<typename D>
-void operator+=(R3Element<Quantities::Quantity<D>>& left,
-                R3Element<Quantities::Quantity<D>> const& right);
-template<typename D>
-void operator-=(R3Element<Quantities::Quantity<D>>& left,
-                R3Element<Quantities::Quantity<D>> const& right);
+template<typename Scalar>
+void operator+=(R3Element<Scalar>& left,
+                R3Element<Scalar> const& right);
+template<typename Scalar>
+void operator-=(R3Element<Scalar>& left,
+                R3Element<Scalar> const& right);
 
-template<typename D>
-void operator*=(R3Element<Quantities::Quantity<D>>& left,
+template<typename Scalar>
+void operator*=(R3Element<Scalar>& left,
                 Quantities::Dimensionless const& right);
-template<typename D>
-void operator/=(R3Element<Quantities::Quantity<D>>& left,
+template<typename Scalar>
+void operator/=(R3Element<Scalar>& left,
                 Quantities::Dimensionless const& right);
 
 template<typename Left, typename Right>
@@ -80,11 +77,9 @@ R3Element<Quantities::Product<Left, Right>> Cross(
     R3Element<Left> const& left,
     R3Element<Right> const& right);
 
-template<typename DLeft, typename DRight>
-Quantities::Product<Quantities::Quantity<DLeft>,
-                    Quantities::Quantity<DRight>> Dot(
-    R3Element<Quantities::Quantity<DLeft>> const& left,
-    R3Element<Quantities::Quantity<DRight>> const& right);
+template<typename Left, typename Right>
+Quantities::Product<Left, Right> Dot(R3Element<Left> const& left,
+                                     R3Element<Right> const& right);
 
 }  // namespace Geometry
 }  // namespace Principia

@@ -56,58 +56,56 @@ inline R3Element<Scalar> operator/(R3Element<Scalar> const& left,
                            left.z / right);
 }
 
-template<typename DLeft, typename DRight>
+template<typename DLeft, typename Right>
 inline R3Element<Quantities::Product<Quantities::Quantity<DLeft>,
-                                     Quantities::Quantity<DRight>>> operator*(
-    Quantities::Quantity<DRight> const& left,
-    R3Element<Quantities::Quantity<DRight>> const& right) {
+                                     Right>> operator*(
+    Quantities::Quantity<DLeft> const& left,
+    R3Element<Right> const& right) {
   return R3Element<Quantities::Product<Quantities::Quantity<DLeft>,
-                                       Quantities::Quantity<DRight>>>(
+                                       Right>>(
       left * right.x,
       left * right. y,
       left * right.z);
 }
-template<typename DLeft, typename DRight>
-inline R3Element<Quantities::Product<Quantities::Quantity<DLeft>,
+template<typename Left, typename DRight>
+inline R3Element<Quantities::Product<Left,
                                      Quantities::Quantity<DRight>>> operator*(
-    R3Element<Quantities::Quantity<DLeft>> const& left,
+    R3Element<Left> const& left,
     Quantities::Quantity<DRight> const& right) {
-  return R3Element<Quantities::Product<Quantities::Quantity<DLeft>,
-                                       Quantities::Quantity<DRight>>>(
+  return R3Element<Quantities::Product<Left, Quantities::Quantity<DRight>>>(
       left.x * right,
       left.y * right,
       left.z * right);
 }
-template<typename DLeft, typename DRight>
-inline R3Element<Quantities::Quotient<Quantities::Quantity<DLeft>,
+template<typename Left, typename DRight>
+inline R3Element<Quantities::Quotient<Left,
                                       Quantities::Quantity<DRight>>> operator/(
-    R3Element<Quantities::Quantity<DLeft>> const& left,
+    R3Element<Left> const& left,
     Quantities::Quantity<DRight> const& right) {
-  return R3Element<Quantities::Quotient<Quantities::Quantity<DLeft>,
-                                        Quantities::Quantity<DRight>>(
+  return R3Element<Quantities::Quotient<Left, Quantities::Quantity<DRight>>>(
       left.x / right,
       left.y / right,
       left.z / right);
 }
 
-template<typename D>
-inline void operator+=(R3Element<Quantities::Quantity<D>>& left,
-                       R3Element<Quantities::Quantity<D>> const& right) {
+template<typename Scalar>
+inline void operator+=(R3Element<Scalar>& left,
+                       R3Element<Scalar> const& right) {
   left = left + right;
 }
-template<typename D>
-inline void operator-=(R3Element<Quantities::Quantity<D>>& left,
-                       R3Element<Quantities::Quantity<D>> const& right) {
+template<typename Scalar>
+inline void operator-=(R3Element<Scalar>& left,
+                       R3Element<Scalar> const& right) {
   left = left - right;
 }
 
-template<typename D>
-inline void operator*=(R3Element<Quantities::Quantity<D>>& left,
+template<typename Scalar>
+inline void operator*=(R3Element<Scalar>& left,
                        Quantities::Dimensionless const& right) {
   left = left * right;
 }
-template<typename D>
-inline void operator/=(R3Element<Quantities::Quantity<D>>& left,
+template<typename Scalar>
+inline void operator/=(R3Element<Scalar>& left,
                        Quantities::Dimensionless const& right) {
   left = left / right;
 }
@@ -122,11 +120,9 @@ inline R3Element<Quantities::Product<Left, Right>> Cross(
       left.x * right.y - left.y * right.x);
 }
 
-template<typename DLeft, typename DRight>
-inline Quantities::Product<Quantities::Quantity<DLeft>,
-                           Quantities::Quantity<DRight>> Dot(
-    R3Element<Quantities::Quantity<DLeft>> const& left,
-    R3Element<Quantities::Quantity<DRight>> const& right) {
+template<typename Left, typename Right>
+inline Quantities::Product<Left, Right> Dot(R3Element<Left> const& left,
+                                            R3Element<Right> const& right) {
   return left.x * right.x + left.y * right.y + left.z * right.z;
 }
 
