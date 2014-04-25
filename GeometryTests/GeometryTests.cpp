@@ -164,6 +164,23 @@ TEST_CLASS(GeometryTests)
                             -Sqrt(2));
     }
   }
+  TEST_METHOD(GrassmannAlgebra) {
+    R3Element<Dimensionless> u(3, -42, 0);
+    R3Element<Dimensionless> v(-π, -e, -1);
+    R3Element<Dimensionless> w(2, 2, 2);
+    R3Element<Dimensionless> a(1.2, 2.3, 3.4);
+    std::function<Bivector<Dimensionless,
+                           World>(Vector<Dimensionless, World>,
+                                  Vector<Dimensionless, World>)> vectorWedge =
+      [](Vector<Dimensionless, World> a, Vector<Dimensionless, World> b) {
+        return Wedge(a, b);
+      };
+    TestAlternatingBilinearMap(vectorWedge, Vector<Dimensionless, World>(u),
+                               Vector<Dimensionless, World>(u),
+                               Vector<Dimensionless, World>(u),
+                               Vector<Dimensionless, World>(u),
+                               Dimensionless(6 * 9));
+  }
 };
 }  // namespace GeometryTests
 }  // namespace Principia
