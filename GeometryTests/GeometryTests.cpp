@@ -57,7 +57,7 @@ TEST_CLASS(GeometryTests)
                                v, w, a, Dimensionless(42));
     TestSymmetricPositiveDefiniteBilinearMap(Dot<Speed, Speed>,
                                              u, v, w, a, Dimensionless(42));
-  }  // TEST_METHOD Dumb3Vector
+  }
 
   TEST_METHOD(SpecialOrthogonalLieAlgebra) {
     R3Element<Dimensionless> u(3, -42, 0);
@@ -69,7 +69,7 @@ TEST_CLASS(GeometryTests)
                    Bivector<Dimensionless, World>(v),
                    Bivector<Dimensionless, World>(w),
                    Bivector<Dimensionless, World>(a), Dimensionless(0.42));
-  }  // TEST_METHOD SpecialOrthogonalLieAlgebra
+  }
 
   TEST_METHOD(VectorSpaces) {
     R3Element<Length> nullDisplacement(0 * Metre, 0 * Metre, 0 * Metre);
@@ -163,7 +163,7 @@ TEST_CLASS(GeometryTests)
                             Dimensionless(0), Dimensionless(1), Sqrt(163),
                             -Sqrt(2));
     }
-  }  // TEST_METHOD VectorSpaces
+  }
 
   TEST_METHOD(GrassmannAlgebra) {
     R3Element<Dimensionless> u(3, -42, 0);
@@ -181,8 +181,8 @@ TEST_CLASS(GeometryTests)
                                Vector<Dimensionless, World>(u),
                                Vector<Dimensionless, World>(u),
                                Dimensionless(6 * 9));
-  }  // TEST_METHOD GrassmannAlgebra
+  }
 
-};  // TEST_CLASS GeometryTests
+};
 }  // namespace GeometryTests
 }  // namespace Principia

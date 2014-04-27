@@ -22,7 +22,7 @@ void TestEquality(T const& low, T const& high) {
   AssertTrue(!(high != high), L"high != high was true.");
 
   LogLine(L"> False comparisons passed!");
-}  // void TestEquality
+}
 
 template<typename T>
 void TestOrder(T const& low, T const& high) {
@@ -51,7 +51,7 @@ void TestOrder(T const& low, T const& high) {
   AssertTrue(!(high <= low), L"high <= low was true.");
 
   LogLine(L"> False comparisons passed!");
-}  // void TestOrder
+}
 
 template<typename T>
 void TestAdditiveGroup(T const& zero, T const& a, T const& b, T const& c) {
@@ -83,7 +83,7 @@ void TestMultiplicativeGroup(T const& one, T const& a, T const& b, T const& c) {
   accumulator *= b;
   accumulator /= c;
   AssertEqual(accumulator, a * b / c);
-}  // void TestMultiplicativeGroup
+}
 
 template<typename Map, typename Scalar, typename U, typename V>
 void TestBilinearMap(Map const& map, U const& u1, U const& u2, V const& v1,
@@ -94,7 +94,7 @@ void TestBilinearMap(Map const& map, U const& u1, U const& u2, V const& v1,
   AssertEqual(λ * map(u1, v1), map(u1, λ * v1));
   AssertEqual(map(u2 * λ, v2), map(u2, v2 * λ));
   AssertEqual(map(u2, v2) * λ, map(u2 * λ, v2));
-}  // void TestBilinearMap
+}
 
 template<typename Map, typename Scalar, typename U>
 void TestSymmetricBilinearMap(Map const& map, U const& u1, U const& u2,
@@ -102,7 +102,7 @@ void TestSymmetricBilinearMap(Map const& map, U const& u1, U const& u2,
   TestBilinearMap(map, u1, u2, v1, v2, λ);
   AssertEqual(map(u1, v1), map(v1, u1));
   AssertEqual(map(u2, v2), map(v2, u2));
-}  // void TestSymmetricBilinearMap
+}
 
 template<typename Map, typename Scalar, typename U>
 void TestSymmetricPositiveDefiniteBilinearMap(Map const& map, U const& u1,
@@ -114,7 +114,7 @@ void TestSymmetricPositiveDefiniteBilinearMap(Map const& map, U const& u1,
   AssertTrue(map(u2, u2) > zero);
   AssertTrue(map(v1, v1) > zero);
   AssertTrue(map(v2, v2) > zero);
-}  // void TestSymmetricPositiveDefiniteBilinearMap
+}
 
 template<typename Map, typename Scalar, typename U>
 void TestAlternatingBilinearMap(Map const& map, U const& u1, U const& u2,
@@ -124,7 +124,7 @@ void TestAlternatingBilinearMap(Map const& map, U const& u1, U const& u2,
   AssertEqual(map(u1, u1), zero);
   AssertEqual(map(u2, u2), zero);
   AssertEqual(map(v1, v2), -map(v2, v1));
-}  // void TestAlternatingBilinearMap
+}
 
 template<typename Map, typename Scalar, typename U>
 void TestLieBracket(Map const& map, U const& u1, U const& u2, U const& v1,
@@ -134,7 +134,7 @@ void TestLieBracket(Map const& map, U const& u1, U const& u2, U const& v1,
   AssertEqual(map(u1, map(u2, v1)) +
               map(u2, map(v1, u1)) +
               map(v1, map(u1, u2)), zero);
-}  // void TestLieBracket
+}
 
 template<typename Vector, typename Scalar>
 void TestVectorSpace(Vector const& nullVector, Vector const& u, Vector const& v,
@@ -156,7 +156,7 @@ void TestVectorSpace(Vector const& nullVector, Vector const& u, Vector const& v,
   AssertEqual(u, vector);
   vector *= zero;
   AssertEqual(vector, nullVector);
-}  // void TestVectorSpace
+}
 
 template<typename Vector, typename Scalar, typename Map>
 void TestInnerProductSpace(Map const& map, Vector const& nullVector,
@@ -166,7 +166,7 @@ void TestInnerProductSpace(Map const& map, Vector const& nullVector,
                            Scalar const& β) {
   TestVectorSpace(nullVector, u, v, w, zero, unit, α, β);
   TestSymmetricPositiveDefiniteBilinearMap(map, u, v, w, a, α);
-}  // void TestInnerProductSpace
+}
 
 template<typename T>
 void TestField(T const& zero, T const& one, T const& a, T const& b,
@@ -174,7 +174,7 @@ void TestField(T const& zero, T const& one, T const& a, T const& b,
   TestAdditiveGroup(zero, a, b, c);
   TestMultiplicativeGroup(one, c, x, y);
   TestVectorSpace(zero, a, b, c, zero, one, x, y);
-}  // void TestField
+}
 
 }  // namespace TestUtilities
 }  // namespace Principia

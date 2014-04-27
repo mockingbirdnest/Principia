@@ -21,7 +21,7 @@ struct R3Element {
   Scalar x;
   Scalar y;
   Scalar z;
-};  // struct R3Element
+};
 
 template<typename Scalar>
 R3Element<Scalar> operator+(R3Element<Scalar> const& right);
