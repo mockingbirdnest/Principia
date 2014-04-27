@@ -56,7 +56,8 @@ namespace SI {
   inline Quantities::Quantity<D> Milli(Quantities::Quantity<D> base) {
     return 1e-3 * base;
   }
-  template<typename D> Quantities::Quantity<D> Micro(Quantities::Quantity<D> base) {
+  template<typename D>
+  Quantities::Quantity<D> Micro(Quantities::Quantity<D> base) {
     return 1e-6 * base;
   }
   template<typename D>
@@ -83,5 +84,5 @@ namespace SI {
   inline Quantities::Quantity<D> Yocto(Quantities::Quantity<D> base) {
     return 1e-24 * base;
   }
-}
-}
+}  // namespace SI 
+}  // namespace Principia

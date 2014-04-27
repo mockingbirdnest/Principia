@@ -119,14 +119,14 @@ template<typename Q, int Exponent>
 struct PowerGenerator<Q, Exponent, Range<(Exponent == 1)>>{
   typedef Q ResultType;
 };
-}
+}  // namespace TypeGenerators
 namespace Factories {
 inline Length Metres(Dimensionless const& number) { return Length(number); }
 inline Mass Kilograms(Dimensionless const& number) { return Mass(number); }
 inline Time Seconds(Dimensionless const& number) { return Time(number); }
 inline Current Amperes(Dimensionless const& number) { return Current(number); }
-inline Temperature Kelvins(Dimensionless const& number) { 
-  return Temperature(number); 
+inline Temperature Kelvins(Dimensionless const& number) {
+  return Temperature(number);
 }
 inline Amount Moles(Dimensionless const& number) { return Amount(number); }
 inline LuminousIntensity Candelas(Dimensionless const& number) {
@@ -134,16 +134,21 @@ inline LuminousIntensity Candelas(Dimensionless const& number) {
 }
 inline Winding Cycles(Dimensionless const& number) { return Winding(number); }
 inline Angle Radians(Dimensionless const& number) { return Angle(number); }
-inline SolidAngle Steradians(Dimensionless const& number) { 
+inline SolidAngle Steradians(Dimensionless const& number) {
   return SolidAngle(number);
 }
-}
+}  // namespace Factories
 template<typename D>
 template<int Exponent>
 Exponentiation<Quantity<D>, Exponent> Quantity<D>::Pow() const {
-  return Exponentiation<Quantity<D>, 
+  return Exponentiation<Quantity<D>,
                         Exponent>(magnitude_.Pow(Exponent));
 }
+
+template<typename D>
+inline Quantity<D>::Quantity(Dimensionless const& magnitude)
+    : magnitude_(magnitude) {}
+
 #pragma region Additive group
 template<typename D>
 inline Quantity<D> operator+(Quantity<D> const& right) {
@@ -169,12 +174,12 @@ template<typename DLeft, typename DRight>
 inline Product <typename Quantity<DLeft>, typename Quantity <DRight>>
 operator*(Quantity<DLeft> const& left,
           Quantity<DRight> const& right) {
-  return Product<typename Quantity<DLeft>, 
-                 typename Quantity<DRight>>(left.magnitude_ * 
+  return Product<typename Quantity<DLeft>,
+                 typename Quantity<DRight>>(left.magnitude_ *
                                              right.magnitude_);
 }
 template<typename DLeft, typename DRight>
-inline Quotient<typename Quantity<DLeft>, typename Quantity <DRight>> 
+inline Quotient<typename Quantity<DLeft>, typename Quantity <DRight>>
 operator/(Quantity<DLeft> const& left,
           Quantity<DRight> const& right) {
   return Quotient<typename Quantity<DLeft>,
@@ -182,12 +187,12 @@ operator/(Quantity<DLeft> const& left,
                                               right.magnitude_);
 }
 template<typename D>
-inline Quantity<D> operator*(Quantity<D> const& left, 
+inline Quantity<D> operator*(Quantity<D> const& left,
                              Dimensionless const& right) {
   return Quantity<D>(left.magnitude_ * right);
 }
 template<typename D>
-inline Quantity<D> operator*(Dimensionless const& left, 
+inline Quantity<D> operator*(Dimensionless const& left,
                              Quantity<D> const& right) {
   return Quantity<D>(left * right.magnitude_);
 }
@@ -253,23 +258,23 @@ inline Quantity<D> Abs(Quantity<D> const& quantity) {
 }
 
 template<typename D>
-inline std::wstring ToString(Quantity<D> const& quantity, 
+inline std::wstring ToString(Quantity<D> const& quantity,
                              unsigned char const precision) {
   return ToString(quantity.magnitude_, precision) +
     (D::Length            != 0 ? L" m^" + std::to_wstring(D::Length) : L"") +
     (D::Mass              != 0 ? L" kg^" + std::to_wstring(D::Mass) : L"") +
     (D::Time              != 0 ? L" s^" + std::to_wstring(D::Time) : L"") +
     (D::Current           != 0 ? L" A^" + std::to_wstring(D::Current) : L"") +
-    (D::Temperature       != 0 ? L" K^" + std::to_wstring(D::Temperature) 
+    (D::Temperature       != 0 ? L" K^" + std::to_wstring(D::Temperature)
                                : L"") +
     (D::Amount            != 0 ? L" mol^" + std::to_wstring(D::Amount) : L"") +
-    (D::LuminousIntensity != 0 ? L" cd^" + std::to_wstring(D::LuminousIntensity) 
+    (D::LuminousIntensity != 0 ? L" cd^" + std::to_wstring(D::LuminousIntensity)
                                : L"") +
-    (D::Winding           != 0 ? L" cycle^" + std::to_wstring(D::Winding) 
+    (D::Winding           != 0 ? L" cycle^" + std::to_wstring(D::Winding)
                                : L"") +
     (D::Angle             != 0 ? L" rad^" + std::to_wstring(D::Angle) : L"") +
-    (D::SolidAngle        != 0 ? L" sr^" + std::to_wstring(D::SolidAngle) 
+    (D::SolidAngle        != 0 ? L" sr^" + std::to_wstring(D::SolidAngle)
                                : L"");
 }
-}
-}
+}  // namespace Quantities
+}  // namespace Principia

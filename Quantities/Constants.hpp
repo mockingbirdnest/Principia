@@ -33,5 +33,5 @@ Quantities::Dimensionless const FineStructureConstant = 7.2973525698e-3;
 
 Quantities::Acceleration const StandardGravity = 9.80665 * SI::Metre /
                                                  SI::Second.Pow<2>();
-}
-}
+}  // namespace Constants
+}  // namespace Principia
