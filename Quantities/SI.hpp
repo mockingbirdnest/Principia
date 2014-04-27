@@ -105,7 +105,7 @@ Quantities::Mass   const Tonne     = 1e3 * Kilogram;
 Quantities::Energy const ElectronVolt     = 1.602176565e-19 * Joule;
 Quantities::Mass   const Dalton           = 1.660538921e-27 * Kilogram;
 Quantities::Length const AstronomicalUnit = 149597870700 * SI::Metre;
-}
-}
+}  // namespace SI
+}  // namespace Principia
 
 #include "SI-body.hpp"

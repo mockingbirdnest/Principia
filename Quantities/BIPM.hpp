@@ -15,6 +15,6 @@ Quantities::Pressure MillimetreOfMercury = 133.322 * SI::Pascal;
 Quantities::Length   Ångström            = 1e-10 * SI::Metre;
 Quantities::Length   NauticalMile        = 1852 * SI::Metre;
 Quantities::Area     Barn                = 100 * SI::Femto(SI::Metre).Pow<2>();
-Quantities::Speed    Knot                = 1 * NauticalMile / Hour;
-}
-}
+Quantities::Speed    Knot                = 1 * NauticalMile / SI::Hour;
+}  // namespace BIPM
+}  // namespace Principia

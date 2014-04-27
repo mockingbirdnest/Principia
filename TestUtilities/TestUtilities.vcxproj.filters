@@ -21,16 +21,16 @@
     <ClInclude Include="Stdafx.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="R3Element.hpp">
+    <ClInclude Include="TestUtilities.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Grassmann.hpp">
+    <ClInclude Include="Algebra.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Grassmann-body.hpp">
+    <ClInclude Include="QuantityComparisons.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="R3Element-body.hpp">
+    <ClInclude Include="GeometryComparisons.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

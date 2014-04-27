@@ -17,5 +17,5 @@ Quantities::Time   const JulianYear    = 365.25 * SI::Day;
 Quantities::Length const Parsec        = 648000 / π * SI::AstronomicalUnit;
 Quantities::Length const LightYear     = Constants::SpeedOfLight * JulianYear;
 Quantities::Length const LunarDistance = 384400000 * SI::Metre;
-}
-}
+}  // namespace Astronomy
+}  // namespace Principia

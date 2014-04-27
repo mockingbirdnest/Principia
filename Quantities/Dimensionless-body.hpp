@@ -4,13 +4,12 @@
 
 namespace Principia {
 namespace Quantities {
-inline Dimensionless::Dimensionless(double value) : value_(value) {}
+inline Dimensionless::Dimensionless(double const value) : value_(value) {}
 inline double Dimensionless::Value() const { return value_; }
 template<int Exponent>
 inline Dimensionless Dimensionless::Pow() const {
   return this->Pow(Exponent);
 }
-// TODO(robin): This should not be inlined.
 inline Dimensionless Dimensionless::Pow(int const exponent) const {
   if (exponent < 0) {
     return (1 / *this).Pow(-exponent);
@@ -25,7 +24,9 @@ inline Dimensionless Dimensionless::Pow(int const exponent) const {
   }
 }
 
-inline Dimensionless operator+(Dimensionless const& right) { return right; }
+inline Dimensionless operator+(Dimensionless const& right) {
+  return +right.Value();
+}
 inline Dimensionless operator-(Dimensionless const& right) {
   return -right.Value();
 }
@@ -89,5 +90,5 @@ inline std::wstring ToString(Dimensionless const& number,
                 number.Value());
   return result;
 }
-}
-}
+}  // namespace Quantities
+}  // namespace Principia

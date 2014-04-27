@@ -1,10 +1,15 @@
 ﻿#include "stdafx.hpp"
 #include "CppUnitTest.h"
 
+#include "..\TestUtilities\TestUtilities.hpp"
+#include "..\TestUtilities\QuantityComparisons.hpp"
+#include "..\TestUtilities\Algebra.hpp"
+
 #include "..\Quantities\Quantities.hpp"
 #include "..\Quantities\NamedQuantities.hpp"
 #include "..\Quantities\SI.hpp"
 #include "..\Quantities\UK.hpp"
+#include "..\Quantities\CGS.hpp"
 #include "..\Quantities\Constants.hpp"
 #include "..\Quantities\Astronomy.hpp"
 #include "..\Quantities\ElementaryFunctions.hpp"
@@ -12,219 +17,20 @@
 
 using namespace Microsoft::VisualStudio::CppUnitTestFramework;
 
+using namespace Principia::TestUtilities;
+
 using namespace Principia;
 using namespace Principia::Quantities;
 using namespace Principia::Constants;
 using namespace Principia::SI;
 using namespace Principia::Astronomy;
 using namespace Principia::UK;
+using namespace Principia::CGS;
 
 namespace QuantitiesTests {
 
-// TODO(robin): move all these utilities somewhere else.
-
-// The Microsoft equivalent only takes a wchar_t*.
-void WriteLog(std::wstring const& message) {
-  Logger::WriteMessage(message.c_str());
-}
-void NewLine() {
-  Logger::WriteMessage(L"\n");
-}
-void LogLine(std::wstring const& message) {
-  WriteLog(message);
-  NewLine();
-}
-// The Microsoft equivalent only takes a wchar_t*.
-void Assert(bool const test, std::wstring const& message = L"") {
-  Assert::IsTrue(test, message.c_str());
-}
-
-// The Microsoft equivalent supports errors only for double.
-template<typename ValueType, typename ErrorType>
-void AssertEqualWithin(ValueType const& left,
-                       ValueType const& right,
-                       ErrorType const& ε) {
-  std::wstring message = L"Should be equal within " + ToString(ε, 3) +
-                         L": " + ToString(left) + L" and " + ToString(right) +
-                         L".";
-  LogLine(message);
-  Assert(left == right || Abs(left / right - 1) < ε, message);
-  LogLine(L"> Passed!");
-}
-
-template<typename ValueType, typename ErrorType>
-void AssertNotEqualWithin(ValueType const& left,
-                          ValueType const& right,
-                          ErrorType const& ε) {
-  std::wstring message = L"Should differ by more than " + ToString(ε, 3) +
-                         L": " + ToString(left) + L" and " + ToString(right) +
-                         L".";
-  LogLine(message);
-  Assert(Abs(left / right - 1) > ε, message);
-  LogLine(L"> Passed!");
-}
-
-template<typename D>
-void AssertEqual(Quantity<D> const& left,
-                 Quantity<D> const& right,
-                 Dimensionless const& ε = 1e-15) {
-  AssertEqualWithin(left, right, ε);
-}
-
-template<typename D>
-void AssertNotEqual(Quantity<D> const& left,
-                    Quantity<D> const& right,
-                    Dimensionless const& ε = 1e-15) {
-  AssertNotEqualWithin(left, right, ε);
-}
-
-void AssertEqualAbsolute(Dimensionless const& left,
-                         Dimensionless const& right,
-                         Dimensionless const& ε = 1e-15) {
-  std::wstring message = L"Should be equal within " + ToString(ε, 3) +
-    L" (absolute): " + ToString(left) + L" and " +
-    ToString(right) + L".";
-  LogLine(message);
-  Assert(Abs(left - right) < ε, message);
-  LogLine(L"> Passed!");
-}
-
-void AssertEqual(Dimensionless const& left,
-                 Dimensionless const& right,
-                 Dimensionless const& ε = 1e-15) {
-  if (left == 0 || right == 0) { AssertEqualAbsolute(left, right, ε); }
-  else {AssertEqualWithin(left, right, ε); }
-}
-
-void AssertNotEqual(Dimensionless const& left,
-                    Dimensionless const& right,
-                    Dimensionless const& ε = 1e-15) {
-  AssertNotEqualWithin(left, right, ε);
-}
-
-template<typename T>
-void TestEquality(T const& low, T const& high) {
-  LogLine(L"Testing equality on " + ToString(low) + L" ≠ " +
-          ToString(high) + L"...");
-  Assert(low == low, L"low == low was false.");
-  Assert(high == high, L"high == high was false.");
-  Assert(high != low, L"high != low was false.");
-  Assert(low != high, L"low != high was false.");
-
-  LogLine(L"> True comparisons passed!");
-
-  Assert(!(high == low), L"high == low was true.");
-  Assert(!(low == high), L"low == high was true.");
-  Assert(!(low != low), L"low != low was true.");
-  Assert(!(high != high), L"high != high was true.");
-
-  LogLine(L"> False comparisons passed!");
-}
-
-template<typename T>
-void TestOrder(T const& low, T const& high) {
-  TestEquality(low, high);
-
-  LogLine(L"Testing ordering of " + ToString(low) + L" < " +
-          ToString(high) + L"...");
-  Assert(high > low, L"high > low was false.");
-  Assert(low < high, L"low < high was false.");
-  Assert(low >= low, L"low >= low was false.");
-  Assert(low <= low, L"low <= low was false.");
-  Assert(high >= high, L"high >= high was false.");
-  Assert(high <= high, L"high <= high was false.");
-  Assert(high >= low, L"high >= low was false.");
-  Assert(low <= high, L"low <= high was false.");
-
-  LogLine(L"> True comparisons passed!");
-
-  Assert(!(low > low), L"low > low was true.");
-  Assert(!(low < low), L"low < low was true.");
-  Assert(!(high > high), L"high > high was true.");
-  Assert(!(high < high), L"high < high was true.");
-  Assert(!(low > high), L"low > high was true.");
-  Assert(!(high < low), L"high < low was true.");
-  Assert(!(low >= high), L"low >= high was true.");
-  Assert(!(high <= low), L"high <= low was true.");
-
-  LogLine(L"> False comparisons passed!");
-}
-
-template<typename T>
-void TestAdditiveGroup(T const& zero, T const& a, T const& b, T const& c) {
-  AssertEqual(a + zero, a);
-  AssertEqual(zero + b, b);
-  AssertEqual(a - a, zero);
-  AssertEqual(-a - b, -(a + b));
-  AssertEqual((a + b) + c, a + (b + c));
-  AssertEqual(a - b - c, a - (b + c));
-  AssertEqual(a + b, b + a);
-  T accumulator = zero;
-  accumulator += a;
-  accumulator += b;
-  accumulator -= c;
-  AssertEqual(accumulator, a + b - c);
-}
-
-template<typename T>
-void TestMultiplicativeGroup(T const& one, T const& a, T const& b, T const& c) {
-  AssertEqual(a * one, a);
-  AssertEqual(one * b, b);
-  AssertEqual(a / a, one);
-  AssertEqual((1 / a) / b, 1 / (a * b));
-  AssertEqual((a * b) * c, a * (b * c));
-  AssertEqual(a / b / c, a / (b * c));
-  AssertEqual(a * b, b * a);
-  T accumulator = one;
-  accumulator *= a;
-  accumulator *= b;
-  accumulator /= c;
-  AssertEqual(accumulator, a * b / c);
-}
-
-template<typename Map, typename Scalar, typename U, typename V>
-void TestBilinearMap(Map const& map, U const& u1, U const& u2, V const& v1,
-                     V const& v2, Scalar const& λ) {
-  AssertEqual(map(u1 + u2, v1), map(u1, v1) + map(u2, v1));
-  AssertEqual(map(u1, v1 + v2), map(u1, v1) + map(u1, v2));
-  AssertEqual(map(λ * u1, v1), map(u1, λ * v1));
-  AssertEqual(λ * map(u1, v1), map(u1, λ * v1));
-  AssertEqual(map(u2 * λ, v2), map(u2, v2 * λ));
-  AssertEqual(map(u2, v2) * λ, map(u2 * λ, v2));
-}
-
-template<typename Vector, typename Scalar>
-void TestVectorSpace(Vector const& nullVector, Vector const& u, Vector const& v,
-                     Vector const& w, Scalar const& zero, Scalar const& unit,
-                     Scalar const& α, Scalar const& β) {
-  TestAdditiveGroup(nullVector, u, v, w);
-  AssertEqual((α * β) * v, α * (β * v));
-  AssertEqual(unit * w, w);
-  AssertEqual(u / unit, u);
-  AssertEqual(zero * u, nullVector);
-  AssertEqual(β * (u + v), β * u + v * β);
-  AssertEqual((w + v) / α, w / α + v / α);
-  AssertEqual((α + β) * w, α * w + β * w);
-  AssertEqual(v * (α + β), α * v + β * v);
-  Vector vector = u;
-  vector *= α;
-  AssertEqual(α * u, vector);
-  vector /= α;
-  AssertEqual(u, vector);
-  vector *= zero;
-  AssertEqual(vector, nullVector);
-}
-
-template<typename T>
-void TestField(T const& zero, T const& one, T const& a, T const& b,
-               T const& c, T const& x, T const& y) {
-  TestAdditiveGroup(zero, a, b, c);
-  TestMultiplicativeGroup(one, c, x, y);
-  TestVectorSpace(zero, a, b, c, zero, one, x, y);
-}
-
 TEST_CLASS(QuantitiesTests) {
-public:
+ public:
   TEST_METHOD(AbsoluteValue) {
     Assert::AreEqual(Abs(-1729), Dimensionless(1729));
     Assert::AreEqual(Abs(1729), Dimensionless(1729));
@@ -280,9 +86,9 @@ public:
                                   L" A^1 K^1 mol^-1 cd^-1 cycle^-1 rad^-1" +
                                   L" sr^-1";
     std::wstring const actual = ToString(allTheUnits, 0);
-    Assert(actual.compare(expected) == 0);
+    AssertTrue(actual.compare(expected) == 0);
     std::wstring π16 = L"3.1415926535897931e+000";
-    Assert(ToString(π).compare(π16) == 0);
+    AssertTrue(ToString(π).compare(π16) == 0);
   }
   TEST_METHOD(PhysicalConstants) {
     AssertEqual(1 / SpeedOfLight.Pow<2>(),
@@ -358,4 +164,4 @@ public:
     AssertEqual(Exp(Log(Rood / Foot.Pow<2>()) / 2) * Foot, Sqrt(Rood));
   }
 };
-}
+}  // namespace QuantitiesTests

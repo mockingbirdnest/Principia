@@ -9,7 +9,7 @@ namespace Quantities {
 // A double by any other name...
 class Dimensionless {
 public:
-  Dimensionless(double value);
+  Dimensionless(double const value);
   double Value() const;
   Dimensionless Pow(int const) const;
   // This function calls Pow(Exponent), its purpose is to provide consistency
@@ -43,7 +43,7 @@ Dimensionless Abs(Dimensionless const&);
 
 std::wstring ToString(Dimensionless const& number, 
                       unsigned char const precision = 16);
-}
-}
+}  // namespace Quantities
+}  // namespace Principia
 
 #include "Dimensionless-body.hpp"
