@@ -164,4 +164,4 @@ TEST_CLASS(QuantitiesTests) {
 
 }  // namespace
 }  // namespace Quantities
-}  // namespace Principa
+}  // namespace Principia
