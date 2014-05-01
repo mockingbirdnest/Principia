@@ -161,6 +161,6 @@ TEST_CLASS(GrassmannTests) {
   }
 };
 
-}  // namepsace
+}  // namespace
 }  // namespace Geometry
 }  // namespace Principia
