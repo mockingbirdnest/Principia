@@ -21,13 +21,6 @@ void LogLine(std::wstring const& message) {
   NewLine();
 }
 // The Microsoft equivalent only takes a wchar_t*.
-void AssertFalse(bool const test, std::wstring const& message = L"") {
-  Microsoft::VisualStudio::CppUnitTestFramework::Assert::IsFalse(
-      test,
-      message.c_str());
-}
-
-// The Microsoft equivalent only takes a wchar_t*.
 void AssertTrue(bool const test, std::wstring const& message = L"") {
   Microsoft::VisualStudio::CppUnitTestFramework::Assert::IsTrue(
       test,
