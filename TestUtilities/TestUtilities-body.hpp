@@ -8,7 +8,6 @@
 namespace Principia {
 namespace TestUtilities {
 
-// The Microsoft equivalent supports errors only for double.
 template<typename ValueType, typename ErrorType>
 void AssertEqualWithin(ValueType const& left,
                        ValueType const& right,
@@ -40,13 +39,11 @@ inline void NewLine() {
   Microsoft::VisualStudio::CppUnitTestFramework::Logger::WriteMessage(L"\n");
 }
 
-// Equivalent to Log(message); Newline();
 inline void LogLine(std::wstring const& message) {
   WriteLog(message);
   NewLine();
 }
 
-// The Microsoft equivalent only takes a wchar_t*.
 inline void AssertTrue(bool const test, std::wstring const& message) {
   Microsoft::VisualStudio::CppUnitTestFramework::Assert::IsTrue(
       test,
