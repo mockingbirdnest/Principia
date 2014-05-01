@@ -22,6 +22,5 @@ void AssertEqual(Geometry::R3Element<Scalar> left,
   AssertEqual(left.z, right.z);
 }
 
-
 }  // namespace TestUtilities
 }  // namespace Principia
