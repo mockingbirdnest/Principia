@@ -1,6 +1,4 @@
-﻿// Constants.h
-
-#pragma once
+﻿#pragma once
 
 #include "Quantities.hpp"
 #include "NamedQuantities.hpp"
