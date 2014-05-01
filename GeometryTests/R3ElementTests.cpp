@@ -19,20 +19,19 @@
 #include "..\Geometry\Grassmann.hpp"
 #include "..\Quantities\ElementaryFunctions.hpp"
 
-using namespace Microsoft::VisualStudio::CppUnitTestFramework;
 
 namespace Principia {
 namespace Geometry {
 namespace {
 
-using namespace TestUtilities;
-
+using namespace Astronomy;
+using namespace BIPM;
+using namespace Constants;
+using namespace Microsoft::VisualStudio::CppUnitTestFramework;
 using namespace Quantities;
 using namespace SI;
+using namespace TestUtilities;
 using namespace UK;
-using namespace BIPM;
-using namespace Astronomy;
-using namespace Constants;
 
 TEST_CLASS(R3ElementTests) {
  public:
