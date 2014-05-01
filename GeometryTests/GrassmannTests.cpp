@@ -33,7 +33,7 @@ using namespace SI;
 using namespace TestUtilities;
 using namespace UK;
 
-TEST_CLASS(GeometryTests) {
+TEST_CLASS(GrassmannTests) {
  public:
   struct World;
   TEST_METHOD(SpecialOrthogonalLieAlgebra) {
