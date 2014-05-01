@@ -16,7 +16,6 @@ template<typename Scalar>
 void AssertEqual(Geometry::R3Element<Scalar> left,
                  Geometry::R3Element<Scalar> right);
 
-
 }  // namespace TestUtilities
 }  // namespace Principia
 
