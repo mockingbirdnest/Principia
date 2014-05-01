@@ -33,6 +33,12 @@
     <ClInclude Include="R3Element-body.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Sign.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Sign-body.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="AssemblyInfo.cpp">
