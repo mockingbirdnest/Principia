@@ -80,11 +80,15 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Algebra-body.hpp" />
     <ClInclude Include="Algebra.hpp" />
+    <ClInclude Include="GeometryComparisons-body.hpp" />
     <ClInclude Include="GeometryComparisons.hpp" />
+    <ClInclude Include="QuantityComparisons-body.hpp" />
     <ClInclude Include="QuantityComparisons.hpp" />
     <ClInclude Include="resource.hpp" />
     <ClInclude Include="Stdafx.hpp" />
+    <ClInclude Include="TestUtilities-body.hpp" />
     <ClInclude Include="TestUtilities.hpp" />
   </ItemGroup>
   <ItemGroup>

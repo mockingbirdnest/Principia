@@ -15,19 +15,16 @@
 #include "..\Quantities\ElementaryFunctions.hpp"
 #include <stdio.h>
 
+namespace Principia {
+namespace Quantities {
+namespace {
+
+using namespace Astronomy;
+using namespace Constants;
 using namespace Microsoft::VisualStudio::CppUnitTestFramework;
-
-using namespace Principia::TestUtilities;
-
-using namespace Principia;
-using namespace Principia::Quantities;
-using namespace Principia::Constants;
-using namespace Principia::SI;
-using namespace Principia::Astronomy;
-using namespace Principia::UK;
-using namespace Principia::CGS;
-
-namespace QuantitiesTests {
+using namespace SI;
+using namespace TestUtilities;
+using namespace UK;
 
 TEST_CLASS(QuantitiesTests) {
  public:
@@ -164,4 +161,7 @@ TEST_CLASS(QuantitiesTests) {
     AssertEqual(Exp(Log(Rood / Foot.Pow<2>()) / 2) * Foot, Sqrt(Rood));
   }
 };
-}  // namespace QuantitiesTests
+
+}  // namespace
+}  // namespace Quantities
+}  // namespace Principia
