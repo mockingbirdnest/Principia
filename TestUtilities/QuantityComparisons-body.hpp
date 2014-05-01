@@ -25,9 +25,9 @@ void AssertNotEqual(Quantities::Quantity<D> const& left,
 inline void AssertEqualAbsolute(Quantities::Dimensionless const& left,
                                 Quantities::Dimensionless const& right,
                                 Quantities::Dimensionless const& ε) {
-  std::wstring message = L"Should be equal within " + ToString(ε, 3) +
-    L" (absolute): " + ToString(left) + L" and " +
-    ToString(right) + L".";
+  std::wstring const message = L"Should be equal within " + ToString(ε, 3) +
+                               L" (absolute): " + ToString(left) + L" and " +
+                               ToString(right) + L".";
   LogLine(message);
   AssertTrue(Abs(left - right) < ε, message);
   LogLine(L"> Passed!");
