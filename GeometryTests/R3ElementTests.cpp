@@ -1,5 +1,4 @@
-﻿
-#include "stdafx.hpp"
+﻿#include "stdafx.hpp"
 
 #include <functional>
 
