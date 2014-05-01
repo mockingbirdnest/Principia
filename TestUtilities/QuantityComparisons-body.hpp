@@ -36,8 +36,11 @@ inline void AssertEqualAbsolute(Quantities::Dimensionless const& left,
 inline void AssertEqual(Quantities::Dimensionless const& left,
                         Quantities::Dimensionless const& right,
                         Quantities::Dimensionless const& ε) {
-  if (left == 0 || right == 0) { AssertEqualAbsolute(left, right, ε); }
-  else {AssertEqualWithin(left, right, ε); }
+  if (left == 0 || right == 0) {
+    AssertEqualAbsolute(left, right, ε);
+  } else {
+    AssertEqualWithin(left, right, ε);
+  }
 }
 
 inline void AssertNotEqual(Quantities::Dimensionless const& left,
