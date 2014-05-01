@@ -15,20 +15,16 @@
 #include "..\Quantities\ElementaryFunctions.hpp"
 #include <stdio.h>
 
-using namespace Microsoft::VisualStudio::CppUnitTestFramework;
-
 namespace Principia {
 namespace Quantities {
 namespace {
 
-using namespace TestUtilities;
-
-using namespace Quantities;
-using namespace Constants;
-using namespace SI;
 using namespace Astronomy;
+using namespace Constants;
+using namespace Microsoft::VisualStudio::CppUnitTestFramework;
+using namespace SI;
+using namespace TestUtilities;
 using namespace UK;
-using namespace CGS;
 
 TEST_CLASS(QuantitiesTests) {
  public:
