@@ -18,7 +18,6 @@ void AssertEqualWithin(ValueType const& left,
                          L".";
   LogLine(message);
   AssertTrue(left == right || Abs(left / right - 1) < ε, message);
-  LogLine(L"> Passed!");
 }
 
 template<typename ValueType, typename ErrorType>
@@ -30,7 +29,6 @@ void AssertNotEqualWithin(ValueType const& left,
                          L".";
   LogLine(message);
   AssertTrue(Abs(left / right - 1) > ε, message);
-  LogLine(L"> Passed!");
 }
 
 inline void WriteLog(std::wstring const& message) {
