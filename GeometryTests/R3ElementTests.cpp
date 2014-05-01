@@ -58,6 +58,6 @@ TEST_CLASS(R3ElementTests) {
   }
 };
 
-}  // namepsace
+}  // namespace
 }  // namespace Geometry
 }  // namespace Principia
