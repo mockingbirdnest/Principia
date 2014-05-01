@@ -20,4 +20,4 @@ void AssertEqual(Geometry::R3Element<Scalar> left,
 }  // namespace TestUtilities
 }  // namespace Principia
 
-#include "TestUtilities-body.hpp"
+#include "GeometryComparisons-body.hpp"

@@ -53,12 +53,6 @@
     <ClCompile Include="Stdafx.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="TestUtilities.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="QuantityComparisons.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Text Include="ReadMe.txt" />
