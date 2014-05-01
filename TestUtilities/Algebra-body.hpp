@@ -67,7 +67,7 @@ void TestAdditiveGroup(T const& zero, T const& a, T const& b, T const& c) {
   accumulator += b;
   accumulator -= c;
   AssertEqual(accumulator, a + b - c);
-}  // TestAdditiveGroup
+}
 
 template<typename T>
 void TestMultiplicativeGroup(T const& one, T const& a, T const& b, T const& c) {
