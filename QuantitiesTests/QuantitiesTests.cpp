@@ -20,7 +20,7 @@ namespace quantities {
 namespace {
 
 using namespace Astronomy;
-using namespace Constants;
+using namespace constants;
 using namespace Microsoft::VisualStudio::CppUnitTestFramework;
 using namespace SI;
 using namespace test_utilities;

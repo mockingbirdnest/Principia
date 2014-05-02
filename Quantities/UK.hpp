@@ -51,7 +51,7 @@ quantities::Volume const Pint       = 4 * Gill;
 quantities::Volume const Quart      = 2 * Pint;
 quantities::Volume const Gallon     = 4 * Quart;
 
-quantities::Force    const PoundForce = Pound * Constants::StandardGravity;
+quantities::Force    const PoundForce = Pound * constants::StandardGravity;
 quantities::Pressure const PoundPerSquareInch = PoundForce / Inch.Pow<2>();
 quantities::Power    const HorsePower = 550 * PoundForce * Foot / SI::Second;
 }  // namespace UK

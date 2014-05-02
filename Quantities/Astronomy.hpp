@@ -15,7 +15,7 @@ quantities::Mass   const JupiterMass   = 1.8986e27 * SI::Kilogram;
 quantities::Mass   const EarthMass     = 5.9742e24 * SI::Kilogram;
 quantities::Time   const JulianYear    = 365.25 * SI::Day;
 quantities::Length const Parsec        = 648000 / π * SI::AstronomicalUnit;
-quantities::Length const LightYear     = Constants::SpeedOfLight * JulianYear;
+quantities::Length const LightYear     = constants::SpeedOfLight * JulianYear;
 quantities::Length const LunarDistance = 384400000 * SI::Metre;
 }  // namespace Astronomy
 }  // namespace principia

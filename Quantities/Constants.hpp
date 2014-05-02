@@ -5,7 +5,7 @@
 #include "SI.hpp"
 
 namespace principia {
-namespace Constants {
+namespace constants {
 quantities::Speed const SpeedOfLight =
   299792458 * (SI::Metre / SI::Second);
 quantities::Permeability const VacuumPermeability =
@@ -31,5 +31,5 @@ quantities::Dimensionless const FineStructureConstant = 7.2973525698e-3;
 
 quantities::Acceleration const StandardGravity = 9.80665 * SI::Metre /
                                                  SI::Second.Pow<2>();
-}  // namespace Constants
+}  // namespace constants
 }  // namespace principia
