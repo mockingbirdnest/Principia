@@ -25,7 +25,7 @@ namespace Geometry {
 namespace {
 
 using namespace astronomy;
-using namespace BIPM;
+using namespace bipm;
 using namespace constants;
 using namespace Microsoft::VisualStudio::CppUnitTestFramework;
 using namespace quantities;
