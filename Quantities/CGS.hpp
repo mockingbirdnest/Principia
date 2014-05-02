@@ -9,7 +9,7 @@ namespace principia {
 // This namespace contains the non-SI units associated with the CGS and the CGS-
 // Gaussian system of units listed in the BIPM's SI brochure 8, section 4.1,
 // table 9, http://www.bipm.org/en/si/si_brochure/chapter4/table9.html.
-namespace CGS {
+namespace cgs {
 quantities::Length const Centimetre = SI::Centi(SI::Metre);
 using SI::Gram;
 using SI::Second;
@@ -33,5 +33,5 @@ quantities::MagneticField       const Œrsted  = 1e3 / (4 * π * SI::Steradian) 
                                                 SI::Ampere / SI::Metre;
 
 quantities::SpectroscopicWavenumber const Kayser = SI::Cycle / Centimetre;
-}  // namespace CGS
+}  // namespace cgs
 }  // namespace principia
