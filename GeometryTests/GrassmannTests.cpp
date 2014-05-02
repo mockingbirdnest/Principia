@@ -18,18 +18,18 @@
 #include "TestUtilities/QuantityComparisons.hpp"
 #include "TestUtilities/TestUtilities.hpp"
 
-namespace Principia {
-namespace Geometry {
+namespace principia {
+namespace geometry {
 namespace {
 
-using namespace Astronomy;
-using namespace BIPM;
-using namespace Constants;
+using namespace astronomy;
+using namespace bipm;
+using namespace constants;
 using namespace Microsoft::VisualStudio::CppUnitTestFramework;
-using namespace Quantities;
-using namespace SI;
-using namespace TestUtilities;
-using namespace UK;
+using namespace quantities;
+using namespace si;
+using namespace test_utilities;
+using namespace uk;
 
 TEST_CLASS(GrassmannTests) {
  public:
@@ -51,7 +51,7 @@ TEST_CLASS(GrassmannTests) {
     R3Element<Length> u(3 * Metre, -42 * Metre, 0 * Metre);
     R3Element<Length> v(-π * Metre, -e * Metre, -1 * Metre);
     R3Element<Length> w(2 * Metre, 2 * Metre, 2 * Metre);
-    R3Element<Length> a(1 * Inch, 2 * Foot, 3 * Admiralty::Fathom);
+    R3Element<Length> a(1 * Inch, 2 * Foot, 3 * admiralty::Fathom);
     {
       std::function<Area(Vector<Length, World>,
                          Vector<Length, World>)> vectorInnerProduct =
@@ -160,5 +160,5 @@ TEST_CLASS(GrassmannTests) {
 };
 
 }  // namespace
-}  // namespace Geometry
-}  // namespace Principia
+}  // namespace geometry
+}  // namespace principia

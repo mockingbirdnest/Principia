@@ -4,8 +4,8 @@
 #include "Quantities/Dimensionless.hpp"
 #include "Quantities/Quantities.hpp"
 
-namespace Principia {
-namespace TestUtilities {
+namespace principia {
+namespace test_utilities {
 // The Microsoft equivalent only takes a wchar_t*.
 void WriteLog(std::wstring const& message);
 void NewLine();
@@ -26,7 +26,7 @@ void AssertNotEqualWithin(ValueType const& left,
                           ValueType const& right,
                           ErrorType const& ε);
 
-}  // namespace TestUtilities
-}  // namespace Principia
+}  // namespace test_utilities
+}  // namespace principia
 
 #include "TestUtilities-body.hpp"

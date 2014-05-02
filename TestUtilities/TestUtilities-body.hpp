@@ -4,8 +4,8 @@
 #include "Quantities/Dimensionless.hpp"
 #include "Quantities/Quantities.hpp"
 
-namespace Principia {
-namespace TestUtilities {
+namespace principia {
+namespace test_utilities {
 
 template<typename ValueType, typename ErrorType>
 void AssertEqualWithin(ValueType const& left,
@@ -49,5 +49,5 @@ inline void AssertTrue(bool const test, std::wstring const& message) {
       message.c_str());
 }
 
-}  // namespace TestUtilities
-}  // namespace Principia
+}  // namespace test_utilities
+}  // namespace principia

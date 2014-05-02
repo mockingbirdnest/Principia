@@ -33,17 +33,17 @@
     <ClInclude Include="GeometryComparisons.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="TestUtilities-body.hpp">
-      <Filter>Header Files</Filter>
+    <ClInclude Include="QuantityComparisons-body.hpp">
+      <Filter>Source Files</Filter>
     </ClInclude>
     <ClInclude Include="GeometryComparisons-body.hpp">
-      <Filter>Header Files</Filter>
+      <Filter>Source Files</Filter>
     </ClInclude>
-    <ClInclude Include="QuantityComparisons-body.hpp">
-      <Filter>Header Files</Filter>
+    <ClInclude Include="TestUtilities-body.hpp">
+      <Filter>Source Files</Filter>
     </ClInclude>
     <ClInclude Include="Algebra-body.hpp">
-      <Filter>Header Files</Filter>
+      <Filter>Source Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

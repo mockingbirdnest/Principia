@@ -16,16 +16,16 @@
 #include "TestUtilities/QuantityComparisons.hpp"
 #include "TestUtilities/TestUtilities.hpp"
 
-namespace Principia {
-namespace Quantities {
+namespace principia {
+namespace quantities {
 namespace {
 
-using namespace Astronomy;
-using namespace Constants;
+using namespace astronomy;
+using namespace constants;
 using namespace Microsoft::VisualStudio::CppUnitTestFramework;
-using namespace SI;
-using namespace TestUtilities;
-using namespace UK;
+using namespace si;
+using namespace test_utilities;
+using namespace uk;
 
 TEST_CLASS(QuantitiesTests) {
  public:
@@ -164,5 +164,5 @@ TEST_CLASS(QuantitiesTests) {
 };
 
 }  // namespace
-}  // namespace Quantities
-}  // namespace Principia
+}  // namespace quantities
+}  // namespace principia
