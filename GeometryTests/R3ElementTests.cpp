@@ -29,7 +29,7 @@ using namespace bipm;
 using namespace constants;
 using namespace Microsoft::VisualStudio::CppUnitTestFramework;
 using namespace quantities;
-using namespace SI;
+using namespace si;
 using namespace test_utilities;
 using namespace UK;
 

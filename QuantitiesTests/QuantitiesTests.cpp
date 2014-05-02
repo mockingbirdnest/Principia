@@ -22,7 +22,7 @@ namespace {
 using namespace astronomy;
 using namespace constants;
 using namespace Microsoft::VisualStudio::CppUnitTestFramework;
-using namespace SI;
+using namespace si;
 using namespace test_utilities;
 using namespace UK;
 

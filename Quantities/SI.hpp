@@ -8,7 +8,7 @@ namespace principia {
 // This namespace contains the units and prefixes of the SI (except the
 // Becquerel, Gray and Sievert), as well as the Non-SI units accepted for use
 // with the SI.
-namespace SI {
+namespace si {
 #pragma region Prefixes
 template<typename D> quantities::Quantity<D> Yotta(quantities::Quantity<D>);
 template<typename D> quantities::Quantity<D> Zetta(quantities::Quantity<D>);
@@ -104,8 +104,8 @@ quantities::Mass   const Tonne     = 1e3 * Kilogram;
 // Units accepted for use with the SI.
 quantities::Energy const ElectronVolt     = 1.602176565e-19 * Joule;
 quantities::Mass   const Dalton           = 1.660538921e-27 * Kilogram;
-quantities::Length const AstronomicalUnit = 149597870700 * SI::Metre;
-}  // namespace SI
+quantities::Length const AstronomicalUnit = 149597870700 * si::Metre;
+}  // namespace si
 }  // namespace principia
 
 #include "SI-body.hpp"
