@@ -5,7 +5,7 @@
 #include "Quantities.hpp"
 
 namespace principia {
-namespace Quantities {
+namespace quantities {
 #pragma region General mechanics
 typedef Quotient<Length, Time>   Speed;
 typedef Quotient<Speed, Time>    Acceleration;
@@ -84,5 +84,5 @@ typedef Quotient<LuminousFlux, Area>           Illuminance;
 typedef Product<Illuminance, Time>             LuminousExposure;
 typedef Quotient<LuminousFlux, RadiantFlux>    LuminousEfficacy;
 #pragma endregion
-}  // namespace Quantities
+}  // namespace quantities
 }  // namespace principia

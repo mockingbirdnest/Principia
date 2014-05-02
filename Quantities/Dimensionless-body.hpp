@@ -3,7 +3,7 @@
 #pragma once
 
 namespace principia {
-namespace Quantities {
+namespace quantities {
 inline Dimensionless::Dimensionless(double const value) : value_(value) {}
 inline double Dimensionless::Value() const { return value_; }
 template<int Exponent>
@@ -90,5 +90,5 @@ inline std::wstring ToString(Dimensionless const& number,
                 number.Value());
   return result;
 }
-}  // namespace Quantities
+}  // namespace quantities
 }  // namespace principia

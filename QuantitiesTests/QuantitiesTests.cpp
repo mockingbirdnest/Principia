@@ -16,7 +16,7 @@
 #include <stdio.h>
 
 namespace principia {
-namespace Quantities {
+namespace quantities {
 namespace {
 
 using namespace Astronomy;
@@ -163,5 +163,5 @@ TEST_CLASS(QuantitiesTests) {
 };
 
 }  // namespace
-}  // namespace Quantities
+}  // namespace quantities
 }  // namespace principia

@@ -27,7 +27,7 @@ using namespace Astronomy;
 using namespace BIPM;
 using namespace Constants;
 using namespace Microsoft::VisualStudio::CppUnitTestFramework;
-using namespace Quantities;
+using namespace quantities;
 using namespace SI;
 using namespace test_utilities;
 using namespace UK;

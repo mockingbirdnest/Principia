@@ -3,7 +3,7 @@
 #include "SI.hpp"
 
 namespace principia {
-namespace Quantities {
+namespace quantities {
 
 namespace TypeGenerators {
 template<typename Q>
@@ -103,5 +103,5 @@ inline SquareRoot<Quantity<D>> Sqrt(Quantity<D> const& x) {
   return SquareRoot<Quantity<D>>(Sqrt(x.magnitude_));
 }
 
-}  // namespace Quantities
+}  // namespace quantities
 }  // namespace principia

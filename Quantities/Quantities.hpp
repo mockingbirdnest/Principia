@@ -4,7 +4,7 @@
 #include <string>
 
 namespace principia {
-namespace Quantities {
+namespace quantities {
 template<int LengthExponent, int MassExponent, int TimeExponent,
          int CurrentExponent, int TemperatureExponent, int AmountExponent,
          int LuminousIntensityExponent, int WindingExponent,
@@ -149,7 +149,7 @@ template<typename D>
 inline void operator*=(Quantity<D>&, Dimensionless const&);
 template<typename D>
 inline void operator/=(Quantity<D>&, Dimensionless const&);
-}  // namespace Quantities
+}  // namespace quantities
 }  // namespace principia
 
 #include "Quantities-body.hpp"
