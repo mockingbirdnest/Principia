@@ -15,7 +15,7 @@
 #include "..\Quantities\ElementaryFunctions.hpp"
 #include <stdio.h>
 
-namespace Principia {
+namespace principia {
 namespace Quantities {
 namespace {
 
@@ -164,4 +164,4 @@ TEST_CLASS(QuantitiesTests) {
 
 }  // namespace
 }  // namespace Quantities
-}  // namespace Principia
+}  // namespace principia

@@ -1,6 +1,6 @@
 ﻿#pragma once
 
-namespace Principia {
+namespace principia {
 namespace Geometry {
 
 template<typename LeftScalar, typename RightScalar, typename Frame>
@@ -155,4 +155,4 @@ inline void operator/=(Multivector<T, Frame, Rank>& left,
 }
 
 }  // namespace Geometry
-}  // namespace Principia
+}  // namespace principia

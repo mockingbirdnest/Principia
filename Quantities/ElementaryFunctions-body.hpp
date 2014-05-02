@@ -2,7 +2,7 @@
 
 #include "SI.hpp"
 
-namespace Principia {
+namespace principia {
 namespace Quantities {
 
 namespace TypeGenerators {
@@ -104,4 +104,4 @@ inline SquareRoot<Quantity<D>> Sqrt(Quantity<D> const& x) {
 }
 
 }  // namespace Quantities
-}  // namespace Principia
+}  // namespace principia

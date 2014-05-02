@@ -5,7 +5,7 @@
 #include "..\Geometry\R3Element.hpp"
 #include "..\Geometry\Grassmann.hpp"
 
-namespace Principia {
+namespace principia {
 namespace TestUtilities {
 
 template<typename Scalar, typename Frame, unsigned int Rank>
@@ -17,6 +17,6 @@ void AssertEqual(Geometry::R3Element<Scalar> left,
                  Geometry::R3Element<Scalar> right);
 
 }  // namespace TestUtilities
-}  // namespace Principia
+}  // namespace principia
 
 #include "GeometryComparisons-body.hpp"

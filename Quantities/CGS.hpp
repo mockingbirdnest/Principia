@@ -5,7 +5,7 @@
 #include "Numbers.hpp"
 #include "SI.hpp"
 
-namespace Principia {
+namespace principia {
 // This namespace contains the non-SI units associated with the CGS and the CGS-
 // Gaussian system of units listed in the BIPM's SI brochure 8, section 4.1,
 // table 9, http://www.bipm.org/en/si/si_brochure/chapter4/table9.html.
@@ -34,4 +34,4 @@ Quantities::MagneticField       const Œrsted  = 1e3 / (4 * π * SI::Steradian) 
 
 Quantities::SpectroscopicWavenumber const Kayser = SI::Cycle / Centimetre;
 }  // namespace CGS
-}  // namespace Principia
+}  // namespace principia

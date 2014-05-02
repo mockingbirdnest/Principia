@@ -1,6 +1,6 @@
 #pragma once
 
-namespace Principia {
+namespace principia {
 namespace Quantities {
 
 template<int LengthExponent, int MassExponent, int TimeExponent,
@@ -277,4 +277,4 @@ inline std::wstring ToString(Quantity<D> const& quantity,
                                : L"");
 }
 }  // namespace Quantities
-}  // namespace Principia
+}  // namespace principia

@@ -3,7 +3,7 @@
 #include "Dimensionless.hpp"
 #include <string>
 
-namespace Principia {
+namespace principia {
 namespace Quantities {
 template<int LengthExponent, int MassExponent, int TimeExponent,
          int CurrentExponent, int TemperatureExponent, int AmountExponent,
@@ -150,6 +150,6 @@ inline void operator*=(Quantity<D>&, Dimensionless const&);
 template<typename D>
 inline void operator/=(Quantity<D>&, Dimensionless const&);
 }  // namespace Quantities
-}  // namespace Principia
+}  // namespace principia
 
 #include "Quantities-body.hpp"

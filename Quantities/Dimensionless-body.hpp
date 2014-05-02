@@ -2,7 +2,7 @@
 
 #pragma once
 
-namespace Principia {
+namespace principia {
 namespace Quantities {
 inline Dimensionless::Dimensionless(double const value) : value_(value) {}
 inline double Dimensionless::Value() const { return value_; }
@@ -91,4 +91,4 @@ inline std::wstring ToString(Dimensionless const& number,
   return result;
 }
 }  // namespace Quantities
-}  // namespace Principia
+}  // namespace principia

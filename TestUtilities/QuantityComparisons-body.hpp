@@ -4,7 +4,7 @@
 #include "..\Quantities\Dimensionless.hpp"
 #include "..\Quantities\Quantities.hpp"
 
-namespace Principia {
+namespace principia {
 namespace TestUtilities {
 
 template<typename D>
@@ -50,4 +50,4 @@ inline void AssertNotEqual(Quantities::Dimensionless const& left,
 }
 
 }  // namespace TestUtilities
-}  // namespace Principia
+}  // namespace principia

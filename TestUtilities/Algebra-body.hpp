@@ -2,7 +2,7 @@
 
 #include "TestUtilities.hpp"
 
-namespace Principia {
+namespace principia {
 namespace TestUtilities {
 
 template<typename T>
@@ -177,4 +177,4 @@ void TestField(T const& zero, T const& one, T const& a, T const& b,
 }
 
 }  // namespace TestUtilities
-}  // namespace Principia
+}  // namespace principia

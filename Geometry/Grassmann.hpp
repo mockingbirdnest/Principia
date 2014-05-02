@@ -4,7 +4,7 @@
 #include "..\Quantities\Quantities.hpp"
 #include "R3Element.hpp"
 
-namespace Principia {
+namespace principia {
 namespace Geometry {
 template<typename Scalar, typename Frame, unsigned int Rank>
 struct Multivector;
@@ -134,6 +134,6 @@ void operator/=(Multivector<T, Frame, Rank>& left,
                 Quantities::Dimensionless const& right);
 
 }  // namespace Geometry
-}  // namespace Principia
+}  // namespace principia
 
 #include "Grassmann-body.hpp"

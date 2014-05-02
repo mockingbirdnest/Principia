@@ -4,7 +4,7 @@
 #include "NamedQuantities.hpp"
 #include "Numbers.hpp"
 
-namespace Principia {
+namespace principia {
 // This namespace contains the units and prefixes of the SI (except the
 // Becquerel, Gray and Sievert), as well as the Non-SI units accepted for use
 // with the SI.
@@ -106,6 +106,6 @@ Quantities::Energy const ElectronVolt     = 1.602176565e-19 * Joule;
 Quantities::Mass   const Dalton           = 1.660538921e-27 * Kilogram;
 Quantities::Length const AstronomicalUnit = 149597870700 * SI::Metre;
 }  // namespace SI
-}  // namespace Principia
+}  // namespace principia
 
 #include "SI-body.hpp"

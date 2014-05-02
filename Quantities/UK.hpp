@@ -6,7 +6,7 @@
 #include "SI.hpp"
 #include "Constants.hpp"
 
-namespace Principia {
+namespace principia {
 // This namespace contains the imperial units as defined by the international
 // yard and pound agreement, as well as the units of the English Engineering
 // system.
@@ -55,4 +55,4 @@ Quantities::Force    const PoundForce = Pound * Constants::StandardGravity;
 Quantities::Pressure const PoundPerSquareInch = PoundForce / Inch.Pow<2>();
 Quantities::Power    const HorsePower = 550 * PoundForce * Foot / SI::Second;
 }  // namespace UK
-}  // namespace Principia
+}  // namespace principia

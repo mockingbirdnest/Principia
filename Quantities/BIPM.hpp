@@ -5,7 +5,7 @@
 #include "Numbers.hpp"
 #include "SI.hpp"
 
-namespace Principia {
+namespace principia {
 // This namespace contains the other non-SI units listed in the BIPM's 
 // SI brochure 8, section 4.1, table 8,
 // http://www.bipm.org/en/si/si_brochure/chapter4/table8.html.
@@ -17,4 +17,4 @@ Quantities::Length   const NauticalMile        = 1852 * SI::Metre;
 Quantities::Area     const Barn                = 1e-28 * SI::Metre.Pow<2>();
 Quantities::Speed    const Knot                = 1 * NauticalMile / SI::Hour;
 }  // namespace BIPM
-}  // namespace Principia
+}  // namespace principia

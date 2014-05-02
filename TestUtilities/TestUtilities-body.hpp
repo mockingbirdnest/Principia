@@ -5,7 +5,7 @@
 #include "..\Quantities\Dimensionless.hpp"
 #include "..\Quantities\Quantities.hpp"
 
-namespace Principia {
+namespace principia {
 namespace TestUtilities {
 
 template<typename ValueType, typename ErrorType>
@@ -51,4 +51,4 @@ inline void AssertTrue(bool const test, std::wstring const& message) {
 }
 
 }  // namespace TestUtilities
-}  // namespace Principia
+}  // namespace principia

@@ -20,7 +20,7 @@
 #include "..\Quantities\ElementaryFunctions.hpp"
 
 
-namespace Principia {
+namespace principia {
 namespace Geometry {
 namespace {
 
@@ -60,4 +60,4 @@ TEST_CLASS(R3ElementTests) {
 
 }  // namespace
 }  // namespace Geometry
-}  // namespace Principia
+}  // namespace principia

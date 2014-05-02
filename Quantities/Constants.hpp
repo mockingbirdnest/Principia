@@ -4,7 +4,7 @@
 #include "NamedQuantities.hpp"
 #include "SI.hpp"
 
-namespace Principia {
+namespace principia {
 namespace Constants {
 Quantities::Speed const SpeedOfLight =
   299792458 * (SI::Metre / SI::Second);
@@ -32,4 +32,4 @@ Quantities::Dimensionless const FineStructureConstant = 7.2973525698e-3;
 Quantities::Acceleration const StandardGravity = 9.80665 * SI::Metre /
                                                  SI::Second.Pow<2>();
 }  // namespace Constants
-}  // namespace Principia
+}  // namespace principia

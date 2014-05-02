@@ -3,7 +3,7 @@
 #include "Dimensionless.hpp"
 #include "Quantities.hpp"
 
-namespace Principia {
+namespace principia {
 namespace Quantities {
 Dimensionless Sqrt(Dimensionless const& x);
 template<typename D>
@@ -35,6 +35,6 @@ Angle ArcSinh(Dimensionless const& x);
 Angle ArcCosh(Dimensionless const& x);
 Angle ArcTanh(Dimensionless const& x);
 }  // namespace Quantities
-}  // namespace Principia
+}  // namespace principia
 
 #include "ElementaryFunctions-body.hpp"

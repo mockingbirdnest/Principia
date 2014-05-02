@@ -4,7 +4,7 @@
 #include "..\Quantities\Quantities.hpp"
 #include <string>
 
-namespace Principia {
+namespace principia {
 namespace Geometry {
 // R3Element is an element of a 3-dimensional dimensionful vector space on the
 // field R, represented by Dimensionless. It is the underlying data type for
@@ -82,6 +82,6 @@ Quantities::Product<Left, Right> Dot(R3Element<Left> const& left,
                                      R3Element<Right> const& right);
 
 }  // namespace Geometry
-}  // namespace Principia
+}  // namespace principia
 
 #include "R3Element-body.hpp"

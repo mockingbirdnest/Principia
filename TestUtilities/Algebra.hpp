@@ -2,7 +2,7 @@
 
 #include "TestUtilities.hpp"
 
-namespace Principia {
+namespace principia {
 namespace TestUtilities {
 
 template<typename T>
@@ -55,6 +55,6 @@ void TestField(T const& zero, T const& one, T const& a, T const& b,
                T const& c, T const& x, T const& y);
 
 }  // namespace TestUtilities
-}  // namespace Principia
+}  // namespace principia
 
 #include "Algebra-body.hpp"

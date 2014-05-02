@@ -6,7 +6,7 @@
 #include "SI.hpp"
 #include "Constants.hpp"
 
-namespace Principia {
+namespace principia {
 // This namespace contains units commonly used in astronomy that are not
 // accepted for use with the SI.
 namespace Astronomy {
@@ -18,4 +18,4 @@ Quantities::Length const Parsec        = 648000 / π * SI::AstronomicalUnit;
 Quantities::Length const LightYear     = Constants::SpeedOfLight * JulianYear;
 Quantities::Length const LunarDistance = 384400000 * SI::Metre;
 }  // namespace Astronomy
-}  // namespace Principia
+}  // namespace principia

@@ -19,7 +19,7 @@
 #include "..\Geometry\Grassmann.hpp"
 #include "..\Quantities\ElementaryFunctions.hpp"
 
-namespace Principia {
+namespace principia {
 namespace Geometry {
 namespace {
 
@@ -162,4 +162,4 @@ TEST_CLASS(GrassmannTests) {
 
 }  // namespace
 }  // namespace Geometry
-}  // namespace Principia
+}  // namespace principia
