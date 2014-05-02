@@ -30,7 +30,7 @@ using namespace Constants;
 using namespace Microsoft::VisualStudio::CppUnitTestFramework;
 using namespace Quantities;
 using namespace SI;
-using namespace TestUtilities;
+using namespace test_utilities;
 using namespace UK;
 
 TEST_CLASS(R3ElementTests) {

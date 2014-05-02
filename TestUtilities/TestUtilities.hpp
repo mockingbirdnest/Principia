@@ -6,7 +6,7 @@
 #include "..\Quantities\Quantities.hpp"
 
 namespace principia {
-namespace TestUtilities {
+namespace test_utilities {
 // The Microsoft equivalent only takes a wchar_t*.
 void WriteLog(std::wstring const& message);
 void NewLine();
@@ -27,7 +27,7 @@ void AssertNotEqualWithin(ValueType const& left,
                           ValueType const& right,
                           ErrorType const& ε);
 
-}  // namespace TestUtilities
+}  // namespace test_utilities
 }  // namespace principia
 
 #include "TestUtilities-body.hpp"

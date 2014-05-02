@@ -3,7 +3,7 @@
 #include "TestUtilities.hpp"
 
 namespace principia {
-namespace TestUtilities {
+namespace test_utilities {
 
 template<typename T>
 void TestEquality(T const& low, T const& high);
@@ -54,7 +54,7 @@ template<typename T>
 void TestField(T const& zero, T const& one, T const& a, T const& b,
                T const& c, T const& x, T const& y);
 
-}  // namespace TestUtilities
+}  // namespace test_utilities
 }  // namespace principia
 
 #include "Algebra-body.hpp"

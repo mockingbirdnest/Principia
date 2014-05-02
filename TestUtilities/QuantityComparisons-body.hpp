@@ -5,7 +5,7 @@
 #include "..\Quantities\Quantities.hpp"
 
 namespace principia {
-namespace TestUtilities {
+namespace test_utilities {
 
 template<typename D>
 void AssertEqual(Quantities::Quantity<D> const& left,
@@ -49,5 +49,5 @@ inline void AssertNotEqual(Quantities::Dimensionless const& left,
   AssertNotEqualWithin(left, right, ε);
 }
 
-}  // namespace TestUtilities
+}  // namespace test_utilities
 }  // namespace principia

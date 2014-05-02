@@ -6,7 +6,7 @@
 #include "..\Geometry\Grassmann.hpp"
 
 namespace principia {
-namespace TestUtilities {
+namespace test_utilities {
 
 template<typename Scalar, typename Frame, unsigned int Rank>
 void AssertEqual(Geometry::Multivector<Scalar, Frame, Rank> left,
@@ -16,7 +16,7 @@ template<typename Scalar>
 void AssertEqual(Geometry::R3Element<Scalar> left,
                  Geometry::R3Element<Scalar> right);
 
-}  // namespace TestUtilities
+}  // namespace test_utilities
 }  // namespace principia
 
 #include "GeometryComparisons-body.hpp"

@@ -6,7 +6,7 @@
 #include "..\Quantities\Quantities.hpp"
 
 namespace principia {
-namespace TestUtilities {
+namespace test_utilities {
 
 template<typename ValueType, typename ErrorType>
 void AssertEqualWithin(ValueType const& left,
@@ -50,5 +50,5 @@ inline void AssertTrue(bool const test, std::wstring const& message) {
       message.c_str());
 }
 
-}  // namespace TestUtilities
+}  // namespace test_utilities
 }  // namespace principia

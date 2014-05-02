@@ -23,7 +23,7 @@ using namespace Astronomy;
 using namespace Constants;
 using namespace Microsoft::VisualStudio::CppUnitTestFramework;
 using namespace SI;
-using namespace TestUtilities;
+using namespace test_utilities;
 using namespace UK;
 
 TEST_CLASS(QuantitiesTests) {

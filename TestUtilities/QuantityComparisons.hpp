@@ -5,7 +5,7 @@
 #include "..\Quantities\Quantities.hpp"
 
 namespace principia {
-namespace TestUtilities {
+namespace test_utilities {
 
 Quantities::Dimensionless const tolerance =  1e-14;
 
@@ -31,7 +31,7 @@ void AssertNotEqual(Quantities::Dimensionless const& left,
                     Quantities::Dimensionless const& right,
                     Quantities::Dimensionless const& ε = tolerance);
 
-}  // namespace TestUtilities
+}  // namespace test_utilities
 }  // namespace principia
 
 #include "QuantityComparisons-body.hpp"
