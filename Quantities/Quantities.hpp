@@ -27,7 +27,7 @@ typedef Quantity<Dimensions<0, 0, 0, 0, 0, 0, 0, 1, 0, 0>> Winding;
 typedef Quantity<Dimensions<0, 0, 0, 0, 0, 0, 0, 0, 1, 0>> Angle;
 typedef Quantity<Dimensions<0, 0, 0, 0, 0, 0, 0, 0, 0, 1>> SolidAngle;
 #pragma endregion
-namespace TypeGenerators {
+namespace type_generators {
 template<typename Left, typename Right> struct ProductGenerator;
 template<typename Left, typename Right> struct QuotientGenerator;
 template<bool> struct Range;
@@ -35,18 +35,18 @@ template<typename Q, int Exponent, typename = Range<true>>
 struct PowerGenerator;
 template<bool> struct Condition;
 template<typename Q, typename = Condition<true>> struct SquareRootGenerator;
-}  // namespace TypeGenerators
+}  // namespace type_generators
 template<typename Left, typename Right>
-using Quotient = typename TypeGenerators::QuotientGenerator<Left,
-                                                            Right>::ResultType;
+using Quotient = typename type_generators::QuotientGenerator<Left,
+                                                             Right>::ResultType;
 template<typename Left, typename Right>
-using Product = typename TypeGenerators::ProductGenerator<Left,
-                                                          Right>::ResultType;
+using Product = typename type_generators::ProductGenerator<Left,
+                                                           Right>::ResultType;
 template<typename Left, int Exponent>
 using Exponentiation =
-  typename TypeGenerators::PowerGenerator<Left, Exponent>::ResultType;
+    typename type_generators::PowerGenerator<Left, Exponent>::ResultType;
 template<typename Q>
-using SquareRoot = typename TypeGenerators::SquareRootGenerator<Q>::ResultType;
+using SquareRoot = typename type_generators::SquareRootGenerator<Q>::ResultType;
 template<typename Right>
 using Inverse = Quotient<Dimensionless, Right>;
 

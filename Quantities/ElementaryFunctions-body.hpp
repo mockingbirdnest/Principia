@@ -5,7 +5,7 @@
 namespace principia {
 namespace quantities {
 
-namespace TypeGenerators {
+namespace type_generators {
 template<typename Q>
 struct SquareRootGenerator<
     Q, Condition<! (Q::Dimensions::Length & 1 ||
@@ -34,7 +34,7 @@ typedef Quantity<
     Dimensions<Length, Mass, Time, Current, Temperature, Amount,
                LuminousIntensity, Winding, Angle, SolidAngle>> ResultType;
 };
-}  // namespace TypeGenerators
+}  // namespace type_generators
 
 
 

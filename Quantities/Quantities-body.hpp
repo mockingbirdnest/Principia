@@ -22,7 +22,7 @@ struct Dimensions {
   };
 };
 
-namespace TypeGenerators {
+namespace type_generators {
 template<typename Q>
 struct Collapse { typedef Q ResultType; };
 template<>
@@ -119,7 +119,7 @@ template<typename Q, int Exponent>
 struct PowerGenerator<Q, Exponent, Range<(Exponent == 1)>>{
   typedef Q ResultType;
 };
-}  // namespace TypeGenerators
+}  // namespace type_generators
 namespace Factories {
 inline Length Metres(Dimensionless const& number) { return Length(number); }
 inline Mass Kilograms(Dimensionless const& number) { return Mass(number); }
