@@ -57,10 +57,10 @@
     <ClInclude Include="ElementaryFunctions.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="SI-body.hpp">
-      <Filter>Header Files\Units</Filter>
-    </ClInclude>
     <ClInclude Include="ElementaryFunctions-body.hpp">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="SI-body.hpp">
       <Filter>Source Files</Filter>
     </ClInclude>
   </ItemGroup>
