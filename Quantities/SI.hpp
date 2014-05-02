@@ -38,20 +38,20 @@ template<typename D> quantities::Quantity<D> Yocto(quantities::Quantity<D>);
 #pragma region SI base units
 // From the BIPM's SI brochure 8, section 2.1.2, table 1,
 // http://www.bipm.org/en/si/si_brochure/chapter2/2-1/.
-quantities::Length      const Metre    = quantities::Factories::Metres(1);
-quantities::Mass        const Kilogram = quantities::Factories::Kilograms(1);
-quantities::Time        const Second   = quantities::Factories::Seconds(1);
-quantities::Current     const Ampere   = quantities::Factories::Amperes(1);
-quantities::Temperature const Kelvin   = quantities::Factories::Kelvins(1);
-quantities::Amount      const Mole     = quantities::Factories::Moles(1);
+quantities::Length      const Metre    = quantities::factories::Metres(1);
+quantities::Mass        const Kilogram = quantities::factories::Kilograms(1);
+quantities::Time        const Second   = quantities::factories::Seconds(1);
+quantities::Current     const Ampere   = quantities::factories::Amperes(1);
+quantities::Temperature const Kelvin   = quantities::factories::Kelvins(1);
+quantities::Amount      const Mole     = quantities::factories::Moles(1);
 quantities::LuminousIntensity
-                        const Candela  = quantities::Factories::Candelas(1);
+                        const Candela  = quantities::factories::Candelas(1);
 // Nonstandard.
-quantities::Winding const Cycle = quantities::Factories::Cycles(1);
+quantities::Winding const Cycle = quantities::factories::Cycles(1);
 // Not base units in the SI. We make these quantities rather than units as they
 // are natural.
-quantities::Angle      const Radian    = quantities::Factories::Radians(1);
-quantities::SolidAngle const Steradian = quantities::Factories::Steradians(1);
+quantities::Angle      const Radian    = quantities::factories::Radians(1);
+quantities::SolidAngle const Steradian = quantities::factories::Steradians(1);
 #pragma endregion
 
 // Gram, for use with prefixes.

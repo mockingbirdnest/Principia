@@ -120,7 +120,7 @@ struct PowerGenerator<Q, Exponent, Range<(Exponent == 1)>>{
   typedef Q ResultType;
 };
 }  // namespace type_generators
-namespace Factories {
+namespace factories {
 inline Length Metres(Dimensionless const& number) { return Length(number); }
 inline Mass Kilograms(Dimensionless const& number) { return Mass(number); }
 inline Time Seconds(Dimensionless const& number) { return Time(number); }
@@ -137,7 +137,7 @@ inline Angle Radians(Dimensionless const& number) { return Angle(number); }
 inline SolidAngle Steradians(Dimensionless const& number) {
   return SolidAngle(number);
 }
-}  // namespace Factories
+}  // namespace factories
 template<typename D>
 template<int Exponent>
 Exponentiation<Quantity<D>, Exponent> Quantity<D>::Pow() const {

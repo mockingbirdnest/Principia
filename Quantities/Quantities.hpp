@@ -50,7 +50,7 @@ using SquareRoot = typename type_generators::SquareRootGenerator<Q>::ResultType;
 template<typename Right>
 using Inverse = Quotient<Dimensionless, Right>;
 
-namespace Factories {
+namespace factories {
 Length            Metres(Dimensionless const&);
 Mass              Kilograms(Dimensionless const&);
 Time              Seconds(Dimensionless const&);
@@ -61,7 +61,7 @@ LuminousIntensity Candelas(Dimensionless const&);
 Winding           Cycles(Dimensionless const&);
 Angle             Radians(Dimensionless const&);
 SolidAngle        Steradians(Dimensionless const&);
-}  // namespace Factories
+}  // namespace factories
 
 template<typename D>
 std::wstring ToString(Quantity<D> const& quantity,
@@ -78,16 +78,16 @@ class Quantity {
   explicit Quantity(Dimensionless const& magnitude);
   Dimensionless magnitude_;
 
-  friend Length            Factories::Metres(Dimensionless const&);
-  friend Mass              Factories::Kilograms(Dimensionless const&);
-  friend Time              Factories::Seconds(Dimensionless const&);
-  friend Current           Factories::Amperes(Dimensionless const&);
-  friend Temperature       Factories::Kelvins(Dimensionless const&);
-  friend Amount            Factories::Moles(Dimensionless const&);
-  friend LuminousIntensity Factories::Candelas(Dimensionless const&);
-  friend Winding           Factories::Cycles(Dimensionless const&);
-  friend Angle             Factories::Radians(Dimensionless const&);
-  friend SolidAngle        Factories::Steradians(Dimensionless const&);
+  friend Length            factories::Metres(Dimensionless const&);
+  friend Mass              factories::Kilograms(Dimensionless const&);
+  friend Time              factories::Seconds(Dimensionless const&);
+  friend Current           factories::Amperes(Dimensionless const&);
+  friend Temperature       factories::Kelvins(Dimensionless const&);
+  friend Amount            factories::Moles(Dimensionless const&);
+  friend LuminousIntensity factories::Candelas(Dimensionless const&);
+  friend Winding           factories::Cycles(Dimensionless const&);
+  friend Angle             factories::Radians(Dimensionless const&);
+  friend SolidAngle        factories::Steradians(Dimensionless const&);
 
   template<typename D>
   friend class Quantity;
