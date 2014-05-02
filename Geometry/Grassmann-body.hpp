@@ -1,7 +1,7 @@
 ﻿#pragma once
 
 namespace principia {
-namespace Geometry {
+namespace geometry {
 
 template<typename LeftScalar, typename RightScalar, typename Frame>
 inline quantities::Product<LeftScalar, RightScalar> InnerProduct(
@@ -154,5 +154,5 @@ inline void operator/=(Multivector<T, Frame, Rank>& left,
   left.coordinates /= right;
 }
 
-}  // namespace Geometry
+}  // namespace geometry
 }  // namespace principia

@@ -5,7 +5,7 @@
 #include <string>
 
 namespace principia {
-namespace Geometry {
+namespace geometry {
 // R3Element is an element of a 3-dimensional dimensionful vector space on the
 // field R, represented by Dimensionless. It is the underlying data type for
 // the more advanced strongly typed structures of the Grassmann algebras and
@@ -81,7 +81,7 @@ template<typename Left, typename Right>
 quantities::Product<Left, Right> Dot(R3Element<Left> const& left,
                                      R3Element<Right> const& right);
 
-}  // namespace Geometry
+}  // namespace geometry
 }  // namespace principia
 
 #include "R3Element-body.hpp"

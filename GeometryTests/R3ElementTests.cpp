@@ -21,7 +21,7 @@
 
 
 namespace principia {
-namespace Geometry {
+namespace geometry {
 namespace {
 
 using namespace astronomy;
@@ -59,5 +59,5 @@ TEST_CLASS(R3ElementTests) {
 };
 
 }  // namespace
-}  // namespace Geometry
+}  // namespace geometry
 }  // namespace principia

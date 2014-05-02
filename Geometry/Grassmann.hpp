@@ -5,7 +5,7 @@
 #include "R3Element.hpp"
 
 namespace principia {
-namespace Geometry {
+namespace geometry {
 template<typename Scalar, typename Frame, unsigned int Rank>
 struct Multivector;
 
@@ -133,7 +133,7 @@ template<typename T, typename Frame, unsigned int Rank>
 void operator/=(Multivector<T, Frame, Rank>& left,
                 quantities::Dimensionless const& right);
 
-}  // namespace Geometry
+}  // namespace geometry
 }  // namespace principia
 
 #include "Grassmann-body.hpp"

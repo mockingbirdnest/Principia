@@ -1,7 +1,7 @@
 #pragma once
 
 namespace principia {
-namespace Geometry {
+namespace geometry {
 template<typename Scalar>
 inline R3Element<Scalar>::R3Element(Scalar const& x,
                                     Scalar const& y,
@@ -126,5 +126,5 @@ inline quantities::Product<Left, Right> Dot(R3Element<Left> const& left,
   return left.x * right.x + left.y * right.y + left.z * right.z;
 }
 
-}  // namespace Geometry
+}  // namespace geometry
 }  // namespace principia

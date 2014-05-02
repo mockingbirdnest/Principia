@@ -20,7 +20,7 @@
 #include "..\Quantities\ElementaryFunctions.hpp"
 
 namespace principia {
-namespace Geometry {
+namespace geometry {
 namespace {
 
 using namespace astronomy;
@@ -161,5 +161,5 @@ TEST_CLASS(GrassmannTests) {
 };
 
 }  // namespace
-}  // namespace Geometry
+}  // namespace geometry
 }  // namespace principia
