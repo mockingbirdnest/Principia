@@ -23,7 +23,7 @@ namespace principia {
 namespace Geometry {
 namespace {
 
-using namespace Astronomy;
+using namespace astronomy;
 using namespace BIPM;
 using namespace constants;
 using namespace Microsoft::VisualStudio::CppUnitTestFramework;

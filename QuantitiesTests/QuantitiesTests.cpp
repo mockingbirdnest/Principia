@@ -19,7 +19,7 @@ namespace principia {
 namespace quantities {
 namespace {
 
-using namespace Astronomy;
+using namespace astronomy;
 using namespace constants;
 using namespace Microsoft::VisualStudio::CppUnitTestFramework;
 using namespace SI;
