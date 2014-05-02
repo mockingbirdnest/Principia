@@ -1,5 +1,3 @@
-// NamedQuantities.h
-
 #pragma once
 
 #include "Quantities.hpp"

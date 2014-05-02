@@ -1,8 +1,8 @@
 ﻿#pragma once
 
-#include "Quantities.hpp"
 #include "NamedQuantities.hpp"
 #include "Numbers.hpp"
+#include "Quantities.hpp"
 
 namespace Principia {
 // This namespace contains the units and prefixes of the SI (except the

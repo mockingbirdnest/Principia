@@ -1,6 +1,4 @@
-﻿// MathematicalConstants.h
-
-#pragma once
+﻿#pragma once
 
 #include "Dimensionless.hpp"
 

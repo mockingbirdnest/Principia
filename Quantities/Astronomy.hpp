@@ -1,10 +1,10 @@
 ﻿#pragma once
 
-#include "Quantities.hpp"
+#include "Constants.hpp"
 #include "NamedQuantities.hpp"
 #include "Numbers.hpp"
+#include "Quantities.hpp"
 #include "SI.hpp"
-#include "Constants.hpp"
 
 namespace Principia {
 // This namespace contains units commonly used in astronomy that are not
