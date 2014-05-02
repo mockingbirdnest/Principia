@@ -1,9 +1,8 @@
 ﻿#pragma once
 
 #include "CppUnitTest.h"
-
-#include "..\Quantities\Dimensionless.hpp"
-#include "..\Quantities\Quantities.hpp"
+#include "Quantities/Dimensionless.hpp"
+#include "Quantities/Quantities.hpp"
 
 namespace Principia {
 namespace TestUtilities {
