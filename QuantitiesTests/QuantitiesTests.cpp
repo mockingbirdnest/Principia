@@ -24,7 +24,7 @@ using namespace constants;
 using namespace Microsoft::VisualStudio::CppUnitTestFramework;
 using namespace si;
 using namespace test_utilities;
-using namespace UK;
+using namespace uk;
 
 TEST_CLASS(QuantitiesTests) {
  public:

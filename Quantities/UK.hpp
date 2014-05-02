@@ -10,7 +10,7 @@ namespace principia {
 // This namespace contains the imperial units as defined by the international
 // yard and pound agreement, as well as the units of the English Engineering
 // system.
-namespace UK {
+namespace uk {
 quantities::Mass const Pound  = 0.45359237 * si::Kilogram;
 quantities::Mass const Ounce  = Pound / 16;
 quantities::Mass const Drachm = Pound / 256;
@@ -54,5 +54,5 @@ quantities::Volume const Gallon     = 4 * Quart;
 quantities::Force    const PoundForce = Pound * constants::StandardGravity;
 quantities::Pressure const PoundPerSquareInch = PoundForce / Inch.Pow<2>();
 quantities::Power    const HorsePower = 550 * PoundForce * Foot / si::Second;
-}  // namespace UK
+}  // namespace uk
 }  // namespace principia
