@@ -4,8 +4,8 @@
 #include "..\Quantities\Quantities.hpp"
 #include "R3Element.hpp"
 
-namespace Principia {
-namespace Geometry {
+namespace principia {
+namespace geometry {
 template<typename Scalar, typename Frame, unsigned int Rank>
 struct Multivector;
 
@@ -35,46 +35,46 @@ template<typename Scalar, typename Frame>
 using Trivector = Multivector<Scalar, Frame, 3>;
 
 template<typename LeftScalar, typename RightScalar, typename Frame>
-Quantities::Product<LeftScalar, RightScalar> InnerProduct(
+quantities::Product<LeftScalar, RightScalar> InnerProduct(
     Vector<LeftScalar, Frame> const& left,
     Vector<RightScalar, Frame> const& right);
 template<typename LeftScalar, typename RightScalar, typename Frame>
-Quantities::Product<LeftScalar, RightScalar> InnerProduct(
+quantities::Product<LeftScalar, RightScalar> InnerProduct(
     Bivector<LeftScalar, Frame> const& left,
     Bivector<RightScalar, Frame> const& right);
 template<typename LeftScalar, typename RightScalar, typename Frame>
-Quantities::Product<LeftScalar, RightScalar> InnerProduct(
+quantities::Product<LeftScalar, RightScalar> InnerProduct(
     Trivector<LeftScalar, Frame> const& left,
     Trivector<RightScalar, Frame> const& right);
 
 template<typename LeftScalar, typename RightScalar, typename Frame>
-Bivector<Quantities::Product<LeftScalar, RightScalar>,
+Bivector<quantities::Product<LeftScalar, RightScalar>,
          Frame> Wedge(Vector<LeftScalar, Frame> const& left,
                       Vector<RightScalar, Frame> const& right);
 template<typename LeftScalar, typename RightScalar, typename Frame>
-Trivector<Quantities::Product<LeftScalar, RightScalar>,
+Trivector<quantities::Product<LeftScalar, RightScalar>,
           Frame> Wedge(Bivector<LeftScalar, Frame> const& left,
                        Vector<RightScalar, Frame> const& right);
 template<typename LeftScalar, typename RightScalar, typename Frame>
-Trivector<Quantities::Product<LeftScalar, RightScalar>,
+Trivector<quantities::Product<LeftScalar, RightScalar>,
           Frame> Wedge(Vector<LeftScalar, Frame> const& left,
                        Bivector<RightScalar, Frame> const& right);
 
 // Lie bracket on V ^ V = so(V).
 template<typename LeftScalar, typename RightScalar, typename Frame>
-Bivector<Quantities::Product<LeftScalar, RightScalar>,
+Bivector<quantities::Product<LeftScalar, RightScalar>,
          Frame> Commutator(Bivector<LeftScalar, Frame> const& left,
                            Bivector<RightScalar, Frame> const& right);
 
 // Left action of V ^ V = so(V) on V.
 template<typename LeftScalar, typename RightScalar, typename Frame>
-Vector<Quantities::Product<LeftScalar, RightScalar>,
+Vector<quantities::Product<LeftScalar, RightScalar>,
        Frame> operator*(Bivector<LeftScalar, Frame> const& left,
                         Vector<RightScalar, Frame> const& right);
 
 // Right action of V ^ V = so(V) on V* = V.
 template<typename LeftScalar, typename RightScalar, typename Frame>
-Vector<Quantities::Product<LeftScalar, RightScalar>,
+Vector<quantities::Product<LeftScalar, RightScalar>,
        Frame> operator*(Vector<LeftScalar, Frame> const& left,
                         Bivector<RightScalar, Frame> const& right);
 
@@ -96,29 +96,29 @@ Multivector<T, Frame,
 
 template<typename T, typename Frame, unsigned int Rank>
 Multivector<T, Frame,
-            Rank> operator*(Quantities::Dimensionless const& left,
+            Rank> operator*(quantities::Dimensionless const& left,
                             Multivector<T, Frame, Rank> const& right);
 template<typename T, typename Frame, unsigned int Rank>
 Multivector<T, Frame,
             Rank> operator*(Multivector<T, Frame, Rank> const& left,
-                            Quantities::Dimensionless const& right);
+                            quantities::Dimensionless const& right);
 template<typename T, typename Frame, unsigned int Rank>
 Multivector<T, Frame,
             Rank> operator/(Multivector<T, Frame, Rank> const& left,
-                            Quantities::Dimensionless const& right);
+                            quantities::Dimensionless const& right);
 
 template<typename T, typename U, typename Frame, unsigned int Rank>
-Multivector<Quantities::Product<U, T> , Frame,
+Multivector<quantities::Product<U, T> , Frame,
             Rank> operator*(U const& left,
                             Multivector<T, Frame, Rank> const& right);
 template<typename T, typename U, typename Frame, unsigned int Rank>
-Multivector<Quantities::Product<T, U>, Frame,
+Multivector<quantities::Product<T, U>, Frame,
             Rank> operator*(Multivector<T, Frame, Rank> const& left,
-                            Quantities::Dimensionless const& right);
+                            quantities::Dimensionless const& right);
 template<typename T, typename U, typename Frame, unsigned int Rank>
-Multivector<Quantities::Quotient<T, U>, Frame,
+Multivector<quantities::Quotient<T, U>, Frame,
             Rank> operator/(Multivector<T, Frame, Rank> const& left,
-                            Quantities::Dimensionless const& right);
+                            quantities::Dimensionless const& right);
 
 template<typename T, typename Frame, unsigned int Rank>
 void operator+=(Multivector<T, Frame, Rank>& left,
@@ -128,12 +128,12 @@ void operator-=(Multivector<T, Frame, Rank>& left,
                 Multivector<T, Frame, Rank> const& right);
 template<typename T, typename Frame, unsigned int Rank>
 void operator*=(Multivector<T, Frame, Rank>& left,
-                Quantities::Dimensionless const& right);
+                quantities::Dimensionless const& right);
 template<typename T, typename Frame, unsigned int Rank>
 void operator/=(Multivector<T, Frame, Rank>& left,
-                Quantities::Dimensionless const& right);
+                quantities::Dimensionless const& right);
 
-}  // namespace Geometry
-}  // namespace Principia
+}  // namespace geometry
+}  // namespace principia
 
 #include "Grassmann-body.hpp"

@@ -2,8 +2,8 @@
 
 #include "TestUtilities.hpp"
 
-namespace Principia {
-namespace TestUtilities {
+namespace principia {
+namespace test_utilities {
 
 template<typename T>
 void TestEquality(T const& low, T const& high) {
@@ -176,5 +176,5 @@ void TestField(T const& zero, T const& one, T const& a, T const& b,
   TestVectorSpace(zero, a, b, c, zero, one, x, y);
 }
 
-}  // namespace TestUtilities
-}  // namespace Principia
+}  // namespace test_utilities
+}  // namespace principia

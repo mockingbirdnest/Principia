@@ -20,18 +20,18 @@
 #include "..\Quantities\ElementaryFunctions.hpp"
 
 
-namespace Principia {
-namespace Geometry {
+namespace principia {
+namespace geometry {
 namespace {
 
-using namespace Astronomy;
-using namespace BIPM;
-using namespace Constants;
+using namespace astronomy;
+using namespace bipm;
+using namespace constants;
 using namespace Microsoft::VisualStudio::CppUnitTestFramework;
-using namespace Quantities;
-using namespace SI;
-using namespace TestUtilities;
-using namespace UK;
+using namespace quantities;
+using namespace si;
+using namespace test_utilities;
+using namespace uk;
 
 TEST_CLASS(R3ElementTests) {
  public:
@@ -44,7 +44,7 @@ TEST_CLASS(R3ElementTests) {
                        -SpeedOfLight);
     R3Element<Speed> v(-20 * Knot,
                        2 * π * AstronomicalUnit / JulianYear,
-                       1 * Admiralty::NauticalMile / Hour);
+                       1 * admiralty::NauticalMile / Hour);
     R3Element<Speed> w(-1 * Mile / Hour, -2 * Foot / Second, -3 * Knot);
     R3Element<Speed> a(88 * Mile / Hour, 300 * Metre / Second, 46 * Knot);
     AssertEqual((e * Dimensionless(42)) * v, e * (Dimensionless(42) * v));
@@ -59,5 +59,5 @@ TEST_CLASS(R3ElementTests) {
 };
 
 }  // namespace
-}  // namespace Geometry
-}  // namespace Principia
+}  // namespace geometry
+}  // namespace principia

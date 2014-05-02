@@ -4,34 +4,34 @@
 #include "..\Quantities\Dimensionless.hpp"
 #include "..\Quantities\Quantities.hpp"
 
-namespace Principia {
-namespace TestUtilities {
+namespace principia {
+namespace test_utilities {
 
-Quantities::Dimensionless const tolerance =  1e-14;
-
-template<typename D>
-void AssertEqual(Quantities::Quantity<D> const& left,
-                 Quantities::Quantity<D> const& right,
-                 Quantities::Dimensionless const& ε = tolerance);
+quantities::Dimensionless const tolerance =  1e-14;
 
 template<typename D>
-void AssertNotEqual(Quantities::Quantity<D> const& left,
-                    Quantities::Quantity<D> const& right,
-                    Quantities::Dimensionless const& ε = tolerance);
+void AssertEqual(quantities::Quantity<D> const& left,
+                 quantities::Quantity<D> const& right,
+                 quantities::Dimensionless const& ε = tolerance);
 
-void AssertEqualAbsolute(Quantities::Dimensionless const& left,
-                         Quantities::Dimensionless const& right,
-                         Quantities::Dimensionless const& ε = tolerance);
+template<typename D>
+void AssertNotEqual(quantities::Quantity<D> const& left,
+                    quantities::Quantity<D> const& right,
+                    quantities::Dimensionless const& ε = tolerance);
 
-void AssertEqual(Quantities::Dimensionless const& left,
-                 Quantities::Dimensionless const& right,
-                 Quantities::Dimensionless const& ε = tolerance);
+void AssertEqualAbsolute(quantities::Dimensionless const& left,
+                         quantities::Dimensionless const& right,
+                         quantities::Dimensionless const& ε = tolerance);
 
-void AssertNotEqual(Quantities::Dimensionless const& left,
-                    Quantities::Dimensionless const& right,
-                    Quantities::Dimensionless const& ε = tolerance);
+void AssertEqual(quantities::Dimensionless const& left,
+                 quantities::Dimensionless const& right,
+                 quantities::Dimensionless const& ε = tolerance);
 
-}  // namespace TestUtilities
-}  // namespace Principia
+void AssertNotEqual(quantities::Dimensionless const& left,
+                    quantities::Dimensionless const& right,
+                    quantities::Dimensionless const& ε = tolerance);
+
+}  // namespace test_utilities
+}  // namespace principia
 
 #include "QuantityComparisons-body.hpp"

@@ -4,27 +4,27 @@
 #include "..\Quantities\Dimensionless.hpp"
 #include "..\Quantities\Quantities.hpp"
 
-namespace Principia {
-namespace TestUtilities {
+namespace principia {
+namespace test_utilities {
 
 template<typename D>
-void AssertEqual(Quantities::Quantity<D> const& left,
-                 Quantities::Quantity<D> const& right,
-                 Quantities::Dimensionless const& ε) {
+void AssertEqual(quantities::Quantity<D> const& left,
+                 quantities::Quantity<D> const& right,
+                 quantities::Dimensionless const& ε) {
   AssertEqualWithin(left, right, ε);
 }
 
 template<typename D>
-void AssertNotEqual(Quantities::Quantity<D> const& left,
-                    Quantities::Quantity<D> const& right,
-                    Quantities::Dimensionless const& ε) {
+void AssertNotEqual(quantities::Quantity<D> const& left,
+                    quantities::Quantity<D> const& right,
+                    quantities::Dimensionless const& ε) {
   AssertNotEqualWithin(left, right, ε);
 }
 
 
-inline void AssertEqualAbsolute(Quantities::Dimensionless const& left,
-                                Quantities::Dimensionless const& right,
-                                Quantities::Dimensionless const& ε) {
+inline void AssertEqualAbsolute(quantities::Dimensionless const& left,
+                                quantities::Dimensionless const& right,
+                                quantities::Dimensionless const& ε) {
   std::wstring const message = L"Should be equal within " + ToString(ε, 3) +
                                L" (absolute): " + ToString(left) + L" and " +
                                ToString(right) + L".";
@@ -33,9 +33,9 @@ inline void AssertEqualAbsolute(Quantities::Dimensionless const& left,
   LogLine(L"> Passed!");
 }
 
-inline void AssertEqual(Quantities::Dimensionless const& left,
-                        Quantities::Dimensionless const& right,
-                        Quantities::Dimensionless const& ε) {
+inline void AssertEqual(quantities::Dimensionless const& left,
+                        quantities::Dimensionless const& right,
+                        quantities::Dimensionless const& ε) {
   if (left == 0 || right == 0) {
     AssertEqualAbsolute(left, right, ε);
   } else {
@@ -43,11 +43,11 @@ inline void AssertEqual(Quantities::Dimensionless const& left,
   }
 }
 
-inline void AssertNotEqual(Quantities::Dimensionless const& left,
-                           Quantities::Dimensionless const& right,
-                           Quantities::Dimensionless const& ε) {
+inline void AssertNotEqual(quantities::Dimensionless const& left,
+                           quantities::Dimensionless const& right,
+                           quantities::Dimensionless const& ε) {
   AssertNotEqualWithin(left, right, ε);
 }
 
-}  // namespace TestUtilities
-}  // namespace Principia
+}  // namespace test_utilities
+}  // namespace principia

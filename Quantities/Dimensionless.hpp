@@ -4,8 +4,8 @@
 
 #include<string>
 
-namespace Principia {
-namespace Quantities {
+namespace principia {
+namespace quantities {
 // A double by any other name...
 class Dimensionless {
 public:
@@ -43,7 +43,7 @@ Dimensionless Abs(Dimensionless const&);
 
 std::wstring ToString(Dimensionless const& number, 
                       unsigned char const precision = 16);
-}  // namespace Quantities
-}  // namespace Principia
+}  // namespace quantities
+}  // namespace principia
 
 #include "Dimensionless-body.hpp"
