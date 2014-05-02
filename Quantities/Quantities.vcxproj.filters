@@ -61,7 +61,7 @@
       <Filter>Header Files\Units</Filter>
     </ClInclude>
     <ClInclude Include="ElementaryFunctions-body.hpp">
-      <Filter>Header Files</Filter>
+      <Filter>Source Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -86,11 +86,11 @@
     </Image>
   </ItemGroup>
   <ItemGroup>
-    <None Include="Dimensionless-body.hpp">
-      <Filter>Header Files</Filter>
-    </None>
     <None Include="Quantities-body.hpp">
-      <Filter>Header Files</Filter>
+      <Filter>Source Files</Filter>
+    </None>
+    <None Include="Dimensionless-body.hpp">
+      <Filter>Source Files</Filter>
     </None>
   </ItemGroup>
 </Project>

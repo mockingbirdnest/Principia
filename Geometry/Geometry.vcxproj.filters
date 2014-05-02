@@ -28,10 +28,10 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Grassmann-body.hpp">
-      <Filter>Header Files</Filter>
+      <Filter>Source Files</Filter>
     </ClInclude>
     <ClInclude Include="R3Element-body.hpp">
-      <Filter>Header Files</Filter>
+      <Filter>Source Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
