@@ -35,11 +35,11 @@ quantities::Length const League  = 3 * Mile;
 quantities::Length const Link = Chain / 100;
 quantities::Length const Rod  = Chain / 4;
 
-namespace Admiralty {
+namespace admiralty {
 quantities::Length const NauticalMile = 6080 * Foot;
 quantities::Length const Cable        = NauticalMile / 10;
 quantities::Length const Fathom       = Cable / 100;
-}  // namespace Admiralty
+}  // namespace admiralty
 
 quantities::Area const Perch = Rod.Pow<2>();
 quantities::Area const Rood  = Furlong * Rod;

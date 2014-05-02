@@ -52,7 +52,7 @@ TEST_CLASS(GrassmannTests) {
     R3Element<Length> u(3 * Metre, -42 * Metre, 0 * Metre);
     R3Element<Length> v(-π * Metre, -e * Metre, -1 * Metre);
     R3Element<Length> w(2 * Metre, 2 * Metre, 2 * Metre);
-    R3Element<Length> a(1 * Inch, 2 * Foot, 3 * Admiralty::Fathom);
+    R3Element<Length> a(1 * Inch, 2 * Foot, 3 * admiralty::Fathom);
     {
       std::function<Area(Vector<Length, World>,
                          Vector<Length, World>)> vectorInnerProduct =
