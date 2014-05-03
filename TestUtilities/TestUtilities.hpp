@@ -1,56 +1,33 @@
 ﻿#pragma once
 
-#include "CppUnitTest.h"
+#include <CppUnitTest.h>
 
-#include "..\Quantities\Dimensionless.hpp"
-#include "..\Quantities\Quantities.hpp"
+#include "Quantities/Dimensionless.hpp"
+#include "Quantities/Quantities.hpp"
 
-namespace Principia {
-namespace TestUtilities {
+namespace principia {
+namespace test_utilities {
 // The Microsoft equivalent only takes a wchar_t*.
-void WriteLog(std::wstring const& message) {
-  Microsoft::VisualStudio::CppUnitTestFramework::Logger::WriteMessage(
-      message.c_str());
-}
-void NewLine() {
-  Microsoft::VisualStudio::CppUnitTestFramework::Logger::WriteMessage(L"\n");
-}
+void WriteLog(std::wstring const& message);
+void NewLine();
 // Equivalent to Log(message); Newline();
-void LogLine(std::wstring const& message) {
-  WriteLog(message);
-  NewLine();
-}
+void LogLine(std::wstring const& message);
+
 // The Microsoft equivalent only takes a wchar_t*.
-void AssertTrue(bool const test, std::wstring const& message = L"") {
-  Microsoft::VisualStudio::CppUnitTestFramework::Assert::IsTrue(
-      test,
-      message.c_str());
-}
+void AssertTrue(bool const test, std::wstring const& message = L"");
 
 // The Microsoft equivalent supports errors only for double.
 template<typename ValueType, typename ErrorType>
 void AssertEqualWithin(ValueType const& left,
                        ValueType const& right,
-                       ErrorType const& ε) {
-  std::wstring message = L"Should be equal within " + ToString(ε, 3) +
-                         L": " + ToString(left) + L" and " + ToString(right) +
-                         L".";
-  LogLine(message);
-  AssertTrue(left == right || Abs(left / right - 1) < ε, message);
-  LogLine(L"> Passed!");
-}
+                       ErrorType const& ε);
 
 template<typename ValueType, typename ErrorType>
 void AssertNotEqualWithin(ValueType const& left,
                           ValueType const& right,
-                          ErrorType const& ε) {
-  std::wstring message = L"Should differ by more than " + ToString(ε, 3) +
-                         L": " + ToString(left) + L" and " + ToString(right) +
-                         L".";
-  LogLine(message);
-  AssertTrue(Abs(left / right - 1) > ε, message);
-  LogLine(L"> Passed!");
-}
+                          ErrorType const& ε);
 
-}  // namespace TestUtilities
-}  // namespace Principia
+}  // namespace test_utilities
+}  // namespace principia
+
+#include "TestUtilities-body.hpp"

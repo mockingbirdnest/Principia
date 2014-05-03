@@ -1,51 +1,37 @@
 ﻿#pragma once
 
-#include "TestUtilities.hpp"
-#include "..\Quantities\Dimensionless.hpp"
-#include "..\Quantities\Quantities.hpp"
+#include "Quantities/Dimensionless.hpp"
+#include "Quantities/Quantities.hpp"
+#include "TestUtilities/TestUtilities.hpp"
 
-namespace Principia {
-namespace TestUtilities {
+namespace principia {
+namespace test_utilities {
 
-Quantities::Dimensionless const tolerance =  1e-14;
-
-template<typename D>
-void AssertEqual(Quantities::Quantity<D> const& left,
-                 Quantities::Quantity<D> const& right,
-                 Quantities::Dimensionless const& ε = tolerance) {
-  AssertEqualWithin(left, right, ε);
-}
+quantities::Dimensionless const tolerance =  1e-14;
 
 template<typename D>
-void AssertNotEqual(Quantities::Quantity<D> const& left,
-                    Quantities::Quantity<D> const& right,
-                    Quantities::Dimensionless const& ε = tolerance) {
-  AssertNotEqualWithin(left, right, ε);
-}
+void AssertEqual(quantities::Quantity<D> const& left,
+                 quantities::Quantity<D> const& right,
+                 quantities::Dimensionless const& ε = tolerance);
 
-void AssertEqualAbsolute(Quantities::Dimensionless const& left,
-                         Quantities::Dimensionless const& right,
-                         Quantities::Dimensionless const& ε = tolerance) {
-  std::wstring message = L"Should be equal within " + ToString(ε, 3) +
-    L" (absolute): " + ToString(left) + L" and " +
-    ToString(right) + L".";
-  LogLine(message);
-  AssertTrue(Abs(left - right) < ε, message);
-  LogLine(L"> Passed!");
-}
+template<typename D>
+void AssertNotEqual(quantities::Quantity<D> const& left,
+                    quantities::Quantity<D> const& right,
+                    quantities::Dimensionless const& ε = tolerance);
 
-void AssertEqual(Quantities::Dimensionless const& left,
-                 Quantities::Dimensionless const& right,
-                 Quantities::Dimensionless const& ε = tolerance) {
-  if (left == 0 || right == 0) { AssertEqualAbsolute(left, right, ε); }
-  else {AssertEqualWithin(left, right, ε); }
-}
+void AssertEqualAbsolute(quantities::Dimensionless const& left,
+                         quantities::Dimensionless const& right,
+                         quantities::Dimensionless const& ε = tolerance);
 
-void AssertNotEqual(Quantities::Dimensionless const& left,
-                    Quantities::Dimensionless const& right,
-                    Quantities::Dimensionless const& ε = tolerance) {
-  AssertNotEqualWithin(left, right, ε);
-}
+void AssertEqual(quantities::Dimensionless const& left,
+                 quantities::Dimensionless const& right,
+                 quantities::Dimensionless const& ε = tolerance);
 
-}  // namespace TestUtilities
-}  // namespace Principia
+void AssertNotEqual(quantities::Dimensionless const& left,
+                    quantities::Dimensionless const& right,
+                    quantities::Dimensionless const& ε = tolerance);
+
+}  // namespace test_utilities
+}  // namespace principia
+
+#include "QuantityComparisons-body.hpp"

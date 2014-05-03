@@ -1,10 +1,11 @@
 #pragma once
 
-#include "Dimensionless.hpp"
 #include <string>
 
-namespace Principia {
-namespace Quantities {
+#include "Quantities/Dimensionless.hpp"
+
+namespace principia {
+namespace quantities {
 template<int LengthExponent, int MassExponent, int TimeExponent,
          int CurrentExponent, int TemperatureExponent, int AmountExponent,
          int LuminousIntensityExponent, int WindingExponent,
@@ -27,7 +28,7 @@ typedef Quantity<Dimensions<0, 0, 0, 0, 0, 0, 0, 1, 0, 0>> Winding;
 typedef Quantity<Dimensions<0, 0, 0, 0, 0, 0, 0, 0, 1, 0>> Angle;
 typedef Quantity<Dimensions<0, 0, 0, 0, 0, 0, 0, 0, 0, 1>> SolidAngle;
 #pragma endregion
-namespace TypeGenerators {
+namespace type_generators {
 template<typename Left, typename Right> struct ProductGenerator;
 template<typename Left, typename Right> struct QuotientGenerator;
 template<bool> struct Range;
@@ -35,22 +36,22 @@ template<typename Q, int Exponent, typename = Range<true>>
 struct PowerGenerator;
 template<bool> struct Condition;
 template<typename Q, typename = Condition<true>> struct SquareRootGenerator;
-}  // namespace TypeGenerators
+}  // namespace type_generators
 template<typename Left, typename Right>
-using Quotient = typename TypeGenerators::QuotientGenerator<Left,
-                                                            Right>::ResultType;
+using Quotient = typename type_generators::QuotientGenerator<Left,
+                                                             Right>::ResultType;
 template<typename Left, typename Right>
-using Product = typename TypeGenerators::ProductGenerator<Left,
-                                                          Right>::ResultType;
+using Product = typename type_generators::ProductGenerator<Left,
+                                                           Right>::ResultType;
 template<typename Left, int Exponent>
 using Exponentiation =
-  typename TypeGenerators::PowerGenerator<Left, Exponent>::ResultType;
+    typename type_generators::PowerGenerator<Left, Exponent>::ResultType;
 template<typename Q>
-using SquareRoot = typename TypeGenerators::SquareRootGenerator<Q>::ResultType;
+using SquareRoot = typename type_generators::SquareRootGenerator<Q>::ResultType;
 template<typename Right>
 using Inverse = Quotient<Dimensionless, Right>;
 
-namespace Factories {
+namespace factories {
 Length            Metres(Dimensionless const&);
 Mass              Kilograms(Dimensionless const&);
 Time              Seconds(Dimensionless const&);
@@ -61,7 +62,7 @@ LuminousIntensity Candelas(Dimensionless const&);
 Winding           Cycles(Dimensionless const&);
 Angle             Radians(Dimensionless const&);
 SolidAngle        Steradians(Dimensionless const&);
-}  // namespace Factories
+}  // namespace factories
 
 template<typename D>
 std::wstring ToString(Quantity<D> const& quantity,
@@ -78,16 +79,16 @@ class Quantity {
   explicit Quantity(Dimensionless const& magnitude);
   Dimensionless magnitude_;
 
-  friend Length            Factories::Metres(Dimensionless const&);
-  friend Mass              Factories::Kilograms(Dimensionless const&);
-  friend Time              Factories::Seconds(Dimensionless const&);
-  friend Current           Factories::Amperes(Dimensionless const&);
-  friend Temperature       Factories::Kelvins(Dimensionless const&);
-  friend Amount            Factories::Moles(Dimensionless const&);
-  friend LuminousIntensity Factories::Candelas(Dimensionless const&);
-  friend Winding           Factories::Cycles(Dimensionless const&);
-  friend Angle             Factories::Radians(Dimensionless const&);
-  friend SolidAngle        Factories::Steradians(Dimensionless const&);
+  friend Length            factories::Metres(Dimensionless const&);
+  friend Mass              factories::Kilograms(Dimensionless const&);
+  friend Time              factories::Seconds(Dimensionless const&);
+  friend Current           factories::Amperes(Dimensionless const&);
+  friend Temperature       factories::Kelvins(Dimensionless const&);
+  friend Amount            factories::Moles(Dimensionless const&);
+  friend LuminousIntensity factories::Candelas(Dimensionless const&);
+  friend Winding           factories::Cycles(Dimensionless const&);
+  friend Angle             factories::Radians(Dimensionless const&);
+  friend SolidAngle        factories::Steradians(Dimensionless const&);
 
   template<typename D>
   friend class Quantity;
@@ -149,7 +150,7 @@ template<typename D>
 inline void operator*=(Quantity<D>&, Dimensionless const&);
 template<typename D>
 inline void operator/=(Quantity<D>&, Dimensionless const&);
-}  // namespace Quantities
-}  // namespace Principia
+}  // namespace quantities
+}  // namespace principia
 
 #include "Quantities-body.hpp"
