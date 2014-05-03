@@ -3,6 +3,9 @@
 namespace Principia {
 namespace Geometry {
 
+template <typename Scalar>
+Sign::Sign(const Scalar& scalar) : Sign(scalar > 0) {}
+
 Sign::Sign(const bool positive) : negative_(!positive) {}
 
 Sign::~Sign() {}

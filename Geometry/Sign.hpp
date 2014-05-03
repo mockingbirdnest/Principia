@@ -5,6 +5,7 @@ namespace Geometry {
 
 class Sign {
  public:
+  template <typename Scalar> explicit Sign(const Scalar& s);
   explicit Sign(const bool positive);
   ~Sign();
 
