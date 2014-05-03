@@ -1,10 +1,10 @@
 ﻿#pragma once
 
-#include "Dimensionless.hpp"
-#include "Quantities.hpp"
+#include "Quantities/Dimensionless.hpp"
+#include "Quantities/Quantities.hpp"
 
-namespace Principia {
-namespace Quantities {
+namespace principia {
+namespace quantities {
 Dimensionless Sqrt(Dimensionless const& x);
 template<typename D>
 SquareRoot<Quantity<D>> Sqrt(Quantity<D> const& x);
@@ -34,7 +34,7 @@ Dimensionless Tanh(Angle const& α);
 Angle ArcSinh(Dimensionless const& x);
 Angle ArcCosh(Dimensionless const& x);
 Angle ArcTanh(Dimensionless const& x);
-}  // namespace Quantities
-}  // namespace Principia
+}  // namespace quantities
+}  // namespace principia
 
 #include "ElementaryFunctions-body.hpp"
