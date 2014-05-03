@@ -18,7 +18,6 @@
 
 namespace principia {
 namespace quantities {
-namespace {
 
 using namespace astronomy;
 using namespace constants;
@@ -163,6 +162,5 @@ TEST_CLASS(QuantitiesTests) {
   }
 };
 
-}  // namespace
 }  // namespace quantities
 }  // namespace principia
