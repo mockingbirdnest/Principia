@@ -20,7 +20,6 @@
 
 namespace principia {
 namespace geometry {
-namespace {
 
 using namespace astronomy;
 using namespace bipm;
@@ -159,6 +158,5 @@ TEST_CLASS(GrassmannTests) {
   }
 };
 
-}  // namespace
 }  // namespace geometry
 }  // namespace principia
