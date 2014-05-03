@@ -1,26 +1,18 @@
 #include "stdafx.hpp"
-#include "CppUnitTest.h"
-#include "..\Geometry\Sign.hpp"
-#include "..\TestUtilities\TestUtilities.hpp"
+#include <CppUnitTest.h>
+
+#include "Geometry/Sign.hpp"
+#include "TestUtilities/TestUtilities.hpp"
 
 using namespace Microsoft::VisualStudio::CppUnitTestFramework;
 
-namespace Principia {
-namespace Geometry {
-namespace {
-using namespace TestUtilities;
+namespace principia {
+namespace geometry {
+
+using namespace test_utilities;
 
 TEST_CLASS(SignTests) {
  public:
-	TEST_METHOD(Boolean) {
-    const Sign positive(true);
-    const Sign negative(false);
-    AssertTrue(positive.Positive());
-    AssertFalse(positive.Negative());
-    AssertFalse(negative.Positive());
-    AssertTrue(negative.Negative());
-	}
-
   TEST_METHOD(Integer) {
     const Sign positive(1);
     const Sign negative(-1);
@@ -31,8 +23,8 @@ TEST_CLASS(SignTests) {
   }
 
 	TEST_METHOD(Multiplication) {
-    const Sign positive(true);
-    const Sign negative(false);
+    const Sign positive(1);
+    const Sign negative(-1);
     AssertTrue((positive * positive).Positive());
     AssertTrue((positive * negative).Negative());
     AssertTrue((negative * positive).Negative());
@@ -40,6 +32,5 @@ TEST_CLASS(SignTests) {
 	}
 };
 
-}  // namespace
-}  // namespace Geometry
-}  // namespace Principia
+}  // namespace geometry
+}  // namespace principia

@@ -44,6 +44,12 @@ inline void LogLine(std::wstring const& message) {
   NewLine();
 }
 
+inline void AssertFalse(bool const test, std::wstring const& message) {
+  Microsoft::VisualStudio::CppUnitTestFramework::Assert::IsFalse(
+      test,
+      message.c_str());
+}
+
 inline void AssertTrue(bool const test, std::wstring const& message) {
   Microsoft::VisualStudio::CppUnitTestFramework::Assert::IsTrue(
       test,

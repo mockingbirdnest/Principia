@@ -1,13 +1,12 @@
 #pragma once
 
-namespace Principia {
-namespace Geometry {
+namespace principia {
+namespace geometry {
 
 class Sign {
  public:
   template <typename Scalar> explicit Sign(const Scalar& s);
-  explicit Sign(const bool positive);
-  ~Sign();
+  ~Sign() = default;
 
   inline bool Negative() const;
   inline bool Positive() const;
@@ -19,7 +18,7 @@ class Sign {
 
 inline Sign operator*(const Sign& left, const Sign& right);
 
-}  // namespace Geometry
-}  // namespace Principia
+}  // namespace geometry
+}  // namespace principia
 
-#include "Sign-body.hpp"
+#include "Geometry/Sign-body.hpp"
