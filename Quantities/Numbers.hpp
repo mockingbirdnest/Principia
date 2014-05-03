@@ -1,8 +1,6 @@
-﻿// MathematicalConstants.h
+﻿#pragma once
 
-#pragma once
-
-#include "Dimensionless.hpp"
+#include "Quantities/Dimensionless.hpp"
 
 namespace principia {
 quantities::Dimensionless const π =

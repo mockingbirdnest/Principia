@@ -1,23 +1,22 @@
 ﻿#include "stdafx.hpp"
 
+#include <CppUnitTest.h>
 #include <functional>
 
-#include "CppUnitTest.h"
-#include "..\TestUtilities\TestUtilities.hpp"
-#include "..\TestUtilities\QuantityComparisons.hpp"
-#include "..\TestUtilities\GeometryComparisons.hpp"
-#include "..\TestUtilities\Algebra.hpp"
-
-#include "..\Quantities\Dimensionless.hpp"
-#include "..\Quantities\Quantities.hpp"
-#include "..\Quantities\SI.hpp"
-#include "..\Quantities\Constants.hpp"
-#include "..\Quantities\UK.hpp"
-#include "..\Quantities\BIPM.hpp"
-#include "..\Quantities\Astronomy.hpp"
-#include "..\Geometry\R3Element.hpp"
-#include "..\Geometry\Grassmann.hpp"
-#include "..\Quantities\ElementaryFunctions.hpp"
+#include "Geometry/Grassmann.hpp"
+#include "Geometry/R3Element.hpp"
+#include "Quantities/Astronomy.hpp"
+#include "Quantities/BIPM.hpp"
+#include "Quantities/Constants.hpp"
+#include "Quantities/Dimensionless.hpp"
+#include "Quantities/ElementaryFunctions.hpp"
+#include "Quantities/Quantities.hpp"
+#include "Quantities/SI.hpp"
+#include "Quantities/UK.hpp"
+#include "TestUtilities/Algebra.hpp"
+#include "TestUtilities/GeometryComparisons.hpp"
+#include "TestUtilities/QuantityComparisons.hpp"
+#include "TestUtilities/TestUtilities.hpp"
 
 namespace principia {
 namespace geometry {

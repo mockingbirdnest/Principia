@@ -1,7 +1,8 @@
 #pragma once
 
-#include "Dimensionless.hpp"
 #include <string>
+
+#include "Quantities/Dimensionless.hpp"
 
 namespace principia {
 namespace quantities {

@@ -1,5 +1,3 @@
-// Dimensionless.ipp
-
 #pragma once
 
 namespace principia {

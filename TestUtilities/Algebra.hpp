@@ -1,6 +1,6 @@
 ﻿#pragma once
 
-#include "TestUtilities.hpp"
+#include "TestUtilities/TestUtilities.hpp"
 
 namespace principia {
 namespace test_utilities {

@@ -1,9 +1,9 @@
 #pragma once
 
-#include "TestUtilities.hpp"
-#include "QuantityComparisons.hpp"
-#include "..\Geometry\R3Element.hpp"
-#include "..\Geometry\Grassmann.hpp"
+#include "Geometry/Grassmann.hpp"
+#include "Geometry/R3Element.hpp"
+#include "TestUtilities/QuantityComparisons.hpp"
+#include "TestUtilities/TestUtilities.hpp"
 
 namespace principia {
 namespace test_utilities {

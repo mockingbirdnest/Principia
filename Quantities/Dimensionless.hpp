@@ -1,5 +1,3 @@
-// Dimensionless.h
-
 #pragma once
 
 #include<string>

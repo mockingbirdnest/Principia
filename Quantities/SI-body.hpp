@@ -1,5 +1,3 @@
-// SIUnits.ipp
-
 #pragma once
 
 namespace principia {

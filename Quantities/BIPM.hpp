@@ -1,9 +1,9 @@
 ﻿#pragma once
 
-#include "Quantities.hpp"
-#include "NamedQuantities.hpp"
-#include "Numbers.hpp"
-#include "SI.hpp"
+#include "Quantities/NamedQuantities.hpp"
+#include "Quantities/Numbers.hpp"
+#include "Quantities/Quantities.hpp"
+#include "Quantities/SI.hpp"
 
 namespace principia {
 // This namespace contains the other non-SI units listed in the BIPM's 

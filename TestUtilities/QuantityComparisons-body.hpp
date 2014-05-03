@@ -1,8 +1,8 @@
 ﻿#pragma once
 
-#include "TestUtilities.hpp"
-#include "..\Quantities\Dimensionless.hpp"
-#include "..\Quantities\Quantities.hpp"
+#include "Quantities/Dimensionless.hpp"
+#include "Quantities/Quantities.hpp"
+#include "TestUtilities/TestUtilities.hpp"
 
 namespace principia {
 namespace test_utilities {
