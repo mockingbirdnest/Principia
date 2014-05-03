@@ -1,6 +1,7 @@
 ﻿#pragma once
 
-#include "CppUnitTest.h"
+#include <CppUnitTest.h>
+
 #include "Quantities/Dimensionless.hpp"
 #include "Quantities/Quantities.hpp"
 

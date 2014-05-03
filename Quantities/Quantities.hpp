@@ -2,7 +2,7 @@
 
 #include <string>
 
-#include "Dimensionless.hpp"
+#include "Quantities/Dimensionless.hpp"
 
 namespace principia {
 namespace quantities {

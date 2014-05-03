@@ -2,9 +2,8 @@
 
 #include "Geometry/Grassmann.hpp"
 #include "Geometry/R3Element.hpp"
-
-#include "QuantityComparisons.hpp"
-#include "TestUtilities.hpp"
+#include "TestUtilities/QuantityComparisons.hpp"
+#include "TestUtilities/TestUtilities.hpp"
 
 namespace principia {
 namespace test_utilities {

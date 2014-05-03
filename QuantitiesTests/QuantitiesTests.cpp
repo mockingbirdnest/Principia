@@ -1,8 +1,8 @@
 ﻿#include "stdafx.hpp"
 
+#include <CppUnitTest.h>
 #include <stdio.h>
 
-#include "CppUnitTest.h"
 #include "Quantities/Astronomy.hpp"
 #include "Quantities/BIPM.hpp"
 #include "Quantities/Constants.hpp"

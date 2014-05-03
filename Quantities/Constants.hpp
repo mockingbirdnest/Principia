@@ -1,8 +1,8 @@
 ﻿#pragma once
 
-#include "NamedQuantities.hpp"
-#include "Quantities.hpp"
-#include "SI.hpp"
+#include "Quantities/NamedQuantities.hpp"
+#include "Quantities/Quantities.hpp"
+#include "Quantities/SI.hpp"
 
 namespace principia {
 namespace constants {

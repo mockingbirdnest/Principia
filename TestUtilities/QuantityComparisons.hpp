@@ -2,8 +2,7 @@
 
 #include "Quantities/Dimensionless.hpp"
 #include "Quantities/Quantities.hpp"
-
-#include "TestUtilities.hpp"
+#include "TestUtilities/TestUtilities.hpp"
 
 namespace principia {
 namespace test_utilities {

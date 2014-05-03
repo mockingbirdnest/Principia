@@ -1,8 +1,8 @@
 ﻿#include "stdafx.hpp"
 
+#include <CppUnitTest.h>
 #include <functional>
 
-#include "CppUnitTest.h"
 #include "Geometry/Grassmann.hpp"
 #include "Geometry/R3Element.hpp"
 #include "Quantities/Astronomy.hpp"
