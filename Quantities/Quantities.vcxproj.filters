@@ -16,6 +16,9 @@
     <Filter Include="Header Files\Units">
       <UniqueIdentifier>{c4ec061d-1396-4424-b0eb-1533aa389a46}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Properties">
+      <UniqueIdentifier>{5a2e6d88-5535-486e-8dac-703ab3f0e848}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Constants.hpp">
@@ -31,12 +34,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Quantities.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="resource.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Stdafx.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Astronomy.hpp">
@@ -63,13 +60,19 @@
     <ClInclude Include="SI-body.hpp">
       <Filter>Source Files</Filter>
     </ClInclude>
+    <ClInclude Include="Stdafx.hpp">
+      <Filter>Properties</Filter>
+    </ClInclude>
+    <ClInclude Include="resource.hpp">
+      <Filter>Properties</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="AssemblyInfo.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="Stdafx.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>Properties</Filter>
+    </ClCompile>
+    <ClCompile Include="AssemblyInfo.cpp">
+      <Filter>Properties</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
