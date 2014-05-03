@@ -13,14 +13,11 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
+    <Filter Include="Properties">
+      <UniqueIdentifier>{e8d4980d-a7bf-42ca-936a-fdc9ecb1a35f}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="resource.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Stdafx.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="R3Element.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -33,17 +30,20 @@
     <ClInclude Include="R3Element-body.hpp">
       <Filter>Source Files</Filter>
     </ClInclude>
+    <ClInclude Include="Stdafx.hpp">
+      <Filter>Properties</Filter>
+    </ClInclude>
+    <ClInclude Include="resource.hpp">
+      <Filter>Properties</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="AssemblyInfo.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="Stdafx.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>Properties</Filter>
     </ClCompile>
-  </ItemGroup>
-  <ItemGroup>
-    <Text Include="ReadMe.txt" />
+    <ClCompile Include="AssemblyInfo.cpp">
+      <Filter>Properties</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="app.rc">

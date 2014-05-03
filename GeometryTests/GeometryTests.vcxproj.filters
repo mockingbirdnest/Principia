@@ -13,24 +13,27 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
+    <Filter Include="Properties">
+      <UniqueIdentifier>{83c85c05-319c-4c9c-9294-45c975d248d1}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="stdafx.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="targetver.hpp">
-      <Filter>Header Files</Filter>
+      <Filter>Properties</Filter>
+    </ClInclude>
+    <ClInclude Include="stdafx.hpp">
+      <Filter>Properties</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="stdafx.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="GrassmannTests.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="R3ElementTests.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="stdafx.cpp">
+      <Filter>Properties</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>
