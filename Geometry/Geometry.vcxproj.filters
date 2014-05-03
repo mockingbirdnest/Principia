@@ -36,6 +36,12 @@
     <ClInclude Include="resource.hpp">
       <Filter>Properties</Filter>
     </ClInclude>
+    <ClInclude Include="Sign.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Sign-body.hpp">
+      <Filter>Source Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Stdafx.cpp">

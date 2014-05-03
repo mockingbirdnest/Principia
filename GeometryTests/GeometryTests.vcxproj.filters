@@ -35,5 +35,8 @@
     <ClCompile Include="stdafx.cpp">
       <Filter>Properties</Filter>
     </ClCompile>
+    <ClCompile Include="SignTests.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

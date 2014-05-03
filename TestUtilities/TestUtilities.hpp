@@ -14,6 +14,7 @@ void NewLine();
 void LogLine(std::wstring const& message);
 
 // The Microsoft equivalent only takes a wchar_t*.
+void AssertFalse(bool const test, std::wstring const& message = L"");
 void AssertTrue(bool const test, std::wstring const& message = L"");
 
 // The Microsoft equivalent supports errors only for double.

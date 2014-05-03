@@ -85,6 +85,8 @@
     <ClInclude Include="R3Element-body.hpp" />
     <ClInclude Include="R3Element.hpp" />
     <ClInclude Include="resource.hpp" />
+    <ClInclude Include="Sign-body.hpp" />
+    <ClInclude Include="Sign.hpp" />
     <ClInclude Include="Stdafx.hpp" />
   </ItemGroup>
   <ItemGroup>
