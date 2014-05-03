@@ -7,18 +7,18 @@ namespace geometry {
 // for instance to represent the determinant of an orthogonal map.
 class Sign {
  public:
-  template <typename Scalar> explicit Sign(const Scalar& s);
+  template<typename Scalar> explicit Sign(Scalar const& s);
   ~Sign() = default;
 
   inline bool Negative() const;
   inline bool Positive() const;
 
  private:
-  const bool negative_;
-  friend Sign operator*(const Sign& left, const Sign& right);
+  bool const negative_;
+  friend Sign operator*(Sign const& left, Sign const& right);
 };
 
-inline Sign operator*(const Sign& left, const Sign& right);
+inline Sign operator*(Sign const& left, Sign const& right);
 
 }  // namespace geometry
 }  // namespace principia
