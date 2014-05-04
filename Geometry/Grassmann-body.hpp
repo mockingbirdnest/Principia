@@ -86,46 +86,46 @@ inline Vector<quantities::Product<LeftScalar, RightScalar>,
 template<typename Scalar, typename Frame, unsigned int Rank>
 inline Multivector<Scalar, Frame, Rank> operator+(
     Multivector<Scalar, Frame, Rank> const& right) {
-  return Multivector<T, Frame, Rank>(+right.coordinates);
+  return Multivector<Scalar, Frame, Rank>(+right.coordinates);
 }
 template<typename Scalar, typename Frame, unsigned int Rank>
 inline Multivector<Scalar, Frame, Rank> operator-(
     Multivector<Scalar, Frame, Rank> const& right) {
-  return Multivector<T, Frame, Rank>(-right.coordinates);
+  return Multivector<Scalar, Frame, Rank>(-right.coordinates);
 }
 
 template<typename Scalar, typename Frame, unsigned int Rank>
 inline Multivector<Scalar, Frame, Rank> operator+(
     Multivector<Scalar, Frame, Rank> const& left,
     Multivector<Scalar, Frame, Rank> const& right) {
-  return Multivector<T, Frame, Rank>(left.coordinates + right.coordinates);
+  return Multivector<Scalar, Frame, Rank>(left.coordinates + right.coordinates);
 }
 template<typename Scalar, typename Frame, unsigned int Rank>
 inline Multivector<Scalar, Frame, Rank> operator-(
     Multivector<Scalar, Frame, Rank> const& left,
-    Multivector<Scalar, Frame, Rank> const& right {
-  return Multivector<T, Frame, Rank>(left.coordinates - right.coordinates);
+    Multivector<Scalar, Frame, Rank> const& right) {
+  return Multivector<Scalar, Frame, Rank>(left.coordinates - right.coordinates);
 }
 
 template<typename Scalar, typename Frame, unsigned int Rank>
 inline Multivector<Scalar, Frame, Rank> operator*(
     quantities::Dimensionless const& left,
-    Multivector<Scalar, Frame, Rank> const& right {
-  return Multivector<T, Frame, Rank>(left * right.coordinates);
+    Multivector<Scalar, Frame, Rank> const& right) {
+  return Multivector<Scalar, Frame, Rank>(left * right.coordinates);
 }
 
 template<typename Scalar, typename Frame, unsigned int Rank>
 inline Multivector<Scalar, Frame, Rank> operator*(
     Multivector<Scalar, Frame, Rank> const& left,
     quantities::Dimensionless const& right) {
-  return Multivector<T, Frame, Rank>(left.coordinates * right);
+  return Multivector<Scalar, Frame, Rank>(left.coordinates * right);
 }
 
 template<typename Scalar, typename Frame, unsigned int Rank>
 inline Multivector<Scalar, Frame, Rank> operator/(
     Multivector<Scalar, Frame, Rank> const& left,
     quantities::Dimensionless const& right) {
-  return Multivector<T, Frame, Rank>(left.coordinates / right);
+  return Multivector<Scalar, Frame, Rank>(left.coordinates / right);
 }
 
 template<typename DLeft, typename RightScalar, typename Frame,
@@ -135,7 +135,9 @@ inline Multivector<
     Frame, Rank>
 operator*(quantities::Quantity<DLeft> const& left,
           Multivector<RightScalar, Frame, Rank> const& right) {
-  return Multivector<T, Frame, Rank>(left * right.coordinates);
+  return Multivector<
+      quantities::Product<quantities::Quantity<DLeft>, RightScalar>,
+      Frame, Rank>(left * right.coordinates);
 }
 
 template<typename LeftScalar, typename DRight, typename Frame,
@@ -145,7 +147,9 @@ inline Multivector<
     Frame, Rank>
 operator*(Multivector<LeftScalar, Frame, Rank> const& left,
           quantities::Quantity<DRight> const& right) {
-  return Multivector<T, Frame, Rank>(left.coordinates * right);
+  return Multivector<
+      quantities::Product<LeftScalar, quantities::Quantity<DRight>>,
+      Frame, Rank>(left.coordinates * right);
 }
 
 template<typename LeftScalar, typename DRight, typename Frame,
@@ -155,7 +159,9 @@ inline Multivector<
     Frame, Rank>
 operator/(Multivector<LeftScalar, Frame, Rank> const& left,
           quantities::Quantity<DRight> const& right) {
-  return Multivector<T, Frame, Rank>(left.coordinates / right);
+  return Multivector<
+      quantities::Quotient<LeftScalar, quantities::Quantity<DRight>>,
+      Frame, Rank>(left.coordinates / right);
 }
 
 template<typename Scalar, typename Frame, unsigned int Rank>
