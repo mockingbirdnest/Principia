@@ -83,4 +83,4 @@ quantities::Product<Left, Right> Dot(R3Element<Left> const& left,
 }  // namespace geometry
 }  // namespace principia
 
-#include "R3Element-body.hpp"
+#include "Geometry/R3Element-body.hpp"
