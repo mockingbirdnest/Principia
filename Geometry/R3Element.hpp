@@ -12,10 +12,11 @@ namespace geometry {
 template<typename Scalar>
 struct R3Element {
  public:
+  R3Element() = default;
   R3Element(Scalar const& x, Scalar const& y, Scalar const& z);
 
-  Scalar&       operator[] (int const index);
-  Scalar const& operator[] (int const index) const;
+  Scalar&       operator[](int const index);
+  Scalar const& operator[](int const index) const;
 
   Scalar x;
   Scalar y;

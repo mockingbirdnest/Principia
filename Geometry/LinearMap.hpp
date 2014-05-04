@@ -2,21 +2,21 @@
 
 #include "Grassmann.hpp"
 
-namespace Principia {
-namespace Geometry {
+namespace principia {
+namespace geometry {
 
 template<typename Scalar, 
          typename FromFrame,
          typename ToFrame,
          unsigned int Rank>
 class LinearMap {
-  public:
-    LinearMap() {}
-    virtual ~LinearMap() {}
+ public:
+  LinearMap() = default;
+  virtual ~LinearMap() = default;
 
-    virtual Multivector<Scalar, ToFrame, Rank> ActOn(
-        Multivector<Scalar, FromFrame, Rank> multivector) = 0;
+  virtual Multivector<Scalar, ToFrame, Rank> ActOn(
+      Multivector<Scalar, FromFrame, Rank> const& multivector) = 0;
 };
 
-}  // namespace Geometry
-}  // namespace Principia
+}  // namespace geometry
+}  // namespace principia

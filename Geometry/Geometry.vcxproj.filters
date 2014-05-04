@@ -39,9 +39,6 @@
     <ClInclude Include="Sign.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Permutation-body.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="Permutation.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -49,6 +46,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Sign-body.hpp">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Permutation-body.hpp">
       <Filter>Source Files</Filter>
     </ClInclude>
   </ItemGroup>

@@ -22,11 +22,18 @@ template<typename ValueType, typename ErrorType>
 void AssertEqualWithin(ValueType const& left,
                        ValueType const& right,
                        ErrorType const& ε);
+template<typename ValueType>
+void AssertEqual(ValueType const& left,
+                 ValueType const& right);
 
 template<typename ValueType, typename ErrorType>
 void AssertNotEqualWithin(ValueType const& left,
                           ValueType const& right,
                           ErrorType const& ε);
+template<typename ValueType>
+void AssertNotEqual(ValueType const& left,
+                    ValueType const& right);
+
 
 }  // namespace test_utilities
 }  // namespace principia

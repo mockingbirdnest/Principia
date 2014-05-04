@@ -72,7 +72,7 @@ template<typename D>
 class Quantity {
  public:
   typedef typename D Dimensions;
-  Quantity() = default;
+  Quantity();
   template<int Exponent>
   Exponentiation<Quantity<D>, Exponent> Pow() const;
  private:

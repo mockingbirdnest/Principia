@@ -90,6 +90,7 @@
     <ClInclude Include="targetver.hpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="PermutationTests.cpp" />
     <ClCompile Include="R3ElementTests.cpp" />
     <ClCompile Include="SignTests.cpp" />
     <ClCompile Include="stdafx.cpp">
