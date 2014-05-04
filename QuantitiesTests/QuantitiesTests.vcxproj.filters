@@ -13,21 +13,24 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
+    <Filter Include="Properties">
+      <UniqueIdentifier>{82f6ae86-39ca-4fdb-b20c-62785ecd1314}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="stdafx.hpp">
-      <Filter>Header Files</Filter>
+      <Filter>Properties</Filter>
     </ClInclude>
     <ClInclude Include="targetver.hpp">
-      <Filter>Header Files</Filter>
+      <Filter>Properties</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="stdafx.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="QuantitiesTests.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="stdafx.cpp">
+      <Filter>Properties</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

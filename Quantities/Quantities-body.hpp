@@ -1,7 +1,7 @@
 #pragma once
 
-namespace Principia {
-namespace Quantities {
+namespace principia {
+namespace quantities {
 
 template<int LengthExponent, int MassExponent, int TimeExponent,
          int CurrentExponent, int TemperatureExponent, int AmountExponent,
@@ -22,7 +22,7 @@ struct Dimensions {
   };
 };
 
-namespace TypeGenerators {
+namespace type_generators {
 template<typename Q>
 struct Collapse { typedef Q ResultType; };
 template<>
@@ -119,8 +119,8 @@ template<typename Q, int Exponent>
 struct PowerGenerator<Q, Exponent, Range<(Exponent == 1)>>{
   typedef Q ResultType;
 };
-}  // namespace TypeGenerators
-namespace Factories {
+}  // namespace type_generators
+namespace factories {
 inline Length Metres(Dimensionless const& number) { return Length(number); }
 inline Mass Kilograms(Dimensionless const& number) { return Mass(number); }
 inline Time Seconds(Dimensionless const& number) { return Time(number); }
@@ -137,7 +137,7 @@ inline Angle Radians(Dimensionless const& number) { return Angle(number); }
 inline SolidAngle Steradians(Dimensionless const& number) {
   return SolidAngle(number);
 }
-}  // namespace Factories
+}  // namespace factories
 template<typename D>
 template<int Exponent>
 Exponentiation<Quantity<D>, Exponent> Quantity<D>::Pow() const {
@@ -276,5 +276,5 @@ inline std::wstring ToString(Quantity<D> const& quantity,
     (D::SolidAngle        != 0 ? L" sr^" + std::to_wstring(D::SolidAngle)
                                : L"");
 }
-}  // namespace Quantities
-}  // namespace Principia
+}  // namespace quantities
+}  // namespace principia

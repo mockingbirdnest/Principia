@@ -1,11 +1,11 @@
 ﻿#pragma once
 
-#include "SI.hpp"
+#include "Quantities/SI.hpp"
 
-namespace Principia {
-namespace Quantities {
+namespace principia {
+namespace quantities {
 
-namespace TypeGenerators {
+namespace type_generators {
 template<typename Q>
 struct SquareRootGenerator<
     Q, Condition<! (Q::Dimensions::Length & 1 ||
@@ -34,7 +34,7 @@ typedef Quantity<
     Dimensions<Length, Mass, Time, Current, Temperature, Amount,
                LuminousIntensity, Winding, Angle, SolidAngle>> ResultType;
 };
-}  // namespace TypeGenerators
+}  // namespace type_generators
 
 
 
@@ -55,23 +55,23 @@ inline Dimensionless Exp(Dimensionless const& x) {
 }
 
 inline Dimensionless Sin(Angle const& α) {
-  return std::sin((α / SI::Radian).Value());
+  return std::sin((α / si::Radian).Value());
 }
 inline Dimensionless Cos(Angle const& α) {
-  return std::cos((α / SI::Radian).Value());
+  return std::cos((α / si::Radian).Value());
 }
 inline Dimensionless Tan(Angle const& α) {
-  return std::tan((α / SI::Radian).Value());
+  return std::tan((α / si::Radian).Value());
 }
 
 inline Angle ArcSin(Dimensionless const& x) {
-  return std::asin(x.Value()) * SI::Radian;
+  return std::asin(x.Value()) * si::Radian;
 }
 inline Angle ArcCos(Dimensionless const& x) {
-  return std::acos(x.Value()) * SI::Radian;
+  return std::acos(x.Value()) * si::Radian;
 }
 inline Angle ArcTan(Dimensionless const& y, Dimensionless const& x) {
-  return std::atan2(y.Value(), x.Value()) * SI::Radian;
+  return std::atan2(y.Value(), x.Value()) * si::Radian;
 }
 template<typename D>
 inline Angle ArcTan(Quantity<D> const& y, Quantity<D> const& x) {
@@ -79,23 +79,23 @@ inline Angle ArcTan(Quantity<D> const& y, Quantity<D> const& x) {
 }
 
 inline Dimensionless Sinh(Angle const& α) {
-  return std::sinh((α / SI::Radian).Value());
+  return std::sinh((α / si::Radian).Value());
 }
 inline Dimensionless Cosh(Angle const& α) {
-  return std::cosh((α / SI::Radian).Value());
+  return std::cosh((α / si::Radian).Value());
 }
 inline Dimensionless Tanh(Angle const& α) {
-  return std::tanh((α / SI::Radian).Value());
+  return std::tanh((α / si::Radian).Value());
 }
 
 inline Angle ArcSinh(Dimensionless const& x) {
-  return std::asinh(x.Value()) * SI::Radian;
+  return std::asinh(x.Value()) * si::Radian;
 }
 inline Angle ArcCosh(Dimensionless const& x) {
-  return std::acosh(x.Value()) * SI::Radian;
+  return std::acosh(x.Value()) * si::Radian;
 }
 inline Angle ArcTanh(Dimensionless const& x) {
-  return std::atanh(x.Value()) * SI::Radian;
+  return std::atanh(x.Value()) * si::Radian;
 }
 
 template<typename D>
@@ -103,5 +103,5 @@ inline SquareRoot<Quantity<D>> Sqrt(Quantity<D> const& x) {
   return SquareRoot<Quantity<D>>(Sqrt(x.magnitude_));
 }
 
-}  // namespace Quantities
-}  // namespace Principia
+}  // namespace quantities
+}  // namespace principia

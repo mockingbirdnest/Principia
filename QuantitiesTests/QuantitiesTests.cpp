@@ -1,33 +1,30 @@
 ﻿#include "stdafx.hpp"
-#include "CppUnitTest.h"
 
-#include "..\TestUtilities\TestUtilities.hpp"
-#include "..\TestUtilities\QuantityComparisons.hpp"
-#include "..\TestUtilities\Algebra.hpp"
-
-#include "..\Quantities\Quantities.hpp"
-#include "..\Quantities\NamedQuantities.hpp"
-#include "..\Quantities\SI.hpp"
-#include "..\Quantities\UK.hpp"
-#include "..\Quantities\CGS.hpp"
-#include "..\Quantities\Constants.hpp"
-#include "..\Quantities\Astronomy.hpp"
-#include "..\Quantities\ElementaryFunctions.hpp"
+#include <CppUnitTest.h>
 #include <stdio.h>
 
+#include "Quantities/Astronomy.hpp"
+#include "Quantities/BIPM.hpp"
+#include "Quantities/Constants.hpp"
+#include "Quantities/Dimensionless.hpp"
+#include "Quantities/ElementaryFunctions.hpp"
+#include "Quantities/Quantities.hpp"
+#include "Quantities/SI.hpp"
+#include "Quantities/UK.hpp"
+#include "TestUtilities/Algebra.hpp"
+#include "TestUtilities/GeometryComparisons.hpp"
+#include "TestUtilities/QuantityComparisons.hpp"
+#include "TestUtilities/TestUtilities.hpp"
+
+namespace principia {
+namespace quantities {
+
+using namespace astronomy;
+using namespace constants;
 using namespace Microsoft::VisualStudio::CppUnitTestFramework;
-
-using namespace Principia::TestUtilities;
-
-using namespace Principia;
-using namespace Principia::Quantities;
-using namespace Principia::Constants;
-using namespace Principia::SI;
-using namespace Principia::Astronomy;
-using namespace Principia::UK;
-using namespace Principia::CGS;
-
-namespace QuantitiesTests {
+using namespace si;
+using namespace test_utilities;
+using namespace uk;
 
 TEST_CLASS(QuantitiesTests) {
  public:
@@ -164,4 +161,6 @@ TEST_CLASS(QuantitiesTests) {
     AssertEqual(Exp(Log(Rood / Foot.Pow<2>()) / 2) * Foot, Sqrt(Rood));
   }
 };
-}  // namespace QuantitiesTests
+
+}  // namespace quantities
+}  // namespace principia
