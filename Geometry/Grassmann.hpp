@@ -6,6 +6,10 @@
 
 namespace principia {
 namespace geometry {
+// A multivector of rank Rank on a three-dimensional real inner product space
+// bearing the dimensionality of Scalar.
+// Do not use this type for Rank = 0 (scalar), use the Scalar type directly
+// instead.
 template<typename Scalar, typename Frame, unsigned int Rank>
 struct Multivector;
 
@@ -107,18 +111,26 @@ Multivector<Scalar, Frame, Rank> operator/(
     Multivector<Scalar, Frame, Rank> const& left,
     quantities::Dimensionless const& right);
 
-template<typename T, typename U, typename Frame, unsigned int Rank>
-Multivector<quantities::Product<U, T> , Frame,
-            Rank> operator*(U const& left,
-                            Multivector<T, Frame, Rank> const& right);
-template<typename T, typename U, typename Frame, unsigned int Rank>
-Multivector<quantities::Product<T, U>, Frame,
-            Rank> operator*(Multivector<T, Frame, Rank> const& left,
-                            quantities::Dimensionless const& right);
-template<typename T, typename U, typename Frame, unsigned int Rank>
-Multivector<quantities::Quotient<T, U>, Frame,
-            Rank> operator/(Multivector<T, Frame, Rank> const& left,
-                            quantities::Dimensionless const& right);
+template<typename DLeft, typename RightScalar, typename Frame,
+         unsigned int Rank>
+Multivector<quantities::Product<quantities::Quantity<DLeft>, RightScalar>,
+            Frame, Rank>
+operator*(quantities::Quantity<DLeft> const& left,
+          Multivector<RightScalar, Frame, Rank> const& right);
+
+template<typename LeftScalar, typename DRight, typename Frame,
+         unsigned int Rank>
+Multivector<quantities::Product<LeftScalar, quantities::Quantity<DRight>>,
+            Frame, Rank>
+operator*(Multivector<LeftScalar, Frame, Rank> const& left,
+          quantities::Quantity<DRight> const& right);
+
+template<typename LeftScalar, typename DRight, typename Frame,
+         unsigned int Rank>
+Multivector<quantities::Quotient<LeftScalar, quantities::Quantity<DRight>>,
+            Frame, Rank>
+operator/(Multivector<LeftScalar, Frame, Rank> const& left,
+           quantities::Quantity<DRight> const& right);
 
 template<typename T, typename Frame, unsigned int Rank>
 void operator+=(Multivector<T, Frame, Rank>& left,
