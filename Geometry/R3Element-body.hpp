@@ -110,19 +110,20 @@ inline void operator/=(R3Element<Scalar>& left,
   left = left / right;
 }
 
-template<typename Left, typename Right>
-inline R3Element<quantities::Product<Left, Right>> Cross(
-    R3Element<Left> const& left,
-    R3Element<Right> const& right) {
-  return R3Element<quantities::Product<Left, Right>>(
+template<typename LeftScalar, typename RightScalar>
+inline R3Element<quantities::Product<LeftScalar, RightScalar>> Cross(
+    R3Element<LeftScalar> const& left,
+    R3Element<RightScalar> const& right) {
+  return R3Element<quantities::Product<LeftScalar, RightScalar>>(
       left.y * right.z - left.z * right.y,
       left.z * right.x - left.x * right.z,
       left.x * right.y - left.y * right.x);
 }
 
-template<typename Left, typename Right>
-inline quantities::Product<Left, Right> Dot(R3Element<Left> const& left,
-                                            R3Element<Right> const& right) {
+template<typename LeftScalar, typename RightScalar>
+inline quantities::Product<LeftScalar, RightScalar> Dot(
+    R3Element<LeftScalar> const& left,
+    R3Element<RightScalar> const& right) {
   return left.x * right.x + left.y * right.y + left.z * right.z;
 }
 
