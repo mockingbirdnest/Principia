@@ -71,14 +71,15 @@ template<typename Scalar>
 void operator/=(R3Element<Scalar>& left,
                 quantities::Dimensionless const& right);
 
-template<typename Left, typename Right>
-R3Element<quantities::Product<Left, Right>> Cross(
-    R3Element<Left> const& left,
-    R3Element<Right> const& right);
+template<typename LeftScalar, typename RightScalar>
+R3Element<quantities::Product<LeftScalar, RightScalar>> Cross(
+    R3Element<LeftScalar> const& left,
+    R3Element<RightScalar> const& right);
 
-template<typename Left, typename Right>
-quantities::Product<Left, Right> Dot(R3Element<Left> const& left,
-                                     R3Element<Right> const& right);
+template<typename LeftScalar, typename RightScalar>
+quantities::Product<LeftScalar, RightScalar> Dot(
+    R3Element<LeftScalar> const& left,
+    R3Element<RightScalar> const& right);
 
 }  // namespace geometry
 }  // namespace principia
