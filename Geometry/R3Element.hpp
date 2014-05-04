@@ -44,17 +44,20 @@ template<typename Scalar>
 R3Element<Scalar> operator/(R3Element<Scalar> const& left,
                             quantities::Dimensionless const& right);
 
-template<typename DLeft, typename Right>
-R3Element<quantities::Product<quantities::Quantity<DLeft>, Right>> operator*(
+template<typename DLeft, typename RightScalar>
+R3Element<quantities::Product<quantities::Quantity<DLeft>,
+                              RightScalar>> operator*(
     quantities::Quantity<DLeft> const& left,
-    R3Element<Right> const& right);
-template<typename Left, typename DRight>
-R3Element<quantities::Product<Left, quantities::Quantity<DRight>>> operator*(
-    R3Element<Left> const& left,
+    R3Element<RightScalar> const& right);
+template<typename LeftScalar, typename DRight>
+R3Element<quantities::Product<LeftScalar,
+                              quantities::Quantity<DRight>>> operator*(
+    R3Element<LeftScalar> const& left,
     quantities::Quantity<DRight> const& right);
-template<typename Left, typename DRight>
-R3Element<quantities::Quotient<Left, quantities::Quantity<DRight>>> operator/(
-    R3Element<Left> const& left,
+template<typename LeftScalar, typename DRight>
+R3Element<quantities::Quotient<LeftScalar,
+                               quantities::Quantity<DRight>>> operator/(
+    R3Element<LeftScalar> const& left,
     quantities::Quantity<DRight> const& right);
 
 template<typename Scalar>

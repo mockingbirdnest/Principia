@@ -67,22 +67,24 @@ inline R3Element<quantities::Product<quantities::Quantity<DLeft>,
       left * right. y,
       left * right.z);
 }
-template<typename Left, typename DRight>
-inline R3Element<quantities::Product<Left,
+template<typename LeftScalar, typename DRight>
+inline R3Element<quantities::Product<LeftScalar,
                                      quantities::Quantity<DRight>>> operator*(
-    R3Element<Left> const& left,
+    R3Element<LeftScalar> const& left,
     quantities::Quantity<DRight> const& right) {
-  return R3Element<quantities::Product<Left, quantities::Quantity<DRight>>>(
+  return R3Element<quantities::Product<LeftScalar,
+                                       quantities::Quantity<DRight>>>(
       left.x * right,
       left.y * right,
       left.z * right);
 }
-template<typename Left, typename DRight>
-inline R3Element<quantities::Quotient<Left,
+template<typename LeftScalar, typename DRight>
+inline R3Element<quantities::Quotient<LeftScalar,
                                       quantities::Quantity<DRight>>> operator/(
-    R3Element<Left> const& left,
+    R3Element<LeftScalar> const& left,
     quantities::Quantity<DRight> const& right) {
-  return R3Element<quantities::Quotient<Left, quantities::Quantity<DRight>>>(
+  return R3Element<quantities::Quotient<LeftScalar,
+                                        quantities::Quantity<DRight>>>(
       left.x / right,
       left.y / right,
       left.z / right);
