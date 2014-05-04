@@ -137,7 +137,7 @@ template<typename LeftScalar, typename DRight, typename Frame,
 Multivector<quantities::Quotient<LeftScalar, quantities::Quantity<DRight>>,
             Frame, Rank>
 operator/(Multivector<LeftScalar, Frame, Rank> const& left,
-           quantities::Quantity<DRight> const& right);
+          quantities::Quantity<DRight> const& right);
 
 template<typename Scalar, typename Frame, unsigned int Rank>
 void operator+=(Multivector<Scalar, Frame, Rank>& left,
