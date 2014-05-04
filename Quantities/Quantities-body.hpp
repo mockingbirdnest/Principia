@@ -261,20 +261,21 @@ template<typename D>
 inline std::wstring ToString(Quantity<D> const& quantity,
                              unsigned char const precision) {
   return ToString(quantity.magnitude_, precision) +
-    (D::Length            != 0 ? L" m^" + std::to_wstring(D::Length) : L"") +
-    (D::Mass              != 0 ? L" kg^" + std::to_wstring(D::Mass) : L"") +
-    (D::Time              != 0 ? L" s^" + std::to_wstring(D::Time) : L"") +
-    (D::Current           != 0 ? L" A^" + std::to_wstring(D::Current) : L"") +
-    (D::Temperature       != 0 ? L" K^" + std::to_wstring(D::Temperature)
-                               : L"") +
-    (D::Amount            != 0 ? L" mol^" + std::to_wstring(D::Amount) : L"") +
-    (D::LuminousIntensity != 0 ? L" cd^" + std::to_wstring(D::LuminousIntensity)
-                               : L"") +
-    (D::Winding           != 0 ? L" cycle^" + std::to_wstring(D::Winding)
-                               : L"") +
-    (D::Angle             != 0 ? L" rad^" + std::to_wstring(D::Angle) : L"") +
-    (D::SolidAngle        != 0 ? L" sr^" + std::to_wstring(D::SolidAngle)
-                               : L"");
-}
-}  // namespace quantities
-}  // namespace principia
+      (D::Length            != 0 ? L" m^" + std::to_wstring(D::Length) : L"") +
+      (D::Mass              != 0 ? L" kg^" + std::to_wstring(D::Mass) : L"") +
+      (D::Time              != 0 ? L" s^" + std::to_wstring(D::Time) : L"") +
+      (D::Current           != 0 ? L" A^" + std::to_wstring(D::Current) : L"") +
+      (D::Temperature       != 0 ?
+          L" K^" + std::to_wstring(D::Temperature) : L"") +
+      (D::Amount            != 0 ?
+          L" mol^" + std::to_wstring(D::Amount) : L"") +
+      (D::LuminousIntensity != 0 ?
+          L" cd^" + std::to_wstring(D::LuminousIntensity) : L"") +
+      (D::Winding           != 0 ?
+          L" cycle^" + std::to_wstring(D::Winding) : L"") +
+      (D::Angle             != 0 ? L" rad^" + std::to_wstring(D::Angle) : L"") +
+      (D::SolidAngle        != 0 ?
+          L" sr^" + std::to_wstring(D::SolidAngle) : L"");
+  }
+  }  // namespace quantities
+  }  // namespace principia

@@ -37,4 +37,4 @@ Angle ArcTanh(Dimensionless const& x);
 }  // namespace quantities
 }  // namespace principia
 
-#include "ElementaryFunctions-body.hpp"
+#include "Quantities/ElementaryFunctions-body.hpp"
