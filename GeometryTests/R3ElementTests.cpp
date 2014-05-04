@@ -1,7 +1,6 @@
 ﻿#include "stdafx.hpp"
 
 #include <CppUnitTest.h>
-#include <functional>
 
 #include "Geometry/Grassmann.hpp"
 #include "Geometry/R3Element.hpp"

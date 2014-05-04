@@ -1,7 +1,6 @@
 ﻿#include "stdafx.hpp"
 
 #include <CppUnitTest.h>
-#include <functional>
 
 #include "Geometry/Grassmann.hpp"
 #include "Geometry/R3Element.hpp"
@@ -52,19 +51,16 @@ TEST_CLASS(GrassmannTests) {
     R3Element<Length> w(2 * Metre, 2 * Metre, 2 * Metre);
     R3Element<Length> a(1 * Inch, 2 * Foot, 3 * admiralty::Fathom);
     {
-      std::function<Area(Vector<Length, World>,
-                         Vector<Length, World>)> vectorInnerProduct =
-      [](Vector<Length, World> a, Vector<Length, World> b) {
+      auto vectorInnerProduct = [](Vector<Length, World> a,
+                                   Vector<Length, World> b) {
         return InnerProduct(a, b);
       };
-      std::function<Area(Bivector<Length, World>,
-                         Bivector<Length, World>)> bivectorInnerProduct =
-      [](Bivector<Length, World> a, Bivector<Length, World> b) {
+      auto bivectorInnerProduct = [](Bivector<Length, World> a,
+                                     Bivector<Length, World> b) {
         return InnerProduct(a, b);
       };
-      std::function<Area(Trivector<Length, World>,
-                         Trivector<Length, World>)> trivectorInnerProduct =
-      [](Trivector<Length, World> a, Trivector<Length, World> b) {
+      auto trivectorInnerProduct = [](Trivector<Length, World> a,
+                                      Trivector<Length, World> b) {
         return InnerProduct(a, b);
       };
       TestInnerProductSpace(vectorInnerProduct,
@@ -91,22 +87,16 @@ TEST_CLASS(GrassmannTests) {
                             -Sqrt(2));
     }
     {
-      std::function<Dimensionless(Vector<Dimensionless, World>,
-                                  Vector<Dimensionless, World>)>
-      vectorInnerProduct = [](Vector<Dimensionless, World> a,
-                              Vector<Dimensionless, World> b) {
+      auto vectorInnerProduct = [](Vector<Dimensionless, World> a,
+                                   Vector<Dimensionless, World> b) {
         return InnerProduct(a, b);
       };
-      std::function<Dimensionless(Bivector<Dimensionless, World>,
-                                  Bivector<Dimensionless, World>)>
-      bivectorInnerProduct = [](Bivector<Dimensionless, World> a,
-                                Bivector<Dimensionless, World> b) {
+      auto bivectorInnerProduct = [](Bivector<Dimensionless, World> a,
+                                     Bivector<Dimensionless, World> b) {
         return InnerProduct(a, b);
       };
-      std::function<Dimensionless(Trivector<Dimensionless, World>,
-                                  Trivector<Dimensionless, World>)>
-      trivectorInnerProduct = [](Trivector<Dimensionless, World> a,
-                                 Trivector<Dimensionless, World> b) {
+      auto trivectorInnerProduct = [](Trivector<Dimensionless, World> a,
+                                      Trivector<Dimensionless, World> b) {
         return InnerProduct(a, b);
       };
       TestInnerProductSpace(vectorInnerProduct,
@@ -144,10 +134,8 @@ TEST_CLASS(GrassmannTests) {
     R3Element<Dimensionless> v(-π, -e, -1);
     R3Element<Dimensionless> w(2, 2, 2);
     R3Element<Dimensionless> a(1.2, 2.3, 3.4);
-    std::function<Bivector<Dimensionless,
-                           World>(Vector<Dimensionless, World>,
-                                  Vector<Dimensionless, World>)> vectorWedge =
-      [](Vector<Dimensionless, World> a, Vector<Dimensionless, World> b) {
+    auto vectorWedge = [](Vector<Dimensionless, World> a,
+                          Vector<Dimensionless, World> b) {
         return Wedge(a, b);
       };
     TestAlternatingBilinearMap(vectorWedge, Vector<Dimensionless, World>(u),
