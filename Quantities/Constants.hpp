@@ -15,7 +15,8 @@ quantities::Permittivity const VacuumPermittivity =
 // We use the 2010 CODATA recommended values. We do not support uncertainties.
 quantities::AngularMomentum const ReducedPlanckConstant =
     1.054571726e-34 * si::Joule * si::Second / si::Radian;
-auto const GravitationalConstant =
+quantities::Quotient<quantities::GravitationalParameter,
+                     quantities::Mass> const GravitationalConstant =
     6.67384e-11 * si::Newton * si::Metre.Pow<2>() / si::Kilogram.Pow<2>();
 quantities::Entropy const BoltzmannConstant =
     1.3806488e-23 * (si::Joule / si::Kelvin);
