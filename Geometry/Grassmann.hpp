@@ -6,6 +6,7 @@
 
 namespace principia {
 namespace geometry {
+
 // A multivector of rank Rank on a three-dimensional real inner product space
 // bearing the dimensionality of Scalar.
 // Do not use this type for Rank = 0 (scalar), use the Scalar type directly

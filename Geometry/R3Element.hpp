@@ -5,6 +5,7 @@
 
 namespace principia {
 namespace geometry {
+
 // R3Element is an element of a 3-dimensional dimensionful vector space on the
 // field R, represented by Dimensionless. It is the underlying data type for
 // the more advanced strongly typed structures of the Grassmann algebras and
