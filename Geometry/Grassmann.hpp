@@ -16,19 +16,19 @@ struct Multivector;
 
 template<typename Scalar, typename Frame>
 struct Multivector<Scalar, Frame, 1> {
-  Multivector(R3Element<Scalar> coordinates) : coordinates(coordinates) {};
+  explicit Multivector(R3Element<Scalar> const& coordinates);
   R3Element<Scalar> coordinates;
 };
 
 template<typename Scalar, typename Frame>
 struct Multivector<Scalar, Frame, 2> {
-  Multivector(R3Element<Scalar> coordinates) : coordinates(coordinates) {};
+  explicit Multivector(R3Element<Scalar> const& coordinates);
   R3Element<Scalar> coordinates;
 };
 
 template<typename Scalar, typename Frame>
 struct Multivector<Scalar, Frame, 3> {
-  Multivector(Scalar coordinates) : coordinates(coordinates) {};
+  explicit Multivector(Scalar const& coordinates);
   Scalar coordinates;
 };
 

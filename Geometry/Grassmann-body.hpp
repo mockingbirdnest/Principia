@@ -3,6 +3,18 @@
 namespace principia {
 namespace geometry {
 
+template<typename Scalar, typename Frame>
+Multivector<Scalar, Frame, 1>::Multivector(R3Element<Scalar> const& coordinates)
+    : coordinates(coordinates) {};
+
+template<typename Scalar, typename Frame>
+Multivector<Scalar, Frame, 2>::Multivector(R3Element<Scalar> const& coordinates)
+    : coordinates(coordinates) {};
+
+template<typename Scalar, typename Frame>
+Multivector<Scalar, Frame, 3>::Multivector(Scalar const& coordinates)
+    : coordinates(coordinates) {};
+
 template<typename LeftScalar, typename RightScalar, typename Frame>
 inline quantities::Product<LeftScalar, RightScalar> InnerProduct(
     Vector<LeftScalar, Frame> const& left,
