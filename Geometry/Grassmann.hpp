@@ -17,18 +17,24 @@ struct Multivector;
 template<typename Scalar, typename Frame>
 struct Multivector<Scalar, Frame, 1> {
   explicit Multivector(R3Element<Scalar> const& coordinates);
+  ~Multivector() = default;
+
   R3Element<Scalar> coordinates;
 };
 
 template<typename Scalar, typename Frame>
 struct Multivector<Scalar, Frame, 2> {
   explicit Multivector(R3Element<Scalar> const& coordinates);
+  ~Multivector() = default;
+
   R3Element<Scalar> coordinates;
 };
 
 template<typename Scalar, typename Frame>
 struct Multivector<Scalar, Frame, 3> {
   explicit Multivector(Scalar const& coordinates);
+  ~Multivector() = default;
+
   Scalar coordinates;
 };
 
@@ -133,17 +139,17 @@ Multivector<quantities::Quotient<LeftScalar, quantities::Quantity<DRight>>,
 operator/(Multivector<LeftScalar, Frame, Rank> const& left,
            quantities::Quantity<DRight> const& right);
 
-template<typename T, typename Frame, unsigned int Rank>
-void operator+=(Multivector<T, Frame, Rank>& left,
-                Multivector<T, Frame, Rank> const& right);
-template<typename T, typename Frame, unsigned int Rank>
-void operator-=(Multivector<T, Frame, Rank>& left,
-                Multivector<T, Frame, Rank> const& right);
-template<typename T, typename Frame, unsigned int Rank>
-void operator*=(Multivector<T, Frame, Rank>& left,
+template<typename Scalar, typename Frame, unsigned int Rank>
+void operator+=(Multivector<Scalar, Frame, Rank>& left,
+                Multivector<Scalar, Frame, Rank> const& right);
+template<typename Scalar, typename Frame, unsigned int Rank>
+void operator-=(Multivector<Scalar, Frame, Rank>& left,
+                Multivector<Scalar, Frame, Rank> const& right);
+template<typename Scalar, typename Frame, unsigned int Rank>
+void operator*=(Multivector<Scalar, Frame, Rank>& left,
                 quantities::Dimensionless const& right);
-template<typename T, typename Frame, unsigned int Rank>
-void operator/=(Multivector<T, Frame, Rank>& left,
+template<typename Scalar, typename Frame, unsigned int Rank>
+void operator/=(Multivector<Scalar, Frame, Rank>& left,
                 quantities::Dimensionless const& right);
 
 }  // namespace geometry
