@@ -21,12 +21,14 @@ inline quantities::Product<LeftScalar, RightScalar> InnerProduct(
     Vector<RightScalar, Frame> const& right) {
   return Dot(left.coordinates, right.coordinates);
 }
+
 template<typename LeftScalar, typename RightScalar, typename Frame>
 inline quantities::Product<LeftScalar, RightScalar> InnerProduct(
     Bivector<LeftScalar, Frame> const& left,
     Bivector<RightScalar, Frame> const& right) {
   return Dot(left.coordinates, right.coordinates);
 }
+
 template<typename LeftScalar, typename RightScalar, typename Frame>
 inline quantities::Product<LeftScalar, RightScalar> InnerProduct(
     Trivector<LeftScalar, Frame> const& left,
@@ -41,6 +43,7 @@ inline Bivector<quantities::Product<LeftScalar, RightScalar>,
   return Bivector<quantities::Product<LeftScalar, RightScalar>,
                    Frame>(Cross(left.coordinates, right.coordinates));
 }
+
 template<typename LeftScalar, typename RightScalar, typename Frame>
 inline Trivector<quantities::Product<LeftScalar, RightScalar>,
                  Frame> Wedge(Bivector<LeftScalar, Frame> const& left,
@@ -48,6 +51,7 @@ inline Trivector<quantities::Product<LeftScalar, RightScalar>,
   return Trivector<quantities::Product<LeftScalar, RightScalar>,
                    Frame>(Dot(left.coordinates, right.coordinates));
 }
+
 template<typename LeftScalar, typename RightScalar, typename Frame>
 inline Trivector<quantities::Product<LeftScalar, RightScalar>,
                  Frame> Wedge(Vector<LeftScalar, Frame> const& left,
@@ -56,7 +60,6 @@ inline Trivector<quantities::Product<LeftScalar, RightScalar>,
                    Frame>(Dot(left.coordinates, right.coordinates));
 }
 
-// Lie bracket on V ^ V = so(V).
 template<typename LeftScalar, typename RightScalar, typename Frame>
 inline Bivector<quantities::Product<LeftScalar, RightScalar>,
                 Frame> Commutator(Bivector<LeftScalar, Frame> const& left,
@@ -65,7 +68,6 @@ inline Bivector<quantities::Product<LeftScalar, RightScalar>,
                   Frame>(Cross(left.coordinates, right.coordinates));
 }
 
-// Left action of V ^ V = so(V) on V.
 template<typename LeftScalar, typename RightScalar, typename Frame>
 inline Vector<quantities::Product<LeftScalar, RightScalar>,
               Frame> operator*(Bivector<LeftScalar, Frame> const& left,
@@ -74,7 +76,6 @@ inline Vector<quantities::Product<LeftScalar, RightScalar>,
                 Frame>(Cross(left.coordinates, right.coordinates));
 }
 
-// Right action of V ^ V = so(V) on V* = V.
 template<typename LeftScalar, typename RightScalar, typename Frame>
 inline Vector<quantities::Product<LeftScalar, RightScalar>,
               Frame> operator*(Vector<LeftScalar, Frame> const& left,
@@ -88,6 +89,7 @@ inline Multivector<Scalar, Frame, Rank> operator+(
     Multivector<Scalar, Frame, Rank> const& right) {
   return Multivector<Scalar, Frame, Rank>(+right.coordinates);
 }
+
 template<typename Scalar, typename Frame, unsigned int Rank>
 inline Multivector<Scalar, Frame, Rank> operator-(
     Multivector<Scalar, Frame, Rank> const& right) {
@@ -100,6 +102,7 @@ inline Multivector<Scalar, Frame, Rank> operator+(
     Multivector<Scalar, Frame, Rank> const& right) {
   return Multivector<Scalar, Frame, Rank>(left.coordinates + right.coordinates);
 }
+
 template<typename Scalar, typename Frame, unsigned int Rank>
 inline Multivector<Scalar, Frame, Rank> operator-(
     Multivector<Scalar, Frame, Rank> const& left,
@@ -169,16 +172,19 @@ inline void operator+=(Multivector<Scalar, Frame, Rank>& left,
                        Multivector<Scalar, Frame, Rank> const& right) {
   left.coordinates += right.coordinates;
 }
+
 template<typename Scalar, typename Frame, unsigned int Rank>
 inline void operator-=(Multivector<Scalar, Frame, Rank>& left,
                        Multivector<Scalar, Frame, Rank> const& right) {
   left.coordinates -= right.coordinates;
 }
+
 template<typename Scalar, typename Frame, unsigned int Rank>
 inline void operator*=(Multivector<Scalar, Frame, Rank>& left,
                        quantities::Dimensionless const& right) {
   left.coordinates *= right;
 }
+
 template<typename Scalar, typename Frame, unsigned int Rank>
 inline void operator/=(Multivector<Scalar, Frame, Rank>& left,
                        quantities::Dimensionless const& right) {
