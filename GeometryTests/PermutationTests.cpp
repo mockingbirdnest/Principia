@@ -18,7 +18,7 @@ using namespace test_utilities;
 
 TEST_CLASS(PermutationTests) {
   struct World;
-  typedef Permutation<quantities::Length, World, World, 2> P;
+  typedef Permutation<quantities::Length, World, World> P;
  public:
   TEST_METHOD_INITIALIZE(Initialize) {
     vector_.reset(new Vector<quantities::Length, World>(

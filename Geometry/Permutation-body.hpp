@@ -9,38 +9,37 @@
 namespace principia {
 namespace geometry {
 
-template<typename Scalar, 
-         typename FromFrame,
-         typename ToFrame,
-         unsigned int Rank>
-Permutation<Scalar, FromFrame, ToFrame, Rank>::Permutation(
+template<typename Scalar, typename FromFrame, typename ToFrame>
+Permutation<Scalar, FromFrame, ToFrame>::Permutation(
     CoordinatePermutation const coordinate_permutation)
     : coordinate_permutation_(coordinate_permutation) {}
 
-template<typename Scalar, 
-         typename FromFrame,
-         typename ToFrame,
-         unsigned int Rank>
-Multivector<Scalar, ToFrame, Rank> 
-Permutation<Scalar, FromFrame, ToFrame, Rank>::ActOn(
-    Multivector<Scalar, FromFrame, Rank> const& right) {
-  return right;  //TODO(phl):Wrong!
+template<typename Scalar, typename FromFrame, typename ToFrame>
+Vector<Scalar, ToFrame> Permutation<Scalar, FromFrame, ToFrame>::ActOn(
+    Vector<Scalar, FromFrame> const& vector) const {
+  return *this * vector.coordinates;
 }
 
-template<typename Scalar, 
-         typename FromFrame,
-         typename ToFrame,
-         unsigned int Rank>
-Sign Permutation<Scalar, FromFrame, ToFrame, Rank>::Determinant() const {
+template<typename Scalar, typename FromFrame, typename ToFrame>
+Bivector<Scalar, ToFrame> Permutation<Scalar, FromFrame, ToFrame>::ActOn(
+    Bivector<Scalar, FromFrame> const& bivector) const {
+  return Determinant() * (*this * bivector.coordinates);
+}
+
+template<typename Scalar, typename FromFrame, typename ToFrame>
+Trivector<Scalar, ToFrame> Permutation<Scalar, FromFrame, ToFrame>::ActOn(
+    Trivector<Scalar, FromFrame> const& trivector) const {
+  return Determinant() * trivector.coordinates;
+}
+
+template<typename Scalar, typename FromFrame, typename ToFrame>
+Sign Permutation<Scalar, FromFrame, ToFrame>::Determinant() const {
   return Sign(coordinate_permutation_);
 }
 
-/*template<typename Scalar, 
-         typename FromFrame,
-         typename ToFrame,
-         unsigned int Rank>
-OrthogonalTransformation<Scalar, FromFrame, ToFrame, Rank> 
-Permutation<Scalar, FromFrame, ToFrame, Rank>::Forget() const {
+/*template<typename Scalar, typename FromFrame, typename ToFrame>
+OrthogonalTransformation<Scalar, FromFrame, ToFrame> 
+Permutation<Scalar, FromFrame, ToFrame>::Forget() const {
   static const quantities::Dimentionless SqrtHalf(quantities::Dimentionless::Sqrt(quantities::Dimensionless(0.5)));
   static const R3Element<quantities::Dimensionless>[] = {
       R3Element<quantities::Dimensionless>(quantities::Dimensionless(0), 
@@ -59,28 +58,22 @@ Permutation<Scalar, FromFrame, ToFrame, Rank>::Forget() const {
       Dimensionless(0),
       Dimensionless(0)};
   const int i = 0x7 & (static_cast<int>(coordinate_permutation_) >> index);
-  return OrthogonalTransformation<Scalar, FromFrame, ToFrame, Rank>(
+  return OrthogonalTransformation<Scalar, FromFrame, ToFrame>(
       Determinant(),
       Rotation<A, B>(quaternionRealParts[i], quaternionImaginaryParts[i]));
 }*/
 
-template<typename Scalar, 
-         typename FromFrame,
-         typename ToFrame,
-         unsigned int Rank>  
-Permutation<Scalar, FromFrame, ToFrame, Rank>
-Permutation<Scalar, FromFrame, ToFrame, Rank>::Identity() {
+template<typename Scalar, typename FromFrame, typename ToFrame>
+Permutation<Scalar, FromFrame, ToFrame>
+Permutation<Scalar, FromFrame, ToFrame>::Identity() {
   return Permutation(XYZ);
 }
 
-template<typename Scalar, 
-         typename FromFrame,
-         typename ToFrame,
-         unsigned int Rank>
+template<typename Scalar, typename FromFrame, typename ToFrame>
 R3Element<Scalar> operator*(
-    Permutation<Scalar, FromFrame, ToFrame, Rank> const& left,
+    Permutation<Scalar, FromFrame, ToFrame> const& left,
     R3Element<Scalar> const& right) {
-  typedef Permutation<Scalar, FromFrame, ToFrame, Rank> P;
+  typedef Permutation<Scalar, FromFrame, ToFrame> P;
   R3Element<Scalar> result;
   for (int coordinate = P::x; coordinate <= P::z; ++coordinate) {
     result[coordinate] = right[

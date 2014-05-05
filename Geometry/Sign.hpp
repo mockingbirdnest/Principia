@@ -16,9 +16,14 @@ class Sign {
  private:
   bool const negative_;
   friend Sign operator*(Sign const& left, Sign const& right);
+  template<typename Scalar>
+  friend Scalar operator*(Sign const& left, Scalar const& right);
 };
 
 inline Sign operator*(Sign const& left, Sign const& right);
+
+template<typename Scalar>
+Scalar operator*(Sign const& left, Scalar const& right);
 
 }  // namespace geometry
 }  // namespace principia

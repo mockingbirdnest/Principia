@@ -11,11 +11,8 @@ namespace geometry {
 // A permutation of the coordinates. Obviously not coordinate-free, but
 // practical.  There are no precision losses when composing or applying
 // permutations.
-template<typename Scalar, 
-         typename FromFrame,
-         typename ToFrame,
-         unsigned int Rank>
-class Permutation : public LinearMap<Scalar, FromFrame, ToFrame, Rank> {
+template<typename Scalar, typename FromFrame, typename ToFrame>
+class Permutation : public LinearMap<Scalar, FromFrame, ToFrame> {
   // These constants are used in the definition of type CoordinatePermutation.
   // The sign bit gives the sign of the permutation.
   static const int even = 0, odd = 0x80000000;
@@ -38,8 +35,12 @@ class Permutation : public LinearMap<Scalar, FromFrame, ToFrame, Rank> {
   Permutation(CoordinatePermutation const coordinate_permutation);
   virtual ~Permutation() = default;
 
-  Multivector<Scalar, ToFrame, Rank> ActOn(
-      Multivector<Scalar, FromFrame, Rank> const& multivector) override;
+  Vector<Scalar, ToFrame> ActOn(
+      Vector<Scalar, FromFrame> const& vector) const override;
+  Bivector<Scalar, ToFrame> ActOn(
+      Bivector<Scalar, FromFrame> const& bivector) const override;
+  Trivector<Scalar, ToFrame> ActOn(
+      Trivector<Scalar, FromFrame> const& trivector) const override;
 
   Sign Determinant() const;
 
@@ -50,21 +51,15 @@ class Permutation : public LinearMap<Scalar, FromFrame, ToFrame, Rank> {
  private:
   CoordinatePermutation const coordinate_permutation_;
 
-  template<typename Scalar, 
-           typename FromFrame,
-           typename ToFrame,
-           unsigned int Rank>
+  template<typename Scalar, typename FromFrame, typename ToFrame>
   friend R3Element<Scalar> operator*(
-      Permutation<Scalar, FromFrame, ToFrame, Rank> const& left,
+      Permutation<Scalar, FromFrame, ToFrame> const& left,
       R3Element<Scalar> const& right);
 };
 
-template<typename Scalar, 
-         typename FromFrame,
-         typename ToFrame,
-         unsigned int Rank>
+template<typename Scalar, typename FromFrame, typename ToFrame>
 R3Element<Scalar> operator*(
-    Permutation<Scalar, FromFrame, ToFrame, Rank> const& left,
+    Permutation<Scalar, FromFrame, ToFrame> const& left,
     R3Element<Scalar> const& right);
 
 }  // namespace geometry

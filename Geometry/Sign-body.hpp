@@ -18,5 +18,10 @@ Sign operator*(Sign const& left, Sign const& right) {
   return Sign(left.negative_ == right.negative_ ? 1 : -1);
 }
 
+template<typename Scalar>
+Scalar operator*(Sign const& left, Scalar const& right) {
+  return left.negative_ ? -right : right;
+}
+
 }  // namespace geometry
 }  // namespace principia
