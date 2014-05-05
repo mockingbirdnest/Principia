@@ -22,8 +22,9 @@ class Sign {
 
 inline Sign operator*(Sign const& left, Sign const& right);
 
-template<typename Scalar>
-Scalar operator*(Sign const& left, Scalar const& right);
+// This operator is applicable to any type that has a unary minus operator.
+template<typename T>
+T operator*(Sign const& left, T const& right);
 
 }  // namespace geometry
 }  // namespace principia
