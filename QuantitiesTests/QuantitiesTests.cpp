@@ -93,18 +93,18 @@ TEST_CLASS(QuantitiesTests) {
     // The Keplerian approximation for the mass of the Sun
     // is fairly accurate.
     AssertEqual(4 * π.Pow<2>() * AstronomicalUnit.Pow<3>() /
-                 (GravitationalConstant * JulianYear.Pow<2>()),
-               SolarMass, 1e-4);
+                    (GravitationalConstant * JulianYear.Pow<2>()),
+                SolarMass, 1e-4);
     AssertEqual(1 * Parsec, 3.26156 * LightYear, 1e-5);
     // The Keplerian approximation for the mass of the Earth
     // is pretty bad, but the error is still only 1%.
     AssertEqual(4 * π.Pow<2>() * LunarDistance.Pow<3>() /
-                (GravitationalConstant * (27.321582 * Day).Pow<2>()),
+                    (GravitationalConstant * (27.321582 * Day).Pow<2>()),
                 EarthMass, 1e-2);
     AssertEqual(1 * SolarMass, 1047 * JupiterMass, 1e-3);
     // Delambre & Méchain.
     AssertEqual(GravitationalConstant * EarthMass /
-                  (40 * Mega(Metre) / (2 * π)).Pow<2>(),
+                    (40 * Mega(Metre) / (2 * π)).Pow<2>(),
                 StandardGravity, 1e-2);
     // Talleyrand.
     AssertEqual(π * Sqrt(1 * Metre / StandardGravity),

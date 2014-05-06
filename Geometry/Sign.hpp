@@ -10,15 +10,15 @@ class Sign {
   template<typename Scalar> explicit Sign(Scalar const& s);
   ~Sign() = default;
 
-  inline bool Negative() const;
-  inline bool Positive() const;
+  bool Negative() const;
+  bool Positive() const;
 
  private:
   bool const negative_;
   friend Sign operator*(Sign const& left, Sign const& right);
 };
 
-inline Sign operator*(Sign const& left, Sign const& right);
+Sign operator*(Sign const& left, Sign const& right);
 
 }  // namespace geometry
 }  // namespace principia
