@@ -29,8 +29,8 @@ quantities::Acceleration const Gal = Centimetre / Second.Pow<2>();
 
 quantities::MagneticFluxDensity const Gauss   = 1e-4 * si::Tesla;
 quantities::MagneticFlux        const Maxwell = Gauss * Centimetre.Pow<2>();
-quantities::MagneticField       const Œrsted  = 1e3 / (4 * π * si::Steradian) *
-                                                si::Ampere / si::Metre;
+quantities::MagneticField       const Œrsted  =
+    1e3 / (4 * π * si::Steradian) * si::Ampere / si::Metre;
 
 quantities::SpectroscopicWavenumber const Kayser = si::Cycle / Centimetre;
 }  // namespace cgs

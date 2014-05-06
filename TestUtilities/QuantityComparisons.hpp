@@ -34,4 +34,4 @@ void AssertNotEqual(quantities::Dimensionless const& left,
 }  // namespace test_utilities
 }  // namespace principia
 
-#include "QuantityComparisons-body.hpp"
+#include "TestUtilities/QuantityComparisons-body.hpp"

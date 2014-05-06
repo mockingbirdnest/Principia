@@ -153,4 +153,4 @@ inline void operator/=(Quantity<D>&, Dimensionless const&);
 }  // namespace quantities
 }  // namespace principia
 
-#include "Quantities-body.hpp"
+#include "Quantities/Quantities-body.hpp"
