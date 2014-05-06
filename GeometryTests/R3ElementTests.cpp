@@ -66,7 +66,7 @@ TEST_CLASS(R3ElementTests) {
                     v_, Dimensionless(42));
     TestBilinearMap(right_time_multiplication, w_, a_, -1 * Day,
                     1 * Parsec / SpeedOfLight, Dimensionless(-π));
-    Time t = -3 * Second;
+    Time const t = -3 * Second;
     AssertEqual(t * u_, u_ * t);
     AssertEqual((u_ * t) / t, u_);
   }
