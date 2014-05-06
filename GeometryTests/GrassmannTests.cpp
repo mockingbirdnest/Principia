@@ -76,7 +76,7 @@ TEST_CLASS(GrassmannTests) {
                           Bivector<Length, World>(w_),
                           Bivector<Length, World>(a_),
                           Dimensionless(0), Dimensionless(1), Sqrt(163),
-                         -Sqrt(2));
+                          -Sqrt(2));
     TestInnerProductSpace(MultivectorInnerProduct<Length, Length, World, 3>,
                           Trivector<Length, World>(null_displacement_.x),
                           Trivector<Length, World>(u_.y),

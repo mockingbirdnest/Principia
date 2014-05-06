@@ -35,51 +35,51 @@ TEST_CLASS(PermutationTests) {
   }
 
   TEST_METHOD(XYZ) {
-    Vector<quantities::Length, World> const permuted = 
+    R3Element<quantities::Length> const permuted = 
         P(P::XYZ) * vector_->coordinates;
-    AssertEqual(1.0 * Metre, permuted.coordinates.x);
-    AssertEqual(2.0 * Metre, permuted.coordinates.y);
-    AssertEqual(3.0 * Metre, permuted.coordinates.z);
+    AssertEqual(1.0 * Metre, permuted.x);
+    AssertEqual(2.0 * Metre, permuted.y);
+    AssertEqual(3.0 * Metre, permuted.z);
   }
 
   TEST_METHOD(YZX) {
-    Vector<quantities::Length, World> const permuted = 
+    R3Element<quantities::Length> const permuted = 
         P(P::YZX) * vector_->coordinates;
-    AssertEqual(2.0 * Metre, permuted.coordinates.x);
-    AssertEqual(3.0 * Metre, permuted.coordinates.y);
-    AssertEqual(1.0 * Metre, permuted.coordinates.z);
+    AssertEqual(2.0 * Metre, permuted.x);
+    AssertEqual(3.0 * Metre, permuted.y);
+    AssertEqual(1.0 * Metre, permuted.z);
   }
 
   TEST_METHOD(ZXY) {
-    Vector<quantities::Length, World> const permuted = 
+    R3Element<quantities::Length> const permuted = 
         P(P::ZXY) * vector_->coordinates;
-    AssertEqual(3.0 * Metre, permuted.coordinates.x);
-    AssertEqual(1.0 * Metre, permuted.coordinates.y);
-    AssertEqual(2.0 * Metre, permuted.coordinates.z);
+    AssertEqual(3.0 * Metre, permuted.x);
+    AssertEqual(1.0 * Metre, permuted.y);
+    AssertEqual(2.0 * Metre, permuted.z);
   }
 
   TEST_METHOD(XZY) {
-    Vector<quantities::Length, World> const permuted = 
+    R3Element<quantities::Length> const permuted = 
         P(P::XZY) * vector_->coordinates;
-    AssertEqual(1.0 * Metre, permuted.coordinates.x);
-    AssertEqual(3.0 * Metre, permuted.coordinates.y);
-    AssertEqual(2.0 * Metre, permuted.coordinates.z);
+    AssertEqual(1.0 * Metre, permuted.x);
+    AssertEqual(3.0 * Metre, permuted.y);
+    AssertEqual(2.0 * Metre, permuted.z);
   }
 
   TEST_METHOD(ZYX) {
-    Vector<quantities::Length, World> const permuted = 
+    R3Element<quantities::Length> const permuted = 
         P(P::ZYX) * vector_->coordinates;
-    AssertEqual(3.0 * Metre, permuted.coordinates.x);
-    AssertEqual(2.0 * Metre, permuted.coordinates.y);
-    AssertEqual(1.0 * Metre, permuted.coordinates.z);
+    AssertEqual(3.0 * Metre, permuted.x);
+    AssertEqual(2.0 * Metre, permuted.y);
+    AssertEqual(1.0 * Metre, permuted.z);
   }
 
   TEST_METHOD(YXZ) {
-    Vector<quantities::Length, World> const permuted = 
+    R3Element<quantities::Length> const permuted = 
         P(P::YXZ) * vector_->coordinates;
-    AssertEqual(2.0 * Metre, permuted.coordinates.x);
-    AssertEqual(1.0 * Metre, permuted.coordinates.y);
-    AssertEqual(3.0 * Metre, permuted.coordinates.z);
+    AssertEqual(2.0 * Metre, permuted.x);
+    AssertEqual(1.0 * Metre, permuted.y);
+    AssertEqual(3.0 * Metre, permuted.z);
   }
 
   TEST_METHOD(Determinant) {

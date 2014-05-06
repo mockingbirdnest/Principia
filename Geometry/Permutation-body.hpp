@@ -17,19 +17,20 @@ Permutation<Scalar, FromFrame, ToFrame>::Permutation(
 template<typename Scalar, typename FromFrame, typename ToFrame>
 Vector<Scalar, ToFrame> Permutation<Scalar, FromFrame, ToFrame>::operator()(
     Vector<Scalar, FromFrame> const& vector) const {
-  return *this * vector.coordinates;
+  return Vector<Scalar, ToFrame>(*this * vector.coordinates);
 }
 
 template<typename Scalar, typename FromFrame, typename ToFrame>
 Bivector<Scalar, ToFrame> Permutation<Scalar, FromFrame, ToFrame>::operator()(
     Bivector<Scalar, FromFrame> const& bivector) const {
-  return Determinant() * (*this * bivector.coordinates);
+  return Bivector<Scalar, ToFrame>(
+      Determinant() * (*this * bivector.coordinates));
 }
 
 template<typename Scalar, typename FromFrame, typename ToFrame>
 Trivector<Scalar, ToFrame> Permutation<Scalar, FromFrame, ToFrame>::operator()(
     Trivector<Scalar, FromFrame> const& trivector) const {
-  return Determinant() * trivector.coordinates;
+  return Trivector<Scalar, ToFrame>(Determinant() * trivector.coordinates);
 }
 
 template<typename Scalar, typename FromFrame, typename ToFrame>
