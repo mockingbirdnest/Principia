@@ -19,6 +19,8 @@ typedef Quotient<AngularFrequency, Time>      AngularAcceleration;
 typedef Quotient<Action, Angle>               AngularMomentum;
 typedef Quotient<AngularMomentum, Time>       Torque;
 typedef Quotient<Torque, AngularAcceleration> MomentOfInertia;
+
+typedef Product<Length, Product<Speed, Speed>> GravitationalParameter;
 #pragma endregion
 #pragma region Thermodynamics
 typedef Product<Length, Length>       Area;

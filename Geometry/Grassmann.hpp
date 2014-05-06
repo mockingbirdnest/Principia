@@ -155,4 +155,4 @@ void operator/=(Multivector<Scalar, Frame, Rank>& left,
 }  // namespace geometry
 }  // namespace principia
 
-#include "Grassmann-body.hpp"
+#include "Geometry/Grassmann-body.hpp"

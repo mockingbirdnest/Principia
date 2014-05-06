@@ -14,20 +14,15 @@ void TestEquality(T const& low, T const& high) {
   AssertTrue(high != low, L"high != low was false.");
   AssertTrue(low != high, L"low != high was false.");
 
-  LogLine(L"> True comparisons passed!");
-
-  AssertTrue(!(high == low), L"high == low was true.");
-  AssertTrue(!(low == high), L"low == high was true.");
-  AssertTrue(!(low != low), L"low != low was true.");
-  AssertTrue(!(high != high), L"high != high was true.");
-
-  LogLine(L"> False comparisons passed!");
+  AssertFalse(high == low, L"high == low was true.");
+  AssertFalse(low == high, L"low == high was true.");
+  AssertFalse(low != low, L"low != low was true.");
+  AssertFalse(high != high, L"high != high was true.");
 }
 
 template<typename T>
 void TestOrder(T const& low, T const& high) {
   TestEquality(low, high);
-
   LogLine(L"Testing ordering of " + ToString(low) + L" < " +
           ToString(high) + L"...");
   AssertTrue(high > low, L"high > low was false.");
@@ -39,18 +34,14 @@ void TestOrder(T const& low, T const& high) {
   AssertTrue(high >= low, L"high >= low was false.");
   AssertTrue(low <= high, L"low <= high was false.");
 
-  LogLine(L"> True comparisons passed!");
-
-  AssertTrue(!(low > low), L"low > low was true.");
-  AssertTrue(!(low < low), L"low < low was true.");
-  AssertTrue(!(high > high), L"high > high was true.");
-  AssertTrue(!(high < high), L"high < high was true.");
-  AssertTrue(!(low > high), L"low > high was true.");
-  AssertTrue(!(high < low), L"high < low was true.");
-  AssertTrue(!(low >= high), L"low >= high was true.");
-  AssertTrue(!(high <= low), L"high <= low was true.");
-
-  LogLine(L"> False comparisons passed!");
+  AssertFalse(low > low, L"low > low was true.");
+  AssertFalse(low < low, L"low < low was true.");
+  AssertFalse(high > high, L"high > high was true.");
+  AssertFalse(high < high, L"high < high was true.");
+  AssertFalse(low > high, L"low > high was true.");
+  AssertFalse(high < low, L"high < low was true.");
+  AssertFalse(low >= high, L"low >= high was true.");
+  AssertFalse(high <= low, L"high <= low was true.");
 }
 
 template<typename T>
