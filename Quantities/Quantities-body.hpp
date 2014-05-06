@@ -259,7 +259,7 @@ inline Quantity<D> Abs(Quantity<D> const& quantity) {
   return Quantity<D>(Abs(quantity.magnitude_));
 }
 
-inline std::wstring FormatUnit(std::wstring name, int const exponent) {
+inline std::wstring FormatUnit(std::wstring const& name, int const exponent) {
   switch(exponent) {
     case 0:
       return L"";
