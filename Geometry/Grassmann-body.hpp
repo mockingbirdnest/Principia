@@ -37,51 +37,51 @@ inline quantities::Product<LScalar, RScalar> InnerProduct(
 }
 
 template<typename LScalar, typename RScalar, typename Frame>
-inline Bivector<quantities::Product<LScalar, RScalar>,
-                Frame> Wedge(Vector<LScalar, Frame> const& left,
-                             Vector<RScalar, Frame> const& right) {
+inline Bivector<quantities::Product<LScalar, RScalar>, Frame> Wedge(
+    Vector<LScalar, Frame> const& left,
+    Vector<RScalar, Frame> const& right) {
   return Bivector<quantities::Product<LScalar, RScalar>,
                    Frame>(Cross(left.coordinates, right.coordinates));
 }
 
 template<typename LScalar, typename RScalar, typename Frame>
-inline Trivector<quantities::Product<LScalar, RScalar>,
-                 Frame> Wedge(Bivector<LScalar, Frame> const& left,
-                              Vector<RScalar, Frame> const& right) {
-  return Trivector<quantities::Product<LScalar, RScalar>,
-                   Frame>(Dot(left.coordinates, right.coordinates));
+inline Trivector<quantities::Product<LScalar, RScalar>, Frame> Wedge(
+    Bivector<LScalar, Frame> const& left,
+    Vector<RScalar, Frame> const& right) {
+  return Trivector<quantities::Product<LScalar, RScalar>, Frame>(
+      Dot(left.coordinates, right.coordinates));
 }
 
 template<typename LScalar, typename RScalar, typename Frame>
-inline Trivector<quantities::Product<LScalar, RScalar>,
-                 Frame> Wedge(Vector<LScalar, Frame> const& left,
-                              Bivector<RScalar, Frame> const& right) {
-  return Trivector<quantities::Product<LScalar, RScalar>,
-                   Frame>(Dot(left.coordinates, right.coordinates));
+inline Trivector<quantities::Product<LScalar, RScalar>, Frame> Wedge(
+    Vector<LScalar, Frame> const& left,
+    Bivector<RScalar, Frame> const& right) {
+  return Trivector<quantities::Product<LScalar, RScalar>, Frame>(
+      Dot(left.coordinates, right.coordinates));
 }
 
 template<typename LScalar, typename RScalar, typename Frame>
-inline Bivector<quantities::Product<LScalar, RScalar>,
-                Frame> Commutator(Bivector<LScalar, Frame> const& left,
-                                  Bivector<RScalar, Frame> const& right) {
-  return Bivector<quantities::Product<LScalar, RScalar>,
-                  Frame>(Cross(left.coordinates, right.coordinates));
+inline Bivector<quantities::Product<LScalar, RScalar>, Frame> Commutator(
+    Bivector<LScalar, Frame> const& left,
+    Bivector<RScalar, Frame> const& right) {
+  return Bivector<quantities::Product<LScalar, RScalar>, Frame>(
+      Cross(left.coordinates, right.coordinates));
 }
 
 template<typename LScalar, typename RScalar, typename Frame>
-inline Vector<quantities::Product<LScalar, RScalar>,
-              Frame> operator*(Bivector<LScalar, Frame> const& left,
-                               Vector<RScalar, Frame> const& right) {
-  return Vector<quantities::Product<LScalar, RScalar>,
-                Frame>(Cross(left.coordinates, right.coordinates));
+inline Vector<quantities::Product<LScalar, RScalar>, Frame> operator*(
+    Bivector<LScalar, Frame> const& left,
+    Vector<RScalar, Frame> const& right) {
+  return Vector<quantities::Product<LScalar, RScalar>, Frame>(
+      Cross(left.coordinates, right.coordinates));
 }
 
 template<typename LScalar, typename RScalar, typename Frame>
-inline Vector<quantities::Product<LScalar, RScalar>,
-              Frame> operator*(Vector<LScalar, Frame> const& left,
-                               Bivector<RScalar, Frame> const& right) {
-  return Vector<quantities::Product<LScalar, RScalar>,
-                Frame>(Cross(left.coordinates, right.coordinates));
+inline Vector<quantities::Product<LScalar, RScalar>, Frame> operator*(
+    Vector<LScalar, Frame> const& left,
+    Bivector<RScalar, Frame> const& right) {
+  return Vector<quantities::Product<LScalar, RScalar>, Frame>(
+      Cross(left.coordinates, right.coordinates));
 }
 
 template<typename Scalar, typename Frame, unsigned int Rank>
@@ -135,7 +135,8 @@ template<typename LDimension, typename RScalar, typename Frame,
          unsigned int Rank>
 inline Multivector<
     quantities::Product<quantities::Quantity<LDimension>, RScalar>,
-    Frame, Rank>
+    Frame,
+    Rank>
 operator*(quantities::Quantity<LDimension> const& left,
           Multivector<RScalar, Frame, Rank> const& right) {
   return Multivector<
@@ -148,7 +149,8 @@ template<typename LScalar, typename RDimension, typename Frame,
          unsigned int Rank>
 inline Multivector<
     quantities::Product<LScalar, quantities::Quantity<RDimension>>,
-    Frame, Rank>
+    Frame,
+    Rank>
 operator*(Multivector<LScalar, Frame, Rank> const& left,
           quantities::Quantity<RDimension> const& right) {
   return Multivector<
@@ -161,7 +163,8 @@ template<typename LScalar, typename RDimension, typename Frame,
          unsigned int Rank>
 inline Multivector<
     quantities::Quotient<LScalar, quantities::Quantity<RDimension>>,
-    Frame, Rank>
+    Frame,
+    Rank>
 operator/(Multivector<LScalar, Frame, Rank> const& left,
           quantities::Quantity<RDimension> const& right) {
   return Multivector<
