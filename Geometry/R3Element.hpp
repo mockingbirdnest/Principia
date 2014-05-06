@@ -44,21 +44,18 @@ template<typename Scalar>
 R3Element<Scalar> operator/(R3Element<Scalar> const& left,
                             quantities::Dimensionless const& right);
 
-template<typename DLeft, typename RightScalar>
-R3Element<quantities::Product<quantities::Quantity<DLeft>,
-                              RightScalar>> operator*(
-    quantities::Quantity<DLeft> const& left,
-    R3Element<RightScalar> const& right);
-template<typename LeftScalar, typename DRight>
-R3Element<quantities::Product<LeftScalar,
-                              quantities::Quantity<DRight>>> operator*(
-    R3Element<LeftScalar> const& left,
-    quantities::Quantity<DRight> const& right);
-template<typename LeftScalar, typename DRight>
-R3Element<quantities::Quotient<LeftScalar,
-                               quantities::Quantity<DRight>>> operator/(
-    R3Element<LeftScalar> const& left,
-    quantities::Quantity<DRight> const& right);
+template<typename LDimension, typename RScalar>
+R3Element<quantities::Product<quantities::Quantity<LDimension>, RScalar>>
+operator*(quantities::Quantity<LDimension> const& left,
+          R3Element<RScalar> const& right);
+template<typename LScalar, typename RDimension>
+R3Element<quantities::Product<LScalar, quantities::Quantity<RDimension>>>
+operator*(R3Element<LScalar> const& left,
+          quantities::Quantity<RDimension> const& right);
+template<typename LScalar, typename RDimension>
+R3Element<quantities::Quotient<LScalar, quantities::Quantity<RDimension>>>
+operator/(R3Element<LScalar> const& left,
+          quantities::Quantity<RDimension> const& right);
 
 template<typename Scalar>
 void operator+=(R3Element<Scalar>& left,
@@ -74,15 +71,14 @@ template<typename Scalar>
 void operator/=(R3Element<Scalar>& left,
                 quantities::Dimensionless const& right);
 
-template<typename LeftScalar, typename RightScalar>
-R3Element<quantities::Product<LeftScalar, RightScalar>> Cross(
-    R3Element<LeftScalar> const& left,
-    R3Element<RightScalar> const& right);
+template<typename LScalar, typename RScalar>
+R3Element<quantities::Product<LScalar, RScalar>> Cross(
+    R3Element<LScalar> const& left,
+    R3Element<RScalar> const& right);
 
-template<typename LeftScalar, typename RightScalar>
-quantities::Product<LeftScalar, RightScalar> Dot(
-    R3Element<LeftScalar> const& left,
-    R3Element<RightScalar> const& right);
+template<typename LScalar, typename RScalar>
+quantities::Product<LScalar, RScalar> Dot(R3Element<LScalar> const& left,
+                                          R3Element<RScalar> const& right);
 
 }  // namespace geometry
 }  // namespace principia
