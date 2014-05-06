@@ -57,4 +57,4 @@ void TestField(T const& zero, T const& one, T const& a, T const& b,
 }  // namespace test_utilities
 }  // namespace principia
 
-#include "Algebra-body.hpp"
+#include "TestUtilities/Algebra-body.hpp"

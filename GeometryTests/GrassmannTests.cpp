@@ -33,121 +33,97 @@ using namespace uk;
 TEST_CLASS(GrassmannTests) {
  public:
   struct World;
+  R3Element<Length> const null_displacement_ =
+      R3Element<Length>(0 * Metre, 0 * Metre, 0 * Metre);
+  R3Element<Length> const u_ =
+      R3Element<Length>(3 * Metre, -42 * Metre, 0 * Metre);
+  R3Element<Length> const v_ =
+      R3Element<Length>(-π * Metre, -e * Metre, -1 * Metre);
+  R3Element<Length> const w_ =
+      R3Element<Length>(2 * Metre, 2 * Metre, 2 * Metre);
+  R3Element<Length> const a_ =
+      R3Element<Length>(1 * Inch, 2 * Foot, 3 * admiralty::Fathom);
+
+  template<typename LScalar, typename RScalar, typename Frame, int Rank>
+  static Product<LScalar, RScalar> MultivectorInnerProduct(
+      Multivector<LScalar, Frame, Rank> const& left,
+      Multivector<RScalar, Frame, Rank> const& right) {
+    return InnerProduct(left, right);
+  }
+
   TEST_METHOD(SpecialOrthogonalLieAlgebra) {
-    R3Element<Dimensionless> u(3, -42, 0);
-    R3Element<Dimensionless> v(-π, -e, -1);
-    R3Element<Dimensionless> w(2, 2, 2);
-    R3Element<Dimensionless> a(1.2, 2.3, 3.4);
     TestLieBracket(Commutator<Dimensionless, Dimensionless, World>,
-                   Bivector<Dimensionless, World>(u),
-                   Bivector<Dimensionless, World>(v),
-                   Bivector<Dimensionless, World>(w),
-                   Bivector<Dimensionless, World>(a), Dimensionless(0.42));
+                   Bivector<Dimensionless, World>(u_ / Foot),
+                   Bivector<Dimensionless, World>(v_ / Metre),
+                   Bivector<Dimensionless, World>(w_ / Rod),
+                   Bivector<Dimensionless, World>(a_ / Furlong),
+                   Dimensionless(0.42));
   }
 
   TEST_METHOD(VectorSpaces) {
-    R3Element<Length> nullDisplacement(0 * Metre, 0 * Metre, 0 * Metre);
-    R3Element<Length> u(3 * Metre, -42 * Metre, 0 * Metre);
-    R3Element<Length> v(-π * Metre, -e * Metre, -1 * Metre);
-    R3Element<Length> w(2 * Metre, 2 * Metre, 2 * Metre);
-    R3Element<Length> a(1 * Inch, 2 * Foot, 3 * admiralty::Fathom);
-    {
-      std::function<Area(Vector<Length, World>,
-                         Vector<Length, World>)> vectorInnerProduct =
-      [](Vector<Length, World> a, Vector<Length, World> b) {
-        return InnerProduct(a, b);
-      };
-      std::function<Area(Bivector<Length, World>,
-                         Bivector<Length, World>)> bivectorInnerProduct =
-      [](Bivector<Length, World> a, Bivector<Length, World> b) {
-        return InnerProduct(a, b);
-      };
-      std::function<Area(Trivector<Length, World>,
-                         Trivector<Length, World>)> trivectorInnerProduct =
-      [](Trivector<Length, World> a, Trivector<Length, World> b) {
-        return InnerProduct(a, b);
-      };
-      TestInnerProductSpace(vectorInnerProduct,
-                            Vector<Length, World>(nullDisplacement),
-                            Vector<Length, World>(u), Vector<Length, World>(v),
-                            Vector<Length, World>(w), Vector<Length, World>(a),
-                            Dimensionless(0), Dimensionless(1), Sqrt(163),
-                            -Sqrt(2));
-      TestInnerProductSpace(bivectorInnerProduct,
-                            Bivector<Length, World>(nullDisplacement),
-                            Bivector<Length, World>(u),
-                            Bivector<Length, World>(v),
-                            Bivector<Length, World>(w),
-                            Bivector<Length, World>(a),
-                            Dimensionless(0), Dimensionless(1), Sqrt(163),
-                            -Sqrt(2));
-      TestInnerProductSpace(trivectorInnerProduct,
-                            Trivector<Length, World>(nullDisplacement.x),
-                            Trivector<Length, World>(u.y),
-                            Trivector<Length, World>(v.z),
-                            Trivector<Length, World>(w.x),
-                            Trivector<Length, World>(a.y),
-                            Dimensionless(0), Dimensionless(1), Sqrt(163),
-                            -Sqrt(2));
+    TestInnerProductSpace(MultivectorInnerProduct<Length, Length, World, 1>,
+                          Vector<Length, World>(null_displacement_),
+                          Vector<Length, World>(u_),
+                          Vector<Length, World>(v_),
+                          Vector<Length, World>(w_),
+                          Vector<Length, World>(a_),
+                          Dimensionless(0), Dimensionless(1), Sqrt(163),
+                          -Sqrt(2));
+    TestInnerProductSpace(MultivectorInnerProduct<Length, Length, World, 2>,
+                          Bivector<Length, World>(null_displacement_),
+                          Bivector<Length, World>(u_),
+                          Bivector<Length, World>(v_),
+                          Bivector<Length, World>(w_),
+                          Bivector<Length, World>(a_),
+                          Dimensionless(0), Dimensionless(1), Sqrt(163),
+                         -Sqrt(2));
+    TestInnerProductSpace(MultivectorInnerProduct<Length, Length, World, 3>,
+                          Trivector<Length, World>(null_displacement_.x),
+                          Trivector<Length, World>(u_.y),
+                          Trivector<Length, World>(v_.z),
+                          Trivector<Length, World>(w_.x),
+                          Trivector<Length, World>(a_.y),
+                          Dimensionless(0), Dimensionless(1), Sqrt(163),
+                          -Sqrt(2));
+    TestInnerProductSpace(MultivectorInnerProduct<Dimensionless, Dimensionless,
+                                                  World, 1>,
+                          Vector<Dimensionless,
+                                 World>(null_displacement_ / Metre),
+                          Vector<Dimensionless, World>(u_ / Metre),
+                          Vector<Dimensionless, World>(v_ / Metre),
+                          Vector<Dimensionless, World>(w_ / Metre),
+                          Vector<Dimensionless, World>(a_ / Metre),
+                          Dimensionless(0), Dimensionless(1), Sqrt(163),
+                          -Sqrt(2));
+    TestInnerProductSpace(MultivectorInnerProduct<Dimensionless, Dimensionless,
+                                                  World, 2>,
+                          Bivector<Dimensionless,
+                                   World>(null_displacement_ / Metre),
+                          Bivector<Dimensionless, World>(u_ / Metre),
+                          Bivector<Dimensionless, World>(v_ / Metre),
+                          Bivector<Dimensionless, World>(w_ / Metre),
+                          Bivector<Dimensionless, World>(a_ / Metre),
+                          Dimensionless(0), Dimensionless(1), Sqrt(163),
+                          -Sqrt(2));
+    TestInnerProductSpace(MultivectorInnerProduct<Dimensionless, Dimensionless,
+                                                  World, 3>,
+                          Trivector<Dimensionless,
+                                    World>(null_displacement_.x / Metre),
+                          Trivector<Dimensionless, World>(u_.y / Metre),
+                          Trivector<Dimensionless, World>(v_.z / Metre),
+                          Trivector<Dimensionless, World>(w_.x / Metre),
+                          Trivector<Dimensionless, World>(a_.y / Metre),
+                          Dimensionless(0), Dimensionless(1), Sqrt(163),
+                          -Sqrt(2));
     }
-    {
-      std::function<Dimensionless(Vector<Dimensionless, World>,
-                                  Vector<Dimensionless, World>)>
-      vectorInnerProduct = [](Vector<Dimensionless, World> a,
-                              Vector<Dimensionless, World> b) {
-        return InnerProduct(a, b);
-      };
-      std::function<Dimensionless(Bivector<Dimensionless, World>,
-                                  Bivector<Dimensionless, World>)>
-      bivectorInnerProduct = [](Bivector<Dimensionless, World> a,
-                                Bivector<Dimensionless, World> b) {
-        return InnerProduct(a, b);
-      };
-      std::function<Dimensionless(Trivector<Dimensionless, World>,
-                                  Trivector<Dimensionless, World>)>
-      trivectorInnerProduct = [](Trivector<Dimensionless, World> a,
-                                 Trivector<Dimensionless, World> b) {
-        return InnerProduct(a, b);
-      };
-      TestInnerProductSpace(vectorInnerProduct,
-                            Vector<Dimensionless,
-                                   World>(nullDisplacement / Metre),
-                            Vector<Dimensionless, World>(u / Metre),
-                            Vector<Dimensionless, World>(v / Metre),
-                            Vector<Dimensionless, World>(w / Metre),
-                            Vector<Dimensionless, World>(a / Metre),
-                            Dimensionless(0), Dimensionless(1), Sqrt(163),
-                            -Sqrt(2));
-      TestInnerProductSpace(bivectorInnerProduct,
-                            Bivector<Dimensionless,
-                                     World>(nullDisplacement / Metre),
-                            Bivector<Dimensionless, World>(u / Metre),
-                            Bivector<Dimensionless, World>(v / Metre),
-                            Bivector<Dimensionless, World>(w / Metre),
-                            Bivector<Dimensionless, World>(a / Metre),
-                            Dimensionless(0), Dimensionless(1), Sqrt(163),
-                            -Sqrt(2));
-      TestInnerProductSpace(trivectorInnerProduct,
-                            Trivector<Dimensionless,
-                                      World>(nullDisplacement.x / Metre),
-                            Trivector<Dimensionless, World>(u.y / Metre),
-                            Trivector<Dimensionless, World>(v.z / Metre),
-                            Trivector<Dimensionless, World>(w.x / Metre),
-                            Trivector<Dimensionless, World>(a.y / Metre),
-                            Dimensionless(0), Dimensionless(1), Sqrt(163),
-                            -Sqrt(2));
-    }
-  }
 
   TEST_METHOD(GrassmannAlgebra) {
     R3Element<Dimensionless> u(3, -42, 0);
     R3Element<Dimensionless> v(-π, -e, -1);
     R3Element<Dimensionless> w(2, 2, 2);
     R3Element<Dimensionless> a(1.2, 2.3, 3.4);
-    std::function<Bivector<Dimensionless,
-                           World>(Vector<Dimensionless, World>,
-                                  Vector<Dimensionless, World>)> vectorWedge =
-      [](Vector<Dimensionless, World> a, Vector<Dimensionless, World> b) {
+    auto vectorWedge = [](Vector<Dimensionless, World> a,
+                          Vector<Dimensionless, World> b) {
         return Wedge(a, b);
       };
     TestAlternatingBilinearMap(vectorWedge, Vector<Dimensionless, World>(u),

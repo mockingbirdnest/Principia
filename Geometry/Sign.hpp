@@ -10,8 +10,8 @@ class Sign {
   template<typename Scalar> explicit Sign(Scalar const& s);
   ~Sign() = default;
 
-  inline bool Negative() const;
-  inline bool Positive() const;
+  bool Negative() const;
+  bool Positive() const;
 
  private:
   bool const negative_;
@@ -20,7 +20,7 @@ class Sign {
   friend Scalar operator*(Sign const& left, Scalar const& right);
 };
 
-inline Sign operator*(Sign const& left, Sign const& right);
+Sign operator*(Sign const& left, Sign const& right);
 
 // This operator is applicable to any type that has a unary minus operator.
 template<typename T>

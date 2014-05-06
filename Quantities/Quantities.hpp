@@ -72,7 +72,7 @@ template<typename D>
 class Quantity {
  public:
   typedef typename D Dimensions;
-  Quantity();
+  Quantity() = default;
   template<int Exponent>
   Exponentiation<Quantity<D>, Exponent> Pow() const;
  private:
@@ -153,4 +153,4 @@ inline void operator/=(Quantity<D>&, Dimensionless const&);
 }  // namespace quantities
 }  // namespace principia
 
-#include "Quantities-body.hpp"
+#include "Quantities/Quantities-body.hpp"

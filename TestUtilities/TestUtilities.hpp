@@ -38,4 +38,4 @@ void AssertNotEqual(ValueType const& left,
 }  // namespace test_utilities
 }  // namespace principia
 
-#include "TestUtilities-body.hpp"
+#include "TestUtilities/TestUtilities-body.hpp"
