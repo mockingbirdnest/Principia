@@ -45,49 +45,49 @@ using Bivector = Multivector<Scalar, Frame, 2>;
 template<typename Scalar, typename Frame>
 using Trivector = Multivector<Scalar, Frame, 3>;
 
-template<typename LeftScalar, typename RightScalar, typename Frame>
-quantities::Product<LeftScalar, RightScalar> InnerProduct(
-    Vector<LeftScalar, Frame> const& left,
-    Vector<RightScalar, Frame> const& right);
-template<typename LeftScalar, typename RightScalar, typename Frame>
-quantities::Product<LeftScalar, RightScalar> InnerProduct(
-    Bivector<LeftScalar, Frame> const& left,
-    Bivector<RightScalar, Frame> const& right);
-template<typename LeftScalar, typename RightScalar, typename Frame>
-quantities::Product<LeftScalar, RightScalar> InnerProduct(
-    Trivector<LeftScalar, Frame> const& left,
-    Trivector<RightScalar, Frame> const& right);
+template<typename LScalar, typename RScalar, typename Frame>
+quantities::Product<LScalar, RScalar> InnerProduct(
+    Vector<LScalar, Frame> const& left,
+    Vector<RScalar, Frame> const& right);
+template<typename LScalar, typename RScalar, typename Frame>
+quantities::Product<LScalar, RScalar> InnerProduct(
+    Bivector<LScalar, Frame> const& left,
+    Bivector<RScalar, Frame> const& right);
+template<typename LScalar, typename RScalar, typename Frame>
+quantities::Product<LScalar, RScalar> InnerProduct(
+    Trivector<LScalar, Frame> const& left,
+    Trivector<RScalar, Frame> const& right);
 
-template<typename LeftScalar, typename RightScalar, typename Frame>
-Bivector<quantities::Product<LeftScalar, RightScalar>,
-         Frame> Wedge(Vector<LeftScalar, Frame> const& left,
-                      Vector<RightScalar, Frame> const& right);
-template<typename LeftScalar, typename RightScalar, typename Frame>
-Trivector<quantities::Product<LeftScalar, RightScalar>,
-          Frame> Wedge(Bivector<LeftScalar, Frame> const& left,
-                       Vector<RightScalar, Frame> const& right);
-template<typename LeftScalar, typename RightScalar, typename Frame>
-Trivector<quantities::Product<LeftScalar, RightScalar>,
-          Frame> Wedge(Vector<LeftScalar, Frame> const& left,
-                       Bivector<RightScalar, Frame> const& right);
+template<typename LScalar, typename RScalar, typename Frame>
+Bivector<quantities::Product<LScalar, RScalar>, Frame> Wedge(
+    Vector<LScalar, Frame> const& left,
+    Vector<RScalar, Frame> const& right);
+template<typename LScalar, typename RScalar, typename Frame>
+Trivector<quantities::Product<LScalar, RScalar>, Frame> Wedge(
+    Bivector<LScalar, Frame> const& left,
+    Vector<RScalar, Frame> const& right);
+template<typename LScalar, typename RScalar, typename Frame>
+Trivector<quantities::Product<LScalar, RScalar>, Frame> Wedge(
+    Vector<LScalar, Frame> const& left,
+    Bivector<RScalar, Frame> const& right);
 
 // Lie bracket on V ^ V = so(V).
-template<typename LeftScalar, typename RightScalar, typename Frame>
-Bivector<quantities::Product<LeftScalar, RightScalar>,
-         Frame> Commutator(Bivector<LeftScalar, Frame> const& left,
-                           Bivector<RightScalar, Frame> const& right);
+template<typename LScalar, typename RScalar, typename Frame>
+Bivector<quantities::Product<LScalar, RScalar>, Frame> Commutator(
+    Bivector<LScalar, Frame> const& left,
+    Bivector<RScalar, Frame> const& right);
 
 // Left action of V ^ V = so(V) on V.
-template<typename LeftScalar, typename RightScalar, typename Frame>
-Vector<quantities::Product<LeftScalar, RightScalar>,
-       Frame> operator*(Bivector<LeftScalar, Frame> const& left,
-                        Vector<RightScalar, Frame> const& right);
+template<typename LScalar, typename RScalar, typename Frame>
+Vector<quantities::Product<LScalar, RScalar>, Frame> operator*(
+    Bivector<LScalar, Frame> const& left,
+    Vector<RScalar, Frame> const& right);
 
 // Right action of V ^ V = so(V) on V* = V.
-template<typename LeftScalar, typename RightScalar, typename Frame>
-Vector<quantities::Product<LeftScalar, RightScalar>,
-       Frame> operator*(Vector<LeftScalar, Frame> const& left,
-                        Bivector<RightScalar, Frame> const& right);
+template<typename LScalar, typename RScalar, typename Frame>
+Vector<quantities::Product<LScalar, RScalar>, Frame> operator*(
+    Vector<LScalar, Frame> const& left,
+    Bivector<RScalar, Frame> const& right);
 
 template<typename Scalar, typename Frame, unsigned int Rank>
 Multivector<Scalar, Frame, Rank> operator+(
@@ -118,26 +118,26 @@ Multivector<Scalar, Frame, Rank> operator/(
     Multivector<Scalar, Frame, Rank> const& left,
     quantities::Dimensionless const& right);
 
-template<typename DLeft, typename RightScalar, typename Frame,
+template<typename LDimension, typename RScalar, typename Frame,
          unsigned int Rank>
-Multivector<quantities::Product<quantities::Quantity<DLeft>, RightScalar>,
+Multivector<quantities::Product<quantities::Quantity<LDimension>, RScalar>,
             Frame, Rank>
-operator*(quantities::Quantity<DLeft> const& left,
-          Multivector<RightScalar, Frame, Rank> const& right);
+operator*(quantities::Quantity<LDimension> const& left,
+          Multivector<RScalar, Frame, Rank> const& right);
 
-template<typename LeftScalar, typename DRight, typename Frame,
+template<typename LScalar, typename RDimension, typename Frame,
          unsigned int Rank>
-Multivector<quantities::Product<LeftScalar, quantities::Quantity<DRight>>,
+Multivector<quantities::Product<LScalar, quantities::Quantity<RDimension>>,
             Frame, Rank>
-operator*(Multivector<LeftScalar, Frame, Rank> const& left,
-          quantities::Quantity<DRight> const& right);
+operator*(Multivector<LScalar, Frame, Rank> const& left,
+          quantities::Quantity<RDimension> const& right);
 
-template<typename LeftScalar, typename DRight, typename Frame,
+template<typename LScalar, typename RDimension, typename Frame,
          unsigned int Rank>
-Multivector<quantities::Quotient<LeftScalar, quantities::Quantity<DRight>>,
+Multivector<quantities::Quotient<LScalar, quantities::Quantity<RDimension>>,
             Frame, Rank>
-operator/(Multivector<LeftScalar, Frame, Rank> const& left,
-          quantities::Quantity<DRight> const& right);
+operator/(Multivector<LScalar, Frame, Rank> const& left,
+          quantities::Quantity<RDimension> const& right);
 
 template<typename Scalar, typename Frame, unsigned int Rank>
 void operator+=(Multivector<Scalar, Frame, Rank>& left,
