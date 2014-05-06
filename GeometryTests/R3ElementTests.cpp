@@ -62,8 +62,8 @@ TEST_CLASS(R3ElementTests) {
     auto right_time_multiplication = [](R3Element<Speed> left, Time right) {
       return left * right;
     };
-    TestBilinearMap(left_time_multiplication, 1 * Second, 1 * JulianYear, u_, v_,
-                    Dimensionless(42));
+    TestBilinearMap(left_time_multiplication, 1 * Second, 1 * JulianYear, u_,
+                    v_, Dimensionless(42));
     TestBilinearMap(right_time_multiplication, w_, a_, -1 * Day,
                     1 * Parsec / SpeedOfLight, Dimensionless(-π));
     Time t = -3 * Second;
