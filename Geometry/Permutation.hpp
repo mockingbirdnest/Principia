@@ -35,16 +35,17 @@ class Permutation : public LinearMap<Scalar, FromFrame, ToFrame> {
   Permutation(CoordinatePermutation const coordinate_permutation);
   virtual ~Permutation() = default;
 
-  Vector<Scalar, ToFrame> ActOn(
+  Vector<Scalar, ToFrame> operator()(
       Vector<Scalar, FromFrame> const& vector) const override;
-  Bivector<Scalar, ToFrame> ActOn(
+  Bivector<Scalar, ToFrame> operator()(
       Bivector<Scalar, FromFrame> const& bivector) const override;
-  Trivector<Scalar, ToFrame> ActOn(
+  Trivector<Scalar, ToFrame> operator()(
       Trivector<Scalar, FromFrame> const& trivector) const override;
 
   Sign Determinant() const;
 
-  //OrthogonalTransformation<Scalar, FromFrame, ToFrame, Rank> Forget() const;
+  // TODO(phl): Uncomment once orthogonal transformations are done.
+  // OrthogonalTransformation<Scalar, FromFrame, ToFrame> Forget() const;
 
   static Permutation Identity();
 

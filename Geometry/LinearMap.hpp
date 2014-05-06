@@ -11,11 +11,11 @@ class LinearMap {
   LinearMap() = default;
   virtual ~LinearMap() = default;
 
-  virtual Vector<Scalar, ToFrame> ActOn(
+  virtual Vector<Scalar, ToFrame> operator()(
       Vector<Scalar, FromFrame> const& vector) const = 0;
-  virtual Bivector<Scalar, ToFrame> ActOn(
+  virtual Bivector<Scalar, ToFrame> operator()(
       Bivector<Scalar, FromFrame> const& bivector) const = 0;
-  virtual Trivector<Scalar, ToFrame> ActOn(
+  virtual Trivector<Scalar, ToFrame> operator()(
       Trivector<Scalar, FromFrame> const& trivector) const = 0;
 };
 

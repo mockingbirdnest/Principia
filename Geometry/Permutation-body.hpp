@@ -15,19 +15,19 @@ Permutation<Scalar, FromFrame, ToFrame>::Permutation(
     : coordinate_permutation_(coordinate_permutation) {}
 
 template<typename Scalar, typename FromFrame, typename ToFrame>
-Vector<Scalar, ToFrame> Permutation<Scalar, FromFrame, ToFrame>::ActOn(
+Vector<Scalar, ToFrame> Permutation<Scalar, FromFrame, ToFrame>::operator()(
     Vector<Scalar, FromFrame> const& vector) const {
   return *this * vector.coordinates;
 }
 
 template<typename Scalar, typename FromFrame, typename ToFrame>
-Bivector<Scalar, ToFrame> Permutation<Scalar, FromFrame, ToFrame>::ActOn(
+Bivector<Scalar, ToFrame> Permutation<Scalar, FromFrame, ToFrame>::operator()(
     Bivector<Scalar, FromFrame> const& bivector) const {
   return Determinant() * (*this * bivector.coordinates);
 }
 
 template<typename Scalar, typename FromFrame, typename ToFrame>
-Trivector<Scalar, ToFrame> Permutation<Scalar, FromFrame, ToFrame>::ActOn(
+Trivector<Scalar, ToFrame> Permutation<Scalar, FromFrame, ToFrame>::operator()(
     Trivector<Scalar, FromFrame> const& trivector) const {
   return Determinant() * trivector.coordinates;
 }
@@ -37,16 +37,20 @@ Sign Permutation<Scalar, FromFrame, ToFrame>::Determinant() const {
   return Sign(coordinate_permutation_);
 }
 
+// TODO(phl): Uncomment once orthogonal transformations are done.
 /*template<typename Scalar, typename FromFrame, typename ToFrame>
 OrthogonalTransformation<Scalar, FromFrame, ToFrame> 
 Permutation<Scalar, FromFrame, ToFrame>::Forget() const {
-  static const quantities::Dimentionless SqrtHalf(quantities::Dimentionless::Sqrt(quantities::Dimensionless(0.5)));
+  static const quantities::Dimentionless SqrtHalf(
+      quantities::Dimentionless::Sqrt(quantities::Dimensionless(0.5)));
   static const R3Element<quantities::Dimensionless>[] = {
       R3Element<quantities::Dimensionless>(quantities::Dimensionless(0), 
                                            quantities::Dimensionless(0),
                                            quantities::Dimensionless(0)),
-      R3Element<Dimensionless>(Dimensionless(0.5), Dimensionless(0.5), Dimensionless(0.5)),
-      R3Element<Dimensionless>(Dimensionless(0.5), Dimensionless(0.5), Dimensionless(0.5)),
+      R3Element<Dimensionless>(
+          Dimensionless(0.5), Dimensionless(0.5), Dimensionless(0.5)),
+      R3Element<Dimensionless>(
+          Dimensionless(0.5), Dimensionless(0.5), Dimensionless(0.5)),
       R3Element<Dimensionless>(Dimensionless(0), -SqrtHalf, SqrtHalf),
       R3Element<Dimensionless>(-SqrtHalf, SqrtHalf, Dimensionless(0)),
       R3Element<Dimensionless>(-SqrtHalf, Dimensionless(0), SqrtHalf)};
