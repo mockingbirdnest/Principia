@@ -79,11 +79,12 @@ TEST_CLASS(QuantitiesTests) {
   TEST_METHOD(Formatting) {
     auto const allTheUnits = 1 * Metre * Kilogram * Second * Ampere * Kelvin /
                              (Mole * Candela * Cycle * Radian * Steradian);
-    std::wstring const expected = std::wstring(L"1e+000 m^1 kg^1 s^1") + 
-                                  L" A^1 K^1 mol^-1 cd^-1 cycle^-1 rad^-1" +
-                                  L" sr^-1";
+    std::wstring const expected = std::wstring(L"1e+000 m kg s A K mol^-1") + 
+                                  L" cd^-1 cycle^-1 rad^-1 sr^-1";
     std::wstring const actual = ToString(allTheUnits, 0);
-    AssertTrue(actual.compare(expected) == 0);
+    AssertTrue(
+        actual.compare(expected) == 0,
+        L"expected:\n" + expected + L";\nactual:\n" + actual + L".");
     std::wstring π16 = L"3.1415926535897931e+000";
     AssertTrue(ToString(π).compare(π16) == 0);
   }

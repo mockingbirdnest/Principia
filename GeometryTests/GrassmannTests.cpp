@@ -57,7 +57,7 @@ TEST_CLASS(GrassmannTests) {
                    Bivector<Dimensionless, World>(v_ / Metre),
                    Bivector<Dimensionless, World>(w_ / Rod),
                    Bivector<Dimensionless, World>(a_ / Furlong),
-                   Dimensionless(0.42));
+                   Dimensionless(0.42), 3e-14);
   }
 
   TEST_METHOD(VectorSpaces) {

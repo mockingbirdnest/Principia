@@ -265,7 +265,7 @@ inline std::wstring FormatUnit(std::wstring const& name, int const exponent) {
       return L"";
       break;
     case 1:
-      return name;
+      return L" " + name;
     default:
       return L" " + name + L"^" + std::to_wstring(exponent);
   }
