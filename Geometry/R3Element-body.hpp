@@ -1,12 +1,46 @@
 #pragma once
 
+#include <assert.h>
+
 namespace principia {
 namespace geometry {
+
 template<typename Scalar>
 inline R3Element<Scalar>::R3Element(Scalar const& x,
                                     Scalar const& y,
                                     Scalar const& z) : x(x), y(y), z(z) {};
 
+template<typename Scalar>
+inline Scalar& R3Element<Scalar>::operator[](int const index) {
+  switch (index) {
+    case 0:
+      return x;
+    case 1:
+      return y;
+    case 2:
+      return z;
+    default:
+      // TODO(phl): Use glog?
+      assert(false);
+      return x;
+  }
+}
+
+template<typename Scalar>
+inline Scalar const& R3Element<Scalar>::operator[](int const index) const {
+  switch (index) {
+    case 0:
+      return x;
+    case 1:
+      return y;
+    case 2:
+      return z;
+    default:
+      // TODO(phl): Use glog?
+      assert(false);
+      return x;
+  }
+}
 
 template<typename Scalar>
 inline R3Element<Scalar> operator+(R3Element<Scalar> const& right) {
@@ -99,6 +133,7 @@ inline void operator+=(R3Element<Scalar>& left,
                        R3Element<Scalar> const& right) {
   left = left + right;
 }
+
 template<typename Scalar>
 inline void operator-=(R3Element<Scalar>& left,
                        R3Element<Scalar> const& right) {
@@ -110,6 +145,7 @@ inline void operator*=(R3Element<Scalar>& left,
                        quantities::Dimensionless const& right) {
   left = left * right;
 }
+
 template<typename Scalar>
 inline void operator/=(R3Element<Scalar>& left,
                        quantities::Dimensionless const& right) {
