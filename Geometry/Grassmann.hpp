@@ -20,7 +20,8 @@ class Multivector<Scalar, Frame, 1> {
   explicit Multivector(R3Element<Scalar> const& coordinates);
   ~Multivector() = default;
 
-  R3Element<Scalar> Coordinates() const;
+  R3Element<Scalar> coordinates() const;
+
  private:
   R3Element<Scalar> coordinates_;
 };
@@ -30,7 +31,8 @@ struct Multivector<Scalar, Frame, 2> {
   explicit Multivector(R3Element<Scalar> const& coordinates);
   ~Multivector() = default;
 
-  R3Element<Scalar> Coordinates() const;
+  R3Element<Scalar> coordinates() const;
+
  private:
   R3Element<Scalar> coordinates_;
 };
@@ -40,7 +42,8 @@ struct Multivector<Scalar, Frame, 3> {
   explicit Multivector(Scalar const& coordinates);
   ~Multivector() = default;
 
-  Scalar Coordinates() const;
+  Scalar coordinates() const;
+
  private:
   Scalar coordinates_;
 };
