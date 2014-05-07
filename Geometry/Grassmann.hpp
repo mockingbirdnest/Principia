@@ -15,11 +15,15 @@ template<typename Scalar, typename Frame, unsigned int Rank>
 struct Multivector;
 
 template<typename Scalar, typename Frame>
-struct Multivector<Scalar, Frame, 1> {
+class Multivector<Scalar, Frame, 1> {
+ public:
   explicit Multivector(R3Element<Scalar> const& coordinates);
   ~Multivector() = default;
 
-  R3Element<Scalar> coordinates;
+  R3Element<Scalar> coordinates() const;
+
+ private:
+  R3Element<Scalar> coordinates_;
 };
 
 template<typename Scalar, typename Frame>
@@ -27,7 +31,10 @@ struct Multivector<Scalar, Frame, 2> {
   explicit Multivector(R3Element<Scalar> const& coordinates);
   ~Multivector() = default;
 
-  R3Element<Scalar> coordinates;
+  R3Element<Scalar> coordinates() const;
+
+ private:
+  R3Element<Scalar> coordinates_;
 };
 
 template<typename Scalar, typename Frame>
@@ -35,7 +42,10 @@ struct Multivector<Scalar, Frame, 3> {
   explicit Multivector(Scalar const& coordinates);
   ~Multivector() = default;
 
-  Scalar coordinates;
+  Scalar coordinates() const;
+
+ private:
+  Scalar coordinates_;
 };
 
 template<typename Scalar, typename Frame>

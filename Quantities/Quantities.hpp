@@ -75,6 +75,7 @@ class Quantity {
   Quantity();
   template<int Exponent>
   Exponentiation<Quantity<D>, Exponent> Pow() const;
+
  private:
   explicit Quantity(Dimensionless const& magnitude);
   Dimensionless magnitude_;
