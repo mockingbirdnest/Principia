@@ -16,8 +16,8 @@ class Sign {
  private:
   bool const negative_;
   friend Sign operator*(Sign const& left, Sign const& right);
-  template<typename Scalar>
-  friend Scalar operator*(Sign const& left, Scalar const& right);
+  template<typename T>
+  friend T operator*(Sign const& left, T const& right);
 };
 
 Sign operator*(Sign const& left, Sign const& right);

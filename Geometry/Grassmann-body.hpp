@@ -127,7 +127,7 @@ inline Multivector<Scalar, Frame, Rank> operator*(
 template<typename Scalar, typename Frame, unsigned int Rank>
 inline Multivector<Scalar, Frame, Rank> operator/(
     Multivector<Scalar, Frame, Rank> const& left,
-                                   quantities::Dimensionless const& right) {
+    quantities::Dimensionless const& right) {
   return Multivector<Scalar, Frame, Rank>(left.coordinates / right);
 }
 

@@ -7,7 +7,7 @@
 namespace principia {
 namespace constants {
 quantities::Speed const SpeedOfLight =
-  299792458 * (si::Metre / si::Second);
+    299792458 * (si::Metre / si::Second);
 quantities::Permeability const VacuumPermeability =
     4e-7 * π * si::Steradian * si::Henry / si::Metre;
 quantities::Permittivity const VacuumPermittivity =

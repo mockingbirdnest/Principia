@@ -23,7 +23,7 @@ void TestBilinearMap(Map const& map, U const& u1, U const& u2, V const& v1,
 
 template<typename Map, typename Scalar, typename U>
 void TestSymmetricBilinearMap(Map const& map, U const& u1, U const& u2,
-                               U const& v1, U const& v2, Scalar const& λ);
+                              U const& v1, U const& v2, Scalar const& λ);
 
 template<typename Map, typename Scalar, typename U>
 void TestSymmetricPositiveDefiniteBilinearMap(Map const& map, U const& u1,

@@ -34,7 +34,6 @@ template<typename ValueType>
 void AssertNotEqual(ValueType const& left,
                     ValueType const& right);
 
-
 }  // namespace test_utilities
 }  // namespace principia
 

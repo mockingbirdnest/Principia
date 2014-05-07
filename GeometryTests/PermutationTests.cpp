@@ -19,7 +19,7 @@ using namespace test_utilities;
 TEST_CLASS(PermutationTests) {
  private:
   struct World;
-  typedef Permutation<quantities::Length, World, World> P;
+  typedef Permutation<World, World> P;
 
   std::unique_ptr<Vector<quantities::Length, World>> vector_;
   std::unique_ptr<Bivector<quantities::Length, World>> bivector_;
@@ -36,7 +36,7 @@ TEST_CLASS(PermutationTests) {
 
   TEST_METHOD(XYZ) {
     R3Element<quantities::Length> const permuted = 
-        P(P::XYZ) * vector_->coordinates;
+        P(P::XYZ)(vector_->coordinates);
     AssertEqual(1.0 * Metre, permuted.x);
     AssertEqual(2.0 * Metre, permuted.y);
     AssertEqual(3.0 * Metre, permuted.z);
@@ -44,7 +44,7 @@ TEST_CLASS(PermutationTests) {
 
   TEST_METHOD(YZX) {
     R3Element<quantities::Length> const permuted = 
-        P(P::YZX) * vector_->coordinates;
+        P(P::YZX)(vector_->coordinates);
     AssertEqual(2.0 * Metre, permuted.x);
     AssertEqual(3.0 * Metre, permuted.y);
     AssertEqual(1.0 * Metre, permuted.z);
@@ -52,7 +52,7 @@ TEST_CLASS(PermutationTests) {
 
   TEST_METHOD(ZXY) {
     R3Element<quantities::Length> const permuted = 
-        P(P::ZXY) * vector_->coordinates;
+        P(P::ZXY)(vector_->coordinates);
     AssertEqual(3.0 * Metre, permuted.x);
     AssertEqual(1.0 * Metre, permuted.y);
     AssertEqual(2.0 * Metre, permuted.z);
@@ -60,7 +60,7 @@ TEST_CLASS(PermutationTests) {
 
   TEST_METHOD(XZY) {
     R3Element<quantities::Length> const permuted = 
-        P(P::XZY) * vector_->coordinates;
+        P(P::XZY)(vector_->coordinates);
     AssertEqual(1.0 * Metre, permuted.x);
     AssertEqual(3.0 * Metre, permuted.y);
     AssertEqual(2.0 * Metre, permuted.z);
@@ -68,7 +68,7 @@ TEST_CLASS(PermutationTests) {
 
   TEST_METHOD(ZYX) {
     R3Element<quantities::Length> const permuted = 
-        P(P::ZYX) * vector_->coordinates;
+        P(P::ZYX)(vector_->coordinates);
     AssertEqual(3.0 * Metre, permuted.x);
     AssertEqual(2.0 * Metre, permuted.y);
     AssertEqual(1.0 * Metre, permuted.z);
@@ -76,7 +76,7 @@ TEST_CLASS(PermutationTests) {
 
   TEST_METHOD(YXZ) {
     R3Element<quantities::Length> const permuted = 
-        P(P::YXZ) * vector_->coordinates;
+        P(P::YXZ)(vector_->coordinates);
     AssertEqual(2.0 * Metre, permuted.x);
     AssertEqual(1.0 * Metre, permuted.y);
     AssertEqual(3.0 * Metre, permuted.z);

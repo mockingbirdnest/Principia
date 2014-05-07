@@ -40,8 +40,7 @@ void AssertNotEqualWithin(ValueType const& left,
 }
 
 template<typename ValueType>
-void AssertNotEqual(ValueType const& left,
-                 ValueType const& right) {
+void AssertNotEqual(ValueType const& left, ValueType const& right) {
   std::wstring message = L"Should be different: " + ToString(left) + L" and " +
                          ToString(right) + L".";
   LogLine(message);

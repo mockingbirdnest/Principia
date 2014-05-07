@@ -4,44 +4,47 @@
 #include "Geometry/LinearMap.hpp"
 #include "Geometry/R3Element.hpp"
 #include "Geometry/Sign.hpp"
-#include "quantities/Dimensionless.hpp"
+#include "Quantities/Dimensionless.hpp"
 
 namespace principia {
 namespace geometry {
 
-template<typename Scalar, typename FromFrame, typename ToFrame>
-Permutation<Scalar, FromFrame, ToFrame>::Permutation(
+template<typename FromFrame, typename ToFrame>
+Permutation<FromFrame, ToFrame>::Permutation(
     CoordinatePermutation const coordinate_permutation)
     : coordinate_permutation_(coordinate_permutation) {}
 
-template<typename Scalar, typename FromFrame, typename ToFrame>
-Vector<Scalar, ToFrame> Permutation<Scalar, FromFrame, ToFrame>::operator()(
+template<typename FromFrame, typename ToFrame>
+template<typename Scalar>
+Vector<Scalar, ToFrame> Permutation<FromFrame, ToFrame>::operator()(
     Vector<Scalar, FromFrame> const& vector) const {
-  return Vector<Scalar, ToFrame>(*this * vector.coordinates);
+  return Vector<Scalar, ToFrame>((*this)(vector.coordinates));
 }
 
-template<typename Scalar, typename FromFrame, typename ToFrame>
-Bivector<Scalar, ToFrame> Permutation<Scalar, FromFrame, ToFrame>::operator()(
+template<typename FromFrame, typename ToFrame>
+template<typename Scalar>
+Bivector<Scalar, ToFrame> Permutation<FromFrame, ToFrame>::operator()(
     Bivector<Scalar, FromFrame> const& bivector) const {
   return Bivector<Scalar, ToFrame>(
-      Determinant() * (*this * bivector.coordinates));
+      Determinant() * ((*this)(bivector.coordinates)));
 }
 
-template<typename Scalar, typename FromFrame, typename ToFrame>
-Trivector<Scalar, ToFrame> Permutation<Scalar, FromFrame, ToFrame>::operator()(
+template<typename FromFrame, typename ToFrame>
+template<typename Scalar>
+Trivector<Scalar, ToFrame> Permutation<FromFrame, ToFrame>::operator()(
     Trivector<Scalar, FromFrame> const& trivector) const {
   return Trivector<Scalar, ToFrame>(Determinant() * trivector.coordinates);
 }
 
-template<typename Scalar, typename FromFrame, typename ToFrame>
-Sign Permutation<Scalar, FromFrame, ToFrame>::Determinant() const {
+template<typename FromFrame, typename ToFrame>
+Sign Permutation<FromFrame, ToFrame>::Determinant() const {
   return Sign(coordinate_permutation_);
 }
 
 // TODO(phl): Uncomment once orthogonal transformations are done.
-/*template<typename Scalar, typename FromFrame, typename ToFrame>
-OrthogonalTransformation<Scalar, FromFrame, ToFrame> 
-Permutation<Scalar, FromFrame, ToFrame>::Forget() const {
+/*template<typename FromFrame, typename ToFrame>
+OrthogonalTransformation<FromFrame, ToFrame> 
+Permutation<FromFrame, ToFrame>::Forget() const {
   static const quantities::Dimentionless SqrtHalf(
       quantities::Dimentionless::Sqrt(quantities::Dimensionless(0.5)));
   static const R3Element<quantities::Dimensionless>[] = {
@@ -68,22 +71,20 @@ Permutation<Scalar, FromFrame, ToFrame>::Forget() const {
       Rotation<A, B>(quaternionRealParts[i], quaternionImaginaryParts[i]));
 }*/
 
-template<typename Scalar, typename FromFrame, typename ToFrame>
-Permutation<Scalar, FromFrame, ToFrame>
-Permutation<Scalar, FromFrame, ToFrame>::Identity() {
+template<typename FromFrame, typename ToFrame>
+Permutation<FromFrame, ToFrame> Permutation<FromFrame, ToFrame>::Identity() {
   return Permutation(XYZ);
 }
 
-template<typename Scalar, typename FromFrame, typename ToFrame>
-R3Element<Scalar> operator*(
-    Permutation<Scalar, FromFrame, ToFrame> const& left,
-    R3Element<Scalar> const& right) {
-  typedef Permutation<Scalar, FromFrame, ToFrame> P;
+template<typename FromFrame, typename ToFrame>
+template<typename Scalar>
+R3Element<Scalar> Permutation<FromFrame, ToFrame>::operator()(
+    R3Element<Scalar> const& r3_element) const {
   R3Element<Scalar> result;
-  for (int coordinate = P::x; coordinate <= P::z; ++coordinate) {
-    result[coordinate] = right[
+  for (int coordinate = x; coordinate <= z; ++coordinate) {
+    result[coordinate] = r3_element[
         0x3 & 
-        (static_cast<int>(left.coordinate_permutation_) >> (coordinate * 2))];
+        (static_cast<int>(coordinate_permutation_) >> (coordinate * 2))];
   }
   return result;
 }
