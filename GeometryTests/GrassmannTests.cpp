@@ -1,5 +1,7 @@
 ﻿#include "stdafx.hpp"
 
+#include <cfloat>
+
 #include <CppUnitTest.h>
 #include <functional>
 
@@ -57,7 +59,7 @@ TEST_CLASS(GrassmannTests) {
                    Bivector<Dimensionless, World>(v_ / Metre),
                    Bivector<Dimensionless, World>(w_ / Rod),
                    Bivector<Dimensionless, World>(a_ / Furlong),
-                   Dimensionless(0.42));
+                   Dimensionless(0.42), 128 * DBL_EPSILON);
   }
 
   TEST_METHOD(MixedScalarMultiplication) {
@@ -117,7 +119,7 @@ TEST_CLASS(GrassmannTests) {
                           Vector<Length, World>(w_),
                           Vector<Length, World>(a_),
                           Dimensionless(0), Dimensionless(1), Sqrt(163),
-                          -Sqrt(2));
+                          -Sqrt(2), 12 * DBL_EPSILON);
     TestInnerProductSpace(MultivectorInnerProduct<Length, Length, World, 2>,
                           Bivector<Length, World>(null_displacement_),
                           Bivector<Length, World>(u_),
@@ -125,7 +127,7 @@ TEST_CLASS(GrassmannTests) {
                           Bivector<Length, World>(w_),
                           Bivector<Length, World>(a_),
                           Dimensionless(0), Dimensionless(1), Sqrt(163),
-                          -Sqrt(2));
+                          -Sqrt(2), 12 * DBL_EPSILON);
     TestInnerProductSpace(MultivectorInnerProduct<Length, Length, World, 3>,
                           Trivector<Length, World>(null_displacement_.x),
                           Trivector<Length, World>(u_.y),
@@ -143,7 +145,7 @@ TEST_CLASS(GrassmannTests) {
                           Vector<Dimensionless, World>(w_ / Metre),
                           Vector<Dimensionless, World>(a_ / Metre),
                           Dimensionless(0), Dimensionless(1), Sqrt(163),
-                          -Sqrt(2));
+                          -Sqrt(2), 12 * DBL_EPSILON);
     TestInnerProductSpace(MultivectorInnerProduct<Dimensionless, Dimensionless,
                                                   World, 2>,
                           Bivector<Dimensionless,
@@ -153,7 +155,7 @@ TEST_CLASS(GrassmannTests) {
                           Bivector<Dimensionless, World>(w_ / Metre),
                           Bivector<Dimensionless, World>(a_ / Metre),
                           Dimensionless(0), Dimensionless(1), Sqrt(163),
-                          -Sqrt(2));
+                          -Sqrt(2), 12 * DBL_EPSILON);
     TestInnerProductSpace(MultivectorInnerProduct<Dimensionless, Dimensionless,
                                                   World, 3>,
                           Trivector<Dimensionless,

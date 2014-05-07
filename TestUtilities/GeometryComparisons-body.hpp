@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 #include "Geometry/Grassmann.hpp"
 #include "Geometry/R3Element.hpp"
@@ -9,17 +9,19 @@ namespace principia {
 namespace test_utilities {
 
 template<typename Scalar, typename Frame, unsigned int Rank>
-void AssertEqual(geometry::Multivector<Scalar, Frame, Rank> left,
-                 geometry::Multivector<Scalar, Frame, Rank> right) {
-  AssertEqual(left.coordinates, right.coordinates);
+void AssertEqual(geometry::Multivector<Scalar, Frame, Rank> const& left,
+                 geometry::Multivector<Scalar, Frame, Rank> const& right,
+                 quantities::Dimensionless const& ε) {
+  AssertEqual(left.coordinates(), right.coordinates(), ε);
 }
 
 template<typename Scalar>
-void AssertEqual(geometry::R3Element<Scalar> left,
-                 geometry::R3Element<Scalar> right) {
-  AssertEqual(left.x, right.x);
-  AssertEqual(left.y, right.y);
-  AssertEqual(left.z, right.z);
+void AssertEqual(geometry::R3Element<Scalar> const& left,
+                 geometry::R3Element<Scalar> const& right,
+                 quantities::Dimensionless const& ε) {
+  AssertEqual(left.x, right.x, ε);
+  AssertEqual(left.y, right.y, ε);
+  AssertEqual(left.z, right.z, ε);
 }
 
 }  // namespace test_utilities

@@ -1,5 +1,7 @@
 ﻿#include "stdafx.hpp"
 
+#include <cfloat>
+
 #include <CppUnitTest.h>
 
 #include "Geometry/Grassmann.hpp"
@@ -48,11 +50,13 @@ TEST_CLASS(R3ElementTests) {
     TestVectorSpace<R3Element<Speed>, Dimensionless>(null_velocity_, u_, v_,
                                                      w_, Dimensionless(0),
                                                      Dimensionless(1), e,
-                                                     Dimensionless(42));
+                                                     Dimensionless(42),
+                                                     2 * DBL_EPSILON);
     TestAlternatingBilinearMap(Cross<Speed, Speed>, u_, v_, w_, a_,
-                               Dimensionless(42));
+                               Dimensionless(42), 2 * DBL_EPSILON);
     TestSymmetricPositiveDefiniteBilinearMap(Dot<Speed, Speed>, u_, v_, w_, a_,
-                                             Dimensionless(42));
+                                             Dimensionless(42),
+                                             2 * DBL_EPSILON);
   }
 
   TEST_METHOD(MixedProduct) {
@@ -63,12 +67,13 @@ TEST_CLASS(R3ElementTests) {
       return left * right;
     };
     TestBilinearMap(left_time_multiplication, 1 * Second, 1 * JulianYear, u_,
-                    v_, Dimensionless(42));
+                    v_, Dimensionless(42), 2 * DBL_EPSILON);
     TestBilinearMap(right_time_multiplication, w_, a_, -1 * Day,
-                    1 * Parsec / SpeedOfLight, Dimensionless(-π));
+                    1 * Parsec / SpeedOfLight, Dimensionless(-π),
+                    2 * DBL_EPSILON);
     Time const t = -3 * Second;
     AssertEqual(t * u_, u_ * t);
-    AssertEqual((u_ * t) / t, u_);
+    AssertEqual((u_ * t) / t, u_, 2 * DBL_EPSILON);
   }
 };
 
