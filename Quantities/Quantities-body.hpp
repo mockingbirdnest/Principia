@@ -265,7 +265,7 @@ inline std::wstring FormatUnit(std::wstring const& name, int const exponent) {
       return L"";
       break;
     case 1:
-      return name;
+      return L" " + name;
     default:
       return L" " + name + L"^" + std::to_wstring(exponent);
   }
@@ -281,6 +281,6 @@ inline std::wstring ToString(Quantity<D> const& quantity,
       FormatUnit(L"cd", D::LuminousIntensity) +
       FormatUnit(L"cycle", D::Winding) + FormatUnit(L"rad", D::Angle) +
       FormatUnit(L"sr", D::SolidAngle);
-  }
-  }  // namespace quantities
-  }  // namespace principia
+}
+}  // namespace quantities
+}  // namespace principia
