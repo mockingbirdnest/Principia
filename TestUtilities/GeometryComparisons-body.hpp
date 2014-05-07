@@ -11,7 +11,7 @@ namespace test_utilities {
 template<typename Scalar, typename Frame, unsigned int Rank>
 void AssertEqual(geometry::Multivector<Scalar, Frame, Rank> left,
                  geometry::Multivector<Scalar, Frame, Rank> right) {
-  AssertEqual(left.coordinates, right.coordinates);
+  AssertEqual(left.Coordinates(), right.Coordinates());
 }
 
 template<typename Scalar>
