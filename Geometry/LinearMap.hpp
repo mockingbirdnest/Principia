@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Geometry/Grassmann.hpp"
+#include "Geometry/Sign.hpp"
 
 namespace principia {
 namespace geometry {
@@ -11,9 +12,13 @@ class LinearMap {
   LinearMap() = default;
   virtual ~LinearMap() = default;
 
+  virtual Sign Determinant() const = 0;
+
 // The following is the contract that must be implemented by subclasses.
 // Apologies for the commented-out code, but we cannot write this in real C++
-// because templates cannot be virtual.
+// for a variety of reasons.
+//
+//  virtual LinearMap<ToFrame, FromFrame> Inverse() const = 0;
 //
 //  template<typename Scalar>
 //  virtual Vector<Scalar, ToFrame> operator()(

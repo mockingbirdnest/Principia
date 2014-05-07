@@ -17,6 +17,10 @@ class Rotation : public LinearMap<FromFrame, ToFrame> {
            R3Element<quantities::Dimensionless> const& imaginary_part);
   virtual ~Rotation() = default;
 
+  Sign Determinant() const override;
+
+  Rotation<ToFrame, FromFrame> Inverse() const;
+
   template<typename Scalar>
   Vector<Scalar, ToFrame> operator()(
       Vector<Scalar, FromFrame> const& vector) const;
@@ -29,10 +33,6 @@ class Rotation : public LinearMap<FromFrame, ToFrame> {
   Trivector<Scalar, ToFrame> operator()(
       Trivector<Scalar, FromFrame> const& trivector) const;
 
-  Sign Determinant() const;
-
-  Rotation<ToFrame, FromFrame> Inverse() const;
-
   // TODO(phl): Add Forget.
 
   static Rotation Identity();
@@ -43,8 +43,18 @@ class Rotation : public LinearMap<FromFrame, ToFrame> {
 
   quantities::Dimensionless real_part_;
   R3Element<quantities::Dimensionless> imaginary_part_;
+
+  template<typename FromFrame, typename ThroughFrame, typename ToFrame>
+  friend Rotation<FromFrame, ToFrame> operator*(
+      Rotation<ThroughFrame, ToFrame> const& left,
+      Rotation<FromFrame, ThroughFrame> const& right);
   friend class RotationTests;
 };
+
+template<typename FromFrame, typename ThroughFrame, typename ToFrame>
+Rotation<FromFrame, ToFrame> operator*(
+    Rotation<ThroughFrame, ToFrame> const& left,
+    Rotation<FromFrame, ThroughFrame> const& right);
 
 }  // namespace geometry
 }  // namespace principia
