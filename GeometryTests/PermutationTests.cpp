@@ -35,7 +35,7 @@ TEST_CLASS(PermutationTests) {
   }
 
   TEST_METHOD(XYZ) {
-    R3Element<quantities::Length> const permuted = 
+    R3Element<quantities::Length> const permuted =
         P(P::XYZ)(vector_->coordinates);
     AssertEqual(1.0 * Metre, permuted.x);
     AssertEqual(2.0 * Metre, permuted.y);
@@ -43,7 +43,7 @@ TEST_CLASS(PermutationTests) {
   }
 
   TEST_METHOD(YZX) {
-    R3Element<quantities::Length> const permuted = 
+    R3Element<quantities::Length> const permuted =
         P(P::YZX)(vector_->coordinates);
     AssertEqual(2.0 * Metre, permuted.x);
     AssertEqual(3.0 * Metre, permuted.y);
@@ -51,7 +51,7 @@ TEST_CLASS(PermutationTests) {
   }
 
   TEST_METHOD(ZXY) {
-    R3Element<quantities::Length> const permuted = 
+    R3Element<quantities::Length> const permuted =
         P(P::ZXY)(vector_->coordinates);
     AssertEqual(3.0 * Metre, permuted.x);
     AssertEqual(1.0 * Metre, permuted.y);
@@ -59,7 +59,7 @@ TEST_CLASS(PermutationTests) {
   }
 
   TEST_METHOD(XZY) {
-    R3Element<quantities::Length> const permuted = 
+    R3Element<quantities::Length> const permuted =
         P(P::XZY)(vector_->coordinates);
     AssertEqual(1.0 * Metre, permuted.x);
     AssertEqual(3.0 * Metre, permuted.y);
@@ -67,7 +67,7 @@ TEST_CLASS(PermutationTests) {
   }
 
   TEST_METHOD(ZYX) {
-    R3Element<quantities::Length> const permuted = 
+    R3Element<quantities::Length> const permuted =
         P(P::ZYX)(vector_->coordinates);
     AssertEqual(3.0 * Metre, permuted.x);
     AssertEqual(2.0 * Metre, permuted.y);
@@ -75,7 +75,7 @@ TEST_CLASS(PermutationTests) {
   }
 
   TEST_METHOD(YXZ) {
-    R3Element<quantities::Length> const permuted = 
+    R3Element<quantities::Length> const permuted =
         P(P::YXZ)(vector_->coordinates);
     AssertEqual(2.0 * Metre, permuted.x);
     AssertEqual(1.0 * Metre, permuted.y);

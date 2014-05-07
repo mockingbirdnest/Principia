@@ -115,7 +115,7 @@ TEST_CLASS(GrassmannTests) {
                           Trivector<Dimensionless, World>(a_.y / Metre),
                           Dimensionless(0), Dimensionless(1), Sqrt(163),
                           -Sqrt(2));
-    }
+  }
 
   TEST_METHOD(GrassmannAlgebra) {
     R3Element<Dimensionless> u(3, -42, 0);

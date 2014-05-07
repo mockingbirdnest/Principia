@@ -43,12 +43,12 @@ Sign Permutation<FromFrame, ToFrame>::Determinant() const {
 
 // TODO(phl): Uncomment once orthogonal transformations are done.
 /*template<typename FromFrame, typename ToFrame>
-OrthogonalTransformation<FromFrame, ToFrame> 
+OrthogonalTransformation<FromFrame, ToFrame>
 Permutation<FromFrame, ToFrame>::Forget() const {
   static const quantities::Dimentionless SqrtHalf(
       quantities::Dimentionless::Sqrt(quantities::Dimensionless(0.5)));
   static const R3Element<quantities::Dimensionless>[] = {
-      R3Element<quantities::Dimensionless>(quantities::Dimensionless(0), 
+      R3Element<quantities::Dimensionless>(quantities::Dimensionless(0),
                                            quantities::Dimensionless(0),
                                            quantities::Dimensionless(0)),
       R3Element<Dimensionless>(
@@ -83,7 +83,7 @@ R3Element<Scalar> Permutation<FromFrame, ToFrame>::operator()(
   R3Element<Scalar> result;
   for (int coordinate = x; coordinate <= z; ++coordinate) {
     result[coordinate] = r3_element[
-        0x3 & 
+        0x3 &
         (static_cast<int>(coordinate_permutation_) >> (coordinate * 2))];
   }
   return result;
