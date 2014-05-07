@@ -19,6 +19,15 @@ void AssertEqualWithin(ValueType const& left,
   AssertTrue(left == right || Abs(left / right - 1) < ε, message);
 }
 
+template<typename ValueType>
+void AssertEqual(ValueType const& left,
+                 ValueType const& right) {
+  std::wstring message = L"Should be equal: " + ToString(left) + L" and " +
+                         ToString(right) + L".";
+  LogLine(message);
+  AssertTrue(left == right, message);
+}
+
 template<typename ValueType, typename ErrorType>
 void AssertNotEqualWithin(ValueType const& left,
                           ValueType const& right,
@@ -28,6 +37,14 @@ void AssertNotEqualWithin(ValueType const& left,
                          L".";
   LogLine(message);
   AssertTrue(Abs(left / right - 1) > ε, message);
+}
+
+template<typename ValueType>
+void AssertNotEqual(ValueType const& left, ValueType const& right) {
+  std::wstring message = L"Should be different: " + ToString(left) + L" and " +
+                         ToString(right) + L".";
+  LogLine(message);
+  AssertTrue(left != right, message);
 }
 
 inline void WriteLog(std::wstring const& message) {

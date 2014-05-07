@@ -23,13 +23,22 @@ TEST_CLASS(SignTests) {
     AssertTrue(negative.Negative());
   }
 
-  TEST_METHOD(Multiplication) {
+  TEST_METHOD(SignMultiplication) {
     Sign const positive(1);
     Sign const negative(-1);
     AssertTrue((positive * positive).Positive());
     AssertTrue((positive * negative).Negative());
     AssertTrue((negative * positive).Negative());
     AssertTrue((negative * negative).Positive());
+  }
+
+  TEST_METHOD(ScalarMultiplication) {
+    Sign const positive(1);
+    Sign const negative(-1);
+    AssertEqual(3, positive * 3);
+    AssertEqual(-3, positive * -3);
+    AssertEqual(-3, negative * 3);
+    AssertEqual(3, negative * -3);
   }
 };
 
