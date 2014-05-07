@@ -18,7 +18,7 @@ template<typename FromFrame, typename ToFrame>
 template<typename Scalar>
 Vector<Scalar, ToFrame> Permutation<FromFrame, ToFrame>::operator()(
     Vector<Scalar, FromFrame> const& vector) const {
-  return Vector<Scalar, ToFrame>((*this)(vector.coordinates));
+  return Vector<Scalar, ToFrame>((*this)(vector.coordinates()));
 }
 
 template<typename FromFrame, typename ToFrame>
@@ -26,14 +26,14 @@ template<typename Scalar>
 Bivector<Scalar, ToFrame> Permutation<FromFrame, ToFrame>::operator()(
     Bivector<Scalar, FromFrame> const& bivector) const {
   return Bivector<Scalar, ToFrame>(
-      Determinant() * ((*this)(bivector.coordinates)));
+      Determinant() * (*this)(bivector.coordinates()));
 }
 
 template<typename FromFrame, typename ToFrame>
 template<typename Scalar>
 Trivector<Scalar, ToFrame> Permutation<FromFrame, ToFrame>::operator()(
     Trivector<Scalar, FromFrame> const& trivector) const {
-  return Trivector<Scalar, ToFrame>(Determinant() * trivector.coordinates);
+  return Trivector<Scalar, ToFrame>(Determinant() * trivector.coordinates());
 }
 
 template<typename FromFrame, typename ToFrame>
