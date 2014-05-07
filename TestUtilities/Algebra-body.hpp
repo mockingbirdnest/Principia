@@ -47,13 +47,13 @@ void TestOrder(T const& low, T const& high) {
 template<typename T>
 void TestAdditiveGroup(T const& zero, T const& a, T const& b, T const& c,
                        quantities::Dimensionless const& ε) {
-  AssertEqual(a + zero, a, ε);
-  AssertEqual(zero + b, b, ε);
-  AssertEqual(a - a, zero, ε);
-  AssertEqual(-a - b, -(a + b), ε);
+  AssertEqual(a + zero, a);
+  AssertEqual(zero + b, b);
+  AssertEqual(a - a, zero);
+  AssertEqual(-a - b, -(a + b));
   AssertEqual((a + b) + c, a + (b + c), ε);
   AssertEqual(a - b - c, a - (b + c), ε);
-  AssertEqual(a + b, b + a, ε);
+  AssertEqual(a + b, b + a);
   T accumulator = zero;
   accumulator += a;
   accumulator += b;
@@ -64,13 +64,13 @@ void TestAdditiveGroup(T const& zero, T const& a, T const& b, T const& c,
 template<typename T>
 void TestMultiplicativeGroup(T const& one, T const& a, T const& b, T const& c,
                              quantities::Dimensionless const& ε) {
-  AssertEqual(a * one, a, ε);
-  AssertEqual(one * b, b, ε);
-  AssertEqual(a / a, one, ε);
+  AssertEqual(a * one, a);
+  AssertEqual(one * b, b);
+  AssertEqual(a / a, one);
   AssertEqual((1 / a) / b, 1 / (a * b), ε);
   AssertEqual((a * b) * c, a * (b * c), ε);
   AssertEqual(a / b / c, a / (b * c), ε);
-  AssertEqual(a * b, b * a, ε);
+  AssertEqual(a * b, b * a);
   T accumulator = one;
   accumulator *= a;
   accumulator *= b;
@@ -129,7 +129,7 @@ template<typename Map, typename Scalar, typename U>
 void TestLieBracket(Map const& map, U const& u1, U const& u2, U const& v1,
                     U const& v2, Scalar const& λ,
                     quantities::Dimensionless const& ε) {
-  TestAlternatingBilinearMap(map, u1, u2, v1, v2, λ);
+  TestAlternatingBilinearMap(map, u1, u2, v1, v2, λ, ε);
   auto zero = map(u1, u1) - map(u1, u1);
   AssertEqual(map(u1, map(u2, v1)) +
               map(u2, map(v1, u1)) +
@@ -143,20 +143,20 @@ void TestVectorSpace(Vector const& nullVector, Vector const& u, Vector const& v,
                      quantities::Dimensionless const& ε) {
   TestAdditiveGroup(nullVector, u, v, w, ε);
   AssertEqual((α * β) * v, α * (β * v), ε);
-  AssertEqual(unit * w, w, ε);
-  AssertEqual(u / unit, u, ε);
-  AssertEqual(zero * u, nullVector, ε);
+  AssertEqual(unit * w, w);
+  AssertEqual(u / unit, u);
+  AssertEqual(zero * u, nullVector);
   AssertEqual(β * (u + v), β * u + v * β, ε);
   AssertEqual((w + v) / α, w / α + v / α, ε);
   AssertEqual((α + β) * w, α * w + β * w, ε);
   AssertEqual(v * (α + β), α * v + β * v, ε);
   Vector vector = u;
   vector *= α;
-  AssertEqual(α * u, vector, ε);
+  AssertEqual(α * u, vector);
   vector /= α;
   AssertEqual(u, vector, ε);
   vector *= zero;
-  AssertEqual(vector, nullVector, ε);
+  AssertEqual(vector, nullVector);
 }
 
 template<typename Vector, typename Scalar, typename Map>
