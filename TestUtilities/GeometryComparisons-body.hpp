@@ -12,7 +12,7 @@ template<typename Scalar, typename Frame, unsigned int Rank>
 void AssertEqual(geometry::Multivector<Scalar, Frame, Rank> const& left,
                  geometry::Multivector<Scalar, Frame, Rank> const& right,
                  quantities::Dimensionless const& ε) {
-  AssertEqual(left.coordinates, right.coordinates, ε);
+  AssertEqual(left.coordinates(), right.coordinates(), ε);
 }
 
 template<typename Scalar>

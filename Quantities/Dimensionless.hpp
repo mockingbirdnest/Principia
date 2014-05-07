@@ -14,6 +14,7 @@ public:
   // with Quantity<D>.Pow<Exponent>();
   template<int Exponent>
   Dimensionless Pow() const;
+
 private:
   double value_;
 };
