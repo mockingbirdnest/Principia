@@ -32,7 +32,7 @@ class Permutation : public LinearMap<FromFrame, ToFrame> {
     YXZ = odd  + (y << x * 2) + (x << y * 2) + (z << z * 2) + (5 << index)
   };
 
-  Permutation(CoordinatePermutation const coordinate_permutation);
+  explicit Permutation(CoordinatePermutation const coordinate_permutation);
   virtual ~Permutation() = default;
 
   template<typename Scalar>

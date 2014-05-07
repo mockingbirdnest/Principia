@@ -285,6 +285,7 @@ inline std::wstring ToString(Quantity<D> const& quantity,
       FormatUnit(L"cd", D::LuminousIntensity) +
       FormatUnit(L"cycle", D::Winding) + FormatUnit(L"rad", D::Angle) +
       FormatUnit(L"sr", D::SolidAngle);
-  }
-  }  // namespace quantities
-  }  // namespace principia
+}
+
+}  // namespace quantities
+}  // namespace principia
