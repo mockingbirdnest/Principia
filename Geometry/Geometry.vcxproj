@@ -82,6 +82,9 @@
   <ItemGroup>
     <ClInclude Include="Grassmann-body.hpp" />
     <ClInclude Include="Grassmann.hpp" />
+    <ClInclude Include="LinearMap.hpp" />
+    <ClInclude Include="Permutation-body.hpp" />
+    <ClInclude Include="Permutation.hpp" />
     <ClInclude Include="R3Element-body.hpp" />
     <ClInclude Include="R3Element.hpp" />
     <ClInclude Include="resource.hpp" />

@@ -16,9 +16,15 @@ class Sign {
  private:
   bool const negative_;
   friend Sign operator*(Sign const& left, Sign const& right);
+  template<typename T>
+  friend T operator*(Sign const& left, T const& right);
 };
 
 Sign operator*(Sign const& left, Sign const& right);
+
+// This operator is applicable to any type that has a unary minus operator.
+template<typename T>
+T operator*(Sign const& left, T const& right);
 
 }  // namespace geometry
 }  // namespace principia

@@ -140,6 +140,10 @@ inline SolidAngle Steradians(Dimensionless const& number) {
   return SolidAngle(number);
 }
 }  // namespace factories
+
+template<typename D>
+inline Quantity<D>::Quantity() : magnitude_(0) {}
+
 template<typename D>
 template<int Exponent>
 Exponentiation<Quantity<D>, Exponent> Quantity<D>::Pow() const {
@@ -282,5 +286,6 @@ inline std::wstring ToString(Quantity<D> const& quantity,
       FormatUnit(L"cycle", D::Winding) + FormatUnit(L"rad", D::Angle) +
       FormatUnit(L"sr", D::SolidAngle);
 }
+
 }  // namespace quantities
 }  // namespace principia
