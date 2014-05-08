@@ -1,6 +1,6 @@
 ﻿#include "stdafx.hpp"
 
-#include <cfloat>
+#include <float.h>
 
 #include <CppUnitTest.h>
 
