@@ -59,9 +59,26 @@ R3Element<Scalar> Rotation<FromFrame, ToFrame>::operator()(
   // TODO(egg): Optimise.
   // TODO(phl): WTF
   return r3_element;
+
   //return Maps.Compose<B, A, B>(
   //  Maps.Compose<A, A, B>(left, new Rotation<A, A>((Scalar)0, right)),
   //  left.Inverse()).imaginary_part_;
+}
+
+template<typename FromFrame, typename ToFrame>
+void Rotation<FromFrame, ToFrame>::QuaternionMultiplication(
+    quantities::Dimensionless const& left_real_part,
+    R3Element<quantities::Dimensionless> const& left_imaginary_part,
+    quantities::Dimensionless const& right_real_part,
+    R3Element<quantities::Dimensionless> const& right_imaginary_part,
+    quantities::Dimensionless* result_real_part,
+    R3Element<quantities::Dimensionless>* result_imaginary_part) {
+  *result_real_part = left_real_part_ * right_real_part_ -
+      left_imaginary_part_.Dot(right_imaginary_part_);
+  *result_imaginary_part =
+      left.real_part_ * right.imaginary_part_ +
+          right.real_part_ * left.imaginary_part_ +
+          left.imaginary_part_.Cross(right.imaginary_part_);
 }
 
 template<typename FromFrame, typename ThroughFrame, typename ToFrame>

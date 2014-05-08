@@ -37,7 +37,7 @@ class Permutation : public LinearMap<FromFrame, ToFrame> {
 
   Sign Determinant() const override;
 
-  // TODO(phl): Inverse.
+  // TODO(phl): Inverse, composition.
 
   template<typename Scalar>
   Vector<Scalar, ToFrame> operator()(
