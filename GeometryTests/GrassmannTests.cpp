@@ -16,6 +16,7 @@
 #include "Quantities/SI.hpp"
 #include "Quantities/UK.hpp"
 #include "TestUtilities/Algebra.hpp"
+#include "TestUtilities/ExplicitOperators.hpp"
 #include "TestUtilities/GeometryComparisons.hpp"
 #include "TestUtilities/QuantityComparisons.hpp"
 #include "TestUtilities/TestUtilities.hpp"
@@ -63,52 +64,23 @@ TEST_CLASS(GrassmannTests) {
   }
 
   TEST_METHOD(MixedScalarMultiplication) {
-     R3Element<Speed> nullVector(0 * Metre / Second,
-                                 0 * Metre / Second,
-                                 0 * Metre / Second);
-     R3Element<Speed> u(1 * Metre / Second,
-                        120 * Kilo(Metre) / Hour,
-                        -SpeedOfLight);
-     R3Element<Speed> v(-20 * Knot,
-                        2 * π * AstronomicalUnit / JulianYear,
-                        1 * admiralty::NauticalMile / Hour);
-     R3Element<Speed> w(-1 * Mile / Hour, -2 * Foot / Second, -3 * Knot);
-     R3Element<Speed> a(88 * Mile / Hour, 300 * Metre / Second, 46 * Knot);
-
-     auto vectorLeftTimeMultiplication = [](Time left,
-                                            Vector<Speed, World> right) {
-       return left * right;
-     };
-     auto vectorRightTimeMultiplication = [](Vector<Speed, World> left,
-                                             Time right) {
-       return left * right;
-     };
-     auto bivectorLeftTimeMultiplication = [](Time left,
-                                              Bivector<Speed, World> right) {
-       return left * right;
-     };
-     auto bivectorRightTimeMultiplication = [](Bivector<Speed, World> left,
-                                               Time right) {
-       return left * right;
-     };
-     auto trivectorLeftTimeMultiplication = [](Time left,
-                                               Trivector<Speed, World> right) {
-       return left * right;
-     };
-     auto trivectorRightTimeMultiplication = [](Trivector<Speed, World> left,
-                                                Time right) {
-       return left * right;
-     };
-
-     TestBilinearMap(vectorLeftTimeMultiplication, 1 * Second, 1 * JulianYear,
-                     Vector<Speed, World>(u), Vector<Speed, World>(v),
-                     Dimensionless(42));
-     TestBilinearMap(vectorRightTimeMultiplication, Vector<Speed, World>(w),
-                     Vector<Speed, World>(a), -1 * Day,
-                     1 * Parsec / SpeedOfLight, Dimensionless(-π));
-     Time t = -3 * Second;
-     AssertEqual(t * Vector<Speed, World>(u), Vector<Speed, World>(u) * t);
-     AssertEqual((Vector<Speed, World>(u) * t) / t, Vector<Speed, World>(u));
+     TestBilinearMap(
+        Times<Vector<Speed, World>, Inverse<Time>, Vector<Length, World>>,
+        1 / Second,
+        1 / JulianYear,
+        Vector<Length, World>(u_),
+        Vector<Length, World>(v_), Dimensionless(42));
+     TestBilinearMap(
+        Times<Vector<Speed, World>, Vector<Length, World>, Inverse<Time>>,
+        Vector<Length, World>(w_),
+        Vector<Length, World>(a_),
+        -1 / Day,
+        SpeedOfLight / Parsec,
+        Dimensionless(-π));
+     Inverse<Time> t = -3 / Second;
+     AssertEqual(t * Vector<Length, World>(u_), Vector<Length, World>(u_) * t);
+     AssertEqual((Vector<Length, World>(v_) * t) / t,
+                 Vector<Length, World>(v_));
   }
 
   TEST_METHOD(VectorSpaces) {

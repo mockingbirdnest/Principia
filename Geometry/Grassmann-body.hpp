@@ -171,7 +171,7 @@ inline Multivector<
 operator*(Multivector<LScalar, Frame, Rank> const& left,
           quantities::Quantity<RDimension> const& right) {
   return Multivector<
-      quantities::Product<LeftScalar, quantities::Quantity<RDimension>>,
+      quantities::Product<LScalar, quantities::Quantity<RDimension>>,
       Frame,
       Rank>(left.coordinates() * right);
 }
@@ -185,7 +185,7 @@ inline Multivector<
 operator/(Multivector<LScalar, Frame, Rank> const& left,
           quantities::Quantity<RDimension> const& right) {
   return Multivector<
-      quantities::Quotient<LeftScalar, quantities::Quantity<RDimension>>,
+      quantities::Quotient<LScalar, quantities::Quantity<RDimension>>,
       Frame,
       Rank>(left.coordinates() / right);
 }
