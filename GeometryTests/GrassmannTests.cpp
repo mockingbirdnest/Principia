@@ -69,14 +69,17 @@ TEST_CLASS(GrassmannTests) {
         1 / Second,
         1 / JulianYear,
         Vector<Length, World>(u_),
-        Vector<Length, World>(v_), Dimensionless(42));
+        Vector<Length, World>(v_),
+        Dimensionless(42),
+        2 * DBL_EPSILON);
      TestBilinearMap(
         Times<Vector<Speed, World>, Vector<Length, World>, Inverse<Time>>,
         Vector<Length, World>(w_),
         Vector<Length, World>(a_),
         -1 / Day,
         SpeedOfLight / Parsec,
-        Dimensionless(-π));
+        Dimensionless(-π),
+        DBL_EPSILON);
      Inverse<Time> t = -3 / Second;
      AssertEqual(t * Vector<Length, World>(u_), Vector<Length, World>(u_) * t);
      AssertEqual((Vector<Length, World>(v_) * t) / t,
