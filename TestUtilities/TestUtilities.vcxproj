@@ -84,6 +84,8 @@
   <ItemGroup>
     <ClInclude Include="Algebra-body.hpp" />
     <ClInclude Include="Algebra.hpp" />
+    <ClInclude Include="ExplicitOperators-body.hpp" />
+    <ClInclude Include="ExplicitOperators.hpp" />
     <ClInclude Include="GeometryComparisons-body.hpp" />
     <ClInclude Include="GeometryComparisons.hpp" />
     <ClInclude Include="QuantityComparisons-body.hpp" />
