@@ -54,6 +54,15 @@ TEST_CLASS(GrassmannTests) {
     return InnerProduct(left, right);
   }
 
+  template<typename LScalar, typename RScalar, typename Frame, int LRank,
+          int RRank>
+  static Multivector<Product<LScalar, RScalar>, Frame, LRank + RRank>
+  Multivectorwedge(
+      Multivector<LScalar, Frame, LRank> const& left,
+      Multivector<RScalar, Frame, RRank> const& right) {
+    return Wedge(left, right);
+  }
+
   TEST_METHOD(SpecialOrthogonalLieAlgebra) {
     TestLieBracket(Commutator<Dimensionless, Dimensionless, World>,
                    Bivector<Dimensionless, World>(u_ / Foot),
@@ -144,19 +153,13 @@ TEST_CLASS(GrassmannTests) {
   }
 
   TEST_METHOD(GrassmannAlgebra) {
-    R3Element<Dimensionless> u(3, -42, 0);
-    R3Element<Dimensionless> v(-π, -e, -1);
-    R3Element<Dimensionless> w(2, 2, 2);
-    R3Element<Dimensionless> a(1.2, 2.3, 3.4);
-    auto vectorWedge = [](Vector<Dimensionless, World> a,
-                          Vector<Dimensionless, World> b) {
-        return Wedge(a, b);
-      };
-    TestAlternatingBilinearMap(vectorWedge, Vector<Dimensionless, World>(u),
-                               Vector<Dimensionless, World>(u),
-                               Vector<Dimensionless, World>(u),
-                               Vector<Dimensionless, World>(u),
-                               Dimensionless(6 * 9));
+    TestAlternatingBilinearMap(
+        Multivectorwedge<Dimensionless, Dimensionless, World, 1, 1>,
+        Vector<Dimensionless, World>(u_ / Metre),
+        Vector<Dimensionless, World>(v_ / Metre),
+        Vector<Dimensionless, World>(w_ / Metre),
+        Vector<Dimensionless, World>(a_ / Metre),
+        Dimensionless(6 * 9));
   }
 };
 
