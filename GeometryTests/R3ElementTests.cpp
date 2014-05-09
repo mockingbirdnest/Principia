@@ -55,6 +55,10 @@ TEST_CLASS(R3ElementTests) {
                                                      2 * DBL_EPSILON);
     TestAlternatingBilinearMap(Cross<Speed, Speed>, u_, v_, w_, a_,
                                Dimensionless(42), 2 * DBL_EPSILON);
+    AssertEqual(
+        Cross(R3Element<Dimensionless>(1, 0, 0),
+              R3Element<Dimensionless>(0, 1, 0)),
+        R3Element<Dimensionless>(0, 0, 1));
     TestSymmetricPositiveDefiniteBilinearMap(Dot<Speed, Speed>, u_, v_, w_, a_,
                                              Dimensionless(42),
                                              2 * DBL_EPSILON);
