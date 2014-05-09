@@ -4,6 +4,7 @@
 #include <memory>
 
 #include "Geometry/Grassmann.hpp"
+#include "Geometry/Quaternion.hpp"
 #include "Geometry/Rotation.hpp"
 #include "Quantities/Quantities.hpp"
 #include "Quantities/SI.hpp"
@@ -34,7 +35,7 @@ TEST_CLASS(RotationTests) {
     bivector_.reset(new Bivector<quantities::Length, World>(
       R3Element<quantities::Length>(1.0 * Metre, 2.0 * Metre, 3.0 * Metre)));
     trivector_.reset(new Trivector<quantities::Length, World>(4.0 * Metre));
-    rotation_a_.reset(new R(0.5, {0.5, 0.5, 0.5}));
+    rotation_a_.reset(new R(Quaternion(0.5, {0.5, 0.5, 0.5})));
   }
 
   TEST_METHOD(Identity) {
