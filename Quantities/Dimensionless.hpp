@@ -7,7 +7,10 @@ namespace quantities {
 // A double by any other name...
 class Dimensionless {
 public:
+  Dimensionless();
+  // No explicit here: we want implicit conversion from double.
   Dimensionless(double const value);
+
   double Value() const;
   Dimensionless Pow(int const) const;
   // This function calls Pow(Exponent), its purpose is to provide consistency

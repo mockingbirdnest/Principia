@@ -91,6 +91,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="PermutationTests.cpp" />
+    <ClCompile Include="QuaternionTests.cpp" />
     <ClCompile Include="R3ElementTests.cpp" />
     <ClCompile Include="RotationTests.cpp" />
     <ClCompile Include="SignTests.cpp" />

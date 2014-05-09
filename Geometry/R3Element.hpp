@@ -60,6 +60,13 @@ operator/(R3Element<LScalar> const& left,
           quantities::Quantity<RDimension> const& right);
 
 template<typename Scalar>
+bool operator==(R3Element<Scalar> const& left,
+                R3Element<Scalar> const& right);
+template<typename Scalar>
+bool operator!=(R3Element<Scalar> const& left,
+                R3Element<Scalar> const& right);
+
+template<typename Scalar>
 void operator+=(R3Element<Scalar>& left,
                 R3Element<Scalar> const& right);
 template<typename Scalar>
