@@ -129,6 +129,18 @@ operator/(R3Element<LScalar> const& left,
 }
 
 template<typename Scalar>
+bool operator==(R3Element<Scalar> const& left,
+                R3Element<Scalar> const& right) {
+  return left.x == right.x && left.y == right.y && left.z == right.z;
+}
+
+template<typename Scalar>
+bool operator!=(R3Element<Scalar> const& left,
+                R3Element<Scalar> const& right) {
+  return left.x != right.x || left.y != right.y || left.z != right.z;
+}
+
+template<typename Scalar>
 inline void operator+=(R3Element<Scalar>& left,
                        R3Element<Scalar> const& right) {
   left = left + right;

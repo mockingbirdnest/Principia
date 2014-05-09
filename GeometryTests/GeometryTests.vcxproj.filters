@@ -41,14 +41,8 @@
     <ClCompile Include="PermutationTests.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-<<<<<<< Updated upstream
-=======
-    <ClCompile Include="RotationTests.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="QuaternionTests.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
->>>>>>> Stashed changes
   </ItemGroup>
 </Project>

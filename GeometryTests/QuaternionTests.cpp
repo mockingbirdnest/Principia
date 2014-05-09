@@ -1,7 +1,7 @@
 #include "stdafx.hpp"
 
-#include <memory>
 #include <CppUnitTest.h>
+#include <memory>
 
 #include "Geometry/Quaternion.hpp"
 #include "TestUtilities/GeometryComparisons.hpp"
@@ -16,7 +16,6 @@ using namespace test_utilities;
 
 TEST_CLASS(QuaternionTests) {
  private:
-
   std::unique_ptr<Quaternion> q1_;
   std::unique_ptr<Quaternion> q2_;
   std::unique_ptr<Quaternion> q3_;
