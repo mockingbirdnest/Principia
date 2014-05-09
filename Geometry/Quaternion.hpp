@@ -45,7 +45,7 @@ Quaternion operator*(quantities::Dimensionless const& left,
                      Quaternion const& right);
 Quaternion operator*(Quaternion const& left,
                      quantities::Dimensionless const& right);
-Quaternion operator/(Quaternion const& left, 
+Quaternion operator/(Quaternion const& left,
                      quantities::Dimensionless const& right);
 
 void operator+=(Quaternion& left, Quaternion const& right);

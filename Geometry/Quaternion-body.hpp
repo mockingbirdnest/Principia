@@ -102,13 +102,13 @@ inline void operator/=(Quaternion& left, Quaternion const& right) {
   left = left / right;
 }
 
-inline void operator*=(Quaternion& left, 
+inline void operator*=(Quaternion& left,
                        quantities::Dimensionless const& right) {
   left.real_part_ *= right;
   left.imaginary_part_ *= right;
 }
 
-inline void operator/=(Quaternion& left, 
+inline void operator/=(Quaternion& left,
                        quantities::Dimensionless const& right) {
   left.real_part_ /= right;
   left.imaginary_part_ /= right;
