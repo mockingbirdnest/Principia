@@ -30,7 +30,8 @@ inline Quaternion Quaternion::Conjugate() const {
 }
 
 inline Quaternion Quaternion::Inverse() const {
-  return Conjugate() / (imaginary_part_.Dot(imaginary_part_));
+  return Conjugate() /
+      (real_part_ * real_part_ + Dot(imaginary_part_, imaginary_part_));
 }
 
 Quaternion operator+(Quaternion const& right) {
@@ -53,10 +54,10 @@ Quaternion operator-(Quaternion const& left, Quaternion const& right) {
 
 Quaternion operator*(Quaternion const& left, Quaternion const& right) {
   return Quaternion(left.real_part() * right.real_part() - 
-                        left.imaginary_part().Dot(right.imaginary_part()),
+                        Dot(left.imaginary_part(), right.imaginary_part()),
                     left.real_part() * right.imaginary_part() +
                         right.real_part() * left.imaginary_part() +
-                        left.imaginary_part().Cross(right.imaginary_part()));
+                        Cross(left.imaginary_part(), right.imaginary_part()));
 }
 
 Quaternion operator/(Quaternion const& left, Quaternion const& right) {

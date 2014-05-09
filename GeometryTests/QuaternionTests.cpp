@@ -1,8 +1,10 @@
 #include "stdafx.hpp"
 
+#include <memory>
 #include <CppUnitTest.h>
 
 #include "Geometry/Quaternion.hpp"
+#include "TestUtilities/GeometryComparisons.hpp"
 #include "TestUtilities/TestUtilities.hpp"
 
 using namespace Microsoft::VisualStudio::CppUnitTestFramework;
@@ -13,48 +15,83 @@ namespace geometry {
 using namespace test_utilities;
 
 TEST_CLASS(QuaternionTests) {
- public:
-  struct World;
-  typedef Permutation<World, World> P;
+ private:
 
-  std::unique_ptr<Vector<quantities::Length, World>> vector_;
-  std::unique_ptr<Bivector<quantities::Length, World>> bivector_;
-  std::unique_ptr<Trivector<quantities::Length, World>> trivector_;
+  std::unique_ptr<Quaternion> q1_;
+  std::unique_ptr<Quaternion> q2_;
+  std::unique_ptr<Quaternion> q3_;
 
  public:
   TEST_METHOD_INITIALIZE(Initialize) {
-    vector_.reset(new Vector<quantities::Length, World>(
-      R3Element<quantities::Length>(1.0 * Metre, 2.0 * Metre, 3.0 * Metre)));
-    bivector_.reset(new Bivector<quantities::Length, World>(
-      R3Element<quantities::Length>(1.0 * Metre, 2.0 * Metre, 3.0 * Metre)));
-    trivector_.reset(new Trivector<quantities::Length, World>(4.0 * Metre));
+    q1_.reset(new Quaternion(1, {1, -1, -1}));
+    q2_.reset(new Quaternion(-2, {1, -3, 4}));
+    q3_.reset(new Quaternion(-8));
   }
 
-  TEST_METHOD(Integer) {
-    Sign const positive(1);
-    Sign const negative(-1);
-    AssertTrue(positive.Positive());
-    AssertFalse(positive.Negative());
-    AssertFalse(negative.Positive());
-    AssertTrue(negative.Negative());
+  TEST_METHOD(RealPart) {
+    AssertEqual<quantities::Dimensionless>(1, q1_->real_part());
+    AssertEqual<quantities::Dimensionless>(-2, q2_->real_part());
+    AssertEqual<quantities::Dimensionless>(-8, q3_->real_part());
   }
 
-  TEST_METHOD(SignMultiplication) {
-    Sign const positive(1);
-    Sign const negative(-1);
-    AssertTrue((positive * positive).Positive());
-    AssertTrue((positive * negative).Negative());
-    AssertTrue((negative * positive).Negative());
-    AssertTrue((negative * negative).Positive());
+  TEST_METHOD(ImaginaryPart) {
+    AssertEqual<quantities::Dimensionless>({1, -1, -1}, q1_->imaginary_part());
+    AssertEqual<quantities::Dimensionless>({1, -3, 4}, q2_->imaginary_part());
+    AssertEqual<quantities::Dimensionless>({0, 0, 0}, q3_->imaginary_part());
   }
 
-  TEST_METHOD(ScalarMultiplication) {
-    Sign const positive(1);
-    Sign const negative(-1);
-    AssertEqual(3, positive * 3);
-    AssertEqual(-3, positive * -3);
-    AssertEqual(-3, negative * 3);
-    AssertEqual(3, negative * -3);
+  TEST_METHOD(Conjugate) {
+    Quaternion const p1(q1_->Conjugate());
+    Quaternion const p2(q2_->Conjugate());
+    Quaternion const p3(q3_->Conjugate());
+    AssertEqual<quantities::Dimensionless>(1, p1.real_part());
+    AssertEqual<quantities::Dimensionless>({-1, 1, 1}, p1.imaginary_part());
+    AssertEqual<quantities::Dimensionless>(-2, p2.real_part());
+    AssertEqual<quantities::Dimensionless>({-1, 3, -4}, p2.imaginary_part());
+    AssertEqual<quantities::Dimensionless>(-8, p3.real_part());
+    AssertEqual<quantities::Dimensionless>({0, 0, 0}, p3.imaginary_part());
+  }
+
+  TEST_METHOD(Inverse) {
+    Quaternion const p1(q1_->Inverse());
+    Quaternion const p2(q2_->Inverse());
+    Quaternion const p3(q3_->Inverse());
+    Quaternion const r1(p1 * *q1_);
+    AssertEqual<quantities::Dimensionless>(0.25, p1.real_part());
+    AssertEqual<quantities::Dimensionless>({-0.25, 0.25, 0.25}, 
+                                           p1.imaginary_part());
+    AssertEqual<quantities::Dimensionless>(-1.0 / 15.0, p2.real_part());
+    AssertEqual<quantities::Dimensionless>({-1.0 / 30.0, 0.1, -2.0 / 15.0},
+                                           p2.imaginary_part());
+    AssertEqual<quantities::Dimensionless>(-0.125, p3.real_part());
+    AssertEqual<quantities::Dimensionless>({0, 0, 0}, p3.imaginary_part());
+
+    AssertEqual<quantities::Dimensionless>(1, r1.real_part());
+    AssertEqual<quantities::Dimensionless>({0, 0, 0}, r1.imaginary_part());
+  }
+
+  TEST_METHOD(UnaryOperators) {
+    Quaternion const a(+*q2_);
+    Quaternion const b(-*q2_);
+    AssertEqual<quantities::Dimensionless>(-2, a.real_part());
+    AssertEqual<quantities::Dimensionless>({1, -3, 4}, a.imaginary_part());
+    AssertEqual<quantities::Dimensionless>(2, b.real_part());
+    AssertEqual<quantities::Dimensionless>({-1, 3, -4}, b.imaginary_part());
+  }
+
+  TEST_METHOD(BinaryOperators) {
+    Quaternion const a(*q2_ + *q1_);
+    Quaternion const b(*q2_ - *q1_);
+    Quaternion const c(*q2_ * *q1_);
+    Quaternion const d(*q2_ / *q1_);
+    AssertEqual<quantities::Dimensionless>(-1, a.real_part());
+    AssertEqual<quantities::Dimensionless>({2, -4, 3}, a.imaginary_part());
+    AssertEqual<quantities::Dimensionless>(-3, b.real_part());
+    AssertEqual<quantities::Dimensionless>({0, -2, 5}, b.imaginary_part());
+    AssertEqual<quantities::Dimensionless>(-2, c.real_part());
+    AssertEqual<quantities::Dimensionless>({6, 4, 8}, c.imaginary_part());
+    AssertEqual<quantities::Dimensionless>(-0.5, d.real_part());
+    AssertEqual<quantities::Dimensionless>({-1, -2.5, 0}, d.imaginary_part());
   }
 };
 
