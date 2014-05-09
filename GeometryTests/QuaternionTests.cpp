@@ -57,7 +57,7 @@ TEST_CLASS(QuaternionTests) {
     Quaternion const p3(q3_->Inverse());
     Quaternion const r1(p1 * *q1_);
     AssertEqual<quantities::Dimensionless>(0.25, p1.real_part());
-    AssertEqual<quantities::Dimensionless>({-0.25, 0.25, 0.25}, 
+    AssertEqual<quantities::Dimensionless>({-0.25, 0.25, 0.25},
                                            p1.imaginary_part());
     AssertEqual<quantities::Dimensionless>(-1.0 / 15.0, p2.real_part());
     AssertEqual<quantities::Dimensionless>({-1.0 / 30.0, 0.1, -2.0 / 15.0},

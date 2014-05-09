@@ -20,7 +20,7 @@ inline quantities::Dimensionless const& Quaternion::real_part() const {
   return real_part_;
 }
 
-inline R3Element<quantities::Dimensionless> const& 
+inline R3Element<quantities::Dimensionless> const&
 Quaternion::imaginary_part() const {
   return imaginary_part_;
 }
@@ -53,7 +53,7 @@ inline Quaternion operator-(Quaternion const& left, Quaternion const& right) {
 }
 
 inline Quaternion operator*(Quaternion const& left, Quaternion const& right) {
-  return Quaternion(left.real_part() * right.real_part() - 
+  return Quaternion(left.real_part() * right.real_part() -
                         Dot(left.imaginary_part(), right.imaginary_part()),
                     left.real_part() * right.imaginary_part() +
                         right.real_part() * left.imaginary_part() +
