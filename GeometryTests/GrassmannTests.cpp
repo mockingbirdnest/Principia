@@ -177,6 +177,9 @@ TEST_CLASS(GrassmannTests) {
         Vector<Speed, World>(a_ / Second),
         Dimensionless(6 * 9),
         2 * DBL_EPSILON);
+    AssertEqual(
+        Wedge(Vector<Speed, World>(v_ / Second), Bivector<Length, World>(u_)),
+        Wedge(Bivector<Length, World>(u_), Vector<Speed, World>(v_ / Second)));
   }
 };
 
