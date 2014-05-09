@@ -93,6 +93,46 @@ TEST_CLASS(QuaternionTests) {
     AssertEqual<quantities::Dimensionless>(-0.5, d.real_part());
     AssertEqual<quantities::Dimensionless>({-1, -2.5, 0}, d.imaginary_part());
   }
+
+  TEST_METHOD(ScalarMultiplicationDivision) {
+    Quaternion const a(3 * *q2_);
+    Quaternion const b(*q2_ * -5);
+    Quaternion const c(*q2_ / 4);
+    AssertEqual<quantities::Dimensionless>(-6, a.real_part());
+    AssertEqual<quantities::Dimensionless>({3, -9, 12}, a.imaginary_part());
+    AssertEqual<quantities::Dimensionless>(10, b.real_part());
+    AssertEqual<quantities::Dimensionless>({-5, 15, -20}, b.imaginary_part());
+    AssertEqual<quantities::Dimensionless>(-0.5, c.real_part());
+    AssertEqual<quantities::Dimensionless>({0.25, -0.75, 1}, c.imaginary_part());
+  }
+
+  TEST_METHOD(Assignment) {
+    Quaternion a = *q2_;
+    Quaternion b = *q2_;
+    Quaternion c = *q2_;
+    Quaternion d = *q2_;
+    Quaternion e = *q2_;
+    Quaternion f = *q2_;
+    a += *q1_;
+    b -= *q1_;
+    c *= *q1_;
+    d /= *q1_;
+    e *= 3;
+    f /= 4;
+    AssertEqual<quantities::Dimensionless>(-1, a.real_part());
+    AssertEqual<quantities::Dimensionless>({2, -4, 3}, a.imaginary_part());
+    AssertEqual<quantities::Dimensionless>(-3, b.real_part());
+    AssertEqual<quantities::Dimensionless>({0, -2, 5}, b.imaginary_part());
+    AssertEqual<quantities::Dimensionless>(-2, c.real_part());
+    AssertEqual<quantities::Dimensionless>({6, 4, 8}, c.imaginary_part());
+    AssertEqual<quantities::Dimensionless>(-0.5, d.real_part());
+    AssertEqual<quantities::Dimensionless>({-1, -2.5, 0}, d.imaginary_part());
+    AssertEqual<quantities::Dimensionless>(-6, e.real_part());
+    AssertEqual<quantities::Dimensionless>({3, -9, 12}, e.imaginary_part());
+    AssertEqual<quantities::Dimensionless>(-0.5, f.real_part());
+    AssertEqual<quantities::Dimensionless>({0.25, -0.75, 1}, f.imaginary_part());
+  }
+
 };
 
 }  // namespace geometry

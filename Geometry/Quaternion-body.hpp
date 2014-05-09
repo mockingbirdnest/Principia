@@ -92,6 +92,16 @@ void operator-=(Quaternion& left, Quaternion const& right)  {
   left.imaginary_part_ -= right.imaginary_part_;
 }
 
+void operator*=(Quaternion& left, Quaternion const& right) {
+  // TODO(phl): Can this be optimized?
+  left = left * right;
+}
+
+void operator/=(Quaternion& left, Quaternion const& right)  {
+  // TODO(phl): Can this be optimized?
+  left = left / right;
+}
+
 void operator*=(Quaternion& left, quantities::Dimensionless const& right) {
   left.real_part_ *= right;
   left.imaginary_part_ *= right;

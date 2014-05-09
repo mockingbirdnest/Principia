@@ -50,6 +50,8 @@ Quaternion operator/(Quaternion const& left,
 
 void operator+=(Quaternion& left, Quaternion const& right);
 void operator-=(Quaternion& left, Quaternion const& right);
+void operator*=(Quaternion& left, Quaternion const& right);
+void operator/=(Quaternion& left, Quaternion const& right);
 
 void operator*=(Quaternion& left, quantities::Dimensionless const& right);
 void operator/=(Quaternion& left, quantities::Dimensionless const& right);
