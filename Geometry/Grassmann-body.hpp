@@ -55,8 +55,8 @@ template<typename LScalar, typename RScalar, typename Frame>
 inline Bivector<quantities::Product<LScalar, RScalar>, Frame> Wedge(
     Vector<LScalar, Frame> const& left,
     Vector<RScalar, Frame> const& right) {
-  return Bivector<quantities::Product<LScalar, RScalar>,
-                   Frame>(Cross(left.coordinates(), right.coordinates()));
+  return Bivector<quantities::Product<LScalar, RScalar>, Frame>(
+      Cross(left.coordinates(), right.coordinates()));
 }
 
 template<typename LScalar, typename RScalar, typename Frame>
