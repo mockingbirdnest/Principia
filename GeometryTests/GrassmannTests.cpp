@@ -159,7 +159,8 @@ TEST_CLASS(GrassmannTests) {
         Vector<Dimensionless, World>(v_ / Metre),
         Vector<Dimensionless, World>(w_ / Metre),
         Vector<Dimensionless, World>(a_ / Metre),
-        Dimensionless(6 * 9));
+        Dimensionless(6 * 9),
+        2 * DBL_EPSILON);
   }
 };
 
