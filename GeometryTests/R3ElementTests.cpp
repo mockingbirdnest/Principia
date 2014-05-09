@@ -47,6 +47,10 @@ TEST_CLASS(R3ElementTests) {
  public:
   TEST_METHOD(Dumb3Vector) {
     AssertEqual((e * Dimensionless(42)) * v_, e * (Dimensionless(42) * v_));
+    AssertTrue(42 * v_ == 42 * v_);
+    AssertFalse(42 * v_ != 42 * v_);
+    AssertTrue(43 * v_ != 42 * v_);
+    AssertFalse(43 * v_ == 42 * v_);
     TestVectorSpace<R3Element<Speed>, Dimensionless>(null_velocity_, u_, v_,
                                                      w_, Dimensionless(0),
                                                      Dimensionless(1), e,
