@@ -161,6 +161,22 @@ TEST_CLASS(GrassmannTests) {
         Vector<Dimensionless, World>(a_ / Metre),
         Dimensionless(6 * 9),
         2 * DBL_EPSILON);
+    TestBilinearMap(
+        Multivectorwedge<Length, Speed, World, 1, 2>,
+        Vector<Length, World>(u_),
+        Vector<Length, World>(v_),
+        Bivector<Speed, World>(w_ / Second),
+        Bivector<Speed, World>(a_ / Second),
+        Dimensionless(6 * 9),
+        2 * DBL_EPSILON);
+    TestBilinearMap(
+        Multivectorwedge<Length, Speed, World, 2, 1>,
+        Bivector<Length, World>(u_),
+        Bivector<Length, World>(v_),
+        Vector<Speed, World>(w_ / Second),
+        Vector<Speed, World>(a_ / Second),
+        Dimensionless(6 * 9),
+        2 * DBL_EPSILON);
   }
 };
 
