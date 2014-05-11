@@ -2,6 +2,8 @@
 
 namespace principia {
 namespace quantities {
+
+inline Dimensionless::Dimensionless() : value_(0) {}
 inline Dimensionless::Dimensionless(double const value) : value_(value) {}
 inline double Dimensionless::Value() const { return value_; }
 template<int Exponent>
