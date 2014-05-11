@@ -19,8 +19,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{4F787E5E
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CTSGeometry", "CTSGeometry\CTSGeometry.csproj", "{E17C45ED-CAC9-4755-9E00-0B825E21C3AC}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Geometry", "Geometry\Geometry.vcxproj", "{B3B7F5AA-9506-4007-8D42-9EC443033AE3}"
-EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "CTSGeometryTests", "CTSGeometryTests\CTSGeometryTests.vcxproj", "{9757CB21-B840-49A6-B057-9F322E543DD6}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Quantities", "Quantities\Quantities.vcxproj", "{273987F9-5E73-43E6-868E-E9D3C137F01A}"
@@ -36,9 +34,11 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "QuantitiesTests", "Quantiti
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{E12187B5-1432-4401-B671-FC3E06256CFD}"
 	ProjectSection(SolutionItems) = preProject
-		google_test_framework_include.props = google_test_framework_include.props
-		IncludeSolution.props = IncludeSolution.props
+		google_test_framework.props = google_test_framework.props
+		include_solution.props = include_solution.props
 	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "geometry", "geometry\geometry.vcxproj", "{0FD08CDF-228C-48C6-8690-CF0A72CF6C69}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -118,18 +118,6 @@ Global
 		{E17C45ED-CAC9-4755-9E00-0B825E21C3AC}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
 		{E17C45ED-CAC9-4755-9E00-0B825E21C3AC}.Release|Mixed Platforms.Build.0 = Release|Any CPU
 		{E17C45ED-CAC9-4755-9E00-0B825E21C3AC}.Release|Win32.ActiveCfg = Release|Any CPU
-		{B3B7F5AA-9506-4007-8D42-9EC443033AE3}.Debug|Any CPU.ActiveCfg = Debug|Win32
-		{B3B7F5AA-9506-4007-8D42-9EC443033AE3}.Debug|Any CPU.Build.0 = Debug|Win32
-		{B3B7F5AA-9506-4007-8D42-9EC443033AE3}.Debug|Mixed Platforms.ActiveCfg = Debug|Win32
-		{B3B7F5AA-9506-4007-8D42-9EC443033AE3}.Debug|Mixed Platforms.Build.0 = Debug|Win32
-		{B3B7F5AA-9506-4007-8D42-9EC443033AE3}.Debug|Win32.ActiveCfg = Debug|Win32
-		{B3B7F5AA-9506-4007-8D42-9EC443033AE3}.Debug|Win32.Build.0 = Debug|Win32
-		{B3B7F5AA-9506-4007-8D42-9EC443033AE3}.Release|Any CPU.ActiveCfg = Release|Win32
-		{B3B7F5AA-9506-4007-8D42-9EC443033AE3}.Release|Any CPU.Build.0 = Release|Win32
-		{B3B7F5AA-9506-4007-8D42-9EC443033AE3}.Release|Mixed Platforms.ActiveCfg = Release|Win32
-		{B3B7F5AA-9506-4007-8D42-9EC443033AE3}.Release|Mixed Platforms.Build.0 = Release|Win32
-		{B3B7F5AA-9506-4007-8D42-9EC443033AE3}.Release|Win32.ActiveCfg = Release|Win32
-		{B3B7F5AA-9506-4007-8D42-9EC443033AE3}.Release|Win32.Build.0 = Release|Win32
 		{9757CB21-B840-49A6-B057-9F322E543DD6}.Debug|Any CPU.ActiveCfg = Debug|Win32
 		{9757CB21-B840-49A6-B057-9F322E543DD6}.Debug|Mixed Platforms.ActiveCfg = Debug|Win32
 		{9757CB21-B840-49A6-B057-9F322E543DD6}.Debug|Mixed Platforms.Build.0 = Debug|Win32
@@ -181,6 +169,16 @@ Global
 		{E9CFB46A-851F-42EC-B780-24FE2E306F74}.Release|Mixed Platforms.Build.0 = Release|Win32
 		{E9CFB46A-851F-42EC-B780-24FE2E306F74}.Release|Win32.ActiveCfg = Release|Win32
 		{E9CFB46A-851F-42EC-B780-24FE2E306F74}.Release|Win32.Build.0 = Release|Win32
+		{0FD08CDF-228C-48C6-8690-CF0A72CF6C69}.Debug|Any CPU.ActiveCfg = Debug|Win32
+		{0FD08CDF-228C-48C6-8690-CF0A72CF6C69}.Debug|Mixed Platforms.ActiveCfg = Debug|Win32
+		{0FD08CDF-228C-48C6-8690-CF0A72CF6C69}.Debug|Mixed Platforms.Build.0 = Debug|Win32
+		{0FD08CDF-228C-48C6-8690-CF0A72CF6C69}.Debug|Win32.ActiveCfg = Debug|Win32
+		{0FD08CDF-228C-48C6-8690-CF0A72CF6C69}.Debug|Win32.Build.0 = Debug|Win32
+		{0FD08CDF-228C-48C6-8690-CF0A72CF6C69}.Release|Any CPU.ActiveCfg = Release|Win32
+		{0FD08CDF-228C-48C6-8690-CF0A72CF6C69}.Release|Mixed Platforms.ActiveCfg = Release|Win32
+		{0FD08CDF-228C-48C6-8690-CF0A72CF6C69}.Release|Mixed Platforms.Build.0 = Release|Win32
+		{0FD08CDF-228C-48C6-8690-CF0A72CF6C69}.Release|Win32.ActiveCfg = Release|Win32
+		{0FD08CDF-228C-48C6-8690-CF0A72CF6C69}.Release|Win32.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

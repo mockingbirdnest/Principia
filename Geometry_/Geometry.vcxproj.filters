@@ -14,35 +14,35 @@
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
     <Filter Include="Test Files">
-      <UniqueIdentifier>{6c627518-7018-4547-aeb6-f1b7d5a3fee5}</UniqueIdentifier>
+      <UniqueIdentifier>{bd63e9a2-5059-4dac-bc8b-af6f819531be}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Grassmann.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="LinearMap.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Permutation.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="R3Element.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Sign.hpp">
+    <ClInclude Include="Grassmann.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Grassmann-body.hpp">
       <Filter>Source Files</Filter>
     </ClInclude>
-    <ClInclude Include="Permutation-body.hpp">
-      <Filter>Source Files</Filter>
-    </ClInclude>
     <ClInclude Include="R3Element-body.hpp">
       <Filter>Source Files</Filter>
     </ClInclude>
+    <ClInclude Include="Sign.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Permutation.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="LinearMap.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="Sign-body.hpp">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Permutation-body.hpp">
       <Filter>Source Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -50,5 +50,15 @@
     <ClCompile Include="sign_test.cpp">
       <Filter>Test Files</Filter>
     </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="app.rc">
+      <Filter>Resource Files</Filter>
+    </ResourceCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="app.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
   </ItemGroup>
 </Project>
