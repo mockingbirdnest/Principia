@@ -13,6 +13,7 @@ class SignTest : public testing::Test {
 };
 
 TEST_F(SignTest, Integer) {
+  LOG(INFO) << "JE SUIS LA!";
   Sign const positive(1);
   Sign const negative(-1);
   EXPECT_TRUE(positive.Positive());
