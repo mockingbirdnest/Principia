@@ -42,7 +42,7 @@ TEST_CLASS(RotationTests) {
             Vector<quantities::Dimensionless, World>({1, 1, 1})));
     rotation_b_.reset(
       new R(90 * si::Degree, 
-            Vector<quantities::Dimensionless, World>({1, 1, 1})));
+            Vector<quantities::Dimensionless, World>({1, 0, 0})));
     rotation_c_.reset(
       new R(30 * si::Degree, 
             Vector<quantities::Dimensionless, World>({1, 1, 1})));
@@ -91,11 +91,11 @@ TEST_CLASS(RotationTests) {
   }
 
   TEST_METHOD(Composition) {
-    R const rotation_bc_ = *rotation_b_ * *rotation_c_;
-    Vector<quantities::Length, World> const rotated = rotation_bc_(*vector_);
-    AssertEqual(3.0 * Metre, rotated.coordinates().x);
+    R const rotation_ab_ = *rotation_a_ * *rotation_b_;
+    Vector<quantities::Length, World> const rotated = rotation_ab_(*vector_);
+    AssertEqualWithin(2.0 * Metre, rotated.coordinates().x, 3 * DBL_EPSILON);
     AssertEqualWithin(1.0 * Metre, rotated.coordinates().y, 3 * DBL_EPSILON);
-    AssertEqual(2.0 * Metre, rotated.coordinates().z);
+    AssertEqual(-3.0 * Metre, rotated.coordinates().z);
   }
 };
 
