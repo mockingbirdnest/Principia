@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Geometry/Grassmann.hpp"
+#include "Geometry/Quaternion.hpp"
 #include "Geometry/LinearMap.hpp"
 #include "Geometry/R3Element.hpp"
 #include "Geometry/Sign.hpp"
@@ -79,7 +80,7 @@ template<typename FromFrame, typename ThroughFrame, typename ToFrame>
 Rotation<FromFrame, ToFrame> operator*(
     Rotation<ThroughFrame, ToFrame> const& left,
     Rotation<FromFrame, ThroughFrame> const& right) {
-  return left.quaternion_ * right.quaternion_;
+  return Rotation<FromFrame, ToFrame>(left.quaternion_ * right.quaternion_);
 }
 
 }  // namespace geometry

@@ -8,10 +8,10 @@
 namespace principia {
 namespace test_utilities {
 
-template<typename ValueType, typename ErrorType>
+template<typename ValueType>
 void AssertEqualWithin(ValueType const& left,
                        ValueType const& right,
-                       ErrorType const& ε) {
+                       quantities::Dimensionless const& ε) {
   std::wstring message = L"Should be equal within " + ToString(ε, 3) +
                          L": " + ToString(left) + L" and " + ToString(right) +
                          L".";
@@ -28,10 +28,10 @@ void AssertEqual(ValueType const& left,
   AssertTrue(left == right, message);
 }
 
-template<typename ValueType, typename ErrorType>
+template<typename ValueType>
 void AssertNotEqualWithin(ValueType const& left,
                           ValueType const& right,
-                          ErrorType const& ε) {
+                          quantities::Dimensionless const& ε) {
   std::wstring message = L"Should differ by more than " + ToString(ε, 3) +
                          L": " + ToString(left) + L" and " + ToString(right) +
                          L".";
@@ -68,7 +68,6 @@ inline void AssertFalse(bool const test, std::wstring const& message) {
 }
 
 inline void AssertTrue(bool const test, std::wstring const& message) {
-  WriteLog(message);
   Microsoft::VisualStudio::CppUnitTestFramework::Assert::IsTrue(
       test,
       message.c_str());
