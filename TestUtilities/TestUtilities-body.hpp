@@ -68,6 +68,7 @@ inline void AssertFalse(bool const test, std::wstring const& message) {
 }
 
 inline void AssertTrue(bool const test, std::wstring const& message) {
+  WriteLog(message);
   Microsoft::VisualStudio::CppUnitTestFramework::Assert::IsTrue(
       test,
       message.c_str());

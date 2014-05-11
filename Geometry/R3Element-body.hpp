@@ -43,6 +43,11 @@ inline Scalar const& R3Element<Scalar>::operator[](int const index) const {
 }
 
 template<typename Scalar>
+inline Scalar R3Element<Scalar>::Norm() const {
+  return Sqrt(x * x + y * y + z * z);
+}
+
+template<typename Scalar>
 inline R3Element<Scalar> operator+(R3Element<Scalar> const& right) {
   return R3Element<Scalar>(+right.x, +right.y, +right.z);
 }

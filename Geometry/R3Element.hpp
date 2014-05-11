@@ -19,6 +19,8 @@ struct R3Element {
   Scalar&       operator[](int const index);
   Scalar const& operator[](int const index) const;
 
+  Scalar Norm() const;
+
   Scalar x;
   Scalar y;
   Scalar z;

@@ -5,13 +5,23 @@
 #include "Geometry/R3Element.hpp"
 #include "Geometry/Sign.hpp"
 #include "Quantities/Dimensionless.hpp"
+#include "Quantities/ElementaryFunctions.hpp"
 
 namespace principia {
 namespace geometry {
 
 template<typename FromFrame, typename ToFrame>
-Rotation<FromFrame, ToFrame>::Rotation(Quaternion const& quaternion)
-    : quaternion_(quaternion) {}
+template<typename Scalar>
+Rotation<FromFrame, ToFrame>::Rotation(quantities::Angle const& angle,
+                                       Vector<Scalar, FromFrame> const& axis) {
+  quantities::Angle const half_angle = 0.5 * angle;
+  quantities::Dimensionless const cos = Cos(half_angle);
+  quantities::Dimensionless const sin = Sin(half_angle);
+  R3Element<Scalar> const coordinates = axis.coordinates();
+  Scalar const norm = coordinates.Norm();
+  R3Element<quantities::Dimensionless> unit_axis = coordinates / norm;
+  quaternion_ = Quaternion(cos, sin * unit_axis);
+}
 
 template<typename FromFrame, typename ToFrame>
 Sign Rotation<FromFrame, ToFrame>::Determinant() const {
@@ -50,10 +60,19 @@ Rotation<FromFrame, ToFrame> Rotation<FromFrame, ToFrame>::Identity() {
 }
 
 template<typename FromFrame, typename ToFrame>
+Rotation<FromFrame, ToFrame>::Rotation(Quaternion const& quaternion) 
+    : quaternion_(quaternion) {}
+
+template<typename FromFrame, typename ToFrame>
 template<typename Scalar>
 R3Element<Scalar> Rotation<FromFrame, ToFrame>::operator()(
     R3Element<Scalar> const& r3_element) const {
-  return quaternion_ * Quaternion(0, r3_element) * quaternion_.Inverse();
+  quantities::Dimensionless const& real_part = quaternion_.real_part();
+  R3Element<quantities::Dimensionless> const& imaginary_part =
+      quaternion_.imaginary_part();
+  return r3_element + 2 * Cross(imaginary_part,
+                                (Cross(imaginary_part, r3_element) +
+                                    real_part * r3_element));
 }
 
 template<typename FromFrame, typename ThroughFrame, typename ToFrame>
