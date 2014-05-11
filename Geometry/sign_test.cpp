@@ -13,30 +13,24 @@ class SignTest : public testing::Test {
 };
 
 TEST_F(SignTest, Integer) {
-  Sign const positive(1);
-  Sign const negative(-1);
-  EXPECT_TRUE(positive.Positive());
-  EXPECT_FALSE(positive.Negative());
-  EXPECT_FALSE(negative.Positive());
-  EXPECT_TRUE(negative.Negative());
+  EXPECT_TRUE(positive_.Positive());
+  EXPECT_FALSE(positive_.Negative());
+  EXPECT_FALSE(negative_.Positive());
+  EXPECT_TRUE(negative_.Negative());
 }
 
-TEST_F(SignTest, SignMultiplication) {
-  Sign const positive(1);
-  Sign const negative(-1);
-  EXPECT_TRUE((positive * positive).Positive());
-  EXPECT_TRUE((positive * negative).Negative());
-  EXPECT_TRUE((negative * positive).Negative());
-  EXPECT_TRUE((negative * negative).Positive());
+TEST_F(SignTest, SignMultiplication_) {
+  EXPECT_TRUE((positive_ * positive_).Positive());
+  EXPECT_TRUE((positive_ * negative_).Negative());
+  EXPECT_TRUE((negative_ * positive_).Negative());
+  EXPECT_TRUE((negative_ * negative_).Positive());
 }
 
 TEST_F(SignTest, ScalarMultiplication) {
-  Sign const positive(1);
-  Sign const negative(-1);
-  EXPECT_EQ(3, positive * 3);
-  EXPECT_EQ(-3, positive * -3);
-  EXPECT_EQ(-3, negative * 3);
-  EXPECT_EQ(3, negative * -3);
+  EXPECT_EQ(3, positive_ * 3);
+  EXPECT_EQ(-3, positive_ * -3);
+  EXPECT_EQ(-3, negative_ * 3);
+  EXPECT_EQ(3, negative_ * -3);
 }
 
 }  // namespace geometry
