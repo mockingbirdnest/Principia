@@ -36,6 +36,7 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "QuantitiesTests", "Quantiti
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{E12187B5-1432-4401-B671-FC3E06256CFD}"
 	ProjectSection(SolutionItems) = preProject
+		google_test_framework_include.props = google_test_framework_include.props
 		IncludeSolution.props = IncludeSolution.props
 	EndProjectSection
 EndProject
