@@ -1,8 +1,8 @@
 #pragma once
 
 #include "Geometry/Grassmann.hpp"
-#include "Geometry/Quaternion.hpp"
 #include "Geometry/LinearMap.hpp"
+#include "Geometry/Quaternion.hpp"
 #include "Geometry/R3Element.hpp"
 #include "Geometry/Sign.hpp"
 #include "Quantities/Dimensionless.hpp"
@@ -20,7 +20,7 @@ Rotation<FromFrame, ToFrame>::Rotation(quantities::Angle const& angle,
   quantities::Dimensionless const sin = Sin(half_angle);
   R3Element<Scalar> const coordinates = axis.coordinates();
   Scalar const norm = coordinates.Norm();
-  R3Element<quantities::Dimensionless> unit_axis = coordinates / norm;
+  R3Element<quantities::Dimensionless> const unit_axis = coordinates / norm;
   quaternion_ = Quaternion(cos, sin * unit_axis);
 }
 
@@ -31,6 +31,7 @@ Sign Rotation<FromFrame, ToFrame>::Determinant() const {
 
 template<typename FromFrame, typename ToFrame>
 Rotation<ToFrame, FromFrame> Rotation<FromFrame, ToFrame>::Inverse() const {
+  // Because |quaternion_| has norm 1, its inverse is just its conjugate.
   return Rotation(quaternion_.Conjugate());
 }
 
@@ -72,8 +73,8 @@ R3Element<Scalar> Rotation<FromFrame, ToFrame>::operator()(
   R3Element<quantities::Dimensionless> const& imaginary_part =
       quaternion_.imaginary_part();
   return r3_element + 2 * Cross(imaginary_part,
-                                (Cross(imaginary_part, r3_element) +
-                                    real_part * r3_element));
+                                Cross(imaginary_part, r3_element) +
+                                    real_part * r3_element);
 }
 
 template<typename FromFrame, typename ThroughFrame, typename ToFrame>

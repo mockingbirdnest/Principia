@@ -16,7 +16,8 @@ class LinearMap {
 
 // The following is the contract that must be implemented by subclasses.
 // Apologies for the commented-out code, but we cannot write this in real C++
-// for a variety of reasons.
+// because templates cannot be virtual and because the return type is not
+// covariant in inheritance.
 //
 //  virtual LinearMap<ToFrame, FromFrame> Inverse() const = 0;
 //

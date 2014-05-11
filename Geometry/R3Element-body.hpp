@@ -44,7 +44,7 @@ inline Scalar const& R3Element<Scalar>::operator[](int const index) const {
 
 template<typename Scalar>
 inline Scalar R3Element<Scalar>::Norm() const {
-  return Sqrt(x * x + y * y + z * z);
+  return Sqrt(Dot(*this, *this));
 }
 
 template<typename Scalar>

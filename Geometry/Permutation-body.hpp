@@ -15,7 +15,7 @@ Permutation<FromFrame, ToFrame>::Permutation(
     : coordinate_permutation_(coordinate_permutation) {}
 
 template<typename FromFrame, typename ToFrame>
-Sign Permutation<FromFrame, ToFrame>::Determinant() const {
+inline Sign Permutation<FromFrame, ToFrame>::Determinant() const {
   return Sign(coordinate_permutation_);
 }
 
