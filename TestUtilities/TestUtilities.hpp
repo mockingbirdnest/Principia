@@ -18,18 +18,18 @@ void AssertFalse(bool const test, std::wstring const& message = L"");
 void AssertTrue(bool const test, std::wstring const& message = L"");
 
 // The Microsoft equivalent supports errors only for double.
-template<typename ValueType, typename ErrorType>
+template<typename ValueType>
 void AssertEqualWithin(ValueType const& left,
                        ValueType const& right,
-                       ErrorType const& ε);
+                       quantities::Dimensionless const& ε);
 template<typename ValueType>
 void AssertEqual(ValueType const& left,
                  ValueType const& right);
 
-template<typename ValueType, typename ErrorType>
+template<typename ValueType>
 void AssertNotEqualWithin(ValueType const& left,
                           ValueType const& right,
-                          ErrorType const& ε);
+                          quantities::Dimensionless const& ε);
 template<typename ValueType>
 void AssertNotEqual(ValueType const& left,
                     ValueType const& right);

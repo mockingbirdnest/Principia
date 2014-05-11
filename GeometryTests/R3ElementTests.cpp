@@ -51,6 +51,8 @@ TEST_CLASS(R3ElementTests) {
     AssertFalse(42 * v_ != 42 * v_);
     AssertTrue(43 * v_ != 42 * v_);
     AssertFalse(43 * v_ == 42 * v_);
+    AssertEqualWithin(303.492345479576 * Metre / Second,
+                      a_.Norm(), 8 * DBL_EPSILON);
     TestVectorSpace<R3Element<Speed>, Dimensionless>(null_velocity_, u_, v_,
                                                      w_, Dimensionless(0),
                                                      Dimensionless(1), e,

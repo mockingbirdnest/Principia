@@ -34,6 +34,14 @@ TEST_CLASS(PermutationTests) {
     trivector_.reset(new Trivector<quantities::Length, World>(4.0 * Metre));
   }
 
+  TEST_METHOD(Identity) {
+    R3Element<quantities::Length> const permuted =
+        P::Identity()(vector_->coordinates());
+    AssertEqual(1.0 * Metre, permuted.x);
+    AssertEqual(2.0 * Metre, permuted.y);
+    AssertEqual(3.0 * Metre, permuted.z);
+  }
+
   TEST_METHOD(XYZ) {
     R3Element<quantities::Length> const permuted =
         P(P::XYZ)(vector_->coordinates());

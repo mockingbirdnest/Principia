@@ -93,6 +93,7 @@
     <ClCompile Include="PermutationTests.cpp" />
     <ClCompile Include="QuaternionTests.cpp" />
     <ClCompile Include="R3ElementTests.cpp" />
+    <ClCompile Include="RotationTests.cpp" />
     <ClCompile Include="SignTests.cpp" />
     <ClCompile Include="stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>

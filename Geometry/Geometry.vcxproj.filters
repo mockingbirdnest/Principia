@@ -39,13 +39,19 @@
     <ClInclude Include="Sign.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Permutation.hpp">
+    <ClInclude Include="Sign-body.hpp">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Rotation.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="LinearMap.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Sign-body.hpp">
+    <ClInclude Include="Permutation.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Rotation-body.hpp">
       <Filter>Source Files</Filter>
     </ClInclude>
     <ClInclude Include="Permutation-body.hpp">
