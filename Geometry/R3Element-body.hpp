@@ -43,6 +43,11 @@ inline Scalar const& R3Element<Scalar>::operator[](int const index) const {
 }
 
 template<typename Scalar>
+inline Scalar R3Element<Scalar>::Norm() const {
+  return Sqrt(Dot(*this, *this));
+}
+
+template<typename Scalar>
 inline R3Element<Scalar> operator+(R3Element<Scalar> const& right) {
   return R3Element<Scalar>(+right.x, +right.y, +right.z);
 }
@@ -126,6 +131,18 @@ operator/(R3Element<LScalar> const& left,
       left.x / right,
       left.y / right,
       left.z / right);
+}
+
+template<typename Scalar>
+bool operator==(R3Element<Scalar> const& left,
+                R3Element<Scalar> const& right) {
+  return left.x == right.x && left.y == right.y && left.z == right.z;
+}
+
+template<typename Scalar>
+bool operator!=(R3Element<Scalar> const& left,
+                R3Element<Scalar> const& right) {
+  return left.x != right.x || left.y != right.y || left.z != right.z;
 }
 
 template<typename Scalar>

@@ -19,6 +19,8 @@ struct R3Element {
   Scalar&       operator[](int const index);
   Scalar const& operator[](int const index) const;
 
+  Scalar Norm() const;
+
   Scalar x;
   Scalar y;
   Scalar z;
@@ -58,6 +60,13 @@ template<typename LScalar, typename RDimension>
 R3Element<quantities::Quotient<LScalar, quantities::Quantity<RDimension>>>
 operator/(R3Element<LScalar> const& left,
           quantities::Quantity<RDimension> const& right);
+
+template<typename Scalar>
+bool operator==(R3Element<Scalar> const& left,
+                R3Element<Scalar> const& right);
+template<typename Scalar>
+bool operator!=(R3Element<Scalar> const& left,
+                R3Element<Scalar> const& right);
 
 template<typename Scalar>
 void operator+=(R3Element<Scalar>& left,

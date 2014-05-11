@@ -87,8 +87,12 @@
     <ClInclude Include="LinearMap.hpp" />
     <ClInclude Include="Permutation-body.hpp" />
     <ClInclude Include="Permutation.hpp" />
+    <ClInclude Include="Quaternion-body.hpp" />
+    <ClInclude Include="Quaternion.hpp" />
     <ClInclude Include="R3Element-body.hpp" />
     <ClInclude Include="R3Element.hpp" />
+    <ClInclude Include="Rotation-body.hpp" />
+    <ClInclude Include="Rotation.hpp" />
     <ClInclude Include="Sign-body.hpp" />
     <ClInclude Include="Sign.hpp" />
   </ItemGroup>

@@ -35,6 +35,10 @@ class Permutation : public LinearMap<FromFrame, ToFrame> {
   explicit Permutation(CoordinatePermutation const coordinate_permutation);
   virtual ~Permutation() = default;
 
+  Sign Determinant() const override;
+
+  // TODO(phl): Inverse, composition.
+
   template<typename Scalar>
   Vector<Scalar, ToFrame> operator()(
       Vector<Scalar, FromFrame> const& vector) const;
@@ -46,8 +50,6 @@ class Permutation : public LinearMap<FromFrame, ToFrame> {
   template<typename Scalar>
   Trivector<Scalar, ToFrame> operator()(
       Trivector<Scalar, FromFrame> const& trivector) const;
-
-  Sign Determinant() const;
 
   // TODO(phl): Uncomment once orthogonal transformations are done.
   // OrthogonalTransformation<Scalar, FromFrame, ToFrame> Forget() const;

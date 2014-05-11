@@ -15,6 +15,11 @@ Permutation<FromFrame, ToFrame>::Permutation(
     : coordinate_permutation_(coordinate_permutation) {}
 
 template<typename FromFrame, typename ToFrame>
+inline Sign Permutation<FromFrame, ToFrame>::Determinant() const {
+  return Sign(coordinate_permutation_);
+}
+
+template<typename FromFrame, typename ToFrame>
 template<typename Scalar>
 Vector<Scalar, ToFrame> Permutation<FromFrame, ToFrame>::operator()(
     Vector<Scalar, FromFrame> const& vector) const {
@@ -34,11 +39,6 @@ template<typename Scalar>
 Trivector<Scalar, ToFrame> Permutation<FromFrame, ToFrame>::operator()(
     Trivector<Scalar, FromFrame> const& trivector) const {
   return Trivector<Scalar, ToFrame>(Determinant() * trivector.coordinates());
-}
-
-template<typename FromFrame, typename ToFrame>
-Sign Permutation<FromFrame, ToFrame>::Determinant() const {
-  return Sign(coordinate_permutation_);
 }
 
 // TODO(phl): Uncomment once orthogonal transformations are done.
