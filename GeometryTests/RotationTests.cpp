@@ -38,13 +38,13 @@ TEST_CLASS(RotationTests) {
       R3Element<quantities::Length>(1.0 * Metre, 2.0 * Metre, 3.0 * Metre)));
     trivector_.reset(new Trivector<quantities::Length, World>(4.0 * Metre));
     rotation_a_.reset(
-      new R(120 * si::Degree, 
+      new R(120 * si::Degree,
             Vector<quantities::Dimensionless, World>({1, 1, 1})));
     rotation_b_.reset(
-      new R(90 * si::Degree, 
+      new R(90 * si::Degree,
             Vector<quantities::Dimensionless, World>({1, 0, 0})));
     rotation_c_.reset(
-      new R(30 * si::Degree, 
+      new R(30 * si::Degree,
             Vector<quantities::Dimensionless, World>({1, 1, 1})));
   }
 

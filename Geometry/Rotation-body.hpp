@@ -61,7 +61,7 @@ Rotation<FromFrame, ToFrame> Rotation<FromFrame, ToFrame>::Identity() {
 }
 
 template<typename FromFrame, typename ToFrame>
-Rotation<FromFrame, ToFrame>::Rotation(Quaternion const& quaternion) 
+Rotation<FromFrame, ToFrame>::Rotation(Quaternion const& quaternion)
     : quaternion_(quaternion) {}
 
 template<typename FromFrame, typename ToFrame>
