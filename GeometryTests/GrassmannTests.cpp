@@ -57,9 +57,8 @@ TEST_CLASS(GrassmannTests) {
   template<typename LScalar, typename RScalar, typename Frame, int LRank,
           int RRank>
   static Multivector<Product<LScalar, RScalar>, Frame, LRank + RRank>
-  Multivectorwedge(
-      Multivector<LScalar, Frame, LRank> const& left,
-      Multivector<RScalar, Frame, RRank> const& right) {
+  Multivectorwedge(Multivector<LScalar, Frame, LRank> const& left,
+                   Multivector<RScalar, Frame, RRank> const& right) {
     return Wedge(left, right);
   }
 

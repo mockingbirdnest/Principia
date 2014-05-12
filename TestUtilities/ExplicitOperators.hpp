@@ -1,3 +1,6 @@
+// This file contains template functions used to refer unambiguously to
+// overloaded operators, for instance when function pointers are needed.
+
 #pragma once
 
 namespace principia {
