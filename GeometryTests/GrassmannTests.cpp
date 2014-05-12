@@ -187,10 +187,13 @@ TEST_CLASS(GrassmannTests) {
     Vector<Length, World> const b(v_);
     Bivector<Length, World> const β(v_);
     Bivector<Length, World> const γ(w_);
+    // A strongly typed version of the Lagrange formula
+    // a × (b × c) = b (a · c) - c (a · b).
     AssertEqual(a * Commutator(β, γ), β * Wedge(a, γ) - γ * Wedge(a, β),
                 21 * DBL_EPSILON);
     AssertEqual(Commutator(β, γ) * a, Wedge(a, β) * γ - β * Wedge(a, γ),
                 21 * DBL_EPSILON);
+
     AssertEqual(a * Wedge(b, γ), Wedge(γ, b) * a,
                 21 * DBL_EPSILON);
   }

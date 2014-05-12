@@ -47,6 +47,7 @@ void TestOrder(T const& low, T const& high) {
 template<typename T>
 void TestAdditiveGroup(T const& zero, T const& a, T const& b, T const& c,
                        quantities::Dimensionless const& ε) {
+  AssertEqual(a, +a);
   AssertEqual(a + zero, a);
   AssertEqual(zero + b, b);
   AssertEqual(a - a, zero);
