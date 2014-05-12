@@ -181,6 +181,20 @@ TEST_CLASS(GrassmannTests) {
         Wedge(Vector<Speed, World>(v_ / Second), Bivector<Length, World>(u_)),
         Wedge(Bivector<Length, World>(u_), Vector<Speed, World>(v_ / Second)));
   }
+
+  TEST_METHOD(Actions) {
+    Vector<Length, World> const a(u_);
+    Vector<Length, World> const b(v_);
+    Bivector<Length, World> const β(v_);
+    Bivector<Length, World> const γ(w_);
+    AssertEqual(a * Commutator(β, γ), β * Wedge(a, γ) - γ * Wedge(a, β),
+                21 * DBL_EPSILON);
+    AssertEqual(Commutator(β, γ) * a, Wedge(a, β) * γ - β * Wedge(a, γ),
+                21 * DBL_EPSILON);
+    AssertEqual(a * Wedge(b, γ), Wedge(γ, b) * a,
+                21 * DBL_EPSILON);
+  }
+
 };
 
 }  // namespace geometry
