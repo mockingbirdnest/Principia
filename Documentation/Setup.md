@@ -12,6 +12,7 @@ This directory should not contain any of the following subfolders:
 - `Principia`;
 - `KSP Assemblies`;
 - `Google`.
+
 In `<root>`, run `git clone https://github.com/mockingbirdnest/Principia.git`.
 
 This project depends upon:
@@ -21,7 +22,7 @@ This project depends upon:
 `<KSP directory>\KSP_Data\Managed`;
 - The Google [glog 0.3.3](https://code.google.com/p/google-glog/downloads/list)
 library, *modified according to the instructions below*;
-- The Google [gmock 1.7.0 and gtest 1.7.0](https://code.google.com/p/googlemock
+- The Google [gmock/gtest 1.7.0](https://code.google.com/p/googlemock
 /downloads/list) libraries, *modified according to the instructions below*.
 
 The following instructions should be followed before opening the repository, so
@@ -44,7 +45,7 @@ solution, then `git add -A` and commit.
 6. Delete `<root>\Google\glog.patch`.
 7. Open `<root>\Google\glog-0.3.3\google-glog.sln`, build for Debug and Release.
 Close the solution.
-8. Download [gmock 1.7.0 and gtest 1.7.0](https://code.google.com/p/googlemock/
+8. Download [gmock/gtest 1.7.0](https://code.google.com/p/googlemock/
 downloads/list), and unpack into `<root>\Google`.
 There should be a file at `<root>\Google\gmock-1.7.0\README` if the unpacking was
 done correctly.
