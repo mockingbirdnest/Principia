@@ -14,6 +14,7 @@
 #include "Quantities/SI.hpp"
 #include "Quantities/UK.hpp"
 #include "TestUtilities/Algebra.hpp"
+#include "TestUtilities/ExplicitOperators.hpp"
 #include "TestUtilities/GeometryComparisons.hpp"
 #include "TestUtilities/QuantityComparisons.hpp"
 #include "TestUtilities/TestUtilities.hpp"
@@ -66,10 +67,10 @@ TEST_CLASS(QuantitiesTests) {
     TestVectorSpace(0 * Metre / Second, SpeedOfLight, 88 * Mile / Hour,
                     -340.29 * Metre / Second, zero, one, -2 * π, taxi,
                     2 * DBL_EPSILON);
-    auto multiply = [](Mass left, Speed right) { return left * right; };
     // Dimensionful multiplication is a tensor product, see [Tao 2012].
-    TestBilinearMap(multiply, SolarMass, ElectronMass, SpeedOfLight,
-                    1 * Furlong / JulianYear, -e, 2 * DBL_EPSILON);
+    TestBilinearMap(Times<Product<Mass, Speed>, Mass, Speed>, SolarMass,
+                    ElectronMass, SpeedOfLight, 1 * Furlong / JulianYear, -e,
+                    2 * DBL_EPSILON);
   }
 
   TEST_METHOD(DimensionlessExponentiation) {

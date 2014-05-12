@@ -16,6 +16,7 @@
 #include "Quantities/SI.hpp"
 #include "Quantities/UK.hpp"
 #include "TestUtilities/Algebra.hpp"
+#include "TestUtilities/ExplicitOperators.hpp"
 #include "TestUtilities/GeometryComparisons.hpp"
 #include "TestUtilities/QuantityComparisons.hpp"
 #include "TestUtilities/TestUtilities.hpp"
@@ -53,6 +54,14 @@ TEST_CLASS(GrassmannTests) {
     return InnerProduct(left, right);
   }
 
+  template<typename LScalar, typename RScalar, typename Frame, int LRank,
+          int RRank>
+  static Multivector<Product<LScalar, RScalar>, Frame, LRank + RRank>
+  Multivectorwedge(Multivector<LScalar, Frame, LRank> const& left,
+                   Multivector<RScalar, Frame, RRank> const& right) {
+    return Wedge(left, right);
+  }
+
   TEST_METHOD(SpecialOrthogonalLieAlgebra) {
     TestLieBracket(Commutator<Dimensionless, Dimensionless, World>,
                    Bivector<Dimensionless, World>(u_ / Foot),
@@ -60,6 +69,29 @@ TEST_CLASS(GrassmannTests) {
                    Bivector<Dimensionless, World>(w_ / Rod),
                    Bivector<Dimensionless, World>(a_ / Furlong),
                    Dimensionless(0.42), 128 * DBL_EPSILON);
+  }
+
+  TEST_METHOD(MixedScalarMultiplication) {
+     TestBilinearMap(
+        Times<Vector<Speed, World>, Inverse<Time>, Vector<Length, World>>,
+        1 / Second,
+        1 / JulianYear,
+        Vector<Length, World>(u_),
+        Vector<Length, World>(v_),
+        Dimensionless(42),
+        2 * DBL_EPSILON);
+     TestBilinearMap(
+        Times<Vector<Speed, World>, Vector<Length, World>, Inverse<Time>>,
+        Vector<Length, World>(w_),
+        Vector<Length, World>(a_),
+        -1 / Day,
+        SpeedOfLight / Parsec,
+        Dimensionless(-π),
+        DBL_EPSILON);
+     Inverse<Time> t = -3 / Second;
+     AssertEqual(t * Vector<Length, World>(u_), Vector<Length, World>(u_) * t);
+     AssertEqual((Vector<Length, World>(v_) * t) / t,
+                 Vector<Length, World>(v_));
   }
 
   TEST_METHOD(VectorSpaces) {
@@ -120,20 +152,51 @@ TEST_CLASS(GrassmannTests) {
   }
 
   TEST_METHOD(GrassmannAlgebra) {
-    R3Element<Dimensionless> u(3, -42, 0);
-    R3Element<Dimensionless> v(-π, -e, -1);
-    R3Element<Dimensionless> w(2, 2, 2);
-    R3Element<Dimensionless> a(1.2, 2.3, 3.4);
-    auto vectorWedge = [](Vector<Dimensionless, World> a,
-                          Vector<Dimensionless, World> b) {
-        return Wedge(a, b);
-      };
-    TestAlternatingBilinearMap(vectorWedge, Vector<Dimensionless, World>(u),
-                               Vector<Dimensionless, World>(u),
-                               Vector<Dimensionless, World>(u),
-                               Vector<Dimensionless, World>(u),
-                               Dimensionless(6 * 9));
+    TestAlternatingBilinearMap(
+        Multivectorwedge<Dimensionless, Dimensionless, World, 1, 1>,
+        Vector<Dimensionless, World>(u_ / Metre),
+        Vector<Dimensionless, World>(v_ / Metre),
+        Vector<Dimensionless, World>(w_ / Metre),
+        Vector<Dimensionless, World>(a_ / Metre),
+        Dimensionless(6 * 9),
+        2 * DBL_EPSILON);
+    TestBilinearMap(
+        Multivectorwedge<Length, Speed, World, 1, 2>,
+        Vector<Length, World>(u_),
+        Vector<Length, World>(v_),
+        Bivector<Speed, World>(w_ / Second),
+        Bivector<Speed, World>(a_ / Second),
+        Dimensionless(6 * 9),
+        2 * DBL_EPSILON);
+    TestBilinearMap(
+        Multivectorwedge<Length, Speed, World, 2, 1>,
+        Bivector<Length, World>(u_),
+        Bivector<Length, World>(v_),
+        Vector<Speed, World>(w_ / Second),
+        Vector<Speed, World>(a_ / Second),
+        Dimensionless(6 * 9),
+        2 * DBL_EPSILON);
+    AssertEqual(
+        Wedge(Vector<Speed, World>(v_ / Second), Bivector<Length, World>(u_)),
+        Wedge(Bivector<Length, World>(u_), Vector<Speed, World>(v_ / Second)));
   }
+
+  TEST_METHOD(Actions) {
+    Vector<Length, World> const a(u_);
+    Vector<Length, World> const b(v_);
+    Bivector<Length, World> const β(v_);
+    Bivector<Length, World> const γ(w_);
+    // A strongly typed version of the Lagrange formula
+    // a × (b × c) = b (a · c) - c (a · b).
+    AssertEqual(a * Commutator(β, γ), β * Wedge(a, γ) - γ * Wedge(a, β),
+                21 * DBL_EPSILON);
+    AssertEqual(Commutator(β, γ) * a, Wedge(a, β) * γ - β * Wedge(a, γ),
+                21 * DBL_EPSILON);
+
+    AssertEqual(a * Wedge(b, γ), Wedge(γ, b) * a,
+                21 * DBL_EPSILON);
+  }
+
 };
 
 }  // namespace geometry

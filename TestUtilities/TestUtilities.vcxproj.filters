@@ -48,6 +48,12 @@
     <ClInclude Include="TestUtilities-body.hpp">
       <Filter>Source Files</Filter>
     </ClInclude>
+    <ClInclude Include="ExplicitOperators.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ExplicitOperators-body.hpp">
+      <Filter>Source Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="AssemblyInfo.cpp">

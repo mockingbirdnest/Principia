@@ -15,6 +15,7 @@
 #include "Quantities/SI.hpp"
 #include "Quantities/UK.hpp"
 #include "TestUtilities/Algebra.hpp"
+#include "TestUtilities/ExplicitOperators.hpp"
 #include "TestUtilities/GeometryComparisons.hpp"
 #include "TestUtilities/QuantityComparisons.hpp"
 #include "TestUtilities/TestUtilities.hpp"
@@ -60,22 +61,21 @@ TEST_CLASS(R3ElementTests) {
                                                      2 * DBL_EPSILON);
     TestAlternatingBilinearMap(Cross<Speed, Speed>, u_, v_, w_, a_,
                                Dimensionless(42), 2 * DBL_EPSILON);
+    AssertEqual(
+        Cross(R3Element<Dimensionless>(1, 0, 0),
+              R3Element<Dimensionless>(0, 1, 0)),
+        R3Element<Dimensionless>(0, 0, 1));
     TestSymmetricPositiveDefiniteBilinearMap(Dot<Speed, Speed>, u_, v_, w_, a_,
                                              Dimensionless(42),
                                              2 * DBL_EPSILON);
   }
 
   TEST_METHOD(MixedProduct) {
-    auto left_time_multiplication = [](Time left, R3Element<Speed> right) {
-      return left * right;
-    };
-    auto right_time_multiplication = [](R3Element<Speed> left, Time right) {
-      return left * right;
-    };
-    TestBilinearMap(left_time_multiplication, 1 * Second, 1 * JulianYear, u_,
-                    v_, Dimensionless(42), 2 * DBL_EPSILON);
-    TestBilinearMap(right_time_multiplication, w_, a_, -1 * Day,
-                    1 * Parsec / SpeedOfLight, Dimensionless(-π),
+    TestBilinearMap(Times<R3Element<Length>, Time, R3Element<Speed>>,
+                    1 * Second, 1 * JulianYear, u_, v_, Dimensionless(42),
+                    2 * DBL_EPSILON);
+    TestBilinearMap(Times<R3Element<Length>, R3Element<Speed>, Time>, w_, a_,
+                    -1 * Day, 1 * Parsec / SpeedOfLight, Dimensionless(-π),
                     2 * DBL_EPSILON);
     Time const t = -3 * Second;
     AssertEqual(t * u_, u_ * t);

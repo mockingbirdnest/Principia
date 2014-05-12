@@ -99,6 +99,23 @@ Vector<quantities::Product<LScalar, RScalar>, Frame> operator*(
     Vector<LScalar, Frame> const& left,
     Bivector<RScalar, Frame> const& right);
 
+template<typename LScalar, typename RScalar, typename Frame>
+Vector<quantities::Product<LScalar, RScalar>, Frame> operator*(
+    Bivector<LScalar, Frame> const& left,
+    Trivector<RScalar, Frame> const& right);
+template<typename LScalar, typename RScalar, typename Frame>
+Vector<quantities::Product<LScalar, RScalar>, Frame> operator*(
+    Trivector<LScalar, Frame> const& left,
+    Bivector<RScalar, Frame> const& right);
+template<typename LScalar, typename RScalar, typename Frame>
+Bivector<quantities::Product<LScalar, RScalar>, Frame> operator*(
+    Vector<LScalar, Frame> const& left,
+    Trivector<RScalar, Frame> const& right);
+template<typename LScalar, typename RScalar, typename Frame>
+Bivector<quantities::Product<LScalar, RScalar>, Frame> operator*(
+    Trivector<LScalar, Frame> const& left,
+    Vector<RScalar, Frame> const& right);
+
 template<typename Scalar, typename Frame, unsigned int Rank>
 Multivector<Scalar, Frame, Rank> operator+(
     Multivector<Scalar, Frame, Rank> const& right);
