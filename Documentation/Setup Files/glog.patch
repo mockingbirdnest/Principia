@@ -1,0 +1,60 @@
+From ccbd720b991c270e2b246f487e79bf625f3f02a4 Mon Sep 17 00:00:00 2001
+From: Robin Leroy <egg.robin.leroy@gmail.com>
+Date: Sun, 11 May 2014 19:00:13 +0200
+Subject: [PATCH 1/2] Make it build.
+
+---
+ glog-0.3.3/src/logging.cc | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/glog-0.3.3/src/logging.cc b/glog-0.3.3/src/logging.cc
+index ec334a9..43611fd 100644
+--- a/glog-0.3.3/src/logging.cc
++++ b/glog-0.3.3/src/logging.cc
+@@ -32,6 +32,7 @@
+ #include "utilities.h"
+ 
+ #include <assert.h>
++#include <algorithm>
+ #include <iomanip>
+ #include <string>
+ #ifdef HAVE_UNISTD_H
+-- 
+1.8.4.msysgit.0
+
+From 2d268e6035956d7de50f032a97f753282367ca25 Mon Sep 17 00:00:00 2001
+From: Robin Leroy <egg.robin.leroy@gmail.com>
+Date: Sun, 11 May 2014 19:03:52 +0200
+Subject: [PATCH 2/2] Don't warn.
+
+---
+ glog-0.3.3/src/windows/glog/logging.h | 12 ++++++++++++
+ 1 file changed, 12 insertions(+)
+
+diff --git a/glog-0.3.3/src/windows/glog/logging.h b/glog-0.3.3/src/windows/glog/logging.h
+index 1d91b12..ea68db8 100644
+--- a/glog-0.3.3/src/windows/glog/logging.h
++++ b/glog-0.3.3/src/windows/glog/logging.h
+@@ -1155,7 +1155,19 @@ public:
+     char* str() const { return pbase(); }
+ 
+   private:
++    // LogStream inherit from non-DLL-exported class (std::ostrstream)
++    // and VC++ produces a warning for this situation.
++    // However, MSDN says "C4251 can be ignored if you are deriving from a type
++    // in the Standard C++ Library"
++    // http://msdn.microsoft.com/en-us/library/esew7y1w.aspx
++    // Let's just ignore the warning.
++#ifdef _MSC_VER
++# pragma warning(disable: 4251)
++#endif
+     base_logging::LogStreamBuf streambuf_;
++#ifdef _MSC_VER
++# pragma warning(default: 4251)
++#endif
+     int ctr_;  // Counter hack (for the LOG_EVERY_X() macro)
+     LogStream *self_;  // Consistency check hack
+   };
+-- 
+1.8.4.msysgit.0
+
