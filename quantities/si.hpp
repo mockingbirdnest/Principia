@@ -1,8 +1,8 @@
 ﻿#pragma once
 
-#include "Quantities/NamedQuantities.hpp"
-#include "Quantities/Numbers.hpp"
-#include "Quantities/Quantities.hpp"
+#include "quantities/NamedQuantities.hpp"
+#include "quantities/Numbers.hpp"
+#include "quantities/Quantities.hpp"
 
 namespace principia {
 // This namespace contains the units and prefixes of the SI (except the
@@ -108,4 +108,4 @@ quantities::Length const AstronomicalUnit = 149597870700 * si::Metre;
 }  // namespace si
 }  // namespace principia
 
-#include "Quantities/SI-body.hpp"
+#include "quantities/SI-body.hpp"

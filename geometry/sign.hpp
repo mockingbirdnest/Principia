@@ -29,4 +29,4 @@ T operator*(Sign const& left, T const& right);
 }  // namespace geometry
 }  // namespace principia
 
-#include "Geometry/Sign-body.hpp"
+#include "geometry/sign_body.hpp"

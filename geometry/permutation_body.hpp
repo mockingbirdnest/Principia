@@ -1,10 +1,10 @@
 #pragma once
 
-#include "Geometry/Grassmann.hpp"
-#include "Geometry/LinearMap.hpp"
-#include "Geometry/R3Element.hpp"
-#include "Geometry/Sign.hpp"
-#include "Quantities/Dimensionless.hpp"
+#include "geometry/grassmann.hpp"
+#include "geometry/linear_map.hpp"
+#include "geometry/r3_element.hpp"
+#include "geometry/sign.hpp"
+#include "quantities/Dimensionless.hpp"
 
 namespace principia {
 namespace geometry {

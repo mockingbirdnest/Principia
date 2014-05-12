@@ -2,8 +2,8 @@
 
 #include <CppUnitTest.h>
 
-#include "Quantities/Dimensionless.hpp"
-#include "Quantities/Quantities.hpp"
+#include "quantities/Dimensionless.hpp"
+#include "quantities/Quantities.hpp"
 
 namespace principia {
 namespace test_utilities {

@@ -2,7 +2,7 @@
 
 #include <CppUnitTest.h>
 
-#include "Geometry/Sign.hpp"
+#include "geometry/sign.hpp"
 #include "TestUtilities/TestUtilities.hpp"
 
 using namespace Microsoft::VisualStudio::CppUnitTestFramework;

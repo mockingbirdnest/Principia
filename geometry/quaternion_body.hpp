@@ -1,8 +1,8 @@
 #pragma once
 
-#include "Geometry/Quaternion.hpp"
-#include "Geometry/R3Element.hpp"
-#include "Quantities/Dimensionless.hpp"
+#include "geometry/quaternion.hpp"
+#include "geometry/r3_element.hpp"
+#include "quantities/Dimensionless.hpp"
 
 namespace principia {
 namespace geometry {

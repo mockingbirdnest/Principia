@@ -4,11 +4,11 @@
 #include <CppUnitTest.h>
 #include <memory>
 
-#include "Geometry/Grassmann.hpp"
-#include "Geometry/Quaternion.hpp"
-#include "Geometry/Rotation.hpp"
-#include "Quantities/Quantities.hpp"
-#include "Quantities/SI.hpp"
+#include "geometry/grassmann.hpp"
+#include "geometry/quaternion.hpp"
+#include "geometry/rotation.hpp"
+#include "quantities/Quantities.hpp"
+#include "quantities/SI.hpp"
 #include "TestUtilities/TestUtilities.hpp"
 
 namespace principia {

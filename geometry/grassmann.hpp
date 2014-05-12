@@ -1,8 +1,8 @@
 ﻿#pragma once
 
-#include "Geometry/R3Element.hpp"
-#include "Quantities/Dimensionless.hpp"
-#include "Quantities/Quantities.hpp"
+#include "geometry/r3_element.hpp"
+#include "quantities/Dimensionless.hpp"
+#include "quantities/Quantities.hpp"
 
 namespace principia {
 namespace geometry {
@@ -182,4 +182,4 @@ void operator/=(Multivector<Scalar, Frame, Rank>& left,
 }  // namespace geometry
 }  // namespace principia
 
-#include "Geometry/Grassmann-body.hpp"
+#include "geometry/grassmann_body.hpp"

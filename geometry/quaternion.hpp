@@ -1,7 +1,7 @@
 #pragma once
 
-#include "Geometry/R3Element.hpp"
-#include "Quantities/Dimensionless.hpp"
+#include "geometry/r3_element.hpp"
+#include "quantities/Dimensionless.hpp"
 
 namespace principia {
 namespace geometry {
@@ -59,4 +59,4 @@ void operator/=(Quaternion& left, quantities::Dimensionless const& right);
 }  // namespace geometry
 }  // namespace principia
 
-#include "Geometry/Quaternion-body.hpp"
+#include "geometry/quaternion_body.hpp"

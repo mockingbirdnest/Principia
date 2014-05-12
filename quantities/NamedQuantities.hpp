@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Quantities/Quantities.hpp"
+#include "quantities/Quantities.hpp"
 
 namespace principia {
 namespace quantities {

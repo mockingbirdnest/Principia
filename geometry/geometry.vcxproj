@@ -82,18 +82,18 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="Grassmann-body.hpp" />
+    <ClInclude Include="grassmann_body.hpp" />
     <ClInclude Include="grassmann.hpp" />
-    <ClInclude Include="LinearMap.hpp" />
-    <ClInclude Include="Permutation-body.hpp" />
+    <ClInclude Include="linear_map.hpp" />
+    <ClInclude Include="permutation_body.hpp" />
     <ClInclude Include="permutation.hpp" />
-    <ClInclude Include="Quaternion-body.hpp" />
+    <ClInclude Include="quaternion_body.hpp" />
     <ClInclude Include="quaternion.hpp" />
-    <ClInclude Include="R3Element-body.hpp" />
-    <ClInclude Include="r3Element.hpp" />
-    <ClInclude Include="Rotation-body.hpp" />
+    <ClInclude Include="r3_element_body.hpp" />
+    <ClInclude Include="r3_element.hpp" />
+    <ClInclude Include="rotation_body.hpp" />
     <ClInclude Include="rotation.hpp" />
-    <ClInclude Include="Sign-body.hpp" />
+    <ClInclude Include="sign_body.hpp" />
     <ClInclude Include="sign.hpp" />
   </ItemGroup>
   <ItemGroup>
