@@ -15,6 +15,7 @@
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <Keyword>ManagedCProj</Keyword>
     <RootNamespace>Quantities</RootNamespace>
+    <ProjectName>quantities</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
@@ -80,20 +81,20 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Astronomy.hpp" />
+    <ClInclude Include="astronomy.hpp" />
     <ClInclude Include="ElementaryFunctions-body.hpp" />
     <ClInclude Include="ElementaryFunctions.hpp" />
     <ClInclude Include="SI-body.hpp" />
-    <ClInclude Include="UK.hpp" />
-    <ClInclude Include="BIPM.hpp" />
-    <ClInclude Include="CGS.hpp" />
-    <ClInclude Include="Constants.hpp" />
-    <ClInclude Include="Dimensionless.hpp" />
-    <ClInclude Include="Numbers.hpp" />
+    <ClInclude Include="uk.hpp" />
+    <ClInclude Include="bipm.hpp" />
+    <ClInclude Include="cgs.hpp" />
+    <ClInclude Include="constants.hpp" />
+    <ClInclude Include="dimensionless.hpp" />
+    <ClInclude Include="numbers.hpp" />
     <ClInclude Include="NamedQuantities.hpp" />
-    <ClInclude Include="Quantities.hpp" />
+    <ClInclude Include="quantities.hpp" />
     <ClInclude Include="resource.hpp" />
-    <ClInclude Include="SI.hpp" />
+    <ClInclude Include="si.hpp" />
     <ClInclude Include="Stdafx.hpp" />
   </ItemGroup>
   <ItemGroup>

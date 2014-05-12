@@ -83,18 +83,18 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="Grassmann-body.hpp" />
-    <ClInclude Include="Grassmann.hpp" />
+    <ClInclude Include="grassmann.hpp" />
     <ClInclude Include="LinearMap.hpp" />
     <ClInclude Include="Permutation-body.hpp" />
-    <ClInclude Include="Permutation.hpp" />
+    <ClInclude Include="permutation.hpp" />
     <ClInclude Include="Quaternion-body.hpp" />
-    <ClInclude Include="Quaternion.hpp" />
+    <ClInclude Include="quaternion.hpp" />
     <ClInclude Include="R3Element-body.hpp" />
-    <ClInclude Include="R3Element.hpp" />
+    <ClInclude Include="r3Element.hpp" />
     <ClInclude Include="Rotation-body.hpp" />
-    <ClInclude Include="Rotation.hpp" />
+    <ClInclude Include="rotation.hpp" />
     <ClInclude Include="Sign-body.hpp" />
-    <ClInclude Include="Sign.hpp" />
+    <ClInclude Include="sign.hpp" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="sign_test.cpp" />
