@@ -1,7 +1,7 @@
 ﻿#pragma once
 
-#include "quantities/Dimensionless.hpp"
-#include "quantities/Quantities.hpp"
+#include "quantities/dimensionless.hpp"
+#include "quantities/quantities.hpp"
 
 namespace principia {
 namespace quantities {
@@ -37,4 +37,4 @@ Angle ArcTanh(Dimensionless const& x);
 }  // namespace quantities
 }  // namespace principia
 
-#include "quantities/ElementaryFunctions-body.hpp"
+#include "quantities/elementary_functions_body.hpp"

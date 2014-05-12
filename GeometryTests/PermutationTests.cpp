@@ -5,8 +5,8 @@
 
 #include "geometry/grassmann.hpp"
 #include "geometry/permutation.hpp"
-#include "quantities/Quantities.hpp"
-#include "quantities/SI.hpp"
+#include "quantities/quantities.hpp"
+#include "quantities/si.hpp"
 #include "TestUtilities/TestUtilities.hpp"
 
 namespace principia {

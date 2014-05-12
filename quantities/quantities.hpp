@@ -2,7 +2,7 @@
 
 #include <string>
 
-#include "quantities/Dimensionless.hpp"
+#include "quantities/dimensionless.hpp"
 
 namespace principia {
 namespace quantities {
@@ -154,4 +154,4 @@ inline void operator/=(Quantity<D>&, Dimensionless const&);
 }  // namespace quantities
 }  // namespace principia
 
-#include "quantities/Quantities-body.hpp"
+#include "quantities/quantities_body.hpp"

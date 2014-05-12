@@ -1,8 +1,8 @@
 ﻿#pragma once
 
 #include "geometry/r3_element.hpp"
-#include "quantities/Dimensionless.hpp"
-#include "quantities/Quantities.hpp"
+#include "quantities/dimensionless.hpp"
+#include "quantities/quantities.hpp"
 
 namespace principia {
 namespace geometry {

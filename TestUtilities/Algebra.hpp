@@ -1,6 +1,6 @@
 ﻿#pragma once
 
-#include "quantities/Dimensionless.hpp"
+#include "quantities/dimensionless.hpp"
 #include "TestUtilities/TestUtilities.hpp"
 
 namespace principia {

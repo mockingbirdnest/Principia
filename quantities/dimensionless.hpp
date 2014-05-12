@@ -48,4 +48,4 @@ std::wstring ToString(Dimensionless const& number,
 }  // namespace quantities
 }  // namespace principia
 
-#include "quantities/Dimensionless-body.hpp"
+#include "quantities/dimensionless_body.hpp"

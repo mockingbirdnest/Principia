@@ -27,9 +27,6 @@
     <ClInclude Include="Dimensionless.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="NamedQuantities.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="Numbers.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -51,20 +48,23 @@
     <ClInclude Include="UK.hpp">
       <Filter>Header Files\Units</Filter>
     </ClInclude>
-    <ClInclude Include="ElementaryFunctions.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="ElementaryFunctions-body.hpp">
-      <Filter>Source Files</Filter>
-    </ClInclude>
-    <ClInclude Include="SI-body.hpp">
-      <Filter>Source Files</Filter>
-    </ClInclude>
     <ClInclude Include="Stdafx.hpp">
       <Filter>Properties</Filter>
     </ClInclude>
     <ClInclude Include="resource.hpp">
       <Filter>Properties</Filter>
+    </ClInclude>
+    <ClInclude Include="elementary_functions.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="named_quantities.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="elementary_functions_body.hpp">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="si_body.hpp">
+      <Filter>Source Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -86,10 +86,10 @@
     </Image>
   </ItemGroup>
   <ItemGroup>
-    <None Include="Quantities-body.hpp">
+    <None Include="dimensionless_body.hpp">
       <Filter>Source Files</Filter>
     </None>
-    <None Include="Dimensionless-body.hpp">
+    <None Include="quantities_body.hpp">
       <Filter>Source Files</Filter>
     </None>
   </ItemGroup>

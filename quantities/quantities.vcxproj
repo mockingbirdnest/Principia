@@ -82,16 +82,16 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="astronomy.hpp" />
-    <ClInclude Include="ElementaryFunctions-body.hpp" />
-    <ClInclude Include="ElementaryFunctions.hpp" />
-    <ClInclude Include="SI-body.hpp" />
+    <ClInclude Include="elementary_functions_body.hpp" />
+    <ClInclude Include="elementary_functions.hpp" />
+    <ClInclude Include="si_body.hpp" />
     <ClInclude Include="uk.hpp" />
     <ClInclude Include="bipm.hpp" />
     <ClInclude Include="cgs.hpp" />
     <ClInclude Include="constants.hpp" />
     <ClInclude Include="dimensionless.hpp" />
     <ClInclude Include="numbers.hpp" />
-    <ClInclude Include="NamedQuantities.hpp" />
+    <ClInclude Include="named_quantities.hpp" />
     <ClInclude Include="quantities.hpp" />
     <ClInclude Include="resource.hpp" />
     <ClInclude Include="si.hpp" />
@@ -111,8 +111,8 @@
     <Image Include="app.ico" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="Dimensionless-body.hpp" />
-    <None Include="Quantities-body.hpp" />
+    <None Include="dimensionless_body.hpp" />
+    <None Include="quantities_body.hpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
