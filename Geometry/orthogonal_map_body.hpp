@@ -2,7 +2,7 @@
 
 #include "Geometry/Grassmann.hpp"
 #include "Geometry/LinearMap.hpp"
-#include "Geometry/OrthogonalMap.hpp"
+#include "Geometry/orthogonal_map.hpp"
 #include "Geometry/R3Element.hpp"
 #include "Geometry/Sign.hpp"
 
@@ -10,7 +10,6 @@ namespace principia {
 namespace geometry {
 
 template<typename FromFrame, typename ToFrame>
-template<typename Scalar>
 OrthogonalMap<FromFrame, ToFrame>::OrthogonalMap(
     const Sign& determinant,
     Rotation<FromFrame, ToFrame> const& rotation)
@@ -31,14 +30,14 @@ template<typename FromFrame, typename ToFrame>
 template<typename Scalar>
 Vector<Scalar, ToFrame> OrthogonalMap<FromFrame, ToFrame>::operator()(
     Vector<Scalar, FromFrame> const& vector) const {
-  return Vector<Scalar, ToFrame>((*this)(vector.coordinates()));
+  return Vector<Scalar, ToFrame>(determinant_ * rotation_(vector));
 }
 
 template<typename FromFrame, typename ToFrame>
 template<typename Scalar>
 Bivector<Scalar, ToFrame> OrthogonalMap<FromFrame, ToFrame>::operator()(
     Bivector<Scalar, FromFrame> const& bivector) const {
-  return Bivector<Scalar, ToFrame>(this->rotation_(bivector));
+  return Bivector<Scalar, ToFrame>(rotation_(bivector));
 }
 
 template<typename FromFrame, typename ToFrame>
@@ -51,13 +50,6 @@ Trivector<Scalar, ToFrame> OrthogonalMap<FromFrame, ToFrame>::operator()(
 template<typename FromFrame, typename ToFrame>
 OrthogonalMap<FromFrame, ToFrame> OrthogonalMap<FromFrame, ToFrame>::Identity() {
   return OrthogonalMap(Sign(1), Rotation<FromFrame, ToFrame>::Identity());
-}
-
-template<typename FromFrame, typename ToFrame>
-template<typename Scalar>
-R3Element<Scalar> OrthogonalMap<FromFrame, ToFrame>::operator()(
-    R3Element<Scalar> const& r3_element) const {
-  return rotation_(determinant_ * r3_element);
 }
 
 template<typename FromFrame, typename ThroughFrame, typename ToFrame>

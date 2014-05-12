@@ -19,7 +19,7 @@ TEST_F(SignTest, Integer) {
   EXPECT_TRUE(negative_.Negative());
 }
 
-TEST_F(SignTest, SignMultiplication_) {
+TEST_F(SignTest, SignMultiplication) {
   EXPECT_TRUE((positive_ * positive_).Positive());
   EXPECT_TRUE((positive_ * negative_).Negative());
   EXPECT_TRUE((negative_ * positive_).Negative());

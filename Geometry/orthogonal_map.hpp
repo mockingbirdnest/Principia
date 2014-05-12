@@ -14,7 +14,6 @@ template<typename FromFrame, typename ToFrame>
 class OrthogonalMap : public LinearMap<FromFrame, ToFrame> {
  public:
 
-  template<typename Scalar>
   OrthogonalMap(const Sign& determinant,
                 Rotation<FromFrame, ToFrame> const& rotation);
   virtual ~OrthogonalMap() = default;
@@ -38,9 +37,6 @@ class OrthogonalMap : public LinearMap<FromFrame, ToFrame> {
   static OrthogonalMap Identity();
 
  private:
-  template<typename Scalar>
-  R3Element<Scalar> operator()(R3Element<Scalar> const& r3_element) const;
-
   Sign determinant_;
   Rotation<FromFrame, ToFrame> rotation_;
 
@@ -59,4 +55,4 @@ OrthogonalMap<FromFrame, ToFrame> operator*(
 }  // namespace geometry
 }  // namespace principia
 
-#include "Geometry/OrthogonalMap-body.hpp"
+#include "Geometry/orthogonal_map_body.hpp"
