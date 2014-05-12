@@ -1,0 +1,448 @@
+\documentclass[10pt, a4paper, twoside]{basestyle}
+\usepackage[Mathematics]{semtex}
+
+%%%% Shorthands.
+
+%%%% Title and authors.
+
+\title{%
+\textdisplay{%
+An Introduction to Runge-Kutta Integrators}%
+}
+\author{Robin~Leroy (eggrobin)}
+\begin{document}
+\maketitle
+In this post I shall assume understanding of the concepts described in chapter~8 (Motion) as well as sections 11--4 and 11--5 (Vectors and Vector algebra) of chapter~11 of Richard Feynmann's \emph{Lectures on Physics}.
+
+\section{Motivation}
+We want to be able to predict the position $\vs\of t$ as a function of time of a spacecraft (without engines) around a fixed planet of mass $M$. In order to do this, we recall that the velocity is given by
+\[\vv = \deriv t \vs\]
+and the acceleration by
+\[\va = \deriv t \vv = \deriv[2] t \vs\text.\]
+We assume that the mass of the spacecraft is constant and that the planet sits at the origin of our reference frame. Newton's law of universal gravitation tells us that the magnitude (the length) of the acceleration vector will be \[
+a=\frac{G M}{s^2}\text,
+\]
+where $s$ is the length of $\vs$, and that the acceleration will be directed towards the planet, so that\[
+\va=-\frac{G M}{s^2} \frac{\vs}{s}\text.
+\]
+We don't really care about the specifics, but we see that this is a function of $\vs$. We'll write it $\va\of\vs$.
+Putting it all together we could rewrite this as
+\[\deriv[2] t \vs = \va\of\vs\]
+and go ahead and solve this kind of problem, but we don't like having a second derivative. Instead we go back to our first order equations and we write both of them down,
+\[
+\begin{dcases}
+\deriv t \vs = \vv \\
+\deriv t \vv = \va\of\vs
+\end{dcases}\text.
+\]
+Let us define a vector $\vy$ with 6 entries instead of 3,
+\[\vy = \tuple{\vs, \vv} = \tuple{s_x, s_y, s_z, v_x, v_y, v_z}\text.\]
+Similarly, define a function $\vf$ as follows:
+\[\vf\tuple{\vy} = \tuple{\vv, \va\of\vs}\text.\]
+Our problem becomes
+\[\deriv t \vy = \tuple{\deriv t \vs, \deriv t \vv} = \tuple{\vv, \va\of\vs} = \vf\of\vy\text.\]
+So we have gotten rid of that second derivative, at the cost of making the problem 6-dimensional instead of 3-dimensional.
+
+\section{Ordinary differential equations}
+We are interested in computing solutions to equations of the form
+\[\deriv t \vy = \vf\of{t,\vy}\text.\]
+Such an equation is called an \emph{ordinary differential equation} (\textsc{ode}). The function $\vf$ is called the \emph{right-hand side} (\textsc{rhs}).
+
+Recall that if the right-hand side didn't depend on $\vy$, the answer would be the integral,
+\[\deriv t \vy = \vf\of t \Implies \vy = \int{} \vf\of t \diffd t\text.\]
+General \textsc{ode}s are a generalisation of this, so the methods we use to compute their solutions are called \emph{integrators}.
+
+In the case where the right-hand side doesn't depend on $t$ (but depends on $\vy$), as was the case in the previous section, the equation becomes
+\[\deriv t \vy = \vf\of{\vy}\text.\]
+For future reference, we call such a right-hand side \emph{autonomous}.
+
+In order to compute a particular solution (a particular trajectory of our spacecraft), we need to define some initial conditions (the initial position and velocity of our spacecraft) at $t=t_0$. We write them as\[
+\vy\of{t_0} = \vy_0\text.
+\]
+The \textsc{ode} together with the initial conditions form the \emph{initial value problem} (\textsc{ivp})
+\[
+\begin{dcases}
+\deriv t \vy = \vf\of{t,\vy} \\
+\vy\of{t_0} = \vy_0
+\end{dcases}\text.
+\]
+\section{Euler's method}
+As we want to actually solve the equation using a computer, we can't compute $\vy\of t$ for all values of $t$. Instead we approximate $\vy\of{t}$ at discrete time steps.
+
+How do we compute the first point $\vy_1$, the approximation for $\vy\of{t_0 + \increment t}$? By definition of the derivative, we have \[
+\lim_{\conv{\increment t}{0}} \frac{\vy\of{t_0+\increment t}-\vy\of{t_0}}{\increment t} =  \vf\of{t_0,\vy_0}\text.
+\]
+This means that if we take a sufficiently small $\increment t$, we have
+\[
+\frac{\vy\of{t_0 + \increment t}-\vy\of{t_0}}{\increment t} \approx \vf\of{t_0,\vy_0}\text,
+\]
+where the approximation gets better as $\increment t$ gets smaller.
+Our first method for approxmimating the solution is therefore to compute\[
+\vy_1 = \vy_0 + \vf\of{t_0,\vy_0}  \increment t \text.\]
+Note that this is an approximation:\[
+\vy_1\approx\vy\of{t_0+\increment t}\text.
+\]
+For the rest of the solution, we just repeat the same method, yielding \[
+\vy_{n+1} =\vy_n + \vf\of{t_n,\vy_n}\increment t\text.\]
+Again these are approximations:\[
+\vy_n\approx\vy\of{t_0+n\increment t}\text.
+\]
+This is called \emph{Euler's method}, after the Swiss mathematician and physicist Leonhard Euler (1707--1783). A good visualisation of this method, as well as a geometric interpretation, can be found in the \emph{Wikipedia} article \url{http://en.wikipedia.org/wiki/Euler_method}.
+
+We want to know two things: how good our approximation is, and how much we need to reduce $\increment t$ in order to make it better.
+In order to do that, we use Taylor's theorem.
+
+\subsection*{Taylor's theorem}
+Recall that if $\deriv t \vy$ is constant, \[\vy\of{t_0+\increment t} = \vy\of{t_0} + \deriv t \vy \of{t_0} \increment t \text.\]
+If $\deriv[2] t \vy $ is constant, \[\vy\of{t_0+\increment t} = \vy\of{t_0} + \deriv t \vy\of{t_0}  \increment t +  \deriv[2] t \vy\of{t_0} \frac{\increment t^2 }{2}\text.\]
+In general, if we assume the $n$th derivative to be constant,\[
+\vy\of{t_0+\increment t}=\vy\of{t_0} + \sum{j=1}[n]  \deriv[j] t \vy \of{t_0} \frac{\increment t^j}{\Factorial j} \text,\]
+where $\Factorial j = 1 \times 2 \times 3 \times \dotsb \times j$ is the factorial of $j$.
+
+Taylor's theorem roughly states that this is a good approximation, which gets better as $n$ gets higher. Formally, if $\vy$ is differentiable $n$ times, for sufficiently small $\increment t$,
+\begin{equation}
+\vy\of{t_0+\increment t}=\vy\of{t_0} + \sum{j=1}[n-1]   \deriv[j] t \vy \of{t_0} \frac{\increment t^j}{\Factorial j} + \BigO\of{\increment t ^ n} \text, 
+\label{TaylorLandau}
+\end{equation}
+where $\BigO\of{\increment t ^ n}$ is read ``big $\BigO$ of $\increment t ^n$''. It is not a specific function, but stands for ``some function whose magnitude is bounded by $K \increment t ^ n$ for some constant $K$ as $\increment t$ goes to $0$''.
+This big $\BigO$ notation indicates the quality of the approximation: it represents error terms that vanish at least as fast as $\increment t ^ n$.
+
+There is a version of Taylor's theorem for multivariate functions\footnote{Functions of a vector.}; the idea is the same, but stating it in its general form is complicated. Instead let us look at the cases we will need here.
+
+For a function $\vf\of{t,\vy}$, We have the analogue to the $n=1$ version of Taylor's theorem:
+\begin{equation}
+\vf\of{t_0,\vy_0+\increment\vy} = \vf\of{t_0,\vy_0} + \BigO\of{\norm{\increment\vy}}
+\label{TaylorF1}
+\end{equation}
+and the analogue to the $n=2$ version:
+\begin{equation}
+\vf\of{t_0,\vy_0+\increment\vy} = \vf\of{t_0,\vy_0} + \deriv\vy\vf\of{t_0,\vy_0}\increment\vy + \BigO\of{\norm{\increment\vy}^2}\text.
+\label{TaylorF2}
+\end{equation}
+Knowing what $\deriv\vy\vf\of{t_0,\vy_0}$ actually means is not important here, it is just something that you can multiply a vector with to get another vector.\footnote{It is a linear map, so if you know what a matrix is, you can see it as one.}
+\subsection*{Error analysis}
+Armed with this theorem, we can look back at Euler's method. We computed the approximation for $\vy\of{t_0 + \increment t}$ as \[
+\vy_1 = \vy_0 + \vf\of{t_0,\vy_0} \increment t = \vy\of{t_0} +  \deriv t \vy\of{t_0} \increment t \text.\]
+By definition of the derivative, we have seen that as $\increment t$ approaches $0$, $\vy_1$ will become a better approximation for $\vy\of{t+\increment t}$. However, when we reduce the time step, we need more steps to compute the solution over the same duration. What is the error when we reach some $t_{\text{end}}$? There are obviously $\frac{t_{\text{end}} - t_0}{\increment t}$ steps, so we should multiply the error on a single step by $\frac{t_{\text{end}} - t_0}{\increment t}$. This means that the error on a single step needs to vanish\footnote{For the advanced reader: uniformly.} \emph{faster than} $\increment t$.
+
+In order to compute the magnitude of the error, we'll use Taylor's theorem for $n=2$. We have, for sufficiently small $\increment t$, \begin{align*}
+\norm{\vy\of{t_0+\increment t} - \vy_1}
+&= \norm{\vy\of{t_0} +  \deriv t \vy\of{t_0} \increment t + \BigO\of{\increment t^2}
+ - \vy\of{t_0} - \deriv t \vy\of{t_0} \increment t} \\
+&=  \norm{\BigO\of{\increment t^2}}
+\leq K \increment t^2
+\end{align*}
+for some constant $K$ which does not depend on $\increment t$ (recall that this is the definition of the big $\BigO$ notation). This means that the error on \emph{one step} behaves as the square of the time step: it is divided by four when the time step is halved.
+
+It follows that the error in the approximation at $t_{\text{end}}$ should intuitively behave as $\frac{t_{\text{end}} - t_0}{\increment t} \increment t^2 = \pa{t_{\text{end}} - t_0} \increment t$, and indeed this is the case. In order to properly show that, some additional assumptions must be made, the description of which is beyond the scope of this introduction.\footnote{For the advanced reader: the solution has to be Lipschitz continuous and its second derivative has to be bounded.}
+
+Thus, the conclusion about Euler's method is that when computing the solution over a fixed duration $t_{\text{end}} - t_0$, the error behaves like $\increment t$, \emph{i.e.}, linearly: halving the time step will halve the error. We call Euler's method a \emph{first-order method}.
+
+We remark that we can rewrite Euler's method as follows.
+\begin{align*}
+\vk_1 &= \vf\of{t_0, \vy_0}\text;\\
+\vy_1 &= \vy_0 + \vk_1 \increment t\text.
+\end{align*}
+This will be useful in the wider scope of Runge-Kutta integrators.
+
+Can we do better than first-order? In order to answer this question, we note that the reason why the error in Euler's method was linear for a fixed duration is that it was quadratic for a single time step. The reason why it was quadratic for a single time step is that our approximation matched the first derivative term in the Taylor expansion. If we could match higher-order terms in the expansion, we would get a higher-order method. Specifically, if our approximation matches the Taylor expansion up to and including the $k$th derivative, we'll get a $k$th order method.
+
+\section{The midpoint method}
+How do we match higher derivatives? We don't know what they are: the first derivative is given to us by the problem (it's $\vf\of{t, \vy\of t}$ at time $t$), the other ones are not. 
+However, if we look at $\vg\of t = \vf\of{t, \vy\of t}$ as a function of $t$,
+we have 
+\begin{align*}
+\vg &= \deriv t \vy \\
+\deriv t \vg &= \deriv[2] t \vy\text.
+\end{align*}
+Of course, we can't directly compute the derivative of $\vg$, because we don't even know what $\vg$ itself looks like: that would entail knowing $\vy$, which is what we are trying to compute.
+
+However, let us assume for a moment that we could compute $\vg\of{t_0 + \frac{\increment t}{2}}$. Using Taylor's theorem on $\vg$,
+\[
+\vg\of{t_0 + \frac{\increment t}{2}} = \vg\of{t_0} +  \deriv t \vg\of{t_0} \frac{\increment t}{2} + \BigO\of{\increment t^2}\text.\]
+Substituting $\vg$ yields.
+\[
+\vg\of{t_0 + \frac{\increment t}{2}} 
+ = \deriv t \vy \of{t_0} +  \deriv[2] t \vy\of{t_0} \frac{\increment t}{2} + \BigO\of{\increment t^2}\text.
+\]
+This looks like the first and second derivative terms in the Taylor expansion of $\vy$. Therefore, the following expression would yield a third-order approximation for the step $\vy\of{t+\increment t}$ (and thus a second-order method), if only we could compute it: \[
+\hat{\vy}_1 = \vy_0 +  \vg\of{t_0 + \frac{\increment t}{2}} \increment t  =  \vy_0 + \vf\of{t_0 + \frac{\increment t}{2}, \vy\of{t_0 + \frac{\increment t}{2}}}  \increment t\text.\]
+Indeed,
+\begin{alignat*}{2}
+\hat{\vy}_1 
+&= \vy_0 + \deriv t \vy \of{t_0} \increment t + \deriv[2] t \vy\of{t_0} \frac{\increment t^2}{2} + \BigO\of{\increment t^3} \\
+&= \vy\of{t+\increment t} + \BigO\of{\increment t^3} \text.
+\end{alignat*}
+Unfortunately, we can't compute $\vg\of{t_0 + \frac{\increment t}{2}}$ exactly, because for that we would need to know $\vy\of{t_0 + \frac{\increment t}{2}}$. Instead, we try using a second-order approximation for it, obtained using one step of Euler's method, namely\[
+\vy_0 + \vf\of{t_0, \vy_0} \frac{\increment t}{2} = \vy\of{t_0 + \frac{\increment t}{2}} + \BigO\of{\increment t^2} \text.
+\]
+We use it to get an approximation $\vy_1$ of $\hat{\vy}_1$.\[
+\vy\of{t_0 + \increment t} \approx \hat{\vy}_1 \approx \vy_1 = \vy_0 + \vf\of{t_0 + \frac{\increment t}{2}, \vy_0 + \frac{\increment t}{2} \vf\of{t_0, \vy_0}}  \increment t
+\]
+
+In order to show that $\vy_1$ is a third-order approximation for $\vy\of{t+\increment t}$, we show that it is a third-order approximation for $\hat{\vy}_1$.
+In order to do that, we use our error bound on the step of Euler's method and compute the multivariate first-order Taylor expansion of $\vf$ in its second argument (\ref{TaylorF1}),
+\begin{align*}
+\vf\of{t_0 + \frac{\increment t}{2}, \vy_0 + \frac{\increment t}{2} \vf\of{t_0, \vy_0}} &= \vf\of{t_0 + \frac{\increment t}{2}, \vy\of{t_0 + \frac{\increment t}{2}} + \BigO\of{\increment t^2}}\\
+&= \vf\of{t_0 + \frac{\increment t}{2}, \vy\of{t_0 + \frac{\increment t}{2}}} + \BigO\of{\increment t^2}\text.
+\end{align*}
+Substituting yields
+\begin{align*}
+\vy_1 
+&= \vy_0 +\vf\of{t_0 + \frac{\increment t}{2}, \vy_0 + \frac{\increment t}{2} \vf\of{t_0, \vy_0}}  \increment t  \\
+&= \vy_0 +\vf\of{t_0 + \frac{\increment t}{2}, \vy\of{t_0 + \frac{\increment t}{2}}}  \increment t  + \BigO\of{\increment t^3} \\
+&= \hat{\vy}_1 + \BigO\of{\increment t^3} \\
+&= \vy\of{t + \increment t} + \BigO\of{\increment t^3}\text.
+\end{align*}
+The method is third-order on a single step, so it is a second order method.
+The idea here was to say that the derivative at $t_0$ is not a good enough approximation for the behaviour between $t_0$ and $t_0 + \increment t$, and to compute the derivative halfway through $\vg\of{t_0 + \frac{\increment t}{2}}$ instead. In order to do that, we had to use a lower-order method (our Euler half-step).
+
+A good visualisation of this method, as well as a geometric interpretation, can be found on the \emph{Wikipedia} article \url{http://en.wikipedia.org/wiki/Midpoint_method}.
+
+Again we remark that we can rewrite the midpoint method as follows.
+\begin{align*}
+\vk_1 &= \vf\of{t_0, \vy_0}\text;\\
+\vk_2 &= \vf\of{t_0, \vy_0 + \vk_1\frac{\increment t}{2}}\text;\\
+\vy_1 &= \vy_0 + \vk_2 \increment t\text.
+\end{align*}
+This will be useful in the wider scope of Runge-Kutta integrators.
+
+\section{Heun's method}
+Before we move on to the description of general Runge-Kutta methods, let us look at another take on second-order methods.
+
+Instead of approximating the behaviour between $t_0$ and $t_0 + \increment t$ by the derivative halfway through, what if we averaged the derivatives at the end and at the beginning?
+\[
+\hat{\vy}_1=\vy_0 + \frac{\vg\of{t_0} + \vg\of{t_0 + \increment t}}{2}  \increment t \text.
+\]
+Let us compute the error:
+\begin{align*}
+\hat{\vy}_1
+&=\vy_0 + \frac{\deriv t \vy \of{t_0} + \deriv t \vy \of{t_0} +  \deriv[2] t \vy\of{t_0} \increment t + \BigO\of{\increment t^2}}{2} \increment t \\
+&= \vy_0 + \deriv t \vy \of{t_0}  \increment t + \deriv[2] t \vy\of{t_0} \frac{\increment t^2}{2} + \BigO\of{\increment t^3} = \vy\of{t_0 + \increment t} + \BigO\of{\increment t^3}\text.
+\end{align*}
+This is indeed a third-order approximation for the step, so this would give us a second-order method. As in the midpoint method, we can't actually compute $\vg\of{t_0 + \increment t}$. Instead we approximate it using Euler's method, so that our step becomes:
+\[
+\hat{\vy}_1\approx\vy_1=\vy_0
++ \frac{\vf\of{t_0,\vy_0} + \vf\of{t_0 + \increment t,\vy_0 + \vf\of{t_0,\vy_0} \increment t}}{2} \increment t\text.
+\]
+We leave checking that the approximation $\hat{\vy}_1\approx\vy_1$ is indeed third-order as an exercise to the reader.
+This method is called \emph{Heun's method}, after German mathematician Karl Heun (1859--1929).
+A good visualisation of this method, as well as a geometric interpretation, can be found on the \emph{Wikipedia} article \url{http://en.wikipedia.org/wiki/Heun's_method#Description}.
+
+It looks like Heun's method is slower than the midpoint method, as there are three evaluations of $\vf$. However, two of those are with the same arguments, so we can rewrite things as follows:
+\begin{align*}
+\vk_1 &= \vf\of{t_0,\vy_0} \text{ is our approximation for $\vg\of{t_0}$;} \\
+\vk_2 &= \vf\of{t_0 + \increment t,\vy_0 + \vk_1 \increment t} \text{ is our approximation for $\vg\of{t_0 + \increment t}$;} \\
+\vy_1 &= \vy_0 + \frac{\vk_1 + \vk_2}{2}\increment t \text{ is our approximation for $\vy\of{t + \increment t}$.}
+\end{align*}
+This process can be generalised, yielding so-called Runge-Kutta methods.
+\section{Runge-Kutta methods}
+In a \emph{Runge-Kutta method},\footnote{Named after German mathematicians Carl David Tolmé Runge (1856--1927) and Martin Wilhelm Kutta (1867--1944).} we compute the step $\vy_1\approx\vy\of{t_0+\increment t}$ as a linear approximation\[
+\vy_1 = \vy_0 + \vgl \increment t\text.
+\]
+The idea is that we want to use a weighted average (with weights $b_i$) of the derivative $\vg$ of $\vy$ at $s$ points between $t_0$ and $t_0 + \increment t$ as our approximation $\vgl$, \[
+\hat{\vy}_1 = \vy_0 + \pa{b_1 \vg\of{t_0} + b_2 \vg\of{t_0 + c_2\increment t} + \dotsb + b_s \vg\of{t_0 + c_s\increment t}} \increment t\text,
+\]
+but we cannot do that because we do not know how to compute $\vg$; we only know how to compute $\vf$. Instead we compute \emph{increments} $\vk_i$ which approximate the derivative, $\vk_i\approx\vg\of{t_0 + c_i \increment t}$, and we take a weighted average of these as our overall linear approximation:\begin{align*}
+\vgl  &= b_1\vk_1 + b_2\vk_2 + \dotsb + b_s\vk_s\text,\\
+\vy_1 &= \vy_0 + \pa{b_1\vk_1 + b_2\vk_2 + \dotsb + b_s\vk_s} \increment t\text.
+\end{align*}
+In order to compute each increment, we can use the previous ones to construct an approximation that has high enough order.
+
+Surprisingly, we will see that the approximation \[
+ b_1\vk_1 + b_2\vk_2 + \dotsb + b_s\vk_s \approx b_1 \vg\of{t_0} + b_2 \vg\of{t_0 + c_2\increment t} + \dotsb + b_s \vg\of{t_0 + c_s\increment t}
+\] is generally better than the individual approximations $\vk_i\approx\vg\of{t_0 + c_i \increment t}$.
+\section*{Definition}
+A Runge-Kutta method is defined by its \emph{weights} $\vb=\tuple{b_1,\dotsc,b_s}$, its \emph{nodes} $\vc=\tuple{c_1,\dotsc,c_s}$ and its Runge-Kutta matrix\[
+\matA=
+\begin{pmatrix}
+a_{11} & \cdots & a_{1s} \\
+\vdots & \ddots & \vdots \\
+a_{s1} & \cdots & a_{ss}
+\end{pmatrix}
+\text.
+\]
+It is typically written as a \emph{Butcher tableau}:\[
+\begin{array}{c | c c c c c}
+c_1    &  a_{11} &  \cdots &  a_{1s} \\
+\vdots &  \vdots &  \ddots &  \vdots \\
+c_s    &  a_{s1} &  \cdots &  a_{ss} \\
+\hline
+       &  b_{1}  &  \cdots &  b_{s}
+\end{array}
+\]
+We will only consider \emph{explicit} Runge-Kutta methods, \emph{i.e.}, those where $\matA$ is strictly lower triangular, so that the Butcher tableau is as follows (blank spaces in $\matA$ are zeros).\[
+\begin{array}{l | c c c c c}
+0      &        &         &        &           &   \\
+c_2    & a_{21} &         &        &           &   \\
+c_3    & a_{31} & a_{32}  &        &           &   \\
+\vdots & \vdots & \vdots  & \ddots &           &   \\
+c_s    & a_{s1} & a_{s2}  & \cdots & a_{s,s-1} &   \\
+\hline
+       & b_{1}  & b_{2}   & \cdots & b_{s-1}   & b_{s}
+\end{array}
+\]
+The step is computed using the weighted sum of the increments as a linear approximation,\[
+\vy_1 = \vy_0 + \pa{b_1\vk_1 + b_2\vk_2 + \dotsb + b_s\vk_s} \increment t\text,
+\]
+where the increments are computed in $s$ \emph{stages} as follows:\footnote{\emph{Caveat lector}: $\vk_i$ is often defined as $\increment t\vf\of{t_0 + c_i\increment t, y_0 + \increment t \pa{a_{i1}\vk_1 + a_{i2}\vk_2 + \dotsb + a_{i,i-1}\vk_{i-1}}}$. In this case it is an approximation of the increment using the derivative at $t_0 + c_i\increment t$ rather than an approximation of the derivative itself.}
+\begin{align*}
+\vk_1 &= \vf\of{t_0, y_0} \\
+\vk_2 &= \vf\of{t_0 + c_2\increment t, y_0 + a_{21}\vk_1  \increment t } \\
+\vk_3 &= \vf\of{t_0 + c_3\increment t, y_0 + \pa{a_{31}\vk_1 + a_{32}\vk_2} \increment t } \\
+      &\vdots\\
+\vk_i &= \vf\of{t_0 + c_i\increment t, y_0 +  \pa{a_{i1}\vk_1 + a_{i2}\vk_2 + \dotsb + a_{i,i-1}\vk_{i-1}} \increment t} \\
+      &\vdots\\
+\vk_s &= \vf\of{t_0 + c_s\increment t, y_0 + \pa{a_{s1}\vk_1 + a_{s2}\vk_2 + \dotsb + a_{s,s-1}\vk_{s-1}} \increment t }\text.
+\end{align*}
+Recall that $\vk_i$ is an approximation for $\vg\of{t_0 + c_i\increment t}$, the derivative of $\vy$ at $t_0 + c_i\increment t$, so that the\[
+y_0 + \pa{a_{i1}\vk_1 + a_{i2}\vk_2 + \dotsb + a_{i,i-1}\vk_{i-1}} \increment t
+\] are themselves linear approximations obtained by weighted averages of approximated derivatives.
+
+Note that each $k_i$ only depends on the $k_j$ for $j<i$, so that they can be computed in order.\footnote{This is why we call the method \emph{explicity}. In an implicit method, each $k_i$ can depend on all the $k_j$, so that you need to solve a system of algebraic equations in order to compute them.}
+
+Note that all of the methods described above were Runge-Kutta methods. We invite the reader to check that the $\vk_i$ described in the relevant sections correspond to the following tableaux:
+Euler's method has Butcher tableau\[
+\begin{array}{c | c}
+0    &    \\
+\hline
+     &  1  
+\end{array}\text,
+\]
+The midpoint method is described by\[
+\begin{array}{c | c c}
+0           &                \\
+\frac 1 2   &  \frac 1 2   & \\
+\hline
+            &  0           & 1  
+\end{array}
+\]
+and Heun's method by\[
+\begin{array}{c | c c}
+0           &                \\
+1           &  1           & \\
+\hline
+            &  \frac 1 2   & \frac 1 2
+\end{array}\text.
+\]
+\subsection*{An example: Kutta's third-order method}
+We will now consider the Runge-Kutta method given by the following Butcher tableau.\[
+\begin{array}{c | c c c}
+0           &                  \\
+\frac 1 2   & \frac 1 2    &   \\
+1           & -1           & 2 \\
+\hline
+            &  \frac 1 6   & \frac 2 3 & \frac 1 6
+\end{array}
+\]
+We have \[
+\vy_1 = \vy_0 + \pa{\frac{\vk_1}{6} + \frac{2\vk_2}{3} + \frac{\vk_3}{6}}\increment t \text.
+\]
+This is an approximation for\[
+\hat{\vy}_1= \vy_0 + \pa{\frac{\vg\of{t_0}}{6} 
+          + \frac{2\vg\of{t_0 + \frac{\increment t}{2}}}{3} + \frac{\vg\of{t_0 + \increment t}}{6}} \increment t 
+\]
+Let us look at the order of $\hat{\vy}_1$ as an approximation of $\vy\of{t_0 + \increment t}$.
+\begin{align*}
+\hat{\vy}_1&= \vy_0 + \pa{\frac{\vg\of{t_0}}{6} 
+          + \frac{2\vg\of{t_0 + \frac{\increment t}{2}}}{3} + \frac{\vg\of{t_0 + \increment t}}{6}} \increment t \\
+&= \vy_0 + \frac{1}{6}\deriv t \vy \of{t_0} \increment t \\
+ & \quad + \frac{2}{3}\pa{\deriv t \vy \of{t_0} + \deriv[2] t \vy \of{t_0} \frac{\increment t}{2} + \deriv[3] t \vy \of{t_0} \frac{\increment t^2}{8} } \increment t \\
+ & \quad +  \frac{1}{6}\pa{\deriv t \vy \of{t_0} + \deriv[2] t \vy \of{t_0} \increment t + \deriv[3] t \vy \of{t_0} \frac{\increment t^2}{2}} \increment t \\
+ &\quad  + \BigO\of{\increment t^3}  \increment t \\
+&= \vy_0 + \deriv t \vy \of{t_0} \increment t + \deriv[2] t \vy \of{t_0} \frac{\increment t^2}{2} + \deriv[3] t \vy \of{t_0} \frac{\increment t^3}{6} + \BigO\of{\increment t^4} \\
+&= \vy\of{t_0 + \increment t} + \BigO\of{\increment t^4}\text,
+\end{align*}
+so it looks like this could be a third-order method ($\hat{\vy}_1\approx\vy\of{t_0 + \increment t}$ is a fourth-order approximation).
+
+In order for that to work however, we need $\vy_1\approx\hat{\vy}_1$ to be fourth-order, in other words, we need the difference between \[
+\frac{\vg\of{t_0}}{6} + \frac{2\vg\of{t_0 + \frac{\increment t}{2}}}{3} + \frac{\vg\of{t_0 + \increment t}}{6}
+\]and\[
+\frac{\vk_1}{6} + \frac{2\vk_2}{3} + \frac{\vk_3}{6}
+\]to be $\BigO\of{\increment t^3}$.
+
+We have $\vk_1=\vg\of{t_0}$.
+If we compute $\vk_2$, we see that it is \emph{only} a second-order approximation for $\vg\of{t_0 + \frac{\increment t}{2}}$,
+\marginnote{The fourth line follows from (\ref{TaylorF2}), the fifth by taking the Taylor expansion of $\deriv\vy\vf\of{t,\vy\of{t}}$ at a function of $t$.}
+\begin{alignat*}{2}
+\vk_2 &=\vf\of{t_0 + \frac{\increment t}{2}, \vy_0 + \vk_1 \frac{\increment t}{2}} \\
+    &=\vf\of{t_0 + \frac{\increment t}{2}, \vy_0 + \deriv t \vy \of{t_0} \frac{\increment t}{2}} \\
+    &=\vf\of{t_0 + \frac{\increment t}{2},
+             \vy\of{t_0 + \frac{\increment t}{2}} 
+             -  \deriv[2] t \vy\of{t_0} \frac{\increment t^2}{8}
+             + \BigO\of{\increment t^3} } \\
+    &=\vf\of{t_0 + \frac{\increment t}{2}, \vy\of{t_0 + \frac{\increment t}{2}} }
+     - \deriv \vy\vf \of{t_0 + \frac{\increment t}{2}, \vy\of{t_0 + \frac{\increment t}{2}} } 
+       \deriv[2] t \vy\of{t_0} \frac{\increment t^2}{8} + \BigO\of{\increment t^3} \\
+    &= \vf\of{t_0 + \frac{\increment t}{2}, \vy\of{t_0 + \deriv[2] t \vy\of{t_0} \frac{\increment t}{2}} } 
+     - \deriv \vy\vf \of{t_0, \vy\of{t_0}}
+       \deriv[2] t \vy\of{t_0} \frac{\increment t^2}{8} + \BigO\of{\increment t^3} \\
+    &= \vg\of{t_0 +\increment t} 
+     - \deriv \vy\vf \of{t_0, \vy\of{t_0}} 
+       \deriv[2] t \vy\of{t_0} \frac{\increment t^2}{8} + \BigO\of{\increment t^3} \text,
+\end{alignat*}
+so in order for the method to be third-order, we need this second-order term to be \emph{cancelled} by the error in $\vk_3$. We can compute this error, \begin{alignat*}{2}
+\vk_3 &=\vf\of{t_0 + \increment t, \vy_0 - \vk_1 \increment t  + 2 \vk_2 \increment t} \\
+    &=\vf\of{t_0 + \increment t,
+             \vy_0 - \deriv t \vy \of{t_0} \increment t
+                   + 2\vf\of{t_0 + \frac{\increment t}{2}, 
+                                         \vy\of{t_0 + \frac{\increment t}{2}} } \increment t
+                   + \BigO\of{\increment t^3} } \\
+    &=\vf\of{t_0 +\increment t,
+             \vy_0 - \deriv t \vy \of{t_0} \increment t
+                   + 2 \deriv t \vy\of{t_0 + \frac{\increment t}{2}} \increment t
+                   + \BigO\of{\increment t^3} }  \\
+    &=\vf\of{t_0 +\increment t,
+             \vy_0 - \deriv t \vy \of{t_0} \increment t
+             + 2 \deriv t \vy\of{t_0}  \increment t
+             + \deriv[2] t \vy\of{t_0}  \increment t^2
+             + \BigO\of{\increment t^3} } \\
+    &=\vf\of{t_0 +\increment t, 
+             \vy\of{t_0 + \increment t} 
+             + \deriv[2] t \vy\of{t_0}  \frac{\increment t^2}{2}
+             + \BigO\of{\increment t^3} } \\
+    &=\vf\of{t_0 +\increment t, \vy\of{t_0 + \increment t} }
+      + \deriv \vy\vf \of{t_0, \vy\of{t_0}} \deriv[2] t \vy\of{t_0} \frac{\increment t^2}{2}  
+      + \BigO\of{\increment t^3} \\
+    &= \vg\of{t_0 +\increment t} 
+       + \deriv \vy\vf \of{t_0, \vy\of{t_0}} \deriv[2] t \vy\of{t_0} \frac{\increment t^2}{2}  
+       + \BigO\of{\increment t^3}  \text,
+\end{alignat*}
+and indeed the second-order error term from $\vk_3$ cancels with the one from $\vk_2$ in the weighted average, so that for the whole step we get:
+\begin{alignat*}{2}
+\vy_1 &= \vy_0 + \pa{\frac{\vk_1}{6} + \frac{2\vk_2}{3} + \frac{\vk_3}{6}} \increment t \\
+    &= \vy_0 + \bigg( \frac{\vg\of{t_0}}{6} \\
+    &\quad + \frac{2\vg\of{t_0 + \frac{\increment t}{2}}}{3} - \frac{2}{3} \deriv \vy\vf \of{t_0, \vy\of{t_0}} \deriv[2] t \vy\of{t_0} \frac{\increment t^2}{8} \\
+    &\quad + \frac{\vg\of{t_0 + \increment t}}{6} + \frac{1}{6} \deriv \vy\vf \of{t_0, \vy\of{t_0}} \deriv[2] t \vy\of{t_0} \frac{\increment t^2}{2}  \\
+    &\quad + \BigO\of{\increment t ^ 3} \bigg) \increment t\\
+    &= \vy_0 + \increment t \pa{\frac{\vg\of{t_0}}{6} + \frac{2\vg\of{t_0 + \frac{\increment t}{2}}}{3} + \frac{\vg\of{t_0 + \increment t}}{6}} + \BigO\of{\increment t ^ 4} \\
+    &= \hat{\vy}_1 + \BigO\of{\increment t ^ 4} \\
+    &= \vy\of{t_0 + \increment t} + \BigO\of{\increment t^4}\text.
+\end{alignat*}
+The error on the step is fourth-order and thus the is accurate to the third order.
+
+\subsection*{Closing remarks}
+Fiddling with Taylor's theorem in order to find a high-order method by trying to make low-order terms cancel out is hard and involves a lot of guesswork. This is where the Runge-Kutta formulation shines: one can check the order of the method by seeing whether the coefficients $\matA$, $\vb$, $\vc$ satisfy the corresponding \emph{order conditions}.
+
+A method has order $1$ if and only if it satisfies\[
+\sum{i=1}[s]b_i =1\text.\]
+It has order $2$ if and only if, in addition to the above equation, it satisfies\[
+\sum{i=1}[s]b_ic_i =\frac 1 2 \text.\]
+It has order $3$ if and only if, in addition to satisfying the above two equations, it satisfies\[
+\begin{dcases}
+\sum{i=1}[s]b_ic_i^2 =\frac 1 3 \\
+\sum{i=1}[s]\sum{j=1}[s]b_ia_{ij}c_j =\frac 1 6 
+\end{dcases}\text.
+\]
+It has order $4$ if and only if, in addition to satisfying the above four equations, it satisfies\[
+\begin{dcases}
+\sum{i=1}[s]b_ic_i^3 =\frac 1 4 \\
+\sum{i=1}[s]\sum{j=1}[s]b_ic_ia_{ij}c_j =\frac 1 8 \\
+\sum{i=1}[s]\sum{j=1}[s]b_ia_{ij}c_j^2 =\frac {1} {12} \\
+\sum{i=1}[s]\sum{j=1}[s]\sum{k=1}[s]b_ia_{ij}a_{jk}c_k =\frac {1} {24} \\
+\end{dcases}\text.
+\]
+The number of order conditions explodes with increasing order, and they are not easy to solve. There are cases where only numerical values are known for the coefficients.
+
+We leave the following as an exercise to the reader: characterise all explicit second-order methods with two stages ($s=2$). Check your result by computing Taylor expansions.
+\end{document}

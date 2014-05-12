@@ -1,0 +1,32 @@
+From 3cdcf0dc89cef18ca216cf222992e48555b4b0e2 Mon Sep 17 00:00:00 2001
+From: Robin Leroy <egg.robin.leroy@gmail.com>
+Date: Sun, 11 May 2014 19:23:05 +0200
+Subject: [PATCH] Init glog.
+
+---
+ gmock-1.7.0/src/gmock_main.cc | 2 ++
+ 2 files changed, 2 insertions(+)
+
+diff --git a/gmock-1.7.0/src/gmock_main.cc b/gmock-1.7.0/src/gmock_main.cc
+index bd5be03..b74c5de 100644
+--- a/gmock-1.7.0/src/gmock_main.cc
++++ b/gmock-1.7.0/src/gmock_main.cc
+@@ -30,6 +30,7 @@
+ // Author: wan@google.com (Zhanyong Wan)
+ 
+ #include <iostream>
++#include "glog/logging.h"
+ #include "gmock/gmock.h"
+ #include "gtest/gtest.h"
+ 
+@@ -46,6 +47,7 @@ GTEST_API_ int _tmain(int argc, TCHAR** argv) {
+ GTEST_API_ int main(int argc, char** argv) {
+ #endif  // GTEST_OS_WINDOWS_MOBILE
+   std::cout << "Running main() from gmock_main.cc\n";
++  google::InitGoogleLogging(argv[0]);
+   // Since Google Mock depends on Google Test, InitGoogleMock() is
+   // also responsible for initializing Google Test.  Therefore there's
+   // no need for calling testing::InitGoogleTest() separately.
+-- 
+1.8.4.msysgit.0
+
