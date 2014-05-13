@@ -145,6 +145,11 @@ template<typename D>
 inline Quantity<D>::Quantity() : magnitude_(0) {}
 
 template<typename D>
+inline Quantity<D> Quantity<D>::SIUnit() {
+  return Quantity<D>(1);
+}
+
+template<typename D>
 template<int Exponent>
 Exponentiation<Quantity<D>, Exponent> Quantity<D>::Pow() const {
   return Exponentiation<Quantity<D>,
