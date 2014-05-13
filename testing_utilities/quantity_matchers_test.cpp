@@ -28,6 +28,8 @@ TEST_F(QuantityMatchersTest, AlmostButNotQuiteEquals) {
     not_quite_one += 0.01;
   }
   EXPECT_THAT(not_quite_one - 1, Not(AlmostEquals(0)));
+  EXPECT_THAT(not_quite_one - 1, AlmostVanishesBefore(1));
+  EXPECT_THAT(not_quite_one - 1, Not(AlmostVanishesBefore(.1)));
 }
 
 TEST_F(QuantityMatchersTest, ApproximationMatcher) {

@@ -1,4 +1,6 @@
-#pragma once
+﻿#pragma once
+
+#include <float.h>
 
 #include <string>
 
@@ -17,11 +19,23 @@ MATCHER_P(AlmostEquals, expected,
       testing::internal::Double((arg / arg.SIUnit()).Value()).AlmostEquals(
           testing::internal::Double(
               (arg_type(expected) / arg_type(expected).SIUnit()).Value()));
-  if(!matches) {
-    *result_listener << "the relative error is " << 
+  if (!matches) {
+    *result_listener << "the relative error is " <<
         Abs((expected - arg) / expected).Value();
   }
   return matches;
+}
+
+MATCHER_P(AlmostVanishesBefore, input_magnitude,
+          std::string(negation ? "is not" : "is") + " within " +
+          PrintToString(input_magnitude) + " * ε of zero.") {
+  double const expected_absolute_error = input_magnitude * DBL_EPSILON;
+  double const actual_absolute_error = Abs((expected - arg)).Value();
+  if (actual_absolute_error <= expected_relative_error) {
+    *result_listener << "the relative error is " <<
+      actual_absolute_error;
+  }
+  return actual_absolute_error <= expected_relative_error;
 }
 
 MATCHER_P2(Approximates, expected, expected_relative_error,
@@ -29,7 +43,7 @@ MATCHER_P2(Approximates, expected, expected_relative_error,
            testing::PrintToString(expected) + " to within "
            + testing::PrintToString(expected_relative_error)) {
   double const actual_relative_error = Abs((expected - arg) / expected).Value();
-  if(actual_relative_error <= expected_relative_error) {
+  if (actual_relative_error <= expected_relative_error) {
     *result_listener << "the relative error is " <<
       actual_relative_error;
   }
