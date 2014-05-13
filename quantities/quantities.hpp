@@ -80,7 +80,7 @@ class Quantity {
   Exponentiation<Quantity, Exponent> Pow() const;
 
   // Returns the base or derived SI Unit of |Quantity|.
-  // For instance, |Action::SIUnit == Joule * Second|.
+  // For instance, |Action::SIUnit() == Joule * Second|.
   static Quantity SIUnit();
 
  private:

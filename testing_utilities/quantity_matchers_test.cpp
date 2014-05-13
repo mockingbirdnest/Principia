@@ -8,14 +8,26 @@ namespace principia {
 namespace test_utilities {
 
 using quantities::Dimensionless;
+using testing::Not;
+using testing::Eq;
 
 class QuantityMatchersTest : public testing::Test {
  protected:
 };
 
-TEST_F(QuantityMatchersTest, Foo) {
-  EXPECT_THAT(Dimensionless(1), AlmostEquals(Dimensionless(1)));
-  EXPECT_THAT(Dimensionless(2), AlmostEquals(Dimensionless(1)));
+TEST_F(QuantityMatchersTest, AlmostButNotQuiteEquals) {
+  EXPECT_THAT(Dimensionless(1), AlmostEquals(1));
+  EXPECT_THAT(Dimensionless(1.01), Not(AlmostEquals(1)));
+  Dimensionless not_quite_one = 0;
+  for (int i = 1; i <= 100; ++i) {
+    not_quite_one += 0.01;
+  }
+  EXPECT_THAT(not_quite_one, Not(Eq(1)));
+  EXPECT_THAT(not_quite_one, AlmostEquals(1));
+  for (int i = 1; i <= 100; ++i) {
+    not_quite_one += 0.01;
+  }
+  EXPECT_THAT(not_quite_one - 1, Not(AlmostEquals(0)));
 }
 
 }  // namespace test_utilities

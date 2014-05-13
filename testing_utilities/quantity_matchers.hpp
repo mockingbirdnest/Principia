@@ -15,7 +15,8 @@ MATCHER_P(AlmostEquals, expected,
           testing::PrintToString(expected)) {
   bool const matches =
       testing::internal::Double((arg / arg.SIUnit()).Value()).AlmostEquals(
-          testing::internal::Double((expected / expected.SIUnit()).Value()));
+          testing::internal::Double(
+              (arg_type(expected) / arg_type(expected).SIUnit()).Value()));
   if(!matches) {
     *result_listener << "the relative error is " << 
         Abs((expected - arg) / expected).Value();
