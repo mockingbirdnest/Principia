@@ -87,12 +87,17 @@ inline Dimensionless Abs(Dimensionless const& number) {
   return std::abs(number.Value());
 }
 
-inline std::wstring ToString(Dimensionless const& number,
-                             unsigned char const precision) {
-  wchar_t result[50];
-  std::swprintf(result, 49, (L"%."+ std::to_wstring(precision) + L"e").c_str(),
-                number.Value());
+inline std::string ToString(Dimensionless const& number,
+                            unsigned char const precision) {
+  char result[50];
+  sprintf_s(result, ("%."+ std::to_string(precision) + "e").c_str(),
+           number.Value());
   return result;
 }
+
+std::ostream& operator<<(::std::ostream& os, Dimensionless const& number) {
+  return os << ToString(number);
+}
+
 }  // namespace quantities
 }  // namespace principia

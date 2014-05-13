@@ -268,28 +268,33 @@ inline Quantity<D> Abs(Quantity<D> const& quantity) {
   return Quantity<D>(Abs(quantity.magnitude_));
 }
 
-inline std::wstring FormatUnit(std::wstring const& name, int const exponent) {
+inline std::string FormatUnit(std::string const& name, int const exponent) {
   switch (exponent) {
     case 0:
-      return L"";
+      return "";
       break;
     case 1:
-      return L" " + name;
+      return " " + name;
     default:
-      return L" " + name + L"^" + std::to_wstring(exponent);
+      return " " + name + "^" + std::to_string(exponent);
   }
 }
 
 template<typename D>
-inline std::wstring ToString(Quantity<D> const& quantity,
-                             unsigned char const precision) {
+inline std::string ToString(Quantity<D> const& quantity,
+                            unsigned char const precision) {
   return ToString(quantity.magnitude_, precision) +
-      FormatUnit(L"m", D::Length) + FormatUnit(L"kg", D::Mass) +
-      FormatUnit(L"s", D::Time) + FormatUnit(L"A", D::Current) +
-      FormatUnit(L"K", D::Temperature) + FormatUnit(L"mol", D::Amount) +
-      FormatUnit(L"cd", D::LuminousIntensity) +
-      FormatUnit(L"cycle", D::Winding) + FormatUnit(L"rad", D::Angle) +
-      FormatUnit(L"sr", D::SolidAngle);
+      FormatUnit("m", D::Length) + FormatUnit("kg", D::Mass) +
+      FormatUnit("s", D::Time) + FormatUnit("A", D::Current) +
+      FormatUnit("K", D::Temperature) + FormatUnit("mol", D::Amount) +
+      FormatUnit("cd", D::LuminousIntensity) +
+      FormatUnit("cycle", D::Winding) + FormatUnit("rad", D::Angle) +
+      FormatUnit("sr", D::SolidAngle);
+}
+
+template<typename D>
+std::ostream& operator<<(::std::ostream& os, Quantity<D> const& quantity) {
+  return os << ToString(quantity);
 }
 
 }  // namespace quantities

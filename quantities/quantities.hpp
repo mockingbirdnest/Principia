@@ -147,8 +147,11 @@ class Quantity {
   friend Angle ArcTan(Quantity<D> const& y, Quantity<D> const& x);
 
   template<typename D>
-  friend std::wstring ToString(Quantity<D> const&, unsigned char const);
+  friend std::string ToString(Quantity<D> const&, unsigned char const);
 };
+
+template<typename D>
+std::ostream& operator<<(::std::ostream& os, Quantity<D> const& quantity);
 
 template<typename D>
 void operator+=(Quantity<D>&, Quantity<D> const&);

@@ -46,8 +46,13 @@ bool operator!=(Dimensionless const&, Dimensionless const&);
 
 Dimensionless Abs(Dimensionless const&);
 
-std::wstring ToString(Dimensionless const& number, 
+std::string ToString(Dimensionless const& number, 
                       unsigned char const precision = 16);
+
+
+template<typename D>
+std::ostream& operator<<(::std::ostream& os, Dimensionless const& number);
+
 }  // namespace quantities
 }  // namespace principia
 

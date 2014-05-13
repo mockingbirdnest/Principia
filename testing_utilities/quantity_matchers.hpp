@@ -28,14 +28,14 @@ MATCHER_P(AlmostEquals, expected,
 
 MATCHER_P(AlmostVanishesBefore, input_magnitude,
           std::string(negation ? "is not" : "is") + " within " +
-          PrintToString(input_magnitude) + " * ε of zero.") {
-  double const expected_absolute_error = input_magnitude * DBL_EPSILON;
-  double const actual_absolute_error = Abs((expected - arg)).Value();
-  if (actual_absolute_error <= expected_relative_error) {
-    *result_listener << "the relative error is " <<
-      actual_absolute_error;
+          testing::PrintToString(input_magnitude) + " * 4 epsilon of zero.") {
+  double const expected_absolute_error = input_magnitude * 4 * DBL_EPSILON;
+  double const actual_absolute_error = std::abs((arg / arg.SIUnit()).Value());
+  if (actual_absolute_error <= expected_absolute_error) {
+    *result_listener << "the absolute error is " <<
+      actual_absolute_error / (4 * DBL_EPSILON) << " * 4 epsilon";
   }
-  return actual_absolute_error <= expected_relative_error;
+  return actual_absolute_error <= expected_absolute_error;
 }
 
 MATCHER_P2(Approximates, expected, expected_relative_error,
