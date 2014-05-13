@@ -9,55 +9,48 @@
       <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
       <Extensions>h;hh;hpp;hxx;hm;inl;inc;xsd</Extensions>
     </Filter>
-    <Filter Include="Resource Files">
-      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
-      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
-    </Filter>
     <Filter Include="Test Files">
       <UniqueIdentifier>{6c627518-7018-4547-aeb6-f1b7d5a3fee5}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Grassmann.hpp">
+    <ClInclude Include="grassmann.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="LinearMap.hpp">
+    <ClInclude Include="rotation.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Sign-body.hpp">
+    <ClInclude Include="sign.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="permutation.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="quaternion.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="linear_map.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="r3_element.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="grassmann_body.hpp">
       <Filter>Source Files</Filter>
     </ClInclude>
-    <ClInclude Include="Rotation.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="R3Element.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Sign.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Grassmann-body.hpp">
+    <ClInclude Include="permutation_body.hpp">
       <Filter>Source Files</Filter>
     </ClInclude>
-    <ClInclude Include="Permutation.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Rotation-body.hpp">
+    <ClInclude Include="quaternion_body.hpp">
       <Filter>Source Files</Filter>
     </ClInclude>
-    <ClInclude Include="Permutation-body.hpp">
+    <ClInclude Include="r3_element_body.hpp">
       <Filter>Source Files</Filter>
     </ClInclude>
-    <ClInclude Include="R3Element-body.hpp">
+    <ClInclude Include="rotation_body.hpp">
       <Filter>Source Files</Filter>
     </ClInclude>
-    <ClInclude Include="Sign-body.hpp">
-      <Filter>Source Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Quaternion.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Quaternion-body.hpp">
+    <ClInclude Include="sign_body.hpp">
       <Filter>Source Files</Filter>
     </ClInclude>
   </ItemGroup>

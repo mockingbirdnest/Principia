@@ -1,7 +1,7 @@
 ﻿#pragma once
 
-#include "Geometry/Grassmann.hpp"
-#include "Geometry/R3Element.hpp"
+#include "geometry/Grassmann.hpp"
+#include "geometry/r3_element.hpp"
 #include "TestUtilities/QuantityComparisons.hpp"
 #include "TestUtilities/TestUtilities.hpp"
 

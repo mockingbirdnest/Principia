@@ -5,14 +5,14 @@
 #include <CppUnitTest.h>
 #include <stdio.h>
 
-#include "Quantities/Astronomy.hpp"
-#include "Quantities/BIPM.hpp"
-#include "Quantities/Constants.hpp"
-#include "Quantities/Dimensionless.hpp"
-#include "Quantities/ElementaryFunctions.hpp"
-#include "Quantities/Quantities.hpp"
-#include "Quantities/SI.hpp"
-#include "Quantities/UK.hpp"
+#include "quantities/astronomy.hpp"
+#include "quantities/BIPM.hpp"
+#include "quantities/constants.hpp"
+#include "quantities/dimensionless.hpp"
+#include "quantities/elementary_functions.hpp"
+#include "quantities/quantities.hpp"
+#include "quantities/si.hpp"
+#include "quantities/uk.hpp"
 #include "TestUtilities/Algebra.hpp"
 #include "TestUtilities/ExplicitOperators.hpp"
 #include "TestUtilities/GeometryComparisons.hpp"

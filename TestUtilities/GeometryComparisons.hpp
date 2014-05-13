@@ -1,8 +1,8 @@
 ﻿#pragma once
 
-#include "Geometry/Grassmann.hpp"
-#include "Geometry/R3Element.hpp"
-#include "Quantities/Dimensionless.hpp"
+#include "geometry/grassmann.hpp"
+#include "geometry/r3_element.hpp"
+#include "quantities/dimensionless.hpp"
 #include "TestUtilities/QuantityComparisons.hpp"
 #include "TestUtilities/TestUtilities.hpp"
 

@@ -1,7 +1,7 @@
 #pragma once
 
-#include "Quantities/Dimensionless.hpp"
-#include "Quantities/Quantities.hpp"
+#include "quantities/dimensionless.hpp"
+#include "quantities/quantities.hpp"
 
 namespace principia {
 namespace geometry {
@@ -94,4 +94,4 @@ quantities::Product<LScalar, RScalar> Dot(R3Element<LScalar> const& left,
 }  // namespace geometry
 }  // namespace principia
 
-#include "Geometry/R3Element-body.hpp"
+#include "geometry/r3_element_body.hpp"

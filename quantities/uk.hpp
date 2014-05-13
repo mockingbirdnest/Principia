@@ -1,10 +1,10 @@
 #pragma once
 
-#include "Quantities/Constants.hpp"
-#include "Quantities/NamedQuantities.hpp"
-#include "Quantities/Numbers.hpp"
-#include "Quantities/Quantities.hpp"
-#include "Quantities/SI.hpp"
+#include "quantities/constants.hpp"
+#include "quantities/named_quantities.hpp"
+#include "quantities/numbers.hpp"
+#include "quantities/quantities.hpp"
+#include "quantities/si.hpp"
 
 namespace principia {
 // This namespace contains the imperial units as defined by the international
