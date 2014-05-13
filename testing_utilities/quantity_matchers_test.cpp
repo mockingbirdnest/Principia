@@ -30,5 +30,10 @@ TEST_F(QuantityMatchersTest, AlmostButNotQuiteEquals) {
   EXPECT_THAT(not_quite_one - 1, Not(AlmostEquals(0)));
 }
 
+TEST_F(QuantityMatchersTest, ApproximationMatcher) {
+  EXPECT_THAT(Dimensionless(2.19), Approximates(2, 0.1));
+  EXPECT_THAT(Dimensionless(2.21), Not(Approximates(2, 0.1)));
+}
+
 }  // namespace test_utilities
 }  // namespace principia
