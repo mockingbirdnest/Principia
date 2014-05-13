@@ -14,19 +14,19 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Grassmann.hpp">
+    <ClInclude Include="grassmann.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Rotation.hpp">
+    <ClInclude Include="rotation.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Sign.hpp">
+    <ClInclude Include="sign.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Permutation.hpp">
+    <ClInclude Include="permutation.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Quaternion.hpp">
+    <ClInclude Include="quaternion.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="linear_map.hpp">
