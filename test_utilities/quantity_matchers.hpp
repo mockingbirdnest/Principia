@@ -7,19 +7,17 @@
 namespace principia {
 namespace test_utilities {
 
-MATCHER_P2(EqualsUpToUlps, expected, ulps,
-           std::string(negation ? "is not" : "is") + " within" +
-           testing::PrintToString(ulps) + " ULPs of " +
-           testing::PrintToString(expected)) {
-  int const distance =
-      testing::internal::Double::DistanceBetweenSignAndMagnitudeNumbers(
-          testing::internal::Double((arg / arg.SIUnit()).Value()).bits_,
-          testing::internal::Double(
-              (expected / expected.SIUnit()).Value()).bits_);
-  if(distance > ulps) {
-    result_listener << "the numbers are separated by " << distance << " ULPs";
+MATCHER_P(AlmostEquals, expected,
+          std::string(negation ? "is not" : "is") + " almost equal to "+
+          testing::PrintToString(expected)) {
+  bool const matches =
+      testing::internal::Double((arg / arg.SIUnit()).Value()).AlmostEquals(
+          testing::internal::Double((expected / expected.SIUnit()).Value()));
+  if(!matches) {
+    *result_listener << "the relative error is " <<
+        ToString(Abs((expected - arg) / expected)).c_str();
   }
-  return distance <= ulps;
+  return matches;
 }
 
 }  // namespace test_utilities
