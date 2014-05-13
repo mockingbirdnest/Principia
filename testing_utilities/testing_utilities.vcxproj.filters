@@ -9,6 +9,9 @@
       <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
       <Extensions>h;hh;hpp;hxx;hm;inl;inc;xsd</Extensions>
     </Filter>
+    <Filter Include="Test Files">
+      <UniqueIdentifier>{02816a23-712b-40ae-9b99-ea302bdbe227}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="quantity_matchers.hpp">
@@ -17,7 +20,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="quantity_matchers_test.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>Test Files</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

@@ -25,11 +25,9 @@ TEST_F(QuantityMatchersTest, AlmostButNotQuiteEquals) {
   }
   EXPECT_THAT(not_quite_one, Not(Eq(1)));
   EXPECT_THAT(not_quite_one, AlmostEquals(1));
-  LOG(ERROR) << not_quite_one;
   EXPECT_THAT(not_quite_one - 1, Not(AlmostEquals(0)));
   EXPECT_THAT(not_quite_one - 1, AlmostVanishesBefore(1));
   EXPECT_THAT(not_quite_one - 1, Not(AlmostVanishesBefore(.5)));
-  EXPECT_THAT(not_quite_one - 1, Not(AlmostVanishesBefore(.75)));
 }
 
 TEST_F(QuantityMatchersTest, ApproximationMatcher) {
