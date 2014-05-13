@@ -65,8 +65,8 @@ SolidAngle        Steradians(Dimensionless const&);
 }  // namespace factories
 
 template<typename D>
-std::wstring ToString(Quantity<D> const& quantity,
-                      unsigned char const precision = 16);
+std::string ToString(Quantity<D> const& quantity,
+                     unsigned char const precision = 16);
 
 template<typename D>
 class Quantity {

@@ -28,11 +28,13 @@ MATCHER_P(AlmostEquals, expected,
 MATCHER_P(AlmostVanishesBefore, input_magnitude,
           std::string(negation ? "is not" : "is") + " within " +
           testing::PrintToString(input_magnitude) + " * 4 epsilon of zero.") {
-  double const expected_absolute_error = input_magnitude * 4 * DBL_EPSILON;
+  double const expected_absolute_error =
+      DoubleValue(arg_type(input_magnitude)) * 4 * DBL_EPSILON;
   double const actual_absolute_error = std::abs(DoubleValue(arg));
   if (actual_absolute_error <= expected_absolute_error) {
     *result_listener << "the absolute error is " <<
-      actual_absolute_error / (4 * DBL_EPSILON) << " * 4 epsilon";
+      actual_absolute_error * arg.SIUnit() / (4 * DBL_EPSILON) <<
+      " * 4 epsilon";
   }
   return actual_absolute_error <= expected_absolute_error;
 }
