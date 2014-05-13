@@ -2,7 +2,7 @@
 #include "gtest/gtest.h"
 
 #include "quantities/dimensionless.hpp"
-#include "test_utilities/quantity_matchers.hpp"
+#include "testing_utilities/quantity_matchers.hpp"
 
 namespace principia {
 namespace test_utilities {
