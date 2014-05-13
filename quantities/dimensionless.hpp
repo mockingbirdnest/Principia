@@ -11,6 +11,9 @@ public:
   // No explicit here: we want implicit conversion from double.
   Dimensionless(double const value);
 
+  // Returns |Dimensionless(1)|, for consistency with |Quantity<D>::SIUnit()|.
+  static Dimensionless SIUnit();
+
   double Value() const;
   Dimensionless Pow(int const) const;
   // This function calls Pow(Exponent), its purpose is to provide consistency

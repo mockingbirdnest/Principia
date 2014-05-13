@@ -5,7 +5,11 @@ namespace quantities {
 
 inline Dimensionless::Dimensionless() : value_(0) {}
 inline Dimensionless::Dimensionless(double const value) : value_(value) {}
+
+inline Dimensionless Dimensionless::SIUnit() {return 1;}
+
 inline double Dimensionless::Value() const { return value_; }
+
 template<int Exponent>
 inline Dimensionless Dimensionless::Pow() const {
   return this->Pow(Exponent);
