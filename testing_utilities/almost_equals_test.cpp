@@ -23,7 +23,7 @@ using uk::Foot;
 class AlmostEqualsTest : public testing::Test {
  protected:
 };
-
+/*
 TEST_F(AlmostEqualsTest, AlmostButNotQuiteEquals) {
   EXPECT_THAT(Dimensionless(1), AlmostEquals(1));
   EXPECT_THAT(Dimensionless(1.01), Not(AlmostEquals(1)));
@@ -61,7 +61,7 @@ TEST_F(AlmostEqualsTest, DimensionfulApproximationMatcher) {
   EXPECT_THAT(2.19 * Foot, Approximates(2 * Foot, 0.1));
   EXPECT_THAT(2.21 * Foot, Not(Approximates(2 * Foot, 0.1)));
 }
-
+*/
 struct World;
 TEST_F(AlmostEqualsTest, Vectors) {
   auto v1 = Vector<Dimensionless, World>(R3Element<Dimensionless>(1, 2, 3));
