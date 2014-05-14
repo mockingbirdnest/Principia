@@ -1,5 +1,7 @@
 #pragma once
 
+#include <iostream>
+
 #include "quantities/dimensionless.hpp"
 #include "quantities/quantities.hpp"
 
@@ -81,6 +83,10 @@ void operator*=(R3Element<Scalar>& left,
 template<typename Scalar>
 void operator/=(R3Element<Scalar>& left,
                 quantities::Dimensionless const& right);
+
+template<typename Scalar>
+std::ostream& operator<<(std::ostream& out, 
+                         R3Element<Scalar> const& r3_element);
 
 template<typename LScalar, typename RScalar>
 R3Element<quantities::Product<LScalar, RScalar>> Cross(

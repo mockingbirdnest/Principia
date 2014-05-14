@@ -4,6 +4,7 @@
 
 #include <CppUnitTest.h>
 #include <functional>
+#include <iostream>
 
 #include "geometry/grassmann.hpp"
 #include "geometry/r3_element.hpp"
@@ -60,6 +61,20 @@ TEST_CLASS(GrassmannTests) {
   Multivectorwedge(Multivector<LScalar, Frame, LRank> const& left,
                    Multivector<RScalar, Frame, RRank> const& right) {
     return Wedge(left, right);
+  }
+
+  TEST_METHOD(Operators) {
+    AssertTrue(Vector<Length, World>(u_) != Vector<Length, World>(v_));
+    AssertTrue(Vector<Length, World>(u_) == Vector<Length, World>(u_));
+    AssertTrue(Bivector<Length, World>(u_) != Bivector<Length, World>(v_));
+    AssertTrue(Bivector<Length, World>(u_) == Bivector<Length, World>(u_));
+    AssertTrue(Trivector<Length, World>(u_.x) !=
+               Trivector<Length, World>(v_.x));
+    AssertTrue(Trivector<Length, World>(u_.x) == 
+               Trivector<Length, World>(u_.x));
+    std::cout << "vector: " << Vector<Length, World>(u_) << "\n";
+    std::cout << "bivector: " << Bivector<Length, World>(u_) << "\n";
+    std::cout << "trivector: " << Trivector<Length, World>(u_.x) << "\n";
   }
 
   TEST_METHOD(SpecialOrthogonalLieAlgebra) {

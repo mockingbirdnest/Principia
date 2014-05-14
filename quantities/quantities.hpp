@@ -1,5 +1,6 @@
 #pragma once
 
+#include <iostream>
 #include <string>
 
 #include "quantities/dimensionless.hpp"
@@ -67,6 +68,9 @@ SolidAngle        Steradians(Dimensionless const&);
 template<typename D>
 std::wstring ToString(Quantity<D> const& quantity,
                       unsigned char const precision = 16);
+
+template<typename D>
+std::ostream& operator<<(std::ostream& out, Quantity<D> const& quantity);
 
 template<typename D>
 class Quantity {

@@ -220,6 +220,18 @@ operator/(Multivector<LScalar, Frame, Rank> const& left,
 }
 
 template<typename Scalar, typename Frame, unsigned int Rank>
+inline bool operator==(Multivector<Scalar, Frame, Rank> const& left,
+                       Multivector<Scalar, Frame, Rank> const& right) {
+  return left.coordinates() == right.coordinates();
+}
+
+template<typename Scalar, typename Frame, unsigned int Rank>
+inline bool operator!=(Multivector<Scalar, Frame, Rank> const& left,
+                       Multivector<Scalar, Frame, Rank> const& right) {
+  return left.coordinates() != right.coordinates();
+}
+
+template<typename Scalar, typename Frame, unsigned int Rank>
 inline void operator+=(Multivector<Scalar, Frame, Rank>& left,
                        Multivector<Scalar, Frame, Rank> const& right) {
   left = left + right;
@@ -241,6 +253,13 @@ template<typename Scalar, typename Frame, unsigned int Rank>
 inline void operator/=(Multivector<Scalar, Frame, Rank>& left,
                        quantities::Dimensionless const& right) {
   left = left / right;
+}
+
+template<typename Scalar, typename Frame, unsigned int Rank>
+std::ostream& operator<<(std::ostream& out, 
+                         Multivector<Scalar, Frame, Rank> const& multivector) {
+  out << multivector.coordinates();
+  return out;
 }
 
 }  // namespace geometry
