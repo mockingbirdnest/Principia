@@ -4,6 +4,7 @@
 
 #include <CppUnitTest.h>
 #include <functional>
+#include <iostream>
 
 #include "geometry/grassmann.hpp"
 #include "geometry/r3_element.hpp"
@@ -71,6 +72,9 @@ TEST_CLASS(GrassmannTests) {
                Trivector<Length, World>(v_.x));
     AssertTrue(Trivector<Length, World>(u_.x) == 
                Trivector<Length, World>(u_.x));
+    std::cout << "vector: " << Vector<Length, World>(u_) << "\n";
+    std::cout << "bivector: " << Bivector<Length, World>(u_) << "\n";
+    std::cout << "trivector: " << Trivector<Length, World>(u_.x) << "\n";
   }
 
   TEST_METHOD(SpecialOrthogonalLieAlgebra) {

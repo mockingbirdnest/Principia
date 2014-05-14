@@ -169,6 +169,15 @@ inline void operator/=(R3Element<Scalar>& left,
   left = left / right;
 }
 
+template<typename Scalar>
+std::ostream& operator<<(std::ostream& out, 
+                         R3Element<Scalar> const& r3_element) {
+  out << "{" << r3_element.x << ", " 
+             << r3_element.y << ", " 
+             << r3_element.z << "}";
+  return out;
+}
+
 template<typename LScalar, typename RScalar>
 inline R3Element<quantities::Product<LScalar, RScalar>> Cross(
     R3Element<LScalar> const& left,

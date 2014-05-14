@@ -256,5 +256,12 @@ inline void operator/=(Multivector<Scalar, Frame, Rank>& left,
   left = left / right;
 }
 
+template<typename Scalar, typename Frame, unsigned int Rank>
+std::ostream& operator<<(std::ostream& out, 
+                         Multivector<Scalar, Frame, Rank> const& multivector) {
+  out << multivector.coordinates();
+  return out;
+}
+
 }  // namespace geometry
 }  // namespace principia

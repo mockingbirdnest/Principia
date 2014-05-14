@@ -2,6 +2,7 @@
 
 #include <float.h>
 
+#include <iostream>
 #include <CppUnitTest.h>
 
 #include "geometry/grassmann.hpp"
@@ -52,6 +53,7 @@ TEST_CLASS(R3ElementTests) {
     AssertFalse(42 * v_ != 42 * v_);
     AssertTrue(43 * v_ != 42 * v_);
     AssertFalse(43 * v_ == 42 * v_);
+    std::cout << "v is: " << v_ << "\n";
     AssertEqualWithin(303.492345479576 * Metre / Second,
                       a_.Norm(), 8 * DBL_EPSILON);
     TestVectorSpace<R3Element<Speed>, Dimensionless>(null_velocity_, u_, v_,
