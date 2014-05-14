@@ -1,7 +1,7 @@
 ﻿#pragma once
 
-#include <float.h>
-#include <stdint.h>
+#include <cfloat>
+#include <cstdint>
 
 #include <string>
 
@@ -12,12 +12,7 @@
 #include "quantities/dimensionless.hpp"
 
 namespace principia {
-namespace test_utilities {
-
-template<typename Scalar>
-double DoubleValue(Scalar const& scalar);
-
-double RelativeError(double const expected, double const actual);
+namespace testing_utilities {
 
 template<typename T>
 class AlmostEqualsMatcher;
@@ -25,12 +20,12 @@ class AlmostEqualsMatcher;
 template<typename T>
 testing::PolymorphicMatcher<AlmostEqualsMatcher<T>> AlmostEquals(
     T const& expected,
-    int64_t const max_ulps = 4);
+    std::int64_t const max_ulps = 4);
 
 template<typename T>
 class AlmostEqualsMatcher{
  public:
-  explicit AlmostEqualsMatcher(T const& expected, int64_t const max_ulps);
+  explicit AlmostEqualsMatcher(T const& expected, std::int64_t const max_ulps);
   ~AlmostEqualsMatcher() = default;
 
   template<typename Dimensions>
@@ -52,37 +47,6 @@ class AlmostEqualsMatcher{
   T const expected_;
   int64_t const max_ulps_;
 };
-
-template<typename Scalar>
-class AlmostVanishesBeforeMatcher : public testing::MatcherInterface<Scalar> {
- public:
-  explicit AlmostVanishesBeforeMatcher(Scalar input_magnitude);
-  ~AlmostVanishesBeforeMatcher() = default;
-
-  virtual bool MatchAndExplain(Scalar actual,
-                               testing::MatchResultListener * listener) const;
-  virtual void DescribeTo(std::ostream* os) const;
-  virtual void DescribeNegationTo(std::ostream* os) const;
-
- private:
-  Scalar const input_magnitude_;
-};
-
-template<typename Scalar>
-class ApproximatesMatcher : public testing::MatcherInterface<Scalar> {
- public:
-  ApproximatesMatcher(Scalar expected, quantities::Dimensionless relativeError);
-  ~ApproximatesMatcher() = default;
-
-  virtual bool MatchAndExplain(Scalar actual,
-                               testing::MatchResultListener * listener) const;
-  virtual void DescribeTo(std::ostream* os) const;
-  virtual void DescribeNegationTo(std::ostream* os) const;
-
- private:
-  Scalar const expected_;
-};
-
 
 
 MATCHER_P(AlmostVanishesBefore, input_magnitude,
@@ -112,7 +76,7 @@ MATCHER_P2(Approximates, expected, expected_relative_error,
 }
 
 
-}  // namespace test_utilities
+}  // namespace testing_utilities
 }  // namespace principia
 
 #include "testing_utilities/almost_equals_body.hpp"

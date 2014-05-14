@@ -10,7 +10,7 @@
 #include "testing_utilities/almost_equals.hpp"
 
 namespace principia {
-namespace test_utilities {
+namespace testing_utilities {
 
 using geometry::R3Element;
 using geometry::Vector;
@@ -63,12 +63,13 @@ TEST_F(AlmostEqualsTest, DimensionfulApproximationMatcher) {
 }
 
 struct World;
-
+/*
 TEST_F(AlmostEqualsTest, Vectors) {
   auto v1 = Vector<Dimensionless, World>(R3Element<Dimensionless>(1, 2, 3));
   auto v2 = v1;
   EXPECT_THAT(v1, AlmostEquals(v2));
 }
+*/
 
-}  // namespace test_utilities
+}  // namespace testing_utilities
 }  // namespace principia
