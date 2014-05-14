@@ -1,6 +1,7 @@
 ﻿#pragma once
 
 #include <float.h>
+#include <stdint.h>
 
 #include <string>
 
@@ -23,12 +24,13 @@ class AlmostEqualsMatcher;
 
 template<typename T>
 testing::PolymorphicMatcher<AlmostEqualsMatcher<T>> AlmostEquals(
-    T const& expected);
+    T const& expected,
+    int64_t const max_ulps = 4);
 
 template<typename T>
 class AlmostEqualsMatcher{
  public:
-  explicit AlmostEqualsMatcher(T const& expected);
+  explicit AlmostEqualsMatcher(T const& expected, int64_t const max_ulps);
   ~AlmostEqualsMatcher() = default;
 
   template<typename Dimensions>
@@ -39,15 +41,16 @@ class AlmostEqualsMatcher{
   template<typename Scalar>
   bool MatchAndExplain(geometry::R3Element<Scalar> const& actual,
                        testing::MatchResultListener* listener) const;
-  // template<typename Scalar, typename Frame, unsigned int Rank>
-  // bool MatchAndExplain(geometry<Scalar, Frame, Rank> const& actual,
-  //                     testing::MatchResultListener* listener) const;
+  template<typename Scalar, typename Frame, unsigned int Rank>
+  bool MatchAndExplain(geometry::Multivector<Scalar, Frame, Rank> const& actual,
+                       testing::MatchResultListener* listener) const;
 
   void DescribeTo(std::ostream* os) const;
   void DescribeNegationTo(std::ostream* os) const;
 
  private:
   T const expected_;
+  int64_t const max_ulps_;
 };
 
 template<typename Scalar>

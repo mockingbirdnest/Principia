@@ -12,7 +12,7 @@ inline Dimensionless::Dimensionless(double const value) : value_(value) {}
 
 inline Dimensionless Dimensionless::SIUnit() {return 1;}
 
-inline double Dimensionless::Value() const { return value_; }
+inline double Dimensionless::value() const { return value_; }
 
 template<int Exponent>
 inline Dimensionless Dimensionless::Pow() const {
@@ -33,26 +33,26 @@ inline Dimensionless Dimensionless::Pow(int const exponent) const {
 }
 
 inline Dimensionless operator+(Dimensionless const& right) {
-  return +right.Value();
+  return +right.value();
 }
 inline Dimensionless operator-(Dimensionless const& right) {
-  return -right.Value();
+  return -right.value();
 }
 inline Dimensionless operator+(Dimensionless const& left,
                                Dimensionless const& right) {
-  return left.Value() + right.Value();
+  return left.value() + right.value();
 }
 inline Dimensionless operator-(Dimensionless const& left,
                                Dimensionless const& right) {
-  return left.Value() - right.Value();
+  return left.value() - right.value();
 }
 inline Dimensionless operator*(Dimensionless const& left,
                                Dimensionless const& right) {
-  return left.Value() * right.Value();
+  return left.value() * right.value();
 }
 inline Dimensionless operator/(Dimensionless const& left,
                                Dimensionless const& right) {
-  return left.Value() / right.Value();
+  return left.value() / right.value();
 }
 
 inline void operator+=(Dimensionless& left, Dimensionless const& right) {
@@ -69,33 +69,33 @@ inline void operator/=(Dimensionless& left, Dimensionless const& right) {
 }
 
 inline bool operator>(Dimensionless const& left, Dimensionless const& right) {
-  return left.Value() > right.Value();
+  return left.value() > right.value();
 }
 inline bool operator<(Dimensionless const& left, Dimensionless const& right) {
-  return left.Value() < right.Value();
+  return left.value() < right.value();
 }
 inline bool operator>=(Dimensionless const& left, Dimensionless const& right) {
-  return left.Value() >= right.Value();
+  return left.value() >= right.value();
 }
 inline bool operator<=(Dimensionless const& left, Dimensionless const& right) {
-  return left.Value() <= right.Value();
+  return left.value() <= right.value();
 }
 inline bool operator==(Dimensionless const& left, Dimensionless const& right) {
-  return left.Value() == right.Value();
+  return left.value() == right.value();
 }
 inline bool operator!=(Dimensionless const& left, Dimensionless const& right) {
-  return left.Value() != right.Value();
+  return left.value() != right.value();
 }
 
 inline Dimensionless Abs(Dimensionless const& number) {
-  return std::abs(number.Value());
+  return std::abs(number.value());
 }
 
 inline std::string ToString(Dimensionless const& number,
                             unsigned char const precision) {
   char result[50];
   sprintf_s(result, ("%."+ std::to_string(precision) + "e").c_str(),
-           number.Value());
+           number.value());
   return result;
 }
 

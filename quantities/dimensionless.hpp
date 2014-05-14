@@ -14,7 +14,7 @@ class Dimensionless {
   // Returns |Dimensionless(1)|, for consistency with |Quantity<D>::SIUnit()|.
   static Dimensionless SIUnit();
 
-  double Value() const;
+  double value() const;
   Dimensionless Pow(int const) const;
   // This function calls Pow(Exponent), its purpose is to provide consistency
   // with Quantity<D>.Pow<Exponent>();
