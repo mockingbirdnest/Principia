@@ -85,14 +85,14 @@ bool AlmostEqualsMatcher<T>::MatchAndExplain(
         testing::internal::Double(DoubleValue(expected_.z)));
   bool const x_matches = x_distance <= max_ulps_;
   bool const y_matches = y_distance <= max_ulps_;
-  bool const x_matches = z_distance <= max_ulps_;
+  bool const z_matches = z_distance <= max_ulps_;
   bool const matches = x_matches && y_matches && z_matches;
   if (!matches) {
     *listener << "the following components differ by more than " << max_ulps_
-              << " ULPs: " (x_matches ? "" : "x, ") << (y_matches ? "" : "y, ")
-              << (z_matches ? "" : "z, ") << "the components differ by the "
-              << "following numbers of ULPs: x: " << x_distance << ", y: "
-              << y_distance << ", z: " << z_distance;
+              << " ULPs: " << (x_matches ? "" : "x, ") 
+              << (y_matches ? "" : "y, ") << (z_matches ? "" : "z, ")
+              << "the components differ by the following numbers of ULPs: x: "
+              << x_distance << ", y: " << y_distance << ", z: " << z_distance;
   }
   return matches;
 }
@@ -106,8 +106,9 @@ bool AlmostEqualsMatcher<T>::MatchAndExplain(
   if (actual == expected_) {
     return true;
   }
-  AlmostEqualsMatcher<geometry::R3Element<Scalar>>(expected_.coordinates(),
-                                                   max_ulps_);
+  return AlmostEqualsMatcher<geometry::R3Element<Scalar>>(
+      expected_.coordinates(), 
+      max_ulps_).MatchAndExplain(actual.coordinates(), listener);
 }
 
 template<typename Scalar>

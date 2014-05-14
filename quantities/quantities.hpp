@@ -155,7 +155,7 @@ class Quantity {
 };
 
 template<typename D>
-std::ostream& operator<<(::std::ostream& os, Quantity<D> const& quantity);
+std::ostream& operator<<(::std::ostream& out, Quantity<D> const& quantity);
 
 template<typename D>
 void operator+=(Quantity<D>&, Quantity<D> const&);
