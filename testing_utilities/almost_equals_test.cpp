@@ -66,7 +66,7 @@ struct World;
 TEST_F(AlmostEqualsTest, Vectors) {
   auto v1 = Vector<Dimensionless, World>(R3Element<Dimensionless>(1, 2, 3));
   auto v2 = v1;
-  EXPECT_THAT(v1, AlmostEquals(v2));
+  EXPECT_THAT(v1, Not(AlmostEquals(v2)));
 }
 
 }  // namespace testing_utilities
