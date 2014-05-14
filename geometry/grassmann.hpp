@@ -1,5 +1,7 @@
 ﻿#pragma once
 
+#include <iostream>
+
 #include "geometry/r3_element.hpp"
 #include "quantities/dimensionless.hpp"
 #include "quantities/quantities.hpp"
@@ -167,6 +169,13 @@ operator/(Multivector<LScalar, Frame, Rank> const& left,
           quantities::Quantity<RDimension> const& right);
 
 template<typename Scalar, typename Frame, unsigned int Rank>
+bool operator==(Multivector<Scalar, Frame, Rank> const& left,
+                Multivector<Scalar, Frame, Rank> const& right);
+template<typename Scalar, typename Frame, unsigned int Rank>
+bool operator!=(Multivector<Scalar, Frame, Rank> const& left,
+                Multivector<Scalar, Frame, Rank> const& right);
+
+template<typename Scalar, typename Frame, unsigned int Rank>
 void operator+=(Multivector<Scalar, Frame, Rank>& left,
                 Multivector<Scalar, Frame, Rank> const& right);
 template<typename Scalar, typename Frame, unsigned int Rank>
@@ -178,6 +187,10 @@ void operator*=(Multivector<Scalar, Frame, Rank>& left,
 template<typename Scalar, typename Frame, unsigned int Rank>
 void operator/=(Multivector<Scalar, Frame, Rank>& left,
                 quantities::Dimensionless const& right);
+
+template<typename Scalar, typename Frame, unsigned int Rank>
+std::ostream& operator<<(std::ostream& out, 
+                         Multivector<Scalar, Frame, Rank> const& multivector);
 
 }  // namespace geometry
 }  // namespace principia

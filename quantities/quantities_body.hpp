@@ -297,5 +297,14 @@ std::ostream& operator<<(::std::ostream& os, Quantity<D> const& quantity) {
   return os << ToString(quantity);
 }
 
+template<typename D>
+std::ostream& operator<<(std::ostream& out, Quantity<D> const& quantity) {
+  std::wstring const wide = ToString(quantity);
+  std::string const narrow(wide.begin(), wide.end());
+  out << narrow;
+  return out;
+}
+
+
 }  // namespace quantities
 }  // namespace principia
