@@ -22,30 +22,53 @@ double RelativeError(double const expected, double const actual) {
 }
 
 template<typename T>
-AlmostEqualsMatcher<T>::AlmostEqualsMatcher(T expected) : expected_(expected) {}
+testing::PolymorphicMatcher<AlmostEqualsMatcher<T>> AlmostEquals(
+    T const& expected) {
+  return testing::MakePolymorphicMatcher(AlmostEqualsMatcher<T>(expected));
+}
+
+template<typename T>
+AlmostEqualsMatcher<T>::AlmostEqualsMatcher(T const& expected)
+    : expected_(expected) {}
 
 template<typename T>
 template<typename Dimensions>
 bool AlmostEqualsMatcher<T>::MatchAndExplain(
-    quantities::Quantity<Dimensions> actual,
-    testing::MatchResultListener * listener) const {
+    quantities::Quantity<Dimensions> const& actual,
+    testing::MatchResultListener* listener) const {
   bool const matches =
       testing::internal::Double(DoubleValue(actual)).AlmostEquals(
-          testing::internal::Double(DoubleValue(expected)));
+          testing::internal::Double(DoubleValue(expected_)));
   if (!matches) {
-    *result_listener << "the relative error is " <<
-        RelativeError(DoubleValue(expected), DoubleValue(arg));
+    *listener << "the relative error is " <<
+        RelativeError(DoubleValue(expected_), DoubleValue(actual));
+  }
+  return matches;
+}
+
+template<typename T>
+bool AlmostEqualsMatcher<T>::MatchAndExplain(
+    quantities::Dimensionless const& actual,
+    testing::MatchResultListener* listener) const {
+  bool const matches =
+      testing::internal::Double(actual.Value()).AlmostEquals(
+          testing::internal::Double(
+              quantities::Dimensionless(expected_).Value()));
+  if (!matches) {
+    *listener << "the relative error is " <<
+        RelativeError(quantities::Dimensionless(expected_).Value(),
+                      actual.Value());
   }
   return matches;
 }
 
 template<typename Scalar>
 void AlmostEqualsMatcher<Scalar>::DescribeTo(std::ostream* os) const {
-  *os << "is within 4 ULPs of " << expected_;
+  *os << "is within 4 ULPs of " << expected_ << " in the uniform norm";
 }
 template<typename Scalar>
 void AlmostEqualsMatcher<Scalar>::DescribeNegationTo(std::ostream* os) const {
-  *os << "is not within 4 ULPs of " << expected_;
+  *os << "is not within 4 ULPs of " << expected_ << " in the uniform norm";
 }
 
 }  // namespace test_utilities

@@ -6,7 +6,7 @@
 #include "quantities/quantities.hpp"
 #include "quantities/uk.hpp"
 #include "quantities/named_quantities.hpp"
-#include "testing_utilities/quantity_matchers.hpp"
+#include "testing_utilities/almost_equals.hpp"
 
 namespace principia {
 namespace test_utilities {

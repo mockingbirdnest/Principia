@@ -6,6 +6,8 @@
 
 #include "gmock/gmock.h"
 
+#include "geometry/r3_element.hpp"
+#include "geometry/grassmann.hpp"
 #include "quantities/dimensionless.hpp"
 
 namespace principia {
@@ -20,22 +22,29 @@ template<typename T>
 class AlmostEqualsMatcher;
 
 template<typename T>
-testing::PolymorphicMatcher<AlmostEqualsMatcher<T>> AlmostEquals(T expected);
+testing::PolymorphicMatcher<AlmostEqualsMatcher<T>> AlmostEquals(
+    T const& expected);
 
 template<typename T>
 class AlmostEqualsMatcher{
  public:
-  explicit AlmostEqualsMatcher(T expected);
+  explicit AlmostEqualsMatcher(T const& expected);
   ~AlmostEqualsMatcher() = default;
 
   template<typename Dimensions>
-  virtual bool MatchAndExplain(quantities::Quantity<Dimensions> actual,
-                               testing::MatchResultListener * listener) const;
-  virtual bool MatchAndExplain(Dimensionless actual,
-                               testing::MatchResultListener * listener) const;
+  bool MatchAndExplain(quantities::Quantity<Dimensions> const& actual,
+                       testing::MatchResultListener* listener) const;
+  bool MatchAndExplain(quantities::Dimensionless const& actual,
+                       testing::MatchResultListener* listener) const;
+  template<typename Scalar>
+  bool MatchAndExplain(geometry::R3Element<Scalar> const& actual,
+                       testing::MatchResultListener* listener) const;
+  // template<typename Scalar, typename Frame, unsigned int Rank>
+  // bool MatchAndExplain(geometry<Scalar, Frame, Rank> const& actual,
+  //                     testing::MatchResultListener* listener) const;
 
-  virtual void DescribeTo(std::ostream* os) const;
-  virtual void DescribeNegationTo(std::ostream* os) const;
+  void DescribeTo(std::ostream* os) const;
+  void DescribeNegationTo(std::ostream* os) const;
 
  private:
   T const expected_;
@@ -103,4 +112,4 @@ MATCHER_P2(Approximates, expected, expected_relative_error,
 }  // namespace test_utilities
 }  // namespace principia
 
-#include "testing_utilities/quantity_matchers_body.hpp"
+#include "testing_utilities/almost_equals_body.hpp"
