@@ -11,11 +11,11 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="quantity_matchers.hpp" />
-    <ClInclude Include="quantity_matchers_body.hpp" />
+    <ClInclude Include="almost_equals.hpp" />
+    <ClInclude Include="almost_equals_body.hpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="quantity_matchers_test.cpp" />
+    <ClCompile Include="almost_equals_test.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{2E28828E-8364-4962-A9FF-C20A72EB884C}</ProjectGuid>

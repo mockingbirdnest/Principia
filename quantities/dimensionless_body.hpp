@@ -2,6 +2,8 @@
 
 #include <math.h>
 
+#include <string>
+
 namespace principia {
 namespace quantities {
 
@@ -97,7 +99,7 @@ inline std::string ToString(Dimensionless const& number,
   return result;
 }
 
-std::ostream& operator<<(::std::ostream& os, Dimensionless const& number) {
+std::ostream& operator<<(std::ostream& os, Dimensionless const& number) {
   return os << ToString(number);
 }
 

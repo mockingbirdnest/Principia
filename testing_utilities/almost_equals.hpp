@@ -16,19 +16,29 @@ double DoubleValue(Scalar const& scalar);
 
 double RelativeError(double const expected, double const actual);
 
-template<typename Scalar>
-class AlmostEqualsMatcher : public testing::MatcherInterface<Scalar> {
+template<typename T>
+class AlmostEqualsMatcher;
+
+template<typename T>
+testing::PolymorphicMatcher<AlmostEqualsMatcher<T>> AlmostEquals(T expected);
+
+template<typename T>
+class AlmostEqualsMatcher{
  public:
-  explicit AlmostEqualsMatcher(Scalar expected);
+  explicit AlmostEqualsMatcher(T expected);
   ~AlmostEqualsMatcher() = default;
 
-  virtual bool MatchAndExplain(Scalar actual,
+  template<typename Dimensions>
+  virtual bool MatchAndExplain(quantities::Quantity<Dimensions> actual,
                                testing::MatchResultListener * listener) const;
+  virtual bool MatchAndExplain(Dimensionless actual,
+                               testing::MatchResultListener * listener) const;
+
   virtual void DescribeTo(std::ostream* os) const;
   virtual void DescribeNegationTo(std::ostream* os) const;
 
  private:
-  Scalar const expected_;
+  T const expected_;
 };
 
 template<typename Scalar>
@@ -61,18 +71,7 @@ class ApproximatesMatcher : public testing::MatcherInterface<Scalar> {
   Scalar const expected_;
 };
 
-MATCHER_P(AlmostEquals, expected,
-          std::string(negation ? "is not" : "is") + " within 4 ULPs of " +
-          testing::PrintToString(expected)) {
-  bool const matches =
-      testing::internal::Double(DoubleValue(arg)).AlmostEquals(
-          testing::internal::Double(DoubleValue(arg_type(expected))));
-  if (!matches) {
-    *result_listener << "the relative error is " <<
-        RelativeError(DoubleValue(arg_type(expected)), DoubleValue(arg));
-  }
-  return matches;
-}
+
 
 MATCHER_P(AlmostVanishesBefore, input_magnitude,
           std::string(negation ? "is not" : "is") + " within " +

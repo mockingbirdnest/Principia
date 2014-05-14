@@ -51,7 +51,7 @@ std::string ToString(Dimensionless const& number,
 
 
 template<typename D>
-std::ostream& operator<<(::std::ostream& os, Dimensionless const& number);
+std::ostream& operator<<(std::ostream& os, Dimensionless const& number);
 
 }  // namespace quantities
 }  // namespace principia
