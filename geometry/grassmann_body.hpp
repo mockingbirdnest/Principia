@@ -231,7 +231,6 @@ inline bool operator!=(Multivector<Scalar, Frame, Rank> const& left,
   return left.coordinates() != right.coordinates();
 }
 
-
 template<typename Scalar, typename Frame, unsigned int Rank>
 inline void operator+=(Multivector<Scalar, Frame, Rank>& left,
                        Multivector<Scalar, Frame, Rank> const& right) {
