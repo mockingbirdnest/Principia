@@ -7,10 +7,51 @@
 #include "gmock/gmock.h"
 
 #include "quantities/dimensionless.hpp"
-#include "quantities/elementary_functions.hpp"
 
 namespace principia {
 namespace test_utilities {
+
+template<typename Scalar>
+class AlmostEqualsMatcher : public testing::MatcherInterface<Scalar> {
+ public:
+  AlmostEqualsMatcher(Scalar expected);
+
+  virtual bool MatchAndExplain(Scalar actual,
+                               testing::MatchResultListener * listener) const;
+  virtual void DescribeTo(std::ostream* os) const;
+  virtual void DescribeNegationTo(std::ostream* os) const;
+
+ private:
+  Scalar expected_;
+};
+
+template<typename Scalar>
+class AlmostVanishesBeforeMatcher : public testing::MatcherInterface<Scalar> {
+ public:
+  AlmostVanishesBeforeMatcher(Scalar input_magnitude);
+
+  virtual bool MatchAndExplain(Scalar actual,
+                               testing::MatchResultListener * listener) const;
+  virtual void DescribeTo(std::ostream* os) const;
+  virtual void DescribeNegationTo(std::ostream* os) const;
+
+ private:
+  Scalar input_magnitude_;
+};
+
+template<typename Scalar>
+class ApproximatesMatcher : public testing::MatcherInterface<Scalar> {
+ public:
+  ApproximatesMatcher(Scalar expected, Dimensionless relativeError);
+
+  virtual bool MatchAndExplain(Scalar actual,
+                               testing::MatchResultListener * listener) const;
+  virtual void DescribeTo(std::ostream* os) const;
+  virtual void DescribeNegationTo(std::ostream* os) const;
+
+ private:
+  Scalar expected_;
+};
 
 MATCHER_P(AlmostEquals, expected,
           std::string(negation ? "is not" : "is") + " within 4 ULPs of " +
