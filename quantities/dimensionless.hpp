@@ -6,10 +6,10 @@ namespace principia {
 namespace quantities {
 // A double by any other name...
 class Dimensionless {
-public:
+ public:
   Dimensionless();
   // No explicit here: we want implicit conversion from double.
-  Dimensionless(double const value);
+  Dimensionless(double const value);  // NOLINT(runtime/explicit)
 
   // Returns |Dimensionless(1)|, for consistency with |Quantity<D>::SIUnit()|.
   static Dimensionless SIUnit();
@@ -21,7 +21,7 @@ public:
   template<int Exponent>
   Dimensionless Pow() const;
 
-private:
+ private:
   double value_;
 };
 
@@ -46,8 +46,8 @@ bool operator!=(Dimensionless const&, Dimensionless const&);
 
 Dimensionless Abs(Dimensionless const&);
 
-std::string ToString(Dimensionless const& number, 
-                      unsigned char const precision = 16);
+std::string ToString(Dimensionless const& number,
+                     unsigned char const precision = 16);
 
 
 template<typename D>

@@ -12,6 +12,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="quantity_matchers.hpp" />
+    <ClInclude Include="quantity_matchers_body.hpp" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="quantity_matchers_test.cpp" />

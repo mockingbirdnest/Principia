@@ -1,5 +1,7 @@
 #pragma once
 
+#include <math.h>
+
 namespace principia {
 namespace quantities {
 
@@ -17,7 +19,7 @@ inline Dimensionless Dimensionless::Pow() const {
 inline Dimensionless Dimensionless::Pow(int const exponent) const {
   if (exponent < 0) {
     return (1 / *this).Pow(-exponent);
-  } else if (exponent == 0) { 
+  } else if (exponent == 0) {
     return 1;
   } else if (exponent == 1) {
     return *this;

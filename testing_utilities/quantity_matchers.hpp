@@ -12,9 +12,15 @@ namespace principia {
 namespace test_utilities {
 
 template<typename Scalar>
+double DoubleValue(Scalar const& scalar);
+
+double RelativeError(double const expected, double const actual);
+
+template<typename Scalar>
 class AlmostEqualsMatcher : public testing::MatcherInterface<Scalar> {
  public:
-  AlmostEqualsMatcher(Scalar expected);
+  explicit AlmostEqualsMatcher(Scalar expected);
+  ~AlmostEqualsMatcher() = default;
 
   virtual bool MatchAndExplain(Scalar actual,
                                testing::MatchResultListener * listener) const;
@@ -22,13 +28,14 @@ class AlmostEqualsMatcher : public testing::MatcherInterface<Scalar> {
   virtual void DescribeNegationTo(std::ostream* os) const;
 
  private:
-  Scalar expected_;
+  Scalar const expected_;
 };
 
 template<typename Scalar>
 class AlmostVanishesBeforeMatcher : public testing::MatcherInterface<Scalar> {
  public:
-  AlmostVanishesBeforeMatcher(Scalar input_magnitude);
+  explicit AlmostVanishesBeforeMatcher(Scalar input_magnitude);
+  ~AlmostVanishesBeforeMatcher() = default;
 
   virtual bool MatchAndExplain(Scalar actual,
                                testing::MatchResultListener * listener) const;
@@ -36,13 +43,14 @@ class AlmostVanishesBeforeMatcher : public testing::MatcherInterface<Scalar> {
   virtual void DescribeNegationTo(std::ostream* os) const;
 
  private:
-  Scalar input_magnitude_;
+  Scalar const input_magnitude_;
 };
 
 template<typename Scalar>
 class ApproximatesMatcher : public testing::MatcherInterface<Scalar> {
  public:
-  ApproximatesMatcher(Scalar expected, Dimensionless relativeError);
+  ApproximatesMatcher(Scalar expected, quantities::Dimensionless relativeError);
+  ~ApproximatesMatcher() = default;
 
   virtual bool MatchAndExplain(Scalar actual,
                                testing::MatchResultListener * listener) const;
@@ -50,7 +58,7 @@ class ApproximatesMatcher : public testing::MatcherInterface<Scalar> {
   virtual void DescribeNegationTo(std::ostream* os) const;
 
  private:
-  Scalar expected_;
+  Scalar const expected_;
 };
 
 MATCHER_P(AlmostEquals, expected,
@@ -92,14 +100,8 @@ MATCHER_P2(Approximates, expected, expected_relative_error,
   return actual_relative_error <= expected_relative_error;
 }
 
-template<typename Scalar>
-double DoubleValue(Scalar const& scalar) {
-  return (scalar / Scalar::SIUnit()).Value();
-}
-
-double RelativeError(double const expected, double const actual) {
-  return std::abs(expected - actual) / std::abs(expected);
-}
 
 }  // namespace test_utilities
 }  // namespace principia
+
+#include "testing_utilities/quantity_matchers_body.hpp"
