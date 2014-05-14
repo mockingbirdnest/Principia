@@ -41,8 +41,8 @@ class AlmostEqualsMatcher{
   template<typename Scalar>
   bool MatchAndExplain(geometry::R3Element<Scalar> const& actual,
                        testing::MatchResultListener* listener) const;
-  template<typename Scalar, typename Frame, unsigned int Rank>
-  bool MatchAndExplain(geometry::Multivector<Scalar, Frame, Rank> const& actual,
+  template<typename Scalar, typename Frame>
+  bool MatchAndExplain(geometry::Vector<Scalar, Frame> const& actual,
                        testing::MatchResultListener* listener) const;
 
   void DescribeTo(std::ostream* os) const;

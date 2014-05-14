@@ -8,6 +8,8 @@
 
 #include "gmock/gmock.h"
 
+#include "geometry/r3_element.hpp"
+#include "geometry/grassmann.hpp"
 #include "quantities/dimensionless.hpp"
 
 namespace principia {
@@ -84,12 +86,12 @@ bool AlmostEqualsMatcher<T>::MatchAndExplain(
     return true;
   }
   int64_t const distance = ULPDistance(actual.value(),
-                                       expected_.value());
+                                       Dimensionless(expected_).value());
   bool const matches = distance <= max_ulps_;
   if (!matches) {
     *listener << "the numbers are separated by " << distance << " ULPs";
   }
-  return matches;;
+  return matches;
 }
 
 template<typename T>
@@ -101,32 +103,40 @@ bool AlmostEqualsMatcher<T>::MatchAndExplain(
   if (actual == expected_) {
     return true;
   }
-  bool const x_matches =
+  int64_t const x_distance =
     testing::internal::Double(DoubleValue(actual.x)).AlmostEquals(
         testing::internal::Double(DoubleValue(expected_.x)));
-  bool const y_matches =
+  int64_t const y_distance =
     testing::internal::Double(DoubleValue(actual.y)).AlmostEquals(
         testing::internal::Double(DoubleValue(expected_.y)));
-  bool const z_matches =
+  int64_t const z_distance =
     testing::internal::Double(DoubleValue(actual.z)).AlmostEquals(
         testing::internal::Double(DoubleValue(expected_.z)));
+  bool const x_matches = x_distance <= max_ulps_;
+  bool const y_matches = y_distance <= max_ulps_;
+  bool const x_matches = z_distance <= max_ulps_;
   bool const matches = x_matches && y_matches && z_matches;
   if (!matches) {
-  *listener << "the following components differ: "
-      << (x_matches ? "" : "x ") << (y_matches ? "" : "y ") <<
-      << (z_matches ? "" : "z ");
+    *listener << "the following components differ by more than " << max_ulps_
+              << " ULPs: " (x_matches ? "" : "x, ") << (y_matches ? "" : "y, ")
+              << (z_matches ? "" : "z, ") << "the components differ by the "
+              << "following numbers of ULPs: x: " << x_distance << ", y: "
+              << y_distance << ", z: " << z_distance;
   }
   return matches;
 }
 
-template<typename Scalar, typename Frame, unsigned int Rank>
+template<typename T>
+template<typename Scalar, typename Frame>
 bool AlmostEqualsMatcher<T>::MatchAndExplain(
-    geometry::Multivector<Scalar, Frame, Rank> const& actual,
+    geometry::Vector<Scalar, Frame> const& actual,
     testing::MatchResultListener* listener) const {
   // Check that the types are equality-comparable up to implicit casts.
   if (actual == expected_) {
     return true;
   }
+  AlmostEqualsMatcher<geometry::R3Element<Scalar>>(expected_.coordinates(),
+                                                   max_ulps_);
 }
 
 template<typename Scalar>
