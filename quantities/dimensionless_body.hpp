@@ -21,7 +21,7 @@ inline Dimensionless Dimensionless::Pow() const {
 inline Dimensionless Dimensionless::Pow(int const exponent) const {
   if (exponent < 0) {
     return (1 / *this).Pow(-exponent);
-  } else if (exponent == 0) { 
+  } else if (exponent == 0) {
     return 1;
   } else if (exponent == 1) {
     return *this;
@@ -92,14 +92,15 @@ inline Dimensionless Abs(Dimensionless const& number) {
 }
 
 inline std::string ToString(Dimensionless const& number,
-                             unsigned char const precision) {
+                            unsigned char const precision) {
   char result[50];
   sprintf_s(result, ("%."+ std::to_string(precision) + "e").c_str(),
             number.value());
   return result;
 }
 
-inline std::ostream& operator<<(std::ostream& out, Dimensionless const& number) {
+inline std::ostream& operator<<(std::ostream& out,
+                                Dimensionless const& number) {
   return out << ToString(number);
 }
 
