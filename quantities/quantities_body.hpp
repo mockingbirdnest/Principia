@@ -293,7 +293,7 @@ inline std::string ToString(Quantity<D> const& quantity,
 }
 
 template<typename D>
-std::ostream& operator<<(::std::ostream& out, Quantity<D> const& quantity) {
+std::ostream& operator<<(std::ostream& out, Quantity<D> const& quantity) {
   return out << ToString(quantity);
 }
 
