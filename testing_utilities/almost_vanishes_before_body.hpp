@@ -1,63 +1,44 @@
 #pragma once
 
-#include <float.h>
-#include <math.h>
-#include <stdint.h>
+#include <cstdint>
 
-#include <string>
-
-#include "gmock/gmock.h"
-
-#include "geometry/r3_element.hpp"
-#include "geometry/grassmann.hpp"
-#include "quantities/dimensionless.hpp"
-#include "testing_utilities/numerics.hpp"
+#include "testing_utilities/almost_equals.hpp"
 
 namespace principia {
 namespace testing_utilities {
 
 template<typename T>
-testing::PolymorphicMatcher<AlmostEqualsMatcher<T>> AlmostEquals(
-    T const& expected,
-    int64_t const max_ulps) {
+testing::PolymorphicMatcher<AlmostVanishesBeforeMatcher<T>>
+AlmostVanishesBefore(T const& input_magnitude,
+                     std::int64_t const max_ulps = 4) {
   return testing::MakePolymorphicMatcher(
-      AlmostEqualsMatcher<T>(expected, max_ulps));
+      AlmostVanishesBeforeMatcher(input_magnitude, max_ulps))
 }
 
+
 template<typename T>
-AlmostEqualsMatcher<T>::AlmostEqualsMatcher(T const& expected,
-                                            int64_t const max_ulps)
+AlmostVanishesBeforeMatcher<T>::AlmostVanishesBeforeMatcher(
+    T const& expected,
+    int64_t const max_ulps)
     : expected_(expected),
       max_ulps_(max_ulps) {}
 
 template<typename T>
 template<typename Dimensions>
-bool AlmostEqualsMatcher<T>::MatchAndExplain(
+bool AlmostVanishesBeforeMatcher<T>::MatchAndExplain(
     quantities::Quantity<Dimensions> const& actual,
     testing::MatchResultListener* listener) const {
-  // Check that the types are equality-comparable up to implicit casts.
-  if (actual == expected_) {
-    return true;
-  }
-  int64_t const distance = ULPDistance(DoubleValue(actual),
-                                       DoubleValue(expected_));
-  *listener << "the numbers are separated by " << distance << " ULPs";
-  return distance <= max_ulps_;
+  return AlmostEqualsMatcher(
+        actual + DoubleValue(input_magnitude) * actual.SIUnit).MatchAndExplain(
+            Quantity<Dimensions>(), listener);
 }
 
 template<typename T>
-bool AlmostEqualsMatcher<T>::MatchAndExplain(
+bool AlmostVanishesBeforeMatcher<T>::MatchAndExplain(
     quantities::Dimensionless const& actual,
     testing::MatchResultListener* listener) const {
-  // Check that the types are equality-comparable up to implicit casts.
-  if (actual == expected_) {
-    return true;
-  }
-  int64_t const distance = ULPDistance(actual.value(),
-                                       Dimensionless(expected_).value());
-  bool const matches = distance <= max_ulps_;
-  *listener << "the numbers are separated by " << distance << " ULPs";
-  return matches;
+  return AlmostEqualsMatcher(
+        actual + DoubleValue(input_magnitude)).MatchAndExplain(0, listener);
 }
 
 template<typename T>
@@ -116,5 +97,6 @@ void AlmostEqualsMatcher<Scalar>::DescribeNegationTo(std::ostream* os) const {
   *os << "is not within 4 ULPs of " << expected_;
 }
 
-}  // namespace test_utilities
+
+}  // namespace testing_utilities
 }  // namespace principia

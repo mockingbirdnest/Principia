@@ -45,7 +45,7 @@ class AlmostEqualsMatcher{
 
  private:
   T const expected_;
-  int64_t const max_ulps_;
+  std::int64_t const max_ulps_;
 };
 
 

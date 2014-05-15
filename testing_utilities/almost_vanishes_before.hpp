@@ -43,7 +43,7 @@ class AlmostVanishesBeforeMatcher{
   void DescribeNegationTo(std::ostream* os) const;
 
  private:
-  T const expected_;
+  T const input_magnitude_;
   int64_t const max_ulps_;
 };
 
