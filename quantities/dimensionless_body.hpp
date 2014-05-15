@@ -95,12 +95,12 @@ inline std::string ToString(Dimensionless const& number,
                             unsigned char const precision) {
   char result[50];
   sprintf_s(result, ("%."+ std::to_string(precision) + "e").c_str(),
-           number.value());
+            number.value());
   return result;
 }
 
-inline std::ostream& operator<<(std::ostream& os, Dimensionless const& number) {
-  return os << ToString(number);
+inline std::ostream& operator<<(std::ostream& out, Dimensionless const& number) {
+  return out << ToString(number);
 }
 
 }  // namespace quantities

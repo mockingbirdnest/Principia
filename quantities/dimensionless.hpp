@@ -49,9 +49,8 @@ Dimensionless Abs(Dimensionless const&);
 std::string ToString(Dimensionless const& number,
                      unsigned char const precision = 16);
 
-
 template<typename D>
-std::ostream& operator<<(std::ostream& os, Dimensionless const& number);
+std::ostream& operator<<(std::ostream& out, Dimensionless const& number);
 
 }  // namespace quantities
 }  // namespace principia
