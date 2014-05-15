@@ -35,10 +35,10 @@ TEST_CLASS(SignTests) {
   TEST_METHOD(ScalarMultiplication) {
     Sign const positive(1);
     Sign const negative(-1);
-    AssertEqual(3, positive * 3);
-    AssertEqual(-3, positive * -3);
-    AssertEqual(-3, negative * 3);
-    AssertEqual(3, negative * -3);
+    Assert::AreEqual(3, positive * 3);
+    Assert::AreEqual(-3, positive * -3);
+    Assert::AreEqual(-3, negative * 3);
+    Assert::AreEqual(3, negative * -3);
   }
 };
 
