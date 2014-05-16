@@ -6,19 +6,22 @@ namespace principia {
 namespace quantities {
 // A double by any other name...
 class Dimensionless {
-public:
+ public:
   Dimensionless();
   // No explicit here: we want implicit conversion from double.
-  Dimensionless(double const value);
+  Dimensionless(double const value);  // NOLINT(runtime/explicit)
 
-  double Value() const;
+  // Returns |Dimensionless(1)|, for consistency with |Quantity<D>::SIUnit()|.
+  static Dimensionless SIUnit();
+
+  double value() const;
   Dimensionless Pow(int const) const;
   // This function calls Pow(Exponent), its purpose is to provide consistency
   // with Quantity<D>.Pow<Exponent>();
   template<int Exponent>
   Dimensionless Pow() const;
 
-private:
+ private:
   double value_;
 };
 

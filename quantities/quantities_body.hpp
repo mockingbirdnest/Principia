@@ -57,7 +57,7 @@ template<typename Right>
 struct ProductGenerator<Dimensionless, Right> { typedef Right ResultType; };
 template<>
 struct ProductGenerator<Dimensionless, Dimensionless> {
- typedef Dimensionless ResultType;
+  typedef Dimensionless ResultType;
 };
 template<typename Left, typename Right>
 struct QuotientGenerator {
@@ -132,7 +132,7 @@ inline Temperature Kelvins(Dimensionless const& number) {
 }
 inline Amount Moles(Dimensionless const& number) { return Amount(number); }
 inline LuminousIntensity Candelas(Dimensionless const& number) {
- return LuminousIntensity(number);
+  return LuminousIntensity(number);
 }
 inline Winding Cycles(Dimensionless const& number) { return Winding(number); }
 inline Angle Radians(Dimensionless const& number) { return Angle(number); }
@@ -143,6 +143,11 @@ inline SolidAngle Steradians(Dimensionless const& number) {
 
 template<typename D>
 inline Quantity<D>::Quantity() : magnitude_(0) {}
+
+template<typename D>
+inline Quantity<D> Quantity<D>::SIUnit() {
+  return Quantity<D>(1);
+}
 
 template<typename D>
 template<int Exponent>

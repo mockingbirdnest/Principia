@@ -43,7 +43,7 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "geometry", "geometry\geomet
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "C Sharp", "C Sharp", "{E883652F-CB37-4F7A-8653-4BA49A65BAE4}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "test_utilities", "test_utilities\test_utilities.vcxproj", "{42764215-AE55-4692-BBD5-D6BF40E1C77D}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "testing_utilities", "testing_utilities\testing_utilities.vcxproj", "{2E28828E-8364-4962-A9FF-C20A72EB884C}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -184,16 +184,16 @@ Global
 		{0FD08CDF-228C-48C6-8690-CF0A72CF6C69}.Release|Mixed Platforms.Build.0 = Release|Win32
 		{0FD08CDF-228C-48C6-8690-CF0A72CF6C69}.Release|Win32.ActiveCfg = Release|Win32
 		{0FD08CDF-228C-48C6-8690-CF0A72CF6C69}.Release|Win32.Build.0 = Release|Win32
-		{42764215-AE55-4692-BBD5-D6BF40E1C77D}.Debug|Any CPU.ActiveCfg = Debug|Win32
-		{42764215-AE55-4692-BBD5-D6BF40E1C77D}.Debug|Mixed Platforms.ActiveCfg = Debug|Win32
-		{42764215-AE55-4692-BBD5-D6BF40E1C77D}.Debug|Mixed Platforms.Build.0 = Debug|Win32
-		{42764215-AE55-4692-BBD5-D6BF40E1C77D}.Debug|Win32.ActiveCfg = Debug|Win32
-		{42764215-AE55-4692-BBD5-D6BF40E1C77D}.Debug|Win32.Build.0 = Debug|Win32
-		{42764215-AE55-4692-BBD5-D6BF40E1C77D}.Release|Any CPU.ActiveCfg = Release|Win32
-		{42764215-AE55-4692-BBD5-D6BF40E1C77D}.Release|Mixed Platforms.ActiveCfg = Release|Win32
-		{42764215-AE55-4692-BBD5-D6BF40E1C77D}.Release|Mixed Platforms.Build.0 = Release|Win32
-		{42764215-AE55-4692-BBD5-D6BF40E1C77D}.Release|Win32.ActiveCfg = Release|Win32
-		{42764215-AE55-4692-BBD5-D6BF40E1C77D}.Release|Win32.Build.0 = Release|Win32
+		{2E28828E-8364-4962-A9FF-C20A72EB884C}.Debug|Any CPU.ActiveCfg = Debug|Win32
+		{2E28828E-8364-4962-A9FF-C20A72EB884C}.Debug|Mixed Platforms.ActiveCfg = Debug|Win32
+		{2E28828E-8364-4962-A9FF-C20A72EB884C}.Debug|Mixed Platforms.Build.0 = Debug|Win32
+		{2E28828E-8364-4962-A9FF-C20A72EB884C}.Debug|Win32.ActiveCfg = Debug|Win32
+		{2E28828E-8364-4962-A9FF-C20A72EB884C}.Debug|Win32.Build.0 = Debug|Win32
+		{2E28828E-8364-4962-A9FF-C20A72EB884C}.Release|Any CPU.ActiveCfg = Release|Win32
+		{2E28828E-8364-4962-A9FF-C20A72EB884C}.Release|Mixed Platforms.ActiveCfg = Release|Win32
+		{2E28828E-8364-4962-A9FF-C20A72EB884C}.Release|Mixed Platforms.Build.0 = Release|Win32
+		{2E28828E-8364-4962-A9FF-C20A72EB884C}.Release|Win32.ActiveCfg = Release|Win32
+		{2E28828E-8364-4962-A9FF-C20A72EB884C}.Release|Win32.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
