@@ -5,10 +5,9 @@
 
 #include <string>
 
-#include "gmock/gmock.h"
-
-#include "geometry/r3_element.hpp"
 #include "geometry/grassmann.hpp"
+#include "geometry/r3_element.hpp"
+#include "gmock/gmock.h"
 #include "quantities/dimensionless.hpp"
 
 namespace principia {
@@ -46,8 +45,8 @@ class AlmostEqualsMatcher{
   bool MatchAndExplain(geometry::Trivector<Scalar, Frame> const& actual,
                        testing::MatchResultListener* listener) const;
 
-  void DescribeTo(std::ostream* os) const;
-  void DescribeNegationTo(std::ostream* os) const;
+  void DescribeTo(std::ostream* out) const;
+  void DescribeNegationTo(std::ostream* out) const;
 
  private:
   T const expected_;

@@ -1,12 +1,12 @@
-﻿#include "glog/logging.h"
+﻿
+#include "geometry/grassmann.hpp"
+#include "glog/logging.h"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
-
-#include "geometry/grassmann.hpp"
 #include "quantities/dimensionless.hpp"
+#include "quantities/named_quantities.hpp"
 #include "quantities/quantities.hpp"
 #include "quantities/uk.hpp"
-#include "quantities/named_quantities.hpp"
 #include "testing_utilities/almost_equals.hpp"
 
 namespace principia {
@@ -21,11 +21,12 @@ using testing::Eq;
 using testing::Not;
 using uk::Foot;
 
-class AlmostEqualsTest : public testing::Test {
- protected:
-};
-
+namespace {
 struct World;
+}  // namespace
+
+class AlmostEqualsTest : public testing::Test {};
+
 TEST_F(AlmostEqualsTest, Vectors) {
   auto const v1 = Vector<Length, World>(
       R3Element<Length>(1 * Foot, 2 * Foot, 3 * Foot));

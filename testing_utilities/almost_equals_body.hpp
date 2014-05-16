@@ -19,14 +19,14 @@ namespace testing_utilities {
 template<typename T>
 testing::PolymorphicMatcher<AlmostEqualsMatcher<T>> AlmostEquals(
     T const& expected,
-    int64_t const max_ulps) {
+    std::int64_t const max_ulps) {
   return testing::MakePolymorphicMatcher(
       AlmostEqualsMatcher<T>(expected, max_ulps));
 }
 
 template<typename T>
 AlmostEqualsMatcher<T>::AlmostEqualsMatcher(T const& expected,
-                                            int64_t const max_ulps)
+                                            std::int64_t const max_ulps)
     : expected_(expected),
       max_ulps_(max_ulps) {}
 
@@ -39,8 +39,8 @@ bool AlmostEqualsMatcher<T>::MatchAndExplain(
   if (actual == expected_) {
     return true;
   }
-  int64_t const distance = ULPDistance(DoubleValue(actual),
-                                       DoubleValue(expected_));
+  std::int64_t const distance = ULPDistance(DoubleValue(actual),
+                                            DoubleValue(expected_));
   *listener << "the numbers are separated by " << distance << " ULPs";
   return distance <= max_ulps_;
 }
@@ -53,8 +53,8 @@ bool AlmostEqualsMatcher<T>::MatchAndExplain(
   if (actual == expected_) {
     return true;
   }
-  int64_t const distance = ULPDistance(actual.value(),
-                                       Dimensionless(expected_).value());
+  std::int64_t const distance = ULPDistance(actual.value(),
+                                            Dimensionless(expected_).value());
   bool const matches = distance <= max_ulps_;
   *listener << "the numbers are separated by " << distance << " ULPs";
   return matches;
@@ -69,12 +69,12 @@ bool AlmostEqualsMatcher<T>::MatchAndExplain(
   if (actual == expected_) {
     return true;
   }
-  int64_t const x_distance = ULPDistance(DoubleValue(actual.x),
-                                         DoubleValue(expected_.x));
-  int64_t const y_distance = ULPDistance(DoubleValue(actual.y),
-                                         DoubleValue(expected_.y));
-  int64_t const z_distance = ULPDistance(DoubleValue(actual.z),
-                                         DoubleValue(expected_.z));
+  std::int64_t const x_distance = ULPDistance(DoubleValue(actual.x),
+                                              DoubleValue(expected_.x));
+  std::int64_t const y_distance = ULPDistance(DoubleValue(actual.y),
+                                              DoubleValue(expected_.y));
+  std::int64_t const z_distance = ULPDistance(DoubleValue(actual.z),
+                                              DoubleValue(expected_.z));
   bool const x_matches = x_distance <= max_ulps_;
   bool const y_matches = y_distance <= max_ulps_;
   bool const z_matches = z_distance <= max_ulps_;
@@ -127,19 +127,19 @@ bool AlmostEqualsMatcher<T>::MatchAndExplain(
     return true;
   }
   return AlmostEqualsMatcher<Scalar>(expected_.coordinates(),
-                                               max_ulps_).MatchAndExplain(
-                                                   actual.coordinates(),
-                                                   listener);
+                                     max_ulps_).MatchAndExplain(
+                                         actual.coordinates(),
+                                         listener);
 }
 
 template<typename T>
-void AlmostEqualsMatcher<T>::DescribeTo(std::ostream* os) const {
-  *os << "is within "<< max_ulps_ << " ULPs of " << expected_;
+void AlmostEqualsMatcher<T>::DescribeTo(std::ostream* out) const {
+  *out << "is within "<< max_ulps_ << " ULPs of " << expected_;
 }
 
 template<typename T>
-void AlmostEqualsMatcher<T>::DescribeNegationTo(std::ostream* os) const {
-  *os << "is not within " << max_ulps_ << " ULPs of " << expected_;
+void AlmostEqualsMatcher<T>::DescribeNegationTo(std::ostream* out) const {
+  *out << "is not within " << max_ulps_ << " ULPs of " << expected_;
 }
 
 }  // namespace test_utilities

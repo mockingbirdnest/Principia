@@ -35,7 +35,7 @@ geometry::R3Element<Scalar> RelativeError(
     geometry::R3Element<Scalar> const& expected,
     geometry::R3Element<Scalar> const& actual) {
   return RelativeError(expected, actual,
-                       [](R3Element<Scalar> v) {return v.Norm()});
+                       [](R3Element<Scalar> v) { return v.Norm() });
 }
 
 union Qword {
