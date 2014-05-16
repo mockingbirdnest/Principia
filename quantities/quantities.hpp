@@ -66,8 +66,8 @@ SolidAngle        Steradians(Dimensionless const&);
 }  // namespace factories
 
 template<typename D>
-std::wstring ToString(Quantity<D> const& quantity,
-                      unsigned char const precision = 16);
+std::string ToString(Quantity<D> const& quantity,
+                     unsigned char const precision = 16);
 
 template<typename D>
 std::ostream& operator<<(std::ostream& out, Quantity<D> const& quantity);
@@ -144,7 +144,7 @@ class Quantity {
   friend Angle ArcTan(Quantity<D> const& y, Quantity<D> const& x);
 
   template<typename D>
-  friend std::wstring ToString(Quantity<D> const&, unsigned char const);
+  friend std::string ToString(Quantity<D> const&, unsigned char const);
 };
 
 template<typename D>

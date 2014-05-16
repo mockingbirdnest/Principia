@@ -7,41 +7,41 @@ namespace test_utilities {
 
 template<typename T>
 void TestEquality(T const& low, T const& high) {
-  LogLine(L"Testing equality on " + ToString(low) + L" ≠ " +
-          ToString(high) + L"...");
-  AssertTrue(low == low, L"low == low was false.");
-  AssertTrue(high == high, L"high == high was false.");
-  AssertTrue(high != low, L"high != low was false.");
-  AssertTrue(low != high, L"low != high was false.");
+  LogLine("Testing equality on " + ToString(low) + " != " +
+          ToString(high) + "...");
+  AssertTrue(low == low, "low == low was false.");
+  AssertTrue(high == high, "high == high was false.");
+  AssertTrue(high != low, "high != low was false.");
+  AssertTrue(low != high, "low != high was false.");
 
-  AssertFalse(high == low, L"high == low was true.");
-  AssertFalse(low == high, L"low == high was true.");
-  AssertFalse(low != low, L"low != low was true.");
-  AssertFalse(high != high, L"high != high was true.");
+  AssertFalse(high == low, "high == low was true.");
+  AssertFalse(low == high, "low == high was true.");
+  AssertFalse(low != low, "low != low was true.");
+  AssertFalse(high != high, "high != high was true.");
 }
 
 template<typename T>
 void TestOrder(T const& low, T const& high) {
   TestEquality(low, high);
-  LogLine(L"Testing ordering of " + ToString(low) + L" < " +
-          ToString(high) + L"...");
-  AssertTrue(high > low, L"high > low was false.");
-  AssertTrue(low < high, L"low < high was false.");
-  AssertTrue(low >= low, L"low >= low was false.");
-  AssertTrue(low <= low, L"low <= low was false.");
-  AssertTrue(high >= high, L"high >= high was false.");
-  AssertTrue(high <= high, L"high <= high was false.");
-  AssertTrue(high >= low, L"high >= low was false.");
-  AssertTrue(low <= high, L"low <= high was false.");
+  LogLine("Testing ordering of " + ToString(low) + " < " +
+          ToString(high) + "...");
+  AssertTrue(high > low, "high > low was false.");
+  AssertTrue(low < high, "low < high was false.");
+  AssertTrue(low >= low, "low >= low was false.");
+  AssertTrue(low <= low, "low <= low was false.");
+  AssertTrue(high >= high, "high >= high was false.");
+  AssertTrue(high <= high, "high <= high was false.");
+  AssertTrue(high >= low, "high >= low was false.");
+  AssertTrue(low <= high, "low <= high was false.");
 
-  AssertFalse(low > low, L"low > low was true.");
-  AssertFalse(low < low, L"low < low was true.");
-  AssertFalse(high > high, L"high > high was true.");
-  AssertFalse(high < high, L"high < high was true.");
-  AssertFalse(low > high, L"low > high was true.");
-  AssertFalse(high < low, L"high < low was true.");
-  AssertFalse(low >= high, L"low >= high was true.");
-  AssertFalse(high <= low, L"high <= low was true.");
+  AssertFalse(low > low, "low > low was true.");
+  AssertFalse(low < low, "low < low was true.");
+  AssertFalse(high > high, "high > high was true.");
+  AssertFalse(high < high, "high < high was true.");
+  AssertFalse(low > high, "low > high was true.");
+  AssertFalse(high < low, "high < low was true.");
+  AssertFalse(low >= high, "low >= high was true.");
+  AssertFalse(high <= low, "high <= low was true.");
 }
 
 template<typename T>

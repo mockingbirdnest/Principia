@@ -8,14 +8,14 @@
 namespace principia {
 namespace test_utilities {
 // The Microsoft equivalent only takes a wchar_t*.
-void WriteLog(std::wstring const& message);
+void WriteLog(std::string const& message);
 void NewLine();
 // Equivalent to Log(message); Newline();
-void LogLine(std::wstring const& message);
+void LogLine(std::string const& message);
 
 // The Microsoft equivalent only takes a wchar_t*.
-void AssertFalse(bool const test, std::wstring const& message = L"");
-void AssertTrue(bool const test, std::wstring const& message = L"");
+void AssertFalse(bool const test, std::string const& message = "");
+void AssertTrue(bool const test, std::string const& message = "");
 
 // The Microsoft equivalent supports errors only for double.
 template<typename ValueType>

@@ -1,5 +1,7 @@
 ﻿#pragma once
 
+#include <string>
+
 #include "quantities/dimensionless.hpp"
 #include "quantities/quantities.hpp"
 #include "TestUtilities/TestUtilities.hpp"
@@ -25,12 +27,11 @@ void AssertNotEqual(quantities::Quantity<D> const& left,
 inline void AssertEqualAbsolute(quantities::Dimensionless const& left,
                                 quantities::Dimensionless const& right,
                                 quantities::Dimensionless const& ε) {
-  std::wstring const message = L"Should be equal within " + ToString(ε, 3) +
-                               L" (absolute): " + ToString(left) + L" and " +
-                               ToString(right) + L".";
+  std::string const message = "Should be equal within " + ToString(ε, 3) +
+                              " (absolute): " + ToString(left) + " and " +
+                              ToString(right) + ".";
   LogLine(message);
   AssertTrue(Abs(left - right) <= ε, message);
-  LogLine(L"> Passed!");
 }
 
 inline void AssertEqual(quantities::Dimensionless const& left,
