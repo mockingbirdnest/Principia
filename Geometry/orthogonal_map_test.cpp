@@ -17,8 +17,8 @@ using namespace testing_utilities;
 class OrthogonalMapTest : public testing::Test {
  protected:
   struct World;
-  typedef OrthogonalMap<World, World> O;
-  typedef Rotation<World, World> R;
+  typedef OrthogonalMap<World, World> Orth;
+  typedef Rotation<World, World> Rot;
 
   void SetUp() override {
     vector_ = Vector<quantities::Length, World>(
@@ -26,29 +26,29 @@ class OrthogonalMapTest : public testing::Test {
     bivector_ = Bivector<quantities::Length, World>(
         R3Element<quantities::Length>(1.0 * Metre, 2.0 * Metre, 3.0 * Metre));
     trivector_ = Trivector<quantities::Length, World>(4.0 * Metre);
-    orthogonal_a_ = O(Sign(-1),
-                      R(120 * si::Degree, 
+    orthogonal_a_ = Orth(Sign(-1),
+                      Rot(120 * si::Degree,
                         Vector<quantities::Dimensionless, World>({1, 1, 1})));
-    orthogonal_b_ = O(Sign(1),
-                      R(90 * si::Degree,
+    orthogonal_b_ = Orth(Sign(1),
+                      Rot(90 * si::Degree,
                         Vector<quantities::Dimensionless, World>({1, 0, 0})));
-    orthogonal_c_ = O(Sign(-1),
-                      R(90 * si::Degree,
+    orthogonal_c_ = Orth(Sign(-1),
+                      Rot(90 * si::Degree,
                         Vector<quantities::Dimensionless, World>({1, 0, 0})));
   }
 
   Vector<quantities::Length, World> vector_;
   Bivector<quantities::Length, World> bivector_;
   Trivector<quantities::Length, World> trivector_;
-  O orthogonal_a_;
-  O orthogonal_b_;
-  O orthogonal_c_;
+  Orth orthogonal_a_;
+  Orth orthogonal_b_;
+  Orth orthogonal_c_;
 };
 
 TEST_F(OrthogonalMapTest, Identity) {
-  EXPECT_THAT(vector_, Eq(O::Identity()(vector_)));
-  EXPECT_THAT(bivector_, Eq(O::Identity()(bivector_)));
-  EXPECT_THAT(trivector_, Eq(O::Identity()(trivector_)));
+  EXPECT_THAT(vector_, Eq(Orth::Identity()(vector_)));
+  EXPECT_THAT(bivector_, Eq(Orth::Identity()(bivector_)));
+  EXPECT_THAT(trivector_, Eq(Orth::Identity()(trivector_)));
 }
 
 TEST_F(OrthogonalMapTest, AppliedToVector) {
@@ -106,7 +106,7 @@ TEST_F(OrthogonalMapTest, Inverse) {
 }
 
 TEST_F(OrthogonalMapTest, Composition) {
-  O const orthogonal_ac = orthogonal_a_ * orthogonal_c_;
+  Orth const orthogonal_ac = orthogonal_a_ * orthogonal_c_;
   EXPECT_THAT(orthogonal_ac(vector_), 
               AlmostEquals(Vector<quantities::Length, World>(
                   R3Element<quantities::Length>(2.0 * Metre,
