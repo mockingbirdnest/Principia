@@ -1,7 +1,7 @@
 ﻿#pragma once
 
-#include "Quantities/Dimensionless.hpp"
-#include "Quantities/Quantities.hpp"
+#include "quantities/dimensionless.hpp"
+#include "quantities/quantities.hpp"
 #include "TestUtilities/TestUtilities.hpp"
 
 namespace principia {

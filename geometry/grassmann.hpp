@@ -1,8 +1,10 @@
 ﻿#pragma once
 
-#include "Geometry/R3Element.hpp"
-#include "Quantities/Dimensionless.hpp"
-#include "Quantities/Quantities.hpp"
+#include <iostream>
+
+#include "geometry/r3_element.hpp"
+#include "quantities/dimensionless.hpp"
+#include "quantities/quantities.hpp"
 
 namespace principia {
 namespace geometry {
@@ -167,6 +169,13 @@ operator/(Multivector<LScalar, Frame, Rank> const& left,
           quantities::Quantity<RDimension> const& right);
 
 template<typename Scalar, typename Frame, unsigned int Rank>
+bool operator==(Multivector<Scalar, Frame, Rank> const& left,
+                Multivector<Scalar, Frame, Rank> const& right);
+template<typename Scalar, typename Frame, unsigned int Rank>
+bool operator!=(Multivector<Scalar, Frame, Rank> const& left,
+                Multivector<Scalar, Frame, Rank> const& right);
+
+template<typename Scalar, typename Frame, unsigned int Rank>
 void operator+=(Multivector<Scalar, Frame, Rank>& left,
                 Multivector<Scalar, Frame, Rank> const& right);
 template<typename Scalar, typename Frame, unsigned int Rank>
@@ -179,7 +188,11 @@ template<typename Scalar, typename Frame, unsigned int Rank>
 void operator/=(Multivector<Scalar, Frame, Rank>& left,
                 quantities::Dimensionless const& right);
 
+template<typename Scalar, typename Frame, unsigned int Rank>
+std::ostream& operator<<(std::ostream& out, 
+                         Multivector<Scalar, Frame, Rank> const& multivector);
+
 }  // namespace geometry
 }  // namespace principia
 
-#include "Geometry/Grassmann-body.hpp"
+#include "geometry/grassmann_body.hpp"

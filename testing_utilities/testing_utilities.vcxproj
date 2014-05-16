@@ -10,10 +10,19 @@
       <Platform>Win32</Platform>
     </ProjectConfiguration>
   </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="almost_equals.hpp" />
+    <ClInclude Include="almost_equals_body.hpp" />
+    <ClInclude Include="numerics.hpp" />
+    <ClInclude Include="numerics_body.hpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="almost_equals_test.cpp" />
+  </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{0FD08CDF-228C-48C6-8690-CF0A72CF6C69}</ProjectGuid>
+    <ProjectGuid>{2E28828E-8364-4962-A9FF-C20A72EB884C}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
-    <RootNamespace>geometry</RootNamespace>
+    <RootNamespace>testing_utilities</RootNamespace>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
@@ -36,13 +45,11 @@
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
     <Import Project="..\include_solution.props" />
     <Import Project="..\google_test_framework.props" />
-    <Import Project="..\copy_libglog_dll.props" />
   </ImportGroup>
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
-    <Import Project="..\google_test_framework.props" />
     <Import Project="..\include_solution.props" />
-    <Import Project="..\copy_libglog_dll.props" />
+    <Import Project="..\google_test_framework.props" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
@@ -58,6 +65,7 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <SDLCheck>true</SDLCheck>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -73,6 +81,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <SDLCheck>true</SDLCheck>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -81,27 +90,6 @@
       <OptimizeReferences>true</OptimizeReferences>
     </Link>
   </ItemDefinitionGroup>
-  <ItemGroup>
-    <ClInclude Include="grassmann_body.hpp" />
-    <ClInclude Include="grassmann.hpp" />
-    <ClInclude Include="linear_map.hpp" />
-    <ClInclude Include="orthogonal_map_body.hpp" />
-    <ClInclude Include="orthogonal_map.hpp" />
-    <ClInclude Include="permutation_body.hpp" />
-    <ClInclude Include="permutation.hpp" />
-    <ClInclude Include="quaternion_body.hpp" />
-    <ClInclude Include="quaternion.hpp" />
-    <ClInclude Include="r3_element_body.hpp" />
-    <ClInclude Include="r3_element.hpp" />
-    <ClInclude Include="rotation_body.hpp" />
-    <ClInclude Include="rotation.hpp" />
-    <ClInclude Include="sign_body.hpp" />
-    <ClInclude Include="sign.hpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClCompile Include="orthogonal_map_test.cpp" />
-    <ClCompile Include="sign_test.cpp" />
-  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

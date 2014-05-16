@@ -1,8 +1,9 @@
 #pragma once
 
+#include <iostream>
 #include <string>
 
-#include "Quantities/Dimensionless.hpp"
+#include "quantities/dimensionless.hpp"
 
 namespace principia {
 namespace quantities {
@@ -22,7 +23,7 @@ typedef Quantity<Dimensions<0, 0, 0, 0, 1, 0, 0, 0, 0, 0>> Temperature;
 typedef Quantity<Dimensions<0, 0, 0, 0, 0, 1, 0, 0, 0, 0>> Amount;
 typedef Quantity<Dimensions<0, 0, 0, 0, 0, 0, 1, 0, 0, 0>> LuminousIntensity;
 // Nonstandard; winding is a dimensionless quantity counting cycles, in order to
-// strongly type the distinction between Frequency = Winding/Time and 
+// strongly type the distinction between Frequency = Winding/Time and
 // AngularFrequency = Angle/Time. We also strongly type angles.
 typedef Quantity<Dimensions<0, 0, 0, 0, 0, 0, 0, 1, 0, 0>> Winding;
 typedef Quantity<Dimensions<0, 0, 0, 0, 0, 0, 0, 0, 1, 0>> Angle;
@@ -32,7 +33,7 @@ namespace type_generators {
 template<typename Left, typename Right> struct ProductGenerator;
 template<typename Left, typename Right> struct QuotientGenerator;
 template<bool> struct Range;
-template<typename Q, int Exponent, typename = Range<true>> 
+template<typename Q, int Exponent, typename = Range<true>>
 struct PowerGenerator;
 template<bool> struct Condition;
 template<typename Q, typename = Condition<true>> struct SquareRootGenerator;
@@ -65,16 +66,26 @@ SolidAngle        Steradians(Dimensionless const&);
 }  // namespace factories
 
 template<typename D>
-std::wstring ToString(Quantity<D> const& quantity,
-                      unsigned char const precision = 16);
+std::string ToString(Quantity<D> const& quantity,
+                     unsigned char const precision = 16);
+
+template<typename D>
+std::ostream& operator<<(std::ostream& out, Quantity<D> const& quantity);
 
 template<typename D>
 class Quantity {
  public:
   typedef typename D Dimensions;
+
   Quantity();
+  ~Quantity() = default;
+
   template<int Exponent>
-  Exponentiation<Quantity<D>, Exponent> Pow() const;
+  Exponentiation<Quantity, Exponent> Pow() const;
+
+  // Returns the base or derived SI Unit of |Quantity|.
+  // For instance, |Action::SIUnit() == Joule * Second|.
+  static Quantity SIUnit();
 
  private:
   explicit Quantity(Dimensionless const& magnitude);
@@ -95,11 +106,11 @@ class Quantity {
   friend class Quantity;
   template<typename D>
   friend Quantity<D> operator+(Quantity<D> const&);
-  template<typename D> 
+  template<typename D>
   friend Quantity<D> operator-(Quantity<D> const&);
   template<typename D>
   friend Quantity<D> operator+(Quantity<D> const&, Quantity<D> const&);
-  template<typename D> 
+  template<typename D>
   friend Quantity<D> operator-(Quantity<D> const&, Quantity<D> const&);
   template<typename DLeft, typename DRight>
   friend Product<typename Quantity<DLeft>,
@@ -140,8 +151,11 @@ class Quantity {
   friend Angle ArcTan(Quantity<D> const& y, Quantity<D> const& x);
 
   template<typename D>
-  friend std::wstring ToString(Quantity<D> const&, unsigned char const);
+  friend std::string ToString(Quantity<D> const&, unsigned char const);
 };
+
+template<typename D>
+std::ostream& operator<<(::std::ostream& out, Quantity<D> const& quantity);
 
 template<typename D>
 void operator+=(Quantity<D>&, Quantity<D> const&);
@@ -154,4 +168,4 @@ inline void operator/=(Quantity<D>&, Dimensionless const&);
 }  // namespace quantities
 }  // namespace principia
 
-#include "Quantities/Quantities-body.hpp"
+#include "quantities/quantities_body.hpp"

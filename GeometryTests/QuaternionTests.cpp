@@ -3,7 +3,7 @@
 #include <CppUnitTest.h>
 #include <memory>
 
-#include "Geometry/Quaternion.hpp"
+#include "geometry/quaternion.hpp"
 #include "TestUtilities/GeometryComparisons.hpp"
 #include "TestUtilities/TestUtilities.hpp"
 

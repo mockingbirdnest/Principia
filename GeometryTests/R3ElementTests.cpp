@@ -2,18 +2,19 @@
 
 #include <float.h>
 
+#include <iostream>
 #include <CppUnitTest.h>
 
-#include "Geometry/Grassmann.hpp"
-#include "Geometry/R3Element.hpp"
-#include "Quantities/Astronomy.hpp"
-#include "Quantities/BIPM.hpp"
-#include "Quantities/Constants.hpp"
-#include "Quantities/Dimensionless.hpp"
-#include "Quantities/ElementaryFunctions.hpp"
-#include "Quantities/Quantities.hpp"
-#include "Quantities/SI.hpp"
-#include "Quantities/UK.hpp"
+#include "geometry/grassmann.hpp"
+#include "geometry/r3_element.hpp"
+#include "quantities/astronomy.hpp"
+#include "quantities/BIPM.hpp"
+#include "quantities/constants.hpp"
+#include "quantities/dimensionless.hpp"
+#include "quantities/elementary_functions.hpp"
+#include "quantities/quantities.hpp"
+#include "quantities/si.hpp"
+#include "quantities/uk.hpp"
 #include "TestUtilities/Algebra.hpp"
 #include "TestUtilities/ExplicitOperators.hpp"
 #include "TestUtilities/GeometryComparisons.hpp"
@@ -52,6 +53,7 @@ TEST_CLASS(R3ElementTests) {
     AssertFalse(42 * v_ != 42 * v_);
     AssertTrue(43 * v_ != 42 * v_);
     AssertFalse(43 * v_ == 42 * v_);
+    std::cout << "v is: " << v_ << "\n";
     AssertEqualWithin(303.492345479576 * Metre / Second,
                       a_.Norm(), 8 * DBL_EPSILON);
     TestVectorSpace<R3Element<Speed>, Dimensionless>(null_velocity_, u_, v_,

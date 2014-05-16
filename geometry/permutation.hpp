@@ -1,9 +1,9 @@
 #pragma once
 
-#include "Geometry/Grassmann.hpp"
-#include "Geometry/LinearMap.hpp"
-#include "Geometry/R3Element.hpp"
-#include "Geometry/Sign.hpp"
+#include "geometry/grassmann.hpp"
+#include "geometry/linear_map.hpp"
+#include "geometry/r3_element.hpp"
+#include "geometry/sign.hpp"
 
 namespace principia {
 namespace geometry {
@@ -67,4 +67,4 @@ class Permutation : public LinearMap<FromFrame, ToFrame> {
 }  // namespace geometry
 }  // namespace principia
 
-#include "Geometry/Permutation-body.hpp"
+#include "geometry/permutation_body.hpp"

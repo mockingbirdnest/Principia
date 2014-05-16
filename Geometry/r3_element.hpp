@@ -1,7 +1,9 @@
 #pragma once
 
-#include "Quantities/Dimensionless.hpp"
-#include "Quantities/Quantities.hpp"
+#include <iostream>
+
+#include "quantities/dimensionless.hpp"
+#include "quantities/quantities.hpp"
 
 namespace principia {
 namespace geometry {
@@ -82,6 +84,10 @@ template<typename Scalar>
 void operator/=(R3Element<Scalar>& left,
                 quantities::Dimensionless const& right);
 
+template<typename Scalar>
+std::ostream& operator<<(std::ostream& out, 
+                         R3Element<Scalar> const& r3_element);
+
 template<typename LScalar, typename RScalar>
 R3Element<quantities::Product<LScalar, RScalar>> Cross(
     R3Element<LScalar> const& left,
@@ -94,4 +100,4 @@ quantities::Product<LScalar, RScalar> Dot(R3Element<LScalar> const& left,
 }  // namespace geometry
 }  // namespace principia
 
-#include "Geometry/R3Element-body.hpp"
+#include "geometry/r3_element_body.hpp"

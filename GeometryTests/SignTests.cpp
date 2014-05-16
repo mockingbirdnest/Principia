@@ -2,7 +2,7 @@
 
 #include <CppUnitTest.h>
 
-#include "Geometry/Sign.hpp"
+#include "geometry/sign.hpp"
 #include "TestUtilities/TestUtilities.hpp"
 
 using namespace Microsoft::VisualStudio::CppUnitTestFramework;
@@ -35,10 +35,10 @@ TEST_CLASS(SignTests) {
   TEST_METHOD(ScalarMultiplication) {
     Sign const positive(1);
     Sign const negative(-1);
-    AssertEqual(3, positive * 3);
-    AssertEqual(-3, positive * -3);
-    AssertEqual(-3, negative * 3);
-    AssertEqual(3, negative * -3);
+    Assert::AreEqual(3, positive * 3);
+    Assert::AreEqual(-3, positive * -3);
+    Assert::AreEqual(-3, negative * 3);
+    Assert::AreEqual(3, negative * -3);
   }
 };
 

@@ -1,7 +1,7 @@
 #pragma once
 
-#include "Geometry/Grassmann.hpp"
-#include "Geometry/Sign.hpp"
+#include "geometry/grassmann.hpp"
+#include "geometry/sign.hpp"
 
 namespace principia {
 namespace geometry {
