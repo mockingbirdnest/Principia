@@ -32,7 +32,6 @@ inline void AssertEqualAbsolute(quantities::Dimensionless const& left,
                               ToString(right) + ".";
   LogLine(message);
   AssertTrue(Abs(left - right) <= ε, message);
-  LogLine("> Passed!");
 }
 
 inline void AssertEqual(quantities::Dimensionless const& left,
