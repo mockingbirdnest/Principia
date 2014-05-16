@@ -48,21 +48,6 @@ class AlmostEqualsMatcher{
   std::int64_t const max_ulps_;
 };
 
-
-MATCHER_P(AlmostVanishesBefore, input_magnitude,
-          std::string(negation ? "is not" : "is") + " within " +
-          testing::PrintToString(input_magnitude) + " * 4 epsilon of zero.") {
-  double const expected_absolute_error =
-      DoubleValue(arg_type(input_magnitude)) * 4 * DBL_EPSILON;
-  double const actual_absolute_error = std::abs(DoubleValue(arg));
-  if (actual_absolute_error <= expected_absolute_error) {
-    *result_listener << "the absolute error is " <<
-      actual_absolute_error * arg.SIUnit() / (4 * DBL_EPSILON) <<
-      " * 4 epsilon";
-  }
-  return actual_absolute_error <= expected_absolute_error;
-}
-
 MATCHER_P2(Approximates, expected, expected_relative_error,
            std::string(negation ? "does not approximate " : "approximates ") +
            testing::PrintToString(expected) + " to within "

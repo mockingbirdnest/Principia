@@ -106,13 +106,13 @@ bool AlmostEqualsMatcher<T>::MatchAndExplain(
       max_ulps_).MatchAndExplain(actual.coordinates(), listener);
 }
 
-template<typename Scalar>
-void AlmostEqualsMatcher<Scalar>::DescribeTo(std::ostream* os) const {
+template<typename T>
+void AlmostEqualsMatcher<T>::DescribeTo(std::ostream* os) const {
   *os << "is within 4 ULPs of " << expected_;
 }
 
-template<typename Scalar>
-void AlmostEqualsMatcher<Scalar>::DescribeNegationTo(std::ostream* os) const {
+template<typename T>
+void AlmostEqualsMatcher<T>::DescribeNegationTo(std::ostream* os) const {
   *os << "is not within 4 ULPs of " << expected_;
 }
 

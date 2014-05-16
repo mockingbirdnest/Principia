@@ -20,7 +20,7 @@ union Qword {
   int64_t long_value;
 };
 
-int64_t ULPDistance(double const x, double const y) {
+inline int64_t ULPDistance(double const x, double const y) {
   if (x == y) {
     return 0;
   }

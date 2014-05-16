@@ -13,8 +13,6 @@
   <ItemGroup>
     <ClInclude Include="almost_equals.hpp" />
     <ClInclude Include="almost_equals_body.hpp" />
-    <ClInclude Include="almost_vanishes_before.hpp" />
-    <ClInclude Include="almost_vanishes_before_body.hpp" />
     <ClInclude Include="numerics.hpp" />
     <ClInclude Include="numerics_body.hpp" />
   </ItemGroup>
