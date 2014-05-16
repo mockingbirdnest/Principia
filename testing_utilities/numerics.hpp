@@ -1,6 +1,8 @@
 #pragma once
 
-#include <stdint.h>
+#include <cstdint>
+
+#include "quantities/dimensionless.hpp"
 
 namespace principia {
 namespace testing_utilities {
@@ -8,9 +10,11 @@ namespace testing_utilities {
 template<typename Scalar>
 double DoubleValue(Scalar const& scalar);
 
-double RelativeError(double const expected, double const actual);
+template<typename T, typename Norm>
+Dimensionless RelativeError(T const& expected, T const& actual,
+                            Norm const norm);
 
-int64_t ULPDistance(double const x, double const y);
+std::int64_t ULPDistance(double const x, double const y);
 
 }  // testing_utilities
 }  // namespace principia

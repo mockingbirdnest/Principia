@@ -107,13 +107,42 @@ bool AlmostEqualsMatcher<T>::MatchAndExplain(
 }
 
 template<typename T>
+template<typename Scalar, typename Frame>
+bool AlmostEqualsMatcher<T>::MatchAndExplain(
+    geometry::Bivector<Scalar, Frame> const& actual,
+    testing::MatchResultListener* listener) const {
+  // Check that the types are equality-comparable up to implicit casts.
+  if (actual == expected_) {
+    return true;
+  }
+  return AlmostEqualsMatcher<geometry::R3Element<Scalar>>(
+      expected_.coordinates(), 
+      max_ulps_).MatchAndExplain(actual.coordinates(), listener);
+}
+
+template<typename T>
+template<typename Scalar, typename Frame>
+bool AlmostEqualsMatcher<T>::MatchAndExplain(
+    geometry::Trivector<Scalar, Frame> const& actual,
+    testing::MatchResultListener* listener) const {
+  // Check that the types are equality-comparable up to implicit casts.
+  if (actual == expected_) {
+    return true;
+  }
+  return AlmostEqualsMatcher<Scalar>(expected_.coordinates(),
+                                               max_ulps_).MatchAndExplain(
+                                                   actual.coordinates(),
+                                                   listener);
+}
+
+template<typename T>
 void AlmostEqualsMatcher<T>::DescribeTo(std::ostream* os) const {
-  *os << "is within 4 ULPs of " << expected_;
+  *os << "is within "<< max_ulps_ << " ULPs of " << expected_;
 }
 
 template<typename T>
 void AlmostEqualsMatcher<T>::DescribeNegationTo(std::ostream* os) const {
-  *os << "is not within 4 ULPs of " << expected_;
+  *os << "is not within " << max_ulps_ << " ULPs of " << expected_;
 }
 
 }  // namespace test_utilities

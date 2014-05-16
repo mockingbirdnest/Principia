@@ -39,6 +39,12 @@ class AlmostEqualsMatcher{
   template<typename Scalar, typename Frame>
   bool MatchAndExplain(geometry::Vector<Scalar, Frame> const& actual,
                        testing::MatchResultListener* listener) const;
+  template<typename Scalar, typename Frame>
+  bool MatchAndExplain(geometry::Bivector<Scalar, Frame> const& actual,
+                       testing::MatchResultListener* listener) const;
+  template<typename Scalar, typename Frame>
+  bool MatchAndExplain(geometry::Trivector<Scalar, Frame> const& actual,
+                       testing::MatchResultListener* listener) const;
 
   void DescribeTo(std::ostream* os) const;
   void DescribeNegationTo(std::ostream* os) const;
@@ -47,19 +53,6 @@ class AlmostEqualsMatcher{
   T const expected_;
   std::int64_t const max_ulps_;
 };
-
-MATCHER_P2(Approximates, expected, expected_relative_error,
-           std::string(negation ? "does not approximate " : "approximates ") +
-           testing::PrintToString(expected) + " to within "
-           + testing::PrintToString(expected_relative_error)) {
-  double const actual_relative_error =
-      RelativeError(DoubleValue(arg_type(expected)), DoubleValue(arg));
-  if (actual_relative_error <= expected_relative_error) {
-    *result_listener << "the relative error is " << actual_relative_error;
-  }
-  return actual_relative_error <= expected_relative_error;
-}
-
 
 }  // namespace testing_utilities
 }  // namespace principia

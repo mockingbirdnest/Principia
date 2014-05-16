@@ -11,8 +11,10 @@ double DoubleValue(Scalar const& scalar) {
   return (scalar / Scalar::SIUnit()).value();
 }
 
-inline double RelativeError(double const expected, double const actual) {
-  return std::abs(expected - actual) / std::abs(expected);
+template<typename T, typename Norm>
+Dimensionless RelativeError(T const& expected, T const& actual,
+                            Norm const norm) {
+  return norm(expected - actual) / norm(expected);
 }
 
 union Qword {
