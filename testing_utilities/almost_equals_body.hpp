@@ -6,10 +6,9 @@
 
 #include <string>
 
-#include "gmock/gmock.h"
-
-#include "geometry/r3_element.hpp"
 #include "geometry/grassmann.hpp"
+#include "geometry/r3_element.hpp"
+#include "gmock/gmock.h"
 #include "quantities/dimensionless.hpp"
 #include "testing_utilities/numerics.hpp"
 
