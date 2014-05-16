@@ -69,15 +69,12 @@ bool AlmostEqualsMatcher<T>::MatchAndExplain(
   if (actual == expected_) {
     return true;
   }
-  int64_t const x_distance =
-    testing::internal::Double(DoubleValue(actual.x)).AlmostEquals(
-        testing::internal::Double(DoubleValue(expected_.x)));
-  int64_t const y_distance =
-    testing::internal::Double(DoubleValue(actual.y)).AlmostEquals(
-        testing::internal::Double(DoubleValue(expected_.y)));
-  int64_t const z_distance =
-    testing::internal::Double(DoubleValue(actual.z)).AlmostEquals(
-        testing::internal::Double(DoubleValue(expected_.z)));
+  int64_t const x_distance = ULPDistance(DoubleValue(actual.x),
+                                         DoubleValue(expected_.x));
+  int64_t const y_distance = ULPDistance(DoubleValue(actual.y),
+                                         DoubleValue(expected_.y));
+  int64_t const z_distance = ULPDistance(DoubleValue(actual.z),
+                                         DoubleValue(expected_.z));
   bool const x_matches = x_distance <= max_ulps_;
   bool const y_matches = y_distance <= max_ulps_;
   bool const z_matches = z_distance <= max_ulps_;
@@ -85,10 +82,10 @@ bool AlmostEqualsMatcher<T>::MatchAndExplain(
   if (!matches) {
     *listener << "the following components differ by more than " << max_ulps_
               << " ULPs: " << (x_matches ? "" : "x, ") 
-              << (y_matches ? "" : "y, ") << (z_matches ? "" : "z, ")
-              << "the components differ by the following numbers of ULPs: x: "
-              << x_distance << ", y: " << y_distance << ", z: " << z_distance;
+              << (y_matches ? "" : "y, ") << (z_matches ? "" : "z, ");
   }
+  *listener << "the components differ by the following numbers of ULPs: x: "
+            << x_distance << ", y: " << y_distance << ", z: " << z_distance;
   return matches;
 }
 
