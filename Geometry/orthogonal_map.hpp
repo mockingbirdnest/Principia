@@ -1,10 +1,10 @@
 #pragma once
 
-#include "Geometry/Grassmann.hpp"
-#include "Geometry/LinearMap.hpp"
-#include "Geometry/R3Element.hpp"
-#include "Geometry/Rotation.hpp"
-#include "Geometry/Sign.hpp"
+#include "geometry/grassmann.hpp"
+#include "geometry/linear_map.hpp"
+#include "geometry/r3_element.hpp"
+#include "geometry/rotation.hpp"
+#include "geometry/sign.hpp"
 
 namespace principia {
 namespace geometry {
@@ -13,7 +13,7 @@ namespace geometry {
 template<typename FromFrame, typename ToFrame>
 class OrthogonalMap : public LinearMap<FromFrame, ToFrame> {
  public:
-
+  OrthogonalMap();
   OrthogonalMap(const Sign& determinant,
                 Rotation<FromFrame, ToFrame> const& rotation);
   virtual ~OrthogonalMap() = default;

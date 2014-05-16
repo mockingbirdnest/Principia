@@ -1,13 +1,18 @@
 #pragma once
 
-#include "Geometry/Grassmann.hpp"
-#include "Geometry/LinearMap.hpp"
-#include "Geometry/orthogonal_map.hpp"
-#include "Geometry/R3Element.hpp"
-#include "Geometry/Sign.hpp"
+#include "geometry/grassmann.hpp"
+#include "geometry/linear_map.hpp"
+#include "geometry/orthogonal_map.hpp"
+#include "geometry/r3_element.hpp"
+#include "geometry/sign.hpp"
 
 namespace principia {
 namespace geometry {
+
+  template<typename FromFrame, typename ToFrame>
+OrthogonalMap<FromFrame, ToFrame>::OrthogonalMap()
+    : determinant_(Sign(1)), 
+      rotation_(Rotation<FromFrame, ToFrame>::Identity()) {}
 
 template<typename FromFrame, typename ToFrame>
 OrthogonalMap<FromFrame, ToFrame>::OrthogonalMap(
@@ -22,7 +27,8 @@ Sign OrthogonalMap<FromFrame, ToFrame>::Determinant() const {
 }
 
 template<typename FromFrame, typename ToFrame>
-OrthogonalMap<ToFrame, FromFrame> OrthogonalMap<FromFrame, ToFrame>::Inverse() const {
+OrthogonalMap<ToFrame, FromFrame>
+OrthogonalMap<FromFrame, ToFrame>::Inverse() const {
   return OrthogonalMap(determinant_, rotation_.Inverse());
 }
 
@@ -48,7 +54,8 @@ Trivector<Scalar, ToFrame> OrthogonalMap<FromFrame, ToFrame>::operator()(
 }
 
 template<typename FromFrame, typename ToFrame>
-OrthogonalMap<FromFrame, ToFrame> OrthogonalMap<FromFrame, ToFrame>::Identity() {
+OrthogonalMap<FromFrame, ToFrame>
+OrthogonalMap<FromFrame, ToFrame>::Identity() {
   return OrthogonalMap(Sign(1), Rotation<FromFrame, ToFrame>::Identity());
 }
 
@@ -56,8 +63,9 @@ template<typename FromFrame, typename ThroughFrame, typename ToFrame>
 OrthogonalMap<FromFrame, ToFrame> operator*(
     OrthogonalMap<ThroughFrame, ToFrame> const& left,
     OrthogonalMap<FromFrame, ThroughFrame> const& right) {
-  return OrthogonalMap(left.determinant_ * right.determinant_,
-                       left.rotation_ * right.rotation_);
+  return OrthogonalMap<FromFrame, ToFrame>(
+             left.determinant_ * right.determinant_,
+             left.rotation_ * right.rotation_);
 }
 
 }  // namespace geometry

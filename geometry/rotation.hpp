@@ -13,7 +13,7 @@ namespace geometry {
 template<typename FromFrame, typename ToFrame>
 class Rotation : public LinearMap<FromFrame, ToFrame> {
  public:
-
+  Rotation() = default;
   template<typename Scalar>
   Rotation(quantities::Angle const& angle,
            Vector<Scalar, FromFrame> const& axis);
