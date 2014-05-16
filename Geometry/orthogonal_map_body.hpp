@@ -9,7 +9,7 @@
 namespace principia {
 namespace geometry {
 
-  template<typename FromFrame, typename ToFrame>
+template<typename FromFrame, typename ToFrame>
 OrthogonalMap<FromFrame, ToFrame>::OrthogonalMap()
     : determinant_(Sign(1)), 
       rotation_(Rotation<FromFrame, ToFrame>::Identity()) {}

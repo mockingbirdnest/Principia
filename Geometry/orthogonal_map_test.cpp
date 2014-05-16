@@ -112,6 +112,9 @@ TEST_F(OrthogonalMapTest, Composition) {
                   R3Element<quantities::Length>(2.0 * Metre,
                                                 1.0 * Metre,
                                                 -3.0 * Metre))));
+  EXPECT_TRUE((orthogonal_a_ * orthogonal_b_).Determinant().Negative());
+  EXPECT_TRUE((orthogonal_a_ * orthogonal_c_).Determinant().Positive());
+  EXPECT_TRUE((orthogonal_b_ * orthogonal_c_).Determinant().Negative());
 }
 
 }  // namespace geometry
