@@ -1,9 +1,7 @@
-﻿#include "stdafx.hpp"
+﻿#include <float.h>
 
-#include <float.h>
-
-#include <iostream>
 #include <CppUnitTest.h>
+#include <iostream>  // NOLINT(readability/streams)
 
 #include "geometry/grassmann.hpp"
 #include "geometry/r3_element.hpp"
@@ -25,14 +23,15 @@
 namespace principia {
 namespace geometry {
 
-using namespace astronomy;
-using namespace bipm;
-using namespace constants;
-using namespace Microsoft::VisualStudio::CppUnitTestFramework;
-using namespace quantities;
-using namespace si;
-using namespace test_utilities;
-using namespace uk;
+using Microsoft::VisualStudio::CppUnitTestFramework::Assert;
+
+using namespace astronomy;  // NOLINT(build/namespaces)
+using namespace bipm;  // NOLINT(build/namespaces)
+using namespace constants;  // NOLINT(build/namespaces)
+using namespace quantities;  // NOLINT(build/namespaces)
+using namespace si;  // NOLINT(build/namespaces)
+using namespace test_utilities;  // NOLINT(build/namespaces)
+using namespace uk;  // NOLINT(build/namespaces)
 
 TEST_CLASS(R3ElementTests) {
   R3Element<Speed> const null_velocity_ =

@@ -21,9 +21,6 @@
     <ClInclude Include="targetver.hpp">
       <Filter>Properties</Filter>
     </ClInclude>
-    <ClInclude Include="stdafx.hpp">
-      <Filter>Properties</Filter>
-    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="GrassmannTests.cpp">
@@ -31,9 +28,6 @@
     </ClCompile>
     <ClCompile Include="R3ElementTests.cpp">
       <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="stdafx.cpp">
-      <Filter>Properties</Filter>
     </ClCompile>
     <ClCompile Include="SignTests.cpp">
       <Filter>Source Files</Filter>
