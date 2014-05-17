@@ -1,6 +1,7 @@
 #pragma once
 
-#include <iostream>
+// We use ostream for logging purposes.
+#include <iostream>  // NOLINT(readability/streams)
 
 #include "quantities/dimensionless.hpp"
 #include "quantities/quantities.hpp"
@@ -71,21 +72,21 @@ bool operator!=(R3Element<Scalar> const& left,
                 R3Element<Scalar> const& right);
 
 template<typename Scalar>
-void operator+=(R3Element<Scalar>& left,
+void operator+=(R3Element<Scalar>& left,  // NOLINT(runtime/references)
                 R3Element<Scalar> const& right);
 template<typename Scalar>
-void operator-=(R3Element<Scalar>& left,
+void operator-=(R3Element<Scalar>& left,  // NOLINT(runtime/references)
                 R3Element<Scalar> const& right);
 
 template<typename Scalar>
-void operator*=(R3Element<Scalar>& left,
+void operator*=(R3Element<Scalar>& left,  // NOLINT(runtime/references)
                 quantities::Dimensionless const& right);
 template<typename Scalar>
-void operator/=(R3Element<Scalar>& left,
+void operator/=(R3Element<Scalar>& left,  // NOLINT(runtime/references)
                 quantities::Dimensionless const& right);
 
 template<typename Scalar>
-std::ostream& operator<<(std::ostream& out, 
+std::ostream& operator<<(std::ostream& out,
                          R3Element<Scalar> const& r3_element);
 
 template<typename LScalar, typename RScalar>

@@ -220,19 +220,23 @@ inline Inverse<Quantity<D>> operator/(Dimensionless const& left,
 #pragma endregion
 #pragma region Assigment operators
 template<typename D>
-inline void operator+=(Quantity<D>& left, Quantity<D> const& right) {
+inline void operator+=(Quantity<D>& left,  // NOLINT(runtime/references)
+                       Quantity<D> const& right) {
   left = left + right;
 }
 template<typename D>
-inline void operator-=(Quantity<D>& left, Quantity<D> const& right) {
+inline void operator-=(Quantity<D>& left,  // NOLINT(runtime/references)
+                       Quantity<D> const& right) {
   left = left - right;
 }
 template<typename D>
-inline void operator*=(Quantity<D>& left, Dimensionless const& right) {
+inline void operator*=(Quantity<D>& left,  // NOLINT(runtime/references)
+                       Dimensionless const& right) {
   left = left * right;
 }
 template<typename D>
-inline void operator/=(Quantity<D>& left, Dimensionless const& right) {
+inline void operator/=(Quantity<D>& left,  // NOLINT(runtime/references)
+                       Dimensionless const& right) {
   left = left / right;
 }
 #pragma endregion

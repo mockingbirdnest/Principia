@@ -1,4 +1,3 @@
-#include "stdafx.hpp"
 #include <float.h>
 
 #include <CppUnitTest.h>
@@ -14,9 +13,10 @@
 namespace principia {
 namespace geometry {
 
-using namespace Microsoft::VisualStudio::CppUnitTestFramework;
-using namespace si;
-using namespace test_utilities;
+using Microsoft::VisualStudio::CppUnitTestFramework::Assert;
+
+using namespace si;  // NOLINT(build/namespaces)
+using namespace test_utilities;  // NOLINT(build/namespaces)
 
 TEST_CLASS(RotationTests) {
  private:

@@ -48,9 +48,6 @@
     <ClInclude Include="UK.hpp">
       <Filter>Header Files\Units</Filter>
     </ClInclude>
-    <ClInclude Include="Stdafx.hpp">
-      <Filter>Properties</Filter>
-    </ClInclude>
     <ClInclude Include="resource.hpp">
       <Filter>Properties</Filter>
     </ClInclude>
@@ -68,9 +65,6 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Stdafx.cpp">
-      <Filter>Properties</Filter>
-    </ClCompile>
     <ClCompile Include="AssemblyInfo.cpp">
       <Filter>Properties</Filter>
     </ClCompile>

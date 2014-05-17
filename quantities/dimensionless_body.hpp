@@ -1,6 +1,6 @@
 #pragma once
 
-#include <math.h>
+#include <cmath>
 
 #include <string>
 
@@ -22,6 +22,7 @@ template<int Exponent>
 inline Dimensionless Dimensionless::Pow() const {
   return this->Pow(Exponent);
 }
+
 inline Dimensionless Dimensionless::Pow(int const exponent) const {
   if (exponent < 0) {
     return (1 / *this).Pow(-exponent);
@@ -39,54 +40,71 @@ inline Dimensionless Dimensionless::Pow(int const exponent) const {
 inline Dimensionless operator+(Dimensionless const& right) {
   return +right.value();
 }
+
 inline Dimensionless operator-(Dimensionless const& right) {
   return -right.value();
 }
+
 inline Dimensionless operator+(Dimensionless const& left,
                                Dimensionless const& right) {
   return left.value() + right.value();
 }
+
 inline Dimensionless operator-(Dimensionless const& left,
                                Dimensionless const& right) {
   return left.value() - right.value();
 }
+
 inline Dimensionless operator*(Dimensionless const& left,
                                Dimensionless const& right) {
   return left.value() * right.value();
 }
+
 inline Dimensionless operator/(Dimensionless const& left,
                                Dimensionless const& right) {
   return left.value() / right.value();
 }
 
-inline void operator+=(Dimensionless& left, Dimensionless const& right) {
+inline void operator+=(Dimensionless& left,  // NOLINT(runtime/references)
+                       Dimensionless const& right) {
   left = left + right;
 }
-inline void operator-=(Dimensionless& left, Dimensionless const& right) {
+
+inline void operator-=(Dimensionless& left,  // NOLINT(runtime/references)
+                       Dimensionless const& right) {
   left = left - right;
 }
-inline void operator*=(Dimensionless& left, Dimensionless const& right) {
+
+inline void operator*=(Dimensionless& left,  // NOLINT(runtime/references)
+                       Dimensionless const& right) {
   left = left * right;
 }
-inline void operator/=(Dimensionless& left, Dimensionless const& right) {
+
+inline void operator/=(Dimensionless& left,  // NOLINT(runtime/references)
+                       Dimensionless const& right) {
   left = left / right;
+}
+
+inline bool operator<(Dimensionless const& left, Dimensionless const& right) {
+  return left.value() < right.value();
 }
 
 inline bool operator>(Dimensionless const& left, Dimensionless const& right) {
   return left.value() > right.value();
 }
-inline bool operator<(Dimensionless const& left, Dimensionless const& right) {
-  return left.value() < right.value();
-}
-inline bool operator>=(Dimensionless const& left, Dimensionless const& right) {
-  return left.value() >= right.value();
-}
+
 inline bool operator<=(Dimensionless const& left, Dimensionless const& right) {
   return left.value() <= right.value();
 }
+
+inline bool operator>=(Dimensionless const& left, Dimensionless const& right) {
+  return left.value() >= right.value();
+}
+
 inline bool operator==(Dimensionless const& left, Dimensionless const& right) {
   return left.value() == right.value();
 }
+
 inline bool operator!=(Dimensionless const& left, Dimensionless const& right) {
   return left.value() != right.value();
 }

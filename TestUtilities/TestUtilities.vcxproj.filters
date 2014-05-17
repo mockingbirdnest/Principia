@@ -39,9 +39,6 @@
     <ClInclude Include="Algebra-body.hpp">
       <Filter>Source Files</Filter>
     </ClInclude>
-    <ClInclude Include="Stdafx.hpp">
-      <Filter>Properties</Filter>
-    </ClInclude>
     <ClInclude Include="resource.hpp">
       <Filter>Properties</Filter>
     </ClInclude>
@@ -57,9 +54,6 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="AssemblyInfo.cpp">
-      <Filter>Properties</Filter>
-    </ClCompile>
-    <ClCompile Include="Stdafx.cpp">
       <Filter>Properties</Filter>
     </ClCompile>
   </ItemGroup>

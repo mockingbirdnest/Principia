@@ -6,11 +6,11 @@ namespace geometry {
 template<typename Scalar>
 Sign::Sign(Scalar const& scalar) : negative_(scalar < 0) {}
 
-inline bool Sign::Negative() const { 
+inline bool Sign::Negative() const {
   return negative_;
 }
 
-inline bool Sign::Positive() const { 
+inline bool Sign::Positive() const {
   return !negative_;
 }
 

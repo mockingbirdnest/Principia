@@ -1,16 +1,14 @@
-#include "stdafx.hpp"
-
 #include <CppUnitTest.h>
 
 #include "geometry/sign.hpp"
 #include "TestUtilities/TestUtilities.hpp"
 
-using namespace Microsoft::VisualStudio::CppUnitTestFramework;
+using Microsoft::VisualStudio::CppUnitTestFramework::Assert;
 
 namespace principia {
 namespace geometry {
 
-using namespace test_utilities;
+using namespace test_utilities;  // NOLINT(build/namespaces)
 
 TEST_CLASS(SignTests) {
  public:
