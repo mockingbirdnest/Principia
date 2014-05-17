@@ -141,5 +141,5 @@ void AlmostEqualsMatcher<T>::DescribeNegationTo(std::ostream* out) const {
   *out << "is not within " << max_ulps_ << " ULPs of " << expected_;
 }
 
-}  // namespace test_utilities
+}  // namespace testing_utilities
 }  // namespace principia
