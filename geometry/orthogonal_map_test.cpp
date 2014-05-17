@@ -52,12 +52,12 @@ TEST_F(OrthogonalMapTest, Identity) {
 }
 
 TEST_F(OrthogonalMapTest, AppliedToVector) {
-  EXPECT_THAT(orthogonal_a_(vector_), 
+  EXPECT_THAT(orthogonal_a_(vector_),
               AlmostEquals(Vector<quantities::Length, World>(
                   R3Element<quantities::Length>(-3.0 * Metre,
                                                 -1.0 * Metre,
                                                 -2.0 * Metre))));
-  EXPECT_THAT(orthogonal_b_(vector_), 
+  EXPECT_THAT(orthogonal_b_(vector_),
               AlmostEquals(Vector<quantities::Length, World>(
                   R3Element<quantities::Length>(1.0 * Metre,
                                                 3.0 * Metre,
@@ -65,12 +65,12 @@ TEST_F(OrthogonalMapTest, AppliedToVector) {
 }
 
 TEST_F(OrthogonalMapTest, AppliedToBivector) {
-  EXPECT_THAT(orthogonal_a_(bivector_), 
+  EXPECT_THAT(orthogonal_a_(bivector_),
               AlmostEquals(Bivector<quantities::Length, World>(
                   R3Element<quantities::Length>(3.0 * Metre,
                                                 1.0 * Metre,
                                                 2.0 * Metre))));
-  EXPECT_THAT(orthogonal_b_(vector_), 
+  EXPECT_THAT(orthogonal_b_(vector_),
               AlmostEquals(Vector<quantities::Length, World>(
                   R3Element<quantities::Length>(1.0 * Metre,
                                                 3.0 * Metre,
@@ -78,10 +78,10 @@ TEST_F(OrthogonalMapTest, AppliedToBivector) {
 }
 
 TEST_F(OrthogonalMapTest, AppliedToTrivector) {
-  EXPECT_THAT(orthogonal_a_(trivector_), 
+  EXPECT_THAT(orthogonal_a_(trivector_),
               AlmostEquals(Trivector<quantities::Length, World>(
                   -4.0 * Metre)));
-  EXPECT_THAT(orthogonal_b_(trivector_), 
+  EXPECT_THAT(orthogonal_b_(trivector_),
               AlmostEquals(Trivector<quantities::Length, World>(
                   4.0 * Metre)));
 }
@@ -93,12 +93,12 @@ TEST_F(OrthogonalMapTest, Determinant) {
 }
 
 TEST_F(OrthogonalMapTest, Inverse) {
-  EXPECT_THAT(orthogonal_a_.Inverse()(vector_), 
+  EXPECT_THAT(orthogonal_a_.Inverse()(vector_),
               AlmostEquals(Vector<quantities::Length, World>(
                   R3Element<quantities::Length>(-2.0 * Metre,
                                                 -3.0 * Metre,
                                                 -1.0 * Metre))));
-  EXPECT_THAT(orthogonal_b_.Inverse()(vector_), 
+  EXPECT_THAT(orthogonal_b_.Inverse()(vector_),
               AlmostEquals(Vector<quantities::Length, World>(
                   R3Element<quantities::Length>(1.0 * Metre,
                                                 3.0 * Metre,
@@ -107,7 +107,7 @@ TEST_F(OrthogonalMapTest, Inverse) {
 
 TEST_F(OrthogonalMapTest, Composition) {
   Orth const orthogonal_ac = orthogonal_a_ * orthogonal_c_;
-  EXPECT_THAT(orthogonal_ac(vector_), 
+  EXPECT_THAT(orthogonal_ac(vector_),
               AlmostEquals(Vector<quantities::Length, World>(
                   R3Element<quantities::Length>(2.0 * Metre,
                                                 1.0 * Metre,
