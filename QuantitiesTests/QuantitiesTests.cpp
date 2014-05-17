@@ -1,9 +1,8 @@
-﻿#include "stdafx.hpp"
-
-#include <float.h>
+﻿#include <float.h>
+#include <stdio.h>
 
 #include <CppUnitTest.h>
-#include <stdio.h>
+#include <string>
 
 #include "quantities/astronomy.hpp"
 #include "quantities/BIPM.hpp"
@@ -22,12 +21,13 @@
 namespace principia {
 namespace quantities {
 
-using namespace astronomy;
-using namespace constants;
-using namespace Microsoft::VisualStudio::CppUnitTestFramework;
-using namespace si;
-using namespace test_utilities;
-using namespace uk;
+using Microsoft::VisualStudio::CppUnitTestFramework::Assert;
+
+using namespace astronomy;  // NOLINT(build/namespaces)
+using namespace constants;  // NOLINT(build/namespaces)
+using namespace si;  // NOLINT(build/namespaces)
+using namespace test_utilities;  // NOLINT(build/namespaces)
+using namespace uk;  // NOLINT(build/namespaces)
 
 TEST_CLASS(QuantitiesTests) {
  public:
@@ -89,7 +89,7 @@ TEST_CLASS(QuantitiesTests) {
   TEST_METHOD(Formatting) {
     auto const allTheUnits = 1 * Metre * Kilogram * Second * Ampere * Kelvin /
                              (Mole * Candela * Cycle * Radian * Steradian);
-    std::string const expected = std::string("1e+000 m kg s A K mol^-1") + 
+    std::string const expected = std::string("1e+000 m kg s A K mol^-1") +
                                  " cd^-1 cycle^-1 rad^-1 sr^-1";
     std::string const actual = ToString(allTheUnits, 0);
     Assert::AreEqual(expected, actual);
