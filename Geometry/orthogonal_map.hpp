@@ -14,7 +14,7 @@ template<typename FromFrame, typename ToFrame>
 class OrthogonalMap : public LinearMap<FromFrame, ToFrame> {
  public:
   OrthogonalMap();
-  OrthogonalMap(const Sign& determinant,
+  OrthogonalMap(Sign const& determinant,
                 Rotation<FromFrame, ToFrame> const& rotation);
   virtual ~OrthogonalMap() = default;
 

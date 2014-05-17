@@ -16,7 +16,7 @@ OrthogonalMap<FromFrame, ToFrame>::OrthogonalMap()
 
 template<typename FromFrame, typename ToFrame>
 OrthogonalMap<FromFrame, ToFrame>::OrthogonalMap(
-    const Sign& determinant,
+    Sign const& determinant,
     Rotation<FromFrame, ToFrame> const& rotation)
     : determinant_(determinant),
       rotation_(rotation) {}
