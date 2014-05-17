@@ -10,9 +10,9 @@
 namespace principia {
 namespace geometry {
 
-using namespace si;
-using namespace testing;
-using namespace testing_utilities;
+using si::Metre;
+using testing::Eq;
+using testing_utilities::AlmostEquals;
 
 class OrthogonalMapTest : public testing::Test {
  protected:
