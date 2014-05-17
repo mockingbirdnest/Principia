@@ -1,6 +1,7 @@
 #pragma once
 
-#include <iostream>
+// We use ostream for logging purposes.
+#include <iostream>  // NOLINT(readability/streams)
 #include <string>
 
 #include "quantities/dimensionless.hpp"

@@ -68,7 +68,7 @@ quantities::Mass const Gram = 1e-3 * Kilogram;
 // The uno was proposed but never accepted.
 quantities::Dimensionless       const Uno = 1;
 quantities::Frequency           const Hertz   = Cycle / Second;
-quantities::Force               const Newton  = Metre * Kilogram / 
+quantities::Force               const Newton  = Metre * Kilogram /
                                                 (Second * Second);
 quantities::Pressure            const Pascal  = Newton / (Metre * Metre);
 quantities::Energy              const Joule   = Newton * Metre;
