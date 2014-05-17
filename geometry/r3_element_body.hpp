@@ -8,7 +8,7 @@ namespace geometry {
 template<typename Scalar>
 inline R3Element<Scalar>::R3Element(Scalar const& x,
                                     Scalar const& y,
-                                    Scalar const& z) : x(x), y(y), z(z) {};
+                                    Scalar const& z) : x(x), y(y), z(z) {}
 
 template<typename Scalar>
 inline Scalar& R3Element<Scalar>::operator[](int const index) {
@@ -146,34 +146,34 @@ bool operator!=(R3Element<Scalar> const& left,
 }
 
 template<typename Scalar>
-inline void operator+=(R3Element<Scalar>& left,
+inline void operator+=(R3Element<Scalar>& left,  // NOLINT(runtime/references)
                        R3Element<Scalar> const& right) {
   left = left + right;
 }
 
 template<typename Scalar>
-inline void operator-=(R3Element<Scalar>& left,
+inline void operator-=(R3Element<Scalar>& left,  // NOLINT(runtime/references)
                        R3Element<Scalar> const& right) {
   left = left - right;
 }
 
 template<typename Scalar>
-inline void operator*=(R3Element<Scalar>& left,
+inline void operator*=(R3Element<Scalar>& left,  // NOLINT(runtime/references)
                        quantities::Dimensionless const& right) {
   left = left * right;
 }
 
 template<typename Scalar>
-inline void operator/=(R3Element<Scalar>& left,
+inline void operator/=(R3Element<Scalar>& left,  // NOLINT(runtime/references)
                        quantities::Dimensionless const& right) {
   left = left / right;
 }
 
 template<typename Scalar>
-std::ostream& operator<<(std::ostream& out, 
+std::ostream& operator<<(std::ostream& out,
                          R3Element<Scalar> const& r3_element) {
-  out << "{" << r3_element.x << ", " 
-             << r3_element.y << ", " 
+  out << "{" << r3_element.x << ", "
+             << r3_element.y << ", "
              << r3_element.z << "}";
   return out;
 }
