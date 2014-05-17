@@ -48,13 +48,19 @@ Quaternion operator*(Quaternion const& left,
 Quaternion operator/(Quaternion const& left,
                      quantities::Dimensionless const& right);
 
-void operator+=(Quaternion& left, Quaternion const& right);  // NOLINT
-void operator-=(Quaternion& left, Quaternion const& right);  // NOLINT
-void operator*=(Quaternion& left, Quaternion const& right);  // NOLINT
-void operator/=(Quaternion& left, Quaternion const& right);  // NOLINT
+void operator+=(Quaternion& left,  // NOLINT(runtime/references)
+                Quaternion const& right);
+void operator-=(Quaternion& left,  // NOLINT(runtime/references)
+                Quaternion const& right);
+void operator*=(Quaternion& left,  // NOLINT(runtime/references)
+                Quaternion const& right);
+void operator/=(Quaternion& left,  // NOLINT(runtime/references)
+                Quaternion const& right);
 
-void operator*=(Quaternion& left, quantities::Dimensionless const& right);  // NOLINT
-void operator/=(Quaternion& left, quantities::Dimensionless const& right);  // NOLINT
+void operator*=(Quaternion& left,  // NOLINT(runtime/references)
+                quantities::Dimensionless const& right);
+void operator/=(Quaternion& left,  // NOLINT(runtime/references)
+                quantities::Dimensionless const& right);
 
 }  // namespace geometry
 }  // namespace principia

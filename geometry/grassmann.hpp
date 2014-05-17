@@ -177,17 +177,21 @@ bool operator!=(Multivector<Scalar, Frame, Rank> const& left,
                 Multivector<Scalar, Frame, Rank> const& right);
 
 template<typename Scalar, typename Frame, unsigned int Rank>
-void operator+=(Multivector<Scalar, Frame, Rank>& left,  // NOLINT
-                Multivector<Scalar, Frame, Rank> const& right);
+void operator+=(
+    Multivector<Scalar, Frame, Rank>& left,  // NOLINT(runtime/references)
+    Multivector<Scalar, Frame, Rank> const& right);
 template<typename Scalar, typename Frame, unsigned int Rank>
-void operator-=(Multivector<Scalar, Frame, Rank>& left,  // NOLINT
-                Multivector<Scalar, Frame, Rank> const& right);
+void operator-=(
+    Multivector<Scalar, Frame, Rank>& left,  // NOLINT(runtime/references)
+    Multivector<Scalar, Frame, Rank> const& right);
 template<typename Scalar, typename Frame, unsigned int Rank>
-void operator*=(Multivector<Scalar, Frame, Rank>& left,  // NOLINT
-                quantities::Dimensionless const& right);
+void operator*=(
+    Multivector<Scalar, Frame, Rank>& left,  // NOLINT(runtime/references)
+    quantities::Dimensionless const& right);
 template<typename Scalar, typename Frame, unsigned int Rank>
-void operator/=(Multivector<Scalar, Frame, Rank>& left,  // NOLINT
-                quantities::Dimensionless const& right);
+void operator/=(
+    Multivector<Scalar, Frame, Rank>& left,  // NOLINT(runtime/references)
+    quantities::Dimensionless const& right);
 
 template<typename Scalar, typename Frame, unsigned int Rank>
 std::ostream& operator<<(std::ostream& out,
