@@ -80,7 +80,7 @@ bool AlmostEqualsMatcher<T>::MatchAndExplain(
   bool const matches = x_matches && y_matches && z_matches;
   if (!matches) {
     *listener << "the following components differ by more than " << max_ulps_
-              << " ULPs: " << (x_matches ? "" : "x, ") 
+              << " ULPs: " << (x_matches ? "" : "x, ")
               << (y_matches ? "" : "y, ") << (z_matches ? "" : "z, ");
   }
   *listener << "the components differ by the following numbers of ULPs: x: "
@@ -98,7 +98,7 @@ bool AlmostEqualsMatcher<T>::MatchAndExplain(
     return true;
   }
   return AlmostEqualsMatcher<geometry::R3Element<Scalar>>(
-      expected_.coordinates(), 
+      expected_.coordinates(),
       max_ulps_).MatchAndExplain(actual.coordinates(), listener);
 }
 
@@ -112,7 +112,7 @@ bool AlmostEqualsMatcher<T>::MatchAndExplain(
     return true;
   }
   return AlmostEqualsMatcher<geometry::R3Element<Scalar>>(
-      expected_.coordinates(), 
+      expected_.coordinates(),
       max_ulps_).MatchAndExplain(actual.coordinates(), listener);
 }
 
