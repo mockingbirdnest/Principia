@@ -12,13 +12,19 @@ class Point {
 };
 
 template<typename Vector>
-Vector operator-(Vector const& to, Vector const& from);
+Vector operator-(Point<Vector> const& to, Point<Vector> const& from);
 
 template<typename Vector>
 Point<Vector> operator+(Point<Vector> const& left, Vector const& right);
-
 template<typename Vector>
 Point<Vector> operator+(Vector const& left, Point<Vector> const& right);
+template<typename Vector>
+Point<Vector> operator-(Point<Vector> const& left, Vector const& right);
+
+template<typename Vector>
+bool operator==(Point<Vector> const& left, Point<Vector> const& right);
+template<typename Vector>
+bool operator!=(Point<Vector> const& left, Point<Vector> const& right);
 
 template<typename Vector, typename Weight>
 Point<Vector> Barycentre(Point<Vector> const& left,
