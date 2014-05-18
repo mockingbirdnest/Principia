@@ -11,7 +11,7 @@ quantities::Speed const SpeedOfLight =
 quantities::Permeability const VacuumPermeability =
     4e-7 * π * si::Steradian * si::Henry / si::Metre;
 quantities::Permittivity const VacuumPermittivity =
-    1 / (VacuumPermeability*SpeedOfLight.Pow<2>());
+    1 / (VacuumPermeability * SpeedOfLight.Pow<2>());
 // We use the 2010 CODATA recommended values. We do not support uncertainties.
 quantities::AngularMomentum const ReducedPlanckConstant =
     1.054571726e-34 * si::Joule * si::Second / si::Radian;
