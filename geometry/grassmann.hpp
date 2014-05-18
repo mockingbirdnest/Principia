@@ -20,6 +20,7 @@ struct Multivector;
 template<typename Scalar, typename Frame>
 class Multivector<Scalar, Frame, 1> {
  public:
+  Multivector() = default;
   explicit Multivector(R3Element<Scalar> const& coordinates);
   ~Multivector() = default;
 
@@ -31,6 +32,7 @@ class Multivector<Scalar, Frame, 1> {
 
 template<typename Scalar, typename Frame>
 struct Multivector<Scalar, Frame, 2> {
+  Multivector() = default;
   explicit Multivector(R3Element<Scalar> const& coordinates);
   ~Multivector() = default;
 
@@ -42,6 +44,7 @@ struct Multivector<Scalar, Frame, 2> {
 
 template<typename Scalar, typename Frame>
 struct Multivector<Scalar, Frame, 3> {
+  Multivector() = default;
   explicit Multivector(Scalar const& coordinates);
   ~Multivector() = default;
 

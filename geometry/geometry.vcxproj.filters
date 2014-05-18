@@ -53,9 +53,18 @@
     <ClInclude Include="sign_body.hpp">
       <Filter>Source Files</Filter>
     </ClInclude>
+    <ClInclude Include="orthogonal_map.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="orthogonal_map_body.hpp">
+      <Filter>Source Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="sign_test.cpp">
+      <Filter>Test Files</Filter>
+    </ClCompile>
+    <ClCompile Include="orthogonal_map_test.cpp">
       <Filter>Test Files</Filter>
     </ClCompile>
   </ItemGroup>

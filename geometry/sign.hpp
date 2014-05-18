@@ -14,7 +14,7 @@ class Sign {
   bool Positive() const;
 
  private:
-  bool const negative_;
+  bool negative_;
   friend Sign operator*(Sign const& left, Sign const& right);
   template<typename T>
   friend T operator*(Sign const& left, T const& right);

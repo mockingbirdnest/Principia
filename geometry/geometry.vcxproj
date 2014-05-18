@@ -85,6 +85,8 @@
     <ClInclude Include="grassmann_body.hpp" />
     <ClInclude Include="grassmann.hpp" />
     <ClInclude Include="linear_map.hpp" />
+    <ClInclude Include="orthogonal_map_body.hpp" />
+    <ClInclude Include="orthogonal_map.hpp" />
     <ClInclude Include="permutation_body.hpp" />
     <ClInclude Include="permutation.hpp" />
     <ClInclude Include="quaternion_body.hpp" />
@@ -97,6 +99,7 @@
     <ClInclude Include="sign.hpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="orthogonal_map_test.cpp" />
     <ClCompile Include="sign_test.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
