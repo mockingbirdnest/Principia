@@ -13,9 +13,9 @@ class QuaternionTest : public testing::Test {
   typedef R3Element<quantities::Dimensionless> R3;
 
   void SetUp() override {
-  q1_ = Quaternion(1, {1, -1, -1});
-  q2_ = Quaternion(-2, {1, -3, 4});
-  q3_ = Quaternion(-8);
+    q1_ = Quaternion(1, {1, -1, -1});
+    q2_ = Quaternion(-2, {1, -3, 4});
+    q3_ = Quaternion(-8);
   }
 
   Quaternion q1_;
