@@ -87,7 +87,6 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="PermutationTests.cpp" />
-    <ClCompile Include="QuaternionTests.cpp" />
     <ClCompile Include="R3ElementTests.cpp" />
     <ClCompile Include="GrassmannTests.cpp" />
   </ItemGroup>
