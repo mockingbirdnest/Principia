@@ -1,6 +1,8 @@
-#include "geometry/sign.hpp"
 #include "glog/logging.h"
 #include "gtest/gtest.h"
+
+#include "geometry/affine_space.hpp"
+#include "quantities/"
 
 namespace principia {
 namespace geometry {
