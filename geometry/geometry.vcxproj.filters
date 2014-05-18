@@ -58,5 +58,11 @@
     <ClCompile Include="sign_test.cpp">
       <Filter>Test Files</Filter>
     </ClCompile>
+    <ClCompile Include="orthogonal_map_test.cpp">
+      <Filter>Test Files</Filter>
+    </ClCompile>
+    <ClCompile Include="rotation_test.cpp">
+      <Filter>Test Files</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

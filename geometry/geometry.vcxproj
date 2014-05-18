@@ -97,6 +97,8 @@
     <ClInclude Include="sign.hpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="orthogonal_map_test.cpp" />
+    <ClCompile Include="rotation_test.cpp" />
     <ClCompile Include="sign_test.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
