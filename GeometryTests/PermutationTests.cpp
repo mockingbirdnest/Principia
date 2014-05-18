@@ -1,5 +1,3 @@
-#include "stdafx.hpp"
-
 #include <CppUnitTest.h>
 #include <memory>
 
@@ -12,9 +10,10 @@
 namespace principia {
 namespace geometry {
 
-using namespace Microsoft::VisualStudio::CppUnitTestFramework;
-using namespace si;
-using namespace test_utilities;
+using namespace si;  // NOLINT(build/namespaces)
+using namespace test_utilities;  // NOLINT(build/namespaces)
+
+using Microsoft::VisualStudio::CppUnitTestFramework::Assert;
 
 TEST_CLASS(PermutationTests) {
  private:

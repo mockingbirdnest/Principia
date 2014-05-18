@@ -1,6 +1,7 @@
 ﻿#pragma once
 
-#include <iostream>
+// We use ostream for logging purposes.
+#include <iostream>  // NOLINT(readability/streams)
 
 #include "geometry/r3_element.hpp"
 #include "quantities/dimensionless.hpp"
@@ -179,20 +180,24 @@ bool operator!=(Multivector<Scalar, Frame, Rank> const& left,
                 Multivector<Scalar, Frame, Rank> const& right);
 
 template<typename Scalar, typename Frame, unsigned int Rank>
-void operator+=(Multivector<Scalar, Frame, Rank>& left,
-                Multivector<Scalar, Frame, Rank> const& right);
+void operator+=(
+    Multivector<Scalar, Frame, Rank>& left,  // NOLINT(runtime/references)
+    Multivector<Scalar, Frame, Rank> const& right);
 template<typename Scalar, typename Frame, unsigned int Rank>
-void operator-=(Multivector<Scalar, Frame, Rank>& left,
-                Multivector<Scalar, Frame, Rank> const& right);
+void operator-=(
+    Multivector<Scalar, Frame, Rank>& left,  // NOLINT(runtime/references)
+    Multivector<Scalar, Frame, Rank> const& right);
 template<typename Scalar, typename Frame, unsigned int Rank>
-void operator*=(Multivector<Scalar, Frame, Rank>& left,
-                quantities::Dimensionless const& right);
+void operator*=(
+    Multivector<Scalar, Frame, Rank>& left,  // NOLINT(runtime/references)
+    quantities::Dimensionless const& right);
 template<typename Scalar, typename Frame, unsigned int Rank>
-void operator/=(Multivector<Scalar, Frame, Rank>& left,
-                quantities::Dimensionless const& right);
+void operator/=(
+    Multivector<Scalar, Frame, Rank>& left,  // NOLINT(runtime/references)
+    quantities::Dimensionless const& right);
 
 template<typename Scalar, typename Frame, unsigned int Rank>
-std::ostream& operator<<(std::ostream& out, 
+std::ostream& operator<<(std::ostream& out,
                          Multivector<Scalar, Frame, Rank> const& multivector);
 
 }  // namespace geometry

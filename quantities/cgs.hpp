@@ -23,7 +23,7 @@ quantities::DynamicViscosity const Poise = Barye * Second;
 quantities::KinematicViscosity const Stokes = Centimetre.Pow<2>() / Second;
 
 quantities::Luminance   const Stilb = si::Candela * Centimetre.Pow<-2>();
-quantities::Illuminance const Phot  = Stilb * si::Steradian ;
+quantities::Illuminance const Phot  = Stilb * si::Steradian;
 
 quantities::Acceleration const Gal = Centimetre / Second.Pow<2>();
 

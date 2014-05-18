@@ -1,24 +1,17 @@
-#include "stdafx.hpp"
-
-using namespace System;
-using namespace System::Reflection;
-using namespace System::Runtime::CompilerServices;
-using namespace System::Runtime::InteropServices;
-using namespace System::Security::Permissions;
-
 //
 // General Information about an assembly is controlled through the following
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
 //
-[assembly:AssemblyTitleAttribute(L"Quantities")];
-[assembly:AssemblyDescriptionAttribute(L"")];
-[assembly:AssemblyConfigurationAttribute(L"")];
-[assembly:AssemblyCompanyAttribute(L"")];
-[assembly:AssemblyProductAttribute(L"Quantities")];
-[assembly:AssemblyCopyrightAttribute(L"Copyright (c)  2014")];
-[assembly:AssemblyTrademarkAttribute(L"")];
-[assembly:AssemblyCultureAttribute(L"")];
+[assembly:System::Reflection::AssemblyTitleAttribute(L"Quantities")];
+[assembly:System::Reflection::AssemblyDescriptionAttribute(L"")];
+[assembly:System::Reflection::AssemblyConfigurationAttribute(L"")];
+[assembly:System::Reflection::AssemblyCompanyAttribute(L"")];
+[assembly:System::Reflection::AssemblyProductAttribute(L"Quantities")];
+[assembly:System::Reflection::AssemblyCopyrightAttribute(
+    L"Copyright (c)  2014")];
+[assembly:System::Reflection::AssemblyTrademarkAttribute(L"")];
+[assembly:System::Reflection::AssemblyCultureAttribute(L"")];
 
 //
 // Version information for an assembly consists of the following four values:
@@ -28,11 +21,11 @@ using namespace System::Security::Permissions;
 //      Build Number
 //      Revision
 //
-// You can specify all the value or you can default the Revision and Build Numbers
-// by using the '*' as shown below:
+// You can specify all the value or you can default the Revision and Build
+// Numbers by using the '*' as shown below:
 
-[assembly:AssemblyVersionAttribute("1.0.*")];
+[assembly:System::Reflection::AssemblyVersionAttribute("1.0.*")];
 
-[assembly:ComVisible(false)];
+[assembly:System::Runtime::InteropServices::ComVisible(false)];
 
-[assembly:CLSCompliantAttribute(true)];
+[assembly:System::CLSCompliantAttribute(true)];

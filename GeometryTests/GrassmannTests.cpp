@@ -1,10 +1,8 @@
-﻿#include "stdafx.hpp"
-
-#include <float.h>
+﻿#include <float.h>
 
 #include <CppUnitTest.h>
 #include <functional>
-#include <iostream>
+#include <iostream>  // NOLINT(readability/streams)
 
 #include "geometry/grassmann.hpp"
 #include "geometry/r3_element.hpp"
@@ -25,14 +23,15 @@
 namespace principia {
 namespace geometry {
 
-using namespace astronomy;
-using namespace bipm;
-using namespace constants;
-using namespace Microsoft::VisualStudio::CppUnitTestFramework;
-using namespace quantities;
-using namespace si;
-using namespace test_utilities;
-using namespace uk;
+using namespace astronomy;  // NOLINT(build/namespaces)
+using namespace bipm;  // NOLINT(build/namespaces)
+using namespace constants;  // NOLINT(build/namespaces)
+using namespace quantities;  // NOLINT(build/namespaces)
+using namespace si;  // NOLINT(build/namespaces)
+using namespace test_utilities;  // NOLINT(build/namespaces)
+using namespace uk;  // NOLINT(build/namespaces)
+
+using Microsoft::VisualStudio::CppUnitTestFramework::Assert;
 
 TEST_CLASS(GrassmannTests) {
  public:
@@ -70,7 +69,7 @@ TEST_CLASS(GrassmannTests) {
     AssertTrue(Bivector<Length, World>(u_) == Bivector<Length, World>(u_));
     AssertTrue(Trivector<Length, World>(u_.x) !=
                Trivector<Length, World>(v_.x));
-    AssertTrue(Trivector<Length, World>(u_.x) == 
+    AssertTrue(Trivector<Length, World>(u_.x) ==
                Trivector<Length, World>(u_.x));
     std::cout << "vector: " << Vector<Length, World>(u_) << "\n";
     std::cout << "bivector: " << Bivector<Length, World>(u_) << "\n";
@@ -211,7 +210,6 @@ TEST_CLASS(GrassmannTests) {
     AssertEqual(a * Wedge(b, γ), Wedge(γ, b) * a,
                 21 * DBL_EPSILON);
   }
-
 };
 
 }  // namespace geometry

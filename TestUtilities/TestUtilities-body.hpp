@@ -1,6 +1,7 @@
 ﻿#pragma once
 
 #include <CppUnitTest.h>
+#include <string>
 
 #include "quantities/dimensionless.hpp"
 #include "quantities/quantities.hpp"

@@ -1,5 +1,3 @@
-#include "stdafx.hpp"
-
 #include <CppUnitTest.h>
 #include <memory>
 
@@ -7,12 +5,12 @@
 #include "TestUtilities/GeometryComparisons.hpp"
 #include "TestUtilities/TestUtilities.hpp"
 
-using namespace Microsoft::VisualStudio::CppUnitTestFramework;
+using Microsoft::VisualStudio::CppUnitTestFramework::Assert;
 
 namespace principia {
 namespace geometry {
 
-using namespace test_utilities;
+using namespace test_utilities;  // NOLINT(build/namespaces)
 
 TEST_CLASS(QuaternionTests) {
  private:
@@ -102,7 +100,8 @@ TEST_CLASS(QuaternionTests) {
     AssertEqual<quantities::Dimensionless>(10, b.real_part());
     AssertEqual<quantities::Dimensionless>({-5, 15, -20}, b.imaginary_part());
     AssertEqual<quantities::Dimensionless>(-0.5, c.real_part());
-    AssertEqual<quantities::Dimensionless>({0.25, -0.75, 1}, c.imaginary_part());
+    AssertEqual<quantities::Dimensionless>({0.25, -0.75, 1},
+                                           c.imaginary_part());
   }
 
   TEST_METHOD(Assignment) {
@@ -129,9 +128,9 @@ TEST_CLASS(QuaternionTests) {
     AssertEqual<quantities::Dimensionless>(-6, e.real_part());
     AssertEqual<quantities::Dimensionless>({3, -9, 12}, e.imaginary_part());
     AssertEqual<quantities::Dimensionless>(-0.5, f.real_part());
-    AssertEqual<quantities::Dimensionless>({0.25, -0.75, 1}, f.imaginary_part());
+    AssertEqual<quantities::Dimensionless>({0.25, -0.75, 1},
+                                           f.imaginary_part());
   }
-
 };
 
 }  // namespace geometry

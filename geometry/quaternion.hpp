@@ -23,13 +23,13 @@ class Quaternion {
   quantities::Dimensionless real_part_;
   R3Element<quantities::Dimensionless> imaginary_part_;
 
-  friend void operator+=(Quaternion& left,
+  friend void operator+=(Quaternion& left,  // NOLINT(runtime/references)
                          Quaternion const& right);
-  friend void operator-=(Quaternion& left,
+  friend void operator-=(Quaternion& left,  // NOLINT(runtime/references)
                          Quaternion const& right);
-  friend void operator*=(Quaternion& left,
+  friend void operator*=(Quaternion& left,  // NOLINT(runtime/references)
                          quantities::Dimensionless const& right);
-  friend void operator/=(Quaternion& left,
+  friend void operator/=(Quaternion& left,  // NOLINT(runtime/references)
                          quantities::Dimensionless const& right);
 };
 
@@ -48,13 +48,19 @@ Quaternion operator*(Quaternion const& left,
 Quaternion operator/(Quaternion const& left,
                      quantities::Dimensionless const& right);
 
-void operator+=(Quaternion& left, Quaternion const& right);
-void operator-=(Quaternion& left, Quaternion const& right);
-void operator*=(Quaternion& left, Quaternion const& right);
-void operator/=(Quaternion& left, Quaternion const& right);
+void operator+=(Quaternion& left,  // NOLINT(runtime/references)
+                Quaternion const& right);
+void operator-=(Quaternion& left,  // NOLINT(runtime/references)
+                Quaternion const& right);
+void operator*=(Quaternion& left,  // NOLINT(runtime/references)
+                Quaternion const& right);
+void operator/=(Quaternion& left,  // NOLINT(runtime/references)
+                Quaternion const& right);
 
-void operator*=(Quaternion& left, quantities::Dimensionless const& right);
-void operator/=(Quaternion& left, quantities::Dimensionless const& right);
+void operator*=(Quaternion& left,  // NOLINT(runtime/references)
+                quantities::Dimensionless const& right);
+void operator/=(Quaternion& left,  // NOLINT(runtime/references)
+                quantities::Dimensionless const& right);
 
 }  // namespace geometry
 }  // namespace principia

@@ -19,24 +19,24 @@ class LinearMap {
 // because templates cannot be virtual and because the return type is not
 // covariant in inheritance.
 //
-//  virtual LinearMap<ToFrame, FromFrame> Inverse() const = 0;
+//   virtual LinearMap<ToFrame, FromFrame> Inverse() const = 0;
 //
-//  template<typename Scalar>
-//  virtual Vector<Scalar, ToFrame> operator()(
-//      Vector<Scalar, FromFrame> const& vector) const = 0;
+//   template<typename Scalar>
+//   virtual Vector<Scalar, ToFrame> operator()(
+//       Vector<Scalar, FromFrame> const& vector) const = 0;
 //
-//  template<typename Scalar>
-//  virtual Bivector<Scalar, ToFrame> operator()(
-//      Bivector<Scalar, FromFrame> const& bivector) const = 0;
+//   template<typename Scalar>
+//   virtual Bivector<Scalar, ToFrame> operator()(
+//       Bivector<Scalar, FromFrame> const& bivector) const = 0;
 //
-//  template<typename Scalar>
-//  virtual Trivector<Scalar, ToFrame> operator()(
-//      Trivector<Scalar, FromFrame> const& trivector) const = 0;
+//   template<typename Scalar>
+//   virtual Trivector<Scalar, ToFrame> operator()(
+//       Trivector<Scalar, FromFrame> const& trivector) const = 0;
 //
-//protected:
-//  template<typename Scalar>
-//  virtual R3Element<Scalar> operator()(
-//      R3Element<Scalar> const& r3_element) const = 0;
+// protected:
+//   template<typename Scalar>
+//   virtual R3Element<Scalar> operator()(
+//       R3Element<Scalar> const& r3_element) const = 0;
 };
 
 }  // namespace geometry

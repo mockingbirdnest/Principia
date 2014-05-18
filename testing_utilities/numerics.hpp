@@ -36,7 +36,7 @@ geometry::R3Element<Scalar> RelativeError(
 
 std::int64_t ULPDistance(double const x, double const y);
 
-}  // testing_utilities
+}  // namespace testing_utilities
 }  // namespace principia
 
 #include "testing_utilities/numerics_body.hpp"

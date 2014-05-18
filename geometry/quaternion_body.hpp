@@ -82,33 +82,37 @@ inline Quaternion operator/(Quaternion const& left,
                     left.imaginary_part() / right);
 }
 
-inline void operator+=(Quaternion& left, Quaternion const& right) {
+inline void operator+=(Quaternion& left,  // NOLINT(runtime/references)
+                       Quaternion const& right) {
   left.real_part_ += right.real_part_;
   left.imaginary_part_ += right.imaginary_part_;
 }
 
-inline void operator-=(Quaternion& left, Quaternion const& right)  {
+inline void operator-=(Quaternion& left,  // NOLINT(runtime/references)
+                       Quaternion const& right)  {
   left.real_part_ -= right.real_part_;
   left.imaginary_part_ -= right.imaginary_part_;
 }
 
-inline void operator*=(Quaternion& left, Quaternion const& right) {
+inline void operator*=(Quaternion& left,  // NOLINT(runtime/references)
+                       Quaternion const& right) {
   // TODO(phl): Can this be optimized?
   left = left * right;
 }
 
-inline void operator/=(Quaternion& left, Quaternion const& right) {
+inline void operator/=(Quaternion& left,  // NOLINT(runtime/references)
+                       Quaternion const& right) {
   // TODO(phl): Can this be optimized?
   left = left / right;
 }
 
-inline void operator*=(Quaternion& left,
+inline void operator*=(Quaternion& left,  // NOLINT(runtime/references)
                        quantities::Dimensionless const& right) {
   left.real_part_ *= right;
   left.imaginary_part_ *= right;
 }
 
-inline void operator/=(Quaternion& left,
+inline void operator/=(Quaternion& left,  // NOLINT(runtime/references)
                        quantities::Dimensionless const& right) {
   left.real_part_ /= right;
   left.imaginary_part_ /= right;

@@ -23,5 +23,5 @@ inline ResultType Divide(LeftType const& left, RightType const& right) {
   return left / right;
 }
 
-}  // test_utilities
-}  // principia
+}  // namespace test_utilities
+}  // namespace principia
