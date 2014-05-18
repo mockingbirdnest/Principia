@@ -5,6 +5,8 @@ namespace geometry {
 
 template<typename Vector>
 class Point {
+ public:
+  explicit Point(Vector const& coordinates);
  private:
   Vector coordinates;
 };

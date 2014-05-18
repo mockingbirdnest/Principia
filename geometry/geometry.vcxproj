@@ -101,6 +101,8 @@
     <ClInclude Include="sign.hpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="affine_map_test.cpp" />
+    <ClCompile Include="affine_space_test.cpp" />
     <ClCompile Include="orthogonal_map_test.cpp" />
     <ClCompile Include="quaternion_test.cpp" />
     <ClCompile Include="rotation_test.cpp" />

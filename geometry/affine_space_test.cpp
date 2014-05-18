@@ -1,37 +1,26 @@
-#include "glog/logging.h"
-#include "gtest/gtest.h"
-
 #include "geometry/affine_space.hpp"
-#include "quantities/"
+#include "gmock/gmock.h"
+#include "quantities/quantities.hpp"
+#include "quantities/named_quantities.hpp"
+#include "quantities/si.hpp"
 
 namespace principia {
 namespace geometry {
 
-class SignTest : public testing::Test {
+using geometry::Point;
+using quantities::Temperature;
+using si::Kelvin;
+using testing::Eq;
+
+class AffineSpaceTest : public testing::Test {
  protected:
-  Sign const positive_ = Sign(1);
-  Sign const negative_ = Sign(-1);
 };
 
-TEST_F(SignTest, Integer) {
-  EXPECT_TRUE(positive_.Positive());
-  EXPECT_FALSE(positive_.Negative());
-  EXPECT_FALSE(negative_.Positive());
-  EXPECT_TRUE(negative_.Negative());
-}
+Point<Temperature> const CelsiusZero(273.15 * Kelvin);
 
-TEST_F(SignTest, SignMultiplication) {
-  EXPECT_TRUE((positive_ * positive_).Positive());
-  EXPECT_TRUE((positive_ * negative_).Negative());
-  EXPECT_TRUE((negative_ * positive_).Negative());
-  EXPECT_TRUE((negative_ * negative_).Positive());
-}
-
-TEST_F(SignTest, ScalarMultiplication) {
-  EXPECT_EQ(3, positive_ * 3);
-  EXPECT_EQ(-3, positive_ * -3);
-  EXPECT_EQ(-3, negative_ * 3);
-  EXPECT_EQ(3, negative_ * -3);
+TEST_F(AffineSpaceTest, WaterBoilingPoint) {
+  Point<Temperature> const water_boiling_point = CelsiusZero + 100 * Kelvin;
+  EXPECT_THAT(water_boiling_point - CelsiusZero, Eq(100 * Kelvin));
 }
 
 }  // namespace geometry
