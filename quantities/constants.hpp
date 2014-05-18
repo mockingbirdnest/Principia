@@ -20,7 +20,7 @@ quantities::Quotient<quantities::GravitationalParameter,
     6.67384e-11 * si::Newton * si::Metre.Pow<2>() / si::Kilogram.Pow<2>();
 quantities::Entropy const BoltzmannConstant =
     1.3806488e-23 * (si::Joule / si::Kelvin);
-quantities::Inverse<quantities::Amount> const AvogadroConstant =
+quantities::Amount::Inverse const AvogadroConstant =
     6.02214129 * (1 / si::Mole);
 
 quantities::Mass   const ElectronMass     = 9.10938291e-31 * si::Kilogram;
