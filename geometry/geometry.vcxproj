@@ -85,6 +85,8 @@
     <ClInclude Include="grassmann_body.hpp" />
     <ClInclude Include="grassmann.hpp" />
     <ClInclude Include="linear_map.hpp" />
+    <ClInclude Include="orthogonal_map_body.hpp" />
+    <ClInclude Include="orthogonal_map.hpp" />
     <ClInclude Include="permutation_body.hpp" />
     <ClInclude Include="permutation.hpp" />
     <ClInclude Include="quaternion_body.hpp" />

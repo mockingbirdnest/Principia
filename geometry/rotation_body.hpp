@@ -12,6 +12,9 @@ namespace principia {
 namespace geometry {
 
 template<typename FromFrame, typename ToFrame>
+Rotation<FromFrame, ToFrame>::Rotation() : quaternion_(Quaternion(1)) {}
+
+template<typename FromFrame, typename ToFrame>
 template<typename Scalar>
 Rotation<FromFrame, ToFrame>::Rotation(quantities::Angle const& angle,
                                        Vector<Scalar, FromFrame> const& axis) {
