@@ -1,21 +1,33 @@
 #pragma once
 
 #include "geometry/affine_space.hpp"
+#include "geometry/grassmann.hpp"
 
 namespace principia {
 namespace geometry {
 
-template<typename FromVector, typename ToVector, typename LinearMap>
+template<typename FromFrame, typename ToFrame, typename Scalar,
+         template<typename, typename> LinearMap>
 class AffineMap {
  public:
+  typedef Vector<Scalar, FromFrame> FromVector;
+  typedef Vector<Scalar, ToFrame> ToVector;
   AffineMap(Point<FromVector> from_origin,
             Point<ToVector> to_origin,
-            LinearMap linear_map);
-  Point<ToVector> operator()(Point<FromVector> point);
+            LinearMap<FromFrame, ToFrame> linear_map);
+
+  AffineMap<ToFrame, FromFrame, Scalar, LinearMap> Inverse() const;
+  Point<ToVector> operator()(Point<FromVector> point) const;
  private:
   ToVector translation_;
-  LinearMap linear_map_;
+  LinearMap<FromFrame, ToFrame> linear_map_;
 };
+
+template<typename FromFrame, typename ThroughFrame, typename ToFrame,
+         typename Scalar, template<typename, typename> LinearMap>
+AffineMap<FromFrame, ToFrame, Scalar, LinearMap> operator*(
+    AffineMap<ThroughFrame, ToFrame, Scalar, LinearMap> const& left,
+    AffineMap<FromFrame, ToFrame, Scalar, LinearMap> const& right);
 
 }  // namespace geometry
 }  // namespace principia
