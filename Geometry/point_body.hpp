@@ -17,12 +17,6 @@ Point<Vector> Point<Vector>::operator+(Vector const& translation) const {
 }
 
 template<typename Vector>
-Point<Vector> operator+(Vector const& translation,
-                        Point<Vector> const& point) {
-  return Point<Vector>(translation + point.coordinates_);
-}
-
-template<typename Vector>
 Point<Vector> Point<Vector>::operator-(Vector const& translation) const {
   return Point<Vector>(coordinates_ - translation);
 }
@@ -47,6 +41,12 @@ bool Point<Vector>::operator==(Point<Vector> const& right) const {
 template<typename Vector>
 bool Point<Vector>::operator!=(Point<Vector> const& right) const {
   return coordinates_ != right.coordinates_;
+}
+
+template<typename Vector>
+Point<Vector> operator+(Vector const& translation,
+                        Point<Vector> const& point) {
+  return Point<Vector>(translation + point.coordinates_);
 }
 
 template<typename Vector, typename Weight>

@@ -3,6 +3,9 @@
 namespace principia {
 namespace geometry {
 
+// Point<Vector> is an affine space on the vector space Vector. Vector should
+// be equipped with operators +, -, +=, -=, ==, !=, as well as Vector * Weight
+// and Vector / Weight for any Weight used in Barycentre.
 template<typename Vector>
 class Point {
  public:
@@ -13,9 +16,6 @@ class Point {
   Vector operator-(Point<Vector> const& from) const;
 
   Point operator+(Vector const& translation) const;
-  template<typename Vector>
-  friend Point<Vector> operator+(Vector const& translation,
-                                 Point<Vector> const& point);
   Point operator-(Vector const& translation) const;
 
   Point& operator+=(Vector const& translation);
@@ -23,6 +23,10 @@ class Point {
 
   bool operator==(Point const& right) const;
   bool operator!=(Point const& right) const;
+
+  template<typename Vector>
+  friend Point<Vector> operator+(Vector const& translation,
+                                 Point<Vector> const& point);
 
   template<typename Vector, typename Weight>
   friend Point<Vector> Barycentre(Point<Vector> const& left,
@@ -47,4 +51,4 @@ Point<Vector> Barycentre(Point<Vector> const& left,
 }  // namespace geometry
 }  // namespace principia
 
-#include "geometry/affine_space_body.hpp"
+#include "geometry/point_body.hpp"
