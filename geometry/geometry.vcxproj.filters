@@ -68,6 +68,9 @@
     <ClInclude Include="affine_space_body.hpp">
       <Filter>Source Files</Filter>
     </ClInclude>
+    <ClInclude Include="affine_map.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="sign_test.cpp">
