@@ -31,5 +31,8 @@
     <ClCompile Include="almost_equals_test.cpp">
       <Filter>Test Files</Filter>
     </ClCompile>
+    <ClCompile Include="numerics-test.cpp">
+      <Filter>Test Files</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>
