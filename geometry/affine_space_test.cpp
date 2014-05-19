@@ -21,6 +21,9 @@ class AffineSpaceTest : public testing::Test {
 
 Point<Temperature> const CelsiusZero(273.15 * Kelvin);
 Point<Temperature> const AbsoluteZero(0 * Kelvin);
+Point<Temperature> const WaterBoilingPoint = CelsiusZero + 100 * Kelvin;
+Point<Temperature> const GalliumMeltingPoint = 29.7646 * Kelvin + CelsiusZero;
+Point<Temperature> const NitrogenBoilingPoint = CelsiusZero - 195.795 * Kelvin;
 
 TEST_F(AffineSpaceTest, Comparisons) {
   EXPECT_TRUE(CelsiusZero == CelsiusZero);
@@ -30,23 +33,17 @@ TEST_F(AffineSpaceTest, Comparisons) {
 }
 
 TEST_F(AffineSpaceTest, PlusMinus) {
-  Point<Temperature> const gallium_boiling_point =
-      29.7646 * Kelvin + CelsiusZero;
-  Point<Temperature> const water_boiling_point = CelsiusZero + 100 * Kelvin;
-  Point<Temperature> const nitrogen_boiling_point =
-      CelsiusZero - 195.795 * Kelvin;
-  EXPECT_THAT(water_boiling_point - AbsoluteZero, Eq(373.15 * Kelvin));
-  EXPECT_THAT(gallium_boiling_point - nitrogen_boiling_point,
+  EXPECT_THAT(WaterBoilingPoint - AbsoluteZero, Eq(373.15 * Kelvin));
+  EXPECT_THAT(GalliumMeltingPoint - NitrogenBoilingPoint,
               AlmostEquals(225.5596 * Kelvin));
 }
 
 TEST_F(AffineSpaceTest, AssignmentOperators) {
-  Point<Temperature> const water_boiling_point = CelsiusZero + 100 * Kelvin;
   Point<Temperature> accumulator = CelsiusZero;
   Point<Temperature> assignment_result;
   assignment_result = (accumulator += 100 * Kelvin);
   EXPECT_THAT(assignment_result, Eq(accumulator));
-  EXPECT_THAT(accumulator, Eq(water_boiling_point));
+  EXPECT_THAT(accumulator, Eq(WaterBoilingPoint));
   assignment_result = (accumulator -= 100 * Kelvin);
   EXPECT_THAT(assignment_result, Eq(accumulator));
   EXPECT_THAT(accumulator, Eq(CelsiusZero));
