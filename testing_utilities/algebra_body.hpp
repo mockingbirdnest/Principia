@@ -81,9 +81,9 @@ template<typename Map, typename Scalar, typename U, typename V>
 void TestBilinearMap(Map const& map, U const& u1, U const& u2, V const& v1,
                      V const& v2, Scalar const& λ,
                      std::int64_t const max_ulps) {
-  EXPECT_THAT(map(u1 + u2, v1), 
+  EXPECT_THAT(map(u1 + u2, v1),
               AlmostEquals(map(u1, v1) + map(u2, v1), max_ulps));
-  EXPECT_THAT(map(u1, v1 + v2), 
+  EXPECT_THAT(map(u1, v1 + v2),
               AlmostEquals(map(u1, v1) + map(u1, v2), max_ulps));
   EXPECT_THAT(map(λ * u1, v1), AlmostEquals(map(u1, λ * v1), max_ulps));
   EXPECT_THAT(λ * map(u1, v1), AlmostEquals(map(u1, λ * v1), max_ulps));
@@ -132,8 +132,8 @@ void TestLieBracket(Map const& map, U const& u1, U const& u2, U const& v1,
                     std::int64_t const max_ulps) {
   TestAlternatingBilinearMap(map, u1, u2, v1, v2, λ, max_ulps);
   auto zero = map(u1, u1) - map(u1, u1);
-  EXPECT_THAT(map(u1, map(u2, v1)) + 
-                  map(u2, map(v1, u1)) + 
+  EXPECT_THAT(map(u1, map(u2, v1)) +
+                  map(u2, map(v1, u1)) +
                   map(v1, map(u1, u2)),
               AlmostEquals(zero, max_ulps));
 }
