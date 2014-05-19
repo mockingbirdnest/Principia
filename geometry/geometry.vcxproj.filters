@@ -73,5 +73,8 @@
     <ClCompile Include="quaternion_test.cpp">
       <Filter>Test Files</Filter>
     </ClCompile>
+    <ClCompile Include="permutation_test.cpp">
+      <Filter>Test Files</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>
