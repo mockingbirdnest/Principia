@@ -4,7 +4,7 @@ namespace principia {
 namespace geometry {
 
 template<typename Vector>
-Point<Vector>::Point(Vector const& coordinates) : coordinates_(coordinates) {};
+Point<Vector>::Point(Vector const& coordinates) : coordinates_(coordinates) {}
 
 template<typename Vector>
 Vector Point<Vector>::operator-(Point<Vector> const& from) const {
