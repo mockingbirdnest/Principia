@@ -6,25 +6,23 @@ namespace geometry {
 template<typename Vector>
 class Point {
  public:
+  Point() = default;
   explicit Point(Vector const& coordinates);
+  ~Point() = default;
 
-  template<typename Vector>
-  friend Vector operator-(Point<Vector> const& to, Point<Vector> const& from);
+  Vector operator-(Point<Vector> const& from) const;
 
+  Point operator+(Vector const& translation) const;
   template<typename Vector>
-  friend Point<Vector> operator+(Point<Vector> const& left,
-                                 Vector const& right);
-  template<typename Vector>
-  friend Point<Vector> operator+(Vector const& left,
-                                 Point<Vector> const& right);
-  template<typename Vector>
-  friend Point<Vector> operator-(Point<Vector> const& left,
-                                 Vector const& right);
+  friend Point<Vector> operator+(Vector const& translation,
+                                 Point<Vector> const& point);
+  Point operator-(Vector const& translation) const;
 
-  template<typename Vector>
-  friend bool operator==(Point<Vector> const& left, Point<Vector> const& right);
-  template<typename Vector>
-  friend bool operator!=(Point<Vector> const& left, Point<Vector> const& right);
+  Point& operator+=(Vector const& translation);
+  Point& operator-=(Vector const& translation);
+
+  bool operator==(Point const& right) const;
+  bool operator!=(Point const& right) const;
 
   template<typename Vector, typename Weight>
   friend Point<Vector> Barycentre(Point<Vector> const& left,
@@ -37,19 +35,8 @@ class Point {
 };
 
 template<typename Vector>
-Vector operator-(Point<Vector> const& to, Point<Vector> const& from);
-
-template<typename Vector>
-Point<Vector> operator+(Point<Vector> const& left, Vector const& right);
-template<typename Vector>
-Point<Vector> operator+(Vector const& left, Point<Vector> const& right);
-template<typename Vector>
-Point<Vector> operator-(Point<Vector> const& left, Vector const& right);
-
-template<typename Vector>
-bool operator==(Point<Vector> const& left, Point<Vector> const& right);
-template<typename Vector>
-bool operator!=(Point<Vector> const& left, Point<Vector> const& right);
+Point<Vector> operator+(Vector const& translation,
+                        Point<Vector> const& point);
 
 template<typename Vector, typename Weight>
 Point<Vector> Barycentre(Point<Vector> const& left,

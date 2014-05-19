@@ -7,33 +7,46 @@ template<typename Vector>
 Point<Vector>::Point(Vector const& coordinates) : coordinates_(coordinates) {};
 
 template<typename Vector>
-Vector operator-(Point<Vector> const& to, Point<Vector> const& from) {
-  return to.coordinates_ - from.coordinates_;
+Vector Point<Vector>::operator-(Point<Vector> const& from) const {
+  return coordinates_ - from.coordinates_;
 }
 
 template<typename Vector>
-Point<Vector> operator+(Point<Vector> const& left, Vector const& right) {
-  return Point<Vector>(left.coordinates_ + right);
+Point<Vector> Point<Vector>::operator+(Vector const& translation) const {
+  return Point<Vector>(coordinates_ + translation);
 }
 
 template<typename Vector>
-Point<Vector> operator+(Vector const& left, Point<Vector> const& right) {
-  return Point<Vector>(left + right.coordinates_);
+Point<Vector> operator+(Vector const& translation,
+                        Point<Vector> const& point) {
+  return Point<Vector>(translation + point.coordinates_);
 }
 
 template<typename Vector>
-Point<Vector> operator-(Point<Vector> const& left, Vector const& right) {
-  return Point<Vector>(left.coordinates_ - right);
+Point<Vector> Point<Vector>::operator-(Vector const& translation) const {
+  return Point<Vector>(coordinates_ - translation);
 }
 
 template<typename Vector>
-bool operator==(Point<Vector> const& left, Point<Vector> const& right) {
-  return left.coordinates_ == right.coordinates_;
+Point<Vector>& Point<Vector>::operator+=(Vector const& translation) {
+  coordinates_ += translation;
+  return *this;
 }
 
 template<typename Vector>
-bool operator!=(Point<Vector> const& left, Point<Vector> const& right) {
-  return left.coordinates_ != right.coordinates_;
+Point<Vector>& Point<Vector>::operator-=(Vector const& translation) {
+  coordinates_ -= translation;
+  return *this;
+}
+
+template<typename Vector>
+bool Point<Vector>::operator==(Point<Vector> const& right) const {
+  return coordinates_ == right.coordinates_;
+}
+
+template<typename Vector>
+bool Point<Vector>::operator!=(Point<Vector> const& right) const {
+  return coordinates_ != right.coordinates_;
 }
 
 template<typename Vector, typename Weight>

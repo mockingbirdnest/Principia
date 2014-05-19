@@ -29,7 +29,7 @@ TEST_F(AffineSpaceTest, Comparisons) {
   EXPECT_FALSE(CelsiusZero != CelsiusZero);
 }
 
-TEST_F(AffineSpaceTest, Operators) {
+TEST_F(AffineSpaceTest, PlusMinus) {
   Point<Temperature> const gallium_boiling_point =
       29.7646 * Kelvin + CelsiusZero;
   Point<Temperature> const water_boiling_point = CelsiusZero + 100 * Kelvin;
@@ -40,12 +40,26 @@ TEST_F(AffineSpaceTest, Operators) {
               AlmostEquals(225.5596 * Kelvin));
 }
 
+TEST_F(AffineSpaceTest, AssignmentOperators) {
+  Point<Temperature> const water_boiling_point = CelsiusZero + 100 * Kelvin;
+  Point<Temperature> accumulator = CelsiusZero;
+  Point<Temperature> assignment_result;
+  assignment_result = (accumulator += 100 * Kelvin);
+  EXPECT_THAT(assignment_result, Eq(accumulator));
+  EXPECT_THAT(accumulator, Eq(water_boiling_point));
+  assignment_result = (accumulator -= 100 * Kelvin);
+  EXPECT_THAT(assignment_result, Eq(accumulator));
+  EXPECT_THAT(accumulator, Eq(CelsiusZero));
+  EXPECT_THAT((accumulator += 100 * Kelvin) -= 100 * Kelvin, Eq(CelsiusZero));
+  EXPECT_THAT(accumulator, Eq(CelsiusZero));
+}
+
 TEST_F(AffineSpaceTest, Barycentres) {
-  Point<Temperature> const T1 = 10 * Kelvin + CelsiusZero;
-  Point<Temperature> const T2 = 40 * Kelvin + CelsiusZero;
-  EXPECT_THAT(Barycentre(T1, 2 * Litre, T2, 1 * Litre),
+  Point<Temperature> const t2 = 10 * Kelvin + CelsiusZero;
+  Point<Temperature> const t1 = 40 * Kelvin + CelsiusZero;
+  EXPECT_THAT(Barycentre(t2, 2 * Litre, t1, 1 * Litre),
               Eq(20 * Kelvin + CelsiusZero));
-  EXPECT_THAT(Barycentre(T1, 1, T2, 1),
+  EXPECT_THAT(Barycentre(t2, 1, t1, 1),
               Eq(25 * Kelvin + CelsiusZero));
 }
 
