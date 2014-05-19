@@ -35,5 +35,12 @@ TEST_F(NumericsTest, ULPs) {
   EXPECT_THAT(ULPDistance(-1, 1), 2 * ULPDistance(0, 1));
 }
 
+TEST_F(NumericsTest, DoubleRelativeError) {
+  auto const double_abs = [](double x) { return std::abs(x); };
+  EXPECT_THAT(
+      RelativeError(SmallestPositive, 2 * (SmallestPositive / 2), double_abs),
+      Eq(1));
+}
+
 }  // namespace testing_utilities
 }  // namespace principia
