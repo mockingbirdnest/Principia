@@ -3,6 +3,7 @@
 #include "quantities/quantities.hpp"
 #include "quantities/named_quantities.hpp"
 #include "quantities/si.hpp"
+#include "testing_utilities/almost_equals.hpp"
 
 namespace principia {
 namespace geometry {
@@ -12,6 +13,7 @@ using quantities::Temperature;
 using si::Litre;
 using si::Kelvin;
 using testing::Eq;
+using testing_utilities::AlmostEquals;
 
 class AffineSpaceTest : public testing::Test {
  protected:
@@ -35,7 +37,7 @@ TEST_F(AffineSpaceTest, Operators) {
       CelsiusZero - 195.795 * Kelvin;
   EXPECT_THAT(water_boiling_point - AbsoluteZero, Eq(373.15 * Kelvin));
   EXPECT_THAT(gallium_boiling_point - nitrogen_boiling_point,
-              Eq(225.5596 * Kelvin));
+              AlmostEquals(225.5596 * Kelvin));
 }
 
 TEST_F(AffineSpaceTest, Barycentres) {
