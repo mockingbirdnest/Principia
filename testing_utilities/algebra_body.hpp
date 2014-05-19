@@ -2,6 +2,7 @@
 
 #include "gtest/gtest.h"
 #include "testing_utilities/algebra.hpp"
+#include "testing_utilities/almost_equals.hpp"
 
 namespace principia {
 namespace testing_utilities {
@@ -43,58 +44,60 @@ void TestOrder(T const& low, T const& high) {
 
 template<typename T>
 void TestAdditiveGroup(T const& zero, T const& a, T const& b, T const& c,
-                       quantities::Dimensionless const& ε) {
-  ASSERT_EQ(a, +a);
-  ASSERT_EQ(a + zero, a);
-  ASSERT_EQ(zero + b, b);
-  ASSERT_EQ(a - a, zero);
-  ASSERT_EQ(-a - b, -(a + b));
-  ASSERT_EQ((a + b) + c, a + (b + c), ε);
-  ASSERT_EQ(a - b - c, a - (b + c), ε);
-  ASSERT_EQ(a + b, b + a);
+                       std::int64_t const max_ulps) {
+  EXPECT_EQ(a, +a);
+  EXPECT_EQ(a + zero, a);
+  EXPECT_EQ(zero + b, b);
+  EXPECT_EQ(a - a, zero);
+  EXPECT_EQ(-a - b, -(a + b));
+  EXPECT_THAT((a + b) + c, AlmostEquals(a + (b + c), max_ulps));
+  EXPECT_THAT(a - b - c, AlmostEquals(a - (b + c), max_ulps));
+  EXPECT_EQ(a + b, b + a);
   T accumulator = zero;
   accumulator += a;
   accumulator += b;
   accumulator -= c;
-  ASSERT_EQ(accumulator, a + b - c, ε);
+  EXPECT_THAT(accumulator, AlmostEquals(a + b - c, max_ulps));
 }
 
 template<typename T>
 void TestMultiplicativeGroup(T const& one, T const& a, T const& b, T const& c,
-                             quantities::Dimensionless const& ε) {
-  ASSERT_EQ(a * one, a);
-  ASSERT_EQ(one * b, b);
-  ASSERT_EQ(a / a, one);
-  ASSERT_EQ((1 / a) / b, 1 / (a * b), ε);
-  ASSERT_EQ((a * b) * c, a * (b * c), ε);
-  ASSERT_EQ(a / b / c, a / (b * c), ε);
-  ASSERT_EQ(a * b, b * a);
+                             std::int64_t const max_ulps) {
+  EXPECT_EQ(a * one, a);
+  EXPECT_EQ(one * b, b);
+  EXPECT_EQ(a / a, one);
+  EXPECT_THAT((1 / a) / b, AlmostEquals(1 / (a * b), max_ulps));
+  EXPECT_THAT((a * b) * c, AlmostEquals(a * (b * c), max_ulps));
+  EXPECT_THAT(a / b / c, AlmostEquals(a / (b * c), max_ulps));
+  EXPECT_EQ(a * b, b * a);
   T accumulator = one;
   accumulator *= a;
   accumulator *= b;
   accumulator /= c;
-  ASSERT_EQ(accumulator, a * b / c, ε);
+  EXPECT_THAT(accumulator, AlmostEquals(a * b / c, max_ulps));
 }
 
 template<typename Map, typename Scalar, typename U, typename V>
 void TestBilinearMap(Map const& map, U const& u1, U const& u2, V const& v1,
                      V const& v2, Scalar const& λ,
-                     quantities::Dimensionless const& ε) {
-  ASSERT_EQ(map(u1 + u2, v1), map(u1, v1) + map(u2, v1), ε);
-  ASSERT_EQ(map(u1, v1 + v2), map(u1, v1) + map(u1, v2), ε);
-  ASSERT_EQ(map(λ * u1, v1), map(u1, λ * v1), ε);
-  ASSERT_EQ(λ * map(u1, v1), map(u1, λ * v1), ε);
-  ASSERT_EQ(map(u2 * λ, v2), map(u2, v2 * λ), ε);
-  ASSERT_EQ(map(u2, v2) * λ, map(u2 * λ, v2), ε);
+                     std::int64_t const max_ulps) {
+  EXPECT_THAT(map(u1 + u2, v1), 
+              AlmostEquals(map(u1, v1) + map(u2, v1), max_ulps));
+  EXPECT_THAT(map(u1, v1 + v2), 
+              AlmostEquals(map(u1, v1) + map(u1, v2), max_ulps));
+  EXPECT_THAT(map(λ * u1, v1), AlmostEquals(map(u1, λ * v1), max_ulps));
+  EXPECT_THAT(λ * map(u1, v1), AlmostEquals(map(u1, λ * v1), max_ulps));
+  EXPECT_THAT(map(u2 * λ, v2), AlmostEquals(map(u2, v2 * λ), max_ulps));
+  EXPECT_THAT(map(u2, v2) * λ, AlmostEquals(map(u2 * λ, v2), max_ulps));
 }
 
 template<typename Map, typename Scalar, typename U>
 void TestSymmetricBilinearMap(Map const& map, U const& u1, U const& u2,
                                U const& v1, U const& v2, Scalar const& λ,
-                               quantities::Dimensionless const& ε) {
-  TestBilinearMap(map, u1, u2, v1, v2, λ, ε);
-  ASSERT_EQ(map(u1, v1), map(v1, u1), ε);
-  ASSERT_EQ(map(u2, v2), map(v2, u2), ε);
+                               std::int64_t const max_ulps) {
+  TestBilinearMap(map, u1, u2, v1, v2, λ, max_ulps);
+  EXPECT_THAT(map(u1, v1), AlmostEquals(map(v1, u1), max_ulps));
+  EXPECT_THAT(map(u2, v2), AlmostEquals(map(v2, u2), max_ulps));
 }
 
 template<typename Map, typename Scalar, typename U>
@@ -103,8 +106,8 @@ void TestSymmetricPositiveDefiniteBilinearMap(
     U const& u1,
     U const& u2, U const& v1,
     U const& v2, Scalar const& λ,
-    quantities::Dimensionless const& ε) {
-  TestSymmetricBilinearMap(map, u1, u2, v1, v2, λ, ε);
+    std::int64_t const max_ulps) {
+  TestSymmetricBilinearMap(map, u1, u2, v1, v2, λ, max_ulps);
   auto zero = map(u1, u1) - map(u1, u1);
   EXPECT_TRUE(map(u1, u1) > zero) << map(u1, u1);
   EXPECT_TRUE(map(u2, u2) > zero) << map(u2, u2);
@@ -115,45 +118,47 @@ void TestSymmetricPositiveDefiniteBilinearMap(
 template<typename Map, typename Scalar, typename U>
 void TestAlternatingBilinearMap(Map const& map, U const& u1, U const& u2,
                                 U const& v1, U const& v2, Scalar const& λ,
-                                quantities::Dimensionless const& ε) {
-  TestBilinearMap(map, u1, u2, v1, v2, λ, ε);
+                                std::int64_t const max_ulps) {
+  TestBilinearMap(map, u1, u2, v1, v2, λ, max_ulps);
   auto zero = map(u1, u1) - map(u1, u1);
-  ASSERT_EQ(map(u1, u1), zero, ε);
-  ASSERT_EQ(map(u2, u2), zero, ε);
-  ASSERT_EQ(map(v1, v2), -map(v2, v1), ε);
+  EXPECT_THAT(map(u1, u1), AlmostEquals(zero, max_ulps));
+  EXPECT_THAT(map(u2, u2), AlmostEquals(zero, max_ulps));
+  EXPECT_THAT(map(v1, v2), AlmostEquals(-map(v2, v1), max_ulps));
 }
 
 template<typename Map, typename Scalar, typename U>
 void TestLieBracket(Map const& map, U const& u1, U const& u2, U const& v1,
                     U const& v2, Scalar const& λ,
-                    quantities::Dimensionless const& ε) {
-  TestAlternatingBilinearMap(map, u1, u2, v1, v2, λ, ε);
+                    std::int64_t const max_ulps) {
+  TestAlternatingBilinearMap(map, u1, u2, v1, v2, λ, max_ulps);
   auto zero = map(u1, u1) - map(u1, u1);
-  ASSERT_EQ(map(u1, map(u2, v1)) + map(u2, map(v1, u1)) + map(v1, map(u1, u2)),
-            zero, ε);
+  EXPECT_THAT(map(u1, map(u2, v1)) + 
+                  map(u2, map(v1, u1)) + 
+                  map(v1, map(u1, u2)),
+              AlmostEquals(zero, max_ulps));
 }
 
 template<typename Vector, typename Scalar>
 void TestVectorSpace(Vector const& nullVector, Vector const& u, Vector const& v,
                      Vector const& w, Scalar const& zero, Scalar const& unit,
                      Scalar const& α, Scalar const& β,
-                     quantities::Dimensionless const& ε) {
-  TestAdditiveGroup(nullVector, u, v, w, ε);
-  ASSERT_EQ((α * β) * v, α * (β * v), ε);
-  ASSERT_EQ(unit * w, w);
-  ASSERT_EQ(u / unit, u);
-  ASSERT_EQ(zero * u, nullVector);
-  ASSERT_EQ(β * (u + v), β * u + v * β, ε);
-  ASSERT_EQ((w + v) / α, w / α + v / α, ε);
-  ASSERT_EQ((α + β) * w, α * w + β * w, ε);
-  ASSERT_EQ(v * (α + β), α * v + β * v, ε);
+                     std::int64_t const max_ulps) {
+  TestAdditiveGroup(nullVector, u, v, w, max_ulps);
+  EXPECT_THAT((α * β) * v, AlmostEquals(α * (β * v), max_ulps));
+  EXPECT_EQ(unit * w, w);
+  EXPECT_EQ(u / unit, u);
+  EXPECT_EQ(zero * u, nullVector);
+  EXPECT_THAT(β * (u + v), AlmostEquals(β * u + v * β, max_ulps));
+  EXPECT_THAT((w + v) / α, AlmostEquals(w / α + v / α, max_ulps));
+  EXPECT_THAT((α + β) * w, AlmostEquals(α * w + β * w, max_ulps));
+  EXPECT_THAT(v * (α + β), AlmostEquals(α * v + β * v, max_ulps));
   Vector vector = u;
   vector *= α;
-  ASSERT_EQ(α * u, vector);
+  EXPECT_EQ(α * u, vector);
   vector /= α;
-  ASSERT_EQ(u, vector, ε);
+  EXPECT_THAT(u, AlmostEquals(vector, max_ulps));
   vector *= zero;
-  ASSERT_EQ(vector, nullVector);
+  EXPECT_EQ(vector, nullVector);
 }
 
 template<typename Vector, typename Scalar, typename Map>
@@ -161,17 +166,17 @@ void TestInnerProductSpace(Map const& map, Vector const& nullVector,
                            Vector const& u, Vector const& v, Vector const& w,
                            Vector const& a, Scalar const& zero,
                            Scalar const& unit, Scalar const& α, Scalar const& β,
-                           quantities::Dimensionless const& ε) {
-  TestVectorSpace(nullVector, u, v, w, zero, unit, α, β, ε);
-  TestSymmetricPositiveDefiniteBilinearMap(map, u, v, w, a, α, ε);
+                           std::int64_t const max_ulps) {
+  TestVectorSpace(nullVector, u, v, w, zero, unit, α, β, max_ulps);
+  TestSymmetricPositiveDefiniteBilinearMap(map, u, v, w, a, α, max_ulps);
 }
 
 template<typename T>
 void TestField(T const& zero, T const& one, T const& a, T const& b, T const& c,
-               T const& x, T const& y, quantities::Dimensionless const& ε) {
-  TestAdditiveGroup(zero, a, b, c, ε);
-  TestMultiplicativeGroup(one, c, x, y, ε);
-  TestVectorSpace(zero, a, b, c, zero, one, x, y, ε);
+               T const& x, T const& y, std::int64_t const max_ulps) {
+  TestAdditiveGroup(zero, a, b, c, max_ulps);
+  TestMultiplicativeGroup(one, c, x, y, max_ulps);
+  TestVectorSpace(zero, a, b, c, zero, one, x, y, max_ulps);
 }
 
 }  // namespace testing_utilities

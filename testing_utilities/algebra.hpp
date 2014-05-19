@@ -1,6 +1,6 @@
-﻿  #pragma once
+﻿#pragma once
 
-#include "quantities/dimensionless.hpp"
+#include <cstdint>
 
 namespace principia {
 namespace testing_utilities {
@@ -13,21 +13,21 @@ void TestOrder(T const& low, T const& high);
 
 template<typename T>
 void TestAdditiveGroup(T const& zero, T const& a, T const& b, T const& c,
-                       quantities::Dimensionless const& ε = 0);
+                       std::int64_t const max_ulps = 0);
 
 template<typename T>
 void TestMultiplicativeGroup(T const& one, T const& a, T const& b, T const& c,
-                             quantities::Dimensionless const& ε = 0);
+                             std::int64_t const max_ulps = 0);
 
 template<typename Map, typename Scalar, typename U, typename V>
 void TestBilinearMap(Map const& map, U const& u1, U const& u2, V const& v1,
                      V const& v2, Scalar const& λ,
-                     quantities::Dimensionless const& ε = 0);
+                     std::int64_t const max_ulps = 0);
 
 template<typename Map, typename Scalar, typename U>
 void TestSymmetricBilinearMap(Map const& map, U const& u1, U const& u2,
                               U const& v1, U const& v2, Scalar const& λ,
-                              quantities::Dimensionless const& ε = 0);
+                              std::int64_t const max_ulps = 0);
 
 template<typename Map, typename Scalar, typename U>
 void TestSymmetricPositiveDefiniteBilinearMap(
@@ -37,23 +37,23 @@ void TestSymmetricPositiveDefiniteBilinearMap(
     U const& v1,
     U const& v2,
     Scalar const& λ,
-    quantities::Dimensionless const& ε = 0);
+    std::int64_t const max_ulps = 0);
 
 template<typename Map, typename Scalar, typename U>
 void TestAlternatingBilinearMap(Map const& map, U const& u1, U const& u2,
                                 U const& v1, U const& v2, Scalar const& λ,
-                                quantities::Dimensionless const& ε = 0);
+                                std::int64_t const max_ulps = 0);
 
 template<typename Map, typename Scalar, typename U>
 void TestLieBracket(Map const& map, U const& u1, U const& u2, U const& v1,
                     U const& v2, Scalar const& λ,
-                    quantities::Dimensionless const& ε = 0);
+                    std::int64_t const max_ulps = 0);
 
 template<typename Vector, typename Scalar>
 void TestVectorSpace(Vector const& nullVector, Vector const& u, Vector const& v,
                      Vector const& w, Scalar const& zero, Scalar const& unit,
                      Scalar const& α, Scalar const& β,
-                     quantities::Dimensionless const& ε = 0);
+                     std::int64_t const max_ulps = 0);
 
 template<typename Vector, typename Scalar, typename Map>
 void TestInnerProductSpace(Map const& map, Vector const& nullVector,
@@ -61,12 +61,12 @@ void TestInnerProductSpace(Map const& map, Vector const& nullVector,
                            Vector const& a, Scalar const& zero,
                            Scalar const& unit, Scalar const& α,
                            Scalar const& β,
-                           quantities::Dimensionless const& ε = 0);
+                           std::int64_t const max_ulps = 0);
 
 template<typename T>
 void TestField(T const& zero, T const& one, T const& a, T const& b,
                T const& c, T const& x, T const& y,
-               quantities::Dimensionless const& ε = 0);
+               std::int64_t const max_ulps = 0);
 
 }  // namespace testing_utilities
 }  // namespace principia

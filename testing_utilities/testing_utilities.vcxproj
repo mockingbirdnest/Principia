@@ -16,12 +16,12 @@
     <ClInclude Include="almost_equals.hpp" />
     <ClInclude Include="almost_equals_body.hpp" />
     <ClInclude Include="explicit_operators.hpp" />
+    <ClInclude Include="explicit_operators_body.hpp" />
     <ClInclude Include="numerics.hpp" />
     <ClInclude Include="numerics_body.hpp" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="almost_equals_test.cpp" />
-    <ClCompile Include="explicit_operators_body.cpp" />
     <ClCompile Include="numerics-test.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">

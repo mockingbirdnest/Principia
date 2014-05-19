@@ -21,4 +21,4 @@ ResultType Divide(LeftType const& left, RightType const& right);
 }  // namespace testing_utilities
 }  // namespace principia
 
-#include "TestUtilities/ExplicitOperators-body.hpp"
+#include "testing_utilities/explicit_operators_body.hpp"
