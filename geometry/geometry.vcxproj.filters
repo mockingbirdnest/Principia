@@ -59,9 +59,6 @@
     <ClInclude Include="orthogonal_map_body.hpp">
       <Filter>Source Files</Filter>
     </ClInclude>
-    <ClInclude Include="affine_map.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="affine_space.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -80,9 +77,6 @@
       <Filter>Test Files</Filter>
     </ClCompile>
     <ClCompile Include="quaternion_test.cpp">
-      <Filter>Test Files</Filter>
-    </ClCompile>
-    <ClCompile Include="affine_map_test.cpp">
       <Filter>Test Files</Filter>
     </ClCompile>
     <ClCompile Include="affine_space_test.cpp">
