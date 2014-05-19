@@ -85,10 +85,10 @@
     <ClCompile Include="quaternion_test.cpp">
       <Filter>Test Files</Filter>
     </ClCompile>
-    <ClCompile Include="affine_map_test.cpp">
+    <ClCompile Include="affine_space_test.cpp">
       <Filter>Test Files</Filter>
     </ClCompile>
-    <ClCompile Include="affine_space_test.cpp">
+    <ClCompile Include="affine_map_test.cpp">
       <Filter>Test Files</Filter>
     </ClCompile>
   </ItemGroup>
