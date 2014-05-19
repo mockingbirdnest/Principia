@@ -1,4 +1,4 @@
-#include "geometry/affine_space.hpp"
+#include "geometry/point.hpp"
 #include "gmock/gmock.h"
 #include "quantities/quantities.hpp"
 #include "quantities/named_quantities.hpp"
@@ -52,8 +52,8 @@ TEST_F(AffineSpaceTest, AssignmentOperators) {
 }
 
 TEST_F(AffineSpaceTest, Barycentres) {
-  Point<Temperature> const t2 = 10 * Kelvin + CelsiusZero;
   Point<Temperature> const t1 = 40 * Kelvin + CelsiusZero;
+  Point<Temperature> const t2 = 10 * Kelvin + CelsiusZero;
   EXPECT_THAT(Barycentre(t2, 2 * Litre, t1, 1 * Litre),
               Eq(20 * Kelvin + CelsiusZero));
   EXPECT_THAT(Barycentre(t2, 1, t1, 1),
