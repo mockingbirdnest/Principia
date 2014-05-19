@@ -87,7 +87,7 @@ TEST_CLASS(GrassmannTests) {
 
   TEST_METHOD(MixedScalarMultiplication) {
      TestBilinearMap(
-        Times<Vector<Speed, World>, Inverse<Time>, Vector<Length, World>>,
+        Times<Vector<Speed, World>, Time::Inverse, Vector<Length, World>>,
         1 / Second,
         1 / JulianYear,
         Vector<Length, World>(u_),
@@ -95,14 +95,14 @@ TEST_CLASS(GrassmannTests) {
         Dimensionless(42),
         2 * DBL_EPSILON);
      TestBilinearMap(
-        Times<Vector<Speed, World>, Vector<Length, World>, Inverse<Time>>,
+        Times<Vector<Speed, World>, Vector<Length, World>, Time::Inverse>,
         Vector<Length, World>(w_),
         Vector<Length, World>(a_),
         -1 / Day,
         SpeedOfLight / Parsec,
         Dimensionless(-π),
         DBL_EPSILON);
-     Inverse<Time> t = -3 / Second;
+     Time::Inverse t = -3 / Second;
      AssertEqual(t * Vector<Length, World>(u_), Vector<Length, World>(u_) * t);
      AssertEqual((Vector<Length, World>(v_) * t) / t,
                  Vector<Length, World>(v_));

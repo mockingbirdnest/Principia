@@ -7,6 +7,8 @@ namespace quantities {
 // A double by any other name...
 class Dimensionless {
  public:
+  typedef Dimensionless Inverse;
+
   Dimensionless();
   // No explicit here: we want implicit conversion from double.
   Dimensionless(double const value);  // NOLINT(runtime/explicit)
