@@ -32,6 +32,9 @@
     <ClInclude Include="algebra_body.hpp">
       <Filter>Source Files</Filter>
     </ClInclude>
+    <ClInclude Include="explicit_operators.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="almost_equals_test.cpp">
@@ -39,6 +42,9 @@
     </ClCompile>
     <ClCompile Include="numerics-test.cpp">
       <Filter>Test Files</Filter>
+    </ClCompile>
+    <ClCompile Include="explicit_operators_body.cpp">
+      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>
