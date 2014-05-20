@@ -91,5 +91,8 @@
     <ClCompile Include="grassmann_test.cpp">
       <Filter>Test Files</Filter>
     </ClCompile>
+    <ClCompile Include="r3_element_test.cpp">
+      <Filter>Test Files</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>
