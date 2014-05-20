@@ -90,26 +90,26 @@ TEST_F(GrassmannTest, SpecialOrthogonalLieAlgebra) {
       Bivector<Dimensionless, World>(v_ / Metre),
       Bivector<Dimensionless, World>(w_ / Rod),
       Bivector<Dimensionless, World>(a_ / Furlong),
-      Dimensionless(0.42), 1000 / DBL_EPSILON);
+      Dimensionless(0.42), static_cast<int64_t>(1000 / DBL_EPSILON));
 }
 
 TEST_F(GrassmannTest, MixedScalarMultiplication) {
   testing_utilities::TestBilinearMap(
-    Times<Vector<Speed, World>, Time::Inverse, Vector<Length, World>>,
-    1 / Second,
-    1 / JulianYear,
-    Vector<Length, World>(u_),
-    Vector<Length, World>(v_),
-    Dimensionless(42),
-    2);
+      Times<Vector<Speed, World>, Time::Inverse, Vector<Length, World>>,
+      1 / Second,
+      1 / JulianYear,
+      Vector<Length, World>(u_),
+      Vector<Length, World>(v_),
+      Dimensionless(42),
+      2);
   testing_utilities::TestBilinearMap(
-    Times<Vector<Speed, World>, Vector<Length, World>, Time::Inverse>,
-    Vector<Length, World>(w_),
-    Vector<Length, World>(a_),
-    -1 / Day,
-    SpeedOfLight / Parsec,
-    Dimensionless(-π),
-    1);
+      Times<Vector<Speed, World>, Vector<Length, World>, Time::Inverse>,
+      Vector<Length, World>(w_),
+      Vector<Length, World>(a_),
+      -1 / Day,
+      SpeedOfLight / Parsec,
+      Dimensionless(-π),
+      1);
   Time::Inverse t = -3 / Second;
   EXPECT_EQ((t * Vector<Length, World>(u_)), (Vector<Length, World>(u_) * t));
   EXPECT_EQ((Vector<Length, World>(v_) * t) / t, (Vector<Length, World>(v_)));
@@ -202,6 +202,10 @@ TEST_F(GrassmannTest, GrassmannAlgebra) {
       Wedge(Bivector<Length, World>(u_), Vector<Speed, World>(v_ / Second)));
 }
 
+// The Greek letters cause a warning when stringified by the macros, because
+// apparently Visual Studio doesn't encode strings in UTF-8 by default.
+#pragma warning(disable: 4566)
+
 TEST_F(GrassmannTest, Actions) {
   Vector<Length, World> const a(u_);
   Vector<Length, World> const b(v_);
@@ -209,13 +213,15 @@ TEST_F(GrassmannTest, Actions) {
   Bivector<Length, World> const γ(w_);
   // A strongly typed version of the Lagrange formula
   // a × (b × c) = b (a · c) - c (a · b).
-  EXPECT_THAT(a * Commutator(β, γ), 
+  EXPECT_THAT(a * Commutator(β, γ),
               AlmostEquals(β * Wedge(a, γ) - γ * Wedge(a, β), 26));
-  EXPECT_THAT(Commutator(β, γ) * a, 
+  EXPECT_THAT(Commutator(β, γ) * a,
               AlmostEquals(Wedge(a, β) * γ - β * Wedge(a, γ), 26));
 
   EXPECT_THAT(a * Wedge(b, γ), AlmostEquals(Wedge(γ, b) * a, 21));
 }
+
+#pragma warning(default: 4566)
 
 }  // namespace geometry
 }  // namespace principia
