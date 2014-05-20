@@ -4,6 +4,7 @@
 #include "geometry/linear_map.hpp"
 #include "geometry/r3_element.hpp"
 #include "geometry/sign.hpp"
+#include "gtest/gtest_prod.h"
 
 namespace principia {
 namespace geometry {
@@ -61,7 +62,16 @@ class Permutation : public LinearMap<FromFrame, ToFrame> {
   R3Element<Scalar> operator()(R3Element<Scalar> const& r3_element) const;
 
   CoordinatePermutation const coordinate_permutation_;
-  friend class PermutationTests;
+
+  // As much as I dislike FRIEND_TEST(), it seems like the most convenient way
+  // to access the above operator.
+  FRIEND_TEST(PermutationTest, Identity);
+  FRIEND_TEST(PermutationTest, XYZ);
+  FRIEND_TEST(PermutationTest, YZX);
+  FRIEND_TEST(PermutationTest, ZXY);
+  FRIEND_TEST(PermutationTest, XZY);
+  FRIEND_TEST(PermutationTest, ZYX);
+  FRIEND_TEST(PermutationTest, YXZ);
 };
 
 }  // namespace geometry
