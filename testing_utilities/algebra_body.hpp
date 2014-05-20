@@ -77,6 +77,8 @@ void TestMultiplicativeGroup(T const& one, T const& a, T const& b, T const& c,
   EXPECT_THAT(accumulator, AlmostEquals(a * b / c, max_ulps));
 }
 
+#pragma warning(disable: 4566)
+
 template<typename Map, typename Scalar, typename U, typename V>
 void TestBilinearMap(Map const& map, U const& u1, U const& u2, V const& v1,
                      V const& v2, Scalar const& λ,
@@ -170,6 +172,8 @@ void TestInnerProductSpace(Map const& map, Vector const& nullVector,
   TestVectorSpace(nullVector, u, v, w, zero, unit, α, β, max_ulps);
   TestSymmetricPositiveDefiniteBilinearMap(map, u, v, w, a, α, max_ulps);
 }
+
+#pragma warning(default: 4566)
 
 template<typename T>
 void TestField(T const& zero, T const& one, T const& a, T const& b, T const& c,

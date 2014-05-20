@@ -11,8 +11,8 @@
 
 using principia::astronomy::JulianYear;
 using principia::astronomy::Parsec;
-using principia::constants::SpeedOfLight;
 using principia::bipm::Knot;
+using principia::constants::SpeedOfLight;
 using principia::quantities::Dimensionless;
 using principia::quantities::Length;
 using principia::quantities::Speed;
@@ -23,27 +23,28 @@ using principia::si::Kilo;
 using principia::si::Metre;
 using principia::si::Minute;
 using principia::si::Second;
+using principia::testing_utilities::AlmostEquals;
+using principia::testing_utilities::Times;
 using principia::uk::Furlong;
 using principia::uk::Mile;
 using principia::uk::Rod;
-using principia::testing_utilities::AlmostEquals;
-using principia::testing_utilities::Times;
 
 namespace principia {
 namespace geometry {
 
 class R3ElementTest : public testing::Test {
  protected:
-  R3Element<Speed> const null_velocity_ =
-      R3Element<Speed>(0 * Knot, 0 * Knot, 0 * Knot);
-  R3Element<Speed> const u_ =
-      R3Element<Speed>(3 * Knot, -42 * Parsec / JulianYear, 0 * Knot);
-  R3Element<Speed> const v_ =
-      R3Element<Speed>(-π * SpeedOfLight, -e * Kilo(Metre) / Hour, -1 * Knot);
-  R3Element<Speed> const w_ =
-      R3Element<Speed>(2 * Mile / Hour, 2 * Furlong / Day, 2 * Rod / Minute);
-  R3Element<Speed> const a_ =
-      R3Element<Speed>(88 * Mile / Hour, 300 * Metre / Second, 46 * Knot);
+  R3Element<Speed> const null_velocity_ = {0 * Knot, 0 * Knot, 0 * Knot};
+  R3Element<Speed> const u_ = {3 * Knot, -42 * Parsec / JulianYear, 0 * Knot};
+  R3Element<Speed> const v_ = {-π * SpeedOfLight,
+                               -e * Kilo(Metre) / Hour,
+                               -1 * Knot};
+  R3Element<Speed> const w_ = {2 * Mile / Hour,
+                               2 * Furlong / Day,
+                               2 * Rod / Minute};
+  R3Element<Speed> const a_ = {88 * Mile / Hour,
+                               300 * Metre / Second,
+                               46 * Knot};
 };
 
 TEST_F(R3ElementTest, Dumb3Vector) {
