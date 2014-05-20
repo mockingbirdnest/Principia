@@ -77,6 +77,8 @@ void TestMultiplicativeGroup(T const& one, T const& a, T const& b, T const& c,
   EXPECT_THAT(accumulator, AlmostEquals(a * b / c, max_ulps));
 }
 
+// The Greek letters cause a warning when stringified by the macros, because
+// apparently Visual Studio doesn't encode strings in UTF-8 by default.
 #pragma warning(disable: 4566)
 
 template<typename Map, typename Scalar, typename U, typename V>
