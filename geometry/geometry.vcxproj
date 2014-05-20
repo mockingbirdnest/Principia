@@ -82,6 +82,9 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="affine_map.hpp" />
+    <ClInclude Include="point.hpp" />
+    <ClInclude Include="point_body.hpp" />
     <ClInclude Include="grassmann_body.hpp" />
     <ClInclude Include="grassmann.hpp" />
     <ClInclude Include="linear_map.hpp" />
@@ -99,7 +102,9 @@
     <ClInclude Include="sign.hpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="point_test.cpp" />
     <ClCompile Include="orthogonal_map_test.cpp" />
+    <ClCompile Include="permutation_test.cpp" />
     <ClCompile Include="quaternion_test.cpp" />
     <ClCompile Include="rotation_test.cpp" />
     <ClCompile Include="sign_test.cpp" />

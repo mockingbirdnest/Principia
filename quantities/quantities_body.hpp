@@ -213,9 +213,9 @@ inline Quantity<D> operator/(Quantity<D> const& left,
   return Quantity<D>(left.magnitude_ / right);
 }
 template<typename D>
-inline Inverse<Quantity<D>> operator/(Dimensionless const& left,
-                                      Quantity<D> const& right) {
-  return Inverse<Quantity<D>>(left / right.magnitude_);
+inline typename Quantity<D>::Inverse operator/(Dimensionless const& left,
+                                               Quantity<D> const& right) {
+  return typename Quantity<D>::Inverse(left / right.magnitude_);
 }
 #pragma endregion
 #pragma region Assigment operators

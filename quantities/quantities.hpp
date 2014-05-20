@@ -14,7 +14,9 @@ template<int LengthExponent, int MassExponent, int TimeExponent,
          int AngleExponent, int SolidAngleExponent>
 struct Dimensions;
 template<typename D> class Quantity;
+
 typedef Dimensions<0, 0, 0, 0, 0, 0, 0, 0, 0, 0> NoDimensions;
+
 #pragma region Base quantities
 typedef Quantity<Dimensions<1, 0, 0, 0, 0, 0, 0, 0, 0, 0>> Length;
 typedef Quantity<Dimensions<0, 1, 0, 0, 0, 0, 0, 0, 0, 0>> Mass;
@@ -30,6 +32,7 @@ typedef Quantity<Dimensions<0, 0, 0, 0, 0, 0, 0, 1, 0, 0>> Winding;
 typedef Quantity<Dimensions<0, 0, 0, 0, 0, 0, 0, 0, 1, 0>> Angle;
 typedef Quantity<Dimensions<0, 0, 0, 0, 0, 0, 0, 0, 0, 1>> SolidAngle;
 #pragma endregion
+
 namespace type_generators {
 template<typename Left, typename Right> struct ProductGenerator;
 template<typename Left, typename Right> struct QuotientGenerator;
@@ -39,19 +42,18 @@ struct PowerGenerator;
 template<bool> struct Condition;
 template<typename Q, typename = Condition<true>> struct SquareRootGenerator;
 }  // namespace type_generators
+
 template<typename Left, typename Right>
-using Quotient = typename type_generators::QuotientGenerator<Left,
-                                                             Right>::ResultType;
+using Quotient =
+    typename type_generators::QuotientGenerator<Left, Right>::ResultType;
 template<typename Left, typename Right>
-using Product = typename type_generators::ProductGenerator<Left,
-                                                           Right>::ResultType;
+using Product =
+    typename type_generators::ProductGenerator<Left, Right>::ResultType;
 template<typename Left, int Exponent>
 using Exponentiation =
     typename type_generators::PowerGenerator<Left, Exponent>::ResultType;
 template<typename Q>
 using SquareRoot = typename type_generators::SquareRootGenerator<Q>::ResultType;
-template<typename Right>
-using Inverse = Quotient<Dimensionless, Right>;
 
 namespace factories {
 Length            Metres(Dimensionless const&);
@@ -77,6 +79,7 @@ template<typename D>
 class Quantity {
  public:
   typedef typename D Dimensions;
+  typedef Quotient<Dimensionless, Quantity> Inverse;
 
   Quantity();
   ~Quantity() = default;
@@ -128,8 +131,8 @@ class Quantity {
   template<typename D>
   friend Quantity<D> operator/(Quantity<D> const&, Dimensionless const&);
   template<typename D>
-  friend Inverse<Quantity<D>> operator/(Dimensionless const&,
-                                        Quantity<D> const&);
+  friend typename Quantity<D>::Inverse operator/(Dimensionless const&,
+                                                 Quantity<D> const&);
   template<typename D>
   friend bool operator>(Quantity<D> const&, Quantity<D> const&);
   template<typename D>
