@@ -43,7 +43,7 @@
     <ClCompile Include="almost_equals_test.cpp">
       <Filter>Test Files</Filter>
     </ClCompile>
-    <ClCompile Include="numerics-test.cpp">
+    <ClCompile Include="numerics_test.cpp">
       <Filter>Test Files</Filter>
     </ClCompile>
   </ItemGroup>
