@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2013
-VisualStudioVersion = 12.0.30110.0
+VisualStudioVersion = 12.0.21005.1
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Integrators", "Integrators\Integrators.csproj", "{5B53B487-092C-43A0-97CB-765F89C8B7C8}"
 EndProject
@@ -22,6 +22,7 @@ EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "CTSGeometryTests", "CTSGeometryTests\CTSGeometryTests.vcxproj", "{9757CB21-B840-49A6-B057-9F322E543DD6}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "GeometryTests", "GeometryTests\GeometryTests.vcxproj", "{FF228EA8-6995-4058-BF52-3E49C317B098}"
+EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "quantities", "Quantities\Quantities.vcxproj", "{273987F9-5E73-43E6-868E-E9D3C137F01A}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "TestUtilities", "TestUtilities\TestUtilities.vcxproj", "{B006F3D8-85A7-4866-A1EE-4E98205576E9}"
@@ -43,8 +44,6 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "C Sharp", "C Sharp", "{E883652F-CB37-4F7A-8653-4BA49A65BAE4}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "testing_utilities", "testing_utilities\testing_utilities.vcxproj", "{2E28828E-8364-4962-A9FF-C20A72EB884C}"
-EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "quantities", "quantities\quantities.vcxproj", "{15D88219-D392-4041-B910-5595B9E85AE9}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -195,16 +194,6 @@ Global
 		{2E28828E-8364-4962-A9FF-C20A72EB884C}.Release|Mixed Platforms.Build.0 = Release|Win32
 		{2E28828E-8364-4962-A9FF-C20A72EB884C}.Release|Win32.ActiveCfg = Release|Win32
 		{2E28828E-8364-4962-A9FF-C20A72EB884C}.Release|Win32.Build.0 = Release|Win32
-		{15D88219-D392-4041-B910-5595B9E85AE9}.Debug|Any CPU.ActiveCfg = Debug|Win32
-		{15D88219-D392-4041-B910-5595B9E85AE9}.Debug|Mixed Platforms.ActiveCfg = Debug|Win32
-		{15D88219-D392-4041-B910-5595B9E85AE9}.Debug|Mixed Platforms.Build.0 = Debug|Win32
-		{15D88219-D392-4041-B910-5595B9E85AE9}.Debug|Win32.ActiveCfg = Debug|Win32
-		{15D88219-D392-4041-B910-5595B9E85AE9}.Debug|Win32.Build.0 = Debug|Win32
-		{15D88219-D392-4041-B910-5595B9E85AE9}.Release|Any CPU.ActiveCfg = Release|Win32
-		{15D88219-D392-4041-B910-5595B9E85AE9}.Release|Mixed Platforms.ActiveCfg = Release|Win32
-		{15D88219-D392-4041-B910-5595B9E85AE9}.Release|Mixed Platforms.Build.0 = Release|Win32
-		{15D88219-D392-4041-B910-5595B9E85AE9}.Release|Win32.ActiveCfg = Release|Win32
-		{15D88219-D392-4041-B910-5595B9E85AE9}.Release|Win32.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
