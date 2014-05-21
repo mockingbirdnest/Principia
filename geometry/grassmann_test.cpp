@@ -90,7 +90,7 @@ TEST_F(GrassmannTest, SpecialOrthogonalLieAlgebra) {
       Bivector<Dimensionless, World>(v_ / Metre),
       Bivector<Dimensionless, World>(w_ / Rod),
       Bivector<Dimensionless, World>(a_ / Furlong),
-      Dimensionless(0.42), static_cast<int64_t>(1000 / DBL_EPSILON));
+      Dimensionless(0.42), 1);
 }
 
 TEST_F(GrassmannTest, MixedScalarMultiplication) {
