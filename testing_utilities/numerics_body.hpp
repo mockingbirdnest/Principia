@@ -24,7 +24,7 @@ inline quantities::Dimensionless RelativeError(
 }
 
 template<typename Dimensions>
-quantities::Quantity<Dimensions> RelativeError(
+quantities::Dimensionless RelativeError(
     quantities::Quantity<Dimensions> const& expected,
     quantities::Quantity<Dimensions> const& actual) {
   return RelativeError(expected, actual, quantities::Abs<Dimensions>);
