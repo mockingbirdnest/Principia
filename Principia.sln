@@ -43,6 +43,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "C Sharp", "C Sharp", "{E883
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "testing_utilities", "testing_utilities\testing_utilities.vcxproj", "{2E28828E-8364-4962-A9FF-C20A72EB884C}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "quantities", "quantities\quantities.vcxproj", "{15D88219-D392-4041-B910-5595B9E85AE9}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -182,6 +184,16 @@ Global
 		{2E28828E-8364-4962-A9FF-C20A72EB884C}.Release|Mixed Platforms.Build.0 = Release|Win32
 		{2E28828E-8364-4962-A9FF-C20A72EB884C}.Release|Win32.ActiveCfg = Release|Win32
 		{2E28828E-8364-4962-A9FF-C20A72EB884C}.Release|Win32.Build.0 = Release|Win32
+		{15D88219-D392-4041-B910-5595B9E85AE9}.Debug|Any CPU.ActiveCfg = Debug|Win32
+		{15D88219-D392-4041-B910-5595B9E85AE9}.Debug|Mixed Platforms.ActiveCfg = Debug|Win32
+		{15D88219-D392-4041-B910-5595B9E85AE9}.Debug|Mixed Platforms.Build.0 = Debug|Win32
+		{15D88219-D392-4041-B910-5595B9E85AE9}.Debug|Win32.ActiveCfg = Debug|Win32
+		{15D88219-D392-4041-B910-5595B9E85AE9}.Debug|Win32.Build.0 = Debug|Win32
+		{15D88219-D392-4041-B910-5595B9E85AE9}.Release|Any CPU.ActiveCfg = Release|Win32
+		{15D88219-D392-4041-B910-5595B9E85AE9}.Release|Mixed Platforms.ActiveCfg = Release|Win32
+		{15D88219-D392-4041-B910-5595B9E85AE9}.Release|Mixed Platforms.Build.0 = Release|Win32
+		{15D88219-D392-4041-B910-5595B9E85AE9}.Release|Win32.ActiveCfg = Release|Win32
+		{15D88219-D392-4041-B910-5595B9E85AE9}.Release|Win32.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
