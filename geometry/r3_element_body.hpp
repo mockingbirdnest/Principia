@@ -2,6 +2,8 @@
 
 #include <assert.h>
 
+#include "quantities/elementary_functions.hpp"
+
 namespace principia {
 namespace geometry {
 
@@ -44,7 +46,7 @@ inline Scalar const& R3Element<Scalar>::operator[](int const index) const {
 
 template<typename Scalar>
 inline Scalar R3Element<Scalar>::Norm() const {
-  return Sqrt(Dot(*this, *this));
+  return quantities::Sqrt(Dot(*this, *this));
 }
 
 template<typename Scalar>
