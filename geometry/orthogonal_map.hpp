@@ -3,13 +3,11 @@
 #include "geometry/grassmann.hpp"
 #include "geometry/linear_map.hpp"
 #include "geometry/r3_element.hpp"
+#include "geometry/rotation.hpp"
 #include "geometry/sign.hpp"
 
 namespace principia {
 namespace geometry {
-
-template<typename FromFrame, typename ToFrame>
-class Rotation;
 
 // The orthogonal map is modeled as a rotoinversion.
 template<typename FromFrame, typename ToFrame>

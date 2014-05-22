@@ -61,7 +61,7 @@ Trivector<Scalar, ToFrame> Permutation<FromFrame, ToFrame>::operator()(
 }
 
 template<typename FromFrame, typename ToFrame>
-OrthogonalMap<FromFrame, ToFrame> 
+OrthogonalMap<FromFrame, ToFrame>
 Permutation<FromFrame, ToFrame>::Forget() const {
   static const quantities::Dimensionless sqrt_half = quantities::Sqrt(0.5);
   static std::map<CoordinatePermutation, Quaternion> quaternion = {
