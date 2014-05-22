@@ -4,11 +4,13 @@
 #include "glog/logging.h"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
+#include "quantities/si.hpp"
 #include "testing_utilities/numerics.hpp"
 
 namespace principia {
 namespace testing_utilities {
 
+using si::Metre;
 using testing::Eq;
 using testing::Ne;
 
@@ -33,6 +35,19 @@ TEST_F(NumericsTest, ULPs) {
   EXPECT_THAT(ULPDistance(-0.0, -SmallestPositive), Eq(1));
   EXPECT_THAT(ULPDistance(-1, 1), Ne(0));
   EXPECT_THAT(ULPDistance(-1, 1), 2 * ULPDistance(0, 1));
+}
+
+TEST_F(NumericsTest, AbsoluteError) {
+  auto const double_abs = [](double const x) { return std::abs(x); };
+  EXPECT_THAT(AbsoluteError(1., 1., double_abs), Eq(0.));
+  EXPECT_THAT(AbsoluteError(1., 2., double_abs), Eq(1.));
+  EXPECT_THAT(AbsoluteError(1., 0., double_abs), Eq(1.));
+  EXPECT_THAT(AbsoluteError(1, 1), Eq(0));
+  EXPECT_THAT(AbsoluteError(1, 2), Eq(1));
+  EXPECT_THAT(AbsoluteError(1, 0), Eq(1));
+  EXPECT_THAT(AbsoluteError(1 * Metre, 1 * Metre), Eq(0 * Metre));
+  EXPECT_THAT(AbsoluteError(1 * Metre, 2 * Metre), Eq(1 * Metre));
+  EXPECT_THAT(AbsoluteError(1 * Metre, 0 * Metre), Eq(1 * Metre));
 }
 
 }  // namespace testing_utilities
