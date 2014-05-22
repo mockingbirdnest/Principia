@@ -9,6 +9,9 @@
 namespace principia {
 namespace geometry {
 
+template<typename FromFrame, typename ToFrame>
+class OrthogonalMap;
+
 // A permutation of the coordinates. Obviously not coordinate-free, but
 // practical.  There are no precision losses when composing or applying
 // permutations.

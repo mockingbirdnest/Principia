@@ -1,11 +1,14 @@
 #include "geometry/permutation.hpp"
+#include "geometry/orthogonal_map.hpp"
 #include "geometry/r3_element.hpp"
 #include "glog/logging.h"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "quantities/si.hpp"
+#include "testing_utilities/almost_equals.hpp"
 
 using principia::si::Metre;
+using principia::testing_utilities::AlmostEquals;
 using testing::Eq;
 
 namespace principia {
@@ -99,6 +102,28 @@ TEST_F(PermutationTest, AppliedToTrivector) {
               Eq(4.0 * Metre));
   EXPECT_THAT(Perm(Perm::XZY)(trivector_).coordinates(),
               Eq(-4.0 * Metre));
+}
+
+TEST_F(PermutationTest, Inverse) {
+  EXPECT_THAT(Perm(Perm::YZX).Inverse()(vector_).coordinates(),
+              Eq<R3>({3.0 * Metre, 1.0 * Metre, 2.0 * Metre}));
+  EXPECT_THAT(Perm(Perm::YXZ).Inverse()(vector_).coordinates(),
+              Eq<R3>({2.0 * Metre, 1.0 * Metre, 3.0 * Metre}));
+}
+
+TEST_F(PermutationTest, Forget) {
+  EXPECT_THAT(Perm(Perm::XYZ).Forget()(vector_).coordinates(),
+              Eq<R3>({1.0 * Metre, 2.0 * Metre, 3.0 * Metre}));
+  EXPECT_THAT(Perm(Perm::YZX).Forget()(vector_).coordinates(),
+              Eq<R3>({2.0 * Metre, 3.0 * Metre, 1.0 * Metre}));
+  EXPECT_THAT(Perm(Perm::ZXY).Forget()(vector_).coordinates(),
+              Eq<R3>({3.0 * Metre, 1.0 * Metre, 2.0 * Metre}));
+  EXPECT_THAT(Perm(Perm::XZY).Forget()(vector_).coordinates(),
+              AlmostEquals<R3>({1.0 * Metre, 3.0 * Metre, 2.0 * Metre}, 2));
+  EXPECT_THAT(Perm(Perm::ZYX).Forget()(vector_).coordinates(),
+              AlmostEquals<R3>({3.0 * Metre, 2.0 * Metre, 1.0 * Metre}, 4));
+  EXPECT_THAT(Perm(Perm::YXZ).Forget()(vector_).coordinates(),
+              AlmostEquals<R3>({2.0 * Metre, 1.0 * Metre, 3.0 * Metre}, 2));
 }
 
 }  // namespace geometry
