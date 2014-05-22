@@ -3,6 +3,8 @@
 #include <cmath>
 #include <cstdint>
 
+#include <functional>
+
 namespace principia {
 namespace testing_utilities {
 
@@ -11,9 +13,9 @@ double DoubleValue(Scalar const& scalar) {
   return (scalar / Scalar::SIUnit()).value();
 }
 
-template<typename T, typename Norm>
-T AbsoluteError(T const& expected, T const& actual,
-                Norm const norm) {
+template<typename T, typename Norm, typename NormType>
+NormType AbsoluteError(T const& expected, T const& actual,
+                       Norm const norm) {
   return norm(expected - actual);
 }
 
@@ -28,6 +30,17 @@ quantities::Quantity<Dimensions> AbsoluteError(
     quantities::Quantity<Dimensions> const& expected,
     quantities::Quantity<Dimensions> const& actual) {
   return AbsoluteError(expected, actual, quantities::Abs<Dimensions>);
+}
+
+template<typename Scalar>
+Scalar AbsoluteError(geometry::R3Element<Scalar> const& expected,
+                     geometry::R3Element<Scalar> const& actual) {
+  std::function<Scalar(geometry::R3Element<Scalar>)> const norm =
+      [](geometry::R3Element<Scalar> const& v) { return v.Norm(); };
+  return AbsoluteError<
+      geometry::R3Element<Scalar>,
+      std::function<Scalar(geometry::R3Element<Scalar>)>,
+      Scalar>(expected, actual, norm);
 }
 
 template<typename T, typename Norm>

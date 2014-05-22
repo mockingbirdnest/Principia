@@ -13,18 +13,26 @@ namespace testing_utilities {
 template<typename Scalar>
 double DoubleValue(Scalar const& scalar);
 
-template<typename T, typename Norm>
-T AbsoluteError(T const& expected, T const& actual,
-                Norm const norm);
+template<typename T, typename Norm, typename NormType = T>
+NormType AbsoluteError(T const& expected, T const& actual,
+                       Norm const norm);
 
+// Equivalent to RelativeError(expected, actual, Abs).
 quantities::Dimensionless AbsoluteError(
     quantities::Dimensionless const& expected,
     quantities::Dimensionless const& actual);
 
+// Equivalent to RelativeError(expected, actual, Abs<Dimensions>).
 template<typename Dimensions>
 quantities::Quantity<Dimensions> AbsoluteError(
     quantities::Quantity<Dimensions> const& expected,
     quantities::Quantity<Dimensions> const& actual);
+
+// Uses R3Element.Norm().
+template<typename Scalar>
+Scalar AbsoluteError(geometry::R3Element<Scalar> const& expected,
+                     geometry::R3Element<Scalar> const& actual);
+
 
 template<typename T, typename Norm>
 quantities::Dimensionless RelativeError(T const& expected, T const& actual,
