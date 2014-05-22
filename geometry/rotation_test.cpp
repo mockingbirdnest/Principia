@@ -109,7 +109,7 @@ TEST_F(RotationTest, Composition) {
 
 TEST_F(RotationTest, Forget) {
   Orth const orthogonal_a = rotation_a_.Forget();
-  EXPECT_THAT(rotation_a_(vector_),
+  EXPECT_THAT(orthogonal_a(vector_),
               AlmostEquals(Vector<quantities::Length, World>(
                   R3Element<quantities::Length>(3.0 * Metre,
                                                 1.0 * Metre,
