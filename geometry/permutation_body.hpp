@@ -7,6 +7,7 @@
 #include "geometry/quaternion.hpp"
 #include "geometry/r3_element.hpp"
 #include "geometry/sign.hpp"
+#include "glog/logging.h"
 #include "quantities/dimensionless.hpp"
 #include "quantities/elementary_functions.hpp"
 
@@ -98,7 +99,57 @@ template<typename FromFrame, typename ThroughFrame, typename ToFrame>
 Permutation<FromFrame, ToFrame> operator*(
     Permutation<ThroughFrame, ToFrame> const& left,
     Permutation<FromFrame, ThroughFrame> const& right) {
-  ///
+  typedef Permutation<FromFrame, ThroughFrame> P;
+  static std::map<std::pair<P::CoordinatePermutation,
+                            P::CoordinatePermutation>,
+                  P::CoordinatePermutation> multiplication =
+  {
+    {{P::XYZ, P::XYZ}, P::XYZ},
+    {{P::XYZ, P::YZX}, P::YZX},
+    {{P::XYZ, P::ZXY}, P::ZXY},
+    {{P::XYZ, P::XZY}, P::XZY},
+    {{P::XYZ, P::ZYX}, P::ZYX},
+    {{P::XYZ, P::YXZ}, P::YXZ},
+
+    {{P::YZX, P::XYZ}, P::YZX},
+    {{P::YZX, P::YZX}, P::ZXY},
+    {{P::YZX, P::ZXY}, P::XYZ},
+    {{P::YZX, P::XZY}, P::YXZ},
+    {{P::YZX, P::ZYX}, P::XZY},
+    {{P::YZX, P::YXZ}, P::ZYX},
+
+    {{P::ZXY, P::XYZ}, P::ZXY},
+    {{P::ZXY, P::YZX}, P::XYZ},
+    {{P::ZXY, P::ZXY}, P::YZX},
+    {{P::ZXY, P::XZY}, P::ZYX},
+    {{P::ZXY, P::ZYX}, P::YXZ},
+    {{P::ZXY, P::YXZ}, P::XZY},
+
+    {{P::XZY, P::XYZ}, P::XZY},
+    {{P::XZY, P::YZX}, P::ZYX},
+    {{P::XZY, P::ZXY}, P::YXZ},
+    {{P::XZY, P::XZY}, P::XYZ},
+    {{P::XZY, P::ZYX}, P::YZX},
+    {{P::XZY, P::YXZ}, P::ZXY},
+
+    {{P::ZYX, P::XYZ}, P::ZYX},
+    {{P::ZYX, P::YZX}, P::YXZ},
+    {{P::ZYX, P::ZXY}, P::XZY},
+    {{P::ZYX, P::XZY}, P::ZXY},
+    {{P::ZYX, P::ZYX}, P::XYZ},
+    {{P::ZYX, P::YXZ}, P::YZX},
+
+    {{P::YXZ, P::XYZ}, P::YXZ},
+    {{P::YXZ, P::YZX}, P::XZY},
+    {{P::YXZ, P::ZXY}, P::ZYX},
+    {{P::YXZ, P::XZY}, P::YZX},
+    {{P::YXZ, P::ZYX}, P::ZXY},
+    {{P::YXZ, P::YXZ}, P::XYZ},
+  };
+  LOG(INFO)<<left.coordinate_permutation_<<" "<<right.coordinate_permutation_;
+  return Permutation<FromFrame, ToFrame>(
+      multiplication[{left.coordinate_permutation_,
+                      right.coordinate_permutation_}]);
 }
 
 }  // namespace geometry

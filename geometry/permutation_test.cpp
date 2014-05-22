@@ -1,3 +1,6 @@
+
+#include <vector>
+
 #include "geometry/permutation.hpp"
 #include "geometry/orthogonal_map.hpp"
 #include "geometry/r3_element.hpp"
@@ -17,6 +20,7 @@ namespace geometry {
 class PermutationTest : public testing::Test {
  protected:
   struct World;
+  typedef OrthogonalMap<World, World> Orth;
   typedef Permutation<World, World> Perm;
   typedef R3Element<quantities::Length> R3;
 
@@ -124,6 +128,20 @@ TEST_F(PermutationTest, Forget) {
               AlmostEquals<R3>({3.0 * Metre, 2.0 * Metre, 1.0 * Metre}, 4));
   EXPECT_THAT(Perm(Perm::YXZ).Forget()(vector_).coordinates(),
               AlmostEquals<R3>({2.0 * Metre, 1.0 * Metre, 3.0 * Metre}, 2));
+}
+
+TEST_F(PermutationTest, Compose) {
+  std::vector<Perm> all = {Perm(Perm::XYZ),Perm(Perm::YZX),Perm(Perm::ZXY),
+                           Perm(Perm::XZY),Perm(Perm::ZYX),Perm(Perm::YXZ)};
+  for (const Perm& p1 : all) {
+    Orth const o1 = p1.Forget();
+    for (const Perm& p2 : all) {
+      Orth const o2 = p2.Forget();
+      Perm const p12 = p1 * p2;
+      Orth const o12 = o1 * o2;
+      EXPECT_THAT(p12(vector_), AlmostEquals(o12(vector_)));
+    }
+  }
 }
 
 }  // namespace geometry

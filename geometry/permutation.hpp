@@ -63,7 +63,7 @@ class Permutation : public LinearMap<FromFrame, ToFrame> {
   template<typename Scalar>
   R3Element<Scalar> operator()(R3Element<Scalar> const& r3_element) const;
 
-  CoordinatePermutation const coordinate_permutation_;
+  CoordinatePermutation coordinate_permutation_;
 
   template<typename FromFrame, typename ThroughFrame, typename ToFrame>
   friend Permutation<FromFrame, ToFrame> operator*(
