@@ -85,5 +85,14 @@ TEST_F(NumericsTest, DoubleRelativeError) {
       RelativeError(42.0, 6.0 * 9.0, DoubleAbs), AllOf(Gt(0.28), Lt(0.29)));
 }
 
+TEST_F(NumericsTest, DoubleRelativeError) {
+  EXPECT_THAT(RelativeError(42.0, 42.0, DoubleAbs), Eq(0));
+  EXPECT_THAT(RelativeError(1.0, -1.0, DoubleAbs), Eq(2));
+  EXPECT_THAT(RelativeError(2.0, 1.0, DoubleAbs), Eq(0.5));
+  EXPECT_THAT(RelativeError(1.0, 2.0, DoubleAbs), Eq(1));
+  EXPECT_THAT(RelativeError(42.0, 6.0 * 9.0, DoubleAbs),
+              AllOf(Gt(0.28), Lt(0.29)));
+}
+
 }  // namespace testing_utilities
 }  // namespace principia
