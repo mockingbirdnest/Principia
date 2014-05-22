@@ -7,6 +7,7 @@
 #include "gtest/gtest.h"
 #include "quantities/elementary_functions.hpp"
 #include "quantities/si.hpp"
+#include "testing_utilities/almost_equals.hpp"
 #include "testing_utilities/numerics.hpp"
 
 namespace principia {
@@ -16,14 +17,22 @@ using quantities::Dimensionless;
 using quantities::Sqrt;
 using geometry::R3Element;
 using si::Metre;
+using testing::AllOf;
 using testing::Eq;
+using testing::Gt;
+using testing::Lt;
 using testing::Ne;
 
 namespace {
 struct World;
 }  // namespace
 
-class NumericsTest : public testing::Test {};
+class NumericsTest : public testing::Test {
+ protected:
+  R3Element<Dimensionless> const i_ = {1, 0, 0};
+  R3Element<Dimensionless> const j_ = {0, 1, 0};
+  R3Element<Dimensionless> const k_ = {0, 0, 1};
+};
 
 double DoubleAbs(const double x) {
   return std::abs(x);
@@ -43,7 +52,7 @@ TEST_F(NumericsTest, ULPs) {
   EXPECT_THAT(ULPDistance(+0.0, -SmallestPositive), Eq(1));
   EXPECT_THAT(ULPDistance(-0.0, -SmallestPositive), Eq(1));
   EXPECT_THAT(ULPDistance(-1, 1), Ne(0));
-  EXPECT_THAT(ULPDistance(-1, 1), 2 * ULPDistance(0, 1));
+  EXPECT_THAT(ULPDistance(-1, 1), Eq(2 * ULPDistance(0, 1)));
 }
 
 TEST_F(NumericsTest, DoubleAbsoluteError) {
@@ -65,12 +74,41 @@ TEST_F(NumericsTest, DimensionfulAbsoluteError) {
 }
 
 TEST_F(NumericsTest, R3ElementAbsoluteError) {
-  R3Element<Dimensionless> const i = {1, 0, 0};
-  R3Element<Dimensionless> const j = {0, 1, 0};
-  R3Element<Dimensionless> const k = {0, 0, 1};
-  EXPECT_THAT(AbsoluteError(i + j + k, i + j + k), Eq(0));
-  EXPECT_THAT(AbsoluteError(i + j, i + j + k), Eq(1));
-  EXPECT_THAT(AbsoluteError(i, i + j + k), Eq(Sqrt(2)));
+  EXPECT_THAT(AbsoluteError(i_ + j_ + k_, i_ + j_ + k_), Eq(0));
+  EXPECT_THAT(AbsoluteError(i_ + j_, i_ + j_ + k_), Eq(1));
+  EXPECT_THAT(AbsoluteError(i_, i_ + j_ + k_), Eq(Sqrt(2)));
+}
+
+TEST_F(NumericsTest, DoubleRelativeError) {
+  EXPECT_THAT(RelativeError(42.0, 42.0, DoubleAbs), Eq(0));
+  EXPECT_THAT(RelativeError(1.0, -1.0, DoubleAbs), Eq(2));
+  EXPECT_THAT(RelativeError(2.0, 1.0, DoubleAbs), Eq(0.5));
+  EXPECT_THAT(RelativeError(1.0, 2.0, DoubleAbs), Eq(1));
+  EXPECT_THAT(RelativeError(42.0, 6.0 * 9.0, DoubleAbs),
+              AllOf(Gt(0.28), Lt(0.29)));
+}
+
+TEST_F(NumericsTest, DimensionlessRelativeError) {
+  EXPECT_THAT(RelativeError(42.0, 42.0), Eq(0));
+  EXPECT_THAT(RelativeError(1.0, -1.0), Eq(2));
+  EXPECT_THAT(RelativeError(2.0, 1.0), Eq(0.5));
+  EXPECT_THAT(RelativeError(1.0, 2.0), Eq(1));
+  EXPECT_THAT(RelativeError(42.0, 6.0 * 9.0), AllOf(Gt(0.28), Lt(0.29)));
+}
+
+TEST_F(NumericsTest, DimensionfulRelativeError) {
+  EXPECT_THAT(RelativeError(42 * Metre, 42 * Metre), Eq(0));
+  EXPECT_THAT(RelativeError(1 * Metre, -1 * Metre), Eq(2));
+  EXPECT_THAT(RelativeError(2 * Metre, 1 * Metre), Eq(0.5));
+  EXPECT_THAT(RelativeError(1 * Metre, 2 * Metre), Eq(1));
+  EXPECT_THAT(RelativeError(42 * Metre, 6 * 9 * Metre),
+              AllOf(Gt(0.28), Lt(0.29)));
+}
+
+TEST_F(NumericsTest, R3ElementRelativeError) {
+  EXPECT_THAT(RelativeError(i_ + j_ + k_, i_ + j_ + k_), Eq(0));
+  EXPECT_THAT(RelativeError(i_ + j_, i_ + j_ + k_), AlmostEquals(Sqrt(0.5)));
+  EXPECT_THAT(RelativeError(i_, i_ + j_ + k_), Eq(Sqrt(2)));
 }
 
 }  // namespace testing_utilities

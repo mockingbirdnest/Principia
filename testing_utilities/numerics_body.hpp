@@ -63,11 +63,11 @@ quantities::Dimensionless RelativeError(
 }
 
 template<typename Scalar>
-geometry::R3Element<Scalar> RelativeError(
+quantities::Dimensionless RelativeError(
     geometry::R3Element<Scalar> const& expected,
     geometry::R3Element<Scalar> const& actual) {
   return RelativeError(expected, actual,
-                       [](R3Element<Scalar> v) { return v.Norm() });
+                       [](geometry::R3Element<Scalar> v) { return v.Norm(); });
 }
 
 union Qword {
