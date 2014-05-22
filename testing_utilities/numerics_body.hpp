@@ -12,6 +12,25 @@ double DoubleValue(Scalar const& scalar) {
 }
 
 template<typename T, typename Norm>
+T AbsoluteError(T const& expected, T const& actual,
+                Norm const norm) {
+  return norm(expected - actual);
+}
+
+inline quantities::Dimensionless AbsoluteError(
+    quantities::Dimensionless const& expected,
+    quantities::Dimensionless const& actual) {
+  return AbsoluteError(expected, actual, quantities::Abs);
+}
+
+template<typename Dimensions>
+quantities::Quantity<Dimensions> AbsoluteError(
+    quantities::Quantity<Dimensions> const& expected,
+    quantities::Quantity<Dimensions> const& actual) {
+  return AbsoluteError(expected, actual, quantities::Abs<Dimensions>);
+}
+
+template<typename T, typename Norm>
 quantities::Dimensionless RelativeError(T const& expected, T const& actual,
                                         Norm const norm) {
   return norm(expected - actual) / norm(expected);
