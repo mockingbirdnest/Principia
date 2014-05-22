@@ -30,7 +30,7 @@ class NumericsTest : public testing::Test {};
 
 double DoubleAbs(const double x) {
   return std::abs(x);
-};
+}
 
 // The smallest positive double, a denormal.
 double const SmallestPositive = DBL_MIN * DBL_EPSILON;
