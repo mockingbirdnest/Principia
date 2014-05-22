@@ -139,7 +139,7 @@ TEST_F(PermutationTest, Compose) {
       Orth const o2 = p2.Forget();
       Perm const p12 = p1 * p2;
       Orth const o12 = o1 * o2;
-      EXPECT_THAT(p12(vector_), AlmostEquals(o12(vector_)));
+      EXPECT_THAT(p12(vector_), AlmostEquals(o12(vector_), 20));
     }
   }
 }

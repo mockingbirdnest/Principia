@@ -100,8 +100,8 @@ Permutation<FromFrame, ToFrame> operator*(
     Permutation<ThroughFrame, ToFrame> const& left,
     Permutation<FromFrame, ThroughFrame> const& right) {
   typedef Permutation<FromFrame, ThroughFrame> P;
-  static std::map<std::pair<P::CoordinatePermutation,
-                            P::CoordinatePermutation>,
+  static std::map<std::pair<P::CoordinatePermutation,   // Right, applied first.
+                            P::CoordinatePermutation>,  // Left, applied last.
                   P::CoordinatePermutation> multiplication =
   {
     {{P::XYZ, P::XYZ}, P::XYZ},
@@ -148,8 +148,8 @@ Permutation<FromFrame, ToFrame> operator*(
   };
   LOG(INFO)<<left.coordinate_permutation_<<" "<<right.coordinate_permutation_;
   return Permutation<FromFrame, ToFrame>(
-      multiplication[{left.coordinate_permutation_,
-                      right.coordinate_permutation_}]);
+      multiplication[{right.coordinate_permutation_,
+                      left.coordinate_permutation_}]);
 }
 
 }  // namespace geometry
