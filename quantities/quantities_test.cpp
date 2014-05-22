@@ -1,4 +1,4 @@
-﻿
+﻿// Start the file with a blank line or a comment to prevent linter confusion.
 #include <string>
 
 #include "glog/logging.h"
