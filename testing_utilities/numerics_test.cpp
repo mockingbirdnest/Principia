@@ -16,7 +16,10 @@ using quantities::Dimensionless;
 using quantities::Sqrt;
 using geometry::R3Element;
 using si::Metre;
+using testing::AllOf;
 using testing::Eq;
+using testing::Gt;
+using testing::Lt;
 using testing::Ne;
 
 namespace {
@@ -43,7 +46,7 @@ TEST_F(NumericsTest, ULPs) {
   EXPECT_THAT(ULPDistance(+0.0, -SmallestPositive), Eq(1));
   EXPECT_THAT(ULPDistance(-0.0, -SmallestPositive), Eq(1));
   EXPECT_THAT(ULPDistance(-1, 1), Ne(0));
-  EXPECT_THAT(ULPDistance(-1, 1), 2 * ULPDistance(0, 1));
+  EXPECT_THAT(ULPDistance(-1, 1), Eq(2 * ULPDistance(0, 1)));
 }
 
 TEST_F(NumericsTest, DoubleAbsoluteError) {
@@ -74,10 +77,12 @@ TEST_F(NumericsTest, R3ElementAbsoluteError) {
 }
 
 TEST_F(NumericsTest, DoubleRelativeError) {
-  auto const double_abs = [](double x) { return std::abs(x); };
   EXPECT_THAT(
-      RelativeError(SmallestPositive, 2 * (SmallestPositive / 2), double_abs),
-      Eq(1));
+      RelativeError(42.0, 42.0, DoubleAbs), Eq(0));
+  EXPECT_THAT(
+      RelativeError(1.0, -1.0, DoubleAbs), Eq(2));
+  EXPECT_THAT(
+      RelativeError(42.0, 6.0 * 9.0, DoubleAbs), AllOf(Gt(0.28), Lt(0.29)));
 }
 
 }  // namespace testing_utilities
