@@ -1,4 +1,5 @@
 #include "geometry/grassmann.hpp"
+#include "geometry/orthogonal_map.hpp"
 #include "geometry/rotation.hpp"
 #include "glog/logging.h"
 #include "gmock/gmock.h"
@@ -16,6 +17,7 @@ using testing_utilities::AlmostEquals;
 class RotationTest : public testing::Test {
  protected:
   struct World;
+  typedef OrthogonalMap<World, World> Orth;
   typedef Rotation<World, World> Rot;
 
   void SetUp() override {
@@ -103,6 +105,15 @@ TEST_F(RotationTest, Composition) {
                   R3Element<quantities::Length>(2.0 * Metre,
                                                 1.0 * Metre,
                                                 -3.0 * Metre))));
+}
+
+TEST_F(RotationTest, Forget) {
+  Orth const orthogonal_a = rotation_a_.Forget();
+  EXPECT_THAT(rotation_a_(vector_),
+              AlmostEquals(Vector<quantities::Length, World>(
+                  R3Element<quantities::Length>(3.0 * Metre,
+                                                1.0 * Metre,
+                                                2.0 * Metre))));
 }
 
 }  // namespace geometry
