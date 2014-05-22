@@ -2,10 +2,15 @@
 
 #include <assert.h>
 
+#include "glog/logging.h"
 #include "quantities/elementary_functions.hpp"
 
 namespace principia {
 namespace geometry {
+
+namespace {
+__declspec(noreturn) void noreturn() {}
+}  // namespace
 
 template<typename Scalar>
 inline R3Element<Scalar>::R3Element(Scalar const& x,
@@ -22,9 +27,8 @@ inline Scalar& R3Element<Scalar>::operator[](int const index) {
     case 2:
       return z;
     default:
-      // TODO(phl): Use glog?
-      assert(false);
-      return x;
+      LOG(FATAL) << "Index = " << index;
+      noreturn();
   }
 }
 
@@ -38,9 +42,8 @@ inline Scalar const& R3Element<Scalar>::operator[](int const index) const {
     case 2:
       return z;
     default:
-      // TODO(phl): Use glog?
-      assert(false);
-      return x;
+      LOG(FATAL) << "Index = " << index;
+      noreturn();
   }
 }
 
