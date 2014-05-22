@@ -20,6 +20,11 @@ inline Sign Permutation<FromFrame, ToFrame>::Determinant() const {
 }
 
 template<typename FromFrame, typename ToFrame>
+Permutation<ToFrame, FromFrame> Inverse() const {
+  ///
+}
+
+template<typename FromFrame, typename ToFrame>
 template<typename Scalar>
 Vector<Scalar, ToFrame> Permutation<FromFrame, ToFrame>::operator()(
     Vector<Scalar, FromFrame> const& vector) const {
@@ -41,10 +46,10 @@ Trivector<Scalar, ToFrame> Permutation<FromFrame, ToFrame>::operator()(
   return Trivector<Scalar, ToFrame>(Determinant() * trivector.coordinates());
 }
 
-// TODO(phl): Uncomment once orthogonal transformations are done.
-/*template<typename FromFrame, typename ToFrame>
-OrthogonalTransformation<FromFrame, ToFrame>
+template<typename FromFrame, typename ToFrame>
+OrthogonalMap<FromFrame, ToFrame> 
 Permutation<FromFrame, ToFrame>::Forget() const {
+  ///
   static const quantities::Dimentionless SqrtHalf(
       quantities::Dimentionless::Sqrt(quantities::Dimensionless(0.5)));
   static const R3Element<quantities::Dimensionless>[] = {
@@ -69,7 +74,7 @@ Permutation<FromFrame, ToFrame>::Forget() const {
   return OrthogonalTransformation<Scalar, FromFrame, ToFrame>(
       Determinant(),
       Rotation<A, B>(quaternionRealParts[i], quaternionImaginaryParts[i]));
-}*/
+}
 
 template<typename FromFrame, typename ToFrame>
 Permutation<FromFrame, ToFrame> Permutation<FromFrame, ToFrame>::Identity() {
@@ -87,6 +92,13 @@ R3Element<Scalar> Permutation<FromFrame, ToFrame>::operator()(
         (static_cast<int>(coordinate_permutation_) >> (coordinate * 2))];
   }
   return result;
+}
+
+template<typename FromFrame, typename ThroughFrame, typename ToFrame>
+Permutation<FromFrame, ToFrame> operator*(
+    Permutation<ThroughFrame, ToFrame> const& left,
+    Permutation<FromFrame, ThroughFrame> const& right) {
+  ///
 }
 
 }  // namespace geometry
