@@ -77,20 +77,28 @@ TEST_F(NumericsTest, R3ElementAbsoluteError) {
 }
 
 TEST_F(NumericsTest, DoubleRelativeError) {
-  EXPECT_THAT(
-      RelativeError(42.0, 42.0, DoubleAbs), Eq(0));
-  EXPECT_THAT(
-      RelativeError(1.0, -1.0, DoubleAbs), Eq(2));
-  EXPECT_THAT(
-      RelativeError(42.0, 6.0 * 9.0, DoubleAbs), AllOf(Gt(0.28), Lt(0.29)));
-}
-
-TEST_F(NumericsTest, DoubleRelativeError) {
   EXPECT_THAT(RelativeError(42.0, 42.0, DoubleAbs), Eq(0));
   EXPECT_THAT(RelativeError(1.0, -1.0, DoubleAbs), Eq(2));
   EXPECT_THAT(RelativeError(2.0, 1.0, DoubleAbs), Eq(0.5));
   EXPECT_THAT(RelativeError(1.0, 2.0, DoubleAbs), Eq(1));
   EXPECT_THAT(RelativeError(42.0, 6.0 * 9.0, DoubleAbs),
+              AllOf(Gt(0.28), Lt(0.29)));
+}
+
+TEST_F(NumericsTest, DimensionlessRelativeError) {
+  EXPECT_THAT(RelativeError(42.0, 42.0), Eq(0));
+  EXPECT_THAT(RelativeError(1.0, -1.0), Eq(2));
+  EXPECT_THAT(RelativeError(2.0, 1.0), Eq(0.5));
+  EXPECT_THAT(RelativeError(1.0, 2.0), Eq(1));
+  EXPECT_THAT(RelativeError(42.0, 6.0 * 9.0), AllOf(Gt(0.28), Lt(0.29)));
+}
+
+TEST_F(NumericsTest, DimensionfulRelativeError) {
+  EXPECT_THAT(RelativeError(42 * Metre, 42 * Metre), Eq(0));
+  EXPECT_THAT(RelativeError(1 * Metre, -1 * Metre), Eq(2));
+  EXPECT_THAT(RelativeError(2 * Metre, 1 * Metre), Eq(0.5));
+  EXPECT_THAT(RelativeError(1 * Metre, 2 * Metre), Eq(1));
+  EXPECT_THAT(RelativeError(42 * Metre, 6 * 9 * Metre),
               AllOf(Gt(0.28), Lt(0.29)));
 }
 
