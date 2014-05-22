@@ -53,6 +53,7 @@ using principia::si::Mole;
 using principia::si::Radian;
 using principia::si::Second;
 using principia::si::Steradian;
+using principia::testing_utilities::AbsoluteError;
 using principia::testing_utilities::AlmostEquals;
 using principia::testing_utilities::RelativeError;
 using principia::testing_utilities::Times;
@@ -125,6 +126,10 @@ TEST_F(QuantitiesTest, DimensionlessExponentiation) {
   }
 }
 
+// The Greek letters cause a warning when stringified by the macros, because
+// apparently Visual Studio doesn't encode strings in UTF-8 by default.
+#pragma warning(disable: 4566)
+
 TEST_F(QuantitiesTest, Formatting) {
   auto const allTheUnits = 1 * Metre * Kilogram * Second * Ampere * Kelvin /
                             (Mole * Candela * Cycle * Radian * Steradian);
@@ -167,27 +172,35 @@ TEST_F(QuantitiesTest, PhysicalConstants) {
               Lt(4E-3));
 }
 
+#pragma warning(default: 4566)
+
 TEST_F(QuantitiesTest, TrigonometricFunctions) {
   EXPECT_EQ(Cos(0 * Degree), 1);
   EXPECT_EQ(Sin(0 * Degree), 0);
-  EXPECT_THAT(RelativeError(Cos(90 * Degree), 0), Lt(0));
+  EXPECT_THAT(AbsoluteError(Cos(90 * Degree), 0), Lt(1E-16));
   EXPECT_EQ(Sin(90 * Degree), 1);
   EXPECT_EQ(Cos(180 * Degree), -1);
-  EXPECT_THAT(RelativeError(Sin(180 * Degree), 0), Lt(0));
-  EXPECT_THAT(RelativeError(Cos(-90 * Degree), 0), Lt(0));
+  EXPECT_THAT(AbsoluteError(Sin(180 * Degree), 0), Lt(1E-15));
+  EXPECT_THAT(AbsoluteError(Cos(-90 * Degree), 0), Lt(1E-16));
   EXPECT_EQ(Sin(-90 * Degree), -1);
-  for (int k = 0; k < 360; ++k) {
-    EXPECT_THAT(Cos((90 - k) * Degree), AlmostEquals(Sin(k * Degree), 2));
-    EXPECT_THAT(Sin(k * Degree) / Cos(k * Degree), 
-                AlmostEquals(Tan(k * Degree), 2));
-    EXPECT_THAT(((k + 179) % 360 - 179) * Degree,
-                AlmostEquals(ArcTan(Sin(k * Degree), Cos(k * Degree)), 1));
-    EXPECT_THAT(((k + 179) % 360 - 179) * Degree,
-                AlmostEquals(ArcTan(Sin(k * Degree) * AstronomicalUnit,
-                                    Cos(k * Degree) * AstronomicalUnit),
-                             47));
-    EXPECT_THAT(Cos(ArcCos(Cos(k * Degree))), AlmostEquals(Cos(k * Degree), 1));
-    EXPECT_THAT(Sin(ArcSin(Sin(k * Degree))), AlmostEquals(Sin(k * Degree), 1));
+  for (int k = 1; k < 360; ++k) {
+    // Don't test for multiples of 90 degrees as zeros lead to horrible
+    // conditioning.
+    if (k % 90 != 0) {
+      EXPECT_THAT(Cos((90 - k) * Degree),
+                  AlmostEquals(Sin(k * Degree), 50));
+      EXPECT_THAT(Sin(k * Degree) / Cos(k * Degree), 
+                  AlmostEquals(Tan(k * Degree), 2));
+      EXPECT_THAT(((k + 179) % 360 - 179) * Degree,
+                  AlmostEquals(ArcTan(Sin(k * Degree), Cos(k * Degree)), 80));
+      EXPECT_THAT(((k + 179) % 360 - 179) * Degree,
+                  AlmostEquals(ArcTan(Sin(k * Degree) * AstronomicalUnit,
+                                      Cos(k * Degree) * AstronomicalUnit), 80));
+      EXPECT_THAT(Cos(ArcCos(Cos(k * Degree))),
+                  AlmostEquals(Cos(k * Degree), 10));
+      EXPECT_THAT(Sin(ArcSin(Sin(k * Degree))),
+                  AlmostEquals(Sin(k * Degree), 1));
+    }
   }
   // Horribly conditioned near 0, so not in the loop above.
   EXPECT_EQ(Tan(ArcTan(Tan(-42 * Degree))), Tan(-42 * Degree));
