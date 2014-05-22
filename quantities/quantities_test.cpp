@@ -74,8 +74,8 @@ class QuantitiesTest : public testing::Test {
 };
 
 TEST_F(QuantitiesTest, AbsoluteValue) {
-  EXPECT_EQ(Abs(-1729), Dimensionless(1729));
-  EXPECT_EQ(Abs(1729), Dimensionless(1729));
+  EXPECT_EQ(Abs(-1729), 1729);
+  EXPECT_EQ(Abs(1729), 1729);
 }
 
 TEST_F(QuantitiesTest, DimensionlessComparisons) {
@@ -120,7 +120,7 @@ TEST_F(QuantitiesTest, DimensionlessExponentiation) {
   Dimensionless const number   = π - 42;
   Dimensionless positivePowers = 1;
   Dimensionless negativePowers = 1;
-  EXPECT_EQ(Dimensionless(1), number.Pow<0>());
+  EXPECT_EQ(1, number.Pow<0>());
   for (int i = 1; i < 10; ++i) {
     positivePowers *= number;
     negativePowers /= number;
