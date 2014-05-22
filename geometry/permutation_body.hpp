@@ -1,13 +1,13 @@
 #pragma once
 
 #include <map>
+#include <utility>
 
 #include "geometry/grassmann.hpp"
 #include "geometry/linear_map.hpp"
 #include "geometry/quaternion.hpp"
 #include "geometry/r3_element.hpp"
 #include "geometry/sign.hpp"
-#include "glog/logging.h"
 #include "quantities/dimensionless.hpp"
 #include "quantities/elementary_functions.hpp"
 
@@ -28,13 +28,12 @@ template<typename FromFrame, typename ToFrame>
 Permutation<ToFrame, FromFrame>
 Permutation<FromFrame, ToFrame>::Inverse() const {
   static std::map<CoordinatePermutation, CoordinatePermutation> inverse = {
-    {XYZ, XYZ},
-    {YZX, ZXY},
-    {ZXY, YZX},
-    {XZY, XZY},
-    {ZYX, ZYX},
-    {YXZ, YXZ},
-  };
+      {XYZ, XYZ},
+      {YZX, ZXY},
+      {ZXY, YZX},
+      {XZY, XZY},
+      {ZYX, ZYX},
+      {YXZ, YXZ}};
   return Permutation(inverse[coordinate_permutation_]);
 }
 
@@ -65,13 +64,12 @@ OrthogonalMap<FromFrame, ToFrame>
 Permutation<FromFrame, ToFrame>::Forget() const {
   static const quantities::Dimensionless sqrt_half = quantities::Sqrt(0.5);
   static std::map<CoordinatePermutation, Quaternion> quaternion = {
-    {XYZ, Quaternion(1, {0, 0, 0})},
-    {YZX, Quaternion(0.5, {-0.5, -0.5, -0.5})},
-    {ZXY, Quaternion(0.5, {0.5, 0.5, 0.5})},
-    {XZY, Quaternion(0, {0, -sqrt_half, sqrt_half})},
-    {ZYX, Quaternion(0, {-sqrt_half, 0, sqrt_half})},
-    {YXZ, Quaternion(0, {-sqrt_half, sqrt_half, 0})},
-  };
+      {XYZ, Quaternion(1, {0, 0, 0})},
+      {YZX, Quaternion(0.5, {-0.5, -0.5, -0.5})},
+      {ZXY, Quaternion(0.5, {0.5, 0.5, 0.5})},
+      {XZY, Quaternion(0, {0, -sqrt_half, sqrt_half})},
+      {ZYX, Quaternion(0, {-sqrt_half, 0, sqrt_half})},
+      {YXZ, Quaternion(0, {-sqrt_half, sqrt_half, 0})}};
   return OrthogonalMap<FromFrame, ToFrame>(
       Determinant(),
       Rotation<FromFrame, ToFrame>(quaternion[coordinate_permutation_]));
@@ -102,51 +100,48 @@ Permutation<FromFrame, ToFrame> operator*(
   typedef Permutation<FromFrame, ThroughFrame> P;
   static std::map<std::pair<P::CoordinatePermutation,   // Right, applied first.
                             P::CoordinatePermutation>,  // Left, applied last.
-                  P::CoordinatePermutation> multiplication =
-  {
-    {{P::XYZ, P::XYZ}, P::XYZ},
-    {{P::XYZ, P::YZX}, P::YZX},
-    {{P::XYZ, P::ZXY}, P::ZXY},
-    {{P::XYZ, P::XZY}, P::XZY},
-    {{P::XYZ, P::ZYX}, P::ZYX},
-    {{P::XYZ, P::YXZ}, P::YXZ},
+                  P::CoordinatePermutation> multiplication = {
+      {{P::XYZ, P::XYZ}, P::XYZ},
+      {{P::XYZ, P::YZX}, P::YZX},
+      {{P::XYZ, P::ZXY}, P::ZXY},
+      {{P::XYZ, P::XZY}, P::XZY},
+      {{P::XYZ, P::ZYX}, P::ZYX},
+      {{P::XYZ, P::YXZ}, P::YXZ},
 
-    {{P::YZX, P::XYZ}, P::YZX},
-    {{P::YZX, P::YZX}, P::ZXY},
-    {{P::YZX, P::ZXY}, P::XYZ},
-    {{P::YZX, P::XZY}, P::YXZ},
-    {{P::YZX, P::ZYX}, P::XZY},
-    {{P::YZX, P::YXZ}, P::ZYX},
+      {{P::YZX, P::XYZ}, P::YZX},
+      {{P::YZX, P::YZX}, P::ZXY},
+      {{P::YZX, P::ZXY}, P::XYZ},
+      {{P::YZX, P::XZY}, P::YXZ},
+      {{P::YZX, P::ZYX}, P::XZY},
+      {{P::YZX, P::YXZ}, P::ZYX},
 
-    {{P::ZXY, P::XYZ}, P::ZXY},
-    {{P::ZXY, P::YZX}, P::XYZ},
-    {{P::ZXY, P::ZXY}, P::YZX},
-    {{P::ZXY, P::XZY}, P::ZYX},
-    {{P::ZXY, P::ZYX}, P::YXZ},
-    {{P::ZXY, P::YXZ}, P::XZY},
+      {{P::ZXY, P::XYZ}, P::ZXY},
+      {{P::ZXY, P::YZX}, P::XYZ},
+      {{P::ZXY, P::ZXY}, P::YZX},
+      {{P::ZXY, P::XZY}, P::ZYX},
+      {{P::ZXY, P::ZYX}, P::YXZ},
+      {{P::ZXY, P::YXZ}, P::XZY},
 
-    {{P::XZY, P::XYZ}, P::XZY},
-    {{P::XZY, P::YZX}, P::ZYX},
-    {{P::XZY, P::ZXY}, P::YXZ},
-    {{P::XZY, P::XZY}, P::XYZ},
-    {{P::XZY, P::ZYX}, P::YZX},
-    {{P::XZY, P::YXZ}, P::ZXY},
+      {{P::XZY, P::XYZ}, P::XZY},
+      {{P::XZY, P::YZX}, P::ZYX},
+      {{P::XZY, P::ZXY}, P::YXZ},
+      {{P::XZY, P::XZY}, P::XYZ},
+      {{P::XZY, P::ZYX}, P::YZX},
+      {{P::XZY, P::YXZ}, P::ZXY},
 
-    {{P::ZYX, P::XYZ}, P::ZYX},
-    {{P::ZYX, P::YZX}, P::YXZ},
-    {{P::ZYX, P::ZXY}, P::XZY},
-    {{P::ZYX, P::XZY}, P::ZXY},
-    {{P::ZYX, P::ZYX}, P::XYZ},
-    {{P::ZYX, P::YXZ}, P::YZX},
+      {{P::ZYX, P::XYZ}, P::ZYX},
+      {{P::ZYX, P::YZX}, P::YXZ},
+      {{P::ZYX, P::ZXY}, P::XZY},
+      {{P::ZYX, P::XZY}, P::ZXY},
+      {{P::ZYX, P::ZYX}, P::XYZ},
+      {{P::ZYX, P::YXZ}, P::YZX},
 
-    {{P::YXZ, P::XYZ}, P::YXZ},
-    {{P::YXZ, P::YZX}, P::XZY},
-    {{P::YXZ, P::ZXY}, P::ZYX},
-    {{P::YXZ, P::XZY}, P::YZX},
-    {{P::YXZ, P::ZYX}, P::ZXY},
-    {{P::YXZ, P::YXZ}, P::XYZ},
-  };
-  LOG(INFO)<<left.coordinate_permutation_<<" "<<right.coordinate_permutation_;
+      {{P::YXZ, P::XYZ}, P::YXZ},
+      {{P::YXZ, P::YZX}, P::XZY},
+      {{P::YXZ, P::ZXY}, P::ZYX},
+      {{P::YXZ, P::XZY}, P::YZX},
+      {{P::YXZ, P::ZYX}, P::ZXY},
+      {{P::YXZ, P::YXZ}, P::XYZ}};
   return Permutation<FromFrame, ToFrame>(
       multiplication[{right.coordinate_permutation_,
                       left.coordinate_permutation_}]);
