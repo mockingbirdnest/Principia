@@ -102,10 +102,12 @@
     <ClInclude Include="sign.hpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="grassmann_test.cpp" />
     <ClCompile Include="point_test.cpp" />
     <ClCompile Include="orthogonal_map_test.cpp" />
     <ClCompile Include="permutation_test.cpp" />
     <ClCompile Include="quaternion_test.cpp" />
+    <ClCompile Include="r3_element_test.cpp" />
     <ClCompile Include="rotation_test.cpp" />
     <ClCompile Include="sign_test.cpp" />
   </ItemGroup>

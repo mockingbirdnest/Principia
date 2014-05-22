@@ -9,47 +9,25 @@
       <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
       <Extensions>h;hh;hpp;hxx;hm;inl;inc;xsd</Extensions>
     </Filter>
-    <Filter Include="Resource Files">
-      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
-      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
-    </Filter>
-    <Filter Include="Header Files\Units">
-      <UniqueIdentifier>{c4ec061d-1396-4424-b0eb-1533aa389a46}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Properties">
-      <UniqueIdentifier>{5a2e6d88-5535-486e-8dac-703ab3f0e848}</UniqueIdentifier>
+    <Filter Include="Test Files">
+      <UniqueIdentifier>{6ac38a92-dcb9-4525-ae79-62c233077706}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Constants.hpp">
+    <ClInclude Include="astronomy.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Dimensionless.hpp">
+    <ClInclude Include="bipm.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Numbers.hpp">
+    <ClInclude Include="cgs.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Quantities.hpp">
+    <ClInclude Include="constants.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Astronomy.hpp">
-      <Filter>Header Files\Units</Filter>
-    </ClInclude>
-    <ClInclude Include="BIPM.hpp">
-      <Filter>Header Files\Units</Filter>
-    </ClInclude>
-    <ClInclude Include="CGS.hpp">
-      <Filter>Header Files\Units</Filter>
-    </ClInclude>
-    <ClInclude Include="SI.hpp">
-      <Filter>Header Files\Units</Filter>
-    </ClInclude>
-    <ClInclude Include="UK.hpp">
-      <Filter>Header Files\Units</Filter>
-    </ClInclude>
-    <ClInclude Include="resource.hpp">
-      <Filter>Properties</Filter>
+    <ClInclude Include="dimensionless.hpp">
+      <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="elementary_functions.hpp">
       <Filter>Header Files</Filter>
@@ -57,34 +35,29 @@
     <ClInclude Include="named_quantities.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="numbers.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="quantities.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="si.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="uk.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="dimensionless_body.hpp">
+      <Filter>Source Files</Filter>
+    </ClInclude>
     <ClInclude Include="elementary_functions_body.hpp">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="quantities_body.hpp">
       <Filter>Source Files</Filter>
     </ClInclude>
     <ClInclude Include="si_body.hpp">
       <Filter>Source Files</Filter>
     </ClInclude>
-  </ItemGroup>
-  <ItemGroup>
-    <ClCompile Include="AssemblyInfo.cpp">
-      <Filter>Properties</Filter>
-    </ClCompile>
-  </ItemGroup>
-  <ItemGroup>
-    <ResourceCompile Include="app.rc">
-      <Filter>Resource Files</Filter>
-    </ResourceCompile>
-  </ItemGroup>
-  <ItemGroup>
-    <Image Include="app.ico">
-      <Filter>Resource Files</Filter>
-    </Image>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="dimensionless_body.hpp">
-      <Filter>Source Files</Filter>
-    </None>
-    <None Include="quantities_body.hpp">
-      <Filter>Source Files</Filter>
-    </None>
   </ItemGroup>
 </Project>

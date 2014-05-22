@@ -11,8 +11,12 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="algebra.hpp" />
+    <ClInclude Include="algebra_body.hpp" />
     <ClInclude Include="almost_equals.hpp" />
     <ClInclude Include="almost_equals_body.hpp" />
+    <ClInclude Include="explicit_operators.hpp" />
+    <ClInclude Include="explicit_operators_body.hpp" />
     <ClInclude Include="numerics.hpp" />
     <ClInclude Include="numerics_body.hpp" />
   </ItemGroup>
