@@ -51,7 +51,7 @@ quantities::Dimensionless RelativeError(
 
 // Uses R3Element.Norm().
 template<typename Scalar>
-geometry::R3Element<Scalar> RelativeError(
+quantities::Dimensionless RelativeError(
     geometry::R3Element<Scalar> const& expected,
     geometry::R3Element<Scalar> const& actual);
 
