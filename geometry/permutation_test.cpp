@@ -113,6 +113,13 @@ TEST_F(PermutationTest, Inverse) {
               Eq<R3>({3.0 * Metre, 1.0 * Metre, 2.0 * Metre}));
   EXPECT_THAT(Perm(Perm::YXZ).Inverse()(vector_).coordinates(),
               Eq<R3>({2.0 * Metre, 1.0 * Metre, 3.0 * Metre}));
+
+  std::vector<Perm> all = {Perm(Perm::XYZ),Perm(Perm::YZX),Perm(Perm::ZXY),
+                           Perm(Perm::XZY),Perm(Perm::ZYX),Perm(Perm::YXZ)};
+  for (const Perm& p : all) {
+    Perm const identity = p * p.Inverse();
+    EXPECT_THAT(identity(vector_), Eq(vector_));
+  }
 }
 
 TEST_F(PermutationTest, Forget) {
