@@ -35,12 +35,12 @@ quantities::Quantity<Dimensions> AbsoluteError(
 template<typename Scalar>
 Scalar AbsoluteError(geometry::R3Element<Scalar> const& expected,
                      geometry::R3Element<Scalar> const& actual) {
-  std::function<Scalar(geometry::R3Element<Scalar>)> const norm =
-      [](geometry::R3Element<Scalar> const& v) { return v.Norm(); };
   return AbsoluteError<
       geometry::R3Element<Scalar>,
       std::function<Scalar(geometry::R3Element<Scalar>)>,
-      Scalar>(expected, actual, norm);
+      Scalar>(expected,
+              actual,
+              [](geometry::R3Element<Scalar> const& v) { return v.Norm(); });
 }
 
 template<typename T, typename Norm>

@@ -25,6 +25,10 @@ struct World;
 
 class NumericsTest : public testing::Test {};
 
+double DoubleAbs(const double x) {
+  return std::abs(x);
+};
+
 // The smallest positive double, a denormal.
 double const SmallestPositive = DBL_MIN * DBL_EPSILON;
 
@@ -43,10 +47,9 @@ TEST_F(NumericsTest, ULPs) {
 }
 
 TEST_F(NumericsTest, DoubleAbsoluteError) {
-  auto const double_abs = [](double const x) { return std::abs(x); };
-  EXPECT_THAT(AbsoluteError(1., 1., double_abs), Eq(0.));
-  EXPECT_THAT(AbsoluteError(1., 2., double_abs), Eq(1.));
-  EXPECT_THAT(AbsoluteError(1., 0., double_abs), Eq(1.));
+  EXPECT_THAT(AbsoluteError(1., 1., DoubleAbs), Eq(0.));
+  EXPECT_THAT(AbsoluteError(1., 2., DoubleAbs), Eq(1.));
+  EXPECT_THAT(AbsoluteError(1., 0., DoubleAbs), Eq(1.));
 }
 
 TEST_F(NumericsTest, DimensionlessAbsoluteError) {
