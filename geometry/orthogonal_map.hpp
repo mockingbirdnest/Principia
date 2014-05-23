@@ -3,21 +3,17 @@
 #include "geometry/grassmann.hpp"
 #include "geometry/linear_map.hpp"
 #include "geometry/r3_element.hpp"
+#include "geometry/rotation.hpp"
 #include "geometry/sign.hpp"
 
 namespace principia {
 namespace geometry {
-
-template<typename FromFrame, typename ToFrame>
-class Rotation;
 
 // The orthogonal map is modeled as a rotoinversion.
 template<typename FromFrame, typename ToFrame>
 class OrthogonalMap : public LinearMap<FromFrame, ToFrame> {
  public:
   OrthogonalMap();
-  OrthogonalMap(Sign const& determinant,
-                Rotation<FromFrame, ToFrame> const& rotation);
   virtual ~OrthogonalMap() = default;
 
   Sign Determinant() const override;
@@ -39,14 +35,23 @@ class OrthogonalMap : public LinearMap<FromFrame, ToFrame> {
   static OrthogonalMap Identity();
 
  private:
+  OrthogonalMap(Sign const& determinant,
+                Rotation<FromFrame, ToFrame> const& rotation);
+
   Sign determinant_;
   Rotation<FromFrame, ToFrame> rotation_;
+
+  template<typename FromFrame, typename ToFrame>
+  friend class Permutation;
+  template<typename FromFrame, typename ToFrame>
+  friend class Rotation;
 
   template<typename FromFrame, typename ThroughFrame, typename ToFrame>
   friend OrthogonalMap<FromFrame, ToFrame> operator*(
       OrthogonalMap<ThroughFrame, ToFrame> const& left,
       OrthogonalMap<FromFrame, ThroughFrame> const& right);
-  friend class OrthogonalMapTests;
+
+  friend class OrthogonalMapTest;
 };
 
 template<typename FromFrame, typename ThroughFrame, typename ToFrame>
