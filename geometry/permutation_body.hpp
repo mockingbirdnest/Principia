@@ -27,8 +27,8 @@ inline Sign Permutation<FromFrame, ToFrame>::Determinant() const {
 template<typename FromFrame, typename ToFrame>
 Permutation<ToFrame, FromFrame>
 Permutation<FromFrame, ToFrame>::Inverse() const {
-  static std::map<CoordinatePermutation const,
-                  CoordinatePermutation const> const inverse = {
+  static std::map<CoordinatePermutation,
+                  CoordinatePermutation> const inverse = {
       {XYZ, XYZ},
       {YZX, ZXY},
       {ZXY, YZX},
@@ -64,8 +64,7 @@ template<typename FromFrame, typename ToFrame>
 OrthogonalMap<FromFrame, ToFrame>
 Permutation<FromFrame, ToFrame>::Forget() const {
   static quantities::Dimensionless const sqrt_half = quantities::Sqrt(0.5);
-  static std::map<CoordinatePermutation const,
-                  Quaternion const> const quaternion = {
+  static std::map<CoordinatePermutation, Quaternion> const quaternion = {
       {XYZ, Quaternion(1, {0, 0, 0})},
       {YZX, Quaternion(0.5, {-0.5, -0.5, -0.5})},
       {ZXY, Quaternion(0.5, {0.5, 0.5, 0.5})},
@@ -104,9 +103,8 @@ Permutation<FromFrame, ToFrame> operator*(
   // The pair<> is in diagrammatic order: right is applied first and is the
   // first element of the pair, left is applied second and is the second
   // element.
-  static std::map<std::pair<P::CoordinatePermutation const,
-                            P::CoordinatePermutation const> const,
-                  P::CoordinatePermutation const> const multiplication = {
+  static std::map<std::pair<P::CoordinatePermutation, P::CoordinatePermutation>,
+                  P::CoordinatePermutation> const multiplication = {
       {{P::XYZ, P::XYZ}, P::XYZ},
       {{P::XYZ, P::YZX}, P::YZX},
       {{P::XYZ, P::ZXY}, P::ZXY},
