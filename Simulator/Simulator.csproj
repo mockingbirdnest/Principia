@@ -51,7 +51,7 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Integrators\Integrators.csproj">
+    <ProjectReference Include="..\Integratorz\Integrators.csproj">
       <Project>{5b53b487-092c-43a0-97cb-765f89c8b7c8}</Project>
       <Name>Integrators</Name>
     </ProjectReference>
