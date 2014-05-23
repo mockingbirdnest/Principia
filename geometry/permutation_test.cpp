@@ -115,8 +115,9 @@ TEST_F(PermutationTest, Inverse) {
   EXPECT_THAT(Perm(Perm::YXZ).Inverse()(vector_).coordinates(),
               Eq<R3>({2.0 * Metre, 1.0 * Metre, 3.0 * Metre}));
 
-  std::vector<Perm> all = {Perm(Perm::XYZ), Perm(Perm::YZX), Perm(Perm::ZXY),
-                           Perm(Perm::XZY), Perm(Perm::ZYX), Perm(Perm::YXZ)};
+  std::vector<Perm const> const all =
+      {Perm(Perm::XYZ), Perm(Perm::YZX), Perm(Perm::ZXY),
+       Perm(Perm::XZY), Perm(Perm::ZYX), Perm(Perm::YXZ)};
   for (const Perm& p : all) {
     Perm const identity = p * p.Inverse();
     EXPECT_THAT(identity(vector_), Eq(vector_));
@@ -139,11 +140,12 @@ TEST_F(PermutationTest, Forget) {
 }
 
 TEST_F(PermutationTest, Compose) {
-  std::vector<Perm> all = {Perm(Perm::XYZ), Perm(Perm::YZX), Perm(Perm::ZXY),
-                           Perm(Perm::XZY), Perm(Perm::ZYX), Perm(Perm::YXZ)};
-  for (const Perm& p1 : all) {
+  std::vector<Perm const> const all =
+      {Perm(Perm::XYZ), Perm(Perm::YZX), Perm(Perm::ZXY),
+       Perm(Perm::XZY), Perm(Perm::ZYX), Perm(Perm::YXZ)};
+  for (Perm const& p1 : all) {
     Orth const o1 = p1.Forget();
-    for (const Perm& p2 : all) {
+    for (Perm const& p2 : all) {
       Orth const o2 = p2.Forget();
       Perm const p12 = p1 * p2;
       Orth const o12 = o1 * o2;

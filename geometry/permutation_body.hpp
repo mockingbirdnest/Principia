@@ -105,8 +105,8 @@ Permutation<FromFrame, ToFrame> operator*(
   // first element of the pair, left is applied second and is the second
   // element.
   static std::map<std::pair<P::CoordinatePermutation const,
-                            P::CoordinatePermutation const>,
-                  P::CoordinatePermutation> const multiplication = {
+                            P::CoordinatePermutation const> const,
+                  P::CoordinatePermutation const> const multiplication = {
       {{P::XYZ, P::XYZ}, P::XYZ},
       {{P::XYZ, P::YZX}, P::YZX},
       {{P::XYZ, P::ZXY}, P::ZXY},
