@@ -10,6 +10,7 @@
 #include "quantities/si.hpp"
 #include "testing_utilities/almost_equals.hpp"
 
+using principia::quantities::Length;
 using principia::si::Metre;
 using principia::testing_utilities::AlmostEquals;
 using testing::Eq;
@@ -146,7 +147,10 @@ TEST_F(PermutationTest, Compose) {
       Orth const o2 = p2.Forget();
       Perm const p12 = p1 * p2;
       Orth const o12 = o1 * o2;
-      EXPECT_THAT(p12(vector_), AlmostEquals(o12(vector_), 20));
+      for (Length l = 1 * Metre; l < 4 * Metre; l += 1 * Metre) {
+        vector_.coordinates().x = l;
+        EXPECT_THAT(p12(vector_), AlmostEquals(o12(vector_), 20));
+      }
     }
   }
 }

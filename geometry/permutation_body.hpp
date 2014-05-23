@@ -27,14 +27,15 @@ inline Sign Permutation<FromFrame, ToFrame>::Determinant() const {
 template<typename FromFrame, typename ToFrame>
 Permutation<ToFrame, FromFrame>
 Permutation<FromFrame, ToFrame>::Inverse() const {
-  static std::map<CoordinatePermutation, CoordinatePermutation> inverse = {
+  static std::map<CoordinatePermutation const,
+                  CoordinatePermutation const> const inverse = {
       {XYZ, XYZ},
       {YZX, ZXY},
       {ZXY, YZX},
       {XZY, XZY},
       {ZYX, ZYX},
       {YXZ, YXZ}};
-  return Permutation(inverse[coordinate_permutation_]);
+  return Permutation(inverse.at(coordinate_permutation_));
 }
 
 template<typename FromFrame, typename ToFrame>
@@ -62,8 +63,9 @@ Trivector<Scalar, ToFrame> Permutation<FromFrame, ToFrame>::operator()(
 template<typename FromFrame, typename ToFrame>
 OrthogonalMap<FromFrame, ToFrame>
 Permutation<FromFrame, ToFrame>::Forget() const {
-  static const quantities::Dimensionless sqrt_half = quantities::Sqrt(0.5);
-  static std::map<CoordinatePermutation, Quaternion> quaternion = {
+  static quantities::Dimensionless const sqrt_half = quantities::Sqrt(0.5);
+  static std::map<CoordinatePermutation const,
+                  Quaternion const> const quaternion = {
       {XYZ, Quaternion(1, {0, 0, 0})},
       {YZX, Quaternion(0.5, {-0.5, -0.5, -0.5})},
       {ZXY, Quaternion(0.5, {0.5, 0.5, 0.5})},
@@ -72,7 +74,7 @@ Permutation<FromFrame, ToFrame>::Forget() const {
       {YXZ, Quaternion(0, {-sqrt_half, sqrt_half, 0})}};
   return OrthogonalMap<FromFrame, ToFrame>(
       Determinant(),
-      Rotation<FromFrame, ToFrame>(quaternion[coordinate_permutation_]));
+      Rotation<FromFrame, ToFrame>(quaternion.at(coordinate_permutation_)));
 }
 
 template<typename FromFrame, typename ToFrame>
@@ -98,9 +100,13 @@ Permutation<FromFrame, ToFrame> operator*(
     Permutation<ThroughFrame, ToFrame> const& left,
     Permutation<FromFrame, ThroughFrame> const& right) {
   typedef Permutation<FromFrame, ThroughFrame> P;
-  static std::map<std::pair<P::CoordinatePermutation,   // Right, applied first.
-                            P::CoordinatePermutation>,  // Left, applied last.
-                  P::CoordinatePermutation> multiplication = {
+
+  // The pair<> is in diagrammatic order: right is applied first and is the
+  // first element of the pair, left is applied second and is the second
+  // element.
+  static std::map<std::pair<P::CoordinatePermutation const,
+                            P::CoordinatePermutation const>,
+                  P::CoordinatePermutation> const multiplication = {
       {{P::XYZ, P::XYZ}, P::XYZ},
       {{P::XYZ, P::YZX}, P::YZX},
       {{P::XYZ, P::ZXY}, P::ZXY},
@@ -143,8 +149,8 @@ Permutation<FromFrame, ToFrame> operator*(
       {{P::YXZ, P::ZYX}, P::ZXY},
       {{P::YXZ, P::YXZ}, P::XYZ}};
   return Permutation<FromFrame, ToFrame>(
-      multiplication[{right.coordinate_permutation_,
-                      left.coordinate_permutation_}]);
+      multiplication.at({right.coordinate_permutation_,
+                         left.coordinate_permutation_}));
 }
 
 }  // namespace geometry
