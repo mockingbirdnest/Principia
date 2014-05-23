@@ -13,4 +13,9 @@
       <UniqueIdentifier>{4b432fe2-1089-42b8-9ed1-a9c1c6991cc5}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="integrator.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+  </ItemGroup>
 </Project>
