@@ -1,0 +1,46 @@
+#pragma once
+
+#include "geometry/point.hpp"
+#include "geometry/grassmann.hpp"
+
+namespace principia {
+namespace geometry {
+
+// Since the map is represented as x -> linear_map_(x) + translation_ and since
+// it is x -> linear_map(x - from_origin) + to_origin, we get
+// linear_map_ = linear_map, translation_ = to_origin - linear_map(from_origin).
+template<typename FromFrame, typename ToFrame, typename Scalar,
+         template<typename, typename> LinearMap>
+AffineMap<FromFrame, ToFrame, Scalar, LinearMap>::AffineMap(
+    Point<FromVector> const& from_origin,
+    Point<ToVector> const& to_origin,
+    LinearMap<FromFrame, ToFrame> const& linear_map)
+    : linear_map_(linear_map),
+      translation_(to_origin - linear_map(from_origin)) {}
+
+template<typename FromFrame, typename ToFrame, typename Scalar,
+         template<typename, typename> LinearMap>
+AffineMap<ToFrame, FromFrame, Scalar, LinearMap>
+AffineMap<FromFrame, ToFrame, Scalar, LinearMap>::Inverse() const {
+  LinearMap<ToFrame, FromFrame> const inverse_linear_map =
+      linear_map_.Inverse();
+  FromVector const inverse_translation = -inverse_linear_map(translation_);
+  AffineMap<ToFrame, FromFrame, Scalar, LinearMap> result;
+  result.linear_map_ = inverse_linear_map;
+  result.translation_ = inverse_translation;
+  return result;
+}
+
+template<typename FromFrame, typename ToFrame, typename Scalar,
+         template<typename, typename> LinearMap>
+Point<ToVector> AffineMap<FromFrame, ToFrame, Scalar, LinearMap>::operator()(
+    Point<FromVector> const& point) const;
+
+template<typename FromFrame, typename ThroughFrame, typename ToFrame,
+         typename Scalar, template<typename, typename> LinearMap>
+AffineMap<FromFrame, ToFrame, Scalar, LinearMap> operator*(
+    AffineMap<ThroughFrame, ToFrame, Scalar, LinearMap> const& left,
+    AffineMap<FromFrame, ToFrame, Scalar, LinearMap> const& right);
+
+}  // namespace geometry
+}  // namespace principia

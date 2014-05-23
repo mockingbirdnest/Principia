@@ -12,13 +12,16 @@ class AffineMap {
  public:
   typedef Vector<Scalar, FromFrame> FromVector;
   typedef Vector<Scalar, ToFrame> ToVector;
-  AffineMap(Point<FromVector> from_origin,
-            Point<ToVector> to_origin,
-            LinearMap<FromFrame, ToFrame> linear_map);
+  // The identity map.
+  AffineMap() = default;
+  AffineMap(Point<FromVector> const& from_origin,
+            Point<ToVector> const& to_origin,
+            LinearMap<FromFrame, ToFrame> const& linear_map);
 
   AffineMap<ToFrame, FromFrame, Scalar, LinearMap> Inverse() const;
-  Point<ToVector> operator()(Point<FromVector> point) const;
+  Point<ToVector> operator()(Point<FromVector> const& point) const;
  private:
+  // The map is internally represented as x -> linear_map_(x) + translation_.
   ToVector translation_;
   LinearMap<FromFrame, ToFrame> linear_map_;
 };
@@ -31,3 +34,5 @@ AffineMap<FromFrame, ToFrame, Scalar, LinearMap> operator*(
 
 }  // namespace geometry
 }  // namespace principia
+
+#include "geometry/affine_map_body.hpp"
