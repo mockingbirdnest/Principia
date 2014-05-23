@@ -22,25 +22,31 @@ template<typename FromFrame, typename ToFrame, typename Scalar,
          template<typename, typename> LinearMap>
 AffineMap<ToFrame, FromFrame, Scalar, LinearMap>
 AffineMap<FromFrame, ToFrame, Scalar, LinearMap>::Inverse() const {
-  LinearMap<ToFrame, FromFrame> const inverse_linear_map =
-      linear_map_.Inverse();
-  FromVector const inverse_translation = -inverse_linear_map(translation_);
   AffineMap<ToFrame, FromFrame, Scalar, LinearMap> result;
-  result.linear_map_ = inverse_linear_map;
-  result.translation_ = inverse_translation;
+  result.linear_map_ = linear_map_.Inverse();
+  result.translation_ = -result.linear_map_(translation_);
   return result;
 }
 
 template<typename FromFrame, typename ToFrame, typename Scalar,
          template<typename, typename> LinearMap>
-Point<ToVector> AffineMap<FromFrame, ToFrame, Scalar, LinearMap>::operator()(
-    Point<FromVector> const& point) const;
+Point<AffineMap<FromFrame, ToFrame, Scalar, LinearMap>::ToVector>
+AffineMap<FromFrame, ToFrame, Scalar, LinearMap>::operator()(
+    Point<FromVector> const& point) const {
+  return linear_map_(point) + translation_;
+}
 
 template<typename FromFrame, typename ThroughFrame, typename ToFrame,
          typename Scalar, template<typename, typename> LinearMap>
 AffineMap<FromFrame, ToFrame, Scalar, LinearMap> operator*(
     AffineMap<ThroughFrame, ToFrame, Scalar, LinearMap> const& left,
-    AffineMap<FromFrame, ToFrame, Scalar, LinearMap> const& right);
+    AffineMap<FromFrame, ToFrame, Scalar, LinearMap> const& right) {
+  AffineMap<ToFrame, FromFrame, Scalar, LinearMap> result;
+  result.linear_map_ = left.linear_map_ * right.linear_map_;
+  result.translation_ = left.linear_map_(right.translation_) +
+                        right.translation_;
+  return result;
+}
 
 }  // namespace geometry
 }  // namespace principia
