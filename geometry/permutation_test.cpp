@@ -1,11 +1,18 @@
+
+#include <vector>
+
 #include "geometry/permutation.hpp"
+#include "geometry/orthogonal_map.hpp"
 #include "geometry/r3_element.hpp"
 #include "glog/logging.h"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "quantities/si.hpp"
+#include "testing_utilities/almost_equals.hpp"
 
+using principia::quantities::Length;
 using principia::si::Metre;
+using principia::testing_utilities::AlmostEquals;
 using testing::Eq;
 
 namespace principia {
@@ -14,6 +21,7 @@ namespace geometry {
 class PermutationTest : public testing::Test {
  protected:
   struct World;
+  typedef OrthogonalMap<World, World> Orth;
   typedef Permutation<World, World> Perm;
   typedef R3Element<quantities::Length> R3;
 
@@ -99,6 +107,54 @@ TEST_F(PermutationTest, AppliedToTrivector) {
               Eq(4.0 * Metre));
   EXPECT_THAT(Perm(Perm::XZY)(trivector_).coordinates(),
               Eq(-4.0 * Metre));
+}
+
+TEST_F(PermutationTest, Inverse) {
+  EXPECT_THAT(Perm(Perm::YZX).Inverse()(vector_).coordinates(),
+              Eq<R3>({3.0 * Metre, 1.0 * Metre, 2.0 * Metre}));
+  EXPECT_THAT(Perm(Perm::YXZ).Inverse()(vector_).coordinates(),
+              Eq<R3>({2.0 * Metre, 1.0 * Metre, 3.0 * Metre}));
+
+  std::vector<Perm> const all =
+      {Perm(Perm::XYZ), Perm(Perm::YZX), Perm(Perm::ZXY),
+       Perm(Perm::XZY), Perm(Perm::ZYX), Perm(Perm::YXZ)};
+  for (const Perm& p : all) {
+    Perm const identity = p * p.Inverse();
+    EXPECT_THAT(identity(vector_), Eq(vector_));
+  }
+}
+
+TEST_F(PermutationTest, Forget) {
+  EXPECT_THAT(Perm(Perm::XYZ).Forget()(vector_).coordinates(),
+              Eq<R3>({1.0 * Metre, 2.0 * Metre, 3.0 * Metre}));
+  EXPECT_THAT(Perm(Perm::YZX).Forget()(vector_).coordinates(),
+              Eq<R3>({2.0 * Metre, 3.0 * Metre, 1.0 * Metre}));
+  EXPECT_THAT(Perm(Perm::ZXY).Forget()(vector_).coordinates(),
+              Eq<R3>({3.0 * Metre, 1.0 * Metre, 2.0 * Metre}));
+  EXPECT_THAT(Perm(Perm::XZY).Forget()(vector_).coordinates(),
+              AlmostEquals<R3>({1.0 * Metre, 3.0 * Metre, 2.0 * Metre}, 2));
+  EXPECT_THAT(Perm(Perm::ZYX).Forget()(vector_).coordinates(),
+              AlmostEquals<R3>({3.0 * Metre, 2.0 * Metre, 1.0 * Metre}, 4));
+  EXPECT_THAT(Perm(Perm::YXZ).Forget()(vector_).coordinates(),
+              AlmostEquals<R3>({2.0 * Metre, 1.0 * Metre, 3.0 * Metre}, 2));
+}
+
+TEST_F(PermutationTest, Compose) {
+  std::vector<Perm> const all =
+      {Perm(Perm::XYZ), Perm(Perm::YZX), Perm(Perm::ZXY),
+       Perm(Perm::XZY), Perm(Perm::ZYX), Perm(Perm::YXZ)};
+  for (Perm const& p1 : all) {
+    Orth const o1 = p1.Forget();
+    for (Perm const& p2 : all) {
+      Orth const o2 = p2.Forget();
+      Perm const p12 = p1 * p2;
+      Orth const o12 = o1 * o2;
+      for (Length l = 1 * Metre; l < 4 * Metre; l += 1 * Metre) {
+        vector_.coordinates().x = l;
+        EXPECT_THAT(p12(vector_), AlmostEquals(o12(vector_), 20));
+      }
+    }
+  }
 }
 
 }  // namespace geometry

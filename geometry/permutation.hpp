@@ -9,6 +9,9 @@
 namespace principia {
 namespace geometry {
 
+template<typename FromFrame, typename ToFrame>
+class OrthogonalMap;
+
 // A permutation of the coordinates. Obviously not coordinate-free, but
 // practical.  There are no precision losses when composing or applying
 // permutations.
@@ -38,7 +41,7 @@ class Permutation : public LinearMap<FromFrame, ToFrame> {
 
   Sign Determinant() const override;
 
-  // TODO(phl): Inverse, composition.
+  Permutation<ToFrame, FromFrame> Inverse() const;
 
   template<typename Scalar>
   Vector<Scalar, ToFrame> operator()(
@@ -52,8 +55,7 @@ class Permutation : public LinearMap<FromFrame, ToFrame> {
   Trivector<Scalar, ToFrame> operator()(
       Trivector<Scalar, FromFrame> const& trivector) const;
 
-  // TODO(phl): Uncomment once orthogonal transformations are done.
-  // OrthogonalTransformation<Scalar, FromFrame, ToFrame> Forget() const;
+  OrthogonalMap<FromFrame, ToFrame> Forget() const;
 
   static Permutation Identity();
 
@@ -61,7 +63,12 @@ class Permutation : public LinearMap<FromFrame, ToFrame> {
   template<typename Scalar>
   R3Element<Scalar> operator()(R3Element<Scalar> const& r3_element) const;
 
-  CoordinatePermutation const coordinate_permutation_;
+  CoordinatePermutation coordinate_permutation_;
+
+  template<typename FromFrame, typename ThroughFrame, typename ToFrame>
+  friend Permutation<FromFrame, ToFrame> operator*(
+      Permutation<ThroughFrame, ToFrame> const& left,
+      Permutation<FromFrame, ThroughFrame> const& right);
 
   // As much as I dislike FRIEND_TEST(), it seems like the most convenient way
   // to access the above operator.
@@ -73,6 +80,11 @@ class Permutation : public LinearMap<FromFrame, ToFrame> {
   FRIEND_TEST(PermutationTest, ZYX);
   FRIEND_TEST(PermutationTest, YXZ);
 };
+
+template<typename FromFrame, typename ThroughFrame, typename ToFrame>
+Permutation<FromFrame, ToFrame> operator*(
+    Permutation<ThroughFrame, ToFrame> const& left,
+    Permutation<FromFrame, ThroughFrame> const& right);
 
 }  // namespace geometry
 }  // namespace principia
