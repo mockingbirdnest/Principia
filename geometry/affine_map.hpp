@@ -1,6 +1,6 @@
 #pragma once
 
-#include "geometry/affine_space.hpp"
+#include "geometry/point.hpp"
 #include "geometry/grassmann.hpp"
 
 namespace principia {
