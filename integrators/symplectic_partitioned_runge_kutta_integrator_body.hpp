@@ -240,14 +240,25 @@ inline void SPRKIntegrator::Increment(
     q.push_back(q_stage);
     //q.Add((double[])qStage.Clone());
   }
-  return new Solution {
-    momentum = p.ToArray(),
-    momentumError = (double[])pError.Clone(),
-    position = q.ToArray(),
-    positionError = (double[])qError.Clone(),
-    time = t.ToArray(),
-    timeError = tError
-  };
+
+  // TODO(phl): Maybe avoid all these copies and return ownership?
+  for (int i = 0; i < p.size(); ++i) {
+    solution->momentum[i].quantities = p[i];
+    solution->momentum[i].error = (*p_error)[i];
+    solution->position[i].quantities = q[i];
+    solution->position[i].error = (*q_error)[i];
+  }
+  solution->time.quantities = t;
+  solution->time.error = t_error;
+
+  //return new Solution {
+    //momentum = p.ToArray(),
+    //momentumError = (double[])pError.Clone(),
+    //position = q.ToArray(),
+    //positionError = (double[])qError.Clone(),
+    //time = t.ToArray(),
+    //timeError = tError
+  //};
 }
 
 }  // namespace integrators
