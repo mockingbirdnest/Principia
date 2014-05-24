@@ -1,3 +1,5 @@
+﻿#include "geometry/affine_map.hpp"
+
 #include "geometry/grassmann.hpp"
 #include "geometry/orthogonal_map.hpp"
 #include "geometry/permutation.hpp"
@@ -5,6 +7,7 @@
 #include "geometry/rotation.hpp"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
+#include "quantities/numbers.hpp"
 #include "quantities/si.hpp"
 #include "testing_utilities/almost_equals.hpp"
 
@@ -13,6 +16,7 @@ namespace geometry {
 
 using quantities::Length;
 using si::Metre;
+using si::Radian;
 using testing::Eq;
 using testing_utilities::AlmostEquals;
 
@@ -22,24 +26,44 @@ class AffineMapTest : public testing::Test {
   typedef OrthogonalMap<World, World> Orth;
   typedef Permutation<World, World> Perm;
   typedef Rotation<World, World> Rot;
+  typedef Vector<Length, World> Displacement;
+  typedef Point<Displacement> Position;
+  typedef AffineMap<World, World, Length, Rotation> RigidTransformation;
 
   void SetUp() override {
-    zero_ = Vector<Length, World>({0 * Metre, 0 * Metre, 0 * Metre});
-    i_ = Vector<Length, World>({1 * Metre, 0 * Metre, 0 * Metre});
-    j_ = Vector<Length, World>({0 * Metre, 1 * Metre, 0 * Metre});
-    k_ = Vector<Length, World>({0 * Metre, 0 * Metre, 1 * Metre});
+    zero_ = Displacement({0 * Metre, 0 * Metre, 0 * Metre});
+    forward_ = Displacement({1 * Metre, 0 * Metre, 0 * Metre});
+    rightward_ = Displacement({0 * Metre, 1 * Metre, 0 * Metre});
+    upward_ = Displacement({0 * Metre, 0 * Metre, 1 * Metre});
+    back_left_bottom_ = Position(Displacement({0 * Metre,
+                                               0 * Metre,
+                                               0 * Metre}));
+    front_left_bottom_ = back_left_bottom_ + forward_;
+    back_right_bottom_ = back_left_bottom_ + rightward_;
+    front_right_bottom_ = back_right_bottom_ + forward_;
+    back_left_top_ = back_left_bottom_ + upward_;
+    front_left_top_ = back_left_top_ + forward_;
+    back_right_top_ = back_left_top_ + rightward_;
+    front_right_top_ = back_right_top_ + forward_;
   }
 
   Vector<Length, World> zero_;
-  Vector<Length, World> i_;
-  Vector<Length, World> j_;
-  Vector<Length, World> k_;
-  Point<Length, World> bottom_left_back_;
-
+  Vector<Length, World> forward_;
+  Vector<Length, World> rightward_;
+  Vector<Length, World> upward_;
+  Position back_left_bottom_;
+  Position front_left_bottom_;
+  Position back_right_bottom_;
+  Position front_right_bottom_;
+  Position back_left_top_;
+  Position front_left_top_;
+  Position back_right_top_;
+  Position front_right_top_;
 };
 
 TEST_F(AffineMapTest, Cube) {
-
+  Rot rotate_right(-π / 2 * Radian, upward_);
+  EXPECT_THAT(rotate_right(forward_), Eq(rightward_));
 }
 
 }  // namespace geometry

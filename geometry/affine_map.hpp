@@ -7,7 +7,7 @@ namespace principia {
 namespace geometry {
 
 template<typename FromFrame, typename ToFrame, typename Scalar,
-         template<typename, typename> LinearMap>
+         template<typename, typename> class LinearMap>
 class AffineMap {
  public:
   typedef Vector<Scalar, FromFrame> FromVector;
@@ -27,7 +27,7 @@ class AffineMap {
 };
 
 template<typename FromFrame, typename ThroughFrame, typename ToFrame,
-         typename Scalar, template<typename, typename> LinearMap>
+         typename Scalar, template<typename, typename> class LinearMap>
 AffineMap<FromFrame, ToFrame, Scalar, LinearMap> operator*(
     AffineMap<ThroughFrame, ToFrame, Scalar, LinearMap> const& left,
     AffineMap<FromFrame, ToFrame, Scalar, LinearMap> const& right);

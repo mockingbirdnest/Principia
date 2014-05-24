@@ -10,7 +10,7 @@ namespace geometry {
 // it is x -> linear_map(x - from_origin) + to_origin, we get
 // linear_map_ = linear_map, translation_ = to_origin - linear_map(from_origin).
 template<typename FromFrame, typename ToFrame, typename Scalar,
-         template<typename, typename> LinearMap>
+         template<typename, typename> class LinearMap>
 AffineMap<FromFrame, ToFrame, Scalar, LinearMap>::AffineMap(
     Point<FromVector> const& from_origin,
     Point<ToVector> const& to_origin,
@@ -19,7 +19,7 @@ AffineMap<FromFrame, ToFrame, Scalar, LinearMap>::AffineMap(
       translation_(to_origin - linear_map(from_origin)) {}
 
 template<typename FromFrame, typename ToFrame, typename Scalar,
-         template<typename, typename> LinearMap>
+         template<typename, typename> class LinearMap>
 AffineMap<ToFrame, FromFrame, Scalar, LinearMap>
 AffineMap<FromFrame, ToFrame, Scalar, LinearMap>::Inverse() const {
   AffineMap<ToFrame, FromFrame, Scalar, LinearMap> result;
@@ -29,15 +29,15 @@ AffineMap<FromFrame, ToFrame, Scalar, LinearMap>::Inverse() const {
 }
 
 template<typename FromFrame, typename ToFrame, typename Scalar,
-         template<typename, typename> LinearMap>
-Point<AffineMap<FromFrame, ToFrame, Scalar, LinearMap>::ToVector>
+         template<typename, typename> class LinearMap>
+Point<typename AffineMap<FromFrame, ToFrame, Scalar, LinearMap>::ToVector>
 AffineMap<FromFrame, ToFrame, Scalar, LinearMap>::operator()(
     Point<FromVector> const& point) const {
   return linear_map_(point) + translation_;
 }
 
 template<typename FromFrame, typename ThroughFrame, typename ToFrame,
-         typename Scalar, template<typename, typename> LinearMap>
+         typename Scalar, template<typename, typename> class LinearMap>
 AffineMap<FromFrame, ToFrame, Scalar, LinearMap> operator*(
     AffineMap<ThroughFrame, ToFrame, Scalar, LinearMap> const& left,
     AffineMap<FromFrame, ToFrame, Scalar, LinearMap> const& right) {
