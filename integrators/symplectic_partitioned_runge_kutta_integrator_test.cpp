@@ -49,7 +49,7 @@ TEST_F(SPRKTest, HarmonicOscillator) {
   parameters_->t0 = 0.0;
   parameters_->tmax = 1000.0;
   parameters_->Δt = 1.0E-4;
-  parameters_->coefficients = SPRKIntegrator::order_5_optimal;
+  parameters_->coefficients = integrator_->Order5Optimal();
   parameters_->sampling_period = 1;
   integrator_->Increment(&compute_harmonic_oscillator_force,
                          &compute_harmonice_oscillator_velocity,
