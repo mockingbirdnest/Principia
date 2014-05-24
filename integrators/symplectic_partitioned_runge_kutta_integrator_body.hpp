@@ -63,7 +63,7 @@ inline void SPRKIntegrator::Solve(
   for (int j = 1; j < stages; ++j) {
     c[j] = c[j - 1] + b[j - 1];
   }
-  
+
   std::unique_ptr<std::vector<double>> q_error(
       PointerOrNew(dimension, parameters.q_error));
   std::unique_ptr<std::vector<double>> p_error(
