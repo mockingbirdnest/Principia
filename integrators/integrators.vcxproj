@@ -85,6 +85,9 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="integrator.hpp" />
+    <ClInclude Include="integrator_body.hpp" />
+    <ClInclude Include="symplectic_partitioned_runge_kutta_integrator.hpp" />
+    <ClInclude Include="symplectic_partitioned_runge_kutta_integrator_body.hpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

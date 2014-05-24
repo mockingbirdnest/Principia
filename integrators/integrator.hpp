@@ -2,6 +2,9 @@
 
 #include <vector>
 
+namespace principia {
+namespace integrators {
+
 class Integrator {
  public:
   Integrator();
@@ -21,8 +24,8 @@ class Integrator {
   struct Parameters {
     std::vector<double> q0;
     std::vector<double> p0;
-    std::vector<double> q_error;
-    std::vector<double> p_error;
+    std::vector<double>* q_error;
+    std::vector<double>* p_error;
     double t0;
     double tmax;
     double Δt;
@@ -42,9 +45,16 @@ class Integrator {
     QuantitiesAndError time;
   };
 
-  virtual Solution Increment(
+  // Takes ownership of the pointers in |parameters|.
+  virtual void Increment(
       RightHandSideComputation const compute_force,
       AutonomousRightHandSideComputation const compute_velocity,
-      Parameters const& parameters) = 0;
+      Parameters const& parameters,
+      Solution* solution) = 0;
 
 };
+
+}  // namespace integrators
+}  // namespace principia
+
+#include "integrators/integrator_body.hpp"
