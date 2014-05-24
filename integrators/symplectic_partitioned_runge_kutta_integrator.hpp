@@ -1,22 +1,21 @@
 ﻿#pragma once
 
-#include "integrators/integrator.hpp"
+#include "integrators/symplectic_integrator.hpp"
 
 namespace principia {
 namespace integrators {
 
-class SPRKIntegrator : public Integrator {
+class SPRKIntegrator : public SymplecticIntegrator {
  public:
   SPRKIntegrator();
   ~SPRKIntegrator() override;
 
   std::vector<std::vector<double>> const& Order5Optimal() const;
 
-  void Increment(
-      RightHandSideComputation const compute_force,
-      AutonomousRightHandSideComputation const compute_velocity,
-      Parameters const& parameters,
-      Solution* solution) override;
+  void Solve(RightHandSideComputation const compute_force,
+             AutonomousRightHandSideComputation const compute_velocity,
+             Parameters const& parameters,
+             Solution* solution) override;
 
 };
 

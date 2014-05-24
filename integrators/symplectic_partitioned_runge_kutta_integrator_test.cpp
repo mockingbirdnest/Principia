@@ -55,7 +55,7 @@ TEST_F(SPRKTest, HarmonicOscillator) {
   parameters_->Δt = 1.0E-4;
   parameters_->coefficients = integrator_->Order5Optimal();
   parameters_->sampling_period = 1;
-  integrator_->Increment(&compute_harmonic_oscillator_force,
+  integrator_->Solve(&compute_harmonic_oscillator_force,
                          &compute_harmonice_oscillator_velocity,
                          *parameters_,
                          solution_.get());

@@ -14,16 +14,16 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="integrator.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="symplectic_partitioned_runge_kutta_integrator.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="integrator_body.hpp">
+    <ClInclude Include="symplectic_partitioned_runge_kutta_integrator_body.hpp">
       <Filter>Source Files</Filter>
     </ClInclude>
-    <ClInclude Include="symplectic_partitioned_runge_kutta_integrator_body.hpp">
+    <ClInclude Include="symplectic_integrator.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="symplectic_integrator_body.hpp">
       <Filter>Source Files</Filter>
     </ClInclude>
   </ItemGroup>

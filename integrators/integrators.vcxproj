@@ -84,8 +84,8 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="integrator.hpp" />
-    <ClInclude Include="integrator_body.hpp" />
+    <ClInclude Include="symplectic_integrator.hpp" />
+    <ClInclude Include="symplectic_integrator_body.hpp" />
     <ClInclude Include="symplectic_partitioned_runge_kutta_integrator.hpp" />
     <ClInclude Include="symplectic_partitioned_runge_kutta_integrator_body.hpp" />
   </ItemGroup>

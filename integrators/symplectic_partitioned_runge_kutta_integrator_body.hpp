@@ -4,6 +4,7 @@
 #include <memory>
 #include <vector>
 
+// NOTE(phl): The glog operations may not work with Unity/Mono.
 #include "glog/logging.h"
 
 #define TRACE
@@ -11,7 +12,7 @@
 namespace principia {
 namespace integrators {
 
-inline SPRKIntegrator::SPRKIntegrator() : Integrator() {}
+inline SPRKIntegrator::SPRKIntegrator() : SymplecticIntegrator() {}
 
 inline SPRKIntegrator::~SPRKIntegrator() {}
  
@@ -33,7 +34,7 @@ SPRKIntegrator::Order5Optimal() const {
   return order_5_optimal;
 }
 
-inline void SPRKIntegrator::Increment(
+inline void SPRKIntegrator::Solve(
       RightHandSideComputation const compute_force,
       AutonomousRightHandSideComputation const compute_velocity,
       Parameters const& parameters,
@@ -59,19 +60,6 @@ inline void SPRKIntegrator::Increment(
     c[j] = c[j - 1] + b[j - 1];
   }
   
-  std::vector<double>* p_error;
-  std::unique_ptr<std::vector<double>> p_error_deleter;
-  if (parameters.p_error == nullptr) {
-    p_error = new std::vector<double>(dimension);
-  } else {
-    p_error = parameters.p_error;
-    CHECK_EQ(dimension, p_error->size());
-  }
-  p_error_deleter.reset(p_error);
-  //if (pError == null) {
-  //  pError = new double[dimension];
-  //}
-  
   //TODO(phl): Just say no to code duplication!
   std::vector<double>* q_error;
   std::unique_ptr<std::vector<double>> q_error_deleter;
@@ -86,17 +74,30 @@ inline void SPRKIntegrator::Increment(
   //  qError = new double[dimension];
   //}
 
+  std::vector<double>* p_error;
+  std::unique_ptr<std::vector<double>> p_error_deleter;
+  if (parameters.p_error == nullptr) {
+    p_error = new std::vector<double>(dimension);
+  } else {
+    p_error = parameters.p_error;
+    CHECK_EQ(dimension, p_error->size());
+  }
+  p_error_deleter.reset(p_error);
+  //if (pError == null) {
+  //  pError = new double[dimension];
+  //}
+  
   double t_error = parameters.t_error;  // NOTE(phl): Don't change |parameters|.
-
-  std::vector<std::vector<double>> Δpstages(stages + 1);
-  //double[][] Δpstages = new double[stages + 1][];
 
   std::vector<std::vector<double>> Δqstages(stages + 1);
   //double[][] Δqstages = new double[stages + 1][];
 
+  std::vector<std::vector<double>> Δpstages(stages + 1);
+  //double[][] Δpstages = new double[stages + 1][];
+
   for (int i = 0; i < stages + 1; ++i) {
-    Δpstages[i].resize(dimension);
     Δqstages[i].resize(dimension);
+    Δpstages[i].resize(dimension);
   }
   //for (int i = 0; i < stages + 1; ++i) {
   //  Δpstages[i] = new double[dimension];
@@ -166,8 +167,8 @@ inline void SPRKIntegrator::Increment(
     // Increment SPRK step from "'SymplecticPartitionedRungeKutta' Method
     // for NDSolve", algorithm 3.
     for (int k = 0; k < dimension; ++k) {
-      Δpstages[0][k] = 0;
       Δqstages[0][k] = 0;
+      Δpstages[0][k] = 0;
       q_stage[k] = q_last[k];
     }
     //for (int k = 0; k < dimension; ++k) {
@@ -176,6 +177,8 @@ inline void SPRKIntegrator::Increment(
     //  qStage[k] = qLast[k];
     //}
     for (int i = 1; i < stages + 1; ++i) {  // NOTE(phl): Unchanged.
+      // Beware, the p/q order matters here, the two computations depend on one
+      // another.
       compute_force(tn + c[i - 1] * h, q_stage, &f);
       //computeForce(qStage, tn + c[i - 1] * h, ref f);
       for (int k = 0; k < dimension; ++k) {  // NOTE(phl): Unchanged.
@@ -194,14 +197,6 @@ inline void SPRKIntegrator::Increment(
     // Compensated summation from "'SymplecticPartitionedRungeKutta' Method
     // for NDSolve", algorithm 2.
     for (int k = 0; k < dimension; ++k) {  // NOTE(phl): Unchanged.
-      double const Δp = Δpstages[stages][k] + (*p_error)[k];
-      //double Δp = Δpstages[stages][k] + pError[k];
-      p_stage[k] = p_last[k] + Δp;
-      //pStage[k] = pLast[k] + Δp;
-      (*p_error)[k] = (p_last[k] - p_stage[k]) + Δp;
-      //pError[k] = (pLast[k] - pStage[k]) + Δp;
-      p_last[k] = p_stage[k];
-      //pLast[k] = pStage[k];
       double Δq = Δqstages[stages][k] + (*q_error)[k];
       //double Δq = Δqstages[stages][k] + qError[k];
       q_stage[k] = q_last[k] + Δq;
@@ -210,11 +205,19 @@ inline void SPRKIntegrator::Increment(
       //qError[k] = (qLast[k] - qStage[k]) + Δq;
       q_last[k] = q_stage[k];
       //qLast[k] = qStage[k];
+      double const Δp = Δpstages[stages][k] + (*p_error)[k];
+      //double Δp = Δpstages[stages][k] + pError[k];
+      p_stage[k] = p_last[k] + Δp;
+      //pStage[k] = pLast[k] + Δp;
+      (*p_error)[k] = (p_last[k] - p_stage[k]) + Δp;
+      //pError[k] = (pLast[k] - pStage[k]) + Δp;
+      p_last[k] = p_stage[k];
+      //pLast[k] = pStage[k];
     }
 
     double const δt = h + t_error;
     //double δt = h + tError;
-    tn = tn + δt;  // NOTE(phl): Unchanged.
+    tn += δt;  // NOTE(phl): Unchanged.
     t_error = (t_last - tn) + δt;
     //tError = (tLast - tn) + δt;
     t_last = tn;
@@ -226,10 +229,10 @@ inline void SPRKIntegrator::Increment(
       //if (samplingPhase % samplingPeriod == 0) {
         t.push_back(tn);
         //t.Add(tn);
-        p.push_back(p_stage);
-        //p.Add((double[])pStage.Clone());
         q.push_back(q_stage);
         //q.Add((double[])qStage.Clone());
+        p.push_back(p_stage);
+        //p.Add((double[])pStage.Clone());
       }
       ++sampling_phase;
       //++samplingPhase;
@@ -255,26 +258,30 @@ inline void SPRKIntegrator::Increment(
   //if (samplingPeriod == 0) {
     t.push_back(tn);
     //t.Add(tn);
-    p.push_back(p_stage);
-    //p.Add((double[])pStage.Clone());
     q.push_back(q_stage);
     //q.Add((double[])qStage.Clone());
+    p.push_back(p_stage);
+    //p.Add((double[])pStage.Clone());
   }
 
   solution->momentum.resize(dimension);
   solution->position.resize(dimension);
   CHECK_EQ(p.size(), q.size());
   for (size_t i = 0; i < p.size(); ++i) {
-    CHECK_EQ(dimension, p[i].size());
     CHECK_EQ(dimension, q[i].size());
+    CHECK_EQ(dimension, p[i].size());
     for (int j = 0; j < dimension; ++j) {
-      solution->momentum[j].quantities.push_back(p[i][j]);
+      if (i == 0) {
+        solution->position[j].quantities.reserve(q.size());
+        solution->momentum[j].quantities.reserve(p.size());
+      }
       solution->position[j].quantities.push_back(q[i][j]);
+      solution->momentum[j].quantities.push_back(p[i][j]);
     }
   }
   for (int j = 0; j < dimension; ++j) {
-    solution->momentum[j].error = (*p_error)[j];
     solution->position[j].error = (*q_error)[j];
+    solution->momentum[j].error = (*p_error)[j];
   }
   solution->time.quantities = t;
   solution->time.error = t_error;
