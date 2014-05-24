@@ -31,7 +31,6 @@ inline void compute_harmonice_oscillator_velocity(std::vector<double> const& p,
 
 }  // namespace
 
-
 class SPRKTest : public testing::Test {
  protected:
   void SetUp() override {
