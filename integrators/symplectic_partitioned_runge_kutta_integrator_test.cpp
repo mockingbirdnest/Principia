@@ -1,4 +1,6 @@
 ﻿
+#include "integrators/symplectic_partitioned_runge_kutta_integrator.hpp"
+
 #include <algorithm>
 #include <vector>
 
@@ -6,7 +8,6 @@
 #include "glog/logging.h"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
-#include "integrators/symplectic_partitioned_runge_kutta_integrator.hpp"
 #include "testing_utilities/numerics.hpp"
 
 using principia::testing_utilities::AbsoluteError;
