@@ -55,6 +55,12 @@ quantities::Dimensionless RelativeError(
     geometry::R3Element<Scalar> const& expected,
     geometry::R3Element<Scalar> const& actual);
 
+// Uses Multivector.Norm().
+template<typename Scalar, typename Frame, unsigned int Rank>
+quantities::Dimensionless RelativeError(
+    geometry::Multivector<Scalar, Frame, Rank> const& expected,
+    geometry::Multivector<Scalar, Frame, Rank> const& actual);
+
 std::int64_t ULPDistance(double const x, double const y);
 
 }  // namespace testing_utilities

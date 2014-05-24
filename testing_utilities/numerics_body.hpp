@@ -70,6 +70,16 @@ quantities::Dimensionless RelativeError(
                        [](geometry::R3Element<Scalar> v) { return v.Norm(); });
 }
 
+template<typename Scalar, typename Frame, unsigned int Rank>
+quantities::Dimensionless RelativeError(
+    geometry::Multivector<Scalar, Frame, Rank> const& expected,
+    geometry::Multivector<Scalar, Frame, Rank> const& actual) {
+  return RelativeError(
+      expected,
+      actual,
+      [](geometry::Multivector<Scalar, Frame, Rank> v) { return v.Norm(); });
+}
+
 union Qword {
   double double_value;
   std::int64_t long_value;
