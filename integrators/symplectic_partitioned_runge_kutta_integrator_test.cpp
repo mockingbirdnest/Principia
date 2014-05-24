@@ -47,7 +47,7 @@ TEST_F(SPRKTest, HarmonicOscillator) {
   parameters_->q0 = {1.0};
   parameters_->p0 = {0.0};
   parameters_->t0 = 0.0;
-  parameters_->tmax = 1000.0;
+  parameters_->tmax = 10.0;//1000.0;
   parameters_->Δt = 1.0E-4;
   parameters_->coefficients = integrator_->Order5Optimal();
   parameters_->sampling_period = 1;
@@ -59,16 +59,16 @@ TEST_F(SPRKTest, HarmonicOscillator) {
   double p_error = 0;
   for (size_t i = 0; i < solution_->time.quantities.size(); ++i) {
     q_error = std::max(q_error,
-                       std::abs(solution_->position[i].quantities[0] - 
+                       std::abs(solution_->position[0].quantities[i] - 
                                 std::cos(solution_->time.quantities[i])));
     p_error = std::max(p_error,
-                       std::abs(solution_->momentum[i].quantities[0] + 
-                                std::cos(solution_->time.quantities[i])));
+                       std::abs(solution_->momentum[0].quantities[i] + 
+                                std::sin(solution_->time.quantities[i])));
   }
   LOG(ERROR) << "q_error = " << q_error;
   LOG(ERROR) << "p_error = " << p_error;
-  EXPECT_THAT(AbsoluteError(0, q_error), Lt(1E-12));
-  EXPECT_THAT(AbsoluteError(0, p_error), Lt(1E-12));
+  EXPECT_THAT(AbsoluteError(0, q_error), Lt(1E-14));
+  EXPECT_THAT(AbsoluteError(0, p_error), Lt(1E-14));
 }
 
 }  // namespace integrators

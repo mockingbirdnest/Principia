@@ -161,7 +161,6 @@ inline void SPRKIntegrator::Increment(
 #endif
 
   // Integration.
-    LOG(ERROR)<<tn<<" "<<parameters.tmax;
   while (tn < parameters.tmax) {
   //while (tn < tmax) {
     // Increment SPRK step from "'SymplecticPartitionedRungeKutta' Method
@@ -262,12 +261,20 @@ inline void SPRKIntegrator::Increment(
     //q.Add((double[])qStage.Clone());
   }
 
-  // TODO(phl): Maybe avoid all these copies and return ownership?
+  solution->momentum.resize(dimension);
+  solution->position.resize(dimension);
+  CHECK_EQ(p.size(), q.size());
   for (size_t i = 0; i < p.size(); ++i) {
-    solution->momentum[i].quantities = p[i];
-    solution->momentum[i].error = (*p_error)[i];
-    solution->position[i].quantities = q[i];
-    solution->position[i].error = (*q_error)[i];
+    CHECK_EQ(dimension, p[i].size());
+    CHECK_EQ(dimension, q[i].size());
+    for (int j = 0; j < dimension; ++j) {
+      solution->momentum[j].quantities.push_back(p[i][j]);
+      solution->position[j].quantities.push_back(q[i][j]);
+    }
+  }
+  for (int j = 0; j < dimension; ++j) {
+    solution->momentum[j].error = (*p_error)[j];
+    solution->position[j].error = (*q_error)[j];
   }
   solution->time.quantities = t;
   solution->time.error = t_error;
