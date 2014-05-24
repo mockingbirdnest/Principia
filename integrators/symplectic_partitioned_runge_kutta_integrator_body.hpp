@@ -80,7 +80,7 @@ inline void SPRKIntegrator::Solve(
 
   // Result goes here.
   int const capacity = parameters.sampling_period == 0 ?
-    1 : 
+    1 :
     static_cast<int>(
         ceil((((parameters.tmax - parameters.t0) / parameters.Δt) + 1) /
                 parameters.sampling_period)) + 1;
@@ -104,7 +104,7 @@ inline void SPRKIntegrator::Solve(
   std::vector<double> q_stage(dimension);
   std::vector<double> p_stage(dimension);
   double tn = parameters.t0;  // Current time.
-  double const h = parameters.Δt; // Constant for now.
+  double const h = parameters.Δt;  // Constant for now.
   std::vector<double> f(dimension);  // Current forces.
   std::vector<double> v(dimension);  // Current velocities.
 

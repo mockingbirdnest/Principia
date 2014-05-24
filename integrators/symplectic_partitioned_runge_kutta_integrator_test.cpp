@@ -1,5 +1,6 @@
 ﻿
 #include <algorithm>
+#include <vector>
 
 #include "geometry/sign.hpp"
 #include "glog/logging.h"
@@ -63,10 +64,10 @@ TEST_F(SPRKTest, HarmonicOscillator) {
   double p_error = 0;
   for (size_t i = 0; i < solution_->time.quantities.size(); ++i) {
     q_error = std::max(q_error,
-                       std::abs(solution_->position[0].quantities[i] - 
+                       std::abs(solution_->position[0].quantities[i] -
                                 std::cos(solution_->time.quantities[i])));
     p_error = std::max(p_error,
-                       std::abs(solution_->momentum[0].quantities[i] + 
+                       std::abs(solution_->momentum[0].quantities[i] +
                                 std::sin(solution_->time.quantities[i])));
   }
   LOG(ERROR) << "q_error = " << q_error;

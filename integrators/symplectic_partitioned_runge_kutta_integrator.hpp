@@ -18,7 +18,6 @@ class SPRKIntegrator : public SymplecticIntegrator {
              AutonomousRightHandSideComputation const compute_velocity,
              Parameters const& parameters,
              Solution* solution) override;
-
 };
 
 }  // namespace integrators

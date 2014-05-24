@@ -70,7 +70,6 @@ class SymplecticIntegrator {
                      AutonomousRightHandSideComputation const compute_velocity,
                      Parameters const& parameters,
                      Solution* solution) = 0;
-
 };
 
 }  // namespace integrators
