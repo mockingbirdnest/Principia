@@ -6,14 +6,16 @@
 
 #include "glog/logging.h"
 
+#define TRACE
+
 namespace principia {
 namespace integrators {
 
-SPRKIntegrator::SPRKIntegrator() : Integrator() {}
+inline SPRKIntegrator::SPRKIntegrator() : Integrator() {}
 
-SPRKIntegrator::~SPRKIntegrator() {}
+inline SPRKIntegrator::~SPRKIntegrator() {}
 
-void SPRKIntegrator::Increment(
+inline void SPRKIntegrator::Increment(
       RightHandSideComputation const compute_force,
       AutonomousRightHandSideComputation const compute_velocity,
       Parameters const& parameters,
@@ -63,6 +65,8 @@ void SPRKIntegrator::Increment(
   //if (qError == null) {
   //  qError = new double[dimension];
   //}
+
+  double t_error = parameters.t_error;  // NOTE(phl): Don't change |parameters|.
 
   std::vector<std::vector<double>> Δpstages(stages + 1);
   //double[][] Δpstages = new double[stages + 1][];
@@ -130,7 +134,7 @@ void SPRKIntegrator::Increment(
   std::vector<double> v(dimension);  // Current velocities.
   //double[] v = new double[dimension]; // Current velocities.
 
-#if TRACE
+#ifdef TRACE
   int percentage = 0;  // NOTE(phl): Unchanged.
   clock_t running_time = clock();
   //long runningTime = -DateTime.Now.Ticks;
@@ -188,34 +192,53 @@ void SPRKIntegrator::Increment(
       //qLast[k] = qStage[k];
     }
 
-    double δt = h + tError;
-    tn = tn + δt;
-    tError = (tLast - tn) + δt;
-    tLast = tn;
+    double const δt = h + t_error;
+    //double δt = h + tError;
+    tn = tn + δt;  // NOTE(phl): Unchanged.
+    t_error = (t_last - tn) + δt;
+    //tError = (tLast - tn) + δt;
+    t_last = tn;
+    //tLast = tn;
 
-    if (samplingPeriod != 0) {
-      if (samplingPhase % samplingPeriod == 0) {
-        t.Add(tn);
-        p.Add((double[])pStage.Clone());
-        q.Add((double[])qStage.Clone());
+    if (parameters.sampling_period != 0) {
+    //if (samplingPeriod != 0) {
+      if (sampling_phase % parameters.sampling_period == 0) {
+      //if (samplingPhase % samplingPeriod == 0) {
+        t.push_back(tn);
+        //t.Add(tn);
+        p.push_back(p_stage);
+        //p.Add((double[])pStage.Clone());
+        q.push_back(q_stage);
+        //q.Add((double[])qStage.Clone());
       }
-      ++samplingPhase;
+      ++sampling_phase;
+      //++samplingPhase;
     }
 
-#if TRACE
-    runningTime += DateTime.Now.Ticks;
-    if (Math.Floor(tn / tmax * 100) > percentage) {
-      Console.WriteLine("SPRK: " + percentage + "%\ttn = " + tn +
-        "\tRunning time: " + runningTime / 10000 + " ms");
-      ++percentage;
+#ifdef TRACE
+    running_time += clock();
+    //runningTime += DateTime.Now.Ticks;
+    if (floor(tn / parameters.tmax * 100) > percentage) {
+    //if (Math.Floor(tn / tmax * 100) > percentage) {
+      LOG(ERROR) << "SPRK: " << percentage << "%\ttn = " << tn
+                 <<"\tRunning time: " << running_time / (CLOCKS_PER_SEC / 1000)
+                 << " ms";
+      //Console.WriteLine("SPRK: " + percentage + "%\ttn = " + tn +
+      //  "\tRunning time: " + runningTime / 10000 + " ms");
+      ++percentage;  // NOTE(phl): Unchanged.
     }
-    runningTime -= DateTime.Now.Ticks;
+    running_time -= clock();
+    //runningTime -= DateTime.Now.Ticks;
 #endif
   }
-  if (samplingPeriod == 0) {
-    t.Add(tn);
-    p.Add((double[])pStage.Clone());
-    q.Add((double[])qStage.Clone());
+  if (parameters.sampling_period == 0) {
+  //if (samplingPeriod == 0) {
+    t.push_back(tn);
+    //t.Add(tn);
+    p.push_back(p_stage);
+    //p.Add((double[])pStage.Clone());
+    q.push_back(q_stage);
+    //q.Add((double[])qStage.Clone());
   }
   return new Solution {
     momentum = p.ToArray(),
@@ -229,3 +252,5 @@ void SPRKIntegrator::Increment(
 
 }  // namespace integrators
 }  // namespace principia
+
+#undef TRACE
