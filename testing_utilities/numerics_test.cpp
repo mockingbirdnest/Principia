@@ -1,4 +1,6 @@
-﻿#include <cfloat>
+﻿#include "testing_utilities/numerics.hpp"
+
+#include <cfloat>
 #include <cmath>
 
 #include "geometry/grassmann.hpp"
@@ -9,7 +11,6 @@
 #include "quantities/elementary_functions.hpp"
 #include "quantities/si.hpp"
 #include "testing_utilities/almost_equals.hpp"
-#include "testing_utilities/numerics.hpp"
 
 namespace principia {
 namespace testing_utilities {
