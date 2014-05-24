@@ -242,7 +242,7 @@ inline void SPRKIntegrator::Increment(
   }
 
   // TODO(phl): Maybe avoid all these copies and return ownership?
-  for (int i = 0; i < p.size(); ++i) {
+  for (size_t i = 0; i < p.size(); ++i) {
     solution->momentum[i].quantities = p[i];
     solution->momentum[i].error = (*p_error)[i];
     solution->position[i].quantities = q[i];
