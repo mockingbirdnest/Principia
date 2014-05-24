@@ -161,6 +161,7 @@ inline void SPRKIntegrator::Increment(
 #endif
 
   // Integration.
+    LOG(ERROR)<<tn<<" "<<parameters.tmax;
   while (tn < parameters.tmax) {
   //while (tn < tmax) {
     // Increment SPRK step from "'SymplecticPartitionedRungeKutta' Method
