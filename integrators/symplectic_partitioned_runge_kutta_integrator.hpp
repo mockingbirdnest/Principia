@@ -1,5 +1,7 @@
 ﻿#pragma once
 
+#include <vector>
+
 #include "integrators/symplectic_integrator.hpp"
 
 namespace principia {
@@ -7,8 +9,8 @@ namespace integrators {
 
 class SPRKIntegrator : public SymplecticIntegrator {
  public:
-  SPRKIntegrator();
-  ~SPRKIntegrator() override;
+  SPRKIntegrator() = default;
+  ~SPRKIntegrator() override = default;
 
   std::vector<std::vector<double>> const& Order5Optimal() const;
 
