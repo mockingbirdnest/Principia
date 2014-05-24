@@ -1,5 +1,6 @@
 ﻿
 #include <cmath>
+#include <ctime>
 #include <memory>
 #include <vector>
 
@@ -120,49 +121,71 @@ void SPRKIntegrator::Increment(
   //double[] qStage = new double[dimension];
   std::vector<double> p_stage(dimension);
   //double[] pStage = new double[dimension];
-  //----
-  double tn = t0; // Current time.
-  double h = Δt; // Constant for now.
-  double[] f = new double[dimension]; // Current forces.
-  double[] v = new double[dimension]; // Current velocities.
+  double tn = parameters.t0;  // Current time.
+  //double tn = t0; // Current time.
+  double const h = parameters.Δt; // Constant for now.
+  //double h = Δt; // Constant for now.
+  std::vector<double> f(dimension);  // Current forces.
+  //double[] f = new double[dimension]; // Current forces.
+  std::vector<double> v(dimension);  // Current velocities.
+  //double[] v = new double[dimension]; // Current velocities.
 
 #if TRACE
-  int percentage = 0;
-  long runningTime = -DateTime.Now.Ticks;
+  int percentage = 0;  // NOTE(phl): Unchanged.
+  clock_t running_time = clock();
+  //long runningTime = -DateTime.Now.Ticks;
 #endif
 
   // Integration.
-  while (tn < tmax) {
+  while (tn < parameters.tmax) {
+  //while (tn < tmax) {
     // Increment SPRK step from "'SymplecticPartitionedRungeKutta' Method
     // for NDSolve", algorithm 3.
     for (int k = 0; k < dimension; ++k) {
       Δpstages[0][k] = 0;
       Δqstages[0][k] = 0;
-      qStage[k] = qLast[k];
+      q_stage[k] = q_last[k];
     }
-    for (int i = 1; i < stages + 1; ++i) {
-      computeForce(qStage, tn + c[i - 1] * h, ref f);
-      for (int k = 0; k < dimension; ++k) {
-        Δpstages[i][k] = Δpstages[i - 1][k] + h * b[i - 1] * f[k];
-        pStage[k] = pLast[k] + Δpstages[i][k];
+    //for (int k = 0; k < dimension; ++k) {
+    //  Δpstages[0][k] = 0;
+    //  Δqstages[0][k] = 0;
+    //  qStage[k] = qLast[k];
+    //}
+    for (int i = 1; i < stages + 1; ++i) {  // NOTE(phl): Unchanged.
+      compute_force(tn + c[i - 1] * h, q_stage, &f);
+      //computeForce(qStage, tn + c[i - 1] * h, ref f);
+      for (int k = 0; k < dimension; ++k) {  // NOTE(phl): Unchanged.
+        Δpstages[i][k] = Δpstages[i - 1][k] + h * b[i - 1] * f[k];  // NOTE(phl): Unchanged.
+        p_stage[k] = p_last[k] + Δpstages[i][k];
+        //pStage[k] = pLast[k] + Δpstages[i][k];
       }
-      computeVelocity(pStage, ref v);
-      for (int k = 0; k < dimension; ++k) {
-        Δqstages[i][k] = Δqstages[i - 1][k] + h * a[i - 1] * v[k];
-        qStage[k] = qLast[k] + Δqstages[i][k];
+      compute_velocity(p_stage, &v);
+      //computeVelocity(pStage, ref v);
+      for (int k = 0; k < dimension; ++k) {  // NOTE(phl): Unchanged.
+        Δqstages[i][k] = Δqstages[i - 1][k] + h * a[i - 1] * v[k];  // NOTE(phl): Unchanged.
+        q_stage[k] = q_last[k] + Δqstages[i][k];
+        //qStage[k] = qLast[k] + Δqstages[i][k];
       }
     }
     // Compensated summation from "'SymplecticPartitionedRungeKutta' Method
     // for NDSolve", algorithm 2.
-    for (int k = 0; k < dimension; ++k) {
-      double Δp = Δpstages[stages][k] + pError[k];
-      pStage[k] = pLast[k] + Δp;
-      pError[k] = (pLast[k] - pStage[k]) + Δp;
-      pLast[k] = pStage[k];
-      double Δq = Δqstages[stages][k] + qError[k];
-      qStage[k] = qLast[k] + Δq;
-      qError[k] = (qLast[k] - qStage[k]) + Δq;
-      qLast[k] = qStage[k];
+    for (int k = 0; k < dimension; ++k) {  // NOTE(phl): Unchanged.
+      double const Δp = Δpstages[stages][k] + (*p_error)[k];
+      //double Δp = Δpstages[stages][k] + pError[k];
+      p_stage[k] = p_last[k] + Δp;
+      //pStage[k] = pLast[k] + Δp;
+      (*p_error)[k] = (p_last[k] - p_stage[k]) + Δp;
+      //pError[k] = (pLast[k] - pStage[k]) + Δp;
+      p_last[k] = p_stage[k];
+      //pLast[k] = pStage[k];
+      double Δq = Δqstages[stages][k] + (*q_error)[k];
+      //double Δq = Δqstages[stages][k] + qError[k];
+      q_stage[k] = q_last[k] + Δq;
+      //qStage[k] = qLast[k] + Δq;
+      (*q_error)[k] = (q_last[k] - q_stage[k]) + Δq;
+      //qError[k] = (qLast[k] - qStage[k]) + Δq;
+      q_last[k] = q_stage[k];
+      //qLast[k] = qStage[k];
     }
 
     double δt = h + tError;
