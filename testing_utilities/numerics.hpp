@@ -33,6 +33,11 @@ template<typename Scalar>
 Scalar AbsoluteError(geometry::R3Element<Scalar> const& expected,
                      geometry::R3Element<Scalar> const& actual);
 
+// Uses Multivector.Norm().
+template<typename Scalar, typename Frame, unsigned int Rank>
+Scalar AbsoluteError(
+    geometry::Multivector<Scalar, Frame, Rank> const& expected,
+    geometry::Multivector<Scalar, Frame, Rank> const& actual);
 
 template<typename T, typename Norm>
 quantities::Dimensionless RelativeError(T const& expected, T const& actual,
