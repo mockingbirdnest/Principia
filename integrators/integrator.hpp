@@ -22,6 +22,7 @@ class Integrator {
 
   // TODO(phl): Rework the struct names, maybe promote them to classes.
   struct Parameters {
+    Parameters();
     std::vector<double> q0;
     std::vector<double> p0;
     std::vector<double>* q_error;

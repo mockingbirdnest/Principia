@@ -38,6 +38,8 @@ inline void SPRKIntegrator::Increment(
       AutonomousRightHandSideComputation const compute_velocity,
       Parameters const& parameters,
       Solution* solution) {
+  CHECK_NOTNULL(solution);
+
   std::vector<double> const& a = parameters.coefficients[0];
   //double[] a = coefficients[0];
   std::vector<double> const& b = parameters.coefficients[1];
@@ -56,7 +58,7 @@ inline void SPRKIntegrator::Increment(
   for (int j = 1; j < stages; ++j) {
     c[j] = c[j - 1] + b[j - 1];
   }
-
+  
   std::vector<double>* p_error;
   std::unique_ptr<std::vector<double>> p_error_deleter;
   if (parameters.p_error == nullptr) {
@@ -69,7 +71,7 @@ inline void SPRKIntegrator::Increment(
   //if (pError == null) {
   //  pError = new double[dimension];
   //}
-
+  
   //TODO(phl): Just say no to code duplication!
   std::vector<double>* q_error;
   std::unique_ptr<std::vector<double>> q_error_deleter;
@@ -277,6 +279,7 @@ inline void SPRKIntegrator::Increment(
     //time = t.ToArray(),
     //timeError = tError
   //};
+  
 }
 
 }  // namespace integrators
