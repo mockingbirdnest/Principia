@@ -16,7 +16,8 @@ AffineMap<FromFrame, ToFrame, Scalar, LinearMap>::AffineMap(
     Point<ToVector> const& to_origin,
     LinearMap<FromFrame, ToFrame> const& linear_map)
     : linear_map_(linear_map),
-      translation_(to_origin - linear_map(from_origin)) {}
+      translation_(to_origin.coordinates_ -
+                       linear_map(from_origin.coordinates_)) {}
 
 template<typename FromFrame, typename ToFrame, typename Scalar,
          template<typename, typename> class LinearMap>
@@ -33,7 +34,9 @@ template<typename FromFrame, typename ToFrame, typename Scalar,
 Point<typename AffineMap<FromFrame, ToFrame, Scalar, LinearMap>::ToVector>
 AffineMap<FromFrame, ToFrame, Scalar, LinearMap>::operator()(
     Point<FromVector> const& point) const {
-  return linear_map_(point) + translation_;
+  return Point<
+      typename AffineMap<FromFrame, ToFrame, Scalar, LinearMap>::ToVector>(
+          linear_map_(point.coordinates_) + translation_);
 }
 
 template<typename FromFrame, typename ThroughFrame, typename ToFrame,

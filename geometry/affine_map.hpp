@@ -10,6 +10,7 @@ template<typename FromFrame, typename ToFrame, typename Scalar,
          template<typename, typename> class LinearMap>
 class AffineMap {
  public:
+   typedef  LinearMap<FromFrame, ToFrame>   li ;
   typedef Vector<Scalar, FromFrame> FromVector;
   typedef Vector<Scalar, ToFrame> ToVector;
   // The identity map.

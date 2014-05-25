@@ -41,9 +41,11 @@ class AffineMapTest : public testing::Test {
     leftward_ = Displacement({0 * Metre, 1 * Metre, 0 * Metre});
     upward_   = Displacement({0 * Metre, 0 * Metre, 1 * Metre});
 
-    back_right_bottom_  = Position(Displacement({0 * Metre,
-                                                 0 * Metre,
-                                                 0 * Metre}));
+    origin_ = Position(Displacement({0 * Metre, 0 * Metre, 0 * Metre}));
+
+    back_right_bottom_  = Position(Displacement({3 * Metre,
+                                                 4 * Metre,
+                                                 5 * Metre}));
     front_right_bottom_ = back_right_bottom_ + forward_;
     back_left_bottom_   = back_right_bottom_ + leftward_;
     front_left_bottom_  = back_left_bottom_ + forward_;
@@ -51,12 +53,16 @@ class AffineMapTest : public testing::Test {
     front_right_top_    = back_right_top_ + forward_;
     back_left_top_      = back_right_top_ + leftward_;
     front_left_top_     = back_left_top_ + forward_;
+    vertices_ = {back_left_bottom_, front_left_bottom_, back_right_bottom_,
+                 front_right_bottom_, back_left_top_, front_left_top_,
+                 back_right_top_, front_right_top_};
   }
 
   Vector<Length, World> zero_;
   Vector<Length, World> forward_;
   Vector<Length, World> leftward_;
   Vector<Length, World> upward_;
+  Position origin_;
   Position back_left_bottom_;
   Position front_left_bottom_;
   Position back_right_bottom_;
@@ -65,12 +71,20 @@ class AffineMapTest : public testing::Test {
   Position front_left_top_;
   Position back_right_top_;
   Position front_right_top_;
+  std::vector<Position> vertices_;
 };
 
 TEST_F(AffineMapTest, Cube) {
   Rot rotate_left(π / 2 * Radian, upward_);
   EXPECT_THAT(RelativeError(leftward_, rotate_left(forward_)),
               Lt(2 * DBL_EPSILON));
+  RigidTransformation map = RigidTransformation(back_right_bottom_,
+                                                front_right_bottom_,
+                                                rotate_left);
+  EXPECT_THAT(map(back_right_bottom_) - origin_,
+              Eq(front_right_bottom_ - origin_));
+  EXPECT_THAT(map(front_left_top_) - origin_,
+              AlmostEquals(back_left_top_ - origin_));
 }
 
 }  // namespace geometry
