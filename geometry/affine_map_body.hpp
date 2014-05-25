@@ -47,7 +47,7 @@ AffineMap<FromFrame, ToFrame, Scalar, LinearMap> operator*(
   AffineMap<ToFrame, FromFrame, Scalar, LinearMap> result;
   result.linear_map_ = left.linear_map_ * right.linear_map_;
   result.translation_ = left.linear_map_(right.translation_) +
-                        right.translation_;
+                        left.translation_;
   return result;
 }
 

@@ -96,6 +96,11 @@ TEST_F(AffineMapTest, Cube) {
     EXPECT_THAT(originated_vertices_,
                 Contains(AlmostEquals(map(point) - origin_)));
   }
+  // Test that |map.Inverse() * map| acts as the identity on that cube.
+  for(std::vector<Position>::size_type i = 0; i < vertices_.size(); ++i) {
+    EXPECT_THAT(originated_vertices_[i],
+                AlmostEquals((map.Inverse() * map)(vertices_[i]) - origin_));
+  }
 }
 
 }  // namespace geometry
