@@ -43,11 +43,22 @@ class SymplecticIntegrator {
     double tmax;
     // The time step.
     double Δt;
-    // The error on ????
+    // The error on the starting time.
     double t_error;
     // The coefficients of the integrator.
     std::vector<std::vector<double>> coefficients;
-    // The sampling ????
+    // To save memory, we only return a datapoint every sampling_period steps
+    // (for trajectory plotting), as well as the result from the last step. If
+    // sampling_period == 0, we only return the result from the last step
+    // (that's for when we just want to advance the system, not to plot its
+    // evolution).
+    // NOTE(eggrobin): The images in the OP of the forum thread show the problem
+    // with the current approach: with reasonable sampling_periods, the plotted
+    // trajectory sometimes becomes polygonal at high velocities, while points
+    // are wasted at low velocities. At some point I think this should be
+    // handled with a function that evaluates the velocity in the plot frame to
+    // decide when to sample.  Plotting some sort of higher-order spline, rather
+    // than a polygon, would help, but isn't enough.
     int sampling_period;
   };
 

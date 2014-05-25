@@ -113,7 +113,8 @@ inline void SPRKIntegrator::Solve(
   clock_t running_time = clock();
 #endif
 
-  // Integration.
+  // Integration.  For details see  Wolfram Reference,
+  // http://reference.wolfram.com/mathematica/tutorial/NDSolveSPRK.html#74387056
   while (tn < parameters.tmax) {
     // Increment SPRK step from "'SymplecticPartitionedRungeKutta' Method
     // for NDSolve", algorithm 3.
