@@ -33,11 +33,12 @@ class Point {
                                   Weight const& left_weight,
                                   Point<Vector> const& right,
                                   Weight const& right_weight);
-  template<typename FromFrame, typename ToFrame, typename Scalar,
-         template<typename, typename> class LinearMap>
-  friend class AffineMap;
  private:
   Vector coordinates_;
+
+  template<typename FromFrame, typename ToFrame, typename Scalar,
+           template<typename, typename> class LinearMap>
+  friend class AffineMap;
 };
 
 template<typename Vector>

@@ -10,7 +10,6 @@ template<typename FromFrame, typename ToFrame, typename Scalar,
          template<typename, typename> class LinearMap>
 class AffineMap {
  public:
-   typedef  LinearMap<FromFrame, ToFrame>   li ;
   typedef Vector<Scalar, FromFrame> FromVector;
   typedef Vector<Scalar, ToFrame> ToVector;
   // The identity map.
@@ -22,16 +21,16 @@ class AffineMap {
   AffineMap<ToFrame, FromFrame, Scalar, LinearMap> Inverse() const;
   Point<ToVector> operator()(Point<FromVector> const& point) const;
 
-  template<typename FromFrame, typename ThroughFrame, typename ToFrame,
-         typename Scalar, template<typename, typename> class LinearMap>
-  friend AffineMap<FromFrame, ToFrame, Scalar, LinearMap> operator*(
-    AffineMap<ThroughFrame, ToFrame, Scalar, LinearMap> const& left,
-    AffineMap<FromFrame, ToFrame, Scalar, LinearMap> const& right);
-
  private:
   // The map is internally represented as x -> linear_map_(x) + translation_.
   ToVector translation_;
   LinearMap<FromFrame, ToFrame> linear_map_;
+  
+  template<typename FromFrame, typename ThroughFrame, typename ToFrame,
+           typename Scalar, template<typename, typename> class LinearMap>
+  friend AffineMap<FromFrame, ToFrame, Scalar, LinearMap> operator*(
+      AffineMap<ThroughFrame, ToFrame, Scalar, LinearMap> const& left,
+      AffineMap<FromFrame, ToFrame, Scalar, LinearMap> const& right);
 };
 
 template<typename FromFrame, typename ThroughFrame, typename ToFrame,

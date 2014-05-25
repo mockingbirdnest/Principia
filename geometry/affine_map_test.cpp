@@ -2,6 +2,8 @@
 
 #include <cfloat>
 
+#include <vector>
+
 #include "geometry/grassmann.hpp"
 #include "geometry/orthogonal_map.hpp"
 #include "geometry/permutation.hpp"
@@ -58,7 +60,7 @@ class AffineMapTest : public testing::Test {
                  front_right_bottom_, back_left_top_, front_left_top_,
                  back_right_top_, front_right_top_};
     originated_vertices_ = std::vector<Displacement>(vertices_.size());
-    for(std::vector<Position>::size_type i = 0; i < vertices_.size(); ++i) {
+    for (std::size_t i = 0; i < vertices_.size(); ++i) {
       originated_vertices_[i] = vertices_[i] - origin_;
     }
   }
@@ -92,12 +94,12 @@ TEST_F(AffineMapTest, Cube) {
   EXPECT_THAT(map(front_left_top_) - origin_,
               AlmostEquals(back_left_top_ - origin_));
   // Check that |map| is an isometry of the cube whose vertices are |vertices_|.
-  for(auto const point : vertices_) {
+  for (auto const& point : vertices_) {
     EXPECT_THAT(originated_vertices_,
                 Contains(AlmostEquals(map(point) - origin_)));
   }
   // Test that |map.Inverse() * map| acts as the identity on that cube.
-  for(std::vector<Position>::size_type i = 0; i < vertices_.size(); ++i) {
+  for (std::size_t i = 0; i < vertices_.size(); ++i) {
     EXPECT_THAT(originated_vertices_[i],
                 AlmostEquals((map.Inverse() * map)(vertices_[i]) - origin_));
   }

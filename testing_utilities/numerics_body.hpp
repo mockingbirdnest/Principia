@@ -50,14 +50,12 @@ Scalar AbsoluteError(
   return AbsoluteError<
       geometry::Multivector<Scalar, Frame, Rank>,
       std::function<Scalar(geometry::Multivector<Scalar, Frame, Rank>)>,
-      Scalar>(
-          expected,
-          actual,
-          [](geometry::Multivector<Scalar, Frame, Rank> v) {
-            return v.Norm();
-          });
+      Scalar>(expected,
+              actual,
+              [](geometry::Multivector<Scalar, Frame, Rank> v) {
+                return v.Norm();
+              });
 }
-
 
 template<typename T, typename Norm>
 quantities::Dimensionless RelativeError(T const& expected, T const& actual,
