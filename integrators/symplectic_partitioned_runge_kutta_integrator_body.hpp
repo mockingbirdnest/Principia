@@ -139,7 +139,7 @@ inline void SPRKIntegrator::Solve(
     // Compensated summation from "'SymplecticPartitionedRungeKutta' Method
     // for NDSolve", algorithm 2.
     for (int k = 0; k < dimension; ++k) {
-      double Δq = Δqstages[stages][k] + (*q_error)[k];
+      double const Δq = Δqstages[stages][k] + (*q_error)[k];
       q_stage[k] = q_last[k] + Δq;
       (*q_error)[k] = (q_last[k] - q_stage[k]) + Δq;
       q_last[k] = q_stage[k];
