@@ -43,6 +43,20 @@ Scalar AbsoluteError(geometry::R3Element<Scalar> const& expected,
               [](geometry::R3Element<Scalar> const& v) { return v.Norm(); });
 }
 
+template<typename Scalar, typename Frame, unsigned int Rank>
+Scalar AbsoluteError(
+    geometry::Multivector<Scalar, Frame, Rank> const& expected,
+    geometry::Multivector<Scalar, Frame, Rank> const& actual) {
+  return AbsoluteError<
+      geometry::Multivector<Scalar, Frame, Rank>,
+      std::function<Scalar(geometry::Multivector<Scalar, Frame, Rank>)>,
+      Scalar>(expected,
+              actual,
+              [](geometry::Multivector<Scalar, Frame, Rank> v) {
+                return v.Norm();
+              });
+}
+
 template<typename T, typename Norm>
 quantities::Dimensionless RelativeError(T const& expected, T const& actual,
                                         Norm const norm) {
@@ -68,6 +82,16 @@ quantities::Dimensionless RelativeError(
     geometry::R3Element<Scalar> const& actual) {
   return RelativeError(expected, actual,
                        [](geometry::R3Element<Scalar> v) { return v.Norm(); });
+}
+
+template<typename Scalar, typename Frame, unsigned int Rank>
+quantities::Dimensionless RelativeError(
+    geometry::Multivector<Scalar, Frame, Rank> const& expected,
+    geometry::Multivector<Scalar, Frame, Rank> const& actual) {
+  return RelativeError(
+      expected,
+      actual,
+      [](geometry::Multivector<Scalar, Frame, Rank> v) { return v.Norm(); });
 }
 
 union Qword {
