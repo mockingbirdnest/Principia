@@ -20,6 +20,7 @@ namespace geometry {
 using quantities::Length;
 using si::Metre;
 using si::Radian;
+using testing::Contains;
 using testing::Eq;
 using testing::Lt;
 using testing_utilities::AlmostEquals;
@@ -56,6 +57,10 @@ class AffineMapTest : public testing::Test {
     vertices_ = {back_left_bottom_, front_left_bottom_, back_right_bottom_,
                  front_right_bottom_, back_left_top_, front_left_top_,
                  back_right_top_, front_right_top_};
+    originated_vertices_ = std::vector<Displacement>(vertices_.size());
+    for(std::vector<Position>::size_type i = 0; i < vertices_.size(); ++i) {
+      originated_vertices_[i] = vertices_[i] - origin_;
+    }
   }
 
   Vector<Length, World> zero_;
@@ -72,6 +77,7 @@ class AffineMapTest : public testing::Test {
   Position back_right_top_;
   Position front_right_top_;
   std::vector<Position> vertices_;
+  std::vector<Displacement> originated_vertices_;
 };
 
 TEST_F(AffineMapTest, Cube) {
@@ -85,6 +91,11 @@ TEST_F(AffineMapTest, Cube) {
               Eq(front_right_bottom_ - origin_));
   EXPECT_THAT(map(front_left_top_) - origin_,
               AlmostEquals(back_left_top_ - origin_));
+  // Check that |map| is an isometry of the cube whose vertices are |vertices_|.
+  for(auto const point : vertices_) {
+    EXPECT_THAT(originated_vertices_,
+                Contains(AlmostEquals(map(point) - origin_)));
+  }
 }
 
 }  // namespace geometry
