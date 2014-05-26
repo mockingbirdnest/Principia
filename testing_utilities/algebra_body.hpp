@@ -60,6 +60,24 @@ void TestAdditiveGroup(T const& zero, T const& a, T const& b, T const& c,
   EXPECT_THAT(accumulator, AlmostEquals(a + b - c, max_ulps));
 }
 
+
+template<typename T>
+void TestNonCommutativeMultiplicativeGroup(T const& one, T const& a, T const& b,
+                                           T const& c,
+                                           std::int64_t const max_ulps = 0) {
+  EXPECT_EQ(a * one, a);
+  EXPECT_EQ(one * b, b);
+  EXPECT_EQ(a / a, one);
+  EXPECT_THAT((1 / a) / b, AlmostEquals(1 / (a * b), max_ulps));
+  EXPECT_THAT((a * b) * c, AlmostEquals(a * (b * c), max_ulps));
+  EXPECT_THAT(a / b / c, AlmostEquals(a / (b * c), max_ulps));
+  T accumulator = one;
+  accumulator *= a;
+  accumulator *= b;
+  accumulator /= c;
+  EXPECT_THAT(accumulator, AlmostEquals(a * b / c, max_ulps));
+}
+
 template<typename T>
 void TestMultiplicativeGroup(T const& one, T const& a, T const& b, T const& c,
                              std::int64_t const max_ulps) {
