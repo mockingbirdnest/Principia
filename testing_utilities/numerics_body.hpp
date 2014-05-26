@@ -3,12 +3,44 @@
 #include <cmath>
 #include <cstdint>
 
+#include <functional>
+
 namespace principia {
 namespace testing_utilities {
 
 template<typename Scalar>
 double DoubleValue(Scalar const& scalar) {
   return (scalar / Scalar::SIUnit()).value();
+}
+
+template<typename T, typename Norm, typename NormType>
+NormType AbsoluteError(T const& expected, T const& actual,
+                       Norm const norm) {
+  return norm(expected - actual);
+}
+
+inline quantities::Dimensionless AbsoluteError(
+    quantities::Dimensionless const& expected,
+    quantities::Dimensionless const& actual) {
+  return AbsoluteError(expected, actual, quantities::Abs);
+}
+
+template<typename Dimensions>
+quantities::Quantity<Dimensions> AbsoluteError(
+    quantities::Quantity<Dimensions> const& expected,
+    quantities::Quantity<Dimensions> const& actual) {
+  return AbsoluteError(expected, actual, quantities::Abs<Dimensions>);
+}
+
+template<typename Scalar>
+Scalar AbsoluteError(geometry::R3Element<Scalar> const& expected,
+                     geometry::R3Element<Scalar> const& actual) {
+  return AbsoluteError<
+      geometry::R3Element<Scalar>,
+      std::function<Scalar(geometry::R3Element<Scalar>)>,
+      Scalar>(expected,
+              actual,
+              [](geometry::R3Element<Scalar> const& v) { return v.Norm(); });
 }
 
 template<typename T, typename Norm>
@@ -24,18 +56,18 @@ inline quantities::Dimensionless RelativeError(
 }
 
 template<typename Dimensions>
-quantities::Quantity<Dimensions> RelativeError(
+quantities::Dimensionless RelativeError(
     quantities::Quantity<Dimensions> const& expected,
     quantities::Quantity<Dimensions> const& actual) {
   return RelativeError(expected, actual, quantities::Abs<Dimensions>);
 }
 
 template<typename Scalar>
-geometry::R3Element<Scalar> RelativeError(
+quantities::Dimensionless RelativeError(
     geometry::R3Element<Scalar> const& expected,
     geometry::R3Element<Scalar> const& actual) {
   return RelativeError(expected, actual,
-                       [](R3Element<Scalar> v) { return v.Norm() });
+                       [](geometry::R3Element<Scalar> v) { return v.Norm(); });
 }
 
 union Qword {

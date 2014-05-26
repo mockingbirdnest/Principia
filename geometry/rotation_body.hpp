@@ -60,6 +60,11 @@ Trivector<Scalar, ToFrame> Rotation<FromFrame, ToFrame>::operator()(
 }
 
 template<typename FromFrame, typename ToFrame>
+OrthogonalMap<FromFrame, ToFrame> Rotation<FromFrame, ToFrame>::Forget() const {
+  return OrthogonalMap<FromFrame, ToFrame>(Sign(1), *this);
+}
+
+template<typename FromFrame, typename ToFrame>
 Rotation<FromFrame, ToFrame> Rotation<FromFrame, ToFrame>::Identity() {
   return Rotation(Quaternion(1));
 }

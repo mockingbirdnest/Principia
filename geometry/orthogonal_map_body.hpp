@@ -15,13 +15,6 @@ OrthogonalMap<FromFrame, ToFrame>::OrthogonalMap()
       rotation_(Rotation<FromFrame, ToFrame>::Identity()) {}
 
 template<typename FromFrame, typename ToFrame>
-OrthogonalMap<FromFrame, ToFrame>::OrthogonalMap(
-    Sign const& determinant,
-    Rotation<FromFrame, ToFrame> const& rotation)
-    : determinant_(determinant),
-      rotation_(rotation) {}
-
-template<typename FromFrame, typename ToFrame>
 Sign OrthogonalMap<FromFrame, ToFrame>::Determinant() const {
   return determinant_;
 }
@@ -58,6 +51,13 @@ OrthogonalMap<FromFrame, ToFrame>
 OrthogonalMap<FromFrame, ToFrame>::Identity() {
   return OrthogonalMap(Sign(1), Rotation<FromFrame, ToFrame>::Identity());
 }
+
+template<typename FromFrame, typename ToFrame>
+OrthogonalMap<FromFrame, ToFrame>::OrthogonalMap(
+    Sign const& determinant,
+    Rotation<FromFrame, ToFrame> const& rotation)
+    : determinant_(determinant),
+      rotation_(rotation) {}
 
 template<typename FromFrame, typename ThroughFrame, typename ToFrame>
 OrthogonalMap<FromFrame, ToFrame> operator*(

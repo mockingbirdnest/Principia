@@ -11,6 +11,9 @@ namespace principia {
 namespace geometry {
 
 template<typename FromFrame, typename ToFrame>
+class OrthogonalMap;
+
+template<typename FromFrame, typename ToFrame>
 class Rotation : public LinearMap<FromFrame, ToFrame> {
  public:
   Rotation();
@@ -35,7 +38,7 @@ class Rotation : public LinearMap<FromFrame, ToFrame> {
   Trivector<Scalar, ToFrame> operator()(
       Trivector<Scalar, FromFrame> const& trivector) const;
 
-  // TODO(phl): Add Forget.
+  OrthogonalMap<FromFrame, ToFrame> Forget() const;
 
   static Rotation Identity();
 
@@ -46,6 +49,10 @@ class Rotation : public LinearMap<FromFrame, ToFrame> {
   R3Element<Scalar> operator()(R3Element<Scalar> const& r3_element) const;
 
   Quaternion quaternion_;
+
+  // For constructing a rotation using a quaternion.
+  template<typename FromFrame, typename ToFrame>
+  friend class Permutation;
 
   template<typename FromFrame, typename ThroughFrame, typename ToFrame>
   friend Rotation<FromFrame, ToFrame> operator*(

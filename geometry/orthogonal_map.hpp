@@ -14,8 +14,6 @@ template<typename FromFrame, typename ToFrame>
 class OrthogonalMap : public LinearMap<FromFrame, ToFrame> {
  public:
   OrthogonalMap();
-  OrthogonalMap(Sign const& determinant,
-                Rotation<FromFrame, ToFrame> const& rotation);
   virtual ~OrthogonalMap() = default;
 
   Sign Determinant() const override;
@@ -37,14 +35,23 @@ class OrthogonalMap : public LinearMap<FromFrame, ToFrame> {
   static OrthogonalMap Identity();
 
  private:
+  OrthogonalMap(Sign const& determinant,
+                Rotation<FromFrame, ToFrame> const& rotation);
+
   Sign determinant_;
   Rotation<FromFrame, ToFrame> rotation_;
+
+  template<typename FromFrame, typename ToFrame>
+  friend class Permutation;
+  template<typename FromFrame, typename ToFrame>
+  friend class Rotation;
 
   template<typename FromFrame, typename ThroughFrame, typename ToFrame>
   friend OrthogonalMap<FromFrame, ToFrame> operator*(
       OrthogonalMap<ThroughFrame, ToFrame> const& left,
       OrthogonalMap<FromFrame, ThroughFrame> const& right);
-  friend class OrthogonalMapTests;
+
+  friend class OrthogonalMapTest;
 };
 
 template<typename FromFrame, typename ThroughFrame, typename ToFrame>
