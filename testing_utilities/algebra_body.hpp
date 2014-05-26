@@ -62,9 +62,9 @@ void TestAdditiveGroup(T const& zero, T const& a, T const& b, T const& c,
 
 
 template<typename T>
-void TestNonCommutativeMultiplicativeGroup(T const& one, T const& a, T const& b,
-                                           T const& c,
-                                           std::int64_t const max_ulps = 0) {
+void TestGroup(T const& one, T const& a, T const& b, T const& c,
+               T (*operation)(T const&, T const&), T (*inverse)(T const&),
+               std::int64_t const max_ulps = 0) {
   EXPECT_EQ(a * one, a);
   EXPECT_EQ(one * b, b);
   EXPECT_EQ(a / a, one);
