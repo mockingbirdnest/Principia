@@ -30,6 +30,21 @@ inline Scalar Multivector<Scalar, Frame, 3>::coordinates() const {
   return coordinates_;
 }
 
+template<typename Scalar, typename Frame>
+inline Scalar Multivector<Scalar, Frame, 1>::Norm() const {
+  return coordinates_.Norm();
+}
+
+template<typename Scalar, typename Frame>
+inline Scalar Multivector<Scalar, Frame, 2>::Norm() const {
+  return coordinates_.Norm();
+}
+
+template<typename Scalar, typename Frame>
+inline Scalar Multivector<Scalar, Frame, 3>::Norm() const {
+  return quantities::Abs(coordinates_);
+}
+
 template<typename LScalar, typename RScalar, typename Frame>
 inline quantities::Product<LScalar, RScalar> InnerProduct(
     Vector<LScalar, Frame> const& left,

@@ -24,6 +24,13 @@ class Point {
   bool operator==(Point const& right) const;
   bool operator!=(Point const& right) const;
 
+ private:
+  Vector coordinates_;
+
+  template<typename FromFrame, typename ToFrame, typename Scalar,
+           template<typename, typename> class LinearMap>
+  friend class AffineMap;
+
   template<typename Vector>
   friend Point<Vector> operator+(Vector const& translation,
                                  Point<Vector> const& point);
@@ -33,9 +40,6 @@ class Point {
                                   Weight const& left_weight,
                                   Point<Vector> const& right,
                                   Weight const& right_weight);
-
- private:
-  Vector coordinates_;
 };
 
 template<typename Vector>

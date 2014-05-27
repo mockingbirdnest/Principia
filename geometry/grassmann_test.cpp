@@ -223,5 +223,16 @@ TEST_F(GrassmannTest, Actions) {
 
 #pragma warning(default: 4566)
 
+TEST_F(GrassmannTest, Norm) {
+  Vector<Length, World> const v({-3 * 4 * Metre, 4 * 4 * Metre, 5 * 3 * Metre});
+  EXPECT_THAT(v.Norm(), Eq(5 * 5 * Metre));
+  Bivector<Length, World> const w({+20 * 21 * Metre,
+                                   -21 * 21 * Metre,
+                                   +29 * 20 * Metre});
+  EXPECT_THAT(w.Norm(), Eq(29 * 29 * Metre));
+  Trivector<Length, World> const u(-4 * Furlong);
+  EXPECT_THAT(u.Norm(), Eq(4 * Furlong));
+}
+
 }  // namespace geometry
 }  // namespace principia
