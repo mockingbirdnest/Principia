@@ -69,7 +69,7 @@ void TestGroup(T const& identity, T const& a, T const& b, T const& c,
   EXPECT_EQ(operation(b, identity), b);
   EXPECT_THAT(operation(a, inverse(a)), AlmostEquals(identity, max_ulps));
   EXPECT_THAT(operation(inverse(a), inverse(b)),
-              AlmostEquals(operation(a, b), max_ulps));
+              AlmostEquals(inverse(operation(a, b)), max_ulps));
   EXPECT_THAT(operation(operation(a, b), c),
               AlmostEquals(operation(a, operation(b, c)), max_ulps));
   EXPECT_THAT(operation(operation(a, inverse(b)), inverse(c)),
