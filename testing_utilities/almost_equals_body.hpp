@@ -52,11 +52,11 @@ bool AlmostEqualsMatcher<T>::MatchAndExplain(
   if (actual == expected_) {
     return true;
   }
-  std::int64_t const distance = ULPDistance(actual.value(),
-                                            Dimensionless(expected_).value());
-  bool const matches = distance <= max_ulps_;
+  std::int64_t const distance = ULPDistance(
+      actual.value(),
+      quantities::Dimensionless(expected_).value());
   *listener << "the numbers are separated by " << distance << " ULPs";
-  return matches;
+  return distance <= max_ulps_;
 }
 
 template<typename T>
