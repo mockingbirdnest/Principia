@@ -46,5 +46,8 @@
     <ClCompile Include="numerics_test.cpp">
       <Filter>Test Files</Filter>
     </ClCompile>
+    <ClCompile Include="algebra_test.cpp">
+      <Filter>Test Files</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>
