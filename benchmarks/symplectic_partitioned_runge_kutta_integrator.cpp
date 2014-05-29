@@ -2,9 +2,11 @@
 #undef TRACE_SYMPLECTIC_PARTITIONED_RUNGE_KUTTA_INTEGRATOR
 
 #include <algorithm>
+#include <vector>
 
-#include "benchmark/benchmark.h"
 #include "integrators/symplectic_partitioned_runge_kutta_integrator.hpp"
+// Must come last to avoid conflicts when defining the CHECK macros.
+#include "benchmark/benchmark.h"
 
 using principia::integrators::SPRKIntegrator;
 
@@ -19,7 +21,7 @@ inline void compute_harmonic_oscillator_force(double const t,
   (*result)[0] = -q[0];
 }
 
-inline void compute_harmonice_oscillator_velocity(std::vector<double> const& p,
+inline void compute_harmonic_oscillator_velocity(std::vector<double> const& p,
                                                   std::vector<double>* result) {
   (*result)[0] = p[0];
 }
@@ -45,9 +47,9 @@ void SolveHarmonicOscillator(benchmark::State* state,
   parameters.coefficients = integrator.Order5Optimal();
   parameters.sampling_period = 1;
   integrator.Solve(&compute_harmonic_oscillator_force,
-                    &compute_harmonice_oscillator_velocity,
-                    parameters,
-                    &solution);
+                   &compute_harmonic_oscillator_velocity,
+                   parameters,
+                   &solution);
 
   state->PauseTiming();
   *q_error = 0;
@@ -63,7 +65,8 @@ void SolveHarmonicOscillator(benchmark::State* state,
   state->ResumeTiming();
 }
 
-static void BM_SolveHarmonicOscillator(benchmark::State& state) {
+static void BM_SolveHarmonicOscillator(
+    benchmark::State& state) {  // NOLINT(runtime/references)
   double q_error;
   double p_error;
   while (state.KeepRunning()) {
