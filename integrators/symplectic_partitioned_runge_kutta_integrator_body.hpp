@@ -7,8 +7,6 @@
 // NOTE(phl): The glog operations may not work with Unity/Mono.
 #include "glog/logging.h"
 
-#define TRACE
-
 namespace principia {
 namespace integrators {
 
@@ -108,9 +106,9 @@ inline void SPRKIntegrator::Solve(
   std::vector<double> f(dimension);  // Current forces.
   std::vector<double> v(dimension);  // Current velocities.
 
-#ifdef TRACE
+#ifdef TRACE_SYMPLECTIC_PARTITIONED_RUNGE_KUTTA_INTEGRATOR
   int percentage = 0;
-  clock_t running_time = clock();
+  clock_t running_time = -clock();
 #endif
 
   // Integration.  For details see Wolfram Reference,
@@ -164,11 +162,11 @@ inline void SPRKIntegrator::Solve(
       ++sampling_phase;
     }
 
-#ifdef TRACE
+#ifdef TRACE_SYMPLECTIC_PARTITIONED_RUNGE_KUTTA_INTEGRATOR
     running_time += clock();
     if (floor(tn / parameters.tmax * 100) > percentage) {
       LOG(ERROR) << "SPRK: " << percentage << "%\ttn = " << tn
-                 <<"\tRunning time: " << running_time / (CLOCKS_PER_SEC / 1000)
+                 << "\tRunning time: " << running_time / (CLOCKS_PER_SEC / 1000)
                  << " ms";
       ++percentage;
     }
@@ -202,9 +200,15 @@ inline void SPRKIntegrator::Solve(
   }
   solution->time.quantities = t;
   solution->time.error = t_error;
+
+#ifdef TRACE_SYMPLECTIC_PARTITIONED_RUNGE_KUTTA_INTEGRATOR
+  running_time += clock();
+  LOG(ERROR) << "SPRK: final running time: "
+             << running_time / (CLOCKS_PER_SEC / 1000) << " ms";
+#endif
 }
 
 }  // namespace integrators
 }  // namespace principia
 
-#undef TRACE
+#undef TRACE_SYMPLECTIC_PARTITIONED_RUNGE_KUTTA_INTEGRATOR

@@ -1,4 +1,5 @@
 ﻿#define GLOG_NO_ABBREVIATED_SEVERITIES
+#define TRACE_SYMPLECTIC_PARTITIONED_RUNGE_KUTTA_INTEGRATOR
 
 #include <algorithm>
 
@@ -25,49 +26,52 @@ inline void compute_harmonice_oscillator_velocity(std::vector<double> const& p,
 
 }  // namespace
 
-void SolveHarmonicOscillator() {
-  std::unique_ptr<SPRKIntegrator> integrator(
-      new SPRKIntegrator);
-  std::unique_ptr<SPRKIntegrator::Parameters> parameters(
-      new SPRKIntegrator::Parameters);
-  std::unique_ptr<SPRKIntegrator::Solution> solution(
-      new SPRKIntegrator::Solution);
+void SolveHarmonicOscillator(benchmark::State* state,
+                             double* q_error,
+                             double* p_error) {
+  SPRKIntegrator integrator;
+  SPRKIntegrator::Parameters parameters;
+  SPRKIntegrator::Solution solution;
 
-  parameters->q0 = {1.0};
-  parameters->p0 = {0.0};
-  parameters->t0 = 0.0;
+  parameters.q0 = {1.0};
+  parameters.p0 = {0.0};
+  parameters.t0 = 0.0;
 #ifdef _DEBUG
-  parameters->tmax = 100.0;
+  parameters.tmax = 100.0;
 #else
-  parameters->tmax = 1000.0;
+  parameters.tmax = 1000.0;
 #endif
-  parameters->Δt = 1.0E-4;
-  parameters->coefficients = integrator->Order5Optimal();
-  parameters->sampling_period = 1;
-  integrator->Solve(&compute_harmonic_oscillator_force,
-                         &compute_harmonice_oscillator_velocity,
-                         *parameters,
-                         solution.get());
-  double q_error = 0;
-  double p_error = 0;
-  for (size_t i = 0; i < solution->time.quantities.size(); ++i) {
-    q_error = std::max(q_error,
-                       std::abs(solution->position[0].quantities[i] -
-                                std::cos(solution->time.quantities[i])));
-    p_error = std::max(p_error,
-                       std::abs(solution->momentum[0].quantities[i] +
-                                std::sin(solution->time.quantities[i])));
+  parameters.Δt = 1.0E-4;
+  parameters.coefficients = integrator.Order5Optimal();
+  parameters.sampling_period = 1;
+  integrator.Solve(&compute_harmonic_oscillator_force,
+                    &compute_harmonice_oscillator_velocity,
+                    parameters,
+                    &solution);
+
+  state->PauseTiming();
+  *q_error = 0;
+  *p_error = 0;
+  for (size_t i = 0; i < solution.time.quantities.size(); ++i) {
+    *q_error = std::max(*q_error,
+                        std::abs(solution.position[0].quantities[i] -
+                                 std::cos(solution.time.quantities[i])));
+    *p_error = std::max(*p_error,
+                        std::abs(solution.momentum[0].quantities[i] +
+                                 std::sin(solution.time.quantities[i])));
   }
-  //LOG(ERROR) << "q_error = " << q_error;
-  //LOG(ERROR) << "p_error = " << p_error;
-  //EXPECT_THAT(AbsoluteError(0, q_error), Lt(2E-16 * parameters_->tmax));
-  //EXPECT_THAT(AbsoluteError(0, p_error), Lt(2E-16 * parameters_->tmax));
+  state->ResumeTiming();
 }
 
 static void BM_SolveHarmonicOscillator(benchmark::State& state) {
+  double q_error;
+  double p_error;
   while (state.KeepRunning()) {
-    SolveHarmonicOscillator();
+    SolveHarmonicOscillator(&state, &q_error, &p_error);
   }
+  std::stringstream ss;
+  ss << q_error << ", " << p_error;
+  state.SetLabel(ss.str());
 }
 BENCHMARK(BM_SolveHarmonicOscillator);
 
