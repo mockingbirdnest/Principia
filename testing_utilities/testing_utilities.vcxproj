@@ -19,6 +19,8 @@
     <ClInclude Include="explicit_operators_body.hpp" />
     <ClInclude Include="numerics.hpp" />
     <ClInclude Include="numerics_body.hpp" />
+    <ClInclude Include="statistics.hpp" />
+    <ClInclude Include="statistics_body.hpp" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="algebra_test.cpp" />
