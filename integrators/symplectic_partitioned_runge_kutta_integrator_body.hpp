@@ -108,6 +108,9 @@ inline void SPRKIntegrator::Solve(
 
 #ifdef TRACE_SYMPLECTIC_PARTITIONED_RUNGE_KUTTA_INTEGRATOR
   int percentage = 0;
+  // Initialize |running_time| so that, when we reach the end of the iteration
+  // and add clock(), |running_time| will contain the time actually spent in the
+  // iteration.
   clock_t running_time = -clock();
 #endif
 
@@ -210,5 +213,3 @@ inline void SPRKIntegrator::Solve(
 
 }  // namespace integrators
 }  // namespace principia
-
-#undef TRACE_SYMPLECTIC_PARTITIONED_RUNGE_KUTTA_INTEGRATOR
