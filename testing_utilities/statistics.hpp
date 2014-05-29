@@ -13,7 +13,7 @@ T Mean(std::vector<T> x);
 template<typename T>
 quantities::Product<T, T> Variance(std::vector<T> x);
 
-template<typename T>
+template<typename T, typename U>
 quantities::Product<T, U> Covariance(std::vector<T> x, std::vector<U> y);
 
 template<typename T>
@@ -25,3 +25,5 @@ Dimensionless PearsonProductMomentCorrelation(std::vector<T> x,
 
 }  // testing_utilities
 }  // principia
+
+#include "testing_utilities/statistics_body.hpp"
