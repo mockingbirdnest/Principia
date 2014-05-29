@@ -71,5 +71,29 @@ TEST_F(SPRKTest, HarmonicOscillator) {
   EXPECT_THAT(AbsoluteError(0, p_error), Lt(2E-16 * parameters_.tmax));
 }
 
+TEST_F(SPRKTest, Convergence) {
+  parameters_.tmax = 100;
+  parameters_.coefficients = integrator_.Order5Optimal();
+  parameters_.sampling_period = 0;
+  int const step_sizes = 5;
+  std::vector<double> log_step_sizes(step_sizes);
+  std::vector<double> log_q_errors(step_sizes);
+  std::vector<double> log_p_errors(step_sizes);
+  parameters_.Δt = 1;
+  for(int i = 0; i < step_sizes; ++i, parameters_.Δt /= 10) {
+    integrator_.Solve(&compute_harmonic_oscillator_force,
+                      &compute_harmonice_oscillator_velocity,
+                      parameters_, &solution_);
+    log_step_sizes[i] = std::log(parameters_.Δt);
+    log_q_errors[i] = std::log(
+        std::abs(solution_.position[0].quantities[0] -
+                 std::cos(solution_.time.quantities[0])));
+    log_p_errors[i] = std::log(
+        std::abs(solution_.position[0].quantities[0] -
+                 std::sin(solution_.time.quantities[0])));
+  }
+
+}
+
 }  // namespace integrators
 }  // namespace principia
