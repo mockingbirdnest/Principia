@@ -1,4 +1,6 @@
 ﻿
+#define TRACE_SYMPLECTIC_PARTITIONED_RUNGE_KUTTA_INTEGRATOR
+
 #include "integrators/symplectic_partitioned_runge_kutta_integrator.hpp"
 
 #include <algorithm>
