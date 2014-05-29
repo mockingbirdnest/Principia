@@ -68,6 +68,9 @@
     <ClInclude Include="point_body.hpp">
       <Filter>Source Files</Filter>
     </ClInclude>
+    <ClInclude Include="affine_map_body.hpp">
+      <Filter>Source Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="sign_test.cpp">
@@ -92,6 +95,9 @@
       <Filter>Test Files</Filter>
     </ClCompile>
     <ClCompile Include="r3_element_test.cpp">
+      <Filter>Test Files</Filter>
+    </ClCompile>
+    <ClCompile Include="affine_map_test.cpp">
       <Filter>Test Files</Filter>
     </ClCompile>
   </ItemGroup>

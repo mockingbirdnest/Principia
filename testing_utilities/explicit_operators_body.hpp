@@ -3,6 +3,11 @@
 namespace principia {
 namespace testing_utilities {
 
+template<typename ResultType, typename RightType>
+inline ResultType Minus(RightType const& right) {
+  return -right;
+}
+
 template<typename ResultType, typename LeftType, typename RightType>
 inline ResultType Plus(LeftType const& left, RightType const& right) {
   return left + right;
