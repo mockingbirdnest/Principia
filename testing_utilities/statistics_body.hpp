@@ -11,7 +11,7 @@ namespace testing_utilities {
 template<typename T>
 T Mean(std::vector<T> const& x) {
   T total;
-  for(T const& x_i : x) {
+  for (T const& x_i : x) {
     total += x_i;
   }
   return total / x.size();
@@ -28,7 +28,7 @@ quantities::Product<T, U> Covariance(std::vector<T> const& x,
   std::vector<quantities::Product<T, U>> integrand(x.size());
   T mean_x = Mean(x);
   U mean_y = Mean(y);
-  for(std::size_t i = 0; i < x.size(); ++i) {
+  for (std::size_t i = 0; i < x.size(); ++i) {
     integrand[i] = (x[i] - mean_x) * (y[i] - mean_y);
   }
   return Mean(integrand);
@@ -52,5 +52,5 @@ quantities::Quotient<U, T> Slope(std::vector<T> const& x,
   return Covariance(x, y) / Variance(x);
 }
 
-}  // testing_utilities
-}  // principia
+}  // namespace testing_utilities
+}  // namespace principia
