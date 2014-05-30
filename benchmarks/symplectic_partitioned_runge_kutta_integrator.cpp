@@ -1,19 +1,6 @@
 ﻿
 // .\Release\benchmarks_tests.exe --benchmark_repetitions=5 --benchmark_min_time=300
 // Benchmarking on 1 X 3310 MHz CPU
-// 2014/05/30-17:19:56
-// Benchmark                           Time(ns)    CPU(ns) Iterations
-// ------------------------------------------------------------------
-// BM_SolveHarmonicOscillator        5503073850 5488398818         11                                 1.37019e-013, 1.37057e-013
-// BM_SolveHarmonicOscillator        5066959920 5054432400         12                                 1.37019e-013, 1.37057e-013
-// BM_SolveHarmonicOscillator        5647669798 5640145245         11                                 1.37019e-013, 1.37057e-013
-// BM_SolveHarmonicOscillator        5107097166 5098832685         13                                 1.37019e-013, 1.37057e-013
-// BM_SolveHarmonicOscillator        4840442968 4828830954         13                                 1.37019e-013, 1.37057e-013
-// BM_SolveHarmonicOscillator_mean   5212995348 5202113347         60                                 1.37019e-013, 1.37057e-013
-// BM_SolveHarmonicOscillator_stddev  294675070  295069109         60                                 1.37019e-013, 1.37057e-013
-
-// .\Release\benchmarks_tests.exe --benchmark_repetitions=5 --benchmark_min_time=300
-// Benchmarking on 1 X 3310 MHz CPU
 // 2014/05/30-18:44:00
 // Benchmark                           Time(ns)    CPU(ns) Iterations
 // ------------------------------------------------------------------
