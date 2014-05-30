@@ -168,9 +168,9 @@ inline void SPRKIntegrator::Solve(
 #ifdef TRACE_SYMPLECTIC_PARTITIONED_RUNGE_KUTTA_INTEGRATOR
     running_time += clock();
     if (floor(tn / parameters.tmax * 100) > percentage) {
-      LOG(ERROR) << "SPRK: " << percentage << "%\ttn = " << tn
-                 << "\tRunning time: " << running_time / (CLOCKS_PER_SEC / 1000)
-                 << " ms";
+      LOG(INFO) << "SPRK: " << percentage << "%\ttn = " << tn
+                << "\tRunning time: " << running_time / (CLOCKS_PER_SEC / 1000)
+                << " ms";
       ++percentage;
     }
     running_time -= clock();
@@ -206,8 +206,8 @@ inline void SPRKIntegrator::Solve(
 
 #ifdef TRACE_SYMPLECTIC_PARTITIONED_RUNGE_KUTTA_INTEGRATOR
   running_time += clock();
-  LOG(ERROR) << "SPRK: final running time: "
-             << running_time / (CLOCKS_PER_SEC / 1000) << " ms";
+  LOG(INFO) << "SPRK: final running time: "
+            << running_time / (CLOCKS_PER_SEC / 1000) << " ms";
 #endif
 }
 
