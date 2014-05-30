@@ -26,6 +26,9 @@ class SymplecticIntegrator {
                                            std::vector<double> const& y,
                                            std::vector<double>* result);
 
+  // The coefficients of the integrator.
+  typedef std::vector<std::vector<double>> Coefficients;
+
   // TODO(phl): Rework the struct names, maybe promote them to classes.
   struct Parameters {
     Parameters();
@@ -45,8 +48,6 @@ class SymplecticIntegrator {
     double Δt;
     // The error on the starting time.
     double t_error;
-    // The coefficients of the integrator.
-    std::vector<std::vector<double>> coefficients;
     // To save memory, we only return a datapoint every sampling_period steps
     // (for trajectory plotting), as well as the result from the last step. If
     // sampling_period == 0, we only return the result from the last step
@@ -74,6 +75,10 @@ class SymplecticIntegrator {
     std::vector<TimeseriesAndError> position;
     TimeseriesAndError time;
   };
+
+  // Initialize the integrator with the given |coefficients|.  Must be called
+  // before calling Solve.
+  virtual void Initialize(Coefficients const& coefficients) = 0;
 
   // Takes ownership of the pointers in |parameters|.
   // TODO(phl): Pass the function pointers at construction?
