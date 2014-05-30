@@ -117,7 +117,6 @@ TEST_F(SPRKTest, Convergence) {
         std::abs(solution_.momentum[0].quantities[0] +
                  std::sin(solution_.time.quantities[0])));
   }
-  google::LogToStderr();
   Dimensionless const q_convergence_order = Slope(log_step_sizes, log_q_errors);
   Dimensionless const q_correlation =
       PearsonProductMomentCorrelationCoefficient(log_step_sizes, log_q_errors);
