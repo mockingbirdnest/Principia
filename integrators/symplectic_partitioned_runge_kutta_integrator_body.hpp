@@ -76,22 +76,26 @@ inline void SPRKIntegrator::Solve(
     Δpstages[i].resize(dimension);
   }
 
-  // Result goes here.
+  // Dimension the result.
   int const capacity = parameters.sampling_period == 0 ?
     1 :
     static_cast<int>(
         ceil((((parameters.tmax - parameters.t0) / parameters.Δt) + 1) /
                 parameters.sampling_period)) + 1;
-  std::vector<std::vector<double>> q;
-  q.reserve(capacity);
-  std::vector<std::vector<double>> p;
-  p.reserve(capacity);
-  std::vector<double> t;
-  t.reserve(capacity);
+  solution->time.quantities.reserve(capacity);
+  solution->momentum.resize(dimension);
+  solution->position.resize(dimension);
+  for (int j = 0; j < dimension; ++j) {
+    solution->position[j].quantities.reserve(capacity);
+    solution->momentum[j].quantities.reserve(capacity);
+  }
+
   if (parameters.sampling_period != 0) {
-    q.push_back(parameters.q0);
-    p.push_back(parameters.p0);
-    t.push_back(parameters.t0);
+    solution->time.quantities.push_back(parameters.t0);
+    for (int j = 0; j < dimension; ++j) {
+      solution->position[j].quantities.push_back(parameters.q0[j]);
+      solution->momentum[j].quantities.push_back(parameters.p0[j]);
+    }
   }
 
   std::vector<double> q_last(parameters.q0);
@@ -158,9 +162,11 @@ inline void SPRKIntegrator::Solve(
 
     if (parameters.sampling_period != 0) {
       if (sampling_phase % parameters.sampling_period == 0) {
-        t.push_back(tn);
-        q.push_back(q_stage);
-        p.push_back(p_stage);
+        solution->time.quantities.push_back(tn);
+        for (int j = 0; j < dimension; ++j) {
+          solution->position[j].quantities.push_back(q_stage[j]);
+          solution->momentum[j].quantities.push_back(p_stage[j]);
+        }
       }
       ++sampling_phase;
     }
@@ -177,32 +183,18 @@ inline void SPRKIntegrator::Solve(
 #endif
   }
   if (parameters.sampling_period == 0) {
-    t.push_back(tn);
-    q.push_back(q_stage);
-    p.push_back(p_stage);
-  }
-
-  solution->momentum.resize(dimension);
-  solution->position.resize(dimension);
-  CHECK_EQ(p.size(), q.size());
-  for (size_t i = 0; i < p.size(); ++i) {
-    CHECK_EQ(dimension, q[i].size());
-    CHECK_EQ(dimension, p[i].size());
+    solution->time.quantities.push_back(tn);
     for (int j = 0; j < dimension; ++j) {
-      if (i == 0) {
-        solution->position[j].quantities.reserve(q.size());
-        solution->momentum[j].quantities.reserve(p.size());
-      }
-      solution->position[j].quantities.push_back(q[i][j]);
-      solution->momentum[j].quantities.push_back(p[i][j]);
+      solution->position[j].quantities.push_back(q_stage[j]);
+      solution->momentum[j].quantities.push_back(p_stage[j]);
     }
   }
+
+  solution->time.error = t_error;
   for (int j = 0; j < dimension; ++j) {
     solution->position[j].error = (*q_error)[j];
     solution->momentum[j].error = (*p_error)[j];
   }
-  solution->time.quantities = t;
-  solution->time.error = t_error;
 
 #ifdef TRACE_SYMPLECTIC_PARTITIONED_RUNGE_KUTTA_INTEGRATOR
   running_time += clock();
