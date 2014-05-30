@@ -1,5 +1,6 @@
 #pragma once
 
+#include<cfloat>
 #include<string>
 
 namespace principia {
@@ -49,7 +50,7 @@ bool operator!=(Dimensionless const&, Dimensionless const&);
 Dimensionless Abs(Dimensionless const&);
 
 std::string ToString(Dimensionless const& number,
-                     unsigned char const precision = 16);
+                     unsigned char const precision = DBL_DIG + 1);
 
 template<typename D>
 std::ostream& operator<<(std::ostream& out, Dimensionless const& number);

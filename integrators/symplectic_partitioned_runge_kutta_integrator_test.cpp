@@ -4,8 +4,8 @@
 #include "integrators/symplectic_partitioned_runge_kutta_integrator.hpp"
 
 #include <algorithm>
-#include <vector>
 #include <string>
+#include <vector>
 
 #include "geometry/sign.hpp"
 #include "glog/logging.h"
@@ -19,6 +19,7 @@ using principia::testing_utilities::AbsoluteError;
 using testing::AllOf;
 using testing::Gt;
 using testing::Lt;
+using principia::testing_utilities::BidimensionalDatasetMathematicaInput;
 using principia::testing_utilities::Slope;
 using principia::testing_utilities::PearsonProductMomentCorrelationCoefficient;
 
@@ -104,6 +105,7 @@ TEST_F(SPRKTest, Convergence) {
   std::vector<Dimensionless> log_q_errors(step_sizes);
   std::vector<Dimensionless> log_p_errors(step_sizes);
   for (int i = 0; i < step_sizes; ++i, parameters_.Δt /= step_reduction) {
+    // TODO(eggrobin): Remove this initialisation once issue #77 is fixed.
     solution_ = SPRKIntegrator::Solution();
     integrator_.Solve(&compute_harmonic_oscillator_force,
                       &compute_harmonic_oscillator_velocity,
@@ -116,45 +118,22 @@ TEST_F(SPRKTest, Convergence) {
         std::abs(solution_.momentum[0].quantities[0] +
                  std::sin(solution_.time.quantities[0])));
   }
-  std::string mathematica_out = "ToExpression[StringReplace[\"\n{";
-  for (int i = 0; i < step_sizes; ++i) {
-    mathematica_out += "{";
-    mathematica_out += ToString(log_step_sizes[i]);
-    mathematica_out += ",";
-    mathematica_out += ToString(log_q_errors[i]);
-    mathematica_out += "}";
-    if (i + 1 < step_sizes) {
-      mathematica_out += ",\n";
-    }
-  }
-  mathematica_out += "}\",\n{\"e\"->\"*^\", \"\\n\"->\"\", \" \"->\"\"}]];";
-  google::LogToStderr();
   Dimensionless const q_convergence_order = Slope(log_step_sizes, log_q_errors);
   Dimensionless const q_correlation =
       PearsonProductMomentCorrelationCoefficient(log_step_sizes, log_q_errors);
   LOG(INFO) << "Convergence order in q : " << q_convergence_order;
   LOG(INFO) << "Correlation            : " << q_correlation;
-  LOG(INFO) << "Convergence data for q :\n" << mathematica_out;
+  LOG(INFO) << "Convergence data for q :\n" <<
+      BidimensionalDatasetMathematicaInput(log_step_sizes, log_q_errors);
   EXPECT_THAT(q_convergence_order, AllOf(Gt(4.9), Lt(5.1)));
   EXPECT_THAT(q_correlation, AllOf(Gt(0.999), Lt(1.01)));
-  mathematica_out = "ToExpression[StringReplace[\"\n{";
-  for (int i = 0; i < step_sizes; ++i) {
-    mathematica_out += "{";
-    mathematica_out += ToString(log_step_sizes[i]);
-    mathematica_out += ",";
-    mathematica_out += ToString(log_p_errors[i]);
-    mathematica_out += "}";
-    if (i + 1 < step_sizes) {
-      mathematica_out += ",\n ";
-    }
-  }
-  mathematica_out += "}\",\n{\"e\"->\"*^\", \"\\n\"->\"\", \" \"->\"\"}]];";
   Dimensionless const p_convergence_order = Slope(log_step_sizes, log_p_errors);
   Dimensionless const p_correlation =
       PearsonProductMomentCorrelationCoefficient(log_step_sizes, log_p_errors);
   LOG(INFO) << "Convergence order in p : " << p_convergence_order;
   LOG(INFO) << "Correlation            : " << p_correlation;
-  LOG(INFO) << "Convergence data for p :\n" << mathematica_out;
+  LOG(INFO) << "Convergence data for p :\n" <<
+      BidimensionalDatasetMathematicaInput(log_step_sizes, log_q_errors);
   EXPECT_THAT(p_convergence_order, AllOf(Gt(5.9), Lt(6.1)));
   EXPECT_THAT(p_correlation, AllOf(Gt(0.999), Lt(1.01)));
 }

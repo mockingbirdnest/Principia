@@ -1,5 +1,6 @@
 ﻿#pragma once
 
+#include <string>
 #include <vector>
 
 #include "quantities/dimensionless.hpp"
@@ -42,6 +43,26 @@ quantities::Dimensionless PearsonProductMomentCorrelationCoefficient(
 template<typename T, typename U>
 quantities::Quotient<U, T> Slope(std::vector<T> const& x,
                                  std::vector<U> const& y);
+
+// Mathematica input for a bidimensional dataset, copyable from the command line
+// (includes a call to StringReplace to remove stray newlines). The resulting
+// expression is a |List| of pairs {xᵢ, yᵢ}, which can be given as an argument
+// to |ListPlot|. |x| and |y| should have the same size.
+// The result contains one pair per line and is delimited by Mathematica
+// comments so as to make the command line output more legible. It is not
+// terminated by a newline.
+// Sample output:
+// (*****************************************************)
+// ToExpression[StringReplace["
+// {{-6.9897000433601875e-001,-7.5318843669225339e+000},
+//  {-1.4854310223422951e+000,-1.1453886857806401e+001},
+//  {-1.5268237075005202e+000,-1.1666519487547756e+001},
+//  {-1.5682163926587451e+000,-1.1885365812893951e+001}}",
+// {"e"->"*^", "\n"->"", " "->""}]];
+// (*****************************************************)
+template<typename T, typename U>
+std::string BidimensionalDatasetMathematicaInput(std::vector<T> const& x,
+                                                 std::vector<U> const& y);
 
 }  // namespace testing_utilities
 }  // namespace principia

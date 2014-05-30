@@ -1,9 +1,12 @@
 #pragma once
 
+#include <string>
 #include <vector>
 
+#include "quantities/dimensionless.hpp"
 #include "quantities/elementary_functions.hpp"
 #include "quantities/quantities.hpp"
+#include "testing_utilities/numerics.hpp"
 
 namespace principia {
 namespace testing_utilities {
@@ -50,6 +53,29 @@ template<typename T, typename U>
 quantities::Quotient<U, T> Slope(std::vector<T> const& x,
                                  std::vector<U> const& y) {
   return Covariance(x, y) / Variance(x);
+}
+
+template<typename T, typename U>
+std::string BidimensionalDatasetMathematicaInput(std::vector<T> const& x,
+                                                 std::vector<U> const& y) {
+  static std::string const mathematica_line =
+      "(*****************************************************)";
+  std::string result = mathematica_line + "\n";
+  result += "ToExpression[StringReplace[\"\n{";
+  for (std::size_t i = 0; i < x.size(); ++i) {
+    result += "{";
+    // We use |ToString(Dimensionless const&)| in order to get enough digits.
+    result += quantities::ToString(DoubleValue(x[i]));
+    result += ",";
+    result += quantities::ToString(DoubleValue(y[i]));
+    result += "}";
+    if (i + 1 < x.size()) {
+      result += ",\n ";
+    }
+  }
+  result += "}\",\n{\"e\"->\"*^\", \"\\n\"->\"\", \" \"->\"\"}]];\n";
+  result += mathematica_line;
+  return result;
 }
 
 }  // namespace testing_utilities
