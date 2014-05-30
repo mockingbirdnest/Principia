@@ -45,7 +45,7 @@ SPRKIntegrator::Order5Optimal() const {
        -0.0589796254980311632}};
   return order_5_optimal;
 }
- 
+
 inline void SPRKIntegrator::Initialize(Coefficients const& coefficients) {
   CHECK_EQ(2, coefficients.size());
   a_ = coefficients[0];
