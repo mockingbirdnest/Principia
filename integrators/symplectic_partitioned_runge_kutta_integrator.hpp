@@ -22,10 +22,13 @@ class SPRKIntegrator : public SymplecticIntegrator {
              Solution* solution) override;
 
  private:
-  // The tableau.
   int stages_;
+
+  // The position and momentum nodes.
   std::vector<double> a_;
   std::vector<double> b_;
+
+  // The weights.
   std::vector<double> c_;
 };
 
