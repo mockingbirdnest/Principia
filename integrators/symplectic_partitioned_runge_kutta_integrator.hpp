@@ -9,15 +9,27 @@ namespace integrators {
 
 class SPRKIntegrator : public SymplecticIntegrator {
  public:
-  SPRKIntegrator() = default;
+  SPRKIntegrator();
   ~SPRKIntegrator() override = default;
 
   std::vector<std::vector<double>> const& Order5Optimal() const;
+
+  void Initialize(Coefficients const& coefficients) override;
 
   void Solve(RightHandSideComputation const compute_force,
              AutonomousRightHandSideComputation const compute_velocity,
              Parameters const& parameters,
              Solution* solution) override;
+
+ private:
+  int stages_;
+
+  // The position and momentum nodes.
+  std::vector<double> a_;
+  std::vector<double> b_;
+
+  // The weights.
+  std::vector<double> c_;
 };
 
 }  // namespace integrators
