@@ -5,6 +5,7 @@
 
 #include <algorithm>
 #include <vector>
+#include <string>
 
 #include "geometry/sign.hpp"
 #include "glog/logging.h"
@@ -102,7 +103,7 @@ TEST_F(SPRKTest, Convergence) {
   std::vector<Dimensionless> log_step_sizes(step_sizes);
   std::vector<Dimensionless> log_q_errors(step_sizes);
   std::vector<Dimensionless> log_p_errors(step_sizes);
-  for(int i = 0; i < step_sizes; ++i, parameters_.Δt /= step_reduction) {
+  for (int i = 0; i < step_sizes; ++i, parameters_.Δt /= step_reduction) {
     solution_ = SPRKIntegrator::Solution();
     integrator_.Solve(&compute_harmonic_oscillator_force,
                       &compute_harmonic_oscillator_velocity,
