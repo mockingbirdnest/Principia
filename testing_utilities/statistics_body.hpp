@@ -46,5 +46,11 @@ quantities::Dimensionless PearsonProductMomentCorrelationCoefficient(
   return Covariance(x, y) / (StandardDeviation(x) * StandardDeviation(y));
 }
 
+template<typename T, typename U>
+quantities::Quotient<U, T> Slope(std::vector<T> const& x,
+                                 std::vector<U> const& y) {
+  return Covariance(x, y) / Variance(x);
+}
+
 }  // testing_utilities
 }  // principia

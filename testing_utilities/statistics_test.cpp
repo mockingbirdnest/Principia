@@ -1,0 +1,54 @@
+#include "testing_utilities/statistics.hpp"
+
+#include <vector>
+
+#include "gmock/gmock.h"
+#include "gtest/gtest.h"
+#include "quantities/dimensionless.hpp"
+#include "quantities/quantities.hpp"
+#include "quantities/si.hpp"
+
+namespace principia {
+namespace testing_utilities {
+
+using quantities::Length;
+using quantities::Speed;
+using quantities::Time;
+using si::Metre;
+using si::Second;
+using testing::Eq;
+
+class StatisticsTest : public testing::Test {
+ protected:
+  void SetUp() override {
+    t_ = std::vector<Time>(population_size_);
+    x_ = std::vector<Length>(population_size_);
+    for(size_t i = 0; i < population_size_; ++i) {
+      t_[i] = i / sampling_rate;
+      x_[i] = t_[i] * v_ + x0_;
+    }
+  };
+
+  size_t const population_size_ = 100;
+  Time::Inverse const sampling_rate = 8 / Second;
+  Length const x0_ = - 12 * Metre;
+  Speed const v_ = 42 * Metre / Second;
+  std::vector<Time> t_;
+  std::vector<Length> x_;
+};
+
+TEST_F(StatisticsTest, UniformPerfectlyCorrelated) {
+  EXPECT_THAT(Mean(t_), Eq(((population_size_ - 1 + 0) / 2) / sampling_rate));
+  EXPECT_THAT(Mean(x_), Eq((x_[population_size_ - 1] + x0_) / 2));
+  EXPECT_THAT(Variance(t_),
+              Eq(((population_size_ - 1) / 12) /
+                 (sampling_rate * sampling_rate)));
+  EXPECT_THAT(StandardDeviation(x_) * StandardDeviation(x_), Eq(Variance(x_)));
+  EXPECT_THAT(StandardDeviation(x_) * StandardDeviation(t_),
+              Eq(Covariance(x_, t_)));
+  EXPECT_THAT(PearsonProductMomentCorrelationCoefficient(t_, x_), Eq(1));
+  EXPECT_THAT(Slope(t_, x_), Eq(v_));
+}
+
+}  // namespace testing_utilities
+}  // namespace principia
