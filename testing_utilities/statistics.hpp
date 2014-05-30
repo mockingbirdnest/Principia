@@ -44,7 +44,7 @@ template<typename T, typename U>
 quantities::Quotient<U, T> Slope(std::vector<T> const& x,
                                  std::vector<U> const& y);
 
-}  // testing_utilities
-}  // principia
+}  // namespace testing_utilities
+}  // namespace principia
 
 #include "testing_utilities/statistics_body.hpp"

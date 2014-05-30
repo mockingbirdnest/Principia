@@ -24,7 +24,7 @@ class StatisticsTest : public testing::Test {
   void SetUp() override {
     t_ = std::vector<Time>(population_size_);
     x_ = std::vector<Length>(population_size_);
-    for(size_t i = 0; i < population_size_; ++i) {
+    for (size_t i = 0; i < population_size_; ++i) {
       t_[i] = i / sampling_rate;
       x_[i] = t_[i] * v_ + x0_;
     }
