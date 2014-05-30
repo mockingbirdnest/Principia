@@ -31,15 +31,14 @@ T StandardDeviation(std::vector<T> const& x);
 
 // The Pearson product-moment correlation coefficient
 // ρ(x, y) = Cov[x, y] / (σ(x) σ(y)).
-// |x| and |y| should have the same |size()|.
+// |x| and |y| should have the same size.
 template<typename T, typename U>
 quantities::Dimensionless PearsonProductMomentCorrelationCoefficient(
     std::vector<T> const& x,
     std::vector<U> const& y);
 
 // The slope of the least-squares linear regression to the dataset
-// with abscissae |x| and ordinates |y|. |x| and |y| should have the same
-// |size()|.
+// with abscissae |x| and ordinates |y|. |x| and |y| should have the same size.
 template<typename T, typename U>
 quantities::Quotient<U, T> Slope(std::vector<T> const& x,
                                  std::vector<U> const& y);
