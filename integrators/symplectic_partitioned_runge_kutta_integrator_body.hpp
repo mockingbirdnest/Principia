@@ -86,16 +86,16 @@ inline void SPRKIntegrator::Solve(
   solution->time.quantities.reserve(capacity);
   solution->momentum.resize(dimension);
   solution->position.resize(dimension);
-  for (int j = 0; j < dimension; ++j) {
-    solution->position[j].quantities.reserve(capacity);
-    solution->momentum[j].quantities.reserve(capacity);
+  for (int k = 0; k < dimension; ++k) {
+    solution->position[k].quantities.reserve(capacity);
+    solution->momentum[k].quantities.reserve(capacity);
   }
 
   if (parameters.sampling_period != 0) {
     solution->time.quantities.push_back(parameters.t0);
-    for (int j = 0; j < dimension; ++j) {
-      solution->position[j].quantities.push_back(parameters.q0[j]);
-      solution->momentum[j].quantities.push_back(parameters.p0[j]);
+    for (int k = 0; k < dimension; ++k) {
+      solution->position[k].quantities.push_back(parameters.q0[k]);
+      solution->momentum[k].quantities.push_back(parameters.p0[k]);
     }
   }
 
@@ -136,13 +136,15 @@ inline void SPRKIntegrator::Solve(
       // another.
       compute_force(tn + c[i - 1] * h, q_stage, &f);
       for (int k = 0; k < dimension; ++k) {
-        (*Δpstage_current)[k] = (*Δpstage_previous)[k] + h * b[i - 1] * f[k];
-        p_stage[k] = p_last[k] + (*Δpstage_current)[k];
+        double const Δp = (*Δpstage_previous)[k] + h * b[i - 1] * f[k];
+        p_stage[k] = p_last[k] + Δp;
+        (*Δpstage_current)[k] = Δp;
       }
       compute_velocity(p_stage, &v);
       for (int k = 0; k < dimension; ++k) {
-        (*Δqstage_current)[k] = (*Δqstage_previous)[k] + h * a[i - 1] * v[k];
-        q_stage[k] = q_last[k] + (*Δqstage_current)[k];
+        double const Δq = (*Δqstage_previous)[k] + h * a[i - 1] * v[k];
+        q_stage[k] = q_last[k] + Δq;
+        (*Δqstage_current)[k] = Δq;
       }
     }
     // Compensated summation from "'SymplecticPartitionedRungeKutta' Method
@@ -166,9 +168,9 @@ inline void SPRKIntegrator::Solve(
     if (parameters.sampling_period != 0) {
       if (sampling_phase % parameters.sampling_period == 0) {
         solution->time.quantities.push_back(tn);
-        for (int j = 0; j < dimension; ++j) {
-          solution->position[j].quantities.push_back(q_stage[j]);
-          solution->momentum[j].quantities.push_back(p_stage[j]);
+        for (int k = 0; k < dimension; ++k) {
+          solution->position[k].quantities.push_back(q_stage[k]);
+          solution->momentum[k].quantities.push_back(p_stage[k]);
         }
       }
       ++sampling_phase;
@@ -187,16 +189,16 @@ inline void SPRKIntegrator::Solve(
   }
   if (parameters.sampling_period == 0) {
     solution->time.quantities.push_back(tn);
-    for (int j = 0; j < dimension; ++j) {
-      solution->position[j].quantities.push_back(q_stage[j]);
-      solution->momentum[j].quantities.push_back(p_stage[j]);
+    for (int k = 0; k < dimension; ++k) {
+      solution->position[k].quantities.push_back(q_stage[k]);
+      solution->momentum[k].quantities.push_back(p_stage[k]);
     }
   }
 
   solution->time.error = t_error;
-  for (int j = 0; j < dimension; ++j) {
-    solution->position[j].error = (*q_error)[j];
-    solution->momentum[j].error = (*p_error)[j];
+  for (int k = 0; k < dimension; ++k) {
+    solution->position[k].error = (*q_error)[k];
+    solution->momentum[k].error = (*p_error)[k];
   }
 
 #ifdef TRACE_SYMPLECTIC_PARTITIONED_RUNGE_KUTTA_INTEGRATOR
