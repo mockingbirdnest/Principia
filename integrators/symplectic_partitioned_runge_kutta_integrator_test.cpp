@@ -93,11 +93,11 @@ TEST_F(SPRKTest, Convergence) {
   parameters_.tmax = 100;
   parameters_.coefficients = integrator_.Order5Optimal();
   parameters_.sampling_period = 0;
-  // For 1.1⁻²⁹ < |Δt| < 0.2 , the correlation between step size and error is
+  // For 1.1⁻²¹ < |Δt| < 0.2 , the correlation between step size and error is
   // very strong. It the step is small enough to converge and large enough to
   // stay clear of floating point inaccuracy.
   parameters_.Δt = 0.2;
-  int const step_sizes = 30;
+  int const step_sizes = 22;
   double const step_reduction = 1.1;
   std::vector<Dimensionless> log_step_sizes(step_sizes);
   std::vector<Dimensionless> log_q_errors(step_sizes);
@@ -154,8 +154,8 @@ TEST_F(SPRKTest, Convergence) {
   LOG(INFO) << "Convergence order in p : " << p_convergence_order;
   LOG(INFO) << "Correlation            : " << p_correlation;
   LOG(INFO) << "Convergence data for p :\n" << mathematica_out;
-  EXPECT_THAT(p_convergence_order, AllOf(Gt(5.4), Lt(5.6)));
-  EXPECT_THAT(p_correlation, AllOf(Gt(0.99), Lt(1.1)));
+  EXPECT_THAT(p_convergence_order, AllOf(Gt(5.9), Lt(6.1)));
+  EXPECT_THAT(p_correlation, AllOf(Gt(0.999), Lt(1.01)));
 }
 
 }  // namespace integrators
