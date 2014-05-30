@@ -94,9 +94,3 @@ BENCHMARK(BM_SolveHarmonicOscillator);
 
 }  // namespace benchmarks
 }  // namespace principia
-
-int main(int argc, const char* argv[]) {
-  benchmark::Initialize(&argc, argv);
-
-  benchmark::RunSpecifiedBenchmarks();
-}
