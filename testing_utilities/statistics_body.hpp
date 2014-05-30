@@ -58,7 +58,10 @@ quantities::Quotient<U, T> Slope(std::vector<T> const& x,
 template<typename T, typename U>
 std::string BidimensionalDatasetMathematicaInput(std::vector<T> const& x,
                                                  std::vector<U> const& y) {
-  std::string result = "ToExpression[StringReplace[\"\n{";
+  static std::string const mathematica_line =
+      "(*****************************************************)";
+  std::string result = mathematica_line + "\n";
+  result += "ToExpression[StringReplace[\"\n{";
   for (std::size_t i = 0; i < x.size(); ++i) {
     result += "{";
     // We use |ToString(Dimensionless const&)| in order to get enough digits.
@@ -70,7 +73,8 @@ std::string BidimensionalDatasetMathematicaInput(std::vector<T> const& x,
       result += ",\n ";
     }
   }
-  result += "}\",\n{\"e\"->\"*^\", \"\\n\"->\"\", \" \"->\"\"}]];";
+  result += "}\",\n{\"e\"->\"*^\", \"\\n\"->\"\", \" \"->\"\"}]];\n";
+  result += mathematica_line;
   return result;
 }
 
