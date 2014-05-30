@@ -90,11 +90,14 @@ inline void SPRKIntegrator::Solve(
     static_cast<int>(
         ceil((((parameters.tmax - parameters.t0) / parameters.Δt) + 1) /
                 parameters.sampling_period)) + 1;
+  solution->time.quantities.clear();
   solution->time.quantities.reserve(capacity);
   solution->momentum.resize(dimension);
   solution->position.resize(dimension);
   for (int k = 0; k < dimension; ++k) {
-    solution->position[k].quantities.reserve(capacity);
+    solution->position[k].quantities.clear();
+    solution->momentum[k].quantities.reserve(capacity);
+    solution->position[k].quantities.clear();
     solution->momentum[k].quantities.reserve(capacity);
   }
 
