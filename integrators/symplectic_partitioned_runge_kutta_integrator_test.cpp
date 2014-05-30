@@ -34,7 +34,7 @@ inline void compute_harmonic_oscillator_force(double const t,
   (*result)[0] = -q[0];
 }
 
-inline void compute_harmonice_oscillator_velocity(std::vector<double> const& p,
+inline void compute_harmonic_oscillator_velocity(std::vector<double> const& p,
                                                   std::vector<double>* result) {
   (*result)[0] = p[0];
 }
@@ -63,7 +63,7 @@ TEST_F(SPRKTest, HarmonicOscillator) {
   parameters_.coefficients = integrator_.Order5Optimal();
   parameters_.sampling_period = 1;
   integrator_.Solve(&compute_harmonic_oscillator_force,
-                    &compute_harmonice_oscillator_velocity,
+                    &compute_harmonic_oscillator_velocity,
                     parameters_, &solution_);
   double q_error = 0;
   double p_error = 0;
@@ -88,25 +88,29 @@ TEST_F(SPRKTest, Convergence) {
   parameters_.tmax = 100;
   parameters_.coefficients = integrator_.Order5Optimal();
   parameters_.sampling_period = 0;
-  int const step_sizes = 50;
+  // For 1.1⁻²⁹ < |Δt| < 0.2 , the correlation between step size and error is
+  // very strong. It the step is small enough to converge and large enough to
+  // stay clear of floating point inaccuracy.
+  parameters_.Δt = 0.2;
+  int const step_sizes = 30;
+  double const step_reduction = 1.1;
   std::vector<Dimensionless> log_step_sizes(step_sizes);
   std::vector<Dimensionless> log_q_errors(step_sizes);
   std::vector<Dimensionless> log_p_errors(step_sizes);
-  parameters_.Δt = 3;
-  for(int i = 0; i < step_sizes; ++i, parameters_.Δt /= 1.1) {
+  for(int i = 0; i < step_sizes; ++i, parameters_.Δt /= step_reduction) {
     solution_ = SPRKIntegrator::Solution();
     integrator_.Solve(&compute_harmonic_oscillator_force,
-                      &compute_harmonice_oscillator_velocity,
+                      &compute_harmonic_oscillator_velocity,
                       parameters_, &solution_);
-    log_step_sizes[i] = std::log(parameters_.Δt);
-    log_q_errors[i] = std::log(
+    log_step_sizes[i] = std::log10(parameters_.Δt);
+    log_q_errors[i] = std::log10(
         std::abs(solution_.position[0].quantities[0] -
                  std::cos(solution_.time.quantities[0])));
-    log_p_errors[i] = std::log(
+    log_p_errors[i] = std::log10(
         std::abs(solution_.momentum[0].quantities[0] +
                  std::sin(solution_.time.quantities[0])));
   }
-  std::string mathematica_out = "{";
+  std::string mathematica_out = "ToExpression[StringReplace[\"\n{";
   for (int i = 0; i < step_sizes; ++i) {
     mathematica_out += "{";
     mathematica_out += ToString(log_step_sizes[i]);
@@ -114,10 +118,10 @@ TEST_F(SPRKTest, Convergence) {
     mathematica_out += ToString(log_q_errors[i]);
     mathematica_out += "}";
     if (i + 1 < step_sizes) {
-      mathematica_out += ",\n ";
+      mathematica_out += ",\n";
     }
   }
-  mathematica_out += "}";
+  mathematica_out += "}\",\n{\"e\"->\"*^\", \"\\n\"->\"\", \" \"->\"\"}]];";
   google::LogToStderr();
   Dimensionless const q_convergence_order = Slope(log_step_sizes, log_q_errors);
   Dimensionless const q_correlation =
@@ -125,9 +129,9 @@ TEST_F(SPRKTest, Convergence) {
   LOG(INFO) << "Convergence order in q : " << q_convergence_order;
   LOG(INFO) << "Correlation            : " << q_correlation;
   LOG(INFO) << "Convergence data for q :\n" << mathematica_out;
-  EXPECT_THAT(q_convergence_order, AllOf(Gt(4.5), Lt(6)));
-  EXPECT_THAT(q_correlation, AllOf(Gt(0.9), Lt(1.1)));
-  mathematica_out = "{";
+  EXPECT_THAT(q_convergence_order, AllOf(Gt(4.9), Lt(5.1)));
+  EXPECT_THAT(q_correlation, AllOf(Gt(0.999), Lt(1.01)));
+  mathematica_out = "ToExpression[StringReplace[\"\n{";
   for (int i = 0; i < step_sizes; ++i) {
     mathematica_out += "{";
     mathematica_out += ToString(log_step_sizes[i]);
@@ -138,15 +142,15 @@ TEST_F(SPRKTest, Convergence) {
       mathematica_out += ",\n ";
     }
   }
-  mathematica_out += "}";
+  mathematica_out += "}\",\n{\"e\"->\"*^\", \"\\n\"->\"\", \" \"->\"\"}]];";
   Dimensionless const p_convergence_order = Slope(log_step_sizes, log_p_errors);
   Dimensionless const p_correlation =
       PearsonProductMomentCorrelationCoefficient(log_step_sizes, log_p_errors);
   LOG(INFO) << "Convergence order in p : " << p_convergence_order;
   LOG(INFO) << "Correlation            : " << p_correlation;
   LOG(INFO) << "Convergence data for p :\n" << mathematica_out;
-  EXPECT_THAT(p_convergence_order, AllOf(Gt(4.5), Lt(6)));
-  EXPECT_THAT(p_correlation, AllOf(Gt(0.9), Lt(1.1)));
+  EXPECT_THAT(p_convergence_order, AllOf(Gt(5.4), Lt(5.6)));
+  EXPECT_THAT(p_correlation, AllOf(Gt(0.99), Lt(1.1)));
 }
 
 }  // namespace integrators
