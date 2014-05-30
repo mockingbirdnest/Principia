@@ -34,10 +34,13 @@ inline void compute_harmonic_oscillator_velocity(std::vector<double> const& p,
 }  // namespace
 
 class SPRKTest : public testing::Test {
- protected:
-  void SetUp() override {
+ public:
+  static void SetUpTestCase() {
     google::LogToStderr();
   }
+
+ protected:
+  void SetUp() override {}
 
   SPRKIntegrator             integrator_;
   SPRKIntegrator::Parameters parameters_;
