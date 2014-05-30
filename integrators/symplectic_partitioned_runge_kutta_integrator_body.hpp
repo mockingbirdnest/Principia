@@ -129,20 +129,20 @@ inline void SPRKIntegrator::Solve(
       (*Δpstage_current)[k] = 0;
       q_stage[k] = q_last[k];
     }
-    for (int i = 1; i < stages + 1; ++i) {
+    for (int i = 0; i < stages; ++i) {
       std::swap(Δqstage_current, Δqstage_previous);
       std::swap(Δpstage_current, Δpstage_previous);
       // Beware, the p/q order matters here, the two computations depend on one
       // another.
-      compute_force(tn + c[i - 1] * h, q_stage, &f);
+      compute_force(tn + c[i] * h, q_stage, &f);
       for (int k = 0; k < dimension; ++k) {
-        double const Δp = (*Δpstage_previous)[k] + h * b[i - 1] * f[k];
+        double const Δp = (*Δpstage_previous)[k] + h * b[i] * f[k];
         p_stage[k] = p_last[k] + Δp;
         (*Δpstage_current)[k] = Δp;
       }
       compute_velocity(p_stage, &v);
       for (int k = 0; k < dimension; ++k) {
-        double const Δq = (*Δqstage_previous)[k] + h * a[i - 1] * v[k];
+        double const Δq = (*Δqstage_previous)[k] + h * a[i] * v[k];
         q_stage[k] = q_last[k] + Δq;
         (*Δqstage_current)[k] = Δq;
       }
