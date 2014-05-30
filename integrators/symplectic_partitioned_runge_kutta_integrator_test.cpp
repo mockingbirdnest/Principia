@@ -42,6 +42,11 @@ inline void compute_harmonic_oscillator_velocity(std::vector<double> const& p,
 }  // namespace
 
 class SPRKTest : public testing::Test {
+ public:
+  static void SetUpTestCase() {
+    google::LogToStderr();
+  }
+
  protected:
   void SetUp() override {}
 
@@ -75,10 +80,10 @@ TEST_F(SPRKTest, HarmonicOscillator) {
                        std::abs(solution_.momentum[0].quantities[i] +
                                 std::sin(solution_.time.quantities[i])));
   }
-  LOG(ERROR) << "q_error = " << q_error;
-  LOG(ERROR) << "p_error = " << p_error;
-  EXPECT_THAT(AbsoluteError(0, q_error), Lt(2E-16 * parameters_.tmax));
-  EXPECT_THAT(AbsoluteError(0, p_error), Lt(2E-16 * parameters_.tmax));
+  LOG(INFO) << "q_error = " << q_error;
+  LOG(INFO) << "p_error = " << p_error;
+  EXPECT_THAT(q_error, Lt(2E-16 * parameters_.tmax));
+  EXPECT_THAT(p_error, Lt(2E-16 * parameters_.tmax));
 }
 
 TEST_F(SPRKTest, Convergence) {
