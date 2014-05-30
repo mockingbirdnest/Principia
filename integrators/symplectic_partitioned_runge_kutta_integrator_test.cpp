@@ -118,14 +118,13 @@ TEST_F(SPRKTest, Convergence) {
     }
   }
   mathematica_out += "}";
-  FLAGS_log_prefix = false;
   google::LogToStderr();
-  LOG(INFO) << "Convergence data for q:\n" << mathematica_out;
   Dimensionless const q_convergence_order = Slope(log_step_sizes, log_q_errors);
   Dimensionless const q_correlation =
       PearsonProductMomentCorrelationCoefficient(log_step_sizes, log_q_errors);
   LOG(INFO) << "Convergence order in q : " << q_convergence_order;
   LOG(INFO) << "Correlation            : " << q_correlation;
+  LOG(INFO) << "Convergence data for q :\n" << mathematica_out;
   EXPECT_THAT(q_convergence_order, AllOf(Gt(4.5), Lt(6)));
   EXPECT_THAT(q_correlation, AllOf(Gt(0.9), Lt(1.1)));
   mathematica_out = "{";
@@ -140,12 +139,12 @@ TEST_F(SPRKTest, Convergence) {
     }
   }
   mathematica_out += "}";
-  LOG(INFO) << "Convergence data for p:\n" << mathematica_out;
   Dimensionless const p_convergence_order = Slope(log_step_sizes, log_p_errors);
   Dimensionless const p_correlation =
       PearsonProductMomentCorrelationCoefficient(log_step_sizes, log_p_errors);
   LOG(INFO) << "Convergence order in p : " << p_convergence_order;
   LOG(INFO) << "Correlation            : " << p_correlation;
+  LOG(INFO) << "Convergence data for p :\n" << mathematica_out;
   EXPECT_THAT(p_convergence_order, AllOf(Gt(4.5), Lt(6)));
   EXPECT_THAT(p_correlation, AllOf(Gt(0.9), Lt(1.1)));
 }
