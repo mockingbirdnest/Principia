@@ -48,8 +48,8 @@ quantities::Quotient<U, T> Slope(std::vector<T> const& x,
 // (includes a call to StringReplace to remove stray newlines). The resulting
 // expression is a |List| of pairs {xᵢ, yᵢ}, which can be given as an argument
 // to |ListPlot|. |x| and |y| should have the same size.
-// The result contains one pair per line and is delimited by Mathematica 
-// comments so as to make the command line output more legible. It is not 
+// The result contains one pair per line and is delimited by Mathematica
+// comments so as to make the command line output more legible. It is not
 // terminated by a newline.
 // Sample output:
 // (*****************************************************)
