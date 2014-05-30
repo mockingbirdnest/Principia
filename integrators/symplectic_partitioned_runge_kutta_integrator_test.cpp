@@ -26,7 +26,7 @@ inline void compute_harmonic_oscillator_force(double const t,
   (*result)[0] = -q[0];
 }
 
-inline void compute_harmonice_oscillator_velocity(std::vector<double> const& p,
+inline void compute_harmonic_oscillator_velocity(std::vector<double> const& p,
                                                   std::vector<double>* result) {
   (*result)[0] = p[0];
 }
@@ -35,7 +35,9 @@ inline void compute_harmonice_oscillator_velocity(std::vector<double> const& p,
 
 class SPRKTest : public testing::Test {
  protected:
-  void SetUp() override {}
+  void SetUp() override {
+    google::LogToStderr();
+  }
 
   SPRKIntegrator             integrator_;
   SPRKIntegrator::Parameters parameters_;
@@ -55,7 +57,7 @@ TEST_F(SPRKTest, HarmonicOscillator) {
   parameters_.coefficients = integrator_.Order5Optimal();
   parameters_.sampling_period = 1;
   integrator_.Solve(&compute_harmonic_oscillator_force,
-                    &compute_harmonice_oscillator_velocity,
+                    &compute_harmonic_oscillator_velocity,
                     parameters_, &solution_);
   double q_error = 0;
   double p_error = 0;
@@ -67,10 +69,10 @@ TEST_F(SPRKTest, HarmonicOscillator) {
                        std::abs(solution_.momentum[0].quantities[i] +
                                 std::sin(solution_.time.quantities[i])));
   }
-  LOG(ERROR) << "q_error = " << q_error;
-  LOG(ERROR) << "p_error = " << p_error;
-  EXPECT_THAT(AbsoluteError(0, q_error), Lt(2E-16 * parameters_.tmax));
-  EXPECT_THAT(AbsoluteError(0, p_error), Lt(2E-16 * parameters_.tmax));
+  LOG(INFO) << "q_error = " << q_error;
+  LOG(INFO) << "p_error = " << p_error;
+  EXPECT_THAT(q_error, Lt(2E-16 * parameters_.tmax));
+  EXPECT_THAT(p_error, Lt(2E-16 * parameters_.tmax));
 }
 
 }  // namespace integrators
