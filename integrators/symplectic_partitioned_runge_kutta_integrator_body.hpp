@@ -5,8 +5,10 @@
 #include <memory>
 #include <vector>
 
-// NOTE(phl): The glog operations may not work with Unity/Mono.
+// The glog operations may not work with Unity/Mono.
+#ifndef _M_CEE_PURE
 #include "glog/logging.h"
+#endif
 
 namespace principia {
 namespace integrators {
@@ -19,7 +21,9 @@ inline std::vector<T>* PointerOrNew(int const dimension,
   if (in == nullptr) {
     return new std::vector<T>(dimension);
   } else {
+#ifndef _M_CEE_PURE
     CHECK_EQ(dimension, in->size());
+#endif
     return in;
   }
 }
@@ -49,7 +53,9 @@ inline void SPRKIntegrator::Solve(
       AutonomousRightHandSideComputation const compute_velocity,
       Parameters const& parameters,
       Solution* solution) {
+#ifndef _M_CEE_PURE
   CHECK_NOTNULL(solution);
+#endif
 
   std::vector<double> const& a = parameters.coefficients[0];
   std::vector<double> const& b = parameters.coefficients[1];
