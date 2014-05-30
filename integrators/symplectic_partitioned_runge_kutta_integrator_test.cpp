@@ -94,8 +94,8 @@ TEST_F(SPRKTest, Convergence) {
   parameters_.tmax = 100;
   parameters_.coefficients = integrator_.Order5Optimal();
   parameters_.sampling_period = 0;
-  // For 1.1⁻²¹ < |Δt| < 0.2 , the correlation between step size and error is
-  // very strong. It the step is small enough to converge and large enough to
+  // For 0.2 * 1.1⁻²¹ < |Δt| < 0.2 , the correlation between step size and error
+  // is very strong. It the step is small enough to converge and large enough to
   // stay clear of floating point inaccuracy.
   parameters_.Δt = 0.2;
   int const step_sizes = 22;
