@@ -68,13 +68,14 @@ inline void SPRKIntegrator::Solve(
       PointerOrNew(dimension, parameters.p_error));
   double t_error = parameters.t_error;
 
-  std::vector<std::vector<double>> Δqstages(stages + 1);
-  std::vector<std::vector<double>> Δpstages(stages + 1);
-
-  for (int i = 0; i < stages + 1; ++i) {
-    Δqstages[i].resize(dimension);
-    Δpstages[i].resize(dimension);
-  }
+  std::vector<double> Δqstage0(dimension);
+  std::vector<double> Δqstage1(dimension);
+  std::vector<double> Δpstage0(dimension);
+  std::vector<double> Δpstage1(dimension);
+  std::vector<double>* Δqstage_current = &Δqstage1;
+  std::vector<double>* Δqstage_previous = &Δqstage0;
+  std::vector<double>* Δpstage_current = &Δpstage1;
+  std::vector<double>* Δpstage_previous = &Δpstage0;
 
   // Dimension the result.
   int const capacity = parameters.sampling_period == 0 ?
@@ -124,32 +125,34 @@ inline void SPRKIntegrator::Solve(
     // Increment SPRK step from "'SymplecticPartitionedRungeKutta' Method
     // for NDSolve", algorithm 3.
     for (int k = 0; k < dimension; ++k) {
-      Δqstages[0][k] = 0;
-      Δpstages[0][k] = 0;
+      (*Δqstage_current)[k] = 0;
+      (*Δpstage_current)[k] = 0;
       q_stage[k] = q_last[k];
     }
     for (int i = 1; i < stages + 1; ++i) {
+      std::swap(Δqstage_current, Δqstage_previous);
+      std::swap(Δpstage_current, Δpstage_previous);
       // Beware, the p/q order matters here, the two computations depend on one
       // another.
       compute_force(tn + c[i - 1] * h, q_stage, &f);
       for (int k = 0; k < dimension; ++k) {
-        Δpstages[i][k] = Δpstages[i - 1][k] + h * b[i - 1] * f[k];
-        p_stage[k] = p_last[k] + Δpstages[i][k];
+        (*Δpstage_current)[k] = (*Δpstage_previous)[k] + h * b[i - 1] * f[k];
+        p_stage[k] = p_last[k] + (*Δpstage_current)[k];
       }
       compute_velocity(p_stage, &v);
       for (int k = 0; k < dimension; ++k) {
-        Δqstages[i][k] = Δqstages[i - 1][k] + h * a[i - 1] * v[k];
-        q_stage[k] = q_last[k] + Δqstages[i][k];
+        (*Δqstage_current)[k] = (*Δqstage_previous)[k] + h * a[i - 1] * v[k];
+        q_stage[k] = q_last[k] + (*Δqstage_current)[k];
       }
     }
     // Compensated summation from "'SymplecticPartitionedRungeKutta' Method
     // for NDSolve", algorithm 2.
     for (int k = 0; k < dimension; ++k) {
-      double const Δq = Δqstages[stages][k] + (*q_error)[k];
+      double const Δq = (*Δqstage_current)[k] + (*q_error)[k];
       q_stage[k] = q_last[k] + Δq;
       (*q_error)[k] = (q_last[k] - q_stage[k]) + Δq;
       q_last[k] = q_stage[k];
-      double const Δp = Δpstages[stages][k] + (*p_error)[k];
+      double const Δp = (*Δpstage_current)[k] + (*p_error)[k];
       p_stage[k] = p_last[k] + Δp;
       (*p_error)[k] = (p_last[k] - p_stage[k]) + Δp;
       p_last[k] = p_stage[k];
