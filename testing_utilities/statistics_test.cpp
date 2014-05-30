@@ -7,6 +7,7 @@
 #include "quantities/dimensionless.hpp"
 #include "quantities/quantities.hpp"
 #include "quantities/si.hpp"
+#include "testing_utilities/almost_equals.hpp"
 
 namespace principia {
 namespace testing_utilities {
@@ -38,12 +39,13 @@ class StatisticsTest : public testing::Test {
 };
 
 TEST_F(StatisticsTest, UniformPerfectlyCorrelated) {
-  EXPECT_THAT(Mean(t_), Eq(((population_size_ - 1 + 0) / 2) / sampling_rate));
-  EXPECT_THAT(Mean(x_), Eq((x_[population_size_ - 1] + x0_) / 2));
+  EXPECT_THAT(Mean(t_), Eq(((population_size_ - 1 + 0) / 2.0) / sampling_rate));
+  EXPECT_THAT(Mean(x_), Eq((x_[population_size_ - 1] + x0_) / 2.0));
   EXPECT_THAT(Variance(t_),
-              Eq(((population_size_ - 1) / 12) /
+              Eq(((population_size_ * population_size_ - 1) / 12.0) /
                  (sampling_rate * sampling_rate)));
-  EXPECT_THAT(StandardDeviation(x_) * StandardDeviation(x_), Eq(Variance(x_)));
+  EXPECT_THAT(StandardDeviation(x_) * StandardDeviation(x_),
+              AlmostEquals(Variance(x_)));
   EXPECT_THAT(StandardDeviation(x_) * StandardDeviation(t_),
               Eq(Covariance(x_, t_)));
   EXPECT_THAT(PearsonProductMomentCorrelationCoefficient(t_, x_), Eq(1));
