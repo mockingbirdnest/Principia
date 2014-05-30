@@ -12,6 +12,19 @@
 // BM_SolveHarmonicOscillator_mean   5212995348 5202113347         60                                 1.37019e-013, 1.37057e-013
 // BM_SolveHarmonicOscillator_stddev  294675070  295069109         60                                 1.37019e-013, 1.37057e-013
 
+//C:\Users\phl\Projects\GitHub\Principia [Tuning]> .\Release\benchmarks_tests.exe --benchmark_repetitions=5 --benchmark_min_time=300
+//Benchmarking on 1 X 3310 MHz CPU
+//2014/05/30-18:06:19
+//Benchmark                           Time(ns)    CPU(ns) Iterations
+//------------------------------------------------------------------
+//BM_SolveHarmonicOscillator        2320474628 2319614869         26                                 1.37019e-013, 1.37057e-013
+//BM_SolveHarmonicOscillator        2241096931 2237169896         27                                 1.37019e-013, 1.37057e-013
+//BM_SolveHarmonicOscillator        2146287530 2143130979         29                                 1.37019e-013, 1.37057e-013
+//BM_SolveHarmonicOscillator        2268943885 2267214533         27                                 1.37019e-013, 1.37057e-013
+//BM_SolveHarmonicOscillator        2448445449 2442975660         25                                 1.37019e-013, 1.37057e-013
+//BM_SolveHarmonicOscillator_mean   2280275500 2277265344        134                                 1.37019e-013, 1.37057e-013
+//BM_SolveHarmonicOscillator_stddev   99047135   98535204        134                                 1.37019e-013, 1.37057e-013
+
 #define GLOG_NO_ABBREVIATED_SEVERITIES
 #undef TRACE_SYMPLECTIC_PARTITIONED_RUNGE_KUTTA_INTEGRATOR
 
