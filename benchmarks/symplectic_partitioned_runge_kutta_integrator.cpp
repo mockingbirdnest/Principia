@@ -49,6 +49,8 @@ void SolveHarmonicOscillator(benchmark::State* state,
   SPRKIntegrator::Parameters parameters;
   SPRKIntegrator::Solution solution;
 
+  integrator.Initialize(integrator.Order5Optimal());
+
   parameters.q0 = {1.0};
   parameters.p0 = {0.0};
   parameters.t0 = 0.0;
@@ -58,7 +60,6 @@ void SolveHarmonicOscillator(benchmark::State* state,
   parameters.tmax = 1000.0;
 #endif
   parameters.Δt = 1.0E-4;
-  parameters.coefficients = integrator.Order5Optimal();
   parameters.sampling_period = 1;
   integrator.Solve(&compute_harmonic_oscillator_force,
                    &compute_harmonic_oscillator_velocity,
