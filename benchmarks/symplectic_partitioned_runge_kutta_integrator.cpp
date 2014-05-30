@@ -36,7 +36,7 @@ inline void compute_harmonic_oscillator_force(double const t,
 }
 
 inline void compute_harmonic_oscillator_velocity(std::vector<double> const& p,
-                                                  std::vector<double>* result) {
+                                                 std::vector<double>* result) {
   (*result)[0] = p[0];
 }
 
