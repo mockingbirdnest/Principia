@@ -96,8 +96,8 @@ inline void SPRKIntegrator::Solve(
   solution->position.resize(dimension);
   for (int k = 0; k < dimension; ++k) {
     solution->position[k].quantities.clear();
-    solution->momentum[k].quantities.reserve(capacity);
-    solution->position[k].quantities.clear();
+    solution->position[k].quantities.reserve(capacity);
+    solution->momentum[k].quantities.clear();
     solution->momentum[k].quantities.reserve(capacity);
   }
 
