@@ -50,7 +50,9 @@ class SPRKTest : public testing::Test {
   }
 
  protected:
-  void SetUp() override {}
+  void SetUp() override {
+    integrator_.Initialize(integrator_.Order5Optimal());
+  }
 
   SPRKIntegrator             integrator_;
   SPRKIntegrator::Parameters parameters_;
@@ -67,7 +69,6 @@ TEST_F(SPRKTest, HarmonicOscillator) {
   parameters_.tmax = 1000.0;
 #endif
   parameters_.Δt = 1.0E-4;
-  parameters_.coefficients = integrator_.Order5Optimal();
   parameters_.sampling_period = 1;
   integrator_.Solve(&compute_harmonic_oscillator_force,
                     &compute_harmonic_oscillator_velocity,
@@ -93,7 +94,6 @@ TEST_F(SPRKTest, Convergence) {
   parameters_.p0 = {0.0};
   parameters_.t0 = 0.0;
   parameters_.tmax = 100;
-  parameters_.coefficients = integrator_.Order5Optimal();
   parameters_.sampling_period = 0;
   // For 0.2 * 1.1⁻²¹ < |Δt| < 0.2 , the correlation between step size and error
   // is very strong. It the step is small enough to converge and large enough to
@@ -105,8 +105,6 @@ TEST_F(SPRKTest, Convergence) {
   std::vector<Dimensionless> log_q_errors(step_sizes);
   std::vector<Dimensionless> log_p_errors(step_sizes);
   for (int i = 0; i < step_sizes; ++i, parameters_.Δt /= step_reduction) {
-    // TODO(eggrobin): Remove this initialisation once issue #77 is fixed.
-    solution_ = SPRKIntegrator::Solution();
     integrator_.Solve(&compute_harmonic_oscillator_force,
                       &compute_harmonic_oscillator_velocity,
                       parameters_, &solution_);

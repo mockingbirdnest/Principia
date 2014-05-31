@@ -30,6 +30,8 @@ inline std::vector<T>* PointerOrNew(int const dimension,
 
 }  // namespace
 
+inline SPRKIntegrator::SPRKIntegrator() : stages_(0) {}
+
 inline std::vector<std::vector<double>> const&
 SPRKIntegrator::Order5Optimal() const {
   static std::vector<std::vector<double>> const order_5_optimal = {
@@ -48,6 +50,21 @@ SPRKIntegrator::Order5Optimal() const {
   return order_5_optimal;
 }
 
+inline void SPRKIntegrator::Initialize(Coefficients const& coefficients) {
+  CHECK_EQ(2, coefficients.size());
+  a_ = coefficients[0];
+  b_ = coefficients[1];
+  stages_ = b_.size();
+  CHECK_EQ(stages_, a_.size());
+
+  // Runge-Kutta time weights.
+  c_.resize(stages_);
+  c_[0] = 0.0;
+  for (int j = 1; j < stages_; ++j) {
+    c_[j] = c_[j - 1] + b_[j - 1];
+  }
+}
+
 inline void SPRKIntegrator::Solve(
       RightHandSideComputation const compute_force,
       AutonomousRightHandSideComputation const compute_velocity,
@@ -57,18 +74,7 @@ inline void SPRKIntegrator::Solve(
   CHECK_NOTNULL(solution);
 #endif
 
-  std::vector<double> const& a = parameters.coefficients[0];
-  std::vector<double> const& b = parameters.coefficients[1];
-  int const stages = b.size();
   int const dimension = parameters.q0.size();
-
-  // Runge-Kutta time weights.
-  std::vector<double> c(stages);
-  c[0] = 0.0;
-  for (int j = 1; j < stages; ++j) {
-    c[j] = c[j - 1] + b[j - 1];
-  }
-
   std::unique_ptr<std::vector<double>> q_error(
       PointerOrNew(dimension, parameters.q_error));
   std::unique_ptr<std::vector<double>> p_error(
@@ -90,11 +96,14 @@ inline void SPRKIntegrator::Solve(
     static_cast<int>(
         ceil((((parameters.tmax - parameters.t0) / parameters.Δt) + 1) /
                 parameters.sampling_period)) + 1;
+  solution->time.quantities.clear();
   solution->time.quantities.reserve(capacity);
   solution->momentum.resize(dimension);
   solution->position.resize(dimension);
   for (int k = 0; k < dimension; ++k) {
+    solution->position[k].quantities.clear();
     solution->position[k].quantities.reserve(capacity);
+    solution->momentum[k].quantities.clear();
     solution->momentum[k].quantities.reserve(capacity);
   }
 
@@ -136,20 +145,20 @@ inline void SPRKIntegrator::Solve(
       (*Δpstage_current)[k] = 0;
       q_stage[k] = q_last[k];
     }
-    for (int i = 0; i < stages; ++i) {
+    for (int i = 0; i < stages_; ++i) {
       std::swap(Δqstage_current, Δqstage_previous);
       std::swap(Δpstage_current, Δpstage_previous);
       // Beware, the p/q order matters here, the two computations depend on one
       // another.
-      compute_force(tn + c[i] * h, q_stage, &f);
+      compute_force(tn + c_[i] * h, q_stage, &f);
       for (int k = 0; k < dimension; ++k) {
-        double const Δp = (*Δpstage_previous)[k] + h * b[i] * f[k];
+        double const Δp = (*Δpstage_previous)[k] + h * b_[i] * f[k];
         p_stage[k] = p_last[k] + Δp;
         (*Δpstage_current)[k] = Δp;
       }
       compute_velocity(p_stage, &v);
       for (int k = 0; k < dimension; ++k) {
-        double const Δq = (*Δqstage_previous)[k] + h * a[i] * v[k];
+        double const Δq = (*Δqstage_previous)[k] + h * a_[i] * v[k];
         q_stage[k] = q_last[k] + Δq;
         (*Δqstage_current)[k] = Δq;
       }
