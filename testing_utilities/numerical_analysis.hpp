@@ -1,9 +1,9 @@
-// Right-hand sides for various differential equations frequently used to test
-// the properties of integrators.
-
 #pragma once
 
 #include<vector>
+
+// Right-hand sides for various differential equations frequently used to test
+// the properties of integrators.
 
 namespace principia {
 namespace testing_utilities {

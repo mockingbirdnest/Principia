@@ -16,16 +16,16 @@
 #include "testing_utilities/numerics.hpp"
 #include "testing_utilities/statistics.hpp"
 
+using principia::quantities::Dimensionless;
+using principia::testing_utilities::AbsoluteError;
+using principia::testing_utilities::BidimensionalDatasetMathematicaInput;
+using principia::testing_utilities::ComputeHarmonicOscillatorForce;
+using principia::testing_utilities::ComputeHarmonicOscillatorVelocity;
+using principia::testing_utilities::PearsonProductMomentCorrelationCoefficient;
+using principia::testing_utilities::Slope;
 using testing::AllOf;
 using testing::Gt;
 using testing::Lt;
-using principia::quantities::Dimensionless;
-using principia::testing_utilities::AbsoluteError;
-using principia::testing_utilities::ComputeHarmonicOscillatorForce;
-using principia::testing_utilities::ComputeHarmonicOscillatorVelocity;
-using principia::testing_utilities::BidimensionalDatasetMathematicaInput;
-using principia::testing_utilities::Slope;
-using principia::testing_utilities::PearsonProductMomentCorrelationCoefficient;
 
 namespace principia {
 namespace integrators {

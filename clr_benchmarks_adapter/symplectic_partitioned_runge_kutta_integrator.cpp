@@ -1,4 +1,5 @@
-﻿#include "clr_benchmarks_adapter/symplectic_partitioned_runge_kutta_integrator.hpp"  // NOLINT(whitespace/line_length)
+﻿
+#include "clr_benchmarks_adapter/symplectic_partitioned_runge_kutta_integrator.hpp"
 
 #include "benchmarks/symplectic_partitioned_runge_kutta_integrator.hpp"
 #undef TRACE_SYMPLECTIC_PARTITIONED_RUNGE_KUTTA_INTEGRATOR
