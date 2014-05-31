@@ -10,7 +10,7 @@
       <AdditionalIncludeDirectories>$(SolutionDir)\..\Google\benchmark\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>google-benchmark.lib;libglog.lib;gmock.lib;gmock_main.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>google-benchmark.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>$(SolutionDir)\..\Google\benchmark\msvc\$(Configuration);$(SolutionDir)\..\Google\glog-0.3.3\$(ConfigurationName);$(SolutionDir)\..\Google\gmock-1.7.0\msvc\2010\$(ConfigurationName);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
