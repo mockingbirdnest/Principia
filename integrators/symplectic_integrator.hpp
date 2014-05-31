@@ -85,7 +85,7 @@ class SymplecticIntegrator {
   virtual void Solve(RightHandSideComputation const compute_force,
                      AutonomousRightHandSideComputation const compute_velocity,
                      Parameters const& parameters,
-                     Solution* solution) = 0;
+                     Solution* solution) const = 0;
 };
 
 }  // namespace integrators

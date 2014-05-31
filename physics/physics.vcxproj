@@ -85,6 +85,7 @@
     <ClInclude Include="body.hpp" />
     <ClInclude Include="frame.hpp" />
     <ClInclude Include="n_body_system.hpp" />
+    <ClInclude Include="n_body_system_body.hpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

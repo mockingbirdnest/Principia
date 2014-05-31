@@ -19,7 +19,7 @@ class SPRKIntegrator : public SymplecticIntegrator {
   void Solve(RightHandSideComputation const compute_force,
              AutonomousRightHandSideComputation const compute_velocity,
              Parameters const& parameters,
-             Solution* solution) override;
+             Solution* solution) const override;
 
  private:
   int stages_;

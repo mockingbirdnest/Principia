@@ -65,7 +65,7 @@ inline void SPRKIntegrator::Solve(
       RightHandSideComputation const compute_force,
       AutonomousRightHandSideComputation const compute_velocity,
       Parameters const& parameters,
-      Solution* solution) {
+      Solution* solution) const {
   CHECK_NOTNULL(solution);
 
   int const dimension = parameters.q0.size();

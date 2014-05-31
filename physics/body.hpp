@@ -30,13 +30,19 @@ class Body {
   explicit Body(GravitationalParameter const& gravitational_parameter);
   ~Body();
 
-  void SetInitial(Vector<Length, Frame> const& position,
-                  Vector<Momentum, Frame> const& momentum,
-                  Time const& when);
+  // Returns the construction parameter.
+  GravitationalParameter const& gravitational_parameter() const;
+
+  // Returns true iff |gravitational_parameter| returns 0.
+  bool is_massless() const;
 
   void AppendToTrajectory(std::vector<Vector<Length, Frame>> const& positions,
                           std::vector<Vector<Momentum, Frame>> const& momenta,
                           std::vector<Time> const& times);
+
+  void GetLast(Vector<Length, Frame>* position,
+               Vector<Momentum, Frame>* momentum,
+               Time* when);
 
 private:
   GravitationalParameter const& gravitational_parameter_;
