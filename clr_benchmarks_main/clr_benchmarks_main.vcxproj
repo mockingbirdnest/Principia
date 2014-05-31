@@ -79,16 +79,6 @@
     <ClCompile Include="main.cpp" />
     <ClCompile Include="symplectic_partitioned_runge_kutta.cpp" />
   </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\clr_benchmarks\clr_benchmarks.vcxproj">
-      <Project>{90c1fbb6-cd89-438f-bc13-5a37c9d6ee88}</Project>
-      <Private>false</Private>
-      <ReferenceOutputAssembly>true</ReferenceOutputAssembly>
-      <CopyLocalSatelliteAssemblies>false</CopyLocalSatelliteAssemblies>
-      <LinkLibraryDependencies>true</LinkLibraryDependencies>
-      <UseLibraryDependencyInputs>false</UseLibraryDependencyInputs>
-    </ProjectReference>
-  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>
