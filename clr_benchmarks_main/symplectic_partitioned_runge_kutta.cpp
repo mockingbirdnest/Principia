@@ -8,14 +8,14 @@
 namespace principia {
 namespace benchmarks {
 
-static void BM_SolveHarmonicOscillator(
+static void BM_CLR_SolveHarmonicOscillator(
     benchmark::State& state) {  // NOLINT(runtime/references)
   while (state.KeepRunning()) {
     principia::clr_benchmarks::SPRKIntegratorCLRBenchmark::SolveHarmonicOscillator();
   }
 }
 
-BENCHMARK(BM_SolveHarmonicOscillator);
+BENCHMARK(BM_CLR_SolveHarmonicOscillator);
 
 }  // namespace benchmarks
 }  // namespace principia
