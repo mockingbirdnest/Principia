@@ -1,5 +1,7 @@
 ﻿#pragma once
 
+#include <vector>
+
 #include "geometry/grassmann.hpp"
 #include "quantities/named_quantities.hpp"
 
@@ -13,7 +15,7 @@ namespace principia {
 namespace physics {
 
 // TODO(phl): The frame used for the positions/momenta of the body.  How do we
-// reify frame change and virtual forces?
+// reify frame change and fictitious forces?
 template<typename Frame>
 class Body {
  public:
@@ -35,6 +37,14 @@ class Body {
   void AppendToTrajectory(std::vector<Vector<Length, Frame>> const& positions,
                           std::vector<Vector<Momentum, Frame>> const& momenta,
                           std::vector<Time> const& times);
+
+private:
+  GravitationalParameter const& gravitational_parameter_;
+
+  // The initial position/momentum/time is at index 0.
+  std::vector<Vector<Length, Frame>> const& positions_;
+  std::vector<Vector<Momentum, Frame>> const& momenta_;
+  std::vector<Time> const& times_;
 };
 
 }  // namespace physics

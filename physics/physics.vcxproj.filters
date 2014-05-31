@@ -18,5 +18,8 @@
     <ClInclude Include="body.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="n_body_system.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
