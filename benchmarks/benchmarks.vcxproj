@@ -91,6 +91,10 @@
     <ClCompile Include="main.cpp" />
     <ClCompile Include="symplectic_partitioned_runge_kutta_integrator.cpp" />
   </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="symplectic_partitioned_runge_kutta_integrator.hpp" />
+    <ClInclude Include="symplectic_partitioned_runge_kutta_integrator_body.hpp" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

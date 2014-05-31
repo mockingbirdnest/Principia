@@ -51,11 +51,15 @@ SPRKIntegrator::Order5Optimal() const {
 }
 
 inline void SPRKIntegrator::Initialize(Coefficients const& coefficients) {
+#ifndef _MANAGED
   CHECK_EQ(2, coefficients.size());
+#endif
   a_ = coefficients[0];
   b_ = coefficients[1];
   stages_ = b_.size();
+#ifndef _MANAGED
   CHECK_EQ(stages_, a_.size());
+#endif
 
   // Runge-Kutta time weights.
   c_.resize(stages_);

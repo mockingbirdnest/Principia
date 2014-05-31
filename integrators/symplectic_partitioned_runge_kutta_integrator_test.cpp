@@ -12,36 +12,23 @@
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "quantities/dimensionless.hpp"
+#include "testing_utilities/numerical_analysis.hpp"
 #include "testing_utilities/numerics.hpp"
 #include "testing_utilities/statistics.hpp"
 
-using principia::testing_utilities::AbsoluteError;
 using testing::AllOf;
 using testing::Gt;
 using testing::Lt;
+using principia::quantities::Dimensionless;
+using principia::testing_utilities::AbsoluteError;
+using principia::testing_utilities::ComputeHarmonicOscillatorForce;
+using principia::testing_utilities::ComputeHarmonicOscillatorVelocity;
 using principia::testing_utilities::BidimensionalDatasetMathematicaInput;
 using principia::testing_utilities::Slope;
 using principia::testing_utilities::PearsonProductMomentCorrelationCoefficient;
 
 namespace principia {
 namespace integrators {
-
-namespace {
-
-using quantities::Dimensionless;
-
-inline void compute_harmonic_oscillator_force(double const t,
-                                              std::vector<double> const& q,
-                                              std::vector<double>* result) {
-  (*result)[0] = -q[0];
-}
-
-inline void compute_harmonic_oscillator_velocity(std::vector<double> const& p,
-                                                  std::vector<double>* result) {
-  (*result)[0] = p[0];
-}
-
-}  // namespace
 
 class SPRKTest : public testing::Test {
  public:
@@ -70,8 +57,8 @@ TEST_F(SPRKTest, HarmonicOscillator) {
 #endif
   parameters_.Δt = 1.0E-4;
   parameters_.sampling_period = 1;
-  integrator_.Solve(&compute_harmonic_oscillator_force,
-                    &compute_harmonic_oscillator_velocity,
+  integrator_.Solve(&ComputeHarmonicOscillatorForce,
+                    &ComputeHarmonicOscillatorVelocity,
                     parameters_, &solution_);
   double q_error = 0;
   double p_error = 0;
@@ -105,8 +92,8 @@ TEST_F(SPRKTest, Convergence) {
   std::vector<Dimensionless> log_q_errors(step_sizes);
   std::vector<Dimensionless> log_p_errors(step_sizes);
   for (int i = 0; i < step_sizes; ++i, parameters_.Δt /= step_reduction) {
-    integrator_.Solve(&compute_harmonic_oscillator_force,
-                      &compute_harmonic_oscillator_velocity,
+    integrator_.Solve(&ComputeHarmonicOscillatorForce,
+                      &ComputeHarmonicOscillatorVelocity,
                       parameters_, &solution_);
     log_step_sizes[i] = std::log10(parameters_.Δt);
     log_q_errors[i] = std::log10(
