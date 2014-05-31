@@ -5,8 +5,8 @@
 #include <memory>
 #include <vector>
 
-// The glog operations may not work with Unity/Mono.
-#ifndef _M_CEE_PURE
+// Mixed assemblies are not supported by Unity/Mono.
+#ifndef _MANAGED
 #include "glog/logging.h"
 #endif
 
@@ -21,7 +21,7 @@ inline std::vector<T>* PointerOrNew(int const dimension,
   if (in == nullptr) {
     return new std::vector<T>(dimension);
   } else {
-#ifndef _M_CEE_PURE
+#ifndef _MANAGED
     CHECK_EQ(dimension, in->size());
 #endif
     return in;
@@ -53,7 +53,7 @@ inline void SPRKIntegrator::Solve(
       AutonomousRightHandSideComputation const compute_velocity,
       Parameters const& parameters,
       Solution* solution) {
-#ifndef _M_CEE_PURE
+#ifndef _MANAGED
   CHECK_NOTNULL(solution);
 #endif
 
