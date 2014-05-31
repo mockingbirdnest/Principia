@@ -60,19 +60,19 @@
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>symplectic_partitioned_runge_kutta_integrator.obj;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>$(SolutionDir)\clr_benchmarks\$(Configuration);$(SolutionDir)\..\Google\benchmark\msvc\$(Configuration);$(SolutionDir)\..\Google\glog-0.3.3\$(ConfigurationName);$(SolutionDir)\..\Google\gmock-1.7.0\msvc\2010\$(ConfigurationName);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <PreprocessorDefinitions>WIN32;NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalUsingDirectories>
+      </AdditionalUsingDirectories>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>clr_benchmarks.dll;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>$(SolutionDir)\$(Configuration);$(SolutionDir)\..\Google\benchmark\msvc\$(Configuration);$(SolutionDir)\..\Google\glog-0.3.3\$(ConfigurationName);$(SolutionDir)\..\Google\gmock-1.7.0\msvc\2010\$(ConfigurationName);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
