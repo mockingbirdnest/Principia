@@ -21,5 +21,8 @@
     <ClInclude Include="n_body_system.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="frame.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
