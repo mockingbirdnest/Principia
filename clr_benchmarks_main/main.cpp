@@ -1,4 +1,3 @@
-#include "clr_benchmarks/symplectic_partitioned_runge_kutta_integrator.hpp"
 #include "benchmark/benchmark.h"
 
 int main(array<System::String^>^ args) {
@@ -16,7 +15,6 @@ int main(array<System::String^>^ args) {
     argv[i][encodedBytes->Length] = '\0';
   }
   benchmark::Initialize(&argc, (char const**)(argv));
-  principia::clr_benchmarks::SPRKIntegratorCLRBenchmark::SolveHarmonicOscillator();
 
   benchmark::RunSpecifiedBenchmarks();
 }
