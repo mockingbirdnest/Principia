@@ -17,15 +17,6 @@ class SymplecticIntegrator {
   // Product<double, double>, Product<float, float> etc. in the same place as
   // the other products (quantities would hardly be appropriate in that case).
 
-  // TODO(phl): See if making these template parameters would improve
-  // performance.
-/*  typedef void (*AutonomousRightHandSideComputation)(
-                     std::vector<double> const& y,
-                     std::vector<double>* result);
-  typedef void (*RightHandSideComputation)(double const t,
-                                           std::vector<double> const& y,
-                                           std::vector<double>* result);*/
-
   // The coefficients of the integrator.
   typedef std::vector<std::vector<double>> Coefficients;
 
@@ -80,12 +71,16 @@ class SymplecticIntegrator {
   // before calling Solve.
   virtual void Initialize(Coefficients const& coefficients) = 0;
 
+  // NOTE(phl): This is part of the contract of SymplecticIntegrator but it
+  // cannot be written in C++ because a template cannot be virtual.
+  //
   // Takes ownership of the pointers in |parameters|.
-  // TODO(phl): Pass the function pointers at construction?
-/*  virtual void Solve(RightHandSideComputation const compute_force,
-                     AutonomousRightHandSideComputation const compute_velocity,
-                     Parameters const& parameters,
-                     Solution* solution) = 0;*/
+  // template<typename AutonomousRightHandSideComputation,
+  //          typename RightHandSideComputation>
+  // void Solve(RightHandSideComputation const compute_force,
+  //            AutonomousRightHandSideComputation const compute_velocity,
+  //            Parameters const& parameters,
+  //            Solution* solution);
 };
 
 }  // namespace integrators
