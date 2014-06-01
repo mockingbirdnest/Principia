@@ -18,8 +18,8 @@ class SPRKIntegrator : public SymplecticIntegrator {
 
   template<typename AutonomousRightHandSideComputation,
            typename RightHandSideComputation>
-  void Solve(RightHandSideComputation const compute_force,
-             AutonomousRightHandSideComputation const compute_velocity,
+  void Solve(RightHandSideComputation compute_force,
+             AutonomousRightHandSideComputation compute_velocity,
              Parameters const& parameters,
              Solution* solution) const;
 

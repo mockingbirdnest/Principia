@@ -42,7 +42,7 @@ class Body {
 
   void GetLast(Vector<Length, Frame>* position,
                Vector<Momentum, Frame>* momentum,
-               Time* when);
+               Time* time);
 
 private:
   GravitationalParameter const& gravitational_parameter_;
@@ -55,3 +55,5 @@ private:
 
 }  // namespace physics
 }  // namespace principia
+
+#include "physics/body_body.hpp"

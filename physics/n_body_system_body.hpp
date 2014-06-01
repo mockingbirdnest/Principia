@@ -39,18 +39,23 @@ void NBodySystem::Integrate(SymplecticIntegrator const& integrator,
   parameters.Δt = (Δt / (1 * Second)).value();
   parameters.sampling_period = sampling_period;
   dynamic_cast<const SPRKIntegrator*>(&integrator)->Solve(
-      std::bind(&NBodySystem::ComputeGravitationalForces, this),
+      std::bind(&NBodySystem::ComputeGravitationalForces, this,
+      //TODO(phl):needed?
+                std::placeholders::_1,
+                std::placeholders::_2,
+                std::placeholders::_3),
       &ComputeGravitationalVelocities,
       parameters, &solution);
 }
 
-void NBodySystem::ComputeGravitationalForces(double const t,
-                                             std::vector<double> const& q,
-                                             std::vector<double>* result) {
+void NBodySystem::ComputeGravitationalForces(
+    double const t,
+    std::vector<double> const& q,
+    std::vector<double>* result) const {
   static auto dimension_factor = Metre.Pow<-3>() * Second.Pow<2>();
   // TODO(phl): Used to deal with proper accelerations here.
-  for (int b1 = 0; b1 < bodies_->size(); ++b1) {
-    for (int b2 = b1 + 1; b2 < bodies_->size(); ++b2) {
+  for (size_t b1 = 0; b1 < bodies_->size(); ++b1) {
+    for (size_t b2 = b1 + 1; b2 < bodies_->size(); ++b2) {
       if (!(*bodies_)[b1]->is_massless() || !(*bodies_)[b2]->is_massless()) {
         double const Δq0 = q[3 * b1] - q[3 * b2];
         double const Δq1 = q[3 * b1 + 1] - q[3 * b2 + 1];

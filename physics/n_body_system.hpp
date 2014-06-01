@@ -30,7 +30,7 @@ class NBodySystem {
  private:
   void ComputeGravitationalForces(double const t,
                                   std::vector<double> const& q,
-                                  std::vector<double>* result);
+                                  std::vector<double>* result) const;
   static void ComputeGravitationalVelocities(std::vector<double> const& p,
                                              std::vector<double>* result);
 

@@ -72,8 +72,8 @@ inline void SPRKIntegrator::Initialize(Coefficients const& coefficients) {
 template<typename AutonomousRightHandSideComputation,
          typename RightHandSideComputation>
 void SPRKIntegrator::Solve(
-      RightHandSideComputation const compute_force,
-      AutonomousRightHandSideComputation const compute_velocity,
+      RightHandSideComputation compute_force,
+      AutonomousRightHandSideComputation compute_velocity,
       Parameters const& parameters,
       Solution* solution) const {
 #ifndef _MANAGED
