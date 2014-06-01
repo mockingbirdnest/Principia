@@ -20,7 +20,7 @@ GravitationalParameter const& Body<Frame>::gravitational_parameter() const {
 
 template<typename Frame>
 bool Body<Frame>::is_massless() const {
-  return gravitational_parameter_ == 0;
+  return gravitational_parameter_ == 0 * GravitationalParameter::SIUnit();
 }
 
 template<typename Frame>
@@ -37,11 +37,10 @@ template<typename Frame>
 void Body<Frame>::GetLast(Vector<Length, Frame>* position,
                           Vector<Momentum, Frame>* momentum,
                           Time* time) {
-    *position = *positions_.back();
-    *momentum = *momenta_.back();
-    *time = *times_.back();
-  }
-};
+  *position = *positions_.back();
+  *momentum = *momenta_.back();
+  *time = *times_.back();
+}
 
 }  // namespace physics
 }  // namespace principia

@@ -48,9 +48,9 @@ private:
   GravitationalParameter const& gravitational_parameter_;
 
   // The initial position/momentum/time is at index 0.
-  std::vector<Vector<Length, Frame>> const& positions_;
-  std::vector<Vector<Momentum, Frame>> const& momenta_;
-  std::vector<Time> const& times_;
+  std::vector<Vector<Length, Frame>> positions_;
+  std::vector<Vector<Momentum, Frame>> momenta_;
+  std::vector<Time> times_;
 };
 
 }  // namespace physics

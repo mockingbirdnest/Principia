@@ -5,6 +5,7 @@
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "physics/body.hpp"
+#include "physics/frame.hpp"
 
 namespace principia {
 namespace physics {

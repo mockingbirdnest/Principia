@@ -5,9 +5,11 @@
 #include <vector>
 
 #include "integrators/symplectic_partitioned_runge_kutta_integrator.hpp"
+#include "physics/frame.hpp"
 #include "quantities/quantities.hpp"
 
 using principia::integrators::SPRKIntegrator;
+using principia::integrators::SymplecticIntegrator;
 using principia::quantities::Length;
 using principia::quantities::Momentum;
 using principia::si::Metre;
