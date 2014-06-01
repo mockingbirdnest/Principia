@@ -5,8 +5,10 @@
 #include <memory>
 #include <vector>
 
-// NOTE(phl): The glog operations may not work with Unity/Mono.
+// Mixed assemblies are not supported by Unity/Mono.
+#ifndef _MANAGED
 #include "glog/logging.h"
+#endif
 
 namespace principia {
 namespace integrators {
@@ -19,7 +21,9 @@ inline std::vector<T>* PointerOrNew(int const dimension,
   if (in == nullptr) {
     return new std::vector<T>(dimension);
   } else {
+#ifndef _MANAGED
     CHECK_EQ(dimension, in->size());
+#endif
     return in;
   }
 }
@@ -47,11 +51,15 @@ SPRKIntegrator::Order5Optimal() const {
 }
 
 inline void SPRKIntegrator::Initialize(Coefficients const& coefficients) {
+#ifndef _MANAGED
   CHECK_EQ(2, coefficients.size());
+#endif
   a_ = coefficients[0];
   b_ = coefficients[1];
   stages_ = b_.size();
+#ifndef _MANAGED
   CHECK_EQ(stages_, a_.size());
+#endif
 
   // Runge-Kutta time weights.
   c_.resize(stages_);
@@ -61,12 +69,16 @@ inline void SPRKIntegrator::Initialize(Coefficients const& coefficients) {
   }
 }
 
-inline void SPRKIntegrator::Solve(
+template<typename AutonomousRightHandSideComputation,
+         typename RightHandSideComputation>
+void SPRKIntegrator::Solve(
       RightHandSideComputation const compute_force,
       AutonomousRightHandSideComputation const compute_velocity,
       Parameters const& parameters,
       Solution* solution) const {
+#ifndef _MANAGED
   CHECK_NOTNULL(solution);
+#endif
 
   int const dimension = parameters.q0.size();
   std::unique_ptr<std::vector<double>> q_error(
