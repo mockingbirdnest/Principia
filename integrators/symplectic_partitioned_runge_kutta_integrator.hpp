@@ -16,10 +16,12 @@ class SPRKIntegrator : public SymplecticIntegrator {
 
   void Initialize(Coefficients const& coefficients) override;
 
+  template<typename AutonomousRightHandSideComputation,
+           typename RightHandSideComputation>
   void Solve(RightHandSideComputation const compute_force,
              AutonomousRightHandSideComputation const compute_velocity,
              Parameters const& parameters,
-             Solution* solution) override;
+             Solution* solution);
 
  private:
   int stages_;
