@@ -19,12 +19,12 @@ class SymplecticIntegrator {
 
   // TODO(phl): See if making these template parameters would improve
   // performance.
-  typedef void (*AutonomousRightHandSideComputation)(
+/*  typedef void (*AutonomousRightHandSideComputation)(
                      std::vector<double> const& y,
                      std::vector<double>* result);
   typedef void (*RightHandSideComputation)(double const t,
                                            std::vector<double> const& y,
-                                           std::vector<double>* result);
+                                           std::vector<double>* result);*/
 
   // The coefficients of the integrator.
   typedef std::vector<std::vector<double>> Coefficients;
@@ -82,10 +82,10 @@ class SymplecticIntegrator {
 
   // Takes ownership of the pointers in |parameters|.
   // TODO(phl): Pass the function pointers at construction?
-  virtual void Solve(RightHandSideComputation const compute_force,
+/*  virtual void Solve(RightHandSideComputation const compute_force,
                      AutonomousRightHandSideComputation const compute_velocity,
                      Parameters const& parameters,
-                     Solution* solution) = 0;
+                     Solution* solution) = 0;*/
 };
 
 }  // namespace integrators

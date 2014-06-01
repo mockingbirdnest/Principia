@@ -69,7 +69,9 @@ inline void SPRKIntegrator::Initialize(Coefficients const& coefficients) {
   }
 }
 
-inline void SPRKIntegrator::Solve(
+template<typename AutonomousRightHandSideComputation,
+         typename RightHandSideComputation>
+void SPRKIntegrator::Solve(
       RightHandSideComputation const compute_force,
       AutonomousRightHandSideComputation const compute_velocity,
       Parameters const& parameters,
