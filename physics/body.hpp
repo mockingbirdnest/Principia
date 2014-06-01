@@ -42,7 +42,7 @@ class Body {
 
   void GetLast(Vector<Length, Frame>* position,
                Vector<Momentum, Frame>* momentum,
-               Time* time);
+               Time* time) const;
 
 private:
   GravitationalParameter const& gravitational_parameter_;

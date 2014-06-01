@@ -34,15 +34,21 @@ void NBodySystem::Integrate(SymplecticIntegrator const& integrator,
   SymplecticIntegrator::Parameters parameters;
   SymplecticIntegrator::Solution solution;
 
-  parameters.q0 = {1.0};
-  parameters.p0 = {0.0};
-  parameters.t0 = 0.0;
-  parameters.tmax = (tmax / (1 * Second)).value();
-  parameters.Δt = (Δt / (1 * Second)).value();
+  Vector<Length, InertialFrame> position;
+  Vector<Momentum, InertialFrame> momentum;
+  Time time;
+  for (const Body<InertialFrame>* body : *bodies_) {
+    body->GetLast(&position, &momentum, &time);
+    parameters.q0.push_back(position);
+    parameters.p0.push_back(momentum);
+    parameters.t0.push_back(time);
+  }
+
+  parameters.tmax = (tmax / (1 * Time::SIUnit())).value();
+  parameters.Δt = (Δt / (1 * Time::SIUnit())).value();
   parameters.sampling_period = sampling_period;
   dynamic_cast<const SPRKIntegrator*>(&integrator)->Solve(
       std::bind(&NBodySystem::ComputeGravitationalForces, this,
-      //TODO(phl):needed?
                 std::placeholders::_1,
                 std::placeholders::_2,
                 std::placeholders::_3),
