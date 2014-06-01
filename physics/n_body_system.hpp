@@ -31,8 +31,8 @@ class NBodySystem {
   void ComputeGravitationalForces(double const t,
                                   std::vector<double> const& q,
                                   std::vector<double>* result);
-  void ComputeGravitationalVelocities(std::vector<double> const& p,
-                                      std::vector<double>* result);
+  static void ComputeGravitationalVelocities(std::vector<double> const& p,
+                                             std::vector<double>* result);
 
   std::unique_ptr<std::vector<Body<InertialFrame>*> const> const bodies_;
 };

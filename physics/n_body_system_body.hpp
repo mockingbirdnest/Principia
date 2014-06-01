@@ -1,10 +1,15 @@
 ﻿#include "physics/n_body_system.hpp"
 
 #include <cmath>
+#include <functional>
 #include <vector>
 
+#include "integrators/symplectic_partitioned_runge_kutta_integrator.hpp"
 #include "quantities/quantities.hpp"
 
+using principia::integrators::SPRKIntegrator;
+using principia::quantities::Length;
+using principia::quantities::Momentum;
 using principia::si::Metre;
 using principia::si::Second;
 
@@ -33,9 +38,10 @@ void NBodySystem::Integrate(SymplecticIntegrator const& integrator,
   parameters.tmax = (tmax / (1 * Second)).value();
   parameters.Δt = (Δt / (1 * Second)).value();
   parameters.sampling_period = sampling_period;
-  integrator.Solve(&ComputeGravitationalForces,
-                   &ComputeGravitationalVelocities,
-                   parameters, &solution);
+  dynamic_cast<const SPRKIntegrator*>(&integrator)->Solve(
+      std::bind(&NBodySystem::ComputeGravitationalForces, this),
+      &ComputeGravitationalVelocities,
+      parameters, &solution);
 }
 
 void NBodySystem::ComputeGravitationalForces(double const t,
