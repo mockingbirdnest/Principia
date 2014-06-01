@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2013
-VisualStudioVersion = 12.0.30110.0
+VisualStudioVersion = 12.0.21005.1
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Integrators", "Integratorz\Integrators.csproj", "{5B53B487-092C-43A0-97CB-765F89C8B7C8}"
 EndProject
@@ -202,5 +202,8 @@ Global
 		{5B53B487-092C-43A0-97CB-765F89C8B7C8} = {E883652F-CB37-4F7A-8653-4BA49A65BAE4}
 		{3D6E953D-9D92-43A8-8B9C-81726AB22602} = {4F787E5E-3F93-4F90-9AA6-8E046A25AD29}
 		{A34DC232-3550-4181-A885-9F90636324F5} = {4F787E5E-3F93-4F90-9AA6-8E046A25AD29}
+	EndGlobalSection
+	GlobalSection(Performance) = preSolution
+		HasPerformanceSessions = true
 	EndGlobalSection
 EndGlobal

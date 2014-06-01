@@ -11,9 +11,11 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="quantities.cpp" />
     <ClCompile Include="symplectic_partitioned_runge_kutta_integrator.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="quantities.hpp" />
     <ClInclude Include="symplectic_partitioned_runge_kutta_integrator.hpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
