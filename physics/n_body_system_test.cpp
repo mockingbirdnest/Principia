@@ -19,32 +19,20 @@ class NBodySystemTest : public testing::Test {
   void SetUp() override {
     integrator_.Initialize(integrator_.Order5Optimal());
 
-    //body1_ = new Body<InertialFrame>(1 * GravitationalParameter::SIUnit());
-    //body2_ = new Body<InertialFrame>(2 * GravitationalParameter::SIUnit());
-    //Vector<Length, InertialFrame> q1({1 * Length::SIUnit(),
-    //                                  2 * Length::SIUnit(),
-    //                                  3 * Length::SIUnit()});
-    //Vector<Length, InertialFrame> q2({4 * Length::SIUnit(),
-    //                                  5 * Length::SIUnit(),
-    //                                  6 * Length::SIUnit()});
-    //Vector<Momentum, InertialFrame> p1({3 * Momentum::SIUnit(),
-    //                                    2 * Momentum::SIUnit(),
-    //                                    1 * Momentum::SIUnit()});
-    //Vector<Momentum, InertialFrame> p2({6 * Momentum::SIUnit(),
-    //                                    5 * Momentum::SIUnit(),
-    //                                    4 * Momentum::SIUnit()});
-    body1_ = new Body<InertialFrame>(1 * GravitationalParameter::SIUnit());
-    body2_ = new Body<InertialFrame>(2 * GravitationalParameter::SIUnit());
-    Vector<Length, InertialFrame> q1({1 * Length::SIUnit(),
+    // The Earth-Moon system, roughly.
+    body1_ = new Body<InertialFrame>(4E14 * GravitationalParameter::SIUnit());
+    body2_ = new Body<InertialFrame>(5E12 * GravitationalParameter::SIUnit());
+    Vector<Length, InertialFrame> q1({0 * Length::SIUnit(),
                                       0 * Length::SIUnit(),
                                       0 * Length::SIUnit()});
     Vector<Length, InertialFrame> q2({0 * Length::SIUnit(),
-                                      2 * Length::SIUnit(),
+                                      4E8 * Length::SIUnit(),
                                       0 * Length::SIUnit()});
     Vector<Momentum, InertialFrame> p1({0 * Momentum::SIUnit(),
-                                        2 * Momentum::SIUnit(),
+                                        0 * Momentum::SIUnit(),
                                         0 * Momentum::SIUnit()});
-    Vector<Momentum, InertialFrame> p2({1 * Momentum::SIUnit(),
+    //TODO(phl): Despite the name, this wants a speed...
+    Vector<Momentum, InertialFrame> p2({1E3 * Momentum::SIUnit(),
                                         0 * Momentum::SIUnit(),
                                         0 * Momentum::SIUnit()});
     body1_->AppendToTrajectory({q1}, {p1}, {0 * Time::SIUnit()});
@@ -95,7 +83,7 @@ TEST_F(NBodySystemTest, T) {
   std::vector<Vector<Length, InertialFrame>> positions;
   std::vector<Vector<Momentum, InertialFrame>> momenta;
   std::vector<Time> times;
-  system_->Integrate(integrator_, 10 * Time::SIUnit(), 0.1 * Time::SIUnit(), 1);
+  system_->Integrate(integrator_, 3E6 * Time::SIUnit(), 3E4 * Time::SIUnit(), 1);
   body1_->GetTrajectory(&positions, &momenta, &times);
   LOG(ERROR) << ToMathematicaString(positions);
   body2_->GetTrajectory(&positions, &momenta, &times);
