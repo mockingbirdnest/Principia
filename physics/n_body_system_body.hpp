@@ -4,19 +4,55 @@
 #include <functional>
 #include <vector>
 
+#include "geometry/r3_element.hpp"
 #include "integrators/symplectic_partitioned_runge_kutta_integrator.hpp"
 #include "physics/frame.hpp"
 #include "quantities/quantities.hpp"
 
+using principia::geometry::R3Element;
 using principia::integrators::SPRKIntegrator;
 using principia::integrators::SymplecticIntegrator;
 using principia::quantities::Length;
 using principia::quantities::Momentum;
+using principia::quantities::Quantity;
 using principia::si::Metre;
 using principia::si::Second;
 
 namespace principia {
 namespace physics {
+
+namespace {
+
+template<typename Scalar>
+Scalar FromDouble(double const quantity) {
+  return quantity * Scalar::SIUnit();
+}
+
+template<typename Scalar, typename Frame>
+Vector<Scalar, Frame> FromDouble(double const x,
+                                 double const y,
+                                 double const z) {
+  R3Element<Scalar> coordinates;
+  coordinates.x = FromDouble<Scalar>(x);
+  coordinates.y = FromDouble<Scalar>(y);
+  coordinates.z = FromDouble<Scalar>(z);
+  return Vector<Scalar, Frame>(coordinates);
+}
+
+template<typename Scalar>
+double ToDouble(Scalar const& quantity) {
+  return (quantity / Scalar::SIUnit()).value();
+}
+
+template<typename Scalar, typename Frame>
+std::vector<double> ToDouble(Vector<Scalar, Frame> const& vector) {
+  R3Element<Scalar> const& coordinates = vector.coordinates();
+  return {ToDouble(coordinates.x),
+          ToDouble(coordinates.y),
+          ToDouble(coordinates.z)};
+}
+
+}  // namespace
 
 NBodySystem::NBodySystem(std::vector<Body<InertialFrame>*> const* bodies)
     : bodies_(bodies) {}
@@ -31,17 +67,30 @@ void NBodySystem::Integrate(SymplecticIntegrator const& integrator,
                             Time const& tmax,
                             Time const& Δt,
                             int const sampling_period) {
+  auto const length_conversion = 1 / Length::SIUnit();
   SymplecticIntegrator::Parameters parameters;
   SymplecticIntegrator::Solution solution;
 
+  // Prepare the input data.
   Vector<Length, InertialFrame> position;
   Vector<Momentum, InertialFrame> momentum;
   Time time;
+  std::unique_ptr<Time> reference_time;
   for (const Body<InertialFrame>* body : *bodies_) {
     body->GetLast(&position, &momentum, &time);
-    parameters.q0.push_back(position);
-    parameters.p0.push_back(momentum);
-    parameters.t0.push_back(time);
+    for (double const q : ToDouble(position)) {
+      parameters.q0.push_back(q);
+    }
+    for (double const p : ToDouble(momentum)) {
+      parameters.p0.push_back(p);
+    }
+    parameters.t0 = ToDouble(time);
+    // All the positions/momenta must be for the same time.
+    if (reference_time == nullptr) {
+      reference_time.reset(new Time(time));
+    } else {
+      CHECK_EQ(*reference_time, time);
+    }
   }
 
   parameters.tmax = (tmax / (1 * Time::SIUnit())).value();
@@ -54,6 +103,36 @@ void NBodySystem::Integrate(SymplecticIntegrator const& integrator,
                 std::placeholders::_3),
       &ComputeGravitationalVelocities,
       parameters, &solution);
+
+  // TODO(phl): Ignoring errors.
+  CHECK_EQ(solution.position.size(), solution.momentum.size());
+  std::vector<double> const& t = solution.time.quantities;
+  // Loop over the bodies.
+  // TODO(phl): It looks like we are transposing in the integrator and then
+  // transposing here again.
+  for (size_t i = 0; i < solution.position.size(); i += 3) {
+    Body<InertialFrame>* body = (*bodies_)[i];
+    std::vector<double> const& q0 = solution.position[i + 0].quantities;
+    std::vector<double> const& q1 = solution.position[i + 1].quantities;
+    std::vector<double> const& q2 = solution.position[i + 2].quantities;
+    std::vector<double> const& p0 = solution.momentum[i + 0].quantities;
+    std::vector<double> const& p1 = solution.momentum[i + 1].quantities;
+    std::vector<double> const& p2 = solution.momentum[i + 2].quantities;
+    CHECK_EQ(t.size(), p0.size());
+    CHECK_EQ(t.size(), p1.size());
+    CHECK_EQ(t.size(), p2.size());
+    CHECK_EQ(t.size(), q0.size());
+    CHECK_EQ(t.size(), q1.size());
+    CHECK_EQ(t.size(), q2.size());
+    for (size_t j = 0; j < t.size(); ++j) {
+      Vector<Length, InertialFrame> const position =
+          FromDouble<Length, InertialFrame>(q0[j], q1[j], q2[j]);
+      Vector<Momentum, InertialFrame> const momentum =
+          FromDouble<Momentum, InertialFrame>(p0[j], p1[j], p2[j]);
+      Time const time = FromDouble<Time>(t[j]);
+      body->AppendToTrajectory({position}, {momentum}, {time});
+    }
+  }
 }
 
 void NBodySystem::ComputeGravitationalForces(

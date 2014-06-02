@@ -37,9 +37,9 @@ template<typename Frame>
 void Body<Frame>::GetLast(Vector<Length, Frame>* position,
                           Vector<Momentum, Frame>* momentum,
                           Time* time) const {
-  *position = *positions_.back();
-  *momentum = *momenta_.back();
-  *time = *times_.back();
+  *position = positions_.back();
+  *momentum = momenta_.back();
+  *time = times_.back();
 }
 
 }  // namespace physics
