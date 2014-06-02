@@ -34,6 +34,16 @@ void Body<Frame>::AppendToTrajectory(
 }
 
 template<typename Frame>
+void Body<Frame>::GetTrajectory(std::vector<Vector<Length, Frame>>* positions,
+                                std::vector<Vector<Momentum, Frame>>* momenta,
+                                std::vector<Time>* times) {
+  // TODO(phl): Avoid copies here.
+  positions->assign(positions_.begin(), positions_.end());
+  momenta->assign(momenta_.begin(), momenta_.end());
+  times->assign(times_.begin(), times_.end());
+}
+
+template<typename Frame>
 void Body<Frame>::GetLast(Vector<Length, Frame>* position,
                           Vector<Momentum, Frame>* momentum,
                           Time* time) const {

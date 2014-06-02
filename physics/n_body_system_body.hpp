@@ -124,7 +124,6 @@ void NBodySystem::Integrate(SymplecticIntegrator const& integrator,
     CHECK_EQ(t.size(), p1.size());
     CHECK_EQ(t.size(), p2.size());
     for (size_t j = 0; j < t.size(); ++j) {
-      LOG(ERROR)<<q0[j]<<" "<<q1[j]<<" "<<q2[j]<<" "<<t[j];
       Vector<Length, InertialFrame> const position =
           FromDouble<Length, InertialFrame>(q0[j], q1[j], q2[j]);
       Vector<Momentum, InertialFrame> const momentum =
@@ -139,7 +138,9 @@ void NBodySystem::ComputeGravitationalForces(
     double const t,
     std::vector<double> const& q,
     std::vector<double>* result) const {
-  static auto dimension_factor = Metre.Pow<-3>() * Second.Pow<2>();
+  static auto const dimension_factor = Metre.Pow<-3>() * Second.Pow<2>();
+  result->assign(result->size(), 0);
+
   // TODO(phl): Used to deal with proper accelerations here.
   for (size_t b1 = 0; b1 < bodies_->size(); ++b1) {
     for (size_t b2 = b1 + 1; b2 < bodies_->size(); ++b2) {

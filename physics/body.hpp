@@ -40,12 +40,16 @@ class Body {
                           std::vector<Vector<Momentum, Frame>> const& momenta,
                           std::vector<Time> const& times);
 
+  void GetTrajectory(std::vector<Vector<Length, Frame>>* positions,
+                     std::vector<Vector<Momentum, Frame>>* momenta,
+                     std::vector<Time>* times);
+
   void GetLast(Vector<Length, Frame>* position,
                Vector<Momentum, Frame>* momentum,
                Time* time) const;
 
 private:
-  GravitationalParameter const& gravitational_parameter_;
+  GravitationalParameter const gravitational_parameter_;
 
   // The initial position/momentum/time is at index 0.
   std::vector<Vector<Length, Frame>> positions_;
