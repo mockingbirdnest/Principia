@@ -203,7 +203,4 @@ Global
 		{3D6E953D-9D92-43A8-8B9C-81726AB22602} = {4F787E5E-3F93-4F90-9AA6-8E046A25AD29}
 		{A34DC232-3550-4181-A885-9F90636324F5} = {4F787E5E-3F93-4F90-9AA6-8E046A25AD29}
 	EndGlobalSection
-	GlobalSection(Performance) = preSolution
-		HasPerformanceSessions = true
-	EndGlobalSection
 EndGlobal
