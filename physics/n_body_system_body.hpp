@@ -67,7 +67,6 @@ void NBodySystem::Integrate(SymplecticIntegrator const& integrator,
                             Time const& tmax,
                             Time const& Δt,
                             int const sampling_period) {
-  auto const length_conversion = 1 / Length::SIUnit();
   SymplecticIntegrator::Parameters parameters;
   SymplecticIntegrator::Solution solution;
 
@@ -111,20 +110,21 @@ void NBodySystem::Integrate(SymplecticIntegrator const& integrator,
   // TODO(phl): It looks like we are transposing in the integrator and then
   // transposing here again.
   for (size_t i = 0; i < solution.position.size(); i += 3) {
-    Body<InertialFrame>* body = (*bodies_)[i];
+    Body<InertialFrame>* body = (*bodies_)[i / 3];
     std::vector<double> const& q0 = solution.position[i + 0].quantities;
     std::vector<double> const& q1 = solution.position[i + 1].quantities;
     std::vector<double> const& q2 = solution.position[i + 2].quantities;
     std::vector<double> const& p0 = solution.momentum[i + 0].quantities;
     std::vector<double> const& p1 = solution.momentum[i + 1].quantities;
     std::vector<double> const& p2 = solution.momentum[i + 2].quantities;
-    CHECK_EQ(t.size(), p0.size());
-    CHECK_EQ(t.size(), p1.size());
-    CHECK_EQ(t.size(), p2.size());
     CHECK_EQ(t.size(), q0.size());
     CHECK_EQ(t.size(), q1.size());
     CHECK_EQ(t.size(), q2.size());
+    CHECK_EQ(t.size(), p0.size());
+    CHECK_EQ(t.size(), p1.size());
+    CHECK_EQ(t.size(), p2.size());
     for (size_t j = 0; j < t.size(); ++j) {
+      LOG(ERROR)<<q0[j]<<" "<<q1[j]<<" "<<q2[j]<<" "<<t[j];
       Vector<Length, InertialFrame> const position =
           FromDouble<Length, InertialFrame>(q0[j], q1[j], q2[j]);
       Vector<Momentum, InertialFrame> const momentum =

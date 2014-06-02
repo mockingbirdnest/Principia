@@ -16,9 +16,9 @@ class NBodySystemTest : public testing::Test {
     integrator_.Initialize(integrator_.Order5Optimal());
 
     Body<InertialFrame>* body1(
-        new Body<InertialFrame>(1 * GravitationalParameter::SIUnit()));
+        new Body<InertialFrame>(1E-11 * GravitationalParameter::SIUnit()));
     Body<InertialFrame>* body2(
-        new Body<InertialFrame>(2 * GravitationalParameter::SIUnit()));
+        new Body<InertialFrame>(2E-11 * GravitationalParameter::SIUnit()));
     Vector<Length, InertialFrame> q1({1 * Length::SIUnit(),
                                       2 * Length::SIUnit(),
                                       3 * Length::SIUnit()});
