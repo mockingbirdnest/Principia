@@ -16,6 +16,8 @@ using principia::constants::GravitationalConstant;
 using principia::geometry::Barycentre;
 using principia::geometry::Point;
 using principia::geometry::Vector;
+using testing::Eq;
+using testing::Lt;
 
 namespace principia {
 namespace physics {
@@ -113,6 +115,11 @@ TEST_F(NBodySystemTest, T) {
   LOG(ERROR) << ToMathematicaString(positions);
   body2_->GetTrajectory(&positions, &momenta, &times);
   LOG(ERROR) << ToMathematicaString(positions);
+  EXPECT_THAT(positions.size(), Eq(101));
+  EXPECT_THAT(Abs(positions[25].coordinates().y), Lt(2 * Length::SIUnit()));
+  EXPECT_THAT(Abs(positions[50].coordinates().x), Lt(2 * Length::SIUnit()));
+  EXPECT_THAT(Abs(positions[75].coordinates().y), Lt(2 * Length::SIUnit()));
+  EXPECT_THAT(Abs(positions[100].coordinates().x), Lt(2 * Length::SIUnit()));
 }
 
 }  // namespace physics
