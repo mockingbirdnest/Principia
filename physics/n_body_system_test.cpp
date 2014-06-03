@@ -1,5 +1,6 @@
 ﻿#include "physics/n_body_system.hpp"
 
+#include <iostream>
 #include <memory>
 #include <string>
 
@@ -25,7 +26,7 @@ class NBodySystemTest : public testing::Test {
   void SetUp() override {
     integrator_.Initialize(integrator_.Order5Optimal());
 
-    // The Earth-Moon system, roughly.
+    // The Earth-Moon system, roughly, with a circular orbit.
     body1_ = new Body<InertialFrame>(6E24 * Mass::SIUnit());
     body2_ = new Body<InertialFrame>(7E22 * Mass::SIUnit());
     Point<Vector<Length, InertialFrame>> const
@@ -39,13 +40,12 @@ class NBodySystemTest : public testing::Test {
     Point<Vector<Length, InertialFrame>> const centre_of_mass =
         Barycentre(q1, body1_->mass(), q2, body2_->mass());
     Point<Vector<Speed, InertialFrame>> const
-        v1(Vector<Speed, InertialFrame>({0 * Speed::SIUnit(),
+        v1(Vector<Speed, InertialFrame>({
+            -11.6054395585695591 * Speed::SIUnit(),
                                          0 * Speed::SIUnit(),
                                          0 * Speed::SIUnit()}));
-    // 1E3 m/s puts us at the apogee at the beginning, because the speed for a
-    // circular orbit with this separation would be 1006.36 m/s.
     Point<Vector<Speed, InertialFrame>> const
-        v2(Vector<Speed, InertialFrame>({1E3 * Speed::SIUnit(),
+        v2(Vector<Speed, InertialFrame>({994.751962163105065 * Speed::SIUnit(),
                                          0 * Speed::SIUnit(),
                                          0 * Speed::SIUnit()}));
     Point<Vector<Speed, InertialFrame>> const overall_velocity =
@@ -56,22 +56,26 @@ class NBodySystemTest : public testing::Test {
     body2_->AppendToTrajectory({q2 - centre_of_mass},
                                {v2 - overall_velocity},
                                {0 * Time::SIUnit()});
-    Length const r2 = (q2 - centre_of_mass).Norm();
-    Length const semi_major_axis =
-        1 / (2 / r2 -
-                 (v2 - overall_velocity).Norm().Pow<2>() /
-                      (body1_->gravitational_parameter() +
-                       body2_->gravitational_parameter()));
-    Length const r1 = (q1 - centre_of_mass).Norm();
-    Length const semi_major_axis1 =
-        1 / (2 / r1 -
-                 (v1 - overall_velocity).Norm().Pow<2>() /
-                      (body1_->gravitational_parameter() +
-                       body2_->gravitational_parameter()));
-    LOG(ERROR)<<semi_major_axis<<" "<<semi_major_axis1;
-    period_ = 2 * π * Sqrt(
-        (semi_major_axis1 + semi_major_axis).Pow<3>() /
-            (GravitationalConstant * (body1_->mass() + body2_->mass())));
+    //Length const r2 = (q2 - centre_of_mass).Norm();
+    //Length const semi_major_axis =
+    //    1 / (2 / r2 -
+    //             (v2 - overall_velocity).Norm().Pow<2>() /
+    //                  (body1_->gravitational_parameter() +
+    //                   body2_->gravitational_parameter()));
+    //Length const r1 = (q1 - centre_of_mass).Norm();
+    //Length const semi_major_axis1 =
+    //    1 / (2 / r1 -
+    //             (v1 - overall_velocity).Norm().Pow<2>() /
+    //                  (body1_->gravitational_parameter() +
+    //                   body2_->gravitational_parameter()));
+    //LOG(ERROR)<<semi_major_axis<<" "<<semi_major_axis1;
+    //period_ = 2 * π * Sqrt(
+    //    (semi_major_axis1 + semi_major_axis).Pow<3>() /
+    //        (GravitationalConstant * (body1_->mass() + body2_->mass())));
+    Length const semi_major_axis = (q1 - q2).Norm();
+    period_ = 2 * π * Sqrt(semi_major_axis.Pow<3>() /
+         (body1_->gravitational_parameter() + body2_->gravitational_parameter()));
+    //period_ = 2.4974E6 * Time::SIUnit();
     system_.reset(new NBodySystem(
         new std::vector<Body<InertialFrame>*>({body1_, body2_})));
   }
@@ -120,11 +124,11 @@ TEST_F(NBodySystemTest, T) {
   std::vector<Vector<Speed, InertialFrame>> momenta;
   std::vector<Time> times;
   LOG(ERROR)<<period_;
-  system_->Integrate(integrator_, 1.1*period_, period_ / 1000, 1);
+  system_->Integrate(integrator_, period_, period_ / 1000, 1);
   body1_->GetTrajectory(&positions, &momenta, &times);
-  LOG(ERROR) << ToMathematicaString(positions);
+  //LOG(ERROR) << ToMathematicaString(positions);
   body2_->GetTrajectory(&positions, &momenta, &times);
-  LOG(ERROR) << ToMathematicaString(positions);
+  /*LOG(ERROR)*/std::cout << ToMathematicaString(positions);
 }
 
 }  // namespace physics
