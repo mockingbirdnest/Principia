@@ -13,7 +13,7 @@ using principia::geometry::R3Element;
 using principia::integrators::SPRKIntegrator;
 using principia::integrators::SymplecticIntegrator;
 using principia::quantities::Length;
-using principia::quantities::Momentum;
+using principia::quantities::Speed;
 using principia::quantities::Quantity;
 using principia::si::Metre;
 using principia::si::Second;
@@ -72,19 +72,19 @@ void NBodySystem::Integrate(SymplecticIntegrator const& integrator,
 
   // Prepare the input data.
   Vector<Length, InertialFrame> position;
-  Vector<Momentum, InertialFrame> momentum;
+  Vector<Speed, InertialFrame> velocity;
   Time time;
   std::unique_ptr<Time> reference_time;
   for (const Body<InertialFrame>* body : *bodies_) {
-    body->GetLast(&position, &momentum, &time);
+    body->GetLast(&position, &velocity, &time);
     for (double const q : ToDouble(position)) {
       parameters.q0.push_back(q);
     }
-    for (double const p : ToDouble(momentum)) {
+    for (double const p : ToDouble(velocity)) {
       parameters.p0.push_back(p);
     }
     parameters.t0 = ToDouble(time);
-    // All the positions/momenta must be for the same time.
+    // All the positions/velocities must be for the same time.
     if (reference_time == nullptr) {
       reference_time.reset(new Time(time));
     } else {
@@ -96,7 +96,7 @@ void NBodySystem::Integrate(SymplecticIntegrator const& integrator,
   parameters.Δt = (Δt / (1 * Time::SIUnit())).value();
   parameters.sampling_period = sampling_period;
   dynamic_cast<const SPRKIntegrator*>(&integrator)->Solve(
-      std::bind(&NBodySystem::ComputeGravitationalForces, this,
+      std::bind(&NBodySystem::ComputeGravitationalAccelerations, this,
                 std::placeholders::_1,
                 std::placeholders::_2,
                 std::placeholders::_3),
@@ -126,15 +126,15 @@ void NBodySystem::Integrate(SymplecticIntegrator const& integrator,
     for (size_t j = 0; j < t.size(); ++j) {
       Vector<Length, InertialFrame> const position =
           FromDouble<Length, InertialFrame>(q0[j], q1[j], q2[j]);
-      Vector<Momentum, InertialFrame> const momentum =
-          FromDouble<Momentum, InertialFrame>(p0[j], p1[j], p2[j]);
+      Vector<Speed, InertialFrame> const velocity =
+          FromDouble<Speed, InertialFrame>(p0[j], p1[j], p2[j]);
       Time const time = FromDouble<Time>(t[j]);
-      body->AppendToTrajectory({position}, {momentum}, {time});
+      body->AppendToTrajectory({position}, {velocity}, {time});
     }
   }
 }
 
-void NBodySystem::ComputeGravitationalForces(
+void NBodySystem::ComputeGravitationalAccelerations(
     double const t,
     std::vector<double> const& q,
     std::vector<double>* result) const {

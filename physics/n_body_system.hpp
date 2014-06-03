@@ -28,9 +28,9 @@ class NBodySystem {
                  int const sampling_period);
 
  private:
-  void ComputeGravitationalForces(double const t,
-                                  std::vector<double> const& q,
-                                  std::vector<double>* result) const;
+  void ComputeGravitationalAccelerations(double const t,
+                                         std::vector<double> const& q,
+                                         std::vector<double>* result) const;
   static void ComputeGravitationalVelocities(std::vector<double> const& p,
                                              std::vector<double>* result);
 

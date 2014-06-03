@@ -8,7 +8,8 @@
 using principia::geometry::Vector;
 using principia::quantities::GravitationalParameter;
 using principia::quantities::Length;
-using principia::quantities::Momentum;
+using principia::quantities::Mass;
+using principia::quantities::Speed;
 using principia::quantities::Time;
 
 namespace principia {
@@ -28,32 +29,35 @@ class Body {
   // by the user as μ = g0 r^2. The generally accepted value for g0 in KSP
   // seems to be 9.81 m/s^2.
   explicit Body(GravitationalParameter const& gravitational_parameter);
+  explicit Body(Mass const& mass);
   ~Body();
 
   // Returns the construction parameter.
   GravitationalParameter const& gravitational_parameter() const;
+  Mass const& mass() const;
 
   // Returns true iff |gravitational_parameter| returns 0.
   bool is_massless() const;
 
   void AppendToTrajectory(std::vector<Vector<Length, Frame>> const& positions,
-                          std::vector<Vector<Momentum, Frame>> const& momenta,
+                          std::vector<Vector<Speed, Frame>> const& velocities,
                           std::vector<Time> const& times);
 
   void GetTrajectory(std::vector<Vector<Length, Frame>>* positions,
-                     std::vector<Vector<Momentum, Frame>>* momenta,
+                     std::vector<Vector<Speed, Frame>>* velocities,
                      std::vector<Time>* times);
 
   void GetLast(Vector<Length, Frame>* position,
-               Vector<Momentum, Frame>* momentum,
+               Vector<Speed, Frame>* velocity,
                Time* time) const;
 
 private:
   GravitationalParameter const gravitational_parameter_;
+  Mass const mass_;
 
-  // The initial position/momentum/time is at index 0.
+  // The initial position/velocity/time is at index 0.
   std::vector<Vector<Length, Frame>> positions_;
-  std::vector<Vector<Momentum, Frame>> momenta_;
+  std::vector<Vector<Speed, Frame>> velocities_;
   std::vector<Time> times_;
 };
 

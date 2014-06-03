@@ -20,21 +20,21 @@ class NBodySystemTest : public testing::Test {
     integrator_.Initialize(integrator_.Order5Optimal());
 
     // The Earth-Moon system, roughly.
-    body1_ = new Body<InertialFrame>(4E14 * GravitationalParameter::SIUnit());
-    body2_ = new Body<InertialFrame>(5E12 * GravitationalParameter::SIUnit());
+    body1_ = new Body<InertialFrame>(6E24 * Mass::SIUnit());
+    body2_ = new Body<InertialFrame>(7E22 * Mass::SIUnit());
     Vector<Length, InertialFrame> q1({0 * Length::SIUnit(),
                                       0 * Length::SIUnit(),
                                       0 * Length::SIUnit()});
     Vector<Length, InertialFrame> q2({0 * Length::SIUnit(),
                                       4E8 * Length::SIUnit(),
                                       0 * Length::SIUnit()});
-    Vector<Momentum, InertialFrame> p1({0 * Momentum::SIUnit(),
-                                        0 * Momentum::SIUnit(),
-                                        0 * Momentum::SIUnit()});
+    Vector<Speed, InertialFrame> p1({0 * Speed::SIUnit(),
+                                     0 * Speed::SIUnit(),
+                                     0 * Speed::SIUnit()});
     //TODO(phl): Despite the name, this wants a speed...
-    Vector<Momentum, InertialFrame> p2({1E3 * Momentum::SIUnit(),
-                                        0 * Momentum::SIUnit(),
-                                        0 * Momentum::SIUnit()});
+    Vector<Speed, InertialFrame> p2({1E3 * Speed::SIUnit(),
+                                     0 * Speed::SIUnit(),
+                                     0 * Speed::SIUnit()});
     body1_->AppendToTrajectory({q1}, {p1}, {0 * Time::SIUnit()});
     body2_->AppendToTrajectory({q2}, {p2}, {0 * Time::SIUnit()});
     system_.reset(new NBodySystem(
@@ -81,7 +81,7 @@ class NBodySystemTest : public testing::Test {
 
 TEST_F(NBodySystemTest, T) {
   std::vector<Vector<Length, InertialFrame>> positions;
-  std::vector<Vector<Momentum, InertialFrame>> momenta;
+  std::vector<Vector<Speed, InertialFrame>> momenta;
   std::vector<Time> times;
   system_->Integrate(integrator_, 3E6 * Time::SIUnit(), 3E4 * Time::SIUnit(), 1);
   body1_->GetTrajectory(&positions, &momenta, &times);
