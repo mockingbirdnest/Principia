@@ -113,14 +113,6 @@ void SPRKIntegrator::Solve(
     solution->momentum[k].quantities.reserve(capacity);
   }
 
-  if (parameters.sampling_period != 0) {
-    solution->time.quantities.push_back(parameters.t0);
-    for (int k = 0; k < dimension; ++k) {
-      solution->position[k].quantities.push_back(parameters.q0[k]);
-      solution->momentum[k].quantities.push_back(parameters.p0[k]);
-    }
-  }
-
   std::vector<double> q_last(parameters.q0);
   std::vector<double> p_last(parameters.p0);
   double t_last = parameters.t0;

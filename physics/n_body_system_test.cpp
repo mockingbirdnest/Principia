@@ -84,8 +84,8 @@ class NBodySystemTest : public testing::Test {
   std::string ToMathematicaString(
       std::vector<Vector<Scalar, Frame>> const& vectors) {
     static std::string const mathematica_line =
-        "(*****************************************************)";
-    std::string result = mathematica_line + "\n";
+        "\n(*****************************************************)\n";
+    std::string result = mathematica_line;
     result += "ToExpression[StringReplace[\"\n{";
     std::string separator = "";
     for (const auto& vector : vectors) {
@@ -94,7 +94,7 @@ class NBodySystemTest : public testing::Test {
       separator = ",\n";
     }
     result +=
-        "}\",\n{\" m\"->\"\",\"e\"->\"*^\", \"\\n\"->\"\", \" \"->\"\"}]];\n";
+        "}\",\n{\" m\"->\"\",\"e\"->\"*^\", \"\\n\"->\"\", \" \"->\"\"}]];";
     result += mathematica_line;
     return result;
   }
@@ -112,9 +112,9 @@ TEST_F(NBodySystemTest, T) {
   std::vector<Time> times;
   system_->Integrate(integrator_, period_, period_ / 100, 1);
   body1_->GetTrajectory(&positions, &momenta, &times);
-  LOG(ERROR) << ToMathematicaString(positions);
+  LOG(INFO) << ToMathematicaString(positions);
   body2_->GetTrajectory(&positions, &momenta, &times);
-  LOG(ERROR) << ToMathematicaString(positions);
+  LOG(INFO) << ToMathematicaString(positions);
   EXPECT_THAT(positions.size(), Eq(101));
   EXPECT_THAT(Abs(positions[25].coordinates().y), Lt(2 * Length::SIUnit()));
   EXPECT_THAT(Abs(positions[50].coordinates().x), Lt(2 * Length::SIUnit()));
