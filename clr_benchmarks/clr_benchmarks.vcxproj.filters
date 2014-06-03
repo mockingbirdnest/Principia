@@ -17,5 +17,8 @@
     <ClCompile Include="symplectic_partitioned_runge_kutta.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="quantities.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

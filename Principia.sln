@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2013
-VisualStudioVersion = 12.0.30110.0
+VisualStudioVersion = 12.0.21005.1
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Integrators", "Integratorz\Integrators.csproj", "{5B53B487-092C-43A0-97CB-765F89C8B7C8}"
 EndProject
@@ -40,6 +40,9 @@ EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "clr_benchmarks_adapter", "clr_benchmarks_adapter\clr_benchmarks_adapter.vcxproj", "{940828E3-AAA8-4AA0-B371-03516A1E0242}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "clr_benchmarks", "clr_benchmarks\clr_benchmarks.vcxproj", "{36F3CAF9-1F27-42DC-B5C5-29CB2B8497F4}"
+	ProjectSection(ProjectDependencies) = postProject
+		{940828E3-AAA8-4AA0-B371-03516A1E0242} = {940828E3-AAA8-4AA0-B371-03516A1E0242}
+	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Git Auxiliary Files", "Git Auxiliary Files", "{0F8586AA-FAEF-4EC5-9D87-A96B9F7561EE}"
 	ProjectSection(SolutionItems) = preProject
