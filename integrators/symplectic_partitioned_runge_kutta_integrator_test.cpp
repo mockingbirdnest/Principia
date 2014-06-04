@@ -16,6 +16,7 @@
 #include "testing_utilities/numerics.hpp"
 #include "testing_utilities/statistics.hpp"
 
+using principia::quantities::Abs;
 using principia::quantities::Dimensionless;
 using principia::testing_utilities::AbsoluteError;
 using principia::testing_utilities::BidimensionalDatasetMathematicaInput;
@@ -121,6 +122,45 @@ TEST_F(SPRKTest, Convergence) {
       BidimensionalDatasetMathematicaInput(log_step_sizes, log_q_errors);
   EXPECT_THAT(p_convergence_order, AllOf(Gt(5.9), Lt(6.1)));
   EXPECT_THAT(p_correlation, AllOf(Gt(0.999), Lt(1.01)));
+}
+
+TEST_F(SPRKTest, Symplecticity) {
+  parameters_.q0 = {1.0};
+  parameters_.p0 = {0.0};
+  parameters_.t0 = 0.0;
+  Dimensionless const initial_energy =
+      0.5 * parameters_.p0[0] * parameters_.p0[0] +
+      0.5 * parameters_.q0[0] * parameters_.q0[0];
+  parameters_.tmax = 500.0;
+  parameters_.Δt = 1;
+  parameters_.sampling_period = 1;
+  integrator_.Solve(&ComputeHarmonicOscillatorForce,
+                    &ComputeHarmonicOscillatorVelocity,
+                    parameters_, &solution_);
+  std::size_t const length = solution_.time.quantities.size();
+  std::vector<Dimensionless> energy_error(length);
+  std::vector<Dimensionless> time_steps(length);
+  Dimensionless max_energy_error = 0;
+  for (size_t i = 0; i < length; ++i) {
+    Dimensionless const q_i = solution_.position[0].quantities[i];
+    Dimensionless const p_i = solution_.momentum[0].quantities[i];
+    time_steps[i] = i;
+    energy_error[i] = Abs(0.5 * p_i.Pow<2>() + 0.5 * q_i.Pow<2>() -
+                          initial_energy);
+    max_energy_error = std::max(energy_error[i], max_energy_error);
+  }
+  LOG(INFO) << "Energy error as a function of time:\n" <<
+      BidimensionalDatasetMathematicaInput(time_steps, energy_error);
+  Dimensionless const correlation =
+      PearsonProductMomentCorrelationCoefficient(time_steps, energy_error);
+  LOG(INFO) << "Correlation between time and energy error : " << correlation;
+  EXPECT_THAT(correlation, Lt(1E-2));
+  Dimensionless const slope = Slope(time_steps, energy_error);
+  LOG(INFO) << "Slope                                     : " << slope;
+  EXPECT_THAT(slope, Lt(1E-8));
+  LOG(INFO) << "Maximum energy error                      : " <<
+      max_energy_error;
+  EXPECT_THAT(max_energy_error, AllOf(Gt(1E-4), Lt(1E-3)));
 }
 
 }  // namespace integrators
