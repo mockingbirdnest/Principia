@@ -53,7 +53,7 @@ class Body {
   std::vector<Vector<Speed, Frame>> const& velocities() const;
   std::vector<Time> const& times() const;
 
-private:
+ private:
   GravitationalParameter const gravitational_parameter_;
   Mass const mass_;
 

@@ -1,7 +1,7 @@
 ﻿#include "body.hpp"
 
 #include <algorithm>
-#include <iterator>
+#include <vector>
 
 #include "quantities/constants.hpp"
 

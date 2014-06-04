@@ -2,6 +2,7 @@
 
 #include <memory>
 #include <string>
+#include <vector>
 
 #include "geometry/grassmann.hpp"
 #include "geometry/point.hpp"
