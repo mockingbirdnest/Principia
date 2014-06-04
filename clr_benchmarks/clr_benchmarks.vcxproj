@@ -74,6 +74,11 @@
     <ClCompile Include="quantities.cpp" />
     <ClCompile Include="symplectic_partitioned_runge_kutta.cpp" />
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\clr_benchmarks_adapter\clr_benchmarks_adapter.vcxproj">
+      <Project>{940828e3-aaa8-4aa0-b371-03516a1e0242}</Project>
+    </ProjectReference>
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>
