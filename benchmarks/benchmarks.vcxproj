@@ -89,9 +89,12 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="quantities.cpp" />
     <ClCompile Include="symplectic_partitioned_runge_kutta_integrator.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="quantities.hpp" />
+    <ClInclude Include="quantities_body.hpp" />
     <ClInclude Include="symplectic_partitioned_runge_kutta_integrator.hpp" />
     <ClInclude Include="symplectic_partitioned_runge_kutta_integrator_body.hpp" />
   </ItemGroup>
