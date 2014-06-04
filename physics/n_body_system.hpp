@@ -20,7 +20,6 @@ class NBodySystem {
   explicit NBodySystem(std::vector<Body<InertialFrame>*> const* bodies);
   ~NBodySystem();
 
-  //TODO(phl): What about errors?
   // The |integrator| must already have been initialized.
   void Integrate(SymplecticIntegrator const& integrator,
                  Time const& tmax,

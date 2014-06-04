@@ -57,12 +57,12 @@ class NBodySystemTest : public testing::Test {
             0 * Speed::SIUnit()}));
     Point<Vector<Speed, InertialFrame>> const overall_velocity =
         Barycentre(v1, body1_->mass(), v2, body2_->mass());
-    body1_->AppendToTrajectory({q1 - centre_of_mass},
-                               {v1 - overall_velocity},
-                               {0 * Time::SIUnit()});
-    body2_->AppendToTrajectory({q2 - centre_of_mass},
-                               {v2 - overall_velocity},
-                               {0 * Time::SIUnit()});
+    body1_->AppendToTrajectory(q1 - centre_of_mass,
+                               v1 - overall_velocity,
+                               0 * Time::SIUnit());
+    body2_->AppendToTrajectory(q2 - centre_of_mass,
+                               v2 - overall_velocity,
+                               0 * Time::SIUnit());
     system_.reset(new NBodySystem(
         new std::vector<Body<InertialFrame>*>({body1_, body2_})));
   }
@@ -106,14 +106,19 @@ class NBodySystemTest : public testing::Test {
   std::unique_ptr<NBodySystem> system_;
 };
 
-TEST_F(NBodySystemTest, T) {
+TEST_F(NBodySystemTest, EarthMoon) {
   std::vector<Vector<Length, InertialFrame>> positions;
-  std::vector<Vector<Speed, InertialFrame>> momenta;
-  std::vector<Time> times;
   system_->Integrate(integrator_, period_, period_ / 100, 1);
-  body1_->GetTrajectory(&positions, &momenta, &times);
+
+  positions = body1_->positions();
+  EXPECT_THAT(positions.size(), Eq(101));
   LOG(INFO) << ToMathematicaString(positions);
-  body2_->GetTrajectory(&positions, &momenta, &times);
+  EXPECT_THAT(Abs(positions[25].coordinates().y), Lt(3E-2 * Length::SIUnit()));
+  EXPECT_THAT(Abs(positions[50].coordinates().x), Lt(3E-2 * Length::SIUnit()));
+  EXPECT_THAT(Abs(positions[75].coordinates().y), Lt(3E-2 * Length::SIUnit()));
+  EXPECT_THAT(Abs(positions[100].coordinates().x), Lt(3E-2 * Length::SIUnit()));
+
+  positions = body2_->positions();
   LOG(INFO) << ToMathematicaString(positions);
   EXPECT_THAT(positions.size(), Eq(101));
   EXPECT_THAT(Abs(positions[25].coordinates().y), Lt(2 * Length::SIUnit()));

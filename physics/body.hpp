@@ -15,8 +15,10 @@ using principia::quantities::Time;
 namespace principia {
 namespace physics {
 
-// TODO(phl): The frame used for the positions/momenta of the body.  How do we
-// reify frame change and fictitious forces?
+// TODO(phl): The frame used for the positions/momenta of the body.  Not sure if
+// this API is right: it might be more logical to templatize the methods that
+// deal with positions and speed (but then we would need to understand frame
+// changes).
 template<typename Frame>
 class Body {
  public:
@@ -36,26 +38,25 @@ class Body {
   GravitationalParameter const& gravitational_parameter() const;
   Mass const& mass() const;
 
-  // Returns true iff |gravitational_parameter| returns 0.
+  // Returns true iff |gravitational_parameter| (or |mass|) returns 0.
   bool is_massless() const;
 
-  void AppendToTrajectory(std::vector<Vector<Length, Frame>> const& positions,
-                          std::vector<Vector<Speed, Frame>> const& velocities,
-                          std::vector<Time> const& times);
+  // Appends one point to the trajectory of the body.
+  void AppendToTrajectory(Vector<Length, Frame> const& position,
+                          Vector<Speed, Frame> const& velocity,
+                          Time const& time);
 
-  void GetTrajectory(std::vector<Vector<Length, Frame>>* positions,
-                     std::vector<Vector<Speed, Frame>>* velocities,
-                     std::vector<Time>* times);
-
-  void GetLast(Vector<Length, Frame>* position,
-               Vector<Speed, Frame>* velocity,
-               Time* time) const;
+  // These functions return the series of positions/velocities/times for the
+  // trajectory of the body.  All three vectors are guaranteed to have the same
+  // length.
+  std::vector<Vector<Length, Frame>> const& positions() const;
+  std::vector<Vector<Speed, Frame>> const& velocities() const;
+  std::vector<Time> const& times() const;
 
 private:
   GravitationalParameter const gravitational_parameter_;
   Mass const mass_;
 
-  // The initial position/velocity/time is at index 0.
   std::vector<Vector<Length, Frame>> positions_;
   std::vector<Vector<Speed, Frame>> velocities_;
   std::vector<Time> times_;

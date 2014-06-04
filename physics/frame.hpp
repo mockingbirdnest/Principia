@@ -1,5 +1,7 @@
 #pragma once
 
+// TODO(phl): Completely experimental.  How do we reify frame change and
+// fictitious forces?
 namespace principia {
 namespace physics {
 

@@ -39,32 +39,27 @@ bool Body<Frame>::is_massless() const {
 }
 
 template<typename Frame>
-void Body<Frame>::AppendToTrajectory(
-    std::vector<Vector<Length, Frame>> const& positions,
-    std::vector<Vector<Speed, Frame>> const& velocities,
-    std::vector<Time> const& times) {
-  std::move(positions.begin(), positions.end(), back_inserter(positions_));
-  std::move(velocities.begin(), velocities.end(), back_inserter(velocities_));
-  std::move(times.begin(), times.end(), back_inserter(times_));
+void Body<Frame>::AppendToTrajectory(Vector<Length, Frame> const& position,
+                                     Vector<Speed, Frame> const& velocity,
+                                     Time const& time) {
+  positions_.push_back(position);
+  velocities_.push_back(velocity);
+  times_.push_back(time);
 }
 
 template<typename Frame>
-void Body<Frame>::GetTrajectory(std::vector<Vector<Length, Frame>>* positions,
-                                std::vector<Vector<Speed, Frame>>* velocities,
-                                std::vector<Time>* times) {
-  // TODO(phl): Avoid copies here.
-  positions->assign(positions_.begin(), positions_.end());
-  velocities->assign(velocities_.begin(), velocities_.end());
-  times->assign(times_.begin(), times_.end());
+std::vector<Vector<Length, Frame>> const& Body<Frame>::positions() const {
+  return positions_;
 }
 
 template<typename Frame>
-void Body<Frame>::GetLast(Vector<Length, Frame>* position,
-                          Vector<Speed, Frame>* velocity,
-                          Time* time) const {
-  *position = positions_.back();
-  *velocity = velocities_.back();
-  *time = times_.back();
+std::vector<Vector<Speed, Frame>> const& Body<Frame>::velocities() const {
+  return velocities_;
+}
+
+template<typename Frame>
+std::vector<Time> const& Body<Frame>::times() const {
+  return times_;
 }
 
 }  // namespace physics

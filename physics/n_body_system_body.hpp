@@ -71,12 +71,11 @@ void NBodySystem::Integrate(SymplecticIntegrator const& integrator,
   SymplecticIntegrator::Solution solution;
 
   // Prepare the input data.
-  Vector<Length, InertialFrame> position;
-  Vector<Speed, InertialFrame> velocity;
-  Time time;
   std::unique_ptr<Time> reference_time;
-  for (const Body<InertialFrame>* body : *bodies_) {
-    body->GetLast(&position, &velocity, &time);
+  for (Body<InertialFrame> const* body : *bodies_) {
+    Vector<Length, InertialFrame> const& position = body->positions().back();
+    Vector<Speed, InertialFrame> const& velocity = body->velocities().back();
+    Time const& time = body->times().back();
     for (double const q : ToDouble(position)) {
       parameters.q0.push_back(q);
     }
@@ -103,7 +102,7 @@ void NBodySystem::Integrate(SymplecticIntegrator const& integrator,
       &ComputeGravitationalVelocities,
       parameters, &solution);
 
-  // TODO(phl): Ignoring errors.
+  // TODO(phl): Ignoring errors for now.
   CHECK_EQ(solution.position.size(), solution.momentum.size());
   std::vector<double> const& t = solution.time.quantities;
   // Loop over the bodies.
@@ -129,7 +128,7 @@ void NBodySystem::Integrate(SymplecticIntegrator const& integrator,
       Vector<Speed, InertialFrame> const velocity =
           FromDouble<Speed, InertialFrame>(p0[j], p1[j], p2[j]);
       Time const time = FromDouble<Time>(t[j]);
-      body->AppendToTrajectory({position}, {velocity}, {time});
+      body->AppendToTrajectory(position, velocity, time);
     }
   }
 }
