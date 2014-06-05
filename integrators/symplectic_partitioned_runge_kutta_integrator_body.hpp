@@ -72,10 +72,10 @@ inline void SPRKIntegrator::Initialize(Coefficients const& coefficients) {
 template<typename AutonomousRightHandSideComputation,
          typename RightHandSideComputation>
 void SPRKIntegrator::Solve(
-      RightHandSideComputation const compute_force,
-      AutonomousRightHandSideComputation const compute_velocity,
+      RightHandSideComputation compute_force,
+      AutonomousRightHandSideComputation compute_velocity,
       Parameters const& parameters,
-      Solution* solution) {
+      Solution* solution) const {
 #ifndef _MANAGED
   CHECK_NOTNULL(solution);
 #endif
@@ -111,14 +111,6 @@ void SPRKIntegrator::Solve(
     solution->position[k].quantities.reserve(capacity);
     solution->momentum[k].quantities.clear();
     solution->momentum[k].quantities.reserve(capacity);
-  }
-
-  if (parameters.sampling_period != 0) {
-    solution->time.quantities.push_back(parameters.t0);
-    for (int k = 0; k < dimension; ++k) {
-      solution->position[k].quantities.push_back(parameters.q0[k]);
-      solution->momentum[k].quantities.push_back(parameters.p0[k]);
-    }
   }
 
   std::vector<double> q_last(parameters.q0);
