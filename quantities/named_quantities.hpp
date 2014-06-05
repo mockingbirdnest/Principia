@@ -9,6 +9,7 @@ typedef Quotient<Length, Time>   Speed;
 typedef Quotient<Speed, Time>    Acceleration;
 typedef Product<Mass, Speed>     Momentum;
 typedef Quotient<Momentum, Time> Force;
+typedef Quotient<Force, Length>  Stiffness;
 
 typedef Product<Force, Length> Energy;
 typedef Quotient<Energy, Time> Power;
