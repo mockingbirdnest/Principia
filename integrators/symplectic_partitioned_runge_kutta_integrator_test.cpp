@@ -17,7 +17,14 @@
 #include "testing_utilities/statistics.hpp"
 
 using principia::quantities::Abs;
+using principia::quantities::Energy;
 using principia::quantities::Dimensionless;
+using principia::quantities::Length;
+using principia::quantities::Mass;
+using principia::quantities::Momentum;
+using principia::quantities::Power;
+using principia::quantities::Stiffness;
+using principia::quantities::Time;
 using principia::testing_utilities::AbsoluteError;
 using principia::testing_utilities::BidimensionalDatasetMathematicaInput;
 using principia::testing_utilities::ComputeHarmonicOscillatorForce;
@@ -128,9 +135,11 @@ TEST_F(SPRKTest, Symplecticity) {
   parameters_.q0 = {1.0};
   parameters_.p0 = {0.0};
   parameters_.t0 = 0.0;
-  Dimensionless const initial_energy =
-      0.5 * parameters_.p0[0] * parameters_.p0[0] +
-      0.5 * parameters_.q0[0] * parameters_.q0[0];
+  Stiffness const k = 1 * Stiffness::SIUnit();
+  Mass const m      = 1 * Mass::SIUnit();
+  Length const q0   = parameters_.q0[0] * Length::SIUnit();
+  Momentum const p0 = parameters_.p0[0] * Momentum::SIUnit();
+  Energy const initial_energy = 0.5 * p0.Pow<2>() / m + 0.5 * k * q0.Pow<2>();
   parameters_.tmax = 500.0;
   parameters_.Δt = 1;
   parameters_.sampling_period = 1;
@@ -138,14 +147,15 @@ TEST_F(SPRKTest, Symplecticity) {
                     &ComputeHarmonicOscillatorVelocity,
                     parameters_, &solution_);
   std::size_t const length = solution_.time.quantities.size();
-  std::vector<Dimensionless> energy_error(length);
-  std::vector<Dimensionless> time_steps(length);
-  Dimensionless max_energy_error = 0;
+  std::vector<Energy> energy_error(length);
+  std::vector<Time> time_steps(length);
+  Energy max_energy_error = 0 * Energy::SIUnit();
   for (size_t i = 0; i < length; ++i) {
-    Dimensionless const q_i = solution_.position[0].quantities[i];
-    Dimensionless const p_i = solution_.momentum[0].quantities[i];
-    time_steps[i] = i;
-    energy_error[i] = Abs(0.5 * p_i.Pow<2>() + 0.5 * q_i.Pow<2>() -
+    Length const q_i   = solution_.position[0].quantities[i] * Length::SIUnit();
+    Momentum const p_i = solution_.momentum[0].quantities[i] *
+                             Momentum::SIUnit();
+    time_steps[i] = solution_.time.quantities[i] * Time::SIUnit();
+    energy_error[i] = Abs(0.5 * p_i.Pow<2>() / m + 0.5 * k * q_i.Pow<2>() -
                           initial_energy);
     max_energy_error = std::max(energy_error[i], max_energy_error);
   }
@@ -154,13 +164,14 @@ TEST_F(SPRKTest, Symplecticity) {
   Dimensionless const correlation =
       PearsonProductMomentCorrelationCoefficient(time_steps, energy_error);
   LOG(INFO) << "Correlation between time and energy error : " << correlation;
-  EXPECT_THAT(correlation, Lt(1E-2));
-  Dimensionless const slope = Slope(time_steps, energy_error);
+  EXPECT_THAT(correlation, Lt(1E-3));
+  Power const slope = Slope(time_steps, energy_error);
   LOG(INFO) << "Slope                                     : " << slope;
-  EXPECT_THAT(slope, Lt(1E-8));
+  EXPECT_THAT(slope, Lt(1E-10 * Power::SIUnit()));
   LOG(INFO) << "Maximum energy error                      : " <<
       max_energy_error;
-  EXPECT_THAT(max_energy_error, AllOf(Gt(1E-4), Lt(1E-3)));
+  EXPECT_THAT(max_energy_error, AllOf(Gt(1E-4 * Energy::SIUnit()),
+                                      Lt(1E-3 * Energy::SIUnit())));
 }
 
 }  // namespace integrators
