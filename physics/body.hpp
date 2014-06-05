@@ -23,16 +23,10 @@ template<typename Frame>
 class Body {
  public:
   // We use the gravitational parameter μ = G M in order not to accumulate
-  // unit roundoffs from repeated multiplications by G. Note that in KSP, the
-  // gravitational parameter is computed from the mass as G M, but the mass is
-  // itself computed from the radius and acceleration due to gravity at sea
-  // level as M = g0 r^2 / G. This is silly (and introduces an---admittedly
-  // tiny---error), so the gravitational parameter should ideally be computed
-  // by the user as μ = g0 r^2. The generally accepted value for g0 in KSP
-  // seems to be 9.81 m/s^2.
+  // unit roundoffs from repeated multiplications by G.
   explicit Body(GravitationalParameter const& gravitational_parameter);
   explicit Body(Mass const& mass);
-  ~Body();
+  ~Body() = default;
 
   // Returns the construction parameter.
   GravitationalParameter const& gravitational_parameter() const;

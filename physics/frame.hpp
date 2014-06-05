@@ -1,17 +1,10 @@
 #pragma once
 
-// TODO(phl): Completely experimental.  How do we reify frame change and
-// fictitious forces?
+// TODO(phl): How do we reify frame change and fictitious forces?
 namespace principia {
 namespace physics {
 
-// The tag is just a way to unambiguously distinguish frames.
-template<int tag>
-class Frame {
-  static int tag() { return tag; }
-};
-
-typedef Frame<0> InertialFrame;
+struct InertialFrame;
 
 }  // namespace physics
 }  // namespace principia

@@ -15,8 +15,6 @@ using principia::integrators::SymplecticIntegrator;
 using principia::quantities::Length;
 using principia::quantities::Speed;
 using principia::quantities::Quantity;
-using principia::si::Metre;
-using principia::si::Second;
 
 namespace principia {
 namespace physics {
@@ -137,7 +135,7 @@ void NBodySystem::ComputeGravitationalAccelerations(
     double const t,
     std::vector<double> const& q,
     std::vector<double>* result) const {
-  static auto const dimension_factor = Metre.Pow<-3>() * Second.Pow<2>();
+  static auto const dimension_factor = 1 / GravitationalParameter::SIUnit();
   result->assign(result->size(), 0);
 
   // TODO(phl): Used to deal with proper accelerations here.

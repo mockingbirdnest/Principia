@@ -21,9 +21,6 @@ Body<Frame>::Body(Mass const& mass)
       mass_(mass) {}
 
 template<typename Frame>
-Body<Frame>::~Body() {}
-
-template<typename Frame>
 GravitationalParameter const& Body<Frame>::gravitational_parameter() const {
   return gravitational_parameter_;
 }
