@@ -166,7 +166,7 @@ inline Quantity<D> operator+(Quantity<D> const& right) {
   return Quantity<D>(+right.magnitude_);
 }
 template<typename D>
-__forceinline Quantity<D> operator-(Quantity<D> const& right) {
+inline Quantity<D> operator-(Quantity<D> const& right) {
   return Quantity<D>(-right.magnitude_);
 }
 template<typename D>
@@ -182,7 +182,7 @@ inline Quantity<D> operator-(Quantity<D> const& left,
 #pragma endregion
 #pragma region Multiplicative group
 template<typename DLeft, typename DRight>
-__forceinline Product <typename Quantity<DLeft>, typename Quantity <DRight>>
+inline Product <typename Quantity<DLeft>, typename Quantity <DRight>>
 operator*(Quantity<DLeft> const& left,
           Quantity<DRight> const& right) {
   return Product<typename Quantity<DLeft>,
