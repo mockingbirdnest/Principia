@@ -82,7 +82,6 @@ class Quantity {
   explicit Quantity(double const magnitude);
   double magnitude_;
 
-  // Why?  But why?
   template<typename D>
   friend class Quantity;
 

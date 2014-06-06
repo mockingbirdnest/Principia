@@ -11,7 +11,8 @@ class Dimensionless {
   typedef Dimensionless Inverse;
 
   Dimensionless();
-  Dimensionless(double const value);
+  // No explicit here: we want implicit conversion from double.
+  Dimensionless(double const value);  // NOLINT(runtime/explicit)
 
   // Returns |Dimensionless(1)|, for consistency with |Quantity<D>::SIUnit()|.
   static Dimensionless SIUnit();
