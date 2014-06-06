@@ -284,12 +284,6 @@ inline Quantity<D> Abs(Quantity<D> const& quantity) {
   return Quantity<D>(std::abs(quantity.magnitude_));
 }
 
-template<typename D>
-inline Quantity<D> Max(Quantity<D> const& quantity1,
-                       Quantity<D> const& quantity2) {
-  return Quantity<D>(std::max(quantity1.magnitude_, quantity2.magnitude_));
-}
-
 inline std::string FormatUnit(std::string const& name, int const exponent) {
   switch (exponent) {
     case 0:
