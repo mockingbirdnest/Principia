@@ -82,8 +82,10 @@ class Quantity {
   explicit Quantity(double const magnitude);
   double magnitude_;
 
+  // Why?  But why?
   template<typename D>
   friend class Quantity;
+
   template<typename D>
   friend Quantity<D> operator+(Quantity<D> const&);
   template<typename D>
@@ -120,6 +122,19 @@ class Quantity {
                                                  Quantity<D> const&);
 
   template<typename D>
+  friend void operator+=(Quantity<D>&, Quantity<D> const&);
+  template<typename D>
+  friend void operator-=(Quantity<D>&, Quantity<D> const&);
+  template<typename D>
+  friend void operator*=(Quantity<D>&, double const);
+  template<typename D>
+  friend void operator*=(Quantity<D>&, Dimensionless const&);
+  template<typename D>
+  friend void operator/=(Quantity<D>&, double const);
+  template<typename D>
+  friend void operator/=(Quantity<D>&, Dimensionless const&);
+
+  template<typename D>
   friend bool operator>(Quantity<D> const&, Quantity<D> const&);
   template<typename D>
   friend bool operator<(Quantity<D> const&, Quantity<D> const&);
@@ -144,28 +159,85 @@ class Quantity {
 
   template<typename D>
   friend std::string ToString(Quantity<D> const&, unsigned char const);
-
-  template<typename D>
-  friend void operator+=(Quantity<D>&, Quantity<D> const&);
-  template<typename D>
-  friend void operator-=(Quantity<D>&, Quantity<D> const&);
-  template<typename D>
-  friend void operator*=(Quantity<D>&, Dimensionless const&);
-  template<typename D>
-  friend void operator/=(Quantity<D>&, Dimensionless const&);
 };
 
 template<typename D>
-std::ostream& operator<<(::std::ostream& out, Quantity<D> const& quantity);
+Quantity<D> operator+(Quantity<D> const&);
+template<typename D>
+Quantity<D> operator-(Quantity<D> const&);
+template<typename D>
+Quantity<D> operator+(Quantity<D> const&, Quantity<D> const&);
+template<typename D>
+Quantity<D> operator-(Quantity<D> const&, Quantity<D> const&);
+template<typename DLeft, typename DRight>
+Product<typename Quantity<DLeft>,
+                typename Quantity<DRight>> operator*(Quantity<DLeft> const&,
+                                                    Quantity<DRight> const&);
+template<typename DLeft, typename DRight>
+Quotient<typename Quantity<DLeft>,
+                typename Quantity<DRight>> operator/(Quantity<DLeft> const&,
+                                                      Quantity<DRight> const&);
+template<typename D>
+Quantity<D> operator*(Quantity<D> const&, double const);
+template<typename D>
+Quantity<D> operator*(Quantity<D> const&, Dimensionless const&);
+template<typename D>
+Quantity<D> operator*(double const, Quantity<D> const&);
+template<typename D>
+Quantity<D> operator*(Dimensionless const&, Quantity<D> const&);
+template<typename D>
+Quantity<D> operator/(Quantity<D> const&, double const);
+template<typename D>
+Quantity<D> operator/(Quantity<D> const&, Dimensionless const&);
+template<typename D>
+typename Quantity<D>::Inverse operator/(double const,
+                                                Quantity<D> const&);
+template<typename D>
+typename Quantity<D>::Inverse operator/(Dimensionless const&,
+                                                Quantity<D> const&);
 
 template<typename D>
 void operator+=(Quantity<D>&, Quantity<D> const&);
 template<typename D>
 inline void operator-=(Quantity<D>&, Quantity<D> const&);
 template<typename D>
+inline void operator*=(Quantity<D>&, double const);
+template<typename D>
 inline void operator*=(Quantity<D>&, Dimensionless const&);
 template<typename D>
+inline void operator/=(Quantity<D>&, double const);
+template<typename D>
 inline void operator/=(Quantity<D>&, Dimensionless const&);
+
+template<typename D>
+bool operator>(Quantity<D> const&, Quantity<D> const&);
+template<typename D>
+bool operator<(Quantity<D> const&, Quantity<D> const&);
+template<typename D>
+bool operator>=(Quantity<D> const&, Quantity<D> const&);
+template<typename D>
+bool operator<=(Quantity<D> const&, Quantity<D> const&);
+template<typename D>
+bool operator==(Quantity<D> const&, Quantity<D> const&);
+template<typename D>
+bool operator!=(Quantity<D> const&, Quantity<D> const&);
+
+template<typename D>
+Quantity<D> Abs(Quantity<D> const&);
+template<typename D>
+Quantity<D> Max(Quantity<D> const&, Quantity<D> const&);
+
+template<typename D>
+SquareRoot<Quantity<D>> Sqrt(Quantity<D> const& x);
+template<typename D>
+Angle ArcTan(Quantity<D> const& y, Quantity<D> const& x);
+
+template<typename D>
+std::string ToString(Quantity<D> const&, unsigned char const);
+
+template<typename D>
+std::ostream& operator<<(::std::ostream& out, Quantity<D> const& quantity);
+
 }  // namespace quantities
 }  // namespace principia
 
