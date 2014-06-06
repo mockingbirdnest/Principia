@@ -92,8 +92,8 @@ class Quantity {
   static Quantity SIUnit();
 
  private:
-  explicit Quantity(Dimensionless const& magnitude);
-  Dimensionless magnitude_;
+  explicit Quantity(double const magnitude);
+  double magnitude_;
 
   friend Length            factories::Metres(Dimensionless const&);
   friend Mass              factories::Kilograms(Dimensionless const&);
@@ -134,6 +134,15 @@ class Quantity {
   friend typename Quantity<D>::Inverse operator/(Dimensionless const&,
                                                  Quantity<D> const&);
   template<typename D>
+  friend Quantity<D> operator*(Quantity<D> const&, double const);
+  template<typename D>
+  friend Quantity<D> operator*(double const, Quantity<D> const&);
+  template<typename D>
+  friend Quantity<D> operator/(Quantity<D> const&, double const);
+  template<typename D>
+  friend typename Quantity<D>::Inverse operator/(double const,
+                                                 Quantity<D> const&);
+  template<typename D>
   friend bool operator>(Quantity<D> const&, Quantity<D> const&);
   template<typename D>
   friend bool operator<(Quantity<D> const&, Quantity<D> const&);
@@ -148,6 +157,8 @@ class Quantity {
 
   template<typename D>
   friend Quantity<D> Abs(Quantity<D> const&);
+  template<typename D>
+  friend Quantity<D> Max(Quantity<D> const&, Quantity<D> const&);
 
   template<typename D>
   friend SquareRoot<Quantity<D>> Sqrt(Quantity<D> const& x);
@@ -156,6 +167,15 @@ class Quantity {
 
   template<typename D>
   friend std::string ToString(Quantity<D> const&, unsigned char const);
+
+  template<typename D>
+  friend void operator+=(Quantity<D>&, Quantity<D> const&);
+  template<typename D>
+  friend void operator-=(Quantity<D>&, Quantity<D> const&);
+  template<typename D>
+  friend void operator*=(Quantity<D>&, Dimensionless const&);
+  template<typename D>
+  friend void operator/=(Quantity<D>&, Dimensionless const&);
 };
 
 template<typename D>

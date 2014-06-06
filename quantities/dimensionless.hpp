@@ -26,6 +26,22 @@ class Dimensionless {
 
  private:
   double value_;
+
+  template<typename D>
+  friend class Quantity;
+  template<typename D>
+  friend Quantity<D> operator*(Quantity<D> const&, Dimensionless const&);
+  template<typename D>
+  friend Quantity<D> operator*(Dimensionless const&, Quantity<D> const&);
+  template<typename D>
+  friend Quantity<D> operator/(Quantity<D> const&, Dimensionless const&);
+  template<typename D>
+  friend typename Quantity<D>::Inverse operator/(Dimensionless const&,
+                                                 Quantity<D> const&);
+  template<typename D>
+  friend void operator*=(Quantity<D>&, Dimensionless const&);
+  template<typename D>
+  friend void operator/=(Quantity<D>&, Dimensionless const&);
 };
 
 Dimensionless operator+(Dimensionless const&);
@@ -48,6 +64,7 @@ bool operator==(Dimensionless const&, Dimensionless const&);
 bool operator!=(Dimensionless const&, Dimensionless const&);
 
 Dimensionless Abs(Dimensionless const&);
+Dimensionless Max(Dimensionless const&, Dimensionless const&);
 
 std::string ToString(Dimensionless const& number,
                      unsigned char const precision = DBL_DIG + 1);

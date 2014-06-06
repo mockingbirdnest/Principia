@@ -1,7 +1,7 @@
 #pragma once
 
+#include <algorithm>
 #include <cmath>
-
 #include <string>
 
 namespace principia {
@@ -111,6 +111,11 @@ inline bool operator!=(Dimensionless const& left, Dimensionless const& right) {
 
 inline Dimensionless Abs(Dimensionless const& number) {
   return std::abs(number.value());
+}
+
+inline Dimensionless Max(Dimensionless const& number1,
+                         Dimensionless const& number2) {
+  return std::max(number1.value(), number2.value());
 }
 
 inline std::string ToString(Dimensionless const& number,

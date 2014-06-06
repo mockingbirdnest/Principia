@@ -102,7 +102,7 @@ inline Angle ArcTanh(Dimensionless const& x) {
 
 template<typename D>
 inline SquareRoot<Quantity<D>> Sqrt(Quantity<D> const& x) {
-  return SquareRoot<Quantity<D>>(Sqrt(x.magnitude_));
+  return SquareRoot<Quantity<D>>(std::sqrt(x.magnitude_));
 }
 
 }  // namespace quantities
