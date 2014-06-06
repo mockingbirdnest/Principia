@@ -122,24 +122,6 @@ struct PowerGenerator<Q, Exponent, Range<(Exponent == 1)>>{
   typedef Q ResultType;
 };
 }  // namespace type_generators
-namespace factories {
-inline Length Metres(Dimensionless const& number) { return Length(number.value()); }
-inline Mass Kilograms(Dimensionless const& number) { return Mass(number.value()); }
-inline Time Seconds(Dimensionless const& number) { return Time(number.value()); }
-inline Current Amperes(Dimensionless const& number) { return Current(number.value()); }
-inline Temperature Kelvins(Dimensionless const& number) {
-  return Temperature(number.value());
-}
-inline Amount Moles(Dimensionless const& number) { return Amount(number.value()); }
-inline LuminousIntensity Candelas(Dimensionless const& number) {
-  return LuminousIntensity(number.value());
-}
-inline Winding Cycles(Dimensionless const& number) { return Winding(number.value()); }
-inline Angle Radians(Dimensionless const& number) { return Angle(number.value()); }
-inline SolidAngle Steradians(Dimensionless const& number) {
-  return SolidAngle(number.value());
-}
-}  // namespace factories
 
 template<typename D>
 inline Quantity<D>::Quantity() : magnitude_(0) {}

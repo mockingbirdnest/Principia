@@ -55,19 +55,6 @@ using Exponentiation =
 template<typename Q>
 using SquareRoot = typename type_generators::SquareRootGenerator<Q>::ResultType;
 
-namespace factories {
-Length            Metres(Dimensionless const&);
-Mass              Kilograms(Dimensionless const&);
-Time              Seconds(Dimensionless const&);
-Current           Amperes(Dimensionless const&);
-Temperature       Kelvins(Dimensionless const&);
-Amount            Moles(Dimensionless const&);
-LuminousIntensity Candelas(Dimensionless const&);
-Winding           Cycles(Dimensionless const&);
-Angle             Radians(Dimensionless const&);
-SolidAngle        Steradians(Dimensionless const&);
-}  // namespace factories
-
 template<typename D>
 std::string ToString(Quantity<D> const& quantity,
                      unsigned char const precision = 16);
@@ -95,17 +82,6 @@ class Quantity {
   explicit Quantity(double const magnitude);
   double magnitude_;
 
-  friend Length            factories::Metres(Dimensionless const&);
-  friend Mass              factories::Kilograms(Dimensionless const&);
-  friend Time              factories::Seconds(Dimensionless const&);
-  friend Current           factories::Amperes(Dimensionless const&);
-  friend Temperature       factories::Kelvins(Dimensionless const&);
-  friend Amount            factories::Moles(Dimensionless const&);
-  friend LuminousIntensity factories::Candelas(Dimensionless const&);
-  friend Winding           factories::Cycles(Dimensionless const&);
-  friend Angle             factories::Radians(Dimensionless const&);
-  friend SolidAngle        factories::Steradians(Dimensionless const&);
-
   template<typename D>
   friend class Quantity;
   template<typename D>
@@ -125,23 +101,24 @@ class Quantity {
                   typename Quantity<DRight>> operator/(Quantity<DLeft> const&,
                                                        Quantity<DRight> const&);
   template<typename D>
-  friend Quantity<D> operator*(Quantity<D> const&, Dimensionless const&);
-  template<typename D>
-  friend Quantity<D> operator*(Dimensionless const&, Quantity<D> const&);
-  template<typename D>
-  friend Quantity<D> operator/(Quantity<D> const&, Dimensionless const&);
-  template<typename D>
-  friend typename Quantity<D>::Inverse operator/(Dimensionless const&,
-                                                 Quantity<D> const&);
-  template<typename D>
   friend Quantity<D> operator*(Quantity<D> const&, double const);
+  template<typename D>
+  friend Quantity<D> operator*(Quantity<D> const&, Dimensionless const&);
   template<typename D>
   friend Quantity<D> operator*(double const, Quantity<D> const&);
   template<typename D>
+  friend Quantity<D> operator*(Dimensionless const&, Quantity<D> const&);
+  template<typename D>
   friend Quantity<D> operator/(Quantity<D> const&, double const);
+  template<typename D>
+  friend Quantity<D> operator/(Quantity<D> const&, Dimensionless const&);
   template<typename D>
   friend typename Quantity<D>::Inverse operator/(double const,
                                                  Quantity<D> const&);
+  template<typename D>
+  friend typename Quantity<D>::Inverse operator/(Dimensionless const&,
+                                                 Quantity<D> const&);
+
   template<typename D>
   friend bool operator>(Quantity<D> const&, Quantity<D> const&);
   template<typename D>
