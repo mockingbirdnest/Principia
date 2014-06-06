@@ -224,8 +224,6 @@ bool operator!=(Quantity<D> const&, Quantity<D> const&);
 
 template<typename D>
 Quantity<D> Abs(Quantity<D> const&);
-template<typename D>
-Quantity<D> Max(Quantity<D> const&, Quantity<D> const&);
 
 template<typename D>
 SquareRoot<Quantity<D>> Sqrt(Quantity<D> const& x);

@@ -11,7 +11,7 @@ inline Dimensionless::Dimensionless() : value_(0) {}
 inline Dimensionless::Dimensionless(double const value) : value_(value) {}
 
 inline Dimensionless Dimensionless::SIUnit() {
-  return 1;
+  return Dimensionless(1);
 }
 
 inline double Dimensionless::value() const {
@@ -38,84 +38,175 @@ inline Dimensionless Dimensionless::Pow(int const exponent) const {
 }
 
 inline Dimensionless operator+(Dimensionless const& right) {
-  return +right.value();
+  return right;
 }
 
 inline Dimensionless operator-(Dimensionless const& right) {
-  return -right.value();
+  return -right.value_;
 }
 
+inline Dimensionless operator+(double const left,
+                               Dimensionless const& right) {
+  return left + right.value_;
+}
+inline Dimensionless operator+(Dimensionless const& left,
+                               double const right) {
+  return left.value_ + right;
+}
 inline Dimensionless operator+(Dimensionless const& left,
                                Dimensionless const& right) {
-  return left.value() + right.value();
+  return left.value_ + right.value_;
 }
 
+inline Dimensionless operator-(double const left,
+                               Dimensionless const& right) {
+  return left - right.value_;
+}
+inline Dimensionless operator-(Dimensionless const& left,
+                               double const right) {
+  return left.value_ - right;
+}
 inline Dimensionless operator-(Dimensionless const& left,
                                Dimensionless const& right) {
-  return left.value() - right.value();
+  return left.value_ - right.value_;
 }
 
+inline Dimensionless operator*(double const left,
+                               Dimensionless const& right) {
+  return left * right.value_;
+}
+inline Dimensionless operator*(Dimensionless const& left,
+                               double const right) {
+  return left.value_ * right;
+}
 inline Dimensionless operator*(Dimensionless const& left,
                                Dimensionless const& right) {
-  return left.value() * right.value();
+  return left.value_ * right.value_;
 }
 
+inline Dimensionless operator/(double const left,
+                               Dimensionless const& right) {
+  return left / right.value_;
+}
+inline Dimensionless operator/(Dimensionless const& left,
+                               double const right) {
+  return left.value_ / right;
+}
 inline Dimensionless operator/(Dimensionless const& left,
                                Dimensionless const& right) {
-  return left.value() / right.value();
+  return left.value_ / right.value_;
 }
 
 inline void operator+=(Dimensionless& left,  // NOLINT(runtime/references)
+                       double const right) {
+  left.value_ += right;
+}
+inline void operator+=(Dimensionless& left,  // NOLINT(runtime/references)
                        Dimensionless const& right) {
-  left = left + right;
+  left.value_ += right.value_;
 }
 
 inline void operator-=(Dimensionless& left,  // NOLINT(runtime/references)
+                       double const right) {
+  left.value_ -= right;
+}
+inline void operator-=(Dimensionless& left,  // NOLINT(runtime/references)
                        Dimensionless const& right) {
-  left = left - right;
+  left.value_ -= right.value_;
 }
 
 inline void operator*=(Dimensionless& left,  // NOLINT(runtime/references)
+                       double const right) {
+  left.value_ *= right;
+}
+inline void operator*=(Dimensionless& left,  // NOLINT(runtime/references)
                        Dimensionless const& right) {
-  left = left * right;
+  left.value_ *= right.value_;
 }
 
 inline void operator/=(Dimensionless& left,  // NOLINT(runtime/references)
+                       double const right) {
+  left.value_ /= right;
+}
+inline void operator/=(Dimensionless& left,  // NOLINT(runtime/references)
                        Dimensionless const& right) {
-  left = left / right;
+  left.value_ /= right.value_;
+}
+
+inline bool operator<(double const left, Dimensionless const& right) {
+  return left < right.value_;
+}
+
+inline bool operator<(Dimensionless const& left, double const right) {
+  return left.value_ < right;
 }
 
 inline bool operator<(Dimensionless const& left, Dimensionless const& right) {
-  return left.value() < right.value();
+  return left.value_ < right.value_;
+}
+
+inline bool operator>(double const left, Dimensionless const& right) {
+  return left > right.value_;
+}
+
+inline bool operator>(Dimensionless const& left, double const right) {
+  return left.value_ > right;
 }
 
 inline bool operator>(Dimensionless const& left, Dimensionless const& right) {
-  return left.value() > right.value();
+  return left.value_ > right.value_;
+}
+
+inline bool operator<=(double const left, Dimensionless const& right) {
+  return left <= right.value_;
+}
+
+inline bool operator<=(Dimensionless const& left, double const right) {
+  return left.value_ <= right;
 }
 
 inline bool operator<=(Dimensionless const& left, Dimensionless const& right) {
-  return left.value() <= right.value();
+  return left.value_ <= right.value_;
+}
+
+inline bool operator>=(double const left, Dimensionless const& right) {
+  return left >= right.value_;
+}
+
+inline bool operator>=(Dimensionless const& left, double const right) {
+  return left.value_ >= right;
 }
 
 inline bool operator>=(Dimensionless const& left, Dimensionless const& right) {
-  return left.value() >= right.value();
+  return left.value_ >= right.value_;
+}
+
+inline bool operator==(double const left, Dimensionless const& right) {
+  return left == right.value_;
+}
+
+inline bool operator==(Dimensionless const& left, double const right) {
+  return left.value_ == right;
 }
 
 inline bool operator==(Dimensionless const& left, Dimensionless const& right) {
-  return left.value() == right.value();
+  return left.value_ == right.value_;
+}
+
+inline bool operator!=(double const left, Dimensionless const& right) {
+  return left != right.value_;
+}
+
+inline bool operator!=(Dimensionless const& left, double const right) {
+  return left.value_ != right;
 }
 
 inline bool operator!=(Dimensionless const& left, Dimensionless const& right) {
-  return left.value() != right.value();
+  return left.value_ != right.value_;
 }
 
 inline Dimensionless Abs(Dimensionless const& number) {
-  return std::abs(number.value());
-}
-
-inline Dimensionless Max(Dimensionless const& number1,
-                         Dimensionless const& number2) {
-  return std::max(number1.value(), number2.value());
+  return std::abs(number.value_);
 }
 
 inline std::string ToString(Dimensionless const& number,

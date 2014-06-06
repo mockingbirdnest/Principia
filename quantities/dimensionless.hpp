@@ -11,8 +11,7 @@ class Dimensionless {
   typedef Dimensionless Inverse;
 
   Dimensionless();
-  // No explicit here: we want implicit conversion from double.
-  Dimensionless(double const value);  // NOLINT(runtime/explicit)
+  Dimensionless(double const value);
 
   // Returns |Dimensionless(1)|, for consistency with |Quantity<D>::SIUnit()|.
   static Dimensionless SIUnit();
@@ -42,29 +41,97 @@ class Dimensionless {
   friend void operator*=(Quantity<D>&, Dimensionless const&);
   template<typename D>
   friend void operator/=(Quantity<D>&, Dimensionless const&);
+
+  friend Dimensionless operator+(Dimensionless const&);
+  friend Dimensionless operator-(Dimensionless const&);
+  friend Dimensionless operator+(double const, Dimensionless const&);
+  friend Dimensionless operator+(Dimensionless const&, double const);
+  friend Dimensionless operator+(Dimensionless const&, Dimensionless const&);
+  friend Dimensionless operator-(double const, Dimensionless const&);
+  friend Dimensionless operator-(Dimensionless const&, double const);
+  friend Dimensionless operator-(Dimensionless const&, Dimensionless const&);
+  friend Dimensionless operator*(double const, Dimensionless const&);
+  friend Dimensionless operator*(Dimensionless const&, double const);
+  friend Dimensionless operator*(Dimensionless const&, Dimensionless const&);
+  friend Dimensionless operator/(double const, Dimensionless const&);
+  friend Dimensionless operator/(Dimensionless const&, double const);
+  friend Dimensionless operator/(Dimensionless const&, Dimensionless const&);
+
+  friend void operator+=(Dimensionless&, double const);
+  friend void operator+=(Dimensionless&, Dimensionless const&);
+  friend void operator-=(Dimensionless&, double const);
+  friend void operator-=(Dimensionless&, Dimensionless const&);
+  friend void operator*=(Dimensionless&, double const);
+  friend void operator*=(Dimensionless&, Dimensionless const&);
+  friend void operator/=(Dimensionless&, double const);
+  friend void operator/=(Dimensionless&, Dimensionless const&);
+
+  friend bool operator>(double const, Dimensionless const&);
+  friend bool operator>(Dimensionless const&, double const);
+  friend bool operator>(Dimensionless const&, Dimensionless const&);
+  friend bool operator<(double const, Dimensionless const&);
+  friend bool operator<(Dimensionless const&, double const);
+  friend bool operator<(Dimensionless const&, Dimensionless const&);
+  friend bool operator>=(double const, Dimensionless const&);
+  friend bool operator>=(Dimensionless const&, double const);
+  friend bool operator>=(Dimensionless const&, Dimensionless const&);
+  friend bool operator<=(double const, Dimensionless const&);
+  friend bool operator<=(Dimensionless const&, double const);
+  friend bool operator<=(Dimensionless const&, Dimensionless const&);
+  friend bool operator==(double const, Dimensionless const&);
+  friend bool operator==(Dimensionless const&, double const);
+  friend bool operator==(Dimensionless const&, Dimensionless const&);
+  friend bool operator!=(double const, Dimensionless const&);
+  friend bool operator!=(Dimensionless const&, double const);
+  friend bool operator!=(Dimensionless const&, Dimensionless const&);
+
+  friend Dimensionless Abs(Dimensionless const& number);
 };
 
 Dimensionless operator+(Dimensionless const&);
 Dimensionless operator-(Dimensionless const&);
+Dimensionless operator+(double const, Dimensionless const&);
+Dimensionless operator+(Dimensionless const&, double const);
 Dimensionless operator+(Dimensionless const&, Dimensionless const&);
+Dimensionless operator-(double const, Dimensionless const&);
+Dimensionless operator-(Dimensionless const&, double const);
 Dimensionless operator-(Dimensionless const&, Dimensionless const&);
+Dimensionless operator*(double const, Dimensionless const&);
+Dimensionless operator*(Dimensionless const&, double const);
 Dimensionless operator*(Dimensionless const&, Dimensionless const&);
+Dimensionless operator/(double const, Dimensionless const&);
+Dimensionless operator/(Dimensionless const&, double const);
 Dimensionless operator/(Dimensionless const&, Dimensionless const&);
 
+void operator+=(Dimensionless&, double const);
 void operator+=(Dimensionless&, Dimensionless const&);
+void operator-=(Dimensionless&, double const);
 void operator-=(Dimensionless&, Dimensionless const&);
+void operator*=(Dimensionless&, double const);
 void operator*=(Dimensionless&, Dimensionless const&);
+void operator/=(Dimensionless&, double const);
 void operator/=(Dimensionless&, Dimensionless const&);
 
+bool operator>(double const, Dimensionless const&);
+bool operator>(Dimensionless const&, double const);
 bool operator>(Dimensionless const&, Dimensionless const&);
+bool operator<(double const, Dimensionless const&);
+bool operator<(Dimensionless const&, double const);
 bool operator<(Dimensionless const&, Dimensionless const&);
+bool operator>=(double const, Dimensionless const&);
+bool operator>=(Dimensionless const&, double const);
 bool operator>=(Dimensionless const&, Dimensionless const&);
+bool operator<=(double const, Dimensionless const&);
+bool operator<=(Dimensionless const&, double const);
 bool operator<=(Dimensionless const&, Dimensionless const&);
+bool operator==(double const, Dimensionless const&);
+bool operator==(Dimensionless const&, double const);
 bool operator==(Dimensionless const&, Dimensionless const&);
+bool operator!=(double const, Dimensionless const&);
+bool operator!=(Dimensionless const&, double const);
 bool operator!=(Dimensionless const&, Dimensionless const&);
 
 Dimensionless Abs(Dimensionless const&);
-Dimensionless Max(Dimensionless const&, Dimensionless const&);
 
 std::string ToString(Dimensionless const& number,
                      unsigned char const precision = DBL_DIG + 1);
