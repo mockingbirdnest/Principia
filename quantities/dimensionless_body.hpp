@@ -11,7 +11,7 @@ inline Dimensionless::Dimensionless() : value_(0) {}
 inline Dimensionless::Dimensionless(double const value) : value_(value) {}
 
 inline Dimensionless Dimensionless::SIUnit() {
-  return Dimensionless(1);
+  return 1;
 }
 
 inline double Dimensionless::value() const {
