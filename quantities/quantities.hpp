@@ -184,7 +184,7 @@ Q SIUnit();
 template<>
 double SIUnit<double>();
 
-// Equivalent to |std::pow(x, exponent)| unles -3 ≤ x ≤ 3, in which case
+// Equivalent to |std::pow(x, exponent)| unless -3 ≤ x ≤ 3, in which case
 // explicit specialisation yields multiplications statically.
 template<int exponent>
 double Pow(double x);
