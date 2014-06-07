@@ -23,7 +23,7 @@ quantities::DynamicViscosity const Poise = Barye * Second;
 quantities::KinematicViscosity const Stokes =
     quantities::Pow<2>(Centimetre) / Second;
 
-quantities::Luminance const Stilb = 
+quantities::Luminance const Stilb =
     si::Candela / quantities::Pow<2>(Centimetre);
 quantities::Illuminance const Phot = Stilb * si::Steradian;
 

@@ -99,17 +99,26 @@ TEST_F(QuantitiesTest, DimensionlfulOperations) {
 
 TEST_F(QuantitiesTest, DimensionlessExponentiation) {
   double const number   = π - 42;
-  double positivePowers = 1;
-  double negativePowers = 1;
-  EXPECT_EQ(1, Pow<0>(number));
-  //TODO(egg):Do something here.
-  /*
-  for (int i = 1; i < 10; ++i) {
-    positivePowers *= number;
-    negativePowers /= number;
-    EXPECT_THAT(number.Pow(i), AlmostEquals(positivePowers, i));
-    EXPECT_THAT(number.Pow(-i), AlmostEquals(negativePowers, i));
-  }*/
+  double positivePower = 1;
+  double negativePower = 1;
+  EXPECT_EQ(positivePower, Pow<0>(number));
+  positivePower *= number;
+  negativePower /= number;
+  EXPECT_EQ(positivePower, Pow<1>(number));
+  EXPECT_EQ(positivePower, Pow<-1>(number));
+  positivePower *= number;
+  negativePower /= number;
+  EXPECT_EQ(positivePower, Pow<2>(number));
+  EXPECT_EQ(positivePower, Pow<-2>(number));
+  positivePower *= number;
+  negativePower /= number;
+  EXPECT_EQ(positivePower, Pow<3>(number));
+  EXPECT_EQ(positivePower, Pow<-3>(number));
+  positivePower *= number;
+  negativePower /= number;
+  // This one calls |std::pow|.
+  EXPECT_EQ(positivePower, Pow<4>(number));
+  EXPECT_EQ(positivePower, Pow<-4>(number));
 }
 
 // The Greek letters cause a warning when stringified by the macros, because
