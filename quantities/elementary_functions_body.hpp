@@ -40,64 +40,52 @@ typedef Quantity<
 
 
 
-inline Dimensionless Sqrt(Dimensionless const& x) {
-  return std::sqrt(x.value());
-}
-inline Dimensionless Log(Dimensionless const& x) {
-  return std::log(x.value());
-}
-inline Dimensionless Log2(Dimensionless const& x) {
-  return std::log2(x.value());
-}
-inline Dimensionless Log10(Dimensionless const& x) {
-  return std::log10(x.value());
-}
-inline Dimensionless Exp(Dimensionless const& x) {
-  return std::exp(x.value());
+inline double Sqrt(double const x) {
+  return std::sqrt(x);
 }
 
-inline Dimensionless Sin(Angle const& α) {
-  return std::sin((α / si::Radian).value());
+inline double Sin(Angle const& α) {
+  return std::sin(α / si::Radian);
 }
-inline Dimensionless Cos(Angle const& α) {
-  return std::cos((α / si::Radian).value());
+inline double Cos(Angle const& α) {
+  return std::cos(α / si::Radian);
 }
-inline Dimensionless Tan(Angle const& α) {
-  return std::tan((α / si::Radian).value());
+inline double Tan(Angle const& α) {
+  return std::tan(α / si::Radian);
 }
 
-inline Angle ArcSin(Dimensionless const& x) {
-  return std::asin(x.value()) * si::Radian;
+inline Angle ArcSin(double const x) {
+  return std::asin(x) * si::Radian;
 }
-inline Angle ArcCos(Dimensionless const& x) {
-  return std::acos(x.value()) * si::Radian;
+inline Angle ArcCos(double const x) {
+  return std::acos(x) * si::Radian;
 }
-inline Angle ArcTan(Dimensionless const& y, Dimensionless const& x) {
-  return std::atan2(y.value(), x.value()) * si::Radian;
+inline Angle ArcTan(double const y, double const x) {
+  return std::atan2(y, x) * si::Radian;
 }
 template<typename D>
 inline Angle ArcTan(Quantity<D> const& y, Quantity<D> const& x) {
   return ArcTan(y.magnitude_, x.magnitude_);
 }
 
-inline Dimensionless Sinh(Angle const& α) {
-  return std::sinh((α / si::Radian).value());
+inline double Sinh(Angle const& α) {
+  return std::sinh((α / si::Radian));
 }
-inline Dimensionless Cosh(Angle const& α) {
-  return std::cosh((α / si::Radian).value());
+inline double Cosh(Angle const& α) {
+  return std::cosh((α / si::Radian));
 }
-inline Dimensionless Tanh(Angle const& α) {
-  return std::tanh((α / si::Radian).value());
+inline double Tanh(Angle const& α) {
+  return std::tanh((α / si::Radian));
 }
 
-inline Angle ArcSinh(Dimensionless const& x) {
-  return std::asinh(x.value()) * si::Radian;
+inline Angle ArcSinh(double const x) {
+  return std::asinh(x) * si::Radian;
 }
-inline Angle ArcCosh(Dimensionless const& x) {
-  return std::acosh(x.value()) * si::Radian;
+inline Angle ArcCosh(double const x) {
+  return std::acosh(x) * si::Radian;
 }
-inline Angle ArcTanh(Dimensionless const& x) {
-  return std::atanh(x.value()) * si::Radian;
+inline Angle ArcTanh(double const x) {
+  return std::atanh(x) * si::Radian;
 }
 
 template<typename D>

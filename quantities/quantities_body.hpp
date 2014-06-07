@@ -28,7 +28,7 @@ namespace type_generators {
 template<typename Q>
 struct Collapse { typedef Q ResultType; };
 template<>
-struct Collapse<Quantity<NoDimensions>> { typedef Dimensionless ResultType; };
+struct Collapse<Quantity<NoDimensions>> { typedef double ResultType; };
 template<typename Left, typename Right>
 struct ProductGenerator {
   enum {
@@ -52,12 +52,12 @@ struct ProductGenerator {
                           SolidAngle>>>::ResultType ResultType;
 };
 template<typename Left>
-struct ProductGenerator<Left, Dimensionless> { typedef Left ResultType; };
+struct ProductGenerator<Left, double> { typedef Left ResultType; };
 template<typename Right>
-struct ProductGenerator<Dimensionless, Right> { typedef Right ResultType; };
+struct ProductGenerator<double, Right> { typedef Right ResultType; };
 template<>
-struct ProductGenerator<Dimensionless, Dimensionless> {
-  typedef Dimensionless ResultType;
+struct ProductGenerator<double, double> {
+  typedef double ResultType;
 };
 template<typename Left, typename Right>
 struct QuotientGenerator {
@@ -82,13 +82,13 @@ struct QuotientGenerator {
                           SolidAngle>>>::ResultType ResultType;
 };
 template<typename Left>
-struct QuotientGenerator<Left, Dimensionless> { typedef Left ResultType; };
+struct QuotientGenerator<Left, double> { typedef Left ResultType; };
 template<>
-struct QuotientGenerator<Dimensionless, Dimensionless> {
-  typedef Dimensionless ResultType;
+struct QuotientGenerator<double, double> {
+  typedef double ResultType;
 };
 template<typename Right>
-struct QuotientGenerator<Dimensionless, Right> {
+struct QuotientGenerator<double, Right> {
   enum {
     Length            = -Right::Dimensions::Length,
     Mass              = -Right::Dimensions::Mass,
@@ -143,25 +143,30 @@ inline Quantity<D>::Quantity(double const magnitude)
     : magnitude_(magnitude) {}
 
 #pragma region Additive group
+
 template<typename D>
 inline Quantity<D> operator+(Quantity<D> const& right) {
   return Quantity<D>(+right.magnitude_);
 }
+
 template<typename D>
 inline Quantity<D> operator-(Quantity<D> const& right) {
   return Quantity<D>(-right.magnitude_);
 }
+
 template<typename D>
 inline Quantity<D> operator+(Quantity<D> const& left,
                              Quantity<D> const& right) {
   return Quantity<D>(left.magnitude_ + right.magnitude_);
 }
+
 template<typename D>
 inline Quantity<D> operator-(Quantity<D> const& left,
                              Quantity<D> const& right) {
   return Quantity<D>(left.magnitude_ - right.magnitude_);
 }
 #pragma endregion
+
 #pragma region Multiplicative group
 template<typename DLeft, typename DRight>
 inline Product <typename Quantity<DLeft>, typename Quantity <DRight>>
@@ -171,6 +176,7 @@ operator*(Quantity<DLeft> const& left,
                  typename Quantity<DRight>>(left.magnitude_ *
                                             right.magnitude_);
 }
+
 template<typename DLeft, typename DRight>
 inline Quotient<typename Quantity<DLeft>, typename Quantity <DRight>>
 operator/(Quantity<DLeft> const& left,
@@ -179,45 +185,29 @@ operator/(Quantity<DLeft> const& left,
                   typename Quantity<DRight>>(left.magnitude_ /
                                              right.magnitude_);
 }
+
 template<typename D>
 inline Quantity<D> operator*(Quantity<D> const& left,
                              double const right) {
   return Quantity<D>(left.magnitude_ * right);
 }
-template<typename D>
-inline Quantity<D> operator*(Quantity<D> const& left,
-                             Dimensionless const& right) {
-  return Quantity<D>(left.magnitude_ * right.value_);
-}
+
 template<typename D>
 inline Quantity<D> operator*(double const left,
                              Quantity<D> const& right) {
   return Quantity<D>(left * right.magnitude_);
 }
-template<typename D>
-inline Quantity<D> operator*(Dimensionless const& left,
-                             Quantity<D> const& right) {
-  return Quantity<D>(left.value_ * right.magnitude_);
-}
+
 template<typename D>
 inline Quantity<D> operator/(Quantity<D> const& left,
                              double const right) {
   return Quantity<D>(left.magnitude_ / right);
 }
-template<typename D>
-inline Quantity<D> operator/(Quantity<D> const& left,
-                             Dimensionless const& right) {
-  return Quantity<D>(left.magnitude_ / right.value_);
-}
+
 template<typename D>
 inline typename Quantity<D>::Inverse operator/(double const left,
                                                Quantity<D> const& right) {
   return typename Quantity<D>::Inverse(left / right.magnitude_);
-}
-template<typename D>
-inline typename Quantity<D>::Inverse operator/(Dimensionless const& left,
-                                               Quantity<D> const& right) {
-  return typename Quantity<D>::Inverse(left.value_ / right.magnitude_);
 }
 #pragma endregion
 #pragma region Assigment operators
@@ -226,30 +216,23 @@ inline void operator+=(Quantity<D>& left,  // NOLINT(runtime/references)
                        Quantity<D> const& right) {
   left.magnitude_ += right.magnitude_;
 }
+
 template<typename D>
 inline void operator-=(Quantity<D>& left,  // NOLINT(runtime/references)
                        Quantity<D> const& right) {
   left.magnitude_ -= right.magnitude_;
 }
+
 template<typename D>
 inline void operator*=(Quantity<D>& left,  // NOLINT(runtime/references)
                        double const right) {
   left.magnitude_ *= right;
 }
-template<typename D>
-inline void operator*=(Quantity<D>& left,  // NOLINT(runtime/references)
-                       Dimensionless const& right) {
-  left.magnitude_ *= right.value_;
-}
+
 template<typename D>
 inline void operator/=(Quantity<D>& left,  // NOLINT(runtime/references)
                        double const right) {
   left.magnitude_ /= right;
-}
-template<typename D>
-inline void operator/=(Quantity<D>& left,  // NOLINT(runtime/references)
-                       Dimensionless const& right) {
-  left.magnitude_ /= right.value_;
 }
 #pragma endregion
 #pragma region Comparison operators
@@ -257,22 +240,27 @@ template<typename D>
 inline bool operator>(Quantity<D> const& left, Quantity<D> const& right) {
   return left.magnitude_ > right.magnitude_;
 }
+
 template<typename D>
 inline bool operator<(Quantity<D> const& left, Quantity<D> const& right) {
   return left.magnitude_ < right.magnitude_;
 }
+
 template<typename D>
 inline bool operator>=(Quantity<D> const& left, Quantity<D> const& right) {
   return left.magnitude_ >= right.magnitude_;
 }
+
 template<typename D>
 inline bool operator<=(Quantity<D> const& left, Quantity<D> const& right) {
   return left.magnitude_ <= right.magnitude_;
 }
+
 template<typename D>
 inline bool operator==(Quantity<D> const& left, Quantity<D> const& right) {
   return left.magnitude_ == right.magnitude_;
 }
+
 template<typename D>
 inline bool operator!=(Quantity<D> const& left, Quantity<D> const& right) {
   return left.magnitude_ != right.magnitude_;

@@ -4,7 +4,6 @@
 #include <cmath>
 #include <vector>
 
-#include "quantities/dimensionless.hpp"
 #include "quantities/elementary_functions.hpp"
 #include "quantities/named_quantities.hpp"
 #include "quantities/numbers.hpp"

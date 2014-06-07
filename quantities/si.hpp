@@ -66,7 +66,7 @@ quantities::Mass const Gram = 1e-3 * Kilogram;
 // Note the nonstandard definition of the Hertz, with a dimensionful cycle.
 
 // The uno was proposed but never accepted.
-quantities::Dimensionless       const Uno = 1;
+double                          const Uno     = 1;
 quantities::Frequency           const Hertz   = Cycle / Second;
 quantities::Force               const Newton  = Metre * Kilogram /
                                                 (Second * Second);

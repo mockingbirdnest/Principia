@@ -1,25 +1,20 @@
 ﻿#pragma once
 
-#include "quantities/dimensionless.hpp"
 #include "quantities/quantities.hpp"
 
 namespace principia {
 namespace quantities {
-Dimensionless Sqrt(Dimensionless const& x);
+double Sqrt(double const x);
 template<typename D>
 SquareRoot<Quantity<D>> Sqrt(Quantity<D> const& x);
-Dimensionless Log(Dimensionless const& x);
-Dimensionless Log2(Dimensionless const& x);
-Dimensionless Log10(Dimensionless const& x);
-Dimensionless Exp(Dimensionless const& x);
 
-Dimensionless Sin(Angle const& α);
-Dimensionless Cos(Angle const& α);
-Dimensionless Tan(Angle const& α);
+double Sin(Angle const& α);
+double Cos(Angle const& α);
+double Tan(Angle const& α);
 
-Angle ArcSin(Dimensionless const& x);
-Angle ArcCos(Dimensionless const& x);
-Angle ArcTan(Dimensionless const& y, Dimensionless const& x = 1);
+Angle ArcSin(double const x);
+Angle ArcCos(double const x);
+Angle ArcTan(double const y, double const x = 1);
 template<typename D>
 Angle ArcTan(Quantity<D> const& y, Quantity<D> const& x);
 
@@ -27,13 +22,13 @@ Angle ArcTan(Quantity<D> const& y, Quantity<D> const& x);
 // curvature radius in the hyperbolic plane, which are angles. This explains the
 // use of "arc" for inverse functions.
 
-Dimensionless Sinh(Angle const& α);
-Dimensionless Cosh(Angle const& α);
-Dimensionless Tanh(Angle const& α);
+double Sinh(Angle const& α);
+double Cosh(Angle const& α);
+double Tanh(Angle const& α);
 
-Angle ArcSinh(Dimensionless const& x);
-Angle ArcCosh(Dimensionless const& x);
-Angle ArcTanh(Dimensionless const& x);
+Angle ArcSinh(double const x);
+Angle ArcCosh(double const x);
+Angle ArcTanh(double const x);
 }  // namespace quantities
 }  // namespace principia
 

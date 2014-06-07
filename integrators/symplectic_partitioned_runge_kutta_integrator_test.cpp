@@ -11,7 +11,6 @@
 #include "glog/logging.h"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
-#include "quantities/dimensionless.hpp"
 #include "testing_utilities/numerical_analysis.hpp"
 #include "testing_utilities/numerics.hpp"
 #include "testing_utilities/statistics.hpp"

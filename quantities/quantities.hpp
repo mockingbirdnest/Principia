@@ -4,8 +4,6 @@
 #include <iostream>  // NOLINT(readability/streams)
 #include <string>
 
-#include "quantities/dimensionless.hpp"
-
 namespace principia {
 namespace quantities {
 template<int LengthExponent, int MassExponent, int TimeExponent,
@@ -66,7 +64,7 @@ template<typename D>
 class Quantity {
  public:
   typedef typename D Dimensions;
-  typedef Quotient<Dimensionless, Quantity> Inverse;
+  typedef Quotient<double, Quantity> Inverse;
 
   Quantity();
   ~Quantity() = default;
@@ -104,20 +102,11 @@ class Quantity {
   template<typename D>
   friend Quantity<D> operator*(Quantity<D> const&, double const);
   template<typename D>
-  friend Quantity<D> operator*(Quantity<D> const&, Dimensionless const&);
-  template<typename D>
   friend Quantity<D> operator*(double const, Quantity<D> const&);
-  template<typename D>
-  friend Quantity<D> operator*(Dimensionless const&, Quantity<D> const&);
   template<typename D>
   friend Quantity<D> operator/(Quantity<D> const&, double const);
   template<typename D>
-  friend Quantity<D> operator/(Quantity<D> const&, Dimensionless const&);
-  template<typename D>
   friend typename Quantity<D>::Inverse operator/(double const,
-                                                 Quantity<D> const&);
-  template<typename D>
-  friend typename Quantity<D>::Inverse operator/(Dimensionless const&,
                                                  Quantity<D> const&);
 
   template<typename D>
@@ -127,11 +116,7 @@ class Quantity {
   template<typename D>
   friend void operator*=(Quantity<D>&, double const);
   template<typename D>
-  friend void operator*=(Quantity<D>&, Dimensionless const&);
-  template<typename D>
   friend void operator/=(Quantity<D>&, double const);
-  template<typename D>
-  friend void operator/=(Quantity<D>&, Dimensionless const&);
 
   template<typename D>
   friend bool operator>(Quantity<D> const&, Quantity<D> const&);
@@ -148,8 +133,6 @@ class Quantity {
 
   template<typename D>
   friend Quantity<D> Abs(Quantity<D> const&);
-  template<typename D>
-  friend Quantity<D> Max(Quantity<D> const&, Quantity<D> const&);
 
   template<typename D>
   friend SquareRoot<Quantity<D>> Sqrt(Quantity<D> const& x);
@@ -179,20 +162,11 @@ Quotient<typename Quantity<DLeft>,
 template<typename D>
 Quantity<D> operator*(Quantity<D> const&, double const);
 template<typename D>
-Quantity<D> operator*(Quantity<D> const&, Dimensionless const&);
-template<typename D>
 Quantity<D> operator*(double const, Quantity<D> const&);
-template<typename D>
-Quantity<D> operator*(Dimensionless const&, Quantity<D> const&);
 template<typename D>
 Quantity<D> operator/(Quantity<D> const&, double const);
 template<typename D>
-Quantity<D> operator/(Quantity<D> const&, Dimensionless const&);
-template<typename D>
 typename Quantity<D>::Inverse operator/(double const,
-                                                Quantity<D> const&);
-template<typename D>
-typename Quantity<D>::Inverse operator/(Dimensionless const&,
                                                 Quantity<D> const&);
 
 template<typename D>
@@ -202,11 +176,7 @@ inline void operator-=(Quantity<D>&, Quantity<D> const&);
 template<typename D>
 inline void operator*=(Quantity<D>&, double const);
 template<typename D>
-inline void operator*=(Quantity<D>&, Dimensionless const&);
-template<typename D>
 inline void operator/=(Quantity<D>&, double const);
-template<typename D>
-inline void operator/=(Quantity<D>&, Dimensionless const&);
 
 template<typename D>
 bool operator>(Quantity<D> const&, Quantity<D> const&);
