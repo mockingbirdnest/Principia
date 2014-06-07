@@ -26,9 +26,6 @@
     <ClInclude Include="constants.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="dimensionless.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="elementary_functions.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
