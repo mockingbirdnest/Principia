@@ -63,11 +63,10 @@ std::string BidimensionalDatasetMathematicaInput(std::vector<T> const& x,
   result += "ToExpression[StringReplace[\"\n{";
   for (std::size_t i = 0; i < x.size(); ++i) {
     result += "{";
-    // We use |ToString(Dimensionless const&)| in order to get enough digits.
-    LOG(FATAL)<<"FIX THIS!!!!";
-    //result += quantities::ToString(DoubleValue(x[i]));
+    // We use |ToString(double const)| in order to get enough digits.
+    result += quantities::ToString(DoubleValue(x[i]));
     result += ",";
-    //result += quantities::ToString(DoubleValue(y[i]));
+    result += quantities::ToString(DoubleValue(y[i]));
     result += "}";
     if (i + 1 < x.size()) {
       result += ",\n ";
