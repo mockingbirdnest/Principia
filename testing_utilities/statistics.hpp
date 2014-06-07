@@ -3,7 +3,6 @@
 #include <string>
 #include <vector>
 
-#include "quantities/dimensionless.hpp"
 #include "quantities/quantities.hpp"
 
 // Various statistics on finite populations stored as |std::vector|s of
@@ -34,9 +33,8 @@ T StandardDeviation(std::vector<T> const& x);
 // ρ(x, y) = Cov[x, y] / (σ(x) σ(y)).
 // |x| and |y| should have the same size.
 template<typename T, typename U>
-quantities::Dimensionless PearsonProductMomentCorrelationCoefficient(
-    std::vector<T> const& x,
-    std::vector<U> const& y);
+double PearsonProductMomentCorrelationCoefficient(std::vector<T> const& x,
+                                                  std::vector<U> const& y);
 
 // The slope of the least-squares linear regression to the dataset
 // with abscissae |x| and ordinates |y|. |x| and |y| should have the same size.

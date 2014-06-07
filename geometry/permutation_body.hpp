@@ -8,7 +8,6 @@
 #include "geometry/quaternion.hpp"
 #include "geometry/r3_element.hpp"
 #include "geometry/sign.hpp"
-#include "quantities/dimensionless.hpp"
 #include "quantities/elementary_functions.hpp"
 
 namespace principia {
@@ -63,7 +62,7 @@ Trivector<Scalar, ToFrame> Permutation<FromFrame, ToFrame>::operator()(
 template<typename FromFrame, typename ToFrame>
 OrthogonalMap<FromFrame, ToFrame>
 Permutation<FromFrame, ToFrame>::Forget() const {
-  static quantities::Dimensionless const sqrt_half = quantities::Sqrt(0.5);
+  static double const sqrt_half = quantities::Sqrt(0.5);
   static std::map<CoordinatePermutation, Quaternion> const quaternion = {
       {XYZ, Quaternion(1, {0, 0, 0})},
       {YZX, Quaternion(0.5, {-0.5, -0.5, -0.5})},

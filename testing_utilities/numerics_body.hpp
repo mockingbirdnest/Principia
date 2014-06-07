@@ -10,7 +10,7 @@ namespace testing_utilities {
 
 template<typename Scalar>
 double DoubleValue(Scalar const& scalar) {
-  return (scalar / Scalar::SIUnit()).value();
+  return scalar / quantities::SIUnit<Scalar>();
 }
 
 template<typename T, typename Norm, typename NormType>
@@ -19,9 +19,7 @@ NormType AbsoluteError(T const& expected, T const& actual,
   return norm(expected - actual);
 }
 
-inline quantities::Dimensionless AbsoluteError(
-    quantities::Dimensionless const& expected,
-    quantities::Dimensionless const& actual) {
+inline double AbsoluteError(double const expected, double const actual) {
   return AbsoluteError(expected, actual, quantities::Abs);
 }
 
@@ -58,36 +56,30 @@ Scalar AbsoluteError(
 }
 
 template<typename T, typename Norm>
-quantities::Dimensionless RelativeError(T const& expected, T const& actual,
-                                        Norm const norm) {
+double RelativeError(T const& expected, T const& actual, Norm const norm) {
   return norm(expected - actual) / norm(expected);
 }
 
-inline quantities::Dimensionless RelativeError(
-    quantities::Dimensionless const& expected,
-    quantities::Dimensionless const& actual) {
+inline double RelativeError(double const expected, double const actual) {
   return RelativeError(expected, actual, quantities::Abs);
 }
 
 template<typename Dimensions>
-quantities::Dimensionless RelativeError(
-    quantities::Quantity<Dimensions> const& expected,
-    quantities::Quantity<Dimensions> const& actual) {
+double RelativeError(quantities::Quantity<Dimensions> const& expected,
+                     quantities::Quantity<Dimensions> const& actual) {
   return RelativeError(expected, actual, quantities::Abs<Dimensions>);
 }
 
 template<typename Scalar>
-quantities::Dimensionless RelativeError(
-    geometry::R3Element<Scalar> const& expected,
-    geometry::R3Element<Scalar> const& actual) {
+double RelativeError(geometry::R3Element<Scalar> const& expected,
+                     geometry::R3Element<Scalar> const& actual) {
   return RelativeError(expected, actual,
                        [](geometry::R3Element<Scalar> v) { return v.Norm(); });
 }
 
 template<typename Scalar, typename Frame, unsigned int Rank>
-quantities::Dimensionless RelativeError(
-    geometry::Multivector<Scalar, Frame, Rank> const& expected,
-    geometry::Multivector<Scalar, Frame, Rank> const& actual) {
+double RelativeError(geometry::Multivector<Scalar, Frame, Rank> const& expected,
+                     geometry::Multivector<Scalar, Frame, Rank> const& actual) {
   return RelativeError(
       expected,
       actual,

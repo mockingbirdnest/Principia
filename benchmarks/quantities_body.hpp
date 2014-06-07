@@ -4,7 +4,6 @@
 #include <cmath>
 #include <vector>
 
-#include "quantities/dimensionless.hpp"
 #include "quantities/elementary_functions.hpp"
 #include "quantities/named_quantities.hpp"
 #include "quantities/numbers.hpp"
@@ -25,15 +24,15 @@ std::size_t const kDimension = 100;
 inline void DimensionfulDiscreteCosineTransform(
     std::vector<quantities::Momentum>* result) {
   using quantities::Cos;
-  using quantities::Dimensionless;
   using quantities::Momentum;
+  using quantities::SIUnit;
   using si::Radian;
   std::vector<Momentum> input(kDimension);
   for (std::size_t i = 0; i < kDimension; ++i) {
-    input[i] = i * Momentum::SIUnit();
+    input[i] = i * SIUnit<Momentum>();
   }
   result->resize(kDimension);
-  Dimensionless sign = 1;
+  double sign = 1;
   Momentum sum;
   for (std::size_t k = 0; k < kDimension; ++k, sign *= -1) {
     sum = Momentum();

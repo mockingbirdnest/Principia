@@ -4,7 +4,6 @@
 #include <iostream>  // NOLINT(readability/streams)
 
 #include "geometry/r3_element.hpp"
-#include "quantities/dimensionless.hpp"
 #include "quantities/quantities.hpp"
 
 namespace principia {
@@ -143,16 +142,16 @@ Multivector<Scalar, Frame, Rank> operator-(
 
 template<typename Scalar, typename Frame, unsigned int Rank>
 Multivector<Scalar, Frame, Rank> operator*(
-    quantities::Dimensionless const& left,
+    double const left,
     Multivector<Scalar, Frame, Rank> const& right);
 template<typename Scalar, typename Frame, unsigned int Rank>
 Multivector<Scalar, Frame, Rank> operator*(
     Multivector<Scalar, Frame, Rank> const& left,
-    quantities::Dimensionless const& right);
+    double const right);
 template<typename Scalar, typename Frame, unsigned int Rank>
 Multivector<Scalar, Frame, Rank> operator/(
     Multivector<Scalar, Frame, Rank> const& left,
-    quantities::Dimensionless const& right);
+    double const right);
 
 template<typename LDimension, typename RScalar, typename Frame,
          unsigned int Rank>
@@ -193,11 +192,11 @@ void operator-=(
 template<typename Scalar, typename Frame, unsigned int Rank>
 void operator*=(
     Multivector<Scalar, Frame, Rank>& left,  // NOLINT(runtime/references)
-    quantities::Dimensionless const& right);
+    double const right);
 template<typename Scalar, typename Frame, unsigned int Rank>
 void operator/=(
     Multivector<Scalar, Frame, Rank>& left,  // NOLINT(runtime/references)
-    quantities::Dimensionless const& right);
+    double const right);
 
 template<typename Scalar, typename Frame, unsigned int Rank>
 std::ostream& operator<<(std::ostream& out,

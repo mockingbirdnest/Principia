@@ -2,25 +2,25 @@
 
 #include "geometry/quaternion.hpp"
 #include "geometry/r3_element.hpp"
-#include "quantities/dimensionless.hpp"
 
 namespace principia {
 namespace geometry {
 
-inline Quaternion::Quaternion(quantities::Dimensionless const& real_part)
+inline Quaternion::Quaternion() : real_part_(0) {}
+
+inline Quaternion::Quaternion(double const real_part)
     : real_part_(real_part) {}
 
-inline Quaternion::Quaternion(
-    quantities::Dimensionless const& real_part,
-    R3Element<quantities::Dimensionless> const& imaginary_part)
+inline Quaternion::Quaternion(double const real_part,
+                              R3Element<double> const& imaginary_part)
     : real_part_(real_part),
       imaginary_part_(imaginary_part) {}
 
-inline quantities::Dimensionless const& Quaternion::real_part() const {
+inline double const Quaternion::real_part() const {
   return real_part_;
 }
 
-inline R3Element<quantities::Dimensionless> const&
+inline R3Element<double> const&
 Quaternion::imaginary_part() const {
   return imaginary_part_;
 }
@@ -64,20 +64,17 @@ inline Quaternion operator/(Quaternion const& left, Quaternion const& right) {
   return left * right.Inverse();
 }
 
-inline Quaternion operator*(quantities::Dimensionless const& left,
-                            Quaternion const& right) {
+inline Quaternion operator*(double const left, Quaternion const& right) {
   return Quaternion(left * right.real_part(),
                     left * right.imaginary_part());
 }
 
-inline Quaternion operator*(Quaternion const& left,
-                            quantities::Dimensionless const& right) {
+inline Quaternion operator*(Quaternion const& left, double const right) {
   return Quaternion(left.real_part() * right,
                     left.imaginary_part() * right);
 }
 
-inline Quaternion operator/(Quaternion const& left,
-                            quantities::Dimensionless const& right) {
+inline Quaternion operator/(Quaternion const& left, double const right) {
   return Quaternion(left.real_part() / right,
                     left.imaginary_part() / right);
 }
@@ -107,13 +104,13 @@ inline void operator/=(Quaternion& left,  // NOLINT(runtime/references)
 }
 
 inline void operator*=(Quaternion& left,  // NOLINT(runtime/references)
-                       quantities::Dimensionless const& right) {
+                       double const right) {
   left.real_part_ *= right;
   left.imaginary_part_ *= right;
 }
 
 inline void operator/=(Quaternion& left,  // NOLINT(runtime/references)
-                       quantities::Dimensionless const& right) {
+                       double const right) {
   left.real_part_ /= right;
   left.imaginary_part_ /= right;
 }

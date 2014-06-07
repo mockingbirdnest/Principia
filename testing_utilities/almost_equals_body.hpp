@@ -9,7 +9,6 @@
 #include "geometry/grassmann.hpp"
 #include "geometry/r3_element.hpp"
 #include "gmock/gmock.h"
-#include "quantities/dimensionless.hpp"
 #include "testing_utilities/numerics.hpp"
 
 namespace principia {
@@ -46,15 +45,13 @@ bool AlmostEqualsMatcher<T>::MatchAndExplain(
 
 template<typename T>
 bool AlmostEqualsMatcher<T>::MatchAndExplain(
-    quantities::Dimensionless const& actual,
+    double const actual,
     testing::MatchResultListener* listener) const {
   // Check that the types are equality-comparable up to implicit casts.
   if (actual == expected_) {
     return true;
   }
-  std::int64_t const distance = ULPDistance(
-      actual.value(),
-      quantities::Dimensionless(expected_).value());
+  std::int64_t const distance = ULPDistance(actual, expected_);
   *listener << "the numbers are separated by " << distance << " ULPs";
   return distance <= max_ulps_;
 }

@@ -15,7 +15,6 @@
 namespace principia {
 namespace testing_utilities {
 
-using quantities::Dimensionless;
 using quantities::Sqrt;
 using geometry::Bivector;
 using geometry::R3Element;
@@ -36,9 +35,9 @@ class NumericsTest : public testing::Test {
  protected:
   struct World;
 
-  R3Element<Dimensionless> const i_ = {1, 0, 0};
-  R3Element<Dimensionless> const j_ = {0, 1, 0};
-  R3Element<Dimensionless> const k_ = {0, 0, 1};
+  R3Element<double> const i_ = {1, 0, 0};
+  R3Element<double> const j_ = {0, 1, 0};
+  R3Element<double> const k_ = {0, 0, 1};
 };
 
 double DoubleAbs(const double x) {
@@ -88,46 +87,46 @@ TEST_F(NumericsTest, R3ElementAbsoluteError) {
 
 TEST_F(NumericsTest, VectorAbsoluteError) {
   EXPECT_THAT(
-      AbsoluteError(Vector<Dimensionless, World>(i_ + j_ + k_),
-                    Vector<Dimensionless, World>(i_ + j_ + k_)),
+      AbsoluteError(Vector<double, World>(i_ + j_ + k_),
+                    Vector<double, World>(i_ + j_ + k_)),
       Eq(0));
   EXPECT_THAT(
-      AbsoluteError(Vector<Dimensionless, World>(i_ + j_),
-                    Vector<Dimensionless, World>(i_ + j_ + k_)),
+      AbsoluteError(Vector<double, World>(i_ + j_),
+                    Vector<double, World>(i_ + j_ + k_)),
       Eq(1));
   EXPECT_THAT(
-      AbsoluteError(Vector<Dimensionless, World>(i_),
-                    Vector<Dimensionless, World>(i_ + j_ + k_)),
+      AbsoluteError(Vector<double, World>(i_),
+                    Vector<double, World>(i_ + j_ + k_)),
       Eq(Sqrt(2)));
 }
 
 TEST_F(NumericsTest, BivectorAbsoluteError) {
   EXPECT_THAT(
-      AbsoluteError(Bivector<Dimensionless, World>(i_ + j_ + k_),
-                    Bivector<Dimensionless, World>(i_ + j_ + k_)),
+      AbsoluteError(Bivector<double, World>(i_ + j_ + k_),
+                    Bivector<double, World>(i_ + j_ + k_)),
       Eq(0));
   EXPECT_THAT(
-      AbsoluteError(Bivector<Dimensionless, World>(i_ + j_),
-                    Bivector<Dimensionless, World>(i_ + j_ + k_)),
+      AbsoluteError(Bivector<double, World>(i_ + j_),
+                    Bivector<double, World>(i_ + j_ + k_)),
       Eq(1));
   EXPECT_THAT(
-      AbsoluteError(Bivector<Dimensionless, World>(i_),
-                    Bivector<Dimensionless, World>(i_ + j_ + k_)),
+      AbsoluteError(Bivector<double, World>(i_),
+                    Bivector<double, World>(i_ + j_ + k_)),
       Eq(Sqrt(2)));
 }
 
 TEST_F(NumericsTest, TrivectorAbsoluteError) {
   EXPECT_THAT(
-      AbsoluteError(Trivector<Dimensionless, World>(1),
-                    Trivector<Dimensionless, World>(1)),
+      AbsoluteError(Trivector<double, World>(1),
+                    Trivector<double, World>(1)),
       Eq(0));
   EXPECT_THAT(
-      AbsoluteError(Trivector<Dimensionless, World>(1.0),
-                    Trivector<Dimensionless, World>(2)),
+      AbsoluteError(Trivector<double, World>(1.0),
+                    Trivector<double, World>(2)),
       Eq(1));
   EXPECT_THAT(
-      AbsoluteError(Trivector<Dimensionless, World>(1),
-                    Trivector<Dimensionless, World>(0)),
+      AbsoluteError(Trivector<double, World>(1),
+                    Trivector<double, World>(0)),
       Eq(1));
 }
 
@@ -165,54 +164,54 @@ TEST_F(NumericsTest, R3ElementRelativeError) {
 
 TEST_F(NumericsTest, VectorRelativeError) {
   EXPECT_THAT(
-      RelativeError(Vector<Dimensionless, World>(i_ + j_ + k_),
-                    Vector<Dimensionless, World>(i_ + j_ + k_)),
+      RelativeError(Vector<double, World>(i_ + j_ + k_),
+                    Vector<double, World>(i_ + j_ + k_)),
       Eq(0));
   EXPECT_THAT(
-      RelativeError(Vector<Dimensionless, World>(i_ + j_),
-                    Vector<Dimensionless, World>(i_ + j_ + k_)),
+      RelativeError(Vector<double, World>(i_ + j_),
+                    Vector<double, World>(i_ + j_ + k_)),
       AlmostEquals(Sqrt(0.5)));
   EXPECT_THAT(
-      RelativeError(Vector<Dimensionless, World>(i_),
-                    Vector<Dimensionless, World>(i_ + j_ + k_)),
+      RelativeError(Vector<double, World>(i_),
+                    Vector<double, World>(i_ + j_ + k_)),
       Eq(Sqrt(2)));
 }
 
 TEST_F(NumericsTest, BivectorRelativeError) {
   EXPECT_THAT(
-      RelativeError(Bivector<Dimensionless, World>(i_ + j_ + k_),
-                    Bivector<Dimensionless, World>(i_ + j_ + k_)),
+      RelativeError(Bivector<double, World>(i_ + j_ + k_),
+                    Bivector<double, World>(i_ + j_ + k_)),
       Eq(0));
   EXPECT_THAT(
-      RelativeError(Bivector<Dimensionless, World>(i_ + j_),
-                    Bivector<Dimensionless, World>(i_ + j_ + k_)),
+      RelativeError(Bivector<double, World>(i_ + j_),
+                    Bivector<double, World>(i_ + j_ + k_)),
       AlmostEquals(Sqrt(0.5)));
   EXPECT_THAT(
-      RelativeError(Bivector<Dimensionless, World>(i_),
-                    Bivector<Dimensionless, World>(i_ + j_ + k_)),
+      RelativeError(Bivector<double, World>(i_),
+                    Bivector<double, World>(i_ + j_ + k_)),
       Eq(Sqrt(2)));
 }
 
 TEST_F(NumericsTest, TrivectorRelativeError) {
   EXPECT_THAT(
-      RelativeError(Trivector<Dimensionless, World>(42.0),
-                    Trivector<Dimensionless, World>(42.0)),
+      RelativeError(Trivector<double, World>(42.0),
+                    Trivector<double, World>(42.0)),
       Eq(0));
   EXPECT_THAT(
-      RelativeError(Trivector<Dimensionless, World>(1.0),
-                    Trivector<Dimensionless, World>(-1.0)),
+      RelativeError(Trivector<double, World>(1.0),
+                    Trivector<double, World>(-1.0)),
       Eq(2));
   EXPECT_THAT(
-      RelativeError(Trivector<Dimensionless, World>(2.0),
-                    Trivector<Dimensionless, World>(1.0)),
+      RelativeError(Trivector<double, World>(2.0),
+                    Trivector<double, World>(1.0)),
       Eq(0.5));
   EXPECT_THAT(
-      RelativeError(Trivector<Dimensionless, World>(1.0),
-                    Trivector<Dimensionless, World>(2.0)),
+      RelativeError(Trivector<double, World>(1.0),
+                    Trivector<double, World>(2.0)),
       Eq(1));
   EXPECT_THAT(
-      RelativeError(Trivector<Dimensionless, World>(42.0),
-                    Trivector<Dimensionless, World>(6.0 * 9.0)),
+      RelativeError(Trivector<double, World>(42.0),
+                    Trivector<double, World>(6.0 * 9.0)),
       AllOf(Gt(0.28), Lt(0.29)));
 }
 

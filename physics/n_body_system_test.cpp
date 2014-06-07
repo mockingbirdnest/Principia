@@ -17,6 +17,8 @@ using principia::constants::GravitationalConstant;
 using principia::geometry::Barycentre;
 using principia::geometry::Point;
 using principia::geometry::Vector;
+using principia::quantities::Pow;
+using principia::quantities::SIUnit;
 using testing::Eq;
 using testing::Lt;
 
@@ -30,40 +32,40 @@ class NBodySystemTest : public testing::Test {
 
     // The Earth-Moon system, roughly, with a circular orbit with velocities
     // in the center-of-mass frame.
-    body1_ = new Body<InertialFrame>(6E24 * Mass::SIUnit());
-    body2_ = new Body<InertialFrame>(7E22 * Mass::SIUnit());
+    body1_ = new Body<InertialFrame>(6E24 * SIUnit<Mass>());
+    body2_ = new Body<InertialFrame>(7E22 * SIUnit<Mass>());
     Point<Vector<Length, InertialFrame>> const
-        q1(Vector<Length, InertialFrame>({0 * Length::SIUnit(),
-                                          0 * Length::SIUnit(),
-                                          0 * Length::SIUnit()}));
+        q1(Vector<Length, InertialFrame>({0 * SIUnit<Length>(),
+                                          0 * SIUnit<Length>(),
+                                          0 * SIUnit<Length>()}));
     Point<Vector<Length, InertialFrame>> const
-        q2(Vector<Length, InertialFrame>({0 * Length::SIUnit(),
-                                          4E8 * Length::SIUnit(),
-                                          0 * Length::SIUnit()}));
+        q2(Vector<Length, InertialFrame>({0 * SIUnit<Length>(),
+                                          4E8 * SIUnit<Length>(),
+                                          0 * SIUnit<Length>()}));
     Point<Vector<Length, InertialFrame>> const centre_of_mass =
         Barycentre(q1, body1_->mass(), q2, body2_->mass());
     Length const semi_major_axis = (q1 - q2).Norm();
-    period_ = 2 * π * Sqrt(semi_major_axis.Pow<3>() /
+    period_ = 2 * π * Sqrt(Pow<3>(semi_major_axis) /
                                (body1_->gravitational_parameter() +
                                 body2_->gravitational_parameter()));
     Point<Vector<Speed, InertialFrame>> const
         v1(Vector<Speed, InertialFrame>({
             -2 * π * (q1 - centre_of_mass).Norm() / period_,
-            0 * Speed::SIUnit(),
-            0 * Speed::SIUnit()}));
+            0 * SIUnit<Speed>(),
+            0 * SIUnit<Speed>()}));
     Point<Vector<Speed, InertialFrame>> const
         v2(Vector<Speed, InertialFrame>({
             2 * π * (q2 - centre_of_mass).Norm() / period_,
-            0 * Speed::SIUnit(),
-            0 * Speed::SIUnit()}));
+            0 * SIUnit<Speed>(),
+            0 * SIUnit<Speed>()}));
     Point<Vector<Speed, InertialFrame>> const overall_velocity =
         Barycentre(v1, body1_->mass(), v2, body2_->mass());
     body1_->AppendToTrajectory(q1 - centre_of_mass,
                                v1 - overall_velocity,
-                               0 * Time::SIUnit());
+                               0 * SIUnit<Time>());
     body2_->AppendToTrajectory(q2 - centre_of_mass,
                                v2 - overall_velocity,
-                               0 * Time::SIUnit());
+                               0 * SIUnit<Time>());
     system_.reset(new NBodySystem(
         new std::vector<Body<InertialFrame>*>({body1_, body2_})));
   }
@@ -114,18 +116,18 @@ TEST_F(NBodySystemTest, EarthMoon) {
   positions = body1_->positions();
   EXPECT_THAT(positions.size(), Eq(101));
   LOG(INFO) << ToMathematicaString(positions);
-  EXPECT_THAT(Abs(positions[25].coordinates().y), Lt(3E-2 * Length::SIUnit()));
-  EXPECT_THAT(Abs(positions[50].coordinates().x), Lt(3E-2 * Length::SIUnit()));
-  EXPECT_THAT(Abs(positions[75].coordinates().y), Lt(3E-2 * Length::SIUnit()));
-  EXPECT_THAT(Abs(positions[100].coordinates().x), Lt(3E-2 * Length::SIUnit()));
+  EXPECT_THAT(Abs(positions[25].coordinates().y), Lt(3E-2 * SIUnit<Length>()));
+  EXPECT_THAT(Abs(positions[50].coordinates().x), Lt(3E-2 * SIUnit<Length>()));
+  EXPECT_THAT(Abs(positions[75].coordinates().y), Lt(3E-2 * SIUnit<Length>()));
+  EXPECT_THAT(Abs(positions[100].coordinates().x), Lt(3E-2 * SIUnit<Length>()));
 
   positions = body2_->positions();
   LOG(INFO) << ToMathematicaString(positions);
   EXPECT_THAT(positions.size(), Eq(101));
-  EXPECT_THAT(Abs(positions[25].coordinates().y), Lt(2 * Length::SIUnit()));
-  EXPECT_THAT(Abs(positions[50].coordinates().x), Lt(2 * Length::SIUnit()));
-  EXPECT_THAT(Abs(positions[75].coordinates().y), Lt(2 * Length::SIUnit()));
-  EXPECT_THAT(Abs(positions[100].coordinates().x), Lt(2 * Length::SIUnit()));
+  EXPECT_THAT(Abs(positions[25].coordinates().y), Lt(2 * SIUnit<Length>()));
+  EXPECT_THAT(Abs(positions[50].coordinates().x), Lt(2 * SIUnit<Length>()));
+  EXPECT_THAT(Abs(positions[75].coordinates().y), Lt(2 * SIUnit<Length>()));
+  EXPECT_THAT(Abs(positions[100].coordinates().x), Lt(2 * SIUnit<Length>()));
 }
 
 }  // namespace physics

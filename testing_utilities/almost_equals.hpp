@@ -8,7 +8,6 @@
 #include "geometry/grassmann.hpp"
 #include "geometry/r3_element.hpp"
 #include "gmock/gmock.h"
-#include "quantities/dimensionless.hpp"
 
 namespace principia {
 namespace testing_utilities {
@@ -30,7 +29,7 @@ class AlmostEqualsMatcher{
   template<typename Dimensions>
   bool MatchAndExplain(quantities::Quantity<Dimensions> const& actual,
                        testing::MatchResultListener* listener) const;
-  bool MatchAndExplain(quantities::Dimensionless const& actual,
+  bool MatchAndExplain(double const actual,
                        testing::MatchResultListener* listener) const;
   template<typename Scalar>
   bool MatchAndExplain(geometry::R3Element<Scalar> const& actual,

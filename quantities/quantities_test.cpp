@@ -6,7 +6,6 @@
 #include "quantities/astronomy.hpp"
 #include "quantities/BIPM.hpp"
 #include "quantities/constants.hpp"
-#include "quantities/dimensionless.hpp"
 #include "quantities/elementary_functions.hpp"
 #include "quantities/quantities.hpp"
 #include "quantities/si.hpp"
@@ -30,17 +29,20 @@ using principia::constants::StandardGravity;
 using principia::constants::VacuumPermeability;
 using principia::constants::VacuumPermittivity;
 using principia::quantities::Abs;
+using principia::quantities::ArcCos;
+using principia::quantities::ArcCosh;
+using principia::quantities::ArcSin;
+using principia::quantities::ArcSinh;
+using principia::quantities::ArcTan;
+using principia::quantities::ArcTanh;
 using principia::quantities::Cos;
-using principia::quantities::Dimensionless;
-using principia::quantities::Exp;
-using principia::quantities::Log;
-using principia::quantities::Log10;
-using principia::quantities::Log2;
 using principia::quantities::Mass;
+using principia::quantities::Pow;
 using principia::quantities::Product;
 using principia::quantities::Sin;
 using principia::quantities::Speed;
 using principia::quantities::Sqrt;
+using principia::quantities::ToString;
 using principia::si::Ampere;
 using principia::si::AstronomicalUnit;
 using principia::si::Candela;
@@ -78,14 +80,6 @@ TEST_F(QuantitiesTest, AbsoluteValue) {
   EXPECT_EQ(Abs(1729), 1729);
 }
 
-TEST_F(QuantitiesTest, DimensionlessComparisons) {
-  testing_utilities::TestOrder(Dimensionless(0), Dimensionless(1));
-  testing_utilities::TestOrder(Dimensionless(-1), Dimensionless(0));
-  testing_utilities::TestOrder(-e, e);
-  testing_utilities::TestOrder(Dimensionless(3), π);
-  testing_utilities::TestOrder(Dimensionless(42), Dimensionless(1729));
-}
-
 TEST_F(QuantitiesTest, DimensionfulComparisons) {
   testing_utilities::TestOrder(EarthMass, JupiterMass);
   testing_utilities::TestOrder(LightYear, Parsec);
@@ -93,23 +87,10 @@ TEST_F(QuantitiesTest, DimensionfulComparisons) {
   testing_utilities::TestOrder(SpeedOfLight * Day, LightYear);
 }
 
-TEST_F(QuantitiesTest, DimensionlessOperations) {
-  Dimensionless const zero    = 0;
-  Dimensionless const one     = 1;
-  Dimensionless const taxi    = 1729;
-  Dimensionless const answer  = 42;
-  Dimensionless const heegner = 163;
-  testing_utilities::TestField(
-      zero, one, taxi, 4 * π / 3, heegner, answer, -e, 2);
-}
-
 TEST_F(QuantitiesTest, DimensionlfulOperations) {
-  Dimensionless const zero = 0;
-  Dimensionless const one = 1;
-  Dimensionless const taxi = 1729;
   testing_utilities::TestVectorSpace(
       0 * Metre / Second, SpeedOfLight, 88 * Mile / Hour,
-      -340.29 * Metre / Second, zero, one, -2 * π, taxi, 2);
+      -340.29 * Metre / Second, 0.0, 1.0, -2 * π, 1729.0, 2);
   // Dimensionful multiplication is a tensor product, see [Tao 2012].
   testing_utilities::TestBilinearMap(
       Times<Product<Mass, Speed>, Mass, Speed>, SolarMass,
@@ -117,16 +98,27 @@ TEST_F(QuantitiesTest, DimensionlfulOperations) {
 }
 
 TEST_F(QuantitiesTest, DimensionlessExponentiation) {
-  Dimensionless const number   = π - 42;
-  Dimensionless positivePowers = 1;
-  Dimensionless negativePowers = 1;
-  EXPECT_EQ(1, number.Pow<0>());
-  for (int i = 1; i < 10; ++i) {
-    positivePowers *= number;
-    negativePowers /= number;
-    EXPECT_THAT(number.Pow(i), AlmostEquals(positivePowers, i));
-    EXPECT_THAT(number.Pow(-i), AlmostEquals(negativePowers, i));
-  }
+  double const number   = π - 42;
+  double positivePower = 1;
+  double negativePower = 1;
+  EXPECT_EQ(positivePower, Pow<0>(number));
+  positivePower *= number;
+  negativePower /= number;
+  EXPECT_EQ(positivePower, Pow<1>(number));
+  EXPECT_EQ(negativePower, Pow<-1>(number));
+  positivePower *= number;
+  negativePower /= number;
+  EXPECT_EQ(positivePower, Pow<2>(number));
+  EXPECT_EQ(negativePower, Pow<-2>(number));
+  positivePower *= number;
+  negativePower /= number;
+  EXPECT_EQ(positivePower, Pow<3>(number));
+  EXPECT_EQ(negativePower, Pow<-3>(number));
+  positivePower *= number;
+  negativePower /= number;
+  // This one calls |std::pow|.
+  EXPECT_THAT(positivePower, AlmostEquals(Pow<4>(number)));
+  EXPECT_THAT(negativePower, AlmostEquals(Pow<-4>(number)));
 }
 
 // The Greek letters cause a warning when stringified by the macros, because
@@ -146,28 +138,28 @@ TEST_F(QuantitiesTest, Formatting) {
 
 TEST_F(QuantitiesTest, PhysicalConstants) {
   // By definition.
-  EXPECT_THAT(1 / SpeedOfLight.Pow<2>(),
+  EXPECT_THAT(1 / Pow<2>(SpeedOfLight),
               AlmostEquals(VacuumPermittivity * VacuumPermeability, 2));
   // The Keplerian approximation for the mass of the Sun
   // is fairly accurate.
   EXPECT_THAT(RelativeError(
-                  4 * π.Pow<2>() * AstronomicalUnit.Pow<3>() /
-                      (GravitationalConstant * JulianYear.Pow<2>()),
+                  4 * Pow<2>(π) * Pow<3>(AstronomicalUnit) /
+                      (GravitationalConstant * Pow<2>(JulianYear)),
                   SolarMass),
               Lt(4E-5));
   EXPECT_THAT(RelativeError(1 * Parsec, 3.26156 * LightYear), Lt(2E-6));
   // The Keplerian approximation for the mass of the Earth
   // is pretty bad, but the error is still only 1%.
   EXPECT_THAT(RelativeError(
-                  4 * π.Pow<2>() * LunarDistance.Pow<3>() /
-                      (GravitationalConstant * (27.321582 * Day).Pow<2>()),
+                  4 * Pow<2>(π) * Pow<3>(LunarDistance) /
+                      (GravitationalConstant * Pow<2>(27.321582 * Day)),
                   EarthMass),
               Lt(1E-2));
   EXPECT_THAT(RelativeError(1 * SolarMass, 1047 * JupiterMass), Lt(4E-4));
   // Delambre & Méchain.
   EXPECT_THAT(RelativeError(
                   GravitationalConstant * EarthMass /
-                      (40 * Mega(Metre) / (2 * π)).Pow<2>(),
+                      Pow<2>(40 * Mega(Metre) / (2 * π)),
                   StandardGravity),
               Lt(4E-3));
   // Talleyrand.
@@ -225,13 +217,9 @@ TEST_F(QuantitiesTest, HyperbolicFunctions) {
   EXPECT_THAT(ArcTanh(Tanh(-10 * Degree)), AlmostEquals(-10 * Degree, 1));
 }
 
-TEST_F(QuantitiesTest, ExpLogAndSqrt) {
-  EXPECT_EQ(Exp(1), e);
-  EXPECT_THAT(Exp(Log(4.2) + Log(1.729)), AlmostEquals(4.2 * 1.729, 1));
-  EXPECT_EQ(Exp(Log(2) * Log2(1.729)), 1.729);
-  EXPECT_EQ(Exp(Log(10) * Log10(1.729)), 1.729);
-  EXPECT_THAT(Exp(Log(2) / 2), AlmostEquals(Sqrt(2), 1));
-  EXPECT_EQ(Exp(Log(Rood / Foot.Pow<2>()) / 2) * Foot, Sqrt(Rood));
+TEST_F(QuantitiesTest, ExpLogAndSqrt) {;
+  EXPECT_THAT(std::exp(std::log(2) / 2), AlmostEquals(Sqrt(2), 1));
+  EXPECT_EQ(std::exp(std::log(Rood / Pow<2>(Foot)) / 2) * Foot, Sqrt(Rood));
 }
 
 }  // namespace geometry

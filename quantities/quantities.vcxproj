@@ -89,8 +89,6 @@
     <ClInclude Include="bipm.hpp" />
     <ClInclude Include="cgs.hpp" />
     <ClInclude Include="constants.hpp" />
-    <ClInclude Include="dimensionless.hpp" />
-    <ClInclude Include="dimensionless_body.hpp" />
     <ClInclude Include="elementary_functions.hpp" />
     <ClInclude Include="elementary_functions_body.hpp" />
     <ClInclude Include="named_quantities.hpp" />

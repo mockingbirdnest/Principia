@@ -13,7 +13,6 @@ using principia::astronomy::JulianYear;
 using principia::astronomy::Parsec;
 using principia::bipm::Knot;
 using principia::constants::SpeedOfLight;
-using principia::quantities::Dimensionless;
 using principia::quantities::Length;
 using principia::quantities::Speed;
 using principia::quantities::Time;
@@ -48,34 +47,27 @@ class R3ElementTest : public testing::Test {
 };
 
 TEST_F(R3ElementTest, Dumb3Vector) {
-  EXPECT_EQ((e * Dimensionless(42)) * v_, e * (Dimensionless(42) * v_));
+  EXPECT_EQ((e * 42) * v_, e * (42 * v_));
   EXPECT_THAT(303.492345479576 * Metre / Second, AlmostEquals(a_.Norm(), 8));
   testing_utilities::TestEquality(42 * v_, 43 * v_);
-  testing_utilities::TestVectorSpace<R3Element<Speed>, Dimensionless>(
-      null_velocity_, u_, v_,
-      w_, Dimensionless(0),
-      Dimensionless(1), e,
-      Dimensionless(42),
-      2);
+  testing_utilities::TestVectorSpace<R3Element<Speed>, double>(
+      null_velocity_, u_, v_, w_, 0.0, 1.0, e, 42.0, 2);
   testing_utilities::TestAlternatingBilinearMap(
-      Cross<Speed, Speed>, u_, v_, w_, a_,
-      Dimensionless(42), 2);
-  EXPECT_EQ(Cross(R3Element<Dimensionless>(1, 0, 0),
-                  R3Element<Dimensionless>(0, 1, 0)),
-            R3Element<Dimensionless>(0, 0, 1));
+      Cross<Speed, Speed>, u_, v_, w_, a_, 42.0, 2);
+  EXPECT_EQ(Cross(R3Element<double>(1, 0, 0),
+                  R3Element<double>(0, 1, 0)),
+            R3Element<double>(0, 0, 1));
   testing_utilities::TestSymmetricPositiveDefiniteBilinearMap(
-      Dot<Speed, Speed>, u_, v_, w_, a_, Dimensionless(42), 2);
+      Dot<Speed, Speed>, u_, v_, w_, a_, 42.0, 2);
 }
 
 TEST_F(R3ElementTest, MixedProduct) {
   testing_utilities::TestBilinearMap(
       Times<R3Element<Length>, Time, R3Element<Speed>>,
-      1 * Second, 1 * JulianYear, u_, v_, Dimensionless(42),
-      2);
+      1 * Second, 1 * JulianYear, u_, v_, 42.0, 2);
   testing_utilities::TestBilinearMap(
       Times<R3Element<Length>, R3Element<Speed>, Time>, w_, a_,
-      -1 * Day, 1 * Parsec / SpeedOfLight, Dimensionless(-π),
-       2);
+      -1 * Day, 1 * Parsec / SpeedOfLight, -π, 2);
   Time const t = -3 * Second;
   EXPECT_EQ(t * u_, u_ * t);
   EXPECT_THAT((u_ * t) / t, AlmostEquals(u_, 2));

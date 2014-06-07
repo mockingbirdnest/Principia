@@ -14,7 +14,8 @@ quantities::Pressure const Bar                 = 1e5 * si::Pascal;
 quantities::Pressure const MillimetreOfMercury = 133.322 * si::Pascal;
 quantities::Length   const Ångström            = 1e-10 * si::Metre;
 quantities::Length   const NauticalMile        = 1852 * si::Metre;
-quantities::Area     const Barn                = 1e-28 * si::Metre.Pow<2>();
 quantities::Speed    const Knot                = 1 * NauticalMile / si::Hour;
+quantities::Area const Barn =
+    1e-28 * quantities::Pow<2>(si::Metre);
 }  // namespace bipm
 }  // namespace principia

@@ -11,18 +11,18 @@
 #include "glog/logging.h"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
-#include "quantities/dimensionless.hpp"
 #include "testing_utilities/numerical_analysis.hpp"
 #include "testing_utilities/numerics.hpp"
 #include "testing_utilities/statistics.hpp"
 
 using principia::quantities::Abs;
 using principia::quantities::Energy;
-using principia::quantities::Dimensionless;
 using principia::quantities::Length;
 using principia::quantities::Mass;
 using principia::quantities::Momentum;
+using principia::quantities::Pow;
 using principia::quantities::Power;
+using principia::quantities::SIUnit;
 using principia::quantities::Stiffness;
 using principia::quantities::Time;
 using principia::testing_utilities::AbsoluteError;
@@ -96,9 +96,9 @@ TEST_F(SPRKTest, Convergence) {
   parameters_.Δt = 0.2;
   int const step_sizes = 22;
   double const step_reduction = 1.1;
-  std::vector<Dimensionless> log_step_sizes(step_sizes);
-  std::vector<Dimensionless> log_q_errors(step_sizes);
-  std::vector<Dimensionless> log_p_errors(step_sizes);
+  std::vector<double> log_step_sizes(step_sizes);
+  std::vector<double> log_q_errors(step_sizes);
+  std::vector<double> log_p_errors(step_sizes);
   for (int i = 0; i < step_sizes; ++i, parameters_.Δt /= step_reduction) {
     integrator_.Solve(&ComputeHarmonicOscillatorForce,
                       &ComputeHarmonicOscillatorVelocity,
@@ -111,8 +111,8 @@ TEST_F(SPRKTest, Convergence) {
         std::abs(solution_.momentum[0].quantities[0] +
                  std::sin(solution_.time.quantities[0])));
   }
-  Dimensionless const q_convergence_order = Slope(log_step_sizes, log_q_errors);
-  Dimensionless const q_correlation =
+  double const q_convergence_order = Slope(log_step_sizes, log_q_errors);
+  double const q_correlation =
       PearsonProductMomentCorrelationCoefficient(log_step_sizes, log_q_errors);
   LOG(INFO) << "Convergence order in q : " << q_convergence_order;
   LOG(INFO) << "Correlation            : " << q_correlation;
@@ -120,8 +120,8 @@ TEST_F(SPRKTest, Convergence) {
       BidimensionalDatasetMathematicaInput(log_step_sizes, log_q_errors);
   EXPECT_THAT(q_convergence_order, AllOf(Gt(4.9), Lt(5.1)));
   EXPECT_THAT(q_correlation, AllOf(Gt(0.999), Lt(1.01)));
-  Dimensionless const p_convergence_order = Slope(log_step_sizes, log_p_errors);
-  Dimensionless const p_correlation =
+  double const p_convergence_order = Slope(log_step_sizes, log_p_errors);
+  double const p_correlation =
       PearsonProductMomentCorrelationCoefficient(log_step_sizes, log_p_errors);
   LOG(INFO) << "Convergence order in p : " << p_convergence_order;
   LOG(INFO) << "Correlation            : " << p_correlation;
@@ -135,11 +135,11 @@ TEST_F(SPRKTest, Symplecticity) {
   parameters_.q0 = {1.0};
   parameters_.p0 = {0.0};
   parameters_.t0 = 0.0;
-  Stiffness const k = 1 * Stiffness::SIUnit();
-  Mass const m      = 1 * Mass::SIUnit();
-  Length const q0   = parameters_.q0[0] * Length::SIUnit();
-  Momentum const p0 = parameters_.p0[0] * Momentum::SIUnit();
-  Energy const initial_energy = 0.5 * p0.Pow<2>() / m + 0.5 * k * q0.Pow<2>();
+  Stiffness const k = 1 * SIUnit<Stiffness>();
+  Mass const m      = 1 * SIUnit<Mass>();
+  Length const q0   = parameters_.q0[0] * SIUnit<Length>();
+  Momentum const p0 = parameters_.p0[0] * SIUnit<Momentum>();
+  Energy const initial_energy = 0.5 * Pow<2>(p0) / m + 0.5 * k * Pow<2>(q0);
   parameters_.tmax = 500.0;
   parameters_.Δt = 1;
   parameters_.sampling_period = 1;
@@ -149,29 +149,29 @@ TEST_F(SPRKTest, Symplecticity) {
   std::size_t const length = solution_.time.quantities.size();
   std::vector<Energy> energy_error(length);
   std::vector<Time> time_steps(length);
-  Energy max_energy_error = 0 * Energy::SIUnit();
+  Energy max_energy_error = 0 * SIUnit<Energy>();
   for (size_t i = 0; i < length; ++i) {
-    Length const q_i   = solution_.position[0].quantities[i] * Length::SIUnit();
+    Length const q_i   = solution_.position[0].quantities[i] * SIUnit<Length>();
     Momentum const p_i = solution_.momentum[0].quantities[i] *
-                             Momentum::SIUnit();
-    time_steps[i] = solution_.time.quantities[i] * Time::SIUnit();
-    energy_error[i] = Abs(0.5 * p_i.Pow<2>() / m + 0.5 * k * q_i.Pow<2>() -
+                             SIUnit<Momentum>();
+    time_steps[i] = solution_.time.quantities[i] * SIUnit<Time>();
+    energy_error[i] = Abs(0.5 * Pow<2>(p_i) / m + 0.5 * k * Pow<2>(q_i) -
                           initial_energy);
     max_energy_error = std::max(energy_error[i], max_energy_error);
   }
   LOG(INFO) << "Energy error as a function of time:\n" <<
       BidimensionalDatasetMathematicaInput(time_steps, energy_error);
-  Dimensionless const correlation =
+  double const correlation =
       PearsonProductMomentCorrelationCoefficient(time_steps, energy_error);
   LOG(INFO) << "Correlation between time and energy error : " << correlation;
   EXPECT_THAT(correlation, Lt(1E-3));
   Power const slope = Slope(time_steps, energy_error);
   LOG(INFO) << "Slope                                     : " << slope;
-  EXPECT_THAT(slope, Lt(1E-10 * Power::SIUnit()));
+  EXPECT_THAT(slope, Lt(1E-10 * SIUnit<Power>()));
   LOG(INFO) << "Maximum energy error                      : " <<
       max_energy_error;
-  EXPECT_THAT(max_energy_error, AllOf(Gt(1E-4 * Energy::SIUnit()),
-                                      Lt(1E-3 * Energy::SIUnit())));
+  EXPECT_THAT(max_energy_error, AllOf(Gt(1E-4 * SIUnit<Energy>()),
+                                      Lt(1E-3 * SIUnit<Energy>())));
 }
 
 }  // namespace integrators

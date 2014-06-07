@@ -1,10 +1,9 @@
-#pragma once
+﻿#pragma once
 
+#include <cfloat>
 // We use ostream for logging purposes.
 #include <iostream>  // NOLINT(readability/streams)
 #include <string>
-
-#include "quantities/dimensionless.hpp"
 
 namespace principia {
 namespace quantities {
@@ -66,17 +65,10 @@ template<typename D>
 class Quantity {
  public:
   typedef typename D Dimensions;
-  typedef Quotient<Dimensionless, Quantity> Inverse;
+  typedef Quotient<double, Quantity> Inverse;
 
   Quantity();
   ~Quantity() = default;
-
-  template<int Exponent>
-  Exponentiation<Quantity, Exponent> Pow() const;
-
-  // Returns the base or derived SI Unit of |Quantity|.
-  // For instance, |Action::SIUnit() == Joule * Second|.
-  static Quantity SIUnit();
 
  private:
   explicit Quantity(double const magnitude);
@@ -104,20 +96,11 @@ class Quantity {
   template<typename D>
   friend Quantity<D> operator*(Quantity<D> const&, double const);
   template<typename D>
-  friend Quantity<D> operator*(Quantity<D> const&, Dimensionless const&);
-  template<typename D>
   friend Quantity<D> operator*(double const, Quantity<D> const&);
-  template<typename D>
-  friend Quantity<D> operator*(Dimensionless const&, Quantity<D> const&);
   template<typename D>
   friend Quantity<D> operator/(Quantity<D> const&, double const);
   template<typename D>
-  friend Quantity<D> operator/(Quantity<D> const&, Dimensionless const&);
-  template<typename D>
   friend typename Quantity<D>::Inverse operator/(double const,
-                                                 Quantity<D> const&);
-  template<typename D>
-  friend typename Quantity<D>::Inverse operator/(Dimensionless const&,
                                                  Quantity<D> const&);
 
   template<typename D>
@@ -127,11 +110,7 @@ class Quantity {
   template<typename D>
   friend void operator*=(Quantity<D>&, double const);
   template<typename D>
-  friend void operator*=(Quantity<D>&, Dimensionless const&);
-  template<typename D>
   friend void operator/=(Quantity<D>&, double const);
-  template<typename D>
-  friend void operator/=(Quantity<D>&, Dimensionless const&);
 
   template<typename D>
   friend bool operator>(Quantity<D> const&, Quantity<D> const&);
@@ -146,11 +125,14 @@ class Quantity {
   template<typename D>
   friend bool operator!=(Quantity<D> const&, Quantity<D> const&);
 
+  template<typename Q>
+  friend Q SIUnit();
+
+  template<int exponent, typename D>
+  friend Exponentiation<Quantity<D>, exponent> Pow(Quantity<D> const& x);
+
   template<typename D>
   friend Quantity<D> Abs(Quantity<D> const&);
-  template<typename D>
-  friend Quantity<D> Max(Quantity<D> const&, Quantity<D> const&);
-
   template<typename D>
   friend SquareRoot<Quantity<D>> Sqrt(Quantity<D> const& x);
   template<typename D>
@@ -179,20 +161,11 @@ Quotient<typename Quantity<DLeft>,
 template<typename D>
 Quantity<D> operator*(Quantity<D> const&, double const);
 template<typename D>
-Quantity<D> operator*(Quantity<D> const&, Dimensionless const&);
-template<typename D>
 Quantity<D> operator*(double const, Quantity<D> const&);
-template<typename D>
-Quantity<D> operator*(Dimensionless const&, Quantity<D> const&);
 template<typename D>
 Quantity<D> operator/(Quantity<D> const&, double const);
 template<typename D>
-Quantity<D> operator/(Quantity<D> const&, Dimensionless const&);
-template<typename D>
 typename Quantity<D>::Inverse operator/(double const,
-                                                Quantity<D> const&);
-template<typename D>
-typename Quantity<D>::Inverse operator/(Dimensionless const&,
                                                 Quantity<D> const&);
 
 template<typename D>
@@ -202,11 +175,7 @@ inline void operator-=(Quantity<D>&, Quantity<D> const&);
 template<typename D>
 inline void operator*=(Quantity<D>&, double const);
 template<typename D>
-inline void operator*=(Quantity<D>&, Dimensionless const&);
-template<typename D>
 inline void operator/=(Quantity<D>&, double const);
-template<typename D>
-inline void operator/=(Quantity<D>&, Dimensionless const&);
 
 template<typename D>
 bool operator>(Quantity<D> const&, Quantity<D> const&);
@@ -221,16 +190,36 @@ bool operator==(Quantity<D> const&, Quantity<D> const&);
 template<typename D>
 bool operator!=(Quantity<D> const&, Quantity<D> const&);
 
+// Returns the base or derived SI Unit of |Q|.
+// For instance, |SIUnit<Action>() == Joule * Second|.
+template<typename Q>
+Q SIUnit();
+// Returns 1.
+template<>
+double SIUnit<double>();
+
+// Equivalent to |std::pow(x, exponent)| unless -3 ≤ x ≤ 3, in which case
+// explicit specialisation yields multiplications statically.
+template<int exponent>
+double Pow(double x);
+template<int exponent, typename D>
+Exponentiation<Quantity<D>, exponent> Pow(Quantity<D> const& x);
+
+// Equivalent to |std::abs(x)|.
+double Abs(double const x);
 template<typename D>
-Quantity<D> Abs(Quantity<D> const&);
+Quantity<D> Abs(Quantity<D> const& x);
 
 template<typename D>
 SquareRoot<Quantity<D>> Sqrt(Quantity<D> const& x);
 template<typename D>
 Angle ArcTan(Quantity<D> const& y, Quantity<D> const& x);
 
+std::string ToString(double const number,
+                     unsigned char const precision = DBL_DIG + 1);
 template<typename D>
-std::string ToString(Quantity<D> const&, unsigned char const);
+std::string ToString(Quantity<D> const& quantity,
+                     unsigned char const precision);
 
 template<typename D>
 std::ostream& operator<<(::std::ostream& out, Quantity<D> const& quantity);

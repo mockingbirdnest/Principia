@@ -28,7 +28,7 @@ namespace type_generators {
 template<typename Q>
 struct Collapse { typedef Q ResultType; };
 template<>
-struct Collapse<Quantity<NoDimensions>> { typedef Dimensionless ResultType; };
+struct Collapse<Quantity<NoDimensions>> { typedef double ResultType; };
 template<typename Left, typename Right>
 struct ProductGenerator {
   enum {
@@ -52,12 +52,12 @@ struct ProductGenerator {
                           SolidAngle>>>::ResultType ResultType;
 };
 template<typename Left>
-struct ProductGenerator<Left, Dimensionless> { typedef Left ResultType; };
+struct ProductGenerator<Left, double> { typedef Left ResultType; };
 template<typename Right>
-struct ProductGenerator<Dimensionless, Right> { typedef Right ResultType; };
+struct ProductGenerator<double, Right> { typedef Right ResultType; };
 template<>
-struct ProductGenerator<Dimensionless, Dimensionless> {
-  typedef Dimensionless ResultType;
+struct ProductGenerator<double, double> {
+  typedef double ResultType;
 };
 template<typename Left, typename Right>
 struct QuotientGenerator {
@@ -82,13 +82,13 @@ struct QuotientGenerator {
                           SolidAngle>>>::ResultType ResultType;
 };
 template<typename Left>
-struct QuotientGenerator<Left, Dimensionless> { typedef Left ResultType; };
+struct QuotientGenerator<Left, double> { typedef Left ResultType; };
 template<>
-struct QuotientGenerator<Dimensionless, Dimensionless> {
-  typedef Dimensionless ResultType;
+struct QuotientGenerator<double, double> {
+  typedef double ResultType;
 };
 template<typename Right>
-struct QuotientGenerator<Dimensionless, Right> {
+struct QuotientGenerator<double, Right> {
   enum {
     Length            = -Right::Dimensions::Length,
     Mass              = -Right::Dimensions::Mass,
@@ -127,41 +127,34 @@ template<typename D>
 inline Quantity<D>::Quantity() : magnitude_(0) {}
 
 template<typename D>
-inline Quantity<D> Quantity<D>::SIUnit() {
-  return Quantity<D>(1);
-}
-
-template<typename D>
-template<int Exponent>
-Exponentiation<Quantity<D>, Exponent> Quantity<D>::Pow() const {
-  return Exponentiation<Quantity<D>,
-                        Exponent>(pow(magnitude_, Exponent));
-}
-
-template<typename D>
 inline Quantity<D>::Quantity(double const magnitude)
     : magnitude_(magnitude) {}
 
 #pragma region Additive group
+
 template<typename D>
 inline Quantity<D> operator+(Quantity<D> const& right) {
   return Quantity<D>(+right.magnitude_);
 }
+
 template<typename D>
 inline Quantity<D> operator-(Quantity<D> const& right) {
   return Quantity<D>(-right.magnitude_);
 }
+
 template<typename D>
 inline Quantity<D> operator+(Quantity<D> const& left,
                              Quantity<D> const& right) {
   return Quantity<D>(left.magnitude_ + right.magnitude_);
 }
+
 template<typename D>
 inline Quantity<D> operator-(Quantity<D> const& left,
                              Quantity<D> const& right) {
   return Quantity<D>(left.magnitude_ - right.magnitude_);
 }
 #pragma endregion
+
 #pragma region Multiplicative group
 template<typename DLeft, typename DRight>
 inline Product <typename Quantity<DLeft>, typename Quantity <DRight>>
@@ -171,6 +164,7 @@ operator*(Quantity<DLeft> const& left,
                  typename Quantity<DRight>>(left.magnitude_ *
                                             right.magnitude_);
 }
+
 template<typename DLeft, typename DRight>
 inline Quotient<typename Quantity<DLeft>, typename Quantity <DRight>>
 operator/(Quantity<DLeft> const& left,
@@ -179,45 +173,29 @@ operator/(Quantity<DLeft> const& left,
                   typename Quantity<DRight>>(left.magnitude_ /
                                              right.magnitude_);
 }
+
 template<typename D>
 inline Quantity<D> operator*(Quantity<D> const& left,
                              double const right) {
   return Quantity<D>(left.magnitude_ * right);
 }
-template<typename D>
-inline Quantity<D> operator*(Quantity<D> const& left,
-                             Dimensionless const& right) {
-  return Quantity<D>(left.magnitude_ * right.value_);
-}
+
 template<typename D>
 inline Quantity<D> operator*(double const left,
                              Quantity<D> const& right) {
   return Quantity<D>(left * right.magnitude_);
 }
-template<typename D>
-inline Quantity<D> operator*(Dimensionless const& left,
-                             Quantity<D> const& right) {
-  return Quantity<D>(left.value_ * right.magnitude_);
-}
+
 template<typename D>
 inline Quantity<D> operator/(Quantity<D> const& left,
                              double const right) {
   return Quantity<D>(left.magnitude_ / right);
 }
-template<typename D>
-inline Quantity<D> operator/(Quantity<D> const& left,
-                             Dimensionless const& right) {
-  return Quantity<D>(left.magnitude_ / right.value_);
-}
+
 template<typename D>
 inline typename Quantity<D>::Inverse operator/(double const left,
                                                Quantity<D> const& right) {
   return typename Quantity<D>::Inverse(left / right.magnitude_);
-}
-template<typename D>
-inline typename Quantity<D>::Inverse operator/(Dimensionless const& left,
-                                               Quantity<D> const& right) {
-  return typename Quantity<D>::Inverse(left.value_ / right.magnitude_);
 }
 #pragma endregion
 #pragma region Assigment operators
@@ -226,30 +204,23 @@ inline void operator+=(Quantity<D>& left,  // NOLINT(runtime/references)
                        Quantity<D> const& right) {
   left.magnitude_ += right.magnitude_;
 }
+
 template<typename D>
 inline void operator-=(Quantity<D>& left,  // NOLINT(runtime/references)
                        Quantity<D> const& right) {
   left.magnitude_ -= right.magnitude_;
 }
+
 template<typename D>
 inline void operator*=(Quantity<D>& left,  // NOLINT(runtime/references)
                        double const right) {
   left.magnitude_ *= right;
 }
-template<typename D>
-inline void operator*=(Quantity<D>& left,  // NOLINT(runtime/references)
-                       Dimensionless const& right) {
-  left.magnitude_ *= right.value_;
-}
+
 template<typename D>
 inline void operator/=(Quantity<D>& left,  // NOLINT(runtime/references)
                        double const right) {
   left.magnitude_ /= right;
-}
-template<typename D>
-inline void operator/=(Quantity<D>& left,  // NOLINT(runtime/references)
-                       Dimensionless const& right) {
-  left.magnitude_ /= right.value_;
 }
 #pragma endregion
 #pragma region Comparison operators
@@ -257,31 +228,99 @@ template<typename D>
 inline bool operator>(Quantity<D> const& left, Quantity<D> const& right) {
   return left.magnitude_ > right.magnitude_;
 }
+
 template<typename D>
 inline bool operator<(Quantity<D> const& left, Quantity<D> const& right) {
   return left.magnitude_ < right.magnitude_;
 }
+
 template<typename D>
 inline bool operator>=(Quantity<D> const& left, Quantity<D> const& right) {
   return left.magnitude_ >= right.magnitude_;
 }
+
 template<typename D>
 inline bool operator<=(Quantity<D> const& left, Quantity<D> const& right) {
   return left.magnitude_ <= right.magnitude_;
 }
+
 template<typename D>
 inline bool operator==(Quantity<D> const& left, Quantity<D> const& right) {
   return left.magnitude_ == right.magnitude_;
 }
+
 template<typename D>
 inline bool operator!=(Quantity<D> const& left, Quantity<D> const& right) {
   return left.magnitude_ != right.magnitude_;
 }
 #pragma endregion
 
+template<int exponent>
+inline double Pow(double x) {
+  return std::pow(x, exponent);
+}
+
+// Static specialisations for frequently-used exponents, so that this gets
+// turned into multiplications at compile time.
+
+template<>
+inline double Pow<-3>(double x) {
+  return 1 / (x * x * x);
+}
+
+template<>
+inline double Pow<-2>(double x) {
+  return 1 / (x * x);
+}
+
+template<>
+inline double Pow<-1>(double x) {
+  return 1 / x;
+}
+
+template<>
+inline double Pow<0>(double x) {
+  return 1;
+}
+
+template<>
+inline double Pow<1>(double x) {
+  return x;
+}
+
+template<>
+inline double Pow<2>(double x) {
+  return x * x;
+}
+
+template<>
+inline double Pow<3>(double x) {
+  return x * x * x;
+}
+
+
+template<int exponent, typename D>
+Exponentiation<Quantity<D>, exponent> Pow(Quantity<D> const& x) {
+  return Exponentiation<Quantity<D>, exponent>(Pow<exponent>(x.magnitude_));
+}
+
+inline double Abs(double const x) {
+  return std::abs(x);
+}
+
 template<typename D>
 inline Quantity<D> Abs(Quantity<D> const& quantity) {
   return Quantity<D>(std::abs(quantity.magnitude_));
+}
+
+
+template<typename Q>
+inline Q SIUnit() {
+  return Q(1);
+}
+template<>
+inline double SIUnit<double>() {
+  return 1;
 }
 
 inline std::string FormatUnit(std::string const& name, int const exponent) {
@@ -294,6 +333,13 @@ inline std::string FormatUnit(std::string const& name, int const exponent) {
     default:
       return " " + name + "^" + std::to_string(exponent);
   }
+}
+
+inline std::string ToString(double const number,
+                            unsigned char const precision) {
+  char result[50];
+  sprintf_s(result, ("%."+ std::to_string(precision) + "e").c_str(), number);
+  return result;
 }
 
 template<typename D>

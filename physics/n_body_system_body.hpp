@@ -9,6 +9,8 @@
 #include "physics/frame.hpp"
 #include "quantities/quantities.hpp"
 
+// TODO(phl): This is a header file, you're polluting the root namespace!
+// Put that in the function bodies.
 using principia::geometry::R3Element;
 using principia::integrators::SPRKIntegrator;
 using principia::integrators::SymplecticIntegrator;
@@ -23,7 +25,7 @@ namespace {
 
 template<typename Scalar>
 Scalar FromDouble(double const quantity) {
-  return quantity * Scalar::SIUnit();
+  return quantity * quantities::SIUnit<Scalar>();
 }
 
 template<typename Scalar, typename Frame>
@@ -39,7 +41,7 @@ Vector<Scalar, Frame> FromDouble(double const x,
 
 template<typename Scalar>
 double ToDouble(Scalar const& quantity) {
-  return (quantity / Scalar::SIUnit()).value();
+  return quantity / quantities::SIUnit<Scalar>();
 }
 
 template<typename Scalar, typename Frame>
@@ -65,6 +67,7 @@ void NBodySystem::Integrate(SymplecticIntegrator const& integrator,
                             Time const& tmax,
                             Time const& Δt,
                             int const sampling_period) {
+  using quantities::SIUnit;
   SymplecticIntegrator::Parameters parameters;
   SymplecticIntegrator::Solution solution;
 
@@ -89,8 +92,8 @@ void NBodySystem::Integrate(SymplecticIntegrator const& integrator,
     }
   }
 
-  parameters.tmax = (tmax / (1 * Time::SIUnit())).value();
-  parameters.Δt = (Δt / (1 * Time::SIUnit())).value();
+  parameters.tmax = tmax / SIUnit<Time>();
+  parameters.Δt = Δt / SIUnit<Time>();
   parameters.sampling_period = sampling_period;
   dynamic_cast<const SPRKIntegrator*>(&integrator)->Solve(
       std::bind(&NBodySystem::ComputeGravitationalAccelerations, this,
@@ -135,7 +138,8 @@ void NBodySystem::ComputeGravitationalAccelerations(
     double const t,
     std::vector<double> const& q,
     std::vector<double>* result) const {
-  static auto const dimension_factor = 1 / GravitationalParameter::SIUnit();
+  using quantities::SIUnit;
+  static auto const dimension_factor = 1 / SIUnit<GravitationalParameter>();
   result->assign(result->size(), 0);
 
   // TODO(phl): Used to deal with proper accelerations here.
@@ -151,8 +155,8 @@ void NBodySystem::ComputeGravitationalAccelerations(
 
         if (!(*bodies_)[b2]->is_massless()) {
           double const μ2OverRSquared =
-              (((*bodies_)[b2]->gravitational_parameter() / denominator) *
-               dimension_factor).value();
+              ((*bodies_)[b2]->gravitational_parameter() / denominator) *
+                  dimension_factor;
           (*result)[3 * b1] -= Δq0 * μ2OverRSquared;
           (*result)[3 * b1 + 1] -= Δq1 * μ2OverRSquared;
           (*result)[3 * b1 + 2] -= Δq2 * μ2OverRSquared;
@@ -162,8 +166,8 @@ void NBodySystem::ComputeGravitationalAccelerations(
         // in partes contrarias dirigi.
         if (!(*bodies_)[b1]->is_massless()) {
           double const μ1OverRSquared =
-              (((*bodies_)[b1]->gravitational_parameter() / denominator) *
-               dimension_factor).value();
+              ((*bodies_)[b1]->gravitational_parameter() / denominator) *
+              dimension_factor;
           (*result)[3 * b2] += Δq0 * μ1OverRSquared;
           (*result)[3 * b2 + 1] += Δq1 * μ1OverRSquared;
           (*result)[3 * b2 + 2] += Δq2 * μ1OverRSquared;
