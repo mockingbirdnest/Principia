@@ -287,13 +287,16 @@ inline std::string FormatUnit(std::string const& name, int const exponent) {
 template<typename D>
 inline std::string ToString(Quantity<D> const& quantity,
                             unsigned char const precision) {
+  //FIX ME
+  /*
   return ToString(quantity.magnitude_, precision) +
       FormatUnit("m", D::Length) + FormatUnit("kg", D::Mass) +
       FormatUnit("s", D::Time) + FormatUnit("A", D::Current) +
       FormatUnit("K", D::Temperature) + FormatUnit("mol", D::Amount) +
       FormatUnit("cd", D::LuminousIntensity) +
       FormatUnit("cycle", D::Winding) + FormatUnit("rad", D::Angle) +
-      FormatUnit("sr", D::SolidAngle);
+      FormatUnit("sr", D::SolidAngle);*/
+  return "";
 }
 
 template<typename D>

@@ -5,7 +5,6 @@
 #include "geometry/quaternion.hpp"
 #include "geometry/r3_element.hpp"
 #include "geometry/sign.hpp"
-#include "quantities/dimensionless.hpp"
 #include "quantities/elementary_functions.hpp"
 
 namespace principia {
@@ -19,11 +18,11 @@ template<typename Scalar>
 Rotation<FromFrame, ToFrame>::Rotation(quantities::Angle const& angle,
                                        Vector<Scalar, FromFrame> const& axis) {
   quantities::Angle const half_angle = 0.5 * angle;
-  quantities::Dimensionless const cos = Cos(half_angle);
-  quantities::Dimensionless const sin = Sin(half_angle);
+  double const cos = Cos(half_angle);
+  double const sin = Sin(half_angle);
   R3Element<Scalar> const coordinates = axis.coordinates();
   Scalar const norm = coordinates.Norm();
-  R3Element<quantities::Dimensionless> const unit_axis = coordinates / norm;
+  R3Element<double> const unit_axis = coordinates / norm;
   quaternion_ = Quaternion(cos, sin * unit_axis);
 }
 

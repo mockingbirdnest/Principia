@@ -27,7 +27,7 @@ quantities::Mass   const ElectronMass     = 9.10938291e-31 * si::Kilogram;
 quantities::Mass   const ProtonMass       = 1.672621777e-27 * si::Kilogram;
 quantities::Charge const ElementaryCharge = si::ElectronVolt / si::Volt;
 
-quantities::Dimensionless const FineStructureConstant = 7.2973525698e-3;
+double const FineStructureConstant = 7.2973525698e-3;
 
 quantities::Acceleration const StandardGravity =
     9.80665 * si::Metre / si::Second.Pow<2>();

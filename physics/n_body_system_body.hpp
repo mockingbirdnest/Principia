@@ -39,7 +39,7 @@ Vector<Scalar, Frame> FromDouble(double const x,
 
 template<typename Scalar>
 double ToDouble(Scalar const& quantity) {
-  return (quantity / Scalar::SIUnit()).value();
+  return quantity / Scalar::SIUnit();
 }
 
 template<typename Scalar, typename Frame>
@@ -89,8 +89,8 @@ void NBodySystem::Integrate(SymplecticIntegrator const& integrator,
     }
   }
 
-  parameters.tmax = (tmax / (1 * Time::SIUnit())).value();
-  parameters.Δt = (Δt / (1 * Time::SIUnit())).value();
+  parameters.tmax = tmax / (1 * Time::SIUnit());
+  parameters.Δt = Δt / (1 * Time::SIUnit());
   parameters.sampling_period = sampling_period;
   dynamic_cast<const SPRKIntegrator*>(&integrator)->Solve(
       std::bind(&NBodySystem::ComputeGravitationalAccelerations, this,
@@ -151,8 +151,8 @@ void NBodySystem::ComputeGravitationalAccelerations(
 
         if (!(*bodies_)[b2]->is_massless()) {
           double const μ2OverRSquared =
-              (((*bodies_)[b2]->gravitational_parameter() / denominator) *
-               dimension_factor).value();
+              ((*bodies_)[b2]->gravitational_parameter() / denominator) *
+              dimension_factor;
           (*result)[3 * b1] -= Δq0 * μ2OverRSquared;
           (*result)[3 * b1 + 1] -= Δq1 * μ2OverRSquared;
           (*result)[3 * b1 + 2] -= Δq2 * μ2OverRSquared;
@@ -162,8 +162,8 @@ void NBodySystem::ComputeGravitationalAccelerations(
         // in partes contrarias dirigi.
         if (!(*bodies_)[b1]->is_massless()) {
           double const μ1OverRSquared =
-              (((*bodies_)[b1]->gravitational_parameter() / denominator) *
-               dimension_factor).value();
+              ((*bodies_)[b1]->gravitational_parameter() / denominator) *
+              dimension_factor;
           (*result)[3 * b2] += Δq0 * μ1OverRSquared;
           (*result)[3 * b2 + 1] += Δq1 * μ1OverRSquared;
           (*result)[3 * b2 + 2] += Δq2 * μ1OverRSquared;

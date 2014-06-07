@@ -8,7 +8,6 @@
 #include "geometry/quaternion.hpp"
 #include "geometry/r3_element.hpp"
 #include "geometry/sign.hpp"
-#include "quantities/dimensionless.hpp"
 #include "quantities/elementary_functions.hpp"
 
 namespace principia {

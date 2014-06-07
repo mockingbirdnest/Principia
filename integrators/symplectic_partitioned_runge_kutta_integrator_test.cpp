@@ -17,7 +17,6 @@
 
 using principia::quantities::Abs;
 using principia::quantities::Energy;
-using principia::quantities::Dimensionless;
 using principia::quantities::Length;
 using principia::quantities::Mass;
 using principia::quantities::Momentum;
@@ -95,9 +94,9 @@ TEST_F(SPRKTest, Convergence) {
   parameters_.Δt = 0.2;
   int const step_sizes = 22;
   double const step_reduction = 1.1;
-  std::vector<Dimensionless> log_step_sizes(step_sizes);
-  std::vector<Dimensionless> log_q_errors(step_sizes);
-  std::vector<Dimensionless> log_p_errors(step_sizes);
+  std::vector<double> log_step_sizes(step_sizes);
+  std::vector<double> log_q_errors(step_sizes);
+  std::vector<double> log_p_errors(step_sizes);
   for (int i = 0; i < step_sizes; ++i, parameters_.Δt /= step_reduction) {
     integrator_.Solve(&ComputeHarmonicOscillatorForce,
                       &ComputeHarmonicOscillatorVelocity,
@@ -110,8 +109,8 @@ TEST_F(SPRKTest, Convergence) {
         std::abs(solution_.momentum[0].quantities[0] +
                  std::sin(solution_.time.quantities[0])));
   }
-  Dimensionless const q_convergence_order = Slope(log_step_sizes, log_q_errors);
-  Dimensionless const q_correlation =
+  double const q_convergence_order = Slope(log_step_sizes, log_q_errors);
+  double const q_correlation =
       PearsonProductMomentCorrelationCoefficient(log_step_sizes, log_q_errors);
   LOG(INFO) << "Convergence order in q : " << q_convergence_order;
   LOG(INFO) << "Correlation            : " << q_correlation;
@@ -119,8 +118,8 @@ TEST_F(SPRKTest, Convergence) {
       BidimensionalDatasetMathematicaInput(log_step_sizes, log_q_errors);
   EXPECT_THAT(q_convergence_order, AllOf(Gt(4.9), Lt(5.1)));
   EXPECT_THAT(q_correlation, AllOf(Gt(0.999), Lt(1.01)));
-  Dimensionless const p_convergence_order = Slope(log_step_sizes, log_p_errors);
-  Dimensionless const p_correlation =
+  double const p_convergence_order = Slope(log_step_sizes, log_p_errors);
+  double const p_correlation =
       PearsonProductMomentCorrelationCoefficient(log_step_sizes, log_p_errors);
   LOG(INFO) << "Convergence order in p : " << p_convergence_order;
   LOG(INFO) << "Correlation            : " << p_correlation;
@@ -160,7 +159,7 @@ TEST_F(SPRKTest, Symplecticity) {
   }
   LOG(INFO) << "Energy error as a function of time:\n" <<
       BidimensionalDatasetMathematicaInput(time_steps, energy_error);
-  Dimensionless const correlation =
+  double const correlation =
       PearsonProductMomentCorrelationCoefficient(time_steps, energy_error);
   LOG(INFO) << "Correlation between time and energy error : " << correlation;
   EXPECT_THAT(correlation, Lt(1E-3));

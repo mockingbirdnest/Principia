@@ -263,14 +263,14 @@ inline void operator-=(
 template<typename Scalar, typename Frame, unsigned int Rank>
 inline void operator*=(
     Multivector<Scalar, Frame, Rank>& left,  // NOLINT(runtime/references)
-    quantities::Dimensionless const& right) {
+    double const& right) {
   left = left * right;
 }
 
 template<typename Scalar, typename Frame, unsigned int Rank>
 inline void operator/=(
     Multivector<Scalar, Frame, Rank>& left,  // NOLINT(runtime/references)
-    quantities::Dimensionless const& right) {
+    double const& right) {
   left = left / right;
 }
 
