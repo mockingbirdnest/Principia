@@ -1,5 +1,6 @@
 ﻿#pragma once
 
+#include <cfloat>
 // We use ostream for logging purposes.
 #include <iostream>  // NOLINT(readability/streams)
 #include <string>
@@ -213,8 +214,11 @@ SquareRoot<Quantity<D>> Sqrt(Quantity<D> const& x);
 template<typename D>
 Angle ArcTan(Quantity<D> const& y, Quantity<D> const& x);
 
+std::string ToString(double const number,
+                     unsigned char const precision = DBL_DIG + 1);
 template<typename D>
-std::string ToString(Quantity<D> const&, unsigned char const);
+std::string ToString(Quantity<D> const& quantity,
+                     unsigned char const precision);
 
 template<typename D>
 std::ostream& operator<<(::std::ostream& out, Quantity<D> const& quantity);

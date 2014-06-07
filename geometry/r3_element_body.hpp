@@ -2,7 +2,9 @@
 
 #include <assert.h>
 
+#ifndef _MANAGED
 #include "glog/logging.h"
+#endif
 #include "quantities/elementary_functions.hpp"
 
 namespace principia {
@@ -11,6 +13,9 @@ namespace geometry {
 namespace {
 __declspec(noreturn) void noreturn() {}
 }  // namespace
+
+template<typename Scalar>
+inline R3Element<Scalar>::R3Element() : x(), y(), z() {}
 
 template<typename Scalar>
 inline R3Element<Scalar>::R3Element(Scalar const& x,
@@ -42,7 +47,9 @@ inline Scalar const& R3Element<Scalar>::operator[](int const index) const {
     case 2:
       return z;
     default:
+#ifndef _MANAGED
       LOG(FATAL) << "Index = " << index;
+#endif
       noreturn();
   }
 }

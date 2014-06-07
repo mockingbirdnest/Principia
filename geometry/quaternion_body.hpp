@@ -6,6 +6,8 @@
 namespace principia {
 namespace geometry {
 
+inline Quaternion::Quaternion() : real_part_(0) {}
+
 inline Quaternion::Quaternion(double const real_part)
     : real_part_(real_part) {}
 

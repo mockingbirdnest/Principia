@@ -335,19 +335,23 @@ inline std::string FormatUnit(std::string const& name, int const exponent) {
   }
 }
 
+inline std::string ToString(double const number,
+                            unsigned char const precision) {
+  char result[50];
+  sprintf_s(result, ("%."+ std::to_string(precision) + "e").c_str(), number);
+  return result;
+}
+
 template<typename D>
 inline std::string ToString(Quantity<D> const& quantity,
                             unsigned char const precision) {
-  //FIX ME
-  /*
   return ToString(quantity.magnitude_, precision) +
       FormatUnit("m", D::Length) + FormatUnit("kg", D::Mass) +
       FormatUnit("s", D::Time) + FormatUnit("A", D::Current) +
       FormatUnit("K", D::Temperature) + FormatUnit("mol", D::Amount) +
       FormatUnit("cd", D::LuminousIntensity) +
       FormatUnit("cycle", D::Winding) + FormatUnit("rad", D::Angle) +
-      FormatUnit("sr", D::SolidAngle);*/
-  return "";
+      FormatUnit("sr", D::SolidAngle);
 }
 
 template<typename D>

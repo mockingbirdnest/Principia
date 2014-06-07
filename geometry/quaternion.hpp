@@ -7,7 +7,7 @@ namespace geometry {
 
 class Quaternion {
  public:
-  Quaternion() = default;
+  Quaternion();
   explicit Quaternion(double const real_part);
   Quaternion(double const real_part,
              R3Element<double> const& imaginary_part);

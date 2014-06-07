@@ -42,6 +42,7 @@ using principia::quantities::Product;
 using principia::quantities::Sin;
 using principia::quantities::Speed;
 using principia::quantities::Sqrt;
+using principia::quantities::ToString;
 using principia::si::Ampere;
 using principia::si::AstronomicalUnit;
 using principia::si::Candela;
@@ -123,8 +124,7 @@ TEST_F(QuantitiesTest, Formatting) {
   std::string const actual = ToString(allTheUnits, 0);
   EXPECT_EQ(expected, actual);
   std::string π16 = "3.1415926535897931e+000";
-  LOG(FATAL)<<"Y U NO FIX THIS?";
-  //EXPECT_EQ(ToString(π), π16);
+  EXPECT_EQ(ToString(π), π16);
 }
 
 TEST_F(QuantitiesTest, PhysicalConstants) {
