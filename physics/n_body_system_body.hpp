@@ -25,8 +25,7 @@ namespace {
 
 template<typename Scalar>
 Scalar FromDouble(double const quantity) {
-  using quantities::SIUnit;
-  return quantity * SIUnit<Scalar>();
+  return quantity * quantities::SIUnit<Scalar>();
 }
 
 template<typename Scalar, typename Frame>
@@ -42,8 +41,7 @@ Vector<Scalar, Frame> FromDouble(double const x,
 
 template<typename Scalar>
 double ToDouble(Scalar const& quantity) {
-  using quantities::SIUnit;
-  return quantity / SIUnit<Scalar>();
+  return quantity / quantities::SIUnit<Scalar>();
 }
 
 template<typename Scalar, typename Frame>
@@ -94,8 +92,8 @@ void NBodySystem::Integrate(SymplecticIntegrator const& integrator,
     }
   }
 
-  parameters.tmax = tmax / (1 * SIUnit<Time>());
-  parameters.Δt = Δt / (1 * SIUnit<Time>());
+  parameters.tmax = tmax / SIUnit<Time>();
+  parameters.Δt = Δt / SIUnit<Time>();
   parameters.sampling_period = sampling_period;
   dynamic_cast<const SPRKIntegrator*>(&integrator)->Solve(
       std::bind(&NBodySystem::ComputeGravitationalAccelerations, this,
@@ -158,7 +156,7 @@ void NBodySystem::ComputeGravitationalAccelerations(
         if (!(*bodies_)[b2]->is_massless()) {
           double const μ2OverRSquared =
               ((*bodies_)[b2]->gravitational_parameter() / denominator) *
-              dimension_factor;
+                  dimension_factor;
           (*result)[3 * b1] -= Δq0 * μ2OverRSquared;
           (*result)[3 * b1 + 1] -= Δq1 * μ2OverRSquared;
           (*result)[3 * b1 + 2] -= Δq2 * μ2OverRSquared;

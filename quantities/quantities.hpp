@@ -194,6 +194,7 @@ bool operator!=(Quantity<D> const&, Quantity<D> const&);
 // For instance, |SIUnit<Action>() == Joule * Second|.
 template<typename Q>
 Q SIUnit();
+// Returns 1.
 template<>
 double SIUnit<double>();
 
