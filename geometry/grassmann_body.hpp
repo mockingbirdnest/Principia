@@ -173,7 +173,7 @@ inline Multivector<Scalar, Frame, Rank> operator-(
 
 template<typename Scalar, typename Frame, unsigned int Rank>
 inline Multivector<Scalar, Frame, Rank> operator*(
-    double const& left,
+    double const left,
     Multivector<Scalar, Frame, Rank> const& right) {
   return Multivector<Scalar, Frame, Rank>(left * right.coordinates());
 }
@@ -181,14 +181,14 @@ inline Multivector<Scalar, Frame, Rank> operator*(
 template<typename Scalar, typename Frame, unsigned int Rank>
 inline Multivector<Scalar, Frame, Rank> operator*(
     Multivector<Scalar, Frame, Rank> const& left,
-    double const& right) {
+    double const right) {
   return Multivector<Scalar, Frame, Rank>(left.coordinates() * right);
 }
 
 template<typename Scalar, typename Frame, unsigned int Rank>
 inline Multivector<Scalar, Frame, Rank> operator/(
     Multivector<Scalar, Frame, Rank> const& left,
-    double const& right) {
+    double const right) {
   return Multivector<Scalar, Frame, Rank>(left.coordinates() / right);
 }
 
@@ -263,14 +263,14 @@ inline void operator-=(
 template<typename Scalar, typename Frame, unsigned int Rank>
 inline void operator*=(
     Multivector<Scalar, Frame, Rank>& left,  // NOLINT(runtime/references)
-    double const& right) {
+    double const right) {
   left = left * right;
 }
 
 template<typename Scalar, typename Frame, unsigned int Rank>
 inline void operator/=(
     Multivector<Scalar, Frame, Rank>& left,  // NOLINT(runtime/references)
-    double const& right) {
+    double const right) {
   left = left / right;
 }
 
