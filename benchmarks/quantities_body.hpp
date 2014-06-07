@@ -25,10 +25,11 @@ inline void DimensionfulDiscreteCosineTransform(
     std::vector<quantities::Momentum>* result) {
   using quantities::Cos;
   using quantities::Momentum;
+  using quantities::SIUnit;
   using si::Radian;
   std::vector<Momentum> input(kDimension);
   for (std::size_t i = 0; i < kDimension; ++i) {
-    input[i] = i * Momentum::SIUnit();
+    input[i] = i * SIUnit<Momentum>();
   }
   result->resize(kDimension);
   double sign = 1;

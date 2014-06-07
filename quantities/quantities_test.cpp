@@ -29,6 +29,12 @@ using principia::constants::StandardGravity;
 using principia::constants::VacuumPermeability;
 using principia::constants::VacuumPermittivity;
 using principia::quantities::Abs;
+using principia::quantities::ArcCos;
+using principia::quantities::ArcCosh;
+using principia::quantities::ArcSin;
+using principia::quantities::ArcSinh;
+using principia::quantities::ArcTan;
+using principia::quantities::ArcTanh;
 using principia::quantities::Cos;
 using principia::quantities::Mass;
 using principia::quantities::Pow;
@@ -123,28 +129,28 @@ TEST_F(QuantitiesTest, Formatting) {
 
 TEST_F(QuantitiesTest, PhysicalConstants) {
   // By definition.
-  EXPECT_THAT(1 / SpeedOfLight.Pow<2>(),
+  EXPECT_THAT(1 / Pow<2>(SpeedOfLight),
               AlmostEquals(VacuumPermittivity * VacuumPermeability, 2));
   // The Keplerian approximation for the mass of the Sun
   // is fairly accurate.
   EXPECT_THAT(RelativeError(
-                  4 * π.Pow<2>() * AstronomicalUnit.Pow<3>() /
-                      (GravitationalConstant * JulianYear.Pow<2>()),
+                  4 * Pow<2>(π) * Pow<3>(AstronomicalUnit) /
+                      (GravitationalConstant * Pow<2>(JulianYear)),
                   SolarMass),
               Lt(4E-5));
   EXPECT_THAT(RelativeError(1 * Parsec, 3.26156 * LightYear), Lt(2E-6));
   // The Keplerian approximation for the mass of the Earth
   // is pretty bad, but the error is still only 1%.
   EXPECT_THAT(RelativeError(
-                  4 * π.Pow<2>() * LunarDistance.Pow<3>() /
-                      (GravitationalConstant * (27.321582 * Day).Pow<2>()),
+                  4 * Pow<2>(π) * Pow<3>(LunarDistance) /
+                      (GravitationalConstant * Pow<2>(27.321582 * Day)),
                   EarthMass),
               Lt(1E-2));
   EXPECT_THAT(RelativeError(1 * SolarMass, 1047 * JupiterMass), Lt(4E-4));
   // Delambre & Méchain.
   EXPECT_THAT(RelativeError(
                   GravitationalConstant * EarthMass /
-                      (40 * Mega(Metre) / (2 * π)).Pow<2>(),
+                      Pow<2>(40 * Mega(Metre) / (2 * π)),
                   StandardGravity),
               Lt(4E-3));
   // Talleyrand.
@@ -202,13 +208,9 @@ TEST_F(QuantitiesTest, HyperbolicFunctions) {
   EXPECT_THAT(ArcTanh(Tanh(-10 * Degree)), AlmostEquals(-10 * Degree, 1));
 }
 
-TEST_F(QuantitiesTest, ExpLogAndSqrt) {
-  EXPECT_EQ(Exp(1), e);
-  EXPECT_THAT(Exp(Log(4.2) + Log(1.729)), AlmostEquals(4.2 * 1.729, 1));
-  EXPECT_EQ(Exp(Log(2) * Log2(1.729)), 1.729);
-  EXPECT_EQ(Exp(Log(10) * Log10(1.729)), 1.729);
-  EXPECT_THAT(Exp(Log(2) / 2), AlmostEquals(Sqrt(2), 1));
-  EXPECT_EQ(Exp(Log(Rood / Foot.Pow<2>()) / 2) * Foot, Sqrt(Rood));
+TEST_F(QuantitiesTest, ExpLogAndSqrt) {;
+  EXPECT_THAT(std::exp(std::log(2) / 2), AlmostEquals(Sqrt(2), 1));
+  EXPECT_EQ(std::exp(std::log(Rood / Pow<2>(Foot)) / 2) * Foot, Sqrt(Rood));
 }
 
 }  // namespace geometry

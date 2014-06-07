@@ -10,7 +10,7 @@ namespace geometry {
 
 class QuaternionTest : public testing::Test {
  protected:
-  typedef R3Element<quantities::Dimensionless> R3;
+  typedef R3Element<double> R3;
 
   void SetUp() override {
     q1_ = Quaternion(1, {1, -1, -1});

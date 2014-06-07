@@ -12,7 +12,8 @@ namespace testing_utilities {
 
 template<typename T>
 T Mean(std::vector<T> const& x) {
-  T total = 0 * T::SIUnit();
+  using quantities::SIUnit;
+  T total = 0 * SIUnit<T>();
   for (T const& x_i : x) {
     total += x_i;
   }

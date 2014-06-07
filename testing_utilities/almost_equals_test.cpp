@@ -39,7 +39,7 @@ TEST_F(AlmostEqualsTest, Dimensionless) {
   EXPECT_THAT(y, AlmostEquals(e, 0));
   EXPECT_THAT(2 * y, Not(AlmostEquals(y)));
   double const δy = e / 100.0;
-  double e_accumulated;
+  double e_accumulated = 0.0;
   for (int i = 1; i <= 100.0; ++i) {
     e_accumulated += δy;
   }

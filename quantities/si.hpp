@@ -38,20 +38,23 @@ template<typename D> quantities::Quantity<D> Yocto(quantities::Quantity<D>);
 #pragma region SI base units
 // From the BIPM's SI brochure 8, section 2.1.2, table 1,
 // http://www.bipm.org/en/si/si_brochure/chapter2/2-1/.
-quantities::Length      const Metre    = quantities::Length::SIUnit();
-quantities::Mass        const Kilogram = quantities::Mass::SIUnit();
-quantities::Time        const Second   = quantities::Time::SIUnit();
-quantities::Current     const Ampere   = quantities::Current::SIUnit();
-quantities::Temperature const Kelvin   = quantities::Temperature::SIUnit();
-quantities::Amount      const Mole     = quantities::Amount::SIUnit();
+quantities::Length const Metre   = quantities::SIUnit<quantities::Length>();
+quantities::Mass const Kilogram  = quantities::SIUnit<quantities::Mass>();
+quantities::Time const Second    = quantities::SIUnit<quantities::Time>();
+quantities::Current const Ampere = quantities::SIUnit<quantities::Current>();
+quantities::Temperature const Kelvin =
+    quantities::SIUnit<quantities::Temperature>();
+quantities::Amount const Mole = quantities::SIUnit<quantities::Amount>();
 quantities::LuminousIntensity const Candela =
-    quantities::LuminousIntensity::SIUnit();
+    quantities::SIUnit<quantities::LuminousIntensity>();
 // Nonstandard.
-quantities::Winding const Cycle = quantities::Winding::SIUnit();
+quantities::Winding const Cycle =
+    quantities::SIUnit<quantities::Winding>();
 // Not base units in the SI. We make these quantities rather than units as they
 // are natural.
-quantities::Angle      const Radian    = quantities::Angle::SIUnit();
-quantities::SolidAngle const Steradian = quantities::SolidAngle::SIUnit();
+quantities::Angle const Radian = quantities::SIUnit<quantities::Angle>();
+quantities::SolidAngle const Steradian =
+    quantities::SIUnit<quantities::SolidAngle>();
 #pragma endregion
 
 // Gram, for use with prefixes.
@@ -96,7 +99,7 @@ quantities::Angle  const Degree    = π / 180 * Radian;
 quantities::Angle  const ArcMinute = π / 10800 * Radian;
 quantities::Angle  const ArcSecond = π / 648000 * Radian;
 quantities::Area   const Hectare   = 1e4 * Metre * Metre;
-quantities::Volume const Litre     = Deci(Metre).Pow<3>();
+quantities::Volume const Litre     = quantities::Pow<3>(Deci(Metre));
 quantities::Mass   const Tonne     = 1e3 * Kilogram;
 #pragma endregion
 #pragma region Non-SI units whose values must be obtained experimentally

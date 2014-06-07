@@ -41,7 +41,7 @@ quantities::Length const Cable        = NauticalMile / 10;
 quantities::Length const Fathom       = Cable / 100;
 }  // namespace admiralty
 
-quantities::Area const Perch = Rod.Pow<2>();
+quantities::Area const Perch = quantities::Pow<2>(Rod);
 quantities::Area const Rood  = Furlong * Rod;
 quantities::Area const Acre  = Furlong * Chain;
 
@@ -52,7 +52,8 @@ quantities::Volume const Quart      = 2 * Pint;
 quantities::Volume const Gallon     = 4 * Quart;
 
 quantities::Force    const PoundForce = Pound * constants::StandardGravity;
-quantities::Pressure const PoundPerSquareInch = PoundForce / Inch.Pow<2>();
 quantities::Power    const HorsePower = 550 * PoundForce * Foot / si::Second;
+quantities::Pressure const PoundPerSquareInch =
+    PoundForce / quantities::Pow<2>(Inch);
 }  // namespace uk
 }  // namespace principia

@@ -9,6 +9,8 @@
 #include "physics/frame.hpp"
 #include "quantities/quantities.hpp"
 
+// TODO(phl): This is a header file, you're polluting the root namespace!
+// Put that in the function bodies.
 using principia::geometry::R3Element;
 using principia::integrators::SPRKIntegrator;
 using principia::integrators::SymplecticIntegrator;
@@ -23,7 +25,8 @@ namespace {
 
 template<typename Scalar>
 Scalar FromDouble(double const quantity) {
-  return quantity * Scalar::SIUnit();
+  using quantities::SIUnit;
+  return quantity * SIUnit<Scalar>();
 }
 
 template<typename Scalar, typename Frame>
@@ -39,7 +42,8 @@ Vector<Scalar, Frame> FromDouble(double const x,
 
 template<typename Scalar>
 double ToDouble(Scalar const& quantity) {
-  return quantity / Scalar::SIUnit();
+  using quantities::SIUnit;
+  return quantity / SIUnit<Scalar>();
 }
 
 template<typename Scalar, typename Frame>
@@ -65,6 +69,7 @@ void NBodySystem::Integrate(SymplecticIntegrator const& integrator,
                             Time const& tmax,
                             Time const& Δt,
                             int const sampling_period) {
+  using quantities::SIUnit;
   SymplecticIntegrator::Parameters parameters;
   SymplecticIntegrator::Solution solution;
 
@@ -89,8 +94,8 @@ void NBodySystem::Integrate(SymplecticIntegrator const& integrator,
     }
   }
 
-  parameters.tmax = tmax / (1 * Time::SIUnit());
-  parameters.Δt = Δt / (1 * Time::SIUnit());
+  parameters.tmax = tmax / (1 * SIUnit<Time>());
+  parameters.Δt = Δt / (1 * SIUnit<Time>());
   parameters.sampling_period = sampling_period;
   dynamic_cast<const SPRKIntegrator*>(&integrator)->Solve(
       std::bind(&NBodySystem::ComputeGravitationalAccelerations, this,
@@ -135,7 +140,8 @@ void NBodySystem::ComputeGravitationalAccelerations(
     double const t,
     std::vector<double> const& q,
     std::vector<double>* result) const {
-  static auto const dimension_factor = 1 / GravitationalParameter::SIUnit();
+  using quantities::SIUnit;
+  static auto const dimension_factor = 1 / SIUnit<GravitationalParameter>();
   result->assign(result->size(), 0);
 
   // TODO(phl): Used to deal with proper accelerations here.

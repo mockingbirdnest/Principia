@@ -44,9 +44,6 @@
     <ClInclude Include="uk.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="dimensionless_body.hpp">
-      <Filter>Source Files</Filter>
-    </ClInclude>
     <ClInclude Include="elementary_functions_body.hpp">
       <Filter>Source Files</Filter>
     </ClInclude>

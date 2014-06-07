@@ -20,7 +20,9 @@ using principia::quantities::Energy;
 using principia::quantities::Length;
 using principia::quantities::Mass;
 using principia::quantities::Momentum;
+using principia::quantities::Pow;
 using principia::quantities::Power;
+using principia::quantities::SIUnit;
 using principia::quantities::Stiffness;
 using principia::quantities::Time;
 using principia::testing_utilities::AbsoluteError;
@@ -133,11 +135,11 @@ TEST_F(SPRKTest, Symplecticity) {
   parameters_.q0 = {1.0};
   parameters_.p0 = {0.0};
   parameters_.t0 = 0.0;
-  Stiffness const k = 1 * Stiffness::SIUnit();
-  Mass const m      = 1 * Mass::SIUnit();
-  Length const q0   = parameters_.q0[0] * Length::SIUnit();
-  Momentum const p0 = parameters_.p0[0] * Momentum::SIUnit();
-  Energy const initial_energy = 0.5 * p0.Pow<2>() / m + 0.5 * k * q0.Pow<2>();
+  Stiffness const k = 1 * SIUnit<Stiffness>();
+  Mass const m      = 1 * SIUnit<Mass>();
+  Length const q0   = parameters_.q0[0] * SIUnit<Length>();
+  Momentum const p0 = parameters_.p0[0] * SIUnit<Momentum>();
+  Energy const initial_energy = 0.5 * Pow<2>(p0) / m + 0.5 * k * Pow<2>(q0);
   parameters_.tmax = 500.0;
   parameters_.Δt = 1;
   parameters_.sampling_period = 1;
@@ -147,13 +149,13 @@ TEST_F(SPRKTest, Symplecticity) {
   std::size_t const length = solution_.time.quantities.size();
   std::vector<Energy> energy_error(length);
   std::vector<Time> time_steps(length);
-  Energy max_energy_error = 0 * Energy::SIUnit();
+  Energy max_energy_error = 0 * SIUnit<Energy>();
   for (size_t i = 0; i < length; ++i) {
-    Length const q_i   = solution_.position[0].quantities[i] * Length::SIUnit();
+    Length const q_i   = solution_.position[0].quantities[i] * SIUnit<Length>();
     Momentum const p_i = solution_.momentum[0].quantities[i] *
-                             Momentum::SIUnit();
-    time_steps[i] = solution_.time.quantities[i] * Time::SIUnit();
-    energy_error[i] = Abs(0.5 * p_i.Pow<2>() / m + 0.5 * k * q_i.Pow<2>() -
+                             SIUnit<Momentum>();
+    time_steps[i] = solution_.time.quantities[i] * SIUnit<Time>();
+    energy_error[i] = Abs(0.5 * Pow<2>(p_i) / m + 0.5 * k * Pow<2>(q_i) -
                           initial_energy);
     max_energy_error = std::max(energy_error[i], max_energy_error);
   }
@@ -165,11 +167,11 @@ TEST_F(SPRKTest, Symplecticity) {
   EXPECT_THAT(correlation, Lt(1E-3));
   Power const slope = Slope(time_steps, energy_error);
   LOG(INFO) << "Slope                                     : " << slope;
-  EXPECT_THAT(slope, Lt(1E-10 * Power::SIUnit()));
+  EXPECT_THAT(slope, Lt(1E-10 * SIUnit<Power>()));
   LOG(INFO) << "Maximum energy error                      : " <<
       max_energy_error;
-  EXPECT_THAT(max_energy_error, AllOf(Gt(1E-4 * Energy::SIUnit()),
-                                      Lt(1E-3 * Energy::SIUnit())));
+  EXPECT_THAT(max_energy_error, AllOf(Gt(1E-4 * SIUnit<Energy>()),
+                                      Lt(1E-3 * SIUnit<Energy>())));
 }
 
 }  // namespace integrators

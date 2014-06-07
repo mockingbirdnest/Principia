@@ -28,13 +28,13 @@ class OrthogonalMapTest : public testing::Test {
     trivector_ = Trivector<quantities::Length, World>(4.0 * Metre);
     orthogonal_a_ = Orth(Sign(-1),
                       Rot(120 * si::Degree,
-                        Vector<quantities::Dimensionless, World>({1, 1, 1})));
+                        Vector<double, World>({1, 1, 1})));
     orthogonal_b_ = Orth(Sign(1),
                       Rot(90 * si::Degree,
-                        Vector<quantities::Dimensionless, World>({1, 0, 0})));
+                        Vector<double, World>({1, 0, 0})));
     orthogonal_c_ = Orth(Sign(-1),
                       Rot(90 * si::Degree,
-                        Vector<quantities::Dimensionless, World>({1, 0, 0})));
+                        Vector<double, World>({1, 0, 0})));
   }
 
   Vector<quantities::Length, World> vector_;

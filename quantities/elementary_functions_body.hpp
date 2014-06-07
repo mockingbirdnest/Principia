@@ -40,8 +40,22 @@ typedef Quantity<
 
 }  // namespace type_generators
 
+inline double Abs(double const x) {
+  return std::abs(x);
+}
+
+template<typename D>
+inline Quantity<D> Abs(Quantity<D> const& quantity) {
+  return Quantity<D>(std::abs(quantity.magnitude_));
+}
+
 inline double Sqrt(double const x) {
   return std::sqrt(x);
+}
+
+template<typename D>
+inline SquareRoot<Quantity<D>> Sqrt(Quantity<D> const& x) {
+  return SquareRoot<Quantity<D>>(std::sqrt(x.magnitude_));
 }
 
 inline double Sin(Angle const& α) {
@@ -86,11 +100,6 @@ inline Angle ArcCosh(double const x) {
 }
 inline Angle ArcTanh(double const x) {
   return std::atanh(x) * si::Radian;
-}
-
-template<typename D>
-inline SquareRoot<Quantity<D>> Sqrt(Quantity<D> const& x) {
-  return SquareRoot<Quantity<D>>(std::sqrt(x.magnitude_));
 }
 
 }  // namespace quantities

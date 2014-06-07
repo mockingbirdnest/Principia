@@ -127,18 +127,6 @@ template<typename D>
 inline Quantity<D>::Quantity() : magnitude_(0) {}
 
 template<typename D>
-inline Quantity<D> Quantity<D>::SIUnit() {
-  return Quantity<D>(1);
-}
-
-template<typename D>
-template<int Exponent>
-Exponentiation<Quantity<D>, Exponent> Quantity<D>::Pow() const {
-  return Exponentiation<Quantity<D>,
-                        Exponent>(pow(magnitude_, Exponent));
-}
-
-template<typename D>
 inline Quantity<D>::Quantity(double const magnitude)
     : magnitude_(magnitude) {}
 
@@ -267,9 +255,13 @@ inline bool operator!=(Quantity<D> const& left, Quantity<D> const& right) {
 }
 #pragma endregion
 
-template<typename D>
-inline Quantity<D> Abs(Quantity<D> const& quantity) {
-  return Quantity<D>(std::abs(quantity.magnitude_));
+template<typename Q>
+inline Q SIUnit() {
+  return Q(1);
+}
+template<>
+inline double SIUnit<double>() {
+  return 1;
 }
 
 inline std::string FormatUnit(std::string const& name, int const exponent) {

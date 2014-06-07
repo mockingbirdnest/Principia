@@ -10,7 +10,7 @@ namespace testing_utilities {
 
 template<typename Scalar>
 double DoubleValue(Scalar const& scalar) {
-  return scalar / quantities::SIUnit(Scalar);
+  return scalar / quantities::SIUnit<Scalar>();
 }
 
 template<typename T, typename Norm, typename NormType>

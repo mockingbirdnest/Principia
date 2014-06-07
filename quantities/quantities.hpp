@@ -69,13 +69,6 @@ class Quantity {
   Quantity();
   ~Quantity() = default;
 
-  template<int Exponent>
-  Exponentiation<Quantity, Exponent> Pow() const;
-
-  // Returns the base or derived SI Unit of |Quantity|.
-  // For instance, |Action::SIUnit() == Joule * Second|.
-  static Quantity SIUnit();
-
  private:
   explicit Quantity(double const magnitude);
   double magnitude_;
@@ -131,9 +124,11 @@ class Quantity {
   template<typename D>
   friend bool operator!=(Quantity<D> const&, Quantity<D> const&);
 
+  template<typename Q>
+  friend Q SIUnit();
+
   template<typename D>
   friend Quantity<D> Abs(Quantity<D> const&);
-
   template<typename D>
   friend SquareRoot<Quantity<D>> Sqrt(Quantity<D> const& x);
   template<typename D>
@@ -191,8 +186,23 @@ bool operator==(Quantity<D> const&, Quantity<D> const&);
 template<typename D>
 bool operator!=(Quantity<D> const&, Quantity<D> const&);
 
+// Returns the base or derived SI Unit of |Q|.
+// For instance, |SIUnit<Action>() == Joule * Second|.
+template<typename Q>
+Q SIUnit();
+template<>
+double SIUnit<double>();
+
+// Equivalent to |std::pow(x, exponent)|.
+template<int exponent>
+double Pow(double x);
+template<int exponent, typename D>
+Exponentiation<Quantity<D>, exponent> Pow(Quantity<D> const& x);
+
+// Equivalent to |std::abs(x)|.
+double Abs(double const x);
 template<typename D>
-Quantity<D> Abs(Quantity<D> const&);
+Quantity<D> Abs(Quantity<D> const& x);
 
 template<typename D>
 SquareRoot<Quantity<D>> Sqrt(Quantity<D> const& x);

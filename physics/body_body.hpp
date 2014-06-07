@@ -5,6 +5,7 @@
 
 #include "quantities/constants.hpp"
 
+// TODO(phl): Polluting the root namespace!!!
 using principia::constants::GravitationalConstant;
 
 namespace principia {
@@ -32,7 +33,8 @@ Mass const& Body<Frame>::mass() const {
 
 template<typename Frame>
 bool Body<Frame>::is_massless() const {
-  return mass_ == 0 * Mass::SIUnit();
+  using quantities::SIUnit;
+  return mass_ == 0 * SIUnit<Mass>();
 }
 
 template<typename Frame>
