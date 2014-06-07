@@ -34,6 +34,40 @@ inline Quaternion Quaternion::Inverse() const {
       (real_part_ * real_part_ + Dot(imaginary_part_, imaginary_part_));
 }
 
+inline Quaternion& Quaternion::operator+=(Quaternion const& right) {
+  real_part_ += right.real_part_;
+  imaginary_part_ += right.imaginary_part_;
+  return *this;
+}
+
+inline Quaternion& Quaternion::operator-=(Quaternion const& right)  {
+  real_part_ -= right.real_part_;
+  imaginary_part_ -= right.imaginary_part_;
+  return *this;
+}
+
+inline Quaternion& Quaternion::operator*=(Quaternion const& right) {
+  // TODO(phl): Can this be optimized?
+  return *this = *this * right;
+}
+
+inline Quaternion& Quaternion::operator/=(Quaternion const& right) {
+  // TODO(phl): Can this be optimized?
+  return *this = *this / right;
+}
+
+inline Quaternion& Quaternion::operator*=(double const right) {
+  real_part_ *= right;
+  imaginary_part_ *= right;
+  return *this;
+}
+
+inline Quaternion& Quaternion::operator/=(double const right) {
+  real_part_ /= right;
+  imaginary_part_ /= right;
+  return *this;
+}
+
 inline Quaternion operator+(Quaternion const& right) {
   return right;
 }
@@ -77,42 +111,6 @@ inline Quaternion operator*(Quaternion const& left, double const right) {
 inline Quaternion operator/(Quaternion const& left, double const right) {
   return Quaternion(left.real_part() / right,
                     left.imaginary_part() / right);
-}
-
-inline void operator+=(Quaternion& left,  // NOLINT(runtime/references)
-                       Quaternion const& right) {
-  left.real_part_ += right.real_part_;
-  left.imaginary_part_ += right.imaginary_part_;
-}
-
-inline void operator-=(Quaternion& left,  // NOLINT(runtime/references)
-                       Quaternion const& right)  {
-  left.real_part_ -= right.real_part_;
-  left.imaginary_part_ -= right.imaginary_part_;
-}
-
-inline void operator*=(Quaternion& left,  // NOLINT(runtime/references)
-                       Quaternion const& right) {
-  // TODO(phl): Can this be optimized?
-  left = left * right;
-}
-
-inline void operator/=(Quaternion& left,  // NOLINT(runtime/references)
-                       Quaternion const& right) {
-  // TODO(phl): Can this be optimized?
-  left = left / right;
-}
-
-inline void operator*=(Quaternion& left,  // NOLINT(runtime/references)
-                       double const right) {
-  left.real_part_ *= right;
-  left.imaginary_part_ *= right;
-}
-
-inline void operator/=(Quaternion& left,  // NOLINT(runtime/references)
-                       double const right) {
-  left.real_part_ /= right;
-  left.imaginary_part_ /= right;
 }
 
 }  // namespace geometry

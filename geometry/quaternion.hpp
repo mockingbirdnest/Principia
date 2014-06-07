@@ -18,18 +18,17 @@ class Quaternion {
   Quaternion Conjugate() const;
   Quaternion Inverse() const;
 
+  Quaternion& operator+=(Quaternion const& right);
+  Quaternion& operator-=(Quaternion const& right);
+  Quaternion& operator*=(Quaternion const& right);
+  Quaternion& operator/=(Quaternion const& right);
+
+  Quaternion& operator*=(double const right);
+  Quaternion& operator/=(double const right);
+
  private:
   double real_part_;
   R3Element<double> imaginary_part_;
-
-  friend void operator+=(Quaternion& left,  // NOLINT(runtime/references)
-                         Quaternion const& right);
-  friend void operator-=(Quaternion& left,  // NOLINT(runtime/references)
-                         Quaternion const& right);
-  friend void operator*=(Quaternion& left,  // NOLINT(runtime/references)
-                         double const right);
-  friend void operator/=(Quaternion& left,  // NOLINT(runtime/references)
-                         double const right);
 };
 
 Quaternion operator+(Quaternion const& right);
@@ -46,20 +45,6 @@ Quaternion operator*(Quaternion const& left,
                      double const right);
 Quaternion operator/(Quaternion const& left,
                      double const right);
-
-void operator+=(Quaternion& left,  // NOLINT(runtime/references)
-                Quaternion const& right);
-void operator-=(Quaternion& left,  // NOLINT(runtime/references)
-                Quaternion const& right);
-void operator*=(Quaternion& left,  // NOLINT(runtime/references)
-                Quaternion const& right);
-void operator/=(Quaternion& left,  // NOLINT(runtime/references)
-                Quaternion const& right);
-
-void operator*=(Quaternion& left,  // NOLINT(runtime/references)
-                double const right);
-void operator/=(Quaternion& left,  // NOLINT(runtime/references)
-                double const right);
 
 }  // namespace geometry
 }  // namespace principia

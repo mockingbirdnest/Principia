@@ -247,31 +247,31 @@ inline bool operator!=(Multivector<Scalar, Frame, Rank> const& left,
 }
 
 template<typename Scalar, typename Frame, unsigned int Rank>
-inline void operator+=(
+inline Multivector<Scalar, Frame, Rank>& operator+=(
     Multivector<Scalar, Frame, Rank>& left,  // NOLINT(runtime/references)
     Multivector<Scalar, Frame, Rank> const& right) {
-  left = left + right;
+  return left = left + right;
 }
 
 template<typename Scalar, typename Frame, unsigned int Rank>
-inline void operator-=(
+inline Multivector<Scalar, Frame, Rank>& operator-=(
     Multivector<Scalar, Frame, Rank>& left,  // NOLINT(runtime/references)
     Multivector<Scalar, Frame, Rank> const& right) {
-  left = left - right;
+  return left = left - right;
 }
 
 template<typename Scalar, typename Frame, unsigned int Rank>
-inline void operator*=(
+inline Multivector<Scalar, Frame, Rank>& operator*=(
     Multivector<Scalar, Frame, Rank>& left,  // NOLINT(runtime/references)
     double const right) {
-  left = left * right;
+  return left = left * right;
 }
 
 template<typename Scalar, typename Frame, unsigned int Rank>
-inline void operator/=(
+inline Multivector<Scalar, Frame, Rank>& operator/=(
     Multivector<Scalar, Frame, Rank>& left,  // NOLINT(runtime/references)
     double const right) {
-  left = left / right;
+  return left = left / right;
 }
 
 template<typename Scalar, typename Frame, unsigned int Rank>

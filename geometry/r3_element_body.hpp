@@ -56,6 +56,28 @@ inline Scalar const& R3Element<Scalar>::operator[](int const index) const {
 }
 
 template<typename Scalar>
+inline R3Element<Scalar>& R3Element<Scalar>::operator+=(
+    R3Element<Scalar> const& right) {
+  return *this = *this + right;
+}
+
+template<typename Scalar>
+inline R3Element<Scalar>& R3Element<Scalar>::operator-=(
+    R3Element<Scalar> const& right) {
+  return *this = *this - right;
+}
+
+template<typename Scalar>
+inline R3Element<Scalar>& R3Element<Scalar>::operator*=(double const right) {
+  return *this = *this * right;
+}
+
+template<typename Scalar>
+inline R3Element<Scalar>& R3Element<Scalar>::operator/=(double const right) {
+  return *this = *this / right;
+}
+
+template<typename Scalar>
 inline Scalar R3Element<Scalar>::Norm() const {
   return quantities::Sqrt(Dot(*this, *this));
 }
@@ -156,30 +178,6 @@ template<typename Scalar>
 bool operator!=(R3Element<Scalar> const& left,
                 R3Element<Scalar> const& right) {
   return left.x != right.x || left.y != right.y || left.z != right.z;
-}
-
-template<typename Scalar>
-inline void operator+=(R3Element<Scalar>& left,  // NOLINT(runtime/references)
-                       R3Element<Scalar> const& right) {
-  left = left + right;
-}
-
-template<typename Scalar>
-inline void operator-=(R3Element<Scalar>& left,  // NOLINT(runtime/references)
-                       R3Element<Scalar> const& right) {
-  left = left - right;
-}
-
-template<typename Scalar>
-inline void operator*=(R3Element<Scalar>& left,  // NOLINT(runtime/references)
-                       double const right) {
-  left = left * right;
-}
-
-template<typename Scalar>
-inline void operator/=(R3Element<Scalar>& left,  // NOLINT(runtime/references)
-                       double const right) {
-  left = left / right;
 }
 
 template<typename Scalar>

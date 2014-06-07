@@ -130,6 +130,30 @@ template<typename D>
 inline Quantity<D>::Quantity(double const magnitude)
     : magnitude_(magnitude) {}
 
+template<typename D>
+inline Quantity<D>& Quantity<D>::operator+=(Quantity const& right) {
+  magnitude_ += right.magnitude_;
+  return *this;
+}
+
+template<typename D>
+inline Quantity<D>& Quantity<D>::operator-=(Quantity const& right) {
+  magnitude_ -= right.magnitude_;
+  return *this;
+}
+
+template<typename D>
+inline Quantity<D>& Quantity<D>::operator*=(double const right) {
+  magnitude_ *= right;
+  return *this;
+}
+
+template<typename D>
+inline Quantity<D>& Quantity<D>::operator/=(double const right) {
+  magnitude_ /= right;
+  return *this;
+}
+
 #pragma region Additive group
 
 template<typename D>
@@ -153,9 +177,11 @@ inline Quantity<D> operator-(Quantity<D> const& left,
                              Quantity<D> const& right) {
   return Quantity<D>(left.magnitude_ - right.magnitude_);
 }
+
 #pragma endregion
 
 #pragma region Multiplicative group
+
 template<typename DLeft, typename DRight>
 inline Product <typename Quantity<DLeft>, typename Quantity <DRight>>
 operator*(Quantity<DLeft> const& left,
@@ -197,33 +223,10 @@ inline typename Quantity<D>::Inverse operator/(double const left,
                                                Quantity<D> const& right) {
   return typename Quantity<D>::Inverse(left / right.magnitude_);
 }
-#pragma endregion
-#pragma region Assigment operators
-template<typename D>
-inline void operator+=(Quantity<D>& left,  // NOLINT(runtime/references)
-                       Quantity<D> const& right) {
-  left.magnitude_ += right.magnitude_;
-}
 
-template<typename D>
-inline void operator-=(Quantity<D>& left,  // NOLINT(runtime/references)
-                       Quantity<D> const& right) {
-  left.magnitude_ -= right.magnitude_;
-}
-
-template<typename D>
-inline void operator*=(Quantity<D>& left,  // NOLINT(runtime/references)
-                       double const right) {
-  left.magnitude_ *= right;
-}
-
-template<typename D>
-inline void operator/=(Quantity<D>& left,  // NOLINT(runtime/references)
-                       double const right) {
-  left.magnitude_ /= right;
-}
 #pragma endregion
 #pragma region Comparison operators
+
 template<typename D>
 inline bool operator>(Quantity<D> const& left, Quantity<D> const& right) {
   return left.magnitude_ > right.magnitude_;
@@ -253,6 +256,7 @@ template<typename D>
 inline bool operator!=(Quantity<D> const& left, Quantity<D> const& right) {
   return left.magnitude_ != right.magnitude_;
 }
+
 #pragma endregion
 
 template<int exponent>
