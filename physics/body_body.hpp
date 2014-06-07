@@ -33,8 +33,7 @@ Mass const& Body<Frame>::mass() const {
 
 template<typename Frame>
 bool Body<Frame>::is_massless() const {
-  using quantities::SIUnit;
-  return mass_ == 0 * SIUnit<Mass>();
+  return mass_ == 0 * quantities::SIUnit<Mass>();
 }
 
 template<typename Frame>

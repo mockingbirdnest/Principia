@@ -14,11 +14,11 @@
 #include "quantities/numbers.hpp"
 
 using principia::constants::GravitationalConstant;
-using principia::quantities::Pow;
-using principia::quantities::SIUnit;
 using principia::geometry::Barycentre;
 using principia::geometry::Point;
 using principia::geometry::Vector;
+using principia::quantities::Pow;
+using principia::quantities::SIUnit;
 using testing::Eq;
 using testing::Lt;
 
