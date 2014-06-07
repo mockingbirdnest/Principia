@@ -76,7 +76,7 @@ template<typename FromFrame, typename ToFrame>
 template<typename Scalar>
 R3Element<Scalar> Rotation<FromFrame, ToFrame>::operator()(
     R3Element<Scalar> const& r3_element) const {
-  double const& real_part = quaternion_.real_part();
+  double const real_part = quaternion_.real_part();
   R3Element<double> const& imaginary_part = quaternion_.imaginary_part();
   return r3_element + 2 * Cross(imaginary_part,
                                 Cross(imaginary_part, r3_element) +

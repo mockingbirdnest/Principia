@@ -142,16 +142,16 @@ Multivector<Scalar, Frame, Rank> operator-(
 
 template<typename Scalar, typename Frame, unsigned int Rank>
 Multivector<Scalar, Frame, Rank> operator*(
-    double const& left,
+    double const left,
     Multivector<Scalar, Frame, Rank> const& right);
 template<typename Scalar, typename Frame, unsigned int Rank>
 Multivector<Scalar, Frame, Rank> operator*(
     Multivector<Scalar, Frame, Rank> const& left,
-    double const& right);
+    double const right);
 template<typename Scalar, typename Frame, unsigned int Rank>
 Multivector<Scalar, Frame, Rank> operator/(
     Multivector<Scalar, Frame, Rank> const& left,
-    double const& right);
+    double const right);
 
 template<typename LDimension, typename RScalar, typename Frame,
          unsigned int Rank>
@@ -192,11 +192,11 @@ void operator-=(
 template<typename Scalar, typename Frame, unsigned int Rank>
 void operator*=(
     Multivector<Scalar, Frame, Rank>& left,  // NOLINT(runtime/references)
-    double const& right);
+    double const right);
 template<typename Scalar, typename Frame, unsigned int Rank>
 void operator/=(
     Multivector<Scalar, Frame, Rank>& left,  // NOLINT(runtime/references)
-    double const& right);
+    double const right);
 
 template<typename Scalar, typename Frame, unsigned int Rank>
 std::ostream& operator<<(std::ostream& out,
