@@ -55,19 +55,6 @@ using Exponentiation =
 template<typename Q>
 using SquareRoot = typename type_generators::SquareRootGenerator<Q>::ResultType;
 
-namespace factories {
-Length            Metres(Dimensionless const&);
-Mass              Kilograms(Dimensionless const&);
-Time              Seconds(Dimensionless const&);
-Current           Amperes(Dimensionless const&);
-Temperature       Kelvins(Dimensionless const&);
-Amount            Moles(Dimensionless const&);
-LuminousIntensity Candelas(Dimensionless const&);
-Winding           Cycles(Dimensionless const&);
-Angle             Radians(Dimensionless const&);
-SolidAngle        Steradians(Dimensionless const&);
-}  // namespace factories
-
 template<typename D>
 std::string ToString(Quantity<D> const& quantity,
                      unsigned char const precision = 16);
@@ -92,22 +79,12 @@ class Quantity {
   static Quantity SIUnit();
 
  private:
-  explicit Quantity(Dimensionless const& magnitude);
-  Dimensionless magnitude_;
-
-  friend Length            factories::Metres(Dimensionless const&);
-  friend Mass              factories::Kilograms(Dimensionless const&);
-  friend Time              factories::Seconds(Dimensionless const&);
-  friend Current           factories::Amperes(Dimensionless const&);
-  friend Temperature       factories::Kelvins(Dimensionless const&);
-  friend Amount            factories::Moles(Dimensionless const&);
-  friend LuminousIntensity factories::Candelas(Dimensionless const&);
-  friend Winding           factories::Cycles(Dimensionless const&);
-  friend Angle             factories::Radians(Dimensionless const&);
-  friend SolidAngle        factories::Steradians(Dimensionless const&);
+  explicit Quantity(double const magnitude);
+  double magnitude_;
 
   template<typename D>
   friend class Quantity;
+
   template<typename D>
   friend Quantity<D> operator+(Quantity<D> const&);
   template<typename D>
@@ -125,14 +102,37 @@ class Quantity {
                   typename Quantity<DRight>> operator/(Quantity<DLeft> const&,
                                                        Quantity<DRight> const&);
   template<typename D>
+  friend Quantity<D> operator*(Quantity<D> const&, double const);
+  template<typename D>
   friend Quantity<D> operator*(Quantity<D> const&, Dimensionless const&);
+  template<typename D>
+  friend Quantity<D> operator*(double const, Quantity<D> const&);
   template<typename D>
   friend Quantity<D> operator*(Dimensionless const&, Quantity<D> const&);
   template<typename D>
+  friend Quantity<D> operator/(Quantity<D> const&, double const);
+  template<typename D>
   friend Quantity<D> operator/(Quantity<D> const&, Dimensionless const&);
+  template<typename D>
+  friend typename Quantity<D>::Inverse operator/(double const,
+                                                 Quantity<D> const&);
   template<typename D>
   friend typename Quantity<D>::Inverse operator/(Dimensionless const&,
                                                  Quantity<D> const&);
+
+  template<typename D>
+  friend void operator+=(Quantity<D>&, Quantity<D> const&);
+  template<typename D>
+  friend void operator-=(Quantity<D>&, Quantity<D> const&);
+  template<typename D>
+  friend void operator*=(Quantity<D>&, double const);
+  template<typename D>
+  friend void operator*=(Quantity<D>&, Dimensionless const&);
+  template<typename D>
+  friend void operator/=(Quantity<D>&, double const);
+  template<typename D>
+  friend void operator/=(Quantity<D>&, Dimensionless const&);
+
   template<typename D>
   friend bool operator>(Quantity<D> const&, Quantity<D> const&);
   template<typename D>
@@ -148,6 +148,8 @@ class Quantity {
 
   template<typename D>
   friend Quantity<D> Abs(Quantity<D> const&);
+  template<typename D>
+  friend Quantity<D> Max(Quantity<D> const&, Quantity<D> const&);
 
   template<typename D>
   friend SquareRoot<Quantity<D>> Sqrt(Quantity<D> const& x);
@@ -159,16 +161,80 @@ class Quantity {
 };
 
 template<typename D>
-std::ostream& operator<<(::std::ostream& out, Quantity<D> const& quantity);
+Quantity<D> operator+(Quantity<D> const&);
+template<typename D>
+Quantity<D> operator-(Quantity<D> const&);
+template<typename D>
+Quantity<D> operator+(Quantity<D> const&, Quantity<D> const&);
+template<typename D>
+Quantity<D> operator-(Quantity<D> const&, Quantity<D> const&);
+template<typename DLeft, typename DRight>
+Product<typename Quantity<DLeft>,
+                typename Quantity<DRight>> operator*(Quantity<DLeft> const&,
+                                                    Quantity<DRight> const&);
+template<typename DLeft, typename DRight>
+Quotient<typename Quantity<DLeft>,
+                typename Quantity<DRight>> operator/(Quantity<DLeft> const&,
+                                                      Quantity<DRight> const&);
+template<typename D>
+Quantity<D> operator*(Quantity<D> const&, double const);
+template<typename D>
+Quantity<D> operator*(Quantity<D> const&, Dimensionless const&);
+template<typename D>
+Quantity<D> operator*(double const, Quantity<D> const&);
+template<typename D>
+Quantity<D> operator*(Dimensionless const&, Quantity<D> const&);
+template<typename D>
+Quantity<D> operator/(Quantity<D> const&, double const);
+template<typename D>
+Quantity<D> operator/(Quantity<D> const&, Dimensionless const&);
+template<typename D>
+typename Quantity<D>::Inverse operator/(double const,
+                                                Quantity<D> const&);
+template<typename D>
+typename Quantity<D>::Inverse operator/(Dimensionless const&,
+                                                Quantity<D> const&);
 
 template<typename D>
 void operator+=(Quantity<D>&, Quantity<D> const&);
 template<typename D>
 inline void operator-=(Quantity<D>&, Quantity<D> const&);
 template<typename D>
+inline void operator*=(Quantity<D>&, double const);
+template<typename D>
 inline void operator*=(Quantity<D>&, Dimensionless const&);
 template<typename D>
+inline void operator/=(Quantity<D>&, double const);
+template<typename D>
 inline void operator/=(Quantity<D>&, Dimensionless const&);
+
+template<typename D>
+bool operator>(Quantity<D> const&, Quantity<D> const&);
+template<typename D>
+bool operator<(Quantity<D> const&, Quantity<D> const&);
+template<typename D>
+bool operator>=(Quantity<D> const&, Quantity<D> const&);
+template<typename D>
+bool operator<=(Quantity<D> const&, Quantity<D> const&);
+template<typename D>
+bool operator==(Quantity<D> const&, Quantity<D> const&);
+template<typename D>
+bool operator!=(Quantity<D> const&, Quantity<D> const&);
+
+template<typename D>
+Quantity<D> Abs(Quantity<D> const&);
+
+template<typename D>
+SquareRoot<Quantity<D>> Sqrt(Quantity<D> const& x);
+template<typename D>
+Angle ArcTan(Quantity<D> const& y, Quantity<D> const& x);
+
+template<typename D>
+std::string ToString(Quantity<D> const&, unsigned char const);
+
+template<typename D>
+std::ostream& operator<<(::std::ostream& out, Quantity<D> const& quantity);
+
 }  // namespace quantities
 }  // namespace principia
 
