@@ -4,6 +4,10 @@
 
 namespace principia {
 namespace quantities {
+
+// We need this for templates, for consistency with the dimensionful Sqrt.
+// TODO(egg): Should this be a function reference instead?
+// Equivalent to std::sqrt(x).
 double Sqrt(double const x);
 template<typename D>
 SquareRoot<Quantity<D>> Sqrt(Quantity<D> const& x);

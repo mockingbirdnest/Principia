@@ -24,7 +24,6 @@ std::size_t const kDimension = 100;
 inline void DimensionfulDiscreteCosineTransform(
     std::vector<quantities::Momentum>* result) {
   using quantities::Cos;
-  using quantities::Dimensionless;
   using quantities::Momentum;
   using si::Radian;
   std::vector<Momentum> input(kDimension);
@@ -32,7 +31,7 @@ inline void DimensionfulDiscreteCosineTransform(
     input[i] = i * Momentum::SIUnit();
   }
   result->resize(kDimension);
-  Dimensionless sign = 1;
+  double sign = 1;
   Momentum sum;
   for (std::size_t k = 0; k < kDimension; ++k, sign *= -1) {
     sum = Momentum();
