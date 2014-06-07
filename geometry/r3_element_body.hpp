@@ -14,6 +14,7 @@ namespace {
 __declspec(noreturn) void noreturn() {}
 }  // namespace
 
+// We want zero initialisation here, so the default constructor won't do.
 template<typename Scalar>
 inline R3Element<Scalar>::R3Element() : x(), y(), z() {}
 
@@ -88,7 +89,7 @@ inline R3Element<Scalar> operator-(
 }
 
 template<typename Scalar>
-inline R3Element<Scalar> operator*(double const& left,
+inline R3Element<Scalar> operator*(double const left,
                                    R3Element<Scalar> const& right) {
   return R3Element<Scalar>(left * right.x,
                            left * right.y,
@@ -97,7 +98,7 @@ inline R3Element<Scalar> operator*(double const& left,
 
 template<typename Scalar>
 inline R3Element<Scalar> operator*(R3Element<Scalar> const& left,
-                                   double const& right) {
+                                   double const right) {
   return R3Element<Scalar>(left.x * right,
                            left.y * right,
                            left.z * right);
@@ -105,7 +106,7 @@ inline R3Element<Scalar> operator*(R3Element<Scalar> const& left,
 
 template<typename Scalar>
 inline R3Element<Scalar> operator/(R3Element<Scalar> const& left,
-                                   double const& right) {
+                                   double const right) {
   return R3Element<Scalar>(left.x / right,
                            left.y / right,
                            left.z / right);
@@ -171,13 +172,13 @@ inline void operator-=(R3Element<Scalar>& left,  // NOLINT(runtime/references)
 
 template<typename Scalar>
 inline void operator*=(R3Element<Scalar>& left,  // NOLINT(runtime/references)
-                       double const& right) {
+                       double const right) {
   left = left * right;
 }
 
 template<typename Scalar>
 inline void operator/=(R3Element<Scalar>& left,  // NOLINT(runtime/references)
-                       double const& right) {
+                       double const right) {
   left = left / right;
 }
 

@@ -16,7 +16,7 @@ inline Quaternion::Quaternion(double const real_part,
     : real_part_(real_part),
       imaginary_part_(imaginary_part) {}
 
-inline double const& Quaternion::real_part() const {
+inline double const Quaternion::real_part() const {
   return real_part_;
 }
 

@@ -41,14 +41,14 @@ R3Element<Scalar> operator-(R3Element<Scalar> const& left,
                             R3Element<Scalar> const& right);
 
 template<typename Scalar>
-R3Element<Scalar> operator*(double const& left,
+R3Element<Scalar> operator*(double const left,
                             R3Element<Scalar> const& right);
 template<typename Scalar>
 R3Element<Scalar> operator*(R3Element<Scalar> const& left,
-                            double const& right);
+                            double const right);
 template<typename Scalar>
 R3Element<Scalar> operator/(R3Element<Scalar> const& left,
-                            double const& right);
+                            double const right);
 
 template<typename LDimension, typename RScalar>
 R3Element<quantities::Product<quantities::Quantity<LDimension>, RScalar>>
@@ -79,10 +79,10 @@ void operator-=(R3Element<Scalar>& left,  // NOLINT(runtime/references)
 
 template<typename Scalar>
 void operator*=(R3Element<Scalar>& left,  // NOLINT(runtime/references)
-                double const& right);
+                double const right);
 template<typename Scalar>
 void operator/=(R3Element<Scalar>& left,  // NOLINT(runtime/references)
-                double const& right);
+                double const right);
 
 template<typename Scalar>
 std::ostream& operator<<(std::ostream& out,
