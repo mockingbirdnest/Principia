@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 // We use ostream for logging purposes.
 #include <iostream>  // NOLINT(readability/streams)
@@ -127,6 +127,9 @@ class Quantity {
   template<typename Q>
   friend Q SIUnit();
 
+  template<int exponent, typename D>
+  friend Exponentiation<Quantity<D>, exponent> Pow(Quantity<D> const& x);
+
   template<typename D>
   friend Quantity<D> Abs(Quantity<D> const&);
   template<typename D>
@@ -193,7 +196,8 @@ Q SIUnit();
 template<>
 double SIUnit<double>();
 
-// Equivalent to |std::pow(x, exponent)|.
+// Equivalent to |std::pow(x, exponent)| unles -3 ≤ x ≤ 3, in which case
+// explicit specialisation yields multiplications statically.
 template<int exponent>
 double Pow(double x);
 template<int exponent, typename D>

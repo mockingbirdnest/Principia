@@ -40,15 +40,6 @@ typedef Quantity<
 
 }  // namespace type_generators
 
-inline double Abs(double const x) {
-  return std::abs(x);
-}
-
-template<typename D>
-inline Quantity<D> Abs(Quantity<D> const& quantity) {
-  return Quantity<D>(std::abs(quantity.magnitude_));
-}
-
 inline double Sqrt(double const x) {
   return std::sqrt(x);
 }

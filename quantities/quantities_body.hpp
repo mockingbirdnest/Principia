@@ -255,6 +255,65 @@ inline bool operator!=(Quantity<D> const& left, Quantity<D> const& right) {
 }
 #pragma endregion
 
+template<int exponent>
+inline double Pow(double x) {
+  return std::pow(x, exponent);
+}
+
+// Static specialisations for frequently-used exponents, so that this gets
+// turned into multiplications at compile time.
+
+template<>
+inline double Pow<-3>(double x) {
+  return 1 / (x * x * x);
+}
+
+template<>
+inline double Pow<-2>(double x) {
+  return 1 / (x * x);
+}
+
+template<>
+inline double Pow<-1>(double x) {
+  return 1 / x;
+}
+
+template<>
+inline double Pow<0>(double x) {
+  return 1;
+}
+
+template<>
+inline double Pow<1>(double x) {
+  return x;
+}
+
+template<>
+inline double Pow<2>(double x) {
+  return x * x;
+}
+
+template<>
+inline double Pow<3>(double x) {
+  return x * x * x;
+}
+
+
+template<int exponent, typename D>
+Exponentiation<Quantity<D>, exponent> Pow(Quantity<D> const& x) {
+  return Exponentiation<Quantity<D>, exponent>(Pow<exponent>(x.magnitude_));
+}
+
+inline double Abs(double const x) {
+  return std::abs(x);
+}
+
+template<typename D>
+inline Quantity<D> Abs(Quantity<D> const& quantity) {
+  return Quantity<D>(std::abs(quantity.magnitude_));
+}
+
+
 template<typename Q>
 inline Q SIUnit() {
   return Q(1);
