@@ -130,6 +130,71 @@ void SolarSystem1643To1727() {
 
   // End of planets.
 
+  // Satellite of Jupiter.
+  Body<ICRFJ2000EclipticFrame> ganymede(1482E20 * Kilogram);
+  ganymede.AppendToTrajectory(
+      Position({-7.942681422941415E+08 * Kilo(Metre),
+                -1.776681035234876E+08 * Kilo(Metre),
+                 1.857215495334835E+07 * Kilo(Metre)}),
+      Velocity({-5.026319376504355E+00 * Kilo(Metre) / Second,
+                -4.481735740234995E+00 * Kilo(Metre) / Second,
+                 1.326192167761359E-01 * Kilo(Metre) / Second}),
+      t0);
+
+  // Satellite of Saturn.
+  Body<ICRFJ2000EclipticFrame> titan(
+      8978.13 * Pow<3>(Kilo(Metre)) / Pow<2>(Second));
+  titan.AppendToTrajectory(
+      Position({-3.771930512714775E+08 * Kilo(Metre),
+                -1.452931696594699E+09 * Kilo(Metre),
+                 4.091643033375849E+07 * Kilo(Metre)}),
+      Velocity({ 1.433381483669744E+01 * Kilo(Metre) / Second,
+                -1.422590492527597E+00 * Kilo(Metre) / Second,
+                -1.375826555026097E+00 * Kilo(Metre) / Second}),
+      t0);
+
+  // Satellites of Jupiter.
+  Body<ICRFJ2000EclipticFrame> callisto(1076E20 * Kilogram);
+  callisto.AppendToTrajectory(
+      Position({-7.951805452047400E+08 * Kilo(Metre),
+                -1.802957437059298E+08 * Kilo(Metre),
+                 1.847154088070625E+07 * Kilo(Metre)}),
+      Velocity({ 1.091928199422218E+01 * Kilo(Metre) / Second,
+                -1.278098875182818E+01 * Kilo(Metre) / Second,
+                 5.878649120351949E-02 * Kilo(Metre) / Second}),
+      t0);
+  Body<ICRFJ2000EclipticFrame> io(893.3E20 * Kilogram);
+  io.AppendToTrajectory(
+      Position({-7.946073188298367E+08 * Kilo(Metre),
+                -1.783491436977172E+08 * Kilo(Metre),
+                 1.854699192614355E+07 * Kilo(Metre)}),
+      Velocity({-5.049684272040893E-01 * Kilo(Metre) / Second,
+                 4.916473261567652E+00 * Kilo(Metre) / Second,
+                 5.469177855959977E-01 * Kilo(Metre) / Second}),
+      t0);
+
+  // Satellite of Earth.
+  Body<ICRFJ2000EclipticFrame> moon(
+      4902.798 * Pow<3>(Kilo(Metre)) / Pow<2>(Second));
+  moon.AppendToTrajectory(
+      Position({ 1.478545271460863E+08 * Kilo(Metre),
+                 3.122566749814625E+07 * Kilo(Metre),
+                 1.500491219719345E+03 * Kilo(Metre)}),
+      Velocity({-6.099833968412930E+00 * Kilo(Metre) / Second,
+                 2.985006033154299E+01 * Kilo(Metre) / Second,
+                -1.952438319420470E-02 * Kilo(Metre) / Second}),
+      t0);
+
+  // Satellite of Jupiter.
+  Body<ICRFJ2000EclipticFrame> europa(479.7E20 * Kilogram);
+  europa.AppendToTrajectory(
+      Position({-7.944180333947762E+08 * Kilo(Metre),
+                -1.787346439588362E+08 * Kilo(Metre),
+                 1.853675837527557E+07 * Kilo(Metre)}),
+      Velocity({ 8.811255547505889E+00 * Kilo(Metre) / Second,
+                 5.018147960240774E-02 * Kilo(Metre) / Second,
+                 6.162195631257494E-01 * Kilo(Metre) / Second}),
+      t0);
 
 }
 
