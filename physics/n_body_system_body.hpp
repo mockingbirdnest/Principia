@@ -22,7 +22,8 @@ namespace principia {
 namespace physics {
 
 template<typename InertialFrame>
-NBodySystem<InertialFrame>::NBodySystem(std::vector<Body<InertialFrame>*> const* bodies)
+NBodySystem<InertialFrame>::NBodySystem(
+    std::vector<Body<InertialFrame>*> const* bodies)
     : bodies_(bodies) {}
 
 template<typename InertialFrame>

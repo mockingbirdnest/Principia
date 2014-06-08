@@ -81,11 +81,11 @@ TEST_F(SPRKTest, HarmonicOscillator) {
                            SIUnit<Length>() *
                            Cos(solution_.time.quantities[i] *
                                SIUnit<AngularFrequency>())));
-   p_error = std::max(p_error,
-                      Abs(solution_.momentum[0].quantities[i] +
-                          SIUnit<Momentum>() *
-                          Sin(solution_.time.quantities[i] *
-                              SIUnit<AngularFrequency>())));
+    p_error = std::max(p_error,
+                       Abs(solution_.momentum[0].quantities[i] +
+                           SIUnit<Momentum>() *
+                           Sin(solution_.time.quantities[i] *
+                               SIUnit<AngularFrequency>())));
   }
   LOG(INFO) << "q_error = " << q_error;
   LOG(INFO) << "p_error = " << p_error;
