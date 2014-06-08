@@ -16,6 +16,7 @@
 #include "testing_utilities/statistics.hpp"
 
 using principia::quantities::Abs;
+using principia::quantities::AngularFrequency;
 using principia::quantities::Energy;
 using principia::quantities::Length;
 using principia::quantities::Mass;
@@ -68,15 +69,19 @@ TEST_F(SPRKTest, HarmonicOscillator) {
   integrator_.Solve(&ComputeHarmonicOscillatorForce,
                     &ComputeHarmonicOscillatorVelocity,
                     parameters_, &solution_);
-  double q_error = 0;
-  double p_error = 0;
+  Length q_error;
+  Momentum p_error;
   for (size_t i = 0; i < solution_.time.quantities.size(); ++i) {
     q_error = std::max(q_error,
-                       std::abs(solution_.position[0].quantities[i] -
-                                std::cos(solution_.time.quantities[i])));
-    p_error = std::max(p_error,
-                       std::abs(solution_.momentum[0].quantities[i] +
-                                std::sin(solution_.time.quantities[i])));
+                       Abs(solution_.position[0].quantities[i] -
+                           SIUnit<Length>() *
+                           Cos(solution_.time.quantities[i] *
+                               SIUnit<AngularFrequency>())));
+   p_error = std::max(p_error,
+                      Abs(solution_.momentum[0].quantities[i] +
+                          SIUnit<Momentum>() *
+                          Sin(solution_.time.quantities[i] *
+                              SIUnit<AngularFrequency>())));
   }
   LOG(INFO) << "q_error = " << q_error;
   LOG(INFO) << "p_error = " << p_error;
@@ -85,15 +90,15 @@ TEST_F(SPRKTest, HarmonicOscillator) {
 }
 
 TEST_F(SPRKTest, Convergence) {
-  parameters_.q0 = {1.0};
-  parameters_.p0 = {0.0};
-  parameters_.t0 = 0.0;
-  parameters_.tmax = 100;
+  parameters_.q0 = {SIUnit<Length>()};
+  parameters_.p0 = {Momentum()};
+  parameters_.t0 = Time();
+  parameters_.tmax = 100 * SIUnit<Time>();
   parameters_.sampling_period = 0;
   // For 0.2 * 1.1⁻²¹ < |Δt| < 0.2 , the correlation between step size and error
   // is very strong. It the step is small enough to converge and large enough to
   // stay clear of floating point inaccuracy.
-  parameters_.Δt = 0.2;
+  parameters_.Δt = 0.2 * SIUnit<Time>();
   int const step_sizes = 22;
   double const step_reduction = 1.1;
   std::vector<double> log_step_sizes(step_sizes);
@@ -103,13 +108,15 @@ TEST_F(SPRKTest, Convergence) {
     integrator_.Solve(&ComputeHarmonicOscillatorForce,
                       &ComputeHarmonicOscillatorVelocity,
                       parameters_, &solution_);
-    log_step_sizes[i] = std::log10(parameters_.Δt);
+    log_step_sizes[i] = std::log10(parameters_.Δt / SIUnit<Time>());
     log_q_errors[i] = std::log10(
-        std::abs(solution_.position[0].quantities[0] -
-                 std::cos(solution_.time.quantities[0])));
+        std::abs(solution_.position[0].quantities[i] / SIUnit<Length>() -
+                 Cos(solution_.time.quantities[i] *
+                     SIUnit<AngularFrequency>())));
     log_p_errors[i] = std::log10(
-        std::abs(solution_.momentum[0].quantities[0] +
-                 std::sin(solution_.time.quantities[0])));
+        std::abs(solution_.momentum[0].quantities[i] / SIUnit<Momentum>() +
+                 Sin(solution_.time.quantities[i] *
+                     SIUnit<AngularFrequency>())));
   }
   double const q_convergence_order = Slope(log_step_sizes, log_q_errors);
   double const q_correlation =
@@ -132,16 +139,16 @@ TEST_F(SPRKTest, Convergence) {
 }
 
 TEST_F(SPRKTest, Symplecticity) {
-  parameters_.q0 = {1.0};
-  parameters_.p0 = {0.0};
-  parameters_.t0 = 0.0;
-  Stiffness const k = 1 * SIUnit<Stiffness>();
-  Mass const m      = 1 * SIUnit<Mass>();
-  Length const q0   = parameters_.q0[0] * SIUnit<Length>();
-  Momentum const p0 = parameters_.p0[0] * SIUnit<Momentum>();
+  parameters_.q0 = {SIUnit<Length>()};
+  parameters_.p0 = {Momentum()};
+  parameters_.t0 = Time();
+  Stiffness const k = SIUnit<Stiffness>();
+  Mass const m      = SIUnit<Mass>();
+  Length const q0   = parameters_.q0[0];
+  Momentum const p0 = parameters_.p0[0];
   Energy const initial_energy = 0.5 * Pow<2>(p0) / m + 0.5 * k * Pow<2>(q0);
-  parameters_.tmax = 500.0;
-  parameters_.Δt = 1;
+  parameters_.tmax = 500.0 * SIUnit<Time>();
+  parameters_.Δt = SIUnit<Time>();
   parameters_.sampling_period = 1;
   integrator_.Solve(&ComputeHarmonicOscillatorForce,
                     &ComputeHarmonicOscillatorVelocity,
@@ -151,10 +158,9 @@ TEST_F(SPRKTest, Symplecticity) {
   std::vector<Time> time_steps(length);
   Energy max_energy_error = 0 * SIUnit<Energy>();
   for (size_t i = 0; i < length; ++i) {
-    Length const q_i   = solution_.position[0].quantities[i] * SIUnit<Length>();
-    Momentum const p_i = solution_.momentum[0].quantities[i] *
-                             SIUnit<Momentum>();
-    time_steps[i] = solution_.time.quantities[i] * SIUnit<Time>();
+    Length const q_i   = solution_.position[0].quantities[i];
+    Momentum const p_i = solution_.momentum[0].quantities[i];
+    time_steps[i] = solution_.time.quantities[i];
     energy_error[i] = Abs(0.5 * Pow<2>(p_i) / m + 0.5 * k * Pow<2>(q_i) -
                           initial_energy);
     max_energy_error = std::max(energy_error[i], max_energy_error);

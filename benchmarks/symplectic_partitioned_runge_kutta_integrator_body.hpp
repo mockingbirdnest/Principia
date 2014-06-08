@@ -25,8 +25,8 @@ inline void SolveHarmonicOscillator(
   integrator.Initialize(integrator.Order5Optimal());
 
   parameters.q0 = {SIUnit<Length>()};
-  parameters.p0 = {0.0 * SIUnit<Momentum>()};
-  parameters.t0 = 0.0 * SIUnit<Time>();
+  parameters.p0 = {Momentum()};
+  parameters.t0 = Time();
 #ifdef _DEBUG
   parameters.tmax = 100.0 * SIUnit<Time>();
 #else
