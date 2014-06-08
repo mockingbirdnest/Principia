@@ -114,12 +114,12 @@ TEST_F(SPRKTest, Convergence) {
                       parameters_, &solution_);
     log_step_sizes[i] = std::log10(parameters_.Δt / SIUnit<Time>());
     log_q_errors[i] = std::log10(
-        std::abs(solution_.position[0].quantities[i] / SIUnit<Length>() -
-                 Cos(solution_.time.quantities[i] *
+        std::abs(solution_.position[0].quantities[0] / SIUnit<Length>() -
+                 Cos(solution_.time.quantities[0] *
                      SIUnit<AngularFrequency>())));
     log_p_errors[i] = std::log10(
-        std::abs(solution_.momentum[0].quantities[i] / SIUnit<Momentum>() +
-                 Sin(solution_.time.quantities[i] *
+        std::abs(solution_.momentum[0].quantities[0] / SIUnit<Momentum>() +
+                 Sin(solution_.time.quantities[0] *
                      SIUnit<AngularFrequency>())));
   }
   double const q_convergence_order = Slope(log_step_sizes, log_q_errors);
