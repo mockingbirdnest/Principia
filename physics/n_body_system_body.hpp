@@ -66,10 +66,11 @@ NBodySystem<InertialFrame>::~NBodySystem() {
 
 
 template<typename InertialFrame>
-void NBodySystem<InertialFrame>::Integrate(SymplecticIntegrator const& integrator,
-                                           Time const& tmax,
-                                           Time const& Δt,
-                                           int const sampling_period) {
+void NBodySystem<InertialFrame>::Integrate(
+    SymplecticIntegrator const& integrator,
+    Time const& tmax,
+    Time const& Δt,
+    int const sampling_period) {
   using quantities::SIUnit;
   SymplecticIntegrator::Parameters parameters;
   SymplecticIntegrator::Solution solution;
