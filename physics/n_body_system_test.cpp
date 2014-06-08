@@ -26,40 +26,40 @@ namespace physics {
 
 class NBodySystemTest : public testing::Test {
  protected:
-  struct EarthMoonBarycentre;
+  struct EarthMoonBarycentricFrame;
 
   void SetUp() override {
     integrator_.Initialize(integrator_.Order5Optimal());
 
     // The Earth-Moon system, roughly, with a circular orbit with velocities
     // in the center-of-mass frame.
-    body1_ = new Body<EarthMoonBarycentre>(6E24 * SIUnit<Mass>());
-    body2_ = new Body<EarthMoonBarycentre>(7E22 * SIUnit<Mass>());
-    Point<Vector<Length, EarthMoonBarycentre>> const
-        q1(Vector<Length, EarthMoonBarycentre>({0 * SIUnit<Length>(),
-                                                0 * SIUnit<Length>(),
-                                                0 * SIUnit<Length>()}));
-    Point<Vector<Length, EarthMoonBarycentre>> const
-        q2(Vector<Length, EarthMoonBarycentre>({0 * SIUnit<Length>(),
-                                                4E8 * SIUnit<Length>(),
-                                                0 * SIUnit<Length>()}));
-    Point<Vector<Length, EarthMoonBarycentre>> const centre_of_mass =
+    body1_ = new Body<EarthMoonBarycentricFrame>(6E24 * SIUnit<Mass>());
+    body2_ = new Body<EarthMoonBarycentricFrame>(7E22 * SIUnit<Mass>());
+    Point<Vector<Length, EarthMoonBarycentricFrame>> const
+        q1(Vector<Length, EarthMoonBarycentricFrame>({0 * SIUnit<Length>(),
+                                                      0 * SIUnit<Length>(),
+                                                      0 * SIUnit<Length>()}));
+    Point<Vector<Length, EarthMoonBarycentricFrame>> const
+        q2(Vector<Length, EarthMoonBarycentricFrame>({0 * SIUnit<Length>(),
+                                                      4E8 * SIUnit<Length>(),
+                                                      0 * SIUnit<Length>()}));
+    Point<Vector<Length, EarthMoonBarycentricFrame>> const centre_of_mass =
         Barycentre(q1, body1_->mass(), q2, body2_->mass());
     Length const semi_major_axis = (q1 - q2).Norm();
     period_ = 2 * π * Sqrt(Pow<3>(semi_major_axis) /
                                (body1_->gravitational_parameter() +
                                 body2_->gravitational_parameter()));
-    Point<Vector<Speed, EarthMoonBarycentre>> const
-        v1(Vector<Speed, EarthMoonBarycentre>({
+    Point<Vector<Speed, EarthMoonBarycentricFrame>> const
+        v1(Vector<Speed, EarthMoonBarycentricFrame>({
             -2 * π * (q1 - centre_of_mass).Norm() / period_,
             0 * SIUnit<Speed>(),
             0 * SIUnit<Speed>()}));
-    Point<Vector<Speed, EarthMoonBarycentre>> const
-        v2(Vector<Speed, EarthMoonBarycentre>({
+    Point<Vector<Speed, EarthMoonBarycentricFrame>> const
+        v2(Vector<Speed, EarthMoonBarycentricFrame>({
             2 * π * (q2 - centre_of_mass).Norm() / period_,
             0 * SIUnit<Speed>(),
             0 * SIUnit<Speed>()}));
-    Point<Vector<Speed, EarthMoonBarycentre>> const overall_velocity =
+    Point<Vector<Speed, EarthMoonBarycentricFrame>> const overall_velocity =
         Barycentre(v1, body1_->mass(), v2, body2_->mass());
     body1_->AppendToTrajectory(q1 - centre_of_mass,
                                v1 - overall_velocity,
@@ -67,8 +67,8 @@ class NBodySystemTest : public testing::Test {
     body2_->AppendToTrajectory(q2 - centre_of_mass,
                                v2 - overall_velocity,
                                0 * SIUnit<Time>());
-    system_.reset(new NBodySystem<EarthMoonBarycentre>(
-        new std::vector<Body<EarthMoonBarycentre>*>({body1_, body2_})));
+    system_.reset(new NBodySystem<EarthMoonBarycentricFrame>(
+        new std::vector<Body<EarthMoonBarycentricFrame>*>({body1_, body2_})));
   }
 
   template<typename Scalar, typename Frame>
@@ -103,15 +103,15 @@ class NBodySystemTest : public testing::Test {
     return result;
   }
 
-  Body<EarthMoonBarycentre>* body1_;
-  Body<EarthMoonBarycentre>* body2_;
+  Body<EarthMoonBarycentricFrame>* body1_;
+  Body<EarthMoonBarycentricFrame>* body2_;
   SPRKIntegrator integrator_;
   Time period_;
-  std::unique_ptr<NBodySystem<EarthMoonBarycentre>> system_;
+  std::unique_ptr<NBodySystem<EarthMoonBarycentricFrame>> system_;
 };
 
 TEST_F(NBodySystemTest, EarthMoon) {
-  std::vector<Vector<Length, EarthMoonBarycentre>> positions;
+  std::vector<Vector<Length, EarthMoonBarycentricFrame>> positions;
   system_->Integrate(integrator_, period_, period_ / 100, 1);
 
   positions = body1_->positions();
