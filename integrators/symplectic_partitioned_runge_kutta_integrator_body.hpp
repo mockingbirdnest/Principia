@@ -5,10 +5,14 @@
 #include <memory>
 #include <vector>
 
+#include "quantities/quantities.hpp"
+
 // Mixed assemblies are not supported by Unity/Mono.
 #ifndef _MANAGED
 #include "glog/logging.h"
 #endif
+
+using principia::quantities::Quotient;
 
 namespace principia {
 namespace integrators {
@@ -127,8 +131,8 @@ void SPRKIntegrator<Position, Momentum>::Solve(
   std::vector<Momentum> p_stage(dimension);
   Time tn = parameters.t0;  // Current time.
   Time const h = parameters.Δt;  // Constant for now.
-  std::vector<double> f(dimension);  // Current forces.
-  std::vector<double> v(dimension);  // Current velocities.
+  std::vector<Quotient<Momentum, Time>> f(dimension);  // Current forces.
+  std::vector<Quotient<Position, Time>> v(dimension);  // Current velocities.
 
 #ifdef TRACE_SYMPLECTIC_PARTITIONED_RUNGE_KUTTA_INTEGRATOR
   int percentage = 0;
@@ -144,8 +148,8 @@ void SPRKIntegrator<Position, Momentum>::Solve(
     // Increment SPRK step from "'SymplecticPartitionedRungeKutta' Method
     // for NDSolve", algorithm 3.
     for (int k = 0; k < dimension; ++k) {
-      (*Δqstage_current)[k] = 0;
-      (*Δpstage_current)[k] = 0;
+      (*Δqstage_current)[k] = Length();
+      (*Δpstage_current)[k] = Momentum();
       q_stage[k] = q_last[k];
     }
     for (int i = 0; i < stages_; ++i) {

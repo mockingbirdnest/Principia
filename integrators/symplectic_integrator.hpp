@@ -63,7 +63,7 @@ class SymplecticIntegrator {
   struct TimeseriesAndError {
     // Indexed by time step.
     std::vector<Scalar> quantities;
-    double error;
+    Scalar error;
   };
 
   struct Solution {

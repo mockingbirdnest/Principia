@@ -104,7 +104,7 @@ class NBodySystemTest : public testing::Test {
 
   Body<InertialFrame>* body1_;
   Body<InertialFrame>* body2_;
-  SPRKIntegrator integrator_;
+  SPRKIntegrator<Length, Speed> integrator_;
   Time period_;
   std::unique_ptr<NBodySystem> system_;
 };
