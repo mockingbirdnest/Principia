@@ -21,6 +21,11 @@ struct R3Element {
   Scalar&       operator[](int const index);
   Scalar const& operator[](int const index) const;
 
+  R3Element& operator+=(R3Element const& right);
+  R3Element& operator-=(R3Element const& right);
+  R3Element& operator*=(double const right);
+  R3Element& operator/=(double const right);
+
   Scalar Norm() const;
 
   Scalar x;
@@ -69,20 +74,6 @@ bool operator==(R3Element<Scalar> const& left,
 template<typename Scalar>
 bool operator!=(R3Element<Scalar> const& left,
                 R3Element<Scalar> const& right);
-
-template<typename Scalar>
-void operator+=(R3Element<Scalar>& left,  // NOLINT(runtime/references)
-                R3Element<Scalar> const& right);
-template<typename Scalar>
-void operator-=(R3Element<Scalar>& left,  // NOLINT(runtime/references)
-                R3Element<Scalar> const& right);
-
-template<typename Scalar>
-void operator*=(R3Element<Scalar>& left,  // NOLINT(runtime/references)
-                double const right);
-template<typename Scalar>
-void operator/=(R3Element<Scalar>& left,  // NOLINT(runtime/references)
-                double const right);
 
 template<typename Scalar>
 std::ostream& operator<<(std::ostream& out,

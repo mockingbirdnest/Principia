@@ -70,6 +70,11 @@ class Quantity {
   Quantity();
   ~Quantity() = default;
 
+  Quantity& operator+=(Quantity const&);
+  Quantity& operator-=(Quantity const&);
+  Quantity& operator*=(double const);
+  Quantity& operator/=(double const);
+
  private:
   explicit Quantity(double const magnitude);
   double magnitude_;
@@ -102,15 +107,6 @@ class Quantity {
   template<typename D>
   friend typename Quantity<D>::Inverse operator/(double const,
                                                  Quantity<D> const&);
-
-  template<typename D>
-  friend void operator+=(Quantity<D>&, Quantity<D> const&);
-  template<typename D>
-  friend void operator-=(Quantity<D>&, Quantity<D> const&);
-  template<typename D>
-  friend void operator*=(Quantity<D>&, double const);
-  template<typename D>
-  friend void operator/=(Quantity<D>&, double const);
 
   template<typename D>
   friend bool operator>(Quantity<D> const&, Quantity<D> const&);
@@ -167,15 +163,6 @@ Quantity<D> operator/(Quantity<D> const&, double const);
 template<typename D>
 typename Quantity<D>::Inverse operator/(double const,
                                                 Quantity<D> const&);
-
-template<typename D>
-void operator+=(Quantity<D>&, Quantity<D> const&);
-template<typename D>
-inline void operator-=(Quantity<D>&, Quantity<D> const&);
-template<typename D>
-inline void operator*=(Quantity<D>&, double const);
-template<typename D>
-inline void operator/=(Quantity<D>&, double const);
 
 template<typename D>
 bool operator>(Quantity<D> const&, Quantity<D> const&);

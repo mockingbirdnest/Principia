@@ -6,7 +6,6 @@
 
 #include "geometry/r3_element.hpp"
 #include "integrators/symplectic_partitioned_runge_kutta_integrator.hpp"
-#include "physics/frame.hpp"
 #include "quantities/quantities.hpp"
 
 using principia::geometry::R3Element;
@@ -22,16 +21,19 @@ using principia::quantities::SIUnit;
 namespace principia {
 namespace physics {
 
-NBodySystem::NBodySystem(std::vector<Body<InertialFrame>*> const* bodies)
+template<typename InertialFrame>
+NBodySystem<InertialFrame>::NBodySystem(std::vector<Body<InertialFrame>*> const* bodies)
     : bodies_(bodies) {}
 
-NBodySystem::~NBodySystem() {
+template<typename InertialFrame>
+NBodySystem<InertialFrame>::~NBodySystem() {
   for (Body<InertialFrame>* body : *bodies_) {
     delete body;
   }
 }
 
-void NBodySystem::Integrate(
+template<typename InertialFrame>
+void NBodySystem<InertialFrame>::Integrate(
     SymplecticIntegrator<Length, Speed> const& integrator,
     Time const& tmax,
     Time const& Δt,
@@ -102,7 +104,8 @@ void NBodySystem::Integrate(
   }
 }
 
-void NBodySystem::ComputeGravitationalAccelerations(
+template<typename InertialFrame>
+void NBodySystem<InertialFrame>::ComputeGravitationalAccelerations(
     Time const& t,
     std::vector<Length> const& q,
     std::vector<Acceleration>* result) const {
@@ -143,8 +146,10 @@ void NBodySystem::ComputeGravitationalAccelerations(
   }
 }
 
-void NBodySystem::ComputeGravitationalVelocities(std::vector<Speed> const& p,
-                                                 std::vector<Speed>* result) {
+template<typename InertialFrame>
+void NBodySystem<InertialFrame>::ComputeGravitationalVelocities(
+    std::vector<Speed> const& p,
+    std::vector<Speed>* result) {
   *result = p;
 }
 
