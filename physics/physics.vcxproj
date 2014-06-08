@@ -84,7 +84,6 @@
   <ItemGroup>
     <ClInclude Include="body.hpp" />
     <ClInclude Include="body_body.hpp" />
-    <ClInclude Include="frame.hpp" />
     <ClInclude Include="n_body_system.hpp" />
     <ClInclude Include="n_body_system_body.hpp" />
   </ItemGroup>
