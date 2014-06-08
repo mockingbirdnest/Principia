@@ -73,7 +73,7 @@ inline void SPRKIntegrator<Position, Momentum>::Initialize(
   }
 }
 
-template<typename Position, typename
+template<typename Position, typename Momentum>
 template<typename AutonomousRightHandSideComputation,
          typename RightHandSideComputation>
 void SPRKIntegrator<Position, Momentum>::Solve(

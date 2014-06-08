@@ -49,21 +49,21 @@ class SPRKTest : public testing::Test {
     integrator_.Initialize(integrator_.Order5Optimal());
   }
 
-  SPRKIntegrator             integrator_;
-  SPRKIntegrator::Parameters parameters_;
-  SPRKIntegrator::Solution   solution_;
+  SPRKIntegrator<Length, Momentum>             integrator_;
+  SPRKIntegrator<Length, Momentum>::Parameters parameters_;
+  SPRKIntegrator<Length, Momentum>::Solution   solution_;
 };
 
 TEST_F(SPRKTest, HarmonicOscillator) {
-  parameters_.q0 = {1.0};
-  parameters_.p0 = {0.0};
-  parameters_.t0 = 0.0;
+  parameters_.q0 = {SIUnit<Length>()};
+  parameters_.p0 = {Momentum()};
+  parameters_.t0 = Time();
 #ifdef _DEBUG
-  parameters_.tmax = 100.0;
+  parameters_.tmax = 100.0 * SIUnit<Time>();
 #else
-  parameters_.tmax = 1000.0;
+  parameters_.tmax = 1000.0 * SIUnit<Time>();
 #endif
-  parameters_.Δt = 1.0E-4;
+  parameters_.Δt = 1.0E-4 * SIUnit<Time>();
   parameters_.sampling_period = 1;
   integrator_.Solve(&ComputeHarmonicOscillatorForce,
                     &ComputeHarmonicOscillatorVelocity,

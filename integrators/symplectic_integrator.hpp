@@ -2,6 +2,8 @@
 
 #include <vector>
 
+#include "quantities/quantities.hpp"
+
 using principia::quantities::Time;
 
 namespace principia {
@@ -68,7 +70,7 @@ class SymplecticIntegrator {
     // Indexed by dimension.
     std::vector<TimeseriesAndError<Position>> position;
     std::vector<TimeseriesAndError<Momentum>> momentum;
-    TimeseriesAndError Time;
+    TimeseriesAndError<Time> time;
   };
 
   // Initialize the integrator with the given |coefficients|.  Must be called

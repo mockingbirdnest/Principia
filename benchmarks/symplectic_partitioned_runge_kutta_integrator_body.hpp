@@ -8,27 +8,31 @@
 #include "testing_utilities/numerical_analysis.hpp"
 
 using principia::integrators::SPRKIntegrator;
+using principia::quantities::Length;
+using principia::quantities::Momentum;
+using principia::quantities::SIUnit;
 
 namespace principia {
 namespace benchmarks {
 
-inline void SolveHarmonicOscillator(SPRKIntegrator::Solution* solution) {
+inline void SolveHarmonicOscillator(
+    SPRKIntegrator<Length, Momentum>::Solution* solution) {
   using principia::testing_utilities::ComputeHarmonicOscillatorForce;
   using principia::testing_utilities::ComputeHarmonicOscillatorVelocity;
-  SPRKIntegrator integrator;
-  SPRKIntegrator::Parameters parameters;
+  SPRKIntegrator<Length, Momentum> integrator;
+  SPRKIntegrator<Length, Momentum>::Parameters parameters;
 
   integrator.Initialize(integrator.Order5Optimal());
 
-  parameters.q0 = {1.0};
-  parameters.p0 = {0.0};
-  parameters.t0 = 0.0;
+  parameters.q0 = {SIUnit<Length>()};
+  parameters.p0 = {0.0 * SIUnit<Momentum>()};
+  parameters.t0 = 0.0 * SIUnit<Time>();
 #ifdef _DEBUG
-  parameters.tmax = 100.0;
+  parameters.tmax = 100.0 * SIUnit<Time>();
 #else
-  parameters.tmax = 1000.0;
+  parameters.tmax = 1000.0 * SIUnit<Time>();
 #endif
-  parameters.Δt = 1.0E-4;
+  parameters.Δt = 1.0E-4 * SIUnit<Time>();
   parameters.sampling_period = 1;
   integrator.Solve(&ComputeHarmonicOscillatorForce,
                    &ComputeHarmonicOscillatorVelocity,

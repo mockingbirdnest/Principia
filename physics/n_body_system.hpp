@@ -9,6 +9,9 @@
 #include "quantities/quantities.hpp"
 
 using principia::integrators::SymplecticIntegrator;
+using principia::quantities::Acceleration;
+using principia::quantities::Length;
+using principia::quantities::Speed;
 using principia::quantities::Time;
 
 namespace principia {
@@ -21,17 +24,18 @@ class NBodySystem {
   ~NBodySystem();
 
   // The |integrator| must already have been initialized.
-  void Integrate(SymplecticIntegrator const& integrator,
+  void Integrate(SymplecticIntegrator<Length, Speed> const& integrator,
                  Time const& tmax,
                  Time const& Δt,
                  int const sampling_period);
 
  private:
-  void ComputeGravitationalAccelerations(double const t,
-                                         std::vector<double> const& q,
-                                         std::vector<double>* result) const;
-  static void ComputeGravitationalVelocities(std::vector<double> const& p,
-                                             std::vector<double>* result);
+  void ComputeGravitationalAccelerations(
+      Time const& t,
+      std::vector<Length> const& q,
+      std::vector<Acceleration>* result) const;
+  static void ComputeGravitationalVelocities(std::vector<Speed> const& p,
+                                             std::vector<Speed>* result);
 
   std::unique_ptr<std::vector<Body<InertialFrame>*> const> const bodies_;
 };
