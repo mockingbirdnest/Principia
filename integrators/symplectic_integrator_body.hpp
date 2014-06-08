@@ -1,7 +1,8 @@
 namespace principia {
 namespace integrators {
 
-SymplecticIntegrator::Parameters::Parameters()
+template<typename Position, typename Momentum>
+SymplecticIntegrator<Position, Momentum>::Parameters::Parameters()
     : p_error(nullptr),
       q_error(nullptr),
       t_error(0) {}

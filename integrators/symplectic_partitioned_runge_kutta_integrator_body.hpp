@@ -30,10 +30,12 @@ inline std::vector<T>* PointerOrNew(int const dimension,
 
 }  // namespace
 
-inline SPRKIntegrator::SPRKIntegrator() : stages_(0) {}
+template<typename Position, typename Momentum>
+inline SPRKIntegrator<Position, Momentum>::SPRKIntegrator() : stages_(0) {}
 
+template<typename Position, typename Momentum>
 inline std::vector<std::vector<double>> const&
-SPRKIntegrator::Order5Optimal() const {
+SPRKIntegrator<Position, Momentum>::Order5Optimal() const {
   static std::vector<std::vector<double>> const order_5_optimal = {
       { 0.339839625839110000,
        -0.088601336903027329,
@@ -50,7 +52,9 @@ SPRKIntegrator::Order5Optimal() const {
   return order_5_optimal;
 }
 
-inline void SPRKIntegrator::Initialize(Coefficients const& coefficients) {
+template<typename Position, typename Momentum>
+inline void SPRKIntegrator<Position, Momentum>::Initialize(
+    Coefficients const& coefficients) {
 #ifndef _MANAGED
   CHECK_EQ(2, coefficients.size());
 #endif
@@ -69,9 +73,10 @@ inline void SPRKIntegrator::Initialize(Coefficients const& coefficients) {
   }
 }
 
+template<typename Position, typename
 template<typename AutonomousRightHandSideComputation,
          typename RightHandSideComputation>
-void SPRKIntegrator::Solve(
+void SPRKIntegrator<Position, Momentum>::Solve(
       RightHandSideComputation compute_force,
       AutonomousRightHandSideComputation compute_velocity,
       Parameters const& parameters,
@@ -81,20 +86,20 @@ void SPRKIntegrator::Solve(
 #endif
 
   int const dimension = parameters.q0.size();
-  std::unique_ptr<std::vector<double>> q_error(
+  std::unique_ptr<std::vector<Position>> q_error(
       PointerOrNew(dimension, parameters.q_error));
-  std::unique_ptr<std::vector<double>> p_error(
+  std::unique_ptr<std::vector<Momentum>> p_error(
       PointerOrNew(dimension, parameters.p_error));
-  double t_error = parameters.t_error;
+  Time t_error = parameters.t_error;
 
-  std::vector<double> Δqstage0(dimension);
-  std::vector<double> Δqstage1(dimension);
-  std::vector<double> Δpstage0(dimension);
-  std::vector<double> Δpstage1(dimension);
-  std::vector<double>* Δqstage_current = &Δqstage1;
-  std::vector<double>* Δqstage_previous = &Δqstage0;
-  std::vector<double>* Δpstage_current = &Δpstage1;
-  std::vector<double>* Δpstage_previous = &Δpstage0;
+  std::vector<Position> Δqstage0(dimension);
+  std::vector<Position> Δqstage1(dimension);
+  std::vector<Momentum> Δpstage0(dimension);
+  std::vector<Momentum> Δpstage1(dimension);
+  std::vector<Position>* Δqstage_current = &Δqstage1;
+  std::vector<Position>* Δqstage_previous = &Δqstage0;
+  std::vector<Momentum>* Δpstage_current = &Δpstage1;
+  std::vector<Momentum>* Δpstage_previous = &Δpstage0;
 
   // Dimension the result.
   int const capacity = parameters.sampling_period == 0 ?
@@ -113,15 +118,15 @@ void SPRKIntegrator::Solve(
     solution->momentum[k].quantities.reserve(capacity);
   }
 
-  std::vector<double> q_last(parameters.q0);
-  std::vector<double> p_last(parameters.p0);
-  double t_last = parameters.t0;
+  std::vector<Position> q_last(parameters.q0);
+  std::vector<Momentum> p_last(parameters.p0);
+  Time t_last = parameters.t0;
   int sampling_phase = 0;
 
-  std::vector<double> q_stage(dimension);
-  std::vector<double> p_stage(dimension);
-  double tn = parameters.t0;  // Current time.
-  double const h = parameters.Δt;  // Constant for now.
+  std::vector<Position> q_stage(dimension);
+  std::vector<Momentum> p_stage(dimension);
+  Time tn = parameters.t0;  // Current time.
+  Time const h = parameters.Δt;  // Constant for now.
   std::vector<double> f(dimension);  // Current forces.
   std::vector<double> v(dimension);  // Current velocities.
 
@@ -150,13 +155,13 @@ void SPRKIntegrator::Solve(
       // another.
       compute_force(tn + c_[i] * h, q_stage, &f);
       for (int k = 0; k < dimension; ++k) {
-        double const Δp = (*Δpstage_previous)[k] + h * b_[i] * f[k];
+        Momentum const Δp = (*Δpstage_previous)[k] + h * b_[i] * f[k];
         p_stage[k] = p_last[k] + Δp;
         (*Δpstage_current)[k] = Δp;
       }
       compute_velocity(p_stage, &v);
       for (int k = 0; k < dimension; ++k) {
-        double const Δq = (*Δqstage_previous)[k] + h * a_[i] * v[k];
+        Position const Δq = (*Δqstage_previous)[k] + h * a_[i] * v[k];
         q_stage[k] = q_last[k] + Δq;
         (*Δqstage_current)[k] = Δq;
       }
@@ -164,17 +169,17 @@ void SPRKIntegrator::Solve(
     // Compensated summation from "'SymplecticPartitionedRungeKutta' Method
     // for NDSolve", algorithm 2.
     for (int k = 0; k < dimension; ++k) {
-      double const Δq = (*Δqstage_current)[k] + (*q_error)[k];
+      Position const Δq = (*Δqstage_current)[k] + (*q_error)[k];
       q_stage[k] = q_last[k] + Δq;
       (*q_error)[k] = (q_last[k] - q_stage[k]) + Δq;
       q_last[k] = q_stage[k];
-      double const Δp = (*Δpstage_current)[k] + (*p_error)[k];
+      Momentum const Δp = (*Δpstage_current)[k] + (*p_error)[k];
       p_stage[k] = p_last[k] + Δp;
       (*p_error)[k] = (p_last[k] - p_stage[k]) + Δp;
       p_last[k] = p_stage[k];
     }
 
-    double const δt = h + t_error;
+    Time const δt = h + t_error;
     tn += δt;
     t_error = (t_last - tn) + δt;
     t_last = tn;
