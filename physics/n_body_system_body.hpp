@@ -6,7 +6,6 @@
 
 #include "geometry/r3_element.hpp"
 #include "integrators/symplectic_partitioned_runge_kutta_integrator.hpp"
-#include "physics/frame.hpp"
 #include "quantities/quantities.hpp"
 
 // TODO(phl): This is a header file, you're polluting the root namespace!
@@ -54,19 +53,23 @@ std::vector<double> ToDouble(Vector<Scalar, Frame> const& vector) {
 
 }  // namespace
 
-NBodySystem::NBodySystem(std::vector<Body<InertialFrame>*> const* bodies)
-    : bodies_(bodies) {}
+template<typename InertialFrame>
+NBodySystem<InertialFrame>::NBodySystem(
+    std::vector<Body<InertialFrame>*> const* bodies) : bodies_(bodies) {}
 
-NBodySystem::~NBodySystem() {
+template<typename InertialFrame>
+NBodySystem<InertialFrame>::~NBodySystem() {
   for (Body<InertialFrame>* body : *bodies_) {
     delete body;
   }
 }
 
-void NBodySystem::Integrate(SymplecticIntegrator const& integrator,
-                            Time const& tmax,
-                            Time const& Δt,
-                            int const sampling_period) {
+
+template<typename InertialFrame>
+void NBodySystem<InertialFrame>::Integrate(SymplecticIntegrator const& integrator,
+                                           Time const& tmax,
+                                           Time const& Δt,
+                                           int const sampling_period) {
   using quantities::SIUnit;
   SymplecticIntegrator::Parameters parameters;
   SymplecticIntegrator::Solution solution;
@@ -134,7 +137,8 @@ void NBodySystem::Integrate(SymplecticIntegrator const& integrator,
   }
 }
 
-void NBodySystem::ComputeGravitationalAccelerations(
+template<typename InertialFrame>
+void NBodySystem<InertialFrame>::ComputeGravitationalAccelerations(
     double const t,
     std::vector<double> const& q,
     std::vector<double>* result) const {
@@ -177,8 +181,10 @@ void NBodySystem::ComputeGravitationalAccelerations(
   }
 }
 
-void NBodySystem::ComputeGravitationalVelocities(std::vector<double> const& p,
-                                                 std::vector<double>* result) {
+template<typename InertialFrame>
+void NBodySystem<InertialFrame>::ComputeGravitationalVelocities(
+    std::vector<double> const& p,
+    std::vector<double>* result) {
   *result = p;
 }
 

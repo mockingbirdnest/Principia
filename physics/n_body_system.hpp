@@ -5,7 +5,6 @@
 
 #include "integrators/symplectic_integrator.hpp"
 #include "physics/body.hpp"
-#include "physics/frame.hpp"
 #include "quantities/quantities.hpp"
 
 using principia::integrators::SymplecticIntegrator;
@@ -14,6 +13,7 @@ using principia::quantities::Time;
 namespace principia {
 namespace physics {
 
+template<typename InertialFrame>
 class NBodySystem {
  public:
   // Takes ownership of the set and the bodies.

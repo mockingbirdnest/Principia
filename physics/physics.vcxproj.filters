@@ -24,9 +24,6 @@
     <ClInclude Include="n_body_system.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="frame.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="n_body_system_body.hpp">
       <Filter>Source Files</Filter>
     </ClInclude>
