@@ -1,18 +1,25 @@
-#pragma once
+﻿#pragma once
 
 #include "physics/n_body_system.hpp"
 
 namespace principia {
 namespace benchmarks {
 
-// Simulates the 18 largest solar system bodies (Pluto and all larger bodies)
-// over Sir Isaac Newton's life (1643-01-04T00:00:00Z/1727-03-21T00:00:00Z, in
-// Julian date JD2321156.5 to JD2351912.5)
-// The integration is performed in  the ICRF/J2000.0 reference frame, the origin
-// is the barycentre of the solar system, the reference plane is the ecliptic
-// mean and mean equinox of J2000.0.
+// ICRF/J2000.0 reference frame.
+// The reference epoch is J2000.0
+// The xy plane is the plane of the Earth's orbit at the reference epoch.
+// The x axis is out along ascending node of instantaneous plane of the Earth's
+// orbit and the Earth's mean equator at the reference epoch.
+// The z axis is perpendicular to the xy-plane in the directional (+ or -) sense
+// of Earth's north pole at the reference epoch.
+// The reference frame is direct.
+struct ICRFJ2000EclipticFrame;
+
+// A system containing the 18 largest solar system bodies (Pluto and all larger
+// bodies) at the time of the launch of Простейший Спутник-1,
+// 1957-10-04T19:28:34Z (JD2436116.3115).
 // All data is from the Jet Propulsion Laboratory's HORIZONS system.
-void SolarSystem1643To1727();
+physics::NBodySystem<ICRFJ2000EclipticFrame> SolarSystemAtSputnikLaunch();
 
 }  // namespace benchmarks
 }  // namespace principia
