@@ -11,6 +11,8 @@
 #include "glog/logging.h"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
+#include "quantities/quantities.hpp"
+#include "quantities/named_quantities.hpp"
 #include "testing_utilities/numerical_analysis.hpp"
 #include "testing_utilities/numerics.hpp"
 #include "testing_utilities/statistics.hpp"
@@ -18,12 +20,14 @@
 using principia::quantities::Abs;
 using principia::quantities::AngularFrequency;
 using principia::quantities::Energy;
+using principia::quantities::Force;
 using principia::quantities::Length;
 using principia::quantities::Mass;
 using principia::quantities::Momentum;
 using principia::quantities::Pow;
 using principia::quantities::Power;
 using principia::quantities::SIUnit;
+using principia::quantities::Speed;
 using principia::quantities::Stiffness;
 using principia::quantities::Time;
 using principia::testing_utilities::AbsoluteError;
@@ -85,8 +89,8 @@ TEST_F(SPRKTest, HarmonicOscillator) {
   }
   LOG(INFO) << "q_error = " << q_error;
   LOG(INFO) << "p_error = " << p_error;
-  EXPECT_THAT(q_error, Lt(2E-16 * parameters_.tmax));
-  EXPECT_THAT(p_error, Lt(2E-16 * parameters_.tmax));
+  EXPECT_THAT(q_error, Lt(2E-16 * parameters_.tmax * SIUnit<Speed>()));
+  EXPECT_THAT(p_error, Lt(2E-16 * parameters_.tmax * SIUnit<Force>()));
 }
 
 TEST_F(SPRKTest, Convergence) {
