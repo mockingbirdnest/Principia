@@ -11,7 +11,7 @@ namespace principia {
 namespace clr_benchmarks_adapter {
 
 void SPRKIntegratorCLRBenchmark::SolveHarmonicOscillator() {
-  SPRKIntegrator::Solution solution;
+  SPRKIntegrator<Length, Momentum>::Solution solution;
   principia::benchmarks::SolveHarmonicOscillator(&solution);
 }
 
