@@ -30,6 +30,7 @@
     <ClCompile Include="algebra_test.cpp" />
     <ClCompile Include="almost_equals_test.cpp" />
     <ClCompile Include="numerics_test.cpp" />
+    <ClCompile Include="solar_system_test.cpp" />
     <ClCompile Include="statistics_test.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">

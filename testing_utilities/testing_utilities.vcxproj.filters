@@ -70,5 +70,8 @@
     <ClCompile Include="statistics_test.cpp">
       <Filter>Test Files</Filter>
     </ClCompile>
+    <ClCompile Include="solar_system_test.cpp">
+      <Filter>Test Files</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

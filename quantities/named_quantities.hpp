@@ -23,6 +23,10 @@ typedef Quotient<Torque, AngularAcceleration> MomentOfInertia;
 
 typedef Product<Length, Product<Speed, Speed>> GravitationalParameter;
 #pragma endregion
+#pragma region Astrodynamics
+typedef Quotient<Energy, Mass>          SpecificEnergy;
+typedef Quotient<AngularMomentum, Mass> SpecificAngularMomentum;
+#pragma endregion
 #pragma region Thermodynamics
 typedef Product<Length, Length>       Area;
 typedef Product<Area, Length>         Volume;
