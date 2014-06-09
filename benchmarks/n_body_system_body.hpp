@@ -196,6 +196,41 @@ void SolarSystem1643To1727() {
                  6.162195631257494E-01 * Kilo(Metre) / Second}),
       t0);
 
+  // Satellite of Neptune.
+  Body<ICRFJ2000EclipticFrame> triton(214.7E20 * Kilogram);
+  triton.AppendToTrajectory(
+      Position({-3.810797098554279E+09 * Kilo(Metre),
+                -2.456691608348630E+09 * Kilo(Metre),
+                 1.381629136719314E+08 * Kilo(Metre)}),
+      Velocity({-1.047462448797063E+00 * Kilo(Metre) / Second,
+                -4.404556713303486E+00 * Kilo(Metre) / Second,
+                 1.914469843538767E+00 * Kilo(Metre) / Second}),
+      t0);
+
+  // Dwarf planet (scattered disc object).
+  // Mass from Brown, Michael E.; Schaller, Emily L. (15 June 2007).
+  // "The Mass of Dwarf Planet Eris", through Wikipedia.
+  Body<ICRFJ2000EclipticFrame> eris(1.67E22 * Kilogram);
+  eris.AppendToTrajectory(
+      Position({ 1.317390066862979E+10 * Kilo(Metre),
+                 2.221403321600002E+09 * Kilo(Metre),
+                -5.736076877456254E+09 * Kilo(Metre)}),
+      Velocity({ 4.161883594267296E-01 * Kilo(Metre) / Second,
+                 1.872714752602233E+00 * Kilo(Metre) / Second,
+                 1.227093842948539E+00 * Kilo(Metre) / Second}),
+      t0);
+
+  // Dwarf planet (Kuiper belt object).
+  Body<ICRFJ2000EclipticFrame> pluto(1.307E22 * Kilogram);
+  pluto.AppendToTrajectory(
+      Position({-4.406985590968750E+09 * Kilo(Metre),
+                 2.448731153209013E+09 * Kilo(Metre),
+                 1.012525975599311E+09 * Kilo(Metre)}),
+      Velocity({-1.319871918266467E+00 * Kilo(Metre) / Second,
+                -5.172112237151897E+00 * Kilo(Metre) / Second,
+                 9.407707128142039E-01 * Kilo(Metre) / Second}),
+      t0);
+
 }
 
 }
