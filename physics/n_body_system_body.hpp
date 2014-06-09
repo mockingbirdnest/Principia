@@ -64,6 +64,11 @@ NBodySystem<InertialFrame>::~NBodySystem() {
   }
 }
 
+template<typename InertialFrame>
+std::vector<Body<InertialFrame>*> const& NBodySystem<InertialFrame>::bodies() {
+  return *bodies_;
+}
+
 
 template<typename InertialFrame>
 void NBodySystem<InertialFrame>::Integrate(
