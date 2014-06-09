@@ -7,7 +7,8 @@
 namespace principia {
 namespace integrators {
 
-class SPRKIntegrator : public SymplecticIntegrator {
+template<typename Position, typename Momentum>
+class SPRKIntegrator : public SymplecticIntegrator<Position, Momentum> {
  public:
   SPRKIntegrator();
   ~SPRKIntegrator() override = default;

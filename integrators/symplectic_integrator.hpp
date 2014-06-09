@@ -2,9 +2,14 @@
 
 #include <vector>
 
+#include "quantities/quantities.hpp"
+
+using principia::quantities::Time;
+
 namespace principia {
 namespace integrators {
 
+template<typename Position, typename Momentum>
 class SymplecticIntegrator {
  public:
   SymplecticIntegrator() = default;
@@ -24,21 +29,21 @@ class SymplecticIntegrator {
   struct Parameters {
     Parameters();
     // The initial positions for each dimension.
-    std::vector<double> q0;
+    std::vector<Position> q0;
     // The initial momenta for each dimension.
-    std::vector<double> p0;
+    std::vector<Momentum> p0;
     // The initial position errors for each dimension, null if no error.
-    std::vector<double>* q_error;
+    std::vector<Position>* q_error;
     // The initial momentum errors for each dimension, null if no error.
-    std::vector<double>* p_error;
+    std::vector<Momentum>* p_error;
     // The starting time of the resolution.
-    double t0;
+    Time t0;
     // The ending time of the resolution.
-    double tmax;
+    Time tmax;
     // The time step.
-    double Δt;
+    Time Δt;
     // The error on the starting time.
-    double t_error;
+    Time t_error;
     // To save memory, we only return a datapoint every sampling_period steps
     // (for trajectory plotting), as well as the result from the last step. If
     // sampling_period == 0, we only return the result from the last step
@@ -54,17 +59,18 @@ class SymplecticIntegrator {
     int sampling_period;
   };
 
+  template<typename Scalar>
   struct TimeseriesAndError {
     // Indexed by time step.
-    std::vector<double> quantities;
-    double error;
+    std::vector<Scalar> quantities;
+    Scalar error;
   };
 
   struct Solution {
     // Indexed by dimension.
-    std::vector<TimeseriesAndError> momentum;
-    std::vector<TimeseriesAndError> position;
-    TimeseriesAndError time;
+    std::vector<TimeseriesAndError<Position>> position;
+    std::vector<TimeseriesAndError<Momentum>> momentum;
+    TimeseriesAndError<Time> time;
   };
 
   // Initialize the integrator with the given |coefficients|.  Must be called

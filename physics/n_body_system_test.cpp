@@ -37,12 +37,12 @@ class NBodySystemTest : public testing::Test {
     body2_ = new Body<EarthMoonBarycentricFrame>(7E22 * SIUnit<Mass>());
     Point<Vector<Length, EarthMoonBarycentricFrame>> const
         q1(Vector<Length, EarthMoonBarycentricFrame>({0 * SIUnit<Length>(),
-                                                      0 * SIUnit<Length>(),
-                                                      0 * SIUnit<Length>()}));
+                                          0 * SIUnit<Length>(),
+                                          0 * SIUnit<Length>()}));
     Point<Vector<Length, EarthMoonBarycentricFrame>> const
         q2(Vector<Length, EarthMoonBarycentricFrame>({0 * SIUnit<Length>(),
-                                                      4E8 * SIUnit<Length>(),
-                                                      0 * SIUnit<Length>()}));
+                                          4E8 * SIUnit<Length>(),
+                                          0 * SIUnit<Length>()}));
     Point<Vector<Length, EarthMoonBarycentricFrame>> const centre_of_mass =
         Barycentre(q1, body1_->mass(), q2, body2_->mass());
     Length const semi_major_axis = (q1 - q2).Norm();
@@ -105,7 +105,7 @@ class NBodySystemTest : public testing::Test {
 
   Body<EarthMoonBarycentricFrame>* body1_;
   Body<EarthMoonBarycentricFrame>* body2_;
-  SPRKIntegrator integrator_;
+  SPRKIntegrator<Length, Speed> integrator_;
   Time period_;
   std::unique_ptr<NBodySystem<EarthMoonBarycentricFrame>> system_;
 };
