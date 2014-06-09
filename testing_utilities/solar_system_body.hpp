@@ -14,7 +14,7 @@
 namespace principia {
 namespace testing_utilities {
 
-physics::NBodySystem<ICRFJ2000EclipticFrame> SolarSystemAtSputnikLaunch() {
+physics::NBodySystem<ICRFJ2000EclipticFrame>* SolarSystemAtSputnikLaunch() {
   using physics::Body;
   using physics::NBodySystem;
   using quantities::GravitationalParameter;
@@ -262,7 +262,7 @@ physics::NBodySystem<ICRFJ2000EclipticFrame> SolarSystemAtSputnikLaunch() {
       new std::vector<Body<ICRFJ2000EclipticFrame>*> const{
           sun, jupiter, saturn, neptune, uranus, earth, venus, mars, mercury,
           ganymede, titan, callisto, io, moon, europa, triton, eris, pluto});
-  NBodySystem<ICRFJ2000EclipticFrame> result(bodies);
+  return new NBodySystem<ICRFJ2000EclipticFrame>(bodies);
 }
 
 }  // namespace testing_utilities

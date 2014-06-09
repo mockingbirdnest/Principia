@@ -21,25 +21,25 @@ struct ICRFJ2000EclipticFrame;
 // bodies) at the time of the launch of Простейший Спутник-1,
 // 1957-10-04T19:28:34Z (JD2436116.3115).
 // The bodies are in decreasing order of mass,
-//  1. Sun,
-//  2. Jupiter,
-//  3. Saturn,
-//  4. Neptune,
-//  5. Uranus,
-//  6. Earth,
-//  7. Venus,
-//  8. Mars,
-//  9. Mercury,
-// 10. Ganymede,
-// 11. Titan,
-// 12. Callisto,
-// 13. Io,
-// 14. Moon,
-// 15. Europa,
-// 16. Triton,
-// 17. Eris,
-// 18. Pluto.
-physics::NBodySystem<ICRFJ2000EclipticFrame> SolarSystemAtSputnikLaunch();
+//  0. Sun,
+//  1. Jupiter,
+//  2. Saturn,
+//  3. Neptune,
+//  4. Uranus,
+//  5. Earth,
+//  6. Venus,
+//  7. Mars,
+//  8. Mercury,
+//  9. Ganymede,
+// 10. Titan,
+// 11. Callisto,
+// 12. Io,
+// 13. Moon,
+// 14. Europa,
+// 15. Triton,
+// 16. Eris,
+// 17. Pluto.
+physics::NBodySystem<ICRFJ2000EclipticFrame>* SolarSystemAtSputnikLaunch();
 
 }  // namespace testing_utilities
 }  // namespace principia
