@@ -21,6 +21,8 @@
     <ClInclude Include="numerical_analysis_body.hpp" />
     <ClInclude Include="numerics.hpp" />
     <ClInclude Include="numerics_body.hpp" />
+    <ClInclude Include="solar_system_body.hpp" />
+    <ClInclude Include="solar_system.hpp" />
     <ClInclude Include="statistics.hpp" />
     <ClInclude Include="statistics_body.hpp" />
   </ItemGroup>
