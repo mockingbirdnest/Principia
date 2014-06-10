@@ -143,7 +143,7 @@ void NBodySystem<InertialFrame>::ComputeGravitationalAccelerations(
         Exponentiation<Length, 2> const squared_distance =
             Δq0 * Δq0 + Δq1 * Δq1 + Δq2 * Δq2;
         Exponentiation<Length, -3> const multiplier =
-            1 / (squared_distance * Sqrt(squared_distance));
+            Sqrt(squared_distance) / (squared_distance * squared_distance);
 
         if (!body2_is_massless) {
           auto const μ2OverRSquared =
