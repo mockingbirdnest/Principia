@@ -19,7 +19,7 @@ SimulateSolarSystem() {
       integrator,
       testing_utilities::SputnikLaunchDate +
           100 * astronomy::JulianYear,       // t_max
-      1 * si::Day,                           // Δt
+      45 * si::Minute,                       // Δt
       0);                                    // sampling_period
   return system;
 }

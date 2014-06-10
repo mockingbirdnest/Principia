@@ -5,6 +5,9 @@
 #include <vector>
 
 #include "geometry/r3_element.hpp"
+#ifndef _MANAGED
+#include "glog/logging.h"
+#endif
 #include "integrators/symplectic_partitioned_runge_kutta_integrator.hpp"
 #include "quantities/quantities.hpp"
 
@@ -97,7 +100,9 @@ void NBodySystem<InertialFrame>::Integrate(
     if (reference_time == nullptr) {
       reference_time.reset(new Time(time));
     } else {
+#ifndef _MANAGED
       CHECK_EQ(*reference_time, time);
+#endif
     }
   }
 
@@ -112,8 +117,10 @@ void NBodySystem<InertialFrame>::Integrate(
       &ComputeGravitationalVelocities,
       parameters, &solution);
 
+#ifndef _MANAGED
   // TODO(phl): Ignoring errors for now.
   CHECK_EQ(solution.position.size(), solution.momentum.size());
+#endif
   std::vector<double> const& t = solution.time.quantities;
   // Loop over the bodies.
   // TODO(phl): It looks like we are transposing in the integrator and then
@@ -126,12 +133,14 @@ void NBodySystem<InertialFrame>::Integrate(
     std::vector<double> const& p0 = solution.momentum[i + 0].quantities;
     std::vector<double> const& p1 = solution.momentum[i + 1].quantities;
     std::vector<double> const& p2 = solution.momentum[i + 2].quantities;
+#ifndef _MANAGED
     CHECK_EQ(t.size(), q0.size());
     CHECK_EQ(t.size(), q1.size());
     CHECK_EQ(t.size(), q2.size());
     CHECK_EQ(t.size(), p0.size());
     CHECK_EQ(t.size(), p1.size());
     CHECK_EQ(t.size(), p2.size());
+#endif
     for (size_t j = 0; j < t.size(); ++j) {
       Vector<Length, InertialFrame> const position =
           FromDouble<Length, InertialFrame>(q0[j], q1[j], q2[j]);
