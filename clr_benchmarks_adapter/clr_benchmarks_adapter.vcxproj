@@ -11,10 +11,12 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="n_body_system.cpp" />
     <ClCompile Include="quantities.cpp" />
     <ClCompile Include="symplectic_partitioned_runge_kutta_integrator.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="n_body_system.hpp" />
     <ClInclude Include="quantities.hpp" />
     <ClInclude Include="symplectic_partitioned_runge_kutta_integrator.hpp" />
   </ItemGroup>

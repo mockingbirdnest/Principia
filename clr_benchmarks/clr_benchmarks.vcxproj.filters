@@ -20,5 +20,8 @@
     <ClCompile Include="quantities.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="n_body_system.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

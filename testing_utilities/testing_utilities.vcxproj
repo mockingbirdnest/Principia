@@ -21,6 +21,8 @@
     <ClInclude Include="numerical_analysis_body.hpp" />
     <ClInclude Include="numerics.hpp" />
     <ClInclude Include="numerics_body.hpp" />
+    <ClInclude Include="solar_system_body.hpp" />
+    <ClInclude Include="solar_system.hpp" />
     <ClInclude Include="statistics.hpp" />
     <ClInclude Include="statistics_body.hpp" />
   </ItemGroup>
@@ -28,6 +30,7 @@
     <ClCompile Include="algebra_test.cpp" />
     <ClCompile Include="almost_equals_test.cpp" />
     <ClCompile Include="numerics_test.cpp" />
+    <ClCompile Include="solar_system_test.cpp" />
     <ClCompile Include="statistics_test.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
@@ -56,11 +59,13 @@
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
     <Import Project="..\include_solution.props" />
     <Import Project="..\google_test_framework.props" />
+    <Import Project="..\copy_libglog_dll.props" />
   </ImportGroup>
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
     <Import Project="..\include_solution.props" />
     <Import Project="..\google_test_framework.props" />
+    <Import Project="..\copy_libglog_dll.props" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">

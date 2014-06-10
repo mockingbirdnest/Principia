@@ -27,7 +27,7 @@ class StatisticsTest : public testing::Test {
       t_[i] = i / sampling_rate;
       x_[i] = t_[i] * v_ + x0_;
     }
-  };
+  }
 
   size_t const population_size_ = 100;
   Time::Inverse const sampling_rate = 8 / Second;
