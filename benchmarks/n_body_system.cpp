@@ -12,6 +12,8 @@
 // BM_SolarSystem_mean   44732615188 44491485200          5                                 1.0002759262591376e+000 ua  // NOLINT(whitespace/line_length)
 // BM_SolarSystem_stddev  477556136  526812397          5                                 1.0002759262591376e+000 ua  // NOLINT(whitespace/line_length)
 
+#include <vector>
+
 #include "benchmarks/n_body_system.hpp"
 #include "quantities/quantities.hpp"
 #include "quantities/si.hpp"

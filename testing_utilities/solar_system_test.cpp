@@ -1,6 +1,8 @@
 ﻿
 #include "testing_utilities/solar_system.hpp"
 
+#include <string>
+
 #include "geometry/grassmann.hpp"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
@@ -37,7 +39,7 @@ class SolarSystemTest : public testing::Test {
                                      secondary.gravitational_parameter();
     Vector<Length, ICRFJ2000EclipticFrame> const r =
         primary.positions().back() - secondary.positions().back();
-    Vector<Speed, ICRFJ2000EclipticFrame> const v = 
+    Vector<Speed, ICRFJ2000EclipticFrame> const v =
         primary.velocities().back() - secondary.velocities().back();
     SpecificEnergy const ε = Pow<2>(v.Norm()) / 2 - μ / r.Norm();
     return -μ / (2 * ε);
@@ -71,7 +73,7 @@ class SolarSystemTest : public testing::Test {
                                      secondary.gravitational_parameter();
     Vector<Length, ICRFJ2000EclipticFrame> const r =
         tertiary.positions().back() - secondary.positions().back();
-    Vector<Speed, ICRFJ2000EclipticFrame> const v = 
+    Vector<Speed, ICRFJ2000EclipticFrame> const v =
         tertiary.velocities().back() - secondary.velocities().back();
     Bivector<SpecificAngularMomentum, ICRFJ2000EclipticFrame> const h =
         Wedge(r, v) / Radian;
@@ -132,8 +134,7 @@ TEST_F(SolarSystemTest, Hierarchy) {
   TestStronglyBoundOrbit(5.811592E-02, 1E-6, moon, earth, &sun, "moon");
   // Using center: Neptune (body center) [500@899]
   TestStronglyBoundOrbit(1.587851E-05, 2E-1, triton, neptune, &sun, "triton");
-
 }
 
-}
-}
+}  // namespace testing_utilities
+}  // nampespace principia
