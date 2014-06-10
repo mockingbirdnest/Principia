@@ -57,13 +57,14 @@ class SolarSystemTest : public testing::Test {
   }
 
   // Tests whether |tertiary| orbits |secondary| in an orbit with excentricity
-  // less than |max_excentricity| and, if |primary| is not null, tests that
-  // |tertiary| is within the Laplace sphere of |secondary| with respect to
-  // |*primary|.
+  // |excentricity| within |relative_error| and, if |primary| is not null, tests
+  // that |tertiary| is within the Laplace sphere of |secondary| with respect
+  // to |*primary|.
   void TestStronglyBoundOrbit(
       double excentricity,
-      Body<ICRFJ2000EclipticFrame> const tertiary,
-      Body<ICRFJ2000EclipticFrame> const secondary,
+      double relative_error,
+      Body<ICRFJ2000EclipticFrame> const& tertiary,
+      Body<ICRFJ2000EclipticFrame> const& secondary,
       Body<ICRFJ2000EclipticFrame> const* const primary,
       std::string message) {
     GravitationalParameter const μ = tertiary.gravitational_parameter() +
@@ -76,7 +77,7 @@ class SolarSystemTest : public testing::Test {
         Wedge(r, v) / Radian;
     SpecificEnergy const ε = Pow<2>(v.Norm()) / 2 - μ / r.Norm();
     double e = Sqrt(1 + 2 * ε * Pow<2>(h.Norm() * Radian) / Pow<2>(μ));
-    EXPECT_THAT(RelativeError(excentricity, e), Lt(1E-6)) << message;
+    EXPECT_THAT(RelativeError(excentricity, e), Lt(relative_error)) << message;
     if (primary != nullptr) {
       EXPECT_THAT(r.Norm(), Lt(LaplaceSphereRadiusRadius(*primary, secondary)));
     }
@@ -105,18 +106,33 @@ TEST_F(SolarSystemTest, Hierarchy) {
   Body<ICRFJ2000EclipticFrame> const& eris     = *system_->bodies()[16];
   Body<ICRFJ2000EclipticFrame> const& pluto    = *system_->bodies()[17];
   // Reference excentricities frm HORIZONS, truncated.
-  // Using center : Sun (body center) [500@10].
-  TestStronglyBoundOrbit(4.864297E-02, jupiter, sun, nullptr, "jupiter");
-  TestStronglyBoundOrbit(5.227008E-02, saturn, sun, nullptr, "saturn");
-  TestStronglyBoundOrbit(2.798871E-03, neptune, sun, nullptr, "neptune");
-  TestStronglyBoundOrbit(5.010917E-02, uranus, sun, nullptr, "uranus");
-  TestStronglyBoundOrbit(1.699349E-02, earth, sun, nullptr, "earth");
-  TestStronglyBoundOrbit(6.797882E-03, venus, sun, nullptr, "venus");
-  TestStronglyBoundOrbit(9.336207E-02, mars, sun, nullptr, "mars");
-  TestStronglyBoundOrbit(2.056249E-01, mercury, sun, nullptr, "mercury");
-  TestStronglyBoundOrbit(2.545944E-01, pluto, sun, nullptr, "pluto");
-  // Using center : Jupiter (body center) [500@599].
-  TestStronglyBoundOrbit(2.825065E-04, ganymede, jupiter, &sun, "ganymede");
+  // Using center: Sun (body center) [500@10].
+  TestStronglyBoundOrbit(4.864297E-02, 1E-6, jupiter, sun, nullptr, "jupiter");
+  TestStronglyBoundOrbit(5.227008E-02, 1E-6, saturn, sun, nullptr, "saturn");
+  TestStronglyBoundOrbit(2.798871E-03, 1E-6, neptune, sun, nullptr, "neptune");
+  TestStronglyBoundOrbit(5.010917E-02, 1E-6, uranus, sun, nullptr, "uranus");
+  TestStronglyBoundOrbit(1.699349E-02, 1E-6, earth, sun, nullptr, "earth");
+  TestStronglyBoundOrbit(6.797882E-03, 1E-6, venus, sun, nullptr, "venus");
+  TestStronglyBoundOrbit(9.336207E-02, 1E-6, mars, sun, nullptr, "mars");
+  TestStronglyBoundOrbit(2.056249E-01, 1E-6, mercury, sun, nullptr, "mercury");
+  TestStronglyBoundOrbit(2.545944E-01, 1E-6, pluto, sun, nullptr, "pluto");
+  TestStronglyBoundOrbit(4.425162E-01, 1E-6, eris, sun, nullptr, "eris");
+  // Using center: Jupiter (body center) [500@599].
+  TestStronglyBoundOrbit(2.825065E-04, 1E-3, ganymede, jupiter, &sun,
+                         "ganymede");
+  TestStronglyBoundOrbit(7.625971E-03, 1E-4, callisto, jupiter, &sun,
+                         "callisto");
+  TestStronglyBoundOrbit(4.333647E-03, 1E-4, io, jupiter, &sun, "io");
+  TestStronglyBoundOrbit(9.077806E-03, 1E-4, europa, jupiter, &sun, "europa");
+  // Using center: Saturn (body center) [500@699].
+  TestStronglyBoundOrbit(2.887478E-02, 1E-6, titan, saturn, &sun, "titan");
+  // Using center: Geocentric [500].
+  TestStronglyBoundOrbit(5.811592E-02, 1E-6, moon, earth, &sun, "moon");
+  // Using center: Geocentric [500].
+  TestStronglyBoundOrbit(5.811592E-02, 1E-6, moon, earth, &sun, "moon");
+  // Using center: Neptune (body center) [500@899]
+  TestStronglyBoundOrbit(1.587851E-05, 2E-1, triton, neptune, &sun, "triton");
+
 }
 
 }
