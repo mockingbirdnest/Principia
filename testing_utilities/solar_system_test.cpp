@@ -28,9 +28,9 @@ namespace testing_utilities {
 
 class SolarSystemTest : public testing::Test {
  protected:
-   void SetUp() {
-     system_.reset(SolarSystemAtSputnikLaunch());
-   }
+  void SetUp() {
+    system_.reset(SolarSystemAtSputnikLaunch());
+  }
   // The maximal separation of |primary| and |secondary| ignoring the influence
   // of any other bodies.
   Length SemiMajorAxis(Body<ICRFJ2000EclipticFrame> const& primary,
@@ -137,4 +137,4 @@ TEST_F(SolarSystemTest, Hierarchy) {
 }
 
 }  // namespace testing_utilities
-}  // nampespace principia
+}  // namespace principia
