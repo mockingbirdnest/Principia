@@ -30,9 +30,8 @@ physics::NBodySystem<ICRFJ2000EclipticFrame>* SolarSystemAtSputnikLaunch() {
   typedef Vector<Length, ICRFJ2000EclipticFrame> Position;
   typedef Vector<Speed, ICRFJ2000EclipticFrame> Velocity;
 
-  // Number of days since the JD epoch. JD2436116.3115 is the time of the launch
-  // of Простейший Спутник-1.
-  Time t0 = 2436116.3115 * Day;
+
+  Time t0 = SputnikLaunchDate;
 
   // All data is from the Jet Propulsion Laboratory's HORIZONS system unless
   // otherwise specified.

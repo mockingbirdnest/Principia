@@ -3,6 +3,7 @@
 #include <vector>
 
 #include "physics/n_body_system.hpp"
+#include "quantities/quantities.hpp"
 
 namespace principia {
 namespace testing_utilities {
@@ -40,6 +41,10 @@ struct ICRFJ2000EclipticFrame;
 // 16. Eris,
 // 17. Pluto.
 physics::NBodySystem<ICRFJ2000EclipticFrame>* SolarSystemAtSputnikLaunch();
+
+// Number of days since the JD epoch. JD2436116.3115 is the time of the launch
+// of Простейший Спутник-1.
+quantities::Time const SputnikLaunchDate = 2436116.3115 * si::Day;
 
 }  // namespace testing_utilities
 }  // namespace principia

@@ -1,7 +1,7 @@
 namespace principia {
 namespace integrators {
 
-SymplecticIntegrator::Parameters::Parameters()
+inline SymplecticIntegrator::Parameters::Parameters()
     : p_error(nullptr),
       q_error(nullptr),
       t_error(0) {}

@@ -89,6 +89,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="n_body_system.cpp" />
     <ClCompile Include="quantities.cpp" />
     <ClCompile Include="symplectic_partitioned_runge_kutta_integrator.cpp" />
   </ItemGroup>
