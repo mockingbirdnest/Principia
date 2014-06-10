@@ -129,20 +129,22 @@ void NBodySystem<InertialFrame>::ComputeGravitationalAccelerations(
 
   // TODO(phl): Used to deal with proper accelerations here.
   for (size_t b1 = 0; b1 < bodies_->size(); ++b1) {
+     Body<InertialFrame> const& body1 = *(*bodies_)[b1];
     for (size_t b2 = b1 + 1; b2 < bodies_->size(); ++b2) {
-      if (!(*bodies_)[b1]->is_massless() || !(*bodies_)[b2]->is_massless()) {
+      Body<InertialFrame> const& body2 = *(*bodies_)[b2];
+      if (!body1.is_massless() || !body2.is_massless()) {
         Length const Δq0 = q[3 * b1] - q[3 * b2];
         Length const Δq1 = q[3 * b1 + 1] - q[3 * b2 + 1];
         Length const Δq2 = q[3 * b1 + 2] - q[3 * b2 + 2];
 
         Exponentiation<Length, 2> const squared_distance =
             Δq0 * Δq0 + Δq1 * Δq1 + Δq2 * Δq2;
-        Exponentiation<Length, 3> const denominator =
-            squared_distance * Sqrt(squared_distance);
+        Exponentiation<Length, -3> const multiplier =
+            1 / (squared_distance * Sqrt(squared_distance));
 
-        if (!(*bodies_)[b2]->is_massless()) {
+        if (!body2.is_massless()) {
           auto const μ2OverRSquared =
-              (*bodies_)[b2]->gravitational_parameter() / denominator;
+              body2.gravitational_parameter() * multiplier;
           (*result)[3 * b1] -= Δq0 * μ2OverRSquared;
           (*result)[3 * b1 + 1] -= Δq1 * μ2OverRSquared;
           (*result)[3 * b1 + 2] -= Δq2 * μ2OverRSquared;
@@ -150,9 +152,9 @@ void NBodySystem<InertialFrame>::ComputeGravitationalAccelerations(
         // Lex. III. Actioni contrariam semper & æqualem esse reactionem:
         // sive corporum duorum actiones in se mutuo semper esse æquales &
         // in partes contrarias dirigi.
-        if (!(*bodies_)[b1]->is_massless()) {
+        if (!body1.is_massless()) {
           auto const μ1OverRSquared =
-              (*bodies_)[b1]->gravitational_parameter() / denominator;
+              body1.gravitational_parameter() * multiplier;
           (*result)[3 * b2] += Δq0 * μ1OverRSquared;
           (*result)[3 * b2 + 1] += Δq1 * μ1OverRSquared;
           (*result)[3 * b2 + 2] += Δq2 * μ1OverRSquared;
