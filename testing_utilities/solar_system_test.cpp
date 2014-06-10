@@ -29,7 +29,7 @@ namespace testing_utilities {
 class SolarSystemTest : public testing::Test {
  protected:
   void SetUp() {
-    system_.reset(SolarSystemAtSputnikLaunch());
+    system_ = SolarSystemAtСпутникLaunch();
   }
   // The maximal separation of |primary| and |secondary| ignoring the influence
   // of any other bodies.
@@ -81,7 +81,9 @@ class SolarSystemTest : public testing::Test {
     double e = Sqrt(1 + 2 * ε * Pow<2>(h.Norm() * Radian) / Pow<2>(μ));
     EXPECT_THAT(RelativeError(excentricity, e), Lt(relative_error)) << message;
     if (primary != nullptr) {
-      EXPECT_THAT(r.Norm(), Lt(LaplaceSphereRadiusRadius(*primary, secondary)));
+      EXPECT_THAT(r.Norm(),
+                  Lt(LaplaceSphereRadiusRadius(*primary,
+                                               secondary))) << message;
     }
   }
 
@@ -107,7 +109,7 @@ TEST_F(SolarSystemTest, Hierarchy) {
   Body<ICRFJ2000EclipticFrame> const& triton   = *system_->bodies()[15];
   Body<ICRFJ2000EclipticFrame> const& eris     = *system_->bodies()[16];
   Body<ICRFJ2000EclipticFrame> const& pluto    = *system_->bodies()[17];
-  // Reference excentricities frm HORIZONS, truncated.
+  // Reference excentricities from HORIZONS, truncated.
   // Using center: Sun (body center) [500@10].
   TestStronglyBoundOrbit(4.864297E-02, 1E-6, jupiter, sun, nullptr, "jupiter");
   TestStronglyBoundOrbit(5.227008E-02, 1E-6, saturn, sun, nullptr, "saturn");

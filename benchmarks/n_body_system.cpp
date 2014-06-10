@@ -12,6 +12,7 @@
 // BM_SolarSystem_mean   44732615188 44491485200          5                                 1.0002759262591376e+000 ua  // NOLINT(whitespace/line_length)
 // BM_SolarSystem_stddev  477556136  526812397          5                                 1.0002759262591376e+000 ua  // NOLINT(whitespace/line_length)
 
+#include <memory>
 #include <vector>
 
 #include "benchmarks/n_body_system.hpp"
@@ -21,21 +22,25 @@
 // Must come last to avoid conflicts when defining the CHECK macros.
 #include "benchmark/benchmark.h"
 
+using principia::testing_utilities::ICRFJ2000EclipticFrame;
+using principia::physics::NBodySystem;
+using principia::quantities::ToString;
+using principia::si::AstronomicalUnit;
+
 namespace principia {
 namespace benchmarks {
 
-static void BM_SolarSystem(
-    benchmark::State& state) {  // NOLINT(runtime/references)>
+void BM_SolarSystem(benchmark::State& state) {  // NOLINT(runtime/references)
   std::vector<quantities::Momentum> output;
   while (state.KeepRunning()) {
-    physics::NBodySystem<testing_utilities::ICRFJ2000EclipticFrame>* system =
-      SimulateSolarSystem();
+    std::unique_ptr<NBodySystem<ICRFJ2000EclipticFrame>> const system =
+        SimulateSolarSystem();
     state.PauseTiming();
     state.SetLabel(
-        quantities::ToString(
+        ToString(
             (system->bodies()[0]->positions().back() -
              system->bodies()[5]->positions().back()).Norm() /
-                si::AstronomicalUnit) + " ua");
+                AstronomicalUnit) + " ua");
     state.ResumeTiming();
   }
 }

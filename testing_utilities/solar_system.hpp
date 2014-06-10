@@ -9,10 +9,10 @@ namespace principia {
 namespace testing_utilities {
 
 // ICRF/J2000.0 reference frame.
-// The reference epoch is J2000.0
+// The reference epoch is J2000.0.
 // The xy plane is the plane of the Earth's orbit at the reference epoch.
-// The x axis is out along ascending node of instantaneous plane of the Earth's
-// orbit and the Earth's mean equator at the reference epoch.
+// The x axis is out along the ascending node of the instantaneous plane of the
+// Earth's orbit and the Earth's mean equator at the reference epoch.
 // The z axis is perpendicular to the xy-plane in the directional (+ or -) sense
 // of Earth's north pole at the reference epoch.
 // The reference frame is direct.
@@ -40,11 +40,12 @@ struct ICRFJ2000EclipticFrame;
 // 15. Triton,
 // 16. Eris,
 // 17. Pluto.
-physics::NBodySystem<ICRFJ2000EclipticFrame>* SolarSystemAtSputnikLaunch();
+std::unique_ptr<physics::NBodySystem<ICRFJ2000EclipticFrame>>
+SolarSystemAtСпутникLaunch();
 
 // Number of days since the JD epoch. JD2436116.3115 is the time of the launch
 // of Простейший Спутник-1.
-quantities::Time const SputnikLaunchDate = 2436116.3115 * si::Day;
+quantities::Time const kСпутникLaunchDate = 2436116.3115 * si::Day;
 
 }  // namespace testing_utilities
 }  // namespace principia

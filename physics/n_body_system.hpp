@@ -23,7 +23,7 @@ class NBodySystem {
   explicit NBodySystem(std::vector<Body<InertialFrame>*> const* bodies);
   ~NBodySystem();
 
-  std::vector<Body<InertialFrame>*> const& bodies();
+  std::vector<Body<InertialFrame>*> const& bodies() const;
 
   // The |integrator| must already have been initialized.
   void Integrate(SymplecticIntegrator<Length, Speed> const& integrator,

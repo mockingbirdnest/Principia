@@ -14,7 +14,8 @@
 namespace principia {
 namespace testing_utilities {
 
-physics::NBodySystem<ICRFJ2000EclipticFrame>* SolarSystemAtSputnikLaunch() {
+std::unique_ptr<physics::NBodySystem<ICRFJ2000EclipticFrame>>
+SolarSystemAtСпутникLaunch() {
   using physics::Body;
   using physics::NBodySystem;
   using quantities::GravitationalParameter;
@@ -31,7 +32,7 @@ physics::NBodySystem<ICRFJ2000EclipticFrame>* SolarSystemAtSputnikLaunch() {
   typedef Vector<Speed, ICRFJ2000EclipticFrame> Velocity;
 
 
-  Time t0 = SputnikLaunchDate;
+  Time const t0 = kСпутникLaunchDate;
 
   // All data is from the Jet Propulsion Laboratory's HORIZONS system unless
   // otherwise specified.
@@ -258,10 +259,10 @@ physics::NBodySystem<ICRFJ2000EclipticFrame>* SolarSystemAtSputnikLaunch() {
   // End of celestial bodies.
 
   std::vector<Body<ICRFJ2000EclipticFrame>*> const* bodies(
-      new std::vector<Body<ICRFJ2000EclipticFrame>*> const{
+      new std::vector<Body<ICRFJ2000EclipticFrame>*>{
           sun, jupiter, saturn, neptune, uranus, earth, venus, mars, mercury,
           ganymede, titan, callisto, io, moon, europa, triton, eris, pluto});
-  return new NBodySystem<ICRFJ2000EclipticFrame>(bodies);
+  return std::make_unique<NBodySystem<ICRFJ2000EclipticFrame>>(bodies);
 }
 
 }  // namespace testing_utilities

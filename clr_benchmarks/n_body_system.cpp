@@ -19,7 +19,7 @@ using principia::clr_benchmarks_adapter::NBodySystemCLRBenchmark;
 namespace principia {
 namespace clr_benchmarks {
 
-static void BM_CLR_SimulateSolarSystem(
+void BM_CLR_SimulateSolarSystem(
     benchmark::State& state) {  // NOLINT(runtime/references)
   while (state.KeepRunning()) {
     NBodySystemCLRBenchmark::SimulateSolarSystem();

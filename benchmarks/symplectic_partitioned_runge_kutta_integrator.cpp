@@ -58,7 +58,7 @@ void SolveHarmonicOscillatorAndComputeError(benchmark::State* state,
   state->ResumeTiming();
 }
 
-static void BM_SolveHarmonicOscillator(
+void BM_SolveHarmonicOscillator(
     benchmark::State& state) {  // NOLINT(runtime/references)
   Length   q_error;
   Momentum p_error;
