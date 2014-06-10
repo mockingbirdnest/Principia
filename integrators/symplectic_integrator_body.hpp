@@ -1,10 +1,10 @@
 namespace principia {
 namespace integrators {
 
-inline SymplecticIntegrator::Parameters::Parameters()
+template<typename Position, typename Momentum>
+SymplecticIntegrator<Position, Momentum>::Parameters::Parameters()
     : p_error(nullptr),
-      q_error(nullptr),
-      t_error(0) {}
+      q_error(nullptr) {}
 
 }  // namespace integrators
 }  // namespace principia

@@ -2,6 +2,15 @@
 
 #include<vector>
 
+#include "quantities/quantities.hpp"
+#include "quantities/named_quantities.hpp"
+
+using principia::quantities::Force;
+using principia::quantities::Length;
+using principia::quantities::Momentum;
+using principia::quantities::Speed;
+using principia::quantities::Time;
+
 // Right-hand sides for various differential equations frequently used to test
 // the properties of integrators.
 
@@ -12,12 +21,12 @@ namespace testing_utilities {
 // q' = p,  |ComputeHarmonicOscillatorVelocity|,
 // p' = -q, |ComputeHarmonicOscillatorForce|.
 
-void ComputeHarmonicOscillatorVelocity(std::vector<double> const& p,
-                                       std::vector<double>* result);
+void ComputeHarmonicOscillatorForce(Time const& t,
+                                    std::vector<Length> const& q,
+                                    std::vector<Force>* result);
 
-void ComputeHarmonicOscillatorForce(double const t,
-                                    std::vector<double> const& q,
-                                    std::vector<double>* result);
+void ComputeHarmonicOscillatorVelocity(std::vector<Momentum> const& p,
+                                       std::vector<Speed>* result);
 
 }  // namespace testing_utilities
 }  // namespace principia

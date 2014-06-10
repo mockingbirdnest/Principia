@@ -13,14 +13,14 @@ physics::NBodySystem<testing_utilities::ICRFJ2000EclipticFrame> *
 SimulateSolarSystem() {
   physics::NBodySystem<testing_utilities::ICRFJ2000EclipticFrame>* system =
     testing_utilities::SolarSystemAtSputnikLaunch();
-  integrators::SPRKIntegrator integrator;
+  integrators::SPRKIntegrator<quantities::Length, quantities::Speed> integrator;
   integrator.Initialize(integrator.Order5Optimal());
   system->Integrate(
       integrator,
       testing_utilities::SputnikLaunchDate +
-          100 * astronomy::JulianYear,       // t_max
-      45 * si::Minute,                       // Δt
-      0);                                    // sampling_period
+          100 * astronomy::JulianYear,        // t_max
+      45 * si::Minute,                        // Δt
+      0);                                     // sampling_period
   return system;
 }
 
