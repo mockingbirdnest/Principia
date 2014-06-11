@@ -134,7 +134,7 @@ void NBodySystem<InertialFrame>::ComputeGravitationalAccelerations(
     for (size_t b2 = b1 + 1; b2 < bodies_->size(); ++b2) {
       Body<InertialFrame> const& body2 = *(*bodies_)[b2];
       bool const body2_is_massless = body2.is_massless();
-      size_t three_b2 = 3 * b2;
+      size_t const three_b2 = 3 * b2;
       if (!body1_is_massless || !body2_is_massless) {
         Length const Δq0 = q[three_b1] - q[three_b2];
         Length const Δq1 = q[three_b1 + 1] - q[three_b2 + 1];
