@@ -14,9 +14,15 @@
     <ClCompile Include="assembly_info.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="principia.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="principia.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="map_render.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
