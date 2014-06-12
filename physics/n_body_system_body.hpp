@@ -19,7 +19,6 @@ using principia::quantities::Exponentiation;
 using principia::quantities::GravitationalParameter;
 using principia::quantities::Length;
 using principia::quantities::Speed;
-using principia::quantities::SIUnit;
 
 namespace principia {
 namespace physics {
