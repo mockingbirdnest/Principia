@@ -72,7 +72,21 @@ void Principia::DrawGUI() {
 }
 
 void Principia::DrawMainWindow(int window_id) {
+  UnityEngine::GUIStyle^ style =
+      gcnew UnityEngine::GUIStyle(UnityEngine::GUI::skin->button);
 
+  style->normal->textColor    = UnityEngine::Color::white;
+  style->focused->textColor   = UnityEngine::Color::white;
+  style->hover->textColor     = UnityEngine::Color::yellow;
+  style->active->textColor    = UnityEngine::Color::yellow;
+  style->onNormal->textColor  = UnityEngine::Color::green;
+  style->onFocused->textColor = UnityEngine::Color::green;
+  style->onHover->textColor   = UnityEngine::Color::green;
+  style->onActive->textColor  = UnityEngine::Color::green;
+  style->padding              = gcnew UnityEngine::RectOffset(8, 8, 8, 8);
+
+  UnityEngine::GUILayout::BeginVertical();
+  UnityEngine::GUILayout::TextArea("Planetarium rotation");
 }
 
 void Principia::DrawReferenceFrameWindow(int window_id) {
