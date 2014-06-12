@@ -25,21 +25,57 @@ namespace principia {
 namespace physics {
 
 template<typename InertialFrame>
-NBodySystem<InertialFrame>::NBodySystem(
-    std::vector<Body<InertialFrame>*> const* bodies)
-    : bodies_(bodies) {}
-
-template<typename InertialFrame>
-NBodySystem<InertialFrame>::~NBodySystem() {
-  for (Body<InertialFrame>* body : *bodies_) {
-    delete body;
+NBodySystem<InertialFrame>::NBodySystem(Bodies const* massive_bodies,
+                                        Bodies const* massless_bodies)
+    : massless_bodies_(massless_bodies),
+      massive_bodies_(massive_bodies) {
+  // Parameter checking.
+  if (massive_bodies_ != nullptr) {
+    for (auto const& body : *massive_bodies_) {
+#ifndef _MANAGED
+      CHECK(!body->is_massless());
+#endif
+      bodies_.push_back(body.get());
+    }
+  }
+  if (massless_bodies_ != nullptr) {
+    for (auto const& body : *massless_bodies_) {
+#ifndef _MANAGED
+      CHECK(body->is_massless());
+#endif
+      bodies_.push_back(body.get());
+    }
   }
 }
 
 template<typename InertialFrame>
-std::vector<Body<InertialFrame>*> const&
+std::vector<Body<InertialFrame> const*>
+NBodySystem<InertialFrame>::massless_bodies() const {
+  std::vector<Body<InertialFrame> const*> result;
+  for (auto const& body : *massless_bodies_) {
+    result.push_back(body.get());
+  }
+  return result;
+}
+
+template<typename InertialFrame>
+std::vector<Body<InertialFrame> const*>
+NBodySystem<InertialFrame>::massive_bodies() const {
+  std::vector<Body<InertialFrame> const*> result;
+  for (auto const& body : *massive_bodies_) {
+    result.push_back(body.get());
+  }
+  return result;
+}
+
+template<typename InertialFrame>
+std::vector<Body<InertialFrame> const*>
 NBodySystem<InertialFrame>::bodies() const {
-  return *bodies_;
+  std::vector<Body<InertialFrame> const*> result;
+  for (auto const& body : bodies_) {
+    result.push_back(body);
+  }
+  return result;
 }
 
 template<typename InertialFrame>
@@ -53,7 +89,7 @@ void NBodySystem<InertialFrame>::Integrate(
 
   // Prepare the input data.
   std::unique_ptr<Time> reference_time;
-  for (Body<InertialFrame> const* body : *bodies_) {
+  for (Body<InertialFrame> const* body : bodies_) {
     R3Element<Length> const& position = body->positions().back().coordinates();
     R3Element<Speed> const& velocity = body->velocities().back().coordinates();
     Time const& time = body->times().back();
@@ -94,7 +130,7 @@ void NBodySystem<InertialFrame>::Integrate(
   // TODO(phl): It looks like we are transposing in the integrator and then
   // transposing here again.
   for (size_t i = 0; i < solution.position.size(); i += 3) {
-    Body<InertialFrame>* body = (*bodies_)[i / 3];
+    Body<InertialFrame>* body = bodies_[i / 3];
     std::vector<Length> const& q0 = solution.position[i + 0].quantities;
     std::vector<Length> const& q1 = solution.position[i + 1].quantities;
     std::vector<Length> const& q2 = solution.position[i + 2].quantities;
@@ -128,11 +164,11 @@ void NBodySystem<InertialFrame>::ComputeGravitationalAccelerations(
   result->assign(result->size(), Acceleration());
 
   // TODO(phl): Used to deal with proper accelerations here.
-  for (size_t b1 = 0, three_b1 = 0; b1 < bodies_->size(); ++b1, three_b1 += 3) {
-    Body<InertialFrame> const& body1 = *(*bodies_)[b1];
+  for (size_t b1 = 0, three_b1 = 0; b1 < bodies_.size(); ++b1, three_b1 += 3) {
+    Body<InertialFrame> const& body1 = *bodies_[b1];
     bool const body1_is_massless = body1.is_massless();
-    for (size_t b2 = b1 + 1; b2 < bodies_->size(); ++b2) {
-      Body<InertialFrame> const& body2 = *(*bodies_)[b2];
+    for (size_t b2 = b1 + 1; b2 < bodies_.size(); ++b2) {
+      Body<InertialFrame> const& body2 = *bodies_[b2];
       bool const body2_is_massless = body2.is_massless();
       size_t const three_b2 = 3 * b2;
       if (!body1_is_massless || !body2_is_massless) {

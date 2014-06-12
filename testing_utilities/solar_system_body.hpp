@@ -258,11 +258,29 @@ SolarSystemAtСпутникLaunch() {
 
   // End of celestial bodies.
 
-  std::vector<Body<ICRFJ2000EclipticFrame>*> const* bodies(
-      new std::vector<Body<ICRFJ2000EclipticFrame>*>{
-          sun, jupiter, saturn, neptune, uranus, earth, venus, mars, mercury,
-          ganymede, titan, callisto, io, moon, europa, triton, eris, pluto});
-  return std::make_unique<NBodySystem<ICRFJ2000EclipticFrame>>(bodies);
+  NBodySystem<ICRFJ2000EclipticFrame>::Bodies* massive_bodies =
+      new NBodySystem<ICRFJ2000EclipticFrame>::Bodies;
+  NBodySystem<ICRFJ2000EclipticFrame>::Bodies* massless_bodies = nullptr;
+  massive_bodies->emplace_back(sun);
+  massive_bodies->emplace_back(jupiter);
+  massive_bodies->emplace_back(saturn);
+  massive_bodies->emplace_back(neptune);
+  massive_bodies->emplace_back(uranus);
+  massive_bodies->emplace_back(earth);
+  massive_bodies->emplace_back(venus);
+  massive_bodies->emplace_back(mars);
+  massive_bodies->emplace_back(mercury);
+  massive_bodies->emplace_back(ganymede);
+  massive_bodies->emplace_back(titan);
+  massive_bodies->emplace_back(callisto);
+  massive_bodies->emplace_back(io);
+  massive_bodies->emplace_back(moon);
+  massive_bodies->emplace_back(europa);
+  massive_bodies->emplace_back(triton);
+  massive_bodies->emplace_back(eris);
+  massive_bodies->emplace_back(pluto);
+  return std::make_unique<NBodySystem<ICRFJ2000EclipticFrame>>(
+      massive_bodies, massless_bodies);
 }
 
 }  // namespace testing_utilities

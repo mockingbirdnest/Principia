@@ -67,8 +67,12 @@ class NBodySystemTest : public testing::Test {
     body2_->AppendToTrajectory(q2 - centre_of_mass,
                                v2 - overall_velocity,
                                0 * SIUnit<Time>());
-    system_.reset(new NBodySystem<EarthMoonBarycentricFrame>(
-        new std::vector<Body<EarthMoonBarycentricFrame>*>({body1_, body2_})));
+    NBodySystem<EarthMoonBarycentricFrame>::Bodies* massive_bodies = 
+        new NBodySystem<EarthMoonBarycentricFrame>::Bodies;
+    massive_bodies->emplace_back(body1_);
+    massive_bodies->emplace_back(body2_);
+    system_.reset(new NBodySystem<EarthMoonBarycentricFrame>(massive_bodies,
+                                                             nullptr));
   }
 
   template<typename Scalar, typename Frame>
