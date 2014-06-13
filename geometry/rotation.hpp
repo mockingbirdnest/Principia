@@ -16,6 +16,7 @@ template<typename FromFrame, typename ToFrame>
 class Rotation : public LinearMap<FromFrame, ToFrame> {
  public:
   Rotation();
+  explicit Rotation(Quaternion const& quaternion);
   template<typename Scalar>
   Rotation(quantities::Angle const& angle,
            Vector<Scalar, FromFrame> const& axis);
@@ -42,8 +43,6 @@ class Rotation : public LinearMap<FromFrame, ToFrame> {
   static Rotation Identity();
 
  private:
-  explicit Rotation(Quaternion const& quaternion);
-
   template<typename Scalar>
   R3Element<Scalar> operator()(R3Element<Scalar> const& r3_element) const;
 

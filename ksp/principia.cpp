@@ -3,11 +3,14 @@
 #include <vector>
 
 #include "geometry/grassmann.hpp"
+#include "geometry/rotation.hpp"
 #include "physics/body.hpp"
 #include "physics/n_body_system.hpp"
 #include "quantities/quantities.hpp"
 #include "quantities/named_quantities.hpp"
 
+using principia::geometry::Quaternion;
+using principia::geometry::Rotation;
 using principia::geometry::Vector;
 using principia::physics::Body;
 using principia::physics::NBodySystem;
@@ -125,13 +128,30 @@ void Principia::SetUpSystem() {
 }
 
 struct World;
+struct UnrotatedWorld;
 
-Vector<Length, IntegrationFrame> IntegrationPosition(CelestialBody^ body);
-Vector<Length, World> WorldPosition(CelestialBody^ body) {
+Rotation<UnrotatedWorld, World> PlanetariumRotation() {
+  UnityEngine::QuaternionD planetarium_rotation = Planetarium::Rotation;
+  return Rotation<UnrotatedWorld, World>(
+      Quaternion(planetarium_rotation.w,
+                 {planetarium_rotation.x,
+                  planetarium_rotation.y,
+                  planetarium_rotation.z}));
+}
+
+Vector<Length, IntegrationFrame> IntegrationPosition(
+    CelestialBody^ const body);
+
+Vector<Length, World> WorldPosition(CelestialBody^ const body) {
   return Vector<Length, World>({
       body->position.x * SIUnit<Length>(),
       body->position.y * SIUnit<Length>(),
       body->position.z * SIUnit<Length>()});
+}
+
+Vector<Length, UnrotatedWorld> UnrotatedWorldPosition(
+    CelestialBody^ const body) {
+  return PlanetariumRotation().Inverse()(WorldPosition(body));
 }
 
 }  // namespace ksp
