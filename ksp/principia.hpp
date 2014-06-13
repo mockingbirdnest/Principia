@@ -33,8 +33,14 @@ public ref class Principia : public UnityEngine::MonoBehaviour {
   void DrawMainWindow(int window_id);
   void DrawReferenceFrameWindow(int window_id);
 
+  void SetUpSystem();
+
   UnityEngine::Rect main_window_position_;
   UnityEngine::Rect reference_frame_window_position_;
+
+  UnityEngine::GUIStyle^ gui_style;
+
+  bool simulating_;
 
   // We own this pointer, but we cannot use |std::unique_ptr| because that's
   // an unmanaged type.

@@ -1,14 +1,36 @@
 #include "ksp/principia.hpp"
 
+#include <vector>
+
+#include "geometry/grassmann.hpp"
 #include "physics/body.hpp"
 #include "physics/n_body_system.hpp"
+#include "quantities/quantities.hpp"
+#include "quantities/named_quantities.hpp"
 
+using principia::geometry::Vector;
+using principia::physics::Body;
 using principia::physics::NBodySystem;
+using principia::quantities::GravitationalParameter;
+using principia::quantities::Length;
+using principia::quantities::SIUnit;
 
 namespace principia {
 namespace ksp {
 
 void Principia::Start() {
+  gui_style = gcnew UnityEngine::GUIStyle(UnityEngine::GUI::skin->button);
+
+  gui_style->normal->textColor    = UnityEngine::Color::white;
+  gui_style->focused->textColor   = UnityEngine::Color::white;
+  gui_style->hover->textColor     = UnityEngine::Color::yellow;
+  gui_style->active->textColor    = UnityEngine::Color::yellow;
+  gui_style->onNormal->textColor  = UnityEngine::Color::green;
+  gui_style->onFocused->textColor = UnityEngine::Color::green;
+  gui_style->onHover->textColor   = UnityEngine::Color::green;
+  gui_style->onActive->textColor  = UnityEngine::Color::green;
+  gui_style->padding              = gcnew UnityEngine::RectOffset(8, 8, 8, 8);
+
   RenderingManager::AddToPostDrawQueue(
       3,                                           // queueSpot
       gcnew Callback(this, &Principia::DrawGUI));  // drawFunction
@@ -72,25 +94,44 @@ void Principia::DrawGUI() {
 }
 
 void Principia::DrawMainWindow(int window_id) {
-  UnityEngine::GUIStyle^ style =
-      gcnew UnityEngine::GUIStyle(UnityEngine::GUI::skin->button);
-
-  style->normal->textColor    = UnityEngine::Color::white;
-  style->focused->textColor   = UnityEngine::Color::white;
-  style->hover->textColor     = UnityEngine::Color::yellow;
-  style->active->textColor    = UnityEngine::Color::yellow;
-  style->onNormal->textColor  = UnityEngine::Color::green;
-  style->onFocused->textColor = UnityEngine::Color::green;
-  style->onHover->textColor   = UnityEngine::Color::green;
-  style->onActive->textColor  = UnityEngine::Color::green;
-  style->padding              = gcnew UnityEngine::RectOffset(8, 8, 8, 8);
-
   UnityEngine::GUILayout::BeginVertical();
   UnityEngine::GUILayout::TextArea("Planetarium rotation");
+  if (UnityEngine::GUILayout::Button(
+          simulating_ ? "Switch to Keplerian" : "Switch to Newtonian")) {
+    simulating_ = !simulating_;
+    if (simulating_) {
+      SetUpSystem();
+    }
+  }
 }
 
 void Principia::DrawReferenceFrameWindow(int window_id) {
 
+}
+
+void Principia::SetUpSystem() {
+  double universal_time = Planetarium::GetUniversalTime();
+  std::vector<Body<IntegrationFrame>*>* const bodies =
+      new std::vector<Body<IntegrationFrame>*>;
+  for each (CelestialBody^ body in FlightGlobals::Bodies) {
+    bodies->push_back(new Body<IntegrationFrame>(
+      body->gravParameter * SIUnit<GravitationalParameter>()));
+    bodies->back()->AppendToTrajectory(
+        {Vector<Length, IntegrationFrame>()},
+        {Vector<Speed, IntegrationFrame>()},
+        universal_time * SIUnit<Time>());
+  }
+  system_ = new NBodySystem<IntegrationFrame>(bodies);
+}
+
+struct World;
+
+Vector<Length, IntegrationFrame> IntegrationPosition(CelestialBody^ body);
+Vector<Length, World> WorldPosition(CelestialBody^ body) {
+  return Vector<Length, World>({
+      body->position.x * SIUnit<Length>(),
+      body->position.y * SIUnit<Length>(),
+      body->position.z * SIUnit<Length>()});
 }
 
 }  // namespace ksp
