@@ -68,7 +68,7 @@ class NBodySystemTest : public testing::Test {
                                v2 - overall_velocity,
                                0 * SIUnit<Time>());
     std::unique_ptr<
-        NBodySystem<EarthMoonBarycentricFrame>::Bodies> massive_bodies( 
+        NBodySystem<EarthMoonBarycentricFrame>::Bodies> massive_bodies(
             new NBodySystem<EarthMoonBarycentricFrame>::Bodies);
     std::unique_ptr<
         NBodySystem<EarthMoonBarycentricFrame>::Bodies> massless_bodies;

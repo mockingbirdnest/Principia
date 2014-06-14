@@ -24,8 +24,9 @@ namespace principia {
 namespace physics {
 
 template<typename InertialFrame>
-NBodySystem<InertialFrame>::NBodySystem(std::unique_ptr<Bodies>&& massive_bodies,
-                                        std::unique_ptr<Bodies>&& massless_bodies)
+NBodySystem<InertialFrame>::NBodySystem(
+    std::unique_ptr<Bodies>&& massive_bodies,
+    std::unique_ptr<Bodies>&& massless_bodies)
     : massless_bodies_(std::move(massless_bodies)),
       massive_bodies_(std::move(massive_bodies)) {
   // Parameter checking.
