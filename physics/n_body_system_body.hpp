@@ -164,41 +164,38 @@ void NBodySystem<InertialFrame>::ComputeGravitationalAccelerations(
   result->assign(result->size(), Acceleration());
 
   // TODO(phl): Used to deal with proper accelerations here.
-  for (size_t b1 = 0, three_b1 = 0; b1 < bodies_.size(); ++b1, three_b1 += 3) {
+  for (size_t b1 = 0, three_b1 = 0;
+       b1 < massive_bodies_->size();
+       ++b1, three_b1 += 3) {
     Body<InertialFrame> const& body1 = *bodies_[b1];
-    bool const body1_is_massless = body1.is_massless();
     for (size_t b2 = b1 + 1; b2 < bodies_.size(); ++b2) {
       Body<InertialFrame> const& body2 = *bodies_[b2];
       bool const body2_is_massless = body2.is_massless();
       size_t const three_b2 = 3 * b2;
-      if (!body1_is_massless || !body2_is_massless) {
-        Length const Δq0 = q[three_b1] - q[three_b2];
-        Length const Δq1 = q[three_b1 + 1] - q[three_b2 + 1];
-        Length const Δq2 = q[three_b1 + 2] - q[three_b2 + 2];
+      Length const Δq0 = q[three_b1] - q[three_b2];
+      Length const Δq1 = q[three_b1 + 1] - q[three_b2 + 1];
+      Length const Δq2 = q[three_b1 + 2] - q[three_b2 + 2];
 
-        Exponentiation<Length, 2> const squared_distance =
-            Δq0 * Δq0 + Δq1 * Δq1 + Δq2 * Δq2;
-        Exponentiation<Length, -3> const multiplier =
-            Sqrt(squared_distance) / (squared_distance * squared_distance);
+      Exponentiation<Length, 2> const squared_distance =
+          Δq0 * Δq0 + Δq1 * Δq1 + Δq2 * Δq2;
+      Exponentiation<Length, -3> const multiplier =
+          Sqrt(squared_distance) / (squared_distance * squared_distance);
 
-        if (!body2_is_massless) {
-          auto const μ2OverRSquared =
-              body2.gravitational_parameter() * multiplier;
-          (*result)[three_b1] -= Δq0 * μ2OverRSquared;
-          (*result)[three_b1 + 1] -= Δq1 * μ2OverRSquared;
-          (*result)[three_b1 + 2] -= Δq2 * μ2OverRSquared;
-        }
-        // Lex. III. Actioni contrariam semper & æqualem esse reactionem:
-        // sive corporum duorum actiones in se mutuo semper esse æquales &
-        // in partes contrarias dirigi.
-        if (!body1_is_massless) {
-          auto const μ1OverRSquared =
-              body1.gravitational_parameter() * multiplier;
-          (*result)[three_b2] += Δq0 * μ1OverRSquared;
-          (*result)[three_b2 + 1] += Δq1 * μ1OverRSquared;
-          (*result)[three_b2 + 2] += Δq2 * μ1OverRSquared;
-        }
+      if (!body2_is_massless) {
+        auto const μ2OverRSquared =
+            body2.gravitational_parameter() * multiplier;
+        (*result)[three_b1] -= Δq0 * μ2OverRSquared;
+        (*result)[three_b1 + 1] -= Δq1 * μ2OverRSquared;
+        (*result)[three_b1 + 2] -= Δq2 * μ2OverRSquared;
       }
+      // Lex. III. Actioni contrariam semper & æqualem esse reactionem:
+      // sive corporum duorum actiones in se mutuo semper esse æquales &
+      // in partes contrarias dirigi.
+      auto const μ1OverRSquared =
+          body1.gravitational_parameter() * multiplier;
+      (*result)[three_b2] += Δq0 * μ1OverRSquared;
+      (*result)[three_b2 + 1] += Δq1 * μ1OverRSquared;
+      (*result)[three_b2 + 2] += Δq2 * μ1OverRSquared;
     }
   }
 }
