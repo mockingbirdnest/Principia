@@ -258,9 +258,9 @@ SolarSystemAtСпутникLaunch() {
 
   // End of celestial bodies.
 
-  NBodySystem<ICRFJ2000EclipticFrame>::Bodies* massive_bodies =
-      new NBodySystem<ICRFJ2000EclipticFrame>::Bodies;
-  NBodySystem<ICRFJ2000EclipticFrame>::Bodies* massless_bodies = nullptr;
+  std::unique_ptr<NBodySystem<ICRFJ2000EclipticFrame>::Bodies> massive_bodies(
+      new NBodySystem<ICRFJ2000EclipticFrame>::Bodies);
+  std::unique_ptr<NBodySystem<ICRFJ2000EclipticFrame>::Bodies> massless_bodies;
   massive_bodies->emplace_back(sun);
   massive_bodies->emplace_back(jupiter);
   massive_bodies->emplace_back(saturn);
@@ -280,7 +280,7 @@ SolarSystemAtСпутникLaunch() {
   massive_bodies->emplace_back(eris);
   massive_bodies->emplace_back(pluto);
   return std::make_unique<NBodySystem<ICRFJ2000EclipticFrame>>(
-      massive_bodies, massless_bodies);
+      std::move(massive_bodies), std::move(massless_bodies));
 }
 
 }  // namespace testing_utilities
