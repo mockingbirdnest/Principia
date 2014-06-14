@@ -75,11 +75,11 @@ class NBodySystemTest : public testing::Test {
   std::string ToMathematicaString(Vector<Scalar, Frame> const& vector) {
     R3Element<Scalar> const& coordinates = vector.coordinates();
     std::string result = "{";
-    result += quantities::ToString(coordinates.x);
+    result += quantities::DebugString(coordinates.x);
     result += ",";
-    result += quantities::ToString(coordinates.y);
+    result += quantities::DebugString(coordinates.y);
     result += ",";
-    result += quantities::ToString(coordinates.z);
+    result += quantities::DebugString(coordinates.z);
     result += "}";
     return result;
   }

@@ -199,6 +199,9 @@ Multivector<Scalar, Frame, Rank>& operator/=(
     double const right);
 
 template<typename Scalar, typename Frame, unsigned int Rank>
+std::string DebugString(Multivector<Scalar, Frame, Rank> const& multivector);
+
+template<typename Scalar, typename Frame, unsigned int Rank>
 std::ostream& operator<<(std::ostream& out,
                          Multivector<Scalar, Frame, Rank> const& multivector);
 

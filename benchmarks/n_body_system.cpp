@@ -24,7 +24,7 @@
 
 using principia::testing_utilities::ICRFJ2000EclipticFrame;
 using principia::physics::NBodySystem;
-using principia::quantities::ToString;
+using principia::quantities::DebugString;
 using principia::si::AstronomicalUnit;
 
 namespace principia {
@@ -37,7 +37,7 @@ void BM_SolarSystem(benchmark::State& state) {  // NOLINT(runtime/references)
         SimulateSolarSystem();
     state.PauseTiming();
     state.SetLabel(
-        ToString(
+        DebugString(
             (system->bodies()[0]->positions().back() -
              system->bodies()[5]->positions().back()).Norm() /
                 AstronomicalUnit) + " ua");

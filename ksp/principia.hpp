@@ -42,6 +42,8 @@ public ref class Principia : public UnityEngine::MonoBehaviour {
 
   bool simulating_;
 
+  CelestialBody^ sun_;
+
   // We own this pointer, but we cannot use |std::unique_ptr| because that's
   // an unmanaged type.
   physics::NBodySystem<IntegrationFrame>* system_ = nullptr;

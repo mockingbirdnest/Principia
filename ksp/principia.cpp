@@ -1,14 +1,17 @@
 #include "ksp/principia.hpp"
 
+#include <string>
 #include <vector>
 
 #include "geometry/grassmann.hpp"
 #include "geometry/rotation.hpp"
+#include <msclr/marshal.h>
 #include "physics/body.hpp"
 #include "physics/n_body_system.hpp"
 #include "quantities/quantities.hpp"
 #include "quantities/named_quantities.hpp"
 
+using principia::geometry::DebugString;
 using principia::geometry::Quaternion;
 using principia::geometry::Rotation;
 using principia::geometry::Vector;
@@ -17,6 +20,11 @@ using principia::physics::NBodySystem;
 using principia::quantities::GravitationalParameter;
 using principia::quantities::Length;
 using principia::quantities::SIUnit;
+
+#define LOG_UNITY(message) UnityEngine::Debug::Log(                            \
+    gcnew System::String(                                                      \
+        (std::string(__FILE__) + ":" + std::to_string(__LINE__) + ", in " +    \
+         __FUNCSIG__ + "]" + (message)).c_str()));
 
 namespace principia {
 namespace ksp {
@@ -112,46 +120,72 @@ void Principia::DrawReferenceFrameWindow(int window_id) {
 
 }
 
+struct World;
+
+template <typename Frame>
+using Displacement = Vector<Length, Frame>;
+template <typename Frame>
+using VelocityChange = Vector<Speed, Frame>;
+
+Displacement<IntegrationFrame> IntegrationPosition(CelestialBody^ const body);
+VelocityChange<IntegrationFrame> IntegrationVelocity(CelestialBody^ const body);
+
 void Principia::SetUpSystem() {
-  double universal_time = Planetarium::GetUniversalTime();
+  Time const universal_time = Planetarium::GetUniversalTime() * SIUnit<Time>();
   std::vector<Body<IntegrationFrame>*>* const bodies =
       new std::vector<Body<IntegrationFrame>*>;
+  sun_ = FlightGlobals::Bodies[0];
   for each (CelestialBody^ body in FlightGlobals::Bodies) {
-    bodies->push_back(new Body<IntegrationFrame>(
-      body->gravParameter * SIUnit<GravitationalParameter>()));
-    bodies->back()->AppendToTrajectory(
-        {Vector<Length, IntegrationFrame>()},
-        {Vector<Speed, IntegrationFrame>()},
-        universal_time * SIUnit<Time>());
+    GravitationalParameter const gravitational_parameter =
+        body->gravParameter * SIUnit<GravitationalParameter>();
+    bodies->push_back(new Body<IntegrationFrame>(gravitational_parameter));
+    Displacement<IntegrationFrame>   const position = IntegrationPosition(body);
+    VelocityChange<IntegrationFrame> const velocity = IntegrationVelocity(body);
+    bodies->back()->AppendToTrajectory({position}, {velocity}, universal_time);
+    msclr::interop::marshal_context^ context =
+      gcnew msclr::interop::marshal_context();
+    LOG_UNITY(std::string("\nAdded CelestialBody ") +
+              context->marshal_as<const char*>(body->name) +
+              "\nGM = " + DebugString(gravitational_parameter) +
+              "\nq  = " + DebugString(position) +
+              "\nv  = " + DebugString(velocity));
+    delete context;
   }
   system_ = new NBodySystem<IntegrationFrame>(bodies);
 }
 
-struct World;
-struct UnrotatedWorld;
-
-Rotation<UnrotatedWorld, World> PlanetariumRotation() {
+Rotation<IntegrationFrame, World> PlanetariumRotation() {
   UnityEngine::QuaternionD planetarium_rotation = Planetarium::Rotation;
-  return Rotation<UnrotatedWorld, World>(
+  return Rotation<IntegrationFrame, World>(
       Quaternion(planetarium_rotation.w,
                  {planetarium_rotation.x,
                   planetarium_rotation.y,
                   planetarium_rotation.z}));
 }
 
-Vector<Length, IntegrationFrame> IntegrationPosition(
-    CelestialBody^ const body);
-
-Vector<Length, World> WorldPosition(CelestialBody^ const body) {
-  return Vector<Length, World>({
-      body->position.x * SIUnit<Length>(),
-      body->position.y * SIUnit<Length>(),
-      body->position.z * SIUnit<Length>()});
+Displacement<World> WorldPosition(CelestialBody^ const body) {
+  Vector3d const position = body->position;
+  return Displacement<World>({
+      position.x * SIUnit<Length>(),
+      position.y * SIUnit<Length>(),
+      position.z * SIUnit<Length>()});
 }
 
-Vector<Length, UnrotatedWorld> UnrotatedWorldPosition(
-    CelestialBody^ const body) {
+Displacement<IntegrationFrame> IntegrationPosition(CelestialBody^ const body) {
   return PlanetariumRotation().Inverse()(WorldPosition(body));
+}
+
+VelocityChange<World> WorldVelocity(CelestialBody^ const body) {
+  Vector3d const frame_velocity = body->GetFrameVel();
+  return VelocityChange<World>({
+      frame_velocity.x * SIUnit<Speed>(),
+      frame_velocity.y * SIUnit<Speed>(),
+      frame_velocity.z * SIUnit<Speed>()});
+}
+
+VelocityChange<IntegrationFrame> IntegrationVelocity(
+    CelestialBody^ const body) {
+  return PlanetariumRotation().Inverse()(WorldVelocity(body));
 }
 
 }  // namespace ksp
