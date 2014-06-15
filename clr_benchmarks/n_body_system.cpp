@@ -1,16 +1,16 @@
 
 // .\Release\clr_benchmarks.exe  --benchmark_repetitions=5 --benchmark_filter=Solar  // NOLINT(whitespace/line_length)
 // Benchmarking on 1 X 3310 MHz CPU
-// 2014/06/14-19:59:24
+// 2014/06/15-10:11:09
 // Benchmark                   Time(ns)    CPU(ns) Iterations
 // ----------------------------------------------------------
-// BM_CLR_SolarSystem        31568664766 31481001800          1
-// BM_CLR_SolarSystem        32741996742 32697809600          1
-// BM_CLR_SolarSystem        32003994919 31933404700          1
-// BM_CLR_SolarSystem        31928994633 31871004300          1
-// BM_CLR_SolarSystem        32342993237 32307807100          1
-// BM_CLR_SolarSystem_mean   32117328859 32058205500          1
-// BM_CLR_SolarSystem_stddev  397613135  413564506          0
+// BM_CLR_SolarSystem        33467878796 33150212500          1
+// BM_CLR_SolarSystem        34258323646 34086218500          1
+// BM_CLR_SolarSystem        32034199215 31933404700          1
+// BM_CLR_SolarSystem        31540147997 31387401200          1
+// BM_CLR_SolarSystem        34020395256 33930217500          1
+// BM_CLR_SolarSystem_mean   33064188982 32897490880          1
+// BM_CLR_SolarSystem_stddev 1085065283 1072688104          0
 #include "benchmark/benchmark.h"
 
 using principia::clr_benchmarks_adapter::NBodySystemCLRBenchmark;
