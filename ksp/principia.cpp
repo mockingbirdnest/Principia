@@ -4,6 +4,7 @@
 #include <vector>
 
 #include "geometry/grassmann.hpp"
+#include "geometry/permutation.hpp"
 #include "geometry/rotation.hpp"
 #include <msclr/marshal.h>
 #include "physics/body.hpp"
@@ -12,6 +13,7 @@
 #include "quantities/named_quantities.hpp"
 
 using principia::geometry::DebugString;
+using principia::geometry::Permutation;
 using principia::geometry::Quaternion;
 using principia::geometry::Rotation;
 using principia::geometry::Vector;
@@ -120,8 +122,6 @@ void Principia::DrawReferenceFrameWindow(int window_id) {
 
 }
 
-struct World;
-
 template <typename Frame>
 using Displacement = Vector<Length, Frame>;
 template <typename Frame>
@@ -130,20 +130,23 @@ using VelocityChange = Vector<Speed, Frame>;
 Displacement<IntegrationFrame> IntegrationPosition(CelestialBody^ const body);
 VelocityChange<IntegrationFrame> IntegrationVelocity(CelestialBody^ const body);
 
+Displacement<IntegrationFrame> IntegrationPosition(Vessel^ const body);
+VelocityChange<IntegrationFrame> IntegrationVelocity(Vessel^ const body);
+
 void Principia::SetUpSystem() {
   Time const universal_time = Planetarium::GetUniversalTime() * SIUnit<Time>();
   std::vector<Body<IntegrationFrame>*>* const bodies =
       new std::vector<Body<IntegrationFrame>*>;
   sun_ = FlightGlobals::Bodies[0];
+  msclr::interop::marshal_context^ context =
+      gcnew msclr::interop::marshal_context();
   for each (CelestialBody^ body in FlightGlobals::Bodies) {
     GravitationalParameter const gravitational_parameter =
         body->gravParameter * SIUnit<GravitationalParameter>();
     bodies->push_back(new Body<IntegrationFrame>(gravitational_parameter));
-    Displacement<IntegrationFrame>   const position = IntegrationPosition(body);
+    Displacement<IntegrationFrame> const   position = IntegrationPosition(body);
     VelocityChange<IntegrationFrame> const velocity = IntegrationVelocity(body);
     bodies->back()->AppendToTrajectory({position}, {velocity}, universal_time);
-    msclr::interop::marshal_context^ context =
-      gcnew msclr::interop::marshal_context();
     LOG_UNITY(std::string("\nAdded CelestialBody ") +
               context->marshal_as<const char*>(body->name) +
               "\nGM = " + DebugString(gravitational_parameter) +
@@ -151,7 +154,26 @@ void Principia::SetUpSystem() {
               "\nv  = " + DebugString(velocity));
     delete context;
   }
+  for each (Vessel^ body in FlightGlobals::Vessels) {
+    bodies->push_back(new Body<IntegrationFrame>(GravitationalParameter()));
+    Displacement<IntegrationFrame> const   position = IntegrationPosition(body);
+    VelocityChange<IntegrationFrame> const velocity = IntegrationVelocity(body);
+    bodies->back()->AppendToTrajectory({position}, {velocity}, universal_time);
+    LOG_UNITY(std::string("\nAdded Vessel ") +
+              context->marshal_as<const char*>(body->name) +
+              "\nq  = " + DebugString(position) +
+              "\nv  = " + DebugString(velocity));
+  }
+  delete context;
   system_ = new NBodySystem<IntegrationFrame>(bodies);
+}
+
+struct World;
+struct AliceWorld;
+
+Permutation<AliceWorld, World> LookingGlass() {
+  UnityEngine::QuaternionD planetarium_rotation = Planetarium::Rotation;
+  return Permutation<AliceWorld, World>(Permutation<AliceWorld, World>::XZY);
 }
 
 Rotation<IntegrationFrame, World> PlanetariumRotation() {
@@ -185,6 +207,35 @@ VelocityChange<World> WorldVelocity(CelestialBody^ const body) {
 
 VelocityChange<IntegrationFrame> IntegrationVelocity(
     CelestialBody^ const body) {
+  return PlanetariumRotation().Inverse()(WorldVelocity(body));
+}
+
+Displacement<AliceWorld> OffsetFromReferenceBody(Vessel^ const body) {
+  Vector3d const result = body->orbitDriver->pos;
+    return Displacement<World>({
+      result.x * SIUnit<Length>(),
+      result.y * SIUnit<Length>(),
+      result.z * SIUnit<Length>()});
+}
+
+Displacement<World> WorldPosition(Vessel^ const body) {
+  return WorldPosition(body->orbitDriver->orbit->referenceBody) +
+      LookingGlass(OffsetFromReferenceBody(body));
+}
+
+Displacement<IntegrationFrame> IntegrationPosition(Vessel^ const body) {
+  return PlanetariumRotation().Inverse()(WorldPosition(body));
+}
+
+VelocityChange<World> WorldVelocity(Vessel^ const body) {
+  Vector3d const frame_velocity = body->orbitDriver->orbit->GetFrameVel();
+  return VelocityChange<World>({
+      frame_velocity.x * SIUnit<Speed>(),
+      frame_velocity.y * SIUnit<Speed>(),
+      frame_velocity.z * SIUnit<Speed>()});
+}
+
+VelocityChange<IntegrationFrame> IntegrationVelocity(Vessel^ const body) {
   return PlanetariumRotation().Inverse()(WorldVelocity(body));
 }
 

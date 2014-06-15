@@ -1,5 +1,7 @@
 #pragma once
 
+#include <map>
+
 #include "physics/body.hpp"
 #include "physics/n_body_system.hpp"
 
@@ -41,6 +43,9 @@ public ref class Principia : public UnityEngine::MonoBehaviour {
   UnityEngine::GUIStyle^ gui_style;
 
   bool simulating_;
+
+  std::map<std::string, physics::Body<IntegrationFrame>*> celestials_;
+  std::map<std::string, physics::Body<IntegrationFrame>*> vessels_;
 
   CelestialBody^ sun_;
 
