@@ -85,7 +85,7 @@ void NBodySystem<InertialFrame>::Integrate(
     Time const& Δt,
     int const sampling_period) {
   SymplecticIntegrator<Length, Speed>::Parameters parameters;
-  SymplecticIntegrator<Length, Speed>::Solution solution;
+  std::vector<SymplecticIntegrator<Length, Speed>::SystemState> solution;
 
   // Prepare the input data.
   std::unique_ptr<Time> reference_time;
@@ -123,9 +123,8 @@ void NBodySystem<InertialFrame>::Integrate(
 
   // TODO(phl): Ignoring errors for now.
   // Loop over the time steps.
-  for (size_t i = 0; i < solution.states.size(); ++i) {
-    SymplecticIntegrator<Length, Speed>::SystemState const& state =
-        solution.states[i];
+  for (size_t i = 0; i < solution.size(); ++i) {
+    SymplecticIntegrator<Length, Speed>::SystemState const& state = solution[i];
     Time const& time = state.t.value;
 #ifndef _MANAGED
     CHECK_EQ(state.q.size(), state.p.size());

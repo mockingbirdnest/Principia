@@ -37,7 +37,7 @@ class SymplecticIntegrator {
     ValueAndError<Time> t;
   };
 
-  // TODO(phl): Rework the struct names, maybe promote them to classes.
+  // TODO(phl): Remove entirely?
   struct Parameters {
     // The initial state of the system.
     SystemState initial;
@@ -60,12 +60,6 @@ class SymplecticIntegrator {
     int sampling_period;
   };
 
-  //TODO(phl):Remove entirely?
-  struct Solution {
-    // Indexed by time step.
-    std::vector<SystemState> states;
-  };
-
   // Initialize the integrator with the given |coefficients|.  Must be called
   // before calling Solve.
   virtual void Initialize(Coefficients const& coefficients) = 0;
@@ -79,7 +73,7 @@ class SymplecticIntegrator {
   // void Solve(RightHandSideComputation const compute_force,
   //            AutonomousRightHandSideComputation const compute_velocity,
   //            Parameters const& parameters,
-  //            Solution* solution);
+  //            std::vector<SystemState>* solution);
 };
 
 }  // namespace integrators

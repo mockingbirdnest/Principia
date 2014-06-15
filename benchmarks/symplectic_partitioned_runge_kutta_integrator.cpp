@@ -36,23 +36,23 @@ namespace benchmarks {
 void SolveHarmonicOscillatorAndComputeError(benchmark::State* state,
                                             Length* q_error,
                                             Momentum* p_error) {
-  SPRKIntegrator<Length, Momentum>::Solution solution;
+  std::vector<SPRKIntegrator<Length, Momentum>::SystemState> solution;
 
   SolveHarmonicOscillator(&solution);
 
   state->PauseTiming();
   *q_error = Length();
   *p_error = Momentum();
-  for (size_t i = 0; i < solution.states.size(); ++i) {
+  for (size_t i = 0; i < solution.size(); ++i) {
     *q_error = std::max(*q_error,
-                        Abs(solution.states[i].q[0].value -
+                        Abs(solution[i].q[0].value -
                             SIUnit<Length>() *
-                            Cos(solution.states[i].t.value *
+                            Cos(solution[i].t.value *
                                 SIUnit<AngularFrequency>())));
     *p_error = std::max(*p_error,
-                        Abs(solution.states[i].p[0].value +
+                        Abs(solution[i].p[0].value +
                             SIUnit<Momentum>() *
-                            Sin(solution.states[i].t.value *
+                            Sin(solution[i].t.value *
                                 SIUnit<AngularFrequency>())));
   }
   state->ResumeTiming();

@@ -66,7 +66,7 @@ void SPRKIntegrator<Position, Momentum>::Solve(
       RightHandSideComputation compute_force,
       AutonomousRightHandSideComputation compute_velocity,
       Parameters const& parameters,
-      Solution* solution) const {
+      std::vector<SystemState>* solution) const {
 #ifndef _MANAGED
   CHECK_NOTNULL(solution);
 #endif
@@ -89,8 +89,8 @@ void SPRKIntegrator<Position, Momentum>::Solve(
         ceil((((parameters.tmax - parameters.initial.t.value) /
                     parameters.Δt) + 1) /
                 parameters.sampling_period)) + 1;
-  solution->states.clear();
-  solution->states.reserve(capacity);
+  solution->clear();
+  solution->reserve(capacity);
 
   std::vector<ValueAndError<Position>> q_last(parameters.initial.q);
   std::vector<ValueAndError<Momentum>> p_last(parameters.initial.p);
@@ -160,16 +160,16 @@ void SPRKIntegrator<Position, Momentum>::Solve(
 
     if (parameters.sampling_period != 0) {
       if (sampling_phase % parameters.sampling_period == 0) {
-        SystemState state;
-        state.t.value = tn;
+        solution->emplace_back();
+        SystemState* state = &solution->back();
+        state->t.value = tn;
         //TODO(phl):At construction?
-        state.q.reserve(dimension);
-        state.p.reserve(dimension);
+        state->q.reserve(dimension);
+        state->p.reserve(dimension);
         for (int k = 0; k < dimension; ++k) {
-          state.q.push_back(q_stage[k]);
-          state.p.push_back(p_stage[k]);
+          state->q.push_back(q_stage[k]);
+          state->p.push_back(p_stage[k]);
         }
-        solution->states.push_back(state);
       }
       ++sampling_phase;
     }
@@ -186,16 +186,16 @@ void SPRKIntegrator<Position, Momentum>::Solve(
 #endif
   }
   if (parameters.sampling_period == 0) {
-    SystemState state;
-    state.t = t_last;
+    solution->emplace_back();
+    SystemState* state = &solution->back();
+    state->t = t_last;
     //TODO(phl):At construction?
-    state.q.reserve(dimension);
-    state.p.reserve(dimension);
+    state->q.reserve(dimension);
+    state->p.reserve(dimension);
     for (int k = 0; k < dimension; ++k) {
-      state.q.push_back(q_last[k]);
-      state.p.push_back(p_last[k]);
+      state->q.push_back(q_last[k]);
+      state->p.push_back(p_last[k]);
     }
-    solution->states.push_back(state);
   }
 
 #ifdef TRACE_SYMPLECTIC_PARTITIONED_RUNGE_KUTTA_INTEGRATOR

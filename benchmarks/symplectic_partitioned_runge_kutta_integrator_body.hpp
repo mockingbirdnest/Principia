@@ -16,7 +16,7 @@ namespace principia {
 namespace benchmarks {
 
 inline void SolveHarmonicOscillator(
-    SPRKIntegrator<Length, Momentum>::Solution* solution) {
+    std::vector<SPRKIntegrator<Length, Momentum>::SystemState>* solution) {
   using principia::testing_utilities::ComputeHarmonicOscillatorForce;
   using principia::testing_utilities::ComputeHarmonicOscillatorVelocity;
   SPRKIntegrator<Length, Momentum> integrator;

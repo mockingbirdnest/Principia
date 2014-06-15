@@ -13,7 +13,7 @@ namespace principia {
 namespace benchmarks {
 
 inline void SolveHarmonicOscillator(
-    SPRKIntegrator<Length, Momentum>::Solution* solution);
+    std::vector<SPRKIntegrator<Length, Momentum>::SystemState>* solution);
 
 }  // namespace benchmarks
 }  // namespace principia

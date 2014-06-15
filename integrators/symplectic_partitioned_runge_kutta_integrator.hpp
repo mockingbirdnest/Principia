@@ -22,7 +22,7 @@ class SPRKIntegrator : public SymplecticIntegrator<Position, Momentum> {
   void Solve(RightHandSideComputation compute_force,
              AutonomousRightHandSideComputation compute_velocity,
              Parameters const& parameters,
-             Solution* solution) const;
+             std::vector<SystemState>* solution) const;
 
  private:
   int stages_;
