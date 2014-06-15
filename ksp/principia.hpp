@@ -1,6 +1,7 @@
 #pragma once
 
 #include <map>
+#include <vector>
 
 #include "physics/body.hpp"
 #include "physics/n_body_system.hpp"
@@ -11,13 +12,32 @@ namespace ksp {
 // The reference frame in which the integration is performed.
 struct IntegrationFrame;
 
+// The reference frame in which the orbits are rendered.
+struct RenderingFrame;
+
 // The type of frame in which the orbits are rendered.
 // Examples given for Earth as the rendering reference body.
-enum class RenderingFrameType {
-  kSurface,     // e.g., Earth surface.
-  kCentric,     // e.g., Geocentric.
-  kBarycentric  // e.g., Sun-Earth barycentre.
+enum RenderingFrameType {
+  kSurface,           // e.g., Earth surface.
+  kCentric,           // e.g., Geocentric.
+  kBarycentric,       // e.g., Sun-Earth barycentre.
 };
+
+std::vector<RenderingFrameType> const kRenderingFrameTypes = {kSurface,
+                                                              kCentric,
+                                                              kBarycentric};
+
+// User-friendly names for the reference frame types.
+std::map<RenderingFrameType, std::string> const kFrameTypeNames =
+    std::map<RenderingFrameType, std::string>{
+        {kSurface, "Surface"},
+        {kCentric, "Centric"},
+        {kBarycentric, "Barycentric rotating"}};
+
+template <typename Frame>
+using Displacement = Vector<Length, Frame>;
+template <typename Frame>
+using VelocityChange = Vector<Speed, Frame>;
 
 [KSPAddon(KSPAddon::Startup::Flight, false)]
 public ref class Principia : public UnityEngine::MonoBehaviour {
@@ -52,19 +72,15 @@ public ref class Principia : public UnityEngine::MonoBehaviour {
   bool simulating_;
 
   CelestialBody^ sun_;
-  CelestialBody^ renderer_reference_body_;
+  CelestialBody^ rendering_reference_body_;
+  RenderingFrameType rendering_frame_type_;
 
   // We own these pointers, but we cannot use |std::unique_ptr| because that's
   // an unmanaged type.
   physics::NBodySystem<IntegrationFrame>* system_ = nullptr;
-  std::map<std::string, physics::Body<IntegrationFrame>*>* celestials_;
-  std::map<std::string, physics::Body<IntegrationFrame>*>* vessels_;
-  std::map<RenderingFrameType, std::string> const* const frame_type_names_ =
-      new std::map<RenderingFrameType, std::string>{
-        {RenderingFrameType::kSurface, "Surface"},
-        {RenderingFrameType::kCentric, "Centric"},
-        {RenderingFrameType::kBarycentric, "Barycentre"},
-      };
+  std::map<std::string,
+           physics::Body<IntegrationFrame>*>* celestials_ = nullptr;
+  std::map<std::string, physics::Body<IntegrationFrame>*>* vessels_ = nullptr;
 };
 
 }  // namespace ksp

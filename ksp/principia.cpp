@@ -77,17 +77,16 @@ void Principia::OnGUI() {
 }
 
 void Principia::OnDestroy() {
-  delete system_;
+  if (system_ != nullptr) {
+    delete system_;
+  }
+  if (celestials_ != nullptr) {
+    delete celestials_;
+  }
+  if (vessels_ != nullptr) {
+    delete vessels_;
+  }
 }
-
-void Foo(int, ... array<int^>^ a) {}
-void Bar(System::String const^ bar);
-/*
-void Principia::DrawGUI() {
-  Foo(1, "bar");
-  Bar("bar");
-}
-*/
 
 void Principia::DrawGUI() {
   UnityEngine::GUI::skin = HighLogic::Skin;
@@ -121,12 +120,13 @@ void Principia::DrawMainWindow(int window_id) {
     }
   }
   UnityEngine::GUILayout::EndVertical();
+  UnityEngine::GUI::DragWindow(UnityEngine::Rect(0.0f, 0.0f, 10000.0f, 20.0f));
 }
 
 // Layout:
 // o Sun        o Surface
 // o Planet 1   o Centric
-// o Planet 2   o Barycentre
+// o Planet 2   o Barycentric rotating
 // o Platet 3
 // ...
 void Principia::DrawReferenceFrameWindow(int window_id) {
@@ -134,22 +134,30 @@ void Principia::DrawReferenceFrameWindow(int window_id) {
   UnityEngine::GUILayout::BeginVertical(UnityEngine::GUILayout::Width(250));
   for each (CelestialBody^ body in FlightGlobals::Bodies) {
     if (UnityEngine::GUILayout::Toggle(
-            renderer_reference_body_ == body,  // value
+            rendering_reference_body_ == body,  // value
             body->name) &&                     // text
-        renderer_reference_body_ != body) {
-      renderer_reference_body_ = body;
+        rendering_reference_body_ != body) {
+      rendering_reference_body_ = body;
     }
   }
   UnityEngine::GUILayout::EndVertical();
   UnityEngine::GUILayout::BeginVertical(
       UnityEngine::GUILayout::ExpandWidth(true));
-
+  for (auto const& type : kRenderingFrameTypes) {
+    // Do not show the barycentric option for the sun, since the sun has no
+    // primary.
+    if ((rendering_reference_body_ != sun_ || type != kBarycentric) &&
+        UnityEngine::GUILayout::Toggle(
+            rendering_frame_type_ == type,                              // value
+            gcnew System::String(kFrameTypeNames.at(type).c_str())) &&  // text
+        rendering_frame_type_ != type) {
+      rendering_frame_type_ = type;
+    }
+  }
+  UnityEngine::GUILayout::EndVertical();
+  UnityEngine::GUILayout::EndHorizontal();
+  UnityEngine::GUI::DragWindow(UnityEngine::Rect(0.0f, 0.0f, 10000.0f, 20.0f));
 }
-
-template <typename Frame>
-using Displacement = Vector<Length, Frame>;
-template <typename Frame>
-using VelocityChange = Vector<Speed, Frame>;
 
 Displacement<IntegrationFrame> IntegrationPosition(CelestialBody^ const body);
 VelocityChange<IntegrationFrame> IntegrationVelocity(CelestialBody^ const body);
@@ -158,11 +166,22 @@ Displacement<IntegrationFrame> IntegrationPosition(Vessel^ const body);
 VelocityChange<IntegrationFrame> IntegrationVelocity(Vessel^ const body);
 
 void Principia::SetUpSystem() {
+  if (system_ != nullptr) {
+    delete system_;
+  }
+  if (celestials_ != nullptr) {
+    delete celestials_;
+  }
+  if (vessels_ != nullptr) {
+    delete vessels_;
+  }
+  celestials_ = new std::map<std::string, Body<IntegrationFrame>*>();
+  vessels_    = new std::map<std::string, Body<IntegrationFrame>*>();
   Time const universal_time = Planetarium::GetUniversalTime() * SIUnit<Time>();
   std::vector<Body<IntegrationFrame>*>* const bodies =
       new std::vector<Body<IntegrationFrame>*>;
   sun_ = FlightGlobals::Bodies[0];
-  renderer_reference_body_ = sun_;
+  rendering_reference_body_ = sun_;
   msclr::interop::marshal_context^ context =
       gcnew msclr::interop::marshal_context();
   for each (CelestialBody^ body in FlightGlobals::Bodies) {
@@ -174,6 +193,8 @@ void Principia::SetUpSystem() {
     VelocityChange<IntegrationFrame> const velocity =
       IntegrationVelocity(body) - IntegrationVelocity(sun_);
     bodies->back()->AppendToTrajectory({position}, {velocity}, universal_time);
+    celestials_->insert({context->marshal_as<const char*>(body->name),
+                         bodies->back()});
     LOG_UNITY(std::string("\nAdded CelestialBody ") +
               context->marshal_as<const char*>(body->name) +
               "\nGM = " + DebugString(gravitational_parameter) +
