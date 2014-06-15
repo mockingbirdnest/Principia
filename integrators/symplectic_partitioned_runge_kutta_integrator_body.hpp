@@ -89,16 +89,8 @@ void SPRKIntegrator<Position, Momentum>::Solve(
         ceil((((parameters.tmax - parameters.initial.t.value) /
                     parameters.Δt) + 1) /
                 parameters.sampling_period)) + 1;
-  solution->time.quantities.clear();
-  solution->time.quantities.reserve(capacity);
-  solution->momentum.resize(dimension);
-  solution->position.resize(dimension);
-  for (int k = 0; k < dimension; ++k) {
-    solution->position[k].quantities.clear();
-    solution->position[k].quantities.reserve(capacity);
-    solution->momentum[k].quantities.clear();
-    solution->momentum[k].quantities.reserve(capacity);
-  }
+  solution->states.clear();
+  solution->states.reserve(capacity);
 
   std::vector<ValueAndError<Position>> q_last(parameters.initial.q);
   std::vector<ValueAndError<Momentum>> p_last(parameters.initial.p);
@@ -168,11 +160,16 @@ void SPRKIntegrator<Position, Momentum>::Solve(
 
     if (parameters.sampling_period != 0) {
       if (sampling_phase % parameters.sampling_period == 0) {
-        solution->time.quantities.push_back(tn);
+        SystemState state;
+        state.t.value = tn;
+        //TODO(phl):At construction?
+        state.q.reserve(dimension);
+        state.p.reserve(dimension);
         for (int k = 0; k < dimension; ++k) {
-          solution->position[k].quantities.push_back(q_stage[k]);
-          solution->momentum[k].quantities.push_back(p_stage[k]);
+          state.q.push_back(q_stage[k]);
+          state.p.push_back(p_stage[k]);
         }
+        solution->states.push_back(state);
       }
       ++sampling_phase;
     }
@@ -189,17 +186,16 @@ void SPRKIntegrator<Position, Momentum>::Solve(
 #endif
   }
   if (parameters.sampling_period == 0) {
-    solution->time.quantities.push_back(tn);
+    SystemState state;
+    state.t = t_last;
+    //TODO(phl):At construction?
+    state.q.reserve(dimension);
+    state.p.reserve(dimension);
     for (int k = 0; k < dimension; ++k) {
-      solution->position[k].quantities.push_back(q_stage[k]);
-      solution->momentum[k].quantities.push_back(p_stage[k]);
+      state.q.push_back(q_last[k]);
+      state.p.push_back(p_last[k]);
     }
-  }
-
-  solution->time.error = t_last.error;
-  for (int k = 0; k < dimension; ++k) {
-    solution->position[k].error = q_last[k].error;
-    solution->momentum[k].error = p_last[k].error;
+    solution->states.push_back(state);
   }
 
 #ifdef TRACE_SYMPLECTIC_PARTITIONED_RUNGE_KUTTA_INTEGRATOR

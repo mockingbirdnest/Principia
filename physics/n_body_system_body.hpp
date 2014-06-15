@@ -121,36 +121,26 @@ void NBodySystem<InertialFrame>::Integrate(
       &ComputeGravitationalVelocities,
       parameters, &solution);
 
-#ifndef _MANAGED
   // TODO(phl): Ignoring errors for now.
-  CHECK_EQ(solution.position.size(), solution.momentum.size());
-#endif
-  std::vector<Time> const& t = solution.time.quantities;
-  // Loop over the bodies.
-  // TODO(phl): It looks like we are transposing in the integrator and then
-  // transposing here again.
-  for (size_t i = 0; i < solution.position.size(); i += 3) {
-    Body<InertialFrame>* body = bodies_[i / 3];
-    std::vector<Length> const& q0 = solution.position[i + 0].quantities;
-    std::vector<Length> const& q1 = solution.position[i + 1].quantities;
-    std::vector<Length> const& q2 = solution.position[i + 2].quantities;
-    std::vector<Speed> const& p0 = solution.momentum[i + 0].quantities;
-    std::vector<Speed> const& p1 = solution.momentum[i + 1].quantities;
-    std::vector<Speed> const& p2 = solution.momentum[i + 2].quantities;
+  // Loop over the time steps.
+  for (size_t i = 0; i < solution.states.size(); ++i) {
+    SymplecticIntegrator<Length, Speed>::SystemState const& state =
+        solution.states[i];
+    Time const& time = state.t.value;
 #ifndef _MANAGED
-    CHECK_EQ(t.size(), q0.size());
-    CHECK_EQ(t.size(), q1.size());
-    CHECK_EQ(t.size(), q2.size());
-    CHECK_EQ(t.size(), p0.size());
-    CHECK_EQ(t.size(), p1.size());
-    CHECK_EQ(t.size(), p2.size());
+    CHECK_EQ(state.q.size(), state.p.size());
 #endif
-    for (size_t j = 0; j < t.size(); ++j) {
+    // Loop over the dimensions.
+    for (size_t k = 0, b = 0; k < state.q.size(); k += 3, ++b) {
+      Body<InertialFrame>* body = bodies_[b];
       Vector<Length, InertialFrame> const position(
-          R3Element<Length>(q0[j], q1[j], q2[j]));
+          R3Element<Length>(state.q[k].value,
+                            state.q[k + 1].value,
+                            state.q[k + 2].value));
       Vector<Speed, InertialFrame> const velocity(
-          R3Element<Speed>(p0[j], p1[j], p2[j]));
-      Time const time = t[j];
+          R3Element<Speed>(state.p[k].value,
+                           state.p[k + 1].value,
+                           state.p[k + 2].value));
       body->AppendToTrajectory(position, velocity, time);
     }
   }

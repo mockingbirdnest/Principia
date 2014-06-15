@@ -60,18 +60,10 @@ class SymplecticIntegrator {
     int sampling_period;
   };
 
-  template<typename Scalar>
-  struct TimeseriesAndError {
-    // Indexed by time step.
-    std::vector<Scalar> quantities;
-    Scalar error;
-  };
-
+  //TODO(phl):Remove entirely?
   struct Solution {
-    // Indexed by dimension.
-    std::vector<TimeseriesAndError<Position>> position;
-    std::vector<TimeseriesAndError<Momentum>> momentum;
-    TimeseriesAndError<Time> time;
+    // Indexed by time step.
+    std::vector<SystemState> states;
   };
 
   // Initialize the integrator with the given |coefficients|.  Must be called
