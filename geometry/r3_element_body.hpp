@@ -33,7 +33,9 @@ inline Scalar& R3Element<Scalar>::operator[](int const index) {
     case 2:
       return z;
     default:
+#ifndef _MANAGED
       LOG(FATAL) << "Index = " << index;
+#endif
       noreturn();
   }
 }

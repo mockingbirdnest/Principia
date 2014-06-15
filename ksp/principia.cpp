@@ -1,5 +1,6 @@
 #include "ksp/principia.hpp"
 
+#include <map>
 #include <string>
 #include <vector>
 
@@ -96,29 +97,52 @@ void Principia::DrawGUI() {
       gcnew UnityEngine::GUI::WindowFunction(this, &Principia::DrawMainWindow),
       "Traces of Various Descriptions",
       UnityEngine::GUILayout::MinWidth(500));
-  reference_frame_window_position_ = UnityEngine::GUILayout::Window(
-      2,  // id
-      reference_frame_window_position_,
-      gcnew UnityEngine::GUI::WindowFunction(
-          this,
-          &Principia::DrawReferenceFrameWindow),
-      "Reference Frame",
-      UnityEngine::GUILayout::MinWidth(500));
+  if (simulating_) {
+    reference_frame_window_position_ = UnityEngine::GUILayout::Window(
+        2,  // id
+        reference_frame_window_position_,
+        gcnew UnityEngine::GUI::WindowFunction(
+            this,
+            &Principia::DrawReferenceFrameWindow),
+        "Reference Frame",
+        UnityEngine::GUILayout::MinWidth(500));
+  }
 }
 
 void Principia::DrawMainWindow(int window_id) {
   UnityEngine::GUILayout::BeginVertical();
-  UnityEngine::GUILayout::TextArea("Planetarium rotation");
   if (UnityEngine::GUILayout::Button(
-          simulating_ ? "Switch to Keplerian" : "Switch to Newtonian")) {
+          simulating_ ? "Switch to Keplerian" : "Switch to Newtonian"),
+          gui_style,
+          UnityEngine::GUILayout::ExpandWidth(true)) {
     simulating_ = !simulating_;
     if (simulating_) {
       SetUpSystem();
     }
   }
+  UnityEngine::GUILayout::EndVertical();
 }
 
+// Layout:
+// o Sun        o Surface
+// o Planet 1   o Centric
+// o Planet 2   o Barycentre
+// o Platet 3
+// ...
 void Principia::DrawReferenceFrameWindow(int window_id) {
+  UnityEngine::GUILayout::BeginHorizontal();
+  UnityEngine::GUILayout::BeginVertical(UnityEngine::GUILayout::Width(250));
+  for each (CelestialBody^ body in FlightGlobals::Bodies) {
+    if (UnityEngine::GUILayout::Toggle(
+            renderer_reference_body_ == body,  // value
+            body->name) &&                     // text
+        renderer_reference_body_ != body) {
+      renderer_reference_body_ = body;
+    }
+  }
+  UnityEngine::GUILayout::EndVertical();
+  UnityEngine::GUILayout::BeginVertical(
+      UnityEngine::GUILayout::ExpandWidth(true));
 
 }
 
@@ -138,14 +162,17 @@ void Principia::SetUpSystem() {
   std::vector<Body<IntegrationFrame>*>* const bodies =
       new std::vector<Body<IntegrationFrame>*>;
   sun_ = FlightGlobals::Bodies[0];
+  renderer_reference_body_ = sun_;
   msclr::interop::marshal_context^ context =
       gcnew msclr::interop::marshal_context();
   for each (CelestialBody^ body in FlightGlobals::Bodies) {
     GravitationalParameter const gravitational_parameter =
         body->gravParameter * SIUnit<GravitationalParameter>();
     bodies->push_back(new Body<IntegrationFrame>(gravitational_parameter));
-    Displacement<IntegrationFrame> const   position = IntegrationPosition(body);
-    VelocityChange<IntegrationFrame> const velocity = IntegrationVelocity(body);
+    Displacement<IntegrationFrame> const   position =
+      IntegrationPosition(body) - IntegrationPosition(sun_);
+    VelocityChange<IntegrationFrame> const velocity =
+      IntegrationVelocity(body) - IntegrationVelocity(sun_);
     bodies->back()->AppendToTrajectory({position}, {velocity}, universal_time);
     LOG_UNITY(std::string("\nAdded CelestialBody ") +
               context->marshal_as<const char*>(body->name) +
@@ -156,8 +183,10 @@ void Principia::SetUpSystem() {
   }
   for each (Vessel^ body in FlightGlobals::Vessels) {
     bodies->push_back(new Body<IntegrationFrame>(GravitationalParameter()));
-    Displacement<IntegrationFrame> const   position = IntegrationPosition(body);
-    VelocityChange<IntegrationFrame> const velocity = IntegrationVelocity(body);
+    Displacement<IntegrationFrame> const   position =
+        IntegrationPosition(body) - IntegrationPosition(sun_);
+    VelocityChange<IntegrationFrame> const velocity =
+        IntegrationVelocity(body) - IntegrationVelocity(sun_);
     bodies->back()->AppendToTrajectory({position}, {velocity}, universal_time);
     LOG_UNITY(std::string("\nAdded Vessel ") +
               context->marshal_as<const char*>(body->name) +
@@ -171,10 +200,8 @@ void Principia::SetUpSystem() {
 struct World;
 struct AliceWorld;
 
-Permutation<AliceWorld, World> LookingGlass() {
-  UnityEngine::QuaternionD planetarium_rotation = Planetarium::Rotation;
-  return Permutation<AliceWorld, World>(Permutation<AliceWorld, World>::XZY);
-}
+Permutation<AliceWorld, World> const LookingGlass =
+    Permutation<AliceWorld, World>(Permutation<AliceWorld, World>::XZY);
 
 Rotation<IntegrationFrame, World> PlanetariumRotation() {
   UnityEngine::QuaternionD planetarium_rotation = Planetarium::Rotation;
@@ -212,7 +239,7 @@ VelocityChange<IntegrationFrame> IntegrationVelocity(
 
 Displacement<AliceWorld> OffsetFromReferenceBody(Vessel^ const body) {
   Vector3d const result = body->orbitDriver->pos;
-    return Displacement<World>({
+    return Displacement<AliceWorld>({
       result.x * SIUnit<Length>(),
       result.y * SIUnit<Length>(),
       result.z * SIUnit<Length>()});
