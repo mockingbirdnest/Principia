@@ -60,9 +60,9 @@ class SPRKTest : public testing::Test {
 };
 
 TEST_F(SPRKTest, HarmonicOscillator) {
-  parameters_.q0 = {SIUnit<Length>()};
-  parameters_.p0 = {Momentum()};
-  parameters_.t0 = Time();
+  parameters_.initial.q.emplace_back(SIUnit<Length>());
+  parameters_.initial.p.emplace_back(Momentum());
+  parameters_.initial.t = Time();
 #ifdef _DEBUG
   parameters_.tmax = 100.0 * SIUnit<Time>();
 #else
@@ -94,9 +94,9 @@ TEST_F(SPRKTest, HarmonicOscillator) {
 }
 
 TEST_F(SPRKTest, Convergence) {
-  parameters_.q0 = {SIUnit<Length>()};
-  parameters_.p0 = {Momentum()};
-  parameters_.t0 = Time();
+  parameters_.initial.q.emplace_back(SIUnit<Length>());
+  parameters_.initial.p.emplace_back(Momentum());
+  parameters_.initial.t = Time();
   parameters_.tmax = 100 * SIUnit<Time>();
   parameters_.sampling_period = 0;
   // For 0.2 * 1.1⁻²¹ < |Δt| < 0.2 , the correlation between step size and error
@@ -143,13 +143,13 @@ TEST_F(SPRKTest, Convergence) {
 }
 
 TEST_F(SPRKTest, Symplecticity) {
-  parameters_.q0 = {SIUnit<Length>()};
-  parameters_.p0 = {Momentum()};
-  parameters_.t0 = Time();
+  parameters_.initial.q.emplace_back(SIUnit<Length>());
+  parameters_.initial.p.emplace_back(Momentum());
+  parameters_.initial.t = Time();
   Stiffness const k = SIUnit<Stiffness>();
   Mass const m      = SIUnit<Mass>();
-  Length const q0   = parameters_.q0[0];
-  Momentum const p0 = parameters_.p0[0];
+  Length const q0   = parameters_.initial.q[0].value;
+  Momentum const p0 = parameters_.initial.p[0].value;
   Energy const initial_energy = 0.5 * Pow<2>(p0) / m + 0.5 * k * Pow<2>(q0);
   parameters_.tmax = 500.0 * SIUnit<Time>();
   parameters_.Δt = SIUnit<Time>();

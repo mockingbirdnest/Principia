@@ -94,12 +94,12 @@ void NBodySystem<InertialFrame>::Integrate(
     R3Element<Speed> const& velocity = body->velocities().back().coordinates();
     Time const& time = body->times().back();
     for (int i = 0; i < 3; ++i) {
-      parameters.q0.push_back(position[i]);
+      parameters.initial.q.emplace_back(position[i]);
     }
     for (int i = 0; i < 3; ++i) {
-      parameters.p0.push_back(velocity[i]);
+      parameters.initial.p.emplace_back(velocity[i]);
     }
-    parameters.t0 = time;
+    parameters.initial.t = time;
     // All the positions/velocities must be for the same time.
     if (reference_time == nullptr) {
       reference_time.reset(new Time(time));
