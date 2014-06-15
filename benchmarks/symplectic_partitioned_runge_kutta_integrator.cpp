@@ -45,14 +45,14 @@ void SolveHarmonicOscillatorAndComputeError(benchmark::State* state,
   *p_error = Momentum();
   for (size_t i = 0; i < solution.size(); ++i) {
     *q_error = std::max(*q_error,
-                        Abs(solution[i].q[0].value -
+                        Abs(solution[i].positions[0].value -
                             SIUnit<Length>() *
-                            Cos(solution[i].t.value *
+                            Cos(solution[i].time.value *
                                 SIUnit<AngularFrequency>())));
     *p_error = std::max(*p_error,
-                        Abs(solution[i].p[0].value +
+                        Abs(solution[i].momenta[0].value +
                             SIUnit<Momentum>() *
-                            Sin(solution[i].t.value *
+                            Sin(solution[i].time.value *
                                 SIUnit<AngularFrequency>())));
   }
   state->ResumeTiming();

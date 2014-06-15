@@ -71,7 +71,7 @@ void SPRKIntegrator<Position, Momentum>::Solve(
   CHECK_NOTNULL(solution);
 #endif
 
-  int const dimension = parameters.initial.q.size();
+  int const dimension = parameters.initial.positions.size();
 
   std::vector<Position> Δqstage0(dimension);
   std::vector<Position> Δqstage1(dimension);
@@ -86,20 +86,20 @@ void SPRKIntegrator<Position, Momentum>::Solve(
   int const capacity = parameters.sampling_period == 0 ?
     1 :
     static_cast<int>(
-        ceil((((parameters.tmax - parameters.initial.t.value) /
+        ceil((((parameters.tmax - parameters.initial.time.value) /
                     parameters.Δt) + 1) /
                 parameters.sampling_period)) + 1;
   solution->clear();
   solution->reserve(capacity);
 
-  std::vector<ValueAndError<Position>> q_last(parameters.initial.q);
-  std::vector<ValueAndError<Momentum>> p_last(parameters.initial.p);
-  ValueAndError<Time> t_last = parameters.initial.t;
+  std::vector<ValueAndError<Position>> q_last(parameters.initial.positions);
+  std::vector<ValueAndError<Momentum>> p_last(parameters.initial.momenta);
+  ValueAndError<Time> t_last = parameters.initial.time;
   int sampling_phase = 0;
 
   std::vector<Position> q_stage(dimension);
   std::vector<Momentum> p_stage(dimension);
-  Time tn = parameters.initial.t.value;  // Current time.
+  Time tn = parameters.initial.time.value;  // Current time.
   Time const h = parameters.Δt;  // Constant for now.
   std::vector<Quotient<Momentum, Time>> f(dimension);  // Current forces.
   std::vector<Quotient<Position, Time>> v(dimension);  // Current velocities.
@@ -162,12 +162,12 @@ void SPRKIntegrator<Position, Momentum>::Solve(
       if (sampling_phase % parameters.sampling_period == 0) {
         solution->emplace_back();
         SystemState* state = &solution->back();
-        state->t.value = tn;
-        state->q.reserve(dimension);
-        state->p.reserve(dimension);
+        state->time.value = tn;
+        state->positions.reserve(dimension);
+        state->momenta.reserve(dimension);
         for (int k = 0; k < dimension; ++k) {
-          state->q.emplace_back(q_stage[k]);
-          state->p.emplace_back(p_stage[k]);
+          state->positions.emplace_back(q_stage[k]);
+          state->momenta.emplace_back(p_stage[k]);
         }
       }
       ++sampling_phase;
@@ -187,12 +187,12 @@ void SPRKIntegrator<Position, Momentum>::Solve(
   if (parameters.sampling_period == 0) {
     solution->emplace_back();
     SystemState* state = &solution->back();
-    state->t = t_last;
-    state->q.reserve(dimension);
-    state->p.reserve(dimension);
+    state->time = t_last;
+    state->positions.reserve(dimension);
+    state->momenta.reserve(dimension);
     for (int k = 0; k < dimension; ++k) {
-      state->q.emplace_back(q_last[k]);
-      state->p.emplace_back(p_last[k]);
+      state->positions.emplace_back(q_last[k]);
+      state->momenta.emplace_back(p_last[k]);
     }
   }
 

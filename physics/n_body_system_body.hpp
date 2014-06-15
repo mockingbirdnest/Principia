@@ -94,12 +94,12 @@ void NBodySystem<InertialFrame>::Integrate(
     R3Element<Speed> const& velocity = body->velocities().back().coordinates();
     Time const& time = body->times().back();
     for (int i = 0; i < 3; ++i) {
-      parameters.initial.q.emplace_back(position[i]);
+      parameters.initial.positions.emplace_back(position[i]);
     }
     for (int i = 0; i < 3; ++i) {
-      parameters.initial.p.emplace_back(velocity[i]);
+      parameters.initial.momenta.emplace_back(velocity[i]);
     }
-    parameters.initial.t = time;
+    parameters.initial.time = time;
     // All the positions/velocities must be for the same time.
     if (reference_time == nullptr) {
       reference_time.reset(new Time(time));
@@ -125,21 +125,21 @@ void NBodySystem<InertialFrame>::Integrate(
   // Loop over the time steps.
   for (size_t i = 0; i < solution.size(); ++i) {
     SymplecticIntegrator<Length, Speed>::SystemState const& state = solution[i];
-    Time const& time = state.t.value;
+    Time const& time = state.time.value;
 #ifndef _MANAGED
-    CHECK_EQ(state.q.size(), state.p.size());
+    CHECK_EQ(state.positions.size(), state.momenta.size());
 #endif
     // Loop over the dimensions.
-    for (size_t k = 0, b = 0; k < state.q.size(); k += 3, ++b) {
+    for (size_t k = 0, b = 0; k < state.positions.size(); k += 3, ++b) {
       Body<InertialFrame>* body = bodies_[b];
       Vector<Length, InertialFrame> const position(
-          R3Element<Length>(state.q[k].value,
-                            state.q[k + 1].value,
-                            state.q[k + 2].value));
+          R3Element<Length>(state.positions[k].value,
+                            state.positions[k + 1].value,
+                            state.positions[k + 2].value));
       Vector<Speed, InertialFrame> const velocity(
-          R3Element<Speed>(state.p[k].value,
-                           state.p[k + 1].value,
-                           state.p[k + 2].value));
+          R3Element<Speed>(state.momenta[k].value,
+                           state.momenta[k + 1].value,
+                           state.momenta[k + 2].value));
       body->AppendToTrajectory(position, velocity, time);
     }
   }

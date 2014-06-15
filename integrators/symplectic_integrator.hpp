@@ -32,9 +32,9 @@ class SymplecticIntegrator {
   // The entire state of the system at a given time.  The vectors are indexed by
   // dimension.
   struct SystemState {
-    std::vector<ValueAndError<Position>> q;
-    std::vector<ValueAndError<Momentum>> p;
-    ValueAndError<Time> t;
+    std::vector<ValueAndError<Position>> positions;
+    std::vector<ValueAndError<Momentum>> momenta;
+    ValueAndError<Time> time;
   };
 
   // TODO(phl): Remove entirely?
