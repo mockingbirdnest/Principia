@@ -2,7 +2,6 @@
 #include <algorithm>
 #include <cmath>
 #include <ctime>
-#include <memory>
 #include <vector>
 
 #include "quantities/quantities.hpp"
@@ -16,23 +15,6 @@ using principia::quantities::Quotient;
 
 namespace principia {
 namespace integrators {
-
-namespace {
-
-template <typename T>
-inline std::vector<T>* PointerOrNew(int const dimension,
-                                    std::vector<T>* const in) {
-  if (in == nullptr) {
-    return new std::vector<T>(dimension);
-  } else {
-#ifndef _MANAGED
-    CHECK_EQ(dimension, in->size());
-#endif
-    return in;
-  }
-}
-
-}  // namespace
 
 template<typename Position, typename Momentum>
 inline SPRKIntegrator<Position, Momentum>::SPRKIntegrator() : stages_(0) {}
