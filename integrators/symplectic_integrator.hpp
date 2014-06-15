@@ -37,7 +37,8 @@ class SymplecticIntegrator {
     ValueAndError<Time> time;
   };
 
-  // TODO(phl): Remove entirely?
+  // TODO(phl): Should we remove this class entirely and just pass 4 parameters
+  // to Solve?
   struct Parameters {
     // The initial state of the system.
     SystemState initial;
