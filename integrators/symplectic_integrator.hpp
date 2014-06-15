@@ -24,7 +24,7 @@ class SymplecticIntegrator {
   template<typename Scalar>
   struct ValueAndError {
     ValueAndError() = default;
-    ValueAndError(Scalar value);
+    ValueAndError(Scalar const& value);
     Scalar value;
     Scalar error;
   };
