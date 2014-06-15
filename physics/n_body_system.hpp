@@ -47,7 +47,7 @@ class NBodySystem {
   static void ComputeGravitationalVelocities(std::vector<Speed> const& p,
                                              std::vector<Speed>* result);
 
-  std::unique_ptr<Bodies const> const massive_bodies_;
+  std::unique_ptr<Bodies const> const massive_bodies_;  // Never null.
   std::unique_ptr<Bodies const> const massless_bodies_;  // Never null.
 
   // The pointers are not owned.  The massive bodies come first.

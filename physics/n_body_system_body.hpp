@@ -27,18 +27,18 @@ template<typename InertialFrame>
 NBodySystem<InertialFrame>::NBodySystem(
     std::unique_ptr<Bodies>&& massive_bodies,
     std::unique_ptr<Bodies>&& massless_bodies)
-    : massive_bodies_(std::move(massive_bodies)),
+    : massive_bodies_(massive_bodies == nullptr ?
+                          std::unique_ptr<Bodies>(new Bodies) :
+                          std::move(massive_bodies)),
       massless_bodies_(massless_bodies == nullptr ?
                            std::unique_ptr<Bodies>(new Bodies) :
                            std::move(massless_bodies)) {
   // Parameter checking.
-  if (massive_bodies_ != nullptr) {
-    for (auto const& body : *massive_bodies_) {
+  for (auto const& body : *massive_bodies_) {
 #ifndef _MANAGED
-      CHECK(!body->is_massless());
+    CHECK(!body->is_massless());
 #endif
-      bodies_.push_back(body.get());
-    }
+    bodies_.push_back(body.get());
   }
   for (auto const& body : *massless_bodies_) {
 #ifndef _MANAGED
@@ -164,9 +164,6 @@ void NBodySystem<InertialFrame>::ComputeGravitationalAccelerations(
   result->assign(result->size(), Acceleration());
 
   // TODO(phl): Used to deal with proper accelerations here.
-  if (massive_bodies_ == nullptr) {
-    return;
-  }
   for (size_t b1 = 0, three_b1 = 0;
        b1 < massive_bodies_->size();
        ++b1, three_b1 += 3) {
