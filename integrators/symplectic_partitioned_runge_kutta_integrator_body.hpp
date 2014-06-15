@@ -163,12 +163,11 @@ void SPRKIntegrator<Position, Momentum>::Solve(
         solution->emplace_back();
         SystemState* state = &solution->back();
         state->t.value = tn;
-        //TODO(phl):At construction?
         state->q.reserve(dimension);
         state->p.reserve(dimension);
         for (int k = 0; k < dimension; ++k) {
-          state->q.push_back(q_stage[k]);
-          state->p.push_back(p_stage[k]);
+          state->q.emplace_back(q_stage[k]);
+          state->p.emplace_back(p_stage[k]);
         }
       }
       ++sampling_phase;
@@ -189,12 +188,11 @@ void SPRKIntegrator<Position, Momentum>::Solve(
     solution->emplace_back();
     SystemState* state = &solution->back();
     state->t = t_last;
-    //TODO(phl):At construction?
     state->q.reserve(dimension);
     state->p.reserve(dimension);
     for (int k = 0; k < dimension; ++k) {
-      state->q.push_back(q_last[k]);
-      state->p.push_back(p_last[k]);
+      state->q.emplace_back(q_last[k]);
+      state->p.emplace_back(p_last[k]);
     }
   }
 
