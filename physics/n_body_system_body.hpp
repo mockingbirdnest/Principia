@@ -27,8 +27,10 @@ template<typename InertialFrame>
 NBodySystem<InertialFrame>::NBodySystem(
     std::unique_ptr<Bodies>&& massive_bodies,
     std::unique_ptr<Bodies>&& massless_bodies)
-    : massless_bodies_(std::move(massless_bodies)),
-      massive_bodies_(std::move(massive_bodies)) {
+    : massive_bodies_(std::move(massive_bodies)),
+      massless_bodies_(massless_bodies == nullptr ?
+                           std::unique_ptr<Bodies>(new Bodies) :
+                           std::move(massless_bodies)) {
   // Parameter checking.
   if (massive_bodies_ != nullptr) {
     for (auto const& body : *massive_bodies_) {
@@ -38,13 +40,11 @@ NBodySystem<InertialFrame>::NBodySystem(
       bodies_.push_back(body.get());
     }
   }
-  if (massless_bodies_ != nullptr) {
-    for (auto const& body : *massless_bodies_) {
+  for (auto const& body : *massless_bodies_) {
 #ifndef _MANAGED
-      CHECK(body->is_massless());
+    CHECK(body->is_massless());
 #endif
-      bodies_.push_back(body.get());
-    }
+    bodies_.push_back(body.get());
   }
 }
 
@@ -164,13 +164,15 @@ void NBodySystem<InertialFrame>::ComputeGravitationalAccelerations(
   result->assign(result->size(), Acceleration());
 
   // TODO(phl): Used to deal with proper accelerations here.
+  if (massive_bodies_ == nullptr) {
+    return;
+  }
   for (size_t b1 = 0, three_b1 = 0;
        b1 < massive_bodies_->size();
        ++b1, three_b1 += 3) {
-    Body<InertialFrame> const& body1 = *bodies_[b1];
-    for (size_t b2 = b1 + 1; b2 < bodies_.size(); ++b2) {
-      Body<InertialFrame> const& body2 = *bodies_[b2];
-      bool const body2_is_massless = body2.is_massless();
+    GravitationalParameter const& body1_gravitational_parameter =
+        (*massive_bodies_)[b1]->gravitational_parameter();
+    for (size_t b2 = b1 + 1; b2 < massive_bodies_->size(); ++b2) {
       size_t const three_b2 = 3 * b2;
       Length const Δq0 = q[three_b1] - q[three_b2];
       Length const Δq1 = q[three_b1 + 1] - q[three_b2 + 1];
@@ -181,18 +183,31 @@ void NBodySystem<InertialFrame>::ComputeGravitationalAccelerations(
       Exponentiation<Length, -3> const multiplier =
           Sqrt(squared_distance) / (squared_distance * squared_distance);
 
-      if (!body2_is_massless) {
-        auto const μ2OverRSquared =
-            body2.gravitational_parameter() * multiplier;
-        (*result)[three_b1] -= Δq0 * μ2OverRSquared;
-        (*result)[three_b1 + 1] -= Δq1 * μ2OverRSquared;
-        (*result)[three_b1 + 2] -= Δq2 * μ2OverRSquared;
-      }
+      auto const μ2OverRSquared =
+          (*massive_bodies_)[b2]->gravitational_parameter() * multiplier;
+      (*result)[three_b1] -= Δq0 * μ2OverRSquared;
+      (*result)[three_b1 + 1] -= Δq1 * μ2OverRSquared;
+      (*result)[three_b1 + 2] -= Δq2 * μ2OverRSquared;
       // Lex. III. Actioni contrariam semper & æqualem esse reactionem:
       // sive corporum duorum actiones in se mutuo semper esse æquales &
       // in partes contrarias dirigi.
-      auto const μ1OverRSquared =
-          body1.gravitational_parameter() * multiplier;
+      auto const μ1OverRSquared = body1_gravitational_parameter * multiplier;
+      (*result)[three_b2] += Δq0 * μ1OverRSquared;
+      (*result)[three_b2 + 1] += Δq1 * μ1OverRSquared;
+      (*result)[three_b2 + 2] += Δq2 * μ1OverRSquared;
+    }
+    for (size_t b2 = 0; b2 < massless_bodies_->size(); ++b2) {
+      size_t const three_b2 = 3 * b2;
+      Length const Δq0 = q[three_b1] - q[three_b2];
+      Length const Δq1 = q[three_b1 + 1] - q[three_b2 + 1];
+      Length const Δq2 = q[three_b1 + 2] - q[three_b2 + 2];
+
+      Exponentiation<Length, 2> const squared_distance =
+          Δq0 * Δq0 + Δq1 * Δq1 + Δq2 * Δq2;
+      Exponentiation<Length, -3> const multiplier =
+          Sqrt(squared_distance) / (squared_distance * squared_distance);
+
+      auto const μ1OverRSquared = body1_gravitational_parameter * multiplier;
       (*result)[three_b2] += Δq0 * μ1OverRSquared;
       (*result)[three_b2 + 1] += Δq1 * μ1OverRSquared;
       (*result)[three_b2 + 2] += Δq2 * μ1OverRSquared;
