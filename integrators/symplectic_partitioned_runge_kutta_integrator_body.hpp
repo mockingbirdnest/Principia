@@ -162,7 +162,7 @@ void SPRKIntegrator<Position, Momentum>::Solve(
       if (sampling_phase % parameters.sampling_period == 0) {
         solution->emplace_back();
         SystemState* state = &solution->back();
-        state->time.value = tn;
+        state->time = t_last;
         state->positions.reserve(dimension);
         state->momenta.reserve(dimension);
         for (int k = 0; k < dimension; ++k) {
