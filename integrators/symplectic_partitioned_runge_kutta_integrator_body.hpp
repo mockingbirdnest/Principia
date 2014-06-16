@@ -166,8 +166,8 @@ void SPRKIntegrator<Position, Momentum>::Solve(
         state->positions.reserve(dimension);
         state->momenta.reserve(dimension);
         for (int k = 0; k < dimension; ++k) {
-          state->positions.emplace_back(q_stage[k]);
-          state->momenta.emplace_back(p_stage[k]);
+          state->positions.emplace_back(q_last[k]);
+          state->momenta.emplace_back(p_last[k]);
         }
       }
       ++sampling_phase;
