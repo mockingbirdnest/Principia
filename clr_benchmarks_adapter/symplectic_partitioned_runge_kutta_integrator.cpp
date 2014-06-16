@@ -1,6 +1,8 @@
 ﻿
 #include "clr_benchmarks_adapter/symplectic_partitioned_runge_kutta_integrator.hpp"
 
+#include <vector>
+
 #include "benchmarks/symplectic_partitioned_runge_kutta_integrator.hpp"
 #undef TRACE_SYMPLECTIC_PARTITIONED_RUNGE_KUTTA_INTEGRATOR
 #include "integrators/symplectic_partitioned_runge_kutta_integrator.hpp"

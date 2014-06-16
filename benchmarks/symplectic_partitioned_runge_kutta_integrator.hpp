@@ -2,6 +2,8 @@
 
 #undef TRACE_SYMPLECTIC_PARTITIONED_RUNGE_KUTTA_INTEGRATOR
 
+#include <vector>
+
 #include "integrators/symplectic_partitioned_runge_kutta_integrator.hpp"
 #include "quantities/named_quantities.hpp"
 

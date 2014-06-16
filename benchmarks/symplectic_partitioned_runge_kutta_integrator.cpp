@@ -16,6 +16,7 @@
 
 #define GLOG_NO_ABBREVIATED_SEVERITIES
 #include <algorithm>
+#include <vector>
 
 #include "quantities/elementary_functions.hpp"
 #include "quantities/named_quantities.hpp"
