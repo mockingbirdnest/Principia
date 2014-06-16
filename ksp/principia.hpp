@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 #include <map>
 #include <vector>
@@ -42,6 +42,9 @@ using VelocityChange = Vector<Speed, Frame>;
 [KSPAddon(KSPAddon::Startup::Flight, false)]
 public ref class Principia : public UnityEngine::MonoBehaviour {
  private:
+   ~Principia();
+   !Principia();
+
   // Unity event functions, accessed through reflection.
   // See http://docs.unity3d.com/Manual/ExecutionOrder.html.
 
@@ -51,8 +54,6 @@ public ref class Principia : public UnityEngine::MonoBehaviour {
   void FixedUpdate();
   // Called once per frame.
   void Update();
-  // Rendering (called before camera culling).
-  void OnPreCull();
   // GUI rendering.
   void OnGUI();
   // Called after all frame updates for the last frame of existence.
@@ -64,12 +65,20 @@ public ref class Principia : public UnityEngine::MonoBehaviour {
 
   void SetUpSystem();
 
+  void FreeAllOwnedPointers();
+
   UnityEngine::Rect main_window_position_;
   UnityEngine::Rect reference_frame_window_position_;
 
   UnityEngine::GUIStyle^ gui_style;
 
   bool simulating_;
+
+  // We own these pointers, but we cannot use |std::unique_ptr| because that's
+  // an unmanaged type.
+  quantities::Time* Δt_                = new quantities::Time(60 * si::Second);
+  quantities::Time* prediction_length_ = new quantities::Time(12 * si::Hour);
+  int sampling_period_                 = 10;
 
   CelestialBody^ sun_;
   CelestialBody^ rendering_reference_body_;
@@ -78,9 +87,12 @@ public ref class Principia : public UnityEngine::MonoBehaviour {
   // We own these pointers, but we cannot use |std::unique_ptr| because that's
   // an unmanaged type.
   physics::NBodySystem<IntegrationFrame>* system_ = nullptr;
-  std::map<std::string,
-           physics::Body<IntegrationFrame>*>* celestials_ = nullptr;
-  std::map<std::string, physics::Body<IntegrationFrame>*>* vessels_ = nullptr;
+  std::map<std::string, physics::Body<IntegrationFrame>*>* celestials_ =
+      new std::map<std::string, physics::Body<IntegrationFrame>*>();
+  std::map<std::string, physics::Body<IntegrationFrame>*>* vessels_ =
+      new std::map<std::string, physics::Body<IntegrationFrame>*>();
+  integrators::SPRKIntegrator<Length, Speed>* integrator_ =
+      new integrators::SPRKIntegrator<Length, Speed>();
 };
 
 }  // namespace ksp

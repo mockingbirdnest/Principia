@@ -1,4 +1,4 @@
-#include "ksp/principia.hpp"
+﻿#include "ksp/principia.hpp"
 
 #include <map>
 #include <string>
@@ -7,7 +7,7 @@
 #include "geometry/grassmann.hpp"
 #include "geometry/permutation.hpp"
 #include "geometry/rotation.hpp"
-#include <msclr/marshal.h>
+#include "ksp/utilities.hpp"
 #include "physics/body.hpp"
 #include "physics/n_body_system.hpp"
 #include "quantities/quantities.hpp"
@@ -23,6 +23,9 @@ using principia::physics::NBodySystem;
 using principia::quantities::GravitationalParameter;
 using principia::quantities::Length;
 using principia::quantities::SIUnit;
+using principia::quantities::DebugString;
+using principia::si::Hour;
+using principia::si::Second;
 
 #define LOG_UNITY(message) UnityEngine::Debug::Log(                            \
     gcnew System::String(                                                      \
@@ -31,6 +34,14 @@ using principia::quantities::SIUnit;
 
 namespace principia {
 namespace ksp {
+
+Principia::~Principia() {
+  FreeAllOwnedPointers();
+}
+
+Principia::!Principia() {
+  FreeAllOwnedPointers();
+}
 
 void Principia::Start() {
   gui_style = gcnew UnityEngine::GUIStyle(UnityEngine::GUI::skin->button);
@@ -58,18 +69,20 @@ void Principia::Start() {
       UnityEngine::Screen::height / 3.0f,  // top
       10.0f,                               // width
       10.0f);                              // height
+  integrator_->Initialize(integrator_->Order5Optimal());
 }
 
 void Principia::FixedUpdate() {
-
+  if (simulating_) {
+    if (system_->bodies().front()->times().back() - UniversalTime() >
+            *Δt_ * sampling_period_) {
+      system_->Integrate(*integrator_, UniversalTime(), *Δt_, sampling_period_);
+    }
+  }
 }
 
 void Principia::Update() {
   // TODO(egg): draw trajectories.
-}
-
-void Principia::OnPreCull() {
-
 }
 
 void Principia::OnGUI() {
@@ -77,15 +90,7 @@ void Principia::OnGUI() {
 }
 
 void Principia::OnDestroy() {
-  if (system_ != nullptr) {
-    delete system_;
-  }
-  if (celestials_ != nullptr) {
-    delete celestials_;
-  }
-  if (vessels_ != nullptr) {
-    delete vessels_;
-  }
+  FreeAllOwnedPointers();
 }
 
 void Principia::DrawGUI() {
@@ -110,6 +115,7 @@ void Principia::DrawGUI() {
 
 void Principia::DrawMainWindow(int window_id) {
   UnityEngine::GUILayout::BeginVertical();
+
   if (UnityEngine::GUILayout::Button(
           simulating_ ? "Switch to Keplerian" : "Switch to Newtonian"),
           gui_style,
@@ -119,6 +125,43 @@ void Principia::DrawMainWindow(int window_id) {
       SetUpSystem();
     }
   }
+
+  UnityEngine::GUILayout::BeginHorizontal();
+  UnityEngine::GUILayout::Label("prediction_length_ =");
+  System::String^ prediction_length_string = UnityEngine::GUILayout::TextArea(
+      (*prediction_length_ / Hour).ToString(),  // text
+      UnityEngine::GUILayout::Width(250));      // options
+  double prediction_length_hours;
+  if (System::Double::TryParse(prediction_length_string,
+                               prediction_length_hours)) {
+    *prediction_length_ = prediction_length_hours * Hour;
+  }
+  UnityEngine::GUILayout::Label("h");
+  UnityEngine::GUILayout::EndHorizontal();
+
+  UnityEngine::GUILayout::BeginHorizontal();
+  UnityEngine::GUILayout::Label(L"Δt_ =");
+  System::String^ timestep_string = UnityEngine::GUILayout::TextArea(
+      (*Δt_ / Second).ToString(),           // text
+      UnityEngine::GUILayout::Width(250));  // options
+  double timestep_seconds;
+  if (System::Double::TryParse(timestep_string, timestep_seconds)) {
+    *Δt_ = timestep_seconds * Second;
+  }
+  UnityEngine::GUILayout::Label("s");
+  UnityEngine::GUILayout::EndHorizontal();
+
+  UnityEngine::GUILayout::BeginHorizontal();
+  UnityEngine::GUILayout::Label("sampling_period_ =");
+  System::String^ sampling_period_string = UnityEngine::GUILayout::TextArea(
+      sampling_period_.ToString(),          // text
+      UnityEngine::GUILayout::Width(250));  // options
+  int new_sampling_period;
+  if (System::Int32::TryParse(sampling_period_string, new_sampling_period)) {
+    sampling_period_ = new_sampling_period;
+  }
+  UnityEngine::GUILayout::EndHorizontal();
+
   UnityEngine::GUILayout::EndVertical();
   UnityEngine::GUI::DragWindow(UnityEngine::Rect(0.0f, 0.0f, 10000.0f, 20.0f));
 }
@@ -127,7 +170,7 @@ void Principia::DrawMainWindow(int window_id) {
 // o Sun        o Surface
 // o Planet 1   o Centric
 // o Planet 2   o Barycentric rotating
-// o Platet 3
+// o Planet 3
 // ...
 void Principia::DrawReferenceFrameWindow(int window_id) {
   UnityEngine::GUILayout::BeginHorizontal();
@@ -148,8 +191,8 @@ void Principia::DrawReferenceFrameWindow(int window_id) {
     // primary.
     if ((rendering_reference_body_ != sun_ || type != kBarycentric) &&
         UnityEngine::GUILayout::Toggle(
-            rendering_frame_type_ == type,                              // value
-            gcnew System::String(kFrameTypeNames.at(type).c_str())) &&  // text
+            rendering_frame_type_ == type,        // value
+            Manage(kFrameTypeNames.at(type))) &&  // text
         rendering_frame_type_ != type) {
       rendering_frame_type_ = type;
     }
@@ -166,24 +209,13 @@ Displacement<IntegrationFrame> IntegrationPosition(Vessel^ const body);
 VelocityChange<IntegrationFrame> IntegrationVelocity(Vessel^ const body);
 
 void Principia::SetUpSystem() {
-  if (system_ != nullptr) {
-    delete system_;
-  }
-  if (celestials_ != nullptr) {
-    delete celestials_;
-  }
-  if (vessels_ != nullptr) {
-    delete vessels_;
-  }
-  celestials_ = new std::map<std::string, Body<IntegrationFrame>*>();
-  vessels_    = new std::map<std::string, Body<IntegrationFrame>*>();
-  Time const universal_time = Planetarium::GetUniversalTime() * SIUnit<Time>();
+  *celestials_ = std::map<std::string, Body<IntegrationFrame>*>();
+  *vessels_    = std::map<std::string, Body<IntegrationFrame>*>();
+  Time const universal_time = UniversalTime();
   std::vector<Body<IntegrationFrame>*>* const bodies =
       new std::vector<Body<IntegrationFrame>*>;
   sun_ = FlightGlobals::Bodies[0];
   rendering_reference_body_ = sun_;
-  msclr::interop::marshal_context^ context =
-      gcnew msclr::interop::marshal_context();
   for each (CelestialBody^ body in FlightGlobals::Bodies) {
     GravitationalParameter const gravitational_parameter =
         body->gravParameter * SIUnit<GravitationalParameter>();
@@ -193,14 +225,12 @@ void Principia::SetUpSystem() {
     VelocityChange<IntegrationFrame> const velocity =
       IntegrationVelocity(body) - IntegrationVelocity(sun_);
     bodies->back()->AppendToTrajectory({position}, {velocity}, universal_time);
-    celestials_->insert({context->marshal_as<const char*>(body->name),
+    celestials_->insert({Unmanage(body->name),
                          bodies->back()});
-    LOG_UNITY(std::string("\nAdded CelestialBody ") +
-              context->marshal_as<const char*>(body->name) +
+    LOG_UNITY(std::string("\nAdded CelestialBody ") + Unmanage(body->name) +
               "\nGM = " + DebugString(gravitational_parameter) +
               "\nq  = " + DebugString(position) +
               "\nv  = " + DebugString(velocity));
-    delete context;
   }
   for each (Vessel^ body in FlightGlobals::Vessels) {
     bodies->push_back(new Body<IntegrationFrame>(GravitationalParameter()));
@@ -209,13 +239,19 @@ void Principia::SetUpSystem() {
     VelocityChange<IntegrationFrame> const velocity =
         IntegrationVelocity(body) - IntegrationVelocity(sun_);
     bodies->back()->AppendToTrajectory({position}, {velocity}, universal_time);
-    LOG_UNITY(std::string("\nAdded Vessel ") +
-              context->marshal_as<const char*>(body->name) +
+    LOG_UNITY(std::string("\nAdded Vessel ") + Unmanage(body->name) +
               "\nq  = " + DebugString(position) +
               "\nv  = " + DebugString(velocity));
   }
-  delete context;
-  system_ = new NBodySystem<IntegrationFrame>(bodies);
+  Reset(system_, new NBodySystem<IntegrationFrame>(bodies));
+}
+
+void Principia::FreeAllOwnedPointers() {
+  Reset(prediction_length_, nullptr);
+  Reset(Δt_, nullptr);
+  Reset(system_, nullptr);
+  Reset(celestials_, nullptr);
+  Reset(vessels_, nullptr);
 }
 
 struct World;

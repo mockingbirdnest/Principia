@@ -74,7 +74,9 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="assembly_info.cpp" />
+    <ClCompile Include="map_renderer.cpp" />
     <ClCompile Include="principia.cpp" />
+    <ClCompile Include="utilities.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="Assembly-CSharp">
@@ -87,8 +89,9 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="map_render.hpp" />
+    <ClInclude Include="map_renderer.hpp" />
     <ClInclude Include="principia.hpp" />
+    <ClInclude Include="utilities.hpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
