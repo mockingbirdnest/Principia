@@ -52,16 +52,13 @@ public ref class Principia : public UnityEngine::MonoBehaviour {
   void Start();
   // Unity physics step.
   void FixedUpdate();
-  // Called once per frame.
-  void Update();
-  // GUI rendering.
-  void OnGUI();
   // Called after all frame updates for the last frame of existence.
   void OnDestroy();
 
   void DrawGUI();
   void DrawMainWindow(int window_id);
   void DrawReferenceFrameWindow(int window_id);
+  void DrawTrajectories(float camera_distance);
 
   void SetUpSystem();
 

@@ -1,7 +1,7 @@
 ﻿namespace principia {
 namespace rendering {
 
-public delegate void RenderingFunction();
+public delegate void RenderingFunction(float camera_distance);
 public class MapRenderer : UnityEngine.MonoBehaviour {
   public static MapRenderer CreateAndAttach(RenderingFunction draw) {
     MapRenderer renderer
@@ -15,7 +15,7 @@ public class MapRenderer : UnityEngine.MonoBehaviour {
   }
 
   private void OnPreCull() {
-    draw_();
+    draw_(MapView.MapCamera.Distance);
   }
   private RenderingFunction draw_;
 }

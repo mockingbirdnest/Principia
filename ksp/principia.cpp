@@ -70,6 +70,8 @@ void Principia::Start() {
       10.0f,                               // width
       10.0f);                              // height
   integrator_->Initialize(integrator_->Order5Optimal());
+  rendering::MapRenderer::CreateAndAttach(
+    gcnew rendering::RenderingFunction(this, &Principia::DrawTrajectories));
 }
 
 void Principia::FixedUpdate() {
@@ -79,10 +81,6 @@ void Principia::FixedUpdate() {
       system_->Integrate(*integrator_, UniversalTime(), *Δt_, sampling_period_);
     }
   }
-}
-
-void Principia::Update() {
-  // TODO(egg): draw trajectories.
 }
 
 void Principia::OnDestroy() {
@@ -198,6 +196,22 @@ void Principia::DrawReferenceFrameWindow(int window_id) {
   UnityEngine::GUI::DragWindow(UnityEngine::Rect(0.0f, 0.0f, 10000.0f, 20.0f));
 }
 
+void Principia::DrawTrajectories(float camera_distance) {
+  if (MapView::MapIsEnabled && simulating_) {
+    Time const universal_time = UniversalTime();
+    for each (Vessel^ ksp_vessel in FlightGlobals::Vessels) {
+      std::string id = Unmanage(ksp_vessel->id.ToString());
+      if (vessels_->count(id)) {
+        Body<IntegrationFrame>* vessel    = vessels_->at(id);
+        Body<IntegrationFrame>* reference =
+            celestials_->at(Unmanage(rendering_reference_body_->name);
+        UnityEngine::LineRenderer^ line_;
+//        if (rendering_frame_type_)
+      }
+    }
+  }
+}
+
 Displacement<IntegrationFrame> IntegrationPosition(CelestialBody^ const body);
 VelocityChange<IntegrationFrame> IntegrationVelocity(CelestialBody^ const body);
 
@@ -235,6 +249,7 @@ void Principia::SetUpSystem() {
     VelocityChange<IntegrationFrame> const velocity =
         IntegrationVelocity(body) - IntegrationVelocity(sun_);
     bodies->back()->AppendToTrajectory({position}, {velocity}, universal_time);
+    vessels_->insert({Unmanage(body->id.ToString()), bodies->back()});
     LOG_UNITY(std::string("\nAdded Vessel ") + Unmanage(body->name) +
               "\nq  = " + DebugString(position) +
               "\nv  = " + DebugString(velocity));
