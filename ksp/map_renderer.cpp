@@ -4,23 +4,22 @@
 namespace principia {
 namespace ksp {
 
-void MapRenderer::OnPreCull() {
-  draw_();
+void MapRenderer::Start() {
+  if (instance_ != nullptr) {
+    Destroy(instance_->gameObject);
+  }
+  instance_ = this;
+
+  if (HighLogic::LoadedScene == GameScenes::FLIGHT ||
+      HighLogic::LoadedScene == GameScenes::TRACKSTATION) {
+    gameObject->layer = 10;
+    mesh_ = gameObject->AddComponent<UnityEngine::MeshFilter^>()->mesh;
+    UnityEngine::MeshRenderer^ =
+        gameObject->AddComponent(UnityEngine::MeshRenderer^);
+  }
 }
 
-MapRenderer^ CreateMapRenderer(void (*draw)()) {
-  MapRenderer^ renderer;// =
-      //MapView::MapCamera->gameObject->GetComponent<MapRenderer^>();
-  if (renderer != nullptr) {
-    UnityEngine::Object::Destroy(renderer);
-  }
-  PlanetariumCamera^ x = MapView::MapCamera;
-  UnityEngine::MonoBehaviour^ y = static_cast<UnityEngine::MonoBehaviour^>(x);
-  UnityEngine::Component^ x;// = MapView::MapCamera;
-  x->gameObject;
-  //renderer = MapView::MapCamera->gameObject->AddComponent<MapRenderer^>()
-  renderer->draw_ = draw;
-  return renderer;
+void MapRenderer::Update() {
 }
 
 }  // namespace ksp
