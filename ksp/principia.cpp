@@ -85,10 +85,6 @@ void Principia::Update() {
   // TODO(egg): draw trajectories.
 }
 
-void Principia::OnGUI() {
-
-}
-
 void Principia::OnDestroy() {
   FreeAllOwnedPointers();
 }

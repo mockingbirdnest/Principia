@@ -74,7 +74,6 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="assembly_info.cpp" />
-    <ClCompile Include="map_renderer.cpp" />
     <ClCompile Include="principia.cpp" />
     <ClCompile Include="utilities.cpp" />
   </ItemGroup>
@@ -89,9 +88,13 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="map_renderer.hpp" />
     <ClInclude Include="principia.hpp" />
     <ClInclude Include="utilities.hpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\rendering\rendering.csproj">
+      <Project>{5d793a44-0026-43c8-a211-c6dee08f0de6}</Project>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

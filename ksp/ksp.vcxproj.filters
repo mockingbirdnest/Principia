@@ -20,18 +20,12 @@
     <ClCompile Include="utilities.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="map_renderer.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="principia.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="utilities.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="map_renderer.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
