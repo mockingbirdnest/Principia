@@ -3,7 +3,7 @@ namespace integrators {
 
 template<typename Position, typename Momentum>
 template<typename Scalar>
-SymplecticIntegrator<Position, Momentum>::ValueAndError<Scalar>::ValueAndError(
+inline SymplecticIntegrator<Position, Momentum>::ValueAndError<Scalar>::ValueAndError(
     Scalar const& value) : value(value) {}
 
 }  // namespace integrators
