@@ -22,9 +22,9 @@ class SymplecticIntegrator {
   // constructor is not explicit to make it easy to construct an object with no
   // error.
   template<typename Scalar>
-  struct ValueAndError {
-    ValueAndError() = default;
-    ValueAndError(Scalar const& value);  // NOLINT(runtime/explicit)
+  struct DoublePrecision {
+    DoublePrecision() = default;
+    DoublePrecision(Scalar const& value);  // NOLINT(runtime/explicit)
     Scalar value;
     Scalar error;
   };
@@ -32,9 +32,9 @@ class SymplecticIntegrator {
   // The entire state of the system at a given time.  The vectors are indexed by
   // dimension.
   struct SystemState {
-    std::vector<ValueAndError<Position>> positions;
-    std::vector<ValueAndError<Momentum>> momenta;
-    ValueAndError<Time> time;
+    std::vector<DoublePrecision<Position>> positions;
+    std::vector<DoublePrecision<Momentum>> momenta;
+    DoublePrecision<Time> time;
   };
 
   // TODO(phl): Should we remove this class entirely and just pass 4 parameters

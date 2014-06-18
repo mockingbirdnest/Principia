@@ -75,7 +75,7 @@ TEST_F(SPRKTest, HarmonicOscillator) {
                     parameters_, &solution_);
   Length q_error;
   Momentum p_error;
-  for (size_t i = 0; i < solution_.size(); ++i) {
+  for (std::size_t i = 0; i < solution_.size(); ++i) {
     q_error = std::max(q_error,
                        Abs(solution_[i].positions[0].value -
                            SIUnit<Length>() *
@@ -161,7 +161,7 @@ TEST_F(SPRKTest, Symplecticity) {
   std::vector<Energy> energy_error(length);
   std::vector<Time> time_steps(length);
   Energy max_energy_error = 0 * SIUnit<Energy>();
-  for (size_t i = 0; i < length; ++i) {
+  for (std::size_t i = 0; i < length; ++i) {
     Length const q_i   = solution_[i].positions[0].value;
     Momentum const p_i = solution_[i].momenta[0].value;
     time_steps[i] = solution_[i].time.value;

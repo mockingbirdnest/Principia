@@ -92,9 +92,9 @@ void SPRKIntegrator<Position, Momentum>::Solve(
   solution->clear();
   solution->reserve(capacity);
 
-  std::vector<ValueAndError<Position>> q_last(parameters.initial.positions);
-  std::vector<ValueAndError<Momentum>> p_last(parameters.initial.momenta);
-  ValueAndError<Time> t_last = parameters.initial.time;
+  std::vector<DoublePrecision<Position>> q_last(parameters.initial.positions);
+  std::vector<DoublePrecision<Momentum>> p_last(parameters.initial.momenta);
+  DoublePrecision<Time> t_last = parameters.initial.time;
   int sampling_phase = 0;
 
   std::vector<Position> q_stage(dimension);

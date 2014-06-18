@@ -123,14 +123,14 @@ void NBodySystem<InertialFrame>::Integrate(
 
   // TODO(phl): Ignoring errors for now.
   // Loop over the time steps.
-  for (size_t i = 0; i < solution.size(); ++i) {
+  for (std::size_t i = 0; i < solution.size(); ++i) {
     SymplecticIntegrator<Length, Speed>::SystemState const& state = solution[i];
     Time const& time = state.time.value;
 #ifndef _MANAGED
     CHECK_EQ(state.positions.size(), state.momenta.size());
 #endif
     // Loop over the dimensions.
-    for (size_t k = 0, b = 0; k < state.positions.size(); k += 3, ++b) {
+    for (std::size_t k = 0, b = 0; k < state.positions.size(); k += 3, ++b) {
       Body<InertialFrame>* body = bodies_[b];
       Vector<Length, InertialFrame> const position(
           R3Element<Length>(state.positions[k].value,
@@ -153,13 +153,13 @@ void NBodySystem<InertialFrame>::ComputeGravitationalAccelerations(
   result->assign(result->size(), Acceleration());
 
   // TODO(phl): Used to deal with proper accelerations here.
-  for (size_t b1 = 0, three_b1 = 0;
+  for (std::size_t b1 = 0, three_b1 = 0;
        b1 < massive_bodies_->size();
        ++b1, three_b1 += 3) {
     GravitationalParameter const& body1_gravitational_parameter =
         (*massive_bodies_)[b1]->gravitational_parameter();
-    for (size_t b2 = b1 + 1; b2 < massive_bodies_->size(); ++b2) {
-      size_t const three_b2 = 3 * b2;
+    for (std::size_t b2 = b1 + 1; b2 < massive_bodies_->size(); ++b2) {
+      std::size_t const three_b2 = 3 * b2;
       Length const Δq0 = q[three_b1] - q[three_b2];
       Length const Δq1 = q[three_b1 + 1] - q[three_b2 + 1];
       Length const Δq2 = q[three_b1 + 2] - q[three_b2 + 2];
@@ -182,8 +182,8 @@ void NBodySystem<InertialFrame>::ComputeGravitationalAccelerations(
       (*result)[three_b2 + 1] += Δq1 * μ1OverRSquared;
       (*result)[three_b2 + 2] += Δq2 * μ1OverRSquared;
     }
-    for (size_t b2 = 0; b2 < massless_bodies_->size(); ++b2) {
-      size_t const three_b2 = 3 * b2;
+    for (std::size_t b2 = 0; b2 < massless_bodies_->size(); ++b2) {
+      std::size_t const three_b2 = 3 * b2;
       Length const Δq0 = q[three_b1] - q[three_b2];
       Length const Δq1 = q[three_b1 + 1] - q[three_b2 + 1];
       Length const Δq2 = q[three_b1 + 2] - q[three_b2 + 2];
