@@ -13,19 +13,23 @@
 #include "quantities/quantities.hpp"
 #include "quantities/named_quantities.hpp"
 
+using principia::geometry::Bivector;
 using principia::geometry::DebugString;
+using principia::geometry::Exp;
 using principia::geometry::Permutation;
 using principia::geometry::Quaternion;
 using principia::geometry::Rotation;
 using principia::geometry::Vector;
 using principia::physics::Body;
 using principia::physics::NBodySystem;
+using principia::quantities::AngularFrequency;
 using principia::quantities::GravitationalParameter;
 using principia::quantities::Length;
 using principia::quantities::SIUnit;
 using principia::quantities::DebugString;
 using principia::si::Hour;
 using principia::si::Second;
+using principia::si::Radian;
 
 #define LOG_UNITY(message) UnityEngine::Debug::Log(                            \
     gcnew System::String(                                                      \
@@ -34,6 +38,17 @@ using principia::si::Second;
 
 namespace principia {
 namespace ksp {
+
+Displacement<IntegrationFrame> IntegrationPosition(CelestialBody^ const body);
+VelocityChange<IntegrationFrame> IntegrationVelocity(CelestialBody^ const body);
+
+Displacement<World> WorldPosition(CelestialBody^ const body);
+
+Displacement<IntegrationFrame> IntegrationPosition(Vessel^ const body);
+VelocityChange<IntegrationFrame> IntegrationVelocity(Vessel^ const body);
+
+Rotation<IntegrationFrame, World> PlanetariumRotation();
+Bivector<AngularFrequency, World> AngularVelocity(CelestialBody^ const body);
 
 Principia::~Principia() {
   FreeAllOwnedPointers();
@@ -205,34 +220,47 @@ void Principia::DrawTrajectories(float camera_distance) {
         Body<IntegrationFrame>* vessel    = vessels_->at(id);
         Body<IntegrationFrame>* reference =
             celestials_->at(Unmanage(rendering_reference_body_->name));
-        UnityEngine::LineRenderer^ line_;
+        UnityEngine::LineRenderer^ line;
+        renderers_->TryGetValue(rendering_reference_body_->name, line);
+        line->SetVertexCount(vessel->positions().size());
+        line->enabled = true;
+        line->SetWidth(0.01f * camera_distance, 0.01f * camera_distance);
         for (std::size_t i = 0; i < vessel->positions().size(); ++i) {
-          Displacement<RenderingFrame> offset_from_reference_body;
+          Displacement<World> offset_from_reference_body;
           switch (rendering_frame_type_) {
             case kSurface:
-              vessel->positions()[i] - reference->positions()[i];
+              offset_from_reference_body = Exp(
+                  AngularVelocity(rendering_reference_body_) *
+                  (vessel->times()[i] - universal_time))(
+                      PlanetariumRotation()(vessel->positions()[i] -
+                                            reference->positions()[i]));
               break;
             case kCentric:
-              vessel->positions()[i] - reference->positions()[i];
-              break;
-            case kBarycentric:
+            case kBarycentric:  // TODO(egg): implement;
+              offset_from_reference_body = PlanetariumRotation()(
+                  vessel->positions()[i] - reference->positions()[i]);
               break;
           }
+          Displacement<World> world_position =
+              WorldPosition(rendering_reference_body_) +
+                  offset_from_reference_body;
+          line->SetPosition(i, ScaledSpace::LocalToScaledSpace(
+              Vector3d(world_position.coordinates().x / SIUnit<Length>(),
+                       world_position.coordinates().y / SIUnit<Length>(),
+                       world_position.coordinates().z / SIUnit<Length>())));
         }
       }
     }
   }
 }
 
-Displacement<IntegrationFrame> IntegrationPosition(CelestialBody^ const body);
-VelocityChange<IntegrationFrame> IntegrationVelocity(CelestialBody^ const body);
-
-Displacement<IntegrationFrame> IntegrationPosition(Vessel^ const body);
-VelocityChange<IntegrationFrame> IntegrationVelocity(Vessel^ const body);
-
 void Principia::SetUpSystem() {
   *celestials_ = std::map<std::string, Body<IntegrationFrame>*>();
   *vessels_    = std::map<std::string, Body<IntegrationFrame>*>();
+  for each (auto renderer in renderers_) {
+    UnityEngine::Object::Destroy(renderer.Value);
+  }
+  renderers_->Clear();
   Time const universal_time = UniversalTime();
   std::vector<Body<IntegrationFrame>*>* const bodies =
       new std::vector<Body<IntegrationFrame>*>;
@@ -270,15 +298,16 @@ void Principia::SetUpSystem() {
 }
 
 void Principia::FreeAllOwnedPointers() {
+  for each (auto renderer in renderers_) {
+    UnityEngine::Object::Destroy(renderer.Value);
+  }
+  renderers_->Clear();
   Reset(prediction_length_, nullptr);
   Reset(Δt_, nullptr);
   Reset(system_, nullptr);
   Reset(celestials_, nullptr);
   Reset(vessels_, nullptr);
 }
-
-struct World;
-struct AliceWorld;
 
 Permutation<AliceWorld, World> const LookingGlass =
     Permutation<AliceWorld, World>(Permutation<AliceWorld, World>::XZY);
@@ -344,6 +373,14 @@ VelocityChange<World> WorldVelocity(Vessel^ const body) {
 
 VelocityChange<IntegrationFrame> IntegrationVelocity(Vessel^ const body) {
   return PlanetariumRotation().Inverse()(WorldVelocity(body));
+}
+
+Bivector<AngularFrequency, World> AngularVelocity(CelestialBody^ const body) {
+  Vector3d const angular_velocity = body->angularVelocity;
+  return Bivector<AngularFrequency, World>({
+      angular_velocity.x * Radian / Second,
+      angular_velocity.y * Radian / Second,
+      angular_velocity.z * Radian / Second});
 }
 
 }  // namespace ksp

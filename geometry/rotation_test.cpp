@@ -27,9 +27,9 @@ class RotationTest : public testing::Test {
         R3Element<quantities::Length>(1.0 * Metre, 2.0 * Metre, 3.0 * Metre));
     trivector_ = Trivector<quantities::Length, World>(4.0 * Metre);
     rotation_a_ = Rot(120 * si::Degree,
-                      Vector<double, World>({1, 1, 1}));
+                      Bivector<double, World>({1, 1, 1}));
     rotation_b_ = Rot(90 * si::Degree,
-                      Vector<double, World>({1, 0, 0}));
+                      Bivector<double, World>({1, 0, 0}));
   }
 
   Vector<quantities::Length, World> vector_;

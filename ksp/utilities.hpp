@@ -23,7 +23,5 @@ void Reset(T* pointer, std::nullptr_t const new_pointer) {
   pointer = new_pointer;
 }
 
-
-
 }  // namespace ksp
 }  // namespace principia

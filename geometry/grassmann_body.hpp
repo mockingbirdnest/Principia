@@ -1,5 +1,7 @@
 ﻿#pragma once
 
+#include "geometry/rotation.hpp"
+
 namespace principia {
 namespace geometry {
 
@@ -112,6 +114,11 @@ inline Vector<quantities::Product<LScalar, RScalar>, Frame> operator*(
     Bivector<RScalar, Frame> const& right) {
   return Vector<quantities::Product<LScalar, RScalar>, Frame>(
       Cross(left.coordinates(), right.coordinates()));
+}
+
+template<typename Frame>
+Rotation<Frame, Frame> Exp(Bivector<quantities::Angle, Frame> exponent) {
+  return Rotation<Frame, Frame>(exponent.Norm(), exponent);
 }
 
 template<typename LScalar, typename RScalar, typename Frame>

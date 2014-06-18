@@ -11,9 +11,10 @@ namespace ksp {
 
 // The reference frame in which the integration is performed.
 struct IntegrationFrame;
-
-// The reference frame in which the orbits are rendered.
-struct RenderingFrame;
+// Unity's Worldspace.
+struct World;
+// Unity's Worldspace, with flipped y and z axes. Used by the Orbit class.
+struct AliceWorld;
 
 // The type of frame in which the orbits are rendered.
 // Examples given for Earth as the rendering reference body.
@@ -80,6 +81,12 @@ public ref class Principia : public UnityEngine::MonoBehaviour {
   CelestialBody^ sun_;
   CelestialBody^ rendering_reference_body_;
   RenderingFrameType rendering_frame_type_;
+
+  System::Collections::Generic::Dictionary<System::String^,
+                                           UnityEngine::LineRenderer^>^
+      renderers_ = gcnew System::Collections::Generic::Dictionary<
+                         System::String^,
+                         UnityEngine::LineRenderer^>();
 
   // We own these pointers, but we cannot use |std::unique_ptr| because that's
   // an unmanaged type.
