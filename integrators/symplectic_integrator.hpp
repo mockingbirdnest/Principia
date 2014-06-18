@@ -15,35 +15,37 @@ class SymplecticIntegrator {
   SymplecticIntegrator() = default;
   virtual ~SymplecticIntegrator() = default;
 
-  // TODO(phl): I'd prefer this API to be typed with the untyping done
-  // internally.
-  // NOTE(eggrobin): This namespace is supposed to contain general-purpose
-  // integrators. If you were to type it, you'd have to define
-  // Product<double, double>, Product<float, float> etc. in the same place as
-  // the other products (quantities would hardly be appropriate in that case).
-
   // The coefficients of the integrator.
   typedef std::vector<std::vector<double>> Coefficients;
 
-  // TODO(phl): Rework the struct names, maybe promote them to classes.
+  // A simple container for a scalar value and the related error.  The
+  // constructor is not explicit to make it easy to construct an object with no
+  // error.
+  template<typename Scalar>
+  struct DoublePrecision {
+    DoublePrecision() = default;
+    DoublePrecision(Scalar const& value);  // NOLINT(runtime/explicit)
+    Scalar value;
+    Scalar error;
+  };
+
+  // The entire state of the system at a given time.  The vectors are indexed by
+  // dimension.
+  struct SystemState {
+    std::vector<DoublePrecision<Position>> positions;
+    std::vector<DoublePrecision<Momentum>> momenta;
+    DoublePrecision<Time> time;
+  };
+
+  // TODO(phl): Should we remove this class entirely and just pass 4 parameters
+  // to Solve?
   struct Parameters {
-    Parameters();
-    // The initial positions for each dimension.
-    std::vector<Position> q0;
-    // The initial momenta for each dimension.
-    std::vector<Momentum> p0;
-    // The initial position errors for each dimension, null if no error.
-    std::vector<Position>* q_error;
-    // The initial momentum errors for each dimension, null if no error.
-    std::vector<Momentum>* p_error;
-    // The starting time of the resolution.
-    Time t0;
+    // The initial state of the system.
+    SystemState initial;
     // The ending time of the resolution.
     Time tmax;
     // The time step.
     Time Δt;
-    // The error on the starting time.
-    Time t_error;
     // To save memory, we only return a datapoint every sampling_period steps
     // (for trajectory plotting), as well as the result from the last step. If
     // sampling_period == 0, we only return the result from the last step
@@ -59,20 +61,6 @@ class SymplecticIntegrator {
     int sampling_period;
   };
 
-  template<typename Scalar>
-  struct TimeseriesAndError {
-    // Indexed by time step.
-    std::vector<Scalar> quantities;
-    Scalar error;
-  };
-
-  struct Solution {
-    // Indexed by dimension.
-    std::vector<TimeseriesAndError<Position>> position;
-    std::vector<TimeseriesAndError<Momentum>> momentum;
-    TimeseriesAndError<Time> time;
-  };
-
   // Initialize the integrator with the given |coefficients|.  Must be called
   // before calling Solve.
   virtual void Initialize(Coefficients const& coefficients) = 0;
@@ -86,7 +74,7 @@ class SymplecticIntegrator {
   // void Solve(RightHandSideComputation const compute_force,
   //            AutonomousRightHandSideComputation const compute_velocity,
   //            Parameters const& parameters,
-  //            Solution* solution);
+  //            std::vector<SystemState>* solution);
 };
 
 }  // namespace integrators

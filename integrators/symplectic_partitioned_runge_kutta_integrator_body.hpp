@@ -2,7 +2,6 @@
 #include <algorithm>
 #include <cmath>
 #include <ctime>
-#include <memory>
 #include <vector>
 
 #include "quantities/quantities.hpp"
@@ -16,23 +15,6 @@ using principia::quantities::Quotient;
 
 namespace principia {
 namespace integrators {
-
-namespace {
-
-template <typename T>
-inline std::vector<T>* PointerOrNew(int const dimension,
-                                    std::vector<T>* const in) {
-  if (in == nullptr) {
-    return new std::vector<T>(dimension);
-  } else {
-#ifndef _MANAGED
-    CHECK_EQ(dimension, in->size());
-#endif
-    return in;
-  }
-}
-
-}  // namespace
 
 template<typename Position, typename Momentum>
 inline SPRKIntegrator<Position, Momentum>::SPRKIntegrator() : stages_(0) {}
@@ -84,17 +66,12 @@ void SPRKIntegrator<Position, Momentum>::Solve(
       RightHandSideComputation compute_force,
       AutonomousRightHandSideComputation compute_velocity,
       Parameters const& parameters,
-      Solution* solution) const {
+      std::vector<SystemState>* solution) const {
 #ifndef _MANAGED
   CHECK_NOTNULL(solution);
 #endif
 
-  int const dimension = parameters.q0.size();
-  std::unique_ptr<std::vector<Position>> q_error(
-      PointerOrNew(dimension, parameters.q_error));
-  std::unique_ptr<std::vector<Momentum>> p_error(
-      PointerOrNew(dimension, parameters.p_error));
-  Time t_error = parameters.t_error;
+  int const dimension = parameters.initial.positions.size();
 
   std::vector<Position> Δqstage0(dimension);
   std::vector<Position> Δqstage1(dimension);
@@ -109,27 +86,20 @@ void SPRKIntegrator<Position, Momentum>::Solve(
   int const capacity = parameters.sampling_period == 0 ?
     1 :
     static_cast<int>(
-        ceil((((parameters.tmax - parameters.t0) / parameters.Δt) + 1) /
+        ceil((((parameters.tmax - parameters.initial.time.value) /
+                    parameters.Δt) + 1) /
                 parameters.sampling_period)) + 1;
-  solution->time.quantities.clear();
-  solution->time.quantities.reserve(capacity);
-  solution->momentum.resize(dimension);
-  solution->position.resize(dimension);
-  for (int k = 0; k < dimension; ++k) {
-    solution->position[k].quantities.clear();
-    solution->position[k].quantities.reserve(capacity);
-    solution->momentum[k].quantities.clear();
-    solution->momentum[k].quantities.reserve(capacity);
-  }
+  solution->clear();
+  solution->reserve(capacity);
 
-  std::vector<Position> q_last(parameters.q0);
-  std::vector<Momentum> p_last(parameters.p0);
-  Time t_last = parameters.t0;
+  std::vector<DoublePrecision<Position>> q_last(parameters.initial.positions);
+  std::vector<DoublePrecision<Momentum>> p_last(parameters.initial.momenta);
+  DoublePrecision<Time> t_last = parameters.initial.time;
   int sampling_phase = 0;
 
   std::vector<Position> q_stage(dimension);
   std::vector<Momentum> p_stage(dimension);
-  Time tn = parameters.t0;  // Current time.
+  Time tn = parameters.initial.time.value;  // Current time.
   Time const h = parameters.Δt;  // Constant for now.
   std::vector<Quotient<Momentum, Time>> f(dimension);  // Current forces.
   std::vector<Quotient<Position, Time>> v(dimension);  // Current velocities.
@@ -150,7 +120,7 @@ void SPRKIntegrator<Position, Momentum>::Solve(
     for (int k = 0; k < dimension; ++k) {
       (*Δqstage_current)[k] = Length();
       (*Δpstage_current)[k] = Momentum();
-      q_stage[k] = q_last[k];
+      q_stage[k] = q_last[k].value;
     }
     for (int i = 0; i < stages_; ++i) {
       std::swap(Δqstage_current, Δqstage_previous);
@@ -160,40 +130,44 @@ void SPRKIntegrator<Position, Momentum>::Solve(
       compute_force(tn + c_[i] * h, q_stage, &f);
       for (int k = 0; k < dimension; ++k) {
         Momentum const Δp = (*Δpstage_previous)[k] + h * b_[i] * f[k];
-        p_stage[k] = p_last[k] + Δp;
+        p_stage[k] = p_last[k].value + Δp;
         (*Δpstage_current)[k] = Δp;
       }
       compute_velocity(p_stage, &v);
       for (int k = 0; k < dimension; ++k) {
         Position const Δq = (*Δqstage_previous)[k] + h * a_[i] * v[k];
-        q_stage[k] = q_last[k] + Δq;
+        q_stage[k] = q_last[k].value + Δq;
         (*Δqstage_current)[k] = Δq;
       }
     }
     // Compensated summation from "'SymplecticPartitionedRungeKutta' Method
     // for NDSolve", algorithm 2.
     for (int k = 0; k < dimension; ++k) {
-      Position const Δq = (*Δqstage_current)[k] + (*q_error)[k];
-      q_stage[k] = q_last[k] + Δq;
-      (*q_error)[k] = (q_last[k] - q_stage[k]) + Δq;
-      q_last[k] = q_stage[k];
-      Momentum const Δp = (*Δpstage_current)[k] + (*p_error)[k];
-      p_stage[k] = p_last[k] + Δp;
-      (*p_error)[k] = (p_last[k] - p_stage[k]) + Δp;
-      p_last[k] = p_stage[k];
+      Position const Δq = (*Δqstage_current)[k] + q_last[k].error;
+      q_stage[k] = q_last[k].value + Δq;
+      q_last[k].error = (q_last[k].value - q_stage[k]) + Δq;
+      q_last[k].value = q_stage[k];
+      Momentum const Δp = (*Δpstage_current)[k] + p_last[k].error;
+      p_stage[k] = p_last[k].value + Δp;
+      p_last[k].error = (p_last[k].value - p_stage[k]) + Δp;
+      p_last[k].value = p_stage[k];
     }
 
-    Time const δt = h + t_error;
+    Time const δt = h + t_last.error;
     tn += δt;
-    t_error = (t_last - tn) + δt;
-    t_last = tn;
+    t_last.error = (t_last.value - tn) + δt;
+    t_last.value = tn;
 
     if (parameters.sampling_period != 0) {
       if (sampling_phase % parameters.sampling_period == 0) {
-        solution->time.quantities.push_back(tn);
+        solution->emplace_back();
+        SystemState* state = &solution->back();
+        state->time = t_last;
+        state->positions.reserve(dimension);
+        state->momenta.reserve(dimension);
         for (int k = 0; k < dimension; ++k) {
-          solution->position[k].quantities.push_back(q_stage[k]);
-          solution->momentum[k].quantities.push_back(p_stage[k]);
+          state->positions.emplace_back(q_last[k]);
+          state->momenta.emplace_back(p_last[k]);
         }
       }
       ++sampling_phase;
@@ -211,17 +185,15 @@ void SPRKIntegrator<Position, Momentum>::Solve(
 #endif
   }
   if (parameters.sampling_period == 0) {
-    solution->time.quantities.push_back(tn);
+    solution->emplace_back();
+    SystemState* state = &solution->back();
+    state->time = t_last;
+    state->positions.reserve(dimension);
+    state->momenta.reserve(dimension);
     for (int k = 0; k < dimension; ++k) {
-      solution->position[k].quantities.push_back(q_stage[k]);
-      solution->momentum[k].quantities.push_back(p_stage[k]);
+      state->positions.emplace_back(q_last[k]);
+      state->momenta.emplace_back(p_last[k]);
     }
-  }
-
-  solution->time.error = t_error;
-  for (int k = 0; k < dimension; ++k) {
-    solution->position[k].error = (*q_error)[k];
-    solution->momentum[k].error = (*p_error)[k];
   }
 
 #ifdef TRACE_SYMPLECTIC_PARTITIONED_RUNGE_KUTTA_INTEGRATOR

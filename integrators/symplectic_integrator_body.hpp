@@ -2,9 +2,10 @@ namespace principia {
 namespace integrators {
 
 template<typename Position, typename Momentum>
-SymplecticIntegrator<Position, Momentum>::Parameters::Parameters()
-    : p_error(nullptr),
-      q_error(nullptr) {}
+template<typename Scalar>
+inline SymplecticIntegrator<Position, Momentum>::
+DoublePrecision<Scalar>::DoublePrecision(Scalar const& value)
+    : value(value) {}
 
 }  // namespace integrators
 }  // namespace principia

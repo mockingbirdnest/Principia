@@ -85,7 +85,7 @@ void NBodySystem<InertialFrame>::Integrate(
     Time const& Δt,
     int const sampling_period) {
   SymplecticIntegrator<Length, Speed>::Parameters parameters;
-  SymplecticIntegrator<Length, Speed>::Solution solution;
+  std::vector<SymplecticIntegrator<Length, Speed>::SystemState> solution;
 
   // Prepare the input data.
   std::unique_ptr<Time> reference_time;
@@ -94,12 +94,12 @@ void NBodySystem<InertialFrame>::Integrate(
     R3Element<Speed> const& velocity = body->velocities().back().coordinates();
     Time const& time = body->times().back();
     for (int i = 0; i < 3; ++i) {
-      parameters.q0.push_back(position[i]);
+      parameters.initial.positions.emplace_back(position[i]);
     }
     for (int i = 0; i < 3; ++i) {
-      parameters.p0.push_back(velocity[i]);
+      parameters.initial.momenta.emplace_back(velocity[i]);
     }
-    parameters.t0 = time;
+    parameters.initial.time = time;
     // All the positions/velocities must be for the same time.
     if (reference_time == nullptr) {
       reference_time.reset(new Time(time));
@@ -121,36 +121,25 @@ void NBodySystem<InertialFrame>::Integrate(
       &ComputeGravitationalVelocities,
       parameters, &solution);
 
-#ifndef _MANAGED
   // TODO(phl): Ignoring errors for now.
-  CHECK_EQ(solution.position.size(), solution.momentum.size());
-#endif
-  std::vector<Time> const& t = solution.time.quantities;
-  // Loop over the bodies.
-  // TODO(phl): It looks like we are transposing in the integrator and then
-  // transposing here again.
-  for (size_t i = 0; i < solution.position.size(); i += 3) {
-    Body<InertialFrame>* body = bodies_[i / 3];
-    std::vector<Length> const& q0 = solution.position[i + 0].quantities;
-    std::vector<Length> const& q1 = solution.position[i + 1].quantities;
-    std::vector<Length> const& q2 = solution.position[i + 2].quantities;
-    std::vector<Speed> const& p0 = solution.momentum[i + 0].quantities;
-    std::vector<Speed> const& p1 = solution.momentum[i + 1].quantities;
-    std::vector<Speed> const& p2 = solution.momentum[i + 2].quantities;
+  // Loop over the time steps.
+  for (std::size_t i = 0; i < solution.size(); ++i) {
+    SymplecticIntegrator<Length, Speed>::SystemState const& state = solution[i];
+    Time const& time = state.time.value;
 #ifndef _MANAGED
-    CHECK_EQ(t.size(), q0.size());
-    CHECK_EQ(t.size(), q1.size());
-    CHECK_EQ(t.size(), q2.size());
-    CHECK_EQ(t.size(), p0.size());
-    CHECK_EQ(t.size(), p1.size());
-    CHECK_EQ(t.size(), p2.size());
+    CHECK_EQ(state.positions.size(), state.momenta.size());
 #endif
-    for (size_t j = 0; j < t.size(); ++j) {
+    // Loop over the dimensions.
+    for (std::size_t k = 0, b = 0; k < state.positions.size(); k += 3, ++b) {
+      Body<InertialFrame>* body = bodies_[b];
       Vector<Length, InertialFrame> const position(
-          R3Element<Length>(q0[j], q1[j], q2[j]));
+          R3Element<Length>(state.positions[k].value,
+                            state.positions[k + 1].value,
+                            state.positions[k + 2].value));
       Vector<Speed, InertialFrame> const velocity(
-          R3Element<Speed>(p0[j], p1[j], p2[j]));
-      Time const time = t[j];
+          R3Element<Speed>(state.momenta[k].value,
+                           state.momenta[k + 1].value,
+                           state.momenta[k + 2].value));
       body->AppendToTrajectory(position, velocity, time);
     }
   }
@@ -164,13 +153,13 @@ void NBodySystem<InertialFrame>::ComputeGravitationalAccelerations(
   result->assign(result->size(), Acceleration());
 
   // TODO(phl): Used to deal with proper accelerations here.
-  for (size_t b1 = 0, three_b1 = 0;
+  for (std::size_t b1 = 0, three_b1 = 0;
        b1 < massive_bodies_->size();
        ++b1, three_b1 += 3) {
     GravitationalParameter const& body1_gravitational_parameter =
         (*massive_bodies_)[b1]->gravitational_parameter();
-    for (size_t b2 = b1 + 1; b2 < massive_bodies_->size(); ++b2) {
-      size_t const three_b2 = 3 * b2;
+    for (std::size_t b2 = b1 + 1; b2 < massive_bodies_->size(); ++b2) {
+      std::size_t const three_b2 = 3 * b2;
       Length const Δq0 = q[three_b1] - q[three_b2];
       Length const Δq1 = q[three_b1 + 1] - q[three_b2 + 1];
       Length const Δq2 = q[three_b1 + 2] - q[three_b2 + 2];
@@ -193,8 +182,8 @@ void NBodySystem<InertialFrame>::ComputeGravitationalAccelerations(
       (*result)[three_b2 + 1] += Δq1 * μ1OverRSquared;
       (*result)[three_b2 + 2] += Δq2 * μ1OverRSquared;
     }
-    for (size_t b2 = 0; b2 < massless_bodies_->size(); ++b2) {
-      size_t const three_b2 = 3 * b2;
+    for (std::size_t b2 = 0; b2 < massless_bodies_->size(); ++b2) {
+      std::size_t const three_b2 = 3 * b2;
       Length const Δq0 = q[three_b1] - q[three_b2];
       Length const Δq1 = q[three_b1 + 1] - q[three_b2 + 1];
       Length const Δq2 = q[three_b1 + 2] - q[three_b2 + 2];

@@ -21,7 +21,6 @@ class NBodySystem {
  public:
   typedef std::vector<std::unique_ptr<Body<InertialFrame>>> Bodies;
 
-  // Takes ownership of the vectors.  Either pointer may be null.
   // NOTE(phl): We would prefer to pass the unique_ptr<> by value, but that
   // confuses the compiler.  So for now, we'll use r-value references.
   NBodySystem(std::unique_ptr<Bodies>&& massive_bodies,

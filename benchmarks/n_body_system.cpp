@@ -1,16 +1,16 @@
 
 // .\Release\benchmarks.exe  --benchmark_repetitions=5 --benchmark_filter=Solar
 // Benchmarking on 1 X 3310 MHz CPU
-// 2014/06/15-09:58:04
+// 2014/06/15-23:58:26
 // Benchmark               Time(ns)    CPU(ns) Iterations
 // ------------------------------------------------------
-// BM_SolarSystem        23154825187 23041347700          1                                 1.0002759262590839e+000 ua  // NOLINT(whitespace/line_length)
-// BM_SolarSystem        23549984193 23462550400          1                                 1.0002759262590839e+000 ua  // NOLINT(whitespace/line_length)
-// BM_SolarSystem        22781985974 22713745600          1                                 1.0002759262590839e+000 ua  // NOLINT(whitespace/line_length)
-// BM_SolarSystem        22981985545 22916546900          1                                 1.0002759262590839e+000 ua  // NOLINT(whitespace/line_length)
-// BM_SolarSystem        22646983123 22588944800          1                                 1.0002759262590839e+000 ua  // NOLINT(whitespace/line_length)
-// BM_SolarSystem_mean   23023152804 22944627080          1                                 1.0002759262590839e+000 ua  // NOLINT(whitespace/line_length)
-// BM_SolarSystem_stddev  315039280  302722342          0                                 1.0002759262590839e+000 ua    // NOLINT(whitespace/line_length)
+// BM_SolarSystem        23449882246 23400150000          1                                 1.0002759262590839e+000 ua  // NOLINT(whitespace/line_length)
+// BM_SolarSystem        24191402412 24164554900          1                                 1.0002759262590839e+000 ua  // NOLINT(whitespace/line_length)
+// BM_SolarSystem        22669252611 22651345200          1                                 1.0002759262590839e+000 ua  // NOLINT(whitespace/line_length)
+// BM_SolarSystem        22655250050 22604544900          1                                 1.0002759262590839e+000 ua  // NOLINT(whitespace/line_length)
+// BM_SolarSystem        23051288582 22963347200          1                                 1.0002759262590839e+000 ua  // NOLINT(whitespace/line_length)
+// BM_SolarSystem_mean   23203415180 23156788440          1                                 1.0002759262590839e+000 ua  // NOLINT(whitespace/line_length)
+// BM_SolarSystem_stddev  573728498  578391459          0                                 1.0002759262590839e+000 ua    // NOLINT(whitespace/line_length)
 #include <memory>
 #include <vector>
 

@@ -16,7 +16,7 @@ namespace principia {
 namespace benchmarks {
 
 inline void SolveHarmonicOscillator(
-    SPRKIntegrator<Length, Momentum>::Solution* solution) {
+    std::vector<SPRKIntegrator<Length, Momentum>::SystemState>* solution) {
   using principia::testing_utilities::ComputeHarmonicOscillatorForce;
   using principia::testing_utilities::ComputeHarmonicOscillatorVelocity;
   SPRKIntegrator<Length, Momentum> integrator;
@@ -24,9 +24,9 @@ inline void SolveHarmonicOscillator(
 
   integrator.Initialize(integrator.Order5Optimal());
 
-  parameters.q0 = {SIUnit<Length>()};
-  parameters.p0 = {Momentum()};
-  parameters.t0 = Time();
+  parameters.initial.positions.emplace_back(SIUnit<Length>());
+  parameters.initial.momenta.emplace_back(Momentum());
+  parameters.initial.time = Time();
 #ifdef _DEBUG
   parameters.tmax = 100.0 * SIUnit<Time>();
 #else

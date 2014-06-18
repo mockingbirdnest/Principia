@@ -1,16 +1,16 @@
 
 // .\Release\clr_benchmarks.exe --benchmark_repetitions=5 --benchmark_min_time=30 --benchmark_filter=HarmonicOscillator  // NOLINT(whitespace/line_length)
 // Benchmarking on 1 X 3310 MHz CPU
-// 2014/06/09-00:26:58
+// 2014/06/16-22:12:38
 // Benchmark                               Time(ns)    CPU(ns) Iterations
 // ----------------------------------------------------------------------
-// BM_CLR_SolveHarmonicOscillator        3304006077 3291621100          2
-// BM_CLR_SolveHarmonicOscillator        3268822528 3260420900          2
-// BM_CLR_SolveHarmonicOscillator        3269823409 3268220950          2
-// BM_CLR_SolveHarmonicOscillator        3269323803 3260420900          2
-// BM_CLR_SolveHarmonicOscillator        3272821642 3276021000          2
-// BM_CLR_SolveHarmonicOscillator_mean   3276959492 3271340970          2
-// BM_CLR_SolveHarmonicOscillator_stddev   13594684   11674046          0
+// BM_CLR_SolveHarmonicOscillator        6683419443 6645642600          1
+// BM_CLR_SolveHarmonicOscillator        6677659250 6661242700          1
+// BM_CLR_SolveHarmonicOscillator        6656656004 6645642600          1
+// BM_CLR_SolveHarmonicOscillator        6658656813 6661242700          1
+// BM_CLR_SolveHarmonicOscillator        6639654375 6598842300          1
+// BM_CLR_SolveHarmonicOscillator_mean   6663209177 6642522580          1
+// BM_CLR_SolveHarmonicOscillator_stddev   15721045   22927371          0
 
 // Must come last to avoid conflicts when defining the CHECK macros.
 #include "benchmark/benchmark.h"

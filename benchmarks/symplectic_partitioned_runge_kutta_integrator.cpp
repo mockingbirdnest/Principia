@@ -1,21 +1,22 @@
 ﻿
 // .\Release\benchmarks.exe --benchmark_repetitions=5 --benchmark_min_time=30 --benchmark_filter=HarmonicOscillator                                                 // NOLINT(whitespace/line_length)
 // Benchmarking on 1 X 3310 MHz CPU
-// 2014/06/09-00:22:28
+// 2014/06/16-22:16:22
 // Benchmark                           Time(ns)    CPU(ns) Iterations
 // ------------------------------------------------------------------
-// BM_SolveHarmonicOscillator        1257378650 1260488080          5                                 1.3701886847350409e-013 m, 1.3705703238997557e-013 m kg s^-1  // NOLINT(whitespace/line_length)
-// BM_SolveHarmonicOscillator        1257609773 1260488080          5                                 1.3701886847350409e-013 m, 1.3705703238997557e-013 m kg s^-1  // NOLINT(whitespace/line_length)
-// BM_SolveHarmonicOscillator        1260331750 1263608100          5                                 1.3701886847350409e-013 m, 1.3705703238997557e-013 m kg s^-1  // NOLINT(whitespace/line_length)
-// BM_SolveHarmonicOscillator        1264436937 1263608100          5                                 1.3701886847350409e-013 m, 1.3705703238997557e-013 m kg s^-1  // NOLINT(whitespace/line_length)
-// BM_SolveHarmonicOscillator        1265400577 1266728120          5                                 1.3701886847350409e-013 m, 1.3705703238997557e-013 m kg s^-1  // NOLINT(whitespace/line_length)
-// BM_SolveHarmonicOscillator_mean   1261031538 1262984096          5                                 1.3701886847350409e-013 m, 1.3705703238997557e-013 m kg s^-1  // NOLINT(whitespace/line_length)
-// BM_SolveHarmonicOscillator_stddev    3353416    2334809          0                                 1.3701886847350409e-013 m, 1.3705703238997557e-013 m kg s^-1  // NOLINT(whitespace/line_length)
+// BM_SolveHarmonicOscillator        2829819781 2828818133          3                                 1.3701886847350409e-013 m, 1.3705703238997557e-013 m kg s^-1  // NOLINT(whitespace/line_length)
+// BM_SolveHarmonicOscillator        2814253671 2808018000          3                                 1.3701886847350409e-013 m, 1.3705703238997557e-013 m kg s^-1  // NOLINT(whitespace/line_length)
+// BM_SolveHarmonicOscillator        2807297888 2813218033          3                                 1.3701886847350409e-013 m, 1.3705703238997557e-013 m kg s^-1  // NOLINT(whitespace/line_length)
+// BM_SolveHarmonicOscillator        2799282335 2808018000          3                                 1.3701886847350409e-013 m, 1.3705703238997557e-013 m kg s^-1  // NOLINT(whitespace/line_length)
+// BM_SolveHarmonicOscillator        2798006796 2792417900          3                                 1.3701886847350409e-013 m, 1.3705703238997557e-013 m kg s^-1  // NOLINT(whitespace/line_length)
+// BM_SolveHarmonicOscillator_mean   2809732094 2810098013          3                                 1.3701886847350409e-013 m, 1.3705703238997557e-013 m kg s^-1  // NOLINT(whitespace/line_length)
+// BM_SolveHarmonicOscillator_stddev   11632414   11674046          0                                 1.3701886847350409e-013 m, 1.3705703238997557e-013 m kg s^-1  // NOLINT(whitespace/line_length)
 
 #include "benchmarks/symplectic_partitioned_runge_kutta_integrator.hpp"
 
 #define GLOG_NO_ABBREVIATED_SEVERITIES
 #include <algorithm>
+#include <vector>
 
 #include "quantities/elementary_functions.hpp"
 #include "quantities/named_quantities.hpp"
@@ -36,23 +37,23 @@ namespace benchmarks {
 void SolveHarmonicOscillatorAndComputeError(benchmark::State* state,
                                             Length* q_error,
                                             Momentum* p_error) {
-  SPRKIntegrator<Length, Momentum>::Solution solution;
+  std::vector<SPRKIntegrator<Length, Momentum>::SystemState> solution;
 
   SolveHarmonicOscillator(&solution);
 
   state->PauseTiming();
   *q_error = Length();
   *p_error = Momentum();
-  for (size_t i = 0; i < solution.time.quantities.size(); ++i) {
+  for (std::size_t i = 0; i < solution.size(); ++i) {
     *q_error = std::max(*q_error,
-                        Abs(solution.position[0].quantities[i] -
+                        Abs(solution[i].positions[0].value -
                             SIUnit<Length>() *
-                            Cos(solution.time.quantities[i] *
+                            Cos(solution[i].time.value *
                                 SIUnit<AngularFrequency>())));
     *p_error = std::max(*p_error,
-                        Abs(solution.momentum[0].quantities[i] +
+                        Abs(solution[i].momenta[0].value +
                             SIUnit<Momentum>() *
-                            Sin(solution.time.quantities[i] *
+                            Sin(solution[i].time.value *
                                 SIUnit<AngularFrequency>())));
   }
   state->ResumeTiming();
