@@ -210,8 +210,10 @@ void Principia::DrawTrajectories(float camera_distance) {
           Displacement<RenderingFrame> offset_from_reference_body;
           switch (rendering_frame_type_) {
             case kSurface:
+              vessel->positions()[i] - reference->positions()[i];
               break;
             case kCentric:
+              vessel->positions()[i] - reference->positions()[i];
               break;
             case kBarycentric:
               break;
