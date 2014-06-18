@@ -204,9 +204,19 @@ void Principia::DrawTrajectories(float camera_distance) {
       if (vessels_->count(id)) {
         Body<IntegrationFrame>* vessel    = vessels_->at(id);
         Body<IntegrationFrame>* reference =
-            celestials_->at(Unmanage(rendering_reference_body_->name);
+            celestials_->at(Unmanage(rendering_reference_body_->name));
         UnityEngine::LineRenderer^ line_;
-//        if (rendering_frame_type_)
+        for (std::size_t i = 0; i < vessel->positions().size(); ++i) {
+          Displacement<RenderingFrame> offset_from_reference_body;
+          switch (rendering_frame_type_) {
+            case kSurface:
+              break;
+            case kCentric:
+              break;
+            case kBarycentric:
+              break;
+          }
+        }
       }
     }
   }
