@@ -1,5 +1,7 @@
 ﻿#pragma once
 
+#include <string>
+
 #include "geometry/rotation.hpp"
 
 namespace principia {

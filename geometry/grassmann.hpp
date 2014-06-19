@@ -2,6 +2,7 @@
 
 // We use ostream for logging purposes.
 #include <iostream>  // NOLINT(readability/streams)
+#include <string>
 
 #include "geometry/r3_element.hpp"
 #include "quantities/quantities.hpp"

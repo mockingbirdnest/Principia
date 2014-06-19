@@ -2,6 +2,8 @@
 
 #include <assert.h>
 
+#include <string>
+
 #ifndef _MANAGED
 #include "glog/logging.h"
 #endif
