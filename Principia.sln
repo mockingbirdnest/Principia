@@ -52,8 +52,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Legal", "Legal", "{4B25658F
 		LICENSE.txt = LICENSE.txt
 	EndProjectSection
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ksp", "ksp\ksp.vcxproj", "{33316D09-B5EB-4F24-83AE-1C36D68C5BAA}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "rendering", "rendering\rendering.csproj", "{5D793A44-0026-43C8-A211-C6DEE08F0DE6}"
 EndProject
 Global
@@ -194,16 +192,6 @@ Global
 		{36F3CAF9-1F27-42DC-B5C5-29CB2B8497F4}.Release|Mixed Platforms.Build.0 = Release|Win32
 		{36F3CAF9-1F27-42DC-B5C5-29CB2B8497F4}.Release|Win32.ActiveCfg = Release|Win32
 		{36F3CAF9-1F27-42DC-B5C5-29CB2B8497F4}.Release|Win32.Build.0 = Release|Win32
-		{33316D09-B5EB-4F24-83AE-1C36D68C5BAA}.Debug|Any CPU.ActiveCfg = Debug|Win32
-		{33316D09-B5EB-4F24-83AE-1C36D68C5BAA}.Debug|Mixed Platforms.ActiveCfg = Debug|Win32
-		{33316D09-B5EB-4F24-83AE-1C36D68C5BAA}.Debug|Mixed Platforms.Build.0 = Debug|Win32
-		{33316D09-B5EB-4F24-83AE-1C36D68C5BAA}.Debug|Win32.ActiveCfg = Debug|Win32
-		{33316D09-B5EB-4F24-83AE-1C36D68C5BAA}.Debug|Win32.Build.0 = Debug|Win32
-		{33316D09-B5EB-4F24-83AE-1C36D68C5BAA}.Release|Any CPU.ActiveCfg = Release|Win32
-		{33316D09-B5EB-4F24-83AE-1C36D68C5BAA}.Release|Mixed Platforms.ActiveCfg = Release|Win32
-		{33316D09-B5EB-4F24-83AE-1C36D68C5BAA}.Release|Mixed Platforms.Build.0 = Release|Win32
-		{33316D09-B5EB-4F24-83AE-1C36D68C5BAA}.Release|Win32.ActiveCfg = Release|Win32
-		{33316D09-B5EB-4F24-83AE-1C36D68C5BAA}.Release|Win32.Build.0 = Release|Win32
 		{5D793A44-0026-43C8-A211-C6DEE08F0DE6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{5D793A44-0026-43C8-A211-C6DEE08F0DE6}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{5D793A44-0026-43C8-A211-C6DEE08F0DE6}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
