@@ -59,18 +59,6 @@ Principia::!Principia() {
 }
 
 void Principia::Start() {
-  gui_style = gcnew UnityEngine::GUIStyle(UnityEngine::GUI::skin->button);
-
-  gui_style->normal->textColor    = UnityEngine::Color::white;
-  gui_style->focused->textColor   = UnityEngine::Color::white;
-  gui_style->hover->textColor     = UnityEngine::Color::yellow;
-  gui_style->active->textColor    = UnityEngine::Color::yellow;
-  gui_style->onNormal->textColor  = UnityEngine::Color::green;
-  gui_style->onFocused->textColor = UnityEngine::Color::green;
-  gui_style->onHover->textColor   = UnityEngine::Color::green;
-  gui_style->onActive->textColor  = UnityEngine::Color::green;
-  gui_style->padding              = gcnew UnityEngine::RectOffset(8, 8, 8, 8);
-
   RenderingManager::AddToPostDrawQueue(
       3,                                           // queueSpot
       gcnew Callback(this, &Principia::DrawGUI));  // drawFunction
@@ -127,7 +115,6 @@ void Principia::DrawMainWindow(int window_id) {
 
   if (UnityEngine::GUILayout::Button(
           simulating_ ? "Switch to Keplerian" : "Switch to Newtonian"),
-          gui_style,
           UnityEngine::GUILayout::ExpandWidth(true)) {
     simulating_ = !simulating_;
     if (simulating_) {
@@ -254,6 +241,17 @@ void Principia::DrawTrajectories(float camera_distance) {
   }
 }
 
+UnityEngine::LineRenderer^ CreateOrbitRenderer() {
+  UnityEngine::GameObject^ line_object = gcnew UnityEngine::GameObject();
+  line_object->layer = 11;
+  UnityEngine::LineRenderer^ line =
+      line_object->AddComponent<UnityEngine::LineRenderer^>();
+  line->transform->parent =  nullptr;
+  line->material = MapView::OrbitLinesMaterial;
+  line->SetColors(UnityEngine::Color::blue, UnityEngine::Color::red);
+  return line;
+}
+
 void Principia::SetUpSystem() {
   *celestials_ = std::map<std::string, Body<IntegrationFrame>*>();
   *vessels_    = std::map<std::string, Body<IntegrationFrame>*>();
@@ -275,8 +273,8 @@ void Principia::SetUpSystem() {
     VelocityChange<IntegrationFrame> const velocity =
       IntegrationVelocity(body) - IntegrationVelocity(sun_);
     bodies->back()->AppendToTrajectory({position}, {velocity}, universal_time);
-    celestials_->insert({Unmanage(body->name),
-                         bodies->back()});
+    celestials_->insert({Unmanage(body->name), bodies->back()});
+    renderers_->Add(body->name, CreateOrbitRenderer());
     LOG_UNITY(std::string("\nAdded CelestialBody ") + Unmanage(body->name) +
               "\nGM = " + DebugString(gravitational_parameter) +
               "\nq  = " + DebugString(position) +
@@ -290,6 +288,7 @@ void Principia::SetUpSystem() {
         IntegrationVelocity(body) - IntegrationVelocity(sun_);
     bodies->back()->AppendToTrajectory({position}, {velocity}, universal_time);
     vessels_->insert({Unmanage(body->id.ToString()), bodies->back()});
+    renderers_->Add(body->id.ToString(), CreateOrbitRenderer());
     LOG_UNITY(std::string("\nAdded Vessel ") + Unmanage(body->name) +
               "\nq  = " + DebugString(position) +
               "\nv  = " + DebugString(velocity));

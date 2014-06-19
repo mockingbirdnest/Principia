@@ -68,8 +68,6 @@ public ref class Principia : public UnityEngine::MonoBehaviour {
   UnityEngine::Rect main_window_position_;
   UnityEngine::Rect reference_frame_window_position_;
 
-  UnityEngine::GUIStyle^ gui_style;
-
   bool simulating_;
 
   // We own these pointers, but we cannot use |std::unique_ptr| because that's
