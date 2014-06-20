@@ -112,7 +112,7 @@ template<typename FromFrame, typename ToFrame> class Rotation;
 
 // Exponential map V ^ V = so(V) -> SO(V).
 template<typename Frame>
-Rotation<Frame, Frame> Exp(Bivector<quantities::Angle, Frame> exponent);
+Rotation<Frame, Frame> Exp(Bivector<quantities::Angle, Frame> const& exponent);
 
 template<typename LScalar, typename RScalar, typename Frame>
 Vector<quantities::Product<LScalar, RScalar>, Frame> operator*(

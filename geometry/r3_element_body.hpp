@@ -186,9 +186,14 @@ bool operator!=(R3Element<Scalar> const& left,
 
 template<typename Scalar>
 std::string DebugString(R3Element<Scalar> const& r3_element) {
-  return std::string("{") + quantities::DebugString(r3_element.x) + ", "
-                          + quantities::DebugString(r3_element.y) + ", "
-                          + quantities::DebugString(r3_element.z) + "}";
+  std::string result += "{";
+  result += quantities::DebugString(r3_element.x);
+  result += ", ";
+  result += quantities::DebugString(r3_element.y);
+  result += ", ";
+  result += quantities::DebugString(r3_element.z);
+  result +="}";
+  return result;
 }
 
 template<typename Scalar>
