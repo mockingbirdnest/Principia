@@ -3,7 +3,7 @@
 namespace principia {
 namespace geometry {
 
-// An element of the multiplicative group {+1, -1}. Useful for instance to
+// An element of the multiplicative group ({+1, -1}, *). Useful for instance to
 // represent the determinant of an orthogonal map.
 class Sign {
  public:

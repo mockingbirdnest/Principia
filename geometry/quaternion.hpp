@@ -1,10 +1,12 @@
-#pragma once
+﻿#pragma once
 
 #include "geometry/r3_element.hpp"
 
 namespace principia {
 namespace geometry {
 
+// An element of the skew field of quaternions ℍ (where ℝ is modeled by
+// |double|).
 class Quaternion {
  public:
   Quaternion();
