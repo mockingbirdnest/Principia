@@ -83,7 +83,8 @@ class AffineMapTest : public testing::Test {
 };
 
 TEST_F(AffineMapTest, Cube) {
-  Rot rotate_left(π / 2 * Radian, upward_);
+  Rot rotate_left(π / 2 * Radian,
+                  Bivector<Length, World>(upward_.coordinates()));
   EXPECT_THAT(RelativeError(leftward_, rotate_left(forward_)),
               Lt(2 * DBL_EPSILON));
   RigidTransformation map = RigidTransformation(back_right_bottom_,

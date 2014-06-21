@@ -2,6 +2,7 @@
 
 // We use ostream for logging purposes.
 #include <iostream>  // NOLINT(readability/streams)
+#include <string>
 
 #include "quantities/quantities.hpp"
 
@@ -74,6 +75,9 @@ bool operator==(R3Element<Scalar> const& left,
 template<typename Scalar>
 bool operator!=(R3Element<Scalar> const& left,
                 R3Element<Scalar> const& right);
+
+template<typename Scalar>
+std::string DebugString(R3Element<Scalar> const& r3_element);
 
 template<typename Scalar>
 std::ostream& operator<<(std::ostream& out,

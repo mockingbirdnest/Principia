@@ -339,17 +339,17 @@ inline std::string FormatUnit(std::string const& name, int const exponent) {
   }
 }
 
-inline std::string ToString(double const number,
-                            unsigned char const precision) {
+inline std::string DebugString(double const number,
+                               unsigned char const precision) {
   char result[50];
   sprintf_s(result, ("%."+ std::to_string(precision) + "e").c_str(), number);
   return result;
 }
 
 template<typename D>
-inline std::string ToString(Quantity<D> const& quantity,
-                            unsigned char const precision) {
-  return ToString(quantity.magnitude_, precision) +
+inline std::string DebugString(Quantity<D> const& quantity,
+                               unsigned char const precision) {
+  return DebugString(quantity.magnitude_, precision) +
       FormatUnit("m", D::Length) + FormatUnit("kg", D::Mass) +
       FormatUnit("s", D::Time) + FormatUnit("A", D::Current) +
       FormatUnit("K", D::Temperature) + FormatUnit("mol", D::Amount) +
@@ -360,7 +360,7 @@ inline std::string ToString(Quantity<D> const& quantity,
 
 template<typename D>
 std::ostream& operator<<(std::ostream& out, Quantity<D> const& quantity) {
-  return out << ToString(quantity);
+  return out << DebugString(quantity);
 }
 
 }  // namespace quantities

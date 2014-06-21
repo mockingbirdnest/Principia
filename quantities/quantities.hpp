@@ -55,8 +55,8 @@ template<typename Q>
 using SquareRoot = typename type_generators::SquareRootGenerator<Q>::ResultType;
 
 template<typename D>
-std::string ToString(Quantity<D> const& quantity,
-                     unsigned char const precision = 16);
+std::string DebugString(Quantity<D> const& quantity,
+                        unsigned char const precision = 16);
 
 template<typename D>
 std::ostream& operator<<(std::ostream& out, Quantity<D> const& quantity);
@@ -135,7 +135,7 @@ class Quantity {
   friend Angle ArcTan(Quantity<D> const& y, Quantity<D> const& x);
 
   template<typename D>
-  friend std::string ToString(Quantity<D> const&, unsigned char const);
+  friend std::string DebugString(Quantity<D> const&, unsigned char const);
 };
 
 template<typename D>
@@ -202,11 +202,11 @@ SquareRoot<Quantity<D>> Sqrt(Quantity<D> const& x);
 template<typename D>
 Angle ArcTan(Quantity<D> const& y, Quantity<D> const& x);
 
-std::string ToString(double const number,
-                     unsigned char const precision = DBL_DIG + 1);
+std::string DebugString(double const number,
+                        unsigned char const precision = DBL_DIG + 1);
 template<typename D>
-std::string ToString(Quantity<D> const& quantity,
-                     unsigned char const precision);
+std::string DebugString(Quantity<D> const& quantity,
+                        unsigned char const precision);
 
 template<typename D>
 std::ostream& operator<<(::std::ostream& out, Quantity<D> const& quantity);

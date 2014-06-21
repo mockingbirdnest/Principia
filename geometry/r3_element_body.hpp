@@ -2,6 +2,8 @@
 
 #include <assert.h>
 
+#include <string>
+
 #ifndef _MANAGED
 #include "glog/logging.h"
 #endif
@@ -33,7 +35,9 @@ inline Scalar& R3Element<Scalar>::operator[](int const index) {
     case 2:
       return z;
     default:
+#ifndef _MANAGED
       LOG(FATAL) << "Index = " << index;
+#endif
       noreturn();
   }
 }
@@ -181,11 +185,21 @@ bool operator!=(R3Element<Scalar> const& left,
 }
 
 template<typename Scalar>
+std::string DebugString(R3Element<Scalar> const& r3_element) {
+  std::string result = "{";
+  result += quantities::DebugString(r3_element.x);
+  result += ", ";
+  result += quantities::DebugString(r3_element.y);
+  result += ", ";
+  result += quantities::DebugString(r3_element.z);
+  result +="}";
+  return result;
+}
+
+template<typename Scalar>
 std::ostream& operator<<(std::ostream& out,
                          R3Element<Scalar> const& r3_element) {
-  out << "{" << r3_element.x << ", "
-             << r3_element.y << ", "
-             << r3_element.z << "}";
+  out << DebugString(r3_element);
   return out;
 }
 

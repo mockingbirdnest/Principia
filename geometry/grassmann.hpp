@@ -2,6 +2,7 @@
 
 // We use ostream for logging purposes.
 #include <iostream>  // NOLINT(readability/streams)
+#include <string>
 
 #include "geometry/r3_element.hpp"
 #include "quantities/quantities.hpp"
@@ -89,23 +90,29 @@ Trivector<quantities::Product<LScalar, RScalar>, Frame> Wedge(
     Vector<LScalar, Frame> const& left,
     Bivector<RScalar, Frame> const& right);
 
-// Lie bracket on V ^ V = so(V).
+// Lie bracket on V ∧ V = 𝖘𝔬(V).
 template<typename LScalar, typename RScalar, typename Frame>
 Bivector<quantities::Product<LScalar, RScalar>, Frame> Commutator(
     Bivector<LScalar, Frame> const& left,
     Bivector<RScalar, Frame> const& right);
 
-// Left action of V ^ V = so(V) on V.
+// Left action of V ∧ V = 𝖘𝔬(V) on V.
 template<typename LScalar, typename RScalar, typename Frame>
 Vector<quantities::Product<LScalar, RScalar>, Frame> operator*(
     Bivector<LScalar, Frame> const& left,
     Vector<RScalar, Frame> const& right);
 
-// Right action of V ^ V = so(V) on V* = V.
+// Right action of V ∧ V = 𝖘𝔬(V) on V* = V.
 template<typename LScalar, typename RScalar, typename Frame>
 Vector<quantities::Product<LScalar, RScalar>, Frame> operator*(
     Vector<LScalar, Frame> const& left,
     Bivector<RScalar, Frame> const& right);
+
+template<typename FromFrame, typename ToFrame> class Rotation;
+
+// Exponential map V ∧ V = 𝖘𝔬(V) -> SO(V).
+template<typename Frame>
+Rotation<Frame, Frame> Exp(Bivector<quantities::Angle, Frame> const& exponent);
 
 template<typename LScalar, typename RScalar, typename Frame>
 Vector<quantities::Product<LScalar, RScalar>, Frame> operator*(
@@ -197,6 +204,9 @@ template<typename Scalar, typename Frame, unsigned int Rank>
 Multivector<Scalar, Frame, Rank>& operator/=(
     Multivector<Scalar, Frame, Rank>& left,  // NOLINT(runtime/references)
     double const right);
+
+template<typename Scalar, typename Frame, unsigned int Rank>
+std::string DebugString(Multivector<Scalar, Frame, Rank> const& multivector);
 
 template<typename Scalar, typename Frame, unsigned int Rank>
 std::ostream& operator<<(std::ostream& out,

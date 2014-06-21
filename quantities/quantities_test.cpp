@@ -28,21 +28,6 @@ using principia::constants::SpeedOfLight;
 using principia::constants::StandardGravity;
 using principia::constants::VacuumPermeability;
 using principia::constants::VacuumPermittivity;
-using principia::quantities::Abs;
-using principia::quantities::ArcCos;
-using principia::quantities::ArcCosh;
-using principia::quantities::ArcSin;
-using principia::quantities::ArcSinh;
-using principia::quantities::ArcTan;
-using principia::quantities::ArcTanh;
-using principia::quantities::Cos;
-using principia::quantities::Mass;
-using principia::quantities::Pow;
-using principia::quantities::Product;
-using principia::quantities::Sin;
-using principia::quantities::Speed;
-using principia::quantities::Sqrt;
-using principia::quantities::ToString;
 using principia::si::Ampere;
 using principia::si::AstronomicalUnit;
 using principia::si::Candela;
@@ -69,7 +54,7 @@ using principia::uk::Rood;
 using testing::Lt;
 
 namespace principia {
-namespace geometry {
+namespace quantities {
 
 class QuantitiesTest : public testing::Test {
  protected:
@@ -130,10 +115,10 @@ TEST_F(QuantitiesTest, Formatting) {
                             (Mole * Candela * Cycle * Radian * Steradian);
   std::string const expected = std::string("1e+000 m kg s A K mol^-1") +
                                 " cd^-1 cycle^-1 rad^-1 sr^-1";
-  std::string const actual = ToString(allTheUnits, 0);
+  std::string const actual = DebugString(allTheUnits, 0);
   EXPECT_EQ(expected, actual);
   std::string π16 = "3.1415926535897931e+000";
-  EXPECT_EQ(ToString(π), π16);
+  EXPECT_EQ(DebugString(π), π16);
 }
 
 TEST_F(QuantitiesTest, PhysicalConstants) {
@@ -222,5 +207,5 @@ TEST_F(QuantitiesTest, ExpLogAndSqrt) {;
   EXPECT_EQ(std::exp(std::log(Rood / Pow<2>(Foot)) / 2) * Foot, Sqrt(Rood));
 }
 
-}  // namespace geometry
+}  // namespace quantities
 }  // namespace principia

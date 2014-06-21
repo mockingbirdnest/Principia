@@ -15,8 +15,9 @@ Rotation<FromFrame, ToFrame>::Rotation() : quaternion_(Quaternion(1)) {}
 
 template<typename FromFrame, typename ToFrame>
 template<typename Scalar>
-Rotation<FromFrame, ToFrame>::Rotation(quantities::Angle const& angle,
-                                       Vector<Scalar, FromFrame> const& axis) {
+Rotation<FromFrame, ToFrame>::Rotation(
+    quantities::Angle const& angle,
+    Bivector<Scalar, FromFrame> const& axis) {
   quantities::Angle const half_angle = 0.5 * angle;
   double const cos = Cos(half_angle);
   double const sin = Sin(half_angle);
@@ -34,7 +35,7 @@ Sign Rotation<FromFrame, ToFrame>::Determinant() const {
 template<typename FromFrame, typename ToFrame>
 Rotation<ToFrame, FromFrame> Rotation<FromFrame, ToFrame>::Inverse() const {
   // Because |quaternion_| has norm 1, its inverse is just its conjugate.
-  return Rotation(quaternion_.Conjugate());
+  return Rotation<ToFrame, FromFrame>(quaternion_.Conjugate());
 }
 
 template<typename FromFrame, typename ToFrame>

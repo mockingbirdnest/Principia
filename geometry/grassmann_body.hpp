@@ -1,5 +1,9 @@
 ﻿#pragma once
 
+#include <string>
+
+#include "geometry/rotation.hpp"
+
 namespace principia {
 namespace geometry {
 
@@ -112,6 +116,11 @@ inline Vector<quantities::Product<LScalar, RScalar>, Frame> operator*(
     Bivector<RScalar, Frame> const& right) {
   return Vector<quantities::Product<LScalar, RScalar>, Frame>(
       Cross(left.coordinates(), right.coordinates()));
+}
+
+template<typename Frame>
+Rotation<Frame, Frame> Exp(Bivector<quantities::Angle, Frame> const& exponent) {
+  return Rotation<Frame, Frame>(exponent.Norm(), exponent);
 }
 
 template<typename LScalar, typename RScalar, typename Frame>
@@ -275,9 +284,19 @@ inline Multivector<Scalar, Frame, Rank>& operator/=(
 }
 
 template<typename Scalar, typename Frame, unsigned int Rank>
+std::string DebugString(Multivector<Scalar, Frame, Rank> const& multivector) {
+  // This |using| is required for the |Trivector|, since we need an ambiguity
+  // between |geometry::DebugString(R3Element<Scalar> const&)| and
+  // |quantities::DebugString(Scalar const&)| in order for the template magic
+  // to work out.
+  using quantities::DebugString;
+  return DebugString(multivector.coordinates());
+}
+
+template<typename Scalar, typename Frame, unsigned int Rank>
 std::ostream& operator<<(std::ostream& out,
                          Multivector<Scalar, Frame, Rank> const& multivector) {
-  out << multivector.coordinates();
+  out << DebugString(multivector);
   return out;
 }
 
