@@ -287,8 +287,8 @@ template<typename Scalar, typename Frame, unsigned int Rank>
 std::string DebugString(Multivector<Scalar, Frame, Rank> const& multivector) {
   // This |using| is required for the |Trivector|, since we need an ambiguity
   // between |geometry::DebugString(R3Element<Scalar> const&)| and
-  // |quantities::DebugString(Scalar const&)| in order for the template magic to
-  // work out.
+  // |quantities::DebugString(Scalar const&)| in order for the template magic
+  // to work out.
   using quantities::DebugString;
   return DebugString(multivector.coordinates());
 }
