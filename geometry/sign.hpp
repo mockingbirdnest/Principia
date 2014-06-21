@@ -3,8 +3,8 @@
 namespace principia {
 namespace geometry {
 
-// A simple abstraction for something that can take the values -1 and 1.  Useful
-// for instance to represent the determinant of an orthogonal map.
+// An element of the multiplicative group {+1, -1}. Useful for instance to
+// represent the determinant of an orthogonal map.
 class Sign {
  public:
   template<typename Scalar> explicit Sign(Scalar const& s);

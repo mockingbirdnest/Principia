@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 #include "geometry/point.hpp"
 #include "geometry/grassmann.hpp"
@@ -6,8 +6,8 @@
 namespace principia {
 namespace geometry {
 
-// Since the map is represented as x -> linear_map_(x) + translation_ and since
-// it is x -> linear_map(x - from_origin) + to_origin, we get
+// Since the map is represented as x ↦ linear_map_(x) + translation_ and since
+// it is x ↦ linear_map(x - from_origin) + to_origin, we get
 // linear_map_ = linear_map, translation_ = to_origin - linear_map(from_origin).
 template<typename FromFrame, typename ToFrame, typename Scalar,
          template<typename, typename> class LinearMap>
