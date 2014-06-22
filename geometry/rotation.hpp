@@ -12,6 +12,9 @@ namespace geometry {
 template<typename FromFrame, typename ToFrame>
 class OrthogonalMap;
 
+// An orientation-preserving orthogonal map between the inner product spaces
+// |FromFrame| and |ToFrame|, as well as the induced maps on the exterior
+// algebra.
 template<typename FromFrame, typename ToFrame>
 class Rotation : public LinearMap<FromFrame, ToFrame> {
  public:

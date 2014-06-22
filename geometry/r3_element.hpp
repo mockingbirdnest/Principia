@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 // We use ostream for logging purposes.
 #include <iostream>  // NOLINT(readability/streams)
@@ -9,10 +9,9 @@
 namespace principia {
 namespace geometry {
 
-// R3Element is an element of a 3-dimensional dimensionful vector space on the
-// field R, represented by Dimensionless. It is the underlying data type for
-// the more advanced strongly typed structures of the Grassmann algebras and
-// affine spaces.
+// An |R3Element<Scalar>| is an element of Scalar³. |Scalar| should be a vector
+// space over ℝ, represented by |double|. |R3Element| is the underlying data
+// type for more advanced strongly typed structures suchas |Multivector|.
 template<typename Scalar>
 struct R3Element {
  public:
@@ -56,6 +55,11 @@ template<typename Scalar>
 R3Element<Scalar> operator/(R3Element<Scalar> const& left,
                             double const right);
 
+// Dimensionful multiplication |LScalar * R3Element<RScalar>| is the tensor
+// product LScalar ⊗ Scalar³. Since LScalar ⊗ Scalar³ ≅ (LScalar ⊗ Scalar)³,
+// the result is an R3Element<Product<LScalar, RScalar>>.
+// The special case where one of the scalars is |double| is handled separately
+// above in order to allow implicit conversions to |double|.
 template<typename LDimension, typename RScalar>
 R3Element<quantities::Product<quantities::Quantity<LDimension>, RScalar>>
 operator*(quantities::Quantity<LDimension> const& left,

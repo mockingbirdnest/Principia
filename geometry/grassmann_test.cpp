@@ -45,10 +45,10 @@ class GrassmannTest : public testing::Test {
  protected:
   struct World;
 
-  template<typename LScalar, typename RScalar, typename Frame, int Rank>
+  template<typename LScalar, typename RScalar, typename Frame, int rank>
   static Product<LScalar, RScalar> MultivectorInnerProduct(
-      Multivector<LScalar, Frame, Rank> const& left,
-      Multivector<RScalar, Frame, Rank> const& right) {
+      Multivector<LScalar, Frame, rank> const& left,
+      Multivector<RScalar, Frame, rank> const& right) {
     return InnerProduct(left, right);
   }
 

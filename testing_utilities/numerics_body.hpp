@@ -41,16 +41,16 @@ Scalar AbsoluteError(geometry::R3Element<Scalar> const& expected,
               [](geometry::R3Element<Scalar> const& v) { return v.Norm(); });
 }
 
-template<typename Scalar, typename Frame, unsigned int Rank>
+template<typename Scalar, typename Frame, unsigned int rank>
 Scalar AbsoluteError(
-    geometry::Multivector<Scalar, Frame, Rank> const& expected,
-    geometry::Multivector<Scalar, Frame, Rank> const& actual) {
+    geometry::Multivector<Scalar, Frame, rank> const& expected,
+    geometry::Multivector<Scalar, Frame, rank> const& actual) {
   return AbsoluteError<
-      geometry::Multivector<Scalar, Frame, Rank>,
-      std::function<Scalar(geometry::Multivector<Scalar, Frame, Rank>)>,
+      geometry::Multivector<Scalar, Frame, rank>,
+      std::function<Scalar(geometry::Multivector<Scalar, Frame, rank>)>,
       Scalar>(expected,
               actual,
-              [](geometry::Multivector<Scalar, Frame, Rank> v) {
+              [](geometry::Multivector<Scalar, Frame, rank> v) {
                 return v.Norm();
               });
 }
@@ -77,13 +77,13 @@ double RelativeError(geometry::R3Element<Scalar> const& expected,
                        [](geometry::R3Element<Scalar> v) { return v.Norm(); });
 }
 
-template<typename Scalar, typename Frame, unsigned int Rank>
-double RelativeError(geometry::Multivector<Scalar, Frame, Rank> const& expected,
-                     geometry::Multivector<Scalar, Frame, Rank> const& actual) {
+template<typename Scalar, typename Frame, unsigned int rank>
+double RelativeError(geometry::Multivector<Scalar, Frame, rank> const& expected,
+                     geometry::Multivector<Scalar, Frame, rank> const& actual) {
   return RelativeError(
       expected,
       actual,
-      [](geometry::Multivector<Scalar, Frame, Rank> v) { return v.Norm(); });
+      [](geometry::Multivector<Scalar, Frame, rank> v) { return v.Norm(); });
 }
 
 union Qword {

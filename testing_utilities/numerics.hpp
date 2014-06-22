@@ -31,10 +31,10 @@ Scalar AbsoluteError(geometry::R3Element<Scalar> const& expected,
                      geometry::R3Element<Scalar> const& actual);
 
 // Uses Multivector.Norm().
-template<typename Scalar, typename Frame, unsigned int Rank>
+template<typename Scalar, typename Frame, unsigned int rank>
 Scalar AbsoluteError(
-    geometry::Multivector<Scalar, Frame, Rank> const& expected,
-    geometry::Multivector<Scalar, Frame, Rank> const& actual);
+    geometry::Multivector<Scalar, Frame, rank> const& expected,
+    geometry::Multivector<Scalar, Frame, rank> const& actual);
 
 template<typename T, typename Norm>
 double RelativeError(T const& expected, T const& actual, Norm const norm);
@@ -53,9 +53,9 @@ double RelativeError(geometry::R3Element<Scalar> const& expected,
                      geometry::R3Element<Scalar> const& actual);
 
 // Uses Multivector.Norm().
-template<typename Scalar, typename Frame, unsigned int Rank>
-double RelativeError(geometry::Multivector<Scalar, Frame, Rank> const& expected,
-                     geometry::Multivector<Scalar, Frame, Rank> const& actual);
+template<typename Scalar, typename Frame, unsigned int rank>
+double RelativeError(geometry::Multivector<Scalar, Frame, rank> const& expected,
+                     geometry::Multivector<Scalar, Frame, rank> const& actual);
 
 std::int64_t ULPDistance(double const x, double const y);
 
