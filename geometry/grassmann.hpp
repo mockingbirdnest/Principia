@@ -10,10 +10,10 @@
 namespace principia {
 namespace geometry {
 
-// A multivector of rank |rank| on a three-dimensional real inner product space
-// bearing the dimensionality of |Scalar|.
-// Do not use this type for |rank == 0| (scalars), use the Scalar type directly
-// instead.
+// A multivector of rank |rank| on a three-dimensional real inner product
+// space bearing the dimensionality of |Scalar|, i.e., an element of
+// ⋀ⁿ Scalar³. Do not use this type for |rank == 0| (scalars), use the |Scalar|
+// type directly instead.
 template<typename Scalar, typename Frame, unsigned int rank>
 struct Multivector;
 
@@ -90,19 +90,19 @@ Trivector<quantities::Product<LScalar, RScalar>, Frame> Wedge(
     Vector<LScalar, Frame> const& left,
     Bivector<RScalar, Frame> const& right);
 
-// Lie bracket on V ∧ V = 𝖘𝔬(V).
+// Lie bracket on V ∧ V ≅ 𝖘𝔬(V).
 template<typename LScalar, typename RScalar, typename Frame>
 Bivector<quantities::Product<LScalar, RScalar>, Frame> Commutator(
     Bivector<LScalar, Frame> const& left,
     Bivector<RScalar, Frame> const& right);
 
-// Left action of V ∧ V = 𝖘𝔬(V) on V.
+// Left action of V ∧ V ≅ 𝖘𝔬(V) on V.
 template<typename LScalar, typename RScalar, typename Frame>
 Vector<quantities::Product<LScalar, RScalar>, Frame> operator*(
     Bivector<LScalar, Frame> const& left,
     Vector<RScalar, Frame> const& right);
 
-// Right action of V ∧ V = 𝖘𝔬(V) on V* = V.
+// Right action of V ∧ V ≅ 𝖘𝔬(V) on V* ≅ V.
 template<typename LScalar, typename RScalar, typename Frame>
 Vector<quantities::Product<LScalar, RScalar>, Frame> operator*(
     Vector<LScalar, Frame> const& left,
@@ -110,7 +110,7 @@ Vector<quantities::Product<LScalar, RScalar>, Frame> operator*(
 
 template<typename FromFrame, typename ToFrame> class Rotation;
 
-// Exponential map V ∧ V = 𝖘𝔬(V) -> SO(V).
+// Exponential map V ∧ V ≅ 𝖘𝔬(V) -> SO(V).
 template<typename Frame>
 Rotation<Frame, Frame> Exp(Bivector<quantities::Angle, Frame> const& exponent);
 
