@@ -90,19 +90,19 @@ Trivector<quantities::Product<LScalar, RScalar>, Frame> Wedge(
     Vector<LScalar, Frame> const& left,
     Bivector<RScalar, Frame> const& right);
 
-// Lie bracket on V ∧ V ≅ 𝖘𝔬(V).
+// Lie bracket on 𝑉 ∧ 𝑉 ≅ 𝖘𝔬(𝑉).
 template<typename LScalar, typename RScalar, typename Frame>
 Bivector<quantities::Product<LScalar, RScalar>, Frame> Commutator(
     Bivector<LScalar, Frame> const& left,
     Bivector<RScalar, Frame> const& right);
 
-// Left action of V ∧ V ≅ 𝖘𝔬(V) on V.
+// Left action of 𝑉 ∧ 𝑉 ≅ 𝖘𝔬(𝑉) on 𝑉.
 template<typename LScalar, typename RScalar, typename Frame>
 Vector<quantities::Product<LScalar, RScalar>, Frame> operator*(
     Bivector<LScalar, Frame> const& left,
     Vector<RScalar, Frame> const& right);
 
-// Right action of V ∧ V ≅ 𝖘𝔬(V) on V* ≅ V.
+// Right action of 𝑉 ∧ 𝑉 ≅ 𝖘𝔬(𝑉) on 𝑉* ≅ 𝑉.
 template<typename LScalar, typename RScalar, typename Frame>
 Vector<quantities::Product<LScalar, RScalar>, Frame> operator*(
     Vector<LScalar, Frame> const& left,
@@ -110,7 +110,7 @@ Vector<quantities::Product<LScalar, RScalar>, Frame> operator*(
 
 template<typename FromFrame, typename ToFrame> class Rotation;
 
-// Exponential map V ∧ V ≅ 𝖘𝔬(V) -> SO(V).
+// Exponential map 𝑉 ∧ 𝑉 ≅ 𝖘𝔬(𝑉) -> SO(𝑉).
 template<typename Frame>
 Rotation<Frame, Frame> Exp(Bivector<quantities::Angle, Frame> const& exponent);
 
