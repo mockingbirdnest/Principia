@@ -13,7 +13,7 @@ double DoubleValue(Scalar const& scalar) {
   return scalar / quantities::SIUnit<Scalar>();
 }
 
-template<typename T, typename NormType = T, typename Norm = NormType(*)(T)>
+template<typename T, typename NormType, typename Norm>
 NormType AbsoluteError(T const& expected, T const& actual,
                        Norm const norm) {
   return norm(expected - actual);
