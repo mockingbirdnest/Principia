@@ -91,13 +91,13 @@ class Quantity {
   template<typename D>
   friend Quantity<D> operator-(Quantity<D> const&, Quantity<D> const&);
   template<typename DLeft, typename DRight>
-  friend Product<typename Quantity<DLeft>,
-                 typename Quantity<DRight>> operator*(Quantity<DLeft> const&,
-                                                      Quantity<DRight> const&);
+  friend Product<Quantity<DLeft>,
+                 Quantity<DRight>> operator*(Quantity<DLeft> const&,
+                                             Quantity<DRight> const&);
   template<typename DLeft, typename DRight>
-  friend Quotient<typename Quantity<DLeft>,
-                  typename Quantity<DRight>> operator/(Quantity<DLeft> const&,
-                                                       Quantity<DRight> const&);
+  friend Quotient<Quantity<DLeft>,
+                  Quantity<DRight>> operator/(Quantity<DLeft> const&,
+                                              Quantity<DRight> const&);
   template<typename D>
   friend Quantity<D> operator*(Quantity<D> const&, double const);
   template<typename D>
@@ -147,12 +147,10 @@ Quantity<D> operator+(Quantity<D> const&, Quantity<D> const&);
 template<typename D>
 Quantity<D> operator-(Quantity<D> const&, Quantity<D> const&);
 template<typename DLeft, typename DRight>
-Product<typename Quantity<DLeft>,
-                typename Quantity<DRight>> operator*(Quantity<DLeft> const&,
-                                                    Quantity<DRight> const&);
+Product<Quantity<DLeft>, Quantity<DRight>> operator*(Quantity<DLeft> const&,
+                                                     Quantity<DRight> const&);
 template<typename DLeft, typename DRight>
-Quotient<typename Quantity<DLeft>,
-                typename Quantity<DRight>> operator/(Quantity<DLeft> const&,
+Quotient<Quantity<DLeft>, Quantity<DRight>> operator/(Quantity<DLeft> const&,
                                                       Quantity<DRight> const&);
 template<typename D>
 Quantity<D> operator*(Quantity<D> const&, double const);

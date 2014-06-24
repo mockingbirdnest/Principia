@@ -183,20 +183,20 @@ inline Quantity<D> operator-(Quantity<D> const& left,
 #pragma region Multiplicative group
 
 template<typename DLeft, typename DRight>
-inline Product <typename Quantity<DLeft>, typename Quantity <DRight>>
-operator*(Quantity<DLeft> const& left,
-          Quantity<DRight> const& right) {
-  return Product<typename Quantity<DLeft>,
-                 typename Quantity<DRight>>(left.magnitude_ *
+inline Product <Quantity<DLeft>, Quantity <DRight>> operator*(
+    Quantity<DLeft> const& left,
+    Quantity<DRight> const& right) {
+  return Product<Quantity<DLeft>,
+                 Quantity<DRight>>(left.magnitude_ *
                                             right.magnitude_);
 }
 
 template<typename DLeft, typename DRight>
-inline Quotient<typename Quantity<DLeft>, typename Quantity <DRight>>
-operator/(Quantity<DLeft> const& left,
-          Quantity<DRight> const& right) {
-  return Quotient<typename Quantity<DLeft>,
-                  typename Quantity<DRight>>(left.magnitude_ /
+inline Quotient<Quantity<DLeft>, Quantity <DRight>> operator/(
+    Quantity<DLeft> const& left,
+    Quantity<DRight> const& right) {
+  return Quotient<Quantity<DLeft>,
+                  Quantity<DRight>>(left.magnitude_ /
                                              right.magnitude_);
 }
 
