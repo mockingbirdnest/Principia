@@ -13,7 +13,7 @@ double DoubleValue(Scalar const& scalar) {
   return scalar / quantities::SIUnit<Scalar>();
 }
 
-template<typename T, typename Norm, typename NormType>
+template<typename T, typename NormType = T, typename Norm = NormType(*)(T)>
 NormType AbsoluteError(T const& expected, T const& actual,
                        Norm const norm) {
   return norm(expected - actual);
@@ -34,11 +34,11 @@ template<typename Scalar>
 Scalar AbsoluteError(geometry::R3Element<Scalar> const& expected,
                      geometry::R3Element<Scalar> const& actual) {
   return AbsoluteError<
-      geometry::R3Element<Scalar>,
-      std::function<Scalar(geometry::R3Element<Scalar>)>,
-      Scalar>(expected,
-              actual,
-              [](geometry::R3Element<Scalar> const& v) { return v.Norm(); });
+      geometry::R3Element<Scalar>, Scalar,
+      std::function<Scalar(geometry::R3Element<Scalar>)>>(
+          expected,
+          actual,
+          [](geometry::R3Element<Scalar> const& v) { return v.Norm(); });
 }
 
 template<typename Scalar, typename Frame, unsigned int rank>
@@ -46,13 +46,13 @@ Scalar AbsoluteError(
     geometry::Multivector<Scalar, Frame, rank> const& expected,
     geometry::Multivector<Scalar, Frame, rank> const& actual) {
   return AbsoluteError<
-      geometry::Multivector<Scalar, Frame, rank>,
-      std::function<Scalar(geometry::Multivector<Scalar, Frame, rank>)>,
-      Scalar>(expected,
-              actual,
-              [](geometry::Multivector<Scalar, Frame, rank> v) {
-                return v.Norm();
-              });
+      geometry::Multivector<Scalar, Frame, rank>, Scalar,
+      std::function<Scalar(geometry::Multivector<Scalar, Frame, rank>)>>(
+          expected,
+          actual,
+          [](geometry::Multivector<Scalar, Frame, rank> v) {
+            return v.Norm();
+          });
 }
 
 template<typename T, typename Norm>
