@@ -64,7 +64,7 @@ std::ostream& operator<<(std::ostream& out, Quantity<D> const& quantity);
 template<typename D>
 class Quantity {
  public:
-  typedef typename D Dimensions;
+  typedef D Dimensions;
   typedef Quotient<double, Quantity> Inverse;
 
   Quantity();
@@ -91,8 +91,8 @@ class Quantity {
   template<typename D>
   friend Quantity<D> operator-(Quantity<D> const&, Quantity<D> const&);
   template<typename DLeft, typename DRight>
-  friend Product<typename Quantity<DLeft>,
-                 typename Quantity<DRight>> operator*(Quantity<DLeft> const&,
+  friend Product<Quantity<DLeft>,
+                 Quantity<DRight>> operator*(Quantity<DLeft> const&,
                                                       Quantity<DRight> const&);
   template<typename DLeft, typename DRight>
   friend Quotient<typename Quantity<DLeft>,

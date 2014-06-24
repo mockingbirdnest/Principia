@@ -1,6 +1,6 @@
 ﻿#pragma once
 
-#include <math.h>
+#include <cmath>
 
 #include "quantities/si.hpp"
 

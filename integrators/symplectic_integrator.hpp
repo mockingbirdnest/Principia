@@ -9,6 +9,17 @@ using principia::quantities::Time;
 namespace principia {
 namespace integrators {
 
+// A simple container for a scalar value and the related error.  The
+// constructor is not explicit to make it easy to construct an object with no
+// error.
+template<typename Scalar>
+struct DoublePrecision {
+  DoublePrecision() = default;
+  DoublePrecision(Scalar const& value);  // NOLINT(runtime/explicit)
+  Scalar value;
+  Scalar error;
+};
+
 template<typename Position, typename Momentum>
 class SymplecticIntegrator {
  public:
@@ -17,17 +28,6 @@ class SymplecticIntegrator {
 
   // The coefficients of the integrator.
   typedef std::vector<std::vector<double>> Coefficients;
-
-  // A simple container for a scalar value and the related error.  The
-  // constructor is not explicit to make it easy to construct an object with no
-  // error.
-  template<typename Scalar>
-  struct DoublePrecision {
-    DoublePrecision() = default;
-    DoublePrecision(Scalar const& value);  // NOLINT(runtime/explicit)
-    Scalar value;
-    Scalar error;
-  };
 
   // The entire state of the system at a given time.  The vectors are indexed by
   // dimension.
