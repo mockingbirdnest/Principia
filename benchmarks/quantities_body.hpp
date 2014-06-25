@@ -1,6 +1,5 @@
 ﻿#pragma once
 
-#define _USE_MATH_DEFINES
 #include <cmath>
 #include <vector>
 
@@ -59,7 +58,7 @@ inline void DoubleDiscreteCosineTransform(
   for (std::size_t k = 0; k < kDimension; ++k, sign *= -1) {
     sum = 0;
     for (std::size_t n = 1; n < kDimension - 1; ++n) {
-      sum += input[n] * std::cos(M_PI / (kDimension - 1) * n * k);
+      sum += input[n] * std::cos(π / (kDimension - 1) * n * k);
     }
 #ifdef TRIGGER_DEAD_CODE_ELIMINATION
     (*result)[k] = 0.5 * (input[0] + sign * input[kDimension - 1]);

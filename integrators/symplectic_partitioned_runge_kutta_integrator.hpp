@@ -10,6 +10,13 @@ namespace integrators {
 template<typename Position, typename Momentum>
 class SPRKIntegrator : public SymplecticIntegrator<Position, Momentum> {
  public:
+  typedef typename SymplecticIntegrator<Position, Momentum>::Coefficients
+      Coefficients;
+  typedef typename SymplecticIntegrator<Position, Momentum>::Parameters
+      Parameters;
+  typedef typename SymplecticIntegrator<Position, Momentum>::SystemState
+      SystemState;
+
   SPRKIntegrator();
   ~SPRKIntegrator() override = default;
 

@@ -12,7 +12,7 @@ namespace testing_utilities {
 template<typename Scalar>
 double DoubleValue(Scalar const& scalar);
 
-template<typename T, typename Norm, typename NormType = T>
+template<typename T, typename NormType = T, typename Norm = NormType(*)(T)>
 NormType AbsoluteError(T const& expected, T const& actual,
                        Norm const norm);
 
@@ -36,7 +36,7 @@ Scalar AbsoluteError(
     geometry::Multivector<Scalar, Frame, rank> const& expected,
     geometry::Multivector<Scalar, Frame, rank> const& actual);
 
-template<typename T, typename Norm>
+template<typename T, typename Norm = T(*)(T)>
 double RelativeError(T const& expected, T const& actual, Norm const norm);
 
 // Equivalent to RelativeError(expected, actual, Abs).

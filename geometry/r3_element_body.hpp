@@ -1,6 +1,7 @@
 #pragma once
 
 #include <assert.h>
+#include <stdlib.h>
 
 #include <string>
 
@@ -13,7 +14,7 @@ namespace principia {
 namespace geometry {
 
 namespace {
-__declspec(noreturn) void noreturn() {}
+__declspec(noreturn) void noreturn() { exit(0); }
 }  // namespace
 
 // We want zero initialisation here, so the default constructor won't do.
