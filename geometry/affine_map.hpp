@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 #include "geometry/point.hpp"
 #include "geometry/grassmann.hpp"
@@ -22,7 +22,7 @@ class AffineMap {
   Point<ToVector> operator()(Point<FromVector> const& point) const;
 
  private:
-  // The map is internally represented as x -> linear_map_(x) + translation_.
+  // The map is internally represented as x ↦ linear_map_(x) + translation_.
   ToVector translation_;
   LinearMap<FromFrame, ToFrame> linear_map_;
 
