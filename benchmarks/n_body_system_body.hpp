@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 
 #include "integrators/symplectic_partitioned_runge_kutta_integrator.hpp"
 #include "physics/n_body_system.hpp"

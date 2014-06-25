@@ -1,4 +1,3 @@
-﻿
 #include "clr_benchmarks_adapter/symplectic_partitioned_runge_kutta_integrator.hpp"
 
 #include <vector>

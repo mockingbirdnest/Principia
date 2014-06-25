@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 
 #undef TRACE_SYMPLECTIC_PARTITIONED_RUNGE_KUTTA_INTEGRATOR
 

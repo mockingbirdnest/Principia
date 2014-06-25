@@ -1,4 +1,3 @@
-
 // .\Release\benchmarks.exe  --benchmark_repetitions=5 --benchmark_filter=Solar
 // Benchmarking on 1 X 3310 MHz CPU
 // 2014/06/15-23:58:26
