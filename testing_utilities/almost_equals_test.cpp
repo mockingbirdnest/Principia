@@ -1,4 +1,6 @@
-﻿#include "geometry/grassmann.hpp"
+﻿#include "testing_utilities/almost_equals.hpp"
+
+#include "geometry/grassmann.hpp"
 #include "glog/logging.h"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
@@ -8,7 +10,6 @@
 #include "quantities/numbers.hpp"
 #include "quantities/quantities.hpp"
 #include "quantities/uk.hpp"
-#include "testing_utilities/almost_equals.hpp"
 
 namespace principia {
 namespace testing_utilities {
