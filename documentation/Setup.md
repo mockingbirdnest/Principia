@@ -24,6 +24,7 @@ This project depends upon:
 library, *modified according to the instructions below*;
 - The Google [gmock/gtest 1.7.0](https://code.google.com/p/googlemock
 /downloads/list) libraries, *modified according to the instructions below*.
+- The Google benchmark library for Windows.
 
 The following instructions should be followed before opening the repository, so
 that all dependencies are found.
@@ -72,6 +73,10 @@ in `gmock_main Properties -> C/C++ -> General`.
 18. Delete `<root>\Google\gmock.patch`.
 19. Open `<root>\Google\gmock-1.7.0\msvc\2010\gmock.sln`.
 20. Build for Debug and Release.
+21. Unhide `<root>\Google\.git`, e.g. by running `attrib -h .git` in `<root>\Google`, then delete `<root>\Google\.git`.
+22. In `<root>\Google`, run `git clone https://github.com/pleroy/benchmark.git`.
+23. Open `<root>\Google\benchmark\msvc\google-benchmark.sln` with Visual Studio 2013.
+24. Build for Debug and Release.
 
 You are now done with the setup of the dependencies.
 Open `<root>\Principia\Principia.sln` and build.
