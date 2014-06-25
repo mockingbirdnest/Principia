@@ -1,4 +1,3 @@
-
 #include "clr_benchmarks_adapter/n_body_system.hpp"
 
 #include "benchmarks/n_body_system.hpp"

@@ -1,4 +1,3 @@
-﻿
 #include "testing_utilities/solar_system.hpp"
 
 #include <string>

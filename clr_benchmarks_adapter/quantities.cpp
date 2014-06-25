@@ -1,4 +1,3 @@
-
 #include "clr_benchmarks_adapter/quantities.hpp"
 
 #include <vector>

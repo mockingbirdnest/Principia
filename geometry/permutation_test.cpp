@@ -1,4 +1,3 @@
-
 #include <vector>
 
 #include "geometry/permutation.hpp"
