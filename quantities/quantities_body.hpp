@@ -187,8 +187,7 @@ inline Product <Quantity<DLeft>, Quantity <DRight>> operator*(
     Quantity<DLeft> const& left,
     Quantity<DRight> const& right) {
   return Product<Quantity<DLeft>,
-                 Quantity<DRight>>(left.magnitude_ *
-                                            right.magnitude_);
+                 Quantity<DRight>>(left.magnitude_ * right.magnitude_);
 }
 
 template<typename DLeft, typename DRight>
@@ -196,8 +195,7 @@ inline Quotient<Quantity<DLeft>, Quantity <DRight>> operator/(
     Quantity<DLeft> const& left,
     Quantity<DRight> const& right) {
   return Quotient<Quantity<DLeft>,
-                  Quantity<DRight>>(left.magnitude_ /
-                                             right.magnitude_);
+                  Quantity<DRight>>(left.magnitude_ / right.magnitude_);
 }
 
 template<typename D>
