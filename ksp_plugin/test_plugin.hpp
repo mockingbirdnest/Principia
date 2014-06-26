@@ -1,5 +1,5 @@
 namespace principia {
-namespace test_plugin {
+namespace ksp_plugin {
 
 extern "C"
 __declspec(dllexport)
@@ -9,5 +9,5 @@ extern "C"
 __declspec(dllexport)
 char const* SayHello();
 
-}  // namespace test_plugin
+}  // namespace ksp_plugin
 }  // namespace principia

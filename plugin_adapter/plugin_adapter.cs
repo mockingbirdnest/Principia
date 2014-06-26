@@ -54,14 +54,18 @@ public class PluginAdapter : MonoBehaviour {
         position : new Rect(left : 0f, top : 0f, width : 10000f, height : 20f));
   }
 
-  [DllImport("test_plugin.dll", CallingConvention = CallingConvention.Cdecl)]
+  private const string kDllPath = "GameData/Principia/principia.dll";
+
+  [DllImport(dllName           : kDllPath,
+             CallingConvention = CallingConvention.Cdecl)]
   private static extern int Say33();
 
-  [DllImport("test_plugin.dll", CallingConvention = CallingConvention.Cdecl)]
+  [DllImport(dllName           : kDllPath,
+             CallingConvention = CallingConvention.Cdecl)]
   private static extern IntPtr SayHello();
 
   private UnityEngine.Rect window_position_;
 }
 
-}  // namespace principia
+}  // namespace plugin_adapter
 }  // namespace principia

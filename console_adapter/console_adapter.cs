@@ -5,11 +5,14 @@ namespace princpia {
 namespace console_adapter {
 
 internal class ConsoleAdapter {
+  private const string kDllPath = "GameData/Principia/principia.dll";
 
-  [DllImport("test_plugin.dll", CallingConvention = CallingConvention.Cdecl)]
+  [DllImport(dllName           : kDllPath,
+             CallingConvention = CallingConvention.Cdecl)]
   private static extern int Say33();
 
-  [DllImport("test_plugin.dll", CallingConvention = CallingConvention.Cdecl)]
+  [DllImport(dllName           : kDllPath,
+             CallingConvention = CallingConvention.Cdecl)]
   private static extern IntPtr SayHello();
 
   internal static void Main(string[] args) {
