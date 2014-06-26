@@ -1,7 +1,7 @@
 using System;
 using System.Runtime.InteropServices;
 
-namespace princpia {
+namespace principia {
 namespace console_adapter {
 
 internal class ConsoleAdapter {
