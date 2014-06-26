@@ -25,4 +25,4 @@ internal class ConsoleAdapter {
 }
 
 }  // namespace console_adapter
-}  // namespace princpia
+}  // namespace principia
