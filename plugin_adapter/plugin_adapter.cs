@@ -8,7 +8,6 @@ namespace plugin_adapter {
 
 [KSPAddon(KSPAddon.Startup.Flight, false)]
 public class PluginAdapter {
-  [StructLayout(LayoutKind.Sequential)]
 
   private void Start() {
     RenderingManager.AddToPostDrawQueue(3, new Callback(DrawGUI));
@@ -38,11 +37,20 @@ public class PluginAdapter {
     style.onActive.textColor  = Color.green;
     style.padding             = new RectOffset(8, 8, 8, 8);
     GUILayout.BeginVertical();
+    GUILayout.TextArea(text : Say33().ToString());
+    IntPtr hello_ptr = SayHello();
+    GUILayout.TextArea(text : Marshal.PtrToStringAnsi(hello_ptr));
+    GUILayout.EndVertical();
 
+    GUI.DragWindow(
+        position : new Rect(left : 0f, top : 0f, width : 10000f, height : 20f));
   }
 
-  [DllImport("test_plugin.dll")]
-  private static extern string SayHello();
+  [DllImport("test_plugin.dll", CallingConvention = CallingConvention.Cdecl)]
+  private static extern int Say33();
+
+  [DllImport("test_plugin.dll", CallingConvention = CallingConvention.Cdecl)]
+  private static extern IntPtr SayHello();
 
   private UnityEngine.Rect window_position_;
 }
