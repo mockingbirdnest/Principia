@@ -2,7 +2,7 @@ using System;
 using System.Runtime.InteropServices;
 
 namespace principia {
-namespace console_adapter {
+namespace ksp_plugin_console {
 
 internal class ConsoleAdapter {
   private const string kDllPath = "GameData/Principia/principia.dll";
@@ -24,5 +24,5 @@ internal class ConsoleAdapter {
   }
 }
 
-}  // namespace console_adapter
+}  // namespace ksp_plugin_console
 }  // namespace principia

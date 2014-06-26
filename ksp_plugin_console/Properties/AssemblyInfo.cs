@@ -5,11 +5,11 @@ using System.Runtime.InteropServices;
 // General Information about an assembly is controlled through the following 
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("plugin_adapter")]
+[assembly: AssemblyTitle("ksp_plugin_console")]
 [assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("")]
-[assembly: AssemblyProduct("plugin_adapter")]
+[assembly: AssemblyProduct("ksp_plugin_console")]
 [assembly: AssemblyCopyright("Copyright ©  2014")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
@@ -20,7 +20,7 @@ using System.Runtime.InteropServices;
 [assembly: ComVisible(false)]
 
 // The following GUID is for the ID of the typelib if this project is exposed to COM
-[assembly: Guid("8e665b76-03f8-473f-89fc-b07d08df7fe6")]
+[assembly: Guid("38ef9f78-9ae6-4558-a2ae-20de6023b615")]
 
 // Version information for an assembly consists of the following four values:
 //

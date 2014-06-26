@@ -4,7 +4,7 @@ using System.Runtime.InteropServices;
 using UnityEngine;
 
 namespace principia {
-namespace plugin_adapter {
+namespace ksp_plugin_adapter {
 
 [KSPAddon(KSPAddon.Startup.EveryScene, false)]
 public class PluginAdapter : MonoBehaviour {
@@ -67,5 +67,5 @@ public class PluginAdapter : MonoBehaviour {
   private UnityEngine.Rect window_position_;
 }
 
-}  // namespace plugin_adapter
+}  // namespace ksp_plugin_adapter
 }  // namespace principia

@@ -52,12 +52,12 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Legal", "Legal", "{4B25658F
 		LICENSE.txt = LICENSE.txt
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "plugin_adapter", "plugin_adapter\plugin_adapter.csproj", "{E75B3F05-D64F-4AFE-9493-2F94A9B37510}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ksp_plugin_adapter", "ksp_plugin_adapter\ksp_plugin_adapter.csproj", "{E75B3F05-D64F-4AFE-9493-2F94A9B37510}"
 	ProjectSection(ProjectDependencies) = postProject
 		{A3F94607-2666-408F-AF98-0E47D61C98BB} = {A3F94607-2666-408F-AF98-0E47D61C98BB}
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "console_adapter", "console_adapter\console_adapter.csproj", "{2182D73B-895F-45AA-B124-2FD95663A096}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ksp_plugin_console", "ksp_plugin_console\ksp_plugin_console.csproj", "{2182D73B-895F-45AA-B124-2FD95663A096}"
 	ProjectSection(ProjectDependencies) = postProject
 		{A3F94607-2666-408F-AF98-0E47D61C98BB} = {A3F94607-2666-408F-AF98-0E47D61C98BB}
 	EndProjectSection
