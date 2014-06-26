@@ -14,4 +14,4 @@ char const* SayHello() {
 }
 
 }  // namespace ksp_plugin
-}  // namespace princpia
+}  // namespace principia
