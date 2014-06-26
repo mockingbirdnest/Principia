@@ -6,15 +6,23 @@ using UnityEngine;
 namespace principia {
 namespace plugin_adapter {
 
-[KSPAddon(KSPAddon.Startup.Flight, false)]
-public class PluginAdapter {
+[KSPAddon(KSPAddon.Startup.EveryScene, false)]
+public class PluginAdapter : MonoBehaviour {
 
   private void Start() {
-    RenderingManager.AddToPostDrawQueue(3, new Callback(DrawGUI));
+    RenderingManager.AddToPostDrawQueue(queueSpot    : 3,
+                                        drawFunction : new Callback(DrawGUI));
     window_position_ = new UnityEngine.Rect(left   : Screen.width / 2.0f,
                                             top    : Screen.height / 2.0f,
                                             width  : 10,
                                             height : 10);
+    Debug.Log("principia log: after Start()");
+  }
+
+  private void OnDestroy() {
+    RenderingManager.RemoveFromPostDrawQueue(
+        queueSpot    : 3,
+        drawFunction : new Callback(DrawGUI));
   }
 
   private void DrawGUI() {
