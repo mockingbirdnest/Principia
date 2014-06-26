@@ -16,7 +16,6 @@ public class PluginAdapter : MonoBehaviour {
                                             top    : Screen.height / 2.0f,
                                             width  : 10,
                                             height : 10);
-    Debug.Log("principia log: after Start()");
   }
 
   private void OnDestroy() {
