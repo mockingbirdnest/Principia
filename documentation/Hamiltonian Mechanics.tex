@@ -7,17 +7,56 @@
 
 \title{%
 \textdisplay{%
-An Introduction to Runge-Kutta Integrators}%
+An Introduction Hamiltonian Mechanics}%
 }
 \author{Robin~Leroy (eggrobin)}
 \begin{document}
 \maketitle
 In this post I shall assume understanding of the concepts described in
-chapter~8 (Motion) as well as sections 11--4 and 11--5 (Vectors and Vector
-algebra) of chapter~11 of Richard Feynmann's \emph{Lectures on Physics}.
+chapter~4 (Conservation of Energy), chapter~8 (Motion) as well as sections
+11--4 and 11--5 (Vectors and Vector algebra) of chapter~11 of Richard
+Feynmann's \emph{Lectures on Physics}.
 
 It is the continuation of my \emph{Introduction to Runge-Kutta Integrators},
 but it does not rely on the concepts described in that post.
 
 \section{Motivation}
+We have previously seen how to compute the evolution of physical systems while
+keeping the buildup of error in check. However, the error will still build up
+over time. We would like to ensure that fundamental properties of the physical
+system are preserved. For instance, we'd like a low strongly-bound orbit not to
+turn into an escape trajectory (or a reentry) over time: we need conservation
+of energy.
 
+In order to make an integrator that conserves energy, it is helpful to look at
+physics from a viewpoint where the conservation of energy is the fundamental
+hypothesis, rather than a consequence of the application of some forces.
+
+\section{Gravitation from a Newtonian viewpoint}
+Recall the formulation by forces of the gravitational $N$-body problem: each
+body $i$, located at position $\vq_i$ exerts a force $\vF_{ij}$ on every other body $j$, located at $\vq_j$ whose magnitude is
+\[
+F_{ij} = \frac{G m_i m_j}{\norm{\vq_i - \vq_j}^2}.
+\]
+The force on $j$ is directed toward $i$, so
+\[
+\vF_{ij} = F_{ij} \frac{\vq_i - \vq_j}{\norm{\vq_i - \vq_j}} =
+\frac{G m_i m_j}{\norm{\vq_i - \vq_j}^2}
+    \frac{\vq_i - \vq_j}{\norm{\vq_i - \vq_j}} =
+\frac{G m_i m_j}{\norm{\vq_i - \vq_j}^3}\pa{\vq_i - \vq_j}.
+\]
+Adding up all the forces exerted on $j$ by the bodies $1, \dotsc, j-1, j+1,
+\dotsc, N$, we get the total force $\vF_j$ on $j$,
+\begin{align*}
+\vF_j &=
+\vF_{1 j} + \vF_{2 j} + \dotsb + \vF_{j-1\, j} + \vF_{j+1\, j} + \vF_{N\, j} \\
+&= \sum{i\in\intclos 1 N \setminus \set{j}} \vF_{i j}
+\end{align*}
+This force then changes the velocity of $j$ according to Newton's second law,
+\[
+\deriv t {\vv_j} = \frac{\vF_j}{m_j}.
+\]
+What is the energy of that $N$-body system? Part of it is the energy due to the motion of the bodies, the so-called \emph{kinetic}\footnote{From ancient Greek \emph{κινεῖν}, to move.} energy $T$, \[
+T = \sum{j=1}[N] \frac12 m_j v_j^2.
+\]
+\end{document}
