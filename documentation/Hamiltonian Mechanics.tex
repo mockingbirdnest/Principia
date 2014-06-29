@@ -32,59 +32,15 @@ In order to make an integrator that conserves energy, it is helpful to look at
 physics from a viewpoint where the conservation of energy is the fundamental
 hypothesis, rather than a consequence of the application of some forces.
 
-\section{Gravitation from a Newtonian viewpoint}
-Recall the formulation by forces of the gravitational $N$-body problem: each
-body $i$, located at position $\vQ_i$ exerts a force $\vF_{ij}$ on every other
-body $j$, located at $\vQ_j$ whose magnitude is
-\[
-F_{ij} = \frac{G m_i m_j}{\norm{\vQ_i - \vQ_j}^2}.
-\]
-The force on $j$ is directed toward $i$, so
-\[
-\vF_{ij} = F_{ij} \frac{\vQ_i - \vQ_j}{\norm{\vQ_i - \vQ_j}} =
-\frac{G m_i m_j}{\norm{\vQ_i - \vQ_j}^2}
-    \frac{\vQ_i - \vQ_j}{\norm{\vQ_i - \vQ_j}} =
-\frac{G m_i m_j}{\norm{\vQ_i - \vQ_j}^3}\pa{\vQ_i - \vQ_j}.
-\]
-Adding up all the forces exerted on $j$ by the bodies $1, \dotsc, j-1, j+1,
-\dotsc, N$, we get the total force $\vF_j$ on $j$,
-\begin{align*}
-\vF_j &=
-\vF_{1 j} + \vF_{2 j} + \dotsb + \vF_{j-1\, j} + \vF_{j+1\, j} + \vF_{N\, j} \\
-&= \sum{\substack {i = 1 \\ i \neq j}}[N] \vF_{i j}
-\end{align*}
-This force then changes the velocity of $j$ according to Newton's second law,
-\[
-\deriv t {\vv_j} = \frac{\vF_j}{m_j}.
-\]
-
-What is the energy of that $N$-body system? Part of it is the energy due to the
-motion of the bodies, the so-called \emph{kinetic}\footnote{From ancient Greek
-\emph{κινεῖν}, to move.} energy $T$, \[
-T = \sum{j=1}[N] \frac12 m_j v_j^2.
-\]
-The other form in which energy is present is gravitational potential energy,
-\[
-V = \sum{i = 1}[N]\sum{\substack {i = 1 \\ i \neq j}}[N] \frac{G m_i m_j}
-{\norm{\vQ_i - \vQ_j}}
-\]
-From the Newtonian viewpoint, it happens that gravity is a conservative force
-(it doesn't waste energy in heat or something else), so that $T + V$, the total
-energy, is conserved, and we can prove this from  the expression of $\vF$.
-
-In the Hamiltonian approach, we start instead with the energy, and \emph{derive}
-the effect of the gravitational interaction from it, ensuring that it conserves
-energy: The energy defines the evolution of the system, and we no longer care
-about individual forces.
-
 \newcommand{\Hamiltonian}{\mathscr{H}}
 \section{Gravitation from a Hamiltonian viewpoint}
 We consider a system of $N$ bodies $1$ through $N$, with masses $m_1$ through
 $m_j$. The state of the system is defined by the \emph{positions} and
 \emph{momenta} of those bodies. For each body $j$, the position $\vQ_j$ and the
 momentum $\vP_j$ are 3-dimensional vectors, so the state of the entire system
-lies in a $6N$-dimensional space, the \emph{classical\footnote{A similar formalism exists for quantum
-mechanics, in which case we talk about the \emph{quantum} phase space.} phase space}.
+lies in a $6N$-dimensional space, the \emph{classical\footnote{A similar
+formalism exists for quantum mechanics, in which case we talk about the
+\emph{quantum} phase space.} phase space}.
 We can write the state as $\tuple{\vq, \vp}$, where $\vq = \tuple{q_1, \dotsc,
 q_{3N}}$ and $\vp =  \tuple{p_1, \dotsc, p_{3N}}$ are $3N$-dimensional.
 
@@ -93,16 +49,16 @@ of the state of the system, the energy of a given state being $\Hamiltonian(\vq,
 \vp)$.
 
 The evolution of the state $\tuple{\vq, \vp}$ is given for each component $i\in
-\set{1,\dotsc,3N}$, by
+\set{1,\dotsc,3N}$, by the \emph{equations of motion}
 \[
 \begin{cases}
 \deriv t {q_i} &= \deriv {p_i} \Hamiltonian \\
 \deriv t {p_i} &= -\deriv {q_i} \Hamiltonian
 \end{cases}.
 \]
-This is can be{Readers familiar with multivariate calculus might
-prefer the notations $\deriv t {\vq} = \grad_{\vp} \Hamiltonian, \deriv t {\vp}
-= -\grad_{\vq} \Hamiltonian$, or $\derivop t 
+This is can be written\footnote{Readers familiar with multivariate calculus
+might prefer the notations $\deriv t {\vq} = \grad_{\vp} \Hamiltonian,
+\deriv t {\vp} = -\grad_{\vq} \Hamiltonian$, or $\derivop t 
 \begin{pmatrix}
 \vq \\
 \vp
@@ -112,7 +68,7 @@ prefer the notations $\deriv t {\vq} = \grad_{\vp} \Hamiltonian, \deriv t {\vp}
 -\Identity & \nullmat
 \end{pmatrix}
 \grad \Hamiltonian$.}
-written as
+as
 \[
 \begin{cases}
 \deriv t {\vq} &= \deriv {\vp} \Hamiltonian \\
@@ -122,4 +78,44 @@ written as
 In this way, we have \emph{defined} the change in position and momentum as a
 function of time, and thus completely desccribed how the system will evolve from
 an initial state $\tuple{\vq_0, \vp_0}$.
+
+From this formulation it immediately follows that energy is conserved:
+indeed,
+\begin{align*}
+\deriv t \Hamiltonian &= \scal{\deriv \vq \Hamiltonian}{\deriv t \vq}
+    + \scal{\deriv \vp \Hamiltonian}{\deriv t \vp} \\
+&= \scal{\deriv \vq \Hamiltonian}{\deriv \vp \Hamiltonian}
+    - \scal{\deriv \vp \Hamiltonian}{\deriv \vq \Hamiltonian} = 0.
+\end{align*}
+
+Here the energy is $\Hamiltonian = T + V$, where $T$ is the kinetic energy
+and $V$ is the gravitational potential energy.
+Since $T$ only depends on the momenta $\vp$ (recall that for body $j$,
+$T_j = \frac{1}{2} m_j v_j^2$ and $\vP_j = m_j\vv_j$) and $V$ only depends
+on the positions $\vq$, we get:
+\[
+\Hamiltonian\of{\vp, \vq} = T\of{\vp} + V\of{\vq}
+\]
+so the equations of motion become
+\[
+\begin{cases}
+\deriv t {\vq} &= \deriv {\vp} T \\
+\deriv t {\vp} &= -\deriv {\vq} V
+\end{cases}.
+\]
+For a single body $j$, this gives us
+\[
+\begin{cases}
+\deriv t {\vQ_j} &= \deriv {\vP_j} T = \derivop {\vP_j}\frac{1}{2} m_j v_j^2
+    = v \\
+\deriv t {\vP_j} &= -\deriv {\vq} V
+\end{cases}.
+\]
+In other words, the change in position is the velocity, and the change in
+momentum (the force) is in the direction which decreases the potential.
+It helps to visualise the potential for a two-dimensional problem, where the
+position of a body is given by $x$ and $y$. One can plot the potential
+$V\of{x, y}$ as a hilly landscape, and the force is then directed downhill,
+its magnitude proportional to the slope of the hill.
+
 \end{document}
