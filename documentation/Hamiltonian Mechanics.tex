@@ -34,24 +34,24 @@ hypothesis, rather than a consequence of the application of some forces.
 
 \section{Gravitation from a Newtonian viewpoint}
 Recall the formulation by forces of the gravitational $N$-body problem: each
-body $i$, located at position $\vq_i$ exerts a force $\vF_{ij}$ on every other
-body $j$, located at $\vq_j$ whose magnitude is
+body $i$, located at position $\vQ_i$ exerts a force $\vF_{ij}$ on every other
+body $j$, located at $\vQ_j$ whose magnitude is
 \[
-F_{ij} = \frac{G m_i m_j}{\norm{\vq_i - \vq_j}^2}.
+F_{ij} = \frac{G m_i m_j}{\norm{\vQ_i - \vQ_j}^2}.
 \]
 The force on $j$ is directed toward $i$, so
 \[
-\vF_{ij} = F_{ij} \frac{\vq_i - \vq_j}{\norm{\vq_i - \vq_j}} =
-\frac{G m_i m_j}{\norm{\vq_i - \vq_j}^2}
-    \frac{\vq_i - \vq_j}{\norm{\vq_i - \vq_j}} =
-\frac{G m_i m_j}{\norm{\vq_i - \vq_j}^3}\pa{\vq_i - \vq_j}.
+\vF_{ij} = F_{ij} \frac{\vQ_i - \vQ_j}{\norm{\vQ_i - \vQ_j}} =
+\frac{G m_i m_j}{\norm{\vQ_i - \vQ_j}^2}
+    \frac{\vQ_i - \vQ_j}{\norm{\vQ_i - \vQ_j}} =
+\frac{G m_i m_j}{\norm{\vQ_i - \vQ_j}^3}\pa{\vQ_i - \vQ_j}.
 \]
 Adding up all the forces exerted on $j$ by the bodies $1, \dotsc, j-1, j+1,
 \dotsc, N$, we get the total force $\vF_j$ on $j$,
 \begin{align*}
 \vF_j &=
 \vF_{1 j} + \vF_{2 j} + \dotsb + \vF_{j-1\, j} + \vF_{j+1\, j} + \vF_{N\, j} \\
-&= \sum{i\in\intclos 1 N \setminus \set{j}} \vF_{i j}
+&= \sum{\substack {i = 1 \\ i \neq j}}[N] \vF_{i j}
 \end{align*}
 This force then changes the velocity of $j$ according to Newton's second law,
 \[
@@ -65,29 +65,61 @@ T = \sum{j=1}[N] \frac12 m_j v_j^2.
 \]
 The other form in which energy is present is gravitational potential energy,
 \[
-V = \sum{i\neq j} \frac{G m_i m_j}{\norm{\vq_i - \vq_j}}
+V = \sum{i = 1}[N]\sum{\substack {i = 1 \\ i \neq j}}[N] \frac{G m_i m_j}
+{\norm{\vQ_i - \vQ_j}}
 \]
 From the Newtonian viewpoint, it happens that gravity is a conservative force
 (it doesn't waste energy in heat or something else), so that $T + V$, the total
-energy, is conserved.
+energy, is conserved, and we can prove this from  the expression of $\vF$.
 
 In the Hamiltonian approach, we start instead with the energy, and \emph{derive}
-the gravitational force from it, ensuring that it conserves energy: The energy
-defines the evolution of the system.
+the effect of the gravitational interaction from it, ensuring that it conserves
+energy: The energy defines the evolution of the system, and we no longer care
+about individual forces.
 
+\newcommand{\Hamiltonian}{\mathscr{H}}
 \section{Gravitation from a Hamiltonian viewpoint}
 We consider a system of $N$ bodies $1$ through $N$, with masses $m_1$ through
 $m_j$. The state of the system is defined by the \emph{positions} and
-\emph{momenta} of those bodies. For each body $j$, the position $\vq_j$ and the
-momentum $\vq_j$ are 3-dimensional vectors, so the state of the entire system
-lies in a $6N$-dimensional space, the \emph{classical\footnote{The term
-classical appears a lot because a similar formalism exists for quantum
-mechanics, in which case we talk about the \emph{quantum} phase space,
-\emph{etc}.} phase space}.
-We can write the state as $\tuple{\vq, \vp}$, where $\vq$ and $\vp$ are
-$3N$-dimensional.
+\emph{momenta} of those bodies. For each body $j$, the position $\vQ_j$ and the
+momentum $\vP_j$ are 3-dimensional vectors, so the state of the entire system
+lies in a $6N$-dimensional space, the \emph{classical\footnote{A similar formalism exists for quantum
+mechanics, in which case we talk about the \emph{quantum} phase space.} phase space}.
+We can write the state as $\tuple{\vq, \vp}$, where $\vq = \tuple{q_1, \dotsc,
+q_{3N}}$ and $\vp =  \tuple{p_1, \dotsc, p_{3N}}$ are $3N$-dimensional.
 
-The total energy $H$, the \emph{classical Hamiltonian} is a function of the
-state of the system, the energy of a given state being $H(\vq, \vp)$.
+The total energy $\Hamiltonian$, the \emph{Hamiltonian} is a function
+of the state of the system, the energy of a given state being $\Hamiltonian(\vq,
+\vp)$.
 
+The evolution of the state $\tuple{\vq, \vp}$ is given for each component $i\in
+\set{1,\dotsc,3N}$, by
+\[
+\begin{cases}
+\deriv t {q_i} &= \deriv {p_i} \Hamiltonian \\
+\deriv t {p_i} &= -\deriv {q_i} \Hamiltonian
+\end{cases}.
+\]
+This is can be{Readers familiar with multivariate calculus might
+prefer the notations $\deriv t {\vq} = \grad_{\vp} \Hamiltonian, \deriv t {\vp}
+= -\grad_{\vq} \Hamiltonian$, or $\derivop t 
+\begin{pmatrix}
+\vq \\
+\vp
+\end{pmatrix} =
+\begin{pmatrix}
+\nullmat    & \Identity \\
+-\Identity & \nullmat
+\end{pmatrix}
+\grad \Hamiltonian$.}
+written as
+\[
+\begin{cases}
+\deriv t {\vq} &= \deriv {\vp} \Hamiltonian \\
+\deriv t {\vp} &= -\deriv {\vq} \Hamiltonian
+\end{cases}.
+\]
+In this way, we have \emph{defined} the change in position and momentum as a
+function of time, and thus completely desccribed how the system will evolve from
+an initial state $\tuple{\vq_0, \vp_0}$.
 \end{document}
