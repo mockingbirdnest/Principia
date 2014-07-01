@@ -44,12 +44,16 @@ formalism exists for quantum mechanics, in which case we talk about the
 We can write the state as $\tuple{\vq, \vp}$, where $\vq = \tuple{q_1, \dotsc,
 q_{3N}}$ and $\vp =  \tuple{p_1, \dotsc, p_{3N}}$ are $3N$-dimensional.
 
-The total energy $\Hamiltonian$, the \emph{Hamiltonian} is a function
+The total energy $\Hamiltonian$, the \emph{Hamiltonian}, is a function
 of the state of the system, the energy of a given state being $\Hamiltonian(\vq,
 \vp)$.
 
-The evolution of the state $\tuple{\vq, \vp}$ is given for each component $i\in
-\set{1,\dotsc,3N}$, by the \emph{equations of motion}
+The evolution of the state $\tuple{\vq, \vp}$ is defined\footnote{The interested
+reader may want to refer to \emph{Wikipedia} or any classical mechanics book for
+a proof of the equivalence of this formulation with the Newtonian force-based
+formulation of classical mechanics. We shall take the Hamiltonian formulation as
+an axiom.} for each dimension $i\in\set{1,\dotsc,3N}$, by the \emph{equations of
+motion}
 \[
 \begin{cases}
 \deriv t {q_i} &= \deriv {p_i} \Hamiltonian \\
@@ -73,8 +77,9 @@ as
 \begin{cases}
 \deriv t {\vq} &= \deriv {\vp} \Hamiltonian \\
 \deriv t {\vp} &= -\deriv {\vq} \Hamiltonian
-\end{cases}.
+\end{cases},
 \]
+Where for a function $f\of{\vx, \vy}$, we define $\deriv \vx f\DefineAs \tuple{\deriv {x_1} f, \deriv {x_2} f, \dotsc, \deriv {x_n} f}$.
 In this way, we have \emph{defined} the change in position and momentum as a
 function of time, and thus completely desccribed how the system will evolve from
 an initial state $\tuple{\vq_0, \vp_0}$.
@@ -155,7 +160,8 @@ post.
 \begin{figure}
 \includegraphics[scale=0.40]{rising-energy.png}
 \caption{Forbidden regions (due to potential higher than the initial energy) for
-various initial energies, with example trajectories.}
+various initial energies, with example trajectories. The energy of the body is
+the blue plane, the potential is the yellow surface.}
 \end{figure}
 
 \section{Conclusion}
@@ -169,6 +175,6 @@ drift away from the truthis impossible, it \emph{is} possible to ensure that the
 trajectory remains unchanged.
 
 Integrators which enforce conservation of energy are called \emph{symplectic}
-integrators.
+integrators. They will be the focus of the next post.
 
 \end{document}
