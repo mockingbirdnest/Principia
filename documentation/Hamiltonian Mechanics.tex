@@ -128,6 +128,47 @@ A one-dimensional example can be seen at \url{https://xkcd.com/681_large/}.
 
 From this formulation of the equation of motions, it is possible to deduce
 properties of the trajectories just from the initial energy, even when the
-trajectories are very convoluted.
+trajectories are very convoluted. Indeed, since the energy is conserved and
+since the kinetic energy (equal to $\frac12 m_j v_j^2$ for each body $j$)
+is never negative (at worst it is $0$ for an unmoving body), the system
+cannot reach a position $\vq$ where the potential $V\of\vq$ is greater than the
+initial energy.
+
+Again, this is best seen on a 2-dimensional example with a single body moving
+in a fixed potential. If we plot the landscape of the potential, and a waterline
+at the level of the initial energy, we know that the body cannot be found on dry
+land at any time, no matter how complicated its trajectory is; if the trajectory
+converts the whole of the body's kinetic energy into potential energy, it will
+only reach the shore.
+
+Moreover, the body cannot\footnote{In quantum mechanics this happens: this is
+quantum tunnelling.} ``jump'' over dry land, as that would require going through
+areas of potential higher than the total energy. It is confined to the ``lake''
+in which it started.
+
+The plots below show various regions allowed by the total energy in the
+previously shown potential, together with example trajectories at these
+energies. Note that the trajectories are computed assuming the potential is
+constant (which is not true in the case of Pluto and Charon, since these bodies
+revolve around each other). We'll look at a more realistic situation in a later
+post.
+\begin{figure}
+\includegraphics[scale=0.40]{rising-energy.png}
+\caption{Forbidden regions (due to potential higher than the initial energy) for
+various initial energies, with example trajectories.}
+\end{figure}
+
+\section{Conclusion}
+We see that the nature of the possible trajectories changes fundamentally when
+the energy changes, from strongly-bound orbits to transfers to outright escapes.
+It would therefore be useful to be able to guarantee that energy does not drift
+too much even over long periods of time when numerically computing these
+trajectories. Surprisingly, while guaranteeing that the actual position does not
+drift away from the truthis impossible, it \emph{is} possible to ensure that the
+\emph{energy} does not drift, thus ensuring that the essential nature of the
+trajectory remains unchanged.
+
+Integrators which enforce conservation of energy are called \emph{symplectic}
+integrators.
 
 \end{document}
