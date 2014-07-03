@@ -14,8 +14,8 @@
 \draw (-.5, 0) -- (.5, 0);
 \coordinate (P) at (0, 0);
 \coordinate (I) at (0, -4);
-\node at (-65 : 4) [name=m, circle, inner sep = .25 cm,
-                    label={$m$}, draw] {};
+\node at (-65 : 4) [name=m, circle, inner sep = .1 cm,
+                    label={[label distance=.15cm]-90:$m$}, draw, fill] {};
 \node at (P) [name=pivot, label={[label distance=1cm]-87:$\gq$}] {};
 \draw (P) -- (m);
 \draw [->] (-90 : 1) arc (-90 : -65 : 1);
@@ -99,12 +99,13 @@ as
 \]
 Where for a function $f\of{\vx, \vy}$, we define\footnote{Note to the pedantic
 reader: while this notation is nonstandard, and one might expect partial
-derivatives here, it makes sense, since no matter whether the derivative is
-partial or total, the notations $\pderiv x f$ and $\deriv t g$ both mean the
-projection of the differential form $\diffd f$ (respectively $\diffd g$) on the
-corresponding subspace. For clarity and in order not to introduce more
-prerequisites we shall use only straight $\diffd$s, and define
-$\frac{}{\diffd \vx}$ as the projection on the subspace corresponding to $\vx$.}
+derivatives here, it \emph{does} makes sense, since no matter whether the
+derivative is partial or total, the notations $\pderiv x f$ and $\deriv t g$
+both mean the projection of the differential form $\diffd f$ (respectively
+$\diffd g$) on the corresponding subspace. For clarity and in order not to
+introduce more prerequisites we shall use only straight $\diffd$s, and define
+$\deriv \vx f$ as the projection of $\diffd f$ onto the subspace on which
+$\diffd\vx$ acts as the identity.}
 $\deriv \vx f\DefineAs \tuple{\deriv {x_1} f, \deriv {x_2} f, \dotsc,
 \deriv {x_n} f}$. 
 In this way, we have \emph{defined} the change in position and momentum as a
@@ -200,7 +201,7 @@ problem at hand.
 Consider a pendulum made of a point mass $m$ suspended in a vacuum with a
 massless rod of length $r$ from a frictionless hinge\footnote{We will not be
 needing the spherical cows today.}, under the influence of uniform standard
-gravity $g_0 = 9.80665\:\mathrm{ms^{-2}}$.
+gravity $g_0$.
 \marginfig[A mathematical pendulum.]{\FigureSimplePendulumConfigurationSpace}
 
 At first glance, this may seem like a 2-dimensional problem since the pendulum
