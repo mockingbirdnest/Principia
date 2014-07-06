@@ -52,13 +52,13 @@ class Rotation : public LinearMap<FromFrame, ToFrame> {
   Quaternion quaternion_;
 
   // For constructing a rotation using a quaternion.
-  template<typename FromFrame, typename ToFrame>
+  template<typename From, typename To>
   friend class Permutation;
 
-  template<typename FromFrame, typename ThroughFrame, typename ToFrame>
-  friend Rotation<FromFrame, ToFrame> operator*(
-      Rotation<ThroughFrame, ToFrame> const& left,
-      Rotation<FromFrame, ThroughFrame> const& right);
+  template<typename From, typename ThroughFrame, typename To>
+  friend Rotation<From, To> operator*(
+      Rotation<ThroughFrame, To> const& left,
+      Rotation<From, ThroughFrame> const& right);
   friend class RotationTests;
 };
 
