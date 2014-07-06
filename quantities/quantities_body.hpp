@@ -301,10 +301,10 @@ inline double Pow<3>(double x) {
 }
 
 
-template<int exponent, typename BaseDimensions>
-Exponentiation<Quantity<BaseDimensions>, exponent> Pow(
-    Quantity<BaseDimensions> const& x) {
-  return Exponentiation<Quantity<BaseDimensions>, exponent>(
+template<int exponent, typename D>
+Exponentiation<Quantity<D>, exponent> Pow(
+    Quantity<D> const& x) {
+  return Exponentiation<Quantity<D>, exponent>(
       Pow<exponent>(x.magnitude_));
 }
 
@@ -312,10 +312,9 @@ inline double Abs(double const x) {
   return std::abs(x);
 }
 
-template<typename ArgumentDimensions>
-inline Quantity<ArgumentDimensions> Abs(
-    Quantity<ArgumentDimensions> const& quantity) {
-  return Quantity<ArgumentDimensions>(std::abs(quantity.magnitude_));
+template<typename D>
+Quantity<D> Abs(Quantity<D> const& quantity) {
+  return Quantity<D>(std::abs(quantity.magnitude_));
 }
 
 
@@ -348,25 +347,19 @@ inline std::string DebugString(double const number,
   return result;
 }
 
-template<typename ArgumentDimensions>
-inline std::string DebugString(Quantity<ArgumentDimensions> const& quantity,
-                               unsigned char const precision) {
+template<typename D>
+std::string DebugString(Quantity<D> const& quantity,
+                        unsigned char const precision) {
   return DebugString(quantity.magnitude_, precision) +
-      FormatUnit("m", ArgumentDimensions::Length) +
-      FormatUnit("kg", ArgumentDimensions::Mass) +
-      FormatUnit("s", ArgumentDimensions::Time) +
-      FormatUnit("A", ArgumentDimensions::Current) +
-      FormatUnit("K", ArgumentDimensions::Temperature) +
-      FormatUnit("mol", ArgumentDimensions::Amount) +
-      FormatUnit("cd", ArgumentDimensions::LuminousIntensity) +
-      FormatUnit("cycle", ArgumentDimensions::Winding) +
-      FormatUnit("rad", ArgumentDimensions::Angle) +
-      FormatUnit("sr", ArgumentDimensions::SolidAngle);
+      FormatUnit("m", D::Length) + FormatUnit("kg", D::Mass) +
+      FormatUnit("s", D::Time) + FormatUnit("A", D::Current) +
+      FormatUnit("K", D::Temperature) + FormatUnit("mol", D::Amount) +
+      FormatUnit("cd", D::LuminousIntensity) + FormatUnit("cycle", D::Winding) +
+      FormatUnit("rad", D::Angle) + FormatUnit("sr", D::SolidAngle);
 }
 
-template<typename ArgumentDimensions>
-std::ostream& operator<<(std::ostream& out,
-                         Quantity<ArgumentDimensions> const& quantity) {
+template<typename D>
+std::ostream& operator<<(std::ostream& out, Quantity<D> const& quantity) {
   return out << DebugString(quantity);
 }
 

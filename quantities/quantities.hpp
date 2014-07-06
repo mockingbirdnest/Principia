@@ -54,6 +54,55 @@ using Exponentiation =
 template<typename Q>
 using SquareRoot = typename type_generators::SquareRootGenerator<Q>::ResultType;
 
+// Returns the base or derived SI Unit of |Q|.
+// For instance, |SIUnit<Action>() == Joule * Second|.
+template<typename Q>
+Q SIUnit();
+// Returns 1.
+template<>
+double SIUnit<double>();
+
+template<typename LDimensions, typename RDimensions>
+Product<Quantity<LDimensions>, Quantity<RDimensions>> operator*(
+    Quantity<LDimensions> const&,
+    Quantity<RDimensions> const&);
+template<typename LDimensions, typename RDimensions>
+Quotient<Quantity<LDimensions>, Quantity<RDimensions>> operator/(
+    Quantity<LDimensions> const&,
+    Quantity<RDimensions> const&);
+template<typename RDimensions>
+Quantity<RDimensions> operator*(double const, Quantity<RDimensions> const&);
+template<typename RDimensions>
+typename Quantity<RDimensions>::Inverse operator/(double const,
+                                                  Quantity<RDimensions> const&);
+
+// Equivalent to |std::pow(x, exponent)| unless -3 ≤ x ≤ 3, in which case
+// explicit specialisation yields multiplications statically.
+template<int exponent>
+double Pow(double x);
+template<int exponent, typename D>
+Exponentiation<Quantity<D>, exponent> Pow(Quantity<D> const& x);
+
+template<typename D>
+std::ostream& operator<<(std::ostream& out, Quantity<D> const& quantity);
+
+// Equivalent to |std::abs(x)|.
+double Abs(double const x);
+template<typename D>
+Quantity<D> Abs(Quantity<D> const& x);
+
+template<typename D>
+SquareRoot<Quantity<D>> Sqrt(Quantity<D> const& x);
+
+template<typename D>
+Angle ArcTan(Quantity<D> const& y, Quantity<D> const& x);
+
+std::string DebugString(double const number,
+                        unsigned char const precision = DBL_DIG + 1);
+template<typename D>
+std::string DebugString(Quantity<D> const& quantity,
+                        unsigned char const precision = DBL_DIG + 1);
+
 template<typename D>
 class Quantity {
  public:
@@ -110,72 +159,14 @@ class Quantity {
   friend Exponentiation<Quantity<BaseDimensions>, exponent> Pow(
       Quantity<BaseDimensions> const& x);
 
-  template<typename ArgumentDimensions>
-  friend Quantity<ArgumentDimensions> Abs(Quantity<ArgumentDimensions> const&);
+  friend Quantity<D> Abs<>(Quantity<D> const&);
   template<typename ArgumentDimensions>
   friend SquareRoot<Quantity<ArgumentDimensions>> Sqrt(
       Quantity<ArgumentDimensions> const& x);
-  template<typename ArgumentDimensions>
-  friend Angle ArcTan(Quantity<ArgumentDimensions> const& y,
-                      Quantity<ArgumentDimensions> const& x);
+  friend Angle ArcTan<>(Quantity<D> const& y, Quantity<D> const& x);
 
-  template<typename ArgumentDimensions>
-  friend std::string DebugString(Quantity<ArgumentDimensions> const&,
-                                 unsigned char const);
+  friend std::string DebugString<>(Quantity<D> const&, unsigned char const);
 };
-
-template<typename LDimensions, typename RDimensions>
-Product<Quantity<LDimensions>, Quantity<RDimensions>> operator*(
-    Quantity<LDimensions> const&,
-    Quantity<RDimensions> const&);
-template<typename LDimensions, typename RDimensions>
-Quotient<Quantity<LDimensions>, Quantity<RDimensions>> operator/(
-    Quantity<LDimensions> const&,
-    Quantity<RDimensions> const&);
-template<typename RDimensions>
-Quantity<RDimensions> operator*(double const, Quantity<RDimensions> const&);
-template<typename RDimensions>
-typename Quantity<RDimensions>::Inverse operator/(double const,
-                                                  Quantity<RDimensions> const&);
-
-// Returns the base or derived SI Unit of |Q|.
-// For instance, |SIUnit<Action>() == Joule * Second|.
-template<typename Q>
-Q SIUnit();
-// Returns 1.
-template<>
-double SIUnit<double>();
-
-// Equivalent to |std::pow(x, exponent)| unless -3 ≤ x ≤ 3, in which case
-// explicit specialisation yields multiplications statically.
-template<int exponent>
-double Pow(double x);
-template<int exponent, typename BaseDimensions>
-Exponentiation<Quantity<BaseDimensions>, exponent> Pow(
-    Quantity<BaseDimensions> const& x);
-
-// Equivalent to |std::abs(x)|.
-double Abs(double const x);
-template<typename ArgumentDimensions>
-Quantity<ArgumentDimensions> Abs(Quantity<ArgumentDimensions> const& x);
-
-template<typename ArgumentDimensions>
-SquareRoot<Quantity<ArgumentDimensions>> Sqrt(
-    Quantity<ArgumentDimensions> const& x);
-
-template<typename ArgumentDimensions>
-Angle ArcTan(Quantity<ArgumentDimensions> const& y,
-             Quantity<ArgumentDimensions> const& x);
-
-std::string DebugString(double const number,
-                        unsigned char const precision = DBL_DIG + 1);
-template<typename ArgumentDimensions>
-std::string DebugString(Quantity<ArgumentDimensions> const& quantity,
-                        unsigned char const precision = DBL_DIG + 1);
-
-template<typename ArgumentDimensions>
-std::ostream& operator<<(std::ostream& out,
-                         Quantity<ArgumentDimensions> const& quantity);
 
 }  // namespace quantities
 }  // namespace principia

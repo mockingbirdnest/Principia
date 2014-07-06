@@ -55,10 +55,9 @@ class Rotation : public LinearMap<FromFrame, ToFrame> {
   template<typename From, typename To>
   friend class Permutation;
 
-  template<typename From, typename ThroughFrame, typename To>
-  friend Rotation<From, To> operator*(
-      Rotation<ThroughFrame, To> const& left,
-      Rotation<From, ThroughFrame> const& right);
+  template<typename From, typename Through, typename To>
+  friend Rotation<From, To> operator*(Rotation<Through, To> const& left,
+                                      Rotation<From, Through> const& right);
   friend class RotationTests;
 };
 
