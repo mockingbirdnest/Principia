@@ -22,7 +22,7 @@ class AffineSpaceTest : public testing::Test {
 Point<Temperature> const CelsiusZero(273.15 * Kelvin);
 Point<Temperature> const AbsoluteZero(0 * Kelvin);
 Point<Temperature> const WaterBoilingPoint = CelsiusZero + 100 * Kelvin;
-Point<Temperature> const GalliumMeltingPoint = 29.7646 * Kelvin + CelsiusZero;
+Point<Temperature> const GalliumMeltingPoint = CelsiusZero + 29.7646 * Kelvin;
 Point<Temperature> const NitrogenBoilingPoint = CelsiusZero - 195.795 * Kelvin;
 
 TEST_F(AffineSpaceTest, Comparisons) {
