@@ -225,9 +225,8 @@ inline Quantity<D> Quantity<D>::operator*(double const right) const {
   return Quantity(magnitude_ * right);
 }
 
-
 template<typename LDimensions, typename RDimensions>
-inline Product <Quantity<LDimensions>, Quantity <RDimensions>> operator*(
+inline Product<Quantity<LDimensions>, Quantity<RDimensions>> operator*(
     Quantity<LDimensions> const& left,
     Quantity<RDimensions> const& right) {
   return Product<Quantity<LDimensions>,
@@ -235,7 +234,7 @@ inline Product <Quantity<LDimensions>, Quantity <RDimensions>> operator*(
 }
 
 template<typename LDimensions, typename RDimensions>
-inline Quotient<Quantity<LDimensions>, Quantity <RDimensions>> operator/(
+inline Quotient<Quantity<LDimensions>, Quantity<RDimensions>> operator/(
     Quantity<LDimensions> const& left,
     Quantity<RDimensions> const& right) {
   return Quotient<Quantity<LDimensions>,
