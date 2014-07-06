@@ -340,7 +340,11 @@ inline std::string FormatUnit(std::string const& name, int const exponent) {
 inline std::string DebugString(double const number,
                                unsigned char const precision) {
   char result[50];
+#ifdef _MSC_VER
   sprintf_s(result, ("%."+ std::to_string(precision) + "e").c_str(), number);
+#else
+  snprintf(result, 50, ("%."+ std::to_string(precision) + "e").c_str(), number);
+#endif
   return result;
 }
 
