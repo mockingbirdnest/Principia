@@ -31,15 +31,13 @@ class Point {
            template<typename, typename> class LinearMap>
   friend class AffineMap;
 
-  template<typename Vector>
-  friend Point<Vector> operator+(Vector const& translation,
-                                 Point<Vector> const& point);
+  template<typename V>
+  friend Point<V> operator+(V const& translation,
+                            Point<V> const& point);
 
-  template<typename Vector, typename Weight>
-  friend Point<Vector> Barycentre(Point<Vector> const& left,
-                                  Weight const& left_weight,
-                                  Point<Vector> const& right,
-                                  Weight const& right_weight);
+  template<typename V, typename Weight>
+  friend Point<V> Barycentre(Point<V> const& left, Weight const& left_weight,
+                             Point<V> const& right, Weight const& right_weight);
 };
 
 template<typename Vector>
