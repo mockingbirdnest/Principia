@@ -26,11 +26,11 @@ class AffineMap {
   ToVector translation_;
   LinearMap<FromFrame, ToFrame> linear_map_;
 
-  template<typename From, typename Through, typename To,
-           typename Scalar, template<typename, typename> class LinearMap>
-  friend AffineMap<From, To, Scalar, LinearMap> operator*(
-      AffineMap<Through, To, Scalar, LinearMap> const& left,
-      AffineMap<From, To, Scalar, LinearMap> const& right);
+  template<typename From, typename Through, typename To, typename S,
+           template<typename, typename> class Map>
+  friend AffineMap<From, To, S, Map> operator*(
+      AffineMap<Through, To, S, Map> const& left,
+      AffineMap<From, To, S, Map> const& right);
 };
 
 template<typename FromFrame, typename ThroughFrame, typename ToFrame,
