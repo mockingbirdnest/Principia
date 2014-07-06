@@ -67,10 +67,10 @@ class Permutation : public LinearMap<FromFrame, ToFrame> {
 
   CoordinatePermutation coordinate_permutation_;
 
-  template<typename FromFrame, typename ThroughFrame, typename ToFrame>
-  friend Permutation<FromFrame, ToFrame> operator*(
-      Permutation<ThroughFrame, ToFrame> const& left,
-      Permutation<FromFrame, ThroughFrame> const& right);
+  template<typename From, typename Through, typename To>
+  friend Permutation<From, To> operator*(
+      Permutation<Through, To> const& left,
+      Permutation<From, Through> const& right);
 
 #ifndef _MANAGED
   // As much as I dislike FRIEND_TEST(), it seems like the most convenient way
