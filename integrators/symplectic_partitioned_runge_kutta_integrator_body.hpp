@@ -119,7 +119,7 @@ void SPRKIntegrator<Position, Momentum>::Solve(
     // Increment SPRK step from "'SymplecticPartitionedRungeKutta' Method
     // for NDSolve", algorithm 3.
     for (int k = 0; k < dimension; ++k) {
-      (*Δqstage_current)[k] = Length();
+      (*Δqstage_current)[k] = Position();
       (*Δpstage_current)[k] = Momentum();
       q_stage[k] = q_last[k].value;
     }
