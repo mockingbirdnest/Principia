@@ -9,9 +9,8 @@ namespace quantities {
 // TODO(egg): Should this be a function reference instead?
 // Equivalent to |std::sqrt(x)|.
 double Sqrt(double const x);
-template<typename ArgumentDimensions>
-SquareRoot<Quantity<ArgumentDimensions>> Sqrt(
-    Quantity<ArgumentDimensions> const& x);
+template<typename D>
+SquareRoot<Quantity<D>> Sqrt(Quantity<D> const& x);
 
 double Sin(Angle const& α);
 double Cos(Angle const& α);
@@ -20,9 +19,8 @@ double Tan(Angle const& α);
 Angle ArcSin(double const x);
 Angle ArcCos(double const x);
 Angle ArcTan(double const y, double const x = 1);
-template<typename ArgumentDimensions>
-Angle ArcTan(Quantity<ArgumentDimensions> const& y,
-             Quantity<ArgumentDimensions> const& x);
+template<typename D>
+Angle ArcTan(Quantity<D> const& y, Quantity<D> const& x);
 
 // We consider hyperbolic functions as dealing with quotients of arc length to
 // curvature radius in the hyperbolic plane, which are angles. This explains the

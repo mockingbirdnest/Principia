@@ -44,10 +44,9 @@ inline double Sqrt(double const x) {
   return std::sqrt(x);
 }
 
-template<typename ArgumentDimensions>
-inline SquareRoot<Quantity<ArgumentDimensions>> Sqrt(
-    Quantity<ArgumentDimensions> const& x) {
-  return SquareRoot<Quantity<ArgumentDimensions>>(std::sqrt(x.magnitude_));
+template<typename D>
+inline SquareRoot<Quantity<D>> Sqrt(Quantity<D> const& x) {
+  return SquareRoot<Quantity<D>>(std::sqrt(x.magnitude_));
 }
 
 inline double Sin(Angle const& α) {
@@ -69,9 +68,8 @@ inline Angle ArcCos(double const x) {
 inline Angle ArcTan(double const y, double const x) {
   return std::atan2(y, x) * si::Radian;
 }
-template<typename ArgumentDimensions>
-inline Angle ArcTan(Quantity<ArgumentDimensions> const& y,
-                    Quantity<ArgumentDimensions> const& x) {
+template<typename D>
+inline Angle ArcTan(Quantity<D> const& y, Quantity<D> const& x) {
   return ArcTan(y.magnitude_, x.magnitude_);
 }
 
