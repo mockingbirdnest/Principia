@@ -347,7 +347,8 @@ inline std::string DebugString(double const number,
   sprintf_s(result, ("%."+ std::to_string(precision) + "e").c_str(), number);
   _set_output_format(old_exponent_format);
 #else
-  snprintf(result, 50, ("%."+ std::to_string(precision) + "e").c_str(), number);
+  snprintf(result, sizeof(result),
+           ("%."+ std::to_string(precision) + "e").c_str(), number);
 #endif
   return result;
 }
