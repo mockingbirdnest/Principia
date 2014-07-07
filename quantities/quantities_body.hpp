@@ -341,7 +341,9 @@ inline std::string DebugString(double const number,
                                unsigned char const precision) {
   char result[50];
 #ifdef _MSC_VER
+  unsigned int old_exponent_format = _set_output_format(_TWO_DIGIT_EXPONENT);
   sprintf_s(result, ("%."+ std::to_string(precision) + "e").c_str(), number);
+  _set_output_format(old_exponent_format);
 #else
   snprintf(result, 50, ("%."+ std::to_string(precision) + "e").c_str(), number);
 #endif
