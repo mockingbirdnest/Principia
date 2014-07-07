@@ -113,11 +113,11 @@ TEST_F(QuantitiesTest, DimensionlessExponentiation) {
 TEST_F(QuantitiesTest, Formatting) {
   auto const allTheUnits = 1 * Metre * Kilogram * Second * Ampere * Kelvin /
                             (Mole * Candela * Cycle * Radian * Steradian);
-  std::string const expected = std::string("1e+000 m kg s A K mol^-1") +
-                                " cd^-1 cycle^-1 rad^-1 sr^-1";
+  std::string const expected = std::string("1e+00 m kg s A K mol^-1") +
+                               " cd^-1 cycle^-1 rad^-1 sr^-1";
   std::string const actual = DebugString(allTheUnits, 0);
   EXPECT_EQ(expected, actual);
-  std::string π16 = "3.1415926535897931e+000";
+  std::string π16 = "3.1415926535897931e+00";
   EXPECT_EQ(DebugString(π), π16);
 }
 

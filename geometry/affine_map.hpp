@@ -23,8 +23,8 @@ class AffineMap {
 
  private:
   // The map is internally represented as x ↦ linear_map_(x) + translation_.
-  ToVector translation_;
   LinearMap<FromFrame, ToFrame> linear_map_;
+  ToVector translation_;
 
   template<typename From, typename Through, typename To, typename S,
            template<typename, typename> class Map>
