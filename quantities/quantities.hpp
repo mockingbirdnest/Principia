@@ -54,12 +54,54 @@ using Exponentiation =
 template<typename Q>
 using SquareRoot = typename type_generators::SquareRootGenerator<Q>::ResultType;
 
-template<typename D>
-std::string DebugString(Quantity<D> const& quantity,
-                        unsigned char const precision = 16);
+// Returns the base or derived SI Unit of |Q|.
+// For instance, |SIUnit<Action>() == Joule * Second|.
+template<typename Q>
+Q SIUnit();
+// Returns 1.
+template<>
+double SIUnit<double>();
+
+template<typename LDimensions, typename RDimensions>
+Product<Quantity<LDimensions>, Quantity<RDimensions>> operator*(
+    Quantity<LDimensions> const&,
+    Quantity<RDimensions> const&);
+template<typename LDimensions, typename RDimensions>
+Quotient<Quantity<LDimensions>, Quantity<RDimensions>> operator/(
+    Quantity<LDimensions> const&,
+    Quantity<RDimensions> const&);
+template<typename RDimensions>
+Quantity<RDimensions> operator*(double const, Quantity<RDimensions> const&);
+template<typename RDimensions>
+typename Quantity<RDimensions>::Inverse operator/(double const,
+                                                  Quantity<RDimensions> const&);
+
+// Equivalent to |std::pow(x, exponent)| unless -3 ≤ x ≤ 3, in which case
+// explicit specialisation yields multiplications statically.
+template<int exponent>
+double Pow(double x);
+template<int exponent, typename D>
+Exponentiation<Quantity<D>, exponent> Pow(Quantity<D> const& x);
 
 template<typename D>
 std::ostream& operator<<(std::ostream& out, Quantity<D> const& quantity);
+
+// Equivalent to |std::abs(x)|.
+double Abs(double const x);
+template<typename D>
+Quantity<D> Abs(Quantity<D> const& x);
+
+template<typename D>
+SquareRoot<Quantity<D>> Sqrt(Quantity<D> const& x);
+
+template<typename D>
+Angle ArcTan(Quantity<D> const& y, Quantity<D> const& x);
+
+std::string DebugString(double const number,
+                        unsigned char const precision = DBL_DIG + 1);
+template<typename D>
+std::string DebugString(Quantity<D> const& quantity,
+                        unsigned char const precision = DBL_DIG + 1);
 
 template<typename D>
 class Quantity {
@@ -70,144 +112,61 @@ class Quantity {
   Quantity();
   ~Quantity() = default;
 
+  Quantity operator+() const;
+  Quantity operator-() const;
+  Quantity operator+(Quantity const& right) const;
+  Quantity operator-(Quantity const& right) const;
+
+  Quantity operator*(double const right) const;
+  Quantity operator/(double const right) const;
+
   Quantity& operator+=(Quantity const&);
   Quantity& operator-=(Quantity const&);
   Quantity& operator*=(double const);
   Quantity& operator/=(double const);
 
+  bool operator>(Quantity const& right) const;
+  bool operator<(Quantity const& right) const;
+  bool operator>=(Quantity const& right) const;
+  bool operator<=(Quantity const& right) const;
+  bool operator==(Quantity const& right) const;
+  bool operator!=(Quantity const& right) const;
+
  private:
   explicit Quantity(double const magnitude);
   double magnitude_;
 
-  template<typename D>
-  friend class Quantity;
-
-  template<typename D>
-  friend Quantity<D> operator+(Quantity<D> const&);
-  template<typename D>
-  friend Quantity<D> operator-(Quantity<D> const&);
-  template<typename D>
-  friend Quantity<D> operator+(Quantity<D> const&, Quantity<D> const&);
-  template<typename D>
-  friend Quantity<D> operator-(Quantity<D> const&, Quantity<D> const&);
-  template<typename DLeft, typename DRight>
-  friend Product<Quantity<DLeft>,
-                 Quantity<DRight>> operator*(Quantity<DLeft> const&,
-                                             Quantity<DRight> const&);
-  template<typename DLeft, typename DRight>
-  friend Quotient<Quantity<DLeft>,
-                  Quantity<DRight>> operator/(Quantity<DLeft> const&,
-                                              Quantity<DRight> const&);
-  template<typename D>
-  friend Quantity<D> operator*(Quantity<D> const&, double const);
-  template<typename D>
-  friend Quantity<D> operator*(double const, Quantity<D> const&);
-  template<typename D>
-  friend Quantity<D> operator/(Quantity<D> const&, double const);
-  template<typename D>
-  friend typename Quantity<D>::Inverse operator/(double const,
-                                                 Quantity<D> const&);
-
-  template<typename D>
-  friend bool operator>(Quantity<D> const&, Quantity<D> const&);
-  template<typename D>
-  friend bool operator<(Quantity<D> const&, Quantity<D> const&);
-  template<typename D>
-  friend bool operator>=(Quantity<D> const&, Quantity<D> const&);
-  template<typename D>
-  friend bool operator<=(Quantity<D> const&, Quantity<D> const&);
-  template<typename D>
-  friend bool operator==(Quantity<D> const&, Quantity<D> const&);
-  template<typename D>
-  friend bool operator!=(Quantity<D> const&, Quantity<D> const&);
+  template<typename LDimensions, typename RDimensions>
+  friend Product<Quantity<LDimensions>, Quantity<RDimensions>> operator*(
+      Quantity<LDimensions> const& left,
+      Quantity<RDimensions> const& right);
+  template<typename LDimensions, typename RDimensions>
+  friend Quotient<Quantity<LDimensions>, Quantity<RDimensions>> operator/(
+      Quantity<LDimensions> const& left,
+      Quantity<RDimensions> const& right);
+  template<typename RDimensions>
+  friend Quantity<RDimensions> operator*(double const left,
+                                         Quantity<RDimensions> const& right);
+  template<typename RDimensions>
+  friend typename Quantity<RDimensions>::Inverse operator/(
+      double const left,
+      Quantity<RDimensions> const& right);
 
   template<typename Q>
   friend Q SIUnit();
 
-  template<int exponent, typename D>
-  friend Exponentiation<Quantity<D>, exponent> Pow(Quantity<D> const& x);
+  template<int exponent, typename BaseDimensions>
+  friend Exponentiation<Quantity<BaseDimensions>, exponent> Pow(
+      Quantity<BaseDimensions> const& x);
 
-  template<typename D>
-  friend Quantity<D> Abs(Quantity<D> const&);
-  template<typename D>
-  friend SquareRoot<Quantity<D>> Sqrt(Quantity<D> const& x);
-  template<typename D>
-  friend Angle ArcTan(Quantity<D> const& y, Quantity<D> const& x);
+  friend Quantity<D> Abs<>(Quantity<D> const&);
+  template<typename ArgumentDimensions>
+  friend SquareRoot<Quantity<ArgumentDimensions>> Sqrt(
+      Quantity<ArgumentDimensions> const& x);
+  friend Angle ArcTan<>(Quantity<D> const& y, Quantity<D> const& x);
 
-  template<typename D>
-  friend std::string DebugString(Quantity<D> const&, unsigned char const);
+  friend std::string DebugString<>(Quantity<D> const&, unsigned char const);
 };
-
-template<typename D>
-Quantity<D> operator+(Quantity<D> const&);
-template<typename D>
-Quantity<D> operator-(Quantity<D> const&);
-template<typename D>
-Quantity<D> operator+(Quantity<D> const&, Quantity<D> const&);
-template<typename D>
-Quantity<D> operator-(Quantity<D> const&, Quantity<D> const&);
-template<typename DLeft, typename DRight>
-Product<Quantity<DLeft>, Quantity<DRight>> operator*(Quantity<DLeft> const&,
-                                                     Quantity<DRight> const&);
-template<typename DLeft, typename DRight>
-Quotient<Quantity<DLeft>, Quantity<DRight>> operator/(Quantity<DLeft> const&,
-                                                      Quantity<DRight> const&);
-template<typename D>
-Quantity<D> operator*(Quantity<D> const&, double const);
-template<typename D>
-Quantity<D> operator*(double const, Quantity<D> const&);
-template<typename D>
-Quantity<D> operator/(Quantity<D> const&, double const);
-template<typename D>
-typename Quantity<D>::Inverse operator/(double const,
-                                                Quantity<D> const&);
-
-template<typename D>
-bool operator>(Quantity<D> const&, Quantity<D> const&);
-template<typename D>
-bool operator<(Quantity<D> const&, Quantity<D> const&);
-template<typename D>
-bool operator>=(Quantity<D> const&, Quantity<D> const&);
-template<typename D>
-bool operator<=(Quantity<D> const&, Quantity<D> const&);
-template<typename D>
-bool operator==(Quantity<D> const&, Quantity<D> const&);
-template<typename D>
-bool operator!=(Quantity<D> const&, Quantity<D> const&);
-
-// Returns the base or derived SI Unit of |Q|.
-// For instance, |SIUnit<Action>() == Joule * Second|.
-template<typename Q>
-Q SIUnit();
-// Returns 1.
-template<>
-double SIUnit<double>();
-
-// Equivalent to |std::pow(x, exponent)| unless -3 ≤ x ≤ 3, in which case
-// explicit specialisation yields multiplications statically.
-template<int exponent>
-double Pow(double x);
-template<int exponent, typename D>
-Exponentiation<Quantity<D>, exponent> Pow(Quantity<D> const& x);
-
-// Equivalent to |std::abs(x)|.
-double Abs(double const x);
-template<typename D>
-Quantity<D> Abs(Quantity<D> const& x);
-
-template<typename D>
-SquareRoot<Quantity<D>> Sqrt(Quantity<D> const& x);
-template<typename D>
-Angle ArcTan(Quantity<D> const& y, Quantity<D> const& x);
-
-std::string DebugString(double const number,
-                        unsigned char const precision = DBL_DIG + 1);
-template<typename D>
-std::string DebugString(Quantity<D> const& quantity,
-                        unsigned char const precision);
-
-template<typename D>
-std::ostream& operator<<(::std::ostream& out, Quantity<D> const& quantity);
 
 }  // namespace quantities
 }  // namespace principia

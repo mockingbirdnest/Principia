@@ -69,7 +69,7 @@ inline Angle ArcTan(double const y, double const x) {
   return std::atan2(y, x) * si::Radian;
 }
 template<typename D>
-inline Angle ArcTan(Quantity<D> const& y, Quantity<D> const& x) {
+Angle ArcTan(Quantity<D> const& y, Quantity<D> const& x) {
   return ArcTan(y.magnitude_, x.magnitude_);
 }
 
