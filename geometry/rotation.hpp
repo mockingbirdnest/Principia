@@ -23,7 +23,7 @@ class Rotation : public LinearMap<FromFrame, ToFrame> {
   template<typename Scalar>
   Rotation(quantities::Angle const& angle,
            Bivector<Scalar, FromFrame> const& axis);
-  virtual ~Rotation() = default;
+  ~Rotation() override = default;
 
   Sign Determinant() const override;
 
