@@ -125,7 +125,11 @@ class NBodySystemTest : public testing::Test {
 
 TEST_F(NBodySystemTest, EarthMoon) {
   std::vector<Vector<Length, EarthMoonBarycentricFrame>> positions;
-  system_->Integrate(integrator_, period_, period_ / 100, 1);
+  system_->Integrate(integrator_,
+                     period_,
+                     period_ / 100,
+                     1,
+                     {trajectory1_, trajectory2_});
 
   positions = trajectory1_->positions();
   EXPECT_THAT(positions.size(), Eq(101));

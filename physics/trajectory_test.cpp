@@ -32,7 +32,7 @@ class TrajectoryTest : public testing::Test {
   std::unique_ptr<Trajectory<World>> trajectory_;
 };
 
-TEST_F(TrajectoryTest) {
+TEST_F(TrajectoryTest, Append) {
   trajectory_->Append(Vector<Length, World>({1 * Metre, 2 * Metre, 3 * Metre}),
                       Vector<Speed, World>({4 * Metre / Second,
                                             5 * Metre / Second,

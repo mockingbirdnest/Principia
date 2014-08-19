@@ -28,9 +28,9 @@ class Trajectory {
   // These functions return the series of positions/velocities/times for the
   // trajectory of the body.  All three vectors are guaranteed to have the same
   // length.
-  std::vector<Vector<Length, Frame>> const& positions() const;
-  std::vector<Vector<Speed, Frame>> const& velocities() const;
-  std::vector<Time> const& times() const;
+  std::vector<Vector<Length, Frame>> const positions() const;
+  std::vector<Vector<Speed, Frame>> const velocities() const;
+  std::vector<Time> const times() const;
 
   // Appends one point to the trajectory.
   //TODO(phl):Dirtying?
@@ -79,6 +79,8 @@ class Trajectory {
    public:
     State(Vector<Length, Frame> const& position,
           Vector<Speed, Frame> const& velocity);
+    Vector<Length, Frame> const& position() const;
+    Vector<Speed, Frame> const& velocity() const;
    private:
     Vector<Length, Frame> const position_;
     Vector<Speed, Frame> const velocity_;

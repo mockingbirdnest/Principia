@@ -13,28 +13,35 @@
 #include "quantities/si.hpp"
 
 using principia::geometry::Vector;
+using principia::physics::Body;
+using principia::physics::NBodySystem;
 using principia::physics::Trajectory;
+using principia::quantities::GravitationalParameter;
+using principia::quantities::Pow;
+using principia::quantities::SIUnit;
+using principia::quantities::Time;
+using principia::si::Day;
+using principia::si::Kilo;
+using principia::si::Kilogram;
+using principia::si::Metre;
+using principia::si::Second;
 
 namespace principia {
 namespace testing_utilities {
 
+class SolarSystem {
+ public:
+  SolarSystem();
+
+  std::unique_ptr<NBodySystem<ICRFJ2000EclipticFrame>::Bodies> massive_bodies();
+  std::unique_ptr<NBodySystem<ICRFJ2000EclipticFrame>::Bodies> massless_bodies();
+
+};
 std::unique_ptr<physics::NBodySystem<ICRFJ2000EclipticFrame>>
 SolarSystemAtСпутникLaunch() {
-  using physics::Body;
-  using physics::NBodySystem;
-  using quantities::GravitationalParameter;
-  using quantities::Pow;
-  using quantities::SIUnit;
-  using quantities::Time;
-  using si::Day;
-  using si::Kilo;
-  using si::Kilogram;
-  using si::Metre;
-  using si::Second;
 
   typedef Vector<Length, ICRFJ2000EclipticFrame> Position;
   typedef Vector<Speed, ICRFJ2000EclipticFrame> Velocity;
-
 
   Time const t0 = kСпутникLaunchDate;
 

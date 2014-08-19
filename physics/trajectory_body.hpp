@@ -10,28 +10,46 @@ namespace principia {
 namespace physics {
 
 template<typename Frame>
-Trajectory<Frame>::Trajectory(Body const* body) : body_(CHECK_NOTNULL(body)) {}
+Trajectory<Frame>::Trajectory(Body const* body)
+    : body_(CHECK_NOTNULL(body)),
+      parent_(nullptr) {}
 
 template<typename Frame>
-std::vector<Vector<Length, Frame>> const& Trajectory<Frame>::positions() const {
-  return positions_;
+std::vector<Vector<Length, Frame>> const Trajectory<Frame>::positions() const {
+  std::vector<Vector<Length, Frame>> result;
+  for (const auto it : states_) {
+    State const& state = it.second;
+    result.push_back(state.position());
+  }
+  return result;
 }
 
 template<typename Frame>
-std::vector<Vector<Speed, Frame>> const& Trajectory<Frame>::velocities() const {
-  return velocities_;
+std::vector<Vector<Speed, Frame>> const Trajectory<Frame>::velocities() const {
+  std::vector<Vector<Speed, Frame>> result;
+  for (const auto it : states_) {
+    State const& state = it.second;
+    result.push_back(state.velocity());
+  }
+  return result;
 }
 
 template<typename Frame>
-std::vector<Time> const& Trajectory<Frame>::times() const {
-  return times_;
+std::vector<Time> const Trajectory<Frame>::times() const {
+  std::vector<Time> result;
+  for (const auto it : states_) {
+    Time const& time = it.first;
+    result.push_back(time);
+  }
+  return result;
 }
 
 template<typename Frame>
 void Trajectory<Frame>::Append(Vector<Length, Frame> const& position,
                                Vector<Speed, Frame> const& velocity,
                                Time const& time) {
-  const bool inserted = states_.insert(State(position, velocity, time)).second;
+  const bool inserted =
+      states_.insert(std::make_pair(time, State(position, velocity))).second;
   CHECK(inserted);
 }
 
@@ -118,6 +136,16 @@ Trajectory<Frame>::State::State(Vector<Length, Frame> const& position,
                                 Vector<Speed, Frame> const& velocity)
     : position_(position),
       velocity_(velocity) {}
+
+template<typename Frame>
+Vector<Length, Frame> const& Trajectory<Frame>::State::position() const {
+  return position_;
+}
+
+template<typename Frame>
+Vector<Speed, Frame> const& Trajectory<Frame>::State::velocity() const {
+  return velocity_;
+}
 
 }  // namespace physics
 }  // namespace principia

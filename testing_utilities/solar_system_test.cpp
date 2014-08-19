@@ -33,8 +33,8 @@ class SolarSystemTest : public testing::Test {
   }
   // The maximal separation of |primary| and |secondary| ignoring the influence
   // of any other bodies.
-  Length SemiMajorAxis(Body<ICRFJ2000EclipticFrame> const& primary,
-                       Body<ICRFJ2000EclipticFrame> const& secondary) {
+  Length SemiMajorAxis(Body const& primary,
+                       Body const& secondary) {
     GravitationalParameter const μ = primary.gravitational_parameter() +
                                      secondary.gravitational_parameter();
     Vector<Length, ICRFJ2000EclipticFrame> const r =
@@ -51,8 +51,8 @@ class SolarSystemTest : public testing::Test {
   // approximation around the secondary is better than the 2-body approximation
   // around the primary.
   Length LaplaceSphereRadiusRadius(
-      Body<ICRFJ2000EclipticFrame> const& primary,
-      Body<ICRFJ2000EclipticFrame> const& secondary) {
+      Body const& primary,
+      Body const& secondary) {
     // Assuming secondary.mass << primary.mass.
     return SemiMajorAxis(primary, secondary) *
         std::pow(secondary.mass() / primary.mass(), 2.0 / 5.0);
@@ -65,9 +65,9 @@ class SolarSystemTest : public testing::Test {
   void TestStronglyBoundOrbit(
       double excentricity,
       double relative_error,
-      Body<ICRFJ2000EclipticFrame> const& tertiary,
-      Body<ICRFJ2000EclipticFrame> const& secondary,
-      Body<ICRFJ2000EclipticFrame> const* const primary,
+      Body const& tertiary,
+      Body const& secondary,
+      Body const* const primary,
       std::string message) {
     GravitationalParameter const μ = tertiary.gravitational_parameter() +
                                      secondary.gravitational_parameter();
@@ -91,24 +91,24 @@ class SolarSystemTest : public testing::Test {
 };
 
 TEST_F(SolarSystemTest, Hierarchy) {
-  Body<ICRFJ2000EclipticFrame> const& sun      = *system_->bodies()[0];
-  Body<ICRFJ2000EclipticFrame> const& jupiter  = *system_->bodies()[1];
-  Body<ICRFJ2000EclipticFrame> const& saturn   = *system_->bodies()[2];
-  Body<ICRFJ2000EclipticFrame> const& neptune  = *system_->bodies()[3];
-  Body<ICRFJ2000EclipticFrame> const& uranus   = *system_->bodies()[4];
-  Body<ICRFJ2000EclipticFrame> const& earth    = *system_->bodies()[5];
-  Body<ICRFJ2000EclipticFrame> const& venus    = *system_->bodies()[6];
-  Body<ICRFJ2000EclipticFrame> const& mars     = *system_->bodies()[7];
-  Body<ICRFJ2000EclipticFrame> const& mercury  = *system_->bodies()[8];
-  Body<ICRFJ2000EclipticFrame> const& ganymede = *system_->bodies()[9];
-  Body<ICRFJ2000EclipticFrame> const& titan    = *system_->bodies()[10];
-  Body<ICRFJ2000EclipticFrame> const& callisto = *system_->bodies()[11];
-  Body<ICRFJ2000EclipticFrame> const& io       = *system_->bodies()[12];
-  Body<ICRFJ2000EclipticFrame> const& moon     = *system_->bodies()[13];
-  Body<ICRFJ2000EclipticFrame> const& europa   = *system_->bodies()[14];
-  Body<ICRFJ2000EclipticFrame> const& triton   = *system_->bodies()[15];
-  Body<ICRFJ2000EclipticFrame> const& eris     = *system_->bodies()[16];
-  Body<ICRFJ2000EclipticFrame> const& pluto    = *system_->bodies()[17];
+  Body const& sun      = *system_->bodies()[0];
+  Body const& jupiter  = *system_->bodies()[1];
+  Body const& saturn   = *system_->bodies()[2];
+  Body const& neptune  = *system_->bodies()[3];
+  Body const& uranus   = *system_->bodies()[4];
+  Body const& earth    = *system_->bodies()[5];
+  Body const& venus    = *system_->bodies()[6];
+  Body const& mars     = *system_->bodies()[7];
+  Body const& mercury  = *system_->bodies()[8];
+  Body const& ganymede = *system_->bodies()[9];
+  Body const& titan    = *system_->bodies()[10];
+  Body const& callisto = *system_->bodies()[11];
+  Body const& io       = *system_->bodies()[12];
+  Body const& moon     = *system_->bodies()[13];
+  Body const& europa   = *system_->bodies()[14];
+  Body const& triton   = *system_->bodies()[15];
+  Body const& eris     = *system_->bodies()[16];
+  Body const& pluto    = *system_->bodies()[17];
   // Reference excentricities from HORIZONS, truncated.
   // Using center: Sun (body center) [500@10].
   TestStronglyBoundOrbit(4.864297E-02, 1E-6, jupiter, sun, nullptr, "jupiter");
