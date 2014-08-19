@@ -23,7 +23,7 @@ std::vector<Vector<Speed, Frame>> const& Trajectory<Frame>::velocities() const {
 }
 
 template<typename Frame>
-std::vector<Time> const& Body<Frame>::times() const {
+std::vector<Time> const& Trajectory<Frame>::times() const {
   return times_;
 }
 
@@ -58,7 +58,7 @@ template<typename Frame>
 void Trajectory<Frame>::ForgetBefore(Time const& time) {
   {
     const auto it = states_.lower_bound(time);
-    states_.erase(states_.begin(), it));
+    states_.erase(states_.begin(), it);
   }
   {
     const auto it = children_.lower_bound(time);
@@ -102,7 +102,7 @@ void Trajectory<Frame>::AddBurst(
   // serious testing as I am too tired to be sure that this test is correct.
   const auto it1 = bursts_.upper_bound(time1);
   const auto it2 = bursts_.lower_bound(time2);
-  CHECK(it1, it2);
+  CHECK_EQ(it1, it2);
 
   bursts_.insert({time1, Burst(acceleration, duration)});
 }

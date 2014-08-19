@@ -49,9 +49,8 @@ NBodySystem<InertialFrame>::NBodySystem(
 }
 
 template<typename InertialFrame>
-std::vector<Body<InertialFrame> const*>
-NBodySystem<InertialFrame>::massless_bodies() const {
-  std::vector<Body<InertialFrame> const*> result;
+std::vector<Body const*> NBodySystem<InertialFrame>::massless_bodies() const {
+  std::vector<Body const*> result;
   for (auto const& body : *massless_bodies_) {
     result.push_back(body.get());
   }
@@ -59,9 +58,8 @@ NBodySystem<InertialFrame>::massless_bodies() const {
 }
 
 template<typename InertialFrame>
-std::vector<Body<InertialFrame> const*>
-NBodySystem<InertialFrame>::massive_bodies() const {
-  std::vector<Body<InertialFrame> const*> result;
+std::vector<Body const*> NBodySystem<InertialFrame>::massive_bodies() const {
+  std::vector<Body const*> result;
   for (auto const& body : *massive_bodies_) {
     result.push_back(body.get());
   }
@@ -69,9 +67,8 @@ NBodySystem<InertialFrame>::massive_bodies() const {
 }
 
 template<typename InertialFrame>
-std::vector<Body<InertialFrame> const*>
-NBodySystem<InertialFrame>::bodies() const {
-  std::vector<Body<InertialFrame> const*> result;
+std::vector<Body const*> NBodySystem<InertialFrame>::bodies() const {
+  std::vector<Body const*> result;
   for (auto const& body : bodies_) {
     result.push_back(body);
   }
@@ -83,16 +80,20 @@ void NBodySystem<InertialFrame>::Integrate(
     SymplecticIntegrator<Length, Speed> const& integrator,
     Time const& tmax,
     Time const& Δt,
-    int const sampling_period) {
+    int const sampling_period,
+    std::vector<Trajectory<InertialFrame>*> const& trajectories) {
   SymplecticIntegrator<Length, Speed>::Parameters parameters;
   std::vector<SymplecticIntegrator<Length, Speed>::SystemState> solution;
 
   // Prepare the input data.
   std::unique_ptr<Time> reference_time;
-  for (Body<InertialFrame> const* body : bodies_) {
-    R3Element<Length> const& position = body->positions().back().coordinates();
-    R3Element<Speed> const& velocity = body->velocities().back().coordinates();
-    Time const& time = body->times().back();
+  for (Trajectory<InertialFrame>* trajectory : trajectories) {
+    //TODO(phl): Relation with bodies_?
+    R3Element<Length> const& position =
+        trajectory->positions().back().coordinates();
+    R3Element<Speed> const& velocity =
+        trajectory->velocities().back().coordinates();
+    Time const& time = trajectory->times().back();
     for (int i = 0; i < 3; ++i) {
       parameters.initial.positions.emplace_back(position[i]);
     }
@@ -131,7 +132,7 @@ void NBodySystem<InertialFrame>::Integrate(
 #endif
     // Loop over the dimensions.
     for (std::size_t k = 0, b = 0; k < state.positions.size(); k += 3, ++b) {
-      Body<InertialFrame>* body = bodies_[b];
+      Body* body = bodies_[b];
       Vector<Length, InertialFrame> const position(
           R3Element<Length>(state.positions[k].value,
                             state.positions[k + 1].value,

@@ -9,6 +9,7 @@
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "physics/body.hpp"
+#include "physics/trajectory.hpp"
 #include "quantities/constants.hpp"
 #include "quantities/numbers.hpp"
 
@@ -33,8 +34,11 @@ class NBodySystemTest : public testing::Test {
 
     // The Earth-Moon system, roughly, with a circular orbit with velocities
     // in the center-of-mass frame.
-    body1_ = new Body<EarthMoonBarycentricFrame>(6E24 * SIUnit<Mass>());
-    body2_ = new Body<EarthMoonBarycentricFrame>(7E22 * SIUnit<Mass>());
+    body1_ = new Body(6E24 * SIUnit<Mass>());
+    body2_ = new Body(7E22 * SIUnit<Mass>());
+
+    trajectory1_ = new Trajectory<EarthMoonBarycentricFrame>(body1_);
+    trajectory2_ = new Trajectory<EarthMoonBarycentricFrame>(body2_);
     Point<Vector<Length, EarthMoonBarycentricFrame>> const
         q1(Vector<Length, EarthMoonBarycentricFrame>({0 * SIUnit<Length>(),
                                           0 * SIUnit<Length>(),
@@ -61,12 +65,12 @@ class NBodySystemTest : public testing::Test {
             0 * SIUnit<Speed>()}));
     Point<Vector<Speed, EarthMoonBarycentricFrame>> const overall_velocity =
         Barycentre(v1, body1_->mass(), v2, body2_->mass());
-    body1_->AppendToTrajectory(q1 - centre_of_mass,
-                               v1 - overall_velocity,
-                               0 * SIUnit<Time>());
-    body2_->AppendToTrajectory(q2 - centre_of_mass,
-                               v2 - overall_velocity,
-                               0 * SIUnit<Time>());
+    trajectory1_->Append(q1 - centre_of_mass,
+                         v1 - overall_velocity,
+                         0 * SIUnit<Time>());
+    trajectory2_->Append(q2 - centre_of_mass,
+                         v2 - overall_velocity,
+                         0 * SIUnit<Time>());
     std::unique_ptr<
         NBodySystem<EarthMoonBarycentricFrame>::Bodies> massive_bodies(
             new NBodySystem<EarthMoonBarycentricFrame>::Bodies);
@@ -110,8 +114,10 @@ class NBodySystemTest : public testing::Test {
     return result;
   }
 
-  Body<EarthMoonBarycentricFrame>* body1_;
-  Body<EarthMoonBarycentricFrame>* body2_;
+  Body* body1_;
+  Body* body2_;
+  Trajectory<EarthMoonBarycentricFrame>* trajectory1_;
+  Trajectory<EarthMoonBarycentricFrame>* trajectory2_;
   SPRKIntegrator<Length, Speed> integrator_;
   Time period_;
   std::unique_ptr<NBodySystem<EarthMoonBarycentricFrame>> system_;
@@ -121,7 +127,7 @@ TEST_F(NBodySystemTest, EarthMoon) {
   std::vector<Vector<Length, EarthMoonBarycentricFrame>> positions;
   system_->Integrate(integrator_, period_, period_ / 100, 1);
 
-  positions = body1_->positions();
+  positions = trajectory1_->positions();
   EXPECT_THAT(positions.size(), Eq(101));
   LOG(INFO) << ToMathematicaString(positions);
   EXPECT_THAT(Abs(positions[25].coordinates().y), Lt(3E-2 * SIUnit<Length>()));
@@ -129,7 +135,7 @@ TEST_F(NBodySystemTest, EarthMoon) {
   EXPECT_THAT(Abs(positions[75].coordinates().y), Lt(3E-2 * SIUnit<Length>()));
   EXPECT_THAT(Abs(positions[100].coordinates().x), Lt(3E-2 * SIUnit<Length>()));
 
-  positions = body2_->positions();
+  positions = trajectory2_->positions();
   LOG(INFO) << ToMathematicaString(positions);
   EXPECT_THAT(positions.size(), Eq(101));
   EXPECT_THAT(Abs(positions[25].coordinates().y), Lt(2 * SIUnit<Length>()));
