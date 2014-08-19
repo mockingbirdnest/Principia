@@ -132,7 +132,8 @@ void NBodySystem<InertialFrame>::Integrate(
 #endif
     // Loop over the dimensions.
     for (std::size_t k = 0, b = 0; k < state.positions.size(); k += 3, ++b) {
-      Body* body = bodies_[b];
+      //TODO(phl): bodies_ vs. trajectory.
+      Trajectory<InertialFrame>* trajectory = trajectories[b];
       Vector<Length, InertialFrame> const position(
           R3Element<Length>(state.positions[k].value,
                             state.positions[k + 1].value,
@@ -141,7 +142,7 @@ void NBodySystem<InertialFrame>::Integrate(
           R3Element<Speed>(state.momenta[k].value,
                            state.momenta[k + 1].value,
                            state.momenta[k + 2].value));
-      body->AppendToTrajectory(position, velocity, time);
+      trajectory->Append(position, velocity, time);
     }
   }
 }

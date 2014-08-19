@@ -1,9 +1,14 @@
 ﻿#pragma once
 
+#include <memory>
 #include <vector>
 
 #include "physics/n_body_system.hpp"
+#include "physics/trajectory.hpp"
 #include "quantities/quantities.hpp"
+
+using principia::physics::NBodySystem;
+using principia::physics::Trajectory;
 
 namespace principia {
 namespace testing_utilities {
@@ -40,12 +45,27 @@ struct ICRFJ2000EclipticFrame;
 // 15. Triton,
 // 16. Eris,
 // 17. Pluto.
-std::unique_ptr<physics::NBodySystem<ICRFJ2000EclipticFrame>>
-SolarSystemAtСпутникLaunch();
+class SolarSystem {
+ public:
+  typedef NBodySystem<ICRFJ2000EclipticFrame>::Bodies Bodies;
 
-// Number of days since the JD epoch. JD2436116.3115 is the time of the launch
-// of Простейший Спутник-1.
-quantities::Time const kСпутникLaunchDate = 2436116.3115 * si::Day;
+  SolarSystem();
+
+  std::unique_ptr<Bodies> massive_bodies();
+  std::unique_ptr<Bodies> massless_bodies();
+
+  std::vector<Trajectory<ICRFJ2000EclipticFrame>*> const&
+  trajectories_at_спутник_launch();
+
+  // Number of days since the JD epoch. JD2436116.3115 is the time of the launch
+  // of Простейший Спутник-1.
+  quantities::Time const kСпутникLaunchDate = 2436116.3115 * si::Day;
+
+ private:
+  std::unique_ptr<Bodies> massive_bodies_;
+  std::unique_ptr<Bodies> massless_bodies_;
+  std::vector<Trajectory<ICRFJ2000EclipticFrame>*> trajectories_;
+};
 
 }  // namespace testing_utilities
 }  // namespace principia
