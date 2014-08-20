@@ -11,11 +11,12 @@ namespace physics {
 
 template<typename Frame>
 Trajectory<Frame>::Trajectory(Body const* body)
-    : body_(
-#ifndef _MANAGED
-    CHECK_NOTNULL
+    :
+#ifdef _MANAGED
+      body_(body),
+#else
+      body_(CHECK_NOTNULL(body)),
 #endif
-          (body)),
       parent_(nullptr) {}
 
 template<typename Frame>

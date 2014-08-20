@@ -107,7 +107,7 @@ void NBodySystem<InertialFrame>::Integrate(
         trajectory->positions().back().coordinates();
     R3Element<Speed> const& velocity =
         trajectory->velocities().back().coordinates();
-    Time const& time = trajectory->times().back();
+    Time const time = trajectory->times().back();
     for (int i = 0; i < 3; ++i) {
       parameters.initial.positions.emplace_back(position[i]);
     }
