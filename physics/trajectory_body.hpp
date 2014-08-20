@@ -53,10 +53,11 @@ template<typename Frame>
 void Trajectory<Frame>::Append(Vector<Length, Frame> const& position,
                                Vector<Speed, Frame> const& velocity,
                                Time const& time) {
-  const bool inserted =
-      states_.insert(std::make_pair(time, State(position, velocity))).second;
+  auto inserted =
+      states_.insert(std::make_pair(time, State(position, velocity)));
 #ifndef _MANAGED
-  CHECK(inserted);
+  CHECK(states_.end() == ++inserted.first) << "Append out of order";
+  CHECK(inserted.second) << "Append at existing time";
 #endif
 }
 
@@ -99,13 +100,13 @@ void Trajectory<Frame>::ForgetBefore(Time const& time) {
 
 template<typename Frame>
 Trajectory<Frame>* Trajectory<Frame>::Fork(Time const& time) {
-  const bool has_time = states_.find(time) != states_.end();
-  CHECK(has_time);
-
-  Child child(time, new Trajectory(body_));
-  child->trajectory_->parent_ = this;
-  children_.insert(child).second;
-  return child->trajectory;
+  auto state_it = states_.find(time);
+  CHECK(state_it != states_.end()) << "Fork at nonexistent time";
+  std::unique_ptr<Trajectory<Frame>> child(
+      new Trajectory(body_, this /*parent*/));
+  child->states_.insert(++state_it, states_.end());
+  auto const child_it = children_.emplace(time, std::move(child));
+  return child_it->second.get();
 }
 
 template<typename Frame>
@@ -131,6 +132,11 @@ void Trajectory<Frame>::AddBurst(
 
   bursts_.insert({time1, Burst(acceleration, duration)});
 }
+
+template<typename Frame>
+Trajectory<Frame>::Trajectory(Body const* body, Trajectory const* parent)
+    : body_(body),
+      parent_(parent) {};
 
 template<typename Frame>
 Trajectory<Frame>::Burst::Burst(Vector<Acceleration, Frame> const& acceleration,

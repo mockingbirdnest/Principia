@@ -66,6 +66,8 @@ class Trajectory {
                 Time const& time2);
 
  private:
+  Trajectory(Body const* body, Trajectory const* parent);
+
   class Burst {
    public:
     Burst(Vector<Acceleration, Frame> const& acceleration,
@@ -88,7 +90,7 @@ class Trajectory {
 
   Body const* const body_;  // Never null.
 
-  Trajectory* const parent_;  // Only null if this is the real trajectory.
+  Trajectory const* const parent_;  // Only null if this is the real trajectory.
 
   // There may be several forks starting from the same time, hence the multimap.
   std::multimap<Time, std::unique_ptr<Trajectory>> children_;
