@@ -29,7 +29,17 @@ using principia::si::Second;
 namespace principia {
 namespace testing_utilities {
 
-SolarSystem::SolarSystem() {
+class SolarSystem {
+ public:
+  SolarSystem();
+
+  std::unique_ptr<NBodySystem<ICRFJ2000EclipticFrame>::Bodies> massive_bodies();
+  std::unique_ptr<NBodySystem<ICRFJ2000EclipticFrame>::Bodies> massless_bodies();
+
+};
+std::unique_ptr<physics::NBodySystem<ICRFJ2000EclipticFrame>>
+SolarSystemAtСпутникLaunch() {
+
   typedef Vector<Length, ICRFJ2000EclipticFrame> Position;
   typedef Vector<Speed, ICRFJ2000EclipticFrame> Velocity;
 
@@ -267,66 +277,30 @@ SolarSystem::SolarSystem() {
 
   // End of celestial bodies.
 
-  massive_bodies_.reset(new NBodySystem<ICRFJ2000EclipticFrame>::Bodies);
-  massless_bodies_.reset(new NBodySystem<ICRFJ2000EclipticFrame>::Bodies);
-
-  massive_bodies_->emplace_back(sun);
-  massive_bodies_->emplace_back(jupiter);
-  massive_bodies_->emplace_back(saturn);
-  massive_bodies_->emplace_back(neptune);
-  massive_bodies_->emplace_back(uranus);
-  massive_bodies_->emplace_back(earth);
-  massive_bodies_->emplace_back(venus);
-  massive_bodies_->emplace_back(mars);
-  massive_bodies_->emplace_back(mercury);
-  massive_bodies_->emplace_back(ganymede);
-  massive_bodies_->emplace_back(titan);
-  massive_bodies_->emplace_back(callisto);
-  massive_bodies_->emplace_back(io);
-  massive_bodies_->emplace_back(moon);
-  massive_bodies_->emplace_back(europa);
-  massive_bodies_->emplace_back(triton);
-  massive_bodies_->emplace_back(eris);
-  massive_bodies_->emplace_back(pluto);
-
-  trajectories_.push_back(sun_trajectory);
-  trajectories_.push_back(jupiter_trajectory);
-  trajectories_.push_back(saturn_trajectory);
-  trajectories_.push_back(neptune_trajectory);
-  trajectories_.push_back(uranus_trajectory);
-  trajectories_.push_back(earth_trajectory);
-  trajectories_.push_back(venus_trajectory);
-  trajectories_.push_back(mars_trajectory);
-  trajectories_.push_back(mercury_trajectory);
-  trajectories_.push_back(ganymede_trajectory);
-  trajectories_.push_back(titan_trajectory);
-  trajectories_.push_back(callisto_trajectory);
-  trajectories_.push_back(io_trajectory);
-  trajectories_.push_back(moon_trajectory);
-  trajectories_.push_back(europa_trajectory);
-  trajectories_.push_back(triton_trajectory);
-  trajectories_.push_back(eris_trajectory);
-  trajectories_.push_back(pluto_trajectory);
+  std::unique_ptr<NBodySystem<ICRFJ2000EclipticFrame>::Bodies> massive_bodies(
+      new NBodySystem<ICRFJ2000EclipticFrame>::Bodies);
+  std::unique_ptr<NBodySystem<ICRFJ2000EclipticFrame>::Bodies> massless_bodies;
+  massive_bodies->emplace_back(sun);
+  massive_bodies->emplace_back(jupiter);
+  massive_bodies->emplace_back(saturn);
+  massive_bodies->emplace_back(neptune);
+  massive_bodies->emplace_back(uranus);
+  massive_bodies->emplace_back(earth);
+  massive_bodies->emplace_back(venus);
+  massive_bodies->emplace_back(mars);
+  massive_bodies->emplace_back(mercury);
+  massive_bodies->emplace_back(ganymede);
+  massive_bodies->emplace_back(titan);
+  massive_bodies->emplace_back(callisto);
+  massive_bodies->emplace_back(io);
+  massive_bodies->emplace_back(moon);
+  massive_bodies->emplace_back(europa);
+  massive_bodies->emplace_back(triton);
+  massive_bodies->emplace_back(eris);
+  massive_bodies->emplace_back(pluto);
+  return std::make_unique<NBodySystem<ICRFJ2000EclipticFrame>>(
+      std::move(massive_bodies), std::move(massless_bodies));
 }
-
-std::unique_ptr<NBodySystem<ICRFJ2000EclipticFrame>::Bodies>
-SolarSystem::massive_bodies() {
-  return massive_bodies_;
-}
-std::unique_ptr<NBodySystem<ICRFJ2000EclipticFrame>::Bodies>
-SolarSystem::massless_bodies() {
-  return massless_bodies_;
-}
-
-std::vector<Trajectory<ICRFJ2000EclipticFrame>*> const&
-SolarSystem::trajectories_at_спутник_launch() {
-  return trajectories_;
-}
-
-  // Number of days since the JD epoch. JD2436116.3115 is the time of the launch
-  // of Простейший Спутник-1.
-  quantities::Time const kСпутникLaunchDate = 2436116.3115 * si::Day;
-
 
 }  // namespace testing_utilities
 }  // namespace principia

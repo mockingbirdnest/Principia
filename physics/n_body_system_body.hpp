@@ -26,13 +26,15 @@ namespace physics {
 template<typename InertialFrame>
 NBodySystem<InertialFrame>::NBodySystem(
     std::unique_ptr<Bodies>&& massive_bodies,
-    std::unique_ptr<Bodies>&& massless_bodies)
+    std::unique_ptr<Bodies>&& massless_bodies,
+    std::unique_ptr<Trajectories>&& trajectories)
     : massive_bodies_(massive_bodies == nullptr ?
                           std::unique_ptr<Bodies>(new Bodies) :
                           std::move(massive_bodies)),
       massless_bodies_(massless_bodies == nullptr ?
                            std::unique_ptr<Bodies>(new Bodies) :
-                           std::move(massless_bodies)) {
+                           std::move(massless_bodies)),
+      trajectories_(std::move(trajectories)) {
   // Parameter checking.
   for (auto const& body : *massive_bodies_) {
 #ifndef _MANAGED
@@ -46,6 +48,9 @@ NBodySystem<InertialFrame>::NBodySystem(
 #endif
     bodies_.push_back(body.get());
   }
+#ifndef _MANAGED
+  CHECK_EQ(trajectories_->size(), bodies_.size());
+#endif
 }
 
 template<typename InertialFrame>
@@ -80,14 +85,13 @@ void NBodySystem<InertialFrame>::Integrate(
     SymplecticIntegrator<Length, Speed> const& integrator,
     Time const& tmax,
     Time const& Δt,
-    int const sampling_period,
-    std::vector<Trajectory<InertialFrame>*> const& trajectories) {
+    int const sampling_period) {
   SymplecticIntegrator<Length, Speed>::Parameters parameters;
   std::vector<SymplecticIntegrator<Length, Speed>::SystemState> solution;
 
   // Prepare the input data.
   std::unique_ptr<Time> reference_time;
-  for (Trajectory<InertialFrame>* trajectory : trajectories) {
+  for (const auto& trajectory : *trajectories_) {
     //TODO(phl): Relation with bodies_?
     R3Element<Length> const& position =
         trajectory->positions().back().coordinates();
@@ -133,7 +137,7 @@ void NBodySystem<InertialFrame>::Integrate(
     // Loop over the dimensions.
     for (std::size_t k = 0, b = 0; k < state.positions.size(); k += 3, ++b) {
       //TODO(phl): bodies_ vs. trajectory.
-      Trajectory<InertialFrame>* trajectory = trajectories[b];
+      Trajectory<InertialFrame>* trajectory = (*trajectories_)[b].get();
       Vector<Length, InertialFrame> const position(
           R3Element<Length>(state.positions[k].value,
                             state.positions[k + 1].value,
