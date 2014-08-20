@@ -52,7 +52,9 @@ class TrajectoryTest : public testing::Test {
   std::unique_ptr<Trajectory<World>> trajectory_;
 };
 
-TEST_F(TrajectoryTest, AppendError) {
+typedef TrajectoryTest TrajectoryDeathTest;
+
+TEST_F(TrajectoryDeathTest, AppendError) {
   // TODO(phl): Find out how to match the messages here.
   EXPECT_DEATH({
     trajectory_->Append(q2_, p2_, t2_);
