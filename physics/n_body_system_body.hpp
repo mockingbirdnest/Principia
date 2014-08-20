@@ -81,6 +81,16 @@ std::vector<Body const*> NBodySystem<InertialFrame>::bodies() const {
 }
 
 template<typename InertialFrame>
+std::vector<Trajectory<InertialFrame> const*>
+NBodySystem<InertialFrame>::trajectories() const {
+  std::vector<Trajectory<InertialFrame> const*> result;
+  for (auto const& trajectory : *trajectories_) {
+    result.push_back(trajectory.get());
+  }
+  return result;
+}
+
+template<typename InertialFrame>
 void NBodySystem<InertialFrame>::Integrate(
     SymplecticIntegrator<Length, Speed> const& integrator,
     Time const& tmax,
@@ -91,7 +101,7 @@ void NBodySystem<InertialFrame>::Integrate(
 
   // Prepare the input data.
   std::unique_ptr<Time> reference_time;
-  for (const auto& trajectory : *trajectories_) {
+  for (auto const& trajectory : *trajectories_) {
     //TODO(phl): Relation with bodies_?
     R3Element<Length> const& position =
         trajectory->positions().back().coordinates();

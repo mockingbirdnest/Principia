@@ -280,6 +280,8 @@ SolarSystemAtСпутникLaunch() {
   std::unique_ptr<NBodySystem<ICRFJ2000EclipticFrame>::Bodies> massive_bodies(
       new NBodySystem<ICRFJ2000EclipticFrame>::Bodies);
   std::unique_ptr<NBodySystem<ICRFJ2000EclipticFrame>::Bodies> massless_bodies;
+  std::unique_ptr<NBodySystem<ICRFJ2000EclipticFrame>::Trajectories>
+      trajectories(new NBodySystem<ICRFJ2000EclipticFrame>::Trajectories);
   massive_bodies->emplace_back(sun);
   massive_bodies->emplace_back(jupiter);
   massive_bodies->emplace_back(saturn);
@@ -298,8 +300,28 @@ SolarSystemAtСпутникLaunch() {
   massive_bodies->emplace_back(triton);
   massive_bodies->emplace_back(eris);
   massive_bodies->emplace_back(pluto);
+  trajectories->emplace_back(sun_trajectory);
+  trajectories->emplace_back(jupiter_trajectory);
+  trajectories->emplace_back(saturn_trajectory);
+  trajectories->emplace_back(neptune_trajectory);
+  trajectories->emplace_back(uranus_trajectory);
+  trajectories->emplace_back(earth_trajectory);
+  trajectories->emplace_back(venus_trajectory);
+  trajectories->emplace_back(mars_trajectory);
+  trajectories->emplace_back(mercury_trajectory);
+  trajectories->emplace_back(ganymede_trajectory);
+  trajectories->emplace_back(titan_trajectory);
+  trajectories->emplace_back(callisto_trajectory);
+  trajectories->emplace_back(io_trajectory);
+  trajectories->emplace_back(moon_trajectory);
+  trajectories->emplace_back(europa_trajectory);
+  trajectories->emplace_back(triton_trajectory);
+  trajectories->emplace_back(eris_trajectory);
+  trajectories->emplace_back(pluto_trajectory);
   return std::make_unique<NBodySystem<ICRFJ2000EclipticFrame>>(
-      std::move(massive_bodies), std::move(massless_bodies));
+      std::move(massive_bodies),
+      std::move(massless_bodies),
+      std::move(trajectories));
 }
 
 }  // namespace testing_utilities

@@ -35,6 +35,7 @@ class NBodySystem {
   std::vector<Body const*> massive_bodies() const;
   std::vector<Body const*> massless_bodies() const;
   std::vector<Body const*> bodies() const;
+  std::vector<Trajectory<InertialFrame> const*> trajectories() const;
 
   // The |integrator| must already have been initialized.
   void Integrate(SymplecticIntegrator<Length, Speed> const& integrator,

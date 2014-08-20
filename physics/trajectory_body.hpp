@@ -11,7 +11,11 @@ namespace physics {
 
 template<typename Frame>
 Trajectory<Frame>::Trajectory(Body const* body)
-    : body_(CHECK_NOTNULL(body)),
+    : body_(
+#ifndef _MANAGED
+    CHECK_NOTNULL
+#endif
+          (body)),
       parent_(nullptr) {}
 
 template<typename Frame>
@@ -50,7 +54,9 @@ void Trajectory<Frame>::Append(Vector<Length, Frame> const& position,
                                Time const& time) {
   const bool inserted =
       states_.insert(std::make_pair(time, State(position, velocity))).second;
+#ifndef _MANAGED
   CHECK(inserted);
+#endif
 }
 
 template<typename Frame>
