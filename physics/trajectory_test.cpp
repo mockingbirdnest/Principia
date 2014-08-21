@@ -29,6 +29,7 @@ class TrajectoryTest : public testing::Test {
     q1_ = Vector<Length, World>({1 * Metre, 2 * Metre, 3 * Metre});
     q2_ = Vector<Length, World>({11 * Metre, 12 * Metre, 13 * Metre});
     q3_ = Vector<Length, World>({21 * Metre, 22 * Metre, 23 * Metre});
+    q4_ = Vector<Length, World>({31 * Metre, 32 * Metre, 33 * Metre});
     p1_ = Vector<Speed, World>({4 * Metre / Second,
                                 5 * Metre / Second,
                                 6 * Metre / Second});
@@ -38,17 +39,21 @@ class TrajectoryTest : public testing::Test {
     p3_ = Vector<Speed, World>({24 * Metre / Second,
                                 25 * Metre / Second,
                                 26 * Metre / Second});
+    p4_ = Vector<Speed, World>({34 * Metre / Second,
+                                35 * Metre / Second,
+                                36 * Metre / Second});
     t1_ = 7 * Second;
     t2_ = 17 * Second;
     t3_ = 27 * Second;
+    t4_ = 37 * Second;
 
     body_.reset(new Body(SIUnit<Mass>()));
     trajectory_.reset(new Trajectory<World>(body_.get()));
   }
 
-  Vector<Length, World> q1_, q2_, q3_;
-  Vector<Speed, World> p1_, p2_, p3_;
-  Time t1_, t2_, t3_;
+  Vector<Length, World> q1_, q2_, q3_, q4_;
+  Vector<Speed, World> p1_, p2_, p3_, p4_;
+  Time t1_, t2_, t3_, t4_;
   std::unique_ptr<Body> body_;
   std::unique_ptr<Trajectory<World>> trajectory_;
 };
@@ -89,14 +94,26 @@ TEST_F(TrajectoryTest, Fork) {
   trajectory_->Append(q2_, p2_, t2_);
   trajectory_->Append(q3_, p3_, t3_);
   Trajectory<World>* fork = trajectory_->Fork(t2_);
-  std::map<Time, Vector<Length, World>> const positions = fork->Positions();
-  std::map<Time, Vector<Speed, World>> const velocities = fork->Velocities();
-  std::list<Time> const times = fork->Times();
+  fork->Append(q4_, p4_, t4_);
+  std::map<Time, Vector<Length, World>> positions = trajectory_->Positions();
+  std::map<Time, Vector<Speed, World>> velocities = trajectory_->Velocities();
+  std::list<Time> times = trajectory_->Times();
   EXPECT_THAT(positions,
               ElementsAre(Pair(t1_, q1_), Pair(t2_, q2_), Pair(t3_, q3_)));
   EXPECT_THAT(velocities,
               ElementsAre(Pair(t1_, p1_), Pair(t2_, p2_), Pair(t3_, p3_)));
   EXPECT_THAT(times, ElementsAre(t1_, t2_, t3_));
+  EXPECT_EQ(body_.get(), fork->body());
+  positions = fork->Positions();
+  velocities = fork->Velocities();
+  times = fork->Times();
+  EXPECT_THAT(positions,
+              ElementsAre(Pair(t1_, q1_), Pair(t2_, q2_),
+                          Pair(t3_, q3_), Pair(t4_, q4_)));
+  EXPECT_THAT(velocities,
+              ElementsAre(Pair(t1_, p1_), Pair(t2_, p2_),
+                          Pair(t3_, p3_), Pair(t4_, p4_)));
+  EXPECT_THAT(times, ElementsAre(t1_, t2_, t3_, t4_));
   EXPECT_EQ(body_.get(), fork->body());
 }
 

@@ -44,12 +44,12 @@ std::list<Time> Trajectory<Frame>::Times() const {
   // The data points of our ancestors in decreasing time order.
   Trajectory const* ancestor = this;
   while (ancestor->parent_ != nullptr) {
-    for (States::iterator it = *ancestor->parent_state_;
-         it != ancestor->parent_->states_.begin();//TODO(phl):wrong
-         --it) {
+    States::iterator it = *ancestor->parent_state_;
+    do {
       Time const& time = it->first;
       result.push_front(time);
-    }
+    } while (it-- !=  // Postdecrement to process begin.
+             ancestor->parent_->states_.begin());
     ancestor = ancestor->parent_;
   }
 
@@ -186,13 +186,13 @@ std::map<Time, Value> Trajectory<Frame>::GetState(
   // The data points of our ancestors in decreasing time order.
   Trajectory const* ancestor = this;
   while (ancestor->parent_ != nullptr) {
-    for (States::iterator it = *ancestor->parent_state_;
-         it != ancestor->parent_->states_.begin();//TODO(phl):wrong
-         --it) {
+    States::iterator it = *ancestor->parent_state_;
+    do {
       Time const& time = it->first;
       State const& state = it->second;
       result.insert(result.begin(), std::make_pair(time, fun(state)));
-    }
+    } while (it-- !=  // Postdecrement to process begin.
+             ancestor->parent_->states_.begin());
     ancestor = ancestor->parent_;
   }
 
