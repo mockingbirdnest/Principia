@@ -16,6 +16,7 @@ using principia::quantities::SIUnit;
 using principia::si::Metre;
 using principia::si::Second;
 using testing::ElementsAre;
+using testing::Eq;
 using testing::Pair;
 
 namespace principia {
@@ -115,6 +116,15 @@ TEST_F(TrajectoryTest, Fork) {
                           Pair(t3_, p3_), Pair(t4_, p4_)));
   EXPECT_THAT(times, ElementsAre(t1_, t2_, t3_, t4_));
   EXPECT_EQ(body_.get(), fork->body());
+}
+
+TEST_F(TrajectoryTest, Last) {
+  trajectory_->Append(q1_, p1_, t1_);
+  trajectory_->Append(q2_, p2_, t2_);
+  trajectory_->Append(q3_, p3_, t3_);
+  EXPECT_THAT(trajectory_->last_position(), Eq(q3_));
+  EXPECT_THAT(trajectory_->last_velocity(), Eq(p3_));
+  EXPECT_THAT(trajectory_->last_time(), Eq(t3_));
 }
 
 }  // namespace physics
