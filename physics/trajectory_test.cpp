@@ -16,6 +16,7 @@ using principia::quantities::SIUnit;
 using principia::si::Metre;
 using principia::si::Second;
 using testing::ElementsAre;
+using testing::Pair;
 
 namespace principia {
 namespace physics {
@@ -75,8 +76,10 @@ TEST_F(TrajectoryTest, AppendSuccess) {
   std::map<Time, Vector<Speed, World>> const velocities =
       trajectory_->Velocities();
   std::list<Time> const times = trajectory_->Times();
-  EXPECT_THAT(positions, ElementsAre(q1_, q2_, q3_));
-  EXPECT_THAT(velocities, ElementsAre(p1_, p2_, p3_));
+  EXPECT_THAT(positions,
+              ElementsAre(Pair(t1_, q1_), Pair(t2_, q2_), Pair(t3_, q3_)));
+  EXPECT_THAT(velocities,
+              ElementsAre(Pair(t1_, p1_), Pair(t2_, p2_), Pair(t3_, p3_)));
   EXPECT_THAT(times, ElementsAre(t1_, t2_, t3_));
   EXPECT_EQ(body_.get(), trajectory_->body());
 }
@@ -89,8 +92,10 @@ TEST_F(TrajectoryTest, Fork) {
   std::map<Time, Vector<Length, World>> const positions = fork->Positions();
   std::map<Time, Vector<Speed, World>> const velocities = fork->Velocities();
   std::list<Time> const times = fork->Times();
-  EXPECT_THAT(positions, ElementsAre(q1_, q2_, q3_));
-  EXPECT_THAT(velocities, ElementsAre(p1_, p2_, p3_));
+  EXPECT_THAT(positions,
+              ElementsAre(Pair(t1_, q1_), Pair(t2_, q2_), Pair(t3_, q3_)));
+  EXPECT_THAT(velocities,
+              ElementsAre(Pair(t1_, p1_), Pair(t2_, p2_), Pair(t3_, p3_)));
   EXPECT_THAT(times, ElementsAre(t1_, t2_, t3_));
   EXPECT_EQ(body_.get(), fork->body());
 }
