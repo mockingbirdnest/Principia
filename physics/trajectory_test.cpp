@@ -70,10 +70,11 @@ TEST_F(TrajectoryTest, AppendSuccess) {
   trajectory_->Append(q1_, p1_, t1_);
   trajectory_->Append(q2_, p2_, t2_);
   trajectory_->Append(q3_, p3_, t3_);
-  std::vector<Vector<Length, World>> const positions = trajectory_->positions();
-  std::vector<Vector<Speed, World>> const velocities =
-      trajectory_->velocities();
-  std::vector<Time> const times = trajectory_->times();
+  std::map<Time, Vector<Length, World>> const positions =
+      trajectory_->Positions();
+  std::map<Time, Vector<Speed, World>> const velocities =
+      trajectory_->Velocities();
+  std::list<Time> const times = trajectory_->Times();
   EXPECT_THAT(positions, ElementsAre(q1_, q2_, q3_));
   EXPECT_THAT(velocities, ElementsAre(p1_, p2_, p3_));
   EXPECT_THAT(times, ElementsAre(t1_, t2_, t3_));
@@ -85,9 +86,9 @@ TEST_F(TrajectoryTest, Fork) {
   trajectory_->Append(q2_, p2_, t2_);
   trajectory_->Append(q3_, p3_, t3_);
   Trajectory<World>* fork = trajectory_->Fork(t2_);
-  std::vector<Vector<Length, World>> const positions = fork->positions();
-  std::vector<Vector<Speed, World>> const velocities = fork->velocities();
-  std::vector<Time> const times = fork->times();
+  std::map<Time, Vector<Length, World>> const positions = fork->Positions();
+  std::map<Time, Vector<Speed, World>> const velocities = fork->Velocities();
+  std::list<Time> const times = fork->Times();
   EXPECT_THAT(positions, ElementsAre(q1_, q2_, q3_));
   EXPECT_THAT(velocities, ElementsAre(p1_, p2_, p3_));
   EXPECT_THAT(times, ElementsAre(t1_, t2_, t3_));

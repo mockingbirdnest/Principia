@@ -120,6 +120,15 @@ class NBodySystemTest : public testing::Test {
     return result;
   }
 
+  template<typename T1, typename T2>
+  std::vector<T2> ValuesOf(std::map<T1, T2> const& m) {
+    std::vector<T2> result;
+    for (auto const it : m) {
+      result.push_back(it.second);
+    }
+    return result;
+  }
+
   Body* body1_;
   Body* body2_;
   Trajectory<EarthMoonBarycentricFrame>* trajectory1_;
@@ -136,7 +145,7 @@ TEST_F(NBodySystemTest, EarthMoon) {
                      period_ / 100,
                      1);
 
-  positions = trajectory1_->positions();
+  positions = ValuesOf(trajectory1_->Positions());
   EXPECT_THAT(positions.size(), Eq(101));
   LOG(INFO) << ToMathematicaString(positions);
   EXPECT_THAT(Abs(positions[25].coordinates().y), Lt(3E-2 * SIUnit<Length>()));
@@ -144,7 +153,7 @@ TEST_F(NBodySystemTest, EarthMoon) {
   EXPECT_THAT(Abs(positions[75].coordinates().y), Lt(3E-2 * SIUnit<Length>()));
   EXPECT_THAT(Abs(positions[100].coordinates().x), Lt(3E-2 * SIUnit<Length>()));
 
-  positions = trajectory2_->positions();
+  positions = ValuesOf(trajectory2_->Positions());
   LOG(INFO) << ToMathematicaString(positions);
   EXPECT_THAT(positions.size(), Eq(101));
   EXPECT_THAT(Abs(positions[25].coordinates().y), Lt(2 * SIUnit<Length>()));

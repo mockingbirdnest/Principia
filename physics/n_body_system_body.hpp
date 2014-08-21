@@ -102,12 +102,12 @@ void NBodySystem<InertialFrame>::Integrate(
   // Prepare the input data.
   std::unique_ptr<Time> reference_time;
   for (auto const& trajectory : *trajectories_) {
-    //TODO(phl): Relation with bodies_?
+    //TODO(phl): Relation with bodies_?  Optimization.
     R3Element<Length> const& position =
-        trajectory->positions().back().coordinates();
+        trajectory->Positions().rbegin()->second.coordinates();
     R3Element<Speed> const& velocity =
-        trajectory->velocities().back().coordinates();
-    Time const time = trajectory->times().back();
+        trajectory->Velocities().rbegin()->second.coordinates();
+    Time const time = trajectory->Times().back();
     for (int i = 0; i < 3; ++i) {
       parameters.initial.positions.emplace_back(position[i]);
     }

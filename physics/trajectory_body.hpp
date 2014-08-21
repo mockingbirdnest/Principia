@@ -20,32 +20,39 @@ Trajectory<Frame>::Trajectory(Body const* body)
       parent_(nullptr) {}
 
 template<typename Frame>
-std::vector<Vector<Length, Frame>> const Trajectory<Frame>::positions() const {
-  std::vector<Vector<Length, Frame>> result;
-  for (const auto it : states_) {
-    State const& state = it.second;
-    result.push_back(state.position());
-  }
-  return result;
+std::map<Time, Vector<Length, Frame>> Trajectory<Frame>::Positions() const {
+  return GetState<Vector<Length, Frame>>(
+      [](State const& s) { return s.position(); });
 }
 
 template<typename Frame>
-std::vector<Vector<Speed, Frame>> const Trajectory<Frame>::velocities() const {
-  std::vector<Vector<Speed, Frame>> result;
-  for (const auto it : states_) {
-    State const& state = it.second;
-    result.push_back(state.velocity());
-  }
-  return result;
+std::map<Time, Vector<Speed, Frame>> Trajectory<Frame>::Velocities() const {
+  return GetState<Vector<Speed, Frame>>(
+      [](State const& s) { return s.velocity(); });
 }
 
 template<typename Frame>
-std::vector<Time> const Trajectory<Frame>::times() const {
-  std::vector<Time> result;
+std::list<Time> Trajectory<Frame>::Times() const {
+  std::list<Time> result;
+
+  // Our own data points in increasing time order.
   for (const auto it : states_) {
     Time const& time = it.first;
     result.push_back(time);
   }
+
+  // The data points of our ancestors in decreasing time order.
+  Trajectory const* ancestor = this;
+  while (ancestor->parent_ != nullptr) {
+    for (States::iterator it = *ancestor->parent_state_;
+         it != ancestor->parent_->states_.begin();//TODO(phl):wrong
+         --it) {
+      Time const& time = it->first;
+      result.push_front(time);
+    }
+    ancestor = ancestor->parent_;
+  }
+
   return result;
 }
 
@@ -100,11 +107,11 @@ void Trajectory<Frame>::ForgetBefore(Time const& time) {
 
 template<typename Frame>
 Trajectory<Frame>* Trajectory<Frame>::Fork(Time const& time) {
-  auto state_it = states_.find(time);
-  CHECK(state_it != states_.end()) << "Fork at nonexistent time";
+  auto fork_it = states_.find(time);
+  CHECK(fork_it != states_.end()) << "Fork at nonexistent time";
   std::unique_ptr<Trajectory<Frame>> child(
-      new Trajectory(body_, this /*parent*/));
-  child->states_.insert(++state_it, states_.end());
+      new Trajectory(body_, this /*parent*/, fork_it));
+  child->states_.insert(++fork_it, states_.end());
   auto const child_it = children_.emplace(time, std::move(child));
   return child_it->second.get();
 }
@@ -134,9 +141,12 @@ void Trajectory<Frame>::AddBurst(
 }
 
 template<typename Frame>
-Trajectory<Frame>::Trajectory(Body const* body, Trajectory const* parent)
+Trajectory<Frame>::Trajectory(Body const* const body,
+                              Trajectory const* const parent,
+                              typename States::iterator const& parent_state)
     : body_(body),
-      parent_(parent) {};
+      parent_(parent),//TODO(phl):CHECK_NOTNULL
+      parent_state_(new States::iterator(parent_state)) {};
 
 template<typename Frame>
 Trajectory<Frame>::Burst::Burst(Vector<Acceleration, Frame> const& acceleration,
@@ -158,6 +168,35 @@ Vector<Length, Frame> const& Trajectory<Frame>::State::position() const {
 template<typename Frame>
 Vector<Speed, Frame> const& Trajectory<Frame>::State::velocity() const {
   return velocity_;
+}
+
+template<typename Frame>
+template<typename Value>
+std::map<Time, Value> Trajectory<Frame>::GetState(
+    std::function<Value(State const&)> fun) const {
+  std::map<Time, Value> result;
+
+  // Our own data points in increasing time order.
+  for (const auto it : states_) {
+    Time const& time = it.first;
+    State const& state = it.second;
+    result.insert(result.end(), std::make_pair(time, fun(state)));
+  }
+
+  // The data points of our ancestors in decreasing time order.
+  Trajectory const* ancestor = this;
+  while (ancestor->parent_ != nullptr) {
+    for (States::iterator it = *ancestor->parent_state_;
+         it != ancestor->parent_->states_.begin();//TODO(phl):wrong
+         --it) {
+      Time const& time = it->first;
+      State const& state = it->second;
+      result.insert(result.begin(), std::make_pair(time, fun(state)));
+    }
+    ancestor = ancestor->parent_;
+  }
+
+  return result;
 }
 
 }  // namespace physics
