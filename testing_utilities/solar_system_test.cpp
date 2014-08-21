@@ -41,11 +41,11 @@ class SolarSystemTest : public testing::Test {
     GravitationalParameter const μ = primary.gravitational_parameter() +
                                      secondary.gravitational_parameter();
     Vector<Length, ICRFJ2000EclipticFrame> const r =
-        primary_trajectory.Positions().rbegin()->second -
-        secondary_trajectory.Positions().rbegin()->second;
+        primary_trajectory.last_position() -
+        secondary_trajectory.last_position();
     Vector<Speed, ICRFJ2000EclipticFrame> const v =
-        primary_trajectory.Velocities().rbegin()->second -
-        secondary_trajectory.Velocities().rbegin()->second;
+        primary_trajectory.last_velocity() -
+        secondary_trajectory.last_velocity();
     SpecificEnergy const ε = Pow<2>(v.Norm()) / 2 - μ / r.Norm();
     return -μ / (2 * ε);
   }
@@ -83,11 +83,11 @@ class SolarSystemTest : public testing::Test {
     GravitationalParameter const μ = tertiary.gravitational_parameter() +
                                      secondary.gravitational_parameter();
     Vector<Length, ICRFJ2000EclipticFrame> const r =
-        tertiary_trajectory.Positions().rbegin()->second -
-        secondary_trajectory.Positions().rbegin()->second;
+        tertiary_trajectory.last_position() -
+        secondary_trajectory.last_position();
     Vector<Speed, ICRFJ2000EclipticFrame> const v =
-        tertiary_trajectory.Velocities().rbegin()->second -
-        secondary_trajectory.Velocities().rbegin()->second;
+        tertiary_trajectory.last_velocity() -
+        secondary_trajectory.last_velocity();
     Bivector<SpecificAngularMomentum, ICRFJ2000EclipticFrame> const h =
         Wedge(r, v) / Radian;
     SpecificEnergy const ε = Pow<2>(v.Norm()) / 2 - μ / r.Norm();

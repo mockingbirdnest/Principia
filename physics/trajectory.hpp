@@ -29,13 +29,18 @@ class Trajectory {
 
   // These functions return the series of positions/velocities/times for the
   // trajectory of the body.  All three containers are guaranteed to have the
-  // same size.
+  // same size.  These functions are fairly expensive.
   std::map<Time, Vector<Length, Frame>> Positions() const;
   std::map<Time, Vector<Speed, Frame>> Velocities() const;
   std::list<Time> Times() const;
 
+  // Return the most recent position/velocity/time.  These functions are dirt
+  // cheap.
+  Vector<Length, Frame> const& last_position() const;
+  Vector<Speed, Frame> const& last_velocity() const;
+  Time const& last_time() const;
+
   // Appends one point to the trajectory.
-  //TODO(phl):Dirtying?
   void Append(Vector<Length, Frame> const& position,
               Vector<Speed, Frame> const& velocity,
               Time const& time);
@@ -52,10 +57,10 @@ class Trajectory {
 
   // Creates a new child trajectory forked at time |time|, and returns it.  The
   // child trajectory may be changed independently from the parent trajectory
-  // for any time (strictly) greater than |time|.  Dirtying the parent
-  // trajectory before the time |time| dirties the child trajectory.  Deleting
-  // the parent trajectory deletes all child trajectories.  |time| must be one
-  // of the times of the current trajectory (as returned by times()).  No
+  // for any time (strictly) greater than |time|.  Calling ForgetAfter on the
+  // parent trajectory before the time |time| deletes the child trajectory.
+  // Deleting the parent trajectory deletes all child trajectories.  |time| must
+  // be one of the times of the current trajectory (as returned by Times()).  No
   // transfer of ownership.
   Trajectory* Fork(Time const& time);
 
@@ -91,6 +96,7 @@ class Trajectory {
 
   typedef std::map<Time, State> States;
 
+  // A constructor for creating a child trajectory during forking.
   Trajectory(Body const* const body,
              Trajectory const* const parent,
              typename States::iterator const& parent_state);

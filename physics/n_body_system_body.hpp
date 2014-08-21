@@ -104,10 +104,10 @@ void NBodySystem<InertialFrame>::Integrate(
   for (auto const& trajectory : *trajectories_) {
     //TODO(phl): Relation with bodies_?  Optimization.
     R3Element<Length> const& position =
-        trajectory->Positions().rbegin()->second.coordinates();
+        trajectory->last_position().coordinates();
     R3Element<Speed> const& velocity =
-        trajectory->Velocities().rbegin()->second.coordinates();
-    Time const time = trajectory->Times().back();
+        trajectory->last_velocity().coordinates();
+    Time const& time = trajectory->last_time();
     for (int i = 0; i < 3; ++i) {
       parameters.initial.positions.emplace_back(position[i]);
     }

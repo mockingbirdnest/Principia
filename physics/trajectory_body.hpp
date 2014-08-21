@@ -57,6 +57,21 @@ std::list<Time> Trajectory<Frame>::Times() const {
 }
 
 template<typename Frame>
+Vector<Length, Frame> const& Trajectory<Frame>::last_position() const {
+  return states_.rbegin()->second.position();
+}
+
+template<typename Frame>
+Vector<Speed, Frame> const& Trajectory<Frame>::last_velocity() const {
+  return states_.rbegin()->second.velocity();
+}
+
+template<typename Frame>
+Time const& Trajectory<Frame>::last_time() const {
+  return states_.rbegin()->first;
+}
+
+template<typename Frame>
 void Trajectory<Frame>::Append(Vector<Length, Frame> const& position,
                                Vector<Speed, Frame> const& velocity,
                                Time const& time) {
