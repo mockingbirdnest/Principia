@@ -84,11 +84,16 @@
   <ItemGroup>
     <ClInclude Include="body.hpp" />
     <ClInclude Include="body_body.hpp" />
+    <ClInclude Include="degrees_of_freedom.hpp" />
+    <ClInclude Include="degrees_of_freedom_body.hpp" />
     <ClInclude Include="n_body_system.hpp" />
     <ClInclude Include="n_body_system_body.hpp" />
+    <ClInclude Include="trajectory.hpp" />
+    <ClInclude Include="trajectory_body.hpp" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="n_body_system_test.cpp" />
+    <ClCompile Include="trajectory_test.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

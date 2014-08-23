@@ -5,6 +5,7 @@
 
 #include "integrators/symplectic_integrator.hpp"
 #include "physics/body.hpp"
+#include "physics/trajectory.hpp"
 #include "quantities/quantities.hpp"
 
 using principia::integrators::SymplecticIntegrator;
@@ -19,18 +20,22 @@ namespace physics {
 template<typename InertialFrame>
 class NBodySystem {
  public:
-  typedef std::vector<std::unique_ptr<Body<InertialFrame>>> Bodies;
+  typedef std::vector<std::unique_ptr<Body>> Bodies;
+  typedef std::vector<std::unique_ptr<Trajectory<InertialFrame>>> Trajectories;
 
   // NOTE(phl): We would prefer to pass the unique_ptr<> by value, but that
   // confuses the compiler.  So for now, we'll use r-value references.
+  // TODO(phl): Unclear relation between trajectories and bodies_.
   NBodySystem(std::unique_ptr<Bodies>&& massive_bodies,
-              std::unique_ptr<Bodies>&& massless_bodies);
+              std::unique_ptr<Bodies>&& massless_bodies,
+              std::unique_ptr<Trajectories>&& trajectories);
   ~NBodySystem() = default;
 
   // No transfer of ownership.
-  std::vector<Body<InertialFrame> const*> massive_bodies() const;
-  std::vector<Body<InertialFrame> const*> massless_bodies() const;
-  std::vector<Body<InertialFrame> const*> bodies() const;
+  std::vector<Body const*> massive_bodies() const;
+  std::vector<Body const*> massless_bodies() const;
+  std::vector<Body const*> bodies() const;
+  std::vector<Trajectory<InertialFrame> const*> trajectories() const;
 
   // The |integrator| must already have been initialized.
   void Integrate(SymplecticIntegrator<Length, Speed> const& integrator,
@@ -48,9 +53,10 @@ class NBodySystem {
 
   std::unique_ptr<Bodies const> const massive_bodies_;  // Never null.
   std::unique_ptr<Bodies const> const massless_bodies_;  // Never null.
+  std::unique_ptr<Trajectories const> const trajectories_;  // Never null.
 
   // The pointers are not owned.  The massive bodies come first.
-  std::vector<Body<InertialFrame>*> bodies_;
+  std::vector<Body*> bodies_;
 };
 
 }  // namespace physics

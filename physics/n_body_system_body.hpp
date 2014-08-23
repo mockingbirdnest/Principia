@@ -26,13 +26,15 @@ namespace physics {
 template<typename InertialFrame>
 NBodySystem<InertialFrame>::NBodySystem(
     std::unique_ptr<Bodies>&& massive_bodies,
-    std::unique_ptr<Bodies>&& massless_bodies)
+    std::unique_ptr<Bodies>&& massless_bodies,
+    std::unique_ptr<Trajectories>&& trajectories)
     : massive_bodies_(massive_bodies == nullptr ?
                           std::unique_ptr<Bodies>(new Bodies) :
                           std::move(massive_bodies)),
       massless_bodies_(massless_bodies == nullptr ?
                            std::unique_ptr<Bodies>(new Bodies) :
-                           std::move(massless_bodies)) {
+                           std::move(massless_bodies)),
+      trajectories_(std::move(trajectories)) {
   // Parameter checking.
   for (auto const& body : *massive_bodies_) {
 #ifndef _MANAGED
@@ -46,12 +48,14 @@ NBodySystem<InertialFrame>::NBodySystem(
 #endif
     bodies_.push_back(body.get());
   }
+#ifndef _MANAGED
+  CHECK_EQ(trajectories_->size(), bodies_.size());
+#endif
 }
 
 template<typename InertialFrame>
-std::vector<Body<InertialFrame> const*>
-NBodySystem<InertialFrame>::massless_bodies() const {
-  std::vector<Body<InertialFrame> const*> result;
+std::vector<Body const*> NBodySystem<InertialFrame>::massless_bodies() const {
+  std::vector<Body const*> result;
   for (auto const& body : *massless_bodies_) {
     result.push_back(body.get());
   }
@@ -59,9 +63,8 @@ NBodySystem<InertialFrame>::massless_bodies() const {
 }
 
 template<typename InertialFrame>
-std::vector<Body<InertialFrame> const*>
-NBodySystem<InertialFrame>::massive_bodies() const {
-  std::vector<Body<InertialFrame> const*> result;
+std::vector<Body const*> NBodySystem<InertialFrame>::massive_bodies() const {
+  std::vector<Body const*> result;
   for (auto const& body : *massive_bodies_) {
     result.push_back(body.get());
   }
@@ -69,11 +72,20 @@ NBodySystem<InertialFrame>::massive_bodies() const {
 }
 
 template<typename InertialFrame>
-std::vector<Body<InertialFrame> const*>
-NBodySystem<InertialFrame>::bodies() const {
-  std::vector<Body<InertialFrame> const*> result;
+std::vector<Body const*> NBodySystem<InertialFrame>::bodies() const {
+  std::vector<Body const*> result;
   for (auto const& body : bodies_) {
     result.push_back(body);
+  }
+  return result;
+}
+
+template<typename InertialFrame>
+std::vector<Trajectory<InertialFrame> const*>
+NBodySystem<InertialFrame>::trajectories() const {
+  std::vector<Trajectory<InertialFrame> const*> result;
+  for (auto const& trajectory : *trajectories_) {
+    result.push_back(trajectory.get());
   }
   return result;
 }
@@ -89,10 +101,13 @@ void NBodySystem<InertialFrame>::Integrate(
 
   // Prepare the input data.
   std::unique_ptr<Time> reference_time;
-  for (Body<InertialFrame> const* body : bodies_) {
-    R3Element<Length> const& position = body->positions().back().coordinates();
-    R3Element<Speed> const& velocity = body->velocities().back().coordinates();
-    Time const& time = body->times().back();
+  for (auto const& trajectory : *trajectories_) {
+    // TODO(phl): Relation with bodies_?
+    R3Element<Length> const& position =
+        trajectory->last_position().coordinates();
+    R3Element<Speed> const& velocity =
+        trajectory->last_velocity().coordinates();
+    Time const& time = trajectory->last_time();
     for (int i = 0; i < 3; ++i) {
       parameters.initial.positions.emplace_back(position[i]);
     }
@@ -131,7 +146,8 @@ void NBodySystem<InertialFrame>::Integrate(
 #endif
     // Loop over the dimensions.
     for (std::size_t k = 0, b = 0; k < state.positions.size(); k += 3, ++b) {
-      Body<InertialFrame>* body = bodies_[b];
+      // TODO(phl): bodies_ vs. trajectory.
+      Trajectory<InertialFrame>* trajectory = (*trajectories_)[b].get();
       Vector<Length, InertialFrame> const position(
           R3Element<Length>(state.positions[k].value,
                             state.positions[k + 1].value,
@@ -140,7 +156,8 @@ void NBodySystem<InertialFrame>::Integrate(
           R3Element<Speed>(state.momenta[k].value,
                            state.momenta[k + 1].value,
                            state.momenta[k + 2].value));
-      body->AppendToTrajectory(position, velocity, time);
+      trajectory->Append(time,
+                         DegreesOfFreedom<InertialFrame>(position, velocity));
     }
   }
 }

@@ -33,14 +33,17 @@ class SolarSystemTest : public testing::Test {
   }
   // The maximal separation of |primary| and |secondary| ignoring the influence
   // of any other bodies.
-  Length SemiMajorAxis(Body<ICRFJ2000EclipticFrame> const& primary,
-                       Body<ICRFJ2000EclipticFrame> const& secondary) {
-    GravitationalParameter const μ = primary.gravitational_parameter() +
-                                     secondary.gravitational_parameter();
+  Length SemiMajorAxis(
+      Trajectory<ICRFJ2000EclipticFrame> const& primary,
+      Trajectory<ICRFJ2000EclipticFrame> const& secondary) {
+    GravitationalParameter const μ = primary.body().gravitational_parameter() +
+                                     secondary.body().gravitational_parameter();
     Vector<Length, ICRFJ2000EclipticFrame> const r =
-        primary.positions().back() - secondary.positions().back();
+        primary.last_position() -
+        secondary.last_position();
     Vector<Speed, ICRFJ2000EclipticFrame> const v =
-        primary.velocities().back() - secondary.velocities().back();
+        primary.last_velocity() -
+        secondary.last_velocity();
     SpecificEnergy const ε = Pow<2>(v.Norm()) / 2 - μ / r.Norm();
     return -μ / (2 * ε);
   }
@@ -51,11 +54,11 @@ class SolarSystemTest : public testing::Test {
   // approximation around the secondary is better than the 2-body approximation
   // around the primary.
   Length LaplaceSphereRadiusRadius(
-      Body<ICRFJ2000EclipticFrame> const& primary,
-      Body<ICRFJ2000EclipticFrame> const& secondary) {
+      Trajectory<ICRFJ2000EclipticFrame> const& primary,
+      Trajectory<ICRFJ2000EclipticFrame> const& secondary) {
     // Assuming secondary.mass << primary.mass.
     return SemiMajorAxis(primary, secondary) *
-        std::pow(secondary.mass() / primary.mass(), 2.0 / 5.0);
+        std::pow(secondary.body().mass() / primary.body().mass(), 2.0 / 5.0);
   }
 
   // Tests whether |tertiary| orbits |secondary| in an orbit with excentricity
@@ -65,25 +68,24 @@ class SolarSystemTest : public testing::Test {
   void TestStronglyBoundOrbit(
       double excentricity,
       double relative_error,
-      Body<ICRFJ2000EclipticFrame> const& tertiary,
-      Body<ICRFJ2000EclipticFrame> const& secondary,
-      Body<ICRFJ2000EclipticFrame> const* const primary,
+      Trajectory<ICRFJ2000EclipticFrame> const& tertiary,
+      Trajectory<ICRFJ2000EclipticFrame> const& secondary,
+      Trajectory<ICRFJ2000EclipticFrame> const* const primary,
       std::string message) {
-    GravitationalParameter const μ = tertiary.gravitational_parameter() +
-                                     secondary.gravitational_parameter();
+    GravitationalParameter const μ = tertiary.body().gravitational_parameter() +
+                                     secondary.body().gravitational_parameter();
     Vector<Length, ICRFJ2000EclipticFrame> const r =
-        tertiary.positions().back() - secondary.positions().back();
+        tertiary.last_position() - secondary.last_position();
     Vector<Speed, ICRFJ2000EclipticFrame> const v =
-        tertiary.velocities().back() - secondary.velocities().back();
+        tertiary.last_velocity() - secondary.last_velocity();
     Bivector<SpecificAngularMomentum, ICRFJ2000EclipticFrame> const h =
         Wedge(r, v) / Radian;
     SpecificEnergy const ε = Pow<2>(v.Norm()) / 2 - μ / r.Norm();
     double e = Sqrt(1 + 2 * ε * Pow<2>(h.Norm() * Radian) / Pow<2>(μ));
     EXPECT_THAT(RelativeError(excentricity, e), Lt(relative_error)) << message;
     if (primary != nullptr) {
-      EXPECT_THAT(r.Norm(),
-                  Lt(LaplaceSphereRadiusRadius(*primary,
-                                               secondary))) << message;
+      EXPECT_THAT(r.Norm(), Lt(LaplaceSphereRadiusRadius(*primary, secondary)))
+          << message;
     }
   }
 
@@ -91,24 +93,42 @@ class SolarSystemTest : public testing::Test {
 };
 
 TEST_F(SolarSystemTest, Hierarchy) {
-  Body<ICRFJ2000EclipticFrame> const& sun      = *system_->bodies()[0];
-  Body<ICRFJ2000EclipticFrame> const& jupiter  = *system_->bodies()[1];
-  Body<ICRFJ2000EclipticFrame> const& saturn   = *system_->bodies()[2];
-  Body<ICRFJ2000EclipticFrame> const& neptune  = *system_->bodies()[3];
-  Body<ICRFJ2000EclipticFrame> const& uranus   = *system_->bodies()[4];
-  Body<ICRFJ2000EclipticFrame> const& earth    = *system_->bodies()[5];
-  Body<ICRFJ2000EclipticFrame> const& venus    = *system_->bodies()[6];
-  Body<ICRFJ2000EclipticFrame> const& mars     = *system_->bodies()[7];
-  Body<ICRFJ2000EclipticFrame> const& mercury  = *system_->bodies()[8];
-  Body<ICRFJ2000EclipticFrame> const& ganymede = *system_->bodies()[9];
-  Body<ICRFJ2000EclipticFrame> const& titan    = *system_->bodies()[10];
-  Body<ICRFJ2000EclipticFrame> const& callisto = *system_->bodies()[11];
-  Body<ICRFJ2000EclipticFrame> const& io       = *system_->bodies()[12];
-  Body<ICRFJ2000EclipticFrame> const& moon     = *system_->bodies()[13];
-  Body<ICRFJ2000EclipticFrame> const& europa   = *system_->bodies()[14];
-  Body<ICRFJ2000EclipticFrame> const& triton   = *system_->bodies()[15];
-  Body<ICRFJ2000EclipticFrame> const& eris     = *system_->bodies()[16];
-  Body<ICRFJ2000EclipticFrame> const& pluto    = *system_->bodies()[17];
+  Trajectory<ICRFJ2000EclipticFrame> const& sun      =
+      *system_->trajectories()[0];
+  Trajectory<ICRFJ2000EclipticFrame> const& jupiter  =
+      *system_->trajectories()[1];
+  Trajectory<ICRFJ2000EclipticFrame> const& saturn   =
+      *system_->trajectories()[2];
+  Trajectory<ICRFJ2000EclipticFrame> const& neptune  =
+      *system_->trajectories()[3];
+  Trajectory<ICRFJ2000EclipticFrame> const& uranus   =
+      *system_->trajectories()[4];
+  Trajectory<ICRFJ2000EclipticFrame> const& earth    =
+      *system_->trajectories()[5];
+  Trajectory<ICRFJ2000EclipticFrame> const& venus    =
+      *system_->trajectories()[6];
+  Trajectory<ICRFJ2000EclipticFrame> const& mars     =
+      *system_->trajectories()[7];
+  Trajectory<ICRFJ2000EclipticFrame> const& mercury  =
+      *system_->trajectories()[8];
+  Trajectory<ICRFJ2000EclipticFrame> const& ganymede =
+      *system_->trajectories()[9];
+  Trajectory<ICRFJ2000EclipticFrame> const& titan    =
+      *system_->trajectories()[10];
+  Trajectory<ICRFJ2000EclipticFrame> const& callisto =
+      *system_->trajectories()[11];
+  Trajectory<ICRFJ2000EclipticFrame> const& io       =
+      *system_->trajectories()[12];
+  Trajectory<ICRFJ2000EclipticFrame> const& moon     =
+      *system_->trajectories()[13];
+  Trajectory<ICRFJ2000EclipticFrame> const& europa   =
+      *system_->trajectories()[14];
+  Trajectory<ICRFJ2000EclipticFrame> const& triton   =
+      *system_->trajectories()[15];
+  Trajectory<ICRFJ2000EclipticFrame> const& eris     =
+      *system_->trajectories()[16];
+  Trajectory<ICRFJ2000EclipticFrame> const& pluto    =
+      *system_->trajectories()[17];
   // Reference excentricities from HORIZONS, truncated.
   // Using center: Sun (body center) [500@10].
   TestStronglyBoundOrbit(4.864297E-02, 1E-6, jupiter, sun, nullptr, "jupiter");
@@ -122,16 +142,14 @@ TEST_F(SolarSystemTest, Hierarchy) {
   TestStronglyBoundOrbit(2.545944E-01, 1E-6, pluto, sun, nullptr, "pluto");
   TestStronglyBoundOrbit(4.425162E-01, 1E-6, eris, sun, nullptr, "eris");
   // Using center: Jupiter (body center) [500@599].
-  TestStronglyBoundOrbit(2.825065E-04, 1E-3, ganymede, jupiter, &sun,
-                         "ganymede");
-  TestStronglyBoundOrbit(7.625971E-03, 1E-4, callisto, jupiter, &sun,
-                         "callisto");
+  TestStronglyBoundOrbit(2.825065E-04, 1E-3, ganymede,
+                         jupiter, &sun, "ganymede");
+  TestStronglyBoundOrbit(7.625971E-03, 1E-4, callisto,
+                         jupiter, &sun, "callisto");
   TestStronglyBoundOrbit(4.333647E-03, 1E-4, io, jupiter, &sun, "io");
   TestStronglyBoundOrbit(9.077806E-03, 1E-4, europa, jupiter, &sun, "europa");
   // Using center: Saturn (body center) [500@699].
   TestStronglyBoundOrbit(2.887478E-02, 1E-6, titan, saturn, &sun, "titan");
-  // Using center: Geocentric [500].
-  TestStronglyBoundOrbit(5.811592E-02, 1E-6, moon, earth, &sun, "moon");
   // Using center: Geocentric [500].
   TestStronglyBoundOrbit(5.811592E-02, 1E-6, moon, earth, &sun, "moon");
   // Using center: Neptune (body center) [500@899]
