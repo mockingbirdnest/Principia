@@ -89,7 +89,7 @@ TEST_F(TrajectoryTest, AppendSuccess) {
   EXPECT_EQ(body_.get(), trajectory_->body());
 }
 
-TEST_F(TrajectoryTest, ForkError) {
+TEST_F(TrajectoryDeathTest, ForkError) {
   EXPECT_DEATH({
     trajectory_->Append(q1_, p1_, t1_);
     trajectory_->Append(q3_, p3_, t3_);
@@ -147,7 +147,7 @@ TEST_F(TrajectoryTest, Root) {
   EXPECT_EQ(t2_, *fork->fork_time());
 }
 
-TEST_F(TrajectoryTest, ForgetAfterError) {
+TEST_F(TrajectoryDeathTest, ForgetAfterError) {
   EXPECT_DEATH({
     trajectory_->Append(q1_, p1_, t1_);
     trajectory_->ForgetAfter(t2_);
@@ -203,7 +203,7 @@ TEST_F(TrajectoryTest, ForgetAfterSuccess) {
   // Don't use fork, it is dangling.
 }
 
-TEST_F(TrajectoryTest, ForgetBeforeError) {
+TEST_F(TrajectoryDeathTest, ForgetBeforeError) {
   EXPECT_DEATH({
     trajectory_->Append(q1_, p1_, t1_);
     Trajectory<World>* fork = trajectory_->Fork(t1_);
