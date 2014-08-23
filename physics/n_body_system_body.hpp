@@ -24,32 +24,27 @@ namespace principia {
 namespace physics {
 
 template<typename InertialFrame>
-NBodySystem<InertialFrame>::NBodySystem(
-    std::unique_ptr<Bodies>&& massive_bodies,
-    std::unique_ptr<Bodies>&& massless_bodies,
-    std::unique_ptr<Trajectories>&& trajectories)
-    : massive_bodies_(massive_bodies == nullptr ?
-                          std::unique_ptr<Bodies>(new Bodies) :
-                          std::move(massive_bodies)),
-      massless_bodies_(massless_bodies == nullptr ?
-                           std::unique_ptr<Bodies>(new Bodies) :
-                           std::move(massless_bodies)),
+NBodySystem<InertialFrame>::NBodySystem(Bodies&& massive_bodies,
+                                        Bodies&& massless_bodies,
+                                        Trajectories&& trajectories)
+    : massive_bodies_(std::move(massive_bodies)),
+      massless_bodies_(std::move(massless_bodies)),
       trajectories_(std::move(trajectories)) {
   // Parameter checking.
-  for (auto const& body : *massive_bodies_) {
+  for (auto const& body : massive_bodies_) {
 #ifndef _MANAGED
     CHECK(!body->is_massless());
 #endif
     bodies_.push_back(body.get());
   }
-  for (auto const& body : *massless_bodies_) {
+  for (auto const& body : massless_bodies_) {
 #ifndef _MANAGED
     CHECK(body->is_massless());
 #endif
     bodies_.push_back(body.get());
   }
 #ifndef _MANAGED
-  CHECK_EQ(trajectories_->size(), bodies_.size());
+  CHECK_EQ(trajectories_.size(), bodies_.size());
 #endif
 }
 
@@ -84,7 +79,7 @@ template<typename InertialFrame>
 std::vector<Trajectory<InertialFrame> const*>
 NBodySystem<InertialFrame>::trajectories() const {
   std::vector<Trajectory<InertialFrame> const*> result;
-  for (auto const& trajectory : *trajectories_) {
+  for (auto const& trajectory : trajectories_) {
     result.push_back(trajectory.get());
   }
   return result;
@@ -101,7 +96,7 @@ void NBodySystem<InertialFrame>::Integrate(
 
   // Prepare the input data.
   std::unique_ptr<Time> reference_time;
-  for (auto const& trajectory : *trajectories_) {
+  for (auto const& trajectory : trajectories_) {
     // TODO(phl): Relation with bodies_?
     R3Element<Length> const& position =
         trajectory->last_position().coordinates();
@@ -147,7 +142,7 @@ void NBodySystem<InertialFrame>::Integrate(
     // Loop over the dimensions.
     for (std::size_t k = 0, b = 0; k < state.positions.size(); k += 3, ++b) {
       // TODO(phl): bodies_ vs. trajectory.
-      Trajectory<InertialFrame>* trajectory = (*trajectories_)[b].get();
+      Trajectory<InertialFrame>* trajectory = trajectories_[b].get();
       Vector<Length, InertialFrame> const position(
           R3Element<Length>(state.positions[k].value,
                             state.positions[k + 1].value,
@@ -171,11 +166,11 @@ void NBodySystem<InertialFrame>::ComputeGravitationalAccelerations(
 
   // TODO(phl): Used to deal with proper accelerations here.
   for (std::size_t b1 = 0, three_b1 = 0;
-       b1 < massive_bodies_->size();
+       b1 < massive_bodies_.size();
        ++b1, three_b1 += 3) {
     GravitationalParameter const& body1_gravitational_parameter =
-        (*massive_bodies_)[b1]->gravitational_parameter();
-    for (std::size_t b2 = b1 + 1; b2 < massive_bodies_->size(); ++b2) {
+        massive_bodies_[b1]->gravitational_parameter();
+    for (std::size_t b2 = b1 + 1; b2 < massive_bodies_.size(); ++b2) {
       std::size_t const three_b2 = 3 * b2;
       Length const Δq0 = q[three_b1] - q[three_b2];
       Length const Δq1 = q[three_b1 + 1] - q[three_b2 + 1];
@@ -187,7 +182,7 @@ void NBodySystem<InertialFrame>::ComputeGravitationalAccelerations(
           Sqrt(squared_distance) / (squared_distance * squared_distance);
 
       auto const μ2OverRSquared =
-          (*massive_bodies_)[b2]->gravitational_parameter() * multiplier;
+          massive_bodies_[b2]->gravitational_parameter() * multiplier;
       (*result)[three_b1] -= Δq0 * μ2OverRSquared;
       (*result)[three_b1 + 1] -= Δq1 * μ2OverRSquared;
       (*result)[three_b1 + 2] -= Δq2 * μ2OverRSquared;
@@ -199,7 +194,7 @@ void NBodySystem<InertialFrame>::ComputeGravitationalAccelerations(
       (*result)[three_b2 + 1] += Δq1 * μ1OverRSquared;
       (*result)[three_b2 + 2] += Δq2 * μ1OverRSquared;
     }
-    for (std::size_t b2 = 0; b2 < massless_bodies_->size(); ++b2) {
+    for (std::size_t b2 = 0; b2 < massless_bodies_.size(); ++b2) {
       std::size_t const three_b2 = 3 * b2;
       Length const Δq0 = q[three_b1] - q[three_b2];
       Length const Δq1 = q[three_b1 + 1] - q[three_b2 + 1];

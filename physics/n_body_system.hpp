@@ -23,12 +23,10 @@ class NBodySystem {
   typedef std::vector<std::unique_ptr<Body>> Bodies;
   typedef std::vector<std::unique_ptr<Trajectory<InertialFrame>>> Trajectories;
 
-  // NOTE(phl): We would prefer to pass the unique_ptr<> by value, but that
-  // confuses the compiler.  So for now, we'll use r-value references.
   // TODO(phl): Unclear relation between trajectories and bodies_.
-  NBodySystem(std::unique_ptr<Bodies>&& massive_bodies,
-              std::unique_ptr<Bodies>&& massless_bodies,
-              std::unique_ptr<Trajectories>&& trajectories);
+  NBodySystem(Bodies&& massive_bodies,
+              Bodies&& massless_bodies,
+              Trajectories&& trajectories);
   ~NBodySystem() = default;
 
   // No transfer of ownership.
@@ -51,9 +49,9 @@ class NBodySystem {
   static void ComputeGravitationalVelocities(std::vector<Speed> const& p,
                                              std::vector<Speed>* result);
 
-  std::unique_ptr<Bodies const> const massive_bodies_;  // Never null.
-  std::unique_ptr<Bodies const> const massless_bodies_;  // Never null.
-  std::unique_ptr<Trajectories const> const trajectories_;  // Never null.
+  Bodies const massive_bodies_;
+  Bodies const massless_bodies_;
+  Trajectories const trajectories_;
 
   // The pointers are not owned.  The massive bodies come first.
   std::vector<Body*> bodies_;
