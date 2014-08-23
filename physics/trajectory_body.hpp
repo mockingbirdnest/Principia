@@ -107,10 +107,6 @@ void Trajectory<Frame>::ForgetAfter(Time const& time) {
     const auto it = children_.upper_bound(time);
     children_.erase(it, children_.end());
   }
-  {
-    const auto it = bursts_.upper_bound(time);
-    bursts_.erase(it, bursts_.end());
-  }
 }
 
 template<typename Frame>
@@ -129,12 +125,6 @@ void Trajectory<Frame>::ForgetBefore(Time const& time) {
   {
     auto it = children_.upper_bound(time);
     children_.erase(children_.begin(), it);
-  }
-  //TODO(phl): This is not correct because there may be a burst which starts
-  // before |time| but ends after.
-  {
-    auto it = bursts_.upper_bound(time);
-    bursts_.erase(bursts_.begin(), it);
   }
 }
 
@@ -187,28 +177,6 @@ template<typename Frame>
 Body const* Trajectory<Frame>::body() const {
   return body_;
 }
-
-template<typename Frame>
-void Trajectory<Frame>::AddBurst(
-    Vector<Acceleration, Frame> const& acceleration,
-    Time const& time1,
-    Time const& time2) {
-  Time const duration = time2 - time1;
-  if (duration <= 0) {
-    return;
-  }
-
-#ifndef _MANAGED
-  // Check that the times don't straddle an existing point.  This needs some
-  // serious testing as I am too tired to be sure that this test is correct.
-  const auto it1 = bursts_.upper_bound(time1);
-  const auto it2 = bursts_.lower_bound(time2);
-  CHECK_EQ(it1, it2);
-#endif
-
-  bursts_.insert({time1, Burst(acceleration, duration)});
-}
-
 template<typename Frame>
 Trajectory<Frame>::Trajectory(Body const* const body,
                               Trajectory* const parent,
@@ -222,12 +190,6 @@ Trajectory<Frame>::Trajectory(Body const* const body,
       parent_(CHECK_NOTNULL(parent)),
 #endif
       parent_state_(new States::iterator(parent_state)) {};
-
-template<typename Frame>
-Trajectory<Frame>::Burst::Burst(Vector<Acceleration, Frame> const& acceleration,
-                                Time const& duration)
-    : acceleration_(acceleration),
-      duration_(duration) {}
 
 template<typename Frame>
 Trajectory<Frame>::State::State(Vector<Length, Frame> const& position,

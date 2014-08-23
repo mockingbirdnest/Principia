@@ -46,14 +46,12 @@ class Trajectory {
               Time const& time);
 
   // Removes all data for times (strictly) greater than |time|, as well as all
-  // child trajectories forked at times (strictly) greater than |time|.  Bursts
-  // that start after |time| are also removed.
+  // child trajectories forked at times (strictly) greater than |time|.
   void ForgetAfter(Time const& time);
 
   // Removes all data for times less than or equal to |time|, as well as all
   // child trajectories forked at times less than or equal to |time|.  This
   // trajectory must be a root.
-  //TODO(phl): Bursts are messy.
   void ForgetBefore(Time const& time);
 
   // Creates a new child trajectory forked at time |time|, and returns it.  The
@@ -80,22 +78,7 @@ class Trajectory {
   // The body to which this trajectory pertains.  No transfer of ownership.
   Body const* body() const;
 
-  // The acceleration applies over the given interval.  It represents e.g., the
-  // intrinsic acceleration of the engine.
-  void AddBurst(Vector<Acceleration, Frame> const& acceleration,
-                Time const& time1,
-                Time const& time2);
-
  private:
-  class Burst {
-   public:
-    Burst(Vector<Acceleration, Frame> const& acceleration,
-          Time const& duration);
-   private:
-    Vector<Acceleration, Frame> const acceleration_;
-    Time const duration_;
-  };
-
   class State {
    public:
     State(Vector<Length, Frame> const& position,
@@ -129,8 +112,6 @@ class Trajectory {
   std::multimap<Time, std::unique_ptr<Trajectory>> children_;
 
   States states_;
-
-  std::map<Time, Burst> bursts_;
 };
 
 }  // namespace physics
