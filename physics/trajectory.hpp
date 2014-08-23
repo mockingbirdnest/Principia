@@ -6,6 +6,7 @@
 #include <memory>
 
 #include "geometry/grassmann.hpp"
+#include "physics/degrees_of_freedom.hpp"
 #include "quantities/named_quantities.hpp"
 
 using principia::geometry::Vector;
@@ -28,13 +29,13 @@ class Trajectory {
 
   // These functions return the series of positions/velocities/times for the
   // trajectory of the body.  All three containers are guaranteed to have the
-  // same size.  These functions are fairly expensive.
+  // same size.  These functions are O(|depth| + |length|).
   std::map<Time, Vector<Length, Frame>> Positions() const;
   std::map<Time, Vector<Speed, Frame>> Velocities() const;
   std::list<Time> Times() const;
 
-  // Return the most recent position/velocity/time.  These functions are dirt
-  // cheap.
+  // Return the most recent position/velocity/time.  These functions are O(1)
+  // and dirt-cheap.
   Vector<Length, Frame> const& last_position() const;
   Vector<Speed, Frame> const& last_velocity() const;
   Time const& last_time() const;
@@ -74,43 +75,33 @@ class Trajectory {
   // trajectory.
   Time const* fork_time() const;
 
-  // The body to which this trajectory pertains.  No transfer of ownership.
-  Body const* body() const;
+  // The body to which this trajectory pertains.
+  Body const& body() const;
 
  private:
-  class State {
-   public:
-    State(Vector<Length, Frame> const& position,
-          Vector<Speed, Frame> const& velocity);
-    Vector<Length, Frame> const& position() const;
-    Vector<Speed, Frame> const& velocity() const;
-   private:
-    Vector<Length, Frame> const position_;
-    Vector<Speed, Frame> const velocity_;
-  };
-
-  typedef std::map<Time, State> States;
+  typedef std::map<Time, DegreesOfFreedom<Frame>> Timeline;
 
   // A constructor for creating a child trajectory during forking.
   Trajectory(Body const* const body,
              Trajectory* const parent,
-             typename States::iterator const& parent_state);
+             typename Timeline::iterator const& fork);
 
   template<typename Value>
-  std::map<Time, Value> GetState(std::function<Value(State const&)> fun) const;
+  std::map<Time, Value> ApplyToDegreesOfFreedom(
+      std::function<Value(DegreesOfFreedom<Frame> const&)> compute_value) const;
 
   Body const* const body_;  // Never null.
 
   Trajectory* const parent_;  // Null for a root trajectory.
 
   // Null for a root trajectory.
-  std::unique_ptr<typename States::iterator> parent_state_;
+  std::unique_ptr<typename Timeline::iterator> fork_;
 
   // There may be several forks starting from the same time, hence the multimap.
   // Child trajectories are owned.
   std::multimap<Time, std::unique_ptr<Trajectory>> children_;
 
-  States states_;
+  Timeline timeline_;
 };
 
 }  // namespace physics

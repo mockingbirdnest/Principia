@@ -20,6 +20,7 @@ using principia::si::Metre;
 using principia::si::Second;
 using testing::ElementsAre;
 using testing::Pair;
+using testing::Ref;
 
 namespace principia {
 namespace physics {
@@ -89,7 +90,7 @@ TEST_F(TrajectoryTest, AppendSuccess) {
   EXPECT_THAT(velocities,
               ElementsAre(Pair(t1_, p1_), Pair(t2_, p2_), Pair(t3_, p3_)));
   EXPECT_THAT(times, ElementsAre(t1_, t2_, t3_));
-  EXPECT_EQ(body_.get(), trajectory_->body());
+  EXPECT_THAT(trajectory_->body(), Ref(*body_));
 }
 
 TEST_F(TrajectoryDeathTest, ForkError) {
@@ -114,7 +115,7 @@ TEST_F(TrajectoryTest, ForkSuccess) {
   EXPECT_THAT(velocities,
               ElementsAre(Pair(t1_, p1_), Pair(t2_, p2_), Pair(t3_, p3_)));
   EXPECT_THAT(times, ElementsAre(t1_, t2_, t3_));
-  EXPECT_EQ(body_.get(), fork->body());
+  EXPECT_THAT(fork->body(), Ref(*body_));
   positions = fork->Positions();
   velocities = fork->Velocities();
   times = fork->Times();
@@ -125,7 +126,7 @@ TEST_F(TrajectoryTest, ForkSuccess) {
               ElementsAre(Pair(t1_, p1_), Pair(t2_, p2_),
                           Pair(t3_, p3_), Pair(t4_, p4_)));
   EXPECT_THAT(times, ElementsAre(t1_, t2_, t3_, t4_));
-  EXPECT_EQ(body_.get(), fork->body());
+  EXPECT_THAT(fork->body(), Ref(*body_));
 }
 
 TEST_F(TrajectoryTest, Last) {
