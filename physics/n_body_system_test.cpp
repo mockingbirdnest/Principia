@@ -66,12 +66,10 @@ class NBodySystemTest : public testing::Test {
             0 * SIUnit<Speed>()}));
     Point<Vector<Speed, EarthMoonBarycentricFrame>> const overall_velocity =
         Barycentre(v1, body1_->mass(), v2, body2_->mass());
-    trajectory1_->Append(q1 - centre_of_mass,
-                         v1 - overall_velocity,
-                         0 * SIUnit<Time>());
-    trajectory2_->Append(q2 - centre_of_mass,
-                         v2 - overall_velocity,
-                         0 * SIUnit<Time>());
+    trajectory1_->Append(0 * SIUnit<Time>(),
+                         {q1 - centre_of_mass, v1 - overall_velocity});
+    trajectory2_->Append(0 * SIUnit<Time>(),
+                         {q2 - centre_of_mass, v2 - overall_velocity});
     std::unique_ptr<
         NBodySystem<EarthMoonBarycentricFrame>::Bodies> massive_bodies(
             new NBodySystem<EarthMoonBarycentricFrame>::Bodies);

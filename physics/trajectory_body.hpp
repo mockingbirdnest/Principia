@@ -75,11 +75,11 @@ Time const& Trajectory<Frame>::last_time() const {
 }
 
 template<typename Frame>
-void Trajectory<Frame>::Append(Vector<Length, Frame> const& position,
-                               Vector<Speed, Frame> const& velocity,
-                               Time const& time) {
-  auto inserted = timeline_.insert(
-      std::make_pair(time, DegreesOfFreedom<Frame>(position, velocity)));
+void Trajectory<Frame>::Append(
+    Time const& time,
+    DegreesOfFreedom<Frame> const& degrees_of_freedom) {
+  // TODO(phl): Could we move?
+  auto inserted = timeline_.insert(std::make_pair(time, degrees_of_freedom));
 #ifndef _MANAGED
   CHECK(timeline_.end() == ++inserted.first) << "Append out of order";
   CHECK(inserted.second) << "Append at existing time";

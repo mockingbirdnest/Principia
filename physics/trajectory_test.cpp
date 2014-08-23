@@ -46,6 +46,10 @@ class TrajectoryTest : public testing::Test {
     p4_ = Vector<Speed, World>({34 * Metre / Second,
                                 35 * Metre / Second,
                                 36 * Metre / Second});
+    d1_ = std::make_unique<DegreesOfFreedom<World>>(q1_, p1_);
+    d2_ = std::make_unique<DegreesOfFreedom<World>>(q2_, p2_);
+    d3_ = std::make_unique<DegreesOfFreedom<World>>(q3_, p3_);
+    d4_ = std::make_unique<DegreesOfFreedom<World>>(q4_, p4_);
     t1_ = 7 * Second;
     t2_ = 17 * Second;
     t3_ = 27 * Second;
@@ -57,6 +61,7 @@ class TrajectoryTest : public testing::Test {
 
   Vector<Length, World> q1_, q2_, q3_, q4_;
   Vector<Speed, World> p1_, p2_, p3_, p4_;
+  std::unique_ptr<DegreesOfFreedom<World>> d1_, d2_, d3_, d4_;
   Time t1_, t2_, t3_, t4_;
   std::unique_ptr<Body> body_;
   std::unique_ptr<Trajectory<World>> trajectory_;
@@ -67,19 +72,19 @@ typedef TrajectoryTest TrajectoryDeathTest;
 TEST_F(TrajectoryDeathTest, AppendError) {
   // TODO(phl): Find out how to match the messages here.
   EXPECT_DEATH({
-    trajectory_->Append(q2_, p2_, t2_);
-    trajectory_->Append(q1_, p1_, t1_);
+    trajectory_->Append(t2_, *d2_);
+    trajectory_->Append(t1_, *d1_);
   }, "");
   EXPECT_DEATH({
-    trajectory_->Append(q1_, p1_, t1_);
-    trajectory_->Append(q1_, p1_, t1_);
+    trajectory_->Append(t1_, *d1_);
+    trajectory_->Append(t1_, *d1_);
   }, "");
 }
 
 TEST_F(TrajectoryTest, AppendSuccess) {
-  trajectory_->Append(q1_, p1_, t1_);
-  trajectory_->Append(q2_, p2_, t2_);
-  trajectory_->Append(q3_, p3_, t3_);
+  trajectory_->Append(t1_, *d1_);
+  trajectory_->Append(t2_, *d2_);
+  trajectory_->Append(t3_, *d3_);
   std::map<Time, Vector<Length, World>> const positions =
       trajectory_->Positions();
   std::map<Time, Vector<Speed, World>> const velocities =
@@ -95,18 +100,18 @@ TEST_F(TrajectoryTest, AppendSuccess) {
 
 TEST_F(TrajectoryDeathTest, ForkError) {
   EXPECT_DEATH({
-    trajectory_->Append(q1_, p1_, t1_);
-    trajectory_->Append(q3_, p3_, t3_);
+    trajectory_->Append(t1_, *d1_);
+    trajectory_->Append(t3_, *d3_);
     Trajectory<World>* fork = trajectory_->Fork(t2_);
   }, "");
 }
 
 TEST_F(TrajectoryTest, ForkSuccess) {
-  trajectory_->Append(q1_, p1_, t1_);
-  trajectory_->Append(q2_, p2_, t2_);
-  trajectory_->Append(q3_, p3_, t3_);
+  trajectory_->Append(t1_, *d1_);
+  trajectory_->Append(t2_, *d2_);
+  trajectory_->Append(t3_, *d3_);
   Trajectory<World>* fork = trajectory_->Fork(t2_);
-  fork->Append(q4_, p4_, t4_);
+  fork->Append(t4_, *d4_);
   std::map<Time, Vector<Length, World>> positions = trajectory_->Positions();
   std::map<Time, Vector<Speed, World>> velocities = trajectory_->Velocities();
   std::list<Time> times = trajectory_->Times();
@@ -130,18 +135,18 @@ TEST_F(TrajectoryTest, ForkSuccess) {
 }
 
 TEST_F(TrajectoryTest, Last) {
-  trajectory_->Append(q1_, p1_, t1_);
-  trajectory_->Append(q2_, p2_, t2_);
-  trajectory_->Append(q3_, p3_, t3_);
+  trajectory_->Append(t1_, *d1_);
+  trajectory_->Append(t2_, *d2_);
+  trajectory_->Append(t3_, *d3_);
   EXPECT_EQ(q3_, trajectory_->last_position());
   EXPECT_EQ(p3_, trajectory_->last_velocity());
   EXPECT_EQ(t3_, trajectory_->last_time());
 }
 
 TEST_F(TrajectoryTest, Root) {
-  trajectory_->Append(q1_, p1_, t1_);
-  trajectory_->Append(q2_, p2_, t2_);
-  trajectory_->Append(q3_, p3_, t3_);
+  trajectory_->Append(t1_, *d1_);
+  trajectory_->Append(t2_, *d2_);
+  trajectory_->Append(t3_, *d3_);
   Trajectory<World>* fork = trajectory_->Fork(t2_);
   EXPECT_TRUE(trajectory_->is_root());
   EXPECT_FALSE(fork->is_root());
@@ -153,22 +158,22 @@ TEST_F(TrajectoryTest, Root) {
 
 TEST_F(TrajectoryDeathTest, ForgetAfterError) {
   EXPECT_DEATH({
-    trajectory_->Append(q1_, p1_, t1_);
+    trajectory_->Append(t1_, *d1_);
     trajectory_->ForgetAfter(t2_);
   }, "");
   EXPECT_DEATH({
-    trajectory_->Append(q1_, p1_, t1_);
+    trajectory_->Append(t1_, *d1_);
     Trajectory<World>* fork = trajectory_->Fork(t1_);
     fork->ForgetAfter(t2_);
   }, "");
 }
 
 TEST_F(TrajectoryTest, ForgetAfterSuccess) {
-  trajectory_->Append(q1_, p1_, t1_);
-  trajectory_->Append(q2_, p2_, t2_);
-  trajectory_->Append(q3_, p3_, t3_);
+  trajectory_->Append(t1_, *d1_);
+  trajectory_->Append(t2_, *d2_);
+  trajectory_->Append(t3_, *d3_);
   Trajectory<World>* fork = trajectory_->Fork(t2_);
-  fork->Append(q4_, p4_, t4_);
+  fork->Append(t4_, *d4_);
 
   fork->ForgetAfter(t3_);
   std::map<Time, Vector<Length, World>> positions = fork->Positions();
@@ -209,23 +214,23 @@ TEST_F(TrajectoryTest, ForgetAfterSuccess) {
 
 TEST_F(TrajectoryDeathTest, ForgetBeforeError) {
   EXPECT_DEATH({
-    trajectory_->Append(q1_, p1_, t1_);
+    trajectory_->Append(t1_, *d1_);
     Trajectory<World>* fork = trajectory_->Fork(t1_);
     fork->ForgetBefore(t1_);
   }, "");
   EXPECT_DEATH({
-    trajectory_->Append(q1_, p1_, t1_);
+    trajectory_->Append(t1_, *d1_);
     Trajectory<World>* fork = trajectory_->Fork(t1_);
     fork->ForgetBefore(t2_);
   }, "");
 }
 
 TEST_F(TrajectoryTest, ForgetBeforeSuccess) {
-  trajectory_->Append(q1_, p1_, t1_);
-  trajectory_->Append(q2_, p2_, t2_);
-  trajectory_->Append(q3_, p3_, t3_);
+  trajectory_->Append(t1_, *d1_);
+  trajectory_->Append(t2_, *d2_);
+  trajectory_->Append(t3_, *d3_);
   Trajectory<World>* fork = trajectory_->Fork(t2_);
-  fork->Append(q4_, p4_, t4_);
+  fork->Append(t4_, *d4_);
 
   trajectory_->ForgetBefore(t1_);
   std::map<Time, Vector<Length, World>> positions = trajectory_->Positions();

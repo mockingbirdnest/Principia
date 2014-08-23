@@ -41,9 +41,8 @@ class Trajectory {
   Time const& last_time() const;
 
   // Appends one point to the trajectory.
-  void Append(Vector<Length, Frame> const& position,
-              Vector<Speed, Frame> const& velocity,
-              Time const& time);
+  void Append(Time const& time,
+              DegreesOfFreedom<Frame> const& degrees_of_freedom);
 
   // Removes all data for times (strictly) greater than |time|, as well as all
   // child trajectories forked at times (strictly) greater than |time|.
