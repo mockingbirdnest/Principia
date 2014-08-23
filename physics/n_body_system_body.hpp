@@ -156,7 +156,7 @@ void NBodySystem<InertialFrame>::Integrate(
           R3Element<Speed>(state.momenta[k].value,
                            state.momenta[k + 1].value,
                            state.momenta[k + 2].value));
-      trajectory->Append(time, 
+      trajectory->Append(time,
                          DegreesOfFreedom<InertialFrame>(position, velocity));
     }
   }
