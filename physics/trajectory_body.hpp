@@ -89,9 +89,9 @@ void Trajectory<Frame>::ForgetAfter(Time const& time) {
   auto const it = states_.find(time);
   if (it == states_.end()) {
 #ifndef _MANAGED
-    CHECK_NOTNULL(fork_)
+    CHECK(parent_state_ != nullptr)
         << "ForgetAfter a nonexistent time for a root trajectory";
-    CHECK_EQ(*fork_->first, time)
+    CHECK_EQ((*parent_state_)->first, time)
         << "ForgetAfter a nonexistent time for a nonroot trajectory";
 #endif
   }
@@ -109,7 +109,7 @@ void Trajectory<Frame>::ForgetAfter(Time const& time) {
   }
   {
     const auto it = bursts_.upper_bound(time);
-    burst_.erase(it, bursts_.end());
+    bursts_.erase(it, bursts_.end());
   }
 }
 

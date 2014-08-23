@@ -147,6 +147,62 @@ TEST_F(TrajectoryTest, Root) {
   EXPECT_EQ(t2_, *fork->fork_time());
 }
 
+TEST_F(TrajectoryTest, ForgetAfterError) {
+  EXPECT_DEATH({
+    trajectory_->Append(q1_, p1_, t1_);
+    trajectory_->ForgetAfter(t2_);
+  }, "");
+  EXPECT_DEATH({
+    trajectory_->Append(q1_, p1_, t1_);
+    Trajectory<World>* fork = trajectory_->Fork(t1_);
+    fork->ForgetAfter(t2_);
+  }, "");
+}
+
+TEST_F(TrajectoryTest, ForgetAfterSuccess) {
+  trajectory_->Append(q1_, p1_, t1_);
+  trajectory_->Append(q2_, p2_, t2_);
+  trajectory_->Append(q3_, p3_, t3_);
+  Trajectory<World>* fork = trajectory_->Fork(t2_);
+  fork->Append(q4_, p4_, t4_);
+
+  fork->ForgetAfter(t3_);
+  std::map<Time, Vector<Length, World>> positions = fork->Positions();
+  std::map<Time, Vector<Speed, World>> velocities = fork->Velocities();
+  std::list<Time> times = fork->Times();
+  EXPECT_THAT(positions,
+              ElementsAre(Pair(t1_, q1_), Pair(t2_, q2_), Pair(t3_, q3_)));
+  EXPECT_THAT(velocities,
+              ElementsAre(Pair(t1_, p1_), Pair(t2_, p2_), Pair(t3_, p3_)));
+  EXPECT_THAT(times, ElementsAre(t1_, t2_, t3_));
+
+  fork->ForgetAfter(t2_);
+  positions = fork->Positions();
+  velocities = fork->Velocities();
+  times = fork->Times();
+  EXPECT_THAT(positions, ElementsAre(Pair(t1_, q1_), Pair(t2_, q2_)));
+  EXPECT_THAT(velocities, ElementsAre(Pair(t1_, p1_), Pair(t2_, p2_)));
+  EXPECT_THAT(times, ElementsAre(t1_, t2_));
+
+  positions = trajectory_->Positions();
+  velocities = trajectory_->Velocities();
+  times = trajectory_->Times();
+  EXPECT_THAT(positions,
+              ElementsAre(Pair(t1_, q1_), Pair(t2_, q2_), Pair(t3_, q3_)));
+  EXPECT_THAT(velocities,
+              ElementsAre(Pair(t1_, p1_), Pair(t2_, p2_), Pair(t3_, p3_)));
+  EXPECT_THAT(times, ElementsAre(t1_, t2_, t3_));
+
+  trajectory_->ForgetAfter(t1_);
+  positions = trajectory_->Positions();
+  velocities = trajectory_->Velocities();
+  times = trajectory_->Times();
+  EXPECT_THAT(positions, ElementsAre(Pair(t1_, q1_)));
+  EXPECT_THAT(velocities, ElementsAre(Pair(t1_, p1_)));
+  EXPECT_THAT(times, ElementsAre(t1_));
+  // Don't use fork, it is dangling.
+}
+
 TEST_F(TrajectoryTest, ForgetBeforeError) {
   EXPECT_DEATH({
     trajectory_->Append(q1_, p1_, t1_);
