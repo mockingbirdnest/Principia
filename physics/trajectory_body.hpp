@@ -85,6 +85,17 @@ void Trajectory<Frame>::Append(Vector<Length, Frame> const& position,
 
 template<typename Frame>
 void Trajectory<Frame>::ForgetAfter(Time const& time) {
+  // Check that |time| is the time of one of our states or the time of fork.
+  auto const it = states_.find(time);
+  if (it == states_.end()) {
+#ifndef _MANAGED
+    CHECK_NOTNULL(fork_)
+        << "ForgetAfter a nonexistent time for a root trajectory";
+    CHECK_EQ(*fork_->first, time)
+        << "ForgetAfter a nonexistent time for a nonroot trajectory";
+#endif
+  }
+
   // Each of these blocks gets an iterator denoting the first entry with
   // time > |time|.  It then removes that entry and all the entries that follow
   // it.  This preserve any entry with time == |time|.
@@ -104,31 +115,72 @@ void Trajectory<Frame>::ForgetAfter(Time const& time) {
 
 template<typename Frame>
 void Trajectory<Frame>::ForgetBefore(Time const& time) {
+#ifndef _MANAGED
+  // Check that this is a root.
+  CHECK(is_root()) << "ForgetBefore on a nonroot trajectory";
+  // Check that |time| is the time of one of our states or the time of fork.
+  CHECK(states_.find(time) != states_.end())
+      << "ForgetBefore a nonexistent time";
+#endif
   {
-    const auto it = states_.lower_bound(time);
+    auto it = states_.upper_bound(time);
     states_.erase(states_.begin(), it);
   }
   {
-    const auto it = children_.lower_bound(time);
+    auto it = children_.upper_bound(time);
     children_.erase(children_.begin(), it);
   }
   //TODO(phl): This is not correct because there may be a burst which starts
   // before |time| but ends after.
   {
-    const auto it = bursts_.lower_bound(time);
-    burst_.erase(bursts_.begin(), it);
+    auto it = bursts_.upper_bound(time);
+    bursts_.erase(bursts_.begin(), it);
   }
 }
 
 template<typename Frame>
 Trajectory<Frame>* Trajectory<Frame>::Fork(Time const& time) {
   auto fork_it = states_.find(time);
+#ifndef _MANAGED
   CHECK(fork_it != states_.end()) << "Fork at nonexistent time";
+#endif
   std::unique_ptr<Trajectory<Frame>> child(
       new Trajectory(body_, this /*parent*/, fork_it));
   child->states_.insert(++fork_it, states_.end());
   auto const child_it = children_.emplace(time, std::move(child));
   return child_it->second.get();
+}
+
+template<typename Frame>
+bool Trajectory<Frame>::is_root() const {
+  return parent_ == nullptr;
+}
+
+template<typename Frame>
+Trajectory<Frame> const* Trajectory<Frame>::root() const {
+  Trajectory const* ancestor = this;
+  while (ancestor->parent_ != nullptr) {
+    ancestor = ancestor->parent_;
+  }
+  return ancestor;
+}
+
+template<typename Frame>
+Trajectory<Frame>* Trajectory<Frame>::root() {
+  Trajectory* ancestor = this;
+  while (ancestor->parent_ != nullptr) {
+    ancestor = ancestor->parent_;
+  }
+  return ancestor;
+}
+
+template<typename Frame>
+Time const* Trajectory<Frame>::fork_time() const {
+  if (parent_ == nullptr) {
+    return nullptr;
+  } else {
+    return &((*parent_state_)->first);
+  }
 }
 
 template<typename Frame>
@@ -146,21 +198,29 @@ void Trajectory<Frame>::AddBurst(
     return;
   }
 
+#ifndef _MANAGED
   // Check that the times don't straddle an existing point.  This needs some
   // serious testing as I am too tired to be sure that this test is correct.
   const auto it1 = bursts_.upper_bound(time1);
   const auto it2 = bursts_.lower_bound(time2);
   CHECK_EQ(it1, it2);
+#endif
 
   bursts_.insert({time1, Burst(acceleration, duration)});
 }
 
 template<typename Frame>
 Trajectory<Frame>::Trajectory(Body const* const body,
-                              Trajectory const* const parent,
+                              Trajectory* const parent,
                               typename States::iterator const& parent_state)
-    : body_(body),
-      parent_(parent),//TODO(phl):CHECK_NOTNULL
+    :
+#ifdef _MANAGED
+      body_(body),
+      parent_(parent),
+#else
+      body_(CHECK_NOTNULL(body)),
+      parent_(CHECK_NOTNULL(parent)),
+#endif
       parent_state_(new States::iterator(parent_state)) {};
 
 template<typename Frame>

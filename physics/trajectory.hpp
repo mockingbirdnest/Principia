@@ -51,18 +51,31 @@ class Trajectory {
   void ForgetAfter(Time const& time);
 
   // Removes all data for times less than or equal to |time|, as well as all
-  // child trajectories forked at times less than or equal to |time|.
+  // child trajectories forked at times less than or equal to |time|.  This
+  // trajectory must be a root.
   //TODO(phl): Bursts are messy.
   void ForgetBefore(Time const& time);
 
   // Creates a new child trajectory forked at time |time|, and returns it.  The
   // child trajectory may be changed independently from the parent trajectory
-  // for any time (strictly) greater than |time|.  Calling ForgetAfter on the
-  // parent trajectory before the time |time| deletes the child trajectory.
-  // Deleting the parent trajectory deletes all child trajectories.  |time| must
-  // be one of the times of the current trajectory (as returned by Times()).  No
-  // transfer of ownership.
+  // for any time (strictly) greater than |time|.  The child trajectory is owned
+  // by its parent trajectory.  Calling ForgetAfter or ForgetBefore on the
+  // parent trajectory with an argument that causes the time |time| to be
+  // removed deletes the child trajectory.  Deleting the parent trajectory
+  // deletes all child trajectories.  |time| must be one of the times of the
+  // current trajectory (as returned by Times()).  No transfer of ownership.
   Trajectory* Fork(Time const& time);
+
+  // Returns true if this is a root trajectory.
+  bool is_root() const;
+
+  // Returns the root trajectory.
+  Trajectory const* root() const;
+  Trajectory* root();
+
+  // Returns the fork time for a nonroot trajectory and null for a root
+  // trajectory.
+  Time const* fork_time() const;
 
   // The body to which this trajectory pertains.  No transfer of ownership.
   Body const* body() const;
@@ -98,7 +111,7 @@ class Trajectory {
 
   // A constructor for creating a child trajectory during forking.
   Trajectory(Body const* const body,
-             Trajectory const* const parent,
+             Trajectory* const parent,
              typename States::iterator const& parent_state);
 
   template<typename Value>
@@ -106,7 +119,7 @@ class Trajectory {
 
   Body const* const body_;  // Never null.
 
-  Trajectory const* const parent_;  // Null for a root trajectory.
+  Trajectory* const parent_;  // Null for a root trajectory.
 
   // Null for a root trajectory.
   std::unique_ptr<typename States::iterator> parent_state_;
