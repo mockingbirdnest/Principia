@@ -29,17 +29,8 @@ using principia::si::Second;
 namespace principia {
 namespace testing_utilities {
 
-class SolarSystem {
- public:
-  SolarSystem();
-
-  std::unique_ptr<NBodySystem<ICRFJ2000EclipticFrame>::Bodies> massive_bodies();
-  std::unique_ptr<NBodySystem<ICRFJ2000EclipticFrame>::Bodies> massless_bodies();
-
-};
 std::unique_ptr<physics::NBodySystem<ICRFJ2000EclipticFrame>>
 SolarSystemAtСпутникLaunch() {
-
   typedef Vector<Length, ICRFJ2000EclipticFrame> Position;
   typedef Vector<Speed, ICRFJ2000EclipticFrame> Velocity;
 
