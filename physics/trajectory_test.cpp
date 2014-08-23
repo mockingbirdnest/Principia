@@ -1,5 +1,8 @@
 #include "trajectory.hpp"
 
+#include <list>
+#include <map>
+
 #include "body.hpp"
 #include "geometry/grassmann.hpp"
 #include "gmock/gmock.h"

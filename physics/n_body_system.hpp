@@ -25,7 +25,7 @@ class NBodySystem {
 
   // NOTE(phl): We would prefer to pass the unique_ptr<> by value, but that
   // confuses the compiler.  So for now, we'll use r-value references.
-  //TODO(phl): Unclear relation between trajectories and bodies_.
+  // TODO(phl): Unclear relation between trajectories and bodies_.
   NBodySystem(std::unique_ptr<Bodies>&& massive_bodies,
               std::unique_ptr<Bodies>&& massless_bodies,
               std::unique_ptr<Trajectories>&& trajectories);

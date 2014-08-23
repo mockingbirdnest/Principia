@@ -1,5 +1,6 @@
 ﻿#include "physics/n_body_system.hpp"
 
+#include <map>
 #include <memory>
 #include <string>
 #include <vector>

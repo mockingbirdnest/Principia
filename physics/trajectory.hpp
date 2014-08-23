@@ -4,7 +4,6 @@
 #include <list>
 #include <map>
 #include <memory>
-#include <set>
 
 #include "geometry/grassmann.hpp"
 #include "quantities/named_quantities.hpp"

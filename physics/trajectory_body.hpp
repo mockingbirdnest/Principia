@@ -2,6 +2,9 @@
 
 #include "trajectory.hpp"
 
+#include <list>
+#include <map>
+
 #ifndef _MANAGED
 #include "glog/logging.h"
 #endif
@@ -189,7 +192,7 @@ Trajectory<Frame>::Trajectory(Body const* const body,
       body_(CHECK_NOTNULL(body)),
       parent_(CHECK_NOTNULL(parent)),
 #endif
-      parent_state_(new States::iterator(parent_state)) {};
+      parent_state_(new States::iterator(parent_state)) {}
 
 template<typename Frame>
 Trajectory<Frame>::State::State(Vector<Length, Frame> const& position,

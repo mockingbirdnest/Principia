@@ -102,7 +102,7 @@ void NBodySystem<InertialFrame>::Integrate(
   // Prepare the input data.
   std::unique_ptr<Time> reference_time;
   for (auto const& trajectory : *trajectories_) {
-    //TODO(phl): Relation with bodies_?  Optimization.
+    // TODO(phl): Relation with bodies_?
     R3Element<Length> const& position =
         trajectory->last_position().coordinates();
     R3Element<Speed> const& velocity =
@@ -146,7 +146,7 @@ void NBodySystem<InertialFrame>::Integrate(
 #endif
     // Loop over the dimensions.
     for (std::size_t k = 0, b = 0; k < state.positions.size(); k += 3, ++b) {
-      //TODO(phl): bodies_ vs. trajectory.
+      // TODO(phl): bodies_ vs. trajectory.
       Trajectory<InertialFrame>* trajectory = (*trajectories_)[b].get();
       Vector<Length, InertialFrame> const position(
           R3Element<Length>(state.positions[k].value,
