@@ -13,13 +13,8 @@ namespace principia {
 namespace physics {
 
 template<typename Frame>
-Trajectory<Frame>::Trajectory(Body const* body)
-    :
-#ifdef _MANAGED
-      body_(body),
-#else
-      body_(CHECK_NOTNULL(body)),
-#endif
+Trajectory<Frame>::Trajectory(Body const& body)
+    : body_(body),
       parent_(nullptr) {}
 
 template<typename Frame>
@@ -178,19 +173,17 @@ Time const* Trajectory<Frame>::fork_time() const {
 
 template<typename Frame>
 Body const& Trajectory<Frame>::body() const {
-  return *body_;
+  return body_;
 }
 
 template<typename Frame>
-Trajectory<Frame>::Trajectory(Body const* const body,
+Trajectory<Frame>::Trajectory(Body const& body,
                               Trajectory* const parent,
                               typename Timeline::iterator const& fork)
-    :
+    : body_(body),
 #ifdef _MANAGED
-      body_(body),
       parent_(parent),
 #else
-      body_(CHECK_NOTNULL(body)),
       parent_(CHECK_NOTNULL(parent)),
 #endif
       fork_(new Timeline::iterator(fork)) {}

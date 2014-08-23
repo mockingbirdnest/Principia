@@ -56,7 +56,7 @@ class TrajectoryTest : public testing::Test {
     t4_ = 37 * Second;
 
     body_.reset(new Body(SIUnit<Mass>()));
-    trajectory_.reset(new Trajectory<World>(body_.get()));
+    trajectory_.reset(new Trajectory<World>(*body_));
   }
 
   Vector<Length, World> q1_, q2_, q3_, q4_;

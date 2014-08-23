@@ -38,8 +38,8 @@ class NBodySystemTest : public testing::Test {
     body1_ = new Body(6E24 * SIUnit<Mass>());
     body2_ = new Body(7E22 * SIUnit<Mass>());
 
-    trajectory1_ = new Trajectory<EarthMoonBarycentricFrame>(body1_);
-    trajectory2_ = new Trajectory<EarthMoonBarycentricFrame>(body2_);
+    trajectory1_ = new Trajectory<EarthMoonBarycentricFrame>(*body1_);
+    trajectory2_ = new Trajectory<EarthMoonBarycentricFrame>(*body2_);
     Point<Vector<Length, EarthMoonBarycentricFrame>> const
         q1(Vector<Length, EarthMoonBarycentricFrame>({0 * SIUnit<Length>(),
                                           0 * SIUnit<Length>(),
@@ -70,17 +70,13 @@ class NBodySystemTest : public testing::Test {
                          {q1 - centre_of_mass, v1 - overall_velocity});
     trajectory2_->Append(0 * SIUnit<Time>(),
                          {q2 - centre_of_mass, v2 - overall_velocity});
-    std::unique_ptr<
-        NBodySystem<EarthMoonBarycentricFrame>::Bodies> massive_bodies(
-            new NBodySystem<EarthMoonBarycentricFrame>::Bodies);
-    std::unique_ptr<
-        NBodySystem<EarthMoonBarycentricFrame>::Bodies> massless_bodies;
-    std::unique_ptr<NBodySystem<EarthMoonBarycentricFrame>::Trajectories>
-        trajectories(new NBodySystem<EarthMoonBarycentricFrame>::Trajectories);
-    massive_bodies->emplace_back(body1_);
-    massive_bodies->emplace_back(body2_);
-    trajectories->emplace_back(trajectory1_);
-    trajectories->emplace_back(trajectory2_);
+    NBodySystem<EarthMoonBarycentricFrame>::Bodies massive_bodies;
+    NBodySystem<EarthMoonBarycentricFrame>::Bodies massless_bodies;
+    NBodySystem<EarthMoonBarycentricFrame>::Trajectories trajectories;
+    massive_bodies.emplace_back(body1_);
+    massive_bodies.emplace_back(body2_);
+    trajectories.emplace_back(trajectory1_);
+    trajectories.emplace_back(trajectory2_);
     system_ = std::make_unique<NBodySystem<EarthMoonBarycentricFrame>>(
                   std::move(massive_bodies),
                   std::move(massless_bodies),

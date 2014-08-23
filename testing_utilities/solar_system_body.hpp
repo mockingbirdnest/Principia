@@ -43,7 +43,7 @@ SolarSystemAtСпутникLaunch() {
   Body* sun(
       new Body(1.3271244004193938E+11 * Pow<3>(Kilo(Metre)) / Pow<2>(Second)));
   Trajectory<ICRFJ2000EclipticFrame>* sun_trajectory(
-      new Trajectory<ICRFJ2000EclipticFrame>(sun));
+      new Trajectory<ICRFJ2000EclipticFrame>(*sun));
   sun_trajectory->Append(
       t0,
       {Position({ 1.138350928138014E+06 * Kilo(Metre),
@@ -58,7 +58,7 @@ SolarSystemAtСпутникLaunch() {
   // Gas giants.
   Body* jupiter(new Body(126686511 * Pow<3>(Kilo(Metre)) / Pow<2>(Second)));
   Trajectory<ICRFJ2000EclipticFrame>* jupiter_trajectory(
-      new Trajectory<ICRFJ2000EclipticFrame>(jupiter));
+      new Trajectory<ICRFJ2000EclipticFrame>(*jupiter));
   jupiter_trajectory->Append(
       t0,
       {Position({-7.950209667306620E+08 * Kilo(Metre),
@@ -69,7 +69,7 @@ SolarSystemAtСпутникLaunch() {
                  -1.088748435062713E-02 * Kilo(Metre) / Second})});
   Body* saturn(new Body(37931207.8 * Pow<3>(Kilo(Metre)) / Pow<2>(Second)));
   Trajectory<ICRFJ2000EclipticFrame>* saturn_trajectory(
-      new Trajectory<ICRFJ2000EclipticFrame>(saturn));
+      new Trajectory<ICRFJ2000EclipticFrame>(*saturn));
   saturn_trajectory->Append(
       t0,
       {Position({-3.774715321901159E+08 * Kilo(Metre),
@@ -80,7 +80,7 @@ SolarSystemAtСпутникLaunch() {
                  -3.068419809533604E-01 * Kilo(Metre) / Second})});
   Body* neptune(new Body(6835107 * Pow<3>(Kilo(Metre)) / Pow<2>(Second)));
   Trajectory<ICRFJ2000EclipticFrame>* neptune_trajectory(
-      new Trajectory<ICRFJ2000EclipticFrame>(neptune));
+      new Trajectory<ICRFJ2000EclipticFrame>(*neptune));
   neptune_trajectory->Append(
       t0,
       {Position({-3.810689792831146E+09 * Kilo(Metre),
@@ -91,7 +91,7 @@ SolarSystemAtСпутникLaunch() {
                   2.589759251085161E-02 * Kilo(Metre) / Second})});
   Body* uranus(new Body(5793966 * Pow<3>(Kilo(Metre)) / Pow<2>(Second)));
   Trajectory<ICRFJ2000EclipticFrame>* uranus_trajectory(
-      new Trajectory<ICRFJ2000EclipticFrame>(uranus));
+      new Trajectory<ICRFJ2000EclipticFrame>(*uranus));
   uranus_trajectory->Append(
       t0,
       {Position({-1.729995609344851E+09 * Kilo(Metre),
@@ -104,7 +104,7 @@ SolarSystemAtСпутникLaunch() {
   // Telluric planets.
   Body* earth(new Body(398600.440 * Pow<3>(Kilo(Metre)) / Pow<2>(Second)));
   Trajectory<ICRFJ2000EclipticFrame>* earth_trajectory(
-      new Trajectory<ICRFJ2000EclipticFrame>(earth));
+      new Trajectory<ICRFJ2000EclipticFrame>(*earth));
   earth_trajectory->Append(
       t0,
       {Position({ 1.475150112055673E+08 * Kilo(Metre),
@@ -115,7 +115,7 @@ SolarSystemAtСпутникLaunch() {
                   3.125252418990812E-03 * Kilo(Metre) / Second})});
   Body* venus(new Body(324858.63 * Pow<3>(Kilo(Metre)) / Pow<2>(Second)));
   Trajectory<ICRFJ2000EclipticFrame>* venus_trajectory(
-      new Trajectory<ICRFJ2000EclipticFrame>(venus));
+      new Trajectory<ICRFJ2000EclipticFrame>(*venus));
   venus_trajectory->Append(
       t0,
       {Position({ 6.084974577091119E+07 * Kilo(Metre),
@@ -126,7 +126,7 @@ SolarSystemAtСпутникLaunch() {
                  -1.418780340302349E+00 * Kilo(Metre) / Second})});
   Body* mars(new Body(42828.3 * Pow<3>(Kilo(Metre)) / Pow<2>(Second)));
   Trajectory<ICRFJ2000EclipticFrame>* mars_trajectory(
-      new Trajectory<ICRFJ2000EclipticFrame>(mars));
+      new Trajectory<ICRFJ2000EclipticFrame>(*mars));
   mars_trajectory->Append(
       t0,
       {Position({-2.440047184660406E+08 * Kilo(Metre),
@@ -137,7 +137,7 @@ SolarSystemAtСпутникLaunch() {
                  -5.348179460834037E-01 * Kilo(Metre) / Second})});
   Body* mercury(new Body(22032.09 * Pow<3>(Kilo(Metre)) / Pow<2>(Second)));
   Trajectory<ICRFJ2000EclipticFrame>* mercury_trajectory(
-      new Trajectory<ICRFJ2000EclipticFrame>(mercury));
+      new Trajectory<ICRFJ2000EclipticFrame>(*mercury));
   mercury_trajectory->Append(
       t0,
       {Position({-3.013851560892715E+07 * Kilo(Metre),
@@ -152,7 +152,7 @@ SolarSystemAtСпутникLaunch() {
   // Satellite of Jupiter.
   Body* ganymede(new Body(1482E20 * Kilogram));
   Trajectory<ICRFJ2000EclipticFrame>* ganymede_trajectory(
-      new Trajectory<ICRFJ2000EclipticFrame>(ganymede));
+      new Trajectory<ICRFJ2000EclipticFrame>(*ganymede));
   ganymede_trajectory->Append(
       t0,
       {Position({-7.942681422941415E+08 * Kilo(Metre),
@@ -165,7 +165,7 @@ SolarSystemAtСпутникLaunch() {
   // Satellite of Saturn.
   Body* titan(new Body(8978.13 * Pow<3>(Kilo(Metre)) / Pow<2>(Second)));
   Trajectory<ICRFJ2000EclipticFrame>* titan_trajectory(
-      new Trajectory<ICRFJ2000EclipticFrame>(titan));
+      new Trajectory<ICRFJ2000EclipticFrame>(*titan));
   titan_trajectory->Append(
       t0,
       {Position({-3.771930512714775E+08 * Kilo(Metre),
@@ -178,7 +178,7 @@ SolarSystemAtСпутникLaunch() {
   // Satellites of Jupiter.
   Body* callisto(new Body(1076E20 * Kilogram));
   Trajectory<ICRFJ2000EclipticFrame>* callisto_trajectory(
-      new Trajectory<ICRFJ2000EclipticFrame>(callisto));
+      new Trajectory<ICRFJ2000EclipticFrame>(*callisto));
   callisto_trajectory->Append(
       t0,
       {Position({-7.951805452047400E+08 * Kilo(Metre),
@@ -189,7 +189,7 @@ SolarSystemAtСпутникLaunch() {
                   5.878649120351949E-02 * Kilo(Metre) / Second})});
   Body* io(new Body(893.3E20 * Kilogram));
   Trajectory<ICRFJ2000EclipticFrame>* io_trajectory(
-      new Trajectory<ICRFJ2000EclipticFrame>(io));
+      new Trajectory<ICRFJ2000EclipticFrame>(*io));
   io_trajectory->Append(
       t0,
       {Position({-7.946073188298367E+08 * Kilo(Metre),
@@ -202,7 +202,7 @@ SolarSystemAtСпутникLaunch() {
   // Satellite of Earth.
   Body* moon(new Body(4902.798 * Pow<3>(Kilo(Metre)) / Pow<2>(Second)));
   Trajectory<ICRFJ2000EclipticFrame>* moon_trajectory(
-      new Trajectory<ICRFJ2000EclipticFrame>(moon));
+      new Trajectory<ICRFJ2000EclipticFrame>(*moon));
   moon_trajectory->Append(
       t0,
       {Position({ 1.478545271460863E+08 * Kilo(Metre),
@@ -215,7 +215,7 @@ SolarSystemAtСпутникLaunch() {
   // Satellite of Jupiter.
   Body* europa(new Body(479.7E20 * Kilogram));
   Trajectory<ICRFJ2000EclipticFrame>* europa_trajectory(
-      new Trajectory<ICRFJ2000EclipticFrame>(europa));
+      new Trajectory<ICRFJ2000EclipticFrame>(*europa));
   europa_trajectory->Append(
       t0,
       {Position({-7.944180333947762E+08 * Kilo(Metre),
@@ -228,7 +228,7 @@ SolarSystemAtСпутникLaunch() {
   // Satellite of Neptune.
   Body* triton(new Body(214.7E20 * Kilogram));
   Trajectory<ICRFJ2000EclipticFrame>* triton_trajectory(
-      new Trajectory<ICRFJ2000EclipticFrame>(triton));
+      new Trajectory<ICRFJ2000EclipticFrame>(*triton));
   triton_trajectory->Append(
       t0,
       {Position({-3.810797098554279E+09 * Kilo(Metre),
@@ -243,7 +243,7 @@ SolarSystemAtСпутникLaunch() {
   // "The Mass of Dwarf Planet Eris", in Science, through Wikipedia.
   Body* eris(new Body(1.67E22 * Kilogram));
   Trajectory<ICRFJ2000EclipticFrame>* eris_trajectory(
-      new Trajectory<ICRFJ2000EclipticFrame>(eris));
+      new Trajectory<ICRFJ2000EclipticFrame>(*eris));
   eris_trajectory->Append(
       t0,
       {Position({ 1.317390066862979E+10 * Kilo(Metre),
@@ -256,7 +256,7 @@ SolarSystemAtСпутникLaunch() {
   // Dwarf planet (Kuiper belt object).
   Body* pluto(new Body(1.307E22 * Kilogram));
   Trajectory<ICRFJ2000EclipticFrame>* pluto_trajectory(
-      new Trajectory<ICRFJ2000EclipticFrame>(pluto));
+      new Trajectory<ICRFJ2000EclipticFrame>(*pluto));
   pluto_trajectory->Append(
       t0,
       {Position({-4.406985590968750E+09 * Kilo(Metre),
@@ -268,47 +268,45 @@ SolarSystemAtСпутникLaunch() {
 
   // End of celestial bodies.
 
-  std::unique_ptr<NBodySystem<ICRFJ2000EclipticFrame>::Bodies> massive_bodies(
-      new NBodySystem<ICRFJ2000EclipticFrame>::Bodies);
-  std::unique_ptr<NBodySystem<ICRFJ2000EclipticFrame>::Bodies> massless_bodies;
-  std::unique_ptr<NBodySystem<ICRFJ2000EclipticFrame>::Trajectories>
-      trajectories(new NBodySystem<ICRFJ2000EclipticFrame>::Trajectories);
-  massive_bodies->emplace_back(sun);
-  massive_bodies->emplace_back(jupiter);
-  massive_bodies->emplace_back(saturn);
-  massive_bodies->emplace_back(neptune);
-  massive_bodies->emplace_back(uranus);
-  massive_bodies->emplace_back(earth);
-  massive_bodies->emplace_back(venus);
-  massive_bodies->emplace_back(mars);
-  massive_bodies->emplace_back(mercury);
-  massive_bodies->emplace_back(ganymede);
-  massive_bodies->emplace_back(titan);
-  massive_bodies->emplace_back(callisto);
-  massive_bodies->emplace_back(io);
-  massive_bodies->emplace_back(moon);
-  massive_bodies->emplace_back(europa);
-  massive_bodies->emplace_back(triton);
-  massive_bodies->emplace_back(eris);
-  massive_bodies->emplace_back(pluto);
-  trajectories->emplace_back(sun_trajectory);
-  trajectories->emplace_back(jupiter_trajectory);
-  trajectories->emplace_back(saturn_trajectory);
-  trajectories->emplace_back(neptune_trajectory);
-  trajectories->emplace_back(uranus_trajectory);
-  trajectories->emplace_back(earth_trajectory);
-  trajectories->emplace_back(venus_trajectory);
-  trajectories->emplace_back(mars_trajectory);
-  trajectories->emplace_back(mercury_trajectory);
-  trajectories->emplace_back(ganymede_trajectory);
-  trajectories->emplace_back(titan_trajectory);
-  trajectories->emplace_back(callisto_trajectory);
-  trajectories->emplace_back(io_trajectory);
-  trajectories->emplace_back(moon_trajectory);
-  trajectories->emplace_back(europa_trajectory);
-  trajectories->emplace_back(triton_trajectory);
-  trajectories->emplace_back(eris_trajectory);
-  trajectories->emplace_back(pluto_trajectory);
+  NBodySystem<ICRFJ2000EclipticFrame>::Bodies massive_bodies;
+  NBodySystem<ICRFJ2000EclipticFrame>::Bodies massless_bodies;
+  NBodySystem<ICRFJ2000EclipticFrame>::Trajectories trajectories;
+  massive_bodies.emplace_back(sun);
+  massive_bodies.emplace_back(jupiter);
+  massive_bodies.emplace_back(saturn);
+  massive_bodies.emplace_back(neptune);
+  massive_bodies.emplace_back(uranus);
+  massive_bodies.emplace_back(earth);
+  massive_bodies.emplace_back(venus);
+  massive_bodies.emplace_back(mars);
+  massive_bodies.emplace_back(mercury);
+  massive_bodies.emplace_back(ganymede);
+  massive_bodies.emplace_back(titan);
+  massive_bodies.emplace_back(callisto);
+  massive_bodies.emplace_back(io);
+  massive_bodies.emplace_back(moon);
+  massive_bodies.emplace_back(europa);
+  massive_bodies.emplace_back(triton);
+  massive_bodies.emplace_back(eris);
+  massive_bodies.emplace_back(pluto);
+  trajectories.emplace_back(sun_trajectory);
+  trajectories.emplace_back(jupiter_trajectory);
+  trajectories.emplace_back(saturn_trajectory);
+  trajectories.emplace_back(neptune_trajectory);
+  trajectories.emplace_back(uranus_trajectory);
+  trajectories.emplace_back(earth_trajectory);
+  trajectories.emplace_back(venus_trajectory);
+  trajectories.emplace_back(mars_trajectory);
+  trajectories.emplace_back(mercury_trajectory);
+  trajectories.emplace_back(ganymede_trajectory);
+  trajectories.emplace_back(titan_trajectory);
+  trajectories.emplace_back(callisto_trajectory);
+  trajectories.emplace_back(io_trajectory);
+  trajectories.emplace_back(moon_trajectory);
+  trajectories.emplace_back(europa_trajectory);
+  trajectories.emplace_back(triton_trajectory);
+  trajectories.emplace_back(eris_trajectory);
+  trajectories.emplace_back(pluto_trajectory);
   return std::make_unique<NBodySystem<ICRFJ2000EclipticFrame>>(
       std::move(massive_bodies),
       std::move(massless_bodies),

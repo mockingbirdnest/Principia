@@ -23,8 +23,9 @@ class Body;
 template<typename Frame>
 class Trajectory {
  public:
-  // No transfer of ownership.
-  explicit Trajectory(Body const* body);
+  // No transfer of ownership.  |body| must live longer than the trajectory as
+  // the trajectory holds a reference to it.
+  explicit Trajectory(Body const& body);
   ~Trajectory() = default;
 
   // These functions return the series of positions/velocities/times for the
@@ -81,7 +82,7 @@ class Trajectory {
   typedef std::map<Time, DegreesOfFreedom<Frame>> Timeline;
 
   // A constructor for creating a child trajectory during forking.
-  Trajectory(Body const* const body,
+  Trajectory(Body const& body,
              Trajectory* const parent,
              typename Timeline::iterator const& fork);
 
@@ -89,7 +90,7 @@ class Trajectory {
   std::map<Time, Value> ApplyToDegreesOfFreedom(
       std::function<Value(DegreesOfFreedom<Frame> const&)> compute_value) const;
 
-  Body const* const body_;  // Never null.
+  Body const& body_;
 
   Trajectory* const parent_;  // Null for a root trajectory.
 
