@@ -82,33 +82,55 @@ void NBodySystem<InertialFrame>::Integrate(
   SymplecticIntegrator<Length, Speed>::Parameters parameters;
   std::vector<SymplecticIntegrator<Length, Speed>::SystemState> solution;
 
-  // Prepare the input data.
+  // Prepare the initial data of the integrator.
+  //TODO(phl):comments
   std::set<Time> times_in_trajectories;
   std::set<Body const*> bodies_in_trajectories;
-  for (auto const& trajectory : trajectories) {
-    R3Element<Length> const& position =
-        trajectory->last_position().coordinates();
-    R3Element<Speed> const& velocity =
-        trajectory->last_velocity().coordinates();
-    Time const& time = trajectory->last_time();
-    for (int i = 0; i < 3; ++i) {
-      parameters.initial.positions.emplace_back(position[i]);
-    }
-    for (int i = 0; i < 3; ++i) {
-      parameters.initial.momenta.emplace_back(velocity[i]);
-    }
-    parameters.initial.time = time;
+  std::vector<Trajectory<InertialFrame> const*> reordered_trajectories;
+  std::vector<Trajectory<InertialFrame> const*> massive_trajectories;
+  int number_of_massless_trajectories = 0;
+  // This loop ensures that the massive bodies precede the massless bodies in
+  // the vectors representing the initial data.
+  for (bool is_massless : {false, true}) {
+    for (auto const& trajectory : trajectories) {
+      // See if this trajectory should be processed in this iteration and
+      // update the appropriate vector.
+      Body const* const body = &trajectory->body();
+      if (body->is_massless() != is_massless) {
+        continue;
+      }
+      if (is_massless) {
+        ++number_of_massless_trajectories;
+      } else {
+        massive_trajectories.push_back(body);
+      }
+      reordered_trajectories.push_back(body);
+
+      // Fill the initial position/velocity/time.
+      R3Element<Length> const& position =
+          trajectory->last_position().coordinates();
+      R3Element<Speed> const& velocity =
+          trajectory->last_velocity().coordinates();
+      Time const& time = trajectory->last_time();
+      for (int i = 0; i < 3; ++i) {
+        parameters.initial.positions.emplace_back(position[i]);
+      }
+      for (int i = 0; i < 3; ++i) {
+        parameters.initial.momenta.emplace_back(velocity[i]);
+      }
+      parameters.initial.time = time;
+
 #ifndef _MANAGED
-    Body const* const body = &trajectory->body();
-    // Check that the trajectory if for a body passed at construction.
-    CHECK(bodies_.find(body) != bodies_.end());
-    // Check that all trajectories are for different bodies.
-    auto const inserted = bodies_in_trajectories.insert(body);
-    CHECK(inserted.second);
-    // The final points of all trajectories must all be for the same time.
-    times_in_trajectories.insert(time);
-    CHECK_GE(1U, times_in_trajectories.size());
+      // Check that the trajectory if for a body passed at construction.
+      CHECK(bodies_.find(body) != bodies_.end());
+      // Check that all trajectories are for different bodies.
+      auto const inserted = bodies_in_trajectories.insert(body);
+      CHECK(inserted.second);
+      // The final points of all trajectories must all be for the same time.
+      times_in_trajectories.insert(time);
+      CHECK_GE(1U, times_in_trajectories.size());
 #endif
+    }
   }
 
   parameters.tmax = tmax;
