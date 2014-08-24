@@ -107,7 +107,7 @@ void NBodySystem<InertialFrame>::Integrate(
     CHECK(inserted.second);
     // The final points of all trajectories must all be for the same time.
     times_in_trajectories.insert(time);
-    CHECK_GE(1, times_in_trajectories.size());
+    CHECK_GE(1U, times_in_trajectories.size());
 #endif
   }
 
