@@ -29,7 +29,10 @@ namespace testing_utilities {
 class SolarSystemTest : public testing::Test {
  protected:
   void SetUp() {
-    system_ = SolarSystemAtСпутникLaunch();
+    solar_system_.reset(new SolarSystem);
+    n_body_system_.reset(new NBodySystem<ICRFJ2000EclipticFrame>(
+                                 solar_system_->massive_bodies(),
+                                 solar_system_->massless_bodies()));
   }
   // The maximal separation of |primary| and |secondary| ignoring the influence
   // of any other bodies.
@@ -89,46 +92,32 @@ class SolarSystemTest : public testing::Test {
     }
   }
 
-  std::unique_ptr<NBodySystem<ICRFJ2000EclipticFrame>> system_;
+  std::unique_ptr<SolarSystem> solar_system_;
+  std::unique_ptr<NBodySystem<ICRFJ2000EclipticFrame>> n_body_system_;
 };
 
 TEST_F(SolarSystemTest, Hierarchy) {
-  Trajectory<ICRFJ2000EclipticFrame> const& sun      =
-      *system_->trajectories()[0];
-  Trajectory<ICRFJ2000EclipticFrame> const& jupiter  =
-      *system_->trajectories()[1];
-  Trajectory<ICRFJ2000EclipticFrame> const& saturn   =
-      *system_->trajectories()[2];
-  Trajectory<ICRFJ2000EclipticFrame> const& neptune  =
-      *system_->trajectories()[3];
-  Trajectory<ICRFJ2000EclipticFrame> const& uranus   =
-      *system_->trajectories()[4];
-  Trajectory<ICRFJ2000EclipticFrame> const& earth    =
-      *system_->trajectories()[5];
-  Trajectory<ICRFJ2000EclipticFrame> const& venus    =
-      *system_->trajectories()[6];
-  Trajectory<ICRFJ2000EclipticFrame> const& mars     =
-      *system_->trajectories()[7];
-  Trajectory<ICRFJ2000EclipticFrame> const& mercury  =
-      *system_->trajectories()[8];
-  Trajectory<ICRFJ2000EclipticFrame> const& ganymede =
-      *system_->trajectories()[9];
-  Trajectory<ICRFJ2000EclipticFrame> const& titan    =
-      *system_->trajectories()[10];
-  Trajectory<ICRFJ2000EclipticFrame> const& callisto =
-      *system_->trajectories()[11];
-  Trajectory<ICRFJ2000EclipticFrame> const& io       =
-      *system_->trajectories()[12];
-  Trajectory<ICRFJ2000EclipticFrame> const& moon     =
-      *system_->trajectories()[13];
-  Trajectory<ICRFJ2000EclipticFrame> const& europa   =
-      *system_->trajectories()[14];
-  Trajectory<ICRFJ2000EclipticFrame> const& triton   =
-      *system_->trajectories()[15];
-  Trajectory<ICRFJ2000EclipticFrame> const& eris     =
-      *system_->trajectories()[16];
-  Trajectory<ICRFJ2000EclipticFrame> const& pluto    =
-      *system_->trajectories()[17];
+  physics::NBodySystem<ICRFJ2000EclipticFrame>::Trajectories trajectories =
+      solar_system_->trajectories_at_спутник_launch_time();
+  Trajectory<ICRFJ2000EclipticFrame> const& sun      = *trajectories[0];
+  Trajectory<ICRFJ2000EclipticFrame> const& jupiter  = *trajectories[1];
+  Trajectory<ICRFJ2000EclipticFrame> const& saturn   = *trajectories[2];
+  Trajectory<ICRFJ2000EclipticFrame> const& neptune  = *trajectories[3];
+  Trajectory<ICRFJ2000EclipticFrame> const& uranus   = *trajectories[4];
+  Trajectory<ICRFJ2000EclipticFrame> const& earth    = *trajectories[5];
+  Trajectory<ICRFJ2000EclipticFrame> const& venus    = *trajectories[6];
+  Trajectory<ICRFJ2000EclipticFrame> const& mars     = *trajectories[7];
+  Trajectory<ICRFJ2000EclipticFrame> const& mercury  = *trajectories[8];
+  Trajectory<ICRFJ2000EclipticFrame> const& ganymede = *trajectories[9];
+  Trajectory<ICRFJ2000EclipticFrame> const& titan    = *trajectories[10];
+  Trajectory<ICRFJ2000EclipticFrame> const& callisto = *trajectories[11];
+  Trajectory<ICRFJ2000EclipticFrame> const& io       = *trajectories[12];
+  Trajectory<ICRFJ2000EclipticFrame> const& moon     = *trajectories[13];
+  Trajectory<ICRFJ2000EclipticFrame> const& europa   = *trajectories[14];
+  Trajectory<ICRFJ2000EclipticFrame> const& triton   = *trajectories[15];
+  Trajectory<ICRFJ2000EclipticFrame> const& eris     = *trajectories[16];
+  Trajectory<ICRFJ2000EclipticFrame> const& pluto    = *trajectories[17];
+
   // Reference excentricities from HORIZONS, truncated.
   // Using center: Sun (body center) [500@10].
   TestStronglyBoundOrbit(4.864297E-02, 1E-6, jupiter, sun, nullptr, "jupiter");

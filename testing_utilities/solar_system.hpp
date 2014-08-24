@@ -18,6 +18,36 @@ namespace testing_utilities {
 // The reference frame is direct.
 struct ICRFJ2000EclipticFrame;
 
+//TODO(phl):Fix comments
+class SolarSystem {
+ public:
+  // Factory.  The caller gets ownership of the pointers.
+  static std::unique_ptr<SolarSystem> AtСпутникLaunch();
+
+  ~SolarSystem() = default;
+
+  // The caller gets ownership of the bodies.  These functions should only be
+  // called once.
+  physics::NBodySystem<ICRFJ2000EclipticFrame>::Bodies massive_bodies();
+  physics::NBodySystem<ICRFJ2000EclipticFrame>::Bodies massless_bodies();
+
+  // This class retains ownership of the trajectories.
+  physics::NBodySystem<ICRFJ2000EclipticFrame>::Trajectories
+      trajectories() const;
+
+  Time const& спутник_launch_time();
+
+private:
+  SolarSystem();
+
+  physics::NBodySystem<ICRFJ2000EclipticFrame>::Bodies massive_bodies_;
+  physics::NBodySystem<ICRFJ2000EclipticFrame>::Bodies massless_bodies_;
+  std::vector<
+      std::unique_ptr<physics::Trajectory<ICRFJ2000EclipticFrame>>>
+      trajectories_at_спутник_launch_time_;
+  Time const спутник_launch_time_;
+};
+
 // A system containing the 18 largest solar system bodies (Pluto and all larger
 // bodies) at the time of the launch of Простейший Спутник-1,
 // 1957-10-04T19:28:34Z (JD2436116.3115).

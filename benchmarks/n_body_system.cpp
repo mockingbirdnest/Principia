@@ -32,8 +32,7 @@ namespace benchmarks {
 void BM_SolarSystem(benchmark::State& state) {  // NOLINT(runtime/references)
   std::vector<quantities::Momentum> output;
   while (state.KeepRunning()) {
-    std::unique_ptr<NBodySystem<ICRFJ2000EclipticFrame>> const system =
-        SimulateSolarSystem();
+    std::unique_ptr<SolarSystem> const system = SimulateSolarSystem(&state);
     state.PauseTiming();
     state.SetLabel(
         DebugString(
