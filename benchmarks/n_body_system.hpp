@@ -11,10 +11,8 @@ using principia::testing_utilities::SolarSystem;
 namespace principia {
 namespace benchmarks {
 
-// Simulates the solar system as at Спутник launch for 100 years with a 45 min
-// time step.  The caller gets ownership of the returned object.  The |state|
-// object may be used to tune benchmarking.
-std::unique_ptr<SolarSystem> SimulateSolarSystem(benchmark::State* state);
+// Simulates the given |solar_system| for 100 years with a 45 min time step.
+void SimulateSolarSystem(SolarSystem* solar_system);
 
 }  // namespace benchmarks
 }  // namespace principia

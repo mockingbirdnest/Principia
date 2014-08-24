@@ -1,4 +1,4 @@
-
+﻿
 // .\Release\benchmarks.exe  --benchmark_repetitions=5 --benchmark_filter=Solar
 // Benchmarking on 1 X 3310 MHz CPU
 // 2014/06/15-23:58:26
@@ -32,14 +32,15 @@ namespace benchmarks {
 void BM_SolarSystem(benchmark::State& state) {  // NOLINT(runtime/references)
   std::vector<quantities::Momentum> output;
   while (state.KeepRunning()) {
-    std::unique_ptr<SolarSystem> const system = SimulateSolarSystem(&state);
+    std::unique_ptr<SolarSystem> solar_system = SolarSystem::AtСпутникLaunch();
+    state.ResumeTiming();
+    SimulateSolarSystem(solar_system.get());
     state.PauseTiming();
     state.SetLabel(
         DebugString(
-            (system->trajectories()[0]->last_position() -
-             system->trajectories()[5]->last_position()).Norm() /
+            (solar_system->trajectories()[0]->last_position() -
+             solar_system->trajectories()[5]->last_position()).Norm() /
                 AstronomicalUnit) + " ua");
-    state.ResumeTiming();
   }
 }
 BENCHMARK(BM_SolarSystem);

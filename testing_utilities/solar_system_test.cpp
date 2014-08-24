@@ -29,7 +29,7 @@ namespace testing_utilities {
 class SolarSystemTest : public testing::Test {
  protected:
   void SetUp() {
-    solar_system_.reset(new SolarSystem);
+    solar_system_ = SolarSystem::AtСпутникLaunch();
     n_body_system_.reset(new NBodySystem<ICRFJ2000EclipticFrame>(
                                  solar_system_->massive_bodies(),
                                  solar_system_->massless_bodies()));
@@ -98,7 +98,7 @@ class SolarSystemTest : public testing::Test {
 
 TEST_F(SolarSystemTest, Hierarchy) {
   physics::NBodySystem<ICRFJ2000EclipticFrame>::Trajectories trajectories =
-      solar_system_->trajectories_at_спутник_launch_time();
+      solar_system_->trajectories();
   Trajectory<ICRFJ2000EclipticFrame> const& sun      = *trajectories[0];
   Trajectory<ICRFJ2000EclipticFrame> const& jupiter  = *trajectories[1];
   Trajectory<ICRFJ2000EclipticFrame> const& saturn   = *trajectories[2];
