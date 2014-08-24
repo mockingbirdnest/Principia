@@ -72,15 +72,11 @@ class NBodySystemTest : public testing::Test {
                          {q2 - centre_of_mass, v2 - overall_velocity});
     NBodySystem<EarthMoonBarycentricFrame>::Bodies massive_bodies;
     NBodySystem<EarthMoonBarycentricFrame>::Bodies massless_bodies;
-    NBodySystem<EarthMoonBarycentricFrame>::Trajectories trajectories;
     massive_bodies.emplace_back(body1_);
     massive_bodies.emplace_back(body2_);
-    trajectories.emplace_back(trajectory1_);
-    trajectories.emplace_back(trajectory2_);
     system_ = std::make_unique<NBodySystem<EarthMoonBarycentricFrame>>(
                   std::move(massive_bodies),
-                  std::move(massless_bodies),
-                  std::move(trajectories));
+                  std::move(massless_bodies));
   }
 
   template<typename Scalar, typename Frame>
@@ -138,7 +134,8 @@ TEST_F(NBodySystemTest, EarthMoon) {
   system_->Integrate(integrator_,
                      period_,
                      period_ / 100,
-                     1);
+                     1,
+                     {trajectory1_, trajectory2_});
 
   positions = ValuesOf(trajectory1_->Positions());
   EXPECT_THAT(positions.size(), Eq(101));
