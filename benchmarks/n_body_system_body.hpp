@@ -14,22 +14,25 @@ using principia::quantities::Length;
 using principia::quantities::Speed;
 using principia::si::Minute;
 using principia::testing_utilities::ICRFJ2000EclipticFrame;
-using principia::testing_utilities::kСпутникLaunchDate;
-using principia::testing_utilities::SolarSystemAtСпутникLaunch;
+using principia::testing_utilities::SolarSystem;
 
 namespace principia {
 namespace benchmarks {
 
-std::unique_ptr<NBodySystem<ICRFJ2000EclipticFrame>> SimulateSolarSystem() {
-  std::unique_ptr<NBodySystem<ICRFJ2000EclipticFrame>> system =
-      SolarSystemAtСпутникLaunch();
+void SimulateSolarSystem(SolarSystem* solar_system) {
+  std::unique_ptr<NBodySystem<ICRFJ2000EclipticFrame>> n_body_system(
+      new NBodySystem<ICRFJ2000EclipticFrame>(
+          solar_system->massive_bodies(),
+          solar_system->massless_bodies()));
+  auto const trajectories = solar_system->trajectories();
   SPRKIntegrator<Length, Speed> integrator;
   integrator.Initialize(integrator.Order5Optimal());
-  system->Integrate(integrator,
-                    kСпутникLaunchDate + 100 * JulianYear,  // t_max
-                    45 * Minute,                           // Δt
-                    0);                                    // sampling_period
-  return system;
+  n_body_system->Integrate(integrator,
+                           trajectories.front()->last_time() +
+                               100 * JulianYear,              // t_max
+                           45 * Minute,                       // Δt
+                           0,                                 // sampling_period
+                           trajectories);
 }
 
 
