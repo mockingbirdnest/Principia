@@ -154,7 +154,8 @@ void NBodySystem<InertialFrame>::Integrate(
     // TODO(phl): Ignoring errors for now.
     // Loop over the time steps.
     for (std::size_t i = 0; i < solution.size(); ++i) {
-      SymplecticIntegrator<Length, Speed>::SystemState const& state = solution[i];
+      SymplecticIntegrator<Length, Speed>::SystemState const& state =
+          solution[i];
       Time const& time = state.time.value;
 #ifndef _MANAGED
       CHECK_EQ(state.positions.size(), state.momenta.size());
