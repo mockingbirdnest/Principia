@@ -2,6 +2,7 @@
 
 #include <cmath>
 #include <functional>
+#include <set>
 #include <vector>
 
 #include "geometry/r3_element.hpp"
