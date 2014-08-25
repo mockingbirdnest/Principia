@@ -82,13 +82,20 @@ void NBodySystem<InertialFrame>::Integrate(
   SymplecticIntegrator<Length, Speed>::Parameters parameters;
   std::vector<SymplecticIntegrator<Length, Speed>::SystemState> solution;
 
-  // Prepare the initial data of the integrator.
-  //TODO(phl):comments
 #ifndef _MANAGED
+  // These objects are for checking the consistency of the parameters.
   std::set<Time> times_in_trajectories;
   std::set<Body const*> bodies_in_trajectories;
 #endif
-  std::vector<Trajectory<InertialFrame> const*> reordered_trajectories;
+
+  // Prepare the initial state of the integrator.  For efficiently computing the
+  // accelerations, we need to separate the trajectories of massive bodies from
+  // those of massless bodies.  They are put in this order in
+  // |reordered_trajectories|.  The trajectories of massive bodies are put in
+  // |massive_trajectories|, and the number of massless bodies is put in
+  // |number_of_massless_trajectories|.  Beyond this point the |trajectory|
+  // parameter should not be used as it has not been reordered.
+  std::vector<Trajectory<InertialFrame>*> reordered_trajectories;
   std::vector<Trajectory<InertialFrame> const*> massive_trajectories;
   int number_of_massless_trajectories = 0;
   // This loop ensures that the massive bodies precede the massless bodies in
@@ -166,13 +173,12 @@ void NBodySystem<InertialFrame>::Integrate(
           R3Element<Speed>(state.momenta[k].value,
                            state.momenta[k + 1].value,
                            state.momenta[k + 2].value));
-      trajectories[t]->Append(
+      reordered_trajectories[t]->Append(
           time, DegreesOfFreedom<InertialFrame>(position, velocity));
     }
   }
 }
 
-//TODO(phl):Indexing by body probably broken here.
 template<typename InertialFrame>
 void NBodySystem<InertialFrame>::ComputeGravitationalAccelerations(
     std::vector<Trajectory<InertialFrame> const*> const& massive_trajectories,

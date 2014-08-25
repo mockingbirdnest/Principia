@@ -156,6 +156,31 @@ TEST_F(NBodySystemTest, EarthMoon) {
   EXPECT_THAT(Abs(positions[100].coordinates().x), Lt(2 * SIUnit<Length>()));
 }
 
+TEST_F(NBodySystemTest, MoonEarth) {
+  std::vector<Vector<Length, EarthMoonBarycentricFrame>> positions;
+  system_->Integrate(integrator_,
+                     period_,
+                     period_ / 100,
+                     1,
+                     {trajectory2_, trajectory1_});
+
+  positions = ValuesOf(trajectory1_->Positions());
+  EXPECT_THAT(positions.size(), Eq(101));
+  LOG(INFO) << ToMathematicaString(positions);
+  EXPECT_THAT(Abs(positions[25].coordinates().y), Lt(3E-2 * SIUnit<Length>()));
+  EXPECT_THAT(Abs(positions[50].coordinates().x), Lt(3E-2 * SIUnit<Length>()));
+  EXPECT_THAT(Abs(positions[75].coordinates().y), Lt(3E-2 * SIUnit<Length>()));
+  EXPECT_THAT(Abs(positions[100].coordinates().x), Lt(3E-2 * SIUnit<Length>()));
+
+  positions = ValuesOf(trajectory2_->Positions());
+  LOG(INFO) << ToMathematicaString(positions);
+  EXPECT_THAT(positions.size(), Eq(101));
+  EXPECT_THAT(Abs(positions[25].coordinates().y), Lt(2 * SIUnit<Length>()));
+  EXPECT_THAT(Abs(positions[50].coordinates().x), Lt(2 * SIUnit<Length>()));
+  EXPECT_THAT(Abs(positions[75].coordinates().y), Lt(2 * SIUnit<Length>()));
+  EXPECT_THAT(Abs(positions[100].coordinates().x), Lt(2 * SIUnit<Length>()));
+}
+
 TEST_F(NBodySystemTest, Moon) {
   std::vector<Vector<Length, EarthMoonBarycentricFrame>> positions;
   system_->Integrate(integrator_,
