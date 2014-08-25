@@ -44,10 +44,12 @@ class NBodySystem {
                  Trajectories const& trajectories);
 
  private:
-  void ComputeGravitationalAccelerations(
+  static void ComputeGravitationalAccelerations(
+      std::vector<Trajectory<InertialFrame> const*> const& massive_trajectories,
+      int const number_of_massless_trajectories,
       Time const& t,
       std::vector<Length> const& q,
-      std::vector<Acceleration>* result) const;
+      std::vector<Acceleration>* result);
   static void ComputeGravitationalVelocities(std::vector<Speed> const& p,
                                              std::vector<Speed>* result);
 

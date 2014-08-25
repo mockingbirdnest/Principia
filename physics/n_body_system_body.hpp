@@ -84,8 +84,10 @@ void NBodySystem<InertialFrame>::Integrate(
 
   // Prepare the initial data of the integrator.
   //TODO(phl):comments
+#ifndef _MANAGED
   std::set<Time> times_in_trajectories;
   std::set<Body const*> bodies_in_trajectories;
+#endif
   std::vector<Trajectory<InertialFrame> const*> reordered_trajectories;
   std::vector<Trajectory<InertialFrame> const*> massive_trajectories;
   int number_of_massless_trajectories = 0;
@@ -102,9 +104,9 @@ void NBodySystem<InertialFrame>::Integrate(
       if (is_massless) {
         ++number_of_massless_trajectories;
       } else {
-        massive_trajectories.push_back(body);
+        massive_trajectories.push_back(trajectory);
       }
-      reordered_trajectories.push_back(body);
+      reordered_trajectories.push_back(trajectory);
 
       // Fill the initial position/velocity/time.
       R3Element<Length> const& position =
@@ -137,7 +139,9 @@ void NBodySystem<InertialFrame>::Integrate(
   parameters.Δt = Δt;
   parameters.sampling_period = sampling_period;
   dynamic_cast<const SPRKIntegrator<Length, Speed>*>(&integrator)->Solve(
-      std::bind(&NBodySystem::ComputeGravitationalAccelerations, this,
+      std::bind(&NBodySystem::ComputeGravitationalAccelerations,
+                massive_trajectories,
+                number_of_massless_trajectories,
                 std::placeholders::_1,
                 std::placeholders::_2,
                 std::placeholders::_3),
@@ -171,18 +175,20 @@ void NBodySystem<InertialFrame>::Integrate(
 //TODO(phl):Indexing by body probably broken here.
 template<typename InertialFrame>
 void NBodySystem<InertialFrame>::ComputeGravitationalAccelerations(
+    std::vector<Trajectory<InertialFrame> const*> const& massive_trajectories,
+    int const number_of_massless_trajectories,
     Time const& t,
     std::vector<Length> const& q,
-    std::vector<Acceleration>* result) const {
+    std::vector<Acceleration>* result) {
   result->assign(result->size(), Acceleration());
 
   // TODO(phl): Used to deal with proper accelerations here.
   for (std::size_t b1 = 0, three_b1 = 0;
-       b1 < massive_bodies_.size();
+       b1 < massive_trajectories.size();
        ++b1, three_b1 += 3) {
     GravitationalParameter const& body1_gravitational_parameter =
-        massive_bodies_[b1]->gravitational_parameter();
-    for (std::size_t b2 = b1 + 1; b2 < massive_bodies_.size(); ++b2) {
+        massive_trajectories[b1]->body().gravitational_parameter();
+    for (std::size_t b2 = b1 + 1; b2 < massive_trajectories.size(); ++b2) {
       std::size_t const three_b2 = 3 * b2;
       Length const Δq0 = q[three_b1] - q[three_b2];
       Length const Δq1 = q[three_b1 + 1] - q[three_b2 + 1];
@@ -194,7 +200,8 @@ void NBodySystem<InertialFrame>::ComputeGravitationalAccelerations(
           Sqrt(squared_distance) / (squared_distance * squared_distance);
 
       auto const μ2OverRSquared =
-          massive_bodies_[b2]->gravitational_parameter() * multiplier;
+          massive_trajectories[b2]->body().gravitational_parameter() *
+          multiplier;
       (*result)[three_b1] -= Δq0 * μ2OverRSquared;
       (*result)[three_b1 + 1] -= Δq1 * μ2OverRSquared;
       (*result)[three_b1 + 2] -= Δq2 * μ2OverRSquared;
@@ -206,7 +213,7 @@ void NBodySystem<InertialFrame>::ComputeGravitationalAccelerations(
       (*result)[three_b2 + 1] += Δq1 * μ1OverRSquared;
       (*result)[three_b2 + 2] += Δq2 * μ1OverRSquared;
     }
-    for (std::size_t b2 = 0; b2 < massless_bodies_.size(); ++b2) {
+    for (int b2 = 0; b2 < number_of_massless_trajectories; ++b2) {
       std::size_t const three_b2 = 3 * b2;
       Length const Δq0 = q[three_b1] - q[three_b2];
       Length const Δq1 = q[three_b1 + 1] - q[three_b2 + 1];

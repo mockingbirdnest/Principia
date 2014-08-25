@@ -13,6 +13,7 @@
 #include "physics/trajectory.hpp"
 #include "quantities/constants.hpp"
 #include "quantities/numbers.hpp"
+#include "testing_utilities/almost_equals.hpp"
 
 using principia::constants::GravitationalConstant;
 using principia::geometry::Barycentre;
@@ -20,6 +21,7 @@ using principia::geometry::Point;
 using principia::geometry::Vector;
 using principia::quantities::Pow;
 using principia::quantities::SIUnit;
+using principia::testing_utilities::AlmostEquals;
 using testing::Eq;
 using testing::Lt;
 
@@ -42,12 +44,12 @@ class NBodySystemTest : public testing::Test {
     trajectory2_ = new Trajectory<EarthMoonBarycentricFrame>(*body2_);
     Point<Vector<Length, EarthMoonBarycentricFrame>> const
         q1(Vector<Length, EarthMoonBarycentricFrame>({0 * SIUnit<Length>(),
-                                          0 * SIUnit<Length>(),
-                                          0 * SIUnit<Length>()}));
+                                                      0 * SIUnit<Length>(),
+                                                      0 * SIUnit<Length>()}));
     Point<Vector<Length, EarthMoonBarycentricFrame>> const
         q2(Vector<Length, EarthMoonBarycentricFrame>({0 * SIUnit<Length>(),
-                                          4E8 * SIUnit<Length>(),
-                                          0 * SIUnit<Length>()}));
+                                                      4E8 * SIUnit<Length>(),
+                                                      0 * SIUnit<Length>()}));
     Point<Vector<Length, EarthMoonBarycentricFrame>> const centre_of_mass =
         Barycentre(q1, body1_->mass(), q2, body2_->mass());
     Length const semi_major_axis = (q1 - q2).Norm();
@@ -161,22 +163,21 @@ TEST_F(NBodySystemTest, Moon) {
                      period_ / 100,
                      1,
                      {trajectory2_});
-
-  positions = ValuesOf(trajectory1_->Positions());
-  EXPECT_THAT(positions.size(), Eq(101));
-  LOG(INFO) << ToMathematicaString(positions);
-  EXPECT_THAT(Abs(positions[25].coordinates().y), Lt(3E-2 * SIUnit<Length>()));
-  EXPECT_THAT(Abs(positions[50].coordinates().x), Lt(3E-2 * SIUnit<Length>()));
-  EXPECT_THAT(Abs(positions[75].coordinates().y), Lt(3E-2 * SIUnit<Length>()));
-  EXPECT_THAT(Abs(positions[100].coordinates().x), Lt(3E-2 * SIUnit<Length>()));
+  Length const q2 = trajectory2_->last_position().coordinates().y;
+  Speed const v1 = trajectory2_->last_velocity().coordinates().x;
 
   positions = ValuesOf(trajectory2_->Positions());
   LOG(INFO) << ToMathematicaString(positions);
   EXPECT_THAT(positions.size(), Eq(101));
-  EXPECT_THAT(Abs(positions[25].coordinates().y), Lt(2 * SIUnit<Length>()));
-  EXPECT_THAT(Abs(positions[50].coordinates().x), Lt(2 * SIUnit<Length>()));
-  EXPECT_THAT(Abs(positions[75].coordinates().y), Lt(2 * SIUnit<Length>()));
-  EXPECT_THAT(Abs(positions[100].coordinates().x), Lt(2 * SIUnit<Length>()));
+  EXPECT_THAT(Abs(positions[25].coordinates().x), Eq(0.25 * period_ * v1));
+  EXPECT_THAT(Abs(positions[25].coordinates().y), Eq(q2));
+  EXPECT_THAT(Abs(positions[50].coordinates().x), Eq(0.50 * period_ * v1));
+  EXPECT_THAT(Abs(positions[50].coordinates().y), Eq(q2));
+  EXPECT_THAT(Abs(positions[75].coordinates().x),
+              AlmostEquals(0.75 * period_ * v1, 1));
+  EXPECT_THAT(Abs(positions[75].coordinates().y), Eq(q2));
+  EXPECT_THAT(Abs(positions[100].coordinates().x), Eq(1.00 * period_ * v1));
+  EXPECT_THAT(Abs(positions[100].coordinates().y), Eq(q2));
 }
 
 }  // namespace physics
