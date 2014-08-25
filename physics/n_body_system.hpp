@@ -32,7 +32,6 @@ class NBodySystem {
   // No transfer of ownership.
   std::vector<Body const*> massive_bodies() const;
   std::vector<Body const*> massless_bodies() const;
-  std::vector<Body const*> bodies() const;
 
   // The |integrator| must already have been initialized.  All the
   // |trajectories| must have the same last_time() and must be for bodies passed

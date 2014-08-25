@@ -36,9 +36,9 @@ class SolarSystem {
   physics::NBodySystem<ICRFJ2000EclipticFrame>::Trajectories
       trajectories() const;
 
-private:
-  // A system containing the 18 largest solar system bodies (Pluto and all larger
-  // bodies)  The bodies are in decreasing order of mass,
+ private:
+  // A system containing the 18 largest solar system bodies (Pluto and all
+  // larger bodies)  The bodies are in decreasing order of mass,
   //  0. Sun,
   //  1. Jupiter,
   //  2. Saturn,

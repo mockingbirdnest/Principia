@@ -295,7 +295,6 @@ std::unique_ptr<SolarSystem> SolarSystem::AtСпутникLaunch() {
 }
 
 SolarSystem::SolarSystem() {
-
   // All data is from the Jet Propulsion Laboratory's HORIZONS system unless
   // otherwise specified.
 

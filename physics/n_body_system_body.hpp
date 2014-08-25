@@ -64,15 +64,6 @@ std::vector<Body const*> NBodySystem<InertialFrame>::massive_bodies() const {
 }
 
 template<typename InertialFrame>
-std::vector<Body const*> NBodySystem<InertialFrame>::bodies() const {
-  std::vector<Body const*> result;
-  for (auto const& body : bodies_) {
-    result.push_back(body);
-  }
-  return result;
-}
-
-template<typename InertialFrame>
 void NBodySystem<InertialFrame>::Integrate(
     SymplecticIntegrator<Length, Speed> const& integrator,
     Time const& tmax,
