@@ -32,6 +32,7 @@ namespace benchmarks {
 void BM_SolarSystem(benchmark::State& state) {  // NOLINT(runtime/references)
   std::vector<quantities::Momentum> output;
   while (state.KeepRunning()) {
+    state.PauseTiming();
     std::unique_ptr<SolarSystem> solar_system = SolarSystem::AtСпутникLaunch();
     state.ResumeTiming();
     SimulateSolarSystem(solar_system.get());
@@ -41,6 +42,7 @@ void BM_SolarSystem(benchmark::State& state) {  // NOLINT(runtime/references)
             (solar_system->trajectories()[0]->last_position() -
              solar_system->trajectories()[5]->last_position()).Norm() /
                 AstronomicalUnit) + " ua");
+    state.ResumeTiming();
   }
 }
 BENCHMARK(BM_SolarSystem);
