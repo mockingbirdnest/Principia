@@ -24,7 +24,6 @@ class NBodySystem {
   typedef std::vector<std::unique_ptr<Body> const> Bodies;
   typedef std::vector<Trajectory<InertialFrame>*> Trajectories;  // Not owned.
 
-  // TODO(phl): Unclear relation between trajectories and bodies_.
   NBodySystem(Bodies&& massive_bodies,
               Bodies&& massless_bodies);
   ~NBodySystem() = default;
@@ -34,8 +33,8 @@ class NBodySystem {
   std::vector<Body const*> massless_bodies() const;
 
   // The |integrator| must already have been initialized.  All the
-  // |trajectories| must have the same last_time() and must be for bodies passed
-  // at construction.
+  // |trajectories| must have the same |last_time()| and must be for bodies
+  // passed at construction.
   void Integrate(SymplecticIntegrator<Length, Speed> const& integrator,
                  Time const& tmax,
                  Time const& Δt,

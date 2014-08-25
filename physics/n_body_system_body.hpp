@@ -85,8 +85,7 @@ void NBodySystem<InertialFrame>::Integrate(
   // those of massless bodies.  They are put in this order in
   // |reordered_trajectories|.  The trajectories of massive bodies are put in
   // |massive_trajectories|, and the number of massless bodies is put in
-  // |number_of_massless_trajectories|.  Beyond this point the |trajectory|
-  // parameter should not be used as it has not been reordered.
+  // |number_of_massless_trajectories|.
   std::vector<Trajectory<InertialFrame>*> reordered_trajectories;
   std::vector<Trajectory<InertialFrame> const*> massive_trajectories;
   int number_of_massless_trajectories = 0;
@@ -122,7 +121,7 @@ void NBodySystem<InertialFrame>::Integrate(
       parameters.initial.time = time;
 
 #ifndef _MANAGED
-      // Check that the trajectory if for a body passed at construction.
+      // Check that the trajectory is for a body passed at construction.
       CHECK(bodies_.find(body) != bodies_.end());
       // Check that all trajectories are for different bodies.
       auto const inserted = bodies_in_trajectories.insert(body);
@@ -133,40 +132,46 @@ void NBodySystem<InertialFrame>::Integrate(
 #endif
     }
   }
+  {
+    // Beyond this point we must not use the |trajectories| parameter as it is
+    // in the wrong order with respect to the data passed to the integrator.  We
+    // use this block to hide it.
+    Trajectories const& trajectories = reordered_trajectories;
 
-  parameters.tmax = tmax;
-  parameters.Δt = Δt;
-  parameters.sampling_period = sampling_period;
-  dynamic_cast<const SPRKIntegrator<Length, Speed>*>(&integrator)->Solve(
-      std::bind(&NBodySystem::ComputeGravitationalAccelerations,
-                massive_trajectories,
-                number_of_massless_trajectories,
-                std::placeholders::_1,
-                std::placeholders::_2,
-                std::placeholders::_3),
-      &ComputeGravitationalVelocities,
-      parameters, &solution);
+    parameters.tmax = tmax;
+    parameters.Δt = Δt;
+    parameters.sampling_period = sampling_period;
+    dynamic_cast<const SPRKIntegrator<Length, Speed>*>(&integrator)->Solve(
+        std::bind(&NBodySystem::ComputeGravitationalAccelerations,
+                  massive_trajectories,
+                  number_of_massless_trajectories,
+                  std::placeholders::_1,
+                  std::placeholders::_2,
+                  std::placeholders::_3),
+        &ComputeGravitationalVelocities,
+        parameters, &solution);
 
-  // TODO(phl): Ignoring errors for now.
-  // Loop over the time steps.
-  for (std::size_t i = 0; i < solution.size(); ++i) {
-    SymplecticIntegrator<Length, Speed>::SystemState const& state = solution[i];
-    Time const& time = state.time.value;
+    // TODO(phl): Ignoring errors for now.
+    // Loop over the time steps.
+    for (std::size_t i = 0; i < solution.size(); ++i) {
+      SymplecticIntegrator<Length, Speed>::SystemState const& state = solution[i];
+      Time const& time = state.time.value;
 #ifndef _MANAGED
-    CHECK_EQ(state.positions.size(), state.momenta.size());
+      CHECK_EQ(state.positions.size(), state.momenta.size());
 #endif
-    // Loop over the dimensions.
-    for (std::size_t k = 0, t = 0; k < state.positions.size(); k += 3, ++t) {
-      Vector<Length, InertialFrame> const position(
-          R3Element<Length>(state.positions[k].value,
-                            state.positions[k + 1].value,
-                            state.positions[k + 2].value));
-      Vector<Speed, InertialFrame> const velocity(
-          R3Element<Speed>(state.momenta[k].value,
-                           state.momenta[k + 1].value,
-                           state.momenta[k + 2].value));
-      reordered_trajectories[t]->Append(
-          time, DegreesOfFreedom<InertialFrame>(position, velocity));
+      // Loop over the dimensions.
+      for (std::size_t k = 0, t = 0; k < state.positions.size(); k += 3, ++t) {
+        Vector<Length, InertialFrame> const position(
+            R3Element<Length>(state.positions[k].value,
+                              state.positions[k + 1].value,
+                              state.positions[k + 2].value));
+        Vector<Speed, InertialFrame> const velocity(
+            R3Element<Speed>(state.momenta[k].value,
+                             state.momenta[k + 1].value,
+                             state.momenta[k + 2].value));
+        trajectories[t]->Append(
+            time, DegreesOfFreedom<InertialFrame>(position, velocity));
+      }
     }
   }
 }
