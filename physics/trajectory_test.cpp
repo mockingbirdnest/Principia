@@ -2,6 +2,7 @@
 
 #include <list>
 #include <map>
+#include <string>
 
 #include "body.hpp"
 #include "geometry/grassmann.hpp"
@@ -26,6 +27,23 @@ namespace principia {
 namespace physics {
 
 class World;
+
+namespace {
+
+// In Debug mode the death message is lost, presumably because Windows tries to
+// bring up an abort/retry/ignore dialog.  We don't care too much, the test will
+// do the right thing in Release mode.
+// TODO(phl): Move this function to testing_utilities if it turns out to be
+// generally useful.
+std::string DeathMessage(std::string const& s) {
+#ifdef NDEBUG
+  return s;
+#else 
+  return "";
+#endif
+}
+
+}  // namespace
 
 class TrajectoryTest : public testing::Test {
  protected:
@@ -73,11 +91,11 @@ TEST_F(TrajectoryDeathTest, AppendError) {
   EXPECT_DEATH({
     trajectory_->Append(t2_, *d2_);
     trajectory_->Append(t1_, *d1_);
-  }, "out of order");
+  }, DeathMessage("out of order"));
   EXPECT_DEATH({
     trajectory_->Append(t1_, *d1_);
     trajectory_->Append(t1_, *d1_);
-  }, "existing time");
+  }, DeathMessage("existing time"));
 }
 
 TEST_F(TrajectoryTest, AppendSuccess) {
@@ -102,7 +120,7 @@ TEST_F(TrajectoryDeathTest, ForkError) {
     trajectory_->Append(t1_, *d1_);
     trajectory_->Append(t3_, *d3_);
     Trajectory<World>* fork = trajectory_->Fork(t2_);
-  }, "nonexistent time");
+  }, DeathMessage("nonexistent time"));
 }
 
 TEST_F(TrajectoryTest, ForkSuccess) {
@@ -159,12 +177,12 @@ TEST_F(TrajectoryDeathTest, ForgetAfterError) {
   EXPECT_DEATH({
     trajectory_->Append(t1_, *d1_);
     trajectory_->ForgetAfter(t2_);
-  }, "nonexistent time.* root");
+  }, DeathMessage("nonexistent time.* root"));
   EXPECT_DEATH({
     trajectory_->Append(t1_, *d1_);
     Trajectory<World>* fork = trajectory_->Fork(t1_);
     fork->ForgetAfter(t2_);
-  }, "nonexistent time.* nonroot");
+  }, DeathMessage("nonexistent time.* nonroot"));
 }
 
 TEST_F(TrajectoryTest, ForgetAfterSuccess) {
@@ -216,11 +234,11 @@ TEST_F(TrajectoryDeathTest, ForgetBeforeError) {
     trajectory_->Append(t1_, *d1_);
     Trajectory<World>* fork = trajectory_->Fork(t1_);
     fork->ForgetBefore(t1_);
-  }, "nonroot");
+  }, DeathMessage("nonroot"));
   EXPECT_DEATH({
     trajectory_->Append(t1_, *d1_);
     trajectory_->ForgetBefore(t2_);
-  }, "nonexistent time");
+  }, DeathMessage("nonexistent time"));
 }
 
 TEST_F(TrajectoryTest, ForgetBeforeSuccess) {
