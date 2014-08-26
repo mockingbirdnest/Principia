@@ -38,7 +38,7 @@ namespace {
 std::string DeathMessage(std::string const& s) {
 #ifdef NDEBUG
   return s;
-#else 
+#else
   return "";
 #endif
 }
