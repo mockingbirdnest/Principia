@@ -205,5 +205,7 @@ TEST_F(NBodySystemTest, Moon) {
   EXPECT_THAT(Abs(positions[100].coordinates().y), Eq(q2));
 }
 
+// TODO(phl): Test the error cases.
+
 }  // namespace physics
 }  // namespace principia

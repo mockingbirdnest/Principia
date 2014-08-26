@@ -70,15 +70,14 @@ class TrajectoryTest : public testing::Test {
 typedef TrajectoryTest TrajectoryDeathTest;
 
 TEST_F(TrajectoryDeathTest, AppendError) {
-  // TODO(phl): Find out how to match the messages here.
   EXPECT_DEATH({
     trajectory_->Append(t2_, *d2_);
     trajectory_->Append(t1_, *d1_);
-  }, "");
+  }, "out of order");
   EXPECT_DEATH({
     trajectory_->Append(t1_, *d1_);
     trajectory_->Append(t1_, *d1_);
-  }, "");
+  }, "existing time");
 }
 
 TEST_F(TrajectoryTest, AppendSuccess) {
@@ -103,7 +102,7 @@ TEST_F(TrajectoryDeathTest, ForkError) {
     trajectory_->Append(t1_, *d1_);
     trajectory_->Append(t3_, *d3_);
     Trajectory<World>* fork = trajectory_->Fork(t2_);
-  }, "");
+  }, "nonexistent time");
 }
 
 TEST_F(TrajectoryTest, ForkSuccess) {
@@ -160,12 +159,12 @@ TEST_F(TrajectoryDeathTest, ForgetAfterError) {
   EXPECT_DEATH({
     trajectory_->Append(t1_, *d1_);
     trajectory_->ForgetAfter(t2_);
-  }, "");
+  }, "nonexistent time.* root");
   EXPECT_DEATH({
     trajectory_->Append(t1_, *d1_);
     Trajectory<World>* fork = trajectory_->Fork(t1_);
     fork->ForgetAfter(t2_);
-  }, "");
+  }, "nonexistent time.* nonroot");
 }
 
 TEST_F(TrajectoryTest, ForgetAfterSuccess) {
@@ -217,12 +216,11 @@ TEST_F(TrajectoryDeathTest, ForgetBeforeError) {
     trajectory_->Append(t1_, *d1_);
     Trajectory<World>* fork = trajectory_->Fork(t1_);
     fork->ForgetBefore(t1_);
-  }, "");
+  }, "nonroot");
   EXPECT_DEATH({
     trajectory_->Append(t1_, *d1_);
-    Trajectory<World>* fork = trajectory_->Fork(t1_);
-    fork->ForgetBefore(t2_);
-  }, "");
+    trajectory_->ForgetBefore(t2_);
+  }, "nonexistent time");
 }
 
 TEST_F(TrajectoryTest, ForgetBeforeSuccess) {
