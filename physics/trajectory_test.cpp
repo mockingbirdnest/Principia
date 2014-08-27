@@ -10,6 +10,7 @@
 #include "gtest/gtest.h"
 #include "quantities/quantities.hpp"
 #include "quantities/si.hpp"
+#include "testing_utilities/death_message.hpp"
 
 using principia::geometry::Vector;
 using principia::quantities::Length;
@@ -19,6 +20,7 @@ using principia::quantities::Time;
 using principia::quantities::SIUnit;
 using principia::si::Metre;
 using principia::si::Second;
+using principia::testing_utilities::DeathMessage;
 using testing::ElementsAre;
 using testing::Pair;
 using testing::Ref;
@@ -27,23 +29,6 @@ namespace principia {
 namespace physics {
 
 class World;
-
-namespace {
-
-// In Debug mode the death message is lost, presumably because Windows tries to
-// bring up an abort/retry/ignore dialog.  We don't care too much, the test will
-// do the right thing in Release mode.
-// TODO(phl): Move this function to testing_utilities if it turns out to be
-// generally useful.
-std::string DeathMessage(std::string const& s) {
-#ifdef NDEBUG
-  return s;
-#else
-  return "";
-#endif
-}
-
-}  // namespace
 
 class TrajectoryTest : public testing::Test {
  protected:

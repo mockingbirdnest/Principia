@@ -122,13 +122,15 @@ void NBodySystem<InertialFrame>::Integrate(
 
 #ifndef _MANAGED
       // Check that the trajectory is for a body passed at construction.
-      CHECK(bodies_.find(body) != bodies_.end());
+      CHECK(bodies_.find(body) != bodies_.end())
+          << "Trajectory for an unknown body";
       // Check that all trajectories are for different bodies.
       auto const inserted = bodies_in_trajectories.insert(body);
-      CHECK(inserted.second);
+      CHECK(inserted.second) << "Multiple trajectories for the same body";
       // The final points of all trajectories must all be for the same time.
       times_in_trajectories.insert(time);
-      CHECK_GE(1U, times_in_trajectories.size());
+      CHECK_GE(1U, times_in_trajectories.size())
+          << "Inconsistent last time in trajectories";
 #endif
     }
   }

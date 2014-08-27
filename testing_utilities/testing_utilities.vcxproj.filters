@@ -56,6 +56,12 @@
     <ClInclude Include="solar_system_body.hpp">
       <Filter>Source Files</Filter>
     </ClInclude>
+    <ClInclude Include="death_message.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="death_message_body.hpp">
+      <Filter>Source Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="almost_equals_test.cpp">
