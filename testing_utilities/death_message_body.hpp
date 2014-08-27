@@ -1,5 +1,7 @@
 #pragma once
 
+#include <string>
+
 #include "testing_utilities/death_message.hpp"
 
 namespace principia {
