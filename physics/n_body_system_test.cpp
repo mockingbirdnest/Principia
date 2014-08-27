@@ -131,6 +131,47 @@ class NBodySystemTest : public testing::Test {
   std::unique_ptr<NBodySystem<EarthMoonBarycentricFrame>> system_;
 };
 
+typedef NBodySystemTest NBodySystemDeathTest;
+
+TEST_F(NBodySystemDeathTest, ConstructionError) {
+  EXPECT_DEATH({
+    NBodySystem<EarthMoonBarycentricFrame>::Bodies massive_bodies;
+    NBodySystem<EarthMoonBarycentricFrame>::Bodies massless_bodies;
+    massless_bodies.emplace_back(body1_);
+    system_ = std::make_unique<NBodySystem<EarthMoonBarycentricFrame>>(
+                  std::move(massive_bodies),
+                  std::move(massless_bodies));
+  }, "is massive");
+  EXPECT_DEATH({
+    NBodySystem<EarthMoonBarycentricFrame>::Bodies massive_bodies;
+    NBodySystem<EarthMoonBarycentricFrame>::Bodies massless_bodies;
+    massive_bodies.emplace_back(new Body(0 * SIUnit<Mass>()));
+    system_ = std::make_unique<NBodySystem<EarthMoonBarycentricFrame>>(
+                  std::move(massive_bodies),
+                  std::move(massless_bodies));
+  }, "is massless");
+  EXPECT_DEATH({
+    NBodySystem<EarthMoonBarycentricFrame>::Bodies massive_bodies;
+    NBodySystem<EarthMoonBarycentricFrame>::Bodies massless_bodies;
+    massive_bodies.emplace_back(body1_);
+    massive_bodies.emplace_back(body2_);
+    massive_bodies.emplace_back(body1_);
+    system_ = std::make_unique<NBodySystem<EarthMoonBarycentricFrame>>(
+                  std::move(massive_bodies),
+                  std::move(massless_bodies));
+  }, "Massive.* multiple times");
+  EXPECT_DEATH({
+    NBodySystem<EarthMoonBarycentricFrame>::Bodies massive_bodies;
+    NBodySystem<EarthMoonBarycentricFrame>::Bodies massless_bodies;
+    Body* body = new Body(0 * SIUnit<Mass>());
+    massless_bodies.emplace_back(body);
+    massless_bodies.emplace_back(body);
+    system_ = std::make_unique<NBodySystem<EarthMoonBarycentricFrame>>(
+                  std::move(massive_bodies),
+                  std::move(massless_bodies));
+  }, "Massless.* multiple times");
+}
+
 TEST_F(NBodySystemTest, EarthMoon) {
   std::vector<Vector<Length, EarthMoonBarycentricFrame>> positions;
   system_->Integrate(integrator_,

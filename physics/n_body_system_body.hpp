@@ -33,15 +33,15 @@ NBodySystem<InertialFrame>::NBodySystem(Bodies&& massive_bodies,
   for (auto const& body : massive_bodies_) {
     auto const inserted = bodies_.insert(body.get());
 #ifndef _MANAGED
-    CHECK(inserted.second);
-    CHECK(!body->is_massless());
+    CHECK(inserted.second) << "Massive body occurs multiple times";
+    CHECK(!body->is_massless()) << "Massive body is massless";
 #endif
   }
   for (auto const& body : massless_bodies_) {
     auto const inserted = bodies_.insert(body.get());
 #ifndef _MANAGED
-    CHECK(inserted.second);
-    CHECK(body->is_massless());
+    CHECK(inserted.second) << "Massless body occurs multiple times";
+    CHECK(body->is_massless()) << "Massless body is massive";
 #endif
   }
 }

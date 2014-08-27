@@ -151,7 +151,7 @@ TEST_F(TrajectoryTest, ForkSuccess) {
   EXPECT_THAT(fork->body(), Ref(*body_));
 }
 
-TEST_F(TrajectoryTest, LastError) {
+TEST_F(TrajectoryDeathTest, LastError) {
   EXPECT_DEATH({
     trajectory_->last_position();
   }, DeathMessage("Empty trajectory"));
