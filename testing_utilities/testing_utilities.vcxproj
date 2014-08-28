@@ -15,6 +15,8 @@
     <ClInclude Include="algebra_body.hpp" />
     <ClInclude Include="almost_equals.hpp" />
     <ClInclude Include="almost_equals_body.hpp" />
+    <ClInclude Include="death_message.hpp" />
+    <ClInclude Include="death_message_body.hpp" />
     <ClInclude Include="explicit_operators.hpp" />
     <ClInclude Include="explicit_operators_body.hpp" />
     <ClInclude Include="numerical_analysis.hpp" />

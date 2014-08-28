@@ -56,17 +56,38 @@ std::list<Time> Trajectory<Frame>::Times() const {
 
 template<typename Frame>
 Vector<Length, Frame> const& Trajectory<Frame>::last_position() const {
-  return timeline_.rbegin()->second.position;
+  if (timeline_.empty()) {
+#ifndef _MANAGED
+    CHECK(fork_ != nullptr) << "Empty trajectory";
+#endif
+    return (*fork_)->second.position;
+  } else {
+    return timeline_.rbegin()->second.position;
+  }
 }
 
 template<typename Frame>
 Vector<Speed, Frame> const& Trajectory<Frame>::last_velocity() const {
-  return timeline_.rbegin()->second.velocity;
+  if (timeline_.empty()) {
+#ifndef _MANAGED
+    CHECK(fork_ != nullptr) << "Empty trajectory";
+#endif
+    return (*fork_)->second.velocity;
+  } else {
+    return timeline_.rbegin()->second.velocity;
+  }
 }
 
 template<typename Frame>
 Time const& Trajectory<Frame>::last_time() const {
-  return timeline_.rbegin()->first;
+  if (timeline_.empty()) {
+#ifndef _MANAGED
+    CHECK(fork_ != nullptr) << "Empty trajectory";
+#endif
+    return (*fork_)->first;
+  } else {
+    return timeline_.rbegin()->first;
+  }
 }
 
 template<typename Frame>

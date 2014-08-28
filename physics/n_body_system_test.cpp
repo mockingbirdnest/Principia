@@ -14,6 +14,7 @@
 #include "quantities/constants.hpp"
 #include "quantities/numbers.hpp"
 #include "testing_utilities/almost_equals.hpp"
+#include "testing_utilities/death_message.hpp"
 
 using principia::constants::GravitationalConstant;
 using principia::geometry::Barycentre;
@@ -22,6 +23,7 @@ using principia::geometry::Vector;
 using principia::quantities::Pow;
 using principia::quantities::SIUnit;
 using principia::testing_utilities::AlmostEquals;
+using principia::testing_utilities::DeathMessage;
 using testing::Eq;
 using testing::Lt;
 
@@ -40,8 +42,8 @@ class NBodySystemTest : public testing::Test {
     body1_ = new Body(6E24 * SIUnit<Mass>());
     body2_ = new Body(7E22 * SIUnit<Mass>());
 
-    trajectory1_ = new Trajectory<EarthMoonBarycentricFrame>(*body1_);
-    trajectory2_ = new Trajectory<EarthMoonBarycentricFrame>(*body2_);
+    trajectory1_.reset(new Trajectory<EarthMoonBarycentricFrame>(*body1_));
+    trajectory2_.reset(new Trajectory<EarthMoonBarycentricFrame>(*body2_));
     Point<Vector<Length, EarthMoonBarycentricFrame>> const
         q1(Vector<Length, EarthMoonBarycentricFrame>({0 * SIUnit<Length>(),
                                                       0 * SIUnit<Length>(),
@@ -124,12 +126,90 @@ class NBodySystemTest : public testing::Test {
 
   Body* body1_;
   Body* body2_;
-  Trajectory<EarthMoonBarycentricFrame>* trajectory1_;
-  Trajectory<EarthMoonBarycentricFrame>* trajectory2_;
+  std::unique_ptr<Trajectory<EarthMoonBarycentricFrame>> trajectory1_;
+  std::unique_ptr<Trajectory<EarthMoonBarycentricFrame>> trajectory2_;
   SPRKIntegrator<Length, Speed> integrator_;
   Time period_;
   std::unique_ptr<NBodySystem<EarthMoonBarycentricFrame>> system_;
 };
+
+typedef NBodySystemTest NBodySystemDeathTest;
+
+TEST_F(NBodySystemDeathTest, ConstructionError) {
+  EXPECT_DEATH({
+    NBodySystem<EarthMoonBarycentricFrame>::Bodies massive_bodies;
+    NBodySystem<EarthMoonBarycentricFrame>::Bodies massless_bodies;
+    massless_bodies.emplace_back(body1_);
+    system_ = std::make_unique<NBodySystem<EarthMoonBarycentricFrame>>(
+                  std::move(massive_bodies),
+                  std::move(massless_bodies));
+  }, DeathMessage("is massive"));
+  EXPECT_DEATH({
+    NBodySystem<EarthMoonBarycentricFrame>::Bodies massive_bodies;
+    NBodySystem<EarthMoonBarycentricFrame>::Bodies massless_bodies;
+    massive_bodies.emplace_back(new Body(0 * SIUnit<Mass>()));
+    system_ = std::make_unique<NBodySystem<EarthMoonBarycentricFrame>>(
+                  std::move(massive_bodies),
+                  std::move(massless_bodies));
+  }, DeathMessage("is massless"));
+  EXPECT_DEATH({
+    NBodySystem<EarthMoonBarycentricFrame>::Bodies massive_bodies;
+    NBodySystem<EarthMoonBarycentricFrame>::Bodies massless_bodies;
+    massive_bodies.emplace_back(body1_);
+    massive_bodies.emplace_back(body2_);
+    massive_bodies.emplace_back(body1_);
+    system_ = std::make_unique<NBodySystem<EarthMoonBarycentricFrame>>(
+                  std::move(massive_bodies),
+                  std::move(massless_bodies));
+  }, DeathMessage("Massive.* multiple times"));
+  EXPECT_DEATH({
+    NBodySystem<EarthMoonBarycentricFrame>::Bodies massive_bodies;
+    NBodySystem<EarthMoonBarycentricFrame>::Bodies massless_bodies;
+    Body* body = new Body(0 * SIUnit<Mass>());
+    massless_bodies.emplace_back(body);
+    massless_bodies.emplace_back(body);
+    system_ = std::make_unique<NBodySystem<EarthMoonBarycentricFrame>>(
+                  std::move(massive_bodies),
+                  std::move(massless_bodies));
+  }, DeathMessage("Massless.* multiple times"));
+}
+
+TEST_F(NBodySystemDeathTest, IntegrateError) {
+  EXPECT_DEATH({
+    system_->Integrate(integrator_,
+                       period_,
+                       period_ / 100,
+                       1,
+                       {trajectory1_.get(),
+                        trajectory2_.get(),
+                        trajectory1_.get()});
+  }, DeathMessage("Multiple trajectories"));
+  EXPECT_DEATH({
+    std::unique_ptr<Body> body(new Body(0 * SIUnit<Mass>()));
+    std::unique_ptr<Trajectory<EarthMoonBarycentricFrame>> trajectory(
+        new Trajectory<EarthMoonBarycentricFrame>(*body));
+    trajectory->Append(0 * SIUnit<Time>(),
+                       {Vector<Length, EarthMoonBarycentricFrame>(),
+                        Vector<Speed, EarthMoonBarycentricFrame>()});
+    system_->Integrate(integrator_,
+                       period_,
+                       period_ / 100,
+                       1,
+                       {trajectory1_.get(), trajectory.get()});
+  }, DeathMessage("unknown body"));
+  EXPECT_DEATH({
+    std::unique_ptr<Trajectory<EarthMoonBarycentricFrame>> trajectory(
+        new Trajectory<EarthMoonBarycentricFrame>(*body2_));
+    trajectory->Append(1 * SIUnit<Time>(),
+                       {Vector<Length, EarthMoonBarycentricFrame>(),
+                        Vector<Speed, EarthMoonBarycentricFrame>()});
+    system_->Integrate(integrator_,
+                       period_,
+                       period_ / 100,
+                       1,
+                       {trajectory1_.get(), trajectory.get()});
+  }, DeathMessage("Inconsistent last time"));
+}
 
 TEST_F(NBodySystemTest, EarthMoon) {
   std::vector<Vector<Length, EarthMoonBarycentricFrame>> positions;
@@ -137,7 +217,7 @@ TEST_F(NBodySystemTest, EarthMoon) {
                      period_,
                      period_ / 100,
                      1,
-                     {trajectory1_, trajectory2_});
+                     {trajectory1_.get(), trajectory2_.get()});
 
   positions = ValuesOf(trajectory1_->Positions());
   EXPECT_THAT(positions.size(), Eq(101));
@@ -162,7 +242,7 @@ TEST_F(NBodySystemTest, MoonEarth) {
                      period_,
                      period_ / 100,
                      1,
-                     {trajectory2_, trajectory1_});
+                     {trajectory2_.get(), trajectory1_.get()});
 
   positions = ValuesOf(trajectory1_->Positions());
   EXPECT_THAT(positions.size(), Eq(101));
@@ -187,7 +267,7 @@ TEST_F(NBodySystemTest, Moon) {
                      period_,
                      period_ / 100,
                      1,
-                     {trajectory2_});
+                     {trajectory2_.get()});
   Length const q2 = trajectory2_->last_position().coordinates().y;
   Speed const v1 = trajectory2_->last_velocity().coordinates().x;
 

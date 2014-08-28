@@ -10,6 +10,7 @@
 #include "gtest/gtest.h"
 #include "quantities/quantities.hpp"
 #include "quantities/si.hpp"
+#include "testing_utilities/death_message.hpp"
 
 using principia::geometry::Vector;
 using principia::quantities::Length;
@@ -19,6 +20,7 @@ using principia::quantities::Time;
 using principia::quantities::SIUnit;
 using principia::si::Metre;
 using principia::si::Second;
+using principia::testing_utilities::DeathMessage;
 using testing::ElementsAre;
 using testing::Pair;
 using testing::Ref;
@@ -27,23 +29,6 @@ namespace principia {
 namespace physics {
 
 class World;
-
-namespace {
-
-// In Debug mode the death message is lost, presumably because Windows tries to
-// bring up an abort/retry/ignore dialog.  We don't care too much, the test will
-// do the right thing in Release mode.
-// TODO(phl): Move this function to testing_utilities if it turns out to be
-// generally useful.
-std::string DeathMessage(std::string const& s) {
-#ifdef NDEBUG
-  return s;
-#else
-  return "";
-#endif
-}
-
-}  // namespace
 
 class TrajectoryTest : public testing::Test {
  protected:
@@ -151,7 +136,19 @@ TEST_F(TrajectoryTest, ForkSuccess) {
   EXPECT_THAT(fork->body(), Ref(*body_));
 }
 
-TEST_F(TrajectoryTest, Last) {
+TEST_F(TrajectoryDeathTest, LastError) {
+  EXPECT_DEATH({
+    trajectory_->last_position();
+  }, DeathMessage("Empty trajectory"));
+  EXPECT_DEATH({
+    trajectory_->last_velocity();
+  }, DeathMessage("Empty trajectory"));
+  EXPECT_DEATH({
+    trajectory_->last_time();
+  }, DeathMessage("Empty trajectory"));
+}
+
+TEST_F(TrajectoryTest, LastSuccess) {
   trajectory_->Append(t1_, *d1_);
   trajectory_->Append(t2_, *d2_);
   trajectory_->Append(t3_, *d3_);
@@ -209,6 +206,9 @@ TEST_F(TrajectoryTest, ForgetAfterSuccess) {
   EXPECT_THAT(positions, ElementsAre(Pair(t1_, q1_), Pair(t2_, q2_)));
   EXPECT_THAT(velocities, ElementsAre(Pair(t1_, p1_), Pair(t2_, p2_)));
   EXPECT_THAT(times, ElementsAre(t1_, t2_));
+  EXPECT_EQ(q2_, fork->last_position());
+  EXPECT_EQ(p2_, fork->last_velocity());
+  EXPECT_EQ(t2_, fork->last_time());
 
   positions = trajectory_->Positions();
   velocities = trajectory_->Velocities();

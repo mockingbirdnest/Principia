@@ -33,15 +33,15 @@ NBodySystem<InertialFrame>::NBodySystem(Bodies&& massive_bodies,
   for (auto const& body : massive_bodies_) {
     auto const inserted = bodies_.insert(body.get());
 #ifndef _MANAGED
-    CHECK(inserted.second);
-    CHECK(!body->is_massless());
+    CHECK(inserted.second) << "Massive body occurs multiple times";
+    CHECK(!body->is_massless()) << "Massive body is massless";
 #endif
   }
   for (auto const& body : massless_bodies_) {
     auto const inserted = bodies_.insert(body.get());
 #ifndef _MANAGED
-    CHECK(inserted.second);
-    CHECK(body->is_massless());
+    CHECK(inserted.second) << "Massless body occurs multiple times";
+    CHECK(body->is_massless()) << "Massless body is massive";
 #endif
   }
 }
@@ -122,13 +122,15 @@ void NBodySystem<InertialFrame>::Integrate(
 
 #ifndef _MANAGED
       // Check that the trajectory is for a body passed at construction.
-      CHECK(bodies_.find(body) != bodies_.end());
+      CHECK(bodies_.find(body) != bodies_.end())
+          << "Trajectory for an unknown body";
       // Check that all trajectories are for different bodies.
       auto const inserted = bodies_in_trajectories.insert(body);
-      CHECK(inserted.second);
+      CHECK(inserted.second) << "Multiple trajectories for the same body";
       // The final points of all trajectories must all be for the same time.
       times_in_trajectories.insert(time);
-      CHECK_GE(1U, times_in_trajectories.size());
+      CHECK_GE(1U, times_in_trajectories.size())
+          << "Inconsistent last time in trajectories";
 #endif
     }
   }
