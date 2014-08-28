@@ -198,6 +198,27 @@ Body const& Trajectory<Frame>::body() const {
 }
 
 template<typename Frame>
+void Trajectory<Frame>::set_intrinsic_acceleration(
+    IntrinsicAcceleration&& acceleration) {
+#ifndef _MANAGED
+  CHECK(intrinsic_acceleration_ == nullptr)
+      << "Trajectory already has an intrinsic acceleration";
+#endif
+  intrinsic_acceleration_.reset(new IntrinsicAcceleration(acceleration));
+}
+
+template<typename Frame>
+void Trajectory<Frame>::clear_intrinsic_acceleration() {
+  intrinsic_acceleration_.reset();
+}
+
+template<typename Frame>
+Trajectory<Frame>::IntrinsicAcceleration*
+Trajectory<Frame>::intrinsic_acceleration() const {
+  return intrinsic_acceleration_.get();
+}
+
+template<typename Frame>
 Trajectory<Frame>::Trajectory(Body const& body,
                               Trajectory* const parent,
                               typename Timeline::iterator const& fork)
