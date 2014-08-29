@@ -213,7 +213,7 @@ void Trajectory<Frame>::clear_intrinsic_acceleration() {
 }
 
 template<typename Frame>
-Trajectory<Frame>::IntrinsicAcceleration*
+typename Trajectory<Frame>::IntrinsicAcceleration*
 Trajectory<Frame>::intrinsic_acceleration() const {
   return intrinsic_acceleration_.get();
 }
