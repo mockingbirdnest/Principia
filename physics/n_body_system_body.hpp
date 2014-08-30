@@ -240,14 +240,18 @@ void NBodySystem<InertialFrame>::ComputeGravitationalAccelerations(
   // Finally, take into account the intrinsic accelerations.
   for (int b2 = 0; b2 < massless_trajectories.size(); ++b2) {
     std::size_t const three_b2 = 3 * b2;
-    Trajectory<InertialFrame>::IntrinsicAcceleration* intrinsic_acceleration =
-        massless_trajectories[b2]->intrinsic_acceleration();
-    if (intrinsic_acceleration != nullptr) {
-      R3Element<Acceleration> const acceleration =
-          (*intrinsic_acceleration)(t).coordinates();
-      (*result)[three_b2] += acceleration.x;
-      (*result)[three_b2 + 1] += acceleration.y;
-      (*result)[three_b2 + 2] += acceleration.z;
+    Trajectory<InertialFrame> const* trajectory = massless_trajectories[b2];
+    Time const* fork_time = trajectory->fork_time();
+    if (fork_time == nullptr || t < *fork_time) {
+      Trajectory<InertialFrame>::IntrinsicAcceleration* intrinsic_acceleration =
+          trajectory->intrinsic_acceleration();
+      if (intrinsic_acceleration != nullptr) {
+        R3Element<Acceleration> const acceleration =
+            (*intrinsic_acceleration)(t).coordinates();
+        (*result)[three_b2] += acceleration.x;
+        (*result)[three_b2 + 1] += acceleration.y;
+        (*result)[three_b2 + 2] += acceleration.z;
+      }
     }
   }
 }
