@@ -214,9 +214,21 @@ void Trajectory<Frame>::clear_intrinsic_acceleration() {
 }
 
 template<typename Frame>
-typename Trajectory<Frame>::IntrinsicAcceleration*
-Trajectory<Frame>::intrinsic_acceleration() const {
-  return intrinsic_acceleration_.get();
+bool Trajectory<Frame>::has_intrinsic_acceleration() const {
+  return intrinsic_acceleration_ != nullptr;
+}
+
+template<typename Frame>
+Vector<Acceleration, Frame> Trajectory<Frame>::evaluate_intrinsic_acceleration(
+    Time const& time) const {
+  if (intrinsic_acceleration_ != nullptr &&
+      (fork_ == nullptr || time > (*fork_)->first)) {
+    return (*intrinsic_acceleration_)(time);
+  } else {
+    return Vector<Acceleration, Frame>({0 * SIUnit<Acceleration>(),
+                                        0 * SIUnit<Acceleration>(),
+                                        0 * SIUnit<Acceleration>()});
+  }
 }
 
 template<typename Frame>

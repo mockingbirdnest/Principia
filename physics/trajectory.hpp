@@ -98,9 +98,14 @@ class Trajectory {
   // Removes any intrinsic acceleration for the trajectory.
   void clear_intrinsic_acceleration();
 
+  //TODO(phl): comment
+  bool has_intrinsic_acceleration() const;
+
   // Returns the intrinsic acceleration for the trajectory, or nullptr if there
   // is none.
-  IntrinsicAcceleration* intrinsic_acceleration() const;
+  //TODO(phl): Fix comment.
+  Vector<Acceleration, Frame> evaluate_intrinsic_acceleration(
+      Time const& time) const;
 
  private:
   typedef std::map<Time, DegreesOfFreedom<Frame>> Timeline;

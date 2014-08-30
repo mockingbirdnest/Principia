@@ -299,21 +299,52 @@ TEST_F(TrajectoryDeathTest, IntrinsicAccelerationError) {
 }
 
 TEST_F(TrajectoryDeathTest, IntrinsicAccelerationSuccess) {
-  EXPECT_EQ(nullptr, massless_trajectory_->intrinsic_acceleration());
+  massless_trajectory_->Append(t1_, *d1_);
+  massless_trajectory_->Append(t2_, *d2_);
+  massless_trajectory_->Append(t3_, *d3_);
+  Trajectory<World>* fork = massless_trajectory_->Fork(t2_);
+  fork->Append(t4_, *d4_);
+
+  EXPECT_FALSE(massless_trajectory_->has_intrinsic_acceleration());
   massless_trajectory_->set_intrinsic_acceleration(
       [](Time const& t) {
         return Vector<Acceleration, World>({1 * SIUnit<Length>() / (t * t),
                                             2 * SIUnit<Length>() / (t * t),
                                             3 * SIUnit<Length>() / (t * t)});});
-  Trajectory<World>::IntrinsicAcceleration* acceleration =
-      massless_trajectory_->intrinsic_acceleration();
-  EXPECT_NE(nullptr, acceleration);
-  EXPECT_THAT((*acceleration)(2 * SIUnit<Time>()),
-              Eq(Vector<Acceleration, World>({0.25 * SIUnit<Acceleration>(),
-                                              0.50 * SIUnit<Acceleration>(),
-                                              0.75 * SIUnit<Acceleration>()})));
+  EXPECT_TRUE(massless_trajectory_->has_intrinsic_acceleration());
+  EXPECT_THAT(massless_trajectory_->evaluate_intrinsic_acceleration(t1_),
+              Eq(Vector<Acceleration, World>(
+                  {0.020408163265306122449 * SIUnit<Acceleration>(),
+                   0.040816326530612244898 * SIUnit<Acceleration>(),
+                   0.061224489795918367347 * SIUnit<Acceleration>()})));
+
+  EXPECT_FALSE(fork->has_intrinsic_acceleration());
+  fork->set_intrinsic_acceleration(
+      [](Time const& t) {
+        return Vector<Acceleration, World>({4 * SIUnit<Length>() / (t * t),
+                                            5 * SIUnit<Length>() / (t * t),
+                                            6 * SIUnit<Length>() / (t * t)});});
+  EXPECT_TRUE(fork->has_intrinsic_acceleration());
+  EXPECT_THAT(fork->evaluate_intrinsic_acceleration(t1_),
+              Eq(Vector<Acceleration, World>({0 * SIUnit<Acceleration>(),
+                                              0 * SIUnit<Acceleration>(),
+                                              0 * SIUnit<Acceleration>()})));
+  EXPECT_THAT(fork->evaluate_intrinsic_acceleration(t2_),
+              Eq(Vector<Acceleration, World>({0 * SIUnit<Acceleration>(),
+                                              0 * SIUnit<Acceleration>(),
+                                              0 * SIUnit<Acceleration>()})));
+  EXPECT_THAT(fork->evaluate_intrinsic_acceleration(t3_),
+              Eq(Vector<Acceleration, World>(
+                  {0.0054869684499314128944 * SIUnit<Acceleration>(),
+                   0.0068587105624142661180 * SIUnit<Acceleration>(),
+                   0.0082304526748971193416 * SIUnit<Acceleration>()})));
+  fork->clear_intrinsic_acceleration();
+  EXPECT_FALSE(fork->has_intrinsic_acceleration());
+  EXPECT_TRUE(massless_trajectory_->has_intrinsic_acceleration());
+
   massless_trajectory_->clear_intrinsic_acceleration();
-  EXPECT_EQ(nullptr, massless_trajectory_->intrinsic_acceleration());
+  EXPECT_FALSE(fork->has_intrinsic_acceleration());
+  EXPECT_FALSE(massless_trajectory_->has_intrinsic_acceleration());
 }
 
 }  // namespace physics
