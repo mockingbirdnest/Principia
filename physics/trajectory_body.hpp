@@ -201,6 +201,7 @@ template<typename Frame>
 void Trajectory<Frame>::set_intrinsic_acceleration(
     IntrinsicAcceleration&& acceleration) {
 #ifndef _MANAGED
+  CHECK(body_.is_massless()) << "Trajectory is for a massive body";
   CHECK(intrinsic_acceleration_ == nullptr)
       << "Trajectory already has an intrinsic acceleration";
 #endif
