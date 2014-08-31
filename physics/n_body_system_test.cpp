@@ -315,7 +315,6 @@ TEST_F(NBodySystemTest, EarthProbe) {
          body1_->gravitational_parameter() / (distance * distance),
          0 * SIUnit<Acceleration>()});});
 
-  std::vector<Vector<Length, EarthMoonBarycentricFrame>> positions;
   system_->Integrate(integrator_,
                      period_,
                      period_ / 100,
@@ -326,17 +325,19 @@ TEST_F(NBodySystemTest, EarthProbe) {
   Speed const v1 = trajectory1_->last_velocity().coordinates().x;
   std::vector<Vector<Length, EarthMoonBarycentricFrame>> const positions1 =
       ValuesOf(trajectory1_->Positions());
-  google::LogToStderr();
   LOG(INFO) << ToMathematicaString(positions1);
   EXPECT_THAT(positions1.size(), Eq(101));
-  EXPECT_THAT(positions1[25].coordinates().x, Eq(0.25 * period_ * v1));
+  EXPECT_THAT(positions1[25].coordinates().x,
+              AlmostEquals(0.25 * period_ * v1, 1));
   EXPECT_THAT(positions1[25].coordinates().y, Eq(q1));
-  EXPECT_THAT(positions1[50].coordinates().x, Eq(0.50 * period_ * v1));
+  EXPECT_THAT(positions1[50].coordinates().x,
+              AlmostEquals(0.50 * period_ * v1, 1));
   EXPECT_THAT(positions1[50].coordinates().y, Eq(q1));
   EXPECT_THAT(positions1[75].coordinates().x,
               AlmostEquals(0.75 * period_ * v1, 1));
   EXPECT_THAT(positions1[75].coordinates().y, Eq(q1));
-  EXPECT_THAT(positions1[100].coordinates().x, Eq(1.00 * period_ * v1));
+  EXPECT_THAT(positions1[100].coordinates().x,
+              AlmostEquals(1.00 * period_ * v1, 1));
   EXPECT_THAT(positions1[100].coordinates().y, Eq(q1));
 
   Length const q3 = trajectory3_->last_position().coordinates().y;
@@ -347,13 +348,13 @@ TEST_F(NBodySystemTest, EarthProbe) {
   EXPECT_THAT(positions3.size(), Eq(101));
   EXPECT_THAT(positions3[25].coordinates().x,
               AlmostEquals(0.25 * period_ * v3, 1));
-  EXPECT_THAT(positions3[25].coordinates().y, Eq(q3));
+  EXPECT_THAT(positions3[25].coordinates().y, AlmostEquals(q3, 2));
   EXPECT_THAT(positions3[50].coordinates().x,
               AlmostEquals(0.50 * period_ * v3, 1));
-  EXPECT_THAT(positions3[50].coordinates().y, Eq(q3));
+  EXPECT_THAT(positions3[50].coordinates().y, AlmostEquals(q3, 2));
   EXPECT_THAT(positions3[75].coordinates().x,
               AlmostEquals(0.75 * period_ * v3, 1));
-  EXPECT_THAT(positions3[75].coordinates().y, Eq(q3));
+  EXPECT_THAT(positions3[75].coordinates().y, AlmostEquals(q3, 1));
   EXPECT_THAT(positions3[100].coordinates().x,
               AlmostEquals(1.00 * period_ * v3, 1));
   EXPECT_THAT(positions3[100].coordinates().y, Eq(q3));

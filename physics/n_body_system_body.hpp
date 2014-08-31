@@ -187,10 +187,11 @@ void NBodySystem<InertialFrame>::ComputeGravitationalAccelerations(
     std::vector<Length> const& q,
     std::vector<Acceleration>* result) {
   result->assign(result->size(), Acceleration());
+  int const number_of_massive_trajectories = massive_trajectories.size();
+  int const number_of_massless_trajectories = massless_trajectories.size();
 
-  // TODO(phl): Used to deal with proper accelerations here.
   for (std::size_t b1 = 0, three_b1 = 0;
-       b1 < massive_trajectories.size();
+       b1 < number_of_massive_trajectories;
        ++b1, three_b1 += 3) {
     GravitationalParameter const& body1_gravitational_parameter =
         massive_trajectories[b1]->body().gravitational_parameter();
@@ -219,7 +220,9 @@ void NBodySystem<InertialFrame>::ComputeGravitationalAccelerations(
       (*result)[three_b2 + 1] += Δq1 * μ1OverRSquared;
       (*result)[three_b2 + 2] += Δq2 * μ1OverRSquared;
     }
-    for (int b2 = 0; b2 < massless_trajectories.size(); ++b2) {
+    for (int b2 = number_of_massive_trajectories;
+         b2 < number_of_massive_trajectories + number_of_massless_trajectories;
+         ++b2) {
       std::size_t const three_b2 = 3 * b2;
       Length const Δq0 = q[three_b1] - q[three_b2];
       Length const Δq1 = q[three_b1 + 1] - q[three_b2 + 1];
@@ -238,9 +241,12 @@ void NBodySystem<InertialFrame>::ComputeGravitationalAccelerations(
   }
 
   // Finally, take into account the intrinsic accelerations.
-  for (int b2 = 0; b2 < massless_trajectories.size(); ++b2) {
+  for (int b2 = number_of_massive_trajectories;
+       b2 < number_of_massive_trajectories + number_of_massless_trajectories;
+       ++b2) {
     std::size_t const three_b2 = 3 * b2;
-    Trajectory<InertialFrame> const* trajectory = massless_trajectories[b2];
+    Trajectory<InertialFrame> const* trajectory =
+        massless_trajectories[b2 - number_of_massive_trajectories];
     if (trajectory->has_intrinsic_acceleration()) {
       R3Element<Acceleration> const acceleration =
           trajectory->evaluate_intrinsic_acceleration(t).coordinates();
