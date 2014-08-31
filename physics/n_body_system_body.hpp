@@ -197,6 +197,7 @@ void NBodySystem<InertialFrame>::ComputeGravitationalAccelerations(
         massive_trajectories[b1]->body().gravitational_parameter();
     for (std::size_t b2 = b1 + 1; b2 < massive_trajectories.size(); ++b2) {
       std::size_t const three_b2 = 3 * b2;
+      // TODO(phl): See if we could compute three_b2_plus_1, etc.
       Length const Δq0 = q[three_b1] - q[three_b2];
       Length const Δq1 = q[three_b1 + 1] - q[three_b2 + 1];
       Length const Δq2 = q[three_b1 + 2] - q[three_b2 + 2];
