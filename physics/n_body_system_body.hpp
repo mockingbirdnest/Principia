@@ -83,12 +83,12 @@ void NBodySystem<InertialFrame>::Integrate(
   // Prepare the initial state of the integrator.  For efficiently computing the
   // accelerations, we need to separate the trajectories of massive bodies from
   // those of massless bodies.  They are put in this order in
-  // |reordered_trajectories|.  The trajectories of massive bodies are put in
-  // |massive_trajectories|, and the number of massless bodies is put in
-  // |number_of_massless_trajectories|.
+  // |reordered_trajectories|.  The trajectories of massive and massless bodies
+  // are put in |massive_trajectories| and |massless_trajectories|,
+  // respectively.
   std::vector<Trajectory<InertialFrame>*> reordered_trajectories;
   std::vector<Trajectory<InertialFrame> const*> massive_trajectories;
-  int number_of_massless_trajectories = 0;
+  std::vector<Trajectory<InertialFrame> const*> massless_trajectories;
   // This loop ensures that the massive bodies precede the massless bodies in
   // the vectors representing the initial data.
   for (bool is_massless : {false, true}) {
@@ -100,7 +100,7 @@ void NBodySystem<InertialFrame>::Integrate(
         continue;
       }
       if (is_massless) {
-        ++number_of_massless_trajectories;
+        massless_trajectories.push_back(trajectory);
       } else {
         massive_trajectories.push_back(trajectory);
       }
@@ -146,7 +146,7 @@ void NBodySystem<InertialFrame>::Integrate(
     dynamic_cast<const SPRKIntegrator<Length, Speed>*>(&integrator)->Solve(
         std::bind(&NBodySystem::ComputeGravitationalAccelerations,
                   massive_trajectories,
-                  number_of_massless_trajectories,
+                  massless_trajectories,
                   std::placeholders::_1,
                   std::placeholders::_2,
                   std::placeholders::_3),
@@ -182,20 +182,22 @@ void NBodySystem<InertialFrame>::Integrate(
 template<typename InertialFrame>
 void NBodySystem<InertialFrame>::ComputeGravitationalAccelerations(
     std::vector<Trajectory<InertialFrame> const*> const& massive_trajectories,
-    int const number_of_massless_trajectories,
+    std::vector<Trajectory<InertialFrame> const*> const& massless_trajectories,
     Time const& t,
     std::vector<Length> const& q,
     std::vector<Acceleration>* result) {
   result->assign(result->size(), Acceleration());
+  size_t const number_of_massive_trajectories = massive_trajectories.size();
+  size_t const number_of_massless_trajectories = massless_trajectories.size();
 
-  // TODO(phl): Used to deal with proper accelerations here.
   for (std::size_t b1 = 0, three_b1 = 0;
-       b1 < massive_trajectories.size();
+       b1 < number_of_massive_trajectories;
        ++b1, three_b1 += 3) {
     GravitationalParameter const& body1_gravitational_parameter =
         massive_trajectories[b1]->body().gravitational_parameter();
     for (std::size_t b2 = b1 + 1; b2 < massive_trajectories.size(); ++b2) {
       std::size_t const three_b2 = 3 * b2;
+      // TODO(phl): See if we could compute three_b2_plus_1, etc.
       Length const Δq0 = q[three_b1] - q[three_b2];
       Length const Δq1 = q[three_b1 + 1] - q[three_b2 + 1];
       Length const Δq2 = q[three_b1 + 2] - q[three_b2 + 2];
@@ -219,7 +221,9 @@ void NBodySystem<InertialFrame>::ComputeGravitationalAccelerations(
       (*result)[three_b2 + 1] += Δq1 * μ1OverRSquared;
       (*result)[three_b2 + 2] += Δq2 * μ1OverRSquared;
     }
-    for (int b2 = 0; b2 < number_of_massless_trajectories; ++b2) {
+    for (size_t b2 = number_of_massive_trajectories;
+         b2 < number_of_massive_trajectories + number_of_massless_trajectories;
+         ++b2) {
       std::size_t const three_b2 = 3 * b2;
       Length const Δq0 = q[three_b1] - q[three_b2];
       Length const Δq1 = q[three_b1 + 1] - q[three_b2 + 1];
@@ -234,6 +238,22 @@ void NBodySystem<InertialFrame>::ComputeGravitationalAccelerations(
       (*result)[three_b2] += Δq0 * μ1OverRSquared;
       (*result)[three_b2 + 1] += Δq1 * μ1OverRSquared;
       (*result)[three_b2 + 2] += Δq2 * μ1OverRSquared;
+    }
+  }
+
+  // Finally, take into account the intrinsic accelerations.
+  for (size_t b2 = number_of_massive_trajectories;
+       b2 < number_of_massive_trajectories + number_of_massless_trajectories;
+       ++b2) {
+    std::size_t const three_b2 = 3 * b2;
+    Trajectory<InertialFrame> const* trajectory =
+        massless_trajectories[b2 - number_of_massive_trajectories];
+    if (trajectory->has_intrinsic_acceleration()) {
+      R3Element<Acceleration> const acceleration =
+          trajectory->evaluate_intrinsic_acceleration(t).coordinates();
+      (*result)[three_b2] += acceleration.x;
+      (*result)[three_b2 + 1] += acceleration.y;
+      (*result)[three_b2 + 2] += acceleration.z;
     }
   }
 }
