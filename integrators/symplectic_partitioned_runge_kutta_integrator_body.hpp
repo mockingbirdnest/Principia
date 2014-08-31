@@ -8,9 +8,7 @@
 #include "quantities/quantities.hpp"
 
 // Mixed assemblies are not supported by Unity/Mono.
-#ifndef _MANAGED
 #include "glog/logging.h"
-#endif
 
 using principia::quantities::Quotient;
 
@@ -42,15 +40,11 @@ SPRKIntegrator<Position, Momentum>::Order5Optimal() const {
 template<typename Position, typename Momentum>
 inline void SPRKIntegrator<Position, Momentum>::Initialize(
     Coefficients const& coefficients) {
-#ifndef _MANAGED
   CHECK_EQ(2, coefficients.size());
-#endif
   a_ = coefficients[0];
   b_ = coefficients[1];
   stages_ = b_.size();
-#ifndef _MANAGED
   CHECK_EQ(stages_, a_.size());
-#endif
 
   // Runge-Kutta time weights.
   c_.resize(stages_);
@@ -68,9 +62,7 @@ void SPRKIntegrator<Position, Momentum>::Solve(
       AutonomousRightHandSideComputation compute_velocity,
       Parameters const& parameters,
       std::vector<SystemState>* solution) const {
-#ifndef _MANAGED
   CHECK_NOTNULL(solution);
-#endif
 
   int const dimension = parameters.initial.positions.size();
 

@@ -5,9 +5,7 @@
 
 #include <string>
 
-#ifndef _MANAGED
 #include "glog/logging.h"
-#endif
 #include "quantities/elementary_functions.hpp"
 
 namespace principia {
@@ -36,9 +34,7 @@ inline Scalar& R3Element<Scalar>::operator[](int const index) {
     case 2:
       return z;
     default:
-#ifndef _MANAGED
       LOG(FATAL) << "Index = " << index;
-#endif
       noreturn();
   }
 }
@@ -53,9 +49,7 @@ inline Scalar const& R3Element<Scalar>::operator[](int const index) const {
     case 2:
       return z;
     default:
-#ifndef _MANAGED
       LOG(FATAL) << "Index = " << index;
-#endif
       noreturn();
   }
 }

@@ -4,9 +4,7 @@
 #include "geometry/linear_map.hpp"
 #include "geometry/r3_element.hpp"
 #include "geometry/sign.hpp"
-#ifndef _MANAGED
 #include "gtest/gtest_prod.h"
-#endif
 
 namespace principia {
 namespace geometry {
@@ -72,7 +70,6 @@ class Permutation : public LinearMap<FromFrame, ToFrame> {
       Permutation<Through, To> const& left,
       Permutation<From, Through> const& right);
 
-#ifndef _MANAGED
   // As much as I dislike FRIEND_TEST(), it seems like the most convenient way
   // to access the above operator.
   FRIEND_TEST(PermutationTest, Identity);
@@ -82,7 +79,6 @@ class Permutation : public LinearMap<FromFrame, ToFrame> {
   FRIEND_TEST(PermutationTest, XZY);
   FRIEND_TEST(PermutationTest, ZYX);
   FRIEND_TEST(PermutationTest, YXZ);
-#endif
 };
 
 template<typename FromFrame, typename ThroughFrame, typename ToFrame>
