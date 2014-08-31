@@ -6,9 +6,7 @@
 #include <vector>
 
 #include "geometry/r3_element.hpp"
-#ifndef _MANAGED
 #include "glog/logging.h"
-#endif
 #include "integrators/symplectic_partitioned_runge_kutta_integrator.hpp"
 #include "quantities/quantities.hpp"
 
@@ -32,17 +30,13 @@ NBodySystem<InertialFrame>::NBodySystem(Bodies&& massive_bodies,
   // Parameter checking.
   for (auto const& body : massive_bodies_) {
     auto const inserted = bodies_.insert(body.get());
-#ifndef _MANAGED
     CHECK(inserted.second) << "Massive body occurs multiple times";
     CHECK(!body->is_massless()) << "Massive body is massless";
-#endif
   }
   for (auto const& body : massless_bodies_) {
     auto const inserted = bodies_.insert(body.get());
-#ifndef _MANAGED
     CHECK(inserted.second) << "Massless body occurs multiple times";
     CHECK(body->is_massless()) << "Massless body is massive";
-#endif
   }
 }
 
@@ -74,11 +68,9 @@ void NBodySystem<InertialFrame>::Integrate(
   SymplecticIntegrator<Length, Speed>::Parameters parameters;
   std::vector<SymplecticIntegrator<Length, Speed>::SystemState> solution;
 
-#ifndef _MANAGED
   // These objects are for checking the consistency of the parameters.
   std::set<Time> times_in_trajectories;
   std::set<Body const*> bodies_in_trajectories;
-#endif
 
   // Prepare the initial state of the integrator.  For efficiently computing the
   // accelerations, we need to separate the trajectories of massive bodies from
@@ -120,7 +112,6 @@ void NBodySystem<InertialFrame>::Integrate(
       }
       parameters.initial.time = time;
 
-#ifndef _MANAGED
       // Check that the trajectory is for a body passed at construction.
       CHECK(bodies_.find(body) != bodies_.end())
           << "Trajectory for an unknown body";
@@ -131,7 +122,6 @@ void NBodySystem<InertialFrame>::Integrate(
       times_in_trajectories.insert(time);
       CHECK_GE(1U, times_in_trajectories.size())
           << "Inconsistent last time in trajectories";
-#endif
     }
   }
   {
@@ -159,9 +149,7 @@ void NBodySystem<InertialFrame>::Integrate(
       SymplecticIntegrator<Length, Speed>::SystemState const& state =
           solution[i];
       Time const& time = state.time.value;
-#ifndef _MANAGED
       CHECK_EQ(state.positions.size(), state.momenta.size());
-#endif
       // Loop over the dimensions.
       for (std::size_t k = 0, t = 0; k < state.positions.size(); k += 3, ++t) {
         Vector<Length, InertialFrame> const position(
