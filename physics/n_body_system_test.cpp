@@ -42,8 +42,12 @@ class NBodySystemTest : public testing::Test {
     body1_ = new Body(6E24 * SIUnit<Mass>());
     body2_ = new Body(7E22 * SIUnit<Mass>());
 
+    // A massless probe.
+    body3_ = new Body(0 * SIUnit<Mass>());
+
     trajectory1_.reset(new Trajectory<EarthMoonBarycentricFrame>(*body1_));
     trajectory2_.reset(new Trajectory<EarthMoonBarycentricFrame>(*body2_));
+    trajectory3_.reset(new Trajectory<EarthMoonBarycentricFrame>(*body3_));
     Point<Vector<Length, EarthMoonBarycentricFrame>> const
         q1(Vector<Length, EarthMoonBarycentricFrame>({0 * SIUnit<Length>(),
                                                       0 * SIUnit<Length>(),
@@ -78,6 +82,7 @@ class NBodySystemTest : public testing::Test {
     NBodySystem<EarthMoonBarycentricFrame>::Bodies massless_bodies;
     massive_bodies.emplace_back(body1_);
     massive_bodies.emplace_back(body2_);
+    massless_bodies.emplace_back(body3_);
     system_ = std::make_unique<NBodySystem<EarthMoonBarycentricFrame>>(
                   std::move(massive_bodies),
                   std::move(massless_bodies));
@@ -126,8 +131,10 @@ class NBodySystemTest : public testing::Test {
 
   Body* body1_;
   Body* body2_;
+  Body* body3_;
   std::unique_ptr<Trajectory<EarthMoonBarycentricFrame>> trajectory1_;
   std::unique_ptr<Trajectory<EarthMoonBarycentricFrame>> trajectory2_;
+  std::unique_ptr<Trajectory<EarthMoonBarycentricFrame>> trajectory3_;
   SPRKIntegrator<Length, Speed> integrator_;
   Time period_;
   std::unique_ptr<NBodySystem<EarthMoonBarycentricFrame>> system_;
@@ -147,7 +154,7 @@ TEST_F(NBodySystemDeathTest, ConstructionError) {
   EXPECT_DEATH({
     NBodySystem<EarthMoonBarycentricFrame>::Bodies massive_bodies;
     NBodySystem<EarthMoonBarycentricFrame>::Bodies massless_bodies;
-    massive_bodies.emplace_back(new Body(0 * SIUnit<Mass>()));
+    massive_bodies.emplace_back(body3_);
     system_ = std::make_unique<NBodySystem<EarthMoonBarycentricFrame>>(
                   std::move(massive_bodies),
                   std::move(massless_bodies));
@@ -165,9 +172,8 @@ TEST_F(NBodySystemDeathTest, ConstructionError) {
   EXPECT_DEATH({
     NBodySystem<EarthMoonBarycentricFrame>::Bodies massive_bodies;
     NBodySystem<EarthMoonBarycentricFrame>::Bodies massless_bodies;
-    Body* body = new Body(0 * SIUnit<Mass>());
-    massless_bodies.emplace_back(body);
-    massless_bodies.emplace_back(body);
+    massless_bodies.emplace_back(body3_);
+    massless_bodies.emplace_back(body3_);
     system_ = std::make_unique<NBodySystem<EarthMoonBarycentricFrame>>(
                   std::move(massive_bodies),
                   std::move(massless_bodies));
@@ -211,6 +217,7 @@ TEST_F(NBodySystemDeathTest, IntegrateError) {
   }, DeathMessage("Inconsistent last time"));
 }
 
+// The canonical Earth-Moon system, tuned to produce circular orbits.
 TEST_F(NBodySystemTest, EarthMoon) {
   std::vector<Vector<Length, EarthMoonBarycentricFrame>> positions;
   system_->Integrate(integrator_,
@@ -236,6 +243,7 @@ TEST_F(NBodySystemTest, EarthMoon) {
   EXPECT_THAT(Abs(positions[100].coordinates().x), Lt(2 * SIUnit<Length>()));
 }
 
+// Same as above, but the trajectories are passed in the reverse order.
 TEST_F(NBodySystemTest, MoonEarth) {
   std::vector<Vector<Length, EarthMoonBarycentricFrame>> positions;
   system_->Integrate(integrator_,
@@ -261,31 +269,96 @@ TEST_F(NBodySystemTest, MoonEarth) {
   EXPECT_THAT(Abs(positions[100].coordinates().x), Lt(2 * SIUnit<Length>()));
 }
 
+// The Moon alone.  It moves in straight line.
 TEST_F(NBodySystemTest, Moon) {
-  std::vector<Vector<Length, EarthMoonBarycentricFrame>> positions;
   system_->Integrate(integrator_,
                      period_,
                      period_ / 100,
                      1,
                      {trajectory2_.get()});
-  Length const q2 = trajectory2_->last_position().coordinates().y;
-  Speed const v1 = trajectory2_->last_velocity().coordinates().x;
 
-  positions = ValuesOf(trajectory2_->Positions());
+  Length const q2 = trajectory2_->last_position().coordinates().y;
+  Speed const v2 = trajectory2_->last_velocity().coordinates().x;
+  std::vector<Vector<Length, EarthMoonBarycentricFrame>> const positions =
+      ValuesOf(trajectory2_->Positions());
   LOG(INFO) << ToMathematicaString(positions);
   EXPECT_THAT(positions.size(), Eq(101));
-  EXPECT_THAT(Abs(positions[25].coordinates().x), Eq(0.25 * period_ * v1));
-  EXPECT_THAT(Abs(positions[25].coordinates().y), Eq(q2));
-  EXPECT_THAT(Abs(positions[50].coordinates().x), Eq(0.50 * period_ * v1));
-  EXPECT_THAT(Abs(positions[50].coordinates().y), Eq(q2));
-  EXPECT_THAT(Abs(positions[75].coordinates().x),
-              AlmostEquals(0.75 * period_ * v1, 1));
-  EXPECT_THAT(Abs(positions[75].coordinates().y), Eq(q2));
-  EXPECT_THAT(Abs(positions[100].coordinates().x), Eq(1.00 * period_ * v1));
-  EXPECT_THAT(Abs(positions[100].coordinates().y), Eq(q2));
+  EXPECT_THAT(positions[25].coordinates().x, Eq(0.25 * period_ * v2));
+  EXPECT_THAT(positions[25].coordinates().y, Eq(q2));
+  EXPECT_THAT(positions[50].coordinates().x, Eq(0.50 * period_ * v2));
+  EXPECT_THAT(positions[50].coordinates().y, Eq(q2));
+  EXPECT_THAT(positions[75].coordinates().x,
+              AlmostEquals(0.75 * period_ * v2, 1));
+  EXPECT_THAT(positions[75].coordinates().y, Eq(q2));
+  EXPECT_THAT(positions[100].coordinates().x, Eq(1.00 * period_ * v2));
+  EXPECT_THAT(positions[100].coordinates().y, Eq(q2));
 }
 
 // TODO(phl): Test the error cases.
+
+// The Earth and a massless probe 1 billion meters away, with the same velocity,
+// and an acceleration which exactly compensates gravitational attraction.  Both
+// bodies move in straight lines.
+TEST_F(NBodySystemTest, EarthProbe) {
+  Length const distance = 1E9 * SIUnit<Length>();
+  trajectory3_->Append(trajectory1_->last_time(),
+                       {trajectory1_->last_position() +
+                            Vector<Length, EarthMoonBarycentricFrame>(
+                                {0 * SIUnit<Length>(),
+                                 distance,
+                                 0 * SIUnit<Length>()}),
+                        trajectory1_->last_velocity()});
+  trajectory3_->set_intrinsic_acceleration(
+      [this, distance](Time const& t) {
+    return Vector<Acceleration, EarthMoonBarycentricFrame>(
+        {0 * SIUnit<Acceleration>(),
+         body1_->gravitational_parameter() / (distance * distance),
+         0 * SIUnit<Acceleration>()});});
+
+  std::vector<Vector<Length, EarthMoonBarycentricFrame>> positions;
+  system_->Integrate(integrator_,
+                     period_,
+                     period_ / 100,
+                     1,
+                     {trajectory1_.get(), trajectory3_.get()});
+
+  Length const q1 = trajectory1_->last_position().coordinates().y;
+  Speed const v1 = trajectory1_->last_velocity().coordinates().x;
+  std::vector<Vector<Length, EarthMoonBarycentricFrame>> const positions1 =
+      ValuesOf(trajectory1_->Positions());
+  google::LogToStderr();
+  LOG(INFO) << ToMathematicaString(positions1);
+  EXPECT_THAT(positions1.size(), Eq(101));
+  EXPECT_THAT(positions1[25].coordinates().x, Eq(0.25 * period_ * v1));
+  EXPECT_THAT(positions1[25].coordinates().y, Eq(q1));
+  EXPECT_THAT(positions1[50].coordinates().x, Eq(0.50 * period_ * v1));
+  EXPECT_THAT(positions1[50].coordinates().y, Eq(q1));
+  EXPECT_THAT(positions1[75].coordinates().x,
+              AlmostEquals(0.75 * period_ * v1, 1));
+  EXPECT_THAT(positions1[75].coordinates().y, Eq(q1));
+  EXPECT_THAT(positions1[100].coordinates().x, Eq(1.00 * period_ * v1));
+  EXPECT_THAT(positions1[100].coordinates().y, Eq(q1));
+
+  Length const q3 = trajectory3_->last_position().coordinates().y;
+  Speed const v3 = trajectory3_->last_velocity().coordinates().x;
+  std::vector<Vector<Length, EarthMoonBarycentricFrame>> const positions3 =
+      ValuesOf(trajectory3_->Positions());
+  LOG(INFO) << ToMathematicaString(positions3);
+  EXPECT_THAT(positions3.size(), Eq(101));
+  EXPECT_THAT(positions3[25].coordinates().x,
+              AlmostEquals(0.25 * period_ * v3, 1));
+  EXPECT_THAT(positions3[25].coordinates().y, Eq(q3));
+  EXPECT_THAT(positions3[50].coordinates().x,
+              AlmostEquals(0.50 * period_ * v3, 1));
+  EXPECT_THAT(positions3[50].coordinates().y, Eq(q3));
+  EXPECT_THAT(positions3[75].coordinates().x,
+              AlmostEquals(0.75 * period_ * v3, 1));
+  EXPECT_THAT(positions3[75].coordinates().y, Eq(q3));
+  EXPECT_THAT(positions3[100].coordinates().x,
+              AlmostEquals(1.00 * period_ * v3, 1));
+  EXPECT_THAT(positions3[100].coordinates().y, Eq(q3));
+}
+
 
 }  // namespace physics
 }  // namespace principia

@@ -98,12 +98,13 @@ class Trajectory {
   // Removes any intrinsic acceleration for the trajectory.
   void clear_intrinsic_acceleration();
 
-  //TODO(phl): comment
+  // Returns true if this trajectory has an intrinsic acceleration.
   bool has_intrinsic_acceleration() const;
 
-  // Returns the intrinsic acceleration for the trajectory, or nullptr if there
-  // is none.
-  //TODO(phl): Fix comment.
+  // Computes the intrinsic acceleration for this trajectory at time |time|.  If
+  // |has_intrinsic_acceleration()| return false, or if |time| is before the
+  // |fork_time()| (or initial time) of this trajectory, the returned
+  // acceleration is zero.
   Vector<Acceleration, Frame> evaluate_intrinsic_acceleration(
       Time const& time) const;
 
