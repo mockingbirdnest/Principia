@@ -86,8 +86,7 @@ template<typename Frame>
 void Trajectory<Frame>::Append(
     Time const& time,
     DegreesOfFreedom<Frame> const& degrees_of_freedom) {
-  // TODO(phl): Could we move?
-  auto inserted = timeline_.insert(std::make_pair(time, degrees_of_freedom));
+  auto inserted = timeline_.emplace(time, degrees_of_freedom);
   CHECK(timeline_.end() == ++inserted.first) << "Append out of order";
   CHECK(inserted.second) << "Append at existing time";
 }
