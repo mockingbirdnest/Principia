@@ -5,7 +5,6 @@
 
 #include "quantities/constants.hpp"
 
-// TODO(phl): Polluting the root namespace!!!
 using principia::constants::GravitationalConstant;
 
 namespace principia {

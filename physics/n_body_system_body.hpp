@@ -178,6 +178,9 @@ void NBodySystem<InertialFrame>::ComputeGravitationalAccelerations(
   size_t const number_of_massive_trajectories = massive_trajectories.size();
   size_t const number_of_massless_trajectories = massless_trajectories.size();
 
+  // Declaring variables for values like 3 * b1 + 1, 3 * b2 + 1, etc. in the
+  // code below brings no performance advantage as it seems that the compiler is
+  // smart enough to figure common subexpressions.
   for (std::size_t b1 = 0, three_b1 = 0;
        b1 < number_of_massive_trajectories;
        ++b1, three_b1 += 3) {
@@ -185,7 +188,6 @@ void NBodySystem<InertialFrame>::ComputeGravitationalAccelerations(
         massive_trajectories[b1]->body().gravitational_parameter();
     for (std::size_t b2 = b1 + 1; b2 < massive_trajectories.size(); ++b2) {
       std::size_t const three_b2 = 3 * b2;
-      // TODO(phl): See if we could compute three_b2_plus_1, etc.
       Length const Δq0 = q[three_b1] - q[three_b2];
       Length const Δq1 = q[three_b1 + 1] - q[three_b2 + 1];
       Length const Δq2 = q[three_b1 + 2] - q[three_b2 + 2];
