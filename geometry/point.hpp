@@ -13,7 +13,7 @@ class Point {
   explicit Point(Vector const& coordinates);
   ~Point() = default;
 
-  Vector operator-(Point<Vector> const& from) const;
+  Vector operator-(Point const& from) const;
 
   Point operator+(Vector const& translation) const;
   Point operator-(Vector const& translation) const;
