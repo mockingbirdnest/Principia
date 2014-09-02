@@ -294,8 +294,6 @@ TEST_F(NBodySystemTest, Moon) {
   EXPECT_THAT(positions[100].coordinates().y, Eq(q2));
 }
 
-// TODO(phl): Test the error cases.
-
 // The Earth and a massless probe 1 billion meters away, with the same velocity,
 // and an acceleration which exactly compensates gravitational attraction.  Both
 // bodies move in straight lines.
