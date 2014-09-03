@@ -50,13 +50,16 @@ Point<Vector> operator+(Vector const& translation,
 }
 
 template<typename Vector, typename Weight>
-Point<Vector> Barycentre(Point<Vector> const& left,
-                         Weight const& left_weight,
-                         Point<Vector> const& right,
-                         Weight const& right_weight) {
-  return Point<Vector>(
-      (left.coordinates_ * left_weight + right.coordinates_ * right_weight) /
-          (left_weight + right_weight));
+Point<Vector> Barycentre(std::vector<Point<Vector>> const& points,
+                         std::vector<Weight> const& weights) {
+  CHECK_EQ(points.size(), weights.size());
+  Vector coordinates;
+  Weight weight = 0;
+  for (size_t i = 0; i < points.size; ++i) {
+    coordinates += points[i].coordinates_ * weight[i];
+    weight += weight[i];
+  }
+  return Point<Vector>(coordinates / weight);
 }
 
 }  // namespace geometry

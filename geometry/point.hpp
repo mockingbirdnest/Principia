@@ -45,10 +45,8 @@ Point<Vector> operator+(Vector const& translation,
                         Point<Vector> const& point);
 
 template<typename Vector, typename Weight>
-Point<Vector> Barycentre(Point<Vector> const& left,
-                         Weight const& left_weight,
-                         Point<Vector> const& right,
-                         Weight const& right_weight);
+Point<Vector> Barycentre(std::vector<Point<Vector>> const& points,
+                         std::vector<Weight> const& weights);
 
 }  // namespace geometry
 }  // namespace principia
