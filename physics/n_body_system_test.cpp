@@ -78,11 +78,6 @@ class NBodySystemTest : public testing::Test {
                          {q1 - centre_of_mass, v1 - overall_velocity});
     trajectory2_->Append(0 * SIUnit<Time>(),
                          {q2 - centre_of_mass, v2 - overall_velocity});
-    NBodySystem<EarthMoonBarycentricFrame>::Bodies massive_bodies;
-    NBodySystem<EarthMoonBarycentricFrame>::Bodies massless_bodies;
-    massive_bodies.emplace_back(body1_.get());
-    massive_bodies.emplace_back(body2_.get());
-    massless_bodies.emplace_back(body3_.get());
     system_ = std::make_unique<NBodySystem<EarthMoonBarycentricFrame>>();
   }
 

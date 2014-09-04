@@ -367,13 +367,11 @@ SolarSystem::SolarSystem() {
   massive_bodies_.emplace_back(pluto);
 }
 
-physics::NBodySystem<ICRFJ2000EclipticFrame>::Bodies
-SolarSystem::massive_bodies() {
+SolarSystem::Bodies SolarSystem::massive_bodies() {
   return std::move(massive_bodies_);
 }
 
-physics::NBodySystem<ICRFJ2000EclipticFrame>::Bodies
-SolarSystem::massless_bodies() {
+SolarSystem::Bodies SolarSystem::massless_bodies() {
   return std::move(massless_bodies_);
 }
 
