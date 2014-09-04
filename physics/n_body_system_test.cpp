@@ -45,9 +45,12 @@ class NBodySystemTest : public testing::Test {
     // A massless probe.
     body3_ = std::make_unique<Body>(0 * SIUnit<Mass>());
 
-    trajectory1_.reset(new Trajectory<EarthMoonBarycentricFrame>(*body1_));
-    trajectory2_.reset(new Trajectory<EarthMoonBarycentricFrame>(*body2_));
-    trajectory3_.reset(new Trajectory<EarthMoonBarycentricFrame>(*body3_));
+    trajectory1_ =
+        std::make_unique<Trajectory<EarthMoonBarycentricFrame>>(*body1_);
+    trajectory2_ =
+        std::make_unique<Trajectory<EarthMoonBarycentricFrame>>(*body2_);
+    trajectory3_ =
+        std::make_unique<Trajectory<EarthMoonBarycentricFrame>>(*body3_);
     Point<Vector<Length, EarthMoonBarycentricFrame>> const
         q1(Vector<Length, EarthMoonBarycentricFrame>({0 * SIUnit<Length>(),
                                                       0 * SIUnit<Length>(),
