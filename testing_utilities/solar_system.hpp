@@ -20,6 +20,8 @@ struct ICRFJ2000EclipticFrame;
 
 class SolarSystem {
  public:
+  typedef std::vector<std::unique_ptr<physics::Body const> const> Bodies;
+
   // Factory.  The caller gets ownership of the pointers.
   // A solar system at the time of the launch of Простейший Спутник-1,
   // 1957-10-04T19:28:34Z (JD2436116.3115).
@@ -29,8 +31,8 @@ class SolarSystem {
 
   // The caller gets ownership of the bodies.  These functions should only be
   // called once.
-  physics::NBodySystem<ICRFJ2000EclipticFrame>::Bodies massive_bodies();
-  physics::NBodySystem<ICRFJ2000EclipticFrame>::Bodies massless_bodies();
+  Bodies massive_bodies();
+  Bodies massless_bodies();
 
   // This class retains ownership of the trajectories.
   physics::NBodySystem<ICRFJ2000EclipticFrame>::Trajectories
@@ -59,8 +61,8 @@ class SolarSystem {
   // 17. Pluto.
   SolarSystem();
 
-  physics::NBodySystem<ICRFJ2000EclipticFrame>::Bodies massive_bodies_;
-  physics::NBodySystem<ICRFJ2000EclipticFrame>::Bodies massless_bodies_;
+  Bodies massive_bodies_;
+  Bodies massless_bodies_;
   std::vector<std::unique_ptr<physics::Trajectory<ICRFJ2000EclipticFrame>>>
       trajectories_;
 };

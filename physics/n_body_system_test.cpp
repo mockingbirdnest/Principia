@@ -39,15 +39,18 @@ class NBodySystemTest : public testing::Test {
 
     // The Earth-Moon system, roughly, with a circular orbit with velocities
     // in the center-of-mass frame.
-    body1_ = new Body(6E24 * SIUnit<Mass>());
-    body2_ = new Body(7E22 * SIUnit<Mass>());
+    body1_ = std::make_unique<Body>(6E24 * SIUnit<Mass>());
+    body2_ = std::make_unique<Body>(7E22 * SIUnit<Mass>());
 
     // A massless probe.
-    body3_ = new Body(0 * SIUnit<Mass>());
+    body3_ = std::make_unique<Body>(0 * SIUnit<Mass>());
 
-    trajectory1_.reset(new Trajectory<EarthMoonBarycentricFrame>(*body1_));
-    trajectory2_.reset(new Trajectory<EarthMoonBarycentricFrame>(*body2_));
-    trajectory3_.reset(new Trajectory<EarthMoonBarycentricFrame>(*body3_));
+    trajectory1_ =
+        std::make_unique<Trajectory<EarthMoonBarycentricFrame>>(*body1_);
+    trajectory2_ =
+        std::make_unique<Trajectory<EarthMoonBarycentricFrame>>(*body2_);
+    trajectory3_ =
+        std::make_unique<Trajectory<EarthMoonBarycentricFrame>>(*body3_);
     Point<Vector<Length, EarthMoonBarycentricFrame>> const
         q1(Vector<Length, EarthMoonBarycentricFrame>({0 * SIUnit<Length>(),
                                                       0 * SIUnit<Length>(),
@@ -78,14 +81,7 @@ class NBodySystemTest : public testing::Test {
                          {q1 - centre_of_mass, v1 - overall_velocity});
     trajectory2_->Append(0 * SIUnit<Time>(),
                          {q2 - centre_of_mass, v2 - overall_velocity});
-    NBodySystem<EarthMoonBarycentricFrame>::Bodies massive_bodies;
-    NBodySystem<EarthMoonBarycentricFrame>::Bodies massless_bodies;
-    massive_bodies.emplace_back(body1_);
-    massive_bodies.emplace_back(body2_);
-    massless_bodies.emplace_back(body3_);
-    system_ = std::make_unique<NBodySystem<EarthMoonBarycentricFrame>>(
-                  std::move(massive_bodies),
-                  std::move(massless_bodies));
+    system_ = std::make_unique<NBodySystem<EarthMoonBarycentricFrame>>();
   }
 
   template<typename Scalar, typename Frame>
@@ -129,9 +125,9 @@ class NBodySystemTest : public testing::Test {
     return result;
   }
 
-  Body* body1_;
-  Body* body2_;
-  Body* body3_;
+  std::unique_ptr<Body> body1_;
+  std::unique_ptr<Body> body2_;
+  std::unique_ptr<Body> body3_;
   std::unique_ptr<Trajectory<EarthMoonBarycentricFrame>> trajectory1_;
   std::unique_ptr<Trajectory<EarthMoonBarycentricFrame>> trajectory2_;
   std::unique_ptr<Trajectory<EarthMoonBarycentricFrame>> trajectory3_;
@@ -141,44 +137,6 @@ class NBodySystemTest : public testing::Test {
 };
 
 typedef NBodySystemTest NBodySystemDeathTest;
-
-TEST_F(NBodySystemDeathTest, ConstructionError) {
-  EXPECT_DEATH({
-    NBodySystem<EarthMoonBarycentricFrame>::Bodies massive_bodies;
-    NBodySystem<EarthMoonBarycentricFrame>::Bodies massless_bodies;
-    massless_bodies.emplace_back(body1_);
-    system_ = std::make_unique<NBodySystem<EarthMoonBarycentricFrame>>(
-                  std::move(massive_bodies),
-                  std::move(massless_bodies));
-  }, DeathMessage("is massive"));
-  EXPECT_DEATH({
-    NBodySystem<EarthMoonBarycentricFrame>::Bodies massive_bodies;
-    NBodySystem<EarthMoonBarycentricFrame>::Bodies massless_bodies;
-    massive_bodies.emplace_back(body3_);
-    system_ = std::make_unique<NBodySystem<EarthMoonBarycentricFrame>>(
-                  std::move(massive_bodies),
-                  std::move(massless_bodies));
-  }, DeathMessage("is massless"));
-  EXPECT_DEATH({
-    NBodySystem<EarthMoonBarycentricFrame>::Bodies massive_bodies;
-    NBodySystem<EarthMoonBarycentricFrame>::Bodies massless_bodies;
-    massive_bodies.emplace_back(body1_);
-    massive_bodies.emplace_back(body2_);
-    massive_bodies.emplace_back(body1_);
-    system_ = std::make_unique<NBodySystem<EarthMoonBarycentricFrame>>(
-                  std::move(massive_bodies),
-                  std::move(massless_bodies));
-  }, DeathMessage("Massive.* multiple times"));
-  EXPECT_DEATH({
-    NBodySystem<EarthMoonBarycentricFrame>::Bodies massive_bodies;
-    NBodySystem<EarthMoonBarycentricFrame>::Bodies massless_bodies;
-    massless_bodies.emplace_back(body3_);
-    massless_bodies.emplace_back(body3_);
-    system_ = std::make_unique<NBodySystem<EarthMoonBarycentricFrame>>(
-                  std::move(massive_bodies),
-                  std::move(massless_bodies));
-  }, DeathMessage("Massless.* multiple times"));
-}
 
 TEST_F(NBodySystemDeathTest, IntegrateError) {
   EXPECT_DEATH({
@@ -190,19 +148,6 @@ TEST_F(NBodySystemDeathTest, IntegrateError) {
                         trajectory2_.get(),
                         trajectory1_.get()});
   }, DeathMessage("Multiple trajectories"));
-  EXPECT_DEATH({
-    std::unique_ptr<Body> body(new Body(0 * SIUnit<Mass>()));
-    std::unique_ptr<Trajectory<EarthMoonBarycentricFrame>> trajectory(
-        new Trajectory<EarthMoonBarycentricFrame>(*body));
-    trajectory->Append(0 * SIUnit<Time>(),
-                       {Vector<Length, EarthMoonBarycentricFrame>(),
-                        Vector<Speed, EarthMoonBarycentricFrame>()});
-    system_->Integrate(integrator_,
-                       period_,
-                       period_ / 100,
-                       1,
-                       {trajectory1_.get(), trajectory.get()});
-  }, DeathMessage("unknown body"));
   EXPECT_DEATH({
     std::unique_ptr<Trajectory<EarthMoonBarycentricFrame>> trajectory(
         new Trajectory<EarthMoonBarycentricFrame>(*body2_));
@@ -293,8 +238,6 @@ TEST_F(NBodySystemTest, Moon) {
   EXPECT_THAT(positions[100].coordinates().x, Eq(1.00 * period_ * v2));
   EXPECT_THAT(positions[100].coordinates().y, Eq(q2));
 }
-
-// TODO(phl): Test the error cases.
 
 // The Earth and a massless probe 1 billion meters away, with the same velocity,
 // and an acceleration which exactly compensates gravitational attraction.  Both
