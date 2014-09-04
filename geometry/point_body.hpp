@@ -1,5 +1,11 @@
 #pragma once
 
+#include "glog/logging.h"
+#include "quantities/quantities.hpp"
+
+using principia::quantities::Product;
+using principia::quantities::SIUnit;
+
 namespace principia {
 namespace geometry {
 
@@ -53,11 +59,11 @@ template<typename Vector, typename Weight>
 Point<Vector> Barycentre(std::vector<Point<Vector>> const& points,
                          std::vector<Weight> const& weights) {
   CHECK_EQ(points.size(), weights.size());
-  Vector coordinates;
-  Weight weight = 0;
-  for (size_t i = 0; i < points.size; ++i) {
-    coordinates += points[i].coordinates_ * weight[i];
-    weight += weight[i];
+  Product<Vector, Weight> coordinates;
+  Weight weight = 0 * SIUnit<Weight>();
+  for (size_t i = 0; i < points.size(); ++i) {
+    coordinates += points[i].coordinates_ * weights[i];
+    weight += weights[i];
   }
   return Point<Vector>(coordinates / weight);
 }

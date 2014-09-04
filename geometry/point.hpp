@@ -1,5 +1,7 @@
 #pragma once
 
+#include <vector>
+
 namespace principia {
 namespace geometry {
 
@@ -35,9 +37,9 @@ class Point {
   friend Point<V> operator+(V const& translation,
                             Point<V> const& point);
 
-  template<typename V, typename Weight>
-  friend Point<V> Barycentre(Point<V> const& left, Weight const& left_weight,
-                             Point<V> const& right, Weight const& right_weight);
+  template<typename Vector, typename Weight>
+  friend Point<Vector> Barycentre(std::vector<Point<Vector>> const& points,
+                                  std::vector<Weight> const& weights);
 };
 
 template<typename Vector>

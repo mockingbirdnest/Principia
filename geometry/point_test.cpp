@@ -10,6 +10,7 @@ namespace geometry {
 
 using geometry::Point;
 using quantities::Temperature;
+using quantities::Volume;
 using si::Litre;
 using si::Kelvin;
 using testing::Eq;
@@ -54,10 +55,12 @@ TEST_F(AffineSpaceTest, AssignmentOperators) {
 TEST_F(AffineSpaceTest, Barycentres) {
   Point<Temperature> const t1 = 40 * Kelvin + CelsiusZero;
   Point<Temperature> const t2 = 10 * Kelvin + CelsiusZero;
-  EXPECT_THAT(Barycentre(t2, 2 * Litre, t1, 1 * Litre),
-              Eq(20 * Kelvin + CelsiusZero));
-  EXPECT_THAT(Barycentre(t2, 1, t1, 1),
-              Eq(25 * Kelvin + CelsiusZero));
+  Point<Temperature> const b1 =
+      Barycentre<Temperature, Volume>({t2, t1}, {2 * Litre, 1 * Litre});
+  Point<Temperature> const b2 =
+      Barycentre<Temperature, double>({t2, t1}, {1, 1});
+  EXPECT_THAT(b1, Eq(20 * Kelvin + CelsiusZero));
+  EXPECT_THAT(b2, Eq(25 * Kelvin + CelsiusZero));
 }
 
 }  // namespace geometry
