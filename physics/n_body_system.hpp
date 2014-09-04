@@ -27,8 +27,8 @@ class NBodySystem {
   ~NBodySystem() = default;
 
   // The |integrator| must already have been initialized.  All the
-  // |trajectories| must have the same |last_time()| and must be for bodies
-  // passed at construction.
+  // |trajectories| must have the same |last_time()| and must be for distinct
+  // bodies.
   void Integrate(SymplecticIntegrator<Length, Speed> const& integrator,
                  Time const& tmax,
                  Time const& Δt,
