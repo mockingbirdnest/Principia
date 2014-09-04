@@ -83,9 +83,7 @@ class NBodySystemTest : public testing::Test {
     massive_bodies.emplace_back(body1_);
     massive_bodies.emplace_back(body2_);
     massless_bodies.emplace_back(body3_);
-    system_ = std::make_unique<NBodySystem<EarthMoonBarycentricFrame>>(
-                  std::move(massive_bodies),
-                  std::move(massless_bodies));
+    system_ = std::make_unique<NBodySystem<EarthMoonBarycentricFrame>>();
   }
 
   template<typename Scalar, typename Frame>
@@ -147,17 +145,13 @@ TEST_F(NBodySystemDeathTest, ConstructionError) {
     NBodySystem<EarthMoonBarycentricFrame>::Bodies massive_bodies;
     NBodySystem<EarthMoonBarycentricFrame>::Bodies massless_bodies;
     massless_bodies.emplace_back(body1_);
-    system_ = std::make_unique<NBodySystem<EarthMoonBarycentricFrame>>(
-                  std::move(massive_bodies),
-                  std::move(massless_bodies));
+    system_ = std::make_unique<NBodySystem<EarthMoonBarycentricFrame>>();
   }, DeathMessage("is massive"));
   EXPECT_DEATH({
     NBodySystem<EarthMoonBarycentricFrame>::Bodies massive_bodies;
     NBodySystem<EarthMoonBarycentricFrame>::Bodies massless_bodies;
     massive_bodies.emplace_back(body3_);
-    system_ = std::make_unique<NBodySystem<EarthMoonBarycentricFrame>>(
-                  std::move(massive_bodies),
-                  std::move(massless_bodies));
+    system_ = std::make_unique<NBodySystem<EarthMoonBarycentricFrame>>();
   }, DeathMessage("is massless"));
   EXPECT_DEATH({
     NBodySystem<EarthMoonBarycentricFrame>::Bodies massive_bodies;
@@ -165,18 +159,14 @@ TEST_F(NBodySystemDeathTest, ConstructionError) {
     massive_bodies.emplace_back(body1_);
     massive_bodies.emplace_back(body2_);
     massive_bodies.emplace_back(body1_);
-    system_ = std::make_unique<NBodySystem<EarthMoonBarycentricFrame>>(
-                  std::move(massive_bodies),
-                  std::move(massless_bodies));
+    system_ = std::make_unique<NBodySystem<EarthMoonBarycentricFrame>>();
   }, DeathMessage("Massive.* multiple times"));
   EXPECT_DEATH({
     NBodySystem<EarthMoonBarycentricFrame>::Bodies massive_bodies;
     NBodySystem<EarthMoonBarycentricFrame>::Bodies massless_bodies;
     massless_bodies.emplace_back(body3_);
     massless_bodies.emplace_back(body3_);
-    system_ = std::make_unique<NBodySystem<EarthMoonBarycentricFrame>>(
-                  std::move(massive_bodies),
-                  std::move(massless_bodies));
+    system_ = std::make_unique<NBodySystem<EarthMoonBarycentricFrame>>();
   }, DeathMessage("Massless.* multiple times"));
 }
 
