@@ -60,7 +60,8 @@ class NBodySystemTest : public testing::Test {
                                                       4E8 * SIUnit<Length>(),
                                                       0 * SIUnit<Length>()}));
     Point<Vector<Length, EarthMoonBarycentricFrame>> const centre_of_mass =
-        Barycentre(q1, body1_->mass(), q2, body2_->mass());
+        Barycentre<Vector<Length, EarthMoonBarycentricFrame>, Mass>(
+            {q1, q2}, {body1_->mass(), body2_->mass()});
     Length const semi_major_axis = (q1 - q2).Norm();
     period_ = 2 * π * Sqrt(Pow<3>(semi_major_axis) /
                                (body1_->gravitational_parameter() +
@@ -76,11 +77,10 @@ class NBodySystemTest : public testing::Test {
             0 * SIUnit<Speed>(),
             0 * SIUnit<Speed>()}));
     Point<Vector<Speed, EarthMoonBarycentricFrame>> const overall_velocity =
-        Barycentre(v1, body1_->mass(), v2, body2_->mass());
-    trajectory1_->Append(0 * SIUnit<Time>(),
-                         {q1 - centre_of_mass, v1 - overall_velocity});
-    trajectory2_->Append(0 * SIUnit<Time>(),
-                         {q2 - centre_of_mass, v2 - overall_velocity});
+        Barycentre<Vector<Speed, EarthMoonBarycentricFrame>, Mass>(
+            {v1, v2}, {body1_->mass(), body2_->mass()});
+    trajectory1_->Append(0 * SIUnit<Time>(), {q1, v1});
+    trajectory2_->Append(0 * SIUnit<Time>(), {q2, v2});
     system_ = std::make_unique<NBodySystem<EarthMoonBarycentricFrame>>();
   }
 
@@ -152,8 +152,8 @@ TEST_F(NBodySystemDeathTest, IntegrateError) {
     std::unique_ptr<Trajectory<EarthMoonBarycentricFrame>> trajectory(
         new Trajectory<EarthMoonBarycentricFrame>(*body2_));
     trajectory->Append(1 * SIUnit<Time>(),
-                       {Vector<Length, EarthMoonBarycentricFrame>(),
-                        Vector<Speed, EarthMoonBarycentricFrame>()});
+                       {Point<Vector<Length, EarthMoonBarycentricFrame>>(),
+                        Point<Vector<Speed, EarthMoonBarycentricFrame>>()});
     system_->Integrate(integrator_,
                        period_,
                        period_ / 100,
