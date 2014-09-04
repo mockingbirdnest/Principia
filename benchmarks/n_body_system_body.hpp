@@ -21,9 +21,7 @@ namespace benchmarks {
 
 void SimulateSolarSystem(SolarSystem* solar_system) {
   std::unique_ptr<NBodySystem<ICRFJ2000EclipticFrame>> n_body_system(
-      new NBodySystem<ICRFJ2000EclipticFrame>(
-          solar_system->massive_bodies(),
-          solar_system->massless_bodies()));
+      new NBodySystem<ICRFJ2000EclipticFrame>());
   auto const trajectories = solar_system->trajectories();
   SPRKIntegrator<Length, Speed> integrator;
   integrator.Initialize(integrator.Order5Optimal());

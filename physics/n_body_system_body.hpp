@@ -23,42 +23,6 @@ namespace principia {
 namespace physics {
 
 template<typename InertialFrame>
-NBodySystem<InertialFrame>::NBodySystem(Bodies&& massive_bodies,
-                                        Bodies&& massless_bodies)
-    : massive_bodies_(std::move(massive_bodies)),
-      massless_bodies_(std::move(massless_bodies)) {
-  // Parameter checking.
-  for (auto const& body : massive_bodies_) {
-    auto const inserted = bodies_.insert(body.get());
-    CHECK(inserted.second) << "Massive body occurs multiple times";
-    CHECK(!body->is_massless()) << "Massive body is massless";
-  }
-  for (auto const& body : massless_bodies_) {
-    auto const inserted = bodies_.insert(body.get());
-    CHECK(inserted.second) << "Massless body occurs multiple times";
-    CHECK(body->is_massless()) << "Massless body is massive";
-  }
-}
-
-template<typename InertialFrame>
-std::vector<Body const*> NBodySystem<InertialFrame>::massless_bodies() const {
-  std::vector<Body const*> result;
-  for (auto const& body : massless_bodies_) {
-    result.push_back(body.get());
-  }
-  return result;
-}
-
-template<typename InertialFrame>
-std::vector<Body const*> NBodySystem<InertialFrame>::massive_bodies() const {
-  std::vector<Body const*> result;
-  for (auto const& body : massive_bodies_) {
-    result.push_back(body.get());
-  }
-  return result;
-}
-
-template<typename InertialFrame>
 void NBodySystem<InertialFrame>::Integrate(
     SymplecticIntegrator<Length, Speed> const& integrator,
     Time const& tmax,
@@ -112,9 +76,6 @@ void NBodySystem<InertialFrame>::Integrate(
       }
       parameters.initial.time = time;
 
-      // Check that the trajectory is for a body passed at construction.
-      CHECK(bodies_.find(body) != bodies_.end())
-          << "Trajectory for an unknown body";
       // Check that all trajectories are for different bodies.
       auto const inserted = bodies_in_trajectories.insert(body);
       CHECK(inserted.second) << "Multiple trajectories for the same body";

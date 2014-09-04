@@ -30,9 +30,7 @@ class SolarSystemTest : public testing::Test {
  protected:
   void SetUp() {
     solar_system_ = SolarSystem::AtСпутникLaunch();
-    n_body_system_.reset(new NBodySystem<ICRFJ2000EclipticFrame>(
-                                 solar_system_->massive_bodies(),
-                                 solar_system_->massless_bodies()));
+    n_body_system_.reset(new NBodySystem<ICRFJ2000EclipticFrame>());
   }
   // The maximal separation of |primary| and |secondary| ignoring the influence
   // of any other bodies.

@@ -21,20 +21,14 @@ namespace physics {
 template<typename InertialFrame>
 class NBodySystem {
  public:
-  typedef std::vector<std::unique_ptr<Body> const> Bodies;
   typedef std::vector<Trajectory<InertialFrame>*> Trajectories;  // Not owned.
 
-  NBodySystem(Bodies&& massive_bodies,
-              Bodies&& massless_bodies);
+  NBodySystem() = default;
   ~NBodySystem() = default;
 
-  // No transfer of ownership.
-  std::vector<Body const*> massive_bodies() const;
-  std::vector<Body const*> massless_bodies() const;
-
   // The |integrator| must already have been initialized.  All the
-  // |trajectories| must have the same |last_time()| and must be for bodies
-  // passed at construction.
+  // |trajectories| must have the same |last_time()| and must be for distinct
+  // bodies.
   void Integrate(SymplecticIntegrator<Length, Speed> const& integrator,
                  Time const& tmax,
                  Time const& Δt,
@@ -51,12 +45,6 @@ class NBodySystem {
       std::vector<Acceleration>* result);
   static void ComputeGravitationalVelocities(std::vector<Speed> const& p,
                                              std::vector<Speed>* result);
-
-  Bodies const massive_bodies_;
-  Bodies const massless_bodies_;
-
-  // The pointers are not owned.
-  std::set<Body const*> bodies_;
 };
 
 }  // namespace physics
