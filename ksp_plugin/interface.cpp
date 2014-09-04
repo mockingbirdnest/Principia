@@ -1,4 +1,4 @@
-#include "ksp_plugin/test_plugin.hpp"
+#include "ksp_plugin/interface.hpp"
 
 #include <string>
 

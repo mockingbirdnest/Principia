@@ -1,3 +1,7 @@
+#pragma once
+
+// DLL-exported functions for interfacing with Platform Invocation Services.
+
 namespace principia {
 namespace ksp_plugin {
 

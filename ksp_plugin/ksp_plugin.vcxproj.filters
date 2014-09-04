@@ -11,12 +11,15 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="test_plugin.hpp">
+    <ClInclude Include="plugin.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="interface.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="test_plugin.cpp">
+    <ClCompile Include="interface.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
