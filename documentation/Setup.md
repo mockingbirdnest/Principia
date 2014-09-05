@@ -2,8 +2,8 @@
 
 These instructions are for Visual Studio 2013.
 
-We assume a working, up-to-date installation of Kerbal Space Program is found in
-`<KSP directory>`.
+We assume a working installation of Kerbal Space Program version 0.24.2 is
+found in `<KSP directory>`.
 
 The repository is found at https://github.com/mockingbirdnest/Principia.git.
 Pick a directory `<root>` in which you will install Principia and its
