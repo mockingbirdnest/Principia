@@ -57,7 +57,26 @@ class Plugin {
 
   void SetCurrentTime(Date const& t);
 
-  void SetVesselStateOffset(Displacement<AliceWorld> from_parent_position,
+  // Arbitrarily sets the current position of the celestial body with index
+  // |index|, so that the |SetCelestialStateOffset| and |SetVesselStateOffset|
+  // functions may be used on its children. The position of the celestial body
+  // should not have been previously set.
+  void DeclareSun(int index);
+
+  // Set the position and velocity of the celestial body with index |index|
+  // relative to its parent at current time. The parent's position should have
+  // been previously set. The position of the celestial body should not have
+  // been previously set.
+  void SetCelestialStateOffset(int index,
+                               Displacement<AliceWorld> from_parent_position,
+                               VelocityOffset<AliceWorld> from_parent_velocity);
+
+  // Set the position and velocity of the vessel with GUID |guid| relative to
+  // its parent at current time. The parent's position should have been
+  // previously set. The position of the vessel should not have been
+  // previously set.
+  void SetVesselStateOffset(std::string guid,
+                            Displacement<AliceWorld> from_parent_position,
                             VelocityOffset<AliceWorld> from_parent_velocity);
 
  private:
