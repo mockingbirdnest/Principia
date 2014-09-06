@@ -34,9 +34,6 @@ using VelocityOffset = Vector<Speed, Frame>;
 
 class Plugin {
  public:
-   // Creates a |Plugin|. The current time of that instance is |inital_time|.
-   Plugin(Date const& initial_time);
-
    // The state of a body described as an offset from the state of the celestial
    // body at index |parent|, with displacement from the parent given by
    // |from_parent_position| and velocity relative to the parent given by
@@ -49,16 +46,18 @@ class Plugin {
      VelocityOffset<AliceWorld> from_parent_velocity;
    };
 
+   // Creates a |Plugin|. The current time of that instance is |inital_time|.
+   // Inserts a celestial body with an arbitrary position and index |sun_index|.
+   Plugin(Date const& initial_time, int sun_index);
+
   // Insert a new celestial body with index |index| and gravitational parameter
   // |gravitational_parameter|. No body with index |index| should already have
-  // been inserted. If |state| is null the celestial is considered as the sun
-  // and given an arbitrary position. Otherwise the parent of the new body
-  // is the body at index |state->parent|, which should already have been
-  // inserted, and the state of the new body is defined by |state|.
-  // |InsertCelestial| should only be called once with null |parent|.
+  // been inserted. The parent of the new body is the body at index |parent|,
+  // which should already have been inserted. The state of the new body is 
   void InsertCelestial(int index,
-                       GravitationalParameter gravitational_parameter,
-                       CelestialRelativeState* state);
+                       int parent;
+                       Displacement<AliceWorld> from_parent_position;
+                       VelocityOffset<AliceWorld> from_parent_velocity;);
 
   // Sets the parent of the celestial body with index |index| to the one with
   // index |parent|. Both bodies should already have been inserted.
@@ -73,7 +72,6 @@ class Plugin {
   // initial state of the new vessel is known.
   bool InsertOrKeepVessel(std::string guid, int parent);
 
-
   // Set the position and velocity of the vessel with GUID |guid| relative to
   // its parent at current time. |SetVesselStateOffset| should only be called
   // once per vessel.
@@ -83,9 +81,8 @@ class Plugin {
 
   // Simulates the system until time |t|. All vessels that have not been
   // refreshed by calling |InsertOrKeepVessel| since the last call to
-  //|AdvanceTime| will be removed. The initial states of the vessels that remain
-  // should have been set using |SetVesselStateOffset|.
-  void AdvanceTime(Date const& t)
+  //|AdvanceTime| will be removed.
+  void AdvanceTime(Date const& t);
 
  private:
   struct Celestial;

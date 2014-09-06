@@ -36,9 +36,14 @@ struct Plugin::Vessel {
   bool keep = true;
 };
 
+Plugin::Plugin(Date const& initial_time) : current_time_(initial_time) {}
 
 void Plugin::InsertCelestial(int index,
-                             GravitationalParameter gravitational_parameter) {
+                             GravitationalParameter gravitational_parameter
+                             CelestialRelativeState* state) {
+  if (state == nullptr) {
+    
+  }
   auto const inserted = celestials_.insert(
       {index, std::make_unique<Celestial>(new Body(gravitational_parameter))});
   CHECK(inserted.second) << "Multiple bodies bearing the same index";
