@@ -6,6 +6,7 @@
 
 #include "body.hpp"
 #include "geometry/grassmann.hpp"
+#include "geometry/point.hpp"
 #include "geometry/r3_element.hpp"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
@@ -13,6 +14,7 @@
 #include "quantities/si.hpp"
 #include "testing_utilities/death_message.hpp"
 
+using principia::geometry::Point;
 using principia::geometry::R3Element;
 using principia::geometry::Vector;
 using principia::quantities::Length;
@@ -36,7 +38,7 @@ class World;
 class TrajectoryTest : public testing::Test {
  protected:
   void SetUp() override {
-    q1_ = Vector<Length, World>({1 * Metre, 2 * Metre, 3 * Metre});
+    q1_ = Point<Vector<Length, World>>({1 * Metre, 2 * Metre, 3 * Metre});
     q2_ = Vector<Length, World>({11 * Metre, 12 * Metre, 13 * Metre});
     q3_ = Vector<Length, World>({21 * Metre, 22 * Metre, 23 * Metre});
     q4_ = Vector<Length, World>({31 * Metre, 32 * Metre, 33 * Metre});
@@ -67,8 +69,8 @@ class TrajectoryTest : public testing::Test {
     massless_trajectory_.reset(new Trajectory<World>(*massless_body_));
   }
 
-  Vector<Length, World> q1_, q2_, q3_, q4_;
-  Vector<Speed, World> p1_, p2_, p3_, p4_;
+  Point<Vector<Length, World>> q1_, q2_, q3_, q4_;
+  Point<Vector<Speed, World>> p1_, p2_, p3_, p4_;
   std::unique_ptr<DegreesOfFreedom<World>> d1_, d2_, d3_, d4_;
   Time t1_, t2_, t3_, t4_;
   std::unique_ptr<Body> massive_body_;
@@ -94,9 +96,9 @@ TEST_F(TrajectoryTest, AppendSuccess) {
   massive_trajectory_->Append(t1_, *d1_);
   massive_trajectory_->Append(t2_, *d2_);
   massive_trajectory_->Append(t3_, *d3_);
-  std::map<Time, Vector<Length, World>> const positions =
+  std::map<Time, Point<Vector<Length, World>>> const positions =
       massive_trajectory_->Positions();
-  std::map<Time, Vector<Speed, World>> const velocities =
+  std::map<Time, Point<Vector<Speed, World>>> const velocities =
       massive_trajectory_->Velocities();
   std::list<Time> const times = massive_trajectory_->Times();
   EXPECT_THAT(positions,
@@ -121,9 +123,9 @@ TEST_F(TrajectoryTest, ForkSuccess) {
   massive_trajectory_->Append(t3_, *d3_);
   Trajectory<World>* fork = massive_trajectory_->Fork(t2_);
   fork->Append(t4_, *d4_);
-  std::map<Time, Vector<Length, World>> positions =
+  std::map<Time, Point<Vector<Length, World>>> positions =
       massive_trajectory_->Positions();
-  std::map<Time, Vector<Speed, World>> velocities =
+  std::map<Time, Point<Vector<Speed, World>>> velocities =
       massive_trajectory_->Velocities();
   std::list<Time> times = massive_trajectory_->Times();
   EXPECT_THAT(positions,
@@ -199,8 +201,8 @@ TEST_F(TrajectoryTest, ForgetAfterSuccess) {
   fork->Append(t4_, *d4_);
 
   fork->ForgetAfter(t3_);
-  std::map<Time, Vector<Length, World>> positions = fork->Positions();
-  std::map<Time, Vector<Speed, World>> velocities = fork->Velocities();
+  std::map<Time, Point<Vector<Length, World>>> positions = fork->Positions();
+  std::map<Time, Point<Vector<Speed, World>>> velocities = fork->Velocities();
   std::list<Time> times = fork->Times();
   EXPECT_THAT(positions,
               ElementsAre(Pair(t1_, q1_), Pair(t2_, q2_), Pair(t3_, q3_)));
@@ -258,9 +260,9 @@ TEST_F(TrajectoryTest, ForgetBeforeSuccess) {
   fork->Append(t4_, *d4_);
 
   massive_trajectory_->ForgetBefore(t1_);
-  std::map<Time, Vector<Length, World>> positions =
+  std::map<Time, Point<Vector<Length, World>>> positions =
       massive_trajectory_->Positions();
-  std::map<Time, Vector<Speed, World>> velocities =
+  std::map<Time, Point<Vector<Speed, World>>> velocities =
       massive_trajectory_->Velocities();
   std::list<Time> times = massive_trajectory_->Times();
   EXPECT_THAT(positions, ElementsAre(Pair(t2_, q2_), Pair(t3_, q3_)));

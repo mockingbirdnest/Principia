@@ -59,24 +59,24 @@ class NBodySystemTest : public testing::Test {
         q2(Vector<Length, EarthMoonBarycentricFrame>({0 * SIUnit<Length>(),
                                                       4E8 * SIUnit<Length>(),
                                                       0 * SIUnit<Length>()}));
-    Point<Vector<Length, EarthMoonBarycentricFrame>> const centre_of_mass =
-        Barycentre<Vector<Length, EarthMoonBarycentricFrame>, Mass>(
-            {q1, q2}, {body1_->mass(), body2_->mass()});
     Length const semi_major_axis = (q1 - q2).Norm();
     period_ = 2 * π * Sqrt(Pow<3>(semi_major_axis) /
                                (body1_->gravitational_parameter() +
                                 body2_->gravitational_parameter()));
+    centre_of_mass_ =
+        Barycentre<Vector<Length, EarthMoonBarycentricFrame>, Mass>(
+            {q1, q2}, {body1_->mass(), body2_->mass()});
     Point<Vector<Speed, EarthMoonBarycentricFrame>> const
         v1(Vector<Speed, EarthMoonBarycentricFrame>({
-            -2 * π * (q1 - centre_of_mass).Norm() / period_,
+            -2 * π * (q1 - centre_of_mass_).Norm() / period_,
             0 * SIUnit<Speed>(),
             0 * SIUnit<Speed>()}));
     Point<Vector<Speed, EarthMoonBarycentricFrame>> const
         v2(Vector<Speed, EarthMoonBarycentricFrame>({
-            2 * π * (q2 - centre_of_mass).Norm() / period_,
+            2 * π * (q2 - centre_of_mass_).Norm() / period_,
             0 * SIUnit<Speed>(),
             0 * SIUnit<Speed>()}));
-    Point<Vector<Speed, EarthMoonBarycentricFrame>> const overall_velocity =
+    overall_velocity_ =
         Barycentre<Vector<Speed, EarthMoonBarycentricFrame>, Mass>(
             {v1, v2}, {body1_->mass(), body2_->mass()});
     trajectory1_->Append(0 * SIUnit<Time>(), {q1, v1});
@@ -117,10 +117,11 @@ class NBodySystemTest : public testing::Test {
   }
 
   template<typename T1, typename T2>
-  std::vector<T2> ValuesOf(std::map<T1, T2> const& m) {
+  std::vector<T2> ValuesOf(std::map<T1, Point<T2>> const& m,
+                           Point<T2> const& relative_to) {
     std::vector<T2> result;
     for (auto const it : m) {
-      result.push_back(it.second);
+      result.push_back(it.second - relative_to);
     }
     return result;
   }
@@ -131,6 +132,8 @@ class NBodySystemTest : public testing::Test {
   std::unique_ptr<Trajectory<EarthMoonBarycentricFrame>> trajectory1_;
   std::unique_ptr<Trajectory<EarthMoonBarycentricFrame>> trajectory2_;
   std::unique_ptr<Trajectory<EarthMoonBarycentricFrame>> trajectory3_;
+  Point<Vector<Length, EarthMoonBarycentricFrame>> centre_of_mass_;
+  Point<Vector<Speed, EarthMoonBarycentricFrame>> overall_velocity_;
   SPRKIntegrator<Length, Speed> integrator_;
   Time period_;
   std::unique_ptr<NBodySystem<EarthMoonBarycentricFrame>> system_;
@@ -171,7 +174,7 @@ TEST_F(NBodySystemTest, EarthMoon) {
                      1,
                      {trajectory1_.get(), trajectory2_.get()});
 
-  positions = ValuesOf(trajectory1_->Positions());
+  positions = ValuesOf(trajectory1_->Positions(), centre_of_mass_);
   EXPECT_THAT(positions.size(), Eq(101));
   LOG(INFO) << ToMathematicaString(positions);
   EXPECT_THAT(Abs(positions[25].coordinates().y), Lt(3E-2 * SIUnit<Length>()));
@@ -179,7 +182,7 @@ TEST_F(NBodySystemTest, EarthMoon) {
   EXPECT_THAT(Abs(positions[75].coordinates().y), Lt(3E-2 * SIUnit<Length>()));
   EXPECT_THAT(Abs(positions[100].coordinates().x), Lt(3E-2 * SIUnit<Length>()));
 
-  positions = ValuesOf(trajectory2_->Positions());
+  positions = ValuesOf(trajectory2_->Positions(), centre_of_mass_);
   LOG(INFO) << ToMathematicaString(positions);
   EXPECT_THAT(positions.size(), Eq(101));
   EXPECT_THAT(Abs(positions[25].coordinates().y), Lt(2 * SIUnit<Length>()));
@@ -197,7 +200,7 @@ TEST_F(NBodySystemTest, MoonEarth) {
                      1,
                      {trajectory2_.get(), trajectory1_.get()});
 
-  positions = ValuesOf(trajectory1_->Positions());
+  positions = ValuesOf(trajectory1_->Positions(), centre_of_mass_);
   EXPECT_THAT(positions.size(), Eq(101));
   LOG(INFO) << ToMathematicaString(positions);
   EXPECT_THAT(Abs(positions[25].coordinates().y), Lt(3E-2 * SIUnit<Length>()));
@@ -205,7 +208,7 @@ TEST_F(NBodySystemTest, MoonEarth) {
   EXPECT_THAT(Abs(positions[75].coordinates().y), Lt(3E-2 * SIUnit<Length>()));
   EXPECT_THAT(Abs(positions[100].coordinates().x), Lt(3E-2 * SIUnit<Length>()));
 
-  positions = ValuesOf(trajectory2_->Positions());
+  positions = ValuesOf(trajectory2_->Positions(), centre_of_mass_);
   LOG(INFO) << ToMathematicaString(positions);
   EXPECT_THAT(positions.size(), Eq(101));
   EXPECT_THAT(Abs(positions[25].coordinates().y), Lt(2 * SIUnit<Length>()));
@@ -216,16 +219,22 @@ TEST_F(NBodySystemTest, MoonEarth) {
 
 // The Moon alone.  It moves in straight line.
 TEST_F(NBodySystemTest, Moon) {
+  Point<Vector<Length, EarthMoonBarycentricFrame>> const initial_position =
+      trajectory2_->last_position();
+  Point<Vector<Speed, EarthMoonBarycentricFrame>> const initial_velocity =
+      trajectory2_->last_velocity();
   system_->Integrate(integrator_,
                      period_,
                      period_ / 100,
                      1,
                      {trajectory2_.get()});
 
-  Length const q2 = trajectory2_->last_position().coordinates().y;
-  Speed const v2 = trajectory2_->last_velocity().coordinates().x;
+  Length const q2 =
+      (trajectory2_->last_position() - initial_position).coordinates().y;
+  Speed const v2 =
+      (trajectory2_->last_velocity() - initial_velocity).coordinates().x;
   std::vector<Vector<Length, EarthMoonBarycentricFrame>> const positions =
-      ValuesOf(trajectory2_->Positions());
+      ValuesOf(trajectory2_->Positions(), initial_position);
   LOG(INFO) << ToMathematicaString(positions);
   EXPECT_THAT(positions.size(), Eq(101));
   EXPECT_THAT(positions[25].coordinates().x, Eq(0.25 * period_ * v2));
@@ -257,6 +266,12 @@ TEST_F(NBodySystemTest, EarthProbe) {
         {0 * SIUnit<Acceleration>(),
          body1_->gravitational_parameter() / (distance * distance),
          0 * SIUnit<Acceleration>()});});
+  Point<Vector<Length, EarthMoonBarycentricFrame>> const initial_position1 =
+      trajectory1_->last_position();
+  Point<Vector<Length, EarthMoonBarycentricFrame>> const initial_position3 =
+      trajectory3_->last_position();
+  Point<Vector<Speed, EarthMoonBarycentricFrame>> const initial_velocity =
+      trajectory1_->last_velocity();
 
   system_->Integrate(integrator_,
                      period_,
@@ -264,10 +279,12 @@ TEST_F(NBodySystemTest, EarthProbe) {
                      1,
                      {trajectory1_.get(), trajectory3_.get()});
 
-  Length const q1 = trajectory1_->last_position().coordinates().y;
-  Speed const v1 = trajectory1_->last_velocity().coordinates().x;
+  Length const q1 =
+      (trajectory1_->last_position() - initial_position1).coordinates().y;
+  Speed const v1 =
+      (trajectory1_->last_velocity() - initial_velocity).coordinates().x;
   std::vector<Vector<Length, EarthMoonBarycentricFrame>> const positions1 =
-      ValuesOf(trajectory1_->Positions());
+      ValuesOf(trajectory1_->Positions(), initial_position1);
   LOG(INFO) << ToMathematicaString(positions1);
   EXPECT_THAT(positions1.size(), Eq(101));
   EXPECT_THAT(positions1[25].coordinates().x,
@@ -283,10 +300,12 @@ TEST_F(NBodySystemTest, EarthProbe) {
               AlmostEquals(1.00 * period_ * v1, 1));
   EXPECT_THAT(positions1[100].coordinates().y, Eq(q1));
 
-  Length const q3 = trajectory3_->last_position().coordinates().y;
-  Speed const v3 = trajectory3_->last_velocity().coordinates().x;
+  Length const q3 =
+      (trajectory3_->last_position() - initial_position3).coordinates().y;
+  Speed const v3 =
+      (trajectory3_->last_velocity() - initial_velocity).coordinates().x;
   std::vector<Vector<Length, EarthMoonBarycentricFrame>> const positions3 =
-      ValuesOf(trajectory3_->Positions());
+      ValuesOf(trajectory3_->Positions(), initial_position3);
   LOG(INFO) << ToMathematicaString(positions3);
   EXPECT_THAT(positions3.size(), Eq(101));
   EXPECT_THAT(positions3[25].coordinates().x,

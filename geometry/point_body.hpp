@@ -59,13 +59,17 @@ template<typename Vector, typename Weight>
 Point<Vector> Barycentre(std::vector<Point<Vector>> const& points,
                          std::vector<Weight> const& weights) {
   CHECK_EQ(points.size(), weights.size());
-  Product<Vector, Weight> coordinates;
-  Weight weight = 0 * SIUnit<Weight>();
-  for (size_t i = 0; i < points.size(); ++i) {
-    coordinates += points[i].coordinates_ * weights[i];
+  CHECK(!points.empty());
+  // We need 'auto' here because we cannot easily write the type of the product
+  // of a |Vector| with a |Weight|.  This is also why the loop below starts at
+  // 1, as we use element 0 to get the type.
+  auto weighted_sum = points[0].coordinates_ * weights[0];
+  Weight weight = weights[0];
+  for (size_t i = 1; i < points.size(); ++i) {
+    weighted_sum += points[i].coordinates_ * weights[i];
     weight += weights[i];
   }
-  return Point<Vector>(coordinates / weight);
+  return Point<Vector>(weighted_sum / weight);
 }
 
 }  // namespace geometry
