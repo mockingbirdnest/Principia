@@ -219,10 +219,9 @@ TEST_F(NBodySystemTest, MoonEarth) {
 
 // The Moon alone.  It moves in straight line.
 TEST_F(NBodySystemTest, Moon) {
-  Point<Vector<Length, EarthMoonBarycentricFrame>> const initial_position =
-      trajectory2_->last_position();
-  Point<Vector<Speed, EarthMoonBarycentricFrame>> const initial_velocity =
-      trajectory2_->last_velocity();
+  // TODO(phl): I am not sure if these things make any sense.
+  Point<Vector<Length, EarthMoonBarycentricFrame>> const reference_position;
+  Point<Vector<Speed, EarthMoonBarycentricFrame>> const reference_velocity;
   system_->Integrate(integrator_,
                      period_,
                      period_ / 100,
@@ -230,11 +229,11 @@ TEST_F(NBodySystemTest, Moon) {
                      {trajectory2_.get()});
 
   Length const q2 =
-      (trajectory2_->last_position() - initial_position).coordinates().y;
+      (trajectory2_->last_position() - reference_position).coordinates().y;
   Speed const v2 =
-      (trajectory2_->last_velocity() - initial_velocity).coordinates().x;
+      (trajectory2_->last_velocity() - reference_velocity).coordinates().x;
   std::vector<Vector<Length, EarthMoonBarycentricFrame>> const positions =
-      ValuesOf(trajectory2_->Positions(), initial_position);
+      ValuesOf(trajectory2_->Positions(), reference_position);
   LOG(INFO) << ToMathematicaString(positions);
   EXPECT_THAT(positions.size(), Eq(101));
   EXPECT_THAT(positions[25].coordinates().x, Eq(0.25 * period_ * v2));
@@ -252,6 +251,9 @@ TEST_F(NBodySystemTest, Moon) {
 // and an acceleration which exactly compensates gravitational attraction.  Both
 // bodies move in straight lines.
 TEST_F(NBodySystemTest, EarthProbe) {
+  // TODO(phl): I am not sure if these things make any sense.
+  Point<Vector<Length, EarthMoonBarycentricFrame>> const reference_position;
+  Point<Vector<Speed, EarthMoonBarycentricFrame>> const reference_velocity;
   Length const distance = 1E9 * SIUnit<Length>();
   trajectory3_->Append(trajectory1_->last_time(),
                        {trajectory1_->last_position() +
@@ -266,12 +268,6 @@ TEST_F(NBodySystemTest, EarthProbe) {
         {0 * SIUnit<Acceleration>(),
          body1_->gravitational_parameter() / (distance * distance),
          0 * SIUnit<Acceleration>()});});
-  Point<Vector<Length, EarthMoonBarycentricFrame>> const initial_position1 =
-      trajectory1_->last_position();
-  Point<Vector<Length, EarthMoonBarycentricFrame>> const initial_position3 =
-      trajectory3_->last_position();
-  Point<Vector<Speed, EarthMoonBarycentricFrame>> const initial_velocity =
-      trajectory1_->last_velocity();
 
   system_->Integrate(integrator_,
                      period_,
@@ -280,11 +276,11 @@ TEST_F(NBodySystemTest, EarthProbe) {
                      {trajectory1_.get(), trajectory3_.get()});
 
   Length const q1 =
-      (trajectory1_->last_position() - initial_position1).coordinates().y;
+      (trajectory1_->last_position() - reference_position).coordinates().y;
   Speed const v1 =
-      (trajectory1_->last_velocity() - initial_velocity).coordinates().x;
+      (trajectory1_->last_velocity() - reference_velocity).coordinates().x;
   std::vector<Vector<Length, EarthMoonBarycentricFrame>> const positions1 =
-      ValuesOf(trajectory1_->Positions(), initial_position1);
+      ValuesOf(trajectory1_->Positions(), reference_position);
   LOG(INFO) << ToMathematicaString(positions1);
   EXPECT_THAT(positions1.size(), Eq(101));
   EXPECT_THAT(positions1[25].coordinates().x,
@@ -301,11 +297,11 @@ TEST_F(NBodySystemTest, EarthProbe) {
   EXPECT_THAT(positions1[100].coordinates().y, Eq(q1));
 
   Length const q3 =
-      (trajectory3_->last_position() - initial_position3).coordinates().y;
+      (trajectory3_->last_position() - reference_position).coordinates().y;
   Speed const v3 =
-      (trajectory3_->last_velocity() - initial_velocity).coordinates().x;
+      (trajectory3_->last_velocity() - reference_velocity).coordinates().x;
   std::vector<Vector<Length, EarthMoonBarycentricFrame>> const positions3 =
-      ValuesOf(trajectory3_->Positions(), initial_position3);
+      ValuesOf(trajectory3_->Positions(), reference_position);
   LOG(INFO) << ToMathematicaString(positions3);
   EXPECT_THAT(positions3.size(), Eq(101));
   EXPECT_THAT(positions3[25].coordinates().x,

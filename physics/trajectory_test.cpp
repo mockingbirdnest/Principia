@@ -38,22 +38,31 @@ class World;
 class TrajectoryTest : public testing::Test {
  protected:
   void SetUp() override {
-    q1_ = Point<Vector<Length, World>>({1 * Metre, 2 * Metre, 3 * Metre});
-    q2_ = Vector<Length, World>({11 * Metre, 12 * Metre, 13 * Metre});
-    q3_ = Vector<Length, World>({21 * Metre, 22 * Metre, 23 * Metre});
-    q4_ = Vector<Length, World>({31 * Metre, 32 * Metre, 33 * Metre});
-    p1_ = Vector<Speed, World>({4 * Metre / Second,
-                                5 * Metre / Second,
-                                6 * Metre / Second});
-    p2_ = Vector<Speed, World>({14 * Metre / Second,
-                                15 * Metre / Second,
-                                16 * Metre / Second});
-    p3_ = Vector<Speed, World>({24 * Metre / Second,
-                                25 * Metre / Second,
-                                26 * Metre / Second});
-    p4_ = Vector<Speed, World>({34 * Metre / Second,
-                                35 * Metre / Second,
-                                36 * Metre / Second});
+    // TODO(phl): See how we can simplify these horrendous expressions.
+    q1_ = Point<Vector<Length, World>>(
+        Vector<Length, World>({1 * Metre, 2 * Metre, 3 * Metre}));
+    q2_ = Point<Vector<Length, World>>(
+        Vector<Length, World>({11 * Metre, 12 * Metre, 13 * Metre}));
+    q3_ = Point<Vector<Length, World>>(
+        Vector<Length, World>({21 * Metre, 22 * Metre, 23 * Metre}));
+    q4_ = Point<Vector<Length, World>>(
+        Vector<Length, World>({31 * Metre, 32 * Metre, 33 * Metre}));
+    p1_ = Point<Vector<Speed, World>>(
+        Vector<Speed, World>({4 * Metre / Second,
+                              5 * Metre / Second,
+                              6 * Metre / Second}));
+    p2_ = Point<Vector<Speed, World>>(
+        Vector<Speed, World>({14 * Metre / Second,
+                              15 * Metre / Second,
+                              16 * Metre / Second}));
+    p3_ = Point<Vector<Speed, World>>(
+        Vector<Speed, World>({24 * Metre / Second,
+                              25 * Metre / Second,
+                              26 * Metre / Second}));
+    p4_ = Point<Vector<Speed, World>>(
+        Vector<Speed, World>({34 * Metre / Second,
+                              35 * Metre / Second,
+                              36 * Metre / Second}));
     d1_ = std::make_unique<DegreesOfFreedom<World>>(q1_, p1_);
     d2_ = std::make_unique<DegreesOfFreedom<World>>(q2_, p2_);
     d3_ = std::make_unique<DegreesOfFreedom<World>>(q3_, p3_);
