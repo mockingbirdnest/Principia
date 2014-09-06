@@ -55,7 +55,8 @@ class Plugin {
   // |InsertOrKeepVessel| since the last call to |CleanupVessels|.
   void CleanupVessels();
 
-  void SetCurrentTime(Date const& t);
+  // Sets current time to t. The time should not have already been set.
+  void SetInitialTime(Date const& t);
 
   // Arbitrarily sets the current position of the celestial body with index
   // |index|, so that the |SetCelestialStateOffset| and |SetVesselStateOffset|
@@ -80,33 +81,13 @@ class Plugin {
                             VelocityOffset<AliceWorld> from_parent_velocity);
 
  private:
-  // Represents a KSP |CelestialBody|.
-  struct Celestial {
-    // Takes ownership of |body|.
-    explicit Celestial(physics::Body const* const body) : body(body) {}
-    std::unique_ptr<physics::Body const> const body;
-    // The parent body for the 2-body approximation. Not owning, should only
-    // be null for the sun.
-    Celestial const* parent = nullptr;
-    std::unique_ptr<physics::Trajectory<World>>
-  };
-
-  // Represents a KSP |Vessel|.
-  struct Vessel {
-    // A massless |Body|.
-    std::unique_ptr<physics::Body const> const body(
-        physics::Body(GravitationalParameter()));
-    // The parent body for the 2-body approximation. Not owning, should not be
-    // null.
-    Celestial const* parent;
-    // Whether to keep the |Vessel| during the next cleanup.
-    bool keep = true;
-  };
+  struct Celestial;
+  struct Vessel;
 
   std::map<std::string, std::unique_ptr<Vessel>> vessels_;
   std::map<int, std::unique_ptr<Celestial>> celestials_;
 
-  Date current_time_;
+  std::unique_ptr<Date> current_time_;
 };
 
 }  // namespace ksp_plugin
