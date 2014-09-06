@@ -4,13 +4,33 @@
 #include <memory>
 #include <string>
 
+#include "geometry/point.hpp"
 #include "physics/body.hpp"
+#include "physics/trajectory.hpp"
 #include "quantities/quantities.hpp"
 #include "quantities/named_quantities.hpp"
 #include "quantities/si.hpp"
 
 namespace principia {
 namespace ksp_plugin {
+
+// The "universal" inertial reference frame in which we perform the integration.
+struct Universe;
+
+// Unity world space. Thank's to KSP madness, occasionally an inertial reference
+// frame, occasionally an uniformly rotating one. Handle with caution.
+struct World;
+
+// Unity world space, with the y and z axes switched through the looking-glass.
+// "We're all mad here. I'm mad. You're mad."
+struct AliceWorld;
+
+typedef geometry::Point<Time> Date;
+
+template<typename Frame>
+using Displacement = Vector<Length, Frame>;
+template<typename Frame>
+using VelocityOffset = Vector<Speed, Frame>;
 
 class Plugin {
  public:
@@ -35,6 +55,11 @@ class Plugin {
   // |InsertOrKeepVessel| since the last call to |CleanupVessels|.
   void CleanupVessels();
 
+  void SetCurrentTime(Date const& t);
+
+  void SetVesselStateOffset(Displacement<AliceWorld> from_parent_position,
+                            VelocityOffset<AliceWorld> from_parent_velocity);
+
  private:
   // Represents a KSP |CelestialBody|.
   struct Celestial {
@@ -44,6 +69,7 @@ class Plugin {
     // The parent body for the 2-body approximation. Not owning, should only
     // be null for the sun.
     Celestial const* parent = nullptr;
+    std::unique_ptr<physics::Trajectory<World>>
   };
 
   // Represents a KSP |Vessel|.
@@ -60,6 +86,8 @@ class Plugin {
 
   std::map<std::string, std::unique_ptr<Vessel>> vessels_;
   std::map<int, std::unique_ptr<Celestial>> celestials_;
+
+  Date current_time_;
 };
 
 }  // namespace ksp_plugin
