@@ -34,51 +34,58 @@ using VelocityOffset = Vector<Speed, Frame>;
 
 class Plugin {
  public:
-  // Insert a new celestial body with index |index| and gravitational parameter
-  // |gravitational_parameter| and null parent. No body with index |index|
-  // should already have been inserted.
-  void InsertCelestial(int index,
-                       GravitationalParameter gravitational_parameter);
+   // Creates a |Plugin|. The current time of that instance is |inital_time|.
+   Plugin(Date const& initial_time);
 
-  // Update the parent of the celestial body with index |index| to the one with
+   // The state of a body described as an offset from the state of the celestial
+   // body at index |parent|, with displacement from the parent given by
+   // |from_parent_position| and velocity relative to the parent given by
+   // |from_parent_velocity|.
+   // These members wrap the following expressions for a KSP |Orbit|:
+   // |Orbit.referenceBody.flightGlobalsIndex|, |Orbit.pos|, |Orbit.vel|.
+   struct CelestialRelativeState {
+     int parent;
+     Displacement<AliceWorld> from_parent_position;
+     VelocityOffset<AliceWorld> from_parent_velocity;
+   };
+
+  // Insert a new celestial body with index |index| and gravitational parameter
+  // |gravitational_parameter|. No body with index |index| should already have
+  // been inserted. If |state| is null the celestial is considered as the sun
+  // and given an arbitrary position. Otherwise the parent of the new body
+  // is the body at index |state->parent|, which should already have been
+  // inserted, and the state of the new body is defined by |state|.
+  // |InsertCelestial| should only be called once with null |parent|.
+  void InsertCelestial(int index,
+                       GravitationalParameter gravitational_parameter,
+                       CelestialRelativeState* state);
+
+  // Sets the parent of the celestial body with index |index| to the one with
   // index |parent|. Both bodies should already have been inserted.
   void UpdateCelestialHierarchy(int index, int parent);
 
   // Insert a new vessel with GUID |guid| if it does not already exist, and
-  // spares the vessel with GUID |guid| at the next call to |CleanupVessels|.
+  // flags the vessel with GUID |guid| so it is kept when calling |AdvanceTime|.
   // The parent body for the vessel is set to the one with index |index|. It
-  // should already have been inserted using |InsertCelestial|.
-  // Returns true if a new vessel was inserted.
+  // should already have been inserted using |InsertCelestial|. Returns |true|
+  // if a new vessel was inserted. In that case, |SetVesselStateOffset| should
+  // be called with the same |guid| the next call to |AdvanceTime|, so that the
+  // initial state of the new vessel is known.
   bool InsertOrKeepVessel(std::string guid, int parent);
 
-  // Remove vessels whose GUID was not given as a parameter to a call to
-  // |InsertOrKeepVessel| since the last call to |CleanupVessels|.
-  void CleanupVessels();
-
-  // Sets current time to t. The time should not have already been set.
-  void SetInitialTime(Date const& t);
-
-  // Arbitrarily sets the current position of the celestial body with index
-  // |index|, so that the |SetCelestialStateOffset| and |SetVesselStateOffset|
-  // functions may be used on its children. The position of the celestial body
-  // should not have been previously set.
-  void DeclareSun(int index);
-
-  // Set the position and velocity of the celestial body with index |index|
-  // relative to its parent at current time. The parent's position should have
-  // been previously set. The position of the celestial body should not have
-  // been previously set.
-  void SetCelestialStateOffset(int index,
-                               Displacement<AliceWorld> from_parent_position,
-                               VelocityOffset<AliceWorld> from_parent_velocity);
 
   // Set the position and velocity of the vessel with GUID |guid| relative to
-  // its parent at current time. The parent's position should have been
-  // previously set. The position of the vessel should not have been
-  // previously set.
+  // its parent at current time. |SetVesselStateOffset| should only be called
+  // once per vessel.
   void SetVesselStateOffset(std::string guid,
                             Displacement<AliceWorld> from_parent_position,
                             VelocityOffset<AliceWorld> from_parent_velocity);
+
+  // Simulates the system until time |t|. All vessels that have not been
+  // refreshed by calling |InsertOrKeepVessel| since the last call to
+  //|AdvanceTime| will be removed. The initial states of the vessels that remain
+  // should have been set using |SetVesselStateOffset|.
+  void AdvanceTime(Date const& t)
 
  private:
   struct Celestial;
@@ -88,6 +95,7 @@ class Plugin {
   std::map<int, std::unique_ptr<Celestial>> celestials_;
 
   std::unique_ptr<Date> current_time_;
+  std::unique_ptr<Celestial> sun_;
 };
 
 }  // namespace ksp_plugin
