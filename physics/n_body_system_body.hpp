@@ -127,7 +127,7 @@ void NBodySystem<InertialFrame>::Integrate(
                              state.momenta[k + 1].value,
                              state.momenta[k + 2].value));
         trajectories[t]->Append(
-            time, 
+            time,
             DegreesOfFreedom<InertialFrame>(position + reference_position,
                                             velocity + reference_velocity));
       }
