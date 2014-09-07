@@ -31,28 +31,28 @@ class Trajectory {
   // These functions return the series of positions/velocities/times for the
   // trajectory of the body.  All three containers are guaranteed to have the
   // same size.  These functions are O(|depth| + |length|).
-  std::map<Time, Point<Vector<Length, Frame>>> Positions() const;
-  std::map<Time, Point<Vector<Speed, Frame>>> Velocities() const;
-  std::list<Time> Times() const;
+  std::map<Point<Time>, Point<Vector<Length, Frame>>> Positions() const;
+  std::map<Point<Time>, Vector<Speed, Frame>> Velocities() const;
+  std::list<Point<Time>> Times() const;
 
   // Return the most recent position/velocity/time.  These functions are O(1)
   // and dirt-cheap.
   Point<Vector<Length, Frame>> const& last_position() const;
-  Point<Vector<Speed, Frame>> const& last_velocity() const;
-  Time const& last_time() const;
+  Vector<Speed, Frame> const& last_velocity() const;
+  Point<Time> const& last_time() const;
 
   // Appends one point to the trajectory.
-  void Append(Time const& time,
+  void Append(Point<Time> const& time,
               DegreesOfFreedom<Frame> const& degrees_of_freedom);
 
   // Removes all data for times (strictly) greater than |time|, as well as all
   // child trajectories forked at times (strictly) greater than |time|.
-  void ForgetAfter(Time const& time);
+  void ForgetAfter(Point<Time> const& time);
 
   // Removes all data for times less than or equal to |time|, as well as all
   // child trajectories forked at times less than or equal to |time|.  This
   // trajectory must be a root.
-  void ForgetBefore(Time const& time);
+  void ForgetBefore(Point<Time> const& time);
 
   // Creates a new child trajectory forked at time |time|, and returns it.  The
   // child trajectory may be changed independently from the parent trajectory
@@ -62,7 +62,7 @@ class Trajectory {
   // removed deletes the child trajectory.  Deleting the parent trajectory
   // deletes all child trajectories.  |time| must be one of the times of the
   // current trajectory (as returned by Times()).  No transfer of ownership.
-  Trajectory* Fork(Time const& time);
+  Trajectory* Fork(Point<Time> const& time);
 
   // Returns true if this is a root trajectory.
   bool is_root() const;
@@ -73,14 +73,14 @@ class Trajectory {
 
   // Returns the fork time for a nonroot trajectory and null for a root
   // trajectory.
-  Time const* fork_time() const;
+  Point<Time> const* fork_time() const;
 
   // The body to which this trajectory pertains.
   Body const& body() const;
 
   // This function represents the intrinsic acceleration of a body, irrespective
   // of any external field.  It can be due e.g., to an engine burn.
-  typedef std::function<Vector<Acceleration, Frame>(Time const& time)>
+  typedef std::function<Vector<Acceleration, Frame>(Point<Time> const& time)>
       IntrinsicAcceleration;
 
   // Sets the intrinsic acceleration for the trajectory of a massless body.
@@ -106,10 +106,10 @@ class Trajectory {
   // |fork_time()| (or initial time) of this trajectory, the returned
   // acceleration is zero.
   Vector<Acceleration, Frame> evaluate_intrinsic_acceleration(
-      Time const& time) const;
+      Point<Time> const& time) const;
 
  private:
-  typedef std::map<Time, DegreesOfFreedom<Frame>> Timeline;
+  typedef std::map<Point<Time>, DegreesOfFreedom<Frame>> Timeline;
 
   // A constructor for creating a child trajectory during forking.
   Trajectory(Body const& body,
@@ -117,7 +117,7 @@ class Trajectory {
              typename Timeline::iterator const& fork);
 
   template<typename Value>
-  std::map<Time, Value> ApplyToDegreesOfFreedom(
+  std::map<Point<Time>, Value> ApplyToDegreesOfFreedom(
       std::function<Value(DegreesOfFreedom<Frame> const&)> compute_value) const;
 
   Body const& body_;
@@ -129,7 +129,7 @@ class Trajectory {
 
   // There may be several forks starting from the same time, hence the multimap.
   // Child trajectories are owned.
-  std::multimap<Time, std::unique_ptr<Trajectory>> children_;
+  std::multimap<Point<Time>, std::unique_ptr<Trajectory>> children_;
 
   Timeline timeline_;
 

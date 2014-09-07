@@ -16,26 +16,26 @@ Trajectory<Frame>::Trajectory(Body const& body)
       parent_(nullptr) {}
 
 template<typename Frame>
-std::map<Time, Point<Vector<Length, Frame>>>
+std::map<Point<Time>, Point<Vector<Length, Frame>>>
 Trajectory<Frame>::Positions() const {
   return ApplyToDegreesOfFreedom<Point<Vector<Length, Frame>>>(
       [](DegreesOfFreedom<Frame> const& s) { return s.position; });
 }
 
 template<typename Frame>
-std::map<Time, Point<Vector<Speed, Frame>>>
+std::map<Point<Time>, Point<Vector<Speed, Frame>>>
 Trajectory<Frame>::Velocities() const {
   return ApplyToDegreesOfFreedom<Point<Vector<Speed, Frame>>>(
       [](DegreesOfFreedom<Frame> const& s) { return s.velocity; });
 }
 
 template<typename Frame>
-std::list<Time> Trajectory<Frame>::Times() const {
-  std::list<Time> result;
+std::list<Point<Time>> Trajectory<Frame>::Times() const {
+  std::list<Point<Time>> result;
 
   // Our own data points in increasing time order.
   for (const auto it : timeline_) {
-    Time const& time = it.first;
+    Point<Time> const& time = it.first;
     result.push_back(time);
   }
 
@@ -44,7 +44,7 @@ std::list<Time> Trajectory<Frame>::Times() const {
   while (ancestor->parent_ != nullptr) {
     Timeline::iterator it = *ancestor->fork_;
     do {
-      Time const& time = it->first;
+      Point<Time> const& time = it->first;
       result.push_front(time);
     } while (it-- !=  // Postdecrement to process begin.
              ancestor->parent_->timeline_.begin());
@@ -75,7 +75,7 @@ Point<Vector<Speed, Frame>> const& Trajectory<Frame>::last_velocity() const {
 }
 
 template<typename Frame>
-Time const& Trajectory<Frame>::last_time() const {
+Point<Time> const& Trajectory<Frame>::last_time() const {
   if (timeline_.empty()) {
     CHECK(fork_ != nullptr) << "Empty trajectory";
     return (*fork_)->first;
@@ -86,7 +86,7 @@ Time const& Trajectory<Frame>::last_time() const {
 
 template<typename Frame>
 void Trajectory<Frame>::Append(
-    Time const& time,
+    Point<Time> const& time,
     DegreesOfFreedom<Frame> const& degrees_of_freedom) {
   auto inserted = timeline_.emplace(time, degrees_of_freedom);
   CHECK(timeline_.end() == ++inserted.first) << "Append out of order";
@@ -94,7 +94,7 @@ void Trajectory<Frame>::Append(
 }
 
 template<typename Frame>
-void Trajectory<Frame>::ForgetAfter(Time const& time) {
+void Trajectory<Frame>::ForgetAfter(Point<Time> const& time) {
   // Check that |time| is the time of one of our Timeline or the time of fork.
   auto const it = timeline_.find(time);
   if (it == timeline_.end()) {
@@ -118,7 +118,7 @@ void Trajectory<Frame>::ForgetAfter(Time const& time) {
 }
 
 template<typename Frame>
-void Trajectory<Frame>::ForgetBefore(Time const& time) {
+void Trajectory<Frame>::ForgetBefore(Point<Time> const& time) {
   // Check that this is a root.
   CHECK(is_root()) << "ForgetBefore on a nonroot trajectory";
   // Check that |time| is the time of one of our Timeline or the time of fork.
@@ -135,7 +135,7 @@ void Trajectory<Frame>::ForgetBefore(Time const& time) {
 }
 
 template<typename Frame>
-Trajectory<Frame>* Trajectory<Frame>::Fork(Time const& time) {
+Trajectory<Frame>* Trajectory<Frame>::Fork(Point<Time> const& time) {
   auto fork_it = timeline_.find(time);
   CHECK(fork_it != timeline_.end()) << "Fork at nonexistent time";
   std::unique_ptr<Trajectory<Frame>> child(
@@ -169,7 +169,7 @@ Trajectory<Frame>* Trajectory<Frame>::root() {
 }
 
 template<typename Frame>
-Time const* Trajectory<Frame>::fork_time() const {
+Point<Time> const* Trajectory<Frame>::fork_time() const {
   if (parent_ == nullptr) {
     return nullptr;
   } else {
@@ -203,7 +203,7 @@ bool Trajectory<Frame>::has_intrinsic_acceleration() const {
 
 template<typename Frame>
 Vector<Acceleration, Frame> Trajectory<Frame>::evaluate_intrinsic_acceleration(
-    Time const& time) const {
+    Point<Time> const& time) const {
   if (intrinsic_acceleration_ != nullptr &&
       (fork_ == nullptr || time > (*fork_)->first)) {
     return (*intrinsic_acceleration_)(time);
@@ -228,13 +228,13 @@ Trajectory<Frame>::Trajectory(Body const& body,
 
 template<typename Frame>
 template<typename Value>
-std::map<Time, Value> Trajectory<Frame>::ApplyToDegreesOfFreedom(
+std::map<Point<Time>, Value> Trajectory<Frame>::ApplyToDegreesOfFreedom(
     std::function<Value(DegreesOfFreedom<Frame> const&)> compute_value) const {
-  std::map<Time, Value> result;
+  std::map<Point<Time>, Value> result;
 
   // Our own data points in increasing time order.
   for (const auto it : timeline_) {
-    Time const& time = it.first;
+    Point<Time> const& time = it.first;
     DegreesOfFreedom<Frame> const& degrees_of_freedom = it.second;
     result.insert(result.end(),
                   std::make_pair(time, compute_value(degrees_of_freedom)));
@@ -245,7 +245,7 @@ std::map<Time, Value> Trajectory<Frame>::ApplyToDegreesOfFreedom(
   while (ancestor->parent_ != nullptr) {
     Timeline::iterator it = *ancestor->fork_;
     do {
-      Time const& time = it->first;
+      Point<Time> const& time = it->first;
       DegreesOfFreedom<Frame> const& degrees_of_freedom = it->second;
       result.insert(result.begin(),
                     std::make_pair(time, compute_value(degrees_of_freedom)));
