@@ -76,8 +76,8 @@ class NBodySystemTest : public testing::Test {
             2 * π * (q2 - centre_of_mass_).Norm() / period_,
             0 * SIUnit<Speed>(),
             0 * SIUnit<Speed>()}));
-    trajectory1_->Append(0 * SIUnit<Time>(), {q1, v1});
-    trajectory2_->Append(0 * SIUnit<Time>(), {q2, v2});
+    trajectory1_->Append(Point<Time>(0 * SIUnit<Time>()), {q1, v1});
+    trajectory2_->Append(Point<Time>(0 * SIUnit<Time>()), {q2, v2});
     system_ = std::make_unique<NBodySystem<EarthMoonOrbitPlane>>();
   }
 
@@ -150,7 +150,7 @@ TEST_F(NBodySystemDeathTest, IntegrateError) {
   EXPECT_DEATH({
     std::unique_ptr<Trajectory<EarthMoonOrbitPlane>> trajectory(
         new Trajectory<EarthMoonOrbitPlane>(*body2_));
-    trajectory->Append(1 * SIUnit<Time>(),
+    trajectory->Append(Point<Time>(1 * SIUnit<Time>()),
                        {Point<Vector<Length, EarthMoonOrbitPlane>>(),
                         Point<Vector<Speed, EarthMoonOrbitPlane>>()});
     system_->Integrate(integrator_,
@@ -217,7 +217,6 @@ TEST_F(NBodySystemTest, MoonEarth) {
 TEST_F(NBodySystemTest, Moon) {
   // TODO(phl): I am not sure if these things make any sense.
   Point<Vector<Length, EarthMoonOrbitPlane>> const reference_position;
-  Point<Vector<Speed, EarthMoonOrbitPlane>> const reference_velocity;
   system_->Integrate(integrator_,
                      period_,
                      period_ / 100,
@@ -226,8 +225,7 @@ TEST_F(NBodySystemTest, Moon) {
 
   Length const q2 =
       (trajectory2_->last_position() - reference_position).coordinates().y;
-  Speed const v2 =
-      (trajectory2_->last_velocity() - reference_velocity).coordinates().x;
+  Speed const v2 = trajectory2_->last_velocity().coordinates().x;
   std::vector<Vector<Length, EarthMoonOrbitPlane>> const positions =
       ValuesOf(trajectory2_->Positions(), reference_position);
   LOG(INFO) << ToMathematicaString(positions);
@@ -249,7 +247,6 @@ TEST_F(NBodySystemTest, Moon) {
 TEST_F(NBodySystemTest, EarthProbe) {
   // TODO(phl): I am not sure if these things make any sense.
   Point<Vector<Length, EarthMoonOrbitPlane>> const reference_position;
-  Point<Vector<Speed, EarthMoonOrbitPlane>> const reference_velocity;
   Length const distance = 1E9 * SIUnit<Length>();
   trajectory3_->Append(trajectory1_->last_time(),
                        {trajectory1_->last_position() +
@@ -273,8 +270,7 @@ TEST_F(NBodySystemTest, EarthProbe) {
 
   Length const q1 =
       (trajectory1_->last_position() - reference_position).coordinates().y;
-  Speed const v1 =
-      (trajectory1_->last_velocity() - reference_velocity).coordinates().x;
+  Speed const v1 = trajectory1_->last_velocity().coordinates().x;
   std::vector<Vector<Length, EarthMoonOrbitPlane>> const positions1 =
       ValuesOf(trajectory1_->Positions(), reference_position);
   LOG(INFO) << ToMathematicaString(positions1);
@@ -294,8 +290,7 @@ TEST_F(NBodySystemTest, EarthProbe) {
 
   Length const q3 =
       (trajectory3_->last_position() - reference_position).coordinates().y;
-  Speed const v3 =
-      (trajectory3_->last_velocity() - reference_velocity).coordinates().x;
+  Speed const v3 = trajectory3_->last_velocity().coordinates().x;
   std::vector<Vector<Length, EarthMoonOrbitPlane>> const positions3 =
       ValuesOf(trajectory3_->Positions(), reference_position);
   LOG(INFO) << ToMathematicaString(positions3);

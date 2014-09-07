@@ -23,9 +23,9 @@ Trajectory<Frame>::Positions() const {
 }
 
 template<typename Frame>
-std::map<Point<Time>, Point<Vector<Speed, Frame>>>
+std::map<Point<Time>, Vector<Speed, Frame>>
 Trajectory<Frame>::Velocities() const {
-  return ApplyToDegreesOfFreedom<Point<Vector<Speed, Frame>>>(
+  return ApplyToDegreesOfFreedom<Vector<Speed, Frame>>(
       [](DegreesOfFreedom<Frame> const& s) { return s.velocity; });
 }
 
@@ -65,7 +65,7 @@ Point<Vector<Length, Frame>> const& Trajectory<Frame>::last_position() const {
 }
 
 template<typename Frame>
-Point<Vector<Speed, Frame>> const& Trajectory<Frame>::last_velocity() const {
+Vector<Speed, Frame> const& Trajectory<Frame>::last_velocity() const {
   if (timeline_.empty()) {
     CHECK(fork_ != nullptr) << "Empty trajectory";
     return (*fork_)->second.velocity;

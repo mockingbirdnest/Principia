@@ -63,10 +63,10 @@ class TrajectoryTest : public testing::Test {
     d2_ = std::make_unique<DegreesOfFreedom<World>>(q2_, p2_);
     d3_ = std::make_unique<DegreesOfFreedom<World>>(q3_, p3_);
     d4_ = std::make_unique<DegreesOfFreedom<World>>(q4_, p4_);
-    t1_ = 7 * Second;
-    t2_ = 17 * Second;
-    t3_ = 27 * Second;
-    t4_ = 37 * Second;
+    t1_ = Point<Time>(7 * Second);
+    t2_ = Point<Time>(17 * Second);
+    t3_ = Point<Time>(27 * Second);
+    t4_ = Point<Time>(37 * Second);
 
     massive_body_.reset(new Body(1 * SIUnit<Mass>()));
     massless_body_.reset(new Body(0 * SIUnit<Mass>()));
