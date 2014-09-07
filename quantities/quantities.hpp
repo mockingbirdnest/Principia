@@ -98,10 +98,10 @@ template<typename D>
 Angle ArcTan(Quantity<D> const& y, Quantity<D> const& x);
 
 std::string DebugString(double const number,
-                        unsigned char const precision = DBL_DIG + 1);
+                        int const precision = DBL_DIG + 1);
 template<typename D>
 std::string DebugString(Quantity<D> const& quantity,
-                        unsigned char const precision = DBL_DIG + 1);
+                        int const precision = DBL_DIG + 1);
 
 template<typename D>
 class Quantity {
@@ -165,7 +165,7 @@ class Quantity {
       Quantity<ArgumentDimensions> const& x);
   friend Angle ArcTan<>(Quantity<D> const& y, Quantity<D> const& x);
 
-  friend std::string DebugString<>(Quantity<D> const&, unsigned char const);
+  friend std::string DebugString<>(Quantity<D> const&, int const);
 };
 
 }  // namespace quantities
