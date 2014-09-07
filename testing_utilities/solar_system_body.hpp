@@ -34,7 +34,7 @@ namespace testing_utilities {
 std::unique_ptr<SolarSystem> SolarSystem::AtСпутникLaunch() {
   typedef Vector<Length, ICRFJ2000EclipticFrame> Displacement;
   typedef Vector<Speed, ICRFJ2000EclipticFrame> Velocity;
-  typedef Position Position;
+  typedef Point<Displacement> Position;
 
   // Number of days since the JD epoch. JD2436116.3115 is the time of the launch
   // of Простейший Спутник-1.
