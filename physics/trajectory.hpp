@@ -31,14 +31,14 @@ class Trajectory {
   // These functions return the series of positions/velocities/times for the
   // trajectory of the body.  All three containers are guaranteed to have the
   // same size.  These functions are O(|depth| + |length|).
-  std::map<Time, Vector<Length, Frame>> Positions() const;
-  std::map<Time, Vector<Speed, Frame>> Velocities() const;
+  std::map<Time, Point<Vector<Length, Frame>>> Positions() const;
+  std::map<Time, Point<Vector<Speed, Frame>>> Velocities() const;
   std::list<Time> Times() const;
 
   // Return the most recent position/velocity/time.  These functions are O(1)
   // and dirt-cheap.
-  Vector<Length, Frame> const& last_position() const;
-  Vector<Speed, Frame> const& last_velocity() const;
+  Point<Vector<Length, Frame>> const& last_position() const;
+  Point<Vector<Speed, Frame>> const& last_velocity() const;
   Time const& last_time() const;
 
   // Appends one point to the trajectory.
