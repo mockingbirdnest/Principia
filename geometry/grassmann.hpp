@@ -14,7 +14,7 @@ namespace geometry {
 // space bearing the dimensionality of |Scalar|, i.e., an element of
 // ⋀ⁿ Scalar³. Do not use this type for |rank == 0| (scalars), use the |Scalar|
 // type directly instead.
-template<typename Scalar, typename Frame, unsigned int rank>
+template<typename Scalar, typename Frame, int rank>
 class Multivector;
 
 template<typename Scalar, typename Frame>
@@ -133,84 +133,81 @@ Bivector<quantities::Product<LScalar, RScalar>, Frame> operator*(
     Trivector<LScalar, Frame> const& left,
     Vector<RScalar, Frame> const& right);
 
-template<typename Scalar, typename Frame, unsigned int rank>
+template<typename Scalar, typename Frame, int rank>
 Multivector<Scalar, Frame, rank> operator+(
     Multivector<Scalar, Frame, rank> const& right);
-template<typename Scalar, typename Frame, unsigned int rank>
+template<typename Scalar, typename Frame, int rank>
 Multivector<Scalar, Frame, rank> operator-(
     Multivector<Scalar, Frame, rank> const& right);
 
-template<typename Scalar, typename Frame, unsigned int rank>
+template<typename Scalar, typename Frame, int rank>
 Multivector<Scalar, Frame, rank> operator+(
     Multivector<Scalar, Frame, rank> const& left,
     Multivector<Scalar, Frame, rank> const& right);
-template<typename Scalar, typename Frame, unsigned int rank>
+template<typename Scalar, typename Frame, int rank>
 Multivector<Scalar, Frame, rank> operator-(
     Multivector<Scalar, Frame, rank> const& left,
     Multivector<Scalar, Frame, rank> const& right);
 
-template<typename Scalar, typename Frame, unsigned int rank>
+template<typename Scalar, typename Frame, int rank>
 Multivector<Scalar, Frame, rank> operator*(
     double const left,
     Multivector<Scalar, Frame, rank> const& right);
-template<typename Scalar, typename Frame, unsigned int rank>
+template<typename Scalar, typename Frame, int rank>
 Multivector<Scalar, Frame, rank> operator*(
     Multivector<Scalar, Frame, rank> const& left,
     double const right);
-template<typename Scalar, typename Frame, unsigned int rank>
+template<typename Scalar, typename Frame, int rank>
 Multivector<Scalar, Frame, rank> operator/(
     Multivector<Scalar, Frame, rank> const& left,
     double const right);
 
-template<typename LDimension, typename RScalar, typename Frame,
-         unsigned int rank>
+template<typename LDimension, typename RScalar, typename Frame, int rank>
 Multivector<quantities::Product<quantities::Quantity<LDimension>, RScalar>,
             Frame, rank>
 operator*(quantities::Quantity<LDimension> const& left,
           Multivector<RScalar, Frame, rank> const& right);
 
-template<typename LScalar, typename RDimension, typename Frame,
-         unsigned int rank>
+template<typename LScalar, typename RDimension, typename Frame, int rank>
 Multivector<quantities::Product<LScalar, quantities::Quantity<RDimension>>,
             Frame, rank>
 operator*(Multivector<LScalar, Frame, rank> const& left,
           quantities::Quantity<RDimension> const& right);
 
-template<typename LScalar, typename RDimension, typename Frame,
-         unsigned int rank>
+template<typename LScalar, typename RDimension, typename Frame, int rank>
 Multivector<quantities::Quotient<LScalar, quantities::Quantity<RDimension>>,
             Frame, rank>
 operator/(Multivector<LScalar, Frame, rank> const& left,
           quantities::Quantity<RDimension> const& right);
 
-template<typename Scalar, typename Frame, unsigned int rank>
+template<typename Scalar, typename Frame, int rank>
 bool operator==(Multivector<Scalar, Frame, rank> const& left,
                 Multivector<Scalar, Frame, rank> const& right);
-template<typename Scalar, typename Frame, unsigned int rank>
+template<typename Scalar, typename Frame, int rank>
 bool operator!=(Multivector<Scalar, Frame, rank> const& left,
                 Multivector<Scalar, Frame, rank> const& right);
 
-template<typename Scalar, typename Frame, unsigned int rank>
+template<typename Scalar, typename Frame, int rank>
 Multivector<Scalar, Frame, rank>& operator+=(
     Multivector<Scalar, Frame, rank>& left,  // NOLINT(runtime/references)
     Multivector<Scalar, Frame, rank> const& right);
-template<typename Scalar, typename Frame, unsigned int rank>
+template<typename Scalar, typename Frame, int rank>
 Multivector<Scalar, Frame, rank>& operator-=(
     Multivector<Scalar, Frame, rank>& left,  // NOLINT(runtime/references)
     Multivector<Scalar, Frame, rank> const& right);
-template<typename Scalar, typename Frame, unsigned int rank>
+template<typename Scalar, typename Frame, int rank>
 Multivector<Scalar, Frame, rank>& operator*=(
     Multivector<Scalar, Frame, rank>& left,  // NOLINT(runtime/references)
     double const right);
-template<typename Scalar, typename Frame, unsigned int rank>
+template<typename Scalar, typename Frame, int rank>
 Multivector<Scalar, Frame, rank>& operator/=(
     Multivector<Scalar, Frame, rank>& left,  // NOLINT(runtime/references)
     double const right);
 
-template<typename Scalar, typename Frame, unsigned int rank>
+template<typename Scalar, typename Frame, int rank>
 std::string DebugString(Multivector<Scalar, Frame, rank> const& multivector);
 
-template<typename Scalar, typename Frame, unsigned int rank>
+template<typename Scalar, typename Frame, int rank>
 std::ostream& operator<<(std::ostream& out,
                          Multivector<Scalar, Frame, rank> const& multivector);
 

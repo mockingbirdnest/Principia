@@ -339,8 +339,7 @@ inline std::string FormatUnit(std::string const& name, int const exponent) {
   }
 }
 
-inline std::string DebugString(double const number,
-                               unsigned char const precision) {
+inline std::string DebugString(double const number, int const precision) {
   char result[50];
 #ifdef _MSC_VER
   unsigned int old_exponent_format = _set_output_format(_TWO_DIGIT_EXPONENT);
@@ -354,8 +353,7 @@ inline std::string DebugString(double const number,
 }
 
 template<typename D>
-std::string DebugString(Quantity<D> const& quantity,
-                        unsigned char const precision) {
+std::string DebugString(Quantity<D> const& quantity, int const precision) {
   return DebugString(quantity.magnitude_, precision) +
       FormatUnit("m", D::Length) + FormatUnit("kg", D::Mass) +
       FormatUnit("s", D::Time) + FormatUnit("A", D::Current) +
