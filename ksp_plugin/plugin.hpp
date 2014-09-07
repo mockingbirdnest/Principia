@@ -34,33 +34,33 @@ using VelocityOffset = Vector<Speed, Frame>;
 
 class Plugin {
  public:
-   // The state of a body described as an offset from the state of the celestial
-   // body at index |parent|, with displacement from the parent given by
-   // |from_parent_position| and velocity relative to the parent given by
-   // |from_parent_velocity|.
-   // These members wrap the following expressions for a KSP |Orbit|:
-   // |Orbit.referenceBody.flightGlobalsIndex|, |Orbit.pos|, |Orbit.vel|.
-   struct CelestialRelativeState {
-     int parent;
-     Displacement<AliceWorld> from_parent_position;
-     VelocityOffset<AliceWorld> from_parent_velocity;
-   };
-
-   // Creates a |Plugin|. The current time of that instance is |inital_time|.
-   // Inserts a celestial body with an arbitrary position and index |sun_index|.
-   Plugin(Date const& initial_time, int sun_index);
+  // Creates a |Plugin|. The current time of that instance is |initial_time|.
+  // Inserts a celestial body with an arbitrary position, index |sun_index| and
+  // gravitational parameter |sun_gravitational_parameter|.
+  // The arguments correspond to KSP's |Planetarium.GetUniversalTime()|,
+  // |Planetarium.fetch.Sun.flightGlobalsIndex|,
+  // |Planetarium.fetch.Sun.gravParameter|.
+  Plugin(Date const& initial_time, int const sun_index,
+         GravitationalParameter const& sun_gravitational_parameter);
 
   // Insert a new celestial body with index |index| and gravitational parameter
   // |gravitational_parameter|. No body with index |index| should already have
   // been inserted. The parent of the new body is the body at index |parent|,
-  // which should already have been inserted. The state of the new body is 
+  // which should already have been inserted. The state of the new body at
+  // current time is given by |AliceWorld| offsets from the parent.
+  // For a KSP |CelestialBody| |b|, the arguments correspond to:
+  // |b.flightGlobalsIndex|, |b.gravParameter|,
+  //|b.orbit.referenceBody.flightGlobalsIndex|, |b.orbit.pos|, |b.orbit.vel|.
   void InsertCelestial(int index,
-                       int parent;
-                       Displacement<AliceWorld> from_parent_position;
-                       VelocityOffset<AliceWorld> from_parent_velocity;);
+                       GravitationalParameter gravitational_parameter,
+                       int parent,
+                       Displacement<AliceWorld> from_parent_position,
+                       VelocityOffset<AliceWorld> from_parent_velocity);
 
   // Sets the parent of the celestial body with index |index| to the one with
   // index |parent|. Both bodies should already have been inserted.
+  // For a KSP |CelestialBody| |b|, the arguments correspond to
+  // |b.flightGlobalsIndex| and |b.orbit.referenceBody.flightGlobalsIndex|.
   void UpdateCelestialHierarchy(int index, int parent);
 
   // Insert a new vessel with GUID |guid| if it does not already exist, and
@@ -70,11 +70,15 @@ class Plugin {
   // if a new vessel was inserted. In that case, |SetVesselStateOffset| should
   // be called with the same |guid| the next call to |AdvanceTime|, so that the
   // initial state of the new vessel is known.
+  // For a KSP |Vessel| |v|, the arguments correspond to |v.id|,
+  // |v.orbit.referenceBody|.
   bool InsertOrKeepVessel(std::string guid, int parent);
 
   // Set the position and velocity of the vessel with GUID |guid| relative to
   // its parent at current time. |SetVesselStateOffset| should only be called
   // once per vessel.
+  // For a KSP |Vessel| |v|, the arguments correspond to |v.id|, |v.orbit.pos|,
+  // |v.orbit.vel|.
   void SetVesselStateOffset(std::string guid,
                             Displacement<AliceWorld> from_parent_position,
                             VelocityOffset<AliceWorld> from_parent_velocity);
@@ -91,8 +95,8 @@ class Plugin {
   std::map<std::string, std::unique_ptr<Vessel>> vessels_;
   std::map<int, std::unique_ptr<Celestial>> celestials_;
 
-  std::unique_ptr<Date> current_time_;
-  std::unique_ptr<Celestial> sun_;
+  Date current_time_;
+  Celestial* sun_;  // Not owning.
 };
 
 }  // namespace ksp_plugin

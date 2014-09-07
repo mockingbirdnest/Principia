@@ -4,39 +4,47 @@ namespace principia {
 namespace ksp_plugin {
 
 using physics::Body;
+using physics::Trajectory;
 
 // Represents a KSP |CelestialBody|.
 struct Plugin::Celestial {
-  // Takes ownership of |body|.
-  explicit Celestial(physics::Body const* const body) : body(body) {}
-  std::unique_ptr<physics::Body const> const body;
+  explicit Celestial(GravitationalParameter const& gravitational_parameter) 
+    : body(new Body(gravitational_parameter)) {}
+  std::unique_ptr<Body const> const body;
   // The parent body for the 2-body approximation. Not owning, should only
   // be null for the sun.
   Celestial const* parent = nullptr;
   // The past and present trajectory of the body.
-  std::unique_ptr<physics::Trajectory<World>> history;
+  std::unique_ptr<Trajectory<World>> history;
 };
 
 // Represents a KSP |Vessel|.
 struct Plugin::Vessel {
   // Constructs a vessel whose parent is initially |*parent|. |parent| should
-  // not be null.
+  // not be null. No transfer of ownership.
   explicit Vessel(Celestial const* parent) : parent(parent) {
     CHECK(parent != nullptr) << "null parent";
-  };
+  }
   // A massless |Body|.
-  std::unique_ptr<physics::Body const> const body =
-      new physics::Body(GravitationalParameter());
+  std::unique_ptr<Body const> const body = new Body(GravitationalParameter());
   // The parent body for the 2-body approximation. Not owning, should not be
   // null.
   Celestial const* parent;
   // The past and present trajectory of the body.
-  std::unique_ptr<physics::Trajectory<World>> history;
-  // Whether to keep the |Vessel| during the next cleanup.
+  std::unique_ptr<Trajectory<World>> history;
+  // Whether to keep the |Vessel| during the next call to |AdvanceTime|.
   bool keep = true;
 };
 
-Plugin::Plugin(Date const& initial_time) : current_time_(initial_time) {}
+Plugin::Plugin(Date const& initial_time, int const sun_index,
+               GravitationalParameter const& sun_gravitational_parameter)
+    : current_time_(initial_time) {
+  celestials_.insert(
+      {sun_index, std::make_unique<Celestial>(sun_gravitational_parameter)});
+  sun_->history = std::make_unique<Trajectory<World>>(*sun_);
+  sun_->history->Append(current_time_ - Date(),
+                        {Displacement<World>(), VelocityOffset<World>()});
+}
 
 void Plugin::InsertCelestial(int index,
                              GravitationalParameter gravitational_parameter
