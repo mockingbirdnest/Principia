@@ -48,7 +48,7 @@ struct ProductGenerator {
                         Right::Dimensions::SolidAngle
   };
   using ResultType = typename Collapse<
-      Quantity<Dimensions<Length, Mass, Time, Current, Temperature, Amount, 
+      Quantity<Dimensions<Length, Mass, Time, Current, Temperature, Amount,
                           LuminousIntensity, Winding, Angle,
                           SolidAngle>>>::ResultType;
 };

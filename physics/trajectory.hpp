@@ -80,7 +80,8 @@ class Trajectory {
 
   // This function represents the intrinsic acceleration of a body, irrespective
   // of any external field.  It can be due e.g., to an engine burn.
-  using IntrinsicAcceleration = std::function<Vector<Acceleration, Frame>(Time const& time)>;
+  using IntrinsicAcceleration =
+      std::function<Vector<Acceleration, Frame>(Time const& time)>;
 
   // Sets the intrinsic acceleration for the trajectory of a massless body.
   // For a nonroot trajectory the intrinsic acceleration only applies to times
