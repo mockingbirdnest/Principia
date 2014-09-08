@@ -40,6 +40,7 @@ class NBodySystem {
       std::vector<Trajectory<InertialFrame> const*> const& massive_trajectories,
       std::vector<Trajectory<InertialFrame> const*> const&
           massless_trajectories,
+      Point<Time> const& reference_time,
       Time const& t,
       std::vector<Length> const& q,
       std::vector<Acceleration>* result);

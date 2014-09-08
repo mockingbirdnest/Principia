@@ -66,16 +66,14 @@ class NBodySystemTest : public testing::Test {
     centre_of_mass_ =
         Barycentre<Vector<Length, EarthMoonOrbitPlane>, Mass>(
             {q1, q2}, {body1_->mass(), body2_->mass()});
-    Point<Vector<Speed, EarthMoonOrbitPlane>> const
-        v1(Vector<Speed, EarthMoonOrbitPlane>({
-            -2 * π * (q1 - centre_of_mass_).Norm() / period_,
+    Vector<Speed, EarthMoonOrbitPlane> const
+        v1({-2 * π * (q1 - centre_of_mass_).Norm() / period_,
+             0 * SIUnit<Speed>(),
+             0 * SIUnit<Speed>()});
+    Vector<Speed, EarthMoonOrbitPlane> const
+        v2({2 * π * (q2 - centre_of_mass_).Norm() / period_,
             0 * SIUnit<Speed>(),
-            0 * SIUnit<Speed>()}));
-    Point<Vector<Speed, EarthMoonOrbitPlane>> const
-        v2(Vector<Speed, EarthMoonOrbitPlane>({
-            2 * π * (q2 - centre_of_mass_).Norm() / period_,
-            0 * SIUnit<Speed>(),
-            0 * SIUnit<Speed>()}));
+            0 * SIUnit<Speed>()});
     trajectory1_->Append(Point<Time>(0 * SIUnit<Time>()), {q1, v1});
     trajectory2_->Append(Point<Time>(0 * SIUnit<Time>()), {q2, v2});
     system_ = std::make_unique<NBodySystem<EarthMoonOrbitPlane>>();
@@ -152,7 +150,7 @@ TEST_F(NBodySystemDeathTest, IntegrateError) {
         new Trajectory<EarthMoonOrbitPlane>(*body2_));
     trajectory->Append(Point<Time>(1 * SIUnit<Time>()),
                        {Point<Vector<Length, EarthMoonOrbitPlane>>(),
-                        Point<Vector<Speed, EarthMoonOrbitPlane>>()});
+                        Vector<Speed, EarthMoonOrbitPlane>()});
     system_->Integrate(integrator_,
                        period_,
                        period_ / 100,

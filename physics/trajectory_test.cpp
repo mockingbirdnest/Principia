@@ -63,10 +63,11 @@ class TrajectoryTest : public testing::Test {
     d2_ = std::make_unique<DegreesOfFreedom<World>>(q2_, p2_);
     d3_ = std::make_unique<DegreesOfFreedom<World>>(q3_, p3_);
     d4_ = std::make_unique<DegreesOfFreedom<World>>(q4_, p4_);
-    t1_ = Point<Time>(7 * Second);
-    t2_ = Point<Time>(17 * Second);
-    t3_ = Point<Time>(27 * Second);
-    t4_ = Point<Time>(37 * Second);
+    t0_ = Point<Time>(0 * Second);
+    t1_ = t0_ + 7 * Second;
+    t2_ = t0_ + 17 * Second;
+    t3_ = t0_ + 27 * Second;
+    t4_ = t0_ + 37 * Second;
 
     massive_body_.reset(new Body(1 * SIUnit<Mass>()));
     massless_body_.reset(new Body(0 * SIUnit<Mass>()));
@@ -77,7 +78,7 @@ class TrajectoryTest : public testing::Test {
   Point<Vector<Length, World>> q1_, q2_, q3_, q4_;
   Vector<Speed, World> p1_, p2_, p3_, p4_;
   std::unique_ptr<DegreesOfFreedom<World>> d1_, d2_, d3_, d4_;
-  Point<Time> t1_, t2_, t3_, t4_;
+  Point<Time> t0_, t1_, t2_, t3_, t4_;
   std::unique_ptr<Body> massive_body_;
   std::unique_ptr<Body> massless_body_;
   std::unique_ptr<Trajectory<World>> massive_trajectory_;
@@ -314,10 +315,11 @@ TEST_F(TrajectoryDeathTest, IntrinsicAccelerationSuccess) {
 
   EXPECT_FALSE(massless_trajectory_->has_intrinsic_acceleration());
   massless_trajectory_->set_intrinsic_acceleration(
-      [](Point<Time> const& t) {
-        return Vector<Acceleration, World>({1 * SIUnit<Length>() / (t * t),
-                                            2 * SIUnit<Length>() / (t * t),
-                                            3 * SIUnit<Length>() / (t * t)});});
+      [this](Point<Time> const& t) {
+        return Vector<Acceleration, World>(
+            {1 * SIUnit<Length>() / ((t - t0_) * (t - t0_)),
+             2 * SIUnit<Length>() / ((t - t0_) * (t - t0_)),
+             3 * SIUnit<Length>() / ((t - t0_) * (t - t0_))});});
   EXPECT_TRUE(massless_trajectory_->has_intrinsic_acceleration());
   EXPECT_THAT(massless_trajectory_->evaluate_intrinsic_acceleration(t1_),
               Eq(Vector<Acceleration, World>(
@@ -327,10 +329,11 @@ TEST_F(TrajectoryDeathTest, IntrinsicAccelerationSuccess) {
 
   EXPECT_FALSE(fork->has_intrinsic_acceleration());
   fork->set_intrinsic_acceleration(
-      [](Point<Time> const& t) {
-        return Vector<Acceleration, World>({4 * SIUnit<Length>() / (t * t),
-                                            5 * SIUnit<Length>() / (t * t),
-                                            6 * SIUnit<Length>() / (t * t)});});
+      [this](Point<Time> const& t) {
+        return Vector<Acceleration, World>(
+            {4 * SIUnit<Length>() / ((t - t0_) * (t - t0_)),
+             5 * SIUnit<Length>() / ((t - t0_) * (t - t0_)),
+             6 * SIUnit<Length>() / ((t - t0_) * (t - t0_))});});
   EXPECT_TRUE(fork->has_intrinsic_acceleration());
   EXPECT_THAT(fork->evaluate_intrinsic_acceleration(t1_),
               Eq(Vector<Acceleration, World>({0 * SIUnit<Acceleration>(),

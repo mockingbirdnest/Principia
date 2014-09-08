@@ -15,9 +15,9 @@ namespace physics {
 template<typename Frame>
 struct DegreesOfFreedom {
   DegreesOfFreedom(Point<Vector<Length, Frame>> const& position,
-                   Point<Vector<Speed, Frame>> const& velocity);
+                   Vector<Speed, Frame> const& velocity);
   Point<Vector<Length, Frame>> const position;
-  Point<Vector<Speed, Frame>> const velocity;
+  Vector<Speed, Frame> const velocity;
 };
 
 }  // namespace physics

@@ -8,7 +8,7 @@ namespace physics {
 template<typename Frame>
 DegreesOfFreedom<Frame>::DegreesOfFreedom(
     Point<Vector<Length, Frame>> const& position,
-    Point<Vector<Speed, Frame>> const& velocity)
+    Vector<Speed, Frame> const& velocity)
     : position(position),
       velocity(velocity) {}
 
