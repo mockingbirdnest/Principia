@@ -14,22 +14,22 @@ template<int LengthExponent, int MassExponent, int TimeExponent,
 struct Dimensions;
 template<typename D> class Quantity;
 
-typedef Dimensions<0, 0, 0, 0, 0, 0, 0, 0, 0, 0> NoDimensions;
+using NoDimensions = Dimensions<0, 0, 0, 0, 0, 0, 0, 0, 0, 0>;
 
 #pragma region Base quantities
-typedef Quantity<Dimensions<1, 0, 0, 0, 0, 0, 0, 0, 0, 0>> Length;
-typedef Quantity<Dimensions<0, 1, 0, 0, 0, 0, 0, 0, 0, 0>> Mass;
-typedef Quantity<Dimensions<0, 0, 1, 0, 0, 0, 0, 0, 0, 0>> Time;
-typedef Quantity<Dimensions<0, 0, 0, 1, 0, 0, 0, 0, 0, 0>> Current;
-typedef Quantity<Dimensions<0, 0, 0, 0, 1, 0, 0, 0, 0, 0>> Temperature;
-typedef Quantity<Dimensions<0, 0, 0, 0, 0, 1, 0, 0, 0, 0>> Amount;
-typedef Quantity<Dimensions<0, 0, 0, 0, 0, 0, 1, 0, 0, 0>> LuminousIntensity;
+using Length            = Quantity<Dimensions<1, 0, 0, 0, 0, 0, 0, 0, 0, 0>>;
+using Mass              = Quantity<Dimensions<0, 1, 0, 0, 0, 0, 0, 0, 0, 0>>;
+using Time              = Quantity<Dimensions<0, 0, 1, 0, 0, 0, 0, 0, 0, 0>>;
+using Current           = Quantity<Dimensions<0, 0, 0, 1, 0, 0, 0, 0, 0, 0>>;
+using Temperature       = Quantity<Dimensions<0, 0, 0, 0, 1, 0, 0, 0, 0, 0>>;
+using Amount            = Quantity<Dimensions<0, 0, 0, 0, 0, 1, 0, 0, 0, 0>>;
+using LuminousIntensity = Quantity<Dimensions<0, 0, 0, 0, 0, 0, 1, 0, 0, 0>>;
 // Nonstandard; winding is a dimensionless quantity counting cycles, in order to
 // strongly type the distinction between Frequency = Winding/Time and
 // AngularFrequency = Angle/Time. We also strongly type angles.
-typedef Quantity<Dimensions<0, 0, 0, 0, 0, 0, 0, 1, 0, 0>> Winding;
-typedef Quantity<Dimensions<0, 0, 0, 0, 0, 0, 0, 0, 1, 0>> Angle;
-typedef Quantity<Dimensions<0, 0, 0, 0, 0, 0, 0, 0, 0, 1>> SolidAngle;
+using Winding           = Quantity<Dimensions<0, 0, 0, 0, 0, 0, 0, 1, 0, 0>>;
+using Angle             = Quantity<Dimensions<0, 0, 0, 0, 0, 0, 0, 0, 1, 0>>;
+using SolidAngle        = Quantity<Dimensions<0, 0, 0, 0, 0, 0, 0, 0, 0, 1>>;
 #pragma endregion
 
 namespace type_generators {
@@ -106,8 +106,8 @@ std::string DebugString(Quantity<D> const& quantity,
 template<typename D>
 class Quantity {
  public:
-  typedef D Dimensions;
-  typedef Quotient<double, Quantity> Inverse;
+  using Dimensions = D;
+  using Inverse = Quotient<double, Quantity>;
 
   Quantity();
   ~Quantity() = default;
