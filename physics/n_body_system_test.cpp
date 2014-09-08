@@ -135,7 +135,7 @@ class NBodySystemTest : public testing::Test {
   std::unique_ptr<NBodySystem<EarthMoonOrbitPlane>> system_;
 };
 
-typedef NBodySystemTest NBodySystemDeathTest;
+using NBodySystemDeathTest = NBodySystemTest;
 
 TEST_F(NBodySystemDeathTest, IntegrateError) {
   EXPECT_DEATH({

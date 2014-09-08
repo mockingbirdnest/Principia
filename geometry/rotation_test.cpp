@@ -17,8 +17,8 @@ using testing_utilities::AlmostEquals;
 class RotationTest : public testing::Test {
  protected:
   struct World;
-  typedef OrthogonalMap<World, World> Orth;
-  typedef Rotation<World, World> Rot;
+  using Orth = OrthogonalMap<World, World>;
+  using Rot = Rotation<World, World>;
 
   void SetUp() override {
     vector_ = Vector<quantities::Length, World>(

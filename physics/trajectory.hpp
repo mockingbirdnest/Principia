@@ -80,8 +80,7 @@ class Trajectory {
 
   // This function represents the intrinsic acceleration of a body, irrespective
   // of any external field.  It can be due e.g., to an engine burn.
-  typedef std::function<Vector<Acceleration, Frame>(Time const& time)>
-      IntrinsicAcceleration;
+  using IntrinsicAcceleration = std::function<Vector<Acceleration, Frame>(Time const& time)>;
 
   // Sets the intrinsic acceleration for the trajectory of a massless body.
   // For a nonroot trajectory the intrinsic acceleration only applies to times
@@ -109,7 +108,7 @@ class Trajectory {
       Time const& time) const;
 
  private:
-  typedef std::map<Time, DegreesOfFreedom<Frame>> Timeline;
+  using Timeline = std::map<Time, DegreesOfFreedom<Frame>>;
 
   // A constructor for creating a child trajectory during forking.
   Trajectory(Body const& body,
