@@ -58,8 +58,8 @@ Point<Vector> operator+(Vector const& translation,
 }
 
 template<typename Vector>
-typename std::enable_if_t<is_quantity<Vector>::value, bool>
-operator<(Point<Vector> const& left, Point<Vector> const& right) {
+typename std::enable_if_t<is_quantity<Vector>::value, bool> operator<(
+    Point<Vector> const& left, Point<Vector> const& right) {
   return left.coordinates_ < right.coordinates_;
 }
 

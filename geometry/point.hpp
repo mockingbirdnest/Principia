@@ -5,16 +5,10 @@
 
 #include "quantities/quantities.hpp"
 
-using principia::quantities::Quantity;
+using principia::quantities::is_quantity;
 
 namespace principia {
 namespace geometry {
-
-template<typename T>
-struct is_quantity : std::false_type {};
-
-template<typename ...D>
-struct is_quantity<Quantity<D...>> : std::true_type {};
 
 // Point<Vector> is an affine space on the vector space Vector. Vector should
 // be equipped with operators +, -, +=, -=, ==, !=, as well as Vector * Weight
@@ -48,8 +42,8 @@ class Point {
   friend Point<V> operator+(V const& translation, Point<V> const& point);
 
   template<typename V>
-  friend typename std::enable_if_t<is_quantity<V>::value,
-  bool> operator<(Point<V> const& left, Point<V> const& right);
+  friend typename std::enable_if_t<is_quantity<V>::value, bool> operator<(
+      Point<V> const& left, Point<V> const& right);
 
   template<typename V, typename Weight>
   friend Point<V> Barycentre(std::vector<Point<V>> const& points,
@@ -61,8 +55,8 @@ Point<Vector> operator+(Vector const& translation,
                         Point<Vector> const& point);
 
 template<typename Vector>
-typename std::enable_if_t<is_quantity<Vector>::value,
-bool> operator<(Point<Vector> const& left, Point<Vector> const& right);
+typename std::enable_if_t<is_quantity<Vector>::value, bool> operator<(
+    Point<Vector> const& left, Point<Vector> const& right);
 
 template<typename Vector, typename Weight>
 Point<Vector> Barycentre(std::vector<Point<Vector>> const& points,
