@@ -17,7 +17,7 @@ namespace testing_utilities {
 // The z axis is perpendicular to the xy-plane in the directional (+ or -) sense
 // of Earth's north pole at J2000.0.
 // The basis is direct and orthonormal.
-struct ICRFJ2000EclipticFrame;
+struct ICRFJ2000Ecliptic;
 
 class SolarSystem {
  public:
@@ -36,7 +36,7 @@ class SolarSystem {
   Bodies massless_bodies();
 
   // This class retains ownership of the trajectories.
-  physics::NBodySystem<ICRFJ2000EclipticFrame>::Trajectories
+  physics::NBodySystem<ICRFJ2000Ecliptic>::Trajectories
       trajectories() const;
 
  private:
@@ -64,7 +64,7 @@ class SolarSystem {
 
   Bodies massive_bodies_;
   Bodies massless_bodies_;
-  std::vector<std::unique_ptr<physics::Trajectory<ICRFJ2000EclipticFrame>>>
+  std::vector<std::unique_ptr<physics::Trajectory<ICRFJ2000Ecliptic>>>
       trajectories_;
 };
 

@@ -32,8 +32,8 @@ namespace principia {
 namespace testing_utilities {
 
 std::unique_ptr<SolarSystem> SolarSystem::AtСпутникLaunch() {
-  typedef Vector<Length, ICRFJ2000EclipticFrame> Displacement;
-  typedef Vector<Speed, ICRFJ2000EclipticFrame> Velocity;
+  typedef Vector<Length, ICRFJ2000Ecliptic> Displacement;
+  typedef Vector<Speed, ICRFJ2000Ecliptic> Velocity;
   typedef Point<Displacement> Position;
 
   // Number of days since the JD epoch. JD2436116.3115 is the time of the launch
@@ -66,8 +66,8 @@ std::unique_ptr<SolarSystem> SolarSystem::AtСпутникLaunch() {
   // otherwise specified.
 
   // Star.
-  Trajectory<ICRFJ2000EclipticFrame>* sun_trajectory(
-      new Trajectory<ICRFJ2000EclipticFrame>(sun));
+  Trajectory<ICRFJ2000Ecliptic>* sun_trajectory(
+      new Trajectory<ICRFJ2000Ecliptic>(sun));
   sun_trajectory->Append(
       kСпутникLaunchTime,
       {Position(Displacement({ 1.138350928138014E+06 * Kilo(Metre),
@@ -81,8 +81,8 @@ std::unique_ptr<SolarSystem> SolarSystem::AtСпутникLaunch() {
   // Planets.
 
   // Gas giants.
-  Trajectory<ICRFJ2000EclipticFrame>* jupiter_trajectory(
-      new Trajectory<ICRFJ2000EclipticFrame>(jupiter));
+  Trajectory<ICRFJ2000Ecliptic>* jupiter_trajectory(
+      new Trajectory<ICRFJ2000Ecliptic>(jupiter));
   jupiter_trajectory->Append(
       kСпутникLaunchTime,
       {Position(Displacement({-7.950209667306620E+08 * Kilo(Metre),
@@ -92,8 +92,8 @@ std::unique_ptr<SolarSystem> SolarSystem::AtСпутникLaunch() {
            Velocity({ 2.709330231918198E+00 * Kilo(Metre) / Second,
                      -1.213073724288562E+01 * Kilo(Metre) / Second,
                      -1.088748435062713E-02 * Kilo(Metre) / Second}))});
-  Trajectory<ICRFJ2000EclipticFrame>* saturn_trajectory(
-      new Trajectory<ICRFJ2000EclipticFrame>(saturn));
+  Trajectory<ICRFJ2000Ecliptic>* saturn_trajectory(
+      new Trajectory<ICRFJ2000Ecliptic>(saturn));
   saturn_trajectory->Append(
       kСпутникLaunchTime,
       {Position(Displacement({-3.774715321901159E+08 * Kilo(Metre),
@@ -103,8 +103,8 @@ std::unique_ptr<SolarSystem> SolarSystem::AtСпутникLaunch() {
            Velocity({ 8.817029873536633E+00 * Kilo(Metre) / Second,
                      -2.466058486223613E+00 * Kilo(Metre) / Second,
                      -3.068419809533604E-01 * Kilo(Metre) / Second}))});
-  Trajectory<ICRFJ2000EclipticFrame>* neptune_trajectory(
-      new Trajectory<ICRFJ2000EclipticFrame>(neptune));
+  Trajectory<ICRFJ2000Ecliptic>* neptune_trajectory(
+      new Trajectory<ICRFJ2000Ecliptic>(neptune));
   neptune_trajectory->Append(
       kСпутникLaunchTime,
       {Position(Displacement({-3.810689792831146E+09 * Kilo(Metre),
@@ -114,8 +114,8 @@ std::unique_ptr<SolarSystem> SolarSystem::AtСпутникLaunch() {
            Velocity({ 2.913267720085410E+00 * Kilo(Metre) / Second,
                      -4.535247383721019E+00 * Kilo(Metre) / Second,
                       2.589759251085161E-02 * Kilo(Metre) / Second}))});
-  Trajectory<ICRFJ2000EclipticFrame>* uranus_trajectory(
-      new Trajectory<ICRFJ2000EclipticFrame>(uranus));
+  Trajectory<ICRFJ2000Ecliptic>* uranus_trajectory(
+      new Trajectory<ICRFJ2000Ecliptic>(uranus));
   uranus_trajectory->Append(
       kСпутникLaunchTime,
       {Position(Displacement({-1.729995609344851E+09 * Kilo(Metre),
@@ -127,8 +127,8 @@ std::unique_ptr<SolarSystem> SolarSystem::AtСпутникLaunch() {
                       5.261322980347850E-02 * Kilo(Metre) / Second}))});
 
   // Telluric planets.
-  Trajectory<ICRFJ2000EclipticFrame>* earth_trajectory(
-      new Trajectory<ICRFJ2000EclipticFrame>(earth));
+  Trajectory<ICRFJ2000Ecliptic>* earth_trajectory(
+      new Trajectory<ICRFJ2000Ecliptic>(earth));
   earth_trajectory->Append(
       kСпутникLaunchTime,
       {Position(Displacement({ 1.475150112055673E+08 * Kilo(Metre),
@@ -138,8 +138,8 @@ std::unique_ptr<SolarSystem> SolarSystem::AtСпутникLaunch() {
            Velocity({-6.635753510543799E+00 * Kilo(Metre) / Second,
                       2.904321639216012E+01 * Kilo(Metre) / Second,
                       3.125252418990812E-03 * Kilo(Metre) / Second}))});
-  Trajectory<ICRFJ2000EclipticFrame>* venus_trajectory(
-      new Trajectory<ICRFJ2000EclipticFrame>(venus));
+  Trajectory<ICRFJ2000Ecliptic>* venus_trajectory(
+      new Trajectory<ICRFJ2000Ecliptic>(venus));
   venus_trajectory->Append(
       kСпутникLaunchTime,
       {Position(Displacement({ 6.084974577091119E+07 * Kilo(Metre),
@@ -149,8 +149,8 @@ std::unique_ptr<SolarSystem> SolarSystem::AtСпутникLaunch() {
            Velocity({ 2.903958257174759E+01 * Kilo(Metre) / Second,
                       1.910383147602264E+01 * Kilo(Metre) / Second,
                      -1.418780340302349E+00 * Kilo(Metre) / Second}))});
-  Trajectory<ICRFJ2000EclipticFrame>* mars_trajectory(
-      new Trajectory<ICRFJ2000EclipticFrame>(mars));
+  Trajectory<ICRFJ2000Ecliptic>* mars_trajectory(
+      new Trajectory<ICRFJ2000Ecliptic>(mars));
   mars_trajectory->Append(
       kСпутникLaunchTime,
       {Position(Displacement({-2.440047184660406E+08 * Kilo(Metre),
@@ -160,8 +160,8 @@ std::unique_ptr<SolarSystem> SolarSystem::AtСпутникLaunch() {
            Velocity({ 2.940381268511949E+00 * Kilo(Metre) / Second,
                      -2.206625841382794E+01 * Kilo(Metre) / Second,
                      -5.348179460834037E-01 * Kilo(Metre) / Second}))});
-  Trajectory<ICRFJ2000EclipticFrame>* mercury_trajectory(
-      new Trajectory<ICRFJ2000EclipticFrame>(mercury));
+  Trajectory<ICRFJ2000Ecliptic>* mercury_trajectory(
+      new Trajectory<ICRFJ2000Ecliptic>(mercury));
   mercury_trajectory->Append(
       kСпутникLaunchTime,
       {Position(Displacement({-3.013851560892715E+07 * Kilo(Metre),
@@ -175,8 +175,8 @@ std::unique_ptr<SolarSystem> SolarSystem::AtСпутникLaunch() {
   // End of planets.
 
   // Satellite of Jupiter.
-  Trajectory<ICRFJ2000EclipticFrame>* ganymede_trajectory(
-      new Trajectory<ICRFJ2000EclipticFrame>(ganymede));
+  Trajectory<ICRFJ2000Ecliptic>* ganymede_trajectory(
+      new Trajectory<ICRFJ2000Ecliptic>(ganymede));
   ganymede_trajectory->Append(
       kСпутникLaunchTime,
       {Position(Displacement({-7.942681422941415E+08 * Kilo(Metre),
@@ -188,8 +188,8 @@ std::unique_ptr<SolarSystem> SolarSystem::AtСпутникLaunch() {
                       1.326192167761359E-01 * Kilo(Metre) / Second}))});
 
   // Satellite of Saturn.
-  Trajectory<ICRFJ2000EclipticFrame>* titan_trajectory(
-      new Trajectory<ICRFJ2000EclipticFrame>(titan));
+  Trajectory<ICRFJ2000Ecliptic>* titan_trajectory(
+      new Trajectory<ICRFJ2000Ecliptic>(titan));
   titan_trajectory->Append(
       kСпутникLaunchTime,
       {Position(Displacement({-3.771930512714775E+08 * Kilo(Metre),
@@ -201,8 +201,8 @@ std::unique_ptr<SolarSystem> SolarSystem::AtСпутникLaunch() {
                      -1.375826555026097E+00 * Kilo(Metre) / Second}))});
 
   // Satellites of Jupiter.
-  Trajectory<ICRFJ2000EclipticFrame>* callisto_trajectory(
-      new Trajectory<ICRFJ2000EclipticFrame>(callisto));
+  Trajectory<ICRFJ2000Ecliptic>* callisto_trajectory(
+      new Trajectory<ICRFJ2000Ecliptic>(callisto));
   callisto_trajectory->Append(
       kСпутникLaunchTime,
       {Position(Displacement({-7.951805452047400E+08 * Kilo(Metre),
@@ -212,8 +212,8 @@ std::unique_ptr<SolarSystem> SolarSystem::AtСпутникLaunch() {
            Velocity({ 1.091928199422218E+01 * Kilo(Metre) / Second,
                      -1.278098875182818E+01 * Kilo(Metre) / Second,
                       5.878649120351949E-02 * Kilo(Metre) / Second}))});
-  Trajectory<ICRFJ2000EclipticFrame>* io_trajectory(
-      new Trajectory<ICRFJ2000EclipticFrame>(io));
+  Trajectory<ICRFJ2000Ecliptic>* io_trajectory(
+      new Trajectory<ICRFJ2000Ecliptic>(io));
   io_trajectory->Append(
       kСпутникLaunchTime,
       {Position(Displacement({-7.946073188298367E+08 * Kilo(Metre),
@@ -225,8 +225,8 @@ std::unique_ptr<SolarSystem> SolarSystem::AtСпутникLaunch() {
                       5.469177855959977E-01 * Kilo(Metre) / Second}))});
 
   // Satellite of Earth.
-  Trajectory<ICRFJ2000EclipticFrame>* moon_trajectory(
-      new Trajectory<ICRFJ2000EclipticFrame>(moon));
+  Trajectory<ICRFJ2000Ecliptic>* moon_trajectory(
+      new Trajectory<ICRFJ2000Ecliptic>(moon));
   moon_trajectory->Append(
       kСпутникLaunchTime,
       {Position(Displacement({ 1.478545271460863E+08 * Kilo(Metre),
@@ -238,8 +238,8 @@ std::unique_ptr<SolarSystem> SolarSystem::AtСпутникLaunch() {
                      -1.952438319420470E-02 * Kilo(Metre) / Second}))});
 
   // Satellite of Jupiter.
-  Trajectory<ICRFJ2000EclipticFrame>* europa_trajectory(
-      new Trajectory<ICRFJ2000EclipticFrame>(europa));
+  Trajectory<ICRFJ2000Ecliptic>* europa_trajectory(
+      new Trajectory<ICRFJ2000Ecliptic>(europa));
   europa_trajectory->Append(
       kСпутникLaunchTime,
       {Position(Displacement({-7.944180333947762E+08 * Kilo(Metre),
@@ -251,8 +251,8 @@ std::unique_ptr<SolarSystem> SolarSystem::AtСпутникLaunch() {
                       6.162195631257494E-01 * Kilo(Metre) / Second}))});
 
   // Satellite of Neptune.
-  Trajectory<ICRFJ2000EclipticFrame>* triton_trajectory(
-      new Trajectory<ICRFJ2000EclipticFrame>(triton));
+  Trajectory<ICRFJ2000Ecliptic>* triton_trajectory(
+      new Trajectory<ICRFJ2000Ecliptic>(triton));
   triton_trajectory->Append(
       kСпутникLaunchTime,
       {Position(Displacement({-3.810797098554279E+09 * Kilo(Metre),
@@ -266,8 +266,8 @@ std::unique_ptr<SolarSystem> SolarSystem::AtСпутникLaunch() {
   // Dwarf planet (scattered disc object).
   // Mass from Brown, Michael E.; Schaller, Emily L. (15 June 2007).
   // "The Mass of Dwarf Planet Eris", in Science, through Wikipedia.
-  Trajectory<ICRFJ2000EclipticFrame>* eris_trajectory(
-      new Trajectory<ICRFJ2000EclipticFrame>(eris));
+  Trajectory<ICRFJ2000Ecliptic>* eris_trajectory(
+      new Trajectory<ICRFJ2000Ecliptic>(eris));
   eris_trajectory->Append(
       kСпутникLaunchTime,
       {Position(Displacement({ 1.317390066862979E+10 * Kilo(Metre),
@@ -279,8 +279,8 @@ std::unique_ptr<SolarSystem> SolarSystem::AtСпутникLaunch() {
                       1.227093842948539E+00 * Kilo(Metre) / Second}))});
 
   // Dwarf planet (Kuiper belt object).
-  Trajectory<ICRFJ2000EclipticFrame>* pluto_trajectory(
-      new Trajectory<ICRFJ2000EclipticFrame>(pluto));
+  Trajectory<ICRFJ2000Ecliptic>* pluto_trajectory(
+      new Trajectory<ICRFJ2000Ecliptic>(pluto));
   pluto_trajectory->Append(
       kСпутникLaunchTime,
       {Position(Displacement({-4.406985590968750E+09 * Kilo(Metre),
@@ -396,9 +396,9 @@ SolarSystem::Bodies SolarSystem::massless_bodies() {
   return std::move(massless_bodies_);
 }
 
-physics::NBodySystem<ICRFJ2000EclipticFrame>::Trajectories
+physics::NBodySystem<ICRFJ2000Ecliptic>::Trajectories
 SolarSystem::trajectories() const {
-  physics::NBodySystem<ICRFJ2000EclipticFrame>::Trajectories result;
+  physics::NBodySystem<ICRFJ2000Ecliptic>::Trajectories result;
   for (auto const& trajectory : trajectories_) {
     result.push_back(trajectory.get());
   }
