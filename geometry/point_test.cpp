@@ -52,6 +52,12 @@ TEST_F(AffineSpaceTest, AssignmentOperators) {
   EXPECT_THAT(accumulator, Eq(CelsiusZero));
 }
 
+TEST_F(AffineSpaceTest, Ordering) {
+  Point<Temperature> const t1 = 40 * Kelvin + CelsiusZero;
+  Point<Temperature> const t2 = 10 * Kelvin + CelsiusZero;
+  EXPECT_TRUE(t2 < t1);
+}
+
 TEST_F(AffineSpaceTest, Barycentres) {
   Point<Temperature> const t1 = 40 * Kelvin + CelsiusZero;
   Point<Temperature> const t2 = 10 * Kelvin + CelsiusZero;
