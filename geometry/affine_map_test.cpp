@@ -31,12 +31,12 @@ using testing_utilities::RelativeError;
 class AffineMapTest : public testing::Test {
  protected:
   struct World;
-  typedef OrthogonalMap<World, World> Orth;
-  typedef Permutation<World, World> Perm;
-  typedef Rotation<World, World> Rot;
-  typedef Vector<Length, World> Displacement;
-  typedef Point<Displacement> Position;
-  typedef AffineMap<World, World, Length, Rotation> RigidTransformation;
+  using Orth = OrthogonalMap<World, World>;
+  using Perm = Permutation<World, World>;
+  using Rot = Rotation<World, World>;
+  using Displacement = Vector<Length, World>;
+  using Position = Point<Displacement>;
+  using RigidTransformation = AffineMap<World, World, Length, Rotation>;
 
   void SetUp() override {
     zero_     = Displacement({0 * Metre, 0 * Metre, 0 * Metre});

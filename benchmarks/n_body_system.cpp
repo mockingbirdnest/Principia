@@ -21,7 +21,7 @@
 // Must come last to avoid conflicts when defining the CHECK macros.
 #include "benchmark/benchmark.h"
 
-using principia::testing_utilities::ICRFJ2000EclipticFrame;
+using principia::testing_utilities::ICRFJ2000Ecliptic;
 using principia::physics::NBodySystem;
 using principia::quantities::DebugString;
 using principia::si::AstronomicalUnit;

@@ -31,7 +31,7 @@ Scalar AbsoluteError(geometry::R3Element<Scalar> const& expected,
                      geometry::R3Element<Scalar> const& actual);
 
 // Uses Multivector.Norm().
-template<typename Scalar, typename Frame, unsigned int rank>
+template<typename Scalar, typename Frame, int rank>
 Scalar AbsoluteError(
     geometry::Multivector<Scalar, Frame, rank> const& expected,
     geometry::Multivector<Scalar, Frame, rank> const& actual);
@@ -53,7 +53,7 @@ double RelativeError(geometry::R3Element<Scalar> const& expected,
                      geometry::R3Element<Scalar> const& actual);
 
 // Uses Multivector.Norm().
-template<typename Scalar, typename Frame, unsigned int rank>
+template<typename Scalar, typename Frame, int rank>
 double RelativeError(geometry::Multivector<Scalar, Frame, rank> const& expected,
                      geometry::Multivector<Scalar, Frame, rank> const& actual);
 

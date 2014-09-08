@@ -30,21 +30,18 @@ class SolarSystemTest : public testing::Test {
  protected:
   void SetUp() {
     solar_system_ = SolarSystem::AtСпутникLaunch();
-    n_body_system_.reset(new NBodySystem<ICRFJ2000EclipticFrame>());
+    n_body_system_.reset(new NBodySystem<ICRFJ2000Ecliptic>());
   }
   // The maximal separation of |primary| and |secondary| ignoring the influence
   // of any other bodies.
-  Length SemiMajorAxis(
-      Trajectory<ICRFJ2000EclipticFrame> const& primary,
-      Trajectory<ICRFJ2000EclipticFrame> const& secondary) {
+  Length SemiMajorAxis(Trajectory<ICRFJ2000Ecliptic> const& primary,
+                       Trajectory<ICRFJ2000Ecliptic> const& secondary) {
     GravitationalParameter const μ = primary.body().gravitational_parameter() +
                                      secondary.body().gravitational_parameter();
-    Vector<Length, ICRFJ2000EclipticFrame> const r =
-        primary.last_position() -
-        secondary.last_position();
-    Vector<Speed, ICRFJ2000EclipticFrame> const v =
-        primary.last_velocity() -
-        secondary.last_velocity();
+    Vector<Length, ICRFJ2000Ecliptic> const r =
+        primary.last_position() - secondary.last_position();
+    Vector<Speed, ICRFJ2000Ecliptic> const v =
+        primary.last_velocity() - secondary.last_velocity();
     SpecificEnergy const ε = Pow<2>(v.Norm()) / 2 - μ / r.Norm();
     return -μ / (2 * ε);
   }
@@ -55,8 +52,8 @@ class SolarSystemTest : public testing::Test {
   // approximation around the secondary is better than the 2-body approximation
   // around the primary.
   Length LaplaceSphereRadiusRadius(
-      Trajectory<ICRFJ2000EclipticFrame> const& primary,
-      Trajectory<ICRFJ2000EclipticFrame> const& secondary) {
+      Trajectory<ICRFJ2000Ecliptic> const& primary,
+      Trajectory<ICRFJ2000Ecliptic> const& secondary) {
     // Assuming secondary.mass << primary.mass.
     return SemiMajorAxis(primary, secondary) *
         std::pow(secondary.body().mass() / primary.body().mass(), 2.0 / 5.0);
@@ -69,17 +66,17 @@ class SolarSystemTest : public testing::Test {
   void TestStronglyBoundOrbit(
       double excentricity,
       double relative_error,
-      Trajectory<ICRFJ2000EclipticFrame> const& tertiary,
-      Trajectory<ICRFJ2000EclipticFrame> const& secondary,
-      Trajectory<ICRFJ2000EclipticFrame> const* const primary,
+      Trajectory<ICRFJ2000Ecliptic> const& tertiary,
+      Trajectory<ICRFJ2000Ecliptic> const& secondary,
+      Trajectory<ICRFJ2000Ecliptic> const* const primary,
       std::string message) {
     GravitationalParameter const μ = tertiary.body().gravitational_parameter() +
                                      secondary.body().gravitational_parameter();
-    Vector<Length, ICRFJ2000EclipticFrame> const r =
+    Vector<Length, ICRFJ2000Ecliptic> const r =
         tertiary.last_position() - secondary.last_position();
-    Vector<Speed, ICRFJ2000EclipticFrame> const v =
+    Vector<Speed, ICRFJ2000Ecliptic> const v =
         tertiary.last_velocity() - secondary.last_velocity();
-    Bivector<SpecificAngularMomentum, ICRFJ2000EclipticFrame> const h =
+    Bivector<SpecificAngularMomentum, ICRFJ2000Ecliptic> const h =
         Wedge(r, v) / Radian;
     SpecificEnergy const ε = Pow<2>(v.Norm()) / 2 - μ / r.Norm();
     double e = Sqrt(1 + 2 * ε * Pow<2>(h.Norm() * Radian) / Pow<2>(μ));
@@ -91,30 +88,30 @@ class SolarSystemTest : public testing::Test {
   }
 
   std::unique_ptr<SolarSystem> solar_system_;
-  std::unique_ptr<NBodySystem<ICRFJ2000EclipticFrame>> n_body_system_;
+  std::unique_ptr<NBodySystem<ICRFJ2000Ecliptic>> n_body_system_;
 };
 
 TEST_F(SolarSystemTest, Hierarchy) {
-  physics::NBodySystem<ICRFJ2000EclipticFrame>::Trajectories trajectories =
+  physics::NBodySystem<ICRFJ2000Ecliptic>::Trajectories trajectories =
       solar_system_->trajectories();
-  Trajectory<ICRFJ2000EclipticFrame> const& sun      = *trajectories[0];
-  Trajectory<ICRFJ2000EclipticFrame> const& jupiter  = *trajectories[1];
-  Trajectory<ICRFJ2000EclipticFrame> const& saturn   = *trajectories[2];
-  Trajectory<ICRFJ2000EclipticFrame> const& neptune  = *trajectories[3];
-  Trajectory<ICRFJ2000EclipticFrame> const& uranus   = *trajectories[4];
-  Trajectory<ICRFJ2000EclipticFrame> const& earth    = *trajectories[5];
-  Trajectory<ICRFJ2000EclipticFrame> const& venus    = *trajectories[6];
-  Trajectory<ICRFJ2000EclipticFrame> const& mars     = *trajectories[7];
-  Trajectory<ICRFJ2000EclipticFrame> const& mercury  = *trajectories[8];
-  Trajectory<ICRFJ2000EclipticFrame> const& ganymede = *trajectories[9];
-  Trajectory<ICRFJ2000EclipticFrame> const& titan    = *trajectories[10];
-  Trajectory<ICRFJ2000EclipticFrame> const& callisto = *trajectories[11];
-  Trajectory<ICRFJ2000EclipticFrame> const& io       = *trajectories[12];
-  Trajectory<ICRFJ2000EclipticFrame> const& moon     = *trajectories[13];
-  Trajectory<ICRFJ2000EclipticFrame> const& europa   = *trajectories[14];
-  Trajectory<ICRFJ2000EclipticFrame> const& triton   = *trajectories[15];
-  Trajectory<ICRFJ2000EclipticFrame> const& eris     = *trajectories[16];
-  Trajectory<ICRFJ2000EclipticFrame> const& pluto    = *trajectories[17];
+  Trajectory<ICRFJ2000Ecliptic> const& sun      = *trajectories[0];
+  Trajectory<ICRFJ2000Ecliptic> const& jupiter  = *trajectories[1];
+  Trajectory<ICRFJ2000Ecliptic> const& saturn   = *trajectories[2];
+  Trajectory<ICRFJ2000Ecliptic> const& neptune  = *trajectories[3];
+  Trajectory<ICRFJ2000Ecliptic> const& uranus   = *trajectories[4];
+  Trajectory<ICRFJ2000Ecliptic> const& earth    = *trajectories[5];
+  Trajectory<ICRFJ2000Ecliptic> const& venus    = *trajectories[6];
+  Trajectory<ICRFJ2000Ecliptic> const& mars     = *trajectories[7];
+  Trajectory<ICRFJ2000Ecliptic> const& mercury  = *trajectories[8];
+  Trajectory<ICRFJ2000Ecliptic> const& ganymede = *trajectories[9];
+  Trajectory<ICRFJ2000Ecliptic> const& titan    = *trajectories[10];
+  Trajectory<ICRFJ2000Ecliptic> const& callisto = *trajectories[11];
+  Trajectory<ICRFJ2000Ecliptic> const& io       = *trajectories[12];
+  Trajectory<ICRFJ2000Ecliptic> const& moon     = *trajectories[13];
+  Trajectory<ICRFJ2000Ecliptic> const& europa   = *trajectories[14];
+  Trajectory<ICRFJ2000Ecliptic> const& triton   = *trajectories[15];
+  Trajectory<ICRFJ2000Ecliptic> const& eris     = *trajectories[16];
+  Trajectory<ICRFJ2000Ecliptic> const& pluto    = *trajectories[17];
 
   // Reference excentricities from HORIZONS, truncated.
   // Using center: Sun (body center) [500@10].
