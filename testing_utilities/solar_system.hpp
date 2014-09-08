@@ -8,15 +8,16 @@
 namespace principia {
 namespace testing_utilities {
 
-// ICRF/J2000.0 reference frame.
-// The reference epoch is J2000.0.
-// The xy plane is the plane of the Earth's orbit at the reference epoch.
+// A reference frame with a basis.
+// The frame is the International Celestial Reference Frame.
+// The basis is defined from the orbit of the Earth at J2000.0 as follows:
+// The xy plane is the plane of the Earth's orbit at J2000.0.
 // The x axis is out along the ascending node of the instantaneous plane of the
-// Earth's orbit and the Earth's mean equator at the reference epoch.
+// Earth's orbit and the Earth's mean equator at J2000.0.
 // The z axis is perpendicular to the xy-plane in the directional (+ or -) sense
-// of Earth's north pole at the reference epoch.
-// The reference frame is direct.
-struct ICRFJ2000EclipticFrame;
+// of Earth's north pole at J2000.0.
+// The basis is direct and orthonormal.
+struct ICRFJ2000Ecliptic;
 
 class SolarSystem {
  public:
@@ -35,8 +36,7 @@ class SolarSystem {
   Bodies massless_bodies();
 
   // This class retains ownership of the trajectories.
-  physics::NBodySystem<ICRFJ2000EclipticFrame>::Trajectories
-      trajectories() const;
+  physics::NBodySystem<ICRFJ2000Ecliptic>::Trajectories trajectories() const;
 
  private:
   // A system containing the 18 largest solar system bodies (Pluto and all
@@ -63,7 +63,7 @@ class SolarSystem {
 
   Bodies massive_bodies_;
   Bodies massless_bodies_;
-  std::vector<std::unique_ptr<physics::Trajectory<ICRFJ2000EclipticFrame>>>
+  std::vector<std::unique_ptr<physics::Trajectory<ICRFJ2000Ecliptic>>>
       trajectories_;
 };
 
