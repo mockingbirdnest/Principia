@@ -21,7 +21,7 @@ struct ICRFJ2000Ecliptic;
 
 class SolarSystem {
  public:
-  typedef std::vector<std::unique_ptr<physics::Body const> const> Bodies;
+  using Bodies = std::vector<std::unique_ptr<physics::Body const> const>;
 
   // Factory.  The caller gets ownership of the pointers.
   // A solar system at the time of the launch of Простейший Спутник-1,

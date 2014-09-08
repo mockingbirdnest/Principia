@@ -97,7 +97,7 @@ template<typename FromFrame, typename ThroughFrame, typename ToFrame>
 Permutation<FromFrame, ToFrame> operator*(
     Permutation<ThroughFrame, ToFrame> const& left,
     Permutation<FromFrame, ThroughFrame> const& right) {
-  typedef Permutation<FromFrame, ThroughFrame> P;
+  using P = Permutation<FromFrame, ThroughFrame>;
 
   // The pair<> is in diagrammatic order: right is applied first and is the
   // first element of the pair, left is applied second and is the second

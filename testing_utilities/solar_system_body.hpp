@@ -32,9 +32,9 @@ namespace principia {
 namespace testing_utilities {
 
 std::unique_ptr<SolarSystem> SolarSystem::AtСпутникLaunch() {
-  typedef Vector<Length, ICRFJ2000Ecliptic> Displacement;
-  typedef Vector<Speed, ICRFJ2000Ecliptic> Velocity;
-  typedef Point<Displacement> Position;
+  using Displacement = Vector<Length, ICRFJ2000Ecliptic>;
+  using Velocity = Vector<Speed, ICRFJ2000Ecliptic>;
+  using Position = Point<Displacement>;
 
   // Number of days since the JD epoch. JD2436116.3115 is the time of the launch
   // of Простейший Спутник-1.

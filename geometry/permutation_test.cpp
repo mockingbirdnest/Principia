@@ -21,9 +21,9 @@ namespace geometry {
 class PermutationTest : public testing::Test {
  protected:
   struct World;
-  typedef OrthogonalMap<World, World> Orth;
-  typedef Permutation<World, World> Perm;
-  typedef R3Element<quantities::Length> R3;
+  using Orth = OrthogonalMap<World, World>;
+  using Perm = Permutation<World, World>;
+  using R3 = R3Element<quantities::Length>;
 
   void SetUp() override {
     vector_ = Vector<quantities::Length, World>(
