@@ -34,17 +34,14 @@ class SolarSystemTest : public testing::Test {
   }
   // The maximal separation of |primary| and |secondary| ignoring the influence
   // of any other bodies.
-  Length SemiMajorAxis(
-      Trajectory<ICRFJ2000Ecliptic> const& primary,
-      Trajectory<ICRFJ2000Ecliptic> const& secondary) {
+  Length SemiMajorAxis(Trajectory<ICRFJ2000Ecliptic> const& primary,
+                       Trajectory<ICRFJ2000Ecliptic> const& secondary) {
     GravitationalParameter const μ = primary.body().gravitational_parameter() +
                                      secondary.body().gravitational_parameter();
-    Vector<Length, ICRFJ2000Ecliptic> const r =
-        primary.last_position() -
-        secondary.last_position();
-    Vector<Speed, ICRFJ2000Ecliptic> const v =
-        primary.last_velocity() -
-        secondary.last_velocity();
+    Vector<Length, ICRFJ2000Ecliptic> const r = primary.last_position() -
+                                                    secondary.last_position();
+    Vector<Speed, ICRFJ2000Ecliptic> const v = primary.last_velocity() -
+                                                   secondary.last_velocity();
     SpecificEnergy const ε = Pow<2>(v.Norm()) / 2 - μ / r.Norm();
     return -μ / (2 * ε);
   }

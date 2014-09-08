@@ -36,8 +36,7 @@ class SolarSystem {
   Bodies massless_bodies();
 
   // This class retains ownership of the trajectories.
-  physics::NBodySystem<ICRFJ2000Ecliptic>::Trajectories
-      trajectories() const;
+  physics::NBodySystem<ICRFJ2000Ecliptic>::Trajectories trajectories() const;
 
  private:
   // A system containing the 18 largest solar system bodies (Pluto and all
