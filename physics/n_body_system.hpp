@@ -21,7 +21,7 @@ namespace physics {
 template<typename InertialFrame>
 class NBodySystem {
  public:
-  typedef std::vector<Trajectory<InertialFrame>*> Trajectories;  // Not owned.
+  using Trajectories = std::vector<Trajectory<InertialFrame>*>;  // Not owned.
 
   NBodySystem() = default;
   ~NBodySystem() = default;

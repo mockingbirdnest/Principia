@@ -13,15 +13,15 @@ using principia::physics::NBodySystem;
 using principia::quantities::Length;
 using principia::quantities::Speed;
 using principia::si::Minute;
-using principia::testing_utilities::ICRFJ2000EclipticFrame;
+using principia::testing_utilities::ICRFJ2000Ecliptic;
 using principia::testing_utilities::SolarSystem;
 
 namespace principia {
 namespace benchmarks {
 
 void SimulateSolarSystem(SolarSystem* solar_system) {
-  std::unique_ptr<NBodySystem<ICRFJ2000EclipticFrame>> n_body_system(
-      new NBodySystem<ICRFJ2000EclipticFrame>());
+  std::unique_ptr<NBodySystem<ICRFJ2000Ecliptic>> n_body_system(
+      new NBodySystem<ICRFJ2000Ecliptic>());
   auto const trajectories = solar_system->trajectories();
   SPRKIntegrator<Length, Speed> integrator;
   integrator.Initialize(integrator.Order5Optimal());

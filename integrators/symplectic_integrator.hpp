@@ -27,7 +27,7 @@ class SymplecticIntegrator {
   virtual ~SymplecticIntegrator() = default;
 
   // The coefficients of the integrator.
-  typedef std::vector<std::vector<double>> Coefficients;
+  using Coefficients = std::vector<std::vector<double>>;
 
   // The entire state of the system at a given time.  The vectors are indexed by
   // dimension.

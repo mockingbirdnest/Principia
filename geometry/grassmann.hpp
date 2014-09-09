@@ -14,6 +14,7 @@ namespace geometry {
 // space bearing the dimensionality of |Scalar|, i.e., an element of
 // ⋀ⁿ Scalar³. Do not use this type for |rank == 0| (scalars), use the |Scalar|
 // type directly instead.
+// |Frame| represents a reference frame together with an orthonormal basis.
 template<typename Scalar, typename Frame, int rank>
 class Multivector;
 

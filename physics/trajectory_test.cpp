@@ -85,7 +85,7 @@ class TrajectoryTest : public testing::Test {
   std::unique_ptr<Trajectory<World>> massless_trajectory_;
 };
 
-typedef TrajectoryTest TrajectoryDeathTest;
+using TrajectoryDeathTest = TrajectoryTest;
 
 TEST_F(TrajectoryDeathTest, AppendError) {
   EXPECT_DEATH({

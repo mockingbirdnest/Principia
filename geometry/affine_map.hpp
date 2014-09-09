@@ -10,8 +10,8 @@ template<typename FromFrame, typename ToFrame, typename Scalar,
          template<typename, typename> class LinearMap>
 class AffineMap {
  public:
-  typedef Vector<Scalar, FromFrame> FromVector;
-  typedef Vector<Scalar, ToFrame> ToVector;
+  using FromVector = Vector<Scalar, FromFrame>;
+  using ToVector = Vector<Scalar, ToFrame>;
   // The identity map.
   AffineMap() = default;
   AffineMap(Point<FromVector> const& from_origin,

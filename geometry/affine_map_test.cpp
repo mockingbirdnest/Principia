@@ -5,6 +5,7 @@
 #include <vector>
 
 #include "geometry/grassmann.hpp"
+#include "geometry/named_quantities.hpp"
 #include "geometry/orthogonal_map.hpp"
 #include "geometry/permutation.hpp"
 #include "geometry/point.hpp"
@@ -31,24 +32,22 @@ using testing_utilities::RelativeError;
 class AffineMapTest : public testing::Test {
  protected:
   struct World;
-  typedef OrthogonalMap<World, World> Orth;
-  typedef Permutation<World, World> Perm;
-  typedef Rotation<World, World> Rot;
-  typedef Vector<Length, World> Displacement;
-  typedef Point<Displacement> Position;
-  typedef AffineMap<World, World, Length, Rotation> RigidTransformation;
+  using Orth = OrthogonalMap<World, World>;
+  using Perm = Permutation<World, World>;
+  using Rot = Rotation<World, World>;
+  using RigidTransformation = AffineMap<World, World, Length, Rotation>;
 
   void SetUp() override {
-    zero_     = Displacement({0 * Metre, 0 * Metre, 0 * Metre});
-    forward_  = Displacement({1 * Metre, 0 * Metre, 0 * Metre});
-    leftward_ = Displacement({0 * Metre, 1 * Metre, 0 * Metre});
-    upward_   = Displacement({0 * Metre, 0 * Metre, 1 * Metre});
+    zero_     = Displacement<World>({0 * Metre, 0 * Metre, 0 * Metre});
+    forward_  = Displacement<World>({1 * Metre, 0 * Metre, 0 * Metre});
+    leftward_ = Displacement<World>({0 * Metre, 1 * Metre, 0 * Metre});
+    upward_   = Displacement<World>({0 * Metre, 0 * Metre, 1 * Metre});
 
-    origin_ = Position(Displacement({0 * Metre, 0 * Metre, 0 * Metre}));
+    origin_ = Position<World>();
 
-    back_right_bottom_  = Position(Displacement({3 * Metre,
-                                                 4 * Metre,
-                                                 5 * Metre}));
+    back_right_bottom_  = origin_ + Displacement<World>({3 * Metre,
+                                                         4 * Metre,
+                                                         5 * Metre});
     front_right_bottom_ = back_right_bottom_ + forward_;
     back_left_bottom_   = back_right_bottom_ + leftward_;
     front_left_bottom_  = back_left_bottom_ + forward_;
@@ -59,27 +58,27 @@ class AffineMapTest : public testing::Test {
     vertices_ = {back_left_bottom_, front_left_bottom_, back_right_bottom_,
                  front_right_bottom_, back_left_top_, front_left_top_,
                  back_right_top_, front_right_top_};
-    originated_vertices_ = std::vector<Displacement>(vertices_.size());
+    originated_vertices_ = std::vector<Displacement<World>>(vertices_.size());
     for (std::size_t i = 0; i < vertices_.size(); ++i) {
       originated_vertices_[i] = vertices_[i] - origin_;
     }
   }
 
-  Vector<Length, World> zero_;
-  Vector<Length, World> forward_;
-  Vector<Length, World> leftward_;
-  Vector<Length, World> upward_;
-  Position origin_;
-  Position back_left_bottom_;
-  Position front_left_bottom_;
-  Position back_right_bottom_;
-  Position front_right_bottom_;
-  Position back_left_top_;
-  Position front_left_top_;
-  Position back_right_top_;
-  Position front_right_top_;
-  std::vector<Position> vertices_;
-  std::vector<Displacement> originated_vertices_;
+  Displacement<World> zero_;
+  Displacement<World> forward_;
+  Displacement<World> leftward_;
+  Displacement<World> upward_;
+  Position<World> origin_;
+  Position<World> back_left_bottom_;
+  Position<World> front_left_bottom_;
+  Position<World> back_right_bottom_;
+  Position<World> front_right_bottom_;
+  Position<World> back_left_top_;
+  Position<World> front_left_top_;
+  Position<World> back_right_top_;
+  Position<World> front_right_top_;
+  std::vector<Position<World>> vertices_;
+  std::vector<Displacement<World>> originated_vertices_;
 };
 
 TEST_F(AffineMapTest, Cube) {
