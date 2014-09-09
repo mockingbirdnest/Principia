@@ -84,6 +84,8 @@
   <ItemGroup>
     <ClInclude Include="affine_map.hpp" />
     <ClInclude Include="affine_map_body.hpp" />
+    <ClInclude Include="epoch.hpp" />
+    <ClInclude Include="named_quantities.hpp" />
     <ClInclude Include="point.hpp" />
     <ClInclude Include="point_body.hpp" />
     <ClInclude Include="grassmann_body.hpp" />
@@ -103,6 +105,7 @@
     <ClInclude Include="sign.hpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="epoch.cpp" />
     <ClCompile Include="grassmann_test.cpp" />
     <ClCompile Include="point_test.cpp" />
     <ClCompile Include="affine_map_test.cpp" />

@@ -2,6 +2,7 @@
 
 #include <vector>
 
+#include "geometry/named_quantities.hpp"
 #include "physics/n_body_system.hpp"
 #include "quantities/quantities.hpp"
 
@@ -18,6 +19,7 @@ namespace testing_utilities {
 // of Earth's north pole at J2000.0.
 // The basis is direct and orthonormal.
 struct ICRFJ2000Ecliptic;
+geometry::Position<ICRFJ2000Ecliptic> const kSolarSystemBarycentre;
 
 class SolarSystem {
  public:
