@@ -28,9 +28,9 @@ TEST_F(AffineSpaceTest, Comparisons) {
 }
 
 TEST_F(AffineSpaceTest, PlusMinus) {
-  EXPECT_THAT(kMJD - kJD, Eq(2400000.5 * Day));
-  EXPECT_THAT(kJD + 2451545.0 * Day, Eq(kJ2000));
-  EXPECT_THAT(kMJD - 2400000.5 * Day, Eq(kJD));
+  EXPECT_THAT(ModifiedJulianDate(0) - JulianDate(0), Eq(2400000.5 * Day));
+  EXPECT_THAT(JulianDate(2451545.0), Eq(kJ2000));
+  EXPECT_THAT(ModifiedJulianDate(0) - 2400000.5 * Day, Eq(JulianDate(0)));
 }
 
 TEST_F(AffineSpaceTest, AssignmentOperators) {
@@ -47,9 +47,9 @@ TEST_F(AffineSpaceTest, AssignmentOperators) {
 }
 
 TEST_F(AffineSpaceTest, Barycentres) {
-  Instant const t1 = 1 * Day + kUnixEpoch;
-  Instant const t2 = 3 * Day + kUnixEpoch;
-  Instant const b1 = Barycentre<Time, Volume>({t2, t1}, {3 * Litre, 1 * Litre});
+  Instant const t1 = kUnixEpoch + 1 * Day;
+  Instant const t2 = kUnixEpoch - 3 * Day;
+  Instant const b1 = Barycentre<Time, Volume>({t1, t2}, {3 * Litre, 1 * Litre});
   Instant const b2 = Barycentre<Time, double>({t2, t1}, {1, 1});
   EXPECT_THAT(b1, Eq(kUnixEpoch));
   EXPECT_THAT(b2, Eq(kUnixEpoch - 1 * Day));

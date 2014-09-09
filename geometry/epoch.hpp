@@ -20,18 +20,19 @@ namespace geometry {
 // +2000-01-01T11:59:27.816 (Temps Atomique International).
 // +2000-01-01T11:58:55.816 (UTC).
 const Instant kJ2000;
-// The origin of Julian dates. J2000.0 is JD 2451545.0.
-// -4712-01-01-T12:00:00.000 (Terrestrial Time), in a Julian calendar.
-const Instant kJulianPeriod = kJ2000 - 2451545.0 * si::Day;
-// The origin of Modified Julian Dates.
-// +1858-11-17-T00:00:00.000 (Terrestrial Time)
-const Instant kMJD = kJ2000 - 51544.5 * si::Day;
 
 // Unix epoch, obtained by subtracting 30 years (including 7 leap years)
 // and the UTC time of day at J2000.0 from J2000.0.
 // +2000-01-01T00:00:00.000 (UTC)
 const Instant kUnixEpoch = kJ2000 - ((30 * 365 + 7) * si::Day + 11 * si::Hour +
                                      58 * si::Minute + 55.816 * si::Second);
+
+// The Julian Date JD |days|. J2000.0 is JD 2451545.0. |days| is the number of
+// days since -4712-01-01-T12:00:00.000 (Terrestrial Time, Julian calendar).
+Instant JulianDate(double const days);
+// The Modified Julian Date MJD |days|. MJD is defined as JD - 2400000.5 days,
+// so |ModifiedJulianDate(0)| is +1858-11-17-T00:00:00.000 (Terrestrial Time).
+Instant ModifiedJulianDate(double const days);
 
 }  // namespace geometry
 }  // namespace principia
