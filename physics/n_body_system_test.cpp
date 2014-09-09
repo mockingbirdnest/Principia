@@ -245,7 +245,6 @@ TEST_F(NBodySystemTest, Moon) {
 // and an acceleration which exactly compensates gravitational attraction.  Both
 // bodies move in straight lines.
 TEST_F(NBodySystemTest, EarthProbe) {
-  // TODO(phl): I am not sure if these things make any sense.
   Position<EarthMoonOrbitPlane> const reference_position;
   Length const distance = 1E9 * SIUnit<Length>();
   trajectory3_->Append(trajectory1_->last_time(),
@@ -256,7 +255,7 @@ TEST_F(NBodySystemTest, EarthProbe) {
                                  0 * SIUnit<Length>()}),
                         trajectory1_->last_velocity()});
   trajectory3_->set_intrinsic_acceleration(
-      [this, distance](Time const& t) {
+      [this, distance](Instant const& t) {
     return Vector<Acceleration, EarthMoonOrbitPlane>(
         {0 * SIUnit<Acceleration>(),
          body1_->gravitational_parameter() / (distance * distance),

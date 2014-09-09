@@ -63,6 +63,29 @@ typename std::enable_if_t<is_quantity<Vector>::value, bool> operator<(
   return left.coordinates_ < right.coordinates_;
 }
 
+template<typename Vector>
+typename std::enable_if_t<is_quantity<Vector>::value, bool> operator<=(
+    Point<Vector> const& left, Point<Vector> const& right) {
+  return left.coordinates_ <= right.coordinates_;
+}
+
+template<typename Vector>
+typename std::enable_if_t<is_quantity<Vector>::value, bool> operator>=(
+    Point<Vector> const& left, Point<Vector> const& right) {
+  return left.coordinates_ >= right.coordinates_;
+}
+
+template<typename Vector>
+typename std::enable_if_t<is_quantity<Vector>::value, bool> operator>(
+    Point<Vector> const& left, Point<Vector> const& right) {
+  return left.coordinates_ > right.coordinates_;
+}
+
+template<typename Vector>
+std::ostream& operator<<(std::ostream& out, Point<Vector> const& point) {
+  return out << point.coordinates_;
+}
+
 template<typename Vector, typename Weight>
 Point<Vector> Barycentre(std::vector<Point<Vector>> const& points,
                          std::vector<Weight> const& weights) {

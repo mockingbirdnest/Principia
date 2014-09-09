@@ -26,8 +26,7 @@ void SimulateSolarSystem(SolarSystem* solar_system) {
   SPRKIntegrator<Length, Speed> integrator;
   integrator.Initialize(integrator.Order5Optimal());
   n_body_system->Integrate(integrator,
-                           trajectories.front()->last_time() +
-                               100 * JulianYear,              // t_max
+                           100 * JulianYear,                  // t_max
                            45 * Minute,                       // Δt
                            0,                                 // sampling_period
                            trajectories);
