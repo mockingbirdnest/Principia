@@ -141,7 +141,7 @@ using NBodySystemDeathTest = NBodySystemTest;
 TEST_F(NBodySystemDeathTest, IntegrateError) {
   EXPECT_DEATH({
     system_->Integrate(integrator_,
-                       period_,
+                       trajectory1_->last_time() + period_,
                        period_ / 100,
                        1,
                        {trajectory1_.get(),
@@ -155,7 +155,7 @@ TEST_F(NBodySystemDeathTest, IntegrateError) {
                        {Position<EarthMoonOrbitPlane>(),
                         Velocity<EarthMoonOrbitPlane>()});
     system_->Integrate(integrator_,
-                       period_,
+                       trajectory1_->last_time() + period_,
                        period_ / 100,
                        1,
                        {trajectory1_.get(), trajectory.get()});
@@ -166,7 +166,7 @@ TEST_F(NBodySystemDeathTest, IntegrateError) {
 TEST_F(NBodySystemTest, EarthMoon) {
   std::vector<Vector<Length, EarthMoonOrbitPlane>> positions;
   system_->Integrate(integrator_,
-                     period_,
+                     trajectory1_->last_time() + period_,
                      period_ / 100,
                      1,
                      {trajectory1_.get(), trajectory2_.get()});
@@ -192,7 +192,7 @@ TEST_F(NBodySystemTest, EarthMoon) {
 TEST_F(NBodySystemTest, MoonEarth) {
   std::vector<Vector<Length, EarthMoonOrbitPlane>> positions;
   system_->Integrate(integrator_,
-                     period_,
+                     trajectory1_->last_time() + period_,
                      period_ / 100,
                      1,
                      {trajectory2_.get(), trajectory1_.get()});
@@ -218,7 +218,7 @@ TEST_F(NBodySystemTest, MoonEarth) {
 TEST_F(NBodySystemTest, Moon) {
   Position<EarthMoonOrbitPlane> const reference_position;
   system_->Integrate(integrator_,
-                     period_,
+                     trajectory1_->last_time() + period_,
                      period_ / 100,
                      1,
                      {trajectory2_.get()});
@@ -262,7 +262,7 @@ TEST_F(NBodySystemTest, EarthProbe) {
          0 * SIUnit<Acceleration>()});});
 
   system_->Integrate(integrator_,
-                     period_,
+                     trajectory1_->last_time() + period_,
                      period_ / 100,
                      1,
                      {trajectory1_.get(), trajectory3_.get()});

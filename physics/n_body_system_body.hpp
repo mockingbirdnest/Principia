@@ -27,7 +27,7 @@ namespace physics {
 template<typename InertialFrame>
 void NBodySystem<InertialFrame>::Integrate(
     SymplecticIntegrator<Length, Speed> const& integrator,
-    Time const& tmax,
+    Instant const& tmax,
     Time const& Δt,
     int const sampling_period,
     Trajectories const& trajectories) {
@@ -100,7 +100,7 @@ void NBodySystem<InertialFrame>::Integrate(
     // use this block to hide it.
     Trajectories const& trajectories = reordered_trajectories;
 
-    parameters.tmax = tmax;
+    parameters.tmax = tmax - reference_time;
     parameters.Δt = Δt;
     parameters.sampling_period = sampling_period;
     dynamic_cast<const SPRKIntegrator<Length, Speed>*>(&integrator)->Solve(

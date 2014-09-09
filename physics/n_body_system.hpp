@@ -32,7 +32,7 @@ class NBodySystem {
   // |trajectories| must have the same |last_time()| and must be for distinct
   // bodies.
   void Integrate(SymplecticIntegrator<Length, Speed> const& integrator,
-                 Time const& tmax,
+                 Instant const& tmax,
                  Time const& Δt,
                  int const sampling_period,
                  Trajectories const& trajectories);
