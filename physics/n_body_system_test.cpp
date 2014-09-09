@@ -308,6 +308,5 @@ TEST_F(NBodySystemTest, EarthProbe) {
   EXPECT_THAT(positions3[100].coordinates().y, Eq(q3));
 }
 
-
 }  // namespace physics
 }  // namespace principia
