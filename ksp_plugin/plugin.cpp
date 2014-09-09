@@ -15,7 +15,7 @@ struct Plugin::Celestial {
   // be null for the sun.
   Celestial const* parent = nullptr;
   // The past and present trajectory of the body.
-  std::unique_ptr<Trajectory<World>> history;
+  std::unique_ptr<Trajectory<Universe>> history;
 };
 
 // Represents a KSP |Vessel|.
@@ -31,7 +31,7 @@ struct Plugin::Vessel {
   // null.
   Celestial const* parent;
   // The past and present trajectory of the body.
-  std::unique_ptr<Trajectory<World>> history;
+  std::unique_ptr<Trajectory<Universe>> history;
   // Whether to keep the |Vessel| during the next call to |AdvanceTime|.
   bool keep = true;
 };
@@ -43,7 +43,7 @@ Plugin::Plugin(Date const& initial_time, int const sun_index,
       {sun_index, std::make_unique<Celestial>(sun_gravitational_parameter)});
   sun_->history = std::make_unique<Trajectory<World>>(*sun_);
   sun_->history->Append(current_time_ - Date(),
-                        {Displacement<World>(), VelocityOffset<World>()});
+                        {Position<World>(), Velocity<World>()});
 }
 
 void Plugin::InsertCelestial(int index,

@@ -17,20 +17,25 @@ namespace ksp_plugin {
 // The "universal" inertial reference frame in which we perform the integration.
 struct Universe;
 
-// Unity world space. Thank's to KSP madness, occasionally an inertial reference
-// frame, occasionally an uniformly rotating one. Handle with caution.
+// Thank's to KSP madness, the reference frame is occasionally that of a
+// celestial body.
+// Unity world space. 
 struct World;
 
 // Unity world space, with the y and z axes switched through the looking-glass.
 // "We're all mad here. I'm mad. You're mad."
 struct AliceWorld;
 
+//TODO(egg): remove these typedefs after the named vectors are merged.
 typedef geometry::Point<Time> Date;
-
 template<typename Frame>
 using Displacement = Vector<Length, Frame>;
 template<typename Frame>
+using Position = geometry::Point<Displacement<Frame>>;
+template<typename Frame>
 using VelocityOffset = Vector<Speed, Frame>;
+template<typename Frame>
+using Velocity = geometry::Point<Frame>;
 
 class Plugin {
  public:
