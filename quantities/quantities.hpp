@@ -169,8 +169,11 @@ class Quantity {
 };
 
 // A type trait for testing if a type is a quantity.
-template<typename>
-struct is_quantity : std::false_type {};
+template<typename T>
+struct is_quantity
+    : std::integral_constant<bool,
+          std::is_integral<T>::value ||
+          std::is_floating_point<T>::value>::value {};
 template<typename ...D>
 struct is_quantity<Quantity<D...>> : std::true_type {};
 
