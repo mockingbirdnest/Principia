@@ -4,11 +4,13 @@
 #include <set>
 #include <vector>
 
+#include "geometry/named_quantities.hpp"
 #include "integrators/symplectic_integrator.hpp"
 #include "physics/body.hpp"
 #include "physics/trajectory.hpp"
 #include "quantities/quantities.hpp"
 
+using principia::geometry::Instant;
 using principia::integrators::SymplecticIntegrator;
 using principia::quantities::Acceleration;
 using principia::quantities::Length;
@@ -40,7 +42,7 @@ class NBodySystem {
       std::vector<Trajectory<InertialFrame> const*> const& massive_trajectories,
       std::vector<Trajectory<InertialFrame> const*> const&
           massless_trajectories,
-      Point<Time> const& reference_time,
+      Instant const& reference_time,
       Time const& t,
       std::vector<Length> const& q,
       std::vector<Acceleration>* result);

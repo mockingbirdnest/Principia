@@ -5,11 +5,13 @@
 #include <set>
 #include <vector>
 
+#include "geometry/named_quantities.hpp"
 #include "geometry/r3_element.hpp"
 #include "glog/logging.h"
 #include "integrators/symplectic_partitioned_runge_kutta_integrator.hpp"
 #include "quantities/quantities.hpp"
 
+using principia::geometry::Instant;
 using principia::geometry::R3Element;
 using principia::integrators::SPRKIntegrator;
 using principia::integrators::SymplecticIntegrator;
@@ -37,10 +39,10 @@ void NBodySystem<InertialFrame>::Integrate(
   // interval.  In the integrator itself, all quantities are "vectors" relative
   // to these references.
   Point<Vector<Length, InertialFrame>> const reference_position;
-  Point<Time> const reference_time;
+  Instant const reference_time;
 
   // These objects are for checking the consistency of the parameters.
-  std::set<Point<Time>> times_in_trajectories;
+  std::set<Instant> times_in_trajectories;
   std::set<Body const*> bodies_in_trajectories;
 
   // Prepare the initial state of the integrator.  For efficiently computing the
@@ -74,7 +76,7 @@ void NBodySystem<InertialFrame>::Integrate(
           (trajectory->last_position() - reference_position).coordinates();
       R3Element<Speed> const& velocity =
           trajectory->last_velocity().coordinates();
-      Point<Time> const& time = trajectory->last_time();
+      Instant const& time = trajectory->last_time();
       for (int i = 0; i < 3; ++i) {
         parameters.initial.positions.emplace_back(position[i]);
       }
@@ -117,7 +119,7 @@ void NBodySystem<InertialFrame>::Integrate(
     for (std::size_t i = 0; i < solution.size(); ++i) {
       SymplecticIntegrator<Length, Speed>::SystemState const& state =
           solution[i];
-      Point<Time> const time = state.time.value + reference_time;
+      Instant const time = state.time.value + reference_time;
       CHECK_EQ(state.positions.size(), state.momenta.size());
       // Loop over the dimensions.
       for (std::size_t k = 0, t = 0; k < state.positions.size(); k += 3, ++t) {
@@ -142,7 +144,7 @@ template<typename InertialFrame>
 void NBodySystem<InertialFrame>::ComputeGravitationalAccelerations(
     std::vector<Trajectory<InertialFrame> const*> const& massive_trajectories,
     std::vector<Trajectory<InertialFrame> const*> const& massless_trajectories,
-    Point<Time> const& reference_time,
+    Instant const& reference_time,
     Time const& t,
     std::vector<Length> const& q,
     std::vector<Acceleration>* result) {

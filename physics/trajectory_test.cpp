@@ -6,6 +6,7 @@
 
 #include "body.hpp"
 #include "geometry/grassmann.hpp"
+#include "geometry/named_quantities.hpp"
 #include "geometry/point.hpp"
 #include "geometry/r3_element.hpp"
 #include "gmock/gmock.h"
@@ -14,13 +15,13 @@
 #include "quantities/si.hpp"
 #include "testing_utilities/death_message.hpp"
 
+using principia::geometry::Instant;
 using principia::geometry::Point;
 using principia::geometry::R3Element;
 using principia::geometry::Vector;
 using principia::quantities::Length;
 using principia::quantities::Mass;
 using principia::quantities::Speed;
-using principia::quantities::Time;
 using principia::quantities::SIUnit;
 using principia::si::Metre;
 using principia::si::Second;
@@ -63,7 +64,7 @@ class TrajectoryTest : public testing::Test {
     d2_ = std::make_unique<DegreesOfFreedom<World>>(q2_, p2_);
     d3_ = std::make_unique<DegreesOfFreedom<World>>(q3_, p3_);
     d4_ = std::make_unique<DegreesOfFreedom<World>>(q4_, p4_);
-    t0_ = Point<Time>(0 * Second);
+    t0_ = Instant(0 * Second);
     t1_ = t0_ + 7 * Second;
     t2_ = t0_ + 17 * Second;
     t3_ = t0_ + 27 * Second;
@@ -78,7 +79,7 @@ class TrajectoryTest : public testing::Test {
   Point<Vector<Length, World>> q1_, q2_, q3_, q4_;
   Vector<Speed, World> p1_, p2_, p3_, p4_;
   std::unique_ptr<DegreesOfFreedom<World>> d1_, d2_, d3_, d4_;
-  Point<Time> t0_, t1_, t2_, t3_, t4_;
+  Instant t0_, t1_, t2_, t3_, t4_;
   std::unique_ptr<Body> massive_body_;
   std::unique_ptr<Body> massless_body_;
   std::unique_ptr<Trajectory<World>> massive_trajectory_;
@@ -102,11 +103,11 @@ TEST_F(TrajectoryTest, AppendSuccess) {
   massive_trajectory_->Append(t1_, *d1_);
   massive_trajectory_->Append(t2_, *d2_);
   massive_trajectory_->Append(t3_, *d3_);
-  std::map<Point<Time>, Point<Vector<Length, World>>> const positions =
+  std::map<Instant, Point<Vector<Length, World>>> const positions =
       massive_trajectory_->Positions();
-  std::map<Point<Time>, Vector<Speed, World>> const velocities =
+  std::map<Instant, Vector<Speed, World>> const velocities =
       massive_trajectory_->Velocities();
-  std::list<Point<Time>> const times = massive_trajectory_->Times();
+  std::list<Instant> const times = massive_trajectory_->Times();
   EXPECT_THAT(positions,
               ElementsAre(Pair(t1_, q1_), Pair(t2_, q2_), Pair(t3_, q3_)));
   EXPECT_THAT(velocities,
@@ -129,11 +130,11 @@ TEST_F(TrajectoryTest, ForkSuccess) {
   massive_trajectory_->Append(t3_, *d3_);
   Trajectory<World>* fork = massive_trajectory_->Fork(t2_);
   fork->Append(t4_, *d4_);
-  std::map<Point<Time>, Point<Vector<Length, World>>> positions =
+  std::map<Instant, Point<Vector<Length, World>>> positions =
       massive_trajectory_->Positions();
-  std::map<Point<Time>, Vector<Speed, World>> velocities =
+  std::map<Instant, Vector<Speed, World>> velocities =
       massive_trajectory_->Velocities();
-  std::list<Point<Time>> times = massive_trajectory_->Times();
+  std::list<Instant> times = massive_trajectory_->Times();
   EXPECT_THAT(positions,
               ElementsAre(Pair(t1_, q1_), Pair(t2_, q2_), Pair(t3_, q3_)));
   EXPECT_THAT(velocities,
@@ -207,9 +208,9 @@ TEST_F(TrajectoryTest, ForgetAfterSuccess) {
   fork->Append(t4_, *d4_);
 
   fork->ForgetAfter(t3_);
-  std::map<Point<Time>, Point<Vector<Length, World>>> positions = fork->Positions();
-  std::map<Point<Time>, Vector<Speed, World>> velocities = fork->Velocities();
-  std::list<Point<Time>> times = fork->Times();
+  std::map<Instant, Point<Vector<Length, World>>> positions = fork->Positions();
+  std::map<Instant, Vector<Speed, World>> velocities = fork->Velocities();
+  std::list<Instant> times = fork->Times();
   EXPECT_THAT(positions,
               ElementsAre(Pair(t1_, q1_), Pair(t2_, q2_), Pair(t3_, q3_)));
   EXPECT_THAT(velocities,
@@ -266,11 +267,11 @@ TEST_F(TrajectoryTest, ForgetBeforeSuccess) {
   fork->Append(t4_, *d4_);
 
   massive_trajectory_->ForgetBefore(t1_);
-  std::map<Point<Time>, Point<Vector<Length, World>>> positions =
+  std::map<Instant, Point<Vector<Length, World>>> positions =
       massive_trajectory_->Positions();
-  std::map<Point<Time>, Vector<Speed, World>> velocities =
+  std::map<Instant, Vector<Speed, World>> velocities =
       massive_trajectory_->Velocities();
-  std::list<Point<Time>> times = massive_trajectory_->Times();
+  std::list<Instant> times = massive_trajectory_->Times();
   EXPECT_THAT(positions, ElementsAre(Pair(t2_, q2_), Pair(t3_, q3_)));
   EXPECT_THAT(velocities, ElementsAre(Pair(t2_, p2_), Pair(t3_, p3_)));
   EXPECT_THAT(times, ElementsAre(t2_, t3_));
@@ -296,13 +297,13 @@ TEST_F(TrajectoryTest, ForgetBeforeSuccess) {
 TEST_F(TrajectoryDeathTest, IntrinsicAccelerationError) {
   EXPECT_DEATH({
     massive_trajectory_->set_intrinsic_acceleration(
-        [](Point<Time> const& t) { return Vector<Acceleration, World>(); } );
+        [](Instant const& t) { return Vector<Acceleration, World>(); } );
   }, DeathMessage("massive body"));
   EXPECT_DEATH({
     massless_trajectory_->set_intrinsic_acceleration(
-        [](Point<Time> const& t) { return Vector<Acceleration, World>(); } );
+        [](Instant const& t) { return Vector<Acceleration, World>(); } );
     massless_trajectory_->set_intrinsic_acceleration(
-        [](Point<Time> const& t) { return Vector<Acceleration, World>(); } );
+        [](Instant const& t) { return Vector<Acceleration, World>(); } );
   }, DeathMessage("already has.* acceleration"));
 }
 
@@ -315,7 +316,7 @@ TEST_F(TrajectoryDeathTest, IntrinsicAccelerationSuccess) {
 
   EXPECT_FALSE(massless_trajectory_->has_intrinsic_acceleration());
   massless_trajectory_->set_intrinsic_acceleration(
-      [this](Point<Time> const& t) {
+      [this](Instant const& t) {
         return Vector<Acceleration, World>(
             {1 * SIUnit<Length>() / ((t - t0_) * (t - t0_)),
              2 * SIUnit<Length>() / ((t - t0_) * (t - t0_)),
@@ -329,7 +330,7 @@ TEST_F(TrajectoryDeathTest, IntrinsicAccelerationSuccess) {
 
   EXPECT_FALSE(fork->has_intrinsic_acceleration());
   fork->set_intrinsic_acceleration(
-      [this](Point<Time> const& t) {
+      [this](Instant const& t) {
         return Vector<Acceleration, World>(
             {4 * SIUnit<Length>() / ((t - t0_) * (t - t0_)),
              5 * SIUnit<Length>() / ((t - t0_) * (t - t0_)),

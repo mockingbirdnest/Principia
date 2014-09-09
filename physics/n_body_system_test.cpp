@@ -6,6 +6,7 @@
 #include <vector>
 
 #include "geometry/grassmann.hpp"
+#include "geometry/named_quantities.hpp"
 #include "geometry/point.hpp"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
@@ -18,6 +19,7 @@
 
 using principia::constants::GravitationalConstant;
 using principia::geometry::Barycentre;
+using principia::geometry::Instant;
 using principia::geometry::Point;
 using principia::geometry::Vector;
 using principia::quantities::Pow;
@@ -74,8 +76,8 @@ class NBodySystemTest : public testing::Test {
         v2({2 * π * (q2 - centre_of_mass_).Norm() / period_,
             0 * SIUnit<Speed>(),
             0 * SIUnit<Speed>()});
-    trajectory1_->Append(Point<Time>(0 * SIUnit<Time>()), {q1, v1});
-    trajectory2_->Append(Point<Time>(0 * SIUnit<Time>()), {q2, v2});
+    trajectory1_->Append(Instant(0 * SIUnit<Time>()), {q1, v1});
+    trajectory2_->Append(Instant(0 * SIUnit<Time>()), {q2, v2});
     system_ = std::make_unique<NBodySystem<EarthMoonOrbitPlane>>();
   }
 
@@ -148,7 +150,7 @@ TEST_F(NBodySystemDeathTest, IntegrateError) {
   EXPECT_DEATH({
     std::unique_ptr<Trajectory<EarthMoonOrbitPlane>> trajectory(
         new Trajectory<EarthMoonOrbitPlane>(*body2_));
-    trajectory->Append(Point<Time>(1 * SIUnit<Time>()),
+    trajectory->Append(Instant(1 * SIUnit<Time>()),
                        {Point<Vector<Length, EarthMoonOrbitPlane>>(),
                         Vector<Speed, EarthMoonOrbitPlane>()});
     system_->Integrate(integrator_,
