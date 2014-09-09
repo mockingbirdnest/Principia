@@ -53,11 +53,11 @@ class NBodySystemTest : public testing::Test {
         std::make_unique<Trajectory<EarthMoonOrbitPlane>>(*body2_);
     trajectory3_ =
         std::make_unique<Trajectory<EarthMoonOrbitPlane>>(*body3_);
-    Point<Vector<Length, EarthMoonOrbitPlane>> const
+    Position<EarthMoonOrbitPlane> const
         q1(Vector<Length, EarthMoonOrbitPlane>({0 * SIUnit<Length>(),
                                                 0 * SIUnit<Length>(),
                                                 0 * SIUnit<Length>()}));
-    Point<Vector<Length, EarthMoonOrbitPlane>> const
+    Position<EarthMoonOrbitPlane> const
         q2(Vector<Length, EarthMoonOrbitPlane>({0 * SIUnit<Length>(),
                                                 4E8 * SIUnit<Length>(),
                                                 0 * SIUnit<Length>()}));
@@ -68,11 +68,11 @@ class NBodySystemTest : public testing::Test {
     centre_of_mass_ =
         Barycentre<Vector<Length, EarthMoonOrbitPlane>, Mass>(
             {q1, q2}, {body1_->mass(), body2_->mass()});
-    Vector<Speed, EarthMoonOrbitPlane> const
+    Velocity<EarthMoonOrbitPlane> const
         v1({-2 * π * (q1 - centre_of_mass_).Norm() / period_,
              0 * SIUnit<Speed>(),
              0 * SIUnit<Speed>()});
-    Vector<Speed, EarthMoonOrbitPlane> const
+    Velocity<EarthMoonOrbitPlane> const
         v2({2 * π * (q2 - centre_of_mass_).Norm() / period_,
             0 * SIUnit<Speed>(),
             0 * SIUnit<Speed>()});
@@ -113,6 +113,7 @@ class NBodySystemTest : public testing::Test {
     return result;
   }
 
+  // TODO(phl): Does this function still make sense?
   template<typename T1, typename T2>
   std::vector<T2> ValuesOf(std::map<T1, Point<T2>> const& m,
                            Point<T2> const& relative_to) {
@@ -129,7 +130,7 @@ class NBodySystemTest : public testing::Test {
   std::unique_ptr<Trajectory<EarthMoonOrbitPlane>> trajectory1_;
   std::unique_ptr<Trajectory<EarthMoonOrbitPlane>> trajectory2_;
   std::unique_ptr<Trajectory<EarthMoonOrbitPlane>> trajectory3_;
-  Point<Vector<Length, EarthMoonOrbitPlane>> centre_of_mass_;
+  Position<EarthMoonOrbitPlane> centre_of_mass_;
   SPRKIntegrator<Length, Speed> integrator_;
   Time period_;
   std::unique_ptr<NBodySystem<EarthMoonOrbitPlane>> system_;
@@ -151,8 +152,8 @@ TEST_F(NBodySystemDeathTest, IntegrateError) {
     std::unique_ptr<Trajectory<EarthMoonOrbitPlane>> trajectory(
         new Trajectory<EarthMoonOrbitPlane>(*body2_));
     trajectory->Append(Instant(1 * SIUnit<Time>()),
-                       {Point<Vector<Length, EarthMoonOrbitPlane>>(),
-                        Vector<Speed, EarthMoonOrbitPlane>()});
+                       {Position<EarthMoonOrbitPlane>(),
+                        Velocity<EarthMoonOrbitPlane>()});
     system_->Integrate(integrator_,
                        period_,
                        period_ / 100,
@@ -215,8 +216,7 @@ TEST_F(NBodySystemTest, MoonEarth) {
 
 // The Moon alone.  It moves in straight line.
 TEST_F(NBodySystemTest, Moon) {
-  // TODO(phl): I am not sure if these things make any sense.
-  Point<Vector<Length, EarthMoonOrbitPlane>> const reference_position;
+  Position<EarthMoonOrbitPlane> const reference_position;
   system_->Integrate(integrator_,
                      period_,
                      period_ / 100,
@@ -246,7 +246,7 @@ TEST_F(NBodySystemTest, Moon) {
 // bodies move in straight lines.
 TEST_F(NBodySystemTest, EarthProbe) {
   // TODO(phl): I am not sure if these things make any sense.
-  Point<Vector<Length, EarthMoonOrbitPlane>> const reference_position;
+  Position<EarthMoonOrbitPlane> const reference_position;
   Length const distance = 1E9 * SIUnit<Length>();
   trajectory3_->Append(trajectory1_->last_time(),
                        {trajectory1_->last_position() +

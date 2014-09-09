@@ -38,7 +38,7 @@ void NBodySystem<InertialFrame>::Integrate(
   // center-of-mass referential and a time in the middle of the integration
   // interval.  In the integrator itself, all quantities are "vectors" relative
   // to these references.
-  Point<Vector<Length, InertialFrame>> const reference_position;
+  Position<InertialFrame> const reference_position;
   Instant const reference_time;
 
   // These objects are for checking the consistency of the parameters.
@@ -127,7 +127,7 @@ void NBodySystem<InertialFrame>::Integrate(
             R3Element<Length>(state.positions[k].value,
                               state.positions[k + 1].value,
                               state.positions[k + 2].value));
-        Vector<Speed, InertialFrame> const velocity(
+        Velocity<InertialFrame> const velocity(
             R3Element<Speed>(state.momenta[k].value,
                              state.momenta[k + 1].value,
                              state.momenta[k + 2].value));

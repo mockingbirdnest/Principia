@@ -12,6 +12,7 @@
 
 using principia::geometry::Instant;
 using principia::geometry::Vector;
+using principia::geometry::Velocity;
 using principia::quantities::Acceleration;
 using principia::quantities::Length;
 using principia::quantities::Speed;
@@ -32,14 +33,14 @@ class Trajectory {
   // These functions return the series of positions/velocities/times for the
   // trajectory of the body.  All three containers are guaranteed to have the
   // same size.  These functions are O(|depth| + |length|).
-  std::map<Instant, Point<Vector<Length, Frame>>> Positions() const;
-  std::map<Instant, Vector<Speed, Frame>> Velocities() const;
+  std::map<Instant, Position<Frame>> Positions() const;
+  std::map<Instant, Velocity<Frame>> Velocities() const;
   std::list<Instant> Times() const;
 
   // Return the most recent position/velocity/time.  These functions are O(1)
   // and dirt-cheap.
-  Point<Vector<Length, Frame>> const& last_position() const;
-  Vector<Speed, Frame> const& last_velocity() const;
+  Position<Frame> const& last_position() const;
+  Velocity<Frame> const& last_velocity() const;
   Instant const& last_time() const;
 
   // Appends one point to the trajectory.

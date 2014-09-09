@@ -40,7 +40,7 @@ class SolarSystemTest : public testing::Test {
                                      secondary.body().gravitational_parameter();
     Vector<Length, ICRFJ2000Ecliptic> const r =
         primary.last_position() - secondary.last_position();
-    Vector<Speed, ICRFJ2000Ecliptic> const v =
+    Velocity<ICRFJ2000Ecliptic> const v =
         primary.last_velocity() - secondary.last_velocity();
     SpecificEnergy const ε = Pow<2>(v.Norm()) / 2 - μ / r.Norm();
     return -μ / (2 * ε);
@@ -74,7 +74,7 @@ class SolarSystemTest : public testing::Test {
                                      secondary.body().gravitational_parameter();
     Vector<Length, ICRFJ2000Ecliptic> const r =
         tertiary.last_position() - secondary.last_position();
-    Vector<Speed, ICRFJ2000Ecliptic> const v =
+    Velocity<ICRFJ2000Ecliptic> const v =
         tertiary.last_velocity() - secondary.last_velocity();
     Bivector<SpecificAngularMomentum, ICRFJ2000Ecliptic> const h =
         Wedge(r, v) / Radian;

@@ -19,15 +19,15 @@ Trajectory<Frame>::Trajectory(Body const& body)
       parent_(nullptr) {}
 
 template<typename Frame>
-std::map<Instant, Point<Vector<Length, Frame>>>
+std::map<Instant, Position<Frame>>
 Trajectory<Frame>::Positions() const {
-  return ApplyToDegreesOfFreedom<Point<Vector<Length, Frame>>>(
+  return ApplyToDegreesOfFreedom<Position<Frame>>(
       [](DegreesOfFreedom<Frame> const& s) { return s.position; });
 }
 
 template<typename Frame>
-std::map<Instant, Vector<Speed, Frame>> Trajectory<Frame>::Velocities() const {
-  return ApplyToDegreesOfFreedom<Vector<Speed, Frame>>(
+std::map<Instant, Velocity<Frame>> Trajectory<Frame>::Velocities() const {
+  return ApplyToDegreesOfFreedom<Velocity<Frame>>(
       [](DegreesOfFreedom<Frame> const& s) { return s.velocity; });
 }
 
@@ -57,7 +57,7 @@ std::list<Instant> Trajectory<Frame>::Times() const {
 }
 
 template<typename Frame>
-Point<Vector<Length, Frame>> const& Trajectory<Frame>::last_position() const {
+Position<Frame> const& Trajectory<Frame>::last_position() const {
   if (timeline_.empty()) {
     CHECK(fork_ != nullptr) << "Empty trajectory";
     return (*fork_)->second.position;
@@ -67,7 +67,7 @@ Point<Vector<Length, Frame>> const& Trajectory<Frame>::last_position() const {
 }
 
 template<typename Frame>
-Vector<Speed, Frame> const& Trajectory<Frame>::last_velocity() const {
+Velocity<Frame> const& Trajectory<Frame>::last_velocity() const {
   if (timeline_.empty()) {
     CHECK(fork_ != nullptr) << "Empty trajectory";
     return (*fork_)->second.velocity;
