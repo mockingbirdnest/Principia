@@ -8,7 +8,7 @@
 namespace principia {
 namespace geometry {
 
-typedef Point<quantities::Time> Instant;
+using Instant = Point<quantities::Time>;
 template<typename Frame>
 using Displacement = Vector<quantities::Length, Frame>;
 template<typename Frame>
