@@ -32,6 +32,11 @@ void NBodySystem<InertialFrame>::Integrate(
   SymplecticIntegrator<Length, Speed>::Parameters parameters;
   std::vector<SymplecticIntegrator<Length, Speed>::SystemState> solution;
 
+  // TODO(phl): Use a position/speed based on the first mantissa bits of the
+  // comoving center-of-mass referential.
+  Point<Vector<Length, InertialFrame>> const reference_position;
+  Point<Vector<Speed, InertialFrame>> const reference_velocity;
+
   // These objects are for checking the consistency of the parameters.
   std::set<Time> times_in_trajectories;
   std::set<Body const*> bodies_in_trajectories;
@@ -64,9 +69,9 @@ void NBodySystem<InertialFrame>::Integrate(
 
       // Fill the initial position/velocity/time.
       R3Element<Length> const& position =
-          trajectory->last_position().coordinates();
+          (trajectory->last_position() - reference_position).coordinates();
       R3Element<Speed> const& velocity =
-          trajectory->last_velocity().coordinates();
+          (trajectory->last_velocity() - reference_velocity).coordinates();
       Time const& time = trajectory->last_time();
       for (int i = 0; i < 3; ++i) {
         parameters.initial.positions.emplace_back(position[i]);
@@ -122,7 +127,9 @@ void NBodySystem<InertialFrame>::Integrate(
                              state.momenta[k + 1].value,
                              state.momenta[k + 2].value));
         trajectories[t]->Append(
-            time, DegreesOfFreedom<InertialFrame>(position, velocity));
+            time,
+            DegreesOfFreedom<InertialFrame>(position + reference_position,
+                                            velocity + reference_velocity));
       }
     }
   }

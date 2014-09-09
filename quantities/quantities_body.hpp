@@ -27,9 +27,9 @@ struct Dimensions {
 
 namespace type_generators {
 template<typename Q>
-struct Collapse { typedef Q ResultType; };
+struct Collapse { using ResultType = Q; };
 template<>
-struct Collapse<Quantity<NoDimensions>> { typedef double ResultType; };
+struct Collapse<Quantity<NoDimensions>> { using ResultType = double; };
 template<typename Left, typename Right>
 struct ProductGenerator {
   enum {
@@ -47,18 +47,18 @@ struct ProductGenerator {
     SolidAngle        = Left::Dimensions::SolidAngle +
                         Right::Dimensions::SolidAngle
   };
-  typedef typename Collapse<
+  using ResultType = typename Collapse<
       Quantity<Dimensions<Length, Mass, Time, Current, Temperature, Amount,
                           LuminousIntensity, Winding, Angle,
-                          SolidAngle>>>::ResultType ResultType;
+                          SolidAngle>>>::ResultType;
 };
 template<typename Left>
-struct ProductGenerator<Left, double> { typedef Left ResultType; };
+struct ProductGenerator<Left, double> { using ResultType = Left; };
 template<typename Right>
-struct ProductGenerator<double, Right> { typedef Right ResultType; };
+struct ProductGenerator<double, Right> { using ResultType = Right; };
 template<>
 struct ProductGenerator<double, double> {
-  typedef double ResultType;
+  using ResultType = double;
 };
 template<typename Left, typename Right>
 struct QuotientGenerator {
@@ -77,16 +77,16 @@ struct QuotientGenerator {
     SolidAngle        = Left::Dimensions::SolidAngle -
                         Right::Dimensions::SolidAngle
   };
-  typedef typename Collapse<
+  using ResultType = typename Collapse<
       Quantity<Dimensions<Length, Mass, Time, Current, Temperature, Amount,
                           LuminousIntensity, Winding, Angle,
-                          SolidAngle>>>::ResultType ResultType;
+                          SolidAngle>>>::ResultType;
 };
 template<typename Left>
-struct QuotientGenerator<Left, double> { typedef Left ResultType; };
+struct QuotientGenerator<Left, double> { using ResultType = Left; };
 template<>
 struct QuotientGenerator<double, double> {
-  typedef double ResultType;
+  using ResultType = double;
 };
 template<typename Right>
 struct QuotientGenerator<double, Right> {
@@ -102,25 +102,25 @@ struct QuotientGenerator<double, Right> {
     Angle             = -Right::Dimensions::Angle,
     SolidAngle        = -Right::Dimensions::SolidAngle
   };
-  typedef Quantity<
+  using ResultType = Quantity<
       Dimensions<Length, Mass, Time, Current, Temperature, Amount,
-                 LuminousIntensity, Winding, Angle, SolidAngle>> ResultType;
+                 LuminousIntensity, Winding, Angle, SolidAngle>>;
 };
 template<typename Q, int Exponent, typename>
 struct PowerGenerator {};
 template<typename Q, int Exponent>
 struct PowerGenerator<Q, Exponent, Range<(Exponent > 1)>> {
-  typedef Product<
-      typename PowerGenerator<Q, Exponent - 1>::ResultType, Q> ResultType;
+  using ResultType =
+      Product<typename PowerGenerator<Q, Exponent - 1>::ResultType, Q>;
 };
 template<typename Q, int Exponent>
 struct PowerGenerator<Q, Exponent, Range<(Exponent < 1)>>{
-  typedef Quotient<
-      typename PowerGenerator<Q, Exponent + 1>::ResultType, Q> ResultType;
+  using ResultType =
+      Quotient<typename PowerGenerator<Q, Exponent + 1>::ResultType, Q>;
 };
 template<typename Q, int Exponent>
 struct PowerGenerator<Q, Exponent, Range<(Exponent == 1)>>{
-  typedef Q ResultType;
+  using ResultType = Q;
 };
 }  // namespace type_generators
 
@@ -128,8 +128,7 @@ template<typename D>
 inline Quantity<D>::Quantity() : magnitude_(0) {}
 
 template<typename D>
-inline Quantity<D>::Quantity(double const magnitude)
-    : magnitude_(magnitude) {}
+inline Quantity<D>::Quantity(double const magnitude) : magnitude_(magnitude) {}
 
 template<typename D>
 inline Quantity<D>& Quantity<D>::operator+=(Quantity const& right) {
@@ -339,8 +338,7 @@ inline std::string FormatUnit(std::string const& name, int const exponent) {
   }
 }
 
-inline std::string DebugString(double const number,
-                               unsigned char const precision) {
+inline std::string DebugString(double const number, int const precision) {
   char result[50];
 #ifdef _MSC_VER
   unsigned int old_exponent_format = _set_output_format(_TWO_DIGIT_EXPONENT);
@@ -354,8 +352,7 @@ inline std::string DebugString(double const number,
 }
 
 template<typename D>
-std::string DebugString(Quantity<D> const& quantity,
-                        unsigned char const precision) {
+std::string DebugString(Quantity<D> const& quantity, int const precision) {
   return DebugString(quantity.magnitude_, precision) +
       FormatUnit("m", D::Length) + FormatUnit("kg", D::Mass) +
       FormatUnit("s", D::Time) + FormatUnit("A", D::Current) +
