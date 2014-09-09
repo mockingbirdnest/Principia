@@ -14,17 +14,19 @@
 namespace principia {
 namespace ksp_plugin {
 
-// The "universal" inertial reference frame in which we perform the integration.
-struct Universe;
-
-// Thank's to KSP madness, the reference frame is occasionally that of a
-// celestial body.
-// Unity world space. 
+// Thank's to KSP madness, the reference frame of the celestial body orbited by
+// the active vessel, occasionally rotating with its surface, occasionally
+// nonrotating.
+// The basis is that of Unity's "world space" (this is an indirect basis).
 struct World;
 
-// Unity world space, with the y and z axes switched through the looking-glass.
+// Same as |World| but with the y and z axes switched through the looking-glass.
 // "We're all mad here. I'm mad. You're mad."
 struct AliceWorld;
+
+// The barycentric reference frame of the solar system.
+// The basis is the basis of |World| at game creation (universal time 0).
+struct Universe;
 
 //TODO(egg): remove these typedefs after the named vectors are merged.
 typedef geometry::Point<Time> Date;
@@ -35,7 +37,7 @@ using Position = geometry::Point<Displacement<Frame>>;
 template<typename Frame>
 using VelocityOffset = Vector<Speed, Frame>;
 template<typename Frame>
-using Velocity = geometry::Point<Frame>;
+using Velocity = geometry::Point<VelocityOffset<Frame>>;
 
 class Plugin {
  public:
