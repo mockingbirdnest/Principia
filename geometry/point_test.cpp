@@ -47,9 +47,12 @@ TEST_F(AffineSpaceTest, AssignmentOperators) {
 }
 
 TEST_F(AffineSpaceTest, Ordering) {
-  Point<Temperature> const t1 = 40 * Kelvin + CelsiusZero;
-  Point<Temperature> const t2 = 10 * Kelvin + CelsiusZero;
+  Instant const t1 = kUnixEpoch + 1 * Day;
+  Instant const t2 = kUnixEpoch - 3 * Day;
   EXPECT_TRUE(t2 < t1);
+  Point<double> d1(1.0);
+  Point<double> d2(-3.0);
+  EXPECT_TRUE(d2 < d1);
 }
 
 TEST_F(AffineSpaceTest, Barycentres) {
