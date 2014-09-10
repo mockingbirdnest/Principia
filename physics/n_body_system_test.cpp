@@ -53,14 +53,14 @@ class NBodySystemTest : public testing::Test {
         std::make_unique<Trajectory<EarthMoonOrbitPlane>>(*body2_);
     trajectory3_ =
         std::make_unique<Trajectory<EarthMoonOrbitPlane>>(*body3_);
-    Position<EarthMoonOrbitPlane> const
-        q1(Vector<Length, EarthMoonOrbitPlane>({0 * SIUnit<Length>(),
-                                                0 * SIUnit<Length>(),
-                                                0 * SIUnit<Length>()}));
-    Position<EarthMoonOrbitPlane> const
-        q2(Vector<Length, EarthMoonOrbitPlane>({0 * SIUnit<Length>(),
-                                                4E8 * SIUnit<Length>(),
-                                                0 * SIUnit<Length>()}));
+    Position<EarthMoonOrbitPlane> const q1(
+        Vector<Length, EarthMoonOrbitPlane>({0 * SIUnit<Length>(),
+                                             0 * SIUnit<Length>(),
+                                             0 * SIUnit<Length>()}));
+    Position<EarthMoonOrbitPlane> const q2(
+        Vector<Length, EarthMoonOrbitPlane>({0 * SIUnit<Length>(),
+                                             4E8 * SIUnit<Length>(),
+                                             0 * SIUnit<Length>()}));
     Length const semi_major_axis = (q1 - q2).Norm();
     period_ = 2 * π * Sqrt(Pow<3>(semi_major_axis) /
                                (body1_->gravitational_parameter() +
@@ -68,14 +68,14 @@ class NBodySystemTest : public testing::Test {
     centre_of_mass_ =
         Barycentre<Vector<Length, EarthMoonOrbitPlane>, Mass>(
             {q1, q2}, {body1_->mass(), body2_->mass()});
-    Velocity<EarthMoonOrbitPlane> const
-        v1({-2 * π * (q1 - centre_of_mass_).Norm() / period_,
-             0 * SIUnit<Speed>(),
-             0 * SIUnit<Speed>()});
-    Velocity<EarthMoonOrbitPlane> const
-        v2({2 * π * (q2 - centre_of_mass_).Norm() / period_,
-            0 * SIUnit<Speed>(),
-            0 * SIUnit<Speed>()});
+    Velocity<EarthMoonOrbitPlane> const v1(
+        {-2 * π * (q1 - centre_of_mass_).Norm() / period_,
+         0 * SIUnit<Speed>(),
+         0 * SIUnit<Speed>()});
+    Velocity<EarthMoonOrbitPlane> const v2(
+        {2 * π * (q2 - centre_of_mass_).Norm() / period_,
+         0 * SIUnit<Speed>(),
+         0 * SIUnit<Speed>()});
     trajectory1_->Append(Instant(0 * SIUnit<Time>()), {q1, v1});
     trajectory2_->Append(Instant(0 * SIUnit<Time>()), {q2, v2});
     system_ = std::make_unique<NBodySystem<EarthMoonOrbitPlane>>();
@@ -113,7 +113,6 @@ class NBodySystemTest : public testing::Test {
     return result;
   }
 
-  // TODO(phl): Does this function still make sense?
   template<typename T1, typename T2>
   std::vector<T2> ValuesOf(std::map<T1, Point<T2>> const& m,
                            Point<T2> const& relative_to) {
