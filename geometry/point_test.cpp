@@ -46,6 +46,24 @@ TEST_F(AffineSpaceTest, AssignmentOperators) {
   EXPECT_THAT(accumulator, Eq(kUnixEpoch));
 }
 
+TEST_F(AffineSpaceTest, Ordering) {
+  // Check that is_quantity works for double.
+  Point<double> d1(1.0);
+  Point<double> d2(-3.0);
+  EXPECT_TRUE(d2 < d1);
+  // Check ordering for instants.
+  Instant const t1 = kUnixEpoch + 1 * Day;
+  Instant const t2 = kUnixEpoch - 3 * Day;
+  EXPECT_TRUE(t2 < t1);
+  EXPECT_FALSE(t2 < t2);
+  EXPECT_TRUE(t2 <= t1);
+  EXPECT_TRUE(t2 <= t2);
+  EXPECT_TRUE(t1 > t2);
+  EXPECT_FALSE(t1 > t1);
+  EXPECT_TRUE(t1 >= t2);
+  EXPECT_TRUE(t1 >= t1);
+}
+
 TEST_F(AffineSpaceTest, Barycentres) {
   Instant const t1 = kUnixEpoch + 1 * Day;
   Instant const t2 = kUnixEpoch - 3 * Day;

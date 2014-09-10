@@ -6,14 +6,16 @@
 #include <memory>
 
 #include "geometry/grassmann.hpp"
+#include "geometry/named_quantities.hpp"
 #include "physics/degrees_of_freedom.hpp"
 #include "quantities/named_quantities.hpp"
 
+using principia::geometry::Instant;
 using principia::geometry::Vector;
+using principia::geometry::Velocity;
 using principia::quantities::Acceleration;
 using principia::quantities::Length;
 using principia::quantities::Speed;
-using principia::quantities::Time;
 
 namespace principia {
 namespace physics {
@@ -31,28 +33,28 @@ class Trajectory {
   // These functions return the series of positions/velocities/times for the
   // trajectory of the body.  All three containers are guaranteed to have the
   // same size.  These functions are O(|depth| + |length|).
-  std::map<Time, Point<Vector<Length, Frame>>> Positions() const;
-  std::map<Time, Point<Vector<Speed, Frame>>> Velocities() const;
-  std::list<Time> Times() const;
+  std::map<Instant, Position<Frame>> Positions() const;
+  std::map<Instant, Velocity<Frame>> Velocities() const;
+  std::list<Instant> Times() const;
 
   // Return the most recent position/velocity/time.  These functions are O(1)
   // and dirt-cheap.
-  Point<Vector<Length, Frame>> const& last_position() const;
-  Point<Vector<Speed, Frame>> const& last_velocity() const;
-  Time const& last_time() const;
+  Position<Frame> const& last_position() const;
+  Velocity<Frame> const& last_velocity() const;
+  Instant const& last_time() const;
 
   // Appends one point to the trajectory.
-  void Append(Time const& time,
+  void Append(Instant const& time,
               DegreesOfFreedom<Frame> const& degrees_of_freedom);
 
   // Removes all data for times (strictly) greater than |time|, as well as all
   // child trajectories forked at times (strictly) greater than |time|.
-  void ForgetAfter(Time const& time);
+  void ForgetAfter(Instant const& time);
 
   // Removes all data for times less than or equal to |time|, as well as all
   // child trajectories forked at times less than or equal to |time|.  This
   // trajectory must be a root.
-  void ForgetBefore(Time const& time);
+  void ForgetBefore(Instant const& time);
 
   // Creates a new child trajectory forked at time |time|, and returns it.  The
   // child trajectory may be changed independently from the parent trajectory
@@ -62,7 +64,7 @@ class Trajectory {
   // removed deletes the child trajectory.  Deleting the parent trajectory
   // deletes all child trajectories.  |time| must be one of the times of the
   // current trajectory (as returned by Times()).  No transfer of ownership.
-  Trajectory* Fork(Time const& time);
+  Trajectory* Fork(Instant const& time);
 
   // Returns true if this is a root trajectory.
   bool is_root() const;
@@ -73,7 +75,7 @@ class Trajectory {
 
   // Returns the fork time for a nonroot trajectory and null for a root
   // trajectory.
-  Time const* fork_time() const;
+  Instant const* fork_time() const;
 
   // The body to which this trajectory pertains.
   Body const& body() const;
@@ -81,7 +83,7 @@ class Trajectory {
   // This function represents the intrinsic acceleration of a body, irrespective
   // of any external field.  It can be due e.g., to an engine burn.
   using IntrinsicAcceleration =
-      std::function<Vector<Acceleration, Frame>(Time const& time)>;
+      std::function<Vector<Acceleration, Frame>(Instant const& time)>;
 
   // Sets the intrinsic acceleration for the trajectory of a massless body.
   // For a nonroot trajectory the intrinsic acceleration only applies to times
@@ -106,10 +108,10 @@ class Trajectory {
   // |fork_time()| (or initial time) of this trajectory, the returned
   // acceleration is zero.
   Vector<Acceleration, Frame> evaluate_intrinsic_acceleration(
-      Time const& time) const;
+      Instant const& time) const;
 
  private:
-  using Timeline = std::map<Time, DegreesOfFreedom<Frame>>;
+  using Timeline = std::map<Instant, DegreesOfFreedom<Frame>>;
 
   // A constructor for creating a child trajectory during forking.
   Trajectory(Body const& body,
@@ -117,7 +119,7 @@ class Trajectory {
              typename Timeline::iterator const& fork);
 
   template<typename Value>
-  std::map<Time, Value> ApplyToDegreesOfFreedom(
+  std::map<Instant, Value> ApplyToDegreesOfFreedom(
       std::function<Value(DegreesOfFreedom<Frame> const&)> compute_value) const;
 
   Body const& body_;
@@ -129,7 +131,7 @@ class Trajectory {
 
   // There may be several forks starting from the same time, hence the multimap.
   // Child trajectories are owned.
-  std::multimap<Time, std::unique_ptr<Trajectory>> children_;
+  std::multimap<Instant, std::unique_ptr<Trajectory>> children_;
 
   Timeline timeline_;
 
