@@ -4,6 +4,7 @@
 #include <memory>
 #include <string>
 
+#include "geometry/named_quantities.hpp"
 #include "geometry/point.hpp"
 #include "physics/body.hpp"
 #include "physics/trajectory.hpp"
@@ -29,11 +30,6 @@ struct AliceWorld;
 struct Universe;
 
 //TODO(egg): remove these typedefs after the named vectors are merged.
-typedef geometry::Point<Time> Date;
-template<typename Frame>
-using Displacement = Vector<Length, Frame>;
-template<typename Frame>
-using Position = geometry::Point<Displacement<Frame>>;
 template<typename Frame>
 using VelocityOffset = Vector<Speed, Frame>;
 template<typename Frame>
