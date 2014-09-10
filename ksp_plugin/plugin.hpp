@@ -17,6 +17,7 @@ namespace ksp_plugin {
 
 using geometry::Displacement;
 using geometry::Instant;
+using quantities::Angle;
 
 // Universal time 0, time of game creation.
 // Putting the origin here makes the instants we use equal as 8-byte objects to
@@ -97,9 +98,14 @@ class Plugin {
   // For a KSP |Vessel| |v|, the arguments correspond to |v.id|, |v.orbit.pos|,
   // |v.orbit.vel|.
   void SetVesselStateOffset(
-      std::string guid,
-      Displacement<InconsistentNonRotating> from_parent_position,
-      Velocity<InconsistentNonRotating> from_parent_velocity);
+      std::string const& guid,
+      Displacement<InconsistentNonRotating> const& from_parent_position,
+      Velocity<InconsistentNonRotating> const& from_parent_velocity);
+
+  // KSP's |Planetarium.InverseRotAngle| (we don't use Planetarium.Rotation
+  // since it undergoes truncation to single-precision (even though it's double-
+  // precision). Note that |Planetarium.InverseRotAngle| is in degrees.
+  void SetPlanetariumRotation(Angle const& rotation_angle);
 
   // Simulates the system until time |t|. All vessels that have not been
   // refreshed by calling |InsertOrKeepVessel| since the last call to
@@ -113,6 +119,7 @@ class Plugin {
   std::map<std::string, std::unique_ptr<Vessel>> vessels_;
   std::map<int, std::unique_ptr<Celestial>> celestials_;
 
+  Angle planetarium_rotation_;
   Instant current_time_;
   Celestial* sun_;  // Not owning.
 };

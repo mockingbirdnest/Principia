@@ -51,14 +51,18 @@ void Plugin::InsertCelestial(
     GravitationalParameter const& gravitational_parameter,
     int const parent,
     Displacement<InconsistentNonRotating> const& from_parent_position,
-      Velocity<InconsistentNonRotating>  const& from_parent_velocity);
-  CHECK(celestials_.find(parent) != celestials_.end()) << "No body at index "
-    << parent;
+    Velocity<InconsistentNonRotating>  const& from_parent_velocity) {
+  auto const found_parent = celestials_.find(parent);
+  CHECK(found_parent != celestials_.end()) << "No body at index " << parent;
+  Celestial const& parent_body = found_parent->second;
   auto const inserted = celestials_.insert(
       {index, std::make_unique<Celestial>(new Body(gravitational_parameter))});
   CHECK(inserted.second) << "Body already present at index " << index;
-  inserted
-
+  Celestial *const celestial = &inserted.first->second;
+  celestial->history = std::make_unique<Trajectory<Universe>>(*celestial);
+  celestial->history->Append(current_time_,
+                             {parent_body.history->last_position(),
+                              parent_body.history->last_velocity()});
 }
 
 void Plugin::UpdateCelestialHierarchy(int index, int parent) {
