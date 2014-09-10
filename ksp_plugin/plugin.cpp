@@ -36,25 +36,29 @@ struct Plugin::Vessel {
   bool keep = true;
 };
 
-Plugin::Plugin(Date const& initial_time, int const sun_index,
+Plugin::Plugin(Instant const& initial_time, int const sun_index,
                GravitationalParameter const& sun_gravitational_parameter)
     : current_time_(initial_time) {
   celestials_.insert(
       {sun_index, std::make_unique<Celestial>(sun_gravitational_parameter)});
-  sun_->history = std::make_unique<Trajectory<World>>(*sun_);
-  sun_->history->Append(current_time_ - Date(),
-                        {Position<World>(), Velocity<World>()});
+  sun_->history = std::make_unique<Trajectory<Universe>>(*sun_);
+  sun_->history->Append(current_time_,
+                        {Position<Universe>(), Velocity<Universe>()});
 }
 
-void Plugin::InsertCelestial(int index,
-                             GravitationalParameter gravitational_parameter
-                             CelestialRelativeState* state) {
-  if (state == nullptr) {
-    
-  }
+void Plugin::InsertCelestial(
+    int const index,
+    GravitationalParameter const& gravitational_parameter,
+    int const parent,
+    Displacement<InconsistentNonRotating> const& from_parent_position,
+      Velocity<InconsistentNonRotating>  const& from_parent_velocity);
+  CHECK(celestials_.find(parent) != celestials_.end()) << "No body at index "
+    << parent;
   auto const inserted = celestials_.insert(
       {index, std::make_unique<Celestial>(new Body(gravitational_parameter))});
-  CHECK(inserted.second) << "Multiple bodies bearing the same index";
+  CHECK(inserted.second) << "Body already present at index " << index;
+  inserted
+
 }
 
 void Plugin::UpdateCelestialHierarchy(int index, int parent) {
