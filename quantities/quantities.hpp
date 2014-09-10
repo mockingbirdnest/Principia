@@ -171,8 +171,8 @@ class Quantity {
 // A type trait for testing if a type is a quantity.
 template<typename T>
 struct is_quantity : std::is_floating_point<T> {};
-template<typename ...D>
-struct is_quantity<Quantity<D...>> : std::true_type {};
+template<typename D>
+struct is_quantity<Quantity<D>> : std::true_type {};
 
 }  // namespace quantities
 }  // namespace principia

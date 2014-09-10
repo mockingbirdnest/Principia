@@ -83,7 +83,6 @@ void NBodySystem<InertialFrame>::Integrate(
       for (int i = 0; i < 3; ++i) {
         parameters.initial.momenta.emplace_back(velocity[i]);
       }
-      parameters.initial.time = time - reference_time;
 
       // Check that all trajectories are for different bodies.
       auto const inserted = bodies_in_trajectories.insert(body);
@@ -100,6 +99,7 @@ void NBodySystem<InertialFrame>::Integrate(
     // use this block to hide it.
     Trajectories const& trajectories = reordered_trajectories;
 
+    parameters.initial.time = *times_in_trajectories.cbegin() - reference_time;
     parameters.tmax = tmax - reference_time;
     parameters.Δt = Δt;
     parameters.sampling_period = sampling_period;
