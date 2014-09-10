@@ -36,3 +36,5 @@ Instant ModifiedJulianDate(double const days);
 
 }  // namespace geometry
 }  // namespace principia
+
+#include "geometry/epoch_body.hpp"

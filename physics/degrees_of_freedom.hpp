@@ -1,11 +1,12 @@
 #pragma once
 
 #include "geometry/grassmann.hpp"
+#include "geometry/named_quantities.hpp"
 #include "geometry/point.hpp"
 #include "quantities/named_quantities.hpp"
 
-using principia::geometry::Point;
-using principia::geometry::Vector;
+using principia::geometry::Position;
+using principia::geometry::Velocity;
 using principia::quantities::Length;
 using principia::quantities::Speed;
 
@@ -14,10 +15,10 @@ namespace physics {
 
 template<typename Frame>
 struct DegreesOfFreedom {
-  DegreesOfFreedom(Point<Vector<Length, Frame>> const& position,
-                   Point<Vector<Speed, Frame>> const& velocity);
-  Point<Vector<Length, Frame>> const position;
-  Point<Vector<Speed, Frame>> const velocity;
+  DegreesOfFreedom(Position<Frame> const& position,
+                   Velocity<Frame> const& velocity);
+  Position<Frame> const position;
+  Velocity<Frame> const velocity;
 };
 
 }  // namespace physics

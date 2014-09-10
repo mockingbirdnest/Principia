@@ -1,6 +1,11 @@
 #pragma once
 
+#include <type_traits>
 #include <vector>
+
+#include "quantities/quantities.hpp"
+
+using principia::quantities::is_quantity;
 
 namespace principia {
 namespace geometry {
@@ -34,17 +39,51 @@ class Point {
   friend class AffineMap;
 
   template<typename V>
-  friend Point<V> operator+(V const& translation,
-                            Point<V> const& point);
+  friend Point<V> operator+(V const& translation, Point<V> const& point);
 
-  template<typename Vector, typename Weight>
-  friend Point<Vector> Barycentre(std::vector<Point<Vector>> const& points,
-                                  std::vector<Weight> const& weights);
+  template<typename V>
+  friend typename std::enable_if_t<is_quantity<V>::value, bool> operator<(
+      Point<V> const& left, Point<V> const& right);
+  template<typename V>
+  friend typename std::enable_if_t<is_quantity<V>::value, bool> operator<=(
+      Point<V> const& left, Point<V> const& right);
+  template<typename V>
+  friend typename std::enable_if_t<is_quantity<V>::value, bool> operator>=(
+      Point<V> const& left, Point<V> const& right);
+  template<typename V>
+  friend typename std::enable_if_t<is_quantity<V>::value, bool> operator>(
+      Point<V> const& left, Point<V> const& right);
+
+  template<typename V>
+  friend std::ostream& operator<<(std::ostream& out, Point<V> const& vector);
+
+  template<typename V, typename Weight>
+  friend Point<V> Barycentre(std::vector<Point<V>> const& points,
+                             std::vector<Weight> const& weights);
 };
 
 template<typename Vector>
 Point<Vector> operator+(Vector const& translation,
                         Point<Vector> const& point);
+
+template<typename Vector>
+typename std::enable_if_t<is_quantity<Vector>::value, bool> operator<(
+    Point<Vector> const& left, Point<Vector> const& right);
+
+template<typename Vector>
+typename std::enable_if_t<is_quantity<Vector>::value, bool> operator<=(
+    Point<Vector> const& left, Point<Vector> const& right);
+
+template<typename Vector>
+typename std::enable_if_t<is_quantity<Vector>::value, bool> operator>=(
+    Point<Vector> const& left, Point<Vector> const& right);
+
+template<typename Vector>
+typename std::enable_if_t<is_quantity<Vector>::value, bool> operator>(
+    Point<Vector> const& left, Point<Vector> const& right);
+
+template<typename Vector>
+std::ostream& operator<<(std::ostream& out, Point<Vector> const& vector);
 
 template<typename Vector, typename Weight>
 Point<Vector> Barycentre(std::vector<Point<Vector>> const& points,

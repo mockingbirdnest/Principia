@@ -1,3 +1,5 @@
+#pragma once
+
 #include "geometry/epoch.hpp"
 
 using principia::si::Day;
