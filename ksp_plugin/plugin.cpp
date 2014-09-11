@@ -103,7 +103,7 @@ bool Plugin::InsertOrKeepVessel(std::string guid, int parent) {
       {guid, std::make_unique<Vessel>(celestials_[parent].get())});
   Vessel* const vessel = inserted.first->second.get();
   vessel->keep = true;
-  vessel->parent = celestials_[parent];
+  vessel->parent = celestials_[parent].get();
   return inserted.second;
 }
 
@@ -116,13 +116,15 @@ void Plugin::SetVesselStateOffset(
   Vessel* const vessel = vessels_[guid].get();
   CHECK(vessel->history == nullptr) << "Vessel with GUID " << guid
       << " already has a trajectory";
-  vessel->history = std::make_unique<Trajectory<Barycentre>>(vessel->body);
+  vessel->history = std::make_unique<Trajectory<Barycentre>>(*vessel->body);
   vessel->history->Append(
       current_time_,
-      {parent_body->history->last_position() + PlanetariumRotation().Inverse()(
-           kSunLookingGlass.Inverse()(from_parent_position)),
-       parent_body->history->last_velocity() + PlanetariumRotation().Inverse()(
-           kSunLookingGlass.Inverse()(from_parent_velocity))});
+      {vessel->parent->history->last_position() +
+           PlanetariumRotation().Inverse()(
+               kSunLookingGlass.Inverse()(from_parent_position)),
+       vessel->parent->history->last_velocity() +
+           PlanetariumRotation().Inverse()(
+               kSunLookingGlass.Inverse()(from_parent_velocity))});
 };
 
 void Plugin::AdvanceTime(Instant const& t, Angle const& planetarium_rotation) {
