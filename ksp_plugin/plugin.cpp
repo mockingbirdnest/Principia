@@ -155,11 +155,49 @@ void Plugin::AdvanceTime(Instant const& t, Angle const& planetarium_rotation) {
   solar_system_.Integrate(integrator_, t, Δt, 0, trajectories);
   if (trajectories.front()->last_time() != t) {
     // TODO(egg): This is bound to happen given how the integrator works now...
-    LOG(WARNING) << "Integration went "
+    LOG(ERROR) << "Integration went "
         << trajectories.front()->last_time() - t << " too far.";
   }
   current_time_ = t;
   planetarium_rotation_ = planetarium_rotation;
+}
+
+Displacement<AliceSun> Plugin::VesselDisplacementFromParent(
+    std::string const& guid) {
+  CHECK(vessels_.find(guid) != vessels_.end()) << "No vessel with GUID "
+      << guid;
+  return kSunLookingGlass(PlanetariumRotation()(
+          vessels_[guid]->history->last_position() -
+              vessels_[guid]->parent->history->last_position()));
+}
+
+Velocity<AliceSun> Plugin::VesselParentRelativeVelocity(
+    std::string const& guid) {
+  CHECK(vessels_.find(guid) != vessels_.end()) << "No vessel with GUID "
+      << guid;
+  return kSunLookingGlass(PlanetariumRotation()(
+          vessels_[guid]->history->last_velocity() -
+              vessels_[guid]->parent->history->last_velocity()));
+}
+
+Displacement<AliceSun> Plugin::CelestialDisplacementFromParent(int const index) {
+  CHECK(celestials_.find(index) != celestials_.end()) << "No body at index "
+      << index;
+  CHECK(celestials_[index]->parent != nullptr) << "Body at index " << index
+      << " is the sun";
+  return kSunLookingGlass(PlanetariumRotation()(
+          celestials_[index]->history->last_position() -
+              celestials_[index]->parent->history->last_position()));
+}
+
+Velocity<AliceSun> Plugin::CelestialParentRelativeVelocity(int const index) {
+  CHECK(celestials_.find(index) != celestials_.end()) << "No body at index "
+      << index;
+  CHECK(celestials_[index]->parent != nullptr) << "Body at index " << index
+      << " is the sun";
+  return kSunLookingGlass(PlanetariumRotation()(
+          celestials_[index]->history->last_velocity() -
+              celestials_[index]->parent->history->last_velocity()));
 }
 
 }  // namespace ksp_plugin

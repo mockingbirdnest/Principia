@@ -41,6 +41,8 @@ struct AliceWorld;
 
 // The barycentric reference frame of the solar system.
 // The basis is the basis of |World| at |kUniversalTimeEpoch|.
+// TODO(egg): it *should* be the barycentric frame. For the moment we're using
+// the velocity of the sun at the time of construction as our reference.
 struct Barycentre;
 // The position of the sun at the instant |initial_time| passed at construction.
 Position<Barycentre> kInitialSunPosition;
@@ -122,6 +124,32 @@ class Plugin {
   // truncation to single-precision even though it's a double- precision value).
   // Note that KSP's |Planetarium.InverseRotAngle| is in degrees.
   void AdvanceTime(Instant const& t, Angle const& planetarium_rotation);
+
+  // Returns the position of the vessel with GUID |guid| relative to its parent
+  // at current time. For a KSP |Vessel| |v|, the argument corresponds to
+  // |v.id.ToString()|, the return value to |v.orbit.pos|.
+  // A vessel with GUID |guid| should have been inserted and kept.
+  Displacement<AliceSun> VesselDisplacementFromParent(std::string const& guid);
+
+  // Returns the velocity of the vessel with GUID |guid| relative to its parent
+  // at current time. For a KSP |Vessel| |v|, the argument corresponds to
+  // |v.id.ToString()|, the return value to |v.orbit.vel|.
+  // A vessel with GUID |guid| should have been inserted and kept.
+  Velocity<AliceSun> VesselParentRelativeVelocity(std::string const& guid);
+
+  // Returns the position of the celestial at index |index| relative to its
+  // parent at current time. For a KSP |CelestialBody| |b|, the argument
+  // corresponds to |b.flightGlobalsIndex|, the return value to |b.orbit.pos|.
+  // A celestial with index |index| should have been inserted, and it should not
+  // be the sun.
+  Displacement<AliceSun> CelestialDisplacementFromParent(int const index);
+
+  // Returns the velocity of the celestial at index |index| relative to its
+  // parent at current time. For a KSP |CelestialBody| |b|, the argument
+  // corresponds to |b.flightGlobalsIndex|, the return value to |b.orbit.vel|.
+  // A celestial with index |index| should have been inserted, and it should not
+  // be the sun.
+  Velocity<AliceSun> CelestialParentRelativeVelocity(int const index);
 
  private:
   struct Celestial;
