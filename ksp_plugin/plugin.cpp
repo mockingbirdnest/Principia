@@ -1,4 +1,4 @@
-#include "ksp_plugin/plugin.hpp"
+﻿#include "ksp_plugin/plugin.hpp"
 
 #include <string>
 
@@ -64,6 +64,7 @@ Plugin::Plugin(Instant const& initial_time, int const sun_index,
   sun_->history = std::make_unique<Trajectory<Barycentre>>(*sun_->body);
   sun_->history->Append(current_time_,
                         {Position<Barycentre>(), Velocity<Barycentre>()});
+  integrator_.Initialize(integrator_.Order5Optimal());
 }
 
 void Plugin::InsertCelestial(
@@ -139,7 +140,25 @@ void Plugin::AdvanceTime(Instant const& t, Angle const& planetarium_rotation) {
       ++it;
     }
   }
-
+  // We make sure the step size divides the interval and is at least as small
+  // as |kΔt|.
+  Time const duration = t - current_time_;
+  Time const Δt = duration / std::ceil(duration / kΔt);
+  NBodySystem<Barycentre>::Trajectories trajectories;
+  trajectories.reserve(vessels_.size() + celestials_.size());
+  for (auto const& pair : celestials_) {
+    trajectories.push_back(pair.second->history.get());
+  }
+  for (auto const& pair : vessels_) {
+    trajectories.push_back(pair.second->history.get());
+  }
+  solar_system_.Integrate(integrator_, t, Δt, 0, trajectories);
+  if (trajectories.front()->last_time() != t) {
+    // TODO(egg): This is bound to happen given how the integrator works now...
+    LOG(WARNING) << "Integration went "
+        << trajectories.front()->last_time() - t << " too far.";
+  }
+  current_time_ = t;
   planetarium_rotation_ = planetarium_rotation;
 }
 

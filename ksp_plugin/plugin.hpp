@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 #include <map>
 #include <memory>
@@ -7,6 +7,7 @@
 #include "geometry/named_quantities.hpp"
 #include "geometry/point.hpp"
 #include "physics/body.hpp"
+#include "physics/n_body_system.hpp"
 #include "physics/trajectory.hpp"
 #include "quantities/quantities.hpp"
 #include "quantities/named_quantities.hpp"
@@ -18,7 +19,10 @@ namespace ksp_plugin {
 using geometry::Displacement;
 using geometry::Instant;
 using geometry::Rotation;
+using integrators::SPRKIntegrator;
+using physics::NBodySystem;
 using quantities::Angle;
+using si::Second;
 
 // Universal time 0, time of game creation.
 // Putting the origin here makes the instants we use equal as 8-byte objects to
@@ -129,8 +133,14 @@ class Plugin {
 // displacements between simultaneous events.
   Rotation<Barycentre, WorldSun> PlanetariumRotation();
 
+  // Constant time step for now.
+  Time const kΔt = 10 * Second;
+
   std::map<std::string, std::unique_ptr<Vessel>> vessels_;
   std::map<int, std::unique_ptr<Celestial>> celestials_;
+
+  NBodySystem<Barycentre> solar_system_;
+  SPRKIntegrator<Length, Speed> integrator_;
 
   Angle planetarium_rotation_;
   Instant current_time_;
