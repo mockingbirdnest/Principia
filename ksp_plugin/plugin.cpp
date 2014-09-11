@@ -15,7 +15,7 @@ struct Plugin::Celestial {
   // be null for the sun.
   Celestial const* parent = nullptr;
   // The past and present trajectory of the body.
-  std::unique_ptr<Trajectory<Universe>> history;
+  std::unique_ptr<Trajectory<Barycentre>> history;
 };
 
 // Represents a KSP |Vessel|.
@@ -31,38 +31,42 @@ struct Plugin::Vessel {
   // null.
   Celestial const* parent;
   // The past and present trajectory of the body.
-  std::unique_ptr<Trajectory<Universe>> history;
+  std::unique_ptr<Trajectory<Barycentre>> history;
   // Whether to keep the |Vessel| during the next call to |AdvanceTime|.
   bool keep = true;
 };
 
 Plugin::Plugin(Instant const& initial_time, int const sun_index,
-               GravitationalParameter const& sun_gravitational_parameter)
-    : current_time_(initial_time) {
+               GravitationalParameter const& sun_gravitational_parameter,
+               Angle const& planetarium_rotation)
+    : current_time_(initial_time),
+      planetarium_rotation_(planetarium_rotation) {
   celestials_.insert(
       {sun_index, std::make_unique<Celestial>(sun_gravitational_parameter)});
-  sun_->history = std::make_unique<Trajectory<Universe>>(*sun_);
+  sun_->history = std::make_unique<Trajectory<Barycentre>>(*sun_->body);
   sun_->history->Append(current_time_,
-                        {Position<Universe>(), Velocity<Universe>()});
+                        {Position<Barycentre>(), Velocity<Barycentre>()});
 }
 
 void Plugin::InsertCelestial(
     int const index,
     GravitationalParameter const& gravitational_parameter,
     int const parent,
-    Displacement<InconsistentNonRotating> const& from_parent_position,
-    Velocity<InconsistentNonRotating>  const& from_parent_velocity) {
+    Displacement<AliceSun> const& from_parent_position,
+    Velocity<AliceSun>  const& from_parent_velocity) {
   auto const found_parent = celestials_.find(parent);
   CHECK(found_parent != celestials_.end()) << "No body at index " << parent;
-  Celestial const& parent_body = found_parent->second;
+  Celestial const* const parent_body = found_parent->second.get();
   auto const inserted = celestials_.insert(
-      {index, std::make_unique<Celestial>(new Body(gravitational_parameter))});
+      {index, std::make_unique<Celestial>(gravitational_parameter)});
   CHECK(inserted.second) << "Body already present at index " << index;
-  Celestial *const celestial = &inserted.first->second;
-  celestial->history = std::make_unique<Trajectory<Universe>>(*celestial);
+  Celestial *const celestial = inserted.first->second.get();
+  celestial->history =
+      std::make_unique<Trajectory<Barycentre>>(*celestial->body);
+  // TODO(egg): implement.
   celestial->history->Append(current_time_,
-                             {parent_body.history->last_position(),
-                              parent_body.history->last_velocity()});
+                             {parent_body->history->last_position(),
+                              parent_body->history->last_velocity()});
 }
 
 void Plugin::UpdateCelestialHierarchy(int index, int parent) {
@@ -80,7 +84,7 @@ bool Plugin::InsertOrKeepVessel(std::string guid, int parent) {
       {guid, std::make_unique<Vessel>(celestials_[parent].get())}).second;
 }
 
-void Plugin::CleanupVessels() {
+void Plugin::AdvanceTime(Instant const& t, Angle const& planetarium_rotation) {
   for (auto it = vessels_.cbegin(); it != vessels_.cend();) {
     if(!it->second->keep) {
       // |std::map::erase| invalidates its parameter so we post-increment.

@@ -36,44 +36,47 @@ struct AliceWorld;
 
 // The barycentric reference frame of the solar system.
 // The basis is the basis of |World| at |kUniversalTimeEpoch|.
-struct Universe; 
+struct Barycentre; 
 // The position of the sun at the instant |initial_time| passed at construction.
-Position<Universe> kInitialSunPosition;
+Position<Barycentre> kInitialSunPosition;
 
-// A nonrotating referencence frame whose axes are those of |AliceWorld|.
-// Since it is nonrotating (though uniformly accelerating), differences between
-// velocities are consistent with those in an inertial reference frame.
-// When |AliceWorld| rotates this means the axes are not fixed in the reference
-// frame, so this pair is inconsistent across instants. Only perform operations
-// between simultaneous quantities, then convert to a consistent (frame, basis)
-// pair before use.
-struct InconsistentNonRotating;
+// A nonrotating referencence frame comoving with the sun with the same axes as
+// |AliceWorld|. Since it is nonrotating (though not inertial), differences
+// between velocities are consistent with those in an inertial reference frame.
+// When |AliceWorld| rotates the axes are not fixed in the reference frame, so
+// this (frame, basis) pair is inconsistent across instants. Operations should
+// only be performed between between simultaneous quantities, then converted to
+// a consistent (frame, basis) pair before use.
+struct AliceSun;
 
 class Plugin {
  public:
   // Creates a |Plugin|. The current time of that instance is |initial_time|.
-  // Inserts a celestial body with an arbitrary position, index |sun_index| and
-  // gravitational parameter |sun_gravitational_parameter|.
+  // The angle between the axes of |World| and |Barycentre| at |initial_time| is
+  //set to |planetarium_rotation|. Inserts a celestial body with an arbitrary
+  // position, index |sun_index| and gravitational parameter
+  // |sun_gravitational_parameter|.
   // The arguments correspond to KSP's |Planetarium.GetUniversalTime()|,
   // |Planetarium.fetch.Sun.flightGlobalsIndex|,
-  // |Planetarium.fetch.Sun.gravParameter|.
+  // |Planetarium.fetch.Sun.gravParameter|,
+  // |Planetarium.InverseRotAngle * si::Degree|.
   Plugin(Instant const& initial_time, int const sun_index,
-         GravitationalParameter const& sun_gravitational_parameter);
+         GravitationalParameter const& sun_gravitational_parameter,
+         Angle const& planetarium_rotation);
 
   // Insert a new celestial body with index |index| and gravitational parameter
   // |gravitational_parameter|. No body with index |index| should already have
   // been inserted. The parent of the new body is the body at index |parent|,
   // which should already have been inserted. The state of the new body at
-  // current time is given by |InconsistentNonRotating| offsets from the parent.
+  // current time is given by |AliceSun| offsets from the parent.
   // For a KSP |CelestialBody| |b|, the arguments correspond to:
   // |b.flightGlobalsIndex|, |b.gravParameter|,
   // |b.orbit.referenceBody.flightGlobalsIndex|, |b.orbit.pos|, |b.orbit.vel|.
-  void InsertCelestial(
-      int const index,
-      GravitationalParameter const& gravitational_parameter,
-      int const parent,
-      Displacement<InconsistentNonRotating> const& from_parent_position,
-      Velocity<InconsistentNonRotating> const& from_parent_velocity);
+  void InsertCelestial(int const index,
+                       GravitationalParameter const& gravitational_parameter,
+                       int const parent,
+                       Displacement<AliceSun> const& from_parent_position,
+                       Velocity<AliceSun> const& from_parent_velocity);
 
   // Sets the parent of the celestial body with index |index| to the one with
   // index |parent|. Both bodies should already have been inserted.
@@ -97,20 +100,19 @@ class Plugin {
   // once per vessel.
   // For a KSP |Vessel| |v|, the arguments correspond to |v.id|, |v.orbit.pos|,
   // |v.orbit.vel|.
-  void SetVesselStateOffset(
-      std::string const& guid,
-      Displacement<InconsistentNonRotating> const& from_parent_position,
-      Velocity<InconsistentNonRotating> const& from_parent_velocity);
+  void SetVesselStateOffset(std::string const& guid,
+                            Displacement<AliceSun> const& from_parent_position,
+                            Velocity<AliceSun> const& from_parent_velocity);
 
-  // KSP's |Planetarium.InverseRotAngle| (we don't use Planetarium.Rotation
-  // since it undergoes truncation to single-precision (even though it's double-
-  // precision). Note that |Planetarium.InverseRotAngle| is in degrees.
-  void SetPlanetariumRotation(Angle const& rotation_angle);
-
-  // Simulates the system until time |t|. All vessels that have not been
+  // Simulates the system until instant |t|. All vessels that have not been
   // refreshed by calling |InsertOrKeepVessel| since the last call to
-  //|AdvanceTime| will be removed.
-  void AdvanceTime(Instant const& t);
+  // |AdvanceTime| will be removed.
+  // |planetarium_rotation| is the value of  KSP's |Planetarium.InverseRotAngle|
+  // at instant |t|, which provides the rotation between the |World| axes and
+  // the |Barycentre| axes (we don't use Planetarium.Rotation since it undergoes
+  // truncation to single-precision even though it's a double- precision value).
+  // Note that KSP's |Planetarium.InverseRotAngle| is in degrees.
+  void AdvanceTime(Instant const& t, Angle const& planetarium_rotation);
 
  private:
   struct Celestial;
