@@ -1,8 +1,12 @@
 #include "ksp_plugin/plugin.hpp"
 
+#include "geometry/permutation.hpp"
+
 namespace principia {
 namespace ksp_plugin {
 
+using geometry::Bivector;
+using geometry::Permutation;
 using physics::Body;
 using physics::Trajectory;
 
@@ -36,6 +40,18 @@ struct Plugin::Vessel {
   bool keep = true;
 };
 
+Permutation<WorldSun, AliceSun> const kWorldLookingGlass(
+    Permutation<WorldSun, AliceSun>::CoordinatePermutation::XZY);
+
+Permutation<WorldSun, AliceSun> const kSunLookingGlass(
+    Permutation<WorldSun, AliceSun>::CoordinatePermutation::XZY);
+
+Rotation<Barycentre, WorldSun> Plugin::PlanetariumRotation() {
+  return Rotation<Barycentre, WorldSun>(
+      planetarium_rotation_,
+      Bivector<double, Barycentre>({0, 1, 0}));
+}
+
 Plugin::Plugin(Instant const& initial_time, int const sun_index,
                GravitationalParameter const& sun_gravitational_parameter,
                Angle const& planetarium_rotation)
@@ -63,10 +79,12 @@ void Plugin::InsertCelestial(
   Celestial *const celestial = inserted.first->second.get();
   celestial->history =
       std::make_unique<Trajectory<Barycentre>>(*celestial->body);
-  // TODO(egg): implement.
-  celestial->history->Append(current_time_,
-                             {parent_body->history->last_position(),
-                              parent_body->history->last_velocity()});
+  celestial->history->Append(
+      current_time_,
+      {parent_body->history->last_position() + PlanetariumRotation().Inverse()(
+               kSunLookingGlass.Inverse()(from_parent_position)),
+       parent_body->history->last_velocity() + PlanetariumRotation().Inverse()(
+               kSunLookingGlass.Inverse()(from_parent_velocity))});
 }
 
 void Plugin::UpdateCelestialHierarchy(int index, int parent) {

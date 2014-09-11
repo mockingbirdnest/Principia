@@ -17,6 +17,7 @@ namespace ksp_plugin {
 
 using geometry::Displacement;
 using geometry::Instant;
+using geometry::Rotation;
 using quantities::Angle;
 
 // Universal time 0, time of game creation.
@@ -48,6 +49,10 @@ Position<Barycentre> kInitialSunPosition;
 // only be performed between between simultaneous quantities, then converted to
 // a consistent (frame, basis) pair before use.
 struct AliceSun;
+
+// Same as above, but with same axes as |World| instead of those of
+// |AliceWorld|. The caveats are the same as for |AliceSun|.
+struct WorldSun;
 
 class Plugin {
  public:
@@ -117,6 +122,12 @@ class Plugin {
  private:
   struct Celestial;
   struct Vessel;
+
+// The rotationg between the |World| basis at |current_time| and the
+// |Barycentre| axes. Since |WorldSun| is not a rotating reference frame,
+// this change of basis all that's required to convert relative velocities or
+// displacements between simultaneous events.
+  Rotation<Barycentre, WorldSun> PlanetariumRotation();
 
   std::map<std::string, std::unique_ptr<Vessel>> vessels_;
   std::map<int, std::unique_ptr<Celestial>> celestials_;

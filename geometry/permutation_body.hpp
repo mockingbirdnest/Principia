@@ -26,15 +26,17 @@ inline Sign Permutation<FromFrame, ToFrame>::Determinant() const {
 template<typename FromFrame, typename ToFrame>
 Permutation<ToFrame, FromFrame>
 Permutation<FromFrame, ToFrame>::Inverse() const {
-  static std::map<CoordinatePermutation,
-                  CoordinatePermutation> const inverse = {
-      {XYZ, XYZ},
-      {YZX, ZXY},
-      {ZXY, YZX},
-      {XZY, XZY},
-      {ZYX, ZYX},
-      {YXZ, YXZ}};
-  return Permutation(inverse.at(coordinate_permutation_));
+  static std::map<
+      CoordinatePermutation,
+      typename Permutation<ToFrame, FromFrame>::CoordinatePermutation> const
+  inverse = {
+      {XYZ, Permutation<ToFrame, FromFrame>::CoordinatePermutation::XYZ},
+      {YZX, Permutation<ToFrame, FromFrame>::CoordinatePermutation::ZXY},
+      {ZXY, Permutation<ToFrame, FromFrame>::CoordinatePermutation::YZX},
+      {XZY, Permutation<ToFrame, FromFrame>::CoordinatePermutation::XZY},
+      {ZYX, Permutation<ToFrame, FromFrame>::CoordinatePermutation::ZYX},
+      {YXZ, Permutation<ToFrame, FromFrame>::CoordinatePermutation::YXZ}};
+  return Permutation<ToFrame, FromFrame>(inverse.at(coordinate_permutation_));
 }
 
 template<typename FromFrame, typename ToFrame>
