@@ -70,21 +70,22 @@ void Plugin::InsertCelestial(
     int const parent,
     Displacement<AliceSun> const& from_parent_position,
     Velocity<AliceSun>  const& from_parent_velocity) {
-  auto const found_parent = celestials_.find(parent);
-  CHECK(found_parent != celestials_.end()) << "No body at index " << parent;
-  Celestial const* const parent_body = found_parent->second.get();
+  CHECK(celestials_.find(parent) != celestials_.end()) << "No body at index "
+      << parent;
+  Celestial* const parent_body = celestials_[parent].get();
   auto const inserted = celestials_.insert(
       {index, std::make_unique<Celestial>(gravitational_parameter)});
-  CHECK(inserted.second) << "Body already present at index " << index;
-  Celestial *const celestial = inserted.first->second.get();
+  CHECK(inserted.second) << "Body already exists at index " << index;
+  Celestial* const celestial = inserted.first->second.get();
+  celestial->parent = parent_body;
   celestial->history =
       std::make_unique<Trajectory<Barycentre>>(*celestial->body);
   celestial->history->Append(
       current_time_,
       {parent_body->history->last_position() + PlanetariumRotation().Inverse()(
-               kSunLookingGlass.Inverse()(from_parent_position)),
+           kSunLookingGlass.Inverse()(from_parent_position)),
        parent_body->history->last_velocity() + PlanetariumRotation().Inverse()(
-               kSunLookingGlass.Inverse()(from_parent_velocity))});
+           kSunLookingGlass.Inverse()(from_parent_velocity))});
 }
 
 void Plugin::UpdateCelestialHierarchy(int index, int parent) {
@@ -96,11 +97,33 @@ void Plugin::UpdateCelestialHierarchy(int index, int parent) {
 }
 
 bool Plugin::InsertOrKeepVessel(std::string guid, int parent) {
-  CHECK(celestials_.find(parent) != celestials_.end()) <<
-      "No body at index " << parent;
-  return vessels_.insert(
-      {guid, std::make_unique<Vessel>(celestials_[parent].get())}).second;
+  CHECK(celestials_.find(parent) != celestials_.end()) << "No body at index "
+      << parent;
+  auto inserted = vessels_.insert(
+      {guid, std::make_unique<Vessel>(celestials_[parent].get())});
+  Vessel* const vessel = inserted.first->second.get();
+  vessel->keep = true;
+  vessel->parent = celestials_[parent];
+  return inserted.second;
 }
+
+void Plugin::SetVesselStateOffset(
+    std::string const& guid,
+    Displacement<AliceSun> const& from_parent_position,
+    Velocity<AliceSun> const& from_parent_velocity) {
+  CHECK(vessels_.find(guid) != vessels_.end()) << "No vessel with GUID "
+      << guid;
+  Vessel* const vessel = vessels_[guid].get();
+  CHECK(vessel->history == nullptr) << "Vessel with GUID " << guid
+      << " already has a trajectory";
+  vessel->history = std::make_unique<Trajectory<Barycentre>>(vessel->body);
+  vessel->history->Append(
+      current_time_,
+      {parent_body->history->last_position() + PlanetariumRotation().Inverse()(
+           kSunLookingGlass.Inverse()(from_parent_position)),
+       parent_body->history->last_velocity() + PlanetariumRotation().Inverse()(
+           kSunLookingGlass.Inverse()(from_parent_velocity))});
+};
 
 void Plugin::AdvanceTime(Instant const& t, Angle const& planetarium_rotation) {
   for (auto it = vessels_.cbegin(); it != vessels_.cend();) {
@@ -112,6 +135,8 @@ void Plugin::AdvanceTime(Instant const& t, Angle const& planetarium_rotation) {
       ++it;
     }
   }
+
+  planetarium_rotation_ = planetarium_rotation;
 }
 
 }  // namespace ksp_plugin

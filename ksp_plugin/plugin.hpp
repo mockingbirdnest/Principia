@@ -103,8 +103,8 @@ class Plugin {
   // Set the position and velocity of the vessel with GUID |guid| relative to
   // its parent at current time. |SetVesselStateOffset| should only be called
   // once per vessel.
-  // For a KSP |Vessel| |v|, the arguments correspond to |v.id|, |v.orbit.pos|,
-  // |v.orbit.vel|.
+  // For a KSP |Vessel| |v|, the arguments correspond to |v.id.ToString()|,
+  // |v.orbit.pos|, |v.orbit.vel|.
   void SetVesselStateOffset(std::string const& guid,
                             Displacement<AliceSun> const& from_parent_position,
                             Velocity<AliceSun> const& from_parent_velocity);
