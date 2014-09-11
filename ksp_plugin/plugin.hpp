@@ -37,7 +37,7 @@ struct AliceWorld;
 
 // The barycentric reference frame of the solar system.
 // The basis is the basis of |World| at |kUniversalTimeEpoch|.
-struct Barycentre; 
+struct Barycentre;
 // The position of the sun at the instant |initial_time| passed at construction.
 Position<Barycentre> kInitialSunPosition;
 
@@ -58,7 +58,7 @@ class Plugin {
  public:
   // Creates a |Plugin|. The current time of that instance is |initial_time|.
   // The angle between the axes of |World| and |Barycentre| at |initial_time| is
-  //set to |planetarium_rotation|. Inserts a celestial body with an arbitrary
+  // set to |planetarium_rotation|. Inserts a celestial body with an arbitrary
   // position, index |sun_index| and gravitational parameter
   // |sun_gravitational_parameter|.
   // The arguments correspond to KSP's |Planetarium.GetUniversalTime()|,

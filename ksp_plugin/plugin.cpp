@@ -1,5 +1,7 @@
 #include "ksp_plugin/plugin.hpp"
 
+#include <string>
+
 #include "geometry/permutation.hpp"
 
 namespace principia {
@@ -12,7 +14,7 @@ using physics::Trajectory;
 
 // Represents a KSP |CelestialBody|.
 struct Plugin::Celestial {
-  explicit Celestial(GravitationalParameter const& gravitational_parameter) 
+  explicit Celestial(GravitationalParameter const& gravitational_parameter)
     : body(new Body(gravitational_parameter)) {}
   std::unique_ptr<Body const> const body;
   // The parent body for the 2-body approximation. Not owning, should only
@@ -125,11 +127,11 @@ void Plugin::SetVesselStateOffset(
        vessel->parent->history->last_velocity() +
            PlanetariumRotation().Inverse()(
                kSunLookingGlass.Inverse()(from_parent_velocity))});
-};
+}
 
 void Plugin::AdvanceTime(Instant const& t, Angle const& planetarium_rotation) {
   for (auto it = vessels_.cbegin(); it != vessels_.cend();) {
-    if(!it->second->keep) {
+    if (!it->second->keep) {
       // |std::map::erase| invalidates its parameter so we post-increment.
       vessels_.erase(it++);
     } else {
