@@ -29,7 +29,7 @@ using si::Second;
 // the corresponding KSP universal time |double|s.
 Instant const kUniversalTimeEpoch;
 
-// Thank's to KSP madness, the reference frame of the celestial body orbited by
+// Thanks to KSP madness, the reference frame of the celestial body orbited by
 // the active vessel, occasionally rotating with its surface, occasionally
 // nonrotating.
 // The basis is that of Unity's "world space" (this is an indirect basis).
