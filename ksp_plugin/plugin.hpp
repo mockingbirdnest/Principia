@@ -118,7 +118,7 @@ class Plugin {
   // Simulates the system until instant |t|. All vessels that have not been
   // refreshed by calling |InsertOrKeepVessel| since the last call to
   // |AdvanceTime| will be removed.
-  // |planetarium_rotation| is the value of  KSP's |Planetarium.InverseRotAngle|
+  // |planetarium_rotation| is the value of KSP's |Planetarium.InverseRotAngle|
   // at instant |t|, which provides the rotation between the |World| axes and
   // the |Barycentre| axes (we don't use Planetarium.Rotation since it undergoes
   // truncation to single-precision even though it's a double- precision value).
