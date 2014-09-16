@@ -20,6 +20,8 @@ using geometry::Displacement;
 using geometry::Instant;
 using geometry::Rotation;
 using integrators::SPRKIntegrator;
+using physics::Body;
+using physics::Trajectory;
 using physics::NBodySystem;
 using quantities::Angle;
 using si::Second;
@@ -45,7 +47,7 @@ struct AliceWorld;
 // the velocity of the sun at the time of construction as our reference.
 struct Barycentre;
 // The position of the sun at the instant |initial_time| passed at construction.
-Position<Barycentre> kInitialSunPosition;
+Position<Barycentre> const kInitialSunPosition;
 
 // A nonrotating referencence frame comoving with the sun with the same axes as
 // |AliceWorld|. Since it is nonrotating (though not inertial), differences
@@ -62,6 +64,10 @@ struct WorldSun;
 
 class Plugin {
  public:
+  Plugin() = delete;
+  Plugin(Plugin const&) = delete;
+  Plugin(Plugin&&) = delete;
+  ~Plugin() = default;
   // Creates a |Plugin|. The current time of that instance is |initial_time|.
   // The angle between the axes of |World| and |Barycentre| at |initial_time| is
   // set to |planetarium_rotation|. Inserts a celestial body with an arbitrary
@@ -93,7 +99,7 @@ class Plugin {
   // index |parent|. Both bodies should already have been inserted.
   // For a KSP |CelestialBody| |b|, the arguments correspond to
   // |b.flightGlobalsIndex| and |b.orbit.referenceBody.flightGlobalsIndex|.
-  void UpdateCelestialHierarchy(int index, int parent);
+  void UpdateCelestialHierarchy(int const index, int const parent);
 
   // Insert a new vessel with GUID |guid| if it does not already exist, and
   // flags the vessel with GUID |guid| so it is kept when calling |AdvanceTime|.
@@ -104,7 +110,7 @@ class Plugin {
   // initial state of the new vessel is known.
   // For a KSP |Vessel| |v|, the arguments correspond to |v.id|,
   // |v.orbit.referenceBody|.
-  bool InsertOrKeepVessel(std::string guid, int parent);
+  bool InsertOrKeepVessel(std::string guid, int const parent);
 
   // Set the position and velocity of the vessel with GUID |guid| relative to
   // its parent at current time. |SetVesselStateOffset| should only be called
@@ -152,13 +158,40 @@ class Plugin {
   Velocity<AliceSun> CelestialParentRelativeVelocity(int const index);
 
  private:
-  struct Celestial;
-  struct Vessel;
+  // Represents a KSP |CelestialBody|.
+  struct Celestial {
+    explicit Celestial(GravitationalParameter const& gravitational_parameter)
+      : body(new Body(gravitational_parameter)) {}
+    std::unique_ptr<Body const> const body;
+    // The parent body for the 2-body approximation. Not owning, should only
+    // be null for the sun.
+    Celestial const* parent = nullptr;
+    // The past and present trajectory of the body.
+    std::unique_ptr<Trajectory<Barycentre>> history;
+  };
 
-// The rotationg between the |World| basis at |current_time| and the
-// |Barycentre| axes. Since |WorldSun| is not a rotating reference frame,
-// this change of basis all that's required to convert relative velocities or
-// displacements between simultaneous events.
+  // Represents a KSP |Vessel|.
+  struct Vessel {
+    // Constructs a vessel whose parent is initially |*parent|. |parent| should
+    // not be null. No transfer of ownership.
+    explicit Vessel(Celestial const* parent) : parent(parent) {
+      CHECK(parent != nullptr) << "null parent";
+    }
+    // A massless |Body|.
+    std::unique_ptr<Body const> const body = new Body(GravitationalParameter());
+    // The parent body for the 2-body approximation. Not owning, should not be
+    // null.
+    Celestial const* parent;
+    // The past and present trajectory of the body.
+    std::unique_ptr<Trajectory<Barycentre>> history;
+    // Whether to keep the |Vessel| during the next call to |AdvanceTime|.
+    bool keep = true;
+  };
+
+  // The rotationg between the |World| basis at |current_time| and the
+  // |Barycentre| axes. Since |WorldSun| is not a rotating reference frame,
+  // this change of basis is all that's required to convert relative velocities
+  // or displacements between simultaneous events.
   Rotation<Barycentre, WorldSun> PlanetariumRotation();
 
   // Constant time step for now.

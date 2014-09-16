@@ -9,38 +9,6 @@ namespace ksp_plugin {
 
 using geometry::Bivector;
 using geometry::Permutation;
-using physics::Body;
-using physics::Trajectory;
-
-// Represents a KSP |CelestialBody|.
-struct Plugin::Celestial {
-  explicit Celestial(GravitationalParameter const& gravitational_parameter)
-    : body(new Body(gravitational_parameter)) {}
-  std::unique_ptr<Body const> const body;
-  // The parent body for the 2-body approximation. Not owning, should only
-  // be null for the sun.
-  Celestial const* parent = nullptr;
-  // The past and present trajectory of the body.
-  std::unique_ptr<Trajectory<Barycentre>> history;
-};
-
-// Represents a KSP |Vessel|.
-struct Plugin::Vessel {
-  // Constructs a vessel whose parent is initially |*parent|. |parent| should
-  // not be null. No transfer of ownership.
-  explicit Vessel(Celestial const* parent) : parent(parent) {
-    CHECK(parent != nullptr) << "null parent";
-  }
-  // A massless |Body|.
-  std::unique_ptr<Body const> const body = new Body(GravitationalParameter());
-  // The parent body for the 2-body approximation. Not owning, should not be
-  // null.
-  Celestial const* parent;
-  // The past and present trajectory of the body.
-  std::unique_ptr<Trajectory<Barycentre>> history;
-  // Whether to keep the |Vessel| during the next call to |AdvanceTime|.
-  bool keep = true;
-};
 
 Permutation<WorldSun, AliceSun> const kWorldLookingGlass(
     Permutation<WorldSun, AliceSun>::CoordinatePermutation::XZY);
@@ -91,7 +59,7 @@ void Plugin::InsertCelestial(
            kSunLookingGlass.Inverse()(from_parent_velocity))});
 }
 
-void Plugin::UpdateCelestialHierarchy(int index, int parent) {
+void Plugin::UpdateCelestialHierarchy(int const index, int const parent) {
   CHECK(celestials_.find(index) != celestials_.end()) <<
       "No body at index " << index;
   CHECK(celestials_.find(parent) != celestials_.end()) <<
@@ -99,7 +67,7 @@ void Plugin::UpdateCelestialHierarchy(int index, int parent) {
   celestials_[index]->parent = celestials_[parent].get();
 }
 
-bool Plugin::InsertOrKeepVessel(std::string guid, int parent) {
+bool Plugin::InsertOrKeepVessel(std::string guid, int const parent) {
   CHECK(celestials_.find(parent) != celestials_.end()) << "No body at index "
       << parent;
   auto inserted = vessels_.insert(
