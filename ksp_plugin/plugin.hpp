@@ -27,8 +27,8 @@ using quantities::Angle;
 using si::Second;
 
 // Universal time 0, time of game creation.
-// Putting the origin here makes the instants we use equal as 8-byte objects to
-// the corresponding KSP universal time |double|s.
+// Putting the origin here makes the instants we use equal to the corresponding
+// KSP universal time doubles.
 Instant const kUniversalTimeEpoch;
 
 // Thanks to KSP's madness, the reference frame of the celestial body orbited by
@@ -76,7 +76,7 @@ class Plugin {
   // The arguments correspond to KSP's |Planetarium.GetUniversalTime()|,
   // |Planetarium.fetch.Sun.flightGlobalsIndex|,
   // |Planetarium.fetch.Sun.gravParameter|,
-  // |Planetarium.InverseRotAngle * si::Degree|.
+  // |Planetarium.InverseRotAngle|.
   Plugin(Instant const& initial_time, int const sun_index,
          GravitationalParameter const& sun_gravitational_parameter,
          Angle const& planetarium_rotation);

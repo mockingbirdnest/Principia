@@ -8,11 +8,14 @@ using principia::si::Metre;
 namespace principia {
 namespace ksp_plugin {
 
-Plugin* CreatePlugin(Instant const initial_time, int const sun_index,
-                     GravitationalParameter const sun_gravitational_parameter,
+Plugin* CreatePlugin(double const initial_time, int const sun_index,
+                     double const sun_gravitational_parameter,
                      double const planetarium_rotation_in_degrees) {
-  return new Plugin(initial_time, sun_index, sun_gravitational_parameter,
-                    planetarium_rotation_in_degrees * Degree);
+  return new Plugin(
+      Instant(initial_time * Second),
+      sun_index,
+      sun_gravitational_parameter * SIUnit<GravitationalParameter>(),
+      planetarium_rotation_in_degrees * Degree);
 }
 
 void DestroyPlugin(Plugin* plugin) {
@@ -21,12 +24,20 @@ void DestroyPlugin(Plugin* plugin) {
 }
 
 void InsertCelestial(Plugin* plugin, int const index,
-                     GravitationalParameter const gravitational_parameter,
+                     double const gravitational_parameter,
                      int const parent,
-                     Displacement<AliceSun> const from_parent_position,
-                     Velocity<AliceSun> const from_parent_velocity) {
-  plugin->InsertCelestial(index, gravitational_parameter, parent,
-                          from_parent_position, from_parent_velocity);
+                     XYZ const from_parent_position,
+                     XYZ const from_parent_velocity) {
+  plugin->InsertCelestial(
+      index,
+      gravitational_parameter * SIUnit<GravitationalParameter>(),
+      parent,
+      Displacement<AliceSun>({from_parent_position.x * Metre,
+                              from_parent_position.y * Metre,
+                              from_parent_position.z * Metre}),
+      Velocity<AliceSun>({from_parent_position.x * Metre / Second,
+                          from_parent_position.y * Metre / Second,
+                          from_parent_position.z * Metre / Second}));
 }
 
 void UpdateCelestialHierarchy(Plugin* plugin, int const index,
@@ -39,10 +50,16 @@ void InsertOrKeepVessel(Plugin* plugin, char const* guid, int const parent) {
 }
 
 void SetVesselStateOffset(Plugin* plugin, char const* guid,
-                          Displacement<AliceSun> const from_parent_position,
-                          Velocity<AliceSun> const from_parent_velocity) {
-  plugin->SetVesselStateOffset(guid, from_parent_position,
-                               from_parent_velocity);
+                          XYZ const from_parent_position,
+                          XYZ const from_parent_velocity) {
+  plugin->SetVesselStateOffset(
+      guid,
+      Displacement<AliceSun>({from_parent_position.x * Metre,
+                              from_parent_position.y * Metre,
+                              from_parent_position.z * Metre}),
+      Velocity<AliceSun>({from_parent_position.x * Metre / Second,
+                          from_parent_position.y * Metre / Second,
+                          from_parent_position.z * Metre / Second}));
 }
 
 XYZ VesselDisplacementFromParent(Plugin* plugin, char const* guid) {
