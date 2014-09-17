@@ -111,17 +111,23 @@ TEST_F(PermutationTest, AppliedToTrivector) {
 }
 
 TEST_F(PermutationTest, Inverse) {
-  EXPECT_THAT(Perm(Perm::YZX).Inverse()(vector_).coordinates(),
+  Vector<quantities::Length, World1> const vector1 = vector_;
+  Vector<quantities::Length, World2> const vector2 =
+      Vector<quantities::Length, World2>(
+          R3(1.0 * Metre, 2.0 * Metre, 3.0 * Metre));
+  EXPECT_THAT(Perm(Perm::YZX).Inverse()(vector2).coordinates(),
               Eq<R3>({3.0 * Metre, 1.0 * Metre, 2.0 * Metre}));
-  EXPECT_THAT(Perm(Perm::YXZ).Inverse()(vector_).coordinates(),
+  EXPECT_THAT(Perm(Perm::YXZ).Inverse()(vector2).coordinates(),
               Eq<R3>({2.0 * Metre, 1.0 * Metre, 3.0 * Metre}));
 
   std::vector<Perm> const all =
       {Perm(Perm::XYZ), Perm(Perm::YZX), Perm(Perm::ZXY),
        Perm(Perm::XZY), Perm(Perm::ZYX), Perm(Perm::YXZ)};
   for (const Perm& p : all) {
-    Perm const identity = p * p.Inverse();
-    EXPECT_THAT(identity(vector_), Eq(vector_));
+    Permutation<World1, World1> const identity1 = p.Inverse() * p;
+    EXPECT_THAT(identity1(vector1), Eq(vector1));
+    Permutation<World2, World2> const identity2 = p * p.Inverse();
+    EXPECT_THAT(identity2(vector2), Eq(vector2));
   }
 }
 
