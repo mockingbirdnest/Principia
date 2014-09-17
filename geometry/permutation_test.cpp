@@ -20,22 +20,23 @@ namespace geometry {
 
 class PermutationTest : public testing::Test {
  protected:
-  struct World;
-  using Orth = OrthogonalMap<World, World>;
-  using Perm = Permutation<World, World>;
+  struct World1;
+  struct World2;
+  using Orth = OrthogonalMap<World1, World2>;
+  using Perm = Permutation<World1, World2>;
   using R3 = R3Element<quantities::Length>;
 
   void SetUp() override {
-    vector_ = Vector<quantities::Length, World>(
+    vector_ = Vector<quantities::Length, World1>(
         R3(1.0 * Metre, 2.0 * Metre, 3.0 * Metre));
-    bivector_ = Bivector<quantities::Length, World>(
+    bivector_ = Bivector<quantities::Length, World1>(
         R3(1.0 * Metre, 2.0 * Metre, 3.0 * Metre));
-    trivector_ = Trivector<quantities::Length, World>(4.0 * Metre);
+    trivector_ = Trivector<quantities::Length, World1>(4.0 * Metre);
   }
 
-  Vector<quantities::Length, World> vector_;
-  Bivector<quantities::Length, World> bivector_;
-  Trivector<quantities::Length, World> trivector_;
+  Vector<quantities::Length, World1> vector_;
+  Bivector<quantities::Length, World1> bivector_;
+  Trivector<quantities::Length, World1> trivector_;
 };
 
 TEST_F(PermutationTest, Identity) {
@@ -140,18 +141,28 @@ TEST_F(PermutationTest, Forget) {
 }
 
 TEST_F(PermutationTest, Compose) {
-  std::vector<Perm> const all =
-      {Perm(Perm::XYZ), Perm(Perm::YZX), Perm(Perm::ZXY),
-       Perm(Perm::XZY), Perm(Perm::ZYX), Perm(Perm::YXZ)};
-  for (Perm const& p1 : all) {
-    Orth const o1 = p1.Forget();
-    for (Perm const& p2 : all) {
-      Orth const o2 = p2.Forget();
-      Perm const p12 = p1 * p2;
-      Orth const o12 = o1 * o2;
+  struct World3;
+  using Orth12 = OrthogonalMap<World1, World2>;
+  using Orth13 = OrthogonalMap<World1, World3>;
+  using Orth23 = OrthogonalMap<World2, World3>;
+  using Perm12 = Permutation<World1, World2>;
+  using Perm13 = Permutation<World1, World3>;
+  using Perm23 = Permutation<World2, World3>;
+  std::vector<Perm12> const all12 =
+      {Perm12(Perm12::XYZ), Perm12(Perm12::YZX), Perm12(Perm12::ZXY),
+       Perm12(Perm12::XZY), Perm12(Perm12::ZYX), Perm12(Perm12::YXZ)};
+  std::vector<Perm23> const all23 =
+      {Perm23(Perm23::XYZ), Perm23(Perm23::YZX), Perm23(Perm23::ZXY),
+       Perm23(Perm23::XZY), Perm23(Perm23::ZYX), Perm23(Perm23::YXZ)};
+  for (Perm12 const& p12 : all12) {
+    Orth12 const o12 = p12.Forget();
+    for (Perm23 const& p23 : all23) {
+      Orth23 const o23 = p23.Forget();
+      Perm13 const p13 = p23 * p12;
+      Orth13 const o13 = o23 * o12;
       for (Length l = 1 * Metre; l < 4 * Metre; l += 1 * Metre) {
         vector_.coordinates().x = l;
-        EXPECT_THAT(p12(vector_), AlmostEquals(o12(vector_), 20));
+        EXPECT_THAT(p13(vector_), AlmostEquals(o13(vector_), 20));
       }
     }
   }
