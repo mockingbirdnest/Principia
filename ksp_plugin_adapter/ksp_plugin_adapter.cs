@@ -165,11 +165,7 @@ public class PluginAdapter : UnityEngine.MonoBehaviour {
                            Planetarium.fetch.Sun.gravParameter,
                            Planetarium.InverseRotAngle);
     {
-      // Good old toposort because the celestial body tree is given by orbit
-      // parents.
-      Stack<CelestialBody> stack = new Stack<CelestialBody>();
-      Dictionary<CelestialBody, bool> visited
-        = new Dictionary<CelestialBody,bool>();
+      // Tree traverl;
       stack.Push(Planetarium.fetch.Sun);
       CelestialBody body;
       foreach (CelestialBody node in FlightGlobals.Bodies) {
