@@ -189,7 +189,6 @@ public class PluginAdapter : UnityEngine.MonoBehaviour {
         if (!inserted) {
           UnityEngine.Debug.LogError(
               "Plugin initialisation: vessel not inserted");
-
         }
       }
     }

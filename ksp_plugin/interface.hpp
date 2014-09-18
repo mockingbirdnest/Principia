@@ -1,5 +1,7 @@
 #pragma once
 
+#include <type_traits>
+
 #include "ksp_plugin/plugin.hpp"
 
 // DLL-exported functions for interfacing with Platform Invocation Services.
@@ -15,6 +17,8 @@ namespace ksp_plugin {
 
 extern "C"
 struct XYZ { double x, y, z; };
+static_assert(std::is_standard_layout<XYZ>::value,
+              "XYZ is used for interfacing");
 
 // Returns a pointer to a plugin constructed with the arguments given.
 extern "C" DLLEXPORT
