@@ -165,26 +165,18 @@ public class PluginAdapter : UnityEngine.MonoBehaviour {
                            Planetarium.fetch.Sun.gravParameter,
                            Planetarium.InverseRotAngle);
     {
-      // Tree traverl;
+      // Tree traversal (DFS, not that it matters).
+      Stack<CelestialBody> stack = new Stack<CelestialBody>();
       stack.Push(Planetarium.fetch.Sun);
       CelestialBody body;
-      foreach (CelestialBody node in FlightGlobals.Bodies) {
-        if (!visited[node]) {
-          visited[node] = true;
-          stack.Push(node);
-          while (stack.Count > 0) {
-            body = stack.Peek();
-            if (body.orbit == null || visited[body.orbit.referenceBody]) {
-              stack.Pop();
-              InsertCelestial(plugin_, body.flightGlobalsIndex,
-                              body.gravParameter,
-                              body.orbit.referenceBody.flightGlobalsIndex,
-                              (XYZ)body.orbit.pos, (XYZ)body.orbit.vel);
-            } else {
-              visited[body] = true;
-              stack.Push(body.orbit.referenceBody);
-            }
-          }
+      while (stack.Count > 0) {
+        body = stack.Pop();
+        InsertCelestial(plugin_, body.flightGlobalsIndex,
+                        body.gravParameter,
+                        body.orbit.referenceBody.flightGlobalsIndex,
+                        (XYZ)body.orbit.pos, (XYZ)body.orbit.vel);
+        foreach (CelestialBody child in body.orbitingBodies) {
+          stack.Push(child);
         }
       }
     }
