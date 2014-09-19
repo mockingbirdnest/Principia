@@ -106,8 +106,9 @@ class Plugin {
   // The parent body for the vessel is set to the one with index |index|. It
   // should already have been inserted using |InsertCelestial|. Returns |true|
   // if a new vessel was inserted. In that case, |SetVesselStateOffset| should
-  // be called with the same |guid| the next call to |AdvanceTime|, so that the
-  // initial state of the new vessel is known.
+  // be called with the same |guid| before the next call to |AdvanceTime|,
+  // |VesselDisplacementFromParent| or |VesselParentRelativeVelocity|, so that
+  // the initial state of the new vessel is known.
   // For a KSP |Vessel| |v|, the arguments correspond to |v.id|,
   // |v.orbit.referenceBody|.
   bool InsertOrKeepVessel(std::string guid, int const parent);
@@ -167,7 +168,7 @@ class Plugin {
     // be null for the sun.
     Celestial const* parent = nullptr;
     // The past and present trajectory of the body.
-    std::unique_ptr<Trajectory<Barycentre>> history;
+    std::unique_ptr<Trajectory<Barycentre>> history = nullptr;
   };
 
   // Represents a KSP |Vessel|.
@@ -183,7 +184,7 @@ class Plugin {
     // null.
     Celestial const* parent;
     // The past and present trajectory of the body.
-    std::unique_ptr<Trajectory<Barycentre>> history;
+    std::unique_ptr<Trajectory<Barycentre>> history = nullptr;
     // Whether to keep the |Vessel| during the next call to |AdvanceTime|.
     bool keep = true;
   };

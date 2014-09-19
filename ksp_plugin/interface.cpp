@@ -11,6 +11,16 @@ namespace ksp_plugin {
 Plugin* CreatePlugin(double const initial_time, int const sun_index,
                      double const sun_gravitational_parameter,
                      double const planetarium_rotation_in_degrees) {
+#ifdef _MSC_VER
+  FILE* file;
+  freopen_s(&file, "stdout", "a", stdout);
+  freopen_s(&file, "stderr", "a", stderr);
+#else
+  std::freopen("stdout", "a", stdout);
+  std::freopen("stderr", "a", stderr);
+#endif
+  std::cerr << "Principia native stderr: starting plugin!";
+  std::cout << "Principia native stdout: starting plugin!";
   return new Plugin(
       Instant(initial_time * Second),
       sun_index,

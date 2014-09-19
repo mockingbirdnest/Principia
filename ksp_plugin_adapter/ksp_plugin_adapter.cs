@@ -108,12 +108,14 @@ public class PluginAdapter : UnityEngine.MonoBehaviour {
   private delegate void BodyProcessor(CelestialBody body);
   private delegate void VesselProcessor(Vessel vessel);
 
-  // Applies |process_body| to all bodies in the tree of celestial bodies in
-  // topological order, starting with the sun.
+  // Applies |process_body| to all bodies but the sun in the tree of celestial
+  // bodies, in topological order.
   private void ApplyToBodyTree(BodyProcessor process_body) {
     // Tree traversal (DFS, not that it matters).
     Stack<CelestialBody> stack = new Stack<CelestialBody>();
-    stack.Push(Planetarium.fetch.Sun);
+    foreach (CelestialBody child in Planetarium.fetch.Sun.orbitingBodies) {
+      stack.Push(child);
+    }
     CelestialBody body;
     while (stack.Count > 0) {
       body = stack.Pop();
@@ -207,7 +209,8 @@ public class PluginAdapter : UnityEngine.MonoBehaviour {
     UnityEngine.GUILayout.BeginVertical();
     IntPtr hello_ptr = SayHello();
     UnityEngine.GUILayout.TextArea(text : Marshal.PtrToStringAnsi(hello_ptr));
-    if (UnityEngine.GUILayout.Button("Toggle plugin")) {
+    if (UnityEngine.GUILayout.Button(plugin_running_? "Stop plugin"
+                                                    : "Start plugin")) {
       if (plugin_running_) {
         DestroyPlugin(plugin_);
       } else {
@@ -223,6 +226,8 @@ public class PluginAdapter : UnityEngine.MonoBehaviour {
   }
 
   private void InitializePlugin() {
+    Console.Error.Write("Principia stderr: starting plugin!");
+    Console.Out.Write("Principia stdout: starting plugin!");
     plugin_ = CreatePlugin(Planetarium.GetUniversalTime(),
                            Planetarium.fetch.Sun.flightGlobalsIndex,
                            Planetarium.fetch.Sun.gravParameter,
@@ -242,6 +247,8 @@ public class PluginAdapter : UnityEngine.MonoBehaviour {
       }
     };
     ApplyToVesselsInSpace(insert_vessel);
+    Console.Error.Write("Principia stderr: initialised plugin!");
+    Console.Out.Write("Principia stdout: initialised plugin!");
   }
 }
 

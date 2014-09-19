@@ -105,6 +105,8 @@ void Plugin::AdvanceTime(Instant const& t, Angle const& planetarium_rotation) {
       // |std::map::erase| invalidates its parameter so we post-increment.
       vessels_.erase(it++);
     } else {
+      CHECK(it->second->history != nullptr) << "Vessel with GUID" << it->first
+          << "was not given an initial state";
       it->second->keep = false;
       ++it;
     }
@@ -135,6 +137,8 @@ Displacement<AliceSun> Plugin::VesselDisplacementFromParent(
     std::string const& guid) {
   CHECK(vessels_.find(guid) != vessels_.end()) << "No vessel with GUID "
       << guid;
+  CHECK(vessels_[guid]->history != nullptr) << "Vessel with GUID" << guid
+      << "was not given an initial state";
   return kSunLookingGlass(PlanetariumRotation()(
           vessels_[guid]->history->last_position() -
               vessels_[guid]->parent->history->last_position()));
@@ -144,6 +148,8 @@ Velocity<AliceSun> Plugin::VesselParentRelativeVelocity(
     std::string const& guid) {
   CHECK(vessels_.find(guid) != vessels_.end()) << "No vessel with GUID "
       << guid;
+  CHECK(vessels_[guid]->history != nullptr) << "Vessel with GUID" << guid
+      << "was not given an initial state";
   return kSunLookingGlass(PlanetariumRotation()(
           vessels_[guid]->history->last_velocity() -
               vessels_[guid]->parent->history->last_velocity()));
