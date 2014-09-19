@@ -105,6 +105,37 @@ public class PluginAdapter : UnityEngine.MonoBehaviour {
     DestroyPlugin(plugin_);
   }
 
+  private delegate void BodyProcessor(CelestialBody body);
+  private delegate void VesselProcessor(Vessel vessel);
+
+  // Applies |process_body| to all bodies in the tree of celestial bodies in
+  // topological order, starting with the sun.
+  private void ApplyToBodyTree(BodyProcessor process_body) {
+    // Tree traversal (DFS, not that it matters).
+    Stack<CelestialBody> stack = new Stack<CelestialBody>();
+    stack.Push(Planetarium.fetch.Sun);
+    CelestialBody body;
+    while (stack.Count > 0) {
+      body = stack.Pop();
+      process_body(body);
+      foreach (CelestialBody child in body.orbitingBodies) {
+        stack.Push(child);
+      }
+    }
+  }
+
+  // Applies |process_vessel| to all vessels in space.
+  private void ApplyToVesselsInSpace(VesselProcessor process_vessel) {
+    foreach (Vessel vessel in FlightGlobals.Vessels) {
+      if (vessel.situation == Vessel.Situations.SUB_ORBITAL ||
+          vessel.situation == Vessel.Situations.ORBITING ||
+          vessel.situation == Vessel.Situations.ESCAPING) {
+        process_vessel(vessel);
+      }
+    }
+  }
+
+  #region Unity Lifecycle
   private void Start() {
     RenderingManager.AddToPostDrawQueue(queueSpot    : 3,
                                         drawFunction : new Callback(DrawGUI));
@@ -120,6 +151,37 @@ public class PluginAdapter : UnityEngine.MonoBehaviour {
         queueSpot    : 3,
         drawFunction : new Callback(DrawGUI));
   }
+
+  private void FixedUpdate() {
+    if (plugin_running_) {
+      double universal_time = Planetarium.GetUniversalTime();
+      BodyProcessor update_body = body => {
+        Vector3d position =
+            (Vector3d)CelestialDisplacementFromParent(plugin_,
+                                                      body.flightGlobalsIndex);
+        Vector3d velocity =
+            (Vector3d)CelestialParentRelativeVelocity(plugin_,
+                                                      body.flightGlobalsIndex);
+        body.orbit.UpdateFromStateVectors(pos: position, vel: velocity,
+                                          refBody: body.orbit.referenceBody,
+                                          UT: universal_time);
+      };
+      ApplyToBodyTree(update_body);
+      VesselProcessor update_vessel = vessel => {
+        Vector3d position =
+            (Vector3d)VesselDisplacementFromParent(plugin_,
+                                                   vessel.id.ToString());
+        Vector3d velocity =
+            (Vector3d)VesselParentRelativeVelocity(plugin_,
+                                                   vessel.id.ToString());
+        vessel.orbit.UpdateFromStateVectors(pos: position, vel: velocity,
+                                            refBody: vessel.orbit.referenceBody,
+                                            UT: universal_time);
+      };
+      ApplyToVesselsInSpace(update_vessel);
+    }
+  }
+  #endregion
 
   private void DrawGUI() {
     UnityEngine.GUI.skin = HighLogic.Skin;
@@ -141,6 +203,7 @@ public class PluginAdapter : UnityEngine.MonoBehaviour {
     style.onHover.textColor   = UnityEngine.Color.green;
     style.onActive.textColor  = UnityEngine.Color.green;
     style.padding             = new UnityEngine.RectOffset(8, 8, 8, 8);
+
     UnityEngine.GUILayout.BeginVertical();
     IntPtr hello_ptr = SayHello();
     UnityEngine.GUILayout.TextArea(text : Marshal.PtrToStringAnsi(hello_ptr));
@@ -164,34 +227,21 @@ public class PluginAdapter : UnityEngine.MonoBehaviour {
                            Planetarium.fetch.Sun.flightGlobalsIndex,
                            Planetarium.fetch.Sun.gravParameter,
                            Planetarium.InverseRotAngle);
-    {
-      // Tree traversal (DFS, not that it matters).
-      Stack<CelestialBody> stack = new Stack<CelestialBody>();
-      stack.Push(Planetarium.fetch.Sun);
-      CelestialBody body;
-      while (stack.Count > 0) {
-        body = stack.Pop();
-        InsertCelestial(plugin_, body.flightGlobalsIndex,
-                        body.gravParameter,
-                        body.orbit.referenceBody.flightGlobalsIndex,
-                        (XYZ)body.orbit.pos, (XYZ)body.orbit.vel);
-        foreach (CelestialBody child in body.orbitingBodies) {
-          stack.Push(child);
-        }
+    ApplyToBodyTree(
+        body => InsertCelestial(plugin_, body.flightGlobalsIndex,
+                                body.gravParameter,
+                                body.orbit.referenceBody.flightGlobalsIndex,
+                                (XYZ)body.orbit.pos, (XYZ)body.orbit.vel));
+    VesselProcessor insert_vessel = vessel => {
+      bool inserted =
+          InsertOrKeepVessel(plugin_, vessel.id.ToString(),
+                             vessel.orbit.referenceBody.flightGlobalsIndex);
+      if (!inserted) {
+        UnityEngine.Debug.LogError(
+            "Plugin initialisation: vessel not inserted");
       }
-    }
-    foreach (Vessel vessel in FlightGlobals.Vessels) {
-      if (vessel.situation == Vessel.Situations.SUB_ORBITAL ||
-         vessel.situation == Vessel.Situations.ORBITING ||
-         vessel.situation == Vessel.Situations.ESCAPING) {
-        bool inserted = InsertOrKeepVessel(plugin_, vessel.id.ToString(),
-                           vessel.orbit.referenceBody.flightGlobalsIndex);
-        if (!inserted) {
-          UnityEngine.Debug.LogError(
-              "Plugin initialisation: vessel not inserted");
-        }
-      }
-    }
+    };
+    ApplyToVesselsInSpace(insert_vessel);
   }
 }
 
