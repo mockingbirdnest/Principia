@@ -20,10 +20,10 @@ struct XYZ { double x, y, z; };
 static_assert(std::is_standard_layout<XYZ>::value,
               "XYZ is used for interfacing");
 
-// Sets stderr to log INFO. Also redirects stderr, which Unity does not log, to
+// Sets stderr to log INFO, and redirects stderr, which Unity does not log, to
 // "<KSP directory>/stderr.log". This provides an easily accessible file
 // containing a sufficiently verbose log of the latest session, instead of
-// requiring users to dig in the archive of all past logs at all severities.
+// requiring users to dig in an archive of all past logs at all severities.
 // Log files are disabled.
 // TODO(egg): This should really be in a separate DLL, what happens if two
 // plugins use glog?
