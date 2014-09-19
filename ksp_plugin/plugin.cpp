@@ -27,8 +27,9 @@ Plugin::Plugin(Instant const& initial_time, int const sun_index,
                Angle const& planetarium_rotation)
     : current_time_(initial_time),
       planetarium_rotation_(planetarium_rotation) {
-  celestials_.insert(
+  auto inserted = celestials_.insert(
       {sun_index, std::make_unique<Celestial>(sun_gravitational_parameter)});
+  sun_ = inserted.first->second.get();
   sun_->history = std::make_unique<Trajectory<Barycentre>>(*sun_->body);
   sun_->history->Append(current_time_,
                         {Position<Barycentre>(), Velocity<Barycentre>()});
