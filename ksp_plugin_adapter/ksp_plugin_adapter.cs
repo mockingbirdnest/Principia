@@ -247,6 +247,9 @@ public class PluginAdapter : UnityEngine.MonoBehaviour {
       if (!inserted) {
         UnityEngine.Debug.LogError(
             "Plugin initialisation: vessel not inserted");
+      } else {
+        SetVesselStateOffset(plugin_, vessel.id.ToString(),
+                             (XYZ)vessel.orbit.pos, (XYZ)vessel.orbit.vel);
       }
     };
     ApplyToVesselsInSpace(insert_vessel);
