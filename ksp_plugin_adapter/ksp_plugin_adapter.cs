@@ -5,11 +5,11 @@ using System.Runtime.InteropServices;
 namespace principia {
 namespace ksp_plugin_adapter {
 
-[KSPAddon(KSPAddon.Startup.EveryScene, false)]
+[KSPAddon(KSPAddon.Startup.Flight, false)]
 public class PluginAdapter : UnityEngine.MonoBehaviour {
 
   #region Interface
-  private const string kDllPath = "GameData/Principia/principia.dll";
+  private const string kDllPath = "principia.dll";
 
   [StructLayout(LayoutKind.Sequential)]
   private struct XYZ {
