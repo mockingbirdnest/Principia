@@ -9,7 +9,7 @@ namespace ksp_plugin_adapter {
 public class PluginAdapter : UnityEngine.MonoBehaviour {
 
   #region Interface
-  private const string kDllPath = "principia.dll";
+  private const string kDllPath = "GameData/Principia/principia.dll";
 
   [StructLayout(LayoutKind.Sequential)]
   private struct XYZ {
@@ -21,6 +21,10 @@ public class PluginAdapter : UnityEngine.MonoBehaviour {
       return new Vector3d {x = v.x, y = v.y, z = v.z};
     }
   };
+
+  [DllImport(dllName           : kDllPath,
+             CallingConvention = CallingConvention.Cdecl)]
+  private static extern void InitGoogleLogging();
 
   [DllImport(dllName           : kDllPath,
              CallingConvention = CallingConvention.Cdecl)]
@@ -139,6 +143,7 @@ public class PluginAdapter : UnityEngine.MonoBehaviour {
 
   #region Unity Lifecycle
   private void Start() {
+    InitGoogleLogging();
     RenderingManager.AddToPostDrawQueue(queueSpot    : 3,
                                         drawFunction : new Callback(DrawGUI));
     window_position_ = new UnityEngine.Rect(
@@ -225,9 +230,7 @@ public class PluginAdapter : UnityEngine.MonoBehaviour {
                                         height : 20f));
   }
 
-  private void InitializePlugin() {
-    Console.Error.Write("Principia stderr: starting plugin!");
-    Console.Out.Write("Principia stdout: starting plugin!");
+  private void InitializePlugin() {;
     plugin_ = CreatePlugin(Planetarium.GetUniversalTime(),
                            Planetarium.fetch.Sun.flightGlobalsIndex,
                            Planetarium.fetch.Sun.gravParameter,
@@ -247,8 +250,6 @@ public class PluginAdapter : UnityEngine.MonoBehaviour {
       }
     };
     ApplyToVesselsInSpace(insert_vessel);
-    Console.Error.Write("Principia stderr: initialised plugin!");
-    Console.Out.Write("Principia stdout: initialised plugin!");
   }
 }
 

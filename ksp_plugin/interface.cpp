@@ -8,18 +8,21 @@ using principia::si::Metre;
 namespace principia {
 namespace ksp_plugin {
 
+void InitGoogleLogging() {
+#ifdef _MSC_VER
+  FILE* file;
+  freopen_s(&file, "stderr.log", "w", stderr);
+#else
+  std::freopen("stderr.log", "w", stderr);
+#endif
+  google::LogToStderr();
+  google::InitGoogleLogging("KSP");
+}
+
 Plugin* CreatePlugin(double const initial_time, int const sun_index,
                      double const sun_gravitational_parameter,
                      double const planetarium_rotation_in_degrees) {
-  
-#ifdef _MSC_VER
-  FILE* file;
-  freopen_s(&file, "stderr", "a", stderr);
-#else
-  std::freopen("stderr", "a", stderr);
-#endif
-  std::cerr << "Principia native stderr: starting plugin!";
-  std::cout << "Principia native stdout: starting plugin!";
+  LOG(INFO) << "Creating Principia";
   return new Plugin(
       Instant(initial_time * Second),
       sun_index,
@@ -28,6 +31,7 @@ Plugin* CreatePlugin(double const initial_time, int const sun_index,
 }
 
 void DestroyPlugin(Plugin* plugin) {
+  LOG(INFO) << "Destroying Principia";
   delete plugin;
   plugin = nullptr;
 }
