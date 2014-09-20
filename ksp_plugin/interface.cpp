@@ -16,29 +16,30 @@ void InitGoogleLogging() {
   std::freopen("stderr.log", "w", stderr);
 #endif
   google::SetStderrLogging(google::INFO);
-  google::SetLogDestination(google::FATAL, "glog/FATAL.");
-  google::SetLogDestination(google::ERROR, "glog/ERROR.");
-  google::SetLogDestination(google::WARNING, "glog/WARNING.");
-  google::SetLogDestination(google::INFO, "glog/INFO.");
-  google::InitGoogleLogging("KSP");
-  LOG(INFO) << "Initialized Google logging for KSP.";
+  google::SetLogDestination(google::FATAL, "glog/Principia/FATAL.");
+  google::SetLogDestination(google::ERROR, "glog/Principia/ERROR.");
+  google::SetLogDestination(google::WARNING, "glog/Principia/WARNING.");
+  google::SetLogDestination(google::INFO, "glog/Principia/INFO.");
+  google::InitGoogleLogging("Principia");
+  LOG(INFO) << "Initialized Google logging for Principia.";
 }
 
 Plugin* CreatePlugin(double const initial_time, int const sun_index,
                      double const sun_gravitational_parameter,
                      double const planetarium_rotation_in_degrees) {
-  LOG(INFO) << "Creating Principia";
+  LOG(INFO) << "Creating Principia...";
   return new Plugin(
       Instant(initial_time * Second),
       sun_index,
       sun_gravitational_parameter * SIUnit<GravitationalParameter>(),
       planetarium_rotation_in_degrees * Degree);
+  LOG(INFO) << "Plugin created.";
 }
 
 void DestroyPlugin(Plugin* plugin) {
-  LOG(INFO) << "Destroying Principia";
   delete plugin;
   plugin = nullptr;
+  LOG(INFO) << "Destroyed Principia.";
 }
 
 void InsertCelestial(Plugin* plugin, int const index,

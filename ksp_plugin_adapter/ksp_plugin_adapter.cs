@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
 
@@ -108,7 +108,7 @@ public class PluginAdapter : UnityEngine.MonoBehaviour {
   PluginAdapter() {
     // We create this directory here so we do not need to worry about cross-
     // platform problems in C++.
-    System.IO.Directory.CreateDirectory("glog");
+    System.IO.Directory.CreateDirectory("glog/Principia");
     InitGoogleLogging();
   }
 
@@ -148,6 +148,17 @@ public class PluginAdapter : UnityEngine.MonoBehaviour {
     }
   }
 
+  private void LogOrbit(Orbit orbit) {
+    UnityEngine.Debug.Log("i = " + orbit.inclination);
+    UnityEngine.Debug.Log("e = " + orbit.eccentricity);
+    UnityEngine.Debug.Log("a = " + orbit.semiMajorAxis);
+    UnityEngine.Debug.Log("Ω = " + orbit.LAN);
+    UnityEngine.Debug.Log("ω = " + orbit.argumentOfPeriapsis);
+    UnityEngine.Debug.Log("M0 = " + orbit.meanAnomalyAtEpoch);
+    UnityEngine.Debug.Log("t0 = " + orbit.epoch);
+    UnityEngine.Debug.Log("primary = " + orbit.referenceBody.name);
+  }
+
   #region Unity Lifecycle
   private void Start() {
     RenderingManager.AddToPostDrawQueue(queueSpot    : 3,
@@ -175,14 +186,20 @@ public class PluginAdapter : UnityEngine.MonoBehaviour {
         Vector3d velocity =
             (Vector3d)CelestialParentRelativeVelocity(plugin_,
                                                       body.flightGlobalsIndex);
-        // TODO(egg): Understand this voodoo.
+        UnityEngine.Debug.Log("New position: " + position.ToString());
+        UnityEngine.Debug.Log("was: " + body.orbit.pos);
+        UnityEngine.Debug.Log("New velocity: " + velocity.ToString());
+        UnityEngine.Debug.Log("was: " + body.orbit.vel);
+        LogOrbit(body.orbit);
+        // TODO(egg): Some of this might be be superfluous and redundant.
         Orbit original = body.orbit;
         Orbit copy = new Orbit(original.inclination, original.eccentricity,
                                original.semiMajorAxis, original.LAN,
-                               original.argumentOfPeriapsis, original.meanAnomalyAtEpoch,
-                               original.epoch, original.referenceBody);
-        copy.UpdateFromStateVectors((Vector3d)position, (Vector3d)velocity,
-                                    copy.referenceBody, universal_time);
+                               original.argumentOfPeriapsis,
+                               original.meanAnomalyAtEpoch, original.epoch,
+                               original.referenceBody);
+        copy.UpdateFromStateVectors(position, velocity, copy.referenceBody,
+                                    universal_time);
         body.orbit.inclination = copy.inclination;
         body.orbit.eccentricity = copy.eccentricity;
         body.orbit.semiMajorAxis = copy.semiMajorAxis;
@@ -191,12 +208,22 @@ public class PluginAdapter : UnityEngine.MonoBehaviour {
         body.orbit.meanAnomalyAtEpoch = copy.meanAnomalyAtEpoch;
         body.orbit.epoch = copy.epoch;
         body.orbit.referenceBody = copy.referenceBody;
+        UnityEngine.Debug.Log("UpdateFromStateVectors");
+        LogOrbit(body.orbit);
         body.orbit.Init();
+        UnityEngine.Debug.Log("Init");
+        LogOrbit(body.orbit);
         body.orbit.UpdateFromUT(universal_time);
+        UnityEngine.Debug.Log("UpdateFromUT");
+        LogOrbit(body.orbit);
         body.CBUpdate();
+        UnityEngine.Debug.Log("CBUpdate");
+        LogOrbit(body.orbit);
         body.orbit.UpdateFromStateVectors((Vector3d)position,
                                           (Vector3d)velocity,
                                           copy.referenceBody, universal_time);
+        UnityEngine.Debug.Log("UpdateFromStateVectors");
+        LogOrbit(body.orbit);
       };
       ApplyToBodyTree(update_body);
       VesselProcessor update_vessel = vessel => {
