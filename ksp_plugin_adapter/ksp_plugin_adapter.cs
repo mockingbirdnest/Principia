@@ -22,9 +22,35 @@ public class PluginAdapter : UnityEngine.MonoBehaviour {
     }
   };
 
+  #region glog
   [DllImport(dllName           : kDllPath,
              CallingConvention = CallingConvention.Cdecl)]
   private static extern void InitGoogleLogging();
+
+  [DllImport(dllName           : kDllPath,
+             CallingConvention = CallingConvention.Cdecl)]
+  private static extern void LOGINFO(
+      [MarshalAs(UnmanagedType.LPStr)]
+      String message);
+
+  [DllImport(dllName           : kDllPath,
+             CallingConvention = CallingConvention.Cdecl)]
+  private static extern void LOGWARNING(
+      [MarshalAs(UnmanagedType.LPStr)]
+      String message);
+
+  [DllImport(dllName           : kDllPath,
+             CallingConvention = CallingConvention.Cdecl)]
+  private static extern void LOGERROR(
+      [MarshalAs(UnmanagedType.LPStr)]
+      String message);
+
+  [DllImport(dllName           : kDllPath,
+             CallingConvention = CallingConvention.Cdecl)]
+  private static extern void LOGFATAL(
+      [MarshalAs(UnmanagedType.LPStr)]
+      String message);
+  #endregion
 
   [DllImport(dllName           : kDllPath,
              CallingConvention = CallingConvention.Cdecl)]
@@ -161,6 +187,7 @@ public class PluginAdapter : UnityEngine.MonoBehaviour {
 
   #region Unity Lifecycle
   private void Start() {
+    LOGINFO("principia.ksp_plugin_adapter.PluginAdapter.Start()");
     RenderingManager.AddToPostDrawQueue(queueSpot    : 3,
                                         drawFunction : new Callback(DrawGUI));
     window_position_ = new UnityEngine.Rect(
@@ -171,6 +198,7 @@ public class PluginAdapter : UnityEngine.MonoBehaviour {
   }
 
   private void OnDestroy() {
+    LOGINFO("principia.ksp_plugin_adapter.PluginAdapter.OnDestroy()");
     RenderingManager.RemoveFromPostDrawQueue(
         queueSpot    : 3,
         drawFunction : new Callback(DrawGUI));
@@ -186,11 +214,6 @@ public class PluginAdapter : UnityEngine.MonoBehaviour {
         Vector3d velocity =
             (Vector3d)CelestialParentRelativeVelocity(plugin_,
                                                       body.flightGlobalsIndex);
-        UnityEngine.Debug.Log("New position: " + position.ToString());
-        UnityEngine.Debug.Log("was: " + body.orbit.pos);
-        UnityEngine.Debug.Log("New velocity: " + velocity.ToString());
-        UnityEngine.Debug.Log("was: " + body.orbit.vel);
-        LogOrbit(body.orbit);
         // TODO(egg): Some of this might be be superfluous and redundant.
         Orbit original = body.orbit;
         Orbit copy = new Orbit(original.inclination, original.eccentricity,
@@ -207,23 +230,13 @@ public class PluginAdapter : UnityEngine.MonoBehaviour {
         body.orbit.argumentOfPeriapsis = copy.argumentOfPeriapsis;
         body.orbit.meanAnomalyAtEpoch = copy.meanAnomalyAtEpoch;
         body.orbit.epoch = copy.epoch;
-        body.orbit.referenceBody = copy.referenceBody;
-        UnityEngine.Debug.Log("UpdateFromStateVectors");
-        LogOrbit(body.orbit);
+        body.orbit.referenceBody = copy.referenceBody;;
         body.orbit.Init();
-        UnityEngine.Debug.Log("Init");
-        LogOrbit(body.orbit);
         body.orbit.UpdateFromUT(universal_time);
-        UnityEngine.Debug.Log("UpdateFromUT");
-        LogOrbit(body.orbit);
         body.CBUpdate();
-        UnityEngine.Debug.Log("CBUpdate");
-        LogOrbit(body.orbit);
         body.orbit.UpdateFromStateVectors((Vector3d)position,
                                           (Vector3d)velocity,
                                           copy.referenceBody, universal_time);
-        UnityEngine.Debug.Log("UpdateFromStateVectors");
-        LogOrbit(body.orbit);
       };
       ApplyToBodyTree(update_body);
       VesselProcessor update_vessel = vessel => {
@@ -287,18 +300,20 @@ public class PluginAdapter : UnityEngine.MonoBehaviour {
                            Planetarium.fetch.Sun.flightGlobalsIndex,
                            Planetarium.fetch.Sun.gravParameter,
                            Planetarium.InverseRotAngle);
-    ApplyToBodyTree(
-        body => InsertCelestial(plugin_, body.flightGlobalsIndex,
-                                body.gravParameter,
-                                body.orbit.referenceBody.flightGlobalsIndex,
-                                (XYZ)body.orbit.pos, (XYZ)body.orbit.vel));
+    BodyProcessor insert_body = body => {
+      LOGINFO("Inserting " + body.name + "...");
+      InsertCelestial(plugin_, body.flightGlobalsIndex, body.gravParameter,
+                      body.orbit.referenceBody.flightGlobalsIndex,
+                      (XYZ)body.orbit.pos, (XYZ)body.orbit.vel);
+    };
+    ApplyToBodyTree(insert_body);
     VesselProcessor insert_vessel = vessel => {
+      LOGINFO("Inserting " + vessel.name + "...");
       bool inserted =
           InsertOrKeepVessel(plugin_, vessel.id.ToString(),
                              vessel.orbit.referenceBody.flightGlobalsIndex);
       if (!inserted) {
-        UnityEngine.Debug.LogError(
-            "Plugin initialisation: vessel not inserted");
+        LOGFATAL("Plugin initialisation: vessel not inserted");
       } else {
         SetVesselStateOffset(plugin_, vessel.id.ToString(),
                              (XYZ)vessel.orbit.pos, (XYZ)vessel.orbit.vel);

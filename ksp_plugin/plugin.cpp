@@ -165,9 +165,8 @@ Displacement<AliceSun> Plugin::VesselDisplacementFromParent(
       vessels_[guid]->parent->history->last_position();
   Displacement<AliceSun> const result =
       kSunLookingGlass(PlanetariumRotation()(barycentric_result));
-  LOG(INFO) << "Vessel with GUID " << guid << " is at parent position + "
-            << barycentric_result << " (Barycentre)";
-  LOG(INFO) << result << " (AliceSun)";
+  VLOG(1) << "Vessel with GUID " << guid << " is at parent position + "
+          << barycentric_result << " Barycentre (" << result << " AliceSun)";
   return result;
 }
 

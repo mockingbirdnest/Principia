@@ -24,6 +24,22 @@ void InitGoogleLogging() {
   LOG(INFO) << "Initialized Google logging for Principia.";
 }
 
+void LOGINFO(char const* message) {
+  LOG(INFO) << message;
+}
+
+void LOGWARNING(char const* message) {
+  LOG(WARNING) << message;
+}
+
+void LOGERROR(char const* message) {
+  LOG(ERROR) << message;
+}
+
+void LOGFATAL(char const* message) {
+  LOG(FATAL) << message;
+}
+
 Plugin* CreatePlugin(double const initial_time, int const sun_index,
                      double const sun_gravitational_parameter,
                      double const planetarium_rotation_in_degrees) {

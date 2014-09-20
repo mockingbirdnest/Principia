@@ -32,6 +32,16 @@ static_assert(std::is_standard_layout<XYZ>::value,
 extern "C" DLLEXPORT
 void InitGoogleLogging();
 
+// Exports |LOG(SEVERITY) << message| for fast logging from the C# adapter.
+extern "C" DLLEXPORT
+void LOGINFO(char const* message);
+extern "C" DLLEXPORT
+void LOGWARNING(char const* message);
+extern "C" DLLEXPORT
+void LOGERROR(char const* message);
+extern "C" DLLEXPORT
+void LOGFATAL(char const* message);
+
 // Returns a pointer to a plugin constructed with the arguments given.
 extern "C" DLLEXPORT
 Plugin* CreatePlugin(double const initial_time, int const sun_index,
