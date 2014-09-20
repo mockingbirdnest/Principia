@@ -186,7 +186,8 @@ Velocity<AliceSun> Plugin::VesselParentRelativeVelocity(
   return result;
 }
 
-Displacement<AliceSun> Plugin::CelestialDisplacementFromParent(int const index) {
+Displacement<AliceSun> Plugin::CelestialDisplacementFromParent(
+    int const index) {
   CHECK(celestials_.find(index) != celestials_.end()) << "No body at index "
                                                       << index;
   CHECK(celestials_[index]->parent != nullptr) << "Body at index " << index
