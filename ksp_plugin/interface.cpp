@@ -54,9 +54,9 @@ void InsertCelestial(Plugin* plugin, int const index,
       Displacement<AliceSun>({from_parent_position.x * Metre,
                               from_parent_position.y * Metre,
                               from_parent_position.z * Metre}),
-      Velocity<AliceSun>({from_parent_position.x * Metre / Second,
-                          from_parent_position.y * Metre / Second,
-                          from_parent_position.z * Metre / Second}));
+      Velocity<AliceSun>({from_parent_velocity.x * Metre / Second,
+                          from_parent_velocity.y * Metre / Second,
+                          from_parent_velocity.z * Metre / Second}));
 }
 
 void UpdateCelestialHierarchy(Plugin* plugin, int const index,
@@ -76,9 +76,9 @@ void SetVesselStateOffset(Plugin* plugin, char const* guid,
       Displacement<AliceSun>({from_parent_position.x * Metre,
                               from_parent_position.y * Metre,
                               from_parent_position.z * Metre}),
-      Velocity<AliceSun>({from_parent_position.x * Metre / Second,
-                          from_parent_position.y * Metre / Second,
-                          from_parent_position.z * Metre / Second}));
+      Velocity<AliceSun>({from_parent_velocity.x * Metre / Second,
+                          from_parent_velocity.y * Metre / Second,
+                          from_parent_velocity.z * Metre / Second}));
 }
 
 XYZ VesselDisplacementFromParent(Plugin* plugin, char const* guid) {
