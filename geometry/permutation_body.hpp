@@ -26,17 +26,17 @@ inline Sign Permutation<FromFrame, ToFrame>::Determinant() const {
 template<typename FromFrame, typename ToFrame>
 Permutation<ToFrame, FromFrame>
 Permutation<FromFrame, ToFrame>::Inverse() const {
-  static std::map<
-      CoordinatePermutation,
-      typename Permutation<ToFrame, FromFrame>::CoordinatePermutation> const
-  inverse = {
-      {XYZ, Permutation<ToFrame, FromFrame>::CoordinatePermutation::XYZ},
-      {YZX, Permutation<ToFrame, FromFrame>::CoordinatePermutation::ZXY},
-      {ZXY, Permutation<ToFrame, FromFrame>::CoordinatePermutation::YZX},
-      {XZY, Permutation<ToFrame, FromFrame>::CoordinatePermutation::XZY},
-      {ZYX, Permutation<ToFrame, FromFrame>::CoordinatePermutation::ZYX},
-      {YXZ, Permutation<ToFrame, FromFrame>::CoordinatePermutation::YXZ}};
-  return Permutation<ToFrame, FromFrame>(inverse.at(coordinate_permutation_));
+  using PFT = Permutation<FromFrame, ToFrame>;
+  using PTF = Permutation<ToFrame, FromFrame>;
+  static std::map<PFT::CoordinatePermutation,
+                  PTF::CoordinatePermutation> const inverse = {
+      {PFT::XYZ, PTF::XYZ},
+      {PFT::YZX, PTF::ZXY},
+      {PFT::ZXY, PTF::YZX},
+      {PFT::XZY, PTF::XZY},
+      {PFT::ZYX, PTF::ZYX},
+      {PFT::YXZ, PTF::YXZ}};
+  return PTF(inverse.at(coordinate_permutation_));
 }
 
 template<typename FromFrame, typename ToFrame>
@@ -99,57 +99,59 @@ template<typename FromFrame, typename ThroughFrame, typename ToFrame>
 Permutation<FromFrame, ToFrame> operator*(
     Permutation<ThroughFrame, ToFrame> const& left,
     Permutation<FromFrame, ThroughFrame> const& right) {
-  using P = Permutation<FromFrame, ThroughFrame>;
+  using Left = Permutation<ThroughFrame, ToFrame>;
+  using Right = Permutation<FromFrame, ThroughFrame>;
+  using Result = Permutation<FromFrame, ToFrame>;
 
   // The pair<> is in diagrammatic order: right is applied first and is the
   // first element of the pair, left is applied second and is the second
   // element.
-  static std::map<std::pair<typename P::CoordinatePermutation,
-                            typename P::CoordinatePermutation>,
-                  typename P::CoordinatePermutation> const multiplication = {
-      {{P::XYZ, P::XYZ}, P::XYZ},
-      {{P::XYZ, P::YZX}, P::YZX},
-      {{P::XYZ, P::ZXY}, P::ZXY},
-      {{P::XYZ, P::XZY}, P::XZY},
-      {{P::XYZ, P::ZYX}, P::ZYX},
-      {{P::XYZ, P::YXZ}, P::YXZ},
+  static std::map<
+      std::pair<typename Right::CoordinatePermutation,
+                typename Left::CoordinatePermutation>,
+      typename Result::CoordinatePermutation> const multiplication = {
+      {{Right::XYZ, Left::XYZ}, Result::XYZ},
+      {{Right::XYZ, Left::YZX}, Result::YZX},
+      {{Right::XYZ, Left::ZXY}, Result::ZXY},
+      {{Right::XYZ, Left::XZY}, Result::XZY},
+      {{Right::XYZ, Left::ZYX}, Result::ZYX},
+      {{Right::XYZ, Left::YXZ}, Result::YXZ},
 
-      {{P::YZX, P::XYZ}, P::YZX},
-      {{P::YZX, P::YZX}, P::ZXY},
-      {{P::YZX, P::ZXY}, P::XYZ},
-      {{P::YZX, P::XZY}, P::YXZ},
-      {{P::YZX, P::ZYX}, P::XZY},
-      {{P::YZX, P::YXZ}, P::ZYX},
+      {{Right::YZX, Left::XYZ}, Result::YZX},
+      {{Right::YZX, Left::YZX}, Result::ZXY},
+      {{Right::YZX, Left::ZXY}, Result::XYZ},
+      {{Right::YZX, Left::XZY}, Result::YXZ},
+      {{Right::YZX, Left::ZYX}, Result::XZY},
+      {{Right::YZX, Left::YXZ}, Result::ZYX},
 
-      {{P::ZXY, P::XYZ}, P::ZXY},
-      {{P::ZXY, P::YZX}, P::XYZ},
-      {{P::ZXY, P::ZXY}, P::YZX},
-      {{P::ZXY, P::XZY}, P::ZYX},
-      {{P::ZXY, P::ZYX}, P::YXZ},
-      {{P::ZXY, P::YXZ}, P::XZY},
+      {{Right::ZXY, Left::XYZ}, Result::ZXY},
+      {{Right::ZXY, Left::YZX}, Result::XYZ},
+      {{Right::ZXY, Left::ZXY}, Result::YZX},
+      {{Right::ZXY, Left::XZY}, Result::ZYX},
+      {{Right::ZXY, Left::ZYX}, Result::YXZ},
+      {{Right::ZXY, Left::YXZ}, Result::XZY},
 
-      {{P::XZY, P::XYZ}, P::XZY},
-      {{P::XZY, P::YZX}, P::ZYX},
-      {{P::XZY, P::ZXY}, P::YXZ},
-      {{P::XZY, P::XZY}, P::XYZ},
-      {{P::XZY, P::ZYX}, P::YZX},
-      {{P::XZY, P::YXZ}, P::ZXY},
+      {{Right::XZY, Left::XYZ}, Result::XZY},
+      {{Right::XZY, Left::YZX}, Result::ZYX},
+      {{Right::XZY, Left::ZXY}, Result::YXZ},
+      {{Right::XZY, Left::XZY}, Result::XYZ},
+      {{Right::XZY, Left::ZYX}, Result::YZX},
+      {{Right::XZY, Left::YXZ}, Result::ZXY},
 
-      {{P::ZYX, P::XYZ}, P::ZYX},
-      {{P::ZYX, P::YZX}, P::YXZ},
-      {{P::ZYX, P::ZXY}, P::XZY},
-      {{P::ZYX, P::XZY}, P::ZXY},
-      {{P::ZYX, P::ZYX}, P::XYZ},
-      {{P::ZYX, P::YXZ}, P::YZX},
+      {{Right::ZYX, Left::XYZ}, Result::ZYX},
+      {{Right::ZYX, Left::YZX}, Result::YXZ},
+      {{Right::ZYX, Left::ZXY}, Result::XZY},
+      {{Right::ZYX, Left::XZY}, Result::ZXY},
+      {{Right::ZYX, Left::ZYX}, Result::XYZ},
+      {{Right::ZYX, Left::YXZ}, Result::YZX},
 
-      {{P::YXZ, P::XYZ}, P::YXZ},
-      {{P::YXZ, P::YZX}, P::XZY},
-      {{P::YXZ, P::ZXY}, P::ZYX},
-      {{P::YXZ, P::XZY}, P::YZX},
-      {{P::YXZ, P::ZYX}, P::ZXY},
-      {{P::YXZ, P::YXZ}, P::XYZ}};
-  return Permutation<FromFrame, ToFrame>(
-      multiplication.at({right.coordinate_permutation_,
+      {{Right::YXZ, Left::XYZ}, Result::YXZ},
+      {{Right::YXZ, Left::YZX}, Result::XZY},
+      {{Right::YXZ, Left::ZXY}, Result::ZYX},
+      {{Right::YXZ, Left::XZY}, Result::YZX},
+      {{Right::YXZ, Left::ZYX}, Result::ZXY},
+      {{Right::YXZ, Left::YXZ}, Result::XYZ}};
+  return Result(multiplication.at({right.coordinate_permutation_,
                          left.coordinate_permutation_}));
 }
 
