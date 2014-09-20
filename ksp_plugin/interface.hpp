@@ -25,7 +25,7 @@ static_assert(std::is_standard_layout<XYZ>::value,
 // containing a sufficiently verbose log of the latest session, instead of
 // requiring users to dig in the archive of all past logs at all severities.
 // This archive is written to
-// "<KSP directory>/glog/Principia/<SEVERITY>.<date>-<time>.<pid>", 
+// "<KSP directory>/glog/Principia/<SEVERITY>.<date>-<time>.<pid>",
 // where date and time are in ISO 8601 basic format.
 // TODO(egg): libglog should really be statically linked, what happens if two
 // plugins use glog?
@@ -89,7 +89,7 @@ XYZ VesselParentRelativeVelocity(Plugin* plugin,
 extern "C" DLLEXPORT
 XYZ CelestialDisplacementFromParent(Plugin* plugin, int const index);
 
-// Calls |plugin->CelestialParentRelativeVelocity| with the arguments given. 
+// Calls |plugin->CelestialParentRelativeVelocity| with the arguments given.
 extern "C" DLLEXPORT
 XYZ CelestialParentRelativeVelocity(Plugin* plugin, int const index);
 
