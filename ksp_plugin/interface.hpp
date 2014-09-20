@@ -23,8 +23,10 @@ static_assert(std::is_standard_layout<XYZ>::value,
 // Sets stderr to log INFO, and redirects stderr, which Unity does not log, to
 // "<KSP directory>/stderr.log". This provides an easily accessible file
 // containing a sufficiently verbose log of the latest session, instead of
-// requiring users to dig in an archive of all past logs at all severities.
-// Log files are disabled.
+// requiring users to dig in the archive of all past logs at all severities.
+// This archive is written to
+// "<KSP directory>/glog/<SEVERITY>.<date>-<time>.<pid>", where date and time
+// are in ISO 8601 basic format.
 // TODO(egg): This should really be in a separate DLL, what happens if two
 // plugins use glog?
 extern "C" DLLEXPORT

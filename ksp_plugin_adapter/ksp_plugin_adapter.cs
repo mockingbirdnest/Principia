@@ -105,6 +105,13 @@ public class PluginAdapter : UnityEngine.MonoBehaviour {
   private IntPtr plugin_;
   private bool plugin_running_;
 
+  PluginAdapter() {
+    // We create this directory here so we do not need to worry about cross-
+    // platform problems in C++.
+    System.IO.Directory.CreateDirectory("glog");
+    InitGoogleLogging();
+  }
+
   ~PluginAdapter() {
     DestroyPlugin(plugin_);
   }
@@ -143,7 +150,6 @@ public class PluginAdapter : UnityEngine.MonoBehaviour {
 
   #region Unity Lifecycle
   private void Start() {
-    InitGoogleLogging();
     RenderingManager.AddToPostDrawQueue(queueSpot    : 3,
                                         drawFunction : new Callback(DrawGUI));
     window_position_ = new UnityEngine.Rect(
@@ -169,9 +175,28 @@ public class PluginAdapter : UnityEngine.MonoBehaviour {
         Vector3d velocity =
             (Vector3d)CelestialParentRelativeVelocity(plugin_,
                                                       body.flightGlobalsIndex);
-        body.orbit.UpdateFromStateVectors(pos: position, vel: velocity,
-                                          refBody: body.orbit.referenceBody,
-                                          UT: universal_time);
+        // TODO(egg): Understand this voodoo.
+        Orbit original = body.orbit;
+        Orbit copy = new Orbit(original.inclination, original.eccentricity,
+                               original.semiMajorAxis, original.LAN,
+                               original.argumentOfPeriapsis, original.meanAnomalyAtEpoch,
+                               original.epoch, original.referenceBody);
+        copy.UpdateFromStateVectors((Vector3d)position, (Vector3d)velocity,
+                                    copy.referenceBody, universal_time);
+        body.orbit.inclination = copy.inclination;
+        body.orbit.eccentricity = copy.eccentricity;
+        body.orbit.semiMajorAxis = copy.semiMajorAxis;
+        body.orbit.LAN = copy.LAN;
+        body.orbit.argumentOfPeriapsis = copy.argumentOfPeriapsis;
+        body.orbit.meanAnomalyAtEpoch = copy.meanAnomalyAtEpoch;
+        body.orbit.epoch = copy.epoch;
+        body.orbit.referenceBody = copy.referenceBody;
+        body.orbit.Init();
+        body.orbit.UpdateFromUT(universal_time);
+        body.CBUpdate();
+        body.orbit.UpdateFromStateVectors((Vector3d)position,
+                                          (Vector3d)velocity,
+                                          copy.referenceBody, universal_time);
       };
       ApplyToBodyTree(update_body);
       VesselProcessor update_vessel = vessel => {

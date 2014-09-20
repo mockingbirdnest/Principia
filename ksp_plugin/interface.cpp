@@ -15,8 +15,13 @@ void InitGoogleLogging() {
 #else
   std::freopen("stderr.log", "w", stderr);
 #endif
-  google::LogToStderr();
+  google::SetStderrLogging(google::INFO);
+  google::SetLogDestination(google::FATAL, "glog/FATAL.");
+  google::SetLogDestination(google::ERROR, "glog/ERROR.");
+  google::SetLogDestination(google::WARNING, "glog/WARNING.");
+  google::SetLogDestination(google::INFO, "glog/INFO.");
   google::InitGoogleLogging("KSP");
+  LOG(INFO) << "Initialized Google logging for KSP.";
 }
 
 Plugin* CreatePlugin(double const initial_time, int const sun_index,
