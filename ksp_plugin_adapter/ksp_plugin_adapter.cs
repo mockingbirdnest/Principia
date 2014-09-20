@@ -174,17 +174,6 @@ public class PluginAdapter : UnityEngine.MonoBehaviour {
     }
   }
 
-  private void LogOrbit(Orbit orbit) {
-    UnityEngine.Debug.Log("i = " + orbit.inclination);
-    UnityEngine.Debug.Log("e = " + orbit.eccentricity);
-    UnityEngine.Debug.Log("a = " + orbit.semiMajorAxis);
-    UnityEngine.Debug.Log("Ω = " + orbit.LAN);
-    UnityEngine.Debug.Log("ω = " + orbit.argumentOfPeriapsis);
-    UnityEngine.Debug.Log("M0 = " + orbit.meanAnomalyAtEpoch);
-    UnityEngine.Debug.Log("t0 = " + orbit.epoch);
-    UnityEngine.Debug.Log("primary = " + orbit.referenceBody.name);
-  }
-
   #region Unity Lifecycle
   private void Start() {
     LOGINFO("principia.ksp_plugin_adapter.PluginAdapter.Start()");
