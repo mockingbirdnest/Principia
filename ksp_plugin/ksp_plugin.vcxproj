@@ -33,10 +33,12 @@
   </ImportGroup>
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="..\google_test_framework.props" />
     <Import Project="..\include_solution.props" />
   </ImportGroup>
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="..\google_test_framework.props" />
     <Import Project="..\include_solution.props" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
@@ -74,10 +76,12 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="test_plugin.hpp" />
+    <ClInclude Include="plugin.hpp" />
+    <ClInclude Include="interface.hpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="test_plugin.cpp" />
+    <ClCompile Include="interface.cpp" />
+    <ClCompile Include="plugin.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -51,7 +51,8 @@ Ignore any compiler or linker warnings. Close the solution.
 `<root>\Google`. There should be a file at `<root>\Google\gmock-1.7.0\README`
 if the unpacking was done correctly.
 9. Make `<root>\Google\gmock-1.7.0` and its contents *not* readonly.
-10. Open `<root>\Google\gmock-1.7.0\msvc\2010\gmock.sln` with Visual Studio 2013.
+10. Open `<root>\Google\gmock-1.7.0\msvc\2010\gmock.sln` with Visual Studio
+2013.
 You will be prompted to upgrade, do so. Save and close the solution,
 `git add -A`, commit.
 11. Set the build configuration to Debug.
@@ -65,7 +66,8 @@ You will be prompted to upgrade, do so. Save and close the solution,
 14. For every project, set the runtime library to Multi-threaded DLL
 (`/MD`), similarly to step 12.
 15. In both build configurations, add glog to the include path of gmock_main by
-prepending `..\..\..\glog-0.3.3\src\windows;` to `Additional Include Directories`
+prepending `..\..\..\glog-0.3.3\src\windows;` to `Additional Include
+Directories`
 in `gmock_main Properties -> C/C++ -> General`.
 16. Save everything, close the solution and commit.
 17. Copy `<root>\Principia\Documentation\Setup Files\gmock.patch` to
@@ -73,9 +75,11 @@ in `gmock_main Properties -> C/C++ -> General`.
 18. Delete `<root>\Google\gmock.patch`.
 19. Open `<root>\Google\gmock-1.7.0\msvc\2010\gmock.sln`.
 20. Build for Debug and Release.
-21. Unhide `<root>\Google\.git`, e.g. by running `attrib -h .git` in `<root>\Google`, then delete `<root>\Google\.git`.
+21. Unhide `<root>\Google\.git`, e.g. by running `attrib -h .git` in
+`<root>\Google`, then delete `<root>\Google\.git`.
 22. In `<root>\Google`, run `git clone https://github.com/pleroy/benchmark.git`.
-23. Open `<root>\Google\benchmark\msvc\google-benchmark.sln` with Visual Studio 2013.
+23. Open `<root>\Google\benchmark\msvc\google-benchmark.sln` with Visual Studio
+2013.
 24. Build for Debug and Release.
 
 You are now done with the setup of the dependencies.
