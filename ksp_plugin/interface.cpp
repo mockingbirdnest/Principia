@@ -55,13 +55,14 @@ Plugin* NewPlugin(double const initial_time,
 
 void DeletePlugin(Plugin const** const plugin) {
   LOG(INFO) << "Destroying Principia plugin...";
+  CHECK_NOTNULL(plugin);
   delete *plugin;
   *plugin = nullptr;
   LOG(INFO) << "Plugin destroyed.";
 }
 
-// NOTE(egg): the |* (Metre / Second)| might be slower than |* SIUnit<Speed>()|,
-// but it is more readable. This will be resolved once we have |constexpr|.
+// NOTE(egg): The |* (Metre / Second)| might be slower than |* SIUnit<Speed>()|,
+// but it is more readable. This will be resolved once we have constexpr.
 
 void InsertCelestial(Plugin* const plugin,
                      int const celestial_index,

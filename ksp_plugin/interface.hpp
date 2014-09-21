@@ -61,7 +61,8 @@ Plugin* NewPlugin(double const initial_time,
                   double const planetarium_rotation_in_degrees);
 
 // Deletes and nulls |*plugin|.
-// No transfer of ownership of |*plugin|, takes ownership of |**plugin|.
+// |plugin| should not be null. No transfer of ownership of |*plugin|,
+// takes ownership of |**plugin|.
 extern "C" DLLEXPORT
 void DeletePlugin(Plugin const** const plugin);
 
@@ -121,7 +122,7 @@ extern "C" DLLEXPORT
 XYZ CelestialParentRelativeVelocity(Plugin const* const plugin,
                                     int const celestial_index);
 
-// Says hello, convenient for checking that calls to the dll work.
+// Says hello, convenient for checking that calls to the DLL work.
 extern "C" DLLEXPORT
 char const* SayHello();
 

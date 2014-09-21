@@ -91,7 +91,7 @@ class Plugin {
          GravitationalParameter const& sun_gravitational_parameter,
          Angle const& planetarium_rotation);
 
-  // Insert a new celestial body with index |celestial_index| and gravitational
+  // Inserts a new celestial body with index |celestial_index| and gravitational
   // parameter |gravitational_parameter|. No body with index |celestial_index|
   // should already have been inserted. The parent of the new body is the body
   // at index |parent_index|, which should already have been inserted. The state
@@ -117,7 +117,7 @@ class Plugin {
   void UpdateCelestialHierarchy(Index const celestial_index,
                                 Index const parent_index) const;
 
-  // Insert a new vessel with GUID |vessel_guid| if it does not already exist,
+  // Inserts a new vessel with GUID |vessel_guid| if it does not already exist,
   // and flags the vessel with GUID |vessel_guid| so it is kept when calling
   // |AdvanceTime|. The parent body for the vessel is set to the one with index
   // |parent_index|. It should already have been inserted using
