@@ -152,7 +152,7 @@ Permutation<FromFrame, ToFrame> operator*(
       {{Right::YXZ, Left::ZYX}, Result::ZXY},
       {{Right::YXZ, Left::YXZ}, Result::XYZ}};
   return Result(multiplication.at({right.coordinate_permutation_,
-                         left.coordinate_permutation_}));
+                                   left.coordinate_permutation_}));
 }
 
 }  // namespace geometry

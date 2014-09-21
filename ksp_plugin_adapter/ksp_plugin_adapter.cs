@@ -5,7 +5,7 @@ using System.Runtime.InteropServices;
 namespace principia {
 namespace ksp_plugin_adapter {
 
-[KSPAddon(KSPAddon.Startup.Flight, false)]
+[KSPAddon(startup : KSPAddon.Startup.Flight, once : false)]
 public class PluginAdapter : UnityEngine.MonoBehaviour {
 
   #region Interface
@@ -29,27 +29,23 @@ public class PluginAdapter : UnityEngine.MonoBehaviour {
 
   [DllImport(dllName           : kDllPath,
              CallingConvention = CallingConvention.Cdecl)]
-  private static extern void LOGINFO(
-      [MarshalAs(UnmanagedType.LPStr)]
-      String message);
+  private static extern void LogInfo(
+      [MarshalAs(UnmanagedType.LPStr)] String message);
 
   [DllImport(dllName           : kDllPath,
              CallingConvention = CallingConvention.Cdecl)]
-  private static extern void LOGWARNING(
-      [MarshalAs(UnmanagedType.LPStr)]
-      String message);
+  private static extern void LogWarning(
+      [MarshalAs(UnmanagedType.LPStr)] String message);
 
   [DllImport(dllName           : kDllPath,
              CallingConvention = CallingConvention.Cdecl)]
-  private static extern void LOGERROR(
-      [MarshalAs(UnmanagedType.LPStr)]
-      String message);
+  private static extern void LogError(
+      [MarshalAs(UnmanagedType.LPStr)] String message);
 
   [DllImport(dllName           : kDllPath,
              CallingConvention = CallingConvention.Cdecl)]
-  private static extern void LOGFATAL(
-      [MarshalAs(UnmanagedType.LPStr)]
-      String message);
+  private static extern void LogFatal(
+      [MarshalAs(UnmanagedType.LPStr)] String message);
   #endregion
 
   [DllImport(dllName           : kDllPath,
@@ -58,7 +54,7 @@ public class PluginAdapter : UnityEngine.MonoBehaviour {
 
   [DllImport(dllName           : kDllPath,
              CallingConvention = CallingConvention.Cdecl)]
-  private static extern IntPtr CreatePlugin(
+  private static extern IntPtr NewPlugin(
       double initial_time,
       int sun_index,
       double sun_gravitational_parameter,
@@ -66,37 +62,36 @@ public class PluginAdapter : UnityEngine.MonoBehaviour {
 
   [DllImport(dllName           : kDllPath,
              CallingConvention = CallingConvention.Cdecl)]
-  private static extern void DestroyPlugin(IntPtr plugin);
+  private static extern void DeletePlugin(ref IntPtr plugin);
 
   [DllImport(dllName           : kDllPath,
              CallingConvention = CallingConvention.Cdecl)]
   private static extern void InsertCelestial(
       IntPtr plugin,
-      int index,
+      int celestial_index,
       double gravitational_parameter,
-      int parent,
+      int parent_index,
       XYZ from_parent_position,
       XYZ from_parent_velocity);
 
   [DllImport(dllName           : kDllPath,
              CallingConvention = CallingConvention.Cdecl)]
-  private static extern void UpdateCelestialHierarchy(IntPtr plugin, int index,
-                                                      int parent);
+  private static extern void UpdateCelestialHierarchy(IntPtr plugin,
+                                                      int celestial_index,
+                                                      int parent_index);
 
   [DllImport(dllName           : kDllPath,
              CallingConvention = CallingConvention.Cdecl)]
   private static extern bool InsertOrKeepVessel(
       IntPtr plugin,
-      [MarshalAs(UnmanagedType.LPStr)]
-      String guid,
-      int parent);
+      [MarshalAs(UnmanagedType.LPStr)] String guid,
+      int parent_index);
 
   [DllImport(dllName           : kDllPath,
              CallingConvention = CallingConvention.Cdecl)]
   private static extern void SetVesselStateOffset(
       IntPtr plugin,
-      [MarshalAs(UnmanagedType.LPStr)]
-      String guid,
+      [MarshalAs(UnmanagedType.LPStr)] String guid,
       XYZ from_parent_position,
       XYZ from_parent_velocity);
 
@@ -104,32 +99,29 @@ public class PluginAdapter : UnityEngine.MonoBehaviour {
              CallingConvention = CallingConvention.Cdecl)]
   private static extern XYZ VesselDisplacementFromParent(
       IntPtr plugin,
-      [MarshalAs(UnmanagedType.LPStr)]
-      String guid);
+      [MarshalAs(UnmanagedType.LPStr)] String guid);
 
   [DllImport(dllName           : kDllPath,
              CallingConvention = CallingConvention.Cdecl)]
   private static extern XYZ VesselParentRelativeVelocity(
       IntPtr plugin,
-      [MarshalAs(UnmanagedType.LPStr)]
-      String guid);
+      [MarshalAs(UnmanagedType.LPStr)] String guid);
 
   [DllImport(dllName           : kDllPath,
              CallingConvention = CallingConvention.Cdecl)]
   private static extern XYZ CelestialDisplacementFromParent(
       IntPtr plugin,
-      int index);
+      int celestial_index);
   
   [DllImport(dllName           : kDllPath,
              CallingConvention = CallingConvention.Cdecl)]
   private static extern XYZ CelestialParentRelativeVelocity(
       IntPtr plugin,
-      int index);
+      int celestial_index);
   #endregion
 
   private UnityEngine.Rect window_position_;
-  private IntPtr plugin_;
-  private bool plugin_running_;
+  private IntPtr plugin_ = IntPtr.Zero;
 
   PluginAdapter() {
     // We create this directory here so we do not need to worry about cross-
@@ -139,7 +131,11 @@ public class PluginAdapter : UnityEngine.MonoBehaviour {
   }
 
   ~PluginAdapter() {
-    DestroyPlugin(plugin_);
+    DeletePlugin(ref plugin_);
+  }
+
+  private bool PluginRunning() {
+    return plugin_ != IntPtr.Zero;
   }
 
   private delegate void BodyProcessor(CelestialBody body);
@@ -175,8 +171,11 @@ public class PluginAdapter : UnityEngine.MonoBehaviour {
   }
 
   #region Unity Lifecycle
+  // See the Unity manual on execution order for more information on |Start()|,
+  // |OnDestroy()| and |FixedUpdate()|.
+  // http://docs.unity3d.com/Manual/ExecutionOrder.html
   private void Start() {
-    LOGINFO("principia.ksp_plugin_adapter.PluginAdapter.Start()");
+    LogInfo("principia.ksp_plugin_adapter.PluginAdapter.Start()");
     RenderingManager.AddToPostDrawQueue(queueSpot    : 3,
                                         drawFunction : new Callback(DrawGUI));
     window_position_ = new UnityEngine.Rect(
@@ -187,14 +186,14 @@ public class PluginAdapter : UnityEngine.MonoBehaviour {
   }
 
   private void OnDestroy() {
-    LOGINFO("principia.ksp_plugin_adapter.PluginAdapter.OnDestroy()");
+    LogInfo("principia.ksp_plugin_adapter.PluginAdapter.OnDestroy()");
     RenderingManager.RemoveFromPostDrawQueue(
         queueSpot    : 3,
         drawFunction : new Callback(DrawGUI));
   }
 
   private void FixedUpdate() {
-    if (plugin_running_) {
+    if (PluginRunning()) {
       double universal_time = Planetarium.GetUniversalTime();
       BodyProcessor update_body = body => {
         Vector3d position =
@@ -268,14 +267,13 @@ public class PluginAdapter : UnityEngine.MonoBehaviour {
     UnityEngine.GUILayout.BeginVertical();
     IntPtr hello_ptr = SayHello();
     UnityEngine.GUILayout.TextArea(text : Marshal.PtrToStringAnsi(hello_ptr));
-    if (UnityEngine.GUILayout.Button(plugin_running_? "Stop plugin"
-                                                    : "Start plugin")) {
-      if (plugin_running_) {
-        DestroyPlugin(plugin_);
+    if (UnityEngine.GUILayout.Button(PluginRunning() ? "Stop plugin"
+                                                     : "Start plugin")) {
+      if (PluginRunning()) {
+        DeletePlugin(ref plugin_);
       } else {
         InitializePlugin();
       }
-      plugin_running_ = !plugin_running_;
     }
     UnityEngine.GUILayout.EndVertical();
 
@@ -285,24 +283,24 @@ public class PluginAdapter : UnityEngine.MonoBehaviour {
   }
 
   private void InitializePlugin() {;
-    plugin_ = CreatePlugin(Planetarium.GetUniversalTime(),
-                           Planetarium.fetch.Sun.flightGlobalsIndex,
-                           Planetarium.fetch.Sun.gravParameter,
-                           Planetarium.InverseRotAngle);
+    plugin_ = NewPlugin(Planetarium.GetUniversalTime(),
+                        Planetarium.fetch.Sun.flightGlobalsIndex,
+                        Planetarium.fetch.Sun.gravParameter,
+                        Planetarium.InverseRotAngle);
     BodyProcessor insert_body = body => {
-      LOGINFO("Inserting " + body.name + "...");
+      LogInfo("Inserting " + body.name + "...");
       InsertCelestial(plugin_, body.flightGlobalsIndex, body.gravParameter,
                       body.orbit.referenceBody.flightGlobalsIndex,
                       (XYZ)body.orbit.pos, (XYZ)body.orbit.vel);
     };
     ApplyToBodyTree(insert_body);
     VesselProcessor insert_vessel = vessel => {
-      LOGINFO("Inserting " + vessel.name + "...");
+      LogInfo("Inserting " + vessel.name + "...");
       bool inserted =
           InsertOrKeepVessel(plugin_, vessel.id.ToString(),
                              vessel.orbit.referenceBody.flightGlobalsIndex);
       if (!inserted) {
-        LOGFATAL("Plugin initialisation: vessel not inserted");
+        LogFatal("Plugin initialisation: vessel not inserted");
       } else {
         SetVesselStateOffset(plugin_, vessel.id.ToString(),
                              (XYZ)vessel.orbit.pos, (XYZ)vessel.orbit.vel);
