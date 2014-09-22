@@ -92,10 +92,16 @@ void SPRKIntegrator<Position, Momentum>::Solve(
 
   std::vector<Position> q_stage(dimension);
   std::vector<Momentum> p_stage(dimension);
-  Time const h = parameters.Δt;  // Constant for now.
-  Time δt = h;
   std::vector<Quotient<Momentum, Time>> f(dimension);  // Current forces.
   std::vector<Quotient<Position, Time>> v(dimension);  // Current velocities.
+
+  // The following quantity is generally equal to |Δt|, but during the last
+  // iteration, if |tmax_is_exact|, it may differ significantly from |Δt|.
+  Time h = parameters.Δt;  // Constant for now.
+
+  // The following quantity is generally close to |Δt|, but it is adjusted using
+  // compensated summation.
+  Time δt = parameters.Δt;
 
 #ifdef TRACE_SYMPLECTIC_PARTITIONED_RUNGE_KUTTA_INTEGRATOR
   int percentage = 0;
@@ -109,19 +115,21 @@ void SPRKIntegrator<Position, Momentum>::Solve(
   // http://reference.wolfram.com/mathematica/tutorial/NDSolveSPRK.html#74387056
   // In this loop, |tn| never exceeds |tmax|.  When it exits, |t_last| is the
   // time for the last point that we computed.
-  for (Time tn = parameters.initial.time.value + h;
+  for (Time tn = parameters.initial.time.value + parameters.Δt;
        tn <= parameters.tmax;
        tn += δt) {
-    if (parameters.tmax_is_exact && parameters.tmax - h / 2 < tn) {
-      // |tn| is close to |tmax|, and in particular closer than |tn + h| will
+    if (parameters.tmax_is_exact && parameters.tmax - parameters.Δt / 2 < tn) {
+      // |tn| is close to |tmax|, and in particular closer than |tn + Δt| will
       // be.  Ensure that this interval ends at |tmax|, it will be the last.
       tn = parameters.tmax;
+      h = tn - t_last.value;
       t_last.error = Time();
     } else {
       t_last.error = (t_last.value - tn) + δt;
     }
     t_last.value = tn;
     δt = h + t_last.error;
+    // Here |h| is the length of the current time interval.
 
     // Increment SPRK step from "'SymplecticPartitionedRungeKutta' Method
     // for NDSolve", algorithm 3.
@@ -178,7 +186,9 @@ void SPRKIntegrator<Position, Momentum>::Solve(
 
 #ifdef TRACE_SYMPLECTIC_PARTITIONED_RUNGE_KUTTA_INTEGRATOR
     running_time += clock();
-    if (floor(tn / parameters.tmax * 100) > percentage) {
+    while (floor(100 * (tn - parameters.initial.time.value) /
+                 (parameters.tmax - parameters.initial.time.value)) >
+           percentage) {
       LOG(INFO) << "SPRK: " << percentage << "%\ttn = " << tn
                 << "\tRunning time: " << running_time / (CLOCKS_PER_SEC / 1000)
                 << " ms";
