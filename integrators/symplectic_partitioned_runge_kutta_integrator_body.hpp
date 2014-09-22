@@ -107,7 +107,24 @@ void SPRKIntegrator<Position, Momentum>::Solve(
 
   // Integration.  For details see Wolfram Reference,
   // http://reference.wolfram.com/mathematica/tutorial/NDSolveSPRK.html#74387056
-  while (tn < parameters.tmax) {
+  for (;;) {
+    // Compute the time for this step.
+    Time const δt = h + t_last.error;
+    tn += δt;
+    if (tn > parameters.tmax) {
+      // Never ever exceed |tmax|.  Note that on this path, |t_last| is the time
+      // for the last point that we computed.
+      break;
+    } else if (parameters.tmax_is_exact && parameters.tmax - h / 2 < tn) {
+      // |tn| is close to |tmax|, and in particular closer than |tn + h| will
+      // be.  Ensure that this interval ends at |tmax|, it will be the last.
+      tn = parameters.tmax;
+      t_last.error = Time();
+    } else {
+      t_last.error = (t_last.value - tn) + δt;
+    }
+    t_last.value = tn;
+
     // Increment SPRK step from "'SymplecticPartitionedRungeKutta' Method
     // for NDSolve", algorithm 3.
     for (int k = 0; k < dimension; ++k) {
@@ -145,11 +162,6 @@ void SPRKIntegrator<Position, Momentum>::Solve(
       p_last[k].error = (p_last[k].value - p_stage[k]) + Δp;
       p_last[k].value = p_stage[k];
     }
-
-    Time const δt = h + t_last.error;
-    tn += δt;
-    t_last.error = (t_last.value - tn) + δt;
-    t_last.value = tn;
 
     if (parameters.sampling_period != 0) {
       if (sampling_phase % parameters.sampling_period == 0) {
