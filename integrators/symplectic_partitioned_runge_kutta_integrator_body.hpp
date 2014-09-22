@@ -92,8 +92,8 @@ void SPRKIntegrator<Position, Momentum>::Solve(
 
   std::vector<Position> q_stage(dimension);
   std::vector<Momentum> p_stage(dimension);
-  Time tn = parameters.initial.time.value;  // Current time.
   Time const h = parameters.Δt;  // Constant for now.
+  Time δt = h;
   std::vector<Quotient<Momentum, Time>> f(dimension);  // Current forces.
   std::vector<Quotient<Position, Time>> v(dimension);  // Current velocities.
 
@@ -107,15 +107,12 @@ void SPRKIntegrator<Position, Momentum>::Solve(
 
   // Integration.  For details see Wolfram Reference,
   // http://reference.wolfram.com/mathematica/tutorial/NDSolveSPRK.html#74387056
-  for (;;) {
-    // Compute the time for this step.
-    Time const δt = h + t_last.error;
-    tn += δt;
-    if (tn > parameters.tmax) {
-      // Never ever exceed |tmax|.  Note that on this path, |t_last| is the time
-      // for the last point that we computed.
-      break;
-    } else if (parameters.tmax_is_exact && parameters.tmax - h / 2 < tn) {
+  // In this loop, |tn| never exceeds |tmax|.  When it exits, |t_last| is the
+  // time for the last point that we computed.
+  for (Time tn = parameters.initial.time.value + h;
+       tn <= parameters.tmax;
+       tn += δt) {
+    if (parameters.tmax_is_exact && parameters.tmax - h / 2 < tn) {
       // |tn| is close to |tmax|, and in particular closer than |tn + h| will
       // be.  Ensure that this interval ends at |tmax|, it will be the last.
       tn = parameters.tmax;
@@ -124,6 +121,7 @@ void SPRKIntegrator<Position, Momentum>::Solve(
       t_last.error = (t_last.value - tn) + δt;
     }
     t_last.value = tn;
+    δt = h + t_last.error;
 
     // Increment SPRK step from "'SymplecticPartitionedRungeKutta' Method
     // for NDSolve", algorithm 3.

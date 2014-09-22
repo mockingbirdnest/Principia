@@ -40,6 +40,7 @@ using testing::AllOf;
 using testing::Eq;
 using testing::Gt;
 using testing::Lt;
+using testing::Ne;
 
 namespace principia {
 namespace integrators {
@@ -107,8 +108,7 @@ TEST_F(SPRKTest, ExactInexactTMax) {
                     parameters_, &solution_);
   EXPECT_EQ(30, solution_.size());
   EXPECT_THAT(solution_.back().time.value, Lt(parameters_.tmax));
-  google::LogToStderr();
-  LOG(INFO)<<solution_.back().time.value;
+  EXPECT_THAT(solution_.back().time.error, Ne(0.0 * SIUnit<Time>()));
 
   parameters_.tmax_is_exact = true;
   integrator_.Solve(&ComputeHarmonicOscillatorForce,
@@ -117,7 +117,6 @@ TEST_F(SPRKTest, ExactInexactTMax) {
   EXPECT_EQ(30, solution_.size());
   EXPECT_THAT(solution_.back().time.value, Eq(parameters_.tmax));
   EXPECT_THAT(solution_.back().time.error, Eq(0.0 * SIUnit<Time>()));
-  LOG(INFO)<<solution_.back().time.value;
 }
 
 TEST_F(SPRKTest, Convergence) {
