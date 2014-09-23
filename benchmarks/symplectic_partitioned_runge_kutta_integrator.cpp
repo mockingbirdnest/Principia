@@ -11,6 +11,7 @@
 // BM_SolveHarmonicOscillator        2960333642 2964019000          3                                 1.3701886847350409e-13 m, 1.3705703238997557e-13 m kg s^-1  // NOLINT(whitespace/line_length)
 // BM_SolveHarmonicOscillator_mean   2976131957 2962978993          3                                 1.3701886847350409e-13 m, 1.3705703238997557e-13 m kg s^-1  // NOLINT(whitespace/line_length)
 // BM_SolveHarmonicOscillator_stddev   33270202   26186699          0                                 1.3701886847350409e-13 m, 1.3705703238997557e-13 m kg s^-1  // NOLINT(whitespace/line_length)
+
 #include "benchmarks/symplectic_partitioned_runge_kutta_integrator.hpp"
 
 #define GLOG_NO_ABBREVIATED_SEVERITIES
