@@ -87,7 +87,6 @@ void SPRKIntegrator<Position, Momentum>::Solve(
 
   std::vector<DoublePrecision<Position>> q_last(parameters.initial.positions);
   std::vector<DoublePrecision<Momentum>> p_last(parameters.initial.momenta);
-  DoublePrecision<Time> t_last = parameters.initial.time;
   int sampling_phase = 0;
 
   std::vector<Position> q_stage(dimension);
@@ -98,6 +97,11 @@ void SPRKIntegrator<Position, Momentum>::Solve(
   // The following quantity is generally equal to |Δt|, but during the last
   // iteration, if |tmax_is_exact|, it may differ significantly from |Δt|.
   Time h = parameters.Δt;  // Constant for now.
+
+  // During one iteration of the outer loop below we process the time interval
+  // [|tn|, |tn| + |h|[.  |tn| is computed using compensated summation to make
+  // sure that we don't have drifts.
+  DoublePrecision<Time> tn = parameters.initial.time;
 
 #ifdef TRACE_SYMPLECTIC_PARTITIONED_RUNGE_KUTTA_INTEGRATOR
   int percentage = 0;
@@ -113,21 +117,21 @@ void SPRKIntegrator<Position, Momentum>::Solve(
   while (!at_end) {
     // Check if this is the last interval and if so process it appropriately.
     if (parameters.tmax_is_exact) {
-      // If |t_last| is getting close to |tmax|, take |tmax| as the upper bound
-      // of the interval and update |h| accordingly.  The interval chosen here
-      // for |tmax| ensures that we don't end up with a ridiculously small last
+      // If |tn| is getting close to |tmax|, use |tmax| as the upper bound of
+      // the interval and update |h| accordingly.  The interval chosen here for
+      // |tmax| ensures that we don't end up with a ridiculously small last
       // interval: we'd rather make the last interval a bit bigger.
-      if (t_last.value + parameters.Δt / 2 <= parameters.tmax &&
-          parameters.tmax <= t_last.value + 3 * parameters.Δt / 2) {
+      if (tn.value + h / 2 <= parameters.tmax &&
+          parameters.tmax <= tn.value + 3 * h / 2) {
         at_end = true;
-        h = (parameters.tmax - t_last.value) - t_last.error;
+        h = (parameters.tmax - tn.value) - tn.error;
       }
-    } else if (parameters.tmax <= t_last.value + 2 * parameters.Δt) {
+    } else if (parameters.tmax < tn.value + 2 * h) {
       // If the next interval would overshoot, make this the last interval but
       // stick to the same step.
       at_end = true;
     }
-    // Here |h| is the length of the current time interval and |t_last| is its
+    // Here |h| is the length of the current time interval and |tn| is its
     // start.
 
     // Increment SPRK step from "'SymplecticPartitionedRungeKutta' Method
@@ -142,7 +146,7 @@ void SPRKIntegrator<Position, Momentum>::Solve(
       std::swap(Δpstage_current, Δpstage_previous);
       // Beware, the p/q order matters here, the two computations depend on one
       // another.
-      compute_force(t_last.value + (t_last.error + c_[i] * h), q_stage, &f);
+      compute_force(tn.value + (tn.error + c_[i] * h), q_stage, &f);
       for (int k = 0; k < dimension; ++k) {
         Momentum const Δp = (*Δpstage_previous)[k] + h * b_[i] * f[k];
         p_stage[k] = p_last[k].value + Δp;
@@ -170,17 +174,17 @@ void SPRKIntegrator<Position, Momentum>::Solve(
 
     // Increment |t_last| by |h| using compensated summation.
     {
-       Time const t = t_last.value;
-       Time const δt = h + t_last.error;
-       t_last.value = t + δt;
-       t_last.error = (t - t_last.value) + δt;
+       Time const t = tn.value;
+       Time const δt = h + tn.error;
+       tn.value = t + δt;
+       tn.error = (t - tn.value) + δt;
     }
 
     if (parameters.sampling_period != 0) {
       if (sampling_phase % parameters.sampling_period == 0) {
         solution->emplace_back();
         SystemState* state = &solution->back();
-        state->time = t_last;
+        state->time = tn;
         state->positions.reserve(dimension);
         state->momenta.reserve(dimension);
         for (int k = 0; k < dimension; ++k) {
@@ -207,7 +211,7 @@ void SPRKIntegrator<Position, Momentum>::Solve(
   if (parameters.sampling_period == 0) {
     solution->emplace_back();
     SystemState* state = &solution->back();
-    state->time = t_last;
+    state->time = tn;
     state->positions.reserve(dimension);
     state->momenta.reserve(dimension);
     for (int k = 0; k < dimension; ++k) {
