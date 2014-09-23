@@ -121,6 +121,8 @@ void SPRKIntegrator<Position, Momentum>::Solve(
       // the interval and update |h| accordingly.  The interval chosen here for
       // |tmax| ensures that we don't end up with a ridiculously small last
       // interval: we'd rather make the last interval a bit bigger.
+      // NOTE(phl): This may lead to convergence as bad as (1.5 Δt)^5 rather
+      // than Δt^5.
       if (tn.value + h / 2 <= parameters.tmax &&
           parameters.tmax <= tn.value + 3 * h / 2) {
         at_end = true;
@@ -144,9 +146,13 @@ void SPRKIntegrator<Position, Momentum>::Solve(
     for (int i = 0; i < stages_; ++i) {
       std::swap(Δqstage_current, Δqstage_previous);
       std::swap(Δpstage_current, Δpstage_previous);
+
+      // By using |tn.error| below we get a time value which is possibly a wee
+      // bit more precise.
+      compute_force(tn.value + (tn.error + c_[i] * h), q_stage, &f);
+
       // Beware, the p/q order matters here, the two computations depend on one
       // another.
-      compute_force(tn.value + (tn.error + c_[i] * h), q_stage, &f);
       for (int k = 0; k < dimension; ++k) {
         Momentum const Δp = (*Δpstage_previous)[k] + h * b_[i] * f[k];
         p_stage[k] = p_last[k].value + Δp;
