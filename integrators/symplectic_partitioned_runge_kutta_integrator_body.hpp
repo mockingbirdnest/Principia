@@ -99,10 +99,6 @@ void SPRKIntegrator<Position, Momentum>::Solve(
   // iteration, if |tmax_is_exact|, it may differ significantly from |Δt|.
   Time h = parameters.Δt;  // Constant for now.
 
-  // The following quantity is generally close to |Δt|, but it is adjusted using
-  // compensated summation.
-  Time δt = parameters.Δt;
-
 #ifdef TRACE_SYMPLECTIC_PARTITIONED_RUNGE_KUTTA_INTEGRATOR
   int percentage = 0;
   // Initialize |running_time| so that, when we reach the end of the iteration
@@ -113,23 +109,22 @@ void SPRKIntegrator<Position, Momentum>::Solve(
 
   // Integration.  For details see Wolfram Reference,
   // http://reference.wolfram.com/mathematica/tutorial/NDSolveSPRK.html#74387056
-  // In this loop, |tn| never exceeds |tmax|.  When it exits, |t_last| is the
-  // time for the last point that we computed.
-  for (Time tn = parameters.initial.time.value + parameters.Δt;
-       tn <= parameters.tmax;
-       tn += δt) {
-    if (parameters.tmax_is_exact && parameters.tmax - parameters.Δt / 2 < tn) {
-      // |tn| is close to |tmax|, and in particular closer than |tn + Δt| will
-      // be.  Ensure that this interval ends at |tmax|, it will be the last.
-      tn = parameters.tmax;
-      h = tn - t_last.value;
-      t_last.error = Time();
-    } else {
-      t_last.error = (t_last.value - tn) + δt;
+  bool at_end = false;
+  while (!at_end) {
+    // If |t_last| is getting close to |tmax|, take |tmax| as the upper bound of
+    // the interval and update |h| accordingly.  The interval chosen here for
+    // |tmax| ensures that we don't end up with a ridiculously small last
+    // interval: we'd rather make the last interval a bit bigger.
+    if (t_last.value + parameters.Δt / 2 <= parameters.tmax &&
+        parameters.tmax <= t_last.value + 3 * parameters.Δt / 2) {
+      at_end = true;
+      if (parameters.tmax_is_exact) {
+        h = (parameters.tmax - t_last.value) - t_last.error;
+      }
     }
-    t_last.value = tn;
-    δt = h + t_last.error;
-    // Here |h| is the length of the current time interval.
+    LOG(INFO)<<t_last.value<<" "<<t_last.error<<" "<<h;
+    // Here |h| is the length of the current time interval and |t_last| is its
+    // start.
 
     // Increment SPRK step from "'SymplecticPartitionedRungeKutta' Method
     // for NDSolve", algorithm 3.
@@ -143,7 +138,7 @@ void SPRKIntegrator<Position, Momentum>::Solve(
       std::swap(Δpstage_current, Δpstage_previous);
       // Beware, the p/q order matters here, the two computations depend on one
       // another.
-      compute_force(tn + c_[i] * h, q_stage, &f);
+      compute_force(t_last.value + (t_last.error + c_[i] * h), q_stage, &f);
       for (int k = 0; k < dimension; ++k) {
         Momentum const Δp = (*Δpstage_previous)[k] + h * b_[i] * f[k];
         p_stage[k] = p_last[k].value + Δp;
@@ -169,6 +164,14 @@ void SPRKIntegrator<Position, Momentum>::Solve(
       p_last[k].value = p_stage[k];
     }
 
+    // Increment |t_last| by |h| using compensated summation.
+    {
+       Time const t = t_last.value;
+       Time const δt = h + t_last.error;
+       t_last.value = t + δt;
+       t_last.error = (t - t_last.value) + δt;
+    }
+
     if (parameters.sampling_period != 0) {
       if (sampling_phase % parameters.sampling_period == 0) {
         solution->emplace_back();
@@ -186,10 +189,10 @@ void SPRKIntegrator<Position, Momentum>::Solve(
 
 #ifdef TRACE_SYMPLECTIC_PARTITIONED_RUNGE_KUTTA_INTEGRATOR
     running_time += clock();
-    while (floor(100 * (tn - parameters.initial.time.value) /
+    while (floor(100 * (t_last.value - parameters.initial.time.value) /
                  (parameters.tmax - parameters.initial.time.value)) >
            percentage) {
-      LOG(INFO) << "SPRK: " << percentage << "%\ttn = " << tn
+      LOG(INFO) << "SPRK: " << percentage << "%\ttn = " << t_last.value
                 << "\tRunning time: " << running_time / (CLOCKS_PER_SEC / 1000)
                 << " ms";
       ++percentage;
@@ -197,6 +200,7 @@ void SPRKIntegrator<Position, Momentum>::Solve(
     running_time -= clock();
 #endif
   }
+  LOG(INFO)<<t_last.value<<" "<<t_last.error<<" "<<h;
   if (parameters.sampling_period == 0) {
     solution->emplace_back();
     SystemState* state = &solution->back();
