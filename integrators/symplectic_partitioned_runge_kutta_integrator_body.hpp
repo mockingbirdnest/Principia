@@ -197,10 +197,10 @@ void SPRKIntegrator<Position, Momentum>::Solve(
 
 #ifdef TRACE_SYMPLECTIC_PARTITIONED_RUNGE_KUTTA_INTEGRATOR
     running_time += clock();
-    while (floor(100 * (t_last.value - parameters.initial.time.value) /
+    while (floor(100 * (tn.value - parameters.initial.time.value) /
                  (parameters.tmax - parameters.initial.time.value)) >
            percentage) {
-      LOG(INFO) << "SPRK: " << percentage << "%\ttn = " << t_last.value
+      LOG(INFO) << "SPRK: " << percentage << "%\ttn = " << tn.value
                 << "\tRunning time: " << running_time / (CLOCKS_PER_SEC / 1000)
                 << " ms";
       ++percentage;
