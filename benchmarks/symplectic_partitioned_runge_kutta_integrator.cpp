@@ -1,17 +1,16 @@
 ﻿
-// .\Release\benchmarks.exe --benchmark_repetitions=5 --benchmark_min_time=30 --benchmark_filter=HarmonicOscillator                                                 // NOLINT(whitespace/line_length)
+// .\Release\benchmarks.exe --benchmark_repetitions=5 --benchmark_min_time=8 --benchmark_filter=HarmonicOscillator                                                // NOLINT(whitespace/line_length)
 // Benchmarking on 1 X 3310 MHz CPU
-// 2014/06/16-22:16:22
+// 2014/09/24-00:17:14
 // Benchmark                           Time(ns)    CPU(ns) Iterations
 // ------------------------------------------------------------------
-// BM_SolveHarmonicOscillator        2829819781 2828818133          3                                 1.3701886847350409e-013 m, 1.3705703238997557e-013 m kg s^-1  // NOLINT(whitespace/line_length)
-// BM_SolveHarmonicOscillator        2814253671 2808018000          3                                 1.3701886847350409e-013 m, 1.3705703238997557e-013 m kg s^-1  // NOLINT(whitespace/line_length)
-// BM_SolveHarmonicOscillator        2807297888 2813218033          3                                 1.3701886847350409e-013 m, 1.3705703238997557e-013 m kg s^-1  // NOLINT(whitespace/line_length)
-// BM_SolveHarmonicOscillator        2799282335 2808018000          3                                 1.3701886847350409e-013 m, 1.3705703238997557e-013 m kg s^-1  // NOLINT(whitespace/line_length)
-// BM_SolveHarmonicOscillator        2798006796 2792417900          3                                 1.3701886847350409e-013 m, 1.3705703238997557e-013 m kg s^-1  // NOLINT(whitespace/line_length)
-// BM_SolveHarmonicOscillator_mean   2809732094 2810098013          3                                 1.3701886847350409e-013 m, 1.3705703238997557e-013 m kg s^-1  // NOLINT(whitespace/line_length)
-// BM_SolveHarmonicOscillator_stddev   11632414   11674046          0                                 1.3701886847350409e-013 m, 1.3705703238997557e-013 m kg s^-1  // NOLINT(whitespace/line_length)
-
+// BM_SolveHarmonicOscillator        2998668648 2995219200          1                                 1.3701886847350409e-13 m, 1.3705703238997557e-13 m kg s^-1  // NOLINT(whitespace/line_length)
+// BM_SolveHarmonicOscillator        2989135242 2995219200          1                                 1.3701886847350409e-13 m, 1.3705703238997557e-13 m kg s^-1  // NOLINT(whitespace/line_length)
+// BM_SolveHarmonicOscillator        2991288639 2995219200          1                                 1.3701886847350409e-13 m, 1.3705703238997557e-13 m kg s^-1  // NOLINT(whitespace/line_length)
+// BM_SolveHarmonicOscillator        2964761234 2964019000          1                                 1.3701886847350409e-13 m, 1.3705703238997557e-13 m kg s^-1  // NOLINT(whitespace/line_length)
+// BM_SolveHarmonicOscillator        2937141634 2948418900          1                                 1.3701886847350409e-13 m, 1.3705703238997557e-13 m kg s^-1  // NOLINT(whitespace/line_length)
+// BM_SolveHarmonicOscillator_mean   2976199080 2979619100          1                                 1.3701886847350409e-13 m, 1.3705703238997557e-13 m kg s^-1  // NOLINT(whitespace/line_length)
+// BM_SolveHarmonicOscillator_stddev   22610745   19732739          0                                 1.3701886847350409e-13 m, 1.3705703238997557e-13 m kg s^-1  // NOLINT(whitespace/line_length)
 #include "benchmarks/symplectic_partitioned_runge_kutta_integrator.hpp"
 
 #define GLOG_NO_ABBREVIATED_SEVERITIES
