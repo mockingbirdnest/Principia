@@ -87,15 +87,21 @@ void SPRKIntegrator<Position, Momentum>::Solve(
 
   std::vector<DoublePrecision<Position>> q_last(parameters.initial.positions);
   std::vector<DoublePrecision<Momentum>> p_last(parameters.initial.momenta);
-  DoublePrecision<Time> t_last = parameters.initial.time;
   int sampling_phase = 0;
 
   std::vector<Position> q_stage(dimension);
   std::vector<Momentum> p_stage(dimension);
-  Time tn = parameters.initial.time.value;  // Current time.
-  Time const h = parameters.Δt;  // Constant for now.
   std::vector<Quotient<Momentum, Time>> f(dimension);  // Current forces.
   std::vector<Quotient<Position, Time>> v(dimension);  // Current velocities.
+
+  // The following quantity is generally equal to |Δt|, but during the last
+  // iteration, if |tmax_is_exact|, it may differ significantly from |Δt|.
+  Time h = parameters.Δt;  // Constant for now.
+
+  // During one iteration of the outer loop below we process the time interval
+  // [|tn|, |tn| + |h|[.  |tn| is computed using compensated summation to make
+  // sure that we don't have drifts.
+  DoublePrecision<Time> tn = parameters.initial.time;
 
 #ifdef TRACE_SYMPLECTIC_PARTITIONED_RUNGE_KUTTA_INTEGRATOR
   int percentage = 0;
@@ -107,7 +113,29 @@ void SPRKIntegrator<Position, Momentum>::Solve(
 
   // Integration.  For details see Wolfram Reference,
   // http://reference.wolfram.com/mathematica/tutorial/NDSolveSPRK.html#74387056
-  while (tn < parameters.tmax) {
+  bool at_end = false;
+  while (!at_end) {
+    // Check if this is the last interval and if so process it appropriately.
+    if (parameters.tmax_is_exact) {
+      // If |tn| is getting close to |tmax|, use |tmax| as the upper bound of
+      // the interval and update |h| accordingly.  The interval chosen here for
+      // |tmax| ensures that we don't end up with a ridiculously small last
+      // interval: we'd rather make the last interval a bit bigger.
+      // NOTE(phl): This may lead to convergence as bad as (1.5 Δt)^5 rather
+      // than Δt^5.
+      if (tn.value + h / 2 <= parameters.tmax &&
+          parameters.tmax <= tn.value + 3 * h / 2) {
+        at_end = true;
+        h = (parameters.tmax - tn.value) - tn.error;
+      }
+    } else if (parameters.tmax < tn.value + 2 * h) {
+      // If the next interval would overshoot, make this the last interval but
+      // stick to the same step.
+      at_end = true;
+    }
+    // Here |h| is the length of the current time interval and |tn| is its
+    // start.
+
     // Increment SPRK step from "'SymplecticPartitionedRungeKutta' Method
     // for NDSolve", algorithm 3.
     for (int k = 0; k < dimension; ++k) {
@@ -118,9 +146,13 @@ void SPRKIntegrator<Position, Momentum>::Solve(
     for (int i = 0; i < stages_; ++i) {
       std::swap(Δqstage_current, Δqstage_previous);
       std::swap(Δpstage_current, Δpstage_previous);
+
+      // By using |tn.error| below we get a time value which is possibly a wee
+      // bit more precise.
+      compute_force(tn.value + (tn.error + c_[i] * h), q_stage, &f);
+
       // Beware, the p/q order matters here, the two computations depend on one
       // another.
-      compute_force(tn + c_[i] * h, q_stage, &f);
       for (int k = 0; k < dimension; ++k) {
         Momentum const Δp = (*Δpstage_previous)[k] + h * b_[i] * f[k];
         p_stage[k] = p_last[k].value + Δp;
@@ -146,16 +178,19 @@ void SPRKIntegrator<Position, Momentum>::Solve(
       p_last[k].value = p_stage[k];
     }
 
-    Time const δt = h + t_last.error;
-    tn += δt;
-    t_last.error = (t_last.value - tn) + δt;
-    t_last.value = tn;
+    // Increment |t_last| by |h| using compensated summation.
+    {
+       Time const t = tn.value;
+       Time const δt = h + tn.error;
+       tn.value = t + δt;
+       tn.error = (t - tn.value) + δt;
+    }
 
     if (parameters.sampling_period != 0) {
       if (sampling_phase % parameters.sampling_period == 0) {
         solution->emplace_back();
         SystemState* state = &solution->back();
-        state->time = t_last;
+        state->time = tn;
         state->positions.reserve(dimension);
         state->momenta.reserve(dimension);
         for (int k = 0; k < dimension; ++k) {
@@ -168,8 +203,10 @@ void SPRKIntegrator<Position, Momentum>::Solve(
 
 #ifdef TRACE_SYMPLECTIC_PARTITIONED_RUNGE_KUTTA_INTEGRATOR
     running_time += clock();
-    if (floor(tn / parameters.tmax * 100) > percentage) {
-      LOG(INFO) << "SPRK: " << percentage << "%\ttn = " << tn
+    while (floor(100 * (tn.value - parameters.initial.time.value) /
+                 (parameters.tmax - parameters.initial.time.value)) >
+           percentage) {
+      LOG(INFO) << "SPRK: " << percentage << "%\ttn = " << tn.value
                 << "\tRunning time: " << running_time / (CLOCKS_PER_SEC / 1000)
                 << " ms";
       ++percentage;
@@ -180,7 +217,7 @@ void SPRKIntegrator<Position, Momentum>::Solve(
   if (parameters.sampling_period == 0) {
     solution->emplace_back();
     SystemState* state = &solution->back();
-    state->time = t_last;
+    state->time = tn;
     state->positions.reserve(dimension);
     state->momenta.reserve(dimension);
     for (int k = 0; k < dimension; ++k) {

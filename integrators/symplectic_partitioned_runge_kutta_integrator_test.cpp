@@ -37,8 +37,10 @@ using principia::testing_utilities::ComputeHarmonicOscillatorVelocity;
 using principia::testing_utilities::PearsonProductMomentCorrelationCoefficient;
 using principia::testing_utilities::Slope;
 using testing::AllOf;
+using testing::Eq;
 using testing::Gt;
 using testing::Lt;
+using testing::Ne;
 
 namespace principia {
 namespace integrators {
@@ -91,6 +93,47 @@ TEST_F(SPRKTest, HarmonicOscillator) {
   LOG(INFO) << "p_error = " << p_error;
   EXPECT_THAT(q_error, Lt(2E-16 * parameters_.tmax * SIUnit<Speed>()));
   EXPECT_THAT(p_error, Lt(2E-16 * parameters_.tmax * SIUnit<Force>()));
+}
+
+TEST_F(SPRKTest, ExactInexactTMax) {
+  parameters_.initial.positions.emplace_back(SIUnit<Length>());
+  parameters_.initial.momenta.emplace_back(Momentum());
+  parameters_.initial.time = Time();
+  parameters_.tmax = 10.0 * SIUnit<Time>();
+  parameters_.sampling_period = 1;
+  parameters_.Δt = (1.0 / 3.000001) * SIUnit<Time>();
+  parameters_.tmax_is_exact = false;
+  integrator_.Solve(&ComputeHarmonicOscillatorForce,
+                    &ComputeHarmonicOscillatorVelocity,
+                    parameters_, &solution_);
+  EXPECT_EQ(30, solution_.size());
+  EXPECT_THAT(solution_.back().time.value, Lt(parameters_.tmax));
+  EXPECT_THAT(solution_.back().time.error, Ne(0.0 * SIUnit<Time>()));
+
+  parameters_.tmax_is_exact = true;
+  integrator_.Solve(&ComputeHarmonicOscillatorForce,
+                    &ComputeHarmonicOscillatorVelocity,
+                    parameters_, &solution_);
+  EXPECT_EQ(30, solution_.size());
+  EXPECT_THAT(solution_.back().time.value, Eq(parameters_.tmax));
+  EXPECT_THAT(solution_.back().time.error, Eq(0.0 * SIUnit<Time>()));
+
+  parameters_.Δt = (1.0 / 2.999999) * SIUnit<Time>();
+  parameters_.tmax_is_exact = false;
+  integrator_.Solve(&ComputeHarmonicOscillatorForce,
+                    &ComputeHarmonicOscillatorVelocity,
+                    parameters_, &solution_);
+  EXPECT_EQ(29, solution_.size());
+  EXPECT_THAT(solution_.back().time.value, Lt(parameters_.tmax));
+  EXPECT_THAT(solution_.back().time.error, Ne(0.0 * SIUnit<Time>()));
+
+  parameters_.tmax_is_exact = true;
+  integrator_.Solve(&ComputeHarmonicOscillatorForce,
+                    &ComputeHarmonicOscillatorVelocity,
+                    parameters_, &solution_);
+  EXPECT_EQ(30, solution_.size());
+  EXPECT_THAT(solution_.back().time.value, Eq(parameters_.tmax));
+  EXPECT_THAT(solution_.back().time.error, Eq(0.0 * SIUnit<Time>()));
 }
 
 TEST_F(SPRKTest, Convergence) {

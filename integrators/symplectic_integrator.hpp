@@ -37,8 +37,6 @@ class SymplecticIntegrator {
     DoublePrecision<Time> time;
   };
 
-  // TODO(phl): Should we remove this class entirely and just pass 4 parameters
-  // to Solve?
   struct Parameters {
     // The initial state of the system.
     SystemState initial;
@@ -59,6 +57,10 @@ class SymplecticIntegrator {
     // decide when to sample.  Plotting some sort of higher-order spline, rather
     // than a polygon, would help, but isn't enough.
     int sampling_period;
+    // If true, the time for the last step of the integration is exactly |tmax|.
+    // If false, the time for the last step may be slightly less than |tmax|.
+    // It never exceeds |tmax|.
+    bool tmax_is_exact = false;
   };
 
   // Initialize the integrator with the given |coefficients|.  Must be called
