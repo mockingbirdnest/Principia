@@ -111,18 +111,22 @@ void SPRKIntegrator<Position, Momentum>::Solve(
   // http://reference.wolfram.com/mathematica/tutorial/NDSolveSPRK.html#74387056
   bool at_end = false;
   while (!at_end) {
-    // If |t_last| is getting close to |tmax|, take |tmax| as the upper bound of
-    // the interval and update |h| accordingly.  The interval chosen here for
-    // |tmax| ensures that we don't end up with a ridiculously small last
-    // interval: we'd rather make the last interval a bit bigger.
-    if (t_last.value + parameters.Δt / 2 <= parameters.tmax &&
-        parameters.tmax <= t_last.value + 3 * parameters.Δt / 2) {
-      at_end = true;
-      if (parameters.tmax_is_exact) {
+    // Check if this is the last interval and if so process it appropriately.
+    if (parameters.tmax_is_exact) {
+      // If |t_last| is getting close to |tmax|, take |tmax| as the upper bound
+      // of the interval and update |h| accordingly.  The interval chosen here
+      // for |tmax| ensures that we don't end up with a ridiculously small last
+      // interval: we'd rather make the last interval a bit bigger.
+      if (t_last.value + parameters.Δt / 2 <= parameters.tmax &&
+          parameters.tmax <= t_last.value + 3 * parameters.Δt / 2) {
+        at_end = true;
         h = (parameters.tmax - t_last.value) - t_last.error;
       }
+    } else if (parameters.tmax <= t_last.value + 2 * parameters.Δt) {
+      // If the next interval would overshoot, make this the last interval but
+      // stick to the same step.
+      at_end = true;
     }
-    LOG(INFO)<<t_last.value<<" "<<t_last.error<<" "<<h;
     // Here |h| is the length of the current time interval and |t_last| is its
     // start.
 
@@ -200,7 +204,6 @@ void SPRKIntegrator<Position, Momentum>::Solve(
     running_time -= clock();
 #endif
   }
-  LOG(INFO)<<t_last.value<<" "<<t_last.error<<" "<<h;
   if (parameters.sampling_period == 0) {
     solution->emplace_back();
     SystemState* state = &solution->back();

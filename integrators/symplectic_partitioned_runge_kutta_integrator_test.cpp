@@ -100,13 +100,30 @@ TEST_F(SPRKTest, ExactInexactTMax) {
   parameters_.initial.momenta.emplace_back(Momentum());
   parameters_.initial.time = Time();
   parameters_.tmax = 10.0 * SIUnit<Time>();
-  parameters_.Δt = (1.0 / 3.000001) * SIUnit<Time>();
   parameters_.sampling_period = 1;
+  parameters_.Δt = (1.0 / 3.000001) * SIUnit<Time>();
   parameters_.tmax_is_exact = false;
   integrator_.Solve(&ComputeHarmonicOscillatorForce,
                     &ComputeHarmonicOscillatorVelocity,
                     parameters_, &solution_);
   EXPECT_EQ(30, solution_.size());
+  EXPECT_THAT(solution_.back().time.value, Lt(parameters_.tmax));
+  EXPECT_THAT(solution_.back().time.error, Ne(0.0 * SIUnit<Time>()));
+
+  parameters_.tmax_is_exact = true;
+  integrator_.Solve(&ComputeHarmonicOscillatorForce,
+                    &ComputeHarmonicOscillatorVelocity,
+                    parameters_, &solution_);
+  EXPECT_EQ(30, solution_.size());
+  EXPECT_THAT(solution_.back().time.value, Eq(parameters_.tmax));
+  EXPECT_THAT(solution_.back().time.error, Eq(0.0 * SIUnit<Time>()));
+
+  parameters_.Δt = (1.0 / 2.999999) * SIUnit<Time>();
+  parameters_.tmax_is_exact = false;
+  integrator_.Solve(&ComputeHarmonicOscillatorForce,
+                    &ComputeHarmonicOscillatorVelocity,
+                    parameters_, &solution_);
+  EXPECT_EQ(29, solution_.size());
   EXPECT_THAT(solution_.back().time.value, Lt(parameters_.tmax));
   EXPECT_THAT(solution_.back().time.error, Ne(0.0 * SIUnit<Time>()));
 
