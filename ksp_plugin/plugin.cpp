@@ -137,10 +137,6 @@ void Plugin::AdvanceTime(Instant const& t, Angle const& planetarium_rotation) {
       ++it;
     }
   }
-  // We make sure the step size divides the interval and is at least as small
-  // as |kΔt|.
-  Time const duration = t - current_time_;
-  Time const Δt = duration / std::ceil(duration / kΔt);
   NBodySystem<Barycentre>::Trajectories trajectories;
   trajectories.reserve(vessels_.size() + celestials_.size());
   for (auto const& pair : celestials_) {
@@ -149,13 +145,8 @@ void Plugin::AdvanceTime(Instant const& t, Angle const& planetarium_rotation) {
   for (auto const& pair : vessels_) {
     trajectories.push_back(pair.second->history.get());
   }
-  solar_system_.Integrate(integrator_, t, Δt, 0, trajectories);
-  if (trajectories.front()->last_time() != t) {
-    // TODO(egg): This is bound to happen given how the integrator works now...
-    LOG(ERROR) << "Integration went "
-               << trajectories.front()->last_time() - t << " too far.";
-  }
-  current_time_ = t;
+  solar_system_.Integrate(integrator_, t, kΔt, 0, trajectories);
+  current_time_ = trajectories.front()->last_time();
   planetarium_rotation_ = planetarium_rotation;
 }
 

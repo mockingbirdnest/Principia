@@ -199,6 +199,12 @@ class Plugin {
     Celestial const* parent = nullptr;
     // The past and present trajectory of the body.
     std::unique_ptr<Trajectory<Barycentre>> history;
+    // A child trajectory of |history|, that continues it until exactly
+    // |current_time|. It is computed with a non-constant timestep, which breaks
+    // symplecticity. |history| is advanced with a constant timestep as soon as
+    // possible, and |rendering_extension| is then restarted from this new end
+    // of |history|.
+    Trajectory<Barycentre> const* rendering_extension;
   };
 
   // Represents a KSP |Vessel|.
@@ -218,6 +224,12 @@ class Plugin {
     Celestial const* parent;
     // The past and present trajectory of the body.
     std::unique_ptr<Trajectory<Barycentre>> history;
+    // A child trajectory of |history|, that continues it until exactly
+    // |current_time|. It is computed with a non-constant timestep, which breaks
+    // symplecticity. |history| is advanced with a constant timestep as soon as
+    // possible, and |rendering_extension| is then restarted from this new end
+    // of |history|.
+    Trajectory<Barycentre> const* rendering_extension;
     // Whether to keep the |Vessel| during the next call to |AdvanceTime|.
     bool keep = true;
   };
