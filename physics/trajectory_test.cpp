@@ -154,6 +154,56 @@ TEST_F(TrajectoryTest, ForkSuccess) {
   EXPECT_THAT(fork->body(), Ref(*massive_body_));
 }
 
+TEST_F(TrajectoryDeathTest, DeleteForkError) {
+  EXPECT_DEATH({
+    massive_trajectory_->DeleteFork(nullptr);
+  }, "'fork'.* non NULL");
+  EXPECT_DEATH({
+    massive_trajectory_->Append(t1_, *d1_);
+    massive_trajectory_->DeleteFork(massive_trajectory_.get());
+  }, "'fork_time'.* non NULL");
+  EXPECT_DEATH({
+    massive_trajectory_->Append(t1_, *d1_);
+    Trajectory<World>* fork1 = massive_trajectory_->Fork(t1_);
+    fork1->Append(t2_, *d2_);
+    Trajectory<World>* fork2 = fork1->Fork(t2_);
+    massive_trajectory_->DeleteFork(fork2);
+  }, "not a child");
+}
+
+TEST_F(TrajectoryTest, DeleteForkSuccess) {
+  massive_trajectory_->Append(t1_, *d1_);
+  massive_trajectory_->Append(t2_, *d2_);
+  massive_trajectory_->Append(t3_, *d3_);
+  Trajectory<World>* fork1 = massive_trajectory_->Fork(t2_);
+  Trajectory<World>* fork2 = massive_trajectory_->Fork(t2_);
+  fork1->Append(t4_, *d4_);
+  massive_trajectory_->DeleteFork(fork2);
+  std::map<Instant, Position<World>> positions =
+      massive_trajectory_->Positions();
+  std::map<Instant, Velocity<World>> velocities =
+      massive_trajectory_->Velocities();
+  std::list<Instant> times = massive_trajectory_->Times();
+  EXPECT_THAT(positions,
+              ElementsAre(Pair(t1_, q1_), Pair(t2_, q2_), Pair(t3_, q3_)));
+  EXPECT_THAT(velocities,
+              ElementsAre(Pair(t1_, p1_), Pair(t2_, p2_), Pair(t3_, p3_)));
+  EXPECT_THAT(times, ElementsAre(t1_, t2_, t3_));
+  EXPECT_THAT(fork1->body(), Ref(*massive_body_));
+  positions = fork1->Positions();
+  velocities = fork1->Velocities();
+  times = fork1->Times();
+  EXPECT_THAT(positions,
+              ElementsAre(Pair(t1_, q1_), Pair(t2_, q2_),
+                          Pair(t3_, q3_), Pair(t4_, q4_)));
+  EXPECT_THAT(velocities,
+              ElementsAre(Pair(t1_, p1_), Pair(t2_, p2_),
+                          Pair(t3_, p3_), Pair(t4_, p4_)));
+  EXPECT_THAT(times, ElementsAre(t1_, t2_, t3_, t4_));
+  EXPECT_THAT(fork1->body(), Ref(*massive_body_));
+  massive_trajectory_.reset();
+}
+
 TEST_F(TrajectoryDeathTest, LastError) {
   EXPECT_DEATH({
     massive_trajectory_->last_position();

@@ -153,14 +153,14 @@ void Trajectory<Frame>::DeleteFork(Trajectory* fork) {
   Instant const* const fork_time = fork->fork_time();
   CHECK_NOTNULL(fork_time);
   // Find the position of |fork| among our children and remove it.
-  auto const range = children_->equal_range(*fork_time);
+  auto const range = children_.equal_range(*fork_time);
   for (auto it = range.first; it != range.second; ++it) {
     if (it->second.get() == fork) {
-      parent_->children_->erase(it);
+      children_.erase(it);
       return;
     }
   }
-  LOG(FATAL) << "Inconsistent parent/chidren";
+  LOG(FATAL) << "fork is not a child of this trajectory";
 }
 
 
