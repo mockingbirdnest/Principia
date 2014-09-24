@@ -36,7 +36,7 @@ std::list<Instant> Trajectory<Frame>::Times() const {
   std::list<Instant> result;
 
   // Our own data points in increasing time order.
-  for (const auto it : timeline_) {
+  for (auto const it : timeline_) {
     Instant const& time = it.first;
     result.push_back(time);
   }
@@ -110,11 +110,11 @@ void Trajectory<Frame>::ForgetAfter(Instant const& time) {
   // time > |time|.  It then removes that entry and all the entries that follow
   // it.  This preserve any entry with time == |time|.
   {
-    const auto it = timeline_.upper_bound(time);
+    auto const it = timeline_.upper_bound(time);
     timeline_.erase(it, timeline_.end());
   }
   {
-    const auto it = children_.upper_bound(time);
+    auto const it = children_.upper_bound(time);
     children_.erase(it, children_.end());
   }
 }
@@ -146,6 +146,25 @@ Trajectory<Frame>* Trajectory<Frame>::Fork(Instant const& time) {
   auto const child_it = children_.emplace(time, std::move(child));
   return child_it->second.get();
 }
+
+template<typename Frame>
+void Trajectory<Frame>::DeleteFork(Trajectory** const fork) {
+  CHECK_NOTNULL(fork);
+  CHECK_NOTNULL(*fork);
+  Instant const* const fork_time = (*fork)->fork_time();
+  CHECK_NOTNULL(fork_time);
+  // Find the position of |*fork| among our children and remove it.
+  auto const range = children_.equal_range(*fork_time);
+  for (auto it = range.first; it != range.second; ++it) {
+    if (it->second.get() == *fork) {
+      children_.erase(it);
+      *fork = nullptr;
+      return;
+    }
+  }
+  LOG(FATAL) << "fork is not a child of this trajectory";
+}
+
 
 template<typename Frame>
 bool Trajectory<Frame>::is_root() const {
@@ -221,11 +240,7 @@ Trajectory<Frame>::Trajectory(Body const& body,
                               Trajectory* const parent,
                               typename Timeline::iterator const& fork)
     : body_(body),
-#ifdef _MANAGED
-      parent_(parent),
-#else
       parent_(CHECK_NOTNULL(parent)),
-#endif
       fork_(new Timeline::iterator(fork)) {}
 
 template<typename Frame>
@@ -235,7 +250,7 @@ std::map<Instant, Value> Trajectory<Frame>::ApplyToDegreesOfFreedom(
   std::map<Instant, Value> result;
 
   // Our own data points in increasing time order.
-  for (const auto it : timeline_) {
+  for (auto const it : timeline_) {
     Instant const& time = it.first;
     DegreesOfFreedom<Frame> const& degrees_of_freedom = it.second;
     result.insert(result.end(),
