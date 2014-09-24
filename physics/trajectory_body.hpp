@@ -221,11 +221,7 @@ Trajectory<Frame>::Trajectory(Body const& body,
                               Trajectory* const parent,
                               typename Timeline::iterator const& fork)
     : body_(body),
-#ifdef _MANAGED
-      parent_(parent),
-#else
       parent_(CHECK_NOTNULL(parent)),
-#endif
       fork_(new Timeline::iterator(fork)) {}
 
 template<typename Frame>
