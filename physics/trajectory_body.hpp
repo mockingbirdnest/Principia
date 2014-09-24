@@ -19,25 +19,6 @@ Trajectory<Frame>::Trajectory(Body const& body)
       parent_(nullptr) {}
 
 template<typename Frame>
-Trajectory<Frame>::~Trajectory() {
-  Instant const* const fork_time = fork_time();
-  if (fork_time != nullptr) {
-    // Find our position among our siblings and remove ourselves.
-    auto siblings = parent_->children_;
-    auto const range = siblings->equal_range(*fork_time);
-    for (auto it = range.first; it != range.second; ++it) {
-      if (it->second.get() == this) {
-        // I now own myself for a few nanoseconds.
-        it->second.release();
-        parent_->children_->erase(it);
-        return;
-      }
-    }
-    LOG(FATAL) << "Inconsistent parent/chidren";
-  }
-}
-
-template<typename Frame>
 std::map<Instant, Position<Frame>>
 Trajectory<Frame>::Positions() const {
   return ApplyToDegreesOfFreedom<Position<Frame>>(
@@ -165,6 +146,23 @@ Trajectory<Frame>* Trajectory<Frame>::Fork(Instant const& time) {
   auto const child_it = children_.emplace(time, std::move(child));
   return child_it->second.get();
 }
+
+template<typename Frame>
+void Trajectory<Frame>::DeleteFork(Trajectory* fork) {
+  CHECK_NOTNULL(fork);
+  Instant const* const fork_time = fork->fork_time();
+  CHECK_NOTNULL(fork_time);
+  // Find the position of |fork| among our children and remove it.
+  auto const range = children_->equal_range(*fork_time);
+  for (auto it = range.first; it != range.second; ++it) {
+    if (it->second.get() == fork) {
+      parent_->children_->erase(it);
+      return;
+    }
+  }
+  LOG(FATAL) << "Inconsistent parent/chidren";
+}
+
 
 template<typename Frame>
 bool Trajectory<Frame>::is_root() const {

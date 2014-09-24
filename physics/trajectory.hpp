@@ -28,10 +28,7 @@ class Trajectory {
   // No transfer of ownership.  |body| must live longer than the trajectory as
   // the trajectory holds a reference to it.
   explicit Trajectory(Body const& body);
-
-  // Deleting a trajectory unlinks it from its parent if needed.  The parent
-  // must still exist.
-  ~Trajectory();
+  ~Trajectory() = default;
 
   // These functions return the series of positions/velocities/times for the
   // trajectory of the body.  All three containers are guaranteed to have the
@@ -68,6 +65,10 @@ class Trajectory {
   // deletes all child trajectories.  |time| must be one of the times of the
   // current trajectory (as returned by Times()).  No transfer of ownership.
   Trajectory* Fork(Instant const& time);
+
+  // Deletes the child trajectory denoted by |fork|, which must be a pointer
+  // previously returned by Fork for this object.
+  void DeleteFork(Trajectory* fork);
 
   // Returns true if this is a root trajectory.
   bool is_root() const;
