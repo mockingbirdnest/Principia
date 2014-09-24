@@ -66,9 +66,9 @@ class Trajectory {
   // current trajectory (as returned by Times()).  No transfer of ownership.
   Trajectory* Fork(Instant const& time);
 
-  // Deletes the child trajectory denoted by |fork|, which must be a pointer
-  // previously returned by Fork for this object.
-  void DeleteFork(Trajectory* fork);
+  // Deletes the child trajectory denoted by |*fork|, which must be a pointer
+  // previously returned by Fork for this object.  Nulls |*fork|.
+  void DeleteFork(Trajectory** const fork);
 
   // Returns true if this is a root trajectory.
   bool is_root() const;

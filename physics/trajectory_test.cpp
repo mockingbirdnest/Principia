@@ -160,14 +160,15 @@ TEST_F(TrajectoryDeathTest, DeleteForkError) {
   }, DeathMessage("'fork'.* non NULL"));
   EXPECT_DEATH({
     massive_trajectory_->Append(t1_, *d1_);
-    massive_trajectory_->DeleteFork(massive_trajectory_.get());
+    Trajectory<World>* root = massive_trajectory_.get();
+    massive_trajectory_->DeleteFork(&root);
   }, DeathMessage("'fork_time'.* non NULL"));
   EXPECT_DEATH({
     massive_trajectory_->Append(t1_, *d1_);
     Trajectory<World>* fork1 = massive_trajectory_->Fork(t1_);
     fork1->Append(t2_, *d2_);
     Trajectory<World>* fork2 = fork1->Fork(t2_);
-    massive_trajectory_->DeleteFork(fork2);
+    massive_trajectory_->DeleteFork(&fork2);
   }, DeathMessage("not a child"));
 }
 
@@ -178,7 +179,8 @@ TEST_F(TrajectoryTest, DeleteForkSuccess) {
   Trajectory<World>* fork1 = massive_trajectory_->Fork(t2_);
   Trajectory<World>* fork2 = massive_trajectory_->Fork(t2_);
   fork1->Append(t4_, *d4_);
-  massive_trajectory_->DeleteFork(fork2);
+  massive_trajectory_->DeleteFork(&fork2);
+  EXPECT_EQ(nullptr, fork2);
   std::map<Instant, Position<World>> positions =
       massive_trajectory_->Positions();
   std::map<Instant, Velocity<World>> velocities =

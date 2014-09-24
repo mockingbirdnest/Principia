@@ -148,15 +148,17 @@ Trajectory<Frame>* Trajectory<Frame>::Fork(Instant const& time) {
 }
 
 template<typename Frame>
-void Trajectory<Frame>::DeleteFork(Trajectory* fork) {
+void Trajectory<Frame>::DeleteFork(Trajectory** const fork) {
   CHECK_NOTNULL(fork);
-  Instant const* const fork_time = fork->fork_time();
+  CHECK_NOTNULL(*fork);
+  Instant const* const fork_time = (*fork)->fork_time();
   CHECK_NOTNULL(fork_time);
-  // Find the position of |fork| among our children and remove it.
+  // Find the position of |*fork| among our children and remove it.
   auto const range = children_.equal_range(*fork_time);
   for (auto it = range.first; it != range.second; ++it) {
-    if (it->second.get() == fork) {
+    if (it->second.get() == *fork) {
       children_.erase(it);
+      *fork = nullptr;
       return;
     }
   }
