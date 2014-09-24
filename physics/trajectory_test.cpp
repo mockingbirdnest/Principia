@@ -157,18 +157,18 @@ TEST_F(TrajectoryTest, ForkSuccess) {
 TEST_F(TrajectoryDeathTest, DeleteForkError) {
   EXPECT_DEATH({
     massive_trajectory_->DeleteFork(nullptr);
-  }, "'fork'.* non NULL");
+  }, DeathMessage("'fork'.* non NULL"));
   EXPECT_DEATH({
     massive_trajectory_->Append(t1_, *d1_);
     massive_trajectory_->DeleteFork(massive_trajectory_.get());
-  }, "'fork_time'.* non NULL");
+  }, DeathMessage("'fork_time'.* non NULL"));
   EXPECT_DEATH({
     massive_trajectory_->Append(t1_, *d1_);
     Trajectory<World>* fork1 = massive_trajectory_->Fork(t1_);
     fork1->Append(t2_, *d2_);
     Trajectory<World>* fork2 = fork1->Fork(t2_);
     massive_trajectory_->DeleteFork(fork2);
-  }, "not a child");
+  }, DeathMessage("not a child"));
 }
 
 TEST_F(TrajectoryTest, DeleteForkSuccess) {
