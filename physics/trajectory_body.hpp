@@ -19,6 +19,25 @@ Trajectory<Frame>::Trajectory(Body const& body)
       parent_(nullptr) {}
 
 template<typename Frame>
+Trajectory<Frame>::~Trajectory() {
+  Instant const* const fork_time = fork_time();
+  if (fork_time != nullptr) {
+    // Find our position among our siblings and remove ourselves.
+    auto siblings = parent_->children_;
+    auto const range = siblings->equal_range(*fork_time);
+    for (auto it = range.first; it != range.second; ++it) {
+      if (it->second.get() == this) {
+        // I now own myself for a few nanoseconds.
+        it->second.release();
+        parent_->children_->erase(it);
+        return;
+      }
+    }
+    LOG(FATAL) << "Inconsistent parent/chidren";
+  }
+}
+
+template<typename Frame>
 std::map<Instant, Position<Frame>>
 Trajectory<Frame>::Positions() const {
   return ApplyToDegreesOfFreedom<Position<Frame>>(
@@ -36,7 +55,7 @@ std::list<Instant> Trajectory<Frame>::Times() const {
   std::list<Instant> result;
 
   // Our own data points in increasing time order.
-  for (const auto it : timeline_) {
+  for (auto const it : timeline_) {
     Instant const& time = it.first;
     result.push_back(time);
   }
@@ -110,11 +129,11 @@ void Trajectory<Frame>::ForgetAfter(Instant const& time) {
   // time > |time|.  It then removes that entry and all the entries that follow
   // it.  This preserve any entry with time == |time|.
   {
-    const auto it = timeline_.upper_bound(time);
+    auto const it = timeline_.upper_bound(time);
     timeline_.erase(it, timeline_.end());
   }
   {
-    const auto it = children_.upper_bound(time);
+    auto const it = children_.upper_bound(time);
     children_.erase(it, children_.end());
   }
 }
@@ -231,7 +250,7 @@ std::map<Instant, Value> Trajectory<Frame>::ApplyToDegreesOfFreedom(
   std::map<Instant, Value> result;
 
   // Our own data points in increasing time order.
-  for (const auto it : timeline_) {
+  for (auto const it : timeline_) {
     Instant const& time = it.first;
     DegreesOfFreedom<Frame> const& degrees_of_freedom = it.second;
     result.insert(result.end(),

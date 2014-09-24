@@ -28,7 +28,10 @@ class Trajectory {
   // No transfer of ownership.  |body| must live longer than the trajectory as
   // the trajectory holds a reference to it.
   explicit Trajectory(Body const& body);
-  ~Trajectory() = default;
+
+  // Deleting a trajectory unlinks it from its parent if needed.  The parent
+  // must still exist.
+  ~Trajectory();
 
   // These functions return the series of positions/velocities/times for the
   // trajectory of the body.  All three containers are guaranteed to have the
