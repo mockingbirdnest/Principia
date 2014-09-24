@@ -69,6 +69,7 @@ void Plugin::InsertCelestial(
       current_time_,
       {parent.history->last_position() + displacement,
        parent.history->last_velocity() + relative_velocity});
+  celestial->rendering_extension = celestial->history->Fork(current_time_);
 }
 
 void Plugin::UpdateCelestialHierarchy(Index const celestial_index,
@@ -122,9 +123,11 @@ void Plugin::SetVesselStateOffset(
       current_time_,
       {vessel->parent->history->last_position() + displacement,
        vessel->parent->history->last_velocity() + relative_velocity});
+  vessel->rendering_extension = vessel->history->Fork(current_time_);
 }
 
 void Plugin::AdvanceTime(Instant const& t, Angle const& planetarium_rotation) {
+  // Remove the vessels which were not updated since last time.
   for (auto it = vessels_.cbegin(); it != vessels_.cend();) {
     if (!it->second->keep) {
       // |std::map::erase| invalidates its parameter so we post-increment.
@@ -137,6 +140,12 @@ void Plugin::AdvanceTime(Instant const& t, Angle const& planetarium_rotation) {
       ++it;
     }
   }
+
+  // TODO(egg): catch up newly added vessels!
+  // The histories are far enough behind that we can advance them at least one
+  // step, so we will restart the rendering extensions at the end of the
+  // prolonged histories.
+  bool const reset_rendering_extension = vessels_
   NBodySystem<Barycentre>::Trajectories trajectories;
   trajectories.reserve(vessels_.size() + celestials_.size());
   for (auto const& pair : celestials_) {
