@@ -10,7 +10,7 @@ class MockPlugin : public Plugin {
   MockPlugin() = delete;
   MockPlugin(MockPlugin const&) = delete;
   MockPlugin(MockPlugin&&) = delete;
-  ~MockPlugin() = default;
+  ~MockPlugin() override = default;
 
   MockPlugin(Instant const& initial_time,
              Index const sun_index,
