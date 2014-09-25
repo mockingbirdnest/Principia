@@ -203,8 +203,8 @@ class Plugin {
     // |current_time|. It is computed with a non-constant timestep, which breaks
     // symplecticity. |history| is advanced with a constant timestep as soon as
     // possible, and |rendering_extension| is then restarted from this new end
-    // of |history|.
-    Trajectory<Barycentre> const* rendering_extension;
+    // of |history|. Not owning, should only be null for the sun.
+    Trajectory<Barycentre>* rendering_extension;
   };
 
   // Represents a KSP |Vessel|.
@@ -228,8 +228,11 @@ class Plugin {
     // |current_time|. It is computed with a non-constant timestep, which breaks
     // symplecticity. |history| is advanced with a constant timestep as soon as
     // possible, and |rendering_extension| is then restarted from this new end
-    // of |history|.
-    Trajectory<Barycentre> const* rendering_extension;
+    // of |history|. Not owning, is null when the vessel is added until
+    // |history| is advanced synchronously for all vessels. In the meantime,
+    // |history| is advanced with small, non-constant timesteps to catch up with
+    // the synchronous constant-timestep integration.
+    Trajectory<Barycentre>* rendering_extension;
     // Whether to keep the |Vessel| during the next call to |AdvanceTime|.
     bool keep = true;
   };
@@ -250,6 +253,9 @@ class Plugin {
   SPRKIntegrator<Length, Speed> integrator_;
 
   Angle planetarium_rotation_;
+  // The common last time of the histories of the vessels.
+  Instant history_time_;
+  // The current in-game universal time.
   Instant current_time_;
   Celestial* sun_;  // Not owning.
 };

@@ -142,17 +142,23 @@ void Plugin::AdvanceTime(Instant const& t, Angle const& planetarium_rotation) {
   }
 
   // TODO(egg): catch up newly added vessels!
-  // The histories are far enough behind that we can advance them at least one
-  // step, so we will restart the rendering extensions at the end of the
-  // prolonged histories.
-  bool const reset_rendering_extension = vessels_
+  // If histories are far enough behind that we can advance them at least one
+  // step, we restart the rendering extensions at the end of the prolonged
+  // histories.
+  bool const reset_rendering_extension = history_time_ + kΔt < t;
   NBodySystem<Barycentre>::Trajectories trajectories;
   trajectories.reserve(vessels_.size() + celestials_.size());
   for (auto const& pair : celestials_) {
     trajectories.push_back(pair.second->history.get());
+    if (reset_rendering_extension) {
+      pair.second->history->DeleteFork(&pair.second->rendering_extension);
+    }
   }
   for (auto const& pair : vessels_) {
     trajectories.push_back(pair.second->history.get());
+    if (reset_rendering_extension) {
+      pair.second->history->DeleteFork(&pair.second->rendering_extension);
+    }
   }
   solar_system_.Integrate(integrator_, t, kΔt, 0, trajectories);
   current_time_ = trajectories.front()->last_time();
