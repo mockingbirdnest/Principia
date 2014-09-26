@@ -43,6 +43,8 @@ void Plugin::InsertCelestial(
     Index const parent_index,
     Displacement<AliceSun> const& from_parent_position,
     Velocity<AliceSun> const& from_parent_velocity) {
+  CHECK(initialising) << "Celestial bodies should be inserted before the first"
+                      << " call to |AdvanceTime|";
   auto const it = celestials_.find(parent_index);
   CHECK(it != celestials_.end()) << "No body at index " << parent_index;
   Celestial const& parent= *it->second;
@@ -100,7 +102,7 @@ bool Plugin::InsertOrKeepVessel(GUID const& vessel_guid,
 void Plugin::SetVesselStateOffset(
     GUID const& vessel_guid,
     Displacement<AliceSun> const& from_parent_position,
-    Velocity<AliceSun> const& from_parent_velocity) const {
+    Velocity<AliceSun> const& from_parent_velocity) {
   auto const it = vessels_.find(vessel_guid);
   CHECK(it != vessels_.end()) << "No vessel with GUID " << vessel_guid;
   Vessel* const vessel = it->second.get();
@@ -123,10 +125,11 @@ void Plugin::SetVesselStateOffset(
       current_time_,
       {vessel->parent->history->last_position() + displacement,
        vessel->parent->history->last_velocity() + relative_velocity});
-  vessel->rendering_extension = vessel->history->Fork(current_time_);
+  new_vessels_.push_back(vessel);
 }
 
 void Plugin::AdvanceTime(Instant const& t, Angle const& planetarium_rotation) {
+  initialising = false;
   // Remove the vessels which were not updated since last time.
   for (auto it = vessels_.cbegin(); it != vessels_.cend();) {
     if (!it->second->keep) {
@@ -140,12 +143,28 @@ void Plugin::AdvanceTime(Instant const& t, Angle const& planetarium_rotation) {
       ++it;
     }
   }
-
-  // TODO(egg): catch up newly added vessels!
-  // If histories are far enough behind that we can advance them at least one
-  // step, we restart the rendering extensions at the end of the prolonged
-  // histories.
-  bool const reset_rendering_extension = history_time_ + kΔt < t;
+  // Whether there the histories are far enough behind that we can advance them
+  // at least one step and reset the rendering extensions.
+  // NOTE(egg): 2 is way too large, this should be 1 + ε.
+  bool reset_rendering_extensions = history_time_ + 2 * kΔt > t;
+  // Integration with a small (non-constant) step.
+  if (!reset_rendering_extensions ||  // Extend rendering extensions.
+      !new_vessels_.empty()) {        // Catch up histories.
+    NBodySystem<Barycentre>::Trajectories trajectories;
+    for (auto const& pair : celestials_) {
+      trajectories.push_back(pair.second->rendering_extension);
+    }
+    for (auto const& it : new_vessels_) {
+      trajectories.push_back(it->history.get());
+    }
+    if (!reset_rendering_extensions) {
+      for (auto const& pair : vessels_) {
+        if (pair.second->rendering_extension != nullptr) {
+          trajectories.push_back(pair.second->rendering_extension);
+        }
+      }
+    }
+  }
   NBodySystem<Barycentre>::Trajectories trajectories;
   trajectories.reserve(vessels_.size() + celestials_.size());
   for (auto const& pair : celestials_) {
@@ -160,6 +179,11 @@ void Plugin::AdvanceTime(Instant const& t, Angle const& planetarium_rotation) {
       pair.second->history->DeleteFork(&pair.second->rendering_extension);
     }
   }
+
+  // If histories are far enough behind that we can advance them at least one
+  // step, we restart the rendering extensions at the end of the prolonged
+  // histories.
+  bool const reset_rendering_extension = history_time_ + kΔt < t;
   solar_system_.Integrate(integrator_, t, kΔt, 0, trajectories);
   current_time_ = trajectories.front()->last_time();
   planetarium_rotation_ = planetarium_rotation;

@@ -96,7 +96,8 @@ class Plugin {
   // should already have been inserted. The parent of the new body is the body
   // at index |parent_index|, which should already have been inserted. The state
   // of the new body at current time is given by |AliceSun| offsets from the
-  // parent.
+  // parent. Should only be called during initialisation (before the first call
+  // to |AdvanceTime|.
   // For a KSP |CelestialBody| |b|, the arguments correspond to:
   // |b.flightGlobalsIndex|,
   // |b.gravParameter|,
@@ -141,11 +142,11 @@ class Plugin {
   void SetVesselStateOffset(
       GUID const& vessel_guid,
       Displacement<AliceSun> const& from_parent_position,
-      Velocity<AliceSun> const& from_parent_velocity) const;
+      Velocity<AliceSun> const& from_parent_velocity);
 
   // Simulates the system until instant |t|. All vessels that have not been
   // refreshed by calling |InsertOrKeepVessel| since the last call to
-  // |AdvanceTime| will be removed.
+  // |AdvanceTime| will be removed. Ends initialisation.
   // |planetarium_rotation| is the value of KSP's |Planetarium.InverseRotAngle|
   // at instant |t|, which provides the rotation between the |World| axes and
   // the |Barycentre| axes (we don't use Planetarium.Rotation since it undergoes
@@ -198,13 +199,15 @@ class Plugin {
     // be null for the sun.
     Celestial const* parent = nullptr;
     // The past and present trajectory of the body.
+    // It ends at |history_time_|.
     std::unique_ptr<Trajectory<Barycentre>> history;
-    // A child trajectory of |history|, that continues it until exactly
-    // |current_time|. It is computed with a non-constant timestep, which breaks
-    // symplecticity. |history| is advanced with a constant timestep as soon as
-    // possible, and |rendering_extension| is then restarted from this new end
-    // of |history|. Not owning, should only be null for the sun.
-    Trajectory<Barycentre>* rendering_extension;
+    // A child trajectory of |*history|. It is forked at |history->last_time()|
+    // and continues it until |current_time_|. It is computed with a
+    // non-constant timestep, which breaks symplecticity. |history| is advanced
+    // with a constant timestep as soon as possible, and |rendering_extension|
+    // is then restarted from this new end of |history|.
+    // Not owning, should only be null for the sun.
+    Trajectory<Barycentre>* rendering_extension = nullptr;
   };
 
   // Represents a KSP |Vessel|.
@@ -223,21 +226,25 @@ class Plugin {
     // null.
     Celestial const* parent;
     // The past and present trajectory of the body.
+    // It ends at |history_time_| unless |*this| was created after
+    // |history_time_|.
     std::unique_ptr<Trajectory<Barycentre>> history;
-    // A child trajectory of |history|, that continues it until exactly
-    // |current_time|. It is computed with a non-constant timestep, which breaks
-    // symplecticity. |history| is advanced with a constant timestep as soon as
-    // possible, and |rendering_extension| is then restarted from this new end
-    // of |history|. Not owning, is null when the vessel is added until
-    // |history| is advanced synchronously for all vessels. In the meantime,
-    // |history| is advanced with small, non-constant timesteps to catch up with
-    // the synchronous constant-timestep integration.
-    Trajectory<Barycentre>* rendering_extension;
+    // A child trajectory of |*history|. It is forked at |history->last_time()|
+    // and continues it until |current_time_|. It is computed with a
+    // non-constant timestep, which breaks symplecticity. |history| is advanced
+    // with a constant timestep as soon as possible, and |rendering_extension|
+    // is then restarted from this new end of |history|.
+    // Not owning, is null when the vessel is added and becomes non-null when 
+    // history| is next advanced for all vessels and celestials. In the
+    // meantime, |history| is advanced with small, non-constant timesteps to
+    // catch up with the synchronous constant-timestep integration.
+    // |this| is in |new_vessels_| if and only if |rendering_extension| is null.
+    Trajectory<Barycentre>* rendering_extension = nullptr;
     // Whether to keep the |Vessel| during the next call to |AdvanceTime|.
     bool keep = true;
   };
 
-  // The rotation between the |World| basis at |current_time| and the
+  // The rotation between the |World| basis at |current_time_| and the
   // |Barycentre| axes. Since |WorldSun| is not a rotating reference frame,
   // this change of basis is all that's required to convert relative velocities
   // or displacements between simultaneous events.
@@ -249,8 +256,17 @@ class Plugin {
   std::map<GUID, std::unique_ptr<Vessel>> vessels_;
   std::map<Index, std::unique_ptr<Celestial>> celestials_;
 
+  // Vessels which have been recently inserted after |history_time_|.
+  // For these vessels, |history->last_time > history_time_|. They have a null
+  // |rendering_extension|.
+  std::vector<std::unique_ptr<Vessel>> new_vessels_;
+
   NBodySystem<Barycentre> solar_system_;
   SPRKIntegrator<Length, Speed> integrator_;
+
+  // Set to false by |AdvanceTime|. Should be true when inserting celestial
+  // bodies.
+  bool initialising = true;
 
   Angle planetarium_rotation_;
   // The common last time of the histories of the vessels.
