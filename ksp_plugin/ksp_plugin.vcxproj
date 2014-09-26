@@ -83,6 +83,7 @@
   <ItemGroup>
     <ClCompile Include="interface.cpp" />
     <ClCompile Include="plugin.cpp" />
+    <ClCompile Include="plugin_test.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
