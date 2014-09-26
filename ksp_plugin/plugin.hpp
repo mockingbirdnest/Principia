@@ -259,17 +259,23 @@ class Plugin {
   // Vessels which have been recently inserted after |history_time_|.
   // For these vessels, |history->last_time > history_time_|. They have a null
   // |rendering_extension|.
-  std::vector<std::unique_ptr<Vessel>> new_vessels_;
+  // The pointers are not owning and not null.
+  std::vector<Vessel* const> new_vessels_;
 
   NBodySystem<Barycentre> solar_system_;
-  SPRKIntegrator<Length, Speed> integrator_;
+  // The symplectic integrator computing the histories in the synchronised
+  // histories.
+  SPRKIntegrator<Length, Speed> history_integrator_;
+  // The integrator computing the rendering extensions and the histories before
+  // they are synchronised.
+  SPRKIntegrator<Length, Speed> extension_integrator_;
 
   // Set to false by |AdvanceTime|. Should be true when inserting celestial
   // bodies.
   bool initialising = true;
 
   Angle planetarium_rotation_;
-  // The common last time of the histories of the vessels.
+  // The common last time of the histories of synchronised vessels.
   Instant history_time_;
   // The current in-game universal time.
   Instant current_time_;

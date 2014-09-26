@@ -110,7 +110,7 @@ void CDECL InsertOrKeepVessel(Plugin* const plugin,
 // Calls |plugin->SetVesselStateOffset| with the arguments given.
 // |plugin| should not be null. No transfer of ownership.
 extern "C" DLLEXPORT
-void CDECL SetVesselStateOffset(Plugin const* const plugin,
+void CDECL SetVesselStateOffset(Plugin* const plugin,
                                 char const* vessel_guid,
                                 XYZ const from_parent_position,
                                 XYZ const from_parent_velocity);

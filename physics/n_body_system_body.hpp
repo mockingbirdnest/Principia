@@ -30,8 +30,10 @@ void NBodySystem<InertialFrame>::Integrate(
     Instant const& tmax,
     Time const& Δt,
     int const sampling_period,
+    bool const tmax_is_exact,
     Trajectories const& trajectories) {
   SymplecticIntegrator<Length, Speed>::Parameters parameters;
+  parameters.tmax_is_exact = tmax_is_exact;
   std::vector<SymplecticIntegrator<Length, Speed>::SystemState> solution;
 
   // TODO(phl): Use a position based on the first mantissa bits of the

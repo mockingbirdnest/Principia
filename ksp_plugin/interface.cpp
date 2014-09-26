@@ -95,7 +95,7 @@ void InsertOrKeepVessel(Plugin* const plugin,
   CHECK_NOTNULL(plugin)->InsertOrKeepVessel(vessel_guid, parent_index);
 }
 
-void SetVesselStateOffset(Plugin const* const plugin,
+void SetVesselStateOffset(Plugin* const plugin,
                           char const* vessel_guid,
                           XYZ const from_parent_position,
                           XYZ const from_parent_velocity) {

@@ -34,7 +34,9 @@ Plugin::Plugin(Instant const& initial_time,
   sun_->history = std::make_unique<Trajectory<Barycentre>>(*sun_->body);
   sun_->history->Append(current_time_,
                         {Position<Barycentre>(), Velocity<Barycentre>()});
-  integrator_.Initialize(integrator_.Order5Optimal());
+  history_integrator_.Initialize(history_integrator_.Order5Optimal());
+  // NOTE(egg): perhaps a lower order would be appropriate.
+  extension_integrator_.Initialize(history_integrator_.Order5Optimal());
 }
 
 void Plugin::InsertCelestial(
@@ -145,7 +147,7 @@ void Plugin::AdvanceTime(Instant const& t, Angle const& planetarium_rotation) {
   }
   // Whether there the histories are far enough behind that we can advance them
   // at least one step and reset the rendering extensions.
-  // NOTE(egg): 2 is way too large, this should be 1 + ε.
+  // TODO(egg): 2 is way too large, this should be 1 + ε.
   bool reset_rendering_extensions = history_time_ + 2 * kΔt > t;
   // Integration with a small (non-constant) step.
   if (!reset_rendering_extensions ||  // Extend rendering extensions.
@@ -164,18 +166,24 @@ void Plugin::AdvanceTime(Instant const& t, Angle const& planetarium_rotation) {
         }
       }
     }
+    solar_system_.Integrate(extension_integrator_,  // integrator
+                            t,                      // tmax
+                            kΔt,                    // Δt
+                            0,                      // sampling_period
+                            true,                   // tmax_is_exact
+                            trajectories);          // trajectories
   }
   NBodySystem<Barycentre>::Trajectories trajectories;
   trajectories.reserve(vessels_.size() + celestials_.size());
   for (auto const& pair : celestials_) {
     trajectories.push_back(pair.second->history.get());
-    if (reset_rendering_extension) {
+    if (reset_rendering_extensions) {
       pair.second->history->DeleteFork(&pair.second->rendering_extension);
     }
   }
   for (auto const& pair : vessels_) {
     trajectories.push_back(pair.second->history.get());
-    if (reset_rendering_extension) {
+    if (reset_rendering_extensions) {
       pair.second->history->DeleteFork(&pair.second->rendering_extension);
     }
   }
@@ -184,7 +192,7 @@ void Plugin::AdvanceTime(Instant const& t, Angle const& planetarium_rotation) {
   // step, we restart the rendering extensions at the end of the prolonged
   // histories.
   bool const reset_rendering_extension = history_time_ + kΔt < t;
-  solar_system_.Integrate(integrator_, t, kΔt, 0, trajectories);
+  solar_system_.Integrate(history_integrator_, t, kΔt, 1, false, trajectories);
   current_time_ = trajectories.front()->last_time();
   planetarium_rotation_ = planetarium_rotation;
 }

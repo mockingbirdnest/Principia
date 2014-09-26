@@ -35,6 +35,7 @@ class NBodySystem {
                  Instant const& tmax,
                  Time const& Δt,
                  int const sampling_period,
+                 bool const tmax_is_exact,
                  Trajectories const& trajectories);
 
  private:

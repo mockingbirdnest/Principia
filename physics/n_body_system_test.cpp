@@ -143,6 +143,7 @@ TEST_F(NBodySystemDeathTest, IntegrateError) {
                        trajectory1_->last_time() + period_,
                        period_ / 100,
                        1,
+                       false,
                        {trajectory1_.get(),
                         trajectory2_.get(),
                         trajectory1_.get()});
@@ -157,6 +158,7 @@ TEST_F(NBodySystemDeathTest, IntegrateError) {
                        trajectory1_->last_time() + period_,
                        period_ / 100,
                        1,
+                       false,
                        {trajectory1_.get(), trajectory.get()});
   }, DeathMessage("Inconsistent last time"));
 }
@@ -168,6 +170,7 @@ TEST_F(NBodySystemTest, EarthMoon) {
                      trajectory1_->last_time() + period_,
                      period_ / 100,
                      1,
+                     false,
                      {trajectory1_.get(), trajectory2_.get()});
 
   positions = ValuesOf(trajectory1_->Positions(), centre_of_mass_);
@@ -194,6 +197,7 @@ TEST_F(NBodySystemTest, MoonEarth) {
                      trajectory1_->last_time() + period_,
                      period_ / 100,
                      1,
+                     false,
                      {trajectory2_.get(), trajectory1_.get()});
 
   positions = ValuesOf(trajectory1_->Positions(), centre_of_mass_);
@@ -220,6 +224,7 @@ TEST_F(NBodySystemTest, Moon) {
                      trajectory1_->last_time() + period_,
                      period_ / 100,
                      1,
+                     false,
                      {trajectory2_.get()});
 
   Length const q2 =
@@ -264,6 +269,7 @@ TEST_F(NBodySystemTest, EarthProbe) {
                      trajectory1_->last_time() + period_,
                      period_ / 100,
                      1,
+                     false,
                      {trajectory1_.get(), trajectory3_.get()});
 
   Length const q1 =
