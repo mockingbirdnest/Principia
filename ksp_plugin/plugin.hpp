@@ -260,7 +260,7 @@ class Plugin {
   // For these vessels, |history->last_time > history_time_|. They have a null
   // |rendering_extension|.
   // The pointers are not owning and not null.
-  std::vector<Vessel* const> new_vessels_;
+  std::map<GUID, Vessel* const> new_vessels_;
 
   NBodySystem<Barycentre> solar_system_;
   // The symplectic integrator computing the histories in the synchronised

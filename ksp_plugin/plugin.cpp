@@ -1,5 +1,6 @@
 ﻿#include "ksp_plugin/plugin.hpp"
 
+#include <cmath>
 #include <string>
 
 #include "geometry/permutation.hpp"
@@ -127,14 +128,19 @@ void Plugin::SetVesselStateOffset(
       current_time_,
       {vessel->parent->history->last_position() + displacement,
        vessel->parent->history->last_velocity() + relative_velocity});
-  new_vessels_.push_back(vessel);
+  new_vessels_.insert({vessel_guid, vessel});
 }
 
 void Plugin::AdvanceTime(Instant const& t, Angle const& planetarium_rotation) {
   initialising = false;
   // Remove the vessels which were not updated since last time.
-  for (auto it = vessels_.cbegin(); it != vessels_.cend();) {
+  for (auto& it = vessels_.cbegin(); it != vessels_.cend();) {
     if (!it->second->keep) {
+      // Leave no dangling pointers.
+      auto const& found_in_new_vessels = new_vessels_.find(it->first);
+      if (found_in_new_vessels != new_vessels_.end()) {
+        new_vessels_.erase(found_in_new_vessels);
+      }
       // |std::map::erase| invalidates its parameter so we post-increment.
       vessels_.erase(it++);
     } else {
@@ -146,9 +152,8 @@ void Plugin::AdvanceTime(Instant const& t, Angle const& planetarium_rotation) {
     }
   }
   // Whether there the histories are far enough behind that we can advance them
-  // at least one step and reset the rendering extensions.
-  // TODO(egg): 2 is way too large, this should be 1 + ε.
-  bool reset_rendering_extensions = history_time_ + 2 * kΔt > t;
+  // at least one step and reset the rendering extensions..
+  bool reset_rendering_extensions = history_time_ + kΔt > t;
   // Integration with a small (non-constant) step.
   if (!reset_rendering_extensions ||  // Extend rendering extensions.
       !new_vessels_.empty()) {        // Catch up histories.
@@ -156,8 +161,8 @@ void Plugin::AdvanceTime(Instant const& t, Angle const& planetarium_rotation) {
     for (auto const& pair : celestials_) {
       trajectories.push_back(pair.second->rendering_extension);
     }
-    for (auto const& it : new_vessels_) {
-      trajectories.push_back(it->history.get());
+    for (auto const& pair : new_vessels_) {
+      trajectories.push_back(pair.second->history.get());
     }
     if (!reset_rendering_extensions) {
       for (auto const& pair : vessels_) {
