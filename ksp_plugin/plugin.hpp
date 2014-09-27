@@ -74,7 +74,7 @@ class Plugin {
   Plugin() = delete;
   Plugin(Plugin const&) = delete;
   Plugin(Plugin&&) = delete;
-  ~Plugin() = default;
+  virtual ~Plugin() = default;
 
   // Constructs a |Plugin|. The current time of that instance is |initial_time|.
   // The angle between the axes of |World| and |Barycentre| at |initial_time| is
@@ -104,19 +104,20 @@ class Plugin {
   // |b.orbit.referenceBody.flightGlobalsIndex|,
   // |b.orbit.pos|,
   // |b.orbit.vel|.
-  void InsertCelestial(Index const celestial_index,
-                       GravitationalParameter const& gravitational_parameter,
-                       Index const parent_index,
-                       Displacement<AliceSun> const& from_parent_position,
-                       Velocity<AliceSun> const& from_parent_velocity);
+  virtual void InsertCelestial(
+    Index const celestial_index,
+    GravitationalParameter const& gravitational_parameter,
+    Index const parent_index,
+    Displacement<AliceSun> const& from_parent_position,
+    Velocity<AliceSun> const& from_parent_velocity);
 
   // Sets the parent of the celestial body with index |celestial_index| to the
   // one with index |parent_index|. Both bodies should already have been
   // inserted.
   // For a KSP |CelestialBody| |b|, the arguments correspond to
   // |b.flightGlobalsIndex|, |b.orbit.referenceBody.flightGlobalsIndex|.
-  void UpdateCelestialHierarchy(Index const celestial_index,
-                                Index const parent_index) const;
+  virtual void UpdateCelestialHierarchy(Index const celestial_index,
+                                        Index const parent_index) const;
 
   // Inserts a new vessel with GUID |vessel_guid| if it does not already exist,
   // and flags the vessel with GUID |vessel_guid| so it is kept when calling
@@ -130,7 +131,8 @@ class Plugin {
   // vessel is known.
   // For a KSP |Vessel| |v|, the arguments correspond to
   // |v.id|, |v.orbit.referenceBody|.
-  bool InsertOrKeepVessel(GUID const& vessel_guid, Index const parent_index);
+  virtual bool InsertOrKeepVessel(GUID const& vessel_guid,
+                                  Index const parent_index);
 
   // Set the position and velocity of the vessel with GUID |vessel_guid|
   // relative to its parent at current time. |SetVesselStateOffset| should only
@@ -139,7 +141,7 @@ class Plugin {
   // |v.id.ToString()|,
   // |v.orbit.pos|,
   // |v.orbit.vel|.
-  void SetVesselStateOffset(
+  virtual void SetVesselStateOffset(
       GUID const& vessel_guid,
       Displacement<AliceSun> const& from_parent_position,
       Velocity<AliceSun> const& from_parent_velocity);
@@ -152,20 +154,20 @@ class Plugin {
   // the |Barycentre| axes (we don't use Planetarium.Rotation since it undergoes
   // truncation to single-precision even though it's a double- precision value).
   // Note that KSP's |Planetarium.InverseRotAngle| is in degrees.
-  void AdvanceTime(Instant const& t, Angle const& planetarium_rotation);
+  virtual void AdvanceTime(Instant const& t, Angle const& planetarium_rotation);
 
   // Returns the position of the vessel with GUID |vessel_guid| relative to its
   // parent at current time. For a KSP |Vessel| |v|, the argument corresponds to
   // |v.id.ToString()|, the return value to |v.orbit.pos|.
   // A vessel with GUID |vessel_guid| should have been inserted and kept.
-  Displacement<AliceSun> VesselDisplacementFromParent(
+  virtual Displacement<AliceSun> VesselDisplacementFromParent(
       GUID const& vessel_guid) const;
 
   // Returns the velocity of the vessel with GUID |vessel_guid| relative to its
   // parent at current time. For a KSP |Vessel| |v|, the argument corresponds to
   // |v.id.ToString()|, the return value to |v.orbit.vel|.
   // A vessel with GUID |vessel_guid| should have been inserted and kept.
-  Velocity<AliceSun> VesselParentRelativeVelocity(
+  virtual Velocity<AliceSun> VesselParentRelativeVelocity(
       GUID const& vessel_guid) const;
 
   // Returns the position of the celestial at index |celestial_index| relative
@@ -173,7 +175,7 @@ class Plugin {
   // corresponds to |b.flightGlobalsIndex|, the return value to |b.orbit.pos|.
   // A celestial with index |celestial_index| should have been inserted, and it
   // should not be the sun.
-  Displacement<AliceSun> CelestialDisplacementFromParent(
+  virtual Displacement<AliceSun> CelestialDisplacementFromParent(
       Index const celestial_index) const;
 
   // Returns the velocity of the celestial at index |celestial_index| relative
@@ -181,7 +183,7 @@ class Plugin {
   // corresponds to |b.flightGlobalsIndex|, the return value to |b.orbit.vel|.
   // A celestial with index |celestial_index| should have been inserted, and it
   // should not be the sun.
-  Velocity<AliceSun> CelestialParentRelativeVelocity(
+  virtual Velocity<AliceSun> CelestialParentRelativeVelocity(
       Index const celestial_index) const;
 
  private:

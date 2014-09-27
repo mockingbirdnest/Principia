@@ -17,6 +17,9 @@
     <ClInclude Include="interface.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="mock_plugin.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="interface.cpp">
