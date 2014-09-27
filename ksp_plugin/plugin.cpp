@@ -203,7 +203,8 @@ void Plugin::AdvanceTime(Instant const& t, Angle const& planetarium_rotation) {
     // Reset rendering extensions.
     for (auto const& pair : vessels_) {
       CHECK(pair.second->rendering_extension == nullptr);
-      pair.second->rendering_extension = pair.second->history->Fork();
+      pair.second->rendering_extension =
+          pair.second->history->Fork(history_time_);
     }
   }
   // Advance the histories of the |new_vessels_| of the rendering extensions of
@@ -214,9 +215,7 @@ void Plugin::AdvanceTime(Instant const& t, Angle const& planetarium_rotation) {
     trajectories.push_back(pair.second->rendering_extension);
   }
   for (auto const& pair : new_vessels_) {
-    if (pair.second.get() != sun_) {
-      trajectories.push_back(pair.second->history.get());
-    }
+    trajectories.push_back(pair.second->history.get());
   }
   for (auto const& pair : vessels_) {
     if (pair.second->rendering_extension != nullptr) {
@@ -229,7 +228,6 @@ void Plugin::AdvanceTime(Instant const& t, Angle const& planetarium_rotation) {
                           0,                      // sampling_period
                           true,                   // tmax_is_exact
                           trajectories);          // trajectories
-  }
   current_time_ = t;
   planetarium_rotation_ = planetarium_rotation;
 }
