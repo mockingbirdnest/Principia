@@ -112,8 +112,8 @@ void SetVesselStateOffset(Plugin* const plugin,
 void AdvanceTime(Plugin* const plugin,
                  double const t,
                  double const planetarium_rotation) {
-    CHECK_NOTNULL(plugin)->AdvanceTime(Instant(t * Second),
-                                       planetarium_rotation * Degree);
+  CHECK_NOTNULL(plugin)->AdvanceTime(Instant(t * Second),
+                                     planetarium_rotation * Degree);
 }
 
 XYZ VesselDisplacementFromParent(Plugin const* const plugin,
