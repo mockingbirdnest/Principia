@@ -35,6 +35,7 @@ Plugin::Plugin(Instant const& initial_time,
   sun_->history = std::make_unique<Trajectory<Barycentre>>(*sun_->body);
   sun_->history->Append(current_time_,
                         {Position<Barycentre>(), Velocity<Barycentre>()});
+  sun_->rendering_extension = sun_->history->Fork(current_time_);
   history_integrator_.Initialize(history_integrator_.Order5Optimal());
   // NOTE(egg): perhaps a lower order would be appropriate.
   extension_integrator_.Initialize(history_integrator_.Order5Optimal());
