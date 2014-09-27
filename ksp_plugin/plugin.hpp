@@ -130,7 +130,7 @@ class Plugin {
   // |VesselParentRelativeVelocity|, so that the initial state of the new
   // vessel is known.
   // For a KSP |Vessel| |v|, the arguments correspond to
-  // |v.id|, |v.orbit.referenceBody|.
+  // |v.id|, |v.orbit.referenceBody.flightGlobalsIndex|.
   virtual bool InsertOrKeepVessel(GUID const& vessel_guid,
                                   Index const parent_index);
 

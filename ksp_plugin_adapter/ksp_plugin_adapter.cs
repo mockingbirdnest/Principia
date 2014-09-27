@@ -203,6 +203,9 @@ public class PluginAdapter : UnityEngine.MonoBehaviour {
       double universal_time = Planetarium.GetUniversalTime();
       AdvanceTime(plugin_, universal_time, Planetarium.InverseRotAngle);
       BodyProcessor update_body = body => {
+        UpdateCelestialHierarchy(plugin_,
+                                 body.flightGlobalsIndex,
+                                 body.orbit.referenceBody.flightGlobalsIndex);
         Vector3d position =
             (Vector3d)CelestialDisplacementFromParent(plugin_,
                                                       body.flightGlobalsIndex);
@@ -235,6 +238,9 @@ public class PluginAdapter : UnityEngine.MonoBehaviour {
       };
       ApplyToBodyTree(update_body);
       VesselProcessor update_vessel = vessel => {
+        InsertOrKeepVessel(plugin_,
+                           vessel.id.ToString(),
+                           vessel.orbit.referenceBody.flightGlobalsIndex);
         Vector3d position =
             (Vector3d)VesselDisplacementFromParent(plugin_,
                                                    vessel.id.ToString());
