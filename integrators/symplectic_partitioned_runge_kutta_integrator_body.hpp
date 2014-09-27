@@ -113,22 +113,19 @@ void SPRKIntegrator<Position, Momentum>::Solve(
 
   // Integration.  For details see Wolfram Reference,
   // http://reference.wolfram.com/mathematica/tutorial/NDSolveSPRK.html#74387056
-  bool at_end = false;
-  if (!parameters.tmax_is_exact && parameters.tmax < tn.value + h) {
-    at_end = true;
-  }
-
+  bool at_end = !parameters.tmax_is_exact && parameters.tmax < tn.value + h;
   while (!at_end) {
     // Check if this is the last interval and if so process it appropriately.
     if (parameters.tmax_is_exact) {
       // If |tn| is getting close to |tmax|, use |tmax| as the upper bound of
-      // the interval and update |h| accordingly.  The interval chosen here for
+      // the interval and update |h| accordingly.  The bound chosen here for
       // |tmax| ensures that we don't end up with a ridiculously small last
-      // interval: we'd rather make the last interval a bit bigger.
+      // interval: we'd rather make the last interval a bit bigger.  More
+      // precisely, the last interval generally has a length between 0.5 Δt and
+      // 1.5 Δt, unless it is also the first interval.
       // NOTE(phl): This may lead to convergence as bad as (1.5 Δt)^5 rather
       // than Δt^5.
-      if (tn.value + h / 2 <= parameters.tmax &&
-          parameters.tmax <= tn.value + 3 * h / 2) {
+      if (parameters.tmax <= tn.value + 3 * h / 2) {
         at_end = true;
         h = (parameters.tmax - tn.value) - tn.error;
       }
