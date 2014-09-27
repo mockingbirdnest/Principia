@@ -128,7 +128,7 @@ void Plugin::SetVesselStateOffset(
       current_time_,
       {vessel->parent->history->last_position() + displacement,
        vessel->parent->history->last_velocity() + relative_velocity});
-  new_vessels_.insert({vessel_guid, vessel});
+  CHECK(new_vessels_.insert({vessel_guid, vessel}).second);
 }
 
 void Plugin::AdvanceTime(Instant const& t, Angle const& planetarium_rotation) {
@@ -154,51 +154,83 @@ void Plugin::AdvanceTime(Instant const& t, Angle const& planetarium_rotation) {
   // Whether there the histories are far enough behind that we can advance them
   // at least one step and reset the rendering extensions..
   bool reset_rendering_extensions = history_time_ + kΔt > t;
-  // Integration with a small (non-constant) step.
-  if (!reset_rendering_extensions ||  // Extend rendering extensions.
-      !new_vessels_.empty()) {        // Catch up histories.
+  // Integration with a constant step.
+  if (reset_rendering_extensions) {
     NBodySystem<Barycentre>::Trajectories trajectories;
+    trajectories.reserve(vessels_.size() - new_vessels_.size() +
+                         celestials_.size());
     for (auto const& pair : celestials_) {
-      trajectories.push_back(pair.second->rendering_extension);
+      if (pair.second.get() != sun_) {
+        pair.second->history->DeleteFork(&pair.second->rendering_extension);
+        trajectories.push_back(pair.second->history.get());
+      }
+    }
+    for (auto const& pair : vessels_) {
+      // newly added vessels (for which |rendering_extension == nullptr|) will
+      // have their history synchronised separately.
+      if (pair.second->rendering_extension != nullptr) {
+        pair.second->history->DeleteFork(&pair.second->rendering_extension);
+        trajectories.push_back(pair.second->history.get());
+      }
+    }
+    solar_system_.Integrate(history_integrator_,  // integrator
+                            t,                    // tmax
+                            kΔt,                  // Δt
+                            0,                    // sampling_period
+                            false,                // tmax_is_exact
+                            trajectories);        // trajectories
+    CHECK_GT(trajectories.front()->last_time(), current_time_);
+    history_time_ = trajectories.front()->last_time();
+    trajectories.clear();
+    trajectories.reserve(celestials_.size() + new_vessels_.size());
+    // Now synchronise the |new_vessels_|.
+    for (auto const& pair : celestials_) {
+      if (pair.second.get() != sun_) {
+        trajectories.push_back(pair.second->rendering_extension);
+      }
     }
     for (auto const& pair : new_vessels_) {
       trajectories.push_back(pair.second->history.get());
     }
-    if (!reset_rendering_extensions) {
-      for (auto const& pair : vessels_) {
-        if (pair.second->rendering_extension != nullptr) {
-          trajectories.push_back(pair.second->rendering_extension);
-        }
-      }
-    }
     solar_system_.Integrate(extension_integrator_,  // integrator
-                            t,                      // tmax
+                            history_time_,          // tmax
                             kΔt,                    // Δt
                             0,                      // sampling_period
                             true,                   // tmax_is_exact
                             trajectories);          // trajectories
+    // All vessels have been synchronised.
+    new_vessels_.clear();
+    // Reset rendering extensions.
+    for (auto const& pair : vessels_) {
+      CHECK(pair.second->rendering_extension == nullptr);
+      pair.second->rendering_extension = pair.second->history->Fork();
+    }
   }
+  // Advance the histories of the |new_vessels_| of the rendering extensions of
+  // the other vessels.
   NBodySystem<Barycentre>::Trajectories trajectories;
   trajectories.reserve(vessels_.size() + celestials_.size());
   for (auto const& pair : celestials_) {
-    trajectories.push_back(pair.second->history.get());
-    if (reset_rendering_extensions) {
-      pair.second->history->DeleteFork(&pair.second->rendering_extension);
+    trajectories.push_back(pair.second->rendering_extension);
+  }
+  for (auto const& pair : new_vessels_) {
+    if (pair.second.get() != sun_) {
+      trajectories.push_back(pair.second->history.get());
     }
   }
   for (auto const& pair : vessels_) {
-    trajectories.push_back(pair.second->history.get());
-    if (reset_rendering_extensions) {
-      pair.second->history->DeleteFork(&pair.second->rendering_extension);
+    if (pair.second->rendering_extension != nullptr) {
+      trajectories.push_back(pair.second->rendering_extension);
     }
   }
-
-  // If histories are far enough behind that we can advance them at least one
-  // step, we restart the rendering extensions at the end of the prolonged
-  // histories.
-  bool const reset_rendering_extension = history_time_ + kΔt < t;
-  solar_system_.Integrate(history_integrator_, t, kΔt, 1, false, trajectories);
-  current_time_ = trajectories.front()->last_time();
+  solar_system_.Integrate(extension_integrator_,  // integrator
+                          t,                      // tmax
+                          kΔt,                    // Δt
+                          0,                      // sampling_period
+                          true,                   // tmax_is_exact
+                          trajectories);          // trajectories
+  }
+  current_time_ = t;
   planetarium_rotation_ = planetarium_rotation;
 }
 
