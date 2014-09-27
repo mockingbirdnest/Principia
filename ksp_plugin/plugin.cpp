@@ -133,6 +133,8 @@ void Plugin::SetVesselStateOffset(
 
 void Plugin::AdvanceTime(Instant const& t, Angle const& planetarium_rotation) {
   initialising = false;
+#undef VLOG
+#define VLOG(level) LOG(ERROR)
   VLOG(1) << "Vessel cleanup";
   // Remove the vessels which were not updated since last time.
   for (auto& it = vessels_.cbegin(); it != vessels_.cend();) {
@@ -166,7 +168,7 @@ void Plugin::AdvanceTime(Instant const& t, Angle const& planetarium_rotation) {
     }
   }
   // Whether there the histories are far enough behind that we can advance them
-  // at least one step and reset the rendering extensions..
+  // at least one step and reset the rendering extensions.
   bool reset_rendering_extensions = history_time_ + kΔt > t;
   if (reset_rendering_extensions) {
     VLOG(1) << "Prolonging old histories...";
@@ -255,6 +257,8 @@ void Plugin::AdvanceTime(Instant const& t, Angle const& planetarium_rotation) {
   VLOG(1) << "to   : " << t;
   current_time_ = t;
   planetarium_rotation_ = planetarium_rotation;
+#undef VLOG
+#define VLOG(verboselevel) LOG_IF(INFO, VLOG_IS_ON(verboselevel))
 }
 
 Displacement<AliceSun> Plugin::VesselDisplacementFromParent(
