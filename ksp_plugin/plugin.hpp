@@ -206,7 +206,7 @@ class Plugin {
     // non-constant timestep, which breaks symplecticity. |history| is advanced
     // with a constant timestep as soon as possible, and |rendering_extension|
     // is then restarted from this new end of |history|.
-    // Not owning, should only be null for the sun.
+    // Not owning, not null.
     Trajectory<Barycentre>* rendering_extension = nullptr;
   };
 

@@ -160,10 +160,8 @@ void Plugin::AdvanceTime(Instant const& t, Angle const& planetarium_rotation) {
     trajectories.reserve(vessels_.size() - new_vessels_.size() +
                          celestials_.size());
     for (auto const& pair : celestials_) {
-      if (pair.second.get() != sun_) {
-        pair.second->history->DeleteFork(&pair.second->rendering_extension);
-        trajectories.push_back(pair.second->history.get());
-      }
+      pair.second->history->DeleteFork(&pair.second->rendering_extension);
+      trajectories.push_back(pair.second->history.get());
     }
     for (auto const& pair : vessels_) {
       // newly added vessels (for which |rendering_extension == nullptr|) will
@@ -185,9 +183,7 @@ void Plugin::AdvanceTime(Instant const& t, Angle const& planetarium_rotation) {
     trajectories.reserve(celestials_.size() + new_vessels_.size());
     // Now synchronise the |new_vessels_|.
     for (auto const& pair : celestials_) {
-      if (pair.second.get() != sun_) {
-        trajectories.push_back(pair.second->rendering_extension);
-      }
+      trajectories.push_back(pair.second->rendering_extension);
     }
     for (auto const& pair : new_vessels_) {
       trajectories.push_back(pair.second->history.get());
@@ -240,7 +236,10 @@ Displacement<AliceSun> Plugin::VesselDisplacementFromParent(
   CHECK(vessel.history != nullptr) << "Vessel with GUID " << vessel_guid
                                    << " was not given an initial state";
   Displacement<Barycentre> const barycentric_result =
-      vessel.history->last_position() - vessel.parent->history->last_position();
+      (vessel.rendering_extension == nullptr ?
+           vessel.history->last_position() :
+           vessel.rendering_extension->last_position()) -
+      vessel.parent->rendering_extension->last_position();
   Displacement<AliceSun> const result =
       kSunLookingGlass(PlanetariumRotation()(barycentric_result));
   VLOG(1) << "Vessel with GUID " << vessel_guid << " is at parent position + "
@@ -256,7 +255,10 @@ Velocity<AliceSun> Plugin::VesselParentRelativeVelocity(
   CHECK(vessel.history != nullptr) << "Vessel with GUID " << vessel_guid
                                    << " was not given an initial state";
   Velocity<Barycentre> const barycentric_result =
-      vessel.history->last_velocity() - vessel.parent->history->last_velocity();
+      (vessel.rendering_extension == nullptr ?
+           vessel.history->last_velocity() :
+           vessel.rendering_extension->last_velocity()) -
+       vessel.parent->rendering_extension->last_velocity();
   Velocity<AliceSun> const result =
       kSunLookingGlass(PlanetariumRotation()(barycentric_result));
   VLOG(1) << "Vessel with GUID " << vessel_guid
@@ -273,8 +275,8 @@ Displacement<AliceSun> Plugin::CelestialDisplacementFromParent(
   CHECK(celestial.parent != nullptr)
       << "Body at index " << celestial_index << " is the sun";
   Displacement<Barycentre> const barycentric_result =
-      celestial.history->last_position() -
-      celestial.parent->history->last_position();
+      celestial.rendering_extension->last_position() -
+      celestial.parent->rendering_extension->last_position();
   Displacement<AliceSun> const result =
       kSunLookingGlass(PlanetariumRotation()(barycentric_result));
   VLOG(1) << "Celestial at index " << celestial_index
@@ -291,8 +293,8 @@ Velocity<AliceSun> Plugin::CelestialParentRelativeVelocity(
   CHECK(celestial.parent != nullptr)
       << "Body at index " << celestial_index << " is the sun";
   Velocity<Barycentre> const barycentric_result =
-      celestial.history->last_velocity() -
-      celestial.parent->history->last_velocity();
+      celestial.rendering_extension->last_velocity() -
+      celestial.parent->rendering_extension->last_velocity();
   Velocity<AliceSun> const result =
       kSunLookingGlass(PlanetariumRotation()(barycentric_result));
   VLOG(1) << "Celestial at index " << celestial_index
