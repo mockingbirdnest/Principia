@@ -97,6 +97,12 @@ public class PluginAdapter : UnityEngine.MonoBehaviour {
 
   [DllImport(dllName           : kDllPath,
              CallingConvention = CallingConvention.Cdecl)]
+  private static extern void AdvanceTime(IntPtr plugin, 
+                                         double t,
+                                         double planetarium_rotation);
+
+  [DllImport(dllName           : kDllPath,
+             CallingConvention = CallingConvention.Cdecl)]
   private static extern XYZ VesselDisplacementFromParent(
       IntPtr plugin,
       [MarshalAs(UnmanagedType.LPStr)] String guid);
@@ -195,6 +201,7 @@ public class PluginAdapter : UnityEngine.MonoBehaviour {
   private void FixedUpdate() {
     if (PluginRunning()) {
       double universal_time = Planetarium.GetUniversalTime();
+      AdvanceTime(plugin_, universal_time, Planetarium.InverseRotAngle);
       BodyProcessor update_body = body => {
         Vector3d position =
             (Vector3d)CelestialDisplacementFromParent(plugin_,

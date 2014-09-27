@@ -133,20 +133,34 @@ void Plugin::SetVesselStateOffset(
 
 void Plugin::AdvanceTime(Instant const& t, Angle const& planetarium_rotation) {
   initialising = false;
+  VLOG(1) << "Vessel cleanup";
   // Remove the vessels which were not updated since last time.
   for (auto& it = vessels_.cbegin(); it != vessels_.cend();) {
+    auto const& found_in_new_vessels = new_vessels_.find(it->first);
+    Vessel const& vessel = *it->second;
+    // While we're going over the vessels, check invariants.
+    CHECK(vessel.history != nullptr) << "Vessel with GUID " << it->first
+                                     << " was not given an initial state";
+    // |vessel| is in |new_vessels_| <=> its |rendering_extension| is null <=>
+    // its |history->last_time()| is greater than |history_time_|.
+    if (found_in_new_vessels != new_vessels_.end()) {
+      CHECK(vessel.rendering_extension == nullptr);
+      CHECK_GT(vessel.history->last_time(), history_time_);
+    } else {
+      CHECK_NOTNULL(it->second->rendering_extension);
+      CHECK_LE(vessel.history->last_time(), history_time_);
+    }
+    // Now do the cleanup.
     if (!it->second->keep) {
+      LOG(INFO) << "Removing vessel with GUID " << it->first;
       // Leave no dangling pointers.
-      auto const& found_in_new_vessels = new_vessels_.find(it->first);
       if (found_in_new_vessels != new_vessels_.end()) {
+        LOG(INFO) << "Vessel had not been synchronised.";
         new_vessels_.erase(found_in_new_vessels);
       }
       // |std::map::erase| invalidates its parameter so we post-increment.
       vessels_.erase(it++);
     } else {
-      CHECK(it->second->history != nullptr)
-          << "Vessel with GUID " << it->first
-          << " was not given an initial state";
       it->second->keep = false;
       ++it;
     }
@@ -154,8 +168,10 @@ void Plugin::AdvanceTime(Instant const& t, Angle const& planetarium_rotation) {
   // Whether there the histories are far enough behind that we can advance them
   // at least one step and reset the rendering extensions..
   bool reset_rendering_extensions = history_time_ + kΔt > t;
-  // Integration with a constant step.
   if (reset_rendering_extensions) {
+    VLOG(1) << "Prolonging old histories...";
+    VLOG(1) << "from : " << history_time_;
+    // Integration with a constant step.
     NBodySystem<Barycentre>::Trajectories trajectories;
     trajectories.reserve(vessels_.size() - new_vessels_.size() +
                          celestials_.size());
@@ -179,29 +195,36 @@ void Plugin::AdvanceTime(Instant const& t, Angle const& planetarium_rotation) {
                             trajectories);        // trajectories
     CHECK_GT(trajectories.front()->last_time(), current_time_);
     history_time_ = trajectories.front()->last_time();
+    VLOG(1) << "to   : " << history_time_;
+    VLOG(1) << "Done.";
     trajectories.clear();
-    trajectories.reserve(celestials_.size() + new_vessels_.size());
-    // Now synchronise the |new_vessels_|.
-    for (auto const& pair : celestials_) {
-      trajectories.push_back(pair.second->rendering_extension);
+    if (!new_vessels_.empty()) {
+      LOG(INFO) << "Synchronising new histories...";
+      // Now synchronise the |new_vessels_|.
+      trajectories.reserve(celestials_.size() + new_vessels_.size());
+      for (auto const& pair : celestials_) {
+        trajectories.push_back(pair.second->rendering_extension);
+      }
+      for (auto const& pair : new_vessels_) {
+        trajectories.push_back(pair.second->history.get());
+      };
+      solar_system_.Integrate(extension_integrator_,  // integrator
+                              history_time_,          // tmax
+                              kΔt,                    // Δt
+                              0,                      // sampling_period
+                              true,                   // tmax_is_exact
+                              trajectories);          // trajectories
+      LOG(INFO) << "Done.";
+      // All vessels have been synchronised.
+      new_vessels_.clear();
     }
-    for (auto const& pair : new_vessels_) {
-      trajectories.push_back(pair.second->history.get());
-    }
-    solar_system_.Integrate(extension_integrator_,  // integrator
-                            history_time_,          // tmax
-                            kΔt,                    // Δt
-                            0,                      // sampling_period
-                            true,                   // tmax_is_exact
-                            trajectories);          // trajectories
-    // All vessels have been synchronised.
-    new_vessels_.clear();
     // Reset rendering extensions.
     for (auto const& pair : vessels_) {
       CHECK(pair.second->rendering_extension == nullptr);
       pair.second->rendering_extension =
           pair.second->history->Fork(history_time_);
     }
+    VLOG(1) << "Rendering extensions have been reset.";
   }
   // Advance the histories of the |new_vessels_| and the rendering extensions of
   // the other vessels.
@@ -218,12 +241,18 @@ void Plugin::AdvanceTime(Instant const& t, Angle const& planetarium_rotation) {
       trajectories.push_back(pair.second->rendering_extension);
     }
   }
+  VLOG(1) << "Prolonging rendering extensions and new histories...";
+  VLOG(1) << "from : " << trajectories.front()->last_time();
+  VLOG(1) << "to   : " << t;
   solar_system_.Integrate(extension_integrator_,  // integrator
                           t,                      // tmax
                           kΔt,                    // Δt
                           0,                      // sampling_period
                           true,                   // tmax_is_exact
                           trajectories);          // trajectories
+  VLOG(1) << "Time has been advanced";
+  VLOG(1) << "from : " << current_time_;
+  VLOG(1) << "to   : " << t;
   current_time_ = t;
   planetarium_rotation_ = planetarium_rotation;
 }

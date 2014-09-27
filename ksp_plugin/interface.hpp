@@ -73,9 +73,9 @@ void CDECL LogFatal(char const* message);
 // The caller takes ownership of the result.
 extern "C" DLLEXPORT
 Plugin* CDECL NewPlugin(double const initial_time,
-                  int const sun_index,
-                  double const sun_gravitational_parameter,
-                  double const planetarium_rotation_in_degrees);
+                        int const sun_index,
+                        double const sun_gravitational_parameter,
+                        double const planetarium_rotation_in_degrees);
 
 // Deletes and nulls |*plugin|.
 // |plugin| should not be null. No transfer of ownership of |*plugin|,
@@ -87,18 +87,18 @@ void CDECL DeletePlugin(Plugin const** const plugin);
 // |plugin| should not be null. No transfer of ownership.
 extern "C" DLLEXPORT
 void CDECL InsertCelestial(Plugin* const plugin,
-                     int const celestial_index,
-                     double const gravitational_parameter,
-                     int const parent_index,
-                     XYZ const from_parent_position,
-                     XYZ const from_parent_velocity);
+                           int const celestial_index,
+                           double const gravitational_parameter,
+                           int const parent_index,
+                           XYZ const from_parent_position,
+                           XYZ const from_parent_velocity);
 
 // Calls |plugin->UpdateCelestialHierarchy| with the arguments given.
 // |plugin| should not be null. No transfer of ownership.
 extern "C" DLLEXPORT
 void CDECL UpdateCelestialHierarchy(Plugin const* const plugin,
-                              int const celestial_index,
-                              int const parent_index);
+                                    int const celestial_index,
+                                    int const parent_index);
 
 // Calls |plugin->InsertOrKeepVessel| with the arguments given.
 // |plugin| should not be null. No transfer of ownership.
@@ -114,6 +114,11 @@ void CDECL SetVesselStateOffset(Plugin* const plugin,
                                 char const* vessel_guid,
                                 XYZ const from_parent_position,
                                 XYZ const from_parent_velocity);
+
+extern "C" DLLEXPORT
+void CDECL AdvanceTime(Plugin* const plugin,
+                       double const t,
+                       double const planetarium_rotation);
 
 // Calls |plugin->VesselDisplacementFromParent| with the arguments given.
 // |plugin| should not be null. No transfer of ownership.
