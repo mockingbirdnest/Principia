@@ -203,7 +203,7 @@ void Plugin::AdvanceTime(Instant const& t, Angle const& planetarium_rotation) {
           pair.second->history->Fork(history_time_);
     }
   }
-  // Advance the histories of the |new_vessels_| of the rendering extensions of
+  // Advance the histories of the |new_vessels_| and the rendering extensions of
   // the other vessels.
   NBodySystem<Barycentre>::Trajectories trajectories;
   trajectories.reserve(vessels_.size() + celestials_.size());
