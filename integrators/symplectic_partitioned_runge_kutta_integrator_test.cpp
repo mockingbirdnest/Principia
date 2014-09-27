@@ -135,7 +135,7 @@ TEST_F(SPRKTest, ExactInexactTMax) {
   EXPECT_THAT(solution_.back().time.value, Eq(parameters_.tmax));
   EXPECT_THAT(solution_.back().time.error, Eq(0.0 * SIUnit<Time>()));
 
-  parameters_.Δt = (11.0) * SIUnit<Time>();
+  parameters_.Δt = 11.0 * SIUnit<Time>();
   parameters_.tmax_is_exact = false;
   integrator_.Solve(&ComputeHarmonicOscillatorForce,
                     &ComputeHarmonicOscillatorVelocity,
@@ -150,7 +150,7 @@ TEST_F(SPRKTest, ExactInexactTMax) {
   EXPECT_THAT(solution_.back().time.value, Eq(parameters_.tmax));
   EXPECT_THAT(solution_.back().time.error, Eq(0.0 * SIUnit<Time>()));
 
-  parameters_.Δt = (100.0) * SIUnit<Time>();
+  parameters_.Δt = 100.0 * SIUnit<Time>();
   parameters_.tmax_is_exact = false;
   integrator_.Solve(&ComputeHarmonicOscillatorForce,
                     &ComputeHarmonicOscillatorVelocity,

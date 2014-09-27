@@ -114,6 +114,10 @@ void SPRKIntegrator<Position, Momentum>::Solve(
   // Integration.  For details see Wolfram Reference,
   // http://reference.wolfram.com/mathematica/tutorial/NDSolveSPRK.html#74387056
   bool at_end = false;
+  if (!parameters.tmax_is_exact && parameters.tmax < tn.value + h) {
+    at_end = true;
+  }
+
   while (!at_end) {
     // Check if this is the last interval and if so process it appropriately.
     if (parameters.tmax_is_exact) {
