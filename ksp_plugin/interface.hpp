@@ -103,6 +103,10 @@ void CDECL UpdateCelestialHierarchy(Plugin const* const plugin,
                                     int const celestial_index,
                                     int const parent_index);
 
+// Calls |plugin->EndInitialisation|.
+// |plugin| should not be null. No transfer of ownership.
+void CDECL EndInitialisation(Plugin* const plugin);
+
 // Calls |plugin->InsertOrKeepVessel| with the arguments given.
 // |plugin| should not be null. No transfer of ownership.
 extern "C" DLLEXPORT

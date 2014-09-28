@@ -76,6 +76,10 @@ public class PluginAdapter : UnityEngine.MonoBehaviour {
 
   [DllImport(dllName           : kDllPath,
              CallingConvention = CallingConvention.Cdecl)]
+  private static extern void EndInitialisation(IntPtr plugin);
+
+  [DllImport(dllName           : kDllPath,
+             CallingConvention = CallingConvention.Cdecl)]
   private static extern void UpdateCelestialHierarchy(IntPtr plugin,
                                                       int celestial_index,
                                                       int parent_index);
@@ -307,6 +311,7 @@ public class PluginAdapter : UnityEngine.MonoBehaviour {
                       (XYZ)body.orbit.pos, (XYZ)body.orbit.vel);
     };
     ApplyToBodyTree(insert_body);
+    EndInitialisation(plugin_);
     VesselProcessor insert_vessel = vessel => {
       LogInfo("Inserting " + vessel.name + "...");
       bool inserted =

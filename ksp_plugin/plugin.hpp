@@ -81,6 +81,7 @@ class Plugin {
   // set to |planetarium_rotation|. Inserts a celestial body with an arbitrary
   // position, index |sun_index| and gravitational parameter
   // |sun_gravitational_parameter|.
+  // Starts initialisation.
   // The arguments correspond to KSP's
   // |Planetarium.GetUniversalTime()|,
   // |Planetarium.fetch.Sun.flightGlobalsIndex|,
@@ -111,9 +112,12 @@ class Plugin {
     Displacement<AliceSun> const& from_parent_position,
     Velocity<AliceSun> const& from_parent_velocity);
 
+  // Ends initialisation.
+  virtual void EndInitialisation();
+
   // Sets the parent of the celestial body with index |celestial_index| to the
   // one with index |parent_index|. Both bodies should already have been
-  // inserted.
+  // inserted. Should be called after initialisation.
   // For a KSP |CelestialBody| |b|, the arguments correspond to
   // |b.flightGlobalsIndex|, |b.orbit.referenceBody.flightGlobalsIndex|.
   virtual void UpdateCelestialHierarchy(Index const celestial_index,
@@ -128,7 +132,7 @@ class Plugin {
   // |SetVesselStateOffset| should be called with the same GUID before the
   // next call to |AdvanceTime|, |VesselDisplacementFromParent| or
   // |VesselParentRelativeVelocity|, so that the initial state of the new
-  // vessel is known.
+  // vessel is known. Should be called after initialisation.
   // For a KSP |Vessel| |v|, the arguments correspond to
   // |v.id|, |v.orbit.referenceBody.flightGlobalsIndex|.
   virtual bool InsertOrKeepVessel(GUID const& vessel_guid,
@@ -136,7 +140,7 @@ class Plugin {
 
   // Set the position and velocity of the vessel with GUID |vessel_guid|
   // relative to its parent at current time. |SetVesselStateOffset| should only
-  // be called once per vessel.
+  // be called once per vessel. Should be called after initialisation.
   // For a KSP |Vessel| |v|, the arguments correspond to
   // |v.id.ToString()|,
   // |v.orbit.pos|,
@@ -148,7 +152,7 @@ class Plugin {
 
   // Simulates the system until instant |t|. All vessels that have not been
   // refreshed by calling |InsertOrKeepVessel| since the last call to
-  // |AdvanceTime| will be removed. Ends initialisation.
+  // |AdvanceTime| will be removed. Should be called after initialisation.
   // |planetarium_rotation| is the value of KSP's |Planetarium.InverseRotAngle|
   // at instant |t|, which provides the rotation between the |World| axes and
   // the |Barycentre| axes (we don't use Planetarium.Rotation since it undergoes
@@ -159,14 +163,16 @@ class Plugin {
   // Returns the position of the vessel with GUID |vessel_guid| relative to its
   // parent at current time. For a KSP |Vessel| |v|, the argument corresponds to
   // |v.id.ToString()|, the return value to |v.orbit.pos|.
-  // A vessel with GUID |vessel_guid| should have been inserted and kept.
+  // A vessel with GUID |vessel_guid| should have been inserted and kept. Should
+  // be called after initialisation.
   virtual Displacement<AliceSun> VesselDisplacementFromParent(
       GUID const& vessel_guid) const;
 
   // Returns the velocity of the vessel with GUID |vessel_guid| relative to its
   // parent at current time. For a KSP |Vessel| |v|, the argument corresponds to
   // |v.id.ToString()|, the return value to |v.orbit.vel|.
-  // A vessel with GUID |vessel_guid| should have been inserted and kept.
+  // A vessel with GUID |vessel_guid| should have been inserted and kept. Should
+  // be called after initialisation.
   virtual Velocity<AliceSun> VesselParentRelativeVelocity(
       GUID const& vessel_guid) const;
 
@@ -174,7 +180,7 @@ class Plugin {
   // to its parent at current time. For a KSP |CelestialBody| |b|, the argument
   // corresponds to |b.flightGlobalsIndex|, the return value to |b.orbit.pos|.
   // A celestial with index |celestial_index| should have been inserted, and it
-  // should not be the sun.
+  // should not be the sun. Should be called after initialisation.
   virtual Displacement<AliceSun> CelestialDisplacementFromParent(
       Index const celestial_index) const;
 
@@ -182,7 +188,7 @@ class Plugin {
   // to its parent at current time. For a KSP |CelestialBody| |b|, the argument
   // corresponds to |b.flightGlobalsIndex|, the return value to |b.orbit.vel|.
   // A celestial with index |celestial_index| should have been inserted, and it
-  // should not be the sun.
+  // should not be the sun. Should be called after initialisation.
   virtual Velocity<AliceSun> CelestialParentRelativeVelocity(
       Index const celestial_index) const;
 
@@ -200,16 +206,15 @@ class Plugin {
     // The parent body for the 2-body approximation. Not owning, should only
     // be null for the sun.
     Celestial const* parent = nullptr;
-    // The past and present trajectory of the body.
-    // It ends at |history_time_|.
+    // The past and present trajectory of the body. It ends at |HistoryTime()|.
     std::unique_ptr<Trajectory<Barycentre>> history;
     // A child trajectory of |*history|. It is forked at |history->last_time()|
     // and continues it until |current_time_|. It is computed with a
     // non-constant timestep, which breaks symplecticity. |history| is advanced
-    // with a constant timestep as soon as possible, and |rendering_extension|
-    // is then restarted from this new end of |history|.
+    // with a constant timestep as soon as possible, and |prolongation| is then
+    // restarted from this new end of |history|.
     // Not owning, not null.
-    Trajectory<Barycentre>* rendering_extension = nullptr;
+    Trajectory<Barycentre>* prolongation = nullptr;
   };
 
   // Represents a KSP |Vessel|.
@@ -227,21 +232,21 @@ class Plugin {
     // The parent body for the 2-body approximation. Not owning, should not be
     // null.
     Celestial const* parent;
-    // The past and present trajectory of the body.
-    // It ends at |history_time_| unless |*this| was created after
-    // |history_time_|.
+    // The past and present trajectory of the body. It ends at |HistoryTime()|
+    // unless |*this| was created after |HistoryTime()|, in which case it ends
+    // at |current_time_|.
     std::unique_ptr<Trajectory<Barycentre>> history;
     // A child trajectory of |*history|. It is forked at |history->last_time()|
     // and continues it until |current_time_|. It is computed with a
     // non-constant timestep, which breaks symplecticity. |history| is advanced
-    // with a constant timestep as soon as possible, and |rendering_extension|
-    // is then restarted from this new end of |history|.
+    // with a constant timestep as soon as possible, and |prolongation| is then
+    // restarted from this new end of |history|.
     // Not owning, is null when the vessel is added and becomes non-null when
     // history| is next advanced for all vessels and celestials. In the
     // meantime, |history| is advanced with small, non-constant timesteps to
     // catch up with the synchronous constant-timestep integration.
-    // |this| is in |new_vessels_| if and only if |rendering_extension| is null.
-    Trajectory<Barycentre>* rendering_extension = nullptr;
+    // |this| is in |new_vessels_| if and only if |prolongation| is null.
+    Trajectory<Barycentre>* prolongation = nullptr;
     // Whether to keep the |Vessel| during the next call to |AdvanceTime|.
     bool keep = true;
   };
@@ -249,21 +254,42 @@ class Plugin {
   using GUIDToOwnedVessel = std::map<GUID, std::unique_ptr<Vessel>>;
   using GUIDToUnOwnedVessel = std::map<GUID, Vessel* const>;
 
+  // The common last time of the histories of synchronised vessels and
+  // celestials. In debug mode, checks whether it is actually the same across
+  // all synchronised histories.
+  Instant HistoryTime() const;
+
   // The rotation between the |World| basis at |current_time_| and the
   // |Barycentre| axes. Since |WorldSun| is not a rotating reference frame,
   // this change of basis is all that's required to convert relative velocities
   // or displacements between simultaneous events.
   Rotation<Barycentre, WorldSun> PlanetariumRotation() const;
 
+  // Utilities for |AdvanceTime|.
+  // Remove vessels for which |keep| is false, and sets |keep| to false for the
+  // remaining ones.
+  void CleanUpVessels();
   // Given a |Vessel| and an iterator to it in |new_vessels_|, checks that it
   // has been given an initial state, i.e. that its |history| is not null, and
   // that the following are equivalent:
   // * |vessel| is in |new_vessels_|
-  // * its |rendering_extension| is null
-  // * its |history->last_time()| is greater than |history_time_|.
+  // * its |prolongation| is null
+  // * its |history->last_time()| is greater than |HistoryTime()|.
   void CheckVesselInvariants(
       Vessel const& vessel,
-      GUIDToUnOwnedVessel::iterator const it_in_new_vessels);
+      GUIDToUnOwnedVessel::iterator const it_in_new_vessels) const;
+  // Evolves the histories of the |celestials_| and of the synchronised vessels
+  // up to at most |t|. |t| should be large enough that at least one step of
+  // size |kΔt| can fit between |current_time_| and |t|.
+  void EvolveSynchronisedHistories(Instant const& t);
+  // Synchronises the |new_vessels_| and clears |new_vessels_|.
+  void SynchroniseNewHistories();
+  // Resets the prolongations of all vessels and celestials to |HistoryTime()|.
+  // all vessels and celestials should have a null |prolongation|.
+  void ResetProlongations();
+  // Evolves the prolongations of all celestials and synchronised vessels, as
+  // well as the histories of unsynchronised vessels, up to exactly instant |t|.
+  void EvolveProlongationsAndUnsynchronisedHistories(Instant const& t);
 
   // TODO(egg): Constant time step for now.
   Time const kΔt = 10 * Second;
@@ -271,18 +297,17 @@ class Plugin {
   GUIDToOwnedVessel vessels_;
   std::map<Index, std::unique_ptr<Celestial>> celestials_;
 
-  // Vessels which have been recently inserted after |history_time_|.
-  // For these vessels, |history->last_time > history_time_|. They have a null
-  // |rendering_extension|.
+  // Vessels which have been recently inserted after |HistoryTime()|.
+  // For these vessels, |history->last_time > HistoryTime()|. They have a null
+  // |prolongation|.
   // The pointers are not owning and not null.
   std::map<GUID, Vessel* const> new_vessels_;
 
   NBodySystem<Barycentre> solar_system_;
-  // The symplectic integrator computing the histories in the synchronised
-  // histories.
+  // The symplectic integrator computing the synchronised histories.
   SPRKIntegrator<Length, Speed> history_integrator_;
-  // The integrator computing the rendering extensions and the histories before
-  // they are synchronised.
+  // The integrator computing the prolongations and the histories before they
+  // are synchronised.
   SPRKIntegrator<Length, Speed> extension_integrator_;
 
   // Set to false by |AdvanceTime|. Should be true when inserting celestial
@@ -290,11 +315,9 @@ class Plugin {
   bool initialising = true;
 
   Angle planetarium_rotation_;
-  // The common last time of the histories of synchronised vessels.
-  Instant history_time_;
   // The current in-game universal time.
   Instant current_time_;
-  Celestial* sun_;  // Not owning.
+  Celestial* sun_;  // Not owning, not null.
 };
 
 }  // namespace ksp_plugin

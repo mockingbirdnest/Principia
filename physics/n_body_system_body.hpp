@@ -33,7 +33,6 @@ void NBodySystem<InertialFrame>::Integrate(
     bool const tmax_is_exact,
     Trajectories const& trajectories) {
   SymplecticIntegrator<Length, Speed>::Parameters parameters;
-  parameters.tmax_is_exact = tmax_is_exact;
   std::vector<SymplecticIntegrator<Length, Speed>::SystemState> solution;
 
   // TODO(phl): Use a position based on the first mantissa bits of the
@@ -105,6 +104,7 @@ void NBodySystem<InertialFrame>::Integrate(
     parameters.tmax = tmax - reference_time;
     parameters.Δt = Δt;
     parameters.sampling_period = sampling_period;
+    parameters.tmax_is_exact = tmax_is_exact;
     dynamic_cast<const SPRKIntegrator<Length, Speed>*>(&integrator)->Solve(
         std::bind(&NBodySystem::ComputeGravitationalAccelerations,
                   massive_trajectories,

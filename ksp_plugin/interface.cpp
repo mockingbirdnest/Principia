@@ -24,7 +24,7 @@ void InitGoogleLogging() {
   // Buffer severities <= |INFO|, i.e., don't buffer.
   FLAGS_logbuflevel = google::INFO - 1;
   google::InitGoogleLogging("Principia");
-  LOG(INFO) << "Initialized Google logging for Principia.";
+  LOG(INFO) << "Initialized Google logging for Principia";
 }
 
 void LogInfo(char const* message) {
@@ -47,21 +47,21 @@ Plugin* NewPlugin(double const initial_time,
                   int const sun_index,
                   double const sun_gravitational_parameter,
                   double const planetarium_rotation_in_degrees) {
-  LOG(INFO) << "Constructing Principia plugin...";
+  LOG(INFO) << "Constructing Principia plugin";
   return new Plugin(
       Instant(initial_time * Second),
       sun_index,
       sun_gravitational_parameter * SIUnit<GravitationalParameter>(),
       planetarium_rotation_in_degrees * Degree);
-  LOG(INFO) << "Plugin constructed.";
+  LOG(INFO) << "Plugin constructed";
 }
 
 void DeletePlugin(Plugin const** const plugin) {
-  LOG(INFO) << "Destroying Principia plugin...";
+  LOG(INFO) << "Destroying Principia plugin";
   CHECK_NOTNULL(plugin);
   delete *plugin;
   *plugin = nullptr;
-  LOG(INFO) << "Plugin destroyed.";
+  LOG(INFO) << "Plugin destroyed";
 }
 
 // NOTE(egg): The |* (Metre / Second)| might be slower than |* SIUnit<Speed>()|,
@@ -90,6 +90,10 @@ void UpdateCelestialHierarchy(Plugin const* const plugin,
                               int const parent_index) {
   CHECK_NOTNULL(plugin)->UpdateCelestialHierarchy(celestial_index,
                                                   parent_index);
+}
+
+void EndInitialisation(Plugin* const plugin) {
+  CHECK_NOTNULL(plugin)->EndInitialisation();
 }
 
 void InsertOrKeepVessel(Plugin* const plugin,

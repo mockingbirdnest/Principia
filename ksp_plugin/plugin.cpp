@@ -17,32 +17,156 @@ Permutation<World, AliceWorld> const kWorldLookingGlass(
 Permutation<WorldSun, AliceSun> const kSunLookingGlass(
     Permutation<WorldSun, AliceSun>::CoordinatePermutation::XZY);
 
-Rotation<Barycentre, WorldSun> Plugin::PlanetariumRotation() const {
-  return Rotation<Barycentre, WorldSun>(
-      planetarium_rotation_,
-      Bivector<double, Barycentre>({0, 1, 0}));
-}
-
 void Plugin::CheckVesselInvariants(
     Vessel const& vessel,
-    GUIDToUnOwnedVessel::iterator const it_in_new_vessels) {
+    GUIDToUnOwnedVessel::iterator const it_in_new_vessels) const {
   CHECK_EQ(it_in_new_vessels->second, &vessel);
   CHECK(vessel.history != nullptr) << "Vessel with GUID "
                                    << it_in_new_vessels->first
                                    << " was not given an initial state";
-  // |vessel| is in |new_vessels_| <=> its |rendering_extension| is null <=>
-  // its |history->last_time()| is greater than |history_time_|.
   // TODO(egg): At the moment, when a vessel is inserted when
-  // |current_time_ == history_time_| (that only happens during initialisation)
+  // |current_time_ == HistoryTime()| (that only happens during initialisation)
   // its first step is unsynchronised. This is convenient to test code paths,
   // but it means the invariant is GE vs. LT, rather than GT vs. LE.
   if (it_in_new_vessels != new_vessels_.end()) {
-    CHECK(vessel.rendering_extension == nullptr);
-    CHECK_GE(vessel.history->last_time(), history_time_);
+    CHECK(vessel.prolongation == nullptr);
+    CHECK_GE(vessel.history->last_time(), HistoryTime());
   } else {
-    CHECK_NOTNULL(vessel.rendering_extension);
-    CHECK_LT(vessel.history->last_time(), history_time_);
+    CHECK_NOTNULL(vessel.prolongation);
+    CHECK_LT(vessel.history->last_time(), HistoryTime());
   }
+}
+
+void Plugin::CleanUpVessels() {
+  VLOG(1) << "Vessel cleanup";
+  // Remove the vessels which were not updated since last time.
+  for (auto& it = vessels_.cbegin(); it != vessels_.cend();) {
+    auto const& it_in_new_vessels = new_vessels_.find(it->first);
+    Vessel const& vessel = *it->second;
+    // While we're going over the vessels, check invariants.
+    CheckVesselInvariants(vessel, it_in_new_vessels);
+    // Now do the cleanup.
+    if (!vessel.keep) {
+      LOG(INFO) << "Removing vessel with GUID " << it->first;
+      // Leave no dangling pointers.
+      if (it_in_new_vessels != new_vessels_.end()) {
+        LOG(INFO) << "Vessel had not been synchronised";
+        new_vessels_.erase(it_in_new_vessels);
+      }
+      // |std::map::erase| invalidates its parameter so we post-increment.
+      vessels_.erase(it++);
+    } else {
+      it->second->keep = false;
+      ++it;
+    }
+  }
+}
+
+void Plugin::EvolveSynchronisedHistories(Instant const& t) {
+  VLOG(1) << "Starting the evolution of the old histories" << '\n'
+          << "from : " << HistoryTime();
+  // Integration with a constant step.
+  NBodySystem<Barycentre>::Trajectories trajectories;
+  trajectories.reserve(vessels_.size() - new_vessels_.size() +
+                       celestials_.size());
+  for (auto const& pair : celestials_) {
+    trajectories.push_back(pair.second->history.get());
+  }
+  for (auto const& pair : vessels_) {
+    trajectories.push_back(pair.second->history.get());
+  }
+  solar_system_.Integrate(history_integrator_,  // integrator
+                          t,                    // tmax
+                          kΔt,                  // Δt
+                          0,                    // sampling_period
+                          false,                // tmax_is_exact
+                          trajectories);        // trajectories
+  CHECK_GT(HistoryTime(), current_time_);
+  VLOG(1) << "Evolved the old histories" << '\n'
+          << "to   : " << HistoryTime();
+}
+
+void Plugin::SynchroniseNewHistories() {
+  VLOG(1) << "Starting the synchronisation of the new histories";
+  NBodySystem<Barycentre>::Trajectories trajectories;
+  trajectories.reserve(celestials_.size() + new_vessels_.size());
+  for (auto const& pair : celestials_) {
+    trajectories.push_back(pair.second->prolongation);
+  }
+  for (auto const& pair : new_vessels_) {
+    trajectories.push_back(pair.second->history.get());
+  }
+  solar_system_.Integrate(extension_integrator_,  // integrator
+                          HistoryTime(),          // tmax
+                          kΔt,                    // Δt
+                          0,                      // sampling_period
+                          true,                   // tmax_is_exact
+                          trajectories);          // trajectories
+  new_vessels_.clear();
+  LOG(INFO) << "Synchronised the new histories";
+}
+
+void Plugin::ResetProlongations() {
+  for (auto const& pair : vessels_) {
+    if (pair.second->prolongation != nullptr) {
+      pair.second->history->DeleteFork(&pair.second->prolongation);
+    }
+    pair.second->prolongation = pair.second->history->Fork(HistoryTime());
+  }
+  for (auto const& pair : celestials_) {
+    pair.second->history->DeleteFork(&pair.second->prolongation);
+    pair.second->prolongation =
+        pair.second->history->Fork(HistoryTime());
+  }
+  VLOG(1) << "Prolongations have been reset";
+}
+
+void Plugin::EvolveProlongationsAndUnsynchronisedHistories(Instant const& t) {
+  NBodySystem<Barycentre>::Trajectories trajectories;
+  trajectories.reserve(vessels_.size() + celestials_.size());
+  for (auto const& pair : celestials_) {
+    trajectories.push_back(pair.second->prolongation);
+  }
+  for (auto const& pair : new_vessels_) {
+    trajectories.push_back(pair.second->history.get());
+  }
+  for (auto const& pair : vessels_) {
+    if (pair.second->prolongation != nullptr) {
+      trajectories.push_back(pair.second->prolongation);
+    }
+  }
+  VLOG(1) << "Evolving prolongations and new histories" << '\n'
+          << "from : " << trajectories.front()->last_time() << '\n'
+          << "to   : " << t;
+  solar_system_.Integrate(extension_integrator_,  // integrator
+                          t,                      // tmax
+                          kΔt,                    // Δt
+                          0,                      // sampling_period
+                          true,                   // tmax_is_exact
+                          trajectories);          // trajectories
+}
+
+Instant Plugin::HistoryTime() const {
+Instant const result = sun_->history->last_time();
+#ifdef _DEBUG
+for (auto const& pair : celestials_) {
+  CHECK(pair.second->history != nullptr);
+  CHECK_EQ(result, pair.second->history->last_time());
+}
+for (auto const& pair : vessels_) {
+  CHECK(pair.second->history != nullptr);
+  if (pair.second->prolongation != nullptr) {
+    CHECK_EQ(result, pair.second->history->last_time());
+  }
+}
+#endif
+return result;
+}
+
+Rotation<Barycentre, WorldSun> Plugin::PlanetariumRotation() const {
+  return Rotation<Barycentre, WorldSun>(
+      planetarium_rotation_,
+      Bivector<double, Barycentre>({0, 1, 0}));
 }
 
 Plugin::Plugin(Instant const& initial_time,
@@ -50,7 +174,6 @@ Plugin::Plugin(Instant const& initial_time,
                GravitationalParameter const& sun_gravitational_parameter,
                Angle const& planetarium_rotation)
     : current_time_(initial_time),
-      history_time_(initial_time),
       planetarium_rotation_(planetarium_rotation) {
   auto inserted = celestials_.insert(
       {sun_index, std::make_unique<Celestial>(sun_gravitational_parameter)});
@@ -58,7 +181,7 @@ Plugin::Plugin(Instant const& initial_time,
   sun_->history = std::make_unique<Trajectory<Barycentre>>(*sun_->body);
   sun_->history->Append(current_time_,
                         {Position<Barycentre>(), Velocity<Barycentre>()});
-  sun_->rendering_extension = sun_->history->Fork(current_time_);
+  sun_->prolongation = sun_->history->Fork(current_time_);
   history_integrator_.Initialize(history_integrator_.Order5Optimal());
   // NOTE(egg): perhaps a lower order would be appropriate.
   extension_integrator_.Initialize(history_integrator_.Order5Optimal());
@@ -98,11 +221,16 @@ void Plugin::InsertCelestial(
       current_time_,
       {parent.history->last_position() + displacement,
        parent.history->last_velocity() + relative_velocity});
-  celestial->rendering_extension = celestial->history->Fork(current_time_);
+  celestial->prolongation = celestial->history->Fork(current_time_);
+}
+
+void Plugin::EndInitialisation() {
+  initialising = false;
 }
 
 void Plugin::UpdateCelestialHierarchy(Index const celestial_index,
                                       Index const parent_index) const {
+  CHECK(!initialising);
   auto const it = celestials_.find(celestial_index);
   CHECK(it != celestials_.end()) << "No body at index " << celestial_index;
   auto const it_parent = celestials_.find(parent_index);
@@ -112,6 +240,7 @@ void Plugin::UpdateCelestialHierarchy(Index const celestial_index,
 
 bool Plugin::InsertOrKeepVessel(GUID const& vessel_guid,
                                 Index const parent_index) {
+  CHECK(!initialising);
   auto const it = celestials_.find(parent_index);
   CHECK(it != celestials_.end()) << "No body at index " << parent_index;
   Celestial const& parent = *it->second;
@@ -130,6 +259,7 @@ void Plugin::SetVesselStateOffset(
     GUID const& vessel_guid,
     Displacement<AliceSun> const& from_parent_position,
     Velocity<AliceSun> const& from_parent_velocity) {
+  CHECK(!initialising);
   auto const it = vessels_.find(vessel_guid);
   CHECK(it != vessels_.end()) << "No vessel with GUID " << vessel_guid;
   Vessel* const vessel = it->second.get();
@@ -157,137 +287,38 @@ void Plugin::SetVesselStateOffset(
 }
 
 void Plugin::AdvanceTime(Instant const& t, Angle const& planetarium_rotation) {
-  initialising = false;
-  VLOG(1) << "Vessel cleanup";
-  // Remove the vessels which were not updated since last time.
-  for (auto& it = vessels_.cbegin(); it != vessels_.cend();) {
-    auto const& it_in_new_vessels = new_vessels_.find(it->first);
-    Vessel const& vessel = *it->second;
-    // While we're going over the vessels, check invariants.
-    CheckVesselInvariants(vessel, it_in_new_vessels);
-    // Now do the cleanup.
-    if (!vessel.keep) {
-      LOG(INFO) << "Removing vessel with GUID " << it->first;
-      // Leave no dangling pointers.
-      if (it_in_new_vessels != new_vessels_.end()) {
-        LOG(INFO) << "Vessel had not been synchronised.";
-        new_vessels_.erase(it_in_new_vessels);
-      }
-      // |std::map::erase| invalidates its parameter so we post-increment.
-      vessels_.erase(it++);
-    } else {
-      it->second->keep = false;
-      ++it;
-    }
-  }
-  // Whether there the histories are far enough behind that we can advance them
-  // at least one step and reset the rendering extensions.
-  bool const reset_rendering_extensions = history_time_ + kΔt < t;
-  if (reset_rendering_extensions) {
-    VLOG(1) << "Prolonging old histories...";
-    VLOG(1) << "from : " << history_time_;
-    // Integration with a constant step.
-    NBodySystem<Barycentre>::Trajectories trajectories;
-    trajectories.reserve(vessels_.size() - new_vessels_.size() +
-                         celestials_.size());
-    for (auto const& pair : celestials_) {
-      trajectories.push_back(pair.second->history.get());
-    }
-    for (auto const& pair : vessels_) {
-      // newly added vessels (for which |rendering_extension == nullptr|) will
-      // have their history synchronised separately.
-      if (pair.second->rendering_extension != nullptr) {
-        pair.second->history->DeleteFork(&pair.second->rendering_extension);
-        trajectories.push_back(pair.second->history.get());
-      }
-    }
-    solar_system_.Integrate(history_integrator_,  // integrator
-                            t,                    // tmax
-                            kΔt,                  // Δt
-                            0,                    // sampling_period
-                            false,                // tmax_is_exact
-                            trajectories);        // trajectories
-    CHECK_GT(trajectories.front()->last_time(), current_time_);
-    history_time_ = trajectories.front()->last_time();
-    VLOG(1) << "to   : " << history_time_;
-    VLOG(1) << "Done.";
-    trajectories.clear();
+  CHECK(!initialising);
+  CleanUpVessels();
+  if (HistoryTime() + kΔt < t) {
+    // The histories are far enough behind that we can advance them at least one
+    // step and reset the prolongations.
+    EvolveSynchronisedHistories(t);
     if (!new_vessels_.empty()) {
-      LOG(INFO) << "Synchronising new histories...";
-      // Now synchronise the |new_vessels_|.
-      trajectories.reserve(celestials_.size() + new_vessels_.size());
-      for (auto const& pair : celestials_) {
-        trajectories.push_back(pair.second->rendering_extension);
-      }
-      for (auto const& pair : new_vessels_) {
-        trajectories.push_back(pair.second->history.get());
-      }
-      solar_system_.Integrate(extension_integrator_,  // integrator
-                              history_time_,          // tmax
-                              kΔt,                    // Δt
-                              0,                      // sampling_period
-                              true,                   // tmax_is_exact
-                              trajectories);          // trajectories
-      // All vessels have been synchronised.
-      new_vessels_.clear();
-      LOG(INFO) << "Done.";
+      SynchroniseNewHistories();
     }
-    // Reset rendering extensions.
-    for (auto const& pair : celestials_) {
-      pair.second->history->DeleteFork(&pair.second->rendering_extension);
-      pair.second->rendering_extension =
-          pair.second->history->Fork(history_time_);
-    }
-    for (auto const& pair : vessels_) {
-      CHECK(pair.second->rendering_extension == nullptr);
-      pair.second->rendering_extension =
-          pair.second->history->Fork(history_time_);
-    }
-    VLOG(1) << "Rendering extensions have been reset.";
+    ResetProlongations();
   }
-  // Advance the histories of the |new_vessels_| and the rendering extensions of
-  // the other vessels.
-  NBodySystem<Barycentre>::Trajectories trajectories;
-  trajectories.reserve(vessels_.size() + celestials_.size());
-  for (auto const& pair : celestials_) {
-    trajectories.push_back(pair.second->rendering_extension);
-  }
-  for (auto const& pair : new_vessels_) {
-    trajectories.push_back(pair.second->history.get());
-  }
-  for (auto const& pair : vessels_) {
-    if (pair.second->rendering_extension != nullptr) {
-      trajectories.push_back(pair.second->rendering_extension);
-    }
-  }
-  VLOG(1) << "Prolonging rendering extensions and new histories...";
-  VLOG(1) << "from : " << trajectories.front()->last_time();
-  VLOG(1) << "to   : " << t;
-  solar_system_.Integrate(extension_integrator_,  // integrator
-                          t,                      // tmax
-                          kΔt,                    // Δt
-                          0,                      // sampling_period
-                          true,                   // tmax_is_exact
-                          trajectories);          // trajectories
-  VLOG(1) << "Time has been advanced";
-  VLOG(1) << "from : " << current_time_;
-  VLOG(1) << "to   : " << t;
+  EvolveProlongationsAndUnsynchronisedHistories(t);
+  VLOG(1) << "Time has been advanced" << '\n'
+          << "from : " << current_time_ << '\n'
+          << "to   : " << t;
   current_time_ = t;
   planetarium_rotation_ = planetarium_rotation;
 }
 
 Displacement<AliceSun> Plugin::VesselDisplacementFromParent(
     GUID const& vessel_guid) const {
+  CHECK(!initialising);
   auto const it = vessels_.find(vessel_guid);
   CHECK(it != vessels_.end()) << "No vessel with GUID " << vessel_guid;
   Vessel const& vessel = *it->second;
   CHECK(vessel.history != nullptr) << "Vessel with GUID " << vessel_guid
                                    << " was not given an initial state";
   Displacement<Barycentre> const barycentric_result =
-      (vessel.rendering_extension == nullptr ?
+      (vessel.prolongation == nullptr ?
            vessel.history->last_position() :
-           vessel.rendering_extension->last_position()) -
-      vessel.parent->rendering_extension->last_position();
+           vessel.prolongation->last_position()) -
+      vessel.parent->prolongation->last_position();
   Displacement<AliceSun> const result =
       kSunLookingGlass(PlanetariumRotation()(barycentric_result));
   VLOG(1) << "Vessel with GUID " << vessel_guid << " is at parent position + "
@@ -297,16 +328,17 @@ Displacement<AliceSun> Plugin::VesselDisplacementFromParent(
 
 Velocity<AliceSun> Plugin::VesselParentRelativeVelocity(
     GUID const& vessel_guid) const {
+  CHECK(!initialising);
   auto const it = vessels_.find(vessel_guid);
   CHECK(it != vessels_.end()) << "No vessel with GUID " << vessel_guid;
   Vessel const& vessel = *it->second;
   CHECK(vessel.history != nullptr) << "Vessel with GUID " << vessel_guid
                                    << " was not given an initial state";
   Velocity<Barycentre> const barycentric_result =
-      (vessel.rendering_extension == nullptr ?
+      (vessel.prolongation == nullptr ?
            vessel.history->last_velocity() :
-           vessel.rendering_extension->last_velocity()) -
-       vessel.parent->rendering_extension->last_velocity();
+           vessel.prolongation->last_velocity()) -
+       vessel.parent->prolongation->last_velocity();
   Velocity<AliceSun> const result =
       kSunLookingGlass(PlanetariumRotation()(barycentric_result));
   VLOG(1) << "Vessel with GUID " << vessel_guid
@@ -317,14 +349,15 @@ Velocity<AliceSun> Plugin::VesselParentRelativeVelocity(
 
 Displacement<AliceSun> Plugin::CelestialDisplacementFromParent(
     Index const celestial_index) const {
+  CHECK(!initialising);
   auto const it = celestials_.find(celestial_index);
   CHECK(it != celestials_.end()) << "No body at index " << celestial_index;
   Celestial const& celestial = *it->second;
   CHECK(celestial.parent != nullptr)
       << "Body at index " << celestial_index << " is the sun";
   Displacement<Barycentre> const barycentric_result =
-      celestial.rendering_extension->last_position() -
-      celestial.parent->rendering_extension->last_position();
+      celestial.prolongation->last_position() -
+      celestial.parent->prolongation->last_position();
   Displacement<AliceSun> const result =
       kSunLookingGlass(PlanetariumRotation()(barycentric_result));
   VLOG(1) << "Celestial at index " << celestial_index
@@ -335,14 +368,15 @@ Displacement<AliceSun> Plugin::CelestialDisplacementFromParent(
 
 Velocity<AliceSun> Plugin::CelestialParentRelativeVelocity(
     Index const celestial_index) const {
+  CHECK(!initialising);
   auto const it = celestials_.find(celestial_index);
   CHECK(it != celestials_.end()) << "No body at index " << celestial_index;
   Celestial const& celestial = *it->second;
   CHECK(celestial.parent != nullptr)
       << "Body at index " << celestial_index << " is the sun";
   Velocity<Barycentre> const barycentric_result =
-      celestial.rendering_extension->last_velocity() -
-      celestial.parent->rendering_extension->last_velocity();
+      celestial.prolongation->last_velocity() -
+      celestial.parent->prolongation->last_velocity();
   Velocity<AliceSun> const result =
       kSunLookingGlass(PlanetariumRotation()(barycentric_result));
   VLOG(1) << "Celestial at index " << celestial_index
