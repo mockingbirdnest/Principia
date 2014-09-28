@@ -152,7 +152,7 @@ class Plugin {
   // |planetarium_rotation| is the value of KSP's |Planetarium.InverseRotAngle|
   // at instant |t|, which provides the rotation between the |World| axes and
   // the |Barycentre| axes (we don't use Planetarium.Rotation since it undergoes
-  // truncation to single-precision even though it's a double- precision value).
+  // truncation to single-precision even though it's a double-precision value).
   // Note that KSP's |Planetarium.InverseRotAngle| is in degrees.
   virtual void AdvanceTime(Instant const& t, Angle const& planetarium_rotation);
 
@@ -236,7 +236,7 @@ class Plugin {
     // non-constant timestep, which breaks symplecticity. |history| is advanced
     // with a constant timestep as soon as possible, and |rendering_extension|
     // is then restarted from this new end of |history|.
-    // Not owning, is null when the vessel is added and becomes non-null when 
+    // Not owning, is null when the vessel is added and becomes non-null when
     // history| is next advanced for all vessels and celestials. In the
     // meantime, |history| is advanced with small, non-constant timesteps to
     // catch up with the synchronous constant-timestep integration.

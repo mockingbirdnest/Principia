@@ -208,7 +208,7 @@ void Plugin::AdvanceTime(Instant const& t, Angle const& planetarium_rotation) {
       }
       for (auto const& pair : new_vessels_) {
         trajectories.push_back(pair.second->history.get());
-      };
+      }
       solar_system_.Integrate(extension_integrator_,  // integrator
                               history_time_,          // tmax
                               kΔt,                    // Δt
