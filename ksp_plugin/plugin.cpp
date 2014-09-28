@@ -169,7 +169,7 @@ void Plugin::AdvanceTime(Instant const& t, Angle const& planetarium_rotation) {
   }
   // Whether there the histories are far enough behind that we can advance them
   // at least one step and reset the rendering extensions.
-  bool reset_rendering_extensions = history_time_ + kΔt < t;
+  bool const reset_rendering_extensions = history_time_ + kΔt < t;
   if (reset_rendering_extensions) {
     VLOG(1) << "Prolonging old histories...";
     VLOG(1) << "from : " << history_time_;
