@@ -21,6 +21,8 @@ void InitGoogleLogging() {
   google::SetLogDestination(google::WARNING, "glog/Principia/WARNING.");
   google::SetLogDestination(google::INFO, "glog/Principia/INFO.");
   FLAGS_v = 1;
+  // Buffer severities <= |INFO|, i.e., don't buffer.
+  FLAGS_logbuflevel = google::INFO - 1;
   google::InitGoogleLogging("Principia");
   LOG(INFO) << "Initialized Google logging for Principia.";
 }

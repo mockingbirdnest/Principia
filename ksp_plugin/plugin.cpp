@@ -147,7 +147,7 @@ void Plugin::AdvanceTime(Instant const& t, Angle const& planetarium_rotation) {
     // its |history->last_time()| is greater than |history_time_|.
     if (found_in_new_vessels != new_vessels_.end()) {
       CHECK(vessel.rendering_extension == nullptr);
-      CHECK_GT(vessel.history->last_time(), history_time_);
+      CHECK_GE(vessel.history->last_time(), history_time_);
     } else {
       CHECK_NOTNULL(it->second->rendering_extension);
       CHECK_LE(vessel.history->last_time(), history_time_);
@@ -178,7 +178,6 @@ void Plugin::AdvanceTime(Instant const& t, Angle const& planetarium_rotation) {
     trajectories.reserve(vessels_.size() - new_vessels_.size() +
                          celestials_.size());
     for (auto const& pair : celestials_) {
-      pair.second->history->DeleteFork(&pair.second->rendering_extension);
       trajectories.push_back(pair.second->history.get());
     }
     for (auto const& pair : vessels_) {
@@ -216,11 +215,16 @@ void Plugin::AdvanceTime(Instant const& t, Angle const& planetarium_rotation) {
                               0,                      // sampling_period
                               true,                   // tmax_is_exact
                               trajectories);          // trajectories
-      LOG(INFO) << "Done.";
       // All vessels have been synchronised.
       new_vessels_.clear();
+      LOG(INFO) << "Done.";
     }
     // Reset rendering extensions.
+    for (auto const& pair : celestials_) {
+      pair.second->history->DeleteFork(&pair.second->rendering_extension);
+      pair.second->rendering_extension =
+          pair.second->history->Fork(history_time_);
+    }
     for (auto const& pair : vessels_) {
       CHECK(pair.second->rendering_extension == nullptr);
       pair.second->rendering_extension =
