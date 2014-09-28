@@ -14,7 +14,7 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\ksp_plugin\plugin_test.cpp">
+    <ClCompile Include="plugin_test.cpp">
       <Filter>Test Files</Filter>
     </ClCompile>
   </ItemGroup>
