@@ -20,6 +20,7 @@ void InitGoogleLogging() {
   google::SetLogDestination(google::ERROR, "glog/Principia/ERROR.");
   google::SetLogDestination(google::WARNING, "glog/Principia/WARNING.");
   google::SetLogDestination(google::INFO, "glog/Principia/INFO.");
+  FLAGS_v = 1;
   google::InitGoogleLogging("Principia");
   LOG(INFO) << "Initialized Google logging for Principia.";
 }
