@@ -6,16 +6,9 @@
 
 // DLL-exported functions for interfacing with Platform Invocation Services.
 
-#if defined(DLLEXPORT)
-#error "DLLEXPORT already defined"
-#elif defined(CDECL)
+#if defined(CDECL)
 #error "CDECL already defined"
 #else
-#if defined(_WIN32) || defined(_WIN64)
-#define DLLEXPORT __declspec(dllexport)
-#else
-#define DLLEXPORT __attribute__((visibility("default")))
-#endif
 // Architecture macros from http://goo.gl/ZypnO8.
 // We use cdecl on x86, the calling convention is unambiguous on x86-64.
 #if defined(__i386) || defined(_M_IX86)
@@ -30,6 +23,16 @@
 #define CDECL
 #else
 #error "Have you tried a Cray-1?"
+#endif
+#endif
+
+#if defined(DLLEXPORT)
+#error "DLLEXPORT already defined"
+#else
+#if defined(_WIN32) || defined(_WIN64)
+#define DLLEXPORT __declspec(dllexport)
+#else
+#define DLLEXPORT __attribute__((visibility("default")))
 #endif
 #endif
 
@@ -151,5 +154,5 @@ char const* CDECL SayHello();
 }  // namespace ksp_plugin
 }  // namespace principia
 
-#undef DLLEXPORT
 #undef CDECL
+#undef DLLEXPORT
