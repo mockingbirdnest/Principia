@@ -23,6 +23,28 @@ Rotation<Barycentre, WorldSun> Plugin::PlanetariumRotation() const {
       Bivector<double, Barycentre>({0, 1, 0}));
 }
 
+void Plugin::CheckVesselInvariants(
+    Vessel const& vessel,
+    GUIDToUnOwnedVessel::iterator const it_in_new_vessels) {
+  CHECK_EQ(it_in_new_vessels->second, &vessel);
+  CHECK(vessel.history != nullptr) << "Vessel with GUID "
+                                   << it_in_new_vessels->first
+                                   << " was not given an initial state";
+  // |vessel| is in |new_vessels_| <=> its |rendering_extension| is null <=>
+  // its |history->last_time()| is greater than |history_time_|.
+  // TODO(egg): At the moment, when a vessel is inserted when
+  // |current_time_ == history_time_| (that only happens during initialisation)
+  // its first step is unsynchronised. This is convenient to test code paths,
+  // but it means the invariant is GE vs. LT, rather than GT vs. LE.
+  if (it_in_new_vessels != new_vessels_.end()) {
+    CHECK(vessel.rendering_extension == nullptr);
+    CHECK_GE(vessel.history->last_time(), history_time_);
+  } else {
+    CHECK_NOTNULL(vessel.rendering_extension);
+    CHECK_LT(vessel.history->last_time(), history_time_);
+  }
+}
+
 Plugin::Plugin(Instant const& initial_time,
                Index const sun_index,
                GravitationalParameter const& sun_gravitational_parameter,
@@ -48,8 +70,8 @@ void Plugin::InsertCelestial(
     Index const parent_index,
     Displacement<AliceSun> const& from_parent_position,
     Velocity<AliceSun> const& from_parent_velocity) {
-  CHECK(initialising) << "Celestial bodies should be inserted before the first"
-                      << " call to |AdvanceTime|";
+  CHECK(initialising) << "Celestial bodies should be inserted before the first "
+                      << "call to |AdvanceTime|";
   auto const it = celestials_.find(parent_index);
   CHECK(it != celestials_.end()) << "No body at index " << parent_index;
   Celestial const& parent= *it->second;
@@ -130,7 +152,8 @@ void Plugin::SetVesselStateOffset(
       current_time_,
       {vessel->parent->history->last_position() + displacement,
        vessel->parent->history->last_velocity() + relative_velocity});
-  CHECK(new_vessels_.insert({vessel_guid, vessel}).second);
+  auto const inserted = new_vessels_.insert({vessel_guid, vessel});
+  CHECK(inserted.second);
 }
 
 void Plugin::AdvanceTime(Instant const& t, Angle const& planetarium_rotation) {
@@ -138,27 +161,17 @@ void Plugin::AdvanceTime(Instant const& t, Angle const& planetarium_rotation) {
   VLOG(1) << "Vessel cleanup";
   // Remove the vessels which were not updated since last time.
   for (auto& it = vessels_.cbegin(); it != vessels_.cend();) {
-    auto const& found_in_new_vessels = new_vessels_.find(it->first);
+    auto const& it_in_new_vessels = new_vessels_.find(it->first);
     Vessel const& vessel = *it->second;
     // While we're going over the vessels, check invariants.
-    CHECK(vessel.history != nullptr) << "Vessel with GUID " << it->first
-                                     << " was not given an initial state";
-    // |vessel| is in |new_vessels_| <=> its |rendering_extension| is null <=>
-    // its |history->last_time()| is greater than |history_time_|.
-    if (found_in_new_vessels != new_vessels_.end()) {
-      CHECK(vessel.rendering_extension == nullptr);
-      CHECK_GE(vessel.history->last_time(), history_time_);
-    } else {
-      CHECK_NOTNULL(it->second->rendering_extension);
-      CHECK_LE(vessel.history->last_time(), history_time_);
-    }
+    CheckVesselInvariants(vessel, it_in_new_vessels);
     // Now do the cleanup.
-    if (!it->second->keep) {
+    if (!vessel.keep) {
       LOG(INFO) << "Removing vessel with GUID " << it->first;
       // Leave no dangling pointers.
-      if (found_in_new_vessels != new_vessels_.end()) {
+      if (it_in_new_vessels != new_vessels_.end()) {
         LOG(INFO) << "Vessel had not been synchronised.";
-        new_vessels_.erase(found_in_new_vessels);
+        new_vessels_.erase(it_in_new_vessels);
       }
       // |std::map::erase| invalidates its parameter so we post-increment.
       vessels_.erase(it++);

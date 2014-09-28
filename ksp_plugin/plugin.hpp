@@ -246,16 +246,29 @@ class Plugin {
     bool keep = true;
   };
 
+  using GUIDToOwnedVessel = std::map<GUID, std::unique_ptr<Vessel>>;
+  using GUIDToUnOwnedVessel = std::map<GUID, Vessel* const>;
+
   // The rotation between the |World| basis at |current_time_| and the
   // |Barycentre| axes. Since |WorldSun| is not a rotating reference frame,
   // this change of basis is all that's required to convert relative velocities
   // or displacements between simultaneous events.
   Rotation<Barycentre, WorldSun> PlanetariumRotation() const;
 
+  // Given a |Vessel| and an iterator to it in |new_vessels_|, checks that it
+  // has been given an initial state, i.e. that its |history| is not null, and
+  // that the following are equivalent:
+  // * |vessel| is in |new_vessels_|
+  // * its |rendering_extension| is null
+  // * its |history->last_time()| is greater than |history_time_|.
+  void CheckVesselInvariants(
+      Vessel const& vessel,
+      GUIDToUnOwnedVessel::iterator const it_in_new_vessels);
+
   // TODO(egg): Constant time step for now.
   Time const kΔt = 10 * Second;
 
-  std::map<GUID, std::unique_ptr<Vessel>> vessels_;
+  GUIDToOwnedVessel vessels_;
   std::map<Index, std::unique_ptr<Celestial>> celestials_;
 
   // Vessels which have been recently inserted after |history_time_|.
