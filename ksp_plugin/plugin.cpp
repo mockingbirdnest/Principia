@@ -136,7 +136,7 @@ void Plugin::EvolveProlongationsAndUnsynchronisedHistories(Instant const& t) {
       trajectories.push_back(pair.second->prolongation);
     }
   }
-  VLOG(1) << "Evolving prolongations and new histories" << 'n'
+  VLOG(1) << "Evolving prolongations and new histories" << '\n'
           << "from : " << trajectories.front()->last_time() << '\n'
           << "to   : " << t;
   solar_system_.Integrate(prolongation_integrator_,  // integrator
