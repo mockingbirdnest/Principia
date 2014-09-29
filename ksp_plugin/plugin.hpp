@@ -305,7 +305,7 @@ class Plugin {
   std::map<Index, std::unique_ptr<Celestial>> celestials_;
 
   // Vessels which have been recently inserted after |HistoryTime()|. For these
-  // vessels, |history->last_time > HistoryTime()|. They have a null 
+  // vessels, |history->last_time > HistoryTime()|. They have a null
   // |prolongation|. The pointers are not owning and not null.
   std::map<GUID, Vessel* const> new_vessels_;
 
