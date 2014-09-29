@@ -11,14 +11,6 @@ namespace ksp_plugin {
 using geometry::Bivector;
 using geometry::Permutation;
 
-void Monostable::Flop() {
-  transient = false;
-}
-
-Monostable::operator bool const() const {
-  return transient;
-}
-
 Permutation<World, AliceWorld> const kWorldLookingGlass(
     Permutation<World, AliceWorld>::CoordinatePermutation::XZY);
 
@@ -27,11 +19,11 @@ Permutation<WorldSun, AliceSun> const kSunLookingGlass(
 
 void Plugin::CheckVesselInvariants(
     Vessel const& vessel,
-    GUIDToUnOwnedVessel::iterator const it_in_new_vessels) const {
+    GUIDToUnownedVessel::iterator const it_in_new_vessels) const {
   CHECK(vessel.history != nullptr) << "Vessel with GUID "
                                    << it_in_new_vessels->first
                                    << " was not given an initial state";
-  // TODO(egg): At the moment, when a vessel is inserted when
+  // TODO(egg): At the moment, if a vessel is inserted when
   // |current_time_ == HistoryTime()| (that only happens before the first call
   // to |AdvanceTime|) its first step is unsynchronised. This is convenient to
   // test code paths, but it means the invariant is GE, rather than GT.
@@ -53,18 +45,19 @@ void Plugin::CleanUpVessels() {
     // While we're going over the vessels, check invariants.
     CheckVesselInvariants(vessel, it_in_new_vessels);
     // Now do the cleanup.
-    if (!vessel.keep) {
+    if (vessel.keep) {
+      it->second->keep = false;
+      ++it;
+    } else {
       LOG(INFO) << "Removing vessel with GUID " << it->first;
-      // Leave no dangling pointers.
+      // Since we are going to delete the vessel, we must remove it from
+      // |new_vessels| if it's there.
       if (it_in_new_vessels != new_vessels_.end()) {
         LOG(INFO) << "Vessel had not been synchronised";
         new_vessels_.erase(it_in_new_vessels);
       }
       // |std::map::erase| invalidates its parameter so we post-increment.
       vessels_.erase(it++);
-    } else {
-      it->second->keep = false;
-      ++it;
     }
   }
 }
@@ -105,12 +98,12 @@ void Plugin::SynchroniseNewHistories() {
   for (auto const& pair : new_vessels_) {
     trajectories.push_back(pair.second->history.get());
   }
-  solar_system_.Integrate(extension_integrator_,  // integrator
-                          HistoryTime(),          // tmax
-                          kΔt,                    // Δt
-                          0,                      // sampling_period
-                          true,                   // tmax_is_exact
-                          trajectories);          // trajectories
+  solar_system_.Integrate(prolongation_integrator_,  // integrator
+                          HistoryTime(),             // tmax
+                          kΔt,                       // Δt
+                          0,                         // sampling_period
+                          true,                      // tmax_is_exact
+                          trajectories);             // trajectories
   new_vessels_.clear();
   LOG(INFO) << "Synchronised the new histories";
 }
@@ -124,8 +117,7 @@ void Plugin::ResetProlongations() {
   }
   for (auto const& pair : celestials_) {
     pair.second->history->DeleteFork(&pair.second->prolongation);
-    pair.second->prolongation =
-        pair.second->history->Fork(HistoryTime());
+    pair.second->prolongation = pair.second->history->Fork(HistoryTime());
   }
   VLOG(1) << "Prolongations have been reset";
 }
@@ -144,34 +136,19 @@ void Plugin::EvolveProlongationsAndUnsynchronisedHistories(Instant const& t) {
       trajectories.push_back(pair.second->prolongation);
     }
   }
-  VLOG(1) << "Evolving prolongations and new histories" << '\n'
+  VLOG(1) << "Evolving prolongations and new histories" << 'n'
           << "from : " << trajectories.front()->last_time() << '\n'
           << "to   : " << t;
-  solar_system_.Integrate(extension_integrator_,  // integrator
-                          t,                      // tmax
-                          kΔt,                    // Δt
-                          0,                      // sampling_period
-                          true,                   // tmax_is_exact
-                          trajectories);          // trajectories
+  solar_system_.Integrate(prolongation_integrator_,  // integrator
+                          t,                         // tmax
+                          kΔt,                       // Δt
+                          0,                         // sampling_period
+                          true,                      // tmax_is_exact
+                          trajectories);             // trajectories
 }
 
-Instant Plugin::HistoryTime() const {
-Instant const result = sun_->history->last_time();
-#ifdef _DEBUG
-// NOTE(egg): these checks are redundant with those done in
-// |CheckVesselInvariants|.
-for (auto const& pair : celestials_) {
-  CHECK(pair.second->history != nullptr);
-  CHECK_EQ(result, pair.second->history->last_time());
-}
-for (auto const& pair : vessels_) {
-  CHECK(pair.second->history != nullptr);
-  if (pair.second->prolongation != nullptr) {
-    CHECK_EQ(result, pair.second->history->last_time());
-  }
-}
-#endif
-return result;
+Instant const& Plugin::HistoryTime() const {
+  return sun_->history->last_time();
 }
 
 Rotation<Barycentre, WorldSun> Plugin::PlanetariumRotation() const {
@@ -195,7 +172,7 @@ Plugin::Plugin(Instant const& initial_time,
   sun_->prolongation = sun_->history->Fork(current_time_);
   history_integrator_.Initialize(history_integrator_.Order5Optimal());
   // NOTE(egg): perhaps a lower order would be appropriate.
-  extension_integrator_.Initialize(history_integrator_.Order5Optimal());
+  prolongation_integrator_.Initialize(history_integrator_.Order5Optimal());
 }
 
 void Plugin::InsertCelestial(

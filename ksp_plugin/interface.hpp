@@ -7,33 +7,33 @@
 // DLL-exported functions for interfacing with Platform Invocation Services.
 
 #if defined(CDECL)
-#error "CDECL already defined"
+#  error "CDECL already defined"
 #else
 // Architecture macros from http://goo.gl/ZypnO8.
 // We use cdecl on x86, the calling convention is unambiguous on x86-64.
-#if defined(__i386) || defined(_M_IX86)
-#if defined(_MSC_VER) || defined(__clang__)
-#define CDECL __cdecl
-#elif defined(__GNUC__) || defined(__INTEL_COMPILER)
-#define CDECL __attribute__((cdecl))
-#else
-#error "Get a real compiler"
-#endif
-#elif defined(_M_X64) || defined(__x86_64__)
-#define CDECL
-#else
-#error "Have you tried a Cray-1?"
-#endif
+#  if defined(__i386) || defined(_M_IX86)
+#    if defined(_MSC_VER) || defined(__clang__)
+#      define CDECL __cdecl
+#    elif defined(__GNUC__) || defined(__INTEL_COMPILER)
+#      define CDECL __attribute__((cdecl))
+#    else
+#      error "Get a real compiler"
+#    endif
+#  elif defined(_M_X64) || defined(__x86_64__)
+#    define CDECL
+#  else
+#    error "Have you tried a Cray-1?"
+#  endif
 #endif
 
 #if defined(DLLEXPORT)
-#error "DLLEXPORT already defined"
+#  error "DLLEXPORT already defined"
 #else
-#if defined(_WIN32) || defined(_WIN64)
-#define DLLEXPORT __declspec(dllexport)
-#else
-#define DLLEXPORT __attribute__((visibility("default")))
-#endif
+#  if defined(_WIN32) || defined(_WIN64)
+#    define DLLEXPORT __declspec(dllexport)
+#  else
+#    define DLLEXPORT __attribute__((visibility("default")))
+#  endif
 #endif
 
 namespace principia {
@@ -81,13 +81,13 @@ Plugin* CDECL NewPlugin(double const initial_time,
                         double const planetarium_rotation_in_degrees);
 
 // Deletes and nulls |*plugin|.
-// |plugin| should not be null. No transfer of ownership of |*plugin|,
+// |plugin| must not be null. No transfer of ownership of |*plugin|,
 // takes ownership of |**plugin|.
 extern "C" DLLEXPORT
 void CDECL DeletePlugin(Plugin const** const plugin);
 
 // Calls |plugin->InsertCelestial| with the arguments given.
-// |plugin| should not be null. No transfer of ownership.
+// |plugin| must not be null. No transfer of ownership.
 extern "C" DLLEXPORT
 void CDECL InsertCelestial(Plugin* const plugin,
                            int const celestial_index,
@@ -97,26 +97,26 @@ void CDECL InsertCelestial(Plugin* const plugin,
                            XYZ const from_parent_velocity);
 
 // Calls |plugin->UpdateCelestialHierarchy| with the arguments given.
-// |plugin| should not be null. No transfer of ownership.
+// |plugin| must not be null. No transfer of ownership.
 extern "C" DLLEXPORT
 void CDECL UpdateCelestialHierarchy(Plugin const* const plugin,
                                     int const celestial_index,
                                     int const parent_index);
 
 // Calls |plugin->EndInitialisation|.
-// |plugin| should not be null. No transfer of ownership.
+// |plugin| must not be null. No transfer of ownership.
 extern "C" DLLEXPORT
 void CDECL EndInitialisation(Plugin* const plugin);
 
 // Calls |plugin->InsertOrKeepVessel| with the arguments given.
-// |plugin| should not be null. No transfer of ownership.
+// |plugin| must not be null. No transfer of ownership.
 extern "C" DLLEXPORT
 void CDECL InsertOrKeepVessel(Plugin* const plugin,
                               char const* vessel_guid,
                               int const parent_index);
 
 // Calls |plugin->SetVesselStateOffset| with the arguments given.
-// |plugin| should not be null. No transfer of ownership.
+// |plugin| must not be null. No transfer of ownership.
 extern "C" DLLEXPORT
 void CDECL SetVesselStateOffset(Plugin* const plugin,
                                 char const* vessel_guid,
@@ -129,25 +129,25 @@ void CDECL AdvanceTime(Plugin* const plugin,
                        double const planetarium_rotation);
 
 // Calls |plugin->VesselDisplacementFromParent| with the arguments given.
-// |plugin| should not be null. No transfer of ownership.
+// |plugin| must not be null. No transfer of ownership.
 extern "C" DLLEXPORT
 XYZ CDECL VesselDisplacementFromParent(Plugin const* const plugin,
                                        char const* vessel_guid);
 
 // Calls |plugin->VesselParentRelativeVelocity| with the arguments given.
-// |plugin| should not be null. No transfer of ownership.
+// |plugin| must not be null. No transfer of ownership.
 extern "C" DLLEXPORT
 XYZ CDECL VesselParentRelativeVelocity(Plugin const* const plugin,
                                        char const* vessel_guid);
 
 // Calls |plugin->CelestialDisplacementFromParent| with the arguments given.
-// |plugin| should not be null. No transfer of ownership.
+// |plugin| must not be null. No transfer of ownership.
 extern "C" DLLEXPORT
 XYZ CDECL CelestialDisplacementFromParent(Plugin const* const plugin,
                                           int const celestial_index);
 
 // Calls |plugin->CelestialParentRelativeVelocity| with the arguments given.
-// |plugin| should not be null. No transfer of ownership.
+// |plugin| must not be null. No transfer of ownership.
 extern "C" DLLEXPORT
 XYZ CDECL CelestialParentRelativeVelocity(Plugin const* const plugin,
                                           int const celestial_index);

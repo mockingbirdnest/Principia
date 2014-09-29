@@ -81,11 +81,13 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="mock_plugin.hpp" />
+    <ClInclude Include="monostable.hpp" />
     <ClInclude Include="plugin.hpp" />
     <ClInclude Include="interface.hpp" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="interface.cpp" />
+    <ClCompile Include="monostable.cpp" />
     <ClCompile Include="plugin.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
