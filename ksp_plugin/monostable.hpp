@@ -15,7 +15,7 @@ class Monostable {
   Monostable& operator=(Monostable&&) = delete;
 
   void Flop();
-  operator bool const() const;
+  operator bool() const;
 
  private:
   bool transient_ = true;

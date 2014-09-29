@@ -7,7 +7,7 @@ void Monostable::Flop() {
   transient_ = false;
 }
 
-Monostable::operator bool const() const {
+Monostable::operator bool() const {
   return transient_;
 }
 
