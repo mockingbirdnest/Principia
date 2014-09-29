@@ -11,6 +11,14 @@ namespace ksp_plugin {
 using geometry::Bivector;
 using geometry::Permutation;
 
+void Monostable::Flop() {
+  transient = false;
+}
+
+Monostable::operator bool const() const {
+  return transient;
+}
+
 Permutation<World, AliceWorld> const kWorldLookingGlass(
     Permutation<World, AliceWorld>::CoordinatePermutation::XZY);
 
@@ -20,20 +28,19 @@ Permutation<WorldSun, AliceSun> const kSunLookingGlass(
 void Plugin::CheckVesselInvariants(
     Vessel const& vessel,
     GUIDToUnOwnedVessel::iterator const it_in_new_vessels) const {
-  CHECK_EQ(it_in_new_vessels->second, &vessel);
   CHECK(vessel.history != nullptr) << "Vessel with GUID "
                                    << it_in_new_vessels->first
                                    << " was not given an initial state";
   // TODO(egg): At the moment, when a vessel is inserted when
-  // |current_time_ == HistoryTime()| (that only happens during initialisation)
-  // its first step is unsynchronised. This is convenient to test code paths,
-  // but it means the invariant is GE vs. LT, rather than GT vs. LE.
+  // |current_time_ == HistoryTime()| (that only happens before the first call
+  // to |AdvanceTime|) its first step is unsynchronised. This is convenient to
+  // test code paths, but it means the invariant is GE, rather than GT.
   if (it_in_new_vessels != new_vessels_.end()) {
     CHECK(vessel.prolongation == nullptr);
     CHECK_GE(vessel.history->last_time(), HistoryTime());
   } else {
     CHECK_NOTNULL(vessel.prolongation);
-    CHECK_LT(vessel.history->last_time(), HistoryTime());
+    CHECK_EQ(vessel.history->last_time(), HistoryTime());
   }
 }
 
@@ -73,7 +80,9 @@ void Plugin::EvolveSynchronisedHistories(Instant const& t) {
     trajectories.push_back(pair.second->history.get());
   }
   for (auto const& pair : vessels_) {
-    trajectories.push_back(pair.second->history.get());
+    if (pair.second->prolongation != nullptr) {
+      trajectories.push_back(pair.second->history.get());
+    }
   }
   solar_system_.Integrate(history_integrator_,  // integrator
                           t,                    // tmax
@@ -149,6 +158,8 @@ void Plugin::EvolveProlongationsAndUnsynchronisedHistories(Instant const& t) {
 Instant Plugin::HistoryTime() const {
 Instant const result = sun_->history->last_time();
 #ifdef _DEBUG
+// NOTE(egg): these checks are redundant with those done in
+// |CheckVesselInvariants|.
 for (auto const& pair : celestials_) {
   CHECK(pair.second->history != nullptr);
   CHECK_EQ(result, pair.second->history->last_time());
@@ -225,7 +236,7 @@ void Plugin::InsertCelestial(
 }
 
 void Plugin::EndInitialisation() {
-  initialising = false;
+  initialising.Flop();
 }
 
 void Plugin::UpdateCelestialHierarchy(Index const celestial_index,

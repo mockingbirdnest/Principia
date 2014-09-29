@@ -69,6 +69,19 @@ using GUID = std::string;
 // |b.flightGlobalsIndex| in C#. We use this as a key in an |std::map|.
 using Index = int;
 
+// A boolean which is constructed true and becomes false when |Flop| is called.
+class Monostable {
+ public:
+  Monostable() = default;
+  ~Monostable() = default;
+
+  void Flop();
+  operator bool const() const;
+
+ private:
+  bool transient = true;
+};
+
 class Plugin {
  public:
   Plugin() = delete;
@@ -275,6 +288,7 @@ class Plugin {
   // * |vessel| is in |new_vessels_|
   // * its |prolongation| is null
   // * its |history->last_time()| is greater than |HistoryTime()|.
+  // Also checks that |history->last_time()| is at least |HistoryTime()|.
   void CheckVesselInvariants(
       Vessel const& vessel,
       GUIDToUnOwnedVessel::iterator const it_in_new_vessels) const;
@@ -310,9 +324,8 @@ class Plugin {
   // are synchronised.
   SPRKIntegrator<Length, Speed> extension_integrator_;
 
-  // Set to false by |AdvanceTime|. Should be true when inserting celestial
-  // bodies.
-  bool initialising = true;
+  // Whether initialisation is ongoing.
+  Monostable initialising;
 
   Angle planetarium_rotation_;
   // The current in-game universal time.
