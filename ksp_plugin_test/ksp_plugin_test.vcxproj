@@ -11,6 +11,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\ksp_plugin\monostable.cpp" />
     <ClCompile Include="..\ksp_plugin\plugin.cpp" />
     <ClCompile Include="plugin_test.cpp" />
   </ItemGroup>
