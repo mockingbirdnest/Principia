@@ -30,6 +30,7 @@ void NBodySystem<InertialFrame>::Integrate(
     Instant const& tmax,
     Time const& Δt,
     int const sampling_period,
+    bool const tmax_is_exact,
     Trajectories const& trajectories) {
   SymplecticIntegrator<Length, Speed>::Parameters parameters;
   std::vector<SymplecticIntegrator<Length, Speed>::SystemState> solution;
@@ -103,6 +104,7 @@ void NBodySystem<InertialFrame>::Integrate(
     parameters.tmax = tmax - reference_time;
     parameters.Δt = Δt;
     parameters.sampling_period = sampling_period;
+    parameters.tmax_is_exact = tmax_is_exact;
     dynamic_cast<const SPRKIntegrator<Length, Speed>*>(&integrator)->Solve(
         std::bind(&NBodySystem::ComputeGravitationalAccelerations,
                   massive_trajectories,

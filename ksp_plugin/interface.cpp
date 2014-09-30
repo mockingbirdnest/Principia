@@ -20,8 +20,11 @@ void InitGoogleLogging() {
   google::SetLogDestination(google::ERROR, "glog/Principia/ERROR.");
   google::SetLogDestination(google::WARNING, "glog/Principia/WARNING.");
   google::SetLogDestination(google::INFO, "glog/Principia/INFO.");
+  FLAGS_v = 1;
+  // Buffer severities <= |INFO|, i.e., don't buffer.
+  FLAGS_logbuflevel = google::INFO - 1;
   google::InitGoogleLogging("Principia");
-  LOG(INFO) << "Initialized Google logging for Principia.";
+  LOG(INFO) << "Initialized Google logging for Principia";
 }
 
 void LogInfo(char const* message) {
@@ -44,21 +47,21 @@ Plugin* NewPlugin(double const initial_time,
                   int const sun_index,
                   double const sun_gravitational_parameter,
                   double const planetarium_rotation_in_degrees) {
-  LOG(INFO) << "Constructing Principia plugin...";
+  LOG(INFO) << "Constructing Principia plugin";
   return new Plugin(
       Instant(initial_time * Second),
       sun_index,
       sun_gravitational_parameter * SIUnit<GravitationalParameter>(),
       planetarium_rotation_in_degrees * Degree);
-  LOG(INFO) << "Plugin constructed.";
+  LOG(INFO) << "Plugin constructed";
 }
 
 void DeletePlugin(Plugin const** const plugin) {
-  LOG(INFO) << "Destroying Principia plugin...";
+  LOG(INFO) << "Destroying Principia plugin";
   CHECK_NOTNULL(plugin);
   delete *plugin;
   *plugin = nullptr;
-  LOG(INFO) << "Plugin destroyed.";
+  LOG(INFO) << "Plugin destroyed";
 }
 
 // NOTE(egg): The |* (Metre / Second)| might be slower than |* SIUnit<Speed>()|,
@@ -89,13 +92,17 @@ void UpdateCelestialHierarchy(Plugin const* const plugin,
                                                   parent_index);
 }
 
+void EndInitialisation(Plugin* const plugin) {
+  CHECK_NOTNULL(plugin)->EndInitialisation();
+}
+
 void InsertOrKeepVessel(Plugin* const plugin,
                         char const* vessel_guid,
                         int const parent_index) {
   CHECK_NOTNULL(plugin)->InsertOrKeepVessel(vessel_guid, parent_index);
 }
 
-void SetVesselStateOffset(Plugin const* const plugin,
+void SetVesselStateOffset(Plugin* const plugin,
                           char const* vessel_guid,
                           XYZ const from_parent_position,
                           XYZ const from_parent_velocity) {
@@ -107,6 +114,13 @@ void SetVesselStateOffset(Plugin const* const plugin,
       Velocity<AliceSun>({from_parent_velocity.x * (Metre / Second),
                           from_parent_velocity.y * (Metre / Second),
                           from_parent_velocity.z * (Metre / Second)}));
+}
+
+void AdvanceTime(Plugin* const plugin,
+                 double const t,
+                 double const planetarium_rotation) {
+  CHECK_NOTNULL(plugin)->AdvanceTime(Instant(t * Second),
+                                     planetarium_rotation * Degree);
 }
 
 XYZ VesselDisplacementFromParent(Plugin const* const plugin,

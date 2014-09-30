@@ -76,6 +76,10 @@ public class PluginAdapter : UnityEngine.MonoBehaviour {
 
   [DllImport(dllName           : kDllPath,
              CallingConvention = CallingConvention.Cdecl)]
+  private static extern void EndInitialisation(IntPtr plugin);
+
+  [DllImport(dllName           : kDllPath,
+             CallingConvention = CallingConvention.Cdecl)]
   private static extern void UpdateCelestialHierarchy(IntPtr plugin,
                                                       int celestial_index,
                                                       int parent_index);
@@ -94,6 +98,12 @@ public class PluginAdapter : UnityEngine.MonoBehaviour {
       [MarshalAs(UnmanagedType.LPStr)] String guid,
       XYZ from_parent_position,
       XYZ from_parent_velocity);
+
+  [DllImport(dllName           : kDllPath,
+             CallingConvention = CallingConvention.Cdecl)]
+  private static extern void AdvanceTime(IntPtr plugin, 
+                                         double t,
+                                         double planetarium_rotation);
 
   [DllImport(dllName           : kDllPath,
              CallingConvention = CallingConvention.Cdecl)]
@@ -195,7 +205,11 @@ public class PluginAdapter : UnityEngine.MonoBehaviour {
   private void FixedUpdate() {
     if (PluginRunning()) {
       double universal_time = Planetarium.GetUniversalTime();
+      AdvanceTime(plugin_, universal_time, Planetarium.InverseRotAngle);
       BodyProcessor update_body = body => {
+        UpdateCelestialHierarchy(plugin_,
+                                 body.flightGlobalsIndex,
+                                 body.orbit.referenceBody.flightGlobalsIndex);
         Vector3d position =
             (Vector3d)CelestialDisplacementFromParent(plugin_,
                                                       body.flightGlobalsIndex);
@@ -228,6 +242,9 @@ public class PluginAdapter : UnityEngine.MonoBehaviour {
       };
       ApplyToBodyTree(update_body);
       VesselProcessor update_vessel = vessel => {
+        InsertOrKeepVessel(plugin_,
+                           vessel.id.ToString(),
+                           vessel.orbit.referenceBody.flightGlobalsIndex);
         Vector3d position =
             (Vector3d)VesselDisplacementFromParent(plugin_,
                                                    vessel.id.ToString());
@@ -294,6 +311,7 @@ public class PluginAdapter : UnityEngine.MonoBehaviour {
                       (XYZ)body.orbit.pos, (XYZ)body.orbit.vel);
     };
     ApplyToBodyTree(insert_body);
+    EndInitialisation(plugin_);
     VesselProcessor insert_vessel = vessel => {
       LogInfo("Inserting " + vessel.name + "...");
       bool inserted =

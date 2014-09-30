@@ -20,12 +20,18 @@
     <ClInclude Include="mock_plugin.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="monostable.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="interface.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="plugin.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="monostable.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
