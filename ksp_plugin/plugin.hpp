@@ -98,8 +98,7 @@ class Plugin {
   // must already have been inserted. The parent of the new body is the body
   // at index |parent_index|, which must already have been inserted. The state
   // of the new body at current time is given by |AliceSun| offsets from the
-  // parent. Must only be called during initialisation (before the first call
-  // to |AdvanceTime|.
+  // parent. Must only be called during initialisation.
   // For a KSP |CelestialBody| |b|, the arguments correspond to:
   // |b.flightGlobalsIndex|,
   // |b.gravParameter|,
