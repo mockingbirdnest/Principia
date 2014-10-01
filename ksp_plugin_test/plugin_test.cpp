@@ -1,6 +1,7 @@
 ﻿
 #include "ksp_plugin/plugin.hpp"
 
+#include <map>
 #include <memory>
 
 #include "geometry/permutation.hpp"
