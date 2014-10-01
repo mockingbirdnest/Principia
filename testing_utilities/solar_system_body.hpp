@@ -451,6 +451,9 @@ int SolarSystem::parent(int const index) {
       return kEarth;
     case kTriton:
       return kNeptune;
+    default:
+      LOG(FATAL) << "Undefined index";
+      return kSun;
   }
 }
 
