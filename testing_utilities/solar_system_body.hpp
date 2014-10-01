@@ -424,5 +424,35 @@ SolarSystem::trajectories() const {
   return result;
 }
 
+int SolarSystem::parent(int const index) {
+  switch (index) {
+    case kSun:
+      LOG(FATAL) << "The Sun has no parent";
+      return kSun;  // Silly compiler is silly.
+    case kJupiter:
+    case kSaturn:
+    case kNeptune:
+    case kUranus:
+    case kEarth:
+    case kVenus:
+    case kMars:
+    case kMercury:
+    case kEris:
+    case kPluto:
+      return kSun;
+    case kGanymede:
+    case kCallisto:
+    case kIo:
+    case kEuropa:
+      return kJupiter;
+    case kTitan:
+      return kSaturn;
+    case kMoon:
+      return kEarth;
+    case kTriton:
+      return kNeptune;
+  }
+}
+
 }  // namespace testing_utilities
 }  // namespace principia
