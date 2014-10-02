@@ -47,7 +47,7 @@ class PluginTest : public testing::Test {
   std::unique_ptr<Plugin> plugin_;
 };
 
-TEST_F(PluginTest, Initialisation) {
+TEST_F(PluginTest, Initialization) {
   for (std::size_t index = SolarSystem::kSun + 1;
        index < bodies_.size();
        ++index) {
@@ -64,7 +64,7 @@ TEST_F(PluginTest, Initialisation) {
                              from_parent_position,
                              from_parent_velocity);
   }
-  plugin_->EndInitialisation();
+  plugin_->EndInitialization();
   for (std::size_t index = SolarSystem::kSun + 1;
        index < bodies_.size();
        ++index) {
