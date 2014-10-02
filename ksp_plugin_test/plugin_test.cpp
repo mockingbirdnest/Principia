@@ -74,9 +74,9 @@ class PluginTest : public testing::Test {
   std::unique_ptr<Plugin> plugin_;
 };
 
-TEST_F(PluginTest, Initialisation) {
+TEST_F(PluginTest, Initialization) {
   InsertAllSolarSystemBodies();
-  plugin_->EndInitialisation();
+  plugin_->EndInitialization();
   for (std::size_t index = SolarSystem::kSun + 1;
        index < bodies_.size();
        ++index) {
@@ -97,7 +97,7 @@ TEST_F(PluginTest, Initialisation) {
 TEST_F(PluginTest, VesselInsertion) {
   GUID const guid = "Test Satellite";
   InsertAllSolarSystemBodies();
-  plugin_->EndInitialisation();
+  plugin_->EndInitialization();
   bool const inserted = plugin_->InsertOrKeepVessel(guid,
                                                     SolarSystem::kEarth);
   EXPECT_TRUE(inserted);
