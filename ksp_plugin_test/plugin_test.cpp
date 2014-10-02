@@ -103,5 +103,9 @@ TEST_F(PluginTest, Initialisation) {
   }
 }
 
+TEST_F(PluginTest, VesselInsertion) {
+
+}
+
 }  // namespace ksp_plugin
 }  // namespace principia
