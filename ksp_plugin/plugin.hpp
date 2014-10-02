@@ -82,7 +82,7 @@ class Plugin {
   // set to |planetarium_rotation|. Inserts a celestial body with an arbitrary
   // position, index |sun_index| and gravitational parameter
   // |sun_gravitational_parameter|.
-  // Starts initialisation.
+  // Starts initialization.
   // The arguments correspond to KSP's
   // |Planetarium.GetUniversalTime()|,
   // |Planetarium.fetch.Sun.flightGlobalsIndex|,
@@ -98,7 +98,7 @@ class Plugin {
   // must already have been inserted. The parent of the new body is the body
   // at index |parent_index|, which must already have been inserted. The state
   // of the new body at current time is given by |AliceSun| offsets from the
-  // parent. Must only be called during initialisation (before the first call
+  // parent. Must only be called during initialization (before the first call
   // to |AdvanceTime|.
   // For a KSP |CelestialBody| |b|, the arguments correspond to:
   // |b.flightGlobalsIndex|,
@@ -113,12 +113,12 @@ class Plugin {
     Displacement<AliceSun> const& from_parent_position,
     Velocity<AliceSun> const& from_parent_velocity);
 
-  // Ends initialisation.
-  virtual void EndInitialisation();
+  // Ends initialization.
+  virtual void EndInitialization();
 
   // Sets the parent of the celestial body with index |celestial_index| to the
   // one with index |parent_index|. Both bodies must already have been
-  // inserted. Must be called after initialisation.
+  // inserted. Must be called after initialization.
   // For a KSP |CelestialBody| |b|, the arguments correspond to
   // |b.flightGlobalsIndex|, |b.orbit.referenceBody.flightGlobalsIndex|.
   virtual void UpdateCelestialHierarchy(Index const celestial_index,
@@ -133,7 +133,7 @@ class Plugin {
   // |SetVesselStateOffset| must be called with the same GUID before the
   // next call to |AdvanceTime|, |VesselDisplacementFromParent| or
   // |VesselParentRelativeVelocity|, so that the initial state of the new
-  // vessel is known. Must be called after initialisation.
+  // vessel is known. Must be called after initialization.
   // For a KSP |Vessel| |v|, the arguments correspond to
   // |v.id|, |v.orbit.referenceBody.flightGlobalsIndex|.
   virtual bool InsertOrKeepVessel(GUID const& vessel_guid,
@@ -141,7 +141,7 @@ class Plugin {
 
   // Set the position and velocity of the vessel with GUID |vessel_guid|
   // relative to its parent at current time. |SetVesselStateOffset| must only
-  // be called once per vessel. Must be called after initialisation.
+  // be called once per vessel. Must be called after initialization.
   // For a KSP |Vessel| |v|, the arguments correspond to
   // |v.id.ToString()|,
   // |v.orbit.pos|,
@@ -153,7 +153,7 @@ class Plugin {
 
   // Simulates the system until instant |t|. All vessels that have not been
   // refreshed by calling |InsertOrKeepVessel| since the last call to
-  // |AdvanceTime| will be removed. Must be called after initialisation.
+  // |AdvanceTime| will be removed. Must be called after initialization.
   // |planetarium_rotation| is the value of KSP's |Planetarium.InverseRotAngle|
   // at instant |t|, which provides the rotation between the |World| axes and
   // the |Barycentre| axes (we don't use Planetarium.Rotation since it undergoes
@@ -165,7 +165,7 @@ class Plugin {
   // parent at current time. For a KSP |Vessel| |v|, the argument corresponds to
   // |v.id.ToString()|, the return value to |v.orbit.pos|.
   // A vessel with GUID |vessel_guid| must have been inserted and kept. Must
-  // be called after initialisation.
+  // be called after initialization.
   virtual Displacement<AliceSun> VesselDisplacementFromParent(
       GUID const& vessel_guid) const;
 
@@ -173,7 +173,7 @@ class Plugin {
   // parent at current time. For a KSP |Vessel| |v|, the argument corresponds to
   // |v.id.ToString()|, the return value to |v.orbit.vel|.
   // A vessel with GUID |vessel_guid| must have been inserted and kept. Must
-  // be called after initialisation.
+  // be called after initialization.
   virtual Velocity<AliceSun> VesselParentRelativeVelocity(
       GUID const& vessel_guid) const;
 
@@ -181,7 +181,7 @@ class Plugin {
   // to its parent at current time. For a KSP |CelestialBody| |b|, the argument
   // corresponds to |b.flightGlobalsIndex|, the return value to |b.orbit.pos|.
   // A celestial with index |celestial_index| must have been inserted, and it
-  // must not be the sun. Must be called after initialisation.
+  // must not be the sun. Must be called after initialization.
   virtual Displacement<AliceSun> CelestialDisplacementFromParent(
       Index const celestial_index) const;
 
@@ -189,7 +189,7 @@ class Plugin {
   // to its parent at current time. For a KSP |CelestialBody| |b|, the argument
   // corresponds to |b.flightGlobalsIndex|, the return value to |b.orbit.vel|.
   // A celestial with index |celestial_index| must have been inserted, and it
-  // must not be the sun. Must be called after initialisation.
+  // must not be the sun. Must be called after initialization.
   virtual Velocity<AliceSun> CelestialParentRelativeVelocity(
       Index const celestial_index) const;
 
@@ -255,7 +255,7 @@ class Plugin {
   using GUIDToOwnedVessel = std::map<GUID, std::unique_ptr<Vessel>>;
   using GUIDToUnownedVessel = std::map<GUID, Vessel* const>;
 
-  // The common last time of the histories of synchronised vessels and
+  // The common last time of the histories of synchronized vessels and
   // celestials.
   Instant const& HistoryTime() const;
 
@@ -282,21 +282,21 @@ class Plugin {
       Vessel const& vessel,
       GUIDToUnownedVessel::iterator const it_in_new_vessels) const;
 
-  // Evolves the histories of the |celestials_| and of the synchronised vessels
+  // Evolves the histories of the |celestials_| and of the synchronized vessels
   // up to at most |t|. |t| must be large enough that at least one step of
   // size |kΔt| can fit between |current_time_| and |t|.
-  void EvolveSynchronisedHistories(Instant const& t);
+  void EvolveSynchronizedHistories(Instant const& t);
 
-  // Synchronises the |new_vessels_| and clears |new_vessels_|.
-  void SynchroniseNewHistories();
+  // Synchronizes the |new_vessels_| and clears |new_vessels_|.
+  void SynchronizeNewHistories();
 
   // Resets the prolongations of all vessels and celestials to |HistoryTime()|.
   // All vessels and celestials must have a null |prolongation|.
   void ResetProlongations();
 
-  // Evolves the prolongations of all celestials and synchronised vessels, as
-  // well as the histories of unsynchronised vessels, up to exactly instant |t|.
-  void EvolveProlongationsAndUnsynchronisedHistories(Instant const& t);
+  // Evolves the prolongations of all celestials and synchronized vessels, as
+  // well as the histories of unsynchronized vessels, up to exactly instant |t|.
+  void EvolveProlongationsAndUnsynchronizedHistories(Instant const& t);
 
   // TODO(egg): Constant time step for now.
   Time const kΔt = 10 * Second;
@@ -310,14 +310,14 @@ class Plugin {
   std::map<GUID, Vessel* const> new_vessels_;
 
   NBodySystem<Barycentre> solar_system_;
-  // The symplectic integrator computing the synchronised histories.
+  // The symplectic integrator computing the synchronized histories.
   SPRKIntegrator<Length, Speed> history_integrator_;
   // The integrator computing the prolongations and the histories before they
-  // are synchronised.
+  // are synchronized.
   SPRKIntegrator<Length, Speed> prolongation_integrator_;
 
-  // Whether initialisation is ongoing.
-  Monostable initialising;
+  // Whether initialization is ongoing.
+  Monostable initializing;
 
   Angle planetarium_rotation_;
   // The current in-game universal time.

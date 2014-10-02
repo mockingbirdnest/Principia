@@ -92,8 +92,8 @@ void UpdateCelestialHierarchy(Plugin const* const plugin,
                                                   parent_index);
 }
 
-void EndInitialisation(Plugin* const plugin) {
-  CHECK_NOTNULL(plugin)->EndInitialisation();
+void EndInitialization(Plugin* const plugin) {
+  CHECK_NOTNULL(plugin)->EndInitialization();
 }
 
 void InsertOrKeepVessel(Plugin* const plugin,
