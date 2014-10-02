@@ -1,5 +1,6 @@
 ﻿#pragma once
 
+#include <memory>
 #include <vector>
 
 #include "geometry/named_quantities.hpp"
@@ -25,6 +26,28 @@ class SolarSystem {
  public:
   using Bodies = std::vector<std::unique_ptr<physics::Body const> const>;
 
+  // The indices of the bodies in the |Bodies| vector.
+  enum Index : int {
+    kSun = 0,
+    kJupiter = 1,
+    kSaturn = 2,
+    kNeptune = 3,
+    kUranus = 4,
+    kEarth = 5,
+    kVenus = 6,
+    kMars = 7,
+    kMercury = 8,
+    kGanymede = 9,
+    kTitan = 10,
+    kCallisto = 11,
+    kIo = 12,
+    kMoon = 13,
+    kEuropa = 14,
+    kTriton = 15,
+    kEris = 16,
+    kPluto = 17,
+  };
+
   // Factory.  The caller gets ownership of the pointers.
   // A solar system at the time of the launch of Простейший Спутник-1,
   // 1957-10-04T19:28:34Z (JD2436116.3115).
@@ -39,6 +62,10 @@ class SolarSystem {
 
   // This class retains ownership of the trajectories.
   physics::NBodySystem<ICRFJ2000Ecliptic>::Trajectories trajectories() const;
+
+  // Returns the index of the parent of the body with the given |index|.
+  // Because enums are broken in C++ we use ints.  Sigh.
+  static int parent(int const index);
 
  private:
   // A system containing the 18 largest solar system bodies (Pluto and all
