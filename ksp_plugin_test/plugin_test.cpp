@@ -105,13 +105,13 @@ TEST_F(PluginTest, InsertCelestialError) {
       solar_system_->trajectories().front()->last_velocity());
   EXPECT_DEATH({
     InsertAllSolarSystemBodies();
-    plugin_->EndInitialisation();
+    plugin_->EndInitialization();
     plugin_->InsertCelestial(42,
                              bodies_.front()->gravitational_parameter(),
                              SolarSystem::kSun,
                              from_parent_position,
                              from_parent_velocity);
-  }, DeathMessage("before the end of initialisation"));
+  }, DeathMessage("before the end of initialization"));
   EXPECT_DEATH({
     InsertAllSolarSystemBodies();
     plugin_->InsertCelestial(42,
