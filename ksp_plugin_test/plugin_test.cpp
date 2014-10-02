@@ -10,6 +10,7 @@
 #include "gtest/gtest.h"
 #include "quantities/si.hpp"
 #include "testing_utilities/almost_equals.hpp"
+#include "testing_utilities/death_message.hpp"
 #include "testing_utilities/numerics.hpp"
 #include "testing_utilities/solar_system.hpp"
 
@@ -19,9 +20,10 @@ using principia::quantities::Abs;
 using principia::quantities::Sqrt;
 using principia::si::Radian;
 using principia::si::AstronomicalUnit;
-using principia::testing_utilities::AlmostEquals;
-using principia::testing_utilities::ICRFJ2000Ecliptic;
 using principia::testing_utilities::AbsoluteError;
+using principia::testing_utilities::AlmostEquals;
+using principia::testing_utilities::DeathMessage;
+using principia::testing_utilities::ICRFJ2000Ecliptic;
 using principia::testing_utilities::SolarSystem;
 using testing::Eq;
 using testing::Lt;
@@ -92,6 +94,40 @@ TEST_F(PluginTest, Initialization) {
                     plugin_->CelestialParentRelativeVelocity(index)),
                     1000));
   }
+}
+
+TEST_F(PluginTest, InsertCelestialError) {
+  Displacement<AliceSun> const from_parent_position = looking_glass_(
+      solar_system_->trajectories().front()->last_position() -
+      solar_system_->trajectories().front()->last_position());
+  Velocity<AliceSun> const from_parent_velocity = looking_glass_(
+      solar_system_->trajectories().front()->last_velocity() -
+      solar_system_->trajectories().front()->last_velocity());
+  EXPECT_DEATH({
+    InsertAllSolarSystemBodies();
+    plugin_->EndInitialisation();
+    plugin_->InsertCelestial(42,
+                             bodies_.front()->gravitational_parameter(),
+                             SolarSystem::kSun,
+                             from_parent_position,
+                             from_parent_velocity);
+  }, DeathMessage("before the end of initialisation"));
+  EXPECT_DEATH({
+    InsertAllSolarSystemBodies();
+    plugin_->InsertCelestial(42,
+                             bodies_.front()->gravitational_parameter(),
+                             1729,
+                             from_parent_position,
+                             from_parent_velocity);
+  }, DeathMessage("No body at index"));
+  EXPECT_DEATH({
+    InsertAllSolarSystemBodies();
+    plugin_->InsertCelestial(SolarSystem::kEarth,
+                             bodies_.front()->gravitational_parameter(),
+                             SolarSystem::kSun,
+                             from_parent_position,
+                             from_parent_velocity);
+  }, DeathMessage("Body already exists"));
 }
 
 TEST_F(PluginTest, VesselInsertion) {
