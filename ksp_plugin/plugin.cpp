@@ -182,7 +182,7 @@ void Plugin::InsertCelestial(
     Displacement<AliceSun> const& from_parent_position,
     Velocity<AliceSun> const& from_parent_velocity) {
   CHECK(initialising) << "Celestial bodies should be inserted before the end "
-                      << "of initialisatio";
+                      << "of initialisation";
   auto const it = celestials_.find(parent_index);
   CHECK(it != celestials_.end()) << "No body at index " << parent_index;
   Celestial const& parent= *it->second;

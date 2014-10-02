@@ -10,6 +10,7 @@
 #include "gtest/gtest.h"
 #include "quantities/si.hpp"
 #include "testing_utilities/almost_equals.hpp"
+#include "testing_utilities/death_message.hpp"
 #include "testing_utilities/numerics.hpp"
 #include "testing_utilities/solar_system.hpp"
 
@@ -19,9 +20,10 @@ using principia::quantities::Abs;
 using principia::quantities::Sqrt;
 using principia::si::Radian;
 using principia::si::AstronomicalUnit;
-using principia::testing_utilities::AlmostEquals;
-using principia::testing_utilities::ICRFJ2000Ecliptic;
 using principia::testing_utilities::AbsoluteError;
+using principia::testing_utilities::AlmostEquals;
+using principia::testing_utilities::DeathMessage;
+using principia::testing_utilities::ICRFJ2000Ecliptic;
 using principia::testing_utilities::SolarSystem;
 using testing::Eq;
 using testing::Lt;
@@ -74,7 +76,7 @@ class PluginTest : public testing::Test {
   std::unique_ptr<Plugin> plugin_;
 };
 
-TEST_F(PluginTest, Initialisation) {
+TEST_F(PluginTest, InitialisationSuccess) {
   InsertAllSolarSystemBodies();
   plugin_->EndInitialisation();
   for (std::size_t index = SolarSystem::kSun + 1;
@@ -92,6 +94,24 @@ TEST_F(PluginTest, Initialisation) {
                     plugin_->CelestialParentRelativeVelocity(index)),
                     1000));
   }
+}
+
+TEST_F(PluginTest, InitialisationError) {
+  EXPECT_DEATH({
+    InsertAllSolarSystemBodies();
+    plugin_->EndInitialisation();
+    Displacement<AliceSun> const from_parent_position = looking_glass_(
+        solar_system_->trajectories().back()->last_position() -
+        solar_system_->trajectories().back()->last_position());
+    Velocity<AliceSun> const from_parent_velocity = looking_glass_(
+        solar_system_->trajectories().back()->last_velocity() -
+        solar_system_->trajectories().back()->last_velocity());
+    plugin_->InsertCelestial(42,
+                             bodies_.back()->gravitational_parameter(),
+                             SolarSystem::kSun,
+                             from_parent_position,
+                             from_parent_velocity);
+  }, DeathMessage("before the end of initialisation"));
 }
 
 TEST_F(PluginTest, VesselInsertion) {

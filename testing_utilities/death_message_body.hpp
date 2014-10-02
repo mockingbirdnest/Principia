@@ -8,10 +8,10 @@ namespace principia {
 namespace testing_utilities {
 
 inline std::string DeathMessage(std::string const& s) {
-#ifdef NDEBUG
-  return s;
-#else
+#ifdef _DEBUG
   return "";
+#else
+  return s;
 #endif
 }
 
