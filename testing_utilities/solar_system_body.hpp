@@ -551,13 +551,13 @@ std::unique_ptr<SolarSystem> SolarSystem::AtСпутник2Launch() {
   triton_trajectory->Append(
       kСпутникLaunchTime,
       {kSolarSystemBarycentre + Displacement<ICRFJ2000Ecliptic>(
-           {-3.810797098554279E+09 * Kilo(Metre),
-            -2.456691608348630E+09 * Kilo(Metre),
-             1.381629136719314E+08 * Kilo(Metre)}),
+           {-3.803376889526241E+09 * Kilo(Metre),
+            -2.468158270187521E+09 * Kilo(Metre),
+             1.382149037665635E+08 * Kilo(Metre)}),
        Velocity<ICRFJ2000Ecliptic>(
-           {-1.047462448797063E+00 * Kilo(Metre) / Second,
-            -4.404556713303486E+00 * Kilo(Metre) / Second,
-             1.914469843538767E+00 * Kilo(Metre) / Second})});
+           {-1.144130125366116E+00 * Kilo(Metre) / Second,
+            -4.720828265121008E+00 * Kilo(Metre) / Second,
+             1.656135195284262E+00 * Kilo(Metre) / Second})});
 
   // Dwarf planet (scattered disc object).
   Trajectory<ICRFJ2000Ecliptic>* eris_trajectory(
