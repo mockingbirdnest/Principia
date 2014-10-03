@@ -465,13 +465,13 @@ std::unique_ptr<SolarSystem> SolarSystem::AtСпутник2Launch() {
   ganymede_trajectory->Append(
       kСпутникLaunchTime,
       {kSolarSystemBarycentre + Displacement<ICRFJ2000Ecliptic>(
-           {-7.942681422941415E+08 * Kilo(Metre),
-            -1.776681035234876E+08 * Kilo(Metre),
-             1.857215495334835E+07 * Kilo(Metre)}),
+           {-7.873440767588949E+08 * Kilo(Metre),
+            -2.079266562514496E+08 * Kilo(Metre),
+             1.853235266265094E+07 * Kilo(Metre)}),
        Velocity<ICRFJ2000Ecliptic>(
-           {-5.026319376504355E+00 * Kilo(Metre) / Second,
-            -4.481735740234995E+00 * Kilo(Metre) / Second,
-             1.326192167761359E-01 * Kilo(Metre) / Second})});
+           {-7.484803642517669E+00 * Kilo(Metre) / Second,
+            -9.979889365339663E+00 * Kilo(Metre) / Second,
+            -9.540419435645386E-02 * Kilo(Metre) / Second})});
 
   // Satellite of Saturn.
   Trajectory<ICRFJ2000Ecliptic>* titan_trajectory(
