@@ -565,13 +565,13 @@ std::unique_ptr<SolarSystem> SolarSystem::AtСпутник2Launch() {
   eris_trajectory->Append(
       kСпутникLaunchTime,
       {kSolarSystemBarycentre + Displacement<ICRFJ2000Ecliptic>(
-           { 1.317390066862979E+10 * Kilo(Metre),
-             2.221403321600002E+09 * Kilo(Metre),
-            -5.736076877456254E+09 * Kilo(Metre)}),
+           { 1.317496754534689E+10 * Kilo(Metre),
+             2.226129564084833E+09 * Kilo(Metre),
+            -5.732978102633001E+09 * Kilo(Metre)}),
        Velocity<ICRFJ2000Ecliptic>(
-           { 4.161883594267296E-01 * Kilo(Metre) / Second,
-             1.872714752602233E+00 * Kilo(Metre) / Second,
-             1.227093842948539E+00 * Kilo(Metre) / Second})});
+           { 4.147613028977510E-01 * Kilo(Metre) / Second,
+             1.872488324095242E+00 * Kilo(Metre) / Second,
+             1.227720820942441E+00 * Kilo(Metre) / Second})});
 
   // Dwarf planet (Kuiper belt object).
   Trajectory<ICRFJ2000Ecliptic>* pluto_trajectory(
