@@ -495,13 +495,13 @@ std::unique_ptr<SolarSystem> SolarSystem::AtСпутник2Launch() {
   callisto_trajectory->Append(
       kСпутникLaunchTime,
       {kSolarSystemBarycentre + Displacement<ICRFJ2000Ecliptic>(
-           {-7.951805452047400E+08 * Kilo(Metre),
-            -1.802957437059298E+08 * Kilo(Metre),
-             1.847154088070625E+07 * Kilo(Metre)}),
+           {-7.894358442189863E+08 * Kilo(Metre),
+            -2.088864854947591E+08 * Kilo(Metre),
+             1.847824600878225E+07 * Kilo(Metre)}),
        Velocity<ICRFJ2000Ecliptic>(
-           { 1.091928199422218E+01 * Kilo(Metre) / Second,
-            -1.278098875182818E+01 * Kilo(Metre) / Second,
-             5.878649120351949E-02 * Kilo(Metre) / Second})});
+           { 2.841233795859193E+00 * Kilo(Metre) / Second,
+            -2.014928300738163E+01 * Kilo(Metre) / Second,
+            -3.092683314888902E-01 * Kilo(Metre) / Second})});
   Trajectory<ICRFJ2000Ecliptic>* io_trajectory(
       new Trajectory<ICRFJ2000Ecliptic>(*solar_system->massive_bodies_[kIo]));
   io_trajectory->Append(
