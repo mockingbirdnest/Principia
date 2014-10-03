@@ -15,7 +15,7 @@ namespace {
 __declspec(noreturn) void noreturn() { exit(0); }
 }  // namespace
 
-// We want zero initialisation here, so the default constructor won't do.
+// We want zero initialization here, so the default constructor won't do.
 template<typename Scalar>
 inline R3Element<Scalar>::R3Element() : x(), y(), z() {}
 
