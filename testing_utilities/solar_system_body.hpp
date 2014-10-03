@@ -480,13 +480,13 @@ std::unique_ptr<SolarSystem> SolarSystem::AtСпутник2Launch() {
   titan_trajectory->Append(
       kСпутникLaunchTime,
       {kSolarSystemBarycentre + Displacement<ICRFJ2000Ecliptic>(
-           {-3.771930512714775E+08 * Kilo(Metre),
-            -1.452931696594699E+09 * Kilo(Metre),
-             4.091643033375849E+07 * Kilo(Metre)}),
+           {-3.559932418834351E+08 * Kilo(Metre),
+            -1.458657870294226E+09 * Kilo(Metre),
+             4.007469245438983E+07 * Kilo(Metre)}),
        Velocity<ICRFJ2000Ecliptic>(
-           { 1.433381483669744E+01 * Kilo(Metre) / Second,
-            -1.422590492527597E+00 * Kilo(Metre) / Second,
-            -1.375826555026097E+00 * Kilo(Metre) / Second})});
+           { 1.277329830321889E+01 * Kilo(Metre) / Second,
+            -5.987335332263677E+00 * Kilo(Metre) / Second,
+             1.206347481985469E+00 * Kilo(Metre) / Second})});
 
   // Satellites of Jupiter.
   Trajectory<ICRFJ2000Ecliptic>* callisto_trajectory(
