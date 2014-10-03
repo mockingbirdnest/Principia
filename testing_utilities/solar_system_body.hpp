@@ -507,13 +507,13 @@ std::unique_ptr<SolarSystem> SolarSystem::AtСпутник2Launch() {
   io_trajectory->Append(
       kСпутникLaunchTime,
       {kSolarSystemBarycentre + Displacement<ICRFJ2000Ecliptic>(
-           {-7.946073188298367E+08 * Kilo(Metre),
-            -1.783491436977172E+08 * Kilo(Metre),
-             1.854699192614355E+07 * Kilo(Metre)}),
+           {-7.879055114756504E+08 * Kilo(Metre),
+            -2.091931053457293E+08 * Kilo(Metre),
+             1.848354122950428E+07 * Kilo(Metre)}),
        Velocity<ICRFJ2000Ecliptic>(
-           {-5.049684272040893E-01 * Kilo(Metre) / Second,
-             4.916473261567652E+00 * Kilo(Metre) / Second,
-             5.469177855959977E-01 * Kilo(Metre) / Second})});
+           { 1.213574915656921E+01 * Kilo(Metre) / Second,
+            -2.689611236410145E+01 * Kilo(Metre) / Second,
+            -4.221293967140784E-01 * Kilo(Metre) / Second})});
 
   // Satellite of Earth.
   Trajectory<ICRFJ2000Ecliptic>* moon_trajectory(
