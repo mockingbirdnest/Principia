@@ -395,13 +395,13 @@ std::unique_ptr<SolarSystem> SolarSystem::AtСпутник2Launch() {
   uranus_trajectory->Append(
       kСпутникLaunchTime,
       {kSolarSystemBarycentre + Displacement<ICRFJ2000Ecliptic>(
-           {-1.729995609344851E+09 * Kilo(Metre),
-             2.159967050539728E+09 * Kilo(Metre),
-             3.048735047038063E+07 * Kilo(Metre)}),
+           {-1.743543206484359E+09 * Kilo(Metre),
+             2.148343005727444E+09 * Kilo(Metre),
+             3.061995217929694E+07 * Kilo(Metre)}),
        Velocity<ICRFJ2000Ecliptic>(
-           {-5.366539669972795E+00 * Kilo(Metre) / Second,
-            -4.575802196749351E+00 * Kilo(Metre) / Second,
-             5.261322980347850E-02 * Kilo(Metre) / Second})});
+           {-5.339030319622795E+00 * Kilo(Metre) / Second,
+            -4.609984321394619E+00 * Kilo(Metre) / Second,
+             5.202604125767743E-02 * Kilo(Metre) / Second})});
 
   // Telluric planets.
   Trajectory<ICRFJ2000Ecliptic>* earth_trajectory(
