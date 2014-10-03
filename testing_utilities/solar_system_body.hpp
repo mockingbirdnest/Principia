@@ -369,13 +369,13 @@ std::unique_ptr<SolarSystem> SolarSystem::AtСпутник2Launch() {
   saturn_trajectory->Append(
       kСпутникLaunchTime,
       {kSolarSystemBarycentre + Displacement<ICRFJ2000Ecliptic>(
-           {-3.774715321901159E+08 * Kilo(Metre),
-            -1.451892263379818E+09 * Kilo(Metre),
-             4.040621083792380E+07 * Kilo(Metre)}),
+           {-3.551066003300792E+08 * Kilo(Metre),
+            -1.457950211244599E+09 * Kilo(Metre),
+             3.962394173262903E+07 * Kilo(Metre)}),
        Velocity<ICRFJ2000Ecliptic>(
-           { 8.817029873536633E+00 * Kilo(Metre) / Second,
-            -2.466058486223613E+00 * Kilo(Metre) / Second,
-            -3.068419809533604E-01 * Kilo(Metre) / Second})});
+           { 8.853737336923556E+00 * Kilo(Metre) / Second,
+            -2.320374389288883E+00 * Kilo(Metre) / Second,
+            -3.114483488133248E-01 * Kilo(Metre) / Second})});
   Trajectory<ICRFJ2000Ecliptic>* neptune_trajectory(
       new Trajectory<ICRFJ2000Ecliptic>(
           *solar_system->massive_bodies_[kNeptune]));
