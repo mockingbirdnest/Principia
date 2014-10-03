@@ -51,7 +51,7 @@ TEST_F(NumericsTest, ULPs) {
   EXPECT_THAT(ULPDistance(1, 1), Eq(0));
   EXPECT_THAT(ULPDistance(+0.0, +0.0), Eq(0));
   EXPECT_THAT(ULPDistance(+0.0, -0.0), Eq(0));
-  // DBL_MIN is the smallest positive normalised number.
+  // DBL_MIN is the smallest positive normalized number.
   // 52 bits of mantissa stand between it and 0, in the form of denormals.
   EXPECT_THAT(ULPDistance(+0.0, DBL_MIN), Eq(std::pow(2, DBL_MANT_DIG - 1)));
   EXPECT_THAT(ULPDistance(-0.0, DBL_MIN), Eq(std::pow(2, DBL_MANT_DIG - 1)));

@@ -48,7 +48,7 @@ class PluginTest : public testing::Test {
   }
 
   void InsertAllSolarSystemBodies() {
-    for (std::size_t index = SolarSystem::kSun + 1;
+  for (std::size_t index = SolarSystem::kSun + 1;
        index < bodies_.size();
        ++index) {
     Index const parent_index = SolarSystem::parent(index);
@@ -63,7 +63,7 @@ class PluginTest : public testing::Test {
                              parent_index,
                              from_parent_position,
                              from_parent_velocity);
-    }
+  }
   }
 
   Permutation<ICRFJ2000Ecliptic, AliceSun> looking_glass_;
@@ -76,9 +76,9 @@ class PluginTest : public testing::Test {
   std::unique_ptr<Plugin> plugin_;
 };
 
-TEST_F(PluginTest, Initialisation) {
+TEST_F(PluginTest, Initialization) {
   InsertAllSolarSystemBodies();
-  plugin_->EndInitialisation();
+  plugin_->EndInitialization();
   for (std::size_t index = SolarSystem::kSun + 1;
        index < bodies_.size();
        ++index) {
@@ -105,13 +105,13 @@ TEST_F(PluginTest, InsertCelestialError) {
       solar_system_->trajectories().front()->last_velocity());
   EXPECT_DEATH({
     InsertAllSolarSystemBodies();
-    plugin_->EndInitialisation();
+    plugin_->EndInitialization();
     plugin_->InsertCelestial(42,
                              bodies_.front()->gravitational_parameter(),
                              SolarSystem::kSun,
                              from_parent_position,
                              from_parent_velocity);
-  }, DeathMessage("before the end of initialisation"));
+  }, DeathMessage("before the end of initialization"));
   EXPECT_DEATH({
     InsertAllSolarSystemBodies();
     plugin_->InsertCelestial(42,
@@ -133,7 +133,7 @@ TEST_F(PluginTest, InsertCelestialError) {
 TEST_F(PluginTest, VesselInsertion) {
   GUID const guid = "Test Satellite";
   InsertAllSolarSystemBodies();
-  plugin_->EndInitialisation();
+  plugin_->EndInitialization();
   bool const inserted = plugin_->InsertOrKeepVessel(guid,
                                                     SolarSystem::kEarth);
   EXPECT_TRUE(inserted);

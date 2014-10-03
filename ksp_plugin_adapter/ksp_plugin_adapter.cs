@@ -76,7 +76,7 @@ public class PluginAdapter : UnityEngine.MonoBehaviour {
 
   [DllImport(dllName           : kDllPath,
              CallingConvention = CallingConvention.Cdecl)]
-  private static extern void EndInitialisation(IntPtr plugin);
+  private static extern void EndInitialization(IntPtr plugin);
 
   [DllImport(dllName           : kDllPath,
              CallingConvention = CallingConvention.Cdecl)]
@@ -311,14 +311,14 @@ public class PluginAdapter : UnityEngine.MonoBehaviour {
                       (XYZ)body.orbit.pos, (XYZ)body.orbit.vel);
     };
     ApplyToBodyTree(insert_body);
-    EndInitialisation(plugin_);
+    EndInitialization(plugin_);
     VesselProcessor insert_vessel = vessel => {
       LogInfo("Inserting " + vessel.name + "...");
       bool inserted =
           InsertOrKeepVessel(plugin_, vessel.id.ToString(),
                              vessel.orbit.referenceBody.flightGlobalsIndex);
       if (!inserted) {
-        LogFatal("Plugin initialisation: vessel not inserted");
+        LogFatal("Plugin initialization: vessel not inserted");
       } else {
         SetVesselStateOffset(plugin_, vessel.id.ToString(),
                              (XYZ)vessel.orbit.pos, (XYZ)vessel.orbit.vel);

@@ -260,7 +260,7 @@ inline double Pow(double x) {
   return std::pow(x, exponent);
 }
 
-// Static specialisations for frequently-used exponents, so that this gets
+// Static specializations for frequently-used exponents, so that this gets
 // turned into multiplications at compile time.
 
 template<>

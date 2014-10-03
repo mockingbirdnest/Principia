@@ -77,7 +77,7 @@ typename Quantity<RDimensions>::Inverse operator/(double const,
                                                   Quantity<RDimensions> const&);
 
 // Equivalent to |std::pow(x, exponent)| unless -3 ≤ x ≤ 3, in which case
-// explicit specialisation yields multiplications statically.
+// explicit specialization yields multiplications statically.
 template<int exponent>
 double Pow(double x);
 template<int exponent, typename D>
