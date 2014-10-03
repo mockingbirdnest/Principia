@@ -410,13 +410,13 @@ std::unique_ptr<SolarSystem> SolarSystem::AtСпутник2Launch() {
   earth_trajectory->Append(
       kСпутникLaunchTime,
       {kSolarSystemBarycentre + Displacement<ICRFJ2000Ecliptic>(
-           { 1.475150112055673E+08 * Kilo(Metre),
-             3.144435102288270E+07 * Kilo(Metre),
-            -3.391764309344300E+04 * Kilo(Metre)}),
+           { 1.131005469241166E+08 * Kilo(Metre),
+             9.799962736944504E+07 * Kilo(Metre),
+            -2.743948682505761E+04 * Kilo(Metre)}),
        Velocity<ICRFJ2000Ecliptic>(
-           {-6.635753510543799E+00 * Kilo(Metre) / Second,
-             2.904321639216012E+01 * Kilo(Metre) / Second,
-             3.125252418990812E-03 * Kilo(Metre) / Second})});
+           {-2.003713675265280E+01 * Kilo(Metre) / Second,
+             2.237299122930724E+01 * Kilo(Metre) / Second,
+             2.796170626009044E-03 * Kilo(Metre) / Second})});
   Trajectory<ICRFJ2000Ecliptic>* venus_trajectory(
       new Trajectory<ICRFJ2000Ecliptic>(
           *solar_system->massive_bodies_[kVenus]));
