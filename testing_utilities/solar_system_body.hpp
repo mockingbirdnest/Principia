@@ -580,13 +580,13 @@ std::unique_ptr<SolarSystem> SolarSystem::AtСпутник2Launch() {
   pluto_trajectory->Append(
       kСпутникLaunchTime,
       {kSolarSystemBarycentre + Displacement<ICRFJ2000Ecliptic>(
-           {-4.406985590968750E+09 * Kilo(Metre),
-             2.448731153209013E+09 * Kilo(Metre),
-             1.012525975599311E+09 * Kilo(Metre)}),
+           {-4.410266464068357E+09 * Kilo(Metre),
+             2.435666526837864E+09 * Kilo(Metre),
+             1.014876954733593E+09 * Kilo(Metre)}),
        Velocity<ICRFJ2000Ecliptic>(
-           {-1.319871918266467E+00 * Kilo(Metre) / Second,
-            -5.172112237151897E+00 * Kilo(Metre) / Second,
-             9.407707128142039E-01 * Kilo(Metre) / Second})});
+           {-1.277624218981084E+00 * Kilo(Metre) / Second,
+            -5.163643781275358E+00 * Kilo(Metre) / Second,
+             9.068668780280327E-01 * Kilo(Metre) / Second})});
 
   // End of celestial bodies.
 
