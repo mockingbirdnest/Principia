@@ -536,13 +536,13 @@ std::unique_ptr<SolarSystem> SolarSystem::AtСпутник2Launch() {
   europa_trajectory->Append(
       kСпутникLaunchTime,
       {kSolarSystemBarycentre + Displacement<ICRFJ2000Ecliptic>(
-           {-7.944180333947762E+08 * Kilo(Metre),
-            -1.787346439588362E+08 * Kilo(Metre),
-             1.853675837527557E+07 * Kilo(Metre)}),
+           {-7.872380045561892E+08 * Kilo(Metre),
+            -2.083874295273294E+08 * Kilo(Metre),
+             1.852692606438262E+07 * Kilo(Metre)}),
        Velocity<ICRFJ2000Ecliptic>(
-           { 8.811255547505889E+00 * Kilo(Metre) / Second,
-             5.018147960240774E-02 * Kilo(Metre) / Second,
-             6.162195631257494E-01 * Kilo(Metre) / Second})});
+           {-9.132729339507982E+00 * Kilo(Metre) / Second,
+            -5.706657631633117E+00 * Kilo(Metre) / Second,
+             8.154101985062136E-03 * Kilo(Metre) / Second})});
 
   // Satellite of Neptune.
   Trajectory<ICRFJ2000Ecliptic>* triton_trajectory(
