@@ -413,19 +413,19 @@ std::unique_ptr<SolarSystem> SolarSystem::AtСпутник1Launch() {
            { 1.473536505664190E+01 * Kilo(Metre) / Second,
             -9.857333255400615E+00 * Kilo(Metre) / Second,
              2.994635825207214E+00 * Kilo(Metre) / Second})});
-  Trajectory<ICRFJ2000Ecliptic>* iapetus_trajectory(
+  Trajectory<ICRFJ2000Ecliptic>* tethys_trajectory(
       new Trajectory<ICRFJ2000Ecliptic>(
-          *solar_system->massive_bodies_[kIapetus]));
-  iapetus_trajectory->Append(
+          *solar_system->massive_bodies_[kTethys]));
+  tethys_trajectory->Append(
       kСпутник1LaunchTime,
       {kSolarSystemBarycentre + Displacement<ICRFJ2000Ecliptic>(
-           {-3.751029285588183E+08 * Kilo(Metre),
-            -1.449565401910516E+09 * Kilo(Metre),
-             3.935332456093812E+07 * Kilo(Metre)}),
+           {-3.772002485884590E+08 * Kilo(Metre),
+            -1.451803185519638E+09 * Kilo(Metre),
+             4.033334240953118E+07 * Kilo(Metre)}),
        Velocity<ICRFJ2000Ecliptic>(
-           { 6.497053388258254E+00 * Kilo(Metre) / Second,
-            -7.325141764921950E-02 * Kilo(Metre) / Second,
-            -4.351376438069059E-01 * Kilo(Metre) / Second})});
+           { 4.474028082408450E+00 * Kilo(Metre) / Second,
+             6.894343190912965E+00 * Kilo(Metre) / Second,
+            -5.036010312221701E+00 * Kilo(Metre) / Second})});
 
   // End of celestial bodies.
 
