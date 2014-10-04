@@ -353,7 +353,7 @@ TEST_F(NBodySystemTest, Sputnik1ToSputnik2) {
     double expected_position_error = 0;
     switch (i) {
       case SolarSystem::kSun:
-        expected_position_error = 1E-9;
+        expected_position_error = 1E-8;
         expected_velocity_error = 1E-7;
         break;
       case SolarSystem::kJupiter:
@@ -361,18 +361,16 @@ TEST_F(NBodySystemTest, Sputnik1ToSputnik2) {
         expected_velocity_error = 1E-5;
         break;
       case SolarSystem::kSaturn:
-        // NOTE(egg): We may want Rhea and Iapetus.
-        expected_position_error = 1E-7;
-        expected_velocity_error = 1E-5;
+        expected_position_error = 1E-8;
+        expected_velocity_error = 1E-7;
         break;
       case SolarSystem::kNeptune:
         expected_position_error = 1E-8;
         expected_velocity_error = 1E-6;
         break;
       case SolarSystem::kUranus:
-        // NOTE(egg): Do we need Titania and Oberon (or even Ariel and Umbriel)?
-        expected_position_error = 1E-6;
-        expected_velocity_error = 1E-4;
+        expected_position_error = 1E-8;
+        expected_velocity_error = 1E-5;
         break;
       case SolarSystem::kEarth:
         expected_position_error = 1E-8;
@@ -431,9 +429,26 @@ TEST_F(NBodySystemTest, Sputnik1ToSputnik2) {
         expected_velocity_error = 1E-5;
         break;
       case SolarSystem::kPluto:
-        // NOTE(egg): we may want Charon.
-        expected_position_error = 1E-4;
-        expected_velocity_error = 1E-2;
+        expected_position_error = 1E-6;
+        expected_velocity_error = 1E-3;
+        break;
+      case SolarSystem::kTitania:
+        break;
+      case SolarSystem::kOberon:
+        break;
+      case SolarSystem::kRhea:
+        break;
+      case SolarSystem::kIapetus:
+        break;
+      case SolarSystem::kCharon:
+        break;
+      case SolarSystem::kAriel:
+        break;
+      case SolarSystem::kUmbriel:
+        break;
+      case SolarSystem::kDione:
+        break;
+      case SolarSystem::kTethys:
         break;
       default:
         LOG(FATAL) << "No such body";
