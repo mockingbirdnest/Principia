@@ -461,15 +461,14 @@ TEST_F(NBodySystemTest, Sputnik1ToSputnik2) {
         EXPECT_THAT(angle, Lt(90 * Degree)) << i;
         EXPECT_THAT(length_error, Lt(2E-3)) << i;
         EXPECT_THAT(length_error, Gt(1E-5)) << i;
-      }
-      else if (i == SolarSystem::kTriton ||
-               i == SolarSystem::kTitan ||
-               i == SolarSystem::kPluto) {
+      } else if (i == SolarSystem::kTriton ||
+                 i == SolarSystem::kTitan ||
+                 i == SolarSystem::kPluto) {
         EXPECT_THAT(vector_error, Lt(2E-3)) << i;
         EXPECT_THAT(vector_error, Gt(1E-5)) << i;
       } else {
         EXPECT_THAT(vector_error, Lt(1E-5)) << i;
-      };
+      }
     }
     EXPECT_THAT(position_error, Lt(expected_position_error)) << i;
     EXPECT_THAT(position_error, Gt(expected_position_error / 10.0)) << i;
