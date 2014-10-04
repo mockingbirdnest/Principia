@@ -385,19 +385,19 @@ std::unique_ptr<SolarSystem> SolarSystem::AtСпутник1Launch() {
            {-6.019957829322824E+00 * Kilo(Metre) / Second,
             -3.682977487897364E+00 * Kilo(Metre) / Second,
              5.440031145983448E+00 * Kilo(Metre) / Second})});
-  Trajectory<ICRFJ2000Ecliptic>* oberon_trajectory(
+  Trajectory<ICRFJ2000Ecliptic>* umbriel_trajectory(
       new Trajectory<ICRFJ2000Ecliptic>(
-          *solar_system->massive_bodies_[kOberon]));
-  oberon_trajectory->Append(
+          *solar_system->massive_bodies_[kUmbriel]));
+  umbriel_trajectory->Append(
       kСпутник1LaunchTime,
       {kSolarSystemBarycentre + Displacement<ICRFJ2000Ecliptic>(
-           {-1.730563623290436E+09 * Kilo(Metre),
-             2.160079664472153E+09 * Kilo(Metre),
-             3.041037690361578E+07 * Kilo(Metre)}),
+           {-1.729930175425741E+09 * Kilo(Metre),
+             2.159917273779030E+09 * Kilo(Metre),
+             3.023539524396962E+07 * Kilo(Metre)}),
        Velocity<ICRFJ2000Ecliptic>(
-           {-5.685242261484572E+00 * Kilo(Metre) / Second,
-            -4.073586348304020E+00 * Kilo(Metre) / Second,
-             3.143404489724676E+00 * Kilo(Metre) / Second})});
+           {-9.791806936609191E+00 * Kilo(Metre) / Second,
+            -3.786140307785084E+00 * Kilo(Metre) / Second,
+            -1.264397874774153E+00 * Kilo(Metre) / Second})});
 
   // Satellites of Saturn.
   Trajectory<ICRFJ2000Ecliptic>* rhea_trajectory(
