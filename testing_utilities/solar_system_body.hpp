@@ -356,6 +356,20 @@ std::unique_ptr<SolarSystem> SolarSystem::AtСпутник1Launch() {
             -7.325141764921950E-02 * Kilo(Metre) / Second,
             -4.351376438069059E-01 * Kilo(Metre) / Second})});
 
+  Trajectory<ICRFJ2000Ecliptic>* charon_trajectory(
+      new Trajectory<ICRFJ2000Ecliptic>(
+          *solar_system->massive_bodies_[kCharon]));
+  charon_trajectory->Append(
+      kСпутник1LaunchTime,
+      {kSolarSystemBarycentre + Displacement<ICRFJ2000Ecliptic>(
+           {-4.406983470848657E+09 * Kilo(Metre),
+             2.448743066982903E+09 * Kilo(Metre),
+             1.012541389091277E+09 * Kilo(Metre)}),
+       Velocity<ICRFJ2000Ecliptic>(
+           {-1.157714657718270E+00 * Kilo(Metre) / Second,
+            -5.062468891990006E+00 * Kilo(Metre) / Second,
+             8.337034401124047E-01 * Kilo(Metre) / Second})});
+
   // End of celestial bodies.
 
   solar_system->trajectories_.emplace_back(sun_trajectory);
@@ -380,6 +394,7 @@ std::unique_ptr<SolarSystem> SolarSystem::AtСпутник1Launch() {
   solar_system->trajectories_.emplace_back(oberon_trajectory);
   solar_system->trajectories_.emplace_back(rhea_trajectory);
   solar_system->trajectories_.emplace_back(iapetus_trajectory);
+  solar_system->trajectories_.emplace_back(charon_trajectory);
 
   return std::move(solar_system);
 }
