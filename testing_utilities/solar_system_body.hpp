@@ -452,6 +452,10 @@ std::unique_ptr<SolarSystem> SolarSystem::AtСпутник1Launch() {
   solar_system->trajectories_.emplace_back(rhea_trajectory);
   solar_system->trajectories_.emplace_back(iapetus_trajectory);
   solar_system->trajectories_.emplace_back(charon_trajectory);
+  solar_system->trajectories_.emplace_back(ariel_trajectory);
+  solar_system->trajectories_.emplace_back(umbriel_trajectory);
+  solar_system->trajectories_.emplace_back(dione_trajectory);
+  solar_system->trajectories_.emplace_back(tethys_trajectory);
 
   return std::move(solar_system);
 }
