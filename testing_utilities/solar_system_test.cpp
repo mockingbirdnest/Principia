@@ -28,10 +28,6 @@ namespace testing_utilities {
 
 class SolarSystemTest : public testing::Test {
  protected:
-  void SetUp() {
-    solar_system_ = SolarSystem::AtСпутникLaunch();
-    n_body_system_.reset(new NBodySystem<ICRFJ2000Ecliptic>());
-  }
   // The maximal separation of |primary| and |secondary| ignoring the influence
   // of any other bodies.
   Length SemiMajorAxis(Trajectory<ICRFJ2000Ecliptic> const& primary,
@@ -88,10 +84,13 @@ class SolarSystemTest : public testing::Test {
   }
 
   std::unique_ptr<SolarSystem> solar_system_;
-  std::unique_ptr<NBodySystem<ICRFJ2000Ecliptic>> n_body_system_;
 };
 
-TEST_F(SolarSystemTest, Hierarchy) {
+// Note(egg): We cannot call this |HierarchyAtСпутник1Launch| because gtest does
+// not do a unicode-friendly stringification.  We settle for the English
+// romanization.
+TEST_F(SolarSystemTest, HierarchyAtSputnik1Launch) {
+  solar_system_ = SolarSystem::AtСпутник1Launch();
   physics::NBodySystem<ICRFJ2000Ecliptic>::Trajectories trajectories =
       solar_system_->trajectories();
   Trajectory<ICRFJ2000Ecliptic> const& sun      = *trajectories[0];
@@ -138,6 +137,56 @@ TEST_F(SolarSystemTest, Hierarchy) {
   TestStronglyBoundOrbit(5.811592E-02, 1E-6, moon, earth, &sun, "moon");
   // Using center: Neptune (body center) [500@899]
   TestStronglyBoundOrbit(1.587851E-05, 2E-1, triton, neptune, &sun, "triton");
+}
+
+TEST_F(SolarSystemTest, HierarchyAtSputnik2Launch) {
+  solar_system_ = SolarSystem::AtСпутник2Launch();
+  physics::NBodySystem<ICRFJ2000Ecliptic>::Trajectories trajectories =
+      solar_system_->trajectories();
+  Trajectory<ICRFJ2000Ecliptic> const& sun      = *trajectories[0];
+  Trajectory<ICRFJ2000Ecliptic> const& jupiter  = *trajectories[1];
+  Trajectory<ICRFJ2000Ecliptic> const& saturn   = *trajectories[2];
+  Trajectory<ICRFJ2000Ecliptic> const& neptune  = *trajectories[3];
+  Trajectory<ICRFJ2000Ecliptic> const& uranus   = *trajectories[4];
+  Trajectory<ICRFJ2000Ecliptic> const& earth    = *trajectories[5];
+  Trajectory<ICRFJ2000Ecliptic> const& venus    = *trajectories[6];
+  Trajectory<ICRFJ2000Ecliptic> const& mars     = *trajectories[7];
+  Trajectory<ICRFJ2000Ecliptic> const& mercury  = *trajectories[8];
+  Trajectory<ICRFJ2000Ecliptic> const& ganymede = *trajectories[9];
+  Trajectory<ICRFJ2000Ecliptic> const& titan    = *trajectories[10];
+  Trajectory<ICRFJ2000Ecliptic> const& callisto = *trajectories[11];
+  Trajectory<ICRFJ2000Ecliptic> const& io       = *trajectories[12];
+  Trajectory<ICRFJ2000Ecliptic> const& moon     = *trajectories[13];
+  Trajectory<ICRFJ2000Ecliptic> const& europa   = *trajectories[14];
+  Trajectory<ICRFJ2000Ecliptic> const& triton   = *trajectories[15];
+  Trajectory<ICRFJ2000Ecliptic> const& eris     = *trajectories[16];
+  Trajectory<ICRFJ2000Ecliptic> const& pluto    = *trajectories[17];
+
+  // Reference excentricities from HORIZONS, truncated.
+  // Using center: Sun (body center) [500@10].
+  TestStronglyBoundOrbit(4.899607E-02, 1E-6, jupiter, sun, nullptr, "jupiter");
+  TestStronglyBoundOrbit(5.215911E-02, 1E-6, saturn, sun, nullptr, "saturn");
+  TestStronglyBoundOrbit(2.719093E-03, 1E-6, neptune, sun, nullptr, "neptune");
+  TestStronglyBoundOrbit(5.004209E-02, 1E-6, uranus, sun, nullptr, "uranus");
+  TestStronglyBoundOrbit(1.671840E-02, 1E-6, earth, sun, nullptr, "earth");
+  TestStronglyBoundOrbit(6.792333E-03, 1E-6, venus, sun, nullptr, "venus");
+  TestStronglyBoundOrbit(9.334796E-02, 1E-6, mars, sun, nullptr, "mars");
+  TestStronglyBoundOrbit(2.056279E-01, 1E-6, mercury, sun, nullptr, "mercury");
+  TestStronglyBoundOrbit(2.537103E-01, 1E-6, pluto, sun, nullptr, "pluto");
+  TestStronglyBoundOrbit(4.424299E-01, 1E-6, eris, sun, nullptr, "eris");
+  // Using center: Jupiter (body center) [500@599].
+  TestStronglyBoundOrbit(4.306439E-04, 1E-3, ganymede,
+                         jupiter, &sun, "ganymede");
+  TestStronglyBoundOrbit(7.138518E-03, 1E-4, callisto,
+                         jupiter, &sun, "callisto");
+  TestStronglyBoundOrbit(4.460632E-03, 1E-4, io, jupiter, &sun, "io");
+  TestStronglyBoundOrbit(9.509972E-03, 1E-4, europa, jupiter, &sun, "europa");
+  // Using center: Saturn (body center) [500@699].
+  TestStronglyBoundOrbit(2.882510E-02, 1E-6, titan, saturn, &sun, "titan");
+  // Using center: Geocentric [500].
+  TestStronglyBoundOrbit(5.804121E-02, 1E-6, moon, earth, &sun, "moon");
+  // Using center: Neptune (body center) [500@899]
+  TestStronglyBoundOrbit(1.529190E-05, 2E-1, triton, neptune, &sun, "triton");
 }
 
 }  // namespace testing_utilities
