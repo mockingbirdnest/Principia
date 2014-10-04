@@ -25,6 +25,9 @@ using principia::geometry::Barycentre;
 using principia::geometry::Instant;
 using principia::geometry::Point;
 using principia::geometry::Vector;
+using principia::quantities::Angle;
+using principia::quantities::ArcTan;
+using principia::quantities::Area;
 using principia::quantities::Pow;
 using principia::quantities::SIUnit;
 using principia::testing_utilities::AlmostEquals;
@@ -33,6 +36,7 @@ using principia::testing_utilities::ICRFJ2000Ecliptic;
 using principia::testing_utilities::kSolarSystemBarycentre;
 using principia::testing_utilities::RelativeError;
 using principia::testing_utilities::SolarSystem;
+using principia::si::Degree;
 using principia::si::Minute;
 using testing::Eq;
 using testing::Gt;
@@ -325,24 +329,24 @@ TEST_F(NBodySystemTest, EarthProbe) {
 TEST_F(NBodySystemTest, Sputnik1ToSputnik2) {
   std::unique_ptr<SolarSystem> const evolved_system =
       SolarSystem::AtСпутник1Launch();
-  std::unique_ptr<SolarSystem> const at_спу́тник_2_launch =
+  std::unique_ptr<SolarSystem> const at_спутник_2_launch =
       SolarSystem::AtСпутник2Launch();
   NBodySystem<ICRFJ2000Ecliptic> system;
   system.Integrate(
       integrator_,
-      at_спу́тник_2_launch->trajectories().front()->last_time(),  // tmax
+      at_спутник_2_launch->trajectories().front()->last_time(),  // tmax
       45 * Minute,  // Δt
       0,  // sampling_period
       true,  // tmax_is_exact
       evolved_system->trajectories());  // trajectories
   for (std::size_t i = 0; i < evolved_system->trajectories().size(); ++i) {
     double const position_error = RelativeError(
-        at_спу́тник_2_launch->trajectories()[i]->last_position() -
+        at_спутник_2_launch->trajectories()[i]->last_position() -
             kSolarSystemBarycentre,
         evolved_system->trajectories()[i]->last_position() -
             kSolarSystemBarycentre);
     double const velocity_error = RelativeError(
-        at_спу́тник_2_launch->trajectories()[i]->last_velocity(),
+        at_спутник_2_launch->trajectories()[i]->last_velocity(),
         evolved_system->trajectories()[i]->last_velocity());
     // Upper bounds, tight to the nearest order of magnitude.
     double expected_velocity_error = 0;
@@ -433,6 +437,39 @@ TEST_F(NBodySystemTest, Sputnik1ToSputnik2) {
         break;
       default:
         LOG(FATAL) << "No such body";
+    }
+    if (i != SolarSystem::kSun) {
+      // Look at the error in the position relative to the parent.
+      Vector<Length, ICRFJ2000Ecliptic> expected =
+          at_спутник_2_launch->trajectories()[i]->last_position() -
+              at_спутник_2_launch->trajectories()[SolarSystem::parent(i)]->
+                  last_position();
+      Vector<Length, ICRFJ2000Ecliptic> actual =
+          evolved_system->trajectories()[i]->last_position() -
+              evolved_system->trajectories()[SolarSystem::parent(i)]->
+                  last_position();
+      double const vector_error =  RelativeError(expected, actual);
+      if (SolarSystem::parent(i) == SolarSystem::kJupiter) {
+        double const length_error = RelativeError(expected.Norm(),
+                                                  actual.Norm());
+        Area const product_of_norms = expected.Norm() * actual.Norm();
+        Angle const angle = ArcTan(
+            InnerProduct(expected, actual) / product_of_norms,
+            Wedge(expected, actual).Norm() / product_of_norms);
+        // We are missing some sort of precession here.
+        EXPECT_THAT(angle, Gt(82 * Degree)) << i;
+        EXPECT_THAT(angle, Lt(90 * Degree)) << i;
+        EXPECT_THAT(length_error, Lt(2E-3)) << i;
+        EXPECT_THAT(length_error, Gt(1E-5)) << i;
+      }
+      else if (i == SolarSystem::kTriton ||
+               i == SolarSystem::kTitan ||
+               i == SolarSystem::kPluto) {
+        EXPECT_THAT(vector_error, Lt(2E-3)) << i;
+        EXPECT_THAT(vector_error, Gt(1E-5)) << i;
+      } else {
+        EXPECT_THAT(vector_error, Lt(1E-5)) << i;
+      };
     }
     EXPECT_THAT(position_error, Lt(expected_position_error)) << i;
     EXPECT_THAT(position_error, Gt(expected_position_error / 10.0)) << i;
