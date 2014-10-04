@@ -56,7 +56,7 @@ class SolarSystem {
   // Factory.  The caller gets ownership of the pointers.
   // A solar system at the time of the launch of Простейший Спутник-2,
   // 1957-11-03T02:30:00Z (JD 2436145.60417)
-  static std::unique_ptr<SolarSystem> SolarSystem::AtСпутник2Launch();
+  static std::unique_ptr<SolarSystem> AtСпутник2Launch();
 
   ~SolarSystem() = default;
 
