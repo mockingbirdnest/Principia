@@ -787,13 +787,13 @@ std::unique_ptr<SolarSystem> SolarSystem::AtСпутник2Launch() {
   charon_trajectory->Append(
       kСпутник2LaunchTime,
       {kSolarSystemBarycentre + Displacement<ICRFJ2000Ecliptic>(
-           {-4.406983470848657E+09 * Kilo(Metre),
-             2.448743066982903E+09 * Kilo(Metre),
-             1.012541389091277E+09 * Kilo(Metre)}),
+           {-4.410275620814398E+09 * Kilo(Metre),
+             2.435651353388658E+09 * Kilo(Metre),
+             1.014868590806160E+09 * Kilo(Metre)}),
        Velocity<ICRFJ2000Ecliptic>(
-           {-1.157714657718270E+00 * Kilo(Metre) / Second,
-            -5.062468891990006E+00 * Kilo(Metre) / Second,
-             8.337034401124047E-01 * Kilo(Metre) / Second})});
+           {-1.404153365129384E+00 * Kilo(Metre) / Second,
+            -5.187717357379291E+00 * Kilo(Metre) / Second,
+             1.089041178376519E+00 * Kilo(Metre) / Second})});
 
   // Satellites of Uranus.
   Trajectory<ICRFJ2000Ecliptic>* ariel_trajectory(
