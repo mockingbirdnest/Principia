@@ -759,13 +759,13 @@ std::unique_ptr<SolarSystem> SolarSystem::AtСпутник2Launch() {
   rhea_trajectory->Append(
       kСпутник2LaunchTime,
       {kSolarSystemBarycentre + Displacement<ICRFJ2000Ecliptic>(
-           {-3.772933911553755E+08 * Kilo(Metre),
-            -1.451461170080230E+09 * Kilo(Metre),
-             4.016028653663339E+07 * Kilo(Metre)}),
+           {-3.553342718565885E+08 * Kilo(Metre),
+            -1.458360446041042E+09 * Kilo(Metre),
+             3.986359566173195E+07 * Kilo(Metre)}),
        Velocity<ICRFJ2000Ecliptic>(
-           { 8.698485920139012E-01 * Kilo(Metre) / Second,
-             3.972546870497955E-01 * Kilo(Metre) / Second,
-            -1.060361115947588E+00 * Kilo(Metre) / Second})});
+           { 1.647814913327736E+01 * Kilo(Metre) / Second,
+            -5.870586279416220E+00 * Kilo(Metre) / Second,
+             8.369964139554196E-01 * Kilo(Metre) / Second})});
   Trajectory<ICRFJ2000Ecliptic>* iapetus_trajectory(
       new Trajectory<ICRFJ2000Ecliptic>(
           *solar_system->massive_bodies_[kIapetus]));
