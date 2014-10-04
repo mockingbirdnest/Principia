@@ -843,13 +843,13 @@ std::unique_ptr<SolarSystem> SolarSystem::AtСпутник2Launch() {
   tethys_trajectory->Append(
       kСпутник2LaunchTime,
       {kSolarSystemBarycentre + Displacement<ICRFJ2000Ecliptic>(
-           {-3.772002485884590E+08 * Kilo(Metre),
-            -1.451803185519638E+09 * Kilo(Metre),
-             4.033334240953118E+07 * Kilo(Metre)}),
+           {-3.553644729603329E+08 * Kilo(Metre),
+            -1.458064034431594E+09 * Kilo(Metre),
+             3.970978147111944E+07 * Kilo(Metre)}),
        Velocity<ICRFJ2000Ecliptic>(
-           { 4.474028082408450E+00 * Kilo(Metre) / Second,
-             6.894343190912965E+00 * Kilo(Metre) / Second,
-            -5.036010312221701E+00 * Kilo(Metre) / Second})});
+           { 1.427192911372915E+01 * Kilo(Metre) / Second,
+            -1.127052555342930E+01 * Kilo(Metre) / Second,
+             4.094008639209452E+00 * Kilo(Metre) / Second})});
 
   // End of celestial bodies.
 
