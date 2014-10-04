@@ -663,6 +663,25 @@ SolarSystem::SolarSystem() {
   // Dwarf planet (Kuiper belt object).
   Body* pluto(new Body(1.307E22 * Kilogram));
 
+  // Satellites of Uranus.
+  Body* titania(new Body(35.27E20 * Kilogram));
+  Body* oberon(new Body(30.14E20 * Kilogram));
+
+  // Satellites of Saturn.
+  Body* rhea(new Body(153.94 * Pow<3>(Kilo(Metre)) / Pow<2>(Second)));
+  Body* iapetus(new Body(120.51 * Pow<3>(Kilo(Metre)) / Pow<2>(Second)));
+
+  // Satellite of Pluto.
+  Body* charon(new Body(102.271 * Pow<3>(Kilo(Metre)) / Pow<2>(Second)));
+
+  // Satellites of Uranus.
+  Body* ariel(new Body(13.53E20 * Kilogram));
+  Body* umbriel(new Body(11.72E20 * Kilogram));
+
+  // Satellites of Saturn.
+  Body* dione(new Body(73.113 * Pow<3>(Kilo(Metre)) / Pow<2>(Second)));
+  Body* tethys(new Body(41.21 * Pow<3>(Kilo(Metre)) / Pow<2>(Second)));
+
   // End of celestial bodies.
 
   massive_bodies_.emplace_back(sun);
@@ -683,6 +702,15 @@ SolarSystem::SolarSystem() {
   massive_bodies_.emplace_back(triton);
   massive_bodies_.emplace_back(eris);
   massive_bodies_.emplace_back(pluto);
+  massive_bodies_.emplace_back(titania);
+  massive_bodies_.emplace_back(oberon);
+  massive_bodies_.emplace_back(rhea);
+  massive_bodies_.emplace_back(iapetus);
+  massive_bodies_.emplace_back(charon);
+  massive_bodies_.emplace_back(ariel);
+  massive_bodies_.emplace_back(umbriel);
+  massive_bodies_.emplace_back(dione);
+  massive_bodies_.emplace_back(tethys);
 }
 
 SolarSystem::Bodies SolarSystem::massive_bodies() {
@@ -724,11 +752,22 @@ int SolarSystem::parent(int const index) {
     case kEuropa:
       return kJupiter;
     case kTitan:
+    case kRhea:
+    case kIapetus:
+    case kDione:
+    case kTethys:
       return kSaturn;
     case kMoon:
       return kEarth;
     case kTriton:
       return kNeptune;
+    case kTitania:
+    case kOberon:
+    case kAriel:
+    case kUmbriel:
+      return kUranus;
+    case kCharon:
+      return kPluto;
     default:
       LOG(FATAL) << "Undefined index";
       return kSun;
