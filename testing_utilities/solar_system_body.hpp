@@ -802,13 +802,13 @@ std::unique_ptr<SolarSystem> SolarSystem::AtСпутник2Launch() {
   ariel_trajectory->Append(
       kСпутник2LaunchTime,
       {kSolarSystemBarycentre + Displacement<ICRFJ2000Ecliptic>(
-           {-1.730181133162941E+09 * Kilo(Metre),
-             2.160003751339937E+09 * Kilo(Metre),
-             3.045891238850706E+07 * Kilo(Metre)}),
+           {-1.743394693015613E+09 * Kilo(Metre),
+             2.148295228037889E+09 * Kilo(Metre),
+             3.051049859822118E+07 * Kilo(Metre)}),
        Velocity<ICRFJ2000Ecliptic>(
-           {-6.019957829322824E+00 * Kilo(Metre) / Second,
-            -3.682977487897364E+00 * Kilo(Metre) / Second,
-             5.440031145983448E+00 * Kilo(Metre) / Second})});
+           {-8.590134956934145E+00 * Kilo(Metre) / Second,
+            -4.517951101991714E+00 * Kilo(Metre) / Second,
+            -4.406982500749494E+00 * Kilo(Metre) / Second})});
   Trajectory<ICRFJ2000Ecliptic>* umbriel_trajectory(
       new Trajectory<ICRFJ2000Ecliptic>(
           *solar_system->massive_bodies_[kUmbriel]));
