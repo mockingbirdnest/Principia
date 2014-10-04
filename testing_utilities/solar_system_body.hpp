@@ -744,13 +744,13 @@ std::unique_ptr<SolarSystem> SolarSystem::AtСпутник2Launch() {
   oberon_trajectory->Append(
       kСпутник2LaunchTime,
       {kSolarSystemBarycentre + Displacement<ICRFJ2000Ecliptic>(
-           {-1.730563623290436E+09 * Kilo(Metre),
-             2.160079664472153E+09 * Kilo(Metre),
-             3.041037690361578E+07 * Kilo(Metre)}),
+           {-1.743851406035026E+09 * Kilo(Metre),
+             2.148476767320335E+09 * Kilo(Metre),
+             3.109684580610486E+07 * Kilo(Metre)}),
        Velocity<ICRFJ2000Ecliptic>(
-           {-5.685242261484572E+00 * Kilo(Metre) / Second,
-            -4.073586348304020E+00 * Kilo(Metre) / Second,
-             3.143404489724676E+00 * Kilo(Metre) / Second})});
+           {-2.745718567351011E+00 * Kilo(Metre) / Second,
+            -4.926321308326997E+00 * Kilo(Metre) / Second,
+             1.815423517306933E+00 * Kilo(Metre) / Second})});
 
   // Satellites of Saturn.
   Trajectory<ICRFJ2000Ecliptic>* rhea_trajectory(
