@@ -394,7 +394,7 @@ TEST_F(NBodySystemTest, Sputnik1ToSputnik2) {
         break;
       case SolarSystem::kGanymede:
         // NOTE(egg): We have all Galilean moons, I have no idea what is going
-        // on here.  It's really bad.
+        // on here.  There seems to be a sort of precession.
         expected_position_error = 1E-5;
         expected_velocity_error = 1E-2;
         break;
