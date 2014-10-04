@@ -29,7 +29,7 @@ namespace testing_utilities {
 class SolarSystemTest : public testing::Test {
  protected:
   void SetUp() {
-    solar_system_ = SolarSystem::AtСпутникLaunch();
+    solar_system_ = SolarSystem::AtСпутник1Launch();
     n_body_system_.reset(new NBodySystem<ICRFJ2000Ecliptic>());
   }
   // The maximal separation of |primary| and |secondary| ignoring the influence

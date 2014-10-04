@@ -36,7 +36,7 @@ using principia::si::Second;
 namespace principia {
 namespace testing_utilities {
 
-std::unique_ptr<SolarSystem> SolarSystem::AtСпутникLaunch() {
+std::unique_ptr<SolarSystem> SolarSystem::AtСпутник1Launch() {
   // Number of days since the JD epoch. JD2436116.3115 is the time of the launch
   // of Простейший Спутник-1.
   Instant const kСпутник1LaunchTime = JulianDate(2436116.3115);

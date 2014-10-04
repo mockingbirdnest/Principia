@@ -33,7 +33,7 @@ void BM_SolarSystem(benchmark::State& state) {  // NOLINT(runtime/references)
   std::vector<quantities::Momentum> output;
   while (state.KeepRunning()) {
     state.PauseTiming();
-    std::unique_ptr<SolarSystem> solar_system = SolarSystem::AtСпутникLaunch();
+    std::unique_ptr<SolarSystem> solar_system = SolarSystem::AtСпутник1Launch();
     state.ResumeTiming();
     SimulateSolarSystem(solar_system.get());
     state.PauseTiming();
