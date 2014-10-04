@@ -400,19 +400,19 @@ std::unique_ptr<SolarSystem> SolarSystem::AtСпутник1Launch() {
             -1.264397874774153E+00 * Kilo(Metre) / Second})});
 
   // Satellites of Saturn.
-  Trajectory<ICRFJ2000Ecliptic>* rhea_trajectory(
+  Trajectory<ICRFJ2000Ecliptic>* dione_trajectory(
       new Trajectory<ICRFJ2000Ecliptic>(
-          *solar_system->massive_bodies_[kRhea]));
-  rhea_trajectory->Append(
+          *solar_system->massive_bodies_[kDione]));
+  dione_trajectory->Append(
       kСпутник1LaunchTime,
       {kSolarSystemBarycentre + Displacement<ICRFJ2000Ecliptic>(
-           {-3.772933911553755E+08 * Kilo(Metre),
-            -1.451461170080230E+09 * Kilo(Metre),
-             4.016028653663339E+07 * Kilo(Metre)}),
+           {-3.777740468280008E+08 * Kilo(Metre),
+            -1.452078913407227E+09 * Kilo(Metre),
+             4.053308808094668E+07 * Kilo(Metre)}),
        Velocity<ICRFJ2000Ecliptic>(
-           { 8.698485920139012E-01 * Kilo(Metre) / Second,
-             3.972546870497955E-01 * Kilo(Metre) / Second,
-            -1.060361115947588E+00 * Kilo(Metre) / Second})});
+           { 1.473536505664190E+01 * Kilo(Metre) / Second,
+            -9.857333255400615E+00 * Kilo(Metre) / Second,
+             2.994635825207214E+00 * Kilo(Metre) / Second})});
   Trajectory<ICRFJ2000Ecliptic>* iapetus_trajectory(
       new Trajectory<ICRFJ2000Ecliptic>(
           *solar_system->massive_bodies_[kIapetus]));
