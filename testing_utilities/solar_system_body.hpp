@@ -830,13 +830,13 @@ std::unique_ptr<SolarSystem> SolarSystem::AtСпутник2Launch() {
   dione_trajectory->Append(
       kСпутник2LaunchTime,
       {kSolarSystemBarycentre + Displacement<ICRFJ2000Ecliptic>(
-           {-3.777740468280008E+08 * Kilo(Metre),
-            -1.452078913407227E+09 * Kilo(Metre),
-             4.053308808094668E+07 * Kilo(Metre)}),
+           {-3.552295721012846E+08 * Kilo(Metre),
+            -1.457630098290271E+09 * Kilo(Metre),
+             3.946811133174797E+07 * Kilo(Metre)}),
        Velocity<ICRFJ2000Ecliptic>(
-           { 1.473536505664190E+01 * Kilo(Metre) / Second,
-            -9.857333255400615E+00 * Kilo(Metre) / Second,
-             2.994635825207214E+00 * Kilo(Metre) / Second})});
+           {-6.030846229930553E-01 * Kilo(Metre) / Second,
+            -4.868620315848084E+00 * Kilo(Metre) / Second,
+             1.933469386798133E+00 * Kilo(Metre) / Second})});
   Trajectory<ICRFJ2000Ecliptic>* tethys_trajectory(
       new Trajectory<ICRFJ2000Ecliptic>(
           *solar_system->massive_bodies_[kTethys]));
