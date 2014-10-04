@@ -433,12 +433,20 @@ TEST_F(NBodySystemTest, Sputnik1ToSputnik2) {
         expected_velocity_error = 1E-3;
         break;
       case SolarSystem::kTitania:
+        expected_position_error = 1E-6;
+        expected_velocity_error = 1E-3;
         break;
       case SolarSystem::kOberon:
+        expected_position_error = 1E-8;
+        expected_velocity_error = 1E-4;
         break;
       case SolarSystem::kRhea:
+        expected_position_error = 1E-5;
+        expected_velocity_error = 1E-1;
         break;
       case SolarSystem::kIapetus:
+        expected_position_error = 1E-5;
+        expected_velocity_error = 1E-1;
         break;
       case SolarSystem::kCharon:
         break;
@@ -476,9 +484,8 @@ TEST_F(NBodySystemTest, Sputnik1ToSputnik2) {
         EXPECT_THAT(angle, Lt(90 * Degree)) << i;
         EXPECT_THAT(length_error, Lt(2E-3)) << i;
         EXPECT_THAT(length_error, Gt(1E-5)) << i;
-      } else if (i == SolarSystem::kTriton ||
-                 i == SolarSystem::kTitan ||
-                 i == SolarSystem::kPluto) {
+      } else if (SolarSystem::parent(i) != SolarSystem::kSun &&
+                 SolarSystem::parent(i) != SolarSystem::kEarth) {
         EXPECT_THAT(vector_error, Lt(2E-3)) << i;
         EXPECT_THAT(vector_error, Gt(1E-5)) << i;
       } else {
