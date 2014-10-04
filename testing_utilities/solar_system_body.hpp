@@ -772,13 +772,13 @@ std::unique_ptr<SolarSystem> SolarSystem::AtСпутник2Launch() {
   iapetus_trajectory->Append(
       kСпутник2LaunchTime,
       {kSolarSystemBarycentre + Displacement<ICRFJ2000Ecliptic>(
-           {-3.751029285588183E+08 * Kilo(Metre),
-            -1.449565401910516E+09 * Kilo(Metre),
-             3.935332456093812E+07 * Kilo(Metre)}),
+           {-3.586954722831523E+08 * Kilo(Metre),
+            -1.457628919841799E+09 * Kilo(Metre),
+             4.026455668743709E+07 * Kilo(Metre)}),
        Velocity<ICRFJ2000Ecliptic>(
-           { 6.497053388258254E+00 * Kilo(Metre) / Second,
-            -7.325141764921950E-02 * Kilo(Metre) / Second,
-            -4.351376438069059E-01 * Kilo(Metre) / Second})});
+           { 8.707383466174113E+00 * Kilo(Metre) / Second,
+            -5.392253140156209E+00 * Kilo(Metre) / Second,
+             4.807764918652989E-01 * Kilo(Metre) / Second})});
 
   // Satellite of Pluto.
   Trajectory<ICRFJ2000Ecliptic>* charon_trajectory(
