@@ -33,14 +33,17 @@ void BM_SolarSystem(benchmark::State& state) {  // NOLINT(runtime/references)
   std::vector<quantities::Momentum> output;
   while (state.KeepRunning()) {
     state.PauseTiming();
-    std::unique_ptr<SolarSystem> solar_system = SolarSystem::AtСпутник1Launch();
+    std::unique_ptr<SolarSystem> solar_system = SolarSystem::AtСпутник1Launch(
+        SolarSystem::Accuracy::kMajorBodiesOnly);
     state.ResumeTiming();
     SimulateSolarSystem(solar_system.get());
     state.PauseTiming();
     state.SetLabel(
         DebugString(
-            (solar_system->trajectories()[0]->last_position() -
-             solar_system->trajectories()[5]->last_position()).Norm() /
+            (solar_system->trajectories()[
+                SolarSystem::kSun]->last_position() -
+             solar_system->trajectories()[
+                SolarSystem::kEarth]->last_position()).Norm() /
                 AstronomicalUnit) + " ua");
     state.ResumeTiming();
   }

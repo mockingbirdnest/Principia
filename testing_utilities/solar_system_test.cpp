@@ -96,7 +96,8 @@ class SolarSystemTest : public testing::Test {
 // not do a unicode-friendly stringification.  We settle for the English
 // romanization.
 TEST_F(SolarSystemTest, HierarchyAtSputnik1Launch) {
-  solar_system_ = SolarSystem::AtСпутник1Launch();
+  solar_system_ = SolarSystem::AtСпутник1Launch(
+      SolarSystem::Accuracy::kMinorBodiesAndOblateness);
   physics::NBodySystem<ICRFJ2000Ecliptic>::Trajectories trajectories =
       solar_system_->trajectories();
   auto const& sun      = *trajectories[SolarSystem::kSun];
@@ -166,7 +167,8 @@ TEST_F(SolarSystemTest, HierarchyAtSputnik1Launch) {
 }
 
 TEST_F(SolarSystemTest, HierarchyAtSputnik2Launch) {
-  solar_system_ = SolarSystem::AtСпутник2Launch();
+  solar_system_ = SolarSystem::AtСпутник2Launch(
+      SolarSystem::Accuracy::kMinorBodiesAndOblateness);
   physics::NBodySystem<ICRFJ2000Ecliptic>::Trajectories trajectories =
       solar_system_->trajectories();
   auto const& sun      = *trajectories[SolarSystem::kSun];
