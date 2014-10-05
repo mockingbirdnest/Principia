@@ -242,9 +242,16 @@ public class PluginAdapter : UnityEngine.MonoBehaviour {
       };
       ApplyToBodyTree(update_body);
       VesselProcessor update_vessel = vessel => {
-        InsertOrKeepVessel(plugin_,
-                           vessel.id.ToString(),
-                           vessel.orbit.referenceBody.flightGlobalsIndex);
+        bool inserted =InsertOrKeepVessel(
+            plugin_,
+            vessel.id.ToString(),
+            vessel.orbit.referenceBody.flightGlobalsIndex);
+        if (inserted) {
+          SetVesselStateOffset(plugin_,
+                               vessel.id.ToString(),
+                               (XYZ)vessel.orbit.pos,
+                               (XYZ)vessel.orbit.vel);
+        }
         Vector3d position =
             (Vector3d)VesselDisplacementFromParent(plugin_,
                                                    vessel.id.ToString());
@@ -306,22 +313,28 @@ public class PluginAdapter : UnityEngine.MonoBehaviour {
                         Planetarium.InverseRotAngle);
     BodyProcessor insert_body = body => {
       LogInfo("Inserting " + body.name + "...");
-      InsertCelestial(plugin_, body.flightGlobalsIndex, body.gravParameter,
+      InsertCelestial(plugin_,
+                      body.flightGlobalsIndex,
+                      body.gravParameter,
                       body.orbit.referenceBody.flightGlobalsIndex,
-                      (XYZ)body.orbit.pos, (XYZ)body.orbit.vel);
+                      (XYZ)body.orbit.pos,
+                      (XYZ)body.orbit.vel);
     };
     ApplyToBodyTree(insert_body);
     EndInitialisation(plugin_);
     VesselProcessor insert_vessel = vessel => {
       LogInfo("Inserting " + vessel.name + "...");
       bool inserted =
-          InsertOrKeepVessel(plugin_, vessel.id.ToString(),
+          InsertOrKeepVessel(plugin_,
+                             vessel.id.ToString(),
                              vessel.orbit.referenceBody.flightGlobalsIndex);
       if (!inserted) {
         LogFatal("Plugin initialisation: vessel not inserted");
       } else {
-        SetVesselStateOffset(plugin_, vessel.id.ToString(),
-                             (XYZ)vessel.orbit.pos, (XYZ)vessel.orbit.vel);
+        SetVesselStateOffset(plugin_,
+                             vessel.id.ToString(),
+                             (XYZ)vessel.orbit.pos,
+                             (XYZ)vessel.orbit.vel);
       }
     };
     ApplyToVesselsInSpace(insert_vessel);
