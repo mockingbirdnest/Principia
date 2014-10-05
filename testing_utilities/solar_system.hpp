@@ -96,7 +96,7 @@ class SolarSystem {
 
  private:
   // A system containing the bodies appropriate for the given |accuracy|.
-  SolarSystem(Accuracy const accuracy);
+  explicit SolarSystem(Accuracy const accuracy);
 
   Bodies massive_bodies_;
   Bodies massless_bodies_;

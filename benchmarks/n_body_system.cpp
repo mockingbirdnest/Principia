@@ -59,7 +59,7 @@ void SolarSystemBenchmark(SolarSystem::Accuracy const accuracy,
   }
 }
 
-} // namespace
+}  // namespace
 
 void BM_SolarSystemMajorBodiesOnly(
     benchmark::State& state) {  // NOLINT(runtime/references)
