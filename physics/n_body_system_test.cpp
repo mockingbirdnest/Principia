@@ -484,7 +484,8 @@ TEST_F(NBodySystemTest, Sputnik1ToSputnik2) {
       double const vector_error =  RelativeError(expected, actual);
       if (SolarSystem::parent(i) == SolarSystem::kJupiter ||
           SolarSystem::parent(i) == SolarSystem::kSaturn ||
-          SolarSystem::parent(i) == SolarSystem::kUranus) {
+          SolarSystem::parent(i) == SolarSystem::kUranus ||
+          SolarSystem::parent(i) == SolarSystem::kPluto) {
         double const length_error = RelativeError(expected.Norm(),
                                                   actual.Norm());
         Area const product_of_norms = expected.Norm() * actual.Norm();
@@ -492,7 +493,8 @@ TEST_F(NBodySystemTest, Sputnik1ToSputnik2) {
             InnerProduct(expected, actual) / product_of_norms,
             Wedge(expected, actual).Norm() / product_of_norms);
         // We are missing some sort of precession here, probably due to
-        // quadrupole moment.
+        // quadrupole moment in the case where |SolarSystem::parent(i)| is a gas
+        // giant, and to the missing Nix and Hydra in the case of Charon.
         EXPECT_THAT(angle / Degree, Gt(78)) << i;
         EXPECT_THAT(angle / Degree, Lt(90)) << i;
         EXPECT_THAT(length_error, Lt(3E-3)) << i;
