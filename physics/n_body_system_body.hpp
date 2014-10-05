@@ -160,32 +160,57 @@ void NBodySystem<InertialFrame>::ComputeGravitationalAccelerations(
   for (std::size_t b1 = 0, three_b1 = 0;
        b1 < number_of_massive_trajectories;
        ++b1, three_b1 += 3) {
+    Body const& body1 = massive_trajectories[b1]->body();
     GravitationalParameter const& body1_gravitational_parameter =
-        massive_trajectories[b1]->body().gravitational_parameter();
+        body1.gravitational_parameter();
+    bool const body1_is_oblate = body1.is_oblate();
     for (std::size_t b2 = b1 + 1; b2 < massive_trajectories.size(); ++b2) {
+      Body const& body2 = massive_trajectories[b2]->body();
+      GravitationalParameter const& body2_gravitational_parameter =
+          body2.gravitational_parameter();
+      bool const body2_is_oblate = body2.is_oblate();
       std::size_t const three_b2 = 3 * b2;
       Length const Δq0 = q[three_b1] - q[three_b2];
       Length const Δq1 = q[three_b1 + 1] - q[three_b2 + 1];
       Length const Δq2 = q[three_b1 + 2] - q[three_b2 + 2];
 
-      Exponentiation<Length, 2> const squared_distance =
+      Exponentiation<Length, 2> const r_squared =
           Δq0 * Δq0 + Δq1 * Δq1 + Δq2 * Δq2;
-      Exponentiation<Length, -3> const multiplier =
-          Sqrt(squared_distance) / (squared_distance * squared_distance);
+      Exponentiation<Length, -3> const one_over_r_cubed =
+          Sqrt(r_squared) / (r_squared * r_squared);
 
-      auto const μ2OverRSquared =
-          massive_trajectories[b2]->body().gravitational_parameter() *
-          multiplier;
-      (*result)[three_b1] -= Δq0 * μ2OverRSquared;
-      (*result)[three_b1 + 1] -= Δq1 * μ2OverRSquared;
-      (*result)[three_b1 + 2] -= Δq2 * μ2OverRSquared;
+      auto const μ2_over_r_cubed =
+          body2_gravitational_parameter * one_over_r_cubed;
+      (*result)[three_b1] -= Δq0 * μ2_over_r_cubed;
+      (*result)[three_b1 + 1] -= Δq1 * μ2_over_r_cubed;
+      (*result)[three_b1 + 2] -= Δq2 * μ2_over_r_cubed;
       // Lex. III. Actioni contrariam semper & æqualem esse reactionem:
       // sive corporum duorum actiones in se mutuo semper esse æquales &
       // in partes contrarias dirigi.
-      auto const μ1OverRSquared = body1_gravitational_parameter * multiplier;
-      (*result)[three_b2] += Δq0 * μ1OverRSquared;
-      (*result)[three_b2 + 1] += Δq1 * μ1OverRSquared;
-      (*result)[three_b2 + 2] += Δq2 * μ1OverRSquared;
+      auto const μ1_over_r_cubed = 
+          body1_gravitational_parameter * one_over_r_cubed;
+      (*result)[three_b2] += Δq0 * μ1_over_r_cubed;
+      (*result)[three_b2 + 1] += Δq1 * μ1_over_r_cubed;
+      (*result)[three_b2 + 2] += Δq2 * μ1_over_r_cubed;
+
+      if (body1_is_oblate || body2_is_oblate) {
+        Exponentiation<Length, -5> const one_over_r_to_the_fifth =
+            one_over_r_cubed / r_squared;
+        if (body1_is_oblate) {
+          auto const j21_contribution =
+              -1.5 * body1.j2() * one_over_r_to_the_fifth;
+          (*result)[three_b2] += Δq0 * j21_contribution;
+          (*result)[three_b2 + 1] += Δq1 * j21_contribution;
+          (*result)[three_b2 + 2] += Δq2 * j21_contribution;
+        }
+        if (body2_is_oblate) {
+          auto const j22_contribution =
+              -1.5 * body2.j2() * one_over_r_to_the_fifth;
+          (*result)[three_b1] += Δq0 * j22_contribution;
+          (*result)[three_b1 + 1] += Δq1 * j22_contribution;
+          (*result)[three_b1 + 2] += Δq2 * j22_contribution;
+        }
+      }
     }
     for (size_t b2 = number_of_massive_trajectories;
          b2 < number_of_massive_trajectories + number_of_massless_trajectories;
@@ -195,15 +220,16 @@ void NBodySystem<InertialFrame>::ComputeGravitationalAccelerations(
       Length const Δq1 = q[three_b1 + 1] - q[three_b2 + 1];
       Length const Δq2 = q[three_b1 + 2] - q[three_b2 + 2];
 
-      Exponentiation<Length, 2> const squared_distance =
+      Exponentiation<Length, 2> const r_squared =
           Δq0 * Δq0 + Δq1 * Δq1 + Δq2 * Δq2;
-      Exponentiation<Length, -3> const multiplier =
-          Sqrt(squared_distance) / (squared_distance * squared_distance);
+      Exponentiation<Length, -3> const one_over_r_cubed =
+          Sqrt(r_squared) / (r_squared * r_squared);
 
-      auto const μ1OverRSquared = body1_gravitational_parameter * multiplier;
-      (*result)[three_b2] += Δq0 * μ1OverRSquared;
-      (*result)[three_b2 + 1] += Δq1 * μ1OverRSquared;
-      (*result)[three_b2 + 2] += Δq2 * μ1OverRSquared;
+      auto const μ1_over_r_cubed =
+          body1_gravitational_parameter * one_over_r_cubed;
+      (*result)[three_b2] += Δq0 * μ1_over_r_cubed;
+      (*result)[three_b2 + 1] += Δq1 * μ1_over_r_cubed;
+      (*result)[three_b2 + 2] += Δq2 * μ1_over_r_cubed;
     }
   }
 

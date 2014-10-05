@@ -358,7 +358,7 @@ TEST_F(NBodySystemTest, Sputnik1ToSputnik2) {
         break;
       case SolarSystem::kJupiter:
         expected_position_error = 1E-8;
-        expected_velocity_error = 1E-5;
+        expected_velocity_error = 1E-7;
         break;
       case SolarSystem::kSaturn:
         expected_position_error = 1E-8;
@@ -391,33 +391,28 @@ TEST_F(NBodySystemTest, Sputnik1ToSputnik2) {
         expected_velocity_error = 1E-6;
         break;
       case SolarSystem::kGanymede:
-        // NOTE(egg): We have all Galilean moons, this probably comes from
-        // spherical harmonics.
-        expected_position_error = 1E-5;
-        expected_velocity_error = 1E-2;
+        expected_position_error = 1E-8;
+        expected_velocity_error = 1E-4;
         break;
       case SolarSystem::kTitan:
         expected_position_error = 1E-5;
         expected_velocity_error = 1E-3;
         break;
       case SolarSystem::kCallisto:
-        // NOTE(egg): Same as Ganymede.
-        expected_position_error = 1E-5;
-        expected_velocity_error = 1E-3;
+        expected_position_error = 1E-8;
+        expected_velocity_error = 1E-6;
         break;
       case SolarSystem::kIo:
-        // NOTE(egg): Same as Ganymede.
-        expected_position_error = 1E-4;
-        expected_velocity_error = 1E-1;
+        expected_position_error = 1E-6;
+        expected_velocity_error = 1E-3;
         break;
       case SolarSystem::kMoon:
         expected_position_error = 1E-7;
         expected_velocity_error = 1E-6;
         break;
       case SolarSystem::kEuropa:
-        // NOTE(egg): Same as Ganymede.
-        expected_position_error = 1E-4;
-        expected_velocity_error = 1E-1;
+        expected_position_error = 1E-7;
+        expected_velocity_error = 1E-3;
         break;
       case SolarSystem::kTriton:
         expected_position_error = 1E-7;

@@ -895,7 +895,9 @@ SolarSystem::SolarSystem() {
   // Planets.
 
   // Gas giants.
-  Body* jupiter(new Body(126686511 * Pow<3>(Kilo(Metre)) / Pow<2>(Second)));
+  Body* jupiter(new Body(126686511 * Pow<3>(Kilo(Metre)) / Pow<2>(Second),
+                         0.01475,
+                         71492 * Kilo(Metre)));
   Body* saturn(new Body(37931207.8 * Pow<3>(Kilo(Metre)) / Pow<2>(Second)));
   Body* neptune(new Body(6835107 * Pow<3>(Kilo(Metre)) / Pow<2>(Second)));
   Body* uranus(new Body(5793966 * Pow<3>(Kilo(Metre)) / Pow<2>(Second)));
