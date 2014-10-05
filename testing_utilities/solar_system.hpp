@@ -1,6 +1,7 @@
 ﻿#pragma once
 
 #include <memory>
+#include <string>
 #include <vector>
 
 #include "geometry/named_quantities.hpp"
@@ -81,6 +82,8 @@ class SolarSystem {
   // Returns the index of the parent of the body with the given |index|.
   // Because enums are broken in C++ we use ints.  Sigh.
   static int parent(int const index);
+  // The name of the body with the given |index|.
+  static std::string name(int const index);
 
  private:
   // A system containing the bodies listed in |Index|.

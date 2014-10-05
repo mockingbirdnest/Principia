@@ -2,6 +2,7 @@
 
 #include "testing_utilities/solar_system.hpp"
 
+#include <string>
 #include <vector>
 
 #include "geometry/epoch.hpp"
@@ -1049,6 +1050,43 @@ int SolarSystem::parent(int const index) {
       LOG(FATAL) << "Undefined index";
       return kSun;
   }
+}
+
+std::string SolarSystem::name(int const index) {
+#define BODY_NAME(name) case k##name: return #name; break
+  switch(index){
+    BODY_NAME(Sun);
+    BODY_NAME(Jupiter);
+    BODY_NAME(Saturn);
+    BODY_NAME(Neptune);
+    BODY_NAME(Uranus);
+    BODY_NAME(Earth);
+    BODY_NAME(Venus);
+    BODY_NAME(Mars);
+    BODY_NAME(Mercury);
+    BODY_NAME(Ganymede);
+    BODY_NAME(Titan);
+    BODY_NAME(Callisto);
+    BODY_NAME(Io);
+    BODY_NAME(Moon);
+    BODY_NAME(Europa);
+    BODY_NAME(Triton);
+    BODY_NAME(Eris);
+    BODY_NAME(Pluto);
+    BODY_NAME(Titania);
+    BODY_NAME(Oberon);
+    BODY_NAME(Rhea);
+    BODY_NAME(Iapetus);
+    BODY_NAME(Charon);
+    BODY_NAME(Ariel);
+    BODY_NAME(Umbriel);
+    BODY_NAME(Dione);
+    BODY_NAME(Tethys);
+    default:
+      LOG(FATAL) << "Undefined index";
+      return "";
+  }
+#undef BODY_NAME
 }
 
 }  // namespace testing_utilities

@@ -22,6 +22,7 @@ using principia::quantities::Speed;
 using principia::quantities::Sqrt;
 using principia::si::Radian;
 using testing::Lt;
+using testing::Ge;
 
 namespace principia {
 namespace testing_utilities {
@@ -58,7 +59,8 @@ class SolarSystemTest : public testing::Test {
   // Tests whether |tertiary| orbits |secondary| in an orbit with excentricity
   // |excentricity| within |relative_error| and, if |primary| is not null, tests
   // that |tertiary| is within the Laplace sphere of |secondary| with respect
-  // to |*primary|.
+  // to |*primary|. If |relative_error| is greater than 1E-6, it should be tight
+  // within an order of magnitude.
   void TestStronglyBoundOrbit(
       double excentricity,
       double relative_error,
@@ -77,6 +79,10 @@ class SolarSystemTest : public testing::Test {
     SpecificEnergy const ε = Pow<2>(v.Norm()) / 2 - μ / r.Norm();
     double e = Sqrt(1 + 2 * ε * Pow<2>(h.Norm() * Radian) / Pow<2>(μ));
     EXPECT_THAT(RelativeError(excentricity, e), Lt(relative_error)) << message;
+    if (relative_error > 1E-6) {
+      EXPECT_THAT(RelativeError(excentricity, e),
+                  Ge(relative_error / 10.0)) << message;
+    }
     if (primary != nullptr) {
       EXPECT_THAT(r.Norm(), Lt(LaplaceSphereRadiusRadius(*primary, secondary)))
           << message;
@@ -214,21 +220,21 @@ TEST_F(SolarSystemTest, HierarchyAtSputnik2Launch) {
   TestStronglyBoundOrbit(9.509972E-03, 1E-4, europa, jupiter, &sun, "europa");
   // Using center: Saturn (body center) [500@699].
   TestStronglyBoundOrbit(2.882510E-02, 1E-6, titan, saturn, &sun, "titan");
-  TestStronglyBoundOrbit(8.926369E-04, 1E-5, rhea, saturn, &sun, "rhea");
-  TestStronglyBoundOrbit(2.799919E-02, 1E-6, iapetus, saturn, &sun, "iapetus");
-  TestStronglyBoundOrbit(2.211120E-03, 1E-6, dione, saturn, &sun, "dione");
-  TestStronglyBoundOrbit(9.814475E-04, 1E-5, tethys, saturn, &sun, "tethys");
+  TestStronglyBoundOrbit(1.228346E-03, 1E-5, rhea, saturn, &sun, "rhea");
+  TestStronglyBoundOrbit(2.720904E-02, 1E-6, iapetus, saturn, &sun, "iapetus");
+  TestStronglyBoundOrbit(2.693662E-03, 1E-5, dione, saturn, &sun, "dione");
+  TestStronglyBoundOrbit(1.088851E-03, 1E-5, tethys, saturn, &sun, "tethys");
   // Using center: Geocentric [500].
   TestStronglyBoundOrbit(5.804121E-02, 1E-6, moon, earth, &sun, "moon");
   // Using center: Neptune (body center) [500@899]
   TestStronglyBoundOrbit(1.529190E-05, 2E-1, triton, neptune, &sun, "triton");
   // Using center: Uranus (body center) [500@799]
-  TestStronglyBoundOrbit(1.413687E-03, 3E-3, titania, uranus, &sun, "titania");
-  TestStronglyBoundOrbit(1.217327E-03, 2E-3, oberon, uranus, &sun, "oberon");
-  TestStronglyBoundOrbit(1.750702E-03, 2E-3, ariel, uranus, &sun, "ariel");
-  TestStronglyBoundOrbit(4.337777E-03, 3E-4, umbriel, uranus, &sun, "umbriel");
+  TestStronglyBoundOrbit(2.254242E-03, 3E-3, titania, uranus, &sun, "titania");
+  TestStronglyBoundOrbit(4.192300E-04, 3E-3, oberon, uranus, &sun, "oberon");
+  TestStronglyBoundOrbit(2.065133E-03, 2E-3, ariel, uranus, &sun, "ariel");
+  TestStronglyBoundOrbit(3.837353E-03, 3E-4, umbriel, uranus, &sun, "umbriel");
   // Using center: Pluto (body center) [500@999]
-  TestStronglyBoundOrbit(5.077777E-05, 1E-6, charon, pluto, &sun, "charon");
+  TestStronglyBoundOrbit(5.212037E-05, 1E-6, charon, pluto, &sun, "charon");
 }
 
 }  // namespace testing_utilities
