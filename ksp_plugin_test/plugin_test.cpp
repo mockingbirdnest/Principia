@@ -18,6 +18,7 @@ using principia::geometry::Bivector;
 using principia::geometry::Permutation;
 using principia::quantities::Abs;
 using principia::quantities::Sqrt;
+using principia::si::Day;
 using principia::si::Radian;
 using principia::si::AstronomicalUnit;
 using principia::testing_utilities::AbsoluteError;
@@ -130,7 +131,7 @@ TEST_F(PluginTest, InsertCelestialError) {
   }, DeathMessage("Body already exists"));
 }
 
-TEST_F(PluginTest, VesselInsertion) {
+TEST_F(PluginTest, VesselInsertionAtInitialization) {
   GUID const guid = "Test Satellite";
   InsertAllSolarSystemBodies();
   plugin_->EndInitialization();
@@ -155,6 +156,48 @@ TEST_F(PluginTest, VesselInsertion) {
   EXPECT_THAT(plugin_->VesselParentRelativeVelocity(guid),
               AlmostEquals(velocity));
 }
+
+TEST_F(PluginTest, AdvanceTime) {
+  GUID const guid = "Test Satellite";
+  InsertAllSolarSystemBodies();
+  plugin_->EndInitialization();
+  NBodySystem<ICRFJ2000Ecliptic> system;
+  SPRKIntegrator<Length, Speed> integrator;
+  integrator.Initialize(integrator.Order5Optimal());
+  Instant const tmax = initial_time_ + 100 * Second;
+  for (Instant t = initial_time_ + 0.02 * Second;
+       t <= tmax;
+       t = t + 0.02 * Second) {
+    plugin_->AdvanceTime(t, π / 3 * Radian);
+  }
+  system.Integrate(integrator,
+                   tmax,
+                   10 * Second,  // Δt
+                   0,  // sampling_period
+                   true,  // tmax_is_exact
+                   solar_system_->trajectories());
+  for (std::size_t index = SolarSystem::kSun + 1;
+       index < bodies_.size();
+       ++index) {
+    Displacement<AliceSun> position;
+    Velocity<AliceSun> velocity;
+    for (int i = index; i != SolarSystem::kSun; i = SolarSystem::parent(i)) {
+      position +=
+          plugin_->CelestialDisplacementFromParent(i);
+      velocity +=
+          plugin_->CelestialParentRelativeVelocity(i);
+    }
+    Displacement<ICRFJ2000Ecliptic> const reference_position = 
+          solar_system_->trajectories()[index]->last_position() -
+          solar_system_->trajectories()[SolarSystem::kSun]->last_position();
+    Velocity<ICRFJ2000Ecliptic> const reference_velocity = 
+          solar_system_->trajectories()[index]->last_velocity() -
+          solar_system_->trajectories()[SolarSystem::kSun]->last_velocity();
+    EXPECT_THAT(position, AlmostEquals(looking_glass_(reference_position)));
+    EXPECT_THAT(velocity, AlmostEquals(looking_glass_(reference_velocity)));
+  }
+}
+
 
 }  // namespace ksp_plugin
 }  // namespace principia
