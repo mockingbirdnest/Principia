@@ -944,7 +944,12 @@ SolarSystem::SolarSystem() {
   Body* iapetus(new Body(120.51 * Pow<3>(Kilo(Metre)) / Pow<2>(Second)));
 
   // Satellite of Pluto.
-  Body* charon(new Body(102.271 * Pow<3>(Kilo(Metre)) / Pow<2>(Second)));
+  // The masses reported by HORIZONS have very few significant digits. Instead
+  // we subtract Pluto's gravitational parameter from the one given for the
+  // Charon-Pluto system.
+  Body* charon(
+      new Body(9.7549380662106296E2 * Pow<3>(Kilo(Metre)) / Pow<2>(Second) -
+               pluto->gravitational_parameter()));
 
   // Satellites of Uranus.
   Body* ariel(new Body(13.53E20 * Kilogram));

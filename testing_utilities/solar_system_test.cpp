@@ -152,10 +152,12 @@ TEST_F(SolarSystemTest, HierarchyAtSputnik1Launch) {
   // Using center: Neptune (body center) [500@899]
   TestStronglyBoundOrbit(1.587851E-05, 2E-1, triton, neptune, &sun, "triton");
   // Using center: Uranus (body center) [500@799]
-  TestStronglyBoundOrbit(1.413687E-03, 1E-6, titania, uranus, &sun, "titania");
-  TestStronglyBoundOrbit(1.217327E-03, 1E-6, oberon, uranus, &sun, "oberon");
-  TestStronglyBoundOrbit(1.750702E-03, 1E-6, ariel, uranus, &sun, "ariel");
-  TestStronglyBoundOrbit(4.337777E-03, 1E-6, umbriel, uranus, &sun, "umbriel");
+  TestStronglyBoundOrbit(1.413687E-03, 3E-3, titania, uranus, &sun, "titania");
+  TestStronglyBoundOrbit(1.217327E-03, 2E-3, oberon, uranus, &sun, "oberon");
+  TestStronglyBoundOrbit(1.750702E-03, 2E-3, ariel, uranus, &sun, "ariel");
+  TestStronglyBoundOrbit(4.337777E-03, 3E-4, umbriel, uranus, &sun, "umbriel");
+  // Using center: Pluto (body center) [500@999]
+  TestStronglyBoundOrbit(5.077777E-05, 1E-6, charon, pluto, &sun, "charon");
 }
 
 TEST_F(SolarSystemTest, HierarchyAtSputnik2Launch) {
@@ -220,6 +222,13 @@ TEST_F(SolarSystemTest, HierarchyAtSputnik2Launch) {
   TestStronglyBoundOrbit(5.804121E-02, 1E-6, moon, earth, &sun, "moon");
   // Using center: Neptune (body center) [500@899]
   TestStronglyBoundOrbit(1.529190E-05, 2E-1, triton, neptune, &sun, "triton");
+  // Using center: Uranus (body center) [500@799]
+  TestStronglyBoundOrbit(1.413687E-03, 3E-3, titania, uranus, &sun, "titania");
+  TestStronglyBoundOrbit(1.217327E-03, 2E-3, oberon, uranus, &sun, "oberon");
+  TestStronglyBoundOrbit(1.750702E-03, 2E-3, ariel, uranus, &sun, "ariel");
+  TestStronglyBoundOrbit(4.337777E-03, 3E-4, umbriel, uranus, &sun, "umbriel");
+  // Using center: Pluto (body center) [500@999]
+  TestStronglyBoundOrbit(5.077777E-05, 1E-6, charon, pluto, &sun, "charon");
 }
 
 }  // namespace testing_utilities
