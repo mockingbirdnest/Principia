@@ -22,11 +22,13 @@ using principia::si::Day;
 using principia::si::Radian;
 using principia::si::AstronomicalUnit;
 using principia::testing_utilities::AbsoluteError;
+using principia::testing_utilities::RelativeError;
 using principia::testing_utilities::AlmostEquals;
 using principia::testing_utilities::DeathMessage;
 using principia::testing_utilities::ICRFJ2000Ecliptic;
 using principia::testing_utilities::SolarSystem;
 using testing::Eq;
+using testing::Gt;
 using testing::Lt;
 
 namespace principia {
@@ -164,37 +166,65 @@ TEST_F(PluginTest, AdvanceTime) {
   NBodySystem<ICRFJ2000Ecliptic> system;
   SPRKIntegrator<Length, Speed> integrator;
   integrator.Initialize(integrator.Order5Optimal());
-  Instant const tmax = initial_time_ + 100 * Second;
+  Instant const tmax = initial_time_ + 1000.0 * Second;
   for (Instant t = initial_time_ + 0.02 * Second;
        t <= tmax;
        t = t + 0.02 * Second) {
-    plugin_->AdvanceTime(t, π / 3 * Radian);
+    plugin_->AdvanceTime(t, 1 * Radian);
+    system.Integrate(integrator,
+                     t,
+                     10 * Second,  // Δt
+                     0,  // sampling_period
+                     true,  // tmax_is_exact
+                     solar_system_->trajectories());
   }
+  std::unique_ptr<SolarSystem> symplectic_system =
+      SolarSystem::AtСпутник1Launch();
   system.Integrate(integrator,
-                   tmax,
+                   solar_system_->trajectories().front()->last_time(),
                    10 * Second,  // Δt
                    0,  // sampling_period
                    true,  // tmax_is_exact
-                   solar_system_->trajectories());
+                   symplectic_system->trajectories());
+
   for (std::size_t index = SolarSystem::kSun + 1;
        index < bodies_.size();
        ++index) {
     Displacement<AliceSun> position;
     Velocity<AliceSun> velocity;
     for (int i = index; i != SolarSystem::kSun; i = SolarSystem::parent(i)) {
-      position +=
-          plugin_->CelestialDisplacementFromParent(i);
-      velocity +=
-          plugin_->CelestialParentRelativeVelocity(i);
+      LOG(ERROR) << SolarSystem::name(i);
+      position += plugin_->CelestialDisplacementFromParent(i);
+      velocity += plugin_->CelestialParentRelativeVelocity(i);
     }
-    Displacement<ICRFJ2000Ecliptic> const reference_position = 
+    // Check that the results match a trajectory integrated with a 10 second
+    // timestep better than one stepped at every call to advance time.
+    Displacement<ICRFJ2000Ecliptic> const reference_position =
           solar_system_->trajectories()[index]->last_position() -
           solar_system_->trajectories()[SolarSystem::kSun]->last_position();
-    Velocity<ICRFJ2000Ecliptic> const reference_velocity = 
+    Velocity<ICRFJ2000Ecliptic> const reference_velocity =
           solar_system_->trajectories()[index]->last_velocity() -
           solar_system_->trajectories()[SolarSystem::kSun]->last_velocity();
-    EXPECT_THAT(position, AlmostEquals(looking_glass_(reference_position)));
-    EXPECT_THAT(velocity, AlmostEquals(looking_glass_(reference_velocity)));
+    Displacement<ICRFJ2000Ecliptic> const symplectic_position =
+          symplectic_system->trajectories()[index]->last_position() -
+          symplectic_system->trajectories()[SolarSystem::kSun]->last_position();
+    Velocity<ICRFJ2000Ecliptic> const symplectic_velocity =
+          symplectic_system->trajectories()[index]->last_velocity() -
+          symplectic_system->trajectories()[SolarSystem::kSun]->last_velocity();
+    double const low_position_error =
+        RelativeError(looking_glass_(symplectic_position), position);
+    double const low_velocity_error =
+        RelativeError(looking_glass_(symplectic_velocity), velocity);
+    double const high_position_error =
+        RelativeError(looking_glass_(reference_position), position);
+    double const high_velocity_error =
+        RelativeError(looking_glass_(reference_velocity), velocity);
+    EXPECT_THAT(low_position_error, Lt(1E-12));
+    EXPECT_THAT(low_velocity_error, Lt(1E-12));
+    if (index != SolarSystem::kRhea) {  // Rhea is probably just bad luck.
+      EXPECT_THAT(high_position_error, Gt(1.1 * low_position_error));
+      EXPECT_THAT(high_velocity_error, Gt(1.1 * low_velocity_error));
+    }
   }
 }
 
