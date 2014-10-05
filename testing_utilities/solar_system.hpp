@@ -95,8 +95,8 @@ class SolarSystem {
   static std::string name(int const index);
 
  private:
-  // A system containing the bodies listed in |Index|.
-  SolarSystem();
+  // A system containing the bodies appropriate for the given |accuracy|.
+  SolarSystem(Accuracy const accuracy);
 
   Bodies massive_bodies_;
   Bodies massless_bodies_;
