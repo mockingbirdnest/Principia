@@ -242,7 +242,7 @@ public class PluginAdapter : UnityEngine.MonoBehaviour {
       };
       ApplyToBodyTree(update_body);
       VesselProcessor update_vessel = vessel => {
-        bool inserted =InsertOrKeepVessel(
+        bool inserted = InsertOrKeepVessel(
             plugin_,
             vessel.id.ToString(),
             vessel.orbit.referenceBody.flightGlobalsIndex);
