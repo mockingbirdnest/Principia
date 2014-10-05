@@ -1053,7 +1053,7 @@ int SolarSystem::parent(int const index) {
 }
 
 std::string SolarSystem::name(int const index) {
-#define BODY_NAME(name) case k##name: return #name; break
+#define BODY_NAME(name) case k##name: return #name
   switch (index) {
     BODY_NAME(Sun);
     BODY_NAME(Jupiter);
