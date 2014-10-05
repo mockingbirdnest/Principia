@@ -386,13 +386,13 @@ TEST_F(NBodySystemTest, Sputnik1ToSputnik2) {
         break;
       case SolarSystem::kMercury:
         // NOTE(egg): We expect the error here to be higher than for the other
-        // planets.  We will not fix this.
+        // planets.
         expected_position_error = 1E-6;
         expected_velocity_error = 1E-6;
         break;
       case SolarSystem::kGanymede:
-        // NOTE(egg): We have all Galilean moons, I have no idea what is going
-        // on here.  There seems to be a sort of precession.
+        // NOTE(egg): We have all Galilean moons, this probably comes from
+        // spherical harmonics.
         expected_position_error = 1E-5;
         expected_velocity_error = 1E-2;
         break;
@@ -482,17 +482,20 @@ TEST_F(NBodySystemTest, Sputnik1ToSputnik2) {
               evolved_system->trajectories()[SolarSystem::parent(i)]->
                   last_position();
       double const vector_error =  RelativeError(expected, actual);
-      if (SolarSystem::parent(i) == SolarSystem::kJupiter) {
+      if (SolarSystem::parent(i) == SolarSystem::kJupiter ||
+          SolarSystem::parent(i) == SolarSystem::kSaturn ||
+          SolarSystem::parent(i) == SolarSystem::kUranus) {
         double const length_error = RelativeError(expected.Norm(),
                                                   actual.Norm());
         Area const product_of_norms = expected.Norm() * actual.Norm();
         Angle const angle = ArcTan(
             InnerProduct(expected, actual) / product_of_norms,
             Wedge(expected, actual).Norm() / product_of_norms);
-        // We are missing some sort of precession here.
-        EXPECT_THAT(angle, Gt(82 * Degree)) << i;
-        EXPECT_THAT(angle, Lt(90 * Degree)) << i;
-        EXPECT_THAT(length_error, Lt(2E-3)) << i;
+        // We are missing some sort of precession here, probably due to
+        // quadrupole moment.
+        EXPECT_THAT(angle / Degree, Gt(78)) << i;
+        EXPECT_THAT(angle / Degree, Lt(90)) << i;
+        EXPECT_THAT(length_error, Lt(3E-3)) << i;
         EXPECT_THAT(length_error, Gt(1E-5)) << i;
       } else if (SolarSystem::parent(i) != SolarSystem::kSun &&
                  SolarSystem::parent(i) != SolarSystem::kEarth) {
