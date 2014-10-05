@@ -351,6 +351,7 @@ TEST_F(NBodySystemTest, Sputnik1ToSputnik2) {
     // Upper bounds, tight to the nearest order of magnitude.
     double expected_velocity_error = 0;
     double expected_position_error = 0;
+    Angle expected_angle_error = 0 * Degree;
     switch (i) {
       case SolarSystem::kSun:
         expected_position_error = 1E-8;
@@ -395,10 +396,12 @@ TEST_F(NBodySystemTest, Sputnik1ToSputnik2) {
         // spherical harmonics.
         expected_position_error = 1E-5;
         expected_velocity_error = 1E-2;
+        expected_angle_error = 0.28 * Degree;
         break;
       case SolarSystem::kTitan:
         expected_position_error = 1E-5;
         expected_velocity_error = 1E-3;
+        expected_angle_error = 0.089 * Degree;
         break;
       case SolarSystem::kCallisto:
         // NOTE(egg): Same as Ganymede.
@@ -409,6 +412,7 @@ TEST_F(NBodySystemTest, Sputnik1ToSputnik2) {
         // NOTE(egg): Same as Ganymede.
         expected_position_error = 1E-4;
         expected_velocity_error = 1E-1;
+        expected_angle_error = 7.6 * Degree;
         break;
       case SolarSystem::kMoon:
         expected_position_error = 1E-7;
@@ -418,6 +422,7 @@ TEST_F(NBodySystemTest, Sputnik1ToSputnik2) {
         // NOTE(egg): Same as Ganymede.
         expected_position_error = 1E-4;
         expected_velocity_error = 1E-1;
+        expected_angle_error = 1.4 * Degree;
         break;
       case SolarSystem::kTriton:
         expected_position_error = 1E-7;
@@ -443,6 +448,7 @@ TEST_F(NBodySystemTest, Sputnik1ToSputnik2) {
       case SolarSystem::kRhea:
         expected_position_error = 1E-5;
         expected_velocity_error = 1E-1;
+        expected_angle_error = 1.5 * Degree;
         break;
       case SolarSystem::kIapetus:
         expected_position_error = 1E-7;
@@ -450,27 +456,39 @@ TEST_F(NBodySystemTest, Sputnik1ToSputnik2) {
         break;
       case SolarSystem::kCharon:
         expected_position_error = 1E-6;
-        expected_velocity_error = 1E-2;
+        expected_velocity_error = 1E-3;
         break;
       case SolarSystem::kAriel:
         expected_position_error = 1E-6;
         expected_velocity_error = 1E-2;
+        expected_angle_error = 0.74 * Degree;
         break;
       case SolarSystem::kUmbriel:
         expected_position_error = 1E-6;
         expected_velocity_error = 1E-2;
+        expected_angle_error = 0.24 * Degree;
         break;
       case SolarSystem::kDione:
         expected_position_error = 1E-4;
         expected_velocity_error = 1E-0;
+        expected_angle_error = 4.8 * Degree;
         break;
       case SolarSystem::kTethys:
         expected_position_error = 1E-4;
         expected_velocity_error = 1E-0;
+        expected_angle_error = 11.4 * Degree;
         break;
       default:
         LOG(FATAL) << "No such body";
     }
+    EXPECT_THAT(position_error, Lt(expected_position_error))
+        << SolarSystem::name(i);
+    EXPECT_THAT(position_error, Gt(expected_position_error / 10.0))
+        << SolarSystem::name(i);
+    EXPECT_THAT(velocity_error, Lt(expected_velocity_error))
+        << SolarSystem::name(i);
+    EXPECT_THAT(velocity_error, Gt(expected_velocity_error / 10.0))
+        << SolarSystem::name(i);
     if (i != SolarSystem::kSun) {
       // Look at the error in the position relative to the parent.
       Vector<Length, ICRFJ2000Ecliptic> expected =
@@ -482,35 +500,62 @@ TEST_F(NBodySystemTest, Sputnik1ToSputnik2) {
               evolved_system->trajectories()[SolarSystem::parent(i)]->
                   last_position();
       double const vector_error =  RelativeError(expected, actual);
-      if (SolarSystem::parent(i) == SolarSystem::kJupiter ||
-          SolarSystem::parent(i) == SolarSystem::kSaturn ||
-          SolarSystem::parent(i) == SolarSystem::kUranus ||
-          SolarSystem::parent(i) == SolarSystem::kPluto) {
+      if (i == SolarSystem::kIo ||
+          i == SolarSystem::kEuropa ||
+          i == SolarSystem::kGanymede ||
+          i == SolarSystem::kTitan ||
+          i == SolarSystem::kRhea ||
+          i == SolarSystem::kAriel ||
+          i == SolarSystem::kUmbriel ||
+          i == SolarSystem::kDione ||
+          i == SolarSystem::kTethys) {
         double const length_error = RelativeError(expected.Norm(),
                                                   actual.Norm());
         Area const product_of_norms = expected.Norm() * actual.Norm();
         Angle const angle = ArcTan(
-            InnerProduct(expected, actual) / product_of_norms,
-            Wedge(expected, actual).Norm() / product_of_norms);
+            Wedge(expected, actual).Norm() / product_of_norms,
+            InnerProduct(expected, actual) / product_of_norms);
         // We are missing some sort of precession here, probably due to
-        // quadrupole moment in the case where |SolarSystem::parent(i)| is a gas
-        // giant, and to the missing Nix and Hydra in the case of Charon.
-        EXPECT_THAT(angle / Degree, Gt(78)) << i;
-        EXPECT_THAT(angle / Degree, Lt(90)) << i;
-        EXPECT_THAT(length_error, Lt(3E-3)) << i;
-        EXPECT_THAT(length_error, Gt(1E-5)) << i;
+        // quadrupole moment.
+        LOG(ERROR) << SolarSystem::name(SolarSystem::parent(i));
+        LOG(ERROR) << angle * Pow<4>(expected.Norm());
+        EXPECT_THAT(angle / Degree,
+                    Gt(expected_angle_error / Degree * 0.9))
+            << SolarSystem::name(i);
+        EXPECT_THAT(angle / Degree,
+                    Lt(expected_angle_error / Degree * 1.1))
+            << SolarSystem::name(i);
+        EXPECT_THAT(length_error, Lt(3E-3)) << SolarSystem::name(i);
+        EXPECT_THAT(length_error, Gt(1E-6)) << SolarSystem::name(i);
       } else if (SolarSystem::parent(i) != SolarSystem::kSun &&
                  SolarSystem::parent(i) != SolarSystem::kEarth) {
-        EXPECT_THAT(vector_error, Lt(2E-3)) << i;
-        EXPECT_THAT(vector_error, Gt(1E-5)) << i;
+        // Less extreme precession, probably the same cause.
+        EXPECT_THAT(vector_error, Lt(1E-3)) << SolarSystem::name(i);
+        EXPECT_THAT(vector_error, Gt(1E-5)) << SolarSystem::name(i);
+      } else if (SolarSystem::parent(i) == SolarSystem::kPluto) {
+        // We are missing Hydra and Nyx.
+        EXPECT_THAT(vector_error, Lt(1E-4)) << SolarSystem::name(i);
+        EXPECT_THAT(vector_error, Gt(1E-5)) << SolarSystem::name(i);
+      } else if (i == SolarSystem::kMoon) {
+        // What is this?
+        EXPECT_THAT(vector_error, Lt(1E-5)) << SolarSystem::name(i);
+        EXPECT_THAT(vector_error, Gt(1E-6)) << SolarSystem::name(i);
+      } else if (i == SolarSystem::kEris) {
+        // We are missing Dysnomia.
+        EXPECT_THAT(vector_error, Lt(1E-5)) << SolarSystem::name(i);
+        EXPECT_THAT(vector_error, Gt(1E-6)) << SolarSystem::name(i);
+      } else if (i == SolarSystem::kPluto) {
+        // We are missing Hydra and Nyx.
+        EXPECT_THAT(vector_error, Lt(1E-6)) << SolarSystem::name(i);
+        EXPECT_THAT(vector_error, Gt(1E-7)) << SolarSystem::name(i);
+      } else if (i == SolarSystem::kMercury) {
+        // We are missing GR...
+        EXPECT_THAT(vector_error, Lt(1E-6)) << SolarSystem::name(i);
+        EXPECT_THAT(vector_error, Gt(1E-7)) << SolarSystem::name(i);
       } else {
-        EXPECT_THAT(vector_error, Lt(1E-5)) << i;
+        EXPECT_THAT(vector_error, Lt(1E-7)) << SolarSystem::name(i);
       }
     }
-    EXPECT_THAT(position_error, Lt(expected_position_error)) << i;
-    EXPECT_THAT(position_error, Gt(expected_position_error / 10.0)) << i;
-    EXPECT_THAT(velocity_error, Lt(expected_velocity_error)) << i;
-    EXPECT_THAT(velocity_error, Gt(expected_velocity_error / 10.0)) << i;
   }
 }
 

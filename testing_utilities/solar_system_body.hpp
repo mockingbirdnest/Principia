@@ -2,6 +2,7 @@
 
 #include "testing_utilities/solar_system.hpp"
 
+#include <string>
 #include <vector>
 
 #include "geometry/epoch.hpp"
@@ -944,7 +945,12 @@ SolarSystem::SolarSystem() {
   Body* iapetus(new Body(120.51 * Pow<3>(Kilo(Metre)) / Pow<2>(Second)));
 
   // Satellite of Pluto.
-  Body* charon(new Body(102.271 * Pow<3>(Kilo(Metre)) / Pow<2>(Second)));
+  // The masses reported by HORIZONS have very few significant digits. Instead
+  // we subtract Pluto's gravitational parameter from the one given for the
+  // Charon-Pluto system.
+  Body* charon(
+      new Body(9.7549380662106296E2 * Pow<3>(Kilo(Metre)) / Pow<2>(Second) -
+               pluto->gravitational_parameter()));
 
   // Satellites of Uranus.
   Body* ariel(new Body(13.53E20 * Kilogram));
@@ -1044,6 +1050,43 @@ int SolarSystem::parent(int const index) {
       LOG(FATAL) << "Undefined index";
       return kSun;
   }
+}
+
+std::string SolarSystem::name(int const index) {
+#define BODY_NAME(name) case k##name: return #name
+  switch (index) {
+    BODY_NAME(Sun);
+    BODY_NAME(Jupiter);
+    BODY_NAME(Saturn);
+    BODY_NAME(Neptune);
+    BODY_NAME(Uranus);
+    BODY_NAME(Earth);
+    BODY_NAME(Venus);
+    BODY_NAME(Mars);
+    BODY_NAME(Mercury);
+    BODY_NAME(Ganymede);
+    BODY_NAME(Titan);
+    BODY_NAME(Callisto);
+    BODY_NAME(Io);
+    BODY_NAME(Moon);
+    BODY_NAME(Europa);
+    BODY_NAME(Triton);
+    BODY_NAME(Eris);
+    BODY_NAME(Pluto);
+    BODY_NAME(Titania);
+    BODY_NAME(Oberon);
+    BODY_NAME(Rhea);
+    BODY_NAME(Iapetus);
+    BODY_NAME(Charon);
+    BODY_NAME(Ariel);
+    BODY_NAME(Umbriel);
+    BODY_NAME(Dione);
+    BODY_NAME(Tethys);
+    default:
+      LOG(FATAL) << "Undefined index";
+      return "";
+  }
+#undef BODY_NAME
 }
 
 }  // namespace testing_utilities
