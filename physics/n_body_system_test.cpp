@@ -445,18 +445,28 @@ TEST_F(NBodySystemTest, Sputnik1ToSputnik2) {
         expected_velocity_error = 1E-1;
         break;
       case SolarSystem::kIapetus:
-        expected_position_error = 1E-5;
-        expected_velocity_error = 1E-1;
+        expected_position_error = 1E-7;
+        expected_velocity_error = 1E-5;
         break;
       case SolarSystem::kCharon:
+        expected_position_error = 1E-6;
+        expected_velocity_error = 1E-2;
         break;
       case SolarSystem::kAriel:
+        expected_position_error = 1E-6;
+        expected_velocity_error = 1E-2;
         break;
       case SolarSystem::kUmbriel:
+        expected_position_error = 1E-6;
+        expected_velocity_error = 1E-2;
         break;
       case SolarSystem::kDione:
+        expected_position_error = 1E-4;
+        expected_velocity_error = 1E-0;
         break;
       case SolarSystem::kTethys:
+        expected_position_error = 1E-4;
+        expected_velocity_error = 1E-0;
         break;
       default:
         LOG(FATAL) << "No such body";
