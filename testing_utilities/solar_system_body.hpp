@@ -933,7 +933,7 @@ SolarSystem::SolarSystem() {
   Body* eris(new Body(1.67E22 * Kilogram));
 
   // Dwarf planet (Kuiper belt object).
-  Body* pluto(new Body(1.307E22 * Kilogram));
+  Body* pluto(new Body(872.4 * Pow<3>(Kilo(Metre)) / Pow<2>(Second)));
 
   // Satellites of Uranus.
   Body* titania(new Body(35.27E20 * Kilogram));
