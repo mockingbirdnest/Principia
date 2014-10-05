@@ -39,9 +39,11 @@ void BM_SolarSystem(benchmark::State& state) {  // NOLINT(runtime/references)
     state.PauseTiming();
     state.SetLabel(
         DebugString(
-            (solar_system->trajectories()[0]->last_position() -
-             solar_system->trajectories()[5]->last_position()).Norm() /
-                AstronomicalUnit) + " ua");
+            (solar_system->trajectories()[
+                 SolarSystem::kSun]->last_position() -
+             solar_system->trajectories()[
+                 SolarSystem::kEarth]->last_position()).Norm() /
+                 AstronomicalUnit) + " ua");
     state.ResumeTiming();
   }
 }

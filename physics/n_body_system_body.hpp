@@ -230,6 +230,16 @@ void NBodySystem<InertialFrame>::ComputeGravitationalAccelerations(
       (*result)[three_b2] += Δq0 * μ1_over_r_cubed;
       (*result)[three_b2 + 1] += Δq1 * μ1_over_r_cubed;
       (*result)[three_b2 + 2] += Δq2 * μ1_over_r_cubed;
+
+      if (body1_is_oblate) {
+        Exponentiation<Length, -5> const one_over_r_to_the_fifth =
+            one_over_r_cubed / r_squared;
+        auto const j21_contribution =
+            -1.5 * body1.j2() * one_over_r_to_the_fifth;
+        (*result)[three_b2] += Δq0 * j21_contribution;
+        (*result)[three_b2 + 1] += Δq1 * j21_contribution;
+        (*result)[three_b2 + 2] += Δq2 * j21_contribution;
+      }
     }
   }
 
