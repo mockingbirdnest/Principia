@@ -29,26 +29,45 @@ using principia::si::AstronomicalUnit;
 namespace principia {
 namespace benchmarks {
 
-void BM_SolarSystem(benchmark::State& state) {  // NOLINT(runtime/references)
+namespace {
+
+void SolarSystemBenchmark(SolarSystem::Accuracy const accuracy,
+                          benchmark::State* state) {
   std::vector<quantities::Momentum> output;
-  while (state.KeepRunning()) {
-    state.PauseTiming();
+  while (state->KeepRunning()) {
+    state->PauseTiming();
     std::unique_ptr<SolarSystem> solar_system = SolarSystem::AtСпутник1Launch(
-        SolarSystem::Accuracy::kMajorBodiesOnly);
-    state.ResumeTiming();
+        accuracy);
+    state->ResumeTiming();
     SimulateSolarSystem(solar_system.get());
-    state.PauseTiming();
-    state.SetLabel(
+    state->PauseTiming();
+    state->SetLabel(
         DebugString(
             (solar_system->trajectories()[
                 SolarSystem::kSun]->last_position() -
              solar_system->trajectories()[
                 SolarSystem::kEarth]->last_position()).Norm() /
                 AstronomicalUnit) + " ua");
-    state.ResumeTiming();
+    state->ResumeTiming();
   }
 }
-BENCHMARK(BM_SolarSystem);
+
+} // namespace
+
+void BM_SolarSystemMajorBodiesOnly(
+    benchmark::State& state) {  // NOLINT(runtime/references)
+  SolarSystemBenchmark(SolarSystem::Accuracy::kMajorBodiesOnly,
+                       &state);
+}
+
+void BM_SolarSystemMinorAndMajorBodies(
+    benchmark::State& state) {  // NOLINT(runtime/references)
+  SolarSystemBenchmark(SolarSystem::Accuracy::kMinorAndMajorBodies,
+                       &state);
+}
+
+BENCHMARK(BM_SolarSystemMajorBodiesOnly);
+BENCHMARK(BM_SolarSystemMinorAndMajorBodies);
 
 }  // namespace benchmarks
 }  // namespace principia

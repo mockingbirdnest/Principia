@@ -61,11 +61,11 @@ class SolarSystem {
 
   // Specifies the accuracy of the modeling.  |kMajorBodiesOnly| has all the
   // bodies with masses greater than or equal to Pluto, and all these bodies are
-  // spheric.  |kMinorBodiesAndOblateness| adds some smaller satellites and the
-  // oblateness.
+  // spheric.  |kMinorAndMajorBodies| adds some smaller satellites of the main
+  // planets.
   enum class Accuracy {
     kMajorBodiesOnly,
-    kMinorBodiesAndOblateness,
+    kMinorAndMajorBodies,
   };
 
   // Factory.  The caller gets ownership of the pointers.
