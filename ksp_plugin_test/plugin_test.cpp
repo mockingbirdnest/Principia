@@ -48,22 +48,22 @@ class PluginTest : public testing::Test {
   }
 
   void InsertAllSolarSystemBodies() {
-  for (std::size_t index = SolarSystem::kSun + 1;
-       index < bodies_.size();
-       ++index) {
-    Index const parent_index = SolarSystem::parent(index);
-    Displacement<AliceSun> const from_parent_position = looking_glass_(
-        solar_system_->trajectories()[index]->last_position() -
-        solar_system_->trajectories()[parent_index]->last_position());
-    Velocity<AliceSun> const from_parent_velocity = looking_glass_(
-        solar_system_->trajectories()[index]->last_velocity() -
-        solar_system_->trajectories()[parent_index]->last_velocity());
-    plugin_->InsertCelestial(index,
-                             bodies_[index]->gravitational_parameter(),
-                             parent_index,
-                             from_parent_position,
-                             from_parent_velocity);
-  }
+    for (std::size_t index = SolarSystem::kSun + 1;
+         index < bodies_.size();
+         ++index) {
+      Index const parent_index = SolarSystem::parent(index);
+      Displacement<AliceSun> const from_parent_position = looking_glass_(
+          solar_system_->trajectories()[index]->last_position() -
+          solar_system_->trajectories()[parent_index]->last_position());
+      Velocity<AliceSun> const from_parent_velocity = looking_glass_(
+          solar_system_->trajectories()[index]->last_velocity() -
+          solar_system_->trajectories()[parent_index]->last_velocity());
+      plugin_->InsertCelestial(index,
+                               bodies_[index]->gravitational_parameter(),
+                               parent_index,
+                               from_parent_position,
+                               from_parent_velocity);
+    }
   }
 
   Permutation<ICRFJ2000Ecliptic, AliceSun> looking_glass_;
