@@ -900,8 +900,20 @@ SolarSystem::SolarSystem(Accuracy const accuracy) {
   // Planets.
 
   // Gas giants.
-  std::unique_ptr<Body> jupiter(
-      new Body(126686511 * Pow<3>(Kilo(Metre)) / Pow<2>(Second)));
+  std::unique_ptr<Body> jupiter;
+  switch (accuracy) {
+    case Accuracy::kMajorBodiesOnly:
+    case Accuracy::kMinorAndMajorBodies:
+      jupiter = std::make_unique<Body>(
+                    126686511 * Pow<3>(Kilo(Metre)) / Pow<2>(Second));
+      break;
+    case Accuracy::kAllBodiesAndOblateness:
+      jupiter = std::make_unique<Body>(
+                    126686511 * Pow<3>(Kilo(Metre)) / Pow<2>(Second),
+                    0.01475,
+                    71492 * Kilo(Metre));
+      break;
+  }
   std::unique_ptr<Body> saturn(
       new Body(37931207.8 * Pow<3>(Kilo(Metre)) / Pow<2>(Second)));
   std::unique_ptr<Body> neptune(

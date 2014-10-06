@@ -51,10 +51,10 @@ void SolarSystemBenchmark(SolarSystem::Accuracy const accuracy,
     state->SetLabel(
         DebugString(
             (solar_system->trajectories()[
-                SolarSystem::kSun]->last_position() -
+                 SolarSystem::kSun]->last_position() -
              solar_system->trajectories()[
-                SolarSystem::kEarth]->last_position()).Norm() /
-                AstronomicalUnit) + " ua");
+                 SolarSystem::kEarth]->last_position()).Norm() /
+                 AstronomicalUnit) + " ua");
     state->ResumeTiming();
   }
 }
