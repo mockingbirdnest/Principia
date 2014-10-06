@@ -345,97 +345,97 @@ TEST_F(NBodySystemTest, Sputnik1ToSputnik2) {
   // Upper bounds, tight to the nearest order of magnitude.
   //TODO(phl):sort
   static std::map<SolarSystem::Index, Angle> const expected_angle_error = {
-      {SolarSystem::kTitan, 0.089 * Degree},
+      {SolarSystem::kTethys, 11.4 * Degree},
+      {SolarSystem::kDione, 4.8 * Degree},
       {SolarSystem::kRhea, 1.5 * Degree},
       {SolarSystem::kAriel, 0.74 * Degree},
       {SolarSystem::kUmbriel, 0.24 * Degree},
-      {SolarSystem::kDione, 4.8 * Degree},
-      {SolarSystem::kTethys, 11.4 * Degree}};
+      {SolarSystem::kTitan, 0.089 * Degree}};
   static std::map<SolarSystem::Index, double> const expected_length_error = {
-      {SolarSystem::kTitan, 1E-4},
-      {SolarSystem::kRhea, 1E-3},
+      {SolarSystem::kTethys, 1E-2},
       {SolarSystem::kAriel, 1E-3},
-      {SolarSystem::kUmbriel, 1E-4},
       {SolarSystem::kDione, 1E-3},
-      {SolarSystem::kTethys, 1E-2}};
+      {SolarSystem::kRhea, 1E-3},
+      {SolarSystem::kTitan, 1E-4},
+      {SolarSystem::kUmbriel, 1E-4}};
   static std::map<SolarSystem::Index, double> const expected_position_error = {
-      {SolarSystem::kSun, 1E-8},
-      {SolarSystem::kJupiter, 1E-8},
-      {SolarSystem::kSaturn, 1E-8},
-      {SolarSystem::kNeptune, 1E-8},
-      {SolarSystem::kUranus, 1E-8},
-      {SolarSystem::kEarth, 1E-8},
-      {SolarSystem::kVenus, 1E-7},
-      {SolarSystem::kMars, 1E-9},
-      {SolarSystem::kMercury, 1E-6},  // NOTE(egg): General relativity.
-      {SolarSystem::kGanymede, 1E-8},
-      {SolarSystem::kTitan, 1E-5},
-      {SolarSystem::kCallisto, 1E-8},
-      {SolarSystem::kIo, 1E-6},
-      {SolarSystem::kMoon, 1E-7},
-      {SolarSystem::kEuropa, 1E-7},
-      {SolarSystem::kTriton, 1E-7},
+      {SolarSystem::kDione, 1E-4},
+      {SolarSystem::kTethys, 1E-4},
       {SolarSystem::kEris, 1E-5},  // NOTE(egg): we may want Dysnomia.
+      {SolarSystem::kRhea, 1E-5},
+      {SolarSystem::kTitan, 1E-5},
+      {SolarSystem::kAriel, 1E-6},
+      {SolarSystem::kCharon, 1E-6},
+      {SolarSystem::kIo, 1E-6},
+      {SolarSystem::kMercury, 1E-6},  // NOTE(egg): General relativity.
       {SolarSystem::kPluto, 1E-6},
       {SolarSystem::kTitania, 1E-6},
-      {SolarSystem::kOberon, 1E-8},
-      {SolarSystem::kRhea, 1E-5},
-      {SolarSystem::kIapetus, 1E-7},
-      {SolarSystem::kCharon, 1E-6},
-      {SolarSystem::kAriel, 1E-6},
       {SolarSystem::kUmbriel, 1E-6},
-      {SolarSystem::kDione, 1E-4},
-      {SolarSystem::kTethys, 1E-4}};
-  static std::map<SolarSystem::Index, double> const expected_vector_error = {
-      {SolarSystem::kSun, 1E-7},
-      {SolarSystem::kJupiter, 1E-8},
-      {SolarSystem::kSaturn, 1E-8},
-      {SolarSystem::kNeptune, 1E-8},
-      {SolarSystem::kUranus, 1E-8},
+      {SolarSystem::kEuropa, 1E-7},
+      {SolarSystem::kIapetus, 1E-7},
+      {SolarSystem::kMoon, 1E-7},
+      {SolarSystem::kTriton, 1E-7},
+      {SolarSystem::kVenus, 1E-7},
+      {SolarSystem::kCallisto, 1E-8},
       {SolarSystem::kEarth, 1E-8},
-      {SolarSystem::kVenus, 1E-7},
-      {SolarSystem::kMars, 1E-9},
-      {SolarSystem::kMercury, 1E-6},  // NOTE(egg): General relativity.
-      {SolarSystem::kGanymede, 1E-5},
-      {SolarSystem::kCallisto, 1E-5},
+      {SolarSystem::kGanymede, 1E-8},
+      {SolarSystem::kJupiter, 1E-8},
+      {SolarSystem::kNeptune, 1E-8},
+      {SolarSystem::kOberon, 1E-8},
+      {SolarSystem::kSaturn, 1E-8},
+      {SolarSystem::kSun, 1E-8},
+      {SolarSystem::kUranus, 1E-8},
+      {SolarSystem::kMars, 1E-9}};
+  static std::map<SolarSystem::Index, double> const expected_vector_error = {
       {SolarSystem::kIo, 1E-3},
-      {SolarSystem::kMoon, 1E-5},  // What is this?
-      {SolarSystem::kEuropa, 1E-4},
-      {SolarSystem::kTriton, 1E-3},
-      {SolarSystem::kEris, 1E-5},  // NOTE(egg): we may want Dysnomia.
-      {SolarSystem::kPluto, 1E-6},  // NOTE(egg): We are missing Hydra and Nyx.
       {SolarSystem::kTitania, 1E-3},
-      {SolarSystem::kOberon, 1E-4},
+      {SolarSystem::kTriton, 1E-3},
+      {SolarSystem::kCharon, 1E-4},
       {SolarSystem::kIapetus, 1E-4},
-      {SolarSystem::kCharon, 1E-4}};
-  static std::map<SolarSystem::Index, double> const expected_velocity_error = {
-      {SolarSystem::kSun, 1E-7},
-      {SolarSystem::kJupiter, 1E-7},
-      {SolarSystem::kSaturn, 1E-7},
-      {SolarSystem::kNeptune, 1E-6},
-      {SolarSystem::kUranus, 1E-5},
-      {SolarSystem::kEarth, 1E-7},
-      {SolarSystem::kVenus, 1E-7},
-      {SolarSystem::kMars, 1E-8},
-      {SolarSystem::kMercury, 1E-6},  // NOTE(egg): General relativity.
-      {SolarSystem::kGanymede, 1E-4},
-      {SolarSystem::kTitan, 1E-3},
-      {SolarSystem::kCallisto, 1E-6},
-      {SolarSystem::kIo, 1E-3},
-      {SolarSystem::kMoon, 1E-6},
-      {SolarSystem::kEuropa, 1E-3},
-      {SolarSystem::kTriton, 1E-3},
-      {SolarSystem::kEris, 1E-5},  // NOTE(egg): we may want Dysnomia.
-      {SolarSystem::kPluto, 1E-3},
-      {SolarSystem::kTitania, 1E-3},
       {SolarSystem::kOberon, 1E-4},
+      {SolarSystem::kEuropa, 1E-4},
+      {SolarSystem::kCallisto, 1E-5},
+      {SolarSystem::kEris, 1E-5},  // NOTE(egg): we may want Dysnomia.
+      {SolarSystem::kGanymede, 1E-5},
+      {SolarSystem::kMoon, 1E-5},  // What is this?
+      {SolarSystem::kMercury, 1E-6},  // NOTE(egg): General relativity.
+      {SolarSystem::kPluto, 1E-6},  // NOTE(egg): We are missing Hydra and Nyx.
+      {SolarSystem::kSun, 1E-7},
+      {SolarSystem::kVenus, 1E-7},
+      {SolarSystem::kEarth, 1E-8},
+      {SolarSystem::kJupiter, 1E-8},
+      {SolarSystem::kNeptune, 1E-8},
+      {SolarSystem::kSaturn, 1E-8},
+      {SolarSystem::kUranus, 1E-8},
+      {SolarSystem::kMars, 1E-9}};
+  static std::map<SolarSystem::Index, double> const expected_velocity_error = {
+      {SolarSystem::kDione, 1E-0},
+      {SolarSystem::kTethys, 1E-0},
       {SolarSystem::kRhea, 1E-1},
-      {SolarSystem::kIapetus, 1E-5},
-      {SolarSystem::kCharon, 1E-3},
       {SolarSystem::kAriel, 1E-2},
       {SolarSystem::kUmbriel, 1E-2},
-      {SolarSystem::kDione, 1E-0},
-      {SolarSystem::kTethys, 1E-0}};
+      {SolarSystem::kCharon, 1E-3},
+      {SolarSystem::kEuropa, 1E-3},
+      {SolarSystem::kIo, 1E-3},
+      {SolarSystem::kPluto, 1E-3},
+      {SolarSystem::kTitan, 1E-3},
+      {SolarSystem::kTitania, 1E-3},
+      {SolarSystem::kTriton, 1E-3},
+      {SolarSystem::kGanymede, 1E-4},
+      {SolarSystem::kOberon, 1E-4},
+      {SolarSystem::kEris, 1E-5},  // NOTE(egg): we may want Dysnomia.
+      {SolarSystem::kIapetus, 1E-5},
+      {SolarSystem::kUranus, 1E-5},
+      {SolarSystem::kCallisto, 1E-6},
+      {SolarSystem::kMercury, 1E-6},  // NOTE(egg): General relativity.
+      {SolarSystem::kMoon, 1E-6},
+      {SolarSystem::kNeptune, 1E-6},
+      {SolarSystem::kEarth, 1E-7},
+      {SolarSystem::kJupiter, 1E-7},
+      {SolarSystem::kSaturn, 1E-7},
+      {SolarSystem::kSun, 1E-7},
+      {SolarSystem::kVenus, 1E-7},
+      {SolarSystem::kMars, 1E-8}};
 
   for (std::size_t i = 0; i < evolved_system->trajectories().size(); ++i) {
     SolarSystem::Index const index = static_cast<SolarSystem::Index>(i);
