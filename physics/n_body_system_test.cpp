@@ -358,12 +358,12 @@ TEST_F(NBodySystemTest, Sputnik1ToSputnik2) {
       {SolarSystem::kTitania, 1E-3},
       {SolarSystem::kTriton, 1E-3},
       {SolarSystem::kCharon, 1E-4},
-      {SolarSystem::kIapetus, 1E-5},
       {SolarSystem::kOberon, 1E-4},
       {SolarSystem::kEuropa, 1E-4},
       {SolarSystem::kCallisto, 1E-5},
       {SolarSystem::kEris, 1E-5},  // NOTE(egg): we may want Dysnomia.
       {SolarSystem::kGanymede, 1E-5},
+      {SolarSystem::kIapetus, 1E-5},
       {SolarSystem::kMoon, 1E-5},  // What is this?
       {SolarSystem::kMercury, 1E-6},  // NOTE(egg): General relativity.
       {SolarSystem::kPluto, 1E-6},  // NOTE(egg): We are missing Hydra and Nyx.
