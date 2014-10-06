@@ -187,7 +187,7 @@ void NBodySystem<InertialFrame>::ComputeGravitationalAccelerations(
       // Lex. III. Actioni contrariam semper & æqualem esse reactionem:
       // sive corporum duorum actiones in se mutuo semper esse æquales &
       // in partes contrarias dirigi.
-      auto const μ1_over_r_cubed = 
+      auto const μ1_over_r_cubed =
           body1_gravitational_parameter * one_over_r_cubed;
       (*result)[three_b2] += Δq0 * μ1_over_r_cubed;
       (*result)[three_b2 + 1] += Δq1 * μ1_over_r_cubed;
