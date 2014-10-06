@@ -354,7 +354,9 @@ TEST_F(NBodySystemTest, Sputnik1ToSputnik2) {
       {SolarSystem::kUmbriel, 1E-4}};
   static std::map<SolarSystem::Index,
                   double> const expected_parent_offset_error = {
+      {SolarSystem::kDione, 1E-3},
       {SolarSystem::kIo, 1E-3},
+      {SolarSystem::kRhea, 1E-3},
       {SolarSystem::kTitania, 1E-3},
       {SolarSystem::kTriton, 1E-3},
       {SolarSystem::kCharon, 1E-4},
@@ -365,6 +367,7 @@ TEST_F(NBodySystemTest, Sputnik1ToSputnik2) {
       {SolarSystem::kGanymede, 1E-5},
       {SolarSystem::kIapetus, 1E-5},
       {SolarSystem::kMoon, 1E-5},  // What is this?
+      {SolarSystem::kTitan, 1E-5},
       {SolarSystem::kMercury, 1E-6},  // NOTE(egg): General relativity.
       {SolarSystem::kPluto, 1E-6},  // NOTE(egg): We are missing Hydra and Nyx.
       {SolarSystem::kVenus, 1E-7},
