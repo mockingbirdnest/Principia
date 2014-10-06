@@ -65,7 +65,7 @@ void BM_SolarSystemMajorBodiesOnly(
     benchmark::State& state) {  // NOLINT(runtime/references)
   SolarSystemBenchmark(SolarSystem::Accuracy::kMajorBodiesOnly,
                        &state);
-  }
+}
 
 void BM_SolarSystemMinorAndMajorBodies(
     benchmark::State& state) {  // NOLINT(runtime/references)

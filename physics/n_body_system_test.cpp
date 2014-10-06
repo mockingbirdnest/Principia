@@ -343,7 +343,6 @@ TEST_F(NBodySystemTest, Sputnik1ToSputnik2) {
       evolved_system->trajectories());  // trajectories
 
   // Upper bounds, tight to the nearest order of magnitude.
-  //TODO(phl):sort
   static std::map<SolarSystem::Index, Angle> const expected_angle_error = {
       {SolarSystem::kTethys, 11.4 * Degree},
       {SolarSystem::kDione, 4.8 * Degree},
