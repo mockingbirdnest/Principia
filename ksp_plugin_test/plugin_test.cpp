@@ -228,6 +228,5 @@ TEST_F(PluginTest, AdvanceTime) {
   }
 }
 
-
 }  // namespace ksp_plugin
 }  // namespace principia
