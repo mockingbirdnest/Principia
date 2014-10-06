@@ -328,9 +328,11 @@ TEST_F(NBodySystemTest, EarthProbe) {
 
 TEST_F(NBodySystemTest, Sputnik1ToSputnik2) {
   std::unique_ptr<SolarSystem> const evolved_system =
-      SolarSystem::AtСпутник1Launch();
+      SolarSystem::AtСпутник1Launch(
+          SolarSystem::Accuracy::kMinorAndMajorBodies);
   std::unique_ptr<SolarSystem> const at_спутник_2_launch =
-      SolarSystem::AtСпутник2Launch();
+      SolarSystem::AtСпутник2Launch(
+          SolarSystem::Accuracy::kMinorAndMajorBodies);
   NBodySystem<ICRFJ2000Ecliptic> system;
   system.Integrate(
       integrator_,
