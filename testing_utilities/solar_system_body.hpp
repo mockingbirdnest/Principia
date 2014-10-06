@@ -913,7 +913,7 @@ SolarSystem::SolarSystem(Accuracy const accuracy) {
                     0.01475,
                     71492 * Kilo(Metre));
       break;
-  };
+  }
   std::unique_ptr<Body> saturn(
       new Body(37931207.8 * Pow<3>(Kilo(Metre)) / Pow<2>(Second)));
   std::unique_ptr<Body> neptune(
