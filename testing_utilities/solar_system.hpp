@@ -66,6 +66,8 @@ class SolarSystem {
     kMajorBodiesOnly,
     // Same as above, with some smaller satellites of the main planets.
     kMinorAndMajorBodies,
+    // Same as above, with oblateness for the gaz giants.
+    kAllBodiesAndOblateness,
   };
 
   // Factory.  The caller gets ownership of the pointers.
