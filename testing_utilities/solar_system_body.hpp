@@ -37,6 +37,28 @@ using principia::si::Second;
 namespace principia {
 namespace testing_utilities {
 
+namespace {
+
+std::unique_ptr<Body> NewBody(
+    SolarSystem::Accuracy const accuracy,
+    GravitationalParameter const& gravitational_parameter,
+    double const j2,
+    Length const& radius) {
+  switch (accuracy) {
+    case SolarSystem::Accuracy::kMajorBodiesOnly:
+    case SolarSystem::Accuracy::kMinorAndMajorBodies:
+      return std::make_unique<Body>(gravitational_parameter);
+    case SolarSystem::Accuracy::kAllBodiesAndOblateness:
+      return std::make_unique<Body>(gravitational_parameter,
+                                    j2,
+                                    radius);
+    default:
+      return nullptr;
+  }
+}
+
+}  // namespace
+
 std::unique_ptr<SolarSystem> SolarSystem::AtСпутник1Launch(
     Accuracy const accuracy) {
   // Number of days since the JD epoch. JD2436116.3115 is the time of the launch
@@ -900,22 +922,16 @@ SolarSystem::SolarSystem(Accuracy const accuracy) {
   // Planets.
 
   // Gas giants.
-  std::unique_ptr<Body> jupiter;
-  switch (accuracy) {
-    case Accuracy::kMajorBodiesOnly:
-    case Accuracy::kMinorAndMajorBodies:
-      jupiter = std::make_unique<Body>(
-                    126686511 * Pow<3>(Kilo(Metre)) / Pow<2>(Second));
-      break;
-    case Accuracy::kAllBodiesAndOblateness:
-      jupiter = std::make_unique<Body>(
-                    126686511 * Pow<3>(Kilo(Metre)) / Pow<2>(Second),
-                    0.01475,
-                    71492 * Kilo(Metre));
-      break;
-  }
+  std::unique_ptr<Body> jupiter(
+      NewBody(accuracy,
+              126686511 * Pow<3>(Kilo(Metre)) / Pow<2>(Second),
+              0.01475,
+              71492 * Kilo(Metre)));
   std::unique_ptr<Body> saturn(
-      new Body(37931207.8 * Pow<3>(Kilo(Metre)) / Pow<2>(Second)));
+      NewBody(accuracy,
+              37931207.8 * Pow<3>(Kilo(Metre)) / Pow<2>(Second),
+              0.01645,
+              60268 * Kilo(Metre)));
   std::unique_ptr<Body> neptune(
       new Body(6835107 * Pow<3>(Kilo(Metre)) / Pow<2>(Second)));
   std::unique_ptr<Body> uranus(
