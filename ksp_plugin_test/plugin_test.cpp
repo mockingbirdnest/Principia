@@ -35,7 +35,8 @@ class PluginTest : public testing::Test {
  protected:
   PluginTest()
       : looking_glass_(Permutation<ICRFJ2000Ecliptic, AliceSun>::XZY),
-        solar_system_(SolarSystem::AtСпутник1Launch()),
+        solar_system_(SolarSystem::AtСпутник1Launch(
+            SolarSystem::Accuracy::kMajorBodiesOnly)),
         bodies_(solar_system_->massive_bodies()),
         initial_time_(solar_system_->trajectories().front()->last_time()),
         sun_gravitational_parameter_(

@@ -2,6 +2,7 @@
 
 #include "testing_utilities/solar_system.hpp"
 
+#include <string>
 #include <vector>
 
 #include "geometry/epoch.hpp"
@@ -36,12 +37,13 @@ using principia::si::Second;
 namespace principia {
 namespace testing_utilities {
 
-std::unique_ptr<SolarSystem> SolarSystem::AtСпутник1Launch() {
+std::unique_ptr<SolarSystem> SolarSystem::AtСпутник1Launch(
+    Accuracy const accuracy) {
   // Number of days since the JD epoch. JD2436116.3115 is the time of the launch
   // of Простейший Спутник-1.
   Instant const kСпутник1LaunchTime = JulianDate(2436116.3115);
 
-  std::unique_ptr<SolarSystem> solar_system(new SolarSystem);
+  std::unique_ptr<SolarSystem> solar_system(new SolarSystem(accuracy));
 
   // All data is from the Jet Propulsion Laboratory's HORIZONS system.
 
@@ -300,6 +302,26 @@ std::unique_ptr<SolarSystem> SolarSystem::AtСпутник1Launch() {
             -5.172112237151897E+00 * Kilo(Metre) / Second,
              9.407707128142039E-01 * Kilo(Metre) / Second})});
 
+  solar_system->trajectories_.emplace_back(sun_trajectory);
+  solar_system->trajectories_.emplace_back(jupiter_trajectory);
+  solar_system->trajectories_.emplace_back(saturn_trajectory);
+  solar_system->trajectories_.emplace_back(neptune_trajectory);
+  solar_system->trajectories_.emplace_back(uranus_trajectory);
+  solar_system->trajectories_.emplace_back(earth_trajectory);
+  solar_system->trajectories_.emplace_back(venus_trajectory);
+  solar_system->trajectories_.emplace_back(mars_trajectory);
+  solar_system->trajectories_.emplace_back(mercury_trajectory);
+  solar_system->trajectories_.emplace_back(ganymede_trajectory);
+  solar_system->trajectories_.emplace_back(titan_trajectory);
+  solar_system->trajectories_.emplace_back(callisto_trajectory);
+  solar_system->trajectories_.emplace_back(io_trajectory);
+  solar_system->trajectories_.emplace_back(moon_trajectory);
+  solar_system->trajectories_.emplace_back(europa_trajectory);
+  solar_system->trajectories_.emplace_back(triton_trajectory);
+  solar_system->trajectories_.emplace_back(eris_trajectory);
+  solar_system->trajectories_.emplace_back(pluto_trajectory);
+
+  if (accuracy > Accuracy::kMajorBodiesOnly) {
   // Satellites of Uranus.
   Trajectory<ICRFJ2000Ecliptic>* titania_trajectory(
       new Trajectory<ICRFJ2000Ecliptic>(
@@ -427,26 +449,6 @@ std::unique_ptr<SolarSystem> SolarSystem::AtСпутник1Launch() {
              6.894343190912965E+00 * Kilo(Metre) / Second,
             -5.036010312221701E+00 * Kilo(Metre) / Second})});
 
-  // End of celestial bodies.
-
-  solar_system->trajectories_.emplace_back(sun_trajectory);
-  solar_system->trajectories_.emplace_back(jupiter_trajectory);
-  solar_system->trajectories_.emplace_back(saturn_trajectory);
-  solar_system->trajectories_.emplace_back(neptune_trajectory);
-  solar_system->trajectories_.emplace_back(uranus_trajectory);
-  solar_system->trajectories_.emplace_back(earth_trajectory);
-  solar_system->trajectories_.emplace_back(venus_trajectory);
-  solar_system->trajectories_.emplace_back(mars_trajectory);
-  solar_system->trajectories_.emplace_back(mercury_trajectory);
-  solar_system->trajectories_.emplace_back(ganymede_trajectory);
-  solar_system->trajectories_.emplace_back(titan_trajectory);
-  solar_system->trajectories_.emplace_back(callisto_trajectory);
-  solar_system->trajectories_.emplace_back(io_trajectory);
-  solar_system->trajectories_.emplace_back(moon_trajectory);
-  solar_system->trajectories_.emplace_back(europa_trajectory);
-  solar_system->trajectories_.emplace_back(triton_trajectory);
-  solar_system->trajectories_.emplace_back(eris_trajectory);
-  solar_system->trajectories_.emplace_back(pluto_trajectory);
   solar_system->trajectories_.emplace_back(titania_trajectory);
   solar_system->trajectories_.emplace_back(oberon_trajectory);
   solar_system->trajectories_.emplace_back(rhea_trajectory);
@@ -456,16 +458,18 @@ std::unique_ptr<SolarSystem> SolarSystem::AtСпутник1Launch() {
   solar_system->trajectories_.emplace_back(umbriel_trajectory);
   solar_system->trajectories_.emplace_back(dione_trajectory);
   solar_system->trajectories_.emplace_back(tethys_trajectory);
+  }
 
   return std::move(solar_system);
 }
 
-std::unique_ptr<SolarSystem> SolarSystem::AtСпутник2Launch() {
+std::unique_ptr<SolarSystem> SolarSystem::AtСпутник2Launch(
+    Accuracy const accuracy) {
   // Number of days since the JD epoch. JD2436145.60417 is the time of the
   // launch of Простейший Спутник-2.
   Instant const kСпутник2LaunchTime = JulianDate(2436145.60417);
 
-  std::unique_ptr<SolarSystem> solar_system(new SolarSystem);
+  std::unique_ptr<SolarSystem> solar_system(new SolarSystem(accuracy));
 
   // All data is from the Jet Propulsion Laboratory's HORIZONS system.
 
@@ -724,6 +728,26 @@ std::unique_ptr<SolarSystem> SolarSystem::AtСпутник2Launch() {
             -5.163643781275358E+00 * Kilo(Metre) / Second,
              9.068668780280327E-01 * Kilo(Metre) / Second})});
 
+  solar_system->trajectories_.emplace_back(sun_trajectory);
+  solar_system->trajectories_.emplace_back(jupiter_trajectory);
+  solar_system->trajectories_.emplace_back(saturn_trajectory);
+  solar_system->trajectories_.emplace_back(neptune_trajectory);
+  solar_system->trajectories_.emplace_back(uranus_trajectory);
+  solar_system->trajectories_.emplace_back(earth_trajectory);
+  solar_system->trajectories_.emplace_back(venus_trajectory);
+  solar_system->trajectories_.emplace_back(mars_trajectory);
+  solar_system->trajectories_.emplace_back(mercury_trajectory);
+  solar_system->trajectories_.emplace_back(ganymede_trajectory);
+  solar_system->trajectories_.emplace_back(titan_trajectory);
+  solar_system->trajectories_.emplace_back(callisto_trajectory);
+  solar_system->trajectories_.emplace_back(io_trajectory);
+  solar_system->trajectories_.emplace_back(moon_trajectory);
+  solar_system->trajectories_.emplace_back(europa_trajectory);
+  solar_system->trajectories_.emplace_back(triton_trajectory);
+  solar_system->trajectories_.emplace_back(eris_trajectory);
+  solar_system->trajectories_.emplace_back(pluto_trajectory);
+
+  if (accuracy > Accuracy::kMajorBodiesOnly) {
   // Satellites of Uranus.
   Trajectory<ICRFJ2000Ecliptic>* titania_trajectory(
       new Trajectory<ICRFJ2000Ecliptic>(
@@ -851,26 +875,6 @@ std::unique_ptr<SolarSystem> SolarSystem::AtСпутник2Launch() {
             -1.127052555342930E+01 * Kilo(Metre) / Second,
              4.094008639209452E+00 * Kilo(Metre) / Second})});
 
-  // End of celestial bodies.
-
-  solar_system->trajectories_.emplace_back(sun_trajectory);
-  solar_system->trajectories_.emplace_back(jupiter_trajectory);
-  solar_system->trajectories_.emplace_back(saturn_trajectory);
-  solar_system->trajectories_.emplace_back(neptune_trajectory);
-  solar_system->trajectories_.emplace_back(uranus_trajectory);
-  solar_system->trajectories_.emplace_back(earth_trajectory);
-  solar_system->trajectories_.emplace_back(venus_trajectory);
-  solar_system->trajectories_.emplace_back(mars_trajectory);
-  solar_system->trajectories_.emplace_back(mercury_trajectory);
-  solar_system->trajectories_.emplace_back(ganymede_trajectory);
-  solar_system->trajectories_.emplace_back(titan_trajectory);
-  solar_system->trajectories_.emplace_back(callisto_trajectory);
-  solar_system->trajectories_.emplace_back(io_trajectory);
-  solar_system->trajectories_.emplace_back(moon_trajectory);
-  solar_system->trajectories_.emplace_back(europa_trajectory);
-  solar_system->trajectories_.emplace_back(triton_trajectory);
-  solar_system->trajectories_.emplace_back(eris_trajectory);
-  solar_system->trajectories_.emplace_back(pluto_trajectory);
   solar_system->trajectories_.emplace_back(titania_trajectory);
   solar_system->trajectories_.emplace_back(oberon_trajectory);
   solar_system->trajectories_.emplace_back(rhea_trajectory);
@@ -880,111 +884,134 @@ std::unique_ptr<SolarSystem> SolarSystem::AtСпутник2Launch() {
   solar_system->trajectories_.emplace_back(umbriel_trajectory);
   solar_system->trajectories_.emplace_back(dione_trajectory);
   solar_system->trajectories_.emplace_back(tethys_trajectory);
+  }
 
   return std::move(solar_system);
 }
 
-SolarSystem::SolarSystem() {
+SolarSystem::SolarSystem(Accuracy const accuracy) {
   // All data is from the Jet Propulsion Laboratory's HORIZONS system unless
   // otherwise specified.
 
   // Star.
-  Body* sun(
+  std::unique_ptr<Body> sun(
       new Body(1.3271244004193938E+11 * Pow<3>(Kilo(Metre)) / Pow<2>(Second)));
 
   // Planets.
 
   // Gas giants.
-  Body* jupiter(new Body(126686511 * Pow<3>(Kilo(Metre)) / Pow<2>(Second),
-                         0.01475,
-                         71492 * Kilo(Metre)));
-  Body* saturn(new Body(37931207.8 * Pow<3>(Kilo(Metre)) / Pow<2>(Second)));
-  Body* neptune(new Body(6835107 * Pow<3>(Kilo(Metre)) / Pow<2>(Second)));
-  Body* uranus(new Body(5793966 * Pow<3>(Kilo(Metre)) / Pow<2>(Second)));
+  std::unique_ptr<Body> jupiter(
+      new Body(126686511 * Pow<3>(Kilo(Metre)) / Pow<2>(Second),
+               0.01475,
+               71492 * Kilo(Metre)));
+  std::unique_ptr<Body> saturn(
+      new Body(37931207.8 * Pow<3>(Kilo(Metre)) / Pow<2>(Second)));
+  std::unique_ptr<Body> neptune(
+      new Body(6835107 * Pow<3>(Kilo(Metre)) / Pow<2>(Second)));
+  std::unique_ptr<Body> uranus(
+      new Body(5793966 * Pow<3>(Kilo(Metre)) / Pow<2>(Second)));
 
   // Telluric planets.
-  Body* earth(new Body(398600.440 * Pow<3>(Kilo(Metre)) / Pow<2>(Second)));
-  Body* venus(new Body(324858.63 * Pow<3>(Kilo(Metre)) / Pow<2>(Second)));
-  Body* mars(new Body(42828.3 * Pow<3>(Kilo(Metre)) / Pow<2>(Second)));
-  Body* mercury(new Body(22032.09 * Pow<3>(Kilo(Metre)) / Pow<2>(Second)));
+  std::unique_ptr<Body> earth(
+      new Body(398600.440 * Pow<3>(Kilo(Metre)) / Pow<2>(Second)));
+  std::unique_ptr<Body> venus(
+      new Body(324858.63 * Pow<3>(Kilo(Metre)) / Pow<2>(Second)));
+  std::unique_ptr<Body> mars(
+      new Body(42828.3 * Pow<3>(Kilo(Metre)) / Pow<2>(Second)));
+  std::unique_ptr<Body> mercury(
+      new Body(22032.09 * Pow<3>(Kilo(Metre)) / Pow<2>(Second)));
 
   // End of planets.
 
   // Satellite of Jupiter.
-  Body* ganymede(new Body(1482E20 * Kilogram));
+  std::unique_ptr<Body> ganymede(new Body(1482E20 * Kilogram));
 
   // Satellite of Saturn.
-  Body* titan(new Body(8978.13 * Pow<3>(Kilo(Metre)) / Pow<2>(Second)));
+  std::unique_ptr<Body> titan(
+      new Body(8978.13 * Pow<3>(Kilo(Metre)) / Pow<2>(Second)));
 
   // Satellites of Jupiter.
-  Body* callisto(new Body(1076E20 * Kilogram));
-  Body* io(new Body(893.3E20 * Kilogram));
+  std::unique_ptr<Body> callisto(new Body(1076E20 * Kilogram));
+  std::unique_ptr<Body> io(new Body(893.3E20 * Kilogram));
 
   // Satellite of Earth.
-  Body* moon(new Body(4902.798 * Pow<3>(Kilo(Metre)) / Pow<2>(Second)));
+  std::unique_ptr<Body> moon(
+      new Body(4902.798 * Pow<3>(Kilo(Metre)) / Pow<2>(Second)));
 
   // Satellite of Jupiter.
-  Body* europa(new Body(479.7E20 * Kilogram));
+  std::unique_ptr<Body> europa(new Body(479.7E20 * Kilogram));
 
   // Satellite of Neptune.
-  Body* triton(new Body(214.7E20 * Kilogram));
+  std::unique_ptr<Body> triton(new Body(214.7E20 * Kilogram));
 
   // Dwarf planet (scattered disc object).
   // Mass from Brown, Michael E.; Schaller, Emily L. (15 June 2007).
   // "The Mass of Dwarf Planet Eris", in Science, through Wikipedia.
-  Body* eris(new Body(1.67E22 * Kilogram));
+  std::unique_ptr<Body> eris(new Body(1.67E22 * Kilogram));
 
   // Dwarf planet (Kuiper belt object).
-  Body* pluto(new Body(872.4 * Pow<3>(Kilo(Metre)) / Pow<2>(Second)));
+  std::unique_ptr<Body> pluto(
+      new Body(872.4 * Pow<3>(Kilo(Metre)) / Pow<2>(Second)));
 
   // Satellites of Uranus.
-  Body* titania(new Body(35.27E20 * Kilogram));
-  Body* oberon(new Body(30.14E20 * Kilogram));
+  std::unique_ptr<Body> titania(new Body(35.27E20 * Kilogram));
+  std::unique_ptr<Body> oberon(new Body(30.14E20 * Kilogram));
 
   // Satellites of Saturn.
-  Body* rhea(new Body(153.94 * Pow<3>(Kilo(Metre)) / Pow<2>(Second)));
-  Body* iapetus(new Body(120.51 * Pow<3>(Kilo(Metre)) / Pow<2>(Second)));
+  std::unique_ptr<Body> rhea(
+      new Body(153.94 * Pow<3>(Kilo(Metre)) / Pow<2>(Second)));
+  std::unique_ptr<Body> iapetus(
+      new Body(120.51 * Pow<3>(Kilo(Metre)) / Pow<2>(Second)));
 
   // Satellite of Pluto.
-  Body* charon(new Body(102.271 * Pow<3>(Kilo(Metre)) / Pow<2>(Second)));
+  // The masses reported by HORIZONS have very few significant digits. Instead
+  // we subtract Pluto's gravitational parameter from the one given for the
+  // Charon-Pluto system.
+  std::unique_ptr<Body> charon(
+      new Body(9.7549380662106296E2 * Pow<3>(Kilo(Metre)) / Pow<2>(Second) -
+                pluto->gravitational_parameter()));
 
   // Satellites of Uranus.
-  Body* ariel(new Body(13.53E20 * Kilogram));
-  Body* umbriel(new Body(11.72E20 * Kilogram));
+  std::unique_ptr<Body> ariel(new Body(13.53E20 * Kilogram));
+  std::unique_ptr<Body> umbriel(new Body(11.72E20 * Kilogram));
 
   // Satellites of Saturn.
-  Body* dione(new Body(73.113 * Pow<3>(Kilo(Metre)) / Pow<2>(Second)));
-  Body* tethys(new Body(41.21 * Pow<3>(Kilo(Metre)) / Pow<2>(Second)));
+  std::unique_ptr<Body> dione(
+      new Body(73.113 * Pow<3>(Kilo(Metre)) / Pow<2>(Second)));
+  std::unique_ptr<Body> tethys(
+      new Body(41.21 * Pow<3>(Kilo(Metre)) / Pow<2>(Second)));
 
   // End of celestial bodies.
 
-  massive_bodies_.emplace_back(sun);
-  massive_bodies_.emplace_back(jupiter);
-  massive_bodies_.emplace_back(saturn);
-  massive_bodies_.emplace_back(neptune);
-  massive_bodies_.emplace_back(uranus);
-  massive_bodies_.emplace_back(earth);
-  massive_bodies_.emplace_back(venus);
-  massive_bodies_.emplace_back(mars);
-  massive_bodies_.emplace_back(mercury);
-  massive_bodies_.emplace_back(ganymede);
-  massive_bodies_.emplace_back(titan);
-  massive_bodies_.emplace_back(callisto);
-  massive_bodies_.emplace_back(io);
-  massive_bodies_.emplace_back(moon);
-  massive_bodies_.emplace_back(europa);
-  massive_bodies_.emplace_back(triton);
-  massive_bodies_.emplace_back(eris);
-  massive_bodies_.emplace_back(pluto);
-  massive_bodies_.emplace_back(titania);
-  massive_bodies_.emplace_back(oberon);
-  massive_bodies_.emplace_back(rhea);
-  massive_bodies_.emplace_back(iapetus);
-  massive_bodies_.emplace_back(charon);
-  massive_bodies_.emplace_back(ariel);
-  massive_bodies_.emplace_back(umbriel);
-  massive_bodies_.emplace_back(dione);
-  massive_bodies_.emplace_back(tethys);
+  massive_bodies_.emplace_back(sun.release());
+  massive_bodies_.emplace_back(jupiter.release());
+  massive_bodies_.emplace_back(saturn.release());
+  massive_bodies_.emplace_back(neptune.release());
+  massive_bodies_.emplace_back(uranus.release());
+  massive_bodies_.emplace_back(earth.release());
+  massive_bodies_.emplace_back(venus.release());
+  massive_bodies_.emplace_back(mars.release());
+  massive_bodies_.emplace_back(mercury.release());
+  massive_bodies_.emplace_back(ganymede.release());
+  massive_bodies_.emplace_back(titan.release());
+  massive_bodies_.emplace_back(callisto.release());
+  massive_bodies_.emplace_back(io.release());
+  massive_bodies_.emplace_back(moon.release());
+  massive_bodies_.emplace_back(europa.release());
+  massive_bodies_.emplace_back(triton.release());
+  massive_bodies_.emplace_back(eris.release());
+  massive_bodies_.emplace_back(pluto.release());
+  if (accuracy > Accuracy::kMajorBodiesOnly) {
+    massive_bodies_.emplace_back(titania.release());
+    massive_bodies_.emplace_back(oberon.release());
+    massive_bodies_.emplace_back(rhea.release());
+    massive_bodies_.emplace_back(iapetus.release());
+    massive_bodies_.emplace_back(charon.release());
+    massive_bodies_.emplace_back(ariel.release());
+    massive_bodies_.emplace_back(umbriel.release());
+    massive_bodies_.emplace_back(dione.release());
+    massive_bodies_.emplace_back(tethys.release());
+  }
 }
 
 SolarSystem::Bodies SolarSystem::massive_bodies() {
@@ -1046,6 +1073,43 @@ int SolarSystem::parent(int const index) {
       LOG(FATAL) << "Undefined index";
       return kSun;
   }
+}
+
+std::string SolarSystem::name(int const index) {
+#define BODY_NAME(name) case k##name: return #name
+  switch (index) {
+    BODY_NAME(Sun);
+    BODY_NAME(Jupiter);
+    BODY_NAME(Saturn);
+    BODY_NAME(Neptune);
+    BODY_NAME(Uranus);
+    BODY_NAME(Earth);
+    BODY_NAME(Venus);
+    BODY_NAME(Mars);
+    BODY_NAME(Mercury);
+    BODY_NAME(Ganymede);
+    BODY_NAME(Titan);
+    BODY_NAME(Callisto);
+    BODY_NAME(Io);
+    BODY_NAME(Moon);
+    BODY_NAME(Europa);
+    BODY_NAME(Triton);
+    BODY_NAME(Eris);
+    BODY_NAME(Pluto);
+    BODY_NAME(Titania);
+    BODY_NAME(Oberon);
+    BODY_NAME(Rhea);
+    BODY_NAME(Iapetus);
+    BODY_NAME(Charon);
+    BODY_NAME(Ariel);
+    BODY_NAME(Umbriel);
+    BODY_NAME(Dione);
+    BODY_NAME(Tethys);
+    default:
+      LOG(FATAL) << "Undefined index";
+      return "";
+  }
+#undef BODY_NAME
 }
 
 }  // namespace testing_utilities

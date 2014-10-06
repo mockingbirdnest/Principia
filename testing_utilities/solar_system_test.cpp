@@ -22,6 +22,7 @@ using principia::quantities::Speed;
 using principia::quantities::Sqrt;
 using principia::si::Radian;
 using testing::Lt;
+using testing::Ge;
 
 namespace principia {
 namespace testing_utilities {
@@ -58,7 +59,8 @@ class SolarSystemTest : public testing::Test {
   // Tests whether |tertiary| orbits |secondary| in an orbit with excentricity
   // |excentricity| within |relative_error| and, if |primary| is not null, tests
   // that |tertiary| is within the Laplace sphere of |secondary| with respect
-  // to |*primary|.
+  // to |*primary|. If |relative_error| is greater than 1E-6, it should be tight
+  // within an order of magnitude.
   void TestStronglyBoundOrbit(
       double excentricity,
       double relative_error,
@@ -77,6 +79,10 @@ class SolarSystemTest : public testing::Test {
     SpecificEnergy const ε = Pow<2>(v.Norm()) / 2 - μ / r.Norm();
     double e = Sqrt(1 + 2 * ε * Pow<2>(h.Norm() * Radian) / Pow<2>(μ));
     EXPECT_THAT(RelativeError(excentricity, e), Lt(relative_error)) << message;
+    if (relative_error > 1E-6) {
+      EXPECT_THAT(RelativeError(excentricity, e),
+                  Ge(relative_error / 10.0)) << message;
+    }
     if (primary != nullptr) {
       EXPECT_THAT(r.Norm(), Lt(LaplaceSphereRadiusRadius(*primary, secondary)))
           << message;
@@ -90,27 +96,37 @@ class SolarSystemTest : public testing::Test {
 // not do a unicode-friendly stringification.  We settle for the English
 // romanization.
 TEST_F(SolarSystemTest, HierarchyAtSputnik1Launch) {
-  solar_system_ = SolarSystem::AtСпутник1Launch();
+  solar_system_ = SolarSystem::AtСпутник1Launch(
+      SolarSystem::Accuracy::kMinorAndMajorBodies);
   physics::NBodySystem<ICRFJ2000Ecliptic>::Trajectories trajectories =
       solar_system_->trajectories();
-  Trajectory<ICRFJ2000Ecliptic> const& sun      = *trajectories[0];
-  Trajectory<ICRFJ2000Ecliptic> const& jupiter  = *trajectories[1];
-  Trajectory<ICRFJ2000Ecliptic> const& saturn   = *trajectories[2];
-  Trajectory<ICRFJ2000Ecliptic> const& neptune  = *trajectories[3];
-  Trajectory<ICRFJ2000Ecliptic> const& uranus   = *trajectories[4];
-  Trajectory<ICRFJ2000Ecliptic> const& earth    = *trajectories[5];
-  Trajectory<ICRFJ2000Ecliptic> const& venus    = *trajectories[6];
-  Trajectory<ICRFJ2000Ecliptic> const& mars     = *trajectories[7];
-  Trajectory<ICRFJ2000Ecliptic> const& mercury  = *trajectories[8];
-  Trajectory<ICRFJ2000Ecliptic> const& ganymede = *trajectories[9];
-  Trajectory<ICRFJ2000Ecliptic> const& titan    = *trajectories[10];
-  Trajectory<ICRFJ2000Ecliptic> const& callisto = *trajectories[11];
-  Trajectory<ICRFJ2000Ecliptic> const& io       = *trajectories[12];
-  Trajectory<ICRFJ2000Ecliptic> const& moon     = *trajectories[13];
-  Trajectory<ICRFJ2000Ecliptic> const& europa   = *trajectories[14];
-  Trajectory<ICRFJ2000Ecliptic> const& triton   = *trajectories[15];
-  Trajectory<ICRFJ2000Ecliptic> const& eris     = *trajectories[16];
-  Trajectory<ICRFJ2000Ecliptic> const& pluto    = *trajectories[17];
+  auto const& sun      = *trajectories[SolarSystem::kSun];
+  auto const& jupiter  = *trajectories[SolarSystem::kJupiter];
+  auto const& saturn   = *trajectories[SolarSystem::kSaturn];
+  auto const& neptune  = *trajectories[SolarSystem::kNeptune];
+  auto const& uranus   = *trajectories[SolarSystem::kUranus];
+  auto const& earth    = *trajectories[SolarSystem::kEarth];
+  auto const& venus    = *trajectories[SolarSystem::kVenus];
+  auto const& mars     = *trajectories[SolarSystem::kMars];
+  auto const& mercury  = *trajectories[SolarSystem::kMercury];
+  auto const& ganymede = *trajectories[SolarSystem::kGanymede];
+  auto const& titan    = *trajectories[SolarSystem::kTitan];
+  auto const& callisto = *trajectories[SolarSystem::kCallisto];
+  auto const& io       = *trajectories[SolarSystem::kIo];
+  auto const& moon     = *trajectories[SolarSystem::kMoon];
+  auto const& europa   = *trajectories[SolarSystem::kEuropa];
+  auto const& triton   = *trajectories[SolarSystem::kTriton];
+  auto const& eris     = *trajectories[SolarSystem::kEris];
+  auto const& pluto    = *trajectories[SolarSystem::kPluto];
+  auto const& titania  = *trajectories[SolarSystem::kTitania];
+  auto const& oberon   = *trajectories[SolarSystem::kOberon];
+  auto const& rhea     = *trajectories[SolarSystem::kRhea];
+  auto const& iapetus  = *trajectories[SolarSystem::kIapetus];
+  auto const& charon   = *trajectories[SolarSystem::kCharon];
+  auto const& ariel    = *trajectories[SolarSystem::kAriel];
+  auto const& umbriel  = *trajectories[SolarSystem::kUmbriel];
+  auto const& dione    = *trajectories[SolarSystem::kDione];
+  auto const& tethys   = *trajectories[SolarSystem::kTethys];
 
   // Reference excentricities from HORIZONS, truncated.
   // Using center: Sun (body center) [500@10].
@@ -133,34 +149,55 @@ TEST_F(SolarSystemTest, HierarchyAtSputnik1Launch) {
   TestStronglyBoundOrbit(9.077806E-03, 1E-4, europa, jupiter, &sun, "europa");
   // Using center: Saturn (body center) [500@699].
   TestStronglyBoundOrbit(2.887478E-02, 1E-6, titan, saturn, &sun, "titan");
+  TestStronglyBoundOrbit(8.926369E-04, 1E-5, rhea, saturn, &sun, "rhea");
+  TestStronglyBoundOrbit(2.799919E-02, 1E-6, iapetus, saturn, &sun, "iapetus");
+  TestStronglyBoundOrbit(2.211120E-03, 1E-6, dione, saturn, &sun, "dione");
+  TestStronglyBoundOrbit(9.814475E-04, 1E-5, tethys, saturn, &sun, "tethys");
   // Using center: Geocentric [500].
   TestStronglyBoundOrbit(5.811592E-02, 1E-6, moon, earth, &sun, "moon");
   // Using center: Neptune (body center) [500@899]
   TestStronglyBoundOrbit(1.587851E-05, 2E-1, triton, neptune, &sun, "triton");
+  // Using center: Uranus (body center) [500@799]
+  TestStronglyBoundOrbit(1.413687E-03, 3E-3, titania, uranus, &sun, "titania");
+  TestStronglyBoundOrbit(1.217327E-03, 2E-3, oberon, uranus, &sun, "oberon");
+  TestStronglyBoundOrbit(1.750702E-03, 2E-3, ariel, uranus, &sun, "ariel");
+  TestStronglyBoundOrbit(4.337777E-03, 3E-4, umbriel, uranus, &sun, "umbriel");
+  // Using center: Pluto (body center) [500@999]
+  TestStronglyBoundOrbit(5.077777E-05, 1E-6, charon, pluto, &sun, "charon");
 }
 
 TEST_F(SolarSystemTest, HierarchyAtSputnik2Launch) {
-  solar_system_ = SolarSystem::AtСпутник2Launch();
+  solar_system_ = SolarSystem::AtСпутник2Launch(
+      SolarSystem::Accuracy::kMinorAndMajorBodies);
   physics::NBodySystem<ICRFJ2000Ecliptic>::Trajectories trajectories =
       solar_system_->trajectories();
-  Trajectory<ICRFJ2000Ecliptic> const& sun      = *trajectories[0];
-  Trajectory<ICRFJ2000Ecliptic> const& jupiter  = *trajectories[1];
-  Trajectory<ICRFJ2000Ecliptic> const& saturn   = *trajectories[2];
-  Trajectory<ICRFJ2000Ecliptic> const& neptune  = *trajectories[3];
-  Trajectory<ICRFJ2000Ecliptic> const& uranus   = *trajectories[4];
-  Trajectory<ICRFJ2000Ecliptic> const& earth    = *trajectories[5];
-  Trajectory<ICRFJ2000Ecliptic> const& venus    = *trajectories[6];
-  Trajectory<ICRFJ2000Ecliptic> const& mars     = *trajectories[7];
-  Trajectory<ICRFJ2000Ecliptic> const& mercury  = *trajectories[8];
-  Trajectory<ICRFJ2000Ecliptic> const& ganymede = *trajectories[9];
-  Trajectory<ICRFJ2000Ecliptic> const& titan    = *trajectories[10];
-  Trajectory<ICRFJ2000Ecliptic> const& callisto = *trajectories[11];
-  Trajectory<ICRFJ2000Ecliptic> const& io       = *trajectories[12];
-  Trajectory<ICRFJ2000Ecliptic> const& moon     = *trajectories[13];
-  Trajectory<ICRFJ2000Ecliptic> const& europa   = *trajectories[14];
-  Trajectory<ICRFJ2000Ecliptic> const& triton   = *trajectories[15];
-  Trajectory<ICRFJ2000Ecliptic> const& eris     = *trajectories[16];
-  Trajectory<ICRFJ2000Ecliptic> const& pluto    = *trajectories[17];
+  auto const& sun      = *trajectories[SolarSystem::kSun];
+  auto const& jupiter  = *trajectories[SolarSystem::kJupiter];
+  auto const& saturn   = *trajectories[SolarSystem::kSaturn];
+  auto const& neptune  = *trajectories[SolarSystem::kNeptune];
+  auto const& uranus   = *trajectories[SolarSystem::kUranus];
+  auto const& earth    = *trajectories[SolarSystem::kEarth];
+  auto const& venus    = *trajectories[SolarSystem::kVenus];
+  auto const& mars     = *trajectories[SolarSystem::kMars];
+  auto const& mercury  = *trajectories[SolarSystem::kMercury];
+  auto const& ganymede = *trajectories[SolarSystem::kGanymede];
+  auto const& titan    = *trajectories[SolarSystem::kTitan];
+  auto const& callisto = *trajectories[SolarSystem::kCallisto];
+  auto const& io       = *trajectories[SolarSystem::kIo];
+  auto const& moon     = *trajectories[SolarSystem::kMoon];
+  auto const& europa   = *trajectories[SolarSystem::kEuropa];
+  auto const& triton   = *trajectories[SolarSystem::kTriton];
+  auto const& eris     = *trajectories[SolarSystem::kEris];
+  auto const& pluto    = *trajectories[SolarSystem::kPluto];
+  auto const& titania  = *trajectories[SolarSystem::kTitania];
+  auto const& oberon   = *trajectories[SolarSystem::kOberon];
+  auto const& rhea     = *trajectories[SolarSystem::kRhea];
+  auto const& iapetus  = *trajectories[SolarSystem::kIapetus];
+  auto const& charon   = *trajectories[SolarSystem::kCharon];
+  auto const& ariel    = *trajectories[SolarSystem::kAriel];
+  auto const& umbriel  = *trajectories[SolarSystem::kUmbriel];
+  auto const& dione    = *trajectories[SolarSystem::kDione];
+  auto const& tethys   = *trajectories[SolarSystem::kTethys];
 
   // Reference excentricities from HORIZONS, truncated.
   // Using center: Sun (body center) [500@10].
@@ -183,10 +220,21 @@ TEST_F(SolarSystemTest, HierarchyAtSputnik2Launch) {
   TestStronglyBoundOrbit(9.509972E-03, 1E-4, europa, jupiter, &sun, "europa");
   // Using center: Saturn (body center) [500@699].
   TestStronglyBoundOrbit(2.882510E-02, 1E-6, titan, saturn, &sun, "titan");
+  TestStronglyBoundOrbit(1.228346E-03, 1E-5, rhea, saturn, &sun, "rhea");
+  TestStronglyBoundOrbit(2.720904E-02, 1E-6, iapetus, saturn, &sun, "iapetus");
+  TestStronglyBoundOrbit(2.693662E-03, 1E-5, dione, saturn, &sun, "dione");
+  TestStronglyBoundOrbit(1.088851E-03, 1E-5, tethys, saturn, &sun, "tethys");
   // Using center: Geocentric [500].
   TestStronglyBoundOrbit(5.804121E-02, 1E-6, moon, earth, &sun, "moon");
   // Using center: Neptune (body center) [500@899]
   TestStronglyBoundOrbit(1.529190E-05, 2E-1, triton, neptune, &sun, "triton");
+  // Using center: Uranus (body center) [500@799]
+  TestStronglyBoundOrbit(2.254242E-03, 3E-3, titania, uranus, &sun, "titania");
+  TestStronglyBoundOrbit(4.192300E-04, 3E-3, oberon, uranus, &sun, "oberon");
+  TestStronglyBoundOrbit(2.065133E-03, 2E-3, ariel, uranus, &sun, "ariel");
+  TestStronglyBoundOrbit(3.837353E-03, 3E-4, umbriel, uranus, &sun, "umbriel");
+  // Using center: Pluto (body center) [500@999]
+  TestStronglyBoundOrbit(5.212037E-05, 1E-6, charon, pluto, &sun, "charon");
 }
 
 }  // namespace testing_utilities
