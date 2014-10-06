@@ -352,12 +352,12 @@ TEST_F(NBodySystemTest, Sputnik1ToSputnik2) {
       {SolarSystem::kDione, 4.8 * Degree},
       {SolarSystem::kTethys, 11.4 * Degree}};
   static std::map<SolarSystem::Index, double> const expected_length_error = {
-      {SolarSystem::kTitan, 1E-5},
-      {SolarSystem::kRhea, 1E-5},
-      {SolarSystem::kAriel, 1E-5},
-      {SolarSystem::kUmbriel, 1E-5},
-      {SolarSystem::kDione, 1E-5},
-      {SolarSystem::kTethys, 1E-5}};
+      {SolarSystem::kTitan, 1E-4},
+      {SolarSystem::kRhea, 1E-3},
+      {SolarSystem::kAriel, 1E-3},
+      {SolarSystem::kUmbriel, 1E-4},
+      {SolarSystem::kDione, 1E-3},
+      {SolarSystem::kTethys, 1E-2}};
   static std::map<SolarSystem::Index, double> const expected_position_error = {
       {SolarSystem::kSun, 1E-8},
       {SolarSystem::kJupiter, 1E-8},
@@ -388,32 +388,26 @@ TEST_F(NBodySystemTest, Sputnik1ToSputnik2) {
       {SolarSystem::kTethys, 1E-4}};
   static std::map<SolarSystem::Index, double> const expected_vector_error = {
       {SolarSystem::kSun, 1E-7},
-      {SolarSystem::kJupiter, 1E-7},
-      {SolarSystem::kSaturn, 1E-7},
-      {SolarSystem::kNeptune, 1E-7},
-      {SolarSystem::kUranus, 1E-7},
-      {SolarSystem::kEarth, 1E-7},
+      {SolarSystem::kJupiter, 1E-8},
+      {SolarSystem::kSaturn, 1E-8},
+      {SolarSystem::kNeptune, 1E-8},
+      {SolarSystem::kUranus, 1E-8},
+      {SolarSystem::kEarth, 1E-8},
       {SolarSystem::kVenus, 1E-7},
-      {SolarSystem::kMars, 1E-7},
+      {SolarSystem::kMars, 1E-9},
       {SolarSystem::kMercury, 1E-6},  // NOTE(egg): General relativity.
       {SolarSystem::kGanymede, 1E-5},
-      {SolarSystem::kTitan, 1E-7},
       {SolarSystem::kCallisto, 1E-5},
-      {SolarSystem::kIo, 1E-7},
+      {SolarSystem::kIo, 1E-3},
       {SolarSystem::kMoon, 1E-5},  // What is this?
-      {SolarSystem::kEuropa, 1E-7},
-      {SolarSystem::kTriton, 1E-7},
+      {SolarSystem::kEuropa, 1E-4},
+      {SolarSystem::kTriton, 1E-3},
       {SolarSystem::kEris, 1E-5},  // NOTE(egg): we may want Dysnomia.
       {SolarSystem::kPluto, 1E-6},  // NOTE(egg): We are missing Hydra and Nyx.
-      {SolarSystem::kTitania, 1E-7},
-      {SolarSystem::kOberon, 1E-7},
-      {SolarSystem::kRhea, 1E-7},
-      {SolarSystem::kIapetus, 1E-7},
-      {SolarSystem::kCharon, 1E-4},  // NOTE(egg): We are missing Hydra and Nyx.
-      {SolarSystem::kAriel, 1E-7},
-      {SolarSystem::kUmbriel, 1E-7},
-      {SolarSystem::kDione, 1E-7},
-      {SolarSystem::kTethys, 1E-7}};
+      {SolarSystem::kTitania, 1E-3},
+      {SolarSystem::kOberon, 1E-4},
+      {SolarSystem::kIapetus, 1E-4},
+      {SolarSystem::kCharon, 1E-4}};
   static std::map<SolarSystem::Index, double> const expected_velocity_error = {
       {SolarSystem::kSun, 1E-7},
       {SolarSystem::kJupiter, 1E-7},
@@ -476,10 +470,6 @@ TEST_F(NBodySystemTest, Sputnik1ToSputnik2) {
         Angle const angle = ArcTan(
             Wedge(expected, actual).Norm() / product_of_norms,
             InnerProduct(expected, actual) / product_of_norms);
-        // We are missing some sort of precession here, probably due to
-        // quadrupole moment.
-        LOG(ERROR) << SolarSystem::name(SolarSystem::parent(i));
-        LOG(ERROR) << angle * Pow<4>(expected.Norm());
         EXPECT_THAT(angle / Degree,
                     Gt(expected_angle_error.at(index) / Degree * 0.9))
             << SolarSystem::name(i);
