@@ -396,7 +396,7 @@ TEST_F(NBodySystemTest, Sputnik1ToSputnik2) {
       case SolarSystem::kGanymede:
         expected_position_error = 1E-8;
         expected_velocity_error = 1E-4;
-        expected_angle_error = 0.28 * Degree;
+        expected_angle_error = 0.00033 * Degree;
         break;
       case SolarSystem::kTitan:
         expected_position_error = 1E-5;
@@ -406,11 +406,12 @@ TEST_F(NBodySystemTest, Sputnik1ToSputnik2) {
       case SolarSystem::kCallisto:
         expected_position_error = 1E-8;
         expected_velocity_error = 1E-6;
+        expected_angle_error = 1.16E-6 * Degree;
         break;
       case SolarSystem::kIo:
         expected_position_error = 1E-6;
         expected_velocity_error = 1E-3;
-        expected_angle_error = 7.6 * Degree;
+        expected_angle_error = 0.014 * Degree;
         break;
       case SolarSystem::kMoon:
         expected_position_error = 1E-7;
@@ -419,7 +420,7 @@ TEST_F(NBodySystemTest, Sputnik1ToSputnik2) {
       case SolarSystem::kEuropa:
         expected_position_error = 1E-7;
         expected_velocity_error = 1E-3;
-        expected_angle_error = 1.4 * Degree;
+        expected_angle_error = 0.0034 * Degree;
         break;
       case SolarSystem::kTriton:
         expected_position_error = 1E-7;
@@ -497,10 +498,7 @@ TEST_F(NBodySystemTest, Sputnik1ToSputnik2) {
               evolved_system->trajectories()[SolarSystem::parent(i)]->
                   last_position();
       double const vector_error =  RelativeError(expected, actual);
-      if (i == SolarSystem::kIo ||
-          i == SolarSystem::kEuropa ||
-          i == SolarSystem::kGanymede ||
-          i == SolarSystem::kTitan ||
+      if (i == SolarSystem::kTitan ||
           i == SolarSystem::kRhea ||
           i == SolarSystem::kAriel ||
           i == SolarSystem::kUmbriel ||
@@ -524,6 +522,12 @@ TEST_F(NBodySystemTest, Sputnik1ToSputnik2) {
             << SolarSystem::name(i);
         EXPECT_THAT(length_error, Lt(3E-3)) << SolarSystem::name(i);
         EXPECT_THAT(length_error, Gt(1E-6)) << SolarSystem::name(i);
+      } else if (i == SolarSystem::kGanymede) {
+        EXPECT_THAT(vector_error, Lt(1E-5)) << SolarSystem::name(i);
+        EXPECT_THAT(vector_error, Gt(1E-6)) << SolarSystem::name(i);
+      } else if (i == SolarSystem::kCallisto) {
+        EXPECT_THAT(vector_error, Lt(1E-5)) << SolarSystem::name(i);
+        EXPECT_THAT(vector_error, Gt(1E-6)) << SolarSystem::name(i);
       } else if (SolarSystem::parent(i) != SolarSystem::kSun &&
                  SolarSystem::parent(i) != SolarSystem::kEarth) {
         // Less extreme precession, probably the same cause.
