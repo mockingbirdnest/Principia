@@ -59,12 +59,12 @@ class SolarSystem {
     kTethys = 26,
   };
 
-  // Specifies the accuracy of the modeling.  |kMajorBodiesOnly| has all the
-  // bodies with masses greater than or equal to Pluto, and all these bodies are
-  // spheric.  |kMinorAndMajorBodies| adds some smaller satellites of the main
-  // planets.
+  // Specifies the accuracy of the modeling.
   enum class Accuracy {
+    // All the bodies with masses greater than or equal to Pluto, modelled as
+    // point masses.
     kMajorBodiesOnly,
+    // Same as above, with some smaller satellites of the main planets.
     kMinorAndMajorBodies,
   };
 
