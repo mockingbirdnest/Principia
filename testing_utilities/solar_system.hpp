@@ -4,8 +4,10 @@
 #include <vector>
 
 #include "geometry/named_quantities.hpp"
+#include "geometry/rotation.hpp"
 #include "physics/n_body_system.hpp"
 #include "quantities/quantities.hpp"
+#include "quantities/si.hpp"
 
 namespace principia {
 namespace testing_utilities {
@@ -27,7 +29,22 @@ struct ICRFJ2000Ecliptic;
 // The basis is right-handed and orthonormal.
 // Note that |ICRFJ2000Equator| and |ICRFJ2000Ecliptic| share their x axis.
 struct ICRFJ2000Equator;
+
+// Rotation around the common x axis mapping equatorial coordinates to ecliptic
+// coordinates.  The angle is the one defined by the XVIth General Assembly of
+// the International Astronomical Union.
+geometry::Rotation<ICRFJ2000Equator, ICRFJ2000Ecliptic> kEquatorialToEcliptic =
+    geometry::Rotation<ICRFJ2000Equator, ICRFJ2000Ecliptic>(
+        23 * si::Degree + 26 * si::ArcMinute + 21.448 * si::ArcSecond,
+        geometry::Bivector<double, ICRFJ2000Equator>({1, 0, 0}));
+
 geometry::Position<ICRFJ2000Ecliptic> const kSolarSystemBarycentre;
+
+// Returns a unit vector pointing in the direction defined by |right_ascension|
+// and |declination|.
+Vector<double, ICRFJ2000Equator> Direction(
+    quantities::Angle const& declination,
+    quantities::Angle const& right_ascension);
 
 class SolarSystem {
  public:

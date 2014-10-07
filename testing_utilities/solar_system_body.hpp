@@ -15,14 +15,17 @@
 #include "quantities/quantities.hpp"
 #include "quantities/si.hpp"
 
+using principia::geometry::Bivector;
 using principia::geometry::Displacement;
 using principia::geometry::Instant;
 using principia::geometry::JulianDate;
 using principia::geometry::Point;
+using principia::geometry::Rotation;
 using principia::geometry::Vector;
 using principia::physics::Body;
 using principia::physics::NBodySystem;
 using principia::physics::Trajectory;
+using principia::quantities::Angle;
 using principia::quantities::GravitationalParameter;
 using principia::quantities::Pow;
 using principia::quantities::SIUnit;
@@ -35,6 +38,20 @@ using principia::si::Second;
 
 namespace principia {
 namespace testing_utilities {
+
+Vector<double, ICRFJ2000Equator> Direction(Angle const& right_ascension,
+                                           Angle const& declination) {
+  // Positive angles map {1, 0, 0} to the positive z hemisphere, which is north.
+  // An angle of 0 keeps {1, 0, 0} on the equator.
+  auto const decline = Rotation<ICRFJ2000Equator, ICRFJ2000Equator>(
+          declination,
+          Bivector<double, ICRFJ2000Equator>({0, 1, 0}));
+  // Rotate counterclockwise around {0, 0, 1} (north), i.e., eastward.
+  auto const ascend = Rotation<ICRFJ2000Equator, ICRFJ2000Equator>(
+          right_ascension,
+          Bivector<double, ICRFJ2000Equator>({0, 0, 1}));
+  return ascend(decline(Vector<double, ICRFJ2000Equator>({1, 0, 0})));
+}
 
 std::unique_ptr<SolarSystem> SolarSystem::AtСпутник1Launch() {
   // Number of days since the JD epoch. JD2436116.3115 is the time of the launch
