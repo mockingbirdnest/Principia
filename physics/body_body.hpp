@@ -34,13 +34,15 @@ inline Body::Body(GravitationalParameter const& gravitational_parameter,
                   Order2ZonalCoefficient const& j2)
     : gravitational_parameter_(gravitational_parameter),
       mass_(gravitational_parameter / GravitationalConstant),
-      j2_(j2) {}
+      j2_(j2),
+      axis_({0, 0, 0}) {}
 
 inline Body::Body(Mass const& mass,
                   Order2ZonalCoefficient const& j2)
     : gravitational_parameter_(mass * GravitationalConstant),
       mass_(mass),
-      j2_(j2) {}
+      j2_(j2),
+      axis_({0, 0, 0}) {}
 
 inline GravitationalParameter const& Body::gravitational_parameter() const {
   return gravitational_parameter_;
@@ -55,7 +57,7 @@ inline Order2ZonalCoefficient const& Body::j2() const {
 }
 
 inline R3Element<double> const& Body::axis() const {
-  return R3Element<double>();
+  return axis_;
 }
 
 inline bool Body::is_massless() const {

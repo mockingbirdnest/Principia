@@ -225,22 +225,20 @@ void NBodySystem<InertialFrame>::ComputeGravitationalAccelerations(
 
       if (body1_is_oblate) {
         R3Element<Acceleration> const order_2_zonal_acceleration1 =
-            Order2ZonalAcceleration(
-                body1,
-                {Δq0, Δq1, Δq2},
-                one_over_r_squared,
-                one_over_r_cubed);
+            Order2ZonalAcceleration(body1,
+                                    {Δq0, Δq1, Δq2},
+                                    one_over_r_squared,
+                                    one_over_r_cubed);
         (*result)[three_b2] += order_2_zonal_acceleration1.x;
         (*result)[three_b2 + 1] += order_2_zonal_acceleration1.y;
         (*result)[three_b2 + 2] += order_2_zonal_acceleration1.z;
       }
       if (body2_is_oblate) {
         R3Element<Acceleration> const order_2_zonal_acceleration2 =
-            Order2ZonalAcceleration(
-                body2,
-                {Δq0, Δq1, Δq2},
-                one_over_r_squared,
-                one_over_r_cubed);
+            Order2ZonalAcceleration(body2,
+                                    {Δq0, Δq1, Δq2},
+                                    one_over_r_squared,
+                                    one_over_r_cubed);
         (*result)[three_b1] += order_2_zonal_acceleration2.x;
         (*result)[three_b1 + 1] += order_2_zonal_acceleration2.y;
         (*result)[three_b1 + 2] += order_2_zonal_acceleration2.z;
@@ -270,11 +268,10 @@ void NBodySystem<InertialFrame>::ComputeGravitationalAccelerations(
         continue;
       }
       R3Element<Acceleration> const order_2_zonal_acceleration1 =
-          Order2ZonalAcceleration(
-              body1,
-              {Δq0, Δq1, Δq2},
-              one_over_r_squared,
-              one_over_r_cubed);
+          Order2ZonalAcceleration(body1,
+                                  {Δq0, Δq1, Δq2},
+                                  one_over_r_squared,
+                                  one_over_r_cubed);
       (*result)[three_b2] += order_2_zonal_acceleration1.x;
       (*result)[three_b2 + 1] += order_2_zonal_acceleration1.y;
       (*result)[three_b2 + 2] += order_2_zonal_acceleration1.z;

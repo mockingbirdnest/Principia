@@ -56,6 +56,7 @@ class Body {
   GravitationalParameter const gravitational_parameter_;
   Mass const mass_;
   Order2ZonalCoefficient const j2_;
+  R3Element<double> const axis_;
 };
 
 }  // namespace physics
