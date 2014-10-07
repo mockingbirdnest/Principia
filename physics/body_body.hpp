@@ -20,29 +20,35 @@ inline Body::Body(Mass const& mass)
 
 inline Body::Body(GravitationalParameter const& gravitational_parameter,
                   double const j2,
-                  Length const& radius)
+                  Length const& radius,
+                  R3Element<double> const& axis)
     : Body(gravitational_parameter,
-           -j2 * gravitational_parameter * radius * radius) {}
+           -j2 * gravitational_parameter * radius * radius,
+           axis) {}
 
 inline Body::Body(Mass const& mass,
                   double const j2,
-                  Length const& radius)
+                  Length const& radius,
+                  R3Element<double> const& axis)
     : Body(mass,
-           -j2 * mass * GravitationalConstant * radius * radius) {}
+           -j2 * mass * GravitationalConstant * radius * radius,
+           axis) {}
 
 inline Body::Body(GravitationalParameter const& gravitational_parameter,
-                  Order2ZonalCoefficient const& j2)
+                  Order2ZonalCoefficient const& j2,
+                  R3Element<double> const& axis)
     : gravitational_parameter_(gravitational_parameter),
       mass_(gravitational_parameter / GravitationalConstant),
       j2_(j2),
-      axis_({0, 0, 1}) {}
+      axis_(axis) {}
 
 inline Body::Body(Mass const& mass,
-                  Order2ZonalCoefficient const& j2)
+                  Order2ZonalCoefficient const& j2,
+                  R3Element<double> const& axis)
     : gravitational_parameter_(mass * GravitationalConstant),
       mass_(mass),
       j2_(j2),
-      axis_({0, 0, 1}) {}
+      axis_(axis) {}
 
 inline GravitationalParameter const& Body::gravitational_parameter() const {
   return gravitational_parameter_;

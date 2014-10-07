@@ -200,6 +200,8 @@ void NBodySystem<InertialFrame>::ComputeGravitationalAccelerations(
 
       Exponentiation<Length, 2> const r_squared =
           Δq0 * Δq0 + Δq1 * Δq1 + Δq2 * Δq2;
+      // Don't try to compute one_over_r_squared here, it makes the non-oblate
+      // path slower.
       Exponentiation<Length, -3> const one_over_r_cubed =
           Sqrt(r_squared) / (r_squared * r_squared);
 
@@ -262,7 +264,7 @@ void NBodySystem<InertialFrame>::ComputeGravitationalAccelerations(
       (*result)[three_b2 + 1] += Δq1 * μ1_over_r_cubed;
       (*result)[three_b2 + 2] += Δq2 * μ1_over_r_cubed;
 
-      if (!body1_is_oblate) {
+      if (true/*!body1_is_oblate*/) {
         continue;
       }
       Exponentiation<Length, -2> const one_over_r_squared = 1 / r_squared;
