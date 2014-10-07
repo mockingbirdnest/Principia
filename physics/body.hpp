@@ -6,6 +6,7 @@
 #include "quantities/named_quantities.hpp"
 #include "quantities/quantities.hpp"
 
+using principia::geometry::R3Element;
 using principia::quantities::GravitationalParameter;
 using principia::quantities::Length;
 using principia::quantities::Mass;
@@ -41,6 +42,9 @@ class Body {
 
   // Returns the j2 coefficient.  Returns 0 for a non-oblate body.
   Order2ZonalCoefficient const& j2() const;
+
+  //TODO(phl): This stinks.
+  R3Element<double> const& axis() const;
 
   // Returns true iff |gravitational_parameter| (or |mass|) returns 0.
   bool is_massless() const;

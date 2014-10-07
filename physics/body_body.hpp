@@ -54,6 +54,10 @@ inline Order2ZonalCoefficient const& Body::j2() const {
   return j2_;
 }
 
+inline R3Element<double> const& Body::axis() const {
+  return R3Element<double>();
+}
+
 inline bool Body::is_massless() const {
   return mass_ == Mass();
 }

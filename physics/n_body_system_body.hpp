@@ -26,6 +26,8 @@ using principia::quantities::Speed;
 namespace principia {
 namespace physics {
 
+namespace {
+
 R3Element<Acceleration>
     Order2ZonalAcceleration(Body const& body,
                             R3Element<Length> const& r,
@@ -44,6 +46,8 @@ R3Element<Acceleration>
                    r_axis_projection * one_over_r_squared)) * r;
   return axis_acceleration + radial_acceleration;
 }
+
+}  // namespace
 
 template<typename InertialFrame>
 void NBodySystem<InertialFrame>::Integrate(
@@ -195,8 +199,9 @@ void NBodySystem<InertialFrame>::ComputeGravitationalAccelerations(
       Length const Δq1 = q[three_b1 + 1] - q[three_b2 + 1];
       Length const Δq2 = q[three_b1 + 2] - q[three_b2 + 2];
 
-      Exponentiation<Length, 2> const one_over_r_squared =
-          1 / (Δq0 * Δq0 + Δq1 * Δq1 + Δq2 * Δq2);
+      Exponentiation<Length, 2> const r_squared =
+          Δq0 * Δq0 + Δq1 * Δq1 + Δq2 * Δq2;
+      Exponentiation<Length, -2> const one_over_r_squared = 1 / r_squared;
       Exponentiation<Length, -3> const one_over_r_cubed =
           Sqrt(r_squared) * one_over_r_squared * one_over_r_squared;
 
@@ -222,7 +227,7 @@ void NBodySystem<InertialFrame>::ComputeGravitationalAccelerations(
         R3Element<Acceleration> const order_2_zonal_acceleration1 =
             Order2ZonalAcceleration(
                 body1,
-                Vector<Length, InertialFrame>({Δq0, Δq1, Δq2}),
+                {Δq0, Δq1, Δq2},
                 one_over_r_squared,
                 one_over_r_cubed);
         (*result)[three_b2] += order_2_zonal_acceleration1.x;
@@ -233,7 +238,7 @@ void NBodySystem<InertialFrame>::ComputeGravitationalAccelerations(
         R3Element<Acceleration> const order_2_zonal_acceleration2 =
             Order2ZonalAcceleration(
                 body2,
-                Vector<Length, InertialFrame>({Δq0, Δq1, Δq2}),
+                {Δq0, Δq1, Δq2},
                 one_over_r_squared,
                 one_over_r_cubed);
         (*result)[three_b1] += order_2_zonal_acceleration2.x;
@@ -251,8 +256,9 @@ void NBodySystem<InertialFrame>::ComputeGravitationalAccelerations(
 
       Exponentiation<Length, 2> const r_squared =
           Δq0 * Δq0 + Δq1 * Δq1 + Δq2 * Δq2;
+      Exponentiation<Length, -2> const one_over_r_squared = 1 / r_squared;
       Exponentiation<Length, -3> const one_over_r_cubed =
-          Sqrt(r_squared) / (r_squared * r_squared);
+          Sqrt(r_squared) * one_over_r_squared * one_over_r_squared;
 
       auto const μ1_over_r_cubed =
           body1_gravitational_parameter * one_over_r_cubed;
@@ -266,7 +272,7 @@ void NBodySystem<InertialFrame>::ComputeGravitationalAccelerations(
       R3Element<Acceleration> const order_2_zonal_acceleration1 =
           Order2ZonalAcceleration(
               body1,
-              Vector<Length, InertialFrame>({Δq0, Δq1, Δq2}),
+              {Δq0, Δq1, Δq2},
               one_over_r_squared,
               one_over_r_cubed);
       (*result)[three_b2] += order_2_zonal_acceleration1.x;
