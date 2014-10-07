@@ -1,6 +1,7 @@
 ﻿#pragma once
 
 #include <memory>
+#include <string>
 #include <vector>
 
 #include "geometry/named_quantities.hpp"
@@ -51,6 +52,7 @@ class SolarSystem {
   using Bodies = std::vector<std::unique_ptr<physics::Body const> const>;
 
   // The indices of the bodies in the |Bodies| vector.
+  // The bodies are in decreasing order of mass.
   enum Index : int {
     kSun = 0,
     kJupiter = 1,
@@ -70,6 +72,15 @@ class SolarSystem {
     kTriton = 15,
     kEris = 16,
     kPluto = 17,
+    kTitania = 18,
+    kOberon = 19,
+    kRhea = 20,
+    kIapetus = 21,
+    kCharon = 22,
+    kAriel = 23,
+    kUmbriel = 24,
+    kDione = 25,
+    kTethys = 26,
   };
 
   // Factory.  The caller gets ownership of the pointers.
@@ -80,7 +91,7 @@ class SolarSystem {
   // Factory.  The caller gets ownership of the pointers.
   // A solar system at the time of the launch of Простейший Спутник-2,
   // 1957-11-03T02:30:00Z (JD 2436145.60417)
-  static std::unique_ptr<SolarSystem> SolarSystem::AtСпутник2Launch();
+  static std::unique_ptr<SolarSystem> AtСпутник2Launch();
 
   ~SolarSystem() = default;
 
@@ -95,28 +106,11 @@ class SolarSystem {
   // Returns the index of the parent of the body with the given |index|.
   // Because enums are broken in C++ we use ints.  Sigh.
   static int parent(int const index);
+  // The name of the body with the given |index|.
+  static std::string name(int const index);
 
  private:
-  // A system containing the 18 largest solar system bodies (Pluto and all
-  // larger bodies)  The bodies are in decreasing order of mass,
-  //  0. Sun,
-  //  1. Jupiter,
-  //  2. Saturn,
-  //  3. Neptune,
-  //  4. Uranus,
-  //  5. Earth,
-  //  6. Venus,
-  //  7. Mars,
-  //  8. Mercury,
-  //  9. Ganymede,
-  // 10. Titan,
-  // 11. Callisto,
-  // 12. Io,
-  // 13. Moon,
-  // 14. Europa,
-  // 15. Triton,
-  // 16. Eris,
-  // 17. Pluto.
+  // A system containing the bodies listed in |Index|.
   SolarSystem();
 
   Bodies massive_bodies_;
