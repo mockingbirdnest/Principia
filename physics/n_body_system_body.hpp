@@ -200,9 +200,8 @@ void NBodySystem<InertialFrame>::ComputeGravitationalAccelerations(
 
       Exponentiation<Length, 2> const r_squared =
           Δq0 * Δq0 + Δq1 * Δq1 + Δq2 * Δq2;
-      Exponentiation<Length, -2> const one_over_r_squared = 1 / r_squared;
       Exponentiation<Length, -3> const one_over_r_cubed =
-          Sqrt(r_squared) * one_over_r_squared * one_over_r_squared;
+          Sqrt(r_squared) / (r_squared * r_squared);
 
       auto const μ2_over_r_cubed =
           body2_gravitational_parameter * one_over_r_cubed;
@@ -222,6 +221,7 @@ void NBodySystem<InertialFrame>::ComputeGravitationalAccelerations(
         continue;
       }
 
+      Exponentiation<Length, -2> const one_over_r_squared = 1 / r_squared;
       if (body1_is_oblate) {
         R3Element<Acceleration> const order_2_zonal_acceleration1 =
             Order2ZonalAcceleration(body1,
@@ -253,9 +253,8 @@ void NBodySystem<InertialFrame>::ComputeGravitationalAccelerations(
 
       Exponentiation<Length, 2> const r_squared =
           Δq0 * Δq0 + Δq1 * Δq1 + Δq2 * Δq2;
-      Exponentiation<Length, -2> const one_over_r_squared = 1 / r_squared;
       Exponentiation<Length, -3> const one_over_r_cubed =
-          Sqrt(r_squared) * one_over_r_squared * one_over_r_squared;
+          Sqrt(r_squared) / (r_squared * r_squared);
 
       auto const μ1_over_r_cubed =
           body1_gravitational_parameter * one_over_r_cubed;
@@ -266,6 +265,7 @@ void NBodySystem<InertialFrame>::ComputeGravitationalAccelerations(
       if (!body1_is_oblate) {
         continue;
       }
+      Exponentiation<Length, -2> const one_over_r_squared = 1 / r_squared;
       R3Element<Acceleration> const order_2_zonal_acceleration1 =
           Order2ZonalAcceleration(body1,
                                   {Δq0, Δq1, Δq2},
