@@ -46,10 +46,10 @@ R3Element<Acceleration>
   R3Element<Acceleration> const& axis_acceleration =
       (-3 * j2_over_r_fifth * r_axis_projection) * axis;
   R3Element<Acceleration> const& radial_acceleration =
-       (j2_over_r_fifth *
-            (-1.5 +
-             7.5 * r_axis_projection *
-                   r_axis_projection * one_over_r_squared)) * r;
+      (j2_over_r_fifth *
+           (-1.5 +
+            7.5 * r_axis_projection *
+                  r_axis_projection * one_over_r_squared)) * r;
   return axis_acceleration + radial_acceleration;
 }
 
@@ -271,7 +271,7 @@ void NBodySystem<InertialFrame>::ComputeGravitationalAccelerations(
       (*result)[three_b2 + 1] += Δq1 * μ1_over_r_cubed;
       (*result)[three_b2 + 2] += Δq2 * μ1_over_r_cubed;
 
-      if (true/*!body1_is_oblate*/) {
+      if (!body1_is_oblate) {
         continue;
       }
       Exponentiation<Length, -2> const one_over_r_squared = 1 / r_squared;

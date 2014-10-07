@@ -54,7 +54,6 @@ std::unique_ptr<Body> NewBody(
     case SolarSystem::Accuracy::kMinorAndMajorBodies:
       return std::make_unique<Body>(gravitational_parameter);
     case SolarSystem::Accuracy::kAllBodiesAndOblateness:
-      LOG(ERROR)<<axis;
       return std::make_unique<Body>(gravitational_parameter,
                                     j2,
                                     radius,
@@ -945,24 +944,44 @@ SolarSystem::SolarSystem(Accuracy const accuracy) {
   // Planets.
 
   // Gas giants.
+  // Gravitational characteristics from
+  // http://ssd.jpl.nasa.gov/?gravity_fields_op.  See also "Interior Models of
+  // Uranus and Neptune", Helled et al.,
+  // http://www.astrouw.edu.pl/~nalezyty/semistud/Artykuly/1010.5546v1.pdf
+  // and "Jupiter’s Moment of Inertia: A Possible Determination by JUNO", Helled
+  // et al., http://arxiv.org/pdf/1109.1627.pdf.
+  // Axis directions from "Report of the IAU Working Group on Cartographic
+  // Coordinates and Rotational Elements: 2009", Archinal et al.,
+  // http://astropedia.astrogeology.usgs.gov/download/Docs/WGCCRE/WGCCRE2009reprint.pdf.
+
   std::unique_ptr<Body> jupiter(
       NewBody(accuracy,
-              126686511 * Pow<3>(Kilo(Metre)) / Pow<2>(Second),
-              0.01475,
+              126686535 * Pow<3>(Kilo(Metre)) / Pow<2>(Second),
+              14696.43E-6,
               71492 * Kilo(Metre),
               kEquatorialToEcliptic(Direction(268.056595 * Degree,
                                               64.495303 * Degree))));
   std::unique_ptr<Body> saturn(
       NewBody(accuracy,
-              37931207.8 * Pow<3>(Kilo(Metre)) / Pow<2>(Second),
-              0.01645,
-              60268 * Kilo(Metre),
+              37931208 * Pow<3>(Kilo(Metre)) / Pow<2>(Second),
+              16290.71E-6,
+              60330 * Kilo(Metre),
               kEquatorialToEcliptic(Direction(40.589 * Degree,
                                               83.537 * Degree))));
   std::unique_ptr<Body> neptune(
-      new Body(6835107 * Pow<3>(Kilo(Metre)) / Pow<2>(Second)));
+      NewBody(accuracy,
+              6835100 * Pow<3>(Kilo(Metre)) / Pow<2>(Second),
+              3408.43E-6,
+              25225 * Kilo(Metre),
+              kEquatorialToEcliptic(Direction(299.36 * Degree,
+                                              43.46 * Degree))));
   std::unique_ptr<Body> uranus(
-      new Body(5793966 * Pow<3>(Kilo(Metre)) / Pow<2>(Second)));
+      NewBody(accuracy,
+              5793964 * Pow<3>(Kilo(Metre)) / Pow<2>(Second),
+              3341.29E-6,
+              26200 * Kilo(Metre),
+              kEquatorialToEcliptic(Direction(257.311 * Degree,
+                                              -15.175 * Degree))));
 
   // Telluric planets.
   std::unique_ptr<Body> earth(
