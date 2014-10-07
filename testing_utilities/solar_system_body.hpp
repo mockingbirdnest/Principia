@@ -361,142 +361,142 @@ std::unique_ptr<SolarSystem> SolarSystem::AtСпутник1Launch(
   solar_system->trajectories_.emplace_back(pluto_trajectory);
 
   if (accuracy > Accuracy::kMajorBodiesOnly) {
-  // Satellites of Uranus.
-  Trajectory<ICRFJ2000Ecliptic>* titania_trajectory(
-      new Trajectory<ICRFJ2000Ecliptic>(
-          *solar_system->massive_bodies_[kTitania]));
-  titania_trajectory->Append(
-      kСпутник1LaunchTime,
-      {kSolarSystemBarycentre + Displacement<ICRFJ2000Ecliptic>(
-           {-1.729595658924435E+09 * Kilo(Metre),
-             2.159860356365425E+09 * Kilo(Metre),
-             3.035141077516359E+07 * Kilo(Metre)}),
-       Velocity<ICRFJ2000Ecliptic>(
-           {-6.591633969110592E+00 * Kilo(Metre) / Second,
-            -4.794586046464699E+00 * Kilo(Metre) / Second,
-            -3.377964153317895E+00 * Kilo(Metre) / Second})});
-  Trajectory<ICRFJ2000Ecliptic>* oberon_trajectory(
-      new Trajectory<ICRFJ2000Ecliptic>(
-          *solar_system->massive_bodies_[kOberon]));
-  oberon_trajectory->Append(
-      kСпутник1LaunchTime,
-      {kSolarSystemBarycentre + Displacement<ICRFJ2000Ecliptic>(
-           {-1.730563623290436E+09 * Kilo(Metre),
-             2.160079664472153E+09 * Kilo(Metre),
-             3.041037690361578E+07 * Kilo(Metre)}),
-       Velocity<ICRFJ2000Ecliptic>(
-           {-5.685242261484572E+00 * Kilo(Metre) / Second,
-            -4.073586348304020E+00 * Kilo(Metre) / Second,
-             3.143404489724676E+00 * Kilo(Metre) / Second})});
+    // Satellites of Uranus.
+    Trajectory<ICRFJ2000Ecliptic>* titania_trajectory(
+        new Trajectory<ICRFJ2000Ecliptic>(
+            *solar_system->massive_bodies_[kTitania]));
+    titania_trajectory->Append(
+        kСпутник1LaunchTime,
+        {kSolarSystemBarycentre + Displacement<ICRFJ2000Ecliptic>(
+             {-1.729595658924435E+09 * Kilo(Metre),
+               2.159860356365425E+09 * Kilo(Metre),
+               3.035141077516359E+07 * Kilo(Metre)}),
+         Velocity<ICRFJ2000Ecliptic>(
+             {-6.591633969110592E+00 * Kilo(Metre) / Second,
+              -4.794586046464699E+00 * Kilo(Metre) / Second,
+              -3.377964153317895E+00 * Kilo(Metre) / Second})});
+    Trajectory<ICRFJ2000Ecliptic>* oberon_trajectory(
+        new Trajectory<ICRFJ2000Ecliptic>(
+            *solar_system->massive_bodies_[kOberon]));
+    oberon_trajectory->Append(
+        kСпутник1LaunchTime,
+        {kSolarSystemBarycentre + Displacement<ICRFJ2000Ecliptic>(
+             {-1.730563623290436E+09 * Kilo(Metre),
+               2.160079664472153E+09 * Kilo(Metre),
+               3.041037690361578E+07 * Kilo(Metre)}),
+         Velocity<ICRFJ2000Ecliptic>(
+             {-5.685242261484572E+00 * Kilo(Metre) / Second,
+              -4.073586348304020E+00 * Kilo(Metre) / Second,
+               3.143404489724676E+00 * Kilo(Metre) / Second})});
 
-  // Satellites of Saturn.
-  Trajectory<ICRFJ2000Ecliptic>* rhea_trajectory(
-      new Trajectory<ICRFJ2000Ecliptic>(
-          *solar_system->massive_bodies_[kRhea]));
-  rhea_trajectory->Append(
-      kСпутник1LaunchTime,
-      {kSolarSystemBarycentre + Displacement<ICRFJ2000Ecliptic>(
-           {-3.772933911553755E+08 * Kilo(Metre),
-            -1.451461170080230E+09 * Kilo(Metre),
-             4.016028653663339E+07 * Kilo(Metre)}),
-       Velocity<ICRFJ2000Ecliptic>(
-           { 8.698485920139012E-01 * Kilo(Metre) / Second,
-             3.972546870497955E-01 * Kilo(Metre) / Second,
-            -1.060361115947588E+00 * Kilo(Metre) / Second})});
-  Trajectory<ICRFJ2000Ecliptic>* iapetus_trajectory(
-      new Trajectory<ICRFJ2000Ecliptic>(
-          *solar_system->massive_bodies_[kIapetus]));
-  iapetus_trajectory->Append(
-      kСпутник1LaunchTime,
-      {kSolarSystemBarycentre + Displacement<ICRFJ2000Ecliptic>(
-           {-3.751029285588183E+08 * Kilo(Metre),
-            -1.449565401910516E+09 * Kilo(Metre),
-             3.935332456093812E+07 * Kilo(Metre)}),
-       Velocity<ICRFJ2000Ecliptic>(
-           { 6.497053388258254E+00 * Kilo(Metre) / Second,
-            -7.325141764921950E-02 * Kilo(Metre) / Second,
-            -4.351376438069059E-01 * Kilo(Metre) / Second})});
+    // Satellites of Saturn.
+    Trajectory<ICRFJ2000Ecliptic>* rhea_trajectory(
+        new Trajectory<ICRFJ2000Ecliptic>(
+            *solar_system->massive_bodies_[kRhea]));
+    rhea_trajectory->Append(
+        kСпутник1LaunchTime,
+        {kSolarSystemBarycentre + Displacement<ICRFJ2000Ecliptic>(
+             {-3.772933911553755E+08 * Kilo(Metre),
+              -1.451461170080230E+09 * Kilo(Metre),
+               4.016028653663339E+07 * Kilo(Metre)}),
+         Velocity<ICRFJ2000Ecliptic>(
+             { 8.698485920139012E-01 * Kilo(Metre) / Second,
+               3.972546870497955E-01 * Kilo(Metre) / Second,
+              -1.060361115947588E+00 * Kilo(Metre) / Second})});
+    Trajectory<ICRFJ2000Ecliptic>* iapetus_trajectory(
+        new Trajectory<ICRFJ2000Ecliptic>(
+            *solar_system->massive_bodies_[kIapetus]));
+    iapetus_trajectory->Append(
+        kСпутник1LaunchTime,
+        {kSolarSystemBarycentre + Displacement<ICRFJ2000Ecliptic>(
+             {-3.751029285588183E+08 * Kilo(Metre),
+              -1.449565401910516E+09 * Kilo(Metre),
+               3.935332456093812E+07 * Kilo(Metre)}),
+         Velocity<ICRFJ2000Ecliptic>(
+             { 6.497053388258254E+00 * Kilo(Metre) / Second,
+              -7.325141764921950E-02 * Kilo(Metre) / Second,
+              -4.351376438069059E-01 * Kilo(Metre) / Second})});
 
-  // Satellite of Pluto.
-  Trajectory<ICRFJ2000Ecliptic>* charon_trajectory(
-      new Trajectory<ICRFJ2000Ecliptic>(
-          *solar_system->massive_bodies_[kCharon]));
-  charon_trajectory->Append(
-      kСпутник1LaunchTime,
-      {kSolarSystemBarycentre + Displacement<ICRFJ2000Ecliptic>(
-           {-4.406983470848657E+09 * Kilo(Metre),
-             2.448743066982903E+09 * Kilo(Metre),
-             1.012541389091277E+09 * Kilo(Metre)}),
-       Velocity<ICRFJ2000Ecliptic>(
-           {-1.157714657718270E+00 * Kilo(Metre) / Second,
-            -5.062468891990006E+00 * Kilo(Metre) / Second,
-             8.337034401124047E-01 * Kilo(Metre) / Second})});
+    // Satellite of Pluto.
+    Trajectory<ICRFJ2000Ecliptic>* charon_trajectory(
+        new Trajectory<ICRFJ2000Ecliptic>(
+            *solar_system->massive_bodies_[kCharon]));
+    charon_trajectory->Append(
+        kСпутник1LaunchTime,
+        {kSolarSystemBarycentre + Displacement<ICRFJ2000Ecliptic>(
+             {-4.406983470848657E+09 * Kilo(Metre),
+               2.448743066982903E+09 * Kilo(Metre),
+               1.012541389091277E+09 * Kilo(Metre)}),
+         Velocity<ICRFJ2000Ecliptic>(
+             {-1.157714657718270E+00 * Kilo(Metre) / Second,
+              -5.062468891990006E+00 * Kilo(Metre) / Second,
+               8.337034401124047E-01 * Kilo(Metre) / Second})});
 
-  // Satellites of Uranus.
-  Trajectory<ICRFJ2000Ecliptic>* ariel_trajectory(
-      new Trajectory<ICRFJ2000Ecliptic>(
-          *solar_system->massive_bodies_[kAriel]));
-  ariel_trajectory->Append(
-      kСпутник1LaunchTime,
-      {kSolarSystemBarycentre + Displacement<ICRFJ2000Ecliptic>(
-           {-1.730181133162941E+09 * Kilo(Metre),
-             2.160003751339937E+09 * Kilo(Metre),
-             3.045891238850706E+07 * Kilo(Metre)}),
-       Velocity<ICRFJ2000Ecliptic>(
-           {-6.019957829322824E+00 * Kilo(Metre) / Second,
-            -3.682977487897364E+00 * Kilo(Metre) / Second,
-             5.440031145983448E+00 * Kilo(Metre) / Second})});
-  Trajectory<ICRFJ2000Ecliptic>* umbriel_trajectory(
-      new Trajectory<ICRFJ2000Ecliptic>(
-          *solar_system->massive_bodies_[kUmbriel]));
-  umbriel_trajectory->Append(
-      kСпутник1LaunchTime,
-      {kSolarSystemBarycentre + Displacement<ICRFJ2000Ecliptic>(
-           {-1.729930175425741E+09 * Kilo(Metre),
-             2.159917273779030E+09 * Kilo(Metre),
-             3.023539524396962E+07 * Kilo(Metre)}),
-       Velocity<ICRFJ2000Ecliptic>(
-           {-9.791806936609191E+00 * Kilo(Metre) / Second,
-            -3.786140307785084E+00 * Kilo(Metre) / Second,
-            -1.264397874774153E+00 * Kilo(Metre) / Second})});
+    // Satellites of Uranus.
+    Trajectory<ICRFJ2000Ecliptic>* ariel_trajectory(
+        new Trajectory<ICRFJ2000Ecliptic>(
+            *solar_system->massive_bodies_[kAriel]));
+    ariel_trajectory->Append(
+        kСпутник1LaunchTime,
+        {kSolarSystemBarycentre + Displacement<ICRFJ2000Ecliptic>(
+             {-1.730181133162941E+09 * Kilo(Metre),
+               2.160003751339937E+09 * Kilo(Metre),
+               3.045891238850706E+07 * Kilo(Metre)}),
+         Velocity<ICRFJ2000Ecliptic>(
+             {-6.019957829322824E+00 * Kilo(Metre) / Second,
+              -3.682977487897364E+00 * Kilo(Metre) / Second,
+               5.440031145983448E+00 * Kilo(Metre) / Second})});
+    Trajectory<ICRFJ2000Ecliptic>* umbriel_trajectory(
+        new Trajectory<ICRFJ2000Ecliptic>(
+            *solar_system->massive_bodies_[kUmbriel]));
+    umbriel_trajectory->Append(
+        kСпутник1LaunchTime,
+        {kSolarSystemBarycentre + Displacement<ICRFJ2000Ecliptic>(
+             {-1.729930175425741E+09 * Kilo(Metre),
+               2.159917273779030E+09 * Kilo(Metre),
+               3.023539524396962E+07 * Kilo(Metre)}),
+         Velocity<ICRFJ2000Ecliptic>(
+             {-9.791806936609191E+00 * Kilo(Metre) / Second,
+              -3.786140307785084E+00 * Kilo(Metre) / Second,
+              -1.264397874774153E+00 * Kilo(Metre) / Second})});
 
-  // Satellites of Saturn.
-  Trajectory<ICRFJ2000Ecliptic>* dione_trajectory(
-      new Trajectory<ICRFJ2000Ecliptic>(
-          *solar_system->massive_bodies_[kDione]));
-  dione_trajectory->Append(
-      kСпутник1LaunchTime,
-      {kSolarSystemBarycentre + Displacement<ICRFJ2000Ecliptic>(
-           {-3.777740468280008E+08 * Kilo(Metre),
-            -1.452078913407227E+09 * Kilo(Metre),
-             4.053308808094668E+07 * Kilo(Metre)}),
-       Velocity<ICRFJ2000Ecliptic>(
-           { 1.473536505664190E+01 * Kilo(Metre) / Second,
-            -9.857333255400615E+00 * Kilo(Metre) / Second,
-             2.994635825207214E+00 * Kilo(Metre) / Second})});
-  Trajectory<ICRFJ2000Ecliptic>* tethys_trajectory(
-      new Trajectory<ICRFJ2000Ecliptic>(
-          *solar_system->massive_bodies_[kTethys]));
-  tethys_trajectory->Append(
-      kСпутник1LaunchTime,
-      {kSolarSystemBarycentre + Displacement<ICRFJ2000Ecliptic>(
-           {-3.772002485884590E+08 * Kilo(Metre),
-            -1.451803185519638E+09 * Kilo(Metre),
-             4.033334240953118E+07 * Kilo(Metre)}),
-       Velocity<ICRFJ2000Ecliptic>(
-           { 4.474028082408450E+00 * Kilo(Metre) / Second,
-             6.894343190912965E+00 * Kilo(Metre) / Second,
-            -5.036010312221701E+00 * Kilo(Metre) / Second})});
+    // Satellites of Saturn.
+    Trajectory<ICRFJ2000Ecliptic>* dione_trajectory(
+        new Trajectory<ICRFJ2000Ecliptic>(
+            *solar_system->massive_bodies_[kDione]));
+    dione_trajectory->Append(
+        kСпутник1LaunchTime,
+        {kSolarSystemBarycentre + Displacement<ICRFJ2000Ecliptic>(
+             {-3.777740468280008E+08 * Kilo(Metre),
+              -1.452078913407227E+09 * Kilo(Metre),
+               4.053308808094668E+07 * Kilo(Metre)}),
+         Velocity<ICRFJ2000Ecliptic>(
+             { 1.473536505664190E+01 * Kilo(Metre) / Second,
+              -9.857333255400615E+00 * Kilo(Metre) / Second,
+               2.994635825207214E+00 * Kilo(Metre) / Second})});
+    Trajectory<ICRFJ2000Ecliptic>* tethys_trajectory(
+        new Trajectory<ICRFJ2000Ecliptic>(
+            *solar_system->massive_bodies_[kTethys]));
+    tethys_trajectory->Append(
+        kСпутник1LaunchTime,
+        {kSolarSystemBarycentre + Displacement<ICRFJ2000Ecliptic>(
+             {-3.772002485884590E+08 * Kilo(Metre),
+              -1.451803185519638E+09 * Kilo(Metre),
+               4.033334240953118E+07 * Kilo(Metre)}),
+         Velocity<ICRFJ2000Ecliptic>(
+             { 4.474028082408450E+00 * Kilo(Metre) / Second,
+               6.894343190912965E+00 * Kilo(Metre) / Second,
+              -5.036010312221701E+00 * Kilo(Metre) / Second})});
 
-  solar_system->trajectories_.emplace_back(titania_trajectory);
-  solar_system->trajectories_.emplace_back(oberon_trajectory);
-  solar_system->trajectories_.emplace_back(rhea_trajectory);
-  solar_system->trajectories_.emplace_back(iapetus_trajectory);
-  solar_system->trajectories_.emplace_back(charon_trajectory);
-  solar_system->trajectories_.emplace_back(ariel_trajectory);
-  solar_system->trajectories_.emplace_back(umbriel_trajectory);
-  solar_system->trajectories_.emplace_back(dione_trajectory);
-  solar_system->trajectories_.emplace_back(tethys_trajectory);
+    solar_system->trajectories_.emplace_back(titania_trajectory);
+    solar_system->trajectories_.emplace_back(oberon_trajectory);
+    solar_system->trajectories_.emplace_back(rhea_trajectory);
+    solar_system->trajectories_.emplace_back(iapetus_trajectory);
+    solar_system->trajectories_.emplace_back(charon_trajectory);
+    solar_system->trajectories_.emplace_back(ariel_trajectory);
+    solar_system->trajectories_.emplace_back(umbriel_trajectory);
+    solar_system->trajectories_.emplace_back(dione_trajectory);
+    solar_system->trajectories_.emplace_back(tethys_trajectory);
   }
 
   return std::move(solar_system);
@@ -787,142 +787,142 @@ std::unique_ptr<SolarSystem> SolarSystem::AtСпутник2Launch(
   solar_system->trajectories_.emplace_back(pluto_trajectory);
 
   if (accuracy > Accuracy::kMajorBodiesOnly) {
-  // Satellites of Uranus.
-  Trajectory<ICRFJ2000Ecliptic>* titania_trajectory(
-      new Trajectory<ICRFJ2000Ecliptic>(
-          *solar_system->massive_bodies_[kTitania]));
-  titania_trajectory->Append(
-      kСпутник2LaunchTime,
-      {kSolarSystemBarycentre + Displacement<ICRFJ2000Ecliptic>(
-           {-1.743918818421802E+09 * Kilo(Metre),
-             2.148394286698188E+09 * Kilo(Metre),
-             3.040267774304451E+07 * Kilo(Metre)}),
-       Velocity<ICRFJ2000Ecliptic>(
-           {-7.036501356327411E+00 * Kilo(Metre) / Second,
-            -3.797291350751153E+00 * Kilo(Metre) / Second,
-             3.166248684554561E+00 * Kilo(Metre) / Second})});
-  Trajectory<ICRFJ2000Ecliptic>* oberon_trajectory(
-      new Trajectory<ICRFJ2000Ecliptic>(
-          *solar_system->massive_bodies_[kOberon]));
-  oberon_trajectory->Append(
-      kСпутник2LaunchTime,
-      {kSolarSystemBarycentre + Displacement<ICRFJ2000Ecliptic>(
-           {-1.743851406035026E+09 * Kilo(Metre),
-             2.148476767320335E+09 * Kilo(Metre),
-             3.109684580610486E+07 * Kilo(Metre)}),
-       Velocity<ICRFJ2000Ecliptic>(
-           {-2.745718567351011E+00 * Kilo(Metre) / Second,
-            -4.926321308326997E+00 * Kilo(Metre) / Second,
-             1.815423517306933E+00 * Kilo(Metre) / Second})});
+    // Satellites of Uranus.
+    Trajectory<ICRFJ2000Ecliptic>* titania_trajectory(
+        new Trajectory<ICRFJ2000Ecliptic>(
+            *solar_system->massive_bodies_[kTitania]));
+    titania_trajectory->Append(
+        kСпутник2LaunchTime,
+        {kSolarSystemBarycentre + Displacement<ICRFJ2000Ecliptic>(
+             {-1.743918818421802E+09 * Kilo(Metre),
+               2.148394286698188E+09 * Kilo(Metre),
+               3.040267774304451E+07 * Kilo(Metre)}),
+         Velocity<ICRFJ2000Ecliptic>(
+             {-7.036501356327411E+00 * Kilo(Metre) / Second,
+              -3.797291350751153E+00 * Kilo(Metre) / Second,
+               3.166248684554561E+00 * Kilo(Metre) / Second})});
+    Trajectory<ICRFJ2000Ecliptic>* oberon_trajectory(
+        new Trajectory<ICRFJ2000Ecliptic>(
+            *solar_system->massive_bodies_[kOberon]));
+    oberon_trajectory->Append(
+        kСпутник2LaunchTime,
+        {kSolarSystemBarycentre + Displacement<ICRFJ2000Ecliptic>(
+             {-1.743851406035026E+09 * Kilo(Metre),
+               2.148476767320335E+09 * Kilo(Metre),
+               3.109684580610486E+07 * Kilo(Metre)}),
+         Velocity<ICRFJ2000Ecliptic>(
+             {-2.745718567351011E+00 * Kilo(Metre) / Second,
+              -4.926321308326997E+00 * Kilo(Metre) / Second,
+               1.815423517306933E+00 * Kilo(Metre) / Second})});
 
-  // Satellites of Saturn.
-  Trajectory<ICRFJ2000Ecliptic>* rhea_trajectory(
-      new Trajectory<ICRFJ2000Ecliptic>(
-          *solar_system->massive_bodies_[kRhea]));
-  rhea_trajectory->Append(
-      kСпутник2LaunchTime,
-      {kSolarSystemBarycentre + Displacement<ICRFJ2000Ecliptic>(
-           {-3.553342718565885E+08 * Kilo(Metre),
-            -1.458360446041042E+09 * Kilo(Metre),
-             3.986359566173195E+07 * Kilo(Metre)}),
-       Velocity<ICRFJ2000Ecliptic>(
-           { 1.647814913327736E+01 * Kilo(Metre) / Second,
-            -5.870586279416220E+00 * Kilo(Metre) / Second,
-             8.369964139554196E-01 * Kilo(Metre) / Second})});
-  Trajectory<ICRFJ2000Ecliptic>* iapetus_trajectory(
-      new Trajectory<ICRFJ2000Ecliptic>(
-          *solar_system->massive_bodies_[kIapetus]));
-  iapetus_trajectory->Append(
-      kСпутник2LaunchTime,
-      {kSolarSystemBarycentre + Displacement<ICRFJ2000Ecliptic>(
-           {-3.586954722831523E+08 * Kilo(Metre),
-            -1.457628919841799E+09 * Kilo(Metre),
-             4.026455668743709E+07 * Kilo(Metre)}),
-       Velocity<ICRFJ2000Ecliptic>(
-           { 8.707383466174113E+00 * Kilo(Metre) / Second,
-            -5.392253140156209E+00 * Kilo(Metre) / Second,
-             4.807764918652989E-01 * Kilo(Metre) / Second})});
+    // Satellites of Saturn.
+    Trajectory<ICRFJ2000Ecliptic>* rhea_trajectory(
+        new Trajectory<ICRFJ2000Ecliptic>(
+            *solar_system->massive_bodies_[kRhea]));
+    rhea_trajectory->Append(
+        kСпутник2LaunchTime,
+        {kSolarSystemBarycentre + Displacement<ICRFJ2000Ecliptic>(
+             {-3.553342718565885E+08 * Kilo(Metre),
+              -1.458360446041042E+09 * Kilo(Metre),
+               3.986359566173195E+07 * Kilo(Metre)}),
+         Velocity<ICRFJ2000Ecliptic>(
+             { 1.647814913327736E+01 * Kilo(Metre) / Second,
+              -5.870586279416220E+00 * Kilo(Metre) / Second,
+               8.369964139554196E-01 * Kilo(Metre) / Second})});
+    Trajectory<ICRFJ2000Ecliptic>* iapetus_trajectory(
+        new Trajectory<ICRFJ2000Ecliptic>(
+            *solar_system->massive_bodies_[kIapetus]));
+    iapetus_trajectory->Append(
+        kСпутник2LaunchTime,
+        {kSolarSystemBarycentre + Displacement<ICRFJ2000Ecliptic>(
+             {-3.586954722831523E+08 * Kilo(Metre),
+              -1.457628919841799E+09 * Kilo(Metre),
+               4.026455668743709E+07 * Kilo(Metre)}),
+         Velocity<ICRFJ2000Ecliptic>(
+             { 8.707383466174113E+00 * Kilo(Metre) / Second,
+              -5.392253140156209E+00 * Kilo(Metre) / Second,
+               4.807764918652989E-01 * Kilo(Metre) / Second})});
 
-  // Satellite of Pluto.
-  Trajectory<ICRFJ2000Ecliptic>* charon_trajectory(
-      new Trajectory<ICRFJ2000Ecliptic>(
-          *solar_system->massive_bodies_[kCharon]));
-  charon_trajectory->Append(
-      kСпутник2LaunchTime,
-      {kSolarSystemBarycentre + Displacement<ICRFJ2000Ecliptic>(
-           {-4.410275620814398E+09 * Kilo(Metre),
-             2.435651353388658E+09 * Kilo(Metre),
-             1.014868590806160E+09 * Kilo(Metre)}),
-       Velocity<ICRFJ2000Ecliptic>(
-           {-1.404153365129384E+00 * Kilo(Metre) / Second,
-            -5.187717357379291E+00 * Kilo(Metre) / Second,
-             1.089041178376519E+00 * Kilo(Metre) / Second})});
+    // Satellite of Pluto.
+    Trajectory<ICRFJ2000Ecliptic>* charon_trajectory(
+        new Trajectory<ICRFJ2000Ecliptic>(
+            *solar_system->massive_bodies_[kCharon]));
+    charon_trajectory->Append(
+        kСпутник2LaunchTime,
+        {kSolarSystemBarycentre + Displacement<ICRFJ2000Ecliptic>(
+             {-4.410275620814398E+09 * Kilo(Metre),
+               2.435651353388658E+09 * Kilo(Metre),
+               1.014868590806160E+09 * Kilo(Metre)}),
+         Velocity<ICRFJ2000Ecliptic>(
+             {-1.404153365129384E+00 * Kilo(Metre) / Second,
+              -5.187717357379291E+00 * Kilo(Metre) / Second,
+               1.089041178376519E+00 * Kilo(Metre) / Second})});
 
-  // Satellites of Uranus.
-  Trajectory<ICRFJ2000Ecliptic>* ariel_trajectory(
-      new Trajectory<ICRFJ2000Ecliptic>(
-          *solar_system->massive_bodies_[kAriel]));
-  ariel_trajectory->Append(
-      kСпутник2LaunchTime,
-      {kSolarSystemBarycentre + Displacement<ICRFJ2000Ecliptic>(
-           {-1.743394693015613E+09 * Kilo(Metre),
-             2.148295228037889E+09 * Kilo(Metre),
-             3.051049859822118E+07 * Kilo(Metre)}),
-       Velocity<ICRFJ2000Ecliptic>(
-           {-8.590134956934145E+00 * Kilo(Metre) / Second,
-            -4.517951101991714E+00 * Kilo(Metre) / Second,
-            -4.406982500749494E+00 * Kilo(Metre) / Second})});
-  Trajectory<ICRFJ2000Ecliptic>* umbriel_trajectory(
-      new Trajectory<ICRFJ2000Ecliptic>(
-          *solar_system->massive_bodies_[kUmbriel]));
-  umbriel_trajectory->Append(
-      kСпутник2LaunchTime,
-      {kSolarSystemBarycentre + Displacement<ICRFJ2000Ecliptic>(
-           {-1.743588311968474E+09 * Kilo(Metre),
-             2.148316432062827E+09 * Kilo(Metre),
-             3.035987024560333E+07 * Kilo(Metre)}),
-       Velocity<ICRFJ2000Ecliptic>(
-           {-9.843503117910014E+00 * Kilo(Metre) / Second,
-            -3.525745217265672E+00 * Kilo(Metre) / Second,
-             7.092444771525036E-01 * Kilo(Metre) / Second})});
+    // Satellites of Uranus.
+    Trajectory<ICRFJ2000Ecliptic>* ariel_trajectory(
+        new Trajectory<ICRFJ2000Ecliptic>(
+            *solar_system->massive_bodies_[kAriel]));
+    ariel_trajectory->Append(
+        kСпутник2LaunchTime,
+        {kSolarSystemBarycentre + Displacement<ICRFJ2000Ecliptic>(
+             {-1.743394693015613E+09 * Kilo(Metre),
+               2.148295228037889E+09 * Kilo(Metre),
+               3.051049859822118E+07 * Kilo(Metre)}),
+         Velocity<ICRFJ2000Ecliptic>(
+             {-8.590134956934145E+00 * Kilo(Metre) / Second,
+              -4.517951101991714E+00 * Kilo(Metre) / Second,
+              -4.406982500749494E+00 * Kilo(Metre) / Second})});
+    Trajectory<ICRFJ2000Ecliptic>* umbriel_trajectory(
+        new Trajectory<ICRFJ2000Ecliptic>(
+            *solar_system->massive_bodies_[kUmbriel]));
+    umbriel_trajectory->Append(
+        kСпутник2LaunchTime,
+        {kSolarSystemBarycentre + Displacement<ICRFJ2000Ecliptic>(
+             {-1.743588311968474E+09 * Kilo(Metre),
+               2.148316432062827E+09 * Kilo(Metre),
+               3.035987024560333E+07 * Kilo(Metre)}),
+         Velocity<ICRFJ2000Ecliptic>(
+             {-9.843503117910014E+00 * Kilo(Metre) / Second,
+              -3.525745217265672E+00 * Kilo(Metre) / Second,
+               7.092444771525036E-01 * Kilo(Metre) / Second})});
 
-  // Satellites of Saturn.
-  Trajectory<ICRFJ2000Ecliptic>* dione_trajectory(
-      new Trajectory<ICRFJ2000Ecliptic>(
-          *solar_system->massive_bodies_[kDione]));
-  dione_trajectory->Append(
-      kСпутник2LaunchTime,
-      {kSolarSystemBarycentre + Displacement<ICRFJ2000Ecliptic>(
-           {-3.552295721012846E+08 * Kilo(Metre),
-            -1.457630098290271E+09 * Kilo(Metre),
-             3.946811133174797E+07 * Kilo(Metre)}),
-       Velocity<ICRFJ2000Ecliptic>(
-           {-6.030846229930553E-01 * Kilo(Metre) / Second,
-            -4.868620315848084E+00 * Kilo(Metre) / Second,
-             1.933469386798133E+00 * Kilo(Metre) / Second})});
-  Trajectory<ICRFJ2000Ecliptic>* tethys_trajectory(
-      new Trajectory<ICRFJ2000Ecliptic>(
-          *solar_system->massive_bodies_[kTethys]));
-  tethys_trajectory->Append(
-      kСпутник2LaunchTime,
-      {kSolarSystemBarycentre + Displacement<ICRFJ2000Ecliptic>(
-           {-3.553644729603329E+08 * Kilo(Metre),
-            -1.458064034431594E+09 * Kilo(Metre),
-             3.970978147111944E+07 * Kilo(Metre)}),
-       Velocity<ICRFJ2000Ecliptic>(
-           { 1.427192911372915E+01 * Kilo(Metre) / Second,
-            -1.127052555342930E+01 * Kilo(Metre) / Second,
-             4.094008639209452E+00 * Kilo(Metre) / Second})});
+    // Satellites of Saturn.
+    Trajectory<ICRFJ2000Ecliptic>* dione_trajectory(
+        new Trajectory<ICRFJ2000Ecliptic>(
+            *solar_system->massive_bodies_[kDione]));
+    dione_trajectory->Append(
+        kСпутник2LaunchTime,
+        {kSolarSystemBarycentre + Displacement<ICRFJ2000Ecliptic>(
+             {-3.552295721012846E+08 * Kilo(Metre),
+              -1.457630098290271E+09 * Kilo(Metre),
+               3.946811133174797E+07 * Kilo(Metre)}),
+         Velocity<ICRFJ2000Ecliptic>(
+             {-6.030846229930553E-01 * Kilo(Metre) / Second,
+              -4.868620315848084E+00 * Kilo(Metre) / Second,
+               1.933469386798133E+00 * Kilo(Metre) / Second})});
+    Trajectory<ICRFJ2000Ecliptic>* tethys_trajectory(
+        new Trajectory<ICRFJ2000Ecliptic>(
+            *solar_system->massive_bodies_[kTethys]));
+    tethys_trajectory->Append(
+        kСпутник2LaunchTime,
+        {kSolarSystemBarycentre + Displacement<ICRFJ2000Ecliptic>(
+             {-3.553644729603329E+08 * Kilo(Metre),
+              -1.458064034431594E+09 * Kilo(Metre),
+               3.970978147111944E+07 * Kilo(Metre)}),
+         Velocity<ICRFJ2000Ecliptic>(
+             { 1.427192911372915E+01 * Kilo(Metre) / Second,
+              -1.127052555342930E+01 * Kilo(Metre) / Second,
+               4.094008639209452E+00 * Kilo(Metre) / Second})});
 
-  solar_system->trajectories_.emplace_back(titania_trajectory);
-  solar_system->trajectories_.emplace_back(oberon_trajectory);
-  solar_system->trajectories_.emplace_back(rhea_trajectory);
-  solar_system->trajectories_.emplace_back(iapetus_trajectory);
-  solar_system->trajectories_.emplace_back(charon_trajectory);
-  solar_system->trajectories_.emplace_back(ariel_trajectory);
-  solar_system->trajectories_.emplace_back(umbriel_trajectory);
-  solar_system->trajectories_.emplace_back(dione_trajectory);
-  solar_system->trajectories_.emplace_back(tethys_trajectory);
+    solar_system->trajectories_.emplace_back(titania_trajectory);
+    solar_system->trajectories_.emplace_back(oberon_trajectory);
+    solar_system->trajectories_.emplace_back(rhea_trajectory);
+    solar_system->trajectories_.emplace_back(iapetus_trajectory);
+    solar_system->trajectories_.emplace_back(charon_trajectory);
+    solar_system->trajectories_.emplace_back(ariel_trajectory);
+    solar_system->trajectories_.emplace_back(umbriel_trajectory);
+    solar_system->trajectories_.emplace_back(dione_trajectory);
+    solar_system->trajectories_.emplace_back(tethys_trajectory);
   }
 
   return std::move(solar_system);
