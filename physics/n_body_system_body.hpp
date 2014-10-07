@@ -27,6 +27,13 @@ namespace physics {
 
 namespace {
 
+// If j is a unit vector along the axis of rotation, and r is the separation
+// between the bodies, the acceleration computed here is:
+//
+//   -(3 J2 / 2 |r|^5) (2 j (r.j) + r (1 - 5 (r.j)^2 / |r|^2)
+//
+// Where |r| is the norm of r and r.j is the inner product.
+//
 R3Element<Acceleration>
     Order2ZonalAcceleration(Body const& body,
                             R3Element<Length> const& r,
