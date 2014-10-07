@@ -16,14 +16,17 @@
 #include "quantities/quantities.hpp"
 #include "quantities/si.hpp"
 
+using principia::geometry::Bivector;
 using principia::geometry::Displacement;
 using principia::geometry::Instant;
 using principia::geometry::JulianDate;
 using principia::geometry::Point;
+using principia::geometry::Rotation;
 using principia::geometry::Vector;
 using principia::physics::Body;
 using principia::physics::NBodySystem;
 using principia::physics::Trajectory;
+using principia::quantities::Angle;
 using principia::quantities::GravitationalParameter;
 using principia::quantities::Pow;
 using principia::quantities::SIUnit;
@@ -55,6 +58,22 @@ std::unique_ptr<Body> NewBody(
     default:
       return nullptr;
   }
+}
+
+// Returns a unit vector pointing in the direction defined by |right_ascension|
+// and |declination|.
+Vector<double, ICRFJ2000Equator> Direction(Angle const& right_ascension,
+                                           Angle const& declination) {
+  // Positive angles map {1, 0, 0} to the positive z hemisphere, which is north.
+  // An angle of 0 keeps {1, 0, 0} on the equator.
+  auto const decline = Rotation<ICRFJ2000Equator, ICRFJ2000Equator>(
+                           declination,
+                           Bivector<double, ICRFJ2000Equator>({0, 1, 0}));
+  // Rotate counterclockwise around {0, 0, 1} (north), i.e., eastward.
+  auto const ascend = Rotation<ICRFJ2000Equator, ICRFJ2000Equator>(
+                          right_ascension,
+                          Bivector<double, ICRFJ2000Equator>({0, 0, 1}));
+  return ascend(decline(Vector<double, ICRFJ2000Equator>({1, 0, 0})));
 }
 
 }  // namespace
@@ -995,7 +1014,7 @@ SolarSystem::SolarSystem(Accuracy const accuracy) {
   // Charon-Pluto system.
   std::unique_ptr<Body> charon(
       new Body(9.7549380662106296E2 * Pow<3>(Kilo(Metre)) / Pow<2>(Second) -
-                pluto->gravitational_parameter()));
+               pluto->gravitational_parameter()));
 
   // Satellites of Uranus.
   std::unique_ptr<Body> ariel(new Body(13.53E20 * Kilogram));
