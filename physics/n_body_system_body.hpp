@@ -5,14 +5,17 @@
 #include <set>
 #include <vector>
 
+#include "geometry/grassmann.hpp"
 #include "geometry/named_quantities.hpp"
 #include "geometry/r3_element.hpp"
 #include "glog/logging.h"
 #include "integrators/symplectic_partitioned_runge_kutta_integrator.hpp"
 #include "quantities/quantities.hpp"
 
+using principia::geometry::InnerProduct;
 using principia::geometry::Instant;
 using principia::geometry::R3Element;
+using principia::geometry::Vector;
 using principia::integrators::SPRKIntegrator;
 using principia::integrators::SymplecticIntegrator;
 using principia::quantities::Acceleration;
@@ -23,6 +26,26 @@ using principia::quantities::Speed;
 
 namespace principia {
 namespace physics {
+
+template<typename InertialFrame>
+Vector<Acceleration, InertialFrame>
+    Order2ZonalForce(Body const& body,
+                     Vector<Length, InertialFrame> const& r,
+                     Exponentiation<Length, -2> const one_over_r_squared,
+                     Exponentiation<Length, -3> const one_over_r_cubed) {
+  Vector<double, InertialFrame> const& axis = body.axis();
+  Length const r_axis_projection = InnerProduct(axis, r);
+  auto const j2_over_r_fifth =
+      body.j2() * one_over_r_cubed * one_over_r_squared;
+  Vector<Acceleration, InertialFrame> const& axis_acceleration =
+      (-3 * j2_over_r_fifth * r_axis_projection) * axis;
+  Vector<Acceleration, InertialFrame> const& radial_acceleration =
+       (j2_over_r_fifth *
+            (-1.5 +
+             7.5 * r_axis_projection *
+                   r_axis_projection * one_over_r_squared)) * r;
+  return axis_acceleration + radial_acceleration;
+}
 
 template<typename InertialFrame>
 void NBodySystem<InertialFrame>::Integrate(
