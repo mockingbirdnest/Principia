@@ -41,12 +41,6 @@ geometry::Rotation<ICRFJ2000Equator, ICRFJ2000Ecliptic> kEquatorialToEcliptic =
 
 geometry::Position<ICRFJ2000Ecliptic> const kSolarSystemBarycentre;
 
-// Returns a unit vector pointing in the direction defined by |right_ascension|
-// and |declination|.
-Vector<double, ICRFJ2000Equator> Direction(
-    quantities::Angle const& declination,
-    quantities::Angle const& right_ascension);
-
 class SolarSystem {
  public:
   using Bodies = std::vector<std::unique_ptr<physics::Body const> const>;

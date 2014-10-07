@@ -60,21 +60,23 @@ std::unique_ptr<Body> NewBody(
   }
 }
 
-}  // namespace
-
+// Returns a unit vector pointing in the direction defined by |right_ascension|
+// and |declination|.
 Vector<double, ICRFJ2000Equator> Direction(Angle const& right_ascension,
                                            Angle const& declination) {
   // Positive angles map {1, 0, 0} to the positive z hemisphere, which is north.
   // An angle of 0 keeps {1, 0, 0} on the equator.
   auto const decline = Rotation<ICRFJ2000Equator, ICRFJ2000Equator>(
-          declination,
-          Bivector<double, ICRFJ2000Equator>({0, 1, 0}));
+                           declination,
+                           Bivector<double, ICRFJ2000Equator>({0, 1, 0}));
   // Rotate counterclockwise around {0, 0, 1} (north), i.e., eastward.
   auto const ascend = Rotation<ICRFJ2000Equator, ICRFJ2000Equator>(
-          right_ascension,
-          Bivector<double, ICRFJ2000Equator>({0, 0, 1}));
+                          right_ascension,
+                          Bivector<double, ICRFJ2000Equator>({0, 0, 1}));
   return ascend(decline(Vector<double, ICRFJ2000Equator>({1, 0, 0})));
 }
+
+}  // namespace
 
 std::unique_ptr<SolarSystem> SolarSystem::AtСпутник1Launch(
     Accuracy const accuracy) {
