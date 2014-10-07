@@ -32,6 +32,7 @@ using principia::quantities::Pow;
 using principia::quantities::SIUnit;
 using principia::quantities::Time;
 using principia::si::Day;
+using principia::si::Degree;
 using principia::si::Kilo;
 using principia::si::Kilogram;
 using principia::si::Metre;
@@ -46,7 +47,8 @@ std::unique_ptr<Body> NewBody(
     SolarSystem::Accuracy const accuracy,
     GravitationalParameter const& gravitational_parameter,
     double const j2,
-    Length const& radius) {
+    Length const& radius,
+    Vector<double, ICRFJ2000Ecliptic> const& axis) {
   switch (accuracy) {
     case SolarSystem::Accuracy::kMajorBodiesOnly:
     case SolarSystem::Accuracy::kMinorAndMajorBodies:
@@ -54,7 +56,8 @@ std::unique_ptr<Body> NewBody(
     case SolarSystem::Accuracy::kAllBodiesAndOblateness:
       return std::make_unique<Body>(gravitational_parameter,
                                     j2,
-                                    radius);
+                                    radius,
+                                    axis.coordinates());
     default:
       return nullptr;
   }
@@ -945,12 +948,16 @@ SolarSystem::SolarSystem(Accuracy const accuracy) {
       NewBody(accuracy,
               126686511 * Pow<3>(Kilo(Metre)) / Pow<2>(Second),
               0.01475,
-              71492 * Kilo(Metre)));
+              71492 * Kilo(Metre),
+              kEquatorialToEcliptic(Direction(268.056595 * Degree,
+                                              64.495303 * Degree))));
   std::unique_ptr<Body> saturn(
       NewBody(accuracy,
               37931207.8 * Pow<3>(Kilo(Metre)) / Pow<2>(Second),
               0.01645,
-              60268 * Kilo(Metre)));
+              60268 * Kilo(Metre),
+              kEquatorialToEcliptic(Direction(40.589 * Degree,
+                                              83.537 * Degree))));
   std::unique_ptr<Body> neptune(
       new Body(6835107 * Pow<3>(Kilo(Metre)) / Pow<2>(Second)));
   std::unique_ptr<Body> uranus(
