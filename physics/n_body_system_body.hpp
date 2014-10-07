@@ -5,14 +5,13 @@
 #include <set>
 #include <vector>
 
-#include "geometry/grassmann.hpp"
 #include "geometry/named_quantities.hpp"
 #include "geometry/r3_element.hpp"
 #include "glog/logging.h"
 #include "integrators/symplectic_partitioned_runge_kutta_integrator.hpp"
 #include "quantities/quantities.hpp"
 
-using principia::geometry::InnerProduct;
+using principia::geometry::Dot;
 using principia::geometry::Instant;
 using principia::geometry::R3Element;
 using principia::geometry::Vector;
@@ -27,19 +26,18 @@ using principia::quantities::Speed;
 namespace principia {
 namespace physics {
 
-template<typename InertialFrame>
-Vector<Acceleration, InertialFrame>
-    Order2ZonalForce(Body const& body,
-                     Vector<Length, InertialFrame> const& r,
-                     Exponentiation<Length, -2> const one_over_r_squared,
-                     Exponentiation<Length, -3> const one_over_r_cubed) {
-  Vector<double, InertialFrame> const& axis = body.axis();
-  Length const r_axis_projection = InnerProduct(axis, r);
+R3Element<Acceleration>
+    Order2ZonalAcceleration(Body const& body,
+                            R3Element<Length> const& r,
+                            Exponentiation<Length, -2> const one_over_r_squared,
+                            Exponentiation<Length, -3> const one_over_r_cubed) {
+  R3Element<double> const& axis = body.axis();
+  Length const r_axis_projection = Dot(axis, r);
   auto const j2_over_r_fifth =
       body.j2() * one_over_r_cubed * one_over_r_squared;
-  Vector<Acceleration, InertialFrame> const& axis_acceleration =
+  R3Element<Acceleration> const& axis_acceleration =
       (-3 * j2_over_r_fifth * r_axis_projection) * axis;
-  Vector<Acceleration, InertialFrame> const& radial_acceleration =
+  R3Element<Acceleration> const& radial_acceleration =
        (j2_over_r_fifth *
             (-1.5 +
              7.5 * r_axis_projection *
@@ -197,10 +195,10 @@ void NBodySystem<InertialFrame>::ComputeGravitationalAccelerations(
       Length const Δq1 = q[three_b1 + 1] - q[three_b2 + 1];
       Length const Δq2 = q[three_b1 + 2] - q[three_b2 + 2];
 
-      Exponentiation<Length, 2> const r_squared =
-          Δq0 * Δq0 + Δq1 * Δq1 + Δq2 * Δq2;
+      Exponentiation<Length, 2> const one_over_r_squared =
+          1 / (Δq0 * Δq0 + Δq1 * Δq1 + Δq2 * Δq2);
       Exponentiation<Length, -3> const one_over_r_cubed =
-          Sqrt(r_squared) / (r_squared * r_squared);
+          Sqrt(r_squared) * one_over_r_squared * one_over_r_squared;
 
       auto const μ2_over_r_cubed =
           body2_gravitational_parameter * one_over_r_cubed;
@@ -216,23 +214,31 @@ void NBodySystem<InertialFrame>::ComputeGravitationalAccelerations(
       (*result)[three_b2 + 1] += Δq1 * μ1_over_r_cubed;
       (*result)[three_b2 + 2] += Δq2 * μ1_over_r_cubed;
 
-      if (body1_is_oblate || body2_is_oblate) {
-        Exponentiation<Length, -5> const one_over_r_to_the_fifth =
-            one_over_r_cubed / r_squared;
-        if (body1_is_oblate) {
-          auto const j21_contribution =
-              -1.5 * body1.j2() * one_over_r_to_the_fifth;
-          (*result)[three_b2] += Δq0 * j21_contribution;
-          (*result)[three_b2 + 1] += Δq1 * j21_contribution;
-          (*result)[three_b2 + 2] += Δq2 * j21_contribution;
-        }
-        if (body2_is_oblate) {
-          auto const j22_contribution =
-              -1.5 * body2.j2() * one_over_r_to_the_fifth;
-          (*result)[three_b1] += Δq0 * j22_contribution;
-          (*result)[three_b1 + 1] += Δq1 * j22_contribution;
-          (*result)[three_b1 + 2] += Δq2 * j22_contribution;
-        }
+      if (!body1_is_oblate && !body2_is_oblate) {
+        continue;
+      }
+
+      if (body1_is_oblate) {
+        R3Element<Acceleration> const order_2_zonal_acceleration1 =
+            Order2ZonalAcceleration(
+                body1,
+                Vector<Length, InertialFrame>({Δq0, Δq1, Δq2}),
+                one_over_r_squared,
+                one_over_r_cubed);
+        (*result)[three_b2] += order_2_zonal_acceleration1.x;
+        (*result)[three_b2 + 1] += order_2_zonal_acceleration1.y;
+        (*result)[three_b2 + 2] += order_2_zonal_acceleration1.z;
+      }
+      if (body2_is_oblate) {
+        R3Element<Acceleration> const order_2_zonal_acceleration2 =
+            Order2ZonalAcceleration(
+                body2,
+                Vector<Length, InertialFrame>({Δq0, Δq1, Δq2}),
+                one_over_r_squared,
+                one_over_r_cubed);
+        (*result)[three_b1] += order_2_zonal_acceleration2.x;
+        (*result)[three_b1 + 1] += order_2_zonal_acceleration2.y;
+        (*result)[three_b1 + 2] += order_2_zonal_acceleration2.z;
       }
     }
     for (size_t b2 = number_of_massive_trajectories;
@@ -254,15 +260,18 @@ void NBodySystem<InertialFrame>::ComputeGravitationalAccelerations(
       (*result)[three_b2 + 1] += Δq1 * μ1_over_r_cubed;
       (*result)[three_b2 + 2] += Δq2 * μ1_over_r_cubed;
 
-      if (body1_is_oblate) {
-        Exponentiation<Length, -5> const one_over_r_to_the_fifth =
-            one_over_r_cubed / r_squared;
-        auto const j21_contribution =
-            -1.5 * body1.j2() * one_over_r_to_the_fifth;
-        (*result)[three_b2] += Δq0 * j21_contribution;
-        (*result)[three_b2 + 1] += Δq1 * j21_contribution;
-        (*result)[three_b2 + 2] += Δq2 * j21_contribution;
+      if (!body1_is_oblate) {
+        continue;
       }
+      R3Element<Acceleration> const order_2_zonal_acceleration1 =
+          Order2ZonalAcceleration(
+              body1,
+              Vector<Length, InertialFrame>({Δq0, Δq1, Δq2}),
+              one_over_r_squared,
+              one_over_r_cubed);
+      (*result)[three_b2] += order_2_zonal_acceleration1.x;
+      (*result)[three_b2 + 1] += order_2_zonal_acceleration1.y;
+      (*result)[three_b2 + 2] += order_2_zonal_acceleration1.z;
     }
   }
 
