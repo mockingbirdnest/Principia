@@ -22,6 +22,8 @@ using Torque              = Quotient<AngularMomentum, Time>;
 using MomentOfInertia     = Quotient<Torque, AngularAcceleration>;
 
 using GravitationalParameter = Product<Length, Product<Speed, Speed>>;
+using Order2ZonalCoefficient = Quotient<Exponentiation<Length, 5>,
+                                        Exponentiation<Time, 2>>;
 #pragma endregion
 #pragma region Astrodynamics
 using SpecificEnergy          = Quotient<Energy, Mass>;
