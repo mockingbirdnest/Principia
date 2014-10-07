@@ -54,6 +54,7 @@ std::unique_ptr<Body> NewBody(
     case SolarSystem::Accuracy::kMinorAndMajorBodies:
       return std::make_unique<Body>(gravitational_parameter);
     case SolarSystem::Accuracy::kAllBodiesAndOblateness:
+      LOG(ERROR)<<axis;
       return std::make_unique<Body>(gravitational_parameter,
                                     j2,
                                     radius,
@@ -71,7 +72,7 @@ Vector<double, ICRFJ2000Equator> Direction(Angle const& right_ascension,
   // An angle of 0 keeps {1, 0, 0} on the equator.
   auto const decline = Rotation<ICRFJ2000Equator, ICRFJ2000Equator>(
                            declination,
-                           Bivector<double, ICRFJ2000Equator>({0, 1, 0}));
+                           Bivector<double, ICRFJ2000Equator>({0, -1, 0}));
   // Rotate counterclockwise around {0, 0, 1} (north), i.e., eastward.
   auto const ascend = Rotation<ICRFJ2000Equator, ICRFJ2000Equator>(
                           right_ascension,

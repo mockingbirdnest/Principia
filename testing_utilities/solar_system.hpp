@@ -37,7 +37,7 @@ struct ICRFJ2000Equator;
 geometry::Rotation<ICRFJ2000Equator, ICRFJ2000Ecliptic> kEquatorialToEcliptic =
     geometry::Rotation<ICRFJ2000Equator, ICRFJ2000Ecliptic>(
         23 * si::Degree + 26 * si::ArcMinute + 21.448 * si::ArcSecond,
-        geometry::Bivector<double, ICRFJ2000Equator>({1, 0, 0}));
+        geometry::Bivector<double, ICRFJ2000Equator>({-1, 0, 0}));
 
 geometry::Position<ICRFJ2000Ecliptic> const kSolarSystemBarycentre;
 

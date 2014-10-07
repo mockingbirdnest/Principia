@@ -346,7 +346,7 @@ TEST_F(NBodySystemTest, Sputnik1ToSputnik2) {
   static std::map<SolarSystem::Index, Angle> const expected_angle_error = {
       {SolarSystem::kAriel, 0.74 * Degree},
       {SolarSystem::kUmbriel, 0.24 * Degree},
-      {SolarSystem::kTethys, 0.12 * Degree}};
+      {SolarSystem::kTethys, 0.042 * Degree}};
   static std::map<SolarSystem::Index,
                   double> const expected_parent_distance_error = {
       {SolarSystem::kAriel, 1E-3},
@@ -389,7 +389,6 @@ TEST_F(NBodySystemTest, Sputnik1ToSputnik2) {
       {SolarSystem::kTitania, 1E-6},
       {SolarSystem::kUmbriel, 1E-6},
       {SolarSystem::kEuropa, 1E-7},
-      {SolarSystem::kIapetus, 1E-7},
       {SolarSystem::kMoon, 1E-7},
       {SolarSystem::kRhea, 1E-7},
       {SolarSystem::kTriton, 1E-7},
@@ -397,6 +396,7 @@ TEST_F(NBodySystemTest, Sputnik1ToSputnik2) {
       {SolarSystem::kCallisto, 1E-8},
       {SolarSystem::kEarth, 1E-8},
       {SolarSystem::kGanymede, 1E-8},
+      {SolarSystem::kIapetus, 1E-8},
       {SolarSystem::kJupiter, 1E-8},
       {SolarSystem::kNeptune, 1E-8},
       {SolarSystem::kOberon, 1E-8},
@@ -410,16 +410,16 @@ TEST_F(NBodySystemTest, Sputnik1ToSputnik2) {
       {SolarSystem::kUmbriel, 1E-2},
       {SolarSystem::kCharon, 1E-3},
       {SolarSystem::kDione, 1E-3},
-      {SolarSystem::kEuropa, 1E-3},
       {SolarSystem::kIo, 1E-3},
       {SolarSystem::kPluto, 1E-3},
       {SolarSystem::kTethys, 1E-3},
       {SolarSystem::kTitania, 1E-3},
       {SolarSystem::kTriton, 1E-3},
-      {SolarSystem::kGanymede, 1E-4},
+      {SolarSystem::kEuropa, 1E-4},
       {SolarSystem::kOberon, 1E-4},
       {SolarSystem::kRhea, 1E-4},
       {SolarSystem::kEris, 1E-5},  // NOTE(egg): we may want Dysnomia.
+      {SolarSystem::kGanymede, 1E-5},
       {SolarSystem::kTitan, 1E-5},
       {SolarSystem::kUranus, 1E-5},
       {SolarSystem::kCallisto, 1E-6},
@@ -427,9 +427,9 @@ TEST_F(NBodySystemTest, Sputnik1ToSputnik2) {
       {SolarSystem::kMercury, 1E-6},  // NOTE(egg): General relativity.
       {SolarSystem::kMoon, 1E-6},
       {SolarSystem::kNeptune, 1E-6},
+      {SolarSystem::kSaturn, 1E-6},
       {SolarSystem::kEarth, 1E-7},
       {SolarSystem::kJupiter, 1E-7},
-      {SolarSystem::kSaturn, 1E-6},
       {SolarSystem::kSun, 1E-7},
       {SolarSystem::kVenus, 1E-7},
       {SolarSystem::kMars, 1E-8}};
