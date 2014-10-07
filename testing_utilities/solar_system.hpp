@@ -18,12 +18,14 @@ namespace testing_utilities {
 // Earth's orbit and the Earth's mean equator at J2000.0.
 // The z axis is perpendicular to the xy-plane in the directional (+ or -) sense
 // of Earth's north pole at J2000.0.
-// The basis is direct and orthonormal.
+// The basis is right-handed and orthonormal.
 struct ICRFJ2000Ecliptic;
 // The xy plane is the plane of the Earth's mean equator at J2000.0.
 // The x axis is out along the ascending node of the instantaneous plane of the
 // Earth's orbit and the Earth's mean equator at J2000.0.
-// The z axis is along the Earth's mean north pole at J2000.0
+// The z axis is along the Earth's mean north pole at J2000.0.
+// The basis is right-handed and orthonormal.
+// Note that |ICRFJ2000Equator| and |ICRFJ2000Ecliptic| share their x axis.
 struct ICRFJ2000Equator;
 geometry::Position<ICRFJ2000Ecliptic> const kSolarSystemBarycentre;
 
