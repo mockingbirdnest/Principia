@@ -14,7 +14,6 @@
 using principia::geometry::Dot;
 using principia::geometry::Instant;
 using principia::geometry::R3Element;
-using principia::geometry::Vector;
 using principia::integrators::SPRKIntegrator;
 using principia::integrators::SymplecticIntegrator;
 using principia::quantities::Acceleration;
