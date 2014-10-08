@@ -43,7 +43,8 @@ geometry::Position<ICRFJ2000Ecliptic> const kSolarSystemBarycentre;
 
 class SolarSystem {
  public:
-  using Bodies = std::vector<std::unique_ptr<physics::Body const> const>;
+  using Bodies = std::vector<std::unique_ptr<
+                     physics::Body<ICRFJ2000Ecliptic> const> const>;
 
   // The indices of the bodies in the |Bodies| vector.
   // The bodies are in decreasing order of mass.

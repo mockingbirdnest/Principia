@@ -6,7 +6,7 @@
 #include "quantities/named_quantities.hpp"
 #include "quantities/quantities.hpp"
 
-using principia::geometry::R3Element;
+using principia::geometry::Vector;
 using principia::quantities::GravitationalParameter;
 using principia::quantities::Length;
 using principia::quantities::Mass;
@@ -15,6 +15,7 @@ using principia::quantities::Order2ZonalCoefficient;
 namespace principia {
 namespace physics {
 
+template<typename Frame>
 class Body {
  public:
   // We use the gravitational parameter μ = G M in order not to accumulate
@@ -26,17 +27,17 @@ class Body {
   Body(GravitationalParameter const& gravitational_parameter,
        double const j2,
        Length const& radius,
-       R3Element<double> const& axis);
+       Vector<double, Frame> const& axis);
   Body(Mass const& mass,
        double const j2,
        Length const& radius,
-       R3Element<double> const& axis);
+       Vector<double, Frame> const& axis);
   Body(GravitationalParameter const& gravitational_parameter,
        Order2ZonalCoefficient const& j2,
-       R3Element<double> const& axis);
+       Vector<double, Frame> const& axis);
   Body(Mass const& mass,
        Order2ZonalCoefficient const& j2,
-       R3Element<double> const& axis);
+       Vector<double, Frame> const& axis);
 
   ~Body() = default;
 
@@ -48,7 +49,7 @@ class Body {
   Order2ZonalCoefficient const& j2() const;
 
   // Returns the axis passed at construction.
-  R3Element<double> const& axis() const;
+  Vector<double, Frame> const& axis() const;
 
   // Returns true iff |gravitational_parameter| (or |mass|) returns 0.
   bool is_massless() const;
@@ -60,7 +61,7 @@ class Body {
   GravitationalParameter const gravitational_parameter_;
   Mass const mass_;
   Order2ZonalCoefficient const j2_;
-  R3Element<double> const axis_;
+  Vector<double, Frame> const axis_;
 };
 
 }  // namespace physics

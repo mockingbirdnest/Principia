@@ -54,11 +54,11 @@ class NBodySystemTest : public testing::Test {
 
     // The Earth-Moon system, roughly, with a circular orbit with velocities
     // in the center-of-mass frame.
-    body1_ = std::make_unique<Body>(6E24 * SIUnit<Mass>());
-    body2_ = std::make_unique<Body>(7E22 * SIUnit<Mass>());
+    body1_ = std::make_unique<Body<EarthMoonOrbitPlane>>(6E24 * SIUnit<Mass>());
+    body2_ = std::make_unique<Body<EarthMoonOrbitPlane>>(7E22 * SIUnit<Mass>());
 
     // A massless probe.
-    body3_ = std::make_unique<Body>(0 * SIUnit<Mass>());
+    body3_ = std::make_unique<Body<EarthMoonOrbitPlane>>(0 * SIUnit<Mass>());
 
     trajectory1_ =
         std::make_unique<Trajectory<EarthMoonOrbitPlane>>(*body1_);
@@ -136,9 +136,9 @@ class NBodySystemTest : public testing::Test {
     return result;
   }
 
-  std::unique_ptr<Body> body1_;
-  std::unique_ptr<Body> body2_;
-  std::unique_ptr<Body> body3_;
+  std::unique_ptr<Body<EarthMoonOrbitPlane>> body1_;
+  std::unique_ptr<Body<EarthMoonOrbitPlane>> body2_;
+  std::unique_ptr<Body<EarthMoonOrbitPlane>> body3_;
   std::unique_ptr<Trajectory<EarthMoonOrbitPlane>> trajectory1_;
   std::unique_ptr<Trajectory<EarthMoonOrbitPlane>> trajectory2_;
   std::unique_ptr<Trajectory<EarthMoonOrbitPlane>> trajectory3_;

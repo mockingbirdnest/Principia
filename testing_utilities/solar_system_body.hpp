@@ -43,7 +43,7 @@ namespace testing_utilities {
 
 namespace {
 
-std::unique_ptr<Body> NewBody(
+std::unique_ptr<Body<ICRFJ2000Ecliptic>> NewBody(
     SolarSystem::Accuracy const accuracy,
     GravitationalParameter const& gravitational_parameter,
     double const j2,
@@ -52,12 +52,12 @@ std::unique_ptr<Body> NewBody(
   switch (accuracy) {
     case SolarSystem::Accuracy::kMajorBodiesOnly:
     case SolarSystem::Accuracy::kMinorAndMajorBodies:
-      return std::make_unique<Body>(gravitational_parameter);
+      return std::make_unique<Body<ICRFJ2000Ecliptic>>(gravitational_parameter);
     case SolarSystem::Accuracy::kAllBodiesAndOblateness:
-      return std::make_unique<Body>(gravitational_parameter,
-                                    j2,
-                                    radius,
-                                    axis.coordinates());
+      return std::make_unique<Body<ICRFJ2000Ecliptic>>(gravitational_parameter,
+                                                       j2,
+                                                       radius,
+                                                       axis);
     default:
       return nullptr;
   }
@@ -938,8 +938,9 @@ SolarSystem::SolarSystem(Accuracy const accuracy) {
   // otherwise specified.
 
   // Star.
-  std::unique_ptr<Body> sun(
-      new Body(1.3271244004193938E+11 * Pow<3>(Kilo(Metre)) / Pow<2>(Second)));
+  std::unique_ptr<Body<ICRFJ2000Ecliptic>> sun(
+      new Body<ICRFJ2000Ecliptic>(
+          1.3271244004193938E+11 * Pow<3>(Kilo(Metre)) / Pow<2>(Second)));
 
   // Planets.
 
@@ -954,28 +955,28 @@ SolarSystem::SolarSystem(Accuracy const accuracy) {
   // Coordinates and Rotational Elements: 2009", Archinal et al.,
   // http://astropedia.astrogeology.usgs.gov/download/Docs/WGCCRE/WGCCRE2009reprint.pdf.
 
-  std::unique_ptr<Body> jupiter(
+  std::unique_ptr<Body<ICRFJ2000Ecliptic>> jupiter(
       NewBody(accuracy,
               126686535 * Pow<3>(Kilo(Metre)) / Pow<2>(Second),
               14696.43E-6,
               71492 * Kilo(Metre),
               kEquatorialToEcliptic(Direction(268.056595 * Degree,
                                               64.495303 * Degree))));
-  std::unique_ptr<Body> saturn(
+  std::unique_ptr<Body<ICRFJ2000Ecliptic>> saturn(
       NewBody(accuracy,
               37931208 * Pow<3>(Kilo(Metre)) / Pow<2>(Second),
               16290.71E-6,
               60330 * Kilo(Metre),
               kEquatorialToEcliptic(Direction(40.589 * Degree,
                                               83.537 * Degree))));
-  std::unique_ptr<Body> neptune(
+  std::unique_ptr<Body<ICRFJ2000Ecliptic>> neptune(
       NewBody(accuracy,
               6835100 * Pow<3>(Kilo(Metre)) / Pow<2>(Second),
               3408.43E-6,
               25225 * Kilo(Metre),
               kEquatorialToEcliptic(Direction(299.36 * Degree,
                                               43.46 * Degree))));
-  std::unique_ptr<Body> uranus(
+  std::unique_ptr<Body<ICRFJ2000Ecliptic>> uranus(
       NewBody(accuracy,
               5793964 * Pow<3>(Kilo(Metre)) / Pow<2>(Second),
               3341.29E-6,
@@ -984,74 +985,96 @@ SolarSystem::SolarSystem(Accuracy const accuracy) {
                                               -15.175 * Degree))));
 
   // Telluric planets.
-  std::unique_ptr<Body> earth(
-      new Body(398600.440 * Pow<3>(Kilo(Metre)) / Pow<2>(Second)));
-  std::unique_ptr<Body> venus(
-      new Body(324858.63 * Pow<3>(Kilo(Metre)) / Pow<2>(Second)));
-  std::unique_ptr<Body> mars(
-      new Body(42828.3 * Pow<3>(Kilo(Metre)) / Pow<2>(Second)));
-  std::unique_ptr<Body> mercury(
-      new Body(22032.09 * Pow<3>(Kilo(Metre)) / Pow<2>(Second)));
+  std::unique_ptr<Body<ICRFJ2000Ecliptic>> earth(
+      new Body<ICRFJ2000Ecliptic>(
+          398600.440 * Pow<3>(Kilo(Metre)) / Pow<2>(Second)));
+  std::unique_ptr<Body<ICRFJ2000Ecliptic>> venus(
+      new Body<ICRFJ2000Ecliptic>(
+          324858.63 * Pow<3>(Kilo(Metre)) / Pow<2>(Second)));
+  std::unique_ptr<Body<ICRFJ2000Ecliptic>> mars(
+      new Body<ICRFJ2000Ecliptic>(
+          42828.3 * Pow<3>(Kilo(Metre)) / Pow<2>(Second)));
+  std::unique_ptr<Body<ICRFJ2000Ecliptic>> mercury(
+      new Body<ICRFJ2000Ecliptic>(
+          22032.09 * Pow<3>(Kilo(Metre)) / Pow<2>(Second)));
 
   // End of planets.
 
   // Satellite of Jupiter.
-  std::unique_ptr<Body> ganymede(new Body(1482E20 * Kilogram));
+  std::unique_ptr<Body<ICRFJ2000Ecliptic>> ganymede(
+      new Body<ICRFJ2000Ecliptic>(1482E20 * Kilogram));
 
   // Satellite of Saturn.
-  std::unique_ptr<Body> titan(
-      new Body(8978.13 * Pow<3>(Kilo(Metre)) / Pow<2>(Second)));
+  std::unique_ptr<Body<ICRFJ2000Ecliptic>> titan(
+      new Body<ICRFJ2000Ecliptic>(
+          8978.13 * Pow<3>(Kilo(Metre)) / Pow<2>(Second)));
 
   // Satellites of Jupiter.
-  std::unique_ptr<Body> callisto(new Body(1076E20 * Kilogram));
-  std::unique_ptr<Body> io(new Body(893.3E20 * Kilogram));
+  std::unique_ptr<Body<ICRFJ2000Ecliptic>> callisto(
+      new Body<ICRFJ2000Ecliptic>(1076E20 * Kilogram));
+  std::unique_ptr<Body<ICRFJ2000Ecliptic>> io(
+      new Body<ICRFJ2000Ecliptic>(893.3E20 * Kilogram));
 
   // Satellite of Earth.
-  std::unique_ptr<Body> moon(
-      new Body(4902.798 * Pow<3>(Kilo(Metre)) / Pow<2>(Second)));
+  std::unique_ptr<Body<ICRFJ2000Ecliptic>> moon(
+      new Body<ICRFJ2000Ecliptic>(
+          4902.798 * Pow<3>(Kilo(Metre)) / Pow<2>(Second)));
 
   // Satellite of Jupiter.
-  std::unique_ptr<Body> europa(new Body(479.7E20 * Kilogram));
+  std::unique_ptr<Body<ICRFJ2000Ecliptic>> europa(
+      new Body<ICRFJ2000Ecliptic>(479.7E20 * Kilogram));
 
   // Satellite of Neptune.
-  std::unique_ptr<Body> triton(new Body(214.7E20 * Kilogram));
+  std::unique_ptr<Body<ICRFJ2000Ecliptic>> triton(
+      new Body<ICRFJ2000Ecliptic>(214.7E20 * Kilogram));
 
   // Dwarf planet (scattered disc object).
   // Mass from Brown, Michael E.; Schaller, Emily L. (15 June 2007).
   // "The Mass of Dwarf Planet Eris", in Science, through Wikipedia.
-  std::unique_ptr<Body> eris(new Body(1.67E22 * Kilogram));
+  std::unique_ptr<Body<ICRFJ2000Ecliptic>> eris(
+      new Body<ICRFJ2000Ecliptic>(1.67E22 * Kilogram));
 
   // Dwarf planet (Kuiper belt object).
-  std::unique_ptr<Body> pluto(
-      new Body(872.4 * Pow<3>(Kilo(Metre)) / Pow<2>(Second)));
+  std::unique_ptr<Body<ICRFJ2000Ecliptic>> pluto(
+      new Body<ICRFJ2000Ecliptic>(
+          872.4 * Pow<3>(Kilo(Metre)) / Pow<2>(Second)));
 
   // Satellites of Uranus.
-  std::unique_ptr<Body> titania(new Body(35.27E20 * Kilogram));
-  std::unique_ptr<Body> oberon(new Body(30.14E20 * Kilogram));
+  std::unique_ptr<Body<ICRFJ2000Ecliptic>> titania(
+      new Body<ICRFJ2000Ecliptic>(35.27E20 * Kilogram));
+  std::unique_ptr<Body<ICRFJ2000Ecliptic>> oberon(
+      new Body<ICRFJ2000Ecliptic>(30.14E20 * Kilogram));
 
   // Satellites of Saturn.
-  std::unique_ptr<Body> rhea(
-      new Body(153.94 * Pow<3>(Kilo(Metre)) / Pow<2>(Second)));
-  std::unique_ptr<Body> iapetus(
-      new Body(120.51 * Pow<3>(Kilo(Metre)) / Pow<2>(Second)));
+  std::unique_ptr<Body<ICRFJ2000Ecliptic>> rhea(
+      new Body<ICRFJ2000Ecliptic>(
+          153.94 * Pow<3>(Kilo(Metre)) / Pow<2>(Second)));
+  std::unique_ptr<Body<ICRFJ2000Ecliptic>> iapetus(
+      new Body<ICRFJ2000Ecliptic>(
+          120.51 * Pow<3>(Kilo(Metre)) / Pow<2>(Second)));
 
   // Satellite of Pluto.
   // The masses reported by HORIZONS have very few significant digits. Instead
   // we subtract Pluto's gravitational parameter from the one given for the
   // Charon-Pluto system.
-  std::unique_ptr<Body> charon(
-      new Body(9.7549380662106296E2 * Pow<3>(Kilo(Metre)) / Pow<2>(Second) -
-               pluto->gravitational_parameter()));
+  std::unique_ptr<Body<ICRFJ2000Ecliptic>> charon(
+      new Body<ICRFJ2000Ecliptic>(
+          9.7549380662106296E2 * Pow<3>(Kilo(Metre)) / Pow<2>(Second) -
+              pluto->gravitational_parameter()));
 
   // Satellites of Uranus.
-  std::unique_ptr<Body> ariel(new Body(13.53E20 * Kilogram));
-  std::unique_ptr<Body> umbriel(new Body(11.72E20 * Kilogram));
+  std::unique_ptr<Body<ICRFJ2000Ecliptic>> ariel(
+      new Body<ICRFJ2000Ecliptic>(13.53E20 * Kilogram));
+  std::unique_ptr<Body<ICRFJ2000Ecliptic>> umbriel(
+      new Body<ICRFJ2000Ecliptic>(11.72E20 * Kilogram));
 
   // Satellites of Saturn.
-  std::unique_ptr<Body> dione(
-      new Body(73.113 * Pow<3>(Kilo(Metre)) / Pow<2>(Second)));
-  std::unique_ptr<Body> tethys(
-      new Body(41.21 * Pow<3>(Kilo(Metre)) / Pow<2>(Second)));
+  std::unique_ptr<Body<ICRFJ2000Ecliptic>> dione(
+      new Body<ICRFJ2000Ecliptic>(
+          73.113 * Pow<3>(Kilo(Metre)) / Pow<2>(Second)));
+  std::unique_ptr<Body<ICRFJ2000Ecliptic>> tethys(
+      new Body<ICRFJ2000Ecliptic>(
+          41.21 * Pow<3>(Kilo(Metre)) / Pow<2>(Second)));
 
   // End of celestial bodies.
 
