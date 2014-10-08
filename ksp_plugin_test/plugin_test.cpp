@@ -177,7 +177,10 @@ TEST_F(PluginTest, AdvanceTime) {
         t + δt <= tmax ? (t - initial_time_) / (2 * Second) * Radian
                        : 1 * Radian;
     plugin_->AdvanceTime(t, angle);
+#pragma warning(push)
+#pragma warning(disable : 4566)  // Stringification of Unicode identifiers.
     EXPECT_THAT(plugin_->HistoryTime() + plugin_->kΔt, Ge(t));
+#pragma warning(pop)
     system.Integrate(integrator,
                      t,
                      plugin_->kΔt,  // Δt
@@ -186,7 +189,7 @@ TEST_F(PluginTest, AdvanceTime) {
                      solar_system_->trajectories());
   }
   std::unique_ptr<SolarSystem> symplectic_system =
-      SolarSystem::AtСпутник1Launch();
+      SolarSystem::AtСпутник1Launch(SolarSystem::Accuracy::kMajorBodiesOnly);
   system.Integrate(integrator,
                    solar_system_->trajectories().front()->last_time(),
                    plugin_->kΔt,  // Δt
