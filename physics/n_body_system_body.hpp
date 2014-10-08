@@ -34,18 +34,19 @@ namespace {
 //
 // Where |r| is the norm of r and r.j is the inner product.
 //
-R3Element<Acceleration>
-    Order2ZonalAcceleration(Body const& body,
-                            R3Element<Length> const& r,
+template<typename InertialFrame>
+Vector<Acceleration>
+    Order2ZonalAcceleration(Body<InertialFrame> const& body,
+                            Vector<Length> const& r,
                             Exponentiation<Length, -2> const one_over_r_squared,
                             Exponentiation<Length, -3> const one_over_r_cubed) {
-  R3Element<double> const& axis = body.axis();
+  Vector<double> const& axis = body.axis();
   Length const r_axis_projection = Dot(axis, r);
   auto const j2_over_r_fifth =
       body.j2() * one_over_r_cubed * one_over_r_squared;
-  R3Element<Acceleration> const& axis_acceleration =
+  Vector<Acceleration> const& axis_acceleration =
       (-3 * j2_over_r_fifth * r_axis_projection) * axis;
-  R3Element<Acceleration> const& radial_acceleration =
+  Vector<Acceleration> const& radial_acceleration =
       (j2_over_r_fifth *
            (-1.5 +
             7.5 * r_axis_projection *
@@ -75,7 +76,7 @@ void NBodySystem<InertialFrame>::Integrate(
 
   // These objects are for checking the consistency of the parameters.
   std::set<Instant> times_in_trajectories;
-  std::set<Body const*> bodies_in_trajectories;
+  std::set<Body<InertialFrame> const*> bodies_in_trajectories;
 
   // Prepare the initial state of the integrator.  For efficiently computing the
   // accelerations, we need to separate the trajectories of massive bodies from
@@ -92,7 +93,7 @@ void NBodySystem<InertialFrame>::Integrate(
     for (auto const& trajectory : trajectories) {
       // See if this trajectory should be processed in this iteration and
       // update the appropriate vector.
-      Body const* const body = &trajectory->body();
+      Body<InertialFrame> const* const body = &trajectory->body();
       if (body->is_massless() != is_massless) {
         continue;
       }
@@ -191,12 +192,12 @@ void NBodySystem<InertialFrame>::ComputeGravitationalAccelerations(
   for (std::size_t b1 = 0, three_b1 = 0;
        b1 < number_of_massive_trajectories;
        ++b1, three_b1 += 3) {
-    Body const& body1 = massive_trajectories[b1]->body();
+    Body<InertialFrame> const& body1 = massive_trajectories[b1]->body();
     GravitationalParameter const& body1_gravitational_parameter =
         body1.gravitational_parameter();
     bool const body1_is_oblate = body1.is_oblate();
     for (std::size_t b2 = b1 + 1; b2 < massive_trajectories.size(); ++b2) {
-      Body const& body2 = massive_trajectories[b2]->body();
+      Body<InertialFrame> const& body2 = massive_trajectories[b2]->body();
       GravitationalParameter const& body2_gravitational_parameter =
           body2.gravitational_parameter();
       bool const body2_is_oblate = body2.is_oblate();
@@ -232,21 +233,21 @@ void NBodySystem<InertialFrame>::ComputeGravitationalAccelerations(
 
       Exponentiation<Length, -2> const one_over_r_squared = 1 / r_squared;
       if (body1_is_oblate) {
-        R3Element<Acceleration> const order_2_zonal_acceleration1 =
-            Order2ZonalAcceleration(body1,
-                                    {Δq0, Δq1, Δq2},
-                                    one_over_r_squared,
-                                    one_over_r_cubed);
+        Vector<Acceleration> const order_2_zonal_acceleration1 =
+            Order2ZonalAcceleration<InertialFrame>(body1,
+                                                   {Δq0, Δq1, Δq2},
+                                                   one_over_r_squared,
+                                                   one_over_r_cubed);
         (*result)[three_b2] += order_2_zonal_acceleration1.x;
         (*result)[three_b2 + 1] += order_2_zonal_acceleration1.y;
         (*result)[three_b2 + 2] += order_2_zonal_acceleration1.z;
       }
       if (body2_is_oblate) {
-        R3Element<Acceleration> const order_2_zonal_acceleration2 =
-            Order2ZonalAcceleration(body2,
-                                    {Δq0, Δq1, Δq2},
-                                    one_over_r_squared,
-                                    one_over_r_cubed);
+        Vector<Acceleration> const order_2_zonal_acceleration2 =
+            Order2ZonalAcceleration<InertialFrame>(body2,
+                                                   {Δq0, Δq1, Δq2},
+                                                   one_over_r_squared,
+                                                   one_over_r_cubed);
         (*result)[three_b1] += order_2_zonal_acceleration2.x;
         (*result)[three_b1 + 1] += order_2_zonal_acceleration2.y;
         (*result)[three_b1 + 2] += order_2_zonal_acceleration2.z;
@@ -275,11 +276,11 @@ void NBodySystem<InertialFrame>::ComputeGravitationalAccelerations(
         continue;
       }
       Exponentiation<Length, -2> const one_over_r_squared = 1 / r_squared;
-      R3Element<Acceleration> const order_2_zonal_acceleration1 =
-          Order2ZonalAcceleration(body1,
-                                  {Δq0, Δq1, Δq2},
-                                  one_over_r_squared,
-                                  one_over_r_cubed);
+      Vector<Acceleration> const order_2_zonal_acceleration1 =
+          Order2ZonalAcceleration<InertialFrame>(body1,
+                                                 {Δq0, Δq1, Δq2},
+                                                 one_over_r_squared,
+                                                 one_over_r_cubed);
       (*result)[three_b2] += order_2_zonal_acceleration1.x;
       (*result)[three_b2 + 1] += order_2_zonal_acceleration1.y;
       (*result)[three_b2 + 2] += order_2_zonal_acceleration1.z;
