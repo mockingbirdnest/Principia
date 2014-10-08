@@ -168,6 +168,8 @@ TEST_F(PluginTest, VesselInsertionAtInitialization) {
 // already broke when merging CL #188).
 // TODO(egg): this test should be rewritten using gmock to mock the integrator.
 // This will make it much faster and far less likely to break.
+// TODO(egg): release-only for now, this is ridiculously slow on debug.
+#ifndef _DEBUG
 TEST_F(PluginTest, AdvanceTime) {
   InsertAllSolarSystemBodies();
   plugin_->EndInitialization();
@@ -245,6 +247,7 @@ TEST_F(PluginTest, AdvanceTime) {
     }
   }
 }
+#endif
 
 }  // namespace ksp_plugin
 }  // namespace principia
