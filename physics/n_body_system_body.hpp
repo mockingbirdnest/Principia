@@ -11,6 +11,7 @@
 #include "integrators/symplectic_partitioned_runge_kutta_integrator.hpp"
 #include "quantities/quantities.hpp"
 
+using principia::geometry::Dot;
 using principia::geometry::Instant;
 using principia::geometry::R3Element;
 using principia::integrators::SPRKIntegrator;
@@ -23,6 +24,36 @@ using principia::quantities::Speed;
 
 namespace principia {
 namespace physics {
+
+namespace {
+
+// If j is a unit vector along the axis of rotation, and r is the separation
+// between the bodies, the acceleration computed here is:
+//
+//   -(J2 / |r|^5) (3 j (r.j) + r (3 - 15 (r.j)^2 / |r|^2) / 2)
+//
+// Where |r| is the norm of r and r.j is the inner product.
+//
+R3Element<Acceleration>
+    Order2ZonalAcceleration(Body const& body,
+                            R3Element<Length> const& r,
+                            Exponentiation<Length, -2> const one_over_r_squared,
+                            Exponentiation<Length, -3> const one_over_r_cubed) {
+  R3Element<double> const& axis = body.axis();
+  Length const r_axis_projection = Dot(axis, r);
+  auto const j2_over_r_fifth =
+      body.j2() * one_over_r_cubed * one_over_r_squared;
+  R3Element<Acceleration> const& axis_acceleration =
+      (-3 * j2_over_r_fifth * r_axis_projection) * axis;
+  R3Element<Acceleration> const& radial_acceleration =
+      (j2_over_r_fifth *
+           (-1.5 +
+            7.5 * r_axis_projection *
+                  r_axis_projection * one_over_r_squared)) * r;
+  return axis_acceleration + radial_acceleration;
+}
+
+}  // namespace
 
 template<typename InertialFrame>
 void NBodySystem<InertialFrame>::Integrate(
@@ -154,38 +185,72 @@ void NBodySystem<InertialFrame>::ComputeGravitationalAccelerations(
   size_t const number_of_massive_trajectories = massive_trajectories.size();
   size_t const number_of_massless_trajectories = massless_trajectories.size();
 
-  // Declaring variables for values like 3 * b1 + 1, 3 * b2 + 1, etc. in the
-  // code below brings no performance advantage as it seems that the compiler is
-  // smart enough to figure common subexpressions.
+  // NOTE(phl): Declaring variables for values like 3 * b1 + 1, 3 * b2 + 1, etc.
+  // in the code below brings no performance advantage as it seems that the
+  // compiler is smart enough to figure common subexpressions.
   for (std::size_t b1 = 0, three_b1 = 0;
        b1 < number_of_massive_trajectories;
        ++b1, three_b1 += 3) {
+    Body const& body1 = massive_trajectories[b1]->body();
     GravitationalParameter const& body1_gravitational_parameter =
-        massive_trajectories[b1]->body().gravitational_parameter();
+        body1.gravitational_parameter();
+    bool const body1_is_oblate = body1.is_oblate();
     for (std::size_t b2 = b1 + 1; b2 < massive_trajectories.size(); ++b2) {
+      Body const& body2 = massive_trajectories[b2]->body();
+      GravitationalParameter const& body2_gravitational_parameter =
+          body2.gravitational_parameter();
+      bool const body2_is_oblate = body2.is_oblate();
       std::size_t const three_b2 = 3 * b2;
       Length const Δq0 = q[three_b1] - q[three_b2];
       Length const Δq1 = q[three_b1 + 1] - q[three_b2 + 1];
       Length const Δq2 = q[three_b1 + 2] - q[three_b2 + 2];
 
-      Exponentiation<Length, 2> const squared_distance =
+      Exponentiation<Length, 2> const r_squared =
           Δq0 * Δq0 + Δq1 * Δq1 + Δq2 * Δq2;
-      Exponentiation<Length, -3> const multiplier =
-          Sqrt(squared_distance) / (squared_distance * squared_distance);
+      // NOTE(phl): Don't try to compute one_over_r_squared here, it makes the
+      // non-oblate path slower.
+      Exponentiation<Length, -3> const one_over_r_cubed =
+          Sqrt(r_squared) / (r_squared * r_squared);
 
-      auto const μ2OverRSquared =
-          massive_trajectories[b2]->body().gravitational_parameter() *
-          multiplier;
-      (*result)[three_b1] -= Δq0 * μ2OverRSquared;
-      (*result)[three_b1 + 1] -= Δq1 * μ2OverRSquared;
-      (*result)[three_b1 + 2] -= Δq2 * μ2OverRSquared;
+      auto const μ2_over_r_cubed =
+          body2_gravitational_parameter * one_over_r_cubed;
+      (*result)[three_b1] -= Δq0 * μ2_over_r_cubed;
+      (*result)[three_b1 + 1] -= Δq1 * μ2_over_r_cubed;
+      (*result)[three_b1 + 2] -= Δq2 * μ2_over_r_cubed;
       // Lex. III. Actioni contrariam semper & æqualem esse reactionem:
       // sive corporum duorum actiones in se mutuo semper esse æquales &
       // in partes contrarias dirigi.
-      auto const μ1OverRSquared = body1_gravitational_parameter * multiplier;
-      (*result)[three_b2] += Δq0 * μ1OverRSquared;
-      (*result)[three_b2 + 1] += Δq1 * μ1OverRSquared;
-      (*result)[three_b2 + 2] += Δq2 * μ1OverRSquared;
+      auto const μ1_over_r_cubed =
+          body1_gravitational_parameter * one_over_r_cubed;
+      (*result)[three_b2] += Δq0 * μ1_over_r_cubed;
+      (*result)[three_b2 + 1] += Δq1 * μ1_over_r_cubed;
+      (*result)[three_b2 + 2] += Δq2 * μ1_over_r_cubed;
+
+      if (!body1_is_oblate && !body2_is_oblate) {
+        continue;
+      }
+
+      Exponentiation<Length, -2> const one_over_r_squared = 1 / r_squared;
+      if (body1_is_oblate) {
+        R3Element<Acceleration> const order_2_zonal_acceleration1 =
+            Order2ZonalAcceleration(body1,
+                                    {Δq0, Δq1, Δq2},
+                                    one_over_r_squared,
+                                    one_over_r_cubed);
+        (*result)[three_b2] += order_2_zonal_acceleration1.x;
+        (*result)[three_b2 + 1] += order_2_zonal_acceleration1.y;
+        (*result)[three_b2 + 2] += order_2_zonal_acceleration1.z;
+      }
+      if (body2_is_oblate) {
+        R3Element<Acceleration> const order_2_zonal_acceleration2 =
+            Order2ZonalAcceleration(body2,
+                                    {Δq0, Δq1, Δq2},
+                                    one_over_r_squared,
+                                    one_over_r_cubed);
+        (*result)[three_b1] += order_2_zonal_acceleration2.x;
+        (*result)[three_b1 + 1] += order_2_zonal_acceleration2.y;
+        (*result)[three_b1 + 2] += order_2_zonal_acceleration2.z;
+      }
     }
     for (size_t b2 = number_of_massive_trajectories;
          b2 < number_of_massive_trajectories + number_of_massless_trajectories;
@@ -195,15 +260,29 @@ void NBodySystem<InertialFrame>::ComputeGravitationalAccelerations(
       Length const Δq1 = q[three_b1 + 1] - q[three_b2 + 1];
       Length const Δq2 = q[three_b1 + 2] - q[three_b2 + 2];
 
-      Exponentiation<Length, 2> const squared_distance =
+      Exponentiation<Length, 2> const r_squared =
           Δq0 * Δq0 + Δq1 * Δq1 + Δq2 * Δq2;
-      Exponentiation<Length, -3> const multiplier =
-          Sqrt(squared_distance) / (squared_distance * squared_distance);
+      Exponentiation<Length, -3> const one_over_r_cubed =
+          Sqrt(r_squared) / (r_squared * r_squared);
 
-      auto const μ1OverRSquared = body1_gravitational_parameter * multiplier;
-      (*result)[three_b2] += Δq0 * μ1OverRSquared;
-      (*result)[three_b2 + 1] += Δq1 * μ1OverRSquared;
-      (*result)[three_b2 + 2] += Δq2 * μ1OverRSquared;
+      auto const μ1_over_r_cubed =
+          body1_gravitational_parameter * one_over_r_cubed;
+      (*result)[three_b2] += Δq0 * μ1_over_r_cubed;
+      (*result)[three_b2 + 1] += Δq1 * μ1_over_r_cubed;
+      (*result)[three_b2 + 2] += Δq2 * μ1_over_r_cubed;
+
+      if (!body1_is_oblate) {
+        continue;
+      }
+      Exponentiation<Length, -2> const one_over_r_squared = 1 / r_squared;
+      R3Element<Acceleration> const order_2_zonal_acceleration1 =
+          Order2ZonalAcceleration(body1,
+                                  {Δq0, Δq1, Δq2},
+                                  one_over_r_squared,
+                                  one_over_r_cubed);
+      (*result)[three_b2] += order_2_zonal_acceleration1.x;
+      (*result)[three_b2 + 1] += order_2_zonal_acceleration1.y;
+      (*result)[three_b2 + 2] += order_2_zonal_acceleration1.z;
     }
   }
 

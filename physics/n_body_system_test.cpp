@@ -328,9 +328,11 @@ TEST_F(NBodySystemTest, EarthProbe) {
 
 TEST_F(NBodySystemTest, Sputnik1ToSputnik2) {
   std::unique_ptr<SolarSystem> const evolved_system =
-      SolarSystem::AtСпутник1Launch();
+      SolarSystem::AtСпутник1Launch(
+          SolarSystem::Accuracy::kAllBodiesAndOblateness);
   std::unique_ptr<SolarSystem> const at_спутник_2_launch =
-      SolarSystem::AtСпутник2Launch();
+      SolarSystem::AtСпутник2Launch(
+          SolarSystem::Accuracy::kAllBodiesAndOblateness);
   NBodySystem<ICRFJ2000Ecliptic> system;
   system.Integrate(
       integrator_,
@@ -339,7 +341,98 @@ TEST_F(NBodySystemTest, Sputnik1ToSputnik2) {
       0,  // sampling_period
       true,  // tmax_is_exact
       evolved_system->trajectories());  // trajectories
+
+  // Upper bounds, tight to the nearest order of magnitude.
+  static std::map<SolarSystem::Index, Angle> const expected_angle_error = {{}};
+  static std::map<SolarSystem::Index,
+                  double> const expected_parent_distance_error = {{}};
+  static std::map<SolarSystem::Index,
+                  double> const expected_parent_offset_error = {
+      {SolarSystem::kAriel, 1E-3},
+      {SolarSystem::kDione, 1E-3},
+      {SolarSystem::kIo, 1E-3},
+      {SolarSystem::kOberon, 1E-3},
+      {SolarSystem::kTethys, 1E-3},
+      {SolarSystem::kTitania, 1E-3},
+      {SolarSystem::kTriton, 1E-4},
+      {SolarSystem::kCharon, 1E-4},
+      {SolarSystem::kEuropa, 1E-4},
+      {SolarSystem::kRhea, 1E-4},
+      {SolarSystem::kTitan, 1E-4},
+      {SolarSystem::kUmbriel, 1E-4},
+      {SolarSystem::kEris, 1E-5},  // NOTE(egg): we may want Dysnomia.
+      {SolarSystem::kGanymede, 1E-5},
+      {SolarSystem::kIapetus, 1E-5},
+      {SolarSystem::kMoon, 1E-5},  // What is this?
+      {SolarSystem::kCallisto, 1E-6},
+      {SolarSystem::kMercury, 1E-6},  // NOTE(egg): General relativity.
+      {SolarSystem::kPluto, 1E-6},  // NOTE(egg): We are missing Hydra and Nyx.
+      {SolarSystem::kVenus, 1E-7},
+      {SolarSystem::kEarth, 1E-8},
+      {SolarSystem::kJupiter, 1E-8},
+      {SolarSystem::kNeptune, 1E-8},
+      {SolarSystem::kSaturn, 1E-8},
+      {SolarSystem::kUranus, 1E-8},
+      {SolarSystem::kMars, 1E-9}};
+  static std::map<SolarSystem::Index, double> const expected_position_error = {
+      {SolarSystem::kEris, 1E-5},  // NOTE(egg): we may want Dysnomia.
+      {SolarSystem::kCharon, 1E-6},
+      {SolarSystem::kMercury, 1E-6},  // NOTE(egg): General relativity.
+      {SolarSystem::kPluto, 1E-6},
+      {SolarSystem::kTethys, 1E-6},
+      {SolarSystem::kAriel, 1E-7},
+      {SolarSystem::kDione, 1E-7},
+      {SolarSystem::kEuropa, 1E-7},
+      {SolarSystem::kIo, 1E-7},
+      {SolarSystem::kMoon, 1E-7},
+      {SolarSystem::kOberon, 1E-7},
+      {SolarSystem::kRhea, 1E-7},
+      {SolarSystem::kTitan, 1E-7},
+      {SolarSystem::kTitania, 1E-7},
+      {SolarSystem::kVenus, 1E-7},
+      {SolarSystem::kCallisto, 1E-8},
+      {SolarSystem::kEarth, 1E-8},
+      {SolarSystem::kGanymede, 1E-8},
+      {SolarSystem::kIapetus, 1E-8},
+      {SolarSystem::kJupiter, 1E-8},
+      {SolarSystem::kNeptune, 1E-8},
+      {SolarSystem::kSaturn, 1E-8},
+      {SolarSystem::kSun, 1E-8},
+      {SolarSystem::kTriton, 1E-8},
+      {SolarSystem::kUmbriel, 1E-8},
+      {SolarSystem::kUranus, 1E-8},
+      {SolarSystem::kMars, 1E-9}};
+  static std::map<SolarSystem::Index, double> const expected_velocity_error = {
+      {SolarSystem::kAriel, 1E-3},
+      {SolarSystem::kCharon, 1E-3},
+      {SolarSystem::kDione, 1E-3},
+      {SolarSystem::kIo, 1E-3},
+      {SolarSystem::kPluto, 1E-3},
+      {SolarSystem::kTethys, 1E-3},
+      {SolarSystem::kEuropa, 1E-4},
+      {SolarSystem::kOberon, 1E-4},
+      {SolarSystem::kRhea, 1E-4},
+      {SolarSystem::kTitania, 1E-4},
+      {SolarSystem::kTriton, 1E-4},
+      {SolarSystem::kUmbriel, 1E-4},
+      {SolarSystem::kEris, 1E-5},  // NOTE(egg): we may want Dysnomia.
+      {SolarSystem::kGanymede, 1E-5},
+      {SolarSystem::kTitan, 1E-5},
+      {SolarSystem::kUranus, 1E-5},
+      {SolarSystem::kCallisto, 1E-6},
+      {SolarSystem::kIapetus, 1E-6},
+      {SolarSystem::kMercury, 1E-6},  // NOTE(egg): General relativity.
+      {SolarSystem::kMoon, 1E-6},
+      {SolarSystem::kSaturn, 1E-6},
+      {SolarSystem::kEarth, 1E-7},
+      {SolarSystem::kJupiter, 1E-7},
+      {SolarSystem::kNeptune, 1E-7},
+      {SolarSystem::kSun, 1E-7},
+      {SolarSystem::kVenus, 1E-7},
+      {SolarSystem::kMars, 1E-8}};
+
   for (std::size_t i = 0; i < evolved_system->trajectories().size(); ++i) {
+    SolarSystem::Index const index = static_cast<SolarSystem::Index>(i);
     double const position_error = RelativeError(
         at_спутник_2_launch->trajectories()[i]->last_position() -
             kSolarSystemBarycentre,
@@ -348,146 +441,13 @@ TEST_F(NBodySystemTest, Sputnik1ToSputnik2) {
     double const velocity_error = RelativeError(
         at_спутник_2_launch->trajectories()[i]->last_velocity(),
         evolved_system->trajectories()[i]->last_velocity());
-    // Upper bounds, tight to the nearest order of magnitude.
-    double expected_velocity_error = 0;
-    double expected_position_error = 0;
-    Angle expected_angle_error = 0 * Degree;
-    switch (i) {
-      case SolarSystem::kSun:
-        expected_position_error = 1E-8;
-        expected_velocity_error = 1E-7;
-        break;
-      case SolarSystem::kJupiter:
-        expected_position_error = 1E-8;
-        expected_velocity_error = 1E-5;
-        break;
-      case SolarSystem::kSaturn:
-        expected_position_error = 1E-8;
-        expected_velocity_error = 1E-7;
-        break;
-      case SolarSystem::kNeptune:
-        expected_position_error = 1E-8;
-        expected_velocity_error = 1E-6;
-        break;
-      case SolarSystem::kUranus:
-        expected_position_error = 1E-8;
-        expected_velocity_error = 1E-5;
-        break;
-      case SolarSystem::kEarth:
-        expected_position_error = 1E-8;
-        expected_velocity_error = 1E-7;
-        break;
-      case SolarSystem::kVenus:
-        expected_position_error = 1E-7;
-        expected_velocity_error = 1E-7;
-        break;
-      case SolarSystem::kMars:
-        expected_position_error = 1E-9;
-        expected_velocity_error = 1E-8;
-        break;
-      case SolarSystem::kMercury:
-        // NOTE(egg): We expect the error here to be higher than for the other
-        // planets.
-        expected_position_error = 1E-6;
-        expected_velocity_error = 1E-6;
-        break;
-      case SolarSystem::kGanymede:
-        // NOTE(egg): We have all Galilean moons, this probably comes from
-        // spherical harmonics.
-        expected_position_error = 1E-5;
-        expected_velocity_error = 1E-2;
-        expected_angle_error = 0.28 * Degree;
-        break;
-      case SolarSystem::kTitan:
-        expected_position_error = 1E-5;
-        expected_velocity_error = 1E-3;
-        expected_angle_error = 0.089 * Degree;
-        break;
-      case SolarSystem::kCallisto:
-        // NOTE(egg): Same as Ganymede.
-        expected_position_error = 1E-5;
-        expected_velocity_error = 1E-3;
-        break;
-      case SolarSystem::kIo:
-        // NOTE(egg): Same as Ganymede.
-        expected_position_error = 1E-4;
-        expected_velocity_error = 1E-1;
-        expected_angle_error = 7.6 * Degree;
-        break;
-      case SolarSystem::kMoon:
-        expected_position_error = 1E-7;
-        expected_velocity_error = 1E-6;
-        break;
-      case SolarSystem::kEuropa:
-        // NOTE(egg): Same as Ganymede.
-        expected_position_error = 1E-4;
-        expected_velocity_error = 1E-1;
-        expected_angle_error = 1.4 * Degree;
-        break;
-      case SolarSystem::kTriton:
-        expected_position_error = 1E-7;
-        expected_velocity_error = 1E-3;
-        break;
-      case SolarSystem::kEris:
-        // NOTE(egg): we may want Dysnomia.
-        expected_position_error = 1E-5;
-        expected_velocity_error = 1E-5;
-        break;
-      case SolarSystem::kPluto:
-        expected_position_error = 1E-6;
-        expected_velocity_error = 1E-3;
-        break;
-      case SolarSystem::kTitania:
-        expected_position_error = 1E-6;
-        expected_velocity_error = 1E-3;
-        break;
-      case SolarSystem::kOberon:
-        expected_position_error = 1E-8;
-        expected_velocity_error = 1E-4;
-        break;
-      case SolarSystem::kRhea:
-        expected_position_error = 1E-5;
-        expected_velocity_error = 1E-1;
-        expected_angle_error = 1.5 * Degree;
-        break;
-      case SolarSystem::kIapetus:
-        expected_position_error = 1E-7;
-        expected_velocity_error = 1E-5;
-        break;
-      case SolarSystem::kCharon:
-        expected_position_error = 1E-6;
-        expected_velocity_error = 1E-3;
-        break;
-      case SolarSystem::kAriel:
-        expected_position_error = 1E-6;
-        expected_velocity_error = 1E-2;
-        expected_angle_error = 0.74 * Degree;
-        break;
-      case SolarSystem::kUmbriel:
-        expected_position_error = 1E-6;
-        expected_velocity_error = 1E-2;
-        expected_angle_error = 0.24 * Degree;
-        break;
-      case SolarSystem::kDione:
-        expected_position_error = 1E-4;
-        expected_velocity_error = 1E-0;
-        expected_angle_error = 4.8 * Degree;
-        break;
-      case SolarSystem::kTethys:
-        expected_position_error = 1E-4;
-        expected_velocity_error = 1E-0;
-        expected_angle_error = 11.4 * Degree;
-        break;
-      default:
-        LOG(FATAL) << "No such body";
-    }
-    EXPECT_THAT(position_error, Lt(expected_position_error))
+    EXPECT_THAT(position_error, Lt(expected_position_error.at(index)))
         << SolarSystem::name(i);
-    EXPECT_THAT(position_error, Gt(expected_position_error / 10.0))
+    EXPECT_THAT(position_error, Gt(expected_position_error.at(index) / 10.0))
         << SolarSystem::name(i);
-    EXPECT_THAT(velocity_error, Lt(expected_velocity_error))
+    EXPECT_THAT(velocity_error, Lt(expected_velocity_error.at(index)))
         << SolarSystem::name(i);
-    EXPECT_THAT(velocity_error, Gt(expected_velocity_error / 10.0))
+    EXPECT_THAT(velocity_error, Gt(expected_velocity_error.at(index) / 10.0))
         << SolarSystem::name(i);
     if (i != SolarSystem::kSun) {
       // Look at the error in the position relative to the parent.
@@ -499,61 +459,38 @@ TEST_F(NBodySystemTest, Sputnik1ToSputnik2) {
           evolved_system->trajectories()[i]->last_position() -
               evolved_system->trajectories()[SolarSystem::parent(i)]->
                   last_position();
-      double const vector_error =  RelativeError(expected, actual);
-      if (i == SolarSystem::kIo ||
-          i == SolarSystem::kEuropa ||
-          i == SolarSystem::kGanymede ||
-          i == SolarSystem::kTitan ||
-          i == SolarSystem::kRhea ||
-          i == SolarSystem::kAriel ||
-          i == SolarSystem::kUmbriel ||
-          i == SolarSystem::kDione ||
-          i == SolarSystem::kTethys) {
-        double const length_error = RelativeError(expected.Norm(),
-                                                  actual.Norm());
+      if (expected_angle_error.find(index) != expected_angle_error.end()) {
         Area const product_of_norms = expected.Norm() * actual.Norm();
         Angle const angle = ArcTan(
             Wedge(expected, actual).Norm() / product_of_norms,
             InnerProduct(expected, actual) / product_of_norms);
-        // We are missing some sort of precession here, probably due to
-        // quadrupole moment.
-        LOG(ERROR) << SolarSystem::name(SolarSystem::parent(i));
-        LOG(ERROR) << angle * Pow<4>(expected.Norm());
         EXPECT_THAT(angle / Degree,
-                    Gt(expected_angle_error / Degree * 0.9))
+                    Gt(expected_angle_error.at(index) / Degree * 0.9))
             << SolarSystem::name(i);
         EXPECT_THAT(angle / Degree,
-                    Lt(expected_angle_error / Degree * 1.1))
+                    Lt(expected_angle_error.at(index) / Degree * 1.1))
             << SolarSystem::name(i);
-        EXPECT_THAT(length_error, Lt(3E-3)) << SolarSystem::name(i);
-        EXPECT_THAT(length_error, Gt(1E-6)) << SolarSystem::name(i);
-      } else if (SolarSystem::parent(i) != SolarSystem::kSun &&
-                 SolarSystem::parent(i) != SolarSystem::kEarth) {
-        // Less extreme precession, probably the same cause.
-        EXPECT_THAT(vector_error, Lt(1E-3)) << SolarSystem::name(i);
-        EXPECT_THAT(vector_error, Gt(1E-5)) << SolarSystem::name(i);
-      } else if (SolarSystem::parent(i) == SolarSystem::kPluto) {
-        // We are missing Hydra and Nyx.
-        EXPECT_THAT(vector_error, Lt(1E-4)) << SolarSystem::name(i);
-        EXPECT_THAT(vector_error, Gt(1E-5)) << SolarSystem::name(i);
-      } else if (i == SolarSystem::kMoon) {
-        // What is this?
-        EXPECT_THAT(vector_error, Lt(1E-5)) << SolarSystem::name(i);
-        EXPECT_THAT(vector_error, Gt(1E-6)) << SolarSystem::name(i);
-      } else if (i == SolarSystem::kEris) {
-        // We are missing Dysnomia.
-        EXPECT_THAT(vector_error, Lt(1E-5)) << SolarSystem::name(i);
-        EXPECT_THAT(vector_error, Gt(1E-6)) << SolarSystem::name(i);
-      } else if (i == SolarSystem::kPluto) {
-        // We are missing Hydra and Nyx.
-        EXPECT_THAT(vector_error, Lt(1E-6)) << SolarSystem::name(i);
-        EXPECT_THAT(vector_error, Gt(1E-7)) << SolarSystem::name(i);
-      } else if (i == SolarSystem::kMercury) {
-        // We are missing GR...
-        EXPECT_THAT(vector_error, Lt(1E-6)) << SolarSystem::name(i);
-        EXPECT_THAT(vector_error, Gt(1E-7)) << SolarSystem::name(i);
-      } else {
-        EXPECT_THAT(vector_error, Lt(1E-7)) << SolarSystem::name(i);
+      }
+      if (expected_parent_distance_error.find(index) !=
+          expected_parent_distance_error.end()) {
+        double const parent_distance_error = RelativeError(expected.Norm(),
+                                                  actual.Norm());
+        EXPECT_THAT(parent_distance_error,
+                    Lt(expected_parent_distance_error.at(index)))
+            << SolarSystem::name(i);
+        EXPECT_THAT(parent_distance_error,
+                    Gt(expected_parent_distance_error.at(index) / 10.0))
+            << SolarSystem::name(i);
+      }
+      if (expected_parent_offset_error.find(index) !=
+          expected_parent_offset_error.end()) {
+        double const parent_offset_error =  RelativeError(expected, actual);
+        EXPECT_THAT(parent_offset_error,
+                    Lt(expected_parent_offset_error.at(index)))
+            << SolarSystem::name(i);
+        EXPECT_THAT(parent_offset_error,
+                    Gt(expected_parent_offset_error.at(index) / 10.0))
+            << SolarSystem::name(i);
       }
     }
   }

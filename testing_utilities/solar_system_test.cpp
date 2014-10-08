@@ -96,7 +96,8 @@ class SolarSystemTest : public testing::Test {
 // not do a unicode-friendly stringification.  We settle for the English
 // romanization.
 TEST_F(SolarSystemTest, HierarchyAtSputnik1Launch) {
-  solar_system_ = SolarSystem::AtСпутник1Launch();
+  solar_system_ = SolarSystem::AtСпутник1Launch(
+      SolarSystem::Accuracy::kMinorAndMajorBodies);
   physics::NBodySystem<ICRFJ2000Ecliptic>::Trajectories trajectories =
       solar_system_->trajectories();
   auto const& sun      = *trajectories[SolarSystem::kSun];
@@ -140,18 +141,18 @@ TEST_F(SolarSystemTest, HierarchyAtSputnik1Launch) {
   TestStronglyBoundOrbit(2.545944E-01, 1E-6, pluto, sun, nullptr, "pluto");
   TestStronglyBoundOrbit(4.425162E-01, 1E-6, eris, sun, nullptr, "eris");
   // Using center: Jupiter (body center) [500@599].
-  TestStronglyBoundOrbit(2.825065E-04, 1E-3, ganymede,
+  TestStronglyBoundOrbit(2.825065E-04, 1E-4, ganymede,
                          jupiter, &sun, "ganymede");
-  TestStronglyBoundOrbit(7.625971E-03, 1E-4, callisto,
+  TestStronglyBoundOrbit(7.625971E-03, 1E-6, callisto,
                          jupiter, &sun, "callisto");
-  TestStronglyBoundOrbit(4.333647E-03, 1E-4, io, jupiter, &sun, "io");
-  TestStronglyBoundOrbit(9.077806E-03, 1E-4, europa, jupiter, &sun, "europa");
+  TestStronglyBoundOrbit(4.333647E-03, 1E-5, io, jupiter, &sun, "io");
+  TestStronglyBoundOrbit(9.077806E-03, 1E-6, europa, jupiter, &sun, "europa");
   // Using center: Saturn (body center) [500@699].
   TestStronglyBoundOrbit(2.887478E-02, 1E-6, titan, saturn, &sun, "titan");
   TestStronglyBoundOrbit(8.926369E-04, 1E-5, rhea, saturn, &sun, "rhea");
   TestStronglyBoundOrbit(2.799919E-02, 1E-6, iapetus, saturn, &sun, "iapetus");
-  TestStronglyBoundOrbit(2.211120E-03, 1E-6, dione, saturn, &sun, "dione");
-  TestStronglyBoundOrbit(9.814475E-04, 1E-5, tethys, saturn, &sun, "tethys");
+  TestStronglyBoundOrbit(2.211120E-03, 1E-5, dione, saturn, &sun, "dione");
+  TestStronglyBoundOrbit(9.814475E-04, 1E-4, tethys, saturn, &sun, "tethys");
   // Using center: Geocentric [500].
   TestStronglyBoundOrbit(5.811592E-02, 1E-6, moon, earth, &sun, "moon");
   // Using center: Neptune (body center) [500@899]
@@ -166,7 +167,8 @@ TEST_F(SolarSystemTest, HierarchyAtSputnik1Launch) {
 }
 
 TEST_F(SolarSystemTest, HierarchyAtSputnik2Launch) {
-  solar_system_ = SolarSystem::AtСпутник2Launch();
+  solar_system_ = SolarSystem::AtСпутник2Launch(
+      SolarSystem::Accuracy::kMinorAndMajorBodies);
   physics::NBodySystem<ICRFJ2000Ecliptic>::Trajectories trajectories =
       solar_system_->trajectories();
   auto const& sun      = *trajectories[SolarSystem::kSun];
@@ -210,18 +212,18 @@ TEST_F(SolarSystemTest, HierarchyAtSputnik2Launch) {
   TestStronglyBoundOrbit(2.537103E-01, 1E-6, pluto, sun, nullptr, "pluto");
   TestStronglyBoundOrbit(4.424299E-01, 1E-6, eris, sun, nullptr, "eris");
   // Using center: Jupiter (body center) [500@599].
-  TestStronglyBoundOrbit(4.306439E-04, 1E-3, ganymede,
+  TestStronglyBoundOrbit(4.306439E-04, 1E-4, ganymede,
                          jupiter, &sun, "ganymede");
-  TestStronglyBoundOrbit(7.138518E-03, 1E-4, callisto,
+  TestStronglyBoundOrbit(7.138518E-03, 1E-5, callisto,
                          jupiter, &sun, "callisto");
-  TestStronglyBoundOrbit(4.460632E-03, 1E-4, io, jupiter, &sun, "io");
-  TestStronglyBoundOrbit(9.509972E-03, 1E-4, europa, jupiter, &sun, "europa");
+  TestStronglyBoundOrbit(4.460632E-03, 1E-5, io, jupiter, &sun, "io");
+  TestStronglyBoundOrbit(9.509972E-03, 1E-6, europa, jupiter, &sun, "europa");
   // Using center: Saturn (body center) [500@699].
   TestStronglyBoundOrbit(2.882510E-02, 1E-6, titan, saturn, &sun, "titan");
   TestStronglyBoundOrbit(1.228346E-03, 1E-5, rhea, saturn, &sun, "rhea");
   TestStronglyBoundOrbit(2.720904E-02, 1E-6, iapetus, saturn, &sun, "iapetus");
   TestStronglyBoundOrbit(2.693662E-03, 1E-5, dione, saturn, &sun, "dione");
-  TestStronglyBoundOrbit(1.088851E-03, 1E-5, tethys, saturn, &sun, "tethys");
+  TestStronglyBoundOrbit(1.088851E-03, 1E-4, tethys, saturn, &sun, "tethys");
   // Using center: Geocentric [500].
   TestStronglyBoundOrbit(5.804121E-02, 1E-6, moon, earth, &sun, "moon");
   // Using center: Neptune (body center) [500@899]
