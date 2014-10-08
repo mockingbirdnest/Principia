@@ -20,6 +20,7 @@ using principia::quantities::Speed;
 namespace principia {
 namespace physics {
 
+template<typename Frame>
 class Body;
 
 template<typename Frame>
@@ -27,7 +28,7 @@ class Trajectory {
  public:
   // No transfer of ownership.  |body| must live longer than the trajectory as
   // the trajectory holds a reference to it.
-  explicit Trajectory(Body const& body);
+  explicit Trajectory(Body<Frame> const& body);
   ~Trajectory() = default;
 
   // These functions return the series of positions/velocities/times for the
@@ -82,7 +83,7 @@ class Trajectory {
   Instant const* fork_time() const;
 
   // The body to which this trajectory pertains.
-  Body const& body() const;
+  Body<Frame> const& body() const;
 
   // This function represents the intrinsic acceleration of a body, irrespective
   // of any external field.  It can be due e.g., to an engine burn.
@@ -118,7 +119,7 @@ class Trajectory {
   using Timeline = std::map<Instant, DegreesOfFreedom<Frame>>;
 
   // A constructor for creating a child trajectory during forking.
-  Trajectory(Body const& body,
+  Trajectory(Body<Frame> const& body,
              Trajectory* const parent,
              typename Timeline::iterator const& fork);
 
@@ -126,7 +127,7 @@ class Trajectory {
   std::map<Instant, Value> ApplyToDegreesOfFreedom(
       std::function<Value(DegreesOfFreedom<Frame> const&)> compute_value) const;
 
-  Body const& body_;
+  Body<Frame> const& body_;
 
   Trajectory* const parent_;  // Null for a root trajectory.
 
