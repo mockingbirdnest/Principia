@@ -6,6 +6,7 @@
 #include "quantities/named_quantities.hpp"
 #include "quantities/quantities.hpp"
 
+using principia::geometry::R3Element;
 using principia::quantities::GravitationalParameter;
 using principia::quantities::Length;
 using principia::quantities::Mass;
@@ -24,14 +25,18 @@ class Body {
   // A body with oblateness.  The body must not be massless.
   Body(GravitationalParameter const& gravitational_parameter,
        double const j2,
-       Length const& radius);
+       Length const& radius,
+       R3Element<double> const& axis);
   Body(Mass const& mass,
        double const j2,
-       Length const& radius);
+       Length const& radius,
+       R3Element<double> const& axis);
   Body(GravitationalParameter const& gravitational_parameter,
-       Order2ZonalCoefficient const& j2);
+       Order2ZonalCoefficient const& j2,
+       R3Element<double> const& axis);
   Body(Mass const& mass,
-       Order2ZonalCoefficient const& j2);
+       Order2ZonalCoefficient const& j2,
+       R3Element<double> const& axis);
 
   ~Body() = default;
 
@@ -41,6 +46,9 @@ class Body {
 
   // Returns the j2 coefficient.  Returns 0 for a non-oblate body.
   Order2ZonalCoefficient const& j2() const;
+
+  // Returns the axis passed at construction.
+  R3Element<double> const& axis() const;
 
   // Returns true iff |gravitational_parameter| (or |mass|) returns 0.
   bool is_massless() const;
@@ -52,6 +60,7 @@ class Body {
   GravitationalParameter const gravitational_parameter_;
   Mass const mass_;
   Order2ZonalCoefficient const j2_;
+  R3Element<double> const axis_;
 };
 
 }  // namespace physics
