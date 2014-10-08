@@ -6,6 +6,7 @@
 
 #include "geometry/named_quantities.hpp"
 #include "geometry/point.hpp"
+#include "gtest/gtest.h"
 #include "ksp_plugin/monostable.hpp"
 #include "physics/body.hpp"
 #include "physics/n_body_system.hpp"
@@ -322,6 +323,9 @@ class Plugin {
   // The current in-game universal time.
   Instant current_time_;
   Celestial* sun_;  // Not owning, not null.
+
+  // We want to check |HistoryTime|.
+  FRIEND_TEST(PluginTest, AdvanceTime);
 };
 
 }  // namespace ksp_plugin

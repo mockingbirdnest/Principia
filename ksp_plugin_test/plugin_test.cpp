@@ -28,6 +28,7 @@ using principia::testing_utilities::DeathMessage;
 using principia::testing_utilities::ICRFJ2000Ecliptic;
 using principia::testing_utilities::SolarSystem;
 using testing::Eq;
+using testing::Ge;
 using testing::Gt;
 using testing::Lt;
 
@@ -167,13 +168,18 @@ TEST_F(PluginTest, AdvanceTime) {
   SPRKIntegrator<Length, Speed> integrator;
   integrator.Initialize(integrator.Order5Optimal());
   Instant const tmax = initial_time_ + 1000.0 * Second;
-  for (Instant t = initial_time_ + 0.02 * Second;
+  Time const δt = 0.02 * Second;
+  for (Instant t = initial_time_ + δt;
        t <= tmax;
-       t = t + 0.02 * Second) {
-    plugin_->AdvanceTime(t, 1 * Radian);
+       t = t + δt) {
+    Angle const angle =
+        t + δt <= tmax ? (t - initial_time_) / (2 * Second) * Radian
+                       : 1 * Radian;
+    plugin_->AdvanceTime(t, angle);
+    EXPECT_THAT(plugin_->HistoryTime() + plugin_->kΔt, Ge(t));
     system.Integrate(integrator,
                      t,
-                     10 * Second,  // Δt
+                     plugin_->kΔt,  // Δt
                      0,  // sampling_period
                      true,  // tmax_is_exact
                      solar_system_->trajectories());
@@ -182,7 +188,7 @@ TEST_F(PluginTest, AdvanceTime) {
       SolarSystem::AtСпутник1Launch();
   system.Integrate(integrator,
                    solar_system_->trajectories().front()->last_time(),
-                   10 * Second,  // Δt
+                   plugin_->kΔt,  // Δt
                    0,  // sampling_period
                    true,  // tmax_is_exact
                    symplectic_system->trajectories());
@@ -193,12 +199,11 @@ TEST_F(PluginTest, AdvanceTime) {
     Displacement<AliceSun> position;
     Velocity<AliceSun> velocity;
     for (int i = index; i != SolarSystem::kSun; i = SolarSystem::parent(i)) {
-      LOG(ERROR) << SolarSystem::name(i);
       position += plugin_->CelestialDisplacementFromParent(i);
       velocity += plugin_->CelestialParentRelativeVelocity(i);
     }
     // Check that the results match a trajectory integrated with a 10 second
-    // timestep better than one stepped at every call to advance time.
+    // timestep better than one stepped at every call to |AdvanceTime|.
     Displacement<ICRFJ2000Ecliptic> const reference_position =
           solar_system_->trajectories()[index]->last_position() -
           solar_system_->trajectories()[SolarSystem::kSun]->last_position();
