@@ -161,8 +161,14 @@ TEST_F(PluginTest, VesselInsertionAtInitialization) {
               AlmostEquals(velocity));
 }
 
+// Checks that the plugin correctly uses its 10-second-step history even when
+// advanced with smaller timesteps.  At the moment this is done by comparing
+// the results with systems integrated with a small step and a 10-second step.
+// This is too much of an integration test, and it will break all the time (it
+// already broke when merging CL #188).
+// TODO(egg): this test should be rewritten using gmock to mock the integrator.
+// This will make it much faster and far less likely to break.
 TEST_F(PluginTest, AdvanceTime) {
-  GUID const guid = "Test Satellite";
   InsertAllSolarSystemBodies();
   plugin_->EndInitialization();
   NBodySystem<ICRFJ2000Ecliptic> system;
@@ -170,11 +176,9 @@ TEST_F(PluginTest, AdvanceTime) {
   integrator.Initialize(integrator.Order5Optimal());
   Instant const tmax = initial_time_ + 1000.0 * Second;
   Time const δt = 0.02 * Second;
-  for (Instant t = initial_time_ + δt;
-       t <= tmax;
-       t = t + δt) {
+  for (Instant t = initial_time_ + δt; t <= tmax; t = t + δt) {
     Angle const angle =
-        t + δt <= tmax ? (t - initial_time_) / (2 * Second) * Radian
+        t + δt <= tmax ? ((t - initial_time_) / (2 * Second)) * Radian
                        : 1 * Radian;
     plugin_->AdvanceTime(t, angle);
 #pragma warning(push)
@@ -206,8 +210,9 @@ TEST_F(PluginTest, AdvanceTime) {
       position += plugin_->CelestialDisplacementFromParent(i);
       velocity += plugin_->CelestialParentRelativeVelocity(i);
     }
-    // Check that the results match a trajectory integrated with a 10 second
-    // timestep better than one stepped at every call to |AdvanceTime|.
+    // Check that the results of the integration by |AdvanceTime| match a
+    // trajectory integrated with a timestep of |kΔt| better than one stepped at
+    // every call to |AdvanceTime|.
     Displacement<ICRFJ2000Ecliptic> const reference_position =
           solar_system_->trajectories()[index]->last_position() -
           solar_system_->trajectories()[SolarSystem::kSun]->last_position();
