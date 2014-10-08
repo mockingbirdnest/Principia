@@ -73,8 +73,15 @@ void BM_SolarSystemMinorAndMajorBodies(
                        &state);
 }
 
+void BM_SolarSystemAllBodiesAndOblateness(
+    benchmark::State& state) {  // NOLINT(runtime/references)
+  SolarSystemBenchmark(SolarSystem::Accuracy::kAllBodiesAndOblateness,
+                       &state);
+}
+
 BENCHMARK(BM_SolarSystemMajorBodiesOnly);
 BENCHMARK(BM_SolarSystemMinorAndMajorBodies);
+BENCHMARK(BM_SolarSystemAllBodiesAndOblateness);
 
 }  // namespace benchmarks
 }  // namespace principia
