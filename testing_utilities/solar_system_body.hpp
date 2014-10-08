@@ -939,7 +939,8 @@ SolarSystem::SolarSystem(Accuracy const accuracy) {
 
   // Star.
   std::unique_ptr<Body<ICRFJ2000Ecliptic>> sun(
-      new Body<ICRFJ2000Ecliptic>(1.3271244004193938E+11 * Pow<3>(Kilo(Metre)) / Pow<2>(Second)));
+      new Body<ICRFJ2000Ecliptic>(
+          1.3271244004193938E+11 * Pow<3>(Kilo(Metre)) / Pow<2>(Second)));
 
   // Planets.
 
