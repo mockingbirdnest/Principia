@@ -30,7 +30,7 @@ namespace {
 // If j is a unit vector along the axis of rotation, and r is the separation
 // between the bodies, the acceleration computed here is:
 //
-//   -(3 J2 / 2 |r|^5) (2 j (r.j) + r (1 - 5 (r.j)^2 / |r|^2)
+//   -(J2 / |r|^5) (3 j (r.j) + r (3 - 15 (r.j)^2 / |r|^2) / 2)
 //
 // Where |r| is the norm of r and r.j is the inner product.
 //
@@ -185,9 +185,9 @@ void NBodySystem<InertialFrame>::ComputeGravitationalAccelerations(
   size_t const number_of_massive_trajectories = massive_trajectories.size();
   size_t const number_of_massless_trajectories = massless_trajectories.size();
 
-  // Declaring variables for values like 3 * b1 + 1, 3 * b2 + 1, etc. in the
-  // code below brings no performance advantage as it seems that the compiler is
-  // smart enough to figure common subexpressions.
+  // NOTE(phl): Declaring variables for values like 3 * b1 + 1, 3 * b2 + 1, etc.
+  // in the code below brings no performance advantage as it seems that the
+  // compiler is smart enough to figure common subexpressions.
   for (std::size_t b1 = 0, three_b1 = 0;
        b1 < number_of_massive_trajectories;
        ++b1, three_b1 += 3) {
@@ -207,8 +207,8 @@ void NBodySystem<InertialFrame>::ComputeGravitationalAccelerations(
 
       Exponentiation<Length, 2> const r_squared =
           Δq0 * Δq0 + Δq1 * Δq1 + Δq2 * Δq2;
-      // Don't try to compute one_over_r_squared here, it makes the non-oblate
-      // path slower.
+      // NOTE(phl): Don't try to compute one_over_r_squared here, it makes the
+      // non-oblate path slower.
       Exponentiation<Length, -3> const one_over_r_cubed =
           Sqrt(r_squared) / (r_squared * r_squared);
 
