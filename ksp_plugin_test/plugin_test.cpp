@@ -230,9 +230,13 @@ TEST_F(PluginTest, AdvanceTime) {
         RelativeError(looking_glass_(reference_velocity), velocity);
     EXPECT_THAT(low_position_error, Lt(1E-12));
     EXPECT_THAT(low_velocity_error, Lt(1E-12));
-    if (index != SolarSystem::kRhea) {  // Rhea is probably just bad luck.
-      EXPECT_THAT(high_position_error, Gt(1.1 * low_position_error));
-      EXPECT_THAT(high_velocity_error, Gt(1.1 * low_velocity_error));
+    if (index != SolarSystem::kEarth &&
+        index != SolarSystem::kVenus &&
+        index != SolarSystem::kMars) {
+      EXPECT_THAT(high_position_error, Gt(1.2 * low_position_error))
+          << SolarSystem::name(index);
+      EXPECT_THAT(high_velocity_error, Gt(1.2 * low_velocity_error))
+          << SolarSystem::name(index);
     }
   }
 }
