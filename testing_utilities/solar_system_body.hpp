@@ -55,9 +55,9 @@ std::unique_ptr<Body<ICRFJ2000Ecliptic>> NewBody(
       return std::make_unique<Body<ICRFJ2000Ecliptic>>(gravitational_parameter);
     case SolarSystem::Accuracy::kAllBodiesAndOblateness:
       return std::make_unique<Body<ICRFJ2000Ecliptic>>(gravitational_parameter,
-                                    j2,
-                                    radius,
-                                    axis.coordinates());
+                                                       j2,
+                                                       radius,
+                                                       axis);
     default:
       return nullptr;
   }
