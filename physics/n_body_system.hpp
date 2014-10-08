@@ -39,14 +39,19 @@ class NBodySystem {
                  Trajectories const& trajectories);
 
  private:
+  using ReadonlyTrajectories = std::vector<Trajectory<InertialFrame> const*>;
+
+  // No transfer of ownership.
   static void ComputeGravitationalAccelerations(
-      std::vector<Trajectory<InertialFrame> const*> const& massive_trajectories,
-      std::vector<Trajectory<InertialFrame> const*> const&
-          massless_trajectories,
+      ReadonlyTrajectories const& massive_oblate_trajectories,
+      ReadonlyTrajectories const& massive_spherical_trajectories,
+      ReadonlyTrajectories const& massless_trajectories,
       Instant const& reference_time,
       Time const& t,
       std::vector<Length> const& q,
       std::vector<Acceleration>* result);
+
+  // No transfer of ownership.
   static void ComputeGravitationalVelocities(std::vector<Speed> const& p,
                                              std::vector<Speed>* result);
 };
