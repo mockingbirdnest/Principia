@@ -193,6 +193,9 @@ inline void NBodySystem<InertialFrame>::ComputeOneBodyGravitationalAcceleration(
     size_t const b2_end,
     std::vector<Length> const& q,
     std::vector<Acceleration>* result) {
+  // NOTE(phl): Declaring variables for values like 3 * b1 + 1, 3 * b2 + 1, etc.
+  // in the code below brings no performance advantage as it seems that the
+  // compiler is smart enough to figure common subexpressions.
   GravitationalParameter const& body1_gravitational_parameter =
       body1.gravitational_parameter();
   std::size_t const three_b1 = 3 * b1;
@@ -275,10 +278,6 @@ void NBodySystem<InertialFrame>::ComputeGravitationalAccelerations(
   size_t const number_of_massive_spherical_trajectories =
       massive_spherical_trajectories.size();
   size_t const number_of_massless_trajectories = massless_trajectories.size();
-
-  // NOTE(phl): Declaring variables for values like 3 * b1 + 1, 3 * b2 + 1, etc.
-  // in the code below brings no performance advantage as it seems that the
-  // compiler is smart enough to figure common subexpressions.
 
   for (std::size_t b1 = 0; b1 < number_of_massive_oblate_trajectories; ++b1) {
     Body<InertialFrame> const& body1 = massive_oblate_trajectories[b1]->body();

@@ -1,30 +1,24 @@
 ﻿
-// .\Release\benchmarks.exe  --benchmark_repetitions=5 --benchmark_filter=Solar
+// .\Release\benchmarks.exe  --benchmark_repetitions=3 --benchmark_filter=Solar
 // Benchmarking on 1 X 3310 MHz CPU
-// 2014/10/08-21:52:53
+// 2014/10/09-22:16:45
 // Benchmark                                     Time(ns)    CPU(ns) Iterations
 // ----------------------------------------------------------------------------
-// BM_SolarSystemMajorBodiesOnly               22719357706 22604544900          1                                 1.0002759262678920e+00 ua  // NOLINT(whitespace/line_length)
-// BM_SolarSystemMajorBodiesOnly               22830249525 22776146000          1                                 1.0002759262678920e+00 ua  // NOLINT(whitespace/line_length)
-// BM_SolarSystemMajorBodiesOnly               22695240236 22620145000          1                                 1.0002759262678920e+00 ua  // NOLINT(whitespace/line_length)
-// BM_SolarSystemMajorBodiesOnly               22681241251 22620145000          1                                 1.0002759262678920e+00 ua  // NOLINT(whitespace/line_length)
-// BM_SolarSystemMajorBodiesOnly               22631234623 22526544400          1                                 1.0002759262678920e+00 ua  // NOLINT(whitespace/line_length)
-// BM_SolarSystemMajorBodiesOnly_mean          22711464668 22629505060          1                                 1.0002759262678920e+00 ua  // NOLINT(whitespace/line_length)
-// BM_SolarSystemMajorBodiesOnly_stddev           66008620    81120520          0                                 1.0002759262678920e+00 ua  // NOLINT(whitespace/line_length)
-// BM_SolarSystemMinorAndMajorBodies           47008883453 46878300500          1                                 1.0002759263137868e+00 ua  // NOLINT(whitespace/line_length)
-// BM_SolarSystemMinorAndMajorBodies           52003164268 51839132300          1                                 1.0002759263137868e+00 ua  // NOLINT(whitespace/line_length)
-// BM_SolarSystemMinorAndMajorBodies           51617127157 51449129800          1                                 1.0002759263137868e+00 ua  // NOLINT(whitespace/line_length)
-// BM_SolarSystemMinorAndMajorBodies           47164680220 47034301500          1                                 1.0002759263137868e+00 ua  // NOLINT(whitespace/line_length)
-// BM_SolarSystemMinorAndMajorBodies           46987666822 46956301000          1                                 1.0002759263137868e+00 ua  // NOLINT(whitespace/line_length)
-// BM_SolarSystemMinorAndMajorBodies_mean      48956304384 48831433020          1                                 1.0002759263137868e+00 ua  // NOLINT(whitespace/line_length)
-// BM_SolarSystemMinorAndMajorBodies_stddev     2334147907  2300396480          0                                 1.0002759263137868e+00 ua  // NOLINT(whitespace/line_length)
-// BM_SolarSystemAllBodiesAndOblateness        59040446020 58968378000          1                                 1.0002759263000629e+00 ua  // NOLINT(whitespace/line_length)
-// BM_SolarSystemAllBodiesAndOblateness        58897055841 58859177300          1                                 1.0002759263000629e+00 ua  // NOLINT(whitespace/line_length)
-// BM_SolarSystemAllBodiesAndOblateness        58945859648 58905977600          1                                 1.0002759263000629e+00 ua  // NOLINT(whitespace/line_length)
-// BM_SolarSystemAllBodiesAndOblateness        58946855522 58921577700          1                                 1.0002759263000629e+00 ua  // NOLINT(whitespace/line_length)
-// BM_SolarSystemAllBodiesAndOblateness        63729339338 63710808400          1                                 1.0002759263000629e+00 ua  // NOLINT(whitespace/line_length)
-// BM_SolarSystemAllBodiesAndOblateness_mean   59911911274 59873183800          1                                 1.0002759263000629e+00 ua  // NOLINT(whitespace/line_length)
-// BM_SolarSystemAllBodiesAndOblateness_stddev  1909278849  1919129349          0                                 1.0002759263000629e+00 ua  // NOLINT(whitespace/line_length)
+// BM_SolarSystemMajorBodiesOnly               22727676130 22401743600          1                                 1.0002759262678920e+00 ua  // NOLINT(whitespace/line_length)
+// BM_SolarSystemMajorBodiesOnly               23477306582 23228548900          1                                 1.0002759262678920e+00 ua  // NOLINT(whitespace/line_length)
+// BM_SolarSystemMajorBodiesOnly               22756247021 22682545400          1                                 1.0002759262678920e+00 ua  // NOLINT(whitespace/line_length)
+// BM_SolarSystemMajorBodiesOnly_mean          22987076578 22770945967          1                                 1.0002759262678920e+00 ua  // NOLINT(whitespace/line_length)
+// BM_SolarSystemMajorBodiesOnly_stddev          346841142   343280979          0                                 1.0002759262678920e+00 ua  // NOLINT(whitespace/line_length)
+// BM_SolarSystemMinorAndMajorBodies           46018670298 45770693400          1                                 1.0002759263137868e+00 ua  // NOLINT(whitespace/line_length)
+// BM_SolarSystemMinorAndMajorBodies           46508613325 46347897100          1                                 1.0002759263137868e+00 ua  // NOLINT(whitespace/line_length)
+// BM_SolarSystemMinorAndMajorBodies           44590424753 44444684900          1                                 1.0002759263137868e+00 ua  // NOLINT(whitespace/line_length)
+// BM_SolarSystemMinorAndMajorBodies_mean      45705902792 45521091800          1                                 1.0002759263137868e+00 ua  // NOLINT(whitespace/line_length)
+// BM_SolarSystemMinorAndMajorBodies_stddev      813727835   796776794          0                                 1.0002759263137868e+00 ua  // NOLINT(whitespace/line_length)
+// BM_SolarSystemAllBodiesAndOblateness        56108044602 55988758900          1                                 1.0002759263001231e+00 ua  // NOLINT(whitespace/line_length)
+// BM_SolarSystemAllBodiesAndOblateness        56511614538 56269560700          1                                 1.0002759263001231e+00 ua  // NOLINT(whitespace/line_length)
+// BM_SolarSystemAllBodiesAndOblateness        56057569719 55848358000          1                                 1.0002759263001231e+00 ua  // NOLINT(whitespace/line_length)
+// BM_SolarSystemAllBodiesAndOblateness_mean   56225742953 56035559200          1                                 1.0002759263001231e+00 ua  // NOLINT(whitespace/line_length)
+// BM_SolarSystemAllBodiesAndOblateness_stddev   203189322   175110688          0                                 1.0002759263001231e+00 ua  // NOLINT(whitespace/line_length)
 #include <memory>
 #include <vector>
 
