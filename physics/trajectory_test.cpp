@@ -120,7 +120,7 @@ TEST_F(TrajectoryDeathTest, ForkError) {
   EXPECT_DEATH({
     massive_trajectory_->Append(t1_, *d1_);
     massive_trajectory_->Append(t3_, *d3_);
-    Trajectory<World>* fork = massive_trajectory_->Fork(t2_);
+    massive_trajectory_->Fork(t2_);
   }, DeathMessage("nonexistent time"));
 }
 

@@ -29,7 +29,7 @@ Permutation<FromFrame, ToFrame>::Inverse() const {
   using PFT = Permutation<FromFrame, ToFrame>;
   using PTF = Permutation<ToFrame, FromFrame>;
   static std::map<PFT::CoordinatePermutation,
-                  PTF::CoordinatePermutation> const inverse = {
+                  typename PTF::CoordinatePermutation> const inverse = {
       {PFT::XYZ, PTF::XYZ},
       {PFT::YZX, PTF::ZXY},
       {PFT::ZXY, PTF::YZX},

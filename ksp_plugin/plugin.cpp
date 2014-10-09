@@ -161,8 +161,8 @@ Plugin::Plugin(Instant const& initial_time,
                Index const sun_index,
                GravitationalParameter const& sun_gravitational_parameter,
                Angle const& planetarium_rotation)
-    : current_time_(initial_time),
-      planetarium_rotation_(planetarium_rotation) {
+    : planetarium_rotation_(planetarium_rotation),
+      current_time_(initial_time) {
   auto inserted = celestials_.insert(
       {sun_index, std::make_unique<Celestial>(sun_gravitational_parameter)});
   sun_ = inserted.first->second.get();
