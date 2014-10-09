@@ -35,7 +35,7 @@ namespace {
 //
 // Where |r| is the norm of r and r.j is the inner product.
 //
-// TODO(phl): __forceinline is for MSVC.  Need a portable macro to do this.
+// TODO(phl): |__forceinline| is for MSVC.  Need a portable macro to do this.
 template<typename InertialFrame>
 __forceinline Vector<Acceleration, InertialFrame>
     Order2ZonalAcceleration(Body<InertialFrame> const& body,
@@ -188,8 +188,8 @@ template<bool body1_is_oblate,
          bool body2_is_massive>
 inline void NBodySystem<InertialFrame>::ComputeOneBodyGravitationalAcceleration(
     Body<InertialFrame> const& body1,
-    ReadonlyTrajectories const& body2_trajectories,
     size_t const b1,
+    ReadonlyTrajectories const& body2_trajectories,
     size_t const b2_begin,
     size_t const b2_end,
     std::vector<Length> const& q,
@@ -285,35 +285,32 @@ void NBodySystem<InertialFrame>::ComputeGravitationalAccelerations(
     ComputeOneBodyGravitationalAcceleration<true /*body1_is_oblate*/,
                                             true /*body2_is_oblate*/,
                                             true /*body2_is_massive*/>(
-        body1,
-        massive_oblate_trajectories,
-        b1,
-        0,
-        number_of_massive_oblate_trajectories,
+        body1, b1,
+        massive_oblate_trajectories /*body2_trajectories*/,
+        0 /*b2_begin*/,
+        number_of_massive_oblate_trajectories /*b2_end*/,
         q,
         result);
     ComputeOneBodyGravitationalAcceleration<true /*body1_is_oblate*/,
                                             false /*body2_is_oblate*/,
                                             true /*body2_is_massive*/>(
-        body1,
-        massive_spherical_trajectories,
-        b1,
-        number_of_massive_oblate_trajectories,
+        body1, b1,
+        massive_spherical_trajectories /*body2_trajectories*/,
+        number_of_massive_oblate_trajectories /*b2_begin*/,
         number_of_massive_oblate_trajectories +
-            number_of_massive_spherical_trajectories,
+            number_of_massive_spherical_trajectories /*b2_end*/,
         q,
         result);
     ComputeOneBodyGravitationalAcceleration<true /*body1_is_oblate*/,
                                             false /*body2_is_oblate*/,
                                             false /*body2_is_massive*/>(
-        body1,
-        massless_trajectories,
-        b1,
+        body1, b1,
+        massless_trajectories /*body2_trajectories*/,
         number_of_massive_oblate_trajectories +
-            number_of_massive_spherical_trajectories,
+            number_of_massive_spherical_trajectories /*b2_begin*/,
         number_of_massive_oblate_trajectories +
             number_of_massive_spherical_trajectories +
-            number_of_massless_trajectories,
+            number_of_massless_trajectories /*b2_end*/,
         q,
         result);
   }
@@ -327,25 +324,23 @@ void NBodySystem<InertialFrame>::ComputeGravitationalAccelerations(
     ComputeOneBodyGravitationalAcceleration<false /*body1_is_oblate*/,
                                             false /*body2_is_oblate*/,
                                             true /*body2_is_massive*/>(
-        body1,
-        massive_spherical_trajectories,
-        b1,
-        number_of_massive_oblate_trajectories,
+        body1, b1,
+        massive_spherical_trajectories /*body2_trajectories*/,
+        number_of_massive_oblate_trajectories /*b2_begin*/,
         number_of_massive_oblate_trajectories +
-            number_of_massive_spherical_trajectories,
+            number_of_massive_spherical_trajectories /*b2_end*/,
         q,
         result);
     ComputeOneBodyGravitationalAcceleration<false /*body1_is_oblate*/,
                                             false /*body2_is_oblate*/,
                                             false /*body2_is_massive*/>(
-        body1,
-        massless_trajectories,
-        b1,
+        body1, b1,
+        massless_trajectories /*body2_trajectories*/,
         number_of_massive_oblate_trajectories +
-            number_of_massive_spherical_trajectories,
+            number_of_massive_spherical_trajectories /*b2_begin*/,
         number_of_massive_oblate_trajectories +
             number_of_massive_spherical_trajectories +
-            number_of_massless_trajectories,
+            number_of_massless_trajectories /*b2_end*/,
         q,
         result);
   }

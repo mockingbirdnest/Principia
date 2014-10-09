@@ -50,8 +50,8 @@ class NBodySystem {
            bool body2_is_massive>
   static void ComputeOneBodyGravitationalAcceleration(
       Body<InertialFrame> const& body1,
-      ReadonlyTrajectories const& body2_trajectories,
       size_t const b1,
+      ReadonlyTrajectories const& body2_trajectories,
       size_t const b2_begin,
       size_t const b2_end,
       std::vector<Length> const& q,
