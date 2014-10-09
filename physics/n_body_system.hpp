@@ -41,6 +41,22 @@ class NBodySystem {
  private:
   using ReadonlyTrajectories = std::vector<Trajectory<InertialFrame> const*>;
 
+  // Computes the acceleration due to one body, |body1| (with index |b1| in the
+  // |q| and |result| arrays) on the bodies with indices [b2_begin, b2_end[ in
+  // |body2_trajectories|.  The template parameters specify what we know about
+  // the bodies, and therefore what forces apply.
+  template<bool body1_is_oblate,
+           bool body2_is_oblate,
+           bool body2_is_massive>
+  static void ComputeOneBodyGravitationalAcceleration(
+      Body<InertialFrame> const& body1,
+      size_t const b1,
+      ReadonlyTrajectories const& body2_trajectories,
+      size_t const b2_begin,
+      size_t const b2_end,
+      std::vector<Length> const& q,
+      std::vector<Acceleration>* result);
+
   // No transfer of ownership.
   static void ComputeGravitationalAccelerations(
       ReadonlyTrajectories const& massive_oblate_trajectories,
