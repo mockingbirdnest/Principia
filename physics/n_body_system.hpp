@@ -41,6 +41,18 @@ class NBodySystem {
  private:
   using ReadonlyTrajectories = std::vector<Trajectory<InertialFrame> const*>;
 
+  template<bool body1_is_oblate,
+           bool body2_is_oblate,
+           bool body2_is_massive>
+  static void ComputeOneBodyGravitationalAcceleration(
+      Body<InertialFrame> const& body1,
+      ReadonlyTrajectories const& body2_trajectories,
+      size_t const b1,
+      size_t const b2_begin,
+      size_t const b2_end,
+      std::vector<Length> const& q,
+      std::vector<Acceleration>* result);
+
   // No transfer of ownership.
   static void ComputeGravitationalAccelerations(
       ReadonlyTrajectories const& massive_oblate_trajectories,
