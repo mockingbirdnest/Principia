@@ -1,5 +1,6 @@
 ﻿#include "physics/n_body_system.hpp"
 
+#include <algorithm>
 #include <cmath>
 #include <functional>
 #include <set>
