@@ -35,7 +35,7 @@ namespace {
 // Where |r| is the norm of r and r.j is the inner product.
 //
 template<typename InertialFrame>
-Vector<Acceleration, InertialFrame>
+inline Vector<Acceleration, InertialFrame>
     Order2ZonalAcceleration(Body<InertialFrame> const& body,
                             Vector<Length, InertialFrame> const& r,
                             Exponentiation<Length, -2> const one_over_r_squared,
@@ -275,12 +275,8 @@ void NBodySystem<InertialFrame>::ComputeGravitationalAccelerations(
   // in the code below brings no performance advantage as it seems that the
   // compiler is smart enough to figure common subexpressions.
 
-  for (std::size_t b1 = 0, three_b1 = 0;
-       b1 < number_of_massive_oblate_trajectories;
-       ++b1, three_b1 += 3) {
+  for (std::size_t b1 = 0; b1 < number_of_massive_oblate_trajectories; ++b1) {
     Body<InertialFrame> const& body1 = massive_oblate_trajectories[b1]->body();
-    GravitationalParameter const& body1_gravitational_parameter =
-        body1.gravitational_parameter();
     ComputeSomething<InertialFrame,
                      true /*body1_is_oblate*/,
                      true /*body2_is_oblate*/,
@@ -319,16 +315,13 @@ void NBodySystem<InertialFrame>::ComputeGravitationalAccelerations(
         q,
         result);
   }
-  for (std::size_t b1 = number_of_massive_oblate_trajectories,
-                   three_b1 = 3 * number_of_massive_oblate_trajectories;
+  for (std::size_t b1 = number_of_massive_oblate_trajectories;
        b1 < number_of_massive_oblate_trajectories +
             number_of_massive_spherical_trajectories;
-       ++b1, three_b1 += 3) {
+       ++b1) {
     Body<InertialFrame> const& body1 =
         massive_spherical_trajectories[
             b1 - number_of_massive_oblate_trajectories]->body();
-    GravitationalParameter const& body1_gravitational_parameter =
-        body1.gravitational_parameter();
     ComputeSomething<InertialFrame,
                      false /*body1_is_oblate*/,
                      false /*body2_is_oblate*/,
@@ -337,7 +330,8 @@ void NBodySystem<InertialFrame>::ComputeGravitationalAccelerations(
         massive_spherical_trajectories,
         b1,
         number_of_massive_oblate_trajectories,
-        number_of_massive_oblate_trajectories + number_of_massive_spherical_trajectories,
+        number_of_massive_oblate_trajectories +
+            number_of_massive_spherical_trajectories,
         q,
         result);
     ComputeSomething<InertialFrame,
