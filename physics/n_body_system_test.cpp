@@ -232,7 +232,8 @@ TEST_F(NBodySystemTest, MoonEarth) {
 
 // The Moon alone.  It moves in straight line.
 TEST_F(NBodySystemTest, Moon) {
-  Position<EarthMoonOrbitPlane> const reference_position;
+  Position<EarthMoonOrbitPlane> const reference_position =
+      Position<EarthMoonOrbitPlane>();
   system_->Integrate(integrator_,
                      trajectory1_->last_time() + period_,
                      period_ / 100,
@@ -262,7 +263,8 @@ TEST_F(NBodySystemTest, Moon) {
 // and an acceleration which exactly compensates gravitational attraction.  Both
 // bodies move in straight lines.
 TEST_F(NBodySystemTest, EarthProbe) {
-  Position<EarthMoonOrbitPlane> const reference_position;
+  Position<EarthMoonOrbitPlane> const reference_position =
+      Position<EarthMoonOrbitPlane>();
   Length const distance = 1E9 * SIUnit<Length>();
   trajectory3_->Append(trajectory1_->last_time(),
                        {trajectory1_->last_position() +

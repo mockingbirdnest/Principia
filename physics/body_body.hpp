@@ -13,12 +13,14 @@ namespace physics {
 template<typename Frame>
 Body<Frame>::Body(GravitationalParameter const& gravitational_parameter)
     : gravitational_parameter_(gravitational_parameter),
-      mass_(gravitational_parameter / GravitationalConstant) {}
+      mass_(gravitational_parameter / GravitationalConstant),
+      axis_({0, 0, 0}) {}
 
 template<typename Frame>
 Body<Frame>::Body(Mass const& mass)
     : gravitational_parameter_(mass * GravitationalConstant),
-      mass_(mass) {}
+      mass_(mass),
+      axis_({0, 0, 0}) {}
 
 template<typename Frame>
 Body<Frame>::Body(GravitationalParameter const& gravitational_parameter,

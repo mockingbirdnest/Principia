@@ -19,7 +19,7 @@ namespace geometry {
 // +2000-01-01T12:00:00.000 (Terrestial Time).
 // +2000-01-01T11:59:27.816 (Temps Atomique International).
 // +2000-01-01T11:58:55.816 (UTC).
-Instant const kJ2000;
+Instant const kJ2000 = Instant();
 
 // Unix epoch, obtained by subtracting 30 years (including 7 leap years)
 // and the UTC time of day at J2000.0 from J2000.0.

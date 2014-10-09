@@ -39,7 +39,7 @@ void Plugin::CheckVesselInvariants(
 void Plugin::CleanUpVessels() {
   VLOG(1) << "Vessel cleanup";
   // Remove the vessels which were not updated since last time.
-  for (auto& it = vessels_.cbegin(); it != vessels_.cend();) {
+  for (auto it = vessels_.cbegin(); it != vessels_.cend();) {
     auto const& it_in_new_vessels = new_vessels_.find(it->first);
     Vessel const& vessel = *it->second;
     // While we're going over the vessels, check invariants.
