@@ -41,6 +41,10 @@ class NBodySystem {
  private:
   using ReadonlyTrajectories = std::vector<Trajectory<InertialFrame> const*>;
 
+  // Computes the acceleration due to one body, |body1| (with index |b1| in the
+  // |q| and |result| arrays) on the bodies with indices [b2_begin, b2_end[ in
+  // |body2_trajectories|.  The template parameters specify what we know about
+  // the bodies, and therefore what forces apply.
   template<bool body1_is_oblate,
            bool body2_is_oblate,
            bool body2_is_massive>

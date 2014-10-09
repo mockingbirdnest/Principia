@@ -252,9 +252,9 @@ inline void NBodySystem<InertialFrame>::ComputeOneBodyGravitationalAcceleration(
                 Δq,
                 one_over_r_squared,
                 one_over_r_cubed).coordinates();
-        (*result)[three_b1] += order_2_zonal_acceleration2.x;
-        (*result)[three_b1 + 1] += order_2_zonal_acceleration2.y;
-        (*result)[three_b1 + 2] += order_2_zonal_acceleration2.z;
+        (*result)[three_b1] -= order_2_zonal_acceleration2.x;
+        (*result)[three_b1 + 1] -= order_2_zonal_acceleration2.y;
+        (*result)[three_b1 + 2] -= order_2_zonal_acceleration2.z;
       }
     }
   }
