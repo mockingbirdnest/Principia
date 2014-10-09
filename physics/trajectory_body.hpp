@@ -14,7 +14,7 @@ namespace principia {
 namespace physics {
 
 template<typename Frame>
-Trajectory<Frame>::Trajectory(Body const& body)
+Trajectory<Frame>::Trajectory(Body<Frame> const& body)
     : body_(body),
       parent_(nullptr) {}
 
@@ -199,7 +199,7 @@ Instant const* Trajectory<Frame>::fork_time() const {
 }
 
 template<typename Frame>
-Body const& Trajectory<Frame>::body() const {
+Body<Frame> const& Trajectory<Frame>::body() const {
   return body_;
 }
 
@@ -236,7 +236,7 @@ Vector<Acceleration, Frame> Trajectory<Frame>::evaluate_intrinsic_acceleration(
 }
 
 template<typename Frame>
-Trajectory<Frame>::Trajectory(Body const& body,
+Trajectory<Frame>::Trajectory(Body<Frame> const& body,
                               Trajectory* const parent,
                               typename Timeline::iterator const& fork)
     : body_(body),

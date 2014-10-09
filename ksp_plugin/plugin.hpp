@@ -6,6 +6,7 @@
 
 #include "geometry/named_quantities.hpp"
 #include "geometry/point.hpp"
+#include "gtest/gtest.h"
 #include "ksp_plugin/monostable.hpp"
 #include "physics/body.hpp"
 #include "physics/n_body_system.hpp"
@@ -201,8 +202,8 @@ class Plugin {
     ~Celestial() = default;
 
     explicit Celestial(GravitationalParameter const& gravitational_parameter)
-      : body(new Body(gravitational_parameter)) {}
-    std::unique_ptr<Body const> const body;
+      : body(new Body<Barycentre>(gravitational_parameter)) {}
+    std::unique_ptr<Body<Barycentre> const> const body;
     // The parent body for the 2-body approximation. Not owning, must only
     // be null for the sun.
     Celestial const* parent = nullptr;
@@ -226,9 +227,11 @@ class Plugin {
 
     // Constructs a vessel whose parent is initially |*parent|. |parent| must
     // not be null. No transfer of ownership.
-    explicit Vessel(Celestial const* parent) : parent(CHECK_NOTNULL(parent)) {}
-    // A massless |Body|.
-    std::unique_ptr<Body const> const body = new Body(GravitationalParameter());
+    explicit Vessel(Celestial const* parent)
+        : body(new Body<Barycentre>(GravitationalParameter())),
+          parent(CHECK_NOTNULL(parent)) {}
+    // A massless body.
+    std::unique_ptr<Body<Barycentre> const> const body;
     // The parent body for the 2-body approximation. Not owning, must not be
     // null.
     Celestial const* parent;
@@ -322,6 +325,9 @@ class Plugin {
   // The current in-game universal time.
   Instant current_time_;
   Celestial* sun_;  // Not owning, not null.
+
+  // We want to check |HistoryTime|.
+  FRIEND_TEST(PluginTest, AdvanceTime);
 };
 
 }  // namespace ksp_plugin

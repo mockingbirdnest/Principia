@@ -1,5 +1,6 @@
 ﻿#include "physics/n_body_system.hpp"
 
+#include <algorithm>
 #include <cmath>
 #include <functional>
 #include <set>
@@ -11,6 +12,7 @@
 #include "integrators/symplectic_partitioned_runge_kutta_integrator.hpp"
 #include "quantities/quantities.hpp"
 
+using principia::geometry::InnerProduct;
 using principia::geometry::Instant;
 using principia::geometry::R3Element;
 using principia::integrators::SPRKIntegrator;
@@ -23,6 +25,38 @@ using principia::quantities::Speed;
 
 namespace principia {
 namespace physics {
+
+namespace {
+
+// If j is a unit vector along the axis of rotation, and r is the separation
+// between the bodies, the acceleration computed here is:
+//
+//   -(J2 / |r|^5) (3 j (r.j) + r (3 - 15 (r.j)^2 / |r|^2) / 2)
+//
+// Where |r| is the norm of r and r.j is the inner product.
+//
+// TODO(phl): |__forceinline| is for MSVC.  Need a portable macro to do this.
+template<typename InertialFrame>
+__forceinline Vector<Acceleration, InertialFrame>
+    Order2ZonalAcceleration(Body<InertialFrame> const& body,
+                            Vector<Length, InertialFrame> const& r,
+                            Exponentiation<Length, -2> const one_over_r_squared,
+                            Exponentiation<Length, -3> const one_over_r_cubed) {
+  Vector<double, InertialFrame> const& axis = body.axis();
+  Length const r_axis_projection = InnerProduct(axis, r);
+  auto const j2_over_r_fifth =
+      body.j2() * one_over_r_cubed * one_over_r_squared;
+  Vector<Acceleration, InertialFrame> const& axis_acceleration =
+      (-3 * j2_over_r_fifth * r_axis_projection) * axis;
+  Vector<Acceleration, InertialFrame> const& radial_acceleration =
+      (j2_over_r_fifth *
+           (-1.5 +
+            7.5 * r_axis_projection *
+                  r_axis_projection * one_over_r_squared)) * r;
+  return axis_acceleration + radial_acceleration;
+}
+
+}  // namespace
 
 template<typename InertialFrame>
 void NBodySystem<InertialFrame>::Integrate(
@@ -44,54 +78,59 @@ void NBodySystem<InertialFrame>::Integrate(
 
   // These objects are for checking the consistency of the parameters.
   std::set<Instant> times_in_trajectories;
-  std::set<Body const*> bodies_in_trajectories;
+  std::set<Body<InertialFrame> const*> bodies_in_trajectories;
 
   // Prepare the initial state of the integrator.  For efficiently computing the
-  // accelerations, we need to separate the trajectories of massive bodies from
-  // those of massless bodies.  They are put in this order in
-  // |reordered_trajectories|.  The trajectories of massive and massless bodies
-  // are put in |massive_trajectories| and |massless_trajectories|,
-  // respectively.
-  std::vector<Trajectory<InertialFrame>*> reordered_trajectories;
-  std::vector<Trajectory<InertialFrame> const*> massive_trajectories;
-  std::vector<Trajectory<InertialFrame> const*> massless_trajectories;
+  // accelerations, we need to separate the trajectories of oblate massive
+  // bodies from of spherical massive bodies and those of massless bodies.  They
+  // are put in this order in |reordered_trajectories|.
+  Trajectories reordered_trajectories;
+  ReadonlyTrajectories massive_oblate_trajectories;
+  ReadonlyTrajectories massive_spherical_trajectories;
+  ReadonlyTrajectories massless_trajectories;
   // This loop ensures that the massive bodies precede the massless bodies in
   // the vectors representing the initial data.
   for (bool is_massless : {false, true}) {
-    for (auto const& trajectory : trajectories) {
-      // See if this trajectory should be processed in this iteration and
-      // update the appropriate vector.
-      Body const* const body = &trajectory->body();
-      if (body->is_massless() != is_massless) {
-        continue;
-      }
-      if (is_massless) {
-        massless_trajectories.push_back(trajectory);
-      } else {
-        massive_trajectories.push_back(trajectory);
-      }
-      reordered_trajectories.push_back(trajectory);
+    for (bool is_oblate : {true, false}) {
+      for (auto const& trajectory : trajectories) {
+        // See if this trajectory should be processed in this iteration and
+        // update the appropriate vector.
+        Body<InertialFrame> const* const body = &trajectory->body();
+        if (body->is_massless() != is_massless ||
+            body->is_oblate() != is_oblate) {
+          continue;
+        }
+        if (is_massless) {
+          CHECK(!is_oblate);
+          massless_trajectories.push_back(trajectory);
+        } else if (is_oblate) {
+          massive_oblate_trajectories.push_back(trajectory);
+        } else {
+          massive_spherical_trajectories.push_back(trajectory);
+        }
+        reordered_trajectories.push_back(trajectory);
 
-      // Fill the initial position/velocity/time.
-      R3Element<Length> const& position =
-          (trajectory->last_position() - reference_position).coordinates();
-      R3Element<Speed> const& velocity =
-          trajectory->last_velocity().coordinates();
-      Instant const& time = trajectory->last_time();
-      for (int i = 0; i < 3; ++i) {
-        parameters.initial.positions.emplace_back(position[i]);
-      }
-      for (int i = 0; i < 3; ++i) {
-        parameters.initial.momenta.emplace_back(velocity[i]);
-      }
+        // Fill the initial position/velocity/time.
+        R3Element<Length> const& position =
+            (trajectory->last_position() - reference_position).coordinates();
+        R3Element<Speed> const& velocity =
+            trajectory->last_velocity().coordinates();
+        Instant const& time = trajectory->last_time();
+        for (int i = 0; i < 3; ++i) {
+          parameters.initial.positions.emplace_back(position[i]);
+        }
+        for (int i = 0; i < 3; ++i) {
+          parameters.initial.momenta.emplace_back(velocity[i]);
+        }
 
-      // Check that all trajectories are for different bodies.
-      auto const inserted = bodies_in_trajectories.insert(body);
-      CHECK(inserted.second) << "Multiple trajectories for the same body";
-      // The final points of all trajectories must all be for the same time.
-      times_in_trajectories.insert(time);
-      CHECK_GE(1U, times_in_trajectories.size())
-          << "Inconsistent last time in trajectories";
+        // Check that all trajectories are for different bodies.
+        auto const inserted = bodies_in_trajectories.insert(body);
+        CHECK(inserted.second) << "Multiple trajectories for the same body";
+        // The final points of all trajectories must all be for the same time.
+        times_in_trajectories.insert(time);
+        CHECK_GE(1U, times_in_trajectories.size())
+            << "Inconsistent last time in trajectories";
+      }
     }
   }
   {
@@ -107,7 +146,8 @@ void NBodySystem<InertialFrame>::Integrate(
     parameters.tmax_is_exact = tmax_is_exact;
     dynamic_cast<const SPRKIntegrator<Length, Speed>*>(&integrator)->Solve(
         std::bind(&NBodySystem::ComputeGravitationalAccelerations,
-                  massive_trajectories,
+                  massive_oblate_trajectories,
+                  massive_spherical_trajectories,
                   massless_trajectories,
                   reference_time,
                   std::placeholders::_1,
@@ -143,77 +183,178 @@ void NBodySystem<InertialFrame>::Integrate(
 }
 
 template<typename InertialFrame>
+template<bool body1_is_oblate,
+         bool body2_is_oblate,
+         bool body2_is_massive>
+inline void NBodySystem<InertialFrame>::ComputeOneBodyGravitationalAcceleration(
+    Body<InertialFrame> const& body1,
+    size_t const b1,
+    ReadonlyTrajectories const& body2_trajectories,
+    size_t const b2_begin,
+    size_t const b2_end,
+    std::vector<Length> const& q,
+    std::vector<Acceleration>* result) {
+  // NOTE(phl): Declaring variables for values like 3 * b1 + 1, 3 * b2 + 1, etc.
+  // in the code below brings no performance advantage as it seems that the
+  // compiler is smart enough to figure common subexpressions.
+  GravitationalParameter const& body1_gravitational_parameter =
+      body1.gravitational_parameter();
+  std::size_t const three_b1 = 3 * b1;
+  for (std::size_t b2 = std::max(b1 + 1, b2_begin); b2 < b2_end; ++b2) {
+    std::size_t const three_b2 = 3 * b2;
+    Length const Δq0 = q[three_b1] - q[three_b2];
+    Length const Δq1 = q[three_b1 + 1] - q[three_b2 + 1];
+    Length const Δq2 = q[three_b1 + 2] - q[three_b2 + 2];
+
+    Exponentiation<Length, 2> const r_squared =
+        Δq0 * Δq0 + Δq1 * Δq1 + Δq2 * Δq2;
+    // NOTE(phl): Don't try to compute one_over_r_squared here, it makes the
+    // non-oblate path slower.
+    Exponentiation<Length, -3> const one_over_r_cubed =
+        Sqrt(r_squared) / (r_squared * r_squared);
+
+    auto const μ1_over_r_cubed =
+        body1_gravitational_parameter * one_over_r_cubed;
+    (*result)[three_b2] += Δq0 * μ1_over_r_cubed;
+    (*result)[three_b2 + 1] += Δq1 * μ1_over_r_cubed;
+    (*result)[three_b2 + 2] += Δq2 * μ1_over_r_cubed;
+
+    Body<InertialFrame> const* body2 = nullptr;
+    if (body2_is_massive) {
+      // Lex. III. Actioni contrariam semper & æqualem esse reactionem:
+      // sive corporum duorum actiones in se mutuo semper esse æquales &
+      // in partes contrarias dirigi.
+      body2 = &body2_trajectories[b2 - b2_begin]->body();
+      GravitationalParameter const& body2_gravitational_parameter =
+          body2->gravitational_parameter();
+      auto const μ2_over_r_cubed =
+          body2_gravitational_parameter * one_over_r_cubed;
+      (*result)[three_b1] -= Δq0 * μ2_over_r_cubed;
+      (*result)[three_b1 + 1] -= Δq1 * μ2_over_r_cubed;
+      (*result)[three_b1 + 2] -= Δq2 * μ2_over_r_cubed;
+    }
+
+    if (body1_is_oblate || body2_is_oblate) {
+      Exponentiation<Length, -2> const one_over_r_squared = 1 / r_squared;
+      Vector<Length, InertialFrame> const Δq({Δq0, Δq1, Δq2});
+      if (body1_is_oblate) {
+        R3Element<Acceleration> const order_2_zonal_acceleration1 =
+            Order2ZonalAcceleration<InertialFrame>(
+                body1,
+                Δq,
+                one_over_r_squared,
+                one_over_r_cubed).coordinates();
+        (*result)[three_b2] += order_2_zonal_acceleration1.x;
+        (*result)[three_b2 + 1] += order_2_zonal_acceleration1.y;
+        (*result)[three_b2 + 2] += order_2_zonal_acceleration1.z;
+      }
+      if (body2_is_oblate) {
+        // |body2| was set in the |body2_is_massive| branch above.
+        R3Element<Acceleration> const order_2_zonal_acceleration2 =
+            Order2ZonalAcceleration<InertialFrame>(
+                *CHECK_NOTNULL(body2),
+                Δq,
+                one_over_r_squared,
+                one_over_r_cubed).coordinates();
+        (*result)[three_b1] -= order_2_zonal_acceleration2.x;
+        (*result)[three_b1 + 1] -= order_2_zonal_acceleration2.y;
+        (*result)[three_b1 + 2] -= order_2_zonal_acceleration2.z;
+      }
+    }
+  }
+}
+
+template<typename InertialFrame>
 void NBodySystem<InertialFrame>::ComputeGravitationalAccelerations(
-    std::vector<Trajectory<InertialFrame> const*> const& massive_trajectories,
-    std::vector<Trajectory<InertialFrame> const*> const& massless_trajectories,
+    ReadonlyTrajectories const& massive_oblate_trajectories,
+    ReadonlyTrajectories const& massive_spherical_trajectories,
+    ReadonlyTrajectories const& massless_trajectories,
     Instant const& reference_time,
     Time const& t,
     std::vector<Length> const& q,
     std::vector<Acceleration>* result) {
   result->assign(result->size(), Acceleration());
-  size_t const number_of_massive_trajectories = massive_trajectories.size();
+  size_t const number_of_massive_oblate_trajectories =
+      massive_oblate_trajectories.size();
+  size_t const number_of_massive_spherical_trajectories =
+      massive_spherical_trajectories.size();
   size_t const number_of_massless_trajectories = massless_trajectories.size();
 
-  // Declaring variables for values like 3 * b1 + 1, 3 * b2 + 1, etc. in the
-  // code below brings no performance advantage as it seems that the compiler is
-  // smart enough to figure common subexpressions.
-  for (std::size_t b1 = 0, three_b1 = 0;
-       b1 < number_of_massive_trajectories;
-       ++b1, three_b1 += 3) {
-    GravitationalParameter const& body1_gravitational_parameter =
-        massive_trajectories[b1]->body().gravitational_parameter();
-    for (std::size_t b2 = b1 + 1; b2 < massive_trajectories.size(); ++b2) {
-      std::size_t const three_b2 = 3 * b2;
-      Length const Δq0 = q[three_b1] - q[three_b2];
-      Length const Δq1 = q[three_b1 + 1] - q[three_b2 + 1];
-      Length const Δq2 = q[three_b1 + 2] - q[three_b2 + 2];
-
-      Exponentiation<Length, 2> const squared_distance =
-          Δq0 * Δq0 + Δq1 * Δq1 + Δq2 * Δq2;
-      Exponentiation<Length, -3> const multiplier =
-          Sqrt(squared_distance) / (squared_distance * squared_distance);
-
-      auto const μ2OverRSquared =
-          massive_trajectories[b2]->body().gravitational_parameter() *
-          multiplier;
-      (*result)[three_b1] -= Δq0 * μ2OverRSquared;
-      (*result)[three_b1 + 1] -= Δq1 * μ2OverRSquared;
-      (*result)[three_b1 + 2] -= Δq2 * μ2OverRSquared;
-      // Lex. III. Actioni contrariam semper & æqualem esse reactionem:
-      // sive corporum duorum actiones in se mutuo semper esse æquales &
-      // in partes contrarias dirigi.
-      auto const μ1OverRSquared = body1_gravitational_parameter * multiplier;
-      (*result)[three_b2] += Δq0 * μ1OverRSquared;
-      (*result)[three_b2 + 1] += Δq1 * μ1OverRSquared;
-      (*result)[three_b2 + 2] += Δq2 * μ1OverRSquared;
-    }
-    for (size_t b2 = number_of_massive_trajectories;
-         b2 < number_of_massive_trajectories + number_of_massless_trajectories;
-         ++b2) {
-      std::size_t const three_b2 = 3 * b2;
-      Length const Δq0 = q[three_b1] - q[three_b2];
-      Length const Δq1 = q[three_b1 + 1] - q[three_b2 + 1];
-      Length const Δq2 = q[three_b1 + 2] - q[three_b2 + 2];
-
-      Exponentiation<Length, 2> const squared_distance =
-          Δq0 * Δq0 + Δq1 * Δq1 + Δq2 * Δq2;
-      Exponentiation<Length, -3> const multiplier =
-          Sqrt(squared_distance) / (squared_distance * squared_distance);
-
-      auto const μ1OverRSquared = body1_gravitational_parameter * multiplier;
-      (*result)[three_b2] += Δq0 * μ1OverRSquared;
-      (*result)[three_b2 + 1] += Δq1 * μ1OverRSquared;
-      (*result)[three_b2 + 2] += Δq2 * μ1OverRSquared;
-    }
+  for (std::size_t b1 = 0; b1 < number_of_massive_oblate_trajectories; ++b1) {
+    Body<InertialFrame> const& body1 = massive_oblate_trajectories[b1]->body();
+    ComputeOneBodyGravitationalAcceleration<true /*body1_is_oblate*/,
+                                            true /*body2_is_oblate*/,
+                                            true /*body2_is_massive*/>(
+        body1, b1,
+        massive_oblate_trajectories /*body2_trajectories*/,
+        0 /*b2_begin*/,
+        number_of_massive_oblate_trajectories /*b2_end*/,
+        q,
+        result);
+    ComputeOneBodyGravitationalAcceleration<true /*body1_is_oblate*/,
+                                            false /*body2_is_oblate*/,
+                                            true /*body2_is_massive*/>(
+        body1, b1,
+        massive_spherical_trajectories /*body2_trajectories*/,
+        number_of_massive_oblate_trajectories /*b2_begin*/,
+        number_of_massive_oblate_trajectories +
+            number_of_massive_spherical_trajectories /*b2_end*/,
+        q,
+        result);
+    ComputeOneBodyGravitationalAcceleration<true /*body1_is_oblate*/,
+                                            false /*body2_is_oblate*/,
+                                            false /*body2_is_massive*/>(
+        body1, b1,
+        massless_trajectories /*body2_trajectories*/,
+        number_of_massive_oblate_trajectories +
+            number_of_massive_spherical_trajectories /*b2_begin*/,
+        number_of_massive_oblate_trajectories +
+            number_of_massive_spherical_trajectories +
+            number_of_massless_trajectories /*b2_end*/,
+        q,
+        result);
   }
-
+  for (std::size_t b1 = number_of_massive_oblate_trajectories;
+       b1 < number_of_massive_oblate_trajectories +
+            number_of_massive_spherical_trajectories;
+       ++b1) {
+    Body<InertialFrame> const& body1 =
+        massive_spherical_trajectories[
+            b1 - number_of_massive_oblate_trajectories]->body();
+    ComputeOneBodyGravitationalAcceleration<false /*body1_is_oblate*/,
+                                            false /*body2_is_oblate*/,
+                                            true /*body2_is_massive*/>(
+        body1, b1,
+        massive_spherical_trajectories /*body2_trajectories*/,
+        number_of_massive_oblate_trajectories /*b2_begin*/,
+        number_of_massive_oblate_trajectories +
+            number_of_massive_spherical_trajectories /*b2_end*/,
+        q,
+        result);
+    ComputeOneBodyGravitationalAcceleration<false /*body1_is_oblate*/,
+                                            false /*body2_is_oblate*/,
+                                            false /*body2_is_massive*/>(
+        body1, b1,
+        massless_trajectories /*body2_trajectories*/,
+        number_of_massive_oblate_trajectories +
+            number_of_massive_spherical_trajectories /*b2_begin*/,
+        number_of_massive_oblate_trajectories +
+            number_of_massive_spherical_trajectories +
+            number_of_massless_trajectories /*b2_end*/,
+        q,
+        result);
+  }
   // Finally, take into account the intrinsic accelerations.
-  for (size_t b2 = number_of_massive_trajectories;
-       b2 < number_of_massive_trajectories + number_of_massless_trajectories;
+  for (size_t b2 = number_of_massive_oblate_trajectories +
+                   number_of_massive_spherical_trajectories;
+       b2 < number_of_massive_oblate_trajectories +
+            number_of_massive_spherical_trajectories +
+            number_of_massless_trajectories;
        ++b2) {
     std::size_t const three_b2 = 3 * b2;
     Trajectory<InertialFrame> const* trajectory =
-        massless_trajectories[b2 - number_of_massive_trajectories];
+        massless_trajectories[b2 - number_of_massive_oblate_trajectories -
+                                   number_of_massive_spherical_trajectories];
     if (trajectory->has_intrinsic_acceleration()) {
       R3Element<Acceleration> const acceleration =
           trajectory->evaluate_intrinsic_acceleration(

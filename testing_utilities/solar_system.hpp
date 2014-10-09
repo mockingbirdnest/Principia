@@ -1,11 +1,14 @@
 ﻿#pragma once
 
 #include <memory>
+#include <string>
 #include <vector>
 
 #include "geometry/named_quantities.hpp"
+#include "geometry/rotation.hpp"
 #include "physics/n_body_system.hpp"
 #include "quantities/quantities.hpp"
+#include "quantities/si.hpp"
 
 namespace principia {
 namespace testing_utilities {
@@ -18,15 +21,33 @@ namespace testing_utilities {
 // Earth's orbit and the Earth's mean equator at J2000.0.
 // The z axis is perpendicular to the xy-plane in the directional (+ or -) sense
 // of Earth's north pole at J2000.0.
-// The basis is direct and orthonormal.
+// The basis is right-handed and orthonormal.
 struct ICRFJ2000Ecliptic;
+// The xy plane is the plane of the Earth's mean equator at J2000.0.
+// The x axis is out along the ascending node of the instantaneous plane of the
+// Earth's orbit and the Earth's mean equator at J2000.0.
+// The z axis is along the Earth's mean north pole at J2000.0.
+// The basis is right-handed and orthonormal.
+// Note that |ICRFJ2000Equator| and |ICRFJ2000Ecliptic| share their x axis.
+struct ICRFJ2000Equator;
+
+// Rotation around the common x axis mapping equatorial coordinates to ecliptic
+// coordinates.  The angle is the one defined by the XVIth General Assembly of
+// the International Astronomical Union.
+geometry::Rotation<ICRFJ2000Equator, ICRFJ2000Ecliptic> kEquatorialToEcliptic =
+    geometry::Rotation<ICRFJ2000Equator, ICRFJ2000Ecliptic>(
+        23 * si::Degree + 26 * si::ArcMinute + 21.448 * si::ArcSecond,
+        geometry::Bivector<double, ICRFJ2000Equator>({-1, 0, 0}));
+
 geometry::Position<ICRFJ2000Ecliptic> const kSolarSystemBarycentre;
 
 class SolarSystem {
  public:
-  using Bodies = std::vector<std::unique_ptr<physics::Body const> const>;
+  using Bodies = std::vector<std::unique_ptr<
+                     physics::Body<ICRFJ2000Ecliptic> const> const>;
 
   // The indices of the bodies in the |Bodies| vector.
+  // The bodies are in decreasing order of mass.
   enum Index : int {
     kSun = 0,
     kJupiter = 1,
@@ -46,17 +67,37 @@ class SolarSystem {
     kTriton = 15,
     kEris = 16,
     kPluto = 17,
+    kTitania = 18,
+    kOberon = 19,
+    kRhea = 20,
+    kIapetus = 21,
+    kCharon = 22,
+    kAriel = 23,
+    kUmbriel = 24,
+    kDione = 25,
+    kTethys = 26,
+  };
+
+  // Specifies the accuracy of the modeling.
+  enum class Accuracy {
+    // All the bodies with a masse greater than or equal to that of Pluto,
+    // modelled as point masses.
+    kMajorBodiesOnly,
+    // Same as above, with some smaller satellites of the main planets.
+    kMinorAndMajorBodies,
+    // Same as above, with oblateness for the gaz giants.
+    kAllBodiesAndOblateness,
   };
 
   // Factory.  The caller gets ownership of the pointers.
   // A solar system at the time of the launch of Простейший Спутник-1,
   // 1957-10-04T19:28:34Z (JD2436116.31150).
-  static std::unique_ptr<SolarSystem> AtСпутник1Launch();
+  static std::unique_ptr<SolarSystem> AtСпутник1Launch(Accuracy const accuracy);
 
   // Factory.  The caller gets ownership of the pointers.
   // A solar system at the time of the launch of Простейший Спутник-2,
   // 1957-11-03T02:30:00Z (JD 2436145.60417)
-  static std::unique_ptr<SolarSystem> SolarSystem::AtСпутник2Launch();
+  static std::unique_ptr<SolarSystem> AtСпутник2Launch(Accuracy const accuracy);
 
   ~SolarSystem() = default;
 
@@ -71,29 +112,12 @@ class SolarSystem {
   // Returns the index of the parent of the body with the given |index|.
   // Because enums are broken in C++ we use ints.  Sigh.
   static int parent(int const index);
+  // The name of the body with the given |index|.
+  static std::string name(int const index);
 
  private:
-  // A system containing the 18 largest solar system bodies (Pluto and all
-  // larger bodies)  The bodies are in decreasing order of mass,
-  //  0. Sun,
-  //  1. Jupiter,
-  //  2. Saturn,
-  //  3. Neptune,
-  //  4. Uranus,
-  //  5. Earth,
-  //  6. Venus,
-  //  7. Mars,
-  //  8. Mercury,
-  //  9. Ganymede,
-  // 10. Titan,
-  // 11. Callisto,
-  // 12. Io,
-  // 13. Moon,
-  // 14. Europa,
-  // 15. Triton,
-  // 16. Eris,
-  // 17. Pluto.
-  SolarSystem();
+  // A system containing the bodies appropriate for the given |accuracy|.
+  explicit SolarSystem(Accuracy const accuracy);
 
   Bodies massive_bodies_;
   Bodies massless_bodies_;
