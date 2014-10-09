@@ -66,7 +66,7 @@ inline void ComputeSomething(
   GravitationalParameter const& body1_gravitational_parameter =
       body1.gravitational_parameter();
   std::size_t const three_b1 = 3 * b1;
-  for (std::size_t b2 = b2_begin; b2 < b2_end; ++b2) {
+  for (std::size_t b2 = std::max(b1 + 1, b2_begin); b2 < b2_end; ++b2) {
     Body<InertialFrame> const& body2 =
         body2_trajectories[b2 - b2_begin]->body();
     GravitationalParameter const& body2_gravitational_parameter =
@@ -277,105 +277,27 @@ void NBodySystem<InertialFrame>::ComputeGravitationalAccelerations(
     Body<InertialFrame> const& body1 = massive_oblate_trajectories[b1]->body();
     GravitationalParameter const& body1_gravitational_parameter =
         body1.gravitational_parameter();
-    for (std::size_t b2 = b1 + 1;
-         b2 < number_of_massive_oblate_trajectories;
-         ++b2) {
-      Body<InertialFrame> const& body2 =
-          massive_oblate_trajectories[b2]->body();
-      GravitationalParameter const& body2_gravitational_parameter =
-          body2.gravitational_parameter();
-      std::size_t const three_b2 = 3 * b2;
-      Length const Δq0 = q[three_b1] - q[three_b2];
-      Length const Δq1 = q[three_b1 + 1] - q[three_b2 + 1];
-      Length const Δq2 = q[three_b1 + 2] - q[three_b2 + 2];
-
-      Exponentiation<Length, 2> const r_squared =
-          Δq0 * Δq0 + Δq1 * Δq1 + Δq2 * Δq2;
-      // NOTE(phl): Don't try to compute one_over_r_squared here, it makes the
-      // non-oblate path slower.
-      Exponentiation<Length, -3> const one_over_r_cubed =
-          Sqrt(r_squared) / (r_squared * r_squared);
-
-      auto const μ2_over_r_cubed =
-          body2_gravitational_parameter * one_over_r_cubed;
-      (*result)[three_b1] -= Δq0 * μ2_over_r_cubed;
-      (*result)[three_b1 + 1] -= Δq1 * μ2_over_r_cubed;
-      (*result)[three_b1 + 2] -= Δq2 * μ2_over_r_cubed;
-      // Lex. III. Actioni contrariam semper & æqualem esse reactionem:
-      // sive corporum duorum actiones in se mutuo semper esse æquales &
-      // in partes contrarias dirigi.
-      auto const μ1_over_r_cubed =
-          body1_gravitational_parameter * one_over_r_cubed;
-      (*result)[three_b2] += Δq0 * μ1_over_r_cubed;
-      (*result)[three_b2 + 1] += Δq1 * μ1_over_r_cubed;
-      (*result)[three_b2 + 2] += Δq2 * μ1_over_r_cubed;
-
-      Exponentiation<Length, -2> const one_over_r_squared = 1 / r_squared;
-      R3Element<Acceleration> const order_2_zonal_acceleration1 =
-          Order2ZonalAcceleration<InertialFrame>(
-              body1,
-              Vector<Length, InertialFrame>({Δq0, Δq1, Δq2}),
-              one_over_r_squared,
-              one_over_r_cubed).coordinates();
-      (*result)[three_b2] += order_2_zonal_acceleration1.x;
-      (*result)[three_b2 + 1] += order_2_zonal_acceleration1.y;
-      (*result)[three_b2 + 2] += order_2_zonal_acceleration1.z;
-      R3Element<Acceleration> const order_2_zonal_acceleration2 =
-          Order2ZonalAcceleration<InertialFrame>(
-              body2,
-              Vector<Length, InertialFrame>({Δq0, Δq1, Δq2}),
-              one_over_r_squared,
-              one_over_r_cubed).coordinates();
-      (*result)[three_b1] += order_2_zonal_acceleration2.x;
-      (*result)[three_b1 + 1] += order_2_zonal_acceleration2.y;
-      (*result)[three_b1 + 2] += order_2_zonal_acceleration2.z;
-    }
-    for (std::size_t b2 = number_of_massive_oblate_trajectories;
-         b2 < number_of_massive_oblate_trajectories +
-              number_of_massive_spherical_trajectories;
-         ++b2) {
-      Body<InertialFrame> const& body2 =
-          massive_spherical_trajectories[
-              b2 - number_of_massive_oblate_trajectories]->body();
-      GravitationalParameter const& body2_gravitational_parameter =
-          body2.gravitational_parameter();
-      std::size_t const three_b2 = 3 * b2;
-      Length const Δq0 = q[three_b1] - q[three_b2];
-      Length const Δq1 = q[three_b1 + 1] - q[three_b2 + 1];
-      Length const Δq2 = q[three_b1 + 2] - q[three_b2 + 2];
-
-      Exponentiation<Length, 2> const r_squared =
-          Δq0 * Δq0 + Δq1 * Δq1 + Δq2 * Δq2;
-      // NOTE(phl): Don't try to compute one_over_r_squared here, it makes the
-      // non-oblate path slower.
-      Exponentiation<Length, -3> const one_over_r_cubed =
-          Sqrt(r_squared) / (r_squared * r_squared);
-
-      auto const μ2_over_r_cubed =
-          body2_gravitational_parameter * one_over_r_cubed;
-      (*result)[three_b1] -= Δq0 * μ2_over_r_cubed;
-      (*result)[three_b1 + 1] -= Δq1 * μ2_over_r_cubed;
-      (*result)[three_b1 + 2] -= Δq2 * μ2_over_r_cubed;
-      // Lex. III. Actioni contrariam semper & æqualem esse reactionem:
-      // sive corporum duorum actiones in se mutuo semper esse æquales &
-      // in partes contrarias dirigi.
-      auto const μ1_over_r_cubed =
-          body1_gravitational_parameter * one_over_r_cubed;
-      (*result)[three_b2] += Δq0 * μ1_over_r_cubed;
-      (*result)[three_b2 + 1] += Δq1 * μ1_over_r_cubed;
-      (*result)[three_b2 + 2] += Δq2 * μ1_over_r_cubed;
-
-      Exponentiation<Length, -2> const one_over_r_squared = 1 / r_squared;
-      R3Element<Acceleration> const order_2_zonal_acceleration1 =
-          Order2ZonalAcceleration<InertialFrame>(
-              body1,
-              Vector<Length, InertialFrame>({Δq0, Δq1, Δq2}),
-              one_over_r_squared,
-              one_over_r_cubed).coordinates();
-      (*result)[three_b2] += order_2_zonal_acceleration1.x;
-      (*result)[three_b2 + 1] += order_2_zonal_acceleration1.y;
-      (*result)[three_b2 + 2] += order_2_zonal_acceleration1.z;
-    }
+    ComputeSomething<InertialFrame,
+                     true /*body1_is_oblate*/,
+                     true /*body2_is_oblate*/>(
+        body1,
+        massive_oblate_trajectories,
+        b1,
+        0,
+        number_of_massive_oblate_trajectories,
+        q,
+        result);
+    ComputeSomething<InertialFrame,
+                     true /*body1_is_oblate*/,
+                     false /*body2_is_oblate*/>(
+        body1,
+        massive_spherical_trajectories,
+        b1,
+        number_of_massive_oblate_trajectories,
+        number_of_massive_oblate_trajectories +
+            number_of_massive_spherical_trajectories,
+        q,
+        result);
     for (size_t b2 = number_of_massive_oblate_trajectories +
                      number_of_massive_spherical_trajectories;
          b2 < number_of_massive_oblate_trajectories +
@@ -426,7 +348,7 @@ void NBodySystem<InertialFrame>::ComputeGravitationalAccelerations(
         body1,
         massive_spherical_trajectories,
         b1,
-        b1 + 1,
+        number_of_massive_oblate_trajectories,
         number_of_massive_oblate_trajectories + number_of_massive_spherical_trajectories,
         q,
         result);
