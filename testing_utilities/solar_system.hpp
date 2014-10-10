@@ -39,8 +39,7 @@ geometry::Rotation<ICRFJ2000Equator, ICRFJ2000Ecliptic> kEquatorialToEcliptic =
         23 * si::Degree + 26 * si::ArcMinute + 21.448 * si::ArcSecond,
         geometry::Bivector<double, ICRFJ2000Equator>({-1, 0, 0}));
 
-geometry::Position<ICRFJ2000Ecliptic> const kSolarSystemBarycentre =
-    geometry::Position<ICRFJ2000Ecliptic>();
+geometry::Position<ICRFJ2000Ecliptic> const kSolarSystemBarycentre;
 
 class SolarSystem {
  public:

@@ -16,7 +16,7 @@ namespace geometry {
 template<typename Vector>
 class Point {
  public:
-  Point() = default;
+  Point();
   explicit Point(Vector const& coordinates);
   ~Point() = default;
 

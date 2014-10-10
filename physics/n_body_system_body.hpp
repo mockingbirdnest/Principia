@@ -73,8 +73,8 @@ void NBodySystem<InertialFrame>::Integrate(
   // center-of-mass referential and a time in the middle of the integration
   // interval.  In the integrator itself, all quantities are "vectors" relative
   // to these references.
-  Position<InertialFrame> const reference_position = Position<InertialFrame>();
-  Instant const reference_time = Instant();
+  Position<InertialFrame> const reference_position;
+  Instant const reference_time;
 
   // These objects are for checking the consistency of the parameters.
   std::set<Instant> times_in_trajectories;

@@ -31,7 +31,7 @@ using si::Second;
 // Universal time 0, time of game creation.
 // Putting the origin here makes the instants we use equal to the corresponding
 // KSP universal time doubles.
-Instant const kUniversalTimeEpoch = Instant();
+Instant const kUniversalTimeEpoch;
 
 // Thanks to KSP's madness, the reference frame of the celestial body orbited by
 // the active vessel, occasionally rotating with its surface, occasionally
@@ -49,7 +49,7 @@ struct AliceWorld;
 // the velocity of the sun at the time of construction as our reference.
 struct Barycentre;
 // The position of the sun at the instant |initial_time| passed at construction.
-Position<Barycentre> const kInitialSunPosition = Position<Barycentre>();
+Position<Barycentre> const kInitialSunPosition;
 
 // A nonrotating referencence frame comoving with the sun with the same axes as
 // |AliceWorld|. Since it is nonrotating (though not inertial), differences
