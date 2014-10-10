@@ -1,3 +1,5 @@
+#pragma once
+
 #include "ksp_plugin/plugin.hpp"
 
 #include "gmock/gmock.h"
@@ -7,15 +9,13 @@ namespace ksp_plugin {
 
 class MockPlugin : public Plugin {
  public:
-  MockPlugin() = delete;
+  MockPlugin() : Plugin(Instant(),
+                        Index(0),
+                        GravitationalParameter(),
+                        Angle()) {}
   MockPlugin(MockPlugin const&) = delete;
   MockPlugin(MockPlugin&&) = delete;
   ~MockPlugin() override = default;
-
-  MockPlugin(Instant const& initial_time,
-             Index const sun_index,
-             GravitationalParameter const& sun_gravitational_parameter,
-             Angle const& planetarium_rotation);
 
   MOCK_METHOD5(InsertCelestial,
                void(Index const celestial_index,
