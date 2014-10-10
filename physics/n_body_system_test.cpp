@@ -301,7 +301,7 @@ TEST_F(NBodySystemTest, EarthProbe) {
               AlmostEquals(0.50 * period_ * v1, 1));
   EXPECT_THAT(positions1[50].coordinates().y, Eq(q1));
   EXPECT_THAT(positions1[75].coordinates().x,
-              AlmostEquals(0.75 * period_ * v1, 1));
+              AlmostEquals(0.75 * period_ * v1, 2));
   EXPECT_THAT(positions1[75].coordinates().y, Eq(q1));
   EXPECT_THAT(positions1[100].coordinates().x,
               AlmostEquals(1.00 * period_ * v1, 1));
@@ -321,7 +321,7 @@ TEST_F(NBodySystemTest, EarthProbe) {
               AlmostEquals(0.50 * period_ * v3, 1));
   EXPECT_THAT(positions3[50].coordinates().y, AlmostEquals(q3, 2));
   EXPECT_THAT(positions3[75].coordinates().x,
-              AlmostEquals(0.75 * period_ * v3, 1));
+              AlmostEquals(0.75 * period_ * v3, 2));
   EXPECT_THAT(positions3[75].coordinates().y, AlmostEquals(q3, 1));
   EXPECT_THAT(positions3[100].coordinates().x,
               AlmostEquals(1.00 * period_ * v3, 1));
