@@ -4,10 +4,12 @@
 #include "gtest/gtest.h"
 #include "quantities/si.hpp"
 #include "ksp_plugin/mock_plugin.hpp"
+#include "testing_utilities/death_message.hpp"
 
 using principia::quantities::GravitationalParameter;
 using principia::si::Radian;
 using principia::si::Second;
+using principia::testing_utilities::DeathMessage;
 using testing::IsNull;
 using testing::StrictMock;
 
@@ -34,10 +36,18 @@ class InterfaceTest : public testing::Test {
   std::unique_ptr<StrictMock<MockPlugin>> plugin_;
 };
 
-TEST_F(InterfaceTest, DeletePlugin) {
+using InterfaceDeathTest = InterfaceTest;
+
+TEST_F(InterfaceTest, DeletePluginSuccess) {
   Plugin const* plugin = plugin_.release();
   DeletePlugin(&plugin);
   EXPECT_THAT(plugin, IsNull());
+}
+
+TEST_F(InterfaceDeathTest, DeletePluginError) {
+  EXPECT_DEATH({
+    DeletePlugin(nullptr);
+  }, DeathMessage("plugin.*non NULL"));
 }
 
 TEST_F(InterfaceTest, InsertCelestial) {
