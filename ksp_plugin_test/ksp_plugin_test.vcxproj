@@ -61,7 +61,6 @@
   </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release_LLVM|Win32'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
-    <Import Project="..\copy_libglog_dll.props" />
     <Import Project="..\google_test_framework.props" />
     <Import Project="..\include_solution.props" />
     <Import Project="..\llvm_compatibility.props" />
