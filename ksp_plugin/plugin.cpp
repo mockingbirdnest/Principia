@@ -39,7 +39,7 @@ void Plugin::CheckVesselInvariants(
 void Plugin::CleanUpVessels() {
   VLOG(1) << "Vessel cleanup";
   // Remove the vessels which were not updated since last time.
-  for (auto& it = vessels_.cbegin(); it != vessels_.cend();) {
+  for (auto it = vessels_.cbegin(); it != vessels_.cend();) {
     auto const& it_in_new_vessels = new_vessels_.find(it->first);
     Vessel const& vessel = *it->second;
     // While we're going over the vessels, check invariants.
@@ -161,8 +161,8 @@ Plugin::Plugin(Instant const& initial_time,
                Index const sun_index,
                GravitationalParameter const& sun_gravitational_parameter,
                Angle const& planetarium_rotation)
-    : current_time_(initial_time),
-      planetarium_rotation_(planetarium_rotation) {
+    : planetarium_rotation_(planetarium_rotation),
+      current_time_(initial_time) {
   auto inserted = celestials_.insert(
       {sun_index, std::make_unique<Celestial>(sun_gravitational_parameter)});
   sun_ = inserted.first->second.get();

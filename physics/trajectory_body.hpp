@@ -44,7 +44,7 @@ std::list<Instant> Trajectory<Frame>::Times() const {
   // The data points of our ancestors in decreasing time order.
   Trajectory const* ancestor = this;
   while (ancestor->parent_ != nullptr) {
-    Timeline::iterator it = *ancestor->fork_;
+    typename Timeline::iterator it = *ancestor->fork_;
     do {
       Instant const& time = it->first;
       result.push_front(time);
@@ -241,7 +241,7 @@ Trajectory<Frame>::Trajectory(Body<Frame> const& body,
                               typename Timeline::iterator const& fork)
     : body_(body),
       parent_(CHECK_NOTNULL(parent)),
-      fork_(new Timeline::iterator(fork)) {}
+      fork_(new typename Timeline::iterator(fork)) {}
 
 template<typename Frame>
 template<typename Value>
@@ -260,7 +260,7 @@ std::map<Instant, Value> Trajectory<Frame>::ApplyToDegreesOfFreedom(
   // The data points of our ancestors in decreasing time order.
   Trajectory const* ancestor = this;
   while (ancestor->parent_ != nullptr) {
-    Timeline::iterator it = *ancestor->fork_;
+    typename Timeline::iterator it = *ancestor->fork_;
     do {
       Instant const& time = it->first;
       DegreesOfFreedom<Frame> const& degrees_of_freedom = it->second;

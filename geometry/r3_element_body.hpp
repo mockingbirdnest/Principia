@@ -12,6 +12,12 @@ namespace principia {
 namespace geometry {
 
 namespace {
+// clang understands that this function is never used, but thinks that control
+// reaches beyond |LOG(FATAL)| if it is not there.
+// MSVC doesn't understand anything.
+#ifdef __clang__
+__attribute__((unused))
+#endif
 __declspec(noreturn) void noreturn() { exit(0); }
 }  // namespace
 
