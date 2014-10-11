@@ -16,6 +16,10 @@ using testing::StrictMock;
 namespace principia {
 namespace ksp_plugin {
 
+bool operator==(XYZ const& left, XYZ const& right) {
+  return left.x == right.x && left.y == right.y && left.z == right.z;
+}
+
 namespace {
 
 char const kVesselGUID[] = "NCC-1701-D";

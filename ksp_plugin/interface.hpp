@@ -42,7 +42,6 @@ namespace ksp_plugin {
 extern "C"
 struct XYZ {
   double x, y, z;
-  bool operator==(XYZ const& other) const;
 };
 
 static_assert(std::is_standard_layout<XYZ>::value,
