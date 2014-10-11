@@ -39,6 +39,21 @@ using testing::_;
 namespace principia {
 namespace ksp_plugin {
 
+namespace {
+
+
+ACTION_TEMPLATE(AppendTimeToTrajectories,
+                HAS_2_TEMPLATE_PARAMS(int, k, typename, T),
+                AND_1_VALUE_PARAMS(time)) {
+  for (auto* trajectory : T(std::tr1::get<k>(args))) {
+    trajectory->Append(time,
+                       {trajectory->last_position(),
+                        trajectory->last_velocity()});
+  }
+}
+
+}  // namespace
+
 class TestablePlugin : public Plugin {
  public:
   // Takes ownership of |n_body_system|.
@@ -192,90 +207,26 @@ TEST_F(PluginTest, VesselInsertionAtInitialization) {
 // the results with systems integrated with a small step and a 10-second step.
 // This is too much of an integration test, and it will break all the time (it
 // already broke when merging CL #188).
-// TODO(egg): this test should be rewritten using gmock to mock the integrator.
-// This will make it much faster and far less likely to break.
-// TODO(egg): release-only for now, this is ridiculously slow on debug.
-// NOTE(phl: All the king's men and all the king's horses couldn't put this test
-// together again.
-#if 0
 TEST_F(PluginTest, AdvanceTime) {
   InsertAllSolarSystemBodies();
   plugin_->EndInitialization();
-  NBodySystem<ICRFJ2000Ecliptic> system;
-  SPRKIntegrator<Length, Speed> integrator;
-  integrator.Initialize(integrator.Order5Optimal());
-  Instant const tmax = initial_time_ + 1000.0 * Second;
   Time const δt = 0.02 * Second;
-  for (Instant t = initial_time_ + δt; t <= tmax; t = t + δt) {
-    Angle const angle =
-        t + δt <= tmax ? ((t - initial_time_) / (2 * Second)) * Radian
-                       : 1 * Radian;
-    plugin_->AdvanceTime(t, angle);
-#pragma warning(push)
-#pragma warning(disable : 4566)  // Stringification of Unicode identifiers.
-    EXPECT_THAT(plugin_->HistoryTime() + plugin_->kΔt, Ge(t));
-#pragma warning(pop)
-    system.Integrate(integrator,
-                     t,
-                     plugin_->kΔt,  // Δt
-                     0,  // sampling_period
-                     true,  // tmax_is_exact
-                     solar_system_->trajectories());
+  Instant const tmax = initial_time_ + plugin_->kΔt;
+  for (Instant t = initial_time_ + δt; t <= tmax; t += δt) {
+    EXPECT_CALL(*n_body_system_,
+                Integrate(_, t, plugin_->kΔt, 0, true, _));
+    plugin_->AdvanceTime(t, 42 * Radian);
   }
-  std::unique_ptr<SolarSystem> symplectic_system =
-      SolarSystem::AtСпутник1Launch(SolarSystem::Accuracy::kMajorBodiesOnly);
-  system.Integrate(integrator,
-                   solar_system_->trajectories().front()->last_time(),
-                   plugin_->kΔt,  // Δt
-                   0,  // sampling_period
-                   true,  // tmax_is_exact
-                   symplectic_system->trajectories());
-
-  for (std::size_t index = SolarSystem::kSun + 1;
-       index < bodies_.size();
-       ++index) {
-    Displacement<AliceSun> position;
-    Velocity<AliceSun> velocity;
-    for (int i = index; i != SolarSystem::kSun; i = SolarSystem::parent(i)) {
-      position += plugin_->CelestialDisplacementFromParent(i);
-      velocity += plugin_->CelestialParentRelativeVelocity(i);
-    }
-    // Check that the results of the integration by |AdvanceTime| match a
-    // trajectory integrated with a timestep of |kΔt| better than one stepped at
-    // every call to |AdvanceTime|.
-    Displacement<ICRFJ2000Ecliptic> const reference_position =
-          solar_system_->trajectories()[index]->last_position() -
-          solar_system_->trajectories()[SolarSystem::kSun]->last_position();
-    Velocity<ICRFJ2000Ecliptic> const reference_velocity =
-          solar_system_->trajectories()[index]->last_velocity() -
-          solar_system_->trajectories()[SolarSystem::kSun]->last_velocity();
-    Displacement<ICRFJ2000Ecliptic> const symplectic_position =
-          symplectic_system->trajectories()[index]->last_position() -
-          symplectic_system->trajectories()[SolarSystem::kSun]->last_position();
-    Velocity<ICRFJ2000Ecliptic> const symplectic_velocity =
-          symplectic_system->trajectories()[index]->last_velocity() -
-          symplectic_system->trajectories()[SolarSystem::kSun]->last_velocity();
-    double const low_position_error =
-        RelativeError(looking_glass_(symplectic_position), position);
-    double const low_velocity_error =
-        RelativeError(looking_glass_(symplectic_velocity), velocity);
-    double const high_position_error =
-        RelativeError(looking_glass_(reference_position), position);
-    double const high_velocity_error =
-        RelativeError(looking_glass_(reference_velocity), velocity);
-    EXPECT_THAT(low_position_error, Lt(1E-12));
-    EXPECT_THAT(low_velocity_error, Lt(1E-12));
-    if (index != SolarSystem::kEarth &&
-        index != SolarSystem::kVenus &&
-        index != SolarSystem::kMars) {
-      EXPECT_THAT(high_position_error, Gt(1.2 * low_position_error))
-          << SolarSystem::name(index);
-      EXPECT_THAT(high_velocity_error, Gt(1.2 * low_velocity_error))
-          << SolarSystem::name(index);
-    }
-  }
+  EXPECT_CALL(*n_body_system_,
+              Integrate(_, Gt(initial_time_ + plugin_->kΔt), plugin_->kΔt,
+                        0, false, _))
+      .WillOnce(
+           AppendTimeToTrajectories<5, NBodySystem<Barycentre>::Trajectories>(
+               initial_time_ + plugin_->kΔt));
+  EXPECT_CALL(*n_body_system_,
+              Integrate(_, tmax + δt, plugin_->kΔt, 0, true, _));
+  plugin_->AdvanceTime(tmax + δt, 42 * Radian);
 }
-#endif
 
 }  // namespace ksp_plugin
 }  // namespace principia
