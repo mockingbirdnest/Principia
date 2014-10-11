@@ -42,16 +42,18 @@ namespace ksp_plugin {
 class TestablePlugin : public Plugin {
  public:
   // Takes ownership of |n_body_system|.
+  // TODO(phl): We'd like to pass a |unique_ptr<>| but that seems to confuse
+  // gMock.
   TestablePlugin(Instant const& initial_time,
                  Index const sun_index,
                  GravitationalParameter const& sun_gravitational_parameter,
                  Angle const& planetarium_rotation,
-                 std::unique_ptr<MockNBodySystem<Barycentre>> n_body_system)
+                 MockNBodySystem<Barycentre>* n_body_system)
       : Plugin(initial_time,
                sun_index,
                sun_gravitational_parameter,
                planetarium_rotation) {
-    n_body_system_.reset(n_body_system.release());
+    n_body_system_.reset(n_body_system);
   }
 };
 

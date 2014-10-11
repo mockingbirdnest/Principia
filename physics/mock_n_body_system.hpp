@@ -20,7 +20,8 @@ class MockNBodySystem : public NBodySystem<InertialFrame> {
           Time const& Δt,
           int const sampling_period,
           bool const tmax_is_exact,
-          Trajectories const& trajectories));
+          typename NBodySystem<InertialFrame>::Trajectories const&
+              trajectories));
 };
 
 }  // namespace physics
