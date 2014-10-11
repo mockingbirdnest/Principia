@@ -77,12 +77,12 @@ void Plugin::EvolveSynchronizedHistories(Instant const& t) {
       trajectories.push_back(pair.second->history.get());
     }
   }
-  solar_system_->Integrate(history_integrator_,  // integrator
-                           t,                    // tmax
-                           kΔt,                  // Δt
-                           0,                    // sampling_period
-                           false,                // tmax_is_exact
-                           trajectories);        // trajectories
+  n_body_system_->Integrate(history_integrator_,  // integrator
+                            t,                    // tmax
+                            kΔt,                  // Δt
+                            0,                    // sampling_period
+                            false,                // tmax_is_exact
+                            trajectories);        // trajectories
   CHECK_GT(HistoryTime(), current_time_);
   VLOG(1) << "Evolved the old histories" << '\n'
           << "to   : " << HistoryTime();
@@ -98,12 +98,12 @@ void Plugin::SynchronizeNewHistories() {
   for (auto const& pair : new_vessels_) {
     trajectories.push_back(pair.second->history.get());
   }
-  solar_system_->Integrate(prolongation_integrator_,  // integrator
-                           HistoryTime(),             // tmax
-                           kΔt,                       // Δt
-                           0,                         // sampling_period
-                           true,                      // tmax_is_exact
-                           trajectories);             // trajectories
+  n_body_system_->Integrate(prolongation_integrator_,  // integrator
+                            HistoryTime(),             // tmax
+                            kΔt,                       // Δt
+                            0,                         // sampling_period
+                            true,                      // tmax_is_exact
+                            trajectories);             // trajectories
   new_vessels_.clear();
   LOG(INFO) << "Synchronized the new histories";
 }
@@ -139,12 +139,12 @@ void Plugin::EvolveProlongationsAndUnsynchronizedHistories(Instant const& t) {
   VLOG(1) << "Evolving prolongations and new histories" << '\n'
           << "from : " << trajectories.front()->last_time() << '\n'
           << "to   : " << t;
-  solar_system_->Integrate(prolongation_integrator_,  // integrator
-                           t,                         // tmax
-                           kΔt,                       // Δt
-                           0,                         // sampling_period
-                           true,                      // tmax_is_exact
-                           trajectories);             // trajectories
+  n_body_system_->Integrate(prolongation_integrator_,  // integrator
+                            t,                         // tmax
+                            kΔt,                       // Δt
+                            0,                         // sampling_period
+                            true,                      // tmax_is_exact
+                            trajectories);             // trajectories
 }
 
 Instant const& Plugin::HistoryTime() const {
@@ -161,7 +161,7 @@ Plugin::Plugin(Instant const& initial_time,
                Index const sun_index,
                GravitationalParameter const& sun_gravitational_parameter,
                Angle const& planetarium_rotation)
-    : solar_system_(new NBodySystem<Barycentre>),
+    : n_body_system_(new NBodySystem<Barycentre>),
       planetarium_rotation_(planetarium_rotation),
       current_time_(initial_time) {
   auto inserted = celestials_.insert(
