@@ -53,7 +53,7 @@ class NBodySystemTest : public testing::Test {
     integrator_.Initialize(integrator_.Order5Optimal());
 
     // The Earth-Moon system, roughly, with a circular orbit with velocities
-    // in the center-of-mass frame.
+    // in the centre-of-mass frame.
     body1_ = std::make_unique<Body<EarthMoonOrbitPlane>>(6E24 * SIUnit<Mass>());
     body2_ = std::make_unique<Body<EarthMoonOrbitPlane>>(7E22 * SIUnit<Mass>());
 
