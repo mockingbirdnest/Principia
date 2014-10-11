@@ -228,7 +228,7 @@ TEST_F(PluginTest, AdvanceTimeWithCelestials) {
   Time const δt = 0.02 * Second;
   Angle const planetarium_rotation = 42 * Radian;
   auto history_step = [this](int const i) {
-    return initial_time_ + i * plugin_->Δt(); 
+    return initial_time_ + i * plugin_->Δt();
   };
   for (int i = 0; i < 10; ++i) {
     for (Instant t = history_step(i) + δt; t <= history_step(i + 1); t += δt) {
