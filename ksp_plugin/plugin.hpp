@@ -328,6 +328,8 @@ class Plugin {
 
   // We want to check |HistoryTime|.
   FRIEND_TEST(PluginTest, AdvanceTime);
+
+  friend class TestablePlugin;
 };
 
 }  // namespace ksp_plugin

@@ -26,17 +26,17 @@ class NBodySystem {
   using Trajectories = std::vector<Trajectory<InertialFrame>*>;  // Not owned.
 
   NBodySystem() = default;
-  ~NBodySystem() = default;
+  virtual ~NBodySystem() = default;
 
   // The |integrator| must already have been initialized.  All the
   // |trajectories| must have the same |last_time()| and must be for distinct
   // bodies.
-  void Integrate(SymplecticIntegrator<Length, Speed> const& integrator,
-                 Instant const& tmax,
-                 Time const& Δt,
-                 int const sampling_period,
-                 bool const tmax_is_exact,
-                 Trajectories const& trajectories);
+  virtual void Integrate(SymplecticIntegrator<Length, Speed> const& integrator,
+                         Instant const& tmax,
+                         Time const& Δt,
+                         int const sampling_period,
+                         bool const tmax_is_exact,
+                         Trajectories const& trajectories) const;
 
  private:
   using ReadonlyTrajectories = std::vector<Trajectory<InertialFrame> const*>;

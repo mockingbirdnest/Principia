@@ -8,6 +8,7 @@
 #include "geometry/permutation.hpp"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
+#include "physics/mock_n_body_system.hpp"
 #include "quantities/si.hpp"
 #include "testing_utilities/almost_equals.hpp"
 #include "testing_utilities/death_message.hpp"
@@ -16,6 +17,7 @@
 
 using principia::geometry::Bivector;
 using principia::geometry::Permutation;
+using principia::physics::MockNBodySystem;
 using principia::quantities::Abs;
 using principia::quantities::Sqrt;
 using principia::si::Day;
@@ -34,6 +36,20 @@ using testing::Lt;
 
 namespace principia {
 namespace ksp_plugin {
+
+class TestablePlugin : public Plugin {
+ public:
+  TestablePlugin(Instant const& initial_time,
+                 Index const sun_index,
+                 GravitationalParameter const& sun_gravitational_parameter,
+                 Angle const& planetarium_rotation)
+      : Plugin(initial_time,
+               sun_index,
+               sun_gravitational_parameter,
+               planetarium_rotation) {
+    solar_system_ = MockNBodySystem<Barycentre>();
+  }
+};
 
 class PluginTest : public testing::Test {
  protected:
