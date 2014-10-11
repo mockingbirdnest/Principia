@@ -45,7 +45,6 @@ namespace ksp_plugin {
 
 namespace {
 
-
 ACTION_TEMPLATE(AppendTimeToTrajectories,
                 HAS_2_TEMPLATE_PARAMS(int, k, typename, T),
                 AND_1_VALUE_PARAMS(time)) {
