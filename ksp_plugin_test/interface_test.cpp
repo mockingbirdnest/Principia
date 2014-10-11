@@ -197,7 +197,7 @@ TEST_F(InterfaceTest, CelestialParentRelativeVelocity) {
                            {kParentVelocity.x * SIUnit<Speed>(),
                             kParentVelocity.y * SIUnit<Speed>(),
                             kParentVelocity.z * SIUnit<Speed>()})));
-  XYZ const result = CelestialParentRelativeVelocity(plugin_.get(), 
+  XYZ const result = CelestialParentRelativeVelocity(plugin_.get(),
                                                      kCelestialIndex);
   EXPECT_THAT(result, Eq(kParentVelocity));
 }
