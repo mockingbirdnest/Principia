@@ -79,7 +79,7 @@ void Plugin::EvolveSynchronizedHistories(Instant const& t) {
   }
   n_body_system_->Integrate(history_integrator_,  // integrator
                             t,                    // tmax
-                            kΔt,                  // Δt
+                            Δt_,                  // Δt
                             0,                    // sampling_period
                             false,                // tmax_is_exact
                             trajectories);        // trajectories
@@ -100,7 +100,7 @@ void Plugin::SynchronizeNewHistories() {
   }
   n_body_system_->Integrate(prolongation_integrator_,  // integrator
                             HistoryTime(),             // tmax
-                            kΔt,                       // Δt
+                            Δt_,                       // Δt
                             0,                         // sampling_period
                             true,                      // tmax_is_exact
                             trajectories);             // trajectories
@@ -141,7 +141,7 @@ void Plugin::EvolveProlongationsAndUnsynchronizedHistories(Instant const& t) {
           << "to   : " << t;
   n_body_system_->Integrate(prolongation_integrator_,  // integrator
                             t,                         // tmax
-                            kΔt,                       // Δt
+                            Δt_,                       // Δt
                             0,                         // sampling_period
                             true,                      // tmax_is_exact
                             trajectories);             // trajectories
@@ -278,7 +278,7 @@ void Plugin::SetVesselStateOffset(
 void Plugin::AdvanceTime(Instant const& t, Angle const& planetarium_rotation) {
   CHECK(!initializing);
   CleanUpVessels();
-  if (HistoryTime() + kΔt < t) {
+  if (HistoryTime() + Δt_ < t) {
     // The histories are far enough behind that we can advance them at least one
     // step and reset the prolongations.
     EvolveSynchronizedHistories(t);

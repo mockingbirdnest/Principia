@@ -45,6 +45,9 @@ namespace ksp_plugin {
 
 namespace {
 
+// Appends a |DegreesOfFreedom| equal to the last one at the given |time| to
+// each |Trajectory| in the |k|th parameter of the expected call.
+// |T| must be |NBodySystem<>::Trajectories|, |time| must be an |Instant|.
 ACTION_TEMPLATE(AppendTimeToTrajectories,
                 HAS_2_TEMPLATE_PARAMS(int, k, typename, T),
                 AND_1_VALUE_PARAMS(time)) {
@@ -74,8 +77,8 @@ class TestablePlugin : public Plugin {
     n_body_system_.reset(n_body_system);
   }
 
-  Time const& Δt() {
-    return kΔt;
+  Time const& Δt() const {
+    return Δt_;
   }
 
   SPRKIntegrator<Length, Speed> const& prolongation_integrator() const {
@@ -223,16 +226,17 @@ TEST_F(PluginTest, AdvanceTimeWithCelestials) {
   InsertAllSolarSystemBodies();
   plugin_->EndInitialization();
   Time const δt = 0.02 * Second;
-  auto history_step = [this](int i) {
+  Angle const planetarium_rotation = 42 * Radian;
+  auto history_step = [this](int const i) {
     return initial_time_ + i * plugin_->Δt(); 
   };
-  InSequence s;
   for (int i = 0; i < 10; ++i) {
     for (Instant t = history_step(i) + δt; t <= history_step(i + 1); t += δt) {
       EXPECT_CALL(*n_body_system_,
                   Integrate(Ref(plugin_->prolongation_integrator()), t,
-                            plugin_->Δt(), 0, true, SizeIs(bodies_.size())));
-      plugin_->AdvanceTime(t, 42 * Radian);
+                            plugin_->Δt(), 0, true, SizeIs(bodies_.size())))
+          .RetiresOnSaturation();
+      plugin_->AdvanceTime(t, planetarium_rotation);
     }
     EXPECT_CALL(*n_body_system_,
                 Integrate(Ref(plugin_->history_integrator()),
@@ -241,12 +245,14 @@ TEST_F(PluginTest, AdvanceTimeWithCelestials) {
                           SizeIs(bodies_.size())))
         .WillOnce(
              AppendTimeToTrajectories<5, NBodySystem<Barycentre>::Trajectories>(
-                 history_step(i + 1)));
+                 history_step(i + 1)))
+        .RetiresOnSaturation();
     EXPECT_CALL(*n_body_system_,
                 Integrate(Ref(plugin_->prolongation_integrator()),
                           history_step(i + 1) + δt, plugin_->Δt(), 0, true,
-                          SizeIs(bodies_.size())));
-    plugin_->AdvanceTime(history_step(i + 1) + δt, 42 * Radian);
+                          SizeIs(bodies_.size())))
+        .RetiresOnSaturation();
+    plugin_->AdvanceTime(history_step(i + 1) + δt, planetarium_rotation);
   }
 }
 

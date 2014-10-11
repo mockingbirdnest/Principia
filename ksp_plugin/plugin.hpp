@@ -286,7 +286,7 @@ class Plugin {
 
   // Evolves the histories of the |celestials_| and of the synchronized vessels
   // up to at most |t|. |t| must be large enough that at least one step of
-  // size |kΔt| can fit between |current_time_| and |t|.
+  // size |Δt_| can fit between |current_time_| and |t|.
   void EvolveSynchronizedHistories(Instant const& t);
 
   // Synchronizes the |new_vessels_| and clears |new_vessels_|.
@@ -301,7 +301,7 @@ class Plugin {
   void EvolveProlongationsAndUnsynchronizedHistories(Instant const& t);
 
   // TODO(egg): Constant time step for now.
-  Time const kΔt = 10 * Second;
+  Time const Δt_ = 10 * Second;
 
   GUIDToOwnedVessel vessels_;
   std::map<Index, std::unique_ptr<Celestial>> celestials_;
