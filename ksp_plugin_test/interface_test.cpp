@@ -42,16 +42,53 @@ class InterfaceTest : public testing::Test {
 
 using InterfaceDeathTest = InterfaceTest;
 
+// And there is only one thing we say to Death.
+TEST_F(InterfaceDeathTest, Errors) {
+  Plugin* plugin = nullptr;
+  EXPECT_DEATH({
+    DeletePlugin(nullptr);
+  }, DeathMessage("plugin.*non NULL"));
+  EXPECT_DEATH({
+    InsertCelestial(plugin,
+                    kCelestialIndex,
+                    kGravitationalParameter,
+                    kParentIndex,
+                    kParentPosition,
+                    kParentVelocity);
+  }, DeathMessage("plugin.*non NULL"));
+  EXPECT_DEATH({
+    UpdateCelestialHierarchy(plugin, kCelestialIndex, kParentIndex);
+  }, DeathMessage("plugin.*non NULL"));
+  EXPECT_DEATH({
+    UpdateCelestialHierarchy(plugin, kCelestialIndex, kParentIndex);
+  }, DeathMessage("plugin.*non NULL"));
+  EXPECT_DEATH({
+    InsertOrKeepVessel(plugin, kVesselGUID, kParentIndex);
+  }, DeathMessage("plugin.*non NULL"));
+  EXPECT_DEATH({
+    SetVesselStateOffset(plugin,
+                         kVesselGUID,
+                         kParentPosition,
+                         kParentVelocity);
+  }, DeathMessage("plugin.*non NULL"));
+  EXPECT_DEATH({
+    VesselDisplacementFromParent(plugin, kVesselGUID);
+  }, DeathMessage("plugin.*non NULL"));
+  EXPECT_DEATH({
+    VesselParentRelativeVelocity(plugin, kVesselGUID);
+  }, DeathMessage("plugin.*non NULL"));
+  EXPECT_DEATH({
+    CelestialDisplacementFromParent(plugin, kCelestialIndex);
+  }, DeathMessage("plugin.*non NULL"));
+  EXPECT_DEATH({
+    CelestialParentRelativeVelocity(plugin, kCelestialIndex);
+  }, DeathMessage("plugin.*non NULL"));
+}
+
 TEST_F(InterfaceTest, DeletePluginSuccess) {
   Plugin const* plugin = plugin_.release();
   DeletePlugin(&plugin);
   EXPECT_THAT(plugin, IsNull());
-}
-
-TEST_F(InterfaceDeathTest, DeletePluginError) {
-  EXPECT_DEATH({
-    DeletePlugin(nullptr);
-  }, DeathMessage("plugin.*non NULL"));
 }
 
 TEST_F(InterfaceTest, InsertCelestial) {
@@ -128,6 +165,41 @@ TEST_F(InterfaceTest, VesselDisplacementFromParent) {
                             kParentPosition.z * SIUnit<Length>()})));
   XYZ const result = VesselDisplacementFromParent(plugin_.get(), kVesselGUID);
   EXPECT_THAT(result, Eq(kParentPosition));
+}
+
+TEST_F(InterfaceTest, VesselParentRelativeVelocity) {
+  EXPECT_CALL(*plugin_,
+              VesselParentRelativeVelocity(kVesselGUID))
+      .WillOnce(Return(Velocity<AliceSun>(
+                           {kParentVelocity.x * SIUnit<Speed>(),
+                            kParentVelocity.y * SIUnit<Speed>(),
+                            kParentVelocity.z * SIUnit<Speed>()})));
+  XYZ const result = VesselParentRelativeVelocity(plugin_.get(), kVesselGUID);
+  EXPECT_THAT(result, Eq(kParentVelocity));
+}
+
+TEST_F(InterfaceTest, CelestialDisplacementFromParent) {
+  EXPECT_CALL(*plugin_,
+              CelestialDisplacementFromParent(kCelestialIndex))
+      .WillOnce(Return(Displacement<AliceSun>(
+                           {kParentPosition.x * SIUnit<Length>(),
+                            kParentPosition.y * SIUnit<Length>(),
+                            kParentPosition.z * SIUnit<Length>()})));
+  XYZ const result = CelestialDisplacementFromParent(plugin_.get(),
+                                                     kCelestialIndex);
+  EXPECT_THAT(result, Eq(kParentPosition));
+}
+
+TEST_F(InterfaceTest, CelestialParentRelativeVelocity) {
+  EXPECT_CALL(*plugin_,
+              CelestialParentRelativeVelocity(kCelestialIndex))
+      .WillOnce(Return(Velocity<AliceSun>(
+                           {kParentVelocity.x * SIUnit<Speed>(),
+                            kParentVelocity.y * SIUnit<Speed>(),
+                            kParentVelocity.z * SIUnit<Speed>()})));
+  XYZ const result = CelestialParentRelativeVelocity(plugin_.get(), 
+                                                     kCelestialIndex);
+  EXPECT_THAT(result, Eq(kParentVelocity));
 }
 
 }  // namespace ksp_plugin
