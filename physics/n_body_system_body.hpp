@@ -70,7 +70,7 @@ void NBodySystem<InertialFrame>::Integrate(
   std::vector<SymplecticIntegrator<Length, Speed>::SystemState> solution;
 
   // TODO(phl): Use a position based on the first mantissa bits of the
-  // center-of-mass referential and a time in the middle of the integration
+  // centre-of-mass referential and a time in the middle of the integration
   // interval.  In the integrator itself, all quantities are "vectors" relative
   // to these references.
   Position<InertialFrame> const reference_position;
