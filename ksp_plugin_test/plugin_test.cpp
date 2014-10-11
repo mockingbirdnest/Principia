@@ -41,17 +41,17 @@ namespace ksp_plugin {
 
 class TestablePlugin : public Plugin {
  public:
-  // Takes ownership of |solar_system|.
+  // Takes ownership of |n_body_system|.
   TestablePlugin(Instant const& initial_time,
                  Index const sun_index,
                  GravitationalParameter const& sun_gravitational_parameter,
                  Angle const& planetarium_rotation,
-                 NBodySystem<Barycentre>* n_body_system)
+                 std::unique_ptr<MockNBodySystem<Barycentre>> n_body_system)
       : Plugin(initial_time,
                sun_index,
                sun_gravitational_parameter,
                planetarium_rotation) {
-    n_body_system_.reset(n_body_system);
+    n_body_system_.reset(n_body_system.release());
   }
 };
 
