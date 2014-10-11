@@ -326,9 +326,6 @@ class Plugin {
   Instant current_time_;
   Celestial* sun_;  // Not owning, not null.
 
-  // We want to check |HistoryTime|.
-  FRIEND_TEST(PluginTest, AdvanceTime);
-
   friend class TestablePlugin;
 };
 

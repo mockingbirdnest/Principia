@@ -32,7 +32,10 @@ using principia::testing_utilities::SolarSystem;
 using testing::Eq;
 using testing::Ge;
 using testing::Gt;
+using testing::InSequence;
 using testing::Lt;
+using testing::Ref;
+using testing::SizeIs;
 using testing::StrictMock;
 using testing::_;
 
@@ -69,6 +72,18 @@ class TestablePlugin : public Plugin {
                sun_gravitational_parameter,
                planetarium_rotation) {
     n_body_system_.reset(n_body_system);
+  }
+
+  Time const& Δt() {
+    return kΔt;
+  }
+
+  SPRKIntegrator<Length, Speed> const& prolongation_integrator() const {
+    return prolongation_integrator_;
+  }
+
+  SPRKIntegrator<Length, Speed> const& history_integrator() const {
+    return history_integrator_;
   }
 };
 
@@ -203,29 +218,46 @@ TEST_F(PluginTest, VesselInsertionAtInitialization) {
 }
 
 // Checks that the plugin correctly uses its 10-second-step history even when
-// advanced with smaller timesteps.  At the moment this is done by comparing
-// the results with systems integrated with a small step and a 10-second step.
-// This is too much of an integration test, and it will break all the time (it
-// already broke when merging CL #188).
-TEST_F(PluginTest, AdvanceTime) {
+// advanced with smaller timesteps.
+TEST_F(PluginTest, AdvanceTimeWithCelestials) {
   InsertAllSolarSystemBodies();
   plugin_->EndInitialization();
   Time const δt = 0.02 * Second;
-  Instant const tmax = initial_time_ + plugin_->kΔt;
-  for (Instant t = initial_time_ + δt; t <= tmax; t += δt) {
+  Instant const t1 = initial_time_ + plugin_->Δt();
+  Instant const t2 = initial_time_ + 2 * plugin_->Δt();
+  InSequence s;
+  for (Instant t = initial_time_ + δt; t <= t1; t += δt) {
     EXPECT_CALL(*n_body_system_,
-                Integrate(_, t, plugin_->kΔt, 0, true, _));
+                Integrate(Ref(plugin_->prolongation_integrator()), t,
+                          plugin_->Δt(), 0, true, SizeIs(bodies_.size())));
     plugin_->AdvanceTime(t, 42 * Radian);
   }
   EXPECT_CALL(*n_body_system_,
-              Integrate(_, Gt(initial_time_ + plugin_->kΔt), plugin_->kΔt,
-                        0, false, _))
+              Integrate(Ref(plugin_->history_integrator()), Gt(t1),
+                        plugin_->Δt(), 0, false, SizeIs(bodies_.size())))
       .WillOnce(
            AppendTimeToTrajectories<5, NBodySystem<Barycentre>::Trajectories>(
-               initial_time_ + plugin_->kΔt));
+               t1));
   EXPECT_CALL(*n_body_system_,
-              Integrate(_, tmax + δt, plugin_->kΔt, 0, true, _));
-  plugin_->AdvanceTime(tmax + δt, 42 * Radian);
+              Integrate(Ref(plugin_->prolongation_integrator()), t1 + δt,
+                        plugin_->Δt(), 0, true, SizeIs(bodies_.size())));
+  plugin_->AdvanceTime(t1 + δt, 42 * Radian);
+  for (Instant t = t1 + δt; t <= t2; t += δt) {
+    EXPECT_CALL(*n_body_system_,
+                Integrate(Ref(plugin_->prolongation_integrator()), t,
+                          plugin_->Δt(), 0, true, SizeIs(bodies_.size())));
+    plugin_->AdvanceTime(t, 42 * Radian);
+  }
+  EXPECT_CALL(*n_body_system_,
+              Integrate(Ref(plugin_->history_integrator()), Gt(t2),
+                        plugin_->Δt(), 0, false, SizeIs(bodies_.size())))
+      .WillOnce(
+           AppendTimeToTrajectories<5, NBodySystem<Barycentre>::Trajectories>(
+               t2));
+  EXPECT_CALL(*n_body_system_,
+              Integrate(Ref(plugin_->prolongation_integrator()), t2 + δt,
+                        plugin_->Δt(), 0, true, SizeIs(bodies_.size())));
+  plugin_->AdvanceTime(t2 + δt, 42 * Radian);
 }
 
 }  // namespace ksp_plugin
