@@ -7,7 +7,7 @@
   </PropertyGroup>
   <ItemDefinitionGroup>
     <ClCompile>
-      <AdditionalIncludeDirectories>$(SolutionDir)\..\Google\gmock-1.7.0\gtest\include;$(SolutionDir)\..\Google\gmock-1.7.0\include;$(SolutionDir)\..\Google\glog-0.3.3\src\windows;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)..\Google\gmock-1.7.0\gtest\include;$(SolutionDir)..\Google\gmock-1.7.0\include;$(SolutionDir)..\Google\glog-0.3.3\src\windows;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <AdditionalLibraryDirectories>$(SolutionDir)\..\Google\glog-0.3.3\$(ConfigurationName);$(SolutionDir)\..\Google\gmock-1.7.0\msvc\2010\$(ConfigurationName);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
