@@ -311,7 +311,7 @@ class Plugin {
   // |prolongation|. The pointers are not owning and not null.
   std::map<GUID, Vessel* const> new_vessels_;
 
-  NBodySystem<Barycentre> solar_system_;
+  std::unique_ptr<NBodySystem<Barycentre>> solar_system_;
   // The symplectic integrator computing the synchronized histories.
   SPRKIntegrator<Length, Speed> history_integrator_;
   // The integrator computing the prolongations and the histories before they

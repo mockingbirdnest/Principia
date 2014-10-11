@@ -33,6 +33,7 @@ using testing::Eq;
 using testing::Ge;
 using testing::Gt;
 using testing::Lt;
+using testing::StrictMock;
 
 namespace principia {
 namespace ksp_plugin {
@@ -47,7 +48,7 @@ class TestablePlugin : public Plugin {
                sun_index,
                sun_gravitational_parameter,
                planetarium_rotation) {
-    solar_system_ = MockNBodySystem<Barycentre>();
+    solar_system_.reset(new MockNBodySystem<Barycentre>());
   }
 };
 
@@ -62,10 +63,11 @@ class PluginTest : public testing::Test {
         sun_gravitational_parameter_(
             bodies_[SolarSystem::kSun]->gravitational_parameter()),
         planetarium_rotation_(1 * Radian) {
-    plugin_ = std::make_unique<Plugin>(initial_time_,
-                                       SolarSystem::kSun,
-                                       sun_gravitational_parameter_,
-                                       planetarium_rotation_);
+    plugin_ = std::make_unique<StrictMock<TestablePlugin>>(
+                  initial_time_,
+                  SolarSystem::kSun,
+                  sun_gravitational_parameter_,
+                  planetarium_rotation_);
   }
 
   void InsertAllSolarSystemBodies() {
@@ -94,7 +96,7 @@ class PluginTest : public testing::Test {
   GravitationalParameter sun_gravitational_parameter_;
   Angle planetarium_rotation_;
 
-  std::unique_ptr<Plugin> plugin_;
+  std::unique_ptr<StrictMock<TestablePlugin>> plugin_;
 };
 
 TEST_F(PluginTest, Initialization) {
