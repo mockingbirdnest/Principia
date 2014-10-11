@@ -65,7 +65,7 @@ void NBodySystem<InertialFrame>::Integrate(
     Time const& Δt,
     int const sampling_period,
     bool const tmax_is_exact,
-    Trajectories const& trajectories) {
+    Trajectories const& trajectories) const {
   SymplecticIntegrator<Length, Speed>::Parameters parameters;
   std::vector<SymplecticIntegrator<Length, Speed>::SystemState> solution;
 
