@@ -24,6 +24,9 @@ class MockPlugin : public Plugin {
                     Displacement<AliceSun> const& from_parent_position,
                     Velocity<AliceSun> const& from_parent_velocity));
 
+  MOCK_METHOD0(EndInitialization,
+               void());
+
   MOCK_CONST_METHOD2(UpdateCelestialHierarchy,
                      void(Index const celestial_index,
                           Index const parent_index));
@@ -31,10 +34,10 @@ class MockPlugin : public Plugin {
   MOCK_METHOD2(InsertOrKeepVessel,
                bool(GUID const& vessel_guid, Index const parent_index));
 
-  MOCK_CONST_METHOD3(SetVesselStateOffset,
-                     void(GUID const& vessel_guid,
-                          Displacement<AliceSun> const& from_parent_position,
-                          Velocity<AliceSun> const& from_parent_velocity));
+  MOCK_METHOD3(SetVesselStateOffset,
+               void(GUID const& vessel_guid,
+                    Displacement<AliceSun> const& from_parent_position,
+                    Velocity<AliceSun> const& from_parent_velocity));
 
   MOCK_METHOD2(AdvanceTime,
                void(Instant const& t, Angle const& planetarium_rotation));

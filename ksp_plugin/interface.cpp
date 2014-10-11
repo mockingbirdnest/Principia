@@ -43,6 +43,11 @@ void LogFatal(char const* message) {
   LOG(FATAL) << message;
 }
 
+bool XYZ::operator==(XYZ const& other) const {
+  return x == other.x && y == other.y && z == other.z;
+}
+
+
 Plugin* NewPlugin(double const initial_time,
                   int const sun_index,
                   double const sun_gravitational_parameter,

@@ -6,11 +6,11 @@
 #include "ksp_plugin/mock_plugin.hpp"
 #include "testing_utilities/death_message.hpp"
 
-using principia::quantities::GravitationalParameter;
-using principia::si::Radian;
-using principia::si::Second;
+using principia::si::Degree;
 using principia::testing_utilities::DeathMessage;
+using testing::Eq;
 using testing::IsNull;
+using testing::Return;
 using testing::StrictMock;
 
 namespace principia {
@@ -18,10 +18,14 @@ namespace ksp_plugin {
 
 namespace {
 
+char const kVesselGUID[] = "NCC-1701-D";
+
 Index const kCelestialIndex = 1;
 Index const kParentIndex = 2;
 
 double const kGravitationalParameter = 3;
+double const kPlanetariumRotation = 10;
+double const kTime = 11;
 
 XYZ kParentPosition = {4, 5, 6};
 XYZ kParentVelocity = {7, 8, 9};
@@ -76,6 +80,54 @@ TEST_F(InterfaceTest, UpdateCelestialHierarchy) {
   EXPECT_CALL(*plugin_,
               UpdateCelestialHierarchy(kCelestialIndex, kParentIndex));
   UpdateCelestialHierarchy(plugin_.get(), kCelestialIndex, kParentIndex);
+}
+
+TEST_F(InterfaceTest, EndInitialization) {
+  EXPECT_CALL(*plugin_,
+              EndInitialization());
+  EndInitialization(plugin_.get());
+}
+
+TEST_F(InterfaceTest, InsertOrKeepVessel) {
+  EXPECT_CALL(*plugin_,
+              InsertOrKeepVessel(kVesselGUID, kParentIndex));
+  InsertOrKeepVessel(plugin_.get(), kVesselGUID, kParentIndex);
+}
+
+TEST_F(InterfaceTest, SetVesselStateOffset) {
+  EXPECT_CALL(*plugin_,
+              SetVesselStateOffset(
+                  kVesselGUID,
+                  Displacement<AliceSun>(
+                      {kParentPosition.x * SIUnit<Length>(),
+                       kParentPosition.y * SIUnit<Length>(),
+                       kParentPosition.z * SIUnit<Length>()}),
+                  Velocity<AliceSun>(
+                      {kParentVelocity.x * SIUnit<Speed>(),
+                       kParentVelocity.y * SIUnit<Speed>(),
+                       kParentVelocity.z * SIUnit<Speed>()})));
+  SetVesselStateOffset(plugin_.get(),
+                       kVesselGUID,
+                       kParentPosition,
+                       kParentVelocity);
+}
+
+TEST_F(InterfaceTest, AdvanceTime) {
+  EXPECT_CALL(*plugin_,
+              AdvanceTime(Instant(kTime * SIUnit<Time>()),
+                          kPlanetariumRotation * Degree));
+  AdvanceTime(plugin_.get(), kTime, kPlanetariumRotation);
+}
+
+TEST_F(InterfaceTest, VesselDisplacementFromParent) {
+  EXPECT_CALL(*plugin_,
+              VesselDisplacementFromParent(kVesselGUID))
+      .WillOnce(Return(Displacement<AliceSun>(
+                           {kParentPosition.x * SIUnit<Length>(),
+                            kParentPosition.y * SIUnit<Length>(),
+                            kParentPosition.z * SIUnit<Length>()})));
+  XYZ const result = VesselDisplacementFromParent(plugin_.get(), kVesselGUID);
+  EXPECT_THAT(result, Eq(kParentPosition));
 }
 
 }  // namespace ksp_plugin
