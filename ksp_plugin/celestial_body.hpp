@@ -21,17 +21,27 @@ Body<Frame> const& Celestial<Frame>::body() const {
 }
 
 template<typename Frame>
-Celestial<Frame> const* Celestial<Frame>::parent() const {
-  return parent_;
+Celestial<Frame> const& Celestial<Frame>::parent() const {
+  return *CHECK_NOTNULL(parent_);
 }
 
 template<typename Frame>
-Trajectory<Frame>* Celestial<Frame>::history() const {
+Trajectory<Frame> const& Celestial<Frame>::history() const {
+  return *history_;
+}
+
+template<typename Frame>
+Trajectory<Frame> const& Celestial<Frame>::prolongation() const {
+  return *prolongation_;
+}
+
+template<typename Frame>
+Trajectory<Frame>* Celestial<Frame>::mutable_history() {
   return history_.get();
 }
 
 template<typename Frame>
-Trajectory<Frame>* Celestial<Frame>::prolongation() const {
+Trajectory<Frame>* Celestial<Frame>::mutable_prolongation() {
   return prolongation_;
 }
 

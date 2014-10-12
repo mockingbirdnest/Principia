@@ -28,10 +28,12 @@ class Celestial {
 
   bool has_parent() const;
   Body<Frame> const& body() const;
-  Celestial const* parent() const;
-  Trajectory<Frame>* history() const;
-  Trajectory<Frame>* prolongation() const;
+  Celestial const& parent() const;
+  Trajectory<Frame> const& history() const;
+  Trajectory<Frame> const& prolongation() const;
 
+  Trajectory<Frame>* mutable_history();
+  Trajectory<Frame>* mutable_prolongation();
   void set_parent(Celestial const* parent);
 
   // Creates a |history_| for this body and appends a point with the given

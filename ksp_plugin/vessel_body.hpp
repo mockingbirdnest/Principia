@@ -26,23 +26,33 @@ Body<Frame> const& Vessel<Frame>::body() const {
 }
 
 template<typename Frame>
-Celestial<Frame> const* Vessel<Frame>::parent() const {
-  return parent_;
+Celestial<Frame> const& Vessel<Frame>::parent() const {
+  return *parent_;
 }
 
 template<typename Frame>
-Trajectory<Frame>* Vessel<Frame>::history() const {
+Trajectory<Frame> const& Vessel<Frame>::history() const {
+  return *history_;
+}
+
+template<typename Frame>
+Trajectory<Frame> const& Vessel<Frame>::prolongation() const {
+  return *prolongation_;
+}
+
+template<typename Frame>
+Trajectory<Frame> const& Vessel<Frame>::prolongation_or_history() const {
+    return prolongation_ == nullptr ? *history_ : *prolongation_;
+}
+
+template<typename Frame>
+Trajectory<Frame>* Vessel<Frame>::mutable_history() {
   return history_.get();
 }
 
 template<typename Frame>
-Trajectory<Frame>* Vessel<Frame>::prolongation() const {
+Trajectory<Frame>* Vessel<Frame>::mutable_prolongation() {
   return prolongation_;
-}
-
-template<typename Frame>
-Trajectory<Frame>* Vessel<Frame>::prolongation_or_history() const {
-    return prolongation_ == nullptr ? history_.get() : prolongation_;
 }
 
 template<typename Frame>
