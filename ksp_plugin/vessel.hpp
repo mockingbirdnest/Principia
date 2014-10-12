@@ -27,15 +27,30 @@ class Vessel {
   // not be null. No transfer of ownership.
   explicit Vessel(Celestial<Frame> const* parent);
 
+  Body<Frame> const& body() const;
+  Celestial<Frame> const* parent() const;
+  Trajectory<Frame>* history() const;
+  Trajectory<Frame>* prolongation() const;
+  void set_parent(Celestial<Frame> const* parent);
+
+  // Creates a |history_| for this body and appends a point with the given
+  // |time| and |degrees_of_freedom|.
+  void Append(Instant const& time,
+              DegreesOfFreedom<Frame> const& degrees_of_freedom);
+
+    // Deletes the |prolongation_| and forks a new one at |time|.
+  void ResetProlongation(Instant const& time);
+
+private:
   // A massless body.
-  std::unique_ptr<Body<Frame> const> const body;
+  std::unique_ptr<Body<Frame> const> const body_;
   // The parent body for the 2-body approximation. Not owning, must not be
   // null.
-  Celestial<Frame> const* parent;
+  Celestial<Frame> const* parent_;
   // The past and present trajectory of the body. It ends at |HistoryTime()|
   // unless |*this| was created after |HistoryTime()|, in which case it ends
   // at |current_time_|.
-  std::unique_ptr<Trajectory<Frame>> history;
+  std::unique_ptr<Trajectory<Frame>> history_;
   // A child trajectory of |*history|. It is forked at |history->last_time()|
   // and continues it until |current_time_|. It is computed with a
   // non-constant timestep, which breaks symplecticity. |history| is advanced
@@ -46,7 +61,8 @@ class Vessel {
   // meantime, |history| is advanced with small, non-constant timesteps to
   // catch up with the synchronous constant-timestep integration.
   // |this| is in |new_vessels_| if and only if |prolongation| is null.
-  Trajectory<Frame>* prolongation = nullptr;
+  Trajectory<Frame>* prolongation_ = nullptr;
+ public:
   // Whether to keep the |Vessel| during the next call to |AdvanceTime|.
   bool keep = true;
 };
