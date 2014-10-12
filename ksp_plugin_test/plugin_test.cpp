@@ -52,7 +52,7 @@ namespace {
 ACTION_TEMPLATE(AppendTimeToTrajectories,
                 HAS_1_TEMPLATE_PARAMS(int, k),
                 AND_1_VALUE_PARAMS(time)) {
-  for (auto* trajectory :static_cast<NBodySystem<Barycentre>::Trajectories>(
+  for (auto* trajectory : static_cast<NBodySystem<Barycentre>::Trajectories>(
                              std::tr1::get<k>(args))) {
     trajectory->Append(time,
                        {trajectory->last_position(),
@@ -345,7 +345,7 @@ TEST_F(PluginTest, AdvanceTimeWithVessels) {
                                        expected_number_of_new_vessels)))
           .RetiresOnSaturation();
       plugin_->AdvanceTime(t, planetarium_rotation);
-      if(AbsoluteError(10, (t - history_step(0)) / δt) < 0.1) {
+      if (AbsoluteError(10, (t - history_step(0)) / δt) < 0.1) {
         insert_vessel(enterprise_d);
       } else if (AbsoluteError(10, (t - history_step(1)) / δt) < 0.1) {
         insert_vessel(stargazer);
