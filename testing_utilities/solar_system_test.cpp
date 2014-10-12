@@ -129,7 +129,7 @@ TEST_F(SolarSystemTest, HierarchyAtSputnik1Launch) {
   auto const& tethys   = *trajectories[SolarSystem::kTethys];
 
   // Reference excentricities from HORIZONS, truncated.
-  // Using center: Sun (body center) [500@10].
+  // Using centre: Sun (body centre) [500@10].
   TestStronglyBoundOrbit(4.864297E-02, 1E-6, jupiter, sun, nullptr, "jupiter");
   TestStronglyBoundOrbit(5.227008E-02, 1E-6, saturn, sun, nullptr, "saturn");
   TestStronglyBoundOrbit(2.798871E-03, 1E-6, neptune, sun, nullptr, "neptune");
@@ -140,29 +140,29 @@ TEST_F(SolarSystemTest, HierarchyAtSputnik1Launch) {
   TestStronglyBoundOrbit(2.056249E-01, 1E-6, mercury, sun, nullptr, "mercury");
   TestStronglyBoundOrbit(2.545944E-01, 1E-6, pluto, sun, nullptr, "pluto");
   TestStronglyBoundOrbit(4.425162E-01, 1E-6, eris, sun, nullptr, "eris");
-  // Using center: Jupiter (body center) [500@599].
+  // Using centre: Jupiter (body centre) [500@599].
   TestStronglyBoundOrbit(2.825065E-04, 1E-4, ganymede,
                          jupiter, &sun, "ganymede");
   TestStronglyBoundOrbit(7.625971E-03, 1E-6, callisto,
                          jupiter, &sun, "callisto");
   TestStronglyBoundOrbit(4.333647E-03, 1E-5, io, jupiter, &sun, "io");
   TestStronglyBoundOrbit(9.077806E-03, 1E-6, europa, jupiter, &sun, "europa");
-  // Using center: Saturn (body center) [500@699].
+  // Using centre: Saturn (body centre) [500@699].
   TestStronglyBoundOrbit(2.887478E-02, 1E-6, titan, saturn, &sun, "titan");
   TestStronglyBoundOrbit(8.926369E-04, 1E-5, rhea, saturn, &sun, "rhea");
   TestStronglyBoundOrbit(2.799919E-02, 1E-6, iapetus, saturn, &sun, "iapetus");
   TestStronglyBoundOrbit(2.211120E-03, 1E-5, dione, saturn, &sun, "dione");
   TestStronglyBoundOrbit(9.814475E-04, 1E-4, tethys, saturn, &sun, "tethys");
-  // Using center: Geocentric [500].
+  // Using centre: Geocentric [500].
   TestStronglyBoundOrbit(5.811592E-02, 1E-6, moon, earth, &sun, "moon");
-  // Using center: Neptune (body center) [500@899]
+  // Using centre: Neptune (body centre) [500@899]
   TestStronglyBoundOrbit(1.587851E-05, 2E-1, triton, neptune, &sun, "triton");
-  // Using center: Uranus (body center) [500@799]
+  // Using centre: Uranus (body centre) [500@799]
   TestStronglyBoundOrbit(1.413687E-03, 3E-3, titania, uranus, &sun, "titania");
   TestStronglyBoundOrbit(1.217327E-03, 2E-3, oberon, uranus, &sun, "oberon");
   TestStronglyBoundOrbit(1.750702E-03, 2E-3, ariel, uranus, &sun, "ariel");
   TestStronglyBoundOrbit(4.337777E-03, 3E-4, umbriel, uranus, &sun, "umbriel");
-  // Using center: Pluto (body center) [500@999]
+  // Using centre: Pluto (body centre) [500@999]
   TestStronglyBoundOrbit(5.077777E-05, 1E-6, charon, pluto, &sun, "charon");
 }
 
@@ -200,7 +200,7 @@ TEST_F(SolarSystemTest, HierarchyAtSputnik2Launch) {
   auto const& tethys   = *trajectories[SolarSystem::kTethys];
 
   // Reference excentricities from HORIZONS, truncated.
-  // Using center: Sun (body center) [500@10].
+  // Using centre: Sun (body centre) [500@10].
   TestStronglyBoundOrbit(4.899607E-02, 1E-6, jupiter, sun, nullptr, "jupiter");
   TestStronglyBoundOrbit(5.215911E-02, 1E-6, saturn, sun, nullptr, "saturn");
   TestStronglyBoundOrbit(2.719093E-03, 1E-6, neptune, sun, nullptr, "neptune");
@@ -211,29 +211,29 @@ TEST_F(SolarSystemTest, HierarchyAtSputnik2Launch) {
   TestStronglyBoundOrbit(2.056279E-01, 1E-6, mercury, sun, nullptr, "mercury");
   TestStronglyBoundOrbit(2.537103E-01, 1E-6, pluto, sun, nullptr, "pluto");
   TestStronglyBoundOrbit(4.424299E-01, 1E-6, eris, sun, nullptr, "eris");
-  // Using center: Jupiter (body center) [500@599].
+  // Using centre: Jupiter (body centre) [500@599].
   TestStronglyBoundOrbit(4.306439E-04, 1E-4, ganymede,
                          jupiter, &sun, "ganymede");
   TestStronglyBoundOrbit(7.138518E-03, 1E-5, callisto,
                          jupiter, &sun, "callisto");
   TestStronglyBoundOrbit(4.460632E-03, 1E-5, io, jupiter, &sun, "io");
   TestStronglyBoundOrbit(9.509972E-03, 1E-6, europa, jupiter, &sun, "europa");
-  // Using center: Saturn (body center) [500@699].
+  // Using centre: Saturn (body centre) [500@699].
   TestStronglyBoundOrbit(2.882510E-02, 1E-6, titan, saturn, &sun, "titan");
   TestStronglyBoundOrbit(1.228346E-03, 1E-5, rhea, saturn, &sun, "rhea");
   TestStronglyBoundOrbit(2.720904E-02, 1E-6, iapetus, saturn, &sun, "iapetus");
   TestStronglyBoundOrbit(2.693662E-03, 1E-5, dione, saturn, &sun, "dione");
   TestStronglyBoundOrbit(1.088851E-03, 1E-4, tethys, saturn, &sun, "tethys");
-  // Using center: Geocentric [500].
+  // Using centre: Geocentric [500].
   TestStronglyBoundOrbit(5.804121E-02, 1E-6, moon, earth, &sun, "moon");
-  // Using center: Neptune (body center) [500@899]
+  // Using centre: Neptune (body centre) [500@899]
   TestStronglyBoundOrbit(1.529190E-05, 2E-1, triton, neptune, &sun, "triton");
-  // Using center: Uranus (body center) [500@799]
+  // Using centre: Uranus (body centre) [500@799]
   TestStronglyBoundOrbit(2.254242E-03, 3E-3, titania, uranus, &sun, "titania");
   TestStronglyBoundOrbit(4.192300E-04, 3E-3, oberon, uranus, &sun, "oberon");
   TestStronglyBoundOrbit(2.065133E-03, 2E-3, ariel, uranus, &sun, "ariel");
   TestStronglyBoundOrbit(3.837353E-03, 3E-4, umbriel, uranus, &sun, "umbriel");
-  // Using center: Pluto (body center) [500@999]
+  // Using centre: Pluto (body centre) [500@999]
   TestStronglyBoundOrbit(5.212037E-05, 1E-6, charon, pluto, &sun, "charon");
 }
 
