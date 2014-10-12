@@ -7,7 +7,9 @@
 #include "geometry/named_quantities.hpp"
 #include "geometry/point.hpp"
 #include "gtest/gtest.h"
+#include "ksp_plugin/celestial.hpp"
 #include "ksp_plugin/monostable.hpp"
+#include "ksp_plugin/vessel.hpp"
 #include "physics/body.hpp"
 #include "physics/n_body_system.hpp"
 #include "physics/trajectory.hpp"
@@ -194,68 +196,8 @@ class Plugin {
       Index const celestial_index) const;
 
  private:
-  // Represents a KSP |CelestialBody|.
-  struct Celestial {
-    Celestial() = delete;
-    Celestial(Celestial const&) = delete;
-    Celestial(Celestial&&) = delete;
-    ~Celestial() = default;
-
-    explicit Celestial(GravitationalParameter const& gravitational_parameter)
-      : body(new Body<Barycentre>(gravitational_parameter)) {}
-    std::unique_ptr<Body<Barycentre> const> const body;
-    // The parent body for the 2-body approximation. Not owning, must only
-    // be null for the sun.
-    Celestial const* parent = nullptr;
-    // The past and present trajectory of the body. It ends at |HistoryTime()|.
-    std::unique_ptr<Trajectory<Barycentre>> history;
-    // A child trajectory of |*history|. It is forked at |history->last_time()|
-    // and continues it until |current_time_|. It is computed with a
-    // non-constant timestep, which breaks symplecticity. |history| is advanced
-    // with a constant timestep as soon as possible, and |prolongation| is then
-    // restarted from this new end of |history|.
-    // Not owning, not null.
-    Trajectory<Barycentre>* prolongation = nullptr;
-  };
-
-  // Represents a KSP |Vessel|.
-  struct Vessel {
-    Vessel() = delete;
-    Vessel(Vessel const&) = delete;
-    Vessel(Vessel&&) = delete;
-    ~Vessel() = default;
-
-    // Constructs a vessel whose parent is initially |*parent|. |parent| must
-    // not be null. No transfer of ownership.
-    explicit Vessel(Celestial const* parent)
-        : body(new Body<Barycentre>(GravitationalParameter())),
-          parent(CHECK_NOTNULL(parent)) {}
-    // A massless body.
-    std::unique_ptr<Body<Barycentre> const> const body;
-    // The parent body for the 2-body approximation. Not owning, must not be
-    // null.
-    Celestial const* parent;
-    // The past and present trajectory of the body. It ends at |HistoryTime()|
-    // unless |*this| was created after |HistoryTime()|, in which case it ends
-    // at |current_time_|.
-    std::unique_ptr<Trajectory<Barycentre>> history;
-    // A child trajectory of |*history|. It is forked at |history->last_time()|
-    // and continues it until |current_time_|. It is computed with a
-    // non-constant timestep, which breaks symplecticity. |history| is advanced
-    // with a constant timestep as soon as possible, and |prolongation| is then
-    // restarted from this new end of |history|.
-    // Not owning, is null when the vessel is added and becomes non-null when
-    // |history| is next advanced for all vessels and celestials. In the
-    // meantime, |history| is advanced with small, non-constant timesteps to
-    // catch up with the synchronous constant-timestep integration.
-    // |this| is in |new_vessels_| if and only if |prolongation| is null.
-    Trajectory<Barycentre>* prolongation = nullptr;
-    // Whether to keep the |Vessel| during the next call to |AdvanceTime|.
-    bool keep = true;
-  };
-
-  using GUIDToOwnedVessel = std::map<GUID, std::unique_ptr<Vessel>>;
-  using GUIDToUnownedVessel = std::map<GUID, Vessel* const>;
+  using GUIDToOwnedVessel = std::map<GUID, std::unique_ptr<Vessel<Barycentre>>>;
+  using GUIDToUnownedVessel = std::map<GUID, Vessel<Barycentre>* const>;
 
   // The common last time of the histories of synchronized vessels and
   // celestials.
@@ -281,7 +223,7 @@ class Plugin {
   // * its |history->last_time()| is greater than |HistoryTime()|.
   // Also checks that |history->last_time()| is at least |HistoryTime()|.
   void CheckVesselInvariants(
-      Vessel const& vessel,
+      Vessel<Barycentre> const& vessel,
       GUIDToUnownedVessel::iterator const it_in_new_vessels) const;
 
   // Evolves the histories of the |celestials_| and of the synchronized vessels
@@ -304,12 +246,12 @@ class Plugin {
   Time const kΔt = 10 * Second;
 
   GUIDToOwnedVessel vessels_;
-  std::map<Index, std::unique_ptr<Celestial>> celestials_;
+  std::map<Index, std::unique_ptr<Celestial<Barycentre>>> celestials_;
 
   // Vessels which have been recently inserted after |HistoryTime()|. For these
   // vessels, |history->last_time > HistoryTime()|. They have a null
   // |prolongation|. The pointers are not owning and not null.
-  std::map<GUID, Vessel* const> new_vessels_;
+  std::map<GUID, Vessel<Barycentre>* const> new_vessels_;
 
   std::unique_ptr<NBodySystem<Barycentre>> n_body_system_;
   // The symplectic integrator computing the synchronized histories.
@@ -324,7 +266,7 @@ class Plugin {
   Angle planetarium_rotation_;
   // The current in-game universal time.
   Instant current_time_;
-  Celestial* sun_;  // Not owning, not null.
+  Celestial<Barycentre>* sun_;  // Not owning, not null.
 
   // We want to check |HistoryTime|.
   FRIEND_TEST(PluginTest, AdvanceTime);

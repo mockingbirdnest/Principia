@@ -23,6 +23,12 @@
     <ClInclude Include="monostable.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="vessel.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="celestial.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="interface.cpp">

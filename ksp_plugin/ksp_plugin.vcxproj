@@ -120,10 +120,12 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="celestial.hpp" />
     <ClInclude Include="mock_plugin.hpp" />
     <ClInclude Include="monostable.hpp" />
     <ClInclude Include="plugin.hpp" />
     <ClInclude Include="interface.hpp" />
+    <ClInclude Include="vessel.hpp" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="interface.cpp" />
