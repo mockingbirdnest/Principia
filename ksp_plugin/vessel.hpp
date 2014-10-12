@@ -27,10 +27,14 @@ class Vessel {
   // not be null. No transfer of ownership.
   explicit Vessel(Celestial<Frame> const* parent);
 
+  bool has_history() const;
+  bool has_prolongation() const;
   Body<Frame> const& body() const;
   Celestial<Frame> const* parent() const;
   Trajectory<Frame>* history() const;
   Trajectory<Frame>* prolongation() const;
+  Trajectory<Frame>* prolongation_or_history() const;
+
   void set_parent(Celestial<Frame> const* parent);
 
   // Creates a |history_| for this body and appends a point with the given

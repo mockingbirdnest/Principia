@@ -20,18 +20,18 @@ Permutation<WorldSun, AliceSun> const kSunLookingGlass(
 void Plugin::CheckVesselInvariants(
     Vessel<Barycentre> const& vessel,
     GUIDToUnownedVessel::iterator const it_in_new_vessels) const {
-  CHECK(vessel.history() != nullptr) << "Vessel with GUID "
-                                     << it_in_new_vessels->first
-                                     << " was not given an initial state";
+  CHECK(vessel.has_history()) << "Vessel with GUID "
+                              << it_in_new_vessels->first
+                              << " was not given an initial state";
   // TODO(egg): At the moment, if a vessel is inserted when
   // |current_time_ == HistoryTime()| (that only happens before the first call
   // to |AdvanceTime|) its first step is unsynchronized. This is convenient to
   // test code paths, but it means the invariant is GE, rather than GT.
   if (it_in_new_vessels != new_vessels_.end()) {
-    CHECK(vessel.prolongation() == nullptr);
+    CHECK(!vessel.has_prolongation());
     CHECK_GE(vessel.history()->last_time(), HistoryTime());
   } else {
-    CHECK_NOTNULL(vessel.prolongation());
+    CHECK(vessel.has_prolongation());
     CHECK_EQ(vessel.history()->last_time(), HistoryTime());
   }
 }
@@ -256,7 +256,7 @@ void Plugin::SetVesselStateOffset(
   auto const it = vessels_.find(vessel_guid);
   CHECK(it != vessels_.end()) << "No vessel with GUID " << vessel_guid;
   Vessel<Barycentre>* const vessel = it->second.get();
-  CHECK(vessel->history() == nullptr)
+  CHECK(!vessel->has_history())
       << "Vessel with GUID " << vessel_guid << " already has a trajectory";
   LOG(INFO) << "Initial |orbit.pos| for vessel with GUID " << vessel_guid
             << ": " << from_parent_position;
@@ -307,9 +307,7 @@ Displacement<AliceSun> Plugin::VesselDisplacementFromParent(
   CHECK(vessel.history() != nullptr) << "Vessel with GUID " << vessel_guid
                                      << " was not given an initial state";
   Displacement<Barycentre> const barycentric_result =
-      (vessel.prolongation() == nullptr ?
-           vessel.history()->last_position() :
-           vessel.prolongation()->last_position()) -
+      vessel.prolongation_or_history()->last_position() -
       vessel.parent()->prolongation()->last_position();
   Displacement<AliceSun> const result =
       kSunLookingGlass(PlanetariumRotation()(barycentric_result));
@@ -327,10 +325,8 @@ Velocity<AliceSun> Plugin::VesselParentRelativeVelocity(
   CHECK(vessel.history() != nullptr) << "Vessel with GUID " << vessel_guid
                                      << " was not given an initial state";
   Velocity<Barycentre> const barycentric_result =
-      (vessel.prolongation() == nullptr ?
-           vessel.history()->last_velocity() :
-           vessel.prolongation()->last_velocity()) -
-       vessel.parent()->prolongation()->last_velocity();
+      vessel.prolongation_or_history()->last_velocity() -
+      vessel.parent()->prolongation()->last_velocity();
   Velocity<AliceSun> const result =
       kSunLookingGlass(PlanetariumRotation()(barycentric_result));
   VLOG(1) << "Vessel with GUID " << vessel_guid

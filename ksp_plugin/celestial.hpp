@@ -26,11 +26,11 @@ class Celestial {
 
   explicit Celestial(GravitationalParameter const& gravitational_parameter);
 
-  // No transfer of ownership in the selectors below.
   Body<Frame> const& body() const;
   Celestial const* parent() const;
   Trajectory<Frame>* history() const;
   Trajectory<Frame>* prolongation() const;
+
   void set_parent(Celestial const* parent);
 
   // Creates a |history_| for this body and appends a point with the given

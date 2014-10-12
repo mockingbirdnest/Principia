@@ -11,6 +11,16 @@ Vessel<Frame>::Vessel(Celestial<Frame> const* parent)
       parent_(CHECK_NOTNULL(parent)) {}
 
 template<typename Frame>
+bool Vessel<Frame>::has_history() const {
+  return history_ != nullptr;
+}
+
+template<typename Frame>
+bool Vessel<Frame>::has_prolongation() const {
+  return prolongation_ != nullptr;
+}
+
+template<typename Frame>
 Body<Frame> const& Vessel<Frame>::body() const {
   return *body_;
 }
@@ -28,6 +38,11 @@ Trajectory<Frame>* Vessel<Frame>::history() const {
 template<typename Frame>
 Trajectory<Frame>* Vessel<Frame>::prolongation() const {
   return prolongation_;
+}
+
+template<typename Frame>
+Trajectory<Frame>* Vessel<Frame>::prolongation_or_history() const {
+    return prolongation_ == nullptr ? history_.get() : prolongation_;
 }
 
 template<typename Frame>
