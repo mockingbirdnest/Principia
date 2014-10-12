@@ -75,7 +75,7 @@ void Plugin::EvolveSynchronizedHistories(Instant const& t) {
   }
   for (auto const& pair : vessels_) {
     std::unique_ptr<Vessel<Barycentre>> const& vessel = pair.second;
-    if (vessel->prolongation() != nullptr) {
+    if (vessel->has_prolongation()) {
       trajectories.push_back(vessel->history());
     }
   }
@@ -137,7 +137,7 @@ void Plugin::EvolveProlongationsAndUnsynchronizedHistories(Instant const& t) {
   }
   for (auto const& pair : vessels_) {
     std::unique_ptr<Vessel<Barycentre>> const& vessel = pair.second;
-    if (vessel->prolongation() != nullptr) {
+    if (vessel->has_prolongation()) {
       trajectories.push_back(vessel->prolongation());
     }
   }
@@ -304,8 +304,8 @@ Displacement<AliceSun> Plugin::VesselDisplacementFromParent(
   auto const it = vessels_.find(vessel_guid);
   CHECK(it != vessels_.end()) << "No vessel with GUID " << vessel_guid;
   Vessel<Barycentre> const& vessel = *it->second;
-  CHECK(vessel.history() != nullptr) << "Vessel with GUID " << vessel_guid
-                                     << " was not given an initial state";
+  CHECK(vessel.has_history()) << "Vessel with GUID " << vessel_guid
+                              << " was not given an initial state";
   Displacement<Barycentre> const barycentric_result =
       vessel.prolongation_or_history()->last_position() -
       vessel.parent()->prolongation()->last_position();
@@ -322,8 +322,8 @@ Velocity<AliceSun> Plugin::VesselParentRelativeVelocity(
   auto const it = vessels_.find(vessel_guid);
   CHECK(it != vessels_.end()) << "No vessel with GUID " << vessel_guid;
   Vessel<Barycentre> const& vessel = *it->second;
-  CHECK(vessel.history() != nullptr) << "Vessel with GUID " << vessel_guid
-                                     << " was not given an initial state";
+  CHECK(vessel.has_history()) << "Vessel with GUID " << vessel_guid
+                              << " was not given an initial state";
   Velocity<Barycentre> const barycentric_result =
       vessel.prolongation_or_history()->last_velocity() -
       vessel.parent()->prolongation()->last_velocity();
@@ -341,7 +341,7 @@ Displacement<AliceSun> Plugin::CelestialDisplacementFromParent(
   auto const it = celestials_.find(celestial_index);
   CHECK(it != celestials_.end()) << "No body at index " << celestial_index;
   Celestial<Barycentre> const& celestial = *it->second;
-  CHECK(celestial.parent() != nullptr)
+  CHECK(celestial.has_parent())
       << "Body at index " << celestial_index << " is the sun";
   Displacement<Barycentre> const barycentric_result =
       celestial.prolongation()->last_position() -
@@ -360,7 +360,7 @@ Velocity<AliceSun> Plugin::CelestialParentRelativeVelocity(
   auto const it = celestials_.find(celestial_index);
   CHECK(it != celestials_.end()) << "No body at index " << celestial_index;
   Celestial<Barycentre> const& celestial = *it->second;
-  CHECK(celestial.parent() != nullptr)
+  CHECK(celestial.has_parent())
       << "Body at index " << celestial_index << " is the sun";
   Velocity<Barycentre> const barycentric_result =
       celestial.prolongation()->last_velocity() -

@@ -11,6 +11,11 @@ Celestial<Frame>::Celestial(
     : body_(new Body<Frame>(gravitational_parameter)) {}
 
 template<typename Frame>
+bool Celestial<Frame>::has_parent() const {
+  return parent_ != nullptr;
+}
+
+template<typename Frame>
 Body<Frame> const& Celestial<Frame>::body() const {
   return *body_;
 }

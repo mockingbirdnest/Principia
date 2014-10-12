@@ -26,6 +26,7 @@ class Celestial {
 
   explicit Celestial(GravitationalParameter const& gravitational_parameter);
 
+  bool has_parent() const;
   Body<Frame> const& body() const;
   Celestial const* parent() const;
   Trajectory<Frame>* history() const;
