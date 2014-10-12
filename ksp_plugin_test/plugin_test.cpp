@@ -275,7 +275,7 @@ TEST_F(PluginTest, AdvanceTimeWithCelestialsOnly) {
 
 // Checks that the plugin correctly advances the history of newly inserted
 // vessels with the prolongation integrator (using small steps), then switches
-// to the history integrator.
+// to the history integrator.  Also tests the removal of vessels.
 TEST_F(PluginTest, AdvanceTimeWithVessels) {
   // Inserted at |initial_time|, removed later on.
   GUID const enterprise = "NCC-1701";
