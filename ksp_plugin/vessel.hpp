@@ -16,7 +16,8 @@ namespace ksp_plugin {
 
 // Represents a KSP |Vessel|.
 template<typename Frame>
-struct Vessel {
+class Vessel {
+ public:
   Vessel() = delete;
   Vessel(Vessel const&) = delete;
   Vessel(Vessel&&) = delete;
@@ -24,9 +25,8 @@ struct Vessel {
 
   // Constructs a vessel whose parent is initially |*parent|. |parent| must
   // not be null. No transfer of ownership.
-  explicit Vessel(Celestial<Frame> const* parent)
-      : body(new Body<Frame>(GravitationalParameter())),
-        parent(CHECK_NOTNULL(parent)) {}
+  explicit Vessel(Celestial<Frame> const* parent);
+
   // A massless body.
   std::unique_ptr<Body<Frame> const> const body;
   // The parent body for the 2-body approximation. Not owning, must not be
@@ -53,3 +53,5 @@ struct Vessel {
 
 }  // namespace ksp_plugin
 }  // namespace principia
+
+#include "ksp_plugin/vessel_body.hpp"

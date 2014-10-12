@@ -15,14 +15,15 @@ namespace ksp_plugin {
 
 // Represents a KSP |CelestialBody|.
 template<typename Frame>
-struct Celestial {
+class Celestial {
+ public:
   Celestial() = delete;
   Celestial(Celestial const&) = delete;
   Celestial(Celestial&&) = delete;
   ~Celestial() = default;
 
-  explicit Celestial(GravitationalParameter const& gravitational_parameter)
-    : body(new Body<Frame>(gravitational_parameter)) {}
+  explicit Celestial(GravitationalParameter const& gravitational_parameter);
+
   std::unique_ptr<Body<Frame> const> const body;
   // The parent body for the 2-body approximation. Not owning, must only
   // be null for the sun.
@@ -40,3 +41,5 @@ struct Celestial {
 
 }  // namespace ksp_plugin
 }  // namespace principia
+
+#include "ksp_plugin/celestial_body.hpp"
