@@ -277,13 +277,16 @@ TEST_F(PluginTest, AdvanceTimeWithCelestialsOnly) {
 // vessels with the prolongation integrator (using small steps), then switches
 // to the history integrator.
 TEST_F(PluginTest, AdvanceTimeWithVessels) {
-  // Inserted at |initial_time|.
-  GUID const enterprise = "NCC-1701";;
+  // Inserted at |initial_time|, removed later on.
+  GUID const enterprise = "NCC-1701";
   // Inserted after |initial_time|, but before the histories are first advanced.
   GUID const enterprise_d = "NCC-1701-D";
   // Inserted after the histories are first advanced, at a timestep where the
   // histories are not advanced further.
   GUID const stargazer = "NCC-2893";
+  // Inserted at the same time as |stargazer|, removed before the histories are
+  // advanced again (it is thus removed while unsynchronized).
+  GUID const bradbury = "NX-72307";
   // Inserted just after the histories are advanced.
   GUID const constantinople = "NCC-43622";
   InsertAllSolarSystemBodies();
@@ -314,12 +317,20 @@ TEST_F(PluginTest, AdvanceTimeWithVessels) {
   for (int i = 0; i < 10; ++i) {
     for (Instant t = history_step(i) + δt; t <= history_step(i + 1); t += δt) {
       // Keep our vessels.  Make sure we're not inserting new ones.
-      keep_vessel(enterprise);
+      if (i <= 3) {
+        keep_vessel(enterprise);
+      }
       if (t > history_step(0) + 10.1 * δt) {
         keep_vessel(enterprise_d);
       }
       if (t > history_step(1) + 10.1 * δt) {
         keep_vessel(stargazer);
+      }
+      if (t > history_step(1) + 10.1 * δt && t < history_step(1) + 24.9 * δt) {
+        keep_vessel(bradbury);
+      } else if (AbsoluteError(25, (t - history_step(1)) / δt) < 0.1) {
+        // We will be removing |bradbury| in this step.
+        --expected_number_of_new_vessels;
       }
       if (i > 2) {
         keep_vessel(constantinople);
@@ -338,10 +349,13 @@ TEST_F(PluginTest, AdvanceTimeWithVessels) {
         insert_vessel(enterprise_d);
       } else if (AbsoluteError(10, (t - history_step(1)) / δt) < 0.1) {
         insert_vessel(stargazer);
+        insert_vessel(bradbury);
       }
     }
     // Keep the vessels for the history-advancing step.
-    keep_vessel(enterprise);
+    if (i <= 3) {
+      keep_vessel(enterprise);
+    }
     keep_vessel(enterprise_d);
     if (i >= 1) {
       keep_vessel(stargazer);
@@ -382,6 +396,9 @@ TEST_F(PluginTest, AdvanceTimeWithVessels) {
     expected_number_of_new_vessels = 0U;
     if (i == 2) {
       insert_vessel(constantinople);
+    } else if (i == 3) {
+      // We will be removing |enterprise|.
+      --expected_number_of_old_vessels;
     }
   }
 }
