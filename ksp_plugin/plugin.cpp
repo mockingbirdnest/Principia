@@ -20,8 +20,7 @@ Permutation<WorldSun, AliceSun> const kSunLookingGlass(
 void Plugin::CheckVesselInvariants(
     Vessel<Barycentre> const& vessel,
     GUIDToUnownedVessel::iterator const it_in_new_vessels) const {
-  CHECK(vessel.has_history()) << "Vessel with GUID "
-                              << it_in_new_vessels->first
+  CHECK(vessel.has_history()) << "Vessel with GUID " << it_in_new_vessels->first
                               << " was not given an initial state";
   // TODO(egg): At the moment, if a vessel is inserted when
   // |current_time_ == HistoryTime()| (that only happens before the first call
@@ -45,7 +44,7 @@ void Plugin::CleanUpVessels() {
     // While we're going over the vessels, check invariants.
     CheckVesselInvariants(*vessel, it_in_new_vessels);
     // Now do the cleanup.
-    if (kept_.erase(vessel) > 0) {
+    if (kept_.erase(vessel)) {
       ++it;
     } else {
       LOG(INFO) << "Removing vessel with GUID " << it->first;
