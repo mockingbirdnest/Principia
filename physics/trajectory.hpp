@@ -100,7 +100,7 @@ class Trajectory {
   // beyond |last_time()|.
   // It is an error to call this function for a trajectory that already has an
   // intrinsic acceleration, or for the trajectory of a massive body.
-  void set_intrinsic_acceleration(IntrinsicAcceleration acceleration);
+  void set_intrinsic_acceleration(IntrinsicAcceleration const acceleration);
 
   // Removes any intrinsic acceleration for the trajectory.
   void clear_intrinsic_acceleration();

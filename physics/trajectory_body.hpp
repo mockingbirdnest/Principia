@@ -205,7 +205,7 @@ Body<Frame> const& Trajectory<Frame>::body() const {
 
 template<typename Frame>
 void Trajectory<Frame>::set_intrinsic_acceleration(
-    IntrinsicAcceleration acceleration) {
+    IntrinsicAcceleration const acceleration) {
   CHECK(body_.is_massless()) << "Trajectory is for a massive body";
   CHECK(intrinsic_acceleration_ == nullptr)
       << "Trajectory already has an intrinsic acceleration";
