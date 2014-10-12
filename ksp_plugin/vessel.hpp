@@ -47,7 +47,7 @@ class Vessel {
     // Deletes the |prolongation_| and forks a new one at |time|.
   void ResetProlongation(Instant const& time);
 
-private:
+ private:
   // A massless body.
   std::unique_ptr<Body<Frame> const> const body_;
   // The parent body for the 2-body approximation. Not owning, must not be
