@@ -41,12 +41,11 @@ void Plugin::CleanUpVessels() {
   // Remove the vessels which were not updated since last time.
   for (auto it = vessels_.cbegin(); it != vessels_.cend();) {
     auto const& it_in_new_vessels = new_vessels_.find(it->first);
-    Vessel<Barycentre> const& vessel = *it->second;
+    Vessel<Barycentre> const* vessel = it->second.get();
     // While we're going over the vessels, check invariants.
-    CheckVesselInvariants(vessel, it_in_new_vessels);
+    CheckVesselInvariants(*vessel, it_in_new_vessels);
     // Now do the cleanup.
-    if (vessel.keep) {
-      it->second->keep = false;
+    if (kept_.erase(vessel) > 0) {
       ++it;
     } else {
       LOG(INFO) << "Removing vessel with GUID " << it->first;
@@ -240,7 +239,7 @@ bool Plugin::InsertOrKeepVessel(GUID const& vessel_guid,
       {vessel_guid,
        std::make_unique<Vessel<Barycentre>>(&parent)});
   Vessel<Barycentre>* const vessel = inserted.first->second.get();
-  vessel->keep = true;
+  kept_.insert(vessel);
   vessel->set_parent(&parent);
   LOG_IF(INFO, inserted.second) << "Inserted Vessel with GUID " << vessel_guid;
   VLOG(1) << "Parent of vessel with GUID " << vessel_guid <<" is at index "

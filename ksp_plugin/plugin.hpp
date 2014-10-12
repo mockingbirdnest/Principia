@@ -253,6 +253,9 @@ class Plugin {
   // |prolongation|. The pointers are not owning and not null.
   std::map<GUID, Vessel<Barycentre>* const> new_vessels_;
 
+  // The vessels that will be kept during the next call to |AdvanceTime|.
+  std::set<Vessel<Barycentre> const* const> kept_;
+
   std::unique_ptr<NBodySystem<Barycentre>> n_body_system_;
   // The symplectic integrator computing the synchronized histories.
   SPRKIntegrator<Length, Speed> history_integrator_;
