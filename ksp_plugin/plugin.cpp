@@ -70,11 +70,13 @@ void Plugin::EvolveSynchronizedHistories(Instant const& t) {
   trajectories.reserve(vessels_.size() - new_vessels_.size() +
                        celestials_.size());
   for (auto const& pair : celestials_) {
-    trajectories.push_back(pair.second->history.get());
+    std::unique_ptr<Celestial<Barycentre>> const& celestial = pair.second;
+    trajectories.push_back(celestial->history());
   }
   for (auto const& pair : vessels_) {
-    if (pair.second->prolongation != nullptr) {
-      trajectories.push_back(pair.second->history.get());
+    std::unique_ptr<Vessel<Barycentre>> const& vessel = pair.second;
+    if (vessel->prolongation != nullptr) {
+      trajectories.push_back(vessel->history.get());
     }
   }
   n_body_system_->Integrate(history_integrator_,  // integrator
@@ -93,10 +95,12 @@ void Plugin::SynchronizeNewHistories() {
   NBodySystem<Barycentre>::Trajectories trajectories;
   trajectories.reserve(celestials_.size() + new_vessels_.size());
   for (auto const& pair : celestials_) {
-    trajectories.push_back(pair.second->prolongation);
+    std::unique_ptr<Celestial<Barycentre>> const& celestial = pair.second;
+    trajectories.push_back(celestial->prolongation());
   }
   for (auto const& pair : new_vessels_) {
-    trajectories.push_back(pair.second->history.get());
+    Vessel<Barycentre> const* vessel = pair.second;
+    trajectories.push_back(vessel->history.get());
   }
   n_body_system_->Integrate(prolongation_integrator_,  // integrator
                             HistoryTime(),             // tmax
@@ -110,14 +114,15 @@ void Plugin::SynchronizeNewHistories() {
 
 void Plugin::ResetProlongations() {
   for (auto const& pair : vessels_) {
-    if (pair.second->prolongation != nullptr) {
-      pair.second->history->DeleteFork(&pair.second->prolongation);
+    std::unique_ptr<Vessel<Barycentre>> const& vessel = pair.second;
+    if (vessel->prolongation != nullptr) {
+      vessel->history->DeleteFork(&vessel->prolongation);
     }
-    pair.second->prolongation = pair.second->history->Fork(HistoryTime());
+    vessel->prolongation = vessel->history->Fork(HistoryTime());
   }
   for (auto const& pair : celestials_) {
-    pair.second->history->DeleteFork(&pair.second->prolongation);
-    pair.second->prolongation = pair.second->history->Fork(HistoryTime());
+    std::unique_ptr<Celestial<Barycentre>> const& celestial = pair.second;
+    celestial->ResetProlongation(HistoryTime());
   }
   VLOG(1) << "Prolongations have been reset";
 }
@@ -126,14 +131,17 @@ void Plugin::EvolveProlongationsAndUnsynchronizedHistories(Instant const& t) {
   NBodySystem<Barycentre>::Trajectories trajectories;
   trajectories.reserve(vessels_.size() + celestials_.size());
   for (auto const& pair : celestials_) {
-    trajectories.push_back(pair.second->prolongation);
+    std::unique_ptr<Celestial<Barycentre>> const& celestial = pair.second;
+    trajectories.push_back(celestial->prolongation());
   }
   for (auto const& pair : new_vessels_) {
-    trajectories.push_back(pair.second->history.get());
+    Vessel<Barycentre> const* vessel = pair.second;
+    trajectories.push_back(vessel->history.get());
   }
   for (auto const& pair : vessels_) {
-    if (pair.second->prolongation != nullptr) {
-      trajectories.push_back(pair.second->prolongation);
+    std::unique_ptr<Vessel<Barycentre>> const& vessel = pair.second;
+    if (vessel->prolongation != nullptr) {
+      trajectories.push_back(vessel->prolongation);
     }
   }
   VLOG(1) << "Evolving prolongations and new histories" << '\n'
@@ -148,7 +156,7 @@ void Plugin::EvolveProlongationsAndUnsynchronizedHistories(Instant const& t) {
 }
 
 Instant const& Plugin::HistoryTime() const {
-  return sun_->history->last_time();
+  return sun_->history()->last_time();
 }
 
 Rotation<Barycentre, WorldSun> Plugin::PlanetariumRotation() const {
@@ -168,10 +176,9 @@ Plugin::Plugin(Instant const& initial_time,
       {sun_index,
        std::make_unique<Celestial<Barycentre>>(sun_gravitational_parameter)});
   sun_ = inserted.first->second.get();
-  sun_->history = std::make_unique<Trajectory<Barycentre>>(*sun_->body);
-  sun_->history->Append(current_time_,
-                        {Position<Barycentre>(), Velocity<Barycentre>()});
-  sun_->prolongation = sun_->history->Fork(current_time_);
+  sun_->AppendAndForkProlongation(
+      current_time_,
+      {Position<Barycentre>(), Velocity<Barycentre>()});
   history_integrator_.Initialize(history_integrator_.Order5Optimal());
   // NOTE(egg): perhaps a lower order would be appropriate.
   prolongation_integrator_.Initialize(history_integrator_.Order5Optimal());
@@ -205,14 +212,11 @@ void Plugin::InsertCelestial(
           kSunLookingGlass.Inverse()(from_parent_velocity));
   LOG(INFO) << "In barycentric coordinates: " << relative_velocity;
   Celestial<Barycentre>* const celestial = inserted.first->second.get();
-  celestial->parent = &parent;
-  celestial->history =
-      std::make_unique<Trajectory<Barycentre>>(*celestial->body);
-  celestial->history->Append(
+  celestial->set_parent(&parent);
+  celestial->AppendAndForkProlongation(
       current_time_,
-      {parent.history->last_position() + displacement,
-       parent.history->last_velocity() + relative_velocity});
-  celestial->prolongation = celestial->history->Fork(current_time_);
+      {parent.history()->last_position() + displacement,
+       parent.history()->last_velocity() + relative_velocity});
 }
 
 void Plugin::EndInitialization() {
@@ -226,7 +230,7 @@ void Plugin::UpdateCelestialHierarchy(Index const celestial_index,
   CHECK(it != celestials_.end()) << "No body at index " << celestial_index;
   auto const it_parent = celestials_.find(parent_index);
   CHECK(it_parent != celestials_.end()) << "No body at index " << parent_index;
-  it->second->parent = it_parent->second.get();
+  it->second->set_parent(it_parent->second.get());
 }
 
 bool Plugin::InsertOrKeepVessel(GUID const& vessel_guid,
@@ -272,8 +276,8 @@ void Plugin::SetVesselStateOffset(
   vessel->history = std::make_unique<Trajectory<Barycentre>>(*vessel->body);
   vessel->history->Append(
       current_time_,
-      {vessel->parent->history->last_position() + displacement,
-       vessel->parent->history->last_velocity() + relative_velocity});
+      {vessel->parent->history()->last_position() + displacement,
+       vessel->parent->history()->last_velocity() + relative_velocity});
   auto const inserted = new_vessels_.insert({vessel_guid, vessel});
   CHECK(inserted.second);
 }
@@ -310,7 +314,7 @@ Displacement<AliceSun> Plugin::VesselDisplacementFromParent(
       (vessel.prolongation == nullptr ?
            vessel.history->last_position() :
            vessel.prolongation->last_position()) -
-      vessel.parent->prolongation->last_position();
+      vessel.parent->prolongation()->last_position();
   Displacement<AliceSun> const result =
       kSunLookingGlass(PlanetariumRotation()(barycentric_result));
   VLOG(1) << "Vessel with GUID " << vessel_guid << " is at parent position + "
@@ -330,7 +334,7 @@ Velocity<AliceSun> Plugin::VesselParentRelativeVelocity(
       (vessel.prolongation == nullptr ?
            vessel.history->last_velocity() :
            vessel.prolongation->last_velocity()) -
-       vessel.parent->prolongation->last_velocity();
+       vessel.parent->prolongation()->last_velocity();
   Velocity<AliceSun> const result =
       kSunLookingGlass(PlanetariumRotation()(barycentric_result));
   VLOG(1) << "Vessel with GUID " << vessel_guid
@@ -345,11 +349,11 @@ Displacement<AliceSun> Plugin::CelestialDisplacementFromParent(
   auto const it = celestials_.find(celestial_index);
   CHECK(it != celestials_.end()) << "No body at index " << celestial_index;
   Celestial<Barycentre> const& celestial = *it->second;
-  CHECK(celestial.parent != nullptr)
+  CHECK(celestial.parent() != nullptr)
       << "Body at index " << celestial_index << " is the sun";
   Displacement<Barycentre> const barycentric_result =
-      celestial.prolongation->last_position() -
-      celestial.parent->prolongation->last_position();
+      celestial.prolongation()->last_position() -
+      celestial.parent()->prolongation()->last_position();
   Displacement<AliceSun> const result =
       kSunLookingGlass(PlanetariumRotation()(barycentric_result));
   VLOG(1) << "Celestial at index " << celestial_index
@@ -364,11 +368,11 @@ Velocity<AliceSun> Plugin::CelestialParentRelativeVelocity(
   auto const it = celestials_.find(celestial_index);
   CHECK(it != celestials_.end()) << "No body at index " << celestial_index;
   Celestial<Barycentre> const& celestial = *it->second;
-  CHECK(celestial.parent != nullptr)
+  CHECK(celestial.parent() != nullptr)
       << "Body at index " << celestial_index << " is the sun";
   Velocity<Barycentre> const barycentric_result =
-      celestial.prolongation->last_velocity() -
-      celestial.parent->prolongation->last_velocity();
+      celestial.prolongation()->last_velocity() -
+      celestial.parent()->prolongation()->last_velocity();
   Velocity<AliceSun> const result =
       kSunLookingGlass(PlanetariumRotation()(barycentric_result));
   VLOG(1) << "Celestial at index " << celestial_index
