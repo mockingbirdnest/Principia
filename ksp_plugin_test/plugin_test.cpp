@@ -156,7 +156,7 @@ class PluginTest : public testing::Test {
 
   // Keeps the vessel with the given |guid| during the next call to
   // |AdvanceTime|.  The vessel must be present.
-  void KeepVessel(GUID const guid) {
+  void KeepVessel(GUID const& guid) {
     bool const inserted = plugin_->InsertOrKeepVessel(guid,
                                                       SolarSystem::kEarth);
     EXPECT_FALSE(inserted) << guid;
@@ -167,7 +167,7 @@ class PluginTest : public testing::Test {
   // |satellite_initial_velocity_|.  The vessel must not already be present.
   // Increments the counter |*number_of_new_vessels|.  |number_of_new_vessels|
   // must not be null.
-  void InsertVessel(GUID const guid, std::size_t* const number_of_new_vessels) {
+  void InsertVessel(GUID const& guid, std::size_t* const number_of_new_vessels) {
     bool const inserted = plugin_->InsertOrKeepVessel(guid,
                                                       SolarSystem::kEarth);
     EXPECT_TRUE(inserted) << guid;
@@ -328,8 +328,8 @@ TEST_F(PluginTest, AdvanceTimeWithVessels) {
   InsertAllSolarSystemBodies();
   plugin_->EndInitialization();
   Angle const planetarium_rotation = 42 * Radian;
-  std::size_t expected_number_of_new_vessels = 0U;
-  std::size_t expected_number_of_old_vessels = 0U;
+  std::size_t expected_number_of_new_vessels = 0;
+  std::size_t expected_number_of_old_vessels = 0;
   InsertVessel(enterprise, &expected_number_of_new_vessels);
   for (int step = 0; step < 10; ++step) {
     for (Instant t = HistoryTime(step) + δt;
