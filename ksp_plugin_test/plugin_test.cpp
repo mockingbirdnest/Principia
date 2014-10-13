@@ -413,7 +413,7 @@ TEST_F(PluginTest, AdvanceTimeWithVessels) {
         .RetiresOnSaturation();
     plugin_->AdvanceTime(HistoryTime(step + 1) + δt, planetarium_rotation);
     expected_number_of_old_vessels += expected_number_of_new_vessels;
-    expected_number_of_new_vessels = 0U;
+    expected_number_of_new_vessels = 0;
     if (step == 2) {
       InsertVessel(constantinople, &expected_number_of_new_vessels);
     } else if (step == 3) {
