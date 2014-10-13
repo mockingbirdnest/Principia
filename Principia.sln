@@ -13,7 +13,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Project Property Sheets", "
 		include_solution.props = include_solution.props
 		llvm_compatibility.props = llvm_compatibility.props
 		suppress_useless_warnings.props = suppress_useless_warnings.props
-		warnings_as_errors.props = warnings_as_errors.props
 	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "geometry", "geometry\geometry.vcxproj", "{0FD08CDF-228C-48C6-8690-CF0A72CF6C69}"

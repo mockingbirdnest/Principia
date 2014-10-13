@@ -6,18 +6,13 @@ namespace principia {
 namespace ksp_plugin {
 
 template<typename Frame>
-Celestial<Frame>::Celestial(
-    GravitationalParameter const& gravitational_parameter)
-    : body_(new Body<Frame>(gravitational_parameter)) {}
+template<typename... Args>
+Celestial<Frame>::Celestial(Args&&... args)
+    : body_(new Body<Frame>(std::forward<Args>(args)...)) {}
 
 template<typename Frame>
 bool Celestial<Frame>::has_parent() const {
   return parent_ != nullptr;
-}
-
-template<typename Frame>
-Body<Frame> const& Celestial<Frame>::body() const {
-  return *body_;
 }
 
 template<typename Frame>
