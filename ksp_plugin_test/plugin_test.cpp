@@ -47,11 +47,13 @@ namespace {
 
 // Appends a |DegreesOfFreedom| equal to the last one at the given |time| to
 // each |Trajectory| in the |k|th parameter of the expected call.
-// |T| must be |NBodySystem<>::Trajectories|, |time| must be an |Instant|.
+// This parameter must be an |NBodySystem<Barycentre>::Trajectories|, |time|
+// must be an |Instant|.
 ACTION_TEMPLATE(AppendTimeToTrajectories,
-                HAS_2_TEMPLATE_PARAMS(int, k, typename, T),
+                HAS_1_TEMPLATE_PARAMS(int, k),
                 AND_1_VALUE_PARAMS(time)) {
-  for (auto* trajectory : T(std::tr1::get<k>(args))) {
+  for (auto* trajectory : static_cast<NBodySystem<Barycentre>::Trajectories>(
+                              std::tr1::get<k>(args))) {
     trajectory->Append(time,
                        {trajectory->last_position(),
                         trajectory->last_velocity()});
@@ -101,6 +103,23 @@ class PluginTest : public testing::Test {
         sun_gravitational_parameter_(
             bodies_[SolarSystem::kSun]->gravitational_parameter()),
         planetarium_rotation_(1 * Radian) {
+    satellite_initial_displacement_ =
+        Displacement<AliceSun>({3111.0 * Kilo(Metre),
+                                4400.0 * Kilo(Metre),
+                                3810.0 * Kilo(Metre)});
+    auto const tangent =
+        satellite_initial_displacement_ * Bivector<double, AliceSun>({1, 2, 3});
+    Vector<double, AliceSun> const unit_tangent = tangent / tangent.Norm();
+    EXPECT_THAT(
+        InnerProduct(unit_tangent,
+                     satellite_initial_displacement_ /
+                         satellite_initial_displacement_.Norm()),
+        Eq(0));
+    // This yields a circular orbit.
+    satellite_initial_velocity_ =
+        Sqrt(bodies_[SolarSystem::kEarth]->gravitational_parameter() /
+                 satellite_initial_displacement_.Norm()) * unit_tangent;
+
     n_body_system_ = new MockNBodySystem<Barycentre>();
     plugin_ = std::make_unique<StrictMock<TestablePlugin>>(
                   initial_time_,
@@ -129,6 +148,36 @@ class PluginTest : public testing::Test {
     }
   }
 
+  // The time of the |step|th synchronized history step of |plugin_|.
+  // |HistoryTime(0)| is |initial_time_|.
+  Instant HistoryTime(int const step) {
+    return initial_time_ + step * plugin_->Δt();
+  }
+
+  // Keeps the vessel with the given |guid| during the next call to
+  // |AdvanceTime|.  The vessel must be present.
+  void KeepVessel(GUID const& guid) {
+    bool const inserted = plugin_->InsertOrKeepVessel(guid,
+                                                      SolarSystem::kEarth);
+    EXPECT_FALSE(inserted) << guid;
+  }
+
+  // Inserts a vessel with the given |guid| and makes it a satellite of Earth
+  // with relative position |satellite_initial_displacement_| and velocity
+  // |satellite_initial_velocity_|.  The vessel must not already be present.
+  // Increments the counter |*number_of_new_vessels|.  |number_of_new_vessels|
+  // must not be null.
+  void InsertVessel(GUID const& guid,
+                    std::size_t* const number_of_new_vessels) {
+    bool const inserted = plugin_->InsertOrKeepVessel(guid,
+                                                      SolarSystem::kEarth);
+    EXPECT_TRUE(inserted) << guid;
+    plugin_->SetVesselStateOffset(guid,
+                                  satellite_initial_displacement_,
+                                  satellite_initial_velocity_);
+    ++*CHECK_NOTNULL(number_of_new_vessels);
+  }
+
   Permutation<ICRFJ2000Ecliptic, AliceSun> looking_glass_;
   MockNBodySystem<Barycentre>* n_body_system_;  // Not owned.
   std::unique_ptr<SolarSystem> solar_system_;
@@ -138,6 +187,10 @@ class PluginTest : public testing::Test {
   Angle planetarium_rotation_;
 
   std::unique_ptr<StrictMock<TestablePlugin>> plugin_;
+
+  // These initial conditions will yield a low circular orbit around Earth.
+  Displacement<AliceSun> satellite_initial_displacement_;
+  Velocity<AliceSun> satellite_initial_velocity_;
 };
 
 TEST_F(PluginTest, Initialization) {
@@ -201,58 +254,173 @@ TEST_F(PluginTest, VesselInsertionAtInitialization) {
   bool const inserted = plugin_->InsertOrKeepVessel(guid,
                                                     SolarSystem::kEarth);
   EXPECT_TRUE(inserted);
-  Displacement<AliceSun> const displacement({3111.0 * Kilo(Metre),
-                                             4400.0 * Kilo(Metre),
-                                             3810.0 * Kilo(Metre)});
-  auto const tangent = displacement * Bivector<double, AliceSun>({1, 2, 3});
-  Vector<double, AliceSun> unit_tangent = tangent / tangent.Norm();
-  EXPECT_THAT(InnerProduct(unit_tangent, displacement / displacement.Norm()),
-              Eq(0));
-  // This yields a circular orbit.
-  Velocity<AliceSun> const velocity =
-      Sqrt(bodies_[SolarSystem::kEarth]->gravitational_parameter() /
-               displacement.Norm()) * unit_tangent;
-  plugin_->SetVesselStateOffset(guid, displacement, velocity);
+  plugin_->SetVesselStateOffset(guid,
+                                satellite_initial_displacement_,
+                                satellite_initial_velocity_);
   EXPECT_THAT(
-      AbsoluteError(plugin_->VesselDisplacementFromParent(guid), displacement),
+      AbsoluteError(plugin_->VesselDisplacementFromParent(guid),
+                    satellite_initial_displacement_),
       Lt(DBL_EPSILON * AstronomicalUnit));
   EXPECT_THAT(plugin_->VesselParentRelativeVelocity(guid),
-              AlmostEquals(velocity));
+              AlmostEquals(satellite_initial_velocity_));
 }
 
 // Checks that the plugin correctly uses its 10-second-step history even when
 // advanced with smaller timesteps.
-TEST_F(PluginTest, AdvanceTimeWithCelestials) {
+TEST_F(PluginTest, AdvanceTimeWithCelestialsOnly) {
   InsertAllSolarSystemBodies();
   plugin_->EndInitialization();
   Time const δt = 0.02 * Second;
   Angle const planetarium_rotation = 42 * Radian;
-  auto history_step = [this](int const i) {
-    return initial_time_ + i * plugin_->Δt();
-  };
-  for (int i = 0; i < 10; ++i) {
-    for (Instant t = history_step(i) + δt; t <= history_step(i + 1); t += δt) {
+  for (int step = 0; step < 10; ++step) {
+    for (Instant t = HistoryTime(step) + δt;
+         t <= HistoryTime(step + 1);
+         t += δt) {
+      // Called to compute the prolongations.
       EXPECT_CALL(*n_body_system_,
                   Integrate(Ref(plugin_->prolongation_integrator()), t,
                             plugin_->Δt(), 0, true, SizeIs(bodies_.size())))
           .RetiresOnSaturation();
       plugin_->AdvanceTime(t, planetarium_rotation);
     }
+    // Called to advance the synchronized histories.
     EXPECT_CALL(*n_body_system_,
                 Integrate(Ref(plugin_->history_integrator()),
-                          history_step(i + 1) + δt,
+                          HistoryTime(step + 1) + δt,
                           plugin_->Δt(), 0, false,
                           SizeIs(bodies_.size())))
-        .WillOnce(
-             AppendTimeToTrajectories<5, NBodySystem<Barycentre>::Trajectories>(
-                 history_step(i + 1)))
+        .WillOnce(AppendTimeToTrajectories<5>(HistoryTime(step + 1)))
         .RetiresOnSaturation();
+    // Called to compute the prolongations.
     EXPECT_CALL(*n_body_system_,
                 Integrate(Ref(plugin_->prolongation_integrator()),
-                          history_step(i + 1) + δt, plugin_->Δt(), 0, true,
+                          HistoryTime(step + 1) + δt, plugin_->Δt(), 0, true,
                           SizeIs(bodies_.size())))
         .RetiresOnSaturation();
-    plugin_->AdvanceTime(history_step(i + 1) + δt, planetarium_rotation);
+    plugin_->AdvanceTime(HistoryTime(step + 1) + δt, planetarium_rotation);
+  }
+}
+
+// Checks that the plugin correctly advances the history of newly inserted
+// vessels with the prolongation integrator (using small steps), then switches
+// to the history integrator.  Also tests the removal of vessels.
+// The sequence of additions and removals is as follows (using the constants
+// defined below; recall that |initial_time_ == HistoryTime(0)|).
+// * |HistoryTime(0)|               : Insert |enterprise|.
+// * |HistoryTime(0) + a_while|     : Insert |enterprise_d|.
+// * |HistoryTime(1) + a_while|     : Insert |stargazer| and |bradbury|.
+// * |HistoryTime(1) + half_a_step| : Remove |bradbury| (it is present at
+//                                    |HistoryTime(1) + half_a_step|, but not at
+//                                    |HistoryTime(1) + half_a_step + δt|).
+//                                    It is thus removed while unsynchronized.
+// * |HistoryTime(2)|               : Insert |constantinople|.
+// * |HistoryTime(3)|               : Remove |enterprise|.
+TEST_F(PluginTest, AdvanceTimeWithVessels) {
+  Time const δt = 0.02 * Second;
+  Time const a_while = 10 * δt;
+  Time const half_a_step = 250 * δt;
+  Time const ε_δt = 0.1 * δt;
+  EXPECT_THAT(half_a_step, Eq(plugin_->Δt() / 2));
+  GUID const enterprise = "NCC-1701";
+  GUID const enterprise_d = "NCC-1701-D";
+  GUID const stargazer = "NCC-2893";
+  GUID const bradbury = "NX-72307";
+  GUID const constantinople = "NCC-43622";
+  InsertAllSolarSystemBodies();
+  plugin_->EndInitialization();
+  Angle const planetarium_rotation = 42 * Radian;
+  std::size_t expected_number_of_new_vessels = 0;
+  std::size_t expected_number_of_old_vessels = 0;
+  InsertVessel(enterprise, &expected_number_of_new_vessels);
+  for (int step = 0; step < 10; ++step) {
+    for (Instant t = HistoryTime(step) + δt;
+         t <= HistoryTime(step + 1);
+         t += δt) {
+      // Keep our vessels.  Make sure we're not inserting new ones.
+      if (step <= 3) {
+        KeepVessel(enterprise);
+      }
+      if (t > HistoryTime(0) + a_while + ε_δt) {
+        KeepVessel(enterprise_d);
+      }
+      if (t > HistoryTime(1) + a_while + ε_δt) {
+        KeepVessel(stargazer);
+      }
+      if (t > HistoryTime(1) + a_while + ε_δt &&
+          t < HistoryTime(1) + half_a_step - ε_δt) {
+        KeepVessel(bradbury);
+      } else if (AbsoluteError(t - HistoryTime(1), half_a_step) < ε_δt) {
+        // We will be removing |bradbury| in this step.
+        --expected_number_of_new_vessels;
+      }
+      if (step > 2) {
+        KeepVessel(constantinople);
+      }
+      // Called to compute the prolongations and advance the unsynchronized
+      // histories.
+      EXPECT_CALL(*n_body_system_,
+                  Integrate(Ref(plugin_->prolongation_integrator()), t,
+                            plugin_->Δt(), 0, true,
+                            SizeIs(bodies_.size() +
+                                       expected_number_of_old_vessels +
+                                       expected_number_of_new_vessels)))
+          .RetiresOnSaturation();
+      plugin_->AdvanceTime(t, planetarium_rotation);
+      if (AbsoluteError(t - HistoryTime(0), a_while) < ε_δt) {
+        InsertVessel(enterprise_d, &expected_number_of_new_vessels);
+      } else if (AbsoluteError(t - HistoryTime(1), a_while) < ε_δt) {
+        InsertVessel(stargazer, &expected_number_of_new_vessels);
+        InsertVessel(bradbury, &expected_number_of_new_vessels);
+      }
+    }
+    // Keep the vessels for the history-advancing step.
+    if (step <= 3) {
+      KeepVessel(enterprise);
+    }
+    KeepVessel(enterprise_d);
+    if (step >= 1) {
+      KeepVessel(stargazer);
+    }
+    if (step > 2) {
+      KeepVessel(constantinople);
+    }
+    // Called to advance the synchronized histories.
+    EXPECT_CALL(*n_body_system_,
+                Integrate(Ref(plugin_->history_integrator()),
+                          HistoryTime(step + 1) + δt,
+                          plugin_->Δt(), 0, false,
+                          SizeIs(bodies_.size() +
+                                     expected_number_of_old_vessels)))
+        .WillOnce(AppendTimeToTrajectories<5>(HistoryTime(step + 1)))
+        .RetiresOnSaturation();
+    if (expected_number_of_new_vessels > 0) {
+      // Called to synchronize the new histories.
+      EXPECT_CALL(*n_body_system_,
+                  Integrate(Ref(plugin_->prolongation_integrator()),
+                            HistoryTime(step + 1),
+                            plugin_->Δt(), 0, true,
+                            SizeIs(bodies_.size() +
+                                       expected_number_of_new_vessels)))
+          .WillOnce(AppendTimeToTrajectories<5>(HistoryTime(step + 1)))
+          .RetiresOnSaturation();
+    }
+    // Called to compute the prolongations.
+    EXPECT_CALL(*n_body_system_,
+                Integrate(Ref(plugin_->prolongation_integrator()),
+                          HistoryTime(step + 1) + δt, plugin_->Δt(), 0, true,
+                          SizeIs(bodies_.size() +
+                                     expected_number_of_old_vessels +
+                                     expected_number_of_new_vessels)))
+        .RetiresOnSaturation();
+    plugin_->AdvanceTime(HistoryTime(step + 1) + δt, planetarium_rotation);
+    expected_number_of_old_vessels += expected_number_of_new_vessels;
+    expected_number_of_new_vessels = 0;
+    if (step == 2) {
+      InsertVessel(constantinople, &expected_number_of_new_vessels);
+    } else if (step == 3) {
+      // We will be removing |enterprise|.
+      --expected_number_of_old_vessels;
+    }
   }
 }
 
