@@ -21,11 +21,6 @@ bool Vessel<Frame>::has_prolongation() const {
 }
 
 template<typename Frame>
-Body<Frame> const& Vessel<Frame>::body() const {
-  return *body_;
-}
-
-template<typename Frame>
 Celestial<Frame> const& Vessel<Frame>::parent() const {
   return *parent_;
 }

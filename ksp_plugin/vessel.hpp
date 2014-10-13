@@ -29,7 +29,6 @@ class Vessel {
 
   bool has_history() const;
   bool has_prolongation() const;
-  Body<Frame> const& body() const;
   Celestial<Frame> const& parent() const;
   Trajectory<Frame> const& history() const;
   Trajectory<Frame> const& prolongation() const;

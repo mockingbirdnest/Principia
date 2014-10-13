@@ -1,6 +1,7 @@
 #pragma once
 
 #include <memory>
+#include <utility>
 
 #include "physics/body.hpp"
 #include "physics/degrees_of_freedom.hpp"
@@ -19,15 +20,14 @@ namespace ksp_plugin {
 template<typename Frame>
 class Celestial {
  public:
-  Celestial() = delete;
   Celestial(Celestial const&) = delete;
   Celestial(Celestial&&) = delete;
   ~Celestial() = default;
 
-  explicit Celestial(GravitationalParameter const& gravitational_parameter);
+  template<typename... Args>
+  explicit Celestial(Args&&... args);  // NOLINT(build/c++11)
 
   bool has_parent() const;
-  Body<Frame> const& body() const;
   Celestial const& parent() const;
   Trajectory<Frame> const& history() const;
   Trajectory<Frame> const& prolongation() const;
