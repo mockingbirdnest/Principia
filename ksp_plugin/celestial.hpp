@@ -25,7 +25,7 @@ class Celestial {
   ~Celestial() = default;
 
   template<typename... Args>
-  explicit Celestial(Args&&... args);
+  explicit Celestial(Args&&... args);  // NOLINT(build/c++11)
 
   bool has_parent() const;
   Celestial const& parent() const;
