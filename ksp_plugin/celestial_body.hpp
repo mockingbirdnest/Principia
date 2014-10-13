@@ -8,7 +8,7 @@ namespace ksp_plugin {
 template<typename Frame>
 template<typename... Args>
 Celestial<Frame>::Celestial(Args&&... args)  // NOLINT(build/c++11)
-    : body_(new Body<Frame>(std::forward<Args>(args)...)) {}  // NOLINT(build/c++11,whitespace/line_length)
+    : body_(new Body<Frame>(std::forward<Args>(args)...)) {}  // NOLINT(build/c++11) NOLINT(whitespace/line_length)
 
 template<typename Frame>
 bool Celestial<Frame>::has_parent() const {
