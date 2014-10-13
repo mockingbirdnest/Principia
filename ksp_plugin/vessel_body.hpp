@@ -64,7 +64,9 @@ void Vessel<Frame>::Append(Instant const& time,
 
 template<typename Frame>
 void Vessel<Frame>::ResetProlongation(Instant const& time) {
-  history_->DeleteFork(&prolongation_);
+  if (prolongation_ != nullptr) {
+    history_->DeleteFork(&prolongation_);
+  }
   prolongation_ = history_->Fork(time);
 }
 
