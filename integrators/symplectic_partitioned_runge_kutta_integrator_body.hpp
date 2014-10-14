@@ -170,22 +170,13 @@ void SPRKIntegrator<Position, Momentum>::Solve(
     // for NDSolve", algorithm 2.
     for (int k = 0; k < dimension; ++k) {
       Position const Δq = (*Δqstage_current)[k] + q_last[k].error;
-      q_stage[k] = q_last[k].value + Δq;
-      q_last[k].error = (q_last[k].value - q_stage[k]) + Δq;
-      q_last[k].value = q_stage[k];
+      q_last[k].Increment(Δq);
+      q_stage[k] = q_last[k].value;
       Momentum const Δp = (*Δpstage_current)[k] + p_last[k].error;
-      p_stage[k] = p_last[k].value + Δp;
-      p_last[k].error = (p_last[k].value - p_stage[k]) + Δp;
-      p_last[k].value = p_stage[k];
+      p_last[k].Increment(Δp);
+      p_stage[k] = p_last[k].value;
     }
-
-    // Increment |t_last| by |h| using compensated summation.
-    {
-       Time const t = tn.value;
-       Time const δt = h + tn.error;
-       tn.value = t + δt;
-       tn.error = (t - tn.value) + δt;
-    }
+    tn.Increment(h);
 
     if (parameters.sampling_period != 0) {
       if (sampling_phase % parameters.sampling_period == 0) {
