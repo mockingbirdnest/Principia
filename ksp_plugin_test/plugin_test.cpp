@@ -425,6 +425,7 @@ TEST_F(PluginTest, AdvanceTimeWithVessels) {
 }
 
 TEST_F(PluginTest, UpdateCelestialHierarchy) {
+  LOG(FATAL) << "AAARGH";
   InsertAllSolarSystemBodies();
   plugin_->EndInitialization();
   for (std::size_t index = SolarSystem::kSun + 1;
