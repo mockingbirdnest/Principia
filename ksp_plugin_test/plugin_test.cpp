@@ -439,12 +439,12 @@ TEST_F(PluginTest, UpdateCelestialHierarchy) {
         solar_system_->trajectories()[index]->last_position() -
             solar_system_->trajectories()[SolarSystem::kSun]->last_position(),
         AlmostEquals(looking_glass_.Inverse()(
-            plugin_->CelestialDisplacementFromParent(index))));
+            plugin_->CelestialDisplacementFromParent(index)), 6000));
     EXPECT_THAT(
         solar_system_->trajectories()[index]->last_velocity() -
             solar_system_->trajectories()[SolarSystem::kSun]->last_velocity(),
         AlmostEquals(looking_glass_.Inverse()(
-            plugin_->CelestialParentRelativeVelocity(index))));
+            plugin_->CelestialParentRelativeVelocity(index)), 1000));
   }
 }
 
