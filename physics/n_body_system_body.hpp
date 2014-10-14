@@ -38,10 +38,11 @@ namespace {
 // TODO(phl): |__forceinline| is for MSVC.  Need a portable macro to do this.
 template<typename InertialFrame>
 __forceinline Vector<Acceleration, InertialFrame>
-    Order2ZonalAcceleration(Body<InertialFrame> const& body,
-                            Vector<Length, InertialFrame> const& r,
-                            Exponentiation<Length, -2> const one_over_r_squared,
-                            Exponentiation<Length, -3> const one_over_r_cubed) {
+    Order2ZonalAcceleration(
+        Body<InertialFrame> const& body,
+        Vector<Length, InertialFrame> const& r,
+        Exponentiation<Length, -2> const& one_over_r_squared,
+        Exponentiation<Length, -3> const& one_over_r_cubed) {
   Vector<double, InertialFrame> const& axis = body.axis();
   Length const r_axis_projection = InnerProduct(axis, r);
   auto const j2_over_r_fifth =
