@@ -169,11 +169,9 @@ void SPRKIntegrator<Position, Momentum>::Solve(
     // Compensated summation from "'SymplecticPartitionedRungeKutta' Method
     // for NDSolve", algorithm 2.
     for (int k = 0; k < dimension; ++k) {
-      Position const Δq = (*Δqstage_current)[k] + q_last[k].error;
-      q_last[k].Increment(Δq);
+      q_last[k].Increment((*Δqstage_current)[k]);
+      p_last[k].Increment((*Δpstage_current)[k]);
       q_stage[k] = q_last[k].value;
-      Momentum const Δp = (*Δpstage_current)[k] + p_last[k].error;
-      p_last[k].Increment(Δp);
       p_stage[k] = p_last[k].value;
     }
     tn.Increment(h);
