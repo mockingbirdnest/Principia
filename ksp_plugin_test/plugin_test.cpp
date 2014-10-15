@@ -424,5 +424,29 @@ TEST_F(PluginTest, AdvanceTimeWithVessels) {
   }
 }
 
+TEST_F(PluginTest, UpdateCelestialHierarchy) {
+  InsertAllSolarSystemBodies();
+  plugin_->EndInitialization();
+  for (std::size_t index = SolarSystem::kSun + 1;
+       index < bodies_.size();
+       ++index) {
+    plugin_->UpdateCelestialHierarchy(index, SolarSystem::kSun);
+  }
+  for (std::size_t index = SolarSystem::kSun + 1;
+       index < bodies_.size();
+       ++index) {
+    EXPECT_THAT(
+        solar_system_->trajectories()[index]->last_position() -
+            solar_system_->trajectories()[SolarSystem::kSun]->last_position(),
+        AlmostEquals(looking_glass_.Inverse()(
+            plugin_->CelestialDisplacementFromParent(index)), 6000));
+    EXPECT_THAT(
+        solar_system_->trajectories()[index]->last_velocity() -
+            solar_system_->trajectories()[SolarSystem::kSun]->last_velocity(),
+        AlmostEquals(looking_glass_.Inverse()(
+            plugin_->CelestialParentRelativeVelocity(index)), 1000));
+  }
+}
+
 }  // namespace ksp_plugin
 }  // namespace principia
