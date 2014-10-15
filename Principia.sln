@@ -12,6 +12,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Project Property Sheets", "
 		google_test_framework.props = google_test_framework.props
 		include_solution.props = include_solution.props
 		llvm_compatibility.props = llvm_compatibility.props
+		profiling.props = profiling.props
 		suppress_useless_warnings.props = suppress_useless_warnings.props
 		warnings_as_errors.props = warnings_as_errors.props
 	EndProjectSection
