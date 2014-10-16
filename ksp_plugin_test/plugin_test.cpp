@@ -247,6 +247,19 @@ TEST_F(PluginTest, InsertCelestialError) {
   }, DeathMessage("Body already exists"));
 }
 
+TEST_F(PluginTest, InsertVesselError) {
+  GUID const guid = "Syrio Forel";
+  EXPECT_DEATH({
+    InsertAllSolarSystemBodies();
+    plugin_->InsertOrKeepVessel(guid, SolarSystem::kSun);
+  }, DeathMessage("Check failed: !initializing"));
+  EXPECT_DEATH({
+    InsertAllSolarSystemBodies();
+    plugin_->EndInitialization();
+    plugin_->InsertOrKeepVessel(guid, 1729);
+  }, DeathMessage("No body at index"));
+}
+
 TEST_F(PluginTest, VesselInsertionAtInitialization) {
   GUID const guid = "Test Satellite";
   InsertAllSolarSystemBodies();
