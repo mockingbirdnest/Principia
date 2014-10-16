@@ -2,6 +2,7 @@
 #include "testing_utilities/solar_system.hpp"
 
 #include <string>
+#include <vector>
 
 #include "geometry/grassmann.hpp"
 #include "gmock/gmock.h"
@@ -21,6 +22,7 @@ using principia::quantities::Quotient;
 using principia::quantities::Speed;
 using principia::quantities::Sqrt;
 using principia::si::Radian;
+using testing::ElementsAreArray;
 using testing::Lt;
 using testing::Ge;
 
@@ -91,6 +93,19 @@ class SolarSystemTest : public testing::Test {
 
   std::unique_ptr<SolarSystem> solar_system_;
 };
+
+TEST_F(SolarSystemTest, Name) {
+  std::vector<std::string> names;
+  for (int i = SolarSystem::kSun; i <= SolarSystem::kTethys; ++i) {
+    names.push_back(SolarSystem::name(i));
+  }
+  std::string const expected_names[] = {
+      "Sun", "Jupiter", "Saturn", "Neptune", "Uranus", "Earth", "Venus", "Mars",
+      "Mercury", "Ganymede", "Titan", "Callisto", "Io", "Moon", "Europa",
+      "Triton", "Eris", "Pluto", "Titania", "Oberon", "Rhea", "Iapetus",
+      "Charon", "Ariel", "Umbriel", "Dione", "Tethys"};
+  EXPECT_THAT(names, ElementsAreArray(expected_names));
+}
 
 // Note(egg): We cannot call this |HierarchyAtСпутник1Launch| because gtest does
 // not do a unicode-friendly stringification.  We settle for the English
