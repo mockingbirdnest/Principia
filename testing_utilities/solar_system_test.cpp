@@ -113,7 +113,7 @@ TEST_F(SolarSystemTest, Name) {
 TEST_F(SolarSystemTest, HierarchyAtSputnik1Launch) {
   solar_system_ = SolarSystem::AtСпутник1Launch(
       SolarSystem::Accuracy::kMinorAndMajorBodies);
-  physics::NBodySystem<ICRFJ2000Ecliptic>::Trajectories trajectories =
+  NBodySystem<ICRFJ2000Ecliptic>::Trajectories trajectories =
       solar_system_->trajectories();
   auto const& sun      = *trajectories[SolarSystem::kSun];
   auto const& jupiter  = *trajectories[SolarSystem::kJupiter];
@@ -184,7 +184,7 @@ TEST_F(SolarSystemTest, HierarchyAtSputnik1Launch) {
 TEST_F(SolarSystemTest, HierarchyAtSputnik2Launch) {
   solar_system_ = SolarSystem::AtСпутник2Launch(
       SolarSystem::Accuracy::kMinorAndMajorBodies);
-  physics::NBodySystem<ICRFJ2000Ecliptic>::Trajectories trajectories =
+  NBodySystem<ICRFJ2000Ecliptic>::Trajectories trajectories =
       solar_system_->trajectories();
   auto const& sun      = *trajectories[SolarSystem::kSun];
   auto const& jupiter  = *trajectories[SolarSystem::kJupiter];
