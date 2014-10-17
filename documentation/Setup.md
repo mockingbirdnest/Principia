@@ -40,7 +40,7 @@ Those assemblies should be copied to the directory `<root>\KSP Assemblies`.
   `<root>\Google`. There should be a file at `<root>\Google\gmock-1.7.0\README`
   if the unpacking was done correctly.
 3. In `<root>\Google\glog-0.3.3`, run the following:
-```
+```bat
 git init
 copy "..\..\Principia\.gitattributes" ".gitattributes"
 copy "..\..\Principia\.gitignore" ".gitignore"
@@ -52,7 +52,7 @@ git commit -m "add glog"
 git am "..\..\Principia\documentation\setup files\glog.patch"
 ```
 4. In `<root>\Google\gmock-1.7.0`, run the following:
-```
+```bat
 git init
 copy "..\..\Principia\.gitattributes" ".gitattributes"
 copy "..\..\Principia\.gitignore" ".gitignore"
