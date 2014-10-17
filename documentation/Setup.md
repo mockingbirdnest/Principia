@@ -40,7 +40,8 @@ Those assemblies should be copied to the directory `<root>\KSP Assemblies`.
   `<root>\Google`. There should be a file at `<root>\Google\gmock-1.7.0\README`
   if the unpacking was done correctly.
 3. In `<root>\Google\glog-0.3.3`, run the following:
-```bat
+  
+  ```bat
 git init
 copy "..\..\Principia\.gitattributes"
 copy "..\..\Principia\.gitignore"
@@ -52,9 +53,10 @@ git commit -m "add glog"
 copy "..\..\Principia\documentation\setup files\glog.patch"
 git am "glog.patch"
 rm "glog.patch"
-```
+  ```
 4. In `<root>\Google\gmock-1.7.0`, run the following:
-```bat
+  
+  ```bat
 git init
 copy "..\..\Principia\.gitattributes"
 copy "..\..\Principia\.gitignore"
@@ -66,7 +68,7 @@ git commit -m "add gmock"
 copy "..\..\Principia\documentation\setup files\gmock.patch"
 git am "gmock.patch"
 rm "gmock.patch"
-```
+  ```
 4. Open `<root>\Google\glog-0.3.3\google-glog.sln` with Visual Studio 2013.
   Build for Debug and Release. Ignore any warnings. Close the solution.
 5. Open `<root>\Google\gmock-1.7.0\msvc\2010\gmock.sln` with Visual Studio
