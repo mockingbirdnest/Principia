@@ -1,16 +1,720 @@
-From ccbd720b991c270e2b246f487e79bf625f3f02a4 Mon Sep 17 00:00:00 2001
+From f2687549830448f5eeee951b91afd69e83048a17 Mon Sep 17 00:00:00 2001
 From: Robin Leroy <egg.robin.leroy@gmail.com>
-Date: Sun, 11 May 2014 19:00:13 +0200
-Subject: [PATCH 1/2] Make it build.
+Date: Fri, 17 Oct 2014 03:12:05 +0200
+Subject: [PATCH 1/3] migrate
 
 ---
- glog-0.3.3/src/logging.cc | 1 +
+ google-glog.sln                                    |  20 ++--
+ vsprojects/libglog/libglog.vcxproj                 | 114 +++++++++++++++++++++
+ vsprojects/libglog/libglog.vcxproj.filters         |  65 ++++++++++++
+ vsprojects/libglog_static/libglog_static.vcxproj   |  97 ++++++++++++++++++
+ .../libglog_static/libglog_static.vcxproj.filters  |  63 ++++++++++++
+ .../logging_unittest/logging_unittest.vcxproj      | 106 +++++++++++++++++++
+ .../logging_unittest.vcxproj.filters               |  23 +++++
+ .../logging_unittest_static.vcxproj                |  99 ++++++++++++++++++
+ .../logging_unittest_static.vcxproj.filters        |  21 ++++
+ 9 files changed, 596 insertions(+), 12 deletions(-)
+ create mode 100644 vsprojects/libglog/libglog.vcxproj
+ create mode 100644 vsprojects/libglog/libglog.vcxproj.filters
+ create mode 100644 vsprojects/libglog_static/libglog_static.vcxproj
+ create mode 100644 vsprojects/libglog_static/libglog_static.vcxproj.filters
+ create mode 100644 vsprojects/logging_unittest/logging_unittest.vcxproj
+ create mode 100644 vsprojects/logging_unittest/logging_unittest.vcxproj.filters
+ create mode 100644 vsprojects/logging_unittest_static/logging_unittest_static.vcxproj
+ create mode 100644 vsprojects/logging_unittest_static/logging_unittest_static.vcxproj.filters
+
+diff --git a/google-glog.sln b/google-glog.sln
+index 298156f..c4b1585 100644
+--- a/google-glog.sln
++++ b/google-glog.sln
+@@ -1,19 +1,15 @@
+ ﻿
+-Microsoft Visual Studio Solution File, Format Version 10.00
+-# Visual C++ Express 2008
+-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "libglog", "vsprojects\libglog\libglog.vcproj", "{34BD04BD-BC1D-4BFC-AAFC-ED02D9E960F1}"
++Microsoft Visual Studio Solution File, Format Version 12.00
++# Visual Studio 2013
++VisualStudioVersion = 12.0.30501.0
++MinimumVisualStudioVersion = 10.0.40219.1
++Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "libglog", "vsprojects\libglog\libglog.vcxproj", "{34BD04BD-BC1D-4BFC-AAFC-ED02D9E960F1}"
+ EndProject
+-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "logging_unittest", "vsprojects\logging_unittest\logging_unittest.vcproj", "{DD0690AA-5E09-46B5-83FD-4B28604CABA8}"
+-	ProjectSection(ProjectDependencies) = postProject
+-		{34BD04BD-BC1D-4BFC-AAFC-ED02D9E960F1} = {34BD04BD-BC1D-4BFC-AAFC-ED02D9E960F1}
+-	EndProjectSection
++Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "logging_unittest", "vsprojects\logging_unittest\logging_unittest.vcxproj", "{DD0690AA-5E09-46B5-83FD-4B28604CABA8}"
+ EndProject
+-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "libglog_static", "vsprojects\libglog_static\libglog_static.vcproj", "{772C2111-BBBF-49E6-B912-198A7F7A88E5}"
++Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "libglog_static", "vsprojects\libglog_static\libglog_static.vcxproj", "{772C2111-BBBF-49E6-B912-198A7F7A88E5}"
+ EndProject
+-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "logging_unittest_static", "vsprojects\logging_unittest_static\logging_unittest_static.vcproj", "{9B239B45-84A9-4E06-AC46-8E220CD43974}"
+-	ProjectSection(ProjectDependencies) = postProject
+-		{772C2111-BBBF-49E6-B912-198A7F7A88E5} = {772C2111-BBBF-49E6-B912-198A7F7A88E5}
+-	EndProjectSection
++Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "logging_unittest_static", "vsprojects\logging_unittest_static\logging_unittest_static.vcxproj", "{9B239B45-84A9-4E06-AC46-8E220CD43974}"
+ EndProject
+ Global
+ 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+diff --git a/vsprojects/libglog/libglog.vcxproj b/vsprojects/libglog/libglog.vcxproj
+new file mode 100644
+index 0000000..4b48c6f
+--- /dev/null
++++ b/vsprojects/libglog/libglog.vcxproj
+@@ -0,0 +1,114 @@
++﻿<?xml version="1.0" encoding="utf-8"?>
++<Project DefaultTargets="Build" ToolsVersion="12.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
++  <ItemGroup Label="ProjectConfigurations">
++    <ProjectConfiguration Include="Debug|Win32">
++      <Configuration>Debug</Configuration>
++      <Platform>Win32</Platform>
++    </ProjectConfiguration>
++    <ProjectConfiguration Include="Release|Win32">
++      <Configuration>Release</Configuration>
++      <Platform>Win32</Platform>
++    </ProjectConfiguration>
++  </ItemGroup>
++  <PropertyGroup Label="Globals">
++    <ProjectGuid>{34BD04BD-BC1D-4BFC-AAFC-ED02D9E960F1}</ProjectGuid>
++    <RootNamespace>libglog</RootNamespace>
++    <Keyword>Win32Proj</Keyword>
++  </PropertyGroup>
++  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
++  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
++    <ConfigurationType>DynamicLibrary</ConfigurationType>
++    <PlatformToolset>v120</PlatformToolset>
++    <CharacterSet>Unicode</CharacterSet>
++    <WholeProgramOptimization>true</WholeProgramOptimization>
++  </PropertyGroup>
++  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
++    <ConfigurationType>DynamicLibrary</ConfigurationType>
++    <PlatformToolset>v120</PlatformToolset>
++    <CharacterSet>Unicode</CharacterSet>
++  </PropertyGroup>
++  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
++  <ImportGroup Label="ExtensionSettings">
++  </ImportGroup>
++  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="PropertySheets">
++    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
++  </ImportGroup>
++  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="PropertySheets">
++    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
++  </ImportGroup>
++  <PropertyGroup Label="UserMacros" />
++  <PropertyGroup>
++    <_ProjectFileVersion>12.0.30501.0</_ProjectFileVersion>
++  </PropertyGroup>
++  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
++    <OutDir>$(SolutionDir)$(Configuration)\</OutDir>
++    <IntDir>$(Configuration)\</IntDir>
++    <LinkIncremental>true</LinkIncremental>
++  </PropertyGroup>
++  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
++    <OutDir>$(SolutionDir)$(Configuration)\</OutDir>
++    <IntDir>$(Configuration)\</IntDir>
++    <LinkIncremental>false</LinkIncremental>
++  </PropertyGroup>
++  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
++    <ClCompile>
++      <Optimization>Disabled</Optimization>
++      <AdditionalIncludeDirectories>..\..\src\windows;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
++      <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;_USRDLL;LIBGLOG_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
++      <MinimalRebuild>true</MinimalRebuild>
++      <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
++      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
++      <PrecompiledHeader />
++      <WarningLevel>Level3</WarningLevel>
++      <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
++    </ClCompile>
++    <Link>
++      <GenerateDebugInformation>true</GenerateDebugInformation>
++      <SubSystem>Windows</SubSystem>
++      <TargetMachine>MachineX86</TargetMachine>
++    </Link>
++  </ItemDefinitionGroup>
++  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
++    <ClCompile>
++      <Optimization>MaxSpeed</Optimization>
++      <IntrinsicFunctions>true</IntrinsicFunctions>
++      <AdditionalIncludeDirectories>..\..\src\windows;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
++      <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;_USRDLL;LIBGLOG_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
++      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
++      <FunctionLevelLinking>true</FunctionLevelLinking>
++      <PrecompiledHeader />
++      <WarningLevel>Level3</WarningLevel>
++      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
++    </ClCompile>
++    <Link>
++      <GenerateDebugInformation>true</GenerateDebugInformation>
++      <SubSystem>Windows</SubSystem>
++      <OptimizeReferences>true</OptimizeReferences>
++      <EnableCOMDATFolding>true</EnableCOMDATFolding>
++      <TargetMachine>MachineX86</TargetMachine>
++    </Link>
++  </ItemDefinitionGroup>
++  <ItemGroup>
++    <ClCompile Include="..\..\src\logging.cc" />
++    <ClCompile Include="..\..\src\raw_logging.cc" />
++    <ClCompile Include="..\..\src\utilities.cc" />
++    <ClCompile Include="..\..\src\vlog_is_on.cc" />
++    <ClCompile Include="..\..\src\windows\port.cc" />
++  </ItemGroup>
++  <ItemGroup>
++    <ClInclude Include="..\..\src\base\commandlineflags.h" />
++    <ClInclude Include="..\..\src\base\googleinit.h" />
++    <ClInclude Include="..\..\src\base\mutex.h" />
++    <ClInclude Include="..\..\src\utilities.h" />
++    <ClInclude Include="..\..\src\windows\config.h" />
++    <ClInclude Include="..\..\src\windows\glog\logging.h" />
++    <ClInclude Include="..\..\src\windows\glog\log_severity.h" />
++    <ClInclude Include="..\..\src\windows\glog\raw_logging.h" />
++    <ClInclude Include="..\..\src\windows\glog\stl_logging.h" />
++    <ClInclude Include="..\..\src\windows\glog\vlog_is_on.h" />
++    <ClInclude Include="..\..\src\windows\port.h" />
++  </ItemGroup>
++  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
++  <ImportGroup Label="ExtensionTargets">
++  </ImportGroup>
++</Project>
+\ No newline at end of file
+diff --git a/vsprojects/libglog/libglog.vcxproj.filters b/vsprojects/libglog/libglog.vcxproj.filters
+new file mode 100644
+index 0000000..5efac96
+--- /dev/null
++++ b/vsprojects/libglog/libglog.vcxproj.filters
+@@ -0,0 +1,65 @@
++﻿<?xml version="1.0" encoding="utf-8"?>
++<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
++  <ItemGroup>
++    <Filter Include="Source Files">
++      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
++      <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
++    </Filter>
++    <Filter Include="Header Files">
++      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
++      <Extensions>h;hpp;hxx;hm;inl;inc;xsd</Extensions>
++    </Filter>
++  </ItemGroup>
++  <ItemGroup>
++    <ClCompile Include="..\..\src\logging.cc">
++      <Filter>Source Files</Filter>
++    </ClCompile>
++    <ClCompile Include="..\..\src\windows\port.cc">
++      <Filter>Source Files</Filter>
++    </ClCompile>
++    <ClCompile Include="..\..\src\raw_logging.cc">
++      <Filter>Source Files</Filter>
++    </ClCompile>
++    <ClCompile Include="..\..\src\utilities.cc">
++      <Filter>Source Files</Filter>
++    </ClCompile>
++    <ClCompile Include="..\..\src\vlog_is_on.cc">
++      <Filter>Source Files</Filter>
++    </ClCompile>
++  </ItemGroup>
++  <ItemGroup>
++    <ClInclude Include="..\..\src\base\commandlineflags.h">
++      <Filter>Header Files</Filter>
++    </ClInclude>
++    <ClInclude Include="..\..\src\windows\config.h">
++      <Filter>Header Files</Filter>
++    </ClInclude>
++    <ClInclude Include="..\..\src\base\googleinit.h">
++      <Filter>Header Files</Filter>
++    </ClInclude>
++    <ClInclude Include="..\..\src\windows\glog\log_severity.h">
++      <Filter>Header Files</Filter>
++    </ClInclude>
++    <ClInclude Include="..\..\src\windows\glog\logging.h">
++      <Filter>Header Files</Filter>
++    </ClInclude>
++    <ClInclude Include="..\..\src\base\mutex.h">
++      <Filter>Header Files</Filter>
++    </ClInclude>
++    <ClInclude Include="..\..\src\windows\port.h">
++      <Filter>Header Files</Filter>
++    </ClInclude>
++    <ClInclude Include="..\..\src\windows\glog\raw_logging.h">
++      <Filter>Header Files</Filter>
++    </ClInclude>
++    <ClInclude Include="..\..\src\windows\glog\stl_logging.h">
++      <Filter>Header Files</Filter>
++    </ClInclude>
++    <ClInclude Include="..\..\src\utilities.h">
++      <Filter>Header Files</Filter>
++    </ClInclude>
++    <ClInclude Include="..\..\src\windows\glog\vlog_is_on.h">
++      <Filter>Header Files</Filter>
++    </ClInclude>
++  </ItemGroup>
++</Project>
+\ No newline at end of file
+diff --git a/vsprojects/libglog_static/libglog_static.vcxproj b/vsprojects/libglog_static/libglog_static.vcxproj
+new file mode 100644
+index 0000000..c63cd94
+--- /dev/null
++++ b/vsprojects/libglog_static/libglog_static.vcxproj
+@@ -0,0 +1,97 @@
++﻿<?xml version="1.0" encoding="utf-8"?>
++<Project DefaultTargets="Build" ToolsVersion="12.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
++  <ItemGroup Label="ProjectConfigurations">
++    <ProjectConfiguration Include="Debug|Win32">
++      <Configuration>Debug</Configuration>
++      <Platform>Win32</Platform>
++    </ProjectConfiguration>
++    <ProjectConfiguration Include="Release|Win32">
++      <Configuration>Release</Configuration>
++      <Platform>Win32</Platform>
++    </ProjectConfiguration>
++  </ItemGroup>
++  <PropertyGroup Label="Globals">
++    <ProjectGuid>{772C2111-BBBF-49E6-B912-198A7F7A88E5}</ProjectGuid>
++    <RootNamespace>libglog_static</RootNamespace>
++  </PropertyGroup>
++  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
++  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
++    <ConfigurationType>StaticLibrary</ConfigurationType>
++    <PlatformToolset>v120</PlatformToolset>
++    <CharacterSet>MultiByte</CharacterSet>
++    <WholeProgramOptimization>true</WholeProgramOptimization>
++  </PropertyGroup>
++  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
++    <ConfigurationType>StaticLibrary</ConfigurationType>
++    <PlatformToolset>v120</PlatformToolset>
++    <CharacterSet>MultiByte</CharacterSet>
++  </PropertyGroup>
++  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
++  <ImportGroup Label="ExtensionSettings">
++  </ImportGroup>
++  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="PropertySheets">
++    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
++  </ImportGroup>
++  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="PropertySheets">
++    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
++  </ImportGroup>
++  <PropertyGroup Label="UserMacros" />
++  <PropertyGroup>
++    <_ProjectFileVersion>12.0.30501.0</_ProjectFileVersion>
++  </PropertyGroup>
++  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
++    <OutDir>$(SolutionDir)$(Configuration)\</OutDir>
++    <IntDir>$(Configuration)\</IntDir>
++  </PropertyGroup>
++  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
++    <OutDir>$(SolutionDir)$(Configuration)\</OutDir>
++    <IntDir>$(Configuration)\</IntDir>
++  </PropertyGroup>
++  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
++    <ClCompile>
++      <Optimization>Disabled</Optimization>
++      <AdditionalIncludeDirectories>..\..\src\windows;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
++      <PreprocessorDefinitions>GOOGLE_GLOG_DLL_DECL=;%(PreprocessorDefinitions)</PreprocessorDefinitions>
++      <MinimalRebuild>true</MinimalRebuild>
++      <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
++      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
++      <WarningLevel>Level3</WarningLevel>
++      <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
++    </ClCompile>
++  </ItemDefinitionGroup>
++  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
++    <ClCompile>
++      <Optimization>MaxSpeed</Optimization>
++      <IntrinsicFunctions>true</IntrinsicFunctions>
++      <AdditionalIncludeDirectories>..\..\src\windows;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
++      <PreprocessorDefinitions>GOOGLE_GLOG_DLL_DECL=;%(PreprocessorDefinitions)</PreprocessorDefinitions>
++      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
++      <FunctionLevelLinking>true</FunctionLevelLinking>
++      <WarningLevel>Level3</WarningLevel>
++      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
++    </ClCompile>
++  </ItemDefinitionGroup>
++  <ItemGroup>
++    <ClCompile Include="..\..\src\logging.cc" />
++    <ClCompile Include="..\..\src\raw_logging.cc" />
++    <ClCompile Include="..\..\src\utilities.cc" />
++    <ClCompile Include="..\..\src\vlog_is_on.cc" />
++    <ClCompile Include="..\..\src\windows\port.cc" />
++  </ItemGroup>
++  <ItemGroup>
++    <ClInclude Include="..\..\src\base\commandlineflags.h" />
++    <ClInclude Include="..\..\src\base\googleinit.h" />
++    <ClInclude Include="..\..\src\base\mutex.h" />
++    <ClInclude Include="..\..\src\utilities.h" />
++    <ClInclude Include="..\..\src\windows\config.h" />
++    <ClInclude Include="..\..\src\windows\glog\logging.h" />
++    <ClInclude Include="..\..\src\windows\glog\log_severity.h" />
++    <ClInclude Include="..\..\src\windows\glog\raw_logging.h" />
++    <ClInclude Include="..\..\src\windows\glog\stl_logging.h" />
++    <ClInclude Include="..\..\src\windows\glog\vlog_is_on.h" />
++    <ClInclude Include="..\..\src\windows\port.h" />
++  </ItemGroup>
++  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
++  <ImportGroup Label="ExtensionTargets">
++  </ImportGroup>
++</Project>
+\ No newline at end of file
+diff --git a/vsprojects/libglog_static/libglog_static.vcxproj.filters b/vsprojects/libglog_static/libglog_static.vcxproj.filters
+new file mode 100644
+index 0000000..d73424b
+--- /dev/null
++++ b/vsprojects/libglog_static/libglog_static.vcxproj.filters
+@@ -0,0 +1,63 @@
++﻿<?xml version="1.0" encoding="utf-8"?>
++<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
++  <ItemGroup>
++    <Filter Include="Source Files">
++      <UniqueIdentifier>{927ad238-1abf-4618-a9e8-08c172442bb2}</UniqueIdentifier>
++    </Filter>
++    <Filter Include="Header Files">
++      <UniqueIdentifier>{08189f04-ee79-41cb-8cf2-9c89e815b183}</UniqueIdentifier>
++    </Filter>
++  </ItemGroup>
++  <ItemGroup>
++    <ClCompile Include="..\..\src\logging.cc">
++      <Filter>Source Files</Filter>
++    </ClCompile>
++    <ClCompile Include="..\..\src\windows\port.cc">
++      <Filter>Source Files</Filter>
++    </ClCompile>
++    <ClCompile Include="..\..\src\raw_logging.cc">
++      <Filter>Source Files</Filter>
++    </ClCompile>
++    <ClCompile Include="..\..\src\utilities.cc">
++      <Filter>Source Files</Filter>
++    </ClCompile>
++    <ClCompile Include="..\..\src\vlog_is_on.cc">
++      <Filter>Source Files</Filter>
++    </ClCompile>
++  </ItemGroup>
++  <ItemGroup>
++    <ClInclude Include="..\..\src\base\commandlineflags.h">
++      <Filter>Header Files</Filter>
++    </ClInclude>
++    <ClInclude Include="..\..\src\windows\config.h">
++      <Filter>Header Files</Filter>
++    </ClInclude>
++    <ClInclude Include="..\..\src\base\googleinit.h">
++      <Filter>Header Files</Filter>
++    </ClInclude>
++    <ClInclude Include="..\..\src\windows\glog\log_severity.h">
++      <Filter>Header Files</Filter>
++    </ClInclude>
++    <ClInclude Include="..\..\src\windows\glog\logging.h">
++      <Filter>Header Files</Filter>
++    </ClInclude>
++    <ClInclude Include="..\..\src\base\mutex.h">
++      <Filter>Header Files</Filter>
++    </ClInclude>
++    <ClInclude Include="..\..\src\windows\port.h">
++      <Filter>Header Files</Filter>
++    </ClInclude>
++    <ClInclude Include="..\..\src\windows\glog\raw_logging.h">
++      <Filter>Header Files</Filter>
++    </ClInclude>
++    <ClInclude Include="..\..\src\windows\glog\stl_logging.h">
++      <Filter>Header Files</Filter>
++    </ClInclude>
++    <ClInclude Include="..\..\src\utilities.h">
++      <Filter>Header Files</Filter>
++    </ClInclude>
++    <ClInclude Include="..\..\src\windows\glog\vlog_is_on.h">
++      <Filter>Header Files</Filter>
++    </ClInclude>
++  </ItemGroup>
++</Project>
+\ No newline at end of file
+diff --git a/vsprojects/logging_unittest/logging_unittest.vcxproj b/vsprojects/logging_unittest/logging_unittest.vcxproj
+new file mode 100644
+index 0000000..48c47b1
+--- /dev/null
++++ b/vsprojects/logging_unittest/logging_unittest.vcxproj
+@@ -0,0 +1,106 @@
++﻿<?xml version="1.0" encoding="utf-8"?>
++<Project DefaultTargets="Build" ToolsVersion="12.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
++  <ItemGroup Label="ProjectConfigurations">
++    <ProjectConfiguration Include="Debug|Win32">
++      <Configuration>Debug</Configuration>
++      <Platform>Win32</Platform>
++    </ProjectConfiguration>
++    <ProjectConfiguration Include="Release|Win32">
++      <Configuration>Release</Configuration>
++      <Platform>Win32</Platform>
++    </ProjectConfiguration>
++  </ItemGroup>
++  <PropertyGroup Label="Globals">
++    <ProjectGuid>{DD0690AA-5E09-46B5-83FD-4B28604CABA8}</ProjectGuid>
++    <RootNamespace>logging_unittest</RootNamespace>
++    <Keyword>Win32Proj</Keyword>
++  </PropertyGroup>
++  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
++  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
++    <ConfigurationType>Application</ConfigurationType>
++    <PlatformToolset>v120</PlatformToolset>
++    <CharacterSet>Unicode</CharacterSet>
++    <WholeProgramOptimization>true</WholeProgramOptimization>
++  </PropertyGroup>
++  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
++    <ConfigurationType>Application</ConfigurationType>
++    <PlatformToolset>v120</PlatformToolset>
++    <CharacterSet>Unicode</CharacterSet>
++  </PropertyGroup>
++  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
++  <ImportGroup Label="ExtensionSettings">
++  </ImportGroup>
++  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="PropertySheets">
++    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
++  </ImportGroup>
++  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="PropertySheets">
++    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
++  </ImportGroup>
++  <PropertyGroup Label="UserMacros" />
++  <PropertyGroup>
++    <_ProjectFileVersion>12.0.30501.0</_ProjectFileVersion>
++  </PropertyGroup>
++  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
++    <OutDir>$(SolutionDir)$(Configuration)\</OutDir>
++    <IntDir>$(Configuration)\</IntDir>
++    <LinkIncremental>true</LinkIncremental>
++  </PropertyGroup>
++  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
++    <OutDir>$(SolutionDir)$(Configuration)\</OutDir>
++    <IntDir>$(Configuration)\</IntDir>
++    <LinkIncremental>false</LinkIncremental>
++  </PropertyGroup>
++  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
++    <ClCompile>
++      <Optimization>Disabled</Optimization>
++      <AdditionalIncludeDirectories>..\..\src\windows;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
++      <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
++      <MinimalRebuild>true</MinimalRebuild>
++      <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
++      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
++      <PrecompiledHeader />
++      <WarningLevel>Level3</WarningLevel>
++      <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
++    </ClCompile>
++    <Link>
++      <GenerateDebugInformation>true</GenerateDebugInformation>
++      <SubSystem>Console</SubSystem>
++      <TargetMachine>MachineX86</TargetMachine>
++    </Link>
++  </ItemDefinitionGroup>
++  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
++    <ClCompile>
++      <Optimization>MaxSpeed</Optimization>
++      <IntrinsicFunctions>true</IntrinsicFunctions>
++      <AdditionalIncludeDirectories>..\..\src\windows;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
++      <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
++      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
++      <FunctionLevelLinking>true</FunctionLevelLinking>
++      <PrecompiledHeader />
++      <WarningLevel>Level3</WarningLevel>
++      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
++    </ClCompile>
++    <Link>
++      <GenerateDebugInformation>true</GenerateDebugInformation>
++      <SubSystem>Console</SubSystem>
++      <OptimizeReferences>true</OptimizeReferences>
++      <EnableCOMDATFolding>true</EnableCOMDATFolding>
++      <TargetMachine>MachineX86</TargetMachine>
++    </Link>
++  </ItemDefinitionGroup>
++  <ItemGroup>
++    <ClCompile Include="..\..\src\logging_unittest.cc" />
++  </ItemGroup>
++  <ItemGroup>
++    <ClInclude Include="..\..\src\googletest.h" />
++  </ItemGroup>
++  <ItemGroup>
++    <ProjectReference Include="..\libglog\libglog.vcxproj">
++      <Project>{34bd04bd-bc1d-4bfc-aafc-ed02d9e960f1}</Project>
++      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
++    </ProjectReference>
++  </ItemGroup>
++  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
++  <ImportGroup Label="ExtensionTargets">
++  </ImportGroup>
++</Project>
+\ No newline at end of file
+diff --git a/vsprojects/logging_unittest/logging_unittest.vcxproj.filters b/vsprojects/logging_unittest/logging_unittest.vcxproj.filters
+new file mode 100644
+index 0000000..3455a1f
+--- /dev/null
++++ b/vsprojects/logging_unittest/logging_unittest.vcxproj.filters
+@@ -0,0 +1,23 @@
++﻿<?xml version="1.0" encoding="utf-8"?>
++<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
++  <ItemGroup>
++    <Filter Include="Source Files">
++      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
++      <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
++    </Filter>
++    <Filter Include="Header Files">
++      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
++      <Extensions>h;hpp;hxx;hm;inl;inc;xsd</Extensions>
++    </Filter>
++  </ItemGroup>
++  <ItemGroup>
++    <ClCompile Include="..\..\src\logging_unittest.cc">
++      <Filter>Source Files</Filter>
++    </ClCompile>
++  </ItemGroup>
++  <ItemGroup>
++    <ClInclude Include="..\..\src\googletest.h">
++      <Filter>Header Files</Filter>
++    </ClInclude>
++  </ItemGroup>
++</Project>
+\ No newline at end of file
+diff --git a/vsprojects/logging_unittest_static/logging_unittest_static.vcxproj b/vsprojects/logging_unittest_static/logging_unittest_static.vcxproj
+new file mode 100644
+index 0000000..c5acc45
+--- /dev/null
++++ b/vsprojects/logging_unittest_static/logging_unittest_static.vcxproj
+@@ -0,0 +1,99 @@
++﻿<?xml version="1.0" encoding="utf-8"?>
++<Project DefaultTargets="Build" ToolsVersion="12.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
++  <ItemGroup Label="ProjectConfigurations">
++    <ProjectConfiguration Include="Debug|Win32">
++      <Configuration>Debug</Configuration>
++      <Platform>Win32</Platform>
++    </ProjectConfiguration>
++    <ProjectConfiguration Include="Release|Win32">
++      <Configuration>Release</Configuration>
++      <Platform>Win32</Platform>
++    </ProjectConfiguration>
++  </ItemGroup>
++  <PropertyGroup Label="Globals">
++    <ProjectGuid>{9B239B45-84A9-4E06-AC46-8E220CD43974}</ProjectGuid>
++    <RootNamespace>logging_unittest_static</RootNamespace>
++  </PropertyGroup>
++  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
++  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
++    <ConfigurationType>Application</ConfigurationType>
++    <PlatformToolset>v120</PlatformToolset>
++    <CharacterSet>MultiByte</CharacterSet>
++    <WholeProgramOptimization>true</WholeProgramOptimization>
++  </PropertyGroup>
++  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
++    <ConfigurationType>Application</ConfigurationType>
++    <PlatformToolset>v120</PlatformToolset>
++    <CharacterSet>MultiByte</CharacterSet>
++  </PropertyGroup>
++  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
++  <ImportGroup Label="ExtensionSettings">
++  </ImportGroup>
++  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="PropertySheets">
++    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
++  </ImportGroup>
++  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="PropertySheets">
++    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
++  </ImportGroup>
++  <PropertyGroup Label="UserMacros" />
++  <PropertyGroup>
++    <_ProjectFileVersion>12.0.30501.0</_ProjectFileVersion>
++  </PropertyGroup>
++  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
++    <OutDir>$(SolutionDir)$(Configuration)\</OutDir>
++    <IntDir>$(Configuration)\</IntDir>
++  </PropertyGroup>
++  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
++    <OutDir>$(SolutionDir)$(Configuration)\</OutDir>
++    <IntDir>$(Configuration)\</IntDir>
++  </PropertyGroup>
++  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
++    <ClCompile>
++      <Optimization>Disabled</Optimization>
++      <AdditionalIncludeDirectories>..\..\src\windows;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
++      <PreprocessorDefinitions>GOOGLE_GLOG_DLL_DECL=;%(PreprocessorDefinitions)</PreprocessorDefinitions>
++      <MinimalRebuild>true</MinimalRebuild>
++      <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
++      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
++      <WarningLevel>Level3</WarningLevel>
++      <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
++    </ClCompile>
++    <Link>
++      <GenerateDebugInformation>true</GenerateDebugInformation>
++      <TargetMachine>MachineX86</TargetMachine>
++    </Link>
++  </ItemDefinitionGroup>
++  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
++    <ClCompile>
++      <Optimization>MaxSpeed</Optimization>
++      <IntrinsicFunctions>true</IntrinsicFunctions>
++      <AdditionalIncludeDirectories>..\..\src\windows;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
++      <PreprocessorDefinitions>GOOGLE_GLOG_DLL_DECL=;%(PreprocessorDefinitions)</PreprocessorDefinitions>
++      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
++      <FunctionLevelLinking>true</FunctionLevelLinking>
++      <WarningLevel>Level3</WarningLevel>
++      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
++    </ClCompile>
++    <Link>
++      <GenerateDebugInformation>true</GenerateDebugInformation>
++      <OptimizeReferences>true</OptimizeReferences>
++      <EnableCOMDATFolding>true</EnableCOMDATFolding>
++      <TargetMachine>MachineX86</TargetMachine>
++    </Link>
++  </ItemDefinitionGroup>
++  <ItemGroup>
++    <ClInclude Include="..\..\src\googletest.h" />
++  </ItemGroup>
++  <ItemGroup>
++    <ClCompile Include="..\..\src\logging_unittest.cc" />
++  </ItemGroup>
++  <ItemGroup>
++    <ProjectReference Include="..\libglog_static\libglog_static.vcxproj">
++      <Project>{772c2111-bbbf-49e6-b912-198a7f7a88e5}</Project>
++      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
++    </ProjectReference>
++  </ItemGroup>
++  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
++  <ImportGroup Label="ExtensionTargets">
++  </ImportGroup>
++</Project>
+\ No newline at end of file
+diff --git a/vsprojects/logging_unittest_static/logging_unittest_static.vcxproj.filters b/vsprojects/logging_unittest_static/logging_unittest_static.vcxproj.filters
+new file mode 100644
+index 0000000..ebb4ac6
+--- /dev/null
++++ b/vsprojects/logging_unittest_static/logging_unittest_static.vcxproj.filters
+@@ -0,0 +1,21 @@
++﻿<?xml version="1.0" encoding="utf-8"?>
++<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
++  <ItemGroup>
++    <Filter Include="Header Files">
++      <UniqueIdentifier>{52db389a-91ab-4870-97b3-22b1876fa519}</UniqueIdentifier>
++    </Filter>
++    <Filter Include="Source Files">
++      <UniqueIdentifier>{86be7af1-7a5f-4319-b36c-6a4df6ca886d}</UniqueIdentifier>
++    </Filter>
++  </ItemGroup>
++  <ItemGroup>
++    <ClInclude Include="..\..\src\googletest.h">
++      <Filter>Header Files</Filter>
++    </ClInclude>
++  </ItemGroup>
++  <ItemGroup>
++    <ClCompile Include="..\..\src\logging_unittest.cc">
++      <Filter>Source Files</Filter>
++    </ClCompile>
++  </ItemGroup>
++</Project>
+\ No newline at end of file
+-- 
+1.8.4.msysgit.0
+
+From d15e593d9b10b99e17cbac559badb5f2370c094d Mon Sep 17 00:00:00 2001
+From: Robin Leroy <egg.robin.leroy@gmail.com>
+Date: Fri, 17 Oct 2014 03:30:32 +0200
+Subject: [PATCH 2/3] Make it build.
+
+---
+ src/logging.cc | 1 +
  1 file changed, 1 insertion(+)
 
-diff --git a/glog-0.3.3/src/logging.cc b/glog-0.3.3/src/logging.cc
+diff --git a/src/logging.cc b/src/logging.cc
 index ec334a9..43611fd 100644
---- a/glog-0.3.3/src/logging.cc
-+++ b/glog-0.3.3/src/logging.cc
+--- a/src/logging.cc
++++ b/src/logging.cc
 @@ -32,6 +32,7 @@
  #include "utilities.h"
  
@@ -22,19 +726,19 @@ index ec334a9..43611fd 100644
 -- 
 1.8.4.msysgit.0
 
-From 2d268e6035956d7de50f032a97f753282367ca25 Mon Sep 17 00:00:00 2001
+From 94296b003070d403050d7122daae3d3eac1fac93 Mon Sep 17 00:00:00 2001
 From: Robin Leroy <egg.robin.leroy@gmail.com>
-Date: Sun, 11 May 2014 19:03:52 +0200
-Subject: [PATCH 2/2] Don't warn.
+Date: Fri, 17 Oct 2014 03:32:24 +0200
+Subject: [PATCH 3/3] Don't warn.
 
 ---
- glog-0.3.3/src/windows/glog/logging.h | 12 ++++++++++++
+ src/windows/glog/logging.h | 12 ++++++++++++
  1 file changed, 12 insertions(+)
 
-diff --git a/glog-0.3.3/src/windows/glog/logging.h b/glog-0.3.3/src/windows/glog/logging.h
+diff --git a/src/windows/glog/logging.h b/src/windows/glog/logging.h
 index 1d91b12..ea68db8 100644
---- a/glog-0.3.3/src/windows/glog/logging.h
-+++ b/glog-0.3.3/src/windows/glog/logging.h
+--- a/src/windows/glog/logging.h
++++ b/src/windows/glog/logging.h
 @@ -1155,7 +1155,19 @@ public:
      char* str() const { return pbase(); }
  
