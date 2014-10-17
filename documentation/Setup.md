@@ -71,11 +71,13 @@ rm "gmock.patch"
   ```
 4. Open `<root>\Google\glog-0.3.3\google-glog.sln` with Visual Studio 2013.
   Build for Debug and Release. Ignore any warnings. Close the solution.
-5. Open `<root>\Google\gmock-1.7.0\msvc\2010\gmock.sln` with Visual Studio
-  2013. Build for Debug and Release. Ignore any warnings. Close the solution.
+5. Open `<root>\Google\gmock-1.7.0\msvc\2010\gmock.sln` with Visual
+  Studio 2013. Build for Debug and Release. Ignore any warnings. Close the
+  solution.
 6. In `<root>\Google`, run `git clone https://github.com/pleroy/benchmark.git`.
-7. Open `<root>\Google\benchmark\msvc\google-benchmark.sln` with Visual Studio
-  2013. Build for Debug and Release. Ignore any warnings. Close the solution.
+7. Open `<root>\Google\benchmark\msvc\google-benchmark.sln` with Visual
+  Studio 2013. Build for Debug and Release. Ignore any warnings. Close the
+  solution.
 
 You are now done with the setup of the dependencies.
 Open `<root>\Principia\Principia.sln` and build.
