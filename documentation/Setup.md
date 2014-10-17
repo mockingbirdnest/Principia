@@ -33,8 +33,8 @@ Those assemblies should be copied to the directory `<root>\KSP Assemblies`.
 ##Google assemblies.
 1. Download [glog 0.3.3](https://code.google.com/p/google-glog/downloads/list),
   and unpack into `<root>\Google`.
-  There should be a file at `<root>\Google\glog-0.3.3\README` if the unpacking was
-  done correctly.
+  There should be a file at `<root>\Google\glog-0.3.3\README` if the unpacking
+  was done correctly.
 2. Download [gmock/gtest 1.7.0]
   (https://code.google.com/p/googlemock/downloads/list), and unpack into
   `<root>\Google`. There should be a file at `<root>\Google\gmock-1.7.0\README`
