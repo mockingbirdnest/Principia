@@ -48,6 +48,7 @@
     <Import Project="..\include_solution.props" />
     <Import Project="..\suppress_useless_warnings.props" />
     <Import Project="..\warnings_as_errors.props" />
+    <Import Project="..\profiling.props" />
   </ImportGroup>
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
@@ -122,10 +123,14 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="celestial.hpp" />
+    <ClInclude Include="celestial_body.hpp" />
     <ClInclude Include="mock_plugin.hpp" />
     <ClInclude Include="monostable.hpp" />
     <ClInclude Include="plugin.hpp" />
     <ClInclude Include="interface.hpp" />
+    <ClInclude Include="vessel.hpp" />
+    <ClInclude Include="vessel_body.hpp" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="interface.cpp" />

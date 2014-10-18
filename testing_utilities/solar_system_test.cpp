@@ -2,10 +2,12 @@
 #include "testing_utilities/solar_system.hpp"
 
 #include <string>
+#include <vector>
 
 #include "geometry/grassmann.hpp"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
+#include "testing_utilities/death_message.hpp"
 #include "testing_utilities/numerics.hpp"
 
 using principia::geometry::Bivector;
@@ -21,6 +23,8 @@ using principia::quantities::Quotient;
 using principia::quantities::Speed;
 using principia::quantities::Sqrt;
 using principia::si::Radian;
+using principia::testing_utilities::DeathMessage;
+using testing::ElementsAreArray;
 using testing::Lt;
 using testing::Ge;
 
@@ -92,13 +96,47 @@ class SolarSystemTest : public testing::Test {
   std::unique_ptr<SolarSystem> solar_system_;
 };
 
+using SolarSystemDeathTest = SolarSystemTest;
+
+TEST_F(SolarSystemDeathTest, Parent) {
+  EXPECT_DEATH({
+    SolarSystem::parent(SolarSystem::kSun);
+  }, DeathMessage("has no parent"));
+}
+
+TEST_F(SolarSystemTest, Name) {
+  std::vector<std::string> names;
+  for (int i = SolarSystem::kSun; i <= SolarSystem::kTethys; ++i) {
+    names.push_back(SolarSystem::name(i));
+  }
+  std::string const expected_names[] = {
+      "Sun", "Jupiter", "Saturn", "Neptune", "Uranus", "Earth", "Venus", "Mars",
+      "Mercury", "Ganymede", "Titan", "Callisto", "Io", "Moon", "Europa",
+      "Triton", "Eris", "Pluto", "Titania", "Oberon", "Rhea", "Iapetus",
+      "Charon", "Ariel", "Umbriel", "Dione", "Tethys"};
+  EXPECT_THAT(names, ElementsAreArray(expected_names));
+}
+
+TEST_F(SolarSystemTest, Parent) {
+  std::vector<std::string> parent_names;
+  for (int i = SolarSystem::kSun + 1; i <= SolarSystem::kTethys; ++i) {
+    parent_names.push_back(SolarSystem::name(SolarSystem::parent(i)));
+  }
+  std::string const expected_parent_names[] = {
+      "Sun", "Sun", "Sun", "Sun", "Sun", "Sun", "Sun", "Sun", "Jupiter",
+      "Saturn", "Jupiter", "Jupiter", "Earth", "Jupiter", "Neptune", "Sun",
+      "Sun", "Uranus", "Uranus", "Saturn", "Saturn", "Pluto", "Uranus",
+      "Uranus", "Saturn", "Saturn"};
+  EXPECT_THAT(parent_names, ElementsAreArray(expected_parent_names));
+}
+
 // Note(egg): We cannot call this |HierarchyAtСпутник1Launch| because gtest does
 // not do a unicode-friendly stringification.  We settle for the English
 // romanization.
 TEST_F(SolarSystemTest, HierarchyAtSputnik1Launch) {
   solar_system_ = SolarSystem::AtСпутник1Launch(
       SolarSystem::Accuracy::kMinorAndMajorBodies);
-  physics::NBodySystem<ICRFJ2000Ecliptic>::Trajectories trajectories =
+  NBodySystem<ICRFJ2000Ecliptic>::Trajectories trajectories =
       solar_system_->trajectories();
   auto const& sun      = *trajectories[SolarSystem::kSun];
   auto const& jupiter  = *trajectories[SolarSystem::kJupiter];
@@ -169,7 +207,7 @@ TEST_F(SolarSystemTest, HierarchyAtSputnik1Launch) {
 TEST_F(SolarSystemTest, HierarchyAtSputnik2Launch) {
   solar_system_ = SolarSystem::AtСпутник2Launch(
       SolarSystem::Accuracy::kMinorAndMajorBodies);
-  physics::NBodySystem<ICRFJ2000Ecliptic>::Trajectories trajectories =
+  NBodySystem<ICRFJ2000Ecliptic>::Trajectories trajectories =
       solar_system_->trajectories();
   auto const& sun      = *trajectories[SolarSystem::kSun];
   auto const& jupiter  = *trajectories[SolarSystem::kJupiter];
