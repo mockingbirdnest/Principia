@@ -762,3 +762,28 @@ index 1d91b12..ea68db8 100644
 -- 
 1.8.4.msysgit.0
 
+From 4e0392584ac0714b7234ec8a9ff6ef71369d0bd2 Mon Sep 17 00:00:00 2001
+From: Robin Leroy <egg.robin.leroy@gmail.com>
+Date: Sat, 18 Oct 2014 13:45:19 +0200
+Subject: [PATCH] remove /EDITANDCONTINUE
+
+---
+ vsprojects/libglog_static/libglog_static.vcxproj | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/vsprojects/libglog_static/libglog_static.vcxproj b/vsprojects/libglog_static/libglog_static.vcxproj
+index c63cd94..bb2eb6e 100644
+--- a/vsprojects/libglog_static/libglog_static.vcxproj
++++ b/vsprojects/libglog_static/libglog_static.vcxproj
+@@ -56,7 +56,7 @@
+       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
+       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+       <WarningLevel>Level3</WarningLevel>
+-      <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
++      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+     </ClCompile>
+   </ItemDefinitionGroup>
+   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+-- 
+1.8.4.msysgit.0
+
