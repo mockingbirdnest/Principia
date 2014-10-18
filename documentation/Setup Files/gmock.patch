@@ -228,3 +228,59 @@ index bd5be03..b74c5de 100644
 -- 
 1.8.4.msysgit.0
 
+From 461a4edda64c21fa89aa2e21b71e1a27b7a95410 Mon Sep 17 00:00:00 2001
+From: Robin Leroy <egg.robin.leroy@gmail.com>
+Date: Sat, 18 Oct 2014 13:00:26 +0200
+Subject: [PATCH] statically link liblglog
+
+---
+ msvc/2010/gmock_main.vcxproj | 16 ++++++++++++++--
+ 1 file changed, 14 insertions(+), 2 deletions(-)
+
+diff --git a/msvc/2010/gmock_main.vcxproj b/msvc/2010/gmock_main.vcxproj
+index 527efbc..d5e84a6 100644
+--- a/msvc/2010/gmock_main.vcxproj
++++ b/msvc/2010/gmock_main.vcxproj
+@@ -50,7 +50,7 @@
+     <ClCompile>
+       <Optimization>Disabled</Optimization>
+       <AdditionalIncludeDirectories>..\..\..\glog-0.3.3\src\windows;../../include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+-      <PreprocessorDefinitions>WIN32;_DEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
++      <PreprocessorDefinitions>GOOGLE_GLOG_DLL_DECL=;WIN32;_DEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+       <MinimalRebuild>true</MinimalRebuild>
+       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
+       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+@@ -59,17 +59,29 @@
+       <WarningLevel>Level3</WarningLevel>
+       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+     </ClCompile>
++    <Lib>
++      <AdditionalDependencies>libglog_static.lib</AdditionalDependencies>
++    </Lib>
++    <Lib>
++      <AdditionalLibraryDirectories>..\..\..\glog-0.3.3\$(ConfigurationName);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
++    </Lib>
+   </ItemDefinitionGroup>
+   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+     <ClCompile>
+       <AdditionalIncludeDirectories>..\..\..\glog-0.3.3\src\windows;../../include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+-      <PreprocessorDefinitions>WIN32;NDEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
++      <PreprocessorDefinitions>GOOGLE_GLOG_DLL_DECL=;WIN32;NDEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+       <PrecompiledHeader>
+       </PrecompiledHeader>
+       <WarningLevel>Level3</WarningLevel>
+       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+     </ClCompile>
++    <Lib>
++      <AdditionalDependencies>libglog_static.lib</AdditionalDependencies>
++    </Lib>
++    <Lib>
++      <AdditionalLibraryDirectories>..\..\..\glog-0.3.3\$(ConfigurationName);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
++    </Lib>
+   </ItemDefinitionGroup>
+   <ItemGroup>
+     <ProjectReference Include="gmock.vcxproj">
+-- 
+1.8.4.msysgit.0
+
