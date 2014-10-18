@@ -16,6 +16,9 @@ template<typename Scalar>
 struct DoublePrecision {
   DoublePrecision() = default;
   DoublePrecision(Scalar const& value);  // NOLINT(runtime/explicit)
+
+  void Increment(Scalar const& increment);
+
   Scalar value;
   Scalar error;
 };

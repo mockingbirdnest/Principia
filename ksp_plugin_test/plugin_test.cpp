@@ -247,6 +247,19 @@ TEST_F(PluginTest, InsertCelestialError) {
   }, DeathMessage("Body already exists"));
 }
 
+TEST_F(PluginTest, InsertVesselError) {
+  GUID const guid = "Syrio Forel";
+  EXPECT_DEATH({
+    InsertAllSolarSystemBodies();
+    plugin_->InsertOrKeepVessel(guid, SolarSystem::kSun);
+  }, DeathMessage("Check failed: !initializing"));
+  EXPECT_DEATH({
+    InsertAllSolarSystemBodies();
+    plugin_->EndInitialization();
+    plugin_->InsertOrKeepVessel(guid, 1729);
+  }, DeathMessage("No body at index"));
+}
+
 TEST_F(PluginTest, VesselInsertionAtInitialization) {
   GUID const guid = "Test Satellite";
   InsertAllSolarSystemBodies();
@@ -421,6 +434,30 @@ TEST_F(PluginTest, AdvanceTimeWithVessels) {
       // We will be removing |enterprise|.
       --expected_number_of_old_vessels;
     }
+  }
+}
+
+TEST_F(PluginTest, UpdateCelestialHierarchy) {
+  InsertAllSolarSystemBodies();
+  plugin_->EndInitialization();
+  for (std::size_t index = SolarSystem::kSun + 1;
+       index < bodies_.size();
+       ++index) {
+    plugin_->UpdateCelestialHierarchy(index, SolarSystem::kSun);
+  }
+  for (std::size_t index = SolarSystem::kSun + 1;
+       index < bodies_.size();
+       ++index) {
+    EXPECT_THAT(
+        solar_system_->trajectories()[index]->last_position() -
+            solar_system_->trajectories()[SolarSystem::kSun]->last_position(),
+        AlmostEquals(looking_glass_.Inverse()(
+            plugin_->CelestialDisplacementFromParent(index)), 6000));
+    EXPECT_THAT(
+        solar_system_->trajectories()[index]->last_velocity() -
+            solar_system_->trajectories()[SolarSystem::kSun]->last_velocity(),
+        AlmostEquals(looking_glass_.Inverse()(
+            plugin_->CelestialParentRelativeVelocity(index)), 1000));
   }
 }
 

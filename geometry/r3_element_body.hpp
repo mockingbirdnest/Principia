@@ -40,7 +40,7 @@ inline Scalar& R3Element<Scalar>::operator[](int const index) {
     case 2:
       return z;
     default:
-      LOG(FATAL) << "Index = " << index;
+      LOG(FATAL) << __FUNCSIG__ << ": index = " << index;
       noreturn();
   }
 }
@@ -55,7 +55,7 @@ inline Scalar const& R3Element<Scalar>::operator[](int const index) const {
     case 2:
       return z;
     default:
-      LOG(FATAL) << "Index = " << index;
+      LOG(FATAL) << __FUNCSIG__ << ": index = " << index;
       noreturn();
   }
 }
