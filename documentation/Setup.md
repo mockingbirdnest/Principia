@@ -2,7 +2,7 @@
 
 These instructions are for Visual Studio 2013.
 
-We assume a working installation of Kerbal Space Program version 0.24.2 is
+We assume a working installation of Kerbal Space Program version 0.25.0 is
 found in `<KSP directory>`.
 
 The repository is found at https://github.com/mockingbirdnest/Principia.git.
@@ -16,12 +16,12 @@ This directory should not contain any of the following subfolders:
 In `<root>`, run `git clone https://github.com/mockingbirdnest/Principia.git`.
 
 This project depends upon:
-- The KSP assembly `Assembly-CSharp.dll`, found in 
-`<KSP directory>\KSP_Data\Managed`;
+- The KSP assemblies `Assembly-CSharp.dll` and `Assembly-CSharp-firstpass.dll`,
+  found in `<KSP directory>\KSP_Data\Managed`;
 - The Unity assembly `UnityEngine.dll`, found in
-`<KSP directory>\KSP_Data\Managed`;
+  `<KSP directory>\KSP_Data\Managed`;
 - The Google [glog 0.3.3](https://code.google.com/p/google-glog/downloads/list)
-library, *modified according to the instructions below*;
+  library, *modified according to the instructions below*;
 - The Google [gmock/gtest 1.7.0](https://code.google.com/p/googlemock
 /downloads/list) libraries, *modified according to the instructions below*.
 - The Google benchmark library for Windows.
