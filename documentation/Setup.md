@@ -41,7 +41,7 @@ git clone "https://chromium.googlesource.com/chromium/src.git" chromium -n --dep
 $GitPromptSettings.RepositoriesInWhichToDisableFileStatus += join-path  (gi -path .).FullName chromium
 cd chromium
 git config core.sparsecheckout true
-copy "..\..\Principia\documentation\setup files\chromium_sparse_checkout" .git/info/sparse-checkout
+copy "..\..\Principia\documentation\setup files\chromium_sparse_checkout.txt" ".git/info/sparse-checkout"
 git checkout master
 copy "..\..\Principia\documentation\setup files\chromium.patch"
 git am "chromium.patch"
