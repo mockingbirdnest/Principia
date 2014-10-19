@@ -16,5 +16,8 @@ using Position = Point<Displacement<Frame>>;
 template<typename Frame>
 using Velocity = Vector<quantities::Speed, Frame>;
 
+template<typename Frame>
+using AngularVelocity = Bivector<quantities::Speed, Frame>;
+
 }  // namespace geometry
 }  // namespace principia

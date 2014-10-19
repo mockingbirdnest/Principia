@@ -1,5 +1,6 @@
 ﻿#pragma once
 
+#include <array>
 #include <map>
 #include <memory>
 #include <set>
@@ -11,6 +12,7 @@
 #include "ksp_plugin/celestial.hpp"
 #include "ksp_plugin/monostable.hpp"
 #include "ksp_plugin/vessel.hpp"
+#include "ksp_plugin/rendering_frame.hpp"
 #include "physics/body.hpp"
 #include "physics/n_body_system.hpp"
 #include "physics/trajectory.hpp"
@@ -73,6 +75,20 @@ using GUID = std::string;
 // The index of a body in |FlightGlobals.Bodies|, obtained by
 // |b.flightGlobalsIndex| in C#. We use this as a key in an |std::map|.
 using Index = int;
+
+// Represents the curve
+// {(1-s)³ p₀ + 3 (1-s)² s p₁ + 3 (1-s) s² p₂ + s³ p₃ | s ∈ [0, 1]}.
+// We leave it to the reader to check that the above can be expressed as a point
+// plus a linear combination of differences of points and is thus well-defined
+// when the pᵢ lie in an affine space.
+template<typename Vector>
+using CubicBézierCurve = std::array<4, Point<Vector>>;
+
+// We render trajectories as cubic Hermite splines matching both position and
+// velocity at the interpolation points.  The C# utilities we have only support
+// Catmull-Rom splines, so we do that with a bunch of Bézier curves instead.
+template<typename Frame>
+using RenderedTrajectory = std::vector<CubicBézierCurve<Displacement<Frame>>>;
 
 class Plugin {
  public:
@@ -195,6 +211,11 @@ class Plugin {
   // must not be the sun. Must be called after initialization.
   virtual Velocity<AliceSun> CelestialParentRelativeVelocity(
       Index const celestial_index) const;
+
+  virtual RenderedTrajectory<World> RenderVesselTrajectory(
+      GUID const& vessel_guid,
+      Instant const& lower_bound,
+      RenderingFrame const& frame) const;
 
  private:
   using GUIDToOwnedVessel = std::map<GUID, std::unique_ptr<Vessel<Barycentre>>>;

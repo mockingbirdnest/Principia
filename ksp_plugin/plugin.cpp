@@ -371,5 +371,19 @@ Velocity<AliceSun> Plugin::CelestialParentRelativeVelocity(
   return result;
 }
 
+RenderedTrajectory<World> Plugin::RenderVesselTrajectory(
+    GUID const& vessel_guid,
+    Instant const& lower_bound,
+    RenderingFrame const& frame) const {
+  auto const it = vessels_.find(vessel_guid);
+  CHECK(it != vessels_.end());
+  Vessel<Barycentre> const& vessel = *(it->second);
+  CHECK(vessel.has_history());
+  RenderedTrajectory<World> result;
+  for (Instant const& t : vessel.history().Times()) {
+    
+  }
+}
+
 }  // namespace ksp_plugin
 }  // namespace principia
