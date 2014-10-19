@@ -787,3 +787,582 @@ index c63cd94..bb2eb6e 100644
 -- 
 1.8.4.msysgit.0
 
+From 2b0434f92c31a7fbef48df26069d112c1eb69931 Mon Sep 17 00:00:00 2001
+From: pleroy <phl+personal@google.com>
+Date: Sun, 19 Oct 2014 00:33:18 +0200
+Subject: [PATCH] Stack trace support for Windows
+
+---
+ src/stacktrace_win-inl.h                           |  28 +++++
+ src/symbolize.cc                                   |  27 +++++
+ src/utilities.cc                                   |   2 +
+ src/utilities.h                                    |   4 +
+ vsprojects/include_chromium.props                  |  20 ++++
+ vsprojects/libglog/libglog.vcxproj                 |  38 +++++++
+ vsprojects/libglog/libglog.vcxproj.filters         | 114 +++++++++++++++++++++
+ vsprojects/libglog_static/libglog_static.vcxproj   |  38 +++++++
+ .../libglog_static/libglog_static.vcxproj.filters  | 114 +++++++++++++++++++++
+ 9 files changed, 385 insertions(+)
+ create mode 100644 src/stacktrace_win-inl.h
+ create mode 100644 vsprojects/include_chromium.props
+
+diff --git a/src/stacktrace_win-inl.h b/src/stacktrace_win-inl.h
+new file mode 100644
+index 0000000..7762d7b
+--- /dev/null
++++ b/src/stacktrace_win-inl.h
+@@ -0,0 +1,28 @@
++#include "stacktrace.h"
++
++#include "base/debug/stack_trace.h"
++
++_START_GOOGLE_NAMESPACE_
++
++// If you change this function, also change GetStackFrames below.
++int GetStackTrace(void** result, int max_depth, int skip_count) {
++// NOTE(phl): This was tuned for the static library with VS2013.
++#ifdef _DEBUG
++  skip_count = 8;
++#else
++  skip_count = 4;
++#endif
++  ::base::debug::StackTrace stacktrace(skip_count);
++
++  size_t size;
++  const void* const* addresses = stacktrace.Addresses(&size);
++
++  if (size > max_depth)
++    size = max_depth;
++  for (int i = 0; i < size; i++)
++    result[i] = const_cast<void*>(addresses[i]);
++
++  return size;
++}
++
++_END_GOOGLE_NAMESPACE_
+diff --git a/src/symbolize.cc b/src/symbolize.cc
+index b69eefd..e5bacfd 100644
+--- a/src/symbolize.cc
++++ b/src/symbolize.cc
+@@ -649,6 +649,33 @@ static ATTRIBUTE_NOINLINE bool SymbolizeAndDemangle(void *pc, char *out,
+ 
+ _END_GOOGLE_NAMESPACE_
+ 
++#elif defined(OS_WINDOWS)
++
++#include <string.h>
++#include "base/debug/stack_trace.h"
++
++_START_GOOGLE_NAMESPACE_
++
++static ATTRIBUTE_NOINLINE bool SymbolizeAndDemangle(void *pc, char *out,
++                                                    int out_size) {
++  const std::string prefix = "Backtrace:\n";
++  const std::string postfix = "\n";
++  void* stack[1];
++  stack[0] = pc;
++  ::base::debug::StackTrace stack_trace(stack, 1);
++  std::string symbol = stack_trace.ToString();
++  if (symbol.substr(0, prefix.size()) == prefix) {
++    symbol = symbol.substr(prefix.size());
++  }
++  if (symbol.substr(symbol.size() - postfix.size()) == postfix) {
++    symbol = symbol.substr(0, symbol.size() - postfix.size());
++  }
++  strcpy(out, symbol.c_str());
++  return true;
++}
++
++_END_GOOGLE_NAMESPACE_
++
+ #else
+ # error BUG: HAVE_SYMBOLIZE was wrongly set
+ #endif
+diff --git a/src/utilities.cc b/src/utilities.cc
+index a6d1961..12f12c7 100644
+--- a/src/utilities.cc
++++ b/src/utilities.cc
+@@ -136,6 +136,7 @@ static void DumpStackTrace(int skip_count, DebugWriter *writerfn, void *arg) {
+ static void DumpStackTraceAndExit() {
+   DumpStackTrace(1, DebugWriteToStderr, NULL);
+ 
++#ifndef OS_WINDOWS
+   // Set the default signal handler for SIGABRT, to avoid invoking our
+   // own signal handler installed by InstallFailedSignalHandler().
+   struct sigaction sig_action;
+@@ -143,6 +144,7 @@ static void DumpStackTraceAndExit() {
+   sigemptyset(&sig_action.sa_mask);
+   sig_action.sa_handler = SIG_DFL;
+   sigaction(SIGABRT, &sig_action, NULL);
++#endif
+ 
+   abort();
+ }
+diff --git a/src/utilities.h b/src/utilities.h
+index 5f79968..d3ef3e3 100644
+--- a/src/utilities.h
++++ b/src/utilities.h
+@@ -110,6 +110,8 @@
+ #  define STACKTRACE_H "stacktrace_x86_64-inl.h"
+ # elif (defined(__ppc__) || defined(__PPC__)) && __GNUC__ >= 2
+ #  define STACKTRACE_H "stacktrace_powerpc-inl.h"
++# elif (defined(OS_WINDOWS))
++#  define STACKTRACE_H "stacktrace_win-inl.h"
+ # endif
+ #endif
+ 
+@@ -127,6 +129,8 @@
+ #elif defined(OS_MACOSX) && defined(HAVE_DLADDR)
+ // Use dladdr to symbolize.
+ # define HAVE_SYMBOLIZE
++#elif defined(OS_WINDOWS)
++# define HAVE_SYMBOLIZE
+ #endif
+ 
+ #ifndef ARRAYSIZE
+diff --git a/vsprojects/include_chromium.props b/vsprojects/include_chromium.props
+new file mode 100644
+index 0000000..4dae729
+--- /dev/null
++++ b/vsprojects/include_chromium.props
+@@ -0,0 +1,20 @@
++﻿<?xml version="1.0" encoding="utf-8"?>
++<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
++  <ImportGroup Label="PropertySheets" />
++  <PropertyGroup Label="UserMacros" />
++  <PropertyGroup />
++  <ItemDefinitionGroup>
++    <ClCompile>
++      <AdditionalIncludeDirectories>$(SolutionDir)..\chromium;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
++      <PreprocessorDefinitions>NOGDI;NOMINMAX;UNICODE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
++      <ShowIncludes>true</ShowIncludes>
++    </ClCompile>
++    <Link>
++      <AdditionalDependencies>dbghelp.lib;%(AdditionalDependencies)</AdditionalDependencies>
++    </Link>
++    <Lib>
++      <AdditionalDependencies>dbghelp.lib;%(AdditionalDependencies)</AdditionalDependencies>
++    </Lib>
++  </ItemDefinitionGroup>
++  <ItemGroup />
++</Project>
+\ No newline at end of file
+diff --git a/vsprojects/libglog/libglog.vcxproj b/vsprojects/libglog/libglog.vcxproj
+index 4b48c6f..b59575b 100644
+--- a/vsprojects/libglog/libglog.vcxproj
++++ b/vsprojects/libglog/libglog.vcxproj
+@@ -32,9 +32,11 @@
+   </ImportGroup>
+   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="PropertySheets">
+     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
++    <Import Project="..\include_chromium.props" />
+   </ImportGroup>
+   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="PropertySheets">
+     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
++    <Import Project="..\include_chromium.props" />
+   </ImportGroup>
+   <PropertyGroup Label="UserMacros" />
+   <PropertyGroup>
+@@ -89,16 +91,52 @@
+     </Link>
+   </ItemDefinitionGroup>
+   <ItemGroup>
++    <ClCompile Include="..\..\..\chromium\base\debug\stack_trace.cc" />
++    <ClCompile Include="..\..\..\chromium\base\debug\stack_trace_win.cc" />
++    <ClCompile Include="..\..\..\chromium\base\files\file_path.cc" />
++    <ClCompile Include="..\..\..\chromium\base\files\file_path_constants.cc" />
++    <ClCompile Include="..\..\..\chromium\base\memory\singleton.cc" />
++    <ClCompile Include="..\..\..\chromium\base\process\launch_win.cc" />
++    <ClCompile Include="..\..\..\chromium\base\strings\string_piece.cc" />
++    <ClCompile Include="..\..\..\chromium\base\strings\string_util.cc" />
++    <ClCompile Include="..\..\..\chromium\base\strings\string_util_constants.cc" />
++    <ClCompile Include="..\..\..\chromium\base\synchronization\lock.cc" />
++    <ClCompile Include="..\..\..\chromium\base\synchronization\lock_impl_win.cc" />
++    <ClCompile Include="..\..\..\chromium\base\threading\platform_thread_win.cc" />
+     <ClCompile Include="..\..\src\logging.cc" />
+     <ClCompile Include="..\..\src\raw_logging.cc" />
++    <ClCompile Include="..\..\src\symbolize.cc" />
+     <ClCompile Include="..\..\src\utilities.cc" />
+     <ClCompile Include="..\..\src\vlog_is_on.cc" />
+     <ClCompile Include="..\..\src\windows\port.cc" />
+   </ItemGroup>
+   <ItemGroup>
++    <ClInclude Include="..\..\..\chromium\base\atomicops.h" />
++    <ClInclude Include="..\..\..\chromium\base\base_export.h" />
++    <ClInclude Include="..\..\..\chromium\base\basictypes.h" />
++    <ClInclude Include="..\..\..\chromium\base\compiler_specific.h" />
++    <ClInclude Include="..\..\..\chromium\base\debug\stack_trace.h" />
++    <ClInclude Include="..\..\..\chromium\base\files\file_path.h" />
++    <ClInclude Include="..\..\..\chromium\base\macros.h" />
++    <ClInclude Include="..\..\..\chromium\base\memory\aligned_memory.h" />
++    <ClInclude Include="..\..\..\chromium\base\memory\singleton.h" />
++    <ClInclude Include="..\..\..\chromium\base\port.h" />
++    <ClInclude Include="..\..\..\chromium\base\process\launch.h" />
++    <ClInclude Include="..\..\..\chromium\base\strings\string16.h" />
++    <ClInclude Include="..\..\..\chromium\base\strings\string_piece.h" />
++    <ClInclude Include="..\..\..\chromium\base\strings\string_util.h" />
++    <ClInclude Include="..\..\..\chromium\base\strings\string_util_win.h" />
++    <ClInclude Include="..\..\..\chromium\base\synchronization\lock.h" />
++    <ClInclude Include="..\..\..\chromium\base\synchronization\lock_impl.h" />
++    <ClInclude Include="..\..\..\chromium\base\third_party\dynamic_annotations\dynamic_annotations.h" />
++    <ClInclude Include="..\..\..\chromium\base\threading\platform_thread.h" />
++    <ClInclude Include="..\..\..\chromium\build\build_config.h" />
+     <ClInclude Include="..\..\src\base\commandlineflags.h" />
+     <ClInclude Include="..\..\src\base\googleinit.h" />
+     <ClInclude Include="..\..\src\base\mutex.h" />
++    <ClInclude Include="..\..\src\stacktrace.h" />
++    <ClInclude Include="..\..\src\stacktrace_win-inl.h" />
++    <ClInclude Include="..\..\src\symbolize.h" />
+     <ClInclude Include="..\..\src\utilities.h" />
+     <ClInclude Include="..\..\src\windows\config.h" />
+     <ClInclude Include="..\..\src\windows\glog\logging.h" />
+diff --git a/vsprojects/libglog/libglog.vcxproj.filters b/vsprojects/libglog/libglog.vcxproj.filters
+index 5efac96..0a9f6dd 100644
+--- a/vsprojects/libglog/libglog.vcxproj.filters
++++ b/vsprojects/libglog/libglog.vcxproj.filters
+@@ -9,6 +9,12 @@
+       <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+       <Extensions>h;hpp;hxx;hm;inl;inc;xsd</Extensions>
+     </Filter>
++    <Filter Include="Chromium Header Files">
++      <UniqueIdentifier>{3dc7a827-ae4e-4437-91d6-48eac3bc97b8}</UniqueIdentifier>
++    </Filter>
++    <Filter Include="Chromium Source Files">
++      <UniqueIdentifier>{0c3112da-445a-4f66-aa77-e829d317b296}</UniqueIdentifier>
++    </Filter>
+   </ItemGroup>
+   <ItemGroup>
+     <ClCompile Include="..\..\src\logging.cc">
+@@ -26,6 +32,45 @@
+     <ClCompile Include="..\..\src\vlog_is_on.cc">
+       <Filter>Source Files</Filter>
+     </ClCompile>
++    <ClCompile Include="..\..\..\chromium\base\debug\stack_trace.cc">
++      <Filter>Chromium Source Files</Filter>
++    </ClCompile>
++    <ClCompile Include="..\..\..\chromium\base\debug\stack_trace_win.cc">
++      <Filter>Chromium Source Files</Filter>
++    </ClCompile>
++    <ClCompile Include="..\..\..\chromium\base\process\launch_win.cc">
++      <Filter>Chromium Source Files</Filter>
++    </ClCompile>
++    <ClCompile Include="..\..\..\chromium\base\files\file_path.cc">
++      <Filter>Chromium Source Files</Filter>
++    </ClCompile>
++    <ClCompile Include="..\..\..\chromium\base\strings\string_util.cc">
++      <Filter>Chromium Source Files</Filter>
++    </ClCompile>
++    <ClCompile Include="..\..\..\chromium\base\synchronization\lock.cc">
++      <Filter>Chromium Source Files</Filter>
++    </ClCompile>
++    <ClCompile Include="..\..\..\chromium\base\files\file_path_constants.cc">
++      <Filter>Chromium Source Files</Filter>
++    </ClCompile>
++    <ClCompile Include="..\..\..\chromium\base\memory\singleton.cc">
++      <Filter>Chromium Source Files</Filter>
++    </ClCompile>
++    <ClCompile Include="..\..\..\chromium\base\synchronization\lock_impl_win.cc">
++      <Filter>Chromium Source Files</Filter>
++    </ClCompile>
++    <ClCompile Include="..\..\..\chromium\base\strings\string_util_constants.cc">
++      <Filter>Chromium Source Files</Filter>
++    </ClCompile>
++    <ClCompile Include="..\..\..\chromium\base\threading\platform_thread_win.cc">
++      <Filter>Chromium Source Files</Filter>
++    </ClCompile>
++    <ClCompile Include="..\..\..\chromium\base\strings\string_piece.cc">
++      <Filter>Chromium Source Files</Filter>
++    </ClCompile>
++    <ClCompile Include="..\..\src\symbolize.cc">
++      <Filter>Source Files</Filter>
++    </ClCompile>
+   </ItemGroup>
+   <ItemGroup>
+     <ClInclude Include="..\..\src\base\commandlineflags.h">
+@@ -61,5 +106,74 @@
+     <ClInclude Include="..\..\src\windows\glog\vlog_is_on.h">
+       <Filter>Header Files</Filter>
+     </ClInclude>
++    <ClInclude Include="..\..\..\chromium\base\debug\stack_trace.h">
++      <Filter>Chromium Header Files</Filter>
++    </ClInclude>
++    <ClInclude Include="..\..\..\chromium\base\base_export.h">
++      <Filter>Chromium Header Files</Filter>
++    </ClInclude>
++    <ClInclude Include="..\..\..\chromium\build\build_config.h">
++      <Filter>Chromium Header Files</Filter>
++    </ClInclude>
++    <ClInclude Include="..\..\..\chromium\base\basictypes.h">
++      <Filter>Chromium Header Files</Filter>
++    </ClInclude>
++    <ClInclude Include="..\..\..\chromium\base\memory\singleton.h">
++      <Filter>Chromium Header Files</Filter>
++    </ClInclude>
++    <ClInclude Include="..\..\..\chromium\base\files\file_path.h">
++      <Filter>Chromium Header Files</Filter>
++    </ClInclude>
++    <ClInclude Include="..\..\..\chromium\base\process\launch.h">
++      <Filter>Chromium Header Files</Filter>
++    </ClInclude>
++    <ClInclude Include="..\..\..\chromium\base\macros.h">
++      <Filter>Chromium Header Files</Filter>
++    </ClInclude>
++    <ClInclude Include="..\..\..\chromium\base\port.h">
++      <Filter>Chromium Header Files</Filter>
++    </ClInclude>
++    <ClInclude Include="..\..\..\chromium\base\strings\string_util.h">
++      <Filter>Chromium Header Files</Filter>
++    </ClInclude>
++    <ClInclude Include="..\..\..\chromium\base\synchronization\lock.h">
++      <Filter>Chromium Header Files</Filter>
++    </ClInclude>
++    <ClInclude Include="..\..\..\chromium\base\synchronization\lock_impl.h">
++      <Filter>Chromium Header Files</Filter>
++    </ClInclude>
++    <ClInclude Include="..\..\..\chromium\base\strings\string_piece.h">
++      <Filter>Chromium Header Files</Filter>
++    </ClInclude>
++    <ClInclude Include="..\..\..\chromium\base\atomicops.h">
++      <Filter>Chromium Header Files</Filter>
++    </ClInclude>
++    <ClInclude Include="..\..\..\chromium\base\memory\aligned_memory.h">
++      <Filter>Chromium Header Files</Filter>
++    </ClInclude>
++    <ClInclude Include="..\..\..\chromium\base\third_party\dynamic_annotations\dynamic_annotations.h">
++      <Filter>Chromium Header Files</Filter>
++    </ClInclude>
++    <ClInclude Include="..\..\..\chromium\base\threading\platform_thread.h">
++      <Filter>Chromium Header Files</Filter>
++    </ClInclude>
++    <ClInclude Include="..\..\..\chromium\base\compiler_specific.h">
++      <Filter>Chromium Header Files</Filter>
++    </ClInclude>
++    <ClInclude Include="..\..\..\chromium\base\strings\string16.h">
++      <Filter>Chromium Header Files</Filter>
++    </ClInclude>
++    <ClInclude Include="..\..\..\chromium\base\strings\string_util_win.h">
++      <Filter>Chromium Header Files</Filter>
++    </ClInclude>
++    <ClInclude Include="..\..\src\stacktrace.h">
++      <Filter>Header Files</Filter>
++    </ClInclude>
++    <ClInclude Include="..\..\src\stacktrace_win-inl.h">
++      <Filter>Header Files</Filter>
++    </ClInclude>
++    <ClInclude Include="..\..\src\symbolize.h">
++      <Filter>Header Files</Filter>
++    </ClInclude>
+   </ItemGroup>
+ </Project>
+\ No newline at end of file
+diff --git a/vsprojects/libglog_static/libglog_static.vcxproj b/vsprojects/libglog_static/libglog_static.vcxproj
+index bb2eb6e..d82ecd9 100644
+--- a/vsprojects/libglog_static/libglog_static.vcxproj
++++ b/vsprojects/libglog_static/libglog_static.vcxproj
+@@ -31,9 +31,11 @@
+   </ImportGroup>
+   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="PropertySheets">
+     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
++    <Import Project="..\include_chromium.props" />
+   </ImportGroup>
+   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="PropertySheets">
+     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
++    <Import Project="..\include_chromium.props" />
+   </ImportGroup>
+   <PropertyGroup Label="UserMacros" />
+   <PropertyGroup>
+@@ -72,16 +74,52 @@
+     </ClCompile>
+   </ItemDefinitionGroup>
+   <ItemGroup>
++    <ClCompile Include="..\..\..\chromium\base\debug\stack_trace.cc" />
++    <ClCompile Include="..\..\..\chromium\base\debug\stack_trace_win.cc" />
++    <ClCompile Include="..\..\..\chromium\base\files\file_path.cc" />
++    <ClCompile Include="..\..\..\chromium\base\files\file_path_constants.cc" />
++    <ClCompile Include="..\..\..\chromium\base\memory\singleton.cc" />
++    <ClCompile Include="..\..\..\chromium\base\process\launch_win.cc" />
++    <ClCompile Include="..\..\..\chromium\base\strings\string_piece.cc" />
++    <ClCompile Include="..\..\..\chromium\base\strings\string_util.cc" />
++    <ClCompile Include="..\..\..\chromium\base\strings\string_util_constants.cc" />
++    <ClCompile Include="..\..\..\chromium\base\synchronization\lock.cc" />
++    <ClCompile Include="..\..\..\chromium\base\synchronization\lock_impl_win.cc" />
++    <ClCompile Include="..\..\..\chromium\base\threading\platform_thread_win.cc" />
+     <ClCompile Include="..\..\src\logging.cc" />
+     <ClCompile Include="..\..\src\raw_logging.cc" />
++    <ClCompile Include="..\..\src\symbolize.cc" />
+     <ClCompile Include="..\..\src\utilities.cc" />
+     <ClCompile Include="..\..\src\vlog_is_on.cc" />
+     <ClCompile Include="..\..\src\windows\port.cc" />
+   </ItemGroup>
+   <ItemGroup>
++    <ClInclude Include="..\..\..\chromium\base\atomicops.h" />
++    <ClInclude Include="..\..\..\chromium\base\base_export.h" />
++    <ClInclude Include="..\..\..\chromium\base\basictypes.h" />
++    <ClInclude Include="..\..\..\chromium\base\compiler_specific.h" />
++    <ClInclude Include="..\..\..\chromium\base\debug\stack_trace.h" />
++    <ClInclude Include="..\..\..\chromium\base\files\file_path.h" />
++    <ClInclude Include="..\..\..\chromium\base\macros.h" />
++    <ClInclude Include="..\..\..\chromium\base\memory\aligned_memory.h" />
++    <ClInclude Include="..\..\..\chromium\base\memory\singleton.h" />
++    <ClInclude Include="..\..\..\chromium\base\port.h" />
++    <ClInclude Include="..\..\..\chromium\base\process\launch.h" />
++    <ClInclude Include="..\..\..\chromium\base\strings\string16.h" />
++    <ClInclude Include="..\..\..\chromium\base\strings\string_piece.h" />
++    <ClInclude Include="..\..\..\chromium\base\strings\string_util.h" />
++    <ClInclude Include="..\..\..\chromium\base\strings\string_util_win.h" />
++    <ClInclude Include="..\..\..\chromium\base\synchronization\lock.h" />
++    <ClInclude Include="..\..\..\chromium\base\synchronization\lock_impl.h" />
++    <ClInclude Include="..\..\..\chromium\base\third_party\dynamic_annotations\dynamic_annotations.h" />
++    <ClInclude Include="..\..\..\chromium\base\threading\platform_thread.h" />
++    <ClInclude Include="..\..\..\chromium\build\build_config.h" />
+     <ClInclude Include="..\..\src\base\commandlineflags.h" />
+     <ClInclude Include="..\..\src\base\googleinit.h" />
+     <ClInclude Include="..\..\src\base\mutex.h" />
++    <ClInclude Include="..\..\src\stacktrace.h" />
++    <ClInclude Include="..\..\src\stacktrace_win-inl.h" />
++    <ClInclude Include="..\..\src\symbolize.h" />
+     <ClInclude Include="..\..\src\utilities.h" />
+     <ClInclude Include="..\..\src\windows\config.h" />
+     <ClInclude Include="..\..\src\windows\glog\logging.h" />
+diff --git a/vsprojects/libglog_static/libglog_static.vcxproj.filters b/vsprojects/libglog_static/libglog_static.vcxproj.filters
+index d73424b..eb7ae6d 100644
+--- a/vsprojects/libglog_static/libglog_static.vcxproj.filters
++++ b/vsprojects/libglog_static/libglog_static.vcxproj.filters
+@@ -7,6 +7,12 @@
+     <Filter Include="Header Files">
+       <UniqueIdentifier>{08189f04-ee79-41cb-8cf2-9c89e815b183}</UniqueIdentifier>
+     </Filter>
++    <Filter Include="Chromium Header Files">
++      <UniqueIdentifier>{46760a46-1497-414b-a543-01cc9890b962}</UniqueIdentifier>
++    </Filter>
++    <Filter Include="Chromium Source Files">
++      <UniqueIdentifier>{51c15136-b567-4f4b-b5cf-a8dcb023afb5}</UniqueIdentifier>
++    </Filter>
+   </ItemGroup>
+   <ItemGroup>
+     <ClCompile Include="..\..\src\logging.cc">
+@@ -24,6 +30,45 @@
+     <ClCompile Include="..\..\src\vlog_is_on.cc">
+       <Filter>Source Files</Filter>
+     </ClCompile>
++    <ClCompile Include="..\..\..\chromium\base\files\file_path.cc">
++      <Filter>Chromium Source Files</Filter>
++    </ClCompile>
++    <ClCompile Include="..\..\..\chromium\base\files\file_path_constants.cc">
++      <Filter>Chromium Source Files</Filter>
++    </ClCompile>
++    <ClCompile Include="..\..\..\chromium\base\process\launch_win.cc">
++      <Filter>Chromium Source Files</Filter>
++    </ClCompile>
++    <ClCompile Include="..\..\..\chromium\base\synchronization\lock_impl_win.cc">
++      <Filter>Chromium Source Files</Filter>
++    </ClCompile>
++    <ClCompile Include="..\..\..\chromium\base\threading\platform_thread_win.cc">
++      <Filter>Chromium Source Files</Filter>
++    </ClCompile>
++    <ClCompile Include="..\..\..\chromium\base\memory\singleton.cc">
++      <Filter>Chromium Source Files</Filter>
++    </ClCompile>
++    <ClCompile Include="..\..\..\chromium\base\debug\stack_trace.cc">
++      <Filter>Chromium Source Files</Filter>
++    </ClCompile>
++    <ClCompile Include="..\..\..\chromium\base\debug\stack_trace_win.cc">
++      <Filter>Chromium Source Files</Filter>
++    </ClCompile>
++    <ClCompile Include="..\..\..\chromium\base\strings\string_piece.cc">
++      <Filter>Chromium Source Files</Filter>
++    </ClCompile>
++    <ClCompile Include="..\..\..\chromium\base\strings\string_util.cc">
++      <Filter>Chromium Source Files</Filter>
++    </ClCompile>
++    <ClCompile Include="..\..\..\chromium\base\strings\string_util_constants.cc">
++      <Filter>Chromium Source Files</Filter>
++    </ClCompile>
++    <ClCompile Include="..\..\src\symbolize.cc">
++      <Filter>Source Files</Filter>
++    </ClCompile>
++    <ClCompile Include="..\..\..\chromium\base\synchronization\lock.cc">
++      <Filter>Chromium Source Files</Filter>
++    </ClCompile>
+   </ItemGroup>
+   <ItemGroup>
+     <ClInclude Include="..\..\src\base\commandlineflags.h">
+@@ -59,5 +104,74 @@
+     <ClInclude Include="..\..\src\windows\glog\vlog_is_on.h">
+       <Filter>Header Files</Filter>
+     </ClInclude>
++    <ClInclude Include="..\..\..\chromium\base\memory\aligned_memory.h">
++      <Filter>Chromium Header Files</Filter>
++    </ClInclude>
++    <ClInclude Include="..\..\..\chromium\base\atomicops.h">
++      <Filter>Chromium Header Files</Filter>
++    </ClInclude>
++    <ClInclude Include="..\..\..\chromium\base\base_export.h">
++      <Filter>Chromium Header Files</Filter>
++    </ClInclude>
++    <ClInclude Include="..\..\..\chromium\base\basictypes.h">
++      <Filter>Chromium Header Files</Filter>
++    </ClInclude>
++    <ClInclude Include="..\..\..\chromium\build\build_config.h">
++      <Filter>Chromium Header Files</Filter>
++    </ClInclude>
++    <ClInclude Include="..\..\..\chromium\base\compiler_specific.h">
++      <Filter>Chromium Header Files</Filter>
++    </ClInclude>
++    <ClInclude Include="..\..\..\chromium\base\third_party\dynamic_annotations\dynamic_annotations.h">
++      <Filter>Chromium Header Files</Filter>
++    </ClInclude>
++    <ClInclude Include="..\..\..\chromium\base\files\file_path.h">
++      <Filter>Chromium Header Files</Filter>
++    </ClInclude>
++    <ClInclude Include="..\..\..\chromium\base\process\launch.h">
++      <Filter>Chromium Header Files</Filter>
++    </ClInclude>
++    <ClInclude Include="..\..\..\chromium\base\synchronization\lock.h">
++      <Filter>Chromium Header Files</Filter>
++    </ClInclude>
++    <ClInclude Include="..\..\..\chromium\base\synchronization\lock_impl.h">
++      <Filter>Chromium Header Files</Filter>
++    </ClInclude>
++    <ClInclude Include="..\..\..\chromium\base\macros.h">
++      <Filter>Chromium Header Files</Filter>
++    </ClInclude>
++    <ClInclude Include="..\..\..\chromium\base\threading\platform_thread.h">
++      <Filter>Chromium Header Files</Filter>
++    </ClInclude>
++    <ClInclude Include="..\..\..\chromium\base\port.h">
++      <Filter>Chromium Header Files</Filter>
++    </ClInclude>
++    <ClInclude Include="..\..\..\chromium\base\memory\singleton.h">
++      <Filter>Chromium Header Files</Filter>
++    </ClInclude>
++    <ClInclude Include="..\..\..\chromium\base\debug\stack_trace.h">
++      <Filter>Chromium Header Files</Filter>
++    </ClInclude>
++    <ClInclude Include="..\..\..\chromium\base\strings\string_piece.h">
++      <Filter>Chromium Header Files</Filter>
++    </ClInclude>
++    <ClInclude Include="..\..\..\chromium\base\strings\string_util.h">
++      <Filter>Chromium Header Files</Filter>
++    </ClInclude>
++    <ClInclude Include="..\..\..\chromium\base\strings\string_util_win.h">
++      <Filter>Chromium Header Files</Filter>
++    </ClInclude>
++    <ClInclude Include="..\..\..\chromium\base\strings\string16.h">
++      <Filter>Chromium Header Files</Filter>
++    </ClInclude>
++    <ClInclude Include="..\..\src\stacktrace.h">
++      <Filter>Header Files</Filter>
++    </ClInclude>
++    <ClInclude Include="..\..\src\stacktrace_win-inl.h">
++      <Filter>Header Files</Filter>
++    </ClInclude>
++    <ClInclude Include="..\..\src\symbolize.h">
++      <Filter>Header Files</Filter>
++    </ClInclude>
+   </ItemGroup>
+ </Project>
+\ No newline at end of file
+-- 
+1.8.4.msysgit.0
+
