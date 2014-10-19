@@ -1,7 +1,7 @@
 #Instructions for building Principia
 
 These instructions are for Visual Studio 2013, using the git
-Powershell provided by git for Windows.
+Powershell provided by [GitHub for Windows](https://windows.github.com/).
 
 We assume a working installation of Kerbal Space Program version 0.24.2 is
 found in `<KSP directory>`.
@@ -27,7 +27,7 @@ library, *modified according to the instructions below*;
 *modified according to the instructions below*;
 - The Google [gmock/gtest 1.7.0](https://code.google.com/p/googlemock
 /downloads/list) libraries, *modified according to the instructions below*;
-- The Google benchmark library for Windows.
+- pleroy's [fork](https://github.com/pleroy/benchmark) of the Google benchmark library.
 
 The following instructions should be followed before opening the repository, so
 that all dependencies are found.
@@ -37,16 +37,16 @@ Those assemblies should be copied to the directory `<root>\KSP Assemblies`.
 0. In `<root>\Google`, run
 
   ```powershell
-git clone "https://chromium.googlesource.com/chromium/src.git" chromium -n --depth 1
+git clone "https://chromium.googlesource.com/chromium/src.git" chromium -n --depth 1 -b "40.0.2193.1"
 $GitPromptSettings.RepositoriesInWhichToDisableFileStatus += join-path  (gi -path .).FullName chromium
 cd chromium
 git config core.sparsecheckout true
 copy "..\..\Principia\documentation\setup files\chromium_sparse_checkout.txt" ".git/info/sparse-checkout"
-git checkout master
+git checkout
 copy "..\..\Principia\documentation\setup files\chromium.patch"
 git am "chromium.patch"
 rm "chromium.patch"
-```
+  ```
 0. Download [glog 0.3.3](https://code.google.com/p/google-glog/downloads/list),
   and unpack into `<root>\Google`.
   There should be a file at `<root>\Google\glog-0.3.3\README` if the unpacking
