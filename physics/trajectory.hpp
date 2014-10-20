@@ -26,6 +26,8 @@ class Body;
 template<typename Frame>
 class Trajectory {
  public:
+  using Timeline = std::map<Instant, DegreesOfFreedom<Frame>>;
+
   // No transfer of ownership.  |body| must live longer than the trajectory as
   // the trajectory holds a reference to it.
   explicit Trajectory(Body<Frame> const& body);
@@ -108,6 +110,9 @@ class Trajectory {
   // Returns true if this trajectory has an intrinsic acceleration.
   bool has_intrinsic_acceleration() const;
 
+  // The position and velocity as a function of time for the whole trajectory.
+  Timeline const& timeline() const;
+
   // Computes the intrinsic acceleration for this trajectory at time |time|.  If
   // |has_intrinsic_acceleration()| return false, or if |time| is before the
   // |fork_time()| (or initial time) of this trajectory, the returned
@@ -116,8 +121,6 @@ class Trajectory {
       Instant const& time) const;
 
  private:
-  using Timeline = std::map<Instant, DegreesOfFreedom<Frame>>;
-
   // A constructor for creating a child trajectory during forking.
   Trajectory(Body<Frame> const& body,
              Trajectory* const parent,

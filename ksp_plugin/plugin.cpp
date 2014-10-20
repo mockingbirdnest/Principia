@@ -4,10 +4,12 @@
 #include <string>
 
 #include "geometry/permutation.hpp"
+#include "geometry/affine_map.hpp"
 
 namespace principia {
 namespace ksp_plugin {
 
+using geometry::AffineMap;
 using geometry::Bivector;
 using geometry::Permutation;
 
@@ -16,6 +18,12 @@ Permutation<World, AliceWorld> const kWorldLookingGlass(
 
 Permutation<WorldSun, AliceSun> const kSunLookingGlass(
     Permutation<WorldSun, AliceSun>::CoordinatePermutation::XZY);
+
+Rotation<Barycentre, WorldSun> Plugin::PlanetariumRotation() const {
+  return Rotation<Barycentre, WorldSun>(
+      planetarium_rotation_,
+      Bivector<double, Barycentre>({0, 1, 0}));
+}
 
 void Plugin::CheckVesselInvariants(
     Vessel<Barycentre> const& vessel,
@@ -152,12 +160,6 @@ void Plugin::EvolveProlongationsAndUnsynchronizedHistories(Instant const& t) {
 
 Instant const& Plugin::HistoryTime() const {
   return sun_->history().last_time();
-}
-
-Rotation<Barycentre, WorldSun> Plugin::PlanetariumRotation() const {
-  return Rotation<Barycentre, WorldSun>(
-      planetarium_rotation_,
-      Bivector<double, Barycentre>({0, 1, 0}));
 }
 
 Plugin::Plugin(Instant const& initial_time,
@@ -371,18 +373,46 @@ Velocity<AliceSun> Plugin::CelestialParentRelativeVelocity(
   return result;
 }
 
-RenderedTrajectory<World> Plugin::RenderVesselTrajectory(
+RenderedTrajectory<World> Plugin::RenderedVesselTrajectory(
     GUID const& vessel_guid,
     Instant const& lower_bound,
-    RenderingFrame const& frame) const {
+    RenderingFrame const& frame,
+    Position<World> const& sun_world_position) const {
+  auto const to_world = AffineMap<Barycentre, World, Length, Rotation>(
+        sun_->prolongation().last_position(),
+        sun_world_position,
+        Rotation<WorldSun, World>::Identity() * PlanetariumRotation());
   auto const it = vessels_.find(vessel_guid);
   CHECK(it != vessels_.end());
   Vessel<Barycentre> const& vessel = *(it->second);
   CHECK(vessel.has_history());
   RenderedTrajectory<World> result;
-  for (Instant const& t : vessel.history().Times()) {
-    
+  Position<Barycentre> const* q_last = nullptr;
+  Velocity<Barycentre> const* v_last = nullptr;
+  Instant const* t_last = nullptr;
+  Position<Barycentre> const* q = nullptr;
+  Velocity<Barycentre> const* v = nullptr;
+  Instant const* t = nullptr;
+  CubicBézierCurve<Barycentre> p;
+  for (auto const& it : vessel.history().timeline()) {
+    t = &it.first;
+    DegreesOfFreedom<Barycentre> const& z = it.second;
+    q = frame.RenderedPosition(z.position, *t);
+    v = frame.RenderedVelocity(z.velocity, *t);
+    if (q_last != nullptr && q != nullptr &&
+        v_last != nullptr && v != nullptr) {
+      Time const δt = *t - *t_last;
+      p[0] = *q_last;
+      p[3] = *q;
+      p[1] = p[0] + *v_last * δt / 3.0;
+      p[2] = p[3] - *v * δt / 3.0;
+      result.push_back({to_world(p[0]), to_world(p[1]),
+                        to_world(p[2]), to_world(p[3])});
+    }
+    std::swap(q, q_last);
+    std::swap(v, v_last);
   }
+  return result;
 }
 
 }  // namespace ksp_plugin

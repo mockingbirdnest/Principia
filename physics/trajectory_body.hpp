@@ -223,6 +223,12 @@ bool Trajectory<Frame>::has_intrinsic_acceleration() const {
 }
 
 template<typename Frame>
+typename Trajectory<Frame>::Timeline const&
+Trajectory<Frame>::timeline() const {
+  return timeline_;
+}
+
+template<typename Frame>
 Vector<Acceleration, Frame> Trajectory<Frame>::evaluate_intrinsic_acceleration(
     Instant const& time) const {
   if (intrinsic_acceleration_ != nullptr &&

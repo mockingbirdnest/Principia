@@ -5,7 +5,6 @@ using System.Runtime.InteropServices;
 namespace principia {
 namespace ksp_plugin_adapter {
 
-[KSPAddon(startup : KSPAddon.Startup.Flight, once : false)]
 public partial class PluginAdapter : UnityEngine.MonoBehaviour {
 
   private const string kDllPath = "GameData/Principia/principia.dll";

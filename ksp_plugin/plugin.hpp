@@ -25,6 +25,7 @@ namespace ksp_plugin {
 
 using geometry::Displacement;
 using geometry::Instant;
+using geometry::Point;
 using geometry::Rotation;
 using integrators::SPRKIntegrator;
 using physics::Body;
@@ -81,14 +82,14 @@ using Index = int;
 // We leave it to the reader to check that the above can be expressed as a point
 // plus a linear combination of differences of points and is thus well-defined
 // when the pᵢ lie in an affine space.
-template<typename Vector>
-using CubicBézierCurve = std::array<4, Point<Vector>>;
+template<typename Frame>
+using CubicBézierCurve = std::array<Position<Frame>, 4>;
 
 // We render trajectories as cubic Hermite splines matching both position and
 // velocity at the interpolation points.  The C# utilities we have only support
 // Catmull-Rom splines, so we do that with a bunch of Bézier curves instead.
 template<typename Frame>
-using RenderedTrajectory = std::vector<CubicBézierCurve<Displacement<Frame>>>;
+using RenderedTrajectory = std::vector<CubicBézierCurve<Frame>>;
 
 class Plugin {
  public:
@@ -212,10 +213,11 @@ class Plugin {
   virtual Velocity<AliceSun> CelestialParentRelativeVelocity(
       Index const celestial_index) const;
 
-  virtual RenderedTrajectory<World> RenderVesselTrajectory(
+  virtual RenderedTrajectory<World> RenderedVesselTrajectory(
       GUID const& vessel_guid,
       Instant const& lower_bound,
-      RenderingFrame const& frame) const;
+      RenderingFrame const& frame,
+      Position<World> const& sun_world_position) const;
 
  private:
   using GUIDToOwnedVessel = std::map<GUID, std::unique_ptr<Vessel<Barycentre>>>;
