@@ -390,17 +390,22 @@ RenderedTrajectory<World> Plugin::RenderedVesselTrajectory(
   Vessel<Barycentre> const& vessel = *(it->second);
   CHECK(vessel.has_history());
   RenderedTrajectory<World> result;
+  if (!vessel.has_prolongation()) {
+    // TODO(egg): We render neither unsynchronized histories nor prolongations
+    // at the moment.
+    return result;
+  }
   // Initial and final time and state for the Bézier segment being computed.
   Instant const* initial_time = nullptr;
   Instant const* final_time = nullptr;
   DegreesOfFreedom<Barycentre> const* initial_state = nullptr;
   DegreesOfFreedom<Barycentre> const* final_state = nullptr;
   CubicBézierCurve<Barycentre> barycentric_bézier_points;
-  Trajectory<Barycentre> const apparent_trajectory =
+  std::unique_ptr<Trajectory<Barycentre>> const apparent_trajectory =
       frame.ApparentTrajectory(vessel.history());
-  for (auto const& it : apparent_trajectory.timeline()) {
-    final_time = &it.first;
-    final_state = &it.second;
+  for (auto const& pair : apparent_trajectory->timeline()) {
+    final_time = &pair.first;
+    final_state = &pair.second;
     if (initial_state != nullptr && final_time != nullptr) {
       Time const δt = *final_time - *initial_time;
       barycentric_bézier_points[0] = initial_state->position;

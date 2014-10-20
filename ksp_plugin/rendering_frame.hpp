@@ -12,7 +12,7 @@ struct Barycentre;
 
 class RenderingFrame {
  public:
-  virtual Trajectory<Barycentre> const ApparentTrajectory(
+  virtual std::unique_ptr<Trajectory<Barycentre>> const ApparentTrajectory(
       Trajectory<Barycentre> const& actual_trajectory) const = 0;
 };
 
@@ -20,7 +20,7 @@ class BodyCentredNonRotating : RenderingFrame {
  public:
   explicit BodyCentredNonRotating(Celestial<Barycentre> const& body);
 
-  Trajectory<Barycentre> const ApparentTrajectory(
+  std::unique_ptr<Trajectory<Barycentre>> const ApparentTrajectory(
       Trajectory<Barycentre> const& actual_trajectory) const override;
 
  private:
@@ -32,7 +32,7 @@ class BodyCentredRotatingWithSurface : RenderingFrame {
   BodyCentredRotatingWithSurface(Celestial<Barycentre> const& body,
                                  AngularVelocity<Barycentre> const& rotation_);
 
-  Trajectory<Barycentre> const ApparentTrajectory(
+  std::unique_ptr<Trajectory<Barycentre>> const ApparentTrajectory(
       Trajectory<Barycentre> const& actual_trajectory) const override;
 
  private:
@@ -45,7 +45,7 @@ class BarycentricRotating : RenderingFrame {
   BarycentricRotating(Celestial<Barycentre> const& primary,
                       Celestial<Barycentre> const& secondary_);
 
-  Trajectory<Barycentre> const ApparentTrajectory(
+  std::unique_ptr<Trajectory<Barycentre>> const ApparentTrajectory(
       Trajectory<Barycentre> const& actual_trajectory) const override;
 
  private:
