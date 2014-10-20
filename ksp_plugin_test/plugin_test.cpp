@@ -45,6 +45,8 @@ namespace ksp_plugin {
 
 namespace {
 
+int const kNotABody = 1729;
+
 // Appends a |DegreesOfFreedom| equal to the last one at the given |time| to
 // each |Trajectory| in the |k|th parameter of the expected call.
 // This parameter must be an |NBodySystem<Barycentre>::Trajectories|, |time|
@@ -193,6 +195,8 @@ class PluginTest : public testing::Test {
   Velocity<AliceSun> satellite_initial_velocity_;
 };
 
+using PluginDeathTest = PluginTest;
+
 TEST_F(PluginTest, Initialization) {
   InsertAllSolarSystemBodies();
   plugin_->EndInitialization();
@@ -213,7 +217,7 @@ TEST_F(PluginTest, Initialization) {
   }
 }
 
-TEST_F(PluginTest, InsertCelestialError) {
+TEST_F(PluginDeathTest, InsertCelestialError) {
   Displacement<AliceSun> const from_parent_position = looking_glass_(
       solar_system_->trajectories().front()->last_position() -
       solar_system_->trajectories().front()->last_position());
@@ -233,7 +237,7 @@ TEST_F(PluginTest, InsertCelestialError) {
     InsertAllSolarSystemBodies();
     plugin_->InsertCelestial(42,
                              bodies_.front()->gravitational_parameter(),
-                             1729,
+                             kNotABody,
                              from_parent_position,
                              from_parent_velocity);
   }, DeathMessage("No body at index"));
@@ -247,7 +251,24 @@ TEST_F(PluginTest, InsertCelestialError) {
   }, DeathMessage("Body already exists"));
 }
 
-TEST_F(PluginTest, InsertVesselError) {
+TEST_F(PluginDeathTest, UpdateCelestialHierarchyError) {
+  EXPECT_DEATH({
+    InsertAllSolarSystemBodies();
+    plugin_->UpdateCelestialHierarchy(SolarSystem::kSun, SolarSystem::kPluto);
+  }, DeathMessage("Check failed: !initializing"));
+  EXPECT_DEATH({
+    InsertAllSolarSystemBodies();
+    plugin_->EndInitialization();
+    plugin_->UpdateCelestialHierarchy(kNotABody, SolarSystem::kPluto);
+  }, DeathMessage("No body at index"));
+  EXPECT_DEATH({
+    InsertAllSolarSystemBodies();
+    plugin_->EndInitialization();
+    plugin_->UpdateCelestialHierarchy(SolarSystem::kSun, kNotABody);
+  }, DeathMessage("No body at index"));
+}
+
+TEST_F(PluginDeathTest, InsertOrKeepVesselError) {
   GUID const guid = "Syrio Forel";
   EXPECT_DEATH({
     InsertAllSolarSystemBodies();
@@ -256,8 +277,115 @@ TEST_F(PluginTest, InsertVesselError) {
   EXPECT_DEATH({
     InsertAllSolarSystemBodies();
     plugin_->EndInitialization();
-    plugin_->InsertOrKeepVessel(guid, 1729);
+    plugin_->InsertOrKeepVessel(guid, kNotABody);
   }, DeathMessage("No body at index"));
+}
+
+TEST_F(PluginDeathTest, SetVesselStateOffsetError) {
+  GUID const guid = "Test Satellite";
+  EXPECT_DEATH({
+    InsertAllSolarSystemBodies();
+    plugin_->SetVesselStateOffset(guid,
+                                  satellite_initial_displacement_,
+                                  satellite_initial_velocity_);
+  }, DeathMessage("Check failed: !initializing"));
+  EXPECT_DEATH({
+    InsertAllSolarSystemBodies();
+    plugin_->EndInitialization();
+    plugin_->SetVesselStateOffset(guid,
+                                  satellite_initial_displacement_,
+                                  satellite_initial_velocity_);
+  }, DeathMessage("No vessel with GUID"));
+  EXPECT_DEATH({
+    InsertAllSolarSystemBodies();
+    plugin_->EndInitialization();
+    plugin_->InsertOrKeepVessel(guid, SolarSystem::kSun);
+    plugin_->SetVesselStateOffset(guid,
+                                  satellite_initial_displacement_,
+                                  satellite_initial_velocity_);
+    plugin_->SetVesselStateOffset(guid,
+                                  satellite_initial_displacement_,
+                                  satellite_initial_velocity_);
+  }, DeathMessage("already has a trajectory"));
+}
+
+TEST_F(PluginDeathTest, AdvanceTimeError) {
+  EXPECT_DEATH({
+    InsertAllSolarSystemBodies();
+    plugin_->AdvanceTime(Instant(), Angle());
+  }, DeathMessage("Check failed: !initializing"));
+}
+
+TEST_F(PluginDeathTest, VesselDisplacementFromParentError) {
+  GUID const guid = "Test Satellite";
+  EXPECT_DEATH({
+    InsertAllSolarSystemBodies();
+    plugin_->VesselDisplacementFromParent(guid);
+  }, DeathMessage("Check failed: !initializing"));
+  EXPECT_DEATH({
+    InsertAllSolarSystemBodies();
+    plugin_->EndInitialization();
+    plugin_->VesselDisplacementFromParent(guid);
+  }, DeathMessage("No vessel with GUID"));
+  EXPECT_DEATH({
+    InsertAllSolarSystemBodies();
+    plugin_->EndInitialization();
+    plugin_->InsertOrKeepVessel(guid, SolarSystem::kSun);
+    plugin_->VesselDisplacementFromParent(guid);
+  }, DeathMessage("not given an initial state"));
+}
+
+TEST_F(PluginDeathTest, VesselParentRelativeVelocityError) {
+  GUID const guid = "Test Satellite";
+  EXPECT_DEATH({
+    InsertAllSolarSystemBodies();
+    plugin_->VesselParentRelativeVelocity(guid);
+  }, DeathMessage("Check failed: !initializing"));
+  EXPECT_DEATH({
+    InsertAllSolarSystemBodies();
+    plugin_->EndInitialization();
+    plugin_->VesselParentRelativeVelocity(guid);
+  }, DeathMessage("No vessel with GUID"));
+  EXPECT_DEATH({
+    InsertAllSolarSystemBodies();
+    plugin_->EndInitialization();
+    plugin_->InsertOrKeepVessel(guid, SolarSystem::kSun);
+    plugin_->VesselParentRelativeVelocity(guid);
+  }, DeathMessage("not given an initial state"));
+}
+
+TEST_F(PluginDeathTest, CelestialDisplacementFromParentError) {
+  EXPECT_DEATH({
+    InsertAllSolarSystemBodies();
+    plugin_->CelestialDisplacementFromParent(SolarSystem::kEarth);
+  }, DeathMessage("Check failed: !initializing"));
+  EXPECT_DEATH({
+    InsertAllSolarSystemBodies();
+    plugin_->EndInitialization();
+    plugin_->CelestialDisplacementFromParent(kNotABody);
+  }, DeathMessage("No body at index"));
+  EXPECT_DEATH({
+    InsertAllSolarSystemBodies();
+    plugin_->EndInitialization();
+    plugin_->CelestialDisplacementFromParent(SolarSystem::kSun);
+  }, DeathMessage("is the sun"));
+}
+
+TEST_F(PluginDeathTest, CelestialParentRelativeVelocityError) {
+  EXPECT_DEATH({
+    InsertAllSolarSystemBodies();
+    plugin_->CelestialParentRelativeVelocity(SolarSystem::kEarth);
+  }, DeathMessage("Check failed: !initializing"));
+  EXPECT_DEATH({
+    InsertAllSolarSystemBodies();
+    plugin_->EndInitialization();
+    plugin_->CelestialParentRelativeVelocity(kNotABody);
+  }, DeathMessage("No body at index"));
+  EXPECT_DEATH({
+    InsertAllSolarSystemBodies();
+    plugin_->EndInitialization();
+    plugin_->CelestialParentRelativeVelocity(SolarSystem::kSun);
+  }, DeathMessage("is the sun"));
 }
 
 TEST_F(PluginTest, VesselInsertionAtInitialization) {
