@@ -1,5 +1,6 @@
 ﻿#include "ksp_plugin/plugin.hpp"
 
+#include <algorithm>
 #include <cmath>
 #include <string>
 
@@ -387,30 +388,27 @@ RenderedTrajectory<World> Plugin::RenderedVesselTrajectory(
   Vessel<Barycentre> const& vessel = *(it->second);
   CHECK(vessel.has_history());
   RenderedTrajectory<World> result;
-  Position<Barycentre> const* q_last = nullptr;
-  Velocity<Barycentre> const* v_last = nullptr;
   Instant const* t_last = nullptr;
-  Position<Barycentre> const* q = nullptr;
-  Velocity<Barycentre> const* v = nullptr;
   Instant const* t = nullptr;
+  DegreesOfFreedom<Barycentre> const* z_last = nullptr;
+  DegreesOfFreedom<Barycentre> const* z = nullptr;
   CubicBézierCurve<Barycentre> p;
-  for (auto const& it : vessel.history().timeline()) {
+  Trajectory<Barycentre> const apparent_trajectory =
+      frame.ApparentTrajectory(vessel.history());
+  for (auto const& it : apparent_trajectory.timeline()) {
     t = &it.first;
-    DegreesOfFreedom<Barycentre> const& z = it.second;
-    q = frame.RenderedPosition(z.position, *t);
-    v = frame.RenderedVelocity(z.velocity, *t);
-    if (q_last != nullptr && q != nullptr &&
-        v_last != nullptr && v != nullptr) {
+    z = &it.second;
+    if (z_last != nullptr && t_last != nullptr) {
       Time const δt = *t - *t_last;
-      p[0] = *q_last;
-      p[3] = *q;
-      p[1] = p[0] + *v_last * δt / 3.0;
-      p[2] = p[3] - *v * δt / 3.0;
+      p[0] = z_last->position;
+      p[3] = z->position;
+      p[1] = p[0] + z_last->velocity * δt / 3.0;
+      p[2] = p[3] - z->velocity * δt / 3.0;
       result.push_back({to_world(p[0]), to_world(p[1]),
                         to_world(p[2]), to_world(p[3])});
     }
-    std::swap(q, q_last);
-    std::swap(v, v_last);
+    std::swap(t, t_last);
+    std::swap(z, z_last);
   }
   return result;
 }

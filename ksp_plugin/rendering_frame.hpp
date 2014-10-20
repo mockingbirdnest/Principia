@@ -12,24 +12,16 @@ struct Barycentre;
 
 class RenderingFrame {
  public:
-  virtual Position<Barycentre>* const RenderedPosition(
-      Position<Barycentre> const& actual_position,
-      Instant const& t) const = 0;
-  virtual Velocity<Barycentre>* const RenderedVelocity(
-      Velocity<Barycentre> const& actual_velocity,
-      Instant const& t) const = 0;
+  virtual Trajectory<Barycentre> const ApparentTrajectory(
+      Trajectory<Barycentre> const& actual_trajectory) const = 0;
 };
 
 class BodyCentredNonRotating : RenderingFrame {
  public:
   explicit BodyCentredNonRotating(Celestial<Barycentre> const& body);
 
-  Position<Barycentre>* const RenderedPosition(
-      Position<Barycentre> const& actual_position,
-      Instant const& t) const override;
-  Velocity<Barycentre>* const RenderedVelocity(
-      Velocity<Barycentre> const& actual_velocity,
-      Instant const& t) const override;
+  Trajectory<Barycentre> const ApparentTrajectory(
+      Trajectory<Barycentre> const& actual_trajectory) const override;
 
  private:
   Celestial<Barycentre> const& body_;
@@ -40,12 +32,8 @@ class BodyCentredRotatingWithSurface : RenderingFrame {
   BodyCentredRotatingWithSurface(Celestial<Barycentre> const& body,
                                  AngularVelocity<Barycentre> const& rotation_);
 
-  Position<Barycentre>* const RenderedPosition(
-      Position<Barycentre> const& actual_position,
-      Instant const& t) const override;
-  Velocity<Barycentre>* const RenderedVelocity(
-      Velocity<Barycentre> const& actual_velocity,
-      Instant const& t) const override;
+  Trajectory<Barycentre> const ApparentTrajectory(
+      Trajectory<Barycentre> const& actual_trajectory) const override;
 
  private:
   Celestial<Barycentre> const& body_;
@@ -57,12 +45,8 @@ class BarycentricRotating : RenderingFrame {
   BarycentricRotating(Celestial<Barycentre> const& primary,
                       Celestial<Barycentre> const& secondary_);
 
-  Position<Barycentre>* const RenderedPosition(
-      Position<Barycentre> const& actual_position,
-      Instant const& t) const override;
-  Velocity<Barycentre>* const RenderedVelocity(
-      Velocity<Barycentre> const& actual_velocity,
-      Instant const& t) const override;
+  Trajectory<Barycentre> const ApparentTrajectory(
+      Trajectory<Barycentre> const& actual_trajectory) const override;
 
  private:
   Celestial<Barycentre> const& primary_;
