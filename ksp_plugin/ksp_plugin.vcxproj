@@ -137,6 +137,7 @@
     <ClCompile Include="interface.cpp" />
     <ClCompile Include="monostable.cpp" />
     <ClCompile Include="plugin.cpp" />
+    <ClCompile Include="rendering_frame.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
