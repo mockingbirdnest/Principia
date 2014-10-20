@@ -61,7 +61,7 @@ struct SplineAndIterator {
                     RenderedTrajectory<World>::const_iterator const it)
       : rendered_trajectory(rendered_trajectory),
         it(it) {};
-  RenderedTrajectory<World> rendered_trajectory;
+  RenderedTrajectory<World> const rendered_trajectory;
   RenderedTrajectory<World>::const_iterator it;
 };
 
