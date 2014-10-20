@@ -374,6 +374,8 @@ Velocity<AliceSun> Plugin::CelestialParentRelativeVelocity(
   return result;
 }
 
+// TODO(egg): would things be faster if we computed a polygon ourselves and had
+// Vectrosity render it, rather than telling it to render a spline?
 RenderedTrajectory<World> Plugin::RenderedVesselTrajectory(
     GUID const& vessel_guid,
     Instant const& lower_bound,
@@ -399,10 +401,11 @@ RenderedTrajectory<World> Plugin::RenderedVesselTrajectory(
   for (auto const& it : apparent_trajectory.timeline()) {
     final_time = &it.first;
     final_state = &it.second;
-    if (initial_state != nullptr && t_last != nullptr) {
-      Time const δt = *final_time*- *t_last;
+    if (initial_state != nullptr && final_time != nullptr) {
+      Time const δt = *final_time - *initial_time;
       barycentric_bézier_points[0] = initial_state->position;
       barycentric_bézier_points[3] = final_state->position;
+      // TODO(egg): * (1.0 / 3.0) would be faster. Would it be measurably so?
       barycentric_bézier_points[1] =
           barycentric_bézier_points[0] + initial_state->velocity * δt / 3.0;
       barycentric_bézier_points[2] =
