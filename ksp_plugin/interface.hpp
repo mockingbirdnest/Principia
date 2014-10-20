@@ -47,6 +47,20 @@ struct XYZ {
 static_assert(std::is_standard_layout<XYZ>::value,
               "XYZ is used for interfacing");
 
+extern "C"
+struct SplineSegment {
+  XYZ p0, p1, p2, p3;
+  bool last;
+};
+
+static_assert(std::is_standard_layout<SplineSegment>::value,
+              "SplineSegment is used for interfacing");
+
+struct SplineAndIterator {
+  std::unique_ptr<RenderedTrajectory<World> const> rendered_trajectory;
+  RenderedTrajectory<World>::const_iterator it;
+};
+
 // Sets stderr to log INFO, and redirects stderr, which Unity does not log, to
 // "<KSP directory>/stderr.log". This provides an easily accessible file
 // containing a sufficiently verbose log of the latest session, instead of
@@ -151,6 +165,27 @@ XYZ CDECL CelestialDisplacementFromParent(Plugin const* const plugin,
 extern "C" DLLEXPORT
 XYZ CDECL CelestialParentRelativeVelocity(Plugin const* const plugin,
                                           int const celestial_index);
+
+extern "C" DLLEXPORT
+BodyCentredNonRotatingFrame const* CDECL NewBodyCentredNonRotatingFrame(
+    Plugin const* const plugin,
+    int const reference_body_index);
+
+extern "C" DLLEXPORT
+void CDECL DeleteBodyCentredNonRotatingFrame(
+    BodyCentredNonRotatingFrame const** const frame);
+
+extern "C" DLLEXPORT
+SplineAndIterator* CDECL RenderedVesselTrajectory(Plugin const* const plugin,
+                                                  char const* vessel_guid,
+                                                  RenderingFrame const* frame,
+                                                  XYZ const sun_world_position);
+
+extern "C" DLLEXPORT
+SplineSegment CDECL FetchAndIncrement(SplineAndIterator* const spline);
+
+extern "C" DLLEXPORT
+void CDECL DeleteSplineAndIterator(SplineAndIterator const** const spline);
 
 // Says hello, convenient for checking that calls to the DLL work.
 extern "C" DLLEXPORT

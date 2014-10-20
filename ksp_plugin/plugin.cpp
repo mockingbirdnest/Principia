@@ -376,11 +376,11 @@ Velocity<AliceSun> Plugin::CelestialParentRelativeVelocity(
 
 // TODO(egg): would things be faster if we computed a polygon ourselves and had
 // Vectrosity render it, rather than telling it to render a spline?
-RenderedTrajectory<World> Plugin::RenderedVesselTrajectory(
+std::unique_ptr<RenderedTrajectory<World>> Plugin::RenderedVesselTrajectory(
     GUID const& vessel_guid,
-    Instant const& lower_bound,
     RenderingFrame const& frame,
     Position<World> const& sun_world_position) const {
+  CHECK(!initializing);
   auto const to_world = AffineMap<Barycentre, World, Length, Rotation>(
         sun_->prolongation().last_position(),
         sun_world_position,
@@ -389,7 +389,8 @@ RenderedTrajectory<World> Plugin::RenderedVesselTrajectory(
   CHECK(it != vessels_.end());
   Vessel<Barycentre> const& vessel = *(it->second);
   CHECK(vessel.has_history());
-  RenderedTrajectory<World> result;
+  std::unique_ptr<RenderedTrajectory<World>> result =
+      std::make_unique<RenderedTrajectory<World>>();
   if (!vessel.has_prolongation()) {
     // TODO(egg): We render neither unsynchronized histories nor prolongations
     // at the moment.
@@ -415,15 +416,23 @@ RenderedTrajectory<World> Plugin::RenderedVesselTrajectory(
           barycentric_bézier_points[0] + initial_state->velocity * δt / 3.0;
       barycentric_bézier_points[2] =
           barycentric_bézier_points[3] - final_state->velocity * δt / 3.0;
-      result.push_back({to_world(barycentric_bézier_points[0]),
-                        to_world(barycentric_bézier_points[1]),
-                        to_world(barycentric_bézier_points[2]),
-                        to_world(barycentric_bézier_points[3])});
+      result->push_back({to_world(barycentric_bézier_points[0]),
+                         to_world(barycentric_bézier_points[1]),
+                         to_world(barycentric_bézier_points[2]),
+                         to_world(barycentric_bézier_points[3])});
     }
     std::swap(final_time, initial_time);
     std::swap(final_state, initial_state);
   }
-  return result;
+  return std::move(result);
+}
+
+std::unique_ptr<BodyCentredNonRotatingFrame>
+Plugin::NewBodyCentredNonRotatingFrame(Index const reference_body_index) const {
+  auto const it = celestials_.find(reference_body_index);
+  CHECK(it != celestials_.end());
+  Celestial<Barycentre> const& reference_body = *it->second;
+  return std::make_unique<BodyCentredNonRotatingFrame>(reference_body);
 }
 
 }  // namespace ksp_plugin

@@ -8,10 +8,11 @@ using principia::quantities::Time;
 namespace principia {
 namespace ksp_plugin {
 
-BodyCentredNonRotating::BodyCentredNonRotating(
+BodyCentredNonRotatingFrame::BodyCentredNonRotatingFrame(
     Celestial<Barycentre> const& body) : body_(body) {};
 
-std::unique_ptr<Trajectory<Barycentre>> const BodyCentredNonRotating::ApparentTrajectory(
+std::unique_ptr<Trajectory<Barycentre>> const
+BodyCentredNonRotatingFrame::ApparentTrajectory(
     Trajectory<Barycentre> const& actual_trajectory) const {
   std::unique_ptr<Trajectory<Barycentre>> result =
       std::make_unique<Trajectory<Barycentre>>(actual_trajectory.body());

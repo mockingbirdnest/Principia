@@ -159,6 +159,54 @@ XYZ CelestialParentRelativeVelocity(Plugin const* const plugin,
           result.z / (Metre / Second)};
 }
 
+BodyCentredNonRotatingFrame const* NewBodyCentredNonRotatingFrame(
+    Plugin const* const plugin,
+    int const reference_body_index) {
+  return CHECK_NOTNULL(plugin)->
+      NewBodyCentredNonRotatingFrame(reference_body_index).release();
+}
+
+void DeleteBodyCentredNonRotatingFrame(
+    BodyCentredNonRotatingFrame const** const frame) {
+  CHECK_NOTNULL(frame);
+  delete *frame;
+  *frame = nullptr;
+}
+
+SplineAndIterator* RenderedVesselTrajectory(Plugin const* const plugin,
+                                            char const* vessel_guid,
+                                            RenderingFrame const* frame,
+                                            XYZ const sun_world_position) {
+  std::unique_ptr<RenderedTrajectory<World> const> rendered_trajectory = 
+      CHECK_NOTNULL(plugin)->RenderedVesselTrajectory(
+          vessel_guid,
+          *frame,
+          kWorldOrigin + Displacement<World>({sun_world_position.x * Metre,
+                                              sun_world_position.y * Metre,
+                                              sun_world_position.z * Metre}));
+  std::unique_ptr<SplineAndIterator> result =
+      std::make_unique<SplineAndIterator>();
+  result->rendered_trajectory = std::move(rendered_trajectory);
+  result->it = result->rendered_trajectory->begin();
+  return result.release();
+}
+
+SplineSegment FetchAndIncrement(SplineAndIterator* const spline) {
+  CubicBézierCurve<World> const& result = *spline->it;
+  ++spline->it;
+  R3Element<Length> p0 = (result[0] - kWorldOrigin).coordinates();
+  R3Element<Length> p1 = (result[1] - kWorldOrigin).coordinates();
+  R3Element<Length> p2 = (result[2] - kWorldOrigin).coordinates();
+  R3Element<Length> p3 = (result[3] - kWorldOrigin).coordinates();
+  return {XYZ{p0.x / Metre, p0.y / Metre, p0.z / Metre},
+          XYZ{p1.x / Metre, p1.y / Metre, p1.z / Metre},
+          XYZ{p2.x / Metre, p2.y / Metre, p2.z / Metre},
+          XYZ{p3.x / Metre, p3.y / Metre, p3.z / Metre},
+          spline->it == spline->rendered_trajectory->end()};
+}
+
+void DeleteSplineAndIterator(SplineAndIterator const** const);
+
 char const* SayHello() {
   return "Hello from native C++!";
 }

@@ -16,9 +16,9 @@ class RenderingFrame {
       Trajectory<Barycentre> const& actual_trajectory) const = 0;
 };
 
-class BodyCentredNonRotating : RenderingFrame {
+class BodyCentredNonRotatingFrame : RenderingFrame {
  public:
-  explicit BodyCentredNonRotating(Celestial<Barycentre> const& body);
+  explicit BodyCentredNonRotatingFrame(Celestial<Barycentre> const& body);
 
   std::unique_ptr<Trajectory<Barycentre>> const ApparentTrajectory(
       Trajectory<Barycentre> const& actual_trajectory) const override;

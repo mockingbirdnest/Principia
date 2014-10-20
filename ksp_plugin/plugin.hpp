@@ -45,6 +45,9 @@ Instant const kUniversalTimeEpoch;
 // The basis is that of Unity's "world space" (this is a left-handed basis).
 struct World;
 
+// The ineffable origin of Unity's "world space".
+Position<World> const kWorldOrigin;
+
 // Same as |World| but with the y and z axes switched through the looking-glass:
 // it is a right-handed basis. "We're all mad here. I'm mad. You're mad."
 struct AliceWorld;
@@ -213,11 +216,13 @@ class Plugin {
   virtual Velocity<AliceSun> CelestialParentRelativeVelocity(
       Index const celestial_index) const;
 
-  virtual RenderedTrajectory<World> RenderedVesselTrajectory(
+  virtual std::unique_ptr<RenderedTrajectory<World>> RenderedVesselTrajectory(
       GUID const& vessel_guid,
-      Instant const& lower_bound,
       RenderingFrame const& frame,
       Position<World> const& sun_world_position) const;
+
+  virtual std::unique_ptr<BodyCentredNonRotatingFrame>
+  NewBodyCentredNonRotatingFrame(Index const reference_body_index) const;
 
  private:
   using GUIDToOwnedVessel = std::map<GUID, std::unique_ptr<Vessel<Barycentre>>>;
