@@ -388,27 +388,32 @@ RenderedTrajectory<World> Plugin::RenderedVesselTrajectory(
   Vessel<Barycentre> const& vessel = *(it->second);
   CHECK(vessel.has_history());
   RenderedTrajectory<World> result;
-  Instant const* t_last = nullptr;
-  Instant const* t = nullptr;
-  DegreesOfFreedom<Barycentre> const* z_last = nullptr;
-  DegreesOfFreedom<Barycentre> const* z = nullptr;
-  CubicBézierCurve<Barycentre> p;
+  // Initial and final time and state for the Bézier segment being computed.
+  Instant const* initial_time = nullptr;
+  Instant const* final_time = nullptr;
+  DegreesOfFreedom<Barycentre> const* initial_state = nullptr;
+  DegreesOfFreedom<Barycentre> const* final_state = nullptr;
+  CubicBézierCurve<Barycentre> barycentric_bézier_points;
   Trajectory<Barycentre> const apparent_trajectory =
       frame.ApparentTrajectory(vessel.history());
   for (auto const& it : apparent_trajectory.timeline()) {
-    t = &it.first;
-    z = &it.second;
-    if (z_last != nullptr && t_last != nullptr) {
-      Time const δt = *t - *t_last;
-      p[0] = z_last->position;
-      p[3] = z->position;
-      p[1] = p[0] + z_last->velocity * δt / 3.0;
-      p[2] = p[3] - z->velocity * δt / 3.0;
-      result.push_back({to_world(p[0]), to_world(p[1]),
-                        to_world(p[2]), to_world(p[3])});
+    final_time = &it.first;
+    final_state = &it.second;
+    if (initial_state != nullptr && t_last != nullptr) {
+      Time const δt = *final_time*- *t_last;
+      barycentric_bézier_points[0] = initial_state->position;
+      barycentric_bézier_points[3] = final_state->position;
+      barycentric_bézier_points[1] =
+          barycentric_bézier_points[0] + initial_state->velocity * δt / 3.0;
+      barycentric_bézier_points[2] =
+          barycentric_bézier_points[3] - final_state->velocity * δt / 3.0;
+      result.push_back({to_world(barycentric_bézier_points[0]),
+                        to_world(barycentric_bézier_points[1]),
+                        to_world(barycentric_bézier_points[2]),
+                        to_world(barycentric_bézier_points[3])});
     }
-    std::swap(t, t_last);
-    std::swap(z, z_last);
+    std::swap(final_time, initial_time);
+    std::swap(final_state, initial_state);
   }
   return result;
 }
