@@ -57,7 +57,11 @@ static_assert(std::is_standard_layout<SplineSegment>::value,
               "SplineSegment is used for interfacing");
 
 struct SplineAndIterator {
-  std::unique_ptr<RenderedTrajectory<World> const> rendered_trajectory;
+  SplineAndIterator(RenderedTrajectory<World> const& rendered_trajectory,
+                    RenderedTrajectory<World>::const_iterator const it)
+      : rendered_trajectory(rendered_trajectory),
+        it(it) {};
+  RenderedTrajectory<World> rendered_trajectory;
   RenderedTrajectory<World>::const_iterator it;
 };
 

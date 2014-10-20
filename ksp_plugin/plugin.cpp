@@ -376,7 +376,7 @@ Velocity<AliceSun> Plugin::CelestialParentRelativeVelocity(
 
 // TODO(egg): would things be faster if we computed a polygon ourselves and had
 // Vectrosity render it, rather than telling it to render a spline?
-std::unique_ptr<RenderedTrajectory<World>> Plugin::RenderedVesselTrajectory(
+RenderedTrajectory<World> Plugin::RenderedVesselTrajectory(
     GUID const& vessel_guid,
     RenderingFrame const& frame,
     Position<World> const& sun_world_position) const {
@@ -389,8 +389,7 @@ std::unique_ptr<RenderedTrajectory<World>> Plugin::RenderedVesselTrajectory(
   CHECK(it != vessels_.end());
   Vessel<Barycentre> const& vessel = *(it->second);
   CHECK(vessel.has_history());
-  std::unique_ptr<RenderedTrajectory<World>> result =
-      std::make_unique<RenderedTrajectory<World>>();
+  RenderedTrajectory<World> result;
   if (!vessel.has_prolongation()) {
     // TODO(egg): We render neither unsynchronized histories nor prolongations
     // at the moment.
@@ -416,15 +415,15 @@ std::unique_ptr<RenderedTrajectory<World>> Plugin::RenderedVesselTrajectory(
           barycentric_bézier_points[0] + initial_state->velocity * δt / 3.0;
       barycentric_bézier_points[2] =
           barycentric_bézier_points[3] - final_state->velocity * δt / 3.0;
-      result->push_back({to_world(barycentric_bézier_points[0]),
-                         to_world(barycentric_bézier_points[1]),
-                         to_world(barycentric_bézier_points[2]),
-                         to_world(barycentric_bézier_points[3])});
+      result.push_back({to_world(barycentric_bézier_points[0]),
+                        to_world(barycentric_bézier_points[1]),
+                        to_world(barycentric_bézier_points[2]),
+                        to_world(barycentric_bézier_points[3])});
     }
     std::swap(final_time, initial_time);
     std::swap(final_state, initial_state);
   }
-  return std::move(result);
+  return result;
 }
 
 std::unique_ptr<BodyCentredNonRotatingFrame>

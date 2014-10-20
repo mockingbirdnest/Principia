@@ -177,17 +177,16 @@ SplineAndIterator* RenderedVesselTrajectory(Plugin const* const plugin,
                                             char const* vessel_guid,
                                             RenderingFrame const* frame,
                                             XYZ const sun_world_position) {
-  std::unique_ptr<RenderedTrajectory<World> const> rendered_trajectory = 
-      CHECK_NOTNULL(plugin)->RenderedVesselTrajectory(
+  RenderedTrajectory<World> rendered_trajectory = CHECK_NOTNULL(plugin)->
+      RenderedVesselTrajectory(
           vessel_guid,
           *frame,
           kWorldOrigin + Displacement<World>({sun_world_position.x * Metre,
                                               sun_world_position.y * Metre,
                                               sun_world_position.z * Metre}));
   std::unique_ptr<SplineAndIterator> result =
-      std::make_unique<SplineAndIterator>();
-  result->rendered_trajectory = std::move(rendered_trajectory);
-  result->it = result->rendered_trajectory->begin();
+      std::make_unique<SplineAndIterator>(rendered_trajectory,
+                                          rendered_trajectory.begin());
   return result.release();
 }
 
@@ -202,7 +201,7 @@ SplineSegment FetchAndIncrement(SplineAndIterator* const spline) {
           XYZ{p1.x / Metre, p1.y / Metre, p1.z / Metre},
           XYZ{p2.x / Metre, p2.y / Metre, p2.z / Metre},
           XYZ{p3.x / Metre, p3.y / Metre, p3.z / Metre},
-          spline->it == spline->rendered_trajectory->end()};
+          spline->it == spline->rendered_trajectory.end()};
 }
 
 void DeleteSplineAndIterator(SplineAndIterator const** const);

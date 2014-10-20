@@ -216,7 +216,7 @@ class Plugin {
   virtual Velocity<AliceSun> CelestialParentRelativeVelocity(
       Index const celestial_index) const;
 
-  virtual std::unique_ptr<RenderedTrajectory<World>> RenderedVesselTrajectory(
+  virtual RenderedTrajectory<World> RenderedVesselTrajectory(
       GUID const& vessel_guid,
       RenderingFrame const& frame,
       Position<World> const& sun_world_position) const;
