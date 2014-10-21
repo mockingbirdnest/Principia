@@ -16,7 +16,6 @@
 #include "quantities/numbers.hpp"
 #include "quantities/si.hpp"
 #include "testing_utilities/almost_equals.hpp"
-#include "testing_utilities/death_message.hpp"
 #include "testing_utilities/numerics.hpp"
 #include "testing_utilities/solar_system.hpp"
 
@@ -31,7 +30,6 @@ using principia::quantities::Area;
 using principia::quantities::Pow;
 using principia::quantities::SIUnit;
 using principia::testing_utilities::AlmostEquals;
-using principia::testing_utilities::DeathMessage;
 using principia::testing_utilities::ICRFJ2000Ecliptic;
 using principia::testing_utilities::kSolarSystemBarycentre;
 using principia::testing_utilities::RelativeError;
@@ -160,7 +158,7 @@ TEST_F(NBodySystemDeathTest, IntegrateError) {
                        {trajectory1_.get(),
                         trajectory2_.get(),
                         trajectory1_.get()});
-  }, DeathMessage("Multiple trajectories"));
+  }, "Multiple trajectories");
   EXPECT_DEATH({
     std::unique_ptr<Trajectory<EarthMoonOrbitPlane>> trajectory(
         new Trajectory<EarthMoonOrbitPlane>(*body2_));
@@ -173,7 +171,7 @@ TEST_F(NBodySystemDeathTest, IntegrateError) {
                        1,      // sampling_period
                        false,  // tmax_is_exact
                        {trajectory1_.get(), trajectory.get()});
-  }, DeathMessage("Inconsistent last time"));
+  }, "Inconsistent last time");
 }
 
 // The canonical Earth-Moon system, tuned to produce circular orbits.
