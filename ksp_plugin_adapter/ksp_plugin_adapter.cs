@@ -13,7 +13,8 @@ public partial class PluginAdapter : UnityEngine.MonoBehaviour {
   private UnityEngine.Vector3[] line_points;
   // TODO(egg): rendering only one trajectory at the moment.
   private VectorLine rendered_trajectory_;
-  private IntPtr rendering_frame = IntPtr.Zero;
+  private IntPtr rendering_frame_ = IntPtr.Zero;
+  private int selected_celestial_ = 0;
 
   private static int kLineSegmentsPerCubic = 10;
 
@@ -26,6 +27,7 @@ public partial class PluginAdapter : UnityEngine.MonoBehaviour {
 
   ~PluginAdapter() {
     DeletePlugin(ref plugin_);
+    DeleteBodyCentredNonRotatingFrame(ref rendering_frame_);
   }
 
   private bool PluginRunning() {
@@ -151,37 +153,42 @@ public partial class PluginAdapter : UnityEngine.MonoBehaviour {
       if (active_vessel.situation == Vessel.Situations.SUB_ORBITAL ||
           active_vessel.situation == Vessel.Situations.ORBITING ||
           active_vessel.situation == Vessel.Situations.ESCAPING) {
-        IntPtr trajectory = RenderedVesselTrajectory(
-            plugin_,
-            active_vessel.id.ToString(),
-            rendering_frame,
-            (XYZ)Planetarium.fetch.Sun.position);
-        line_points =
-            new UnityEngine.Vector3[NumberOfSegments(trajectory) *
-                                        kLineSegmentsPerCubic];
-        rendered_trajectory_ = new VectorLine(
-            lineName     : "rendered_trajectory_",
-            linePoints   : line_points,
-            lineMaterial : MapView.OrbitLinesMaterial,
-            color        : XKCDColors.AcidGreen,
-            width        : 5,
-            lineType     : LineType.Discrete);
-        SplineSegment segment = FetchAndIncrement(trajectory);
-        int index_of_first_point = 0;
-        do {
-          // TODO(egg): should we do the |LocalToScaledSpace| conversion in
-          // native code?
-          Vector.MakeCurveInLine(
-              line : rendered_trajectory_,
-              anchor1  : ScaledSpace.LocalToScaledSpace((Vector3d)segment.p0),
-              control1 : ScaledSpace.LocalToScaledSpace((Vector3d)segment.p1),
-              control2 : ScaledSpace.LocalToScaledSpace((Vector3d)segment.p2),
-              anchor2  : ScaledSpace.LocalToScaledSpace((Vector3d)segment.p3),
-              segments : kLineSegmentsPerCubic,
-              index    : index_of_first_point);
-          index_of_first_point += 2 * kLineSegmentsPerCubic;
-          segment = FetchAndIncrement(trajectory);
-        } while(!segment.is_last);
+        IntPtr trajectory = IntPtr.Zero;
+        try {
+          trajectory = RenderedVesselTrajectory(
+              plugin_,
+              active_vessel.id.ToString(),
+              rendering_frame_,
+              (XYZ)Planetarium.fetch.Sun.position);
+          line_points =
+              new UnityEngine.Vector3[NumberOfSegments(trajectory) *
+                                          kLineSegmentsPerCubic];
+          rendered_trajectory_ = new VectorLine(
+              lineName     : "rendered_trajectory_",
+              linePoints   : line_points,
+              lineMaterial : MapView.OrbitLinesMaterial,
+              color        : XKCDColors.AcidGreen,
+              width        : 5,
+              lineType     : LineType.Discrete);
+          SplineSegment segment = FetchAndIncrement(trajectory);
+          int index_of_first_point = 0;
+          do {
+            // TODO(egg): should we do the |LocalToScaledSpace| conversion in
+            // native code?
+            Vector.MakeCurveInLine(
+                line : rendered_trajectory_,
+                anchor1  : ScaledSpace.LocalToScaledSpace((Vector3d)segment.p0),
+                control1 : ScaledSpace.LocalToScaledSpace((Vector3d)segment.p1),
+                control2 : ScaledSpace.LocalToScaledSpace((Vector3d)segment.p2),
+                anchor2  : ScaledSpace.LocalToScaledSpace((Vector3d)segment.p3),
+                segments : kLineSegmentsPerCubic,
+                index    : index_of_first_point);
+            index_of_first_point += 2 * kLineSegmentsPerCubic;
+            segment = FetchAndIncrement(trajectory);
+          } while(!segment.is_last);
+        } finally {
+          DeleteSplineAndIterator(ref trajectory);
+        }
         Vector.DrawLine3D(rendered_trajectory_);
       }
     }
@@ -218,6 +225,18 @@ public partial class PluginAdapter : UnityEngine.MonoBehaviour {
         DeletePlugin(ref plugin_);
       } else {
         InitializePlugin();
+      }
+    }
+    foreach (CelestialBody celestial in FlightGlobals.Bodies) {
+      if (UnityEngine.GUILayout.Toggle(
+              value : selected_celestial_ == celestial.flightGlobalsIndex,
+              text  : celestial.name)) {
+        selected_celestial_ = celestial.flightGlobalsIndex;
+        if (PluginRunning()) {
+          DeleteBodyCentredNonRotatingFrame(ref rendering_frame_);
+          rendering_frame_ =
+              NewBodyCentredNonRotatingFrame(plugin_, selected_celestial_);
+        }
       }
     }
     UnityEngine.GUILayout.EndVertical();
