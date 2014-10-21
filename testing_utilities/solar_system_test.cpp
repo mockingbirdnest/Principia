@@ -7,7 +7,6 @@
 #include "geometry/grassmann.hpp"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
-#include "testing_utilities/death_message.hpp"
 #include "testing_utilities/numerics.hpp"
 
 using principia::geometry::Bivector;
@@ -23,7 +22,6 @@ using principia::quantities::Quotient;
 using principia::quantities::Speed;
 using principia::quantities::Sqrt;
 using principia::si::Radian;
-using principia::testing_utilities::DeathMessage;
 using testing::ElementsAreArray;
 using testing::Lt;
 using testing::Ge;
@@ -101,7 +99,7 @@ using SolarSystemDeathTest = SolarSystemTest;
 TEST_F(SolarSystemDeathTest, Parent) {
   EXPECT_DEATH({
     SolarSystem::parent(SolarSystem::kSun);
-  }, DeathMessage("has no parent"));
+  }, "has no parent");
 }
 
 TEST_F(SolarSystemTest, Name) {

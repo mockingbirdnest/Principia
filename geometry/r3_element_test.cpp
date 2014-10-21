@@ -7,7 +7,6 @@
 #include "quantities/named_quantities.hpp"
 #include "quantities/uk.hpp"
 #include "testing_utilities/algebra.hpp"
-#include "testing_utilities/death_message.hpp"
 #include "testing_utilities/explicit_operators.hpp"
 
 using principia::astronomy::JulianYear;
@@ -24,7 +23,6 @@ using principia::si::Metre;
 using principia::si::Minute;
 using principia::si::Second;
 using principia::testing_utilities::AlmostEquals;
-using principia::testing_utilities::DeathMessage;
 using principia::testing_utilities::Times;
 using principia::uk::Furlong;
 using principia::uk::Mile;
@@ -54,10 +52,10 @@ TEST_F(R3ElementDeathTest, IndexingOperator) {
   EXPECT_DEATH({
     R3Element<Speed> null_velocity = null_velocity_;
     Speed speed = null_velocity[4];
-  }, DeathMessage("\\(const int\\)\\:"));
+  }, "\\(const int\\)\\:");
   EXPECT_DEATH({
     const Speed& speed = null_velocity_[3];
-  }, DeathMessage("\\(const int\\) const\\:"));
+  }, "\\(const int\\) const\\:");
 }
 
 TEST_F(R3ElementTest, Dumb3Vector) {

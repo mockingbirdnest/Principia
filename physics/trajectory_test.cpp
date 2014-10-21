@@ -13,7 +13,6 @@
 #include "gtest/gtest.h"
 #include "quantities/quantities.hpp"
 #include "quantities/si.hpp"
-#include "testing_utilities/death_message.hpp"
 
 using principia::geometry::Instant;
 using principia::geometry::Point;
@@ -25,7 +24,6 @@ using principia::quantities::Speed;
 using principia::quantities::SIUnit;
 using principia::si::Metre;
 using principia::si::Second;
-using principia::testing_utilities::DeathMessage;
 using testing::ElementsAre;
 using testing::Eq;
 using testing::Pair;
@@ -92,11 +90,11 @@ TEST_F(TrajectoryDeathTest, AppendError) {
   EXPECT_DEATH({
     massive_trajectory_->Append(t2_, *d2_);
     massive_trajectory_->Append(t1_, *d1_);
-  }, DeathMessage("out of order"));
+  }, "out of order");
   EXPECT_DEATH({
     massive_trajectory_->Append(t1_, *d1_);
     massive_trajectory_->Append(t1_, *d1_);
-  }, DeathMessage("existing time"));
+  }, "existing time");
 }
 
 TEST_F(TrajectoryTest, AppendSuccess) {
@@ -121,7 +119,7 @@ TEST_F(TrajectoryDeathTest, ForkError) {
     massive_trajectory_->Append(t1_, *d1_);
     massive_trajectory_->Append(t3_, *d3_);
     massive_trajectory_->Fork(t2_);
-  }, DeathMessage("nonexistent time"));
+  }, "nonexistent time");
 }
 
 TEST_F(TrajectoryTest, ForkSuccess) {
@@ -157,19 +155,19 @@ TEST_F(TrajectoryTest, ForkSuccess) {
 TEST_F(TrajectoryDeathTest, DeleteForkError) {
   EXPECT_DEATH({
     massive_trajectory_->DeleteFork(nullptr);
-  }, DeathMessage("'fork'.* non NULL"));
+  }, "'fork'.* non NULL");
   EXPECT_DEATH({
     massive_trajectory_->Append(t1_, *d1_);
     Trajectory<World>* root = massive_trajectory_.get();
     massive_trajectory_->DeleteFork(&root);
-  }, DeathMessage("'fork_time'.* non NULL"));
+  }, "'fork_time'.* non NULL");
   EXPECT_DEATH({
     massive_trajectory_->Append(t1_, *d1_);
     Trajectory<World>* fork1 = massive_trajectory_->Fork(t1_);
     fork1->Append(t2_, *d2_);
     Trajectory<World>* fork2 = fork1->Fork(t2_);
     massive_trajectory_->DeleteFork(&fork2);
-  }, DeathMessage("not a child"));
+  }, "not a child");
 }
 
 TEST_F(TrajectoryTest, DeleteForkSuccess) {
@@ -209,13 +207,13 @@ TEST_F(TrajectoryTest, DeleteForkSuccess) {
 TEST_F(TrajectoryDeathTest, LastError) {
   EXPECT_DEATH({
     massive_trajectory_->last_position();
-  }, DeathMessage("Empty trajectory"));
+  }, "Empty trajectory");
   EXPECT_DEATH({
     massive_trajectory_->last_velocity();
-  }, DeathMessage("Empty trajectory"));
+  }, "Empty trajectory");
   EXPECT_DEATH({
     massive_trajectory_->last_time();
-  }, DeathMessage("Empty trajectory"));
+  }, "Empty trajectory");
 }
 
 TEST_F(TrajectoryTest, LastSuccess) {
@@ -244,12 +242,12 @@ TEST_F(TrajectoryDeathTest, ForgetAfterError) {
   EXPECT_DEATH({
     massive_trajectory_->Append(t1_, *d1_);
     massive_trajectory_->ForgetAfter(t2_);
-  }, DeathMessage("nonexistent time.* root"));
+  }, "nonexistent time.* root");
   EXPECT_DEATH({
     massive_trajectory_->Append(t1_, *d1_);
     Trajectory<World>* fork = massive_trajectory_->Fork(t1_);
     fork->ForgetAfter(t2_);
-  }, DeathMessage("nonexistent time.* nonroot"));
+  }, "nonexistent time.* nonroot");
 }
 
 TEST_F(TrajectoryTest, ForgetAfterSuccess) {
@@ -304,11 +302,11 @@ TEST_F(TrajectoryDeathTest, ForgetBeforeError) {
     massive_trajectory_->Append(t1_, *d1_);
     Trajectory<World>* fork = massive_trajectory_->Fork(t1_);
     fork->ForgetBefore(t1_);
-  }, DeathMessage("nonroot"));
+  }, "nonroot");
   EXPECT_DEATH({
     massive_trajectory_->Append(t1_, *d1_);
     massive_trajectory_->ForgetBefore(t2_);
-  }, DeathMessage("nonexistent time"));
+  }, "nonexistent time");
 }
 
 TEST_F(TrajectoryTest, ForgetBeforeSuccess) {
@@ -350,13 +348,13 @@ TEST_F(TrajectoryDeathTest, IntrinsicAccelerationError) {
   EXPECT_DEATH({
     massive_trajectory_->set_intrinsic_acceleration(
         [](Instant const& t) { return Vector<Acceleration, World>(); } );
-  }, DeathMessage("massive body"));
+  }, "massive body");
   EXPECT_DEATH({
     massless_trajectory_->set_intrinsic_acceleration(
         [](Instant const& t) { return Vector<Acceleration, World>(); } );
     massless_trajectory_->set_intrinsic_acceleration(
         [](Instant const& t) { return Vector<Acceleration, World>(); } );
-  }, DeathMessage("already has.* acceleration"));
+  }, "already has.* acceleration");
 }
 
 TEST_F(TrajectoryDeathTest, IntrinsicAccelerationSuccess) {
