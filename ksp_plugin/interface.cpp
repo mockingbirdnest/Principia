@@ -11,7 +11,7 @@ namespace ksp_plugin {
 template<typename T>
 std::unique_ptr<T> TakeOwnership(T** const pointer) {
   CHECK_NOTNULL(pointer);
-  std::unique_ptr<T const> owned_pointer = *pointer;
+  std::unique_ptr<T const> owned_pointer(*pointer);
   *pointer = nullptr;
   return owned_pointer;
 }
@@ -66,7 +66,7 @@ Plugin* NewPlugin(double const initial_time,
 
 void DeletePlugin(Plugin const** const plugin) {
   LOG(INFO) << "Destroying Principia plugin";
-  TakeOwnership(plugin);
+  TakeOwnership(plugin).reset();
   LOG(INFO) << "Plugin destroyed";
 }
 
