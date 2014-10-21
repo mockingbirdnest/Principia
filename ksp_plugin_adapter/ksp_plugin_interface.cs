@@ -11,13 +11,19 @@ public partial class PluginAdapter : UnityEngine.MonoBehaviour {
 
   [StructLayout(LayoutKind.Sequential)]
   private struct XYZ {
-    double x, y, z;
+    public double x, y, z;
     public static explicit operator XYZ(Vector3d v) {
       return new XYZ {x = v.x, y = v.y, z = v.z};
     }
     public static explicit operator Vector3d(XYZ v) {
       return new Vector3d {x = v.x, y = v.y, z = v.z};
     }
+  };
+
+  [StructLayout(LayoutKind.Sequential)]
+  private struct SplineSegment {
+    public XYZ p0, p1, p2, p3;
+    public bool is_last;
   };
 
   // Logging.
@@ -122,12 +128,43 @@ public partial class PluginAdapter : UnityEngine.MonoBehaviour {
   private static extern XYZ CelestialDisplacementFromParent(
       IntPtr plugin,
       int celestial_index);
-  
+
   [DllImport(dllName           : kDllPath,
              CallingConvention = CallingConvention.Cdecl)]
   private static extern XYZ CelestialParentRelativeVelocity(
       IntPtr plugin,
       int celestial_index);
+
+  [DllImport(dllName           : kDllPath,
+             CallingConvention = CallingConvention.Cdecl)]
+  private static extern IntPtr NewBodyCentredNonRotatingFrame(
+      IntPtr plugin,
+      int reference_body_index);
+
+  [DllImport(dllName           : kDllPath,
+             CallingConvention = CallingConvention.Cdecl)]
+  private static extern void DeleteBodyCentredNonRotatingFrame(
+      ref IntPtr frame);
+
+  [DllImport(dllName           : kDllPath,
+             CallingConvention = CallingConvention.Cdecl)]
+  private static extern IntPtr RenderedVesselTrajectory(
+      IntPtr plugin,
+      [MarshalAs(UnmanagedType.LPStr)] String vessel_guid,
+      IntPtr frame,
+      XYZ sun_world_position);
+
+  [DllImport(dllName           : kDllPath,
+             CallingConvention = CallingConvention.Cdecl)]
+  private static extern int NumberOfSegments(IntPtr spline);
+
+  [DllImport(dllName           : kDllPath,
+             CallingConvention = CallingConvention.Cdecl)]
+  private static extern SplineSegment FetchAndIncrement(IntPtr spline);
+
+  [DllImport(dllName           : kDllPath,
+             CallingConvention = CallingConvention.Cdecl)]
+  private static extern void DeleteSplineAndIterator(ref IntPtr spline);
 }
 
 }  // namespace ksp_plugin_adapter

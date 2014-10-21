@@ -195,6 +195,10 @@ SplineAndIterator* RenderedVesselTrajectory(Plugin const* const plugin,
   return result.release();
 }
 
+int NumberOfSegments(SplineAndIterator const* spline) {
+  return spline->rendered_trajectory.size();
+}
+
 SplineSegment FetchAndIncrement(SplineAndIterator* const spline) {
   CubicBézierCurve<World> const& result = *spline->it;
   ++spline->it;

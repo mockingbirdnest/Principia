@@ -10,6 +10,12 @@ public partial class PluginAdapter : UnityEngine.MonoBehaviour {
 
   private UnityEngine.Rect window_position_;
   private IntPtr plugin_ = IntPtr.Zero;
+  private UnityEngine.Vector3[] line_points;
+  // TODO(egg): rendering only one trajectory at the moment.
+  private VectorLine rendered_trajectory_;
+  private IntPtr rendering_frame = IntPtr.Zero;
+
+  private static int kLineSegmentsPerCubic = 10;
 
   PluginAdapter() {
     // We create this directory here so we do not need to worry about cross-
@@ -141,6 +147,43 @@ public partial class PluginAdapter : UnityEngine.MonoBehaviour {
                                             UT: universal_time);
       };
       ApplyToVesselsInSpace(update_vessel);
+      Vessel active_vessel = FlightGlobals.ActiveVessel;
+      if (active_vessel.situation == Vessel.Situations.SUB_ORBITAL ||
+          active_vessel.situation == Vessel.Situations.ORBITING ||
+          active_vessel.situation == Vessel.Situations.ESCAPING) {
+        IntPtr trajectory = RenderedVesselTrajectory(
+            plugin_,
+            active_vessel.id.ToString(),
+            rendering_frame,
+            (XYZ)Planetarium.fetch.Sun.position);
+        line_points =
+            new UnityEngine.Vector3[NumberOfSegments(trajectory) *
+                                        kLineSegmentsPerCubic];
+        rendered_trajectory_ = new VectorLine(
+            lineName     : "rendered_trajectory_",
+            linePoints   : line_points,
+            lineMaterial : MapView.OrbitLinesMaterial,
+            color        : XKCDColors.AcidGreen,
+            width        : 5,
+            lineType     : LineType.Discrete);
+        SplineSegment segment = FetchAndIncrement(trajectory);
+        int index_of_first_point = 0;
+        do {
+          // TODO(egg): should we do the |LocalToScaledSpace| conversion in
+          // native code?
+          Vector.MakeCurveInLine(
+              line : rendered_trajectory_,
+              anchor1  : ScaledSpace.LocalToScaledSpace((Vector3d)segment.p0),
+              control1 : ScaledSpace.LocalToScaledSpace((Vector3d)segment.p1),
+              control2 : ScaledSpace.LocalToScaledSpace((Vector3d)segment.p2),
+              anchor2  : ScaledSpace.LocalToScaledSpace((Vector3d)segment.p3),
+              segments : kLineSegmentsPerCubic,
+              index    : index_of_first_point);
+          index_of_first_point += 2 * kLineSegmentsPerCubic;
+          segment = FetchAndIncrement(trajectory);
+        } while(!segment.is_last);
+        Vector.DrawLine3D(rendered_trajectory_);
+      }
     }
   }
   #endregion

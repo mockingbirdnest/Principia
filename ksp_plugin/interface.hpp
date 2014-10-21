@@ -50,7 +50,7 @@ static_assert(std::is_standard_layout<XYZ>::value,
 extern "C"
 struct SplineSegment {
   XYZ p0, p1, p2, p3;
-  bool last;
+  bool is_last;
 };
 
 static_assert(std::is_standard_layout<SplineSegment>::value,
@@ -184,6 +184,9 @@ SplineAndIterator* CDECL RenderedVesselTrajectory(Plugin const* const plugin,
                                                   char const* vessel_guid,
                                                   RenderingFrame const* frame,
                                                   XYZ const sun_world_position);
+
+extern "C" DLLEXPORT
+int CDECL NumberOfSegments(SplineAndIterator const* spline);
 
 extern "C" DLLEXPORT
 SplineSegment CDECL FetchAndIncrement(SplineAndIterator* const spline);
