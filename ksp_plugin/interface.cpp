@@ -8,6 +8,14 @@ using principia::si::Metre;
 namespace principia {
 namespace ksp_plugin {
 
+template<typename T>
+std::unique_ptr<T> TakeOwnership(T** const pointer) {
+  CHECK_NOTNULL(pointer);
+  std::unique_ptr<T const> owned_pointer = *pointer;
+  *pointer = nullptr;
+  return owned_pointer;
+}
+
 void InitGoogleLogging() {
 #ifdef _MSC_VER
   FILE* file;
@@ -58,9 +66,7 @@ Plugin* NewPlugin(double const initial_time,
 
 void DeletePlugin(Plugin const** const plugin) {
   LOG(INFO) << "Destroying Principia plugin";
-  CHECK_NOTNULL(plugin);
-  delete *plugin;
-  *plugin = nullptr;
+  TakeOwnership(plugin);
   LOG(INFO) << "Plugin destroyed";
 }
 
@@ -168,9 +174,7 @@ BodyCentredNonRotatingFrame const* NewBodyCentredNonRotatingFrame(
 
 void DeleteBodyCentredNonRotatingFrame(
     BodyCentredNonRotatingFrame const** const frame) {
-  CHECK_NOTNULL(frame);
-  delete *frame;
-  *frame = nullptr;
+  TakeOwnership(frame);
 }
 
 SplineAndIterator* RenderedVesselTrajectory(Plugin const* const plugin,
@@ -204,7 +208,9 @@ SplineSegment FetchAndIncrement(SplineAndIterator* const spline) {
           spline->it == spline->rendered_trajectory.end()};
 }
 
-void DeleteSplineAndIterator(SplineAndIterator const** const);
+void DeleteSplineAndIterator(SplineAndIterator const** const spline) {
+  TakeOwnership(spline);
+}
 
 char const* SayHello() {
   return "Hello from native C++!";
