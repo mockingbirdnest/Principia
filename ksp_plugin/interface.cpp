@@ -56,12 +56,13 @@ Plugin* NewPlugin(double const initial_time,
                   double const sun_gravitational_parameter,
                   double const planetarium_rotation_in_degrees) {
   LOG(INFO) << "Constructing Principia plugin";
-  return new Plugin(
+  std::unique_ptr<Plugin> result = std::make_unique<Plugin>(
       Instant(initial_time * Second),
       sun_index,
       sun_gravitational_parameter * SIUnit<GravitationalParameter>(),
       planetarium_rotation_in_degrees * Degree);
   LOG(INFO) << "Plugin constructed";
+  return result.release();
 }
 
 void DeletePlugin(Plugin const** const plugin) {
