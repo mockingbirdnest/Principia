@@ -165,6 +165,9 @@ public partial class PluginAdapter : UnityEngine.MonoBehaviour {
           line_points =
               new UnityEngine.Vector3[NumberOfSegments(trajectory) *
                                           2 * kLineSegmentsPerCubic];
+          if(rendered_trajectory_ != null) {
+            Vector.DestroyLine(ref rendered_trajectory_);
+          }
           rendered_trajectory_ = new VectorLine(
               lineName     : "rendered_trajectory_",
               linePoints   : line_points,
@@ -210,7 +213,7 @@ public partial class PluginAdapter : UnityEngine.MonoBehaviour {
   private void LateUpdate() {
 
   }
-   */
+  */
   #endregion
 
   private void DrawGUI() {

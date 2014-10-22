@@ -39,8 +39,7 @@ BodyCentredNonRotatingFrame::ApparentTrajectory(
       result->Append(t,
                      {actual_state.position - reference_state.position +
                           current_reference_state.position,
-                      actual_state.velocity - reference_state.velocity +
-                          current_reference_state.velocity});
+                      actual_state.velocity - reference_state.velocity});
     }
   }
   return std::move(result);
