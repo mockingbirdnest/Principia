@@ -150,9 +150,10 @@ public partial class PluginAdapter : UnityEngine.MonoBehaviour {
       };
       ApplyToVesselsInSpace(update_vessel);
       Vessel active_vessel = FlightGlobals.ActiveVessel;
-      if (active_vessel.situation == Vessel.Situations.SUB_ORBITAL ||
-          active_vessel.situation == Vessel.Situations.ORBITING ||
-          active_vessel.situation == Vessel.Situations.ESCAPING) {
+      if (MapView.MapIsEnabled && 
+              (active_vessel.situation == Vessel.Situations.SUB_ORBITAL ||
+               active_vessel.situation == Vessel.Situations.ORBITING ||
+               active_vessel.situation == Vessel.Situations.ESCAPING)) {
         IntPtr trajectory = IntPtr.Zero;
         try {
           trajectory = RenderedVesselTrajectory(
@@ -160,9 +161,10 @@ public partial class PluginAdapter : UnityEngine.MonoBehaviour {
               active_vessel.id.ToString(),
               rendering_frame_,
               (XYZ)Planetarium.fetch.Sun.position);
+          // TODO(egg): construct the VectorLine and its array less often...
           line_points =
               new UnityEngine.Vector3[NumberOfSegments(trajectory) *
-                                          kLineSegmentsPerCubic];
+                                          2 * kLineSegmentsPerCubic];
           rendered_trajectory_ = new VectorLine(
               lineName     : "rendered_trajectory_",
               linePoints   : line_points,
@@ -170,6 +172,12 @@ public partial class PluginAdapter : UnityEngine.MonoBehaviour {
               color        : XKCDColors.AcidGreen,
               width        : 5,
               lineType     : LineType.Discrete);
+          rendered_trajectory_.vectorObject.transform.parent =
+              ScaledSpace.Instance.transform;
+          rendered_trajectory_.vectorObject.renderer.castShadows = false;
+          rendered_trajectory_.vectorObject.renderer.receiveShadows = false;
+          rendered_trajectory_.layer = 31;
+
           SplineSegment segment;
           int index_of_first_point = 0;
           while(!AtEnd(trajectory)) {
@@ -189,10 +197,20 @@ public partial class PluginAdapter : UnityEngine.MonoBehaviour {
         } finally {
           DeleteSplineAndIterator(ref trajectory);
         }
-        Vector.DrawLine3D(rendered_trajectory_);
+        if (MapView.Draw3DLines) {
+          Vector.DrawLine3D(rendered_trajectory_);
+        } else {
+          Vector.DrawLine(rendered_trajectory_);
+        }
       }
     }
   }
+
+  /*
+  private void LateUpdate() {
+
+  }
+   */
   #endregion
 
   private void DrawGUI() {

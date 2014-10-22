@@ -389,10 +389,12 @@ RenderedTrajectory<World> Plugin::RenderedVesselTrajectory(
   CHECK(it != vessels_.end());
   Vessel<Barycentre> const& vessel = *(it->second);
   CHECK(vessel.has_history());
+  VLOG(1) << "Rendering a trajectory for the vessel with GUID " << vessel_guid;
   RenderedTrajectory<World> result;
   if (!vessel.has_prolongation()) {
     // TODO(egg): We render neither unsynchronized histories nor prolongations
     // at the moment.
+    VLOG(1) << "Returning an empty trajectory";
     return result;
   }
   // Initial and final time and state for the Bézier segment being computed.
@@ -423,6 +425,7 @@ RenderedTrajectory<World> Plugin::RenderedVesselTrajectory(
     std::swap(final_time, initial_time);
     std::swap(final_state, initial_state);
   }
+  VLOG(1) << "Returning a " << result.size() << "-segment trajectory";
   return result;
 }
 
