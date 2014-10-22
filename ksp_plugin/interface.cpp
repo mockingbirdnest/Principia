@@ -190,8 +190,8 @@ SplineAndIterator* RenderedVesselTrajectory(Plugin const* const plugin,
                                               sun_world_position.y * Metre,
                                               sun_world_position.z * Metre}));
   std::unique_ptr<SplineAndIterator> result =
-      std::make_unique<SplineAndIterator>(rendered_trajectory,
-                                          rendered_trajectory.begin());
+      std::make_unique<SplineAndIterator>(std::move(rendered_trajectory));
+  result->it = result->rendered_trajectory.begin();
   return result.release();
 }
 
