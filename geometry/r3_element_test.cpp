@@ -54,7 +54,7 @@ TEST_F(R3ElementDeathTest, IndexingOperator) {
     Speed speed = null_velocity[4];
   }, "\\(const int\\)\\:");
   EXPECT_DEATH({
-    const Speed& speed = null_velocity_[3];
+    Speed const& speed = null_velocity_[3];
   }, "\\(const int\\) const\\:");
 }
 
