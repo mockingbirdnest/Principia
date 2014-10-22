@@ -23,7 +23,7 @@ BodyCentredNonRotatingFrame::ApparentTrajectory(
   Trajectory<Barycentre>::Timeline::const_iterator it_in_reference =
       reference_body_timeline.lower_bound(actual_timeline.begin()->first);
   DegreesOfFreedom<Barycentre> const& current_reference_state =
-      reference_body_timeline.rbegin()->second;
+      body_.prolongation().timeline().rbegin()->second;
   CHECK(it_in_reference != reference_body_timeline.end());
   for (auto const& pair : actual_timeline) {
     Instant const& t = pair.first;
