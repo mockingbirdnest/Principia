@@ -129,7 +129,7 @@ void CDECL EndInitialization(Plugin* const plugin);
 // Calls |plugin->InsertOrKeepVessel| with the arguments given.
 // |plugin| must not be null. No transfer of ownership.
 extern "C" DLLEXPORT
-void CDECL InsertOrKeepVessel(Plugin* const plugin,
+bool CDECL InsertOrKeepVessel(Plugin* const plugin,
                               char const* vessel_guid,
                               int const parent_index);
 

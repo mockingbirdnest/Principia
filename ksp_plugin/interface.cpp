@@ -103,10 +103,10 @@ void EndInitialization(Plugin* const plugin) {
   CHECK_NOTNULL(plugin)->EndInitialization();
 }
 
-void InsertOrKeepVessel(Plugin* const plugin,
+bool InsertOrKeepVessel(Plugin* const plugin,
                         char const* vessel_guid,
                         int const parent_index) {
-  CHECK_NOTNULL(plugin)->InsertOrKeepVessel(vessel_guid, parent_index);
+  return CHECK_NOTNULL(plugin)->InsertOrKeepVessel(vessel_guid, parent_index);
 }
 
 void SetVesselStateOffset(Plugin* const plugin,
