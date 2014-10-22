@@ -196,11 +196,13 @@ SplineAndIterator* RenderedVesselTrajectory(Plugin const* const plugin,
 }
 
 int NumberOfSegments(SplineAndIterator const* spline) {
-  return spline->rendered_trajectory.size();
+  return CHECK_NOTNULL(spline)->rendered_trajectory.size();
 }
 
 SplineSegment FetchAndIncrement(SplineAndIterator* const spline) {
-  CubicBézierCurve<World> const& result = *spline->it;
+  CHECK_NOTNULL(spline);
+  CHECK(spline->it != spline->rendered_trajectory.end());
+  CubicBézierCurve<World> const result = *spline->it;
   ++spline->it;
   R3Element<Length> p0 = (result[0] - kWorldOrigin).coordinates();
   R3Element<Length> p1 = (result[1] - kWorldOrigin).coordinates();
@@ -209,8 +211,12 @@ SplineSegment FetchAndIncrement(SplineAndIterator* const spline) {
   return {XYZ{p0.x / Metre, p0.y / Metre, p0.z / Metre},
           XYZ{p1.x / Metre, p1.y / Metre, p1.z / Metre},
           XYZ{p2.x / Metre, p2.y / Metre, p2.z / Metre},
-          XYZ{p3.x / Metre, p3.y / Metre, p3.z / Metre},
-          spline->it == spline->rendered_trajectory.end()};
+          XYZ{p3.x / Metre, p3.y / Metre, p3.z / Metre}};
+}
+
+bool AtEnd(SplineAndIterator* const spline) {
+  CHECK_NOTNULL(spline);
+  return spline->it == spline->rendered_trajectory.end();
 }
 
 void DeleteSplineAndIterator(SplineAndIterator const** const spline) {

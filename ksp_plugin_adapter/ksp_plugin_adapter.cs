@@ -170,9 +170,10 @@ public partial class PluginAdapter : UnityEngine.MonoBehaviour {
               color        : XKCDColors.AcidGreen,
               width        : 5,
               lineType     : LineType.Discrete);
-          SplineSegment segment = FetchAndIncrement(trajectory);
+          SplineSegment segment;
           int index_of_first_point = 0;
-          do {
+          while(!AtEnd(trajectory)) {
+            segment = FetchAndIncrement(trajectory);
             // TODO(egg): should we do the |LocalToScaledSpace| conversion in
             // native code?
             Vector.MakeCurveInLine(
@@ -184,8 +185,7 @@ public partial class PluginAdapter : UnityEngine.MonoBehaviour {
                 segments : kLineSegmentsPerCubic,
                 index    : index_of_first_point);
             index_of_first_point += 2 * kLineSegmentsPerCubic;
-            segment = FetchAndIncrement(trajectory);
-          } while(!segment.is_last);
+          }
         } finally {
           DeleteSplineAndIterator(ref trajectory);
         }

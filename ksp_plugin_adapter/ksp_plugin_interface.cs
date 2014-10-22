@@ -23,7 +23,6 @@ public partial class PluginAdapter : UnityEngine.MonoBehaviour {
   [StructLayout(LayoutKind.Sequential)]
   private struct SplineSegment {
     public XYZ p0, p1, p2, p3;
-    public bool is_last;
   };
 
   // Logging.
@@ -161,6 +160,10 @@ public partial class PluginAdapter : UnityEngine.MonoBehaviour {
   [DllImport(dllName           : kDllPath,
              CallingConvention = CallingConvention.Cdecl)]
   private static extern SplineSegment FetchAndIncrement(IntPtr spline);
+
+  [DllImport(dllName           : kDllPath,
+             CallingConvention = CallingConvention.Cdecl)]
+  private static extern bool AtEnd(IntPtr spline);
 
   [DllImport(dllName           : kDllPath,
              CallingConvention = CallingConvention.Cdecl)]

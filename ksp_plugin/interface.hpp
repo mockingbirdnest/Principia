@@ -50,7 +50,6 @@ static_assert(std::is_standard_layout<XYZ>::value,
 extern "C"
 struct SplineSegment {
   XYZ p0, p1, p2, p3;
-  bool is_last;
 };
 
 static_assert(std::is_standard_layout<SplineSegment>::value,
@@ -190,6 +189,9 @@ int CDECL NumberOfSegments(SplineAndIterator const* spline);
 
 extern "C" DLLEXPORT
 SplineSegment CDECL FetchAndIncrement(SplineAndIterator* const spline);
+
+extern "C" DLLEXPORT
+bool CDECL AtEnd(SplineAndIterator* const spline);
 
 extern "C" DLLEXPORT
 void CDECL DeleteSplineAndIterator(SplineAndIterator const** const spline);
