@@ -15,12 +15,17 @@ internal class ConsoleAdapter {
              CallingConvention = CallingConvention.Cdecl)]
   private static extern IntPtr SayHello();
 
+  [DllImport(dllName           : kDllPath,
+             CallingConvention = CallingConvention.Cdecl)]
+  private static extern void InitGoogleLogging();
+
   internal static void Main(string[] args) {
-    Console.WriteLine(Say33());
     IntPtr hello_ptr = SayHello();
     string hello = Marshal.PtrToStringAnsi(hello_ptr);
     Console.WriteLine(hello);
     Console.ReadLine();
+    InitGoogleLogging();
+    InitGoogleLogging();
   }
 }
 
