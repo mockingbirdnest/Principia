@@ -113,7 +113,7 @@ class NBodySystemTest : public testing::Test {
     std::string result = mathematica_line;
     result += "ToExpression[StringReplace[\"\n{";
     std::string separator = "";
-    for (const auto& vector : vectors) {
+    for (auto const& vector : vectors) {
       result += separator;
       result += ToMathematicaString(vector);
       separator = ",\n";
