@@ -7,16 +7,28 @@ namespace ksp_plugin_adapter {
 
 [KSPAddon(startup : KSPAddon.Startup.Flight, once : false)]
 public partial class PluginAdapter : UnityEngine.MonoBehaviour {
+  // A maximum of 65534 vertices, 2 vertices per point on discrete lines.  We
+  // want this to be an integer multiple of |kLineSegmentsPerCubic| so as not to
+  // waste space.
+  // TODO(egg): things are fairly slow with this many points.  We will have to
+  // do with fewer. At the moment we store points in the history every
+  // 10 k seconds, where k is maximal such that 10 k seconds is less than the
+  // Length of a |FixedUpdate|. This means we sometimes have very large gaps.
+  // We should store *all* points of the history, then decimate for rendering.
+  // This should actually remove the need for splines, since 10 s is small
+  // enough to give the illusion of continuity at these scales, and splines are
+  // rendered by Vectrosity as line segments, so that a spline rendered as
+  // 10 segments counts 20 towards |kLinePoints| (and probably takes as long to
+  // render, with overhead for computation).
+  private const int kLinePoints = 65520 / 2;
+  private const int kLineSegmentsPerCubic = 10;
 
   private UnityEngine.Rect window_position_;
   private IntPtr plugin_ = IntPtr.Zero;
-  private UnityEngine.Vector3[] line_points;
   // TODO(egg): rendering only one trajectory at the moment.
   private VectorLine rendered_trajectory_;
   private IntPtr rendering_frame_ = IntPtr.Zero;
   private int selected_celestial_ = 0;
-
-  private static int kLineSegmentsPerCubic = 10;
 
   PluginAdapter() {
     // We create this directory here so we do not need to worry about cross-
@@ -79,6 +91,18 @@ public partial class PluginAdapter : UnityEngine.MonoBehaviour {
         top    : UnityEngine.Screen.height / 2.0f,
         width  : 10,
         height : 10);
+    rendered_trajectory_ = new VectorLine(
+        lineName     : "rendered_trajectory_",
+        linePoints   : new UnityEngine.Vector3[kLinePoints],
+        lineMaterial : MapView.OrbitLinesMaterial,
+        color        : XKCDColors.AcidGreen,
+        width        : 5,
+        lineType     : LineType.Discrete);
+    rendered_trajectory_.vectorObject.transform.parent =
+        ScaledSpace.Instance.transform;
+    rendered_trajectory_.vectorObject.renderer.castShadows = false;
+    rendered_trajectory_.vectorObject.renderer.receiveShadows = false;
+    rendered_trajectory_.layer = 31;
   }
 
   private void OnDestroy() {
@@ -154,51 +178,37 @@ public partial class PluginAdapter : UnityEngine.MonoBehaviour {
               (active_vessel.situation == Vessel.Situations.SUB_ORBITAL ||
                active_vessel.situation == Vessel.Situations.ORBITING ||
                active_vessel.situation == Vessel.Situations.ESCAPING)) {
-        IntPtr trajectory = IntPtr.Zero;
+        IntPtr trajectory_iterator = IntPtr.Zero;
         try {
-          trajectory = RenderedVesselTrajectory(
+          trajectory_iterator = RenderedVesselTrajectory(
               plugin_,
               active_vessel.id.ToString(),
               rendering_frame_,
               (XYZ)Planetarium.fetch.Sun.position);
-          // TODO(egg): construct the VectorLine and its array less often...
-          line_points =
-              new UnityEngine.Vector3[NumberOfSegments(trajectory) *
-                                          2 * kLineSegmentsPerCubic];
-          if(rendered_trajectory_ != null) {
-            Vector.DestroyLine(ref rendered_trajectory_);
-          }
-          rendered_trajectory_ = new VectorLine(
-              lineName     : "rendered_trajectory_",
-              linePoints   : line_points,
-              lineMaterial : MapView.OrbitLinesMaterial,
-              color        : XKCDColors.AcidGreen,
-              width        : 5,
-              lineType     : LineType.Discrete);
-          rendered_trajectory_.vectorObject.transform.parent =
-              ScaledSpace.Instance.transform;
-          rendered_trajectory_.vectorObject.renderer.castShadows = false;
-          rendered_trajectory_.vectorObject.renderer.receiveShadows = false;
-          rendered_trajectory_.layer = 31;
 
           SplineSegment segment;
-          int index_of_first_point = 0;
-          while(!AtEnd(trajectory)) {
-            segment = FetchAndIncrement(trajectory);
+          int index_of_first_point = kLinePoints -
+              NumberOfSegments(trajectory_iterator) * 2 * kLineSegmentsPerCubic;
+          while (index_of_first_point < 0) {
+            FetchAndIncrement(trajectory_iterator);
+            index_of_first_point += 2 * kLineSegmentsPerCubic;
+          }
+          while (!AtEnd(trajectory_iterator)) {
+            segment = FetchAndIncrement(trajectory_iterator);
             // TODO(egg): should we do the |LocalToScaledSpace| conversion in
             // native code?
             Vector.MakeCurveInLine(
-                line : rendered_trajectory_,
+                line     : rendered_trajectory_,
                 anchor1  : ScaledSpace.LocalToScaledSpace((Vector3d)segment.p0),
                 control1 : ScaledSpace.LocalToScaledSpace((Vector3d)segment.p1),
                 control2 : ScaledSpace.LocalToScaledSpace((Vector3d)segment.p2),
                 anchor2  : ScaledSpace.LocalToScaledSpace((Vector3d)segment.p3),
                 segments : kLineSegmentsPerCubic,
                 index    : index_of_first_point);
-            index_of_first_point += 2 * kLineSegmentsPerCubic;
+                index_of_first_point += 2 * kLineSegmentsPerCubic;
           }
         } finally {
-          DeleteSplineAndIterator(ref trajectory);
+          DeleteSplineAndIterator(ref trajectory_iterator);
         }
         if (MapView.Draw3DLines) {
           Vector.DrawLine3D(rendered_trajectory_);
