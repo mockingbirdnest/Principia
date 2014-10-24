@@ -10,7 +10,7 @@ class Monostable {
   ~Monostable() = default;
 
   Monostable(Monostable const&) = delete;
-  Monostable(Monostable&&) = delete;;
+  Monostable(Monostable&&) = delete;
   Monostable& operator=(Monostable const&) = delete;
   Monostable& operator=(Monostable&&) = delete;
 
