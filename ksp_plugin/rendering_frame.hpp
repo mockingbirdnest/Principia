@@ -52,9 +52,9 @@ class BodyCentredRotatingWithSurface : RenderingFrame {
   AngularVelocity<Barycentre> const rotation_;
 };
 
-class BarycentricRotating : RenderingFrame {
+class BarycentricRotatingFrame : RenderingFrame {
  public:
-  BarycentricRotating(Celestial<Barycentre> const& primary,
+  BarycentricRotatingFrame(Celestial<Barycentre> const& primary,
                       Celestial<Barycentre> const& secondary);
 
   std::unique_ptr<Trajectory<Barycentre>> const ApparentTrajectory(

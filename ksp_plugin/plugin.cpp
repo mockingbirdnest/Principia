@@ -419,5 +419,17 @@ Plugin::NewBodyCentredNonRotatingFrame(Index const reference_body_index) const {
   return std::make_unique<BodyCentredNonRotatingFrame>(reference_body);
 }
 
+std::unique_ptr<BarycentricRotatingFrame> Plugin::NewBarycentricRotatingFrame(
+    Index const primary_index,
+    Index const secondary_index) const {
+  auto const primary_it = celestials_.find(primary_index);
+  CHECK(primary_it != celestials_.end());
+  Celestial<Barycentre> const& primary = *primary_it->second;
+  auto const secondary_it = celestials_.find(secondary_index);
+  CHECK(secondary_it != celestials_.end());
+  Celestial<Barycentre> const& secondary = *secondary_it->second;
+  return std::make_unique<BarycentricRotatingFrame>(primary, secondary);
+}
+
 }  // namespace ksp_plugin
 }  // namespace principia

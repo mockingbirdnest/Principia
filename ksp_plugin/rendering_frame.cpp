@@ -51,13 +51,13 @@ BodyCentredNonRotatingFrame::ApparentTrajectory(
   return std::move(result);
 }
 
-BarycentricRotating::BarycentricRotating(Celestial<Barycentre> const& primary,
+BarycentricRotatingFrame::BarycentricRotatingFrame(Celestial<Barycentre> const& primary,
                                          Celestial<Barycentre> const& secondary)
     : primary_(primary),
       secondary_(secondary) {}
 
 std::unique_ptr<Trajectory<Barycentre>> const
-BarycentricRotating::ApparentTrajectory(
+BarycentricRotatingFrame::ApparentTrajectory(
     Trajectory<Barycentre> const& actual_trajectory) const {
   std::unique_ptr<Trajectory<Barycentre>> result =
       std::make_unique<Trajectory<Barycentre>>(actual_trajectory.body());

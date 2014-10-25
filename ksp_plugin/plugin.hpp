@@ -230,6 +230,10 @@ class Plugin {
   virtual std::unique_ptr<BodyCentredNonRotatingFrame>
   NewBodyCentredNonRotatingFrame(Index const reference_body_index) const;
 
+  virtual std::unique_ptr<BarycentricRotatingFrame>
+  NewBarycentricRotatingFrame(Index const primary_index,
+                              Index const secondary_index) const;
+
  private:
   using GUIDToOwnedVessel = std::map<GUID, std::unique_ptr<Vessel<Barycentre>>>;
   using GUIDToUnownedVessel = std::map<GUID, Vessel<Barycentre>* const>;

@@ -29,7 +29,8 @@ public partial class PluginAdapter : UnityEngine.MonoBehaviour {
   // TODO(egg): rendering only one trajectory at the moment.
   private VectorLine rendered_trajectory_;
   private IntPtr rendering_frame_ = IntPtr.Zero;
-  private int selected_celestial_ = 0;
+  private int first_selected_celestial_ = 0;
+  private int second_selected_celestial_ = 0;
 
   PluginAdapter() {
     // We create this directory here so we do not need to worry about cross-
@@ -40,7 +41,7 @@ public partial class PluginAdapter : UnityEngine.MonoBehaviour {
 
   ~PluginAdapter() {
     DeletePlugin(ref plugin_);
-    DeleteBodyCentredNonRotatingFrame(ref rendering_frame_);
+    DeleteReferenceFrame(ref rendering_frame_);
   }
 
   private bool PluginRunning() {
@@ -272,14 +273,32 @@ public partial class PluginAdapter : UnityEngine.MonoBehaviour {
       }
     }
     foreach (CelestialBody celestial in FlightGlobals.Bodies) {
+      bool changed_reference_frame = false;
       if (UnityEngine.GUILayout.Toggle(
-              value : selected_celestial_ == celestial.flightGlobalsIndex,
-              text  : celestial.name)) {
-        selected_celestial_ = celestial.flightGlobalsIndex;
-        if (PluginRunning()) {
-          DeleteBodyCentredNonRotatingFrame(ref rendering_frame_);
-          rendering_frame_ =
-              NewBodyCentredNonRotatingFrame(plugin_, selected_celestial_);
+              value : first_selected_celestial_ == celestial.flightGlobalsIndex,
+              text  : celestial.name) &&
+          first_selected_celestial_ != celestial.flightGlobalsIndex) {
+        first_selected_celestial_ = celestial.flightGlobalsIndex;
+        changed_reference_frame = true;
+      }
+      if (UnityEngine.GUILayout.Toggle(
+              value : second_selected_celestial_ == celestial.flightGlobalsIndex,
+              text  : celestial.name) &&
+          second_selected_celestial_ != celestial.flightGlobalsIndex) {
+        second_selected_celestial_ = celestial.flightGlobalsIndex;
+        changed_reference_frame = true;
+      }
+      if (changed_reference_frame && PluginRunning()) {
+        DeleteReferenceFrame(ref rendering_frame_);
+        if (first_selected_celestial_ == second_selected_celestial_) {
+          rendering_frame_ = NewBodyCentredNonRotatingFrame(
+                                 plugin_,
+                                 first_selected_celestial_);
+        } else {
+          rendering_frame_ = NewBarycentricRotatingFrame(
+                                 plugin_,
+                                 first_selected_celestial_,
+                                 second_selected_celestial_);
         }
       }
     }
