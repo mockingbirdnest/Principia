@@ -149,7 +149,7 @@ public partial class PluginAdapter : UnityEngine.MonoBehaviour {
 
   [DllImport(dllName           : kDllPath,
              CallingConvention = CallingConvention.Cdecl)]
-  private static extern void DeleteReferenceFrame(ref IntPtr frame);
+  private static extern void DeleteRenderingFrame(ref IntPtr frame);
 
   [DllImport(dllName           : kDllPath,
              CallingConvention = CallingConvention.Cdecl)]

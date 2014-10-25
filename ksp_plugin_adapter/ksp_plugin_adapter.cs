@@ -41,7 +41,7 @@ public partial class PluginAdapter : UnityEngine.MonoBehaviour {
 
   ~PluginAdapter() {
     DeletePlugin(ref plugin_);
-    DeleteReferenceFrame(ref rendering_frame_);
+    DeleteRenderingFrame(ref rendering_frame_);
   }
 
   private bool PluginRunning() {
@@ -274,9 +274,10 @@ public partial class PluginAdapter : UnityEngine.MonoBehaviour {
     }
     foreach (CelestialBody celestial in FlightGlobals.Bodies) {
       bool changed_reference_frame = false;
+      UnityEngine.GUILayout.BeginHorizontal();
       if (UnityEngine.GUILayout.Toggle(
               value : first_selected_celestial_ == celestial.flightGlobalsIndex,
-              text  : celestial.name) &&
+              text  : "") &&
           first_selected_celestial_ != celestial.flightGlobalsIndex) {
         first_selected_celestial_ = celestial.flightGlobalsIndex;
         changed_reference_frame = true;
@@ -288,8 +289,9 @@ public partial class PluginAdapter : UnityEngine.MonoBehaviour {
         second_selected_celestial_ = celestial.flightGlobalsIndex;
         changed_reference_frame = true;
       }
+      UnityEngine.GUILayout.EndHorizontal();
       if (changed_reference_frame && PluginRunning()) {
-        DeleteReferenceFrame(ref rendering_frame_);
+        DeleteRenderingFrame(ref rendering_frame_);
         if (first_selected_celestial_ == second_selected_celestial_) {
           rendering_frame_ = NewBodyCentredNonRotatingFrame(
                                  plugin_,
@@ -325,6 +327,10 @@ public partial class PluginAdapter : UnityEngine.MonoBehaviour {
     };
     ApplyToBodyTree(insert_body);
     EndInitialization(plugin_);
+    DeleteRenderingFrame(ref rendering_frame_);
+    first_selected_celestial_ = second_selected_celestial_ = 0;
+    rendering_frame_ =
+        NewBodyCentredNonRotatingFrame(plugin_, first_selected_celestial_);
     VesselProcessor insert_vessel = vessel => {
       LogInfo("Inserting " + vessel.name + "...");
       bool inserted =

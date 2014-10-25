@@ -195,7 +195,7 @@ LineAndIterator* RenderedVesselTrajectory(Plugin const* const plugin,
   RenderedTrajectory<World> rendered_trajectory = CHECK_NOTNULL(plugin)->
       RenderedVesselTrajectory(
           vessel_guid,
-          *frame,
+          *CHECK_NOTNULL(frame),
           kWorldOrigin + Displacement<World>({sun_world_position.x * Metre,
                                               sun_world_position.y * Metre,
                                               sun_world_position.z * Metre}));
