@@ -49,7 +49,7 @@ TEST_F(InterfaceDeathTest, Errors) {
   Plugin* plugin = nullptr;
   EXPECT_DEATH({
     DeletePlugin(nullptr);
-  }, "plugin.*non NULL");
+  }, "pointer.*non NULL");
   EXPECT_DEATH({
     InsertCelestial(plugin,
                     kCelestialIndex,
