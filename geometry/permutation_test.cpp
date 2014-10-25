@@ -123,7 +123,7 @@ TEST_F(PermutationTest, Inverse) {
   std::vector<Perm> const all =
       {Perm(Perm::XYZ), Perm(Perm::YZX), Perm(Perm::ZXY),
        Perm(Perm::XZY), Perm(Perm::ZYX), Perm(Perm::YXZ)};
-  for (const Perm& p : all) {
+  for (Perm const& p : all) {
     Permutation<World1, World1> const identity1 = p.Inverse() * p;
     EXPECT_THAT(identity1(vector1), Eq(vector1));
     Permutation<World2, World2> const identity2 = p * p.Inverse();

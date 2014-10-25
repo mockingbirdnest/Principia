@@ -92,7 +92,7 @@ void Plugin::EvolveSynchronizedHistories(Instant const& t) {
                             0,                    // sampling_period
                             false,                // tmax_is_exact
                             trajectories);        // trajectories
-  CHECK_GT(HistoryTime(), current_time_);
+  CHECK_GE(HistoryTime(), current_time_);
   VLOG(1) << "Evolved the old histories" << '\n'
           << "to   : " << HistoryTime();
 }
