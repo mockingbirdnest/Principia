@@ -5,6 +5,18 @@
 
 using principia::geometry::AngularVelocity;
 
+// TODO(egg): the contents of this file make little sense, and the current
+// abstractions get in the way of optimizatitons.  |RenderingFrame| should
+// return a |Trajectory| in the rendering frame, rather than in |Barycentre|,
+// so that this trajectory may be prolonged as the history is computed, rather
+// than computed every time. Since the actual rendering frame is not known at
+// compile time, a wrapper (|ApparentTrajectory|?) for the trajectory *and*
+// the |RenderingFrame| is needed to operate on the trajectory correctly.
+// While the realization of the apparent trajectory in WorldSpace will have to
+// be done at every frame, this means we will be able to do the conversion
+// Barycentre -> rendering frame incrementally (except when switching reference
+// frames).
+
 namespace principia {
 namespace ksp_plugin {
 

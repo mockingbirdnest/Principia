@@ -94,9 +94,7 @@ struct LineSegment {
   Position<Frame> const end;
 };
 
-// We render trajectories as cubic Hermite splines matching both position and
-// velocity at the interpolation points.  The C# utilities we have only support
-// Catmull-Rom splines, so we do that with a bunch of Bézier curves instead.
+// We render trajectories as polygons.
 template<typename Frame>
 using RenderedTrajectory = std::vector<LineSegment<Frame>>;
 
@@ -222,6 +220,8 @@ class Plugin {
   virtual Velocity<AliceSun> CelestialParentRelativeVelocity(
       Index const celestial_index) const;
 
+  // Returns a polygon in |World| space depicting the trajectory of the vessel
+  // with the given |GUID| in |frame|.
   virtual RenderedTrajectory<World> RenderedVesselTrajectory(
       GUID const& vessel_guid,
       RenderingFrame const& frame,

@@ -9,7 +9,7 @@ namespace principia {
 namespace ksp_plugin {
 
 BodyCentredNonRotatingFrame::BodyCentredNonRotatingFrame(
-    Celestial<Barycentre> const& body) : body_(body) {};
+    Celestial<Barycentre> const& body) : body_(body) {}
 
 std::unique_ptr<Trajectory<Barycentre>> const
 BodyCentredNonRotatingFrame::ApparentTrajectory(
