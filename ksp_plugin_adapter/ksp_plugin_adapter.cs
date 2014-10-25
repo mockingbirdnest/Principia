@@ -178,6 +178,19 @@ public partial class PluginAdapter : UnityEngine.MonoBehaviour {
               (active_vessel.situation == Vessel.Situations.SUB_ORBITAL ||
                active_vessel.situation == Vessel.Situations.ORBITING ||
                active_vessel.situation == Vessel.Situations.ESCAPING)) {
+        if (active_vessel.orbitDriver.Renderer.drawMode !=
+                OrbitRenderer.DrawMode.OFF ||
+            active_vessel.orbitDriver.Renderer.drawIcons !=
+                OrbitRenderer.DrawIcons.OBJ ||
+            active_vessel.patchedConicRenderer != null) {
+          LogInfo("Removing orbit rendering for the active vessel");
+          active_vessel.orbitDriver.Renderer.drawMode =
+              OrbitRenderer.DrawMode.OFF;
+          active_vessel.orbitDriver.Renderer.drawIcons =
+              OrbitRenderer.DrawIcons.OBJ;
+          active_vessel.DetachPatchedConicsSolver();
+          active_vessel.patchedConicRenderer = null;
+        }
         IntPtr trajectory_iterator = IntPtr.Zero;
         try {
           trajectory_iterator = RenderedVesselTrajectory(
