@@ -27,6 +27,7 @@ class Celestial {
   template<typename... Args>
   explicit Celestial(Args&&... args);  // NOLINT(build/c++11)
 
+  Body<Frame> const& body() const;
   bool has_parent() const;
   Celestial const& parent() const;
   Trajectory<Frame> const& history() const;
