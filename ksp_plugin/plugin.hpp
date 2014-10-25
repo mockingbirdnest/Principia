@@ -5,6 +5,7 @@
 #include <memory>
 #include <set>
 #include <string>
+#include <vector>
 
 #include "geometry/named_quantities.hpp"
 #include "geometry/point.hpp"
