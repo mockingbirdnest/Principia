@@ -56,8 +56,8 @@ static_assert(std::is_standard_layout<XYZSegment>::value,
               "XYZSegment is used for interfacing");
 
 struct LineAndIterator {
-  LineAndIterator(RenderedTrajectory<World> const& rendered_trajectory)
-      : rendered_trajectory(rendered_trajectory) {};
+  explicit LineAndIterator(RenderedTrajectory<World> const& rendered_trajectory)
+      : rendered_trajectory(rendered_trajectory) {}
   RenderedTrajectory<World> const rendered_trajectory;
   RenderedTrajectory<World>::const_iterator it;
 };

@@ -8,6 +8,9 @@ using principia::si::Metre;
 namespace principia {
 namespace ksp_plugin {
 
+// Takes ownership of |**pointer| and returns it to the caller.  Nulls
+// |*pointer|.  |pointer| must not be null.  No transfer of ownership of
+// |*pointer|.
 template<typename T>
 std::unique_ptr<T> TakeOwnership(T** const pointer) {
   CHECK_NOTNULL(pointer);
