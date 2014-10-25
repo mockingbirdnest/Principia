@@ -7,20 +7,21 @@ namespace ksp_plugin_adapter {
 
 [KSPAddon(startup : KSPAddon.Startup.Flight, once : false)]
 public partial class PluginAdapter : UnityEngine.MonoBehaviour {
-  // A maximum of 65534 vertices, 2 vertices per point on discrete lines.  We
-  // want this to be even so as to not waste space, since we have 2 points per.
-  // line.
+  // This constant can be at most 32766, since Vectrosity imposes a maximum of
+  // 65534 vertices, where there are 2 vertices per point on discrete lines.  We
+  // want this to be even since we have two points per line segment.
   // NOTE(egg): things are fairly slow the maximum number of points.  We have to
-  // do with fewer.
+  // do with fewer.  10000 is mostly ok, even fewer would be better.
   // TODO(egg):  At the moment we store points in the history  every
   // 10 n seconds, where n is maximal such that 10 n seconds is less than the
   // length of a |FixedUpdate|. This means we sometimes have very large gaps.
   // We should store *all* points of the history, then decimate for rendering.
   // This means splines are not needed, since 10 s is small enough to give the
   // illusion of continuity on the scales we are dealing with, and cubics are
-  // rendered by Vectrosity as line segments, so that a cubic/ rendered as
+  // rendered by Vectrosity as line segments, so that a cubic rendered as
   // 10 segments counts 20 towards |kLinePoints| (and probably takes as long to
-  // render, with extra overhead for computation).
+  // render as 10 segments from the actual data, with extra overhead for
+  // the evaluation of the cubic.
   private const int kLinePoints = 10000;
 
   private UnityEngine.Rect window_position_;

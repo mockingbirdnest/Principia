@@ -4,10 +4,8 @@
 #include "gtest/gtest.h"
 #include "quantities/si.hpp"
 #include "ksp_plugin/mock_plugin.hpp"
-#include "testing_utilities/death_message.hpp"
 
 using principia::si::Degree;
-using principia::testing_utilities::DeathMessage;
 using testing::Eq;
 using testing::IsNull;
 using testing::Return;
@@ -51,7 +49,7 @@ TEST_F(InterfaceDeathTest, Errors) {
   Plugin* plugin = nullptr;
   EXPECT_DEATH({
     DeletePlugin(nullptr);
-  }, DeathMessage("plugin.*non NULL"));
+  }, "pointer.*non NULL");
   EXPECT_DEATH({
     InsertCelestial(plugin,
                     kCelestialIndex,
@@ -59,34 +57,34 @@ TEST_F(InterfaceDeathTest, Errors) {
                     kParentIndex,
                     kParentPosition,
                     kParentVelocity);
-  }, DeathMessage("plugin.*non NULL"));
+  }, "plugin.*non NULL");
   EXPECT_DEATH({
     UpdateCelestialHierarchy(plugin, kCelestialIndex, kParentIndex);
-  }, DeathMessage("plugin.*non NULL"));
+  }, "plugin.*non NULL");
   EXPECT_DEATH({
     UpdateCelestialHierarchy(plugin, kCelestialIndex, kParentIndex);
-  }, DeathMessage("plugin.*non NULL"));
+  }, "plugin.*non NULL");
   EXPECT_DEATH({
     InsertOrKeepVessel(plugin, kVesselGUID, kParentIndex);
-  }, DeathMessage("plugin.*non NULL"));
+  }, "plugin.*non NULL");
   EXPECT_DEATH({
     SetVesselStateOffset(plugin,
                          kVesselGUID,
                          kParentPosition,
                          kParentVelocity);
-  }, DeathMessage("plugin.*non NULL"));
+  }, "plugin.*non NULL");
   EXPECT_DEATH({
     VesselDisplacementFromParent(plugin, kVesselGUID);
-  }, DeathMessage("plugin.*non NULL"));
+  }, "plugin.*non NULL");
   EXPECT_DEATH({
     VesselParentRelativeVelocity(plugin, kVesselGUID);
-  }, DeathMessage("plugin.*non NULL"));
+  }, "plugin.*non NULL");
   EXPECT_DEATH({
     CelestialDisplacementFromParent(plugin, kCelestialIndex);
-  }, DeathMessage("plugin.*non NULL"));
+  }, "plugin.*non NULL");
   EXPECT_DEATH({
     CelestialParentRelativeVelocity(plugin, kCelestialIndex);
-  }, DeathMessage("plugin.*non NULL"));
+  }, "plugin.*non NULL");
 }
 
 TEST_F(InterfaceTest, DeletePluginSuccess) {

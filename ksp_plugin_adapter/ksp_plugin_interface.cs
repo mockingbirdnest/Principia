@@ -93,14 +93,14 @@ public partial class PluginAdapter : UnityEngine.MonoBehaviour {
              CallingConvention = CallingConvention.Cdecl)]
   private static extern bool InsertOrKeepVessel(
       IntPtr plugin,
-      [MarshalAs(UnmanagedType.LPStr)] String guid,
+      [MarshalAs(UnmanagedType.LPStr)] String vessel_guid,
       int parent_index);
 
   [DllImport(dllName           : kDllPath,
              CallingConvention = CallingConvention.Cdecl)]
   private static extern void SetVesselStateOffset(
       IntPtr plugin,
-      [MarshalAs(UnmanagedType.LPStr)] String guid,
+      [MarshalAs(UnmanagedType.LPStr)] String vessel_guid,
       XYZ from_parent_position,
       XYZ from_parent_velocity);
 
@@ -114,13 +114,13 @@ public partial class PluginAdapter : UnityEngine.MonoBehaviour {
              CallingConvention = CallingConvention.Cdecl)]
   private static extern XYZ VesselDisplacementFromParent(
       IntPtr plugin,
-      [MarshalAs(UnmanagedType.LPStr)] String guid);
+      [MarshalAs(UnmanagedType.LPStr)] String vessel_guid);
 
   [DllImport(dllName           : kDllPath,
              CallingConvention = CallingConvention.Cdecl)]
   private static extern XYZ VesselParentRelativeVelocity(
       IntPtr plugin,
-      [MarshalAs(UnmanagedType.LPStr)] String guid);
+      [MarshalAs(UnmanagedType.LPStr)] String vessel_guid);
 
   [DllImport(dllName           : kDllPath,
              CallingConvention = CallingConvention.Cdecl)]

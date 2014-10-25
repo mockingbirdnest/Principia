@@ -1,6 +1,6 @@
 #include "benchmark/benchmark.h"
 
-int main(int argc, const char* argv[]) {
+int main(int argc, char const* argv[]) {
   benchmark::Initialize(&argc, argv);
   benchmark::RunSpecifiedBenchmarks();
 }
