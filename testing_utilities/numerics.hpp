@@ -12,14 +12,18 @@ namespace testing_utilities {
 template<typename Scalar>
 double DoubleValue(Scalar const& scalar);
 
-template<typename T, typename NormType = T, typename Norm = NormType(*)(T)>
+template<typename T, typename NormType>
 NormType AbsoluteError(T const& expected, T const& actual,
-                       Norm const norm);
+                       NormType (T::* norm)() const);
 
-// Equivalent to RelativeError(expected, actual, Abs).
+template<typename T, typename NormType, typename NormArg>
+NormType AbsoluteError(T const& expected, T const& actual,
+                       NormType (*norm)(NormArg const));
+
+// Equivalent to AbsoluteError(expected, actual, &Abs).
 double AbsoluteError(double const expected, double const actual);
 
-// Equivalent to RelativeError(expected, actual, Abs<Dimensions>).
+// Equivalent to AbsoluteError(expected, actual, &Abs<Dimensions>).
 template<typename Dimensions>
 quantities::Quantity<Dimensions> AbsoluteError(
     quantities::Quantity<Dimensions> const& expected,
@@ -36,13 +40,18 @@ Scalar AbsoluteError(
     geometry::Multivector<Scalar, Frame, rank> const& expected,
     geometry::Multivector<Scalar, Frame, rank> const& actual);
 
-template<typename T, typename Norm = T(*)(T)>
-double RelativeError(T const& expected, T const& actual, Norm const norm);
+template<typename T, typename NormType>
+double RelativeError(T const& expected, T const& actual,
+                     NormType (T::* norm)() const);
 
-// Equivalent to RelativeError(expected, actual, Abs).
+template<typename T, typename NormType, typename NormArg>
+double RelativeError(T const& expected, T const& actual,
+                     NormType (*norm)(NormArg const));
+
+// Equivalent to RelativeError(expected, actual, &Abs).
 double RelativeError(double const expected, double const actual);
 
-// Equivalent to RelativeError(expected, actual, Abs<Dimensions>).
+// Equivalent to RelativeError(expected, actual, &Abs<Dimensions>).
 template<typename Dimensions>
 double RelativeError(quantities::Quantity<Dimensions> const& expected,
                      quantities::Quantity<Dimensions> const& actual);
