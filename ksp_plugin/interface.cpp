@@ -178,7 +178,7 @@ void DeleteBodyCentredNonRotatingFrame(
   TakeOwnership(frame);
 }
 
-SplineAndIterator* RenderedVesselTrajectory(Plugin const* const plugin,
+LineAndIterator* RenderedVesselTrajectory(Plugin const* const plugin,
                                             char const* vessel_guid,
                                             RenderingFrame const* frame,
                                             XYZ const sun_world_position) {
@@ -189,37 +189,33 @@ SplineAndIterator* RenderedVesselTrajectory(Plugin const* const plugin,
           kWorldOrigin + Displacement<World>({sun_world_position.x * Metre,
                                               sun_world_position.y * Metre,
                                               sun_world_position.z * Metre}));
-  std::unique_ptr<SplineAndIterator> result =
-      std::make_unique<SplineAndIterator>(std::move(rendered_trajectory));
+  std::unique_ptr<LineAndIterator> result =
+      std::make_unique<LineAndIterator>(std::move(rendered_trajectory));
   result->it = result->rendered_trajectory.begin();
   return result.release();
 }
 
-int NumberOfSegments(SplineAndIterator const* spline) {
+int NumberOfSegments(LineAndIterator const* spline) {
   return CHECK_NOTNULL(spline)->rendered_trajectory.size();
 }
 
-SplineSegment FetchAndIncrement(SplineAndIterator* const spline) {
+XYZSegment FetchAndIncrement(LineAndIterator* const spline) {
   CHECK_NOTNULL(spline);
   CHECK(spline->it != spline->rendered_trajectory.end());
-  CubicBézierCurve<World> const result = *spline->it;
+  LineSegment<World> const result = *spline->it;
   ++spline->it;
-  R3Element<Length> p0 = (result[0] - kWorldOrigin).coordinates();
-  R3Element<Length> p1 = (result[1] - kWorldOrigin).coordinates();
-  R3Element<Length> p2 = (result[2] - kWorldOrigin).coordinates();
-  R3Element<Length> p3 = (result[3] - kWorldOrigin).coordinates();
-  return {XYZ{p0.x / Metre, p0.y / Metre, p0.z / Metre},
-          XYZ{p1.x / Metre, p1.y / Metre, p1.z / Metre},
-          XYZ{p2.x / Metre, p2.y / Metre, p2.z / Metre},
-          XYZ{p3.x / Metre, p3.y / Metre, p3.z / Metre}};
+  R3Element<Length> begin = (result.begin - kWorldOrigin).coordinates();
+  R3Element<Length> end = (result.end - kWorldOrigin).coordinates();
+  return {XYZ{begin.x / Metre, begin.y / Metre, begin.z / Metre},
+          XYZ{end.x / Metre, end.y / Metre, end.z / Metre}};
 }
 
-bool AtEnd(SplineAndIterator* const spline) {
+bool AtEnd(LineAndIterator* const spline) {
   CHECK_NOTNULL(spline);
   return spline->it == spline->rendered_trajectory.end();
 }
 
-void DeleteSplineAndIterator(SplineAndIterator const** const spline) {
+void DeleteLineAndIterator(LineAndIterator const** const spline) {
   TakeOwnership(spline);
 }
 

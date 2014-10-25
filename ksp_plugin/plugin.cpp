@@ -374,8 +374,6 @@ Velocity<AliceSun> Plugin::CelestialParentRelativeVelocity(
   return result;
 }
 
-// TODO(egg): would things be faster if we computed a polygon ourselves and had
-// Vectrosity render it, rather than telling it to render a spline?
 RenderedTrajectory<World> Plugin::RenderedVesselTrajectory(
     GUID const& vessel_guid,
     RenderingFrame const& frame,
@@ -397,32 +395,16 @@ RenderedTrajectory<World> Plugin::RenderedVesselTrajectory(
     VLOG(1) << "Returning an empty trajectory";
     return result;
   }
-  // Initial and final time and state for the Bézier segment being computed.
-  Instant const* initial_time = nullptr;
-  Instant const* final_time = nullptr;
   DegreesOfFreedom<Barycentre> const* initial_state = nullptr;
   DegreesOfFreedom<Barycentre> const* final_state = nullptr;
-  CubicBézierCurve<Barycentre> barycentric_bézier_points;
   std::unique_ptr<Trajectory<Barycentre>> const apparent_trajectory =
       frame.ApparentTrajectory(vessel.history());
   for (auto const& pair : apparent_trajectory->timeline()) {
-    final_time = &pair.first;
     final_state = &pair.second;
-    if (initial_state != nullptr && final_time != nullptr) {
-      Time const δt = *final_time - *initial_time;
-      barycentric_bézier_points[0] = initial_state->position;
-      barycentric_bézier_points[3] = final_state->position;
-      // TODO(egg): * (1.0 / 3.0) would be faster. Would it be measurably so?
-      barycentric_bézier_points[1] =
-          barycentric_bézier_points[0] + initial_state->velocity * δt / 3.0;
-      barycentric_bézier_points[2] =
-          barycentric_bézier_points[3] - final_state->velocity * δt / 3.0;
-      result.push_back({to_world(barycentric_bézier_points[0]),
-                        to_world(barycentric_bézier_points[1]),
-                        to_world(barycentric_bézier_points[2]),
-                        to_world(barycentric_bézier_points[3])});
+    if (initial_state != nullptr) {
+      result.emplace_back(to_world(initial_state->position),
+                          to_world(final_state->position));
     }
-    std::swap(final_time, initial_time);
     std::swap(final_state, initial_state);
   }
   VLOG(1) << "Returning a " << result.size() << "-segment trajectory";

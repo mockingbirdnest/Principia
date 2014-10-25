@@ -8,20 +8,20 @@ namespace ksp_plugin_adapter {
 [KSPAddon(startup : KSPAddon.Startup.Flight, once : false)]
 public partial class PluginAdapter : UnityEngine.MonoBehaviour {
   // A maximum of 65534 vertices, 2 vertices per point on discrete lines.  We
-  // want this to be an integer multiple of |kLineSegmentsPerCubic| so as not to
-  // waste space.
-  // TODO(egg): things are fairly slow with this many points.  We will have to
-  // do with fewer. At the moment we store points in the history every
-  // 10 k seconds, where k is maximal such that 10 k seconds is less than the
-  // Length of a |FixedUpdate|. This means we sometimes have very large gaps.
+  // want this to be even so as to not waste space, since we have 2 points per.
+  // line.
+  // NOTE(egg): things are fairly slow the maximum number of points.  We have to
+  // do with fewer.
+  // TODO(egg):  At the moment we store points in the history  every
+  // 10 n seconds, where n is maximal such that 10 n seconds is less than the
+  // length of a |FixedUpdate|. This means we sometimes have very large gaps.
   // We should store *all* points of the history, then decimate for rendering.
-  // This should actually remove the need for splines, since 10 s is small
-  // enough to give the illusion of continuity at these scales, and splines are
-  // rendered by Vectrosity as line segments, so that a spline rendered as
+  // This means splines are not needed, since 10 s is small enough to give the
+  // illusion of continuity on the scales we are dealing with, and cubics are
+  // rendered by Vectrosity as line segments, so that a cubic/ rendered as
   // 10 segments counts 20 towards |kLinePoints| (and probably takes as long to
-  // render, with overhead for computation).
-  private const int kLinePoints = 65520 / 2;
-  private const int kLineSegmentsPerCubic = 10;
+  // render, with extra overhead for computation).
+  private const int kLinePoints = 10000;
 
   private UnityEngine.Rect window_position_;
   private IntPtr plugin_ = IntPtr.Zero;
@@ -186,29 +186,28 @@ public partial class PluginAdapter : UnityEngine.MonoBehaviour {
               rendering_frame_,
               (XYZ)Planetarium.fetch.Sun.position);
 
-          SplineSegment segment;
-          int index_of_first_point = kLinePoints -
-              NumberOfSegments(trajectory_iterator) * 2 * kLineSegmentsPerCubic;
-          while (index_of_first_point < 0) {
+          LineSegment segment;
+          int index_in_line_points = kLinePoints -
+              NumberOfSegments(trajectory_iterator) * 2;
+          while (index_in_line_points < 0) {
             FetchAndIncrement(trajectory_iterator);
-            index_of_first_point += 2 * kLineSegmentsPerCubic;
+            index_in_line_points += 2;
           }
           while (!AtEnd(trajectory_iterator)) {
             segment = FetchAndIncrement(trajectory_iterator);
             // TODO(egg): should we do the |LocalToScaledSpace| conversion in
             // native code?
-            Vector.MakeCurveInLine(
-                line     : rendered_trajectory_,
-                anchor1  : ScaledSpace.LocalToScaledSpace((Vector3d)segment.p0),
-                control1 : ScaledSpace.LocalToScaledSpace((Vector3d)segment.p1),
-                control2 : ScaledSpace.LocalToScaledSpace((Vector3d)segment.p2),
-                anchor2  : ScaledSpace.LocalToScaledSpace((Vector3d)segment.p3),
-                segments : kLineSegmentsPerCubic,
-                index    : index_of_first_point);
-                index_of_first_point += 2 * kLineSegmentsPerCubic;
+            // TODO(egg): could we directly assign to
+            // |rendered_trajectory_.points3| from C++ using unsafe code and
+            // something like the following?
+            // |fixed (UnityEngine.Vector3* pts = rendered_trajectory_.points3)|
+            rendered_trajectory_.points3[index_in_line_points++] =
+                ScaledSpace.LocalToScaledSpace((Vector3d)segment.begin);
+            rendered_trajectory_.points3[index_in_line_points++] =
+                ScaledSpace.LocalToScaledSpace((Vector3d)segment.end);
           }
         } finally {
-          DeleteSplineAndIterator(ref trajectory_iterator);
+          DeleteLineAndIterator(ref trajectory_iterator);
         }
         if (MapView.Draw3DLines) {
           Vector.DrawLine3D(rendered_trajectory_);

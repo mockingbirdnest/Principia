@@ -80,19 +80,24 @@ using GUID = std::string;
 // |b.flightGlobalsIndex| in C#. We use this as a key in an |std::map|.
 using Index = int;
 
-// Represents the curve
-// {(1-s)³ p₀ + 3 (1-s)² s p₁ + 3 (1-s) s² p₂ + s³ p₃ | s ∈ [0, 1]}.
-// We leave it to the reader to check that the above can be expressed as a point
-// plus a linear combination of differences of points and is thus well-defined
-// when the pᵢ lie in an affine space.
+// Represents the line segment {(1-s) |begin| + s |end| | s ∈ [0, 1]}.
+// It is immediate that for every ∀ s ∈ [0, 1], (1-s) |begin| + s |end| is a
+// convex combination of |begin| and |end|, so that this is well-defined for
+// |begin| and |end| in an affine space.
 template<typename Frame>
-using CubicBézierCurve = std::array<Position<Frame>, 4>;
+struct LineSegment {
+  LineSegment(Position<Frame> const& begin, Position<Frame> const& end)
+      : begin(begin),
+        end(end) {}
+  Position<Frame> const begin;
+  Position<Frame> const end;
+};
 
 // We render trajectories as cubic Hermite splines matching both position and
 // velocity at the interpolation points.  The C# utilities we have only support
 // Catmull-Rom splines, so we do that with a bunch of Bézier curves instead.
 template<typename Frame>
-using RenderedTrajectory = std::vector<CubicBézierCurve<Frame>>;
+using RenderedTrajectory = std::vector<LineSegment<Frame>>;
 
 class Plugin {
  public:

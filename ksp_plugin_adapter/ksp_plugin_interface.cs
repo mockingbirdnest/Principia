@@ -21,8 +21,8 @@ public partial class PluginAdapter : UnityEngine.MonoBehaviour {
   };
 
   [StructLayout(LayoutKind.Sequential)]
-  private struct SplineSegment {
-    public XYZ p0, p1, p2, p3;
+  private struct LineSegment {
+    public XYZ begin, end;
   };
 
   // Logging.
@@ -155,19 +155,19 @@ public partial class PluginAdapter : UnityEngine.MonoBehaviour {
 
   [DllImport(dllName           : kDllPath,
              CallingConvention = CallingConvention.Cdecl)]
-  private static extern int NumberOfSegments(IntPtr spline);
+  private static extern int NumberOfSegments(IntPtr line);
 
   [DllImport(dllName           : kDllPath,
              CallingConvention = CallingConvention.Cdecl)]
-  private static extern SplineSegment FetchAndIncrement(IntPtr spline);
+  private static extern LineSegment FetchAndIncrement(IntPtr line);
 
   [DllImport(dllName           : kDllPath,
              CallingConvention = CallingConvention.Cdecl)]
-  private static extern bool AtEnd(IntPtr spline);
+  private static extern bool AtEnd(IntPtr line);
 
   [DllImport(dllName           : kDllPath,
              CallingConvention = CallingConvention.Cdecl)]
-  private static extern void DeleteSplineAndIterator(ref IntPtr spline);
+  private static extern void DeleteLineAndIterator(ref IntPtr line);
 }
 
 }  // namespace ksp_plugin_adapter

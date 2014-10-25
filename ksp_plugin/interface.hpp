@@ -48,15 +48,15 @@ static_assert(std::is_standard_layout<XYZ>::value,
               "XYZ is used for interfacing");
 
 extern "C"
-struct SplineSegment {
-  XYZ p0, p1, p2, p3;
+struct XYZSegment {
+  XYZ begin, end;
 };
 
-static_assert(std::is_standard_layout<SplineSegment>::value,
+static_assert(std::is_standard_layout<XYZSegment>::value,
               "SplineSegment is used for interfacing");
 
-struct SplineAndIterator {
-  SplineAndIterator(RenderedTrajectory<World> const& rendered_trajectory)
+struct LineAndIterator {
+  LineAndIterator(RenderedTrajectory<World> const& rendered_trajectory)
       : rendered_trajectory(rendered_trajectory) {};
   RenderedTrajectory<World> const rendered_trajectory;
   RenderedTrajectory<World>::const_iterator it;
@@ -177,22 +177,22 @@ void CDECL DeleteBodyCentredNonRotatingFrame(
     BodyCentredNonRotatingFrame const** const frame);
 
 extern "C" DLLEXPORT
-SplineAndIterator* CDECL RenderedVesselTrajectory(Plugin const* const plugin,
-                                                  char const* vessel_guid,
-                                                  RenderingFrame const* frame,
-                                                  XYZ const sun_world_position);
+LineAndIterator* CDECL RenderedVesselTrajectory(Plugin const* const plugin,
+                                                char const* vessel_guid,
+                                                RenderingFrame const* frame,
+                                                XYZ const sun_world_position);
 
 extern "C" DLLEXPORT
-int CDECL NumberOfSegments(SplineAndIterator const* spline);
+int CDECL NumberOfSegments(LineAndIterator const* line);
 
 extern "C" DLLEXPORT
-SplineSegment CDECL FetchAndIncrement(SplineAndIterator* const spline);
+XYZSegment CDECL FetchAndIncrement(LineAndIterator* const line);
 
 extern "C" DLLEXPORT
-bool CDECL AtEnd(SplineAndIterator* const spline);
+bool CDECL AtEnd(LineAndIterator* const line);
 
 extern "C" DLLEXPORT
-void CDECL DeleteSplineAndIterator(SplineAndIterator const** const spline);
+void CDECL DeleteLineAndIterator(LineAndIterator const** const line);
 
 // Says hello, convenient for checking that calls to the DLL work.
 extern "C" DLLEXPORT
