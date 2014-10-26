@@ -20,17 +20,19 @@ Multivector<Scalar, Frame, 3>::Multivector(Scalar const& coordinates)
     : coordinates_(coordinates) {}
 
 template<typename Scalar, typename Frame>
-inline R3Element<Scalar> Multivector<Scalar, Frame, 1>::coordinates() const {
+inline R3Element<Scalar> const&
+Multivector<Scalar, Frame, 1>::coordinates() const {
   return coordinates_;
 }
 
 template<typename Scalar, typename Frame>
-inline R3Element<Scalar> Multivector<Scalar, Frame, 2>::coordinates() const {
+inline R3Element<Scalar> const&
+Multivector<Scalar, Frame, 2>::coordinates() const {
   return coordinates_;
 }
 
 template<typename Scalar, typename Frame>
-inline Scalar Multivector<Scalar, Frame, 3>::coordinates() const {
+inline Scalar const& Multivector<Scalar, Frame, 3>::coordinates() const {
   return coordinates_;
 }
 
