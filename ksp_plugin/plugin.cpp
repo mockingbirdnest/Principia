@@ -24,6 +24,8 @@ Permutation<World, AliceWorld> const kWorldLookingGlass(
 Permutation<WorldSun, AliceSun> const kSunLookingGlass(
     Permutation<WorldSun, AliceSun>::CoordinatePermutation::XZY);
 
+} // namespace
+
 // The map between the vector spaces of |Barycentre| and |WorldSun| at
 // |current_time_|.
 Rotation<Barycentre, WorldSun> Plugin::PlanetariumRotation() const {
@@ -31,8 +33,6 @@ Rotation<Barycentre, WorldSun> Plugin::PlanetariumRotation() const {
       planetarium_rotation_,
       Bivector<double, Barycentre>({0, 1, 0}));
 }
-
-}  // namespace
 
 void Plugin::CheckVesselInvariants(
     Vessel<Barycentre> const& vessel,
