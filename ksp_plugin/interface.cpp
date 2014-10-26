@@ -74,8 +74,8 @@ Plugin* NewPlugin(double const initial_time,
 
 void DeletePlugin(Plugin const** const plugin) {
   LOG(INFO) << "Destroying Principia plugin";
-  // We want to log before and after destroying the plugin since it is a pretty,
-  // significant even, so we take ownership inside a block.
+  // We want to log before and after destroying the plugin since it is a pretty
+  // significant event, so we take ownership inside a block.
   {
     TakeOwnership(plugin);
   }
@@ -215,8 +215,8 @@ XYZSegment FetchAndIncrement(LineAndIterator* const line_and_iterator) {
   CHECK(line_and_iterator->it != line_and_iterator->rendered_trajectory.end());
   LineSegment<World> const result = *line_and_iterator->it;
   ++line_and_iterator->it;
-  R3Element<Length> begin = (result.begin - kWorldOrigin).coordinates();
-  R3Element<Length> end = (result.end - kWorldOrigin).coordinates();
+  R3Element<Length> const begin = (result.begin - kWorldOrigin).coordinates();
+  R3Element<Length> const end = (result.end - kWorldOrigin).coordinates();
   return {XYZ{begin.x / Metre, begin.y / Metre, begin.z / Metre},
           XYZ{end.x / Metre, end.y / Metre, end.z / Metre}};
 }
