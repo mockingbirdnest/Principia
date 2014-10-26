@@ -14,5 +14,8 @@
     <ClInclude Include="not_null.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="not_null_body.hpp">
+      <Filter>Source Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
