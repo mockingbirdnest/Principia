@@ -112,7 +112,7 @@ void NBodySystem<InertialFrame>::Integrate(
         reordered_trajectories.push_back(trajectory);
 
         // Fill the initial position/velocity/time.
-        R3Element<Length> const& position =
+        R3Element<Length> const position =
             (trajectory->last_position() - reference_position).coordinates();
         R3Element<Speed> const& velocity =
             trajectory->last_velocity().coordinates();
