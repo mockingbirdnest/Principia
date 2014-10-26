@@ -14,17 +14,25 @@ using geometry::AffineMap;
 using geometry::Bivector;
 using geometry::Permutation;
 
+namespace {
+
+// The map between the vector spaces of |World| and |AliceWorld|.
 Permutation<World, AliceWorld> const kWorldLookingGlass(
     Permutation<World, AliceWorld>::CoordinatePermutation::XZY);
 
+// The map between the vector spaces of |WorldSun| and |AliceSun|.
 Permutation<WorldSun, AliceSun> const kSunLookingGlass(
     Permutation<WorldSun, AliceSun>::CoordinatePermutation::XZY);
 
+// The map between the vector spaces of |Barycentre| and |WorldSun| at
+// |current_time_|.
 Rotation<Barycentre, WorldSun> Plugin::PlanetariumRotation() const {
   return Rotation<Barycentre, WorldSun>(
       planetarium_rotation_,
       Bivector<double, Barycentre>({0, 1, 0}));
 }
+
+}  // namespace
 
 void Plugin::CheckVesselInvariants(
     Vessel<Barycentre> const& vessel,
@@ -379,10 +387,11 @@ RenderedTrajectory<World> Plugin::RenderedVesselTrajectory(
     RenderingFrame const& frame,
     Position<World> const& sun_world_position) const {
   CHECK(!initializing);
-  auto const to_world = AffineMap<Barycentre, World, Length, Rotation>(
-        sun_->prolongation().last_position(),
-        sun_world_position,
-        Rotation<WorldSun, World>::Identity() * PlanetariumRotation());
+  auto const to_world =
+      AffineMap<Barycentre, World, Length, Rotation>(
+          sun_->prolongation().last_position(),
+          sun_world_position,
+          Rotation<WorldSun, World>::Identity() * PlanetariumRotation());
   auto const it = vessels_.find(vessel_guid);
   CHECK(it != vessels_.end());
   Vessel<Barycentre> const& vessel = *(it->second);

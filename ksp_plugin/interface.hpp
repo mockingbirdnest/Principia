@@ -191,29 +191,31 @@ LineAndIterator* CDECL RenderedVesselTrajectory(Plugin const* const plugin,
                                                 RenderingFrame const* frame,
                                                 XYZ const sun_world_position);
 
-// Returns |line->rendered_trajectory.size()|.
-// |line| must not be null.  No transfer of ownership.
+// Returns |line_and_iterator->rendered_trajectory.size()|.
+// |line_and_iterator| must not be null.  No transfer of ownership.
 extern "C" DLLEXPORT
-int CDECL NumberOfSegments(LineAndIterator const* line);
+int CDECL NumberOfSegments(LineAndIterator const* line_and_iterator);
 
-// Returns the |XYZSegment| corresponding to the |LineSegment| |*line->it|, then
-// increments |line->it|.
-// |line| must not be null.  |line->it| must not be the end of
-// |line->rendered_trajectory|.  No transfer of ownership.
+// Returns the |XYZSegment| corresponding to the |LineSegment|
+// |*line_and_iterator->it|, then increments |line_and_iterator->it|.
+// |line_and_iterator| must not be null.  |line_and_iterator->it| must not be
+// the end of |line_and_iterator->rendered_trajectory|.  No transfer of
+// ownership.
 extern "C" DLLEXPORT
-XYZSegment CDECL FetchAndIncrement(LineAndIterator* const line);
+XYZSegment CDECL FetchAndIncrement(LineAndIterator* const line_and_iterator);
 
-// Returns |true| if and only if |line->it| is the end of
-// |line->rendered_trajectory|.
-// |line| must not be null.  No transfer of ownership.
+// Returns |true| if and only if |line_and_iterator->it| is the end of
+// |line_and_iterator->rendered_trajectory|.
+// |line_and_iterator| must not be null.  No transfer of ownership.
 extern "C" DLLEXPORT
-bool CDECL AtEnd(LineAndIterator* const line);
+bool CDECL AtEnd(LineAndIterator* const line_and_iterator);
 
-// Deletes and nulls |*line|.
-// |line| must not be null.  No transfer of ownership of |*line|, takes
-// ownership of |**line|.
+// Deletes and nulls |*line_and_iterator|.
+// |line_and_iterator| must not be null.  No transfer of ownership of
+// |*line_and_iterator|, takes ownership of |**line_and_iterator|.
 extern "C" DLLEXPORT
-void CDECL DeleteLineAndIterator(LineAndIterator const** const line);
+void CDECL DeleteLineAndIterator(
+    LineAndIterator const** const line_and_iterator);
 
 // Says hello, convenient for checking that calls to the DLL work.
 extern "C" DLLEXPORT

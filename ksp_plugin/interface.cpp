@@ -8,6 +8,8 @@ using principia::si::Metre;
 namespace principia {
 namespace ksp_plugin {
 
+namespace {
+
 // Takes ownership of |**pointer| and returns it to the caller.  Nulls
 // |*pointer|.  |pointer| must not be null.  No transfer of ownership of
 // |*pointer|.
@@ -18,6 +20,8 @@ std::unique_ptr<T> TakeOwnership(T** const pointer) {
   *pointer = nullptr;
   return owned_pointer;
 }
+
+}  // namespace
 
 void InitGoogleLogging() {
 #ifdef _MSC_VER
@@ -70,7 +74,11 @@ Plugin* NewPlugin(double const initial_time,
 
 void DeletePlugin(Plugin const** const plugin) {
   LOG(INFO) << "Destroying Principia plugin";
-  TakeOwnership(plugin).reset();
+  // We want to log before and after destroying the plugin since it is a pretty,
+  // significant even, so we take ownership inside a block.
+  {
+    TakeOwnership(plugin);
+  }
   LOG(INFO) << "Plugin destroyed";
 }
 
@@ -182,9 +190,9 @@ void DeleteBodyCentredNonRotatingFrame(
 }
 
 LineAndIterator* RenderedVesselTrajectory(Plugin const* const plugin,
-                                            char const* vessel_guid,
-                                            RenderingFrame const* frame,
-                                            XYZ const sun_world_position) {
+                                          char const* vessel_guid,
+                                          RenderingFrame const* frame,
+                                          XYZ const sun_world_position) {
   RenderedTrajectory<World> rendered_trajectory = CHECK_NOTNULL(plugin)->
       RenderedVesselTrajectory(
           vessel_guid,
@@ -198,28 +206,28 @@ LineAndIterator* RenderedVesselTrajectory(Plugin const* const plugin,
   return result.release();
 }
 
-int NumberOfSegments(LineAndIterator const* spline) {
-  return CHECK_NOTNULL(spline)->rendered_trajectory.size();
+int NumberOfSegments(LineAndIterator const* line_and_iterator) {
+  return CHECK_NOTNULL(line_and_iterator)->rendered_trajectory.size();
 }
 
-XYZSegment FetchAndIncrement(LineAndIterator* const spline) {
-  CHECK_NOTNULL(spline);
-  CHECK(spline->it != spline->rendered_trajectory.end());
-  LineSegment<World> const result = *spline->it;
-  ++spline->it;
+XYZSegment FetchAndIncrement(LineAndIterator* const line_and_iterator) {
+  CHECK_NOTNULL(line_and_iterator);
+  CHECK(line_and_iterator->it != line_and_iterator->rendered_trajectory.end());
+  LineSegment<World> const result = *line_and_iterator->it;
+  ++line_and_iterator->it;
   R3Element<Length> begin = (result.begin - kWorldOrigin).coordinates();
   R3Element<Length> end = (result.end - kWorldOrigin).coordinates();
   return {XYZ{begin.x / Metre, begin.y / Metre, begin.z / Metre},
           XYZ{end.x / Metre, end.y / Metre, end.z / Metre}};
 }
 
-bool AtEnd(LineAndIterator* const spline) {
-  CHECK_NOTNULL(spline);
-  return spline->it == spline->rendered_trajectory.end();
+bool AtEnd(LineAndIterator* const line_and_iterator) {
+  CHECK_NOTNULL(line_and_iterator);
+  return line_and_iterator->it == line_and_iterator->rendered_trajectory.end();
 }
 
-void DeleteLineAndIterator(LineAndIterator const** const spline) {
-  TakeOwnership(spline);
+void DeleteLineAndIterator(LineAndIterator const** const line_and_iterator) {
+  TakeOwnership(line_and_iterator);
 }
 
 char const* SayHello() {

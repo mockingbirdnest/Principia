@@ -10,9 +10,9 @@ public partial class PluginAdapter : UnityEngine.MonoBehaviour {
   // This constant can be at most 32766, since Vectrosity imposes a maximum of
   // 65534 vertices, where there are 2 vertices per point on discrete lines.  We
   // want this to be even since we have two points per line segment.
-  // NOTE(egg): things are fairly slow the maximum number of points.  We have to
-  // do with fewer.  10000 is mostly ok, even fewer would be better.
-  // TODO(egg):  At the moment we store points in the history  every
+  // NOTE(egg): Things are fairly slow with the maximum number of points.  We
+  // have to do with fewer.  10000 is mostly ok, even fewer would be better.
+  // TODO(egg): At the moment we store points in the history  every
   // 10 n seconds, where n is maximal such that 10 n seconds is less than the
   // length of a |FixedUpdate|. This means we sometimes have very large gaps.
   // We should store *all* points of the history, then decimate for rendering.
@@ -21,7 +21,7 @@ public partial class PluginAdapter : UnityEngine.MonoBehaviour {
   // rendered by Vectrosity as line segments, so that a cubic rendered as
   // 10 segments counts 20 towards |kLinePoints| (and probably takes as long to
   // render as 10 segments from the actual data, with extra overhead for
-  // the evaluation of the cubic.
+  // the evaluation of the cubic).
   private const int kLinePoints = 10000;
 
   private UnityEngine.Rect window_position_;
@@ -176,9 +176,9 @@ public partial class PluginAdapter : UnityEngine.MonoBehaviour {
       ApplyToVesselsInSpace(update_vessel);
       Vessel active_vessel = FlightGlobals.ActiveVessel;
       if (MapView.MapIsEnabled && 
-              (active_vessel.situation == Vessel.Situations.SUB_ORBITAL ||
-               active_vessel.situation == Vessel.Situations.ORBITING ||
-               active_vessel.situation == Vessel.Situations.ESCAPING)) {
+          (active_vessel.situation == Vessel.Situations.SUB_ORBITAL ||
+           active_vessel.situation == Vessel.Situations.ORBITING ||
+           active_vessel.situation == Vessel.Situations.ESCAPING)) {
         IntPtr trajectory_iterator = IntPtr.Zero;
         try {
           trajectory_iterator = RenderedVesselTrajectory(
@@ -219,11 +219,6 @@ public partial class PluginAdapter : UnityEngine.MonoBehaviour {
     }
   }
 
-  /*
-  private void LateUpdate() {
-
-  }
-  */
   #endregion
 
   private void DrawGUI() {
