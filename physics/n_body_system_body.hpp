@@ -112,6 +112,8 @@ void NBodySystem<InertialFrame>::Integrate(
         reordered_trajectories.push_back(trajectory);
 
         // Fill the initial position/velocity/time.
+        // NOTE(phl): Using |const&| below doesn't work, even though 12.2/5
+        // seems to indicate that it should.  A bug in Visual Studio 2013?
         R3Element<Length> const position =
             (trajectory->last_position() - reference_position).coordinates();
         R3Element<Speed> const& velocity =
