@@ -39,9 +39,18 @@ class not_null {
   Pointer pointer_;
 };
 
+// Factories taking advantage of template argument deduction.
+
 template<typename Pointer>
 not_null<Pointer> check_not_null(Pointer const pointer) {
   return not_null<Pointer>(pointer);
+}
+
+// While the above would cover this case using the implicit conversion, this
+// results in a redundant |CHECK|.
+template<typename Pointer>
+not_null<Pointer> check_not_null(not_null<Pointer> const pointer) {
+  return pointer;
 }
 
 }  // namespace base
