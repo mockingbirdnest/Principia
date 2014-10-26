@@ -48,19 +48,13 @@ not_null<Pointer>::operator bool() const {
 }
 
 template<typename Pointer>
-std::ostream& operator<<(std::ostream& stream,
-                         not_null<Pointer> const& pointer) {
-  return stream << (Pointer)(pointer);
+not_null<Pointer> check_not_null(Pointer const& pointer) {
+  return not_null<Pointer>(pointer);
 }
 
 template<typename Pointer>
 not_null<Pointer> check_not_null(Pointer&& pointer) {
   return not_null<Pointer>(std::move(pointer));
-}
-
-template<typename Pointer>
-not_null<Pointer> check_not_null(Pointer const& pointer) {
-  return not_null<Pointer>(pointer);
 }
 
 template<typename Pointer>
@@ -70,7 +64,13 @@ not_null<Pointer> check_not_null(not_null<Pointer> const& pointer) {
 
 template<typename Pointer>
 not_null<Pointer> check_not_null(not_null<Pointer>&& pointer) {
-  return std::move(pointer)
+  return std::move(pointer);
+}
+
+template<typename Pointer>
+std::ostream& operator<<(std::ostream& stream,
+                         not_null<Pointer> const& pointer) {
+  return stream << (Pointer)(pointer);
 }
 
 }  // namespace base

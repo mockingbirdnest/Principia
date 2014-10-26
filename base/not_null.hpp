@@ -47,16 +47,12 @@ class not_null {
   Pointer pointer_;
 };
 
-template<typename Pointer>
-std::ostream& operator<<(std::ostream& stream,
-                         not_null<Pointer> const& pointer);
-
 // Factories taking advantage of template argument deduction.  They call the
 // corresponding constructors for |not_null<Pointer>|.
 template<typename Pointer>
-not_null<Pointer> check_not_null(Pointer&& pointer);  // NOLINT(build/c++11)
-template<typename Pointer>
 not_null<Pointer> check_not_null(Pointer const& pointer);
+template<typename Pointer>
+not_null<Pointer> check_not_null(Pointer&& pointer);  // NOLINT(build/c++11)
 
 // While the above would cover this case using the implicit conversion, this
 // results in a redundant |CHECK|.  These return the argument.
@@ -66,6 +62,11 @@ not_null<Pointer> check_not_null(not_null<Pointer> const& pointer);
 template<typename Pointer>
 not_null<Pointer> check_not_null(
     not_null<Pointer>&& pointer);  // NOLINT(build/c++11)
+
+// For logging.
+template<typename Pointer>
+std::ostream& operator<<(std::ostream& stream,
+                         not_null<Pointer> const& pointer);
 
 }  // namespace base
 }  // namespace principia
