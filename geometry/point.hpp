@@ -58,8 +58,8 @@ class Point {
   friend std::ostream& operator<<(std::ostream& out, Point<V> const& vector);
 
   template<typename V, typename Weight>
-  friend Point<V> Barycentre(std::vector<Point<V> const> const& points,
-                             std::vector<Weight const> const& weights);
+  friend Point<V> Barycentre(std::vector<Point<V>> const& points,
+                             std::vector<Weight> const& weights);
 };
 
 template<typename Vector>
@@ -86,8 +86,8 @@ template<typename Vector>
 std::ostream& operator<<(std::ostream& out, Point<Vector> const& vector);
 
 template<typename Vector, typename Weight>
-Point<Vector> Barycentre(std::vector<Point<Vector> const> const& points,
-                         std::vector<Weight const> const& weights);
+Point<Vector> Barycentre(std::vector<Point<Vector>> const& points,
+                         std::vector<Weight> const& weights);
 
 }  // namespace geometry
 }  // namespace principia
