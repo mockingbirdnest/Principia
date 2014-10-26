@@ -8,15 +8,21 @@ namespace base {
 template<typename Pointer>
 class not_null {
  public:
+  explicit not_null(Pointer pointer);
+
   not_null() = delete;
   not_null(not_null const&) = default;
-  not_null(not_null&&) = default;
+  // Moving the |pointer_| might make the argument an invalid
+  // |not_null<Pointer>| by making its |pointer_| null.  The standard says we
+  // must leave the argument in a leave the argument in some valid but otherwise
+  // indeterminate state.
+  // not_null(not_null&&) = delete;
+  not_null(not_null&&);
   ~not_null() = default;
 
   not_null& operator=(not_null const&) = default;
-  not_null& operator=(not_null&&) = default
-
-  explicit not_null(Pointer pointer);
+  // Implemented as a swap, so the argument remains valid.
+  not_null& operator=(not_null&&);
 
   // Returns |pointer_|.
   operator Pointer const() const;
@@ -34,7 +40,7 @@ class not_null {
 // Factories taking advantage of template argument deduction.
 
 template<typename Pointer>
-not_null<Pointer> check_not_null(Pointer const pointer);
+not_null<Pointer> check_not_null(Pointer pointer);
 // While the above would cover this case using the implicit conversion, this
 // results in a redundant |CHECK|.
 template<typename Pointer>
