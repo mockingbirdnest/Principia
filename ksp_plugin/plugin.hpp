@@ -221,7 +221,10 @@ class Plugin {
       Index const celestial_index) const;
 
   // Returns a polygon in |World| space depicting the trajectory of the vessel
-  // with the given |GUID| in |frame|.
+  // with the given |GUID| in |frame|.  |sun_world_position| is the current
+  // position of the sun in |World| space as returned by
+  // |Planetarium.fetch.Sun.position|.  It is used to define the relation
+  // between |WorldSun| and |World|.
   virtual RenderedTrajectory<World> RenderedVesselTrajectory(
       GUID const& vessel_guid,
       RenderingFrame const& frame,
