@@ -33,12 +33,18 @@ TEST_F(NotNullDeathTest, DeathByNullptr) {
   }, "Check failed: .* != nullptr");
 }
 
-TEST_F(NotNullDeathTest, Assignment) {;
+TEST_F(NotNullDeathTest, UniqueAssignment) {
   not_null<std::unique_ptr<int>> int_ptr1 =
       check_not_null(std::make_unique<int>(3));
   not_null<std::unique_ptr<int>> int_ptr2 = std::move(int_ptr1);
-  LOG(ERROR)<<int_ptr1;
 }
+
+TEST_F(NotNullDeathTest, Assignment) {
+  std::unique_ptr<int> int_ptr = std::make_unique<int>(3);
+  not_null<int*> int_ptr1 = check_not_null(int_ptr.get());
+  not_null<int*> int_ptr2 = int_ptr1;
+}
+
 
 }  // namespace base
 }  // namespace principia

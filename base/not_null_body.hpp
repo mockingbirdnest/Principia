@@ -10,40 +10,39 @@
 namespace principia {
 namespace base {
 
-template<typename Pointer>
-not_null<Pointer>::not_null(not_null<Pointer>&& other)
-    : pointer_(std::move(other.pointer_)) {
+  /*
+template<typename T>
+not_null<Pointer>::not_null(not_null&&) : pointer_(std::move(pointer)) {
   CHECK(pointer_ != nullptr);
 }
+*/
+template<typename T>
+not_null<T*>::not_null(T* pointer) : pointer_(CHECK_NOTNULL(pointer)) {};
 
-template<typename Pointer>
-not_null<Pointer>::not_null(Pointer pointer) : pointer_(std::move(pointer)) {
-  CHECK(pointer_ != nullptr);
-}
-
-template<typename Pointer>
-not_null<Pointer>& not_null<Pointer>::operator=(not_null&& other) {
+template<typename T>
+not_null<T*>& not_null<T*>::operator=(not_null&& other) {
   std::swap(pointer_, other.pointer_);
+  return *this;
 }
 
-template<typename Pointer>
-not_null<Pointer>::operator Pointer const() const {
+template<typename T>
+not_null<T*>::operator T* const() const {
   return pointer_;
 }
 
-template<typename Pointer>
-bool not_null<Pointer>::operator==(nullptr_t other) const {
+template<typename T>
+bool not_null<T*>::operator==(nullptr_t other) const {
   return false;
 }
 
-template<typename Pointer>
-not_null<Pointer>::operator bool() const {
+template<typename T>
+not_null<T*>::operator bool() const {
   return false;
 }
 
 template<typename Pointer>
 not_null<Pointer> check_not_null(Pointer pointer) {
-  return not_null<Pointer>(std::move(pointer));
+  return not_null<Pointer>(pointer);
 }
 
 template<typename Pointer>
