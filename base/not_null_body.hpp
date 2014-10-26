@@ -11,12 +11,6 @@ namespace principia {
 namespace base {
 
 template<typename Pointer>
-not_null<Pointer>::not_null(not_null&& other)
-  : pointer_(std::move(other.pointer_)) {
-  CHECK(pointer_ != nullptr);
-}
-
-template<typename Pointer>
 not_null<Pointer>::not_null(Pointer const& pointer) : pointer_(pointer) {
   CHECK(pointer != nullptr);
 };
@@ -25,6 +19,12 @@ template<typename Pointer>
 not_null<Pointer>::not_null(Pointer&& pointer) : pointer_(std::move(pointer)) {
   CHECK(pointer != nullptr);
 };
+
+template<typename Pointer>
+not_null<Pointer>::not_null(not_null&& other)
+  : pointer_(std::move(other.pointer_)) {
+  CHECK(pointer_ != nullptr);
+}
 
 template<typename Pointer>
 not_null<Pointer>& not_null<Pointer>::operator=(not_null&& other) {
@@ -44,7 +44,7 @@ bool not_null<Pointer>::operator==(nullptr_t other) const {
 
 template<typename Pointer>
 not_null<Pointer>::operator bool() const {
-  return false;
+  return true;
 }
 
 template<typename Pointer>
