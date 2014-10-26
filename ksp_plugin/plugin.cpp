@@ -24,7 +24,7 @@ Permutation<World, AliceWorld> const kWorldLookingGlass(
 Permutation<WorldSun, AliceSun> const kSunLookingGlass(
     Permutation<WorldSun, AliceSun>::CoordinatePermutation::XZY);
 
-} // namespace
+}  // namespace
 
 // The map between the vector spaces of |Barycentre| and |WorldSun| at
 // |current_time_|.
