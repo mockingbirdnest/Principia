@@ -90,8 +90,8 @@ std::ostream& operator<<(std::ostream& out, Point<Vector> const& point) {
 }
 
 template<typename Vector, typename Weight>
-Point<Vector> Barycentre(std::vector<Point<Vector>> const& points,
-                         std::vector<Weight> const& weights) {
+Point<Vector> Barycentre(std::vector<Point<Vector> const> const& points,
+                         std::vector<Weight const> const& weights) {
   CHECK_EQ(points.size(), weights.size());
   CHECK(!points.empty());
   // We need 'auto' here because we cannot easily write the type of the product
