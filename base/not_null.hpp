@@ -9,24 +9,26 @@ namespace principia {
 namespace base {
 
 template<typename Pointer>
-class not_null {};
-
-template<typename T>
-class not_null<T*> {
+class not_null {
  public:
-  explicit not_null(T* pointer);
+  explicit not_null(Pointer const& pointer);
+  explicit not_null(Pointer&& pointer);
 
   not_null() = delete;
   not_null(not_null const&) = default;
-  // Moving the |pointer_| might make the argument an invalid
-  // |not_null<Pointer>| by making its |pointer_| null.  The standard says we
-  // must leave the argument in a leave the argument in some valid but otherwise
-  // indeterminate state, so this just performs a copy.
-  // not_null(not_null&&);
+  // We really want a move constructor. Moving the |pointer_| might make the
+  // argument an invalid |not_null<Pointer>| by making its |pointer_| null.  The
+  // standard says we must leave the argument in a leave the argument in some
+  // valid but otherwise indeterminate state, so we infrige on that.  On the
+  // other hand, if you rely on the value after a move, you're asking for
+  // trouble.
+  // NOTE(egg): We would use |= default|, but VS2013 does not implement that for
+  // the move constructor;
+  not_null(not_null&&);
   ~not_null() = default;
 
-  // Returns |pointer_|.
-  operator T* const() const;
+  // Returns |pointer_|, by const reference to avoid issues with |unique_ptr|.
+  operator Pointer const&() const;
 
   not_null& operator=(not_null const&) = default;
   // Implemented as a swap, so the argument remains valid.
@@ -39,55 +41,25 @@ class not_null<T*> {
   operator bool() const;
 
  private:
-  T* pointer_;
+  Pointer pointer_;
 };
 
 template<typename Pointer>
-std::ostream& operator<<(std::ostream& stream, not_null<Pointer> pointer);
-
-template<typename T>
-class not_null<std::unique_ptr<T>> {
- public:
-  explicit not_null(T* pointer);
-
-  not_null() = delete;
-  not_null(not_null const&) = delete;
-  // For |unique_ptr|, a move constructor is really needed.  Moving the
-  // |pointer_| might make the argument an invalid |not_null<Pointer>| by making
-  // its |pointer_| null.  The standard says we must leave the argument in a
-  // leave the argument in some valid but otherwise indeterminate state, so we
-  // infrige on that.  On the other hand, if you rely on the value after a move,
-  // you're asking for trouble.
-  // NOTE(egg): We would use |= default|, but VS2013 does not implement that for
-  // the move constructor.
-  not_null(not_null&&);
-  ~not_null() = default;
-
-  // Returns |pointer_|.
-  operator T* const() const;
-
-  not_null& operator=(not_null const&) = delete;
-  // Implemented as a swap, so the argument remains valid.
-  not_null& operator=(not_null&& other);
-
-  // The following operators can be inlined and will be turned into constexprs
-  // eventually, so having them explicitly should improve optimization.
-  // They return |false|.
-  bool operator==(nullptr_t other) const;
-  operator bool() const;
-
- private:
-  std::unique_ptr<T> pointer_;
-};
+std::ostream& operator<<(std::ostream& stream,
+                         not_null<Pointer> const& pointer);
 
 // Factories taking advantage of template argument deduction.
 
 template<typename Pointer>
-not_null<Pointer> check_not_null(Pointer pointer);
+not_null<Pointer> check_not_null(Pointer&& pointer);
+template<typename Pointer>
+not_null<Pointer> check_not_null(Pointer const& pointer);
 // While the above would cover this case using the implicit conversion, this
 // results in a redundant |CHECK|.
 template<typename Pointer>
-not_null<Pointer> check_not_null(not_null<Pointer> const pointer);
+not_null<Pointer> check_not_null(not_null<Pointer> const& pointer);
+template<typename Pointer>
+not_null<Pointer> check_not_null(not_null<Pointer>&& pointer);
 
 }  // namespace base
 }  // namespace principia
