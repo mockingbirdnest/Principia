@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2013
-VisualStudioVersion = 12.0.30501.0
+VisualStudioVersion = 12.0.21005.1
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "quantities", "quantities\quantities.vcxproj", "{273987F9-5E73-43E6-868E-E9D3C137F01A}"
 EndProject
@@ -46,6 +46,8 @@ EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ksp_plugin", "ksp_plugin\ksp_plugin.vcxproj", "{A3F94607-2666-408F-AF98-0E47D61C98BB}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ksp_plugin_test", "ksp_plugin_test\ksp_plugin_test.vcxproj", "{A942ADF0-62F4-435C-85B2-934D5B666DB8}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "base", "base\base.vcxproj", "{7E7CC89A-FC65-409C-A975-9C3A6A50786B}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -195,6 +197,21 @@ Global
 		{A942ADF0-62F4-435C-85B2-934D5B666DB8}.Release|Mixed Platforms.Build.0 = Release|Win32
 		{A942ADF0-62F4-435C-85B2-934D5B666DB8}.Release|Win32.ActiveCfg = Release|Win32
 		{A942ADF0-62F4-435C-85B2-934D5B666DB8}.Release|Win32.Build.0 = Release|Win32
+		{7E7CC89A-FC65-409C-A975-9C3A6A50786B}.Debug|Any CPU.ActiveCfg = Debug|Win32
+		{7E7CC89A-FC65-409C-A975-9C3A6A50786B}.Debug|Mixed Platforms.ActiveCfg = Debug|Win32
+		{7E7CC89A-FC65-409C-A975-9C3A6A50786B}.Debug|Mixed Platforms.Build.0 = Debug|Win32
+		{7E7CC89A-FC65-409C-A975-9C3A6A50786B}.Debug|Win32.ActiveCfg = Debug|Win32
+		{7E7CC89A-FC65-409C-A975-9C3A6A50786B}.Debug|Win32.Build.0 = Debug|Win32
+		{7E7CC89A-FC65-409C-A975-9C3A6A50786B}.Release_LLVM|Any CPU.ActiveCfg = Release|Win32
+		{7E7CC89A-FC65-409C-A975-9C3A6A50786B}.Release_LLVM|Mixed Platforms.ActiveCfg = Release_LLVM|Win32
+		{7E7CC89A-FC65-409C-A975-9C3A6A50786B}.Release_LLVM|Mixed Platforms.Build.0 = Release_LLVM|Win32
+		{7E7CC89A-FC65-409C-A975-9C3A6A50786B}.Release_LLVM|Win32.ActiveCfg = Release|Win32
+		{7E7CC89A-FC65-409C-A975-9C3A6A50786B}.Release_LLVM|Win32.Build.0 = Release|Win32
+		{7E7CC89A-FC65-409C-A975-9C3A6A50786B}.Release|Any CPU.ActiveCfg = Release|Win32
+		{7E7CC89A-FC65-409C-A975-9C3A6A50786B}.Release|Mixed Platforms.ActiveCfg = Release|Win32
+		{7E7CC89A-FC65-409C-A975-9C3A6A50786B}.Release|Mixed Platforms.Build.0 = Release|Win32
+		{7E7CC89A-FC65-409C-A975-9C3A6A50786B}.Release|Win32.ActiveCfg = Release|Win32
+		{7E7CC89A-FC65-409C-A975-9C3A6A50786B}.Release|Win32.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
