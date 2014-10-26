@@ -8,6 +8,21 @@ using principia::si::Metre;
 namespace principia {
 namespace ksp_plugin {
 
+namespace {
+
+// Takes ownership of |**pointer| and returns it to the caller.  Nulls
+// |*pointer|.  |pointer| must not be null.  No transfer of ownership of
+// |*pointer|.
+template<typename T>
+std::unique_ptr<T> TakeOwnership(T** const pointer) {
+  CHECK_NOTNULL(pointer);
+  std::unique_ptr<T const> owned_pointer(*pointer);
+  *pointer = nullptr;
+  return owned_pointer;
+}
+
+}  // namespace
+
 void InitGoogleLogging() {
 #ifdef _MSC_VER
   FILE* file;
@@ -48,19 +63,22 @@ Plugin* NewPlugin(double const initial_time,
                   double const sun_gravitational_parameter,
                   double const planetarium_rotation_in_degrees) {
   LOG(INFO) << "Constructing Principia plugin";
-  return new Plugin(
+  std::unique_ptr<Plugin> result = std::make_unique<Plugin>(
       Instant(initial_time * Second),
       sun_index,
       sun_gravitational_parameter * SIUnit<GravitationalParameter>(),
       planetarium_rotation_in_degrees * Degree);
   LOG(INFO) << "Plugin constructed";
+  return result.release();
 }
 
 void DeletePlugin(Plugin const** const plugin) {
   LOG(INFO) << "Destroying Principia plugin";
-  CHECK_NOTNULL(plugin);
-  delete *plugin;
-  *plugin = nullptr;
+  // We want to log before and after destroying the plugin since it is a pretty
+  // significant event, so we take ownership inside a block.
+  {
+    TakeOwnership(plugin);
+  }
   LOG(INFO) << "Plugin destroyed";
 }
 
@@ -96,10 +114,10 @@ void EndInitialization(Plugin* const plugin) {
   CHECK_NOTNULL(plugin)->EndInitialization();
 }
 
-void InsertOrKeepVessel(Plugin* const plugin,
+bool InsertOrKeepVessel(Plugin* const plugin,
                         char const* vessel_guid,
                         int const parent_index) {
-  CHECK_NOTNULL(plugin)->InsertOrKeepVessel(vessel_guid, parent_index);
+  return CHECK_NOTNULL(plugin)->InsertOrKeepVessel(vessel_guid, parent_index);
 }
 
 void SetVesselStateOffset(Plugin* const plugin,
@@ -157,6 +175,59 @@ XYZ CelestialParentRelativeVelocity(Plugin const* const plugin,
   return {result.x / (Metre / Second),
           result.y / (Metre / Second),
           result.z / (Metre / Second)};
+}
+
+BodyCentredNonRotatingFrame const* NewBodyCentredNonRotatingFrame(
+    Plugin const* const plugin,
+    int const reference_body_index) {
+  return CHECK_NOTNULL(plugin)->
+      NewBodyCentredNonRotatingFrame(reference_body_index).release();
+}
+
+void DeleteBodyCentredNonRotatingFrame(
+    BodyCentredNonRotatingFrame const** const frame) {
+  TakeOwnership(frame);
+}
+
+LineAndIterator* RenderedVesselTrajectory(Plugin const* const plugin,
+                                          char const* vessel_guid,
+                                          RenderingFrame const* frame,
+                                          XYZ const sun_world_position) {
+  RenderedTrajectory<World> rendered_trajectory = CHECK_NOTNULL(plugin)->
+      RenderedVesselTrajectory(
+          vessel_guid,
+          *frame,
+          kWorldOrigin + Displacement<World>({sun_world_position.x * Metre,
+                                              sun_world_position.y * Metre,
+                                              sun_world_position.z * Metre}));
+  std::unique_ptr<LineAndIterator> result =
+      std::make_unique<LineAndIterator>(std::move(rendered_trajectory));
+  result->it = result->rendered_trajectory.begin();
+  return result.release();
+}
+
+int NumberOfSegments(LineAndIterator const* line_and_iterator) {
+  return CHECK_NOTNULL(line_and_iterator)->rendered_trajectory.size();
+}
+
+XYZSegment FetchAndIncrement(LineAndIterator* const line_and_iterator) {
+  CHECK_NOTNULL(line_and_iterator);
+  CHECK(line_and_iterator->it != line_and_iterator->rendered_trajectory.end());
+  LineSegment<World> const result = *line_and_iterator->it;
+  ++line_and_iterator->it;
+  R3Element<Length> const begin = (result.begin - kWorldOrigin).coordinates();
+  R3Element<Length> const end = (result.end - kWorldOrigin).coordinates();
+  return {XYZ{begin.x / Metre, begin.y / Metre, begin.z / Metre},
+          XYZ{end.x / Metre, end.y / Metre, end.z / Metre}};
+}
+
+bool AtEnd(LineAndIterator* const line_and_iterator) {
+  CHECK_NOTNULL(line_and_iterator);
+  return line_and_iterator->it == line_and_iterator->rendered_trajectory.end();
+}
+
+void DeleteLineAndIterator(LineAndIterator const** const line_and_iterator) {
+  TakeOwnership(line_and_iterator);
 }
 
 char const* SayHello() {

@@ -1,21 +1,38 @@
 ﻿#include "ksp_plugin/plugin.hpp"
 
+#include <algorithm>
 #include <cmath>
 #include <string>
 
 #include "geometry/permutation.hpp"
+#include "geometry/affine_map.hpp"
 
 namespace principia {
 namespace ksp_plugin {
 
+using geometry::AffineMap;
 using geometry::Bivector;
 using geometry::Permutation;
 
+namespace {
+
+// The map between the vector spaces of |World| and |AliceWorld|.
 Permutation<World, AliceWorld> const kWorldLookingGlass(
     Permutation<World, AliceWorld>::CoordinatePermutation::XZY);
 
+// The map between the vector spaces of |WorldSun| and |AliceSun|.
 Permutation<WorldSun, AliceSun> const kSunLookingGlass(
     Permutation<WorldSun, AliceSun>::CoordinatePermutation::XZY);
+
+}  // namespace
+
+// The map between the vector spaces of |Barycentre| and |WorldSun| at
+// |current_time_|.
+Rotation<Barycentre, WorldSun> Plugin::PlanetariumRotation() const {
+  return Rotation<Barycentre, WorldSun>(
+      planetarium_rotation_,
+      Bivector<double, Barycentre>({0, 1, 0}));
+}
 
 void Plugin::CheckVesselInvariants(
     Vessel<Barycentre> const& vessel,
@@ -152,12 +169,6 @@ void Plugin::EvolveProlongationsAndUnsynchronizedHistories(Instant const& t) {
 
 Instant const& Plugin::HistoryTime() const {
   return sun_->history().last_time();
-}
-
-Rotation<Barycentre, WorldSun> Plugin::PlanetariumRotation() const {
-  return Rotation<Barycentre, WorldSun>(
-      planetarium_rotation_,
-      Bivector<double, Barycentre>({0, 1, 0}));
 }
 
 Plugin::Plugin(Instant const& initial_time,
@@ -369,6 +380,52 @@ Velocity<AliceSun> Plugin::CelestialParentRelativeVelocity(
           << " moves at parent velocity + " << barycentric_result
           << " Barycentre (" << result << " AliceSun)";
   return result;
+}
+
+RenderedTrajectory<World> Plugin::RenderedVesselTrajectory(
+    GUID const& vessel_guid,
+    RenderingFrame const& frame,
+    Position<World> const& sun_world_position) const {
+  CHECK(!initializing);
+  auto const to_world =
+      AffineMap<Barycentre, World, Length, Rotation>(
+          sun_->prolongation().last_position(),
+          sun_world_position,
+          Rotation<WorldSun, World>::Identity() * PlanetariumRotation());
+  auto const it = vessels_.find(vessel_guid);
+  CHECK(it != vessels_.end());
+  Vessel<Barycentre> const& vessel = *(it->second);
+  CHECK(vessel.has_history());
+  VLOG(1) << "Rendering a trajectory for the vessel with GUID " << vessel_guid;
+  RenderedTrajectory<World> result;
+  if (!vessel.has_prolongation()) {
+    // TODO(egg): We render neither unsynchronized histories nor prolongations
+    // at the moment.
+    VLOG(1) << "Returning an empty trajectory";
+    return result;
+  }
+  DegreesOfFreedom<Barycentre> const* initial_state = nullptr;
+  DegreesOfFreedom<Barycentre> const* final_state = nullptr;
+  std::unique_ptr<Trajectory<Barycentre>> const apparent_trajectory =
+      frame.ApparentTrajectory(vessel.history());
+  for (auto const& pair : apparent_trajectory->timeline()) {
+    final_state = &pair.second;
+    if (initial_state != nullptr) {
+      result.emplace_back(to_world(initial_state->position),
+                          to_world(final_state->position));
+    }
+    std::swap(final_state, initial_state);
+  }
+  VLOG(1) << "Returning a " << result.size() << "-segment trajectory";
+  return result;
+}
+
+std::unique_ptr<BodyCentredNonRotatingFrame>
+Plugin::NewBodyCentredNonRotatingFrame(Index const reference_body_index) const {
+  auto const it = celestials_.find(reference_body_index);
+  CHECK(it != celestials_.end());
+  Celestial<Barycentre> const& reference_body = *it->second;
+  return std::make_unique<BodyCentredNonRotatingFrame>(reference_body);
 }
 
 }  // namespace ksp_plugin

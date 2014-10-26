@@ -99,7 +99,7 @@
       <UseUnicodeForAssemblerListing>false</UseUnicodeForAssemblerListing>
     </ClCompile>
     <Link>
-      <GenerateDebugInformation>false</GenerateDebugInformation>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <ImportLibrary>$(OutDir)\..\..\$(TargetName).lib</ImportLibrary>
@@ -129,6 +129,7 @@
     <ClInclude Include="monostable.hpp" />
     <ClInclude Include="plugin.hpp" />
     <ClInclude Include="interface.hpp" />
+    <ClInclude Include="rendering_frame.hpp" />
     <ClInclude Include="vessel.hpp" />
     <ClInclude Include="vessel_body.hpp" />
   </ItemGroup>
@@ -136,6 +137,7 @@
     <ClCompile Include="interface.cpp" />
     <ClCompile Include="monostable.cpp" />
     <ClCompile Include="plugin.cpp" />
+    <ClCompile Include="rendering_frame.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

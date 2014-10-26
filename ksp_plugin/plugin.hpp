@@ -1,9 +1,11 @@
 ﻿#pragma once
 
+#include <array>
 #include <map>
 #include <memory>
 #include <set>
 #include <string>
+#include <vector>
 
 #include "geometry/named_quantities.hpp"
 #include "geometry/point.hpp"
@@ -11,6 +13,7 @@
 #include "ksp_plugin/celestial.hpp"
 #include "ksp_plugin/monostable.hpp"
 #include "ksp_plugin/vessel.hpp"
+#include "ksp_plugin/rendering_frame.hpp"
 #include "physics/body.hpp"
 #include "physics/n_body_system.hpp"
 #include "physics/trajectory.hpp"
@@ -23,6 +26,7 @@ namespace ksp_plugin {
 
 using geometry::Displacement;
 using geometry::Instant;
+using geometry::Point;
 using geometry::Rotation;
 using integrators::SPRKIntegrator;
 using physics::Body;
@@ -41,6 +45,9 @@ Instant const kUniversalTimeEpoch;
 // nonrotating.
 // The basis is that of Unity's "world space" (this is a left-handed basis).
 struct World;
+
+// The ineffable origin of Unity's "world space".
+Position<World> const kWorldOrigin;
 
 // Same as |World| but with the y and z axes switched through the looking-glass:
 // it is a right-handed basis. "We're all mad here. I'm mad. You're mad."
@@ -73,6 +80,23 @@ using GUID = std::string;
 // The index of a body in |FlightGlobals.Bodies|, obtained by
 // |b.flightGlobalsIndex| in C#. We use this as a key in an |std::map|.
 using Index = int;
+
+// Represents the line segment {(1-s) |begin| + s |end| | s ∈ [0, 1]}.
+// It is immediate that for every ∀ s ∈ [0, 1], (1-s) |begin| + s |end| is a
+// convex combination of |begin| and |end|, so that this is well-defined for
+// |begin| and |end| in an affine space.
+template<typename Frame>
+struct LineSegment {
+  LineSegment(Position<Frame> const& begin, Position<Frame> const& end)
+      : begin(begin),
+        end(end) {}
+  Position<Frame> const begin;
+  Position<Frame> const end;
+};
+
+// We render trajectories as polygons.
+template<typename Frame>
+using RenderedTrajectory = std::vector<LineSegment<Frame>>;
 
 class Plugin {
  public:
@@ -195,6 +219,19 @@ class Plugin {
   // must not be the sun. Must be called after initialization.
   virtual Velocity<AliceSun> CelestialParentRelativeVelocity(
       Index const celestial_index) const;
+
+  // Returns a polygon in |World| space depicting the trajectory of the vessel
+  // with the given |GUID| in |frame|.  |sun_world_position| is the current
+  // position of the sun in |World| space as returned by
+  // |Planetarium.fetch.Sun.position|.  It is used to define the relation
+  // between |WorldSun| and |World|.
+  virtual RenderedTrajectory<World> RenderedVesselTrajectory(
+      GUID const& vessel_guid,
+      RenderingFrame const& frame,
+      Position<World> const& sun_world_position) const;
+
+  virtual std::unique_ptr<BodyCentredNonRotatingFrame>
+  NewBodyCentredNonRotatingFrame(Index const reference_body_index) const;
 
  private:
   using GUIDToOwnedVessel = std::map<GUID, std::unique_ptr<Vessel<Barycentre>>>;
