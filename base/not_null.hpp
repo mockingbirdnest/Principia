@@ -22,7 +22,7 @@ class not_null<T*> {
   // |not_null<Pointer>| by making its |pointer_| null.  The standard says we
   // must leave the argument in a leave the argument in some valid but otherwise
   // indeterminate state, so this just performs a copy.
-  //not_null(not_null&&);
+  // not_null(not_null&&);
   ~not_null() = default;
 
   // Returns |pointer_|.
@@ -41,6 +41,9 @@ class not_null<T*> {
  private:
   T* pointer_;
 };
+
+template<typename Pointer>
+std::ostream& operator<<(std::ostream& stream, not_null<Pointer> pointer);
 
 template<typename T>
 class not_null<std::unique_ptr<T>> {

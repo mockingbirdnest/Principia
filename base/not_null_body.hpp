@@ -41,6 +41,11 @@ not_null<T*>::operator bool() const {
 }
 
 template<typename Pointer>
+std::ostream& operator<<(std::ostream& stream, not_null<Pointer> pointer) {
+  return stream << (Pointer)(pointer);
+}
+
+template<typename Pointer>
 not_null<Pointer> check_not_null(Pointer pointer) {
   return not_null<Pointer>(pointer);
 }
