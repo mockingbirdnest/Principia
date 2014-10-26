@@ -167,8 +167,10 @@ TEST_F(PermutationTest, Compose) {
       Perm13 const p13 = p23 * p12;
       Orth13 const o13 = o23 * o12;
       for (Length l = 1 * Metre; l < 4 * Metre; l += 1 * Metre) {
-        vector_.coordinates().x = l;
-        EXPECT_THAT(p13(vector_), AlmostEquals(o13(vector_), 20));
+        Vector<quantities::Length, World1> modified_vector(
+            {l, vector_.coordinates().y, vector_.coordinates().z});
+        EXPECT_THAT(p13(modified_vector),
+                    AlmostEquals(o13(modified_vector), 12));
       }
     }
   }
