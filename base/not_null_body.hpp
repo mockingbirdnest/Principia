@@ -38,7 +38,12 @@ not_null<Pointer>::operator Pointer const&() const {
 }
 
 template<typename Pointer>
-bool not_null<Pointer>::operator==(nullptr_t other) const {
+decltype(*Pointer{}) not_null<Pointer>::operator*() const {
+  return *pointer_;
+}
+
+template<typename Pointer>
+bool not_null<Pointer>::operator==(nullptr_t const other) const {
   return false;
 }
 

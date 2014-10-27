@@ -32,14 +32,19 @@ class not_null {
   // Implemented as a swap, so the argument remains valid.
   not_null& operator=(not_null&& other);  // NOLINT(build/c++11)
 
-  // Returns |pointer_|, by const reference to avoid issues with |unique_ptr|.
+  // Returns |pointer_|, by const reference to avoid a copy if |Pointer| is
+  // |unique_ptr|.
   operator Pointer const&() const;
+  // Returns |*pointer|.  Dereferencing does not work for |unique_ptr| through
+  // the above implicit conversion.
+  decltype(*Pointer{}) operator*() const;
 
-  // The following operators can be inlined and will be turned into constexprs
-  // eventually, so having them explicitly should improve optimization.
+  // The following operators are redundant for valid |not_null<Pointer>|s with
+  // the implicit conversion to |Pointer|, but they should allow some
+  // compile-time optimization.
 
   // Returns |false|.
-  bool operator==(nullptr_t other) const;
+  bool operator==(nullptr_t const other) const;
   // Returns |true|.
   operator bool() const;
 
@@ -49,16 +54,25 @@ class not_null {
 
 // Factories taking advantage of template argument deduction.  They call the
 // corresponding constructors for |not_null<Pointer>|.
+
+// Returns a |not_null<Pointer>| to |*pointer|.  |CHECK|s that |pointer| is not
+// null.
 template<typename Pointer>
 not_null<Pointer> check_not_null(Pointer const& pointer);
+// Returns a |not_null<Pointer>| to |*pointer|.  |pointer| may be invalid after
+// the call, as described above.  |CHECK|s that |pointer| is not null.
 template<typename Pointer>
 not_null<Pointer> check_not_null(Pointer&& pointer);  // NOLINT(build/c++11)
 
-// While the above would cover this case using the implicit conversion, this
-// results in a redundant |CHECK|.  These return the argument.
+// While the above factories would cover this case using the implicit
+// conversion, this results in a redundant |CHECK|.  These functions return
+// their argument.
+
+// Returns a copy of |pointer|.
 template<typename Pointer>
 not_null<Pointer> check_not_null(not_null<Pointer> const& pointer);
-// Returns |pointer| by moving it, which may invalidate it as described above.
+// Equivalent to |std::move(pointer)|.  |pointer| may be invalid after the call,
+// as described above.
 template<typename Pointer>
 not_null<Pointer> check_not_null(
     not_null<Pointer>&& pointer);  // NOLINT(build/c++11)
