@@ -18,6 +18,11 @@ class not_null {
 
   not_null() = delete;
   not_null(not_null const&) = default;
+  template<typename OtherPointer,
+           typename = typename std::enable_if<
+               std::is_convertible<OtherPointer, Pointer>::value>::type>
+  not_null(not_null<OtherPointer> const& other);
+
   // We really want a move constructor. Moving the |pointer_| might make the
   // argument an invalid |not_null<Pointer>| by making its |pointer_| null.  The
   // standard says we must leave the argument in some  valid but otherwise
@@ -26,11 +31,24 @@ class not_null {
   // NOTE(egg): We would use |= default|, but VS2013 does not implement that for
   // the move constructor;
   not_null(not_null&&);  // NOLINT(build/c++11)
+  template<typename OtherPointer,
+           typename = typename std::enable_if<
+               std::is_convertible<OtherPointer, Pointer>::value>::type>
+  not_null(not_null<OtherPointer>&& other);
   ~not_null() = default;
 
   not_null& operator=(not_null const&) = default;
+  template<typename OtherPointer,
+           typename = typename std::enable_if<
+               std::is_convertible<OtherPointer, Pointer>::value>::type>
+  not_null& operator=(not_null<OtherPointer> const& other);
   // Implemented as a swap, so the argument remains valid.
   not_null& operator=(not_null&& other);  // NOLINT(build/c++11)
+  // This operator may invalidate its argument.
+  template<typename OtherPointer,
+           typename = typename std::enable_if<
+               std::is_convertible<OtherPointer, Pointer>::value>::type>
+  not_null& operator=(not_null<OtherPointer>&& other);
 
   // Returns |pointer_|, by const reference to avoid a copy if |Pointer| is
   // |unique_ptr|.
@@ -50,6 +68,31 @@ class not_null {
 
  private:
   Pointer pointer_;
+
+  template<typename OtherPointer>
+  friend class not_null;
+};
+
+// Use |not_null<Pointer> const| instead.
+template<typename Pointer>
+class not_null<Pointer const>;
+
+// Use |not_null<Pointer>| instead.
+template<typename Pointer>
+class not_null<not_null<Pointer>>;
+
+// Use |not_null<Pointer>| instead.
+template<typename Pointer>
+class not_null<not_null<Pointer>&>;
+
+template<typename T>
+struct remove_not_null {
+  using type = T;
+};
+
+template<typename T>
+struct remove_not_null<not_null<T>> {
+  using type = T;
 };
 
 // Factories taking advantage of template argument deduction.  They call the
@@ -58,11 +101,13 @@ class not_null {
 // Returns a |not_null<Pointer>| to |*pointer|.  |CHECK|s that |pointer| is not
 // null.
 template<typename Pointer>
-not_null<Pointer> check_not_null(Pointer const& pointer);
+not_null<typename remove_not_null<std::remove_reference<Pointer>::type>::type>
+check_not_null(Pointer const& pointer);
 // Returns a |not_null<Pointer>| to |*pointer|.  |pointer| may be invalid after
 // the call, as described above.  |CHECK|s that |pointer| is not null.
 template<typename Pointer>
-not_null<Pointer> check_not_null(Pointer&& pointer);  // NOLINT(build/c++11)
+not_null<typename remove_not_null<std::remove_reference<Pointer>::type>::type>
+check_not_null(Pointer&& pointer);  // NOLINT(build/c++11)
 
 // While the above factories would cover this case using the implicit
 // conversion, this results in a redundant |CHECK|.  These functions return

@@ -38,7 +38,7 @@ TEST_F(NotNullDeathTest, DeathByNullptr) {
 
 }
 
-TEST_F(NotNullDeathTest, Move) {
+TEST_F(NotNullTest, Move) {
   not_null<std::unique_ptr<int>> int_ptr1 =
       check_not_null(std::make_unique<int>(3));
   EXPECT_THAT(*(std::unique_ptr<int> const&)int_ptr1, Eq(3));
@@ -55,12 +55,15 @@ TEST_F(NotNullDeathTest, Move) {
   EXPECT_THAT(*int_ptr3, Eq(5));
 }
 
-TEST_F(NotNullDeathTest, Copy) {
-  std::unique_ptr<int> owner_of_three = std::make_unique<int>(3);
-  std::unique_ptr<int> owner_of_five = std::make_unique<int>(5);
-  not_null<int*> int_ptr1 = check_not_null(owner_of_three.get());
+TEST_F(NotNullTest, Copy) {
+  std::unique_ptr<int> const owner_of_three = std::make_unique<int>(3);
+  std::unique_ptr<int> const owner_of_five = std::make_unique<int>(5);
+  not_null<int*> const int_ptr1 = check_not_null(owner_of_three.get());
   not_null<int*> int_ptr2 = int_ptr1;
-  not_null<int*> int_ptr3(int_ptr2);
+  not_null<int*> const int_ptr3(int_ptr2);
+  EXPECT_THAT(int_ptr1, Eq(owner_of_three.get()));
+  EXPECT_THAT(int_ptr2, Eq(owner_of_three.get()));
+  EXPECT_THAT(int_ptr3, Eq(owner_of_three.get()));
   EXPECT_THAT(*int_ptr1, Eq(3));
   EXPECT_THAT(*int_ptr2, Eq(3));
   EXPECT_THAT(*int_ptr3, Eq(3));
@@ -71,6 +74,16 @@ TEST_F(NotNullDeathTest, Copy) {
   EXPECT_THAT(*int_ptr3, Eq(3));
 }
 
+TEST_F(NotNullTest, CheckNotNull) {
+  std::unique_ptr<int> const owner_of_three = std::make_unique<int>(3);
+  int* const constant_access_int = owner_of_three.get();
+  int const* const constant_access_constant_int = owner_of_three.get();
+  not_null<int*> not_null_access_int = check_not_null(constant_access_int);
+  not_null<int const*> not_null_access_constant_int =
+      check_not_null(constant_access_constant_int);
+  not_null_access_constant_int = check_not_null(not_null_access_int);
+
+}
 
 }  // namespace base
 }  // namespace principia
