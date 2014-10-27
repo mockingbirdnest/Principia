@@ -85,22 +85,11 @@ class not_null<not_null<Pointer>>;
 template<typename Pointer>
 class not_null<not_null<Pointer>&>;
 
-// Type traits.
-
+// Type trait.
 template<typename Pointer>
 struct is_not_null : std::false_type {};
 template<typename Pointer>
 struct is_not_null<not_null<Pointer>> : std::true_type {};
-
-template<typename T>
-struct remove_not_null {
-  using type = T;
-};
-
-template<typename T>
-struct remove_not_null<not_null<T>> {
-  using type = T;
-};
 
 // Factories taking advantage of template argument deduction.  They call the
 // corresponding constructors for |not_null<Pointer>|.
@@ -109,19 +98,15 @@ struct remove_not_null<not_null<T>> {
 // null.
 template<typename Pointer,
          typename = typename std::enable_if<!is_not_null<
-             typename remove_not_null<typename std::remove_reference<
-                 Pointer>::type>::type>::value>::type>
-not_null<typename remove_not_null<
-    typename std::remove_reference<Pointer>::type>::type>
+             typename std::remove_reference<Pointer>::type>::value>::type>
+not_null<typename std::remove_reference<Pointer>::type>
 check_not_null(Pointer const& pointer);
 // Returns a |not_null<Pointer>| to |*pointer|.  |pointer| may be invalid after
 // the call, as described above.  |CHECK|s that |pointer| is not null.
 template<typename Pointer,
          typename = typename std::enable_if<!is_not_null<
-             typename remove_not_null<typename std::remove_reference<
-                 Pointer>::type>::type>::value>::type>
-not_null<typename remove_not_null<
-    typename std::remove_reference<Pointer>::type>::type>
+             typename std::remove_reference<Pointer>::type>::value>::type>
+not_null<typename std::remove_reference<Pointer>::type>
 check_not_null(Pointer&& pointer);  // NOLINT(build/c++11)
 
 // While the above factories would cover this case using the implicit

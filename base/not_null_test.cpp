@@ -75,13 +75,14 @@ TEST_F(NotNullTest, Copy) {
 }
 
 TEST_F(NotNullTest, CheckNotNull) {
-  std::unique_ptr<int> const owner_of_three = std::make_unique<int>(3);
-  int* const constant_access_int = owner_of_three.get();
-  int const* const constant_access_constant_int = owner_of_three.get();
-  not_null<int*> not_null_access_int = check_not_null(constant_access_int);
-  not_null<int const*> not_null_access_constant_int =
-      check_not_null(constant_access_constant_int);
-  not_null_access_constant_int = check_not_null(not_null_access_int);
+  std::unique_ptr<int> owner_int = std::make_unique<int>(3);
+  int* const constant_access_int = owner_int.get();
+  not_null<int*> const constant_not_null_access_int =
+      check_not_null(constant_access_int);
+  check_not_null(constant_not_null_access_int);
+  not_null<std::unique_ptr<int>> not_null_owner_int =
+      check_not_null(std::move(owner_int));
+  check_not_null(std::move(not_null_owner_int));
 }
 
 }  // namespace base
