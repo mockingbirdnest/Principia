@@ -77,10 +77,7 @@ class not_null {
   decltype(*Pointer{}) operator*() const;
   decltype(&*Pointer{}) const operator->() const;
 
-  // TODO(egg): widen to types |Pointers| with a |get()| method, not just
-  // |std::unique_ptr|.
-  template<typename = typename std::enable_if<
-               is_unique_ptr<Pointer>::value>::type>
+  template<typename = decltype(Pointer{}.get())>
   not_null<decltype(Pointer{}.get())> const get() const;
 
   // The following operators are redundant for valid |not_null<Pointer>|s with
