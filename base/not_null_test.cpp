@@ -40,14 +40,13 @@ TEST_F(NotNullDeathTest, DeathByNullptr) {
 }
 
 TEST_F(NotNullTest, Move) {
-  not_null<std::unique_ptr<int>> int_ptr1 =
-      check_not_null(std::make_unique<int>(3));
+  not_null<std::unique_ptr<int>> int_ptr1 = make_not_null_unique<int>(3);
   EXPECT_THAT(*(std::unique_ptr<int> const&)int_ptr1, Eq(3));
   not_null<std::unique_ptr<int>> int_ptr2 = std::move(int_ptr1);
   EXPECT_THAT(*int_ptr2, Eq(3));
   not_null<std::unique_ptr<int>> int_ptr3(std::move(int_ptr2));
   EXPECT_THAT(*int_ptr3, Eq(3));
-  int_ptr2 = check_not_null(std::make_unique<int>(5));
+  int_ptr2 = make_not_null_unique<int>(5);
   EXPECT_THAT(*int_ptr2, Eq(5));
   int_ptr2 = std::move(int_ptr3);
   EXPECT_THAT(*int_ptr2, Eq(3));
@@ -87,8 +86,7 @@ TEST_F(NotNullTest, CheckNotNull) {
 }
 
 TEST_F(NotNullTest, Booleans) {
-  not_null<std::unique_ptr<int>> const pointer =
-      check_not_null(std::make_unique<int>(3));
+  not_null<std::unique_ptr<int>> const pointer = make_not_null_unique<int>(3);
   EXPECT_TRUE(pointer);
   EXPECT_TRUE(pointer != nullptr);
   EXPECT_FALSE(pointer == nullptr);
@@ -96,7 +94,7 @@ TEST_F(NotNullTest, Booleans) {
 
 TEST_F(NotNullTest, ImplicitConversions) {
   not_null<std::unique_ptr<int>> not_null_owner_int =
-      check_not_null(std::make_unique<int>(3));
+      make_not_null_unique<int>(3);
   not_null<int const*> const constant_not_null_access_int =
       not_null_owner_int.get();
   // Copy constructor.
@@ -106,14 +104,14 @@ TEST_F(NotNullTest, ImplicitConversions) {
   not_null_access_constant_int = not_null_owner_int.get();
   // Move constructor.
   not_null<std::unique_ptr<int const>> not_null_owner_constant_int =
-      check_not_null(std::make_unique<int>(5));
+      make_not_null_unique<int>(5);
   // Move assigment.
   not_null_owner_constant_int = std::move(not_null_owner_int);
 }
 
 TEST_F(NotNullTest, Arrow) {
   not_null<std::unique_ptr<std::string>> not_null_owner_string =
-      check_not_null(std::make_unique<std::string>("-"));
+      make_not_null_unique<std::string>("-");
   not_null_owner_string->append(">");
   EXPECT_THAT(*not_null_owner_string, Eq("->"));
   not_null<std::string*> not_null_access_string = not_null_owner_string.get();

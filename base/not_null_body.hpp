@@ -123,6 +123,11 @@ not_null<Pointer> check_not_null(
   return std::move(pointer);
 }
 
+template<typename T, typename... Args>
+not_null<std::unique_ptr<T>> make_not_null_unique(Args&&... args) {
+  return check_not_null(std::make_unique<T>(std::forward(args)));
+}
+
 template<typename Pointer>
 std::ostream& operator<<(std::ostream& stream,
                          not_null<Pointer> const& pointer) {

@@ -137,6 +137,12 @@ template<typename Pointer>
 not_null<Pointer> check_not_null(
     not_null<Pointer>&& pointer);  // NOLINT(build/c++11)
 
+// Factory for a |not_null<std::unique_ptr<T>>|, forwards the arguments to the
+// constructor of T.  Equivalent to |check_not_null(make_unique<T>(args))|.
+// TODO(egg): remove the redundant |CHECK|.
+template<typename T, typename... Args>
+not_null<std::unique_ptr<T>> make_not_null_unique(Args&&... args);
+
 // For logging.
 template<typename Pointer>
 std::ostream& operator<<(std::ostream& stream,
