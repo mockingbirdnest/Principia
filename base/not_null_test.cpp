@@ -94,9 +94,13 @@ TEST_F(NotNullTest, Booleans) {
 }
 
 TEST_F(NotNullTest, ImplicitConversions) {
-  std::unique_ptr<int> owner_int = std::make_unique<int>(3);
+  not_null<std::unique_ptr<int>> not_null_owner_int =
+      check_not_null(std::make_unique<int>(3));
+  not_null<int const*> const constant_not_null_access_int =
+      not_null_owner_int.get();
   not_null<int const*> const constant_not_null_access_constant_int =
-      check_not_null(owner_int.get());
+      constant_not_null_access_int;
+  not_null<std::unique_ptr<int const>> not_null_owner_constant_int = not_null_owner_constant_int;
 }
 
 }  // namespace base

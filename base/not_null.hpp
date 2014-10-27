@@ -9,6 +9,20 @@ namespace principia {
 namespace base {
 
 template<typename Pointer>
+class not_null;
+
+// Type traits.
+template<typename Pointer>
+struct is_not_null : std::false_type {};
+template<typename Pointer>
+struct is_not_null<not_null<Pointer>> : std::true_type {};
+
+template<typename T>
+struct is_unique_ptr : std::false_type {};
+template<typename T>
+struct is_unique_ptr<std::unique_ptr<T>> : std::true_type {};
+
+template<typename Pointer>
 class not_null {
  public:
   // Creates a |not_null<Pointer>| whose |pointer_| equals the given |pointer|,
@@ -56,6 +70,11 @@ class not_null {
   // Returns |*pointer|.  Dereferencing does not work for |unique_ptr| through
   // the above implicit conversion.
   decltype(*Pointer{}) operator*() const;
+  decltype(&*Pointer{}) const operator->() const;
+
+  template<typename = typename std::enable_if<
+               is_unique_ptr<Pointer>::value>::type>
+  not_null<decltype(Pointer{}.get())> const get() const;
 
   // The following operators are redundant for valid |not_null<Pointer>|s with
   // the implicit conversion to |Pointer|, but they should allow some
@@ -86,12 +105,6 @@ class not_null<not_null<Pointer>>;
 // Use |not_null<Pointer>| instead.
 template<typename Pointer>
 class not_null<not_null<Pointer>&>;
-
-// Type trait.
-template<typename Pointer>
-struct is_not_null : std::false_type {};
-template<typename Pointer>
-struct is_not_null<not_null<Pointer>> : std::true_type {};
 
 // Factories taking advantage of template argument deduction.  They call the
 // corresponding constructors for |not_null<Pointer>|.
