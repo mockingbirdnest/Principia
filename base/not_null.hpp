@@ -22,6 +22,11 @@ struct is_unique_ptr : std::false_type {};
 template<typename T>
 struct is_unique_ptr<std::unique_ptr<T>> : std::true_type {};
 
+// |not_null<Pointer>| is a wrapper for a non-null object of type |Pointer|.
+// |Pointer| should be a C-style pointer or a smart pointer.  |Pointer| must
+// not be a const, reference, rvalue reference, or |not_null|.
+// |not_null<Pointer>| is moveable and may be left in an invalid state when
+// moved (rather than the valid but unspecified state mandated by STL).
 template<typename Pointer>
 class not_null {
  public:
@@ -72,6 +77,8 @@ class not_null {
   decltype(*Pointer{}) operator*() const;
   decltype(&*Pointer{}) const operator->() const;
 
+  // TODO(egg): widen to types |Pointers| with a |get()| method, not just
+  // |std::unique_ptr|.
   template<typename = typename std::enable_if<
                is_unique_ptr<Pointer>::value>::type>
   not_null<decltype(Pointer{}.get())> const get() const;
@@ -104,7 +111,11 @@ class not_null<not_null<Pointer>>;
 
 // Use |not_null<Pointer>| instead.
 template<typename Pointer>
-class not_null<not_null<Pointer>&>;
+class not_null<Pointer&>;
+
+// Use |not_null<Pointer>| instead.
+template<typename Pointer>
+class not_null<Pointer&&>;
 
 // Factories taking advantage of template argument deduction.  They call the
 // corresponding constructors for |not_null<Pointer>|.
