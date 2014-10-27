@@ -8,6 +8,20 @@
 namespace principia {
 namespace base {
 
+template<typename Pointer>
+class not_null;
+
+// Type traits.
+template<typename Pointer>
+struct is_not_null : std::false_type {};
+template<typename Pointer>
+struct is_not_null<not_null<Pointer>> : std::true_type {};
+
+template<typename Pointer>
+using _checked_not_null = typename std::enable_if<
+    !is_not_null<typename std::remove_reference<Pointer>::type>::value,
+    not_null<typename std::remove_reference<Pointer>::type>>::type;
+
 // |not_null<Pointer>| is a wrapper for a non-null object of type |Pointer|.
 // |Pointer| should be a C-style pointer or a smart pointer.  |Pointer| must not
 // be a const, reference, rvalue reference, or |not_null|.
@@ -19,10 +33,6 @@ namespace base {
 template<typename Pointer>
 class not_null {
  public:
-  // Creates a |not_null<Pointer>| whose |pointer_| equals the given |pointer|,
-  // dawg, and checks (using a glog |CHECK| macro) that |pointer| is not null.
-  explicit not_null(Pointer const& pointer);
-  explicit not_null(Pointer&& pointer);  // NOLINT(build/c++11)
 
   not_null() = delete;
   not_null(not_null const&) = default;
@@ -79,10 +89,20 @@ class not_null {
   operator bool() const;
 
  private:
+  // Creates a |not_null<Pointer>| whose |pointer_| equals the given |pointer|,
+  // dawg, and checks (using a glog |CHECK| macro) that |pointer| is not null.
+  explicit not_null(Pointer const& pointer);
+  explicit not_null(Pointer&& pointer);  // NOLINT(build/c++11)
+
   Pointer pointer_;
 
   template<typename OtherPointer>
   friend class not_null;
+
+  template<typename P>
+  friend _checked_not_null<P> check_not_null(P const& pointer);
+  template<typename P>
+  friend _checked_not_null<P> check_not_null(P&& pointer);
 };
 
 // Use |not_null<Pointer> const| instead.
@@ -101,29 +121,17 @@ class not_null<Pointer&>;
 template<typename Pointer>
 class not_null<Pointer&&>;
 
-// Type traits.
-template<typename Pointer>
-struct is_not_null : std::false_type {};
-template<typename Pointer>
-struct is_not_null<not_null<Pointer>> : std::true_type {};
-
 // Factories taking advantage of template argument deduction.  They call the
 // corresponding constructors for |not_null<Pointer>|.
 
 // Returns a |not_null<Pointer>| to |*pointer|.  |CHECK|s that |pointer| is not
 // null.
-template<typename Pointer,
-         typename = typename std::enable_if<!is_not_null<
-             typename std::remove_reference<Pointer>::type>::value>::type>
-not_null<typename std::remove_reference<Pointer>::type>
-check_not_null(Pointer const& pointer);
+template<typename Pointer>
+_checked_not_null<Pointer> check_not_null(Pointer const& pointer);
 // Returns a |not_null<Pointer>| to |*pointer|.  |pointer| may be invalid after
 // the call.  |CHECK|s that |pointer| is not null.
-template<typename Pointer,
-         typename = typename std::enable_if<!is_not_null<
-             typename std::remove_reference<Pointer>::type>::value>::type>
-not_null<typename std::remove_reference<Pointer>::type>
-check_not_null(Pointer&& pointer);  // NOLINT(build/c++11)
+template<typename Pointer>
+_checked_not_null<Pointer> check_not_null(Pointer&& pointer);  // NOLINT(build/c++11)
 
 // While the above factories would cover this case using the implicit
 // conversion, this results in a redundant |CHECK|.  These functions return

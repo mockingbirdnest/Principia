@@ -19,24 +19,12 @@ using NotNullDeathTest = NotNullTest;
 TEST_F(NotNullDeathTest, DeathByNullptr) {
   EXPECT_DEATH({
     int* const null_int_ptr = nullptr;
-    not_null<int*> int_ptr(null_int_ptr);
-  }, "Check failed: .* != nullptr");
-
-  EXPECT_DEATH({
-    std::unique_ptr<int> null_int_ptr;
-    not_null<std::unique_ptr<int>> int_ptr(std::move(null_int_ptr));
-  }, "Check failed: .* != nullptr");
-
-  EXPECT_DEATH({
-    int* const null_int_ptr = nullptr;
     check_not_null(null_int_ptr);
   }, "Check failed: .* != nullptr");
-
   EXPECT_DEATH({
     std::unique_ptr<int> null_int_ptr;
     check_not_null(std::move(null_int_ptr));
   }, "Check failed: .* != nullptr");
-
 }
 
 TEST_F(NotNullTest, Move) {

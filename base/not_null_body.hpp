@@ -12,13 +12,13 @@ namespace base {
 
 template<typename Pointer>
 not_null<Pointer>::not_null(Pointer const& pointer) : pointer_(pointer) {
-  CHECK(pointer_ != nullptr);
+    CHECK(pointer_ != nullptr);
 }
 
 template<typename Pointer>
 not_null<Pointer>::not_null(Pointer&& pointer)  // NOLINT(build/c++11)
     : pointer_(std::move(pointer)) {
-  CHECK(pointer_ != nullptr);
+    CHECK(pointer_ != nullptr);
 }
 
 template<typename Pointer>
@@ -99,14 +99,13 @@ not_null<Pointer>::operator bool() const {
   return true;
 }
 
-template<typename Pointer, typename>
-not_null<typename std::remove_reference<Pointer>::type>
-check_not_null(Pointer const& pointer) {
+template<typename Pointer>
+_checked_not_null<Pointer> check_not_null(Pointer const& pointer) {
   return not_null<typename std::remove_reference<Pointer>::type>(pointer);
 }
 
-template<typename Pointer, typename>
-not_null<typename std::remove_reference<Pointer>::type>
+template<typename Pointer>
+_checked_not_null<Pointer>
 check_not_null(Pointer&& pointer) {  // NOLINT(build/c++11)
   return not_null<typename std::remove_reference<Pointer>::type>(
       std::move(pointer));
