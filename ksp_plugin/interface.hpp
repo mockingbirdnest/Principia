@@ -69,8 +69,6 @@ struct LineAndIterator {
 // This archive is written to
 // "<KSP directory>/glog/Principia/<SEVERITY>.<date>-<time>.<pid>",
 // where date and time are in ISO 8601 basic format.
-// TODO(egg): libglog should really be statically linked, what happens if two
-// plugins use glog?
 extern "C" DLLEXPORT
 void CDECL InitGoogleLogging();
 

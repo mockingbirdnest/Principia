@@ -40,6 +40,9 @@ class Trajectory {
   std::map<Instant, Velocity<Frame>> Velocities() const;
   std::list<Instant> Times() const;
 
+  // The position and velocity as a function of time for the whole trajectory.
+  Timeline const& timeline() const;
+
   // Return the most recent position/velocity/time.  These functions are O(1)
   // and dirt-cheap.
   Position<Frame> const& last_position() const;
@@ -109,9 +112,6 @@ class Trajectory {
 
   // Returns true if this trajectory has an intrinsic acceleration.
   bool has_intrinsic_acceleration() const;
-
-  // The position and velocity as a function of time for the whole trajectory.
-  Timeline const& timeline() const;
 
   // Computes the intrinsic acceleration for this trajectory at time |time|.  If
   // |has_intrinsic_acceleration()| return false, or if |time| is before the
