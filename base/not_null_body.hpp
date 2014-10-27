@@ -11,15 +11,11 @@ namespace principia {
 namespace base {
 
 template<typename Pointer>
-not_null<Pointer>::not_null(Pointer const& pointer) : pointer_(pointer) {
-    CHECK(pointer_ != nullptr);
-}
+not_null<Pointer>::not_null(Pointer const& pointer) : pointer_(pointer) {}
 
 template<typename Pointer>
 not_null<Pointer>::not_null(Pointer&& pointer)  // NOLINT(build/c++11)
-    : pointer_(std::move(pointer)) {
-    CHECK(pointer_ != nullptr);
-}
+    : pointer_(std::move(pointer)) {}
 
 template<typename Pointer>
 template<typename OtherPointer,
@@ -80,7 +76,7 @@ decltype(&*Pointer{}) const not_null<Pointer>::operator->() const {
 template<typename Pointer>
 template<typename P, typename>
 not_null<decltype(P{}.get())> const not_null<Pointer>::get() const {
-  // TODO(egg): No need for a check here.
+  // NOTE(egg): no |CHECK| is performed.
   return not_null<decltype(P{}.get())>(pointer_.get());
 }
 
@@ -101,12 +97,14 @@ not_null<Pointer>::operator bool() const {
 
 template<typename Pointer>
 _checked_not_null<Pointer> check_not_null(Pointer const& pointer) {
+  CHECK(pointer != nullptr);
   return not_null<typename std::remove_reference<Pointer>::type>(pointer);
 }
 
 template<typename Pointer>
 _checked_not_null<Pointer>
 check_not_null(Pointer&& pointer) {  // NOLINT(build/c++11)
+  CHECK(pointer != nullptr);
   return not_null<typename std::remove_reference<Pointer>::type>(
       std::move(pointer));
 }
@@ -124,7 +122,8 @@ not_null<Pointer> check_not_null(
 
 template<typename T, typename... Args>
 not_null<std::unique_ptr<T>> make_not_null_unique(Args&&... args) {
-  return check_not_null(std::make_unique<T>(std::forward<Args...>(args...)));
+  return not_null<std::unique_ptr<T>>(
+      std::make_unique<T>(std::forward<Args...>(args...)));
 }
 
 template<typename Pointer>

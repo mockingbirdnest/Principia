@@ -90,7 +90,8 @@ class not_null {
 
  private:
   // Creates a |not_null<Pointer>| whose |pointer_| equals the given |pointer|,
-  // dawg, and checks (using a glog |CHECK| macro) that |pointer| is not null.
+  // dawg.  The constructor does *not* perform a null check.  Callers must
+  // perform it if needed before using it.
   explicit not_null(Pointer const& pointer);
   explicit not_null(Pointer&& pointer);  // NOLINT(build/c++11)
 
@@ -103,6 +104,8 @@ class not_null {
   friend _checked_not_null<P> check_not_null(P const& pointer);
   template<typename P>
   friend _checked_not_null<P> check_not_null(P&& pointer);
+  template<typename T, typename... Args>
+  friend not_null<std::unique_ptr<T>> make_not_null_unique(Args&&... args);
 };
 
 // Use |not_null<Pointer> const| instead.
@@ -146,8 +149,9 @@ not_null<Pointer> check_not_null(
     not_null<Pointer>&& pointer);  // NOLINT(build/c++11)
 
 // Factory for a |not_null<std::unique_ptr<T>>|, forwards the arguments to the
-// constructor of T.  Equivalent to |check_not_null(make_unique<T>(args))|.
-// TODO(egg): remove the redundant |CHECK|.
+// constructor of T.  |make_not_null_unique<T>(args)| is interchangeable with
+// |check_not_null(make_unique<T>(args))|, but does not perform a |CHECK|, since
+// the result of |make_unique| is not null.
 template<typename T, typename... Args>
 not_null<std::unique_ptr<T>> make_not_null_unique(Args&&... args);
 
