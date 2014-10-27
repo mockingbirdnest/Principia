@@ -78,6 +78,11 @@ bool not_null<Pointer>::operator==(nullptr_t const other) const {
 }
 
 template<typename Pointer>
+bool not_null<Pointer>::operator!=(nullptr_t const other) const {
+  return true;
+}
+
+template<typename Pointer>
 not_null<Pointer>::operator bool() const {
   return true;
 }

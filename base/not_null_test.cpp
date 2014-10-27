@@ -85,5 +85,19 @@ TEST_F(NotNullTest, CheckNotNull) {
   check_not_null(std::move(not_null_owner_int));
 }
 
+TEST_F(NotNullTest, Booleans) {
+  not_null<std::unique_ptr<int>> const pointer =
+      check_not_null(std::make_unique<int>(3));
+  EXPECT_TRUE(pointer);
+  EXPECT_TRUE(pointer != nullptr);
+  EXPECT_FALSE(pointer == nullptr);
+}
+
+TEST_F(NotNullTest, ImplicitConversions) {
+  std::unique_ptr<int> owner_int = std::make_unique<int>(3);
+  not_null<int const*> const constant_not_null_access_constant_int =
+      check_not_null(owner_int.get());
+}
+
 }  // namespace base
 }  // namespace principia

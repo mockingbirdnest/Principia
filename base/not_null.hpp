@@ -64,6 +64,8 @@ class not_null {
   // Returns |false|.
   bool operator==(nullptr_t const other) const;
   // Returns |true|.
+  bool operator!=(nullptr_t const other) const;
+  // Returns |true|.
   operator bool() const;
 
  private:
