@@ -82,7 +82,6 @@ TEST_F(NotNullTest, CheckNotNull) {
   not_null<int const*> not_null_access_constant_int =
       check_not_null(constant_access_constant_int);
   not_null_access_constant_int = check_not_null(not_null_access_int);
-
 }
 
 }  // namespace base
