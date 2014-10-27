@@ -78,10 +78,10 @@ decltype(&*Pointer{}) const not_null<Pointer>::operator->() const {
 }
 
 template<typename Pointer>
-template<typename>
-not_null<decltype(Pointer{}.get())> const not_null<Pointer>::get() const {
+template<typename P, typename>
+not_null<decltype(P{}.get())> const not_null<Pointer>::get() const {
   // TODO(egg): No need for a check here.
-  return not_null<decltype(Pointer{}.get())>(pointer_.get());
+  return not_null<decltype(P{}.get())>(pointer_.get());
 }
 
 template<typename Pointer>
@@ -125,7 +125,7 @@ not_null<Pointer> check_not_null(
 
 template<typename T, typename... Args>
 not_null<std::unique_ptr<T>> make_not_null_unique(Args&&... args) {
-  return check_not_null(std::make_unique<T>(std::forward(args)));
+  return check_not_null(std::make_unique<T>(std::forward<Args...>(args...)));
 }
 
 template<typename Pointer>

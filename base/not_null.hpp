@@ -9,10 +9,13 @@ namespace principia {
 namespace base {
 
 // |not_null<Pointer>| is a wrapper for a non-null object of type |Pointer|.
-// |Pointer| should be a C-style pointer or a smart pointer.  |Pointer| must
-// not be a const, reference, rvalue reference, or |not_null|.
+// |Pointer| should be a C-style pointer or a smart pointer.  |Pointer| must not
+// be a const, reference, rvalue reference, or |not_null|.
 // |not_null<Pointer>| is moveable and may be left in an invalid state when
-// moved (rather than the valid but unspecified state mandated by STL).
+// moved, by making its |pointer_| null.  STL mandates that we leave it in a
+// valid but otherwise indeterminate state, so we infrige on that.  On the other
+// hand, we're just turning one flavour of undefined behaviour into another, so
+// things should be fine.
 template<typename Pointer>
 class not_null {
  public:
@@ -28,14 +31,11 @@ class not_null {
                std::is_convertible<OtherPointer, Pointer>::value>::type>
   not_null(not_null<OtherPointer> const& other);
 
-  // We really want a move constructor. Moving the |pointer_| might make the
-  // argument an invalid |not_null<Pointer>| by making its |pointer_| null.  The
-  // standard says we must leave the argument in some  valid but otherwise
-  // indeterminate state, so we infrige on that.  On the other hand, if you rely
-  // on the value after a move, you're asking for trouble.
+  // This constructor may invalidate its argument.
   // NOTE(egg): We would use |= default|, but VS2013 does not implement that for
   // the move constructor;
   not_null(not_null&&);  // NOLINT(build/c++11)
+  // This constructor may invalidate its argument.
   template<typename OtherPointer,
            typename = typename std::enable_if<
                std::is_convertible<OtherPointer, Pointer>::value>::type>
@@ -63,8 +63,9 @@ class not_null {
   decltype(*Pointer{}) operator*() const;
   decltype(&*Pointer{}) const operator->() const;
 
-  template<typename = decltype(Pointer{}.get())>
-  not_null<decltype(Pointer{}.get())> const get() const;
+  template<typename P = Pointer,
+           typename = decltype(P{}.get())>
+  not_null<decltype(P{}.get())> const get() const;
 
   // The following operators are redundant for valid |not_null<Pointer>|s with
   // the implicit conversion to |Pointer|, but they should allow some
