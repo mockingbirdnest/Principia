@@ -2,6 +2,7 @@
 
 #include <memory>
 #include <utility>
+#include <string>
 
 #include "gtest/gtest.h"
 #include "gmock/gmock.h"
@@ -98,10 +99,26 @@ TEST_F(NotNullTest, ImplicitConversions) {
       check_not_null(std::make_unique<int>(3));
   not_null<int const*> const constant_not_null_access_int =
       not_null_owner_int.get();
-  not_null<int const*> const constant_not_null_access_constant_int =
+  // Copy constructor.
+  not_null<int const*> not_null_access_constant_int =
       constant_not_null_access_int;
+  // Copy assignment.
+  not_null_access_constant_int = not_null_owner_int.get();
+  // Move constructor.
   not_null<std::unique_ptr<int const>> not_null_owner_constant_int =
-      std::move(not_null_owner_int);
+      check_not_null(std::make_unique<int>(5));
+  // Move assigment.
+  not_null_owner_constant_int = std::move(not_null_owner_int);
+}
+
+TEST_F(NotNullTest, Arrow) {
+  not_null<std::unique_ptr<std::string>> not_null_owner_string =
+      check_not_null(std::make_unique<std::string>("-"));
+  not_null_owner_string->append(">");
+  EXPECT_THAT(*not_null_owner_string, Eq("->"));
+  not_null<std::string*> not_null_access_string = not_null_owner_string.get();
+  not_null_access_string->insert(0, "operator");
+  EXPECT_THAT(*not_null_access_string, Eq("operator->"));
 }
 
 }  // namespace base

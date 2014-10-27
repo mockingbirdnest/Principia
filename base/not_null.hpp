@@ -8,20 +8,6 @@
 namespace principia {
 namespace base {
 
-template<typename Pointer>
-class not_null;
-
-// Type traits.
-template<typename Pointer>
-struct is_not_null : std::false_type {};
-template<typename Pointer>
-struct is_not_null<not_null<Pointer>> : std::true_type {};
-
-template<typename T>
-struct is_unique_ptr : std::false_type {};
-template<typename T>
-struct is_unique_ptr<std::unique_ptr<T>> : std::true_type {};
-
 // |not_null<Pointer>| is a wrapper for a non-null object of type |Pointer|.
 // |Pointer| should be a C-style pointer or a smart pointer.  |Pointer| must
 // not be a const, reference, rvalue reference, or |not_null|.
@@ -113,6 +99,12 @@ class not_null<Pointer&>;
 // Use |not_null<Pointer>| instead.
 template<typename Pointer>
 class not_null<Pointer&&>;
+
+// Type traits.
+template<typename Pointer>
+struct is_not_null : std::false_type {};
+template<typename Pointer>
+struct is_not_null<not_null<Pointer>> : std::true_type {};
 
 // Factories taking advantage of template argument deduction.  They call the
 // corresponding constructors for |not_null<Pointer>|.
