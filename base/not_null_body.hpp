@@ -21,17 +21,17 @@ template<typename Pointer>
 template<typename OtherPointer,
          typename>
 not_null<Pointer>::not_null(not_null<OtherPointer> const& other)
-    : pointer_(other.pointer_) {};
+    : pointer_(other.pointer_) {}
 
 template<typename Pointer>
-not_null<Pointer>::not_null(not_null&& other)
-    : pointer_(std::move(other.pointer_)) {};
+not_null<Pointer>::not_null(not_null&& other)  // NOLINT(build/c++11)
+    : pointer_(std::move(other.pointer_)) {}
 
 template<typename Pointer>
 template<typename OtherPointer,
          typename>
-not_null<Pointer>::not_null(not_null<OtherPointer>&& other)
-    : pointer_(std::move(other.pointer_)) {};
+not_null<Pointer>::not_null(not_null<OtherPointer>&& other)  // NOLINT
+    : pointer_(std::move(other.pointer_)) {}
 
 template<typename Pointer>
 template<typename OtherPointer,
@@ -53,7 +53,7 @@ template<typename Pointer>
 template<typename OtherPointer,
          typename>
 not_null<Pointer>& not_null<Pointer>::operator=(
-    not_null<OtherPointer>&& other) {
+    not_null<OtherPointer>&& other) {  // NOLINT(build/c++11)
   pointer_ = std::move(other.pointer_);
   return *this;
 }
@@ -121,9 +121,9 @@ not_null<Pointer> check_not_null(
 }
 
 template<typename T, typename... Args>
-not_null<std::unique_ptr<T>> make_not_null_unique(Args&&... args) {
+not_null<std::unique_ptr<T>> make_not_null_unique(Args&&... args) {  // NOLINT
   return not_null<std::unique_ptr<T>>(
-      std::make_unique<T>(std::forward<Args...>(args...)));
+      std::make_unique<T>(std::forward<Args...>(args...)));  // NOLINT
 }
 
 template<typename Pointer>
