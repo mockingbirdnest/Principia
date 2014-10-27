@@ -73,6 +73,18 @@ decltype(*Pointer{}) not_null<Pointer>::operator*() const {
 }
 
 template<typename Pointer>
+decltype(&*Pointer{}) const not_null<Pointer>::operator->() const {
+  return &*pointer_;
+}
+
+template<typename Pointer>
+template<typename>
+not_null<decltype(Pointer{}.get())> const not_null<Pointer>::get() const {
+  // TODO(egg): No need for a check here.
+  return not_null<decltype(Pointer{}.get())>(pointer_.get());
+}
+
+template<typename Pointer>
 bool not_null<Pointer>::operator==(nullptr_t const other) const {
   return false;
 }

@@ -100,7 +100,8 @@ TEST_F(NotNullTest, ImplicitConversions) {
       not_null_owner_int.get();
   not_null<int const*> const constant_not_null_access_constant_int =
       constant_not_null_access_int;
-  not_null<std::unique_ptr<int const>> not_null_owner_constant_int = not_null_owner_constant_int;
+  not_null<std::unique_ptr<int const>> not_null_owner_constant_int =
+      std::move(not_null_owner_int);
 }
 
 }  // namespace base
