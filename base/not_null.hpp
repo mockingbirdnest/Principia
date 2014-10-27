@@ -69,7 +69,7 @@ class not_null {
 
   // The following operators are redundant for valid |not_null<Pointer>|s with
   // the implicit conversion to |Pointer|, but they should allow some
-  // compile-time optimization.
+  // optimization.
 
   // Returns |false|.
   bool operator==(nullptr_t const other) const;
@@ -118,7 +118,7 @@ template<typename Pointer,
 not_null<typename std::remove_reference<Pointer>::type>
 check_not_null(Pointer const& pointer);
 // Returns a |not_null<Pointer>| to |*pointer|.  |pointer| may be invalid after
-// the call, as described above.  |CHECK|s that |pointer| is not null.
+// the call.  |CHECK|s that |pointer| is not null.
 template<typename Pointer,
          typename = typename std::enable_if<!is_not_null<
              typename std::remove_reference<Pointer>::type>::value>::type>
@@ -132,8 +132,7 @@ check_not_null(Pointer&& pointer);  // NOLINT(build/c++11)
 // Returns a copy of |pointer|.
 template<typename Pointer>
 not_null<Pointer> check_not_null(not_null<Pointer> const& pointer);
-// Equivalent to |std::move(pointer)|.  |pointer| may be invalid after the call,
-// as described above.
+// Returns |std::move(pointer)|.  |pointer| may be invalid after the call.
 template<typename Pointer>
 not_null<Pointer> check_not_null(
     not_null<Pointer>&& pointer);  // NOLINT(build/c++11)
