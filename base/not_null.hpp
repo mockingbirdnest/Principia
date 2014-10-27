@@ -17,14 +17,10 @@ struct is_not_null : std::false_type {};
 template<typename Pointer>
 struct is_not_null<not_null<Pointer>> : std::true_type {};
 
-namespace {
-
 template<typename Pointer>
 using _checked_not_null = typename std::enable_if<
     !is_not_null<typename std::remove_reference<Pointer>::type>::value,
     not_null<typename std::remove_reference<Pointer>::type>>::type;
-
-}  // namespace
 
 // |not_null<Pointer>| is a wrapper for a non-null object of type |Pointer|.
 // |Pointer| should be a C-style pointer or a smart pointer.  |Pointer| must not
