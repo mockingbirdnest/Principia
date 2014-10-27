@@ -40,7 +40,7 @@ class not_null {
 
   // This constructor may invalidate its argument.
   // NOTE(egg): We would use |= default|, but VS2013 does not implement that for
-  // the move constructor;
+  // the move constructor.
   not_null(not_null&&);  // NOLINT(build/c++11)
   // Move contructor for implicitly convertible pointers. This constructor may
   // invalidate its argument.
@@ -90,7 +90,7 @@ class not_null {
  private:
   // Creates a |not_null<Pointer>| whose |pointer_| equals the given |pointer|,
   // dawg.  The constructor does *not* perform a null check.  Callers must
-  // perform it if needed before using it.
+  // perform one if needed before using it.
   explicit not_null(Pointer const& pointer);
   explicit not_null(Pointer&& pointer);  // NOLINT(build/c++11)
 
