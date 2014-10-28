@@ -69,8 +69,9 @@ decltype(*Pointer{}) not_null<Pointer>::operator*() const {
 }
 
 template<typename Pointer>
-decltype(&*Pointer{}) const not_null<Pointer>::operator->() const {
-  return &*pointer_;
+decltype(std::addressof(*Pointer{})) const
+not_null<Pointer>::operator->() const {
+  return std::addressof(*pointer_);
 }
 
 template<typename Pointer>

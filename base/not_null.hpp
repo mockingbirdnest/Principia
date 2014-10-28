@@ -68,7 +68,7 @@ class not_null {
   operator Pointer const&() const;
   // Returns |*pointer|.
   decltype(*Pointer{}) operator*() const;
-  decltype(&*Pointer{}) const operator->() const;
+  decltype(std::addressof(*Pointer{})) const operator->() const;
 
   // When |Pointer| has a |get()| member function, this returns
   // |pointer_.get()|.
