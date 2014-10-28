@@ -12,14 +12,15 @@ template<typename Pointer>
 class not_null;
 
 // Type traits.
-template<typename Pointer>
-struct is_not_null : std::false_type {};
-template<typename Pointer>
-struct is_not_null<not_null<Pointer>> : std::true_type {};
+template<template<typename...> class T, typename U>
+struct is_instance_of : std::false_type {};
+template<template<typename...> class T, typename U>
+struct is_instance_of<T, T<U>> : std::true_type {};
 
 template<typename Pointer>
 using _checked_not_null = typename std::enable_if<
-    !is_not_null<typename std::remove_reference<Pointer>::type>::value,
+    !is_instance_of<not_null,
+                    typename std::remove_reference<Pointer>::type>::value,
     not_null<typename std::remove_reference<Pointer>::type>>::type;
 
 // |not_null<Pointer>| is a wrapper for a non-null object of type |Pointer|.
