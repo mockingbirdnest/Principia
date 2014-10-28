@@ -11,7 +11,7 @@ namespace ksp_plugin {
 BodyCentredNonRotatingFrame::BodyCentredNonRotatingFrame(
     Celestial<Barycentre> const& body) : body_(body) {}
 
-std::unique_ptr<Trajectory<Barycentre>> const
+std::unique_ptr<Trajectory<Barycentre>>
 BodyCentredNonRotatingFrame::ApparentTrajectory(
     Trajectory<Barycentre> const& actual_trajectory) const {
   std::unique_ptr<Trajectory<Barycentre>> result =

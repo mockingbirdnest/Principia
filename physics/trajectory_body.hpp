@@ -57,6 +57,12 @@ std::list<Instant> Trajectory<Frame>::Times() const {
 }
 
 template<typename Frame>
+typename Trajectory<Frame>::Timeline const&
+Trajectory<Frame>::timeline() const {
+  return timeline_;
+}
+
+template<typename Frame>
 Position<Frame> const& Trajectory<Frame>::last_position() const {
   if (timeline_.empty()) {
     CHECK(fork_ != nullptr) << "Empty trajectory";
@@ -220,12 +226,6 @@ void Trajectory<Frame>::clear_intrinsic_acceleration() {
 template<typename Frame>
 bool Trajectory<Frame>::has_intrinsic_acceleration() const {
   return intrinsic_acceleration_ != nullptr;
-}
-
-template<typename Frame>
-typename Trajectory<Frame>::Timeline const&
-Trajectory<Frame>::timeline() const {
-  return timeline_;
 }
 
 template<typename Frame>
