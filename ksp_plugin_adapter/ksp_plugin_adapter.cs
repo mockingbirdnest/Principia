@@ -176,9 +176,9 @@ public partial class PluginAdapter : UnityEngine.MonoBehaviour {
       ApplyToVesselsInSpace(update_vessel);
       Vessel active_vessel = FlightGlobals.ActiveVessel;
       if (MapView.MapIsEnabled && 
-              (active_vessel.situation == Vessel.Situations.SUB_ORBITAL ||
-               active_vessel.situation == Vessel.Situations.ORBITING ||
-               active_vessel.situation == Vessel.Situations.ESCAPING)) {
+          (active_vessel.situation == Vessel.Situations.SUB_ORBITAL ||
+           active_vessel.situation == Vessel.Situations.ORBITING ||
+           active_vessel.situation == Vessel.Situations.ESCAPING)) {
         if (active_vessel.orbitDriver.Renderer.drawMode !=
                 OrbitRenderer.DrawMode.OFF ||
             active_vessel.orbitDriver.Renderer.drawIcons !=
