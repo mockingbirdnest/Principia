@@ -39,8 +39,7 @@
 //     Accumulate(check_not_null(dubious_accumulator),
 //                check_not_null(term_of_dubious_c_provenance));
 //     // The call below fails to compile: we need to check the arguments.
-//     Accumulate(check_not_null(dubious_accumulator),
-//                check_not_null(term_of_dubious_c_provenance));
+//     Accumulate(dubious_accumulator, term_of_dubious_c_provenance);
 //   }
 //
 //   void UseAccumulator() {
@@ -60,10 +59,9 @@
 //   Accumulate(check_not_null(accumulator.get()), check_not_null(term));
 // |term == nullptr| can be expanded to false through inlining, so the branch
 // will likely be optimized away.
-//   if(term == nullptr) // ...
+//   if (term == nullptr) // ...
 //   // Same as above.
-//   if(term) // ...
-
+//   if (term) // ...
 
 namespace principia {
 namespace base {
