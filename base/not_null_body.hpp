@@ -94,27 +94,14 @@ not_null<Pointer>::operator bool() const {
 }
 
 template<typename Pointer>
-_checked_not_null<Pointer> check_not_null(Pointer const& pointer) {
-  CHECK(pointer != nullptr);
-  return not_null<typename std::remove_reference<Pointer>::type>(pointer);
-}
-
-template<typename Pointer>
-_checked_not_null<Pointer>
-check_not_null(Pointer&& pointer) {  // NOLINT(build/c++11)
+_checked_not_null<Pointer> check_not_null(Pointer pointer) {
   CHECK(pointer != nullptr);
   return not_null<typename std::remove_reference<Pointer>::type>(
       std::move(pointer));
 }
 
 template<typename Pointer>
-not_null<Pointer> check_not_null(not_null<Pointer> const& pointer) {
-  return pointer;
-}
-
-template<typename Pointer>
-not_null<Pointer> check_not_null(
-    not_null<Pointer>&& pointer) {  // NOLINT(build/c++11)
+not_null<Pointer> check_not_null(not_null<Pointer> pointer) {
   return std::move(pointer);
 }
 

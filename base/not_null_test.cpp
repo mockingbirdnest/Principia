@@ -126,9 +126,8 @@ TEST_F(NotNullTest, NotNullNotNull) {
 }
 
 TEST_F(NotNullTest, CheckArguments) {
-  not_null<std::unique_ptr<int>> accumulator = make_not_null_unique<int>(0);
+  not_null<std::unique_ptr<int>> accumulator = make_not_null_unique<int>(21);
   std::unique_ptr<int const> twenty_one = std::make_unique<int const>(21);
-  Add(accumulator.get(), check_not_null(twenty_one).get());
   Add(accumulator.get(), check_not_null(twenty_one.get()));
   EXPECT_THAT(*twenty_one, Eq(21));
   EXPECT_THAT(*accumulator, Eq(42));

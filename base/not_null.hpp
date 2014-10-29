@@ -193,9 +193,7 @@ class not_null {
   friend class not_null;
 
   template<typename P>
-  friend _checked_not_null<P> check_not_null(P const& pointer);
-  template<typename P>
-  friend _checked_not_null<P> check_not_null(P&& pointer);  // NOLINT
+  friend _checked_not_null<P> check_not_null(P pointer);
   template<typename T, typename... Args>
   friend not_null<std::unique_ptr<T>> make_not_null_unique(
       Args&&... args);  // NOLINT(build/c++11)
@@ -215,30 +213,16 @@ class not_null<Pointer&>;
 template<typename Pointer>
 class not_null<Pointer&&>;  // NOLINT(build/c++11)
 
-// Factories taking advantage of template argument deduction.  They call the
-// corresponding constructors for |not_null<Pointer>|.
-
-// Returns a |not_null<Pointer>| to |*pointer|.  |CHECK|s that |pointer| is not
-// null.
+// Factory taking advantage of template argument deduction.  Returns a
+// |not_null<Pointer>| to |*pointer|.  |CHECK|s that |pointer| is not null.
 template<typename Pointer>
-_checked_not_null<Pointer> check_not_null(Pointer const& pointer);
+_checked_not_null<Pointer> check_not_null(Pointer pointer);
 
-// Returns a |not_null<Pointer>| to |*pointer|.  |pointer| may be invalid after
-// the call.  |CHECK|s that |pointer| is not null.
+// While the above factory would cover this case using the implicit
+// conversion, this results in a redundant |CHECK|.
+// This function returns its argument.
 template<typename Pointer>
-_checked_not_null<Pointer> check_not_null(Pointer&& pointer);  // NOLINT
-
-// While the above factories would cover this case using the implicit
-// conversion, this results in a redundant |CHECK|.  These functions return
-// their argument.
-
-// Returns a copy of |pointer|.
-template<typename Pointer>
-not_null<Pointer> check_not_null(not_null<Pointer> const& pointer);
-// Returns |std::move(pointer)|.  |pointer| may be invalid after the call.
-template<typename Pointer>
-not_null<Pointer> check_not_null(
-    not_null<Pointer>&& pointer);  // NOLINT(build/c++11)
+not_null<Pointer> check_not_null(not_null<Pointer> pointer);
 
 // Factory for a |not_null<std::unique_ptr<T>>|, forwards the arguments to the
 // constructor of T.  |make_not_null_unique<T>(args)| is interchangeable with
