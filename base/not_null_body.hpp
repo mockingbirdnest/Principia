@@ -11,15 +11,14 @@ namespace principia {
 namespace base {
 
 template<typename Pointer>
-not_null<Pointer>::not_null(Pointer const& pointer) : pointer_(pointer) {}
+not_null<Pointer>::not_null(pointer const& ptr) : pointer_(ptr) {}
 
 template<typename Pointer>
-not_null<Pointer>::not_null(Pointer&& pointer)  // NOLINT(build/c++11)
-    : pointer_(std::move(pointer)) {}
+not_null<Pointer>::not_null(pointer&& ptr)  // NOLINT(build/c++11)
+    : pointer_(std::move(ptr)) {}
 
 template<typename Pointer>
-template<typename OtherPointer,
-         typename>
+template<typename OtherPointer, typename>
 not_null<Pointer>::not_null(not_null<OtherPointer> const& other)
     : pointer_(other.pointer_) {}
 
@@ -28,14 +27,12 @@ not_null<Pointer>::not_null(not_null&& other)  // NOLINT(build/c++11)
     : pointer_(std::move(other.pointer_)) {}
 
 template<typename Pointer>
-template<typename OtherPointer,
-         typename>
+template<typename OtherPointer, typename>
 not_null<Pointer>::not_null(not_null<OtherPointer>&& other)  // NOLINT
     : pointer_(std::move(other.pointer_)) {}
 
 template<typename Pointer>
-template<typename OtherPointer,
-         typename>
+template<typename OtherPointer, typename>
 not_null<Pointer>& not_null<Pointer>::operator=(
     not_null<OtherPointer> const& other) {
   pointer_ = other.pointer_;
@@ -50,8 +47,7 @@ not_null<Pointer>& not_null<Pointer>::operator=(
 }
 
 template<typename Pointer>
-template<typename OtherPointer,
-         typename>
+template<typename OtherPointer, typename>
 not_null<Pointer>& not_null<Pointer>::operator=(
     not_null<OtherPointer>&& other) {  // NOLINT(build/c++11)
   pointer_ = std::move(other.pointer_);
@@ -59,24 +55,25 @@ not_null<Pointer>& not_null<Pointer>::operator=(
 }
 
 template<typename Pointer>
-not_null<Pointer>::operator Pointer const&() const {
+not_null<Pointer>::operator pointer const&() const {
   return pointer_;
 }
 
 template<typename Pointer>
-decltype(*Pointer{}) not_null<Pointer>::operator*() const {
+decltype(*typename not_null<Pointer>::pointer{})
+not_null<Pointer>::operator*() const {
   return *pointer_;
 }
 
 template<typename Pointer>
-decltype(std::addressof(*Pointer{})) const
+decltype(std::addressof(*typename not_null<Pointer>::pointer{})) const
 not_null<Pointer>::operator->() const {
   return std::addressof(*pointer_);
 }
 
 template<typename Pointer>
 template<typename P, typename>
-not_null<decltype(P{}.get())> const not_null<Pointer>::get() const {
+not_null<decltype(P{}.get())> not_null<Pointer>::get() const {
   // NOTE(egg): no |CHECK| is performed.
   return not_null<decltype(P{}.get())>(pointer_.get());
 }

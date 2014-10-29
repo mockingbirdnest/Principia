@@ -12,7 +12,18 @@ using testing::Eq;
 namespace principia {
 namespace base {
 
-class NotNullTest : public testing::Test {};
+class NotNullTest : public testing::Test {
+ protected:
+  // A very convoluted wrapper for the x86 add...
+  void Add(not_null<int*> const destination,
+           not_null<int const*> const source) {
+    *destination += *source;
+  }
+  void Sub(not_null<int*> const destination,
+           not_null<int const*> const source) {
+    *destination -= *source;
+  }
+};
 
 using NotNullDeathTest = NotNullTest;
 
@@ -38,9 +49,6 @@ TEST_F(NotNullTest, Move) {
   EXPECT_THAT(*int_ptr2, Eq(5));
   int_ptr2 = std::move(int_ptr3);
   EXPECT_THAT(*int_ptr2, Eq(3));
-  // This checks an implementation detail, namely that move assignment is
-  // implemented as a swap.
-  EXPECT_THAT(*int_ptr3, Eq(5));
 }
 
 TEST_F(NotNullTest, Copy) {
@@ -105,6 +113,27 @@ TEST_F(NotNullTest, Arrow) {
   not_null<std::string*> not_null_access_string = not_null_owner_string.get();
   not_null_access_string->insert(0, "operator");
   EXPECT_THAT(*not_null_access_string, Eq("operator->"));
+}
+
+TEST_F(NotNullTest, NotNullNotNull) {
+  not_null<std::unique_ptr<int>> owner = make_not_null_unique<int>(42);
+  not_null<not_null<int*>> x = owner.get();
+  not_null<int*> y = x;
+  *x = 6 * 9;
+  EXPECT_THAT(*owner, Eq(6 * 9));
+  EXPECT_THAT(*x, Eq(6 * 9));
+  EXPECT_THAT(*y, Eq(6 * 9));
+}
+
+TEST_F(NotNullTest, CheckArguments) {
+  not_null<std::unique_ptr<int>> accumulator = make_not_null_unique<int>(0);
+  std::unique_ptr<int const> twenty_one = std::make_unique<int const>(21);
+  Add(accumulator.get(), check_not_null(twenty_one).get());
+  Add(accumulator.get(), check_not_null(twenty_one.get()));
+  EXPECT_THAT(*twenty_one, Eq(21));
+  EXPECT_THAT(*accumulator, Eq(42));
+  Sub(check_not_null(accumulator.get()), check_not_null(twenty_one.get()));
+  EXPECT_THAT(*accumulator, Eq(21));
 }
 
 }  // namespace base
