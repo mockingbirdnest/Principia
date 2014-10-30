@@ -6,132 +6,30 @@ namespace principia {
 namespace ksp_plugin_adapter {
 
 [KSPAddon(startup : KSPAddon.Startup.Flight, once : false)]
-public class PluginAdapter : UnityEngine.MonoBehaviour {
-
-  #region Interface
-  private const string kDllPath = "GameData/Principia/principia.dll";
-
-  [StructLayout(LayoutKind.Sequential)]
-  private struct XYZ {
-    double x, y, z;
-    public static explicit operator XYZ(Vector3d v) {
-      return new XYZ {x = v.x, y = v.y, z = v.z};
-    }
-    public static explicit operator Vector3d(XYZ v) {
-      return new Vector3d {x = v.x, y = v.y, z = v.z};
-    }
-  };
-
-  #region glog
-  [DllImport(dllName           : kDllPath,
-             CallingConvention = CallingConvention.Cdecl)]
-  private static extern void InitGoogleLogging();
-
-  [DllImport(dllName           : kDllPath,
-             CallingConvention = CallingConvention.Cdecl)]
-  private static extern void LogInfo(
-      [MarshalAs(UnmanagedType.LPStr)] String message);
-
-  [DllImport(dllName           : kDllPath,
-             CallingConvention = CallingConvention.Cdecl)]
-  private static extern void LogWarning(
-      [MarshalAs(UnmanagedType.LPStr)] String message);
-
-  [DllImport(dllName           : kDllPath,
-             CallingConvention = CallingConvention.Cdecl)]
-  private static extern void LogError(
-      [MarshalAs(UnmanagedType.LPStr)] String message);
-
-  [DllImport(dllName           : kDllPath,
-             CallingConvention = CallingConvention.Cdecl)]
-  private static extern void LogFatal(
-      [MarshalAs(UnmanagedType.LPStr)] String message);
-  #endregion
-
-  [DllImport(dllName           : kDllPath,
-             CallingConvention = CallingConvention.Cdecl)]
-  private static extern IntPtr SayHello();
-
-  [DllImport(dllName           : kDllPath,
-             CallingConvention = CallingConvention.Cdecl)]
-  private static extern IntPtr NewPlugin(
-      double initial_time,
-      int sun_index,
-      double sun_gravitational_parameter,
-      double planetarium_rotation_in_degrees);
-
-  [DllImport(dllName           : kDllPath,
-             CallingConvention = CallingConvention.Cdecl)]
-  private static extern void DeletePlugin(ref IntPtr plugin);
-
-  [DllImport(dllName           : kDllPath,
-             CallingConvention = CallingConvention.Cdecl)]
-  private static extern void InsertCelestial(
-      IntPtr plugin,
-      int celestial_index,
-      double gravitational_parameter,
-      int parent_index,
-      XYZ from_parent_position,
-      XYZ from_parent_velocity);
-
-  [DllImport(dllName           : kDllPath,
-             CallingConvention = CallingConvention.Cdecl)]
-  private static extern void EndInitialization(IntPtr plugin);
-
-  [DllImport(dllName           : kDllPath,
-             CallingConvention = CallingConvention.Cdecl)]
-  private static extern void UpdateCelestialHierarchy(IntPtr plugin,
-                                                      int celestial_index,
-                                                      int parent_index);
-
-  [DllImport(dllName           : kDllPath,
-             CallingConvention = CallingConvention.Cdecl)]
-  private static extern bool InsertOrKeepVessel(
-      IntPtr plugin,
-      [MarshalAs(UnmanagedType.LPStr)] String guid,
-      int parent_index);
-
-  [DllImport(dllName           : kDllPath,
-             CallingConvention = CallingConvention.Cdecl)]
-  private static extern void SetVesselStateOffset(
-      IntPtr plugin,
-      [MarshalAs(UnmanagedType.LPStr)] String guid,
-      XYZ from_parent_position,
-      XYZ from_parent_velocity);
-
-  [DllImport(dllName           : kDllPath,
-             CallingConvention = CallingConvention.Cdecl)]
-  private static extern void AdvanceTime(IntPtr plugin, 
-                                         double t,
-                                         double planetarium_rotation);
-
-  [DllImport(dllName           : kDllPath,
-             CallingConvention = CallingConvention.Cdecl)]
-  private static extern XYZ VesselDisplacementFromParent(
-      IntPtr plugin,
-      [MarshalAs(UnmanagedType.LPStr)] String guid);
-
-  [DllImport(dllName           : kDllPath,
-             CallingConvention = CallingConvention.Cdecl)]
-  private static extern XYZ VesselParentRelativeVelocity(
-      IntPtr plugin,
-      [MarshalAs(UnmanagedType.LPStr)] String guid);
-
-  [DllImport(dllName           : kDllPath,
-             CallingConvention = CallingConvention.Cdecl)]
-  private static extern XYZ CelestialDisplacementFromParent(
-      IntPtr plugin,
-      int celestial_index);
-  
-  [DllImport(dllName           : kDllPath,
-             CallingConvention = CallingConvention.Cdecl)]
-  private static extern XYZ CelestialParentRelativeVelocity(
-      IntPtr plugin,
-      int celestial_index);
-  #endregion
+public partial class PluginAdapter : UnityEngine.MonoBehaviour {
+  // This constant can be at most 32766, since Vectrosity imposes a maximum of
+  // 65534 vertices, where there are 2 vertices per point on discrete lines.  We
+  // want this to be even since we have two points per line segment.
+  // NOTE(egg): Things are fairly slow with the maximum number of points.  We
+  // have to do with fewer.  10000 is mostly ok, even fewer would be better.
+  // TODO(egg): At the moment we store points in the history  every
+  // 10 n seconds, where n is maximal such that 10 n seconds is less than the
+  // length of a |FixedUpdate|. This means we sometimes have very large gaps.
+  // We should store *all* points of the history, then decimate for rendering.
+  // This means splines are not needed, since 10 s is small enough to give the
+  // illusion of continuity on the scales we are dealing with, and cubics are
+  // rendered by Vectrosity as line segments, so that a cubic rendered as
+  // 10 segments counts 20 towards |kLinePoints| (and probably takes as long to
+  // render as 10 segments from the actual data, with extra overhead for
+  // the evaluation of the cubic).
+  private const int kLinePoints = 10000;
 
   private UnityEngine.Rect window_position_;
   private IntPtr plugin_ = IntPtr.Zero;
+  // TODO(egg): rendering only one trajectory at the moment.
+  private VectorLine rendered_trajectory_;
+  private IntPtr rendering_frame_ = IntPtr.Zero;
+  private int selected_celestial_ = 0;
 
   PluginAdapter() {
     // We create this directory here so we do not need to worry about cross-
@@ -142,6 +40,7 @@ public class PluginAdapter : UnityEngine.MonoBehaviour {
 
   ~PluginAdapter() {
     DeletePlugin(ref plugin_);
+    DeleteBodyCentredNonRotatingFrame(ref rendering_frame_);
   }
 
   private bool PluginRunning() {
@@ -193,6 +92,18 @@ public class PluginAdapter : UnityEngine.MonoBehaviour {
         top    : UnityEngine.Screen.height / 2.0f,
         width  : 10,
         height : 10);
+    rendered_trajectory_ = new VectorLine(
+        lineName     : "rendered_trajectory_",
+        linePoints   : new UnityEngine.Vector3[kLinePoints],
+        lineMaterial : MapView.OrbitLinesMaterial,
+        color        : XKCDColors.AcidGreen,
+        width        : 5,
+        lineType     : LineType.Discrete);
+    rendered_trajectory_.vectorObject.transform.parent =
+        ScaledSpace.Instance.transform;
+    rendered_trajectory_.vectorObject.renderer.castShadows = false;
+    rendered_trajectory_.vectorObject.renderer.receiveShadows = false;
+    rendered_trajectory_.layer = 31;
   }
 
   private void OnDestroy() {
@@ -263,8 +174,64 @@ public class PluginAdapter : UnityEngine.MonoBehaviour {
                                             UT: universal_time);
       };
       ApplyToVesselsInSpace(update_vessel);
+      Vessel active_vessel = FlightGlobals.ActiveVessel;
+      if (MapView.MapIsEnabled && 
+          (active_vessel.situation == Vessel.Situations.SUB_ORBITAL ||
+           active_vessel.situation == Vessel.Situations.ORBITING ||
+           active_vessel.situation == Vessel.Situations.ESCAPING)) {
+        if (active_vessel.orbitDriver.Renderer.drawMode !=
+                OrbitRenderer.DrawMode.OFF ||
+            active_vessel.orbitDriver.Renderer.drawIcons !=
+                OrbitRenderer.DrawIcons.OBJ ||
+            active_vessel.patchedConicRenderer != null) {
+          LogInfo("Removing orbit rendering for the active vessel");
+          active_vessel.orbitDriver.Renderer.drawMode =
+              OrbitRenderer.DrawMode.OFF;
+          active_vessel.orbitDriver.Renderer.drawIcons =
+              OrbitRenderer.DrawIcons.OBJ;
+          active_vessel.DetachPatchedConicsSolver();
+          active_vessel.patchedConicRenderer = null;
+        }
+        IntPtr trajectory_iterator = IntPtr.Zero;
+        try {
+          trajectory_iterator = RenderedVesselTrajectory(
+              plugin_,
+              active_vessel.id.ToString(),
+              rendering_frame_,
+              (XYZ)Planetarium.fetch.Sun.position);
+
+          LineSegment segment;
+          int index_in_line_points = kLinePoints -
+              NumberOfSegments(trajectory_iterator) * 2;
+          while (index_in_line_points < 0) {
+            FetchAndIncrement(trajectory_iterator);
+            index_in_line_points += 2;
+          }
+          while (!AtEnd(trajectory_iterator)) {
+            segment = FetchAndIncrement(trajectory_iterator);
+            // TODO(egg): should we do the |LocalToScaledSpace| conversion in
+            // native code?
+            // TODO(egg): could we directly assign to
+            // |rendered_trajectory_.points3| from C++ using unsafe code and
+            // something like the following?
+            // |fixed (UnityEngine.Vector3* pts = rendered_trajectory_.points3)|
+            rendered_trajectory_.points3[index_in_line_points++] =
+                ScaledSpace.LocalToScaledSpace((Vector3d)segment.begin);
+            rendered_trajectory_.points3[index_in_line_points++] =
+                ScaledSpace.LocalToScaledSpace((Vector3d)segment.end);
+          }
+        } finally {
+          DeleteLineAndIterator(ref trajectory_iterator);
+        }
+        if (MapView.Draw3DLines) {
+          Vector.DrawLine3D(rendered_trajectory_);
+        } else {
+          Vector.DrawLine(rendered_trajectory_);
+        }
+      }
     }
   }
+
   #endregion
 
   private void DrawGUI() {
@@ -297,6 +264,18 @@ public class PluginAdapter : UnityEngine.MonoBehaviour {
         DeletePlugin(ref plugin_);
       } else {
         InitializePlugin();
+      }
+    }
+    foreach (CelestialBody celestial in FlightGlobals.Bodies) {
+      if (UnityEngine.GUILayout.Toggle(
+              value : selected_celestial_ == celestial.flightGlobalsIndex,
+              text  : celestial.name)) {
+        selected_celestial_ = celestial.flightGlobalsIndex;
+        if (PluginRunning()) {
+          DeleteBodyCentredNonRotatingFrame(ref rendering_frame_);
+          rendering_frame_ =
+              NewBodyCentredNonRotatingFrame(plugin_, selected_celestial_);
+        }
       }
     }
     UnityEngine.GUILayout.EndVertical();

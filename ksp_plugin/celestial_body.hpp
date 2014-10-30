@@ -12,6 +12,11 @@ Celestial<Frame>::Celestial(Args&&... args)  // NOLINT(build/c++11)
                     std::forward<Args>(args)...)) {}  // NOLINT(build/c++11)
 
 template<typename Frame>
+Body<Frame> const& Celestial<Frame>::body() const {
+  return *body_;
+}
+
+template<typename Frame>
 bool Celestial<Frame>::has_parent() const {
   return parent_ != nullptr;
 }

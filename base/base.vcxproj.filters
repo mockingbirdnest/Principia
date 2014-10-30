@@ -10,27 +10,20 @@
       <Extensions>h;hh;hpp;hxx;hm;inl;inc;xsd</Extensions>
     </Filter>
     <Filter Include="Test Files">
-      <UniqueIdentifier>{0faba8e9-2063-4801-98f0-1f32c1e084ec}</UniqueIdentifier>
+      <UniqueIdentifier>{d76b8234-8f36-423c-8d7e-f460751798af}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="plugin_test.cpp">
+    <ClInclude Include="not_null.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="not_null_body.hpp">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="not_null_test.cpp">
       <Filter>Test Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\ksp_plugin\plugin.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\ksp_plugin\monostable.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="interface_test.cpp">
-      <Filter>Test Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\ksp_plugin\interface.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\ksp_plugin\rendering_frame.cpp">
-      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

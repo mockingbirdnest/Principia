@@ -35,6 +35,9 @@
     <ClInclude Include="vessel_body.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="rendering_frame.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="interface.cpp">
@@ -44,6 +47,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="monostable.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="rendering_frame.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

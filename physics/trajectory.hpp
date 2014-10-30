@@ -26,6 +26,8 @@ class Body;
 template<typename Frame>
 class Trajectory {
  public:
+  using Timeline = std::map<Instant, DegreesOfFreedom<Frame>>;
+
   // No transfer of ownership.  |body| must live longer than the trajectory as
   // the trajectory holds a reference to it.
   explicit Trajectory(Body<Frame> const& body);
@@ -37,6 +39,9 @@ class Trajectory {
   std::map<Instant, Position<Frame>> Positions() const;
   std::map<Instant, Velocity<Frame>> Velocities() const;
   std::list<Instant> Times() const;
+
+  // The position and velocity as a function of time for the whole trajectory.
+  Timeline const& timeline() const;
 
   // Return the most recent position/velocity/time.  These functions are O(1)
   // and dirt-cheap.
@@ -116,8 +121,6 @@ class Trajectory {
       Instant const& time) const;
 
  private:
-  using Timeline = std::map<Instant, DegreesOfFreedom<Frame>>;
-
   // A constructor for creating a child trajectory during forking.
   Trajectory(Body<Frame> const& body,
              Trajectory* const parent,

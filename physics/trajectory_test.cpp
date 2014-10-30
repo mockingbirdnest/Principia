@@ -37,7 +37,6 @@ class World;
 class TrajectoryTest : public testing::Test {
  protected:
   void SetUp() override {
-    // TODO(phl): See how we can simplify these horrendous expressions.
     q1_ = Position<World>(
         Vector<Length, World>({1 * Metre, 2 * Metre, 3 * Metre}));
     q2_ = Position<World>(
