@@ -11,11 +11,7 @@ namespace principia {
 namespace base {
 
 template<typename Pointer>
-not_null<Pointer>::not_null(pointer const& ptr) : pointer_(ptr) {}
-
-template<typename Pointer>
-not_null<Pointer>::not_null(pointer&& ptr)  // NOLINT(build/c++11)
-    : pointer_(std::move(ptr)) {}
+not_null<Pointer>::not_null(pointer ptr) : pointer_(std::move(ptr)) {}
 
 template<typename Pointer>
 template<typename OtherPointer, typename>
