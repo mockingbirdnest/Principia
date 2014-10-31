@@ -23,11 +23,11 @@ r = \norm{\vr}\text.
 \]
 For oblateness along the $z$-axis, the potential is
 \[
-\frac{J_2}{2r^5}(3z^2 - r^2)\text.
+\frac{J_2}{2r^5}\pa{3z^2 - r^2}\text.
 \]
 For oblateness along $\vj$,
 \[
-U\of\vr = \frac{J_2}{3\pascal{\scal{\vr}{\vj}}^2 - r^2}\text.
+U\of\vr = \frac{J_2}{2r^5}\pa{3\pascal{\scal{\vr}{\vj}}^2 - r^2}\text.
 \]
 Differentiating,
 \[
@@ -43,18 +43,19 @@ Recall that $\deriv \vr \vr = \frac{\vr}{r}$,
                 + \frac{1}{r^5}\pa{3\derivop \vr \pascal{\scal\vr\vj}^2 -
                     2 \vr}} \\
              &= \frac{J_2}{2}\pa{-\frac{15\vr}{r^7}
-                    \pascal{\scal\vr\vj}^2 - \frac{3\vr}{r^5}
+                    \pascal{\scal\vr\vj}^2 + \frac{3\vr}{r^5}
                 + \frac{3}{r^5}3\derivop \vr \pascal{\scal\vr\vj}^2}\text.
 \end{align*}
 With $\derivop \vr \pascal{\scal\vr\vj}^2 =
   2\pascal{\scal\vr\vj}\deriv\vr{\pascal{\scal\vr\vj}} = 2\pascal{\scal\vr\vj}\vj$,
 \begin{align*}
 \deriv \vr U &= \frac{J_2}{2}\pa{-\frac{15\vr}{r^7}
-                    \pascal{\scal\vr\vj}^2 - \frac{3\vr}{r^5}
+                    \pascal{\scal\vr\vj}^2 + \frac{3\vr}{r^5}
                 + \frac{6\vj}{r^5}\pascal{\scal\vr\vj}} \\
              &= \frac{3J_2}{2r^5}\pa{2\vj\pascal{\scal\vr\vj}
                 + \vr \pa{1 - \frac{5\pascal{\scal\vr\vj}^2}{r^2}}}\text.
 \end{align*}
+Note that this is invariant under $\vj\mapsto -\vj$ (but not under $\vr\mapsto -\vr$).
 \vfill
 \pagebreak
 
