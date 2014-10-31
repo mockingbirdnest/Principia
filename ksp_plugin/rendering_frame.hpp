@@ -27,7 +27,7 @@ class RenderingFrame {
       Trajectory<Barycentre> const& actual_trajectory) const = 0;
 };
 
-class BodyCentredNonRotatingFrame : RenderingFrame {
+class BodyCentredNonRotatingFrame : public RenderingFrame {
  public:
   explicit BodyCentredNonRotatingFrame(Celestial<Barycentre> const& body);
 
@@ -38,7 +38,7 @@ class BodyCentredNonRotatingFrame : RenderingFrame {
   Celestial<Barycentre> const& body_;
 };
 
-class BodyCentredRotating: RenderingFrame {
+class BodyCentredRotating : public RenderingFrame {
  public:
   BodyCentredRotating(Celestial<Barycentre> const& body,
                       AngularVelocity<Barycentre> const& angular_velocity);
@@ -51,7 +51,7 @@ class BodyCentredRotating: RenderingFrame {
   AngularVelocity<Barycentre> const angular_velocity_;
 };
 
-class BarycentricRotating : RenderingFrame {
+class BarycentricRotating : public RenderingFrame {
  public:
   BarycentricRotating(Celestial<Barycentre> const& primary,
                       Celestial<Barycentre> const& secondary);
