@@ -20,6 +20,8 @@ using principia::physics::MockNBodySystem;
 using principia::quantities::Abs;
 using principia::quantities::Sqrt;
 using principia::si::Day;
+using principia::si::Hour;
+using principia::si::Minute;
 using principia::si::Radian;
 using principia::si::AstronomicalUnit;
 using principia::testing_utilities::AbsoluteError;
@@ -584,6 +586,79 @@ TEST_F(PluginTest, UpdateCelestialHierarchy) {
             solar_system_->trajectories()[SolarSystem::kSun]->last_velocity(),
         AlmostEquals(looking_glass_.Inverse()(
             plugin_->CelestialParentRelativeVelocity(index)), 1000));
+  }
+}
+
+TEST_F(PluginTest, RenderingIntegration) {
+  GUID const satellite = "satellite";
+  // This is an integration test, so we need a plugin that will actually
+  // integrate.
+  Plugin plugin(
+      initial_time_,
+      SolarSystem::kSun,
+      sun_gravitational_parameter_,
+      planetarium_rotation_);
+  for (std::size_t index = SolarSystem::kSun + 1;
+       index < bodies_.size();
+       ++index) {
+    Index const parent_index = SolarSystem::parent(index);
+    Displacement<AliceSun> const from_parent_position = looking_glass_(
+        solar_system_->trajectories()[index]->last_position() -
+        solar_system_->trajectories()[parent_index]->last_position());
+    Velocity<AliceSun> const from_parent_velocity = looking_glass_(
+        solar_system_->trajectories()[index]->last_velocity() -
+        solar_system_->trajectories()[parent_index]->last_velocity());
+    plugin.InsertCelestial(index,
+                            bodies_[index]->gravitational_parameter(),
+                            parent_index,
+                            from_parent_position,
+                            from_parent_velocity);
+  }
+  plugin.EndInitialization();
+  plugin.InsertOrKeepVessel(satellite, SolarSystem::kEarth);
+  plugin.SetVesselStateOffset(satellite,
+                              satellite_initial_displacement_,
+                              satellite_initial_velocity_);
+  std::unique_ptr<RenderingFrame> const geocentric =
+      plugin.NewBodyCentredNonRotatingFrame(SolarSystem::kEarth);
+  Length perigee = std::numeric_limits<double>::infinity() * Metre;
+  Length apogee = -std::numeric_limits<double>::infinity() * Metre;
+  Permutation<AliceSun, World> const alice_sun_to_world =
+      Permutation<AliceSun, World>(Permutation<AliceSun, World>::XZY);
+  for (Instant t = initial_time_ + 1 * Minute;
+       t < initial_time_ + 12 * Hour;
+       t += 10 * Minute) {
+    plugin.AdvanceTime(t,
+                       1 * Radian / Pow<2>(Minute) * Pow<2>(t - initial_time_));
+    plugin.InsertOrKeepVessel(satellite, SolarSystem::kEarth);
+    Position<World> const sun_world_position =
+        kWorldOrigin + Velocity<World>(
+            { 0.1 * AstronomicalUnit / Hour,
+             -1.0 * AstronomicalUnit / Hour,
+              0.0 * AstronomicalUnit / Hour}) * (t - initial_time_);
+    RenderedTrajectory<World> const rendered_trajectory =
+        plugin.RenderedVesselTrajectory(satellite,
+                                        *geocentric,
+                                        sun_world_position);
+    Position<World> earth_world_position =
+        sun_world_position + alice_sun_to_world(
+            plugin.CelestialDisplacementFromParent(SolarSystem::kEarth));
+    for (auto const segment : rendered_trajectory) {
+      Length const l_min =
+          std::min((segment.begin - earth_world_position).Norm(),
+                   (segment.end - earth_world_position).Norm());
+      Length const l_max =
+          std::max((segment.begin - earth_world_position).Norm(),
+                   (segment.end - earth_world_position).Norm());
+      perigee = std::min(perigee, l_min);
+      apogee = std::max(apogee, l_max);
+    }
+    // Check continuity.
+    for (std::size_t i = 0; i < rendered_trajectory.size() - 1; ++i) {
+      EXPECT_THAT(rendered_trajectory[i].end,
+                  Eq(rendered_trajectory[i + 1].begin));
+    }
+    EXPECT_THAT(Abs(apogee - perigee), Lt(1.1 * Metre));
   }
 }
 
