@@ -595,11 +595,10 @@ TEST_F(PluginTest, RenderingIntegration) {
   GUID const satellite = "satellite";
   // This is an integration test, so we need a plugin that will actually
   // integrate.
-  Plugin plugin(
-      initial_time_,
-      SolarSystem::kSun,
-      sun_gravitational_parameter_,
-      planetarium_rotation_);
+  Plugin plugin(initial_time_,
+                SolarSystem::kSun,
+                sun_gravitational_parameter_,
+                planetarium_rotation_);
   for (std::size_t index = SolarSystem::kSun + 1;
        index < bodies_.size();
        ++index) {
@@ -635,6 +634,7 @@ TEST_F(PluginTest, RenderingIntegration) {
     plugin.AdvanceTime(t,
                        1 * Radian / Pow<2>(Minute) * Pow<2>(t - initial_time_));
     plugin.InsertOrKeepVessel(satellite, SolarSystem::kEarth);
+    // We give the sun an arbitrary nonzero velocity in |World|.
     Position<World> const sun_world_position =
         kWorldOrigin + Velocity<World>(
             { 0.1 * AstronomicalUnit / Hour,
