@@ -182,8 +182,7 @@ class not_null {
   // Creates a |not_null<Pointer>| whose |pointer_| equals the given |pointer|,
   // dawg.  The constructor does *not* perform a null check.  Callers must
   // perform one if needed before using it.
-  explicit not_null(pointer const& ptr);
-  explicit not_null(pointer&& ptr);  // NOLINT(build/c++11)
+  explicit not_null(pointer ptr);
 
   pointer pointer_;
 
