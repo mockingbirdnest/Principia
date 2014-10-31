@@ -59,10 +59,6 @@ class MockPlugin : public Plugin {
                          GUID const& vessel_guid,
                          RenderingFrame const& frame,
                          Position<World> const& sun_world_position));
-
-  MOCK_CONST_METHOD1(NewBodyCentredNonRotatingFrame,
-                     std::unique_ptr<BodyCentredNonRotatingFrame>(
-                         Index const reference_body_index));
 };
 
 }  // namespace ksp_plugin

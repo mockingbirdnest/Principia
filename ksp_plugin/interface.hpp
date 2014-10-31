@@ -182,7 +182,8 @@ void CDECL DeleteBodyCentredNonRotatingFrame(
 // Returns the result of |plugin->RenderedVesselTrajectory| called with the
 // arguments given, together with an iterator to its beginning.
 // |plugin| must not be null.  No transfer of ownership of |plugin|.  The caller
-// gets ownership of the result.
+// gets ownership of the result.  |frame| must not be null.  No transfer of
+// ownership of |frame.
 extern "C" DLLEXPORT
 LineAndIterator* CDECL RenderedVesselTrajectory(Plugin const* const plugin,
                                                 char const* vessel_guid,
