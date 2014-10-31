@@ -85,6 +85,9 @@ TEST_F(InterfaceDeathTest, Errors) {
   EXPECT_DEATH({
     CelestialParentRelativeVelocity(plugin, kCelestialIndex);
   }, "plugin.*non NULL");
+  EXPECT_DEATH({
+    NewBodyCentredNonRotatingFrame(plugin, kCelestialIndex);
+  }, "plugin.*non NULL");
 }
 
 TEST_F(InterfaceTest, DeletePluginSuccess) {
