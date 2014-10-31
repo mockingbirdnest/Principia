@@ -609,10 +609,10 @@ TEST_F(PluginTest, RenderingIntegration) {
         solar_system_->trajectories()[index]->last_velocity() -
         solar_system_->trajectories()[parent_index]->last_velocity());
     plugin.InsertCelestial(index,
-                            bodies_[index]->gravitational_parameter(),
-                            parent_index,
-                            from_parent_position,
-                            from_parent_velocity);
+                           bodies_[index]->gravitational_parameter(),
+                           parent_index,
+                           from_parent_position,
+                           from_parent_velocity);
   }
   plugin.EndInitialization();
   plugin.InsertOrKeepVessel(satellite, SolarSystem::kEarth);
@@ -621,6 +621,8 @@ TEST_F(PluginTest, RenderingIntegration) {
                               satellite_initial_velocity_);
   std::unique_ptr<RenderingFrame> const geocentric =
       plugin.NewBodyCentredNonRotatingFrame(SolarSystem::kEarth);
+  // We'll check that our orbit is rendered as circular (actually, we only check
+  // that it is rendered within a thin spherical shell around the Earth).
   Length perigee = std::numeric_limits<double>::infinity() * Metre;
   Length apogee = -std::numeric_limits<double>::infinity() * Metre;
   Permutation<AliceSun, World> const alice_sun_to_world =
