@@ -69,8 +69,6 @@ struct LineAndIterator {
 // This archive is written to
 // "<KSP directory>/glog/Principia/<SEVERITY>.<date>-<time>.<pid>",
 // where date and time are in ISO 8601 basic format.
-// TODO(egg): libglog should really be statically linked, what happens if two
-// plugins use glog?
 extern "C" DLLEXPORT
 void CDECL InitGoogleLogging();
 
@@ -191,7 +189,8 @@ void CDECL DeleteRenderingFrame(RenderingFrame const** const frame);
 // Returns the result of |plugin->RenderedVesselTrajectory| called with the
 // arguments given, together with an iterator to its beginning.
 // |plugin| must not be null.  No transfer of ownership of |plugin|.  The caller
-// gets ownership of the result.
+// gets ownership of the result.  |frame| must not be null.  No transfer of
+// ownership of |frame|.
 extern "C" DLLEXPORT
 LineAndIterator* CDECL RenderedVesselTrajectory(Plugin const* const plugin,
                                                 char const* vessel_guid,

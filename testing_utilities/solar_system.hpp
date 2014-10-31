@@ -85,7 +85,7 @@ class SolarSystem {
     kMajorBodiesOnly,
     // Same as above, with some smaller satellites of the main planets.
     kMinorAndMajorBodies,
-    // Same as above, with oblateness for the gaz giants.
+    // Same as above, with oblateness for the gas giants.
     kAllBodiesAndOblateness,
   };
 

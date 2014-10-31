@@ -82,9 +82,9 @@ using GUID = std::string;
 using Index = int;
 
 // Represents the line segment {(1-s) |begin| + s |end| | s ∈ [0, 1]}.
-// It is immediate that for every ∀ s ∈ [0, 1], (1-s) |begin| + s |end| is a
-// convex combination of |begin| and |end|, so that this is well-defined for
-// |begin| and |end| in an affine space.
+// It is immediate that ∀ s ∈ [0, 1], (1-s) |begin| + s |end| is a convex
+// combination of |begin| and |end|, so that this is well-defined for |begin|
+// and |end| in an affine space.
 template<typename Frame>
 struct LineSegment {
   LineSegment(Position<Frame> const& begin, Position<Frame> const& end)

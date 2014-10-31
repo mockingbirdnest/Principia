@@ -49,10 +49,16 @@ class MockPlugin : public Plugin {
                      Velocity<AliceSun>(GUID const& vessel_guid));
 
   MOCK_CONST_METHOD1(CelestialDisplacementFromParent,
-                     Displacement<AliceSun> (Index const celestial_index));
+                     Displacement<AliceSun>(Index const celestial_index));
 
   MOCK_CONST_METHOD1(CelestialParentRelativeVelocity,
-                     Velocity<AliceSun> (Index const celestial_index));
+                     Velocity<AliceSun>(Index const celestial_index));
+
+  MOCK_CONST_METHOD3(RenderedVesselTrajectory,
+                     RenderedTrajectory<World>(
+                         GUID const& vessel_guid,
+                         RenderingFrame const& frame,
+                         Position<World> const& sun_world_position));
 };
 
 }  // namespace ksp_plugin
