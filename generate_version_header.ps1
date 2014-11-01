@@ -1,5 +1,5 @@
 $solutiondir = resolve-path $args[0]
-$env:Path += ";$env:localappdata\GitHub\Portab~1\bin"
+$env:Path += ";$env:programfiles\Git\bin;$env:localappdata\GitHub\Portab~1\bin"
 
 $text = [string]::format(
     "#pragma once`n"                                `
