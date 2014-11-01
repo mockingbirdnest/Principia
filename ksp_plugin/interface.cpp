@@ -42,7 +42,9 @@ void InitGoogleLogging() {
   FLAGS_logbuflevel = google::INFO - 1;
   google::InitGoogleLogging("Principia");
   LOG(INFO) << "Initialized Google logging for Principia";
-  LOG(INFO) << "Principia version " << base::kVersion;
+  LOG(INFO) << "Principia version " << base::kVersion
+            << " built on " << base::kBuildDate;
+  // TODO(egg): by (compiler) for (ARCH, OS).
 }
 
 void LogInfo(char const* message) {
