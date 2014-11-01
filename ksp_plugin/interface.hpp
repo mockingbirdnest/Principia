@@ -172,12 +172,19 @@ BodyCentredNonRotatingFrame const* CDECL NewBodyCentredNonRotatingFrame(
     Plugin const* const plugin,
     int const reference_body_index);
 
+// Calls |plugin->NewBarycentricRotatingFrame| with the arguments given.
+// |plugin| must not be null.  No transfer of ownership.
+extern "C" DLLEXPORT
+BarycentricRotatingFrame const* CDECL NewBarycentricRotatingFrame(
+    Plugin const* const plugin,
+    int const primary_index,
+    int const secondary_index);
+
 // Deletes and nulls |*frame|.
 // |frame| must not be null.  No transfer of ownership of |*frame|, takes
 // ownership of |**frame|.
 extern "C" DLLEXPORT
-void CDECL DeleteBodyCentredNonRotatingFrame(
-    BodyCentredNonRotatingFrame const** const frame);
+void CDECL DeleteRenderingFrame(RenderingFrame const** const frame);
 
 // Returns the result of |plugin->RenderedVesselTrajectory| called with the
 // arguments given, together with an iterator to its beginning.

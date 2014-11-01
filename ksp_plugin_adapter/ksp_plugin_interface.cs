@@ -142,8 +142,14 @@ public partial class PluginAdapter : UnityEngine.MonoBehaviour {
 
   [DllImport(dllName           : kDllPath,
              CallingConvention = CallingConvention.Cdecl)]
-  private static extern void DeleteBodyCentredNonRotatingFrame(
-      ref IntPtr frame);
+  private static extern IntPtr NewBarycentricRotatingFrame(
+      IntPtr plugin,
+      int primary_index,
+      int secondary_index);
+
+  [DllImport(dllName           : kDllPath,
+             CallingConvention = CallingConvention.Cdecl)]
+  private static extern void DeleteRenderingFrame(ref IntPtr frame);
 
   [DllImport(dllName           : kDllPath,
              CallingConvention = CallingConvention.Cdecl)]

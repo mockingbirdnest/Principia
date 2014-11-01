@@ -51,10 +51,10 @@ class BodyCentredRotating : public RenderingFrame {
   AngularVelocity<Barycentre> const angular_velocity_;
 };
 
-class BarycentricRotating : public RenderingFrame {
+class BarycentricRotatingFrame : public RenderingFrame {
  public:
-  BarycentricRotating(Celestial<Barycentre> const& primary,
-                      Celestial<Barycentre> const& secondary);
+  BarycentricRotatingFrame(Celestial<Barycentre> const& primary,
+                           Celestial<Barycentre> const& secondary);
 
   std::unique_ptr<Trajectory<Barycentre>> ApparentTrajectory(
       Trajectory<Barycentre> const& actual_trajectory) const override;
