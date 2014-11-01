@@ -323,7 +323,8 @@ public partial class PluginAdapter : UnityEngine.MonoBehaviour {
     ApplyToBodyTree(insert_body);
     EndInitialization(plugin_);
     DeleteRenderingFrame(ref rendering_frame_);
-    first_selected_celestial_ = second_selected_celestial_ = 0;
+    first_selected_celestial_ = 0;
+    second_selected_celestial_ = 0;
     rendering_frame_ =
         NewBodyCentredNonRotatingFrame(plugin_, first_selected_celestial_);
     VesselProcessor insert_vessel = vessel => {

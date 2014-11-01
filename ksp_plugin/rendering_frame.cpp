@@ -80,7 +80,7 @@ BarycentricRotatingFrame::ApparentTrajectory(
       geometry::Barycentre<Displacement<Barycentre>, Mass>(
           {current_primary_state.position, current_secondary_state.position},
           {primary_.body().mass(), secondary_.body().mass()});
-  Displacement<Barycentre>  const to =
+  Displacement<Barycentre> const to =
         current_primary_state.position - current_barycentre;
   for (auto const& pair : actual_timeline) {
     Instant const& t = pair.first;
@@ -101,7 +101,7 @@ BarycentricRotatingFrame::ApparentTrajectory(
       Displacement<Barycentre> const from = primary_state.position - barycentre;
       auto const wedge = Wedge(from, to);
       auto const inverse_product_of_norms = 1 / (from.Norm() * to.Norm());
-      Rotation<Barycentre, Barycentre> rotate =
+      Rotation<Barycentre, Barycentre> const rotate =
           Rotation<Barycentre, Barycentre>(
               ArcTan(wedge.Norm() * inverse_product_of_norms,
                      InnerProduct(from, to) * inverse_product_of_norms),
