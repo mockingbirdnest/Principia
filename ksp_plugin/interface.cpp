@@ -2,6 +2,8 @@
 
 #include <string>
 
+#include "base/version.hpp"
+
 using principia::si::Degree;
 using principia::si::Metre;
 
@@ -40,6 +42,7 @@ void InitGoogleLogging() {
   FLAGS_logbuflevel = google::INFO - 1;
   google::InitGoogleLogging("Principia");
   LOG(INFO) << "Initialized Google logging for Principia";
+  LOG(INFO) << "Principia version " << base::kVersion;
 }
 
 void LogInfo(char const* message) {
