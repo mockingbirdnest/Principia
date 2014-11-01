@@ -7,7 +7,7 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "quantities", "quantities\qu
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Project Property Sheets", "Project Property Sheets", "{E12187B5-1432-4401-B671-FC3E06256CFD}"
 	ProjectSection(SolutionItems) = preProject
-		copy_libglog_dll.props = copy_libglog_dll.props
+		generate_version_header.props = generate_version_header.props
 		google_benchmark.props = google_benchmark.props
 		google_test_framework.props = google_test_framework.props
 		include_solution.props = include_solution.props
