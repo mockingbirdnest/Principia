@@ -3,7 +3,7 @@
   <ImportGroup Label="PropertySheets" />
   <ItemDefinitionGroup>
     <PreBuildEvent>
-      <Command>powershell -ExecutionPolicy unrestricted -File "$(SolutionDir)generate_version_header.ps1" "$(SolutionDir)"</Command>
+      <Command>powershell -ExecutionPolicy unrestricted -File "$(SolutionDir)generate_version_header.ps1" "$(SolutionDir)."</Command>
     </PreBuildEvent>
   </ItemDefinitionGroup>
 </Project>
