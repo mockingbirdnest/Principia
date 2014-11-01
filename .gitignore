@@ -92,3 +92,6 @@ packages/
 *.out
 *.synctex.gz
 *.thm
+
+#git version header
+base/version.hpp
