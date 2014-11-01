@@ -1,5 +1,4 @@
 $solutiondir = resolve-path $args[0]
-$encoding = [system.text.encoding]::utf8
 $env:Path += ";$env:localappdata\GitHub\Portab~1\bin"
 
 $text = [string]::format(
