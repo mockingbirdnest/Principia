@@ -285,7 +285,7 @@ public partial class PluginAdapter : UnityEngine.MonoBehaviour {
                                         height : 20f));
   }
 
-  private void InitializePlugin() {;
+  private void InitializePlugin() {
     plugin_ = NewPlugin(Planetarium.GetUniversalTime(),
                         Planetarium.fetch.Sun.flightGlobalsIndex,
                         Planetarium.fetch.Sun.gravParameter,
