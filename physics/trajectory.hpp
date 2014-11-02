@@ -181,7 +181,7 @@ class Trajectory {
    public:
     DegreesOfFreedom<ToFrame> const& degrees_of_freedom() const;
    private:
-    TransformingIterator(Transform<ToFrame> const& transform);
+    explicit TransformingIterator(Transform<ToFrame> const& transform);
     Transform<ToFrame> const transform_;
   };
 
