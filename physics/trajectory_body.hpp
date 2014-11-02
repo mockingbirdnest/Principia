@@ -20,9 +20,11 @@ Trajectory<Frame>::Trajectory(Body<Frame> const& body)
 
 template<typename Frame>
 std::map<Instant, Position<Frame>> Trajectory<Frame>::Positions() const {
-  std::map<Instant, Positions<Frame>> result;
+  std::map<Instant, Position<Frame>> result;
   for (Iterator it(this); !it.at_end(); ++it) {
-    result.push_back(it.degrees_of_freedom().postion);
+    Instant const& time = it.time();
+    result.insert(result.end(),
+                  std::make_pair(time, it.degrees_of_freedom().position));
   }
   return result;
 }
@@ -31,7 +33,9 @@ template<typename Frame>
 std::map<Instant, Velocity<Frame>> Trajectory<Frame>::Velocities() const {
   std::map<Instant, Velocity<Frame>> result;
   for (Iterator it(this); !it.at_end(); ++it) {
-    result.push_back(it.degrees_of_freedom().velocity);
+    Instant const& time = it.time();
+    result.insert(result.end(),
+                  std::make_pair(time, it.degrees_of_freedom().velocity));
   }
   return result;
 }
@@ -239,8 +243,8 @@ Trajectory<Frame>::Trajectory(Body<Frame> const& body,
       fork_(new typename Timeline::iterator(fork)) {}
 
 template<typename Frame>
-Trajectory<Frame>::Iterator::Iterator(Trajectory<Frame> const& trajectory) {
-  Trajectory const* ancestor = this;
+Trajectory<Frame>::Iterator::Iterator(Trajectory const* trajectory) {
+  Trajectory const* ancestor = trajectory;
   while (ancestor->parent_ != nullptr) {
     ancestry_.push_back(ancestor);
     forks_.push_back(*ancestor->fork_);
@@ -253,28 +257,28 @@ Trajectory<Frame>::Iterator::Iterator(Trajectory<Frame> const& trajectory) {
 template<typename Frame>
 void Trajectory<Frame>::Iterator::operator++() {
   if (current_ == *forks_.begin()) {
-    current_ = ancestry_.begin()->timeline_.begin();
+    current_ = ancestry_.front()->timeline_.begin();
     ancestry_.pop_front();
     forks_.pop_front();
   } else {
-    CHECK(current_ != ancestry_.begin()->timeline_.end());
+    CHECK(current_ != ancestry_.front()->timeline_.end());
     ++current_;
   }
 }
 
 template<typename Frame>
 bool Trajectory<Frame>::Iterator::at_end() const {
-  return forks_.empty() && current_ == ancestry_.begin()->timeline_.end();
+  return forks_.empty() && current_ == ancestry_.front()->timeline_.end();
 }
 
 template<typename Frame>
-Trajectory<Frame>::Iterator::Instant const& time() const {
+Instant const& Trajectory<Frame>::Iterator::time() const {
   return current_->first;
 }
 
 template<typename Frame>
-Trajectory<Frame>::Iterator::DegreesOfFreedom<Frame> const&
-degrees_of_freedom() const {
+DegreesOfFreedom<Frame> const&
+Trajectory<Frame>::Iterator::degrees_of_freedom() const {
   return current_->second;
 }
 

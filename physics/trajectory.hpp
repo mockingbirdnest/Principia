@@ -127,17 +127,19 @@ class Trajectory {
              typename Timeline::iterator const& fork);
 
   class Iterator {
-    // Constructing an iterator has complexity O(|depth|).
-    explicit Iterator(Trajectory<Frame> const& trajectory);
+   public:
+    // Constructing an iterator has complexity O(|depth|).  No transfer of
+    // ownership.
+    explicit Iterator(Trajectory const* trajectory);
 
     void operator++();
     bool at_end() const;
 
     Instant const& time() const;
     DegreesOfFreedom<Frame> const& degrees_of_freedom() const;
-  private:
-    typename Timeline::iterator current_;
-    std::list<Trajectory<Frame>const *> ancestry_;  // Pointers not owned.
+   private:
+    typename Timeline::const_iterator current_;
+    std::list<Trajectory const*> ancestry_;  // Pointers not owned.
     std::list<typename Timeline::iterator> forks_;
   };
 
