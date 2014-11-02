@@ -34,7 +34,7 @@ typename Trajectory<Frame>::NativeIterator Trajectory<Frame>::last() const {
 
 template<typename Frame>
 template<typename ToFrame>
-typename Trajectory<Frame>::TransformingIterator<ToFrame>
+Trajectory<Frame>::template TransformingIterator<ToFrame>
     Trajectory<Frame>::first_with_transform(
         Transform<ToFrame> const& transform) const {
   TransformingIterator<ToFrame> it(transform);
@@ -44,7 +44,7 @@ typename Trajectory<Frame>::TransformingIterator<ToFrame>
 
 template<typename Frame>
 template<typename ToFrame>
-typename Trajectory<Frame>::TransformingIterator<ToFrame>
+Trajectory<Frame>::template TransformingIterator<ToFrame>
     Trajectory<Frame>::last_with_transform(
         Transform<ToFrame> const& transform) const {
   TransformingIterator<ToFrame> it(transform);
@@ -300,7 +300,7 @@ Trajectory<Frame>::Iterator::current() const {
 template<typename Frame>
 DegreesOfFreedom<Frame> const&
 Trajectory<Frame>::NativeIterator::degrees_of_freedom() const {
-  return current()->second;
+  return this->current()->second;
 }
 
 template<typename Frame>

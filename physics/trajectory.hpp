@@ -54,13 +54,13 @@ class Trajectory {
   // Same as |first| above, but returns an iterator that performs a coordinate
   // tranformation to ToFrame.
   template<typename ToFrame>
-  typename TransformingIterator<ToFrame> first_with_transform(
+  TransformingIterator<ToFrame> first_with_transform(
       Transform<ToFrame> const& transform) const;
 
   // Same as |last| above, but returns an iterator that performs a coordinate
   // tranformation to ToFrame.
   template<typename ToFrame>
-  typename TransformingIterator<ToFrame> last_with_transform(
+  TransformingIterator<ToFrame> last_with_transform(
       Transform<ToFrame> const& transform) const;
 
   // These functions return the series of positions/velocities/times for the

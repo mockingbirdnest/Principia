@@ -205,13 +205,7 @@ TEST_F(TrajectoryTest, DeleteForkSuccess) {
 
 TEST_F(TrajectoryDeathTest, LastError) {
   EXPECT_DEATH({
-    massive_trajectory_->last().degrees_of_freedom().position;
-  }, "Empty trajectory");
-  EXPECT_DEATH({
-    massive_trajectory_->last().degrees_of_freedom().velocity;
-  }, "Empty trajectory");
-  EXPECT_DEATH({
-    massive_trajectory_->last().time();
+    massive_trajectory_->last();
   }, "Empty trajectory");
 }
 

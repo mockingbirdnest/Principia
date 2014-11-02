@@ -26,7 +26,8 @@ NormType AbsoluteError(T const& expected, T const& actual,
 }
 
 inline double AbsoluteError(double const expected, double const actual) {
-  return AbsoluteError(expected, actual, &quantities::Abs);
+  return AbsoluteError<double, double, double>(
+             expected, actual, &quantities::Abs);
 }
 
 template<typename Dimensions>
@@ -66,7 +67,8 @@ double RelativeError(T const& expected, T const& actual,
 }
 
 inline double RelativeError(double const expected, double const actual) {
-  return RelativeError(expected, actual, &quantities::Abs);
+  return RelativeError<double, double, double>(
+             expected, actual, &quantities::Abs);
 }
 
 template<typename Dimensions>
