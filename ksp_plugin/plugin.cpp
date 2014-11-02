@@ -13,6 +13,7 @@ namespace ksp_plugin {
 using geometry::AffineMap;
 using geometry::Bivector;
 using geometry::Permutation;
+using si::Radian;
 
 namespace {
 
@@ -438,6 +439,48 @@ std::unique_ptr<BarycentricRotatingFrame> Plugin::NewBarycentricRotatingFrame(
   CHECK(secondary_it != celestials_.end());
   Celestial<Barycentre> const& secondary = *secondary_it->second;
   return std::make_unique<BarycentricRotatingFrame>(primary, secondary);
+}
+
+Position<World> Plugin::VesselWorldPosition(
+    GUID const& vessel_guid,
+    Position<World> const& parent_world_position) const {
+  auto const it = vessels_.find(vessel_guid);
+  CHECK(it != vessels_.end());
+  Vessel<Barycentre> const& vessel = *(it->second);
+  auto const to_world =
+      AffineMap<Barycentre, World, Length, Rotation>(
+          vessel.parent().prolongation().last_position(),
+          parent_world_position,
+          Rotation<WorldSun, World>::Identity() * PlanetariumRotation());
+  CHECK(vessel.has_history()) << "Vessel with GUID " << vessel_guid
+                              << " was not given an initial state";
+  return to_world(vessel.prolongation_or_history().last_position());
+}
+
+Velocity<World> Plugin::VesselWorldVelocity(
+      GUID const& vessel_guid,
+      Velocity<World> const& parent_world_velocity,
+      AngularFrequency const& parent_rotation) const {
+  auto const it = vessels_.find(vessel_guid);
+  CHECK(it != vessels_.end());
+  Vessel<Barycentre> const& vessel = *(it->second);
+  CHECK(vessel.has_history()) << "Vessel with GUID " << vessel_guid
+                              << " was not given an initial state";
+  Rotation<Barycentre, World> to_world =
+      Rotation<WorldSun, World>::Identity() * PlanetariumRotation();
+  Velocity<Barycentre> const velocity_relative_to_parent =
+      vessel.prolongation_or_history().last_velocity() -
+      vessel.parent().prolongation().last_velocity();
+  Displacement<Barycentre> const offset_from_parent =
+      vessel.prolongation_or_history().last_position() -
+      vessel.parent().prolongation().last_position();
+  AngularVelocity<Barycentre> const world_frame_angular_velocity =
+      AngularVelocity<Barycentre>({0 * Radian / Second,
+                                   parent_rotation,
+                                   0 * Radian / Second});
+  return to_world(
+      (world_frame_angular_velocity * offset_from_parent) / Radian 
+          + velocity_relative_to_parent + parent_world_velocity);
 }
 
 }  // namespace ksp_plugin

@@ -33,6 +33,7 @@ using physics::Body;
 using physics::Trajectory;
 using physics::NBodySystem;
 using quantities::Angle;
+using quantities::AngularFrequency;
 using si::Second;
 
 // Universal time 0, time of game creation.
@@ -239,11 +240,12 @@ class Plugin {
 
   virtual Position<World> VesselWorldPosition(
       GUID const& vessel_guid,
-      Position<World> const& sun_world_position) const;
+      Position<World> const& parent_world_position) const;
 
   virtual Velocity<World> VesselWorldVelocity(
       GUID const& vessel_guid,
-      Velocity<World> const& sun_world_position) const;
+      Velocity<World> const& parent_world_velocity,
+      AngularFrequency const& parent_rotation) const;
 
  private:
   using GUIDToOwnedVessel = std::map<GUID, std::unique_ptr<Vessel<Barycentre>>>;

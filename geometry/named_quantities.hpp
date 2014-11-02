@@ -17,7 +17,7 @@ template<typename Frame>
 using Velocity = Vector<quantities::Speed, Frame>;
 
 template<typename Frame>
-using AngularVelocity = Bivector<quantities::Speed, Frame>;
+using AngularVelocity = Bivector<quantities::AngularFrequency, Frame>;
 
 }  // namespace geometry
 }  // namespace principia
