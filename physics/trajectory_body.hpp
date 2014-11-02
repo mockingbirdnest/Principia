@@ -34,9 +34,9 @@ typename Trajectory<Frame>::NativeIterator Trajectory<Frame>::last() const {
 
 template<typename Frame>
 template<typename ToFrame>
-Trajectory<Frame>::template TransformingIterator<ToFrame>
-    Trajectory<Frame>::first_with_transform(
-        Transform<ToFrame> const& transform) const {
+typename Trajectory<Frame>::TransformingIterator<ToFrame>
+Trajectory<Frame>::first_with_transform(
+    Transform<ToFrame> const& transform) const {
   TransformingIterator<ToFrame> it(transform);
   it.InitializeFirst(this);
   return it;
@@ -44,9 +44,9 @@ Trajectory<Frame>::template TransformingIterator<ToFrame>
 
 template<typename Frame>
 template<typename ToFrame>
-Trajectory<Frame>::template TransformingIterator<ToFrame>
-    Trajectory<Frame>::last_with_transform(
-        Transform<ToFrame> const& transform) const {
+typename Trajectory<Frame>::TransformingIterator<ToFrame>
+Trajectory<Frame>::last_with_transform(
+    Transform<ToFrame> const& transform) const {
   TransformingIterator<ToFrame> it(transform);
   it.InitializeLast(this);
   return it;
