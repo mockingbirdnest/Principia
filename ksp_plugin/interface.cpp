@@ -242,6 +242,36 @@ void DeleteLineAndIterator(LineAndIterator const** const line_and_iterator) {
   TakeOwnership(line_and_iterator);
 }
 
+XYZ VesselWorldPosition(Plugin const* const plugin,
+                        char const* vessel_guid,
+                        XYZ const parent_world_position) {
+  Position<World> result = CHECK_NOTNULL(plugin)->VesselWorldPosition(
+      vessel_guid,
+      kWorldOrigin + Displacement<World>({parent_world_position.x * Metre,
+                                          parent_world_position.y * Metre,
+                                          parent_world_position.z * Metre}));
+  R3Element<Length> const coordinates = (result - kWorldOrigin).coordinates();
+  return XYZ{coordinates.x / Metre,
+             coordinates.y / Metre,
+             coordinates.z / Metre};
+}
+
+XYZ VesselWorldVelocity(Plugin const* const plugin,
+                        char const* vessel_guid,
+                        XYZ const parent_world_velocity,
+                        double const parent_rotation_period) {
+  Velocity<World> result = CHECK_NOTNULL(plugin)->VesselWorldVelocity(
+      vessel_guid,
+      Velocity<World>({parent_world_velocity.x * Metre,
+                       parent_world_velocity.y * Metre,
+                       parent_world_velocity.z * Metre}),
+      parent_rotation_period * Second);
+  R3Element<Length> const coordinates = (result - kWorldOrigin).coordinates();
+  return XYZ{coordinates.x / Metre,
+             coordinates.y / Metre,
+             coordinates.z / Metre};
+}
+
 char const* SayHello() {
   return "Hello from native C++!";
 }

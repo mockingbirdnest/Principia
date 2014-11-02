@@ -460,7 +460,7 @@ Position<World> Plugin::VesselWorldPosition(
 Velocity<World> Plugin::VesselWorldVelocity(
       GUID const& vessel_guid,
       Velocity<World> const& parent_world_velocity,
-      AngularFrequency const& parent_rotation) const {
+      Time const& parent_rotation_period) const {
   auto const it = vessels_.find(vessel_guid);
   CHECK(it != vessels_.end());
   Vessel<Barycentre> const& vessel = *(it->second);
@@ -476,7 +476,7 @@ Velocity<World> Plugin::VesselWorldVelocity(
       vessel.parent().prolongation().last_position();
   AngularVelocity<Barycentre> const world_frame_angular_velocity =
       AngularVelocity<Barycentre>({0 * Radian / Second,
-                                   parent_rotation,
+                                   2 * π * Radian / parent_rotation_period,
                                    0 * Radian / Second});
   return to_world(
       (world_frame_angular_velocity * offset_from_parent) / Radian 
