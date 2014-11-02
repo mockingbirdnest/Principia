@@ -120,25 +120,17 @@ class Trajectory {
   Vector<Acceleration, Frame> evaluate_intrinsic_acceleration(
       Instant const& time) const;
 
- private:
+  //TODO(phl): Comments
   // A class to iterate over the timeline of a trajectory, taking forks into
   // account.
-  class Iterator {
+  class IteratorBase {
    public:
-    // |first| returns an iterator at the first point of the trajectory.  It has
-    // complexity O(|depth|).  The result may be at end if the trajectory is
-    // empty.
-    // |last| returns an iterator at the last point of the trajectory.  It has
-    // complexity O(1).  The trajectory must not be empty.
-    // No transfer of ownership.
-    static Iterator first(Trajectory const* trajectory);
-    static Iterator last(Trajectory const* trajectory);
-
     void operator++();
     bool at_end() const;
-
     Instant const& time() const;
-    DegreesOfFreedom<Frame> const& degrees_of_freedom() const;
+
+   protected:
+    typename Timeline::const_iterator current() const;
 
    private:
     Iterator();
@@ -147,6 +139,30 @@ class Trajectory {
     std::list<typename Timeline::iterator> forks_;
   };
 
+  class Iterator : public IteratorBase {
+   public:
+    DegreesOfFreedom<Frame> const& degrees_of_freedom() const;
+  };
+
+  template<typename ToFrame>
+  class TransformingIterator : public IteratorBase {
+   public:
+    DegreesOfFreedom<ToFrame> const& degrees_of_freedom() const;
+
+   private:
+  };
+
+  //TODO(phl):reorder, remove last_...
+  // |first| returns an iterator at the first point of the trajectory.  It has
+  // complexity O(|depth|).  The result may be at end if the trajectory is
+  // empty.
+  // |last| returns an iterator at the last point of the trajectory.  It has
+  // complexity O(1).  The trajectory must not be empty.
+  // No transfer of ownership.
+  Iterator first() const;
+  Iterator last() const;
+
+ private:
   // A constructor for creating a child trajectory during forking.
   Trajectory(Body<Frame> const& body,
              Trajectory* const parent,
