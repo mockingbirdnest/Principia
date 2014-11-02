@@ -2,6 +2,8 @@
 
 #include <string>
 
+#include "base/version.hpp"
+
 using principia::si::Degree;
 using principia::si::Metre;
 
@@ -40,6 +42,9 @@ void InitGoogleLogging() {
   FLAGS_logbuflevel = google::INFO - 1;
   google::InitGoogleLogging("Principia");
   LOG(INFO) << "Initialized Google logging for Principia";
+  LOG(INFO) << "Principia version " << base::kVersion
+            << " built on " << base::kBuildDate;
+  // TODO(egg): by (compiler) for (ARCH, OS).
 }
 
 void LogInfo(char const* message) {
@@ -184,8 +189,15 @@ BodyCentredNonRotatingFrame const* NewBodyCentredNonRotatingFrame(
       NewBodyCentredNonRotatingFrame(reference_body_index).release();
 }
 
-void DeleteBodyCentredNonRotatingFrame(
-    BodyCentredNonRotatingFrame const** const frame) {
+BarycentricRotatingFrame const* NewBarycentricRotatingFrame(
+    Plugin const* const plugin,
+    int const primary_index,
+    int const secondary_index) {
+  return CHECK_NOTNULL(plugin)->
+      NewBarycentricRotatingFrame(primary_index, secondary_index).release();
+}
+
+void DeleteRenderingFrame(RenderingFrame const** const frame) {
   TakeOwnership(frame);
 }
 

@@ -233,6 +233,10 @@ class Plugin {
   virtual std::unique_ptr<BodyCentredNonRotatingFrame>
   NewBodyCentredNonRotatingFrame(Index const reference_body_index) const;
 
+  virtual std::unique_ptr<BarycentricRotatingFrame>
+  NewBarycentricRotatingFrame(Index const primary_index,
+                              Index const secondary_index) const;
+
   virtual Position<World> VesselWorldPosition(
       GUID const& vessel_guid,
       Position<World> const& sun_world_position) const;

@@ -29,7 +29,8 @@ public partial class PluginAdapter : UnityEngine.MonoBehaviour {
   // TODO(egg): rendering only one trajectory at the moment.
   private VectorLine rendered_trajectory_;
   private IntPtr rendering_frame_ = IntPtr.Zero;
-  private int selected_celestial_ = 0;
+  private int first_selected_celestial_ = 0;
+  private int second_selected_celestial_ = 0;
 
   PluginAdapter() {
     // We create this directory here so we do not need to worry about cross-
@@ -40,7 +41,7 @@ public partial class PluginAdapter : UnityEngine.MonoBehaviour {
 
   ~PluginAdapter() {
     DeletePlugin(ref plugin_);
-    DeleteBodyCentredNonRotatingFrame(ref rendering_frame_);
+    DeleteRenderingFrame(ref rendering_frame_);
   }
 
   private bool PluginRunning() {
@@ -176,9 +177,9 @@ public partial class PluginAdapter : UnityEngine.MonoBehaviour {
       ApplyToVesselsInSpace(update_vessel);
       Vessel active_vessel = FlightGlobals.ActiveVessel;
       if (MapView.MapIsEnabled && 
-          (active_vessel.situation == Vessel.Situations.SUB_ORBITAL ||
-           active_vessel.situation == Vessel.Situations.ORBITING ||
-           active_vessel.situation == Vessel.Situations.ESCAPING)) {
+              (active_vessel.situation == Vessel.Situations.SUB_ORBITAL ||
+               active_vessel.situation == Vessel.Situations.ORBITING ||
+               active_vessel.situation == Vessel.Situations.ESCAPING)) {
         if (active_vessel.orbitDriver.Renderer.drawMode !=
                 OrbitRenderer.DrawMode.OFF ||
             active_vessel.orbitDriver.Renderer.drawIcons !=
@@ -267,14 +268,34 @@ public partial class PluginAdapter : UnityEngine.MonoBehaviour {
       }
     }
     foreach (CelestialBody celestial in FlightGlobals.Bodies) {
+      bool changed_reference_frame = false;
+      UnityEngine.GUILayout.BeginHorizontal();
       if (UnityEngine.GUILayout.Toggle(
-              value : selected_celestial_ == celestial.flightGlobalsIndex,
-              text  : celestial.name)) {
-        selected_celestial_ = celestial.flightGlobalsIndex;
-        if (PluginRunning()) {
-          DeleteBodyCentredNonRotatingFrame(ref rendering_frame_);
-          rendering_frame_ =
-              NewBodyCentredNonRotatingFrame(plugin_, selected_celestial_);
+              value : first_selected_celestial_ == celestial.flightGlobalsIndex,
+              text  : "") &&
+          first_selected_celestial_ != celestial.flightGlobalsIndex) {
+        first_selected_celestial_ = celestial.flightGlobalsIndex;
+        changed_reference_frame = true;
+      }
+      if (UnityEngine.GUILayout.Toggle(
+              value : second_selected_celestial_ == celestial.flightGlobalsIndex,
+              text  : celestial.name) &&
+          second_selected_celestial_ != celestial.flightGlobalsIndex) {
+        second_selected_celestial_ = celestial.flightGlobalsIndex;
+        changed_reference_frame = true;
+      }
+      UnityEngine.GUILayout.EndHorizontal();
+      if (changed_reference_frame && PluginRunning()) {
+        DeleteRenderingFrame(ref rendering_frame_);
+        if (first_selected_celestial_ == second_selected_celestial_) {
+          rendering_frame_ = NewBodyCentredNonRotatingFrame(
+                                 plugin_,
+                                 first_selected_celestial_);
+        } else {
+          rendering_frame_ = NewBarycentricRotatingFrame(
+                                 plugin_,
+                                 first_selected_celestial_,
+                                 second_selected_celestial_);
         }
       }
     }
@@ -301,6 +322,11 @@ public partial class PluginAdapter : UnityEngine.MonoBehaviour {
     };
     ApplyToBodyTree(insert_body);
     EndInitialization(plugin_);
+    DeleteRenderingFrame(ref rendering_frame_);
+    first_selected_celestial_ = 0;
+    second_selected_celestial_ = 0;
+    rendering_frame_ =
+        NewBodyCentredNonRotatingFrame(plugin_, first_selected_celestial_);
     VesselProcessor insert_vessel = vessel => {
       LogInfo("Inserting " + vessel.name + "...");
       bool inserted =

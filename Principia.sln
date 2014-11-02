@@ -7,7 +7,7 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "quantities", "quantities\qu
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Project Property Sheets", "Project Property Sheets", "{E12187B5-1432-4401-B671-FC3E06256CFD}"
 	ProjectSection(SolutionItems) = preProject
-		copy_libglog_dll.props = copy_libglog_dll.props
+		generate_version_header.props = generate_version_header.props
 		google_benchmark.props = google_benchmark.props
 		google_test_framework.props = google_test_framework.props
 		include_solution.props = include_solution.props
@@ -48,6 +48,11 @@ EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ksp_plugin_test", "ksp_plugin_test\ksp_plugin_test.vcxproj", "{A942ADF0-62F4-435C-85B2-934D5B666DB8}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "base", "base\base.vcxproj", "{7E7CC89A-FC65-409C-A975-9C3A6A50786B}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Scripts", "Scripts", "{B0F47E49-0EDF-4D58-AB27-F99CCCE4253A}"
+	ProjectSection(SolutionItems) = preProject
+		generate_version_header.ps1 = generate_version_header.ps1
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
