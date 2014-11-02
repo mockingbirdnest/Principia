@@ -262,14 +262,14 @@ XYZ VesselWorldVelocity(Plugin const* const plugin,
                         double const parent_rotation_period) {
   Velocity<World> result = CHECK_NOTNULL(plugin)->VesselWorldVelocity(
       vessel_guid,
-      Velocity<World>({parent_world_velocity.x * Metre,
-                       parent_world_velocity.y * Metre,
-                       parent_world_velocity.z * Metre}),
+      Velocity<World>({parent_world_velocity.x * Metre / Second,
+                       parent_world_velocity.y * Metre / Second,
+                       parent_world_velocity.z * Metre / Second}),
       parent_rotation_period * Second);
-  R3Element<Length> const coordinates = (result - kWorldOrigin).coordinates();
-  return XYZ{coordinates.x / Metre,
-             coordinates.y / Metre,
-             coordinates.z / Metre};
+  R3Element<Speed> const coordinates = result.coordinates();
+  return XYZ{coordinates.x / (Metre / Second),
+             coordinates.y / (Metre / Second),
+             coordinates.z / (Metre / Second)};
 }
 
 char const* SayHello() {

@@ -480,7 +480,7 @@ Velocity<World> Plugin::VesselWorldVelocity(
                                    0 * Radian / Second});
   return to_world(
       (world_frame_angular_velocity * offset_from_parent) / Radian 
-          + velocity_relative_to_parent + parent_world_velocity);
+          + velocity_relative_to_parent) + parent_world_velocity;
 }
 
 }  // namespace ksp_plugin

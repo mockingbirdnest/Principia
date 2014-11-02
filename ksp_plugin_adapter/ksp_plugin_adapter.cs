@@ -299,8 +299,46 @@ public partial class PluginAdapter : UnityEngine.MonoBehaviour {
         }
       }
     }
+    if (PluginRunning()) {
+      Vessel active_vessel = FlightGlobals.ActiveVessel;
+      UnityEngine.GUILayout.TextArea(
+          "Root part world velocity : " +
+          active_vessel.rootPart.rb.velocity.ToString());
+      UnityEngine.GUILayout.TextArea(
+          "+ Kraken : " +
+              (active_vessel.rootPart.rb.velocity +
+                   Krakensbane.GetFrameVelocity()).ToString());
+      UnityEngine.GUILayout.TextArea(
+          "Principia \"world\", no rotation : " +
+          (Vector3d)VesselWorldVelocity(
+              plugin_,
+              active_vessel.id.ToString(),
+              new XYZ{x = 0, y = 0, z = 0},
+              double.PositiveInfinity));
+      UnityEngine.GUILayout.TextArea(
+          "+ Kraken + getRFrmVel: " +
+              (active_vessel.rootPart.rb.velocity +
+                   Krakensbane.GetFrameVelocity() + 
+                   active_vessel.orbit.referenceBody.getRFrmVel(
+                       active_vessel.rootPart.rb.position)).ToString());
+      UnityEngine.GUILayout.TextArea(
+          "Principia \"world\", rotating : " +
+          VesselWorldVelocity(
+              plugin_,
+              active_vessel.id.ToString(),
+              new XYZ{x = 0, y = 0, z = 0},
+              active_vessel.orbit.referenceBody.rotationPeriod));
+      UnityEngine.GUILayout.TextArea(
+          "Root part world position : " +
+          active_vessel.rootPart.rb.position.ToString());
+      UnityEngine.GUILayout.TextArea(
+          "Principia world : " +
+          (Vector3d)VesselWorldPosition(
+              plugin_,
+              active_vessel.id.ToString(),
+              (XYZ)active_vessel.orbit.referenceBody.position));
+    }
     UnityEngine.GUILayout.EndVertical();
-
     UnityEngine.GUI.DragWindow(
         position : new UnityEngine.Rect(left : 0f, top : 0f, width : 10000f,
                                         height : 20f));
