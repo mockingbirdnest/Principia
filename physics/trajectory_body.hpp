@@ -21,7 +21,7 @@ Trajectory<Frame>::Trajectory(Body<Frame> const& body)
 template<typename Frame>
 std::map<Instant, Position<Frame>> Trajectory<Frame>::Positions() const {
   std::map<Instant, Position<Frame>> result;
-  for (Iterator it(this); !it.at_end(); ++it) {
+  for (Iterator it = Iterator::first(this); !it.at_end(); ++it) {
     Instant const& time = it.time();
     result.insert(result.end(),
                   std::make_pair(time, it.degrees_of_freedom().position));
@@ -32,7 +32,7 @@ std::map<Instant, Position<Frame>> Trajectory<Frame>::Positions() const {
 template<typename Frame>
 std::map<Instant, Velocity<Frame>> Trajectory<Frame>::Velocities() const {
   std::map<Instant, Velocity<Frame>> result;
-  for (Iterator it(this); !it.at_end(); ++it) {
+  for (Iterator it = Iterator::first(this); !it.at_end(); ++it) {
     Instant const& time = it.time();
     result.insert(result.end(),
                   std::make_pair(time, it.degrees_of_freedom().velocity));
@@ -43,7 +43,7 @@ std::map<Instant, Velocity<Frame>> Trajectory<Frame>::Velocities() const {
 template<typename Frame>
 std::list<Instant> Trajectory<Frame>::Times() const {
   std::list<Instant> result;
-  for (Iterator it(this); !it.at_end(); ++it) {
+  for (Iterator it = Iterator::first(this); !it.at_end(); ++it) {
     result.push_back(it.time());
   }
   return result;
@@ -57,32 +57,17 @@ Trajectory<Frame>::timeline() const {
 
 template<typename Frame>
 Position<Frame> const& Trajectory<Frame>::last_position() const {
-  if (timeline_.empty()) {
-    CHECK(fork_ != nullptr) << "Empty trajectory";
-    return (*fork_)->second.position;
-  } else {
-    return timeline_.rbegin()->second.position;
-  }
+  return Iterator::last(this).degrees_of_freedom().position;
 }
 
 template<typename Frame>
 Velocity<Frame> const& Trajectory<Frame>::last_velocity() const {
-  if (timeline_.empty()) {
-    CHECK(fork_ != nullptr) << "Empty trajectory";
-    return (*fork_)->second.velocity;
-  } else {
-    return timeline_.rbegin()->second.velocity;
-  }
+  return Iterator::last(this).degrees_of_freedom().velocity;
 }
 
 template<typename Frame>
 Instant const& Trajectory<Frame>::last_time() const {
-  if (timeline_.empty()) {
-    CHECK(fork_ != nullptr) << "Empty trajectory";
-    return (*fork_)->first;
-  } else {
-    return timeline_.rbegin()->first;
-  }
+  return Iterator::last(this).time();
 }
 
 template<typename Frame>
@@ -235,31 +220,44 @@ Vector<Acceleration, Frame> Trajectory<Frame>::evaluate_intrinsic_acceleration(
 }
 
 template<typename Frame>
-Trajectory<Frame>::Trajectory(Body<Frame> const& body,
-                              Trajectory* const parent,
-                              typename Timeline::iterator const& fork)
-    : body_(body),
-      parent_(CHECK_NOTNULL(parent)),
-      fork_(new typename Timeline::iterator(fork)) {}
-
-template<typename Frame>
-Trajectory<Frame>::Iterator::Iterator(Trajectory const* trajectory) {
+typename Trajectory<Frame>::Iterator Trajectory<Frame>::Iterator::first(
+    Trajectory const* trajectory) {
+  CHECK_NOTNULL(trajectory);
+  Iterator it;
   Trajectory const* ancestor = trajectory;
   while (ancestor->parent_ != nullptr) {
-    ancestry_.push_back(ancestor);
-    forks_.push_back(*ancestor->fork_);
+    it.ancestry_.push_front(ancestor);
+    it.forks_.push_front(*ancestor->fork_);
     ancestor = ancestor->parent_;
   }
-  ancestry_.push_back(ancestor);
-  current_ = ancestor->timeline_.begin();
+  it.ancestry_.push_front(ancestor);
+  it.current_ = ancestor->timeline_.begin();
+  return it;
+}
+
+template<typename Frame>
+typename Trajectory<Frame>::Iterator Trajectory<Frame>::Iterator::last(
+    Trajectory const* trajectory) {
+  CHECK_NOTNULL(trajectory);
+  // We don't need to really keep track of the forks or of the ancestry.
+  Iterator it;
+  if (trajectory->timeline_.empty()) {
+    CHECK(trajectory->fork_ != nullptr) << "Empty trajectory";
+    it.ancestry_.push_front(trajectory->parent_);
+    it.current_ = *trajectory->fork_;
+  } else {
+    it.ancestry_.push_front(trajectory);
+    it.current_ = --trajectory->timeline_.end();
+  }
+  return it;
 }
 
 template<typename Frame>
 void Trajectory<Frame>::Iterator::operator++() {
-  if (current_ == *forks_.begin()) {
-    current_ = ancestry_.front()->timeline_.begin();
+  if (!forks_.empty() && current_ == forks_.front()) {
     ancestry_.pop_front();
     forks_.pop_front();
+    current_ = ancestry_.front()->timeline_.begin();
   } else {
     CHECK(current_ != ancestry_.front()->timeline_.end());
     ++current_;
@@ -281,6 +279,17 @@ DegreesOfFreedom<Frame> const&
 Trajectory<Frame>::Iterator::degrees_of_freedom() const {
   return current_->second;
 }
+
+template<typename Frame>
+Trajectory<Frame>::Iterator::Iterator() {}
+
+template<typename Frame>
+Trajectory<Frame>::Trajectory(Body<Frame> const& body,
+                              Trajectory* const parent,
+                              typename Timeline::iterator const& fork)
+    : body_(body),
+      parent_(CHECK_NOTNULL(parent)),
+      fork_(new typename Timeline::iterator(fork)) {}
 
 }  // namespace physics
 }  // namespace principia
