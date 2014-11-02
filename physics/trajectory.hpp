@@ -133,10 +133,12 @@ class Trajectory {
     typename Timeline::const_iterator current() const;
 
    private:
-    Iterator();
+    IteratorBase();
     typename Timeline::const_iterator current_;
     std::list<Trajectory const*> ancestry_;  // Pointers not owned.
     std::list<typename Timeline::iterator> forks_;
+
+    friend class Trajectory;
   };
 
   class Iterator : public IteratorBase {
@@ -145,11 +147,18 @@ class Trajectory {
   };
 
   template<typename ToFrame>
+  using Transform =
+      std::function<DegreesOfFreedom<ToFrame>(Instant const&,
+                                              DegreesOfFreedom<Frame>)>;
+
+  template<typename ToFrame>
   class TransformingIterator : public IteratorBase {
    public:
     DegreesOfFreedom<ToFrame> const& degrees_of_freedom() const;
 
    private:
+    TransformingIterator(Transform<ToFrame> const& transform);
+    Transform<ToFrame> const transform_;
   };
 
   //TODO(phl):reorder, remove last_...
@@ -161,6 +170,10 @@ class Trajectory {
   // No transfer of ownership.
   Iterator first() const;
   Iterator last() const;
+
+  template<typename ToFrame>
+  typename TransformingIterator<ToFrame> first_with_transform(
+      Transform<ToFrame> const& transform) const;
 
  private:
   // A constructor for creating a child trajectory during forking.
