@@ -125,9 +125,12 @@ class Trajectory {
   // account.
   class Iterator {
    public:
-    // |first| has complexity O(|depth|).  It may be at end if the trajectory is
-    // empty.  |last| has complexity O(1), it is not at end.  No transfer of
-    // ownership.
+    // |first| returns an iterator at the first point of the trajectory.  It has
+    // complexity O(|depth|).  The result may be at end if the trajectory is
+    // empty.
+    // |last| returns an iterator at the last point of the trajectory.  It has
+    // complexity O(1).  The trajectory must not be empty.
+    // No transfer of ownership.
     static Iterator first(Trajectory const* trajectory);
     static Iterator last(Trajectory const* trajectory);
 
