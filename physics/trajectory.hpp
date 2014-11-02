@@ -121,14 +121,36 @@ class Trajectory {
       Instant const& time) const;
 
  private:
+  // A class to iterate over the timeline of a trajectory, taking forks into
+  // account.
+  class Iterator {
+   public:
+    // |first| returns an iterator at the first point of the trajectory.  It has
+    // complexity O(|depth|).  The result may be at end if the trajectory is
+    // empty.
+    // |last| returns an iterator at the last point of the trajectory.  It has
+    // complexity O(1).  The trajectory must not be empty.
+    // No transfer of ownership.
+    static Iterator first(Trajectory const* trajectory);
+    static Iterator last(Trajectory const* trajectory);
+
+    void operator++();
+    bool at_end() const;
+
+    Instant const& time() const;
+    DegreesOfFreedom<Frame> const& degrees_of_freedom() const;
+
+   private:
+    Iterator();
+    typename Timeline::const_iterator current_;
+    std::list<Trajectory const*> ancestry_;  // Pointers not owned.
+    std::list<typename Timeline::iterator> forks_;
+  };
+
   // A constructor for creating a child trajectory during forking.
   Trajectory(Body<Frame> const& body,
              Trajectory* const parent,
              typename Timeline::iterator const& fork);
-
-  template<typename Value>
-  std::map<Instant, Value> ApplyToDegreesOfFreedom(
-      std::function<Value(DegreesOfFreedom<Frame> const&)> compute_value) const;
 
   Body<Frame> const& body_;
 
