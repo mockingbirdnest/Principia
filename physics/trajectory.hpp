@@ -126,6 +126,21 @@ class Trajectory {
              Trajectory* const parent,
              typename Timeline::iterator const& fork);
 
+  class Iterator {
+    // Constructing an iterator has complexity O(|depth|).
+    explicit Iterator(Trajectory<Frame> const& trajectory);
+
+    void operator++();
+    bool at_end() const;
+
+    Instant const& time() const;
+    DegreesOfFreedom<Frame> const& degrees_of_freedom() const;
+  private:
+    typename Timeline::iterator current_;
+    std::list<Trajectory<Frame>const *> ancestry_;  // Pointers not owned.
+    std::list<typename Timeline::iterator> forks_;
+  };
+
   template<typename Value>
   std::map<Instant, Value> ApplyToDegreesOfFreedom(
       std::function<Value(DegreesOfFreedom<Frame> const&)> compute_value) const;

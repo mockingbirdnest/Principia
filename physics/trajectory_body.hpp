@@ -19,40 +19,29 @@ Trajectory<Frame>::Trajectory(Body<Frame> const& body)
       parent_(nullptr) {}
 
 template<typename Frame>
-std::map<Instant, Position<Frame>>
-Trajectory<Frame>::Positions() const {
-  return ApplyToDegreesOfFreedom<Position<Frame>>(
-      [](DegreesOfFreedom<Frame> const& s) { return s.position; });
+std::map<Instant, Position<Frame>> Trajectory<Frame>::Positions() const {
+  std::map<Instant, Positions<Frame>> result;
+  for (Iterator it(this); !it.at_end(); ++it) {
+    result.push_back(it.degrees_of_freedom().postion);
+  }
+  return result;
 }
 
 template<typename Frame>
 std::map<Instant, Velocity<Frame>> Trajectory<Frame>::Velocities() const {
-  return ApplyToDegreesOfFreedom<Velocity<Frame>>(
-      [](DegreesOfFreedom<Frame> const& s) { return s.velocity; });
+  std::map<Instant, Velocity<Frame>> result;
+  for (Iterator it(this); !it.at_end(); ++it) {
+    result.push_back(it.degrees_of_freedom().velocity);
+  }
+  return result;
 }
 
 template<typename Frame>
 std::list<Instant> Trajectory<Frame>::Times() const {
   std::list<Instant> result;
-
-  // Our own data points in increasing time order.
-  for (auto const it : timeline_) {
-    Instant const& time = it.first;
-    result.push_back(time);
+  for (Iterator it(this); !it.at_end(); ++it) {
+    result.push_back(it.time());
   }
-
-  // The data points of our ancestors in decreasing time order.
-  Trajectory const* ancestor = this;
-  while (ancestor->parent_ != nullptr) {
-    typename Timeline::iterator it = *ancestor->fork_;
-    do {
-      Instant const& time = it->first;
-      result.push_front(time);
-    } while (it-- !=  // Postdecrement to process begin.
-             ancestor->parent_->timeline_.begin());
-    ancestor = ancestor->parent_;
-  }
-
   return result;
 }
 
@@ -250,34 +239,43 @@ Trajectory<Frame>::Trajectory(Body<Frame> const& body,
       fork_(new typename Timeline::iterator(fork)) {}
 
 template<typename Frame>
-template<typename Value>
-std::map<Instant, Value> Trajectory<Frame>::ApplyToDegreesOfFreedom(
-    std::function<Value(DegreesOfFreedom<Frame> const&)> compute_value) const {
-  std::map<Instant, Value> result;
-
-  // Our own data points in increasing time order.
-  for (auto const it : timeline_) {
-    Instant const& time = it.first;
-    DegreesOfFreedom<Frame> const& degrees_of_freedom = it.second;
-    result.insert(result.end(),
-                  std::make_pair(time, compute_value(degrees_of_freedom)));
-  }
-
-  // The data points of our ancestors in decreasing time order.
+Trajectory<Frame>::Iterator::Iterator(Trajectory<Frame> const& trajectory) {
   Trajectory const* ancestor = this;
   while (ancestor->parent_ != nullptr) {
-    typename Timeline::iterator it = *ancestor->fork_;
-    do {
-      Instant const& time = it->first;
-      DegreesOfFreedom<Frame> const& degrees_of_freedom = it->second;
-      result.insert(result.begin(),
-                    std::make_pair(time, compute_value(degrees_of_freedom)));
-    } while (it-- !=  // Postdecrement to process begin.
-             ancestor->parent_->timeline_.begin());
+    ancestry_.push_back(ancestor);
+    forks_.push_back(*ancestor->fork_);
     ancestor = ancestor->parent_;
   }
+  ancestry_.push_back(ancestor);
+  current_ = ancestor->timeline_.begin();
+}
 
-  return result;
+template<typename Frame>
+void Trajectory<Frame>::Iterator::operator++() {
+  if (current_ == *forks_.begin()) {
+    current_ = ancestry_.begin()->timeline_.begin();
+    ancestry_.pop_front();
+    forks_.pop_front();
+  } else {
+    CHECK(current_ != ancestry_.begin()->timeline_.end());
+    ++current_;
+  }
+}
+
+template<typename Frame>
+bool Trajectory<Frame>::Iterator::at_end() const {
+  return forks_.empty() && current_ == ancestry_.begin()->timeline_.end();
+}
+
+template<typename Frame>
+Trajectory<Frame>::Iterator::Instant const& time() const {
+  return current_->first;
+}
+
+template<typename Frame>
+Trajectory<Frame>::Iterator::DegreesOfFreedom<Frame> const&
+degrees_of_freedom() const {
+  return current_->second;
 }
 
 }  // namespace physics
