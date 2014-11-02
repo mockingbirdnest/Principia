@@ -43,12 +43,6 @@ class Trajectory {
   // The position and velocity as a function of time for the whole trajectory.
   Timeline const& timeline() const;
 
-  // Return the most recent position/velocity/time.  These functions are O(1)
-  // and dirt-cheap.
-  Position<Frame> const& last_position() const;
-  Velocity<Frame> const& last_velocity() const;
-  Instant const& last_time() const;
-
   // Appends one point to the trajectory.
   void Append(Instant const& time,
               DegreesOfFreedom<Frame> const& degrees_of_freedom);
@@ -130,20 +124,24 @@ class Trajectory {
     Instant const& time() const;
 
    protected:
+    IteratorBase() = default;
+    void InitializeFirst(Trajectory const* trajectory);
+    void InitializeLast(Trajectory const* trajectory);
     typename Timeline::const_iterator current() const;
 
    private:
-    IteratorBase();
     typename Timeline::const_iterator current_;
     std::list<Trajectory const*> ancestry_;  // Pointers not owned.
     std::list<typename Timeline::iterator> forks_;
-
-    friend class Trajectory;
   };
 
-  class Iterator : public IteratorBase {
+  class NativeIterator : public IteratorBase {
    public:
     DegreesOfFreedom<Frame> const& degrees_of_freedom() const;
+
+   private:
+    NativeIterator() = default;
+    friend class Trajectory;
   };
 
   template<typename ToFrame>
@@ -162,15 +160,16 @@ class Trajectory {
   };
 
   //TODO(phl):reorder, remove last_...
-  // |first| returns an iterator at the first point of the trajectory.  It has
-  // complexity O(|depth|).  The result may be at end if the trajectory is
-  // empty.
-  // |last| returns an iterator at the last point of the trajectory.  It has
-  // complexity O(1).  The trajectory must not be empty.
-  // No transfer of ownership.
-  Iterator first() const;
-  Iterator last() const;
+  // Returns an iterator at the first point of the trajectory.  Complexity is
+  // O(|depth|).  The result may be at end if the trajectory is empty.  No
+  // transfer of ownership.
+  NativeIterator first() const;
 
+  // Returns an iterator at the last point of the trajectory.  Complexity is
+  // O(1).  The trajectory must not be empty.  No transfer of ownership.
+  NativeIterator last() const;
+
+  //TODO(phl):comment
   template<typename ToFrame>
   typename TransformingIterator<ToFrame> first_with_transform(
       Transform<ToFrame> const& transform) const;
