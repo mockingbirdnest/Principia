@@ -26,12 +26,42 @@ class Body;
 template<typename Frame>
 class Trajectory {
  public:
+  class NativeIterator;
+  template<typename ToFrame>
+  class TransformingIterator;
+
+  // A function that transforms the coordinates to a different frame.
+  template<typename ToFrame>
+  using Transform =
+      std::function<DegreesOfFreedom<ToFrame>(Instant const&,
+                                              DegreesOfFreedom<Frame>)>;
+
   using Timeline = std::map<Instant, DegreesOfFreedom<Frame>>;
 
   // No transfer of ownership.  |body| must live longer than the trajectory as
   // the trajectory holds a reference to it.
   explicit Trajectory(Body<Frame> const& body);
   ~Trajectory() = default;
+
+  // Returns an iterator at the first point of the trajectory.  Complexity is
+  // O(|depth|).  The result may be at end if the trajectory is empty.
+  NativeIterator first() const;
+
+  // Returns an iterator at the last point of the trajectory.  Complexity is
+  // O(1).  The trajectory must not be empty.
+  NativeIterator last() const;
+
+  // Same as |first| above, but returns an iterator that performs a coordinate
+  // tranformation to ToFrame.
+  template<typename ToFrame>
+  typename TransformingIterator<ToFrame> first_with_transform(
+      Transform<ToFrame> const& transform) const;
+
+  // Same as |last| above, but returns an iterator that performs a coordinate
+  // tranformation to ToFrame.
+  template<typename ToFrame>
+  typename TransformingIterator<ToFrame> last_with_transform(
+      Transform<ToFrame> const& transform) const;
 
   // These functions return the series of positions/velocities/times for the
   // trajectory of the body.  All three containers are guaranteed to have the
@@ -114,17 +144,17 @@ class Trajectory {
   Vector<Acceleration, Frame> evaluate_intrinsic_acceleration(
       Instant const& time) const;
 
-  //TODO(phl): Comments
-  // A class to iterate over the timeline of a trajectory, taking forks into
-  // account.
-  class IteratorBase {
+  // A base class for iterating over the timeline of a trajectory, taking forks
+  // into account.  Objects of this class cannot be created.
+  class Iterator {
    public:
-    void operator++();
+    Iterator& operator++();
     bool at_end() const;
     Instant const& time() const;
 
    protected:
-    IteratorBase() = default;
+    Iterator() = default;
+    // No transfer of ownership.
     void InitializeFirst(Trajectory const* trajectory);
     void InitializeLast(Trajectory const* trajectory);
     typename Timeline::const_iterator current() const;
@@ -135,44 +165,25 @@ class Trajectory {
     std::list<typename Timeline::iterator> forks_;
   };
 
-  class NativeIterator : public IteratorBase {
+  // An iterator which returns the coordinates in the native frame of the
+  // trajectory, i.e., |Frame|.
+  class NativeIterator : public Iterator {
    public:
     DegreesOfFreedom<Frame> const& degrees_of_freedom() const;
-
    private:
     NativeIterator() = default;
     friend class Trajectory;
   };
 
+  // An iterator which returns the coordinates in another frame.
   template<typename ToFrame>
-  using Transform =
-      std::function<DegreesOfFreedom<ToFrame>(Instant const&,
-                                              DegreesOfFreedom<Frame>)>;
-
-  template<typename ToFrame>
-  class TransformingIterator : public IteratorBase {
+  class TransformingIterator : public Iterator {
    public:
     DegreesOfFreedom<ToFrame> const& degrees_of_freedom() const;
-
    private:
     TransformingIterator(Transform<ToFrame> const& transform);
     Transform<ToFrame> const transform_;
   };
-
-  //TODO(phl):reorder, remove last_...
-  // Returns an iterator at the first point of the trajectory.  Complexity is
-  // O(|depth|).  The result may be at end if the trajectory is empty.  No
-  // transfer of ownership.
-  NativeIterator first() const;
-
-  // Returns an iterator at the last point of the trajectory.  Complexity is
-  // O(1).  The trajectory must not be empty.  No transfer of ownership.
-  NativeIterator last() const;
-
-  //TODO(phl):comment
-  template<typename ToFrame>
-  typename TransformingIterator<ToFrame> first_with_transform(
-      Transform<ToFrame> const& transform) const;
 
  private:
   // A constructor for creating a child trajectory during forking.

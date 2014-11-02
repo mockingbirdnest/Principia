@@ -19,6 +19,40 @@ Trajectory<Frame>::Trajectory(Body<Frame> const& body)
       parent_(nullptr) {}
 
 template<typename Frame>
+typename Trajectory<Frame>::NativeIterator Trajectory<Frame>::first() const {
+  NativeIterator it;
+  it.InitializeFirst(this);
+  return it;
+}
+
+template<typename Frame>
+typename Trajectory<Frame>::NativeIterator Trajectory<Frame>::last() const {
+  NativeIterator it;
+  it.InitializeLast(this);
+  return it;
+}
+
+template<typename Frame>
+template<typename ToFrame>
+typename Trajectory<Frame>::TransformingIterator<ToFrame>
+    Trajectory<Frame>::first_with_transform(
+        Transform<ToFrame> const& transform) const {
+  TransformingIterator<ToFrame> it(transform);
+  it.InitializeFirst(this);
+  return it;
+}
+
+template<typename Frame>
+template<typename ToFrame>
+typename Trajectory<Frame>::TransformingIterator<ToFrame>
+    Trajectory<Frame>::last_with_transform(
+        Transform<ToFrame> const& transform) const {
+  TransformingIterator<ToFrame> it(transform);
+  it.InitializeLast(this);
+  return it;
+}
+
+template<typename Frame>
 std::map<Instant, Position<Frame>> Trajectory<Frame>::Positions() const {
   std::map<Instant, Position<Frame>> result;
   for (NativeIterator it = first(); !it.at_end(); ++it) {
@@ -205,21 +239,8 @@ Vector<Acceleration, Frame> Trajectory<Frame>::evaluate_intrinsic_acceleration(
 }
 
 template<typename Frame>
-typename Trajectory<Frame>::NativeIterator Trajectory<Frame>::first() const {
-  NativeIterator it;
-  it.InitializeFirst(this);
-  return it;
-}
-
-template<typename Frame>
-typename Trajectory<Frame>::NativeIterator Trajectory<Frame>::last() const {
-  NativeIterator it;
-  it.InitializeLast(this);
-  return it;
-}
-
-template<typename Frame>
-void Trajectory<Frame>::IteratorBase::operator++() {
+typename Trajectory<Frame>::Iterator&
+Trajectory<Frame>::Iterator::operator++() {
   if (!forks_.empty() && current_ == forks_.front()) {
     ancestry_.pop_front();
     forks_.pop_front();
@@ -228,20 +249,21 @@ void Trajectory<Frame>::IteratorBase::operator++() {
     CHECK(current_ != ancestry_.front()->timeline_.end());
     ++current_;
   }
+  return *this;
 }
 
 template<typename Frame>
-bool Trajectory<Frame>::IteratorBase::at_end() const {
+bool Trajectory<Frame>::Iterator::at_end() const {
   return forks_.empty() && current_ == ancestry_.front()->timeline_.end();
 }
 
 template<typename Frame>
-Instant const& Trajectory<Frame>::IteratorBase::time() const {
+Instant const& Trajectory<Frame>::Iterator::time() const {
   return current_->first;
 }
 
 template<typename Frame>
-void Trajectory<Frame>::IteratorBase::InitializeFirst(
+void Trajectory<Frame>::Iterator::InitializeFirst(
     Trajectory const* trajectory) {
   CHECK_NOTNULL(trajectory);
   Trajectory const* ancestor = trajectory;
@@ -255,7 +277,7 @@ void Trajectory<Frame>::IteratorBase::InitializeFirst(
 }
 
 template<typename Frame>
-void Trajectory<Frame>::IteratorBase::InitializeLast(
+void Trajectory<Frame>::Iterator::InitializeLast(
     Trajectory const* trajectory) {
   CHECK_NOTNULL(trajectory);
   // We don't need to really keep track of the forks or of the ancestry.
@@ -271,7 +293,7 @@ void Trajectory<Frame>::IteratorBase::InitializeLast(
 
 template<typename Frame>
 typename Trajectory<Frame>::Timeline::const_iterator
-Trajectory<Frame>::IteratorBase::current() const {
+Trajectory<Frame>::Iterator::current() const {
   return current_;
 }
 
@@ -293,18 +315,8 @@ template<typename Frame>
 template<typename ToFrame>
 Trajectory<Frame>::TransformingIterator<ToFrame>::TransformingIterator(
     Transform<ToFrame> const& transform)
-    : IteratorBase(),
+    : Iterator(),
       transform_(transform) {}
-
-template<typename Frame>
-template<typename ToFrame>
-typename Trajectory<Frame>::TransformingIterator<ToFrame>
-    Trajectory<Frame>::first_with_transform(
-        Transform<ToFrame> const& transform) const {
-  TransformingIterator<ToFrame> it(transform);
-  it.InitializeFirst(this);
-  return it;
-}
 
 template<typename Frame>
 Trajectory<Frame>::Trajectory(Body<Frame> const& body,
