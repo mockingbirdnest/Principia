@@ -205,13 +205,7 @@ TEST_F(TrajectoryTest, DeleteForkSuccess) {
 
 TEST_F(TrajectoryDeathTest, LastError) {
   EXPECT_DEATH({
-    massive_trajectory_->last_position();
-  }, "Empty trajectory");
-  EXPECT_DEATH({
-    massive_trajectory_->last_velocity();
-  }, "Empty trajectory");
-  EXPECT_DEATH({
-    massive_trajectory_->last_time();
+    massive_trajectory_->last();
   }, "Empty trajectory");
 }
 
@@ -219,9 +213,9 @@ TEST_F(TrajectoryTest, LastSuccess) {
   massive_trajectory_->Append(t1_, *d1_);
   massive_trajectory_->Append(t2_, *d2_);
   massive_trajectory_->Append(t3_, *d3_);
-  EXPECT_EQ(q3_, massive_trajectory_->last_position());
-  EXPECT_EQ(p3_, massive_trajectory_->last_velocity());
-  EXPECT_EQ(t3_, massive_trajectory_->last_time());
+  EXPECT_EQ(q3_, massive_trajectory_->last().degrees_of_freedom().position);
+  EXPECT_EQ(p3_, massive_trajectory_->last().degrees_of_freedom().velocity);
+  EXPECT_EQ(t3_, massive_trajectory_->last().time());
 }
 
 TEST_F(TrajectoryTest, Root) {
@@ -273,9 +267,9 @@ TEST_F(TrajectoryTest, ForgetAfterSuccess) {
   EXPECT_THAT(positions, ElementsAre(Pair(t1_, q1_), Pair(t2_, q2_)));
   EXPECT_THAT(velocities, ElementsAre(Pair(t1_, p1_), Pair(t2_, p2_)));
   EXPECT_THAT(times, ElementsAre(t1_, t2_));
-  EXPECT_EQ(q2_, fork->last_position());
-  EXPECT_EQ(p2_, fork->last_velocity());
-  EXPECT_EQ(t2_, fork->last_time());
+  EXPECT_EQ(q2_, fork->last().degrees_of_freedom().position);
+  EXPECT_EQ(p2_, fork->last().degrees_of_freedom().velocity);
+  EXPECT_EQ(t2_, fork->last().time());
 
   positions = massive_trajectory_->Positions();
   velocities = massive_trajectory_->Velocities();
