@@ -14,6 +14,26 @@ using principia::geometry::Wedge;
 namespace principia {
 namespace ksp_plugin {
 
+namespace {
+
+// Returns an iterator for the first entry in |trajectory| with a time greater
+// than or equal to |t|.
+// TODO(phl): This is O(N), so we might want to expose a more efficient version.
+// But then it's likely that we'll just rewrite this class anyway.
+Trajectory<Barycentre>::NativeIterator LowerBound(
+    Instant const& t, Trajectory<Barycentre> const& trajectory) {
+  for (Trajectory<Barycentre>::NativeIterator it = trajectory.first();
+       !it.at_end();
+       ++it) {
+    if (it.time() >= t) {
+      return it;
+    }
+  }
+  LOG(FATAL) << t << " not found in trajectory";
+}
+
+}  // namespace
+
 BodyCentredNonRotatingFrame::BodyCentredNonRotatingFrame(
     Celestial<Barycentre> const& body) : body_(body) {}
 
@@ -24,22 +44,20 @@ BodyCentredNonRotatingFrame::ApparentTrajectory(
       std::make_unique<Trajectory<Barycentre>>(actual_trajectory.body());
   Trajectory<Barycentre>::NativeIterator actual_timeline =
       actual_trajectory.first();
-  Trajectory<Barycentre>::NativeIterator reference_body_timeline =
-      body_.history().first();
-  Trajectory<Barycentre>::Timeline::const_iterator it_in_reference =
-      reference_body_timeline.lower_bound(actual_timeline.begin()->first);
+  Trajectory<Barycentre>::NativeIterator it_in_reference =
+      LowerBound(actual_timeline.time(), body_.history());
   DegreesOfFreedom<Barycentre> const& current_reference_state =
       body_.prolongation().last().degrees_of_freedom();
-  CHECK(it_in_reference != reference_body_timeline.end());
-  for (auto const& pair : actual_timeline) {
-    Instant const& t = pair.first;
-    DegreesOfFreedom<Barycentre> const& actual_state = pair.second;
-    while (it_in_reference->first < t) {
+  for (; !actual_timeline.at_end(); ++actual_timeline) {
+    Instant const& t = actual_timeline.time();
+    DegreesOfFreedom<Barycentre> const& actual_state =
+        actual_timeline.degrees_of_freedom();
+    while (it_in_reference.time() < t) {
       ++it_in_reference;
     }
-    if (it_in_reference->first == t) {
+    if (it_in_reference.time() == t) {
       DegreesOfFreedom<Barycentre> const& reference_state =
-          it_in_reference->second;
+          it_in_reference.degrees_of_freedom();
       // TODO(egg): We should have a vector space structure on
       // |DegreesOfFreedom<Fries>|.
       result->Append(t,
@@ -62,16 +80,12 @@ BarycentricRotatingFrame::ApparentTrajectory(
     Trajectory<Barycentre> const& actual_trajectory) const {
   std::unique_ptr<Trajectory<Barycentre>> result =
       std::make_unique<Trajectory<Barycentre>>(actual_trajectory.body());
-  Trajectory<Barycentre>::NativeIterator const& actual_timeline =
+  Trajectory<Barycentre>::NativeIterator actual_timeline =
       actual_trajectory.first();
-  Trajectory<Barycentre>::NativeIterator const& primary_timeline =
-      primary_.history().first();
-  Trajectory<Barycentre>::NativeIterator const& secondary_timeline =
-      secondary_.history().first();
-  Trajectory<Barycentre>::Timeline::const_iterator it_in_primary =
-      primary_timeline.lower_bound(actual_timeline.begin()->first);
-  Trajectory<Barycentre>::Timeline::const_iterator it_in_secondary =
-      secondary_timeline.lower_bound(actual_timeline.begin()->first);
+  Trajectory<Barycentre>::NativeIterator it_in_primary =
+      LowerBound(actual_timeline.time(), primary_.history());
+  Trajectory<Barycentre>::NativeIterator it_in_secondary =
+      LowerBound(actual_timeline.time(), secondary_.history());
   DegreesOfFreedom<Barycentre> const& current_primary_state =
       primary_.prolongation().last().degrees_of_freedom();
   DegreesOfFreedom<Barycentre> const& current_secondary_state =
@@ -82,17 +96,19 @@ BarycentricRotatingFrame::ApparentTrajectory(
           {primary_.body().mass(), secondary_.body().mass()});
   Displacement<Barycentre> const to =
         current_primary_state.position - current_barycentre;
-  for (auto const& pair : actual_timeline) {
-    Instant const& t = pair.first;
-    DegreesOfFreedom<Barycentre> const& actual_state = pair.second;
-    while (it_in_primary->first < t) {
+  for (; !actual_timeline.at_end(); ++actual_timeline) {
+    Instant const& t = actual_timeline.time();
+    DegreesOfFreedom<Barycentre> const& actual_state =
+        actual_timeline.degrees_of_freedom();
+    while (it_in_primary.time() < t) {
       ++it_in_primary;
       ++it_in_secondary;
     }
-    if (it_in_primary->first == t) {
-      DegreesOfFreedom<Barycentre> const& primary_state = it_in_primary->second;
+    if (it_in_primary.time() == t) {
+      DegreesOfFreedom<Barycentre> const& primary_state =
+          it_in_primary.degrees_of_freedom();
       DegreesOfFreedom<Barycentre> const& secondary_state =
-          it_in_secondary->second;
+          it_in_secondary.degrees_of_freedom();
       Position<Barycentre> const barycentre =
           geometry::Barycentre<Displacement<Barycentre>, Mass>(
               {primary_state.position, secondary_state.position},
