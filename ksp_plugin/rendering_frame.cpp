@@ -30,6 +30,7 @@ Trajectory<Barycentre>::NativeIterator LowerBound(
     }
   }
   LOG(FATAL) << t << " not found in trajectory";
+  return trajectory.first();
 }
 
 }  // namespace
@@ -42,22 +43,21 @@ BodyCentredNonRotatingFrame::ApparentTrajectory(
     Trajectory<Barycentre> const& actual_trajectory) const {
   std::unique_ptr<Trajectory<Barycentre>> result =
       std::make_unique<Trajectory<Barycentre>>(actual_trajectory.body());
-  Trajectory<Barycentre>::NativeIterator actual_timeline =
-      actual_trajectory.first();
-  Trajectory<Barycentre>::NativeIterator it_in_reference =
-      LowerBound(actual_timeline.time(), body_.history());
+  Trajectory<Barycentre>::NativeIterator actual_it = actual_trajectory.first();
+  Trajectory<Barycentre>::NativeIterator reference_it =
+      LowerBound(actual_it.time(), body_.history());
   DegreesOfFreedom<Barycentre> const& current_reference_state =
       body_.prolongation().last().degrees_of_freedom();
-  for (; !actual_timeline.at_end(); ++actual_timeline) {
-    Instant const& t = actual_timeline.time();
+  for (; !actual_it.at_end(); ++actual_it) {
+    Instant const& t = actual_it.time();
     DegreesOfFreedom<Barycentre> const& actual_state =
-        actual_timeline.degrees_of_freedom();
-    while (it_in_reference.time() < t) {
-      ++it_in_reference;
+        actual_it.degrees_of_freedom();
+    while (reference_it.time() < t) {
+      ++reference_it;
     }
-    if (it_in_reference.time() == t) {
+    if (reference_it.time() == t) {
       DegreesOfFreedom<Barycentre> const& reference_state =
-          it_in_reference.degrees_of_freedom();
+          reference_it.degrees_of_freedom();
       // TODO(egg): We should have a vector space structure on
       // |DegreesOfFreedom<Fries>|.
       result->Append(t,
@@ -80,12 +80,11 @@ BarycentricRotatingFrame::ApparentTrajectory(
     Trajectory<Barycentre> const& actual_trajectory) const {
   std::unique_ptr<Trajectory<Barycentre>> result =
       std::make_unique<Trajectory<Barycentre>>(actual_trajectory.body());
-  Trajectory<Barycentre>::NativeIterator actual_timeline =
-      actual_trajectory.first();
-  Trajectory<Barycentre>::NativeIterator it_in_primary =
-      LowerBound(actual_timeline.time(), primary_.history());
-  Trajectory<Barycentre>::NativeIterator it_in_secondary =
-      LowerBound(actual_timeline.time(), secondary_.history());
+  Trajectory<Barycentre>::NativeIterator actual_it = actual_trajectory.first();
+  Trajectory<Barycentre>::NativeIterator primary_it =
+      LowerBound(actual_it.time(), primary_.history());
+  Trajectory<Barycentre>::NativeIterator secondary_it =
+      LowerBound(actual_it.time(), secondary_.history());
   DegreesOfFreedom<Barycentre> const& current_primary_state =
       primary_.prolongation().last().degrees_of_freedom();
   DegreesOfFreedom<Barycentre> const& current_secondary_state =
@@ -96,19 +95,19 @@ BarycentricRotatingFrame::ApparentTrajectory(
           {primary_.body().mass(), secondary_.body().mass()});
   Displacement<Barycentre> const to =
         current_primary_state.position - current_barycentre;
-  for (; !actual_timeline.at_end(); ++actual_timeline) {
-    Instant const& t = actual_timeline.time();
+  for (; !actual_it.at_end(); ++actual_it) {
+    Instant const& t = actual_it.time();
     DegreesOfFreedom<Barycentre> const& actual_state =
-        actual_timeline.degrees_of_freedom();
-    while (it_in_primary.time() < t) {
-      ++it_in_primary;
-      ++it_in_secondary;
+        actual_it.degrees_of_freedom();
+    while (primary_it.time() < t) {
+      ++primary_it;
+      ++secondary_it;
     }
-    if (it_in_primary.time() == t) {
+    if (primary_it.time() == t) {
       DegreesOfFreedom<Barycentre> const& primary_state =
-          it_in_primary.degrees_of_freedom();
+          primary_it.degrees_of_freedom();
       DegreesOfFreedom<Barycentre> const& secondary_state =
-          it_in_secondary.degrees_of_freedom();
+          secondary_it.degrees_of_freedom();
       Position<Barycentre> const barycentre =
           geometry::Barycentre<Displacement<Barycentre>, Mass>(
               {primary_state.position, secondary_state.position},
