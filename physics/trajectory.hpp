@@ -139,8 +139,6 @@ class Trajectory {
   Vector<Acceleration, Frame> evaluate_intrinsic_acceleration(
       Instant const& time) const;
 
-  using Timeline = std::map<Instant, DegreesOfFreedom<Frame>>;
-
   // A base class for iterating over the timeline of a trajectory, taking forks
   // into account.  Objects of this class cannot be created.
   class Iterator {
@@ -150,6 +148,8 @@ class Trajectory {
     Instant const& time() const;
 
    protected:
+    using Timeline = std::map<Instant, DegreesOfFreedom<Frame>>;
+
     Iterator() = default;
     // No transfer of ownership.
     void InitializeFirst(Trajectory const* trajectory);
@@ -183,6 +183,8 @@ class Trajectory {
   };
 
  private:
+  using Timeline = std::map<Instant, DegreesOfFreedom<Frame>>;
+
   // A constructor for creating a child trajectory during forking.
   Trajectory(Body<Frame> const& body,
              Trajectory* const parent,
