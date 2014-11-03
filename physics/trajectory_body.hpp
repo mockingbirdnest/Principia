@@ -84,12 +84,6 @@ std::list<Instant> Trajectory<Frame>::Times() const {
 }
 
 template<typename Frame>
-typename Trajectory<Frame>::Timeline const&
-Trajectory<Frame>::timeline() const {
-  return timeline_;
-}
-
-template<typename Frame>
 void Trajectory<Frame>::Append(
     Instant const& time,
     DegreesOfFreedom<Frame> const& degrees_of_freedom) {

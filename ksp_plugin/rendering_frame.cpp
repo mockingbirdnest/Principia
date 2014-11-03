@@ -22,14 +22,14 @@ BodyCentredNonRotatingFrame::ApparentTrajectory(
     Trajectory<Barycentre> const& actual_trajectory) const {
   std::unique_ptr<Trajectory<Barycentre>> result =
       std::make_unique<Trajectory<Barycentre>>(actual_trajectory.body());
-  Trajectory<Barycentre>::Timeline const& actual_timeline =
-      actual_trajectory.timeline();
-  Trajectory<Barycentre>::Timeline const& reference_body_timeline =
-      body_.history().timeline();
+  Trajectory<Barycentre>::NativeIterator actual_timeline =
+      actual_trajectory.first();
+  Trajectory<Barycentre>::NativeIterator reference_body_timeline =
+      body_.history().first();
   Trajectory<Barycentre>::Timeline::const_iterator it_in_reference =
       reference_body_timeline.lower_bound(actual_timeline.begin()->first);
   DegreesOfFreedom<Barycentre> const& current_reference_state =
-      body_.prolongation().timeline().rbegin()->second;
+      body_.prolongation().last().degrees_of_freedom();
   CHECK(it_in_reference != reference_body_timeline.end());
   for (auto const& pair : actual_timeline) {
     Instant const& t = pair.first;
@@ -62,20 +62,20 @@ BarycentricRotatingFrame::ApparentTrajectory(
     Trajectory<Barycentre> const& actual_trajectory) const {
   std::unique_ptr<Trajectory<Barycentre>> result =
       std::make_unique<Trajectory<Barycentre>>(actual_trajectory.body());
-  Trajectory<Barycentre>::Timeline const& actual_timeline =
-      actual_trajectory.timeline();
-  Trajectory<Barycentre>::Timeline const& primary_timeline =
-      primary_.history().timeline();
-  Trajectory<Barycentre>::Timeline const& secondary_timeline =
-      secondary_.history().timeline();
+  Trajectory<Barycentre>::NativeIterator const& actual_timeline =
+      actual_trajectory.first();
+  Trajectory<Barycentre>::NativeIterator const& primary_timeline =
+      primary_.history().first();
+  Trajectory<Barycentre>::NativeIterator const& secondary_timeline =
+      secondary_.history().first();
   Trajectory<Barycentre>::Timeline::const_iterator it_in_primary =
       primary_timeline.lower_bound(actual_timeline.begin()->first);
   Trajectory<Barycentre>::Timeline::const_iterator it_in_secondary =
       secondary_timeline.lower_bound(actual_timeline.begin()->first);
   DegreesOfFreedom<Barycentre> const& current_primary_state =
-      primary_.prolongation().timeline().rbegin()->second;
+      primary_.prolongation().last().degrees_of_freedom();
   DegreesOfFreedom<Barycentre> const& current_secondary_state =
-      secondary_.prolongation().timeline().rbegin()->second;
+      secondary_.prolongation().last().degrees_of_freedom();
   Position<Barycentre> const current_barycentre =
       geometry::Barycentre<Displacement<Barycentre>, Mass>(
           {current_primary_state.position, current_secondary_state.position},

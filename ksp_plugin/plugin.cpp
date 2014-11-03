@@ -410,8 +410,10 @@ RenderedTrajectory<World> Plugin::RenderedVesselTrajectory(
   DegreesOfFreedom<Barycentre> const* final_state = nullptr;
   std::unique_ptr<Trajectory<Barycentre>> const apparent_trajectory =
       frame.ApparentTrajectory(vessel.history());
-  for (auto const& pair : apparent_trajectory->timeline()) {
-    final_state = &pair.second;
+  for (Trajectory<Barycentre>::NativeIterator it = apparent_trajectory->first();
+       !it.at_end();
+       ++it) {
+    final_state = &it.degrees_of_freedom();
     if (initial_state != nullptr) {
       result.emplace_back(to_world(initial_state->position),
                           to_world(final_state->position));
