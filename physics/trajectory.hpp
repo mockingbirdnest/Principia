@@ -36,8 +36,6 @@ class Trajectory {
       std::function<DegreesOfFreedom<ToFrame>(Instant const&,
                                               DegreesOfFreedom<Frame>)>;
 
-  using Timeline = std::map<Instant, DegreesOfFreedom<Frame>>;
-
   // No transfer of ownership.  |body| must live longer than the trajectory as
   // the trajectory holds a reference to it.
   explicit Trajectory(Body<Frame> const& body);
@@ -69,9 +67,6 @@ class Trajectory {
   std::map<Instant, Position<Frame>> Positions() const;
   std::map<Instant, Velocity<Frame>> Velocities() const;
   std::list<Instant> Times() const;
-
-  // The position and velocity as a function of time for the whole trajectory.
-  Timeline const& timeline() const;
 
   // Appends one point to the trajectory.
   void Append(Instant const& time,
@@ -153,6 +148,8 @@ class Trajectory {
     Instant const& time() const;
 
    protected:
+    using Timeline = std::map<Instant, DegreesOfFreedom<Frame>>;
+
     Iterator() = default;
     // No transfer of ownership.
     void InitializeFirst(Trajectory const* trajectory);
@@ -186,6 +183,8 @@ class Trajectory {
   };
 
  private:
+  using Timeline = std::map<Instant, DegreesOfFreedom<Frame>>;
+
   // A constructor for creating a child trajectory during forking.
   Trajectory(Body<Frame> const& body,
              Trajectory* const parent,
