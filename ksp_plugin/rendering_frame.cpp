@@ -105,7 +105,7 @@ BarycentricRotatingFrame::ApparentTrajectory(
       Angle const angle =
           ArcTan(wedge.Norm() * inverse_product_of_norms,
                  InnerProduct(from, to) * inverse_product_of_norms);
-      Rotation<Barycentre, Barycentre> const rotate =
+      Rotation<Barycentre, Barycentre> const rotation =
           Rotation<Barycentre, Barycentre>(angle,
                                            wedge);
       VLOG(1) << "Rotation:\n"
@@ -113,11 +113,11 @@ BarycentricRotatingFrame::ApparentTrajectory(
               << "to       : " << to << "\n"
               << "wedge    : " << wedge << "\n"
               << "angle    : " << angle  << "\n"
-              << "rotation : " << rotate;
+              << "rotation : " << rotation;
       // TODO(egg): We should have a vector space structure on
       // |DegreesOfFreedom<Fries>|.
       result->Append(t,
-                     {rotate(actual_state.position - barycentre) +
+                     {rotation(actual_state.position - barycentre) +
                           current_barycentre,
                       // This would not be trivial to compute, but we don't use
                       // it...
