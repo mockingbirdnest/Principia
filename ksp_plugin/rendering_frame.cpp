@@ -4,6 +4,7 @@
 #include "ksp_plugin/celestial.hpp"
 #include "quantities/quantities.hpp"
 
+using principia::quantities::Angle;
 using principia::quantities::ArcTan;
 using principia::quantities::Time;
 using principia::geometry::Displacement;
@@ -101,11 +102,18 @@ BarycentricRotatingFrame::ApparentTrajectory(
       Displacement<Barycentre> const from = primary_state.position - barycentre;
       auto const wedge = Wedge(from, to);
       auto const inverse_product_of_norms = 1 / (from.Norm() * to.Norm());
+      Angle const angle =
+          ArcTan(wedge.Norm() * inverse_product_of_norms,
+                 InnerProduct(from, to) * inverse_product_of_norms);
       Rotation<Barycentre, Barycentre> const rotate =
-          Rotation<Barycentre, Barycentre>(
-              ArcTan(wedge.Norm() * inverse_product_of_norms,
-                     InnerProduct(from, to) * inverse_product_of_norms),
-              wedge);
+          Rotation<Barycentre, Barycentre>(angle,
+                                           wedge);
+      VLOG(1) << "Rotation:\n"
+              << "from     : " << from << "\n"
+              << "to       : " << to << "\n"
+              << "wedge    : " << wedge << "\n"
+              << "angle    : " << angle  << "\n"
+              << "rotation : " << rotate;
       // TODO(egg): We should have a vector space structure on
       // |DegreesOfFreedom<Fries>|.
       result->Append(t,

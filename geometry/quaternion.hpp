@@ -48,6 +48,8 @@ Quaternion operator*(Quaternion const& left,
 Quaternion operator/(Quaternion const& left,
                      double const right);
 
+std::ostream& operator<<(std::ostream& out, Quaternion const& quaternion);
+
 }  // namespace geometry
 }  // namespace principia
 
