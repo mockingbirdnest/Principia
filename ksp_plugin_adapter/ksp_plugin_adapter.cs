@@ -329,7 +329,7 @@ public partial class PluginAdapter : UnityEngine.MonoBehaviour {
               new XYZ{x = 0, y = 0, z = 0},
               double.PositiveInfinity));
       UnityEngine.GUILayout.TextArea(
-          "Root part @ CoM world velocity : " +
+          "GetVel : " +
               (Vector3d)active_vessel.orbit.GetVel());
       UnityEngine.GUILayout.TextArea(
           "CoM world position : " +

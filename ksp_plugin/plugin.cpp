@@ -453,12 +453,13 @@ Position<World> Plugin::VesselWorldPosition(
   Vessel<Barycentre> const& vessel = *(it->second);
   auto const to_world =
       AffineMap<Barycentre, World, Length, Rotation>(
-          vessel.parent().prolongation().last_position(),
+          vessel.parent().prolongation().last().degrees_of_freedom().position,
           parent_world_position,
           Rotation<WorldSun, World>::Identity() * PlanetariumRotation());
   CHECK(vessel.has_history()) << "Vessel with GUID " << vessel_guid
                               << " was not given an initial state";
-  return to_world(vessel.prolongation_or_history().last_position());
+  return to_world(
+      vessel.prolongation_or_history().last().degrees_of_freedom().position);
 }
 
 Velocity<World> Plugin::VesselWorldVelocity(
@@ -473,11 +474,11 @@ Velocity<World> Plugin::VesselWorldVelocity(
   Rotation<Barycentre, World> to_world =
       Rotation<WorldSun, World>::Identity() * PlanetariumRotation();
   Velocity<Barycentre> const velocity_relative_to_parent =
-      vessel.prolongation_or_history().last_velocity() -
-      vessel.parent().prolongation().last_velocity();
+      vessel.prolongation_or_history().last().degrees_of_freedom().velocity -
+      vessel.parent().prolongation().last().degrees_of_freedom().velocity;
   Displacement<Barycentre> const offset_from_parent =
-      vessel.prolongation_or_history().last_position() -
-      vessel.parent().prolongation().last_position();
+      vessel.prolongation_or_history().last().degrees_of_freedom().position -
+      vessel.parent().prolongation().last().degrees_of_freedom().position;
   AngularVelocity<Barycentre> const world_frame_angular_velocity =
       AngularVelocity<Barycentre>({0 * Radian / Second,
                                    2 * π * Radian / parent_rotation_period,
