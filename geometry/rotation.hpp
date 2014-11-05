@@ -59,7 +59,7 @@ class Rotation : public LinearMap<FromFrame, ToFrame> {
   friend Rotation<From, To> operator*(Rotation<Through, To> const& left,
                                       Rotation<From, Through> const& right);
 
-  friend std::ostream& operator<<<>(std::ostream& out,
+  friend std::ostream& operator<<<>(std::ostream& out,  // NOLINT
                                     Rotation const& rotation);
   friend class RotationTests;
 };
