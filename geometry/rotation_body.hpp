@@ -91,5 +91,11 @@ Rotation<FromFrame, ToFrame> operator*(
   return Rotation<FromFrame, ToFrame>(left.quaternion_ * right.quaternion_);
 }
 
+template<typename FromFrame, typename ToFrame>
+std::ostream& operator<<(std::ostream& out,
+                         Rotation<FromFrame, ToFrame> const& rotation) {
+  return out << rotation.quaternion_;
+}
+
 }  // namespace geometry
 }  // namespace principia
