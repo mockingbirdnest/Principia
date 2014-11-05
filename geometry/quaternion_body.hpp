@@ -114,7 +114,7 @@ inline Quaternion operator/(Quaternion const& left, double const right) {
 }
 
 inline std::ostream& operator<<(std::ostream& out,
-                                Quaternion const& quaternion) {;
+                                Quaternion const& quaternion) {
   return out << quaternion.real_part() << " + "
              << quaternion.imaginary_part().x << " i + "
              << quaternion.imaginary_part().y << " j + "

@@ -106,9 +106,8 @@ BarycentricRotatingFrame::ApparentTrajectory(
           ArcTan(wedge.Norm() * inverse_product_of_norms,
                  InnerProduct(from, to) * inverse_product_of_norms);
       Rotation<Barycentre, Barycentre> const rotation =
-          Rotation<Barycentre, Barycentre>(angle,
-                                           wedge);
-      VLOG(1) << "Rotation:\n"
+          Rotation<Barycentre, Barycentre>(angle, wedge);
+      VLOG(1) << "Rotation :\n"
               << "from     : " << from << "\n"
               << "to       : " << to << "\n"
               << "wedge    : " << wedge << "\n"
