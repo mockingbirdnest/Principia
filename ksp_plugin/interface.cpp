@@ -169,7 +169,7 @@ XYZ CelestialDisplacementFromParent(Plugin const* const plugin,
   R3Element<Length> const result =
       CHECK_NOTNULL(plugin)->
           CelestialDisplacementFromParent(celestial_index).coordinates();
-  return {result.x / Metre, result.y / Metre, result.z / Metre};;
+  return {result.x / Metre, result.y / Metre, result.z / Metre};
 }
 
 XYZ CelestialParentRelativeVelocity(Plugin const* const plugin,

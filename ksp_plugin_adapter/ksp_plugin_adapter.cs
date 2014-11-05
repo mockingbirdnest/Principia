@@ -144,7 +144,7 @@ public partial class PluginAdapter : UnityEngine.MonoBehaviour {
         body.orbit.argumentOfPeriapsis = copy.argumentOfPeriapsis;
         body.orbit.meanAnomalyAtEpoch = copy.meanAnomalyAtEpoch;
         body.orbit.epoch = copy.epoch;
-        body.orbit.referenceBody = copy.referenceBody;;
+        body.orbit.referenceBody = copy.referenceBody;
         body.orbit.Init();
         body.orbit.UpdateFromUT(universal_time);
         body.CBUpdate();

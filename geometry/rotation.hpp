@@ -58,6 +58,9 @@ class Rotation : public LinearMap<FromFrame, ToFrame> {
   template<typename From, typename Through, typename To>
   friend Rotation<From, To> operator*(Rotation<Through, To> const& left,
                                       Rotation<From, Through> const& right);
+
+  friend std::ostream& operator<<<>(std::ostream& out,  // NOLINT
+                                    Rotation const& rotation);
   friend class RotationTests;
 };
 
@@ -65,6 +68,10 @@ template<typename FromFrame, typename ThroughFrame, typename ToFrame>
 Rotation<FromFrame, ToFrame> operator*(
     Rotation<ThroughFrame, ToFrame> const& left,
     Rotation<FromFrame, ThroughFrame> const& right);
+
+template<typename FromFrame, typename ToFrame>
+std::ostream& operator<<(std::ostream& out,
+                         Rotation<FromFrame, ToFrame> const& rotation);
 
 }  // namespace geometry
 }  // namespace principia

@@ -4,6 +4,7 @@
 #include "ksp_plugin/celestial.hpp"
 #include "quantities/quantities.hpp"
 
+using principia::quantities::Angle;
 using principia::quantities::ArcTan;
 using principia::quantities::Time;
 using principia::geometry::Displacement;
@@ -14,6 +15,27 @@ using principia::geometry::Wedge;
 namespace principia {
 namespace ksp_plugin {
 
+namespace {
+
+// Returns an iterator for the first entry in |trajectory| with a time greater
+// than or equal to |t|.
+// TODO(phl): This is O(N), so we might want to expose a more efficient version.
+// But then it's likely that we'll just rewrite this class anyway.
+Trajectory<Barycentre>::NativeIterator LowerBound(
+    Instant const& t, Trajectory<Barycentre> const& trajectory) {
+  for (Trajectory<Barycentre>::NativeIterator it = trajectory.first();
+       !it.at_end();
+       ++it) {
+    if (it.time() >= t) {
+      return it;
+    }
+  }
+  LOG(FATAL) << t << " not found in trajectory";
+  return trajectory.first();
+}
+
+}  // namespace
+
 BodyCentredNonRotatingFrame::BodyCentredNonRotatingFrame(
     Celestial<Barycentre> const& body) : body_(body) {}
 
@@ -22,24 +44,21 @@ BodyCentredNonRotatingFrame::ApparentTrajectory(
     Trajectory<Barycentre> const& actual_trajectory) const {
   std::unique_ptr<Trajectory<Barycentre>> result =
       std::make_unique<Trajectory<Barycentre>>(actual_trajectory.body());
-  Trajectory<Barycentre>::Timeline const& actual_timeline =
-      actual_trajectory.timeline();
-  Trajectory<Barycentre>::Timeline const& reference_body_timeline =
-      body_.history().timeline();
-  Trajectory<Barycentre>::Timeline::const_iterator it_in_reference =
-      reference_body_timeline.lower_bound(actual_timeline.begin()->first);
+  Trajectory<Barycentre>::NativeIterator actual_it = actual_trajectory.first();
+  Trajectory<Barycentre>::NativeIterator reference_it =
+      LowerBound(actual_it.time(), body_.history());
   DegreesOfFreedom<Barycentre> const& current_reference_state =
-      body_.prolongation().timeline().rbegin()->second;
-  CHECK(it_in_reference != reference_body_timeline.end());
-  for (auto const& pair : actual_timeline) {
-    Instant const& t = pair.first;
-    DegreesOfFreedom<Barycentre> const& actual_state = pair.second;
-    while (it_in_reference->first < t) {
-      ++it_in_reference;
+      body_.prolongation().last().degrees_of_freedom();
+  for (; !actual_it.at_end(); ++actual_it) {
+    Instant const& t = actual_it.time();
+    DegreesOfFreedom<Barycentre> const& actual_state =
+        actual_it.degrees_of_freedom();
+    while (reference_it.time() < t) {
+      ++reference_it;
     }
-    if (it_in_reference->first == t) {
+    if (reference_it.time() == t) {
       DegreesOfFreedom<Barycentre> const& reference_state =
-          it_in_reference->second;
+          reference_it.degrees_of_freedom();
       // TODO(egg): We should have a vector space structure on
       // |DegreesOfFreedom<Fries>|.
       result->Append(t,
@@ -62,37 +81,34 @@ BarycentricRotatingFrame::ApparentTrajectory(
     Trajectory<Barycentre> const& actual_trajectory) const {
   std::unique_ptr<Trajectory<Barycentre>> result =
       std::make_unique<Trajectory<Barycentre>>(actual_trajectory.body());
-  Trajectory<Barycentre>::Timeline const& actual_timeline =
-      actual_trajectory.timeline();
-  Trajectory<Barycentre>::Timeline const& primary_timeline =
-      primary_.history().timeline();
-  Trajectory<Barycentre>::Timeline const& secondary_timeline =
-      secondary_.history().timeline();
-  Trajectory<Barycentre>::Timeline::const_iterator it_in_primary =
-      primary_timeline.lower_bound(actual_timeline.begin()->first);
-  Trajectory<Barycentre>::Timeline::const_iterator it_in_secondary =
-      secondary_timeline.lower_bound(actual_timeline.begin()->first);
+  Trajectory<Barycentre>::NativeIterator actual_it = actual_trajectory.first();
+  Trajectory<Barycentre>::NativeIterator primary_it =
+      LowerBound(actual_it.time(), primary_.history());
+  Trajectory<Barycentre>::NativeIterator secondary_it =
+      LowerBound(actual_it.time(), secondary_.history());
   DegreesOfFreedom<Barycentre> const& current_primary_state =
-      primary_.prolongation().timeline().rbegin()->second;
+      primary_.prolongation().last().degrees_of_freedom();
   DegreesOfFreedom<Barycentre> const& current_secondary_state =
-      secondary_.prolongation().timeline().rbegin()->second;
+      secondary_.prolongation().last().degrees_of_freedom();
   Position<Barycentre> const current_barycentre =
       geometry::Barycentre<Displacement<Barycentre>, Mass>(
           {current_primary_state.position, current_secondary_state.position},
           {primary_.body().mass(), secondary_.body().mass()});
   Displacement<Barycentre> const to =
         current_primary_state.position - current_barycentre;
-  for (auto const& pair : actual_timeline) {
-    Instant const& t = pair.first;
-    DegreesOfFreedom<Barycentre> const& actual_state = pair.second;
-    while (it_in_primary->first < t) {
-      ++it_in_primary;
-      ++it_in_secondary;
+  for (; !actual_it.at_end(); ++actual_it) {
+    Instant const& t = actual_it.time();
+    DegreesOfFreedom<Barycentre> const& actual_state =
+        actual_it.degrees_of_freedom();
+    while (primary_it.time() < t) {
+      ++primary_it;
+      ++secondary_it;
     }
-    if (it_in_primary->first == t) {
-      DegreesOfFreedom<Barycentre> const& primary_state = it_in_primary->second;
+    if (primary_it.time() == t) {
+      DegreesOfFreedom<Barycentre> const& primary_state =
+          primary_it.degrees_of_freedom();
       DegreesOfFreedom<Barycentre> const& secondary_state =
-          it_in_secondary->second;
+          secondary_it.degrees_of_freedom();
       Position<Barycentre> const barycentre =
           geometry::Barycentre<Displacement<Barycentre>, Mass>(
               {primary_state.position, secondary_state.position},
@@ -101,15 +117,21 @@ BarycentricRotatingFrame::ApparentTrajectory(
       Displacement<Barycentre> const from = primary_state.position - barycentre;
       auto const wedge = Wedge(from, to);
       auto const inverse_product_of_norms = 1 / (from.Norm() * to.Norm());
-      Rotation<Barycentre, Barycentre> const rotate =
-          Rotation<Barycentre, Barycentre>(
-              ArcTan(wedge.Norm() * inverse_product_of_norms,
-                     InnerProduct(from, to) * inverse_product_of_norms),
-              wedge);
+      Angle const angle =
+          ArcTan(wedge.Norm() * inverse_product_of_norms,
+                 InnerProduct(from, to) * inverse_product_of_norms);
+      Rotation<Barycentre, Barycentre> const rotation =
+          Rotation<Barycentre, Barycentre>(angle, wedge);
+      VLOG(1) << "Rotation :\n"
+              << "from     : " << from << "\n"
+              << "to       : " << to << "\n"
+              << "wedge    : " << wedge << "\n"
+              << "angle    : " << angle  << "\n"
+              << "rotation : " << rotation;
       // TODO(egg): We should have a vector space structure on
       // |DegreesOfFreedom<Fries>|.
       result->Append(t,
-                     {rotate(actual_state.position - barycentre) +
+                     {rotation(actual_state.position - barycentre) +
                           current_barycentre,
                       // This would not be trivial to compute, but we don't use
                       // it...
