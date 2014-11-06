@@ -181,7 +181,7 @@ class Trajectory {
   template<typename ToFrame>
   class TransformingIterator : public Iterator {
    public:
-    DegreesOfFreedom<ToFrame> const degrees_of_freedom() const;
+    DegreesOfFreedom<ToFrame> degrees_of_freedom() const;
    private:
     explicit TransformingIterator(Transform<ToFrame> const& transform);
     Transform<ToFrame> const transform_;

@@ -312,7 +312,7 @@ Trajectory<Frame>::NativeIterator::degrees_of_freedom() const {
 
 template<typename Frame>
 template<typename ToFrame>
-DegreesOfFreedom<ToFrame> const
+DegreesOfFreedom<ToFrame>
 Trajectory<Frame>::TransformingIterator<ToFrame>::degrees_of_freedom() const {
   auto it = current();
   return transform_(it->first, it->second);
