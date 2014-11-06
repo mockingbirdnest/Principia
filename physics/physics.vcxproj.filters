@@ -45,6 +45,12 @@
     <ClInclude Include="mock_n_body_system.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="transforms.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="transforms_body.hpp">
+      <Filter>Source Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="n_body_system_test.cpp">

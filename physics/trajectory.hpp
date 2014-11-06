@@ -34,7 +34,7 @@ class Trajectory {
   template<typename ToFrame>
   using Transform =
       std::function<DegreesOfFreedom<ToFrame>(Instant const&,
-                                              DegreesOfFreedom<Frame>)>;
+                                              DegreesOfFreedom<Frame> const&)>;
 
   // No transfer of ownership.  |body| must live longer than the trajectory as
   // the trajectory holds a reference to it.
@@ -67,6 +67,11 @@ class Trajectory {
   std::map<Instant, Position<Frame>> Positions() const;
   std::map<Instant, Velocity<Frame>> Velocities() const;
   std::list<Instant> Times() const;
+
+  // Returns the position and velocity at the given |time|.  Fails if |time| is
+  // not one of the times of the trajectory.  Complexity is
+  // O(|depth| + Ln(|length|)).
+  const DegreesOfFreedom<Frame>& GetDegreesOfFreedom(Instant const& time) const;
 
   // Appends one point to the trajectory.
   void Append(Instant const& time,
@@ -176,10 +181,11 @@ class Trajectory {
   template<typename ToFrame>
   class TransformingIterator : public Iterator {
    public:
-    DegreesOfFreedom<ToFrame> const& degrees_of_freedom() const;
+    DegreesOfFreedom<ToFrame> const degrees_of_freedom() const;
    private:
     explicit TransformingIterator(Transform<ToFrame> const& transform);
     Transform<ToFrame> const transform_;
+    friend class Trajectory;
   };
 
  private:

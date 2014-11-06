@@ -2,6 +2,7 @@
 
 #include "geometry/rotation.hpp"
 #include "ksp_plugin/celestial.hpp"
+#include "physics/transforms.hpp"
 #include "quantities/quantities.hpp"
 
 using principia::quantities::Angle;
@@ -11,6 +12,7 @@ using principia::geometry::Displacement;
 using principia::geometry::InnerProduct;
 using principia::geometry::Rotation;
 using principia::geometry::Wedge;
+using principia::physics::BodyCentredNonRotatingTransformingIterator;
 
 namespace principia {
 namespace ksp_plugin {
@@ -44,28 +46,12 @@ BodyCentredNonRotatingFrame::ApparentTrajectory(
     Trajectory<Barycentre> const& actual_trajectory) const {
   std::unique_ptr<Trajectory<Barycentre>> result =
       std::make_unique<Trajectory<Barycentre>>(actual_trajectory.body());
-  Trajectory<Barycentre>::NativeIterator actual_it = actual_trajectory.first();
-  Trajectory<Barycentre>::NativeIterator reference_it =
-      LowerBound(actual_it.time(), body_.history());
-  DegreesOfFreedom<Barycentre> const& current_reference_state =
-      body_.prolongation().last().degrees_of_freedom();
-  for (; !actual_it.at_end(); ++actual_it) {
-    Instant const& t = actual_it.time();
-    DegreesOfFreedom<Barycentre> const& actual_state =
-        actual_it.degrees_of_freedom();
-    while (reference_it.time() < t) {
-      ++reference_it;
-    }
-    if (reference_it.time() == t) {
-      DegreesOfFreedom<Barycentre> const& reference_state =
-          reference_it.degrees_of_freedom();
-      // TODO(egg): We should have a vector space structure on
-      // |DegreesOfFreedom<Fries>|.
-      result->Append(t,
-                     {actual_state.position - reference_state.position +
-                          current_reference_state.position,
-                      actual_state.velocity - reference_state.velocity});
-    }
+  // TODO(phl): Should tag the two frames differently.
+  auto it =
+      BodyCentredNonRotatingTransformingIterator<Barycentre, Barycentre>(
+          body_.prolongation(), &actual_trajectory);
+  for (; !it.at_end(); ++it) {
+    result->Append(it.time(), it.degrees_of_freedom());
   }
   return std::move(result);
 }
