@@ -34,7 +34,7 @@ class Trajectory {
   template<typename ToFrame>
   using Transform =
       std::function<DegreesOfFreedom<ToFrame>(Instant const&,
-                                              DegreesOfFreedom<Frame>)>;
+                                              DegreesOfFreedom<Frame> const&)>;
 
   // No transfer of ownership.  |body| must live longer than the trajectory as
   // the trajectory holds a reference to it.
