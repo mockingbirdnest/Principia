@@ -19,10 +19,10 @@ BodyCentredNonRotatingTransformingIterator(
     DegreesOfFreedom<ToFrame> {
     DegreesOfFreedom<FromFrame> const& last_centre_degrees_of_freedom =
         centre_trajectory.last().degrees_of_freedom();
+    // GetDegreesOfFreedom is Ln(N), but it doesn't matter unless the map gets
+    // very big, in which case we'll have cache misses anyway.
     DegreesOfFreedom<FromFrame> const& centre_degrees_of_freedom =
         centre_trajectory.GetDegreesOfFreedom(t);
-    // TODO(egg): We should have a vector space structure on
-    // |DegreesOfFreedom<Fries>|.
     return {from_degrees_of_freedom.position -
                 centre_degrees_of_freedom.position +
                 last_centre_degrees_of_freedom.position,
