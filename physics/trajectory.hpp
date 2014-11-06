@@ -69,7 +69,7 @@ class Trajectory {
   std::list<Instant> Times() const;
 
   //TODO(phl): comment
-  const DegreesOfFreedom<Frame>& GetDegreesOfFreedom(Instant const& t);
+  const DegreesOfFreedom<Frame>& GetDegreesOfFreedom(Instant const& t) const;
 
   // Appends one point to the trajectory.
   void Append(Instant const& time,
@@ -183,6 +183,7 @@ class Trajectory {
    private:
     explicit TransformingIterator(Transform<ToFrame> const& transform);
     Transform<ToFrame> const transform_;
+    friend class Trajectory;
   };
 
  private:

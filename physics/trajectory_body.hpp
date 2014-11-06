@@ -85,7 +85,7 @@ std::list<Instant> Trajectory<Frame>::Times() const {
 
 template<typename Frame>
 const DegreesOfFreedom<Frame>& Trajectory<Frame>::GetDegreesOfFreedom(
-    Instant const& t) {
+    Instant const& t) const {
   Trajectory const* ancestor = this;
   while (fork_ != nullptr && t <= (*fork_)->first) {
     ancestor = ancestor->parent_;
@@ -315,7 +315,7 @@ template<typename ToFrame>
 DegreesOfFreedom<ToFrame> const&
 Trajectory<Frame>::TransformingIterator<ToFrame>::degrees_of_freedom() const {
   auto it = current();
-  return transform_(it->first, it()->second);
+  return transform_(it->first, it->second);
 }
 
 template<typename Frame>

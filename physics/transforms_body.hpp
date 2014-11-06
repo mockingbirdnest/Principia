@@ -7,7 +7,7 @@ namespace principia {
 namespace physics {
 
 template<typename FromFrame, typename ToFrame>
-Trajectory<FromFrame>::TransformingIterator<ToFrame>
+typename Trajectory<FromFrame>::TransformingIterator<ToFrame>
 BodyCentredNonRotatingTransformingIterator(
     Trajectory<FromFrame> const& centre_trajectory,
     Trajectory<FromFrame> const* transformed_trajectory) {
@@ -19,7 +19,7 @@ BodyCentredNonRotatingTransformingIterator(
     DegreesOfFreedom<ToFrame> {
     DegreesOfFreedom<FromFrame> const& last_centre_degrees_of_freedom =
         centre_trajectory.last().degrees_of_freedom();
-    DegreesOfFreedom<FromFrame> const centre_degrees_of_freedom =
+    DegreesOfFreedom<FromFrame> const& centre_degrees_of_freedom =
         centre_trajectory.GetDegreesOfFreedom(t);
     // TODO(egg): We should have a vector space structure on
     // |DegreesOfFreedom<Fries>|.
@@ -27,7 +27,7 @@ BodyCentredNonRotatingTransformingIterator(
                 centre_degrees_of_freedom.position +
                 last_centre_degrees_of_freedom.position,
             from_degrees_of_freedom.velocity -
-                centre_degrees_of_freedom.velocity});
+                centre_degrees_of_freedom.velocity};
   };
   return transformed_trajectory->first_with_transform(transform);
 }
