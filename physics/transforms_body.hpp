@@ -19,12 +19,10 @@ BodyCentredNonRotatingTransformingIterator(
     DegreesOfFreedom<ToFrame> {
     DegreesOfFreedom<FromFrame> const& last_centre_degrees_of_freedom =
         centre_trajectory.last().degrees_of_freedom();
-    Trajectory<FromFrame>::NativeIterator centre_it =
-        LowerBound(t, centre_trajectory);
     DegreesOfFreedom<FromFrame> const centre_degrees_of_freedom =
-        centre_it.degrees_of_freedom();
-      // TODO(egg): We should have a vector space structure on
-      // |DegreesOfFreedom<Fries>|.
+        centre_trajectory.GetDegreesOfFreedom(t);
+    // TODO(egg): We should have a vector space structure on
+    // |DegreesOfFreedom<Fries>|.
     return {from_degrees_of_freedom.position -
                 centre_degrees_of_freedom.position +
                 last_centre_degrees_of_freedom.position,

@@ -68,6 +68,9 @@ class Trajectory {
   std::map<Instant, Velocity<Frame>> Velocities() const;
   std::list<Instant> Times() const;
 
+  //TODO(phl): comment
+  const DegreesOfFreedom<Frame>& GetDegreesOfFreedom(Instant const& t);
+
   // Appends one point to the trajectory.
   void Append(Instant const& time,
               DegreesOfFreedom<Frame> const& degrees_of_freedom);
