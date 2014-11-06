@@ -87,7 +87,7 @@ template<typename Frame>
 const DegreesOfFreedom<Frame>& Trajectory<Frame>::GetDegreesOfFreedom(
     Instant const& t) const {
   Trajectory const* ancestor = this;
-  while (fork_ != nullptr && t <= (*fork_)->first) {
+  while (ancestor->fork_ != nullptr && t <= (*ancestor->fork_)->first) {
     ancestor = ancestor->parent_;
   }
   auto const it = ancestor->timeline_.find(t);
@@ -312,7 +312,7 @@ Trajectory<Frame>::NativeIterator::degrees_of_freedom() const {
 
 template<typename Frame>
 template<typename ToFrame>
-DegreesOfFreedom<ToFrame> const&
+DegreesOfFreedom<ToFrame> const
 Trajectory<Frame>::TransformingIterator<ToFrame>::degrees_of_freedom() const {
   auto it = current();
   return transform_(it->first, it->second);
