@@ -68,8 +68,10 @@ class Trajectory {
   std::map<Instant, Velocity<Frame>> Velocities() const;
   std::list<Instant> Times() const;
 
-  //TODO(phl): comment
-  const DegreesOfFreedom<Frame>& GetDegreesOfFreedom(Instant const& t) const;
+  // Returns the position and velocity at the given |time|.  Fails if |time| is
+  // not one of the times of the trajectory.  Complexity is
+  // O(|depth| + Ln(|length|)).
+  const DegreesOfFreedom<Frame>& GetDegreesOfFreedom(Instant const& time) const;
 
   // Appends one point to the trajectory.
   void Append(Instant const& time,

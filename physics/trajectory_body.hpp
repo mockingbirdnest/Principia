@@ -85,14 +85,14 @@ std::list<Instant> Trajectory<Frame>::Times() const {
 
 template<typename Frame>
 const DegreesOfFreedom<Frame>& Trajectory<Frame>::GetDegreesOfFreedom(
-    Instant const& t) const {
+    Instant const& time) const {
   Trajectory const* ancestor = this;
-  while (ancestor->fork_ != nullptr && t <= (*ancestor->fork_)->first) {
+  while (ancestor->fork_ != nullptr && time <= (*ancestor->fork_)->first) {
     ancestor = ancestor->parent_;
   }
-  auto const it = ancestor->timeline_.find(t);
+  auto const it = ancestor->timeline_.find(time);
   CHECK(it != ancestor->timeline_.end())
-      << "Time " << t << " not in trajectory";
+      << "Time " << time << " not in trajectory";
   return it->second;
 }
 
