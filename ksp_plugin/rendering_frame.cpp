@@ -102,10 +102,7 @@ BarycentricRotatingFrame::ApparentTrajectory(
 
       Displacement<Barycentre> const from = primary_state.position - barycentre;
       auto const wedge = Wedge(from, to);
-      auto const inverse_product_of_norms = 1 / (from.Norm() * to.Norm());
-      Angle const angle =
-          ArcTan(wedge.Norm() * inverse_product_of_norms,
-                 InnerProduct(from, to) * inverse_product_of_norms);
+      Angle const angle = ArcTan(wedge.Norm(), InnerProduct(from, to));
       Rotation<Barycentre, Barycentre> const rotation =
           Rotation<Barycentre, Barycentre>(angle, wedge);
       VLOG(1) << "Rotation :\n"
