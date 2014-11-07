@@ -106,6 +106,18 @@ BarycentricRotatingFrame::ApparentTrajectory(
       Rotation<Barycentre, Barycentre> const rotation =
           Rotation<Barycentre, Barycentre>(angle, wedge);
       VLOG(1) << "Rotation :\n"
+              << "primary_.body().mass() :\n"
+              << "  " << primary_.body().mass() << "\n"
+              << "secondary_.body().mass() :\n"
+              << "  " << secondary_.body().mass() << "\n"
+              << "primary_state.position :\n"
+              << "  " << primary_state.position << "\n"
+              << "secondary_state.position :\n"
+              << "  " << secondary_state.position << "\n"
+              << "current_primary_state.position :\n"
+              << "  " << current_primary_state.position << "\n"
+              << "current_secondary_state.position :\n"
+              << "  " << current_secondary_state.position << "\n"
               << "from     : " << from << "\n"
               << "to       : " << to << "\n"
               << "wedge    : " << wedge << "\n"
