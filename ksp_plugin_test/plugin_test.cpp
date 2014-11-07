@@ -58,9 +58,7 @@ ACTION_TEMPLATE(AppendTimeToTrajectories,
                 AND_1_VALUE_PARAMS(time)) {
   for (auto* trajectory : static_cast<NBodySystem<Barycentre>::Trajectories>(
                               std::tr1::get<k>(args))) {
-    trajectory->Append(time,
-                       {trajectory->last_position(),
-                        trajectory->last_velocity()});
+    trajectory->Append(time, trajectory->last().degrees_of_freedom());
   }
 }
 
@@ -103,7 +101,7 @@ class PluginTest : public testing::Test {
         solar_system_(SolarSystem::AtСпутник1Launch(
             SolarSystem::Accuracy::kMajorBodiesOnly)),
         bodies_(solar_system_->massive_bodies()),
-        initial_time_(solar_system_->trajectories().front()->last_time()),
+        initial_time_(solar_system_->trajectories().front()->last().time()),
         sun_gravitational_parameter_(
             bodies_[SolarSystem::kSun]->gravitational_parameter()),
         planetarium_rotation_(1 * Radian) {
@@ -139,11 +137,15 @@ class PluginTest : public testing::Test {
          ++index) {
       Index const parent_index = SolarSystem::parent(index);
       Displacement<AliceSun> const from_parent_position = looking_glass_(
-          solar_system_->trajectories()[index]->last_position() -
-          solar_system_->trajectories()[parent_index]->last_position());
+          solar_system_->trajectories()[index]->
+              last().degrees_of_freedom().position -
+          solar_system_->trajectories()[parent_index]->
+              last().degrees_of_freedom().position);
       Velocity<AliceSun> const from_parent_velocity = looking_glass_(
-          solar_system_->trajectories()[index]->last_velocity() -
-          solar_system_->trajectories()[parent_index]->last_velocity());
+          solar_system_->trajectories()[index]->
+              last().degrees_of_freedom().velocity -
+          solar_system_->trajectories()[parent_index]->
+              last().degrees_of_freedom().velocity);
       plugin_->InsertCelestial(index,
                                bodies_[index]->gravitational_parameter(),
                                parent_index,
@@ -206,13 +208,17 @@ TEST_F(PluginTest, Initialization) {
        index < bodies_.size();
        ++index) {
     Index const parent_index = SolarSystem::parent(index);
-    EXPECT_THAT(solar_system_->trajectories()[index]->last_position() -
-                solar_system_->trajectories()[parent_index]->last_position(),
+    EXPECT_THAT(solar_system_->trajectories()[index]->
+                    last().degrees_of_freedom().position -
+                solar_system_->trajectories()[parent_index]->
+                    last().degrees_of_freedom().position,
                 AlmostEquals(looking_glass_.Inverse()(
                     plugin_->CelestialDisplacementFromParent(index)),
                     250000));
-    EXPECT_THAT(solar_system_->trajectories()[index]->last_velocity() -
-                solar_system_->trajectories()[parent_index]->last_velocity(),
+    EXPECT_THAT(solar_system_->trajectories()[index]->
+                    last().degrees_of_freedom().velocity -
+                solar_system_->trajectories()[parent_index]->
+                    last().degrees_of_freedom().velocity,
                 AlmostEquals(looking_glass_.Inverse()(
                     plugin_->CelestialParentRelativeVelocity(index)),
                     1000));
@@ -221,11 +227,15 @@ TEST_F(PluginTest, Initialization) {
 
 TEST_F(PluginDeathTest, InsertCelestialError) {
   Displacement<AliceSun> const from_parent_position = looking_glass_(
-      solar_system_->trajectories().front()->last_position() -
-      solar_system_->trajectories().front()->last_position());
+      solar_system_->trajectories().front()->
+          last().degrees_of_freedom().position -
+      solar_system_->trajectories().front()->
+          last().degrees_of_freedom().position);
   Velocity<AliceSun> const from_parent_velocity = looking_glass_(
-      solar_system_->trajectories().front()->last_velocity() -
-      solar_system_->trajectories().front()->last_velocity());
+      solar_system_->trajectories().front()->
+          last().degrees_of_freedom().velocity -
+      solar_system_->trajectories().front()->
+          last().degrees_of_freedom().velocity);
   EXPECT_DEATH({
     InsertAllSolarSystemBodies();
     plugin_->EndInitialization();
@@ -579,13 +589,17 @@ TEST_F(PluginTest, UpdateCelestialHierarchy) {
        index < bodies_.size();
        ++index) {
     EXPECT_THAT(
-        solar_system_->trajectories()[index]->last_position() -
-            solar_system_->trajectories()[SolarSystem::kSun]->last_position(),
+        solar_system_->trajectories()[index]->
+            last().degrees_of_freedom().position -
+        solar_system_->trajectories()[SolarSystem::kSun]->
+            last().degrees_of_freedom().position,
         AlmostEquals(looking_glass_.Inverse()(
             plugin_->CelestialDisplacementFromParent(index)), 6000));
     EXPECT_THAT(
-        solar_system_->trajectories()[index]->last_velocity() -
-            solar_system_->trajectories()[SolarSystem::kSun]->last_velocity(),
+        solar_system_->trajectories()[index]->
+            last().degrees_of_freedom().velocity -
+        solar_system_->trajectories()[SolarSystem::kSun]->
+            last().degrees_of_freedom().velocity,
         AlmostEquals(looking_glass_.Inverse()(
             plugin_->CelestialParentRelativeVelocity(index)), 1000));
   }
@@ -604,11 +618,15 @@ TEST_F(PluginTest, RenderingIntegration) {
        ++index) {
     Index const parent_index = SolarSystem::parent(index);
     Displacement<AliceSun> const from_parent_position = looking_glass_(
-        solar_system_->trajectories()[index]->last_position() -
-        solar_system_->trajectories()[parent_index]->last_position());
+        solar_system_->trajectories()[index]->
+            last().degrees_of_freedom().position -
+        solar_system_->trajectories()[parent_index]->
+            last().degrees_of_freedom().position);
     Velocity<AliceSun> const from_parent_velocity = looking_glass_(
-        solar_system_->trajectories()[index]->last_velocity() -
-        solar_system_->trajectories()[parent_index]->last_velocity());
+        solar_system_->trajectories()[index]->
+            last().degrees_of_freedom().velocity -
+        solar_system_->trajectories()[parent_index]->
+            last().degrees_of_freedom().velocity);
     plugin.InsertCelestial(index,
                            bodies_[index]->gravitational_parameter(),
                            parent_index,

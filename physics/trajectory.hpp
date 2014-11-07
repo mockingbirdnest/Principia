@@ -26,12 +26,40 @@ class Body;
 template<typename Frame>
 class Trajectory {
  public:
-  using Timeline = std::map<Instant, DegreesOfFreedom<Frame>>;
+  class NativeIterator;
+  template<typename ToFrame>
+  class TransformingIterator;
+
+  // A function that transforms the coordinates to a different frame.
+  template<typename ToFrame>
+  using Transform =
+      std::function<DegreesOfFreedom<ToFrame>(Instant const&,
+                                              DegreesOfFreedom<Frame> const&)>;
 
   // No transfer of ownership.  |body| must live longer than the trajectory as
   // the trajectory holds a reference to it.
   explicit Trajectory(Body<Frame> const& body);
   ~Trajectory() = default;
+
+  // Returns an iterator at the first point of the trajectory.  Complexity is
+  // O(|depth|).  The result may be at end if the trajectory is empty.
+  NativeIterator first() const;
+
+  // Returns an iterator at the last point of the trajectory.  Complexity is
+  // O(1).  The trajectory must not be empty.
+  NativeIterator last() const;
+
+  // Same as |first| above, but returns an iterator that performs a coordinate
+  // tranformation to ToFrame.
+  template<typename ToFrame>
+  TransformingIterator<ToFrame> first_with_transform(
+      Transform<ToFrame> const& transform) const;
+
+  // Same as |last| above, but returns an iterator that performs a coordinate
+  // tranformation to ToFrame.
+  template<typename ToFrame>
+  TransformingIterator<ToFrame> last_with_transform(
+      Transform<ToFrame> const& transform) const;
 
   // These functions return the series of positions/velocities/times for the
   // trajectory of the body.  All three containers are guaranteed to have the
@@ -40,14 +68,10 @@ class Trajectory {
   std::map<Instant, Velocity<Frame>> Velocities() const;
   std::list<Instant> Times() const;
 
-  // The position and velocity as a function of time for the whole trajectory.
-  Timeline const& timeline() const;
-
-  // Return the most recent position/velocity/time.  These functions are O(1)
-  // and dirt-cheap.
-  Position<Frame> const& last_position() const;
-  Velocity<Frame> const& last_velocity() const;
-  Instant const& last_time() const;
+  // Returns the position and velocity at the given |time|.  Fails if |time| is
+  // not one of the times of the trajectory.  Complexity is
+  // O(|depth| + Ln(|length|)).
+  const DegreesOfFreedom<Frame>& GetDegreesOfFreedom(Instant const& time) const;
 
   // Appends one point to the trajectory.
   void Append(Instant const& time,
@@ -120,32 +144,52 @@ class Trajectory {
   Vector<Acceleration, Frame> evaluate_intrinsic_acceleration(
       Instant const& time) const;
 
- private:
-  // A class to iterate over the timeline of a trajectory, taking forks into
-  // account.
+  // A base class for iterating over the timeline of a trajectory, taking forks
+  // into account.  Objects of this class cannot be created.
   class Iterator {
    public:
-    // |first| returns an iterator at the first point of the trajectory.  It has
-    // complexity O(|depth|).  The result may be at end if the trajectory is
-    // empty.
-    // |last| returns an iterator at the last point of the trajectory.  It has
-    // complexity O(1).  The trajectory must not be empty.
-    // No transfer of ownership.
-    static Iterator first(Trajectory const* trajectory);
-    static Iterator last(Trajectory const* trajectory);
-
-    void operator++();
+    Iterator& operator++();
     bool at_end() const;
-
     Instant const& time() const;
-    DegreesOfFreedom<Frame> const& degrees_of_freedom() const;
+
+   protected:
+    using Timeline = std::map<Instant, DegreesOfFreedom<Frame>>;
+
+    Iterator() = default;
+    // No transfer of ownership.
+    void InitializeFirst(Trajectory const* trajectory);
+    void InitializeLast(Trajectory const* trajectory);
+    typename Timeline::const_iterator current() const;
 
    private:
-    Iterator();
     typename Timeline::const_iterator current_;
     std::list<Trajectory const*> ancestry_;  // Pointers not owned.
     std::list<typename Timeline::iterator> forks_;
   };
+
+  // An iterator which returns the coordinates in the native frame of the
+  // trajectory, i.e., |Frame|.
+  class NativeIterator : public Iterator {
+   public:
+    DegreesOfFreedom<Frame> const& degrees_of_freedom() const;
+   private:
+    NativeIterator() = default;
+    friend class Trajectory;
+  };
+
+  // An iterator which returns the coordinates in another frame.
+  template<typename ToFrame>
+  class TransformingIterator : public Iterator {
+   public:
+    DegreesOfFreedom<ToFrame> degrees_of_freedom() const;
+   private:
+    explicit TransformingIterator(Transform<ToFrame> const& transform);
+    Transform<ToFrame> const transform_;
+    friend class Trajectory;
+  };
+
+ private:
+  using Timeline = std::map<Instant, DegreesOfFreedom<Frame>>;
 
   // A constructor for creating a child trajectory during forking.
   Trajectory(Body<Frame> const& body,

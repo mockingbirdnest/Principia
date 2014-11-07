@@ -45,10 +45,10 @@ void Plugin::CheckVesselInvariants(
   // test code paths, but it means the invariant is GE, rather than GT.
   if (it_in_new_vessels != new_vessels_.end()) {
     CHECK(!vessel.has_prolongation());
-    CHECK_GE(vessel.history().last_time(), HistoryTime());
+    CHECK_GE(vessel.history().last().time(), HistoryTime());
   } else {
     CHECK(vessel.has_prolongation());
-    CHECK_EQ(vessel.history().last_time(), HistoryTime());
+    CHECK_EQ(vessel.history().last().time(), HistoryTime());
   }
 }
 
@@ -157,7 +157,7 @@ void Plugin::EvolveProlongationsAndUnsynchronizedHistories(Instant const& t) {
     }
   }
   VLOG(1) << "Evolving prolongations and new histories" << '\n'
-          << "from : " << trajectories.front()->last_time() << '\n'
+          << "from : " << trajectories.front()->last().time() << '\n'
           << "to   : " << t;
   n_body_system_->Integrate(prolongation_integrator_,  // integrator
                             t,                         // tmax
@@ -168,7 +168,7 @@ void Plugin::EvolveProlongationsAndUnsynchronizedHistories(Instant const& t) {
 }
 
 Instant const& Plugin::HistoryTime() const {
-  return sun_->history().last_time();
+  return sun_->history().last().time();
 }
 
 Plugin::Plugin(Instant const& initial_time,
@@ -219,10 +219,11 @@ void Plugin::InsertCelestial(
   LOG(INFO) << "In barycentric coordinates: " << relative_velocity;
   Celestial<Barycentre>* const celestial = inserted.first->second.get();
   celestial->set_parent(&parent);
+  auto const last = parent.history().last();
   celestial->AppendAndForkProlongation(
       current_time_,
-      {parent.history().last_position() + displacement,
-       parent.history().last_velocity() + relative_velocity});
+      {last.degrees_of_freedom().position + displacement,
+       last.degrees_of_freedom().velocity + relative_velocity});
 }
 
 void Plugin::EndInitialization() {
@@ -279,10 +280,11 @@ void Plugin::SetVesselStateOffset(
       PlanetariumRotation().Inverse()(
           kSunLookingGlass.Inverse()(from_parent_velocity));
   LOG(INFO) << "In barycentric coordinates: " << relative_velocity;
+  auto const last = vessel->parent().history().last();
   vessel->Append(
       current_time_,
-      {vessel->parent().history().last_position() + displacement,
-       vessel->parent().history().last_velocity() + relative_velocity});
+      {last.degrees_of_freedom().position + displacement,
+       last.degrees_of_freedom().velocity + relative_velocity});
   auto const inserted = new_vessels_.insert({vessel_guid, vessel});
   CHECK(inserted.second);
 }
@@ -316,8 +318,8 @@ Displacement<AliceSun> Plugin::VesselDisplacementFromParent(
   CHECK(vessel.has_history()) << "Vessel with GUID " << vessel_guid
                               << " was not given an initial state";
   Displacement<Barycentre> const barycentric_result =
-      vessel.prolongation_or_history().last_position() -
-      vessel.parent().prolongation().last_position();
+      vessel.prolongation_or_history().last().degrees_of_freedom().position -
+      vessel.parent().prolongation().last().degrees_of_freedom().position;
   Displacement<AliceSun> const result =
       kSunLookingGlass(PlanetariumRotation()(barycentric_result));
   VLOG(1) << "Vessel with GUID " << vessel_guid << " is at parent position + "
@@ -334,8 +336,8 @@ Velocity<AliceSun> Plugin::VesselParentRelativeVelocity(
   CHECK(vessel.has_history()) << "Vessel with GUID " << vessel_guid
                               << " was not given an initial state";
   Velocity<Barycentre> const barycentric_result =
-      vessel.prolongation_or_history().last_velocity() -
-      vessel.parent().prolongation().last_velocity();
+      vessel.prolongation_or_history().last().degrees_of_freedom().velocity -
+      vessel.parent().prolongation().last().degrees_of_freedom().velocity;
   Velocity<AliceSun> const result =
       kSunLookingGlass(PlanetariumRotation()(barycentric_result));
   VLOG(1) << "Vessel with GUID " << vessel_guid
@@ -353,8 +355,8 @@ Displacement<AliceSun> Plugin::CelestialDisplacementFromParent(
   CHECK(celestial.has_parent())
       << "Body at index " << celestial_index << " is the sun";
   Displacement<Barycentre> const barycentric_result =
-      celestial.prolongation().last_position() -
-      celestial.parent().prolongation().last_position();
+      celestial.prolongation().last().degrees_of_freedom().position -
+      celestial.parent().prolongation().last().degrees_of_freedom().position;
   Displacement<AliceSun> const result =
       kSunLookingGlass(PlanetariumRotation()(barycentric_result));
   VLOG(1) << "Celestial at index " << celestial_index
@@ -372,8 +374,8 @@ Velocity<AliceSun> Plugin::CelestialParentRelativeVelocity(
   CHECK(celestial.has_parent())
       << "Body at index " << celestial_index << " is the sun";
   Velocity<Barycentre> const barycentric_result =
-      celestial.prolongation().last_velocity() -
-      celestial.parent().prolongation().last_velocity();
+      celestial.prolongation().last().degrees_of_freedom().velocity -
+      celestial.parent().prolongation().last().degrees_of_freedom().velocity;
   Velocity<AliceSun> const result =
       kSunLookingGlass(PlanetariumRotation()(barycentric_result));
   VLOG(1) << "Celestial at index " << celestial_index
@@ -389,7 +391,7 @@ RenderedTrajectory<World> Plugin::RenderedVesselTrajectory(
   CHECK(!initializing);
   auto const to_world =
       AffineMap<Barycentre, World, Length, Rotation>(
-          sun_->prolongation().last_position(),
+          sun_->prolongation().last().degrees_of_freedom().position,
           sun_world_position,
           Rotation<WorldSun, World>::Identity() * PlanetariumRotation());
   auto const it = vessels_.find(vessel_guid);
@@ -408,8 +410,10 @@ RenderedTrajectory<World> Plugin::RenderedVesselTrajectory(
   DegreesOfFreedom<Barycentre> const* final_state = nullptr;
   std::unique_ptr<Trajectory<Barycentre>> const apparent_trajectory =
       frame.ApparentTrajectory(vessel.history());
-  for (auto const& pair : apparent_trajectory->timeline()) {
-    final_state = &pair.second;
+  for (Trajectory<Barycentre>::NativeIterator it = apparent_trajectory->first();
+       !it.at_end();
+       ++it) {
+    final_state = &it.degrees_of_freedom();
     if (initial_state != nullptr) {
       result.emplace_back(to_world(initial_state->position),
                           to_world(final_state->position));
