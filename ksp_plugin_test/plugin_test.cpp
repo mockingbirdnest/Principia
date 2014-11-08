@@ -679,7 +679,7 @@ TEST_F(PluginTest, BodyCentredNonrotatingRenderingIntegration) {
     }
     // Check continuity.
     for (std::size_t i = 0;
-         static_cast<int64_t>(rendered_trajectory.size()) - 1;
+         i < static_cast<int64_t>(rendered_trajectory.size()) - 1;
          ++i) {
       EXPECT_THAT(rendered_trajectory[i].end,
                   Eq(rendered_trajectory[i + 1].begin));
