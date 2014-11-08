@@ -679,7 +679,7 @@ TEST_F(PluginTest, BodyCentredNonrotatingRenderingIntegration) {
     }
     // Check continuity.
     for (std::size_t i = 0;
-         i < static_cast<int64_t>(rendered_trajectory.size()) - 1;
+         i + 1 < rendered_trajectory.size();
          ++i) {
       EXPECT_THAT(rendered_trajectory[i].end,
                   Eq(rendered_trajectory[i + 1].begin));
@@ -789,7 +789,7 @@ TEST_F(PluginTest, BarycentricRotatingRenderingIntegration) {
   }
   // Check continuity.
   for (std::size_t i = 0;
-       i < static_cast<int64_t>(rendered_trajectory.size()) - 1;
+       i + 1 < rendered_trajectory.size();
        ++i) {
     EXPECT_THAT(rendered_trajectory[i].end,
                 Eq(rendered_trajectory[i + 1].begin));
@@ -799,7 +799,7 @@ TEST_F(PluginTest, BarycentricRotatingRenderingIntegration) {
   // consecutive points form a sufficiently flat triangle.  This tests issue
   // #256.
   for (std::size_t i = 0;
-       i < static_cast<int64_t>(rendered_trajectory.size()) - 2;
+       i + 2 < rendered_trajectory.size();
        ++i) {
     if (i == 171) {
       // TODO(phl): issue #256.
