@@ -401,5 +401,78 @@ TEST_F(TrajectoryDeathTest, IntrinsicAccelerationSuccess) {
   EXPECT_FALSE(massless_trajectory_->has_intrinsic_acceleration());
 }
 
+TEST_F(TrajectoryDeathTest, DegreesOfFreedomError) {
+  massless_trajectory_->Append(t1_, *d1_);
+  massless_trajectory_->Append(t2_, *d2_);
+  massless_trajectory_->Append(t3_, *d3_);
+  Trajectory<World>* fork = massless_trajectory_->Fork(t2_);
+  fork->Append(t4_, *d4_);
+
+  EXPECT_DEATH({
+    DegreesOfFreedom<World> d =
+        massless_trajectory_->GetDegreesOfFreedom(t0_ + 10 * Second);
+  }, "Time.*not in trajectory");
+  EXPECT_DEATH({
+    DegreesOfFreedom<World> d =
+        fork->GetDegreesOfFreedom(t0_ + 35 * Second);
+  }, "Time.*not in trajectory");
+}
+
+TEST_F(TrajectoryTest, DegreesOfFreedomSuccess) {
+  massless_trajectory_->Append(t1_, *d1_);
+  massless_trajectory_->Append(t2_, *d2_);
+  massless_trajectory_->Append(t3_, *d3_);
+  Trajectory<World>* fork = massless_trajectory_->Fork(t2_);
+  fork->Append(t4_, *d4_);
+
+  EXPECT_EQ(*d4_, fork->GetDegreesOfFreedom(t4_));
+  EXPECT_EQ(*d2_, fork->GetDegreesOfFreedom(t2_));
+  EXPECT_EQ(*d1_, fork->GetDegreesOfFreedom(t1_));
+  EXPECT_EQ(*d3_, massless_trajectory_->GetDegreesOfFreedom(t3_));
+  EXPECT_EQ(*d2_, massless_trajectory_->GetDegreesOfFreedom(t2_));
+  EXPECT_EQ(*d1_, massless_trajectory_->GetDegreesOfFreedom(t1_));
+}
+
+TEST_F(TrajectoryTest, NativeIterator) {
+  Trajectory<World>::NativeIterator it = massive_trajectory_->first();
+  EXPECT_TRUE(it.at_end());
+
+  massless_trajectory_->Append(t1_, *d1_);
+  massless_trajectory_->Append(t2_, *d2_);
+  massless_trajectory_->Append(t3_, *d3_);
+
+  it = massless_trajectory_->first();
+  EXPECT_FALSE(it.at_end());
+  EXPECT_EQ(t1_, it.time());
+  EXPECT_EQ(*d1_, it.degrees_of_freedom());
+  ++it;
+  EXPECT_EQ(t2_, it.time());
+  EXPECT_EQ(*d2_, it.degrees_of_freedom());
+  ++it;
+  EXPECT_EQ(t3_, it.time());
+  EXPECT_EQ(*d3_, it.degrees_of_freedom());
+  ++it;
+  EXPECT_TRUE(it.at_end());
+
+  Trajectory<World>* fork = massless_trajectory_->Fork(t2_);
+  fork->Append(t4_, *d4_);
+
+  it = fork->first();
+  EXPECT_FALSE(it.at_end());
+  EXPECT_EQ(t1_, it.time());
+  EXPECT_EQ(*d1_, it.degrees_of_freedom());
+  ++it;
+  EXPECT_EQ(t2_, it.time());
+  EXPECT_EQ(*d2_, it.degrees_of_freedom());
+  ++it;
+  EXPECT_EQ(t3_, it.time());
+  EXPECT_EQ(*d3_, it.degrees_of_freedom());
+  ++it;
+  EXPECT_EQ(t4_, it.time());
+  EXPECT_EQ(*d4_, it.degrees_of_freedom());
+  ++it;
+  EXPECT_TRUE(it.at_end());
+}
+
 }  // namespace physics
 }  // namespace principia
