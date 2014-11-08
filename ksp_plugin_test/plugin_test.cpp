@@ -678,9 +678,7 @@ TEST_F(PluginTest, BodyCentredNonrotatingRenderingIntegration) {
       apogee = std::max(apogee, l_max);
     }
     // Check continuity.
-    for (std::size_t i = 0;
-         i + 1 < rendered_trajectory.size();
-         ++i) {
+    for (std::size_t i = 0; i + 1 < rendered_trajectory.size(); ++i) {
       EXPECT_THAT(rendered_trajectory[i].end,
                   Eq(rendered_trajectory[i + 1].begin));
     }
@@ -788,9 +786,7 @@ TEST_F(PluginTest, BarycentricRotatingRenderingIntegration) {
     EXPECT_THAT(RelativeError(earth_moon, satellite_moon), Lt(0.2));;
   }
   // Check continuity.
-  for (std::size_t i = 0;
-       i + 1 < rendered_trajectory.size();
-       ++i) {
+  for (std::size_t i = 0; i + 1 < rendered_trajectory.size(); ++i) {
     EXPECT_THAT(rendered_trajectory[i].end,
                 Eq(rendered_trajectory[i + 1].begin));
   }
@@ -798,9 +794,7 @@ TEST_F(PluginTest, BarycentricRotatingRenderingIntegration) {
   // Check that there are no spikes in the rendered trajectory, i.e., that three
   // consecutive points form a sufficiently flat triangle.  This tests issue
   // #256.
-  for (std::size_t i = 0;
-       i + 2 < rendered_trajectory.size();
-       ++i) {
+  for (std::size_t i = 0; i + 2 < rendered_trajectory.size(); ++i) {
     if (i == 171) {
       // TODO(phl): issue #256.
       EXPECT_THAT(
