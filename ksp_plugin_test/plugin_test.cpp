@@ -688,7 +688,6 @@ TEST_F(PluginTest, BodyCentredNonrotatingRenderingIntegration) {
   }
 }
 
-#ifndef _DEBUG
 TEST_F(PluginTest, BarycentricRotatingRenderingIntegration) {
   GUID const satellite = "satellite";
   // This is an integration test, so we need a plugin that will actually
@@ -747,8 +746,14 @@ TEST_F(PluginTest, BarycentricRotatingRenderingIntegration) {
                                          SolarSystem::kMoon);
   Permutation<AliceSun, World> const alice_sun_to_world =
       Permutation<AliceSun, World>(Permutation<AliceSun, World>::XZY);
-  Instant t = initial_time_ + 1 * Hour;
-  for (; t < initial_time_ + 20 * Day; t += 1 * Hour) {
+  Time const δt = 1 * Hour;
+#if defined(_DEBUG)
+  Time const duration = 1 * Day;
+#else
+  Time const duration = 20 * Day;
+#endif
+  Instant t = initial_time_ + δt;
+  for (; t < initial_time_ + duration; t += δt) {
     plugin.AdvanceTime(t,
                        1 * Radian / Pow<2>(Minute) * Pow<2>(t - initial_time_));
     plugin.InsertOrKeepVessel(satellite, SolarSystem::kEarth);
@@ -789,6 +794,7 @@ TEST_F(PluginTest, BarycentricRotatingRenderingIntegration) {
     EXPECT_THAT(rendered_trajectory[i].end,
                 Eq(rendered_trajectory[i + 1].begin));
   }
+#if !defined(_DEBUG)
   // Check that there are no spikes in the rendered trajectory, i.e., that three
   // consecutive points form a sufficiently flat triangle.  This tests issue
   // #256.
@@ -814,8 +820,8 @@ TEST_F(PluginTest, BarycentricRotatingRenderingIntegration) {
                  rendered_trajectory[i + 1].end).Norm()) / 1.5)) << i;
     }
   }
+#endif
 }
-#endif  // _DEBUG
 
 }  // namespace ksp_plugin
 }  // namespace principia
