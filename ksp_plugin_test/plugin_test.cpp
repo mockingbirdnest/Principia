@@ -20,6 +20,7 @@ using principia::geometry::Bivector;
 using principia::geometry::Permutation;
 using principia::physics::MockNBodySystem;
 using principia::quantities::Abs;
+using principia::quantities::ArcTan;
 using principia::quantities::Sqrt;
 using principia::si::Day;
 using principia::si::Hour;
@@ -605,7 +606,7 @@ TEST_F(PluginTest, UpdateCelestialHierarchy) {
   }
 }
 
-TEST_F(PluginTest, RenderingIntegration) {
+TEST_F(PluginTest, BodyCentredNonrotatingRenderingIntegration) {
   GUID const satellite = "satellite";
   // This is an integration test, so we need a plugin that will actually
   // integrate.
@@ -662,7 +663,7 @@ TEST_F(PluginTest, RenderingIntegration) {
         plugin.RenderedVesselTrajectory(satellite,
                                         *geocentric,
                                         sun_world_position);
-    Position<World> earth_world_position =
+    Position<World> const earth_world_position =
         sun_world_position + alice_sun_to_world(
             plugin.CelestialDisplacementFromParent(SolarSystem::kEarth));
     for (auto const segment : rendered_trajectory) {
@@ -676,11 +677,128 @@ TEST_F(PluginTest, RenderingIntegration) {
       apogee = std::max(apogee, l_max);
     }
     // Check continuity.
-    for (std::size_t i = 0; i < rendered_trajectory.size() - 1; ++i) {
+    for (std::size_t i = 0;
+         static_cast<int64_t>(rendered_trajectory.size()) - 1;
+         ++i) {
       EXPECT_THAT(rendered_trajectory[i].end,
                   Eq(rendered_trajectory[i + 1].begin));
     }
     EXPECT_THAT(Abs(apogee - perigee), Lt(1.1 * Metre));
+  }
+}
+
+TEST_F(PluginTest, BarycentricRotatingRenderingIntegration) {
+  GUID const satellite = "satellite";
+  // This is an integration test, so we need a plugin that will actually
+  // integrate.
+  Plugin plugin(initial_time_,
+                SolarSystem::kSun,
+                sun_gravitational_parameter_,
+                planetarium_rotation_);
+  for (std::size_t index = SolarSystem::kSun + 1;
+       index < bodies_.size();
+       ++index) {
+    Index const parent_index = SolarSystem::parent(index);
+    Displacement<AliceSun> const from_parent_position = looking_glass_(
+        solar_system_->trajectories()[index]->
+            last().degrees_of_freedom().position -
+        solar_system_->trajectories()[parent_index]->
+            last().degrees_of_freedom().position);
+    Velocity<AliceSun> const from_parent_velocity = looking_glass_(
+        solar_system_->trajectories()[index]->
+            last().degrees_of_freedom().velocity -
+        solar_system_->trajectories()[parent_index]->
+            last().degrees_of_freedom().velocity);
+    plugin.InsertCelestial(index,
+                           bodies_[index]->gravitational_parameter(),
+                           parent_index,
+                           from_parent_position,
+                           from_parent_velocity);
+  }
+  plugin.EndInitialization();
+  plugin.InsertOrKeepVessel(satellite, SolarSystem::kEarth);
+  // A vessel at the Lagrange point L₅.
+  Displacement<ICRFJ2000Ecliptic> const from_the_earth_to_the_moon = 
+      solar_system_->trajectories()[SolarSystem::kMoon]->
+          last().degrees_of_freedom().position -
+      solar_system_->trajectories()[SolarSystem::kEarth]->
+          last().degrees_of_freedom().position;
+  Velocity<ICRFJ2000Ecliptic> const moon_velocity_wrt_earth =
+      solar_system_->trajectories()[SolarSystem::kMoon]->
+          last().degrees_of_freedom().velocity -
+      solar_system_->trajectories()[SolarSystem::kEarth]->
+          last().degrees_of_freedom().velocity;
+  Displacement<ICRFJ2000Ecliptic> const from_the_earth_to_l5 =
+      from_the_earth_to_the_moon / 2 -
+          moon_velocity_wrt_earth / moon_velocity_wrt_earth.Norm() *
+              from_the_earth_to_the_moon.Norm() * Sqrt(3) / 2;
+  Velocity<ICRFJ2000Ecliptic> const initial_velocity =
+      Rotation<ICRFJ2000Ecliptic, ICRFJ2000Ecliptic>(
+          π / 3 * Radian,
+          Wedge(moon_velocity_wrt_earth, from_the_earth_to_the_moon))(
+              moon_velocity_wrt_earth);
+  plugin.SetVesselStateOffset(satellite,
+                              looking_glass_(from_the_earth_to_l5),
+                              looking_glass_(initial_velocity));
+  std::unique_ptr<RenderingFrame> const earth_moon_barycentric =
+      plugin.NewBarycentricRotatingFrame(SolarSystem::kEarth,
+                                         SolarSystem::kMoon);
+  Permutation<AliceSun, World> const alice_sun_to_world =
+      Permutation<AliceSun, World>(Permutation<AliceSun, World>::XZY);
+  Instant t = initial_time_ + 1 * Hour;
+  for (; t < initial_time_ + 20 * Day; t += 1 * Hour) {
+    plugin.AdvanceTime(t,
+                       1 * Radian / Pow<2>(Minute) * Pow<2>(t - initial_time_));
+    plugin.InsertOrKeepVessel(satellite, SolarSystem::kEarth);
+  }
+  plugin.AdvanceTime(t,
+                     1 * Radian / Pow<2>(Minute) * Pow<2>(t - initial_time_));
+  plugin.InsertOrKeepVessel(satellite, SolarSystem::kEarth);
+  // We give the sun an arbitrary nonzero velocity in |World|.
+  Position<World> const sun_world_position =
+      kWorldOrigin + Velocity<World>(
+          { 0.1 * AstronomicalUnit / Hour,
+           -1.0 * AstronomicalUnit / Hour,
+            0.0 * AstronomicalUnit / Hour}) * (t - initial_time_);
+  RenderedTrajectory<World> const rendered_trajectory =
+      plugin.RenderedVesselTrajectory(satellite,
+                                      *earth_moon_barycentric,
+                                      sun_world_position);
+  Position<World> const earth_world_position =
+      sun_world_position + alice_sun_to_world(
+          plugin.CelestialDisplacementFromParent(SolarSystem::kEarth));
+  Position<World> const moon_world_position =
+      earth_world_position + alice_sun_to_world(
+          plugin.CelestialDisplacementFromParent(SolarSystem::kMoon));
+  Length const earth_moon =
+      (moon_world_position - earth_world_position).Norm();
+  for (auto const segment : rendered_trajectory) {
+    Length const satellite_earth =
+        (segment.begin - earth_world_position).Norm();
+    Length const satellite_moon =
+        (segment.begin - moon_world_position).Norm();
+    EXPECT_THAT(RelativeError(earth_moon, satellite_earth), Lt(0.2));
+    EXPECT_THAT(RelativeError(earth_moon, satellite_moon), Lt(0.2));;
+  }
+  // Check continuity.
+  for (std::size_t i = 0;
+       i < static_cast<int64_t>(rendered_trajectory.size()) - 1;
+       ++i) {
+    EXPECT_THAT(rendered_trajectory[i].end,
+                Eq(rendered_trajectory[i + 1].begin));
+  }
+  // Check that there are no spikes in the rendered trajectory, i.e., that three
+  // consecutive points form a sufficiently flat triangle.  This tests issue
+  // #256.
+  for (std::size_t i = 0;
+       i < static_cast<int64_t>(rendered_trajectory.size()) - 2;
+       ++i) {
+    EXPECT_THAT(
+      (rendered_trajectory[i].begin - rendered_trajectory[i + 1].end).Norm(),
+      Gt(((rendered_trajectory[i].begin -
+               rendered_trajectory[i + 1].begin).Norm() +
+           (rendered_trajectory[i].end -
+               rendered_trajectory[i + 1].end).Norm()) / 1.5)) << i;
   }
 }
 
