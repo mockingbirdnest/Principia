@@ -719,7 +719,7 @@ TEST_F(PluginTest, BarycentricRotatingRenderingIntegration) {
   plugin.EndInitialization();
   plugin.InsertOrKeepVessel(satellite, SolarSystem::kEarth);
   // A vessel at the Lagrange point L₅.
-  Displacement<ICRFJ2000Ecliptic> const from_the_earth_to_the_moon = 
+  Displacement<ICRFJ2000Ecliptic> const from_the_earth_to_the_moon =
       solar_system_->trajectories()[SolarSystem::kMoon]->
           last().degrees_of_freedom().position -
       solar_system_->trajectories()[SolarSystem::kEarth]->
