@@ -26,6 +26,14 @@ typename Trajectory<Frame>::NativeIterator Trajectory<Frame>::first() const {
 }
 
 template<typename Frame>
+typename Trajectory<Frame>::NativeIterator Trajectory<Frame>::on_or_after(
+    Instant const& time) const {
+  NativeIterator it;
+  it.InitializeOnOrAfter(time, this);
+  return it;
+}
+
+template<typename Frame>
 typename Trajectory<Frame>::NativeIterator Trajectory<Frame>::last() const {
   NativeIterator it;
   it.InitializeLast(this);
@@ -39,6 +47,17 @@ Trajectory<Frame>::first_with_transform(
     Transform<ToFrame> const& transform) const {
   TransformingIterator<ToFrame> it(transform);
   it.InitializeFirst(this);
+  return it;
+}
+
+template<typename Frame>
+template<typename ToFrame>
+typename Trajectory<Frame>::TransformingIterator<ToFrame>
+Trajectory<Frame>::on_or_after_with_transform(
+    Instant const& time,
+    Transform<ToFrame> const& transform) const {
+  TransformingIterator<ToFrame> it(transform);
+  it.InitializeOnOrAfter(time, this);
   return it;
 }
 
@@ -282,6 +301,20 @@ void Trajectory<Frame>::Iterator::InitializeFirst(
   }
   ancestry_.push_front(ancestor);
   current_ = ancestor->timeline_.begin();
+}
+
+template<typename Frame>
+void Trajectory<Frame>::Iterator::InitializeOnOrAfter(
+  Instant const& time, Trajectory const* trajectory) {
+  CHECK_NOTNULL(trajectory);
+  Trajectory const* ancestor = trajectory;
+  while (ancestor->fork_ != nullptr && time <= (*ancestor->fork_)->first) {
+    ancestry_.push_front(ancestor);
+    forks_.push_front(*ancestor->fork_);
+    ancestor = ancestor->parent_;
+  }
+  ancestry_.push_front(ancestor);
+  current_ = ancestor->timeline_.lower_bound(time);
 }
 
 template<typename Frame>

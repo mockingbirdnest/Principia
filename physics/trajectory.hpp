@@ -45,6 +45,11 @@ class Trajectory {
   // O(|depth|).  The result may be at end if the trajectory is empty.
   NativeIterator first() const;
 
+  // Returns at the first point of the trajectory which is on or after |time|.
+  // Complexity is O(|depth| + Ln(|length|)).  The result may be at end if the
+  // |time| is after the end of the trajectory.
+  NativeIterator on_or_after(Instant const& time) const;
+
   // Returns an iterator at the last point of the trajectory.  Complexity is
   // O(1).  The trajectory must not be empty.
   NativeIterator last() const;
@@ -53,6 +58,14 @@ class Trajectory {
   // tranformation to ToFrame.
   template<typename ToFrame>
   TransformingIterator<ToFrame> first_with_transform(
+      Transform<ToFrame> const& transform) const;
+
+  // Returns at the first point of the trajectory which is on or after |time|.
+  // Complexity is O(|depth| + Ln(|length|)).  The result may be at end if the
+  // |time| is after the end of the trajectory.
+  template<typename ToFrame>
+  TransformingIterator<ToFrame> on_or_after_with_transform(
+      Instant const& time,
       Transform<ToFrame> const& transform) const;
 
   // Same as |last| above, but returns an iterator that performs a coordinate
@@ -158,6 +171,7 @@ class Trajectory {
     Iterator() = default;
     // No transfer of ownership.
     void InitializeFirst(Trajectory const* trajectory);
+    void InitializeOnOrAfter(Instant const& time, Trajectory const* trajectory);
     void InitializeLast(Trajectory const* trajectory);
     typename Timeline::const_iterator current() const;
 

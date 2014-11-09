@@ -572,5 +572,92 @@ TEST_F(TrajectoryTest, TransformingIteratorSuccess) {
   EXPECT_TRUE(it.at_end());
 }
 
+TEST_F(TrajectoryTest, NativeIteratorOnOrAfterSuccess) {
+  Trajectory<World>::NativeIterator it = massive_trajectory_->on_or_after(t0_);
+  EXPECT_TRUE(it.at_end());
+
+  massless_trajectory_->Append(t1_, *d1_);
+  massless_trajectory_->Append(t2_, *d2_);
+  massless_trajectory_->Append(t3_, *d3_);
+
+  it = massless_trajectory_->on_or_after(t0_);
+  EXPECT_FALSE(it.at_end());
+  EXPECT_EQ(t1_, it.time());
+  EXPECT_EQ(*d1_, it.degrees_of_freedom());
+  it = massless_trajectory_->on_or_after(t2_);
+  EXPECT_EQ(t2_, it.time());
+  EXPECT_EQ(*d2_, it.degrees_of_freedom());
+  it = massless_trajectory_->on_or_after(t4_);
+  EXPECT_TRUE(it.at_end());
+
+  Trajectory<World>* fork = massless_trajectory_->Fork(t2_);
+  fork->Append(t4_, *d4_);
+
+  it = fork->on_or_after(t0_);
+  EXPECT_FALSE(it.at_end());
+  EXPECT_EQ(t1_, it.time());
+  EXPECT_EQ(*d1_, it.degrees_of_freedom());
+  it = fork->on_or_after(t2_);
+  EXPECT_EQ(t2_, it.time());
+  EXPECT_EQ(*d2_, it.degrees_of_freedom());
+  it = fork->on_or_after(t4_);
+  EXPECT_EQ(t4_, it.time());
+  EXPECT_EQ(*d4_, it.degrees_of_freedom());
+  it = fork->on_or_after(t4_ + 1 * Second);
+  EXPECT_TRUE(it.at_end());
+}
+
+TEST_F(TrajectoryTest, TransformingIteratorOnOrAfterSuccess) {
+  Trajectory<World>::TransformingIterator<World> it =
+      massive_trajectory_->on_or_after_with_transform(t0_, transform_);
+  EXPECT_TRUE(it.at_end());
+
+  massless_trajectory_->Append(t1_, *d1_);
+  massless_trajectory_->Append(t2_, *d2_);
+  massless_trajectory_->Append(t3_, *d3_);
+
+  it = massless_trajectory_->on_or_after_with_transform(t0_, transform_);
+  EXPECT_FALSE(it.at_end());
+  EXPECT_EQ(t1_, it.time());
+  EXPECT_EQ(Position<World>(Vector<Length, World>(
+                {-84 * Metre, -80 * Metre, -76 * Metre})),
+            it.degrees_of_freedom().position);
+  EXPECT_EQ(3 * p1_, it.degrees_of_freedom().velocity);
+  it = massless_trajectory_->on_or_after_with_transform(t2_, transform_);
+  EXPECT_EQ(t2_, it.time());
+  EXPECT_EQ(Position<World>(Vector<Length, World>(
+                {-64 * Metre, -60 * Metre, -56 * Metre})),
+            it.degrees_of_freedom().position);
+  EXPECT_EQ(3 * p2_, it.degrees_of_freedom().velocity);
+  it = massless_trajectory_->on_or_after_with_transform(t4_, transform_);
+  EXPECT_TRUE(it.at_end());
+
+  Trajectory<World>* fork = massless_trajectory_->Fork(t2_);
+  fork->Append(t4_, *d4_);
+
+  it = fork->on_or_after_with_transform(t0_, transform_);
+  EXPECT_FALSE(it.at_end());
+  EXPECT_EQ(t1_, it.time());
+  EXPECT_EQ(t1_, it.time());
+  EXPECT_EQ(Position<World>(Vector<Length, World>(
+                {-84 * Metre, -80 * Metre, -76 * Metre})),
+            it.degrees_of_freedom().position);
+  EXPECT_EQ(3 * p1_, it.degrees_of_freedom().velocity);
+  it = fork->on_or_after_with_transform(t2_, transform_);
+  EXPECT_EQ(t2_, it.time());
+  EXPECT_EQ(Position<World>(Vector<Length, World>(
+                {-64 * Metre, -60 * Metre, -56 * Metre})),
+            it.degrees_of_freedom().position);
+  EXPECT_EQ(3 * p2_, it.degrees_of_freedom().velocity);
+  it = fork->on_or_after_with_transform(t4_, transform_);
+  EXPECT_EQ(t4_, it.time());
+  EXPECT_EQ(Position<World>(Vector<Length, World>(
+                {-24 * Metre, -20 * Metre, -16 * Metre})),
+            it.degrees_of_freedom().position);
+  EXPECT_EQ(3 * p4_, it.degrees_of_freedom().velocity);
+  it = fork->on_or_after_with_transform(t4_ + 1 * Second, transform_);
+  EXPECT_TRUE(it.at_end());
+}
+
 }  // namespace physics
 }  // namespace principia
