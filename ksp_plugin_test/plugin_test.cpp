@@ -648,9 +648,16 @@ TEST_F(PluginTest, BodyCentredNonrotatingRenderingIntegration) {
   Length apogee = -std::numeric_limits<double>::infinity() * Metre;
   Permutation<AliceSun, World> const alice_sun_to_world =
       Permutation<AliceSun, World>(Permutation<AliceSun, World>::XZY);
-  for (Instant t = initial_time_ + 1 * Minute;
-       t < initial_time_ + 12 * Hour;
-       t += 10 * Minute) {
+  Time const δt_short = 0.02 * Second;
+  Time const δt_long = 10 * Minute;
+  Instant t = initial_time_ + δt_short;
+  // Exercise #267.
+  for (; t < initial_time_ + δt_long; t += δt_short) {
+    plugin.AdvanceTime(t,
+                       1 * Radian / Pow<2>(Minute) * Pow<2>(t - initial_time_));
+    plugin.InsertOrKeepVessel(satellite, SolarSystem::kEarth);
+  }
+  for (; t < initial_time_ + 12 * Hour; t += δt_long) {
     plugin.AdvanceTime(t,
                        1 * Radian / Pow<2>(Minute) * Pow<2>(t - initial_time_));
     plugin.InsertOrKeepVessel(satellite, SolarSystem::kEarth);
@@ -744,14 +751,22 @@ TEST_F(PluginTest, BarycentricRotatingRenderingIntegration) {
                                          SolarSystem::kMoon);
   Permutation<AliceSun, World> const alice_sun_to_world =
       Permutation<AliceSun, World>(Permutation<AliceSun, World>::XZY);
-  Time const δt = 1 * Hour;
+  Time const δt_long = 1 * Hour;
 #if defined(_DEBUG)
   Time const duration = 1 * Day;
+  Instant t = initial_time_ + δt_long;
 #else
+  Time const δt_short = 0.02 * Second;
   Time const duration = 20 * Day;
+  Instant t = initial_time_ + δt_short;
+  // Exercise #267.
+  for (; t < initial_time_ + δt_long; t += δt_short) {
+    plugin.AdvanceTime(t,
+                       1 * Radian / Pow<2>(Minute) * Pow<2>(t - initial_time_));
+    plugin.InsertOrKeepVessel(satellite, SolarSystem::kEarth);
+  }
 #endif
-  Instant t = initial_time_ + δt;
-  for (; t < initial_time_ + duration; t += δt) {
+  for (; t < initial_time_ + duration; t += δt_long) {
     plugin.AdvanceTime(t,
                        1 * Radian / Pow<2>(Minute) * Pow<2>(t - initial_time_));
     plugin.InsertOrKeepVessel(satellite, SolarSystem::kEarth);
@@ -795,7 +810,7 @@ TEST_F(PluginTest, BarycentricRotatingRenderingIntegration) {
   // consecutive points form a sufficiently flat triangle.  This tests issue
   // #256.
   for (std::size_t i = 0; i + 2 < rendered_trajectory.size(); ++i) {
-    if (i == 171) {
+    if (i == 530) {
       // TODO(phl): issue #256.
       EXPECT_THAT(
           (rendered_trajectory[i].begin -
