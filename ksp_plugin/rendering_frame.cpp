@@ -94,10 +94,6 @@ Matrix FromColumns(geometry::R3Element<double> const& column_x,
           {column_x.z, column_y.z, column_z.z}};
 }
 
-Matrix Transpose(Matrix const& m) {
-  return FromColumns(m.row_x, m.row_y, m.row_z);
-}
-
 }  // namespace
 
 std::unique_ptr<Trajectory<Barycentre>>
