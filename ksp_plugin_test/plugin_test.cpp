@@ -652,7 +652,8 @@ TEST_F(PluginTest, BodyCentredNonrotatingRenderingIntegration) {
 #if !defined(_DEBUG)
   Time const δt_short = 0.02 * Second;
   Instant t = initial_time_ + δt_short;
-  // Exercise #267.
+  // Exercise #267 by having small time steps at the beginning of the trajectory
+  // that are not synchronized with those of the Earth.
   for (; t < initial_time_ + δt_long; t += δt_short) {
     plugin.AdvanceTime(t,
                        1 * Radian / Pow<2>(Minute) * Pow<2>(t - initial_time_));
@@ -763,7 +764,8 @@ TEST_F(PluginTest, BarycentricRotatingRenderingIntegration) {
   Time const δt_short = 0.02 * Second;
   Time const duration = 20 * Day;
   Instant t = initial_time_ + δt_short;
-  // Exercise #267.
+  // Exercise #267 by having small time steps at the beginning of the trajectory
+  // that are not synchronized with those of the Earth and Moon.
   for (; t < initial_time_ + δt_long; t += δt_short) {
     plugin.AdvanceTime(t,
                        1 * Radian / Pow<2>(Minute) * Pow<2>(t - initial_time_));
