@@ -816,24 +816,12 @@ TEST_F(PluginTest, BarycentricRotatingRenderingIntegration) {
   // consecutive points form a sufficiently flat triangle.  This tests issue
   // #256.
   for (std::size_t i = 0; i + 2 < rendered_trajectory.size(); ++i) {
-    if (i == 530) {
-      // TODO(phl): issue #256.
-      EXPECT_THAT(
-          (rendered_trajectory[i].begin -
-               rendered_trajectory[i + 1].end).Norm(),
-        Le(((rendered_trajectory[i].begin -
-                 rendered_trajectory[i + 1].begin).Norm() +
-             (rendered_trajectory[i].end -
-                 rendered_trajectory[i + 1].end).Norm()) / 1.5)) << i;
-    } else {
-      EXPECT_THAT(
-          (rendered_trajectory[i].begin -
-               rendered_trajectory[i + 1].end).Norm(),
+    EXPECT_THAT(
+        (rendered_trajectory[i].begin - rendered_trajectory[i + 1].end).Norm(),
         Gt(((rendered_trajectory[i].begin -
                  rendered_trajectory[i + 1].begin).Norm() +
-             (rendered_trajectory[i].end -
+            (rendered_trajectory[i].end -
                  rendered_trajectory[i + 1].end).Norm()) / 1.5)) << i;
-    }
   }
 #endif
 }
