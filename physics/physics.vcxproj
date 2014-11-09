@@ -135,6 +135,8 @@
     <ClInclude Include="n_body_system_body.hpp" />
     <ClInclude Include="trajectory.hpp" />
     <ClInclude Include="trajectory_body.hpp" />
+    <ClInclude Include="transforms.hpp" />
+    <ClInclude Include="transforms_body.hpp" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="n_body_system_test.cpp" />
