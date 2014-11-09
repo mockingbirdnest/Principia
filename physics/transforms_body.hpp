@@ -19,10 +19,13 @@ BodyCentredNonRotatingTransformingIterator(
     DegreesOfFreedom<ToFrame> {
     DegreesOfFreedom<FromFrame> const& last_centre_degrees_of_freedom =
         centre_trajectory.last().degrees_of_freedom();
-    // GetDegreesOfFreedom is Ln(N), but it doesn't matter unless the map gets
-    // very big, in which case we'll have cache misses anyway.
+    // on_or_after() is Ln(N), but it doesn't matter unless the map gets very
+    // big, in which case we'll have cache misses anyway.
+    Trajectory<FromFrame>::NativeIterator const centre_it =
+        centre_trajectory.on_or_after(t);
+    CHECK_EQ(centre_it.time(), t) << "Time " << t << " not in trajectory";
     DegreesOfFreedom<FromFrame> const& centre_degrees_of_freedom =
-        centre_trajectory.GetDegreesOfFreedom(t);
+        centre_it.degrees_of_freedom();
     return {from_degrees_of_freedom.position -
                 centre_degrees_of_freedom.position +
                 last_centre_degrees_of_freedom.position,
