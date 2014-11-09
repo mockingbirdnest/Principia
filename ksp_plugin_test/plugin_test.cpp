@@ -648,8 +648,9 @@ TEST_F(PluginTest, BodyCentredNonrotatingRenderingIntegration) {
   Length apogee = -std::numeric_limits<double>::infinity() * Metre;
   Permutation<AliceSun, World> const alice_sun_to_world =
       Permutation<AliceSun, World>(Permutation<AliceSun, World>::XZY);
-  Time const δt_short = 0.02 * Second;
   Time const δt_long = 10 * Minute;
+#if !defined(_DEBUG)
+  Time const δt_short = 0.02 * Second;
   Instant t = initial_time_ + δt_short;
   // Exercise #267.
   for (; t < initial_time_ + δt_long; t += δt_short) {
@@ -657,6 +658,9 @@ TEST_F(PluginTest, BodyCentredNonrotatingRenderingIntegration) {
                        1 * Radian / Pow<2>(Minute) * Pow<2>(t - initial_time_));
     plugin.InsertOrKeepVessel(satellite, SolarSystem::kEarth);
   }
+#else
+  Instant t = initial_time_ + δt_long;
+#endif
   for (; t < initial_time_ + 12 * Hour; t += δt_long) {
     plugin.AdvanceTime(t,
                        1 * Radian / Pow<2>(Minute) * Pow<2>(t - initial_time_));
