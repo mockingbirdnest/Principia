@@ -1,5 +1,7 @@
 #include "ksp_plugin/rendering_frame.hpp"
 
+#include <utility>
+
 #include "geometry/rotation.hpp"
 #include "ksp_plugin/celestial.hpp"
 #include "physics/transforms.hpp"
