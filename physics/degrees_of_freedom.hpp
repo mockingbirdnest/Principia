@@ -21,6 +21,10 @@ struct DegreesOfFreedom {
   Velocity<Frame> const velocity;
 };
 
+template<typename Frame>
+bool operator==(DegreesOfFreedom<Frame> const& left,
+                DegreesOfFreedom<Frame> const& right);
+
 }  // namespace physics
 }  // namespace principia
 

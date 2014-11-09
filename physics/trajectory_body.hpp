@@ -253,7 +253,8 @@ Trajectory<Frame>::Iterator::operator++() {
     forks_.pop_front();
     current_ = ancestry_.front()->timeline_.begin();
   } else {
-    CHECK(current_ != ancestry_.front()->timeline_.end());
+    CHECK(current_ != ancestry_.front()->timeline_.end())
+        << "Incrementing beyond end of trajectory";
     ++current_;
   }
   return *this;
