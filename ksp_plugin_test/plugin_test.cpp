@@ -818,10 +818,10 @@ TEST_F(PluginTest, BarycentricRotatingRenderingIntegration) {
   for (std::size_t i = 0; i + 2 < rendered_trajectory.size(); ++i) {
     EXPECT_THAT(
         (rendered_trajectory[i].begin - rendered_trajectory[i + 1].end).Norm(),
-      Gt(((rendered_trajectory[i].begin -
-               rendered_trajectory[i + 1].begin).Norm() +
-           (rendered_trajectory[i].end -
-               rendered_trajectory[i + 1].end).Norm()) / 1.5)) << i;
+        Gt(((rendered_trajectory[i].begin -
+                 rendered_trajectory[i + 1].begin).Norm() +
+            (rendered_trajectory[i].end -
+                 rendered_trajectory[i + 1].end).Norm()) / 1.5)) << i;
   }
 #endif
 }

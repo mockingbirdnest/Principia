@@ -94,6 +94,50 @@ Matrix FromColumns(geometry::R3Element<double> const& column_x,
           {column_x.z, column_y.z, column_z.z}};
 }
 
+Matrix Transpose(Matrix const& m) {
+  return FromColumns(m.row_x, m.row_y, m.row_z);
+}
+
+// Returns the rotation matrix that maps the standard basis to the barycentric
+// frame, as well as the state of the barycentre itself.
+std::pair<Matrix, DegreesOfFreedom<Barycentre>>
+FromStandardBasisToBarycentricFrame(
+    DegreesOfFreedom<Barycentre> const& primary_state,
+    GravitationalParameter const& primary_gravitational_parameter,
+    DegreesOfFreedom<Barycentre> const& secondary_state,
+    GravitationalParameter const& secondary_gravitational_parameter) {
+  Position<Barycentre> const barycentre_position =
+      geometry::Barycentre<Displacement<Barycentre>, GravitationalParameter>(
+          {primary_state.position, secondary_state.position},
+          {primary_gravitational_parameter, secondary_gravitational_parameter});
+  // TODO(phl): a barycentre on vectors (and on degrees of freedom).
+  Velocity<Barycentre> const barycentre_velocity =
+      (primary_gravitational_parameter * primary_state.velocity +
+           secondary_gravitational_parameter * secondary_state.velocity) /
+      (primary_gravitational_parameter + secondary_gravitational_parameter);
+  Displacement<Barycentre> const reference_direction =
+      primary_state.position - barycentre_position;
+  Vector<double, Barycentre> const normalized_reference_direction =
+      reference_direction / reference_direction.Norm();
+  Velocity<Barycentre> const reference_coplanar =
+      primary_state.velocity - barycentre_velocity;
+  Vector<double, Barycentre> const normalized_reference_coplanar =
+      reference_coplanar / reference_coplanar.Norm();
+  // Modified Gram-Schmidt.
+  Vector<double, Barycentre> const reference_normal =
+      normalized_reference_coplanar -
+          InnerProduct(normalized_reference_coplanar,
+                       normalized_reference_direction) *
+              normalized_reference_direction;
+  // TODO(egg): should we normalize this?
+  Bivector<double, Barycentre> const reference_binormal =
+      Wedge(normalized_reference_direction, reference_normal);
+  return {FromColumns(normalized_reference_direction.coordinates(),
+                      reference_normal.coordinates(),
+                      reference_binormal.coordinates()),
+          {barycentre_position, barycentre_velocity}};
+}
+
 }  // namespace
 
 std::unique_ptr<Trajectory<Barycentre>>
@@ -110,38 +154,16 @@ BarycentricRotatingFrame::ApparentTrajectory(
       primary_.prolongation().last().degrees_of_freedom();
   DegreesOfFreedom<Barycentre> const& current_secondary_state =
       secondary_.prolongation().last().degrees_of_freedom();
-  Position<Barycentre> const current_barycentre_position =
-      geometry::Barycentre<Displacement<Barycentre>, Mass>(
-          {current_primary_state.position, current_secondary_state.position},
-          {primary_.body().mass(), secondary_.body().mass()});
-  Velocity<Barycentre> const current_barycentre_velocity =
-      (primary_.body().mass() * current_primary_state.velocity +
-           secondary_.body().mass() * current_secondary_state.velocity) /
-      (primary_.body().mass() + secondary_.body().mass());
-  Matrix from_standard_basis_to_current_barycentric_frame;
-  {
-    Displacement<Barycentre> reference_direction =
-        current_primary_state.position - current_barycentre_position;
-    Vector<double, Barycentre> const normalized_reference_direction =
-        reference_direction / reference_direction.Norm();
-    Velocity<Barycentre> const reference_coplanar =
-        current_primary_state.velocity - current_barycentre_velocity;
-    Vector<double, Barycentre> const normalized_reference_coplanar =
-        reference_coplanar / reference_coplanar.Norm();
-    // Modified Gram-Schmidt.
-    Vector<double, Barycentre> const reference_normal =
-        normalized_reference_coplanar -
-            InnerProduct(normalized_reference_coplanar,
-                         normalized_reference_direction) *
-                normalized_reference_direction;
-    // TODO(egg): should we normalize this?
-    Bivector<double, Barycentre> const reference_binormal =
-        Wedge(normalized_reference_direction, reference_normal);
-    from_standard_basis_to_current_barycentric_frame =
-        FromColumns(normalized_reference_direction.coordinates(),
-                    reference_normal.coordinates(),
-                    reference_binormal.coordinates());
-  }
+  auto const current_transform =
+      FromStandardBasisToBarycentricFrame(
+          current_primary_state,
+          primary_.body().gravitational_parameter(),
+          current_secondary_state,
+          secondary_.body().gravitational_parameter());
+  Matrix const from_standard_basis_to_current_barycentric_frame =
+      current_transform.first;
+  DegreesOfFreedom<Barycentre> const current_barycentre =
+      current_transform.second;
   for (; !actual_it.at_end(); ++actual_it) {
     Instant const& t = actual_it.time();
     DegreesOfFreedom<Barycentre> const& actual_state =
@@ -155,39 +177,16 @@ BarycentricRotatingFrame::ApparentTrajectory(
           primary_it.degrees_of_freedom();
       DegreesOfFreedom<Barycentre> const& secondary_state =
           secondary_it.degrees_of_freedom();
-      Position<Barycentre> const barycentre_position =
-          geometry::Barycentre<Displacement<Barycentre>, Mass>(
-              {primary_state.position, secondary_state.position},
-              {primary_.body().mass(), secondary_.body().mass()});
-      Velocity<Barycentre> const barycentre_velocity =
-          (primary_.body().mass() * primary_state.velocity +
-               secondary_.body().mass() * secondary_state.velocity) /
-          (primary_.body().mass() + secondary_.body().mass());
-      Matrix from_barycentric_frame_to_standard_basis;
-      {
-        Displacement<Barycentre> reference_direction =
-            primary_state.position - barycentre_position;
-        Vector<double, Barycentre> const normalized_reference_direction =
-            reference_direction / reference_direction.Norm();
-        Velocity<Barycentre> const reference_coplanar =
-            primary_state.velocity - barycentre_velocity;
-        Vector<double, Barycentre> const normalized_reference_coplanar =
-            reference_coplanar / reference_coplanar.Norm();
-        // Modified Gram-Schmidt.
-        Vector<double, Barycentre> const reference_normal =
-            normalized_reference_coplanar -
-                InnerProduct(normalized_reference_coplanar,
-                             normalized_reference_direction) *
-                    normalized_reference_direction;
-        // TODO(egg): should we normalize this?
-        Bivector<double, Barycentre> const reference_binormal =
-            Wedge(normalized_reference_direction, reference_normal);
-        // Constructed from rows.
-        from_barycentric_frame_to_standard_basis =
-            {normalized_reference_direction.coordinates(),
-             reference_normal.coordinates(),
-             reference_binormal.coordinates()};
-      }
+      auto const transform =
+          FromStandardBasisToBarycentricFrame(
+              primary_state,
+              primary_.body().gravitational_parameter(),
+              secondary_state,
+              secondary_.body().gravitational_parameter());
+      Matrix const from_barycentric_frame_to_standard_basis =
+          Transpose(transform.first);
+      DegreesOfFreedom<Barycentre> const barycentre =
+          transform.second;
       // TODO(egg): We should have a vector space structure on
       // |DegreesOfFreedom<Fries>|.
       result->Append(
@@ -196,13 +195,13 @@ BarycentricRotatingFrame::ApparentTrajectory(
                from_standard_basis_to_current_barycentric_frame(
                    from_barycentric_frame_to_standard_basis(
                        (actual_state.position -
-                            barycentre_position).coordinates()))) +
-               current_barycentre_position,
+                            barycentre.position).coordinates()))) +
+               current_barycentre.position,
            Velocity<Barycentre>(
                from_standard_basis_to_current_barycentric_frame(
                    from_barycentric_frame_to_standard_basis(
                        (actual_state.velocity -
-                            barycentre_velocity).coordinates())))});
+                            barycentre.velocity).coordinates())))});
     }
   }
   return std::move(result);
