@@ -36,7 +36,7 @@ public partial class PluginAdapter : UnityEngine.MonoBehaviour {
     // We create this directory here so we do not need to worry about cross-
     // platform problems in C++.
     System.IO.Directory.CreateDirectory("glog/Principia");
-    InitGoogleLogging();
+    Log.InitGoogleLogging();
   }
 
   ~PluginAdapter() {
@@ -85,7 +85,7 @@ public partial class PluginAdapter : UnityEngine.MonoBehaviour {
   // |OnDestroy()| and |FixedUpdate()|.
   // http://docs.unity3d.com/Manual/ExecutionOrder.html
   private void Start() {
-    LogInfo("principia.ksp_plugin_adapter.PluginAdapter.Start()");
+    Log.Info("principia.ksp_plugin_adapter.PluginAdapter.Start()");
     RenderingManager.AddToPostDrawQueue(queueSpot    : 3,
                                         drawFunction : new Callback(DrawGUI));
     window_position_ = new UnityEngine.Rect(
@@ -108,7 +108,7 @@ public partial class PluginAdapter : UnityEngine.MonoBehaviour {
   }
 
   private void OnDestroy() {
-    LogInfo("principia.ksp_plugin_adapter.PluginAdapter.OnDestroy()");
+    Log.Info("principia.ksp_plugin_adapter.PluginAdapter.OnDestroy()");
     RenderingManager.RemoveFromPostDrawQueue(
         queueSpot    : 3,
         drawFunction : new Callback(DrawGUI));
@@ -185,7 +185,7 @@ public partial class PluginAdapter : UnityEngine.MonoBehaviour {
             active_vessel.orbitDriver.Renderer.drawIcons !=
                 OrbitRenderer.DrawIcons.OBJ ||
             active_vessel.patchedConicRenderer != null) {
-          LogInfo("Removing orbit rendering for the active vessel");
+          Log.Info("Removing orbit rendering for the active vessel");
           active_vessel.orbitDriver.Renderer.drawMode =
               OrbitRenderer.DrawMode.OFF;
           active_vessel.orbitDriver.Renderer.drawIcons =
@@ -312,7 +312,7 @@ public partial class PluginAdapter : UnityEngine.MonoBehaviour {
                         Planetarium.fetch.Sun.gravParameter,
                         Planetarium.InverseRotAngle);
     BodyProcessor insert_body = body => {
-      LogInfo("Inserting " + body.name + "...");
+      Log.Info("Inserting " + body.name + "...");
       InsertCelestial(plugin_,
                       body.flightGlobalsIndex,
                       body.gravParameter,
@@ -328,13 +328,13 @@ public partial class PluginAdapter : UnityEngine.MonoBehaviour {
     rendering_frame_ =
         NewBodyCentredNonRotatingFrame(plugin_, first_selected_celestial_);
     VesselProcessor insert_vessel = vessel => {
-      LogInfo("Inserting " + vessel.name + "...");
+      Log.Info("Inserting " + vessel.name + "...");
       bool inserted =
           InsertOrKeepVessel(plugin_,
                              vessel.id.ToString(),
                              vessel.orbit.referenceBody.flightGlobalsIndex);
       if (!inserted) {
-        LogFatal("Plugin initialization: vessel not inserted");
+        Log.Fatal("Plugin initialization: vessel not inserted");
       } else {
         SetVesselStateOffset(plugin_,
                              vessel.id.ToString(),
