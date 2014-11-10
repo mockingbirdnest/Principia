@@ -61,20 +61,20 @@ FromStandardBasisToBarycentricFrame(
             secondary_gravitational_parameter);
   Displacement<Frame> const reference_direction =
       primary_degrees_of_freedom.position - barycentre_position;
-  Vector<double, Barycentre> const normalized_reference_direction =
+  Vector<double, Frame> const normalized_reference_direction =
       reference_direction / reference_direction.Norm();
   Velocity<Frame> const reference_coplanar =
       primary_degrees_of_freedom.velocity - barycentre_velocity;
-  Vector<double, Barycentre> const normalized_reference_coplanar =
+  Vector<double, Frame> const normalized_reference_coplanar =
       reference_coplanar / reference_coplanar.Norm();
   // Modified Gram-Schmidt.
-  Vector<double, Barycentre> const reference_normal =
+  Vector<double, Frame> const reference_normal =
       normalized_reference_coplanar -
           InnerProduct(normalized_reference_coplanar,
                        normalized_reference_direction) *
               normalized_reference_direction;
   // TODO(egg): should we normalize this?
-  Bivector<double, Barycentre> const reference_binormal =
+  Bivector<double, Frame> const reference_binormal =
       Wedge(normalized_reference_direction, reference_normal);
   return {FromColumns(normalized_reference_direction.coordinates(),
                       reference_normal.coordinates(),
@@ -142,7 +142,8 @@ BarycentricRotatingTransformingIterator(
       last_matrix_and_barycentre.second;
 
   Trajectory<FromFrame>::Transform<ToFrame> transform =
-      [&centre_trajectory,
+      [&primary_trajectory,
+       &secondary_trajectory,
        from_standard_basis_to_last_barycentric_frame,
        last_barycentre](
           Instant const& t,
@@ -153,7 +154,6 @@ BarycentricRotatingTransformingIterator(
         primary_trajectory.on_or_after(t);
     CHECK_EQ(primary_it.time(), t)
         << "Time " << t << " not in primary trajectory";
-    DegreesOfFreedom<ToFrame> const& last_primary_degrees_of_freedom =
     Trajectory<FromFrame>::NativeIterator secondary_it =
         secondary_trajectory.on_or_after(t);
     CHECK_EQ(secondary_it.time(), t)
