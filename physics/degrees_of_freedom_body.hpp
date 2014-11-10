@@ -18,5 +18,25 @@ bool operator==(DegreesOfFreedom<Frame> const& left,
          left.velocity == right.velocity;
 }
 
+template<typename Frame, typename Weight>
+DegreesOfFreedom<Frame> Barycentre(
+    std::vector<DegreesOfFreedom<Frame>> const& degrees_of_freedom,
+    std::vector<Weight> const& weights) {
+  auto positions_weighted_sum =
+      degrees_of_freedom[0].position.coordinates() * weights[0];
+  auto velocities_weighted_sum =
+      degrees_of_freedom[0].velocity.coordinates() * weights[0];
+  Weight weight = weights[0];
+  for (size_t i = 1; i < points.size(); ++i) {
+    positions_weighted_sum +=
+        degrees_of_freedom[i].position.coordinates_ * weights[i];
+    velocities_weighted_sum +=
+        degrees_of_freedom[i].position.coordinates_ * weights[i];
+    weight += weights[i];
+  }
+  return {Displacement<Frame>(positions_weighted_sum / weight),
+          velocities_weighted_sum / weight};
+}
+
 }  // namespace physics
 }  // namespace principia

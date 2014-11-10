@@ -1,5 +1,7 @@
 #pragma once
 
+#include <vector>
+
 #include "geometry/grassmann.hpp"
 #include "geometry/named_quantities.hpp"
 #include "geometry/point.hpp"
@@ -24,6 +26,11 @@ struct DegreesOfFreedom {
 template<typename Frame>
 bool operator==(DegreesOfFreedom<Frame> const& left,
                 DegreesOfFreedom<Frame> const& right);
+
+template<typename Frame, typename Weight>
+DegreesOfFreedom<Frame> Barycentre(
+    std::vector<DegreesOfFreedom<Frame>> const& degrees_of_freedom,
+    std::vector<Weight> const& weights);
 
 }  // namespace physics
 }  // namespace principia
