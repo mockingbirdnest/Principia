@@ -2,7 +2,12 @@
 
 #include "physics/transforms.hpp"
 
+#include "geometry/grassmann.hpp"
+#include "geometry/named_quantities.hpp"
 #include "glog/logging.h"
+
+using principia::geometry::Bivector;
+using principia::geometry::Displacement;
 
 namespace principia {
 namespace physics {

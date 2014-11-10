@@ -2,45 +2,13 @@
 
 #include <utility>
 
-#include "geometry/rotation.hpp"
-#include "ksp_plugin/celestial.hpp"
 #include "physics/transforms.hpp"
-#include "quantities/quantities.hpp"
 
-using principia::quantities::Angle;
-using principia::quantities::ArcTan;
-using principia::quantities::Time;
-using principia::geometry::Bivector;
-using principia::geometry::Displacement;
-using principia::geometry::InnerProduct;
-using principia::geometry::Rotation;
-using principia::geometry::Wedge;
 using principia::physics::BarycentricRotatingTransformingIterator;
 using principia::physics::BodyCentredNonRotatingTransformingIterator;
 
 namespace principia {
 namespace ksp_plugin {
-
-namespace {
-
-// Returns an iterator for the first entry in |trajectory| with a time greater
-// than or equal to |t|.
-// TODO(phl): This is O(N), so we might want to expose a more efficient version.
-// But then it's likely that we'll just rewrite this class anyway.
-Trajectory<Barycentre>::NativeIterator LowerBound(
-    Instant const& t, Trajectory<Barycentre> const& trajectory) {
-  for (Trajectory<Barycentre>::NativeIterator it = trajectory.first();
-       !it.at_end();
-       ++it) {
-    if (it.time() >= t) {
-      return it;
-    }
-  }
-  LOG(FATAL) << t << " not found in trajectory";
-  return trajectory.first();
-}
-
-}  // namespace
 
 BodyCentredNonRotatingFrame::BodyCentredNonRotatingFrame(
     Celestial<Barycentre> const& body) : body_(body) {}
