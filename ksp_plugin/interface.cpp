@@ -27,7 +27,7 @@ std::unique_ptr<T> TakeOwnership(T** const pointer) {
 
 void InitGoogleLogging() {
 #ifdef _MSC_VER
-  if (google::IsGoogleLoggingInitialized) {
+  if (google::IsGoogleLoggingInitialized()) {
     LOG(INFO) << "Google logging was already initialized, no action taken";
   } else {
     FILE* file;
