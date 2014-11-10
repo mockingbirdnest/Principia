@@ -43,11 +43,12 @@ Matrix Transpose(Matrix const& m) {
   return FromColumns(m.row_x, m.row_y, m.row_z);
 }
 
-// Returns the rotation matrix that maps the standard basis to the barycentric
-// frame, as well as the state of the barycentre itself.
+// Returns the rotation matrix that maps the standard basis to the basis of the
+// barycentric frame, as well as the degrees of freedom of the barycentre
+// itself.
 template<typename Frame>
 std::pair<Matrix, DegreesOfFreedom<Frame>>
-FromStandardBasisToBarycentricFrame(
+FromStandardBasisToBasisOfBarycentricFrame(
     DegreesOfFreedom<Frame> const& primary_degrees_of_freedom,
     GravitationalParameter const& primary_gravitational_parameter,
     DegreesOfFreedom<Frame> const& secondary_degrees_of_freedom,
@@ -130,20 +131,20 @@ BarycentricRotatingTransformingIterator(
   CHECK_NOTNULL(transformed_trajectory);
 
   // Start by computing the matrix that transforms from the standard basis to
-  // the last barycentric frame.  We pass it by copy to the lambda so that it
-  // doesn't recompute it each time.
+  // the last basis of the barycentric frame.  We pass it by copy to the lambda
+  // so that it doesn't recompute it each time.
   DegreesOfFreedom<ToFrame> const& last_primary_degrees_of_freedom =
       primary_trajectory.last().degrees_of_freedom();
   DegreesOfFreedom<ToFrame> const& last_secondary_degrees_of_freedom =
       secondary_trajectory.last().degrees_of_freedom();
 
   auto const last_matrix_and_barycentre =
-      FromStandardBasisToBarycentricFrame(
+      FromStandardBasisToBasisOfBarycentricFrame(
           last_primary_degrees_of_freedom,
           primary_trajectory.body().gravitational_parameter(),
           last_secondary_degrees_of_freedom,
           secondary_trajectory.body().gravitational_parameter());
-  Matrix const& from_standard_basis_to_last_barycentric_frame =
+  Matrix const& from_standard_basis_to_basis_of_last_barycentric_frame =
       last_matrix_and_barycentre.first;
   DegreesOfFreedom<ToFrame> const& last_barycentre =
       last_matrix_and_barycentre.second;
@@ -151,7 +152,7 @@ BarycentricRotatingTransformingIterator(
   Trajectory<FromFrame>::Transform<ToFrame> transform =
       [&primary_trajectory,
        &secondary_trajectory,
-       from_standard_basis_to_last_barycentric_frame,
+       from_standard_basis_to_basis_of_last_barycentric_frame,
        last_barycentre](
           Instant const& t,
           DegreesOfFreedom<FromFrame> const& from_degrees_of_freedom) ->
@@ -166,30 +167,29 @@ BarycentricRotatingTransformingIterator(
     CHECK_EQ(secondary_it.time(), t)
         << "Time " << t << " not in secondary trajectory";
 
-    // OUARCH!
     DegreesOfFreedom<ToFrame> const& primary_degrees_of_freedom =
         primary_it.degrees_of_freedom();
     DegreesOfFreedom<ToFrame> const& secondary_degrees_of_freedom =
         secondary_it.degrees_of_freedom();
     auto const matrix_and_barycentre =
-        FromStandardBasisToBarycentricFrame(
+        FromStandardBasisToBasisOfBarycentricFrame(
             primary_degrees_of_freedom,
             primary_trajectory.body().gravitational_parameter(),
             secondary_degrees_of_freedom,
             secondary_trajectory.body().gravitational_parameter());
-    Matrix const& from_barycentric_frame_to_standard_basis =
+    Matrix const& from_basis_of_barycentric_frame_to_standard_basis =
         Transpose(matrix_and_barycentre.first);
     DegreesOfFreedom<ToFrame> const barycentre =
         matrix_and_barycentre.second;
     return {Displacement<ToFrame>(
-                from_standard_basis_to_last_barycentric_frame(
-                    from_barycentric_frame_to_standard_basis(
+                from_standard_basis_to_basis_of_last_barycentric_frame(
+                    from_basis_of_barycentric_frame_to_standard_basis(
                         (from_degrees_of_freedom.position -
                             barycentre.position).coordinates()))) +
                 last_barycentre.position,
             Velocity<ToFrame>(
-                from_standard_basis_to_last_barycentric_frame(
-                    from_barycentric_frame_to_standard_basis(
+                from_standard_basis_to_basis_of_last_barycentric_frame(
+                    from_basis_of_barycentric_frame_to_standard_basis(
                         (from_degrees_of_freedom.velocity -
                             barycentre.velocity).coordinates())))};
   };
