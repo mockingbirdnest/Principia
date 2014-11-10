@@ -26,15 +26,15 @@ std::unique_ptr<T> TakeOwnership(T** const pointer) {
 }  // namespace
 
 void InitGoogleLogging() {
-#ifdef _MSC_VER
   if (google::IsGoogleLoggingInitialized()) {
     LOG(INFO) << "Google logging was already initialized, no action taken";
   } else {
+#ifdef _MSC_VER
     FILE* file;
     freopen_s(&file, "stderr.log", "w", stderr);
-  #else
+#else
     std::freopen("stderr.log", "w", stderr);
-  #endif
+#endif
     google::SetStderrLogging(google::INFO);
     google::SetLogDestination(google::FATAL, "glog/Principia/FATAL.");
     google::SetLogDestination(google::ERROR, "glog/Principia/ERROR.");
