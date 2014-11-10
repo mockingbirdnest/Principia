@@ -7,7 +7,7 @@ namespace ksp_plugin_adapter {
 
 public partial class PluginAdapter : UnityEngine.MonoBehaviour {
 
-  private const string kDllPath = "GameData/Principia/principia.dll";
+  internal const string kDllPath = "GameData/Principia/principia.dll";
 
   [StructLayout(LayoutKind.Sequential)]
   private struct XYZ {
@@ -24,32 +24,6 @@ public partial class PluginAdapter : UnityEngine.MonoBehaviour {
   private struct LineSegment {
     public XYZ begin, end;
   };
-
-  // Logging.
-
-  [DllImport(dllName           : kDllPath,
-             CallingConvention = CallingConvention.Cdecl)]
-  private static extern void InitGoogleLogging();
-
-  [DllImport(dllName           : kDllPath,
-             CallingConvention = CallingConvention.Cdecl)]
-  private static extern void LogInfo(
-      [MarshalAs(UnmanagedType.LPStr)] String message);
-
-  [DllImport(dllName           : kDllPath,
-             CallingConvention = CallingConvention.Cdecl)]
-  private static extern void LogWarning(
-      [MarshalAs(UnmanagedType.LPStr)] String message);
-
-  [DllImport(dllName           : kDllPath,
-             CallingConvention = CallingConvention.Cdecl)]
-  private static extern void LogError(
-      [MarshalAs(UnmanagedType.LPStr)] String message);
-
-  [DllImport(dllName           : kDllPath,
-             CallingConvention = CallingConvention.Cdecl)]
-  private static extern void LogFatal(
-      [MarshalAs(UnmanagedType.LPStr)] String message);
 
   // Plugin interface.
 
