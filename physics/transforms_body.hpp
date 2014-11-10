@@ -53,26 +53,16 @@ FromStandardBasisToBasisOfBarycentricFrame(
     GravitationalParameter const& primary_gravitational_parameter,
     DegreesOfFreedom<Frame> const& secondary_degrees_of_freedom,
     GravitationalParameter const& secondary_gravitational_parameter) {
-  Position<Frame> const barycentre_position =
-      geometry::Barycentre<Displacement<Frame>, GravitationalParameter>(
-          {primary_degrees_of_freedom.position,
-           secondary_degrees_of_freedom.position},
-          {primary_gravitational_parameter,
-           secondary_gravitational_parameter});
-  // TODO(phl): a barycentre on vectors (and on degrees of freedom).
-  Velocity<Frame> const barycentre_velocity =
-      (primary_gravitational_parameter *
-           primary_degrees_of_freedom.velocity +
-           secondary_gravitational_parameter *
-           secondary_degrees_of_freedom.velocity) /
-           (primary_gravitational_parameter +
-            secondary_gravitational_parameter);
+  DegreesOfFreedom<Frame> const barycentre =
+      Barycentre<Frame, GravitationalParameter>(
+          {primary_degrees_of_freedom, secondary_degrees_of_freedom},
+          {primary_gravitational_parameter, secondary_gravitational_parameter});
   Displacement<Frame> const reference_direction =
-      primary_degrees_of_freedom.position - barycentre_position;
+      primary_degrees_of_freedom.position - barycentre.position;
   Vector<double, Frame> const normalized_reference_direction =
       reference_direction / reference_direction.Norm();
   Velocity<Frame> const reference_coplanar =
-      primary_degrees_of_freedom.velocity - barycentre_velocity;
+      primary_degrees_of_freedom.velocity - barycentre.velocity;
   Vector<double, Frame> const normalized_reference_coplanar =
       reference_coplanar / reference_coplanar.Norm();
   // Modified Gram-Schmidt.
@@ -87,7 +77,7 @@ FromStandardBasisToBasisOfBarycentricFrame(
   return {FromColumns(normalized_reference_direction.coordinates(),
                       reference_normal.coordinates(),
                       reference_binormal.coordinates()),
-          {barycentre_position, barycentre_velocity}};
+          barycentre};
 }
 
 }  // namespace
