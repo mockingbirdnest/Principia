@@ -1366,3 +1366,44 @@ index d73424b..eb7ae6d 100644
 -- 
 1.8.4.msysgit.0
 
+From e40c19ca9ef8123af522833f29ed43162fa71b01 Mon Sep 17 00:00:00 2001
+From: Robin Leroy <egg.robin.leroy@gmail.com>
+Date: Mon, 10 Nov 2014 21:03:51 +0100
+Subject: [PATCH] export IsGoogleLoggingInitialized()
+
+---
+ src/logging.cc             | 4 ++++
+ src/windows/glog/logging.h | 2 ++
+ 2 files changed, 6 insertions(+)
+
+diff --git a/src/logging.cc b/src/logging.cc
+index 43611fd..8aab28a 100644
+--- a/src/logging.cc
++++ b/src/logging.cc
+@@ -2040,6 +2040,10 @@ void InitGoogleLogging(const char* argv0) {
+   glog_internal_namespace_::InitGoogleLoggingUtilities(argv0);
+ }
+ 
++bool IsGoogleLoggingInitialized() {
++  return glog_internal_namespace_::IsGoogleLoggingInitialized();
++}
++
+ void ShutdownGoogleLogging() {
+   glog_internal_namespace_::ShutdownGoogleLoggingUtilities();
+   LogDestination::DeleteLogDestinations();
+diff --git a/src/windows/glog/logging.h b/src/windows/glog/logging.h
+index ea68db8..37dd54a 100644
+--- a/src/windows/glog/logging.h
++++ b/src/windows/glog/logging.h
+@@ -497,6 +497,8 @@ namespace google {
+ // specified by argv0 in log outputs.
+ GOOGLE_GLOG_DLL_DECL void InitGoogleLogging(const char* argv0);
+ 
++GOOGLE_GLOG_DLL_DECL bool IsGoogleLoggingInitialized();
++
+ // Shutdown google's logging library.
+ GOOGLE_GLOG_DLL_DECL void ShutdownGoogleLogging();
+ 
+-- 
+1.8.4.msysgit.0
+

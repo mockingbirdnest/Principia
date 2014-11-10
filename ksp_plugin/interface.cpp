@@ -27,24 +27,28 @@ std::unique_ptr<T> TakeOwnership(T** const pointer) {
 
 void InitGoogleLogging() {
 #ifdef _MSC_VER
-  FILE* file;
-  freopen_s(&file, "stderr.log", "w", stderr);
-#else
-  std::freopen("stderr.log", "w", stderr);
-#endif
-  google::SetStderrLogging(google::INFO);
-  google::SetLogDestination(google::FATAL, "glog/Principia/FATAL.");
-  google::SetLogDestination(google::ERROR, "glog/Principia/ERROR.");
-  google::SetLogDestination(google::WARNING, "glog/Principia/WARNING.");
-  google::SetLogDestination(google::INFO, "glog/Principia/INFO.");
-  FLAGS_v = 1;
-  // Buffer severities <= |INFO|, i.e., don't buffer.
-  FLAGS_logbuflevel = google::INFO - 1;
-  google::InitGoogleLogging("Principia");
-  LOG(INFO) << "Initialized Google logging for Principia";
-  LOG(INFO) << "Principia version " << base::kVersion
-            << " built on " << base::kBuildDate;
-  // TODO(egg): by (compiler) for (ARCH, OS).
+  if (google::IsGoogleLoggingInitialized) {
+    LOG(INFO) << "Google logging was already initialized, no action taken";
+  } else {
+    FILE* file;
+    freopen_s(&file, "stderr.log", "w", stderr);
+  #else
+    std::freopen("stderr.log", "w", stderr);
+  #endif
+    google::SetStderrLogging(google::INFO);
+    google::SetLogDestination(google::FATAL, "glog/Principia/FATAL.");
+    google::SetLogDestination(google::ERROR, "glog/Principia/ERROR.");
+    google::SetLogDestination(google::WARNING, "glog/Principia/WARNING.");
+    google::SetLogDestination(google::INFO, "glog/Principia/INFO.");
+    FLAGS_v = 1;
+    // Buffer severities <= |INFO|, i.e., don't buffer.
+    FLAGS_logbuflevel = google::INFO - 1;
+    google::InitGoogleLogging("Principia");
+    LOG(INFO) << "Initialized Google logging for Principia";
+    LOG(INFO) << "Principia version " << base::kVersion
+              << " built on " << base::kBuildDate;
+    // TODO(egg): by (compiler) for (ARCH, OS).
+  }
 }
 
 void LogInfo(char const* message) {
