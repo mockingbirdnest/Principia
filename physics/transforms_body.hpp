@@ -1,7 +1,5 @@
 #pragma once
 
-#include <utility>
-
 #include "physics/transforms.hpp"
 
 #include "geometry/grassmann.hpp"
@@ -44,25 +42,20 @@ Matrix Transpose(Matrix const& m) {
 }
 
 // Returns the rotation matrix that maps the standard basis to the basis of the
-// barycentric frame, as well as the degrees of freedom of the barycentre
-// itself.
+// barycentric frame.
 template<typename Frame>
-std::pair<Matrix, DegreesOfFreedom<Frame>>
-FromStandardBasisToBasisOfBarycentricFrame(
+Matrix FromStandardBasisToBasisOfBarycentricFrame(
+    DegreesOfFreedom<Frame> const& barycentre_degrees_of_freedom,
     DegreesOfFreedom<Frame> const& primary_degrees_of_freedom,
-    GravitationalParameter const& primary_gravitational_parameter,
-    DegreesOfFreedom<Frame> const& secondary_degrees_of_freedom,
-    GravitationalParameter const& secondary_gravitational_parameter) {
-  DegreesOfFreedom<Frame> const barycentre =
-      Barycentre<Frame, GravitationalParameter>(
-          {primary_degrees_of_freedom, secondary_degrees_of_freedom},
-          {primary_gravitational_parameter, secondary_gravitational_parameter});
+    DegreesOfFreedom<Frame> const& secondary_degrees_of_freedom) {
   Displacement<Frame> const reference_direction =
-      primary_degrees_of_freedom.position - barycentre.position;
+      primary_degrees_of_freedom.position -
+      barycentre_degrees_of_freedom.position;
   Vector<double, Frame> const normalized_reference_direction =
       reference_direction / reference_direction.Norm();
   Velocity<Frame> const reference_coplanar =
-      primary_degrees_of_freedom.velocity - barycentre.velocity;
+      primary_degrees_of_freedom.velocity -
+      barycentre_degrees_of_freedom.velocity;
   Vector<double, Frame> const normalized_reference_coplanar =
       reference_coplanar / reference_coplanar.Norm();
   // Modified Gram-Schmidt.
@@ -74,10 +67,9 @@ FromStandardBasisToBasisOfBarycentricFrame(
   // TODO(egg): should we normalize this?
   Bivector<double, Frame> const reference_binormal =
       Wedge(normalized_reference_direction, reference_normal);
-  return {FromColumns(normalized_reference_direction.coordinates(),
-                      reference_normal.coordinates(),
-                      reference_binormal.coordinates()),
-          barycentre};
+  return FromColumns(normalized_reference_direction.coordinates(),
+                     reference_normal.coordinates(),
+                     reference_binormal.coordinates());
 }
 
 }  // namespace
@@ -123,21 +115,21 @@ BarycentricRotatingTransformingIterator(
   // Start by computing the matrix that transforms from the standard basis to
   // the last basis of the barycentric frame.  We pass it by copy to the lambda
   // so that it doesn't recompute it each time.
-  DegreesOfFreedom<ToFrame> const& last_primary_degrees_of_freedom =
+  DegreesOfFreedom<FromFrame> const& last_primary_degrees_of_freedom =
       primary_trajectory.last().degrees_of_freedom();
-  DegreesOfFreedom<ToFrame> const& last_secondary_degrees_of_freedom =
+  DegreesOfFreedom<FromFrame> const& last_secondary_degrees_of_freedom =
       secondary_trajectory.last().degrees_of_freedom();
-
-  auto const last_matrix_and_barycentre =
+  DegreesOfFreedom<FromFrame> const last_barycentre =
+      Barycentre<FromFrame, GravitationalParameter>(
+          {last_primary_degrees_of_freedom,
+           last_secondary_degrees_of_freedom},
+          {primary_trajectory.body().gravitational_parameter(),
+           secondary_trajectory.body().gravitational_parameter()});
+  Matrix const from_standard_basis_to_basis_of_last_barycentric_frame =
       FromStandardBasisToBasisOfBarycentricFrame(
+          last_barycentre,
           last_primary_degrees_of_freedom,
-          primary_trajectory.body().gravitational_parameter(),
-          last_secondary_degrees_of_freedom,
-          secondary_trajectory.body().gravitational_parameter());
-  Matrix const& from_standard_basis_to_basis_of_last_barycentric_frame =
-      last_matrix_and_barycentre.first;
-  DegreesOfFreedom<ToFrame> const& last_barycentre =
-      last_matrix_and_barycentre.second;
+          last_secondary_degrees_of_freedom);
 
   typename Trajectory<FromFrame>::Transform<ToFrame> transform =
       [&primary_trajectory,
@@ -157,20 +149,21 @@ BarycentricRotatingTransformingIterator(
     CHECK_EQ(secondary_it.time(), t)
         << "Time " << t << " not in secondary trajectory";
 
-    DegreesOfFreedom<ToFrame> const& primary_degrees_of_freedom =
+    DegreesOfFreedom<FromFrame> const& primary_degrees_of_freedom =
         primary_it.degrees_of_freedom();
-    DegreesOfFreedom<ToFrame> const& secondary_degrees_of_freedom =
+    DegreesOfFreedom<FromFrame> const& secondary_degrees_of_freedom =
         secondary_it.degrees_of_freedom();
-    auto const matrix_and_barycentre =
-        FromStandardBasisToBasisOfBarycentricFrame(
-            primary_degrees_of_freedom,
-            primary_trajectory.body().gravitational_parameter(),
-            secondary_degrees_of_freedom,
-            secondary_trajectory.body().gravitational_parameter());
-    Matrix const& from_basis_of_barycentric_frame_to_standard_basis =
-        Transpose(matrix_and_barycentre.first);
-    DegreesOfFreedom<ToFrame> const barycentre =
-        matrix_and_barycentre.second;
+    DegreesOfFreedom<FromFrame> const barycentre =
+        Barycentre<FromFrame, GravitationalParameter>(
+            {primary_degrees_of_freedom,
+             secondary_degrees_of_freedom},
+            {primary_trajectory.body().gravitational_parameter(),
+             secondary_trajectory.body().gravitational_parameter()});
+    Matrix const from_basis_of_barycentric_frame_to_standard_basis =
+        Transpose(FromStandardBasisToBasisOfBarycentricFrame(
+                      barycentre,
+                      primary_degrees_of_freedom,
+                      secondary_degrees_of_freedom));
     return {Displacement<ToFrame>(
                 from_standard_basis_to_basis_of_last_barycentric_frame(
                     from_basis_of_barycentric_frame_to_standard_basis(
