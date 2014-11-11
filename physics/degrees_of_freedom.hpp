@@ -19,8 +19,8 @@ template<typename Frame>
 struct DegreesOfFreedom {
   DegreesOfFreedom(Position<Frame> const& position,
                    Velocity<Frame> const& velocity);
-  Position<Frame> const position;
-  Velocity<Frame> const velocity;
+  Position<Frame> position;
+  Velocity<Frame> velocity;
 };
 
 template<typename Frame>
