@@ -40,8 +40,7 @@ public partial class PluginAdapter : UnityEngine.MonoBehaviour {
   }
 
   ~PluginAdapter() {
-    DeletePlugin(ref plugin_);
-    DeleteRenderingFrame(ref rendering_frame_);
+    Cleanup();
   }
 
   private bool PluginRunning() {
@@ -93,18 +92,6 @@ public partial class PluginAdapter : UnityEngine.MonoBehaviour {
         top    : UnityEngine.Screen.height / 2.0f,
         width  : 10,
         height : 10);
-    rendered_trajectory_ = new VectorLine(
-        lineName     : "rendered_trajectory_",
-        linePoints   : new UnityEngine.Vector3[kLinePoints],
-        lineMaterial : MapView.OrbitLinesMaterial,
-        color        : XKCDColors.AcidGreen,
-        width        : 5,
-        lineType     : LineType.Discrete);
-    rendered_trajectory_.vectorObject.transform.parent =
-        ScaledSpace.Instance.transform;
-    rendered_trajectory_.vectorObject.renderer.castShadows = false;
-    rendered_trajectory_.vectorObject.renderer.receiveShadows = false;
-    rendered_trajectory_.layer = 31;
   }
 
   private void OnDestroy() {
@@ -112,6 +99,7 @@ public partial class PluginAdapter : UnityEngine.MonoBehaviour {
     RenderingManager.RemoveFromPostDrawQueue(
         queueSpot    : 3,
         drawFunction : new Callback(DrawGUI));
+    Cleanup();
   }
 
   private void FixedUpdate() {
@@ -235,6 +223,14 @@ public partial class PluginAdapter : UnityEngine.MonoBehaviour {
 
   #endregion
 
+  private void Cleanup() {
+    DeletePlugin(ref plugin_);
+    DeleteRenderingFrame(ref rendering_frame_);
+    if (rendered_trajectory_ != null) {
+      Vector.DestroyLine(ref rendered_trajectory_);
+    }
+  }
+
   private void DrawGUI() {
     UnityEngine.GUI.skin = HighLogic.Skin;
     window_position_ = UnityEngine.GUILayout.Window(
@@ -262,7 +258,7 @@ public partial class PluginAdapter : UnityEngine.MonoBehaviour {
     if (UnityEngine.GUILayout.Button(PluginRunning() ? "Stop plugin"
                                                      : "Start plugin")) {
       if (PluginRunning()) {
-        DeletePlugin(ref plugin_);
+        Cleanup();
       } else {
         InitializePlugin();
       }
@@ -306,7 +302,19 @@ public partial class PluginAdapter : UnityEngine.MonoBehaviour {
                                         height : 20f));
   }
 
-  private void InitializePlugin() {;
+  private void InitializePlugin() {
+    rendered_trajectory_ = new VectorLine(
+        lineName     : "rendered_trajectory_",
+        linePoints   : new UnityEngine.Vector3[kLinePoints],
+        lineMaterial : MapView.OrbitLinesMaterial,
+        color        : XKCDColors.AcidGreen,
+        width        : 5,
+        lineType     : LineType.Discrete);
+    rendered_trajectory_.vectorObject.transform.parent =
+        ScaledSpace.Instance.transform;
+    rendered_trajectory_.vectorObject.renderer.castShadows = false;
+    rendered_trajectory_.vectorObject.renderer.receiveShadows = false;
+    rendered_trajectory_.layer = 31;
     plugin_ = NewPlugin(Planetarium.GetUniversalTime(),
                         Planetarium.fetch.Sun.flightGlobalsIndex,
                         Planetarium.fetch.Sun.gravParameter,
@@ -322,7 +330,6 @@ public partial class PluginAdapter : UnityEngine.MonoBehaviour {
     };
     ApplyToBodyTree(insert_body);
     EndInitialization(plugin_);
-    DeleteRenderingFrame(ref rendering_frame_);
     first_selected_celestial_ = 0;
     second_selected_celestial_ = 0;
     rendering_frame_ =
