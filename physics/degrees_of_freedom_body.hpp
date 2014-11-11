@@ -1,5 +1,7 @@
 #pragma once
 
+#include <vector>
+
 #include "physics/degrees_of_freedom.hpp"
 
 namespace principia {
