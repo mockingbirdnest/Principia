@@ -298,12 +298,15 @@ public partial class PluginAdapter : UnityEngine.MonoBehaviour {
     if (PluginRunning()) {
       Vessel active_vessel = FlightGlobals.ActiveVessel;
       UnityEngine.GUILayout.TextArea(
-          "Root part @ CoM world velocity : " +
-              (Vector3d)active_vessel.rb_velocity);
-      UnityEngine.GUILayout.TextArea(
           "+ Kraken : " +
               (((Vector3d)active_vessel.rb_velocity) +
                    Krakensbane.GetFrameVelocity()));
+      UnityEngine.GUILayout.TextArea(
+          "+ Kraken + getRFrmVel: " +
+              (((Vector3d)active_vessel.rb_velocity) +
+                   Krakensbane.GetFrameVelocity() + 
+                   active_vessel.orbit.referenceBody.getRFrmVel(
+                       active_vessel.CoM)));
       UnityEngine.GUILayout.TextArea(
           "Principia \"world\", rotating : " +
           (Vector3d)VesselWorldVelocity(
@@ -312,12 +315,6 @@ public partial class PluginAdapter : UnityEngine.MonoBehaviour {
               new XYZ{x = 0, y = 0, z = 0},
               active_vessel.orbit.referenceBody.rotationPeriod));
       UnityEngine.GUILayout.TextArea(
-          "+ Kraken + getRFrmVel: " +
-              (((Vector3d)active_vessel.rb_velocity) +
-                   Krakensbane.GetFrameVelocity() + 
-                   active_vessel.orbit.referenceBody.getRFrmVel(
-                       active_vessel.CoM)));
-      UnityEngine.GUILayout.TextArea(
           "Principia \"world\", no rotation : " +
           (Vector3d)VesselWorldVelocity(
               plugin_,
@@ -325,11 +322,27 @@ public partial class PluginAdapter : UnityEngine.MonoBehaviour {
               new XYZ{x = 0, y = 0, z = 0},
               double.PositiveInfinity));
       UnityEngine.GUILayout.TextArea(
+          "Principia \"world\", expected : " +
+          (Vector3d)VesselWorldVelocity(
+              plugin_,
+              active_vessel.id.ToString(),
+              new XYZ{x = 0, y = 0, z = 0},
+              Planetarium.FrameIsRotating()
+                  ? active_vessel.orbit.referenceBody.rotationPeriod
+                  : double.PositiveInfinity));
+      UnityEngine.GUILayout.TextArea(
           "GetVel : " +
               (Vector3d)active_vessel.orbit.GetVel());
       UnityEngine.GUILayout.TextArea(
-          "CoM world position : " +
+          "Root part @ CoM world velocity : " +
+              (Vector3d)active_vessel.rootPart.rb.GetPointVelocity(
+                  (Vector3d)active_vessel.findWorldCenterOfMass()));
+      UnityEngine.GUILayout.TextArea(
+          "CoM : " +
           ((Vector3d)active_vessel.CoM));
+      UnityEngine.GUILayout.TextArea(
+          "found CoM world position : " +
+          ((Vector3d)active_vessel.findWorldCenterOfMass()));
       UnityEngine.GUILayout.TextArea(
           "Principia world : " +
           (Vector3d)VesselWorldPosition(
