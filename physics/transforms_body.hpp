@@ -98,7 +98,7 @@ BodyCentredNonRotatingTransformingIterator(
     Trajectory<FromFrame> const& centre_trajectory,
     Trajectory<FromFrame> const* transformed_trajectory) {
   CHECK_NOTNULL(transformed_trajectory);
-  Trajectory<FromFrame>::Transform<ToFrame> transform =
+  typename Trajectory<FromFrame>::Transform<ToFrame> transform =
       [&centre_trajectory](
           Instant const& t,
           DegreesOfFreedom<FromFrame> const& from_degrees_of_freedom) ->
@@ -107,7 +107,7 @@ BodyCentredNonRotatingTransformingIterator(
         centre_trajectory.last().degrees_of_freedom();
     // on_or_after() is Ln(N), but it doesn't matter unless the map gets very
     // big, in which case we'll have cache misses anyway.
-    Trajectory<FromFrame>::NativeIterator const centre_it =
+    typename Trajectory<FromFrame>::NativeIterator const centre_it =
         centre_trajectory.on_or_after(t);
     CHECK_EQ(centre_it.time(), t)
         << "Time " << t << " not in centre trajectory";
@@ -149,7 +149,7 @@ BarycentricRotatingTransformingIterator(
   DegreesOfFreedom<ToFrame> const& last_barycentre =
       last_matrix_and_barycentre.second;
 
-  Trajectory<FromFrame>::Transform<ToFrame> transform =
+  typename Trajectory<FromFrame>::Transform<ToFrame> transform =
       [&primary_trajectory,
        &secondary_trajectory,
        from_standard_basis_to_basis_of_last_barycentric_frame,
@@ -158,11 +158,11 @@ BarycentricRotatingTransformingIterator(
           DegreesOfFreedom<FromFrame> const& from_degrees_of_freedom) ->
     DegreesOfFreedom<ToFrame> {
     // on_or_after() is Ln(N).
-    Trajectory<FromFrame>::NativeIterator const primary_it =
+    typename Trajectory<FromFrame>::NativeIterator const primary_it =
         primary_trajectory.on_or_after(t);
     CHECK_EQ(primary_it.time(), t)
         << "Time " << t << " not in primary trajectory";
-    Trajectory<FromFrame>::NativeIterator secondary_it =
+    typename Trajectory<FromFrame>::NativeIterator secondary_it =
         secondary_trajectory.on_or_after(t);
     CHECK_EQ(secondary_it.time(), t)
         << "Time " << t << " not in secondary trajectory";
