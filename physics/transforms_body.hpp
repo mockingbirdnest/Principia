@@ -42,7 +42,8 @@ Matrix Transpose(Matrix const& m) {
 }
 
 // Returns the rotation matrix that maps the standard basis to the basis of the
-// barycentric frame.
+// barycentric frame.  |barycentre_degrees_of_freedom| must be a convex
+// combination of the two other parameters.
 template<typename Frame>
 Matrix FromStandardBasisToBasisOfBarycentricFrame(
     DegreesOfFreedom<Frame> const& barycentre_degrees_of_freedom,

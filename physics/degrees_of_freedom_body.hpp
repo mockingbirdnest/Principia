@@ -24,6 +24,9 @@ template<typename Frame, typename Weight>
 DegreesOfFreedom<Frame> Barycentre(
     std::vector<DegreesOfFreedom<Frame>> const& degrees_of_freedom,
     std::vector<Weight> const& weights) {
+  // We need a reference position to convert points into vectors.  We pick a
+  // default constructed Position<> as it doesn't introduce any inaccuracies in
+  // the computations below.
   Position<Frame> reference_position;
   auto positions_weighted_sum =
       (degrees_of_freedom[0].position -
