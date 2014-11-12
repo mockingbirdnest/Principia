@@ -12,6 +12,10 @@ namespace geometry {
 template<typename FromFrame, typename ToFrame>
 class OrthogonalMap;
 
+template<typename FromFrame, typename ToFrame>
+std::ostream& operator<<(std::ostream& out,
+                         Rotation<FromFrame, ToFrame> const& rotation);
+
 // An orientation-preserving orthogonal map between the inner product spaces
 // |FromFrame| and |ToFrame|, as well as the induced maps on the exterior
 // algebra.
@@ -68,10 +72,6 @@ template<typename FromFrame, typename ThroughFrame, typename ToFrame>
 Rotation<FromFrame, ToFrame> operator*(
     Rotation<ThroughFrame, ToFrame> const& left,
     Rotation<FromFrame, ThroughFrame> const& right);
-
-template<typename FromFrame, typename ToFrame>
-std::ostream& operator<<(std::ostream& out,
-                         Rotation<FromFrame, ToFrame> const& rotation);
 
 }  // namespace geometry
 }  // namespace principia

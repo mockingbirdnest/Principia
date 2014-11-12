@@ -69,7 +69,7 @@ Matrix FromStandardBasisToBasisOfBarycentricFrame(
   Bivector<double, Frame> const reference_binormal =
       Wedge(normalized_reference_direction, reference_normal);
   return FromColumns(normalized_reference_direction.coordinates(),
-                     reference_normal.coordinates(),
+                      reference_normal.coordinates(),
                      reference_binormal.coordinates());
 }
 
@@ -163,7 +163,7 @@ BarycentricRotatingTransformingIterator(
     Matrix const from_basis_of_barycentric_frame_to_standard_basis =
         Transpose(FromStandardBasisToBasisOfBarycentricFrame(
                       barycentre,
-                      primary_degrees_of_freedom,
+            primary_degrees_of_freedom,
                       secondary_degrees_of_freedom));
     return {Displacement<ToFrame>(
                 from_standard_basis_to_basis_of_last_barycentric_frame(
