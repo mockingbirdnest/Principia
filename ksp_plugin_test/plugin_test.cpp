@@ -804,7 +804,7 @@ TEST_F(PluginTest, BarycentricRotatingRenderingIntegration) {
     Length const satellite_moon =
         (segment.begin - moon_world_position).Norm();
     EXPECT_THAT(RelativeError(earth_moon, satellite_earth), Lt(0.2));
-    EXPECT_THAT(RelativeError(earth_moon, satellite_moon), Lt(0.2));;
+    EXPECT_THAT(RelativeError(earth_moon, satellite_moon), Lt(0.2));
   }
   // Check continuity.
   for (std::size_t i = 0; i + 1 < rendered_trajectory.size(); ++i) {
