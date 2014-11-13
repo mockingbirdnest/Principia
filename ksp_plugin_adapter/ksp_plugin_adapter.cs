@@ -218,6 +218,7 @@ public partial class PluginAdapter : UnityEngine.MonoBehaviour {
           Vector.DrawLine(rendered_trajectory_);
         }
       }
+      LogALot();
     }
   }
 
@@ -334,9 +335,11 @@ public partial class PluginAdapter : UnityEngine.MonoBehaviour {
           "GetVel : " +
               (Vector3d)active_vessel.orbit.GetVel());
       UnityEngine.GUILayout.TextArea(
-          "Root part @ CoM world velocity : " +
-              (Vector3d)active_vessel.rootPart.rb.GetPointVelocity(
-                  (Vector3d)active_vessel.findWorldCenterOfMass()));
+          "Root part @ CoM world velocity + Kraken: " +
+              (Vector3d)
+                  (active_vessel.rootPart.rb.GetPointVelocity(
+                       (Vector3d)active_vessel.findWorldCenterOfMass()) +
+                   Krakensbane.GetFrameVelocity()));
       UnityEngine.GUILayout.TextArea(
           "CoM : " +
           ((Vector3d)active_vessel.CoM));
@@ -354,6 +357,51 @@ public partial class PluginAdapter : UnityEngine.MonoBehaviour {
     UnityEngine.GUI.DragWindow(
         position : new UnityEngine.Rect(left : 0f, top : 0f, width : 10000f,
                                         height : 20f));
+  }
+
+  private void LogALot() {
+    Vessel active_vessel = FlightGlobals.ActiveVessel;
+    Log.Info("UT : " + Planetarium.GetUniversalTime());
+    Log.Info(
+        "Principia world position : " +
+        (Vector3d)VesselWorldPosition(
+            plugin_,
+            active_vessel.id.ToString(),
+            (XYZ)active_vessel.orbit.referenceBody.position));
+    Log.Info(
+        "Principia world velocity (rotating) : " +
+        (Vector3d)VesselWorldVelocity(
+            plugin_,
+            active_vessel.id.ToString(),
+            new XYZ{x = 0, y = 0, z = 0},
+            active_vessel.orbit.referenceBody.rotationPeriod));
+    Log.Info(
+        "Principia world velocity (no rotation) : " +
+        (Vector3d)VesselWorldVelocity(
+            plugin_,
+            active_vessel.id.ToString(),
+            new XYZ{x = 0, y = 0, z = 0},
+            double.PositiveInfinity));
+    Log.Info("reference body position : " +
+             active_vessel.orbit.referenceBody.position);
+    Log.Info("reference body GetVel : " +
+             active_vessel.orbit.referenceBody.orbit.GetVel());
+    Log.Info("active vessel found world CoM (32) : " +
+             (Vector3d)active_vessel.findWorldCenterOfMass());
+    Log.Info("Root part at found world CoM world velocity (32) : " +
+             (Vector3d)active_vessel.rootPart.rb.GetPointVelocity(
+                 (Vector3d)active_vessel.findWorldCenterOfMass()));
+    Log.Info("active vessel orbit.pos : " + active_vessel.orbit.pos);
+    Log.Info("active vessel orbit.vel : " + active_vessel.orbit.vel);
+    Log.Info("active vessel GetVel : " + active_vessel.orbit.GetVel());
+    Log.Info("Principia orbit.pos : " + 
+             (Vector3d)VesselDisplacementFromParent(
+                 plugin_,
+                 active_vessel.id.ToString()));
+    Log.Info("Principia orbit.vel : " + 
+             (Vector3d)VesselParentRelativeVelocity(
+                 plugin_,
+                 active_vessel.id.ToString()));
   }
 
   private void InitializePlugin() {
