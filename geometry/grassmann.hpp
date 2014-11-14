@@ -99,7 +99,7 @@ Bivector<quantities::Product<LScalar, RScalar>, Frame> Commutator(
     Bivector<LScalar, Frame> const& left,
     Bivector<RScalar, Frame> const& right);
 
-// Returns 𝑉 / ‖𝑉‖.
+// Returns multivector / ‖multivector‖.
 template<typename Scalar, typename Frame, int rank>
 Multivector<double, Frame, rank> Normalize(
     Multivector<Scalar, Frame, rank> const& multivector);
