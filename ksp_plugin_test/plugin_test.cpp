@@ -113,7 +113,7 @@ class PluginTest : public testing::Test {
                                 3810.0 * Kilo(Metre)});
     auto const tangent =
         satellite_initial_displacement_ * Bivector<double, AliceSun>({1, 2, 3});
-    Vector<double, AliceSun> const unit_tangent = tangent / tangent.Norm();
+    Vector<double, AliceSun> const unit_tangent = Normalize(tangent);
     EXPECT_THAT(
         InnerProduct(unit_tangent,
                      satellite_initial_displacement_ /
@@ -741,7 +741,7 @@ TEST_F(PluginTest, BarycentricRotatingRenderingIntegration) {
           last().degrees_of_freedom().velocity;
   Displacement<ICRFJ2000Ecliptic> const from_the_earth_to_l5 =
       from_the_earth_to_the_moon / 2 -
-          moon_velocity_wrt_earth / moon_velocity_wrt_earth.Norm() *
+          Normalize(moon_velocity_wrt_earth) *
               from_the_earth_to_the_moon.Norm() * Sqrt(3) / 2;
   Velocity<ICRFJ2000Ecliptic> const initial_velocity =
       Rotation<ICRFJ2000Ecliptic, ICRFJ2000Ecliptic>(
