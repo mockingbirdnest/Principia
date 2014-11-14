@@ -104,6 +104,12 @@ inline Bivector<quantities::Product<LScalar, RScalar>, Frame> Commutator(
       Cross(left.coordinates(), right.coordinates()));
 }
 
+template<typename Scalar, typename Frame, int rank>
+inline Multivector<double, Frame, rank> Normalize(
+    Multivector<Scalar, Frame, rank> const& multivector) {
+  return multivector / multivector.Norm();
+}
+
 template<typename LScalar, typename RScalar, typename Frame>
 inline Vector<quantities::Product<LScalar, RScalar>, Frame> operator*(
     Bivector<LScalar, Frame> const& left,

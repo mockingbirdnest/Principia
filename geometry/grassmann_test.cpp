@@ -229,5 +229,20 @@ TEST_F(GrassmannTest, Norm) {
   EXPECT_THAT(u.Norm(), Eq(4 * Furlong));
 }
 
+TEST_F(GrassmannTest, Normalize) {
+  Vector<Length, World> const v({-1 * Metre, 2 * Metre, 3 * Metre});
+  EXPECT_THAT(Normalize(v),
+              Eq(Vector<double, World>({-1 / Sqrt(14),
+                                        2 / Sqrt(14),
+                                        3 / Sqrt(14)})));
+  Bivector<Length, World> const w({4 * Metre, -5 * Metre, 6 * Metre});
+  EXPECT_THAT(Normalize(w),
+              Eq(Bivector<double, World>({4 / Sqrt(77),
+                                          -5 / Sqrt(77),
+                                          6 / Sqrt(77)})));
+  Trivector<Length, World> const u(-4 * Furlong);
+  EXPECT_THAT(Normalize(u), Eq(Trivector<double, World>(-1)));
+}
+
 }  // namespace geometry
 }  // namespace principia
