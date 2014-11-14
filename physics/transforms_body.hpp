@@ -53,12 +53,12 @@ Matrix FromStandardBasisToBasisOfBarycentricFrame(
       primary_degrees_of_freedom.position -
       barycentre_degrees_of_freedom.position;
   Vector<double, Frame> const normalized_reference_direction =
-      reference_direction / reference_direction.Norm();
+      Normalize(reference_direction);
   Velocity<Frame> const reference_coplanar =
       primary_degrees_of_freedom.velocity -
       barycentre_degrees_of_freedom.velocity;
   Vector<double, Frame> const normalized_reference_coplanar =
-      reference_coplanar / reference_coplanar.Norm();
+      Normalize(reference_coplanar);
   // Modified Gram-Schmidt.
   Vector<double, Frame> const reference_normal =
       normalized_reference_coplanar -
