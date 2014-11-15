@@ -33,7 +33,6 @@ class Transforms {
 
  private:
   typename Trajectory<FromFrame>::template Transform<ThroughFrame> first_;
-
   typename Trajectory<ThroughFrame>::template Transform<ToFrame> second_;
 };
 
