@@ -4,8 +4,7 @@
 
 #include "physics/transforms.hpp"
 
-using principia::physics::BarycentricRotatingTransformingIterator;
-using principia::physics::BodyCentredNonRotatingTransformingIterator;
+using principia::physics::Transforms;
 
 namespace principia {
 namespace ksp_plugin {
@@ -18,19 +17,34 @@ BodyCentredNonRotatingFrame::ApparentTrajectory(
     Trajectory<Barycentre> const& actual_trajectory) const {
   std::unique_ptr<Trajectory<Barycentre>> result =
       std::make_unique<Trajectory<Barycentre>>(actual_trajectory.body());
-  // TODO(phl): Should tag the two frames differently.
-  auto actual_it =
-      BodyCentredNonRotatingTransformingIterator<Barycentre, Barycentre>(
-          body_.prolongation(), &actual_trajectory);
+  // TODO(phl): Should tag the frames differently.
+  auto transforms(
+      Transforms<Barycentre, Barycentre, Barycentre>::BodyCentredNonRotating(
+          body_.prolongation(),
+          body_.prolongation()));
+  auto actual_it = transforms.first(&actual_trajectory);
   auto body_it = body_.prolongation().on_or_after(actual_it.time());
+
+  // First build the trajectory resulting from the first transform.
+  Trajectory<Barycentre> intermediate_trajectory(actual_trajectory.body());
   for (; !actual_it.at_end(); ++actual_it, ++body_it) {
     // Advance over the bits of the actual trajectory that don't have a matching
     // time in the body trajectory.
     while (actual_it.time() != body_it.time()) {
       ++actual_it;
     }
-    result->Append(actual_it.time(), actual_it.degrees_of_freedom());
+    intermediate_trajectory.Append(actual_it.time(),
+                                   actual_it.degrees_of_freedom());
   }
+
+  // Then build the final trajectory using the second transform.
+  for (auto intermediate_it = transforms.second(&intermediate_trajectory);
+       !intermediate_it.at_end();
+       ++intermediate_it) {
+    result->Append(intermediate_it.time(),
+                   intermediate_it.degrees_of_freedom());
+  }
+
   return std::move(result);
 }
 
@@ -45,14 +59,19 @@ BarycentricRotatingFrame::ApparentTrajectory(
     Trajectory<Barycentre> const& actual_trajectory) const {
   std::unique_ptr<Trajectory<Barycentre>> result =
       std::make_unique<Trajectory<Barycentre>>(actual_trajectory.body());
-  // TODO(phl): Should tag the two frames differently.
-  auto actual_it =
-      BarycentricRotatingTransformingIterator<Barycentre, Barycentre>(
+  // TODO(phl): Should tag the frames differently.
+  auto transforms(
+      Transforms<Barycentre, Barycentre, Barycentre>::BarycentricRotating(
+          primary_.prolongation(),
           primary_.prolongation(),
           secondary_.prolongation(),
-          &actual_trajectory);
+          secondary_.prolongation()));
+  auto actual_it = transforms.first(&actual_trajectory);
   auto primary_it = primary_.prolongation().on_or_after(actual_it.time());
   auto secondary_it = secondary_.prolongation().on_or_after(actual_it.time());
+
+  // First build the trajectory resulting from the first transform.
+  Trajectory<Barycentre> intermediate_trajectory(actual_trajectory.body());
   for (; !actual_it.at_end(); ++actual_it, ++primary_it, ++secondary_it) {
     // Advance over the bits of the actual trajectory that don't have a matching
     // time in the trajectories.
@@ -60,8 +79,18 @@ BarycentricRotatingFrame::ApparentTrajectory(
            actual_it.time() != secondary_it.time()) {
       ++actual_it;
     }
-    result->Append(actual_it.time(), actual_it.degrees_of_freedom());
+    intermediate_trajectory.Append(actual_it.time(),
+                                   actual_it.degrees_of_freedom());
   }
+
+  // Then build the final trajectory using the second transform.
+  for (auto intermediate_it = transforms.second(&intermediate_trajectory);
+       !intermediate_it.at_end();
+       ++intermediate_it) {
+    result->Append(intermediate_it.time(),
+                   intermediate_it.degrees_of_freedom());
+  }
+
   return std::move(result);
 }
 

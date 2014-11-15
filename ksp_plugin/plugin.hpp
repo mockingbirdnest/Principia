@@ -61,6 +61,10 @@ struct Barycentre;
 // The position of the sun at the instant |initial_time| passed at construction.
 Position<Barycentre> const kInitialSunPosition;
 
+// The frame used for rendering.  Its definition depends on the actual factory
+// function used to create it, see class Transforms.
+struct Rendering;
+
 // A nonrotating referencence frame comoving with the sun with the same axes as
 // |AliceWorld|. Since it is nonrotating (though not inertial), differences
 // between velocities are consistent with those in an inertial reference frame.
