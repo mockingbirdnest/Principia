@@ -405,6 +405,8 @@ public partial class PluginAdapter : UnityEngine.MonoBehaviour {
     Log.Info("Kraken : " + (Vector3d)Krakensbane.GetFrameVelocity());
     Log.Info("Root rb velocity : " +
              (Vector3d)active_vessel.rootPart.rb.velocity);
+    Log.Info("Root part partTransform.position : " +
+             (Vector3d)active_vessel.rootPart.partTransform.position);
   }
 
   private void InitializePlugin() {
