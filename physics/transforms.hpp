@@ -7,23 +7,27 @@ namespace physics {
 
 // This class represent a pair of transformations of a trajectory from
 // |FromFrame| to |ToFrame| with an intermediate representation in
-// |ThroughFrame|.
+// |ThroughFrame|.  Both |FromFrame| and |ToFrame| must be inertial frames.
 template<typename FromFrame, typename ThroughFrame, typename ToFrame>
 class Transforms {
  public:
-  // A factory method where the intermediate frame is in translation with the
-  // body of |centre_trajectory|.
+  // A factory method where |ThroughFrame| is defined as follows: it has the
+  // same axes as |FromFrame| and the body of |centre_trajectory| is the origin
+  // of |ThroughFrame|.
   static Transforms BodyCentredNonRotating(
-      Trajectory<FromFrame> const& centre_trajectory);
+      Trajectory<FromFrame> const& from_centre_trajectory,
+      Trajectory<ToFrame> const& to_centre_trajectory);
 
-  // A factory method where the intermediate frame is in translation with the
-  // barycentre of the two bodies, whose X axis goes from the primary to the
-  // secondary, whose Y axis is in the plane of the velocities of the bodies in
-  // their barycentric frame, along the velocity of the primary body, and which
-  // is right-handed.
+  // A factory method where |ThroughFrame| is defined as follows: its X axis
+  // goes from the primary to the secondary bodies, its Y axis is in the plane
+  // of the velocities of the bodies in their barycentric frame, along the
+  // velocity of the primary body, its Z axis is such that it is right-handed.
+  // The barycenter of the bodies is the origin of |ThroughFrame|.
   static Transforms BarycentricRotating(
-      Trajectory<FromFrame> const& primary_trajectory,
-      Trajectory<FromFrame> const& secondary_trajectory);
+      Trajectory<FromFrame> const& from_primary_trajectory,
+      Trajectory<ToFrame> const& to_primary_trajectory,
+      Trajectory<FromFrame> const& from_secondary_trajectory,
+      Trajectory<ToFrame> const& to_secondary_trajectory);
 
   typename Trajectory<FromFrame>::template TransformingIterator<ThroughFrame>
   first(Trajectory<FromFrame> const* from_trajectory);

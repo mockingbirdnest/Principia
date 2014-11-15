@@ -20,6 +20,7 @@ BodyCentredNonRotatingFrame::ApparentTrajectory(
   // TODO(phl): Should tag the frames differently.
   auto transforms(
       Transforms<Barycentre, Barycentre, Barycentre>::BodyCentredNonRotating(
+          body_.prolongation(),
           body_.prolongation()));
   auto actual_it = transforms.first(&actual_trajectory);
   auto body_it = body_.prolongation().on_or_after(actual_it.time());
@@ -62,6 +63,8 @@ BarycentricRotatingFrame::ApparentTrajectory(
   auto transforms(
       Transforms<Barycentre, Barycentre, Barycentre>::BarycentricRotating(
           primary_.prolongation(),
+          primary_.prolongation(),
+          secondary_.prolongation(),
           secondary_.prolongation()));
   auto actual_it = transforms.first(&actual_trajectory);
   auto primary_it = primary_.prolongation().on_or_after(actual_it.time());
