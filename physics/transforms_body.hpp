@@ -75,6 +75,100 @@ Matrix FromStandardBasisToBasisOfBarycentricFrame(
 
 }  // namespace
 
+template<typename FromFrame, typename ThroughFrame, typename ToFrame>
+Transforms<FromFrame, ThroughFrame, ToFrame>
+Transforms<FromFrame, ThroughFrame, ToFrame>::BodyCentredNonRotating(
+    Trajectory<FromFrame> const& centre_trajectory) {
+  typename Trajectory<FromFrame>::Transform<ThroughFrame> first_transform =
+      [&centre_trajectory](
+          Instant const& t,
+          DegreesOfFreedom<FromFrame> const& from_degrees_of_freedom) ->
+    DegreesOfFreedom<ToFrame> {
+    // on_or_after() is Ln(N), but it doesn't matter unless the map gets very
+    // big, in which case we'll have cache misses anyway.
+    typename Trajectory<FromFrame>::NativeIterator const centre_it =
+        centre_trajectory.on_or_after(t);
+    CHECK_EQ(centre_it.time(), t)
+        << "Time " << t << " not in centre trajectory";
+    DegreesOfFreedom<FromFrame> const& centre_degrees_of_freedom =
+        centre_it.degrees_of_freedom();
+    return {from_degrees_of_freedom.position -
+                centre_degrees_of_freedom.position,
+            from_degrees_of_freedom.velocity -
+                centre_degrees_of_freedom.velocity};
+  };
+
+  typename Trajectory<ThroughFrame>::Transform<ToFrame> second_transform =
+      [&centre_trajectory](
+          Instant const& t,
+          DegreesOfFreedom<FromFrame> const& from_degrees_of_freedom) ->
+    DegreesOfFreedom<ToFrame> {
+    DegreesOfFreedom<FromFrame> const& last_centre_degrees_of_freedom =
+        centre_trajectory.last().degrees_of_freedom();
+    return {from_degrees_of_freedom.position +
+                last_centre_degrees_of_freedom.position,
+            from_degrees_of_freedom.velocity};
+  };
+
+  return {first_transform, second_transform};
+}
+
+template<typename FromFrame, typename ThroughFrame, typename ToFrame>
+typename Trajectory<FromFrame>::template TransformingIterator<ThroughFrame>
+Transforms<FromFrame, ThroughFrame, ToFrame>::first(
+    Trajectory<FromFrame> const* from_trajectory) {
+  return CHECK_NOTNULL(from_trajectory)->first_with_transfrom(first_transform_);
+}
+
+template<typename FromFrame, typename ThroughFrame, typename ToFrame>
+typename Trajectory<ThroughFrame>::template TransformingIterator<ToFrame>
+Transforms<FromFrame, ThroughFrame, ToFrame>::second(
+    Trajectory<ThroughFrame> const* through_trajectory) {
+  return CHECK_NOTNULL(through_trajectory)->
+             first_with_transfrom(second_transform_);
+}
+
+template<typename FromFrame, typename ThroughFrame, typename ToFrame>
+typename Transforms<FromFrame, ThroughFrame, ToFrame>
+BodyCentredNonRotatingTransformingIterator(
+    Trajectory<FromFrame> const& centre_trajectory) {
+  CHECK_NOTNULL(transformed_trajectory);
+
+  typename Trajectory<FromFrame>::Transform<ThroughFrame> first =
+      [&centre_trajectory](
+          Instant const& t,
+          DegreesOfFreedom<FromFrame> const& from_degrees_of_freedom) ->
+    DegreesOfFreedom<ToFrame> {
+    // on_or_after() is Ln(N), but it doesn't matter unless the map gets very
+    // big, in which case we'll have cache misses anyway.
+    typename Trajectory<FromFrame>::NativeIterator const centre_it =
+        centre_trajectory.on_or_after(t);
+    CHECK_EQ(centre_it.time(), t)
+        << "Time " << t << " not in centre trajectory";
+    DegreesOfFreedom<FromFrame> const& centre_degrees_of_freedom =
+        centre_it.degrees_of_freedom();
+    return {from_degrees_of_freedom.position -
+                centre_degrees_of_freedom.position,
+            from_degrees_of_freedom.velocity -
+                centre_degrees_of_freedom.velocity};
+  };
+
+  typename Trajectory<ThroughFrame>::Transform<ToFrame> second =
+      [&centre_trajectory](
+          Instant const& t,
+          DegreesOfFreedom<FromFrame> const& from_degrees_of_freedom) ->
+    DegreesOfFreedom<ToFrame> {
+    DegreesOfFreedom<FromFrame> const& last_centre_degrees_of_freedom =
+        centre_trajectory.last().degrees_of_freedom();
+    return {from_degrees_of_freedom.position +
+                last_centre_degrees_of_freedom.position,
+            from_degrees_of_freedom.velocity};
+  };
+
+  return {transformed_trajectory->first_with_transform(first),
+          transformed_trajectory->first_with_transform(second)}
+}
+
 template<typename FromFrame, typename ToFrame>
 typename Trajectory<FromFrame>::TransformingIterator<ToFrame>
 BodyCentredNonRotatingTransformingIterator(
