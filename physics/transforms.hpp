@@ -20,9 +20,10 @@ class Transforms {
 
   // A factory method where |ThroughFrame| is defined as follows: its X axis
   // goes from the primary to the secondary bodies, its Y axis is in the plane
-  // of the velocities of the bodies in their barycentric frame, along the
-  // velocity of the primary body, its Z axis is such that it is right-handed.
-  // The barycenter of the bodies is the origin of |ThroughFrame|.
+  // of the velocities of the bodies in their barycentric frame, on the same
+  // side of the X axis as the velocity of the primary body, its Z axis is such
+  // that it is right-handed.  The barycentre of the bodies is the origin of
+  // |ThroughFrame|.
   static Transforms BarycentricRotating(
       Trajectory<FromFrame> const& from_primary_trajectory,
       Trajectory<ToFrame> const& to_primary_trajectory,
