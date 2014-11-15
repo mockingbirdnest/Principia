@@ -9,9 +9,9 @@ namespace physics {
 template<typename FromFrame, typename ThroughFrame, typename ToFrame>
 class Transforms {
  public:
-  Transforms BodyCentredNonRotating(
+  static Transforms BodyCentredNonRotating(
       Trajectory<FromFrame> const& centre_trajectory);
-  Transforms BarycentricRotating(
+  static Transforms BarycentricRotating(
       Trajectory<FromFrame> const& primary_trajectory,
       Trajectory<FromFrame> const& secondary_trajectory);
 
@@ -28,17 +28,6 @@ class Transforms {
   typename Trajectory<ThroughFrame>::template Transform<ToFrame>
   second_transform_;
 };
-
-template<typename FromFrame, typename ThroughFrame, typename ToFrame>
-typename Transforms<FromFrame, ThroughFrame, ToFrame>
-BodyCentredNonRotatingTransformingIterator(
-    Trajectory<FromFrame> const& centre_trajectory);
-
-template<typename FromFrame, typename ThroughFrame, typename ToFrame>
-typename Transforms<FromFrame, ThroughFrame, ToFrame>
-BarycentricRotatingTransformingIterator(
-    Trajectory<FromFrame> const& primary_trajectory,
-    Trajectory<FromFrame> const& secondary_trajectory);
 
 }  // namespace physics
 }  // namespace principia

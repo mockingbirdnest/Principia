@@ -160,38 +160,19 @@ Transforms<FromFrame, ThroughFrame, ToFrame>::BarycentricRotating(
                         barycentre.velocity).coordinates()))};
   };
 
-
-  // Start by computing the matrix that transforms from the standard basis to
-  // the last basis of the barycentric frame.  We pass it by copy to the lambda
-  // so that it doesn't recompute it each time.
-  DegreesOfFreedom<FromFrame> const& last_primary_degrees_of_freedom =
-      primary_trajectory.last().degrees_of_freedom();
-  DegreesOfFreedom<FromFrame> const& last_secondary_degrees_of_freedom =
-      secondary_trajectory.last().degrees_of_freedom();
-  DegreesOfFreedom<FromFrame> const last_barycentre =
-      Barycentre<FromFrame, GravitationalParameter>(
-          {last_primary_degrees_of_freedom,
-           last_secondary_degrees_of_freedom},
-          {primary_trajectory.body().gravitational_parameter(),
-           secondary_trajectory.body().gravitational_parameter()});
-  Matrix const from_standard_basis_to_basis_of_last_barycentric_frame =
-      FromStandardBasisToBasisOfBarycentricFrame(
-          last_barycentre,
-          last_primary_degrees_of_freedom,
-          last_secondary_degrees_of_freedom);
-
   typename Trajectory<ThroughFrame>::Transform<ToFrame> second_transform =
       [&primary_trajectory,
        &secondary_trajectory](
           Instant const& t,
           DegreesOfFreedom<ThroughFrame> const& through_degrees_of_freedom) ->
     DegreesOfFreedom<ToFrame> {
-    DegreesOfFreedom<FromFrame> const& last_primary_degrees_of_freedom =
+    // NOTE(phl): This seems to assume that ToFrame is identical to FromFrame.
+    DegreesOfFreedom<ToFrame> const& last_primary_degrees_of_freedom =
         primary_trajectory.last().degrees_of_freedom();
-    DegreesOfFreedom<FromFrame> const& last_secondary_degrees_of_freedom =
+    DegreesOfFreedom<ToFrame> const& last_secondary_degrees_of_freedom =
         secondary_trajectory.last().degrees_of_freedom();
-    DegreesOfFreedom<FromFrame> const last_barycentre =
-        Barycentre<FromFrame, GravitationalParameter>(
+    DegreesOfFreedom<ToFrame> const last_barycentre =
+        Barycentre<ToFrame, GravitationalParameter>(
             {last_primary_degrees_of_freedom,
              last_secondary_degrees_of_freedom},
             {primary_trajectory.body().gravitational_parameter(),
@@ -226,152 +207,6 @@ Transforms<FromFrame, ThroughFrame, ToFrame>::second(
     Trajectory<ThroughFrame> const* through_trajectory) {
   return CHECK_NOTNULL(through_trajectory)->
              first_with_transfrom(second_transform_);
-}
-
-template<typename FromFrame, typename ThroughFrame, typename ToFrame>
-typename Transforms<FromFrame, ThroughFrame, ToFrame>
-BodyCentredNonRotatingTransformingIterator(
-    Trajectory<FromFrame> const& centre_trajectory) {
-  CHECK_NOTNULL(transformed_trajectory);
-
-  typename Trajectory<FromFrame>::Transform<ThroughFrame> first =
-      [&centre_trajectory](
-          Instant const& t,
-          DegreesOfFreedom<FromFrame> const& from_degrees_of_freedom) ->
-    DegreesOfFreedom<ToFrame> {
-    // on_or_after() is Ln(N), but it doesn't matter unless the map gets very
-    // big, in which case we'll have cache misses anyway.
-    typename Trajectory<FromFrame>::NativeIterator const centre_it =
-        centre_trajectory.on_or_after(t);
-    CHECK_EQ(centre_it.time(), t)
-        << "Time " << t << " not in centre trajectory";
-    DegreesOfFreedom<FromFrame> const& centre_degrees_of_freedom =
-        centre_it.degrees_of_freedom();
-    return {from_degrees_of_freedom.position -
-                centre_degrees_of_freedom.position,
-            from_degrees_of_freedom.velocity -
-                centre_degrees_of_freedom.velocity};
-  };
-
-  typename Trajectory<ThroughFrame>::Transform<ToFrame> second =
-      [&centre_trajectory](
-          Instant const& t,
-          DegreesOfFreedom<FromFrame> const& from_degrees_of_freedom) ->
-    DegreesOfFreedom<ToFrame> {
-    DegreesOfFreedom<FromFrame> const& last_centre_degrees_of_freedom =
-        centre_trajectory.last().degrees_of_freedom();
-    return {from_degrees_of_freedom.position +
-                last_centre_degrees_of_freedom.position,
-            from_degrees_of_freedom.velocity};
-  };
-
-  return {transformed_trajectory->first_with_transform(first),
-          transformed_trajectory->first_with_transform(second)}
-}
-
-template<typename FromFrame, typename ToFrame>
-typename Trajectory<FromFrame>::TransformingIterator<ToFrame>
-BodyCentredNonRotatingTransformingIterator(
-    Trajectory<FromFrame> const& centre_trajectory,
-    Trajectory<FromFrame> const* transformed_trajectory) {
-  CHECK_NOTNULL(transformed_trajectory);
-  typename Trajectory<FromFrame>::Transform<ToFrame> transform =
-      [&centre_trajectory](
-          Instant const& t,
-          DegreesOfFreedom<FromFrame> const& from_degrees_of_freedom) ->
-    DegreesOfFreedom<ToFrame> {
-    DegreesOfFreedom<FromFrame> const& last_centre_degrees_of_freedom =
-        centre_trajectory.last().degrees_of_freedom();
-    // on_or_after() is Ln(N), but it doesn't matter unless the map gets very
-    // big, in which case we'll have cache misses anyway.
-    typename Trajectory<FromFrame>::NativeIterator const centre_it =
-        centre_trajectory.on_or_after(t);
-    CHECK_EQ(centre_it.time(), t)
-        << "Time " << t << " not in centre trajectory";
-    DegreesOfFreedom<FromFrame> const& centre_degrees_of_freedom =
-        centre_it.degrees_of_freedom();
-    return {from_degrees_of_freedom.position -
-                centre_degrees_of_freedom.position +
-                last_centre_degrees_of_freedom.position,
-            from_degrees_of_freedom.velocity -
-                centre_degrees_of_freedom.velocity};
-  };
-  return transformed_trajectory->first_with_transform(transform);
-}
-
-template<typename FromFrame, typename ToFrame>
-typename Trajectory<FromFrame>::TransformingIterator<ToFrame>
-BarycentricRotatingTransformingIterator(
-    Trajectory<FromFrame> const& primary_trajectory,
-    Trajectory<FromFrame> const& secondary_trajectory,
-    Trajectory<FromFrame> const* transformed_trajectory) {
-  CHECK_NOTNULL(transformed_trajectory);
-
-  // Start by computing the matrix that transforms from the standard basis to
-  // the last basis of the barycentric frame.  We pass it by copy to the lambda
-  // so that it doesn't recompute it each time.
-  DegreesOfFreedom<FromFrame> const& last_primary_degrees_of_freedom =
-      primary_trajectory.last().degrees_of_freedom();
-  DegreesOfFreedom<FromFrame> const& last_secondary_degrees_of_freedom =
-      secondary_trajectory.last().degrees_of_freedom();
-  DegreesOfFreedom<FromFrame> const last_barycentre =
-      Barycentre<FromFrame, GravitationalParameter>(
-          {last_primary_degrees_of_freedom,
-           last_secondary_degrees_of_freedom},
-          {primary_trajectory.body().gravitational_parameter(),
-           secondary_trajectory.body().gravitational_parameter()});
-  Matrix const from_standard_basis_to_basis_of_last_barycentric_frame =
-      FromStandardBasisToBasisOfBarycentricFrame(
-          last_barycentre,
-          last_primary_degrees_of_freedom,
-          last_secondary_degrees_of_freedom);
-
-  typename Trajectory<FromFrame>::Transform<ToFrame> transform =
-      [&primary_trajectory,
-       &secondary_trajectory,
-       from_standard_basis_to_basis_of_last_barycentric_frame,
-       last_barycentre](
-          Instant const& t,
-          DegreesOfFreedom<FromFrame> const& from_degrees_of_freedom) ->
-    DegreesOfFreedom<ToFrame> {
-    // on_or_after() is Ln(N).
-    typename Trajectory<FromFrame>::NativeIterator const primary_it =
-        primary_trajectory.on_or_after(t);
-    CHECK_EQ(primary_it.time(), t)
-        << "Time " << t << " not in primary trajectory";
-    typename Trajectory<FromFrame>::NativeIterator secondary_it =
-        secondary_trajectory.on_or_after(t);
-    CHECK_EQ(secondary_it.time(), t)
-        << "Time " << t << " not in secondary trajectory";
-
-    DegreesOfFreedom<FromFrame> const& primary_degrees_of_freedom =
-        primary_it.degrees_of_freedom();
-    DegreesOfFreedom<FromFrame> const& secondary_degrees_of_freedom =
-        secondary_it.degrees_of_freedom();
-    DegreesOfFreedom<FromFrame> const barycentre =
-        Barycentre<FromFrame, GravitationalParameter>(
-            {primary_degrees_of_freedom,
-             secondary_degrees_of_freedom},
-            {primary_trajectory.body().gravitational_parameter(),
-             secondary_trajectory.body().gravitational_parameter()});
-    Matrix const from_basis_of_barycentric_frame_to_standard_basis =
-        Transpose(FromStandardBasisToBasisOfBarycentricFrame(
-                      barycentre,
-            primary_degrees_of_freedom,
-                      secondary_degrees_of_freedom));
-    return {Displacement<ToFrame>(
-                from_standard_basis_to_basis_of_last_barycentric_frame(
-                    from_basis_of_barycentric_frame_to_standard_basis(
-                        (from_degrees_of_freedom.position -
-                            barycentre.position).coordinates()))) +
-                last_barycentre.position,
-            Velocity<ToFrame>(
-                from_standard_basis_to_basis_of_last_barycentric_frame(
-                    from_basis_of_barycentric_frame_to_standard_basis(
-                        (from_degrees_of_freedom.velocity -
-                            barycentre.velocity).coordinates())))};
-  };
-  return transformed_trajectory->first_with_transform(transform);
 }
 
 }  // namespace physics
