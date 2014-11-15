@@ -86,7 +86,7 @@ Transforms<FromFrame, ThroughFrame, ToFrame>::BodyCentredNonRotating(
     Trajectory<FromFrame> const& centre_trajectory) {
   Transforms transforms;
 
-  transforms.first_transform_ =
+  transforms.first_ =
       [&centre_trajectory](
           Instant const& t,
           DegreesOfFreedom<FromFrame> const& from_degrees_of_freedom) ->
@@ -109,7 +109,7 @@ Transforms<FromFrame, ThroughFrame, ToFrame>::BodyCentredNonRotating(
                 centre_degrees_of_freedom.velocity};
   };
 
-  transforms.second_transform_ =
+  transforms.second_ =
       [&centre_trajectory](
           Instant const& t,
           DegreesOfFreedom<ThroughFrame> const& through_degrees_of_freedom) ->
@@ -136,7 +136,7 @@ Transforms<FromFrame, ThroughFrame, ToFrame>::BarycentricRotating(
       Trajectory<FromFrame> const& secondary_trajectory) {
   Transforms transforms;
 
-  transforms.first_transform_ =
+  transforms.first_ =
       [&primary_trajectory,
        &secondary_trajectory](
           Instant const& t,
@@ -181,7 +181,7 @@ Transforms<FromFrame, ThroughFrame, ToFrame>::BarycentricRotating(
                             coordinates()))};
   };
 
-  transforms.second_transform_ =
+  transforms.second_ =
       [&primary_trajectory,
        &secondary_trajectory](
           Instant const& t,
@@ -222,7 +222,7 @@ template<typename FromFrame, typename ThroughFrame, typename ToFrame>
 typename Trajectory<FromFrame>::template TransformingIterator<ThroughFrame>
 Transforms<FromFrame, ThroughFrame, ToFrame>::first(
     Trajectory<FromFrame> const* from_trajectory) {
-  return CHECK_NOTNULL(from_trajectory)->first_with_transform(first_transform_);
+  return CHECK_NOTNULL(from_trajectory)->first_with_transform(first_);
 }
 
 template<typename FromFrame, typename ThroughFrame, typename ToFrame>
@@ -230,7 +230,7 @@ typename Trajectory<ThroughFrame>::template TransformingIterator<ToFrame>
 Transforms<FromFrame, ThroughFrame, ToFrame>::second(
     Trajectory<ThroughFrame> const* through_trajectory) {
   return CHECK_NOTNULL(through_trajectory)->
-             first_with_transform(second_transform_);
+             first_with_transform(second_);
 }
 
 }  // namespace physics

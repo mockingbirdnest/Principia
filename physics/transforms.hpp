@@ -22,11 +22,9 @@ class Transforms {
   second(Trajectory<ThroughFrame> const* through_trajectory);
 
  private:
-  typename Trajectory<FromFrame>::template Transform<ThroughFrame>
-  first_transform_;
+  typename Trajectory<FromFrame>::template Transform<ThroughFrame> first_;
 
-  typename Trajectory<ThroughFrame>::template Transform<ToFrame>
-  second_transform_;
+  typename Trajectory<ThroughFrame>::template Transform<ToFrame> second_;
 };
 
 }  // namespace physics

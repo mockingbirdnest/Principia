@@ -18,10 +18,10 @@ BodyCentredNonRotatingFrame::ApparentTrajectory(
   std::unique_ptr<Trajectory<Barycentre>> result =
       std::make_unique<Trajectory<Barycentre>>(actual_trajectory.body());
   // TODO(phl): Should tag the frames differently.
-  auto transform(
+  auto transforms(
       Transforms<Barycentre, Barycentre, Barycentre>::BodyCentredNonRotating(
           body_.prolongation()));
-  auto actual_it = transform.first(&actual_trajectory);
+  auto actual_it = transforms.first(&actual_trajectory);
   auto body_it = body_.prolongation().on_or_after(actual_it.time());
 
   // First build the trajectory resulting from the first transform.
@@ -37,7 +37,7 @@ BodyCentredNonRotatingFrame::ApparentTrajectory(
   }
 
   // Then build the final trajectory using the second transform.
-  for (auto intermediate_it = transform.second(&intermediate_trajectory);
+  for (auto intermediate_it = transforms.second(&intermediate_trajectory);
        !intermediate_it.at_end();
        ++intermediate_it) {
     result->Append(intermediate_it.time(),
@@ -59,11 +59,11 @@ BarycentricRotatingFrame::ApparentTrajectory(
   std::unique_ptr<Trajectory<Barycentre>> result =
       std::make_unique<Trajectory<Barycentre>>(actual_trajectory.body());
   // TODO(phl): Should tag the frames differently.
-  auto transform(
+  auto transforms(
       Transforms<Barycentre, Barycentre, Barycentre>::BarycentricRotating(
           primary_.prolongation(),
           secondary_.prolongation()));
-  auto actual_it = transform.first(&actual_trajectory);
+  auto actual_it = transforms.first(&actual_trajectory);
   auto primary_it = primary_.prolongation().on_or_after(actual_it.time());
   auto secondary_it = secondary_.prolongation().on_or_after(actual_it.time());
 
@@ -81,7 +81,7 @@ BarycentricRotatingFrame::ApparentTrajectory(
   }
 
   // Then build the final trajectory using the second transform.
-  for (auto intermediate_it = transform.second(&intermediate_trajectory);
+  for (auto intermediate_it = transforms.second(&intermediate_trajectory);
        !intermediate_it.at_end();
        ++intermediate_it) {
     result->Append(intermediate_it.time(),
