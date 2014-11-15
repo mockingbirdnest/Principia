@@ -2,12 +2,17 @@
 
 #include "physics/transforms.hpp"
 
+#include "geometry/affine_map.hpp"
 #include "geometry/grassmann.hpp"
 #include "geometry/named_quantities.hpp"
+#include "geometry/permutation.hpp"
 #include "glog/logging.h"
 
+using principia::geometry::AffineMap;
 using principia::geometry::Bivector;
 using principia::geometry::Displacement;
+using principia::geometry::Permutation;
+using principia::geometry::Position;
 
 namespace principia {
 namespace physics {
@@ -79,39 +84,49 @@ template<typename FromFrame, typename ThroughFrame, typename ToFrame>
 Transforms<FromFrame, ThroughFrame, ToFrame>
 Transforms<FromFrame, ThroughFrame, ToFrame>::BodyCentredNonRotating(
     Trajectory<FromFrame> const& centre_trajectory) {
-  typename Trajectory<FromFrame>::Transform<ThroughFrame> first_transform =
+  Transforms transforms;
+
+  transforms.first_transform_ =
       [&centre_trajectory](
           Instant const& t,
           DegreesOfFreedom<FromFrame> const& from_degrees_of_freedom) ->
-    DegreesOfFreedom<ThroughFrame> {
+      DegreesOfFreedom<ThroughFrame> {
     // on_or_after() is Ln(N), but it doesn't matter unless the map gets very
     // big, in which case we'll have cache misses anyway.
-    typename Trajectory<FromFrame>::NativeIterator const centre_it =
+    Trajectory<FromFrame>::NativeIterator const centre_it =
         centre_trajectory.on_or_after(t);
     CHECK_EQ(centre_it.time(), t)
         << "Time " << t << " not in centre trajectory";
     DegreesOfFreedom<FromFrame> const& centre_degrees_of_freedom =
         centre_it.degrees_of_freedom();
-    return {from_degrees_of_freedom.position -
-                centre_degrees_of_freedom.position,
+
+    AffineMap<FromFrame, ThroughFrame, Length, Permutation> position_map(
+        centre_degrees_of_freedom.position,
+        Position<ThroughFrame>(),
+        Permutation<FromFrame, ThroughFrame>::Identity());
+    return {position_map(from_degrees_of_freedom.position),
             from_degrees_of_freedom.velocity -
                 centre_degrees_of_freedom.velocity};
   };
 
-  typename Trajectory<ThroughFrame>::Transform<ToFrame> second_transform =
+  transforms.second_transform_ =
       [&centre_trajectory](
           Instant const& t,
           DegreesOfFreedom<ThroughFrame> const& through_degrees_of_freedom) ->
-    DegreesOfFreedom<ToFrame> {
+      DegreesOfFreedom<ToFrame> {
     // NOTE(phl): This seems to assume that ToFrame is identical to FromFrame.
     DegreesOfFreedom<ToFrame> const& last_centre_degrees_of_freedom =
         centre_trajectory.last().degrees_of_freedom();
-    return {through_degrees_of_freedom.position +
-                last_centre_degrees_of_freedom.position,
+
+    AffineMap<ThroughFrame, ToFrame, Length, Permutation> position_map(
+        Position<ThroughFrame>(),
+        last_centre_degrees_of_freedom.position,
+        Permutation<ThroughFrame, ToFrame>::Identity());
+    return {position_map(through_degrees_of_freedom.position),
             through_degrees_of_freedom.velocity};
   };
 
-  return {first_transform, second_transform};
+  return transforms;
 }
 
 template<typename FromFrame, typename ThroughFrame, typename ToFrame>
@@ -119,18 +134,20 @@ Transforms<FromFrame, ThroughFrame, ToFrame>
 Transforms<FromFrame, ThroughFrame, ToFrame>::BarycentricRotating(
       Trajectory<FromFrame> const& primary_trajectory,
       Trajectory<FromFrame> const& secondary_trajectory) {
-  typename Trajectory<FromFrame>::Transform<ThroughFrame> first_transform =
+  Transforms transforms;
+
+  transforms.first_transform_ =
       [&primary_trajectory,
        &secondary_trajectory](
           Instant const& t,
           DegreesOfFreedom<FromFrame> const& from_degrees_of_freedom) ->
-    DegreesOfFreedom<ThroughFrame> {
+      DegreesOfFreedom<ThroughFrame> {
     // on_or_after() is Ln(N).
-    typename Trajectory<FromFrame>::NativeIterator const primary_it =
+    Trajectory<FromFrame>::NativeIterator const primary_it =
         primary_trajectory.on_or_after(t);
     CHECK_EQ(primary_it.time(), t)
         << "Time " << t << " not in primary trajectory";
-    typename Trajectory<FromFrame>::NativeIterator secondary_it =
+    Trajectory<FromFrame>::NativeIterator secondary_it =
         secondary_trajectory.on_or_after(t);
     CHECK_EQ(secondary_it.time(), t)
         << "Time " << t << " not in secondary trajectory";
@@ -139,7 +156,7 @@ Transforms<FromFrame, ThroughFrame, ToFrame>::BarycentricRotating(
         primary_it.degrees_of_freedom();
     DegreesOfFreedom<FromFrame> const& secondary_degrees_of_freedom =
         secondary_it.degrees_of_freedom();
-    DegreesOfFreedom<FromFrame> const barycentre =
+    DegreesOfFreedom<FromFrame> const barycentre_degrees_of_freedom =
         Barycentre<FromFrame, GravitationalParameter>(
             {primary_degrees_of_freedom,
              secondary_degrees_of_freedom},
@@ -147,25 +164,29 @@ Transforms<FromFrame, ThroughFrame, ToFrame>::BarycentricRotating(
              secondary_trajectory.body().gravitational_parameter()});
     Matrix const from_basis_of_barycentric_frame_to_standard_basis =
         Transpose(FromStandardBasisToBasisOfBarycentricFrame(
-                      barycentre,
-            primary_degrees_of_freedom,
+                      barycentre_degrees_of_freedom,
+                      primary_degrees_of_freedom,
                       secondary_degrees_of_freedom));
+    // TODO(phl): There should be an affine map here too, once we have properly
+    // 'framed' the matrix.
     return {Displacement<ThroughFrame>(
                 from_basis_of_barycentric_frame_to_standard_basis(
                     (from_degrees_of_freedom.position -
-                        barycentre.position).coordinates())),
+                        barycentre_degrees_of_freedom.position).
+                            coordinates())) + Position<ThroughFrame>(),
             Velocity<ThroughFrame>(
                 from_basis_of_barycentric_frame_to_standard_basis(
                     (from_degrees_of_freedom.velocity -
-                        barycentre.velocity).coordinates()))};
+                        barycentre_degrees_of_freedom.velocity).
+                            coordinates()))};
   };
 
-  typename Trajectory<ThroughFrame>::Transform<ToFrame> second_transform =
+  transforms.second_transform_ =
       [&primary_trajectory,
        &secondary_trajectory](
           Instant const& t,
           DegreesOfFreedom<ThroughFrame> const& through_degrees_of_freedom) ->
-    DegreesOfFreedom<ToFrame> {
+      DegreesOfFreedom<ToFrame> {
     // NOTE(phl): This seems to assume that ToFrame is identical to FromFrame.
     DegreesOfFreedom<ToFrame> const& last_primary_degrees_of_freedom =
         primary_trajectory.last().degrees_of_freedom();
@@ -182,23 +203,26 @@ Transforms<FromFrame, ThroughFrame, ToFrame>::BarycentricRotating(
             last_barycentre,
             last_primary_degrees_of_freedom,
             last_secondary_degrees_of_freedom);
+    // TODO(phl): There should be an affine map here too, once we have properly
+    // 'framed' the matrix.
     return {Displacement<ToFrame>(
                 from_standard_basis_to_basis_of_last_barycentric_frame(
-                    through_degrees_of_freedom.position)) +
+                    (through_degrees_of_freedom.position -
+                     Position<ThroughFrame>()).coordinates())) +
                 last_barycentre.position,
             Velocity<ToFrame>(
                 from_standard_basis_to_basis_of_last_barycentric_frame(
-                    through_degrees_of_freedom.velocity))};
+                    through_degrees_of_freedom.velocity.coordinates()))};
   };
 
-  return {first_transform, second_transform};
+  return transforms;
 }
 
 template<typename FromFrame, typename ThroughFrame, typename ToFrame>
 typename Trajectory<FromFrame>::template TransformingIterator<ThroughFrame>
 Transforms<FromFrame, ThroughFrame, ToFrame>::first(
     Trajectory<FromFrame> const* from_trajectory) {
-  return CHECK_NOTNULL(from_trajectory)->first_with_transfrom(first_transform_);
+  return CHECK_NOTNULL(from_trajectory)->first_with_transform(first_transform_);
 }
 
 template<typename FromFrame, typename ThroughFrame, typename ToFrame>
@@ -206,7 +230,7 @@ typename Trajectory<ThroughFrame>::template TransformingIterator<ToFrame>
 Transforms<FromFrame, ThroughFrame, ToFrame>::second(
     Trajectory<ThroughFrame> const* through_trajectory) {
   return CHECK_NOTNULL(through_trajectory)->
-             first_with_transfrom(second_transform_);
+             first_with_transform(second_transform_);
 }
 
 }  // namespace physics
