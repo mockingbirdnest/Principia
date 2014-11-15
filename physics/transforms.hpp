@@ -5,11 +5,15 @@
 namespace principia {
 namespace physics {
 
+//TODO(phl):Comment
 template<typename FromFrame, typename ThroughFrame, typename ToFrame>
 class Transforms {
  public:
   Transforms BodyCentredNonRotating(
       Trajectory<FromFrame> const& centre_trajectory);
+  Transforms BarycentricRotating(
+      Trajectory<FromFrame> const& primary_trajectory,
+      Trajectory<FromFrame> const& secondary_trajectory);
 
   typename Trajectory<FromFrame>::template TransformingIterator<ThroughFrame>
   first(Trajectory<FromFrame> const* from_trajectory);
