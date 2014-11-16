@@ -40,8 +40,8 @@ class Vessel {
 
   // Creates a |history_| for this body and appends a point with the given
   // |time| and |degrees_of_freedom|.
-  void Append(Instant const& time,
-              DegreesOfFreedom<Frame> const& degrees_of_freedom);
+  void CreateHistory(Instant const& time,
+                     DegreesOfFreedom<Frame> const& degrees_of_freedom);
 
   // Deletes the |prolongation_| if there is one and forks a new one at |time|.
   void ResetProlongation(Instant const& time);

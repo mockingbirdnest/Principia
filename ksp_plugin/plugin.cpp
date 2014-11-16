@@ -182,7 +182,7 @@ Plugin::Plugin(Instant const& initial_time,
       {sun_index,
        std::make_unique<Celestial<Barycentre>>(sun_gravitational_parameter)});
   sun_ = inserted.first->second.get();
-  sun_->AppendAndForkProlongation(
+  sun_->CreateHistoryAndForkProlongation(
       current_time_,
       {Position<Barycentre>(), Velocity<Barycentre>()});
   history_integrator_.Initialize(history_integrator_.Order5Optimal());
@@ -220,7 +220,7 @@ void Plugin::InsertCelestial(
   Celestial<Barycentre>* const celestial = inserted.first->second.get();
   celestial->set_parent(&parent);
   auto const last = parent.history().last();
-  celestial->AppendAndForkProlongation(
+  celestial->CreateHistoryAndForkProlongation(
       current_time_,
       {last.degrees_of_freedom().position + displacement,
        last.degrees_of_freedom().velocity + relative_velocity});
@@ -281,7 +281,7 @@ void Plugin::SetVesselStateOffset(
           kSunLookingGlass.Inverse()(from_parent_velocity));
   LOG(INFO) << "In barycentric coordinates: " << relative_velocity;
   auto const last = vessel->parent().history().last();
-  vessel->Append(
+  vessel->CreateHistory(
       current_time_,
       {last.degrees_of_freedom().position + displacement,
        last.degrees_of_freedom().velocity + relative_velocity});
