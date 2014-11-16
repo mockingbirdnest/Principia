@@ -443,6 +443,8 @@ public partial class PluginAdapter : UnityEngine.MonoBehaviour {
              FlightGlobals.Bodies[7].orbit.pos);
     Log.Info("Ike measured orbit.vel : " +
              FlightGlobals.Bodies[7].orbit.vel);
+    Log.Info("Ike position : " +
+             FlightGlobals.Bodies[7].position);
   }
 
   private void InitializePlugin() {
