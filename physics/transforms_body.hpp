@@ -88,10 +88,16 @@ Transforms<FromFrame, ThroughFrame, ToFrame>::BodyCentredNonRotating(
   Transforms transforms;
 
   transforms.first_ =
-      [&from_centre_trajectory](
+      [&from_centre_trajectory, &transforms](
           Instant const& t,
           DegreesOfFreedom<FromFrame> const& from_degrees_of_freedom) ->
       DegreesOfFreedom<ThroughFrame> {
+    // First check if the result is cached.
+    auto cache_it = transforms.first_cache_.find(t);
+    if (cache_it != transforms.first_cache_.end()) {
+      return cache_it->second;
+    }
+
     // on_or_after() is Ln(N), but it doesn't matter unless the map gets very
     // big, in which case we'll have cache misses anyway.
     Trajectory<FromFrame>::NativeIterator const centre_it =
@@ -105,9 +111,13 @@ Transforms<FromFrame, ThroughFrame, ToFrame>::BodyCentredNonRotating(
         centre_degrees_of_freedom.position,
         ThroughFrame::origin,
         Permutation<FromFrame, ThroughFrame>::Identity());
-    return {position_map(from_degrees_of_freedom.position),
-            from_degrees_of_freedom.velocity -
-                centre_degrees_of_freedom.velocity};
+    DegreesOfFreedom<ThroughFrame> through_degrees_of_freedom =
+        {position_map(from_degrees_of_freedom.position),
+         from_degrees_of_freedom.velocity - centre_degrees_of_freedom.velocity};
+
+    // Cache the result before returning it.
+    transforms.first_cache_.emplace(t, through_degrees_of_freedom);
+    return std::move(through_degrees_of_freedom);
   };
 
   transforms.second_ =
@@ -126,7 +136,7 @@ Transforms<FromFrame, ThroughFrame, ToFrame>::BodyCentredNonRotating(
             through_degrees_of_freedom.velocity};
   };
 
-  return transforms;
+  return std::move(transforms);
 }
 
 template<typename FromFrame, typename ThroughFrame, typename ToFrame>
