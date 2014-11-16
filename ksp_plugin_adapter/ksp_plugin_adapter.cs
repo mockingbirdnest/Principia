@@ -164,6 +164,9 @@ public partial class PluginAdapter : UnityEngine.MonoBehaviour {
         vessel.orbit.UpdateFromStateVectors(pos: position, vel: velocity,
                                             refBody: vessel.orbit.referenceBody,
                                             UT: universal_time);
+        // Work around a KSP bug: |Orbit.pos| for a vessel in an elliptic orbit
+        // corresponds to the position one timestep in the future.
+        // TODO(egg): do it.
       };
       ApplyToVesselsInSpace(update_vessel);
       Vessel active_vessel = FlightGlobals.ActiveVessel;
@@ -426,6 +429,20 @@ public partial class PluginAdapter : UnityEngine.MonoBehaviour {
              active_vessel.orbit.referenceBody.orbit.pos);
     Log.Info("reference body measured orbit.vel : " +
              active_vessel.orbit.referenceBody.orbit.vel);
+    Log.Info("Duna position : " +
+             FlightGlobals.Bodies[6].position);
+    Log.Info("Ike Principia orbit.pos : " +
+             (Vector3d)CelestialDisplacementFromParent(
+                 plugin_,
+                 FlightGlobals.Bodies[7].flightGlobalsIndex));
+    Log.Info("Ike Principia orbit.vel : " +
+             (Vector3d)CelestialParentRelativeVelocity(
+                 plugin_,
+                 FlightGlobals.Bodies[7].flightGlobalsIndex));
+    Log.Info("Ike measured orbit.pos : " +
+             FlightGlobals.Bodies[7].orbit.pos);
+    Log.Info("Ike measured orbit.vel : " +
+             FlightGlobals.Bodies[7].orbit.vel);
   }
 
   private void InitializePlugin() {
