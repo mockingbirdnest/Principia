@@ -81,17 +81,26 @@ Matrix FromStandardBasisToBasisOfBarycentricFrame(
 }  // namespace
 
 template<typename FromFrame, typename ThroughFrame, typename ToFrame>
-Transforms<FromFrame, ThroughFrame, ToFrame>
+std::unique_ptr<Transforms<FromFrame, ThroughFrame, ToFrame>>
 Transforms<FromFrame, ThroughFrame, ToFrame>::BodyCentredNonRotating(
     Trajectory<FromFrame> const& from_centre_trajectory,
     Trajectory<ToFrame> const& to_centre_trajectory) {
-  Transforms transforms;
+  std::unique_ptr<Transforms> transforms(new Transforms);
 
-  transforms.first_ =
-      [&from_centre_trajectory](
+  // From the perspective of the lambda the following variable is really |this|,
+  // hence the name.
+  Transforms* that = transforms.get();
+  transforms->first_ =
+      [&from_centre_trajectory, that](
           Instant const& t,
           DegreesOfFreedom<FromFrame> const& from_degrees_of_freedom) ->
       DegreesOfFreedom<ThroughFrame> {
+    // First check if the result is cached.
+    auto cache_it = that->first_cache_.find(t);
+    if (cache_it != that->first_cache_.end()) {
+      return cache_it->second;
+    }
+
     // on_or_after() is Ln(N), but it doesn't matter unless the map gets very
     // big, in which case we'll have cache misses anyway.
     Trajectory<FromFrame>::NativeIterator const centre_it =
@@ -105,12 +114,16 @@ Transforms<FromFrame, ThroughFrame, ToFrame>::BodyCentredNonRotating(
         centre_degrees_of_freedom.position,
         ThroughFrame::origin,
         Permutation<FromFrame, ThroughFrame>::Identity());
-    return {position_map(from_degrees_of_freedom.position),
-            from_degrees_of_freedom.velocity -
-                centre_degrees_of_freedom.velocity};
+    DegreesOfFreedom<ThroughFrame> through_degrees_of_freedom =
+        {position_map(from_degrees_of_freedom.position),
+         from_degrees_of_freedom.velocity - centre_degrees_of_freedom.velocity};
+
+    // Cache the result before returning it.
+    that->first_cache_.emplace(t, through_degrees_of_freedom);
+    return std::move(through_degrees_of_freedom);
   };
 
-  transforms.second_ =
+  transforms->second_ =
       [&to_centre_trajectory](
           Instant const& t,
           DegreesOfFreedom<ThroughFrame> const& through_degrees_of_freedom) ->
@@ -130,20 +143,28 @@ Transforms<FromFrame, ThroughFrame, ToFrame>::BodyCentredNonRotating(
 }
 
 template<typename FromFrame, typename ThroughFrame, typename ToFrame>
-Transforms<FromFrame, ThroughFrame, ToFrame>
+std::unique_ptr<Transforms<FromFrame, ThroughFrame, ToFrame>>
 Transforms<FromFrame, ThroughFrame, ToFrame>::BarycentricRotating(
       Trajectory<FromFrame> const& from_primary_trajectory,
       Trajectory<ToFrame> const& to_primary_trajectory,
       Trajectory<FromFrame> const& from_secondary_trajectory,
       Trajectory<ToFrame> const& to_secondary_trajectory) {
-  Transforms transforms;
+  std::unique_ptr<Transforms> transforms(new Transforms);
 
-  transforms.first_ =
-      [&from_primary_trajectory,
-       &from_secondary_trajectory](
+  // From the perspective of the lambda the following variable is really |this|,
+  // hence the name.
+  Transforms* that = transforms.get();
+  transforms->first_ =
+      [&from_primary_trajectory, &from_secondary_trajectory, that](
           Instant const& t,
           DegreesOfFreedom<FromFrame> const& from_degrees_of_freedom) ->
       DegreesOfFreedom<ThroughFrame> {
+    // First check if the result is cached.
+    auto cache_it = that->first_cache_.find(t);
+    if (cache_it != that->first_cache_.end()) {
+      return cache_it->second;
+    }
+
     // on_or_after() is Ln(N).
     Trajectory<FromFrame>::NativeIterator const primary_it =
         from_primary_trajectory.on_or_after(t);
@@ -171,21 +192,25 @@ Transforms<FromFrame, ThroughFrame, ToFrame>::BarycentricRotating(
                       secondary_degrees_of_freedom));
     // TODO(phl): There should be an affine map here too, once we have properly
     // 'framed' the matrix.
-    return {Displacement<ThroughFrame>(
-                from_basis_of_barycentric_frame_to_standard_basis(
-                    (from_degrees_of_freedom.position -
-                        barycentre_degrees_of_freedom.position).
-                            coordinates())) + ThroughFrame::origin,
-            Velocity<ThroughFrame>(
-                from_basis_of_barycentric_frame_to_standard_basis(
-                    (from_degrees_of_freedom.velocity -
-                        barycentre_degrees_of_freedom.velocity).
-                            coordinates()))};
+    DegreesOfFreedom<ThroughFrame> through_degrees_of_freedom =
+        {Displacement<ThroughFrame>(
+             from_basis_of_barycentric_frame_to_standard_basis(
+                 (from_degrees_of_freedom.position -
+                      barycentre_degrees_of_freedom.position).
+                  coordinates())) + ThroughFrame::origin,
+         Velocity<ThroughFrame>(
+             from_basis_of_barycentric_frame_to_standard_basis(
+                 (from_degrees_of_freedom.velocity -
+                     barycentre_degrees_of_freedom.velocity).
+                  coordinates()))};
+
+    // Cache the result before returning it.
+    that->first_cache_.emplace(t, through_degrees_of_freedom);
+    return std::move(through_degrees_of_freedom);
   };
 
-  transforms.second_ =
-      [&to_primary_trajectory,
-       &to_secondary_trajectory](
+  transforms->second_ =
+      [&to_primary_trajectory, &to_secondary_trajectory](
           Instant const& t,
           DegreesOfFreedom<ThroughFrame> const& through_degrees_of_freedom) ->
       DegreesOfFreedom<ToFrame> {
