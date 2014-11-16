@@ -2,12 +2,28 @@
 
 #include <utility>
 
+#include "geometry/grassmann.hpp"
+#include "glog/logging.h"
 #include "physics/transforms.hpp"
 
+using principia::geometry::Vector;
 using principia::physics::Transforms;
 
 namespace principia {
 namespace ksp_plugin {
+
+namespace {
+
+// This function changes the frame of a nonrotating body.  If we ever need to
+// change the frame of rotating bodies we will need to adjust the axis.
+template<typename FromFrame, typename ToFrame>
+Body<ToFrame> NonrotatingBody(Body<FromFrame> const& body) {
+  auto no_axis = Vector<double, FromFrame>({0, 0, 0});
+  CHECK(body.axis() == no_axis);
+  return Body<ToFrame>(body.gravitational_parameter());
+}
+
+}  // namespace
 
 BodyCentredNonRotatingFrame::BodyCentredNonRotatingFrame(
     Celestial const& body) : body_(body) {}
@@ -17,16 +33,16 @@ BodyCentredNonRotatingFrame::ApparentTrajectory(
     Trajectory<Barycentric> const& actual_trajectory) const {
   std::unique_ptr<Trajectory<Barycentric>> result =
       std::make_unique<Trajectory<Barycentric>>(actual_trajectory.body());
-  // TODO(phl): Should tag the frames differently.
   auto transforms(
-      Transforms<Barycentric, Barycentric, Barycentric>::BodyCentredNonRotating(
+      Transforms<Barycentric, Rendering, Barycentric>::BodyCentredNonRotating(
           body_.prolongation(),
           body_.prolongation()));
   auto actual_it = transforms->first(&actual_trajectory);
   auto body_it = body_.prolongation().on_or_after(actual_it.time());
 
   // First build the trajectory resulting from the first transform.
-  Trajectory<Barycentric> intermediate_trajectory(actual_trajectory.body());
+  Trajectory<Rendering> intermediate_trajectory(
+      NonrotatingBody<Barycentric, Rendering>(actual_trajectory.body()));
   for (; !actual_it.at_end(); ++actual_it, ++body_it) {
     // Advance over the bits of the actual trajectory that don't have a matching
     // time in the body trajectory.
@@ -59,9 +75,8 @@ BarycentricRotatingFrame::ApparentTrajectory(
     Trajectory<Barycentric> const& actual_trajectory) const {
   std::unique_ptr<Trajectory<Barycentric>> result =
       std::make_unique<Trajectory<Barycentric>>(actual_trajectory.body());
-  // TODO(phl): Should tag the frames differently.
   auto transforms(
-      Transforms<Barycentric, Barycentric, Barycentric>::BarycentricRotating(
+      Transforms<Barycentric, Rendering, Barycentric>::BarycentricRotating(
           primary_.prolongation(),
           primary_.prolongation(),
           secondary_.prolongation(),
@@ -71,7 +86,8 @@ BarycentricRotatingFrame::ApparentTrajectory(
   auto secondary_it = secondary_.prolongation().on_or_after(actual_it.time());
 
   // First build the trajectory resulting from the first transform.
-  Trajectory<Barycentric> intermediate_trajectory(actual_trajectory.body());
+  Trajectory<Rendering> intermediate_trajectory(
+      NonrotatingBody<Barycentric, Rendering>(actual_trajectory.body()));
   for (; !actual_it.at_end(); ++actual_it, ++primary_it, ++secondary_it) {
     // Advance over the bits of the actual trajectory that don't have a matching
     // time in the trajectories.
