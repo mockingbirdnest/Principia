@@ -39,7 +39,7 @@ class Celestial {
 
   // Creates a |history_| for this body and appends a point with the given
   // |time| and |degrees_of_freedom|.  Then forks a |prolongation_| at |time|.
-  void AppendAndForkProlongation(
+  void CreateHistoryAndForkProlongation(
       Instant const& time,
       DegreesOfFreedom<Frame> const& degrees_of_freedom);
 
