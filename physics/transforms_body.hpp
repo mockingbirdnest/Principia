@@ -212,8 +212,7 @@ Transforms<FromFrame, ThroughFrame, ToFrame>::BarycentricRotating(
   };
 
   transforms->second_ =
-      [&to_primary_trajectory,
-       &to_secondary_trajectory](
+      [&to_primary_trajectory, &to_secondary_trajectory](
           Instant const& t,
           DegreesOfFreedom<ThroughFrame> const& through_degrees_of_freedom) ->
       DegreesOfFreedom<ToFrame> {
