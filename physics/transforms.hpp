@@ -2,7 +2,6 @@
 
 #include <map>
 #include <memory>
-#include <utility>
 
 #include "physics/trajectory.hpp"
 

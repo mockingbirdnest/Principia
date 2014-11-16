@@ -90,7 +90,6 @@ Transforms<FromFrame, ThroughFrame, ToFrame>::BodyCentredNonRotating(
   // From the perspective of the lambda the following variable is really |this|,
   // hence the name.
   Transforms* that = transforms.get();
-
   transforms->first_ =
       [&from_centre_trajectory, that](
           Instant const& t,
@@ -155,7 +154,6 @@ Transforms<FromFrame, ThroughFrame, ToFrame>::BarycentricRotating(
   // From the perspective of the lambda the following variable is really |this|,
   // hence the name.
   Transforms* that = transforms.get();
-
   transforms->first_ =
       [&from_primary_trajectory, &from_secondary_trajectory, that](
           Instant const& t,
