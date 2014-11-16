@@ -23,6 +23,7 @@ namespace physics {
 template<typename Frame>
 class NBodySystem {
   static_assert(Frame::is_inertial, "Frame must be inertial");
+
  public:
   using Trajectories = std::vector<Trajectory<Frame>*>;  // Not owned.
 
