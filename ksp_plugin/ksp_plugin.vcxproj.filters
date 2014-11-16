@@ -35,10 +35,10 @@
     <ClInclude Include="frames.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="vessel.cpp">
+    <ClInclude Include="celestial_body.hpp">
       <Filter>Source Files</Filter>
     </ClInclude>
-    <ClInclude Include="celestial.cpp">
+    <ClInclude Include="vessel_body.hpp">
       <Filter>Source Files</Filter>
     </ClInclude>
   </ItemGroup>
