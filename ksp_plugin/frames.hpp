@@ -10,7 +10,7 @@ using principia::physics::Frame;
 namespace principia {
 namespace ksp_plugin {
 
-enum class Tag {
+enum Tag {
   kAliceSun,
   kAliceWorld,
   kBarycentric,
@@ -33,7 +33,7 @@ using World = Frame<kWorld, false>;
 
 // Same as |World| but with the y and z axes switched through the looking-glass:
 // it is a right-handed basis. "We're all mad here. I'm mad. You're mad."
-using AliceWorld = Frame<kAliceWorld, false>;
+using AliceWorld = Frame<Tag::kAliceWorld, false>;
 
 // The barycentric reference frame of the solar system.
 // The basis is the basis of |World| at |kUniversalTimeEpoch|.
@@ -41,11 +41,11 @@ using AliceWorld = Frame<kAliceWorld, false>;
 // the velocity of the sun at the time of construction as our reference.
 // The origin is the position of the sun at the instant |initial_time| passed at
 // construction.
-using Barycentre = Frame<kBarycentric, true>;
+using Barycentre = Frame<Tag::kBarycentric, true>;
 
 // The frame used for rendering.  Its definition depends on the actual factory
 // function used to create it, see class Transforms.
-using Rendering = Frame<kRendering, false>;
+using Rendering = Frame<Tag::kRendering, false>;
 
 // A nonrotating referencence frame comoving with the sun with the same axes as
 // |AliceWorld|. Since it is nonrotating (though not inertial), differences
@@ -54,11 +54,11 @@ using Rendering = Frame<kRendering, false>;
 // this (frame, basis) pair is inconsistent across instants. Operations should
 // only be performed between simultaneous quantities, then converted to a
 // consistent (frame, basis) pair before use.
-using AliceSun = Frame<kAliceSun, false>;
+using AliceSun = Frame<Tag::kAliceSun, false>;
 
 // Same as above, but with same axes as |World| instead of those of
 // |AliceWorld|. The caveats are the same as for |AliceSun|.
-using WorldSun = Frame<kWorldSun, false>;
+using WorldSun = Frame<Tag::kWorldSun, false>;
 
 }  // namespace ksp_plugin
 }  // namespace principia

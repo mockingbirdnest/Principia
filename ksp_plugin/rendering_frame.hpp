@@ -2,6 +2,7 @@
 
 #include "geometry/named_quantities.hpp"
 #include "ksp_plugin/celestial.hpp"
+#include "ksp_plugin/frames.hpp"
 
 using principia::geometry::AngularVelocity;
 
@@ -18,8 +19,6 @@ using principia::geometry::AngularVelocity;
 
 namespace principia {
 namespace ksp_plugin {
-
-struct Barycentre;
 
 class RenderingFrame {
  public:
