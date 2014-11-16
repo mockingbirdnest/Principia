@@ -29,13 +29,16 @@
     <ClInclude Include="celestial.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="celestial_body.hpp">
+    <ClInclude Include="rendering_frame.hpp">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="celestial_body.hpp">
+      <Filter>Source Files</Filter>
     </ClInclude>
     <ClInclude Include="vessel_body.hpp">
-      <Filter>Header Files</Filter>
+      <Filter>Source Files</Filter>
     </ClInclude>
-    <ClInclude Include="rendering_frame.hpp">
+    <ClInclude Include="frames.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
