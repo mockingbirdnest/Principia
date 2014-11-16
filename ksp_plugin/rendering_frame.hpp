@@ -28,39 +28,39 @@ class RenderingFrame {
 
 class BodyCentredNonRotatingFrame : public RenderingFrame {
  public:
-  explicit BodyCentredNonRotatingFrame(Celestial<Barycentric> const& body);
+  explicit BodyCentredNonRotatingFrame(Celestial const& body);
 
   std::unique_ptr<Trajectory<Barycentric>> ApparentTrajectory(
       Trajectory<Barycentric> const& actual_trajectory) const override;
 
  private:
-  Celestial<Barycentric> const& body_;
+  Celestial const& body_;
 };
 
 class BodyCentredRotating : public RenderingFrame {
  public:
-  BodyCentredRotating(Celestial<Barycentric> const& body,
+  BodyCentredRotating(Celestial const& body,
                       AngularVelocity<Barycentric> const& angular_velocity);
 
   std::unique_ptr<Trajectory<Barycentric>> ApparentTrajectory(
       Trajectory<Barycentric> const& actual_trajectory) const override;
 
  private:
-  Celestial<Barycentric> const& body_;
+  Celestial const& body_;
   AngularVelocity<Barycentric> const angular_velocity_;
 };
 
 class BarycentricRotatingFrame : public RenderingFrame {
  public:
-  BarycentricRotatingFrame(Celestial<Barycentric> const& primary,
-                           Celestial<Barycentric> const& secondary);
+  BarycentricRotatingFrame(Celestial const& primary,
+                           Celestial const& secondary);
 
   std::unique_ptr<Trajectory<Barycentric>> ApparentTrajectory(
       Trajectory<Barycentric> const& actual_trajectory) const override;
 
  private:
-  Celestial<Barycentric> const& primary_;
-  Celestial<Barycentric> const& secondary_;
+  Celestial const& primary_;
+  Celestial const& secondary_;
 };
 
 }  // namespace ksp_plugin

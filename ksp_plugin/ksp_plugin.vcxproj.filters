@@ -32,14 +32,14 @@
     <ClInclude Include="rendering_frame.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="frames.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="celestial_body.hpp">
       <Filter>Source Files</Filter>
     </ClInclude>
     <ClInclude Include="vessel_body.hpp">
       <Filter>Source Files</Filter>
-    </ClInclude>
-    <ClInclude Include="frames.hpp">
-      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

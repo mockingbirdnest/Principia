@@ -3,6 +3,7 @@
 #include <memory>
 
 #include "ksp_plugin/celestial.hpp"
+#include "ksp_plugin/vessel.hpp"
 #include "physics/body.hpp"
 #include "physics/trajectory.hpp"
 #include "quantities/named_quantities.hpp"
@@ -15,7 +16,6 @@ namespace principia {
 namespace ksp_plugin {
 
 // Represents a KSP |Vessel|.
-template<typename Frame>
 class Vessel {
  public:
   Vessel() = delete;
@@ -25,37 +25,37 @@ class Vessel {
 
   // Constructs a vessel whose parent is initially |*parent|. |parent| must
   // not be null. No transfer of ownership.
-  explicit Vessel(Celestial<Frame> const* parent);
+  explicit Vessel(Celestial const* parent);
 
   bool has_history() const;
   bool has_prolongation() const;
-  Celestial<Frame> const& parent() const;
-  Trajectory<Frame> const& history() const;
-  Trajectory<Frame> const& prolongation() const;
-  Trajectory<Frame> const& prolongation_or_history() const;
+  Celestial const& parent() const;
+  Trajectory<Barycentric> const& history() const;
+  Trajectory<Barycentric> const& prolongation() const;
+  Trajectory<Barycentric> const& prolongation_or_history() const;
 
-  Trajectory<Frame>* mutable_history();
-  Trajectory<Frame>* mutable_prolongation();
-  void set_parent(Celestial<Frame> const* parent);
+  Trajectory<Barycentric>* mutable_history();
+  Trajectory<Barycentric>* mutable_prolongation();
+  void set_parent(Celestial const* parent);
 
   // Creates a |history_| for this body and appends a point with the given
   // |time| and |degrees_of_freedom|.
   void CreateHistory(Instant const& time,
-                     DegreesOfFreedom<Frame> const& degrees_of_freedom);
+                     DegreesOfFreedom<Barycentric> const& degrees_of_freedom);
 
   // Deletes the |prolongation_| if there is one and forks a new one at |time|.
   void ResetProlongation(Instant const& time);
 
  private:
   // A massless body.
-  std::unique_ptr<Body<Frame> const> const body_;
+  std::unique_ptr<Body<Barycentric> const> const body_;
   // The parent body for the 2-body approximation. Not owning, must not be
   // null.
-  Celestial<Frame> const* parent_;
+  Celestial const* parent_;
   // The past and present trajectory of the body. It ends at |HistoryTime()|
   // unless |*this| was created after |HistoryTime()|, in which case it ends
   // at |current_time_|.
-  std::unique_ptr<Trajectory<Frame>> history_;
+  std::unique_ptr<Trajectory<Barycentric>> history_;
   // A child trajectory of |*history|. It is forked at |history->last_time()|
   // and continues it until |current_time_|. It is computed with a
   // non-constant timestep, which breaks symplecticity. |history| is advanced
@@ -66,7 +66,7 @@ class Vessel {
   // meantime, |history| is advanced with small, non-constant timesteps to
   // catch up with the synchronous constant-timestep integration.
   // |this| is in |new_vessels_| if and only if |prolongation| is null.
-  Trajectory<Frame>* prolongation_ = nullptr;
+  Trajectory<Barycentric>* prolongation_ = nullptr;
 };
 
 }  // namespace ksp_plugin

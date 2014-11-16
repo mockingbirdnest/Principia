@@ -5,67 +5,55 @@
 namespace principia {
 namespace ksp_plugin {
 
-template<typename Frame>
 template<typename... Args>
-Celestial<Frame>::Celestial(Args&&... args)  // NOLINT(build/c++11)
-    : body_(new Body<Frame>(
+Celestial::Celestial(Args&&... args)  // NOLINT(build/c++11)
+    : body_(new Body<Barycentric>(
                     std::forward<Args>(args)...)) {}  // NOLINT(build/c++11)
 
-template<typename Frame>
-Body<Frame> const& Celestial<Frame>::body() const {
+inline Body<Barycentric> const& Celestial::body() const {
   return *body_;
 }
 
-template<typename Frame>
-bool Celestial<Frame>::has_parent() const {
+inline bool Celestial::has_parent() const {
   return parent_ != nullptr;
 }
 
-template<typename Frame>
-Celestial<Frame> const& Celestial<Frame>::parent() const {
+inline Celestial const& Celestial::parent() const {
   return *CHECK_NOTNULL(parent_);
 }
 
-template<typename Frame>
-Trajectory<Frame> const& Celestial<Frame>::history() const {
+inline Trajectory<Barycentric> const& Celestial::history() const {
   return *history_;
 }
 
-template<typename Frame>
-Trajectory<Frame> const& Celestial<Frame>::prolongation() const {
+inline Trajectory<Barycentric> const& Celestial::prolongation() const {
   return *prolongation_;
 }
 
-template<typename Frame>
-Trajectory<Frame>* Celestial<Frame>::mutable_history() {
+inline Trajectory<Barycentric>* Celestial::mutable_history() {
   return history_.get();
 }
 
-template<typename Frame>
-Trajectory<Frame>* Celestial<Frame>::mutable_prolongation() {
+inline Trajectory<Barycentric>* Celestial::mutable_prolongation() {
   return prolongation_;
 }
 
-template<typename Frame>
-void Celestial<Frame>::set_parent(Celestial const* parent) {
+inline void Celestial::set_parent(Celestial const* parent) {
   parent_ = CHECK_NOTNULL(parent);
 }
 
-template<typename Frame>
-void Celestial<Frame>::CreateHistoryAndForkProlongation(
+inline void Celestial::CreateHistoryAndForkProlongation(
     Instant const& time,
-    DegreesOfFreedom<Frame> const& degrees_of_freedom) {
-  history_ = std::make_unique<Trajectory<Frame>>(*body_);
+    DegreesOfFreedom<Barycentric> const& degrees_of_freedom) {
+  history_ = std::make_unique<Trajectory<Barycentric>>(*body_);
   history_->Append(time, degrees_of_freedom);
   prolongation_ = history_->Fork(time);
 }
 
-template<typename Frame>
-void Celestial<Frame>::ResetProlongation(Instant const& time) {
+inline void Celestial::ResetProlongation(Instant const& time) {
   history_->DeleteFork(&prolongation_);
   prolongation_ = history_->Fork(time);
 }
-
 
 }  // namespace ksp_plugin
 }  // namespace principia
