@@ -201,9 +201,8 @@ class Plugin {
                               Index const secondary_index) const;
 
  private:
-  using GUIDToOwnedVessel =
-      std::map<GUID, std::unique_ptr<Vessel<Barycentric>>>;
-  using GUIDToUnownedVessel = std::map<GUID, Vessel<Barycentric>* const>;
+  using GUIDToOwnedVessel = std::map<GUID, std::unique_ptr<Vessel>>;
+  using GUIDToUnownedVessel = std::map<GUID, Vessel* const>;
 
   // The common last time of the histories of synchronized vessels and
   // celestials.
@@ -229,7 +228,7 @@ class Plugin {
   // * its |history->last_time()| is greater than |HistoryTime()|.
   // Also checks that |history->last_time()| is at least |HistoryTime()|.
   void CheckVesselInvariants(
-      Vessel<Barycentric> const& vessel,
+      Vessel const& vessel,
       GUIDToUnownedVessel::iterator const it_in_new_vessels) const;
 
   // Evolves the histories of the |celestials_| and of the synchronized vessels
@@ -252,15 +251,15 @@ class Plugin {
   Time const Δt_ = 10 * Second;
 
   GUIDToOwnedVessel vessels_;
-  std::map<Index, std::unique_ptr<Celestial<Barycentric>>> celestials_;
+  std::map<Index, std::unique_ptr<Celestial>> celestials_;
 
   // Vessels which have been recently inserted after |HistoryTime()|. For these
   // vessels, |history->last_time > HistoryTime()|. They have a null
   // |prolongation|. The pointers are not owning and not null.
-  std::map<GUID, Vessel<Barycentric>* const> new_vessels_;
+  std::map<GUID, Vessel* const> new_vessels_;
 
   // The vessels that will be kept during the next call to |AdvanceTime|.
-  std::set<Vessel<Barycentric> const* const> kept_;
+  std::set<Vessel const* const> kept_;
 
   std::unique_ptr<NBodySystem<Barycentric>> n_body_system_;
   // The symplectic integrator computing the synchronized histories.
@@ -275,7 +274,7 @@ class Plugin {
   Angle planetarium_rotation_;
   // The current in-game universal time.
   Instant current_time_;
-  Celestial<Barycentric>* sun_;  // Not owning, not null.
+  Celestial* sun_;  // Not owning, not null.
 
   friend class TestablePlugin;
 };

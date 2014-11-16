@@ -127,7 +127,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="celestial.hpp" />
-    <ClInclude Include="celestial_body.hpp" />
+    <ClInclude Include="celestial.cpp" />
     <ClInclude Include="frames.hpp" />
     <ClInclude Include="mock_plugin.hpp" />
     <ClInclude Include="monostable.hpp" />
@@ -135,7 +135,7 @@
     <ClInclude Include="interface.hpp" />
     <ClInclude Include="rendering_frame.hpp" />
     <ClInclude Include="vessel.hpp" />
-    <ClInclude Include="vessel_body.hpp" />
+    <ClInclude Include="vessel.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="interface.cpp" />
