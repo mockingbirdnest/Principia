@@ -123,7 +123,9 @@ public partial class PluginAdapter : UnityEngine.MonoBehaviour {
                                original.argumentOfPeriapsis,
                                original.meanAnomalyAtEpoch, original.epoch,
                                original.referenceBody);
-        copy.UpdateFromStateVectors(position, velocity, copy.referenceBody,
+        copy.UpdateFromStateVectors(position,
+                                    velocity,
+                                    copy.referenceBody,
                                     universal_time);
         body.orbit.inclination = copy.inclination;
         body.orbit.eccentricity = copy.eccentricity;
@@ -136,9 +138,10 @@ public partial class PluginAdapter : UnityEngine.MonoBehaviour {
         body.orbit.Init();
         body.orbit.UpdateFromUT(universal_time);
         body.CBUpdate();
-        body.orbit.UpdateFromStateVectors((Vector3d)position,
-                                          (Vector3d)velocity,
-                                          copy.referenceBody, universal_time);
+        body.orbit.UpdateFromStateVectors(position,
+                                          velocity,
+                                          copy.referenceBody,
+                                          universal_time);
       };
       ApplyToBodyTree(update_body);
       VesselProcessor update_vessel = vessel => {
