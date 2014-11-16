@@ -118,7 +118,8 @@ Transforms<FromFrame, ThroughFrame, ToFrame>::BodyCentredNonRotating(
         Permutation<FromFrame, ThroughFrame>::Identity());
     DegreesOfFreedom<ThroughFrame> through_degrees_of_freedom =
         {position_map(from_degrees_of_freedom.position),
-         velocity_map(from_degrees_of_freedom.velocity)};
+         velocity_map(from_degrees_of_freedom.velocity -
+                      centre_degrees_of_freedom.velocity)};
 
     // Cache the result before returning it.
     that->first_cache_.emplace(t, through_degrees_of_freedom);
