@@ -18,7 +18,7 @@ namespace {
 // change the frame of rotating bodies we will need to adjust the axis.
 template<typename FromFrame, typename ToFrame>
 Body<ToFrame> NonrotatingBody(Body<FromFrame> const& body) {
-  auto no_axis = Vector<double, FromFrame>({0, 0, 0});
+  auto const no_axis = Vector<double, FromFrame>({0, 0, 0});
   CHECK(body.axis() == no_axis);
   return Body<ToFrame>(body.gravitational_parameter());
 }
