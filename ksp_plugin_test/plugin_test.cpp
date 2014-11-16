@@ -668,7 +668,7 @@ TEST_F(PluginTest, BodyCentredNonrotatingRenderingIntegration) {
     plugin.InsertOrKeepVessel(satellite, SolarSystem::kEarth);
     // We give the sun an arbitrary nonzero velocity in |World|.
     Position<World> const sun_world_position =
-        kWorldOrigin + Velocity<World>(
+        World::origin + Velocity<World>(
             { 0.1 * AstronomicalUnit / Hour,
              -1.0 * AstronomicalUnit / Hour,
               0.0 * AstronomicalUnit / Hour}) * (t - initial_time_);
@@ -782,7 +782,7 @@ TEST_F(PluginTest, BarycentricRotatingRenderingIntegration) {
   plugin.InsertOrKeepVessel(satellite, SolarSystem::kEarth);
   // We give the sun an arbitrary nonzero velocity in |World|.
   Position<World> const sun_world_position =
-      kWorldOrigin + Velocity<World>(
+      World::origin + Velocity<World>(
           { 0.1 * AstronomicalUnit / Hour,
            -1.0 * AstronomicalUnit / Hour,
             0.0 * AstronomicalUnit / Hour}) * (t - initial_time_);

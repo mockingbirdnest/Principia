@@ -11,6 +11,7 @@
 #include "geometry/point.hpp"
 #include "gtest/gtest.h"
 #include "ksp_plugin/celestial.hpp"
+#include "ksp_plugin/frames.hpp"
 #include "ksp_plugin/monostable.hpp"
 #include "ksp_plugin/vessel.hpp"
 #include "ksp_plugin/rendering_frame.hpp"
@@ -34,49 +35,6 @@ using physics::Trajectory;
 using physics::NBodySystem;
 using quantities::Angle;
 using si::Second;
-
-// Universal time 0, time of game creation.
-// Putting the origin here makes the instants we use equal to the corresponding
-// KSP universal time doubles.
-Instant const kUniversalTimeEpoch;
-
-// Thanks to KSP's madness, the reference frame of the celestial body orbited by
-// the active vessel, occasionally rotating with its surface, occasionally
-// nonrotating.
-// The basis is that of Unity's "world space" (this is a left-handed basis).
-struct World;
-
-// The ineffable origin of Unity's "world space".
-Position<World> const kWorldOrigin;
-
-// Same as |World| but with the y and z axes switched through the looking-glass:
-// it is a right-handed basis. "We're all mad here. I'm mad. You're mad."
-struct AliceWorld;
-
-// The barycentric reference frame of the solar system.
-// The basis is the basis of |World| at |kUniversalTimeEpoch|.
-// TODO(egg): it *should* be the barycentric frame. For the moment we're using
-// the velocity of the sun at the time of construction as our reference.
-struct Barycentre;
-// The position of the sun at the instant |initial_time| passed at construction.
-Position<Barycentre> const kInitialSunPosition;
-
-// The frame used for rendering.  Its definition depends on the actual factory
-// function used to create it, see class Transforms.
-struct Rendering;
-
-// A nonrotating referencence frame comoving with the sun with the same axes as
-// |AliceWorld|. Since it is nonrotating (though not inertial), differences
-// between velocities are consistent with those in an inertial reference frame.
-// When |AliceWorld| rotates the axes are not fixed in the reference frame, so
-// this (frame, basis) pair is inconsistent across instants. Operations should
-// only be performed between simultaneous quantities, then converted to a
-// consistent (frame, basis) pair before use.
-struct AliceSun;
-
-// Same as above, but with same axes as |World| instead of those of
-// |AliceWorld|. The caveats are the same as for |AliceSun|.
-struct WorldSun;
 
 // The GUID of a vessel, obtained by |v.id.ToString()| in C#. We use this as a
 // key in an |std::map|.
