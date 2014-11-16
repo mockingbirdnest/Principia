@@ -17,7 +17,7 @@ namespace principia {
 namespace testing_utilities {
 
 enum Tag {
-  kICRFJ2000Ecliptic,
+  kICRFJ2000Ecliptic = UNIQUE_TAG,
   kICRFJ2000Equator,
 };
 

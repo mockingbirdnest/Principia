@@ -45,7 +45,7 @@ namespace physics {
 class NBodySystemTest : public testing::Test {
  protected:
   enum Tag {
-    kEarthMoonOrbitPlane,
+    kEarthMoonOrbitPlane = UNIQUE_TAG,
   };
 
   using EarthMoonOrbitPlane = Frame<kEarthMoonOrbitPlane, true>;

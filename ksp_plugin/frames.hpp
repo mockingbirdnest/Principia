@@ -1,5 +1,7 @@
 #pragma once
 
+#include <functional>
+
 #include "geometry/named_quantities.hpp"
 #include "physics/frame.hpp"
 
@@ -10,10 +12,8 @@ using principia::physics::Frame;
 namespace principia {
 namespace ksp_plugin {
 
-// Small tags are freely usable by tests.
-//TODO(phl): HMMM...
 enum Tag {
-  kAliceSun = 1000,
+  kAliceSun = UNIQUE_TAG,
   kAliceWorld,
   kBarycentric,
   kRendering,
