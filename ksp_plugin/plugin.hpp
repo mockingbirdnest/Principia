@@ -68,9 +68,9 @@ class Plugin {
   virtual ~Plugin() = default;
 
   // Constructs a |Plugin|. The current time of that instance is |initial_time|.
-  // The angle between the axes of |World| and |Barycentric| at |initial_time| is
-  // set to |planetarium_rotation|. Inserts a celestial body with an arbitrary
-  // position, index |sun_index| and gravitational parameter
+  // The angle between the axes of |World| and |Barycentric| at |initial_time|
+  // is set to |planetarium_rotation|. Inserts a celestial body with an
+  // arbitrary position, index |sun_index| and gravitational parameter
   // |sun_gravitational_parameter|.
   // Starts initialization.
   // The arguments correspond to KSP's
@@ -145,9 +145,10 @@ class Plugin {
   // |AdvanceTime| will be removed. Must be called after initialization.
   // |planetarium_rotation| is the value of KSP's |Planetarium.InverseRotAngle|
   // at instant |t|, which provides the rotation between the |World| axes and
-  // the |Barycentric| axes (we don't use Planetarium.Rotation since it undergoes
-  // truncation to single-precision even though it's a double-precision value).
-  // Note that KSP's |Planetarium.InverseRotAngle| is in degrees.
+  // the |Barycentric| axes (we don't use Planetarium.Rotation since it
+  // undergoes truncation to single-precision even though it's a double-
+  // precision value).  Note that KSP's |Planetarium.InverseRotAngle| is in
+  // degrees.
   virtual void AdvanceTime(Instant const& t, Angle const& planetarium_rotation);
 
   // Returns the position of the vessel with GUID |vessel_guid| relative to its
@@ -200,7 +201,8 @@ class Plugin {
                               Index const secondary_index) const;
 
  private:
-  using GUIDToOwnedVessel = std::map<GUID, std::unique_ptr<Vessel<Barycentric>>>;
+  using GUIDToOwnedVessel =
+      std::map<GUID, std::unique_ptr<Vessel<Barycentric>>>;
   using GUIDToUnownedVessel = std::map<GUID, Vessel<Barycentric>* const>;
 
   // The common last time of the histories of synchronized vessels and

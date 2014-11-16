@@ -410,7 +410,8 @@ RenderedTrajectory<World> Plugin::RenderedVesselTrajectory(
   DegreesOfFreedom<Barycentric> const* final_state = nullptr;
   std::unique_ptr<Trajectory<Barycentric>> const apparent_trajectory =
       frame.ApparentTrajectory(vessel.history());
-  for (Trajectory<Barycentric>::NativeIterator it = apparent_trajectory->first();
+  for (Trajectory<Barycentric>::NativeIterator
+           it = apparent_trajectory->first();
        !it.at_end();
        ++it) {
     final_state = &it.degrees_of_freedom();
