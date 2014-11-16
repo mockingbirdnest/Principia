@@ -405,11 +405,27 @@ public partial class PluginAdapter : UnityEngine.MonoBehaviour {
              (Vector3d)VesselParentRelativeVelocity(
                  plugin_,
                  active_vessel.id.ToString()));
-    Log.Info("Kraken : " + (Vector3d)Krakensbane.GetFrameVelocity());
-    Log.Info("Root rb velocity : " +
+    Log.Info("Kraken : " + Krakensbane.GetFrameVelocity());
+    Log.Info("Root rb velocity (32) : " +
              (Vector3d)active_vessel.rootPart.rb.velocity);
-    Log.Info("Root part partTransform.position : " +
+    Log.Info("Root part partTransform.position (32) : " +
              (Vector3d)active_vessel.rootPart.partTransform.position);
+    Log.Info("Measured orbit.pos : " + active_vessel.orbit.pos);
+    Log.Info("Measured orbit.vel : " + active_vessel.orbit.vel);
+    Log.Info("reference body reference body position : " +
+             active_vessel.orbit.referenceBody.referenceBody.position);
+    Log.Info("reference body Principia orbit.pos : " +
+             (Vector3d)CelestialDisplacementFromParent(
+                 plugin_,
+                 active_vessel.orbit.referenceBody.flightGlobalsIndex));
+    Log.Info("reference body Principia orbit.vel : " +
+             (Vector3d)CelestialParentRelativeVelocity(
+                 plugin_,
+                 active_vessel.orbit.referenceBody.flightGlobalsIndex));
+    Log.Info("reference body measured orbit.pos : " +
+             active_vessel.orbit.referenceBody.orbit.pos);
+    Log.Info("reference body measured orbit.vel : " +
+             active_vessel.orbit.referenceBody.orbit.vel);
   }
 
   private void InitializePlugin() {
