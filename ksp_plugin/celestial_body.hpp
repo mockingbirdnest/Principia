@@ -10,39 +10,39 @@ Celestial::Celestial(Args&&... args)  // NOLINT(build/c++11)
     : body_(new Body<Barycentric>(
                     std::forward<Args>(args)...)) {}  // NOLINT(build/c++11)
 
-Body<Barycentric> const& Celestial::body() const {
+inline Body<Barycentric> const& Celestial::body() const {
   return *body_;
 }
 
-bool Celestial::has_parent() const {
+inline bool Celestial::has_parent() const {
   return parent_ != nullptr;
 }
 
-Celestial const& Celestial::parent() const {
+inline Celestial const& Celestial::parent() const {
   return *CHECK_NOTNULL(parent_);
 }
 
-Trajectory<Barycentric> const& Celestial::history() const {
+inline Trajectory<Barycentric> const& Celestial::history() const {
   return *history_;
 }
 
-Trajectory<Barycentric> const& Celestial::prolongation() const {
+inline Trajectory<Barycentric> const& Celestial::prolongation() const {
   return *prolongation_;
 }
 
-Trajectory<Barycentric>* Celestial::mutable_history() {
+inline Trajectory<Barycentric>* Celestial::mutable_history() {
   return history_.get();
 }
 
-Trajectory<Barycentric>* Celestial::mutable_prolongation() {
+inline Trajectory<Barycentric>* Celestial::mutable_prolongation() {
   return prolongation_;
 }
 
-void Celestial::set_parent(Celestial const* parent) {
+inline void Celestial::set_parent(Celestial const* parent) {
   parent_ = CHECK_NOTNULL(parent);
 }
 
-void Celestial::CreateHistoryAndForkProlongation(
+inline void Celestial::CreateHistoryAndForkProlongation(
     Instant const& time,
     DegreesOfFreedom<Barycentric> const& degrees_of_freedom) {
   history_ = std::make_unique<Trajectory<Barycentric>>(*body_);
@@ -50,7 +50,7 @@ void Celestial::CreateHistoryAndForkProlongation(
   prolongation_ = history_->Fork(time);
 }
 
-void Celestial::ResetProlongation(Instant const& time) {
+inline void Celestial::ResetProlongation(Instant const& time) {
   history_->DeleteFork(&prolongation_);
   prolongation_ = history_->Fork(time);
 }

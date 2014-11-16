@@ -64,3 +64,5 @@ class Celestial {
 
 }  // namespace ksp_plugin
 }  // namespace principia
+
+#include "ksp_plugin/celestial_body.hpp"

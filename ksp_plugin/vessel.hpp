@@ -71,3 +71,5 @@ class Vessel {
 
 }  // namespace ksp_plugin
 }  // namespace principia
+
+#include "ksp_plugin/vessel_body.hpp"
