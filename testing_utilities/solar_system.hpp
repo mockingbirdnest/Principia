@@ -6,12 +6,20 @@
 
 #include "geometry/named_quantities.hpp"
 #include "geometry/rotation.hpp"
+#include "physics/frame.hpp"
 #include "physics/n_body_system.hpp"
 #include "quantities/quantities.hpp"
 #include "quantities/si.hpp"
 
+using principia::physics::Frame;
+
 namespace principia {
 namespace testing_utilities {
+
+enum Tag {
+  kICRFJ2000Ecliptic,
+  kICRFJ2000Equator,
+};
 
 // A reference frame with a basis.
 // The frame is the International Celestial Reference Frame.
@@ -22,14 +30,15 @@ namespace testing_utilities {
 // The z axis is perpendicular to the xy-plane in the directional (+ or -) sense
 // of Earth's north pole at J2000.0.
 // The basis is right-handed and orthonormal.
-struct ICRFJ2000Ecliptic;
+using ICRFJ2000Ecliptic = Frame<kICRFJ2000Ecliptic, true>;
+
 // The xy plane is the plane of the Earth's mean equator at J2000.0.
 // The x axis is out along the ascending node of the instantaneous plane of the
 // Earth's orbit and the Earth's mean equator at J2000.0.
 // The z axis is along the Earth's mean north pole at J2000.0.
 // The basis is right-handed and orthonormal.
 // Note that |ICRFJ2000Equator| and |ICRFJ2000Ecliptic| share their x axis.
-struct ICRFJ2000Equator;
+using ICRFJ2000Equator = Frame<kICRFJ2000Equator, true>;
 
 // Rotation around the common x axis mapping equatorial coordinates to ecliptic
 // coordinates.  The angle is the one defined by the XVIth General Assembly of

@@ -20,10 +20,11 @@ using principia::quantities::Time;
 namespace principia {
 namespace physics {
 
-template<typename InertialFrame>
+template<typename Frame>
 class NBodySystem {
+  static_assert(Frame::is_inertial, "Frame must be inertial");
  public:
-  using Trajectories = std::vector<Trajectory<InertialFrame>*>;  // Not owned.
+  using Trajectories = std::vector<Trajectory<Frame>*>;  // Not owned.
 
   NBodySystem() = default;
   virtual ~NBodySystem() = default;
@@ -39,7 +40,7 @@ class NBodySystem {
                          Trajectories const& trajectories) const;
 
  private:
-  using ReadonlyTrajectories = std::vector<Trajectory<InertialFrame> const*>;
+  using ReadonlyTrajectories = std::vector<Trajectory<Frame> const*>;
 
   // Computes the acceleration due to one body, |body1| (with index |b1| in the
   // |q| and |result| arrays) on the bodies with indices [b2_begin, b2_end[ in
@@ -49,7 +50,7 @@ class NBodySystem {
            bool body2_is_oblate,
            bool body2_is_massive>
   static void ComputeOneBodyGravitationalAcceleration(
-      Body<InertialFrame> const& body1,
+      Body<Frame> const& body1,
       size_t const b1,
       ReadonlyTrajectories const& body2_trajectories,
       size_t const b2_begin,

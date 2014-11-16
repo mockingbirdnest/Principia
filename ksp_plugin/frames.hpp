@@ -10,8 +10,10 @@ using principia::physics::Frame;
 namespace principia {
 namespace ksp_plugin {
 
+// Small tags are freely usable by tests.
+//TODO(phl): HMMM...
 enum Tag {
-  kAliceSun,
+  kAliceSun = 1000,
   kAliceWorld,
   kBarycentric,
   kRendering,

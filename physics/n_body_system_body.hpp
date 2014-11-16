@@ -36,20 +36,20 @@ namespace {
 // Where |r| is the norm of r and r.j is the inner product.
 //
 // TODO(phl): |__forceinline| is for MSVC.  Need a portable macro to do this.
-template<typename InertialFrame>
-__forceinline Vector<Acceleration, InertialFrame>
+template<typename Frame>
+__forceinline Vector<Acceleration, Frame>
     Order2ZonalAcceleration(
-        Body<InertialFrame> const& body,
-        Vector<Length, InertialFrame> const& r,
+        Body<Frame> const& body,
+        Vector<Length, Frame> const& r,
         Exponentiation<Length, -2> const& one_over_r_squared,
         Exponentiation<Length, -3> const& one_over_r_cubed) {
-  Vector<double, InertialFrame> const& axis = body.axis();
+  Vector<double, Frame> const& axis = body.axis();
   Length const r_axis_projection = InnerProduct(axis, r);
   auto const j2_over_r_fifth =
       body.j2() * one_over_r_cubed * one_over_r_squared;
-  Vector<Acceleration, InertialFrame> const& axis_acceleration =
+  Vector<Acceleration, Frame> const& axis_acceleration =
       (-3 * j2_over_r_fifth * r_axis_projection) * axis;
-  Vector<Acceleration, InertialFrame> const& radial_acceleration =
+  Vector<Acceleration, Frame> const& radial_acceleration =
       (j2_over_r_fifth *
            (-1.5 +
             7.5 * r_axis_projection *
@@ -59,8 +59,8 @@ __forceinline Vector<Acceleration, InertialFrame>
 
 }  // namespace
 
-template<typename InertialFrame>
-void NBodySystem<InertialFrame>::Integrate(
+template<typename Frame>
+void NBodySystem<Frame>::Integrate(
     SymplecticIntegrator<Length, Speed> const& integrator,
     Instant const& tmax,
     Time const& Δt,
@@ -74,12 +74,12 @@ void NBodySystem<InertialFrame>::Integrate(
   // centre-of-mass referential and a time in the middle of the integration
   // interval.  In the integrator itself, all quantities are "vectors" relative
   // to these references.
-  Position<InertialFrame> const reference_position;
+  Position<Frame> const reference_position;
   Instant const reference_time;
 
   // These objects are for checking the consistency of the parameters.
   std::set<Instant> times_in_trajectories;
-  std::set<Body<InertialFrame> const*> bodies_in_trajectories;
+  std::set<Body<Frame> const*> bodies_in_trajectories;
 
   // Prepare the initial state of the integrator.  For efficiently computing the
   // accelerations, we need to separate the trajectories of oblate massive
@@ -96,7 +96,7 @@ void NBodySystem<InertialFrame>::Integrate(
       for (auto const& trajectory : trajectories) {
         // See if this trajectory should be processed in this iteration and
         // update the appropriate vector.
-        Body<InertialFrame> const* const body = &trajectory->body();
+        Body<Frame> const* const body = &trajectory->body();
         if (body->is_massless() != is_massless ||
             body->is_oblate() != is_oblate) {
           continue;
@@ -169,29 +169,29 @@ void NBodySystem<InertialFrame>::Integrate(
       CHECK_EQ(state.positions.size(), state.momenta.size());
       // Loop over the dimensions.
       for (std::size_t k = 0, t = 0; k < state.positions.size(); k += 3, ++t) {
-        Vector<Length, InertialFrame> const position(
+        Vector<Length, Frame> const position(
             R3Element<Length>(state.positions[k].value,
                               state.positions[k + 1].value,
                               state.positions[k + 2].value));
-        Velocity<InertialFrame> const velocity(
+        Velocity<Frame> const velocity(
             R3Element<Speed>(state.momenta[k].value,
                              state.momenta[k + 1].value,
                              state.momenta[k + 2].value));
         trajectories[t]->Append(
             time,
-            DegreesOfFreedom<InertialFrame>(position + reference_position,
+            DegreesOfFreedom<Frame>(position + reference_position,
                                             velocity));
       }
     }
   }
 }
 
-template<typename InertialFrame>
+template<typename Frame>
 template<bool body1_is_oblate,
          bool body2_is_oblate,
          bool body2_is_massive>
-inline void NBodySystem<InertialFrame>::ComputeOneBodyGravitationalAcceleration(
-    Body<InertialFrame> const& body1,
+inline void NBodySystem<Frame>::ComputeOneBodyGravitationalAcceleration(
+    Body<Frame> const& body1,
     size_t const b1,
     ReadonlyTrajectories const& body2_trajectories,
     size_t const b2_begin,
@@ -223,7 +223,7 @@ inline void NBodySystem<InertialFrame>::ComputeOneBodyGravitationalAcceleration(
     (*result)[three_b2 + 1] += Δq1 * μ1_over_r_cubed;
     (*result)[three_b2 + 2] += Δq2 * μ1_over_r_cubed;
 
-    Body<InertialFrame> const* body2 = nullptr;
+    Body<Frame> const* body2 = nullptr;
     if (body2_is_massive) {
       // Lex. III. Actioni contrariam semper & æqualem esse reactionem:
       // sive corporum duorum actiones in se mutuo semper esse æquales &
@@ -240,10 +240,10 @@ inline void NBodySystem<InertialFrame>::ComputeOneBodyGravitationalAcceleration(
 
     if (body1_is_oblate || body2_is_oblate) {
       Exponentiation<Length, -2> const one_over_r_squared = 1 / r_squared;
-      Vector<Length, InertialFrame> const Δq({Δq0, Δq1, Δq2});
+      Vector<Length, Frame> const Δq({Δq0, Δq1, Δq2});
       if (body1_is_oblate) {
         R3Element<Acceleration> const order_2_zonal_acceleration1 =
-            Order2ZonalAcceleration<InertialFrame>(
+            Order2ZonalAcceleration<Frame>(
                 body1,
                 Δq,
                 one_over_r_squared,
@@ -255,7 +255,7 @@ inline void NBodySystem<InertialFrame>::ComputeOneBodyGravitationalAcceleration(
       if (body2_is_oblate) {
         // |body2| was set in the |body2_is_massive| branch above.
         R3Element<Acceleration> const order_2_zonal_acceleration2 =
-            Order2ZonalAcceleration<InertialFrame>(
+            Order2ZonalAcceleration<Frame>(
                 *CHECK_NOTNULL(body2),
                 Δq,
                 one_over_r_squared,
@@ -268,8 +268,8 @@ inline void NBodySystem<InertialFrame>::ComputeOneBodyGravitationalAcceleration(
   }
 }
 
-template<typename InertialFrame>
-void NBodySystem<InertialFrame>::ComputeGravitationalAccelerations(
+template<typename Frame>
+void NBodySystem<Frame>::ComputeGravitationalAccelerations(
     ReadonlyTrajectories const& massive_oblate_trajectories,
     ReadonlyTrajectories const& massive_spherical_trajectories,
     ReadonlyTrajectories const& massless_trajectories,
@@ -285,7 +285,7 @@ void NBodySystem<InertialFrame>::ComputeGravitationalAccelerations(
   size_t const number_of_massless_trajectories = massless_trajectories.size();
 
   for (std::size_t b1 = 0; b1 < number_of_massive_oblate_trajectories; ++b1) {
-    Body<InertialFrame> const& body1 = massive_oblate_trajectories[b1]->body();
+    Body<Frame> const& body1 = massive_oblate_trajectories[b1]->body();
     ComputeOneBodyGravitationalAcceleration<true /*body1_is_oblate*/,
                                             true /*body2_is_oblate*/,
                                             true /*body2_is_massive*/>(
@@ -322,7 +322,7 @@ void NBodySystem<InertialFrame>::ComputeGravitationalAccelerations(
        b1 < number_of_massive_oblate_trajectories +
             number_of_massive_spherical_trajectories;
        ++b1) {
-    Body<InertialFrame> const& body1 =
+    Body<Frame> const& body1 =
         massive_spherical_trajectories[
             b1 - number_of_massive_oblate_trajectories]->body();
     ComputeOneBodyGravitationalAcceleration<false /*body1_is_oblate*/,
@@ -356,7 +356,7 @@ void NBodySystem<InertialFrame>::ComputeGravitationalAccelerations(
             number_of_massless_trajectories;
        ++b2) {
     std::size_t const three_b2 = 3 * b2;
-    Trajectory<InertialFrame> const* trajectory =
+    Trajectory<Frame> const* trajectory =
         massless_trajectories[b2 - number_of_massive_oblate_trajectories -
                                    number_of_massive_spherical_trajectories];
     if (trajectory->has_intrinsic_acceleration()) {
@@ -370,8 +370,8 @@ void NBodySystem<InertialFrame>::ComputeGravitationalAccelerations(
   }
 }
 
-template<typename InertialFrame>
-void NBodySystem<InertialFrame>::ComputeGravitationalVelocities(
+template<typename Frame>
+void NBodySystem<Frame>::ComputeGravitationalVelocities(
     std::vector<Speed> const& p,
     std::vector<Speed>* result) {
   *result = p;

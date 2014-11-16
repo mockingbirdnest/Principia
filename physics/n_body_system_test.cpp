@@ -44,7 +44,11 @@ namespace physics {
 
 class NBodySystemTest : public testing::Test {
  protected:
-  struct EarthMoonOrbitPlane;
+  enum Tag {
+    kEarthMoonOrbitPlane,
+  };
+
+  using EarthMoonOrbitPlane = Frame<kEarthMoonOrbitPlane, true>;
 
   void SetUp() override {
     integrator_.Initialize(integrator_.Order5Optimal());
