@@ -127,6 +127,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="celestial.hpp" />
+    <ClInclude Include="celestial.cpp" />
     <ClInclude Include="frames.hpp" />
     <ClInclude Include="mock_plugin.hpp" />
     <ClInclude Include="monostable.hpp" />
@@ -134,14 +135,13 @@
     <ClInclude Include="interface.hpp" />
     <ClInclude Include="rendering_frame.hpp" />
     <ClInclude Include="vessel.hpp" />
+    <ClInclude Include="vessel.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="celestial.cpp" />
     <ClCompile Include="interface.cpp" />
     <ClCompile Include="monostable.cpp" />
     <ClCompile Include="plugin.cpp" />
     <ClCompile Include="rendering_frame.cpp" />
-    <ClCompile Include="vessel.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

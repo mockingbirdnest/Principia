@@ -1,3 +1,5 @@
+#pragma once
+
 #include "ksp_plugin/celestial.hpp"
 
 namespace principia {
