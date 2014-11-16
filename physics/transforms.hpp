@@ -10,6 +10,8 @@ namespace physics {
 // |ThroughFrame|.  Both |FromFrame| and |ToFrame| must be inertial frames.
 template<typename FromFrame, typename ThroughFrame, typename ToFrame>
 class Transforms {
+  static_assert(FromFrame::is_inertial && ToFrame::is_inertial,
+                "Both FromFrame and ToFrame must be inertial");
  public:
   // A factory method where |ThroughFrame| is defined as follows: it has the
   // same axes as |FromFrame| and the body of |centre_trajectory| is the origin

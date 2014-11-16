@@ -103,7 +103,7 @@ Transforms<FromFrame, ThroughFrame, ToFrame>::BodyCentredNonRotating(
 
     AffineMap<FromFrame, ThroughFrame, Length, Permutation> position_map(
         centre_degrees_of_freedom.position,
-        Position<ThroughFrame>(),
+        ThroughFrame::origin,
         Permutation<FromFrame, ThroughFrame>::Identity());
     return {position_map(from_degrees_of_freedom.position),
             from_degrees_of_freedom.velocity -
@@ -119,7 +119,7 @@ Transforms<FromFrame, ThroughFrame, ToFrame>::BodyCentredNonRotating(
         to_centre_trajectory.last().degrees_of_freedom();
 
     AffineMap<ThroughFrame, ToFrame, Length, Permutation> position_map(
-        Position<ThroughFrame>(),
+        ThroughFrame::origin,
         last_centre_degrees_of_freedom.position,
         Permutation<ThroughFrame, ToFrame>::Identity());
     return {position_map(through_degrees_of_freedom.position),
@@ -175,7 +175,7 @@ Transforms<FromFrame, ThroughFrame, ToFrame>::BarycentricRotating(
                 from_basis_of_barycentric_frame_to_standard_basis(
                     (from_degrees_of_freedom.position -
                         barycentre_degrees_of_freedom.position).
-                            coordinates())) + Position<ThroughFrame>(),
+                            coordinates())) + ThroughFrame::origin,
             Velocity<ThroughFrame>(
                 from_basis_of_barycentric_frame_to_standard_basis(
                     (from_degrees_of_freedom.velocity -
@@ -209,7 +209,7 @@ Transforms<FromFrame, ThroughFrame, ToFrame>::BarycentricRotating(
     return {Displacement<ToFrame>(
                 from_standard_basis_to_basis_of_last_barycentric_frame(
                     (through_degrees_of_freedom.position -
-                     Position<ThroughFrame>()).coordinates())) +
+                     ThroughFrame::origin).coordinates())) +
                 last_barycentre.position,
             Velocity<ToFrame>(
                 from_standard_basis_to_basis_of_last_barycentric_frame(
