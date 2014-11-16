@@ -161,12 +161,14 @@ public partial class PluginAdapter : UnityEngine.MonoBehaviour {
         Vector3d velocity =
             (Vector3d)VesselParentRelativeVelocity(plugin_,
                                                    vessel.id.ToString());
-        vessel.orbit.UpdateFromStateVectors(pos: position, vel: velocity,
-                                            refBody: vessel.orbit.referenceBody,
-                                            UT: universal_time);
-        // Work around a KSP bug: |Orbit.pos| for a vessel in an elliptic orbit
-        // corresponds to the position one timestep in the future.
-        // TODO(egg): do it.
+        // NOTE(egg): Here we work around a KSP bug: |Orbit.pos| for a vessel
+        // corresponds to the position one timestep in the future.  This is not
+        // the case for celestial bodies.
+        vessel.orbit.UpdateFromStateVectors(
+            pos: position + velocity * UnityEngine.Time.deltaTime,
+            vel: velocity,
+            refBody: vessel.orbit.referenceBody,
+            UT: universal_time);
       };
       ApplyToVesselsInSpace(update_vessel);
       Vessel active_vessel = FlightGlobals.ActiveVessel;
@@ -367,6 +369,9 @@ public partial class PluginAdapter : UnityEngine.MonoBehaviour {
 
   private void LogALot() {
     Vessel active_vessel = FlightGlobals.ActiveVessel;
+    if (active_vessel.orbit.referenceBody == Planetarium.fetch.Sun) {
+      return;
+    }
     Log.Info("UT : " + Planetarium.GetUniversalTime());
     Log.Info(
         "Principia world position : " +
