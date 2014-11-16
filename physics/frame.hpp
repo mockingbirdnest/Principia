@@ -19,7 +19,7 @@ class Frame {
 // A helper for declaring tags without conflicts.
 // TODO(phl): Ideally we'd like a constexpr function hashing the
 // (__FILE__, __LINE__) pair.
-#define UNIQUE_TAG (1000 * __COUNTER__ + __LINE__)
+#define UNIQUE_TAG (10000 * __COUNTER__ + 100 * __LINE__)
 
 }  // namespace physics
 }  // namespace principia
