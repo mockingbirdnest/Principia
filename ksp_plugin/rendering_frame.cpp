@@ -10,23 +10,23 @@ namespace principia {
 namespace ksp_plugin {
 
 BodyCentredNonRotatingFrame::BodyCentredNonRotatingFrame(
-    Celestial<Barycentre> const& body) : body_(body) {}
+    Celestial<Barycentric> const& body) : body_(body) {}
 
-std::unique_ptr<Trajectory<Barycentre>>
+std::unique_ptr<Trajectory<Barycentric>>
 BodyCentredNonRotatingFrame::ApparentTrajectory(
-    Trajectory<Barycentre> const& actual_trajectory) const {
-  std::unique_ptr<Trajectory<Barycentre>> result =
-      std::make_unique<Trajectory<Barycentre>>(actual_trajectory.body());
+    Trajectory<Barycentric> const& actual_trajectory) const {
+  std::unique_ptr<Trajectory<Barycentric>> result =
+      std::make_unique<Trajectory<Barycentric>>(actual_trajectory.body());
   // TODO(phl): Should tag the frames differently.
   auto transforms(
-      Transforms<Barycentre, Barycentre, Barycentre>::BodyCentredNonRotating(
+      Transforms<Barycentric, Barycentric, Barycentric>::BodyCentredNonRotating(
           body_.prolongation(),
           body_.prolongation()));
   auto actual_it = transforms.first(&actual_trajectory);
   auto body_it = body_.prolongation().on_or_after(actual_it.time());
 
   // First build the trajectory resulting from the first transform.
-  Trajectory<Barycentre> intermediate_trajectory(actual_trajectory.body());
+  Trajectory<Barycentric> intermediate_trajectory(actual_trajectory.body());
   for (; !actual_it.at_end(); ++actual_it, ++body_it) {
     // Advance over the bits of the actual trajectory that don't have a matching
     // time in the body trajectory.
@@ -49,19 +49,19 @@ BodyCentredNonRotatingFrame::ApparentTrajectory(
 }
 
 BarycentricRotatingFrame::BarycentricRotatingFrame(
-    Celestial<Barycentre> const& primary,
-    Celestial<Barycentre> const& secondary)
+    Celestial<Barycentric> const& primary,
+    Celestial<Barycentric> const& secondary)
     : primary_(primary),
       secondary_(secondary) {}
 
-std::unique_ptr<Trajectory<Barycentre>>
+std::unique_ptr<Trajectory<Barycentric>>
 BarycentricRotatingFrame::ApparentTrajectory(
-    Trajectory<Barycentre> const& actual_trajectory) const {
-  std::unique_ptr<Trajectory<Barycentre>> result =
-      std::make_unique<Trajectory<Barycentre>>(actual_trajectory.body());
+    Trajectory<Barycentric> const& actual_trajectory) const {
+  std::unique_ptr<Trajectory<Barycentric>> result =
+      std::make_unique<Trajectory<Barycentric>>(actual_trajectory.body());
   // TODO(phl): Should tag the frames differently.
   auto transforms(
-      Transforms<Barycentre, Barycentre, Barycentre>::BarycentricRotating(
+      Transforms<Barycentric, Barycentric, Barycentric>::BarycentricRotating(
           primary_.prolongation(),
           primary_.prolongation(),
           secondary_.prolongation(),
@@ -71,7 +71,7 @@ BarycentricRotatingFrame::ApparentTrajectory(
   auto secondary_it = secondary_.prolongation().on_or_after(actual_it.time());
 
   // First build the trajectory resulting from the first transform.
-  Trajectory<Barycentre> intermediate_trajectory(actual_trajectory.body());
+  Trajectory<Barycentric> intermediate_trajectory(actual_trajectory.body());
   for (; !actual_it.at_end(); ++actual_it, ++primary_it, ++secondary_it) {
     // Advance over the bits of the actual trajectory that don't have a matching
     // time in the trajectories.

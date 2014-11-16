@@ -53,12 +53,12 @@ int const kNotABody = 1729;
 
 // Appends a |DegreesOfFreedom| equal to the last one at the given |time| to
 // each |Trajectory| in the |k|th parameter of the expected call.
-// This parameter must be an |NBodySystem<Barycentre>::Trajectories|, |time|
+// This parameter must be an |NBodySystem<Barycentric>::Trajectories|, |time|
 // must be an |Instant|.
 ACTION_TEMPLATE(AppendTimeToTrajectories,
                 HAS_1_TEMPLATE_PARAMS(int, k),
                 AND_1_VALUE_PARAMS(time)) {
-  for (auto* trajectory : static_cast<NBodySystem<Barycentre>::Trajectories>(
+  for (auto* trajectory : static_cast<NBodySystem<Barycentric>::Trajectories>(
                               std::tr1::get<k>(args))) {
     trajectory->Append(time, trajectory->last().degrees_of_freedom());
   }
@@ -75,7 +75,7 @@ class TestablePlugin : public Plugin {
                  Index const sun_index,
                  GravitationalParameter const& sun_gravitational_parameter,
                  Angle const& planetarium_rotation,
-                 MockNBodySystem<Barycentre>* n_body_system)
+                 MockNBodySystem<Barycentric>* n_body_system)
       : Plugin(initial_time,
                sun_index,
                sun_gravitational_parameter,
@@ -124,7 +124,7 @@ class PluginTest : public testing::Test {
         Sqrt(bodies_[SolarSystem::kEarth]->gravitational_parameter() /
                  satellite_initial_displacement_.Norm()) * unit_tangent;
 
-    n_body_system_ = new MockNBodySystem<Barycentre>();
+    n_body_system_ = new MockNBodySystem<Barycentric>();
     plugin_ = std::make_unique<StrictMock<TestablePlugin>>(
                   initial_time_,
                   SolarSystem::kSun,
@@ -187,7 +187,7 @@ class PluginTest : public testing::Test {
   }
 
   Permutation<ICRFJ2000Ecliptic, AliceSun> looking_glass_;
-  MockNBodySystem<Barycentre>* n_body_system_;  // Not owned.
+  MockNBodySystem<Barycentric>* n_body_system_;  // Not owned.
   std::unique_ptr<SolarSystem> solar_system_;
   SolarSystem::Bodies bodies_;
   Instant initial_time_;

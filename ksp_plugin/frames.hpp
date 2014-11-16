@@ -43,7 +43,7 @@ using AliceWorld = Frame<Tag::kAliceWorld, false>;
 // the velocity of the sun at the time of construction as our reference.
 // The origin is the position of the sun at the instant |initial_time| passed at
 // construction.
-using Barycentre = Frame<Tag::kBarycentric, true>;
+using Barycentric = Frame<Tag::kBarycentric, true>;
 
 // The frame used for rendering.  Its definition depends on the actual factory
 // function used to create it, see class Transforms.
