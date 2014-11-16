@@ -1,5 +1,3 @@
-#pragma once
-
 #include "ksp_plugin/vessel.hpp"
 
 namespace principia {

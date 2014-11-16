@@ -35,12 +35,6 @@
     <ClInclude Include="frames.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="vessel.cpp">
-      <Filter>Source Files</Filter>
-    </ClInclude>
-    <ClInclude Include="celestial.cpp">
-      <Filter>Source Files</Filter>
-    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="interface.cpp">
@@ -53,6 +47,12 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="rendering_frame.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="celestial.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="vessel.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
