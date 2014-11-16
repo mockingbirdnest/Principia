@@ -59,7 +59,7 @@ template<typename Frame>
 void Vessel<Frame>::CreateHistory(
     Instant const& time,
     DegreesOfFreedom<Frame> const& degrees_of_freedom) {
-  history_ = std::make_unique<Trajectory<Barycentre>>(*body_);
+  history_ = std::make_unique<Trajectory<Frame>>(*body_);
   history_->Append(time, degrees_of_freedom);
 }
 
