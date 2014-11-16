@@ -22,7 +22,7 @@ BodyCentredNonRotatingFrame::ApparentTrajectory(
       Transforms<Barycentric, Barycentric, Barycentric>::BodyCentredNonRotating(
           body_.prolongation(),
           body_.prolongation()));
-  auto actual_it = transforms.first(&actual_trajectory);
+  auto actual_it = transforms->first(&actual_trajectory);
   auto body_it = body_.prolongation().on_or_after(actual_it.time());
 
   // First build the trajectory resulting from the first transform.
@@ -38,7 +38,7 @@ BodyCentredNonRotatingFrame::ApparentTrajectory(
   }
 
   // Then build the final trajectory using the second transform.
-  for (auto intermediate_it = transforms.second(&intermediate_trajectory);
+  for (auto intermediate_it = transforms->second(&intermediate_trajectory);
        !intermediate_it.at_end();
        ++intermediate_it) {
     result->Append(intermediate_it.time(),
@@ -66,7 +66,7 @@ BarycentricRotatingFrame::ApparentTrajectory(
           primary_.prolongation(),
           secondary_.prolongation(),
           secondary_.prolongation()));
-  auto actual_it = transforms.first(&actual_trajectory);
+  auto actual_it = transforms->first(&actual_trajectory);
   auto primary_it = primary_.prolongation().on_or_after(actual_it.time());
   auto secondary_it = secondary_.prolongation().on_or_after(actual_it.time());
 
@@ -84,7 +84,7 @@ BarycentricRotatingFrame::ApparentTrajectory(
   }
 
   // Then build the final trajectory using the second transform.
-  for (auto intermediate_it = transforms.second(&intermediate_trajectory);
+  for (auto intermediate_it = transforms->second(&intermediate_trajectory);
        !intermediate_it.at_end();
        ++intermediate_it) {
     result->Append(intermediate_it.time(),
