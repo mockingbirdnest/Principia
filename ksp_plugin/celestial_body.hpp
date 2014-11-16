@@ -52,7 +52,7 @@ void Celestial<Frame>::set_parent(Celestial const* parent) {
 }
 
 template<typename Frame>
-void Celestial<Frame>::AppendAndForkProlongation(
+void Celestial<Frame>::CreateHistoryAndForkProlongation(
     Instant const& time,
     DegreesOfFreedom<Frame> const& degrees_of_freedom) {
   history_ = std::make_unique<Trajectory<Barycentre>>(*body_);
