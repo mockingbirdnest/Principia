@@ -252,9 +252,9 @@ XYZ VesselWorldPosition(Plugin const* const plugin,
   Position<World> result = CHECK_NOTNULL(plugin)->VesselWorldPosition(
       vessel_guid,
       World::origin + Displacement<World>({parent_world_position.x * Metre,
-                                          parent_world_position.y * Metre,
-                                          parent_world_position.z * Metre}));
-  R3Element<Length> const coordinates = (result - World::origin).coordinates();
+                                           parent_world_position.y * Metre,
+                                           parent_world_position.z * Metre}));
+  R3Element<Length> const& coordinates = (result - World::origin).coordinates();
   return XYZ{coordinates.x / Metre,
              coordinates.y / Metre,
              coordinates.z / Metre};
@@ -270,7 +270,7 @@ XYZ VesselWorldVelocity(Plugin const* const plugin,
                        parent_world_velocity.y * Metre / Second,
                        parent_world_velocity.z * Metre / Second}),
       parent_rotation_period * Second);
-  R3Element<Speed> const coordinates = result.coordinates();
+  R3Element<Speed> const& coordinates = result.coordinates();
   return XYZ{coordinates.x / (Metre / Second),
              coordinates.y / (Metre / Second),
              coordinates.z / (Metre / Second)};

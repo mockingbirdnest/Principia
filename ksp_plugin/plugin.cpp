@@ -482,8 +482,8 @@ Velocity<World> Plugin::VesselWorldVelocity(
       vessel.parent().prolongation().last().degrees_of_freedom().position;
   AngularVelocity<Barycentric> const world_frame_angular_velocity =
       AngularVelocity<Barycentric>({0 * Radian / Second,
-                                   2 * π * Radian / parent_rotation_period,
-                                   0 * Radian / Second});
+                                    2 * π * Radian / parent_rotation_period,
+                                    0 * Radian / Second});
   return to_world(
       (world_frame_angular_velocity * offset_from_parent) / Radian
           + velocity_relative_to_parent) + parent_world_velocity;

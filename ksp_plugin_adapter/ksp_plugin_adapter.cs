@@ -308,14 +308,14 @@ public partial class PluginAdapter : UnityEngine.MonoBehaviour {
       Vessel active_vessel = FlightGlobals.ActiveVessel;
       UnityEngine.GUILayout.TextArea(
           "+ Kraken : " +
-              (((Vector3d)active_vessel.rb_velocity) +
-                   Krakensbane.GetFrameVelocity()));
+          (((Vector3d)active_vessel.rb_velocity) +
+           Krakensbane.GetFrameVelocity()));
       UnityEngine.GUILayout.TextArea(
           "+ Kraken + getRFrmVel: " +
-              (((Vector3d)active_vessel.rb_velocity) +
-                   Krakensbane.GetFrameVelocity() + 
-                   active_vessel.orbit.referenceBody.getRFrmVel(
-                       active_vessel.CoM)));
+          (((Vector3d)active_vessel.rb_velocity) +
+           Krakensbane.GetFrameVelocity() + 
+           active_vessel.orbit.referenceBody.getRFrmVel(
+               active_vessel.CoM)));
       UnityEngine.GUILayout.TextArea(
           "Principia \"world\", rotating : " +
           (Vector3d)VesselWorldVelocity(
@@ -341,13 +341,13 @@ public partial class PluginAdapter : UnityEngine.MonoBehaviour {
                   : double.PositiveInfinity));
       UnityEngine.GUILayout.TextArea(
           "GetVel : " +
-              (Vector3d)active_vessel.orbit.GetVel());
+          (Vector3d)active_vessel.orbit.GetVel());
       UnityEngine.GUILayout.TextArea(
           "Root part @ CoM world velocity + Kraken: " +
-              (Vector3d)
-                  (active_vessel.rootPart.rb.GetPointVelocity(
-                       (Vector3d)active_vessel.findWorldCenterOfMass()) +
-                   Krakensbane.GetFrameVelocity()));
+          (Vector3d)
+              (active_vessel.rootPart.rb.GetPointVelocity(
+                   (Vector3d)active_vessel.findWorldCenterOfMass()) +
+               Krakensbane.GetFrameVelocity()));
       UnityEngine.GUILayout.TextArea(
           "CoM : " +
           ((Vector3d)active_vessel.CoM));
