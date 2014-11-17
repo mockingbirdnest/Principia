@@ -11,6 +11,7 @@
 #include "geometry/point.hpp"
 #include "gtest/gtest.h"
 #include "ksp_plugin/celestial.hpp"
+#include "ksp_plugin/frames.hpp"
 #include "ksp_plugin/monostable.hpp"
 #include "ksp_plugin/vessel.hpp"
 #include "ksp_plugin/rendering_frame.hpp"
@@ -34,45 +35,6 @@ using physics::Trajectory;
 using physics::NBodySystem;
 using quantities::Angle;
 using si::Second;
-
-// Universal time 0, time of game creation.
-// Putting the origin here makes the instants we use equal to the corresponding
-// KSP universal time doubles.
-Instant const kUniversalTimeEpoch;
-
-// Thanks to KSP's madness, the reference frame of the celestial body orbited by
-// the active vessel, occasionally rotating with its surface, occasionally
-// nonrotating.
-// The basis is that of Unity's "world space" (this is a left-handed basis).
-struct World;
-
-// The ineffable origin of Unity's "world space".
-Position<World> const kWorldOrigin;
-
-// Same as |World| but with the y and z axes switched through the looking-glass:
-// it is a right-handed basis. "We're all mad here. I'm mad. You're mad."
-struct AliceWorld;
-
-// The barycentric reference frame of the solar system.
-// The basis is the basis of |World| at |kUniversalTimeEpoch|.
-// TODO(egg): it *should* be the barycentric frame. For the moment we're using
-// the velocity of the sun at the time of construction as our reference.
-struct Barycentre;
-// The position of the sun at the instant |initial_time| passed at construction.
-Position<Barycentre> const kInitialSunPosition;
-
-// A nonrotating referencence frame comoving with the sun with the same axes as
-// |AliceWorld|. Since it is nonrotating (though not inertial), differences
-// between velocities are consistent with those in an inertial reference frame.
-// When |AliceWorld| rotates the axes are not fixed in the reference frame, so
-// this (frame, basis) pair is inconsistent across instants. Operations should
-// only be performed between simultaneous quantities, then converted to a
-// consistent (frame, basis) pair before use.
-struct AliceSun;
-
-// Same as above, but with same axes as |World| instead of those of
-// |AliceWorld|. The caveats are the same as for |AliceSun|.
-struct WorldSun;
 
 // The GUID of a vessel, obtained by |v.id.ToString()| in C#. We use this as a
 // key in an |std::map|.
@@ -106,9 +68,9 @@ class Plugin {
   virtual ~Plugin() = default;
 
   // Constructs a |Plugin|. The current time of that instance is |initial_time|.
-  // The angle between the axes of |World| and |Barycentre| at |initial_time| is
-  // set to |planetarium_rotation|. Inserts a celestial body with an arbitrary
-  // position, index |sun_index| and gravitational parameter
+  // The angle between the axes of |World| and |Barycentric| at |initial_time|
+  // is set to |planetarium_rotation|. Inserts a celestial body with an
+  // arbitrary position, index |sun_index| and gravitational parameter
   // |sun_gravitational_parameter|.
   // Starts initialization.
   // The arguments correspond to KSP's
@@ -183,9 +145,10 @@ class Plugin {
   // |AdvanceTime| will be removed. Must be called after initialization.
   // |planetarium_rotation| is the value of KSP's |Planetarium.InverseRotAngle|
   // at instant |t|, which provides the rotation between the |World| axes and
-  // the |Barycentre| axes (we don't use Planetarium.Rotation since it undergoes
-  // truncation to single-precision even though it's a double-precision value).
-  // Note that KSP's |Planetarium.InverseRotAngle| is in degrees.
+  // the |Barycentric| axes (we don't use Planetarium.Rotation since it
+  // undergoes truncation to single-precision even though it's a double-
+  // precision value).  Note that KSP's |Planetarium.InverseRotAngle| is in
+  // degrees.
   virtual void AdvanceTime(Instant const& t, Angle const& planetarium_rotation);
 
   // Returns the position of the vessel with GUID |vessel_guid| relative to its
@@ -247,18 +210,18 @@ class Plugin {
       Time const& parent_rotation_period) const;
 
  private:
-  using GUIDToOwnedVessel = std::map<GUID, std::unique_ptr<Vessel<Barycentre>>>;
-  using GUIDToUnownedVessel = std::map<GUID, Vessel<Barycentre>* const>;
+  using GUIDToOwnedVessel = std::map<GUID, std::unique_ptr<Vessel>>;
+  using GUIDToUnownedVessel = std::map<GUID, Vessel* const>;
 
   // The common last time of the histories of synchronized vessels and
   // celestials.
   Instant const& HistoryTime() const;
 
   // The rotation between the |World| basis at |current_time_| and the
-  // |Barycentre| axes. Since |WorldSun| is not a rotating reference frame,
+  // |Barycentric| axes. Since |WorldSun| is not a rotating reference frame,
   // this change of basis is all that's required to convert relative velocities
   // or displacements between simultaneous events.
-  Rotation<Barycentre, WorldSun> PlanetariumRotation() const;
+  Rotation<Barycentric, WorldSun> PlanetariumRotation() const;
 
   // Utilities for |AdvanceTime|.
 
@@ -274,7 +237,7 @@ class Plugin {
   // * its |history->last_time()| is greater than |HistoryTime()|.
   // Also checks that |history->last_time()| is at least |HistoryTime()|.
   void CheckVesselInvariants(
-      Vessel<Barycentre> const& vessel,
+      Vessel const& vessel,
       GUIDToUnownedVessel::iterator const it_in_new_vessels) const;
 
   // Evolves the histories of the |celestials_| and of the synchronized vessels
@@ -297,17 +260,17 @@ class Plugin {
   Time const Δt_ = 10 * Second;
 
   GUIDToOwnedVessel vessels_;
-  std::map<Index, std::unique_ptr<Celestial<Barycentre>>> celestials_;
+  std::map<Index, std::unique_ptr<Celestial>> celestials_;
 
   // Vessels which have been recently inserted after |HistoryTime()|. For these
   // vessels, |history->last_time > HistoryTime()|. They have a null
   // |prolongation|. The pointers are not owning and not null.
-  std::map<GUID, Vessel<Barycentre>* const> new_vessels_;
+  std::map<GUID, Vessel* const> new_vessels_;
 
   // The vessels that will be kept during the next call to |AdvanceTime|.
-  std::set<Vessel<Barycentre> const* const> kept_;
+  std::set<Vessel const* const> kept_;
 
-  std::unique_ptr<NBodySystem<Barycentre>> n_body_system_;
+  std::unique_ptr<NBodySystem<Barycentric>> n_body_system_;
   // The symplectic integrator computing the synchronized histories.
   SPRKIntegrator<Length, Speed> history_integrator_;
   // The integrator computing the prolongations and the histories before they
@@ -320,7 +283,7 @@ class Plugin {
   Angle planetarium_rotation_;
   // The current in-game universal time.
   Instant current_time_;
-  Celestial<Barycentre>* sun_;  // Not owning, not null.
+  Celestial* sun_;  // Not owning, not null.
 
   friend class TestablePlugin;
 };

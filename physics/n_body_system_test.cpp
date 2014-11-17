@@ -20,7 +20,6 @@
 #include "testing_utilities/solar_system.hpp"
 
 using principia::constants::GravitationalConstant;
-using principia::geometry::Barycentre;
 using principia::geometry::Instant;
 using principia::geometry::Point;
 using principia::geometry::Vector;
@@ -45,7 +44,11 @@ namespace physics {
 
 class NBodySystemTest : public testing::Test {
  protected:
-  struct EarthMoonOrbitPlane;
+  enum class Tag {
+    kEarthMoonOrbitPlane,
+  };
+
+  using EarthMoonOrbitPlane = Frame<Tag, Tag::kEarthMoonOrbitPlane, true>;
 
   void SetUp() override {
     integrator_.Initialize(integrator_.Order5Optimal());
@@ -77,7 +80,7 @@ class NBodySystemTest : public testing::Test {
                                (body1_->gravitational_parameter() +
                                 body2_->gravitational_parameter()));
     centre_of_mass_ =
-        Barycentre<Vector<Length, EarthMoonOrbitPlane>, Mass>(
+        geometry::Barycentre<Vector<Length, EarthMoonOrbitPlane>, Mass>(
             {q1, q2}, {body1_->mass(), body2_->mass()});
     Velocity<EarthMoonOrbitPlane> const v1(
         {-2 * π * (q1 - centre_of_mass_).Norm() / period_,

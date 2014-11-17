@@ -53,12 +53,12 @@ int const kNotABody = 1729;
 
 // Appends a |DegreesOfFreedom| equal to the last one at the given |time| to
 // each |Trajectory| in the |k|th parameter of the expected call.
-// This parameter must be an |NBodySystem<Barycentre>::Trajectories|, |time|
+// This parameter must be an |NBodySystem<Barycentric>::Trajectories|, |time|
 // must be an |Instant|.
 ACTION_TEMPLATE(AppendTimeToTrajectories,
                 HAS_1_TEMPLATE_PARAMS(int, k),
                 AND_1_VALUE_PARAMS(time)) {
-  for (auto* trajectory : static_cast<NBodySystem<Barycentre>::Trajectories>(
+  for (auto* trajectory : static_cast<NBodySystem<Barycentric>::Trajectories>(
                               std::tr1::get<k>(args))) {
     trajectory->Append(time, trajectory->last().degrees_of_freedom());
   }
@@ -75,7 +75,7 @@ class TestablePlugin : public Plugin {
                  Index const sun_index,
                  GravitationalParameter const& sun_gravitational_parameter,
                  Angle const& planetarium_rotation,
-                 MockNBodySystem<Barycentre>* n_body_system)
+                 MockNBodySystem<Barycentric>* n_body_system)
       : Plugin(initial_time,
                sun_index,
                sun_gravitational_parameter,
@@ -113,7 +113,7 @@ class PluginTest : public testing::Test {
                                 3810.0 * Kilo(Metre)});
     auto const tangent =
         satellite_initial_displacement_ * Bivector<double, AliceSun>({1, 2, 3});
-    Vector<double, AliceSun> const unit_tangent = tangent / tangent.Norm();
+    Vector<double, AliceSun> const unit_tangent = Normalize(tangent);
     EXPECT_THAT(
         InnerProduct(unit_tangent,
                      satellite_initial_displacement_ /
@@ -124,7 +124,7 @@ class PluginTest : public testing::Test {
         Sqrt(bodies_[SolarSystem::kEarth]->gravitational_parameter() /
                  satellite_initial_displacement_.Norm()) * unit_tangent;
 
-    n_body_system_ = new MockNBodySystem<Barycentre>();
+    n_body_system_ = new MockNBodySystem<Barycentric>();
     plugin_ = std::make_unique<StrictMock<TestablePlugin>>(
                   initial_time_,
                   SolarSystem::kSun,
@@ -187,7 +187,7 @@ class PluginTest : public testing::Test {
   }
 
   Permutation<ICRFJ2000Ecliptic, AliceSun> looking_glass_;
-  MockNBodySystem<Barycentre>* n_body_system_;  // Not owned.
+  MockNBodySystem<Barycentric>* n_body_system_;  // Not owned.
   std::unique_ptr<SolarSystem> solar_system_;
   SolarSystem::Bodies bodies_;
   Instant initial_time_;
@@ -668,7 +668,7 @@ TEST_F(PluginTest, BodyCentredNonrotatingRenderingIntegration) {
     plugin.InsertOrKeepVessel(satellite, SolarSystem::kEarth);
     // We give the sun an arbitrary nonzero velocity in |World|.
     Position<World> const sun_world_position =
-        kWorldOrigin + Velocity<World>(
+        World::origin + Velocity<World>(
             { 0.1 * AstronomicalUnit / Hour,
              -1.0 * AstronomicalUnit / Hour,
               0.0 * AstronomicalUnit / Hour}) * (t - initial_time_);
@@ -741,7 +741,7 @@ TEST_F(PluginTest, BarycentricRotatingRenderingIntegration) {
           last().degrees_of_freedom().velocity;
   Displacement<ICRFJ2000Ecliptic> const from_the_earth_to_l5 =
       from_the_earth_to_the_moon / 2 -
-          moon_velocity_wrt_earth / moon_velocity_wrt_earth.Norm() *
+          Normalize(moon_velocity_wrt_earth) *
               from_the_earth_to_the_moon.Norm() * Sqrt(3) / 2;
   Velocity<ICRFJ2000Ecliptic> const initial_velocity =
       Rotation<ICRFJ2000Ecliptic, ICRFJ2000Ecliptic>(
@@ -782,7 +782,7 @@ TEST_F(PluginTest, BarycentricRotatingRenderingIntegration) {
   plugin.InsertOrKeepVessel(satellite, SolarSystem::kEarth);
   // We give the sun an arbitrary nonzero velocity in |World|.
   Position<World> const sun_world_position =
-      kWorldOrigin + Velocity<World>(
+      World::origin + Velocity<World>(
           { 0.1 * AstronomicalUnit / Hour,
            -1.0 * AstronomicalUnit / Hour,
             0.0 * AstronomicalUnit / Hour}) * (t - initial_time_);
@@ -803,8 +803,9 @@ TEST_F(PluginTest, BarycentricRotatingRenderingIntegration) {
         (segment.begin - earth_world_position).Norm();
     Length const satellite_moon =
         (segment.begin - moon_world_position).Norm();
-    EXPECT_THAT(RelativeError(earth_moon, satellite_earth), Lt(0.2));
-    EXPECT_THAT(RelativeError(earth_moon, satellite_moon), Lt(0.2));;
+    EXPECT_THAT(RelativeError(earth_moon, satellite_earth), Lt(0.0896));
+    EXPECT_THAT(RelativeError(earth_moon, satellite_moon), Lt(0.131));
+    EXPECT_THAT(RelativeError(satellite_moon, satellite_earth), Lt(0.148));
   }
   // Check continuity.
   for (std::size_t i = 0; i + 1 < rendered_trajectory.size(); ++i) {

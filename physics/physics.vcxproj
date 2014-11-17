@@ -130,6 +130,8 @@
     <ClInclude Include="body_body.hpp" />
     <ClInclude Include="degrees_of_freedom.hpp" />
     <ClInclude Include="degrees_of_freedom_body.hpp" />
+    <ClInclude Include="frame.hpp" />
+    <ClInclude Include="frame_body.hpp" />
     <ClInclude Include="mock_n_body_system.hpp" />
     <ClInclude Include="n_body_system.hpp" />
     <ClInclude Include="n_body_system_body.hpp" />

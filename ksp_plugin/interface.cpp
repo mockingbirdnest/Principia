@@ -213,9 +213,9 @@ LineAndIterator* RenderedVesselTrajectory(Plugin const* const plugin,
       RenderedVesselTrajectory(
           vessel_guid,
           *CHECK_NOTNULL(frame),
-          kWorldOrigin + Displacement<World>({sun_world_position.x * Metre,
-                                              sun_world_position.y * Metre,
-                                              sun_world_position.z * Metre}));
+          World::origin + Displacement<World>({sun_world_position.x * Metre,
+                                               sun_world_position.y * Metre,
+                                               sun_world_position.z * Metre}));
   std::unique_ptr<LineAndIterator> result =
       std::make_unique<LineAndIterator>(std::move(rendered_trajectory));
   result->it = result->rendered_trajectory.begin();
@@ -231,8 +231,8 @@ XYZSegment FetchAndIncrement(LineAndIterator* const line_and_iterator) {
   CHECK(line_and_iterator->it != line_and_iterator->rendered_trajectory.end());
   LineSegment<World> const result = *line_and_iterator->it;
   ++line_and_iterator->it;
-  R3Element<Length> const begin = (result.begin - kWorldOrigin).coordinates();
-  R3Element<Length> const end = (result.end - kWorldOrigin).coordinates();
+  R3Element<Length> const begin = (result.begin - World::origin).coordinates();
+  R3Element<Length> const end = (result.end - World::origin).coordinates();
   return {XYZ{begin.x / Metre, begin.y / Metre, begin.z / Metre},
           XYZ{end.x / Metre, end.y / Metre, end.z / Metre}};
 }
