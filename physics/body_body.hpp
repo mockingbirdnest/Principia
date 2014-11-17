@@ -23,36 +23,44 @@ Body<Frame>::Body(Mass const& mass)
       axis_({0, 0, 0}) {}
 
 template<typename Frame>
-Body<Frame>::Body(GravitationalParameter const& gravitational_parameter,
-                  double const j2,
-                  Length const& radius,
-                  Vector<double, Frame> const& axis)
+template<typename F>
+Body<Frame>::Body(
+    GravitationalParameter const& gravitational_parameter,
+    double const j2,
+    Length const& radius,
+    std::enable_if_t<F::is_inertial, Vector<double, F>> const& axis)
     : Body(gravitational_parameter,
            -j2 * gravitational_parameter * radius * radius,
            axis) {}
 
 template<typename Frame>
-Body<Frame>::Body(Mass const& mass,
-                  double const j2,
-                  Length const& radius,
-                  Vector<double, Frame> const& axis)
+template<typename F>
+Body<Frame>::Body(
+    Mass const& mass,
+    double const j2,
+    Length const& radius,
+    std::enable_if_t<F::is_inertial, Vector<double, F>> const& axis)
     : Body(mass,
            -j2 * mass * GravitationalConstant * radius * radius,
            axis) {}
 
 template<typename Frame>
-Body<Frame>::Body(GravitationalParameter const& gravitational_parameter,
-                  Order2ZonalCoefficient const& j2,
-                  Vector<double, Frame> const& axis)
+template<typename F>
+Body<Frame>::Body(
+    GravitationalParameter const& gravitational_parameter,
+    Order2ZonalCoefficient const& j2,
+    std::enable_if_t<F::is_inertial, Vector<double, F>> const& axis)
     : gravitational_parameter_(gravitational_parameter),
       mass_(gravitational_parameter / GravitationalConstant),
       j2_(j2),
       axis_(axis) {}
 
 template<typename Frame>
-Body<Frame>::Body(Mass const& mass,
-                  Order2ZonalCoefficient const& j2,
-                  Vector<double, Frame> const& axis)
+template<typename F>
+Body<Frame>::Body(
+    Mass const& mass,
+    Order2ZonalCoefficient const& j2,
+    std::enable_if_t<F::is_inertial, Vector<double, F>> const& axis)
     : gravitational_parameter_(mass * GravitationalConstant),
       mass_(mass),
       j2_(j2),

@@ -23,21 +23,28 @@ class Body {
   explicit Body(GravitationalParameter const& gravitational_parameter);
   explicit Body(Mass const& mass);
 
-  // A body with oblateness.  The body must not be massless.
+  // A body with oblateness.  The body must not be massless.  The frame must be
+  // inertial to ensure that the axis is well defined.  These constructors are
+  // templatized just to enable SFINAE, clients should let the template
+  // parameter default.
+  template<typename F = Frame>
   Body(GravitationalParameter const& gravitational_parameter,
        double const j2,
        Length const& radius,
-       Vector<double, Frame> const& axis);
+       std::enable_if_t<F::is_inertial, Vector<double, F>> const& axis);
+  template<typename F = Frame>
   Body(Mass const& mass,
        double const j2,
        Length const& radius,
-       Vector<double, Frame> const& axis);
+       std::enable_if_t<F::is_inertial, Vector<double, F>> const& axis);
+  template<typename F = Frame>
   Body(GravitationalParameter const& gravitational_parameter,
        Order2ZonalCoefficient const& j2,
-       Vector<double, Frame> const& axis);
+       std::enable_if_t<F::is_inertial, Vector<double, F>> const& axis);
+  template<typename F = Frame>
   Body(Mass const& mass,
        Order2ZonalCoefficient const& j2,
-       Vector<double, Frame> const& axis);
+       std::enable_if_t<F::is_inertial, Vector<double, F>> const& axis);
 
   ~Body() = default;
 

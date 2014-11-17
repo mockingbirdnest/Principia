@@ -11,6 +11,7 @@
 #include "geometry/r3_element.hpp"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
+#include "physics/frame.hpp"
 #include "quantities/quantities.hpp"
 #include "quantities/si.hpp"
 
@@ -32,10 +33,14 @@ using testing::Ref;
 namespace principia {
 namespace physics {
 
-class World;
-
 class TrajectoryTest : public testing::Test {
  protected:
+  enum class Tag {
+    kWorld,
+  };
+
+  using World = Frame<Tag, Tag::kWorld, true>;
+
   void SetUp() override {
     q1_ = Position<World>(
         Vector<Length, World>({1 * Metre, 2 * Metre, 3 * Metre}));
