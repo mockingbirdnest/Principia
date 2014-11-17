@@ -127,6 +127,7 @@
     <ClInclude Include="affine_map_body.hpp" />
     <ClInclude Include="epoch.hpp" />
     <ClInclude Include="epoch_body.hpp" />
+    <ClInclude Include="identity.hpp" />
     <ClInclude Include="named_quantities.hpp" />
     <ClInclude Include="point.hpp" />
     <ClInclude Include="point_body.hpp" />
