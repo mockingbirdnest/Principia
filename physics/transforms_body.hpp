@@ -4,6 +4,7 @@
 
 #include "geometry/affine_map.hpp"
 #include "geometry/grassmann.hpp"
+#include "geometry/identity.hpp"
 #include "geometry/named_quantities.hpp"
 #include "geometry/permutation.hpp"
 #include "glog/logging.h"
@@ -11,6 +12,7 @@
 using principia::geometry::AffineMap;
 using principia::geometry::Bivector;
 using principia::geometry::Displacement;
+using principia::geometry::Identity;
 using principia::geometry::Permutation;
 using principia::geometry::Position;
 
@@ -110,12 +112,11 @@ Transforms<FromFrame, ThroughFrame, ToFrame>::BodyCentredNonRotating(
     DegreesOfFreedom<FromFrame> const& centre_degrees_of_freedom =
         centre_it.degrees_of_freedom();
 
-    AffineMap<FromFrame, ThroughFrame, Length, Permutation> position_map(
+    AffineMap<FromFrame, ThroughFrame, Length, Identity> position_map(
         centre_degrees_of_freedom.position,
         ThroughFrame::origin,
-        Permutation<FromFrame, ThroughFrame>::Identity());
-    Permutation<FromFrame, ThroughFrame> velocity_map(
-        Permutation<FromFrame, ThroughFrame>::Identity());
+        Identity<FromFrame, ThroughFrame>());
+    Identity<FromFrame, ThroughFrame> velocity_map;
     DegreesOfFreedom<ThroughFrame> through_degrees_of_freedom =
         {position_map(from_degrees_of_freedom.position),
          velocity_map(from_degrees_of_freedom.velocity -
@@ -134,12 +135,11 @@ Transforms<FromFrame, ThroughFrame, ToFrame>::BodyCentredNonRotating(
     DegreesOfFreedom<ToFrame> const& last_centre_degrees_of_freedom =
         to_centre_trajectory.last().degrees_of_freedom();
 
-    AffineMap<ThroughFrame, ToFrame, Length, Permutation> position_map(
+    AffineMap<ThroughFrame, ToFrame, Length, Identity> position_map(
         ThroughFrame::origin,
         last_centre_degrees_of_freedom.position,
-        Permutation<ThroughFrame, ToFrame>::Identity());
-    Permutation<ThroughFrame, ToFrame> velocity_map(
-        Permutation<ThroughFrame, ToFrame>::Identity());
+        Identity<ThroughFrame, ToFrame>());
+    Identity<ThroughFrame, ToFrame> velocity_map;
     return {position_map(through_degrees_of_freedom.position),
             velocity_map(through_degrees_of_freedom.velocity)};
   };
