@@ -49,4 +49,4 @@ Identity<FromFrame, ToFrame> operator*(
 }  // namespace geometry
 }  // namespace principia
 
-#include "geometry/permutation_body.hpp"
+#include "geometry/identity_body.hpp"
