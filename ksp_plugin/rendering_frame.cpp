@@ -14,12 +14,11 @@ namespace ksp_plugin {
 
 namespace {
 
-// This function changes the frame of a nonrotating body.  If we ever need to
-// change the frame of rotating bodies we will need to adjust the axis.
+// This function changes the frame of a nonrotating body.  This cannot be
+// applied to a rotating body as the constructors that take an axis are not
+// present for noninertial frames.
 template<typename FromFrame, typename ToFrame>
 Body<ToFrame> NonrotatingBody(Body<FromFrame> const& body) {
-  auto const no_axis = Vector<double, FromFrame>({0, 0, 0});
-  CHECK(body.axis() == no_axis);
   return Body<ToFrame>(body.gravitational_parameter());
 }
 
