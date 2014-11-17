@@ -251,10 +251,10 @@ XYZ VesselWorldPosition(Plugin const* const plugin,
                         XYZ const parent_world_position) {
   Position<World> result = CHECK_NOTNULL(plugin)->VesselWorldPosition(
       vessel_guid,
-      kWorldOrigin + Displacement<World>({parent_world_position.x * Metre,
+      World::origin + Displacement<World>({parent_world_position.x * Metre,
                                           parent_world_position.y * Metre,
                                           parent_world_position.z * Metre}));
-  R3Element<Length> const coordinates = (result - kWorldOrigin).coordinates();
+  R3Element<Length> const coordinates = (result - World::origin).coordinates();
   return XYZ{coordinates.x / Metre,
              coordinates.y / Metre,
              coordinates.z / Metre};

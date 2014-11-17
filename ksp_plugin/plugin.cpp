@@ -451,9 +451,9 @@ Position<World> Plugin::VesselWorldPosition(
     Position<World> const& parent_world_position) const {
   auto const it = vessels_.find(vessel_guid);
   CHECK(it != vessels_.end());
-  Vessel<Barycentre> const& vessel = *(it->second);
+  Vessel const& vessel = *(it->second);
   auto const to_world =
-      AffineMap<Barycentre, World, Length, Rotation>(
+      AffineMap<Barycentric, World, Length, Rotation>(
           vessel.parent().prolongation().last().degrees_of_freedom().position,
           parent_world_position,
           Rotation<WorldSun, World>::Identity() * PlanetariumRotation());
@@ -469,23 +469,23 @@ Velocity<World> Plugin::VesselWorldVelocity(
       Time const& parent_rotation_period) const {
   auto const it = vessels_.find(vessel_guid);
   CHECK(it != vessels_.end());
-  Vessel<Barycentre> const& vessel = *(it->second);
+  Vessel const& vessel = *(it->second);
   CHECK(vessel.has_history()) << "Vessel with GUID " << vessel_guid
                               << " was not given an initial state";
-  Rotation<Barycentre, World> to_world =
+  Rotation<Barycentric, World> to_world =
       Rotation<WorldSun, World>::Identity() * PlanetariumRotation();
-  Velocity<Barycentre> const velocity_relative_to_parent =
+  Velocity<Barycentric> const velocity_relative_to_parent =
       vessel.prolongation_or_history().last().degrees_of_freedom().velocity -
       vessel.parent().prolongation().last().degrees_of_freedom().velocity;
-  Displacement<Barycentre> const offset_from_parent =
+  Displacement<Barycentric> const offset_from_parent =
       vessel.prolongation_or_history().last().degrees_of_freedom().position -
       vessel.parent().prolongation().last().degrees_of_freedom().position;
-  AngularVelocity<Barycentre> const world_frame_angular_velocity =
-      AngularVelocity<Barycentre>({0 * Radian / Second,
+  AngularVelocity<Barycentric> const world_frame_angular_velocity =
+      AngularVelocity<Barycentric>({0 * Radian / Second,
                                    2 * π * Radian / parent_rotation_period,
                                    0 * Radian / Second});
   return to_world(
-      (world_frame_angular_velocity * offset_from_parent) / Radian 
+      (world_frame_angular_velocity * offset_from_parent) / Radian
           + velocity_relative_to_parent) + parent_world_velocity;
 }
 
