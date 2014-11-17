@@ -13,6 +13,7 @@ class OrthogonalMap;
 // The identity map.
 template<typename FromFrame, typename ToFrame>
 class Identity : public LinearMap<FromFrame, ToFrame> {
+ public:
   Identity() = default;
   ~Identity() override = default;
 
@@ -33,8 +34,6 @@ class Identity : public LinearMap<FromFrame, ToFrame> {
       Trivector<Scalar, FromFrame> const& trivector) const;
 
   OrthogonalMap<FromFrame, ToFrame> Forget() const;
-
-  static Identity Identity();
 
  private:
   template<typename Scalar>

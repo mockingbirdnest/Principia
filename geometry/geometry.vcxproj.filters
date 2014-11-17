@@ -115,5 +115,8 @@
     <ClCompile Include="affine_map_test.cpp">
       <Filter>Test Files</Filter>
     </ClCompile>
+    <ClCompile Include="identity_test.cpp">
+      <Filter>Test Files</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

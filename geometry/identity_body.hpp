@@ -29,14 +29,14 @@ template<typename FromFrame, typename ToFrame>
 template<typename Scalar>
 Bivector<Scalar, ToFrame> Identity<FromFrame, ToFrame>::operator()(
     Bivector<Scalar, FromFrame> const& bivector) const {
-  return Vector<Scalar, ToFrame>(bivector.coordinates());
+  return Bivector<Scalar, ToFrame>(bivector.coordinates());
 }
 
 template<typename FromFrame, typename ToFrame>
 template<typename Scalar>
 Trivector<Scalar, ToFrame> Identity<FromFrame, ToFrame>::operator()(
     Trivector<Scalar, FromFrame> const& trivector) const {
-  return Vector<Scalar, ToFrame>(trivector.coordinates());
+  return Trivector<Scalar, ToFrame>(trivector.coordinates());
 }
 
 template<typename FromFrame, typename ToFrame>
@@ -44,11 +44,6 @@ OrthogonalMap<FromFrame, ToFrame> Identity<FromFrame, ToFrame>::Forget() const {
   return OrthogonalMap<FromFrame, ToFrame>(
       Determinant(),
       Rotation<FromFrame, ToFrame>());
-}
-
-template<typename FromFrame, typename ToFrame>
-static Identity<FromFrame, ToFrame> Identity<FromFrame, ToFrame>::Identity() {
-  return Identity<FromFrame, ToFrame>)();
 }
 
 template<typename FromFrame, typename ThroughFrame, typename ToFrame>

@@ -150,6 +150,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="grassmann_test.cpp" />
+    <ClCompile Include="identity_test.cpp" />
     <ClCompile Include="point_test.cpp" />
     <ClCompile Include="affine_map_test.cpp" />
     <ClCompile Include="orthogonal_map_test.cpp" />
