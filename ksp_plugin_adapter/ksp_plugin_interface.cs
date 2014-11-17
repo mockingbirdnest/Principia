@@ -148,6 +148,21 @@ public partial class PluginAdapter : UnityEngine.MonoBehaviour {
   [DllImport(dllName           : kDllPath,
              CallingConvention = CallingConvention.Cdecl)]
   private static extern void DeleteLineAndIterator(ref IntPtr line);
+
+  [DllImport(dllName           : kDllPath,
+             CallingConvention = CallingConvention.Cdecl)]
+  private static extern XYZ VesselWorldPosition(
+    IntPtr plugin,
+    [MarshalAs(UnmanagedType.LPStr)] String vessel_guid,
+    XYZ parent_world_position);
+
+  [DllImport(dllName           : kDllPath,
+             CallingConvention = CallingConvention.Cdecl)]
+  private static extern XYZ VesselWorldVelocity(
+    IntPtr plugin,
+    [MarshalAs(UnmanagedType.LPStr)] String vessel_guid,
+    XYZ parent_world_velocity,
+    double parent_rotation_period);
 }
 
 }  // namespace ksp_plugin_adapter
