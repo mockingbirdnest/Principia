@@ -1,99 +1,75 @@
-﻿#include "body.hpp"
+﻿#include "physics/oblate_body.hpp"
 
 #include <algorithm>
 #include <vector>
-
-#include "quantities/constants.hpp"
-
-using principia::constants::GravitationalConstant;
 
 namespace principia {
 namespace physics {
 
 template<typename Frame>
-Body<Frame>::Body(GravitationalParameter const& gravitational_parameter)
-    : gravitational_parameter_(gravitational_parameter),
-      mass_(gravitational_parameter / GravitationalConstant),
-      axis_({0, 0, 0}) {}
-
-template<typename Frame>
-Body<Frame>::Body(Mass const& mass)
-    : gravitational_parameter_(mass * GravitationalConstant),
-      mass_(mass),
-      axis_({0, 0, 0}) {}
-
-template<typename Frame>
-template<typename F>
-Body<Frame>::Body(
+OblateBody<Frame>::Body(
     GravitationalParameter const& gravitational_parameter,
     double const j2,
     Length const& radius,
-    std::enable_if_t<F::is_inertial, Vector<double, F>> const& axis)
-    : Body(gravitational_parameter,
-           -j2 * gravitational_parameter * radius * radius,
-           axis) {}
+    Vector<double, Frame> const& axis)
+    : OblateBody(gravitational_parameter,
+                 -j2 * gravitational_parameter * radius * radius,
+                 axis) {}
 
 template<typename Frame>
-template<typename F>
-Body<Frame>::Body(
+OblateBody<Frame>::Body(
     Mass const& mass,
     double const j2,
     Length const& radius,
-    std::enable_if_t<F::is_inertial, Vector<double, F>> const& axis)
-    : Body(mass,
-           -j2 * mass * GravitationalConstant * radius * radius,
-           axis) {}
+    Vector<double, Frame> const& axis)
+    : OblateBody(mass,
+                 -j2 * mass * GravitationalConstant * radius * radius,
+                 axis) {}
 
 template<typename Frame>
-template<typename F>
-Body<Frame>::Body(
+OblateBody<Frame>::Body(
     GravitationalParameter const& gravitational_parameter,
     Order2ZonalCoefficient const& j2,
-    std::enable_if_t<F::is_inertial, Vector<double, F>> const& axis)
-    : gravitational_parameter_(gravitational_parameter),
-      mass_(gravitational_parameter / GravitationalConstant),
+    Vector<double, Frame> const& axis)
+    : MassiveBody(gravitational_parameter),
       j2_(j2),
-      axis_(axis) {}
+      axis_(axis) {
+  CHECK_NE(j2, Order2ZonalCoefficient()) << "Oblate cannot have zero j2";
+  CHECK_GT(axis.Norm(), 0.999) << "Axis must have norm one";
+  CHECK_LT(axis.Norm(), 1.001) << "Axis must have norm one";
+}
 
 template<typename Frame>
-template<typename F>
-Body<Frame>::Body(
+OblateBody<Frame>::Body(
     Mass const& mass,
     Order2ZonalCoefficient const& j2,
-    std::enable_if_t<F::is_inertial, Vector<double, F>> const& axis)
-    : gravitational_parameter_(mass * GravitationalConstant),
-      mass_(mass),
+    Vector<double, Frame> const& axis)
+    : MassiveBody(mass),
       j2_(j2),
-      axis_(axis) {}
-
-template<typename Frame>
-GravitationalParameter const& Body<Frame>::gravitational_parameter() const {
-  return gravitational_parameter_;
+      axis_(axis) {
+  CHECK_NE(j2, Order2ZonalCoefficient()) << "Oblate cannot have zero j2";
+  CHECK_GT(axis.Norm(), 0.999) << "Axis must have norm one";
+  CHECK_LT(axis.Norm(), 1.001) << "Axis must have norm one";
 }
 
 template<typename Frame>
-Mass const& Body<Frame>::mass() const {
-  return mass_;
-}
-
-template<typename Frame>
-Order2ZonalCoefficient const& Body<Frame>::j2() const {
+Order2ZonalCoefficient const& OblateBody<Frame>::j2() const {
   return j2_;
 }
 
 template<typename Frame>
-Vector<double, Frame> const& Body<Frame>::axis() const {
+Vector<double, Frame> const& OblateBody<Frame>::axis() const {
   return axis_;
 }
 
 template<typename Frame>
-bool Body<Frame>::is_massless() const {
-  return mass_ == Mass();
+bool OblateBody<Frame>::is_massless() const {
+  return false;
 }
 
 template<typename Frame>
-bool Body<Frame>::is_oblate() const {
-  return j2_ != Order2ZonalCoefficient();
+bool OblateBody<Frame>::is_oblate() const {
+  return true;
 }
 
 }  // namespace physics

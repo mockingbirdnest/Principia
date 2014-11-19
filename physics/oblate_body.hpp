@@ -3,6 +3,7 @@
 #include <vector>
 
 #include "geometry/grassmann.hpp"
+#include "physics/massive_body.hpp"
 #include "quantities/named_quantities.hpp"
 #include "quantities/quantities.hpp"
 
@@ -16,57 +17,38 @@ namespace principia {
 namespace physics {
 
 template<typename Frame>
-class Body {
+class OblateBody : MassiveBody {
+  static_assert(Frame::is_inertial, "Frame must be inertial");
  public:
-  // We use the gravitational parameter μ = G M in order not to accumulate
-  // unit roundoffs from repeated multiplications by G.
-  explicit Body(GravitationalParameter const& gravitational_parameter);
-  explicit Body(Mass const& mass);
+  OblateBody(GravitationalParameter const& gravitational_parameter,
+             double const j2,
+             Length const& radius,
+             Vector<double, Frame> const& axis);
+  OblateBody(Mass const& mass,
+             double const j2,
+             Length const& radius,
+             Vector<double, Frame> const& axis);
+  OblateBody(GravitationalParameter const& gravitational_parameter,
+             Order2ZonalCoefficient const& j2,
+             Vector<double, Frame> const& axis);
+  OblateBody(Mass const& mass,
+             Order2ZonalCoefficient const& j2,
+             Vector<double, Frame> const& axis);
+  ~OblateBody() = default;
 
-  // A body with oblateness.  The body must not be massless.  The frame must be
-  // inertial to ensure that the axis is well defined.  These constructors are
-  // templatized just to enable SFINAE, clients should let the template
-  // parameter default.
-  template<typename F = Frame>
-  Body(GravitationalParameter const& gravitational_parameter,
-       double const j2,
-       Length const& radius,
-       std::enable_if_t<F::is_inertial, Vector<double, F>> const& axis);
-  template<typename F = Frame>
-  Body(Mass const& mass,
-       double const j2,
-       Length const& radius,
-       std::enable_if_t<F::is_inertial, Vector<double, F>> const& axis);
-  template<typename F = Frame>
-  Body(GravitationalParameter const& gravitational_parameter,
-       Order2ZonalCoefficient const& j2,
-       std::enable_if_t<F::is_inertial, Vector<double, F>> const& axis);
-  template<typename F = Frame>
-  Body(Mass const& mass,
-       Order2ZonalCoefficient const& j2,
-       std::enable_if_t<F::is_inertial, Vector<double, F>> const& axis);
-
-  ~Body() = default;
-
-  // Returns the construction parameter.
-  GravitationalParameter const& gravitational_parameter() const;
-  Mass const& mass() const;
-
-  // Returns the j2 coefficient.  Returns 0 for a non-oblate body.
+  // Returns the j2 coefficient.
   Order2ZonalCoefficient const& j2() const;
 
   // Returns the axis passed at construction.
   Vector<double, Frame> const& axis() const;
 
-  // Returns true iff |gravitational_parameter| (or |mass|) returns 0.
+  // Returns false.
   bool is_massless() const;
 
-  // Returns true iff |j2| returns a non-0 value.
+  // Returns true.
   bool is_oblate() const;
 
  private:
-  GravitationalParameter const gravitational_parameter_;
-  Mass const mass_;
   Order2ZonalCoefficient const j2_;
   Vector<double, Frame> const axis_;
 };
@@ -74,4 +56,4 @@ class Body {
 }  // namespace physics
 }  // namespace principia
 
-#include "physics/body_body.hpp"
+#include "physics/oblate_body_body.hpp"
