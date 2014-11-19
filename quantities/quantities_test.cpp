@@ -202,7 +202,7 @@ TEST_F(QuantitiesTest, HyperbolicFunctions) {
   EXPECT_THAT(ArcTanh(Tanh(-10 * Degree)), AlmostEquals(-10 * Degree, 1));
 }
 
-TEST_F(QuantitiesTest, ExpLogAndSqrt) {;
+TEST_F(QuantitiesTest, ExpLogAndSqrt) {
   EXPECT_THAT(std::exp(std::log(2) / 2), AlmostEquals(Sqrt(2), 1));
   EXPECT_EQ(std::exp(std::log(Rood / Pow<2>(Foot)) / 2) * Foot, Sqrt(Rood));
 }
