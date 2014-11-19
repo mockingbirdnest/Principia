@@ -17,7 +17,7 @@ namespace principia {
 namespace physics {
 
 template<typename Frame>
-class OblateBody : MassiveBody {
+class OblateBody : public MassiveBody {
   static_assert(Frame::is_inertial, "Frame must be inertial");
 
  public:

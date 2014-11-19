@@ -10,25 +10,35 @@ using principia::constants::GravitationalConstant;
 namespace principia {
 namespace physics {
 
-MassiveBody::MassiveBody(GravitationalParameter const& gravitational_parameter)
+inline MassiveBody::MassiveBody(
+    GravitationalParameter const& gravitational_parameter)
     : gravitational_parameter_(gravitational_parameter),
       mass_(gravitational_parameter / GravitationalConstant) {
   CHECK_NE(gravitational_parameter, GravitationalParameter())
       << "Massive body cannot have zero gravitational parameter";
 }
 
-MassiveBody::MassiveBody(Mass const& mass)
+inline MassiveBody::MassiveBody(Mass const& mass)
     : gravitational_parameter_(mass * GravitationalConstant),
       mass_(mass) {
   CHECK_NE(mass, Mass())
       << "Massive body cannot have zero mass";
 }
 
-bool MassiveBody::is_massless() const {
+inline GravitationalParameter const&
+MassiveBody::gravitational_parameter() const {
+  return gravitational_parameter_;
+}
+
+inline Mass const& MassiveBody::mass() const {
+  return mass_;
+}
+
+inline bool MassiveBody::is_massless() const {
   return false;
 }
 
-bool MassiveBody::is_oblate() const {
+inline bool MassiveBody::is_oblate() const {
   return false;
 }
 

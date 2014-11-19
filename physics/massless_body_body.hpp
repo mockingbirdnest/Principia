@@ -5,11 +5,11 @@
 namespace principia {
 namespace physics {
 
-bool MasslessBody::is_massless() const {
+inline bool MasslessBody::is_massless() const {
   return true;
 }
 
-bool MasslessBody::is_oblate() const {
+inline bool MasslessBody::is_oblate() const {
   return false;
 }
 

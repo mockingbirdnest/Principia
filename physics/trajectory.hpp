@@ -118,8 +118,12 @@ class Trajectory {
   // trajectory.
   Instant const* fork_time() const;
 
-  // The body to which this trajectory pertains.
-  Body const& body() const;
+  // The body to which this trajectory pertains.  The body is dynamic_cast to
+  // the type B.  An error occurs if the cast fails.
+  //TODO(phl): Not sure if I like this templatization, covariance might work
+  // better...
+  template<typename B>
+  B const& body() const;
 
   // This function represents the intrinsic acceleration of a body, irrespective
   // of any external field.  It can be due e.g., to an engine burn.

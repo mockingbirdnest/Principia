@@ -129,7 +129,7 @@ TEST_F(TrajectoryTest, AppendSuccess) {
   EXPECT_THAT(velocities,
               ElementsAre(Pair(t1_, p1_), Pair(t2_, p2_), Pair(t3_, p3_)));
   EXPECT_THAT(times, ElementsAre(t1_, t2_, t3_));
-  EXPECT_THAT(massive_trajectory_->body(), Ref(*massive_body_));
+  EXPECT_THAT(massive_trajectory_->body<MassiveBody>(), Ref(*massive_body_));
 }
 
 TEST_F(TrajectoryDeathTest, ForkError) {
@@ -156,7 +156,7 @@ TEST_F(TrajectoryTest, ForkSuccess) {
   EXPECT_THAT(velocities,
               ElementsAre(Pair(t1_, p1_), Pair(t2_, p2_), Pair(t3_, p3_)));
   EXPECT_THAT(times, ElementsAre(t1_, t2_, t3_));
-  EXPECT_THAT(fork->body(), Ref(*massive_body_));
+  EXPECT_THAT(fork->body<MassiveBody>(), Ref(*massive_body_));
   positions = fork->Positions();
   velocities = fork->Velocities();
   times = fork->Times();
@@ -167,7 +167,7 @@ TEST_F(TrajectoryTest, ForkSuccess) {
               ElementsAre(Pair(t1_, p1_), Pair(t2_, p2_),
                           Pair(t3_, p3_), Pair(t4_, p4_)));
   EXPECT_THAT(times, ElementsAre(t1_, t2_, t3_, t4_));
-  EXPECT_THAT(fork->body(), Ref(*massive_body_));
+  EXPECT_THAT(fork->body<MassiveBody>(), Ref(*massive_body_));
 }
 
 TEST_F(TrajectoryDeathTest, DeleteForkError) {
@@ -207,7 +207,7 @@ TEST_F(TrajectoryTest, DeleteForkSuccess) {
   EXPECT_THAT(velocities,
               ElementsAre(Pair(t1_, p1_), Pair(t2_, p2_), Pair(t3_, p3_)));
   EXPECT_THAT(times, ElementsAre(t1_, t2_, t3_));
-  EXPECT_THAT(fork1->body(), Ref(*massive_body_));
+  EXPECT_THAT(fork1->body<MassiveBody>(), Ref(*massive_body_));
   positions = fork1->Positions();
   velocities = fork1->Velocities();
   times = fork1->Times();
@@ -218,7 +218,7 @@ TEST_F(TrajectoryTest, DeleteForkSuccess) {
               ElementsAre(Pair(t1_, p1_), Pair(t2_, p2_),
                           Pair(t3_, p3_), Pair(t4_, p4_)));
   EXPECT_THAT(times, ElementsAre(t1_, t2_, t3_, t4_));
-  EXPECT_THAT(fork1->body(), Ref(*massive_body_));
+  EXPECT_THAT(fork1->body<MassiveBody>(), Ref(*massive_body_));
   massive_trajectory_.reset();
 }
 

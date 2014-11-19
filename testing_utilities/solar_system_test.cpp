@@ -35,8 +35,9 @@ class SolarSystemTest : public testing::Test {
   // of any other bodies.
   Length SemiMajorAxis(Trajectory<ICRFJ2000Ecliptic> const& primary,
                        Trajectory<ICRFJ2000Ecliptic> const& secondary) {
-    GravitationalParameter const μ = primary.body().gravitational_parameter() +
-                                     secondary.body().gravitational_parameter();
+    GravitationalParameter const μ =
+        primary.body<MassiveBody>().gravitational_parameter() +
+        secondary.body<MassiveBody>().gravitational_parameter();
     Vector<Length, ICRFJ2000Ecliptic> const r =
         primary.last().degrees_of_freedom().position -
         secondary.last().degrees_of_freedom().position;
@@ -57,7 +58,8 @@ class SolarSystemTest : public testing::Test {
       Trajectory<ICRFJ2000Ecliptic> const& secondary) {
     // Assuming secondary.mass << primary.mass.
     return SemiMajorAxis(primary, secondary) *
-        std::pow(secondary.body().mass() / primary.body().mass(), 2.0 / 5.0);
+        std::pow(secondary.body<MassiveBody>().mass() /
+                 primary.body<MassiveBody>().mass(), 2.0 / 5.0);
   }
 
   // Tests whether |tertiary| orbits |secondary| in an orbit with excentricity
@@ -72,8 +74,9 @@ class SolarSystemTest : public testing::Test {
       Trajectory<ICRFJ2000Ecliptic> const& secondary,
       Trajectory<ICRFJ2000Ecliptic> const* const primary,
       std::string message) {
-    GravitationalParameter const μ = tertiary.body().gravitational_parameter() +
-                                     secondary.body().gravitational_parameter();
+    GravitationalParameter const μ =
+        tertiary.body<MassiveBody>().gravitational_parameter() +
+        secondary.body<MassiveBody>().gravitational_parameter();
     Vector<Length, ICRFJ2000Ecliptic> const r =
         tertiary.last().degrees_of_freedom().position -
         secondary.last().degrees_of_freedom().position;

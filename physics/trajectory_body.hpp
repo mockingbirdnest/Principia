@@ -215,8 +215,9 @@ Instant const* Trajectory<Frame>::fork_time() const {
 }
 
 template<typename Frame>
-Body const& Trajectory<Frame>::body() const {
-  return body_;
+template<typename B>
+B const& Trajectory<Frame>::body() const {
+  return *CHECK_NOTNULL(dynamic_cast<B const*>(&body_));
 }
 
 template<typename Frame>
