@@ -2,7 +2,7 @@
 
 #include <vector>
 
-#include "physics/body.hpp
+#include "physics/body.hpp"
 
 namespace principia {
 namespace physics {

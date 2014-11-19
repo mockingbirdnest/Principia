@@ -80,7 +80,7 @@ void NBodySystem<Frame>::Integrate(
 
   // These objects are for checking the consistency of the parameters.
   std::set<Instant> times_in_trajectories;
-  std::set<Body<Frame> const*> bodies_in_trajectories;
+  std::set<Body const*> bodies_in_trajectories;
 
   // Prepare the initial state of the integrator.  For efficiently computing the
   // accelerations, we need to separate the trajectories of oblate massive
@@ -97,7 +97,7 @@ void NBodySystem<Frame>::Integrate(
       for (auto const& trajectory : trajectories) {
         // See if this trajectory should be processed in this iteration and
         // update the appropriate vector.
-        Body<Frame> const* const body = &trajectory->body();
+        Body const* const body = &trajectory->body();
         if (body->is_massless() != is_massless ||
             body->is_oblate() != is_oblate) {
           continue;
@@ -286,7 +286,7 @@ void NBodySystem<Frame>::ComputeGravitationalAccelerations(
   size_t const number_of_massless_trajectories = massless_trajectories.size();
 
   for (std::size_t b1 = 0; b1 < number_of_massive_oblate_trajectories; ++b1) {
-    Body<Frame> const& body1 = massive_oblate_trajectories[b1]->body();
+    OblateBody<Frame> const& body1 = massive_oblate_trajectories[b1]->body();
     ComputeOneBodyGravitationalAcceleration<true /*body1_is_oblate*/,
                                             true /*body2_is_oblate*/,
                                             true /*body2_is_massive*/>(
@@ -323,7 +323,7 @@ void NBodySystem<Frame>::ComputeGravitationalAccelerations(
        b1 < number_of_massive_oblate_trajectories +
             number_of_massive_spherical_trajectories;
        ++b1) {
-    Body<Frame> const& body1 =
+    MassiveBody const& body1 =
         massive_spherical_trajectories[
             b1 - number_of_massive_oblate_trajectories]->body();
     ComputeOneBodyGravitationalAcceleration<false /*body1_is_oblate*/,

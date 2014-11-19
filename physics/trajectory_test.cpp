@@ -12,6 +12,8 @@
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "physics/frame.hpp"
+#include "physics/massive_body.hpp"
+#include "physics/massless_body.hpp"
 #include "quantities/quantities.hpp"
 #include "quantities/si.hpp"
 
@@ -72,8 +74,8 @@ class TrajectoryTest : public testing::Test {
     t3_ = t0_ + 27 * Second;
     t4_ = t0_ + 37 * Second;
 
-    massive_body_.reset(new Body<World>(1 * SIUnit<Mass>()));
-    massless_body_.reset(new Body<World>(0 * SIUnit<Mass>()));
+    massive_body_.reset(new MassiveBody(1 * SIUnit<Mass>()));
+    massless_body_.reset(new MasslessBody);
     massive_trajectory_.reset(new Trajectory<World>(*massive_body_));
     massless_trajectory_.reset(new Trajectory<World>(*massless_body_));
 
@@ -93,8 +95,8 @@ class TrajectoryTest : public testing::Test {
   Velocity<World> p1_, p2_, p3_, p4_;
   std::unique_ptr<DegreesOfFreedom<World>> d1_, d2_, d3_, d4_;
   Instant t0_, t1_, t2_, t3_, t4_;
-  std::unique_ptr<Body<World>> massive_body_;
-  std::unique_ptr<Body<World>> massless_body_;
+  std::unique_ptr<MassiveBody> massive_body_;
+  std::unique_ptr<MasslessBody> massless_body_;
   std::unique_ptr<Trajectory<World>> massive_trajectory_;
   std::unique_ptr<Trajectory<World>> massless_trajectory_;
   Trajectory<World>::Transform<World> transform_;

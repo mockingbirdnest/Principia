@@ -14,10 +14,10 @@ namespace ksp_plugin {
 
 namespace {
 
-// This function changes the frame of a nonrotating body.  If we ever need to
-// change the frame of rotating bodies we will need to adjust the axis.
+// This function changes the frame of a spherical body.  If we ever need to
+// change the frame of oblate bodies we will need to adjust the axis.
 template<typename FromFrame, typename ToFrame>
-Body<ToFrame> NonrotatingBody(Body<FromFrame> const& body) {
+Body<ToFrame> SphericalBody(Body<FromFrame> const& body) {
   auto const no_axis = Vector<double, FromFrame>({0, 0, 0});
   CHECK(body.axis() == no_axis);
   return Body<ToFrame>(body.gravitational_parameter());
@@ -42,7 +42,7 @@ BodyCentredNonRotatingFrame::ApparentTrajectory(
 
   // First build the trajectory resulting from the first transform.
   Trajectory<Rendering> intermediate_trajectory(
-      NonrotatingBody<Barycentric, Rendering>(actual_trajectory.body()));
+      SphericalBody<Barycentric, Rendering>(actual_trajectory.body()));
   for (; !actual_it.at_end(); ++actual_it, ++body_it) {
     // Advance over the bits of the actual trajectory that don't have a matching
     // time in the body trajectory.
@@ -87,7 +87,7 @@ BarycentricRotatingFrame::ApparentTrajectory(
 
   // First build the trajectory resulting from the first transform.
   Trajectory<Rendering> intermediate_trajectory(
-      NonrotatingBody<Barycentric, Rendering>(actual_trajectory.body()));
+      SphericalBody<Barycentric, Rendering>(actual_trajectory.body()));
   for (; !actual_it.at_end(); ++actual_it, ++primary_it, ++secondary_it) {
     // Advance over the bits of the actual trajectory that don't have a matching
     // time in the trajectories.
