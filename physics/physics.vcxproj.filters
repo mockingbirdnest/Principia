@@ -27,9 +27,6 @@
     <ClInclude Include="n_body_system_body.hpp">
       <Filter>Source Files</Filter>
     </ClInclude>
-    <ClInclude Include="body_body.hpp">
-      <Filter>Source Files</Filter>
-    </ClInclude>
     <ClInclude Include="trajectory.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -55,6 +52,24 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="frame_body.hpp">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="massive_body.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="massless_body.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="oblate_body.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="massive_body_body.hpp">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="massless_body_body.hpp">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="oblate_body_body.hpp">
       <Filter>Source Files</Filter>
     </ClInclude>
   </ItemGroup>
