@@ -5,10 +5,13 @@
 namespace principia {
 namespace ksp_plugin {
 
-template<typename... Args>
-Celestial::Celestial(Args&&... args)  // NOLINT(build/c++11)
-    : body_(new Body<Barycentric>(
-                    std::forward<Args>(args)...)) {}  // NOLINT(build/c++11)
+template<typename B, typename... Args>
+std::unique_ptr<Celestial> NewCelestial(
+    std::enable_if_t<std::is_base_of<Body, B>::value,
+                     Args>&&... args) {  // NOLINT(build/c++11)
+  B body(std::forward<Args>(args)...);  // NOLINT(build/c++11)
+  return std::make_unique(body);
+}
 
 inline MassiveBody const& Celestial::body() const {
   return *body_;
@@ -54,6 +57,9 @@ inline void Celestial::ResetProlongation(Instant const& time) {
   history_->DeleteFork(&prolongation_);
   prolongation_ = history_->Fork(time);
 }
+
+inline Celestial::Celestial(std::unique_ptr<MassiveBody>&& body)
+    : body_(body) {}
 
 }  // namespace ksp_plugin
 }  // namespace principia

@@ -216,7 +216,8 @@ Instant const* Trajectory<Frame>::fork_time() const {
 
 template<typename Frame>
 template<typename B>
-B const& Trajectory<Frame>::body() const {
+std::enable_if_t<std::is_base_of<Body, B>::value, B> const&
+Trajectory<Frame>::body() const {
   return *CHECK_NOTNULL(dynamic_cast<B const*>(&body_));
 }
 

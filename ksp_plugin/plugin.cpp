@@ -178,9 +178,10 @@ Plugin::Plugin(Instant const& initial_time,
     : n_body_system_(new NBodySystem<Barycentric>),
       planetarium_rotation_(planetarium_rotation),
       current_time_(initial_time) {
+  auto a = new Celestial(sun_gravitational_parameter);
   auto inserted = celestials_.insert(
       {sun_index,
-       std::make_unique<Celestial>(sun_gravitational_parameter)});
+       std::unique_ptr<Celestial>(new Celestial<MassiveBody, GravitationalParameter>(sun_gravitational_parameter)});
   sun_ = inserted.first->second.get();
   sun_->CreateHistoryAndForkProlongation(
       current_time_,
