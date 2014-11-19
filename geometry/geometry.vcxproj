@@ -127,6 +127,8 @@
     <ClInclude Include="affine_map_body.hpp" />
     <ClInclude Include="epoch.hpp" />
     <ClInclude Include="epoch_body.hpp" />
+    <ClInclude Include="identity.hpp" />
+    <ClInclude Include="identity_body.hpp" />
     <ClInclude Include="named_quantities.hpp" />
     <ClInclude Include="point.hpp" />
     <ClInclude Include="point_body.hpp" />
@@ -148,6 +150,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="grassmann_test.cpp" />
+    <ClCompile Include="identity_test.cpp" />
     <ClCompile Include="point_test.cpp" />
     <ClCompile Include="affine_map_test.cpp" />
     <ClCompile Include="orthogonal_map_test.cpp" />
