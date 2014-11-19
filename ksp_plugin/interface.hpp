@@ -55,6 +55,16 @@ struct XYZSegment {
 static_assert(std::is_standard_layout<XYZSegment>::value,
               "XYZSegment is used for interfacing");
 
+extern "C"
+struct KSPPart {
+  XYZ world_position;
+  XYZ world_velocity;
+  double mass;
+};
+
+static_assert(std::is_standard_layout<KSPPart>::value,
+              "KSPPart is used for interfacing");
+
 struct LineAndIterator {
   explicit LineAndIterator(RenderedTrajectory<World> const& rendered_trajectory)
       : rendered_trajectory(rendered_trajectory) {}
@@ -233,6 +243,13 @@ XYZ CDECL VesselWorldVelocity(Plugin const* const plugin,
                               char const* vessel_guid,
                               XYZ const parent_world_velocity,
                               double const parent_rotation_period);
+
+extern "C" DLLEXPORT
+void CDECL SetVesselParts(
+    Plugin const* const plugin,
+    char const* vessel_guid,
+    KSPPart const* const parts,
+    int count);
 
 // Says hello, convenient for checking that calls to the DLL work.
 extern "C" DLLEXPORT

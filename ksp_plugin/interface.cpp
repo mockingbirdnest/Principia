@@ -276,6 +276,15 @@ XYZ VesselWorldVelocity(Plugin const* const plugin,
              coordinates.z / (Metre / Second)};
 }
 
+void SetVesselParts(
+    Plugin const* const plugin,
+    char const* vessel_guid,
+    KSPPart const* const parts,
+    int count) {
+  for (KSPPart const* const part = parts; part < parts + count; ++part) {
+  }
+}
+
 char const* SayHello() {
   return "Hello from native C++!";
 }

@@ -25,6 +25,13 @@ public partial class PluginAdapter : UnityEngine.MonoBehaviour {
     public XYZ begin, end;
   };
 
+  [StructLayout(LayoutKind.Sequential)]
+  struct KSPPart {
+    XYZ world_position;
+    XYZ world_velocity;
+    double mass;
+  };
+
   // Plugin interface.
 
   [DllImport(dllName           : kDllPath,
@@ -152,17 +159,25 @@ public partial class PluginAdapter : UnityEngine.MonoBehaviour {
   [DllImport(dllName           : kDllPath,
              CallingConvention = CallingConvention.Cdecl)]
   private static extern XYZ VesselWorldPosition(
-    IntPtr plugin,
-    [MarshalAs(UnmanagedType.LPStr)] String vessel_guid,
-    XYZ parent_world_position);
+      IntPtr plugin,
+      [MarshalAs(UnmanagedType.LPStr)] String vessel_guid,
+      XYZ parent_world_position);
 
   [DllImport(dllName           : kDllPath,
              CallingConvention = CallingConvention.Cdecl)]
   private static extern XYZ VesselWorldVelocity(
-    IntPtr plugin,
-    [MarshalAs(UnmanagedType.LPStr)] String vessel_guid,
-    XYZ parent_world_velocity,
-    double parent_rotation_period);
+      IntPtr plugin,
+      [MarshalAs(UnmanagedType.LPStr)] String vessel_guid,
+      XYZ parent_world_velocity,
+      double parent_rotation_period);
+
+  [DllImport(dllName           : kDllPath,
+             CallingConvention = CallingConvention.Cdecl)]
+  private static extern void SetVesselParts(
+      IntPtr plugin,
+      [MarshalAs(UnmanagedType.LPStr)] String vessel_guid,
+      KSPPart[] parts,
+      int count);
 }
 
 }  // namespace ksp_plugin_adapter
