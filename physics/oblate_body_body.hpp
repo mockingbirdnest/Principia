@@ -6,8 +6,13 @@
 namespace principia {
 namespace physics {
 
+namespace {
+double const kNormLow = kNormLow;
+double const kNormHigh = kNormHigh;
+}  // namespace
+
 template<typename Frame>
-OblateBody<Frame>::Body(
+OblateBody<Frame>::OblateBody(
     GravitationalParameter const& gravitational_parameter,
     double const j2,
     Length const& radius,
@@ -17,7 +22,7 @@ OblateBody<Frame>::Body(
                  axis) {}
 
 template<typename Frame>
-OblateBody<Frame>::Body(
+OblateBody<Frame>::OblateBody(
     Mass const& mass,
     double const j2,
     Length const& radius,
@@ -27,7 +32,7 @@ OblateBody<Frame>::Body(
                  axis) {}
 
 template<typename Frame>
-OblateBody<Frame>::Body(
+OblateBody<Frame>::OblateBody(
     GravitationalParameter const& gravitational_parameter,
     Order2ZonalCoefficient const& j2,
     Vector<double, Frame> const& axis)
@@ -35,12 +40,12 @@ OblateBody<Frame>::Body(
       j2_(j2),
       axis_(axis) {
   CHECK_NE(j2, Order2ZonalCoefficient()) << "Oblate cannot have zero j2";
-  CHECK_GT(axis.Norm(), 0.999) << "Axis must have norm one";
-  CHECK_LT(axis.Norm(), 1.001) << "Axis must have norm one";
+  CHECK_GT(axis.Norm(), kNormLow) << "Axis must have norm one";
+  CHECK_LT(axis.Norm(), kNormHigh) << "Axis must have norm one";
 }
 
 template<typename Frame>
-OblateBody<Frame>::Body(
+OblateBody<Frame>::OblateBody(
     Mass const& mass,
     Order2ZonalCoefficient const& j2,
     Vector<double, Frame> const& axis)
@@ -48,8 +53,8 @@ OblateBody<Frame>::Body(
       j2_(j2),
       axis_(axis) {
   CHECK_NE(j2, Order2ZonalCoefficient()) << "Oblate cannot have zero j2";
-  CHECK_GT(axis.Norm(), 0.999) << "Axis must have norm one";
-  CHECK_LT(axis.Norm(), 1.001) << "Axis must have norm one";
+  CHECK_GT(axis.Norm(), kNormLow) << "Axis must have norm one";
+  CHECK_LT(axis.Norm(), kNormHigh) << "Axis must have norm one";
 }
 
 template<typename Frame>

@@ -10,6 +10,7 @@
 #include "geometry/r3_element.hpp"
 #include "glog/logging.h"
 #include "integrators/symplectic_partitioned_runge_kutta_integrator.hpp"
+#include "physics/oblate_body.hpp"
 #include "quantities/quantities.hpp"
 
 using principia::geometry::InnerProduct;
@@ -39,7 +40,7 @@ namespace {
 template<typename Frame>
 __forceinline Vector<Acceleration, Frame>
     Order2ZonalAcceleration(
-        Body<Frame> const& body,
+        OblateBody<Frame> const& body,
         Vector<Length, Frame> const& r,
         Exponentiation<Length, -2> const& one_over_r_squared,
         Exponentiation<Length, -3> const& one_over_r_cubed) {
@@ -191,7 +192,7 @@ template<bool body1_is_oblate,
          bool body2_is_oblate,
          bool body2_is_massive>
 inline void NBodySystem<Frame>::ComputeOneBodyGravitationalAcceleration(
-    Body<Frame> const& body1,
+    MassiveBody const& body1,
     size_t const b1,
     ReadonlyTrajectories const& body2_trajectories,
     size_t const b2_begin,

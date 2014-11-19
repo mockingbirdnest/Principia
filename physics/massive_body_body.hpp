@@ -24,12 +24,10 @@ MassiveBody::MassiveBody(Mass const& mass)
       << "Massive body cannot have zero mass";
 }
 
-template<typename Frame>
 bool MassiveBody::is_massless() const {
   return false;
 }
 
-template<typename Frame>
 bool MassiveBody::is_oblate() const {
   return false;
 }

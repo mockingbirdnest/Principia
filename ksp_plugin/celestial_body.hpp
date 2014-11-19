@@ -10,7 +10,7 @@ Celestial::Celestial(Args&&... args)  // NOLINT(build/c++11)
     : body_(new Body<Barycentric>(
                     std::forward<Args>(args)...)) {}  // NOLINT(build/c++11)
 
-inline Body<Barycentric> const& Celestial::body() const {
+inline MassiveBody const& Celestial::body() const {
   return *body_;
 }
 

@@ -19,6 +19,7 @@ namespace physics {
 template<typename Frame>
 class OblateBody : MassiveBody {
   static_assert(Frame::is_inertial, "Frame must be inertial");
+
  public:
   OblateBody(GravitationalParameter const& gravitational_parameter,
              double const j2,

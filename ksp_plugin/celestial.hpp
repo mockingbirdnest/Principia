@@ -4,13 +4,13 @@
 #include <utility>
 
 #include "ksp_plugin/frames.hpp"
-#include "physics/body.hpp"
 #include "physics/degrees_of_freedom.hpp"
+#include "physics/massive_body.hpp"
 #include "physics/trajectory.hpp"
 #include "quantities/named_quantities.hpp"
 
-using principia::physics::Body;
 using principia::physics::DegreesOfFreedom;
+using principia::physics::MassiveBody;
 using principia::physics::Trajectory;
 using principia::quantities::GravitationalParameter;
 
@@ -27,7 +27,7 @@ class Celestial {
   template<typename... Args>
   explicit Celestial(Args&&... args);  // NOLINT(build/c++11)
 
-  Body<Barycentric> const& body() const;
+  MassiveBody const& body() const;
   bool has_parent() const;
   Celestial const& parent() const;
   Trajectory<Barycentric> const& history() const;
@@ -47,7 +47,7 @@ class Celestial {
   void ResetProlongation(Instant const& time);
 
  private:
-  std::unique_ptr<Body<Barycentric> const> const body_;
+  std::unique_ptr<MassiveBody const> const body_;
   // The parent body for the 2-body approximation. Not owning, must only
   // be null for the sun.
   Celestial const* parent_ = nullptr;
