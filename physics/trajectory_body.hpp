@@ -14,7 +14,7 @@ namespace principia {
 namespace physics {
 
 template<typename Frame>
-Trajectory<Frame>::Trajectory(Body<Frame> const& body)
+Trajectory<Frame>::Trajectory(Body const& body)
     : body_(body),
       parent_(nullptr) {}
 
@@ -215,7 +215,7 @@ Instant const* Trajectory<Frame>::fork_time() const {
 }
 
 template<typename Frame>
-Body<Frame> const& Trajectory<Frame>::body() const {
+Body const& Trajectory<Frame>::body() const {
   return body_;
 }
 
@@ -347,7 +347,7 @@ Trajectory<Frame>::TransformingIterator<ToFrame>::TransformingIterator(
       transform_(transform) {}
 
 template<typename Frame>
-Trajectory<Frame>::Trajectory(Body<Frame> const& body,
+Trajectory<Frame>::Trajectory(Body const& body,
                               Trajectory* const parent,
                               typename Timeline::iterator const& fork)
     : body_(body),
