@@ -13,6 +13,7 @@ namespace ksp_plugin {
 using geometry::AffineMap;
 using geometry::Bivector;
 using geometry::Permutation;
+using si::Radian;
 
 namespace {
 
@@ -445,6 +446,49 @@ std::unique_ptr<BarycentricRotatingFrame> Plugin::NewBarycentricRotatingFrame(
   CHECK(secondary_it != celestials_.end());
   Celestial const& secondary = *secondary_it->second;
   return std::make_unique<BarycentricRotatingFrame>(primary, secondary);
+}
+
+Position<World> Plugin::VesselWorldPosition(
+    GUID const& vessel_guid,
+    Position<World> const& parent_world_position) const {
+  auto const it = vessels_.find(vessel_guid);
+  CHECK(it != vessels_.end());
+  Vessel const& vessel = *(it->second);
+  auto const to_world =
+      AffineMap<Barycentric, World, Length, Rotation>(
+          vessel.parent().prolongation().last().degrees_of_freedom().position,
+          parent_world_position,
+          Rotation<WorldSun, World>::Identity() * PlanetariumRotation());
+  CHECK(vessel.has_history()) << "Vessel with GUID " << vessel_guid
+                              << " was not given an initial state";
+  return to_world(
+      vessel.prolongation_or_history().last().degrees_of_freedom().position);
+}
+
+Velocity<World> Plugin::VesselWorldVelocity(
+      GUID const& vessel_guid,
+      Velocity<World> const& parent_world_velocity,
+      Time const& parent_rotation_period) const {
+  auto const it = vessels_.find(vessel_guid);
+  CHECK(it != vessels_.end());
+  Vessel const& vessel = *(it->second);
+  CHECK(vessel.has_history()) << "Vessel with GUID " << vessel_guid
+                              << " was not given an initial state";
+  Rotation<Barycentric, World> to_world =
+      Rotation<WorldSun, World>::Identity() * PlanetariumRotation();
+  Velocity<Barycentric> const velocity_relative_to_parent =
+      vessel.prolongation_or_history().last().degrees_of_freedom().velocity -
+      vessel.parent().prolongation().last().degrees_of_freedom().velocity;
+  Displacement<Barycentric> const offset_from_parent =
+      vessel.prolongation_or_history().last().degrees_of_freedom().position -
+      vessel.parent().prolongation().last().degrees_of_freedom().position;
+  AngularVelocity<Barycentric> const world_frame_angular_velocity =
+      AngularVelocity<Barycentric>({0 * Radian / Second,
+                                    2 * π * Radian / parent_rotation_period,
+                                    0 * Radian / Second});
+  return to_world(
+      (world_frame_angular_velocity * offset_from_parent) / Radian
+          + velocity_relative_to_parent) + parent_world_velocity;
 }
 
 }  // namespace ksp_plugin

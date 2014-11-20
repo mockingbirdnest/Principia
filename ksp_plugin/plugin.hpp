@@ -200,6 +200,15 @@ class Plugin {
   NewBarycentricRotatingFrame(Index const primary_index,
                               Index const secondary_index) const;
 
+  virtual Position<World> VesselWorldPosition(
+      GUID const& vessel_guid,
+      Position<World> const& parent_world_position) const;
+
+  virtual Velocity<World> VesselWorldVelocity(
+      GUID const& vessel_guid,
+      Velocity<World> const& parent_world_velocity,
+      Time const& parent_rotation_period) const;
+
  private:
   using GUIDToOwnedVessel = std::map<GUID, std::unique_ptr<Vessel>>;
   using GUIDToUnownedVessel = std::map<GUID, Vessel* const>;

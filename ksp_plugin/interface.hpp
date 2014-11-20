@@ -223,6 +223,17 @@ extern "C" DLLEXPORT
 void CDECL DeleteLineAndIterator(
     LineAndIterator const** const line_and_iterator);
 
+extern "C" DLLEXPORT
+XYZ CDECL VesselWorldPosition(Plugin const* const plugin,
+                              char const* vessel_guid,
+                              XYZ const parent_world_position);
+
+extern "C" DLLEXPORT
+XYZ CDECL VesselWorldVelocity(Plugin const* const plugin,
+                              char const* vessel_guid,
+                              XYZ const parent_world_velocity,
+                              double const parent_rotation_period);
+
 // Says hello, convenient for checking that calls to the DLL work.
 extern "C" DLLEXPORT
 char const* CDECL SayHello();
