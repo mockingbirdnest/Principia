@@ -20,8 +20,7 @@ namespace principia {
 namespace benchmarks {
 
 void SimulateSolarSystem(SolarSystem* solar_system) {
-  std::unique_ptr<NBodySystem<ICRFJ2000Ecliptic>> n_body_system(
-      new NBodySystem<ICRFJ2000Ecliptic>());
+  auto const n_body_system = std::make_unique<NBodySystem<ICRFJ2000Ecliptic>>();
   auto const trajectories = solar_system->trajectories();
   SPRKIntegrator<Length, Speed> integrator;
   integrator.Initialize(integrator.Order5Optimal());
