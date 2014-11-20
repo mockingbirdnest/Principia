@@ -6,7 +6,7 @@ namespace principia {
 namespace ksp_plugin {
 
 inline Vessel::Vessel(Celestial const* parent)
-    : body_(new Body<Barycentric>(GravitationalParameter())),
+    : body_(new MasslessBody),
       parent_(CHECK_NOTNULL(parent)) {}
 
 inline bool Vessel::has_history() const {

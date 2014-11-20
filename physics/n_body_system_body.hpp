@@ -10,6 +10,7 @@
 #include "geometry/r3_element.hpp"
 #include "glog/logging.h"
 #include "integrators/symplectic_partitioned_runge_kutta_integrator.hpp"
+#include "physics/oblate_body.hpp"
 #include "quantities/quantities.hpp"
 
 using principia::geometry::InnerProduct;
@@ -39,7 +40,7 @@ namespace {
 template<typename Frame>
 __forceinline Vector<Acceleration, Frame>
     Order2ZonalAcceleration(
-        Body<Frame> const& body,
+        OblateBody<Frame> const& body,
         Vector<Length, Frame> const& r,
         Exponentiation<Length, -2> const& one_over_r_squared,
         Exponentiation<Length, -3> const& one_over_r_cubed) {
@@ -79,7 +80,7 @@ void NBodySystem<Frame>::Integrate(
 
   // These objects are for checking the consistency of the parameters.
   std::set<Instant> times_in_trajectories;
-  std::set<Body<Frame> const*> bodies_in_trajectories;
+  std::set<Body const*> bodies_in_trajectories;
 
   // Prepare the initial state of the integrator.  For efficiently computing the
   // accelerations, we need to separate the trajectories of oblate massive
@@ -96,7 +97,7 @@ void NBodySystem<Frame>::Integrate(
       for (auto const& trajectory : trajectories) {
         // See if this trajectory should be processed in this iteration and
         // update the appropriate vector.
-        Body<Frame> const* const body = &trajectory->body();
+        Body const* const body = &trajectory->body<Body>();
         if (body->is_massless() != is_massless ||
             body->is_oblate() != is_oblate) {
           continue;
@@ -191,7 +192,7 @@ template<bool body1_is_oblate,
          bool body2_is_oblate,
          bool body2_is_massive>
 inline void NBodySystem<Frame>::ComputeOneBodyGravitationalAcceleration(
-    Body<Frame> const& body1,
+    MassiveBody const& body1,
     size_t const b1,
     ReadonlyTrajectories const& body2_trajectories,
     size_t const b2_begin,
@@ -223,12 +224,12 @@ inline void NBodySystem<Frame>::ComputeOneBodyGravitationalAcceleration(
     (*result)[three_b2 + 1] += Δq1 * μ1_over_r_cubed;
     (*result)[three_b2 + 2] += Δq2 * μ1_over_r_cubed;
 
-    Body<Frame> const* body2 = nullptr;
+    MassiveBody const* body2 = nullptr;
     if (body2_is_massive) {
       // Lex. III. Actioni contrariam semper & æqualem esse reactionem:
       // sive corporum duorum actiones in se mutuo semper esse æquales &
       // in partes contrarias dirigi.
-      body2 = &body2_trajectories[b2 - b2_begin]->body();
+      body2 = &body2_trajectories[b2 - b2_begin]->body<MassiveBody>();
       GravitationalParameter const& body2_gravitational_parameter =
           body2->gravitational_parameter();
       auto const μ2_over_r_cubed =
@@ -244,7 +245,7 @@ inline void NBodySystem<Frame>::ComputeOneBodyGravitationalAcceleration(
       if (body1_is_oblate) {
         R3Element<Acceleration> const order_2_zonal_acceleration1 =
             Order2ZonalAcceleration<Frame>(
-                body1,
+                static_cast<OblateBody<Frame> const &>(body1),
                 Δq,
                 one_over_r_squared,
                 one_over_r_cubed).coordinates();
@@ -256,7 +257,7 @@ inline void NBodySystem<Frame>::ComputeOneBodyGravitationalAcceleration(
         // |body2| was set in the |body2_is_massive| branch above.
         R3Element<Acceleration> const order_2_zonal_acceleration2 =
             Order2ZonalAcceleration<Frame>(
-                *CHECK_NOTNULL(body2),
+                *CHECK_NOTNULL(static_cast<OblateBody<Frame> const*>(body2)),
                 Δq,
                 one_over_r_squared,
                 one_over_r_cubed).coordinates();
@@ -285,7 +286,8 @@ void NBodySystem<Frame>::ComputeGravitationalAccelerations(
   size_t const number_of_massless_trajectories = massless_trajectories.size();
 
   for (std::size_t b1 = 0; b1 < number_of_massive_oblate_trajectories; ++b1) {
-    Body<Frame> const& body1 = massive_oblate_trajectories[b1]->body();
+    OblateBody<Frame> const& body1 =
+        massive_oblate_trajectories[b1]->body<OblateBody<Frame>>();
     ComputeOneBodyGravitationalAcceleration<true /*body1_is_oblate*/,
                                             true /*body2_is_oblate*/,
                                             true /*body2_is_massive*/>(
@@ -322,9 +324,9 @@ void NBodySystem<Frame>::ComputeGravitationalAccelerations(
        b1 < number_of_massive_oblate_trajectories +
             number_of_massive_spherical_trajectories;
        ++b1) {
-    Body<Frame> const& body1 =
+    MassiveBody const& body1 =
         massive_spherical_trajectories[
-            b1 - number_of_massive_oblate_trajectories]->body();
+            b1 - number_of_massive_oblate_trajectories]->body<MassiveBody>();
     ComputeOneBodyGravitationalAcceleration<false /*body1_is_oblate*/,
                                             false /*body2_is_oblate*/,
                                             true /*body2_is_massive*/>(

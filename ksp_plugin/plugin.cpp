@@ -181,7 +181,8 @@ Plugin::Plugin(Instant const& initial_time,
       current_time_(initial_time) {
   auto inserted = celestials_.insert(
       {sun_index,
-       std::make_unique<Celestial>(sun_gravitational_parameter)});
+       std::make_unique<Celestial>(
+           std::make_unique<MassiveBody>(sun_gravitational_parameter))});
   sun_ = inserted.first->second.get();
   sun_->CreateHistoryAndForkProlongation(
       current_time_,
@@ -204,7 +205,8 @@ void Plugin::InsertCelestial(
   Celestial const& parent= *it->second;
   auto const inserted = celestials_.insert(
       {celestial_index,
-       std::make_unique<Celestial>(gravitational_parameter)});
+       std::make_unique<Celestial>(
+           std::make_unique<MassiveBody>(gravitational_parameter))});
   CHECK(inserted.second) << "Body already exists at index " << celestial_index;
   LOG(INFO) << "Initial |orbit.pos| for celestial at index " << celestial_index
             << ": " << from_parent_position;

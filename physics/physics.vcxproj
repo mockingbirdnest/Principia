@@ -127,14 +127,19 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="body.hpp" />
-    <ClInclude Include="body_body.hpp" />
     <ClInclude Include="degrees_of_freedom.hpp" />
     <ClInclude Include="degrees_of_freedom_body.hpp" />
     <ClInclude Include="frame.hpp" />
     <ClInclude Include="frame_body.hpp" />
+    <ClInclude Include="massive_body.hpp" />
+    <ClInclude Include="massive_body_body.hpp" />
+    <ClInclude Include="massless_body.hpp" />
+    <ClInclude Include="massless_body_body.hpp" />
     <ClInclude Include="mock_n_body_system.hpp" />
     <ClInclude Include="n_body_system.hpp" />
     <ClInclude Include="n_body_system_body.hpp" />
+    <ClInclude Include="oblate_body.hpp" />
+    <ClInclude Include="oblate_body_body.hpp" />
     <ClInclude Include="trajectory.hpp" />
     <ClInclude Include="trajectory_body.hpp" />
     <ClInclude Include="transforms.hpp" />

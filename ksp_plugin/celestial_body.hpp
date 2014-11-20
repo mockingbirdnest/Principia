@@ -5,12 +5,10 @@
 namespace principia {
 namespace ksp_plugin {
 
-template<typename... Args>
-Celestial::Celestial(Args&&... args)  // NOLINT(build/c++11)
-    : body_(new Body<Barycentric>(
-                    std::forward<Args>(args)...)) {}  // NOLINT(build/c++11)
+inline Celestial::Celestial(std::unique_ptr<MassiveBody const> body)
+    : body_(std::move(body)) {}
 
-inline Body<Barycentric> const& Celestial::body() const {
+inline MassiveBody const& Celestial::body() const {
   return *body_;
 }
 
