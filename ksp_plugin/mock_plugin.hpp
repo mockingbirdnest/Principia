@@ -11,7 +11,7 @@ class MockPlugin : public Plugin {
  public:
   MockPlugin() : Plugin(Instant(),
                         Index(0),
-                        GravitationalParameter(),
+                        1 * SIUnit<GravitationalParameter>(),
                         Angle()) {}
   MockPlugin(MockPlugin const&) = delete;
   MockPlugin(MockPlugin&&) = delete;

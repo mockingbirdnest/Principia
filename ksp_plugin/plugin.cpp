@@ -178,10 +178,10 @@ Plugin::Plugin(Instant const& initial_time,
     : n_body_system_(new NBodySystem<Barycentric>),
       planetarium_rotation_(planetarium_rotation),
       current_time_(initial_time) {
-  auto a = new Celestial(sun_gravitational_parameter);
   auto inserted = celestials_.insert(
       {sun_index,
-       std::unique_ptr<Celestial>(new Celestial<MassiveBody, GravitationalParameter>(sun_gravitational_parameter)});
+       std::make_unique<Celestial>(
+           std::make_unique<MassiveBody>(sun_gravitational_parameter))});
   sun_ = inserted.first->second.get();
   sun_->CreateHistoryAndForkProlongation(
       current_time_,
@@ -204,7 +204,8 @@ void Plugin::InsertCelestial(
   Celestial const& parent= *it->second;
   auto const inserted = celestials_.insert(
       {celestial_index,
-       std::make_unique<Celestial>(gravitational_parameter)});
+       std::make_unique<Celestial>(
+           std::make_unique<MassiveBody>(gravitational_parameter))});
   CHECK(inserted.second) << "Body already exists at index " << celestial_index;
   LOG(INFO) << "Initial |orbit.pos| for celestial at index " << celestial_index
             << ": " << from_parent_position;

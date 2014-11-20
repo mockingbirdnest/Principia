@@ -20,17 +20,13 @@ using principia::quantities::GravitationalParameter;
 namespace principia {
 namespace ksp_plugin {
 
-// Represents a KSP |CelestialBody|.
+// Represents a KSP celestial body.
 class Celestial {
  public:
+  explicit Celestial(std::unique_ptr<MassiveBody const> body);
   Celestial(Celestial const&) = delete;
   Celestial(Celestial&&) = delete;
   ~Celestial() = default;
-
-  template<typename B, typename... Args>
-  std::unique_ptr<Celestial> NewCelestial(
-      std::enable_if_t<std::is_base_of<Body, B>::value,
-                       Args>&&... args);  // NOLINT(build/c++11)
 
   MassiveBody const& body() const;
   bool has_parent() const;
@@ -52,8 +48,6 @@ class Celestial {
   void ResetProlongation(Instant const& time);
 
  private:
-  Celestial(std::unique_ptr<MassiveBody>&& body);
-
   std::unique_ptr<MassiveBody const> const body_;
   // The parent body for the 2-body approximation. Not owning, must only
   // be null for the sun.

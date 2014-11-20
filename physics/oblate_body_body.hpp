@@ -7,8 +7,8 @@ namespace principia {
 namespace physics {
 
 namespace {
-double const kNormLow = kNormLow;
-double const kNormHigh = kNormHigh;
+double const kNormLow = 0.999;
+double const kNormHigh = 1.001;
 }  // namespace
 
 template<typename Frame>
