@@ -4,6 +4,7 @@
 
 #include "ksp_plugin/celestial.hpp"
 #include "ksp_plugin/vessel.hpp"
+#include "ksp_plugin/part.hpp"
 #include "physics/body.hpp"
 #include "physics/trajectory.hpp"
 #include "quantities/named_quantities.hpp"
@@ -67,6 +68,8 @@ class Vessel {
   // catch up with the synchronous constant-timestep integration.
   // |this| is in |new_vessels_| if and only if |prolongation| is null.
   Trajectory<Barycentric>* prolongation_ = nullptr;
+
+  std::vector<Part<Barycentric>> parts_;
 };
 
 }  // namespace ksp_plugin
