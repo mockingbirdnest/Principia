@@ -18,7 +18,7 @@ using principia::quantities::GravitationalParameter;
 namespace principia {
 namespace ksp_plugin {
 
-// Represents a KSP celestial body.
+// Represents a KSP |CelestialBody|.
 class Celestial {
  public:
   explicit Celestial(std::unique_ptr<MassiveBody const> body);
