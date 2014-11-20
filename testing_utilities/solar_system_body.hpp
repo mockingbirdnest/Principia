@@ -56,7 +56,6 @@ std::unique_ptr<MassiveBody> NewBody(
     case SolarSystem::Accuracy::kMinorAndMajorBodies:
       return std::make_unique<MassiveBody>(gravitational_parameter);
     case SolarSystem::Accuracy::kAllBodiesAndOblateness:
-      LOG(ERROR)<<axis;
       return std::make_unique<OblateBody<ICRFJ2000Ecliptic>>(
           gravitational_parameter, j2, radius, axis);
     default:

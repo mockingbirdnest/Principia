@@ -118,8 +118,8 @@ class Trajectory {
   // trajectory.
   Instant const* fork_time() const;
 
-  // The body to which this trajectory pertains.  The body is dynamic_cast to
-  // the type B.  An error occurs if the cast fails.
+  // The body to which this trajectory pertains.  The body is cast to the type
+  // B.  An error occurs in debug mode if the cast fails.
   template<typename B>
   std::enable_if_t<std::is_base_of<Body, B>::value, B> const& body() const;
 

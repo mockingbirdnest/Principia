@@ -218,7 +218,14 @@ template<typename Frame>
 template<typename B>
 std::enable_if_t<std::is_base_of<Body, B>::value, B> const&
 Trajectory<Frame>::body() const {
+// Dynamic casting is expensive, as in 3x slower for the benchmarks.  Do that in
+// debug mode to catch bugs, but not in optimized mode where we want all the
+// performance we can get.
+#ifdef _DEBUG
   return *CHECK_NOTNULL(dynamic_cast<B const*>(&body_));
+#else
+  return *static_cast<B const*>(&body_);
+#endif
 }
 
 template<typename Frame>
