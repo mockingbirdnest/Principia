@@ -14,6 +14,7 @@
 #include "physics/frame.hpp"
 #include "physics/massive_body.hpp"
 #include "physics/massless_body.hpp"
+#include "physics/oblate_body.hpp"
 #include "quantities/quantities.hpp"
 #include "quantities/si.hpp"
 
@@ -39,6 +40,7 @@ class TrajectoryTest : public testing::Test {
  protected:
   enum class Tag {
     kWorld,
+    kOtherWorld,
   };
 
   using World = Frame<Tag, Tag::kWorld, true>;
@@ -103,6 +105,18 @@ class TrajectoryTest : public testing::Test {
 };
 
 using TrajectoryDeathTest = TrajectoryTest;
+
+TEST_F(TrajectoryDeathTest, Construction) {
+  using OtherWorld = Frame<Tag, Tag::kOtherWorld, true>;
+  // TODO(phl): Commented out while I figure out to do this.
+  // EXPECT_DEATH({
+  //   OblateBody<OtherWorld> body(1 * SIUnit<GravitationalParameter>(),
+  //                               1.0 /*j2*/,
+  //                               1 * SIUnit<Length>(),
+  //                               Vector<double, OtherWorld>({0, 1, 0}));
+  //   Trajectory<World> trajectory(body);
+  // }, "not in the same frame");
+}
 
 TEST_F(TrajectoryDeathTest, AppendError) {
   EXPECT_DEATH({

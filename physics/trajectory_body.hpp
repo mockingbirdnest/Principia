@@ -7,6 +7,7 @@
 
 #include "geometry/named_quantities.hpp"
 #include "glog/logging.h"
+#include "physics/oblate_body.hpp"
 
 using principia::geometry::Instant;
 
@@ -16,7 +17,13 @@ namespace physics {
 template<typename Frame>
 Trajectory<Frame>::Trajectory(Body const& body)
     : body_(body),
-      parent_(nullptr) {}
+      parent_(nullptr) {
+  // TODO(phl): This check would be nice, but just writing OblateBody<Frame> for
+  // a non-inertial frame is a compilation error.  How do we do this?
+  // CHECK(!body.is_oblate() ||
+  //       dynamic_cast<OblateBody<Frame> const*>(&body) != nullptr)
+  //     << "Oblate body not in the same frame as the trajectory";
+}
 
 template<typename Frame>
 typename Trajectory<Frame>::NativeIterator Trajectory<Frame>::first() const {
