@@ -11,6 +11,10 @@
 #include "geometry/r3_element.hpp"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
+#include "physics/frame.hpp"
+#include "physics/massive_body.hpp"
+#include "physics/massless_body.hpp"
+#include "physics/oblate_body.hpp"
 #include "quantities/quantities.hpp"
 #include "quantities/si.hpp"
 
@@ -32,10 +36,15 @@ using testing::Ref;
 namespace principia {
 namespace physics {
 
-class World;
-
 class TrajectoryTest : public testing::Test {
  protected:
+  enum class Tag {
+    kWorld,
+    kOtherWorld,
+  };
+
+  using World = Frame<Tag, Tag::kWorld, true>;
+
   void SetUp() override {
     q1_ = Position<World>(
         Vector<Length, World>({1 * Metre, 2 * Metre, 3 * Metre}));
@@ -67,8 +76,8 @@ class TrajectoryTest : public testing::Test {
     t3_ = t0_ + 27 * Second;
     t4_ = t0_ + 37 * Second;
 
-    massive_body_.reset(new Body<World>(1 * SIUnit<Mass>()));
-    massless_body_.reset(new Body<World>(0 * SIUnit<Mass>()));
+    massive_body_.reset(new MassiveBody(1 * SIUnit<Mass>()));
+    massless_body_.reset(new MasslessBody);
     massive_trajectory_.reset(new Trajectory<World>(*massive_body_));
     massless_trajectory_.reset(new Trajectory<World>(*massless_body_));
 
@@ -88,14 +97,26 @@ class TrajectoryTest : public testing::Test {
   Velocity<World> p1_, p2_, p3_, p4_;
   std::unique_ptr<DegreesOfFreedom<World>> d1_, d2_, d3_, d4_;
   Instant t0_, t1_, t2_, t3_, t4_;
-  std::unique_ptr<Body<World>> massive_body_;
-  std::unique_ptr<Body<World>> massless_body_;
+  std::unique_ptr<MassiveBody> massive_body_;
+  std::unique_ptr<MasslessBody> massless_body_;
   std::unique_ptr<Trajectory<World>> massive_trajectory_;
   std::unique_ptr<Trajectory<World>> massless_trajectory_;
   Trajectory<World>::Transform<World> transform_;
 };
 
 using TrajectoryDeathTest = TrajectoryTest;
+
+TEST_F(TrajectoryDeathTest, Construction) {
+  using OtherWorld = Frame<Tag, Tag::kOtherWorld, true>;
+  // TODO(phl): Commented out while I figure out to do this.
+  // EXPECT_DEATH({
+  //   OblateBody<OtherWorld> body(1 * SIUnit<GravitationalParameter>(),
+  //                               1.0 /*j2*/,
+  //                               1 * SIUnit<Length>(),
+  //                               Vector<double, OtherWorld>({0, 1, 0}));
+  //   Trajectory<World> trajectory(body);
+  // }, "not in the same frame");
+}
 
 TEST_F(TrajectoryDeathTest, AppendError) {
   EXPECT_DEATH({
@@ -122,7 +143,7 @@ TEST_F(TrajectoryTest, AppendSuccess) {
   EXPECT_THAT(velocities,
               ElementsAre(Pair(t1_, p1_), Pair(t2_, p2_), Pair(t3_, p3_)));
   EXPECT_THAT(times, ElementsAre(t1_, t2_, t3_));
-  EXPECT_THAT(massive_trajectory_->body(), Ref(*massive_body_));
+  EXPECT_THAT(massive_trajectory_->body<MassiveBody>(), Ref(*massive_body_));
 }
 
 TEST_F(TrajectoryDeathTest, ForkError) {
@@ -149,7 +170,7 @@ TEST_F(TrajectoryTest, ForkSuccess) {
   EXPECT_THAT(velocities,
               ElementsAre(Pair(t1_, p1_), Pair(t2_, p2_), Pair(t3_, p3_)));
   EXPECT_THAT(times, ElementsAre(t1_, t2_, t3_));
-  EXPECT_THAT(fork->body(), Ref(*massive_body_));
+  EXPECT_THAT(fork->body<MassiveBody>(), Ref(*massive_body_));
   positions = fork->Positions();
   velocities = fork->Velocities();
   times = fork->Times();
@@ -160,7 +181,7 @@ TEST_F(TrajectoryTest, ForkSuccess) {
               ElementsAre(Pair(t1_, p1_), Pair(t2_, p2_),
                           Pair(t3_, p3_), Pair(t4_, p4_)));
   EXPECT_THAT(times, ElementsAre(t1_, t2_, t3_, t4_));
-  EXPECT_THAT(fork->body(), Ref(*massive_body_));
+  EXPECT_THAT(fork->body<MassiveBody>(), Ref(*massive_body_));
 }
 
 TEST_F(TrajectoryDeathTest, DeleteForkError) {
@@ -200,7 +221,7 @@ TEST_F(TrajectoryTest, DeleteForkSuccess) {
   EXPECT_THAT(velocities,
               ElementsAre(Pair(t1_, p1_), Pair(t2_, p2_), Pair(t3_, p3_)));
   EXPECT_THAT(times, ElementsAre(t1_, t2_, t3_));
-  EXPECT_THAT(fork1->body(), Ref(*massive_body_));
+  EXPECT_THAT(fork1->body<MassiveBody>(), Ref(*massive_body_));
   positions = fork1->Positions();
   velocities = fork1->Velocities();
   times = fork1->Times();
@@ -211,7 +232,7 @@ TEST_F(TrajectoryTest, DeleteForkSuccess) {
               ElementsAre(Pair(t1_, p1_), Pair(t2_, p2_),
                           Pair(t3_, p3_), Pair(t4_, p4_)));
   EXPECT_THAT(times, ElementsAre(t1_, t2_, t3_, t4_));
-  EXPECT_THAT(fork1->body(), Ref(*massive_body_));
+  EXPECT_THAT(fork1->body<MassiveBody>(), Ref(*massive_body_));
   massive_trajectory_.reset();
 }
 

@@ -8,6 +8,7 @@
 #include "geometry/named_quantities.hpp"
 #include "geometry/permutation.hpp"
 #include "glog/logging.h"
+#include "physics/massive_body.hpp"
 
 using principia::geometry::AffineMap;
 using principia::geometry::Bivector;
@@ -188,8 +189,10 @@ Transforms<FromFrame, ThroughFrame, ToFrame>::BarycentricRotating(
         Barycentre<FromFrame, GravitationalParameter>(
             {primary_degrees_of_freedom,
              secondary_degrees_of_freedom},
-            {from_primary_trajectory.body().gravitational_parameter(),
-             from_secondary_trajectory.body().gravitational_parameter()});
+            {from_primary_trajectory.body<MassiveBody>().
+                 gravitational_parameter(),
+             from_secondary_trajectory.body<MassiveBody>().
+                 gravitational_parameter()});
     Matrix const from_basis_of_barycentric_frame_to_standard_basis =
         Transpose(FromStandardBasisToBasisOfBarycentricFrame(
                       barycentre_degrees_of_freedom,
@@ -227,8 +230,10 @@ Transforms<FromFrame, ThroughFrame, ToFrame>::BarycentricRotating(
         Barycentre<ToFrame, GravitationalParameter>(
             {last_primary_degrees_of_freedom,
              last_secondary_degrees_of_freedom},
-            {to_primary_trajectory.body().gravitational_parameter(),
-             to_secondary_trajectory.body().gravitational_parameter()});
+            {to_primary_trajectory.body<MassiveBody>().
+                 gravitational_parameter(),
+             to_secondary_trajectory.body<MassiveBody>().
+                 gravitational_parameter()});
     Matrix const from_standard_basis_to_basis_of_last_barycentric_frame =
         FromStandardBasisToBasisOfBarycentricFrame(
             last_barycentre,

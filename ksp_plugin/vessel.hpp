@@ -5,11 +5,11 @@
 #include "ksp_plugin/celestial.hpp"
 #include "ksp_plugin/vessel.hpp"
 #include "ksp_plugin/part.hpp"
-#include "physics/body.hpp"
+#include "physics/massless_body.hpp"
 #include "physics/trajectory.hpp"
 #include "quantities/named_quantities.hpp"
 
-using principia::physics::Body;
+using principia::physics::MasslessBody;
 using principia::physics::Trajectory;
 using principia::quantities::GravitationalParameter;
 
@@ -48,8 +48,7 @@ class Vessel {
   void ResetProlongation(Instant const& time);
 
  private:
-  // A massless body.
-  std::unique_ptr<Body<Barycentric> const> const body_;
+  std::unique_ptr<MasslessBody const> const body_;
   // The parent body for the 2-body approximation. Not owning, must not be
   // null.
   Celestial const* parent_;

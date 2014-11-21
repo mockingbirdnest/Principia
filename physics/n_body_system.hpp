@@ -7,6 +7,7 @@
 #include "geometry/named_quantities.hpp"
 #include "integrators/symplectic_integrator.hpp"
 #include "physics/body.hpp"
+#include "physics/massive_body.hpp"
 #include "physics/trajectory.hpp"
 #include "quantities/quantities.hpp"
 
@@ -51,7 +52,7 @@ class NBodySystem {
            bool body2_is_oblate,
            bool body2_is_massive>
   static void ComputeOneBodyGravitationalAcceleration(
-      Body<Frame> const& body1,
+      MassiveBody const& body1,
       size_t const b1,
       ReadonlyTrajectories const& body2_trajectories,
       size_t const b2_begin,

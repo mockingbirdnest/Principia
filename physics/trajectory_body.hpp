@@ -7,6 +7,7 @@
 
 #include "geometry/named_quantities.hpp"
 #include "glog/logging.h"
+#include "physics/oblate_body.hpp"
 
 using principia::geometry::Instant;
 
@@ -14,9 +15,15 @@ namespace principia {
 namespace physics {
 
 template<typename Frame>
-Trajectory<Frame>::Trajectory(Body<Frame> const& body)
+Trajectory<Frame>::Trajectory(Body const& body)
     : body_(body),
-      parent_(nullptr) {}
+      parent_(nullptr) {
+  // TODO(phl): This check would be nice, but just writing OblateBody<Frame> for
+  // a non-inertial frame is a compilation error.  How do we do this?
+  // CHECK(!body.is_oblate() ||
+  //       dynamic_cast<OblateBody<Frame> const*>(&body) != nullptr)
+  //     << "Oblate body not in the same frame as the trajectory";
+}
 
 template<typename Frame>
 typename Trajectory<Frame>::NativeIterator Trajectory<Frame>::first() const {
@@ -215,8 +222,17 @@ Instant const* Trajectory<Frame>::fork_time() const {
 }
 
 template<typename Frame>
-Body<Frame> const& Trajectory<Frame>::body() const {
-  return body_;
+template<typename B>
+std::enable_if_t<std::is_base_of<Body, B>::value, B> const&
+Trajectory<Frame>::body() const {
+// Dynamic casting is expensive, as in 3x slower for the benchmarks.  Do that in
+// debug mode to catch bugs, but not in optimized mode where we want all the
+// performance we can get.
+#ifdef _DEBUG
+  return *CHECK_NOTNULL(dynamic_cast<B const*>(&body_));
+#else
+  return *static_cast<B const*>(&body_);
+#endif
 }
 
 template<typename Frame>
@@ -347,7 +363,7 @@ Trajectory<Frame>::TransformingIterator<ToFrame>::TransformingIterator(
       transform_(transform) {}
 
 template<typename Frame>
-Trajectory<Frame>::Trajectory(Body<Frame> const& body,
+Trajectory<Frame>::Trajectory(Body const& body,
                               Trajectory* const parent,
                               typename Timeline::iterator const& fork)
     : body_(body),

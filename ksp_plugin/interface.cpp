@@ -281,7 +281,7 @@ void SetVesselParts(
     char const* vessel_guid,
     KSPPart const* const parts,
     int count) {
-  for (KSPPart const* const part = parts; part < parts + count; ++part) {
+  for (KSPPart const* part = parts; part < parts + count; ++part) {
   }
 }
 

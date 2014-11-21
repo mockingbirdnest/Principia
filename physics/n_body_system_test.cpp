@@ -11,6 +11,8 @@
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "physics/body.hpp"
+#include "physics/massive_body.hpp"
+#include "physics/massless_body.hpp"
 #include "physics/trajectory.hpp"
 #include "quantities/constants.hpp"
 #include "quantities/numbers.hpp"
@@ -55,11 +57,11 @@ class NBodySystemTest : public testing::Test {
 
     // The Earth-Moon system, roughly, with a circular orbit with velocities
     // in the centre-of-mass frame.
-    body1_ = std::make_unique<Body<EarthMoonOrbitPlane>>(6E24 * SIUnit<Mass>());
-    body2_ = std::make_unique<Body<EarthMoonOrbitPlane>>(7E22 * SIUnit<Mass>());
+    body1_ = std::make_unique<MassiveBody>(6E24 * SIUnit<Mass>());
+    body2_ = std::make_unique<MassiveBody>(7E22 * SIUnit<Mass>());
 
     // A massless probe.
-    body3_ = std::make_unique<Body<EarthMoonOrbitPlane>>(0 * SIUnit<Mass>());
+    body3_ = std::make_unique<MasslessBody>();
 
     trajectory1_ =
         std::make_unique<Trajectory<EarthMoonOrbitPlane>>(*body1_);
@@ -137,9 +139,9 @@ class NBodySystemTest : public testing::Test {
     return result;
   }
 
-  std::unique_ptr<Body<EarthMoonOrbitPlane>> body1_;
-  std::unique_ptr<Body<EarthMoonOrbitPlane>> body2_;
-  std::unique_ptr<Body<EarthMoonOrbitPlane>> body3_;
+  std::unique_ptr<MassiveBody> body1_;
+  std::unique_ptr<MassiveBody> body2_;
+  std::unique_ptr<MasslessBody> body3_;
   std::unique_ptr<Trajectory<EarthMoonOrbitPlane>> trajectory1_;
   std::unique_ptr<Trajectory<EarthMoonOrbitPlane>> trajectory2_;
   std::unique_ptr<Trajectory<EarthMoonOrbitPlane>> trajectory3_;
