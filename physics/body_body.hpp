@@ -9,20 +9,20 @@ namespace physics {
 
 template<typename Frame>
 bool Body::is_compatible_with() const {
-  return CompatibilityHelper<Frame, 
+  return CompatibilityHelper<Frame,
                              Frame::is_inertial>::is_compatible_with(this);
 }
 
 template<typename Frame>
 class Body::CompatibilityHelper<Frame, false> {
-   public:
-     static bool is_compatible_with(Body const* body);
+ public:
+  static bool is_compatible_with(Body const* body);
 };
 
 template<typename Frame>
 class Body::CompatibilityHelper<Frame, true> {
-   public:
-     static bool is_compatible_with(Body const* body);
+ public:
+  static bool is_compatible_with(Body const* body);
 };
 
 template<typename Frame>
