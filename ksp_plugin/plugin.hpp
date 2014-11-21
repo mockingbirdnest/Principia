@@ -256,6 +256,9 @@ class Plugin {
   // well as the histories of unsynchronized vessels, up to exactly instant |t|.
   void EvolveProlongationsAndUnsynchronizedHistories(Instant const& t);
 
+  void AddVesselToNextPhysicsBubble(GUID const& vessel_guid,
+                                    std::vector<Part<World>> parts);
+
   // TODO(egg): Constant time step for now.
   Time const Δt_ = 10 * Second;
 
@@ -269,6 +272,14 @@ class Plugin {
 
   // The vessels that will be kept during the next call to |AdvanceTime|.
   std::set<Vessel const* const> kept_;
+
+  struct PhysicsBubble {
+    std::set<Vessel* const> vessels;
+    std::map<PartID, Part* const> parts;
+  };
+
+  std::unique_ptr<PhysicsBubble> current_physics_bubble_;
+  std::unique_ptr<PhysicsBubble> next_physics_bubble_;
 
   std::set<Vessel const* const> physics_bubble_;
   std::set<Vessel const* const> kept_in_physics_bubble_;

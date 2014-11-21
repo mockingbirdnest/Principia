@@ -60,6 +60,7 @@ struct KSPPart {
   XYZ world_position;
   XYZ world_velocity;
   double mass;
+  uint32_t id;
 };
 
 static_assert(std::is_standard_layout<KSPPart>::value,
@@ -245,7 +246,7 @@ XYZ CDECL VesselWorldVelocity(Plugin const* const plugin,
                               double const parent_rotation_period);
 
 extern "C" DLLEXPORT
-void CDECL SetVesselParts(
+void CDECL AddVesselToNextPhysicsBubble(
     Plugin const* const plugin,
     char const* vessel_guid,
     KSPPart const* const parts,

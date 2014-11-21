@@ -30,6 +30,7 @@ public partial class PluginAdapter : UnityEngine.MonoBehaviour {
     XYZ world_position;
     XYZ world_velocity;
     double mass;
+    uint id;
   };
 
   // Plugin interface.
@@ -173,7 +174,7 @@ public partial class PluginAdapter : UnityEngine.MonoBehaviour {
 
   [DllImport(dllName           : kDllPath,
              CallingConvention = CallingConvention.Cdecl)]
-  private static extern void SetVesselParts(
+  private static extern void AddVesselToNextPhysicsBubble(
       IntPtr plugin,
       [MarshalAs(UnmanagedType.LPStr)] String vessel_guid,
       KSPPart[] parts,

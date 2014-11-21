@@ -6,6 +6,7 @@
 
 using principia::si::Degree;
 using principia::si::Metre;
+using principia::si::Tonne;
 
 namespace principia {
 namespace ksp_plugin {
@@ -276,13 +277,25 @@ XYZ VesselWorldVelocity(Plugin const* const plugin,
              coordinates.z / (Metre / Second)};
 }
 
-void SetVesselParts(
+void AddVesselToNextPhysicsBubble(
     Plugin const* const plugin,
     char const* vessel_guid,
     KSPPart const* const parts,
     int count) {
+  std::vector<Part<World>> vessel_parts;
   for (KSPPart const* part = parts; part < parts + count; ++part) {
+    vessel_parts.push_back(
+        {World::origin + Displacement<World>({part->world_position.x * Metre,
+                                              part->world_position.y * Metre,
+                                              part->world_position.z * Metre}),
+         Velocity<World>({part->world_velocity.x * (Metre / Second),
+                          part->world_velocity.y * (Metre / Second),
+                          part->world_velocity.z * (Metre / Second)}),
+         part->mass * Tonne,
+         part->id});
   }
+  CHECK_NOTNULL(plugin)->AddVesselToNextPhysicsBubble(vessel_guid,
+                                                      vessel_parts);
 }
 
 char const* SayHello() {
