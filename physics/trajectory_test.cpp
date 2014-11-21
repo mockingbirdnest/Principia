@@ -108,14 +108,13 @@ using TrajectoryDeathTest = TrajectoryTest;
 
 TEST_F(TrajectoryDeathTest, Construction) {
   using OtherWorld = Frame<Tag, Tag::kOtherWorld, true>;
-  // TODO(phl): Commented out while I figure out to do this.
-  // EXPECT_DEATH({
-  //   OblateBody<OtherWorld> body(1 * SIUnit<GravitationalParameter>(),
-  //                               1.0 /*j2*/,
-  //                               1 * SIUnit<Length>(),
-  //                               Vector<double, OtherWorld>({0, 1, 0}));
-  //   Trajectory<World> trajectory(body);
-  // }, "not in the same frame");
+  EXPECT_DEATH({
+    OblateBody<OtherWorld> body(1 * SIUnit<GravitationalParameter>(),
+                                1.0 /*j2*/,
+                                1 * SIUnit<Length>(),
+                                Vector<double, OtherWorld>({0, 1, 0}));
+    Trajectory<World> trajectory(body);
+  }, "not in the same frame");
 }
 
 TEST_F(TrajectoryDeathTest, AppendError) {

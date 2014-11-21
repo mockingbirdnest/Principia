@@ -36,7 +36,8 @@ class Trajectory {
                                               DegreesOfFreedom<Frame> const&)>;
 
   // No transfer of ownership.  |body| must live longer than the trajectory as
-  // the trajectory holds a reference to it.
+  // the trajectory holds a reference to it.  If |body| is oblate it must be
+  // expressed in the same frame as the trajectory.
   explicit Trajectory(Body const& body);
   ~Trajectory() = default;
 
