@@ -77,7 +77,7 @@ Matrix FromStandardBasisToBasisOfBarycentricFrame(
   Bivector<double, Frame> const reference_binormal =
       Wedge(normalized_reference_direction, reference_normal);
   return FromColumns(normalized_reference_direction.coordinates(),
-                      reference_normal.coordinates(),
+                     reference_normal.coordinates(),
                      reference_binormal.coordinates());
 }
 

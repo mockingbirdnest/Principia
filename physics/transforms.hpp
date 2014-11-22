@@ -10,7 +10,8 @@ namespace physics {
 
 // This class represent a pair of transformations of a trajectory from
 // |FromFrame| to |ToFrame| with an intermediate representation in
-// |ThroughFrame|.
+// |ThroughFrame|.  Note that the trajectory in |ToFrame| is not the trajectory
+// of a body since its past changes from moment to moment.
 template<typename FromFrame, typename ThroughFrame, typename ToFrame>
 class Transforms {
   static_assert(FromFrame::is_inertial && ToFrame::is_inertial,
