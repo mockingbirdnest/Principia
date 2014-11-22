@@ -57,28 +57,24 @@ Matrix FromStandardBasisToBasisOfBarycentricFrame(
     DegreesOfFreedom<Frame> const& barycentre_degrees_of_freedom,
     DegreesOfFreedom<Frame> const& primary_degrees_of_freedom,
     DegreesOfFreedom<Frame> const& secondary_degrees_of_freedom) {
-  Displacement<Frame> const reference_direction =
-      primary_degrees_of_freedom.position -
-      barycentre_degrees_of_freedom.position;
   Vector<double, Frame> const normalized_reference_direction =
-      Normalize(reference_direction);
+      Normalize(primary_degrees_of_freedom.position -
+                barycentre_degrees_of_freedom.position);
   Velocity<Frame> const reference_coplanar =
       primary_degrees_of_freedom.velocity -
       barycentre_degrees_of_freedom.velocity;
-  Vector<double, Frame> const normalized_reference_coplanar =
-      Normalize(reference_coplanar);
   // Modified Gram-Schmidt.
-  Vector<double, Frame> const reference_normal =
-      normalized_reference_coplanar -
-          InnerProduct(normalized_reference_coplanar,
-                       normalized_reference_direction) *
-              normalized_reference_direction;
+  Vector<double, Frame> const normalized_reference_normal =
+      Normalize(
+          reference_coplanar -
+          InnerProduct(reference_coplanar, normalized_reference_direction) *
+              normalized_reference_direction);
   // TODO(egg): should we normalize this?
-  Bivector<double, Frame> const reference_binormal =
-      Wedge(normalized_reference_direction, reference_normal);
+  Bivector<double, Frame> const normalized_reference_binormal =
+      Wedge(normalized_reference_direction, normalized_reference_normal);
   return FromColumns(normalized_reference_direction.coordinates(),
-                     reference_normal.coordinates(),
-                     reference_binormal.coordinates());
+                     normalized_reference_normal.coordinates(),
+                     normalized_reference_binormal.coordinates());
 }
 
 }  // namespace

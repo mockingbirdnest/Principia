@@ -42,9 +42,7 @@ protected:
   void SetUp() override {
     body1_ = std::make_unique<MassiveBody>(1 * SIUnit<Mass>());
     body2_ = std::make_unique<MassiveBody>(3 * SIUnit<Mass>());
-    satellite1_from_ = std::make_unique<Trajectory<From>>(satellite1_);
-    satellite2_from_ = std::make_unique<Trajectory<From>>(satellite2_);
-    satellite3_from_ = std::make_unique<Trajectory<From>>(satellite3_);
+    satellite_from_ = std::make_unique<Trajectory<From>>(satellite_);
     body1_from_ = std::make_unique<Trajectory<From>>(*body1_);
     body2_from_ = std::make_unique<Trajectory<From>>(*body2_);
     body1_to_ = std::make_unique<Trajectory<To>>(*body1_);
@@ -68,10 +66,10 @@ protected:
                           Displacement<From>({-1 * i * SIUnit<Length>(),
                                               -2 * i * SIUnit<Length>(),
                                               3 * i * SIUnit<Length>()})),
-                      Velocity<From>({4 * i * SIUnit<Speed>(),
+                      Velocity<From>({-4 * i * SIUnit<Speed>(),
                                       8 * i * SIUnit<Speed>(),
                                       -16 * i * SIUnit<Speed>()})));
-      satellite1_from_->Append(
+      satellite_from_->Append(
           Instant(i * SIUnit<Time>()),
                   DegreesOfFreedom<From>(
                       Position<From>(
@@ -81,32 +79,17 @@ protected:
                       Velocity<From>({40 * i * SIUnit<Speed>(),
                                       -80 * i * SIUnit<Speed>(),
                                       160 * i * SIUnit<Speed>()})));
-      // At the midpoint between body1_ and body2_.
-      satellite2_from_->Append(
-          Instant(i * SIUnit<Time>()),
-                  DegreesOfFreedom<From>(
-                      Position<From>(
-                          Displacement<From>({0 * i * SIUnit<Length>(),
-                                              0 * i * SIUnit<Length>(),
-                                              6 * i * SIUnit<Length>()})),
-                      Velocity<From>({8 * i * SIUnit<Speed>(),
-                                      16 * i * SIUnit<Speed>(),
-                                      0 * i * SIUnit<Speed>()})));
     }
   }
 
   std::unique_ptr<MassiveBody> body1_;
   std::unique_ptr<MassiveBody> body2_;
-  MasslessBody satellite1_;
-  MasslessBody satellite2_;
-  MasslessBody satellite3_;
+  MasslessBody satellite_;
   std::unique_ptr<Trajectory<From>> body1_from_;
   std::unique_ptr<Trajectory<From>> body2_from_;
   std::unique_ptr<Trajectory<To>> body1_to_;
   std::unique_ptr<Trajectory<To>> body2_to_;
-  std::unique_ptr<Trajectory<From>> satellite1_from_;
-  std::unique_ptr<Trajectory<From>> satellite2_from_;
-  std::unique_ptr<Trajectory<From>> satellite3_from_;
+  std::unique_ptr<Trajectory<From>> satellite_from_;
 
   std::unique_ptr<Transforms<From, Through, To>> transforms_;
 };
@@ -117,7 +100,7 @@ TEST_F(TransformsTest, BodyCentredNonRotating) {
   Trajectory<Through> body1_through(*body1_);
 
   int i = 1;
-  for (auto it = transforms_->first(satellite1_from_.get());
+  for (auto it = transforms_->first(satellite_from_.get());
        !it.at_end();
        ++it, ++i) {
     DegreesOfFreedom<Through> const degrees_of_freedom =
@@ -161,33 +144,34 @@ TEST_F(TransformsTest, BodyCentredNonRotating) {
   }
 }
 
+// Check that the computations we do match those done using Mathematica.
 TEST_F(TransformsTest, SatelliteBarycentricRotating) {
   transforms_ = Transforms<From, Through, To>::BarycentricRotating(
                     *body1_from_, *body1_to_,
                     *body2_from_, *body2_to_);
-  Trajectory<Through> satellite1_through(satellite1_);
+  Trajectory<Through> satellite_through(satellite_);
 
   int i = 1;
-  for (auto it = transforms_->first(satellite1_from_.get());
+  for (auto it = transforms_->first(satellite_from_.get());
        !it.at_end();
        ++it, ++i) {
     DegreesOfFreedom<Through> const degrees_of_freedom =
         it.degrees_of_freedom();
     EXPECT_THAT(degrees_of_freedom.position - Position<Through>(),
                 AlmostEquals(Displacement<Through>(
-                                 {-5.5 * sqrt(5.0) * i * SIUnit<Length>(),
-                                  27 * i * SIUnit<Length>(),
-                                  8 * sqrt(5.0) * i * SIUnit<Length>()}))) << i;
+                    {-5.5 * sqrt(5.0) * i * SIUnit<Length>(),
+                     62.0 * sqrt(5.0 / 21.0) * i * SIUnit<Length>(),
+                     53.0 / sqrt(21.0) * i * SIUnit<Length>()}))) << i;
     EXPECT_THAT(degrees_of_freedom.velocity,
                 AlmostEquals(Velocity<Through>(
-                                 {-28 * sqrt(5.0) * i * SIUnit<Speed>(),
-                                  168 * i * SIUnit<Speed>(),
-                                  32 * sqrt(5.0) * i * SIUnit<Speed>()}))) << i;
-    satellite1_through.Append(Instant(i * SIUnit<Time>()), degrees_of_freedom);
+                    {-134.0 / sqrt(5.0) * i * SIUnit<Speed>(),
+                     1852.0 / sqrt(105.0) * i * SIUnit<Speed>(),
+                     176.0 / sqrt(21.0) * i * SIUnit<Speed>()}))) << i;
+    satellite_through.Append(Instant(i * SIUnit<Time>()), degrees_of_freedom);
   }
 
   i = 1;
-  for (auto it = transforms_->second(&satellite1_through);
+  for (auto it = transforms_->second(&satellite_through);
        !it.at_end();
        ++it, ++i) {
       body1_to_->Append(
@@ -215,17 +199,22 @@ TEST_F(TransformsTest, SatelliteBarycentricRotating) {
         it.degrees_of_freedom();
     EXPECT_THAT(degrees_of_freedom.position - Position<To>(),
                 AlmostEquals(Displacement<To>(
-                                 {30 * i * SIUnit<Length>(),
-                                  10 * i * SIUnit<Length>(),
-                                  -20 * i * SIUnit<Length>()}))) << i;
+                    {(3.0 + 62.0 * sqrt(5.0 / 21.0)) * i * SIUnit<Length>(),
+                     (-6.0 + 106.0 / sqrt(105.0)) * i * SIUnit<Length>(),
+                     (-12.0 - 53.0 / sqrt(105.0)) * i * SIUnit<Length>()})))
+        << i;
     EXPECT_THAT(degrees_of_freedom.velocity,
                 AlmostEquals(Velocity<To>(
-                                 {168 * i * SIUnit<Speed>(),
-                                  36 * i * SIUnit<Speed>(),
-                                  -88 * i * SIUnit<Speed>()}))) << i;
+                    {1852.0 / sqrt(105.0) * i * SIUnit<Speed>(),
+                     (-26.8 + 352.0 / sqrt(105.0)) * i * SIUnit<Speed>(),
+                     (-53.6 - 176.0 / sqrt(105.0)) * i * SIUnit<Speed>()}),
+                    12)) << i;
   }
 }
 
+// Check that the bodies remain on the invariant line and at the right distance
+// from each other and from the barycentre, and that the barycentre is the
+// center of the coordinates.
 TEST_F(TransformsTest, BodiesBarycentricRotating) {
   // TODO(phl): We need two transforms to avoid getting confused by the cache.
   auto transforms1 = Transforms<From, Through, To>::BarycentricRotating(
