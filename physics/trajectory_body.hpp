@@ -18,11 +18,8 @@ template<typename Frame>
 Trajectory<Frame>::Trajectory(Body const& body)
     : body_(body),
       parent_(nullptr) {
-  // TODO(phl): This check would be nice, but just writing OblateBody<Frame> for
-  // a non-inertial frame is a compilation error.  How do we do this?
-  // CHECK(!body.is_oblate() ||
-  //       dynamic_cast<OblateBody<Frame> const*>(&body) != nullptr)
-  //     << "Oblate body not in the same frame as the trajectory";
+  CHECK(body.is_compatible_with<Frame>())
+      << "Oblate body not in the same frame as the trajectory";
 }
 
 template<typename Frame>
