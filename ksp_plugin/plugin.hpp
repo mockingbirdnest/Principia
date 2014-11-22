@@ -275,7 +275,7 @@ class Plugin {
 
   struct PhysicsBubble {
     std::set<Vessel* const> vessels;
-    std::map<PartID, Part* const> parts;
+    std::map<PartID, std::unique_ptr<Part<World>> const> parts;
   };
 
   std::unique_ptr<PhysicsBubble> current_physics_bubble_;

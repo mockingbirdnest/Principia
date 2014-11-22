@@ -67,8 +67,6 @@ class Vessel {
   // catch up with the synchronous constant-timestep integration.
   // |this| is in |new_vessels_| if and only if |prolongation| is null.
   Trajectory<Barycentric>* prolongation_ = nullptr;
-
-  std::vector<Part<Barycentric>> parts_;
 };
 
 }  // namespace ksp_plugin
