@@ -29,7 +29,7 @@ const int kNumberOfPoints = 20;
 }  // namespace
 
 class TransformsTest : public testing::Test {
-protected:
+ protected:
   enum class Tag {
     kFrom,
     kThrough,
