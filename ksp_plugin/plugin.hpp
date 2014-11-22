@@ -209,6 +209,13 @@ class Plugin {
       Velocity<World> const& parent_world_velocity,
       Time const& parent_rotation_period) const;
 
+  // Creates |next_physics_bubble_| if it is null.  Adds the vessel with GUID
+  // |vessel_guid| to |next_physics_bubble_->vessels| with a list of pointers to
+  // the |Part|s in |parts|.  Merges |parts| into |next_physics_bubble_->parts|.
+  // A vessel with GUID |vessel_guid| must have been inserted and kept.  The
+  // vessel with GUID |vessel_guid| must not already be in
+  // |next_physics_bubble_->vessels|.  |parts| must not contain a |PartID|
+  // already in |next_physics_bubble_->parts|.
   void AddVesselToNextPhysicsBubble(
       GUID const& vessel_guid,
       std::map<PartID, std::unique_ptr<Part<World>>> parts);
@@ -260,6 +267,8 @@ class Plugin {
   // well as the histories of unsynchronized vessels, up to exactly instant |t|.
   void EvolveProlongationsAndUnsynchronizedHistories(Instant const& t);
 
+  Trajectory<Barycentric> IntegrablePhysicsBubble();
+
   // TODO(egg): Constant time step for now.
   Time const Δt_ = 10 * Second;
 
@@ -275,7 +284,7 @@ class Plugin {
   std::set<Vessel const* const> kept_;
 
   struct PhysicsBubble {
-    std::map<Vessel const* const, std::list<Part<World>* const>> vessels;
+    std::map<Vessel const* const, std::vector<Part<World>* const>> vessels;
     std::map<PartID, std::unique_ptr<Part<World>> const> parts;
   };
 

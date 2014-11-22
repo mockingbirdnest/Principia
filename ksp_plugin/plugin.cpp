@@ -502,9 +502,9 @@ void Plugin::AddVesselToNextPhysicsBubble(
   Vessel const* const vessel = it->second.get();
   auto const inserted_vessel =
       next_physics_bubble_->vessels.insert({vessel,
-                                            std::list<Part<World>* const>()});
+                                            std::vector<Part<World>* const>()});
   CHECK(inserted_vessel.second);
-  std::list<Part<World>* const> vessel_parts = inserted_vessel.first->second;
+  std::vector<Part<World>* const> vessel_parts = inserted_vessel.first->second;
   for (std::pair<PartID const, std::unique_ptr<Part<World>>>& id_part : parts) {
     CHECK(inserted_vessel.second);
     auto const inserted_part =
