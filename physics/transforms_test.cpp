@@ -1,5 +1,6 @@
 #include "physics/transforms.hpp"
 
+#include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "physics/degrees_of_freedom.hpp"
 #include "physics/frame.hpp"
@@ -9,8 +10,11 @@
 #include "quantities/quantities.hpp"
 
 using principia::quantities::Length;
+using principia::quantities::Mass;
+using principia::quantities::SIUnit;
 using principia::quantities::Speed;
 using principia::quantities::Time;
+using testing::Eq;
 
 namespace principia {
 namespace physics {
@@ -31,11 +35,13 @@ protected:
   using To = Frame<Tag, Tag::kTo, true>;
 
   void SetUp() override {
+    body1_ = std::make_unique<MassiveBody>(1 * SIUnit<Mass>());
+    body2_ = std::make_unique<MassiveBody>(2 * SIUnit<Mass>());
     body_from_ = std::make_unique<Trajectory<From>>(body_);
-    body1_from_ = std::make_unique<Trajectory<From>>(body1_);
-    body2_from_ = std::make_unique<Trajectory<From>>(body2_);
-    body1_to_ = std::make_unique<Trajectory<To>>(body1_);
-    body2_to_ = std::make_unique<Trajectory<To>>(body2_);
+    body1_from_ = std::make_unique<Trajectory<From>>(*body1_);
+    body2_from_ = std::make_unique<Trajectory<From>>(*body2_);
+    body1_to_ = std::make_unique<Trajectory<To>>(*body1_);
+    body2_to_ = std::make_unique<Trajectory<To>>(*body2_);
 
     for (int i = 0; i < kNumberOfPoints; ++i) {
       body_from_->Append(
@@ -92,8 +98,8 @@ protected:
   }
 
   MasslessBody body_;
-  MassiveBody body1_;
-  MassiveBody body2_;
+  std::unique_ptr<MassiveBody> body1_;
+  std::unique_ptr<MassiveBody> body2_;
   std::unique_ptr<Trajectory<From>> body_from_;
   std::unique_ptr<Trajectory<From>> body1_from_;
   std::unique_ptr<Trajectory<From>> body2_from_;
@@ -103,14 +109,24 @@ protected:
   std::unique_ptr<Transforms<From, Through, To>> transforms_;
 };
 
-TEST_F(TransformsTest) {
-  transforms_ = std::make_unique<Transforms<From, Through, To>>(
-      Transforms<From, Through, To>::BodyCentredNonRotating(*body1_from_,
-                                                            *body1_to_));
-  for (auto it = transforms_->first(body_from_.get()); !it.at_end(); ++it) {
+TEST_F(TransformsTest, BodyCentredNonRotating) {
+  transforms_ = Transforms<From, Through, To>::BodyCentredNonRotating(
+                    *body1_from_, *body1_to_);
+  int i = 0;
+  for (auto it = transforms_->first(body_from_.get());
+       !it.at_end();
+       ++it, ++i) {
     DegreesOfFreedom<Through> const degrees_of_freedom =
         it.degrees_of_freedom();
-    LOG(ERROR)<<degrees_of_freedom.position;
+    EXPECT_THAT(degrees_of_freedom.position,
+                Eq(Position<Through>(
+                       Displacement<Through>({9 * i * SIUnit<Length>(),
+                                              -22 * i * SIUnit<Length>(),
+                                              27 * i * SIUnit<Length>()}))));
+    EXPECT_THAT(degrees_of_freedom.velocity,
+                Eq(Velocity<Through>({36 * i * SIUnit<Speed>(),
+                                      -88 * i * SIUnit<Speed>(),
+                                      144 * i * SIUnit<Speed>()})));
   }
 }
 
