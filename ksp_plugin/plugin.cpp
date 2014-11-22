@@ -491,5 +491,29 @@ Velocity<World> Plugin::VesselWorldVelocity(
           + velocity_relative_to_parent) + parent_world_velocity;
 }
 
+void Plugin::AddVesselToNextPhysicsBubble(
+    GUID const& vessel_guid,
+    std::map<PartID, std::unique_ptr<Part<World>>> parts) {
+  if (next_physics_bubble_ == nullptr) {
+    next_physics_bubble_ = std::make_unique<PhysicsBubble>();
+  }
+  auto const it = vessels_.find(vessel_guid);
+  CHECK(it != vessels_.end());
+  Vessel const* const vessel = it->second.get();
+  auto const inserted_vessel =
+      next_physics_bubble_->vessels.insert({vessel,
+                                            std::list<Part<World>* const>()});
+  CHECK(inserted_vessel.second);
+  std::list<Part<World>* const> vessel_parts = inserted_vessel.first->second;
+  for (std::pair<PartID const, std::unique_ptr<Part<World>>>& id_part : parts) {
+    CHECK(inserted_vessel.second);
+    auto const inserted_part =
+    next_physics_bubble_->parts.insert(
+        std::make_pair(id_part.first, std::move(id_part.second)));
+    CHECK(inserted_part.second);
+    vessel_parts.push_back(inserted_part.first->second.get());
+  }
+}
+
 }  // namespace ksp_plugin
 }  // namespace principia

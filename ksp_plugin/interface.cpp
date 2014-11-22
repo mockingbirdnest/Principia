@@ -4,6 +4,7 @@
 
 #include "base/version.hpp"
 
+using principia::quantities::Pow;
 using principia::si::Degree;
 using principia::si::Metre;
 using principia::si::Tonne;
@@ -278,24 +279,32 @@ XYZ VesselWorldVelocity(Plugin const* const plugin,
 }
 
 void AddVesselToNextPhysicsBubble(
-    Plugin const* const plugin,
+    Plugin* const plugin,
     char const* vessel_guid,
     KSPPart const* const parts,
     int count) {
-  std::vector<Part<World>> vessel_parts;
+  std::map<PartID, std::unique_ptr<Part<World>>> vessel_parts;
   for (KSPPart const* part = parts; part < parts + count; ++part) {
-    vessel_parts.push_back(
-        {World::origin + Displacement<World>({part->world_position.x * Metre,
-                                              part->world_position.y * Metre,
-                                              part->world_position.z * Metre}),
-         Velocity<World>({part->world_velocity.x * (Metre / Second),
-                          part->world_velocity.y * (Metre / Second),
-                          part->world_velocity.z * (Metre / Second)}),
-         part->mass * Tonne,
-         part->id});
+    vessel_parts.insert(
+        std::make_pair(
+            part->id,
+            std::make_unique<Part<World>>(
+                World::origin + Displacement<World>(
+                                    {part->world_position.x * Metre,
+                                     part->world_position.y * Metre,
+                                     part->world_position.z * Metre}),
+                Velocity<World>({part->world_velocity.x * (Metre / Second),
+                                 part->world_velocity.y * (Metre / Second),
+                                 part->world_velocity.z * (Metre / Second)}),
+                part->mass * Tonne,
+                Vector<Acceleration, World>(
+                    {part->expected_ksp_gravity.x * (Metre / Pow<2>(Second)),
+                     part->expected_ksp_gravity.y * (Metre / Pow<2>(Second)),
+                     part->expected_ksp_gravity.z *
+                         (Metre / Pow<2>(Second))}))));
   }
   CHECK_NOTNULL(plugin)->AddVesselToNextPhysicsBubble(vessel_guid,
-                                                      vessel_parts);
+                                                      std::move(vessel_parts));
 }
 
 char const* SayHello() {

@@ -209,6 +209,10 @@ class Plugin {
       Velocity<World> const& parent_world_velocity,
       Time const& parent_rotation_period) const;
 
+  void AddVesselToNextPhysicsBubble(
+      GUID const& vessel_guid,
+      std::map<PartID, std::unique_ptr<Part<World>>> parts);
+
  private:
   using GUIDToOwnedVessel = std::map<GUID, std::unique_ptr<Vessel>>;
   using GUIDToUnownedVessel = std::map<GUID, Vessel* const>;
@@ -256,9 +260,6 @@ class Plugin {
   // well as the histories of unsynchronized vessels, up to exactly instant |t|.
   void EvolveProlongationsAndUnsynchronizedHistories(Instant const& t);
 
-  void AddVesselToNextPhysicsBubble(GUID const& vessel_guid,
-                                    std::vector<Part<World>> parts);
-
   // TODO(egg): Constant time step for now.
   Time const Δt_ = 10 * Second;
 
@@ -274,15 +275,12 @@ class Plugin {
   std::set<Vessel const* const> kept_;
 
   struct PhysicsBubble {
-    std::set<Vessel* const> vessels;
+    std::map<Vessel const* const, std::list<Part<World>* const>> vessels;
     std::map<PartID, std::unique_ptr<Part<World>> const> parts;
   };
 
   std::unique_ptr<PhysicsBubble> current_physics_bubble_;
   std::unique_ptr<PhysicsBubble> next_physics_bubble_;
-
-  std::set<Vessel const* const> physics_bubble_;
-  std::set<Vessel const* const> kept_in_physics_bubble_;
 
   std::unique_ptr<NBodySystem<Barycentric>> n_body_system_;
   // The symplectic integrator computing the synchronized histories.

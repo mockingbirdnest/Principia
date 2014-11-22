@@ -60,6 +60,7 @@ struct KSPPart {
   XYZ world_position;
   XYZ world_velocity;
   double mass;
+  XYZ expected_ksp_gravity;
   uint32_t id;
 };
 
@@ -247,7 +248,7 @@ XYZ CDECL VesselWorldVelocity(Plugin const* const plugin,
 
 extern "C" DLLEXPORT
 void CDECL AddVesselToNextPhysicsBubble(
-    Plugin const* const plugin,
+    Plugin* const plugin,
     char const* vessel_guid,
     KSPPart const* const parts,
     int count);

@@ -44,6 +44,9 @@
     <ClInclude Include="part.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="part_body.hpp">
+      <Filter>Source Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="interface.cpp">
