@@ -1,6 +1,5 @@
 ﻿#include "geometry/affine_map.hpp"
 
-#include <cfloat>
 #include <limits>
 #include <vector>
 

@@ -1,6 +1,5 @@
 ﻿#pragma once
 
-#include <cfloat>
 // We use ostream for logging purposes.
 #include <iostream>  // NOLINT(readability/streams)
 #include <limits>
@@ -100,11 +99,11 @@ Angle ArcTan(Quantity<D> const& y, Quantity<D> const& x);
 
 std::string DebugString(
     double const number,
-    int const precision = std::numeric_limits<double>::digits10 + 1);
+    int const precision = std::numeric_limits<double>::max_digits10);
 template<typename D>
 std::string DebugString(
     Quantity<D> const& quantity,
-    int const precision = std::numeric_limits<double>::digits10 + 1);
+    int const precision = std::numeric_limits<double>::max_digits10);
 
 template<typename D>
 class Quantity {
