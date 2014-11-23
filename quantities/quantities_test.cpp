@@ -117,8 +117,8 @@ TEST_F(QuantitiesTest, Formatting) {
                                " cd^-1 cycle^-1 rad^-1 sr^-1";
   std::string const actual = DebugString(allTheUnits, 0);
   EXPECT_EQ(expected, actual);
-  std::string π16 = "3.1415926535897931e+00";
-  EXPECT_EQ(DebugString(π), π16);
+  std::string π17 = "3.14159265358979310e+00";
+  EXPECT_EQ(DebugString(π), π17);
 }
 
 TEST_F(QuantitiesTest, PhysicalConstants) {
