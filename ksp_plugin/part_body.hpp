@@ -7,12 +7,10 @@ namespace ksp_plugin {
 
 template<typename Frame>
 inline Part<Frame>::Part(
-    Position<Frame> const& position,
-    Velocity<Frame> const& velocity,
+    DegreesOfFreedom<Frame> const& degrees_of_freedom,
     Mass const& mass,
     Vector<Acceleration, Frame> const& expected_ksp_gravity)
-    : position(position),
-      velocity(velocity),
+    : degrees_of_freedom(degrees_of_freedom),
       mass(mass),
       expected_ksp_gravity(expected_ksp_gravity) {}
 

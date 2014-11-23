@@ -267,7 +267,10 @@ class Plugin {
   // well as the histories of unsynchronized vessels, up to exactly instant |t|.
   void EvolveProlongationsAndUnsynchronizedHistories(Instant const& t);
 
-  Trajectory<Barycentric> IntegrablePhysicsBubble();
+  void PreparePhysicsBubble();
+
+  Position<Barycentric> WorldToBarycentric(
+      Position<World> const& position) const;
 
   // TODO(egg): Constant time step for now.
   Time const Δt_ = 10 * Second;
@@ -286,10 +289,17 @@ class Plugin {
   struct PhysicsBubble {
     std::map<Vessel const* const, std::vector<Part<World>* const>> vessels;
     std::map<PartID, std::unique_ptr<Part<World>> const> parts;
+    std::map<Part<World>*, DegreesOfFreedom<Barycentric>> barycentric_parts;
+    // TODO(egg): the following two should be |std::optional| when that becomes
+    // a thing.
+    std::unique_ptr<DegreesOfFreedom<World>> centre_of_mass;
+    std::unique_ptr<Trajectory<Barycentric>> centre_of_mass_trajectory;
   };
 
   std::unique_ptr<PhysicsBubble> current_physics_bubble_;
   std::unique_ptr<PhysicsBubble> next_physics_bubble_;
+
+  MasslessBody bubble_body_;
 
   std::unique_ptr<NBodySystem<Barycentric>> n_body_system_;
   // The symplectic integrator computing the synchronized histories.

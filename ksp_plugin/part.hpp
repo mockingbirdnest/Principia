@@ -15,18 +15,13 @@ namespace ksp_plugin {
 using PartID = uint32_t;
 
 // Represents a KSP part.
-// TODO(egg): Not sure whether we need the templatization
-// (|expected_ksp_gravity| may tie it to |World|), but it does not seem to hurt
-// at the moment.
 template<typename Frame>
 struct Part {
-  explicit Part(Position<Frame> const& position,
-                Velocity<Frame> const& velocity,
+  explicit Part(DegreesOfFreedom<Frame> const& degrees_of_freedom,
                 Mass const& mass,
                 Vector<Acceleration, Frame> const& expected_ksp_gravity);
 
-  Position<Frame> position;
-  Velocity<Frame> velocity;
+  DegreesOfFreedom<Frame> degrees_of_freedom;
   Mass mass;
   Vector<Acceleration, Frame> expected_ksp_gravity;
   // TODO(egg): we may want to keep track of the moment of inertia, angular

@@ -4,6 +4,7 @@
 #include <cmath>
 #include <string>
 
+#include "geometry/identity.hpp"
 #include "geometry/permutation.hpp"
 #include "geometry/affine_map.hpp"
 
@@ -12,6 +13,7 @@ namespace ksp_plugin {
 
 using geometry::AffineMap;
 using geometry::Bivector;
+using geometry::Identity;
 using geometry::Permutation;
 using si::Radian;
 
@@ -512,6 +514,57 @@ void Plugin::AddVesselToNextPhysicsBubble(
     CHECK(inserted_part.second);
     vessel_parts.push_back(inserted_part.first->second.get());
   }
+}
+
+void Plugin::PreparePhysicsBubble() {
+  CHECK(next_physics_bubble_ != nullptr);
+  std::vector<DegreesOfFreedom<World>> part_degrees_of_freedom;
+  part_degrees_of_freedom.reserve(next_physics_bubble_->parts.size());
+  std::vector<Mass> part_masses;
+  part_masses.reserve(next_physics_bubble_->parts.size());
+  for (auto const& id_part : next_physics_bubble_->parts) {
+    part_degrees_of_freedom.push_back(id_part.second->degrees_of_freedom);
+    part_masses.push_back(id_part.second->mass);
+    next_physics_bubble_->barycentric_parts.insert(
+        {id_part.second.get(),
+         DegreesOfFreedom<Barycentric>(
+             WorldToBarycentric(id_part.second->degrees_of_freedom.position),
+             // Using the identity as the map |World| -> |WorldSun| is valid
+             // since we assume |World| is currently nonrotating, i.e., it is
+             // stationary with respect |to WorldSun|.
+             PlanetariumRotation().Inverse()(
+                 Identity<World, WorldSun>()(
+                     id_part.second->degrees_of_freedom.velocity)))});
+  }
+  next_physics_bubble_->centre_of_mass =
+      std::make_unique<DegreesOfFreedom<World>>(
+          physics::Barycentre(part_degrees_of_freedom, part_masses));
+  if (current_physics_bubble_ == nullptr) {
+    // There was no physics bubble.  The new physics bubble is located at the
+    // barycentre of the positions its vessels.
+    next_physics_bubble_->centre_of_mass_trajectory =
+        std::make_unique<Trajectory<Barycentric>>(bubble_body_);
+    // Filling the array with dummy degrees of freedom.
+    std::vector<DegreesOfFreedom<Barycentric>> vessel_degrees_of_freedom;
+    vessel_degrees_of_freedom.reserve(next_physics_bubble_->vessels.size());
+    std::vector<Mass> vessel_masses;
+    vessel_masses.reserve(next_physics_bubble_->vessels.size());
+    for (auto const& vessel_parts : next_physics_bubble_->vessels) {
+      vessel_degrees_of_freedom.push_back(
+          vessel_parts.first->
+              prolongation_or_history().last().degrees_of_freedom());
+      vessel_masses.push_back(Mass());
+      for (Part<World> const* const part : vessel_parts.second) {
+        vessel_masses.back() += part->mass;
+      }
+    }
+    next_physics_bubble_->centre_of_mass_trajectory->Append(
+        current_time_,
+        physics::Barycentre(vessel_degrees_of_freedom, vessel_masses));
+  } else {
+    // TODO(egg): something
+  }
+
 }
 
 }  // namespace ksp_plugin

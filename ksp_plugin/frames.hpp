@@ -19,6 +19,7 @@ enum Tag {
   kRendering,
   kWorld,
   kWorldSun,
+  kBubbly,
 };
 
 // Universal time 0, time of game creation.
@@ -61,6 +62,9 @@ using AliceSun = Frame<Tag, Tag::kAliceSun, false>;
 // Same as above, but with same axes as |World| instead of those of
 // |AliceWorld|. The caveats are the same as for |AliceSun|.
 using WorldSun = Frame<Tag, Tag::kWorldSun, false>;
+
+// |World|, one step in the past.
+using Bubbly = Frame<Tag, Tag::kBubbly, false>;
 
 }  // namespace ksp_plugin
 }  // namespace principia
