@@ -198,5 +198,13 @@ void TestField(T const& zero, T const& one, T const& a, T const& b, T const& c,
   TestVectorSpace(zero, a, b, c, zero, one, x, y, max_ulps);
 }
 
+template<typename T>
+void TestSkewField(T const& zero, T const& one, T const& a, T const& b, T const& c,
+                   T const& x, T const& y, std::int64_t const max_ulps) {
+  TestAdditiveGroup(zero, a, b, c, max_ulps);
+  //TestMultiplicativeGroup(one, c, x, y, max_ulps);
+  TestVectorSpace(zero, a, b, c, zero, one, x, y, max_ulps);
+}
+
 }  // namespace testing_utilities
 }  // namespace principia

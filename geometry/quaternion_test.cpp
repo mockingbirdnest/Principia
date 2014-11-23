@@ -4,7 +4,7 @@
 #include "gtest/gtest.h"
 #include "testing_utilities/algebra.hpp"
 
-using principia::testing_utilities::TestField;
+using principia::testing_utilities::TestSkewField;
 using testing::Eq;
 
 namespace principia {
@@ -129,9 +129,9 @@ TEST_F(QuaternionTest, Assignment) {
 }
 
 TEST_F(QuaternionTest, SkewField) {
-  TestField<Quaternion>(Quaternion(0), Quaternion(1),
-                        q1_, q2_, q3_,
-                        Quaternion(6, {1, -3, 4}), Quaternion(0, {8, 9, -1}));
+  TestSkewField<Quaternion>(Quaternion(0), Quaternion(1),
+                            q1_, q2_, q3_,
+                            Quaternion(6, {1, -3, 4}), Quaternion(0, {8, 9, -1}), 4);
 }
 
 }  // namespace geometry

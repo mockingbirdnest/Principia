@@ -73,6 +73,11 @@ void TestField(T const& zero, T const& one, T const& a, T const& b,
                T const& c, T const& x, T const& y,
                std::int64_t const max_ulps = 0);
 
+template<typename T>
+void TestSkewField(T const& zero, T const& one, T const& a, T const& b,
+               T const& c, T const& x, T const& y,
+               std::int64_t const max_ulps = 0);
+
 }  // namespace testing_utilities
 }  // namespace principia
 
