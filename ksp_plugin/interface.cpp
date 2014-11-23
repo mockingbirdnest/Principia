@@ -290,13 +290,15 @@ void AddVesselToNextPhysicsBubble(
         std::make_pair(
             part->id,
             std::make_unique<Part<World>>(
-                DegreesOfFreedom<World>{World::origin + Displacement<World>(
-                                     {part->world_position.x * Metre,
-                                      part->world_position.y * Metre,
-                                      part->world_position.z * Metre}),
-                 Velocity<World>({part->world_velocity.x * (Metre / Second),
-                                  part->world_velocity.y * (Metre / Second),
-                                  part->world_velocity.z * (Metre / Second)})},
+                DegreesOfFreedom<World>(
+                    World::origin + Displacement<World>(
+                                        {part->world_position.x * Metre,
+                                         part->world_position.y * Metre,
+                                         part->world_position.z * Metre}),
+                    Velocity<World>(
+                        {part->world_velocity.x * (Metre / Second),
+                         part->world_velocity.y * (Metre / Second),
+                         part->world_velocity.z * (Metre / Second)})),
                 part->mass * Tonne,
                 Vector<Acceleration, World>(
                     {part->expected_ksp_gravity.x * (Metre / Pow<2>(Second)),
