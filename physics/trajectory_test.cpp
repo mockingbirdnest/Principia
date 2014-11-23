@@ -82,9 +82,10 @@ class TrajectoryTest : public testing::Test {
     massless_trajectory_.reset(new Trajectory<World>(*massless_body_));
 
     transform_ = [](
-          Instant const& t,
-          DegreesOfFreedom<World> const& from_degrees_of_freedom) ->
-          DegreesOfFreedom<World> {
+        Instant const& t,
+        DegreesOfFreedom<World> const& from_degrees_of_freedom,
+        Trajectory<World> const* trajectory) ->
+        DegreesOfFreedom<World> {
       return {Position<World>(
                   2 * (from_degrees_of_freedom.position -
                        Position<World>(Vector<Length, World>(

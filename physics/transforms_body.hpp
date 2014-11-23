@@ -92,7 +92,8 @@ Transforms<FromFrame, ThroughFrame, ToFrame>::BodyCentredNonRotating(
   transforms->first_ =
       [&from_centre_trajectory, that](
           Instant const& t,
-          DegreesOfFreedom<FromFrame> const& from_degrees_of_freedom) ->
+          DegreesOfFreedom<FromFrame> const& from_degrees_of_freedom,
+          Trajectory<FromFrame> const* trajectory) ->
       DegreesOfFreedom<ThroughFrame> {
     // First check if the result is cached.
     auto cache_it = that->first_cache_.find(t);
@@ -127,7 +128,8 @@ Transforms<FromFrame, ThroughFrame, ToFrame>::BodyCentredNonRotating(
   transforms->second_ =
       [&to_centre_trajectory](
           Instant const& t,
-          DegreesOfFreedom<ThroughFrame> const& through_degrees_of_freedom) ->
+          DegreesOfFreedom<ThroughFrame> const& through_degrees_of_freedom,
+          Trajectory<ThroughFrame> const* trajectory) ->
       DegreesOfFreedom<ToFrame> {
     DegreesOfFreedom<ToFrame> const& last_centre_degrees_of_freedom =
         to_centre_trajectory.last().degrees_of_freedom();
@@ -159,7 +161,8 @@ Transforms<FromFrame, ThroughFrame, ToFrame>::BarycentricRotating(
   transforms->first_ =
       [&from_primary_trajectory, &from_secondary_trajectory, that](
           Instant const& t,
-          DegreesOfFreedom<FromFrame> const& from_degrees_of_freedom) ->
+          DegreesOfFreedom<FromFrame> const& from_degrees_of_freedom,
+          Trajectory<FromFrame> const* trajectory) ->
       DegreesOfFreedom<ThroughFrame> {
     // First check if the result is cached.
     auto cache_it = that->first_cache_.find(t);
@@ -216,7 +219,8 @@ Transforms<FromFrame, ThroughFrame, ToFrame>::BarycentricRotating(
   transforms->second_ =
       [&to_primary_trajectory, &to_secondary_trajectory](
           Instant const& t,
-          DegreesOfFreedom<ThroughFrame> const& through_degrees_of_freedom) ->
+          DegreesOfFreedom<ThroughFrame> const& through_degrees_of_freedom,
+          Trajectory<ThroughFrame> const* trajectory) ->
       DegreesOfFreedom<ToFrame> {
     DegreesOfFreedom<ToFrame> const& last_primary_degrees_of_freedom =
         to_primary_trajectory.last().degrees_of_freedom();
