@@ -229,16 +229,13 @@ class Plugin {
   // remaining ones.
   void CleanUpVessels();
 
-  // Given |vessel| and an iterator to it in |new_vessels_|, checks that it has
-  // been given an initial state, i.e. that its |history| is not null, and that
-  // the following are equivalent:
-  // * |vessel| is in |new_vessels_|
-  // * its |prolongation| is null
-  // * its |history->last_time()| is greater than |HistoryTime()|.
-  // Also checks that |history->last_time()| is at least |HistoryTime()|.
-  void CheckVesselInvariants(
-      Vessel const& vessel,
-      GUIDToUnownedVessel::iterator const it_in_new_vessels) const;
+  // Given an iterator to an element of |vessels_|, check that the corresponding
+  // |Vessel| been given an initial state, i.e. that its |history| is not
+  // null, and that it is in |new_vessels_| if, and only if, it has a
+  // |prologation|.
+  // Also checks that its |history().last().time()| is at least |HistoryTime()|,
+  // and that they are equal if it is not in |new_vessels_|.
+  void CheckVesselInvariants(GUIDToOwnedVessel::const_iterator const it) const;
 
   // Evolves the histories of the |celestials_| and of the synchronized vessels
   // up to at most |t|. |t| must be large enough that at least one step of
@@ -265,7 +262,7 @@ class Plugin {
   // Vessels which have been recently inserted after |HistoryTime()|. For these
   // vessels, |history->last_time > HistoryTime()|. They have a null
   // |prolongation|. The pointers are not owning and not null.
-  std::map<GUID, Vessel* const> new_vessels_;
+  std::set<Vessel* const> new_vessels_;
 
   // The vessels that will be kept during the next call to |AdvanceTime|.
   std::set<Vessel const* const> kept_;

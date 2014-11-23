@@ -36,20 +36,20 @@ Rotation<Barycentric, WorldSun> Plugin::PlanetariumRotation() const {
 }
 
 void Plugin::CheckVesselInvariants(
-    Vessel const& vessel,
-    GUIDToUnownedVessel::iterator const it_in_new_vessels) const {
-  CHECK(vessel.has_history()) << "Vessel with GUID " << it_in_new_vessels->first
+    GUIDToOwnedVessel::const_iterator const it) const {
+  Vessel* const vessel = it->second.get();
+  CHECK(vessel->has_history()) << "Vessel with GUID " << it->first
                               << " was not given an initial state";
   // TODO(egg): At the moment, if a vessel is inserted when
   // |current_time_ == HistoryTime()| (that only happens before the first call
   // to |AdvanceTime|) its first step is unsynchronized. This is convenient to
   // test code paths, but it means the invariant is GE, rather than GT.
-  if (it_in_new_vessels != new_vessels_.end()) {
-    CHECK(!vessel.has_prolongation());
-    CHECK_GE(vessel.history().last().time(), HistoryTime());
+  if (new_vessels_.count(vessel) > 0) {
+    CHECK(!vessel->has_prolongation());
+    CHECK_GE(vessel->history().last().time(), HistoryTime());
   } else {
-    CHECK(vessel.has_prolongation());
-    CHECK_EQ(vessel.history().last().time(), HistoryTime());
+    CHECK(vessel->has_prolongation());
+    CHECK_EQ(vessel->history().last().time(), HistoryTime());
   }
 }
 
@@ -57,10 +57,9 @@ void Plugin::CleanUpVessels() {
   VLOG(1) << "Vessel cleanup";
   // Remove the vessels which were not updated since last time.
   for (auto it = vessels_.cbegin(); it != vessels_.cend();) {
-    auto const& it_in_new_vessels = new_vessels_.find(it->first);
-    Vessel const* vessel = it->second.get();
     // While we're going over the vessels, check invariants.
-    CheckVesselInvariants(*vessel, it_in_new_vessels);
+    CheckVesselInvariants(it);
+    Vessel* const vessel = it->second.get();
     // Now do the cleanup.
     if (kept_.erase(vessel)) {
       ++it;
@@ -68,9 +67,8 @@ void Plugin::CleanUpVessels() {
       LOG(INFO) << "Removing vessel with GUID " << it->first;
       // Since we are going to delete the vessel, we must remove it from
       // |new_vessels| if it's there.
-      if (it_in_new_vessels != new_vessels_.end()) {
+      if (new_vessels_.erase(vessel)) {
         LOG(INFO) << "Vessel had not been synchronized";
-        new_vessels_.erase(it_in_new_vessels);
       }
       // |std::map::erase| invalidates its parameter so we post-increment.
       vessels_.erase(it++);
@@ -114,8 +112,7 @@ void Plugin::SynchronizeNewHistories() {
     std::unique_ptr<Celestial> const& celestial = pair.second;
     trajectories.push_back(celestial->mutable_prolongation());
   }
-  for (auto const& pair : new_vessels_) {
-    Vessel* vessel = pair.second;
+  for (Vessel* const vessel : new_vessels_) {
     trajectories.push_back(vessel->mutable_history());
   }
   n_body_system_->Integrate(prolongation_integrator_,  // integrator
@@ -147,8 +144,7 @@ void Plugin::EvolveProlongationsAndUnsynchronizedHistories(Instant const& t) {
     std::unique_ptr<Celestial> const& celestial = pair.second;
     trajectories.push_back(celestial->mutable_prolongation());
   }
-  for (auto const& pair : new_vessels_) {
-    Vessel* vessel = pair.second;
+  for (Vessel* const vessel : new_vessels_) {
     trajectories.push_back(vessel->mutable_history());
   }
   for (auto const& pair : vessels_) {
@@ -288,7 +284,7 @@ void Plugin::SetVesselStateOffset(
       current_time_,
       {last.degrees_of_freedom().position + displacement,
        last.degrees_of_freedom().velocity + relative_velocity});
-  auto const inserted = new_vessels_.insert({vessel_guid, vessel});
+  auto const inserted = new_vessels_.insert(vessel);
   CHECK(inserted.second);
 }
 
