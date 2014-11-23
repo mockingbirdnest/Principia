@@ -1,8 +1,8 @@
 ﻿#pragma once
 
-#include <cfloat>
 // We use ostream for logging purposes.
 #include <iostream>  // NOLINT(readability/streams)
+#include <limits>
 #include <string>
 
 namespace principia {
@@ -97,11 +97,13 @@ SquareRoot<Quantity<D>> Sqrt(Quantity<D> const& x);
 template<typename D>
 Angle ArcTan(Quantity<D> const& y, Quantity<D> const& x);
 
-std::string DebugString(double const number,
-                        int const precision = DBL_DIG + 1);
+std::string DebugString(
+    double const number,
+    int const precision = std::numeric_limits<double>::max_digits10);
 template<typename D>
-std::string DebugString(Quantity<D> const& quantity,
-                        int const precision = DBL_DIG + 1);
+std::string DebugString(
+    Quantity<D> const& quantity,
+    int const precision = std::numeric_limits<double>::max_digits10);
 
 template<typename D>
 class Quantity {
