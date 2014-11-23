@@ -493,7 +493,7 @@ Velocity<World> Plugin::VesselWorldVelocity(
 
 void Plugin::AddVesselToNextPhysicsBubble(
     GUID const& vessel_guid,
-    std::map<PartID, std::unique_ptr<Part<World>>> parts) {
+    std::vector<std::pair<PartID, std::unique_ptr<Part<World>>>> parts) {
   if (next_physics_bubble_ == nullptr) {
     next_physics_bubble_ = std::make_unique<PhysicsBubble>();
   }
@@ -505,11 +505,10 @@ void Plugin::AddVesselToNextPhysicsBubble(
                                             std::vector<Part<World>* const>()});
   CHECK(inserted_vessel.second);
   std::vector<Part<World>* const> vessel_parts = inserted_vessel.first->second;
-  for (std::pair<PartID const, std::unique_ptr<Part<World>>>& id_part : parts) {
+  for (std::pair<PartID, std::unique_ptr<Part<World>>>& id_part : parts) {
     CHECK(inserted_vessel.second);
     auto const inserted_part =
-    next_physics_bubble_->parts.insert(
-        std::make_pair(id_part.first, std::move(id_part.second)));
+    next_physics_bubble_->parts.insert(std::move(id_part));
     CHECK(inserted_part.second);
     vessel_parts.push_back(inserted_part.first->second.get());
   }

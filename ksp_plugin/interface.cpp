@@ -283,9 +283,10 @@ void AddVesselToNextPhysicsBubble(
     char const* vessel_guid,
     KSPPart const* const parts,
     int count) {
-  std::map<PartID, std::unique_ptr<Part<World>>> vessel_parts;
+  std::vector<std::pair<PartID, std::unique_ptr<Part<World>>>> vessel_parts(
+                                                                   count);
   for (KSPPart const* part = parts; part < parts + count; ++part) {
-    vessel_parts.insert(
+    vessel_parts.push_back(
         std::make_pair(
             part->id,
             std::make_unique<Part<World>>(

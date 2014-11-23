@@ -218,7 +218,7 @@ class Plugin {
   // already in |next_physics_bubble_->parts|.
   void AddVesselToNextPhysicsBubble(
       GUID const& vessel_guid,
-      std::map<PartID, std::unique_ptr<Part<World>>> parts);
+      std::vector<std::pair<PartID, std::unique_ptr<Part<World>>>> parts);
 
  private:
   using GUIDToOwnedVessel = std::map<GUID, std::unique_ptr<Vessel>>;
