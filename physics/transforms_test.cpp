@@ -224,7 +224,7 @@ TEST_F(TransformsTest, SatelliteBarycentricRotating) {
 
 // Check that the bodies remain on the invariant line and at the right distance
 // from each other and from the barycentre, and that the barycentre is the
-// center of the coordinates.
+// centre of the coordinates.
 TEST_F(TransformsTest, BodiesBarycentricRotating) {
   // TODO(phl): We need two transforms to avoid getting confused by the cache.
   auto transforms1 = Transforms<From, Through, To>::BarycentricRotating(
@@ -263,15 +263,15 @@ TEST_F(TransformsTest, BodiesBarycentricRotating) {
     // TODO(phl): Add a test that the velocities are along X once we have fixed
     // them.
 
-    DegreesOfFreedom<Through> const barycenter_degrees_of_freedom =
+    DegreesOfFreedom<Through> const barycentre_degrees_of_freedom =
         Barycentre<Through, Mass>({degrees_of_freedom1, degrees_of_freedom2},
                                   {body1_->mass(), body2_->mass()});
-    EXPECT_THAT(AbsoluteError(barycenter_degrees_of_freedom.position -
+    EXPECT_THAT(AbsoluteError(barycentre_degrees_of_freedom.position -
                                   Position<Through>(),
                               Displacement<Through>()),
                 Lt(40 * std::numeric_limits<double>::epsilon() *
                    SIUnit<Length>())) << i;
-    EXPECT_THAT(AbsoluteError(barycenter_degrees_of_freedom.velocity,
+    EXPECT_THAT(AbsoluteError(barycentre_degrees_of_freedom.velocity,
                               Velocity<Through>()),
                 Lt(140 * std::numeric_limits<double>::epsilon() *
                    SIUnit<Speed>())) << i;
