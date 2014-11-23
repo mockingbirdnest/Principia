@@ -77,7 +77,7 @@ void TestGroup(T const& identity, T const& a, T const& b, T const& c,
 }
 
 template<typename T>
-void TestMultiplicativeGroup(T const& one, T const& a, T const& b, T const& c,
+void TestAbelianMultiplicativeGroup(T const& one, T const& a, T const& b, T const& c,
                              std::int64_t const max_ulps) {
   EXPECT_EQ(a * one, a);
   EXPECT_EQ(one * b, b);
@@ -86,6 +86,22 @@ void TestMultiplicativeGroup(T const& one, T const& a, T const& b, T const& c,
   EXPECT_THAT((a * b) * c, AlmostEquals(a * (b * c), max_ulps));
   EXPECT_THAT(a / b / c, AlmostEquals(a / (b * c), max_ulps));
   EXPECT_EQ(a * b, b * a);
+  T accumulator = one;
+  accumulator *= a;
+  accumulator *= b;
+  accumulator /= c;
+  EXPECT_THAT(accumulator, AlmostEquals(a * b / c, max_ulps));
+}
+
+template<typename T>
+void TestNonAbelianMultiplicativeGroup(T const& one, T const& a, T const& b, 
+                                       T const& c, std::int64_t const max_ulps) {
+  EXPECT_EQ(a * one, a);
+  EXPECT_EQ(one * b, b);
+  EXPECT_EQ(a / a, one);
+  EXPECT_THAT((one / a) / b, AlmostEquals(one / (a * b), max_ulps));
+  EXPECT_THAT((a * b) * c, AlmostEquals(a * (b * c), max_ulps));
+  EXPECT_THAT(a / b / c, AlmostEquals(a / (c * b), max_ulps));
   T accumulator = one;
   accumulator *= a;
   accumulator *= b;
@@ -194,7 +210,7 @@ template<typename T>
 void TestField(T const& zero, T const& one, T const& a, T const& b, T const& c,
                T const& x, T const& y, std::int64_t const max_ulps) {
   TestAdditiveGroup(zero, a, b, c, max_ulps);
-  TestMultiplicativeGroup(one, c, x, y, max_ulps);
+  TestAbelianMultiplicativeGroup(one, c, x, y, max_ulps);
   TestVectorSpace(zero, a, b, c, zero, one, x, y, max_ulps);
 }
 
@@ -202,7 +218,7 @@ template<typename T>
 void TestSkewField(T const& zero, T const& one, T const& a, T const& b, T const& c,
                    T const& x, T const& y, std::int64_t const max_ulps) {
   TestAdditiveGroup(zero, a, b, c, max_ulps);
-  //TestMultiplicativeGroup(one, c, x, y, max_ulps);
+  TestNonAbelianMultiplicativeGroup(one, c, x, y, max_ulps);
   TestVectorSpace(zero, a, b, c, zero, one, x, y, max_ulps);
 }
 
