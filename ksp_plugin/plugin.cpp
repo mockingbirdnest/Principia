@@ -562,7 +562,36 @@ void Plugin::PreparePhysicsBubble() {
         current_time_,
         physics::Barycentre(vessel_degrees_of_freedom, vessel_masses));
   } else {
-    // TODO(egg): something
+    // The IDs of the parts that are both in the current and in the next physics
+    // bubble.
+    std::map<PartID, std::pair<Part<World>*, Part<World>*>> common_parts;
+    // TODO(egg): templatize and move to base?
+    auto current_parts_it = current_physics_bubble_->parts.cbegin();
+    auto next_parts_it = next_physics_bubble_->parts.cbegin();
+    while (current_parts_it != current_physics_bubble_->parts.end() &&
+           next_parts_it != next_physics_bubble_->parts.end()) {
+      if (current_parts_it->first < next_parts_it->first) {
+        ++current_parts_it;
+      } else if (next_parts_it->first < current_parts_it->first) {
+        ++next_parts_it;
+      } else {
+        common_parts.insert(
+            {current_parts_it->first,
+             std::make_pair(current_parts_it->second.get(),
+                            next_parts_it->second.get())});
+        ++current_parts_it;
+        ++next_parts_it;
+      }
+    }
+    if (common_parts.size() == next_physics_bubble_->parts.size()) {
+      next_physics_bubble_->centre_of_mass_trajectory =
+          std::move(current_physics_bubble_->centre_of_mass_trajectory);
+      // TODO(egg): we end up dragging some history along here, we probably
+      // should not.
+    } else {
+      // TODO(egg): do something here.
+    }
+
   }
 
 }
