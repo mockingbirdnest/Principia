@@ -47,16 +47,19 @@ double DoubleAbs(const double x) {
 
 // The smallest positive double, a denormal.
 double const SmallestPositive =
-    DBL_MIN * std::numeric_limits<double>::epsilon();
+    std::numeric_limits<double>::min() * std::numeric_limits<double>::epsilon();
 
 TEST_F(NumericsTest, ULPs) {
   EXPECT_THAT(ULPDistance(1, 1), Eq(0));
   EXPECT_THAT(ULPDistance(+0.0, +0.0), Eq(0));
   EXPECT_THAT(ULPDistance(+0.0, -0.0), Eq(0));
-  // DBL_MIN is the smallest positive normalized number.
-  // 52 bits of mantissa stand between it and 0, in the form of denormals.
-  EXPECT_THAT(ULPDistance(+0.0, DBL_MIN), Eq(std::pow(2, DBL_MANT_DIG - 1)));
-  EXPECT_THAT(ULPDistance(-0.0, DBL_MIN), Eq(std::pow(2, DBL_MANT_DIG - 1)));
+  // std::numeric_limits<double>::min() is the smallest positive normalized
+  // number.  52 bits of mantissa stand between it and 0, in the form of
+  // denormals.
+  EXPECT_THAT(ULPDistance(+0.0, std::numeric_limits<double>::min()),
+              Eq(std::pow(2, std::numeric_limits<double>::digits - 1)));
+  EXPECT_THAT(ULPDistance(-0.0, std::numeric_limits<double>::min()),
+              Eq(std::pow(2, std::numeric_limits<double>::digits - 1)));
   EXPECT_THAT(ULPDistance(+0.0, -SmallestPositive), Eq(1));
   EXPECT_THAT(ULPDistance(-0.0, -SmallestPositive), Eq(1));
   EXPECT_THAT(ULPDistance(-1, 1), Ne(0));
