@@ -1,5 +1,7 @@
 #include "physics/transforms.hpp"
 
+#include <limits>
+
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "physics/degrees_of_freedom.hpp"
@@ -250,14 +252,14 @@ TEST_F(TransformsTest, BodiesBarycentricRotating) {
                           {1.5 * sqrt(5.0) * i * SIUnit<Length>(),
                            0 * SIUnit<Length>(),
                            0 * SIUnit<Length>()})),
-        Lt(40 * DBL_EPSILON * SIUnit<Length>()));
+        Lt(40 * std::numeric_limits<double>::epsilon() * SIUnit<Length>()));
     EXPECT_THAT(
         AbsoluteError(degrees_of_freedom2.position - Position<Through>(),
                       Displacement<Through>(
                           {-0.5 * sqrt(5.0) * i * SIUnit<Length>(),
                            0 * SIUnit<Length>(),
                            0 * SIUnit<Length>()})),
-        Lt(50 * DBL_EPSILON * SIUnit<Length>()));
+        Lt(50 * std::numeric_limits<double>::epsilon() * SIUnit<Length>()));
     // TODO(phl): Add a test that the velocities are along X once we have fixed
     // them.
 
@@ -267,10 +269,12 @@ TEST_F(TransformsTest, BodiesBarycentricRotating) {
     EXPECT_THAT(AbsoluteError(barycenter_degrees_of_freedom.position -
                                   Position<Through>(),
                               Displacement<Through>()),
-                Lt(40 * DBL_EPSILON * SIUnit<Length>())) << i;
+                Lt(40 * std::numeric_limits<double>::epsilon() *
+                   SIUnit<Length>())) << i;
     EXPECT_THAT(AbsoluteError(barycenter_degrees_of_freedom.velocity,
                               Velocity<Through>()),
-                Lt(140 * DBL_EPSILON * SIUnit<Speed>())) << i;
+                Lt(140 * std::numeric_limits<double>::epsilon() *
+                   SIUnit<Speed>())) << i;
 
     Length const length = (degrees_of_freedom1.position -
                            degrees_of_freedom2.position).Norm();

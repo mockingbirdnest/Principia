@@ -2,6 +2,7 @@
 
 #include <cfloat>
 #include <cmath>
+#include <limits>
 
 #include "geometry/grassmann.hpp"
 #include "geometry/r3_element.hpp"
@@ -45,7 +46,8 @@ double DoubleAbs(const double x) {
 }
 
 // The smallest positive double, a denormal.
-double const SmallestPositive = DBL_MIN * DBL_EPSILON;
+double const SmallestPositive =
+    DBL_MIN * std::numeric_limits<double>::epsilon();
 
 TEST_F(NumericsTest, ULPs) {
   EXPECT_THAT(ULPDistance(1, 1), Eq(0));
