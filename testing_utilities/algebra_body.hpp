@@ -82,7 +82,7 @@ void TestMultiplicativeGroup(T const& one, T const& a, T const& b, T const& c,
   EXPECT_EQ(a * one, a);
   EXPECT_EQ(one * b, b);
   EXPECT_EQ(a / a, one);
-  EXPECT_THAT((1 / a) / b, AlmostEquals(1 / (a * b), max_ulps));
+  EXPECT_THAT((one / a) / b, AlmostEquals(one / (a * b), max_ulps));
   EXPECT_THAT((a * b) * c, AlmostEquals(a * (b * c), max_ulps));
   EXPECT_THAT(a / b / c, AlmostEquals(a / (b * c), max_ulps));
   EXPECT_EQ(a * b, b * a);

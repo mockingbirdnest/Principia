@@ -33,6 +33,8 @@ class Quaternion {
   R3Element<double> imaginary_part_;
 };
 
+bool operator==(Quaternion const& left, Quaternion const& right);
+
 Quaternion operator+(Quaternion const& right);
 Quaternion operator-(Quaternion const& right);
 

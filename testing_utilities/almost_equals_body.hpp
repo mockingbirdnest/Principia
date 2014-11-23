@@ -86,6 +86,14 @@ bool AlmostEqualsMatcher<T>::MatchAndExplain(
 }
 
 template<typename T>
+bool AlmostEqualsMatcher<T>::MatchAndExplain(
+    geometry::Quaternion const& actual,
+    testing::MatchResultListener* listener) const {
+  //TODO(tnu): Implement properly.
+  return actual == expected_;
+}
+
+template<typename T>
 template<typename Scalar, typename Frame>
 bool AlmostEqualsMatcher<T>::MatchAndExplain(
     geometry::Vector<Scalar, Frame> const& actual,
