@@ -566,21 +566,21 @@ void Plugin::PreparePhysicsBubble() {
     // bubble.
     std::map<PartID, std::pair<Part<World>*, Part<World>*>> common_parts;
     // TODO(egg): templatize and move to base?
-    auto current_parts_it = current_physics_bubble_->parts.cbegin();
-    auto next_parts_it = next_physics_bubble_->parts.cbegin();
-    while (current_parts_it != current_physics_bubble_->parts.end() &&
-           next_parts_it != next_physics_bubble_->parts.end()) {
-      if (current_parts_it->first < next_parts_it->first) {
-        ++current_parts_it;
-      } else if (next_parts_it->first < current_parts_it->first) {
-        ++next_parts_it;
+    auto it_in_current_parts = current_physics_bubble_->parts.cbegin();
+    auto it_in_next_parts = next_physics_bubble_->parts.cbegin();
+    while (it_in_current_parts != current_physics_bubble_->parts.end() &&
+           it_in_next_parts != next_physics_bubble_->parts.end()) {
+      if (it_in_current_parts->first < it_in_next_parts->first) {
+        ++it_in_current_parts;
+      } else if (it_in_next_parts->first < it_in_current_parts->first) {
+        ++it_in_next_parts;
       } else {
         common_parts.insert(
-            {current_parts_it->first,
-             std::make_pair(current_parts_it->second.get(),
-                            next_parts_it->second.get())});
-        ++current_parts_it;
-        ++next_parts_it;
+            {it_in_current_parts->first,
+             std::make_pair(it_in_current_parts->second.get(),
+                            it_in_next_parts->second.get())});
+        ++it_in_current_parts;
+        ++it_in_next_parts;
       }
     }
     if (common_parts.size() == next_physics_bubble_->parts.size()) {
@@ -588,7 +588,14 @@ void Plugin::PreparePhysicsBubble() {
           std::move(current_physics_bubble_->centre_of_mass_trajectory);
       // TODO(egg): we end up dragging some history along here, we probably
       // should not.
+    } else if () {
+      // The next physics bubble is unrelated to the current one.
+      // TODO(egg): do what we do when |current_physics_bubble_ == nullptr|.
     } else {
+      // Parts appeared or were removed from the physics bubble, but the
+      // intersection is nonempty.  We fix the degrees of freedom of the centre
+      // of mass of the intersection, and we use its measured acceleration as
+      // the intrinsic acceleration of the |bubble_body_|.
       // TODO(egg): do something here.
     }
 
