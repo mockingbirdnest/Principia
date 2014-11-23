@@ -48,6 +48,12 @@ class TransformsTest : public testing::Test {
     body1_to_ = std::make_unique<Trajectory<To>>(*body1_);
     body2_to_ = std::make_unique<Trajectory<To>>(*body2_);
 
+    // The various bodies move have both a position and a velocity that
+    // increases linearly with time.  This is not a situation that's physically
+    // possible, but we don't care, all we want is to make sure that the
+    // transforms are properly performed: |Transforms| doesn't know anything
+    // about physics.  Also, the trajectories were chosen so that we are not in
+    // any "special case" with respect to the positions or the velocities.
     for (int i = 1; i <= kNumberOfPoints; ++i) {
       body1_from_->Append(
           Instant(i * SIUnit<Time>()),
@@ -94,6 +100,8 @@ class TransformsTest : public testing::Test {
   std::unique_ptr<Transforms<From, Through, To>> transforms_;
 };
 
+// This transform is simple enough that we can compute its effect by hand.  This
+// test verifies that we get the expected result both in |Through| and in |To|.
 TEST_F(TransformsTest, BodyCentredNonRotating) {
   transforms_ = Transforms<From, Through, To>::BodyCentredNonRotating(
                     *body1_from_, *body1_to_);
