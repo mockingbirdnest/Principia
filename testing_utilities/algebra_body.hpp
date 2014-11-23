@@ -79,18 +79,8 @@ void TestGroup(T const& identity, T const& a, T const& b, T const& c,
 template<typename T>
 void TestAbelianMultiplicativeGroup(T const& one, T const& a, T const& b, T const& c,
                              std::int64_t const max_ulps) {
-  EXPECT_EQ(a * one, a);
-  EXPECT_EQ(one * b, b);
-  EXPECT_EQ(a / a, one);
-  EXPECT_THAT((one / a) / b, AlmostEquals(one / (a * b), max_ulps));
-  EXPECT_THAT((a * b) * c, AlmostEquals(a * (b * c), max_ulps));
-  EXPECT_THAT(a / b / c, AlmostEquals(a / (b * c), max_ulps));
+  TestNonAbelianMultiplicativeGroup(one, a, b, c, max_ulps);
   EXPECT_EQ(a * b, b * a);
-  T accumulator = one;
-  accumulator *= a;
-  accumulator *= b;
-  accumulator /= c;
-  EXPECT_THAT(accumulator, AlmostEquals(a * b / c, max_ulps));
 }
 
 template<typename T>
