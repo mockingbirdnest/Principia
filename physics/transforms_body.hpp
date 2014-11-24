@@ -96,7 +96,7 @@ Transforms<FromFrame, ThroughFrame, ToFrame>::BodyCentredNonRotating(
           Trajectory<FromFrame> const* trajectory) ->
       DegreesOfFreedom<ThroughFrame> {
     // First check if the result is cached.
-    auto cache_it = that->first_cache_.find(t);
+    auto cache_it = that->first_cache_.find(std::make_pair(trajectory, t));
     if (cache_it != that->first_cache_.end()) {
       return cache_it->second;
     }
@@ -121,7 +121,8 @@ Transforms<FromFrame, ThroughFrame, ToFrame>::BodyCentredNonRotating(
                       centre_degrees_of_freedom.velocity)};
 
     // Cache the result before returning it.
-    that->first_cache_.emplace(t, through_degrees_of_freedom);
+    that->first_cache_.emplace(std::make_pair(trajectory, t),
+                               through_degrees_of_freedom);
     return std::move(through_degrees_of_freedom);
   };
 
@@ -165,7 +166,7 @@ Transforms<FromFrame, ThroughFrame, ToFrame>::BarycentricRotating(
           Trajectory<FromFrame> const* trajectory) ->
       DegreesOfFreedom<ThroughFrame> {
     // First check if the result is cached.
-    auto cache_it = that->first_cache_.find(t);
+    auto cache_it = that->first_cache_.find(std::make_pair(trajectory, t));
     if (cache_it != that->first_cache_.end()) {
       return cache_it->second;
     }
@@ -212,7 +213,8 @@ Transforms<FromFrame, ThroughFrame, ToFrame>::BarycentricRotating(
                   coordinates()))};
 
     // Cache the result before returning it.
-    that->first_cache_.emplace(t, through_degrees_of_freedom);
+    that->first_cache_.emplace(std::make_pair(trajectory, t),
+                               through_degrees_of_freedom);
     return std::move(through_degrees_of_freedom);
   };
 
