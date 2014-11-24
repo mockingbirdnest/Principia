@@ -516,6 +516,49 @@ void Plugin::AddVesselToNextPhysicsBubble(
   }
 }
 
+void Plugin::RestartPhysicsBubble() {
+  std::vector<DegreesOfFreedom<Barycentric>> vessel_degrees_of_freedom;
+  vessel_degrees_of_freedom.reserve(next_physics_bubble_->vessels.size());
+  std::vector<Mass> vessel_masses;
+  vessel_masses.reserve(next_physics_bubble_->vessels.size());
+  for (auto const& vessel_parts : next_physics_bubble_->vessels) {
+    vessel_degrees_of_freedom.push_back(
+        vessel_parts.first->
+            prolongation_or_history().last().degrees_of_freedom());
+    vessel_masses.push_back(Mass());
+    for (Part<World> const* const part : vessel_parts.second) {
+      vessel_masses.back() += part->mass;
+    }
+  }
+  next_physics_bubble_->centre_of_mass_trajectory =
+      std::make_unique<Trajectory<Barycentric>>(bubble_body_);
+  next_physics_bubble_->centre_of_mass_trajectory->Append(
+      current_time_,
+      physics::Barycentre(vessel_degrees_of_freedom, vessel_masses));
+}
+
+std::map<PartID, std::pair<Part<World>*, Part<World>*>> Plugin::CommonParts() {
+  std::map<PartID, std::pair<Part<World>*, Part<World>*>> common_parts;
+  auto it_in_current_parts = current_physics_bubble_->parts.cbegin();
+  auto it_in_next_parts = next_physics_bubble_->parts.cbegin();
+  while (it_in_current_parts != current_physics_bubble_->parts.end() &&
+         it_in_next_parts != next_physics_bubble_->parts.end()) {
+    if (it_in_current_parts->first < it_in_next_parts->first) {
+      ++it_in_current_parts;
+    } else if (it_in_next_parts->first < it_in_current_parts->first) {
+      ++it_in_next_parts;
+    } else {
+      common_parts.emplace(
+          it_in_current_parts->first,
+          std::make_pair(it_in_current_parts->second.get(),
+                         it_in_next_parts->second.get()));
+      ++it_in_current_parts;
+      ++it_in_next_parts;
+    }
+  }
+  return common_parts;
+}
+
 void Plugin::PreparePhysicsBubble() {
   CHECK(next_physics_bubble_ != nullptr);
   std::vector<DegreesOfFreedom<World>> part_degrees_of_freedom;
@@ -541,47 +584,14 @@ void Plugin::PreparePhysicsBubble() {
           physics::Barycentre(part_degrees_of_freedom, part_masses));
   if (current_physics_bubble_ == nullptr) {
     // There was no physics bubble.  The new physics bubble is located at the
-    // barycentre of the positions its vessels.
-    std::vector<DegreesOfFreedom<Barycentric>> vessel_degrees_of_freedom;
-    vessel_degrees_of_freedom.reserve(next_physics_bubble_->vessels.size());
-    std::vector<Mass> vessel_masses;
-    vessel_masses.reserve(next_physics_bubble_->vessels.size());
-    for (auto const& vessel_parts : next_physics_bubble_->vessels) {
-      vessel_degrees_of_freedom.push_back(
-          vessel_parts.first->
-              prolongation_or_history().last().degrees_of_freedom());
-      vessel_masses.push_back(Mass());
-      for (Part<World> const* const part : vessel_parts.second) {
-        vessel_masses.back() += part->mass;
-      }
-    }
-    next_physics_bubble_->centre_of_mass_trajectory =
-        std::make_unique<Trajectory<Barycentric>>(bubble_body_);
-    next_physics_bubble_->centre_of_mass_trajectory->Append(
-        current_time_,
-        physics::Barycentre(vessel_degrees_of_freedom, vessel_masses));
+    // barycentre of the positions its vessels.  There is no intrinsic
+    // acceleration.
+    RestartPhysicsBubble();
   } else {
     // The IDs of the parts that are both in the current and in the next physics
     // bubble.
-    std::map<PartID, std::pair<Part<World>*, Part<World>*>> common_parts;
-    // TODO(egg): templatize and move to base?
-    auto it_in_current_parts = current_physics_bubble_->parts.cbegin();
-    auto it_in_next_parts = next_physics_bubble_->parts.cbegin();
-    while (it_in_current_parts != current_physics_bubble_->parts.end() &&
-           it_in_next_parts != next_physics_bubble_->parts.end()) {
-      if (it_in_current_parts->first < it_in_next_parts->first) {
-        ++it_in_current_parts;
-      } else if (it_in_next_parts->first < it_in_current_parts->first) {
-        ++it_in_next_parts;
-      } else {
-        common_parts.insert(
-            {it_in_current_parts->first,
-             std::make_pair(it_in_current_parts->second.get(),
-                            it_in_next_parts->second.get())});
-        ++it_in_current_parts;
-        ++it_in_next_parts;
-      }
-    }
+    std::map<PartID, std::pair<Part<World>*, Part<World>*>> common_parts =
+        CommonParts();
     if (common_parts.size() == next_physics_bubble_->parts.size()) {
       // The set of parts has not changed.
       next_physics_bubble_->centre_of_mass_trajectory =
@@ -590,8 +600,10 @@ void Plugin::PreparePhysicsBubble() {
       // should not.
     } else if (common_parts.size() == 0) {
       // The current and next set of parts are disjoint, i.e., the next physics
-      // bubble is unrelated to the current one.
-      // TODO(egg): do what we do when |current_physics_bubble_ == nullptr|.
+      // bubble is unrelated to the current one.  The new physics bubble is
+      // located at the barycentre of the positions its vessels.  There is no
+      // intrinsic acceleration.
+      RestartPhysicsBubble();
     } else {
       // Parts appeared or were removed from the physics bubble, but the
       // intersection is nonempty.  We fix the degrees of freedom of the centre

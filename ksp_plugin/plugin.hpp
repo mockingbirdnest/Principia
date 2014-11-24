@@ -268,6 +268,8 @@ class Plugin {
   void EvolveProlongationsAndUnsynchronizedHistories(Instant const& t);
 
   void PreparePhysicsBubble();
+  void RestartPhysicsBubble();
+  std::map<PartID, std::pair<Part<World>*, Part<World>*>> CommonParts();
 
   Position<Barycentric> WorldToBarycentric(
       Position<World> const& position) const;

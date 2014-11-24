@@ -14,6 +14,5 @@ inline Part<Frame>::Part(
       mass(mass),
       expected_ksp_gravity(expected_ksp_gravity) {}
 
-
 }  // namespace ksp_plugin
 }  // namespace principia
