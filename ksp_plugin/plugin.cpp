@@ -538,8 +538,8 @@ void Plugin::RestartPhysicsBubble() {
   current_physics_bubble_ = std::move(next_physics_bubble_);
 }
 
-std::map<PartID, std::pair<Part<World>*, Part<World>*>> Plugin::CommonParts() {
-  std::map<PartID, std::pair<Part<World>*, Part<World>*>> common_parts;
+std::vector<std::pair<Part<World>*, Part<World>*>> Plugin::CommonParts() {
+  std::vector<std::pair<Part<World>*, Part<World>*>> common_parts;
   auto it_in_current_parts = current_physics_bubble_->parts.cbegin();
   auto it_in_next_parts = next_physics_bubble_->parts.cbegin();
   while (it_in_current_parts != current_physics_bubble_->parts.end() &&
@@ -549,10 +549,8 @@ std::map<PartID, std::pair<Part<World>*, Part<World>*>> Plugin::CommonParts() {
     } else if (it_in_next_parts->first < it_in_current_parts->first) {
       ++it_in_next_parts;
     } else {
-      common_parts.emplace(
-          it_in_current_parts->first,
-          std::make_pair(it_in_current_parts->second.get(),
-                         it_in_next_parts->second.get()));
+      common_parts.emplace_back(it_in_current_parts->second.get(),
+                                it_in_next_parts->second.get());
       ++it_in_current_parts;
       ++it_in_next_parts;
     }
@@ -560,7 +558,7 @@ std::map<PartID, std::pair<Part<World>*, Part<World>*>> Plugin::CommonParts() {
   return common_parts;
 }
 
-void Plugin::ComputeNextPhysicsBubbleCentreOfMass() {
+void Plugin::ComputeNextPhysicsBubbleCentreOfMassWorldDegreesOfFreedom() {
   std::vector<DegreesOfFreedom<World>> part_degrees_of_freedom;
   part_degrees_of_freedom.reserve(next_physics_bubble_->parts.size());
   std::vector<Mass> part_masses;
@@ -576,20 +574,19 @@ void Plugin::ComputeNextPhysicsBubbleCentreOfMass() {
 
 void Plugin::PreparePhysicsBubble() {
   CHECK(next_physics_bubble_ != nullptr);
+  ComputeNextPhysicsBubbleCentreOfMassWorldDegreesOfFreedom();
   if (current_physics_bubble_ == nullptr) {
     // There was no physics bubble.
-    RestartPhysicsBubble();
-    return;
+    return RestartPhysicsBubble();
   } else {
     // The IDs of the parts that are both in the current and in the next physics
     // bubble.
-    std::map<PartID, std::pair<Part<World>*, Part<World>*>> common_parts =
+    std::vector<std::pair<Part<World>*, Part<World>*>> common_parts =
         CommonParts();
     if (common_parts.size() == 0) {
       // The current and next set of parts are disjoint, i.e., the next physics
       // bubble is unrelated to the current one.
-      RestartPhysicsBubble();
-      return;
+      return RestartPhysicsBubble();
     } else if (common_parts.size() == next_physics_bubble_->parts.size()) {
       // The set of parts has not changed.
       next_physics_bubble_->centre_of_mass_trajectory =
@@ -609,13 +606,13 @@ void Plugin::PreparePhysicsBubble() {
       next_common_degrees_of_freedom.reserve(common_parts.size());
       std::vector<Mass> next_common_masses;
       next_common_masses.reserve(common_parts.size());
-      for (auto const& id_current_next : common_parts) {
+      for (auto const& current_next : common_parts) {
         current_common_degrees_of_freedom.push_back(
-            id_current_next.second.first->degrees_of_freedom);
-        current_common_masses.push_back(id_current_next.second.first->mass);
+            current_next.first->degrees_of_freedom);
+        current_common_masses.push_back(current_next.first->mass);
         next_common_degrees_of_freedom.push_back(
-            id_current_next.second.second->degrees_of_freedom);
-        next_common_masses.push_back(id_current_next.second.second->mass);
+            current_next.second->degrees_of_freedom);
+        next_common_masses.push_back(current_next.second->mass);
       }
       DegreesOfFreedom<World> const current_common_centre_of_mass =
           physics::Barycentre(current_common_degrees_of_freedom,
