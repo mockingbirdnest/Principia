@@ -583,12 +583,14 @@ void Plugin::PreparePhysicsBubble() {
       }
     }
     if (common_parts.size() == next_physics_bubble_->parts.size()) {
+      // The set of parts has not changed.
       next_physics_bubble_->centre_of_mass_trajectory =
           std::move(current_physics_bubble_->centre_of_mass_trajectory);
       // TODO(egg): we end up dragging some history along here, we probably
       // should not.
-    } else if () {
-      // The next physics bubble is unrelated to the current one.
+    } else if (common_parts.size() == 0) {
+      // The current and next set of parts are disjoint, i.e., the next physics
+      // bubble is unrelated to the current one.
       // TODO(egg): do what we do when |current_physics_bubble_ == nullptr|.
     } else {
       // Parts appeared or were removed from the physics bubble, but the
