@@ -226,15 +226,15 @@ TEST_F(TransformsTest, SatelliteBarycentricRotating) {
 // from each other and from the barycentre, and that the barycentre is the
 // centre of the coordinates.
 TEST_F(TransformsTest, BodiesBarycentricRotating) {
-  auto transforms = Transforms<From, Through, To>::BarycentricRotating(
-                        *body1_from_, *body1_to_,
-                        *body2_from_, *body2_to_);
+  transforms_ = Transforms<From, Through, To>::BarycentricRotating(
+                    *body1_from_, *body1_to_,
+                    *body2_from_, *body2_to_);
   Trajectory<Through> body1_through(*body1_);
   Trajectory<Through> body2_through(*body2_);
 
   int i = 1;
-  for (auto it1 = transforms->first(body1_from_.get()),
-            it2 = transforms->first(body2_from_.get());
+  for (auto it1 = transforms_->first(body1_from_.get()),
+            it2 = transforms_->first(body2_from_.get());
        !it1.at_end() && !it2.at_end();
        ++it1, ++it2, ++i) {
     DegreesOfFreedom<Through> const degrees_of_freedom1 =
