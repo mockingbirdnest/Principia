@@ -268,6 +268,12 @@ class Plugin {
   void EvolveProlongationsAndUnsynchronizedHistories(Instant const& t);
 
   void PreparePhysicsBubble();
+  void ComputeNextPhysicsBubbleCentreOfMass();
+  // Creates |next_physics_bubble_->centre_of_mass_trajectory| and appends to it
+  // the barycentre of the degrees of freedom of the vessels in
+  // |next_physics_bubble_->vessels|, then moves |next_physics_bubble_| into
+  // |current_physics_bubble_|.  |next_physics_bubble_| is left null.  There is
+  // no intrinsic acceleration.
   void RestartPhysicsBubble();
   std::map<PartID, std::pair<Part<World>*, Part<World>*>> CommonParts();
 
@@ -291,7 +297,6 @@ class Plugin {
   struct PhysicsBubble {
     std::map<Vessel const* const, std::vector<Part<World>* const>> vessels;
     std::map<PartID, std::unique_ptr<Part<World>> const> parts;
-    std::map<Part<World>*, DegreesOfFreedom<Barycentric>> barycentric_parts;
     // TODO(egg): the following two should be |std::optional| when that becomes
     // a thing.
     std::unique_ptr<DegreesOfFreedom<World>> centre_of_mass;
