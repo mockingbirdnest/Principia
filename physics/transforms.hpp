@@ -2,6 +2,7 @@
 
 #include <map>
 #include <memory>
+#include <utility>
 
 #include "physics/trajectory.hpp"
 
@@ -47,11 +48,11 @@ class Transforms {
   typename Trajectory<FromFrame>::template Transform<ThroughFrame> first_;
   typename Trajectory<ThroughFrame>::template Transform<ToFrame> second_;
 
-  // A cache for the result of the |first_| transform.  The map is keyed by
-  // time, and therefore assumes that the transform is not called twice with the
-  // same time and different degrees of freedom.
-  // NOTE(phl): This assumes that |first()| is only called once.
-  std::map<Instant const, DegreesOfFreedom<ThroughFrame>> first_cache_;
+  // A cache for the result of the |first_| transform.  This cache assumes that
+  // the iterator is never called with the same time but different degrees of
+  // freedom.
+  std::map<std::pair<Trajectory<FromFrame> const*, Instant const>,
+           DegreesOfFreedom<ThroughFrame>> first_cache_;
 };
 
 }  // namespace physics

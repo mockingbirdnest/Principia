@@ -339,6 +339,11 @@ Trajectory<Frame>::Iterator::current() const {
 }
 
 template<typename Frame>
+Trajectory<Frame> const* Trajectory<Frame>::Iterator::trajectory() const {
+  return ancestry_.back();
+}
+
+template<typename Frame>
 DegreesOfFreedom<Frame> const&
 Trajectory<Frame>::NativeIterator::degrees_of_freedom() const {
   return this->current()->second;
@@ -349,7 +354,7 @@ template<typename ToFrame>
 DegreesOfFreedom<ToFrame>
 Trajectory<Frame>::TransformingIterator<ToFrame>::degrees_of_freedom() const {
   auto it = current();
-  return transform_(it->first, it->second);
+  return transform_(it->first, it->second, trajectory());
 }
 
 template<typename Frame>
