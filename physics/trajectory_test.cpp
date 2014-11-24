@@ -98,9 +98,9 @@ class TrajectoryTest : public testing::Test {
                            {43 * Metre, 42 * Metre, 41 * Metre})))),
               3 * from_degrees_of_freedom.velocity};
     };
-    massive_transform_ = 
+    massive_transform_ =
         std::bind(transform_, _1, _2, _3, massive_trajectory_.get());
-    massless_transform_ = 
+    massless_transform_ =
         std::bind(transform_, _1, _2, _3, massless_trajectory_.get());
   }
 
