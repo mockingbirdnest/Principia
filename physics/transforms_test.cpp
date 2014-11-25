@@ -256,8 +256,20 @@ TEST_F(TransformsTest, BodiesBarycentricRotating) {
                            0 * SIUnit<Length>(),
                            0 * SIUnit<Length>()})),
         Lt(50 * std::numeric_limits<double>::epsilon() * SIUnit<Length>()));
-    // TODO(phl): Add a test that the velocities are along X once we have fixed
-    // them.
+    EXPECT_THAT(
+        AbsoluteError(degrees_of_freedom1.velocity,
+                      Velocity<Through>(
+                          {1.5 * sqrt(5.0) * i * SIUnit<Speed>(),
+                           0 * SIUnit<Speed>(),
+                           0 * SIUnit<Speed>()})),
+        Lt(1 * std::numeric_limits<double>::epsilon() * SIUnit<Speed>()));
+    EXPECT_THAT(
+        AbsoluteError(degrees_of_freedom2.velocity,
+                      Velocity<Through>(
+                          {-0.5 * sqrt(5.0) * i * SIUnit<Speed>(),
+                           0 * SIUnit<Speed>(),
+                           0 * SIUnit<Speed>()})),
+        Lt(1 * std::numeric_limits<double>::epsilon() * SIUnit<Speed>()));
 
     DegreesOfFreedom<Through> const barycentre_degrees_of_freedom =
         Barycentre<Through, Mass>({degrees_of_freedom1, degrees_of_freedom2},
