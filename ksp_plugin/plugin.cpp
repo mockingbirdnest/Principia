@@ -15,6 +15,7 @@ using geometry::AffineMap;
 using geometry::Bivector;
 using geometry::Identity;
 using geometry::Permutation;
+using quantities::Force;
 using si::Radian;
 
 namespace {
@@ -538,8 +539,14 @@ void Plugin::RestartPhysicsBubble() {
   current_physics_bubble_ = std::move(next_physics_bubble_);
 }
 
-std::vector<std::pair<Part<World>*, Part<World>*>> Plugin::CommonParts() {
-  std::vector<std::pair<Part<World>*, Part<World>*>> common_parts;
+Vector<Acceleration, World> Plugin::IntrinsicAcceleration(
+      Instant const& next_time,
+      std::vector<std::pair<Part<World>*, Part<World>*>>* const common_parts) {
+  CHECK(common_parts->empty());
+  // Most of the time no parts explode.  We reserve accordingly.
+  common_parts->reserve(current_physics_bubble_->parts.size());
+  Vector<Force, World> weighted_sum;
+  Mass total_mass;
   auto it_in_current_parts = current_physics_bubble_->parts.cbegin();
   auto it_in_next_parts = next_physics_bubble_->parts.cbegin();
   while (it_in_current_parts != current_physics_bubble_->parts.end() &&
@@ -549,13 +556,21 @@ std::vector<std::pair<Part<World>*, Part<World>*>> Plugin::CommonParts() {
     } else if (it_in_next_parts->first < it_in_current_parts->first) {
       ++it_in_next_parts;
     } else {
-      common_parts.emplace_back(it_in_current_parts->second.get(),
-                                it_in_next_parts->second.get());
+      Part<World>* const current_part = it_in_current_parts->second.get();
+      Part<World>* const next_part = it_in_next_parts->second.get();
+      common_parts->emplace_back(current_part, next_part);
+      // TODO(egg): not sure what we actually want to do here.
+      Mass const mass = (next_part->mass + current_part->mass) / 2.0;
+      weighted_sum += ((next_part->degrees_of_freedom.velocity -
+                        current_part->degrees_of_freedom.velocity) /
+                           (next_time - current_time_) -
+                       current_part->expected_ksp_gravity) * mass ;
+      total_mass += mass;
       ++it_in_current_parts;
       ++it_in_next_parts;
     }
   }
-  return common_parts;
+  return weighted_sum / total_mass;
 }
 
 void Plugin::ComputeNextPhysicsBubbleCentreOfMassWorldDegreesOfFreedom() {
@@ -572,7 +587,7 @@ void Plugin::ComputeNextPhysicsBubbleCentreOfMassWorldDegreesOfFreedom() {
           physics::Barycentre(part_degrees_of_freedom, part_masses));
 }
 
-void Plugin::PreparePhysicsBubble() {
+void Plugin::PreparePhysicsBubble(Instant const& next_time) {
   CHECK(next_physics_bubble_ != nullptr);
   ComputeNextPhysicsBubbleCentreOfMassWorldDegreesOfFreedom();
   if (current_physics_bubble_ == nullptr) {
@@ -581,13 +596,15 @@ void Plugin::PreparePhysicsBubble() {
   } else {
     // The IDs of the parts that are both in the current and in the next physics
     // bubble.
-    std::vector<std::pair<Part<World>*, Part<World>*>> common_parts =
-        CommonParts();
-    if (common_parts.size() == 0) {
+    auto const common_parts =
+        std::make_unique<std::vector<std::pair<Part<World>*, Part<World>*>>>();
+    Vector<Acceleration, World> intrinsic_acceleration =
+        IntrinsicAcceleration(next_time, common_parts.get());
+    if (common_parts->size() == 0) {
       // The current and next set of parts are disjoint, i.e., the next physics
       // bubble is unrelated to the current one.
       return RestartPhysicsBubble();
-    } else if (common_parts.size() == next_physics_bubble_->parts.size()) {
+    } else if (common_parts->size() == next_physics_bubble_->parts.size()) {
       // The set of parts has not changed.
       next_physics_bubble_->centre_of_mass_trajectory =
           std::move(current_physics_bubble_->centre_of_mass_trajectory);
@@ -599,14 +616,14 @@ void Plugin::PreparePhysicsBubble() {
       // of mass of the intersection, and we use its measured acceleration as
       // the intrinsic acceleration of the |bubble_body_|.
       std::vector<DegreesOfFreedom<World>> current_common_degrees_of_freedom;
-      current_common_degrees_of_freedom.reserve(common_parts.size());
+      current_common_degrees_of_freedom.reserve(common_parts->size());
       std::vector<Mass> current_common_masses;
-      current_common_masses.reserve(common_parts.size());
+      current_common_masses.reserve(common_parts->size());
       std::vector<DegreesOfFreedom<World>> next_common_degrees_of_freedom;
-      next_common_degrees_of_freedom.reserve(common_parts.size());
+      next_common_degrees_of_freedom.reserve(common_parts->size());
       std::vector<Mass> next_common_masses;
-      next_common_masses.reserve(common_parts.size());
-      for (auto const& current_next : common_parts) {
+      next_common_masses.reserve(common_parts->size());
+      for (auto const& current_next : *common_parts) {
         current_common_degrees_of_freedom.push_back(
             current_next.first->degrees_of_freedom);
         current_common_masses.push_back(current_next.first->mass);

@@ -267,7 +267,7 @@ class Plugin {
   // well as the histories of unsynchronized vessels, up to exactly instant |t|.
   void EvolveProlongationsAndUnsynchronizedHistories(Instant const& t);
 
-  void PreparePhysicsBubble();
+  void PreparePhysicsBubble(Instant const& next_time);
   void ComputeNextPhysicsBubbleCentreOfMassWorldDegreesOfFreedom();
   // Creates |next_physics_bubble_->centre_of_mass_trajectory| and appends to it
   // the barycentre of the degrees of freedom of the vessels in
@@ -275,7 +275,11 @@ class Plugin {
   // |current_physics_bubble_|.  |next_physics_bubble_| is left null.  There is
   // no intrinsic acceleration.
   void RestartPhysicsBubble();
-  std::vector<std::pair<Part<World>*, Part<World>*>> CommonParts();
+  // TODO(egg): document.
+  // |*common_parts| must be empty.
+  Vector<Acceleration, World> IntrinsicAcceleration(
+      Instant const& next_time,
+      std::vector<std::pair<Part<World>*, Part<World>*>>* const common_parts);
 
   Position<Barycentric> WorldToBarycentric(
       Position<World> const& position) const;
