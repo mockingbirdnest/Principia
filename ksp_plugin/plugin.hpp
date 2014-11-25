@@ -280,6 +280,9 @@ class Plugin {
   Vector<Acceleration, World> IntrinsicAcceleration(
       Instant const& next_time,
       std::vector<std::pair<Part<World>*, Part<World>*>>* const common_parts);
+  void ShiftBubble(
+      std::vector<std::pair<Part<World>*,
+                            Part<World>*>> const* const common_parts);
 
   Position<Barycentric> WorldToBarycentric(
       Position<World> const& position) const;

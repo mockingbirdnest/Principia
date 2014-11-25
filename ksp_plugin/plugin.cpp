@@ -540,8 +540,8 @@ void Plugin::RestartPhysicsBubble() {
 }
 
 Vector<Acceleration, World> Plugin::IntrinsicAcceleration(
-      Instant const& next_time,
-      std::vector<std::pair<Part<World>*, Part<World>*>>* const common_parts) {
+    Instant const& next_time,
+    std::vector<std::pair<Part<World>*, Part<World>*>>* const common_parts) {
   CHECK(common_parts->empty());
   // Most of the time no parts explode.  We reserve accordingly.
   common_parts->reserve(current_physics_bubble_->parts.size());
@@ -573,6 +573,62 @@ Vector<Acceleration, World> Plugin::IntrinsicAcceleration(
   return weighted_sum / total_mass;
 }
 
+void Plugin::ShiftBubble(
+    std::vector<std::pair<Part<World>*,
+                          Part<World>*>> const* const common_parts) {
+  std::vector<DegreesOfFreedom<World>> current_common_degrees_of_freedom;
+  current_common_degrees_of_freedom.reserve(common_parts->size());
+  std::vector<Mass> current_common_masses;
+  current_common_masses.reserve(common_parts->size());
+  std::vector<DegreesOfFreedom<World>> next_common_degrees_of_freedom;
+  next_common_degrees_of_freedom.reserve(common_parts->size());
+  std::vector<Mass> next_common_masses;
+  next_common_masses.reserve(common_parts->size());
+  for (auto const& current_next : *common_parts) {
+    current_common_degrees_of_freedom.emplace_back(
+        current_next.first->degrees_of_freedom);
+    current_common_masses.emplace_back(current_next.first->mass);
+    next_common_degrees_of_freedom.emplace_back(
+        current_next.second->degrees_of_freedom);
+    next_common_masses.emplace_back(current_next.second->mass);
+  }
+  DegreesOfFreedom<World> const current_common_centre_of_mass =
+      physics::Barycentre(current_common_degrees_of_freedom, 
+                          current_common_masses);
+  DegreesOfFreedom<World> const next_common_centre_of_mass =
+      physics::Barycentre(next_common_degrees_of_freedom, next_common_masses);
+  // The change in the position of the overall centre of mass resulting from
+  // fixing the centre of mass of the intersection.
+  Displacement<World> const position_change =
+      (next_physics_bubble_->centre_of_mass->position -
+           next_common_centre_of_mass.position) -
+      (current_physics_bubble_->centre_of_mass->position -
+           current_common_centre_of_mass.position);
+  // The change in the velocity of the overall centre of mass resulting from
+  // fixing the velocity of the centre of mass of the intersection.
+  Velocity<World> const velocity_change =
+      (next_physics_bubble_->centre_of_mass->velocity -
+           next_common_centre_of_mass.velocity) -
+      (current_physics_bubble_->centre_of_mass->velocity -
+           current_common_centre_of_mass.velocity);
+  DegreesOfFreedom<Barycentric> const& current_centre_of_mass =
+      current_physics_bubble_->
+          centre_of_mass_trajectory->last().degrees_of_freedom();
+  next_physics_bubble_->centre_of_mass_trajectory =
+      std::make_unique<Trajectory<Barycentric>>(bubble_body_);
+  // Using the identity as the map |World| -> |WorldSun| is valid for
+  // velocities too since we assume |World| is currently nonrotating, i.e.,
+  // it is stationary with respect |to WorldSun|.
+  next_physics_bubble_->centre_of_mass_trajectory->Append(
+      current_time_,
+      {current_centre_of_mass.position +
+           PlanetariumRotation().Inverse()(
+               Identity<World, WorldSun>()(position_change)),
+       current_centre_of_mass.velocity +
+           PlanetariumRotation().Inverse()(
+               Identity<World, WorldSun>()(velocity_change))});
+}
+
 void Plugin::ComputeNextPhysicsBubbleCentreOfMassWorldDegreesOfFreedom() {
   std::vector<DegreesOfFreedom<World>> part_degrees_of_freedom;
   part_degrees_of_freedom.reserve(next_physics_bubble_->parts.size());
@@ -593,82 +649,43 @@ void Plugin::PreparePhysicsBubble(Instant const& next_time) {
   if (current_physics_bubble_ == nullptr) {
     // There was no physics bubble.
     return RestartPhysicsBubble();
-  } else {
-    // The IDs of the parts that are both in the current and in the next physics
-    // bubble.
-    auto const common_parts =
-        std::make_unique<std::vector<std::pair<Part<World>*, Part<World>*>>>();
-    Vector<Acceleration, World> intrinsic_acceleration =
-        IntrinsicAcceleration(next_time, common_parts.get());
-    if (common_parts->size() == 0) {
-      // The current and next set of parts are disjoint, i.e., the next physics
-      // bubble is unrelated to the current one.
-      return RestartPhysicsBubble();
-    } else if (common_parts->size() == next_physics_bubble_->parts.size()) {
-      // The set of parts has not changed.
-      next_physics_bubble_->centre_of_mass_trajectory =
-          std::move(current_physics_bubble_->centre_of_mass_trajectory);
-      // TODO(egg): we end up dragging some history along here, we probably
-      // should not.
-    } else {
-      // Parts appeared or were removed from the physics bubble, but the
-      // intersection is nonempty.  We fix the degrees of freedom of the centre
-      // of mass of the intersection, and we use its measured acceleration as
-      // the intrinsic acceleration of the |bubble_body_|.
-      std::vector<DegreesOfFreedom<World>> current_common_degrees_of_freedom;
-      current_common_degrees_of_freedom.reserve(common_parts->size());
-      std::vector<Mass> current_common_masses;
-      current_common_masses.reserve(common_parts->size());
-      std::vector<DegreesOfFreedom<World>> next_common_degrees_of_freedom;
-      next_common_degrees_of_freedom.reserve(common_parts->size());
-      std::vector<Mass> next_common_masses;
-      next_common_masses.reserve(common_parts->size());
-      for (auto const& current_next : *common_parts) {
-        current_common_degrees_of_freedom.push_back(
-            current_next.first->degrees_of_freedom);
-        current_common_masses.push_back(current_next.first->mass);
-        next_common_degrees_of_freedom.push_back(
-            current_next.second->degrees_of_freedom);
-        next_common_masses.push_back(current_next.second->mass);
-      }
-      DegreesOfFreedom<World> const current_common_centre_of_mass =
-          physics::Barycentre(current_common_degrees_of_freedom,
-                              current_common_masses);
-      DegreesOfFreedom<World> const next_common_centre_of_mass =
-          physics::Barycentre(next_common_degrees_of_freedom,
-                              next_common_masses);
-      // The change in the position of the overall centre of mass resulting from
-      // fixing the centre of mass of the intersection.
-      Displacement<World> const position_change =
-          (next_physics_bubble_->centre_of_mass->position -
-               next_common_centre_of_mass.position) -
-          (current_physics_bubble_->centre_of_mass->position -
-               current_common_centre_of_mass.position);
-      // The change in the velocity of the overall centre of mass resulting from
-      // fixing the velocity of the centre of mass of the intersection.
-      Velocity<World> const velocity_change =
-          (next_physics_bubble_->centre_of_mass->velocity -
-               next_common_centre_of_mass.velocity) -
-          (current_physics_bubble_->centre_of_mass->velocity -
-               current_common_centre_of_mass.velocity);
-      DegreesOfFreedom<Barycentric> const& current_centre_of_mass =
-          current_physics_bubble_->
-              centre_of_mass_trajectory->last().degrees_of_freedom();
-      next_physics_bubble_->centre_of_mass_trajectory =
-          std::make_unique<Trajectory<Barycentric>>(bubble_body_);
-      // Using the identity as the map |World| -> |WorldSun| is valid for
-      // velocities too since we assume |World| is currently nonrotating, i.e.,
-      // it is stationary with respect |to WorldSun|.
-      next_physics_bubble_->centre_of_mass_trajectory->Append(
-          current_time_,
-          {current_centre_of_mass.position +
-               PlanetariumRotation().Inverse()(
-                   Identity<World, WorldSun>()(position_change)),
-           current_centre_of_mass.velocity +
-               PlanetariumRotation().Inverse()(
-                   Identity<World, WorldSun>()(velocity_change))});
-    }
   }
+  // The IDs of the parts that are both in the current and in the next physics
+  // bubble.
+  auto const common_parts =
+      std::make_unique<std::vector<std::pair<Part<World>*, Part<World>*>>>();
+  Vector<Acceleration, World> intrinsic_acceleration =
+      IntrinsicAcceleration(next_time, common_parts.get());
+  if (common_parts->size() == 0) {
+    // The current and next set of parts are disjoint, i.e., the next physics
+    // bubble is unrelated to the current one.
+    return RestartPhysicsBubble();
+  } else if (common_parts->size() == next_physics_bubble_->parts.size()) {
+    // The set of parts has not changed.
+    next_physics_bubble_->centre_of_mass_trajectory =
+        std::move(current_physics_bubble_->centre_of_mass_trajectory);
+    // TODO(egg): we end up dragging some history along here, we probably should
+    // not.
+  } else {
+    // Parts appeared or were removed from the physics bubble, but the
+    // intersection is nonempty.  We fix the degrees of freedom of the centre of
+    // mass of the intersection, and we use its measured acceleration as the
+    // intrinsic acceleration of the |bubble_body_|.
+    ShiftBubble(common_parts.get());
+  }
+  // Correct since |World| is currently nonrotating.
+  Vector<Acceleration, Barycentric> barycentric_intrinsic_acceleration =
+      PlanetariumRotation().Inverse()(
+          Identity<World, WorldSun>()(intrinsic_acceleration));
+  // TODO(egg): this makes the intrinsic acceleration a step function.  Might
+  // something smoother be better?  We need to be careful not to be one step or
+  // half a step in the past though.
+  next_physics_bubble_->centre_of_mass_trajectory->
+        set_intrinsic_acceleration(
+            [barycentric_intrinsic_acceleration](Instant const& t) {
+              return barycentric_intrinsic_acceleration;
+            });
+  current_physics_bubble_ = std::move(next_physics_bubble_);
 }
 
 }  // namespace ksp_plugin
