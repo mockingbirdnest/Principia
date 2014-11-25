@@ -270,6 +270,8 @@ TEST_F(TransformsTest, BodiesBarycentricRotating) {
                            0 * SIUnit<Speed>(),
                            0 * SIUnit<Speed>()})),
         Lt(1 * std::numeric_limits<double>::epsilon() * SIUnit<Speed>()));
+    LOG(ERROR)<<degrees_of_freedom1.velocity;
+    LOG(ERROR)<<degrees_of_freedom2.velocity;
 
     DegreesOfFreedom<Through> const barycentre_degrees_of_freedom =
         Barycentre<Through, Mass>({degrees_of_freedom1, degrees_of_freedom2},
