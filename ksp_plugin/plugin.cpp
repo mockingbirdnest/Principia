@@ -518,6 +518,7 @@ void Plugin::AddVesselToNextPhysicsBubble(
 }
 
 void Plugin::RestartPhysicsBubble() {
+  CHECK(next_physics_bubble_ != nullptr);
   std::vector<DegreesOfFreedom<Barycentric>> vessel_degrees_of_freedom;
   vessel_degrees_of_freedom.reserve(next_physics_bubble_->vessels.size());
   std::vector<Mass> vessel_masses;
@@ -542,6 +543,7 @@ void Plugin::RestartPhysicsBubble() {
 Vector<Acceleration, World> Plugin::IntrinsicAcceleration(
     Instant const& next_time,
     std::vector<std::pair<Part<World>*, Part<World>*>>* const common_parts) {
+  CHECK_NOTNULL(common_parts);
   CHECK(common_parts->empty());
   // Most of the time no parts explode.  We reserve accordingly.
   common_parts->reserve(current_physics_bubble_->parts.size());
@@ -576,6 +578,8 @@ Vector<Acceleration, World> Plugin::IntrinsicAcceleration(
 void Plugin::ShiftBubble(
     std::vector<std::pair<Part<World>*,
                           Part<World>*>> const* const common_parts) {
+  CHECK_NOTNULL(common_parts);
+  CHECK(next_physics_bubble_ != nullptr);
   std::vector<DegreesOfFreedom<World>> current_common_degrees_of_freedom;
   current_common_degrees_of_freedom.reserve(common_parts->size());
   std::vector<Mass> current_common_masses;
@@ -630,6 +634,7 @@ void Plugin::ShiftBubble(
 }
 
 void Plugin::ComputeNextPhysicsBubbleCentreOfMassWorldDegreesOfFreedom() {
+  CHECK(next_physics_bubble_ != nullptr);
   std::vector<DegreesOfFreedom<World>> part_degrees_of_freedom;
   part_degrees_of_freedom.reserve(next_physics_bubble_->parts.size());
   std::vector<Mass> part_masses;

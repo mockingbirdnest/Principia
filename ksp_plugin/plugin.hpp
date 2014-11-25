@@ -239,7 +239,6 @@ class Plugin {
   // Remove vessels for which |keep| is false, and sets |keep| to false for the
   // remaining ones.
   void CleanUpVessels();
-
   // Given |vessel| and an iterator to it in |new_vessels_|, checks that it has
   // been given an initial state, i.e. that its |history| is not null, and that
   // the following are equivalent:
@@ -250,42 +249,56 @@ class Plugin {
   void CheckVesselInvariants(
       Vessel const& vessel,
       GUIDToUnownedVessel::iterator const it_in_new_vessels) const;
-
   // Evolves the histories of the |celestials_| and of the synchronized vessels
   // up to at most |t|. |t| must be large enough that at least one step of
   // size |Δt_| can fit between |current_time_| and |t|.
   void EvolveSynchronizedHistories(Instant const& t);
-
   // Synchronizes the |new_vessels_| and clears |new_vessels_|.
   void SynchronizeNewHistories();
-
   // Resets the prolongations of all vessels and celestials to |HistoryTime()|.
   // All vessels and celestials must have a null |prolongation|.
   void ResetProlongations();
-
   // Evolves the prolongations of all celestials and synchronized vessels, as
   // well as the histories of unsynchronized vessels, up to exactly instant |t|.
   void EvolveProlongationsAndUnsynchronizedHistories(Instant const& t);
 
+  // Computes the world centre of mass, trajectory (including intrinsic
+  // acceleration) of |next_physics_bubble_|, then moves it into
+  // |current_physics_bubble_|.  |next_physics_bubble_| is left null.
+  // |next_physics_bubble_| must not be null.
   void PreparePhysicsBubble(Instant const& next_time);
+
+  // Utilities for |PreparePhysicsBubble|.
+
+  // Computes the world degrees of freedom of the centre of mass of
+  // |next_physics_bubble_| using the contents of |next_physics_bubble_->parts|.
+  // |next_physics_bubble_| must not be null.
   void ComputeNextPhysicsBubbleCentreOfMassWorldDegreesOfFreedom();
   // Creates |next_physics_bubble_->centre_of_mass_trajectory| and appends to it
   // the barycentre of the degrees of freedom of the vessels in
   // |next_physics_bubble_->vessels|, then moves |next_physics_bubble_| into
   // |current_physics_bubble_|.  |next_physics_bubble_| is left null.  There is
   // no intrinsic acceleration.
+  // |next_physics_bubble_| must not be null.
   void RestartPhysicsBubble();
-  // TODO(egg): document.
-  // |*common_parts| must be empty.
+  // Returns the intrinsic acceleration measured on the parts that are common to
+  // the current and next physics bubbles.  Stores a pair of pointers to parts
+  // (current, next) in |common_parts| for all parts common to the current and
+  // next physics bubble.
+  // |common_parts| must not be null.  |*common_parts| must be empty.  No
+  // transfer of ownership.
   Vector<Acceleration, World> IntrinsicAcceleration(
       Instant const& next_time,
       std::vector<std::pair<Part<World>*, Part<World>*>>* const common_parts);
+  // Given the vector of common parts produced by |IntrinsicAcceleration|,
+  // constructs |*next_physics_bubble_->centre_of_mass_trajectory| and appends
+  // degres of freedom at |current_time_| that conserve the degrees of freedom
+  // of the centre of mass of the parts in |common_parts|.
+  // |common_parts| must not be null.  |next_physics_bubble_| must not be null.
+  // No transfer of ownership
   void ShiftBubble(
       std::vector<std::pair<Part<World>*,
                             Part<World>*>> const* const common_parts);
-
-  Position<Barycentric> WorldToBarycentric(
-      Position<World> const& position) const;
 
   // TODO(egg): Constant time step for now.
   Time const Δt_ = 10 * Second;
