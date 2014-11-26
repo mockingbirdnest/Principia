@@ -262,10 +262,9 @@ class Plugin {
   // well as the histories of unsynchronized vessels, up to exactly instant |t|.
   void EvolveProlongationsAndUnsynchronizedHistories(Instant const& t);
 
-  // Computes the world centre of mass, trajectory (including intrinsic
-  // acceleration) of |next_physics_bubble_|, then moves it into
-  // |current_physics_bubble_|.  |next_physics_bubble_| is left null.
-  // |next_physics_bubble_| must not be null.
+  // If |next_physics_bubble_| is not null, computes the world centre of mass,
+  // trajectory (including intrinsic acceleration) of |*next_physics_bubble_|.
+  // Moves |next_physics_bubble_| into |current_physics_bubble_|.
   void PreparePhysicsBubble(Instant const& next_time);
 
   // Utilities for |PreparePhysicsBubble|.
@@ -276,11 +275,9 @@ class Plugin {
   void ComputeNextPhysicsBubbleCentreOfMassWorldDegreesOfFreedom();
   // Creates |next_physics_bubble_->centre_of_mass_trajectory| and appends to it
   // the barycentre of the degrees of freedom of the vessels in
-  // |next_physics_bubble_->vessels|, then moves |next_physics_bubble_| into
-  // |current_physics_bubble_|.  |next_physics_bubble_| is left null.  There is
-  // no intrinsic acceleration.
+  // |next_physics_bubble_->vessels|.  There is no intrinsic acceleration.
   // |next_physics_bubble_| must not be null.
-  void RestartPhysicsBubble();
+  void RestartNextPhysicsBubble();
   // Returns the intrinsic acceleration measured on the parts that are common to
   // the current and next physics bubbles.  Stores a pair of pointers to parts
   // (current, next) in |common_parts| for all parts common to the current and
