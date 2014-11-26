@@ -665,7 +665,7 @@ void Plugin::PreparePhysicsBubble(Instant const& next_time) {
               std::vector<std::pair<Part<World>*, Part<World>*>>>();
       Vector<Acceleration, World> intrinsic_acceleration =
           IntrinsicAcceleration(next_time, common_parts.get());
-      if (common_parts->size() == 0) {
+      if (common_parts->empty()) {
         // The current and next set of parts are disjoint, i.e., the next
         // physics bubble is unrelated to the current one.
         RestartNextPhysicsBubble();
