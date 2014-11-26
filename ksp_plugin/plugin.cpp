@@ -177,6 +177,14 @@ bool Plugin::IsInPhysicsBubble(Vessel const* const vessel) const {
              current_physics_bubble_->vessels.end();
 }
 
+int64_t Plugin::NumberOfVesselsInPhysicsBubble() const {
+  if (current_physics_bubble_ == nullptr) {
+    return 0;
+  } else {
+    return current_physics_bubble_->vessels.size();
+  }
+}
+
 Instant const& Plugin::HistoryTime() const {
   return sun_->history().last().time();
 }
@@ -304,10 +312,8 @@ void Plugin::SetVesselStateOffset(
 void Plugin::AdvanceTime(Instant const& t, Angle const& planetarium_rotation) {
   CHECK(!initializing);
   CleanUpVessels();
-  bool const have_physics_bubble = next_physics_bubble_ != nullptr;
-  if (have_physics_bubble) {
-    PreparePhysicsBubble(t);
-  }
+  PreparePhysicsBubble(t);
+  bool const have_physics_bubble = current_physics_bubble_ != nullptr;
   if (HistoryTime() + Δt_ < t) {
     // The histories are far enough behind that we can advance them at least one
     // step and reset the prolongations.
