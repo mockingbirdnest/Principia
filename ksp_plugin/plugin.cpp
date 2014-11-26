@@ -298,6 +298,10 @@ void Plugin::SetVesselStateOffset(
 void Plugin::AdvanceTime(Instant const& t, Angle const& planetarium_rotation) {
   CHECK(!initializing);
   CleanUpVessels();
+  bool const have_physics_bubble = next_physics_bubble_ != nullptr;
+  if (have_physics_bubble) {
+    PreparePhysicsBubble(t);
+  }
   if (HistoryTime() + Δt_ < t) {
     // The histories are far enough behind that we can advance them at least one
     // step and reset the prolongations.
