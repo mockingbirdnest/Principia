@@ -171,6 +171,12 @@ void Plugin::EvolveProlongationsAndUnsynchronizedHistories(Instant const& t) {
                             trajectories);             // trajectories
 }
 
+bool Plugin::IsInPhysicsBubble(Vessel const* const vessel) const {
+  return current_physics_bubble_ != nullptr &&
+         current_physics_bubble_->vessels.find(vessel) !=
+             current_physics_bubble_->vessels.end();
+}
+
 Instant const& Plugin::HistoryTime() const {
   return sun_->history().last().time();
 }

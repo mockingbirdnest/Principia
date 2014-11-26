@@ -261,6 +261,10 @@ class Plugin {
   // Evolves the prolongations of all celestials and synchronized vessels, as
   // well as the histories of unsynchronized vessels, up to exactly instant |t|.
   void EvolveProlongationsAndUnsynchronizedHistories(Instant const& t);
+  // Returns true if, and only if, |vessel| is in
+  // |current_physics_bubble_->vessels|.  |current_physics_bubble_| may be null,
+  // in that case, returns false.
+  bool IsInPhysicsBubble(Vessel const* const vessel) const;
 
   // If |next_physics_bubble_| is not null, computes the world centre of mass,
   // trajectory (including intrinsic acceleration) of |*next_physics_bubble_|.
