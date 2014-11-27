@@ -87,7 +87,7 @@ void Plugin::EvolveSynchronizedHistories(Instant const& t) {
   // Integration with a constant step.
   NBodySystem<Barycentric>::Trajectories trajectories;
   trajectories.reserve(vessels_.size() - new_vessels_.size() +
-                       celestials_.size());
+                       celestials_.size() - NumberOfVesselsInPhysicsBubble());
   for (auto const& pair : celestials_) {
     std::unique_ptr<Celestial> const& celestial = pair.second;
     trajectories.push_back(celestial->mutable_history());
