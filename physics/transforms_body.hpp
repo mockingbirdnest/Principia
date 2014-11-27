@@ -54,10 +54,11 @@ Matrix Transpose(Matrix const& m) {
   return FromColumns(m.row_x, m.row_y, m.row_z);
 }
 
-// Returns the rotation |matrix| that maps the standard basis to the basis of
-// the barycentric frame and the corresponding velocity.
-// |barycentre_degrees_of_freedom| must be a convex combination of the two other
-// degrees of freedom.
+// Fills the rotation |*matrix| that maps the standard basis to the basis of the
+// barycentric frame.  Fills |*angular_frequency| with the corresponding angular
+// velocity.  These pointers must be nonnul, and there is no transfer of
+// ownership.  |barycentre_degrees_of_freedom| must be a convex combination of
+// the two other degrees of freedom.
 // TODO(phl): All of this should be strongly typed.  It's awfully confusing as
 // it stands.  In particular, the sign of the bivector may or may not be
 // correct.
