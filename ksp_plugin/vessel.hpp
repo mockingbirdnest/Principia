@@ -32,7 +32,6 @@ class Vessel {
   Celestial const& parent() const;
   Trajectory<Barycentric> const& history() const;
   Trajectory<Barycentric> const& prolongation() const;
-  Trajectory<Barycentric> const& prolongation_or_history() const;
 
   Trajectory<Barycentric>* mutable_history();
   Trajectory<Barycentric>* mutable_prolongation();
