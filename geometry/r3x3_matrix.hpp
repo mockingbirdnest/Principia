@@ -16,19 +16,22 @@ class R3x3Matrix {
  public:
   // The identity matrix.
   R3x3Matrix();
-  R3x3Matrix(R3Element<double> const& column_x,
-             R3Element<double> const& column_y,
-             R3Element<double> const& column_z);
+  R3x3Matrix(R3Element<double> const& row_x,
+             R3Element<double> const& row_y,
+             R3Element<double> const& row_z);
+
+  R3x3Matrix Transpose() const;
 
   R3x3Matrix& operator+=(R3x3Matrix const& right);
   R3x3Matrix& operator-=(R3x3Matrix const& right);
+  R3x3Matrix& operator*=(R3x3Matrix const& right);
   R3x3Matrix& operator*=(double const right);
   R3x3Matrix& operator/=(double const right);
 
  private:
-  R3Element<double> column_x_;
-  R3Element<double> column_y_;
-  R3Element<double> column_z_;
+  R3Element<double> row_x_;
+  R3Element<double> row_y_;
+  R3Element<double> row_z_;
 
   friend R3x3Matrix operator+(R3x3Matrix const& right);
   friend R3x3Matrix operator-(R3x3Matrix const& right);
@@ -36,6 +39,8 @@ class R3x3Matrix {
   friend R3x3Matrix operator+(R3x3Matrix const& left,
                               R3x3Matrix const& right);
   friend R3x3Matrix operator-(R3x3Matrix const& left,
+                              R3x3Matrix const& right);
+  friend R3x3Matrix operator*(R3x3Matrix const& left,
                               R3x3Matrix const& right);
 
   friend R3x3Matrix operator*(double const left,
@@ -50,7 +55,7 @@ class R3x3Matrix {
   friend bool operator!=(R3x3Matrix const& left,
                          R3x3Matrix const& right);
 
-  friend std::string DebugString(R3x3Matrix const& r3_element);
+  friend std::string DebugString(R3x3Matrix const& r3x3_matrix);
 };
 
 R3x3Matrix operator+(R3x3Matrix const& right);
@@ -59,6 +64,8 @@ R3x3Matrix operator-(R3x3Matrix const& right);
 R3x3Matrix operator+(R3x3Matrix const& left,
                      R3x3Matrix const& right);
 R3x3Matrix operator-(R3x3Matrix const& left,
+                     R3x3Matrix const& right);
+R3x3Matrix operator*(R3x3Matrix const& left,
                      R3x3Matrix const& right);
 
 R3x3Matrix operator*(double const left,
@@ -73,10 +80,10 @@ bool operator==(R3x3Matrix const& left,
 bool operator!=(R3x3Matrix const& left,
                 R3x3Matrix const& right);
 
-std::string DebugString(R3x3Matrix const& r3_element);
+std::string DebugString(R3x3Matrix const& r3x3_matrix);
 
 std::ostream& operator<<(std::ostream& out,
-                         R3x3Matrix const& r3_element);
+                         R3x3Matrix const& r3x3_matrix);
 
 }  // namespace geometry
 }  // namespace principia

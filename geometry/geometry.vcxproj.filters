@@ -124,5 +124,8 @@
     <ClCompile Include="identity_test.cpp">
       <Filter>Test Files</Filter>
     </ClCompile>
+    <ClCompile Include="r3x3_matrix_test.cpp">
+      <Filter>Test Files</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>
