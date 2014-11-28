@@ -23,8 +23,10 @@ __attribute__((unused))
 __declspec(noreturn) void noreturn() { exit(0); }
 }  // namespace
 
-// We want zero initialization here, so the default constructor won't do.
-inline R3x3Matrix::R3x3Matrix() : x(), y(), z() {}
+inline R3x3Matrix::R3x3Matrix()
+    : column_x_({1, 0, 0}),
+      column_y_({0, 1, 0}),
+      column_z_({0, 0, 1}) {}
 
 inline R3x3Matrix::R3x3Matrix(R3Element<double> const& column_x,
                               R3Element<double> const& column_y,
@@ -50,67 +52,71 @@ inline R3x3Matrix& R3x3Matrix::operator/=(double const right) {
 }
 
 inline R3x3Matrix operator+(R3x3Matrix const& right) {
-  return R3x3Matrix(+right.x, +right.y, +right.z);
+  return R3x3Matrix(+right.column_x_, +right.column_y_, +right.column_z_);
 }
 
 inline R3x3Matrix operator-(R3x3Matrix const& right) {
-  return R3x3Matrix(-right.x, -right.y, -right.z);
+  return R3x3Matrix(-right.column_x_, -right.column_y_, -right.column_z_);
 }
 
 inline R3x3Matrix operator+(
     R3x3Matrix const& left,
     R3x3Matrix const& right) {
-  return R3x3Matrix(left.x + right.x,
-                           left.y + right.y,
-                           left.z + right.z);
+  return R3x3Matrix(left.column_x_ + right.column_x_,
+                           left.column_y_ + right.column_y_,
+                           left.column_z_ + right.column_z_);
 }
 
 inline R3x3Matrix operator-(
     R3x3Matrix const& left,
     R3x3Matrix const& right) {
-  return R3x3Matrix(left.x - right.x,
-                           left.y - right.y,
-                           left.z - right.z);
+  return R3x3Matrix(left.column_x_ - right.column_x_,
+                           left.column_y_ - right.column_y_,
+                           left.column_z_ - right.column_z_);
 }
 
 inline R3x3Matrix operator*(double const left,
                                    R3x3Matrix const& right) {
-  return R3x3Matrix(left * right.x,
-                           left * right.y,
-                           left * right.z);
+  return R3x3Matrix(left * right.column_x_,
+                           left * right.column_y_,
+                           left * right.column_z_);
 }
 
 inline R3x3Matrix operator*(R3x3Matrix const& left,
                                    double const right) {
-  return R3x3Matrix(left.x * right,
-                           left.y * right,
-                           left.z * right);
+  return R3x3Matrix(left.column_x_ * right,
+                           left.column_y_ * right,
+                           left.column_z_ * right);
 }
 
 inline R3x3Matrix operator/(R3x3Matrix const& left,
                                    double const right) {
-  return R3x3Matrix(left.x / right,
-                           left.y / right,
-                           left.z / right);
+  return R3x3Matrix(left.column_x_ / right,
+                           left.column_y_ / right,
+                           left.column_z_ / right);
 }
 
 bool operator==(R3x3Matrix const& left,
                 R3x3Matrix const& right) {
-  return left.x == right.x && left.y == right.y && left.z == right.z;
+  return left.column_x_ == right.column_x_ &&
+         left.column_y_ == right.column_y_ &&
+         left.column_z_ == right.column_z_;
 }
 
 bool operator!=(R3x3Matrix const& left,
                 R3x3Matrix const& right) {
-  return left.x != right.x || left.y != right.y || left.z != right.z;
+  return left.column_x_ != right.column_x_ ||
+         left.column_y_ != right.column_y_ ||
+         left.column_z_ != right.column_z_;
 }
 
 std::string DebugString(R3x3Matrix const& r3_element) {
   std::string result = "{";
-  result += quantities::DebugString(r3_element.x);
+  result += DebugString(r3_element.column_x_);
   result += ", ";
-  result += quantities::DebugString(r3_element.y);
+  result += DebugString(r3_element.column_y_);
   result += ", ";
-  result += quantities::DebugString(r3_element.z);
+  result += DebugString(r3_element.column_z_);
   result +="}";
   return result;
 }
