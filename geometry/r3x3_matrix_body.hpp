@@ -34,8 +34,8 @@ inline double R3x3Matrix::operator[](std::pair<int, int> const& indices) const {
     case 2:
       return row_z_[indices.second];
     default:
-      LOG(FATAL) << __FUNCSIG__ << ": indices = {" << indices.first
-                                << ", " << indices.second << "}";
+      LOG(FATAL) << "indices = {" << indices.first
+                 << ", " << indices.second << "}";
       noreturn();
   }
 }
