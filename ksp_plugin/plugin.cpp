@@ -39,7 +39,7 @@ void Plugin::CheckVesselInvariants(
     GUIDToOwnedVessel::const_iterator const it) const {
   Vessel* const vessel = it->second.get();
   CHECK(vessel->is_initialized()) << "Vessel with GUID " << it->first
-                               << " was not given an initial state";
+                                  << " was not given an initial state";
   // TODO(egg): At the moment, if a vessel is inserted when
   // |current_time_ == HistoryTime()| (that only happens before the first call
   // to |AdvanceTime|) its first step is unsynchronized. This is convenient to
@@ -315,7 +315,7 @@ Displacement<AliceSun> Plugin::VesselDisplacementFromParent(
   CHECK(it != vessels_.end()) << "No vessel with GUID " << vessel_guid;
   Vessel const& vessel = *it->second;
   CHECK(vessel.is_initialized()) << "Vessel with GUID " << vessel_guid
-                              << " was not given an initial state";
+                                 << " was not given an initial state";
   Displacement<Barycentric> const barycentric_result =
       vessel.prolongation().last().degrees_of_freedom().position -
       vessel.parent().prolongation().last().degrees_of_freedom().position;
@@ -333,7 +333,7 @@ Velocity<AliceSun> Plugin::VesselParentRelativeVelocity(
   CHECK(it != vessels_.end()) << "No vessel with GUID " << vessel_guid;
   Vessel const& vessel = *it->second;
   CHECK(vessel.is_initialized()) << "Vessel with GUID " << vessel_guid
-                              << " was not given an initial state";
+                                 << " was not given an initial state";
   Velocity<Barycentric> const barycentric_result =
       vessel.prolongation().last().degrees_of_freedom().velocity -
       vessel.parent().prolongation().last().degrees_of_freedom().velocity;
@@ -456,7 +456,7 @@ Position<World> Plugin::VesselWorldPosition(
           parent_world_position,
           Rotation<WorldSun, World>::Identity() * PlanetariumRotation());
   CHECK(vessel.is_initialized()) << "Vessel with GUID " << vessel_guid
-                              << " was not given an initial state";
+                                 << " was not given an initial state";
   return to_world(
       vessel.prolongation().last().degrees_of_freedom().position);
 }
