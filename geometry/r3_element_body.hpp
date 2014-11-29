@@ -90,12 +90,8 @@ template<typename Scalar>
 void R3Element<Scalar>::Orthogonalize(R3Element* r3_element) const {
   CHECK_NOTNULL(r3_element);
   Scalar const this_norm = this->Norm();
-  LOG(ERROR)<<this_norm;
   CHECK_NE(0 * SIUnit<Scalar>(), this_norm);
   R3Element<double> const this_normalized = *this / this_norm;
-  LOG(ERROR)<<this_normalized;
-  LOG(ERROR)<<Dot(*r3_element, this_normalized);
-  LOG(ERROR)<<Dot(*r3_element, this_normalized) * this_normalized;
   *r3_element -= Dot(*r3_element, this_normalized) * this_normalized;
 }
 
