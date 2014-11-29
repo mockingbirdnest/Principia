@@ -1,3 +1,5 @@
+#include <utility>
+
 #include "geometry/r3x3_matrix.hpp"
 #include "glog/logging.h"
 #include "gmock/gmock.h"
@@ -22,9 +24,41 @@ class R3x3MatrixTest : public testing::Test {
   R3x3Matrix m3_;
 };
 
+using R3x3MatrixDeathTest = R3x3MatrixTest;
+
+TEST_F(R3x3MatrixTest, Trace) {
+  EXPECT_THAT(m1_.Trace(), Eq(-13));
+}
+
 TEST_F(R3x3MatrixTest, Transpose) {
   EXPECT_THAT(m1_.Transpose(),
               Eq(R3x3Matrix({-9, 7, -1}, {6, -5, 2}, {6, -4, 1})));
+}
+
+TEST_F(R3x3MatrixDeathTest, IndexingError) {
+  std::pair<int, int> const p1 = {-1, 2};
+  std::pair<int, int> const p2 = {2, -1};
+  std::pair<int, int> const p3 = {1, 3};
+  std::pair<int, int> const p4 = {3, 1};
+  EXPECT_DEATH({
+    m1_[p1];
+  }, "indices = \\{-1, 2\\}");
+  EXPECT_DEATH({
+    m1_[p2];
+  }, "index = -1");
+  EXPECT_DEATH({
+    m1_[p3];
+  }, "index = 3");
+  EXPECT_DEATH({
+    m1_[p4];
+  }, "indices = \\{3, 1\\}");
+}
+
+TEST_F(R3x3MatrixTest, IndexingSuccess) {
+  double const a = m1_[{1, 2}];
+  double const b = m1_[{0, 0}];
+  EXPECT_THAT(a, Eq(-4));
+  EXPECT_THAT(b, Eq(-9));
 }
 
 TEST_F(R3x3MatrixTest, UnaryOperators) {

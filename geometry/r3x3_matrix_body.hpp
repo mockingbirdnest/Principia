@@ -3,6 +3,7 @@
 #include "geometry/r3x3_matrix.hpp"
 
 #include <string>
+#include <utility>
 
 #include "glog/logging.h"
 #include "quantities/elementary_functions.hpp"
@@ -20,7 +21,26 @@ inline R3x3Matrix::R3x3Matrix(R3Element<double> const& row_x,
                               R3Element<double> const& row_z)
     : row_x_(row_x), row_y_(row_y), row_z_(row_z) {}
 
-R3x3Matrix R3x3Matrix::Transpose() const {
+inline double R3x3Matrix::Trace() const {
+  return row_x_.x + row_y_.y + row_z_.z;
+}
+
+inline double R3x3Matrix::operator[](std::pair<int, int> const& indices) const {
+  switch (indices.first) {
+    case 0:
+      return row_x_[indices.second];
+    case 1:
+      return row_y_[indices.second];
+    case 2:
+      return row_z_[indices.second];
+    default:
+      LOG(FATAL) << "indices = {" << indices.first
+                 << ", " << indices.second << "}";
+      noreturn();
+  }
+}
+
+inline R3x3Matrix R3x3Matrix::Transpose() const {
   return R3x3Matrix({row_x_.x, row_y_.x, row_z_.x},
                     {row_x_.y, row_y_.y, row_z_.y},
                     {row_x_.z, row_y_.z, row_z_.z});
@@ -71,9 +91,8 @@ inline R3x3Matrix operator-(R3x3Matrix const& left,
                     left.row_z_ - right.row_z_);
 }
 
-inline R3x3Matrix operator*(
-    R3x3Matrix const& left,
-    R3x3Matrix const& right) {
+inline R3x3Matrix operator*(R3x3Matrix const& left,
+                            R3x3Matrix const& right) {
   R3x3Matrix const t_right = right.Transpose();
   return R3x3Matrix({Dot(left.row_x_, t_right.row_x_),
                      Dot(left.row_x_, t_right.row_y_),
@@ -85,6 +104,22 @@ inline R3x3Matrix operator*(
                      Dot(left.row_z_, t_right.row_y_),
                      Dot(left.row_z_, t_right.row_z_)});
 }
+
+inline R3Element<double> operator*(R3x3Matrix const& left,
+                                   R3Element<double> const& right) {
+  return R3Element<double>({Dot(left.row_x_, right),
+                            Dot(left.row_y_, right),
+                            Dot(left.row_z_, right)});
+}
+
+inline R3Element<double> operator*(R3Element<double> const& left,
+                                   R3x3Matrix const& right) {
+  R3x3Matrix const t_right = right.Transpose();
+  return R3Element<double>({Dot(left, t_right.row_x_),
+                            Dot(left, t_right.row_y_),
+                            Dot(left, t_right.row_z_)});
+}
+
 
 inline R3x3Matrix operator*(double const left,
                             R3x3Matrix const& right) {
@@ -107,21 +142,21 @@ inline R3x3Matrix operator/(R3x3Matrix const& left,
                     left.row_z_ / right);
 }
 
-bool operator==(R3x3Matrix const& left,
-                R3x3Matrix const& right) {
+inline bool operator==(R3x3Matrix const& left,
+                       R3x3Matrix const& right) {
   return left.row_x_ == right.row_x_ &&
          left.row_y_ == right.row_y_ &&
          left.row_z_ == right.row_z_;
 }
 
-bool operator!=(R3x3Matrix const& left,
-                R3x3Matrix const& right) {
+inline bool operator!=(R3x3Matrix const& left,
+                       R3x3Matrix const& right) {
   return left.row_x_ != right.row_x_ ||
          left.row_y_ != right.row_y_ ||
          left.row_z_ != right.row_z_;
 }
 
-std::string DebugString(R3x3Matrix const& r3x3_matrix) {
+inline std::string DebugString(R3x3Matrix const& r3x3_matrix) {
   std::string result = "{";
   result += DebugString(r3x3_matrix.row_x_);
   result += ", ";
@@ -132,8 +167,8 @@ std::string DebugString(R3x3Matrix const& r3x3_matrix) {
   return result;
 }
 
-std::ostream& operator<<(std::ostream& out,
-                         R3x3Matrix const& r3x3_matrix) {
+inline std::ostream& operator<<(std::ostream& out,
+                                R3x3Matrix const& r3x3_matrix) {
   out << DebugString(r3x3_matrix);
   return out;
 }
