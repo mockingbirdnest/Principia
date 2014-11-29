@@ -661,6 +661,9 @@ TEST_F(PluginTest, BodyCentredNonrotatingRenderingIntegration) {
   }
 #else
   Instant t = initial_time_ + δt_long;
+  plugin.AdvanceTime(t, 0 * Radian);  // This ensures the history is nonempty.
+  plugin.InsertOrKeepVessel(satellite, SolarSystem::kEarth);
+  t += δt_long;
 #endif
   for (; t < initial_time_ + 12 * Hour; t += δt_long) {
     plugin.AdvanceTime(t,
