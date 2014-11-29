@@ -1,5 +1,6 @@
 #include "geometry/grassmann.hpp"
 #include "geometry/orthogonal_map.hpp"
+#include "geometry/r3_element.hpp"
 #include "geometry/rotation.hpp"
 #include "glog/logging.h"
 #include "gmock/gmock.h"
@@ -139,10 +140,66 @@ TEST_F(RotationTest, Forget) {
                                                 2.0 * Metre))));
 }
 
-TEST_F(RotationTest, ToQuaternion) {
+// These four tests cover all the branches of ToQuaternion.
+TEST_F(RotationTest, ToQuaternion1) {
   R3Element<double> const v1 = {2, 5, 6};
   R3Element<double> v2 = {-3, 4, 1};
   v1.Orthogonalize(&v2);
   R3Element<double> v3 = Cross(v1, v2);
+  R3Element<double> const w1 = Normalize(v1);
+  R3Element<double> const w2 = Normalize(v2);
+  R3Element<double> const w3 = Normalize(v3);
+  R3x3Matrix m = {w1, w2, w3};
+  Rot rotation(m);
+  EXPECT_THAT(R3Element<double>({1, 0, 0}) * m, Eq(w1));
+  EXPECT_THAT(R3Element<double>({0, 1, 0}) * m, Eq(w2));
+  EXPECT_THAT(R3Element<double>({0, 0, 1}) * m, Eq(w3));
+}
+
+TEST_F(RotationTest, ToQuaternion2) {
+  R3Element<double> const v1 = {-2, -5, -6};
+  R3Element<double> v2 = {-3, 4, 1};
+  v1.Orthogonalize(&v2);
+  R3Element<double> v3 = Cross(v1, v2);
+  R3Element<double> const w1 = Normalize(v1);
+  R3Element<double> const w2 = Normalize(v2);
+  R3Element<double> const w3 = Normalize(v3);
+  R3x3Matrix m = {w1, w2, w3};
+  Rot rotation(m);
+  EXPECT_THAT(R3Element<double>({1, 0, 0}) * m, Eq(w1));
+  EXPECT_THAT(R3Element<double>({0, 1, 0}) * m, Eq(w2));
+  EXPECT_THAT(R3Element<double>({0, 0, 1}) * m, Eq(w3));
+}
+
+TEST_F(RotationTest, ToQuaternion3) {
+  R3Element<double> const v1 = {-2, -5, -6};
+  R3Element<double> v2 = {-3, -4, 1};
+  v1.Orthogonalize(&v2);
+  R3Element<double> v3 = Cross(v1, v2);
+  R3Element<double> const w1 = Normalize(v1);
+  R3Element<double> const w2 = Normalize(v2);
+  R3Element<double> const w3 = Normalize(v3);
+  R3x3Matrix m = {w1, w2, w3};
+  Rot rotation(m);
+  EXPECT_THAT(R3Element<double>({1, 0, 0}) * m, Eq(w1));
+  EXPECT_THAT(R3Element<double>({0, 1, 0}) * m, Eq(w2));
+  EXPECT_THAT(R3Element<double>({0, 0, 1}) * m, Eq(w3));
+}
+
+TEST_F(RotationTest, ToQuaternion4) {
+  R3Element<double> const v1 = {-2, -5, -6};
+  R3Element<double> v2 = {-3, -4, -1};
+  v1.Orthogonalize(&v2);
+  R3Element<double> v3 = Cross(v1, v2);
+  R3Element<double> const w1 = Normalize(v1);
+  R3Element<double> const w2 = Normalize(v2);
+  R3Element<double> const w3 = Normalize(v3);
+  R3x3Matrix m = {w1, w2, w3};
+  Rot rotation(m);
+  EXPECT_THAT(R3Element<double>({1, 0, 0}) * m, Eq(w1));
+  EXPECT_THAT(R3Element<double>({0, 1, 0}) * m, Eq(w2));
+  EXPECT_THAT(R3Element<double>({0, 0, 1}) * m, Eq(w3));
+}
+
 }  // namespace geometry
 }  // namespace principia

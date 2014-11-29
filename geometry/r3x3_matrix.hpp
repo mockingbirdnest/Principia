@@ -47,6 +47,11 @@ class R3x3Matrix {
   friend R3x3Matrix operator*(R3x3Matrix const& left,
                               R3x3Matrix const& right);
 
+  friend R3Element<double> operator*(R3x3Matrix const& left,
+                                     R3Element<double> const& right);
+  friend R3Element<double> operator*(R3Element<double> const& left,
+                                     R3x3Matrix const& right);
+
   friend R3x3Matrix operator*(double const left,
                               R3x3Matrix const& right);
   friend R3x3Matrix operator*(R3x3Matrix const& left,
@@ -71,6 +76,11 @@ R3x3Matrix operator-(R3x3Matrix const& left,
                      R3x3Matrix const& right);
 R3x3Matrix operator*(R3x3Matrix const& left,
                      R3x3Matrix const& right);
+
+R3Element<double> operator*(R3x3Matrix const& left,
+                            R3Element<double> const& right);
+R3Element<double> operator*(R3Element<double> const& left,
+                            R3x3Matrix const& right);
 
 R3x3Matrix operator*(double const left,
                      R3x3Matrix const& right);

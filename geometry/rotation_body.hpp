@@ -1,5 +1,7 @@
 #pragma once
 
+#include <algorithm>
+
 #include "geometry/grassmann.hpp"
 #include "geometry/linear_map.hpp"
 #include "geometry/quaternion.hpp"
@@ -12,16 +14,45 @@ namespace geometry {
 
 namespace {
 
+// Well-conditioned conversion of a rotation matrix to a quaternion.  See
+// http://en.wikipedia.org/wiki/Rotation_matrix#Quaternion and
+// http://www.euclideanspace.com/maths/geometry/rotations/conversions/matrixToQuaternion/.
 Quaternion ToQuaternion(R3x3Matrix const& matrix) {
   double const t = matrix.Trace();
-  CHECK_LE(0, t);
-  double const r = sqrt(1.0 + t);
-  double const s = 0.5 / r;
-  double const real_part = 0.5 * r;
+  double real_part;
   R3Element<double> imaginary_part;
-  imaginary_part.x = (matrix[{2, 1}] - matrix[{1, 2}]) * s;
-  imaginary_part.y = (matrix[{0, 2}] - matrix[{2, 0}]) * s;
-  imaginary_part.z = (matrix[{1, 0}] - matrix[{0, 1}]) * s;
+  if (t > 0) {
+    double const r = sqrt(1.0 + t);
+    double const s = 0.5 / r;
+    real_part = 0.5 * r;
+    imaginary_part.x = (matrix[{2, 1}] - matrix[{1, 2}]) * s;
+    imaginary_part.y = (matrix[{0, 2}] - matrix[{2, 0}]) * s;
+    imaginary_part.z = (matrix[{1, 0}] - matrix[{0, 1}]) * s;
+  } else if (matrix[{0, 0}] > std::max(matrix[{1, 1}], matrix[{2, 2}])) { 
+    double const r =
+        sqrt(1.0 + matrix[{0, 0}] - matrix[{1, 1}] - matrix[{2, 2}]);
+    double const s = 0.5 / r;
+    real_part = (matrix[{2, 1}] - matrix[{1, 2}]) * s;
+    imaginary_part.x = 0.5 * r;
+    imaginary_part.y = (matrix[{0, 1}] + matrix[{1, 0}]) * s;
+    imaginary_part.z = (matrix[{2, 0}] + matrix[{0, 2}]) * s;
+  } else if (matrix[{1, 1}] > matrix[{2, 2}]) {
+    double const r =
+        sqrt(1.0 - matrix[{0, 0}] + matrix[{1, 1}] - matrix[{2, 2}]);
+    double const s = 0.5 / r;
+    real_part = (matrix[{0, 2}] - matrix[{2, 0}]) * s;
+    imaginary_part.x = (matrix[{0, 1}] + matrix[{1, 0}]) * s;
+    imaginary_part.y = 0.5 * r;
+    imaginary_part.z = (matrix[{1, 2}] + matrix[{2, 1}]) * s;
+  } else {
+    double const r =
+        sqrt(1.0 - matrix[{0, 0}] - matrix[{1, 1}] + matrix[{2, 2}]);
+    double const s = 0.5 / r;
+    real_part = (matrix[{1, 0}] - matrix[{0, 1}]) * s;
+    imaginary_part.x = (matrix[{0, 2}] + matrix[{2, 0}]) * s;
+    imaginary_part.y = (matrix[{1, 2}] + matrix[{2, 1}]) * s;
+    imaginary_part.z = 0.5 * r;
+  }
   return Quaternion(real_part, imaginary_part);
 }
 

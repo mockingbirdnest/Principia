@@ -102,5 +102,13 @@ TEST_F(R3ElementTest, OrthogonalizeSuccess) {
                                                   (2.0 / 3.0) * Metre}), 1));
 }
 
+TEST_F(R3ElementTest, Normalize) {
+  R3Element<Length> const v = {1 * Metre, -2 * Metre, 5 * Metre};
+  EXPECT_THAT(Normalize(v),
+              AlmostEquals(R3Element<double>({1.0 / sqrt(30.0),
+                                              -2.0 / sqrt(30.0),
+                                              5.0 / sqrt(30.0)}), 1));
+}
+
 }  // namespace geometry
 }  // namespace principia

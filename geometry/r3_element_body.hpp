@@ -194,6 +194,11 @@ bool operator!=(R3Element<Scalar> const& left,
 }
 
 template<typename Scalar>
+R3Element<double> Normalize(R3Element<Scalar> const& r3_element) {
+  return r3_element / r3_element.Norm();
+}
+
+template<typename Scalar>
 std::string DebugString(R3Element<Scalar> const& r3_element) {
   std::string result = "{";
   result += quantities::DebugString(r3_element.x);
