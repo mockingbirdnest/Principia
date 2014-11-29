@@ -247,7 +247,7 @@ class Plugin {
   void SynchronizeNewHistories();
 
   // Resets the prolongations of all vessels and celestials to |HistoryTime()|.
-  // All vessels and celestials must have a null |prolongation|.
+  // All vessels and celestials must be |synchronized()|.
   void ResetProlongations();
 
   // Evolves the prolongations of all celestials and vessels up to exactly

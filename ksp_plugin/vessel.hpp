@@ -42,24 +42,24 @@ class Vessel {
   void set_parent(Celestial const* parent);
 
   // Creates an |owned_prolongation_| for this vessel and appends a point with
-  // the given |time| and |degrees_of_freedom|.  The vessel must have neither a
-  // |history_|, an |owned_prolongation_| nor a |prolongation_|.
+  // the given |time| and |degrees_of_freedom|.  The vessel must not be
+  // |initialized()| nor |synchronized()|, |owned_prolongation_| must be null.
   void CreateProlongation(
       Instant const& time,
       DegreesOfFreedom<Barycentric> const& degrees_of_freedom);
 
   // Creates a |history_| for this vessel and appends a point with  with the
   // given |time| and |degrees_of_freedom|, then forks a |prolongation_| at
-  // |time|.  Nulls |owned_prolongation_|.  The vessel must not have a
-  // |history_|. |*owned_prolongation_| is destroyed *after* |history_| has been
-  // constructed.
+  // |time|.  Nulls |owned_prolongation_|.  The vessel must not be
+  // |synchronized()|.  |*owned_prolongation_| is destroyed *after* |history_|
+  // has been constructed.
   void CreateHistoryAndForkProlongation(
       Instant const& time,
       DegreesOfFreedom<Barycentric> const& degrees_of_freedom);
 
   // Deletes the |prolongation_| and forks a new one at |time|.
-  // |history_| and |prolongation_| must not be null, |owned_prolongation_|
-  // must be null.
+  // The vessel must by |synchronized()| and |initialized()|,
+  // |owned_prolongation_| must be null.
   void ResetProlongation(Instant const& time);
 
  private:

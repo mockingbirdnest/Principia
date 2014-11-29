@@ -44,8 +44,8 @@ inline void Vessel::set_parent(Celestial const* parent) {
 inline void Vessel::CreateProlongation(
     Instant const& time,
     DegreesOfFreedom<Barycentric> const& degrees_of_freedom) {
-  CHECK(history_ == nullptr);
-  CHECK(prolongation_ == nullptr);
+  CHECK(!synchronized());
+  CHECK(!initialized());
   CHECK(owned_prolongation_ == nullptr);
   owned_prolongation_ = std::make_unique<Trajectory<Barycentric>>(*body_);
   owned_prolongation_->Append(time, degrees_of_freedom);
@@ -55,7 +55,7 @@ inline void Vessel::CreateProlongation(
 inline void Vessel::CreateHistoryAndForkProlongation(
     Instant const& time,
     DegreesOfFreedom<Barycentric> const& degrees_of_freedom) {
-  CHECK(history_ == nullptr);
+  CHECK(!synchronized());
   history_ = std::make_unique<Trajectory<Barycentric>>(*body_);
   history_->Append(time, degrees_of_freedom);
   prolongation_ = history_->Fork(time);
@@ -63,8 +63,8 @@ inline void Vessel::CreateHistoryAndForkProlongation(
 }
 
 inline void Vessel::ResetProlongation(Instant const& time) {
-  CHECK(history_ != nullptr);
-  CHECK(prolongation_ != nullptr);
+  CHECK(initialized());
+  CHECK(synchronized());
   CHECK(owned_prolongation_ == nullptr);
   history_->DeleteFork(&prolongation_);
   prolongation_ = history_->Fork(time);
