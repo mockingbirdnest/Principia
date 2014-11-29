@@ -85,6 +85,15 @@ inline Scalar R3Element<Scalar>::Norm() const {
 }
 
 template<typename Scalar>
+void R3Element<Scalar>::Orthogonalize(R3Element* r3_element) const {
+  CHECK_NOTNULL(r3_element);
+  Scalar const this_norm = this->Norm();
+  CHECK_NE(0, this_norm);
+  R3Element const this_normalized = *this / this_norm;
+  *r3_element -= Dot(*r3_element, this_normalized) * this_normalized;
+}
+
+template<typename Scalar>
 inline R3Element<Scalar> operator+(R3Element<Scalar> const& right) {
   return R3Element<Scalar>(+right.x, +right.y, +right.z);
 }
