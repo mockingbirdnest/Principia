@@ -2,9 +2,6 @@
 
 #include "geometry/r3x3_matrix.hpp"
 
-#include <assert.h>
-#include <stdlib.h>
-
 #include <string>
 
 #include "glog/logging.h"
