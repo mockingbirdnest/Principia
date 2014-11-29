@@ -53,8 +53,8 @@ class Vessel {
   // Creates a |history_| for this vessel and appends a point with the
   // given |time| and |degrees_of_freedom|, then forks a |prolongation_| at
   // |time|.  Nulls |owned_prolongation_|.  The vessel must not satisfy
-  // |is_synchronized()|.  |*owned_prolongation_| is destroyed *after* |history_|
-  // has been constructed.
+  // |is_synchronized()|.  |*owned_prolongation_| is destroyed *after*
+  // |history_| has been constructed.
   // The vessel |is_synchronized()| and |is_initialized()| after the call.
   void CreateHistoryAndForkProlongation(
       Instant const& time,
