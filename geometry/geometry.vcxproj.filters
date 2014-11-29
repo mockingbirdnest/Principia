@@ -86,6 +86,12 @@
     <ClInclude Include="identity_body.hpp">
       <Filter>Source Files</Filter>
     </ClInclude>
+    <ClInclude Include="r3x3_matrix.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="r3x3_matrix_body.hpp">
+      <Filter>Source Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="sign_test.cpp">
@@ -116,6 +122,9 @@
       <Filter>Test Files</Filter>
     </ClCompile>
     <ClCompile Include="identity_test.cpp">
+      <Filter>Test Files</Filter>
+    </ClCompile>
+    <ClCompile Include="r3x3_matrix_test.cpp">
       <Filter>Test Files</Filter>
     </ClCompile>
   </ItemGroup>
