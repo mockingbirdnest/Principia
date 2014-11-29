@@ -38,7 +38,7 @@ Rotation<Barycentric, WorldSun> Plugin::PlanetariumRotation() const {
 void Plugin::CheckVesselInvariants(
     GUIDToOwnedVessel::const_iterator const it) const {
   Vessel* const vessel = it->second.get();
-  CHECK(vessel->initialized()) << "Vessel with GUID " << it->first
+  CHECK(vessel->is_initialized()) << "Vessel with GUID " << it->first
                                << " was not given an initial state";
   // TODO(egg): At the moment, if a vessel is inserted when
   // |current_time_ == HistoryTime()| (that only happens before the first call
@@ -46,9 +46,9 @@ void Plugin::CheckVesselInvariants(
   // test code paths, but it means the invariant is GE, rather than GT.
   CHECK_GE(vessel->prolongation().last().time(), HistoryTime());
   if (new_vessels_.count(vessel) > 0) {
-    CHECK(!vessel->synchronized());
+    CHECK(!vessel->is_synchronized());
   } else {
-    CHECK(vessel->synchronized());
+    CHECK(vessel->is_synchronized());
     CHECK_EQ(vessel->history().last().time(), HistoryTime());
   }
 }
@@ -89,7 +89,7 @@ void Plugin::EvolveSynchronizedHistories(Instant const& t) {
   }
   for (auto const& pair : vessels_) {
     std::unique_ptr<Vessel> const& vessel = pair.second;
-    if (vessel->synchronized()) {
+    if (vessel->is_synchronized()) {
       trajectories.push_back(vessel->mutable_history());
     }
   }
@@ -265,7 +265,7 @@ void Plugin::SetVesselStateOffset(
   auto const it = vessels_.find(vessel_guid);
   CHECK(it != vessels_.end()) << "No vessel with GUID " << vessel_guid;
   Vessel* const vessel = it->second.get();
-  CHECK(!vessel->initialized())
+  CHECK(!vessel->is_initialized())
       << "Vessel with GUID " << vessel_guid << " already has a trajectory";
   LOG(INFO) << "Initial |orbit.pos| for vessel with GUID " << vessel_guid
             << ": " << from_parent_position;
@@ -314,7 +314,7 @@ Displacement<AliceSun> Plugin::VesselDisplacementFromParent(
   auto const it = vessels_.find(vessel_guid);
   CHECK(it != vessels_.end()) << "No vessel with GUID " << vessel_guid;
   Vessel const& vessel = *it->second;
-  CHECK(vessel.initialized()) << "Vessel with GUID " << vessel_guid
+  CHECK(vessel.is_initialized()) << "Vessel with GUID " << vessel_guid
                               << " was not given an initial state";
   Displacement<Barycentric> const barycentric_result =
       vessel.prolongation().last().degrees_of_freedom().position -
@@ -332,7 +332,7 @@ Velocity<AliceSun> Plugin::VesselParentRelativeVelocity(
   auto const it = vessels_.find(vessel_guid);
   CHECK(it != vessels_.end()) << "No vessel with GUID " << vessel_guid;
   Vessel const& vessel = *it->second;
-  CHECK(vessel.initialized()) << "Vessel with GUID " << vessel_guid
+  CHECK(vessel.is_initialized()) << "Vessel with GUID " << vessel_guid
                               << " was not given an initial state";
   Velocity<Barycentric> const barycentric_result =
       vessel.prolongation().last().degrees_of_freedom().velocity -
@@ -396,10 +396,10 @@ RenderedTrajectory<World> Plugin::RenderedVesselTrajectory(
   auto const it = vessels_.find(vessel_guid);
   CHECK(it != vessels_.end());
   Vessel const& vessel = *(it->second);
-  CHECK(vessel.initialized());
+  CHECK(vessel.is_initialized());
   VLOG(1) << "Rendering a trajectory for the vessel with GUID " << vessel_guid;
   RenderedTrajectory<World> result;
-  if (!vessel.synchronized()) {
+  if (!vessel.is_synchronized()) {
     // TODO(egg): We render neither unsynchronized histories nor prolongations
     // at the moment.
     VLOG(1) << "Returning an empty trajectory";
@@ -455,7 +455,7 @@ Position<World> Plugin::VesselWorldPosition(
           vessel.parent().prolongation().last().degrees_of_freedom().position,
           parent_world_position,
           Rotation<WorldSun, World>::Identity() * PlanetariumRotation());
-  CHECK(vessel.initialized()) << "Vessel with GUID " << vessel_guid
+  CHECK(vessel.is_initialized()) << "Vessel with GUID " << vessel_guid
                               << " was not given an initial state";
   return to_world(
       vessel.prolongation().last().degrees_of_freedom().position);
@@ -468,7 +468,7 @@ Velocity<World> Plugin::VesselWorldVelocity(
   auto const it = vessels_.find(vessel_guid);
   CHECK(it != vessels_.end());
   Vessel const& vessel = *(it->second);
-  CHECK(vessel.initialized()) << "Vessel with GUID " << vessel_guid
+  CHECK(vessel.is_initialized()) << "Vessel with GUID " << vessel_guid
                               << " was not given an initial state";
   Rotation<Barycentric, World> to_world =
       Rotation<WorldSun, World>::Identity() * PlanetariumRotation();
