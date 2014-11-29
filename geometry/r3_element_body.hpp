@@ -3,7 +3,9 @@
 #include <string>
 
 #include "glog/logging.h"
-#include "quantities/elementary_functions.hpp"
+#include "quantities/quantities.hpp"
+
+using principia::quantities::SIUnit;
 
 namespace principia {
 namespace geometry {
@@ -82,6 +84,15 @@ inline R3Element<Scalar>& R3Element<Scalar>::operator/=(double const right) {
 template<typename Scalar>
 inline Scalar R3Element<Scalar>::Norm() const {
   return quantities::Sqrt(Dot(*this, *this));
+}
+
+template<typename Scalar>
+void R3Element<Scalar>::Orthogonalize(R3Element* r3_element) const {
+  CHECK_NOTNULL(r3_element);
+  Scalar const this_norm = this->Norm();
+  CHECK_NE(0 * SIUnit<Scalar>(), this_norm);
+  R3Element<double> const this_normalized = *this / this_norm;
+  *r3_element -= Dot(*r3_element, this_normalized) * this_normalized;
 }
 
 template<typename Scalar>

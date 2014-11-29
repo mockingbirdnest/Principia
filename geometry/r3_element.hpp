@@ -28,6 +28,10 @@ struct R3Element {
 
   Scalar Norm() const;
 
+  // Modifies |r3_element| so as to make it orthogonal to |this|, using the
+  // modified Gram-Schmidt algorithm.  Fails if |this| is zero.
+  void Orthogonalize(R3Element* r3_element) const;
+
   Scalar x;
   Scalar y;
   Scalar z;
