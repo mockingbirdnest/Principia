@@ -230,11 +230,12 @@ class Plugin {
   void CleanUpVessels();
 
   // Given an iterator to an element of |vessels_|, check that the corresponding
-  // |Vessel| been given an initial state, i.e. that its |history| is not
-  // null, and that it is in |new_vessels_| if, and only if, it has a
-  // |prologation|.
-  // Also checks that its |history().last().time()| is at least |HistoryTime()|,
-  // and that they are equal if it is not in |new_vessels_|.
+  // |Vessel| been given an initial state, i.e. that its |prolongation_| is not
+  // null, and that it is not in |new_vessels_| if, and only if, it
+  // |is_synchronized()|.
+  // Also checks that its |prolongation().last().time()| is at least
+  // |HistoryTime()|, and that if it |is_synchronized()|, its
+  // |history().last().time()| is exactly |HistoryTime()|.
   void CheckVesselInvariants(GUIDToOwnedVessel::const_iterator const it) const;
 
   // Evolves the histories of the |celestials_| and of the synchronized vessels
@@ -246,12 +247,12 @@ class Plugin {
   void SynchronizeNewHistories();
 
   // Resets the prolongations of all vessels and celestials to |HistoryTime()|.
-  // All vessels and celestials must have a null |prolongation|.
+  // All vessels must satisfy |is_synchronized()|.
   void ResetProlongations();
 
-  // Evolves the prolongations of all celestials and synchronized vessels, as
-  // well as the histories of unsynchronized vessels, up to exactly instant |t|.
-  void EvolveProlongationsAndUnsynchronizedHistories(Instant const& t);
+  // Evolves the prolongations of all celestials and vessels up to exactly
+  // instant |t|.
+  void EvolveProlongations(Instant const& t);
 
   // TODO(egg): Constant time step for now.
   Time const Δt_ = 10 * Second;
@@ -259,9 +260,9 @@ class Plugin {
   GUIDToOwnedVessel vessels_;
   std::map<Index, std::unique_ptr<Celestial>> celestials_;
 
-  // Vessels which have been recently inserted after |HistoryTime()|. For these
-  // vessels, |history->last_time > HistoryTime()|. They have a null
-  // |prolongation|. The pointers are not owning and not null.
+  // Vessels which have been recently inserted after |HistoryTime()|.  These
+  // vessels do not satisfy |is_synchronized()|.  The pointers are not owning
+  // and not null.
   std::set<Vessel* const> new_vessels_;
 
   // The vessels that will be kept during the next call to |AdvanceTime|.
@@ -270,8 +271,7 @@ class Plugin {
   std::unique_ptr<NBodySystem<Barycentric>> n_body_system_;
   // The symplectic integrator computing the synchronized histories.
   SPRKIntegrator<Length, Speed> history_integrator_;
-  // The integrator computing the prolongations and the histories before they
-  // are synchronized.
+  // The integrator computing the prolongations.
   SPRKIntegrator<Length, Speed> prolongation_integrator_;
 
   // Whether initialization is ongoing.

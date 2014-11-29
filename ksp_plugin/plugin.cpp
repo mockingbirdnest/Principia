@@ -38,17 +38,17 @@ Rotation<Barycentric, WorldSun> Plugin::PlanetariumRotation() const {
 void Plugin::CheckVesselInvariants(
     GUIDToOwnedVessel::const_iterator const it) const {
   Vessel* const vessel = it->second.get();
-  CHECK(vessel->has_history()) << "Vessel with GUID " << it->first
-                              << " was not given an initial state";
+  CHECK(vessel->is_initialized()) << "Vessel with GUID " << it->first
+                                  << " was not given an initial state";
   // TODO(egg): At the moment, if a vessel is inserted when
   // |current_time_ == HistoryTime()| (that only happens before the first call
   // to |AdvanceTime|) its first step is unsynchronized. This is convenient to
   // test code paths, but it means the invariant is GE, rather than GT.
+  CHECK_GE(vessel->prolongation().last().time(), HistoryTime());
   if (new_vessels_.count(vessel) > 0) {
-    CHECK(!vessel->has_prolongation());
-    CHECK_GE(vessel->history().last().time(), HistoryTime());
+    CHECK(!vessel->is_synchronized());
   } else {
-    CHECK(vessel->has_prolongation());
+    CHECK(vessel->is_synchronized());
     CHECK_EQ(vessel->history().last().time(), HistoryTime());
   }
 }
@@ -89,7 +89,7 @@ void Plugin::EvolveSynchronizedHistories(Instant const& t) {
   }
   for (auto const& pair : vessels_) {
     std::unique_ptr<Vessel> const& vessel = pair.second;
-    if (vessel->has_prolongation()) {
+    if (vessel->is_synchronized()) {
       trajectories.push_back(vessel->mutable_history());
     }
   }
@@ -113,7 +113,7 @@ void Plugin::SynchronizeNewHistories() {
     trajectories.push_back(celestial->mutable_prolongation());
   }
   for (Vessel* const vessel : new_vessels_) {
-    trajectories.push_back(vessel->mutable_history());
+    trajectories.push_back(vessel->mutable_prolongation());
   }
   n_body_system_->Integrate(prolongation_integrator_,  // integrator
                             HistoryTime(),             // tmax
@@ -121,6 +121,11 @@ void Plugin::SynchronizeNewHistories() {
                             0,                         // sampling_period
                             true,                      // tmax_is_exact
                             trajectories);             // trajectories
+  for (Vessel* const vessel : new_vessels_) {
+    vessel->CreateHistoryAndForkProlongation(
+        HistoryTime(),
+        vessel->prolongation().last().degrees_of_freedom());
+  }
   new_vessels_.clear();
   LOG(INFO) << "Synchronized the new histories";
 }
@@ -137,21 +142,16 @@ void Plugin::ResetProlongations() {
   VLOG(1) << "Prolongations have been reset";
 }
 
-void Plugin::EvolveProlongationsAndUnsynchronizedHistories(Instant const& t) {
+void Plugin::EvolveProlongations(Instant const& t) {
   NBodySystem<Barycentric>::Trajectories trajectories;
   trajectories.reserve(vessels_.size() + celestials_.size());
   for (auto const& pair : celestials_) {
     std::unique_ptr<Celestial> const& celestial = pair.second;
     trajectories.push_back(celestial->mutable_prolongation());
   }
-  for (Vessel* const vessel : new_vessels_) {
-    trajectories.push_back(vessel->mutable_history());
-  }
   for (auto const& pair : vessels_) {
     std::unique_ptr<Vessel> const& vessel = pair.second;
-    if (vessel->has_prolongation()) {
-      trajectories.push_back(vessel->mutable_prolongation());
-    }
+    trajectories.push_back(vessel->mutable_prolongation());
   }
   VLOG(1) << "Evolving prolongations and new histories" << '\n'
           << "from : " << trajectories.front()->last().time() << '\n'
@@ -265,7 +265,7 @@ void Plugin::SetVesselStateOffset(
   auto const it = vessels_.find(vessel_guid);
   CHECK(it != vessels_.end()) << "No vessel with GUID " << vessel_guid;
   Vessel* const vessel = it->second.get();
-  CHECK(!vessel->has_history())
+  CHECK(!vessel->is_initialized())
       << "Vessel with GUID " << vessel_guid << " already has a trajectory";
   LOG(INFO) << "Initial |orbit.pos| for vessel with GUID " << vessel_guid
             << ": " << from_parent_position;
@@ -280,7 +280,7 @@ void Plugin::SetVesselStateOffset(
           kSunLookingGlass.Inverse()(from_parent_velocity));
   LOG(INFO) << "In barycentric coordinates: " << relative_velocity;
   auto const last = vessel->parent().history().last();
-  vessel->CreateHistory(
+  vessel->CreateProlongation(
       current_time_,
       {last.degrees_of_freedom().position + displacement,
        last.degrees_of_freedom().velocity + relative_velocity});
@@ -300,7 +300,7 @@ void Plugin::AdvanceTime(Instant const& t, Angle const& planetarium_rotation) {
     }
     ResetProlongations();
   }
-  EvolveProlongationsAndUnsynchronizedHistories(t);
+  EvolveProlongations(t);
   VLOG(1) << "Time has been advanced" << '\n'
           << "from : " << current_time_ << '\n'
           << "to   : " << t;
@@ -314,10 +314,10 @@ Displacement<AliceSun> Plugin::VesselDisplacementFromParent(
   auto const it = vessels_.find(vessel_guid);
   CHECK(it != vessels_.end()) << "No vessel with GUID " << vessel_guid;
   Vessel const& vessel = *it->second;
-  CHECK(vessel.has_history()) << "Vessel with GUID " << vessel_guid
-                              << " was not given an initial state";
+  CHECK(vessel.is_initialized()) << "Vessel with GUID " << vessel_guid
+                                 << " was not given an initial state";
   Displacement<Barycentric> const barycentric_result =
-      vessel.prolongation_or_history().last().degrees_of_freedom().position -
+      vessel.prolongation().last().degrees_of_freedom().position -
       vessel.parent().prolongation().last().degrees_of_freedom().position;
   Displacement<AliceSun> const result =
       kSunLookingGlass(PlanetariumRotation()(barycentric_result));
@@ -332,10 +332,10 @@ Velocity<AliceSun> Plugin::VesselParentRelativeVelocity(
   auto const it = vessels_.find(vessel_guid);
   CHECK(it != vessels_.end()) << "No vessel with GUID " << vessel_guid;
   Vessel const& vessel = *it->second;
-  CHECK(vessel.has_history()) << "Vessel with GUID " << vessel_guid
-                              << " was not given an initial state";
+  CHECK(vessel.is_initialized()) << "Vessel with GUID " << vessel_guid
+                                 << " was not given an initial state";
   Velocity<Barycentric> const barycentric_result =
-      vessel.prolongation_or_history().last().degrees_of_freedom().velocity -
+      vessel.prolongation().last().degrees_of_freedom().velocity -
       vessel.parent().prolongation().last().degrees_of_freedom().velocity;
   Velocity<AliceSun> const result =
       kSunLookingGlass(PlanetariumRotation()(barycentric_result));
@@ -396,10 +396,10 @@ RenderedTrajectory<World> Plugin::RenderedVesselTrajectory(
   auto const it = vessels_.find(vessel_guid);
   CHECK(it != vessels_.end());
   Vessel const& vessel = *(it->second);
-  CHECK(vessel.has_history());
+  CHECK(vessel.is_initialized());
   VLOG(1) << "Rendering a trajectory for the vessel with GUID " << vessel_guid;
   RenderedTrajectory<World> result;
-  if (!vessel.has_prolongation()) {
+  if (!vessel.is_synchronized()) {
     // TODO(egg): We render neither unsynchronized histories nor prolongations
     // at the moment.
     VLOG(1) << "Returning an empty trajectory";
@@ -455,10 +455,10 @@ Position<World> Plugin::VesselWorldPosition(
           vessel.parent().prolongation().last().degrees_of_freedom().position,
           parent_world_position,
           Rotation<WorldSun, World>::Identity() * PlanetariumRotation());
-  CHECK(vessel.has_history()) << "Vessel with GUID " << vessel_guid
-                              << " was not given an initial state";
+  CHECK(vessel.is_initialized()) << "Vessel with GUID " << vessel_guid
+                                 << " was not given an initial state";
   return to_world(
-      vessel.prolongation_or_history().last().degrees_of_freedom().position);
+      vessel.prolongation().last().degrees_of_freedom().position);
 }
 
 Velocity<World> Plugin::VesselWorldVelocity(
@@ -468,15 +468,15 @@ Velocity<World> Plugin::VesselWorldVelocity(
   auto const it = vessels_.find(vessel_guid);
   CHECK(it != vessels_.end());
   Vessel const& vessel = *(it->second);
-  CHECK(vessel.has_history()) << "Vessel with GUID " << vessel_guid
+  CHECK(vessel.is_initialized()) << "Vessel with GUID " << vessel_guid
                               << " was not given an initial state";
   Rotation<Barycentric, World> to_world =
       Rotation<WorldSun, World>::Identity() * PlanetariumRotation();
   Velocity<Barycentric> const velocity_relative_to_parent =
-      vessel.prolongation_or_history().last().degrees_of_freedom().velocity -
+      vessel.prolongation().last().degrees_of_freedom().velocity -
       vessel.parent().prolongation().last().degrees_of_freedom().velocity;
   Displacement<Barycentric> const offset_from_parent =
-      vessel.prolongation_or_history().last().degrees_of_freedom().position -
+      vessel.prolongation().last().degrees_of_freedom().position -
       vessel.parent().prolongation().last().degrees_of_freedom().position;
   AngularVelocity<Barycentric> const world_frame_angular_velocity =
       AngularVelocity<Barycentric>({0 * Radian / Second,
