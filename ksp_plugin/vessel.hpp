@@ -27,8 +27,12 @@ class Vessel {
   // not be null. No transfer of ownership.
   explicit Vessel(Celestial const* parent);
 
-  bool has_history() const;
-  bool has_prolongation() const;
+  // True if, and only if, |history_| is not null.
+  bool synchronized() const;
+  // True if, and only if, |prolongation_| is not null, i.e., if either
+  // |CreateProlongation| or |CreateHistoryAndForkProlongation| was called at
+  // some point.
+  bool initialized() const;
   Celestial const& parent() const;
   Trajectory<Barycentric> const& history() const;
   Trajectory<Barycentric> const& prolongation() const;

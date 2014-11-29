@@ -9,11 +9,11 @@ inline Vessel::Vessel(Celestial const* parent)
     : body_(new MasslessBody),
       parent_(CHECK_NOTNULL(parent)) {}
 
-inline bool Vessel::has_history() const {
+inline bool Vessel::synchronized() const {
   return history_ != nullptr;
 }
 
-inline bool Vessel::has_prolongation() const {
+inline bool Vessel::initialized() const {
   return prolongation_ != nullptr;
 }
 
@@ -64,7 +64,7 @@ inline void Vessel::CreateHistoryAndForkProlongation(
 
 inline void Vessel::ResetProlongation(Instant const& time) {
   CHECK(history_ != nullptr);
-  CHECK(prolongation_ == nullptr);
+  CHECK(prolongation_ != nullptr);
   CHECK(owned_prolongation_ == nullptr);
   history_->DeleteFork(&prolongation_);
   prolongation_ = history_->Fork(time);
