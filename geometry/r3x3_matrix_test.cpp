@@ -1,3 +1,5 @@
+#include <utility>
+
 #include "geometry/r3x3_matrix.hpp"
 #include "glog/logging.h"
 #include "gmock/gmock.h"

@@ -3,6 +3,7 @@
 #include "geometry/r3x3_matrix.hpp"
 
 #include <string>
+#include <utility>
 
 #include "glog/logging.h"
 #include "quantities/elementary_functions.hpp"
