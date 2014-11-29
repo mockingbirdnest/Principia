@@ -8,6 +8,7 @@
 #include "geometry/named_quantities.hpp"
 #include "geometry/permutation.hpp"
 #include "geometry/r3x3_matrix.hpp"
+#include "geometry/rotation.hpp"
 #include "glog/logging.h"
 #include "physics/massive_body.hpp"
 #include "quantities/named_quantities.hpp"
@@ -20,6 +21,7 @@ using principia::geometry::Identity;
 using principia::geometry::Permutation;
 using principia::geometry::Position;
 using principia::geometry::R3x3Matrix;
+using principia::geometry::Rotation;
 using principia::geometry::Wedge;
 using principia::quantities::AngularFrequency;
 using principia::si::Radian;
@@ -29,6 +31,7 @@ namespace physics {
 
 namespace {
 
+//TODO(phl):Fix
 // Fills |*matrix| with the rotation matrix that maps the standard basis to the
 // basis of the barycentric frame.  Fills |*angular_frequency| with the
 // corresponding angular velocity.  These pointers must be nonnul, and there is
@@ -37,36 +40,37 @@ namespace {
 // TODO(phl): All of this should be strongly typed.  It's awfully confusing as
 // it stands.  In particular, the sign of the bivector may or may not be
 // correct.
-template<typename Frame>
+template<typename FromFrame, typename ToFrame>
 void FromBasisOfBarycentricFrameToStandardBasis(
-    DegreesOfFreedom<Frame> const& barycentre_degrees_of_freedom,
-    DegreesOfFreedom<Frame> const& primary_degrees_of_freedom,
-    DegreesOfFreedom<Frame> const& secondary_degrees_of_freedom,
-    R3x3Matrix* matrix,
-    Bivector<AngularFrequency, Frame>* angular_frequency) {
-  CHECK_NOTNULL(matrix);
+    DegreesOfFreedom<FromFrame> const& barycentre_degrees_of_freedom,
+    DegreesOfFreedom<FromFrame> const& primary_degrees_of_freedom,
+    DegreesOfFreedom<FromFrame> const& secondary_degrees_of_freedom,
+    Rotation<FromFrame, ToFrame>* rotation,
+    Bivector<AngularFrequency, FromFrame>* angular_frequency) {
+  CHECK_NOTNULL(rotation);
   CHECK_NOTNULL(angular_frequency);
-  Displacement<Frame> const reference_direction =
+  Displacement<FromFrame> const reference_direction =
       primary_degrees_of_freedom.position -
       barycentre_degrees_of_freedom.position;
-  Vector<double, Frame> const normalized_reference_direction =
+  Vector<double, FromFrame> const normalized_reference_direction =
       Normalize(reference_direction);
-  Velocity<Frame> const reference_normal =
+  Velocity<FromFrame> const reference_coplanar =
       primary_degrees_of_freedom.velocity -
       barycentre_degrees_of_freedom.velocity;
   // Modified Gram-Schmidt.
-  Velocity<Frame> const reference_normal =
+  Velocity<FromFrame> const reference_normal =
       reference_coplanar -
       InnerProduct(reference_coplanar, normalized_reference_direction) *
           normalized_reference_direction;
-  Vector<double, Frame> const normalized_reference_normal =
+  Vector<double, FromFrame> const normalized_reference_normal =
       Normalize(reference_normal);
   // TODO(egg): should we normalize this?
-  Bivector<double, Frame> const normalized_reference_binormal =
+  Bivector<double, FromFrame> const normalized_reference_binormal =
       Wedge(normalized_reference_direction, normalized_reference_normal);
-  *matrix = R3x3Matrix(normalized_reference_direction.coordinates(),
-                       normalized_reference_normal.coordinates(),
-                       normalized_reference_binormal.coordinates());
+  *rotation = Rotation<FromFrame, ToFrame>(
+                  R3x3Matrix(normalized_reference_direction.coordinates(),
+                             normalized_reference_normal.coordinates(),
+                             normalized_reference_binormal.coordinates()));
   *angular_frequency =
       (1 * Radian * reference_normal.Norm() / reference_direction.Norm()) *
           normalized_reference_binormal;
@@ -188,7 +192,8 @@ Transforms<FromFrame, ThroughFrame, ToFrame>::BarycentricRotating(
                  gravitational_parameter(),
              from_secondary_trajectory.body<MassiveBody>().
                  gravitational_parameter()});
-    R3x3Matrix from_basis_of_barycentric_frame_to_standard_basis;
+    Rotation<FromFrame, ThroughFrame>
+        from_basis_of_barycentric_frame_to_standard_basis;
     Bivector<AngularFrequency, FromFrame> angular_frequency;
     FromBasisOfBarycentricFrameToStandardBasis(
         barycentre_degrees_of_freedom,
@@ -198,21 +203,21 @@ Transforms<FromFrame, ThroughFrame, ToFrame>::BarycentricRotating(
         &angular_frequency);
     // TODO(phl): There should be an affine map here too, once we have properly
     // 'framed' the matrix.
+    Displacement<ThroughFrame> const displacement_in_standard_basis =
+        from_basis_of_barycentric_frame_to_standard_basis(
+            from_degrees_of_freedom.position -
+            barycentre_degrees_of_freedom.position);
+    Velocity<ThroughFrame> const velocity_in_standard_basis =
+        from_basis_of_barycentric_frame_to_standard_basis(
+            from_degrees_of_freedom.velocity -
+                barycentre_degrees_of_freedom.velocity -
+                angular_frequency *
+                    (from_degrees_of_freedom.position -
+                     barycentre_degrees_of_freedom.position) /
+                         (1 * Radian));
     DegreesOfFreedom<ThroughFrame> through_degrees_of_freedom =
-        {Displacement<ThroughFrame>(
-             from_basis_of_barycentric_frame_to_standard_basis *
-                 (from_degrees_of_freedom.position -
-                      barycentre_degrees_of_freedom.position).
-                  coordinates()) + ThroughFrame::origin,
-         Velocity<ThroughFrame>(
-             from_basis_of_barycentric_frame_to_standard_basis *
-                 (from_degrees_of_freedom.velocity -
-                     barycentre_degrees_of_freedom.velocity -
-                     angular_frequency *
-                         (from_degrees_of_freedom.position -
-                          barycentre_degrees_of_freedom.position) /
-                          (1 * Radian)).
-                  coordinates())};
+        {displacement_in_standard_basis + ThroughFrame::origin,
+         velocity_in_standard_basis};
 
     // Cache the result before returning it.
     that->first_cache_.emplace(std::make_pair(trajectory, t),
@@ -238,7 +243,8 @@ Transforms<FromFrame, ThroughFrame, ToFrame>::BarycentricRotating(
                  gravitational_parameter(),
              to_secondary_trajectory.body<MassiveBody>().
                  gravitational_parameter()});
-    R3x3Matrix from_basis_of_last_barycentric_frame_to_standard_basis;
+    Rotation<ToFrame, ThroughFrame>
+        from_basis_of_last_barycentric_frame_to_standard_basis;
     Bivector<AngularFrequency, ToFrame> angular_frequency;
     FromBasisOfBarycentricFrameToStandardBasis(
         last_barycentre_degrees_of_freedom,
@@ -246,18 +252,20 @@ Transforms<FromFrame, ThroughFrame, ToFrame>::BarycentricRotating(
         last_secondary_degrees_of_freedom,
         &from_basis_of_last_barycentric_frame_to_standard_basis,
         &angular_frequency);
-    R3x3Matrix const from_standard_basis_to_basis_of_last_barycentric_frame =
-        from_basis_of_last_barycentric_frame_to_standard_basis.Transpose();
+    Rotation<ThroughFrame, ToFrame> const
+        from_standard_basis_to_basis_of_last_barycentric_frame =
+            from_basis_of_last_barycentric_frame_to_standard_basis.Inverse();
     // TODO(phl): There should be an affine map here too, once we have properly
     // 'framed' the matrix.
-    return {Displacement<ToFrame>(
-                from_standard_basis_to_basis_of_last_barycentric_frame *
-                    (through_degrees_of_freedom.position -
-                     ThroughFrame::origin).coordinates()) +
+    Displacement<ToFrame> const displacement_in_last_barycentric_basis =
+        from_standard_basis_to_basis_of_last_barycentric_frame(
+            through_degrees_of_freedom.position - ThroughFrame::origin);
+    Velocity<ToFrame> const velocity_in_last_barycentric_basis =
+        from_standard_basis_to_basis_of_last_barycentric_frame(
+            through_degrees_of_freedom.velocity);
+    return {displacement_in_last_barycentric_basis +
                 last_barycentre_degrees_of_freedom.position,
-            Velocity<ToFrame>(
-                from_standard_basis_to_basis_of_last_barycentric_frame *
-                    through_degrees_of_freedom.velocity.coordinates())};
+            velocity_in_last_barycentric_basis};
   };
 
   return transforms;

@@ -171,13 +171,14 @@ TEST_F(TransformsTest, SatelliteBarycentricRotating) {
                 AlmostEquals(Displacement<Through>(
                     {-5.5 * sqrt(5.0) * i * SIUnit<Length>(),
                      62.0 * sqrt(5.0 / 21.0) * i * SIUnit<Length>(),
-                     53.0 / sqrt(21.0) * i * SIUnit<Length>()}))) << i;
+                     53.0 / sqrt(21.0) * i * SIUnit<Length>()}),
+                    6)) << i;
     EXPECT_THAT(degrees_of_freedom.velocity,
                 AlmostEquals(Velocity<Through>(
                     {(362.0 / sqrt(5.0)) * i * SIUnit<Speed>(),
                      (2776.0 / sqrt(105.0)) * i * SIUnit<Speed>(),
                      176.0 / sqrt(21.0) * i * SIUnit<Speed>()}),
-                    6)) << i;
+                    10)) << i;
     satellite_through.Append(Instant(i * SIUnit<Time>()), degrees_of_freedom);
   }
 
@@ -212,14 +213,15 @@ TEST_F(TransformsTest, SatelliteBarycentricRotating) {
                 AlmostEquals(Displacement<To>(
                     {(3.0 + 62.0 * sqrt(5.0 / 21.0)) * i * SIUnit<Length>(),
                      (-6.0 + 106.0 / sqrt(105.0)) * i * SIUnit<Length>(),
-                     (-12.0 - 53.0 / sqrt(105.0)) * i * SIUnit<Length>()})))
+                     (-12.0 - 53.0 / sqrt(105.0)) * i * SIUnit<Length>()}),
+                    21))
         << i;
     EXPECT_THAT(degrees_of_freedom.velocity,
                 AlmostEquals(Velocity<To>(
                     {2776.0 / sqrt(105.0) * i * SIUnit<Speed>(),
                      (72.4 + 352.0 / sqrt(105.0)) * i * SIUnit<Speed>(),
                      (144.8 - 176.0 / sqrt(105.0)) * i * SIUnit<Speed>()}),
-                    5)) << i;
+                    8)) << i;
   }
 }
 
@@ -249,7 +251,7 @@ TEST_F(TransformsTest, BodiesBarycentricRotating) {
                           {1.5 * sqrt(5.0) * i * SIUnit<Length>(),
                            0 * SIUnit<Length>(),
                            0 * SIUnit<Length>()})),
-        Lt(40 * std::numeric_limits<double>::epsilon() * SIUnit<Length>()));
+        Lt(80 * std::numeric_limits<double>::epsilon() * SIUnit<Length>()));
     EXPECT_THAT(
         AbsoluteError(degrees_of_freedom2.position - Position<Through>(),
                       Displacement<Through>(
@@ -263,7 +265,7 @@ TEST_F(TransformsTest, BodiesBarycentricRotating) {
                           {6.0 / sqrt(5.0) * i * SIUnit<Speed>(),
                            0 * SIUnit<Speed>(),
                            0 * SIUnit<Speed>()})),
-        Lt(530 * std::numeric_limits<double>::epsilon() * SIUnit<Speed>()));
+        Lt(560 * std::numeric_limits<double>::epsilon() * SIUnit<Speed>()));
     EXPECT_THAT(
         AbsoluteError(degrees_of_freedom2.velocity,
                       Velocity<Through>(
