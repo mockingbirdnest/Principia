@@ -22,6 +22,8 @@ class R3x3MatrixTest : public testing::Test {
   R3x3Matrix m3_;
 };
 
+using R3x3MatrixDeathTest = R3x3MatrixTest;
+
 TEST_F(R3x3MatrixTest, Trace) {
   EXPECT_THAT(m1_.Trace(), Eq(-13));
 }
@@ -29,6 +31,25 @@ TEST_F(R3x3MatrixTest, Trace) {
 TEST_F(R3x3MatrixTest, Transpose) {
   EXPECT_THAT(m1_.Transpose(),
               Eq(R3x3Matrix({-9, 7, -1}, {6, -5, 2}, {6, -4, 1})));
+}
+
+TEST_F(R3x3MatrixDeathTest, IndexingError) {
+  std::pair<int, int> const p1 = {-1, 2};
+  std::pair<int, int> const p2 = {2, -1};
+  std::pair<int, int> const p3 = {1, 3};
+  std::pair<int, int> const p4 = {3, 1};
+  EXPECT_DEATH({
+    m1_[p1];
+  }, "indices = \\{-1, 2\\}");
+  EXPECT_DEATH({
+    m1_[p2];
+  }, "index = -1");
+  EXPECT_DEATH({
+    m1_[p3];
+  }, "index = 3");
+  EXPECT_DEATH({
+    m1_[p4];
+  }, "indices = \\{3, 1\\}");
 }
 
 TEST_F(R3x3MatrixTest, IndexingSuccess) {
