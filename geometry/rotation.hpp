@@ -4,6 +4,7 @@
 #include "geometry/linear_map.hpp"
 #include "geometry/quaternion.hpp"
 #include "geometry/r3_element.hpp"
+#include "geometry/r3x3_matrix.hpp"
 #include "geometry/sign.hpp"
 
 namespace principia {

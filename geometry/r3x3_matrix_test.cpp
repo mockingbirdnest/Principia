@@ -34,7 +34,7 @@ TEST_F(R3x3MatrixTest, Transpose) {
 TEST_F(R3x3MatrixTest, IndexingSuccess) {
   double const a = m1_[{1, 2}];
   double const b = m1_[{0, 0}];
-  EXPECT_THAT(a, Eq(4));
+  EXPECT_THAT(a, Eq(-4));
   EXPECT_THAT(b, Eq(-9));
 }
 

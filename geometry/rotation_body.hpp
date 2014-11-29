@@ -10,6 +10,23 @@
 namespace principia {
 namespace geometry {
 
+namespace {
+
+Quaternion ToQuaternion(R3x3Matrix const& matrix) {
+  double const t = matrix.Trace();
+  CHECK_LE(0, t);
+  double const r = sqrt(1.0 + t);
+  double const s = 0.5 / r;
+  double const real_part = 0.5 * r;
+  R3Element<double> imaginary_part;
+  imaginary_part.x = (matrix[{2, 1}] - matrix[{1, 2}]) * s;
+  imaginary_part.y = (matrix[{0, 2}] - matrix[{2, 0}]) * s;
+  imaginary_part.z = (matrix[{1, 0}] - matrix[{0, 1}]) * s;
+  return Quaternion(real_part, imaginary_part);
+}
+
+}  // namespace
+
 template<typename FromFrame, typename ToFrame>
 Rotation<FromFrame, ToFrame>::Rotation() : quaternion_(Quaternion(1)) {}
 
@@ -19,7 +36,7 @@ Rotation<FromFrame, ToFrame>::Rotation(Quaternion const& quaternion)
 
 template<typename FromFrame, typename ToFrame>
 Rotation<FromFrame, ToFrame>::Rotation(R3x3Matrix const& matrix)
-  : Rotation(matrix.ToQuaternion()) {}
+  : Rotation(ToQuaternion(matrix)) {}
 
 template<typename FromFrame, typename ToFrame>
 template<typename Scalar>
