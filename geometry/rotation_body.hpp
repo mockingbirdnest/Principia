@@ -14,6 +14,14 @@ template<typename FromFrame, typename ToFrame>
 Rotation<FromFrame, ToFrame>::Rotation() : quaternion_(Quaternion(1)) {}
 
 template<typename FromFrame, typename ToFrame>
+Rotation<FromFrame, ToFrame>::Rotation(Quaternion const& quaternion)
+    : quaternion_(quaternion) {}
+
+template<typename FromFrame, typename ToFrame>
+Rotation<FromFrame, ToFrame>::Rotation(R3x3Matrix const& matrix)
+  : Rotation(matrix.ToQuaternion()) {}
+
+template<typename FromFrame, typename ToFrame>
 template<typename Scalar>
 Rotation<FromFrame, ToFrame>::Rotation(
     quantities::Angle const& angle,
@@ -68,10 +76,6 @@ template<typename FromFrame, typename ToFrame>
 Rotation<FromFrame, ToFrame> Rotation<FromFrame, ToFrame>::Identity() {
   return Rotation(Quaternion(1));
 }
-
-template<typename FromFrame, typename ToFrame>
-Rotation<FromFrame, ToFrame>::Rotation(Quaternion const& quaternion)
-    : quaternion_(quaternion) {}
 
 template<typename FromFrame, typename ToFrame>
 template<typename Scalar>

@@ -22,9 +22,20 @@ class R3x3MatrixTest : public testing::Test {
   R3x3Matrix m3_;
 };
 
+TEST_F(R3x3MatrixTest, Trace) {
+  EXPECT_THAT(m1_.Trace(), Eq(-13));
+}
+
 TEST_F(R3x3MatrixTest, Transpose) {
   EXPECT_THAT(m1_.Transpose(),
               Eq(R3x3Matrix({-9, 7, -1}, {6, -5, 2}, {6, -4, 1})));
+}
+
+TEST_F(R3x3MatrixTest, IndexingSuccess) {
+  double const a = m1_[{1, 2}];
+  double const b = m1_[{0, 0}];
+  EXPECT_THAT(a, Eq(4));
+  EXPECT_THAT(b, Eq(-9));
 }
 
 TEST_F(R3x3MatrixTest, UnaryOperators) {

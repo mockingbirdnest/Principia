@@ -3,6 +3,7 @@
 // We use ostream for logging purposes.
 #include <iostream>  // NOLINT(readability/streams)
 #include <string>
+#include <utility>
 
 #include "geometry/r3_element.hpp"
 #include "quantities/quantities.hpp"
@@ -20,7 +21,10 @@ class R3x3Matrix {
              R3Element<double> const& row_y,
              R3Element<double> const& row_z);
 
+  double Trace() const;
   R3x3Matrix Transpose() const;
+
+  double operator[](std::pair<int, int> const& indices) const;
 
   R3x3Matrix& operator+=(R3x3Matrix const& right);
   R3x3Matrix& operator-=(R3x3Matrix const& right);

@@ -24,6 +24,7 @@ class Rotation : public LinearMap<FromFrame, ToFrame> {
  public:
   Rotation();
   explicit Rotation(Quaternion const& quaternion);
+  explicit Rotation(R3x3Matrix const& matrix);
   template<typename Scalar>
   Rotation(quantities::Angle const& angle,
            Bivector<Scalar, FromFrame> const& axis);

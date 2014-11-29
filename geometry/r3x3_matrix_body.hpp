@@ -20,6 +20,25 @@ inline R3x3Matrix::R3x3Matrix(R3Element<double> const& row_x,
                               R3Element<double> const& row_z)
     : row_x_(row_x), row_y_(row_y), row_z_(row_z) {}
 
+double R3x3Matrix::Trace() const {
+  return row_x_.x + row_y_.y + row_z_.z;
+}
+
+double R3x3Matrix::operator[](std::pair<int, int> const& indices) const {
+  switch (indices.first) {
+    case 0:
+      return row_x_[indices.second];
+    case 1:
+      return row_y_[indices.second];
+    case 2:
+      return row_z_[indices.second];
+    default:
+      LOG(FATAL) << __FUNCSIG__ << ": indices = {" << indices.first
+                                << ", " << indices.second << "}";
+      noreturn();
+  }
+}
+
 R3x3Matrix R3x3Matrix::Transpose() const {
   return R3x3Matrix({row_x_.x, row_y_.x, row_z_.x},
                     {row_x_.y, row_y_.y, row_z_.y},
