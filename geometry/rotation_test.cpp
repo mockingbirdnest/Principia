@@ -27,6 +27,9 @@ class RotationTest : public testing::Test {
     bivector_ = Bivector<quantities::Length, World>(
         R3Element<quantities::Length>(1.0 * Metre, 2.0 * Metre, 3.0 * Metre));
     trivector_ = Trivector<quantities::Length, World>(4.0 * Metre);
+    e1_ = Vector<double, World>(R3Element<double>({1, 0, 0}));
+    e2_ = Vector<double, World>(R3Element<double>({0, 1, 0}));
+    e3_ = Vector<double, World>(R3Element<double>({0, 0, 1}));
     rotation_a_ = Rot(120 * si::Degree,
                       Bivector<double, World>({1, 1, 1}));
     rotation_b_ = Rot(90 * si::Degree,
@@ -39,6 +42,9 @@ class RotationTest : public testing::Test {
   Vector<quantities::Length, World> vector_;
   Bivector<quantities::Length, World> bivector_;
   Trivector<quantities::Length, World> trivector_;
+  Vector<double, World> e1_;
+  Vector<double, World> e2_;
+  Vector<double, World> e3_;
   Rot rotation_a_;
   Rot rotation_b_;
   Rot rotation_c_;
@@ -150,10 +156,10 @@ TEST_F(RotationTest, ToQuaternion1) {
   R3Element<double> const w2 = Normalize(v2);
   R3Element<double> const w3 = Normalize(v3);
   R3x3Matrix m = {w1, w2, w3};
-  Rot rotation(m);
-  EXPECT_THAT(R3Element<double>({1, 0, 0}) * m, Eq(w1));
-  EXPECT_THAT(R3Element<double>({0, 1, 0}) * m, Eq(w2));
-  EXPECT_THAT(R3Element<double>({0, 0, 1}) * m, Eq(w3));
+  Rot rotation(m.Transpose());
+  EXPECT_THAT(rotation(e1_).coordinates(), AlmostEquals(w1, 6));
+  EXPECT_THAT(rotation(e2_).coordinates(), AlmostEquals(w2, 5));
+  EXPECT_THAT(rotation(e3_).coordinates(), AlmostEquals(w3, 1));
 }
 
 TEST_F(RotationTest, ToQuaternion2) {
@@ -165,10 +171,10 @@ TEST_F(RotationTest, ToQuaternion2) {
   R3Element<double> const w2 = Normalize(v2);
   R3Element<double> const w3 = Normalize(v3);
   R3x3Matrix m = {w1, w2, w3};
-  Rot rotation(m);
-  EXPECT_THAT(R3Element<double>({1, 0, 0}) * m, Eq(w1));
-  EXPECT_THAT(R3Element<double>({0, 1, 0}) * m, Eq(w2));
-  EXPECT_THAT(R3Element<double>({0, 0, 1}) * m, Eq(w3));
+  Rot rotation(m.Transpose());
+  EXPECT_THAT(rotation(e1_).coordinates(), AlmostEquals(w1, 6));
+  EXPECT_THAT(rotation(e2_).coordinates(), AlmostEquals(w2, 5));
+  EXPECT_THAT(rotation(e3_).coordinates(), AlmostEquals(w3, 1));
 }
 
 TEST_F(RotationTest, ToQuaternion3) {
@@ -180,10 +186,10 @@ TEST_F(RotationTest, ToQuaternion3) {
   R3Element<double> const w2 = Normalize(v2);
   R3Element<double> const w3 = Normalize(v3);
   R3x3Matrix m = {w1, w2, w3};
-  Rot rotation(m);
-  EXPECT_THAT(R3Element<double>({1, 0, 0}) * m, Eq(w1));
-  EXPECT_THAT(R3Element<double>({0, 1, 0}) * m, Eq(w2));
-  EXPECT_THAT(R3Element<double>({0, 0, 1}) * m, Eq(w3));
+  Rot rotation(m.Transpose());
+  EXPECT_THAT(rotation(e1_).coordinates(), AlmostEquals(w1, 2));
+  EXPECT_THAT(rotation(e2_).coordinates(), AlmostEquals(w2, 1));
+  EXPECT_THAT(rotation(e3_).coordinates(), AlmostEquals(w3, 12));
 }
 
 TEST_F(RotationTest, ToQuaternion4) {
@@ -195,10 +201,10 @@ TEST_F(RotationTest, ToQuaternion4) {
   R3Element<double> const w2 = Normalize(v2);
   R3Element<double> const w3 = Normalize(v3);
   R3x3Matrix m = {w1, w2, w3};
-  Rot rotation(m);
-  EXPECT_THAT(R3Element<double>({1, 0, 0}) * m, Eq(w1));
-  EXPECT_THAT(R3Element<double>({0, 1, 0}) * m, Eq(w2));
-  EXPECT_THAT(R3Element<double>({0, 0, 1}) * m, Eq(w3));
+  Rot rotation(m.Transpose());
+  EXPECT_THAT(rotation(e1_).coordinates(), AlmostEquals(w1, 6));
+  EXPECT_THAT(rotation(e2_).coordinates(), AlmostEquals(w2, 1));
+  EXPECT_THAT(rotation(e3_).coordinates(), AlmostEquals(w3, 2));
 }
 
 }  // namespace geometry
