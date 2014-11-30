@@ -97,12 +97,12 @@ TEST_F(OrthogonalMapTest, Inverse) {
               AlmostEquals(Vector<quantities::Length, World>(
                   R3Element<quantities::Length>(-2.0 * Metre,
                                                 -3.0 * Metre,
-                                                -1.0 * Metre)), 4));
+                                                -1.0 * Metre)), 2));
   EXPECT_THAT(orthogonal_b_.Inverse()(vector_),
               AlmostEquals(Vector<quantities::Length, World>(
                   R3Element<quantities::Length>(1.0 * Metre,
                                                 3.0 * Metre,
-                                                -2.0 * Metre)), 4));
+                                                -2.0 * Metre)), 1));
 }
 
 TEST_F(OrthogonalMapTest, Composition) {

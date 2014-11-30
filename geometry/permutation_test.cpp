@@ -170,7 +170,7 @@ TEST_F(PermutationTest, Compose) {
         Vector<quantities::Length, World1> modified_vector(
             {l, vector_.coordinates().y, vector_.coordinates().z});
         EXPECT_THAT(p13(modified_vector),
-                    AlmostEquals(o13(modified_vector), 12));
+                    AlmostEquals(o13(modified_vector), 1, 12));
       }
     }
   }

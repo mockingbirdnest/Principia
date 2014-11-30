@@ -21,9 +21,17 @@ testing::PolymorphicMatcher<AlmostEqualsMatcher<T>> AlmostEquals(
     std::int64_t const max_ulps);
 
 template<typename T>
+testing::PolymorphicMatcher<AlmostEqualsMatcher<T>> AlmostEquals(
+    T const& expected,
+    std::int64_t const min_ulps,
+    std::int64_t const max_ulps);
+
+template<typename T>
 class AlmostEqualsMatcher{
  public:
-  explicit AlmostEqualsMatcher(T const& expected, std::int64_t const max_ulps);
+  explicit AlmostEqualsMatcher(T const& expected,
+                               std::int64_t const min_ulps,
+                               std::int64_t const max_ulps);
   ~AlmostEqualsMatcher() = default;
 
   template<typename Dimensions>
@@ -49,6 +57,7 @@ class AlmostEqualsMatcher{
 
  private:
   T const expected_;
+  std::int64_t const min_ulps_;
   std::int64_t const max_ulps_;
 };
 
