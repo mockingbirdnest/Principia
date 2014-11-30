@@ -44,7 +44,7 @@ TEST_F(StatisticsTest, UniformPerfectlyCorrelated) {
               Eq(((population_size_ * population_size_ - 1) / 12.0) /
                  (sampling_rate * sampling_rate)));
   EXPECT_THAT(StandardDeviation(x_) * StandardDeviation(x_),
-              AlmostEquals(Variance(x_), 4));
+              AlmostEquals(Variance(x_), 1));
   EXPECT_THAT(StandardDeviation(x_) * StandardDeviation(t_),
               Eq(Covariance(x_, t_)));
   EXPECT_THAT(PearsonProductMomentCorrelationCoefficient(t_, x_), Eq(1));
@@ -61,7 +61,7 @@ TEST_F(StatisticsTest, NegativelyCorrelated) {
   std::vector<Time> t   = {0 * Second, 1 * Second, 1 * Second};
   std::vector<Length> x = {1 * Metre, 0 * Metre, 1 * Metre};
   EXPECT_THAT(PearsonProductMomentCorrelationCoefficient(t, x),
-              AlmostEquals(-0.5, 4));
+              AlmostEquals(-0.5, 1));
 }
 
 }  // namespace testing_utilities
