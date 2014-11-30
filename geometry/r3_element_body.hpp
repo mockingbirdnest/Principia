@@ -87,7 +87,8 @@ inline Scalar R3Element<Scalar>::Norm() const {
 }
 
 template<typename Scalar>
-void R3Element<Scalar>::Orthogonalize(R3Element* r3_element) const {
+template<typename S>
+void R3Element<Scalar>::Orthogonalize(R3Element<S>* r3_element) const {
   CHECK_NOTNULL(r3_element);
   Scalar const this_norm = this->Norm();
   CHECK_NE(0 * SIUnit<Scalar>(), this_norm);

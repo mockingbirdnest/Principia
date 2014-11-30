@@ -28,8 +28,14 @@ class Multivector<Scalar, Frame, 1> {
   R3Element<Scalar> const& coordinates() const;
   Scalar Norm() const;
 
+  template<typename S, typename F>
+  void Orthogonalize(Multivector<S, F, 1>* multivector) const;
+
  private:
   R3Element<Scalar> coordinates_;
+
+  template<typename S, typename F, int r>
+  friend class Multivector;
 };
 
 template<typename Scalar, typename Frame>
@@ -41,6 +47,9 @@ class Multivector<Scalar, Frame, 2> {
 
   R3Element<Scalar> const& coordinates() const;
   Scalar Norm() const;
+
+  template<typename S, typename F>
+  void Orthogonalize(Multivector<S, F, 2>* multivector) const;
 
  private:
   R3Element<Scalar> coordinates_;

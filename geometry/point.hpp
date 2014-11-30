@@ -34,10 +34,6 @@ class Point {
  private:
   Vector coordinates_;
 
-  template<typename FromFrame, typename ToFrame, typename Scalar,
-           template<typename, typename> class LinearMap>
-  friend class AffineMap;
-
   template<typename V>
   friend Point<V> operator+(V const& translation, Point<V> const& point);
 

@@ -22,9 +22,9 @@ class AffineMap {
   Point<ToVector> operator()(Point<FromVector> const& point) const;
 
  private:
-  // The map is internally represented as x ↦ linear_map_(x) + translation_.
+  Point<FromVector> from_origin_;
+  Point<ToVector> to_origin_;
   LinearMap<FromFrame, ToFrame> linear_map_;
-  ToVector translation_;
 
   template<typename From, typename Through, typename To, typename S,
            template<typename, typename> class Map>

@@ -51,6 +51,22 @@ inline Scalar Multivector<Scalar, Frame, 3>::Norm() const {
   return quantities::Abs(coordinates_);
 }
 
+template<typename Scalar, typename Frame>
+template<typename S, typename F>
+void Multivector<Scalar, Frame, 1>::Orthogonalize(
+    Multivector<S, F, 1>* multivector) const {
+  CHECK_NOTNULL(multivector);
+  coordinates_.Orthogonalize(&multivector->coordinates_);
+}
+
+template<typename Scalar, typename Frame>
+template<typename S, typename F>
+void Multivector<Scalar, Frame, 2>::Orthogonalize(
+    Multivector<S, F, 2>* multivector) const {
+  CHECK_NOTNULL(multivector);
+  coordinates_.Orthogonalize(&multivector->coordinates_);
+}
+
 template<typename LScalar, typename RScalar, typename Frame>
 inline quantities::Product<LScalar, RScalar> InnerProduct(
     Vector<LScalar, Frame> const& left,
