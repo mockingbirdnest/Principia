@@ -1,7 +1,8 @@
 ﻿#pragma once
 
-#include "gtest/gtest.h"
 #include "testing_utilities/algebra.hpp"
+
+#include "gtest/gtest.h"
 #include "testing_utilities/almost_equals.hpp"
 
 namespace principia {
@@ -91,8 +92,9 @@ void TestAbelianMultiplicativeGroup(
 
 template<typename T>
 void TestNonAbelianMultiplicativeGroup(
-    T const& one, T const& a, T const& b,
-    T const& c, std::int64_t const max_ulps) {
+    T const& one, T const& a, T const& b, T const& c,
+    std::int64_t const min_ulps,
+    std::int64_t const max_ulps) {
   EXPECT_EQ(a * one, a);
   EXPECT_EQ(one * b, b);
   EXPECT_EQ(a / a, one);
@@ -131,9 +133,9 @@ void TestBilinearMap(Map const& map, U const& u1, U const& u2, V const& v1,
 
 template<typename Map, typename Scalar, typename U>
 void TestSymmetricBilinearMap(Map const& map, U const& u1, U const& u2,
-                               U const& v1, U const& v2, Scalar const& λ,
-                               std::int64_t const min_ulps,
-                               std::int64_t const max_ulps) {
+                              U const& v1, U const& v2, Scalar const& λ,
+                              std::int64_t const min_ulps,
+                              std::int64_t const max_ulps) {
   TestBilinearMap(map, u1, u2, v1, v2, λ, min_ulps, max_ulps);
   EXPECT_THAT(map(u1, v1), AlmostEquals(map(v1, u1), min_ulps, max_ulps));
   EXPECT_THAT(map(u2, v2), AlmostEquals(map(v2, u2), min_ulps, max_ulps));
@@ -141,10 +143,8 @@ void TestSymmetricBilinearMap(Map const& map, U const& u1, U const& u2,
 
 template<typename Map, typename Scalar, typename U>
 void TestSymmetricPositiveDefiniteBilinearMap(
-    Map const& map,
-    U const& u1,
-    U const& u2, U const& v1,
-    U const& v2, Scalar const& λ,
+    Map const& map, U const& u1, U const& u2,
+    U const& v1, U const& v2, Scalar const& λ,
     std::int64_t const min_ulps,
     std::int64_t const max_ulps) {
   TestSymmetricBilinearMap(map, u1, u2, v1, v2, λ, min_ulps, max_ulps);
@@ -168,8 +168,8 @@ void TestAlternatingBilinearMap(Map const& map, U const& u1, U const& u2,
 }
 
 template<typename Map, typename Scalar, typename U>
-void TestLieBracket(Map const& map, U const& u1, U const& u2, U const& v1,
-                    U const& v2, Scalar const& λ,
+void TestLieBracket(Map const& map, U const& u1, U const& u2,
+                    U const& v1, U const& v2, Scalar const& λ,
                     std::int64_t const min_ulps,
                     std::int64_t const max_ulps) {
   TestAlternatingBilinearMap(map, u1, u2, v1, v2, λ, min_ulps, max_ulps);

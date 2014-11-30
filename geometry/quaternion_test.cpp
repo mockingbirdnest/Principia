@@ -132,7 +132,7 @@ TEST_F(QuaternionTest, SkewField) {
   TestSkewField<Quaternion>(
       Quaternion(0), Quaternion(1),
       q1_, q2_, q3_,
-      Quaternion(6, {1, -3, 4}), Quaternion(0, {8, 9, -1}), 4);
+      Quaternion(6, {1, -3, 4}), Quaternion(0, {8, 9, -1}), 4, 4);
 }
 
 }  // namespace geometry

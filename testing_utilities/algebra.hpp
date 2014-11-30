@@ -47,12 +47,8 @@ void TestSymmetricBilinearMap(Map const& map, U const& u1, U const& u2,
 
 template<typename Map, typename Scalar, typename U>
 void TestSymmetricPositiveDefiniteBilinearMap(
-    Map const& map,
-    U const& u1,
-    U const& u2,
-    U const& v1,
-    U const& v2,
-    Scalar const& λ,
+    Map const& map, U const& u1, U const& u2,
+    U const& v1, U const& v2, Scalar const& λ,
     std::int64_t const min_ulps = 0,
     std::int64_t const max_ulps = 0);
 
@@ -63,8 +59,8 @@ void TestAlternatingBilinearMap(Map const& map, U const& u1, U const& u2,
                                 std::int64_t const max_ulps = 0);
 
 template<typename Map, typename Scalar, typename U>
-void TestLieBracket(Map const& map, U const& u1, U const& u2, U const& v1,
-                    U const& v2, Scalar const& λ,
+void TestLieBracket(Map const& map, U const& u1, U const& u2,
+                    U const& v1, U const& v2, Scalar const& λ,
                     std::int64_t const min_ulps = 0,
                     std::int64_t const max_ulps = 0);
 
