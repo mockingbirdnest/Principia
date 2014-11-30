@@ -201,17 +201,11 @@ Transforms<FromFrame, ThroughFrame, ToFrame>::BarycentricRotating(
         secondary_degrees_of_freedom,
         &from_basis_of_barycentric_frame_to_standard_basis,
         &angular_frequency);
-    // TODO(phl): There should be an affine map here too, once we have properly
-    // 'framed' the matrix.
     AffineMap<FromFrame, ThroughFrame, Length, Rotation> position_map(
         barycentre_degrees_of_freedom.position,
         ThroughFrame::origin,
         from_basis_of_barycentric_frame_to_standard_basis);
-
-    //Displacement<ThroughFrame> const displacement_in_standard_basis =
-    //    from_basis_of_barycentric_frame_to_standard_basis(
-    //        from_degrees_of_freedom.position -
-    //        barycentre_degrees_of_freedom.position);
+    // TODO(phl): Could we represent this as a map?
     Velocity<ThroughFrame> const velocity_in_standard_basis =
         from_basis_of_barycentric_frame_to_standard_basis(
             from_degrees_of_freedom.velocity -
@@ -260,16 +254,16 @@ Transforms<FromFrame, ThroughFrame, ToFrame>::BarycentricRotating(
     Rotation<ThroughFrame, ToFrame> const
         from_standard_basis_to_basis_of_last_barycentric_frame =
             from_basis_of_last_barycentric_frame_to_standard_basis.Inverse();
+    AffineMap<ThroughFrame, ToFrame, Length, Rotation> position_map(
+        ThroughFrame::origin,
+        last_barycentre_degrees_of_freedom.position,
+        from_standard_basis_to_basis_of_last_barycentric_frame);
     // TODO(phl): There should be an affine map here too, once we have properly
     // 'framed' the matrix.
-    Displacement<ToFrame> const displacement_in_last_barycentric_basis =
-        from_standard_basis_to_basis_of_last_barycentric_frame(
-            through_degrees_of_freedom.position - ThroughFrame::origin);
     Velocity<ToFrame> const velocity_in_last_barycentric_basis =
         from_standard_basis_to_basis_of_last_barycentric_frame(
             through_degrees_of_freedom.velocity);
-    return {displacement_in_last_barycentric_basis +
-                last_barycentre_degrees_of_freedom.position,
+    return {position_map(through_degrees_of_freedom.position),
             velocity_in_last_barycentric_basis};
   };
 
