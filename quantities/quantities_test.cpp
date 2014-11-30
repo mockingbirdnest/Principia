@@ -102,8 +102,8 @@ TEST_F(QuantitiesTest, DimensionlessExponentiation) {
   positivePower *= number;
   negativePower /= number;
   // This one calls |std::pow|.
-  EXPECT_THAT(positivePower, AlmostEquals(Pow<4>(number)));
-  EXPECT_THAT(negativePower, AlmostEquals(Pow<-4>(number)));
+  EXPECT_THAT(positivePower, AlmostEquals(Pow<4>(number), 4));
+  EXPECT_THAT(negativePower, AlmostEquals(Pow<-4>(number), 4));
 }
 
 // The Greek letters cause a warning when stringified by the macros, because

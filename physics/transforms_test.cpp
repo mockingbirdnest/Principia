@@ -289,7 +289,8 @@ TEST_F(TransformsTest, BodiesBarycentricRotating) {
 
     Length const length = (degrees_of_freedom1.position -
                            degrees_of_freedom2.position).Norm();
-    EXPECT_THAT(length, AlmostEquals(2.0 * sqrt(5.0) * i * SIUnit<Length>()));
+    EXPECT_THAT(length,
+                AlmostEquals(2.0 * sqrt(5.0) * i * SIUnit<Length>(), 4));
   }
 }
 

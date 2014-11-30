@@ -417,7 +417,7 @@ TEST_F(PluginTest, VesselInsertionAtInitialization) {
                     satellite_initial_displacement_),
       Lt(std::numeric_limits<double>::epsilon() * AstronomicalUnit));
   EXPECT_THAT(plugin_->VesselParentRelativeVelocity(guid),
-              AlmostEquals(satellite_initial_velocity_));
+              AlmostEquals(satellite_initial_velocity_, 4));
 }
 
 // Checks that the plugin correctly uses its 10-second-step history even when

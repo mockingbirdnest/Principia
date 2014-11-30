@@ -18,7 +18,7 @@ class AlmostEqualsMatcher;
 template<typename T>
 testing::PolymorphicMatcher<AlmostEqualsMatcher<T>> AlmostEquals(
     T const& expected,
-    std::int64_t const max_ulps = 4);
+    std::int64_t const max_ulps);
 
 template<typename T>
 class AlmostEqualsMatcher{

@@ -40,7 +40,7 @@ bool AlmostEqualsMatcher<T>::MatchAndExplain(
   std::int64_t const distance = ULPDistance(DoubleValue(actual),
                                             DoubleValue(expected_));
   *listener << "the numbers are separated by " << distance << " ULPs";
-  return distance <= max_ulps_;
+  return max_ulps_ - 1 < distance && distance <= max_ulps_;
 }
 
 template<typename T>
@@ -53,7 +53,7 @@ bool AlmostEqualsMatcher<T>::MatchAndExplain(
   }
   std::int64_t const distance = ULPDistance(actual, expected_);
   *listener << "the numbers are separated by " << distance << " ULPs";
-  return distance <= max_ulps_;
+  return max_ulps_ - 1 < distance && distance <= max_ulps_;
 }
 
 template<typename T>
@@ -71,13 +71,16 @@ bool AlmostEqualsMatcher<T>::MatchAndExplain(
                                               DoubleValue(expected_.y));
   std::int64_t const z_distance = ULPDistance(DoubleValue(actual.z),
                                               DoubleValue(expected_.z));
-  bool const x_matches = x_distance <= max_ulps_;
-  bool const y_matches = y_distance <= max_ulps_;
-  bool const z_matches = z_distance <= max_ulps_;
-  bool const matches = x_matches && y_matches && z_matches;
+  std::int64_t const max_distance =
+      std::max({x_distance, y_distance, z_distance});
+  bool const x_matches = max_ulps_ - 1 < x_distance && x_distance <= max_ulps_;
+  bool const y_matches = max_ulps_ - 1 < y_distance && y_distance <= max_ulps_;
+  bool const z_matches = max_ulps_ - 1 < z_distance && z_distance <= max_ulps_;
+  bool const matches = max_ulps_ - 1 < max_distance &&
+                       max_distance <= max_ulps_;
   if (!matches) {
-    *listener << "the following components differ by more than " << max_ulps_
-              << " ULPs: " << (x_matches ? "" : "x, ")
+    *listener << "the following components are not within a tight bound of "
+              << max_ulps_ << " ULPs: " << (x_matches ? "" : "x, ")
               << (y_matches ? "" : "y, ") << (z_matches ? "" : "z, ");
   }
   *listener << "the components differ by the following numbers of ULPs: x: "

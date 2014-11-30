@@ -56,12 +56,12 @@ TEST_F(OrthogonalMapTest, AppliedToVector) {
               AlmostEquals(Vector<quantities::Length, World>(
                   R3Element<quantities::Length>(-3.0 * Metre,
                                                 -1.0 * Metre,
-                                                -2.0 * Metre))));
+                                                -2.0 * Metre)), 4));
   EXPECT_THAT(orthogonal_b_(vector_),
               AlmostEquals(Vector<quantities::Length, World>(
                   R3Element<quantities::Length>(1.0 * Metre,
                                                 3.0 * Metre,
-                                                -2.0 * Metre))));
+                                                -2.0 * Metre)), 4));
 }
 
 TEST_F(OrthogonalMapTest, AppliedToBivector) {
@@ -69,21 +69,21 @@ TEST_F(OrthogonalMapTest, AppliedToBivector) {
               AlmostEquals(Bivector<quantities::Length, World>(
                   R3Element<quantities::Length>(3.0 * Metre,
                                                 1.0 * Metre,
-                                                2.0 * Metre))));
+                                                2.0 * Metre)), 4));
   EXPECT_THAT(orthogonal_b_(vector_),
               AlmostEquals(Vector<quantities::Length, World>(
                   R3Element<quantities::Length>(1.0 * Metre,
                                                 3.0 * Metre,
-                                                -2.0 * Metre))));
+                                                -2.0 * Metre)), 4));
 }
 
 TEST_F(OrthogonalMapTest, AppliedToTrivector) {
   EXPECT_THAT(orthogonal_a_(trivector_),
               AlmostEquals(Trivector<quantities::Length, World>(
-                  -4.0 * Metre)));
+                  -4.0 * Metre), 4));
   EXPECT_THAT(orthogonal_b_(trivector_),
               AlmostEquals(Trivector<quantities::Length, World>(
-                  4.0 * Metre)));
+                  4.0 * Metre), 4));
 }
 
 TEST_F(OrthogonalMapTest, Determinant) {
@@ -97,12 +97,12 @@ TEST_F(OrthogonalMapTest, Inverse) {
               AlmostEquals(Vector<quantities::Length, World>(
                   R3Element<quantities::Length>(-2.0 * Metre,
                                                 -3.0 * Metre,
-                                                -1.0 * Metre))));
+                                                -1.0 * Metre)), 4));
   EXPECT_THAT(orthogonal_b_.Inverse()(vector_),
               AlmostEquals(Vector<quantities::Length, World>(
                   R3Element<quantities::Length>(1.0 * Metre,
                                                 3.0 * Metre,
-                                                -2.0 * Metre))));
+                                                -2.0 * Metre)), 4));
 }
 
 TEST_F(OrthogonalMapTest, Composition) {
@@ -111,7 +111,7 @@ TEST_F(OrthogonalMapTest, Composition) {
               AlmostEquals(Vector<quantities::Length, World>(
                   R3Element<quantities::Length>(2.0 * Metre,
                                                 1.0 * Metre,
-                                                -3.0 * Metre))));
+                                                -3.0 * Metre)), 4));
   EXPECT_TRUE((orthogonal_a_ * orthogonal_b_).Determinant().Negative());
   EXPECT_TRUE((orthogonal_a_ * orthogonal_c_).Determinant().Positive());
   EXPECT_TRUE((orthogonal_b_ * orthogonal_c_).Determinant().Negative());
