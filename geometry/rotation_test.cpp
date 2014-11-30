@@ -115,12 +115,12 @@ TEST_F(RotationTest, Inverse) {
               AlmostEquals(Vector<quantities::Length, World>(
                   R3Element<quantities::Length>(2.0 * Metre,
                                                 3.0 * Metre,
-                                                1.0 * Metre)), 4));
+                                                1.0 * Metre)), 2));
   EXPECT_THAT(rotation_b_.Inverse()(vector_),
               AlmostEquals(Vector<quantities::Length, World>(
                   R3Element<quantities::Length>(1.0 * Metre,
                                                 3.0 * Metre,
-                                                -2.0 * Metre)), 4));
+                                                -2.0 * Metre)), 1));
   EXPECT_THAT(rotation_c_.Inverse()(vector_),
               AlmostEquals(Vector<quantities::Length, World>(
                   R3Element<quantities::Length>((0.5 - sqrt(3.0)) * Metre,

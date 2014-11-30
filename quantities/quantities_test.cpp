@@ -197,7 +197,7 @@ TEST_F(QuantitiesTest, HyperbolicFunctions) {
   EXPECT_EQ(Tanh(-20 * Radian), -1);
 
   EXPECT_EQ(Sinh(2 * Radian) / Cosh(2 * Radian), Tanh(2 * Radian));
-  EXPECT_THAT(ArcSinh(Sinh(-10 * Degree)), AlmostEquals(-10 * Degree, 2));
+  EXPECT_THAT(ArcSinh(Sinh(-10 * Degree)), AlmostEquals(-10 * Degree, 1));
   EXPECT_THAT(ArcCosh(Cosh(-10 * Degree)), AlmostEquals(10 * Degree, 20));
   EXPECT_THAT(ArcTanh(Tanh(-10 * Degree)), AlmostEquals(-10 * Degree, 1));
 }

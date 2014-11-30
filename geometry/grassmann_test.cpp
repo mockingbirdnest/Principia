@@ -76,9 +76,6 @@ TEST_F(GrassmannTest, Operators) {
                                   Vector<Length, World>(v_));
   testing_utilities::TestEquality(Trivector<Length, World>(u_.x),
                                   Trivector<Length, World>(v_.x));
-  std::cout << "vector: " << Vector<Length, World>(u_) << "\n";
-  std::cout << "bivector: " << Bivector<Length, World>(u_) << "\n";
-  std::cout << "trivector: " << Trivector<Length, World>(u_.x) << "\n";
 }
 
 TEST_F(GrassmannTest, SpecialOrthogonalLieAlgebra) {

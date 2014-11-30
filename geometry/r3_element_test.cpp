@@ -82,7 +82,7 @@ TEST_F(R3ElementTest, MixedProduct) {
       -1 * Day, 1 * Parsec / SpeedOfLight, -π, 2);
   Time const t = -3 * Second;
   EXPECT_EQ(t * u_, u_ * t);
-  EXPECT_THAT((u_ * t) / t, AlmostEquals(u_, 2));
+  EXPECT_THAT((u_ * t) / t, AlmostEquals(u_, 1));
 }
 
 TEST_F(R3ElementDeathTest, OrthogonalizeError) {
