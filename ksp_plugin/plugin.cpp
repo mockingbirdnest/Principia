@@ -84,15 +84,17 @@ void Plugin::EvolveSynchronizedHistories(Instant const& t) {
           << "from : " << HistoryTime();
   // Integration with a constant step.
   NBodySystem<Barycentric>::Trajectories trajectories;
+  // NOTE(egg): This may be too large, vessels that are not new and in the
+  // physics bubble will not be added.
   trajectories.reserve(vessels_.size() - new_vessels_.size() +
                        celestials_.size());
   for (auto const& pair : celestials_) {
-    std::unique_ptr<Celestial> const& celestial = pair.second;
+    Celestial* const celestial = pair.second.get();
     trajectories.push_back(celestial->mutable_history());
   }
   for (auto const& pair : vessels_) {
-    std::unique_ptr<Vessel> const& vessel = pair.second;
-    if (vessel->is_synchronized()) {
+    Vessel* const vessel = pair.second.get();
+    if (vessel->is_synchronized() && !IsInPhysicsBubble(vessel)) {
       trajectories.push_back(vessel->mutable_history());
     }
   }
@@ -107,16 +109,23 @@ void Plugin::EvolveSynchronizedHistories(Instant const& t) {
           << "to   : " << HistoryTime();
 }
 
-void Plugin::SynchronizeNewHistories() {
+void Plugin::SynchronizeNewHistoriesAndBubble() {
   VLOG(1) << "Starting the synchronization of the new histories";
   NBodySystem<Barycentric>::Trajectories trajectories;
-  trajectories.reserve(celestials_.size() + new_vessels_.size());
+  trajectories.reserve(celestials_.size() + new_vessels_.size() +
+                       HavePhysicsBubble() ? 1 : 0);
   for (auto const& pair : celestials_) {
     std::unique_ptr<Celestial> const& celestial = pair.second;
     trajectories.push_back(celestial->mutable_prolongation());
   }
   for (Vessel* const vessel : new_vessels_) {
-    trajectories.push_back(vessel->mutable_prolongation());
+    if (!IsInPhysicsBubble(vessel)) {
+      trajectories.push_back(vessel->mutable_prolongation());
+    }
+  }
+  if (HavePhysicsBubble()) {
+    trajectories.push_back(
+        current_physics_bubble_->centre_of_mass_trajectory.get());
   }
   n_body_system_->Integrate(prolongation_integrator_,  // integrator
                             HistoryTime(),             // tmax
@@ -124,13 +133,42 @@ void Plugin::SynchronizeNewHistories() {
                             0,                         // sampling_period
                             true,                      // tmax_is_exact
                             trajectories);             // trajectories
+  if (HavePhysicsBubble()) {
+    SynchronizeBubbleHistories();
+  }
   for (Vessel* const vessel : new_vessels_) {
+    CHECK(!IsInPhysicsBubble(vessel));
     vessel->CreateHistoryAndForkProlongation(
         HistoryTime(),
         vessel->prolongation().last().degrees_of_freedom());
   }
   new_vessels_.clear();
   LOG(INFO) << "Synchronized the new histories";
+}
+
+void Plugin::SynchronizeBubbleHistories() {
+  DegreesOfFreedom<Barycentric> const& centre_of_mass =
+      current_physics_bubble_->centre_of_mass_trajectory->
+          last().degrees_of_freedom();
+  for (auto const& pair : current_physics_bubble_->vessels) {
+    Vessel* const vessel = pair.first;
+    Displacement<Barycentric> const& displacement =
+        current_physics_bubble_->displacements_from_centre_of_mass->at(vessel);
+    Velocity<Barycentric> const& velocity =
+        current_physics_bubble_->velocities_from_centre_of_mass->at(vessel);
+    if (vessel->is_synchronized()) {
+      vessel->mutable_history()->Append(
+          HistoryTime(),
+          {centre_of_mass.position + displacement,
+           centre_of_mass.velocity + velocity});
+    } else {
+      vessel->CreateHistoryAndForkProlongation(
+          HistoryTime(),
+          {centre_of_mass.position + displacement,
+           centre_of_mass.velocity + velocity});
+      CHECK(new_vessels_.erase(vessel));
+    }
+  }
 }
 
 void Plugin::ResetProlongations() {
@@ -145,16 +183,24 @@ void Plugin::ResetProlongations() {
   VLOG(1) << "Prolongations have been reset";
 }
 
-void Plugin::EvolveProlongations(Instant const& t) {
+void Plugin::EvolveProlongationsAndBubble(Instant const& t) {
   NBodySystem<Barycentric>::Trajectories trajectories;
-  trajectories.reserve(vessels_.size() + celestials_.size());
+  trajectories.reserve(vessels_.size() + celestials_.size() -
+                       NumberOfVesselsInPhysicsBubble() +
+                       HavePhysicsBubble() ? 1 : 0);
   for (auto const& pair : celestials_) {
     std::unique_ptr<Celestial> const& celestial = pair.second;
     trajectories.push_back(celestial->mutable_prolongation());
   }
   for (auto const& pair : vessels_) {
-    std::unique_ptr<Vessel> const& vessel = pair.second;
-    trajectories.push_back(vessel->mutable_prolongation());
+    Vessel* const vessel = pair.second.get();
+    if (!IsInPhysicsBubble(vessel)) {
+      trajectories.push_back(vessel->mutable_prolongation());
+    }
+  }
+  if (HavePhysicsBubble()) {
+    trajectories.push_back(
+        current_physics_bubble_->centre_of_mass_trajectory.get());
   }
   VLOG(1) << "Evolving prolongations and new histories" << '\n'
           << "from : " << trajectories.front()->last().time() << '\n'
@@ -165,20 +211,41 @@ void Plugin::EvolveProlongations(Instant const& t) {
                             0,                         // sampling_period
                             true,                      // tmax_is_exact
                             trajectories);             // trajectories
+  if (HavePhysicsBubble()) {
+    DegreesOfFreedom<Barycentric> const& centre_of_mass =
+        current_physics_bubble_->centre_of_mass_trajectory->
+            last().degrees_of_freedom();
+    for (auto const& pair : current_physics_bubble_->vessels) {
+      Vessel* const vessel = pair.first;
+      Displacement<Barycentric> const& displacement =
+          current_physics_bubble_->
+              displacements_from_centre_of_mass->at(vessel);
+      Velocity<Barycentric> const& velocity =
+          current_physics_bubble_->velocities_from_centre_of_mass->at(vessel);
+      vessel->mutable_prolongation()->Append(
+          t,
+          {centre_of_mass.position + displacement,
+           centre_of_mass.velocity + velocity});
+    }
+  }
 }
 
-bool Plugin::IsInPhysicsBubble(Vessel const* const vessel) const {
-  return current_physics_bubble_ != nullptr &&
+bool Plugin::IsInPhysicsBubble(Vessel* const vessel) const {
+  return HavePhysicsBubble() &&
          current_physics_bubble_->vessels.find(vessel) !=
              current_physics_bubble_->vessels.end();
 }
 
-int64_t Plugin::NumberOfVesselsInPhysicsBubble() const {
-  if (current_physics_bubble_ == nullptr) {
-    return 0;
-  } else {
+std::size_t Plugin::NumberOfVesselsInPhysicsBubble() const {
+  if (HavePhysicsBubble()) {
     return current_physics_bubble_->vessels.size();
+  } else {
+    return 0;
   }
+}
+
+bool Plugin::HavePhysicsBubble() const {
+  return current_physics_bubble_ != nullptr;
 }
 
 Instant const& Plugin::HistoryTime() const {
@@ -309,17 +376,16 @@ void Plugin::AdvanceTime(Instant const& t, Angle const& planetarium_rotation) {
   CHECK(!initializing);
   CleanUpVessels();
   PreparePhysicsBubble(t);
-  bool const have_physics_bubble = current_physics_bubble_ != nullptr;
   if (HistoryTime() + Δt_ < t) {
     // The histories are far enough behind that we can advance them at least one
     // step and reset the prolongations.
     EvolveSynchronizedHistories(t);
-    if (!new_vessels_.empty()) {
-      SynchronizeNewHistories();
+    if (!new_vessels_.empty() || HavePhysicsBubble()) {
+      SynchronizeNewHistoriesAndBubble();
     }
     ResetProlongations();
   }
-  EvolveProlongations(t);
+  EvolveProlongationsAndBubble(t);
   VLOG(1) << "Time has been advanced" << '\n'
           << "from : " << current_time_ << '\n'
           << "to   : " << t;
@@ -514,10 +580,10 @@ void Plugin::AddVesselToNextPhysicsBubble(
   }
   auto const it = vessels_.find(vessel_guid);
   CHECK(it != vessels_.end());
-  Vessel const* const vessel = it->second.get();
+  Vessel* const vessel = it->second.get();
   auto const inserted_vessel =
-      next_physics_bubble_->vessels.insert({vessel,
-                                            std::vector<Part<World>* const>()});
+      next_physics_bubble_->vessels.emplace(vessel,
+                                            std::vector<Part<World>* const>());
   CHECK(inserted_vessel.second);
   std::vector<Part<World>* const> vessel_parts = inserted_vessel.first->second;
   for (std::pair<PartID, std::unique_ptr<Part<World>>>& id_part : parts) {

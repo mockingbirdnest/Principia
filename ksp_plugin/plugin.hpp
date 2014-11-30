@@ -251,21 +251,29 @@ class Plugin {
   // up to at most |t|. |t| must be large enough that at least one step of
   // size |Δt_| can fit between |current_time_| and |t|.
   void EvolveSynchronizedHistories(Instant const& t);
-  // Synchronizes the |new_vessels_| and clears |new_vessels_|.
-  void SynchronizeNewHistories();
+  // Synchronizes the |new_vessels_| and prolongs the histories of the vessels
+  // in the physics bubble, clears |new_vessels_|.
+  void SynchronizeNewHistoriesAndBubble();
+  // Called from |SynchronizeNewHistoriesAndBubble()|, prolongs the histories of
+  // the vessels in the physics bubble (the integration must already have been
+  // done).  Any new vessels in the physics bubble are synchronized and removed
+  // from |new_vessels_|.
+  void SynchronizeBubbleHistories();
   // Resets the prolongations of all vessels and celestials to |HistoryTime()|.
   // All vessels must satisfy |is_synchronized()|.
   void ResetProlongations();
   // Evolves the prolongations of all celestials and vessels up to exactly
   // instant |t|.
-  void EvolveProlongations(Instant const& t);
+  void EvolveProlongationsAndBubble(Instant const& t);
   // Returns true if, and only if, |vessel| is in
   // |current_physics_bubble_->vessels|.  |current_physics_bubble_| may be null,
   // in that case, returns false.
-  bool IsInPhysicsBubble(Vessel const* const vessel) const;
+  bool IsInPhysicsBubble(Vessel* const vessel) const;
   // |current_physics_bubble_->vessels.size()|, or 0 if
   // |current_physics_bubble_| is null.
-  int64_t NumberOfVesselsInPhysicsBubble() const;
+  std::size_t NumberOfVesselsInPhysicsBubble() const;
+  // returns |current_physics_bubble_ != nullptr|.
+  bool HavePhysicsBubble() const;
 
   // If |next_physics_bubble_| is not null, computes the world centre of mass,
   // trajectory (including intrinsic acceleration) of |*next_physics_bubble_|.
@@ -317,12 +325,18 @@ class Plugin {
   std::set<Vessel const* const> kept_;
 
   struct PhysicsBubble {
-    std::map<Vessel const* const, std::vector<Part<World>* const>> vessels;
+    std::map<Vessel* const, std::vector<Part<World>* const>> vessels;
     std::map<PartID, std::unique_ptr<Part<World>> const> parts;
-    // TODO(egg): the following two should be |std::optional| when that becomes
-    // a thing.
+    // TODO(egg): the following three should be |std::optional| when that
+    // becomes a thing.
     std::unique_ptr<DegreesOfFreedom<World>> centre_of_mass;
     std::unique_ptr<Trajectory<Barycentric>> centre_of_mass_trajectory;
+    std::unique_ptr<
+        std::map<Vessel const* const,
+                 Displacement<Barycentric>>> displacements_from_centre_of_mass;
+    std::unique_ptr<
+        std::map<Vessel const* const,
+                 Velocity<Barycentric>>> velocities_from_centre_of_mass;
   };
 
   std::unique_ptr<PhysicsBubble> current_physics_bubble_;
