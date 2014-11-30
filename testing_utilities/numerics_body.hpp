@@ -4,6 +4,7 @@
 #include <cstdint>
 
 #include <functional>
+#include <limits>
 
 namespace principia {
 namespace testing_utilities {
