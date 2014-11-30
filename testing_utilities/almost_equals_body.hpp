@@ -4,6 +4,7 @@
 #include <math.h>
 #include <stdint.h>
 
+#include <algorithm>
 #include <string>
 
 #include "geometry/grassmann.hpp"
@@ -19,13 +20,25 @@ testing::PolymorphicMatcher<AlmostEqualsMatcher<T>> AlmostEquals(
     T const& expected,
     std::int64_t const max_ulps) {
   return testing::MakePolymorphicMatcher(
-      AlmostEqualsMatcher<T>(expected, max_ulps));
+      AlmostEqualsMatcher<T>(expected, max_ulps, max_ulps));
+}
+
+template<typename T>
+testing::PolymorphicMatcher<AlmostEqualsMatcher<T>> AlmostEquals(
+    T const& expected,
+    std::int64_t const min_ulps,
+    std::int64_t const max_ulps) {
+  CHECK_LE(min_ulps, max_ulps);
+  return testing::MakePolymorphicMatcher(
+      AlmostEqualsMatcher<T>(expected, min_ulps, max_ulps));
 }
 
 template<typename T>
 AlmostEqualsMatcher<T>::AlmostEqualsMatcher(T const& expected,
+                                            std::int64_t const min_ulps,
                                             std::int64_t const max_ulps)
     : expected_(expected),
+      min_ulps_(min_ulps),
       max_ulps_(max_ulps) {}
 
 template<typename T>
@@ -40,7 +53,7 @@ bool AlmostEqualsMatcher<T>::MatchAndExplain(
   std::int64_t const distance = ULPDistance(DoubleValue(actual),
                                             DoubleValue(expected_));
   *listener << "the numbers are separated by " << distance << " ULPs";
-  return distance <= max_ulps_;
+  return min_ulps_ <= distance && distance <= max_ulps_;
 }
 
 template<typename T>
@@ -53,7 +66,7 @@ bool AlmostEqualsMatcher<T>::MatchAndExplain(
   }
   std::int64_t const distance = ULPDistance(actual, expected_);
   *listener << "the numbers are separated by " << distance << " ULPs";
-  return distance <= max_ulps_;
+  return min_ulps_ <= distance && distance <= max_ulps_;
 }
 
 template<typename T>
@@ -71,17 +84,57 @@ bool AlmostEqualsMatcher<T>::MatchAndExplain(
                                               DoubleValue(expected_.y));
   std::int64_t const z_distance = ULPDistance(DoubleValue(actual.z),
                                               DoubleValue(expected_.z));
+  std::int64_t const max_distance =
+      std::max({x_distance, y_distance, z_distance});
+  bool const x_is_max = x_distance == max_distance;
+  bool const y_is_max = y_distance == max_distance;
+  bool const z_is_max = z_distance == max_distance;
+  bool const matches = min_ulps_ <= max_distance && max_distance <= max_ulps_;
+  if (!matches) {
+    *listener << "the following components are not within "
+              << min_ulps_ << " to " << max_ulps_ << " ULPs: "
+              << (x_is_max ? "" : "x, ") << (y_is_max ? "" : "y, ")
+              << (z_is_max ? "" : "z, ");
+    *listener << "the components differ by the following numbers of ULPs: x: "
+              << x_distance << ", y: " << y_distance << ", z: " << z_distance;
+  }
+  return matches;
+}
+
+template<typename T>
+bool AlmostEqualsMatcher<T>::MatchAndExplain(
+    geometry::Quaternion const& actual,
+    testing::MatchResultListener* listener) const {
+  // Check that the types are equality-comparable up to implicit casts.
+  if (actual == expected_) {
+    return true;
+  }
+  std::int64_t const w_distance = ULPDistance(
+      DoubleValue(actual.real_part()),
+      DoubleValue(expected_.real_part()));
+  std::int64_t const x_distance = ULPDistance(
+      DoubleValue(actual.imaginary_part().x),
+      DoubleValue(expected_.imaginary_part().x));
+  std::int64_t const y_distance = ULPDistance(
+      DoubleValue(actual.imaginary_part().y),
+      DoubleValue(expected_.imaginary_part().y));
+  std::int64_t const z_distance = ULPDistance(
+      DoubleValue(actual.imaginary_part().z),
+      DoubleValue(expected_.imaginary_part().z));
+  bool const w_matches = w_distance <= max_ulps_;
   bool const x_matches = x_distance <= max_ulps_;
   bool const y_matches = y_distance <= max_ulps_;
   bool const z_matches = z_distance <= max_ulps_;
-  bool const matches = x_matches && y_matches && z_matches;
+  bool const matches = w_matches && x_matches && y_matches && z_matches;
   if (!matches) {
     *listener << "the following components differ by more than " << max_ulps_
-              << " ULPs: " << (x_matches ? "" : "x, ")
+              << " ULPs: "
+              << (w_matches ? "" : "w, ") << (x_matches ? "" : "x, ")
               << (y_matches ? "" : "y, ") << (z_matches ? "" : "z, ");
   }
-  *listener << "the components differ by the following numbers of ULPs: x: "
-            << x_distance << ", y: " << y_distance << ", z: " << z_distance;
+  *listener << "the components differ by the following numbers of ULPs: w: "
+            << w_distance << ", x: " << x_distance
+            << ", y: " << y_distance << ", z: " << z_distance;
   return matches;
 }
 
@@ -96,6 +149,7 @@ bool AlmostEqualsMatcher<T>::MatchAndExplain(
   }
   return AlmostEqualsMatcher<geometry::R3Element<Scalar>>(
       expected_.coordinates(),
+      min_ulps_,
       max_ulps_).MatchAndExplain(actual.coordinates(), listener);
 }
 
@@ -110,6 +164,7 @@ bool AlmostEqualsMatcher<T>::MatchAndExplain(
   }
   return AlmostEqualsMatcher<geometry::R3Element<Scalar>>(
       expected_.coordinates(),
+      min_ulps_,
       max_ulps_).MatchAndExplain(actual.coordinates(), listener);
 }
 
@@ -123,6 +178,7 @@ bool AlmostEqualsMatcher<T>::MatchAndExplain(
     return true;
   }
   return AlmostEqualsMatcher<Scalar>(expected_.coordinates(),
+                                     min_ulps_,
                                      max_ulps_).MatchAndExplain(
                                          actual.coordinates(),
                                          listener);
@@ -130,12 +186,14 @@ bool AlmostEqualsMatcher<T>::MatchAndExplain(
 
 template<typename T>
 void AlmostEqualsMatcher<T>::DescribeTo(std::ostream* out) const {
-  *out << "is within "<< max_ulps_ << " ULPs of " << expected_;
+  *out << "is within "<< min_ulps_
+       << " to " << max_ulps_ << " ULPs of " << expected_;
 }
 
 template<typename T>
 void AlmostEqualsMatcher<T>::DescribeNegationTo(std::ostream* out) const {
-  *out << "is not within " << max_ulps_ << " ULPs of " << expected_;
+  *out << "is not within " << min_ulps_
+       << " to " << max_ulps_ << " ULPs of " << expected_;
 }
 
 }  // namespace testing_utilities

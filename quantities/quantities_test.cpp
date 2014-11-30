@@ -75,11 +75,11 @@ TEST_F(QuantitiesTest, DimensionfulComparisons) {
 TEST_F(QuantitiesTest, DimensionlfulOperations) {
   testing_utilities::TestVectorSpace(
       0 * Metre / Second, SpeedOfLight, 88 * Mile / Hour,
-      -340.29 * Metre / Second, 0.0, 1.0, -2 * π, 1729.0, 2);
+      -340.29 * Metre / Second, 0.0, 1.0, -2 * π, 1729.0, 1, 2);
   // Dimensionful multiplication is a tensor product, see [Tao 2012].
   testing_utilities::TestBilinearMap(
       Times<Product<Mass, Speed>, Mass, Speed>, SolarMass,
-      ElectronMass, SpeedOfLight, 1 * Furlong / JulianYear, -e, 2);
+      ElectronMass, SpeedOfLight, 1 * Furlong / JulianYear, -e, 1, 2);
 }
 
 TEST_F(QuantitiesTest, DimensionlessExponentiation) {
@@ -102,8 +102,8 @@ TEST_F(QuantitiesTest, DimensionlessExponentiation) {
   positivePower *= number;
   negativePower /= number;
   // This one calls |std::pow|.
-  EXPECT_THAT(positivePower, AlmostEquals(Pow<4>(number)));
-  EXPECT_THAT(negativePower, AlmostEquals(Pow<-4>(number)));
+  EXPECT_THAT(positivePower, AlmostEquals(Pow<4>(number), 1));
+  EXPECT_THAT(negativePower, AlmostEquals(Pow<-4>(number), 1));
 }
 
 // The Greek letters cause a warning when stringified by the macros, because
@@ -124,7 +124,7 @@ TEST_F(QuantitiesTest, Formatting) {
 TEST_F(QuantitiesTest, PhysicalConstants) {
   // By definition.
   EXPECT_THAT(1 / Pow<2>(SpeedOfLight),
-              AlmostEquals(VacuumPermittivity * VacuumPermeability, 2));
+              AlmostEquals(VacuumPermittivity * VacuumPermeability, 1));
   // The Keplerian approximation for the mass of the Sun
   // is fairly accurate.
   EXPECT_THAT(RelativeError(
@@ -168,16 +168,18 @@ TEST_F(QuantitiesTest, TrigonometricFunctions) {
     // conditioning.
     if (k % 90 != 0) {
       EXPECT_THAT(Cos((90 - k) * Degree),
-                  AlmostEquals(Sin(k * Degree), 50));
+                  AlmostEquals(Sin(k * Degree), 1, 46));
       EXPECT_THAT(Sin(k * Degree) / Cos(k * Degree),
-                  AlmostEquals(Tan(k * Degree), 2));
+                  AlmostEquals(Tan(k * Degree), 1, 2));
       EXPECT_THAT(((k + 179) % 360 - 179) * Degree,
-                  AlmostEquals(ArcTan(Sin(k * Degree), Cos(k * Degree)), 80));
+                  AlmostEquals(ArcTan(Sin(k * Degree), Cos(k * Degree)),
+                               1, 77));
       EXPECT_THAT(((k + 179) % 360 - 179) * Degree,
                   AlmostEquals(ArcTan(Sin(k * Degree) * AstronomicalUnit,
-                                      Cos(k * Degree) * AstronomicalUnit), 80));
+                                      Cos(k * Degree) * AstronomicalUnit),
+                               1, 77));
       EXPECT_THAT(Cos(ArcCos(Cos(k * Degree))),
-                  AlmostEquals(Cos(k * Degree), 10));
+                  AlmostEquals(Cos(k * Degree), 1, 7));
       EXPECT_THAT(Sin(ArcSin(Sin(k * Degree))),
                   AlmostEquals(Sin(k * Degree), 1));
     }
@@ -197,7 +199,7 @@ TEST_F(QuantitiesTest, HyperbolicFunctions) {
   EXPECT_EQ(Tanh(-20 * Radian), -1);
 
   EXPECT_EQ(Sinh(2 * Radian) / Cosh(2 * Radian), Tanh(2 * Radian));
-  EXPECT_THAT(ArcSinh(Sinh(-10 * Degree)), AlmostEquals(-10 * Degree, 2));
+  EXPECT_THAT(ArcSinh(Sinh(-10 * Degree)), AlmostEquals(-10 * Degree, 1));
   EXPECT_THAT(ArcCosh(Cosh(-10 * Degree)), AlmostEquals(10 * Degree, 20));
   EXPECT_THAT(ArcTanh(Tanh(-10 * Degree)), AlmostEquals(-10 * Degree, 1));
 }
