@@ -31,7 +31,7 @@ class Multivector<Scalar, Frame, 1> {
   template<typename S, typename F>
   void Orthogonalize(Multivector<S, F, 1>* multivector) const;
 
-private:
+ private:
   R3Element<Scalar> coordinates_;
 
   template<typename S, typename F, int r>
