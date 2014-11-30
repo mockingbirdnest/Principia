@@ -18,11 +18,8 @@ template<typename Frame>
 Trajectory<Frame>::Trajectory(Body const& body)
     : body_(body),
       parent_(nullptr) {
-  // TODO(phl): This check would be nice, but just writing OblateBody<Frame> for
-  // a non-inertial frame is a compilation error.  How do we do this?
-  // CHECK(!body.is_oblate() ||
-  //       dynamic_cast<OblateBody<Frame> const*>(&body) != nullptr)
-  //     << "Oblate body not in the same frame as the trajectory";
+  CHECK(body.is_compatible_with<Frame>())
+      << "Oblate body not in the same frame as the trajectory";
 }
 
 template<typename Frame>
@@ -342,6 +339,11 @@ Trajectory<Frame>::Iterator::current() const {
 }
 
 template<typename Frame>
+Trajectory<Frame> const* Trajectory<Frame>::Iterator::trajectory() const {
+  return ancestry_.back();
+}
+
+template<typename Frame>
 DegreesOfFreedom<Frame> const&
 Trajectory<Frame>::NativeIterator::degrees_of_freedom() const {
   return this->current()->second;
@@ -352,7 +354,7 @@ template<typename ToFrame>
 DegreesOfFreedom<ToFrame>
 Trajectory<Frame>::TransformingIterator<ToFrame>::degrees_of_freedom() const {
   auto it = current();
-  return transform_(it->first, it->second);
+  return transform_(it->first, it->second, trajectory());
 }
 
 template<typename Frame>

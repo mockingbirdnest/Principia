@@ -415,7 +415,7 @@ TEST_F(PluginTest, VesselInsertionAtInitialization) {
   EXPECT_THAT(
       AbsoluteError(plugin_->VesselDisplacementFromParent(guid),
                     satellite_initial_displacement_),
-      Lt(DBL_EPSILON * AstronomicalUnit));
+      Lt(std::numeric_limits<double>::epsilon() * AstronomicalUnit));
   EXPECT_THAT(plugin_->VesselParentRelativeVelocity(guid),
               AlmostEquals(satellite_initial_velocity_));
 }
@@ -661,6 +661,9 @@ TEST_F(PluginTest, BodyCentredNonrotatingRenderingIntegration) {
   }
 #else
   Instant t = initial_time_ + δt_long;
+  plugin.AdvanceTime(t, 0 * Radian);  // This ensures the history is nonempty.
+  plugin.InsertOrKeepVessel(satellite, SolarSystem::kEarth);
+  t += δt_long;
 #endif
   for (; t < initial_time_ + 12 * Hour; t += δt_long) {
     plugin.AdvanceTime(t,
@@ -803,7 +806,7 @@ TEST_F(PluginTest, BarycentricRotatingRenderingIntegration) {
         (segment.begin - earth_world_position).Norm();
     Length const satellite_moon =
         (segment.begin - moon_world_position).Norm();
-    EXPECT_THAT(RelativeError(earth_moon, satellite_earth), Lt(0.0896));
+    EXPECT_THAT(RelativeError(earth_moon, satellite_earth), Lt(0.0907));
     EXPECT_THAT(RelativeError(earth_moon, satellite_moon), Lt(0.131));
     EXPECT_THAT(RelativeError(satellite_moon, satellite_earth), Lt(0.148));
   }

@@ -33,10 +33,12 @@ class Trajectory {
   template<typename ToFrame>
   using Transform =
       std::function<DegreesOfFreedom<ToFrame>(Instant const&,
-                                              DegreesOfFreedom<Frame> const&)>;
+                                              DegreesOfFreedom<Frame> const&,
+                                              Trajectory<Frame> const*)>;
 
   // No transfer of ownership.  |body| must live longer than the trajectory as
-  // the trajectory holds a reference to it.
+  // the trajectory holds a reference to it.  If |body| is oblate it must be
+  // expressed in the same frame as the trajectory.
   explicit Trajectory(Body const& body);
   ~Trajectory() = default;
 
@@ -170,6 +172,7 @@ class Trajectory {
     void InitializeOnOrAfter(Instant const& time, Trajectory const* trajectory);
     void InitializeLast(Trajectory const* trajectory);
     typename Timeline::const_iterator current() const;
+    Trajectory const* trajectory() const;
 
    private:
     typename Timeline::const_iterator current_;

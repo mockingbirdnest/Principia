@@ -141,6 +141,8 @@
     <ClInclude Include="permutation.hpp" />
     <ClInclude Include="quaternion_body.hpp" />
     <ClInclude Include="quaternion.hpp" />
+    <ClInclude Include="r3x3_matrix.hpp" />
+    <ClInclude Include="r3x3_matrix_body.hpp" />
     <ClInclude Include="r3_element_body.hpp" />
     <ClInclude Include="r3_element.hpp" />
     <ClInclude Include="rotation_body.hpp" />
@@ -156,6 +158,7 @@
     <ClCompile Include="orthogonal_map_test.cpp" />
     <ClCompile Include="permutation_test.cpp" />
     <ClCompile Include="quaternion_test.cpp" />
+    <ClCompile Include="r3x3_matrix_test.cpp" />
     <ClCompile Include="r3_element_test.cpp" />
     <ClCompile Include="rotation_test.cpp" />
     <ClCompile Include="sign_test.cpp" />

@@ -1,7 +1,6 @@
 ﻿#include "geometry/affine_map.hpp"
 
-#include <cfloat>
-
+#include <limits>
 #include <vector>
 
 #include "geometry/grassmann.hpp"
@@ -85,7 +84,7 @@ TEST_F(AffineMapTest, Cube) {
   Rot rotate_left(π / 2 * Radian,
                   Bivector<Length, World>(upward_.coordinates()));
   EXPECT_THAT(RelativeError(leftward_, rotate_left(forward_)),
-              Lt(2 * DBL_EPSILON));
+              Lt(2 * std::numeric_limits<double>::epsilon()));
   RigidTransformation map = RigidTransformation(back_right_bottom_,
                                                 front_right_bottom_,
                                                 rotate_left);

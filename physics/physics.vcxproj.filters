@@ -72,12 +72,18 @@
     <ClInclude Include="oblate_body_body.hpp">
       <Filter>Source Files</Filter>
     </ClInclude>
+    <ClInclude Include="body_body.hpp">
+      <Filter>Source Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="n_body_system_test.cpp">
       <Filter>Test Files</Filter>
     </ClCompile>
     <ClCompile Include="trajectory_test.cpp">
+      <Filter>Test Files</Filter>
+    </ClCompile>
+    <ClCompile Include="transforms_test.cpp">
       <Filter>Test Files</Filter>
     </ClCompile>
   </ItemGroup>

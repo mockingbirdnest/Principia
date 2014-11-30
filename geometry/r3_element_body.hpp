@@ -1,12 +1,11 @@
 #pragma once
 
-#include <assert.h>
-#include <stdlib.h>
-
 #include <string>
 
 #include "glog/logging.h"
-#include "quantities/elementary_functions.hpp"
+#include "quantities/quantities.hpp"
+
+using principia::quantities::SIUnit;
 
 namespace principia {
 namespace geometry {
@@ -85,6 +84,15 @@ inline R3Element<Scalar>& R3Element<Scalar>::operator/=(double const right) {
 template<typename Scalar>
 inline Scalar R3Element<Scalar>::Norm() const {
   return quantities::Sqrt(Dot(*this, *this));
+}
+
+template<typename Scalar>
+void R3Element<Scalar>::Orthogonalize(R3Element* r3_element) const {
+  CHECK_NOTNULL(r3_element);
+  Scalar const this_norm = this->Norm();
+  CHECK_NE(0 * SIUnit<Scalar>(), this_norm);
+  R3Element<double> const this_normalized = *this / this_norm;
+  *r3_element -= Dot(*r3_element, this_normalized) * this_normalized;
 }
 
 template<typename Scalar>
@@ -183,6 +191,11 @@ template<typename Scalar>
 bool operator!=(R3Element<Scalar> const& left,
                 R3Element<Scalar> const& right) {
   return left.x != right.x || left.y != right.y || left.z != right.z;
+}
+
+template<typename Scalar>
+R3Element<double> Normalize(R3Element<Scalar> const& r3_element) {
+  return r3_element / r3_element.Norm();
 }
 
 template<typename Scalar>
