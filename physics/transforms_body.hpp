@@ -24,6 +24,7 @@ using principia::geometry::R3x3Matrix;
 using principia::geometry::Rotation;
 using principia::geometry::Wedge;
 using principia::quantities::AngularFrequency;
+using principia::quantities::Pow;
 using principia::si::Radian;
 
 namespace principia {
@@ -31,15 +32,11 @@ namespace physics {
 
 namespace {
 
-//TODO(phl):Fix
-// Fills |*matrix| with the rotation matrix that maps the standard basis to the
-// basis of the barycentric frame.  Fills |*angular_frequency| with the
-// corresponding angular velocity.  These pointers must be nonnul, and there is
+// Fills |*rotation| with the rotation that maps the basis of the barycentric
+// frame to the standard basis.  Fills |*angular_frequency| with the
+// corresponding angular velocity.  These pointers must be nonnull, and there is
 // no transfer of ownership.  |barycentre_degrees_of_freedom| must be a convex
 // combination of the two other degrees of freedom.
-// TODO(phl): All of this should be strongly typed.  It's awfully confusing as
-// it stands.  In particular, the sign of the bivector may or may not be
-// correct.
 template<typename FromFrame, typename ToFrame>
 void FromBasisOfBarycentricFrameToStandardBasis(
     DegreesOfFreedom<FromFrame> const& barycentre_degrees_of_freedom,
@@ -52,28 +49,18 @@ void FromBasisOfBarycentricFrameToStandardBasis(
   Displacement<FromFrame> const reference_direction =
       primary_degrees_of_freedom.position -
       barycentre_degrees_of_freedom.position;
-  Vector<double, FromFrame> const normalized_reference_direction =
-      Normalize(reference_direction);
-  Velocity<FromFrame> const reference_coplanar =
+  Velocity<FromFrame> reference_normal =
       primary_degrees_of_freedom.velocity -
       barycentre_degrees_of_freedom.velocity;
-  // Modified Gram-Schmidt.
-  Velocity<FromFrame> const reference_normal =
-      reference_coplanar -
-      InnerProduct(reference_coplanar, normalized_reference_direction) *
-          normalized_reference_direction;
-  Vector<double, FromFrame> const normalized_reference_normal =
-      Normalize(reference_normal);
-  // TODO(egg): should we normalize this?
-  Bivector<double, FromFrame> const normalized_reference_binormal =
-      Wedge(normalized_reference_direction, normalized_reference_normal);
+  reference_direction.Orthogonalize(&reference_normal);
+  Bivector<Product<Length, Speed>, FromFrame> const reference_binormal =
+      Wedge(reference_direction, reference_normal);
   *rotation = Rotation<FromFrame, ToFrame>(
-                  R3x3Matrix(normalized_reference_direction.coordinates(),
-                             normalized_reference_normal.coordinates(),
-                             normalized_reference_binormal.coordinates()));
+                  R3x3Matrix(Normalize(reference_direction).coordinates(),
+                             Normalize(reference_normal).coordinates(),
+                             Normalize(reference_binormal).coordinates()));
   *angular_frequency =
-      (Radian * reference_normal.Norm() / reference_direction.Norm()) *
-          normalized_reference_binormal;
+      (Radian / Pow<2>(reference_direction.Norm())) * reference_binormal;
 }
 
 }  // namespace

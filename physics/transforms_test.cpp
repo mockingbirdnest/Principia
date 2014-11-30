@@ -172,7 +172,7 @@ TEST_F(TransformsTest, SatelliteBarycentricRotating) {
                     {-5.5 * sqrt(5.0) * i * SIUnit<Length>(),
                      62.0 * sqrt(5.0 / 21.0) * i * SIUnit<Length>(),
                      53.0 / sqrt(21.0) * i * SIUnit<Length>()}),
-                    6)) << i;
+                    8)) << i;
     EXPECT_THAT(degrees_of_freedom.velocity,
                 AlmostEquals(Velocity<Through>(
                     {(362.0 / sqrt(5.0)) * i * SIUnit<Speed>(),
