@@ -86,7 +86,7 @@ void TestAbelianMultiplicativeGroup(
 
 template<typename T>
 void TestNonAbelianMultiplicativeGroup(
-    T const& one, T const& a, T const& b, 
+    T const& one, T const& a, T const& b,
     T const& c, std::int64_t const max_ulps) {
   EXPECT_EQ(a * one, a);
   EXPECT_EQ(one * b, b);

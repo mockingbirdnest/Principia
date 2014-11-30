@@ -117,10 +117,10 @@ bool AlmostEqualsMatcher<T>::MatchAndExplain(
               << (y_matches ? "" : "y, ") << (z_matches ? "" : "z, ");
   }
   *listener << "the components differ by the following numbers of ULPs: w: "
-            << w_distance << ", x: " << x_distance 
+            << w_distance << ", x: " << x_distance
             << ", y: " << y_distance << ", z: " << z_distance;
   return matches;
-} 
+}
 
 template<typename T>
 template<typename Scalar, typename Frame>
