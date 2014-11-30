@@ -6,7 +6,9 @@
 namespace principia {
 namespace geometry {
 
-// The map is represented as x ↦ linear_map(x - from_origin) + to_origin.
+// The map is represented as x ↦ linear_map(x - from_origin) + to_origin.  This
+// numerically better behaved than x ↦ linear_map(x) + translation with
+// translation = to_origin - linear_map(from_origin).
 template<typename FromFrame, typename ToFrame, typename Scalar,
          template<typename, typename> class LinearMap>
 AffineMap<FromFrame, ToFrame, Scalar, LinearMap>::AffineMap(
