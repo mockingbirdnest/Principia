@@ -595,6 +595,25 @@ void Plugin::AddVesselToNextPhysicsBubble(
   }
 }
 
+Displacement<World> Plugin::BubbleDisplacementOffset(
+    Position<World> sun_world_position) const {
+  CHECK(HavePhysicsBubble());
+  return Identity<WorldSun, World>()(PlanetariumRotation()(
+             current_physics_bubble_->centre_of_mass_trajectory->
+                 last().degrees_of_freedom().position -
+             sun_->prolongation().last().degrees_of_freedom().position)) +
+         sun_world_position - current_physics_bubble_->centre_of_mass->position;
+}
+
+Velocity<World> Plugin::BubbleVelocityOffset() const {
+  CHECK(HavePhysicsBubble());
+  return Identity<WorldSun, World>()(PlanetariumRotation()(
+             current_physics_bubble_->centre_of_mass_trajectory->
+                 last().degrees_of_freedom().velocity)) -
+         current_physics_bubble_->centre_of_mass->velocity;
+}
+
+
 void Plugin::RestartNextPhysicsBubble() {
   CHECK(next_physics_bubble_ != nullptr);
   std::vector<DegreesOfFreedom<Barycentric>> vessel_degrees_of_freedom;

@@ -220,6 +220,10 @@ class Plugin {
       GUID const& vessel_guid,
       std::vector<std::pair<PartID, std::unique_ptr<Part<World>>>> parts);
 
+  Displacement<World> BubbleDisplacementOffset(
+      Position<World> sun_world_position) const;
+  Velocity<World> BubbleVelocityOffset() const;
+
  private:
   using GUIDToOwnedVessel = std::map<GUID, std::unique_ptr<Vessel>>;
   using GUIDToUnownedVessel = std::map<GUID, Vessel* const>;
