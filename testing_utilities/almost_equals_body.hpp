@@ -85,19 +85,18 @@ bool AlmostEqualsMatcher<T>::MatchAndExplain(
                                               DoubleValue(expected_.z));
   std::int64_t const max_distance =
       std::max({x_distance, y_distance, z_distance});
-  bool const x_matches = min_ulps_ <= x_distance && x_distance <= max_ulps_;
-  bool const y_matches = min_ulps_ <= y_distance && y_distance <= max_ulps_;
-  bool const z_matches = min_ulps_ <= z_distance && z_distance <= max_ulps_;
-  bool const matches = min_ulps_ <= max_distance &&
-                       max_distance <= max_ulps_;
+  bool const x_is_max = x_distance == max_distance;
+  bool const y_is_max = y_distance == max_distance;
+  bool const z_is_max = z_distance == max_distance;
+  bool const matches = min_ulps_ <= max_distance && max_distance <= max_ulps_;
   if (!matches) {
     *listener << "the following components are not within "
               << min_ulps_ << " to " << max_ulps_ << " ULPs: "
-              << (x_matches ? "" : "x, ") << (y_matches ? "" : "y, ")
-              << (z_matches ? "" : "z, ");
+              << (x_is_max ? "" : "x, ") << (y_is_max ? "" : "y, ")
+              << (z_is_max ? "" : "z, ");
+    *listener << "the components differ by the following numbers of ULPs: x: "
+              << x_distance << ", y: " << y_distance << ", z: " << z_distance;
   }
-  *listener << "the components differ by the following numbers of ULPs: x: "
-            << x_distance << ", y: " << y_distance << ", z: " << z_distance;
   return matches;
 }
 

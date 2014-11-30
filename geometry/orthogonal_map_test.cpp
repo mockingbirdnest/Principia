@@ -61,7 +61,7 @@ TEST_F(OrthogonalMapTest, AppliedToVector) {
               AlmostEquals(Vector<quantities::Length, World>(
                   R3Element<quantities::Length>(1.0 * Metre,
                                                 -3.0 * Metre,
-                                                2.0 * Metre)), 4));
+                                                2.0 * Metre)), 1));
 }
 
 TEST_F(OrthogonalMapTest, AppliedToBivector) {
@@ -74,7 +74,7 @@ TEST_F(OrthogonalMapTest, AppliedToBivector) {
               AlmostEquals(Bivector<quantities::Length, World>(
                   R3Element<quantities::Length>(1.0 * Metre,
                                                 -3.0 * Metre,
-                                                2.0 * Metre)), 4));
+                                                2.0 * Metre)), 1));
 }
 
 TEST_F(OrthogonalMapTest, AppliedToTrivector) {
