@@ -195,7 +195,7 @@ Transforms<FromFrame, ThroughFrame, ToFrame>::BarycentricRotating(
         ThroughFrame::origin,
         from_basis_of_barycentric_frame_to_standard_basis);
     // TODO(phl): This is where we wonder if |velocity_map| should be an affine
-    // map.  Also the filioque.
+    // map.  Also, the filioque.
     Rotation<FromFrame, ThroughFrame> const& velocity_map =
         from_basis_of_barycentric_frame_to_standard_basis;
     DegreesOfFreedom<ThroughFrame> through_degrees_of_freedom =
