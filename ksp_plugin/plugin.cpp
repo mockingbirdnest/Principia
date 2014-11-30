@@ -725,9 +725,48 @@ void Plugin::ComputeNextPhysicsBubbleCentreOfMassWorldDegreesOfFreedom() {
           physics::Barycentre(part_degrees_of_freedom, part_masses));
 }
 
+void Plugin::ComputeNextPhysicsBubbleVesselOffsets() {
+  CHECK(next_physics_bubble_ != nullptr);
+  next_physics_bubble_->displacements_from_centre_of_mass =
+      std::make_unique<std::map<Vessel const* const,
+                                Displacement<Barycentric>>>();
+  next_physics_bubble_->velocities_from_centre_of_mass =
+      std::make_unique<std::map<Vessel const* const,
+                                Velocity<Barycentric>>>();
+  for (auto const& vessel_parts : next_physics_bubble_->vessels) {
+    std::vector<DegreesOfFreedom<World>> part_degrees_of_freedom;
+    std::vector<Mass> part_masses;
+    part_degrees_of_freedom.reserve(vessel_parts.second.size());
+    part_masses.reserve(vessel_parts.second.size());
+    for (auto const part : vessel_parts.second) {
+      part_degrees_of_freedom.emplace_back(part->degrees_of_freedom);
+      part_masses.emplace_back(part->mass);
+    }
+    DegreesOfFreedom<World> const vessel_degrees_of_freedom =
+        physics::Barycentre(part_degrees_of_freedom, part_masses);
+    Displacement<Barycentric> const displacement =
+        PlanetariumRotation().Inverse()(
+            Identity<World, WorldSun>()(
+                vessel_degrees_of_freedom.position -
+                next_physics_bubble_->centre_of_mass->position));
+    Velocity<Barycentric> const velocity =
+        PlanetariumRotation().Inverse()(
+            Identity<World, WorldSun>()(
+                vessel_degrees_of_freedom.velocity -
+                next_physics_bubble_->centre_of_mass->velocity));
+    next_physics_bubble_->displacements_from_centre_of_mass->emplace(
+        vessel_parts.first,
+        displacement);
+    next_physics_bubble_->velocities_from_centre_of_mass->emplace(
+        vessel_parts.first,
+        velocity);
+  }
+}
+
 void Plugin::PreparePhysicsBubble(Instant const& next_time) {
   if (next_physics_bubble_ != nullptr) {
     ComputeNextPhysicsBubbleCentreOfMassWorldDegreesOfFreedom();
+    ComputeNextPhysicsBubbleVesselOffsets();
     if (current_physics_bubble_ == nullptr) {
       // There was no physics bubble.
       RestartNextPhysicsBubble();

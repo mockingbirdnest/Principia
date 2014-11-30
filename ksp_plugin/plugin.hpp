@@ -286,6 +286,10 @@ class Plugin {
   // |next_physics_bubble_| using the contents of |next_physics_bubble_->parts|.
   // |next_physics_bubble_| must not be null.
   void ComputeNextPhysicsBubbleCentreOfMassWorldDegreesOfFreedom();
+  // Computes |next_physics_bubble_->displacements_from_centre_of_mass| and
+  // |next_physics_bubble_->velocities_from_centre_of_mass|.
+  // |next_physics_bubble_| must not be null.
+  void ComputeNextPhysicsBubbleVesselOffsets();
   // Creates |next_physics_bubble_->centre_of_mass_trajectory| and appends to it
   // the barycentre of the degrees of freedom of the vessels in
   // |next_physics_bubble_->vessels|.  There is no intrinsic acceleration.
