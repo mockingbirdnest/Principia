@@ -203,10 +203,15 @@ Transforms<FromFrame, ThroughFrame, ToFrame>::BarycentricRotating(
         &angular_frequency);
     // TODO(phl): There should be an affine map here too, once we have properly
     // 'framed' the matrix.
-    Displacement<ThroughFrame> const displacement_in_standard_basis =
-        from_basis_of_barycentric_frame_to_standard_basis(
-            from_degrees_of_freedom.position -
-            barycentre_degrees_of_freedom.position);
+    AffineMap<FromFrame, ThroughFrame, Length, Rotation> position_map(
+        barycentre_degrees_of_freedom.position,
+        ThroughFrame::origin,
+        from_basis_of_barycentric_frame_to_standard_basis);
+
+    //Displacement<ThroughFrame> const displacement_in_standard_basis =
+    //    from_basis_of_barycentric_frame_to_standard_basis(
+    //        from_degrees_of_freedom.position -
+    //        barycentre_degrees_of_freedom.position);
     Velocity<ThroughFrame> const velocity_in_standard_basis =
         from_basis_of_barycentric_frame_to_standard_basis(
             from_degrees_of_freedom.velocity -
@@ -216,7 +221,7 @@ Transforms<FromFrame, ThroughFrame, ToFrame>::BarycentricRotating(
                      barycentre_degrees_of_freedom.position) /
                          (1 * Radian));
     DegreesOfFreedom<ThroughFrame> through_degrees_of_freedom =
-        {displacement_in_standard_basis + ThroughFrame::origin,
+        {position_map(from_degrees_of_freedom.position),
          velocity_in_standard_basis};
 
     // Cache the result before returning it.
