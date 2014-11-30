@@ -172,13 +172,13 @@ TEST_F(TransformsTest, SatelliteBarycentricRotating) {
                     {-5.5 * sqrt(5.0) * i * SIUnit<Length>(),
                      62.0 * sqrt(5.0 / 21.0) * i * SIUnit<Length>(),
                      53.0 / sqrt(21.0) * i * SIUnit<Length>()}),
-                    8)) << i;
+                    1, 8)) << i;
     EXPECT_THAT(degrees_of_freedom.velocity,
                 AlmostEquals(Velocity<Through>(
                     {(362.0 / sqrt(5.0)) * i * SIUnit<Speed>(),
                      (2776.0 / sqrt(105.0)) * i * SIUnit<Speed>(),
                      176.0 / sqrt(21.0) * i * SIUnit<Speed>()}),
-                    10)) << i;
+                    1, 10)) << i;
     satellite_through.Append(Instant(i * SIUnit<Time>()), degrees_of_freedom);
   }
 
@@ -214,14 +214,14 @@ TEST_F(TransformsTest, SatelliteBarycentricRotating) {
                     {(3.0 + 62.0 * sqrt(5.0 / 21.0)) * i * SIUnit<Length>(),
                      (-6.0 + 106.0 / sqrt(105.0)) * i * SIUnit<Length>(),
                      (-12.0 - 53.0 / sqrt(105.0)) * i * SIUnit<Length>()}),
-                    21))
+                    3, 21))
         << i;
     EXPECT_THAT(degrees_of_freedom.velocity,
                 AlmostEquals(Velocity<To>(
                     {2776.0 / sqrt(105.0) * i * SIUnit<Speed>(),
                      (72.4 + 352.0 / sqrt(105.0)) * i * SIUnit<Speed>(),
                      (144.8 - 176.0 / sqrt(105.0)) * i * SIUnit<Speed>()}),
-                    8)) << i;
+                    1, 8)) << i;
   }
 }
 
@@ -290,7 +290,7 @@ TEST_F(TransformsTest, BodiesBarycentricRotating) {
     Length const length = (degrees_of_freedom1.position -
                            degrees_of_freedom2.position).Norm();
     EXPECT_THAT(length,
-                AlmostEquals(2.0 * sqrt(5.0) * i * SIUnit<Length>(), 4));
+                AlmostEquals(2.0 * sqrt(5.0) * i * SIUnit<Length>(), 1, 2));
   }
 }
 
