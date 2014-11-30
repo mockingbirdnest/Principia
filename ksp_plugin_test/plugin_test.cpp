@@ -216,14 +216,14 @@ TEST_F(PluginTest, Initialization) {
                     last().degrees_of_freedom().position,
                 AlmostEquals(looking_glass_.Inverse()(
                     plugin_->CelestialDisplacementFromParent(index)),
-                    250000));
+                    1, 216320));
     EXPECT_THAT(solar_system_->trajectories()[index]->
                     last().degrees_of_freedom().velocity -
                 solar_system_->trajectories()[parent_index]->
                     last().degrees_of_freedom().velocity,
                 AlmostEquals(looking_glass_.Inverse()(
                     plugin_->CelestialParentRelativeVelocity(index)),
-                    1000));
+                    1, 936));
   }
 }
 
@@ -417,7 +417,7 @@ TEST_F(PluginTest, VesselInsertionAtInitialization) {
                     satellite_initial_displacement_),
       Lt(std::numeric_limits<double>::epsilon() * AstronomicalUnit));
   EXPECT_THAT(plugin_->VesselParentRelativeVelocity(guid),
-              AlmostEquals(satellite_initial_velocity_));
+              AlmostEquals(satellite_initial_velocity_, 3));
 }
 
 // Checks that the plugin correctly uses its 10-second-step history even when
@@ -596,14 +596,14 @@ TEST_F(PluginTest, UpdateCelestialHierarchy) {
         solar_system_->trajectories()[SolarSystem::kSun]->
             last().degrees_of_freedom().position,
         AlmostEquals(looking_glass_.Inverse()(
-            plugin_->CelestialDisplacementFromParent(index)), 6000));
+            plugin_->CelestialDisplacementFromParent(index)), 1, 5056));
     EXPECT_THAT(
         solar_system_->trajectories()[index]->
             last().degrees_of_freedom().velocity -
         solar_system_->trajectories()[SolarSystem::kSun]->
             last().degrees_of_freedom().velocity,
         AlmostEquals(looking_glass_.Inverse()(
-            plugin_->CelestialParentRelativeVelocity(index)), 1000));
+            plugin_->CelestialParentRelativeVelocity(index)), 1, 936));
   }
 }
 
