@@ -21,12 +21,14 @@ void TestGroup(T const& identity, T const& a, T const& b, T const& c,
                std::int64_t const max_ulps = 0);
 
 template<typename T>
-void TestAbelianMultiplicativeGroup(T const& one, T const& a, T const& b, T const& c,
-                             std::int64_t const max_ulps = 0);
+void TestAbelianMultiplicativeGroup(
+    T const& one, T const& a, T const& b, T const& c,
+    std::int64_t const max_ulps = 0);
 
 template<typename T>
-void TestNonAbelianMultiplicativeGroup(T const& one, T const& a, T const& b, 
-                                       T const& c, std::int64_t const max_ulps = 0);
+void TestNonAbelianMultiplicativeGroup(
+    T const& one, T const& a, T const& b, 
+    T const& c, std::int64_t const max_ulps = 0);
 
 template<typename Map, typename Scalar, typename U, typename V>
 void TestBilinearMap(Map const& map, U const& u1, U const& u2, V const& v1,

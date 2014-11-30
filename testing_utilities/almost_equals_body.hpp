@@ -93,14 +93,18 @@ bool AlmostEqualsMatcher<T>::MatchAndExplain(
   if (actual == expected_) {
     return true;
   }
-  std::int64_t const w_distance = ULPDistance(DoubleValue(actual.real_part()),
-                                              DoubleValue(expected_.real_part()));
-  std::int64_t const x_distance = ULPDistance(DoubleValue(actual.imaginary_part().x),
-                                              DoubleValue(expected_.imaginary_part().x));
-  std::int64_t const y_distance = ULPDistance(DoubleValue(actual.imaginary_part().y),
-                                              DoubleValue(expected_.imaginary_part().y));
-  std::int64_t const z_distance = ULPDistance(DoubleValue(actual.imaginary_part().z),
-                                              DoubleValue(expected_.imaginary_part().z));
+  std::int64_t const w_distance = ULPDistance(
+      DoubleValue(actual.real_part()),
+      DoubleValue(expected_.real_part()));
+  std::int64_t const x_distance = ULPDistance(
+      DoubleValue(actual.imaginary_part().x),
+      DoubleValue(expected_.imaginary_part().x));
+  std::int64_t const y_distance = ULPDistance(
+      DoubleValue(actual.imaginary_part().y),
+      DoubleValue(expected_.imaginary_part().y));
+  std::int64_t const z_distance = ULPDistance(
+      DoubleValue(actual.imaginary_part().z),
+      DoubleValue(expected_.imaginary_part().z));
   bool const w_matches = w_distance <= max_ulps_;
   bool const x_matches = x_distance <= max_ulps_;
   bool const y_matches = y_distance <= max_ulps_;
