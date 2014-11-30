@@ -112,13 +112,13 @@ bool AlmostEqualsMatcher<T>::MatchAndExplain(
   bool const matches = w_matches && x_matches && y_matches && z_matches;
   if (!matches) {
     *listener << "the following components differ by more than " << max_ulps_
-              << " ULPs: " << (w_matches ? "" : "w, ")
-              << (x_matches ? "" : "x, ")
+              << " ULPs: "
+              << (w_matches ? "" : "w, ") << (x_matches ? "" : "x, ")
               << (y_matches ? "" : "y, ") << (z_matches ? "" : "z, ");
   }
-  *listener << "the components differ by the following numbers of ULPs: w: " 
-            <<w_distance << ", x: "
-            << x_distance << ", y: " << y_distance << ", z: " << z_distance;
+  *listener << "the components differ by the following numbers of ULPs: w: "
+            << w_distance << ", x: " << x_distance 
+            << ", y: " << y_distance << ", z: " << z_distance;
   return matches;
 } 
 

@@ -27,8 +27,8 @@ void TestAbelianMultiplicativeGroup(
 
 template<typename T>
 void TestNonAbelianMultiplicativeGroup(
-    T const& one, T const& a, T const& b, 
-    T const& c, std::int64_t const max_ulps = 0);
+    T const& one, T const& a, T const& b, T const& c,
+    std::int64_t const max_ulps = 0);
 
 template<typename Map, typename Scalar, typename U, typename V>
 void TestBilinearMap(Map const& map, U const& u1, U const& u2, V const& v1,
@@ -75,14 +75,14 @@ void TestInnerProductSpace(Map const& map, Vector const& nullVector,
                            std::int64_t const max_ulps = 0);
 
 template<typename T>
-void TestField(T const& zero, T const& one, T const& a, T const& b,
-               T const& c, T const& x, T const& y,
+void TestField(T const& zero, T const& one,
+               T const& a, T const& b, T const& c, T const& x, T const& y,
                std::int64_t const max_ulps = 0);
 
 template<typename T>
-void TestSkewField(T const& zero, T const& one, T const& a, T const& b,
-               T const& c, T const& x, T const& y,
-               std::int64_t const max_ulps = 0);
+void TestSkewField(T const& zero, T const& one, 
+                   T const& a, T const& b, T const& c, T const& x, T const& y,
+                   std::int64_t const max_ulps = 0);
 
 }  // namespace testing_utilities
 }  // namespace principia
