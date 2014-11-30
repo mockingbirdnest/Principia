@@ -77,15 +77,23 @@ void TestGroup(T const& identity, T const& a, T const& b, T const& c,
 }
 
 template<typename T>
-void TestMultiplicativeGroup(T const& one, T const& a, T const& b, T const& c,
-                             std::int64_t const max_ulps) {
+void TestAbelianMultiplicativeGroup(
+    T const& one, T const& a, T const& b, T const& c,
+    std::int64_t const max_ulps) {
+  TestNonAbelianMultiplicativeGroup(one, a, b, c, max_ulps);
+  EXPECT_EQ(a * b, b * a);
+}
+
+template<typename T>
+void TestNonAbelianMultiplicativeGroup(
+    T const& one, T const& a, T const& b,
+    T const& c, std::int64_t const max_ulps) {
   EXPECT_EQ(a * one, a);
   EXPECT_EQ(one * b, b);
   EXPECT_EQ(a / a, one);
-  EXPECT_THAT((1 / a) / b, AlmostEquals(1 / (a * b), max_ulps));
+  EXPECT_THAT((one / a) / b, AlmostEquals(one / (a * b), max_ulps));
   EXPECT_THAT((a * b) * c, AlmostEquals(a * (b * c), max_ulps));
-  EXPECT_THAT(a / b / c, AlmostEquals(a / (b * c), max_ulps));
-  EXPECT_EQ(a * b, b * a);
+  EXPECT_THAT(a / b / c, AlmostEquals(a / (c * b), max_ulps));
   T accumulator = one;
   accumulator *= a;
   accumulator *= b;
@@ -194,7 +202,16 @@ template<typename T>
 void TestField(T const& zero, T const& one, T const& a, T const& b, T const& c,
                T const& x, T const& y, std::int64_t const max_ulps) {
   TestAdditiveGroup(zero, a, b, c, max_ulps);
-  TestMultiplicativeGroup(one, c, x, y, max_ulps);
+  TestAbelianMultiplicativeGroup(one, c, x, y, max_ulps);
+  TestVectorSpace(zero, a, b, c, zero, one, x, y, max_ulps);
+}
+
+template<typename T>
+void TestSkewField(
+    T const& zero, T const& one, T const& a, T const& b, T const& c,
+    T const& x, T const& y, std::int64_t const max_ulps) {
+  TestAdditiveGroup(zero, a, b, c, max_ulps);
+  TestNonAbelianMultiplicativeGroup(one, c, x, y, max_ulps);
   TestVectorSpace(zero, a, b, c, zero, one, x, y, max_ulps);
 }
 

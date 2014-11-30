@@ -86,6 +86,43 @@ bool AlmostEqualsMatcher<T>::MatchAndExplain(
 }
 
 template<typename T>
+bool AlmostEqualsMatcher<T>::MatchAndExplain(
+    geometry::Quaternion const& actual,
+    testing::MatchResultListener* listener) const {
+  // Check that the types are equality-comparable up to implicit casts.
+  if (actual == expected_) {
+    return true;
+  }
+  std::int64_t const w_distance = ULPDistance(
+      DoubleValue(actual.real_part()),
+      DoubleValue(expected_.real_part()));
+  std::int64_t const x_distance = ULPDistance(
+      DoubleValue(actual.imaginary_part().x),
+      DoubleValue(expected_.imaginary_part().x));
+  std::int64_t const y_distance = ULPDistance(
+      DoubleValue(actual.imaginary_part().y),
+      DoubleValue(expected_.imaginary_part().y));
+  std::int64_t const z_distance = ULPDistance(
+      DoubleValue(actual.imaginary_part().z),
+      DoubleValue(expected_.imaginary_part().z));
+  bool const w_matches = w_distance <= max_ulps_;
+  bool const x_matches = x_distance <= max_ulps_;
+  bool const y_matches = y_distance <= max_ulps_;
+  bool const z_matches = z_distance <= max_ulps_;
+  bool const matches = w_matches && x_matches && y_matches && z_matches;
+  if (!matches) {
+    *listener << "the following components differ by more than " << max_ulps_
+              << " ULPs: "
+              << (w_matches ? "" : "w, ") << (x_matches ? "" : "x, ")
+              << (y_matches ? "" : "y, ") << (z_matches ? "" : "z, ");
+  }
+  *listener << "the components differ by the following numbers of ULPs: w: "
+            << w_distance << ", x: " << x_distance
+            << ", y: " << y_distance << ", z: " << z_distance;
+  return matches;
+}
+
+template<typename T>
 template<typename Scalar, typename Frame>
 bool AlmostEqualsMatcher<T>::MatchAndExplain(
     geometry::Vector<Scalar, Frame> const& actual,
