@@ -810,9 +810,9 @@ void Plugin::PreparePhysicsBubble(Instant const& next_time) {
           // should not.
         } else {
           // Parts appeared or were removed from the physics bubble, but the
-          // intersection is nonempty.  We fix the degrees of freedom of the centre
-          // of mass of the intersection, and we use its measured acceleration as
-          // the intrinsic acceleration of the |bubble_body_|.
+          // intersection is nonempty.  We fix the degrees of freedom of the
+          // centre of mass of the intersection, and we use its measured
+          // acceleration as the intrinsic acceleration of the |bubble_body_|.
           ShiftBubble(common_parts.get());
         }
         // Correct since |World| is currently nonrotating.
