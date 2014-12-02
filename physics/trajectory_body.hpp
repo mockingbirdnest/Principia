@@ -80,8 +80,7 @@ std::map<Instant, Position<Frame>> Trajectory<Frame>::Positions() const {
   std::map<Instant, Position<Frame>> result;
   for (NativeIterator it = first(); !it.at_end(); ++it) {
     Instant const& time = it.time();
-    result.insert(result.end(),
-                  std::make_pair(time, it.degrees_of_freedom().position));
+    result.emplace_hint(result.end(), time, it.degrees_of_freedom().position);
   }
   return result;
 }
@@ -91,8 +90,7 @@ std::map<Instant, Velocity<Frame>> Trajectory<Frame>::Velocities() const {
   std::map<Instant, Velocity<Frame>> result;
   for (NativeIterator it = first(); !it.at_end(); ++it) {
     Instant const& time = it.time();
-    result.insert(result.end(),
-                  std::make_pair(time, it.degrees_of_freedom().velocity));
+    result.emplace_hint(result.end(), time, it.degrees_of_freedom().velocity);
   }
   return result;
 }
@@ -162,7 +160,7 @@ Trajectory<Frame>* Trajectory<Frame>::Fork(Instant const& time) {
   CHECK(fork_it != timeline_.end()) << "Fork at nonexistent time";
   std::unique_ptr<Trajectory<Frame>> child(
       new Trajectory(body_, this /*parent*/, fork_it));
-  child->timeline_.insert(++fork_it, timeline_.end());
+  child->timeline_.emplace(++fork_it, timeline_.end());
   auto const child_it = children_.emplace(time, std::move(child));
   return child_it->second.get();
 }
