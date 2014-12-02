@@ -596,7 +596,7 @@ void Plugin::AddVesselToNextPhysicsBubble(
 }
 
 Displacement<World> Plugin::BubbleDisplacementOffset(
-    Position<World> sun_world_position) const {
+    Position<World> const& sun_world_position) const {
   CHECK(HavePhysicsBubble());
   return Identity<WorldSun, World>()(PlanetariumRotation()(
              current_physics_bubble_->centre_of_mass_trajectory->
@@ -605,12 +605,17 @@ Displacement<World> Plugin::BubbleDisplacementOffset(
          sun_world_position - current_physics_bubble_->centre_of_mass->position;
 }
 
-Velocity<World> Plugin::BubbleVelocityOffset() const {
+Velocity<World> Plugin::BubbleVelocityOffset(
+    Index const reference_body_index) const {
   CHECK(HavePhysicsBubble());
+  auto const found = celestials_.find(reference_body_index);
+  CHECK(found != celestials_.end());
+  Celestial const& reference_body = *found->second;
   return Identity<WorldSun, World>()(PlanetariumRotation()(
              current_physics_bubble_->centre_of_mass_trajectory->
-                 last().degrees_of_freedom().velocity)) -
-         current_physics_bubble_->centre_of_mass->velocity;
+                 last().degrees_of_freedom().velocity -
+             reference_body.prolongation().
+                 last().degrees_of_freedom().velocity));
 }
 
 
