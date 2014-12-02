@@ -59,7 +59,7 @@ TEST_F(NumericsTest, ULPs) {
               Eq(1));
   EXPECT_THAT(ULPDistance(-0.0, -std::numeric_limits<double>::denorm_min()),
               Eq(1));
-  EXPECT_THAT(ULPDistance(-1, 1), Ne(0));
+  EXPECT_THAT(ULPDistance(-2, 2), Gt(0));
   EXPECT_THAT(ULPDistance(-1, 1), Eq(2 * ULPDistance(0, 1)));
 }
 
