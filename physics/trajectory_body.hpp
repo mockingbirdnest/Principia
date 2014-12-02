@@ -80,8 +80,7 @@ std::map<Instant, Position<Frame>> Trajectory<Frame>::Positions() const {
   std::map<Instant, Position<Frame>> result;
   for (NativeIterator it = first(); !it.at_end(); ++it) {
     Instant const& time = it.time();
-    result.insert(result.end(),
-                  std::make_pair(time, it.degrees_of_freedom().position));
+    result.emplace_hint(result.end(), time, it.degrees_of_freedom().position);
   }
   return result;
 }
@@ -91,8 +90,7 @@ std::map<Instant, Velocity<Frame>> Trajectory<Frame>::Velocities() const {
   std::map<Instant, Velocity<Frame>> result;
   for (NativeIterator it = first(); !it.at_end(); ++it) {
     Instant const& time = it.time();
-    result.insert(result.end(),
-                  std::make_pair(time, it.degrees_of_freedom().velocity));
+    result.emplace_hint(result.end(), time, it.degrees_of_freedom().velocity);
   }
   return result;
 }

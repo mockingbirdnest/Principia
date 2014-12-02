@@ -259,10 +259,10 @@ Plugin::Plugin(Instant const& initial_time,
     : n_body_system_(new NBodySystem<Barycentric>),
       planetarium_rotation_(planetarium_rotation),
       current_time_(initial_time) {
-  auto inserted = celestials_.insert(
-      {sun_index,
-       std::make_unique<Celestial>(
-           std::make_unique<MassiveBody>(sun_gravitational_parameter))});
+  auto inserted = celestials_.emplace(
+      sun_index,
+      std::make_unique<Celestial>(
+          std::make_unique<MassiveBody>(sun_gravitational_parameter)));
   sun_ = inserted.first->second.get();
   sun_->CreateHistoryAndForkProlongation(
       current_time_,
@@ -283,10 +283,10 @@ void Plugin::InsertCelestial(
   auto const it = celestials_.find(parent_index);
   CHECK(it != celestials_.end()) << "No body at index " << parent_index;
   Celestial const& parent= *it->second;
-  auto const inserted = celestials_.insert(
-      {celestial_index,
-       std::make_unique<Celestial>(
-           std::make_unique<MassiveBody>(gravitational_parameter))});
+  auto const inserted = celestials_.emplace(
+      celestial_index,
+      std::make_unique<Celestial>(
+          std::make_unique<MassiveBody>(gravitational_parameter)));
   CHECK(inserted.second) << "Body already exists at index " << celestial_index;
   LOG(INFO) << "Initial |orbit.pos| for celestial at index " << celestial_index
             << ": " << from_parent_position;
@@ -329,11 +329,10 @@ bool Plugin::InsertOrKeepVessel(GUID const& vessel_guid,
   auto const it = celestials_.find(parent_index);
   CHECK(it != celestials_.end()) << "No body at index " << parent_index;
   Celestial const& parent = *it->second;
-  auto inserted = vessels_.insert(
-      {vessel_guid,
-       std::make_unique<Vessel>(&parent)});
+  auto inserted = vessels_.emplace(vessel_guid,
+                                   std::make_unique<Vessel>(&parent));
   Vessel* const vessel = inserted.first->second.get();
-  kept_.insert(vessel);
+  kept_.emplace(vessel);
   vessel->set_parent(&parent);
   LOG_IF(INFO, inserted.second) << "Inserted Vessel with GUID " << vessel_guid;
   VLOG(1) << "Parent of vessel with GUID " << vessel_guid <<" is at index "
@@ -368,7 +367,7 @@ void Plugin::SetVesselStateOffset(
       current_time_,
       {last.degrees_of_freedom().position + displacement,
        last.degrees_of_freedom().velocity + relative_velocity});
-  auto const inserted = new_vessels_.insert(vessel);
+  auto const inserted = new_vessels_.emplace(vessel);
   CHECK(inserted.second);
 }
 
