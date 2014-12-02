@@ -2,7 +2,9 @@
 #include "glog/logging.h"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
+#include "testing_utilities/algebra.hpp"
 
+using principia::testing_utilities::TestSkewField;
 using testing::Eq;
 
 namespace principia {
@@ -124,6 +126,13 @@ TEST_F(QuaternionTest, Assignment) {
   EXPECT_THAT(e.imaginary_part(), Eq<R3>({3, -9, 12}));
   EXPECT_THAT(f.real_part(), Eq(-0.5));
   EXPECT_THAT(f.imaginary_part(), Eq<R3>({0.25, -0.75, 1}));
+}
+
+TEST_F(QuaternionTest, SkewField) {
+  TestSkewField<Quaternion>(
+      Quaternion(0), Quaternion(1),
+      q1_, q2_, q3_,
+      Quaternion(6, {1, -3, 4}), Quaternion(0, {8, 9, -1}), 4, 4);
 }
 
 }  // namespace geometry

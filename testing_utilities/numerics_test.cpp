@@ -59,7 +59,7 @@ TEST_F(NumericsTest, ULPs) {
               Eq(1));
   EXPECT_THAT(ULPDistance(-0.0, -std::numeric_limits<double>::denorm_min()),
               Eq(1));
-  EXPECT_THAT(ULPDistance(-1, 1), Ne(0));
+  EXPECT_THAT(ULPDistance(-2, 2), Gt(0));
   EXPECT_THAT(ULPDistance(-1, 1), Eq(2 * ULPDistance(0, 1)));
 }
 
@@ -160,7 +160,7 @@ TEST_F(NumericsTest, DimensionfulRelativeError) {
 
 TEST_F(NumericsTest, R3ElementRelativeError) {
   EXPECT_THAT(RelativeError(i_ + j_ + k_, i_ + j_ + k_), Eq(0));
-  EXPECT_THAT(RelativeError(i_ + j_, i_ + j_ + k_), AlmostEquals(Sqrt(0.5)));
+  EXPECT_THAT(RelativeError(i_ + j_, i_ + j_ + k_), AlmostEquals(Sqrt(0.5), 1));
   EXPECT_THAT(RelativeError(i_, i_ + j_ + k_), Eq(Sqrt(2)));
 }
 
@@ -172,7 +172,7 @@ TEST_F(NumericsTest, VectorRelativeError) {
   EXPECT_THAT(
       RelativeError(Vector<double, World>(i_ + j_),
                     Vector<double, World>(i_ + j_ + k_)),
-      AlmostEquals(Sqrt(0.5)));
+      AlmostEquals(Sqrt(0.5), 1));
   EXPECT_THAT(
       RelativeError(Vector<double, World>(i_),
                     Vector<double, World>(i_ + j_ + k_)),
@@ -187,7 +187,7 @@ TEST_F(NumericsTest, BivectorRelativeError) {
   EXPECT_THAT(
       RelativeError(Bivector<double, World>(i_ + j_),
                     Bivector<double, World>(i_ + j_ + k_)),
-      AlmostEquals(Sqrt(0.5)));
+      AlmostEquals(Sqrt(0.5), 1));
   EXPECT_THAT(
       RelativeError(Bivector<double, World>(i_),
                     Bivector<double, World>(i_ + j_ + k_)),

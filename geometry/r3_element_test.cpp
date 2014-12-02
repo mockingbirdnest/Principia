@@ -63,26 +63,26 @@ TEST_F(R3ElementTest, Dumb3Vector) {
   EXPECT_THAT(303.492345479576 * Metre / Second, AlmostEquals(a_.Norm(), 8));
   testing_utilities::TestEquality(42 * v_, 43 * v_);
   testing_utilities::TestVectorSpace<R3Element<Speed>, double>(
-      null_velocity_, u_, v_, w_, 0.0, 1.0, e, 42.0, 2);
+      null_velocity_, u_, v_, w_, 0.0, 1.0, e, 42.0, 0, 1);
   testing_utilities::TestAlternatingBilinearMap(
-      Cross<Speed, Speed>, u_, v_, w_, a_, 42.0, 2);
+      Cross<Speed, Speed>, u_, v_, w_, a_, 42.0, 0, 1);
   EXPECT_EQ(Cross(R3Element<double>(1, 0, 0),
                   R3Element<double>(0, 1, 0)),
             R3Element<double>(0, 0, 1));
   testing_utilities::TestSymmetricPositiveDefiniteBilinearMap(
-      Dot<Speed, Speed>, u_, v_, w_, a_, 42.0, 2);
+      Dot<Speed, Speed>, u_, v_, w_, a_, 42.0, 0, 1);
 }
 
 TEST_F(R3ElementTest, MixedProduct) {
   testing_utilities::TestBilinearMap(
       Times<R3Element<Length>, Time, R3Element<Speed>>,
-      1 * Second, 1 * JulianYear, u_, v_, 42.0, 2);
+      1 * Second, 1 * JulianYear, u_, v_, 42.0, 0, 1);
   testing_utilities::TestBilinearMap(
       Times<R3Element<Length>, R3Element<Speed>, Time>, w_, a_,
-      -1 * Day, 1 * Parsec / SpeedOfLight, -π, 2);
+      -1 * Day, 1 * Parsec / SpeedOfLight, -π, 0, 1);
   Time const t = -3 * Second;
   EXPECT_EQ(t * u_, u_ * t);
-  EXPECT_THAT((u_ * t) / t, AlmostEquals(u_, 2));
+  EXPECT_THAT((u_ * t) / t, AlmostEquals(u_, 1));
 }
 
 TEST_F(R3ElementDeathTest, OrthogonalizeError) {

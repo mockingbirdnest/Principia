@@ -105,17 +105,19 @@ inline R3x3Matrix operator*(R3x3Matrix const& left,
                      Dot(left.row_z_, t_right.row_z_)});
 }
 
-inline R3Element<double> operator*(R3x3Matrix const& left,
-                                   R3Element<double> const& right) {
-  return R3Element<double>({Dot(left.row_x_, right),
+template<typename Scalar>
+R3Element<Scalar> operator*(R3x3Matrix const& left,
+                            R3Element<Scalar> const& right) {
+  return R3Element<Scalar>({Dot(left.row_x_, right),
                             Dot(left.row_y_, right),
                             Dot(left.row_z_, right)});
 }
 
-inline R3Element<double> operator*(R3Element<double> const& left,
-                                   R3x3Matrix const& right) {
+template<typename Scalar>
+R3Element<Scalar> operator*(R3Element<Scalar> const& left,
+                            R3x3Matrix const& right) {
   R3x3Matrix const t_right = right.Transpose();
-  return R3Element<double>({Dot(left, t_right.row_x_),
+  return R3Element<Scalar>({Dot(left, t_right.row_x_),
                             Dot(left, t_right.row_y_),
                             Dot(left, t_right.row_z_)});
 }

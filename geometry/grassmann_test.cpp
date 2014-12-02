@@ -76,9 +76,6 @@ TEST_F(GrassmannTest, Operators) {
                                   Vector<Length, World>(v_));
   testing_utilities::TestEquality(Trivector<Length, World>(u_.x),
                                   Trivector<Length, World>(v_.x));
-  std::cout << "vector: " << Vector<Length, World>(u_) << "\n";
-  std::cout << "bivector: " << Bivector<Length, World>(u_) << "\n";
-  std::cout << "trivector: " << Trivector<Length, World>(u_.x) << "\n";
 }
 
 TEST_F(GrassmannTest, SpecialOrthogonalLieAlgebra) {
@@ -88,7 +85,7 @@ TEST_F(GrassmannTest, SpecialOrthogonalLieAlgebra) {
       Bivector<double, World>(v_ / Metre),
       Bivector<double, World>(w_ / Rod),
       Bivector<double, World>(a_ / Furlong),
-      0.42, 1);
+      0.42, 0, 1);
 }
 
 TEST_F(GrassmannTest, MixedScalarMultiplication) {
@@ -99,7 +96,7 @@ TEST_F(GrassmannTest, MixedScalarMultiplication) {
       Vector<Length, World>(u_),
       Vector<Length, World>(v_),
       42,
-      2);
+      0, 1);
   testing_utilities::TestBilinearMap(
       Times<Vector<Speed, World>, Vector<Length, World>, Time::Inverse>,
       Vector<Length, World>(w_),
@@ -107,7 +104,7 @@ TEST_F(GrassmannTest, MixedScalarMultiplication) {
       -1 / Day,
       SpeedOfLight / Parsec,
       -π,
-       1);
+       0, 1);
   Time::Inverse t = -3 / Second;
   EXPECT_EQ((t * Vector<Length, World>(u_)), (Vector<Length, World>(u_) * t));
   EXPECT_EQ((Vector<Length, World>(v_) * t) / t, (Vector<Length, World>(v_)));
@@ -121,7 +118,7 @@ TEST_F(GrassmannTest, VectorSpaces) {
       Vector<Length, World>(v_),
       Vector<Length, World>(w_),
       Vector<Length, World>(a_),
-      0.0, 1.0, Sqrt(163), -Sqrt(2), 18);
+      0.0, 1.0, Sqrt(163), -Sqrt(2), 0, 18);
   testing_utilities::TestInnerProductSpace(
       MultivectorInnerProduct<Length, Length, World, 2>,
       Bivector<Length, World>(null_displacement_),
@@ -129,7 +126,7 @@ TEST_F(GrassmannTest, VectorSpaces) {
       Bivector<Length, World>(v_),
       Bivector<Length, World>(w_),
       Bivector<Length, World>(a_),
-      0.0, 1.0, Sqrt(163), -Sqrt(2), 18);
+      0.0, 1.0, Sqrt(163), -Sqrt(2), 0, 18);
   testing_utilities::TestInnerProductSpace(
       MultivectorInnerProduct<Length, Length, World, 3>,
       Trivector<Length, World>(null_displacement_.x),
@@ -137,7 +134,7 @@ TEST_F(GrassmannTest, VectorSpaces) {
       Trivector<Length, World>(v_.z),
       Trivector<Length, World>(w_.x),
       Trivector<Length, World>(a_.y),
-      0.0, 1.0, Sqrt(163), -Sqrt(2));
+      0.0, 1.0, Sqrt(163), -Sqrt(2), 0, 1);
   testing_utilities::TestInnerProductSpace(
       MultivectorInnerProduct<double, double, World, 1>,
       Vector<double, World>(null_displacement_ / Metre),
@@ -145,8 +142,7 @@ TEST_F(GrassmannTest, VectorSpaces) {
       Vector<double, World>(v_ / Metre),
       Vector<double, World>(w_ / Metre),
       Vector<double, World>(a_ / Metre),
-      0.0, 1.0, Sqrt(163),
-      -Sqrt(2), 18);
+      0.0, 1.0, Sqrt(163), -Sqrt(2), 0, 18);
   testing_utilities::TestInnerProductSpace(
       MultivectorInnerProduct<double, double, World, 2>,
       Bivector<double, World>(null_displacement_ / Metre),
@@ -154,8 +150,7 @@ TEST_F(GrassmannTest, VectorSpaces) {
       Bivector<double, World>(v_ / Metre),
       Bivector<double, World>(w_ / Metre),
       Bivector<double, World>(a_ / Metre),
-      0.0, 1.0, Sqrt(163),
-      -Sqrt(2), 18);
+      0.0, 1.0, Sqrt(163), -Sqrt(2), 0, 18);
   testing_utilities::TestInnerProductSpace(
       MultivectorInnerProduct<double, double, World, 3>,
       Trivector<double, World>(null_displacement_.x / Metre),
@@ -163,8 +158,7 @@ TEST_F(GrassmannTest, VectorSpaces) {
       Trivector<double, World>(v_.z / Metre),
       Trivector<double, World>(w_.x / Metre),
       Trivector<double, World>(a_.y / Metre),
-      0.0, 1.0, Sqrt(163),
-      -Sqrt(2));
+      0.0, 1.0, Sqrt(163), -Sqrt(2), 0, 1);
 }
 
 TEST_F(GrassmannTest, GrassmannAlgebra) {
@@ -175,7 +169,7 @@ TEST_F(GrassmannTest, GrassmannAlgebra) {
       Vector<double, World>(w_ / Metre),
       Vector<double, World>(a_ / Metre),
       6.0 * 9.0,
-      2);
+      0, 1);
   testing_utilities::TestBilinearMap(
       Multivectorwedge<Length, Speed, World, 1, 2>,
       Vector<Length, World>(u_),
@@ -183,7 +177,7 @@ TEST_F(GrassmannTest, GrassmannAlgebra) {
       Bivector<Speed, World>(w_ / Second),
       Bivector<Speed, World>(a_ / Second),
       6.0 * 9.0,
-      2);
+      0, 1);
   testing_utilities::TestBilinearMap(
       Multivectorwedge<Length, Speed, World, 2, 1>,
       Bivector<Length, World>(u_),
@@ -191,7 +185,7 @@ TEST_F(GrassmannTest, GrassmannAlgebra) {
       Vector<Speed, World>(w_ / Second),
       Vector<Speed, World>(a_ / Second),
       6.0 * 9.0,
-      2);
+      0, 1);
   EXPECT_EQ(
       Wedge(Vector<Speed, World>(v_ / Second), Bivector<Length, World>(u_)),
       Wedge(Bivector<Length, World>(u_), Vector<Speed, World>(v_ / Second)));

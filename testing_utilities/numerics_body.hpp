@@ -4,6 +4,7 @@
 #include <cstdint>
 
 #include <functional>
+#include <limits>
 
 namespace principia {
 namespace testing_utilities {
@@ -104,7 +105,14 @@ inline std::int64_t ULPDistance(double const x, double const y) {
   if (x_sign != y_sign) {
     double const positive = x_sign == 1 ? x : y;
     double const negative = x_sign == 1 ? y : x;
-    return ULPDistance(positive, +0.0) + ULPDistance(negative, -0.0);
+    std::int64_t const positive_distance = ULPDistance(positive, +0.0);
+    std::int64_t const negative_distance = ULPDistance(negative, -0.0);
+    if (positive_distance >
+            std::numeric_limits<std::int64_t>::max() - negative_distance) {
+      return std::numeric_limits<std::int64_t>::max();
+    } else {
+      return positive_distance + negative_distance;
+    }
   }
   Qword x_qword;
   Qword y_qword;
