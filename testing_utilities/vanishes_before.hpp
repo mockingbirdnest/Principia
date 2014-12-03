@@ -15,7 +15,7 @@ template<typename T>
 class VanishesBeforeMatcher;
 
 // The matchers below are useful when a computation gives a result whose
-// expected value is 0.  Because of cancellations it is unlikely that the
+// expected value is zero.  Because of cancellations it is unlikely that the
 // computed value is exactly zero.  The matchers take a reference value, which
 // represents the order of magnitude of the intermediate results that triggered
 // the cancellation, and a tolerance expressed as a number of epsilons in the

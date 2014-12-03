@@ -1,6 +1,6 @@
 #pragma once
 
-#include "testing_utilities/numerics.hpp"
+#include "testing_utilities/vanishes_before.hpp"
 
 #include <float.h>
 #include <math.h>
@@ -13,6 +13,7 @@
 #include "geometry/grassmann.hpp"
 #include "geometry/r3_element.hpp"
 #include "gmock/gmock.h"
+#include "testing_utilities/numerics.hpp"
 
 namespace principia {
 namespace testing_utilities {
