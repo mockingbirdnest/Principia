@@ -85,7 +85,7 @@ public partial class PluginAdapter : UnityEngine.MonoBehaviour {
         active_vessel.loaded &&
         (active_vessel.situation == Vessel.Situations.SUB_ORBITAL ||
          active_vessel.situation == Vessel.Situations.ORBITING ||
-         active_vessel.situation == Vessel.Situations.ESCAPING) {
+         active_vessel.situation == Vessel.Situations.ESCAPING)) {
       foreach (Vessel vessel in FlightGlobals.Vessels) {
         if (!vessel.packed && vessel.loaded) {
           process_vessel(vessel);
