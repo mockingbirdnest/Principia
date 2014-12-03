@@ -10,8 +10,6 @@
 #include <limits>
 #include <string>
 
-#include "geometry/grassmann.hpp"
-#include "geometry/r3_element.hpp"
 #include "gmock/gmock.h"
 #include "testing_utilities/numerics.hpp"
 
@@ -21,29 +19,28 @@ namespace testing_utilities {
 template<typename T>
 testing::PolymorphicMatcher<VanishesBeforeMatcher<T>> VanishesBefore(
     T const& reference,
-    double const max_epsilons) {
+    std::int64_t const max_ulps) {
   return testing::MakePolymorphicMatcher(
-      VanishesBeforeMatcher<T>(reference, 0.5 * max_epsilons, max_epsilons));
+      VanishesBeforeMatcher<T>(reference, max_ulps, max_ulps));
 }
 
 template<typename T>
 testing::PolymorphicMatcher<VanishesBeforeMatcher<T>> VanishesBefore(
     T const& reference,
-    double const min_epsilons,
-    double const max_epsilons) {
-  CHECK_LT(0, min_epsilons);
-  CHECK_LT(min_epsilons, max_epsilons);
+    std::int64_t const min_ulps,
+    std::int64_t const max_ulps) {
+  CHECK_LE(min_ulps, max_ulps);
   return testing::MakePolymorphicMatcher(
-      VanishesBeforeMatcher<T>(reference, min_epsilons, max_epsilons));
+      VanishesBeforeMatcher<T>(reference, min_ulps, max_ulps));
 }
 
 template<typename T>
 VanishesBeforeMatcher<T>::VanishesBeforeMatcher(T const& reference,
-                                                double const min_epsilons,
-                                                double const max_epsilons)
+                                                std::int64_t const min_ulps,
+                                                std::int64_t const max_ulps)
     : reference_(reference),
-      min_epsilons_(min_epsilons),
-      max_epsilons_(max_epsilons) {}
+      min_ulps_(min_ulps),
+      max_ulps_(max_ulps) {}
 
 template<typename T>
 template<typename Dimensions>
@@ -54,11 +51,10 @@ bool VanishesBeforeMatcher<T>::MatchAndExplain(
   if (actual == reference_) {
     return true;
   }
-  double const distance =
-      AbsoluteError(DoubleValue(actual), 0.0) /
-          (DoubleValue(reference_) * std::numeric_limits<double>::epsilon());
-  *listener << "the numbers are separated by " << distance << " epsilons";
-  return min_epsilons_ < distance && distance <= max_epsilons_;
+  std::int64_t const distance =
+      ULPDistance(DoubleValue(reference_), DoubleValue(actual + reference_));
+  *listener << "the numbers are separated by " << distance << " ulps";
+  return min_ulps_ <= distance && distance <= max_ulps_;
 }
 
 template<typename T>
@@ -69,23 +65,21 @@ bool VanishesBeforeMatcher<T>::MatchAndExplain(
   if (actual == reference_) {
     return true;
   }
-  double const distance =
-      AbsoluteError(actual, 0.0) /
-          (reference_ * std::numeric_limits<double>::epsilon());
-  *listener << "the numbers are separated by " << distance << " epsilons";
-  return min_epsilons_ < distance && distance <= max_epsilons_;
+  std::int64_t const distance = ULPDistance(reference_, actual + reference_);
+  *listener << "the numbers are separated by " << distance << " ulps";
+  return min_ulps_ <= distance && distance <= max_ulps_;
 }
 
 template<typename T>
 void VanishesBeforeMatcher<T>::DescribeTo(std::ostream* out) const {
-  *out << "is within "<< min_epsilons_
-       << " to " << max_epsilons_ << " epsilons of " << reference_;
+  *out << "is within "<< min_ulps_
+       << " to " << max_ulps_ << " ulps of " << reference_;
 }
 
 template<typename T>
 void VanishesBeforeMatcher<T>::DescribeNegationTo(std::ostream* out) const {
-  *out << "is not within " << min_epsilons_
-       << " to " << max_epsilons_ << " epsilons of " << reference_;
+  *out << "is not within " << min_ulps_
+       << " to " << max_ulps_ << " ulps of " << reference_;
 }
 
 }  // namespace testing_utilities

@@ -21,8 +21,8 @@ class VanishesBeforeTest : public testing::Test {};
 
 TEST_F(VanishesBeforeTest, Dimensionless) {
   double const y = 3000.0 * std::numeric_limits<double>::epsilon();
-  EXPECT_THAT(y, VanishesBefore(1000.0, 3));
-  EXPECT_THAT(2 * y, Not(VanishesBefore(1000.0, 3)));
+  EXPECT_THAT(y, VanishesBefore(1000.0, 6));
+  EXPECT_THAT(2 * y, Not(VanishesBefore(1000.0, 6)));
   double const δy = e / 100.0;
   double e_accumulated = 0.0;
   for (int i = 1; i <= 100.0; ++i) {

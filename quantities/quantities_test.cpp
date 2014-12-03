@@ -158,11 +158,11 @@ TEST_F(QuantitiesTest, PhysicalConstants) {
 TEST_F(QuantitiesTest, TrigonometricFunctions) {
   EXPECT_EQ(Cos(0 * Degree), 1);
   EXPECT_EQ(Sin(0 * Degree), 0);
-  EXPECT_THAT(Cos(90 * Degree), VanishesBefore(1.0, 0.5));
+  EXPECT_THAT(Cos(90 * Degree), VanishesBefore(1.0, 0));
   EXPECT_EQ(Sin(90 * Degree), 1);
   EXPECT_EQ(Cos(180 * Degree), -1);
   EXPECT_THAT(Sin(180 * Degree), VanishesBefore(1.0, 1));
-  EXPECT_THAT(Cos(-90 * Degree), VanishesBefore(1.0, 0.5));
+  EXPECT_THAT(Cos(-90 * Degree), VanishesBefore(1.0, 0));
   EXPECT_EQ(Sin(-90 * Degree), -1);
   for (int k = 1; k < 360; ++k) {
     // Don't test for multiples of 90 degrees as zeros lead to horrible

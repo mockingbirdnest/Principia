@@ -18,18 +18,16 @@ class VanishesBeforeMatcher;
 // expected value is zero.  Because of cancellations it is unlikely that the
 // computed value is exactly zero.  The matchers take a reference value, which
 // represents the order of magnitude of the intermediate results that triggered
-// the cancellation, and a tolerance expressed as a number of epsilons in the
-// error.  More precisely the matcher checks that the actual value is in:
-//
-//   ]min_epsilons * reference * epsilon, max_epsilons * reference * epsilon]
+// the cancellation, and a tolerance expressed as a number of ulps in the
+// error.  More precisely the matcher checks that the |reference| is equal to
+// to |actual + reference| to within the specified number of ulps.
 
 // The 2-argument version of |VanishesBefore()| should always be preferred as it
-// guarantees that the error bound is tight.  The implicit value for
-// |min_epsilon| is |max_epsilon| / 2.
+// guarantees that the error bound is tight.
 template<typename T>
 testing::PolymorphicMatcher<VanishesBeforeMatcher<T>> VanishesBefore(
     T const& reference,
-    double const max_epsilons);
+    std::int64_t const max_ulps);
 
 // The 3-argument version of |VanishesBefore()| is exclusively for use when a
 // given assertion may have different errors, e.g., because it's in a loop.  It
@@ -37,15 +35,15 @@ testing::PolymorphicMatcher<VanishesBeforeMatcher<T>> VanishesBefore(
 template<typename T>
 testing::PolymorphicMatcher<VanishesBeforeMatcher<T>> VanishesBefore(
     T const& reference,
-    double const min_epsilons,
-    double const max_epsilons);
+    std::int64_t const min_ulps,
+    std::int64_t const max_ulps);
 
 template<typename T>
 class VanishesBeforeMatcher{
  public:
   explicit VanishesBeforeMatcher(T const& reference,
-                                 double const min_epsilons,
-                                 double const max_epsilons);
+                                 std::int64_t const min_ulps,
+                                 std::int64_t const max_ulps);
   ~VanishesBeforeMatcher() = default;
 
   template<typename Dimensions>
@@ -59,8 +57,8 @@ class VanishesBeforeMatcher{
 
  private:
   T const reference_;
-  double const min_epsilons_;
-  double const max_epsilons_;
+  std::int64_t const min_ulps_;
+  std::int64_t const max_ulps_;
 };
 
 }  // namespace testing_utilities
