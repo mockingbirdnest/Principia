@@ -617,7 +617,6 @@ Velocity<World> Plugin::BubbleVelocityOffset(
                  last().degrees_of_freedom().velocity));
 }
 
-
 void Plugin::RestartNextPhysicsBubble() {
   CHECK(next_physics_bubble_ != nullptr);
   std::vector<DegreesOfFreedom<Barycentric>> vessel_degrees_of_freedom;
