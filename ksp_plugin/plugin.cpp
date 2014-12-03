@@ -584,13 +584,14 @@ void Plugin::AddVesselToNextPhysicsBubble(
       next_physics_bubble_->vessels.emplace(vessel,
                                             std::vector<Part<World>* const>());
   CHECK(inserted_vessel.second);
-  std::vector<Part<World>* const> vessel_parts = inserted_vessel.first->second;
+  std::vector<Part<World>* const>* const vessel_parts =
+      &inserted_vessel.first->second;
   for (std::pair<PartID, std::unique_ptr<Part<World>>>& id_part : parts) {
     CHECK(inserted_vessel.second);
     auto const inserted_part =
     next_physics_bubble_->parts.insert(std::move(id_part));
     CHECK(inserted_part.second);
-    vessel_parts.push_back(inserted_part.first->second.get());
+    vessel_parts->push_back(inserted_part.first->second.get());
   }
 }
 
@@ -790,6 +791,7 @@ void Plugin::ComputeNextPhysicsBubbleVesselOffsets() {
 }
 
 void Plugin::PreparePhysicsBubble(Instant const& next_time) {
+  VLOG(1) << "PreparePhysicsBubble";
   if (next_physics_bubble_ != nullptr) {
     ComputeNextPhysicsBubbleCentreOfMassWorldDegreesOfFreedom();
     ComputeNextPhysicsBubbleVesselOffsets();
@@ -828,6 +830,11 @@ void Plugin::PreparePhysicsBubble(Instant const& next_time) {
                 Identity<World, WorldSun>()(intrinsic_acceleration));
         LOG(INFO) << "Intrinsic accerelation : "
                   << barycentric_intrinsic_acceleration;
+        if (next_physics_bubble_->centre_of_mass_trajectory->
+                has_intrinsic_acceleration()) {
+          next_physics_bubble_->centre_of_mass_trajectory->
+              clear_intrinsic_acceleration();
+        }
         // TODO(egg): this makes the intrinsic acceleration a step function.  Might
         // something smoother be better?  We need to be careful not to be one step
         // or half a step in the past though.

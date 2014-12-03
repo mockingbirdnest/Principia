@@ -283,6 +283,8 @@ void AddVesselToNextPhysicsBubble(
     char const* vessel_guid,
     KSPPart const* const parts,
     int count) {
+  LOG(INFO) << "AddVesselToNextPhysicsBubble" << '\n'
+            << "count : " << count;
   std::vector<std::pair<PartID, std::unique_ptr<Part<World>>>> vessel_parts;
   vessel_parts.reserve(count);
   for (KSPPart const* part = parts; part < parts + count; ++part) {

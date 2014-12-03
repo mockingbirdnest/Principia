@@ -125,6 +125,7 @@ public partial class PluginAdapter : UnityEngine.MonoBehaviour {
       double universal_time = Planetarium.GetUniversalTime();
       VesselProcessor add_to_physics_bubble = vessel => {
         KSPPart[] parts = new KSPPart[vessel.parts.Count];
+        Log.Info("vessel has " + parts.Length + " parts");
         Vector3d gravity = FlightGlobals.getGeeForceAtPosition(
             vessel.findWorldCenterOfMass());
         int i = 0;
