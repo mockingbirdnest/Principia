@@ -39,7 +39,7 @@ testing::PolymorphicMatcher<VanishesBeforeMatcher<T>> VanishesBefore(
     std::int64_t const max_ulps);
 
 template<typename T>
-class VanishesBeforeMatcher{
+class VanishesBeforeMatcher {
  public:
   explicit VanishesBeforeMatcher(T const& reference,
                                  std::int64_t const min_ulps,
