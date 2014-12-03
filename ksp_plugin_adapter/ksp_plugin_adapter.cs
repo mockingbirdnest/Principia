@@ -79,19 +79,22 @@ public partial class PluginAdapter : UnityEngine.MonoBehaviour {
     }
   }
 
-  private void ApplyToLoadedVesselsInSpace (VesselProcessor process_vessel) {
+  private void ApplyToLoadedVesselsInSpace(VesselProcessor process_vessel) {
+    foreach (Vessel vessel in FlightGlobals.Vessels) {
+      if (!vessel.packed && vessel.loaded) {
+        process_vessel(vessel);
+      }
+    }
+  }
+
+  private bool HavePhysicsBubble() {
     Vessel active_vessel = FlightGlobals.ActiveVessel;
-    if (!active_vessel.packed &&
+    return
+        !active_vessel.packed &&
         active_vessel.loaded &&
         (active_vessel.situation == Vessel.Situations.SUB_ORBITAL ||
          active_vessel.situation == Vessel.Situations.ORBITING ||
-         active_vessel.situation == Vessel.Situations.ESCAPING)) {
-      foreach (Vessel vessel in FlightGlobals.Vessels) {
-        if (!vessel.packed && vessel.loaded) {
-          process_vessel(vessel);
-        }
-      }
-    }
+         active_vessel.situation == Vessel.Situations.ESCAPING);
   }
 
   #region Unity Lifecycle
@@ -145,7 +148,9 @@ public partial class PluginAdapter : UnityEngine.MonoBehaviour {
                                      parts : parts,
                                      count : parts.Length);
       };
-      ApplyToLoadedVesselsInSpace(add_to_physics_bubble);
+      if (HavePhysicsBubble()) {
+        ApplyToLoadedVesselsInSpace(add_to_physics_bubble);
+      }
       AdvanceTime(plugin_, universal_time, Planetarium.InverseRotAngle);
       BodyProcessor update_body = body => {
         UpdateCelestialHierarchy(plugin_,
@@ -213,18 +218,20 @@ public partial class PluginAdapter : UnityEngine.MonoBehaviour {
       };
       ApplyToVesselsInSpace(update_vessel);
       Vessel active_vessel = FlightGlobals.ActiveVessel;
-      Vector3d displacement_offset =
-          (Vector3d)BubbleDisplacementOffset(
-                        plugin_,
-                        (XYZ)Planetarium.fetch.Sun.position);
-      Vector3d velocity_offset =
-          (Vector3d)BubbleVelocityOffset(
-                        plugin_,
-                        active_vessel.orbit.referenceBody.flightGlobalsIndex);
-      Krakensbane krakensbane =
-          (Krakensbane)FindObjectOfType(typeof(Krakensbane));
-      krakensbane.setOffset(displacement_offset);
-      krakensbane.FrameVel += velocity_offset;
+      if (HavePhysicsBubble()) {
+        Vector3d displacement_offset =
+            (Vector3d)BubbleDisplacementOffset(
+                          plugin_,
+                          (XYZ)Planetarium.fetch.Sun.position);
+        Vector3d velocity_offset =
+            (Vector3d)BubbleVelocityOffset(
+                          plugin_,
+                          active_vessel.orbit.referenceBody.flightGlobalsIndex);
+        Krakensbane krakensbane =
+            (Krakensbane)FindObjectOfType(typeof(Krakensbane));
+        krakensbane.setOffset(displacement_offset);
+        krakensbane.FrameVel += velocity_offset;
+      }
       if (MapView.MapIsEnabled && 
               (active_vessel.situation == Vessel.Situations.SUB_ORBITAL ||
                active_vessel.situation == Vessel.Situations.ORBITING ||
