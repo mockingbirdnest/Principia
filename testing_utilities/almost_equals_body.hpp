@@ -1,5 +1,7 @@
 #pragma once
 
+#include "testing_utilities/almost_equals.hpp"
+
 #include <float.h>
 #include <math.h>
 #include <stdint.h>
