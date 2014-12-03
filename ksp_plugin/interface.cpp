@@ -326,11 +326,11 @@ XYZ BubbleDisplacementOffset(Plugin const* const plugin,
 
 XYZ BubbleVelocityOffset(Plugin const* const plugin,
                          int const reference_body_index) {
-  Displacement<World> const result =
-      CHECK_NOTNULL(plugin)->BubbleDisplacementOffset(reference_body_index);
-  return XYZ{result.coordinates().x / Metre,
-             result.coordinates().y / Metre,
-             result.coordinates().z / Metre};
+  Velocity<World> const result =
+      CHECK_NOTNULL(plugin)->BubbleVelocityOffset(reference_body_index);
+  return XYZ{result.coordinates().x / (Metre / Second),
+             result.coordinates().y / (Metre / Second),
+             result.coordinates().z / (Metre / Second)};
 }
 
 char const* SayHello() {
