@@ -79,6 +79,21 @@ public partial class PluginAdapter : UnityEngine.MonoBehaviour {
     }
   }
 
+  private void ApplyToLoadedVesselsInSpace (VesselProcessor process_vessel) {
+    Vessel active_vessel = FlightGlobals.ActiveVessel;
+    if (!active_vessel.packed &&
+        active_vessel.loaded &&
+        (active_vessel.situation == Vessel.Situations.SUB_ORBITAL ||
+         active_vessel.situation == Vessel.Situations.ORBITING ||
+         active_vessel.situation == Vessel.Situations.ESCAPING) {
+      foreach (Vessel vessel in FlightGlobals.Vessels) {
+        if (!vessel.packed && vessel.loaded) {
+          process_vessel(vessel);
+        }
+      }
+    }
+  }
+
   #region Unity Lifecycle
   // See the Unity manual on execution order for more information on |Start()|,
   // |OnDestroy()| and |FixedUpdate()|.
@@ -105,6 +120,32 @@ public partial class PluginAdapter : UnityEngine.MonoBehaviour {
   private void FixedUpdate() {
     if (PluginRunning()) {
       double universal_time = Planetarium.GetUniversalTime();
+      VesselProcessor add_to_physics_bubble = vessel => {
+        KSPPart[] parts = new KSPPart[vessel.parts.Count];
+        Vector3d gravity = FlightGlobals.getGeeForceAtPosition(
+            vessel.findWorldCenterOfMass());
+        int i = 0;
+        foreach (Part part in vessel.parts) {
+          Vector3d position =
+              part.rb == null ? part.transform.position
+                              : part.rb.worldCenterOfMass;
+          Vector3d velocity =
+              part.rb == null ? part.vel
+                              : part.rb.velocity;
+          double mass = (double)part.mass + (double)part.GetResourceMass();
+          parts[i] = new KSPPart {world_position = (XYZ)position,
+                        world_velocity = (XYZ)velocity,
+                        mass = mass,
+                        expected_ksp_gravity = (XYZ)gravity,
+                        id = part.flightID};
+          ++i;
+        }
+        AddVesselToNextPhysicsBubble(plugin : plugin_,
+                                     vessel_guid : vessel.id.ToString(),
+                                     parts : parts,
+                                     count : parts.Length);
+      };
+      ApplyToLoadedVesselsInSpace(add_to_physics_bubble);
       AdvanceTime(plugin_, universal_time, Planetarium.InverseRotAngle);
       BodyProcessor update_body = body => {
         UpdateCelestialHierarchy(plugin_,
