@@ -748,6 +748,7 @@ void Plugin::ComputeNextPhysicsBubbleCentreOfMassWorldDegreesOfFreedom() {
 }
 
 void Plugin::ComputeNextPhysicsBubbleVesselOffsets() {
+  VLOG(1) << "ComputeNextPhysicsBubbleVesselOffsets";
   CHECK(next_physics_bubble_ != nullptr);
   next_physics_bubble_->displacements_from_centre_of_mass =
       std::make_unique<std::map<Vessel const* const,
@@ -755,7 +756,10 @@ void Plugin::ComputeNextPhysicsBubbleVesselOffsets() {
   next_physics_bubble_->velocities_from_centre_of_mass =
       std::make_unique<std::map<Vessel const* const,
                                 Velocity<Barycentric>>>();
+  VLOG(1) << "Vessels in next bubble: "
+          << next_physics_bubble_->vessels.size();
   for (auto const& vessel_parts : next_physics_bubble_->vessels) {
+    VLOG(1) << "Parts in vessel: " << vessel_parts.second.size();
     std::vector<DegreesOfFreedom<World>> part_degrees_of_freedom;
     std::vector<Mass> part_masses;
     part_degrees_of_freedom.reserve(vessel_parts.second.size());
