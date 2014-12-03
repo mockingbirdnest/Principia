@@ -27,10 +27,11 @@ public partial class PluginAdapter : UnityEngine.MonoBehaviour {
 
   [StructLayout(LayoutKind.Sequential)]
   struct KSPPart {
-    XYZ world_position;
-    XYZ world_velocity;
-    double mass;
-    uint id;
+    public XYZ world_position;
+    public XYZ world_velocity;
+    public double mass;
+    public XYZ expected_ksp_gravity;
+    public uint id;
   };
 
   // Plugin interface.
@@ -179,6 +180,17 @@ public partial class PluginAdapter : UnityEngine.MonoBehaviour {
       [MarshalAs(UnmanagedType.LPStr)] String vessel_guid,
       KSPPart[] parts,
       int count);
+
+  [DllImport(dllName           : kDllPath,
+             CallingConvention = CallingConvention.Cdecl)]
+  private static extern XYZ BubbleDisplacementOffset(IntPtr plugin,
+                                                     XYZ sun_position);
+
+  [DllImport(dllName           : kDllPath,
+             CallingConvention = CallingConvention.Cdecl)]
+  private static extern XYZ BubbleVelocityOffset(IntPtr plugin,
+                                                 int reference_body_index);
+
 }
 
 }  // namespace ksp_plugin_adapter

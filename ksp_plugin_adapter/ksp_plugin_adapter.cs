@@ -213,6 +213,18 @@ public partial class PluginAdapter : UnityEngine.MonoBehaviour {
       };
       ApplyToVesselsInSpace(update_vessel);
       Vessel active_vessel = FlightGlobals.ActiveVessel;
+      Vector3d displacement_offset =
+          (Vector3d)BubbleDisplacementOffset(
+                        plugin_,
+                        (XYZ)Planetarium.fetch.Sun.position);
+      Vector3d velocity_offset =
+          (Vector3d)BubbleVelocityOffset(
+                        plugin_,
+                        active_vessel.orbit.referenceBody.flightGlobalsIndex);
+      Krakensbane krakensbane =
+          (Krakensbane)FindObjectOfType(typeof(Krakensbane));
+      krakensbane.setOffset(displacement_offset);
+      krakensbane.FrameVel += velocity_offset;
       if (MapView.MapIsEnabled && 
               (active_vessel.situation == Vessel.Situations.SUB_ORBITAL ||
                active_vessel.situation == Vessel.Situations.ORBITING ||
