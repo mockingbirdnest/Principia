@@ -822,6 +822,8 @@ void Plugin::PreparePhysicsBubble(Instant const& next_time) {
         Vector<Acceleration, Barycentric> barycentric_intrinsic_acceleration =
             PlanetariumRotation().Inverse()(
                 Identity<World, WorldSun>()(intrinsic_acceleration));
+        LOG(INFO) << "Intrinsic accerelation : "
+                  << barycentric_intrinsic_acceleration;
         // TODO(egg): this makes the intrinsic acceleration a step function.  Might
         // something smoother be better?  We need to be careful not to be one step
         // or half a step in the past though.
