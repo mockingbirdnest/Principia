@@ -44,7 +44,7 @@ TEST_F(VanishesBeforeTest, Quantity) {
     v_accumulated += δv;
   }
   EXPECT_THAT(v_accumulated, Ne(v1));
-  EXPECT_THAT(v_accumulated - v1, Not(VanishesBefore(v1, 5)));
+  EXPECT_THAT(v_accumulated - v1, Not(VanishesBefore(v1, 8)));
   EXPECT_THAT(v_accumulated - v1, VanishesBefore(v1, 4));
 }
 

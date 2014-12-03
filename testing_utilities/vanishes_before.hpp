@@ -14,12 +14,22 @@ namespace testing_utilities {
 template<typename T>
 class VanishesBeforeMatcher;
 
+// The matchers below are useful when a computation gives a result whose
+// expected value is 0.  Because of cancellations it is unlikely that the
+// computed value is exactly zero.  The matchers take a reference value, which
+// represents the order of magnitude of the intermediate results that triggered
+// the cancellation, and a tolerance expressed as a number of epsilons in the
+// error.  More precisely the matcher checks that the actual value is in:
+//
+//   ]min_epsilons * reference * epsilon, max_epsilons * reference * epsilon]
+
 // The 2-argument version of |VanishesBefore()| should always be preferred as it
-// guarantees that the error bound is tight.
+// guarantees that the error bound is tight.  The implicit value for
+// |min_epsilon| is |max_epsilon| / 2.
 template<typename T>
 testing::PolymorphicMatcher<VanishesBeforeMatcher<T>> VanishesBefore(
     T const& reference,
-    std::int64_t const max_epsilons);
+    double const max_epsilons);
 
 // The 3-argument version of |VanishesBefore()| is exclusively for use when a
 // given assertion may have different errors, e.g., because it's in a loop.  It
@@ -27,15 +37,15 @@ testing::PolymorphicMatcher<VanishesBeforeMatcher<T>> VanishesBefore(
 template<typename T>
 testing::PolymorphicMatcher<VanishesBeforeMatcher<T>> VanishesBefore(
     T const& reference,
-    std::int64_t const min_epsilons,
-    std::int64_t const max_epsilons);
+    double const min_epsilons,
+    double const max_epsilons);
 
 template<typename T>
 class VanishesBeforeMatcher{
  public:
   explicit VanishesBeforeMatcher(T const& reference,
-                                 std::int64_t const min_epsilons,
-                                 std::int64_t const max_epsilons);
+                                 double const min_epsilons,
+                                 double const max_epsilons);
   ~VanishesBeforeMatcher() = default;
 
   template<typename Dimensions>
@@ -49,8 +59,8 @@ class VanishesBeforeMatcher{
 
  private:
   T const reference_;
-  std::int64_t const min_epsilons_;
-  std::int64_t const max_epsilons_;
+  double const min_epsilons_;
+  double const max_epsilons_;
 };
 
 }  // namespace testing_utilities

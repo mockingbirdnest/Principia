@@ -14,6 +14,7 @@
 #include "testing_utilities/almost_equals.hpp"
 #include "testing_utilities/explicit_operators.hpp"
 #include "testing_utilities/numerics.hpp"
+#include "testing_utilities/vanishes_before.hpp"
 
 using principia::astronomy::EarthMass;
 using principia::astronomy::JulianYear;
@@ -43,10 +44,10 @@ using principia::si::Mole;
 using principia::si::Radian;
 using principia::si::Second;
 using principia::si::Steradian;
-using principia::testing_utilities::AbsoluteError;
 using principia::testing_utilities::AlmostEquals;
 using principia::testing_utilities::RelativeError;
 using principia::testing_utilities::Times;
+using principia::testing_utilities::VanishesBefore;
 using principia::uk::Foot;
 using principia::uk::Furlong;
 using principia::uk::Mile;
@@ -157,11 +158,11 @@ TEST_F(QuantitiesTest, PhysicalConstants) {
 TEST_F(QuantitiesTest, TrigonometricFunctions) {
   EXPECT_EQ(Cos(0 * Degree), 1);
   EXPECT_EQ(Sin(0 * Degree), 0);
-  EXPECT_THAT(AbsoluteError(Cos(90 * Degree), 0), Lt(1E-16));
+  EXPECT_THAT(Cos(90 * Degree), VanishesBefore(1.0, 0.5));
   EXPECT_EQ(Sin(90 * Degree), 1);
   EXPECT_EQ(Cos(180 * Degree), -1);
-  EXPECT_THAT(AbsoluteError(Sin(180 * Degree), 0), Lt(1E-15));
-  EXPECT_THAT(AbsoluteError(Cos(-90 * Degree), 0), Lt(1E-16));
+  EXPECT_THAT(Sin(180 * Degree), VanishesBefore(1.0, 1));
+  EXPECT_THAT(Cos(-90 * Degree), VanishesBefore(1.0, 0.5));
   EXPECT_EQ(Sin(-90 * Degree), -1);
   for (int k = 1; k < 360; ++k) {
     // Don't test for multiples of 90 degrees as zeros lead to horrible

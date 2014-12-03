@@ -30,7 +30,6 @@ using principia::quantities::SIUnit;
 using principia::quantities::Speed;
 using principia::quantities::Stiffness;
 using principia::quantities::Time;
-using principia::testing_utilities::AbsoluteError;
 using principia::testing_utilities::BidimensionalDatasetMathematicaInput;
 using principia::testing_utilities::ComputeHarmonicOscillatorForce;
 using principia::testing_utilities::ComputeHarmonicOscillatorVelocity;

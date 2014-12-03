@@ -20,17 +20,17 @@ namespace testing_utilities {
 template<typename T>
 testing::PolymorphicMatcher<VanishesBeforeMatcher<T>> VanishesBefore(
     T const& reference,
-    std::int64_t const max_epsilons) {
+    double const max_epsilons) {
   return testing::MakePolymorphicMatcher(
-      VanishesBeforeMatcher<T>(reference, max_epsilons - 1, max_epsilons));
+      VanishesBeforeMatcher<T>(reference, 0.5 * max_epsilons, max_epsilons));
 }
 
 template<typename T>
 testing::PolymorphicMatcher<VanishesBeforeMatcher<T>> VanishesBefore(
     T const& reference,
-    std::int64_t const min_epsilons,
-    std::int64_t const max_epsilons) {
-  CHECK_LE(0, min_epsilons);
+    double const min_epsilons,
+    double const max_epsilons) {
+  CHECK_LT(0, min_epsilons);
   CHECK_LT(min_epsilons, max_epsilons);
   return testing::MakePolymorphicMatcher(
       VanishesBeforeMatcher<T>(reference, min_epsilons, max_epsilons));
@@ -38,8 +38,8 @@ testing::PolymorphicMatcher<VanishesBeforeMatcher<T>> VanishesBefore(
 
 template<typename T>
 VanishesBeforeMatcher<T>::VanishesBeforeMatcher(T const& reference,
-                                                std::int64_t const min_epsilons,
-                                                std::int64_t const max_epsilons)
+                                                double const min_epsilons,
+                                                double const max_epsilons)
     : reference_(reference),
       min_epsilons_(min_epsilons),
       max_epsilons_(max_epsilons) {}
