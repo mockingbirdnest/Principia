@@ -619,6 +619,7 @@ Velocity<World> Plugin::BubbleVelocityOffset(
 }
 
 void Plugin::RestartNextPhysicsBubble() {
+  VLOG(1) << "RestartNextPhysicsBubble"
   CHECK(next_physics_bubble_ != nullptr);
   std::vector<DegreesOfFreedom<Barycentric>> vessel_degrees_of_freedom;
   vessel_degrees_of_freedom.reserve(next_physics_bubble_->vessels.size());
@@ -643,6 +644,7 @@ void Plugin::RestartNextPhysicsBubble() {
 Vector<Acceleration, World> Plugin::IntrinsicAcceleration(
     Instant const& next_time,
     std::vector<std::pair<Part<World>*, Part<World>*>>* const common_parts) {
+  VLOG(1) << "IntrinsicAcceleration";
   CHECK_NOTNULL(common_parts);
   CHECK(common_parts->empty());
   // Most of the time no parts explode.  We reserve accordingly.
@@ -672,12 +674,15 @@ Vector<Acceleration, World> Plugin::IntrinsicAcceleration(
       ++it_in_next_parts;
     }
   }
-  return weighted_sum / total_mass;
+  Vector<Acceleration, World> const result = weighted_sum / total_mass;
+  VLOG(1) << "returning " << result;
+  return result;
 }
 
 void Plugin::ShiftBubble(
     std::vector<std::pair<Part<World>*,
                           Part<World>*>> const* const common_parts) {
+  VLOG(1) << "ShiftBubble";
   CHECK_NOTNULL(common_parts);
   CHECK(next_physics_bubble_ != nullptr);
   std::vector<DegreesOfFreedom<World>> current_common_degrees_of_freedom;
@@ -734,6 +739,7 @@ void Plugin::ShiftBubble(
 }
 
 void Plugin::ComputeNextPhysicsBubbleCentreOfMassWorldDegreesOfFreedom() {
+  VLOG(1) << "ComputeNextPhysicsBubbleCentreOfMassWorldDegreesOfFreedom";
   CHECK(next_physics_bubble_ != nullptr);
   std::vector<DegreesOfFreedom<World>> part_degrees_of_freedom;
   part_degrees_of_freedom.reserve(next_physics_bubble_->parts.size());
@@ -828,8 +834,8 @@ void Plugin::PreparePhysicsBubble(Instant const& next_time) {
         Vector<Acceleration, Barycentric> barycentric_intrinsic_acceleration =
             PlanetariumRotation().Inverse()(
                 Identity<World, WorldSun>()(intrinsic_acceleration));
-        LOG(INFO) << "Intrinsic accerelation: "
-                  << barycentric_intrinsic_acceleration;
+        VLOG(1) << "Intrinsic accerelation: "
+                << barycentric_intrinsic_acceleration;
         if (next_physics_bubble_->centre_of_mass_trajectory->
                 has_intrinsic_acceleration()) {
           next_physics_bubble_->centre_of_mass_trajectory->
