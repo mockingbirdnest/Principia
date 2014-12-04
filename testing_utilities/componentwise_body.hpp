@@ -5,7 +5,9 @@
 #include <string>
 
 #include "gmock/gmock.h"
+#include "quantities/quantities.hpp"
 
+using principia::quantities::Quantity;
 using testing::Matcher;
 
 namespace principia {
@@ -35,6 +37,13 @@ template<typename T, template<typename> class U, template<typename> class V>
 class MatcherParameterType<U<V<T>>> {
  public:
   using type = T;
+};
+
+// And now a case that we *don't* want to peel away.  Yes, this smells a bit.
+template<typename T, template<typename> class U>
+class MatcherParameterType<U<Quantity<T>>> {
+ public:
+  using type = Quantity<T>;
 };
 
 }  // namespace

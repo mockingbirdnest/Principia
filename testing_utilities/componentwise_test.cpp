@@ -47,6 +47,12 @@ TEST_F(VanishesBeforeTest, Grassmann) {
   EXPECT_THAT(v, Componentwise(AlmostEquals(1.0 * Metre, 4504),
                                 VanishesBefore(1.0 * Metre, 450360),
                                 Eq(3.5 * Metre)));
+  Bivector<Length, World> b({(1.0 + 1.0E-12) * Metre,
+                              1.0E-10 * Metre,
+                              3.5 * Metre});
+  EXPECT_THAT(b, Componentwise(AlmostEquals(1.0 * Metre, 4504),
+                                VanishesBefore(1.0 * Metre, 450360),
+                                Eq(3.5 * Metre)));
 }
 
 }  // namespace testing_utilities
