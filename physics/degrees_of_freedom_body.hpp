@@ -48,5 +48,12 @@ DegreesOfFreedom<Frame> Barycentre(
           geometry::Velocity<Frame>(velocities_weighted_sum / weight)};
 }
 
+template<typename Frame>
+std::ostream& operator<<(std::ostream& out,
+                         DegreesOfFreedom<Frame> const& degrees_of_freedom) {
+  return out << "{" << degrees_of_freedom.position << ", "
+                    << degrees_of_freedom.velocity << "}";
+}
+
 }  // namespace physics
 }  // namespace principia
