@@ -762,6 +762,8 @@ void Plugin::ComputeNextPhysicsBubbleCentreOfMassWorldDegreesOfFreedom() {
   next_physics_bubble_->centre_of_mass =
       std::make_unique<DegreesOfFreedom<World>>(
           physics::Barycentre(part_degrees_of_freedom, part_masses));
+  VLOG(1) << "computed |next_physics_bubble_->centre_of_mass|: "
+          << *next_physics_bubble_->centre_of_mass;
 }
 
 void Plugin::ComputeNextPhysicsBubbleVesselOffsets() {
