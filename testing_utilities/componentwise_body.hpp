@@ -6,6 +6,8 @@
 
 #include "gmock/gmock.h"
 
+using testing::Matcher;
+
 namespace principia {
 namespace testing_utilities {
 
@@ -33,29 +35,29 @@ template<typename Scalar>
 bool ComponentwiseMatcher<XMatcher, YMatcher, ZMatcher>::MatchAndExplain(
     geometry::R3Element<Scalar> const& actual,
     testing::MatchResultListener* listener) const {
-  return x_matcher_.MatchAndExplain(actual.x, listener) &&
-         y_matcher_.MatchAndExplain(actual.y, listener) &&
-         z_matcher_.MatchAndExplain(actual.z, listener);
+  return Matcher<Scalar>(x_matcher_).MatchAndExplain(actual.x, listener) &&
+         Matcher<Scalar>(y_matcher_).MatchAndExplain(actual.y, listener) &&
+         Matcher<Scalar>(z_matcher_).MatchAndExplain(actual.z, listener);
 }
 
 template<typename XMatcher, typename YMatcher, typename ZMatcher>
 void ComponentwiseMatcher<XMatcher, YMatcher, ZMatcher>::DescribeTo(
     std::ostream* out) const {
-  x_matcher_.DescribeTo(out);
+  //Matcher<void*>(x_matcher_).DescribeTo(out);
   *out << " and ";
-  y_matcher_.DescribeTo(out);
+  //Matcher<void*>(y_matcher_).DescribeTo(out);
   *out << " and ";
-  z_matcher_.DescribeTo(out);
+  //Matcher<void*>(z_matcher_).DescribeTo(out);
 }
 
 template<typename XMatcher, typename YMatcher, typename ZMatcher>
 void ComponentwiseMatcher<XMatcher, YMatcher, ZMatcher>::DescribeNegationTo(
     std::ostream* out) const {
-  x_matcher_.DescribeNegationTo(out);
+  //Matcher<void*>(x_matcher_).DescribeNegationTo(out);
   *out << " or ";
-  y_matcher_.DescribeNegationTo(out);
+  //Matcher<void*>(y_matcher_).DescribeNegationTo(out);
   *out << " or ";
-  z_matcher_.DescribeNegationTo(out);
+  //Matcher<void*>(z_matcher_).DescribeNegationTo(out);
 }
 
 }  // namespace testing_utilities

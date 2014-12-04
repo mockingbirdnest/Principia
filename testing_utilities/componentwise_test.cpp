@@ -11,6 +11,7 @@
 
 using principia::geometry::R3Element;
 using testing::AllOf;
+using testing::Eq;
 
 namespace principia {
 namespace testing_utilities {
@@ -18,10 +19,10 @@ namespace testing_utilities {
 class VanishesBeforeTest : public testing::Test {};
 
 TEST_F(VanishesBeforeTest, R3Element) {
-  R3Element<double> r1({1.0 + 1.0E-12, 1.0E-10, 1.0E-11});
-  EXPECT_THAT(r1, Componentwise(AlmostEquals(1.0, 4),
-                                VanishesBefore(1.0, 2),
-                                VanishesBefore(2.0, 1)));
+  R3Element<double> r1({1.0 + 1.0E-12, 1.0E-10, 3.5});
+  EXPECT_THAT(r1, Componentwise(AlmostEquals(1.0, 4504),
+                                VanishesBefore(1.0, 450360),
+                                Eq(3.5)));
 }
 
 }  // namespace testing_utilities
