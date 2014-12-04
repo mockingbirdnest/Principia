@@ -69,6 +69,32 @@ bool ComponentwiseMatcher<XMatcher, YMatcher, ZMatcher>::MatchAndExplain(
 }
 
 template<typename XMatcher, typename YMatcher, typename ZMatcher>
+template<typename Scalar, typename Frame>
+bool ComponentwiseMatcher<XMatcher, YMatcher, ZMatcher>::
+MatchAndExplain(geometry::Vector<Scalar, Frame> const& actual,
+                testing::MatchResultListener* listener) const {
+  return Matcher<Scalar>(x_matcher_).MatchAndExplain(
+             actual.coordinates().x, listener) &&
+         Matcher<Scalar>(y_matcher_).MatchAndExplain(
+             actual.coordinates().y, listener) &&
+         Matcher<Scalar>(z_matcher_).MatchAndExplain(
+             actual.coordinates().z, listener);
+}
+
+template<typename XMatcher, typename YMatcher, typename ZMatcher>
+template<typename Scalar, typename Frame>
+bool ComponentwiseMatcher<XMatcher, YMatcher, ZMatcher>::
+MatchAndExplain(geometry::Bivector<Scalar, Frame> const& actual,
+                testing::MatchResultListener* listener) const {
+  return Matcher<Scalar>(x_matcher_).MatchAndExplain(
+             actual.coordinates().x, listener) &&
+         Matcher<Scalar>(y_matcher_).MatchAndExplain(
+             actual.coordinates().y, listener) &&
+         Matcher<Scalar>(z_matcher_).MatchAndExplain(
+             actual.coordinates().z, listener);
+}
+
+template<typename XMatcher, typename YMatcher, typename ZMatcher>
 void ComponentwiseMatcher<XMatcher, YMatcher, ZMatcher>::DescribeTo(
     std::ostream* out) const {
   *out << "x ";
