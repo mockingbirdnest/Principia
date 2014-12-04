@@ -133,15 +133,15 @@ public partial class PluginAdapter : UnityEngine.MonoBehaviour {
           Vector3d position =
               part.rb == null ? part.transform.position
                               : part.rb.worldCenterOfMass;
-          Vector3d velocity =
-              part.rb == null ? part.vel
-                              : part.rb.velocity;
+          Vector3d velocity = Krakensbane.GetFrameVelocity() +
+              (part.rb == null ? part.vel
+                               : part.rb.velocity);
           double mass = (double)part.mass + (double)part.GetResourceMass();
           parts[i] = new KSPPart {world_position = (XYZ)position,
-                        world_velocity = (XYZ)velocity,
-                        mass = mass,
-                        expected_ksp_gravity = (XYZ)gravity,
-                        id = part.flightID};
+                                  world_velocity = (XYZ)velocity,
+                                  mass = mass,
+                                  expected_ksp_gravity = (XYZ)gravity,
+                                  id = part.flightID};
           ++i;
         }
         AddVesselToNextPhysicsBubble(plugin : plugin_,

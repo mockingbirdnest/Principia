@@ -828,7 +828,7 @@ void Plugin::PreparePhysicsBubble(Instant const& next_time) {
         Vector<Acceleration, Barycentric> barycentric_intrinsic_acceleration =
             PlanetariumRotation().Inverse()(
                 Identity<World, WorldSun>()(intrinsic_acceleration));
-        LOG(INFO) << "Intrinsic accerelation : "
+        LOG(INFO) << "Intrinsic accerelation: "
                   << barycentric_intrinsic_acceleration;
         if (next_physics_bubble_->centre_of_mass_trajectory->
                 has_intrinsic_acceleration()) {
