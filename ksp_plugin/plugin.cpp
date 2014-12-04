@@ -597,25 +597,35 @@ void Plugin::AddVesselToNextPhysicsBubble(
 
 Displacement<World> Plugin::BubbleDisplacementOffset(
     Position<World> const& sun_world_position) const {
+  VLOG(1) << "BubbleDisplacementOffset" << '\n'
+          << "sun_world_position: " << sun_world_position;
   CHECK(HavePhysicsBubble());
-  return Identity<WorldSun, World>()(PlanetariumRotation()(
-             current_physics_bubble_->centre_of_mass_trajectory->
-                 last().degrees_of_freedom().position -
-             sun_->prolongation().last().degrees_of_freedom().position)) +
-         sun_world_position - current_physics_bubble_->centre_of_mass->position;
+  Displacement<World> const result =
+      Identity<WorldSun, World>()(PlanetariumRotation()(
+          current_physics_bubble_->centre_of_mass_trajectory->
+              last().degrees_of_freedom().position -
+          sun_->prolongation().last().degrees_of_freedom().position)) +
+      sun_world_position - current_physics_bubble_->centre_of_mass->position;
+  VLOG(1) << "returning " << result;
+  return result;
 }
 
 Velocity<World> Plugin::BubbleVelocityOffset(
     Index const reference_body_index) const {
+  VLOG(1) << "BubbleVelocityOffset" << '\n'
+          << "reference_body_index: " << reference_body_index;
   CHECK(HavePhysicsBubble());
   auto const found = celestials_.find(reference_body_index);
   CHECK(found != celestials_.end());
   Celestial const& reference_body = *found->second;
-  return Identity<WorldSun, World>()(PlanetariumRotation()(
-             current_physics_bubble_->centre_of_mass_trajectory->
-                 last().degrees_of_freedom().velocity -
-             reference_body.prolongation().
-                 last().degrees_of_freedom().velocity));
+  Velocity<World> const result =
+      Identity<WorldSun, World>()(PlanetariumRotation()(
+          current_physics_bubble_->centre_of_mass_trajectory->
+              last().degrees_of_freedom().velocity -
+          reference_body.prolongation().
+              last().degrees_of_freedom().velocity));
+  VLOG(1) << "returning " << result;
+  return result;
 }
 
 void Plugin::RestartNextPhysicsBubble() {
