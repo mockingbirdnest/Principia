@@ -11,6 +11,22 @@ using testing::Matcher;
 namespace principia {
 namespace testing_utilities {
 
+namespace {
+
+template<typename Matcher>
+class UnwrapMatcher {
+public:
+  using matcher = Matcher;
+};
+
+template<typename Impl>
+class UnwrapMatcher<testing::PolymorphicMatcher<Impl>> {
+public:
+  using matcher = Impl;
+};
+
+}  // namespace
+
 template<typename XMatcher, typename YMatcher, typename ZMatcher>
 testing::PolymorphicMatcher<ComponentwiseMatcher<XMatcher, YMatcher, ZMatcher>>
 Componentwise(XMatcher const& x_matcher,
@@ -43,7 +59,7 @@ bool ComponentwiseMatcher<XMatcher, YMatcher, ZMatcher>::MatchAndExplain(
 template<typename XMatcher, typename YMatcher, typename ZMatcher>
 void ComponentwiseMatcher<XMatcher, YMatcher, ZMatcher>::DescribeTo(
     std::ostream* out) const {
-  //Matcher<void*>(x_matcher_).DescribeTo(out);
+  UnwrapMatcher<XMatcher>::matcher(x_matcher_).DescribeTo(out);
   *out << " and ";
   //Matcher<void*>(y_matcher_).DescribeTo(out);
   *out << " and ";
