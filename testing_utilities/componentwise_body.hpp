@@ -13,16 +13,28 @@ namespace testing_utilities {
 
 namespace {
 
+// In order to call |Describe...To| on the various matchers we need to convert
+// them to some |Matcher<T>|.  However, it is quite difficult to figure out
+// what |T| is because the class |ComponentwiseMatcher| and the factory
+// |Componentwise| cannot take it as a parameter (the template deduction would
+// fail and the usages would get very ugly).  To make things worse, the actual
+// type of the matcher depends on whether it polymorphic, monomorphic or
+// some other internal helper.  We obtain |T| by peeling away the layers of
+// templates around it.
+
 template<typename T>
-class DescribeHelper {
+class MatcherParameterType {};
+
+template<typename T, template<typename> class U>
+class MatcherParameterType<U<T>> {
  public:
-  static T const& Cast(T const& t) { return t; }
+  using type = T;
 };
 
-template<typename Impl>
-class DescribeHelper<testing::PolymorphicMatcher<Impl>> {
+template<typename T, template<typename> class U, template<typename> class V>
+class MatcherParameterType<U<V<T>>> {
  public:
-  static Impl const& Cast(testing::PolymorphicMatcher<Impl> const& m) { return m.impl(); }
+  using type = T;
 };
 
 }  // namespace
@@ -59,21 +71,26 @@ bool ComponentwiseMatcher<XMatcher, YMatcher, ZMatcher>::MatchAndExplain(
 template<typename XMatcher, typename YMatcher, typename ZMatcher>
 void ComponentwiseMatcher<XMatcher, YMatcher, ZMatcher>::DescribeTo(
     std::ostream* out) const {
-  DescribeHelper<XMatcher>::Cast(x_matcher_).DescribeTo(out);
-  *out << " and ";
-  DescribeHelper<YMatcher>::Cast(y_matcher_).DescribeTo(out);
-  *out << " and ";
-  DescribeHelper<ZMatcher>::Cast(z_matcher_).DescribeTo(out);
+  *out << "x ";
+  Matcher<MatcherParameterType<XMatcher>::type>(x_matcher_).DescribeTo(out);
+  *out << " and y ";
+  Matcher<MatcherParameterType<YMatcher>::type>(y_matcher_).DescribeTo(out);
+  *out << " and z ";
+  Matcher<MatcherParameterType<ZMatcher>::type>(z_matcher_).DescribeTo(out);
 }
 
 template<typename XMatcher, typename YMatcher, typename ZMatcher>
 void ComponentwiseMatcher<XMatcher, YMatcher, ZMatcher>::DescribeNegationTo(
     std::ostream* out) const {
-  //Matcher<void*>(x_matcher_).DescribeNegationTo(out);
-  *out << " or ";
-  //Matcher<void*>(y_matcher_).DescribeNegationTo(out);
-  *out << " or ";
-  //Matcher<void*>(z_matcher_).DescribeNegationTo(out);
+  *out << "x ";
+  Matcher<MatcherParameterType<XMatcher>::type>(
+      x_matcher_).DescribeNegationTo(out);
+  *out << " or y ";
+  Matcher<MatcherParameterType<YMatcher>::type>(
+      y_matcher_).DescribeNegationTo(out);
+  *out << " or z ";
+  Matcher<MatcherParameterType<ZMatcher>::type>(
+      z_matcher_).DescribeNegationTo(out);
 }
 
 }  // namespace testing_utilities
