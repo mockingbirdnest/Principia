@@ -13,16 +13,16 @@ namespace testing_utilities {
 
 namespace {
 
-template<typename Matcher>
-class UnwrapMatcher {
-public:
-  using matcher = Matcher;
+template<typename T>
+class DescribeHelper {
+ public:
+  static T const& Cast(T const& t) { return t; }
 };
 
 template<typename Impl>
-class UnwrapMatcher<testing::PolymorphicMatcher<Impl>> {
-public:
-  using matcher = Impl;
+class DescribeHelper<testing::PolymorphicMatcher<Impl>> {
+ public:
+  static Impl const& Cast(testing::PolymorphicMatcher<Impl> const& m) { return m.impl(); }
 };
 
 }  // namespace
@@ -59,11 +59,11 @@ bool ComponentwiseMatcher<XMatcher, YMatcher, ZMatcher>::MatchAndExplain(
 template<typename XMatcher, typename YMatcher, typename ZMatcher>
 void ComponentwiseMatcher<XMatcher, YMatcher, ZMatcher>::DescribeTo(
     std::ostream* out) const {
-  UnwrapMatcher<XMatcher>::matcher(x_matcher_).DescribeTo(out);
+  DescribeHelper<XMatcher>::Cast(x_matcher_).DescribeTo(out);
   *out << " and ";
-  //Matcher<void*>(y_matcher_).DescribeTo(out);
+  DescribeHelper<YMatcher>::Cast(y_matcher_).DescribeTo(out);
   *out << " and ";
-  //Matcher<void*>(z_matcher_).DescribeTo(out);
+  DescribeHelper<ZMatcher>::Cast(z_matcher_).DescribeTo(out);
 }
 
 template<typename XMatcher, typename YMatcher, typename ZMatcher>

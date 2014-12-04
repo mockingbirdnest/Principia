@@ -20,7 +20,7 @@ class VanishesBeforeTest : public testing::Test {};
 
 TEST_F(VanishesBeforeTest, R3Element) {
   R3Element<double> r1({1.0 + 1.0E-12, 1.0E-10, 3.5});
-  EXPECT_THAT(r1, Componentwise(AlmostEquals(1.0, 4504),
+  EXPECT_THAT(r1, Componentwise(AlmostEquals(1.0, 45044),
                                 VanishesBefore(1.0, 450360),
                                 Eq(3.5)));
 }
