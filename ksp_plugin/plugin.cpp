@@ -4,6 +4,7 @@
 #include <cmath>
 #include <string>
 
+#include "base/unique_ptr_logging.hpp"
 #include "geometry/identity.hpp"
 #include "geometry/permutation.hpp"
 #include "geometry/affine_map.hpp"
