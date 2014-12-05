@@ -7,6 +7,8 @@
 #include "geometry/identity.hpp"
 #include "geometry/permutation.hpp"
 #include "geometry/affine_map.hpp"
+#include "glog/logging.h"
+#include "glog/stl_logging.h"
 
 namespace principia {
 namespace ksp_plugin {
