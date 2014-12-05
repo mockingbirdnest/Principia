@@ -57,7 +57,7 @@ void Plugin::CheckVesselInvariants(
 }
 
 void Plugin::CleanUpVessels() {
-  VLOG(1) << "Vessel cleanup";
+  VLOG(1) << "CleanUpVessels";
   // Remove the vessels which were not updated since last time.
   for (auto it = vessels_.cbegin(); it != vessels_.cend();) {
     // While we're going over the vessels, check invariants.
@@ -372,6 +372,9 @@ void Plugin::SetVesselStateOffset(
 }
 
 void Plugin::AdvanceTime(Instant const& t, Angle const& planetarium_rotation) {
+  VLOG(1) << "AdvanceTime" << '\n'
+          << "t: " << t << '\n'
+          << "planetarium_rotation: " << planetarium_rotation;
   CHECK(!initializing);
   CleanUpVessels();
   PreparePhysicsBubble(t);
@@ -574,6 +577,9 @@ Velocity<World> Plugin::VesselWorldVelocity(
 void Plugin::AddVesselToNextPhysicsBubble(
     GUID const& vessel_guid,
     std::vector<std::pair<PartID, std::unique_ptr<Part<World>>>> parts) {
+  VLOG(1) << "AddVesselToNextPhysicsBubble" << '\n'
+          << "vessel_guid: " << vessel_guid << '\n'
+          << "parts: " << parts;
   if (next_physics_bubble_ == nullptr) {
     next_physics_bubble_ = std::make_unique<PhysicsBubble>();
   }
@@ -654,7 +660,9 @@ void Plugin::RestartNextPhysicsBubble() {
 Vector<Acceleration, World> Plugin::IntrinsicAcceleration(
     Instant const& next_time,
     std::vector<std::pair<Part<World>*, Part<World>*>>* const common_parts) {
-  VLOG(1) << "IntrinsicAcceleration";
+  VLOG(1) << "IntrinsicAcceleration" << '\n'
+          << "next_time: " << next_time
+          << "common_parts" << common_parts;
   CHECK_NOTNULL(common_parts);
   CHECK(common_parts->empty());
   // Most of the time no parts explode.  We reserve accordingly.
@@ -685,14 +693,16 @@ Vector<Acceleration, World> Plugin::IntrinsicAcceleration(
     }
   }
   Vector<Acceleration, World> const result = weighted_sum / total_mass;
-  VLOG(1) << "returning " << result;
+  VLOG(1) << "returning " << result << '\n'
+          << "*common_parts: " << *common_parts;
   return result;
 }
 
 void Plugin::ShiftBubble(
     std::vector<std::pair<Part<World>*,
                           Part<World>*>> const* const common_parts) {
-  VLOG(1) << "ShiftBubble";
+  VLOG(1) << "ShiftBubble" << '\n'
+          << "common_parts: " << common_parts;
   CHECK_NOTNULL(common_parts);
   CHECK(next_physics_bubble_ != nullptr);
   std::vector<DegreesOfFreedom<World>> current_common_degrees_of_freedom;
@@ -762,7 +772,7 @@ void Plugin::ComputeNextPhysicsBubbleCentreOfMassWorldDegreesOfFreedom() {
   next_physics_bubble_->centre_of_mass =
       std::make_unique<DegreesOfFreedom<World>>(
           physics::Barycentre(part_degrees_of_freedom, part_masses));
-  VLOG(1) << "computed |next_physics_bubble_->centre_of_mass|: "
+  VLOG(1) << "computed |*next_physics_bubble_->centre_of_mass|: "
           << *next_physics_bubble_->centre_of_mass;
 }
 
