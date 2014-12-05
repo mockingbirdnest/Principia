@@ -111,6 +111,7 @@
   <ItemGroup>
     <ClInclude Include="not_null.hpp" />
     <ClInclude Include="not_null_body.hpp" />
+    <ClInclude Include="unique_ptr_logging.hpp" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="not_null_test.cpp" />
