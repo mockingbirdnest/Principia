@@ -826,7 +826,8 @@ void Plugin::ComputeNextPhysicsBubbleVesselOffsets() {
 }
 
 void Plugin::PreparePhysicsBubble(Instant const& next_time) {
-  VLOG(1) << "PreparePhysicsBubble";
+  VLOG(1) << "PreparePhysicsBubble" << '\n'
+          << "next_time: " << next_time;
   if (next_physics_bubble_ != nullptr) {
     ComputeNextPhysicsBubbleCentreOfMassWorldDegreesOfFreedom();
     ComputeNextPhysicsBubbleVesselOffsets();
