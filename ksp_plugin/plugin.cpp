@@ -632,7 +632,8 @@ Velocity<World> Plugin::BubbleVelocityOffset(
           current_physics_bubble_->centre_of_mass_trajectory->
               last().degrees_of_freedom().velocity -
           reference_body.prolongation().
-              last().degrees_of_freedom().velocity));
+              last().degrees_of_freedom().velocity)) -
+      current_physics_bubble_->centre_of_mass->velocity;
   VLOG(1) << "returning " << result;
   return result;
 }
