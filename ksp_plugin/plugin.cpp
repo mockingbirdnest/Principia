@@ -2,7 +2,10 @@
 
 #include <algorithm>
 #include <cmath>
+#include <map>
 #include <string>
+#include <utility>
+#include <vector>
 
 #include "base/unique_ptr_logging.hpp"
 #include "geometry/identity.hpp"
@@ -867,9 +870,9 @@ void Plugin::PreparePhysicsBubble(Instant const& next_time) {
           next_physics_bubble_->centre_of_mass_trajectory->
               clear_intrinsic_acceleration();
         }
-        // TODO(egg): this makes the intrinsic acceleration a step function.  Might
-        // something smoother be better?  We need to be careful not to be one step
-        // or half a step in the past though.
+        // TODO(egg): this makes the intrinsic acceleration a step function.
+        // Might something smoother be better?  We need to be careful not to be
+        // one step or half a step in the past though.
         next_physics_bubble_->centre_of_mass_trajectory->
               set_intrinsic_acceleration(
                   [barycentric_intrinsic_acceleration](Instant const& t) {
