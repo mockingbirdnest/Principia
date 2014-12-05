@@ -12,7 +12,6 @@
 #include "quantities/quantities.hpp"
 #include "testing_utilities/almost_equals.hpp"
 #include "testing_utilities/componentwise.hpp"
-#include "testing_utilities/numerics.hpp"
 #include "testing_utilities/vanishes_before.hpp"
 
 using principia::quantities::Length;
