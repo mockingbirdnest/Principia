@@ -47,10 +47,6 @@ template<typename Dimensions>
 bool VanishesBeforeMatcher<T>::MatchAndExplain(
     quantities::Quantity<Dimensions> const& actual,
     testing::MatchResultListener* listener) const {
-  // Check that the types are equality-comparable up to implicit casts.
-  if (actual == reference_) {
-    return true;
-  }
   std::int64_t const distance =
       ULPDistance(DoubleValue(reference_), DoubleValue(actual + reference_));
   bool const matches = min_ulps_ <= distance && distance <= max_ulps_;
@@ -64,10 +60,6 @@ template<typename T>
 bool VanishesBeforeMatcher<T>::MatchAndExplain(
     double const actual,
     testing::MatchResultListener* listener) const {
-  // Check that the types are equality-comparable up to implicit casts.
-  if (actual == reference_) {
-    return true;
-  }
   std::int64_t const distance = ULPDistance(reference_, actual + reference_);
   bool const matches = min_ulps_ <= distance && distance <= max_ulps_;
   if (!matches) {
