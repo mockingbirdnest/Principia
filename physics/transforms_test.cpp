@@ -244,6 +244,7 @@ TEST_F(TransformsTest, BodiesBarycentricRotating) {
        !it1.at_end() && !it2.at_end();
        ++it1, ++it2, ++i) {
     Length const l = i * SIUnit<Length>();
+    Speed const s = i * SIUnit<Speed>();
     DegreesOfFreedom<Through> const degrees_of_freedom1 =
         it1.degrees_of_freedom();
     DegreesOfFreedom<Through> const degrees_of_freedom2 =
@@ -257,33 +258,26 @@ TEST_F(TransformsTest, BodiesBarycentricRotating) {
                 Componentwise(AlmostEquals(-0.5 * sqrt(5.0) * l, 1, 2),
                               VanishesBefore(l, 0, 2),
                               VanishesBefore(l, 0, 1)));
-    //EXPECT_THAT(
-    //    AbsoluteError(degrees_of_freedom1.velocity,
-    //                  Velocity<Through>(
-    //                      {6.0 / sqrt(5.0) * i * SIUnit<Speed>(),
-    //                       0 * SIUnit<Speed>(),
-    //                       0 * SIUnit<Speed>()})),
-    //    Lt(560 * std::numeric_limits<double>::epsilon() * SIUnit<Speed>()));
-    //EXPECT_THAT(
-    //    AbsoluteError(degrees_of_freedom2.velocity,
-    //                  Velocity<Through>(
-    //                      {-2.0 / sqrt(5.0) * i * SIUnit<Speed>(),
-    //                       0 * SIUnit<Speed>(),
-    //                       0 * SIUnit<Speed>()})),
-    //    Lt(260 * std::numeric_limits<double>::epsilon() * SIUnit<Speed>()));
+    EXPECT_THAT(degrees_of_freedom1.velocity,
+                Componentwise(AlmostEquals(6.0 / sqrt(5.0) * s, 1, 7),
+                              VanishesBefore(s, 0, 34),
+                              VanishesBefore(s, 0, 2)));
+    EXPECT_THAT(degrees_of_freedom2.velocity,
+                Componentwise(AlmostEquals(-2.0 / sqrt(5.0) * s, 1, 14),
+                              VanishesBefore(s, 0, 16),
+                              VanishesBefore(s, 0, 1)));
 
     DegreesOfFreedom<Through> const barycentre_degrees_of_freedom =
         Barycentre<Through, Mass>({degrees_of_freedom1, degrees_of_freedom2},
                                   {body1_->mass(), body2_->mass()});
-    //EXPECT_THAT(AbsoluteError(barycentre_degrees_of_freedom.position -
-    //                              Position<Through>(),
-    //                          Displacement<Through>()),
-    //            Lt(40 * std::numeric_limits<double>::epsilon() *
-    //               SIUnit<Length>())) << i;
-    //EXPECT_THAT(AbsoluteError(barycentre_degrees_of_freedom.velocity,
-    //                          Velocity<Through>()),
-    //            Lt(240 * std::numeric_limits<double>::epsilon() *
-    //               SIUnit<Speed>())) << i;
+    EXPECT_THAT(barycentre_degrees_of_freedom.position - Position<Through>(),
+                Componentwise(VanishesBefore(l, 0, 1),
+                              VanishesBefore(l, 0, 2),
+                              VanishesBefore(l, 0, 1)));
+    EXPECT_THAT(barycentre_degrees_of_freedom.velocity,
+                Componentwise(VanishesBefore(s, 0, 14),
+                              VanishesBefore(s, 0, 7),
+                              VanishesBefore(s, 0, 1)));
 
     Length const length = (degrees_of_freedom1.position -
                            degrees_of_freedom2.position).Norm();
