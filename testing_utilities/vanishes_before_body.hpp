@@ -53,8 +53,11 @@ bool VanishesBeforeMatcher<T>::MatchAndExplain(
   }
   std::int64_t const distance =
       ULPDistance(DoubleValue(reference_), DoubleValue(actual + reference_));
-  *listener << "the numbers are separated by " << distance << " ulps";
-  return min_ulps_ <= distance && distance <= max_ulps_;
+  bool const matches = min_ulps_ <= distance && distance <= max_ulps_;
+  if (!matches) {
+    *listener << "the numbers are separated by " << distance << " ulps";
+  }
+  return matches;
 }
 
 template<typename T>
@@ -66,8 +69,11 @@ bool VanishesBeforeMatcher<T>::MatchAndExplain(
     return true;
   }
   std::int64_t const distance = ULPDistance(reference_, actual + reference_);
-  *listener << "the numbers are separated by " << distance << " ulps";
-  return min_ulps_ <= distance && distance <= max_ulps_;
+  bool const matches = min_ulps_ <= distance && distance <= max_ulps_;
+  if (!matches) {
+    *listener << "the numbers are separated by " << distance << " ulps";
+  }
+  return matches;
 }
 
 template<typename T>
