@@ -25,23 +25,20 @@ namespace {
 // templates around it.
 
 template<typename T>
-class MatcherParameterType {};
+class MatcherParameterType {
+ public:
+  using type = T;
+};
 
 template<typename T, template<typename> class U>
 class MatcherParameterType<U<T>> {
  public:
-  using type = T;
-};
-
-template<typename T, template<typename> class U, template<typename> class V>
-class MatcherParameterType<U<V<T>>> {
- public:
-  using type = T;
+  using type = typename MatcherParameterType<T>::type;
 };
 
 // And now a case that we *don't* want to peel away.  Yes, this smells a bit.
-template<typename T, template<typename> class U>
-class MatcherParameterType<U<Quantity<T>>> {
+template<typename T>
+class MatcherParameterType<Quantity<T>> {
  public:
   using type = Quantity<T>;
 };
