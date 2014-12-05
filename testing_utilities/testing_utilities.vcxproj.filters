@@ -62,6 +62,12 @@
     <ClInclude Include="vanishes_before_body.hpp">
       <Filter>Source Files</Filter>
     </ClInclude>
+    <ClInclude Include="componentwise.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="componentwise_body.hpp">
+      <Filter>Source Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="almost_equals_test.cpp">
@@ -80,6 +86,9 @@
       <Filter>Test Files</Filter>
     </ClCompile>
     <ClCompile Include="vanishes_before_test.cpp">
+      <Filter>Test Files</Filter>
+    </ClCompile>
+    <ClCompile Include="componentwise_test.cpp">
       <Filter>Test Files</Filter>
     </ClCompile>
   </ItemGroup>
