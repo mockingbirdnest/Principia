@@ -38,10 +38,10 @@ class CoverageAnalyser {
         Console.WriteLine("Covering principia::" + tested_unit +
                           " as well as extern \"C\" interface functions" +
                           " (of the form ::principia__Identifier)");
-        regex = new Regex("^principia::" + tested_unit);
+        regex = new Regex("^principia(::" + tested_unit + "|__)");
       } else {
         Console.WriteLine("Covering principia::" + tested_unit);
-        regex = new Regex("^principia(::" + tested_unit + "|__)");
+        regex = new Regex("^principia::" + tested_unit);
       }
       Regex test_file_regex = new Regex("_test.cpp$");
       var covered = new Dictionary<CodeLine, UInt32>();
