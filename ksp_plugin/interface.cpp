@@ -253,8 +253,8 @@ void principia__DeleteLineAndIterator(
 }
 
 XYZ principia__VesselWorldPosition(Plugin const* const plugin,
-                        char const* vessel_guid,
-                        XYZ const parent_world_position) {
+                                   char const* vessel_guid,
+                                   XYZ const parent_world_position) {
   Position<World> result = CHECK_NOTNULL(plugin)->VesselWorldPosition(
       vessel_guid,
       World::origin + Displacement<World>({parent_world_position.x * Metre,
@@ -269,7 +269,7 @@ XYZ principia__VesselWorldPosition(Plugin const* const plugin,
 XYZ principia__VesselWorldVelocity(Plugin const* const plugin,
                                    char const* vessel_guid,
                                    XYZ const parent_world_velocity,
-                        double const parent_rotation_period) {
+                                   double const parent_rotation_period) {
   Velocity<World> result = CHECK_NOTNULL(plugin)->VesselWorldVelocity(
       vessel_guid,
       Velocity<World>({parent_world_velocity.x * Metre / Second,
