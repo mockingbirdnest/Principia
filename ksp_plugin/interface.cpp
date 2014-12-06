@@ -58,7 +58,7 @@ void principia__LogInfo(char const* message) {
   LOG(INFO) << message;
 }
 
-void LogWarning(char const* message) {
+void principia__LogWarning(char const* message) {
   LOG(WARNING) << message;
 }
 

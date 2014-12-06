@@ -18,7 +18,7 @@ internal static class Log {
       [MarshalAs(UnmanagedType.LPStr)] String message);
 
   [DllImport(dllName           : PluginAdapter.kDllPath,
-             EntryPoint        = "LogWarning",
+             EntryPoint        = "principia__LogWarning",
              CallingConvention = CallingConvention.Cdecl)]
   internal static extern void Warning(
       [MarshalAs(UnmanagedType.LPStr)] String message);
