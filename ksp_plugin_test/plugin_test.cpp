@@ -412,10 +412,8 @@ TEST_F(PluginTest, VesselInsertionAtInitialization) {
   plugin_->SetVesselStateOffset(guid,
                                 satellite_initial_displacement_,
                                 satellite_initial_velocity_);
-  EXPECT_THAT(
-      AbsoluteError(plugin_->VesselDisplacementFromParent(guid),
-                    satellite_initial_displacement_),
-      Lt(std::numeric_limits<double>::epsilon() * AstronomicalUnit));
+  EXPECT_THAT(plugin_->VesselDisplacementFromParent(guid),
+              AlmostEquals(satellite_initial_displacement_, 7460));
   EXPECT_THAT(plugin_->VesselParentRelativeVelocity(guid),
               AlmostEquals(satellite_initial_velocity_, 3));
 }

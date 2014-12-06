@@ -19,6 +19,8 @@
     <ClInclude Include="algebra_body.hpp" />
     <ClInclude Include="almost_equals.hpp" />
     <ClInclude Include="almost_equals_body.hpp" />
+    <ClInclude Include="componentwise.hpp" />
+    <ClInclude Include="componentwise_body.hpp" />
     <ClInclude Include="explicit_operators.hpp" />
     <ClInclude Include="explicit_operators_body.hpp" />
     <ClInclude Include="numerical_analysis.hpp" />
@@ -29,13 +31,17 @@
     <ClInclude Include="solar_system.hpp" />
     <ClInclude Include="statistics.hpp" />
     <ClInclude Include="statistics_body.hpp" />
+    <ClInclude Include="vanishes_before.hpp" />
+    <ClInclude Include="vanishes_before_body.hpp" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="algebra_test.cpp" />
     <ClCompile Include="almost_equals_test.cpp" />
+    <ClCompile Include="componentwise_test.cpp" />
     <ClCompile Include="numerics_test.cpp" />
     <ClCompile Include="solar_system_test.cpp" />
     <ClCompile Include="statistics_test.cpp" />
+    <ClCompile Include="vanishes_before_test.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{2E28828E-8364-4962-A9FF-C20A72EB884C}</ProjectGuid>

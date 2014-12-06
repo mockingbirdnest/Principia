@@ -1,5 +1,7 @@
 #pragma once
 
+#include "testing_utilities/almost_equals.hpp"
+
 #include <float.h>
 #include <math.h>
 #include <stdint.h>
@@ -52,8 +54,11 @@ bool AlmostEqualsMatcher<T>::MatchAndExplain(
   }
   std::int64_t const distance = ULPDistance(DoubleValue(actual),
                                             DoubleValue(expected_));
-  *listener << "the numbers are separated by " << distance << " ULPs";
-  return min_ulps_ <= distance && distance <= max_ulps_;
+  bool const match =  min_ulps_ <= distance && distance <= max_ulps_;
+  if (!match) {
+    *listener << "the numbers are separated by " << distance << " ULPs";
+  }
+  return match;
 }
 
 template<typename T>
@@ -65,8 +70,11 @@ bool AlmostEqualsMatcher<T>::MatchAndExplain(
     return true;
   }
   std::int64_t const distance = ULPDistance(actual, expected_);
-  *listener << "the numbers are separated by " << distance << " ULPs";
-  return min_ulps_ <= distance && distance <= max_ulps_;
+  bool const match =  min_ulps_ <= distance && distance <= max_ulps_;
+  if (!match) {
+    *listener << "the numbers are separated by " << distance << " ULPs";
+  }
+  return match;
 }
 
 template<typename T>
@@ -131,10 +139,10 @@ bool AlmostEqualsMatcher<T>::MatchAndExplain(
               << " ULPs: "
               << (w_matches ? "" : "w, ") << (x_matches ? "" : "x, ")
               << (y_matches ? "" : "y, ") << (z_matches ? "" : "z, ");
+    *listener << "the components differ by the following numbers of ULPs: w: "
+              << w_distance << ", x: " << x_distance
+              << ", y: " << y_distance << ", z: " << z_distance;
   }
-  *listener << "the components differ by the following numbers of ULPs: w: "
-            << w_distance << ", x: " << x_distance
-            << ", y: " << y_distance << ", z: " << z_distance;
   return matches;
 }
 

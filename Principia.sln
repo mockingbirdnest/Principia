@@ -55,6 +55,13 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Scripts", "Scripts", "{B0F4
 	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "coverage_analyser", "coverage_analyser\coverage_analyser.csproj", "{06E78A3D-AAA0-4CD9-8F23-B5BBBBE6F14F}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Setup Files", "Setup Files", "{E3536C51-3B98-4D50-8973-A72D03042FCF}"
+	ProjectSection(SolutionItems) = preProject
+		documentation\Setup Files\chromium.patch = documentation\Setup Files\chromium.patch
+		documentation\Setup Files\chromium_sparse_checkout.txt = documentation\Setup Files\chromium_sparse_checkout.txt
+		documentation\Setup Files\glog.patch = documentation\Setup Files\glog.patch
+		documentation\Setup Files\gmock.patch = documentation\Setup Files\gmock.patch
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
