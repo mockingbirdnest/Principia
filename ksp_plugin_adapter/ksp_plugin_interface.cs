@@ -81,9 +81,10 @@ public partial class PluginAdapter : UnityEngine.MonoBehaviour {
 
   [DllImport(dllName           : kDllPath,
              CallingConvention = CallingConvention.Cdecl)]
-  private static extern void AdvanceTime(IntPtr plugin, 
-                                         double t,
-                                         double planetarium_rotation);
+  private static extern void principia__AdvanceTime(
+      IntPtr plugin, 
+      double t,
+      double planetarium_rotation);
 
   [DllImport(dllName           : kDllPath,
              CallingConvention = CallingConvention.Cdecl)]

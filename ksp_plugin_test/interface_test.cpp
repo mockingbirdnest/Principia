@@ -157,7 +157,7 @@ TEST_F(InterfaceTest, AdvanceTime) {
   EXPECT_CALL(*plugin_,
               AdvanceTime(Instant(kTime * SIUnit<Time>()),
                           kPlanetariumRotation * Degree));
-  AdvanceTime(plugin_.get(), kTime, kPlanetariumRotation);
+  principia__AdvanceTime(plugin_.get(), kTime, kPlanetariumRotation);
 }
 
 TEST_F(InterfaceTest, VesselDisplacementFromParent) {

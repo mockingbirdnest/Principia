@@ -147,9 +147,9 @@ void CDECL principia__SetVesselStateOffset(Plugin* const plugin,
                                            XYZ const from_parent_velocity);
 
 extern "C" DLLEXPORT
-void CDECL AdvanceTime(Plugin* const plugin,
-                       double const t,
-                       double const planetarium_rotation);
+void CDECL principia__AdvanceTime(Plugin* const plugin,
+                                  double const t,
+                                  double const planetarium_rotation);
 
 // Calls |plugin->VesselDisplacementFromParent| with the arguments given.
 // |plugin| must not be null.  No transfer of ownership.

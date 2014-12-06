@@ -146,9 +146,9 @@ void principia__SetVesselStateOffset(Plugin* const plugin,
                           from_parent_velocity.z * (Metre / Second)}));
 }
 
-void AdvanceTime(Plugin* const plugin,
-                 double const t,
-                 double const planetarium_rotation) {
+void principia__AdvanceTime(Plugin* const plugin,
+                            double const t,
+                            double const planetarium_rotation) {
   CHECK_NOTNULL(plugin)->AdvanceTime(Instant(t * Second),
                                      planetarium_rotation * Degree);
 }

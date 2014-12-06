@@ -105,7 +105,9 @@ public partial class PluginAdapter : UnityEngine.MonoBehaviour {
   private void FixedUpdate() {
     if (PluginRunning()) {
       double universal_time = Planetarium.GetUniversalTime();
-      AdvanceTime(plugin_, universal_time, Planetarium.InverseRotAngle);
+      principia__AdvanceTime(plugin_,
+                             universal_time,
+                             Planetarium.InverseRotAngle);
       BodyProcessor update_body = body => {
         principia__UpdateCelestialHierarchy(
             plugin_,
