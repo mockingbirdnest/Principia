@@ -696,7 +696,7 @@ Vector<Acceleration, World> Plugin::IntrinsicAcceleration(
       Mass const mass = (next_part->mass + current_part->mass) / 2.0;
       weighted_sum += ((next_part->degrees_of_freedom.velocity -
                         (current_part->degrees_of_freedom.velocity +
-                         current_physics_bubble_->velocity_correction)) /
+                         *current_physics_bubble_->velocity_correction)) /
                            (next_time - current_time_) -
                        current_part->expected_ksp_gravity) * mass;
       total_mass += mass;
