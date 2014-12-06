@@ -33,8 +33,15 @@ class CoverageAnalyser {
       Regex file_regex = new Regex(@"^(.+?)(_tests?)+.exe.coverage");
       Match file_match = file_regex.Match(file.Name);
       string tested_unit = file_match.Groups[1].ToString();
-      Console.WriteLine("Covering principia::" + tested_unit);
-      Regex regex = new Regex("^principia(::|__)" + tested_unit);
+      Regex regex;
+      if (tested_unit == "ksp_plugin") {
+        Console.WriteLine("Covering principia::" + tested_unit +
+                          " as well as extern \"C\" interface functions" +
+                          " (of the form ::principia__Identifier)");
+        regex = new Regex("^principia::" + tested_unit);
+      } else {
+        regex = new Regex("^principia(::" + tested_unit + "|__)");
+      }
       Regex test_file_regex = new Regex("_test.cpp$");
       var covered = new Dictionary<CodeLine, UInt32>();
       using (CoverageInfo info = CoverageInfo.CreateFromFile(file.FullName)) {
