@@ -465,7 +465,7 @@ public partial class PluginAdapter : UnityEngine.MonoBehaviour {
     rendered_trajectory_.vectorObject.renderer.castShadows = false;
     rendered_trajectory_.vectorObject.renderer.receiveShadows = false;
     rendered_trajectory_.layer = 31;
-    plugin_ = NewPlugin(Planetarium.GetUniversalTime(),
+    plugin_ = principia__NewPlugin(Planetarium.GetUniversalTime(),
                         Planetarium.fetch.Sun.flightGlobalsIndex,
                         Planetarium.fetch.Sun.gravParameter,
                         Planetarium.InverseRotAngle);

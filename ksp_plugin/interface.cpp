@@ -46,7 +46,7 @@ void principia__InitGoogleLogging() {
     FLAGS_v = 1;
     // Buffer severities <= |INFO|, i.e., don't buffer.
     FLAGS_logbuflevel = google::INFO - 1;
-    google::principia__InitGoogleLogging("Principia");
+    google::InitGoogleLogging("Principia");
     LOG(INFO) << "Initialized Google logging for Principia";
     LOG(INFO) << "Principia version " << principia::base::kVersion
               << " built on " << principia::base::kBuildDate;
@@ -70,10 +70,10 @@ void principia__LogFatal(char const* message) {
   LOG(FATAL) << message;
 }
 
-Plugin* NewPlugin(double const initial_time,
-                  int const sun_index,
-                  double const sun_gravitational_parameter,
-                  double const planetarium_rotation_in_degrees) {
+Plugin* principia__NewPlugin(double const initial_time,
+                             int const sun_index,
+                             double const sun_gravitational_parameter,
+                             double const planetarium_rotation_in_degrees) {
   LOG(INFO) << "Constructing Principia plugin";
   std::unique_ptr<Plugin> result = std::make_unique<Plugin>(
       Instant(initial_time * Second),

@@ -33,7 +33,7 @@ public partial class PluginAdapter : UnityEngine.MonoBehaviour {
 
   [DllImport(dllName           : kDllPath,
              CallingConvention = CallingConvention.Cdecl)]
-  private static extern IntPtr NewPlugin(
+  private static extern IntPtr principia__NewPlugin(
       double initial_time,
       int sun_index,
       double sun_gravitational_parameter,

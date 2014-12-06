@@ -97,10 +97,11 @@ void CDECL principia__LogFatal(char const* message);
 // Returns a pointer to a plugin constructed with the arguments given.
 // The caller takes ownership of the result.
 extern "C" DLLEXPORT
-Plugin* CDECL NewPlugin(double const initial_time,
-                        int const sun_index,
-                        double const sun_gravitational_parameter,
-                        double const planetarium_rotation_in_degrees);
+Plugin* CDECL principia__NewPlugin(
+    double const initial_time,
+    int const sun_index,
+    double const sun_gravitational_parameter,
+    double const planetarium_rotation_in_degrees);
 
 // Deletes and nulls |*plugin|.
 // |plugin| must not be null.  No transfer of ownership of |*plugin|, takes
