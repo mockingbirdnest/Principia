@@ -126,9 +126,9 @@ void principia__EndInitialization(Plugin* const plugin) {
   CHECK_NOTNULL(plugin)->EndInitialization();
 }
 
-bool InsertOrKeepVessel(Plugin* const plugin,
-                        char const* vessel_guid,
-                        int const parent_index) {
+bool principia__InsertOrKeepVessel(Plugin* const plugin,
+                                   char const* vessel_guid,
+                                   int const parent_index) {
   return CHECK_NOTNULL(plugin)->InsertOrKeepVessel(vessel_guid, parent_index);
 }
 

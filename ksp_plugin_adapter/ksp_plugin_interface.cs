@@ -66,7 +66,7 @@ public partial class PluginAdapter : UnityEngine.MonoBehaviour {
 
   [DllImport(dllName           : kDllPath,
              CallingConvention = CallingConvention.Cdecl)]
-  private static extern bool InsertOrKeepVessel(
+  private static extern bool principia__InsertOrKeepVessel(
       IntPtr plugin,
       [MarshalAs(UnmanagedType.LPStr)] String vessel_guid,
       int parent_index);

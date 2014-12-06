@@ -64,7 +64,7 @@ TEST_F(InterfaceDeathTest, Errors) {
     principia__UpdateCelestialHierarchy(plugin, kCelestialIndex, kParentIndex);
   }, "plugin.*non NULL");
   EXPECT_DEATH({
-    InsertOrKeepVessel(plugin, kVesselGUID, kParentIndex);
+    principia__InsertOrKeepVessel(plugin, kVesselGUID, kParentIndex);
   }, "plugin.*non NULL");
   EXPECT_DEATH({
     SetVesselStateOffset(plugin,
@@ -132,7 +132,7 @@ TEST_F(InterfaceTest, EndInitialization) {
 TEST_F(InterfaceTest, InsertOrKeepVessel) {
   EXPECT_CALL(*plugin_,
               InsertOrKeepVessel(kVesselGUID, kParentIndex));
-  InsertOrKeepVessel(plugin_.get(), kVesselGUID, kParentIndex);
+  principia__InsertOrKeepVessel(plugin_.get(), kVesselGUID, kParentIndex);
 }
 
 TEST_F(InterfaceTest, SetVesselStateOffset) {

@@ -134,9 +134,9 @@ void CDECL principia__EndInitialization(Plugin* const plugin);
 // Calls |plugin->InsertOrKeepVessel| with the arguments given.
 // |plugin| must not be null.  No transfer of ownership.
 extern "C" DLLEXPORT
-bool CDECL InsertOrKeepVessel(Plugin* const plugin,
-                              char const* vessel_guid,
-                              int const parent_index);
+bool CDECL principia__InsertOrKeepVessel(Plugin* const plugin,
+                                         char const* vessel_guid,
+                                         int const parent_index);
 
 // Calls |plugin->SetVesselStateOffset| with the arguments given.
 // |plugin| must not be null.  No transfer of ownership.

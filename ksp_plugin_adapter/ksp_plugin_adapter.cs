@@ -146,7 +146,7 @@ public partial class PluginAdapter : UnityEngine.MonoBehaviour {
       };
       ApplyToBodyTree(update_body);
       VesselProcessor update_vessel = vessel => {
-        bool inserted = InsertOrKeepVessel(
+        bool inserted = principia__InsertOrKeepVessel(
             plugin_,
             vessel.id.ToString(),
             vessel.orbit.referenceBody.flightGlobalsIndex);
@@ -488,7 +488,7 @@ public partial class PluginAdapter : UnityEngine.MonoBehaviour {
     VesselProcessor insert_vessel = vessel => {
       Log.Info("Inserting " + vessel.name + "...");
       bool inserted =
-          InsertOrKeepVessel(plugin_,
+          principia__InsertOrKeepVessel(plugin_,
                              vessel.id.ToString(),
                              vessel.orbit.referenceBody.flightGlobalsIndex);
       if (!inserted) {
