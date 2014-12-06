@@ -194,7 +194,7 @@ BarycentricRotatingFrame const* CDECL principia__NewBarycentricRotatingFrame(
 // |frame| must not be null.  No transfer of ownership of |*frame|, takes
 // ownership of |**frame|.
 extern "C" DLLEXPORT
-void CDECL DeleteRenderingFrame(RenderingFrame const** const frame);
+void CDECL principia__DeleteRenderingFrame(RenderingFrame const** const frame);
 
 // Returns the result of |plugin->RenderedVesselTrajectory| called with the
 // arguments given, together with an iterator to its beginning.

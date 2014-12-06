@@ -204,7 +204,7 @@ BarycentricRotatingFrame const* principia__NewBarycentricRotatingFrame(
       NewBarycentricRotatingFrame(primary_index, secondary_index).release();
 }
 
-void DeleteRenderingFrame(RenderingFrame const** const frame) {
+void principia__DeleteRenderingFrame(RenderingFrame const** const frame) {
   TakeOwnership(frame);
 }
 

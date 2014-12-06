@@ -241,7 +241,7 @@ public partial class PluginAdapter : UnityEngine.MonoBehaviour {
 
   private void Cleanup() {
     principia__DeletePlugin(ref plugin_);
-    DeleteRenderingFrame(ref rendering_frame_);
+    principia__DeleteRenderingFrame(ref rendering_frame_);
     if (rendered_trajectory_ != null) {
       Vector.DestroyLine(ref rendered_trajectory_);
     }
@@ -298,7 +298,7 @@ public partial class PluginAdapter : UnityEngine.MonoBehaviour {
       }
       UnityEngine.GUILayout.EndHorizontal();
       if (changed_reference_frame && PluginRunning()) {
-        DeleteRenderingFrame(ref rendering_frame_);
+        principia__DeleteRenderingFrame(ref rendering_frame_);
         if (first_selected_celestial_ == second_selected_celestial_) {
           rendering_frame_ = principia__NewBodyCentredNonRotatingFrame(
                                  plugin_,
