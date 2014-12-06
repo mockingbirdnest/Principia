@@ -247,7 +247,8 @@ bool principia__AtEnd(LineAndIterator* const line_and_iterator) {
   return line_and_iterator->it == line_and_iterator->rendered_trajectory.end();
 }
 
-void DeleteLineAndIterator(LineAndIterator const** const line_and_iterator) {
+void principia__DeleteLineAndIterator(
+    LineAndIterator const** const line_and_iterator) {
   TakeOwnership(line_and_iterator);
 }
 

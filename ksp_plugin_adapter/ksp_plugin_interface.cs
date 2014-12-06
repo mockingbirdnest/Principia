@@ -149,7 +149,7 @@ public partial class PluginAdapter : UnityEngine.MonoBehaviour {
 
   [DllImport(dllName           : kDllPath,
              CallingConvention = CallingConvention.Cdecl)]
-  private static extern void DeleteLineAndIterator(ref IntPtr line);
+  private static extern void principia__DeleteLineAndIterator(ref IntPtr line);
 
   [DllImport(dllName           : kDllPath,
              CallingConvention = CallingConvention.Cdecl)]

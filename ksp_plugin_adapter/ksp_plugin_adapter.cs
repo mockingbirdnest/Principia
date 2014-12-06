@@ -225,7 +225,7 @@ public partial class PluginAdapter : UnityEngine.MonoBehaviour {
                 ScaledSpace.LocalToScaledSpace((Vector3d)segment.end);
           }
         } finally {
-          DeleteLineAndIterator(ref trajectory_iterator);
+          principia__DeleteLineAndIterator(ref trajectory_iterator);
         }
         if (MapView.Draw3DLines) {
           Vector.DrawLine3D(rendered_trajectory_);
