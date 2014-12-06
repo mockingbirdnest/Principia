@@ -67,10 +67,10 @@ TEST_F(InterfaceDeathTest, Errors) {
     principia__InsertOrKeepVessel(plugin, kVesselGUID, kParentIndex);
   }, "plugin.*non NULL");
   EXPECT_DEATH({
-    SetVesselStateOffset(plugin,
-                         kVesselGUID,
-                         kParentPosition,
-                         kParentVelocity);
+    principia__SetVesselStateOffset(plugin,
+                                    kVesselGUID,
+                                    kParentPosition,
+                                    kParentVelocity);
   }, "plugin.*non NULL");
   EXPECT_DEATH({
     VesselDisplacementFromParent(plugin, kVesselGUID);
@@ -147,10 +147,10 @@ TEST_F(InterfaceTest, SetVesselStateOffset) {
                       {kParentVelocity.x * SIUnit<Speed>(),
                        kParentVelocity.y * SIUnit<Speed>(),
                        kParentVelocity.z * SIUnit<Speed>()})));
-  SetVesselStateOffset(plugin_.get(),
-                       kVesselGUID,
-                       kParentPosition,
-                       kParentVelocity);
+  principia__SetVesselStateOffset(plugin_.get(),
+                                  kVesselGUID,
+                                  kParentPosition,
+                                  kParentVelocity);
 }
 
 TEST_F(InterfaceTest, AdvanceTime) {

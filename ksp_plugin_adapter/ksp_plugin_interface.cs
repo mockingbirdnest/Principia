@@ -73,7 +73,7 @@ public partial class PluginAdapter : UnityEngine.MonoBehaviour {
 
   [DllImport(dllName           : kDllPath,
              CallingConvention = CallingConvention.Cdecl)]
-  private static extern void SetVesselStateOffset(
+  private static extern void principia__SetVesselStateOffset(
       IntPtr plugin,
       [MarshalAs(UnmanagedType.LPStr)] String vessel_guid,
       XYZ from_parent_position,

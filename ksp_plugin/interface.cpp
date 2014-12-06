@@ -132,10 +132,10 @@ bool principia__InsertOrKeepVessel(Plugin* const plugin,
   return CHECK_NOTNULL(plugin)->InsertOrKeepVessel(vessel_guid, parent_index);
 }
 
-void SetVesselStateOffset(Plugin* const plugin,
-                          char const* vessel_guid,
-                          XYZ const from_parent_position,
-                          XYZ const from_parent_velocity) {
+void principia__SetVesselStateOffset(Plugin* const plugin,
+                                     char const* vessel_guid,
+                                     XYZ const from_parent_position,
+                                     XYZ const from_parent_velocity) {
   CHECK_NOTNULL(plugin)->SetVesselStateOffset(
       vessel_guid,
       Displacement<AliceSun>({from_parent_position.x * Metre,

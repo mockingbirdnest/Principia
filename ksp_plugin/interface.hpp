@@ -141,10 +141,10 @@ bool CDECL principia__InsertOrKeepVessel(Plugin* const plugin,
 // Calls |plugin->SetVesselStateOffset| with the arguments given.
 // |plugin| must not be null.  No transfer of ownership.
 extern "C" DLLEXPORT
-void CDECL SetVesselStateOffset(Plugin* const plugin,
-                                char const* vessel_guid,
-                                XYZ const from_parent_position,
-                                XYZ const from_parent_velocity);
+void CDECL principia__SetVesselStateOffset(Plugin* const plugin,
+                                           char const* vessel_guid,
+                                           XYZ const from_parent_position,
+                                           XYZ const from_parent_velocity);
 
 extern "C" DLLEXPORT
 void CDECL AdvanceTime(Plugin* const plugin,

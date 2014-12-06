@@ -151,10 +151,10 @@ public partial class PluginAdapter : UnityEngine.MonoBehaviour {
             vessel.id.ToString(),
             vessel.orbit.referenceBody.flightGlobalsIndex);
         if (inserted) {
-          SetVesselStateOffset(plugin_,
-                               vessel.id.ToString(),
-                               (XYZ)vessel.orbit.pos,
-                               (XYZ)vessel.orbit.vel);
+          principia__SetVesselStateOffset(plugin_,
+                                          vessel.id.ToString(),
+                                          (XYZ)vessel.orbit.pos,
+                                          (XYZ)vessel.orbit.vel);
         }
         Vector3d position =
             (Vector3d)VesselDisplacementFromParent(plugin_,
@@ -494,10 +494,10 @@ public partial class PluginAdapter : UnityEngine.MonoBehaviour {
       if (!inserted) {
         Log.Fatal("Plugin initialization: vessel not inserted");
       } else {
-        SetVesselStateOffset(plugin_,
-                             vessel.id.ToString(),
-                             (XYZ)vessel.orbit.pos,
-                             (XYZ)vessel.orbit.vel);
+        principia__SetVesselStateOffset(plugin_,
+                                        vessel.id.ToString(),
+                                        (XYZ)vessel.orbit.pos,
+                                        (XYZ)vessel.orbit.vel);
       }
     };
     ApplyToVesselsInSpace(insert_vessel);
