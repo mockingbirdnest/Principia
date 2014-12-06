@@ -66,7 +66,7 @@ void principia__LogError(char const* message) {
   LOG(ERROR) << message;
 }
 
-void LogFatal(char const* message) {
+void principia__LogFatal(char const* message) {
   LOG(FATAL) << message;
 }
 

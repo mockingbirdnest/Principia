@@ -30,7 +30,7 @@ internal static class Log {
       [MarshalAs(UnmanagedType.LPStr)] String message);
 
   [DllImport(dllName           : PluginAdapter.kDllPath,
-             EntryPoint        = "LogFatal",
+             EntryPoint        = "principia__LogFatal",
              CallingConvention = CallingConvention.Cdecl)]
   internal static extern void Fatal(
       [MarshalAs(UnmanagedType.LPStr)] String message);

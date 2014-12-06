@@ -92,7 +92,7 @@ void CDECL principia__LogWarning(char const* message);
 extern "C" DLLEXPORT
 void CDECL principia__LogError(char const* message);
 extern "C" DLLEXPORT
-void CDECL LogFatal(char const* message);
+void CDECL principia__LogFatal(char const* message);
 
 // Returns a pointer to a plugin constructed with the arguments given.
 // The caller takes ownership of the result.
