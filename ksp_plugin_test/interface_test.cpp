@@ -89,13 +89,13 @@ TEST_F(InterfaceDeathTest, Errors) {
   }, "plugin.*non NULL");
 }
 
-TEST_F(InterfaceTest, principia__DeletePluginSuccess) {
+TEST_F(InterfaceTest, DeletePluginSuccess) {
   Plugin const* plugin = plugin_.release();
   principia__DeletePlugin(&plugin);
   EXPECT_THAT(plugin, IsNull());
 }
 
-TEST_F(InterfaceTest, principia__InsertCelestial) {
+TEST_F(InterfaceTest, InsertCelestial) {
   EXPECT_CALL(*plugin_,
               InsertCelestial(
                   kCelestialIndex,
@@ -167,7 +167,8 @@ TEST_F(InterfaceTest, VesselDisplacementFromParent) {
                            {kParentPosition.x * SIUnit<Length>(),
                             kParentPosition.y * SIUnit<Length>(),
                             kParentPosition.z * SIUnit<Length>()})));
-  XYZ const result = principia__VesselDisplacementFromParent(plugin_.get(), kVesselGUID);
+  XYZ const result = principia__VesselDisplacementFromParent(plugin_.get(),
+                                                             kVesselGUID);
   EXPECT_THAT(result, Eq(kParentPosition));
 }
 
@@ -178,7 +179,8 @@ TEST_F(InterfaceTest, VesselParentRelativeVelocity) {
                            {kParentVelocity.x * SIUnit<Speed>(),
                             kParentVelocity.y * SIUnit<Speed>(),
                             kParentVelocity.z * SIUnit<Speed>()})));
-  XYZ const result = principia__VesselParentRelativeVelocity(plugin_.get(), kVesselGUID);
+  XYZ const result = principia__VesselParentRelativeVelocity(plugin_.get(),
+                                                             kVesselGUID);
   EXPECT_THAT(result, Eq(kParentVelocity));
 }
 
@@ -190,8 +192,8 @@ TEST_F(InterfaceTest, CelestialDisplacementFromParent) {
                             kParentPosition.y * SIUnit<Length>(),
                             kParentPosition.z * SIUnit<Length>()})));
   XYZ const result = principia__CelestialDisplacementFromParent(
-      plugin_.get(),
-      kCelestialIndex);
+                         plugin_.get(),
+                         kCelestialIndex);
   EXPECT_THAT(result, Eq(kParentPosition));
 }
 
