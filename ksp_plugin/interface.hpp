@@ -160,8 +160,8 @@ XYZ CDECL principia__VesselDisplacementFromParent(Plugin const* const plugin,
 // Calls |plugin->VesselParentRelativeVelocity| with the arguments given.
 // |plugin| must not be null.  No transfer of ownership.
 extern "C" DLLEXPORT
-XYZ CDECL VesselParentRelativeVelocity(Plugin const* const plugin,
-                                       char const* vessel_guid);
+XYZ CDECL principia__VesselParentRelativeVelocity(Plugin const* const plugin,
+                                                  char const* vessel_guid);
 
 // Calls |plugin->CelestialDisplacementFromParent| with the arguments given.
 // |plugin| must not be null.  No transfer of ownership.

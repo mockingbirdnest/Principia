@@ -161,8 +161,8 @@ XYZ principia__VesselDisplacementFromParent(Plugin const* const plugin,
   return {result.x / Metre, result.y / Metre, result.z / Metre};
 }
 
-XYZ VesselParentRelativeVelocity(Plugin const* const plugin,
-                                 char const* vessel_guid) {
+XYZ principia__VesselParentRelativeVelocity(Plugin const* const plugin,
+                                            char const* vessel_guid) {
   R3Element<Speed> const result =
       CHECK_NOTNULL(plugin)->
           VesselParentRelativeVelocity(vessel_guid).coordinates();

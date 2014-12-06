@@ -163,8 +163,9 @@ public partial class PluginAdapter : UnityEngine.MonoBehaviour {
                 plugin_,
                 vessel.id.ToString());
         Vector3d velocity =
-            (Vector3d)VesselParentRelativeVelocity(plugin_,
-                                                   vessel.id.ToString());
+            (Vector3d)principia__VesselParentRelativeVelocity(
+                plugin_,
+                vessel.id.ToString());
         // NOTE(egg): Here we work around a KSP bug: |Orbit.pos| for a vessel
         // corresponds to the position one timestep in the future.  This is not
         // the case for celestial bodies.
@@ -414,7 +415,7 @@ public partial class PluginAdapter : UnityEngine.MonoBehaviour {
                  plugin_,
                  active_vessel.id.ToString()));
     Log.Info("Principia orbit.vel : " + 
-             (Vector3d)VesselParentRelativeVelocity(
+             (Vector3d)principia__VesselParentRelativeVelocity(
                  plugin_,
                  active_vessel.id.ToString()));
     Log.Info("Kraken : " + Krakensbane.GetFrameVelocity());
