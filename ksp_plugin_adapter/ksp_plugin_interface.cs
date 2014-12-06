@@ -112,7 +112,7 @@ public partial class PluginAdapter : UnityEngine.MonoBehaviour {
 
   [DllImport(dllName           : kDllPath,
              CallingConvention = CallingConvention.Cdecl)]
-  private static extern IntPtr NewBodyCentredNonRotatingFrame(
+  private static extern IntPtr principia__NewBodyCentredNonRotatingFrame(
       IntPtr plugin,
       int reference_body_index);
 

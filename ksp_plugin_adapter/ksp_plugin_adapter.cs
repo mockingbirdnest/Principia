@@ -300,7 +300,7 @@ public partial class PluginAdapter : UnityEngine.MonoBehaviour {
       if (changed_reference_frame && PluginRunning()) {
         DeleteRenderingFrame(ref rendering_frame_);
         if (first_selected_celestial_ == second_selected_celestial_) {
-          rendering_frame_ = NewBodyCentredNonRotatingFrame(
+          rendering_frame_ = principia__NewBodyCentredNonRotatingFrame(
                                  plugin_,
                                  first_selected_celestial_);
         } else {
@@ -490,7 +490,8 @@ public partial class PluginAdapter : UnityEngine.MonoBehaviour {
     first_selected_celestial_ = 0;
     second_selected_celestial_ = 0;
     rendering_frame_ =
-        NewBodyCentredNonRotatingFrame(plugin_, first_selected_celestial_);
+        principia__NewBodyCentredNonRotatingFrame(plugin_,
+                                                  first_selected_celestial_);
     VesselProcessor insert_vessel = vessel => {
       Log.Info("Inserting " + vessel.name + "...");
       bool inserted =

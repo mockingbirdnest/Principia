@@ -85,7 +85,7 @@ TEST_F(InterfaceDeathTest, Errors) {
     principia__CelestialParentRelativeVelocity(plugin, kCelestialIndex);
   }, "plugin.*non NULL");
   EXPECT_DEATH({
-    NewBodyCentredNonRotatingFrame(plugin, kCelestialIndex);
+    principia__NewBodyCentredNonRotatingFrame(plugin, kCelestialIndex);
   }, "plugin.*non NULL");
 }
 

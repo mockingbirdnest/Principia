@@ -189,7 +189,7 @@ XYZ principia__CelestialParentRelativeVelocity(Plugin const* const plugin,
           result.z / (Metre / Second)};
 }
 
-BodyCentredNonRotatingFrame const* NewBodyCentredNonRotatingFrame(
+BodyCentredNonRotatingFrame const* principia__NewBodyCentredNonRotatingFrame(
     Plugin const* const plugin,
     int const reference_body_index) {
   return CHECK_NOTNULL(plugin)->

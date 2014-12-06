@@ -178,9 +178,9 @@ XYZ CDECL principia__CelestialParentRelativeVelocity(Plugin const* const plugin,
 // Calls |plugin->NewBodyCentredNonRotatingFrame| with the arguments given.
 // |plugin| must not be null.  No transfer of ownership.
 extern "C" DLLEXPORT
-BodyCentredNonRotatingFrame const* CDECL NewBodyCentredNonRotatingFrame(
-    Plugin const* const plugin,
-    int const reference_body_index);
+BodyCentredNonRotatingFrame const* CDECL
+principia__NewBodyCentredNonRotatingFrame(Plugin const* const plugin,
+                                          int const reference_body_index);
 
 // Calls |plugin->NewBarycentricRotatingFrame| with the arguments given.
 // |plugin| must not be null.  No transfer of ownership.
