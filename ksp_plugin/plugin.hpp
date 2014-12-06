@@ -220,9 +220,10 @@ class Plugin {
       GUID const& vessel_guid,
       std::vector<std::pair<PartID, std::unique_ptr<Part<World>>>> parts);
 
-  Displacement<World> BubbleDisplacementOffset(
+  Displacement<World> BubbleDisplacementCorrection(
       Position<World> const& sun_world_position) const;
-  Velocity<World> BubbleVelocityOffset(Index const reference_body_index) const;
+  Velocity<World> BubbleVelocityCorrection(
+      Index const reference_body_index) const;
 
  private:
   using GUIDToOwnedVessel = std::map<GUID, std::unique_ptr<Vessel>>;
@@ -335,7 +336,7 @@ class Plugin {
   struct PhysicsBubble {
     std::map<Vessel* const, std::vector<Part<World>* const>> vessels;
     std::map<PartID, std::unique_ptr<Part<World>> const> parts;
-    // TODO(egg): the following three should be |std::optional| when that
+    // TODO(egg): the following six should be |std::optional| when that
     // becomes a thing.
     std::unique_ptr<DegreesOfFreedom<World>> centre_of_mass;
     std::unique_ptr<Trajectory<Barycentric>> centre_of_mass_trajectory;
@@ -345,6 +346,8 @@ class Plugin {
     std::unique_ptr<
         std::map<Vessel const* const,
                  Velocity<Barycentric>>> velocities_from_centre_of_mass;
+    std::unique_ptr<Displacement<World>> displacement_correction;
+    std::unique_ptr<Velocity<World>> velocity_correction;
   };
 
   std::unique_ptr<PhysicsBubble> current_physics_bubble_;

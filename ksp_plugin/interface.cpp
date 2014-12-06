@@ -312,10 +312,10 @@ void AddVesselToNextPhysicsBubble(
                                                       std::move(vessel_parts));
 }
 
-XYZ BubbleDisplacementOffset(Plugin const* const plugin,
-                             XYZ const sun_position) {
+XYZ BubbleDisplacementCorrection(Plugin const* const plugin,
+                                 XYZ const sun_position) {
   Displacement<World> const result =
-      CHECK_NOTNULL(plugin)->BubbleDisplacementOffset(
+      CHECK_NOTNULL(plugin)->BubbleDisplacementCorrection(
           World::origin +
           Displacement<World>(
               {sun_position.x * Metre,
@@ -326,10 +326,10 @@ XYZ BubbleDisplacementOffset(Plugin const* const plugin,
              result.coordinates().z / Metre};
 }
 
-XYZ BubbleVelocityOffset(Plugin const* const plugin,
-                         int const reference_body_index) {
+XYZ BubbleVelocityCorrection(Plugin const* const plugin,
+                             int const reference_body_index) {
   Velocity<World> const result =
-      CHECK_NOTNULL(plugin)->BubbleVelocityOffset(reference_body_index);
+      CHECK_NOTNULL(plugin)->BubbleVelocityCorrection(reference_body_index);
   return XYZ{result.coordinates().x / (Metre / Second),
              result.coordinates().y / (Metre / Second),
              result.coordinates().z / (Metre / Second)};

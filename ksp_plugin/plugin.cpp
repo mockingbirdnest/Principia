@@ -607,38 +607,42 @@ void Plugin::AddVesselToNextPhysicsBubble(
   }
 }
 
-Displacement<World> Plugin::BubbleDisplacementOffset(
+Displacement<World> Plugin::BubbleDisplacementCorrection(
     Position<World> const& sun_world_position) const {
-  VLOG(1) << "BubbleDisplacementOffset" << '\n'
+  VLOG(1) << "BubbleDisplacementCorrection" << '\n'
           << "sun_world_position: " << sun_world_position;
   CHECK(HavePhysicsBubble());
-  Displacement<World> const result =
-      Identity<WorldSun, World>()(PlanetariumRotation()(
-          current_physics_bubble_->centre_of_mass_trajectory->
-              last().degrees_of_freedom().position -
-          sun_->prolongation().last().degrees_of_freedom().position)) +
-      sun_world_position - current_physics_bubble_->centre_of_mass->position;
-  VLOG(1) << "returning " << result;
-  return result;
+  CHECK(current_physics_bubble_->displacement_correction == nullptr);
+  current_physics_bubble_->displacement_correction =
+      std::make_unique<Displacement<World>>(
+        Identity<WorldSun, World>()(PlanetariumRotation()(
+            current_physics_bubble_->centre_of_mass_trajectory->
+                last().degrees_of_freedom().position -
+            sun_->prolongation().last().degrees_of_freedom().position)) +
+        sun_world_position - current_physics_bubble_->centre_of_mass->position);
+  VLOG(1) << "returning " << *current_physics_bubble_->displacement_correction;
+  return *current_physics_bubble_->displacement_correction;
 }
 
-Velocity<World> Plugin::BubbleVelocityOffset(
+Velocity<World> Plugin::BubbleVelocityCorrection(
     Index const reference_body_index) const {
-  VLOG(1) << "BubbleVelocityOffset" << '\n'
+  VLOG(1) << "BubbleVelocityCorrection" << '\n'
           << "reference_body_index: " << reference_body_index;
   CHECK(HavePhysicsBubble());
+  CHECK(current_physics_bubble_->velocity_correction == nullptr);
   auto const found = celestials_.find(reference_body_index);
   CHECK(found != celestials_.end());
   Celestial const& reference_body = *found->second;
-  Velocity<World> const result =
-      Identity<WorldSun, World>()(PlanetariumRotation()(
-          current_physics_bubble_->centre_of_mass_trajectory->
-              last().degrees_of_freedom().velocity -
-          reference_body.prolongation().
-              last().degrees_of_freedom().velocity)) -
-      current_physics_bubble_->centre_of_mass->velocity;
-  VLOG(1) << "returning " << result;
-  return result;
+  current_physics_bubble_->velocity_correction =
+      std::make_unique<Velocity<World>>(
+          Identity<WorldSun, World>()(PlanetariumRotation()(
+              current_physics_bubble_->centre_of_mass_trajectory->
+                  last().degrees_of_freedom().velocity -
+              reference_body.prolongation().
+                  last().degrees_of_freedom().velocity)) -
+          current_physics_bubble_->centre_of_mass->velocity);
+  VLOG(1) << "returning " << *current_physics_bubble_->velocity_correction;
+  return *current_physics_bubble_->velocity_correction;
 }
 
 void Plugin::RestartNextPhysicsBubble() {

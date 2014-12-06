@@ -254,12 +254,12 @@ void CDECL AddVesselToNextPhysicsBubble(
     int count);
 
 extern "C" DLLEXPORT
-XYZ CDECL BubbleDisplacementOffset(Plugin const* const plugin,
-                                   XYZ const sun_position);
+XYZ CDECL BubbleDisplacementCorrection(Plugin const* const plugin,
+                                       XYZ const sun_position);
 
 extern "C" DLLEXPORT
-XYZ CDECL BubbleVelocityOffset(Plugin const* const plugin,
-                               int const reference_body_index);
+XYZ CDECL BubbleVelocityCorrection(Plugin const* const plugin,
+                                   int const reference_body_index);
 
 // Says hello, convenient for checking that calls to the DLL work.
 extern "C" DLLEXPORT
