@@ -40,6 +40,7 @@ class CoverageAnalyser {
                           " (of the form ::principia__Identifier)");
         regex = new Regex("^principia::" + tested_unit);
       } else {
+        Console.WriteLine("Covering principia::" + tested_unit);
         regex = new Regex("^principia(::" + tested_unit + "|__)");
       }
       Regex test_file_regex = new Regex("_test.cpp$");
