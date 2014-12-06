@@ -282,6 +282,6 @@ XYZ principia__VesselWorldVelocity(Plugin const* const plugin,
              coordinates.z / (Metre / Second)};
 }
 
-char const* SayHello() {
+char const* principia__SayHello() {
   return "Hello from native C++!";
 }

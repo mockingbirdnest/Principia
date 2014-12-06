@@ -248,7 +248,7 @@ XYZ CDECL principia__VesselWorldVelocity(Plugin const* const plugin,
 
 // Says hello, convenient for checking that calls to the DLL work.
 extern "C" DLLEXPORT
-char const* CDECL SayHello();
+char const* CDECL principia__SayHello();
 
 #undef CDECL
 #undef DLLEXPORT

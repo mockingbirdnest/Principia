@@ -269,7 +269,7 @@ public partial class PluginAdapter : UnityEngine.MonoBehaviour {
     style.padding             = new UnityEngine.RectOffset(8, 8, 8, 8);
 
     UnityEngine.GUILayout.BeginVertical();
-    IntPtr hello_ptr = SayHello();
+    IntPtr hello_ptr = principia__SayHello();
     UnityEngine.GUILayout.TextArea(text : Marshal.PtrToStringAnsi(hello_ptr));
     if (UnityEngine.GUILayout.Button(PluginRunning() ? "Stop plugin"
                                                      : "Start plugin")) {
