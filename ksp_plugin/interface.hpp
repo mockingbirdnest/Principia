@@ -39,6 +39,22 @@
 namespace principia {
 namespace ksp_plugin {
 
+struct LineAndIterator {
+  explicit LineAndIterator(RenderedTrajectory<World> const& rendered_trajectory)
+      : rendered_trajectory(rendered_trajectory) {}
+  RenderedTrajectory<World> const rendered_trajectory;
+  RenderedTrajectory<World>::const_iterator it;
+};
+
+}  // namespace ksp_plugin
+}  // namespace principia
+
+using principia::ksp_plugin::BarycentricRotatingFrame;
+using principia::ksp_plugin::BodyCentredNonRotatingFrame;
+using principia::ksp_plugin::LineAndIterator;
+using principia::ksp_plugin::Plugin;
+using principia::ksp_plugin::RenderingFrame;
+
 extern "C"
 struct XYZ {
   double x, y, z;
@@ -54,13 +70,6 @@ struct XYZSegment {
 
 static_assert(std::is_standard_layout<XYZSegment>::value,
               "XYZSegment is used for interfacing");
-
-struct LineAndIterator {
-  explicit LineAndIterator(RenderedTrajectory<World> const& rendered_trajectory)
-      : rendered_trajectory(rendered_trajectory) {}
-  RenderedTrajectory<World> const rendered_trajectory;
-  RenderedTrajectory<World>::const_iterator it;
-};
 
 // Sets stderr to log INFO, and redirects stderr, which Unity does not log, to
 // "<KSP directory>/stderr.log".  This provides an easily accessible file
@@ -237,9 +246,6 @@ XYZ CDECL VesselWorldVelocity(Plugin const* const plugin,
 // Says hello, convenient for checking that calls to the DLL work.
 extern "C" DLLEXPORT
 char const* CDECL SayHello();
-
-}  // namespace ksp_plugin
-}  // namespace principia
 
 #undef CDECL
 #undef DLLEXPORT

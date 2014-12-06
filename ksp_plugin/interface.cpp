@@ -4,11 +4,14 @@
 
 #include "base/version.hpp"
 
+using principia::geometry::Displacement;
+using principia::ksp_plugin::AliceSun;
+using principia::ksp_plugin::LineSegment;
+using principia::ksp_plugin::RenderedTrajectory;
+using principia::ksp_plugin::World;
 using principia::si::Degree;
 using principia::si::Metre;
-
-namespace principia {
-namespace ksp_plugin {
+using principia::si::Second;
 
 namespace {
 
@@ -45,8 +48,8 @@ void InitGoogleLogging() {
     FLAGS_logbuflevel = google::INFO - 1;
     google::InitGoogleLogging("Principia");
     LOG(INFO) << "Initialized Google logging for Principia";
-    LOG(INFO) << "Principia version " << base::kVersion
-              << " built on " << base::kBuildDate;
+    LOG(INFO) << "Principia version " << principia::base::kVersion
+              << " built on " << principia::base::kBuildDate;
     // TODO(egg): by (compiler) for (ARCH, OS).
   }
 }
@@ -279,6 +282,3 @@ XYZ VesselWorldVelocity(Plugin const* const plugin,
 char const* SayHello() {
   return "Hello from native C++!";
 }
-
-}  // namespace ksp_plugin
-}  // namespace principia

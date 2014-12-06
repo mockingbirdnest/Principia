@@ -5,14 +5,15 @@
 #include "quantities/si.hpp"
 #include "ksp_plugin/mock_plugin.hpp"
 
+using principia::geometry::Displacement;
+using principia::ksp_plugin::AliceSun;
+using principia::ksp_plugin::Index;
+using principia::ksp_plugin::MockPlugin;
 using principia::si::Degree;
 using testing::Eq;
 using testing::IsNull;
 using testing::Return;
 using testing::StrictMock;
-
-namespace principia {
-namespace ksp_plugin {
 
 bool operator==(XYZ const& left, XYZ const& right) {
   return left.x == right.x && left.y == right.y && left.z == right.z;
@@ -31,8 +32,6 @@ double const kTime = 11;
 
 XYZ kParentPosition = {4, 5, 6};
 XYZ kParentVelocity = {7, 8, 9};
-
-}  // namespace
 
 class InterfaceTest : public testing::Test {
  protected:
@@ -207,5 +206,4 @@ TEST_F(InterfaceTest, CelestialParentRelativeVelocity) {
   EXPECT_THAT(result, Eq(kParentVelocity));
 }
 
-}  // namespace ksp_plugin
-}  // namespace principia
+}  // namespace
