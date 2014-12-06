@@ -171,8 +171,8 @@ XYZ principia__VesselParentRelativeVelocity(Plugin const* const plugin,
           result.z / (Metre / Second)};
 }
 
-XYZ CelestialDisplacementFromParent(Plugin const* const plugin,
-                                    int const celestial_index) {
+XYZ principia__CelestialDisplacementFromParent(Plugin const* const plugin,
+                                               int const celestial_index) {
   R3Element<Length> const result =
       CHECK_NOTNULL(plugin)->
           CelestialDisplacementFromParent(celestial_index).coordinates();

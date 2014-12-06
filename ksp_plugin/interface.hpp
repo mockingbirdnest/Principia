@@ -166,8 +166,8 @@ XYZ CDECL principia__VesselParentRelativeVelocity(Plugin const* const plugin,
 // Calls |plugin->CelestialDisplacementFromParent| with the arguments given.
 // |plugin| must not be null.  No transfer of ownership.
 extern "C" DLLEXPORT
-XYZ CDECL CelestialDisplacementFromParent(Plugin const* const plugin,
-                                          int const celestial_index);
+XYZ CDECL principia__CelestialDisplacementFromParent(Plugin const* const plugin,
+                                                     int const celestial_index);
 
 // Calls |plugin->CelestialParentRelativeVelocity| with the arguments given.
 // |plugin| must not be null.  No transfer of ownership.

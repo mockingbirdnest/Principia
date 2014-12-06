@@ -114,8 +114,9 @@ public partial class PluginAdapter : UnityEngine.MonoBehaviour {
             body.flightGlobalsIndex,
             body.orbit.referenceBody.flightGlobalsIndex);
         Vector3d position =
-            (Vector3d)CelestialDisplacementFromParent(plugin_,
-                                                      body.flightGlobalsIndex);
+            (Vector3d)principia__CelestialDisplacementFromParent(
+                plugin_,
+                body.flightGlobalsIndex);
         Vector3d velocity =
             (Vector3d)CelestialParentRelativeVelocity(plugin_,
                                                       body.flightGlobalsIndex);
@@ -428,7 +429,7 @@ public partial class PluginAdapter : UnityEngine.MonoBehaviour {
     Log.Info("reference body reference body position : " +
              active_vessel.orbit.referenceBody.referenceBody.position);
     Log.Info("reference body Principia orbit.pos : " +
-             (Vector3d)CelestialDisplacementFromParent(
+             (Vector3d)principia__CelestialDisplacementFromParent(
                  plugin_,
                  active_vessel.orbit.referenceBody.flightGlobalsIndex));
     Log.Info("reference body Principia orbit.vel : " +
@@ -442,7 +443,7 @@ public partial class PluginAdapter : UnityEngine.MonoBehaviour {
     Log.Info("Duna position : " +
              FlightGlobals.Bodies[6].position);
     Log.Info("Ike Principia orbit.pos : " +
-             (Vector3d)CelestialDisplacementFromParent(
+             (Vector3d)principia__CelestialDisplacementFromParent(
                  plugin_,
                  FlightGlobals.Bodies[7].flightGlobalsIndex));
     Log.Info("Ike Principia orbit.vel : " +
