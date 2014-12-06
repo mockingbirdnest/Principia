@@ -196,7 +196,7 @@ BodyCentredNonRotatingFrame const* principia__NewBodyCentredNonRotatingFrame(
       NewBodyCentredNonRotatingFrame(reference_body_index).release();
 }
 
-BarycentricRotatingFrame const* NewBarycentricRotatingFrame(
+BarycentricRotatingFrame const* principia__NewBarycentricRotatingFrame(
     Plugin const* const plugin,
     int const primary_index,
     int const secondary_index) {

@@ -304,7 +304,7 @@ public partial class PluginAdapter : UnityEngine.MonoBehaviour {
                                  plugin_,
                                  first_selected_celestial_);
         } else {
-          rendering_frame_ = NewBarycentricRotatingFrame(
+          rendering_frame_ = principia__NewBarycentricRotatingFrame(
                                  plugin_,
                                  first_selected_celestial_,
                                  second_selected_celestial_);

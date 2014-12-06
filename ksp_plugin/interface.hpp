@@ -185,7 +185,7 @@ principia__NewBodyCentredNonRotatingFrame(Plugin const* const plugin,
 // Calls |plugin->NewBarycentricRotatingFrame| with the arguments given.
 // |plugin| must not be null.  No transfer of ownership.
 extern "C" DLLEXPORT
-BarycentricRotatingFrame const* CDECL NewBarycentricRotatingFrame(
+BarycentricRotatingFrame const* CDECL principia__NewBarycentricRotatingFrame(
     Plugin const* const plugin,
     int const primary_index,
     int const secondary_index);

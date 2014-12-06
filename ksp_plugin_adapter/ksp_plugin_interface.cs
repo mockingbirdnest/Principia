@@ -118,7 +118,7 @@ public partial class PluginAdapter : UnityEngine.MonoBehaviour {
 
   [DllImport(dllName           : kDllPath,
              CallingConvention = CallingConvention.Cdecl)]
-  private static extern IntPtr NewBarycentricRotatingFrame(
+  private static extern IntPtr principia__NewBarycentricRotatingFrame(
       IntPtr plugin,
       int primary_index,
       int secondary_index);
