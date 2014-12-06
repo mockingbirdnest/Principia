@@ -82,7 +82,7 @@ TEST_F(InterfaceDeathTest, Errors) {
     principia__CelestialDisplacementFromParent(plugin, kCelestialIndex);
   }, "plugin.*non NULL");
   EXPECT_DEATH({
-    CelestialParentRelativeVelocity(plugin, kCelestialIndex);
+    principia__CelestialParentRelativeVelocity(plugin, kCelestialIndex);
   }, "plugin.*non NULL");
   EXPECT_DEATH({
     NewBodyCentredNonRotatingFrame(plugin, kCelestialIndex);
@@ -202,8 +202,9 @@ TEST_F(InterfaceTest, CelestialParentRelativeVelocity) {
                            {kParentVelocity.x * SIUnit<Speed>(),
                             kParentVelocity.y * SIUnit<Speed>(),
                             kParentVelocity.z * SIUnit<Speed>()})));
-  XYZ const result = CelestialParentRelativeVelocity(plugin_.get(),
-                                                     kCelestialIndex);
+  XYZ const result = principia__CelestialParentRelativeVelocity(
+                         plugin_.get(),
+                         kCelestialIndex);
   EXPECT_THAT(result, Eq(kParentVelocity));
 }
 

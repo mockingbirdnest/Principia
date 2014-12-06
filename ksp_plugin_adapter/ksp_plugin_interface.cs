@@ -106,7 +106,7 @@ public partial class PluginAdapter : UnityEngine.MonoBehaviour {
 
   [DllImport(dllName           : kDllPath,
              CallingConvention = CallingConvention.Cdecl)]
-  private static extern XYZ CelestialParentRelativeVelocity(
+  private static extern XYZ principia__CelestialParentRelativeVelocity(
       IntPtr plugin,
       int celestial_index);
 

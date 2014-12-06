@@ -118,8 +118,9 @@ public partial class PluginAdapter : UnityEngine.MonoBehaviour {
                 plugin_,
                 body.flightGlobalsIndex);
         Vector3d velocity =
-            (Vector3d)CelestialParentRelativeVelocity(plugin_,
-                                                      body.flightGlobalsIndex);
+            (Vector3d)principia__CelestialParentRelativeVelocity(
+                plugin_,
+                body.flightGlobalsIndex);
         // TODO(egg): Some of this might be be superfluous and redundant.
         Orbit original = body.orbit;
         Orbit copy = new Orbit(original.inclination, original.eccentricity,
@@ -433,7 +434,7 @@ public partial class PluginAdapter : UnityEngine.MonoBehaviour {
                  plugin_,
                  active_vessel.orbit.referenceBody.flightGlobalsIndex));
     Log.Info("reference body Principia orbit.vel : " +
-             (Vector3d)CelestialParentRelativeVelocity(
+             (Vector3d)principia__CelestialParentRelativeVelocity(
                  plugin_,
                  active_vessel.orbit.referenceBody.flightGlobalsIndex));
     Log.Info("reference body measured orbit.pos : " +
@@ -447,7 +448,7 @@ public partial class PluginAdapter : UnityEngine.MonoBehaviour {
                  plugin_,
                  FlightGlobals.Bodies[7].flightGlobalsIndex));
     Log.Info("Ike Principia orbit.vel : " +
-             (Vector3d)CelestialParentRelativeVelocity(
+             (Vector3d)principia__CelestialParentRelativeVelocity(
                  plugin_,
                  FlightGlobals.Bodies[7].flightGlobalsIndex));
     Log.Info("Ike measured orbit.pos : " +
