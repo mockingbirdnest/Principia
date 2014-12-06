@@ -124,6 +124,19 @@ public partial class PluginAdapter : UnityEngine.MonoBehaviour {
     if (PluginRunning()) {
       double universal_time = Planetarium.GetUniversalTime();
       VesselProcessor add_to_physics_bubble = vessel => {
+        bool inserted = InsertOrKeepVessel(
+            plugin_,
+            vessel.id.ToString(),
+            vessel.orbit.referenceBody.flightGlobalsIndex);
+        if (inserted) {
+          // NOTE(egg): these degrees of freedom are off by one Δt, but they
+          // should never actually be used.
+          // TODO(egg): we shouldn't have to do this.
+          SetVesselStateOffset(plugin_,
+                               vessel.id.ToString(),
+                               (XYZ)vessel.orbit.pos,
+                               (XYZ)vessel.orbit.vel);
+        }
         KSPPart[] parts = new KSPPart[vessel.parts.Count];
         Log.Info("vessel has " + parts.Length + " parts");
         Vector3d gravity = FlightGlobals.getGeeForceAtPosition(
