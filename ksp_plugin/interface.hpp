@@ -154,8 +154,8 @@ void CDECL principia__AdvanceTime(Plugin* const plugin,
 // Calls |plugin->VesselDisplacementFromParent| with the arguments given.
 // |plugin| must not be null.  No transfer of ownership.
 extern "C" DLLEXPORT
-XYZ CDECL VesselDisplacementFromParent(Plugin const* const plugin,
-                                       char const* vessel_guid);
+XYZ CDECL principia__VesselDisplacementFromParent(Plugin const* const plugin,
+                                                  char const* vessel_guid);
 
 // Calls |plugin->VesselParentRelativeVelocity| with the arguments given.
 // |plugin| must not be null.  No transfer of ownership.

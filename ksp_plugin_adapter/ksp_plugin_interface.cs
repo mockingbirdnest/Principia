@@ -88,7 +88,7 @@ public partial class PluginAdapter : UnityEngine.MonoBehaviour {
 
   [DllImport(dllName           : kDllPath,
              CallingConvention = CallingConvention.Cdecl)]
-  private static extern XYZ VesselDisplacementFromParent(
+  private static extern XYZ principia__VesselDisplacementFromParent(
       IntPtr plugin,
       [MarshalAs(UnmanagedType.LPStr)] String vessel_guid);
 

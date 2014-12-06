@@ -159,8 +159,9 @@ public partial class PluginAdapter : UnityEngine.MonoBehaviour {
                                           (XYZ)vessel.orbit.vel);
         }
         Vector3d position =
-            (Vector3d)VesselDisplacementFromParent(plugin_,
-                                                   vessel.id.ToString());
+            (Vector3d)principia__VesselDisplacementFromParent(
+                plugin_,
+                vessel.id.ToString());
         Vector3d velocity =
             (Vector3d)VesselParentRelativeVelocity(plugin_,
                                                    vessel.id.ToString());
@@ -409,7 +410,7 @@ public partial class PluginAdapter : UnityEngine.MonoBehaviour {
     Log.Info("active vessel orbit.vel : " + active_vessel.orbit.vel);
     Log.Info("active vessel GetVel : " + active_vessel.orbit.GetVel());
     Log.Info("Principia orbit.pos : " + 
-             (Vector3d)VesselDisplacementFromParent(
+             (Vector3d)principia__VesselDisplacementFromParent(
                  plugin_,
                  active_vessel.id.ToString()));
     Log.Info("Principia orbit.vel : " + 

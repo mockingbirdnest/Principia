@@ -73,7 +73,7 @@ TEST_F(InterfaceDeathTest, Errors) {
                                     kParentVelocity);
   }, "plugin.*non NULL");
   EXPECT_DEATH({
-    VesselDisplacementFromParent(plugin, kVesselGUID);
+    principia__VesselDisplacementFromParent(plugin, kVesselGUID);
   }, "plugin.*non NULL");
   EXPECT_DEATH({
     VesselParentRelativeVelocity(plugin, kVesselGUID);
@@ -167,7 +167,7 @@ TEST_F(InterfaceTest, VesselDisplacementFromParent) {
                            {kParentPosition.x * SIUnit<Length>(),
                             kParentPosition.y * SIUnit<Length>(),
                             kParentPosition.z * SIUnit<Length>()})));
-  XYZ const result = VesselDisplacementFromParent(plugin_.get(), kVesselGUID);
+  XYZ const result = principia__VesselDisplacementFromParent(plugin_.get(), kVesselGUID);
   EXPECT_THAT(result, Eq(kParentPosition));
 }
 

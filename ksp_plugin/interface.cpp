@@ -153,8 +153,8 @@ void principia__AdvanceTime(Plugin* const plugin,
                                      planetarium_rotation * Degree);
 }
 
-XYZ VesselDisplacementFromParent(Plugin const* const plugin,
-                                 char const* vessel_guid) {
+XYZ principia__VesselDisplacementFromParent(Plugin const* const plugin,
+                                            char const* vessel_guid) {
   R3Element<Length> const result =
       CHECK_NOTNULL(plugin)->
           VesselDisplacementFromParent(vessel_guid).coordinates();
