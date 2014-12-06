@@ -36,7 +36,7 @@ public partial class PluginAdapter : UnityEngine.MonoBehaviour {
     // We create this directory here so we do not need to worry about cross-
     // platform problems in C++.
     System.IO.Directory.CreateDirectory("glog/Principia");
-    Log.principia__InitGoogleLogging();
+    Log.InitGoogleLogging();
   }
 
   ~PluginAdapter() {
@@ -105,22 +105,17 @@ public partial class PluginAdapter : UnityEngine.MonoBehaviour {
   private void FixedUpdate() {
     if (PluginRunning()) {
       double universal_time = Planetarium.GetUniversalTime();
-      principia__AdvanceTime(plugin_,
-                             universal_time,
-                             Planetarium.InverseRotAngle);
+      AdvanceTime(plugin_, universal_time, Planetarium.InverseRotAngle);
       BodyProcessor update_body = body => {
-        principia__UpdateCelestialHierarchy(
-            plugin_,
-            body.flightGlobalsIndex,
-            body.orbit.referenceBody.flightGlobalsIndex);
+        UpdateCelestialHierarchy(plugin_,
+                                 body.flightGlobalsIndex,
+                                 body.orbit.referenceBody.flightGlobalsIndex);
         Vector3d position =
-            (Vector3d)principia__CelestialDisplacementFromParent(
-                plugin_,
-                body.flightGlobalsIndex);
+            (Vector3d)CelestialDisplacementFromParent(plugin_,
+                                                      body.flightGlobalsIndex);
         Vector3d velocity =
-            (Vector3d)principia__CelestialParentRelativeVelocity(
-                plugin_,
-                body.flightGlobalsIndex);
+            (Vector3d)CelestialParentRelativeVelocity(plugin_,
+                                                      body.flightGlobalsIndex);
         // TODO(egg): Some of this might be be superfluous and redundant.
         Orbit original = body.orbit;
         Orbit copy = new Orbit(original.inclination, original.eccentricity,
@@ -150,24 +145,22 @@ public partial class PluginAdapter : UnityEngine.MonoBehaviour {
       };
       ApplyToBodyTree(update_body);
       VesselProcessor update_vessel = vessel => {
-        bool inserted = principia__InsertOrKeepVessel(
+        bool inserted = InsertOrKeepVessel(
             plugin_,
             vessel.id.ToString(),
             vessel.orbit.referenceBody.flightGlobalsIndex);
         if (inserted) {
-          principia__SetVesselStateOffset(plugin_,
-                                          vessel.id.ToString(),
-                                          (XYZ)vessel.orbit.pos,
-                                          (XYZ)vessel.orbit.vel);
+          SetVesselStateOffset(plugin_,
+                               vessel.id.ToString(),
+                               (XYZ)vessel.orbit.pos,
+                               (XYZ)vessel.orbit.vel);
         }
         Vector3d position =
-            (Vector3d)principia__VesselDisplacementFromParent(
-                plugin_,
-                vessel.id.ToString());
+            (Vector3d)VesselDisplacementFromParent(plugin_,
+                                                   vessel.id.ToString());
         Vector3d velocity =
-            (Vector3d)principia__VesselParentRelativeVelocity(
-                plugin_,
-                vessel.id.ToString());
+            (Vector3d)VesselParentRelativeVelocity(plugin_,
+                                                   vessel.id.ToString());
         // NOTE(egg): Here we work around a KSP bug: |Orbit.pos| for a vessel
         // corresponds to the position one timestep in the future.  This is not
         // the case for celestial bodies.
@@ -198,7 +191,7 @@ public partial class PluginAdapter : UnityEngine.MonoBehaviour {
         }
         IntPtr trajectory_iterator = IntPtr.Zero;
         try {
-          trajectory_iterator = principia__RenderedVesselTrajectory(
+          trajectory_iterator = RenderedVesselTrajectory(
               plugin_,
               active_vessel.id.ToString(),
               rendering_frame_,
@@ -206,13 +199,13 @@ public partial class PluginAdapter : UnityEngine.MonoBehaviour {
 
           LineSegment segment;
           int index_in_line_points = kLinePoints -
-              principia__NumberOfSegments(trajectory_iterator) * 2;
+              NumberOfSegments(trajectory_iterator) * 2;
           while (index_in_line_points < 0) {
-            principia__FetchAndIncrement(trajectory_iterator);
+            FetchAndIncrement(trajectory_iterator);
             index_in_line_points += 2;
           }
-          while (!principia__AtEnd(trajectory_iterator)) {
-            segment = principia__FetchAndIncrement(trajectory_iterator);
+          while (!AtEnd(trajectory_iterator)) {
+            segment = FetchAndIncrement(trajectory_iterator);
             // TODO(egg): should we do the |LocalToScaledSpace| conversion in
             // native code?
             // TODO(egg): could we directly assign to
@@ -225,7 +218,7 @@ public partial class PluginAdapter : UnityEngine.MonoBehaviour {
                 ScaledSpace.LocalToScaledSpace((Vector3d)segment.end);
           }
         } finally {
-          principia__DeleteLineAndIterator(ref trajectory_iterator);
+          DeleteLineAndIterator(ref trajectory_iterator);
         }
         if (MapView.Draw3DLines) {
           Vector.DrawLine3D(rendered_trajectory_);
@@ -240,8 +233,8 @@ public partial class PluginAdapter : UnityEngine.MonoBehaviour {
   #endregion
 
   private void Cleanup() {
-    principia__DeletePlugin(ref plugin_);
-    principia__DeleteRenderingFrame(ref rendering_frame_);
+    DeletePlugin(ref plugin_);
+    DeleteRenderingFrame(ref rendering_frame_);
     if (rendered_trajectory_ != null) {
       Vector.DestroyLine(ref rendered_trajectory_);
     }
@@ -269,7 +262,7 @@ public partial class PluginAdapter : UnityEngine.MonoBehaviour {
     style.padding             = new UnityEngine.RectOffset(8, 8, 8, 8);
 
     UnityEngine.GUILayout.BeginVertical();
-    IntPtr hello_ptr = principia__SayHello();
+    IntPtr hello_ptr = SayHello();
     UnityEngine.GUILayout.TextArea(text : Marshal.PtrToStringAnsi(hello_ptr));
     if (UnityEngine.GUILayout.Button(PluginRunning() ? "Stop plugin"
                                                      : "Start plugin")) {
@@ -298,13 +291,13 @@ public partial class PluginAdapter : UnityEngine.MonoBehaviour {
       }
       UnityEngine.GUILayout.EndHorizontal();
       if (changed_reference_frame && PluginRunning()) {
-        principia__DeleteRenderingFrame(ref rendering_frame_);
+        DeleteRenderingFrame(ref rendering_frame_);
         if (first_selected_celestial_ == second_selected_celestial_) {
-          rendering_frame_ = principia__NewBodyCentredNonRotatingFrame(
+          rendering_frame_ = NewBodyCentredNonRotatingFrame(
                                  plugin_,
                                  first_selected_celestial_);
         } else {
-          rendering_frame_ = principia__NewBarycentricRotatingFrame(
+          rendering_frame_ = NewBarycentricRotatingFrame(
                                  plugin_,
                                  first_selected_celestial_,
                                  second_selected_celestial_);
@@ -325,21 +318,21 @@ public partial class PluginAdapter : UnityEngine.MonoBehaviour {
                active_vessel.CoM)));
       UnityEngine.GUILayout.TextArea(
           "Principia \"world\", rotating : " +
-          (Vector3d)principia__VesselWorldVelocity(
+          (Vector3d)VesselWorldVelocity(
               plugin_,
               active_vessel.id.ToString(),
               new XYZ{x = 0, y = 0, z = 0},
               active_vessel.orbit.referenceBody.rotationPeriod));
       UnityEngine.GUILayout.TextArea(
           "Principia \"world\", no rotation : " +
-          (Vector3d)principia__VesselWorldVelocity(
+          (Vector3d)VesselWorldVelocity(
               plugin_,
               active_vessel.id.ToString(),
               new XYZ{x = 0, y = 0, z = 0},
               double.PositiveInfinity));
       UnityEngine.GUILayout.TextArea(
           "Principia \"world\", expected : " +
-          (Vector3d)principia__VesselWorldVelocity(
+          (Vector3d)VesselWorldVelocity(
               plugin_,
               active_vessel.id.ToString(),
               new XYZ{x = 0, y = 0, z = 0},
@@ -363,7 +356,7 @@ public partial class PluginAdapter : UnityEngine.MonoBehaviour {
           ((Vector3d)active_vessel.findWorldCenterOfMass()));
       UnityEngine.GUILayout.TextArea(
           "Principia world : " +
-          (Vector3d)principia__VesselWorldPosition(
+          (Vector3d)VesselWorldPosition(
               plugin_,
               active_vessel.id.ToString(),
               (XYZ)active_vessel.orbit.referenceBody.position));
@@ -382,20 +375,20 @@ public partial class PluginAdapter : UnityEngine.MonoBehaviour {
     Log.Info("UT : " + Planetarium.GetUniversalTime());
     Log.Info(
         "Principia world position : " +
-        (Vector3d)principia__VesselWorldPosition(
+        (Vector3d)VesselWorldPosition(
             plugin_,
             active_vessel.id.ToString(),
             (XYZ)active_vessel.orbit.referenceBody.position));
     Log.Info(
         "Principia world velocity (rotating) : " +
-        (Vector3d)principia__VesselWorldVelocity(
+        (Vector3d)VesselWorldVelocity(
             plugin_,
             active_vessel.id.ToString(),
             new XYZ{x = 0, y = 0, z = 0},
             active_vessel.orbit.referenceBody.rotationPeriod));
     Log.Info(
         "Principia world velocity (no rotation) : " +
-        (Vector3d)principia__VesselWorldVelocity(
+        (Vector3d)VesselWorldVelocity(
             plugin_,
             active_vessel.id.ToString(),
             new XYZ{x = 0, y = 0, z = 0},
@@ -413,11 +406,11 @@ public partial class PluginAdapter : UnityEngine.MonoBehaviour {
     Log.Info("active vessel orbit.vel : " + active_vessel.orbit.vel);
     Log.Info("active vessel GetVel : " + active_vessel.orbit.GetVel());
     Log.Info("Principia orbit.pos : " + 
-             (Vector3d)principia__VesselDisplacementFromParent(
+             (Vector3d)VesselDisplacementFromParent(
                  plugin_,
                  active_vessel.id.ToString()));
     Log.Info("Principia orbit.vel : " + 
-             (Vector3d)principia__VesselParentRelativeVelocity(
+             (Vector3d)VesselParentRelativeVelocity(
                  plugin_,
                  active_vessel.id.ToString()));
     Log.Info("Kraken : " + Krakensbane.GetFrameVelocity());
@@ -430,11 +423,11 @@ public partial class PluginAdapter : UnityEngine.MonoBehaviour {
     Log.Info("reference body reference body position : " +
              active_vessel.orbit.referenceBody.referenceBody.position);
     Log.Info("reference body Principia orbit.pos : " +
-             (Vector3d)principia__CelestialDisplacementFromParent(
+             (Vector3d)CelestialDisplacementFromParent(
                  plugin_,
                  active_vessel.orbit.referenceBody.flightGlobalsIndex));
     Log.Info("reference body Principia orbit.vel : " +
-             (Vector3d)principia__CelestialParentRelativeVelocity(
+             (Vector3d)CelestialParentRelativeVelocity(
                  plugin_,
                  active_vessel.orbit.referenceBody.flightGlobalsIndex));
     Log.Info("reference body measured orbit.pos : " +
@@ -444,11 +437,11 @@ public partial class PluginAdapter : UnityEngine.MonoBehaviour {
     Log.Info("Duna position : " +
              FlightGlobals.Bodies[6].position);
     Log.Info("Ike Principia orbit.pos : " +
-             (Vector3d)principia__CelestialDisplacementFromParent(
+             (Vector3d)CelestialDisplacementFromParent(
                  plugin_,
                  FlightGlobals.Bodies[7].flightGlobalsIndex));
     Log.Info("Ike Principia orbit.vel : " +
-             (Vector3d)principia__CelestialParentRelativeVelocity(
+             (Vector3d)CelestialParentRelativeVelocity(
                  plugin_,
                  FlightGlobals.Bodies[7].flightGlobalsIndex));
     Log.Info("Ike measured orbit.pos : " +
@@ -472,13 +465,13 @@ public partial class PluginAdapter : UnityEngine.MonoBehaviour {
     rendered_trajectory_.vectorObject.renderer.castShadows = false;
     rendered_trajectory_.vectorObject.renderer.receiveShadows = false;
     rendered_trajectory_.layer = 31;
-    plugin_ = principia__NewPlugin(Planetarium.GetUniversalTime(),
+    plugin_ = NewPlugin(Planetarium.GetUniversalTime(),
                         Planetarium.fetch.Sun.flightGlobalsIndex,
                         Planetarium.fetch.Sun.gravParameter,
                         Planetarium.InverseRotAngle);
     BodyProcessor insert_body = body => {
       Log.Info("Inserting " + body.name + "...");
-      principia__InsertCelestial(plugin_,
+      InsertCelestial(plugin_,
                       body.flightGlobalsIndex,
                       body.gravParameter,
                       body.orbit.referenceBody.flightGlobalsIndex,
@@ -486,25 +479,24 @@ public partial class PluginAdapter : UnityEngine.MonoBehaviour {
                       (XYZ)body.orbit.vel);
     };
     ApplyToBodyTree(insert_body);
-    principia__EndInitialization(plugin_);
+    EndInitialization(plugin_);
     first_selected_celestial_ = 0;
     second_selected_celestial_ = 0;
     rendering_frame_ =
-        principia__NewBodyCentredNonRotatingFrame(plugin_,
-                                                  first_selected_celestial_);
+        NewBodyCentredNonRotatingFrame(plugin_, first_selected_celestial_);
     VesselProcessor insert_vessel = vessel => {
       Log.Info("Inserting " + vessel.name + "...");
       bool inserted =
-          principia__InsertOrKeepVessel(plugin_,
+          InsertOrKeepVessel(plugin_,
                              vessel.id.ToString(),
                              vessel.orbit.referenceBody.flightGlobalsIndex);
       if (!inserted) {
         Log.Fatal("Plugin initialization: vessel not inserted");
       } else {
-        principia__SetVesselStateOffset(plugin_,
-                                        vessel.id.ToString(),
-                                        (XYZ)vessel.orbit.pos,
-                                        (XYZ)vessel.orbit.vel);
+        SetVesselStateOffset(plugin_,
+                             vessel.id.ToString(),
+                             (XYZ)vessel.orbit.pos,
+                             (XYZ)vessel.orbit.vel);
       }
     };
     ApplyToVesselsInSpace(insert_vessel);
