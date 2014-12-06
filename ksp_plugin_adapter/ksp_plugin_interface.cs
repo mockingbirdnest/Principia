@@ -141,7 +141,7 @@ public partial class PluginAdapter : UnityEngine.MonoBehaviour {
 
   [DllImport(dllName           : kDllPath,
              CallingConvention = CallingConvention.Cdecl)]
-  private static extern LineSegment FetchAndIncrement(IntPtr line);
+  private static extern LineSegment principia__FetchAndIncrement(IntPtr line);
 
   [DllImport(dllName           : kDllPath,
              CallingConvention = CallingConvention.Cdecl)]

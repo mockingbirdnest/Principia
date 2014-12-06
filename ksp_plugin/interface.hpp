@@ -219,7 +219,8 @@ int CDECL principia__NumberOfSegments(LineAndIterator const* line_and_iterator);
 // the end of |line_and_iterator->rendered_trajectory|.  No transfer of
 // ownership.
 extern "C" DLLEXPORT
-XYZSegment CDECL FetchAndIncrement(LineAndIterator* const line_and_iterator);
+XYZSegment CDECL principia__FetchAndIncrement(
+    LineAndIterator* const line_and_iterator);
 
 // Returns |true| if and only if |line_and_iterator->it| is the end of
 // |line_and_iterator->rendered_trajectory|.

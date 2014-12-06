@@ -230,7 +230,8 @@ int principia__NumberOfSegments(LineAndIterator const* line_and_iterator) {
   return CHECK_NOTNULL(line_and_iterator)->rendered_trajectory.size();
 }
 
-XYZSegment FetchAndIncrement(LineAndIterator* const line_and_iterator) {
+XYZSegment principia__FetchAndIncrement(
+    LineAndIterator* const line_and_iterator) {
   CHECK_NOTNULL(line_and_iterator);
   CHECK(line_and_iterator->it != line_and_iterator->rendered_trajectory.end());
   LineSegment<World> const result = *line_and_iterator->it;

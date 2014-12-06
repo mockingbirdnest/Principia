@@ -208,11 +208,11 @@ public partial class PluginAdapter : UnityEngine.MonoBehaviour {
           int index_in_line_points = kLinePoints -
               principia__NumberOfSegments(trajectory_iterator) * 2;
           while (index_in_line_points < 0) {
-            FetchAndIncrement(trajectory_iterator);
+            principia__FetchAndIncrement(trajectory_iterator);
             index_in_line_points += 2;
           }
           while (!AtEnd(trajectory_iterator)) {
-            segment = FetchAndIncrement(trajectory_iterator);
+            segment = principia__FetchAndIncrement(trajectory_iterator);
             // TODO(egg): should we do the |LocalToScaledSpace| conversion in
             // native code?
             // TODO(egg): could we directly assign to
