@@ -1407,3 +1407,112 @@ index ea68db8..37dd54a 100644
 -- 
 1.8.4.msysgit.0
 
+From a41719627fabe520ddc7eae661d812ed3ce6758d Mon Sep 17 00:00:00 2001
+From: pleroy <phl+personal@google.com>
+Date: Sat, 6 Dec 2014 15:03:05 +0100
+Subject: [PATCH] Stacktrace to the fatal file.
+
+Cleanup.
+---
+ src/logging.cc             | 18 ++++++++++++++++--
+ src/stacktrace_win-inl.h   |  4 ++--
+ src/utilities.cc           |  2 +-
+ src/windows/glog/logging.h |  3 +++
+ 4 files changed, 22 insertions(+), 5 deletions(-)
+
+diff --git a/src/logging.cc b/src/logging.cc
+index 8aab28a..fa1d899 100644
+--- a/src/logging.cc
++++ b/src/logging.cc
+@@ -177,6 +177,9 @@ GLOG_DEFINE_bool(stop_logging_if_full_disk, false,
+ GLOG_DEFINE_string(log_backtrace_at, "",
+                    "Emit a backtrace when logging at file:linenum.");
+ 
++GLOG_DEFINE_bool(log_backtrace_on_fatal, true,
++                 "Emit a backtrace to the fatal file.");
++
+ // TODO(hamaji): consider windows
+ #define PATH_SEPARATOR '/'
+ 
+@@ -409,6 +412,7 @@ class LogFileObject : public base::Logger {
+ class LogDestination {
+  public:
+   friend class LogMessage;
++  friend class LogMessageFatal;
+   friend void ReprintFatalMessage();
+   friend base::Logger* base::GetLogger(LogSeverity);
+   friend void base::SetLogger(LogSeverity, base::Logger*);
+@@ -1250,6 +1254,10 @@ ostream& LogMessage::stream() {
+   return *(data_->stream_);
+ }
+ 
++time_t LogMessage::timestamp() const {
++  return data_->timestamp_;
++}
++
+ // Flush buffered message, called by the destructor, or any other function
+ // that needs to synchronize the log.
+ void LogMessage::Flush() {
+@@ -1982,8 +1990,14 @@ LogMessageFatal::LogMessageFatal(const char* file, int line,
+     LogMessage(file, line, result) {}
+ 
+ LogMessageFatal::~LogMessageFatal() {
+-    Flush();
+-    LogMessage::Fail();
++  if (FLAGS_log_backtrace_on_fatal) {
++    std::string stacktrace;
++    DumpStackTraceToString(&stacktrace);
++    LogDestination::MaybeLogToLogfile(
++        GLOG_FATAL, timestamp(), stacktrace.c_str(), stacktrace.size());
++  }
++  Flush();
++  LogMessage::Fail();
+ }
+ 
+ namespace base {
+diff --git a/src/stacktrace_win-inl.h b/src/stacktrace_win-inl.h
+index 7762d7b..b068de1 100644
+--- a/src/stacktrace_win-inl.h
++++ b/src/stacktrace_win-inl.h
+@@ -8,9 +8,9 @@ _START_GOOGLE_NAMESPACE_
+ int GetStackTrace(void** result, int max_depth, int skip_count) {
+ // NOTE(phl): This was tuned for the static library with VS2013.
+ #ifdef _DEBUG
+-  skip_count = 8;
++  skip_count += 3;
+ #else
+-  skip_count = 4;
++  skip_count += 0;
+ #endif
+   ::base::debug::StackTrace stacktrace(skip_count);
+ 
+diff --git a/src/utilities.cc b/src/utilities.cc
+index 12f12c7..337a3f8 100644
+--- a/src/utilities.cc
++++ b/src/utilities.cc
+@@ -134,7 +134,7 @@ static void DumpStackTrace(int skip_count, DebugWriter *writerfn, void *arg) {
+ }
+ 
+ static void DumpStackTraceAndExit() {
+-  DumpStackTrace(1, DebugWriteToStderr, NULL);
++  DumpStackTrace(4, DebugWriteToStderr, NULL);
+ 
+ #ifndef OS_WINDOWS
+   // Set the default signal handler for SIGABRT, to avoid invoking our
+diff --git a/src/windows/glog/logging.h b/src/windows/glog/logging.h
+index 37dd54a..7f81080 100644
+--- a/src/windows/glog/logging.h
++++ b/src/windows/glog/logging.h
+@@ -1247,6 +1247,9 @@ public:
+ 
+   struct LogMessageData;
+ 
++protected:
++  time_t timestamp() const;
++
+ private:
+   // Fully internal SendMethod cases:
+   void SendToSinkAndLog();  // Send to sink if provided and dispatch to the logs
+-- 
+1.8.4.msysgit.0
+
