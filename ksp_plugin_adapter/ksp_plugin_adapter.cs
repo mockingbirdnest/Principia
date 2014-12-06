@@ -221,11 +221,11 @@ public partial class PluginAdapter : UnityEngine.MonoBehaviour {
       Vessel active_vessel = FlightGlobals.ActiveVessel;
       if (HavePhysicsBubble()) {
         Vector3d displacement_offset =
-            (Vector3d)BubbleDisplacementOffset(
+            (Vector3d)BubbleDisplacementCorrection(
                           plugin_,
                           (XYZ)Planetarium.fetch.Sun.position);
         Vector3d velocity_offset =
-            (Vector3d)BubbleVelocityOffset(
+            (Vector3d)BubbleVelocityCorrection(
                           plugin_,
                           active_vessel.orbit.referenceBody.flightGlobalsIndex);
         Krakensbane krakensbane =

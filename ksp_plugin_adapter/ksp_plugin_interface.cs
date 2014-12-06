@@ -183,12 +183,12 @@ public partial class PluginAdapter : UnityEngine.MonoBehaviour {
 
   [DllImport(dllName           : kDllPath,
              CallingConvention = CallingConvention.Cdecl)]
-  private static extern XYZ BubbleDisplacementOffset(IntPtr plugin,
+  private static extern XYZ BubbleDisplacementCorrection(IntPtr plugin,
                                                      XYZ sun_position);
 
   [DllImport(dllName           : kDllPath,
              CallingConvention = CallingConvention.Cdecl)]
-  private static extern XYZ BubbleVelocityOffset(IntPtr plugin,
+  private static extern XYZ BubbleVelocityCorrection(IntPtr plugin,
                                                  int reference_body_index);
 
 }
