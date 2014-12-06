@@ -252,7 +252,7 @@ void principia__DeleteLineAndIterator(
   TakeOwnership(line_and_iterator);
 }
 
-XYZ VesselWorldPosition(Plugin const* const plugin,
+XYZ principia__VesselWorldPosition(Plugin const* const plugin,
                         char const* vessel_guid,
                         XYZ const parent_world_position) {
   Position<World> result = CHECK_NOTNULL(plugin)->VesselWorldPosition(

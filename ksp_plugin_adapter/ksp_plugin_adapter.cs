@@ -363,7 +363,7 @@ public partial class PluginAdapter : UnityEngine.MonoBehaviour {
           ((Vector3d)active_vessel.findWorldCenterOfMass()));
       UnityEngine.GUILayout.TextArea(
           "Principia world : " +
-          (Vector3d)VesselWorldPosition(
+          (Vector3d)principia__VesselWorldPosition(
               plugin_,
               active_vessel.id.ToString(),
               (XYZ)active_vessel.orbit.referenceBody.position));
@@ -382,7 +382,7 @@ public partial class PluginAdapter : UnityEngine.MonoBehaviour {
     Log.Info("UT : " + Planetarium.GetUniversalTime());
     Log.Info(
         "Principia world position : " +
-        (Vector3d)VesselWorldPosition(
+        (Vector3d)principia__VesselWorldPosition(
             plugin_,
             active_vessel.id.ToString(),
             (XYZ)active_vessel.orbit.referenceBody.position));
