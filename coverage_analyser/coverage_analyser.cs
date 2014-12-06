@@ -10,7 +10,7 @@ using Microsoft.VisualStudio.Coverage.Analysis;
 
 namespace coverage_analyser {
 
-class coverage_analyser {
+class CoverageAnalyser {
 
   private struct CodeLine {
     public Int64 line_number;
