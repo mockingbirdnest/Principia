@@ -198,7 +198,7 @@ public partial class PluginAdapter : UnityEngine.MonoBehaviour {
         }
         IntPtr trajectory_iterator = IntPtr.Zero;
         try {
-          trajectory_iterator = RenderedVesselTrajectory(
+          trajectory_iterator = principia__RenderedVesselTrajectory(
               plugin_,
               active_vessel.id.ToString(),
               rendering_frame_,

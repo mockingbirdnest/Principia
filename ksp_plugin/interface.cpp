@@ -208,10 +208,11 @@ void principia__DeleteRenderingFrame(RenderingFrame const** const frame) {
   TakeOwnership(frame);
 }
 
-LineAndIterator* RenderedVesselTrajectory(Plugin const* const plugin,
-                                          char const* vessel_guid,
-                                          RenderingFrame const* frame,
-                                          XYZ const sun_world_position) {
+LineAndIterator* principia__RenderedVesselTrajectory(
+    Plugin const* const plugin,
+    char const* vessel_guid,
+    RenderingFrame const* frame,
+    XYZ const sun_world_position) {
   RenderedTrajectory<World> rendered_trajectory = CHECK_NOTNULL(plugin)->
       RenderedVesselTrajectory(
           vessel_guid,

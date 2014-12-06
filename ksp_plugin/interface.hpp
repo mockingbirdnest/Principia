@@ -202,10 +202,11 @@ void CDECL principia__DeleteRenderingFrame(RenderingFrame const** const frame);
 // gets ownership of the result.  |frame| must not be null.  No transfer of
 // ownership of |frame|.
 extern "C" DLLEXPORT
-LineAndIterator* CDECL RenderedVesselTrajectory(Plugin const* const plugin,
-                                                char const* vessel_guid,
-                                                RenderingFrame const* frame,
-                                                XYZ const sun_world_position);
+LineAndIterator* CDECL principia__RenderedVesselTrajectory(
+    Plugin const* const plugin,
+    char const* vessel_guid,
+    RenderingFrame const* frame,
+    XYZ const sun_world_position);
 
 // Returns |line_and_iterator->rendered_trajectory.size()|.
 // |line_and_iterator| must not be null.  No transfer of ownership.

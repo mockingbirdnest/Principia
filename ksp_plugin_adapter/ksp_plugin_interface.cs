@@ -129,7 +129,7 @@ public partial class PluginAdapter : UnityEngine.MonoBehaviour {
 
   [DllImport(dllName           : kDllPath,
              CallingConvention = CallingConvention.Cdecl)]
-  private static extern IntPtr RenderedVesselTrajectory(
+  private static extern IntPtr principia__RenderedVesselTrajectory(
       IntPtr plugin,
       [MarshalAs(UnmanagedType.LPStr)] String vessel_guid,
       IntPtr frame,
