@@ -62,7 +62,7 @@ void principia__LogWarning(char const* message) {
   LOG(WARNING) << message;
 }
 
-void LogError(char const* message) {
+void principia__LogError(char const* message) {
   LOG(ERROR) << message;
 }
 

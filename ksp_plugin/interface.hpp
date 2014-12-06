@@ -90,7 +90,7 @@ void CDECL principia__LogInfo(char const* message);
 extern "C" DLLEXPORT
 void CDECL principia__LogWarning(char const* message);
 extern "C" DLLEXPORT
-void CDECL LogError(char const* message);
+void CDECL principia__LogError(char const* message);
 extern "C" DLLEXPORT
 void CDECL LogFatal(char const* message);
 
