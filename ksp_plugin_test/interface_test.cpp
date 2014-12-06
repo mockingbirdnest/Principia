@@ -120,7 +120,9 @@ TEST_F(InterfaceTest, InsertCelestial) {
 TEST_F(InterfaceTest, UpdateCelestialHierarchy) {
   EXPECT_CALL(*plugin_,
               UpdateCelestialHierarchy(kCelestialIndex, kParentIndex));
-  principia__UpdateCelestialHierarchy(plugin_.get(), kCelestialIndex, kParentIndex);
+  principia__UpdateCelestialHierarchy(plugin_.get(),
+                                      kCelestialIndex,
+                                      kParentIndex);
 }
 
 TEST_F(InterfaceTest, EndInitialization) {
