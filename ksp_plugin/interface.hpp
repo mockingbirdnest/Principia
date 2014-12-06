@@ -79,7 +79,7 @@ static_assert(std::is_standard_layout<XYZSegment>::value,
 // "<KSP directory>/glog/Principia/<SEVERITY>.<date>-<time>.<pid>",
 // where date and time are in ISO 8601 basic format.
 extern "C" DLLEXPORT
-void CDECL InitGoogleLogging();
+void CDECL principia__InitGoogleLogging();
 
 // Exports |LOG(SEVERITY) << message| for fast logging from the C# adapter.
 // This will always evaluate its argument even if the corresponding log severity

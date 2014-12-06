@@ -9,7 +9,7 @@ internal static class Log {
 
   [DllImport(dllName           : PluginAdapter.kDllPath,
              CallingConvention = CallingConvention.Cdecl)]
-  internal static extern void InitGoogleLogging();
+  internal static extern void principia__InitGoogleLogging();
 
   [DllImport(dllName           : PluginAdapter.kDllPath,
              EntryPoint        = "LogInfo",

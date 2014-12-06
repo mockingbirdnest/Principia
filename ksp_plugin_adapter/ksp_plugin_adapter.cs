@@ -36,7 +36,7 @@ public partial class PluginAdapter : UnityEngine.MonoBehaviour {
     // We create this directory here so we do not need to worry about cross-
     // platform problems in C++.
     System.IO.Directory.CreateDirectory("glog/Principia");
-    Log.InitGoogleLogging();
+    Log.principia__InitGoogleLogging();
   }
 
   ~PluginAdapter() {

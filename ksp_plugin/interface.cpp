@@ -28,7 +28,7 @@ std::unique_ptr<T> TakeOwnership(T** const pointer) {
 
 }  // namespace
 
-void InitGoogleLogging() {
+void principia__InitGoogleLogging() {
   if (google::IsGoogleLoggingInitialized()) {
     LOG(INFO) << "Google logging was already initialized, no action taken";
   } else {
@@ -46,7 +46,7 @@ void InitGoogleLogging() {
     FLAGS_v = 1;
     // Buffer severities <= |INFO|, i.e., don't buffer.
     FLAGS_logbuflevel = google::INFO - 1;
-    google::InitGoogleLogging("Principia");
+    google::principia__InitGoogleLogging("Principia");
     LOG(INFO) << "Initialized Google logging for Principia";
     LOG(INFO) << "Principia version " << principia::base::kVersion
               << " built on " << principia::base::kBuildDate;
