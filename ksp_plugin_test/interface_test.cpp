@@ -126,7 +126,7 @@ TEST_F(InterfaceTest, UpdateCelestialHierarchy) {
 TEST_F(InterfaceTest, EndInitialization) {
   EXPECT_CALL(*plugin_,
               EndInitialization());
-  EndInitialization(plugin_.get());
+  principia__EndInitialization(plugin_.get());
 }
 
 TEST_F(InterfaceTest, InsertOrKeepVessel) {

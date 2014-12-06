@@ -122,7 +122,7 @@ void principia__UpdateCelestialHierarchy(Plugin const* const plugin,
                                                   parent_index);
 }
 
-void EndInitialization(Plugin* const plugin) {
+void principia__EndInitialization(Plugin* const plugin) {
   CHECK_NOTNULL(plugin)->EndInitialization();
 }
 

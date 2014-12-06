@@ -480,7 +480,7 @@ public partial class PluginAdapter : UnityEngine.MonoBehaviour {
                       (XYZ)body.orbit.vel);
     };
     ApplyToBodyTree(insert_body);
-    EndInitialization(plugin_);
+    principia__EndInitialization(plugin_);
     first_selected_celestial_ = 0;
     second_selected_celestial_ = 0;
     rendering_frame_ =

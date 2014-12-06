@@ -129,7 +129,7 @@ void CDECL principia__UpdateCelestialHierarchy(Plugin const* const plugin,
 // Calls |plugin->EndInitialization|.
 // |plugin| must not be null.  No transfer of ownership.
 extern "C" DLLEXPORT
-void CDECL EndInitialization(Plugin* const plugin);
+void CDECL principia__EndInitialization(Plugin* const plugin);
 
 // Calls |plugin->InsertOrKeepVessel| with the arguments given.
 // |plugin| must not be null.  No transfer of ownership.

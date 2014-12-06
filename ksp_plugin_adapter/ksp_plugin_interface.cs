@@ -55,7 +55,7 @@ public partial class PluginAdapter : UnityEngine.MonoBehaviour {
 
   [DllImport(dllName           : kDllPath,
              CallingConvention = CallingConvention.Cdecl)]
-  private static extern void EndInitialization(IntPtr plugin);
+  private static extern void principia__EndInitialization(IntPtr plugin);
 
   [DllImport(dllName           : kDllPath,
              CallingConvention = CallingConvention.Cdecl)]
