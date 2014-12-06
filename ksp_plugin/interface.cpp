@@ -54,7 +54,7 @@ void principia__InitGoogleLogging() {
   }
 }
 
-void LogInfo(char const* message) {
+void principia__LogInfo(char const* message) {
   LOG(INFO) << message;
 }
 

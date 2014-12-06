@@ -86,7 +86,7 @@ void CDECL principia__InitGoogleLogging();
 // is disabled, so it is less efficient than LOG(INFO).  It will not report the
 // line and file of the caller.
 extern "C" DLLEXPORT
-void CDECL LogInfo(char const* message);
+void CDECL principia__LogInfo(char const* message);
 extern "C" DLLEXPORT
 void CDECL LogWarning(char const* message);
 extern "C" DLLEXPORT

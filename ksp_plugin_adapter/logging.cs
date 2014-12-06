@@ -12,7 +12,7 @@ internal static class Log {
   internal static extern void principia__InitGoogleLogging();
 
   [DllImport(dllName           : PluginAdapter.kDllPath,
-             EntryPoint        = "LogInfo",
+             EntryPoint        = "principia__LogInfo",
              CallingConvention = CallingConvention.Cdecl)]
   internal static extern void Info(
       [MarshalAs(UnmanagedType.LPStr)] String message);
