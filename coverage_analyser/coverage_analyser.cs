@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 
 using Microsoft.VisualStudio.Coverage.Analysis;
 
+namespace principia {
 namespace coverage_analyser {
 
 class CoverageAnalyser {
@@ -126,4 +127,5 @@ class CoverageAnalyser {
 
 }
 
-}  // coverage_analyser
+}  // namespace coverage_analyser
+}  // namespace principia
