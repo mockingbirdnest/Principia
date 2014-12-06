@@ -69,9 +69,22 @@ template<typename Scalar>
 bool ComponentwiseMatcher<XMatcher, YMatcher, ZMatcher>::MatchAndExplain(
     geometry::R3Element<Scalar> const& actual,
     testing::MatchResultListener* listener) const {
-  return Matcher<Scalar>(x_matcher_).MatchAndExplain(actual.x, listener) &&
-         Matcher<Scalar>(y_matcher_).MatchAndExplain(actual.y, listener) &&
-         Matcher<Scalar>(z_matcher_).MatchAndExplain(actual.z, listener);
+  bool const x_matches =  Matcher<Scalar>(x_matcher_).MatchAndExplain(
+                              actual.x, listener);
+  if (!x_matches) {
+    *listener << " in the x coordinate; ";
+  }
+  bool const y_matches =  Matcher<Scalar>(y_matcher_).MatchAndExplain(
+                              actual.y, listener);
+  if (!y_matches) {
+    *listener << " in the y coordinate; ";
+  }
+  bool const z_matches =  Matcher<Scalar>(z_matcher_).MatchAndExplain(
+                              actual.z, listener);
+  if (!z_matches) {
+    *listener << " in the z coordinate; ";
+  }
+  return x_matches && y_matches && z_matches;
 }
 
 template<typename XMatcher, typename YMatcher, typename ZMatcher>
@@ -79,12 +92,22 @@ template<typename Scalar, typename Frame>
 bool ComponentwiseMatcher<XMatcher, YMatcher, ZMatcher>::
 MatchAndExplain(geometry::Vector<Scalar, Frame> const& actual,
                 testing::MatchResultListener* listener) const {
-  return Matcher<Scalar>(x_matcher_).MatchAndExplain(
-             actual.coordinates().x, listener) &&
-         Matcher<Scalar>(y_matcher_).MatchAndExplain(
-             actual.coordinates().y, listener) &&
-         Matcher<Scalar>(z_matcher_).MatchAndExplain(
-             actual.coordinates().z, listener);
+  bool const x_matches =  Matcher<Scalar>(x_matcher_).MatchAndExplain(
+                              actual.coordinates().x, listener);
+  if (!x_matches) {
+    *listener << " in the x coordinate; ";
+  }
+  bool const y_matches =  Matcher<Scalar>(y_matcher_).MatchAndExplain(
+                              actual.coordinates().y, listener);
+  if (!y_matches) {
+    *listener << " in the y coordinate; ";
+  }
+  bool const z_matches =  Matcher<Scalar>(z_matcher_).MatchAndExplain(
+                              actual.coordinates().z, listener);
+  if (!z_matches) {
+    *listener << " in the z coordinate; ";
+  }
+  return x_matches && y_matches && z_matches;
 }
 
 template<typename XMatcher, typename YMatcher, typename ZMatcher>
@@ -92,12 +115,22 @@ template<typename Scalar, typename Frame>
 bool ComponentwiseMatcher<XMatcher, YMatcher, ZMatcher>::
 MatchAndExplain(geometry::Bivector<Scalar, Frame> const& actual,
                 testing::MatchResultListener* listener) const {
-  return Matcher<Scalar>(x_matcher_).MatchAndExplain(
-             actual.coordinates().x, listener) &&
-         Matcher<Scalar>(y_matcher_).MatchAndExplain(
-             actual.coordinates().y, listener) &&
-         Matcher<Scalar>(z_matcher_).MatchAndExplain(
-             actual.coordinates().z, listener);
+  bool const x_matches =  Matcher<Scalar>(x_matcher_).MatchAndExplain(
+                              actual.coordinates().x, listener);
+  if (!x_matches) {
+    *listener << " in the x coordinate; ";
+  }
+  bool const y_matches =  Matcher<Scalar>(y_matcher_).MatchAndExplain(
+                              actual.coordinates().y, listener);
+  if (!y_matches) {
+    *listener << " in the y coordinate; ";
+  }
+  bool const z_matches =  Matcher<Scalar>(z_matcher_).MatchAndExplain(
+                              actual.coordinates().z, listener);
+  if (!z_matches) {
+    *listener << " in the z coordinate; ";
+  }
+  return x_matches && y_matches && z_matches;
 }
 
 template<typename XMatcher, typename YMatcher, typename ZMatcher>

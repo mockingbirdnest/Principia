@@ -25,9 +25,9 @@ namespace testing_utilities {
 
 struct World;
 
-class VanishesBeforeTest : public testing::Test {};
+class ComponentwiseTest : public testing::Test {};
 
-TEST_F(VanishesBeforeTest, R3Element) {
+TEST_F(ComponentwiseTest, R3Element) {
   R3Element<double> r({1.0 + 1.0E-12, 1.0E-10, 3.5});
   EXPECT_THAT(r, Componentwise(AlmostEquals(1.0, 4504),
                                VanishesBefore(1.0, 450360),
@@ -40,7 +40,7 @@ TEST_F(VanishesBeforeTest, R3Element) {
                                    Eq(2.5))));
 }
 
-TEST_F(VanishesBeforeTest, Grassmann) {
+TEST_F(ComponentwiseTest, Grassmann) {
   Vector<Length, World> v({(1.0 + 1.0E-12) * Metre,
                             1.0E-10 * Metre,
                             3.5 * Metre});
