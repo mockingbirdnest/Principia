@@ -8,8 +8,9 @@ namespace ksp_plugin_adapter {
 internal static class Log {
 
   [DllImport(dllName           : PluginAdapter.kDllPath,
+             EntryPoint        = "principia__InitGoogleLogging",
              CallingConvention = CallingConvention.Cdecl)]
-  internal static extern void principia__InitGoogleLogging();
+  internal static extern void InitGoogleLogging();
 
   [DllImport(dllName           : PluginAdapter.kDllPath,
              EntryPoint        = "principia__LogInfo",
