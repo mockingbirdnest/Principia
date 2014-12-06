@@ -266,9 +266,9 @@ XYZ principia__VesselWorldPosition(Plugin const* const plugin,
              coordinates.z / Metre};
 }
 
-XYZ VesselWorldVelocity(Plugin const* const plugin,
-                        char const* vessel_guid,
-                        XYZ const parent_world_velocity,
+XYZ principia__VesselWorldVelocity(Plugin const* const plugin,
+                                   char const* vessel_guid,
+                                   XYZ const parent_world_velocity,
                         double const parent_rotation_period) {
   Velocity<World> result = CHECK_NOTNULL(plugin)->VesselWorldVelocity(
       vessel_guid,

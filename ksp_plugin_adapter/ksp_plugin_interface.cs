@@ -160,7 +160,7 @@ public partial class PluginAdapter : UnityEngine.MonoBehaviour {
 
   [DllImport(dllName           : kDllPath,
              CallingConvention = CallingConvention.Cdecl)]
-  private static extern XYZ VesselWorldVelocity(
+  private static extern XYZ principia__VesselWorldVelocity(
     IntPtr plugin,
     [MarshalAs(UnmanagedType.LPStr)] String vessel_guid,
     XYZ parent_world_velocity,

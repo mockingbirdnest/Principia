@@ -325,21 +325,21 @@ public partial class PluginAdapter : UnityEngine.MonoBehaviour {
                active_vessel.CoM)));
       UnityEngine.GUILayout.TextArea(
           "Principia \"world\", rotating : " +
-          (Vector3d)VesselWorldVelocity(
+          (Vector3d)principia__VesselWorldVelocity(
               plugin_,
               active_vessel.id.ToString(),
               new XYZ{x = 0, y = 0, z = 0},
               active_vessel.orbit.referenceBody.rotationPeriod));
       UnityEngine.GUILayout.TextArea(
           "Principia \"world\", no rotation : " +
-          (Vector3d)VesselWorldVelocity(
+          (Vector3d)principia__VesselWorldVelocity(
               plugin_,
               active_vessel.id.ToString(),
               new XYZ{x = 0, y = 0, z = 0},
               double.PositiveInfinity));
       UnityEngine.GUILayout.TextArea(
           "Principia \"world\", expected : " +
-          (Vector3d)VesselWorldVelocity(
+          (Vector3d)principia__VesselWorldVelocity(
               plugin_,
               active_vessel.id.ToString(),
               new XYZ{x = 0, y = 0, z = 0},
@@ -388,14 +388,14 @@ public partial class PluginAdapter : UnityEngine.MonoBehaviour {
             (XYZ)active_vessel.orbit.referenceBody.position));
     Log.Info(
         "Principia world velocity (rotating) : " +
-        (Vector3d)VesselWorldVelocity(
+        (Vector3d)principia__VesselWorldVelocity(
             plugin_,
             active_vessel.id.ToString(),
             new XYZ{x = 0, y = 0, z = 0},
             active_vessel.orbit.referenceBody.rotationPeriod));
     Log.Info(
         "Principia world velocity (no rotation) : " +
-        (Vector3d)VesselWorldVelocity(
+        (Vector3d)principia__VesselWorldVelocity(
             plugin_,
             active_vessel.id.ToString(),
             new XYZ{x = 0, y = 0, z = 0},
