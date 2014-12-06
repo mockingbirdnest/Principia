@@ -50,7 +50,7 @@ TEST_F(InterfaceDeathTest, Errors) {
     principia__DeletePlugin(nullptr);
   }, "pointer.*non NULL");
   EXPECT_DEATH({
-    InsertCelestial(plugin,
+    principia__InsertCelestial(plugin,
                     kCelestialIndex,
                     kGravitationalParameter,
                     kParentIndex,
@@ -95,9 +95,9 @@ TEST_F(InterfaceTest, principia__DeletePluginSuccess) {
   EXPECT_THAT(plugin, IsNull());
 }
 
-TEST_F(InterfaceTest, InsertCelestial) {
+TEST_F(InterfaceTest, principia__InsertCelestial) {
   EXPECT_CALL(*plugin_,
-              InsertCelestial(
+              principia__InsertCelestial(
                   kCelestialIndex,
                   kGravitationalParameter * SIUnit<GravitationalParameter>(),
                   kParentIndex,
@@ -109,7 +109,7 @@ TEST_F(InterfaceTest, InsertCelestial) {
                       {kParentVelocity.x * SIUnit<Speed>(),
                        kParentVelocity.y * SIUnit<Speed>(),
                        kParentVelocity.z * SIUnit<Speed>()})));
-  InsertCelestial(plugin_.get(),
+  principia__InsertCelestial(plugin_.get(),
                   kCelestialIndex,
                   kGravitationalParameter,
                   kParentIndex,

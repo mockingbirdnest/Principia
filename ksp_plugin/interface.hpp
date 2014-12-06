@@ -109,15 +109,15 @@ Plugin* CDECL principia__NewPlugin(
 extern "C" DLLEXPORT
 void CDECL principia__DeletePlugin(Plugin const** const plugin);
 
-// Calls |plugin->InsertCelestial| with the arguments given.
+// Calls |plugin->principia__InsertCelestial| with the arguments given.
 // |plugin| must not be null.  No transfer of ownership.
 extern "C" DLLEXPORT
-void CDECL InsertCelestial(Plugin* const plugin,
-                           int const celestial_index,
-                           double const gravitational_parameter,
-                           int const parent_index,
-                           XYZ const from_parent_position,
-                           XYZ const from_parent_velocity);
+void CDECL principia__InsertCelestial(Plugin* const plugin,
+                                      int const celestial_index,
+                                      double const gravitational_parameter,
+                                      int const parent_index,
+                                      XYZ const from_parent_position,
+                                      XYZ const from_parent_velocity);
 
 // Calls |plugin->UpdateCelestialHierarchy| with the arguments given.
 // |plugin| must not be null.  No transfer of ownership.

@@ -45,7 +45,7 @@ public partial class PluginAdapter : UnityEngine.MonoBehaviour {
 
   [DllImport(dllName           : kDllPath,
              CallingConvention = CallingConvention.Cdecl)]
-  private static extern void InsertCelestial(
+  private static extern void principia__InsertCelestial(
       IntPtr plugin,
       int celestial_index,
       double gravitational_parameter,

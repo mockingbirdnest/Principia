@@ -471,7 +471,7 @@ public partial class PluginAdapter : UnityEngine.MonoBehaviour {
                         Planetarium.InverseRotAngle);
     BodyProcessor insert_body = body => {
       Log.Info("Inserting " + body.name + "...");
-      InsertCelestial(plugin_,
+      principia__InsertCelestial(plugin_,
                       body.flightGlobalsIndex,
                       body.gravParameter,
                       body.orbit.referenceBody.flightGlobalsIndex,

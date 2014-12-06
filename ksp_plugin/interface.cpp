@@ -97,12 +97,12 @@ void principia__DeletePlugin(Plugin const** const plugin) {
 // NOTE(egg): The |* (Metre / Second)| might be slower than |* SIUnit<Speed>()|,
 // but it is more readable. This will be resolved once we have constexpr.
 
-void InsertCelestial(Plugin* const plugin,
-                     int const celestial_index,
-                     double const gravitational_parameter,
-                     int const parent_index,
-                     XYZ const from_parent_position,
-                     XYZ const from_parent_velocity) {
+void principia__InsertCelestial(Plugin* const plugin,
+                                int const celestial_index,
+                                double const gravitational_parameter,
+                                int const parent_index,
+                                XYZ const from_parent_position,
+                                XYZ const from_parent_velocity) {
   CHECK_NOTNULL(plugin)->InsertCelestial(
       celestial_index,
       gravitational_parameter * SIUnit<GravitationalParameter>(),
