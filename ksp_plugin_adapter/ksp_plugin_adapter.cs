@@ -211,7 +211,7 @@ public partial class PluginAdapter : UnityEngine.MonoBehaviour {
             principia__FetchAndIncrement(trajectory_iterator);
             index_in_line_points += 2;
           }
-          while (!AtEnd(trajectory_iterator)) {
+          while (!principia__AtEnd(trajectory_iterator)) {
             segment = principia__FetchAndIncrement(trajectory_iterator);
             // TODO(egg): should we do the |LocalToScaledSpace| conversion in
             // native code?

@@ -242,7 +242,7 @@ XYZSegment principia__FetchAndIncrement(
           XYZ{end.x / Metre, end.y / Metre, end.z / Metre}};
 }
 
-bool AtEnd(LineAndIterator* const line_and_iterator) {
+bool principia__AtEnd(LineAndIterator* const line_and_iterator) {
   CHECK_NOTNULL(line_and_iterator);
   return line_and_iterator->it == line_and_iterator->rendered_trajectory.end();
 }
