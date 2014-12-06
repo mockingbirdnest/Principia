@@ -115,9 +115,9 @@ void principia__InsertCelestial(Plugin* const plugin,
                           from_parent_velocity.z * (Metre / Second)}));
 }
 
-void UpdateCelestialHierarchy(Plugin const* const plugin,
-                              int const celestial_index,
-                              int const parent_index) {
+void principia__UpdateCelestialHierarchy(Plugin const* const plugin,
+                                         int const celestial_index,
+                                         int const parent_index) {
   CHECK_NOTNULL(plugin)->UpdateCelestialHierarchy(celestial_index,
                                                   parent_index);
 }

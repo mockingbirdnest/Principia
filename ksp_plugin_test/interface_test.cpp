@@ -58,10 +58,10 @@ TEST_F(InterfaceDeathTest, Errors) {
                     kParentVelocity);
   }, "plugin.*non NULL");
   EXPECT_DEATH({
-    UpdateCelestialHierarchy(plugin, kCelestialIndex, kParentIndex);
+    principia__UpdateCelestialHierarchy(plugin, kCelestialIndex, kParentIndex);
   }, "plugin.*non NULL");
   EXPECT_DEATH({
-    UpdateCelestialHierarchy(plugin, kCelestialIndex, kParentIndex);
+    principia__UpdateCelestialHierarchy(plugin, kCelestialIndex, kParentIndex);
   }, "plugin.*non NULL");
   EXPECT_DEATH({
     InsertOrKeepVessel(plugin, kVesselGUID, kParentIndex);
@@ -97,7 +97,7 @@ TEST_F(InterfaceTest, principia__DeletePluginSuccess) {
 
 TEST_F(InterfaceTest, principia__InsertCelestial) {
   EXPECT_CALL(*plugin_,
-              principia__InsertCelestial(
+              InsertCelestial(
                   kCelestialIndex,
                   kGravitationalParameter * SIUnit<GravitationalParameter>(),
                   kParentIndex,
@@ -110,17 +110,17 @@ TEST_F(InterfaceTest, principia__InsertCelestial) {
                        kParentVelocity.y * SIUnit<Speed>(),
                        kParentVelocity.z * SIUnit<Speed>()})));
   principia__InsertCelestial(plugin_.get(),
-                  kCelestialIndex,
-                  kGravitationalParameter,
-                  kParentIndex,
-                  kParentPosition,
-                  kParentVelocity);
+                             kCelestialIndex,
+                             kGravitationalParameter,
+                             kParentIndex,
+                             kParentPosition,
+                             kParentVelocity);
 }
 
 TEST_F(InterfaceTest, UpdateCelestialHierarchy) {
   EXPECT_CALL(*plugin_,
               UpdateCelestialHierarchy(kCelestialIndex, kParentIndex));
-  UpdateCelestialHierarchy(plugin_.get(), kCelestialIndex, kParentIndex);
+  principia__UpdateCelestialHierarchy(plugin_.get(), kCelestialIndex, kParentIndex);
 }
 
 TEST_F(InterfaceTest, EndInitialization) {

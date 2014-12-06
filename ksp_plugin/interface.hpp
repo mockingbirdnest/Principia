@@ -119,12 +119,12 @@ void CDECL principia__InsertCelestial(Plugin* const plugin,
                                       XYZ const from_parent_position,
                                       XYZ const from_parent_velocity);
 
-// Calls |plugin->UpdateCelestialHierarchy| with the arguments given.
+// Calls |plugin->principia__UpdateCelestialHierarchy| with the arguments given.
 // |plugin| must not be null.  No transfer of ownership.
 extern "C" DLLEXPORT
-void CDECL UpdateCelestialHierarchy(Plugin const* const plugin,
-                                    int const celestial_index,
-                                    int const parent_index);
+void CDECL principia__UpdateCelestialHierarchy(Plugin const* const plugin,
+                                               int const celestial_index,
+                                               int const parent_index);
 
 // Calls |plugin->EndInitialization|.
 // |plugin| must not be null.  No transfer of ownership.

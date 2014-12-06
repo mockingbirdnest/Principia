@@ -107,9 +107,10 @@ public partial class PluginAdapter : UnityEngine.MonoBehaviour {
       double universal_time = Planetarium.GetUniversalTime();
       AdvanceTime(plugin_, universal_time, Planetarium.InverseRotAngle);
       BodyProcessor update_body = body => {
-        UpdateCelestialHierarchy(plugin_,
-                                 body.flightGlobalsIndex,
-                                 body.orbit.referenceBody.flightGlobalsIndex);
+        principia__UpdateCelestialHierarchy(
+            plugin_,
+            body.flightGlobalsIndex,
+            body.orbit.referenceBody.flightGlobalsIndex);
         Vector3d position =
             (Vector3d)CelestialDisplacementFromParent(plugin_,
                                                       body.flightGlobalsIndex);

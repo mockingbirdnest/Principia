@@ -59,9 +59,10 @@ public partial class PluginAdapter : UnityEngine.MonoBehaviour {
 
   [DllImport(dllName           : kDllPath,
              CallingConvention = CallingConvention.Cdecl)]
-  private static extern void UpdateCelestialHierarchy(IntPtr plugin,
-                                                      int celestial_index,
-                                                      int parent_index);
+  private static extern void principia__UpdateCelestialHierarchy(
+      IntPtr plugin,
+      int celestial_index,
+      int parent_index);
 
   [DllImport(dllName           : kDllPath,
              CallingConvention = CallingConvention.Cdecl)]
