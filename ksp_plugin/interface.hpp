@@ -107,7 +107,7 @@ Plugin* CDECL principia__NewPlugin(
 // |plugin| must not be null.  No transfer of ownership of |*plugin|, takes
 // ownership of |**plugin|.
 extern "C" DLLEXPORT
-void CDECL DeletePlugin(Plugin const** const plugin);
+void CDECL principia__DeletePlugin(Plugin const** const plugin);
 
 // Calls |plugin->InsertCelestial| with the arguments given.
 // |plugin| must not be null.  No transfer of ownership.

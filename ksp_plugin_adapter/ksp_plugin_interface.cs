@@ -41,7 +41,7 @@ public partial class PluginAdapter : UnityEngine.MonoBehaviour {
 
   [DllImport(dllName           : kDllPath,
              CallingConvention = CallingConvention.Cdecl)]
-  private static extern void DeletePlugin(ref IntPtr plugin);
+  private static extern void principia__DeletePlugin(ref IntPtr plugin);
 
   [DllImport(dllName           : kDllPath,
              CallingConvention = CallingConvention.Cdecl)]

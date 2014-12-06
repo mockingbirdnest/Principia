@@ -84,7 +84,7 @@ Plugin* principia__NewPlugin(double const initial_time,
   return result.release();
 }
 
-void DeletePlugin(Plugin const** const plugin) {
+void principia__DeletePlugin(Plugin const** const plugin) {
   LOG(INFO) << "Destroying Principia plugin";
   // We want to log before and after destroying the plugin since it is a pretty
   // significant event, so we take ownership inside a block.

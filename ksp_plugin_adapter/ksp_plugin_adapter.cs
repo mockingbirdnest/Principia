@@ -233,7 +233,7 @@ public partial class PluginAdapter : UnityEngine.MonoBehaviour {
   #endregion
 
   private void Cleanup() {
-    DeletePlugin(ref plugin_);
+    principia__DeletePlugin(ref plugin_);
     DeleteRenderingFrame(ref rendering_frame_);
     if (rendered_trajectory_ != null) {
       Vector.DestroyLine(ref rendered_trajectory_);

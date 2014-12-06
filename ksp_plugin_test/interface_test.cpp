@@ -47,7 +47,7 @@ using InterfaceDeathTest = InterfaceTest;
 TEST_F(InterfaceDeathTest, Errors) {
   Plugin* plugin = nullptr;
   EXPECT_DEATH({
-    DeletePlugin(nullptr);
+    principia__DeletePlugin(nullptr);
   }, "pointer.*non NULL");
   EXPECT_DEATH({
     InsertCelestial(plugin,
@@ -89,9 +89,9 @@ TEST_F(InterfaceDeathTest, Errors) {
   }, "plugin.*non NULL");
 }
 
-TEST_F(InterfaceTest, DeletePluginSuccess) {
+TEST_F(InterfaceTest, principia__DeletePluginSuccess) {
   Plugin const* plugin = plugin_.release();
-  DeletePlugin(&plugin);
+  principia__DeletePlugin(&plugin);
   EXPECT_THAT(plugin, IsNull());
 }
 
