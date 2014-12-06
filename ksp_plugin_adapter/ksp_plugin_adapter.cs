@@ -206,7 +206,7 @@ public partial class PluginAdapter : UnityEngine.MonoBehaviour {
 
           LineSegment segment;
           int index_in_line_points = kLinePoints -
-              NumberOfSegments(trajectory_iterator) * 2;
+              principia__NumberOfSegments(trajectory_iterator) * 2;
           while (index_in_line_points < 0) {
             FetchAndIncrement(trajectory_iterator);
             index_in_line_points += 2;

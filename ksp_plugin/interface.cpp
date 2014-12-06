@@ -226,7 +226,7 @@ LineAndIterator* principia__RenderedVesselTrajectory(
   return result.release();
 }
 
-int NumberOfSegments(LineAndIterator const* line_and_iterator) {
+int principia__NumberOfSegments(LineAndIterator const* line_and_iterator) {
   return CHECK_NOTNULL(line_and_iterator)->rendered_trajectory.size();
 }
 

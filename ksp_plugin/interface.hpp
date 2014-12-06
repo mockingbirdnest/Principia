@@ -211,7 +211,7 @@ LineAndIterator* CDECL principia__RenderedVesselTrajectory(
 // Returns |line_and_iterator->rendered_trajectory.size()|.
 // |line_and_iterator| must not be null.  No transfer of ownership.
 extern "C" DLLEXPORT
-int CDECL NumberOfSegments(LineAndIterator const* line_and_iterator);
+int CDECL principia__NumberOfSegments(LineAndIterator const* line_and_iterator);
 
 // Returns the |XYZSegment| corresponding to the |LineSegment|
 // |*line_and_iterator->it|, then increments |line_and_iterator->it|.
