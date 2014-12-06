@@ -54,6 +54,14 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Scripts", "Scripts", "{B0F4
 		generate_version_header.ps1 = generate_version_header.ps1
 	EndProjectSection
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Setup Files", "Setup Files", "{E3536C51-3B98-4D50-8973-A72D03042FCF}"
+	ProjectSection(SolutionItems) = preProject
+		documentation\Setup Files\chromium.patch = documentation\Setup Files\chromium.patch
+		documentation\Setup Files\chromium_sparse_checkout.txt = documentation\Setup Files\chromium_sparse_checkout.txt
+		documentation\Setup Files\glog.patch = documentation\Setup Files\glog.patch
+		documentation\Setup Files\gmock.patch = documentation\Setup Files\gmock.patch
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
