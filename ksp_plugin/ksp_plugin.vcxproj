@@ -139,6 +139,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="interface.cpp" />
+    <ClCompile Include="mock_plugin.cpp" />
     <ClCompile Include="monostable.cpp" />
     <ClCompile Include="plugin.cpp" />
     <ClCompile Include="rendering_frame.cpp" />

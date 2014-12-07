@@ -176,14 +176,14 @@ XYZ CDECL principia__CelestialParentRelativeVelocity(Plugin const* const plugin,
                                                      int const celestial_index);
 
 // Calls |plugin->NewBodyCentredNonRotatingFrame| with the arguments given.
-// |plugin| must not be null.  No transfer of ownership.
+// |plugin| must not be null.  The caller gets ownership of the returned object.
 extern "C" DLLEXPORT
 BodyCentredNonRotatingFrame const* CDECL
 principia__NewBodyCentredNonRotatingFrame(Plugin const* const plugin,
                                           int const reference_body_index);
 
 // Calls |plugin->NewBarycentricRotatingFrame| with the arguments given.
-// |plugin| must not be null.  No transfer of ownership.
+// |plugin| must not be null.  The caller gets ownership of the returned object.
 extern "C" DLLEXPORT
 BarycentricRotatingFrame const* CDECL principia__NewBarycentricRotatingFrame(
     Plugin const* const plugin,

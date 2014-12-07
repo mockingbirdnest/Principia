@@ -14,6 +14,7 @@ using testing::Eq;
 using testing::IsNull;
 using testing::Return;
 using testing::StrictMock;
+using testing::_;
 
 bool operator==(XYZ const& left, XYZ const& right) {
   return left.x == right.x && left.y == right.y && left.z == right.z;
@@ -33,10 +34,33 @@ double const kTime = 11;
 XYZ kParentPosition = {4, 5, 6};
 XYZ kParentVelocity = {7, 8, 9};
 
+ACTION_P(FillUniquePtr1, p) { return arg1->reset(p); }
+
+ACTION_TEMPLATE(FillUniquePtr,
+                // Note the comma between int and k:
+                HAS_1_TEMPLATE_PARAMS(int, k),
+                AND_1_VALUE_PARAMS(ptr)) {
+  std::tr1::get<k>(args)->reset(ptr);
+}
+
 class InterfaceTest : public testing::Test {
  protected:
   InterfaceTest()
-      : plugin_(new StrictMock<MockPlugin>) {}
+      : body_centred_non_rotating_frame_placeholder_(nullptr),
+        barycentric_rotating_frame_placeholder_(nullptr),
+        plugin_(new StrictMock<MockPlugin>) {}
+
+  // Since we cannot create a BodyCentredNonRotatingFrame or a
+  // BarycentricRotatingFrame here, we just create a pointer to a bunch of bytes
+  // having the right size.
+  template<typename T>
+  static T* NewPlaceholder() {
+    return reinterpret_cast<T*>(new char[sizeof(T)]);
+  }
+
+  // These two pointers are not owned.
+  BodyCentredNonRotatingFrame* body_centred_non_rotating_frame_placeholder_;
+  BarycentricRotatingFrame* barycentric_rotating_frame_placeholder_;
 
   std::unique_ptr<StrictMock<MockPlugin>> plugin_;
 };
@@ -89,7 +113,22 @@ TEST_F(InterfaceDeathTest, Errors) {
   }, "plugin.*non NULL");
 }
 
-TEST_F(InterfaceTest, DeletePluginSuccess) {
+TEST_F(InterfaceTest, Log) {
+  principia__LogInfo("An info");
+  principia__LogWarning("A warning");
+  principia__LogError("An error");
+}
+
+TEST_F(InterfaceTest, NewPlugin) {
+  std::unique_ptr<Plugin> plugin(principia__NewPlugin(
+                                     kTime,
+                                     kParentIndex /*sun_index*/,
+                                     kGravitationalParameter,
+                                     kPlanetariumRotation));
+  EXPECT_THAT(plugin, Not(IsNull()));
+}
+
+TEST_F(InterfaceTest, DeletePlugin) {
   Plugin const* plugin = plugin_.release();
   principia__DeletePlugin(&plugin);
   EXPECT_THAT(plugin, IsNull());
@@ -210,6 +249,46 @@ TEST_F(InterfaceTest, CelestialParentRelativeVelocity) {
                          plugin_.get(),
                          kCelestialIndex);
   EXPECT_THAT(result, Eq(kParentVelocity));
+}
+
+TEST_F(InterfaceTest, NewBodyCentredNonRotatingFrame) {
+  body_centred_non_rotating_frame_placeholder_ =
+      NewPlaceholder<BodyCentredNonRotatingFrame>();
+  EXPECT_CALL(*plugin_,
+              FillBodyCentredNonRotatingFrame(kCelestialIndex, _))
+      .WillOnce(FillUniquePtr<1>(body_centred_non_rotating_frame_placeholder_));
+  std::unique_ptr<BodyCentredNonRotatingFrame const> frame(
+      principia__NewBodyCentredNonRotatingFrame(plugin_.get(),
+                                                kCelestialIndex));
+  EXPECT_EQ(body_centred_non_rotating_frame_placeholder_, frame.get());
+}
+
+TEST_F(InterfaceTest, NewBarycentricRotatingFrame) {
+  barycentric_rotating_frame_placeholder_ =
+      NewPlaceholder<BarycentricRotatingFrame>();
+  EXPECT_CALL(*plugin_,
+              FillBarycentricRotatingFrame(kCelestialIndex, kParentIndex, _))
+      .WillOnce(FillUniquePtr<2>(barycentric_rotating_frame_placeholder_));
+  std::unique_ptr<BarycentricRotatingFrame const> frame(
+      principia__NewBarycentricRotatingFrame(plugin_.get(),
+                                             kCelestialIndex,
+                                             kParentIndex));
+  EXPECT_EQ(barycentric_rotating_frame_placeholder_, frame.get());
+}
+
+TEST_F(InterfaceTest, DeleteRenderingFrame) {
+  barycentric_rotating_frame_placeholder_ =
+      NewPlaceholder<BarycentricRotatingFrame>();
+  EXPECT_CALL(*plugin_,
+              FillBarycentricRotatingFrame(kCelestialIndex, kParentIndex, _))
+      .WillOnce(FillUniquePtr<2>(barycentric_rotating_frame_placeholder_));
+  RenderingFrame const* frame =
+      principia__NewBarycentricRotatingFrame(plugin_.get(),
+                                             kCelestialIndex,
+                                             kParentIndex);
+  EXPECT_EQ(barycentric_rotating_frame_placeholder_, frame);
+  principia__DeleteRenderingFrame(&frame);
+  EXPECT_THAT(frame, IsNull());
 }
 
 }  // namespace
