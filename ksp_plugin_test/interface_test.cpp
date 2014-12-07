@@ -8,10 +8,14 @@
 using principia::geometry::Displacement;
 using principia::ksp_plugin::AliceSun;
 using principia::ksp_plugin::Index;
+using principia::ksp_plugin::LineSegment;
 using principia::ksp_plugin::MockPlugin;
+using principia::ksp_plugin::RenderedTrajectory;
+using principia::ksp_plugin::World;
 using principia::si::Degree;
 using testing::Eq;
 using testing::IsNull;
+using testing::Ref;
 using testing::Return;
 using testing::StrictMock;
 using testing::_;
@@ -33,6 +37,8 @@ double const kTime = 11;
 
 XYZ kParentPosition = {4, 5, 6};
 XYZ kParentVelocity = {7, 8, 9};
+
+int const kTrajectorySize = 10;
 
 ACTION_P(FillUniquePtr1, p) { return arg1->reset(p); }
 
@@ -289,6 +295,71 @@ TEST_F(InterfaceTest, DeleteRenderingFrame) {
   EXPECT_EQ(barycentric_rotating_frame_placeholder_, frame);
   principia__DeleteRenderingFrame(&frame);
   EXPECT_THAT(frame, IsNull());
+}
+
+TEST_F(InterfaceTest, LineAndIterator) {
+  barycentric_rotating_frame_placeholder_ =
+      NewPlaceholder<BarycentricRotatingFrame>();
+  EXPECT_CALL(*plugin_,
+              FillBarycentricRotatingFrame(kCelestialIndex, kParentIndex, _))
+      .WillOnce(FillUniquePtr<2>(barycentric_rotating_frame_placeholder_));
+  RenderingFrame const* frame =
+      principia__NewBarycentricRotatingFrame(plugin_.get(),
+                                             kCelestialIndex,
+                                             kParentIndex);
+
+  // Construct a test rendered trajectory.
+  RenderedTrajectory<World> rendered_trajectory;
+  Position<World> position =
+      World::origin + Displacement<World>(
+                          {1 * SIUnit<Length>(),
+                           2 * SIUnit<Length>(),
+                           3 * SIUnit<Length>()});
+  for (int i = 0; i < kTrajectorySize; ++i) {
+    Position<World> next_position =
+        position + Displacement<World>({10 * SIUnit<Length>(),
+                                        20 * SIUnit<Length>(),
+                                        30 * SIUnit<Length>()});
+    LineSegment<World> line_segment(position, next_position);
+    rendered_trajectory.push_back(line_segment);
+    position = next_position;
+  }
+
+  // Construct a LineAndIterator.
+  EXPECT_CALL(*plugin_,
+              RenderedVesselTrajectory(
+                  kVesselGUID,
+                  Ref(*frame),
+                  World::origin + Displacement<World>(
+                                      {kParentPosition.x * SIUnit<Length>(),
+                                       kParentPosition.y * SIUnit<Length>(),
+                                       kParentPosition.z * SIUnit<Length>()})))
+      .WillOnce(Return(rendered_trajectory));
+  LineAndIterator* line_and_iterator =
+      principia__RenderedVesselTrajectory(plugin_.get(),
+                                          kVesselGUID,
+                                          frame,
+                                          kParentPosition);
+  EXPECT_EQ(kTrajectorySize, line_and_iterator->rendered_trajectory.size());
+  EXPECT_EQ(kTrajectorySize, principia__NumberOfSegments(line_and_iterator));
+
+  // Traverse it and check that we get the right data.
+  for (int i = 0; i < kTrajectorySize; ++i) {
+    EXPECT_FALSE(principia__AtEnd(line_and_iterator));
+    XYZSegment const segment = principia__FetchAndIncrement(line_and_iterator);
+    EXPECT_EQ(1 + 10 * i, segment.begin.x);
+    EXPECT_EQ(2 + 20 * i, segment.begin.y);
+    EXPECT_EQ(3 + 30 * i, segment.begin.z);
+    EXPECT_EQ(11 + 10 * i, segment.end.x);
+    EXPECT_EQ(22 + 20 * i, segment.end.y);
+    EXPECT_EQ(33 + 30 * i, segment.end.z);
+  }
+  EXPECT_TRUE(principia__AtEnd(line_and_iterator));
+
+  // Delete it.
+  EXPECT_THAT(line_and_iterator, Not(IsNull()));
+  principia__DeleteLineAndIterator(&line_and_iterator);
+  EXPECT_THAT(line_and_iterator, IsNull());
 }
 
 }  // namespace
