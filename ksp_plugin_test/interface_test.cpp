@@ -276,4 +276,19 @@ TEST_F(InterfaceTest, NewBarycentricRotatingFrame) {
   EXPECT_EQ(barycentric_rotating_frame_placeholder_, frame.get());
 }
 
+TEST_F(InterfaceTest, DeleteRenderingFrame) {
+  barycentric_rotating_frame_placeholder_ =
+      NewPlaceholder<BarycentricRotatingFrame>();
+  EXPECT_CALL(*plugin_,
+              FillBarycentricRotatingFrame(kCelestialIndex, kParentIndex, _))
+      .WillOnce(FillUniquePtr<2>(barycentric_rotating_frame_placeholder_));
+  RenderingFrame const* frame =
+      principia__NewBarycentricRotatingFrame(plugin_.get(),
+                                             kCelestialIndex,
+                                             kParentIndex);
+  EXPECT_EQ(barycentric_rotating_frame_placeholder_, frame);
+  principia__DeleteRenderingFrame(&frame);
+  EXPECT_THAT(frame, IsNull());
+}
+
 }  // namespace
