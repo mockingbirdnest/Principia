@@ -14,6 +14,7 @@ using testing::Eq;
 using testing::IsNull;
 using testing::Return;
 using testing::StrictMock;
+using testing::_;
 
 bool operator==(XYZ const& left, XYZ const& right) {
   return left.x == right.x && left.y == right.y && left.z == right.z;
@@ -32,6 +33,8 @@ double const kTime = 11;
 
 XYZ kParentPosition = {4, 5, 6};
 XYZ kParentVelocity = {7, 8, 9};
+
+ACTION_P(FillUniquePtr1, p) { return arg1->reset(p); }
 
 class InterfaceTest : public testing::Test {
  protected:
@@ -97,10 +100,10 @@ TEST_F(InterfaceTest, Log) {
 
 TEST_F(InterfaceTest, NewPlugin) {
   std::unique_ptr<Plugin> plugin(principia__NewPlugin(
-                                     1.0 /*initial_time*/,
-                                     2 /*sun_index*/,
-                                     3.0 /*sun_gravitational_parameter*/,
-                                     4.0 /*planetarium_rotation_in_degrees*/));
+                                     kTime,
+                                     kParentIndex /*sun_index*/,
+                                     kGravitationalParameter,
+                                     kPlanetariumRotation));
   EXPECT_THAT(plugin, Not(IsNull()));
 }
 
@@ -225,6 +228,17 @@ TEST_F(InterfaceTest, CelestialParentRelativeVelocity) {
                          plugin_.get(),
                          kCelestialIndex);
   EXPECT_THAT(result, Eq(kParentVelocity));
+}
+
+TEST_F(InterfaceTest, NewBodyCentredNonRotatingFrame) {
+  // Since we cannot create a BodyCentredNonRotatingFrame here, we just pass a
+  // pointer to an int.  
+  int frame_placeholder;
+  EXPECT_CALL(*plugin_,
+              FillBodyCentredNonRotatingFrame(kCelestialIndex, _))
+      .WillOnce(FillUniquePtr1(reinterpret_cast<BodyCentredNonRotatingFrame*>(&frame_placeholder)));
+  std::unique_ptr<BodyCentredNonRotatingFrame const> actual_frame(
+      principia__NewBodyCentredNonRotatingFrame(plugin_.get(), kCelestialIndex));
 }
 
 }  // namespace

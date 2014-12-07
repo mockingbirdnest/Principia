@@ -16,6 +16,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\ksp_plugin\interface.cpp" />
+    <ClCompile Include="..\ksp_plugin\mock_plugin.cpp" />
     <ClCompile Include="..\ksp_plugin\monostable.cpp" />
     <ClCompile Include="..\ksp_plugin\plugin.cpp" />
     <ClCompile Include="..\ksp_plugin\rendering_frame.cpp" />
