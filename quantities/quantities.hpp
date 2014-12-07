@@ -16,7 +16,7 @@ template<typename D> class Quantity;
 
 using NoDimensions = Dimensions<0, 0, 0, 0, 0, 0, 0, 0, 0, 0>;
 
-#pragma region Base quantities
+// Base quantities
 using Length            = Quantity<Dimensions<1, 0, 0, 0, 0, 0, 0, 0, 0, 0>>;
 using Mass              = Quantity<Dimensions<0, 1, 0, 0, 0, 0, 0, 0, 0, 0>>;
 using Time              = Quantity<Dimensions<0, 0, 1, 0, 0, 0, 0, 0, 0, 0>>;
@@ -30,7 +30,6 @@ using LuminousIntensity = Quantity<Dimensions<0, 0, 0, 0, 0, 0, 1, 0, 0, 0>>;
 using Winding           = Quantity<Dimensions<0, 0, 0, 0, 0, 0, 0, 1, 0, 0>>;
 using Angle             = Quantity<Dimensions<0, 0, 0, 0, 0, 0, 0, 0, 1, 0>>;
 using SolidAngle        = Quantity<Dimensions<0, 0, 0, 0, 0, 0, 0, 0, 0, 1>>;
-#pragma endregion
 
 namespace type_generators {
 template<typename Left, typename Right> struct ProductGenerator;

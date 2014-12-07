@@ -154,7 +154,7 @@ inline Quantity<D>& Quantity<D>::operator/=(double const right) {
   return *this;
 }
 
-#pragma region Additive group
+// Additive group
 
 template<typename D>
 inline Quantity<D> Quantity<D>::operator+() const {
@@ -176,9 +176,7 @@ inline Quantity<D> Quantity<D>::operator-(Quantity const& right) const {
   return Quantity(magnitude_ - right.magnitude_);
 }
 
-#pragma endregion
-
-#pragma region Comparison operators
+// Comparison operators
 
 template<typename D>
 inline bool Quantity<D>::operator>(Quantity const& right) const {
@@ -210,9 +208,7 @@ inline bool Quantity<D>::operator!=(Quantity<D> const& right) const {
   return magnitude_ != right.magnitude_;
 }
 
-#pragma endregion
-
-#pragma region Multiplicative group
+// Multiplicative group
 
 template<typename D>
 inline Quantity<D> Quantity<D>::operator/(double const right) const {
@@ -252,8 +248,6 @@ inline typename Quantity<RDimensions>::Inverse operator/(
     Quantity<RDimensions> const& right) {
   return typename Quantity<RDimensions>::Inverse(left / right.magnitude_);
 }
-
-#pragma endregion
 
 template<int exponent>
 inline double Pow(double x) {
