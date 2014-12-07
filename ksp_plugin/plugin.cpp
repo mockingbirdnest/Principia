@@ -592,6 +592,7 @@ void Plugin::AddVesselToNextPhysicsBubble(
   auto const it = vessels_.find(vessel_guid);
   CHECK(it != vessels_.end());
   Vessel* const vessel = it->second.get();
+  VLOG(1) << "Vessel: " << vessel;
   auto const inserted_vessel =
       next_physics_bubble_->vessels.emplace(vessel,
                                             std::vector<Part<World>* const>());
@@ -599,10 +600,13 @@ void Plugin::AddVesselToNextPhysicsBubble(
   std::vector<Part<World>* const>* const vessel_parts =
       &inserted_vessel.first->second;
   for (std::pair<PartID, std::unique_ptr<Part<World>>>& id_part : parts) {
-    CHECK(inserted_vessel.second);
+    VLOG(1) << "Inserting {id, part}" << '\n'
+            << "id: " << id_part.first << '\n'
+            << "*part: " << *id_part.second;
     auto const inserted_part =
-    next_physics_bubble_->parts.insert(std::move(id_part));
+        next_physics_bubble_->parts.insert(std::move(id_part));
     CHECK(inserted_part.second);
+    VLOG(1) << "Part is at: " << inserted_part.first->second;
     vessel_parts->push_back(inserted_part.first->second.get());
   }
 }
@@ -800,6 +804,7 @@ void Plugin::ComputeNextPhysicsBubbleVesselOffsets() {
   VLOG(1) << "Vessels in next bubble: "
           << next_physics_bubble_->vessels.size();
   for (auto const& vessel_parts : next_physics_bubble_->vessels) {
+    VLOG(1) << "Vessel: " << vessel_parts.first;
     VLOG(1) << "Parts in vessel: " << vessel_parts.second.size();
     std::vector<DegreesOfFreedom<World>> part_degrees_of_freedom;
     std::vector<Mass> part_masses;
@@ -821,6 +826,8 @@ void Plugin::ComputeNextPhysicsBubbleVesselOffsets() {
             Identity<World, WorldSun>()(
                 vessel_degrees_of_freedom.velocity -
                 next_physics_bubble_->centre_of_mass->velocity));
+    VLOG(1) << "Displacement from centre of mass: " << displacement;
+    VLOG(1) << "Velocity from centre of mass: " << velocity;
     next_physics_bubble_->displacements_from_centre_of_mass->emplace(
         vessel_parts.first,
         displacement);
@@ -888,6 +895,9 @@ void Plugin::PreparePhysicsBubble(Instant const& next_time) {
     }
   }
   current_physics_bubble_ = std::move(next_physics_bubble_);
+  VLOG(1) << "Bubble will be integrated from: "
+          << current_physics_bubble_->
+                 centre_of_mass_trajectory->last().degrees_of_freedom();
 }
 
 }  // namespace ksp_plugin

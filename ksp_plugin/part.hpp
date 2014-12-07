@@ -28,6 +28,9 @@ struct Part {
   // momentum, etc.
 };
 
+template<typename Frame>
+std::ostream& operator<<(std::ostream& out, Part<Frame> const& part);
+
 }  // namespace ksp_plugin
 }  // namespace principia
 
