@@ -297,7 +297,7 @@ TEST_F(InterfaceTest, DeleteRenderingFrame) {
   EXPECT_THAT(frame, IsNull());
 }
 
-TEST_F(InterfaceTest, RenderedVesselTrajectory) {
+TEST_F(InterfaceTest, LineAndIterator) {
   barycentric_rotating_frame_placeholder_ =
       NewPlaceholder<BarycentricRotatingFrame>();
   EXPECT_CALL(*plugin_,
@@ -325,6 +325,7 @@ TEST_F(InterfaceTest, RenderedVesselTrajectory) {
     position = next_position;
   }
 
+  // Construct a LineAndIterator.
   EXPECT_CALL(*plugin_,
               RenderedVesselTrajectory(
                   kVesselGUID,
@@ -340,6 +341,19 @@ TEST_F(InterfaceTest, RenderedVesselTrajectory) {
                                           frame,
                                           kParentPosition));
   EXPECT_EQ(kTrajectorySize, line_and_iterator->rendered_trajectory.size());
+  EXPECT_EQ(kTrajectorySize,
+            principia__NumberOfSegments(line_and_iterator.get()));
+
+  for (int i = 0; i < kTrajectorySize; ++i) {
+    XYZSegment const segment =
+        principia__FetchAndIncrement(line_and_iterator.get());
+    EXPECT_EQ(1 + 10 * i, segment.begin.x);
+    EXPECT_EQ(2 + 20 * i, segment.begin.y);
+    EXPECT_EQ(3 + 30 * i, segment.begin.z);
+    EXPECT_EQ(11 + 10 * i, segment.end.x);
+    EXPECT_EQ(22 + 20 * i, segment.end.y);
+    EXPECT_EQ(33 + 30 * i, segment.end.z);
+  }
 }
 
 }  // namespace
