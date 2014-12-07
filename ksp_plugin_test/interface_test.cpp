@@ -89,7 +89,22 @@ TEST_F(InterfaceDeathTest, Errors) {
   }, "plugin.*non NULL");
 }
 
-TEST_F(InterfaceTest, DeletePluginSuccess) {
+TEST_F(InterfaceTest, Log) {
+  principia__LogInfo("An info");
+  principia__LogWarning("A warning");
+  principia__LogError("An error");
+}
+
+TEST_F(InterfaceTest, NewPlugin) {
+  std::unique_ptr<Plugin> plugin(principia__NewPlugin(
+                                     1.0 /*initial_time*/,
+                                     2 /*sun_index*/,
+                                     3.0 /*sun_gravitational_parameter*/,
+                                     4.0 /*planetarium_rotation_in_degrees*/));
+  EXPECT_THAT(plugin, Not(IsNull()));
+}
+
+TEST_F(InterfaceTest, DeletePlugin) {
   Plugin const* plugin = plugin_.release();
   principia__DeletePlugin(&plugin);
   EXPECT_THAT(plugin, IsNull());
