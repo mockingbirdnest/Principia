@@ -46,7 +46,21 @@ ACTION_TEMPLATE(FillUniquePtr,
 class InterfaceTest : public testing::Test {
  protected:
   InterfaceTest()
-      : plugin_(new StrictMock<MockPlugin>) {}
+      : body_centred_non_rotating_frame_placeholder_(nullptr),
+        barycentric_rotating_frame_placeholder_(nullptr),
+        plugin_(new StrictMock<MockPlugin>) {}
+
+  // Since we cannot create a BodyCentredNonRotatingFrame or a
+  // BarycentricRotatingFrame here, we just create a pointer to a bunch of bytes
+  // having the right size.
+  template<typename T>
+  static T* NewPlaceholder() {
+    return reinterpret_cast<T*>(new char[sizeof(T)]);
+  }
+
+  // These two pointers are not owned.
+  BodyCentredNonRotatingFrame* body_centred_non_rotating_frame_placeholder_;
+  BarycentricRotatingFrame* barycentric_rotating_frame_placeholder_;
 
   std::unique_ptr<StrictMock<MockPlugin>> plugin_;
 };
@@ -238,32 +252,28 @@ TEST_F(InterfaceTest, CelestialParentRelativeVelocity) {
 }
 
 TEST_F(InterfaceTest, NewBodyCentredNonRotatingFrame) {
-  // Since we cannot create a BodyCentredNonRotatingFrame here, we just pass a
-  // pointer to a bunch of bytes having the right size.
-  BodyCentredNonRotatingFrame* frame_placeholder =
-      reinterpret_cast<BodyCentredNonRotatingFrame*>(
-          new char[sizeof(BodyCentredNonRotatingFrame)]);
+  body_centred_non_rotating_frame_placeholder_ =
+      NewPlaceholder<BodyCentredNonRotatingFrame>();
   EXPECT_CALL(*plugin_,
               FillBodyCentredNonRotatingFrame(kCelestialIndex, _))
-      .WillOnce(FillUniquePtr<1>(frame_placeholder));
-  std::unique_ptr<BodyCentredNonRotatingFrame const> actual_frame(
+      .WillOnce(FillUniquePtr<1>(body_centred_non_rotating_frame_placeholder_));
+  std::unique_ptr<BodyCentredNonRotatingFrame const> frame(
       principia__NewBodyCentredNonRotatingFrame(plugin_.get(),
                                                 kCelestialIndex));
+  EXPECT_EQ(body_centred_non_rotating_frame_placeholder_, frame.get());
 }
 
 TEST_F(InterfaceTest, NewBarycentricRotatingFrame) {
-  // Since we cannot create a BarycentricRotatingFrame here, we just pass a
-  // pointer to a bunch of bytes having the right size.
-  BarycentricRotatingFrame* frame_placeholder =
-      reinterpret_cast<BarycentricRotatingFrame*>(
-          new char[sizeof(BarycentricRotatingFrame)]);
+  barycentric_rotating_frame_placeholder_ =
+      NewPlaceholder<BarycentricRotatingFrame>();
   EXPECT_CALL(*plugin_,
               FillBarycentricRotatingFrame(kCelestialIndex, kParentIndex, _))
-      .WillOnce(FillUniquePtr<2>(frame_placeholder));
-  std::unique_ptr<BarycentricRotatingFrame const> actual_frame(
+      .WillOnce(FillUniquePtr<2>(barycentric_rotating_frame_placeholder_));
+  std::unique_ptr<BarycentricRotatingFrame const> frame(
       principia__NewBarycentricRotatingFrame(plugin_.get(),
                                              kCelestialIndex,
                                              kParentIndex));
+  EXPECT_EQ(barycentric_rotating_frame_placeholder_, frame.get());
 }
 
 }  // namespace
