@@ -896,11 +896,11 @@ void Plugin::PreparePhysicsBubble(Instant const& next_time) {
   }
   current_physics_bubble_ = std::move(next_physics_bubble_);
   if (current_physics_bubble_ == nullptr) {
+    VLOG(1) << "No physics bubble";
+  } else {
     VLOG(1) << "Bubble will be integrated from: "
             << current_physics_bubble_->
                    centre_of_mass_trajectory->last().degrees_of_freedom();
-  } else {
-    VLOG(1) << "No physics bubble";
   }
 }
 
