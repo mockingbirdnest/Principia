@@ -36,6 +36,13 @@ XYZ kParentVelocity = {7, 8, 9};
 
 ACTION_P(FillUniquePtr1, p) { return arg1->reset(p); }
 
+ACTION_TEMPLATE(FillUniquePtr,
+                // Note the comma between int and k:
+                HAS_1_TEMPLATE_PARAMS(int, k),
+                AND_1_VALUE_PARAMS(ptr)) {
+  std::tr1::get<k>(args)->reset(ptr);
+}
+
 class InterfaceTest : public testing::Test {
  protected:
   InterfaceTest()
@@ -238,10 +245,25 @@ TEST_F(InterfaceTest, NewBodyCentredNonRotatingFrame) {
           new char[sizeof(BodyCentredNonRotatingFrame)]);
   EXPECT_CALL(*plugin_,
               FillBodyCentredNonRotatingFrame(kCelestialIndex, _))
-      .WillOnce(FillUniquePtr1(frame_placeholder));
+      .WillOnce(FillUniquePtr<1>(frame_placeholder));
   std::unique_ptr<BodyCentredNonRotatingFrame const> actual_frame(
       principia__NewBodyCentredNonRotatingFrame(plugin_.get(),
                                                 kCelestialIndex));
+}
+
+TEST_F(InterfaceTest, NewBarycentricRotatingFrame) {
+  // Since we cannot create a BarycentricRotatingFrame here, we just pass a
+  // pointer to a bunch of bytes having the right size.
+  BarycentricRotatingFrame* frame_placeholder =
+      reinterpret_cast<BarycentricRotatingFrame*>(
+          new char[sizeof(BarycentricRotatingFrame)]);
+  EXPECT_CALL(*plugin_,
+              FillBarycentricRotatingFrame(kCelestialIndex, kParentIndex, _))
+      .WillOnce(FillUniquePtr<2>(frame_placeholder));
+  std::unique_ptr<BarycentricRotatingFrame const> actual_frame(
+      principia__NewBarycentricRotatingFrame(plugin_.get(),
+                                             kCelestialIndex,
+                                             kParentIndex));
 }
 
 }  // namespace
