@@ -211,13 +211,13 @@ public partial class PluginAdapter : UnityEngine.MonoBehaviour {
              EntryPoint        = "principia__BubbleDisplacementCorrection",
              CallingConvention = CallingConvention.Cdecl)]
   private static extern XYZ BubbleDisplacementCorrection(IntPtr plugin,
-                                                     XYZ sun_position);
+                                                         XYZ sun_position);
 
   [DllImport(dllName           : kDllPath,
              EntryPoint        = "principia__BubbleVelocityCorrection",
              CallingConvention = CallingConvention.Cdecl)]
   private static extern XYZ BubbleVelocityCorrection(IntPtr plugin,
-                                                 int reference_body_index);
+                                                     int reference_body_index);
 
 }
 
