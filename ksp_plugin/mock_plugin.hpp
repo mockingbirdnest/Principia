@@ -70,7 +70,7 @@ class MockPlugin : public Plugin {
   MOCK_CONST_METHOD2(FillBodyCentredNonRotatingFrame,
                      void(Index const reference_body_index,
                           std::unique_ptr<BodyCentredNonRotatingFrame>* frame));
-  
+
   MOCK_CONST_METHOD3(FillBarycentricRotatingFrame,
                      void(Index const primary_index,
                           Index const secondary_index,
