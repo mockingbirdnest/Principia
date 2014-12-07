@@ -2,6 +2,7 @@
 
 #include <string>
 
+#include "base/macros.hpp"
 #include "glog/logging.h"
 #include "quantities/quantities.hpp"
 
@@ -9,16 +10,6 @@ using principia::quantities::SIUnit;
 
 namespace principia {
 namespace geometry {
-
-namespace {
-// clang understands that this function is never used, but thinks that control
-// reaches beyond |LOG(FATAL)| if it is not there.
-// MSVC doesn't understand anything.
-#ifdef __clang__
-__attribute__((unused))
-#endif
-__declspec(noreturn) void noreturn() { exit(0); }
-}  // namespace
 
 // We want zero initialization here, so the default constructor won't do.
 template<typename Scalar>
@@ -40,7 +31,7 @@ inline Scalar& R3Element<Scalar>::operator[](int const index) {
       return z;
     default:
       LOG(FATAL) << __FUNCSIG__ << ": index = " << index;
-      noreturn();
+      base::noreturn();
   }
 }
 
@@ -55,7 +46,7 @@ inline Scalar const& R3Element<Scalar>::operator[](int const index) const {
       return z;
     default:
       LOG(FATAL) << __FUNCSIG__ << ": index = " << index;
-      noreturn();
+      base::noreturn();
   }
 }
 

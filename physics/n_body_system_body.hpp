@@ -6,6 +6,7 @@
 #include <set>
 #include <vector>
 
+#include "base/macros.hpp"
 #include "geometry/named_quantities.hpp"
 #include "geometry/r3_element.hpp"
 #include "glog/logging.h"
@@ -35,10 +36,8 @@ namespace {
 //   -(J2 / |r|^5) (3 j (r.j) + r (3 - 15 (r.j)^2 / |r|^2) / 2)
 //
 // Where |r| is the norm of r and r.j is the inner product.
-//
-// TODO(phl): |__forceinline| is for MSVC.  Need a portable macro to do this.
 template<typename Frame>
-__forceinline Vector<Acceleration, Frame>
+FORCE_INLINE Vector<Acceleration, Frame>
     Order2ZonalAcceleration(
         OblateBody<Frame> const& body,
         Vector<Length, Frame> const& r,

@@ -34,5 +34,20 @@ namespace base {
 #  endif
 #endif
 
+// A function for use on control paths that don't return a value, typically
+// because they end with a |LOG(FATAL)|.
+// MSVC used to require __declspec(noreturn) but doesn't anymore.  Odd.
+#ifdef __clang__
+[[noreturn]]
+#endif
+inline void noreturn() { exit(0); }
+
+// Used to force inlining.
+#ifdef __clang__
+#define FORCE_INLINE [[gnu::always_inline]]
+#elif _MSC_VER
+#define FORCE_INLINE __forceinline
+#endif
+
 }  // namespace base
 }  // namespace principia
