@@ -5,14 +5,15 @@
 #include "quantities/si.hpp"
 #include "ksp_plugin/mock_plugin.hpp"
 
+using principia::geometry::Displacement;
+using principia::ksp_plugin::AliceSun;
+using principia::ksp_plugin::Index;
+using principia::ksp_plugin::MockPlugin;
 using principia::si::Degree;
 using testing::Eq;
 using testing::IsNull;
 using testing::Return;
 using testing::StrictMock;
-
-namespace principia {
-namespace ksp_plugin {
 
 bool operator==(XYZ const& left, XYZ const& right) {
   return left.x == right.x && left.y == right.y && left.z == right.z;
@@ -32,8 +33,6 @@ double const kTime = 11;
 XYZ kParentPosition = {4, 5, 6};
 XYZ kParentVelocity = {7, 8, 9};
 
-}  // namespace
-
 class InterfaceTest : public testing::Test {
  protected:
   InterfaceTest()
@@ -48,10 +47,10 @@ using InterfaceDeathTest = InterfaceTest;
 TEST_F(InterfaceDeathTest, Errors) {
   Plugin* plugin = nullptr;
   EXPECT_DEATH({
-    DeletePlugin(nullptr);
+    principia__DeletePlugin(nullptr);
   }, "pointer.*non NULL");
   EXPECT_DEATH({
-    InsertCelestial(plugin,
+    principia__InsertCelestial(plugin,
                     kCelestialIndex,
                     kGravitationalParameter,
                     kParentIndex,
@@ -59,40 +58,40 @@ TEST_F(InterfaceDeathTest, Errors) {
                     kParentVelocity);
   }, "plugin.*non NULL");
   EXPECT_DEATH({
-    UpdateCelestialHierarchy(plugin, kCelestialIndex, kParentIndex);
+    principia__UpdateCelestialHierarchy(plugin, kCelestialIndex, kParentIndex);
   }, "plugin.*non NULL");
   EXPECT_DEATH({
-    UpdateCelestialHierarchy(plugin, kCelestialIndex, kParentIndex);
+    principia__UpdateCelestialHierarchy(plugin, kCelestialIndex, kParentIndex);
   }, "plugin.*non NULL");
   EXPECT_DEATH({
-    InsertOrKeepVessel(plugin, kVesselGUID, kParentIndex);
+    principia__InsertOrKeepVessel(plugin, kVesselGUID, kParentIndex);
   }, "plugin.*non NULL");
   EXPECT_DEATH({
-    SetVesselStateOffset(plugin,
-                         kVesselGUID,
-                         kParentPosition,
-                         kParentVelocity);
+    principia__SetVesselStateOffset(plugin,
+                                    kVesselGUID,
+                                    kParentPosition,
+                                    kParentVelocity);
   }, "plugin.*non NULL");
   EXPECT_DEATH({
-    VesselDisplacementFromParent(plugin, kVesselGUID);
+    principia__VesselDisplacementFromParent(plugin, kVesselGUID);
   }, "plugin.*non NULL");
   EXPECT_DEATH({
-    VesselParentRelativeVelocity(plugin, kVesselGUID);
+    principia__VesselParentRelativeVelocity(plugin, kVesselGUID);
   }, "plugin.*non NULL");
   EXPECT_DEATH({
-    CelestialDisplacementFromParent(plugin, kCelestialIndex);
+    principia__CelestialDisplacementFromParent(plugin, kCelestialIndex);
   }, "plugin.*non NULL");
   EXPECT_DEATH({
-    CelestialParentRelativeVelocity(plugin, kCelestialIndex);
+    principia__CelestialParentRelativeVelocity(plugin, kCelestialIndex);
   }, "plugin.*non NULL");
   EXPECT_DEATH({
-    NewBodyCentredNonRotatingFrame(plugin, kCelestialIndex);
+    principia__NewBodyCentredNonRotatingFrame(plugin, kCelestialIndex);
   }, "plugin.*non NULL");
 }
 
 TEST_F(InterfaceTest, DeletePluginSuccess) {
   Plugin const* plugin = plugin_.release();
-  DeletePlugin(&plugin);
+  principia__DeletePlugin(&plugin);
   EXPECT_THAT(plugin, IsNull());
 }
 
@@ -110,30 +109,32 @@ TEST_F(InterfaceTest, InsertCelestial) {
                       {kParentVelocity.x * SIUnit<Speed>(),
                        kParentVelocity.y * SIUnit<Speed>(),
                        kParentVelocity.z * SIUnit<Speed>()})));
-  InsertCelestial(plugin_.get(),
-                  kCelestialIndex,
-                  kGravitationalParameter,
-                  kParentIndex,
-                  kParentPosition,
-                  kParentVelocity);
+  principia__InsertCelestial(plugin_.get(),
+                             kCelestialIndex,
+                             kGravitationalParameter,
+                             kParentIndex,
+                             kParentPosition,
+                             kParentVelocity);
 }
 
 TEST_F(InterfaceTest, UpdateCelestialHierarchy) {
   EXPECT_CALL(*plugin_,
               UpdateCelestialHierarchy(kCelestialIndex, kParentIndex));
-  UpdateCelestialHierarchy(plugin_.get(), kCelestialIndex, kParentIndex);
+  principia__UpdateCelestialHierarchy(plugin_.get(),
+                                      kCelestialIndex,
+                                      kParentIndex);
 }
 
 TEST_F(InterfaceTest, EndInitialization) {
   EXPECT_CALL(*plugin_,
               EndInitialization());
-  EndInitialization(plugin_.get());
+  principia__EndInitialization(plugin_.get());
 }
 
 TEST_F(InterfaceTest, InsertOrKeepVessel) {
   EXPECT_CALL(*plugin_,
               InsertOrKeepVessel(kVesselGUID, kParentIndex));
-  InsertOrKeepVessel(plugin_.get(), kVesselGUID, kParentIndex);
+  principia__InsertOrKeepVessel(plugin_.get(), kVesselGUID, kParentIndex);
 }
 
 TEST_F(InterfaceTest, SetVesselStateOffset) {
@@ -148,17 +149,17 @@ TEST_F(InterfaceTest, SetVesselStateOffset) {
                       {kParentVelocity.x * SIUnit<Speed>(),
                        kParentVelocity.y * SIUnit<Speed>(),
                        kParentVelocity.z * SIUnit<Speed>()})));
-  SetVesselStateOffset(plugin_.get(),
-                       kVesselGUID,
-                       kParentPosition,
-                       kParentVelocity);
+  principia__SetVesselStateOffset(plugin_.get(),
+                                  kVesselGUID,
+                                  kParentPosition,
+                                  kParentVelocity);
 }
 
 TEST_F(InterfaceTest, AdvanceTime) {
   EXPECT_CALL(*plugin_,
               AdvanceTime(Instant(kTime * SIUnit<Time>()),
                           kPlanetariumRotation * Degree));
-  AdvanceTime(plugin_.get(), kTime, kPlanetariumRotation);
+  principia__AdvanceTime(plugin_.get(), kTime, kPlanetariumRotation);
 }
 
 TEST_F(InterfaceTest, VesselDisplacementFromParent) {
@@ -168,7 +169,8 @@ TEST_F(InterfaceTest, VesselDisplacementFromParent) {
                            {kParentPosition.x * SIUnit<Length>(),
                             kParentPosition.y * SIUnit<Length>(),
                             kParentPosition.z * SIUnit<Length>()})));
-  XYZ const result = VesselDisplacementFromParent(plugin_.get(), kVesselGUID);
+  XYZ const result = principia__VesselDisplacementFromParent(plugin_.get(),
+                                                             kVesselGUID);
   EXPECT_THAT(result, Eq(kParentPosition));
 }
 
@@ -179,7 +181,8 @@ TEST_F(InterfaceTest, VesselParentRelativeVelocity) {
                            {kParentVelocity.x * SIUnit<Speed>(),
                             kParentVelocity.y * SIUnit<Speed>(),
                             kParentVelocity.z * SIUnit<Speed>()})));
-  XYZ const result = VesselParentRelativeVelocity(plugin_.get(), kVesselGUID);
+  XYZ const result = principia__VesselParentRelativeVelocity(plugin_.get(),
+                                                             kVesselGUID);
   EXPECT_THAT(result, Eq(kParentVelocity));
 }
 
@@ -190,8 +193,9 @@ TEST_F(InterfaceTest, CelestialDisplacementFromParent) {
                            {kParentPosition.x * SIUnit<Length>(),
                             kParentPosition.y * SIUnit<Length>(),
                             kParentPosition.z * SIUnit<Length>()})));
-  XYZ const result = CelestialDisplacementFromParent(plugin_.get(),
-                                                     kCelestialIndex);
+  XYZ const result = principia__CelestialDisplacementFromParent(
+                         plugin_.get(),
+                         kCelestialIndex);
   EXPECT_THAT(result, Eq(kParentPosition));
 }
 
@@ -202,10 +206,10 @@ TEST_F(InterfaceTest, CelestialParentRelativeVelocity) {
                            {kParentVelocity.x * SIUnit<Speed>(),
                             kParentVelocity.y * SIUnit<Speed>(),
                             kParentVelocity.z * SIUnit<Speed>()})));
-  XYZ const result = CelestialParentRelativeVelocity(plugin_.get(),
-                                                     kCelestialIndex);
+  XYZ const result = principia__CelestialParentRelativeVelocity(
+                         plugin_.get(),
+                         kCelestialIndex);
   EXPECT_THAT(result, Eq(kParentVelocity));
 }
 
-}  // namespace ksp_plugin
-}  // namespace principia
+}  // namespace

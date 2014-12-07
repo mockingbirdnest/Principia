@@ -4,13 +4,16 @@
 
 #include "base/version.hpp"
 
+using principia::geometry::Displacement;
+using principia::ksp_plugin::AliceSun;
+using principia::ksp_plugin::LineSegment;
+using principia::ksp_plugin::RenderedTrajectory;
+using principia::ksp_plugin::World;
 using principia::quantities::Pow;
 using principia::si::Degree;
 using principia::si::Metre;
+using principia::si::Second;
 using principia::si::Tonne;
-
-namespace principia {
-namespace ksp_plugin {
 
 namespace {
 
@@ -27,7 +30,7 @@ std::unique_ptr<T> TakeOwnership(T** const pointer) {
 
 }  // namespace
 
-void InitGoogleLogging() {
+void principia__InitGoogleLogging() {
   if (google::IsGoogleLoggingInitialized()) {
     LOG(INFO) << "Google logging was already initialized, no action taken";
   } else {
@@ -47,29 +50,29 @@ void InitGoogleLogging() {
     FLAGS_logbuflevel = google::INFO - 1;
     google::InitGoogleLogging("Principia");
     LOG(INFO) << "Initialized Google logging for Principia";
-    LOG(INFO) << "Principia version " << base::kVersion
-              << " built on " << base::kBuildDate;
+    LOG(INFO) << "Principia version " << principia::base::kVersion
+              << " built on " << principia::base::kBuildDate;
     // TODO(egg): by (compiler) for (ARCH, OS).
   }
 }
 
-void LogInfo(char const* message) {
+void principia__LogInfo(char const* message) {
   LOG(INFO) << message;
 }
 
-void LogWarning(char const* message) {
+void principia__LogWarning(char const* message) {
   LOG(WARNING) << message;
 }
 
-void LogError(char const* message) {
+void principia__LogError(char const* message) {
   LOG(ERROR) << message;
 }
 
-void LogFatal(char const* message) {
+void principia__LogFatal(char const* message) {
   LOG(FATAL) << message;
 }
 
-Plugin* NewPlugin(double const initial_time,
+Plugin* principia__NewPlugin(double const initial_time,
                   int const sun_index,
                   double const sun_gravitational_parameter,
                   double const planetarium_rotation_in_degrees) {
@@ -83,7 +86,7 @@ Plugin* NewPlugin(double const initial_time,
   return result.release();
 }
 
-void DeletePlugin(Plugin const** const plugin) {
+void principia__DeletePlugin(Plugin const** const plugin) {
   LOG(INFO) << "Destroying Principia plugin";
   // We want to log before and after destroying the plugin since it is a pretty
   // significant event, so we take ownership inside a block.
@@ -96,7 +99,7 @@ void DeletePlugin(Plugin const** const plugin) {
 // NOTE(egg): The |* (Metre / Second)| might be slower than |* SIUnit<Speed>()|,
 // but it is more readable. This will be resolved once we have constexpr.
 
-void InsertCelestial(Plugin* const plugin,
+void principia__InsertCelestial(Plugin* const plugin,
                      int const celestial_index,
                      double const gravitational_parameter,
                      int const parent_index,
@@ -114,24 +117,24 @@ void InsertCelestial(Plugin* const plugin,
                           from_parent_velocity.z * (Metre / Second)}));
 }
 
-void UpdateCelestialHierarchy(Plugin const* const plugin,
+void principia__UpdateCelestialHierarchy(Plugin const* const plugin,
                               int const celestial_index,
                               int const parent_index) {
   CHECK_NOTNULL(plugin)->UpdateCelestialHierarchy(celestial_index,
                                                   parent_index);
 }
 
-void EndInitialization(Plugin* const plugin) {
+void principia__EndInitialization(Plugin* const plugin) {
   CHECK_NOTNULL(plugin)->EndInitialization();
 }
 
-bool InsertOrKeepVessel(Plugin* const plugin,
+bool principia__InsertOrKeepVessel(Plugin* const plugin,
                         char const* vessel_guid,
                         int const parent_index) {
   return CHECK_NOTNULL(plugin)->InsertOrKeepVessel(vessel_guid, parent_index);
 }
 
-void SetVesselStateOffset(Plugin* const plugin,
+void principia__SetVesselStateOffset(Plugin* const plugin,
                           char const* vessel_guid,
                           XYZ const from_parent_position,
                           XYZ const from_parent_velocity) {
@@ -145,14 +148,14 @@ void SetVesselStateOffset(Plugin* const plugin,
                           from_parent_velocity.z * (Metre / Second)}));
 }
 
-void AdvanceTime(Plugin* const plugin,
+void principia__AdvanceTime(Plugin* const plugin,
                  double const t,
                  double const planetarium_rotation) {
   CHECK_NOTNULL(plugin)->AdvanceTime(Instant(t * Second),
                                      planetarium_rotation * Degree);
 }
 
-XYZ VesselDisplacementFromParent(Plugin const* const plugin,
+XYZ principia__VesselDisplacementFromParent(Plugin const* const plugin,
                                  char const* vessel_guid) {
   R3Element<Length> const result =
       CHECK_NOTNULL(plugin)->
@@ -160,7 +163,7 @@ XYZ VesselDisplacementFromParent(Plugin const* const plugin,
   return {result.x / Metre, result.y / Metre, result.z / Metre};
 }
 
-XYZ VesselParentRelativeVelocity(Plugin const* const plugin,
+XYZ principia__VesselParentRelativeVelocity(Plugin const* const plugin,
                                  char const* vessel_guid) {
   R3Element<Speed> const result =
       CHECK_NOTNULL(plugin)->
@@ -170,7 +173,7 @@ XYZ VesselParentRelativeVelocity(Plugin const* const plugin,
           result.z / (Metre / Second)};
 }
 
-XYZ CelestialDisplacementFromParent(Plugin const* const plugin,
+XYZ principia__CelestialDisplacementFromParent(Plugin const* const plugin,
                                     int const celestial_index) {
   R3Element<Length> const result =
       CHECK_NOTNULL(plugin)->
@@ -178,7 +181,7 @@ XYZ CelestialDisplacementFromParent(Plugin const* const plugin,
   return {result.x / Metre, result.y / Metre, result.z / Metre};
 }
 
-XYZ CelestialParentRelativeVelocity(Plugin const* const plugin,
+XYZ principia__CelestialParentRelativeVelocity(Plugin const* const plugin,
                                     int const celestial_index) {
   R3Element<Speed> const result =
       CHECK_NOTNULL(plugin)->
@@ -188,14 +191,14 @@ XYZ CelestialParentRelativeVelocity(Plugin const* const plugin,
           result.z / (Metre / Second)};
 }
 
-BodyCentredNonRotatingFrame const* NewBodyCentredNonRotatingFrame(
+BodyCentredNonRotatingFrame const* principia__NewBodyCentredNonRotatingFrame(
     Plugin const* const plugin,
     int const reference_body_index) {
   return CHECK_NOTNULL(plugin)->
       NewBodyCentredNonRotatingFrame(reference_body_index).release();
 }
 
-BarycentricRotatingFrame const* NewBarycentricRotatingFrame(
+BarycentricRotatingFrame const* principia__NewBarycentricRotatingFrame(
     Plugin const* const plugin,
     int const primary_index,
     int const secondary_index) {
@@ -203,11 +206,12 @@ BarycentricRotatingFrame const* NewBarycentricRotatingFrame(
       NewBarycentricRotatingFrame(primary_index, secondary_index).release();
 }
 
-void DeleteRenderingFrame(RenderingFrame const** const frame) {
+void principia__DeleteRenderingFrame(RenderingFrame const** const frame) {
   TakeOwnership(frame);
 }
 
-LineAndIterator* RenderedVesselTrajectory(Plugin const* const plugin,
+LineAndIterator* principia__RenderedVesselTrajectory(
+    Plugin const* const plugin,
                                           char const* vessel_guid,
                                           RenderingFrame const* frame,
                                           XYZ const sun_world_position) {
@@ -224,11 +228,12 @@ LineAndIterator* RenderedVesselTrajectory(Plugin const* const plugin,
   return result.release();
 }
 
-int NumberOfSegments(LineAndIterator const* line_and_iterator) {
+int principia__NumberOfSegments(LineAndIterator const* line_and_iterator) {
   return CHECK_NOTNULL(line_and_iterator)->rendered_trajectory.size();
 }
 
-XYZSegment FetchAndIncrement(LineAndIterator* const line_and_iterator) {
+XYZSegment principia__FetchAndIncrement(
+    LineAndIterator* const line_and_iterator) {
   CHECK_NOTNULL(line_and_iterator);
   CHECK(line_and_iterator->it != line_and_iterator->rendered_trajectory.end());
   LineSegment<World> const result = *line_and_iterator->it;
@@ -239,16 +244,17 @@ XYZSegment FetchAndIncrement(LineAndIterator* const line_and_iterator) {
           XYZ{end.x / Metre, end.y / Metre, end.z / Metre}};
 }
 
-bool AtEnd(LineAndIterator* const line_and_iterator) {
+bool principia__AtEnd(LineAndIterator* const line_and_iterator) {
   CHECK_NOTNULL(line_and_iterator);
   return line_and_iterator->it == line_and_iterator->rendered_trajectory.end();
 }
 
-void DeleteLineAndIterator(LineAndIterator const** const line_and_iterator) {
+void principia__DeleteLineAndIterator(
+    LineAndIterator const** const line_and_iterator) {
   TakeOwnership(line_and_iterator);
 }
 
-XYZ VesselWorldPosition(Plugin const* const plugin,
+XYZ principia__VesselWorldPosition(Plugin const* const plugin,
                         char const* vessel_guid,
                         XYZ const parent_world_position) {
   Position<World> result = CHECK_NOTNULL(plugin)->VesselWorldPosition(
@@ -262,7 +268,7 @@ XYZ VesselWorldPosition(Plugin const* const plugin,
              coordinates.z / Metre};
 }
 
-XYZ VesselWorldVelocity(Plugin const* const plugin,
+XYZ principia__VesselWorldVelocity(Plugin const* const plugin,
                         char const* vessel_guid,
                         XYZ const parent_world_velocity,
                         double const parent_rotation_period) {
@@ -335,9 +341,6 @@ XYZ BubbleVelocityCorrection(Plugin const* const plugin,
              result.coordinates().z / (Metre / Second)};
 }
 
-char const* SayHello() {
+char const* principia__SayHello() {
   return "Hello from native C++!";
 }
-
-}  // namespace ksp_plugin
-}  // namespace principia
