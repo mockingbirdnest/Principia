@@ -7,6 +7,8 @@
 using principia::geometry::Displacement;
 using principia::ksp_plugin::AliceSun;
 using principia::ksp_plugin::LineSegment;
+using principia::ksp_plugin::Part;
+using principia::ksp_plugin::PartID;
 using principia::ksp_plugin::RenderedTrajectory;
 using principia::ksp_plugin::World;
 using principia::quantities::Pow;
@@ -284,12 +286,12 @@ XYZ principia__VesselWorldVelocity(Plugin const* const plugin,
              coordinates.z / (Metre / Second)};
 }
 
-void AddVesselToNextPhysicsBubble(
+void principia__AddVesselToNextPhysicsBubble(
     Plugin* const plugin,
     char const* vessel_guid,
     KSPPart const* const parts,
     int count) {
-  LOG(INFO) << "AddVesselToNextPhysicsBubble" << '\n'
+  LOG(INFO) << "principia__AddVesselToNextPhysicsBubble" << '\n'
             << "count : " << count;
   std::vector<std::pair<PartID, std::unique_ptr<Part<World>>>> vessel_parts;
   vessel_parts.reserve(count);
@@ -318,8 +320,8 @@ void AddVesselToNextPhysicsBubble(
                                                       std::move(vessel_parts));
 }
 
-XYZ BubbleDisplacementCorrection(Plugin const* const plugin,
-                                 XYZ const sun_position) {
+XYZ principia__BubbleDisplacementCorrection(Plugin const* const plugin,
+                                            XYZ const sun_position) {
   Displacement<World> const result =
       CHECK_NOTNULL(plugin)->BubbleDisplacementCorrection(
           World::origin +
@@ -332,8 +334,8 @@ XYZ BubbleDisplacementCorrection(Plugin const* const plugin,
              result.coordinates().z / Metre};
 }
 
-XYZ BubbleVelocityCorrection(Plugin const* const plugin,
-                             int const reference_body_index) {
+XYZ principia__BubbleVelocityCorrection(Plugin const* const plugin,
+                                        int const reference_body_index) {
   Velocity<World> const result =
       CHECK_NOTNULL(plugin)->BubbleVelocityCorrection(reference_body_index);
   return XYZ{result.coordinates().x / (Metre / Second),

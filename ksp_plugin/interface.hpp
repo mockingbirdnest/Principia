@@ -259,19 +259,19 @@ XYZ CDECL principia__VesselWorldVelocity(Plugin const* const plugin,
                               double const parent_rotation_period);
 
 extern "C" DLLEXPORT
-void CDECL AddVesselToNextPhysicsBubble(
+void CDECL principia__AddVesselToNextPhysicsBubble(
     Plugin* const plugin,
     char const* vessel_guid,
     KSPPart const* const parts,
     int count);
 
 extern "C" DLLEXPORT
-XYZ CDECL BubbleDisplacementCorrection(Plugin const* const plugin,
-                                       XYZ const sun_position);
+XYZ CDECL principia__BubbleDisplacementCorrection(Plugin const* const plugin,
+                                                  XYZ const sun_position);
 
 extern "C" DLLEXPORT
-XYZ CDECL BubbleVelocityCorrection(Plugin const* const plugin,
-                                   int const reference_body_index);
+XYZ CDECL principia__BubbleVelocityCorrection(Plugin const* const plugin,
+                                              int const reference_body_index);
 
 // Says hello, convenient for checking that calls to the DLL work.
 extern "C" DLLEXPORT

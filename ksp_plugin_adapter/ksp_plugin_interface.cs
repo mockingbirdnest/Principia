@@ -199,6 +199,7 @@ public partial class PluginAdapter : UnityEngine.MonoBehaviour {
       double parent_rotation_period);
 
   [DllImport(dllName           : kDllPath,
+             EntryPoint        = "principia__AddVesselToNextPhysicsBubble",
              CallingConvention = CallingConvention.Cdecl)]
   private static extern void AddVesselToNextPhysicsBubble(
       IntPtr plugin,
@@ -207,11 +208,13 @@ public partial class PluginAdapter : UnityEngine.MonoBehaviour {
       int count);
 
   [DllImport(dllName           : kDllPath,
+             EntryPoint        = "principia__BubbleDisplacementCorrection",
              CallingConvention = CallingConvention.Cdecl)]
   private static extern XYZ BubbleDisplacementCorrection(IntPtr plugin,
                                                      XYZ sun_position);
 
   [DllImport(dllName           : kDllPath,
+             EntryPoint        = "principia__BubbleVelocityCorrection",
              CallingConvention = CallingConvention.Cdecl)]
   private static extern XYZ BubbleVelocityCorrection(IntPtr plugin,
                                                  int reference_body_index);
