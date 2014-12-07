@@ -335,18 +335,18 @@ TEST_F(InterfaceTest, LineAndIterator) {
                                        kParentPosition.y * SIUnit<Length>(),
                                        kParentPosition.z * SIUnit<Length>()})))
       .WillOnce(Return(rendered_trajectory));
-  std::unique_ptr<LineAndIterator> line_and_iterator(
+  LineAndIterator* line_and_iterator =
       principia__RenderedVesselTrajectory(plugin_.get(),
                                           kVesselGUID,
                                           frame,
-                                          kParentPosition));
+                                          kParentPosition);
   EXPECT_EQ(kTrajectorySize, line_and_iterator->rendered_trajectory.size());
-  EXPECT_EQ(kTrajectorySize,
-            principia__NumberOfSegments(line_and_iterator.get()));
+  EXPECT_EQ(kTrajectorySize, principia__NumberOfSegments(line_and_iterator));
 
+  // Traverse it and check that we get the right data.
   for (int i = 0; i < kTrajectorySize; ++i) {
-    XYZSegment const segment =
-        principia__FetchAndIncrement(line_and_iterator.get());
+    EXPECT_FALSE(principia__AtEnd(line_and_iterator));
+    XYZSegment const segment = principia__FetchAndIncrement(line_and_iterator);
     EXPECT_EQ(1 + 10 * i, segment.begin.x);
     EXPECT_EQ(2 + 20 * i, segment.begin.y);
     EXPECT_EQ(3 + 30 * i, segment.begin.z);
@@ -354,6 +354,12 @@ TEST_F(InterfaceTest, LineAndIterator) {
     EXPECT_EQ(22 + 20 * i, segment.end.y);
     EXPECT_EQ(33 + 30 * i, segment.end.z);
   }
+  EXPECT_TRUE(principia__AtEnd(line_and_iterator));
+
+  // Delete it.
+  EXPECT_THAT(line_and_iterator, Not(IsNull()));
+  principia__DeleteLineAndIterator(&line_and_iterator);
+  EXPECT_THAT(line_and_iterator, IsNull());
 }
 
 }  // namespace

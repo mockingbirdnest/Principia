@@ -233,7 +233,7 @@ bool CDECL principia__AtEnd(LineAndIterator* const line_and_iterator);
 // |*line_and_iterator|, takes ownership of |**line_and_iterator|.
 extern "C" DLLEXPORT
 void CDECL principia__DeleteLineAndIterator(
-    LineAndIterator const** const line_and_iterator);
+    LineAndIterator** const line_and_iterator);
 
 extern "C" DLLEXPORT
 XYZ CDECL principia__VesselWorldPosition(Plugin const* const plugin,
