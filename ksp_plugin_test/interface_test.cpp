@@ -232,13 +232,16 @@ TEST_F(InterfaceTest, CelestialParentRelativeVelocity) {
 
 TEST_F(InterfaceTest, NewBodyCentredNonRotatingFrame) {
   // Since we cannot create a BodyCentredNonRotatingFrame here, we just pass a
-  // pointer to an int.  
-  int frame_placeholder;
+  // pointer to a bunch of bytes having the right size.
+  BodyCentredNonRotatingFrame* frame_placeholder =
+      reinterpret_cast<BodyCentredNonRotatingFrame*>(
+          new char[sizeof(BodyCentredNonRotatingFrame)]);
   EXPECT_CALL(*plugin_,
               FillBodyCentredNonRotatingFrame(kCelestialIndex, _))
-      .WillOnce(FillUniquePtr1(reinterpret_cast<BodyCentredNonRotatingFrame*>(&frame_placeholder)));
+      .WillOnce(FillUniquePtr1(frame_placeholder));
   std::unique_ptr<BodyCentredNonRotatingFrame const> actual_frame(
-      principia__NewBodyCentredNonRotatingFrame(plugin_.get(), kCelestialIndex));
+      principia__NewBodyCentredNonRotatingFrame(plugin_.get(),
+                                                kCelestialIndex));
 }
 
 }  // namespace
