@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Runtime.InteropServices;
 
 namespace principia {
@@ -137,30 +138,23 @@ public partial class PluginAdapter : UnityEngine.MonoBehaviour {
                                (XYZ)vessel.orbit.pos,
                                (XYZ)vessel.orbit.vel);
         }
-        KSPPart[] parts = new KSPPart[vessel.parts.Count];
-        Log.Info("vessel has " + parts.Length + " parts");
-        Vector3d gravity = FlightGlobals.getGeeForceAtPosition(
-            vessel.findWorldCenterOfMass());
-        int i = 0;
-        foreach (Part part in vessel.parts) {
-          Vector3d position =
-              part.rb == null ? part.transform.position
-                              : part.rb.worldCenterOfMass;
-          Vector3d velocity = Krakensbane.GetFrameVelocity() +
-              (part.rb == null ? part.vel
-                               : part.rb.velocity);
-          double mass = (double)part.mass + (double)part.GetResourceMass();
-          parts[i] = new KSPPart {world_position = (XYZ)position,
-                                  world_velocity = (XYZ)velocity,
-                                  mass = mass,
-                                  expected_ksp_gravity = (XYZ)gravity,
-                                  id = part.flightID};
-          ++i;
-        }
+        Log.Info("vessel has " + vessel.parts.Count() + " parts");
+        Vector3d gravity =
+            FlightGlobals.getGeeForceAtPosition(vessel.findWorldCenterOfMass());
+        Vector3d kraken_velocity = Krakensbane.GetFrameVelocity();
+        KSPPart[] parts =
+            (from part in vessel.parts
+             where part.rb != null
+             select new KSPPart {
+                 world_position = (XYZ)(Vector3d)part.rb.worldCenterOfMass,
+                 world_velocity = (XYZ)(kraken_velocity + part.rb.velocity),
+                 mass = (double)part.mass + (double)part.GetResourceMass(),
+                 expected_ksp_gravity = (XYZ)gravity,
+                 id = part.flightID}).ToArray();
         AddVesselToNextPhysicsBubble(plugin : plugin_,
                                      vessel_guid : vessel.id.ToString(),
                                      parts : parts,
-                                     count : parts.Length);
+                                     count : parts.Count());
       };
       if (HavePhysicsBubble()) {
         ApplyToLoadedVesselsInSpace(add_to_physics_bubble);
