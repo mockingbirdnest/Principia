@@ -45,7 +45,7 @@ inline void noreturn() { exit(0); }
 
 // Used to force inlining.
 #ifdef __clang__
-#define FORCE_INLINE [[gnu::always_inline]]
+#define FORCE_INLINE [[gnu::always_inline]]  // NOLINT(whitespace/braces)
 #elif _MSC_VER
 #define FORCE_INLINE __forceinline
 #endif
