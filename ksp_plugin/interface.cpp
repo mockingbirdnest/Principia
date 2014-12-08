@@ -120,8 +120,8 @@ void principia__InsertCelestial(Plugin* const plugin,
 }
 
 void principia__UpdateCelestialHierarchy(Plugin const* const plugin,
-                              int const celestial_index,
-                              int const parent_index) {
+                                         int const celestial_index,
+                                         int const parent_index) {
   CHECK_NOTNULL(plugin)->UpdateCelestialHierarchy(celestial_index,
                                                   parent_index);
 }

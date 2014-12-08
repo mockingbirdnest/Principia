@@ -109,10 +109,11 @@ void CDECL principia__LogFatal(char const* message);
 // Returns a pointer to a plugin constructed with the arguments given.
 // The caller takes ownership of the result.
 extern "C" DLLEXPORT
-Plugin* CDECL principia__NewPlugin(double const initial_time,
-                                   int const sun_index,
-                                   double const sun_gravitational_parameter,
-                                   double const planetarium_rotation_in_degrees);
+Plugin* CDECL principia__NewPlugin(
+    double const initial_time,
+    int const sun_index,
+    double const sun_gravitational_parameter,
+    double const planetarium_rotation_in_degrees);
 
 // Deletes and nulls |*plugin|.
 // |plugin| must not be null.  No transfer of ownership of |*plugin|, takes
@@ -124,11 +125,11 @@ void CDECL principia__DeletePlugin(Plugin const** const plugin);
 // |plugin| must not be null.  No transfer of ownership.
 extern "C" DLLEXPORT
 void CDECL principia__InsertCelestial(Plugin* const plugin,
-                                     int const celestial_index,
-                                     double const gravitational_parameter,
-                                     int const parent_index,
-                                     XYZ const from_parent_position,
-                                     XYZ const from_parent_velocity);
+                                      int const celestial_index,
+                                      double const gravitational_parameter,
+                                      int const parent_index,
+                                      XYZ const from_parent_position,
+                                      XYZ const from_parent_velocity);
 
 // Calls |plugin->UpdateCelestialHierarchy| with the arguments given.
 // |plugin| must not be null.  No transfer of ownership.
@@ -191,7 +192,7 @@ XYZ CDECL principia__CelestialParentRelativeVelocity(Plugin const* const plugin,
 extern "C" DLLEXPORT
 BodyCentredNonRotatingFrame const* CDECL
 principia__NewBodyCentredNonRotatingFrame(Plugin const* const plugin,
-    int const reference_body_index);
+                                          int const reference_body_index);
 
 // Calls |plugin->NewBarycentricRotatingFrame| with the arguments given.
 // |plugin| must not be null.  No transfer of ownership.
