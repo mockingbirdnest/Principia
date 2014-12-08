@@ -75,9 +75,9 @@ void principia__LogFatal(char const* message) {
 }
 
 Plugin* principia__NewPlugin(double const initial_time,
-                  int const sun_index,
-                  double const sun_gravitational_parameter,
-                  double const planetarium_rotation_in_degrees) {
+                             int const sun_index,
+                             double const sun_gravitational_parameter,
+                             double const planetarium_rotation_in_degrees) {
   LOG(INFO) << "Constructing Principia plugin";
   std::unique_ptr<Plugin> result = std::make_unique<Plugin>(
       Instant(initial_time * Second),
@@ -102,11 +102,11 @@ void principia__DeletePlugin(Plugin const** const plugin) {
 // but it is more readable. This will be resolved once we have constexpr.
 
 void principia__InsertCelestial(Plugin* const plugin,
-                     int const celestial_index,
-                     double const gravitational_parameter,
-                     int const parent_index,
-                     XYZ const from_parent_position,
-                     XYZ const from_parent_velocity) {
+                                int const celestial_index,
+                                double const gravitational_parameter,
+                                int const parent_index,
+                                XYZ const from_parent_position,
+                                XYZ const from_parent_velocity) {
   CHECK_NOTNULL(plugin)->InsertCelestial(
       celestial_index,
       gravitational_parameter * SIUnit<GravitationalParameter>(),
@@ -131,15 +131,15 @@ void principia__EndInitialization(Plugin* const plugin) {
 }
 
 bool principia__InsertOrKeepVessel(Plugin* const plugin,
-                        char const* vessel_guid,
-                        int const parent_index) {
+                                   char const* vessel_guid,
+                                   int const parent_index) {
   return CHECK_NOTNULL(plugin)->InsertOrKeepVessel(vessel_guid, parent_index);
 }
 
 void principia__SetVesselStateOffset(Plugin* const plugin,
-                          char const* vessel_guid,
-                          XYZ const from_parent_position,
-                          XYZ const from_parent_velocity) {
+                                     char const* vessel_guid,
+                                     XYZ const from_parent_position,
+                                     XYZ const from_parent_velocity) {
   CHECK_NOTNULL(plugin)->SetVesselStateOffset(
       vessel_guid,
       Displacement<AliceSun>({from_parent_position.x * Metre,
@@ -151,14 +151,14 @@ void principia__SetVesselStateOffset(Plugin* const plugin,
 }
 
 void principia__AdvanceTime(Plugin* const plugin,
-                 double const t,
-                 double const planetarium_rotation) {
+                            double const t,
+                            double const planetarium_rotation) {
   CHECK_NOTNULL(plugin)->AdvanceTime(Instant(t * Second),
                                      planetarium_rotation * Degree);
 }
 
 XYZ principia__VesselDisplacementFromParent(Plugin const* const plugin,
-                                 char const* vessel_guid) {
+                                            char const* vessel_guid) {
   R3Element<Length> const result =
       CHECK_NOTNULL(plugin)->
           VesselDisplacementFromParent(vessel_guid).coordinates();
@@ -166,7 +166,7 @@ XYZ principia__VesselDisplacementFromParent(Plugin const* const plugin,
 }
 
 XYZ principia__VesselParentRelativeVelocity(Plugin const* const plugin,
-                                 char const* vessel_guid) {
+                                            char const* vessel_guid) {
   R3Element<Speed> const result =
       CHECK_NOTNULL(plugin)->
           VesselParentRelativeVelocity(vessel_guid).coordinates();
@@ -176,7 +176,7 @@ XYZ principia__VesselParentRelativeVelocity(Plugin const* const plugin,
 }
 
 XYZ principia__CelestialDisplacementFromParent(Plugin const* const plugin,
-                                    int const celestial_index) {
+                                               int const celestial_index) {
   R3Element<Length> const result =
       CHECK_NOTNULL(plugin)->
           CelestialDisplacementFromParent(celestial_index).coordinates();
@@ -184,7 +184,7 @@ XYZ principia__CelestialDisplacementFromParent(Plugin const* const plugin,
 }
 
 XYZ principia__CelestialParentRelativeVelocity(Plugin const* const plugin,
-                                    int const celestial_index) {
+                                               int const celestial_index) {
   R3Element<Speed> const result =
       CHECK_NOTNULL(plugin)->
           CelestialParentRelativeVelocity(celestial_index).coordinates();
@@ -214,9 +214,9 @@ void principia__DeleteRenderingFrame(RenderingFrame const** const frame) {
 
 LineAndIterator* principia__RenderedVesselTrajectory(
     Plugin const* const plugin,
-                                          char const* vessel_guid,
-                                          RenderingFrame const* frame,
-                                          XYZ const sun_world_position) {
+    char const* vessel_guid,
+    RenderingFrame const* frame,
+    XYZ const sun_world_position) {
   RenderedTrajectory<World> rendered_trajectory = CHECK_NOTNULL(plugin)->
       RenderedVesselTrajectory(
           vessel_guid,
@@ -257,8 +257,8 @@ void principia__DeleteLineAndIterator(
 }
 
 XYZ principia__VesselWorldPosition(Plugin const* const plugin,
-                        char const* vessel_guid,
-                        XYZ const parent_world_position) {
+                                   char const* vessel_guid,
+                                   XYZ const parent_world_position) {
   Position<World> result = CHECK_NOTNULL(plugin)->VesselWorldPosition(
       vessel_guid,
       World::origin + Displacement<World>({parent_world_position.x * Metre,
@@ -271,9 +271,9 @@ XYZ principia__VesselWorldPosition(Plugin const* const plugin,
 }
 
 XYZ principia__VesselWorldVelocity(Plugin const* const plugin,
-                        char const* vessel_guid,
-                        XYZ const parent_world_velocity,
-                        double const parent_rotation_period) {
+                                   char const* vessel_guid,
+                                   XYZ const parent_world_velocity,
+                                   double const parent_rotation_period) {
   Velocity<World> result = CHECK_NOTNULL(plugin)->VesselWorldVelocity(
       vessel_guid,
       Velocity<World>({parent_world_velocity.x * Metre / Second,
@@ -286,11 +286,10 @@ XYZ principia__VesselWorldVelocity(Plugin const* const plugin,
              coordinates.z / (Metre / Second)};
 }
 
-void principia__AddVesselToNextPhysicsBubble(
-    Plugin* const plugin,
-    char const* vessel_guid,
-    KSPPart const* const parts,
-    int count) {
+void principia__AddVesselToNextPhysicsBubble(Plugin* const plugin,
+                                             char const* vessel_guid,
+                                             KSPPart const* const parts,
+                                             int count) {
   LOG(INFO) << "principia__AddVesselToNextPhysicsBubble" << '\n'
             << "count : " << count;
   std::vector<std::pair<PartID, std::unique_ptr<Part<World>>>> vessel_parts;

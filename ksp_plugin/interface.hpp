@@ -109,11 +109,10 @@ void CDECL principia__LogFatal(char const* message);
 // Returns a pointer to a plugin constructed with the arguments given.
 // The caller takes ownership of the result.
 extern "C" DLLEXPORT
-Plugin* CDECL principia__NewPlugin(
-    double const initial_time,
-                        int const sun_index,
-                        double const sun_gravitational_parameter,
-                        double const planetarium_rotation_in_degrees);
+Plugin* CDECL principia__NewPlugin(double const initial_time,
+                                   int const sun_index,
+                                   double const sun_gravitational_parameter,
+                                   double const planetarium_rotation_in_degrees);
 
 // Deletes and nulls |*plugin|.
 // |plugin| must not be null.  No transfer of ownership of |*plugin|, takes
@@ -125,18 +124,18 @@ void CDECL principia__DeletePlugin(Plugin const** const plugin);
 // |plugin| must not be null.  No transfer of ownership.
 extern "C" DLLEXPORT
 void CDECL principia__InsertCelestial(Plugin* const plugin,
-                           int const celestial_index,
-                           double const gravitational_parameter,
-                           int const parent_index,
-                           XYZ const from_parent_position,
-                           XYZ const from_parent_velocity);
+                                     int const celestial_index,
+                                     double const gravitational_parameter,
+                                     int const parent_index,
+                                     XYZ const from_parent_position,
+                                     XYZ const from_parent_velocity);
 
 // Calls |plugin->UpdateCelestialHierarchy| with the arguments given.
 // |plugin| must not be null.  No transfer of ownership.
 extern "C" DLLEXPORT
 void CDECL principia__UpdateCelestialHierarchy(Plugin const* const plugin,
-                                    int const celestial_index,
-                                    int const parent_index);
+                                               int const celestial_index,
+                                               int const parent_index);
 
 // Calls |plugin->EndInitialization|.
 // |plugin| must not be null.  No transfer of ownership.
@@ -147,45 +146,45 @@ void CDECL principia__EndInitialization(Plugin* const plugin);
 // |plugin| must not be null.  No transfer of ownership.
 extern "C" DLLEXPORT
 bool CDECL principia__InsertOrKeepVessel(Plugin* const plugin,
-                              char const* vessel_guid,
-                              int const parent_index);
+                                         char const* vessel_guid,
+                                         int const parent_index);
 
 // Calls |plugin->SetVesselStateOffset| with the arguments given.
 // |plugin| must not be null.  No transfer of ownership.
 extern "C" DLLEXPORT
 void CDECL principia__SetVesselStateOffset(Plugin* const plugin,
-                                char const* vessel_guid,
-                                XYZ const from_parent_position,
-                                XYZ const from_parent_velocity);
+                                           char const* vessel_guid,
+                                           XYZ const from_parent_position,
+                                           XYZ const from_parent_velocity);
 
 extern "C" DLLEXPORT
 void CDECL principia__AdvanceTime(Plugin* const plugin,
-                       double const t,
-                       double const planetarium_rotation);
+                                  double const t,
+                                  double const planetarium_rotation);
 
 // Calls |plugin->VesselDisplacementFromParent| with the arguments given.
 // |plugin| must not be null.  No transfer of ownership.
 extern "C" DLLEXPORT
 XYZ CDECL principia__VesselDisplacementFromParent(Plugin const* const plugin,
-                                       char const* vessel_guid);
+                                                  char const* vessel_guid);
 
 // Calls |plugin->VesselParentRelativeVelocity| with the arguments given.
 // |plugin| must not be null.  No transfer of ownership.
 extern "C" DLLEXPORT
 XYZ CDECL principia__VesselParentRelativeVelocity(Plugin const* const plugin,
-                                       char const* vessel_guid);
+                                                  char const* vessel_guid);
 
 // Calls |plugin->CelestialDisplacementFromParent| with the arguments given.
 // |plugin| must not be null.  No transfer of ownership.
 extern "C" DLLEXPORT
 XYZ CDECL principia__CelestialDisplacementFromParent(Plugin const* const plugin,
-                                          int const celestial_index);
+                                                     int const celestial_index);
 
 // Calls |plugin->CelestialParentRelativeVelocity| with the arguments given.
 // |plugin| must not be null.  No transfer of ownership.
 extern "C" DLLEXPORT
 XYZ CDECL principia__CelestialParentRelativeVelocity(Plugin const* const plugin,
-                                          int const celestial_index);
+                                                     int const celestial_index);
 
 // Calls |plugin->NewBodyCentredNonRotatingFrame| with the arguments given.
 // |plugin| must not be null.  No transfer of ownership.
@@ -216,9 +215,9 @@ void CDECL principia__DeleteRenderingFrame(RenderingFrame const** const frame);
 extern "C" DLLEXPORT
 LineAndIterator* CDECL principia__RenderedVesselTrajectory(
     Plugin const* const plugin,
-                                                char const* vessel_guid,
-                                                RenderingFrame const* frame,
-                                                XYZ const sun_world_position);
+    char const* vessel_guid,
+    RenderingFrame const* frame,
+    XYZ const sun_world_position);
 
 // Returns |line_and_iterator->rendered_trajectory.size()|.
 // |line_and_iterator| must not be null.  No transfer of ownership.
@@ -249,21 +248,20 @@ void CDECL principia__DeleteLineAndIterator(
 
 extern "C" DLLEXPORT
 XYZ CDECL principia__VesselWorldPosition(Plugin const* const plugin,
-                              char const* vessel_guid,
-                              XYZ const parent_world_position);
+                                         char const* vessel_guid,
+                                         XYZ const parent_world_position);
 
 extern "C" DLLEXPORT
 XYZ CDECL principia__VesselWorldVelocity(Plugin const* const plugin,
-                              char const* vessel_guid,
-                              XYZ const parent_world_velocity,
-                              double const parent_rotation_period);
+                                         char const* vessel_guid,
+                                         XYZ const parent_world_velocity,
+                                         double const parent_rotation_period);
 
 extern "C" DLLEXPORT
-void CDECL principia__AddVesselToNextPhysicsBubble(
-    Plugin* const plugin,
-    char const* vessel_guid,
-    KSPPart const* const parts,
-    int count);
+void CDECL principia__AddVesselToNextPhysicsBubble(Plugin* const plugin,
+                                                   char const* vessel_guid,
+                                                   KSPPart const* const parts,
+                                                   int count);
 
 extern "C" DLLEXPORT
 XYZ CDECL principia__BubbleDisplacementCorrection(Plugin const* const plugin,
