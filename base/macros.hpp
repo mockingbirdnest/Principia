@@ -36,9 +36,10 @@ namespace base {
 
 // A function for use on control paths that don't return a value, typically
 // because they end with a |LOG(FATAL)|.
-// MSVC used to require __declspec(noreturn) but doesn't anymore.  Odd.
 #ifdef __clang__
 [[noreturn]]
+#elif _MSC_VER
+__declspec(noreturn)
 #endif
 inline void noreturn() { exit(0); }
 
