@@ -859,7 +859,8 @@ void Plugin::PreparePhysicsBubble(Instant const& next_time) {
         // physics bubble is unrelated to the current one.
         RestartNextPhysicsBubble();
       } else {
-        if (common_parts->size() == next_physics_bubble_->parts.size()) {
+        if (common_parts->size() == next_physics_bubble_->parts.size() &&
+            common_parts->size() == current_physics_bubble_->parts.size()) {
           // The set of parts has not changed.
           next_physics_bubble_->centre_of_mass_trajectory =
               std::move(current_physics_bubble_->centre_of_mass_trajectory);
