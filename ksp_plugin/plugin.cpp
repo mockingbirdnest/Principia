@@ -137,7 +137,7 @@ void Plugin::SynchronizeNewHistoriesAndBubble() {
     }
   }
   for (Vessel* const vessel : dirty_vessels_) {
-    if (!IsInPhysicsBubble(vessel)) {
+    if (!IsInPhysicsBubble(vessel) && new_vessels_.count(vessel) == 0) {
       trajectories.push_back(vessel->mutable_prolongation());
     }
   }
@@ -160,6 +160,7 @@ void Plugin::SynchronizeNewHistoriesAndBubble() {
     vessel->CreateHistoryAndForkProlongation(
         HistoryTime(),
         vessel->prolongation().last().degrees_of_freedom());
+    dirty_vessels_.erase(vessel);
   }
   new_vessels_.clear();
   for (Vessel* const vessel : dirty_vessels_) {
