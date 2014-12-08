@@ -333,6 +333,8 @@ class Plugin {
   // The vessels that will be kept during the next call to |AdvanceTime|.
   std::set<Vessel const* const> kept_;
 
+  std::set<Vessel* const> dirty_vessels_;
+
   struct PhysicsBubble {
     std::map<Vessel* const, std::vector<Part<World>* const>> vessels;
     std::map<PartID, std::unique_ptr<Part<World>> const> parts;

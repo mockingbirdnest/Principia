@@ -91,7 +91,7 @@ void Plugin::EvolveSynchronizedHistories(Instant const& t) {
   // Integration with a constant step.
   NBodySystem<Barycentric>::Trajectories trajectories;
   // NOTE(egg): This may be too large, vessels that are not new and in the
-  // physics bubble will not be added.
+  // physics bubble or dirty will not be added.
   trajectories.reserve(vessels_.size() - new_vessels_.size() +
                        celestials_.size());
   for (auto const& pair : celestials_) {
@@ -100,7 +100,9 @@ void Plugin::EvolveSynchronizedHistories(Instant const& t) {
   }
   for (auto const& pair : vessels_) {
     Vessel* const vessel = pair.second.get();
-    if (vessel->is_synchronized() && !IsInPhysicsBubble(vessel)) {
+    if (vessel->is_synchronized() &&
+        !IsInPhysicsBubble(vessel) &&
+        dirty_vessels_.count(vessel) == 0) {
       trajectories.push_back(vessel->mutable_history());
     }
   }
@@ -129,6 +131,11 @@ void Plugin::SynchronizeNewHistoriesAndBubble() {
       trajectories.push_back(vessel->mutable_prolongation());
     }
   }
+  for (Vessel* const vessel : dirty_vessels_) {
+    if (!IsInPhysicsBubble(vessel)) {
+      trajectories.push_back(vessel->mutable_prolongation());
+    }
+  }
   if (HavePhysicsBubble()) {
     trajectories.push_back(
         current_physics_bubble_->centre_of_mass_trajectory.get());
@@ -149,6 +156,13 @@ void Plugin::SynchronizeNewHistoriesAndBubble() {
         vessel->prolongation().last().degrees_of_freedom());
   }
   new_vessels_.clear();
+  for (Vessel* const vessel : dirty_vessels_) {
+    CHECK(!IsInPhysicsBubble(vessel));
+    vessel->mutable_history()->Append(
+        HistoryTime(),
+        vessel->prolongation().last().degrees_of_freedom());
+  }
+  dirty_vessels_.clear();
   LOG(INFO) << "Synchronized the new histories";
 }
 
@@ -174,6 +188,7 @@ void Plugin::SynchronizeBubbleHistories() {
            centre_of_mass.velocity + velocity});
       CHECK(new_vessels_.erase(vessel));
     }
+    dirty_vessels_.erase(vessel);
   }
 }
 
@@ -593,6 +608,7 @@ void Plugin::AddVesselToNextPhysicsBubble(
   CHECK(it != vessels_.end());
   Vessel* const vessel = it->second.get();
   VLOG(1) << "Vessel: " << vessel;
+  dirty_vessels_.insert(vessel);
   auto const inserted_vessel =
       next_physics_bubble_->vessels.emplace(vessel,
                                             std::vector<Part<World>* const>());
