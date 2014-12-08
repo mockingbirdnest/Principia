@@ -79,6 +79,9 @@ void Plugin::CleanUpVessels() {
       if (new_vessels_.erase(vessel)) {
         LOG(INFO) << "Vessel had not been synchronized";
       }
+      if (dirty_vessels_.erase(vessel)) {
+        LOG(INFO) << "Vessel was dirty";
+      }
       // |std::map::erase| invalidates its parameter so we post-increment.
       vessels_.erase(it++);
     }
@@ -86,8 +89,8 @@ void Plugin::CleanUpVessels() {
 }
 
 void Plugin::EvolveSynchronizedHistories(Instant const& t) {
-  VLOG(1) << "Starting the evolution of the old histories" << '\n'
-          << "from : " << HistoryTime();
+  VLOG(1) << "EvolveSynchronizedHistories" << '\n'
+          << "t: " << t;
   // Integration with a constant step.
   NBodySystem<Barycentric>::Trajectories trajectories;
   // NOTE(egg): This may be too large, vessels that are not new and in the
@@ -106,6 +109,8 @@ void Plugin::EvolveSynchronizedHistories(Instant const& t) {
       trajectories.push_back(vessel->mutable_history());
     }
   }
+  VLOG(1) << "Starting the evolution of the old histories" << '\n'
+          << "from : " << HistoryTime();
   n_body_system_->Integrate(history_integrator_,  // integrator
                             t,                    // tmax
                             Δt_,                  // Δt
@@ -118,7 +123,7 @@ void Plugin::EvolveSynchronizedHistories(Instant const& t) {
 }
 
 void Plugin::SynchronizeNewHistoriesAndBubble() {
-  VLOG(1) << "Starting the synchronization of the new histories";
+  VLOG(1) << "SynchronizeNewHistoriesAndBubble";
   NBodySystem<Barycentric>::Trajectories trajectories;
   trajectories.reserve(celestials_.size() + new_vessels_.size() +
                        HavePhysicsBubble() ? 1 : 0);
@@ -140,6 +145,7 @@ void Plugin::SynchronizeNewHistoriesAndBubble() {
     trajectories.push_back(
         current_physics_bubble_->centre_of_mass_trajectory.get());
   }
+  VLOG(1) << "Starting the synchronization of the new histories";
   n_body_system_->Integrate(prolongation_integrator_,  // integrator
                             HistoryTime(),             // tmax
                             Δt_,                       // Δt
@@ -163,7 +169,7 @@ void Plugin::SynchronizeNewHistoriesAndBubble() {
         vessel->prolongation().last().degrees_of_freedom());
   }
   dirty_vessels_.clear();
-  LOG(INFO) << "Synchronized the new histories";
+  VLOG(1) << "Synchronized the new histories";
 }
 
 void Plugin::SynchronizeBubbleHistories() {
@@ -188,11 +194,12 @@ void Plugin::SynchronizeBubbleHistories() {
            centre_of_mass.velocity + velocity});
       CHECK(new_vessels_.erase(vessel));
     }
-    dirty_vessels_.erase(vessel);
+    CHECK(dirty_vessels_.erase(vessel));
   }
 }
 
 void Plugin::ResetProlongations() {
+  VLOG(1) << "ResetProlongations";
   for (auto const& pair : vessels_) {
     std::unique_ptr<Vessel> const& vessel = pair.second;
     vessel->ResetProlongation(HistoryTime());
@@ -403,7 +410,9 @@ void Plugin::AdvanceTime(Instant const& t, Angle const& planetarium_rotation) {
     // The histories are far enough behind that we can advance them at least one
     // step and reset the prolongations.
     EvolveSynchronizedHistories(t);
-    if (!new_vessels_.empty() || HavePhysicsBubble()) {
+    if (!new_vessels_.empty() ||
+        !dirty_vessels_.empty() ||
+        HavePhysicsBubble()) {
       SynchronizeNewHistoriesAndBubble();
     }
     ResetProlongations();
