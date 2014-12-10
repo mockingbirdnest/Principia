@@ -1,6 +1,7 @@
 #pragma once
 
 #include <type_traits>
+#include <utility>
 #include <vector>
 
 #include "quantities/quantities.hpp"
@@ -41,10 +42,8 @@ class Point {
     Point const Get() const;
 
    private:
-    static Point p_;
-    static Weight w_;
     bool empty_ = true;
-    decltype(p_.coordinates_ * w_) weighted_sum_;
+    decltype(std::declval<Vector>() * std::declval<Weight>()) weighted_sum_;
     Weight weight_;
   };
 
