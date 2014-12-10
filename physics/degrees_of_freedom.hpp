@@ -33,10 +33,10 @@ struct DegreesOfFreedom {
 
    private:
     bool empty_ = true;
-    decltype(std::declval<Position<Frame>() *
-             std::declval<Weight>()) position_weighted_sum_;
-    decltype(std::declval<Velocity<Frame>() *
-             std::declval<Weight>()) velocity_weighted_sum_;
+    decltype(std::declval<Displacement<Frame>>() *
+             std::declval<Weight>()) displacements_weighted_sum_;
+    decltype(std::declval<Velocity<Frame>>() *
+             std::declval<Weight>()) velocities_weighted_sum_;
     Weight weight_;
 
     // We need a reference position to convert points into vectors.  We pick a

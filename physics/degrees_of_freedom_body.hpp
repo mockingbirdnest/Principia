@@ -18,18 +18,17 @@ template<typename Weight>
 void DegreesOfFreedom<Frame>::BarycentreCalculator<Weight>::Add(
     DegreesOfFreedom const& degrees_of_freedom,
     Weight const& weight) {
-  auto const positions_weighted_sum_diff =
-      (degrees_of_freedom.position -
-       reference_position_).coordinates() * weight;
+  auto const displacements_weighted_sum_diff =
+      (degrees_of_freedom.position - reference_position_) * weight;
   auto const velocity_weighted_sum_diff =
-      degrees_of_freedom.velocity.coordinates() * weight;
+      degrees_of_freedom.velocity * weight;
   if (empty_) {
-    positions_weighted_sum_ = positions_weighted_sum_diff;
+    displacements_weighted_sum_ = displacements_weighted_sum_diff;
     velocities_weighted_sum_ = velocity_weighted_sum_diff;
     weight_ = weight;
     empty_ = false;
   } else {
-    positions_weighted_sum_ += positions_weighted_sum_diff;
+    displacements_weighted_sum_ += displacements_weighted_sum_diff;
     velocities_weighted_sum_ += velocity_weighted_sum_diff;
     weight_ += weight;
   }
@@ -40,7 +39,9 @@ template<typename Weight>
 DegreesOfFreedom<Frame> const
 DegreesOfFreedom<Frame>::BarycentreCalculator<Weight>::Get() const {
   CHECK(!empty_) << "Empty BarycentreCalculator";
-  return Point<Vector>(weighted_sum_ / weight_);
+  return {reference_position_ +
+              Displacement<Frame>(displacements_weighted_sum_ / weight_),
+          Velocity<Frame>(velocities_weighted_sum_ / weight_)};
 }
 
 template<typename Frame>
@@ -95,7 +96,8 @@ std::ostream& operator<<(std::ostream& out,
 
 template<typename Frame>
 template<typename Weight>
-DegreesOfFreedom<Frame>::Position<Frame> const reference_position_;
+Position<Frame> const
+DegreesOfFreedom<Frame>::BarycentreCalculator<Weight>::reference_position_;
 
 }  // namespace physics
 }  // namespace principia

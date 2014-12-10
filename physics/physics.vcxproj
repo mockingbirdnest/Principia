@@ -147,6 +147,7 @@
     <ClInclude Include="transforms_body.hpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="degrees_of_freedom_test.cpp" />
     <ClCompile Include="n_body_system_test.cpp" />
     <ClCompile Include="trajectory_test.cpp" />
     <ClCompile Include="transforms_test.cpp" />
