@@ -55,6 +55,27 @@ bool Point<Vector>::operator!=(Point<Vector> const& right) const {
 }
 
 template<typename Vector>
+template<typename Weight>
+void Point<Vector>::BarycentreCalculator<Weight>::Add(Point const& point,
+                                                      Weight const& weight) {
+  if (empty_) {
+    weighted_sum_ = point.coordinates_ * weight;
+    weight_ = weight;
+    empty_ = false;
+  } else {
+    weighted_sum_ += point.coordinates_ * weight;
+    weight_ += weight;
+  }
+}
+
+template<typename Vector>
+template<typename Weight>
+Point<Vector> const Point<Vector>::BarycentreCalculator<Weight>::Get() const {
+  CHECK(!empty_) << "Empty BarycentreCalculator";
+  return Point<Vector>(weighted_sum_ / weight_);
+}
+
+template<typename Vector>
 Point<Vector> operator+(Vector const& translation,
                         Point<Vector> const& point) {
   return Point<Vector>(translation + point.coordinates_);

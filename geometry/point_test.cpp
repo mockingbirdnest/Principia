@@ -73,5 +73,33 @@ TEST_F(AffineSpaceTest, Barycentres) {
   EXPECT_THAT(b2, Eq(kUnixEpoch - 1 * Day));
 }
 
+TEST_F(AffineSpaceTest, InstantBarycentreCalculator) {
+  Instant::BarycentreCalculator<double> calculator;
+  Instant const t1 = kUnixEpoch + 2 * Day;
+  Instant const t2 = kUnixEpoch - 3 * Day;
+  Instant const t3 = kUnixEpoch + 5 * Day;
+  Instant const t4 = kUnixEpoch - 7 * Day;
+  calculator.Add(t1, 1);
+  calculator.Add(t2, 2);
+  EXPECT_THAT(calculator.Get(), Eq(kUnixEpoch - 4 * Day / 3));
+  calculator.Add(t3, 3);
+  calculator.Add(t4, 4);
+  EXPECT_THAT(calculator.Get(), Eq(kUnixEpoch - 1.7 * Day));
+}
+
+TEST_F(AffineSpaceTest, DoubleBarycentreCalculator) {
+  Point<double>::BarycentreCalculator<double> calculator;
+  Point<double> const d1 = Point<double>(2);
+  Point<double> const d2 = Point<double>(-3);
+  Point<double> const d3 = Point<double>(5);
+  Point<double> const d4 = Point<double>(-7);
+  calculator.Add(d1, 1);
+  calculator.Add(d2, 2);
+  EXPECT_THAT(calculator.Get(), Eq(Point<double>(-4.0 / 3.0)));
+  calculator.Add(d3, 3);
+  calculator.Add(d4, 4);
+  EXPECT_THAT(calculator.Get(), Eq(Point<double>(-1.7)));
+}
+
 }  // namespace geometry
 }  // namespace principia
