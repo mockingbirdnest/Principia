@@ -1,5 +1,8 @@
-#include "geometry/epoch.hpp"
 #include "geometry/point.hpp"
+
+#include <vector>
+
+#include "geometry/epoch.hpp"
 #include "gmock/gmock.h"
 #include "quantities/quantities.hpp"
 #include "quantities/named_quantities.hpp"

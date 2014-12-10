@@ -1,5 +1,7 @@
 #include "physics/degrees_of_freedom.hpp"
 
+#include <vector>
+
 #include "geometry/named_quantities.hpp"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
