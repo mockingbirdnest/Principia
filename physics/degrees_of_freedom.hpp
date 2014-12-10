@@ -21,10 +21,37 @@ struct DegreesOfFreedom {
                    Velocity<Frame> const& velocity);
   Position<Frame> position;
   Velocity<Frame> velocity;
+
+  template<typename Weight>
+  class BarycentreCalculator {
+   public:
+    BarycentreCalculator() = default;
+    ~BarycentreCalculator() = default;
+
+    void Add(DegreesOfFreedom const& degrees_of_freedom, Weight const& weight);
+    DegreesOfFreedom const Get() const;
+
+   private:
+    bool empty_ = true;
+    decltype(std::declval<Position<Frame>() *
+             std::declval<Weight>()) position_weighted_sum_;
+    decltype(std::declval<Velocity<Frame>() *
+             std::declval<Weight>()) velocity_weighted_sum_;
+    Weight weight_;
+
+    // We need a reference position to convert points into vectors.  We pick a
+    // default constructed Position<> as it doesn't introduce any inaccuracies
+    // in the computations.
+    static Position<Frame> const reference_position_;
+  };
 };
 
 template<typename Frame>
 bool operator==(DegreesOfFreedom<Frame> const& left,
+                DegreesOfFreedom<Frame> const& right);
+
+template<typename Frame>
+bool operator!=(DegreesOfFreedom<Frame> const& left,
                 DegreesOfFreedom<Frame> const& right);
 
 template<typename Frame, typename Weight>
