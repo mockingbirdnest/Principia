@@ -50,6 +50,25 @@ class DegreesOfFreedomTest : public testing::Test {
   DegreesOfFreedom<World> d3_;
 };
 
+TEST_F(DegreesOfFreedomTest, BarycentreError) {
+  // The <> seem to confuse EXPECT_DEATH, hence the lambda.
+  auto barycentre =
+      [](std::vector<DegreesOfFreedom<World>> const& degrees_of_freedom,
+         std::vector<Entropy> const& weights) -> DegreesOfFreedom<World> {
+    return Barycentre<World, Entropy>(degrees_of_freedom, weights);
+  };
+  EXPECT_DEATH({
+    barycentre({d1_, d2_, d3_}, {3 * SIUnit<Entropy>(), 4 * SIUnit<Entropy>()});
+  }, "unequal sizes");
+  EXPECT_DEATH({
+    barycentre({}, {});
+  }, "Empty input");
+  EXPECT_DEATH({
+    DegreesOfFreedom<World>::BarycentreCalculator<Entropy> calculator;
+    calculator.Get();
+  }, "");
+}
+
 TEST_F(DegreesOfFreedomTest, Barycentre) {
   DegreesOfFreedom<World> const barycentre =
       Barycentre<World, Entropy>({d1_, d2_, d3_},
@@ -82,24 +101,24 @@ TEST_F(DegreesOfFreedomTest, BarycentreCalculator) {
               AlmostEquals(
                   Displacement<World>({(19.0 / 7.0) * SIUnit<Length>(),
                                        -2.0 * SIUnit<Length>(),
-                                       (33.0 / 7.0) * SIUnit<Length>()}), 4));
+                                       (33.0 / 7.0) * SIUnit<Length>()}), 0));
   EXPECT_THAT(barycentre.velocity,
               AlmostEquals(
                   Velocity<World>({(190.0 / 7.0) * SIUnit<Speed>(),
                                    (260.0 / 7.0) * SIUnit<Speed>(),
-                                   (-150.0 / 7.0) * SIUnit<Speed>()}), 1));
+                                   (-150.0 / 7.0) * SIUnit<Speed>()}), 0));
   calculator.Add(d3_, 5);
   barycentre = calculator.Get();
   EXPECT_THAT(barycentre.position - origin_,
               AlmostEquals(
                   Displacement<World>({(-4.0 / 3.0) * SIUnit<Length>(),
                                         (13.0 / 6.0) * SIUnit<Length>(),
-                                        -1.0 * SIUnit<Length>()}), 1));
+                                        -1.0 * SIUnit<Length>()}), 0));
   EXPECT_THAT(barycentre.velocity,
               AlmostEquals(
                   Velocity<World>({(-40.0 / 3.0) * SIUnit<Speed>(),
                                    (-35.0 / 3.0) * SIUnit<Speed>(),
-                                   -50.0 * SIUnit<Speed>()}), 1));
+                                   -50.0 * SIUnit<Speed>()}), 0));
 }
 
 }  // namespace physics
