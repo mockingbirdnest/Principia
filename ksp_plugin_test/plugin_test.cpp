@@ -600,7 +600,7 @@ TEST_F(PluginTest, PhysicsBubble) {
   GUID const enterprise = "NCC-1701";
   GUID const enterprise_d = "NCC-1701-D";
   GUID const enterprise_d_saucer = "NCC-1701-D (saucer)";
-  PartID const enterprise = 0U;
+  PartID const enterprise_whole_ship = 0U;
   PartID const enterprise_d_engineering_section = 1U;
   PartID const enterprise_d_saucer_section = 2U;
   InsertAllSolarSystemBodies();
@@ -609,6 +609,7 @@ TEST_F(PluginTest, PhysicsBubble) {
   std::size_t expected_number_of_new_vessels = 0;
   std::size_t expected_number_of_old_dirty_on_rails_vessels = 0;
   std::size_t expected_number_of_old_vessels = 0;
+  bool have_physics_bubble = true;
   InsertVessel(enterprise, &expected_number_of_new_vessels);
   for (int step = 0; step < 10; ++step) {
     for (Instant t = HistoryTime(step) + δt;
@@ -634,27 +635,21 @@ TEST_F(PluginTest, PhysicsBubble) {
                         SizeIs(bodies_.size() +
                                expected_number_of_old_vessels +
                                expected_number_of_new_vessels +
-                               expected_number_of_old_dirty_on_rails_vessels)))
+                               expected_number_of_old_dirty_on_rails_vessels +
+                               have_physics_bubble ? 1 : 0)))
           .RetiresOnSaturation();
       plugin_->AdvanceTime(t, planetarium_rotation);
       if (AbsoluteError(t - HistoryTime(0), a_while) < ε_δt) {
         InsertVessel(enterprise_d, &expected_number_of_new_vessels);
-      } else if (AbsoluteError(t - HistoryTime(1), a_while) < ε_δt) {
-        InsertVessel(stargazer, &expected_number_of_new_vessels);
-        InsertVessel(bradbury, &expected_number_of_new_vessels);
+      } else if (AbsoluteError(t - HistoryTime(1), half_a_step) < ε_δt) {
+        InsertVessel(enterprise_d_saucer, &expected_number_of_new_vessels);
       }
     }
     // Keep the vessels for the history-advancing step.
-    if (step <= 3) {
+    if (step <= 2) {
       KeepVessel(enterprise);
     }
     KeepVessel(enterprise_d);
-    if (step >= 1) {
-      KeepVessel(stargazer);
-    }
-    if (step > 2) {
-      KeepVessel(constantinople);
-    }
     // Called to advance the synchronized histories.
     EXPECT_CALL(
         *n_body_system_,
@@ -667,7 +662,8 @@ TEST_F(PluginTest, PhysicsBubble) {
         .WillOnce(AppendTimeToTrajectories<5>(HistoryTime(step + 1)))
         .RetiresOnSaturation();
     if (expected_number_of_new_vessels > 0 ||
-        expected_number_of_old_dirty_on_rails_vessels > 0) {
+        expected_number_of_old_dirty_on_rails_vessels > 0 ||
+        have_physics_bubble) {
       // Called to synchronize the new histories.
       EXPECT_CALL(
           *n_body_system_,
@@ -676,7 +672,8 @@ TEST_F(PluginTest, PhysicsBubble) {
                         plugin_->Δt(), 0, true,
                         SizeIs(bodies_.size() +
                                expected_number_of_new_vessels +
-                               expected_number_of_old_dirty_on_rails_vessels)))
+                               expected_number_of_old_dirty_on_rails_vessels +
+                               have_physics_bubble ? 1 : 0)))
           .WillOnce(AppendTimeToTrajectories<5>(HistoryTime(step + 1)))
           .RetiresOnSaturation();
     }
@@ -688,12 +685,11 @@ TEST_F(PluginTest, PhysicsBubble) {
                 Integrate(Ref(plugin_->prolongation_integrator()),
                           HistoryTime(step + 1) + δt, plugin_->Δt(), 0, true,
                           SizeIs(bodies_.size() +
-                                     expected_number_of_old_vessels)))
+                                     expected_number_of_old_vessels +
+                                     have_physics_bubble ? 1 : 0)))
         .RetiresOnSaturation();
     plugin_->AdvanceTime(HistoryTime(step + 1) + δt, planetarium_rotation);
-    if (step == 2) {
-      InsertVessel(constantinople, &expected_number_of_new_vessels);
-    } else if (step == 3) {
+    if (step = 2) {
       // We will be removing |enterprise|.
       --expected_number_of_old_vessels;
     }
