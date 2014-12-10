@@ -116,7 +116,7 @@ Point<Vector> Barycentre(std::vector<Point<Vector>> const& points,
   CHECK_EQ(points.size(), weights.size());
   CHECK(!points.empty());
   Point<Vector>::BarycentreCalculator<Weight> calculator;
-  for (size_t i = 1; i < points.size(); ++i) {
+  for (size_t i = 0; i < points.size(); ++i) {
     calculator.Add(points[i], weights[i]);
   }
   return calculator.Get();

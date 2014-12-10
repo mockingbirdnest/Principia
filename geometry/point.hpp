@@ -41,8 +41,10 @@ class Point {
     Point const Get() const;
 
    private:
+    static Point p_;
+    static Weight w_;
     bool empty_ = true;
-    Vector weighted_sum_;
+    decltype(p_.coordinates_ * w_) weighted_sum_;
     Weight weight_;
   };
 
