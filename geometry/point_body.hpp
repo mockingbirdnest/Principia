@@ -113,8 +113,9 @@ std::ostream& operator<<(std::ostream& out, Point<Vector> const& point) {
 template<typename Vector, typename Weight>
 Point<Vector> Barycentre(std::vector<Point<Vector>> const& points,
                          std::vector<Weight> const& weights) {
-  CHECK_EQ(points.size(), weights.size());
-  CHECK(!points.empty());
+  CHECK_EQ(points.size(), weights.size())
+      << "Points and weights of unequal sizes";
+  CHECK(!points.empty()) << "Empty input";
   Point<Vector>::BarycentreCalculator<Weight> calculator;
   for (size_t i = 0; i < points.size(); ++i) {
     calculator.Add(points[i], weights[i]);

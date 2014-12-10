@@ -1,5 +1,8 @@
-#include "geometry/epoch.hpp"
 #include "geometry/point.hpp"
+
+#include <vector>
+
+#include "geometry/epoch.hpp"
 #include "gmock/gmock.h"
 #include "quantities/quantities.hpp"
 #include "quantities/named_quantities.hpp"
@@ -62,6 +65,27 @@ TEST_F(AffineSpaceTest, Ordering) {
   EXPECT_FALSE(t1 > t1);
   EXPECT_TRUE(t1 >= t2);
   EXPECT_TRUE(t1 >= t1);
+}
+
+TEST_F(AffineSpaceTest, BarycentreError) {
+  // The <> seem to confuse EXPECT_DEATH, hence the lambda.
+  auto barycentre =
+      [](std::vector<Instant> const& instants,
+         std::vector<Volume> const& weights) -> Instant {
+    return Barycentre<Time, Volume>(instants, weights);
+  };
+  EXPECT_DEATH({
+    Instant const t1 = kUnixEpoch + 1 * Day;
+    Instant const t2 = kUnixEpoch - 3 * Day;
+    barycentre({t1, t2}, {3 * Litre, 4 * Litre, 5 * Litre});
+  }, "unequal sizes");
+  EXPECT_DEATH({
+    barycentre({}, {});
+  }, "Empty input");
+  EXPECT_DEATH({
+    Instant::BarycentreCalculator<Volume> calculator;
+    calculator.Get();
+  }, "Empty BarycentreCalculator");
 }
 
 TEST_F(AffineSpaceTest, Barycentres) {
