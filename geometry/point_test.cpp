@@ -82,7 +82,7 @@ TEST_F(AffineSpaceTest, BarycentreError) {
   EXPECT_DEATH({
     Instant::BarycentreCalculator<Volume> calculator;
     calculator.Get();
-  }, "");
+  }, "Empty BarycentreCalculator");
 }
 
 TEST_F(AffineSpaceTest, Barycentres) {

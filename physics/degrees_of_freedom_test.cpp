@@ -66,7 +66,7 @@ TEST_F(DegreesOfFreedomTest, BarycentreError) {
   EXPECT_DEATH({
     DegreesOfFreedom<World>::BarycentreCalculator<Entropy> calculator;
     calculator.Get();
-  }, "");
+  }, "Empty BarycentreCalculator");
 }
 
 TEST_F(DegreesOfFreedomTest, Barycentre) {
