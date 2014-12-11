@@ -600,17 +600,62 @@ TEST_F(PluginTest, PhysicsBubble) {
   GUID const enterprise = "NCC-1701";
   GUID const enterprise_d = "NCC-1701-D";
   GUID const enterprise_d_saucer = "NCC-1701-D (saucer)";
-  PartID const enterprise_whole_ship = 0U;
-  PartID const enterprise_d_engineering_section = 1U;
-  PartID const enterprise_d_saucer_section = 2U;
+  auto const make_enterprise_whole_ship = []() {
+    return std::make_pair(
+        PartID(0U),
+        std::make_unique<Part<World>>(
+            DegreesOfFreedom<World>(
+                World::origin,
+                Velocity<World>({1 * Metre / Second,
+                                 0 * Metre / Second,
+                                 0 * Metre / Second})),
+            1 * Kilogram,
+            Vector<Acceleration, World>({1 * Metre / Pow<2>(Second),
+                                         0 * Metre / Pow<2>(Second),
+                                         0 * Metre / Pow<2>(Second)})));
+  };
+  auto const make_enterprise_d_engineering_section = []() {
+    return std::make_pair(
+        PartID(1U),
+        std::make_unique<Part<World>>(
+            DegreesOfFreedom<World>(
+                World::origin +
+                    Displacement<World>({1 * Metre, 0 * Metre, 0 * Metre}),
+                Velocity<World>({0 * Metre / Second,
+                                 1 * Metre / Second,
+                                 0 * Metre / Second})),
+            3 * Kilogram,
+            Vector<Acceleration, World>({1 * Metre / Pow<2>(Second),
+                                         0 * Metre / Pow<2>(Second),
+                                         0 * Metre / Pow<2>(Second)})));
+  };
+  auto const make_enterprise_d_saucer_section = []() {
+    return std::make_pair(
+        PartID(2U),
+        std::make_unique<Part<World>>(
+            DegreesOfFreedom<World>(
+                World::origin -
+                    Displacement<World>({1 * Metre, 0 * Metre, 0 * Metre}),
+                -Velocity<World>({0 * Metre / Second,
+                                  1 * Metre / Second,
+                                  0 * Metre / Second})),
+            5 * Kilogram,
+            Vector<Acceleration, World>({1 * Metre / Pow<2>(Second),
+                                         0 * Metre / Pow<2>(Second),
+                                         0 * Metre / Pow<2>(Second)})));
+  };
+  auto const foo = make_enterprise_whole_ship();
   InsertAllSolarSystemBodies();
   plugin_->EndInitialization();
   Angle const planetarium_rotation = 42 * Radian;
   std::size_t expected_number_of_new_vessels = 0;
-  std::size_t expected_number_of_old_dirty_on_rails_vessels = 0;
+  std::size_t expected_number_of_dirty_old_on_rails_vessels = 0;
   std::size_t expected_number_of_old_vessels = 0;
+  std::vector<std::pair<PartID, std::unique_ptr<Part<World>>>> parts;
   bool have_physics_bubble = true;
   InsertVessel(enterprise, &expected_number_of_new_vessels);
+  parts.emplace_back(std::move(make_enterprise_whole_ship()));
+  plugin_->AddVesselToNextPhysicsBubble(enterprise, std::move(parts));
   for (int step = 0; step < 10; ++step) {
     for (Instant t = HistoryTime(step) + δt;
          t <= HistoryTime(step + 1);
@@ -618,13 +663,30 @@ TEST_F(PluginTest, PhysicsBubble) {
       // Keep our vessels.  Make sure we're not inserting new ones.
       if (step <= 2) {
         KeepVessel(enterprise);
+        parts.clear();
+        parts.emplace_back(std::move(make_enterprise_whole_ship()));
+        plugin_->AddVesselToNextPhysicsBubble(enterprise, std::move(parts));
       }
-      if (t > HistoryTime(0) + a_while + ε_δt) {
+      if (t > HistoryTime(0) + a_while + ε_δt &&
+          t < HistoryTime(1) + half_a_step + ε_δt ||
+          t > HistoryTime(2) + half_a_step - ε_δt) {
         KeepVessel(enterprise_d);
+        parts.clear();
+        parts.emplace_back(std::move(make_enterprise_d_engineering_section()));
+        parts.emplace_back(std::move(make_enterprise_d_saucer_section()));
+        plugin_->AddVesselToNextPhysicsBubble(enterprise_d, std::move(parts));
       }
       if (t > HistoryTime(1) + half_a_step + ε_δt &&
           t < HistoryTime(2) + half_a_step - ε_δt) {
+        KeepVessel(enterprise_d);
         KeepVessel(enterprise_d_saucer);
+        parts.clear();
+        parts.emplace_back(std::move(make_enterprise_d_engineering_section()));
+        plugin_->AddVesselToNextPhysicsBubble(enterprise_d, std::move(parts));
+        parts.clear();
+        parts.emplace_back(std::move(make_enterprise_d_saucer_section()));
+        plugin_->AddVesselToNextPhysicsBubble(enterprise_d_saucer,
+                                              std::move(parts));
       }
       // Called to compute the prolongations and advance the unsynchronized
       // histories.
@@ -635,7 +697,7 @@ TEST_F(PluginTest, PhysicsBubble) {
                         SizeIs(bodies_.size() +
                                expected_number_of_old_vessels +
                                expected_number_of_new_vessels +
-                               expected_number_of_old_dirty_on_rails_vessels +
+                               expected_number_of_dirty_old_on_rails_vessels +
                                have_physics_bubble ? 1 : 0)))
           .RetiresOnSaturation();
       plugin_->AdvanceTime(t, planetarium_rotation);
@@ -648,8 +710,15 @@ TEST_F(PluginTest, PhysicsBubble) {
     // Keep the vessels for the history-advancing step.
     if (step <= 2) {
       KeepVessel(enterprise);
+      parts.clear();
+      parts.emplace_back(std::move(make_enterprise_whole_ship()));
+      plugin_->AddVesselToNextPhysicsBubble(enterprise, std::move(parts));
     }
     KeepVessel(enterprise_d);
+    parts.clear();
+    parts.emplace_back(std::move(make_enterprise_d_engineering_section()));
+    parts.emplace_back(std::move(make_enterprise_d_saucer_section()));
+    plugin_->AddVesselToNextPhysicsBubble(enterprise_d, std::move(parts));
     // Called to advance the synchronized histories.
     EXPECT_CALL(
         *n_body_system_,
@@ -658,11 +727,11 @@ TEST_F(PluginTest, PhysicsBubble) {
                       plugin_->Δt(), 0, false,
                       SizeIs(bodies_.size() +
                              expected_number_of_old_vessels -
-                             expected_number_of_old_dirty_on_rails_vessels)))
+                             expected_number_of_dirty_old_on_rails_vessels)))
         .WillOnce(AppendTimeToTrajectories<5>(HistoryTime(step + 1)))
         .RetiresOnSaturation();
     if (expected_number_of_new_vessels > 0 ||
-        expected_number_of_old_dirty_on_rails_vessels > 0 ||
+        expected_number_of_dirty_old_on_rails_vessels > 0 ||
         have_physics_bubble) {
       // Called to synchronize the new histories.
       EXPECT_CALL(
@@ -672,14 +741,14 @@ TEST_F(PluginTest, PhysicsBubble) {
                         plugin_->Δt(), 0, true,
                         SizeIs(bodies_.size() +
                                expected_number_of_new_vessels +
-                               expected_number_of_old_dirty_on_rails_vessels +
+                               expected_number_of_dirty_old_on_rails_vessels +
                                have_physics_bubble ? 1 : 0)))
           .WillOnce(AppendTimeToTrajectories<5>(HistoryTime(step + 1)))
           .RetiresOnSaturation();
     }
     expected_number_of_old_vessels += expected_number_of_new_vessels;
     expected_number_of_new_vessels = 0;
-    expected_number_of_old_dirty_on_rails_vessels = 0;
+    expected_number_of_dirty_old_on_rails_vessels = 0;
     // Called to compute the prolongations.
     EXPECT_CALL(*n_body_system_,
                 Integrate(Ref(plugin_->prolongation_integrator()),
