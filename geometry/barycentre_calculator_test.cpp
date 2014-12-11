@@ -31,7 +31,7 @@ class BarycentreCalculatorTest : public testing::Test {
              8 * SIUnit<Entropy>(),
              7 * SIUnit<Entropy>()}),
         k1_(4 * SIUnit<KinematicViscosity>()),
-        k2_(5 * SIUnit<KinematicViscosity>()){}
+        k2_(5 * SIUnit<KinematicViscosity>()) {}
 
   Bivector<Entropy, World> b1_;
   Bivector<Entropy, World> b2_;
