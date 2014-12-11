@@ -648,14 +648,13 @@ TEST_F(PluginTest, PhysicsBubble) {
   InsertAllSolarSystemBodies();
   plugin_->EndInitialization();
   Angle const planetarium_rotation = 42 * Radian;
-  std::size_t expected_number_of_new_vessels = 0;
+  std::size_t expected_number_of_new_off_rails_vessels = 0;
   std::size_t expected_number_of_dirty_old_on_rails_vessels = 0;
   std::size_t expected_number_of_old_vessels = 0;
   std::vector<std::pair<PartID, std::unique_ptr<Part<World>>>> parts;
   bool have_physics_bubble = true;
-  InsertVessel(enterprise, &expected_number_of_new_vessels);
-  parts.emplace_back(std::move(make_enterprise_whole_ship()));
-  plugin_->AddVesselToNextPhysicsBubble(enterprise, std::move(parts));
+  InsertVessel(enterprise, &expected_number_of_new_off_rails_vessels);
+  --expected_number_of_new_off_rails_vessels;
   for (int step = 0; step < 10; ++step) {
     for (Instant t = HistoryTime(step) + δt;
          t <= HistoryTime(step + 1);
@@ -688,6 +687,7 @@ TEST_F(PluginTest, PhysicsBubble) {
         plugin_->AddVesselToNextPhysicsBubble(enterprise_d_saucer,
                                               std::move(parts));
       }
+      LOG(ERROR)<<step;
       // Called to compute the prolongations and advance the unsynchronized
       // histories.
       EXPECT_CALL(
@@ -696,15 +696,18 @@ TEST_F(PluginTest, PhysicsBubble) {
                         plugin_->Δt(), 0, true,
                         SizeIs(bodies_.size() +
                                expected_number_of_old_vessels +
-                               expected_number_of_new_vessels +
+                               expected_number_of_new_off_rails_vessels +
                                expected_number_of_dirty_old_on_rails_vessels +
-                               have_physics_bubble ? 1 : 0)))
+                               (have_physics_bubble ? 1 : 0))))
           .RetiresOnSaturation();
       plugin_->AdvanceTime(t, planetarium_rotation);
       if (AbsoluteError(t - HistoryTime(0), a_while) < ε_δt) {
-        InsertVessel(enterprise_d, &expected_number_of_new_vessels);
+        InsertVessel(enterprise_d, &expected_number_of_new_off_rails_vessels);
+        --expected_number_of_new_off_rails_vessels;
       } else if (AbsoluteError(t - HistoryTime(1), half_a_step) < ε_δt) {
-        InsertVessel(enterprise_d_saucer, &expected_number_of_new_vessels);
+        InsertVessel(enterprise_d_saucer,
+                     &expected_number_of_new_off_rails_vessels);
+        --expected_number_of_new_off_rails_vessels;
       }
     }
     // Keep the vessels for the history-advancing step.
@@ -730,7 +733,7 @@ TEST_F(PluginTest, PhysicsBubble) {
                              expected_number_of_dirty_old_on_rails_vessels)))
         .WillOnce(AppendTimeToTrajectories<5>(HistoryTime(step + 1)))
         .RetiresOnSaturation();
-    if (expected_number_of_new_vessels > 0 ||
+    if (expected_number_of_new_off_rails_vessels > 0 ||
         expected_number_of_dirty_old_on_rails_vessels > 0 ||
         have_physics_bubble) {
       // Called to synchronize the new histories.
@@ -740,14 +743,14 @@ TEST_F(PluginTest, PhysicsBubble) {
                         HistoryTime(step + 1),
                         plugin_->Δt(), 0, true,
                         SizeIs(bodies_.size() +
-                               expected_number_of_new_vessels +
+                               expected_number_of_new_off_rails_vessels +
                                expected_number_of_dirty_old_on_rails_vessels +
-                               have_physics_bubble ? 1 : 0)))
+                               (have_physics_bubble ? 1 : 0))))
           .WillOnce(AppendTimeToTrajectories<5>(HistoryTime(step + 1)))
           .RetiresOnSaturation();
     }
-    expected_number_of_old_vessels += expected_number_of_new_vessels;
-    expected_number_of_new_vessels = 0;
+    expected_number_of_old_vessels += expected_number_of_new_off_rails_vessels;
+    expected_number_of_new_off_rails_vessels = 0;
     expected_number_of_dirty_old_on_rails_vessels = 0;
     // Called to compute the prolongations.
     EXPECT_CALL(*n_body_system_,
@@ -755,7 +758,7 @@ TEST_F(PluginTest, PhysicsBubble) {
                           HistoryTime(step + 1) + δt, plugin_->Δt(), 0, true,
                           SizeIs(bodies_.size() +
                                      expected_number_of_old_vessels +
-                                     have_physics_bubble ? 1 : 0)))
+                                     (have_physics_bubble ? 1 : 0))))
         .RetiresOnSaturation();
     plugin_->AdvanceTime(HistoryTime(step + 1) + δt, planetarium_rotation);
     if (step = 2) {

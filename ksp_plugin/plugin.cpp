@@ -706,6 +706,7 @@ Vector<Acceleration, World> Plugin::IntrinsicAcceleration(
           << "common_parts" << common_parts;
   CHECK_NOTNULL(common_parts);
   CHECK(common_parts->empty());
+  CHECK(current_physics_bubble_->velocity_correction != nullptr);
   // Most of the time no parts explode.  We reserve accordingly.
   common_parts->reserve(current_physics_bubble_->parts.size());
   Vector<Force, World> weighted_sum;
