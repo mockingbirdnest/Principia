@@ -52,7 +52,9 @@ class DegreesOfFreedomTest : public testing::Test {
   DegreesOfFreedom<World> d3_;
 };
 
-TEST_F(DegreesOfFreedomTest, BarycentreError) {
+using DegreesOfFreedomDeathTest = DegreesOfFreedomTest;
+
+TEST_F(DegreesOfFreedomDeathTest, BarycentreError) {
   // The <> seem to confuse EXPECT_DEATH, hence the lambda.
   auto barycentre =
       [](std::vector<DegreesOfFreedom<World>> const& degrees_of_freedom,

@@ -23,6 +23,8 @@ class AffineSpaceTest : public testing::Test {
  protected:
 };
 
+using AffineSpaceDeathTest = AffineSpaceTest;
+
 TEST_F(AffineSpaceTest, Comparisons) {
   EXPECT_TRUE(kUnixEpoch == kUnixEpoch);
   EXPECT_FALSE(kUnixEpoch == kJ2000);
@@ -67,7 +69,7 @@ TEST_F(AffineSpaceTest, Ordering) {
   EXPECT_TRUE(t1 >= t1);
 }
 
-TEST_F(AffineSpaceTest, BarycentreError) {
+TEST_F(AffineSpaceDeathTest, BarycentreError) {
   // The <> seem to confuse EXPECT_DEATH, hence the lambda.
   auto barycentre =
       [](std::vector<Instant> const& instants,
