@@ -3,17 +3,17 @@
 namespace principia {
 namespace geometry {
 
-// |Vector| may a vector space over the field |Scalar|.
+// |Vector| must be a vector space over the field |Scalar|.
 template<typename Vector, typename Scalar>
 class BarycentreCalculator {
-  public:
+ public:
   BarycentreCalculator() = default;
   ~BarycentreCalculator() = default;
 
   void Add(Vector const& vector, Scalar const& weight);
   Vector const Get() const;
 
-  private:
+ private:
   bool empty_ = true;
   decltype(std::declval<Vector>() * std::declval<Scalar>()) weighted_sum_;
   Scalar weight_;

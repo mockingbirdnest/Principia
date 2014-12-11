@@ -39,6 +39,16 @@ class BarycentreCalculatorTest : public testing::Test {
   KinematicViscosity k2_;
 };
 
+using BarycentreCalculatorDeathTest = BarycentreCalculatorTest;
+
+TEST_F(BarycentreCalculatorDeathTest, Error) {
+  using Calculator = BarycentreCalculator<Bivector<Entropy, World>, double>;
+  EXPECT_DEATH({
+    Calculator calculator;
+    calculator.Get();
+  }, "Empty BarycentreCalculator");
+}
+
 TEST_F(BarycentreCalculatorTest, Bivector) {
   BarycentreCalculator<Bivector<Entropy, World>, KinematicViscosity>
       barycentre_calculator;
