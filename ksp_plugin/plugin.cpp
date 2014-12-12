@@ -405,6 +405,7 @@ void Plugin::AdvanceTime(Instant const& t, Angle const& planetarium_rotation) {
           << "t: " << t << '\n'
           << "planetarium_rotation: " << planetarium_rotation;
   CHECK(!initializing);
+  CHECK_GT(t, current_time_);
   CleanUpVessels();
   PreparePhysicsBubble(t);
   if (HistoryTime() + Δt_ < t) {

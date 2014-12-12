@@ -486,7 +486,7 @@ TEST_F(PluginTest, AdvanceTimeWithVessels) {
   std::size_t expected_number_of_old_vessels = 0;
   InsertVessel(enterprise, &expected_number_of_new_vessels);
   for (int step = 0; step < 10; ++step) {
-    for (Instant t = HistoryTime(step) + δt;
+    for (Instant t = HistoryTime(step) + 2 * δt;
          t <= HistoryTime(step + 1);
          t += δt) {
       // Keep our vessels.  Make sure we're not inserting new ones.
@@ -644,7 +644,8 @@ TEST_F(PluginTest, PhysicsBubble) {
                                          0 * Metre / Pow<2>(Second),
                                          0 * Metre / Pow<2>(Second)})));
   };
-  auto const foo = make_enterprise_whole_ship();
+  //FLAGS_v = 1;
+  google::SetStderrLogging(google::INFO);
   InsertAllSolarSystemBodies();
   plugin_->EndInitialization();
   Angle const planetarium_rotation = 42 * Radian;
@@ -656,7 +657,7 @@ TEST_F(PluginTest, PhysicsBubble) {
   InsertVessel(enterprise, &expected_number_of_new_off_rails_vessels);
   --expected_number_of_new_off_rails_vessels;
   for (int step = 0; step < 10; ++step) {
-    for (Instant t = HistoryTime(step) + δt;
+    for (Instant t = HistoryTime(step) + 2 * δt;
          t <= HistoryTime(step + 1);
          t += δt) {
       // Keep our vessels.  Make sure we're not inserting new ones.
@@ -668,15 +669,15 @@ TEST_F(PluginTest, PhysicsBubble) {
       }
       if (t > HistoryTime(0) + a_while + ε_δt &&
           t < HistoryTime(1) + half_a_step + ε_δt ||
-          t > HistoryTime(2) + half_a_step - ε_δt) {
+          t > HistoryTime(2) - ε_δt) {
         KeepVessel(enterprise_d);
         parts.clear();
         parts.emplace_back(std::move(make_enterprise_d_engineering_section()));
         parts.emplace_back(std::move(make_enterprise_d_saucer_section()));
         plugin_->AddVesselToNextPhysicsBubble(enterprise_d, std::move(parts));
-      }
-      if (t > HistoryTime(1) + half_a_step + ε_δt &&
-          t < HistoryTime(2) + half_a_step - ε_δt) {
+      } else if (t > HistoryTime(1) + half_a_step - ε_δt &&
+          t < HistoryTime(2) + ε_δt) {
+        LOG(ERROR)<<"split";
         KeepVessel(enterprise_d);
         KeepVessel(enterprise_d_saucer);
         parts.clear();
@@ -701,6 +702,8 @@ TEST_F(PluginTest, PhysicsBubble) {
                                (have_physics_bubble ? 1 : 0))))
           .RetiresOnSaturation();
       plugin_->AdvanceTime(t, planetarium_rotation);
+      plugin_->BubbleDisplacementCorrection(World::origin);
+      plugin_->BubbleVelocityCorrection(SolarSystem::kSaturn);
       if (AbsoluteError(t - HistoryTime(0), a_while) < ε_δt) {
         InsertVessel(enterprise_d, &expected_number_of_new_off_rails_vessels);
         --expected_number_of_new_off_rails_vessels;
@@ -761,10 +764,15 @@ TEST_F(PluginTest, PhysicsBubble) {
                                      (have_physics_bubble ? 1 : 0))))
         .RetiresOnSaturation();
     plugin_->AdvanceTime(HistoryTime(step + 1) + δt, planetarium_rotation);
-    if (step = 2) {
+    plugin_->BubbleDisplacementCorrection(World::origin);
+    plugin_->BubbleVelocityCorrection(SolarSystem::kSaturn);
+    if (step == 2) {
       // We will be removing |enterprise|.
       --expected_number_of_old_vessels;
     }
+    /*if (step == 3) {
+      have_physics_bubble = false;
+    }*/
   }
 }
 
