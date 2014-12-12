@@ -250,19 +250,19 @@ TEST_F(TransformsTest, BodiesBarycentricRotating) {
         it2.degrees_of_freedom();
 
     EXPECT_THAT(degrees_of_freedom1.position - Position<Through>(),
-                Componentwise(AlmostEquals(1.5 * sqrt(5.0) * l, 1),
+                Componentwise(AlmostEquals(1.5 * sqrt(5.0) * l, 0, 1),
                               VanishesBefore(l, 0, 4),
                               VanishesBefore(l, 0, 2)));
     EXPECT_THAT(degrees_of_freedom2.position - Position<Through>(),
-                Componentwise(AlmostEquals(-0.5 * sqrt(5.0) * l, 1, 2),
+                Componentwise(AlmostEquals(-0.5 * sqrt(5.0) * l, 0, 2),
                               VanishesBefore(l, 0, 2),
                               VanishesBefore(l, 0, 1)));
     EXPECT_THAT(degrees_of_freedom1.velocity,
-                Componentwise(AlmostEquals(6.0 / sqrt(5.0) * s, 1, 7),
+                Componentwise(AlmostEquals(6.0 / sqrt(5.0) * s, 0, 7),
                               VanishesBefore(s, 0, 34),
                               VanishesBefore(s, 0, 2)));
     EXPECT_THAT(degrees_of_freedom2.velocity,
-                Componentwise(AlmostEquals(-2.0 / sqrt(5.0) * s, 1, 14),
+                Componentwise(AlmostEquals(-2.0 / sqrt(5.0) * s, 0, 14),
                               VanishesBefore(s, 0, 16),
                               VanishesBefore(s, 0, 1)));
 
@@ -281,7 +281,7 @@ TEST_F(TransformsTest, BodiesBarycentricRotating) {
     Length const length = (degrees_of_freedom1.position -
                            degrees_of_freedom2.position).Norm();
     EXPECT_THAT(length,
-                AlmostEquals(2.0 * sqrt(5.0) * i * SIUnit<Length>(), 1, 2));
+                AlmostEquals(2.0 * sqrt(5.0) * i * SIUnit<Length>(), 0, 2));
   }
 }
 

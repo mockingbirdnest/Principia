@@ -83,12 +83,12 @@ TEST_F(DegreesOfFreedomTest, Barycentre) {
               AlmostEquals(
                   Displacement<World>({(-4.0 / 3.0) * SIUnit<Length>(),
                                        (13.0 / 6.0) * SIUnit<Length>(),
-                                       -1.0 * SIUnit<Length>()}), 1));
+                                       -1.0 * SIUnit<Length>()}), 0));
   EXPECT_THAT(barycentre.velocity,
               AlmostEquals(
                   Velocity<World>({(-40.0 / 3.0) * SIUnit<Speed>(),
                                    (-35.0 / 3.0) * SIUnit<Speed>(),
-                                   -50.0 * SIUnit<Speed>()}), 1));
+                                   -50.0 * SIUnit<Speed>()}), 0));
 }
 
 TEST_F(DegreesOfFreedomTest, BarycentreCalculator) {
