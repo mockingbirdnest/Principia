@@ -207,7 +207,7 @@ TEST_F(GrassmannTest, Actions) {
   EXPECT_THAT(Commutator(β, γ) * a,
               AlmostEquals(Wedge(a, β) * γ - β * Wedge(a, γ), 26));
 
-  EXPECT_THAT(a * Wedge(b, γ), AlmostEquals(Wedge(γ, b) * a, 21));
+  EXPECT_THAT(a * Wedge(b, γ), AlmostEquals(Wedge(γ, b) * a, 0, 21));
 }
 
 #pragma warning(default: 4566)

@@ -207,7 +207,7 @@ void AlmostEqualsMatcher<T>::DescribeNegationTo(std::ostream* out) const {
 template<typename T>
 bool AlmostEqualsMatcher<T>::MatchAndExplainIdentical(
     testing::MatchResultListener* listener) const {
-  if (min_ulps_ == 0 && max_ulps_ == 0) {
+  if (min_ulps_ == 0) {
     return true;
   } else {
     *listener << "the numbers are identical";

@@ -59,7 +59,7 @@ TEST_F(BarycentreCalculatorTest, Bivector) {
                   Bivector<Entropy, World>({(-41.0 / 9.0) * SIUnit<Entropy>(),
                                             (32.0 / 9.0) * SIUnit<Entropy>(),
                                             (47.0 / 9.0) * SIUnit<Entropy>()}),
-                  1));
+                  0));
 }
 
 TEST_F(BarycentreCalculatorTest, Scalar) {
@@ -67,7 +67,7 @@ TEST_F(BarycentreCalculatorTest, Scalar) {
   barycentre_calculator.Add(k1_, -3);
   barycentre_calculator.Add(k2_, 7);
   EXPECT_THAT(barycentre_calculator.Get(),
-              AlmostEquals((23.0 / 4.0) * SIUnit<KinematicViscosity>(), 1));
+              AlmostEquals((23.0 / 4.0) * SIUnit<KinematicViscosity>(), 0));
 }
 
 }  // namespace geometry
