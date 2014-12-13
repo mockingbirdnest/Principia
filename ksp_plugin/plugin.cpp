@@ -88,8 +88,8 @@ void Plugin::CleanUpVessels() {
   }
 }
 
-void Plugin::EvolveSynchronizedHistories(Instant const& t) {
-  VLOG(1) << "EvolveSynchronizedHistories" << '\n'
+void Plugin::EvolveHistories(Instant const& t) {
+  VLOG(1) << "EvolveHistories" << '\n'
           << "t: " << t;
   // Integration with a constant step.
   NBodySystem<Barycentric>::Trajectories trajectories;
@@ -109,7 +109,7 @@ void Plugin::EvolveSynchronizedHistories(Instant const& t) {
       trajectories.push_back(vessel->mutable_history());
     }
   }
-  VLOG(1) << "Starting the evolution of the old histories" << '\n'
+  VLOG(1) << "Starting the evolution of the histories" << '\n'
           << "from : " << HistoryTime();
   n_body_system_->Integrate(history_integrator_,  // integrator
                             t,                    // tmax
@@ -118,12 +118,12 @@ void Plugin::EvolveSynchronizedHistories(Instant const& t) {
                             false,                // tmax_is_exact
                             trajectories);        // trajectories
   CHECK_GE(HistoryTime(), current_time_);
-  VLOG(1) << "Evolved the old histories" << '\n'
+  VLOG(1) << "Evolved the histories" << '\n'
           << "to   : " << HistoryTime();
 }
 
-void Plugin::SynchronizeNewHistoriesAndBubble() {
-  VLOG(1) << "SynchronizeNewHistoriesAndBubble";
+void Plugin::SynchronizeNewVesselsAndCleanDirtyVessels() {
+  VLOG(1) << "SynchronizeNewVesselsAndCleanDirtyVessels";
   NBodySystem<Barycentric>::Trajectories trajectories;
   trajectories.reserve(celestials_.size() + new_vessels_.size() +
                        HavePhysicsBubble() ? 1 : 0);
@@ -145,7 +145,8 @@ void Plugin::SynchronizeNewHistoriesAndBubble() {
     trajectories.push_back(
         current_physics_bubble_->centre_of_mass_trajectory.get());
   }
-  VLOG(1) << "Starting the synchronization of the new histories";
+  VLOG(1) << "Starting the synchronization of the new vessels"
+          << (HavePhysicsBubble() ? " and of the bubble" : "");
   n_body_system_->Integrate(prolongation_integrator_,  // integrator
                             HistoryTime(),             // tmax
                             Δt_,                       // Δt
@@ -170,10 +171,12 @@ void Plugin::SynchronizeNewHistoriesAndBubble() {
         vessel->prolongation().last().degrees_of_freedom());
   }
   dirty_vessels_.clear();
-  VLOG(1) << "Synchronized the new histories";
+  VLOG(1) << "Synchronized the new vessels"
+          << (HavePhysicsBubble() ? " and the bubble" : "");
 }
 
 void Plugin::SynchronizeBubbleHistories() {
+  VLOG(1) << "SynchronizeBubbleHistories";
   DegreesOfFreedom<Barycentric> const& centre_of_mass =
       current_physics_bubble_->centre_of_mass_trajectory->
           last().degrees_of_freedom();
@@ -213,6 +216,8 @@ void Plugin::ResetProlongations() {
 }
 
 void Plugin::EvolveProlongationsAndBubble(Instant const& t) {
+  VLOG(1) << "EvolveProlongationsAndBubble" << '\n'
+          << "t: " << t;
   NBodySystem<Barycentric>::Trajectories trajectories;
   trajectories.reserve(vessels_.size() + celestials_.size() -
                        NumberOfVesselsInPhysicsBubble() +
@@ -231,7 +236,8 @@ void Plugin::EvolveProlongationsAndBubble(Instant const& t) {
     trajectories.push_back(
         current_physics_bubble_->centre_of_mass_trajectory.get());
   }
-  VLOG(1) << "Evolving prolongations and new histories" << '\n'
+  VLOG(1) << "Evolving prolongations"
+          << (HavePhysicsBubble() ? " and bubble" : "") << '\n'
           << "from : " << trajectories.front()->last().time() << '\n'
           << "to   : " << t;
   n_body_system_->Integrate(prolongation_integrator_,  // integrator
@@ -344,6 +350,9 @@ void Plugin::EndInitialization() {
 
 void Plugin::UpdateCelestialHierarchy(Index const celestial_index,
                                       Index const parent_index) const {
+  VLOG(1) << "UpdateCelestialHierarchy" << '\n'
+          << "celestial_index: " << celestial_index << '\n'
+          << "parent_index: " << parent_index;
   CHECK(!initializing);
   auto const it = celestials_.find(celestial_index);
   CHECK(it != celestials_.end()) << "No body at index " << celestial_index;
@@ -354,6 +363,9 @@ void Plugin::UpdateCelestialHierarchy(Index const celestial_index,
 
 bool Plugin::InsertOrKeepVessel(GUID const& vessel_guid,
                                 Index const parent_index) {
+  VLOG(1) << "InsertOrKeepVessel" << '\n'
+          << "vessel_guid: " << vessel_guid << '\n'
+          << "parent_index: " << parent_index;
   CHECK(!initializing);
   auto const it = celestials_.find(parent_index);
   CHECK(it != celestials_.end()) << "No body at index " << parent_index;
@@ -373,6 +385,10 @@ void Plugin::SetVesselStateOffset(
     GUID const& vessel_guid,
     Displacement<AliceSun> const& from_parent_position,
     Velocity<AliceSun> const& from_parent_velocity) {
+  VLOG(1) << "SetVesselStateOffset" << '\n'
+          << "vessel_guid: " << vessel_guid << '\n'
+          << "from_parent_position: " << from_parent_position << '\n'
+          << "from_parent_velocity: " << from_parent_velocity;
   CHECK(!initializing);
   auto const it = vessels_.find(vessel_guid);
   CHECK(it != vessels_.end()) << "No vessel with GUID " << vessel_guid;
@@ -411,11 +427,11 @@ void Plugin::AdvanceTime(Instant const& t, Angle const& planetarium_rotation) {
   if (HistoryTime() + Δt_ < t) {
     // The histories are far enough behind that we can advance them at least one
     // step and reset the prolongations.
-    EvolveSynchronizedHistories(t);
+    EvolveHistories(t);
     if (!new_vessels_.empty() ||
         !dirty_vessels_.empty() ||
         HavePhysicsBubble()) {
-      SynchronizeNewHistoriesAndBubble();
+      SynchronizeNewVesselsAndCleanDirtyVessels();
     }
     ResetProlongations();
   }
@@ -703,7 +719,7 @@ Vector<Acceleration, World> Plugin::IntrinsicAcceleration(
     Instant const& next_time,
     std::vector<std::pair<Part<World>*, Part<World>*>>* const common_parts) {
   VLOG(1) << "IntrinsicAcceleration" << '\n'
-          << "next_time: " << next_time
+          << "next_time: " << next_time << '\n'
           << "common_parts" << common_parts;
   CHECK_NOTNULL(common_parts);
   CHECK(common_parts->empty());

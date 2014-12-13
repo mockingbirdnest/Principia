@@ -5,6 +5,7 @@
 #include <memory>
 #include <set>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "geometry/named_quantities.hpp"
@@ -142,7 +143,9 @@ class Plugin {
 
   // Simulates the system until instant |t|. All vessels that have not been
   // refreshed by calling |InsertOrKeepVessel| since the last call to
-  // |AdvanceTime| will be removed. Must be called after initialization.
+  // |AdvanceTime| will be removed.  Sets |current_time_| to |t|.
+  // Must be called after initialization.  |t| must be greater than
+  // |current_time_|.
   // |planetarium_rotation| is the value of KSP's |Planetarium.InverseRotAngle|
   // at instant |t|, which provides the rotation between the |World| axes and
   // the |Barycentric| axes (we don't use Planetarium.Rotation since it
@@ -212,6 +215,7 @@ class Plugin {
   // Creates |next_physics_bubble_| if it is null.  Adds the vessel with GUID
   // |vessel_guid| to |next_physics_bubble_->vessels| with a list of pointers to
   // the |Part|s in |parts|.  Merges |parts| into |next_physics_bubble_->parts|.
+  // Adds the vessel to |dirty_vessels_|.
   // A vessel with GUID |vessel_guid| must have been inserted and kept.  The
   // vessel with GUID |vessel_guid| must not already be in
   // |next_physics_bubble_->vessels|.  |parts| must not contain a |PartID|
@@ -241,13 +245,11 @@ class Plugin {
 
   // Utilities for |AdvanceTime|.
 
-  // Remove vessels for which |keep| is false, and sets |keep| to false for the
-  // remaining ones.
+  // Remove vessels not in |kept_|, and clears |kept_|.
   void CleanUpVessels();
   // Given an iterator to an element of |vessels_|, check that the corresponding
-  // |Vessel| been given an initial state, i.e. that its |prolongation_| is not
-  // null, and that it is not in |new_vessels_| if, and only if, it
-  // |is_synchronized()|.
+  // |Vessel| |is_initialized()|, and that it is not in |new_vessels_| if, and
+  // only if, it |is_synchronized()|.
   // Also checks that its |prolongation().last().time()| is at least
   // |HistoryTime()|, and that if it |is_synchronized()|, its
   // |history().last().time()| is exactly |HistoryTime()|.
@@ -255,20 +257,24 @@ class Plugin {
   // Evolves the histories of the |celestials_| and of the synchronized vessels
   // up to at most |t|. |t| must be large enough that at least one step of
   // size |Δt_| can fit between |current_time_| and |t|.
-  void EvolveSynchronizedHistories(Instant const& t);
-  // Synchronizes the |new_vessels_| and prolongs the histories of the vessels
-  // in the physics bubble, clears |new_vessels_|.
-  void SynchronizeNewHistoriesAndBubble();
-  // Called from |SynchronizeNewHistoriesAndBubble()|, prolongs the histories of
-  // the vessels in the physics bubble (the integration must already have been
-  // done).  Any new vessels in the physics bubble are synchronized and removed
-  // from |new_vessels_|.
+  void EvolveHistories(Instant const& t);
+  // Synchronizes the |new_vessels_|, clears |new_vessels_|.  Prolongs the
+  // histories of the vessels in the physics bubble by evolving the trajectory
+  // of the |current_physics_bubble_| if there is one, prolongs the histories of
+  // the remaining |dirty_vessels_| using their prolongations, clears
+  // |dirty_vessels_|.
+  void SynchronizeNewVesselsAndCleanDirtyVessels();
+  // Called from |SynchronizeNewVesselsAndCleanDirtyVessels()|, prolongs the
+  // histories of the vessels in the physics bubble (the integration must
+  // already have been done).  Any new vessels in the physics bubble are
+  // synchronized and removed from |new_vessels_|.
   void SynchronizeBubbleHistories();
   // Resets the prolongations of all vessels and celestials to |HistoryTime()|.
   // All vessels must satisfy |is_synchronized()|.
   void ResetProlongations();
   // Evolves the prolongations of all celestials and vessels up to exactly
-  // instant |t|.
+  // instant |t|.  Also evolves the trajectory/ of the |current_physics_bubble_|
+  // if there is one.
   void EvolveProlongationsAndBubble(Instant const& t);
   // Returns true if, and only if, |vessel| is in
   // |current_physics_bubble_->vessels|.  |current_physics_bubble_| may be null,
@@ -314,7 +320,7 @@ class Plugin {
   // degres of freedom at |current_time_| that conserve the degrees of freedom
   // of the centre of mass of the parts in |common_parts|.
   // |common_parts| must not be null.  |next_physics_bubble_| must not be null.
-  // No transfer of ownership
+  // No transfer of ownership.
   void ShiftBubble(
       std::vector<std::pair<Part<World>*,
                             Part<World>*>> const* const common_parts);
@@ -325,15 +331,18 @@ class Plugin {
   GUIDToOwnedVessel vessels_;
   std::map<Index, std::unique_ptr<Celestial>> celestials_;
 
-  // Vessels which have been recently inserted after |HistoryTime()|.  These
-  // vessels do not satisfy |is_synchronized()|.  The pointers are not owning
-  // and not null.
+  // The vessels which have been inserted after |HistoryTime()|.  These are the
+  // vessels which do not satisfy |is_synchronized()|, i.e., they do not have a
+  // history.  The pointers are not owning and not null.
   std::set<Vessel* const> new_vessels_;
+  // The vessels that have been added to the physics bubble after
+  // |HistoryTime()|.  For these vessels, the prolongation contains information
+  // that may not be discarded, and the history will be advanced using the
+  // prolongation.  The pointers are not owning and not null.
+  std::set<Vessel* const> dirty_vessels_;
 
   // The vessels that will be kept during the next call to |AdvanceTime|.
   std::set<Vessel const* const> kept_;
-
-  std::set<Vessel* const> dirty_vessels_;
 
   struct PhysicsBubble {
     std::map<Vessel* const, std::vector<Part<World>* const>> vessels;
