@@ -7,6 +7,7 @@
 #include "geometry/point.hpp"
 #include "quantities/named_quantities.hpp"
 
+using principia::geometry::Displacement;
 using principia::geometry::Position;
 using principia::geometry::Velocity;
 using principia::quantities::Length;
