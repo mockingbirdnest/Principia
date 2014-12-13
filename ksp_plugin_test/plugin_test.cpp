@@ -444,7 +444,7 @@ TEST_F(PluginTest, AdvanceTimeWithCelestialsOnly) {
   Time const δt = 0.02 * Second;
   Angle const planetarium_rotation = 42 * Radian;
   for (int step = 0; step < 10; ++step) {
-    for (Instant t = HistoryTime(step) + δt;
+    for (Instant t = HistoryTime(step) + 2 * δt;
          t <= HistoryTime(step + 1);
          t += δt) {
       // Called to compute the prolongations.
@@ -505,7 +505,7 @@ TEST_F(PluginTest, AdvanceTimeWithVessels) {
   InsertVessel(enterprise, &expected_number_of_new_vessels);
   for (int step = 0; step < 10; ++step) {
     for (Instant t = HistoryTime(step) + 2 * δt;
-         t < HistoryTime(step + 1);
+         t <= HistoryTime(step + 1);
          t += δt) {
       // Keep our vessels.  Make sure we're not inserting new ones.
       if (step <= 3) {
@@ -675,7 +675,7 @@ TEST_F(PluginTest, PhysicsBubble) {
   --expected_number_of_new_off_rails_vessels;
   for (int step = 0; step < 10; ++step) {
     for (Instant t = HistoryTime(step) + 2 * δt;
-         t < HistoryTime(step + 1);
+         t <= HistoryTime(step + 1);
          t += δt) {
       // Keep our vessels.  Make sure we're not inserting new ones.
       if (t < HistoryTime(0) + a_while + ε_δt) {
