@@ -37,7 +37,6 @@ class AlmostEqualsTest : public testing::Test {};
 TEST_F(AlmostEqualsTest, Dimensionless) {
   double const y = e;
   EXPECT_THAT(y, AlmostEquals(e, 0));
-  EXPECT_THAT(y, AlmostEquals(e, 0));
   EXPECT_THAT(2 * y, Not(AlmostEquals(y, 4)));
   double const δy = e / 100.0;
   double e_accumulated = 0.0;
