@@ -6,6 +6,8 @@
 #include <limits>
 #include <map>
 #include <memory>
+#include <utility>
+#include <vector>
 
 #include "geometry/permutation.hpp"
 #include "gmock/gmock.h"
@@ -66,21 +68,17 @@ ACTION_TEMPLATE(AppendTimeToTrajectories,
 }
 
 MATCHER_P(HasNonvanishingIntrinsicAccelerationAt, t, "") {
-  LOG(ERROR)<<arg;
   if (arg->has_intrinsic_acceleration()) {
     if (arg->evaluate_intrinsic_acceleration(t) ==
         Vector<Acceleration, Barycentric>()) {
        *result_listener << "has vanishing intrinsic acceleration at";
-       LOG(ERROR)<<"vanishes";
        return false;
     } else {
        *result_listener << "has nonvanishing intrinsic acceleration at";
-       LOG(ERROR)<<"WOOOHOOOO!!!";
        return true;
     }
   }
   *result_listener << "has no intrinsic acceleration";
-  LOG(ERROR)<<"nothing here";
   return false;
 }
 
@@ -612,11 +610,11 @@ TEST_F(PluginTest, AdvanceTimeWithVessels) {
 //                                    and |enterprise_d_saucer|.
 // * |HistoryTime(2 + half_a_step)| : Physics bubble ends.
 TEST_F(PluginTest, PhysicsBubble) {
-  Time const δt = 2 * Second;
-  Time const a_while = 2 * δt;
-  Time const half_a_step = 3 * δt;
+  Time const δt = 0.02 * Second;
+  Time const a_while = 10 * δt;
+  Time const half_a_step = 250 * δt;
   Time const ε_δt = 0.1 * δt;
-  //EXPECT_THAT(half_a_step, Eq(plugin_->Δt() / 2));
+  EXPECT_THAT(half_a_step, Eq(plugin_->Δt() / 2));
   GUID const enterprise = "NCC-1701";
   GUID const enterprise_d = "NCC-1701-D";
   GUID const enterprise_d_saucer = "NCC-1701-D (saucer)";
@@ -664,9 +662,6 @@ TEST_F(PluginTest, PhysicsBubble) {
                                          0 * Metre / Pow<2>(Second),
                                          0 * Metre / Pow<2>(Second)})));
   };
-  //FLAGS_v= 1; 
-  InSequence  s ; 
-  google::SetStderrLogging( google::INFO); 
   InsertAllSolarSystemBodies();
   plugin_->EndInitialization();
   Angle const planetarium_rotation = 42 * Radian;
@@ -684,14 +679,12 @@ TEST_F(PluginTest, PhysicsBubble) {
          t += δt) {
       // Keep our vessels.  Make sure we're not inserting new ones.
       if (t < HistoryTime(0) + a_while + ε_δt) {
-        LOG(ERROR)<<"FOUNDATION";
         KeepVessel(enterprise);
         parts.clear();
         parts.emplace_back(std::move(make_enterprise_whole_ship()));
         plugin_->AddVesselToNextPhysicsBubble(enterprise, std::move(parts));
       } else if (t > HistoryTime(0) + a_while + ε_δt &&
                  t < HistoryTime(1) + half_a_step + ε_δt) {
-        LOG(ERROR)<<"FOUNDATIONANDEMPIRE";
         KeepVessel(enterprise_d);
         parts.clear();
         parts.emplace_back(std::move(make_enterprise_d_engineering_section()));
@@ -703,7 +696,6 @@ TEST_F(PluginTest, PhysicsBubble) {
         plugin_->AddVesselToNextPhysicsBubble(enterprise, std::move(parts));
       } else if (t > HistoryTime(1) + half_a_step - ε_δt &&
                  t < HistoryTime(2) + ε_δt) {
-        LOG(ERROR)<<"split";
         KeepVessel(enterprise_d);
         parts.clear();
         parts.emplace_back(std::move(make_enterprise_d_engineering_section()));
@@ -717,21 +709,17 @@ TEST_F(PluginTest, PhysicsBubble) {
         parts.clear();
         parts.emplace_back(std::move(make_enterprise_whole_ship()));
         plugin_->AddVesselToNextPhysicsBubble(enterprise, std::move(parts));
-      } else if(t > HistoryTime(2) - ε_δt &&
-                t < HistoryTime(2) + half_a_step - ε_δt) {
-        LOG(ERROR)<<"HITHERE";
+      } else if (t > HistoryTime(2) - ε_δt &&
+                 t < HistoryTime(2) + half_a_step - ε_δt) {
         KeepVessel(enterprise_d);
         parts.clear();
         parts.emplace_back(std::move(make_enterprise_d_engineering_section()));
         parts.emplace_back(std::move(make_enterprise_d_saucer_section()));
         plugin_->AddVesselToNextPhysicsBubble(enterprise_d, std::move(parts));
       } else {
-        LOG(ERROR)<<"FUCKYOU";
         KeepVessel(enterprise_d);
       }
-      LOG(ERROR)<<step;
       if (AbsoluteError(t - HistoryTime(2), half_a_step) < ε_δt) {
-        LOG(ERROR)<<"BASTARD";
         ++expected_number_of_dirty_old_on_rails_vessels;
         expect_to_have_physics_bubble = false;
       }
@@ -742,32 +730,27 @@ TEST_F(PluginTest, PhysicsBubble) {
         EXPECT_CALL(
             *n_body_system_,
             Integrate(Ref(plugin_->prolongation_integrator()), t,
-                          plugin_->Δt(), 0, true,
-                          AllOf(
-                              SizeIs(bodies_.size() +
-                                     expected_number_of_clean_old_vessels +
-                                     expected_number_of_new_off_rails_vessels +
-                                     expected_number_of_dirty_old_on_rails_vessels +
-                                     (expect_to_have_physics_bubble ? 1 : 0)),
-                              Contains(HasNonvanishingIntrinsicAccelerationAt(t)))))
+                      plugin_->Δt(), 0, true,
+                      AllOf(
+                          SizeIs(bodies_.size() +
+                                 expected_number_of_clean_old_vessels +
+                                 expected_number_of_new_off_rails_vessels +
+                                 expected_number_of_dirty_old_on_rails_vessels +
+                                 (expect_to_have_physics_bubble ? 1 : 0)),
+                          Contains(HasNonvanishingIntrinsicAccelerationAt(t)))))
             .RetiresOnSaturation();
       } else {
         EXPECT_CALL(
             *n_body_system_,
             Integrate(Ref(plugin_->prolongation_integrator()), t,
-                          plugin_->Δt(), 0, true,
-                          SizeIs(bodies_.size() +
-                                 expected_number_of_clean_old_vessels +
-                                 expected_number_of_new_off_rails_vessels +
-                                 expected_number_of_dirty_old_on_rails_vessels +
-                                 (expect_to_have_physics_bubble ? 1 : 0))))
+                      plugin_->Δt(), 0, true,
+                      SizeIs(bodies_.size() +
+                             expected_number_of_clean_old_vessels +
+                             expected_number_of_new_off_rails_vessels +
+                             expected_number_of_dirty_old_on_rails_vessels +
+                             (expect_to_have_physics_bubble ? 1 : 0))))
             .RetiresOnSaturation();
       }
-      LOG(ERROR)<<bodies_.size();
-      LOG(ERROR)<<expected_number_of_clean_old_vessels;
-      LOG(ERROR)<<expected_number_of_new_off_rails_vessels;
-      LOG(ERROR)<<expected_number_of_dirty_old_on_rails_vessels;
-      LOG(ERROR)<<expect_to_have_physics_bubble;
       plugin_->AdvanceTime(t, planetarium_rotation);
       if (expect_to_have_physics_bubble) {
         plugin_->BubbleDisplacementCorrection(World::origin);
