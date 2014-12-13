@@ -145,7 +145,9 @@ class Plugin {
   // refreshed by calling |InsertOrKeepVessel| since the last call to
   // |AdvanceTime| will be removed.  Sets |current_time_| to |t|.
   // Must be called after initialization.  |t| must be greater than
-  // |current_time_|.
+  // |current_time_|.  If |AddVesselToNextPhysicsBubble| was called since the
+  // last call to |AdvanceTime|, |BubbleDisplacementCorrection| and
+  // |BubbleDisplacementVelocity| must have been called too.
   // |planetarium_rotation| is the value of KSP's |Planetarium.InverseRotAngle|
   // at instant |t|, which provides the rotation between the |World| axes and
   // the |Barycentric| axes (we don't use Planetarium.Rotation since it
@@ -223,9 +225,14 @@ class Plugin {
   void AddVesselToNextPhysicsBubble(
       GUID const& vessel_guid,
       std::vector<std::pair<PartID, std::unique_ptr<Part<World>>>> parts);
-
+  // Computes and returns |current_physics_bubble_->displacement_correction|.
+  // This is the shift to be applied to the physics bubble in worldspace in
+  // order for it to be in the correct position.
   Displacement<World> BubbleDisplacementCorrection(
       Position<World> const& sun_world_position) const;
+  // Computes and returns |current_physics_bubble_->velocity_correction|.
+  // This is the shift to be applied to the physics bubble in worldspace in
+  // order for it to be in the correct position.
   Velocity<World> BubbleVelocityCorrection(
       Index const reference_body_index) const;
 
