@@ -65,6 +65,8 @@ class AlmostEqualsMatcher{
   void DescribeNegationTo(std::ostream* out) const;
 
  private:
+  bool MatchAndExplainIdentical(testing::MatchResultListener* listener) const;
+
   T const expected_;
   std::int64_t const min_ulps_;
   std::int64_t const max_ulps_;

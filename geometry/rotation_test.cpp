@@ -71,7 +71,7 @@ TEST_F(RotationTest, AppliedToVector) {
               AlmostEquals(Vector<quantities::Length, World>(
                   R3Element<quantities::Length>((0.5 + sqrt(3.0)) * Metre,
                                                 (1.0 - 0.5 * sqrt(3.0)) * Metre,
-                                                3.0 * Metre)), 4));
+                                                3.0 * Metre)), 0));
 }
 
 TEST_F(RotationTest, AppliedToBivector) {
@@ -89,19 +89,19 @@ TEST_F(RotationTest, AppliedToBivector) {
               AlmostEquals(Bivector<quantities::Length, World>(
                   R3Element<quantities::Length>((0.5 + sqrt(3.0)) * Metre,
                                                 (1.0 - 0.5 * sqrt(3.0)) * Metre,
-                                                3.0 * Metre)), 4));
+                                                3.0 * Metre)), 0));
 }
 
 TEST_F(RotationTest, AppliedToTrivector) {
   EXPECT_THAT(rotation_a_(trivector_),
               AlmostEquals(Trivector<quantities::Length, World>(
-                  4.0 * Metre), 4));
+                  4.0 * Metre), 0));
   EXPECT_THAT(rotation_b_(trivector_),
               AlmostEquals(Trivector<quantities::Length, World>(
-                  4.0 * Metre), 4));
+                  4.0 * Metre), 0));
   EXPECT_THAT(rotation_c_(trivector_),
               AlmostEquals(Trivector<quantities::Length, World>(
-                  4.0 * Metre), 4));
+                  4.0 * Metre), 0));
 }
 
 TEST_F(RotationTest, Determinant) {
@@ -125,7 +125,7 @@ TEST_F(RotationTest, Inverse) {
               AlmostEquals(Vector<quantities::Length, World>(
                   R3Element<quantities::Length>((0.5 - sqrt(3.0)) * Metre,
                                                 (1.0 + 0.5 * sqrt(3.0)) * Metre,
-                                                3.0 * Metre)), 4));
+                                                3.0 * Metre)), 0));
 }
 
 TEST_F(RotationTest, Composition) {

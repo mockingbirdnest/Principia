@@ -76,11 +76,11 @@ TEST_F(QuantitiesTest, DimensionfulComparisons) {
 TEST_F(QuantitiesTest, DimensionlfulOperations) {
   testing_utilities::TestVectorSpace(
       0 * Metre / Second, SpeedOfLight, 88 * Mile / Hour,
-      -340.29 * Metre / Second, 0.0, 1.0, -2 * π, 1729.0, 1, 2);
+      -340.29 * Metre / Second, 0.0, 1.0, -2 * π, 1729.0, 0, 2);
   // Dimensionful multiplication is a tensor product, see [Tao 2012].
   testing_utilities::TestBilinearMap(
       Times<Product<Mass, Speed>, Mass, Speed>, SolarMass,
-      ElectronMass, SpeedOfLight, 1 * Furlong / JulianYear, -e, 1, 2);
+      ElectronMass, SpeedOfLight, 1 * Furlong / JulianYear, -e, 0, 2);
 }
 
 TEST_F(QuantitiesTest, DimensionlessExponentiation) {
@@ -171,20 +171,20 @@ TEST_F(QuantitiesTest, TrigonometricFunctions) {
     // conditioning.
     if (k % 90 != 0) {
       EXPECT_THAT(Cos((90 - k) * Degree),
-                  AlmostEquals(Sin(k * Degree), 1, 46));
+                  AlmostEquals(Sin(k * Degree), 0, 46));
       EXPECT_THAT(Sin(k * Degree) / Cos(k * Degree),
-                  AlmostEquals(Tan(k * Degree), 1, 2));
+                  AlmostEquals(Tan(k * Degree), 0, 2));
       EXPECT_THAT(((k + 179) % 360 - 179) * Degree,
                   AlmostEquals(ArcTan(Sin(k * Degree), Cos(k * Degree)),
-                               1, 77));
+                               0, 77));
       EXPECT_THAT(((k + 179) % 360 - 179) * Degree,
                   AlmostEquals(ArcTan(Sin(k * Degree) * AstronomicalUnit,
                                       Cos(k * Degree) * AstronomicalUnit),
-                               1, 77));
+                               0, 77));
       EXPECT_THAT(Cos(ArcCos(Cos(k * Degree))),
-                  AlmostEquals(Cos(k * Degree), 1, 7));
+                  AlmostEquals(Cos(k * Degree), 0, 7));
       EXPECT_THAT(Sin(ArcSin(Sin(k * Degree))),
-                  AlmostEquals(Sin(k * Degree), 1));
+                  AlmostEquals(Sin(k * Degree), 0, 1));
     }
   }
   // Horribly conditioned near 0, so not in the loop above.
