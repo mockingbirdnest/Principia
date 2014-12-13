@@ -1067,34 +1067,34 @@ SolarSystem::SolarSystem(Accuracy const accuracy) {
 
   // End of celestial bodies.
 
-  massive_bodies_.emplace_back(sun.release());
-  massive_bodies_.emplace_back(jupiter.release());
-  massive_bodies_.emplace_back(saturn.release());
-  massive_bodies_.emplace_back(neptune.release());
-  massive_bodies_.emplace_back(uranus.release());
-  massive_bodies_.emplace_back(earth.release());
-  massive_bodies_.emplace_back(venus.release());
-  massive_bodies_.emplace_back(mars.release());
-  massive_bodies_.emplace_back(mercury.release());
-  massive_bodies_.emplace_back(ganymede.release());
-  massive_bodies_.emplace_back(titan.release());
-  massive_bodies_.emplace_back(callisto.release());
-  massive_bodies_.emplace_back(io.release());
-  massive_bodies_.emplace_back(moon.release());
-  massive_bodies_.emplace_back(europa.release());
-  massive_bodies_.emplace_back(triton.release());
-  massive_bodies_.emplace_back(eris.release());
-  massive_bodies_.emplace_back(pluto.release());
+  massive_bodies_.emplace_back(std::move(sun));
+  massive_bodies_.emplace_back(std::move(jupiter));
+  massive_bodies_.emplace_back(std::move(saturn));
+  massive_bodies_.emplace_back(std::move(neptune));
+  massive_bodies_.emplace_back(std::move(uranus));
+  massive_bodies_.emplace_back(std::move(earth));
+  massive_bodies_.emplace_back(std::move(venus));
+  massive_bodies_.emplace_back(std::move(mars));
+  massive_bodies_.emplace_back(std::move(mercury));
+  massive_bodies_.emplace_back(std::move(ganymede));
+  massive_bodies_.emplace_back(std::move(titan));
+  massive_bodies_.emplace_back(std::move(callisto));
+  massive_bodies_.emplace_back(std::move(io));
+  massive_bodies_.emplace_back(std::move(moon));
+  massive_bodies_.emplace_back(std::move(europa));
+  massive_bodies_.emplace_back(std::move(triton));
+  massive_bodies_.emplace_back(std::move(eris));
+  massive_bodies_.emplace_back(std::move(pluto));
   if (accuracy > Accuracy::kMajorBodiesOnly) {
-    massive_bodies_.emplace_back(titania.release());
-    massive_bodies_.emplace_back(oberon.release());
-    massive_bodies_.emplace_back(rhea.release());
-    massive_bodies_.emplace_back(iapetus.release());
-    massive_bodies_.emplace_back(charon.release());
-    massive_bodies_.emplace_back(ariel.release());
-    massive_bodies_.emplace_back(umbriel.release());
-    massive_bodies_.emplace_back(dione.release());
-    massive_bodies_.emplace_back(tethys.release());
+    massive_bodies_.emplace_back(std::move(titania));
+    massive_bodies_.emplace_back(std::move(oberon));
+    massive_bodies_.emplace_back(std::move(rhea));
+    massive_bodies_.emplace_back(std::move(iapetus));
+    massive_bodies_.emplace_back(std::move(charon));
+    massive_bodies_.emplace_back(std::move(ariel));
+    massive_bodies_.emplace_back(std::move(umbriel));
+    massive_bodies_.emplace_back(std::move(dione));
+    massive_bodies_.emplace_back(std::move(tethys));
   }
 }
 
