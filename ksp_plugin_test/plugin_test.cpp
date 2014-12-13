@@ -33,6 +33,7 @@ using principia::testing_utilities::AlmostEquals;
 using principia::testing_utilities::ICRFJ2000Ecliptic;
 using principia::testing_utilities::SolarSystem;
 using testing::AllOf;
+using testing::Contains;
 using testing::Eq;
 using testing::Ge;
 using testing::Gt;
@@ -62,6 +63,25 @@ ACTION_TEMPLATE(AppendTimeToTrajectories,
                               std::tr1::get<k>(args))) {
     trajectory->Append(time, trajectory->last().degrees_of_freedom());
   }
+}
+
+MATCHER_P(HasNonvanishingIntrinsicAccelerationAt, t, "") {
+  LOG(ERROR)<<arg;
+  if (arg->has_intrinsic_acceleration()) {
+    if (arg->evaluate_intrinsic_acceleration(t) ==
+        Vector<Acceleration, Barycentric>()) {
+       *result_listener << "has vanishing intrinsic acceleration at";
+       LOG(ERROR)<<"vanishes";
+       return false;
+    } else {
+       *result_listener << "has nonvanishing intrinsic acceleration at";
+       LOG(ERROR)<<"WOOOHOOOO!!!";
+       return true;
+    }
+  }
+  *result_listener << "has no intrinsic acceleration";
+  LOG(ERROR)<<"nothing here";
+  return false;
 }
 
 }  // namespace
@@ -644,7 +664,7 @@ TEST_F(PluginTest, PhysicsBubble) {
                                          0 * Metre / Pow<2>(Second),
                                          0 * Metre / Pow<2>(Second)})));
   };
-  FLAGS_v= 1; 
+  //FLAGS_v= 1; 
   InSequence  s ; 
   google::SetStderrLogging( google::INFO); 
   InsertAllSolarSystemBodies();
@@ -655,6 +675,7 @@ TEST_F(PluginTest, PhysicsBubble) {
   std::size_t expected_number_of_clean_old_vessels = 0;
   std::vector<std::pair<PartID, std::unique_ptr<Part<World>>>> parts;
   bool expect_to_have_physics_bubble = true;
+  bool expect_intrinsic_acceleration = false;
   InsertVessel(enterprise, &expected_number_of_new_off_rails_vessels);
   --expected_number_of_new_off_rails_vessels;
   for (int step = 0; step < 10; ++step) {
@@ -714,18 +735,34 @@ TEST_F(PluginTest, PhysicsBubble) {
         ++expected_number_of_dirty_old_on_rails_vessels;
         expect_to_have_physics_bubble = false;
       }
+      expect_intrinsic_acceleration &= expect_to_have_physics_bubble;
       // Called to compute the prolongations and advance the unsynchronized
       // histories.
-      EXPECT_CALL(
-          *n_body_system_,
-          Integrate(Ref(plugin_->prolongation_integrator()), t,
-                        plugin_->Δt(), 0, true,
-                        SizeIs(bodies_.size() +
-                               expected_number_of_clean_old_vessels +
-                               expected_number_of_new_off_rails_vessels +
-                               expected_number_of_dirty_old_on_rails_vessels +
-                               (expect_to_have_physics_bubble ? 1 : 0))))
-          .RetiresOnSaturation();
+      if (expect_intrinsic_acceleration) {
+        EXPECT_CALL(
+            *n_body_system_,
+            Integrate(Ref(plugin_->prolongation_integrator()), t,
+                          plugin_->Δt(), 0, true,
+                          AllOf(
+                              SizeIs(bodies_.size() +
+                                     expected_number_of_clean_old_vessels +
+                                     expected_number_of_new_off_rails_vessels +
+                                     expected_number_of_dirty_old_on_rails_vessels +
+                                     (expect_to_have_physics_bubble ? 1 : 0)),
+                              Contains(HasNonvanishingIntrinsicAccelerationAt(t)))))
+            .RetiresOnSaturation();
+      } else {
+        EXPECT_CALL(
+            *n_body_system_,
+            Integrate(Ref(plugin_->prolongation_integrator()), t,
+                          plugin_->Δt(), 0, true,
+                          SizeIs(bodies_.size() +
+                                 expected_number_of_clean_old_vessels +
+                                 expected_number_of_new_off_rails_vessels +
+                                 expected_number_of_dirty_old_on_rails_vessels +
+                                 (expect_to_have_physics_bubble ? 1 : 0))))
+            .RetiresOnSaturation();
+      }
       LOG(ERROR)<<bodies_.size();
       LOG(ERROR)<<expected_number_of_clean_old_vessels;
       LOG(ERROR)<<expected_number_of_new_off_rails_vessels;
@@ -744,6 +781,7 @@ TEST_F(PluginTest, PhysicsBubble) {
                      &expected_number_of_new_off_rails_vessels);
         --expected_number_of_new_off_rails_vessels;
       }
+      expect_intrinsic_acceleration = expect_to_have_physics_bubble;
     }
     // Keep the vessels for the history-advancing step.
     if (step <= 0) {
