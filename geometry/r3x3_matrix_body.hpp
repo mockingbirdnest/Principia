@@ -36,7 +36,7 @@ inline double R3x3Matrix::operator[](std::pair<int, int> const& indices) const {
     default:
       LOG(FATAL) << "indices = {" << indices.first
                  << ", " << indices.second << "}";
-      noreturn();
+      base::noreturn();
   }
 }
 

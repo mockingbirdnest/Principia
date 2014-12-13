@@ -107,7 +107,7 @@ TEST_F(R3ElementTest, Normalize) {
   EXPECT_THAT(Normalize(v),
               AlmostEquals(R3Element<double>({1.0 / sqrt(30.0),
                                               -2.0 / sqrt(30.0),
-                                              5.0 / sqrt(30.0)}), 1));
+                                              5.0 / sqrt(30.0)}), 0));
 }
 
 }  // namespace geometry

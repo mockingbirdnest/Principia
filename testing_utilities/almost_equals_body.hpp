@@ -50,7 +50,7 @@ bool AlmostEqualsMatcher<T>::MatchAndExplain(
     testing::MatchResultListener* listener) const {
   // Check that the types are equality-comparable up to implicit casts.
   if (actual == expected_) {
-    return true;
+    return MatchAndExplainIdentical(listener);
   }
   std::int64_t const distance = ULPDistance(DoubleValue(actual),
                                             DoubleValue(expected_));
@@ -67,7 +67,7 @@ bool AlmostEqualsMatcher<T>::MatchAndExplain(
     testing::MatchResultListener* listener) const {
   // Check that the types are equality-comparable up to implicit casts.
   if (actual == expected_) {
-    return true;
+    return MatchAndExplainIdentical(listener);
   }
   std::int64_t const distance = ULPDistance(actual, expected_);
   bool const match =  min_ulps_ <= distance && distance <= max_ulps_;
@@ -84,7 +84,7 @@ bool AlmostEqualsMatcher<T>::MatchAndExplain(
     testing::MatchResultListener* listener) const {
   // Check that the types are equality-comparable up to implicit casts.
   if (actual == expected_) {
-    return true;
+    return MatchAndExplainIdentical(listener);
   }
   std::int64_t const x_distance = ULPDistance(DoubleValue(actual.x),
                                               DoubleValue(expected_.x));
@@ -115,7 +115,7 @@ bool AlmostEqualsMatcher<T>::MatchAndExplain(
     testing::MatchResultListener* listener) const {
   // Check that the types are equality-comparable up to implicit casts.
   if (actual == expected_) {
-    return true;
+    return MatchAndExplainIdentical(listener);
   }
   std::int64_t const w_distance = ULPDistance(
       DoubleValue(actual.real_part()),
@@ -153,7 +153,7 @@ bool AlmostEqualsMatcher<T>::MatchAndExplain(
     testing::MatchResultListener* listener) const {
   // Check that the types are equality-comparable up to implicit casts.
   if (actual == expected_) {
-    return true;
+    return MatchAndExplainIdentical(listener);
   }
   return AlmostEqualsMatcher<geometry::R3Element<Scalar>>(
       expected_.coordinates(),
@@ -168,7 +168,7 @@ bool AlmostEqualsMatcher<T>::MatchAndExplain(
     testing::MatchResultListener* listener) const {
   // Check that the types are equality-comparable up to implicit casts.
   if (actual == expected_) {
-    return true;
+    return MatchAndExplainIdentical(listener);
   }
   return AlmostEqualsMatcher<geometry::R3Element<Scalar>>(
       expected_.coordinates(),
@@ -183,7 +183,7 @@ bool AlmostEqualsMatcher<T>::MatchAndExplain(
     testing::MatchResultListener* listener) const {
   // Check that the types are equality-comparable up to implicit casts.
   if (actual == expected_) {
-    return true;
+    return MatchAndExplainIdentical(listener);
   }
   return AlmostEqualsMatcher<Scalar>(expected_.coordinates(),
                                      min_ulps_,
@@ -202,6 +202,17 @@ template<typename T>
 void AlmostEqualsMatcher<T>::DescribeNegationTo(std::ostream* out) const {
   *out << "is not within " << min_ulps_
        << " to " << max_ulps_ << " ULPs of " << expected_;
+}
+
+template<typename T>
+bool AlmostEqualsMatcher<T>::MatchAndExplainIdentical(
+    testing::MatchResultListener* listener) const {
+  if (min_ulps_ == 0) {
+    return true;
+  } else {
+    *listener << "the numbers are identical";
+    return false;
+  }
 }
 
 }  // namespace testing_utilities

@@ -27,7 +27,7 @@ namespace {
 template<typename T>
 std::unique_ptr<T> TakeOwnership(T** const pointer) {
   CHECK_NOTNULL(pointer);
-  std::unique_ptr<T const> owned_pointer(*pointer);
+  std::unique_ptr<T> owned_pointer(*pointer);
   *pointer = nullptr;
   return owned_pointer;
 }
@@ -254,7 +254,7 @@ bool principia__AtEnd(LineAndIterator* const line_and_iterator) {
 }
 
 void principia__DeleteLineAndIterator(
-    LineAndIterator const** const line_and_iterator) {
+    LineAndIterator** const line_and_iterator) {
   TakeOwnership(line_and_iterator);
 }
 

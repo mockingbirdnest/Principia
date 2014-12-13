@@ -80,10 +80,10 @@ TEST_F(OrthogonalMapTest, AppliedToBivector) {
 TEST_F(OrthogonalMapTest, AppliedToTrivector) {
   EXPECT_THAT(orthogonal_a_(trivector_),
               AlmostEquals(Trivector<quantities::Length, World>(
-                  -4.0 * Metre), 4));
+                  -4.0 * Metre), 0));
   EXPECT_THAT(orthogonal_b_(trivector_),
               AlmostEquals(Trivector<quantities::Length, World>(
-                  4.0 * Metre), 4));
+                  4.0 * Metre), 0));
 }
 
 TEST_F(OrthogonalMapTest, Determinant) {

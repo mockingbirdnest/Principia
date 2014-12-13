@@ -36,7 +36,6 @@ class AlmostEqualsTest : public testing::Test {};
 
 TEST_F(AlmostEqualsTest, Dimensionless) {
   double const y = e;
-  EXPECT_THAT(y, AlmostEquals(e, 4));
   EXPECT_THAT(y, AlmostEquals(e, 0));
   EXPECT_THAT(2 * y, Not(AlmostEquals(y, 4)));
   double const δy = e / 100.0;
@@ -52,7 +51,7 @@ TEST_F(AlmostEqualsTest, Dimensionless) {
 TEST_F(AlmostEqualsTest, Quantity) {
   Speed v1 = 1 * Knot;
   Speed const v2 = v1;
-  EXPECT_THAT(v2, AlmostEquals(v1, 4));
+  EXPECT_THAT(v2, AlmostEquals(v1, 0));
   EXPECT_THAT(2 * v2, Not(AlmostEquals(v1, 4)));
   Speed const δv = v1 / 100;
   Speed v_accumulated;
@@ -66,7 +65,7 @@ TEST_F(AlmostEqualsTest, Quantity) {
 TEST_F(AlmostEqualsTest, R3Element) {
   R3Element<Speed> const v1 = {1 * Knot, 2 * Knot, 3 * Knot};
   R3Element<Speed> const v2 = v1;
-  EXPECT_THAT(v2, AlmostEquals(v1, 4));
+  EXPECT_THAT(v2, AlmostEquals(v1, 0));
   EXPECT_THAT(2 * v2, Not(AlmostEquals(v1, 4)));
   R3Element<Speed> const δv = v1 / 100;
   R3Element<Speed> v_accumulated;
@@ -80,7 +79,7 @@ TEST_F(AlmostEqualsTest, R3Element) {
 TEST_F(AlmostEqualsTest, Vector) {
   Vector<Length, World> const v1({1 * Foot, 2 * Foot, 3 * Foot});
   Vector<Length, World> const v2 = v1;
-  EXPECT_THAT(v2, AlmostEquals(v1, 4));
+  EXPECT_THAT(v2, AlmostEquals(v1, 0));
   EXPECT_THAT(2 * v2, Not(AlmostEquals(v1, 4)));
   Vector<Length, World> const δv = v1 / 100;
   Vector<Length, World> v_accumulated;
@@ -94,7 +93,7 @@ TEST_F(AlmostEqualsTest, Vector) {
 TEST_F(AlmostEqualsTest, Bivector) {
   Bivector<double, World> const v1({4, -5, 6});
   Bivector<double, World> const v2 = v1;
-  EXPECT_THAT(v2, AlmostEquals(v1, 4));
+  EXPECT_THAT(v2, AlmostEquals(v1, 0));
   EXPECT_THAT(2 * v2, Not(AlmostEquals(v1, 4)));
   Bivector<double, World> const δv = v1 / 100;
   Bivector<double, World> v_accumulated;
@@ -108,7 +107,7 @@ TEST_F(AlmostEqualsTest, Bivector) {
 TEST_F(AlmostEqualsTest, Trivector) {
   Trivector<MagneticFlux, World> const v1(2 * Maxwell);
   Trivector<MagneticFlux, World> const v2 = v1;
-  EXPECT_THAT(v2, AlmostEquals(v1, 4));
+  EXPECT_THAT(v2, AlmostEquals(v1, 0));
   EXPECT_THAT(2 * v2, Not(AlmostEquals(v1, 4)));
   Trivector<MagneticFlux, World> const δv = v1 / 100;
   Trivector<MagneticFlux, World> v_accumulated;

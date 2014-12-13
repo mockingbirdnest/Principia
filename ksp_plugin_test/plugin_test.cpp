@@ -241,7 +241,7 @@ TEST_F(PluginTest, Initialization) {
                     last().degrees_of_freedom().velocity,
                 AlmostEquals(looking_glass_.Inverse()(
                     plugin_->CelestialParentRelativeVelocity(index)),
-                    1, 936));
+                    0, 936));
   }
 }
 

@@ -55,6 +55,27 @@ bool Point<Vector>::operator!=(Point<Vector> const& right) const {
 }
 
 template<typename Vector>
+template<typename Weight>
+void Point<Vector>::BarycentreCalculator<Weight>::Add(Point const& point,
+                                                      Weight const& weight) {
+  if (empty_) {
+    weighted_sum_ = point.coordinates_ * weight;
+    weight_ = weight;
+    empty_ = false;
+  } else {
+    weighted_sum_ += point.coordinates_ * weight;
+    weight_ += weight;
+  }
+}
+
+template<typename Vector>
+template<typename Weight>
+Point<Vector> const Point<Vector>::BarycentreCalculator<Weight>::Get() const {
+  CHECK(!empty_) << "Empty BarycentreCalculator";
+  return Point<Vector>(weighted_sum_ / weight_);
+}
+
+template<typename Vector>
 Point<Vector> operator+(Vector const& translation,
                         Point<Vector> const& point) {
   return Point<Vector>(translation + point.coordinates_);
@@ -92,18 +113,14 @@ std::ostream& operator<<(std::ostream& out, Point<Vector> const& point) {
 template<typename Vector, typename Weight>
 Point<Vector> Barycentre(std::vector<Point<Vector>> const& points,
                          std::vector<Weight> const& weights) {
-  CHECK_EQ(points.size(), weights.size());
-  CHECK(!points.empty());
-  // We need 'auto' here because we cannot easily write the type of the product
-  // of a |Vector| with a |Weight|.  This is also why the loop below starts at
-  // 1, as we use element 0 to get the type.
-  auto weighted_sum = points[0].coordinates_ * weights[0];
-  Weight weight = weights[0];
-  for (size_t i = 1; i < points.size(); ++i) {
-    weighted_sum += points[i].coordinates_ * weights[i];
-    weight += weights[i];
+  CHECK_EQ(points.size(), weights.size())
+      << "Points and weights of unequal sizes";
+  CHECK(!points.empty()) << "Empty input";
+  Point<Vector>::BarycentreCalculator<Weight> calculator;
+  for (size_t i = 0; i < points.size(); ++i) {
+    calculator.Add(points[i], weights[i]);
   }
-  return Point<Vector>(weighted_sum / weight);
+  return calculator.Get();
 }
 
 }  // namespace geometry

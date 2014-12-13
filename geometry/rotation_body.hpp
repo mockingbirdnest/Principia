@@ -67,7 +67,7 @@ Rotation<FromFrame, ToFrame>::Rotation(Quaternion const& quaternion)
 
 template<typename FromFrame, typename ToFrame>
 Rotation<FromFrame, ToFrame>::Rotation(R3x3Matrix const& matrix)
-  : Rotation(ToQuaternion(matrix)) {}
+    : Rotation(ToQuaternion(matrix)) {}
 
 template<typename FromFrame, typename ToFrame>
 template<typename Scalar>

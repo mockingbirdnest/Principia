@@ -1,6 +1,7 @@
 #pragma once
 
 #include <type_traits>
+#include <utility>
 #include <vector>
 
 #include "quantities/quantities.hpp"
@@ -30,6 +31,21 @@ class Point {
 
   bool operator==(Point const& right) const;
   bool operator!=(Point const& right) const;
+
+  template<typename Weight>
+  class BarycentreCalculator {
+   public:
+    BarycentreCalculator() = default;
+    ~BarycentreCalculator() = default;
+
+    void Add(Point const& point, Weight const& weight);
+    Point const Get() const;
+
+   private:
+    bool empty_ = true;
+    decltype(std::declval<Vector>() * std::declval<Weight>()) weighted_sum_;
+    Weight weight_;
+  };
 
  private:
   Vector coordinates_;

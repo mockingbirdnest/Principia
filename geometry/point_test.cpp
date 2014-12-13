@@ -1,5 +1,8 @@
-#include "geometry/epoch.hpp"
 #include "geometry/point.hpp"
+
+#include <vector>
+
+#include "geometry/epoch.hpp"
 #include "gmock/gmock.h"
 #include "quantities/quantities.hpp"
 #include "quantities/named_quantities.hpp"
@@ -19,6 +22,8 @@ using testing_utilities::AlmostEquals;
 class AffineSpaceTest : public testing::Test {
  protected:
 };
+
+using AffineSpaceDeathTest = AffineSpaceTest;
 
 TEST_F(AffineSpaceTest, Comparisons) {
   EXPECT_TRUE(kUnixEpoch == kUnixEpoch);
@@ -64,6 +69,27 @@ TEST_F(AffineSpaceTest, Ordering) {
   EXPECT_TRUE(t1 >= t1);
 }
 
+TEST_F(AffineSpaceDeathTest, BarycentreError) {
+  // The <> seem to confuse EXPECT_DEATH, hence the lambda.
+  auto barycentre =
+      [](std::vector<Instant> const& instants,
+         std::vector<Volume> const& weights) -> Instant {
+    return Barycentre<Time, Volume>(instants, weights);
+  };
+  EXPECT_DEATH({
+    Instant const t1 = kUnixEpoch + 1 * Day;
+    Instant const t2 = kUnixEpoch - 3 * Day;
+    barycentre({t1, t2}, {3 * Litre, 4 * Litre, 5 * Litre});
+  }, "unequal sizes");
+  EXPECT_DEATH({
+    barycentre({}, {});
+  }, "Empty input");
+  EXPECT_DEATH({
+    Instant::BarycentreCalculator<Volume> calculator;
+    calculator.Get();
+  }, "Empty BarycentreCalculator");
+}
+
 TEST_F(AffineSpaceTest, Barycentres) {
   Instant const t1 = kUnixEpoch + 1 * Day;
   Instant const t2 = kUnixEpoch - 3 * Day;
@@ -71,6 +97,34 @@ TEST_F(AffineSpaceTest, Barycentres) {
   Instant const b2 = Barycentre<Time, double>({t2, t1}, {1, 1});
   EXPECT_THAT(b1, Eq(kUnixEpoch));
   EXPECT_THAT(b2, Eq(kUnixEpoch - 1 * Day));
+}
+
+TEST_F(AffineSpaceTest, InstantBarycentreCalculator) {
+  Instant::BarycentreCalculator<double> calculator;
+  Instant const t1 = kUnixEpoch + 2 * Day;
+  Instant const t2 = kUnixEpoch - 3 * Day;
+  Instant const t3 = kUnixEpoch + 5 * Day;
+  Instant const t4 = kUnixEpoch - 7 * Day;
+  calculator.Add(t1, 1);
+  calculator.Add(t2, 2);
+  EXPECT_THAT(calculator.Get(), Eq(kUnixEpoch - 4 * Day / 3));
+  calculator.Add(t3, 3);
+  calculator.Add(t4, 4);
+  EXPECT_THAT(calculator.Get(), Eq(kUnixEpoch - 1.7 * Day));
+}
+
+TEST_F(AffineSpaceTest, DoubleBarycentreCalculator) {
+  Point<double>::BarycentreCalculator<double> calculator;
+  Point<double> const d1 = Point<double>(2);
+  Point<double> const d2 = Point<double>(-3);
+  Point<double> const d3 = Point<double>(5);
+  Point<double> const d4 = Point<double>(-7);
+  calculator.Add(d1, 1);
+  calculator.Add(d2, 2);
+  EXPECT_THAT(calculator.Get(), Eq(Point<double>(-4.0 / 3.0)));
+  calculator.Add(d3, 3);
+  calculator.Add(d4, 4);
+  EXPECT_THAT(calculator.Get(), Eq(Point<double>(-1.7)));
 }
 
 }  // namespace geometry
