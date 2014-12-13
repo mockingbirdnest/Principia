@@ -1,6 +1,8 @@
 #include "ksp_plugin/interface.hpp"
 
 #include <string>
+#include <utility>
+#include <vector>
 
 #include "base/version.hpp"
 
