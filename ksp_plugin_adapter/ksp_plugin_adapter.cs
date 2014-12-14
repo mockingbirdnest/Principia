@@ -144,12 +144,13 @@ public partial class PluginAdapter : UnityEngine.MonoBehaviour {
         Vector3d kraken_velocity = Krakensbane.GetFrameVelocity();
         KSPPart[] parts =
             (from part in vessel.parts
-             where part.rb != null
+             where part.rb != null  // Physicsless parts have no rigid body.
              select new KSPPart {
                  world_position = (XYZ)(Vector3d)part.rb.worldCenterOfMass,
                  world_velocity = (XYZ)(kraken_velocity + part.rb.velocity),
                  mass = (double)part.mass + (double)part.GetResourceMass(),
-                 expected_ksp_gravity = (XYZ)gravity,
+                 gravitational_acceleration_to_be_applied_by_ksp =
+                     (XYZ)gravity,
                  id = part.flightID}).ToArray();
         AddVesselToNextPhysicsBubble(plugin : plugin_,
                                      vessel_guid : vessel.id.ToString(),

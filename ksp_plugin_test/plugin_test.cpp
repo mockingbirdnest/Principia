@@ -668,7 +668,7 @@ TEST_F(PluginTest, PhysicsBubble) {
   std::size_t expected_number_of_new_off_rails_vessels = 0;
   std::size_t expected_number_of_dirty_old_on_rails_vessels = 0;
   std::size_t expected_number_of_clean_old_vessels = 0;
-  std::vector<std::pair<PartID, std::unique_ptr<Part<World>>>> parts;
+  std::vector<IDAndOwnedPart> parts;
   bool expect_to_have_physics_bubble = true;
   bool expect_intrinsic_acceleration = false;
   InsertVessel(enterprise, &expected_number_of_new_off_rails_vessels);

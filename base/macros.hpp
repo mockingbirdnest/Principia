@@ -50,5 +50,12 @@ inline void noreturn() { exit(0); }
 #define FORCE_INLINE __forceinline
 #endif
 
+#define VLOG_AND_RETURN(verboselevel, expression)                  \
+  do {                                                             \
+    auto const& value__ = (expression);                            \
+    VLOG(verboselevel) << __FUNCTION__ << " returns " << value__;  \
+    return value__;                                                \
+  } while (false)
+
 }  // namespace base
 }  // namespace principia

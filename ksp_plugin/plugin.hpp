@@ -61,6 +61,9 @@ struct LineSegment {
 template<typename Frame>
 using RenderedTrajectory = std::vector<LineSegment<Frame>>;
 
+using PartIDToOwnedPart = std::map<PartID, std::unique_ptr<Part<World>>>;
+using IDAndOwnedPart = PartIDToOwnedPart::value_type;
+
 class Plugin {
  public:
   Plugin() = delete;
@@ -222,23 +225,44 @@ class Plugin {
   // vessel with GUID |vessel_guid| must not already be in
   // |next_physics_bubble_->vessels|.  |parts| must not contain a |PartID|
   // already in |next_physics_bubble_->parts|.
-  void AddVesselToNextPhysicsBubble(
-      GUID const& vessel_guid,
-      std::vector<std::pair<PartID, std::unique_ptr<Part<World>>>> parts);
+  void AddVesselToNextPhysicsBubble(GUID const& vessel_guid,
+                                    std::vector<IDAndOwnedPart> parts);
   // Computes and returns |current_physics_bubble_->displacement_correction|.
-  // This is the shift to be applied to the physics bubble in worldspace in
-  // order for it to be in the correct position.
+  // This is the |World| shift to be applied to the physics bubble in order for
+  // it to be in the correct position.
   Displacement<World> BubbleDisplacementCorrection(
       Position<World> const& sun_world_position) const;
   // Computes and returns |current_physics_bubble_->velocity_correction|.
-  // This is the shift to be applied to the physics bubble in worldspace in
-  // order for it to be in the correct position.
+  // This is the |World| shift to be applied to the physics bubble in order for
+  // it to have the correct velocity.
   Velocity<World> BubbleVelocityCorrection(
       Index const reference_body_index) const;
 
  private:
   using GUIDToOwnedVessel = std::map<GUID, std::unique_ptr<Vessel>>;
   using GUIDToUnownedVessel = std::map<GUID, Vessel* const>;
+  using PartCorrespondence = std::pair<Part<World>*, Part<World>*>;
+
+  std::unique_ptr<Vessel> const& find_vessel_by_guid_or_die(
+      GUID const& vessel_guid) const;
+
+  // Returns |current_physics_bubble_ != nullptr|.
+  bool has_physics_bubble() const;
+  // Returns |!dirty_vessels_.empty()|.
+  bool has_dirty_vessels() const;
+  // Returns |!unsynchronized_vessels_.empty()|.
+  bool has_new_vessels() const;
+  // Returns |current_physics_bubble_->vessels.size()|, or 0 if
+  // |current_physics_bubble_| is null.
+  std::size_t number_of_vessels_in_physics_bubble() const;
+  // Returns 1 if |has_physics_bubble()|, 0 otherwise.
+  std::size_t number_of_physics_bubbles() const;
+  // Returns |dirty_vessels_.count(vessel) > 0|.
+  bool is_dirty(Vessel* const vessel) const;
+  // Returns true if, and only if, |vessel| is in
+  // |current_physics_bubble_->vessels|.  |current_physics_bubble_| may be null,
+  // in that case, returns false.
+  bool is_in_physics_bubble(Vessel* const vessel) const;
 
   // The common last time of the histories of synchronized vessels and
   // celestials.
@@ -252,11 +276,11 @@ class Plugin {
 
   // Utilities for |AdvanceTime|.
 
-  // Remove vessels not in |kept_|, and clears |kept_|.
+  // Remove vessels not in |kept_vessels|, and clears |kept_vessels|.
   void CleanUpVessels();
   // Given an iterator to an element of |vessels_|, check that the corresponding
-  // |Vessel| |is_initialized()|, and that it is not in |new_vessels_| if, and
-  // only if, it |is_synchronized()|.
+  // |Vessel| |is_initialized()|, and that it is not in
+  // |unsynchronized_vessels_| if, and only if, it |is_synchronized()|.
   // Also checks that its |prolongation().last().time()| is at least
   // |HistoryTime()|, and that if it |is_synchronized()|, its
   // |history().last().time()| is exactly |HistoryTime()|.
@@ -265,16 +289,16 @@ class Plugin {
   // up to at most |t|. |t| must be large enough that at least one step of
   // size |Δt_| can fit between |current_time_| and |t|.
   void EvolveHistories(Instant const& t);
-  // Synchronizes the |new_vessels_|, clears |new_vessels_|.  Prolongs the
-  // histories of the vessels in the physics bubble by evolving the trajectory
-  // of the |current_physics_bubble_| if there is one, prolongs the histories of
-  // the remaining |dirty_vessels_| using their prolongations, clears
-  // |dirty_vessels_|.
+  // Synchronizes the |unsynchronized_vessels_|, clears
+  // |unsynchronized_vessels_|.  Prolongs the histories of the vessels in the
+  // physics bubble by evolving the trajectory of the |current_physics_bubble_|
+  // if there is one, prolongs the histories of the remaining |dirty_vessels_|
+  // using their prolongations, clears |dirty_vessels_|.
   void SynchronizeNewVesselsAndCleanDirtyVessels();
   // Called from |SynchronizeNewVesselsAndCleanDirtyVessels()|, prolongs the
   // histories of the vessels in the physics bubble (the integration must
   // already have been done).  Any new vessels in the physics bubble are
-  // synchronized and removed from |new_vessels_|.
+  // synchronized and removed from |unsynchronized_vessels_|.
   void SynchronizeBubbleHistories();
   // Resets the prolongations of all vessels and celestials to |HistoryTime()|.
   // All vessels must satisfy |is_synchronized()|.
@@ -283,15 +307,6 @@ class Plugin {
   // instant |t|.  Also evolves the trajectory/ of the |current_physics_bubble_|
   // if there is one.
   void EvolveProlongationsAndBubble(Instant const& t);
-  // Returns true if, and only if, |vessel| is in
-  // |current_physics_bubble_->vessels|.  |current_physics_bubble_| may be null,
-  // in that case, returns false.
-  bool IsInPhysicsBubble(Vessel* const vessel) const;
-  // |current_physics_bubble_->vessels.size()|, or 0 if
-  // |current_physics_bubble_| is null.
-  std::size_t NumberOfVesselsInPhysicsBubble() const;
-  // returns |current_physics_bubble_ != nullptr|.
-  bool HavePhysicsBubble() const;
 
   // If |next_physics_bubble_| is not null, computes the world centre of mass,
   // trajectory (including intrinsic acceleration) of |*next_physics_bubble_|.
@@ -321,16 +336,14 @@ class Plugin {
   // transfer of ownership.
   Vector<Acceleration, World> IntrinsicAcceleration(
       Instant const& next_time,
-      std::vector<std::pair<Part<World>*, Part<World>*>>* const common_parts);
+      std::vector<PartCorrespondence>* const common_parts);
   // Given the vector of common parts produced by |IntrinsicAcceleration|,
   // constructs |*next_physics_bubble_->centre_of_mass_trajectory| and appends
-  // degres of freedom at |current_time_| that conserve the degrees of freedom
+  // degrees of freedom at |current_time_| that conserve the degrees of freedom
   // of the centre of mass of the parts in |common_parts|.
   // |common_parts| must not be null.  |next_physics_bubble_| must not be null.
   // No transfer of ownership.
-  void ShiftBubble(
-      std::vector<std::pair<Part<World>*,
-                            Part<World>*>> const* const common_parts);
+  void ShiftBubble(std::vector<PartCorrespondence> const* const common_parts);
 
   // TODO(egg): Constant time step for now.
   Time const Δt_ = 10 * Second;
@@ -341,7 +354,7 @@ class Plugin {
   // The vessels which have been inserted after |HistoryTime()|.  These are the
   // vessels which do not satisfy |is_synchronized()|, i.e., they do not have a
   // history.  The pointers are not owning and not null.
-  std::set<Vessel* const> new_vessels_;
+  std::set<Vessel* const> unsynchronized_vessels_;
   // The vessels that have been added to the physics bubble after
   // |HistoryTime()|.  For these vessels, the prolongation contains information
   // that may not be discarded, and the history will be advanced using the
@@ -349,11 +362,11 @@ class Plugin {
   std::set<Vessel* const> dirty_vessels_;
 
   // The vessels that will be kept during the next call to |AdvanceTime|.
-  std::set<Vessel const* const> kept_;
+  std::set<Vessel const* const> kept_vessels;
 
   struct PhysicsBubble {
     std::map<Vessel* const, std::vector<Part<World>* const>> vessels;
-    std::map<PartID, std::unique_ptr<Part<World>> const> parts;
+    PartIDToOwnedPart parts;
     // TODO(egg): the following six should be |std::optional| when that
     // becomes a thing.
     std::unique_ptr<DegreesOfFreedom<World>> centre_of_mass;

@@ -30,7 +30,7 @@ public partial class PluginAdapter : UnityEngine.MonoBehaviour {
     public XYZ world_position;
     public XYZ world_velocity;
     public double mass;
-    public XYZ expected_ksp_gravity;
+    public XYZ gravitational_acceleration_to_be_applied_by_ksp;
     public uint id;
   };
 

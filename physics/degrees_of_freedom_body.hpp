@@ -2,7 +2,6 @@
 
 #include <vector>
 
-#include "geometry/named_quantities.hpp"
 #include "physics/degrees_of_freedom.hpp"
 
 namespace principia {

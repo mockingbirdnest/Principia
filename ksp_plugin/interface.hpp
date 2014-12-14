@@ -45,7 +45,7 @@ struct KSPPart {
   XYZ world_position;
   XYZ world_velocity;
   double mass;
-  XYZ expected_ksp_gravity;
+  XYZ gravitational_acceleration_to_be_applied_by_ksp;
   uint32_t id;
 };
 
