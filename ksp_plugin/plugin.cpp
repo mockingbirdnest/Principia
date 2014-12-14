@@ -43,7 +43,7 @@ std::unique_ptr<Vessel> const& Plugin::find_vessel_by_guid_or_die(
   VLOG(1) << __FUNCTION__ << '\n'
           << "vessel_guid: " << vessel_guid;
   auto const it = vessels_.find(vessel_guid);
-  CHECK(it != vessels_.end()) << vessel_guid;
+  CHECK(it != vessels_.end()) << "No vessel with GUID " << vessel_guid;
   VLOG_AND_RETURN(1, it->second);
 }
 
