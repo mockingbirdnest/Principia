@@ -883,10 +883,12 @@ void Plugin::ComputeNextPhysicsBubbleVesselOffsets() {
                 next_physics_bubble_->centre_of_mass->velocity));
     VLOG(1) << NAMED(displacement_from_centre_of_mass) << ", "
             << NAMED(velocity_from_centre_of_mass);
-    next_physics_bubble_->
-        displacements_from_centre_of_mass->emplace(vessel, displacement);
-    next_physics_bubble_->
-        velocities_from_centre_of_mass->emplace(vessel, velocity);
+    next_physics_bubble_->displacements_from_centre_of_mass->emplace(
+        vessel,
+        displacement_from_centre_of_mass);
+    next_physics_bubble_->velocities_from_centre_of_mass->emplace(
+        vessel,
+        velocity_from_centre_of_mass);
   }
 }
 
