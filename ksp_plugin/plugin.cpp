@@ -456,7 +456,9 @@ void Plugin::AdvanceTime(Instant const& t, Angle const& planetarium_rotation) {
     // step and reset the prolongations.
     EvolveHistories(t);
     // TODO(egg): I think |has_physics_bubble()| => |has_dirty_vessels()|.
-    if (has_unsynchronized_vessels() || has_dirty_vessels() || has_physics_bubble()) {
+    if (has_unsynchronized_vessels() ||
+        has_dirty_vessels() ||
+        has_physics_bubble()) {
       SynchronizeNewVesselsAndCleanDirtyVessels();
     }
     ResetProlongations();
