@@ -57,7 +57,7 @@ inline void noreturn() { exit(0); }
     return value__;                                                \
   } while (false)
 
-#define NAMED(expression) #expression << (expression)
+#define NAMED(expression) #expression << ": " << (expression)
 
 }  // namespace base
 }  // namespace principia
