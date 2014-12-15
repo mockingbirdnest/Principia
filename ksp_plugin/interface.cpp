@@ -273,7 +273,7 @@ void principia__AddVesselToNextPhysicsBubble(Plugin* const plugin,
                                              KSPPart const* const parts,
                                              int count) {
   VLOG(1) << __FUNCTION__ << '\n'
-          << "count: " << count;
+          << NAMED(count);
   std::vector<principia::ksp_plugin::IdAndOwnedPart> vessel_parts;
   vessel_parts.reserve(count);
   for (KSPPart const* part = parts; part < parts + count; ++part) {
