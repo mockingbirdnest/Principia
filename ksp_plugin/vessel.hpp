@@ -4,6 +4,7 @@
 
 #include "ksp_plugin/celestial.hpp"
 #include "ksp_plugin/vessel.hpp"
+#include "ksp_plugin/part.hpp"
 #include "physics/massless_body.hpp"
 #include "physics/trajectory.hpp"
 #include "quantities/named_quantities.hpp"

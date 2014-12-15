@@ -1,17 +1,23 @@
 #include "ksp_plugin/interface.hpp"
 
 #include <string>
+#include <utility>
+#include <vector>
 
 #include "base/version.hpp"
 
 using principia::geometry::Displacement;
 using principia::ksp_plugin::AliceSun;
 using principia::ksp_plugin::LineSegment;
+using principia::ksp_plugin::Part;
+using principia::ksp_plugin::PartId;
 using principia::ksp_plugin::RenderedTrajectory;
 using principia::ksp_plugin::World;
+using principia::quantities::Pow;
 using principia::si::Degree;
 using principia::si::Metre;
 using principia::si::Second;
+using principia::si::Tonne;
 
 namespace {
 
@@ -24,6 +30,14 @@ std::unique_ptr<T> TakeOwnership(T** const pointer) {
   std::unique_ptr<T> owned_pointer(*pointer);
   *pointer = nullptr;
   return owned_pointer;
+}
+
+R3Element<double> ToR3Element(XYZ const& xyz) {
+  return {xyz.x, xyz.y, xyz.z};
+}
+
+XYZ ToXYZ(R3Element<double> const& r3_element) {
+  return {r3_element.x, r3_element.y, r3_element.z};
 }
 
 }  // namespace
@@ -107,12 +121,8 @@ void principia__InsertCelestial(Plugin* const plugin,
       celestial_index,
       gravitational_parameter * SIUnit<GravitationalParameter>(),
       parent_index,
-      Displacement<AliceSun>({from_parent_position.x * Metre,
-                              from_parent_position.y * Metre,
-                              from_parent_position.z * Metre}),
-      Velocity<AliceSun>({from_parent_velocity.x * (Metre / Second),
-                          from_parent_velocity.y * (Metre / Second),
-                          from_parent_velocity.z * (Metre / Second)}));
+      Displacement<AliceSun>(ToR3Element(from_parent_position) * Metre),
+      Velocity<AliceSun>(ToR3Element(from_parent_velocity) * (Metre / Second)));
 }
 
 void principia__UpdateCelestialHierarchy(Plugin const* const plugin,
@@ -138,12 +148,8 @@ void principia__SetVesselStateOffset(Plugin* const plugin,
                                      XYZ const from_parent_velocity) {
   CHECK_NOTNULL(plugin)->SetVesselStateOffset(
       vessel_guid,
-      Displacement<AliceSun>({from_parent_position.x * Metre,
-                              from_parent_position.y * Metre,
-                              from_parent_position.z * Metre}),
-      Velocity<AliceSun>({from_parent_velocity.x * (Metre / Second),
-                          from_parent_velocity.y * (Metre / Second),
-                          from_parent_velocity.z * (Metre / Second)}));
+      Displacement<AliceSun>(ToR3Element(from_parent_position) * Metre),
+      Velocity<AliceSun>(ToR3Element(from_parent_velocity) * (Metre / Second)));
 }
 
 void principia__AdvanceTime(Plugin* const plugin,
@@ -155,38 +161,30 @@ void principia__AdvanceTime(Plugin* const plugin,
 
 XYZ principia__VesselDisplacementFromParent(Plugin const* const plugin,
                                             char const* vessel_guid) {
-  R3Element<Length> const result =
-      CHECK_NOTNULL(plugin)->
-          VesselDisplacementFromParent(vessel_guid).coordinates();
-  return {result.x / Metre, result.y / Metre, result.z / Metre};
+  Displacement<AliceSun> const result =
+      CHECK_NOTNULL(plugin)->VesselDisplacementFromParent(vessel_guid);
+  return ToXYZ(result.coordinates() / Metre);
 }
 
 XYZ principia__VesselParentRelativeVelocity(Plugin const* const plugin,
                                             char const* vessel_guid) {
-  R3Element<Speed> const result =
-      CHECK_NOTNULL(plugin)->
-          VesselParentRelativeVelocity(vessel_guid).coordinates();
-  return {result.x / (Metre / Second),
-          result.y / (Metre / Second),
-          result.z / (Metre / Second)};
+  Velocity<AliceSun> const result =
+      CHECK_NOTNULL(plugin)->VesselParentRelativeVelocity(vessel_guid);
+  return ToXYZ(result.coordinates() / (Metre / Second));
 }
 
 XYZ principia__CelestialDisplacementFromParent(Plugin const* const plugin,
                                                int const celestial_index) {
-  R3Element<Length> const result =
-      CHECK_NOTNULL(plugin)->
-          CelestialDisplacementFromParent(celestial_index).coordinates();
-  return {result.x / Metre, result.y / Metre, result.z / Metre};
+  Displacement<AliceSun> const result =
+      CHECK_NOTNULL(plugin)->CelestialDisplacementFromParent(celestial_index);
+  return ToXYZ(result.coordinates() / Metre);
 }
 
 XYZ principia__CelestialParentRelativeVelocity(Plugin const* const plugin,
                                                int const celestial_index) {
-  R3Element<Speed> const result =
-      CHECK_NOTNULL(plugin)->
-          CelestialParentRelativeVelocity(celestial_index).coordinates();
-  return {result.x / (Metre / Second),
-          result.y / (Metre / Second),
-          result.z / (Metre / Second)};
+  Velocity<AliceSun> const result =
+      CHECK_NOTNULL(plugin)->CelestialParentRelativeVelocity(celestial_index);
+  return ToXYZ(result.coordinates() / (Metre / Second));
 }
 
 BodyCentredNonRotatingFrame const* principia__NewBodyCentredNonRotatingFrame(
@@ -217,9 +215,8 @@ LineAndIterator* principia__RenderedVesselTrajectory(
       RenderedVesselTrajectory(
           vessel_guid,
           *CHECK_NOTNULL(frame),
-          World::origin + Displacement<World>({sun_world_position.x * Metre,
-                                               sun_world_position.y * Metre,
-                                               sun_world_position.z * Metre}));
+          World::origin + Displacement<World>(
+                              ToR3Element(sun_world_position) * Metre));
   std::unique_ptr<LineAndIterator> result =
       std::make_unique<LineAndIterator>(std::move(rendered_trajectory));
   result->it = result->rendered_trajectory.begin();
@@ -236,10 +233,8 @@ XYZSegment principia__FetchAndIncrement(
   CHECK(line_and_iterator->it != line_and_iterator->rendered_trajectory.end());
   LineSegment<World> const result = *line_and_iterator->it;
   ++line_and_iterator->it;
-  R3Element<Length> const begin = (result.begin - World::origin).coordinates();
-  R3Element<Length> const end = (result.end - World::origin).coordinates();
-  return {XYZ{begin.x / Metre, begin.y / Metre, begin.z / Metre},
-          XYZ{end.x / Metre, end.y / Metre, end.z / Metre}};
+  return {ToXYZ((result.begin - World::origin).coordinates() / Metre),
+          ToXYZ((result.end - World::origin).coordinates() / Metre)};
 }
 
 bool principia__AtEnd(LineAndIterator* const line_and_iterator) {
@@ -255,31 +250,67 @@ void principia__DeleteLineAndIterator(
 XYZ principia__VesselWorldPosition(Plugin const* const plugin,
                                    char const* vessel_guid,
                                    XYZ const parent_world_position) {
-  Position<World> result = CHECK_NOTNULL(plugin)->VesselWorldPosition(
+  Position<World> const result = CHECK_NOTNULL(plugin)->VesselWorldPosition(
       vessel_guid,
-      World::origin + Displacement<World>({parent_world_position.x * Metre,
-                                           parent_world_position.y * Metre,
-                                           parent_world_position.z * Metre}));
-  R3Element<Length> const& coordinates = (result - World::origin).coordinates();
-  return XYZ{coordinates.x / Metre,
-             coordinates.y / Metre,
-             coordinates.z / Metre};
+      World::origin + Displacement<World>(
+                          ToR3Element(parent_world_position) * Metre));
+  return ToXYZ((result - World::origin).coordinates() / Metre);
 }
 
 XYZ principia__VesselWorldVelocity(Plugin const* const plugin,
                                    char const* vessel_guid,
                                    XYZ const parent_world_velocity,
                                    double const parent_rotation_period) {
-  Velocity<World> result = CHECK_NOTNULL(plugin)->VesselWorldVelocity(
+  Velocity<World> const result = CHECK_NOTNULL(plugin)->VesselWorldVelocity(
       vessel_guid,
-      Velocity<World>({parent_world_velocity.x * Metre / Second,
-                       parent_world_velocity.y * Metre / Second,
-                       parent_world_velocity.z * Metre / Second}),
+      Velocity<World>(ToR3Element(parent_world_velocity) * (Metre / Second)),
       parent_rotation_period * Second);
-  R3Element<Speed> const& coordinates = result.coordinates();
-  return XYZ{coordinates.x / (Metre / Second),
-             coordinates.y / (Metre / Second),
-             coordinates.z / (Metre / Second)};
+  return ToXYZ(result.coordinates() / (Metre / Second));
+}
+
+void principia__AddVesselToNextPhysicsBubble(Plugin* const plugin,
+                                             char const* vessel_guid,
+                                             KSPPart const* const parts,
+                                             int count) {
+  VLOG(1) << __FUNCTION__ << '\n'
+          << "count: " << count;
+  std::vector<principia::ksp_plugin::IdAndOwnedPart> vessel_parts;
+  vessel_parts.reserve(count);
+  for (KSPPart const* part = parts; part < parts + count; ++part) {
+    vessel_parts.push_back(
+        std::make_pair(
+            part->id,
+            std::make_unique<Part<World>>(
+                DegreesOfFreedom<World>(
+                    World::origin +
+                        Displacement<World>(
+                            ToR3Element(part->world_position) * Metre),
+                    Velocity<World>(
+                        ToR3Element(part->world_velocity) * (Metre / Second))),
+                part->mass * Tonne,
+                Vector<Acceleration, World>(
+                    ToR3Element(
+                        part->gravitational_acceleration_to_be_applied_by_ksp) *
+                    (Metre / Pow<2>(Second))))));
+  }
+  CHECK_NOTNULL(plugin)->AddVesselToNextPhysicsBubble(vessel_guid,
+                                                      std::move(vessel_parts));
+}
+
+XYZ principia__BubbleDisplacementCorrection(Plugin const* const plugin,
+                                            XYZ const sun_position) {
+  Displacement<World> const result =
+      CHECK_NOTNULL(plugin)->BubbleDisplacementCorrection(
+          World::origin + Displacement<World>(
+                              ToR3Element(sun_position) * Metre));
+  return ToXYZ(result.coordinates() / Metre);
+}
+
+XYZ principia__BubbleVelocityCorrection(Plugin const* const plugin,
+                                        int const reference_body_index) {
+  Velocity<World> const result =
+      CHECK_NOTNULL(plugin)->BubbleVelocityCorrection(reference_body_index);
+  return ToXYZ(result.coordinates() / (Metre / Second));
 }
 
 char const* principia__SayHello() {

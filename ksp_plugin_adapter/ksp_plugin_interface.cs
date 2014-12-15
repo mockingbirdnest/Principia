@@ -25,6 +25,15 @@ public partial class PluginAdapter : UnityEngine.MonoBehaviour {
     public XYZ begin, end;
   };
 
+  [StructLayout(LayoutKind.Sequential)]
+  struct KSPPart {
+    public XYZ world_position;
+    public XYZ world_velocity;
+    public double mass;
+    public XYZ gravitational_acceleration_to_be_applied_by_ksp;
+    public uint id;
+  };
+
   // Plugin interface.
 
   [DllImport(dllName           : kDllPath,
@@ -176,18 +185,40 @@ public partial class PluginAdapter : UnityEngine.MonoBehaviour {
              EntryPoint        = "principia__VesselWorldPosition",
              CallingConvention = CallingConvention.Cdecl)]
   private static extern XYZ VesselWorldPosition(
-    IntPtr plugin,
-    [MarshalAs(UnmanagedType.LPStr)] String vessel_guid,
-    XYZ parent_world_position);
+      IntPtr plugin,
+      [MarshalAs(UnmanagedType.LPStr)] String vessel_guid,
+      XYZ parent_world_position);
 
   [DllImport(dllName           : kDllPath,
              EntryPoint        = "principia__VesselWorldVelocity",
              CallingConvention = CallingConvention.Cdecl)]
   private static extern XYZ VesselWorldVelocity(
-    IntPtr plugin,
-    [MarshalAs(UnmanagedType.LPStr)] String vessel_guid,
-    XYZ parent_world_velocity,
-    double parent_rotation_period);
+      IntPtr plugin,
+      [MarshalAs(UnmanagedType.LPStr)] String vessel_guid,
+      XYZ parent_world_velocity,
+      double parent_rotation_period);
+
+  [DllImport(dllName           : kDllPath,
+             EntryPoint        = "principia__AddVesselToNextPhysicsBubble",
+             CallingConvention = CallingConvention.Cdecl)]
+  private static extern void AddVesselToNextPhysicsBubble(
+      IntPtr plugin,
+      [MarshalAs(UnmanagedType.LPStr)] String vessel_guid,
+      KSPPart[] parts,
+      int count);
+
+  [DllImport(dllName           : kDllPath,
+             EntryPoint        = "principia__BubbleDisplacementCorrection",
+             CallingConvention = CallingConvention.Cdecl)]
+  private static extern XYZ BubbleDisplacementCorrection(IntPtr plugin,
+                                                         XYZ sun_position);
+
+  [DllImport(dllName           : kDllPath,
+             EntryPoint        = "principia__BubbleVelocityCorrection",
+             CallingConvention = CallingConvention.Cdecl)]
+  private static extern XYZ BubbleVelocityCorrection(IntPtr plugin,
+                                                     int reference_body_index);
+
 }
 
 }  // namespace ksp_plugin_adapter

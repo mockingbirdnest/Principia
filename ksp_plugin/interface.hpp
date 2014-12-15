@@ -40,6 +40,18 @@ struct XYZSegment {
 static_assert(std::is_standard_layout<XYZSegment>::value,
               "XYZSegment is used for interfacing");
 
+extern "C"
+struct KSPPart {
+  XYZ world_position;
+  XYZ world_velocity;
+  double mass;
+  XYZ gravitational_acceleration_to_be_applied_by_ksp;
+  uint32_t id;
+};
+
+static_assert(std::is_standard_layout<KSPPart>::value,
+              "KSPPart is used for interfacing");
+
 // Sets stderr to log INFO, and redirects stderr, which Unity does not log, to
 // "<KSP directory>/stderr.log".  This provides an easily accessible file
 // containing a sufficiently verbose log of the latest session, instead of
@@ -214,6 +226,20 @@ XYZ CDECL principia__VesselWorldVelocity(Plugin const* const plugin,
                                          char const* vessel_guid,
                                          XYZ const parent_world_velocity,
                                          double const parent_rotation_period);
+
+extern "C" DLLEXPORT
+void CDECL principia__AddVesselToNextPhysicsBubble(Plugin* const plugin,
+                                                   char const* vessel_guid,
+                                                   KSPPart const* const parts,
+                                                   int count);
+
+extern "C" DLLEXPORT
+XYZ CDECL principia__BubbleDisplacementCorrection(Plugin const* const plugin,
+                                                  XYZ const sun_position);
+
+extern "C" DLLEXPORT
+XYZ CDECL principia__BubbleVelocityCorrection(Plugin const* const plugin,
+                                              int const reference_body_index);
 
 // Says hello, convenient for checking that calls to the DLL work.
 extern "C" DLLEXPORT

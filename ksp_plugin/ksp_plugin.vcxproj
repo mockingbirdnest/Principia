@@ -131,6 +131,8 @@
     <ClInclude Include="frames.hpp" />
     <ClInclude Include="mock_plugin.hpp" />
     <ClInclude Include="monostable.hpp" />
+    <ClInclude Include="part.hpp" />
+    <ClInclude Include="part_body.hpp" />
     <ClInclude Include="plugin.hpp" />
     <ClInclude Include="interface.hpp" />
     <ClInclude Include="rendering_frame.hpp" />

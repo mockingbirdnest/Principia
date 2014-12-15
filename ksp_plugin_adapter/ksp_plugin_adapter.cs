@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Runtime.InteropServices;
 
 namespace principia {
@@ -79,6 +80,24 @@ public partial class PluginAdapter : UnityEngine.MonoBehaviour {
     }
   }
 
+  private void ApplyToLoadedVesselsInSpace(VesselProcessor process_vessel) {
+    foreach (Vessel vessel in FlightGlobals.Vessels) {
+      if (!vessel.packed && vessel.loaded) {
+        process_vessel(vessel);
+      }
+    }
+  }
+
+  private bool HavePhysicsBubble() {
+    Vessel active_vessel = FlightGlobals.ActiveVessel;
+    return
+        !active_vessel.packed &&
+        active_vessel.loaded &&
+        (active_vessel.situation == Vessel.Situations.SUB_ORBITAL ||
+         active_vessel.situation == Vessel.Situations.ORBITING ||
+         active_vessel.situation == Vessel.Situations.ESCAPING);
+  }
+
   #region Unity Lifecycle
   // See the Unity manual on execution order for more information on |Start()|,
   // |OnDestroy()| and |FixedUpdate()|.
@@ -105,6 +124,42 @@ public partial class PluginAdapter : UnityEngine.MonoBehaviour {
   private void FixedUpdate() {
     if (PluginRunning()) {
       double universal_time = Planetarium.GetUniversalTime();
+      VesselProcessor add_to_physics_bubble = vessel => {
+        bool inserted = InsertOrKeepVessel(
+            plugin_,
+            vessel.id.ToString(),
+            vessel.orbit.referenceBody.flightGlobalsIndex);
+        if (inserted) {
+          // NOTE(egg): these degrees of freedom are off by one Δt, but they
+          // should never actually be used.
+          // TODO(egg): we shouldn't have to do this.
+          SetVesselStateOffset(plugin_,
+                               vessel.id.ToString(),
+                               (XYZ)vessel.orbit.pos,
+                               (XYZ)vessel.orbit.vel);
+        }
+        Log.Info("vessel has " + vessel.parts.Count() + " parts");
+        Vector3d gravity =
+            FlightGlobals.getGeeForceAtPosition(vessel.findWorldCenterOfMass());
+        Vector3d kraken_velocity = Krakensbane.GetFrameVelocity();
+        KSPPart[] parts =
+            (from part in vessel.parts
+             where part.rb != null  // Physicsless parts have no rigid body.
+             select new KSPPart {
+                 world_position = (XYZ)(Vector3d)part.rb.worldCenterOfMass,
+                 world_velocity = (XYZ)(kraken_velocity + part.rb.velocity),
+                 mass = (double)part.mass + (double)part.GetResourceMass(),
+                 gravitational_acceleration_to_be_applied_by_ksp =
+                     (XYZ)gravity,
+                 id = part.flightID}).ToArray();
+        AddVesselToNextPhysicsBubble(plugin : plugin_,
+                                     vessel_guid : vessel.id.ToString(),
+                                     parts : parts,
+                                     count : parts.Count());
+      };
+      if (HavePhysicsBubble()) {
+        ApplyToLoadedVesselsInSpace(add_to_physics_bubble);
+      }
       AdvanceTime(plugin_, universal_time, Planetarium.InverseRotAngle);
       BodyProcessor update_body = body => {
         UpdateCelestialHierarchy(plugin_,
@@ -172,6 +227,20 @@ public partial class PluginAdapter : UnityEngine.MonoBehaviour {
       };
       ApplyToVesselsInSpace(update_vessel);
       Vessel active_vessel = FlightGlobals.ActiveVessel;
+      if (HavePhysicsBubble()) {
+        Vector3d displacement_offset =
+            (Vector3d)BubbleDisplacementCorrection(
+                          plugin_,
+                          (XYZ)Planetarium.fetch.Sun.position);
+        Vector3d velocity_offset =
+            (Vector3d)BubbleVelocityCorrection(
+                          plugin_,
+                          active_vessel.orbit.referenceBody.flightGlobalsIndex);
+        Krakensbane krakensbane =
+            (Krakensbane)FindObjectOfType(typeof(Krakensbane));
+        krakensbane.setOffset(displacement_offset);
+        krakensbane.FrameVel += velocity_offset;
+      }
       if (MapView.MapIsEnabled && 
               (active_vessel.situation == Vessel.Situations.SUB_ORBITAL ||
                active_vessel.situation == Vessel.Situations.ORBITING ||
