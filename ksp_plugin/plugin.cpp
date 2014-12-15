@@ -40,8 +40,7 @@ Permutation<WorldSun, AliceSun> const kSunLookingGlass(
 
 std::unique_ptr<Vessel> const& Plugin::find_vessel_by_guid_or_die(
     GUID const& vessel_guid) const {
-  VLOG(1) << __FUNCTION__ << '\n'
-          << NAMED(vessel_guid);
+  VLOG(1) << __FUNCTION__ << '\n' << NAMED(vessel_guid);
   auto const it = vessels_.find(vessel_guid);
   CHECK(it != vessels_.end()) << "No vessel with GUID " << vessel_guid;
   VLOG_AND_RETURN(1, it->second);
@@ -134,8 +133,7 @@ void Plugin::CleanUpVessels() {
 }
 
 void Plugin::EvolveHistories(Instant const& t) {
-  VLOG(1) << __FUNCTION__ << '\n'
-          << NAMED(t);
+  VLOG(1) << __FUNCTION__ << '\n' << NAMED(t);
   // Integration with a constant step.
   NBodySystem<Barycentric>::Trajectories trajectories;
   // NOTE(egg): This may be too large, vessels that are not new and in the
@@ -261,8 +259,7 @@ void Plugin::ResetProlongations() {
 }
 
 void Plugin::EvolveProlongationsAndBubble(Instant const& t) {
-  VLOG(1) << __FUNCTION__ << '\n'
-          << NAMED(t);
+  VLOG(1) << __FUNCTION__ << '\n' << NAMED(t);
   NBodySystem<Barycentric>::Trajectories trajectories;
   trajectories.reserve(vessels_.size() + celestials_.size() -
                        number_of_vessels_in_physics_bubble() +
@@ -377,8 +374,7 @@ void Plugin::EndInitialization() {
 
 void Plugin::UpdateCelestialHierarchy(Index const celestial_index,
                                       Index const parent_index) const {
-  VLOG(1) << __FUNCTION__ << '\n'
-          << NAMED(celestial_index) << '\n'
+  VLOG(1) << __FUNCTION__ << '\n' << NAMED(celestial_index) << '\n'
           << NAMED(parent_index);
   CHECK(!initializing);
   auto const it = celestials_.find(celestial_index);
@@ -390,8 +386,7 @@ void Plugin::UpdateCelestialHierarchy(Index const celestial_index,
 
 bool Plugin::InsertOrKeepVessel(GUID const& vessel_guid,
                                 Index const parent_index) {
-  VLOG(1) << __FUNCTION__ << '\n'
-          << NAMED(vessel_guid) << '\n'
+  VLOG(1) << __FUNCTION__ << '\n' << NAMED(vessel_guid) << '\n'
           << NAMED(parent_index);
   CHECK(!initializing);
   auto const it = celestials_.find(parent_index);
@@ -413,10 +408,8 @@ void Plugin::SetVesselStateOffset(
     GUID const& vessel_guid,
     Displacement<AliceSun> const& from_parent_position,
     Velocity<AliceSun> const& from_parent_velocity) {
-  VLOG(1) << __FUNCTION__ << '\n'
-          << NAMED(vessel_guid) << '\n'
-          << NAMED(from_parent_position) << '\n'
-          << NAMED(from_parent_velocity);
+  VLOG(1) << __FUNCTION__ << '\n' << NAMED(vessel_guid) << '\n'
+          << NAMED(from_parent_position) << '\n' << NAMED(from_parent_velocity);
   CHECK(!initializing);
   std::unique_ptr<Vessel> const& vessel =
       find_vessel_by_guid_or_die(vessel_guid);
@@ -444,8 +437,7 @@ void Plugin::SetVesselStateOffset(
 }
 
 void Plugin::AdvanceTime(Instant const& t, Angle const& planetarium_rotation) {
-  VLOG(1) << __FUNCTION__ << '\n'
-          << NAMED(t) << '\n'
+  VLOG(1) << __FUNCTION__ << '\n' << NAMED(t) << '\n'
           << NAMED(planetarium_rotation);
   CHECK(!initializing);
   CHECK_GT(t, current_time_);
@@ -666,8 +658,7 @@ void Plugin::AddVesselToNextPhysicsBubble(
   for (IdAndOwnedPart& id_part : parts) {
     PartId const id = id_part.first;
     std::unique_ptr<Part<World>> const& part = id_part.second;
-    VLOG(1) << "Inserting {id, part}" << '\n'
-            << NAMED(id) << '\n'
+    VLOG(1) << "Inserting {id, part}" << '\n' << NAMED(id) << '\n'
             << NAMED(*part);
     auto const inserted_part =
         next_physics_bubble_->parts.insert(std::move(id_part));
@@ -679,8 +670,7 @@ void Plugin::AddVesselToNextPhysicsBubble(
 
 Displacement<World> Plugin::BubbleDisplacementCorrection(
     Position<World> const& sun_world_position) const {
-  VLOG(1) << __FUNCTION__ << '\n'
-          << NAMED(sun_world_position);
+  VLOG(1) << __FUNCTION__ << '\n' << NAMED(sun_world_position);
   CHECK(has_physics_bubble());
   CHECK(current_physics_bubble_->displacement_correction == nullptr);
   current_physics_bubble_->displacement_correction =
@@ -695,8 +685,7 @@ Displacement<World> Plugin::BubbleDisplacementCorrection(
 
 Velocity<World> Plugin::BubbleVelocityCorrection(
     Index const reference_body_index) const {
-  VLOG(1) << __FUNCTION__ << '\n'
-          << NAMED(reference_body_index);
+  VLOG(1) << __FUNCTION__ << '\n' << NAMED(reference_body_index);
   CHECK(has_physics_bubble());
   CHECK(current_physics_bubble_->velocity_correction == nullptr);
   auto const found = celestials_.find(reference_body_index);
@@ -740,8 +729,7 @@ void Plugin::RestartNextPhysicsBubble() {
 Vector<Acceleration, World> Plugin::IntrinsicAcceleration(
     Instant const& next_time,
     std::vector<std::pair<Part<World>*, Part<World>*>>* const common_parts) {
-  VLOG(1) << __FUNCTION__ << '\n'
-          << NAMED(next_time) << '\n'
+  VLOG(1) << __FUNCTION__ << '\n' << NAMED(next_time) << '\n'
           << NAMED(common_parts);
   CHECK_NOTNULL(common_parts);
   CHECK(common_parts->empty());
@@ -784,8 +772,7 @@ Vector<Acceleration, World> Plugin::IntrinsicAcceleration(
 void Plugin::ShiftBubble(
     std::vector<std::pair<Part<World>*,
                           Part<World>*>> const* const common_parts) {
-  VLOG(1) << __FUNCTION__ << '\n'
-          << NAMED(common_parts);
+  VLOG(1) << __FUNCTION__ << '\n'<< NAMED(common_parts);
   CHECK_NOTNULL(common_parts);
   CHECK(next_physics_bubble_ != nullptr);
   std::vector<DegreesOfFreedom<World>> current_common_degrees_of_freedom;
@@ -873,8 +860,7 @@ void Plugin::ComputeNextPhysicsBubbleVesselOffsets() {
   for (auto const& vessel_parts : next_physics_bubble_->vessels) {
     Vessel const* const vessel = vessel_parts.first;
     std::vector<Part<World>* const> const& parts = vessel_parts.second;
-    VLOG(1) << NAMED(vessel);
-    VLOG(1) << NAMED(parts.size());
+    VLOG(1) << NAMED(vessel) << ", " << NAMED(parts.size());
     std::vector<DegreesOfFreedom<World>> part_degrees_of_freedom;
     std::vector<Mass> part_masses;
     part_degrees_of_freedom.reserve(parts.size());
@@ -895,8 +881,8 @@ void Plugin::ComputeNextPhysicsBubbleVesselOffsets() {
             Identity<World, WorldSun>()(
                 vessel_degrees_of_freedom.velocity -
                 next_physics_bubble_->centre_of_mass->velocity));
-    VLOG(1) << NAMED(displacement_from_centre_of_mass);
-    VLOG(1) << NAMED(velocity_from_centre_of_mass);
+    VLOG(1) << NAMED(displacement_from_centre_of_mass) << ", "
+            << NAMED(velocity_from_centre_of_mass);
     next_physics_bubble_->
         displacements_from_centre_of_mass->emplace(vessel, displacement);
     next_physics_bubble_->
@@ -905,8 +891,7 @@ void Plugin::ComputeNextPhysicsBubbleVesselOffsets() {
 }
 
 void Plugin::PreparePhysicsBubble(Instant const& next_time) {
-  VLOG(1) << __FUNCTION__ << '\n'
-          << NAMED(next_time);
+  VLOG(1) << __FUNCTION__ << '\n' << NAMED(next_time);
   if (next_physics_bubble_ != nullptr) {
     ComputeNextPhysicsBubbleCentreOfMassWorldDegreesOfFreedom();
     ComputeNextPhysicsBubbleVesselOffsets();
