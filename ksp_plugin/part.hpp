@@ -12,7 +12,7 @@ namespace ksp_plugin {
 
 // Corresponds to KSP's |Part.flightID|, *not* to |Part.uid|.  C#'s |uint|
 // corresponds to |uint32_t|.
-using PartID = uint32_t;
+using PartId = uint32_t;
 
 // Represents a KSP part.
 template<typename Frame>

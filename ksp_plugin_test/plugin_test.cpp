@@ -620,7 +620,7 @@ TEST_F(PluginTest, PhysicsBubble) {
   GUID const enterprise_d_saucer = "NCC-1701-D (saucer)";
   auto const make_enterprise_whole_ship = []() {
     return std::make_pair(
-        PartID(0U),
+        PartId(0U),
         std::make_unique<Part<World>>(
             DegreesOfFreedom<World>(
                 World::origin,
@@ -634,7 +634,7 @@ TEST_F(PluginTest, PhysicsBubble) {
   };
   auto const make_enterprise_d_engineering_section = []() {
     return std::make_pair(
-        PartID(1U),
+        PartId(1U),
         std::make_unique<Part<World>>(
             DegreesOfFreedom<World>(
                 World::origin +
@@ -649,7 +649,7 @@ TEST_F(PluginTest, PhysicsBubble) {
   };
   auto const make_enterprise_d_saucer_section = []() {
     return std::make_pair(
-        PartID(2U),
+        PartId(2U),
         std::make_unique<Part<World>>(
             DegreesOfFreedom<World>(
                 World::origin -
@@ -668,7 +668,7 @@ TEST_F(PluginTest, PhysicsBubble) {
   std::size_t expected_number_of_new_off_rails_vessels = 0;
   std::size_t expected_number_of_dirty_old_on_rails_vessels = 0;
   std::size_t expected_number_of_clean_old_vessels = 0;
-  std::vector<IDAndOwnedPart> parts;
+  std::vector<IdAndOwnedPart> parts;
   bool expect_to_have_physics_bubble = true;
   bool expect_intrinsic_acceleration = false;
   InsertVessel(enterprise, &expected_number_of_new_off_rails_vessels);

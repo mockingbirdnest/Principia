@@ -61,8 +61,8 @@ struct LineSegment {
 template<typename Frame>
 using RenderedTrajectory = std::vector<LineSegment<Frame>>;
 
-using PartIDToOwnedPart = std::map<PartID, std::unique_ptr<Part<World>>>;
-using IDAndOwnedPart = PartIDToOwnedPart::value_type;
+using PartIdToOwnedPart = std::map<PartId, std::unique_ptr<Part<World>>>;
+using IdAndOwnedPart = PartIdToOwnedPart::value_type;
 
 class Plugin {
  public:
@@ -223,10 +223,10 @@ class Plugin {
   // Adds the vessel to |dirty_vessels_|.
   // A vessel with GUID |vessel_guid| must have been inserted and kept.  The
   // vessel with GUID |vessel_guid| must not already be in
-  // |next_physics_bubble_->vessels|.  |parts| must not contain a |PartID|
+  // |next_physics_bubble_->vessels|.  |parts| must not contain a |PartId|
   // already in |next_physics_bubble_->parts|.
   void AddVesselToNextPhysicsBubble(GUID const& vessel_guid,
-                                    std::vector<IDAndOwnedPart> parts);
+                                    std::vector<IdAndOwnedPart> parts);
   // Computes and returns |current_physics_bubble_->displacement_correction|.
   // This is the |World| shift to be applied to the physics bubble in order for
   // it to be in the correct position.
@@ -251,7 +251,7 @@ class Plugin {
   // Returns |!dirty_vessels_.empty()|.
   bool has_dirty_vessels() const;
   // Returns |!unsynchronized_vessels_.empty()|.
-  bool has_new_vessels() const;
+  bool has_unsynchronized_vessels() const;
   // Returns |current_physics_bubble_->vessels.size()|, or 0 if
   // |current_physics_bubble_| is null.
   std::size_t number_of_vessels_in_physics_bubble() const;
@@ -276,7 +276,7 @@ class Plugin {
 
   // Utilities for |AdvanceTime|.
 
-  // Remove vessels not in |kept_vessels|, and clears |kept_vessels|.
+  // Remove vessels not in |kept_vessels_|, and clears |kept_vessels_|.
   void CleanUpVessels();
   // Given an iterator to an element of |vessels_|, check that the corresponding
   // |Vessel| |is_initialized()|, and that it is not in
@@ -362,11 +362,11 @@ class Plugin {
   std::set<Vessel* const> dirty_vessels_;
 
   // The vessels that will be kept during the next call to |AdvanceTime|.
-  std::set<Vessel const* const> kept_vessels;
+  std::set<Vessel const* const> kept_vessels_;
 
   struct PhysicsBubble {
     std::map<Vessel* const, std::vector<Part<World>* const>> vessels;
-    PartIDToOwnedPart parts;
+    PartIdToOwnedPart parts;
     // TODO(egg): the following six should be |std::optional| when that
     // becomes a thing.
     std::unique_ptr<DegreesOfFreedom<World>> centre_of_mass;

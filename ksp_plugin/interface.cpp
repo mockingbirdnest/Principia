@@ -10,7 +10,7 @@ using principia::geometry::Displacement;
 using principia::ksp_plugin::AliceSun;
 using principia::ksp_plugin::LineSegment;
 using principia::ksp_plugin::Part;
-using principia::ksp_plugin::PartID;
+using principia::ksp_plugin::PartId;
 using principia::ksp_plugin::RenderedTrajectory;
 using principia::ksp_plugin::World;
 using principia::quantities::Pow;
@@ -274,7 +274,7 @@ void principia__AddVesselToNextPhysicsBubble(Plugin* const plugin,
                                              int count) {
   VLOG(1) << __FUNCTION__ << '\n'
           << "count: " << count;
-  std::vector<principia::ksp_plugin::IDAndOwnedPart> vessel_parts;
+  std::vector<principia::ksp_plugin::IdAndOwnedPart> vessel_parts;
   vessel_parts.reserve(count);
   for (KSPPart const* part = parts; part < parts + count; ++part) {
     vessel_parts.push_back(

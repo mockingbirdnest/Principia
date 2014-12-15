@@ -51,7 +51,7 @@ bool Plugin::has_dirty_vessels() const {
   return !dirty_vessels_.empty();
 }
 
-bool Plugin::has_new_vessels() const {
+bool Plugin::has_unsynchronized_vessels() const {
   return !unsynchronized_vessels_.empty();
 }
 
@@ -115,7 +115,7 @@ void Plugin::CleanUpVessels() {
     CheckVesselInvariants(it);
     Vessel* const vessel = it->second.get();
     // Now do the cleanup.
-    if (kept_vessels.erase(vessel)) {
+    if (kept_vessels_.erase(vessel)) {
       ++it;
     } else {
       LOG(INFO) << "Removing vessel with GUID " << it->first;
@@ -400,7 +400,7 @@ bool Plugin::InsertOrKeepVessel(GUID const& vessel_guid,
   auto inserted = vessels_.emplace(vessel_guid,
                                    std::make_unique<Vessel>(&parent));
   Vessel* const vessel = inserted.first->second.get();
-  kept_vessels.emplace(vessel);
+  kept_vessels_.emplace(vessel);
   vessel->set_parent(&parent);
   LOG_IF(INFO, inserted.second) << "Inserted vessel with GUID " << vessel_guid
                                 << " at " << vessel;
@@ -456,7 +456,7 @@ void Plugin::AdvanceTime(Instant const& t, Angle const& planetarium_rotation) {
     // step and reset the prolongations.
     EvolveHistories(t);
     // TODO(egg): I think |has_physics_bubble()| => |has_dirty_vessels()|.
-    if (has_new_vessels() || has_dirty_vessels() || has_physics_bubble()) {
+    if (has_unsynchronized_vessels() || has_dirty_vessels() || has_physics_bubble()) {
       SynchronizeNewVesselsAndCleanDirtyVessels();
     }
     ResetProlongations();
@@ -645,7 +645,7 @@ Velocity<World> Plugin::VesselWorldVelocity(
 
 void Plugin::AddVesselToNextPhysicsBubble(
     GUID const& vessel_guid,
-    std::vector<IDAndOwnedPart> parts) {
+    std::vector<IdAndOwnedPart> parts) {
   VLOG(1) << __FUNCTION__ << '\n'
           << "vessel_guid: " << vessel_guid << '\n'
           << "parts: " << parts;
@@ -661,8 +661,8 @@ void Plugin::AddVesselToNextPhysicsBubble(
   CHECK(inserted_vessel.second) << vessel_guid;
   std::vector<Part<World>* const>* const vessel_parts =
       &inserted_vessel.first->second;
-  for (IDAndOwnedPart& id_part : parts) {
-    PartID const id = id_part.first;
+  for (IdAndOwnedPart& id_part : parts) {
+    PartId const id = id_part.first;
     std::unique_ptr<Part<World>> const& part = id_part.second;
     VLOG(1) << "Inserting {id, part}" << '\n'
             << "id: " << id << '\n'
@@ -720,7 +720,7 @@ void Plugin::RestartNextPhysicsBubble() {
   vessel_masses.reserve(next_physics_bubble_->vessels.size());
   for (auto const& vessel_parts : next_physics_bubble_->vessels) {
     Vessel const* vessel = vessel_parts.first;
-    std::vector<Part<World>* const> parts = vessel_parts.second;
+    std::vector<Part<World>* const> const& parts = vessel_parts.second;
     vessel_degrees_of_freedom.push_back(
         vessel->prolongation().last().degrees_of_freedom());
     vessel_masses.push_back(Mass());
@@ -753,8 +753,8 @@ Vector<Acceleration, World> Plugin::IntrinsicAcceleration(
             it_in_next_parts = next_physics_bubble_->parts.cbegin();
        it_in_current_parts != current_physics_bubble_->parts.end() &&
        it_in_next_parts != next_physics_bubble_->parts.end();) {
-    PartID current_part_id = it_in_current_parts->first;
-    PartID next_part_id = it_in_next_parts->first;
+    PartId current_part_id = it_in_current_parts->first;
+    PartId next_part_id = it_in_next_parts->first;
     if (current_part_id < next_part_id) {
       ++it_in_current_parts;
     } else if (next_part_id < current_part_id) {
@@ -871,7 +871,7 @@ void Plugin::ComputeNextPhysicsBubbleVesselOffsets() {
           << next_physics_bubble_->vessels.size();
   for (auto const& vessel_parts : next_physics_bubble_->vessels) {
     Vessel const* const vessel = vessel_parts.first;
-    std::vector<Part<World>* const> const parts = vessel_parts.second;
+    std::vector<Part<World>* const> const& parts = vessel_parts.second;
     VLOG(1) << "Vessel: " << vessel;
     VLOG(1) << "Parts in vessel: " << parts.size();
     std::vector<DegreesOfFreedom<World>> part_degrees_of_freedom;
