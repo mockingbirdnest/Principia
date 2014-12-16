@@ -408,9 +408,9 @@ void Plugin::SetVesselStateOffset(
     GUID const& vessel_guid,
     Displacement<AliceSun> const& from_parent_position,
     Velocity<AliceSun> const& from_parent_velocity) {
-  VLOG(1) << __FUNCTION__
-          << '\n' << NAMED(vessel_guid) << '\n' << NAMED(from_parent_position)
-          << '\n' << NAMED(from_parent_velocity);
+  VLOG(1) << __FUNCTION__ << '\n'
+          << NAMED(vessel_guid) << '\n' << NAMED(from_parent_position) << '\n'
+          << NAMED(from_parent_velocity);
   CHECK(!initializing);
   std::unique_ptr<Vessel> const& vessel =
       find_vessel_by_guid_or_die(vessel_guid);
