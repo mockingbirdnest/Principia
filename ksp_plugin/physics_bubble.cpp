@@ -3,6 +3,7 @@
 #include <vector>
 
 #include "base/macros.hpp"
+#include "base/unique_ptr_logging.hpp"
 #include "geometry/barycentre_calculator.hpp"
 #include "geometry/identity.hpp"
 #include "glog/stl_logging.h"
@@ -16,6 +17,31 @@ using principia::quantities::Time;
 
 namespace principia {
 namespace ksp_plugin {
+
+void PhysicsBubble::AddVesselToNextPhysicsBubble(
+    Vessel* vessel,
+    std::vector<IdAndOwnedPart> parts) {
+  VLOG(1) << __FUNCTION__ << '\n' << NAMED(vessel) << '\n' << NAMED(parts);
+  if (next_ == nullptr) {
+    next_ = std::make_unique<State>();
+  }
+  auto const inserted_vessel =
+      next_->vessels.emplace(vessel, std::vector<Part<World>* const>());
+  CHECK(inserted_vessel.second);
+  std::vector<Part<World>* const>* const vessel_parts =
+      &inserted_vessel.first->second;
+  for (IdAndOwnedPart& id_part : parts) {
+    PartId const id = id_part.first;
+    std::unique_ptr<Part<World>> const& part = id_part.second;
+    VLOG(1) << "Inserting {id, part}" << '\n' << NAMED(id) << '\n'
+            << NAMED(*part);
+    auto const inserted_part =
+        next_->parts.insert(std::move(id_part));
+    CHECK(inserted_part.second) << id;
+    VLOG(1) << "Part is at: " << inserted_part.first->second;
+    vessel_parts->push_back(inserted_part.first->second.get());
+  }
+}
 
 void PhysicsBubble::Prepare(PlanetariumRotationXXX const& planetarium_rotation,
                             Instant const& current_time,
@@ -80,6 +106,44 @@ void PhysicsBubble::Prepare(PlanetariumRotationXXX const& planetarium_rotation,
   VLOG_IF(1, current_ != nullptr)
       << "Bubble will be integrated from: "
       << current_->centre_of_mass_trajectory->last().degrees_of_freedom();
+}
+
+Displacement<World> PhysicsBubble::DisplacementCorrection(
+    PlanetariumRotationXXX const& planetarium_rotation,
+    Celestial const& reference_celestial,
+    Position<World> const& reference_celestial_world_position) const {
+  VLOG(1) << __FUNCTION__ << '\n'
+          << NAMED(&reference_celestial) << '\n'
+          << NAMED(reference_celestial_world_position);
+  CHECK(has_physics_bubble());
+  CHECK(current_->displacement_correction == nullptr);
+  current_->displacement_correction =
+      std::make_unique<Displacement<World>>(
+        Identity<WorldSun, World>()(planetarium_rotation(
+            current_->centre_of_mass_trajectory->
+                last().degrees_of_freedom().position -
+            reference_celestial.prolongation().
+                last().degrees_of_freedom().position)) +
+        reference_celestial_world_position - 
+            current_->centre_of_mass->position);
+  VLOG_AND_RETURN(1, *current_->displacement_correction);
+}
+
+Velocity<World> PhysicsBubble::VelocityCorrection(
+    PlanetariumRotationXXX const& planetarium_rotation,
+    Celestial const& reference_celestial) const {
+  VLOG(1) << __FUNCTION__ << '\n' << NAMED(&reference_celestial);
+  CHECK(has_physics_bubble());
+  CHECK(current_->velocity_correction == nullptr);
+  current_->velocity_correction =
+      std::make_unique<Velocity<World>>(
+          Identity<WorldSun, World>()(planetarium_rotation(
+              current_->centre_of_mass_trajectory->
+                  last().degrees_of_freedom().velocity -
+              reference_celestial.prolongation().
+                  last().degrees_of_freedom().velocity)) -
+          current_->centre_of_mass->velocity);
+  VLOG_AND_RETURN(1, *current_->velocity_correction);
 }
 
 void PhysicsBubble::ComputeNextCentreOfMassWorldDegreesOfFreedom() {

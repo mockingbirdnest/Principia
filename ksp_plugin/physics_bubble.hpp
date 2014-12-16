@@ -15,12 +15,28 @@ namespace ksp_plugin {
 
 class PhysicsBubble {
  public:
+  //TODO(phl): Move to some common place.
+  using PartIdToOwnedPart = std::map<PartId, std::unique_ptr<Part<World>>>;
+  using IdAndOwnedPart = PartIdToOwnedPart::value_type;
+  using Index = int;
   using PartCorrespondence = std::pair<Part<World>*, Part<World>*>;
   using PlanetariumRotationXXX = geometry::Rotation<Barycentric, WorldSun>;
 
-  //TODO(phl): Fix \o/ ALL \o/ the comments.
   PhysicsBubble() = default;
   ~PhysicsBubble() = default;
+
+  //TODO(phl): Fix \o/ ALL \o/ the comments.
+  // Creates |next_physics_bubble_| if it is null.  Adds the vessel with GUID
+  // |vessel_guid| to |next_physics_bubble_->vessels| with a list of pointers to
+  // the |Part|s in |parts|.  Merges |parts| into |next_physics_bubble_->parts|.
+  // Adds the vessel to |dirty_vessels_|.
+  // A vessel with GUID |vessel_guid| must have been inserted and kept.  The
+  // vessel with GUID |vessel_guid| must not already be in
+  // |next_physics_bubble_->vessels|.  |parts| must not contain a |PartId|
+  // already in |next_physics_bubble_->parts|.
+  void PhysicsBubble::AddVesselToNextPhysicsBubble(
+      Vessel* vessel,
+      std::vector<IdAndOwnedPart> parts);
 
   // If |next_| is not null, computes the world centre of mass, trajectory
   // (including intrinsic acceleration) of |*next_|. Moves |next_| into
@@ -29,6 +45,17 @@ class PhysicsBubble {
   void Prepare(PlanetariumRotationXXX const& planetarium_rotation,
                Instant const& current_time,
                Instant const& next_time);
+
+  //TODO(phl): Fix \o/ ALL \o/ the comments.
+  Displacement<World> PhysicsBubble::DisplacementCorrection(
+      PlanetariumRotationXXX const& planetarium_rotation,
+      Celestial const& reference_celestial,
+      Position<World> const& reference_celestial_world_position) const;
+
+  //TODO(phl): Fix \o/ ALL \o/ the comments.
+  Velocity<World> PhysicsBubble::VelocityCorrection(
+    PlanetariumRotationXXX const& planetarium_rotation,
+    Celestial const& reference_celestial) const;
 
  private:
   // Computes the world degrees of freedom of the centre of mass of
@@ -63,8 +90,6 @@ class PhysicsBubble {
   void Shift(PlanetariumRotationXXX const& planetarium_rotation,
              Instant const& current_time,
              std::vector<PartCorrespondence> const* const common_parts);
-
-  using PartIdToOwnedPart = std::map<PartId, std::unique_ptr<Part<World>>>;
 
   struct State {
     std::map<Vessel* const, std::vector<Part<World>* const>> vessels;
