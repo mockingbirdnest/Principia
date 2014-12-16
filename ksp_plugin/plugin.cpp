@@ -769,8 +769,7 @@ Vector<Acceleration, World> Plugin::IntrinsicAcceleration(
 }
 
 void Plugin::ShiftBubble(
-    std::vector<std::pair<Part<World>*,
-                          Part<World>*>> const* const common_parts) {
+    std::vector<PartCorrespondence> const* const common_parts) {
   VLOG(1) << __FUNCTION__ << '\n'<< NAMED(common_parts);
   CHECK_NOTNULL(common_parts);
   CHECK(next_physics_bubble_ != nullptr);
