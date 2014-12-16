@@ -18,6 +18,7 @@ namespace principia {
 namespace ksp_plugin {
 
 void PhysicsBubble::Prepare(PlanetariumRotationXXX const& planetarium_rotation,
+                            Instant const& current_time,
                             Instant const& next_time) {
   VLOG(1) << __FUNCTION__ << '\n' << NAMED(next_time);
   if (next_ != nullptr) {
@@ -25,7 +26,7 @@ void PhysicsBubble::Prepare(PlanetariumRotationXXX const& planetarium_rotation,
     ComputeNextVesselOffsets(planetarium_rotation);
     if (current_ == nullptr) {
       // There was no physics bubble.
-      RestartNext();
+      RestartNext(current_time);
     } else {
       // The IDs of the parts that are both in the current and in the next
       // physics bubble.
@@ -33,11 +34,11 @@ void PhysicsBubble::Prepare(PlanetariumRotationXXX const& planetarium_rotation,
           std::make_unique<
               std::vector<std::pair<Part<World>*, Part<World>*>>>();
       Vector<Acceleration, World> const intrinsic_acceleration =
-          IntrinsicAcceleration(next_time, common_parts.get());
+          IntrinsicAcceleration(current_time, next_time, common_parts.get());
       if (common_parts->empty()) {
         // The current and next set of parts are disjoint, i.e., the next
         // physics bubble is unrelated to the current one.
-        RestartNext();
+        RestartNext(current_time);
       } else {
         if (common_parts->size() == next_->parts.size() &&
             common_parts->size() == current_->parts.size()) {
@@ -51,7 +52,7 @@ void PhysicsBubble::Prepare(PlanetariumRotationXXX const& planetarium_rotation,
           // intersection is nonempty.  We fix the degrees of freedom of the
           // centre of mass of the intersection, and we use its measured
           // acceleration as the intrinsic acceleration of the |bubble_body_|.
-          Shift(planetarium_rotation, common_parts.get());
+          Shift(planetarium_rotation, current_time, common_parts.get());
         }
         // Correct since |World| is currently nonrotating.
         Vector<Acceleration, Barycentric> barycentric_intrinsic_acceleration =
@@ -144,7 +145,7 @@ void PhysicsBubble::ComputeNextVesselOffsets(
         velocity_from_centre_of_mass);
   }}
 
-void PhysicsBubble::RestartNext() {
+void PhysicsBubble::RestartNext(Instant const& current_time) {
   VLOG(1) << __FUNCTION__;
   CHECK(next_ != nullptr);
   std::vector<DegreesOfFreedom<Barycentric>> vessel_degrees_of_freedom;
@@ -164,11 +165,12 @@ void PhysicsBubble::RestartNext() {
   next_->centre_of_mass_trajectory =
       std::make_unique<Trajectory<Barycentric>>(bubble_body_);
   next_->centre_of_mass_trajectory->Append(
-      current_time_,
+      current_time,
       physics::Barycentre(vessel_degrees_of_freedom, vessel_masses));
 }
 
 Vector<Acceleration, World> PhysicsBubble::IntrinsicAcceleration(
+    Instant const& current_time,
     Instant const& next_time,
     std::vector<PartCorrespondence>* const common_parts) {
   VLOG(1) << __FUNCTION__ << '\n'
@@ -180,7 +182,7 @@ Vector<Acceleration, World> PhysicsBubble::IntrinsicAcceleration(
   common_parts->reserve(current_->parts.size());
   BarycentreCalculator<Vector<Acceleration, World>, Mass>
       acceleration_calculator;
-  Time const δt = next_time - current_time_;
+  Time const δt = next_time - current_time;
   for (auto it_in_current_parts = current_->parts.cbegin(),
             it_in_next_parts = next_->parts.cbegin();
        it_in_current_parts != current_->parts.end() &&
@@ -213,6 +215,7 @@ Vector<Acceleration, World> PhysicsBubble::IntrinsicAcceleration(
 
 void PhysicsBubble::Shift(
     PlanetariumRotationXXX const& planetarium_rotation,
+    Instant const& current_time,
     std::vector<PartCorrespondence> const* const common_parts) {
   VLOG(1) << __FUNCTION__ << '\n'<< NAMED(common_parts);
   CHECK_NOTNULL(common_parts);
@@ -261,7 +264,7 @@ void PhysicsBubble::Shift(
   // velocities too since we assume |World| is currently nonrotating, i.e.,
   // it is stationary with respect to |WorldSun|.
   next_->centre_of_mass_trajectory->Append(
-      current_time_,
+      current_time,
       {current_centre_of_mass.position +
            planetarium_rotation.Inverse()(
                Identity<World, WorldSun>()(position_change)),

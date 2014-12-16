@@ -26,8 +26,10 @@ class PhysicsBubble {
   // trajectory (including intrinsic acceleration) of |*next_physics_bubble_|.
   // Moves |next_physics_bubble_| into |current_physics_bubble_|.
   void Prepare(PlanetariumRotationXXX const& planetarium_rotation,
+               Instant const& current_time,
                Instant const& next_time);
 
+ private:
   // Computes the world degrees of freedom of the centre of mass of
   // |next_physics_bubble_| using the contents of |next_physics_bubble_->parts|.
   // |next_physics_bubble_| must not be null.
@@ -43,7 +45,7 @@ class PhysicsBubble {
   // the barycentre of the degrees of freedom of the vessels in
   // |next_physics_bubble_->vessels|.  There is no intrinsic acceleration.
   // |next_physics_bubble_| must not be null.
-  void RestartNext();
+  void RestartNext(Instant const& current_time);
 
   // Returns the intrinsic acceleration measured on the parts that are common to
   // the current and next physics bubbles.  Stores a pair of pointers to parts
@@ -52,6 +54,7 @@ class PhysicsBubble {
   // |common_parts| must not be null.  |*common_parts| must be empty.  No
   // transfer of ownership.
   Vector<Acceleration, World> IntrinsicAcceleration(
+      Instant const& current_time,
       Instant const& next_time,
       std::vector<PartCorrespondence>* const common_parts);
 
@@ -62,9 +65,9 @@ class PhysicsBubble {
   // |common_parts| must not be null.  |next_physics_bubble_| must not be null.
   // No transfer of ownership.
   void Shift(PlanetariumRotationXXX const& planetarium_rotation,
+             Instant const& current_time,
              std::vector<PartCorrespondence> const* const common_parts);
 
- private:
   using PartIdToOwnedPart = std::map<PartId, std::unique_ptr<Part<World>>>;
 
   struct State {
