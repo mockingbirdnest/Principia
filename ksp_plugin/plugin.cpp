@@ -374,8 +374,8 @@ void Plugin::EndInitialization() {
 
 void Plugin::UpdateCelestialHierarchy(Index const celestial_index,
                                       Index const parent_index) const {
-  VLOG(1) << __FUNCTION__ << '\n' << NAMED(celestial_index) << '\n'
-          << NAMED(parent_index);
+  VLOG(1) << __FUNCTION__ << '\n'
+          << NAMED(celestial_index) << '\n' << NAMED(parent_index);
   CHECK(!initializing);
   auto const it = celestials_.find(celestial_index);
   CHECK(it != celestials_.end()) << "No body at index " << celestial_index;
@@ -386,8 +386,8 @@ void Plugin::UpdateCelestialHierarchy(Index const celestial_index,
 
 bool Plugin::InsertOrKeepVessel(GUID const& vessel_guid,
                                 Index const parent_index) {
-  VLOG(1) << __FUNCTION__ << '\n' << NAMED(vessel_guid) << '\n'
-          << NAMED(parent_index);
+  VLOG(1) << __FUNCTION__ << '\n'
+          << NAMED(vessel_guid) << '\n' << NAMED(parent_index);
   CHECK(!initializing);
   auto const it = celestials_.find(parent_index);
   CHECK(it != celestials_.end()) << "No body at index " << parent_index;
@@ -408,8 +408,9 @@ void Plugin::SetVesselStateOffset(
     GUID const& vessel_guid,
     Displacement<AliceSun> const& from_parent_position,
     Velocity<AliceSun> const& from_parent_velocity) {
-  VLOG(1) << __FUNCTION__ << '\n' << NAMED(vessel_guid) << '\n'
-          << NAMED(from_parent_position) << '\n' << NAMED(from_parent_velocity);
+  VLOG(1) << __FUNCTION__
+          << '\n' << NAMED(vessel_guid) << '\n' << NAMED(from_parent_position)
+          << '\n' << NAMED(from_parent_velocity);
   CHECK(!initializing);
   std::unique_ptr<Vessel> const& vessel =
       find_vessel_by_guid_or_die(vessel_guid);
@@ -437,8 +438,8 @@ void Plugin::SetVesselStateOffset(
 }
 
 void Plugin::AdvanceTime(Instant const& t, Angle const& planetarium_rotation) {
-  VLOG(1) << __FUNCTION__ << '\n' << NAMED(t) << '\n'
-          << NAMED(planetarium_rotation);
+  VLOG(1) << __FUNCTION__ << '\n'
+          << NAMED(t) << '\n' << NAMED(planetarium_rotation);
   CHECK(!initializing);
   CHECK_GT(t, current_time_);
   CleanUpVessels();
@@ -640,9 +641,7 @@ Velocity<World> Plugin::VesselWorldVelocity(
 void Plugin::AddVesselToNextPhysicsBubble(
     GUID const& vessel_guid,
     std::vector<IdAndOwnedPart> parts) {
-  VLOG(1) << __FUNCTION__ << '\n'
-          << "vessel_guid: " << vessel_guid << '\n'
-          << "parts: " << parts;
+  VLOG(1) << __FUNCTION__ << '\n' << NAMED(vessel_guid) << '\n' << NAMED(parts);
   if (next_physics_bubble_ == nullptr) {
     next_physics_bubble_ = std::make_unique<PhysicsBubble>();
   }
@@ -729,8 +728,8 @@ void Plugin::RestartNextPhysicsBubble() {
 Vector<Acceleration, World> Plugin::IntrinsicAcceleration(
     Instant const& next_time,
     std::vector<std::pair<Part<World>*, Part<World>*>>* const common_parts) {
-  VLOG(1) << __FUNCTION__ << '\n' << NAMED(next_time) << '\n'
-          << NAMED(common_parts);
+  VLOG(1) << __FUNCTION__ << '\n'
+          << NAMED(next_time) << '\n' << NAMED(common_parts);
   CHECK_NOTNULL(common_parts);
   CHECK(common_parts->empty());
   CHECK(current_physics_bubble_->velocity_correction != nullptr);
