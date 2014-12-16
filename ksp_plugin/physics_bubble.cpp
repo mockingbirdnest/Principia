@@ -1,21 +1,28 @@
-#include "ksp_plugin/physics_bubble.hpp"
+﻿#include "ksp_plugin/physics_bubble.hpp"
 
 #include <vector>
 
+#include "base/macros.hpp"
+#include "geometry/barycentre_calculator.hpp"
 #include "geometry/identity.hpp"
+#include "glog/stl_logging.h"
 #include "ksp_plugin/frames.hpp"
 #include "physics/degrees_of_freedom.hpp"
+#include "quantities/quantities.hpp"
 
+using principia::geometry::BarycentreCalculator;
 using principia::geometry::Identity;
+using principia::quantities::Time;
 
 namespace principia {
 namespace ksp_plugin {
 
-void PhysicsBubble::Prepare(Instant const& next_time) {
+void PhysicsBubble::Prepare(PlanetariumRotationXXX const& planetarium_rotation,
+                            Instant const& next_time) {
   VLOG(1) << __FUNCTION__ << '\n' << NAMED(next_time);
   if (next_ != nullptr) {
     ComputeNextCentreOfMassWorldDegreesOfFreedom();
-    ComputeNextVesselOffsets();
+    ComputeNextVesselOffsets(planetarium_rotation);
     if (current_ == nullptr) {
       // There was no physics bubble.
       RestartNext();
@@ -44,11 +51,11 @@ void PhysicsBubble::Prepare(Instant const& next_time) {
           // intersection is nonempty.  We fix the degrees of freedom of the
           // centre of mass of the intersection, and we use its measured
           // acceleration as the intrinsic acceleration of the |bubble_body_|.
-          Shift(common_parts.get());
+          Shift(planetarium_rotation, common_parts.get());
         }
         // Correct since |World| is currently nonrotating.
         Vector<Acceleration, Barycentric> barycentric_intrinsic_acceleration =
-            PlanetariumRotation().Inverse()(
+            planetarium_rotation.Inverse()(
                 Identity<World, WorldSun>()(intrinsic_acceleration));
         VLOG(1) << NAMED(barycentric_intrinsic_acceleration);
         if (next_->centre_of_mass_trajectory->
@@ -92,7 +99,8 @@ void PhysicsBubble::ComputeNextCentreOfMassWorldDegreesOfFreedom() {
   VLOG(1) << NAMED(*next_->centre_of_mass);
 }
 
-void PhysicsBubble::ComputeNextVesselOffsets() {
+void PhysicsBubble::ComputeNextVesselOffsets(
+    PlanetariumRotationXXX const& planetarium_rotation) {
   VLOG(1) << __FUNCTION__;
   CHECK(next_ != nullptr);
   next_->displacements_from_centre_of_mass =
@@ -117,12 +125,12 @@ void PhysicsBubble::ComputeNextVesselOffsets() {
     DegreesOfFreedom<World> const vessel_degrees_of_freedom =
         physics::Barycentre(part_degrees_of_freedom, part_masses);
     Displacement<Barycentric> const displacement_from_centre_of_mass =
-        PlanetariumRotation().Inverse()(
+        planetarium_rotation.Inverse()(
             Identity<World, WorldSun>()(
                 vessel_degrees_of_freedom.position -
                 next_->centre_of_mass->position));
     Velocity<Barycentric> const velocity_from_centre_of_mass =
-        PlanetariumRotation().Inverse()(
+        planetarium_rotation.Inverse()(
             Identity<World, WorldSun>()(
                 vessel_degrees_of_freedom.velocity -
                 next_->centre_of_mass->velocity));
@@ -160,7 +168,51 @@ void PhysicsBubble::RestartNext() {
       physics::Barycentre(vessel_degrees_of_freedom, vessel_masses));
 }
 
+Vector<Acceleration, World> PhysicsBubble::IntrinsicAcceleration(
+    Instant const& next_time,
+    std::vector<PartCorrespondence>* const common_parts) {
+  VLOG(1) << __FUNCTION__ << '\n'
+          << NAMED(next_time) << '\n' << NAMED(common_parts);
+  CHECK_NOTNULL(common_parts);
+  CHECK(common_parts->empty());
+  CHECK(current_->velocity_correction != nullptr);
+  // Most of the time no parts explode.  We reserve accordingly.
+  common_parts->reserve(current_->parts.size());
+  BarycentreCalculator<Vector<Acceleration, World>, Mass>
+      acceleration_calculator;
+  Time const δt = next_time - current_time_;
+  for (auto it_in_current_parts = current_->parts.cbegin(),
+            it_in_next_parts = next_->parts.cbegin();
+       it_in_current_parts != current_->parts.end() &&
+       it_in_next_parts != next_->parts.end();) {
+    PartId current_part_id = it_in_current_parts->first;
+    PartId next_part_id = it_in_next_parts->first;
+    if (current_part_id < next_part_id) {
+      ++it_in_current_parts;
+    } else if (next_part_id < current_part_id) {
+      ++it_in_next_parts;
+    } else {
+      std::unique_ptr<Part<World>> const& current_part =
+          it_in_current_parts->second;
+      std::unique_ptr<Part<World>> const& next_part = it_in_next_parts->second;
+      common_parts->emplace_back(current_part.get(), next_part.get());
+      acceleration_calculator.Add(
+          (next_part->degrees_of_freedom.velocity -
+           (current_part->degrees_of_freedom.velocity +
+            *current_->velocity_correction)) / δt -
+          current_part->gravitational_acceleration_to_be_applied_by_ksp,
+          // TODO(egg): not sure what we actually want to do here.
+          (next_part->mass + current_part->mass) / 2.0);
+      ++it_in_current_parts;
+      ++it_in_next_parts;
+    }
+  }
+  VLOG(1) << NAMED(*common_parts);
+  VLOG_AND_RETURN(1, acceleration_calculator.Get());
+}
+
 void PhysicsBubble::Shift(
+    PlanetariumRotationXXX const& planetarium_rotation,
     std::vector<PartCorrespondence> const* const common_parts) {
   VLOG(1) << __FUNCTION__ << '\n'<< NAMED(common_parts);
   CHECK_NOTNULL(common_parts);
@@ -211,10 +263,10 @@ void PhysicsBubble::Shift(
   next_->centre_of_mass_trajectory->Append(
       current_time_,
       {current_centre_of_mass.position +
-           PlanetariumRotation().Inverse()(
+           planetarium_rotation.Inverse()(
                Identity<World, WorldSun>()(position_change)),
        current_centre_of_mass.velocity +
-           PlanetariumRotation().Inverse()(
+           planetarium_rotation.Inverse()(
                Identity<World, WorldSun>()(velocity_change))});
 }
 
