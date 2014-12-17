@@ -295,7 +295,6 @@ public partial class PluginAdapter : UnityEngine.MonoBehaviour {
           Vector.DrawLine(rendered_trajectory_);
         }
       }
-      LogALot();
     }
   }
 
@@ -344,6 +343,10 @@ public partial class PluginAdapter : UnityEngine.MonoBehaviour {
     foreach (CelestialBody celestial in FlightGlobals.Bodies) {
       bool changed_reference_frame = false;
       UnityEngine.GUILayout.BeginHorizontal();
+      UnityEngine.GUILayout.Label(
+          text : first_selected_celestial_ ==
+                     second_selected_celestial_ ? "Rotating" : "Nonrotating");
+      UnityEngine.GUILayout.Label(text : "Fixed bodies:");
       if (UnityEngine.GUILayout.Toggle(
               value : first_selected_celestial_ == celestial.flightGlobalsIndex,
               text  : "") &&
@@ -352,7 +355,8 @@ public partial class PluginAdapter : UnityEngine.MonoBehaviour {
         changed_reference_frame = true;
       }
       if (UnityEngine.GUILayout.Toggle(
-              value : second_selected_celestial_ == celestial.flightGlobalsIndex,
+              value : second_selected_celestial_ ==
+                          celestial.flightGlobalsIndex,
               text  : celestial.name) &&
           second_selected_celestial_ != celestial.flightGlobalsIndex) {
         second_selected_celestial_ = celestial.flightGlobalsIndex;
@@ -373,152 +377,10 @@ public partial class PluginAdapter : UnityEngine.MonoBehaviour {
         }
       }
     }
-    if (PluginRunning()) {
-      Vessel active_vessel = FlightGlobals.ActiveVessel;
-      UnityEngine.GUILayout.TextArea(
-          "+ Kraken : " +
-          (((Vector3d)active_vessel.rb_velocity) +
-           Krakensbane.GetFrameVelocity()));
-      UnityEngine.GUILayout.TextArea(
-          "+ Kraken + getRFrmVel: " +
-          (((Vector3d)active_vessel.rb_velocity) +
-           Krakensbane.GetFrameVelocity() + 
-           active_vessel.orbit.referenceBody.getRFrmVel(
-               active_vessel.CoM)));
-      UnityEngine.GUILayout.TextArea(
-          "Principia \"world\", rotating : " +
-          (Vector3d)VesselWorldVelocity(
-              plugin_,
-              active_vessel.id.ToString(),
-              new XYZ{x = 0, y = 0, z = 0},
-              active_vessel.orbit.referenceBody.rotationPeriod));
-      UnityEngine.GUILayout.TextArea(
-          "Principia \"world\", no rotation : " +
-          (Vector3d)VesselWorldVelocity(
-              plugin_,
-              active_vessel.id.ToString(),
-              new XYZ{x = 0, y = 0, z = 0},
-              double.PositiveInfinity));
-      UnityEngine.GUILayout.TextArea(
-          "Principia \"world\", expected : " +
-          (Vector3d)VesselWorldVelocity(
-              plugin_,
-              active_vessel.id.ToString(),
-              new XYZ{x = 0, y = 0, z = 0},
-              Planetarium.FrameIsRotating()
-                  ? active_vessel.orbit.referenceBody.rotationPeriod
-                  : double.PositiveInfinity));
-      UnityEngine.GUILayout.TextArea(
-          "GetVel : " +
-          (Vector3d)active_vessel.orbit.GetVel());
-      UnityEngine.GUILayout.TextArea(
-          "Root part @ CoM world velocity + Kraken: " +
-          (Vector3d)
-              (active_vessel.rootPart.rb.GetPointVelocity(
-                   (Vector3d)active_vessel.findWorldCenterOfMass()) +
-               Krakensbane.GetFrameVelocity()));
-      UnityEngine.GUILayout.TextArea(
-          "CoM : " +
-          ((Vector3d)active_vessel.CoM));
-      UnityEngine.GUILayout.TextArea(
-          "found CoM world position : " +
-          ((Vector3d)active_vessel.findWorldCenterOfMass()));
-      UnityEngine.GUILayout.TextArea(
-          "Principia world : " +
-          (Vector3d)VesselWorldPosition(
-              plugin_,
-              active_vessel.id.ToString(),
-              (XYZ)active_vessel.orbit.referenceBody.position));
-    }
     UnityEngine.GUILayout.EndVertical();
     UnityEngine.GUI.DragWindow(
         position : new UnityEngine.Rect(left : 0f, top : 0f, width : 10000f,
                                         height : 20f));
-  }
-
-  private void LogALot() {
-    Vessel active_vessel = FlightGlobals.ActiveVessel;
-    if (active_vessel.orbit.referenceBody == Planetarium.fetch.Sun) {
-      return;
-    }
-    Log.Info("UT : " + Planetarium.GetUniversalTime());
-    Log.Info(
-        "Principia world position : " +
-        (Vector3d)VesselWorldPosition(
-            plugin_,
-            active_vessel.id.ToString(),
-            (XYZ)active_vessel.orbit.referenceBody.position));
-    Log.Info(
-        "Principia world velocity (rotating) : " +
-        (Vector3d)VesselWorldVelocity(
-            plugin_,
-            active_vessel.id.ToString(),
-            new XYZ{x = 0, y = 0, z = 0},
-            active_vessel.orbit.referenceBody.rotationPeriod));
-    Log.Info(
-        "Principia world velocity (no rotation) : " +
-        (Vector3d)VesselWorldVelocity(
-            plugin_,
-            active_vessel.id.ToString(),
-            new XYZ{x = 0, y = 0, z = 0},
-            double.PositiveInfinity));
-    Log.Info("reference body position : " +
-             active_vessel.orbit.referenceBody.position);
-    Log.Info("reference body GetVel : " +
-             active_vessel.orbit.referenceBody.orbit.GetVel());
-    Log.Info("active vessel found world CoM (32) : " +
-             (Vector3d)active_vessel.findWorldCenterOfMass());
-    Log.Info("Root part at found world CoM world velocity (32) : " +
-             (Vector3d)active_vessel.rootPart.rb.GetPointVelocity(
-                 (Vector3d)active_vessel.findWorldCenterOfMass()));
-    Log.Info("active vessel orbit.pos : " + active_vessel.orbit.pos);
-    Log.Info("active vessel orbit.vel : " + active_vessel.orbit.vel);
-    Log.Info("active vessel GetVel : " + active_vessel.orbit.GetVel());
-    Log.Info("Principia orbit.pos : " + 
-             (Vector3d)VesselDisplacementFromParent(
-                 plugin_,
-                 active_vessel.id.ToString()));
-    Log.Info("Principia orbit.vel : " + 
-             (Vector3d)VesselParentRelativeVelocity(
-                 plugin_,
-                 active_vessel.id.ToString()));
-    Log.Info("Kraken : " + Krakensbane.GetFrameVelocity());
-    Log.Info("Root rb velocity (32) : " +
-             (Vector3d)active_vessel.rootPart.rb.velocity);
-    Log.Info("Root part partTransform.position (32) : " +
-             (Vector3d)active_vessel.rootPart.partTransform.position);
-    Log.Info("Measured orbit.pos : " + active_vessel.orbit.pos);
-    Log.Info("Measured orbit.vel : " + active_vessel.orbit.vel);
-    Log.Info("reference body reference body position : " +
-             active_vessel.orbit.referenceBody.referenceBody.position);
-    Log.Info("reference body Principia orbit.pos : " +
-             (Vector3d)CelestialDisplacementFromParent(
-                 plugin_,
-                 active_vessel.orbit.referenceBody.flightGlobalsIndex));
-    Log.Info("reference body Principia orbit.vel : " +
-             (Vector3d)CelestialParentRelativeVelocity(
-                 plugin_,
-                 active_vessel.orbit.referenceBody.flightGlobalsIndex));
-    Log.Info("reference body measured orbit.pos : " +
-             active_vessel.orbit.referenceBody.orbit.pos);
-    Log.Info("reference body measured orbit.vel : " +
-             active_vessel.orbit.referenceBody.orbit.vel);
-    Log.Info("Duna position : " +
-             FlightGlobals.Bodies[6].position);
-    Log.Info("Ike Principia orbit.pos : " +
-             (Vector3d)CelestialDisplacementFromParent(
-                 plugin_,
-                 FlightGlobals.Bodies[7].flightGlobalsIndex));
-    Log.Info("Ike Principia orbit.vel : " +
-             (Vector3d)CelestialParentRelativeVelocity(
-                 plugin_,
-                 FlightGlobals.Bodies[7].flightGlobalsIndex));
-    Log.Info("Ike measured orbit.pos : " +
-             FlightGlobals.Bodies[7].orbit.pos);
-    Log.Info("Ike measured orbit.vel : " +
-             FlightGlobals.Bodies[7].orbit.vel);
-    Log.Info("Ike position : " +
-             FlightGlobals.Bodies[7].position);
   }
 
   private void InitializePlugin() {
