@@ -87,6 +87,7 @@ std::unique_ptr<SolarSystem> SolarSystem::AtСпутник1Launch(
   // of Простейший Спутник-1.
   Instant const kСпутник1LaunchTime = JulianDate(2436116.3115);
 
+  // Can't use make_unique here.
   std::unique_ptr<SolarSystem> solar_system(new SolarSystem(accuracy));
 
   // All data is from the Jet Propulsion Laboratory's HORIZONS system.
@@ -513,6 +514,7 @@ std::unique_ptr<SolarSystem> SolarSystem::AtСпутник2Launch(
   // launch of Простейший Спутник-2.
   Instant const kСпутник2LaunchTime = JulianDate(2436145.60417);
 
+  // Can't use make_unique here.
   std::unique_ptr<SolarSystem> solar_system(new SolarSystem(accuracy));
 
   // All data is from the Jet Propulsion Laboratory's HORIZONS system.
