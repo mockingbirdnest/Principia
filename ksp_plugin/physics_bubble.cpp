@@ -115,7 +115,7 @@ Displacement<World> PhysicsBubble::DisplacementCorrection(
   VLOG(1) << __FUNCTION__ << '\n'
           << NAMED(&reference_celestial) << '\n'
           << NAMED(reference_celestial_world_position);
-  CHECK(has_physics_bubble());
+  CHECK(!empty());
   CHECK(current_->displacement_correction == nullptr);
   current_->displacement_correction =
       std::make_unique<Displacement<World>>(
@@ -133,7 +133,7 @@ Velocity<World> PhysicsBubble::VelocityCorrection(
     PlanetariumRotationXXX const& planetarium_rotation,
     Celestial const& reference_celestial) const {
   VLOG(1) << __FUNCTION__ << '\n' << NAMED(&reference_celestial);
-  CHECK(has_physics_bubble());
+  CHECK(!empty());
   CHECK(current_->velocity_correction == nullptr);
   current_->velocity_correction =
       std::make_unique<Velocity<World>>(
@@ -144,6 +144,61 @@ Velocity<World> PhysicsBubble::VelocityCorrection(
                   last().degrees_of_freedom().velocity)) -
           current_->centre_of_mass->velocity);
   VLOG_AND_RETURN(1, *current_->velocity_correction);
+}
+
+bool PhysicsBubble::empty() const {
+  return current_ == nullptr;
+}
+
+std::size_t PhysicsBubble::size() const {
+  return empty() ? 0 : 1;
+}
+
+std::size_t PhysicsBubble::number_of_vessels() const {
+  if (empty()) {
+    return 0;
+  } else {
+    return current_->vessels.size();
+  }
+}
+
+bool PhysicsBubble::is_in_physics_bubble(Vessel* const vessel) const {
+  return !empty() &&
+         current_->vessels.find(vessel) != current_->vessels.end();
+}
+
+std::vector<Vessel const*> PhysicsBubble::vessels() const {
+  CHECK(!empty());
+  std::vector<Vessel const*> vessels;
+  for (auto const& pair : current_->vessels) {
+    Vessel* const vessel = pair.first;
+    vessels.push_back(vessel);
+  }
+  return vessels;
+}
+
+Displacement<Barycentric> const&
+PhysicsBubble::displacements_from_centre_of_mass(Vessel* const vessel) const {
+  CHECK(!empty());
+  CHECK(current_->displacements_from_centre_of_mass != nullptr);
+  auto const it = current_->displacements_from_centre_of_mass->find(vessel);
+  CHECK(it != current_->displacements_from_centre_of_mass->end());
+  return it->second;
+}
+
+Velocity<Barycentric> const&
+PhysicsBubble::velocities_from_centre_of_mass(Vessel* const vessel) const {
+  CHECK(!empty());
+  CHECK(current_->velocities_from_centre_of_mass != nullptr);
+  auto const it = current_->velocities_from_centre_of_mass->find(vessel);
+  CHECK(it != current_->velocities_from_centre_of_mass->end());
+  return it->second;
+}
+
+Trajectory<Barycentric> const&
+PhysicsBubble::centre_of_mass_trajectory() const {
+  CHECK(!empty());
+  return *current_->centre_of_mass_trajectory;
 }
 
 void PhysicsBubble::ComputeNextCentreOfMassWorldDegreesOfFreedom() {

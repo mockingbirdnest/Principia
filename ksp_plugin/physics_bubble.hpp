@@ -54,10 +54,37 @@ class PhysicsBubble {
 
   //TODO(phl): Fix \o/ ALL \o/ the comments.
   Velocity<World> PhysicsBubble::VelocityCorrection(
-    PlanetariumRotationXXX const& planetarium_rotation,
-    Celestial const& reference_celestial) const;
+      PlanetariumRotationXXX const& planetarium_rotation,
+      Celestial const& reference_celestial) const;
 
- private:
+  //TODO(phl): Fix \o/ ALL \o/ the comments.
+  // Returns |current_physics_bubble_ != nullptr|.
+  bool empty() const;
+
+  //TODO(phl): Fix \o/ ALL \o/ the comments.
+  // Returns 1 if |has_physics_bubble()|, 0 otherwise.
+  std::size_t size() const;
+
+  //TODO(phl): Fix \o/ ALL \o/ the comments.
+  // Returns |current_physics_bubble_->vessels.size()|, or 0 if
+  // |current_physics_bubble_| is null.
+  std::size_t number_of_vessels() const;
+
+  //TODO(phl): Fix \o/ ALL \o/ the comments.
+  // Returns true if, and only if, |vessel| is in
+  // |current_physics_bubble_->vessels|.  |current_physics_bubble_| may be null,
+  // in that case, returns false.
+  bool is_in_physics_bubble(Vessel* const vessel) const;
+
+  //TODO(phl): comments.
+  std::vector<Vessel const*> vessels() const;
+  Displacement<Barycentric> const& displacements_from_centre_of_mass(
+      Vessel* const vessel) const;
+  Velocity<Barycentric> const& velocities_from_centre_of_mass(
+      Vessel* const vessel) const;
+  Trajectory<Barycentric> const& centre_of_mass_trajectory() const;
+
+private:
   // Computes the world degrees of freedom of the centre of mass of
   // |next_| using the contents of |next_->parts|.  |next_| must not be null.
   void ComputeNextCentreOfMassWorldDegreesOfFreedom();
