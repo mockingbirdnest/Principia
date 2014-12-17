@@ -344,8 +344,10 @@ public partial class PluginAdapter : UnityEngine.MonoBehaviour {
       bool changed_reference_frame = false;
       UnityEngine.GUILayout.BeginHorizontal();
       UnityEngine.GUILayout.Label(
-          text : first_selected_celestial_ ==
-                     second_selected_celestial_ ? "Rotating" : "Nonrotating");
+          text : "Frame is " +
+                 (first_selected_celestial_ == second_selected_celestial_
+                      ? "not " : "") +
+                 "rotating");
       UnityEngine.GUILayout.Label(text : "Fixed bodies:");
       if (UnityEngine.GUILayout.Toggle(
               value : first_selected_celestial_ == celestial.flightGlobalsIndex,
