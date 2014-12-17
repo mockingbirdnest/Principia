@@ -6,14 +6,14 @@ using System.Runtime.InteropServices;
 namespace principia {
 namespace ksp_plugin_adapter {
 
-[KSPAddon(startup : KSPAddon.Startup.Flight, once : false)]
+[KSPAddon(startup : KSPAddon.Startup.EveryScene, once : false)]
 public partial class PluginAdapter : UnityEngine.MonoBehaviour {
   // This constant can be at most 32766, since Vectrosity imposes a maximum of
   // 65534 vertices, where there are 2 vertices per point on discrete lines.  We
   // want this to be even since we have two points per line segment.
   // NOTE(egg): Things are fairly slow with the maximum number of points.  We
   // have to do with fewer.  10000 is mostly ok, even fewer would be better.
-  // TODO(egg): At the moment we store points in the history  every
+  // TODO(egg): At the moment we store points in the history every
   // 10 n seconds, where n is maximal such that 10 n seconds is less than the
   // length of a |FixedUpdate|. This means we sometimes have very large gaps.
   // We should store *all* points of the history, then decimate for rendering.
@@ -25,6 +25,8 @@ public partial class PluginAdapter : UnityEngine.MonoBehaviour {
   // the evaluation of the cubic).
   private const int kLinePoints = 10000;
 
+  private const int kGUIQueueSpot = 3;
+
   private UnityEngine.Rect window_position_;
   private IntPtr plugin_ = IntPtr.Zero;
   // TODO(egg): rendering only one trajectory at the moment.
@@ -32,6 +34,8 @@ public partial class PluginAdapter : UnityEngine.MonoBehaviour {
   private IntPtr rendering_frame_ = IntPtr.Zero;
   private int first_selected_celestial_ = 0;
   private int second_selected_celestial_ = 0;
+
+  private static bool an_instance_is_loaded;
 
   PluginAdapter() {
     // We create this directory here so we do not need to worry about cross-
@@ -102,9 +106,17 @@ public partial class PluginAdapter : UnityEngine.MonoBehaviour {
   // See the Unity manual on execution order for more information on |Start()|,
   // |OnDestroy()| and |FixedUpdate()|.
   // http://docs.unity3d.com/Manual/ExecutionOrder.html
-  private void Start() {
-    Log.Info("principia.ksp_plugin_adapter.PluginAdapter.Start()");
-    RenderingManager.AddToPostDrawQueue(queueSpot    : 3,
+
+  // Awake is called once.
+  private void Awake() {
+    Log.Info("principia.ksp_plugin_adapter.PluginAdapter.Awake()");
+    if (an_instance_is_loaded) {
+      UnityEngine.Object.Destroy(gameObject);
+    } else {
+      UnityEngine.Object.DontDestroyOnLoad(gameObject);
+      an_instance_is_loaded = true;
+    }
+    RenderingManager.AddToPostDrawQueue(queueSpot    : kGUIQueueSpot,
                                         drawFunction : new Callback(DrawGUI));
     window_position_ = new UnityEngine.Rect(
         left   : UnityEngine.Screen.width / 2.0f,
@@ -116,7 +128,7 @@ public partial class PluginAdapter : UnityEngine.MonoBehaviour {
   private void OnDestroy() {
     Log.Info("principia.ksp_plugin_adapter.PluginAdapter.OnDestroy()");
     RenderingManager.RemoveFromPostDrawQueue(
-        queueSpot    : 3,
+        queueSpot    : kGUIQueueSpot,
         drawFunction : new Callback(DrawGUI));
     Cleanup();
   }
