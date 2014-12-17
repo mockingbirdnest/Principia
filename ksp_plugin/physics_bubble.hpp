@@ -83,6 +83,7 @@ class PhysicsBubble {
   Velocity<Barycentric> const& velocities_from_centre_of_mass(
       Vessel* const vessel) const;
   Trajectory<Barycentric> const& centre_of_mass_trajectory() const;
+  Trajectory<Barycentric>* mutable_centre_of_mass_trajectory() const;
 
 private:
   // Computes the world degrees of freedom of the centre of mass of

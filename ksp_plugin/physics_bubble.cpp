@@ -201,6 +201,12 @@ PhysicsBubble::centre_of_mass_trajectory() const {
   return *current_->centre_of_mass_trajectory;
 }
 
+Trajectory<Barycentric>* 
+PhysicsBubble::mutable_centre_of_mass_trajectory() const {
+  CHECK(!empty());
+  return current_->centre_of_mass_trajectory.get();
+}
+
 void PhysicsBubble::ComputeNextCentreOfMassWorldDegreesOfFreedom() {
   VLOG(1) << __FUNCTION__;
   CHECK(next_ != nullptr);
