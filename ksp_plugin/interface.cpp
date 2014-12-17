@@ -4,6 +4,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/macros.hpp"
 #include "base/version.hpp"
 
 using principia::geometry::Displacement;
@@ -63,8 +64,11 @@ void principia__InitGoogleLogging() {
     google::InitGoogleLogging("Principia");
     LOG(INFO) << "Initialized Google logging for Principia";
     LOG(INFO) << "Principia version " << principia::base::kVersion
-              << " built on " << principia::base::kBuildDate;
-    // TODO(egg): by (compiler) for (ARCH, OS).
+              << " built on " << principia::base::kBuildDate
+              << " by " << principia::base::kCompilerName
+              << " version " << principia::base::kCompilerVersion
+              << " for " << principia::base::kOperatingSystem
+              << " " << principia::base::kArchitecture;
   }
 }
 
