@@ -165,8 +165,8 @@ TEST_F(NBodySystemDeathTest, IntegrateError) {
                         trajectory1_.get()});
   }, "Multiple trajectories");
   EXPECT_DEATH({
-    std::unique_ptr<Trajectory<EarthMoonOrbitPlane>> trajectory(
-        new Trajectory<EarthMoonOrbitPlane>(*body2_));
+    std::unique_ptr<Trajectory<EarthMoonOrbitPlane>> trajectory =
+        std::make_unique<Trajectory<EarthMoonOrbitPlane>>(*body2_);
     trajectory->Append(Instant(1 * SIUnit<Time>()),
                        {Position<EarthMoonOrbitPlane>(),
                         Velocity<EarthMoonOrbitPlane>()});

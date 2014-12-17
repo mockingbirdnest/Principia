@@ -158,8 +158,8 @@ template<typename Frame>
 Trajectory<Frame>* Trajectory<Frame>::Fork(Instant const& time) {
   auto fork_it = timeline_.find(time);
   CHECK(fork_it != timeline_.end()) << "Fork at nonexistent time";
-  std::unique_ptr<Trajectory<Frame>> child(
-      new Trajectory(body_, this /*parent*/, fork_it));
+  std::unique_ptr<Trajectory<Frame>> child =
+      std::make_unique<Trajectory>(body_, this /*parent*/, fork_it);
   child->timeline_.insert(++fork_it, timeline_.end());
   auto const child_it = children_.emplace(time, std::move(child));
   return child_it->second.get();

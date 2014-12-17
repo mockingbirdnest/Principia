@@ -80,10 +80,10 @@ class TrajectoryTest : public testing::Test {
     t3_ = t0_ + 27 * Second;
     t4_ = t0_ + 37 * Second;
 
-    massive_body_.reset(new MassiveBody(1 * SIUnit<Mass>()));
-    massless_body_.reset(new MasslessBody);
-    massive_trajectory_.reset(new Trajectory<World>(*massive_body_));
-    massless_trajectory_.reset(new Trajectory<World>(*massless_body_));
+    massive_body_ = std::make_unique<MassiveBody>(1 * SIUnit<Mass>());
+    massless_body_ = std::make_unique<MasslessBody>();
+    massive_trajectory_ = std::make_unique<Trajectory<World>>(*massive_body_);
+    massless_trajectory_ = std::make_unique<Trajectory<World>>(*massless_body_);
 
     transform_ = [](
         Instant const& t,
