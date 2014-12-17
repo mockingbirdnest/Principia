@@ -158,6 +158,7 @@ template<typename Frame>
 Trajectory<Frame>* Trajectory<Frame>::Fork(Instant const& time) {
   auto fork_it = timeline_.find(time);
   CHECK(fork_it != timeline_.end()) << "Fork at nonexistent time";
+  // Can't use make_unique below.
   std::unique_ptr<Trajectory<Frame>> child(
       new Trajectory(body_, this /*parent*/, fork_it));
   child->timeline_.insert(++fork_it, timeline_.end());

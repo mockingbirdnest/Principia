@@ -70,7 +70,7 @@ std::unique_ptr<Transforms<FromFrame, ThroughFrame, ToFrame>>
 Transforms<FromFrame, ThroughFrame, ToFrame>::BodyCentredNonRotating(
     Trajectory<FromFrame> const& from_centre_trajectory,
     Trajectory<ToFrame> const& to_centre_trajectory) {
-  std::unique_ptr<Transforms> transforms(new Transforms);
+  std::unique_ptr<Transforms> transforms = std::make_unique<Transforms>();
 
   // From the perspective of the lambda the following variable is really |this|,
   // hence the name.
@@ -141,7 +141,7 @@ Transforms<FromFrame, ThroughFrame, ToFrame>::BarycentricRotating(
       Trajectory<ToFrame> const& to_primary_trajectory,
       Trajectory<FromFrame> const& from_secondary_trajectory,
       Trajectory<ToFrame> const& to_secondary_trajectory) {
-  std::unique_ptr<Transforms> transforms(new Transforms);
+  std::unique_ptr<Transforms> transforms = std::make_unique<Transforms>();
 
   // From the perspective of the lambda the following variable is really |this|,
   // hence the name.
