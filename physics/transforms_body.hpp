@@ -176,9 +176,9 @@ Transforms<FromFrame, ThroughFrame, ToFrame>::BarycentricRotating(
         Barycentre<FromFrame, GravitationalParameter>(
             {primary_degrees_of_freedom,
              secondary_degrees_of_freedom},
-            {from_primary_trajectory.body<MassiveBody>().
+            {from_primary_trajectory.template body<MassiveBody>().
                  gravitational_parameter(),
-             from_secondary_trajectory.body<MassiveBody>().
+             from_secondary_trajectory.template body<MassiveBody>().
                  gravitational_parameter()});
     Rotation<FromFrame, ThroughFrame>
         from_basis_of_barycentric_frame_to_standard_basis;
@@ -226,9 +226,9 @@ Transforms<FromFrame, ThroughFrame, ToFrame>::BarycentricRotating(
         Barycentre<ToFrame, GravitationalParameter>(
             {last_primary_degrees_of_freedom,
              last_secondary_degrees_of_freedom},
-            {to_primary_trajectory.body<MassiveBody>().
+            {to_primary_trajectory.template body<MassiveBody>().
                  gravitational_parameter(),
-             to_secondary_trajectory.body<MassiveBody>().
+             to_secondary_trajectory.template body<MassiveBody>().
                  gravitational_parameter()});
     Rotation<ToFrame, ThroughFrame>
         from_basis_of_last_barycentric_frame_to_standard_basis;
