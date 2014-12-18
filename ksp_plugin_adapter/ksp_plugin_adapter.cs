@@ -136,10 +136,10 @@ public partial class PluginAdapter : UnityEngine.MonoBehaviour {
         vessel.id.ToString(),
         vessel.orbit.referenceBody.flightGlobalsIndex);
     if (inserted) {
-      SetVesselStateOffset(plugin_,
-                           vessel.id.ToString(),
-                           (XYZ)vessel.orbit.pos,
-                           (XYZ)vessel.orbit.vel);
+      SetVesselStateOffset(plugin               : plugin_,
+                           vessel_guid          : vessel.id.ToString(),
+                           from_parent_position : (XYZ)vessel.orbit.pos,
+                           from_parent_velocity : (XYZ)vessel.orbit.vel);
     }
     Vector3d position =
         (Vector3d)VesselDisplacementFromParent(plugin_,
@@ -151,10 +151,10 @@ public partial class PluginAdapter : UnityEngine.MonoBehaviour {
     // corresponds to the position one timestep in the future.  This is not
     // the case for celestial bodies.
     vessel.orbit.UpdateFromStateVectors(
-        pos: position + velocity * UnityEngine.Time.deltaTime,
-        vel: velocity,
-        refBody: vessel.orbit.referenceBody,
-        UT: universal_time);
+        pos     : position + velocity * UnityEngine.Time.deltaTime,
+        vel     : velocity,
+        refBody : vessel.orbit.referenceBody,
+        UT      : universal_time);
   }
 
   private void AddToPhysicsBubble(Vessel vessel) {
@@ -166,10 +166,10 @@ public partial class PluginAdapter : UnityEngine.MonoBehaviour {
       // NOTE(egg): these degrees of freedom are off by one Δt, but they
       // should never actually be used.
       // TODO(egg): we shouldn't have to do this.
-      SetVesselStateOffset(plugin_,
-                           vessel.id.ToString(),
-                           (XYZ)vessel.orbit.pos,
-                           (XYZ)vessel.orbit.vel);
+      SetVesselStateOffset(plugin               : plugin_,
+                           vessel_guid          : vessel.id.ToString(),
+                           from_parent_position : (XYZ)vessel.orbit.pos,
+                           from_parent_velocity : (XYZ)vessel.orbit.vel);
     }
     Log.Info("vessel has " + vessel.parts.Count() + " parts");
     Vector3d gravity =
@@ -182,13 +182,12 @@ public partial class PluginAdapter : UnityEngine.MonoBehaviour {
              world_position = (XYZ)(Vector3d)part.rb.worldCenterOfMass,
              world_velocity = (XYZ)(kraken_velocity + part.rb.velocity),
              mass = (double)part.mass + (double)part.GetResourceMass(),
-             gravitational_acceleration_to_be_applied_by_ksp =
-                 (XYZ)gravity,
+             gravitational_acceleration_to_be_applied_by_ksp = (XYZ)gravity,
              id = part.flightID}).ToArray();
-    AddVesselToNextPhysicsBubble(plugin : plugin_,
+    AddVesselToNextPhysicsBubble(plugin      : plugin_,
                                  vessel_guid : vessel.id.ToString(),
-                                 parts : parts,
-                                 count : parts.Count());
+                                 parts       : parts,
+                                 count       : parts.Count());
   }
 
   private bool is_in_space(Vessel vessel) {
