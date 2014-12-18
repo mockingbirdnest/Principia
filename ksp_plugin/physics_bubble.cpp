@@ -43,7 +43,7 @@ void PhysicsBubble::AddVesselToNextPhysicsBubble(
   }
 }
 
-void PhysicsBubble::Prepare(PlanetariumRotationXXX const& planetarium_rotation,
+void PhysicsBubble::Prepare(PlanetariumRotation const& planetarium_rotation,
                             Instant const& current_time,
                             Instant const& next_time) {
   VLOG(1) << __FUNCTION__ << '\n' << NAMED(next_time);
@@ -118,7 +118,7 @@ void PhysicsBubble::Prepare(PlanetariumRotationXXX const& planetarium_rotation,
 }
 
 Displacement<World> PhysicsBubble::DisplacementCorrection(
-    PlanetariumRotationXXX const& planetarium_rotation,
+    PlanetariumRotation const& planetarium_rotation,
     Celestial const& reference_celestial,
     Position<World> const& reference_celestial_world_position) const {
   VLOG(1) << __FUNCTION__ << '\n'
@@ -139,7 +139,7 @@ Displacement<World> PhysicsBubble::DisplacementCorrection(
 }
 
 Velocity<World> PhysicsBubble::VelocityCorrection(
-    PlanetariumRotationXXX const& planetarium_rotation,
+    PlanetariumRotation const& planetarium_rotation,
     Celestial const& reference_celestial) const {
   VLOG(1) << __FUNCTION__ << '\n' << NAMED(&reference_celestial);
   CHECK(!empty());
@@ -236,7 +236,7 @@ void PhysicsBubble::ComputeNextCentreOfMassWorldDegreesOfFreedom(
 }
 
 void PhysicsBubble::ComputeNextVesselOffsets(
-    PlanetariumRotationXXX const& planetarium_rotation,
+    PlanetariumRotation const& planetarium_rotation,
     FullState* next) {
   VLOG(1) << __FUNCTION__;
   CHECK_NOTNULL(next);
@@ -351,7 +351,7 @@ Vector<Acceleration, World> PhysicsBubble::IntrinsicAcceleration(
 }
 
 void PhysicsBubble::Shift(
-    PlanetariumRotationXXX const& planetarium_rotation,
+    PlanetariumRotation const& planetarium_rotation,
     Instant const& current_time,
     std::vector<PartCorrespondence> const* const common_parts,
     FullState* next) {

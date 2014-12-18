@@ -20,7 +20,7 @@ class PhysicsBubble {
   using IdAndOwnedPart = PartIdToOwnedPart::value_type;
   using Index = int;
   using PartCorrespondence = std::pair<Part<World>*, Part<World>*>;
-  using PlanetariumRotationXXX = geometry::Rotation<Barycentric, WorldSun>;
+  using PlanetariumRotation = geometry::Rotation<Barycentric, WorldSun>;
 
   PhysicsBubble() = default;
   ~PhysicsBubble() = default;
@@ -42,19 +42,19 @@ class PhysicsBubble {
   // (including intrinsic acceleration) of |*next_|. Moves |next_| into
   // |current_|.
   // TODO(phl): Document the parameters!
-  void Prepare(PlanetariumRotationXXX const& planetarium_rotation,
+  void Prepare(PlanetariumRotation const& planetarium_rotation,
                Instant const& current_time,
                Instant const& next_time);
 
   //TODO(phl): Fix \o/ ALL \o/ the comments.
   Displacement<World> PhysicsBubble::DisplacementCorrection(
-      PlanetariumRotationXXX const& planetarium_rotation,
+      PlanetariumRotation const& planetarium_rotation,
       Celestial const& reference_celestial,
       Position<World> const& reference_celestial_world_position) const;
 
   //TODO(phl): Fix \o/ ALL \o/ the comments.
   Velocity<World> PhysicsBubble::VelocityCorrection(
-      PlanetariumRotationXXX const& planetarium_rotation,
+      PlanetariumRotation const& planetarium_rotation,
       Celestial const& reference_celestial) const;
 
   //TODO(phl): Fix \o/ ALL \o/ the comments.
@@ -113,7 +113,7 @@ private:
   // Computes |next_->displacements_from_centre_of_mass| and
   // |next_->velocities_from_centre_of_mass|.  |next_| must not be null.
   void ComputeNextVesselOffsets(
-      PlanetariumRotationXXX const& planetarium_rotation,
+      PlanetariumRotation const& planetarium_rotation,
       FullState* next);
 
   // Creates |next_->centre_of_mass_trajectory| and appends to it the barycentre
@@ -137,7 +137,7 @@ private:
   // freedom at |current_time| that conserve the degrees of freedom of the
   // centre of mass of the parts in |common_parts|. |common_parts| must not be
   // null.  |next_| must not be null.  No transfer of ownership.
-  void Shift(PlanetariumRotationXXX const& planetarium_rotation,
+  void Shift(PlanetariumRotation const& planetarium_rotation,
              Instant const& current_time,
              std::vector<PartCorrespondence> const* const common_parts,
              FullState* next);
