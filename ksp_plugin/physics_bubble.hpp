@@ -86,19 +86,41 @@ class PhysicsBubble {
   Trajectory<Barycentric>* mutable_centre_of_mass_trajectory() const;
 
 private:
+  struct PreliminaryState {
+    std::map<Vessel* const, std::vector<Part<World>* const>> vessels;
+    PartIdToOwnedPart parts;
+  };
+
+  struct FullState : public PreliminaryState {
+    // TODO(egg): the following six should be |std::optional| when that
+    // becomes a thing.
+    std::unique_ptr<DegreesOfFreedom<World>> centre_of_mass;
+    std::unique_ptr<Trajectory<Barycentric>> centre_of_mass_trajectory;
+    std::unique_ptr<
+        std::map<Vessel const* const,
+                 Displacement<Barycentric>>> displacements_from_centre_of_mass;
+    std::unique_ptr<
+        std::map<Vessel const* const,
+                 Velocity<Barycentric>>> velocities_from_centre_of_mass;
+    std::unique_ptr<Displacement<World>> displacement_correction;  // Only for current_.
+    std::unique_ptr<Velocity<World>> velocity_correction;  // Only for current_.
+  };
+
   // Computes the world degrees of freedom of the centre of mass of
   // |next_| using the contents of |next_->parts|.  |next_| must not be null.
-  void ComputeNextCentreOfMassWorldDegreesOfFreedom();
+  void ComputeNextCentreOfMassWorldDegreesOfFreedom(FullState* next);
 
   // Computes |next_->displacements_from_centre_of_mass| and
   // |next_->velocities_from_centre_of_mass|.  |next_| must not be null.
   void ComputeNextVesselOffsets(
-      PlanetariumRotationXXX const& planetarium_rotation);
+      PlanetariumRotationXXX const& planetarium_rotation,
+      FullState* next);
 
   // Creates |next_->centre_of_mass_trajectory| and appends to it the barycentre
   // of the degrees of freedom of the vessels in |next_->vessels|.  There is no
   // intrinsic acceleration.  |next_| must not be null.
-  void RestartNext(Instant const& current_time);
+  void RestartNext(Instant const& current_time,
+                   FullState* next);
 
   // Returns the intrinsic acceleration measured on the parts that are common to
   // the current and next bubbles.  Stores a pair of pointers to parts
@@ -117,28 +139,11 @@ private:
   // null.  |next_| must not be null.  No transfer of ownership.
   void Shift(PlanetariumRotationXXX const& planetarium_rotation,
              Instant const& current_time,
-             std::vector<PartCorrespondence> const* const common_parts);
+             std::vector<PartCorrespondence> const* const common_parts,
+             FullState* next);
 
-  struct State {
-    std::map<Vessel* const, std::vector<Part<World>* const>> vessels;
-    PartIdToOwnedPart parts;
-    // TODO(egg): the following six should be |std::optional| when that
-    // becomes a thing.
-    std::unique_ptr<DegreesOfFreedom<World>> centre_of_mass;
-    std::unique_ptr<Trajectory<Barycentric>> centre_of_mass_trajectory;
-    std::unique_ptr<
-        std::map<Vessel const* const,
-                 Displacement<Barycentric>>> displacements_from_centre_of_mass;
-    std::unique_ptr<
-        std::map<Vessel const* const,
-                 Velocity<Barycentric>>> velocities_from_centre_of_mass;
-    std::unique_ptr<Displacement<World>> displacement_correction;  // Only for current_.
-    std::unique_ptr<Velocity<World>> velocity_correction;  // Only for current_.
-  };
-
-  //TODO(phl): See what's used exactly for next_.
-  std::unique_ptr<State> current_;
-  std::unique_ptr<State> next_;
+  std::unique_ptr<FullState> current_;
+  std::unique_ptr<PreliminaryState> next_;
 
   MasslessBody const bubble_body_;
 };
