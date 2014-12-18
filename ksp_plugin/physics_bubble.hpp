@@ -25,15 +25,10 @@ class PhysicsBubble {
   PhysicsBubble() = default;
   ~PhysicsBubble() = default;
 
-  //TODO(phl): Fix \o/ ALL \o/ the comments.
-  // Creates |next_physics_bubble_| if it is null.  Adds the vessel with GUID
-  // |vessel_guid| to |next_physics_bubble_->vessels| with a list of pointers to
-  // the |Part|s in |parts|.  Merges |parts| into |next_physics_bubble_->parts|.
-  // Adds the vessel to |dirty_vessels_|.
-  // A vessel with GUID |vessel_guid| must have been inserted and kept.  The
-  // vessel with GUID |vessel_guid| must not already be in
-  // |next_physics_bubble_->vessels|.  |parts| must not contain a |PartId|
-  // already in |next_physics_bubble_->parts|.
+  // Creates |next_| if it is null.  Adds the |vessel| to |next_->vessels| with
+  // a list of pointers to the Parts in |parts|.  Merges |parts| into
+  // |next_->parts|.  The |vessel| must not already be in |next_->vessels|.
+  // |parts| must not contain a |PartId| already in |next_->parts|.
   void PhysicsBubble::AddVesselToNextPhysicsBubble(
       Vessel* vessel,
       std::vector<IdAndOwnedPart> parts);
@@ -46,37 +41,35 @@ class PhysicsBubble {
                Instant const& current_time,
                Instant const& next_time);
 
-  //TODO(phl): Fix \o/ ALL \o/ the comments.
+  // Computes and returns |current_->displacement_correction|.  This is the
+  // |World| shift to be applied to the bubble in order for it to be in the
+  // correct position.
   Displacement<World> PhysicsBubble::DisplacementCorrection(
       PlanetariumRotation const& planetarium_rotation,
       Celestial const& reference_celestial,
       Position<World> const& reference_celestial_world_position) const;
 
-  //TODO(phl): Fix \o/ ALL \o/ the comments.
+  // Computes and returns |current_->velocity_correction|.  This is the |World|
+  // shift to be applied to the physics bubble in order for it to have the
+  // correct velocity.
   Velocity<World> PhysicsBubble::VelocityCorrection(
       PlanetariumRotation const& planetarium_rotation,
       Celestial const& reference_celestial) const;
 
-  //TODO(phl): Fix \o/ ALL \o/ the comments.
-  // Returns |current_physics_bubble_ != nullptr|.
+  // Returns |current_ != nullptr|.
   bool empty() const;
 
-  //TODO(phl): Fix \o/ ALL \o/ the comments.
-  // Returns 1 if |has_physics_bubble()|, 0 otherwise.
+  // Returns 0 if |empty()|, 1 otherwise.
   std::size_t size() const;
 
-  //TODO(phl): Fix \o/ ALL \o/ the comments.
-  // Returns |current_physics_bubble_->vessels.size()|, or 0 if
-  // |current_physics_bubble_| is null.
+  // Returns |current_->vessels.size()|, or 0 if |empty()|.
   std::size_t number_of_vessels() const;
 
-  //TODO(phl): Fix \o/ ALL \o/ the comments.
-  // Returns true if, and only if, |vessel| is in
-  // |current_physics_bubble_->vessels|.  |current_physics_bubble_| may be null,
-  // in that case, returns false.
+  // Returns true if, and only if, |vessel| is in |current_->vessels|.
+  // |current_| may be null, in that case, returns false.
   bool is_in_physics_bubble(Vessel* const vessel) const;
 
-  //TODO(phl): comments.
+  // Selectors for the data in |current_|.
   std::vector<Vessel const*> vessels() const;
   Displacement<Barycentric> const& displacements_from_centre_of_mass(
       Vessel* const vessel) const;
@@ -107,18 +100,18 @@ private:
   };
 
   // Computes the world degrees of freedom of the centre of mass of
-  // |next_| using the contents of |next_->parts|.  |next_| must not be null.
+  // |next| using the contents of |next->parts|.
   void ComputeNextCentreOfMassWorldDegreesOfFreedom(FullState* next);
 
-  // Computes |next_->displacements_from_centre_of_mass| and
-  // |next_->velocities_from_centre_of_mass|.  |next_| must not be null.
+  // Computes |next->displacements_from_centre_of_mass| and
+  // |next->velocities_from_centre_of_mass|.
   void ComputeNextVesselOffsets(
       PlanetariumRotation const& planetarium_rotation,
       FullState* next);
 
-  // Creates |next_->centre_of_mass_trajectory| and appends to it the barycentre
-  // of the degrees of freedom of the vessels in |next_->vessels|.  There is no
-  // intrinsic acceleration.  |next_| must not be null.
+  // Creates |next->centre_of_mass_trajectory| and appends to it the barycentre
+  // of the degrees of freedom of the vessels in |next->vessels|.  There is no
+  // intrinsic acceleration.
   void RestartNext(Instant const& current_time,
                    FullState* next);
 
@@ -133,10 +126,9 @@ private:
       std::vector<PartCorrespondence>* const common_parts);
 
   // Given the vector of common parts produced by |IntrinsicAcceleration|,
-  // constructs |*next_->centre_of_mass_trajectory| and appends degrees of
+  // constructs |next->centre_of_mass_trajectory| and appends degrees of
   // freedom at |current_time| that conserve the degrees of freedom of the
-  // centre of mass of the parts in |common_parts|. |common_parts| must not be
-  // null.  |next_| must not be null.  No transfer of ownership.
+  // centre of mass of the parts in |common_parts|.  No transfer of ownership.
   void Shift(PlanetariumRotation const& planetarium_rotation,
              Instant const& current_time,
              std::vector<PartCorrespondence> const* const common_parts,
