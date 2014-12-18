@@ -14,7 +14,7 @@ class OrthogonalMap;
 template<typename FromFrame, typename ToFrame>
 class Identity : public LinearMap<FromFrame, ToFrame> {
  public:
-  Identity() = default;
+  Identity();
   ~Identity() override = default;
 
   Sign Determinant() const override;

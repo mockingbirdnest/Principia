@@ -116,7 +116,7 @@ Point<Vector> Barycentre(std::vector<Point<Vector>> const& points,
   CHECK_EQ(points.size(), weights.size())
       << "Points and weights of unequal sizes";
   CHECK(!points.empty()) << "Empty input";
-  Point<Vector>::BarycentreCalculator<Weight> calculator;
+  typename Point<Vector>::BarycentreCalculator<Weight> calculator;
   for (size_t i = 0; i < points.size(); ++i) {
     calculator.Add(points[i], weights[i]);
   }

@@ -7,11 +7,11 @@ using principia::geometry::Position;
 namespace principia {
 namespace physics {
 
-template<typename Tag, Tag tag, bool is_inertial>
+template<typename Tag, Tag tag, bool is_inertialLOLZ>
 class Frame {
  public:
   static Position<Frame> const origin;
-  static bool const is_inertial = is_inertial;
+  static bool const is_inertial = is_inertialLOLZ;
 
   Frame() = delete;
 };
