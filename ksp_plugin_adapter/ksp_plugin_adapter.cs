@@ -92,14 +92,116 @@ public partial class PluginAdapter : UnityEngine.MonoBehaviour {
     }
   }
 
-  private bool HavePhysicsBubble() {
+  private void UpdateBody(CelestialBody body, double universal_time) {
+    UpdateCelestialHierarchy(plugin_,
+                             body.flightGlobalsIndex,
+                             body.orbit.referenceBody.flightGlobalsIndex);
+    Vector3d position =
+        (Vector3d)CelestialDisplacementFromParent(plugin_,
+                                                  body.flightGlobalsIndex);
+    Vector3d velocity =
+        (Vector3d)CelestialParentRelativeVelocity(plugin_,
+                                                  body.flightGlobalsIndex);
+    // TODO(egg): Some of this might be be superfluous and redundant.
+    Orbit original = body.orbit;
+    Orbit copy = new Orbit(original.inclination, original.eccentricity,
+                           original.semiMajorAxis, original.LAN,
+                           original.argumentOfPeriapsis,
+                           original.meanAnomalyAtEpoch, original.epoch,
+                           original.referenceBody);
+    copy.UpdateFromStateVectors(position,
+                                velocity,
+                                copy.referenceBody,
+                                universal_time);
+    body.orbit.inclination = copy.inclination;
+    body.orbit.eccentricity = copy.eccentricity;
+    body.orbit.semiMajorAxis = copy.semiMajorAxis;
+    body.orbit.LAN = copy.LAN;
+    body.orbit.argumentOfPeriapsis = copy.argumentOfPeriapsis;
+    body.orbit.meanAnomalyAtEpoch = copy.meanAnomalyAtEpoch;
+    body.orbit.epoch = copy.epoch;
+    body.orbit.referenceBody = copy.referenceBody;
+    body.orbit.Init();
+    body.orbit.UpdateFromUT(universal_time);
+    body.CBUpdate();
+    body.orbit.UpdateFromStateVectors(position,
+                                      velocity,
+                                      copy.referenceBody,
+                                      universal_time);
+  }
+
+  private void UpdateVessel(Vessel vessel, double universal_time) {
+    bool inserted = InsertOrKeepVessel(
+        plugin_,
+        vessel.id.ToString(),
+        vessel.orbit.referenceBody.flightGlobalsIndex);
+    if (inserted) {
+      SetVesselStateOffset(plugin_,
+                           vessel.id.ToString(),
+                           (XYZ)vessel.orbit.pos,
+                           (XYZ)vessel.orbit.vel);
+    }
+    Vector3d position =
+        (Vector3d)VesselDisplacementFromParent(plugin_,
+                                               vessel.id.ToString());
+    Vector3d velocity =
+        (Vector3d)VesselParentRelativeVelocity(plugin_,
+                                               vessel.id.ToString());
+    // NOTE(egg): Here we work around a KSP bug: |Orbit.pos| for a vessel
+    // corresponds to the position one timestep in the future.  This is not
+    // the case for celestial bodies.
+    vessel.orbit.UpdateFromStateVectors(
+        pos: position + velocity * UnityEngine.Time.deltaTime,
+        vel: velocity,
+        refBody: vessel.orbit.referenceBody,
+        UT: universal_time);
+  }
+
+  private void AddToPhysicsBubble(Vessel vessel) {
+    bool inserted = InsertOrKeepVessel(
+        plugin_,
+        vessel.id.ToString(),
+        vessel.orbit.referenceBody.flightGlobalsIndex);
+    if (inserted) {
+      // NOTE(egg): these degrees of freedom are off by one Δt, but they
+      // should never actually be used.
+      // TODO(egg): we shouldn't have to do this.
+      SetVesselStateOffset(plugin_,
+                           vessel.id.ToString(),
+                           (XYZ)vessel.orbit.pos,
+                           (XYZ)vessel.orbit.vel);
+    }
+    Log.Info("vessel has " + vessel.parts.Count() + " parts");
+    Vector3d gravity =
+        FlightGlobals.getGeeForceAtPosition(vessel.findWorldCenterOfMass());
+    Vector3d kraken_velocity = Krakensbane.GetFrameVelocity();
+    KSPPart[] parts =
+        (from part in vessel.parts
+         where part.rb != null  // Physicsless parts have no rigid body.
+         select new KSPPart {
+             world_position = (XYZ)(Vector3d)part.rb.worldCenterOfMass,
+             world_velocity = (XYZ)(kraken_velocity + part.rb.velocity),
+             mass = (double)part.mass + (double)part.GetResourceMass(),
+             gravitational_acceleration_to_be_applied_by_ksp =
+                 (XYZ)gravity,
+             id = part.flightID}).ToArray();
+    AddVesselToNextPhysicsBubble(plugin : plugin_,
+                                 vessel_guid : vessel.id.ToString(),
+                                 parts : parts,
+                                 count : parts.Count());
+  }
+
+  private bool is_in_space(Vessel vessel) {
+    return vessel.situation == Vessel.Situations.SUB_ORBITAL ||
+           vessel.situation == Vessel.Situations.ORBITING ||
+           vessel.situation == Vessel.Situations.ESCAPING;
+  }
+
+  private bool has_physics_bubble_in_space() {
     Vessel active_vessel = FlightGlobals.ActiveVessel;
-    return
-        !active_vessel.packed &&
-        active_vessel.loaded &&
-        (active_vessel.situation == Vessel.Situations.SUB_ORBITAL ||
-         active_vessel.situation == Vessel.Situations.ORBITING ||
-         active_vessel.situation == Vessel.Situations.ESCAPING);
+    return !active_vessel.packed &&
+            active_vessel.loaded &&
+            is_in_space(active_vessel);
   }
 
   #region Unity Lifecycle
@@ -136,110 +238,14 @@ public partial class PluginAdapter : UnityEngine.MonoBehaviour {
   private void FixedUpdate() {
     if (PluginRunning()) {
       double universal_time = Planetarium.GetUniversalTime();
-      VesselProcessor add_to_physics_bubble = vessel => {
-        bool inserted = InsertOrKeepVessel(
-            plugin_,
-            vessel.id.ToString(),
-            vessel.orbit.referenceBody.flightGlobalsIndex);
-        if (inserted) {
-          // NOTE(egg): these degrees of freedom are off by one Δt, but they
-          // should never actually be used.
-          // TODO(egg): we shouldn't have to do this.
-          SetVesselStateOffset(plugin_,
-                               vessel.id.ToString(),
-                               (XYZ)vessel.orbit.pos,
-                               (XYZ)vessel.orbit.vel);
-        }
-        Log.Info("vessel has " + vessel.parts.Count() + " parts");
-        Vector3d gravity =
-            FlightGlobals.getGeeForceAtPosition(vessel.findWorldCenterOfMass());
-        Vector3d kraken_velocity = Krakensbane.GetFrameVelocity();
-        KSPPart[] parts =
-            (from part in vessel.parts
-             where part.rb != null  // Physicsless parts have no rigid body.
-             select new KSPPart {
-                 world_position = (XYZ)(Vector3d)part.rb.worldCenterOfMass,
-                 world_velocity = (XYZ)(kraken_velocity + part.rb.velocity),
-                 mass = (double)part.mass + (double)part.GetResourceMass(),
-                 gravitational_acceleration_to_be_applied_by_ksp =
-                     (XYZ)gravity,
-                 id = part.flightID}).ToArray();
-        AddVesselToNextPhysicsBubble(plugin : plugin_,
-                                     vessel_guid : vessel.id.ToString(),
-                                     parts : parts,
-                                     count : parts.Count());
-      };
-      if (HavePhysicsBubble()) {
-        ApplyToLoadedVesselsInSpace(add_to_physics_bubble);
+      if (has_physics_bubble_in_space()) {
+        ApplyToLoadedVesselsInSpace(AddToPhysicsBubble);
       }
       AdvanceTime(plugin_, universal_time, Planetarium.InverseRotAngle);
-      BodyProcessor update_body = body => {
-        UpdateCelestialHierarchy(plugin_,
-                                 body.flightGlobalsIndex,
-                                 body.orbit.referenceBody.flightGlobalsIndex);
-        Vector3d position =
-            (Vector3d)CelestialDisplacementFromParent(plugin_,
-                                                      body.flightGlobalsIndex);
-        Vector3d velocity =
-            (Vector3d)CelestialParentRelativeVelocity(plugin_,
-                                                      body.flightGlobalsIndex);
-        // TODO(egg): Some of this might be be superfluous and redundant.
-        Orbit original = body.orbit;
-        Orbit copy = new Orbit(original.inclination, original.eccentricity,
-                               original.semiMajorAxis, original.LAN,
-                               original.argumentOfPeriapsis,
-                               original.meanAnomalyAtEpoch, original.epoch,
-                               original.referenceBody);
-        copy.UpdateFromStateVectors(position,
-                                    velocity,
-                                    copy.referenceBody,
-                                    universal_time);
-        body.orbit.inclination = copy.inclination;
-        body.orbit.eccentricity = copy.eccentricity;
-        body.orbit.semiMajorAxis = copy.semiMajorAxis;
-        body.orbit.LAN = copy.LAN;
-        body.orbit.argumentOfPeriapsis = copy.argumentOfPeriapsis;
-        body.orbit.meanAnomalyAtEpoch = copy.meanAnomalyAtEpoch;
-        body.orbit.epoch = copy.epoch;
-        body.orbit.referenceBody = copy.referenceBody;
-        body.orbit.Init();
-        body.orbit.UpdateFromUT(universal_time);
-        body.CBUpdate();
-        body.orbit.UpdateFromStateVectors(position,
-                                          velocity,
-                                          copy.referenceBody,
-                                          universal_time);
-      };
-      ApplyToBodyTree(update_body);
-      VesselProcessor update_vessel = vessel => {
-        bool inserted = InsertOrKeepVessel(
-            plugin_,
-            vessel.id.ToString(),
-            vessel.orbit.referenceBody.flightGlobalsIndex);
-        if (inserted) {
-          SetVesselStateOffset(plugin_,
-                               vessel.id.ToString(),
-                               (XYZ)vessel.orbit.pos,
-                               (XYZ)vessel.orbit.vel);
-        }
-        Vector3d position =
-            (Vector3d)VesselDisplacementFromParent(plugin_,
-                                                   vessel.id.ToString());
-        Vector3d velocity =
-            (Vector3d)VesselParentRelativeVelocity(plugin_,
-                                                   vessel.id.ToString());
-        // NOTE(egg): Here we work around a KSP bug: |Orbit.pos| for a vessel
-        // corresponds to the position one timestep in the future.  This is not
-        // the case for celestial bodies.
-        vessel.orbit.UpdateFromStateVectors(
-            pos: position + velocity * UnityEngine.Time.deltaTime,
-            vel: velocity,
-            refBody: vessel.orbit.referenceBody,
-            UT: universal_time);
-      };
-      ApplyToVesselsInSpace(update_vessel);
+      ApplyToBodyTree(body => UpdateBody(body, universal_time));
+      ApplyToVesselsInSpace(vessel => UpdateVessel(vessel, universal_time));
       Vessel active_vessel = FlightGlobals.ActiveVessel;
-      if (HavePhysicsBubble()) {
+      if (has_physics_bubble_in_space()) {
         Vector3d displacement_offset =
             (Vector3d)BubbleDisplacementCorrection(
                           plugin_,
@@ -253,10 +259,7 @@ public partial class PluginAdapter : UnityEngine.MonoBehaviour {
         krakensbane.setOffset(displacement_offset);
         krakensbane.FrameVel += velocity_offset;
       }
-      if (MapView.MapIsEnabled && 
-              (active_vessel.situation == Vessel.Situations.SUB_ORBITAL ||
-               active_vessel.situation == Vessel.Situations.ORBITING ||
-               active_vessel.situation == Vessel.Situations.ESCAPING)) {
+      if (MapView.MapIsEnabled && is_in_space(active_vessel)) {
         if (active_vessel.orbitDriver.Renderer.drawMode !=
                 OrbitRenderer.DrawMode.OFF ||
             active_vessel.orbitDriver.Renderer.drawIcons !=
