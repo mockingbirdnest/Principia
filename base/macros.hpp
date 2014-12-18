@@ -50,6 +50,14 @@ inline void noreturn() { exit(0); }
 #define FORCE_INLINE __forceinline
 #endif
 
+// A workaround for a MSVC bug wherein a |typename| is required by the standard
+// and by clang but forbidden by MSVC.
+#ifdef _MSC_VER
+#define TYPENAME
+#else
+#define TYPENAME typename
+#endif
+
 #define VLOG_AND_RETURN(verboselevel, expression)                  \
   do {                                                             \
     auto const& value__ = (expression);                            \
