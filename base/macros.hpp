@@ -5,6 +5,9 @@
 namespace principia {
 namespace base {
 
+#define STRINGIFY(X) #X
+#define STRINGIFY_EXPANSION(X) STRINGIFY(X)
+
 // See http://goo.gl/2EVxN4 for a partial overview of compiler detection and
 // version macros.  We cannot use |COMPILER_MSVC| because it conflicts with
 // a macro in the benchmark library, so the macros have obnoxiously long names.
@@ -20,7 +23,7 @@ char const* const kCompilerVersion = __VERSION__;
 #elif defined(_MSC_VER)
 #define PRINCIPIA_COMPILER_MSVC 1
 char const* const kCompilerName = "Microsoft Visual C++";
-char const* const kCompilerVersion = std::to_string(_MSC_FULL_VER).c_str();
+char const* const kCompilerVersion = STRINGIFY_EXPANSION(_MSC_FULL_VER);
 #elif defined(__ICC) || defined(__INTEL_COMPILER)
 #define PRINCIPIA_COMPILER_ICC 1
 char const* const kCompilerName = "Intel C++ Compiler";
