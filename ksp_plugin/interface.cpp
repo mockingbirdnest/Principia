@@ -316,6 +316,10 @@ XYZ principia__BubbleVelocityCorrection(Plugin const* const plugin,
   return ToXYZ(result.coordinates() / (Metre / Second));
 }
 
+double principia__current_time(Plugin const* const plugin) {
+  return (CHECK_NOTNULL(plugin)->current_time() - Instant()) / Second;
+}
+
 char const* principia__SayHello() {
   return "Hello from native C++!";
 }

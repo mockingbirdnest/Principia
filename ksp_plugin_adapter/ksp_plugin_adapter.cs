@@ -27,13 +27,15 @@ public partial class PluginAdapter : UnityEngine.MonoBehaviour {
 
   private const int kGUIQueueSpot = 3;
 
-  private UnityEngine.Rect window_position_;
+  private UnityEngine.Rect main_window_position_;
   private IntPtr plugin_ = IntPtr.Zero;
   // TODO(egg): rendering only one trajectory at the moment.
   private VectorLine rendered_trajectory_;
   private IntPtr rendering_frame_ = IntPtr.Zero;
   private int first_selected_celestial_ = 0;
   private int second_selected_celestial_ = 0;
+
+  private bool time_is_advancing_;
 
   private static bool an_instance_is_loaded;
 
@@ -196,11 +198,13 @@ public partial class PluginAdapter : UnityEngine.MonoBehaviour {
            vessel.situation == Vessel.Situations.ESCAPING;
   }
 
-  private bool has_physics_bubble_in_space() {
+  private bool has_inertial_physics_bubble_in_space() {
     Vessel active_vessel = FlightGlobals.ActiveVessel;
-    return !active_vessel.packed &&
-            active_vessel.loaded &&
-            is_in_space(active_vessel);
+    return active_vessel != null &&
+           !active_vessel.packed &&
+           active_vessel.loaded &&
+           is_in_space(active_vessel) &&
+           !Planetarium.FrameIsRotating();
   }
 
   #region Unity Lifecycle
@@ -217,34 +221,43 @@ public partial class PluginAdapter : UnityEngine.MonoBehaviour {
       UnityEngine.Object.DontDestroyOnLoad(gameObject);
       an_instance_is_loaded = true;
     }
-    RenderingManager.AddToPostDrawQueue(queueSpot    : kGUIQueueSpot,
-                                        drawFunction : new Callback(DrawGUI));
-    window_position_ = new UnityEngine.Rect(
+    GameEvents.onGameStateLoad.Add(InitializeOnGameStateLoad);
+    main_window_position_ = new UnityEngine.Rect(
         left   : UnityEngine.Screen.width / 2.0f,
         top    : UnityEngine.Screen.height / 2.0f,
         width  : 10,
         height : 10);
   }
 
-  private void OnDestroy() {
-    Log.Info("principia.ksp_plugin_adapter.PluginAdapter.OnDestroy()");
-    RenderingManager.RemoveFromPostDrawQueue(
-        queueSpot    : kGUIQueueSpot,
-        drawFunction : new Callback(DrawGUI));
-    Cleanup();
+  private void OnGUI() {
+    UnityEngine.GUI.skin = HighLogic.Skin;
+    main_window_position_ = UnityEngine.GUILayout.Window(
+        id         : 1,
+        screenRect : main_window_position_,
+        func       : DrawMainWindow,
+        text       : "Traces of Various Descriptions",
+        options    : UnityEngine.GUILayout.MinWidth(500));
   }
 
   private void FixedUpdate() {
     if (PluginRunning()) {
       double universal_time = Planetarium.GetUniversalTime();
-      if (has_physics_bubble_in_space()) {
+      double plugin_time = current_time(plugin_);
+      if (plugin_time > universal_time) {
+        Log.Fatal("Closed Timelike Curve");
+      } else if (plugin_time == universal_time) {
+        time_is_advancing_ = false;
+        return;
+      }
+      time_is_advancing_ = true;
+      if (has_inertial_physics_bubble_in_space()) {
         ApplyToLoadedVesselsInSpace(AddToPhysicsBubble);
       }
       AdvanceTime(plugin_, universal_time, Planetarium.InverseRotAngle);
       ApplyToBodyTree(body => UpdateBody(body, universal_time));
       ApplyToVesselsInSpace(vessel => UpdateVessel(vessel, universal_time));
       Vessel active_vessel = FlightGlobals.ActiveVessel;
-      if (has_physics_bubble_in_space()) {
+      if (has_inertial_physics_bubble_in_space()) {
         Vector3d displacement_offset =
             (Vector3d)BubbleDisplacementCorrection(
                           plugin_,
@@ -258,7 +271,9 @@ public partial class PluginAdapter : UnityEngine.MonoBehaviour {
         krakensbane.setOffset(displacement_offset);
         krakensbane.FrameVel += velocity_offset;
       }
-      if (MapView.MapIsEnabled && is_in_space(active_vessel)) {
+      if (MapView.MapIsEnabled &&
+          active_vessel != null &&
+          is_in_space(active_vessel)) {
         if (active_vessel.orbitDriver.Renderer.drawMode !=
                 OrbitRenderer.DrawMode.OFF ||
             active_vessel.orbitDriver.Renderer.drawIcons !=
@@ -308,28 +323,28 @@ public partial class PluginAdapter : UnityEngine.MonoBehaviour {
         } else {
           Vector.DrawLine(rendered_trajectory_);
         }
+      } else {
+        DestroyRenderedTrajectory();
       }
     }
   }
 
   #endregion
 
-  private void Cleanup() {
-    DeletePlugin(ref plugin_);
-    DeleteRenderingFrame(ref rendering_frame_);
+  private void DestroyRenderedTrajectory() {
     if (rendered_trajectory_ != null) {
       Vector.DestroyLine(ref rendered_trajectory_);
     }
   }
 
-  private void DrawGUI() {
-    UnityEngine.GUI.skin = HighLogic.Skin;
-    window_position_ = UnityEngine.GUILayout.Window(
-        id         : 1,
-        screenRect : window_position_,
-        func       : DrawMainWindow,
-        text       : "Traces of Various Descriptions",
-        options    : UnityEngine.GUILayout.MinWidth(500));
+  private void Cleanup() {
+    DeletePlugin(ref plugin_);
+    DeleteRenderingFrame(ref rendering_frame_);
+    DestroyRenderedTrajectory();
+  }
+
+  private void InitializeOnGameStateLoad(ConfigNode node) {
+    InitializePlugin();
   }
 
   private void DrawMainWindow(int window_id) {
@@ -344,25 +359,26 @@ public partial class PluginAdapter : UnityEngine.MonoBehaviour {
     style.padding             = new UnityEngine.RectOffset(8, 8, 8, 8);
 
     UnityEngine.GUILayout.BeginVertical();
-    IntPtr hello_ptr = SayHello();
-    UnityEngine.GUILayout.TextArea(text : Marshal.PtrToStringAnsi(hello_ptr));
-    if (UnityEngine.GUILayout.Button(PluginRunning() ? "Stop plugin"
-                                                     : "Start plugin")) {
-      if (PluginRunning()) {
-        Cleanup();
-      } else {
-        InitializePlugin();
-      }
+    String plugin_state;
+    if (!PluginRunning()) {
+      plugin_state = "not started";
+    } else if (!time_is_advancing_) {
+      plugin_state = "holding";
+    } else if (!has_inertial_physics_bubble_in_space()) {
+      plugin_state = "running";
+    } else {
+      plugin_state = "managing physics bubble";
     }
+    UnityEngine.GUILayout.TextArea(text : "Plugin is " + plugin_state);
+    UnityEngine.GUILayout.TextArea(
+        text : "Frame is " +
+               (first_selected_celestial_ == second_selected_celestial_
+                    ? "not " : "") +
+               "rotating");
+    UnityEngine.GUILayout.Label(text : "Fixed bodies:");
     foreach (CelestialBody celestial in FlightGlobals.Bodies) {
       bool changed_reference_frame = false;
       UnityEngine.GUILayout.BeginHorizontal();
-      UnityEngine.GUILayout.Label(
-          text : "Frame is " +
-                 (first_selected_celestial_ == second_selected_celestial_
-                      ? "not " : "") +
-                 "rotating");
-      UnityEngine.GUILayout.Label(text : "Fixed bodies:");
       if (UnityEngine.GUILayout.Toggle(
               value : first_selected_celestial_ == celestial.flightGlobalsIndex,
               text  : "") &&
@@ -380,17 +396,7 @@ public partial class PluginAdapter : UnityEngine.MonoBehaviour {
       }
       UnityEngine.GUILayout.EndHorizontal();
       if (changed_reference_frame && PluginRunning()) {
-        DeleteRenderingFrame(ref rendering_frame_);
-        if (first_selected_celestial_ == second_selected_celestial_) {
-          rendering_frame_ = NewBodyCentredNonRotatingFrame(
-                                 plugin_,
-                                 first_selected_celestial_);
-        } else {
-          rendering_frame_ = NewBarycentricRotatingFrame(
-                                 plugin_,
-                                 first_selected_celestial_,
-                                 second_selected_celestial_);
-        }
+        UpdateRenderingFrame();
       }
     }
     UnityEngine.GUILayout.EndVertical();
@@ -399,7 +405,24 @@ public partial class PluginAdapter : UnityEngine.MonoBehaviour {
                                         height : 20f));
   }
 
+  private void UpdateRenderingFrame() {
+    DeleteRenderingFrame(ref rendering_frame_);
+    if (first_selected_celestial_ == second_selected_celestial_) {
+      rendering_frame_ = NewBodyCentredNonRotatingFrame(
+                             plugin_,
+                             first_selected_celestial_);
+    } else {
+      rendering_frame_ = NewBarycentricRotatingFrame(
+                             plugin_,
+                             first_selected_celestial_,
+                             second_selected_celestial_);
+    }
+  }
+
   private void InitializePlugin() {
+    if (PluginRunning()) {
+      Cleanup();
+    }
     rendered_trajectory_ = new VectorLine(
         lineName     : "rendered_trajectory_",
         linePoints   : new UnityEngine.Vector3[kLinePoints],
@@ -427,10 +450,7 @@ public partial class PluginAdapter : UnityEngine.MonoBehaviour {
     };
     ApplyToBodyTree(insert_body);
     EndInitialization(plugin_);
-    first_selected_celestial_ = 0;
-    second_selected_celestial_ = 0;
-    rendering_frame_ =
-        NewBodyCentredNonRotatingFrame(plugin_, first_selected_celestial_);
+    UpdateRenderingFrame();
     VesselProcessor insert_vessel = vessel => {
       Log.Info("Inserting " + vessel.name + "...");
       bool inserted =

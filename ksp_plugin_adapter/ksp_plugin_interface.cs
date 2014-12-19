@@ -219,6 +219,11 @@ public partial class PluginAdapter : UnityEngine.MonoBehaviour {
   private static extern XYZ BubbleVelocityCorrection(IntPtr plugin,
                                                      int reference_body_index);
 
+  [DllImport(dllName           : kDllPath,
+             EntryPoint        = "principia__current_time",
+             CallingConvention = CallingConvention.Cdecl)]
+  private static extern double current_time(IntPtr plugin);
+
 }
 
 }  // namespace ksp_plugin_adapter
