@@ -89,7 +89,7 @@ Transforms<FromFrame, ThroughFrame, ToFrame>::BodyCentredNonRotating(
 
     // on_or_after() is Ln(N), but it doesn't matter unless the map gets very
     // big, in which case we'll have cache misses anyway.
-    Trajectory<FromFrame>::NativeIterator const centre_it =
+    TYPENAME Trajectory<FromFrame>::NativeIterator const centre_it =
         from_centre_trajectory.on_or_after(t);
     CHECK_EQ(centre_it.time(), t)
         << "Time " << t << " not in centre trajectory";
@@ -159,11 +159,11 @@ Transforms<FromFrame, ThroughFrame, ToFrame>::BarycentricRotating(
     }
 
     // on_or_after() is Ln(N).
-    Trajectory<FromFrame>::NativeIterator const primary_it =
+    TYPENAME Trajectory<FromFrame>::NativeIterator const primary_it =
         from_primary_trajectory.on_or_after(t);
     CHECK_EQ(primary_it.time(), t)
         << "Time " << t << " not in primary trajectory";
-    Trajectory<FromFrame>::NativeIterator secondary_it =
+    TYPENAME Trajectory<FromFrame>::NativeIterator secondary_it =
         from_secondary_trajectory.on_or_after(t);
     CHECK_EQ(secondary_it.time(), t)
         << "Time " << t << " not in secondary trajectory";
@@ -176,9 +176,9 @@ Transforms<FromFrame, ThroughFrame, ToFrame>::BarycentricRotating(
         Barycentre<FromFrame, GravitationalParameter>(
             {primary_degrees_of_freedom,
              secondary_degrees_of_freedom},
-            {from_primary_trajectory.body<MassiveBody>().
+            {from_primary_trajectory.template body<MassiveBody>().
                  gravitational_parameter(),
-             from_secondary_trajectory.body<MassiveBody>().
+             from_secondary_trajectory.template body<MassiveBody>().
                  gravitational_parameter()});
     Rotation<FromFrame, ThroughFrame>
         from_basis_of_barycentric_frame_to_standard_basis;
@@ -226,9 +226,9 @@ Transforms<FromFrame, ThroughFrame, ToFrame>::BarycentricRotating(
         Barycentre<ToFrame, GravitationalParameter>(
             {last_primary_degrees_of_freedom,
              last_secondary_degrees_of_freedom},
-            {to_primary_trajectory.body<MassiveBody>().
+            {to_primary_trajectory.template body<MassiveBody>().
                  gravitational_parameter(),
-             to_secondary_trajectory.body<MassiveBody>().
+             to_secondary_trajectory.template body<MassiveBody>().
                  gravitational_parameter()});
     Rotation<ToFrame, ThroughFrame>
         from_basis_of_last_barycentric_frame_to_standard_basis;

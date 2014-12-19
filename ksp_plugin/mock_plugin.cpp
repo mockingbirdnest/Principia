@@ -1,5 +1,3 @@
-#pragma once
-
 #include "ksp_plugin/mock_plugin.hpp"
 
 #include "gmock/gmock.h"
