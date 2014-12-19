@@ -46,7 +46,7 @@ typename Trajectory<Frame>::NativeIterator Trajectory<Frame>::last() const {
 
 template<typename Frame>
 template<typename ToFrame>
-typename Trajectory<Frame>::TransformingIterator<ToFrame>
+typename Trajectory<Frame>::TEMPLATE TransformingIterator<ToFrame>
 Trajectory<Frame>::first_with_transform(
     Transform<ToFrame> const& transform) const {
   TransformingIterator<ToFrame> it(transform);
@@ -56,7 +56,7 @@ Trajectory<Frame>::first_with_transform(
 
 template<typename Frame>
 template<typename ToFrame>
-typename Trajectory<Frame>::TransformingIterator<ToFrame>
+typename Trajectory<Frame>::TEMPLATE TransformingIterator<ToFrame>
 Trajectory<Frame>::on_or_after_with_transform(
     Instant const& time,
     Transform<ToFrame> const& transform) const {
@@ -67,7 +67,7 @@ Trajectory<Frame>::on_or_after_with_transform(
 
 template<typename Frame>
 template<typename ToFrame>
-typename Trajectory<Frame>::TransformingIterator<ToFrame>
+typename Trajectory<Frame>::TEMPLATE TransformingIterator<ToFrame>
 Trajectory<Frame>::last_with_transform(
     Transform<ToFrame> const& transform) const {
   TransformingIterator<ToFrame> it(transform);
@@ -352,8 +352,8 @@ template<typename Frame>
 template<typename ToFrame>
 DegreesOfFreedom<ToFrame>
 Trajectory<Frame>::TransformingIterator<ToFrame>::degrees_of_freedom() const {
-  auto it = current();
-  return transform_(it->first, it->second, trajectory());
+  auto it = this->current();
+  return transform_(it->first, it->second, this->trajectory());
 }
 
 template<typename Frame>

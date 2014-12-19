@@ -96,7 +96,7 @@ void NBodySystem<Frame>::Integrate(
       for (auto const& trajectory : trajectories) {
         // See if this trajectory should be processed in this iteration and
         // update the appropriate vector.
-        Body const* const body = &trajectory->body<Body>();
+        Body const* const body = &trajectory->template body<Body>();
         if (body->is_massless() != is_massless ||
             body->is_oblate() != is_oblate) {
           continue;
@@ -228,7 +228,8 @@ inline void NBodySystem<Frame>::ComputeOneBodyGravitationalAcceleration(
       // Lex. III. Actioni contrariam semper & æqualem esse reactionem:
       // sive corporum duorum actiones in se mutuo semper esse æquales &
       // in partes contrarias dirigi.
-      body2 = &body2_trajectories[b2 - b2_begin]->body<MassiveBody>();
+      body2 = &body2_trajectories[b2 - b2_begin]->
+          template body<MassiveBody>();
       GravitationalParameter const& body2_gravitational_parameter =
           body2->gravitational_parameter();
       auto const μ2_over_r_cubed =
@@ -286,7 +287,7 @@ void NBodySystem<Frame>::ComputeGravitationalAccelerations(
 
   for (std::size_t b1 = 0; b1 < number_of_massive_oblate_trajectories; ++b1) {
     OblateBody<Frame> const& body1 =
-        massive_oblate_trajectories[b1]->body<OblateBody<Frame>>();
+        massive_oblate_trajectories[b1]->template body<OblateBody<Frame>>();
     ComputeOneBodyGravitationalAcceleration<true /*body1_is_oblate*/,
                                             true /*body2_is_oblate*/,
                                             true /*body2_is_massive*/>(
@@ -325,7 +326,8 @@ void NBodySystem<Frame>::ComputeGravitationalAccelerations(
        ++b1) {
     MassiveBody const& body1 =
         massive_spherical_trajectories[
-            b1 - number_of_massive_oblate_trajectories]->body<MassiveBody>();
+            b1 - number_of_massive_oblate_trajectories]->
+                template body<MassiveBody>();
     ComputeOneBodyGravitationalAcceleration<false /*body1_is_oblate*/,
                                             false /*body2_is_oblate*/,
                                             true /*body2_is_massive*/>(

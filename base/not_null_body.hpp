@@ -75,12 +75,12 @@ not_null<decltype(P{}.get())> not_null<Pointer>::get() const {
 }
 
 template<typename Pointer>
-bool not_null<Pointer>::operator==(nullptr_t const other) const {
+bool not_null<Pointer>::operator==(std::nullptr_t const other) const {
   return false;
 }
 
 template<typename Pointer>
-bool not_null<Pointer>::operator!=(nullptr_t const other) const {
+bool not_null<Pointer>::operator!=(std::nullptr_t const other) const {
   return true;
 }
 

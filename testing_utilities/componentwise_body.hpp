@@ -137,24 +137,24 @@ template<typename XMatcher, typename YMatcher, typename ZMatcher>
 void ComponentwiseMatcher<XMatcher, YMatcher, ZMatcher>::DescribeTo(
     std::ostream* out) const {
   *out << "x ";
-  Matcher<MatcherParameterType<XMatcher>::type>(x_matcher_).DescribeTo(out);
+  Matcher<typename MatcherParameterType<XMatcher>::type>(x_matcher_).DescribeTo(out);
   *out << " and y ";
-  Matcher<MatcherParameterType<YMatcher>::type>(y_matcher_).DescribeTo(out);
+  Matcher<typename MatcherParameterType<YMatcher>::type>(y_matcher_).DescribeTo(out);
   *out << " and z ";
-  Matcher<MatcherParameterType<ZMatcher>::type>(z_matcher_).DescribeTo(out);
+  Matcher<typename MatcherParameterType<ZMatcher>::type>(z_matcher_).DescribeTo(out);
 }
 
 template<typename XMatcher, typename YMatcher, typename ZMatcher>
 void ComponentwiseMatcher<XMatcher, YMatcher, ZMatcher>::DescribeNegationTo(
     std::ostream* out) const {
   *out << "x ";
-  Matcher<MatcherParameterType<XMatcher>::type>(
+  Matcher<typename MatcherParameterType<XMatcher>::type>(
       x_matcher_).DescribeNegationTo(out);
   *out << " or y ";
-  Matcher<MatcherParameterType<YMatcher>::type>(
+  Matcher<typename MatcherParameterType<YMatcher>::type>(
       y_matcher_).DescribeNegationTo(out);
   *out << " or z ";
-  Matcher<MatcherParameterType<ZMatcher>::type>(
+  Matcher<typename MatcherParameterType<ZMatcher>::type>(
       z_matcher_).DescribeNegationTo(out);
 }
 

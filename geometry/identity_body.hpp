@@ -9,6 +9,9 @@ namespace principia {
 namespace geometry {
 
 template<typename FromFrame, typename ToFrame>
+Identity<FromFrame, ToFrame>::Identity() {}
+
+template<typename FromFrame, typename ToFrame>
 Sign Identity<FromFrame, ToFrame>::Determinant() const {
   return Sign(1);
 }
