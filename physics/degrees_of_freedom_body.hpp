@@ -65,7 +65,8 @@ DegreesOfFreedom<Frame> Barycentre(
   CHECK_EQ(degrees_of_freedom.size(), weights.size())
       << "Degrees of freedom and weights of unequal sizes";
   CHECK(!degrees_of_freedom.empty()) << "Empty input";
-  typename DegreesOfFreedom<Frame>::template BarycentreCalculator<Weight> calculator;
+  typename DegreesOfFreedom<Frame>::
+      template BarycentreCalculator<Weight> calculator;
   for (size_t i = 0; i < degrees_of_freedom.size(); ++i) {
     calculator.Add(degrees_of_freedom[i], weights[i]);
   }

@@ -137,11 +137,14 @@ template<typename XMatcher, typename YMatcher, typename ZMatcher>
 void ComponentwiseMatcher<XMatcher, YMatcher, ZMatcher>::DescribeTo(
     std::ostream* out) const {
   *out << "x ";
-  Matcher<typename MatcherParameterType<XMatcher>::type>(x_matcher_).DescribeTo(out);
+  Matcher<typename MatcherParameterType<XMatcher>::type>(
+      x_matcher_).DescribeTo(out);
   *out << " and y ";
-  Matcher<typename MatcherParameterType<YMatcher>::type>(y_matcher_).DescribeTo(out);
+  Matcher<typename MatcherParameterType<YMatcher>::type>(
+      y_matcher_).DescribeTo(out);
   *out << " and z ";
-  Matcher<typename MatcherParameterType<ZMatcher>::type>(z_matcher_).DescribeTo(out);
+  Matcher<typename MatcherParameterType<ZMatcher>::type>(
+      z_matcher_).DescribeTo(out);
 }
 
 template<typename XMatcher, typename YMatcher, typename ZMatcher>
