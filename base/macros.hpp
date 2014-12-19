@@ -107,7 +107,7 @@ __declspec(noreturn)
 #elif PRINCIPIA_COMPILER_ICC
 __attribute__((noreturn))
 #else
-#  error "What compiler is this?"
+#error "What compiler is this?"
 #endif
 inline void noreturn() { exit(0); }
 
@@ -127,16 +127,16 @@ inline void noreturn() { exit(0); }
 // A workaround for a MSVC bug wherein a |typename| is required by the standard
 // and by clang but forbidden by MSVC.
 #if PRINCIPIA_COMPILER_MSVC
-#define TYPENAME
+#  define TYPENAME
 #else
-#define TYPENAME typename
+#  define TYPENAME typename
 #endif
 
 // Same as above, with |template|.
 #if PRINCIPIA_COMPILER_MSVC
-#define TEMPLATE
+#  define TEMPLATE
 #else
-#define TEMPLATE template
+#  define TEMPLATE template
 #endif
 
 
