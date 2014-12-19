@@ -6,7 +6,7 @@ using System.Runtime.InteropServices;
 namespace principia {
 namespace ksp_plugin_adapter {
 
-[KSPAddon(startup : KSPAddon.Startup.EveryScene, once : false)]
+[KSPAddon(startup : KSPAddon.Startup.MainMenu, once : false)]
 public partial class PluginAdapter : UnityEngine.MonoBehaviour {
   // This constant can be at most 32766, since Vectrosity imposes a maximum of
   // 65534 vertices, where there are 2 vertices per point on discrete lines.  We
@@ -36,6 +36,8 @@ public partial class PluginAdapter : UnityEngine.MonoBehaviour {
   private int second_selected_celestial_ = 0;
 
   private bool time_is_advancing_;
+
+  private bool should_initialize_on_next_fixed_update_ = false;
 
   private static bool an_instance_is_loaded;
 
@@ -76,21 +78,23 @@ public partial class PluginAdapter : UnityEngine.MonoBehaviour {
   }
 
   // Applies |process_vessel| to all vessels in space.
-  private void ApplyToVesselsInSpace(VesselProcessor process_vessel) {
-    foreach (Vessel vessel in FlightGlobals.Vessels) {
-      if (vessel.situation == Vessel.Situations.SUB_ORBITAL ||
-          vessel.situation == Vessel.Situations.ORBITING ||
-          vessel.situation == Vessel.Situations.ESCAPING) {
-        process_vessel(vessel);
-      }
+  private void ApplyToVesselsOnRailsOrInInertialPhysicsBubbleInSpace(
+      VesselProcessor process_vessel) {
+    var vessels = from vessel in FlightGlobals.Vessels
+                  where is_on_rails_in_space(vessel) || 
+                        is_in_inertial_physics_bubble_in_space(vessel)
+                  select vessel;
+    foreach (Vessel vessel in vessels) {
+      process_vessel(vessel);
     }
   }
 
-  private void ApplyToLoadedVesselsInSpace(VesselProcessor process_vessel) {
-    foreach (Vessel vessel in FlightGlobals.Vessels) {
-      if (!vessel.packed && vessel.loaded) {
-        process_vessel(vessel);
-      }
+  private void ApplyToVesselsInPhysicsBubble(VesselProcessor process_vessel) {
+    var vessels = from vessel in FlightGlobals.Vessels
+                  where is_in_physics_bubble(vessel)
+                  select vessel;
+    foreach (Vessel vessel in vessels) {
+      process_vessel(vessel);
     }
   }
 
@@ -198,13 +202,24 @@ public partial class PluginAdapter : UnityEngine.MonoBehaviour {
            vessel.situation == Vessel.Situations.ESCAPING;
   }
 
+  private bool is_on_rails_in_space(Vessel vessel) {
+    return vessel.packed && is_in_space(vessel);
+  }
+
+  private bool is_in_physics_bubble(Vessel vessel) {
+    return !vessel.packed && vessel.loaded;
+  }
+
+  private bool is_in_inertial_physics_bubble_in_space(Vessel vessel) {
+    return is_in_physics_bubble(vessel) &&
+           !Planetarium.FrameIsRotating() &&
+           is_in_space(vessel);
+  }
+
   private bool has_inertial_physics_bubble_in_space() {
     Vessel active_vessel = FlightGlobals.ActiveVessel;
     return active_vessel != null &&
-           !active_vessel.packed &&
-           active_vessel.loaded &&
-           is_in_space(active_vessel) &&
-           !Planetarium.FrameIsRotating();
+           is_in_inertial_physics_bubble_in_space(active_vessel);
   }
 
   #region Unity Lifecycle
@@ -216,6 +231,7 @@ public partial class PluginAdapter : UnityEngine.MonoBehaviour {
   private void Awake() {
     Log.Info("principia.ksp_plugin_adapter.PluginAdapter.Awake()");
     if (an_instance_is_loaded) {
+      Log.Info("an instance was loaded");
       UnityEngine.Object.Destroy(gameObject);
     } else {
       UnityEngine.Object.DontDestroyOnLoad(gameObject);
@@ -227,6 +243,8 @@ public partial class PluginAdapter : UnityEngine.MonoBehaviour {
         top    : UnityEngine.Screen.height / 2.0f,
         width  : 10,
         height : 10);
+    ApplyToBodyTree(body => body.inverseRotThresholdAltitude =
+                                body.maxAtmosphereAltitude);
   }
 
   private void OnGUI() {
@@ -240,6 +258,10 @@ public partial class PluginAdapter : UnityEngine.MonoBehaviour {
   }
 
   private void FixedUpdate() {
+    if (should_initialize_on_next_fixed_update_) {
+      ResetPlugin();
+      should_initialize_on_next_fixed_update_ = false;
+    }
     if (PluginRunning()) {
       double universal_time = Planetarium.GetUniversalTime();
       double plugin_time = current_time(plugin_);
@@ -251,11 +273,11 @@ public partial class PluginAdapter : UnityEngine.MonoBehaviour {
       }
       time_is_advancing_ = true;
       if (has_inertial_physics_bubble_in_space()) {
-        ApplyToLoadedVesselsInSpace(AddToPhysicsBubble);
+        ApplyToVesselsInPhysicsBubble(AddToPhysicsBubble);
       }
       AdvanceTime(plugin_, universal_time, Planetarium.InverseRotAngle);
       ApplyToBodyTree(body => UpdateBody(body, universal_time));
-      ApplyToVesselsInSpace(vessel => UpdateVessel(vessel, universal_time));
+      ApplyToVesselsOnRailsOrInInertialPhysicsBubbleInSpace(vessel => UpdateVessel(vessel, universal_time));
       Vessel active_vessel = FlightGlobals.ActiveVessel;
       if (has_inertial_physics_bubble_in_space()) {
         Vector3d displacement_offset =
@@ -273,7 +295,8 @@ public partial class PluginAdapter : UnityEngine.MonoBehaviour {
       }
       if (MapView.MapIsEnabled &&
           active_vessel != null &&
-          is_in_space(active_vessel)) {
+          (is_on_rails_in_space(active_vessel) ||
+           is_in_inertial_physics_bubble_in_space(active_vessel))) {
         if (active_vessel.orbitDriver.Renderer.drawMode !=
                 OrbitRenderer.DrawMode.OFF ||
             active_vessel.orbitDriver.Renderer.drawIcons !=
@@ -324,12 +347,28 @@ public partial class PluginAdapter : UnityEngine.MonoBehaviour {
           Vector.DrawLine(rendered_trajectory_);
         }
       } else {
-        DestroyRenderedTrajectory();
+        ResetRenderedTrajectory();
       }
     }
   }
 
   #endregion
+
+  private void ResetRenderedTrajectory() {
+    DestroyRenderedTrajectory();
+    rendered_trajectory_ = new VectorLine(
+        lineName     : "rendered_trajectory_",
+        linePoints   : new UnityEngine.Vector3[kLinePoints],
+        lineMaterial : MapView.OrbitLinesMaterial,
+        color        : XKCDColors.AcidGreen,
+        width        : 5,
+        lineType     : LineType.Discrete);
+    rendered_trajectory_.vectorObject.transform.parent =
+        ScaledSpace.Instance.transform;
+    rendered_trajectory_.vectorObject.renderer.castShadows = false;
+    rendered_trajectory_.vectorObject.renderer.receiveShadows = false;
+    rendered_trajectory_.layer = 31;
+  }
 
   private void DestroyRenderedTrajectory() {
     if (rendered_trajectory_ != null) {
@@ -344,7 +383,7 @@ public partial class PluginAdapter : UnityEngine.MonoBehaviour {
   }
 
   private void InitializeOnGameStateLoad(ConfigNode node) {
-    InitializePlugin();
+    should_initialize_on_next_fixed_update_ = true;
   }
 
   private void DrawMainWindow(int window_id) {
@@ -360,6 +399,15 @@ public partial class PluginAdapter : UnityEngine.MonoBehaviour {
 
     UnityEngine.GUILayout.BeginVertical();
     String plugin_state;
+    if (PluginRunning()) {
+      if (UnityEngine.GUILayout.Button(text : "Force Stop")) {
+        Cleanup();
+      }
+    } else {
+      if (UnityEngine.GUILayout.Button(text : "Force Start")) {
+        ResetPlugin();
+      }
+    }
     if (!PluginRunning()) {
       plugin_state = "not started";
     } else if (!time_is_advancing_) {
@@ -370,12 +418,25 @@ public partial class PluginAdapter : UnityEngine.MonoBehaviour {
       plugin_state = "managing physics bubble";
     }
     UnityEngine.GUILayout.TextArea(text : "Plugin is " + plugin_state);
+    bool barycentric_rotating =
+        first_selected_celestial_ != second_selected_celestial_;
     UnityEngine.GUILayout.TextArea(
-        text : "Frame is " +
-               (first_selected_celestial_ == second_selected_celestial_
-                    ? "not " : "") +
-               "rotating");
-    UnityEngine.GUILayout.Label(text : "Fixed bodies:");
+        text : "Frame is " + (barycentric_rotating ? " " : "not ") + "rotating");
+    String reference_frame_description;
+    if (barycentric_rotating) {
+      reference_frame_description =
+          "The reference frame fixing the barycentre of " +
+          FlightGlobals.Bodies[first_selected_celestial_].theName + " and " +
+          FlightGlobals.Bodies[second_selected_celestial_].theName + ", " +
+          "the line through them, and the plane in which they move about the " +
+          "barycentre.";
+    } else {
+      reference_frame_description =
+          "The nonrotating reference frame fixing the centre of " +
+          FlightGlobals.Bodies[first_selected_celestial_].theName + ".";
+    }
+    UnityEngine.GUILayout.TextArea(text: reference_frame_description);
+    UnityEngine.GUILayout.Label(text : "Reference frame selection:");
     foreach (CelestialBody celestial in FlightGlobals.Bodies) {
       bool changed_reference_frame = false;
       UnityEngine.GUILayout.BeginHorizontal();
@@ -419,22 +480,9 @@ public partial class PluginAdapter : UnityEngine.MonoBehaviour {
     }
   }
 
-  private void InitializePlugin() {
-    if (PluginRunning()) {
-      Cleanup();
-    }
-    rendered_trajectory_ = new VectorLine(
-        lineName     : "rendered_trajectory_",
-        linePoints   : new UnityEngine.Vector3[kLinePoints],
-        lineMaterial : MapView.OrbitLinesMaterial,
-        color        : XKCDColors.AcidGreen,
-        width        : 5,
-        lineType     : LineType.Discrete);
-    rendered_trajectory_.vectorObject.transform.parent =
-        ScaledSpace.Instance.transform;
-    rendered_trajectory_.vectorObject.renderer.castShadows = false;
-    rendered_trajectory_.vectorObject.renderer.receiveShadows = false;
-    rendered_trajectory_.layer = 31;
+  private void ResetPlugin() {
+    Cleanup();
+    ResetRenderedTrajectory();
     plugin_ = NewPlugin(Planetarium.GetUniversalTime(),
                         Planetarium.fetch.Sun.flightGlobalsIndex,
                         Planetarium.fetch.Sun.gravParameter,
@@ -466,7 +514,7 @@ public partial class PluginAdapter : UnityEngine.MonoBehaviour {
                              (XYZ)vessel.orbit.vel);
       }
     };
-    ApplyToVesselsInSpace(insert_vessel);
+    ApplyToVesselsOnRailsOrInInertialPhysicsBubbleInSpace(insert_vessel);
   }
 }
 
