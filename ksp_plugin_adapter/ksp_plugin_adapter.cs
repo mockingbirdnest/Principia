@@ -39,6 +39,7 @@ public partial class PluginAdapter : UnityEngine.MonoBehaviour {
 
   private bool should_initialize_ = false;
   private int fixed_updates_until_initialization_;
+  private DateTime last_plugin_reset_;
 
   private static bool an_instance_is_loaded;
 
@@ -424,6 +425,15 @@ public partial class PluginAdapter : UnityEngine.MonoBehaviour {
       plugin_state = "managing physics bubble";
     }
     UnityEngine.GUILayout.TextArea(text : "Plugin is " + plugin_state);
+    String last_reset_information;
+    if (!PluginRunning()) {
+      last_reset_information = "";
+    } else {
+      last_reset_information =
+          "Plugin was started at " +
+          last_plugin_reset_.ToUniversalTime().ToString("O");
+    }
+    UnityEngine.GUILayout.TextArea(last_reset_information);
     bool barycentric_rotating =
         first_selected_celestial_ != second_selected_celestial_;
     UnityEngine.GUILayout.TextArea(
@@ -431,7 +441,8 @@ public partial class PluginAdapter : UnityEngine.MonoBehaviour {
     String reference_frame_description;
     if (barycentric_rotating) {
       reference_frame_description =
-          "The reference frame fixing the barycentre of " +
+          "The trajectory of the active vessel is plotted in the reference " +
+          "frame fixing the barycentre of " +
           FlightGlobals.Bodies[first_selected_celestial_].theName + " and " +
           FlightGlobals.Bodies[second_selected_celestial_].theName + ", " +
           "the line through them, and the plane in which they move about the " +
@@ -489,6 +500,7 @@ public partial class PluginAdapter : UnityEngine.MonoBehaviour {
   private void ResetPlugin() {
     Cleanup();
     ResetRenderedTrajectory();
+    last_plugin_reset_ = DateTime.Now;
     plugin_ = NewPlugin(Planetarium.GetUniversalTime(),
                         Planetarium.fetch.Sun.flightGlobalsIndex,
                         Planetarium.fetch.Sun.gravParameter,
