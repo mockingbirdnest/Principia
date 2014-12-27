@@ -37,7 +37,8 @@ public partial class PluginAdapter : UnityEngine.MonoBehaviour {
 
   private bool time_is_advancing_;
 
-  private bool should_initialize_on_next_fixed_update_ = false;
+  private bool should_initialize_ = false;
+  private int fixed_updates_until_initialization_;
 
   private static bool an_instance_is_loaded;
 
@@ -258,9 +259,13 @@ public partial class PluginAdapter : UnityEngine.MonoBehaviour {
   }
 
   private void FixedUpdate() {
-    if (should_initialize_on_next_fixed_update_) {
-      ResetPlugin();
-      should_initialize_on_next_fixed_update_ = false;
+    if (should_initialize_) {
+      if (fixed_updates_until_initialization_ > 0) {
+        --fixed_updates_until_initialization_;
+      } else {
+        ResetPlugin();
+        should_initialize_ = false;
+      }
     }
     if (PluginRunning()) {
       double universal_time = Planetarium.GetUniversalTime();
@@ -383,7 +388,8 @@ public partial class PluginAdapter : UnityEngine.MonoBehaviour {
   }
 
   private void InitializeOnGameStateLoad(ConfigNode node) {
-    should_initialize_on_next_fixed_update_ = true;
+    should_initialize_ = true;
+    fixed_updates_until_initialization_ = 1;
   }
 
   private void DrawMainWindow(int window_id) {
