@@ -29,8 +29,7 @@ class PhysicsBubble {
   // a list of pointers to the Parts in |parts|.  Merges |parts| into
   // |next_->parts|.  The |vessel| must not already be in |next_->vessels|.
   // |parts| must not contain a |PartId| already in |next_->parts|.
-  void PhysicsBubble::AddVesselToNext(Vessel* vessel,
-                                      std::vector<IdAndOwnedPart> parts);
+  void AddVesselToNext(Vessel* vessel, std::vector<IdAndOwnedPart> parts);
 
   // If |next_| is not null, computes the world centre of mass, trajectory
   // (including intrinsic acceleration) of |*next_|. Moves |next_| into
@@ -43,7 +42,7 @@ class PhysicsBubble {
   // Computes and returns |current_->displacement_correction|.  This is the
   // |World| shift to be applied to the bubble in order for it to be in the
   // correct position.
-  Displacement<World> PhysicsBubble::DisplacementCorrection(
+  Displacement<World> DisplacementCorrection(
       PlanetariumRotation const& planetarium_rotation,
       Celestial const& reference_celestial,
       Position<World> const& reference_celestial_world_position) const;
@@ -51,7 +50,7 @@ class PhysicsBubble {
   // Computes and returns |current_->velocity_correction|.  This is the |World|
   // shift to be applied to the physics bubble in order for it to have the
   // correct velocity.
-  Velocity<World> PhysicsBubble::VelocityCorrection(
+  Velocity<World> VelocityCorrection(
       PlanetariumRotation const& planetarium_rotation,
       Celestial const& reference_celestial) const;
 

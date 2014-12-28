@@ -616,7 +616,7 @@ void Plugin::AddVesselToNextPhysicsBubble(
   std::unique_ptr<Vessel> const& vessel =
       find_vessel_by_guid_or_die(vessel_guid);
   dirty_vessels_.insert(vessel.get());
-  bubble_->AddVesselToNext(vessel.get(), parts);
+  bubble_->AddVesselToNext(vessel.get(), std::move(parts));
 }
 
 Displacement<World> Plugin::BubbleDisplacementCorrection(
