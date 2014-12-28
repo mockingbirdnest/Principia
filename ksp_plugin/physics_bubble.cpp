@@ -225,7 +225,8 @@ PhysicsBubble::mutable_centre_of_mass_trajectory() const {
 
 PhysicsBubble::PreliminaryState::PreliminaryState() {}
 
-PhysicsBubble::FullState::FullState(PreliminaryState&& preliminary_state)
+PhysicsBubble::FullState::FullState(
+    PreliminaryState&& preliminary_state)  // NOLINT(build/c++11)
     : PreliminaryState() {
   parts = std::move(preliminary_state.parts);
   vessels = std::move(preliminary_state.vessels);

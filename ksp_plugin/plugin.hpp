@@ -61,9 +61,6 @@ struct LineSegment {
 template<typename Frame>
 using RenderedTrajectory = std::vector<LineSegment<Frame>>;
 
-using PartIdToOwnedPart = std::map<PartId, std::unique_ptr<Part<World>>>;
-using IdAndOwnedPart = PartIdToOwnedPart::value_type;
-
 class Plugin {
  public:
   Plugin() = delete;
@@ -216,7 +213,7 @@ class Plugin {
       GUID const& vessel_guid,
       Velocity<World> const& parent_world_velocity,
       Time const& parent_rotation_period) const;
-  
+
   // Creates |next_physics_bubble_| if it is null.  Adds the vessel with GUID
   // |vessel_guid| to |next_physics_bubble_->vessels| with a list of pointers to
   // the |Part|s in |parts|.  Merges |parts| into |next_physics_bubble_->parts|.
@@ -241,7 +238,6 @@ class Plugin {
  private:
   using GUIDToOwnedVessel = std::map<GUID, std::unique_ptr<Vessel>>;
   using GUIDToUnownedVessel = std::map<GUID, Vessel* const>;
-  using PartCorrespondence = std::pair<Part<World>*, Part<World>*>;
 
   std::unique_ptr<Vessel> const& find_vessel_by_guid_or_die(
       GUID const& vessel_guid) const;

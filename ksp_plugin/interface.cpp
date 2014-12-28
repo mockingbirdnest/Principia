@@ -5,6 +5,7 @@
 #include <vector>
 
 #include "base/version.hpp"
+#include "ksp_plugin/part.hpp"
 
 using principia::geometry::Displacement;
 using principia::ksp_plugin::AliceSun;

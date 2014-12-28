@@ -15,11 +15,6 @@ namespace ksp_plugin {
 
 class PhysicsBubble {
  public:
-  //TODO(phl): Move to some common place.
-  using PartIdToOwnedPart = std::map<PartId, std::unique_ptr<Part<World>>>;
-  using IdAndOwnedPart = PartIdToOwnedPart::value_type;
-  using Index = int;
-  using PartCorrespondence = std::pair<Part<World>*, Part<World>*>;
   using PlanetariumRotation = geometry::Rotation<Barycentric, WorldSun>;
 
   PhysicsBubble();
@@ -77,6 +72,8 @@ class PhysicsBubble {
   Trajectory<Barycentric>* mutable_centre_of_mass_trajectory() const;
 
  private:
+  using PartCorrespondence = std::pair<Part<World>*, Part<World>*>;
+
   struct PreliminaryState {
     PreliminaryState();
     std::map<Vessel* const, std::vector<Part<World>* const>> vessels;
@@ -84,7 +81,8 @@ class PhysicsBubble {
   };
 
   struct FullState : public PreliminaryState {
-    explicit FullState(PreliminaryState&& preliminary_state);
+    explicit FullState(
+        PreliminaryState&& preliminary_state);  // NOLINT(build/c++11)
 
     // TODO(egg): these fields should be |std::optional| when that becomes a
     // thing.
