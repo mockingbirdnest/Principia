@@ -316,7 +316,7 @@ class Plugin {
   // The vessels that will be kept during the next call to |AdvanceTime|.
   std::set<Vessel const* const> kept_vessels_;
 
-  std::unique_ptr<PhysicsBubble> bubble_;
+  PhysicsBubble bubble_;
 
   std::unique_ptr<NBodySystem<Barycentric>> n_body_system_;
   // The symplectic integrator computing the synchronized histories.

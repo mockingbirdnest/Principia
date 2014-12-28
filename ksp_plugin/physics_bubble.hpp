@@ -22,7 +22,7 @@ class PhysicsBubble {
   using PartCorrespondence = std::pair<Part<World>*, Part<World>*>;
   using PlanetariumRotation = geometry::Rotation<Barycentric, WorldSun>;
 
-  PhysicsBubble() = default;
+  PhysicsBubble();
   ~PhysicsBubble() = default;
 
   // Creates |next_| if it is null.  Adds the |vessel| to |next_->vessels| with
@@ -124,7 +124,8 @@ class PhysicsBubble {
   Vector<Acceleration, World> IntrinsicAcceleration(
       Instant const& current_time,
       Instant const& next_time,
-      std::vector<PartCorrespondence>* const common_parts);
+      std::vector<PartCorrespondence>* const common_parts,
+      FullState* next);
 
   // Given the vector of common parts produced by |IntrinsicAcceleration|,
   // constructs |next->centre_of_mass_trajectory| and appends degrees of
@@ -136,9 +137,11 @@ class PhysicsBubble {
              FullState* next);
 
   std::unique_ptr<FullState> current_;
+  // The following member is only accessed by |AddVesselToNext| and at the
+  // beginning of |Prepare|.
   std::unique_ptr<PreliminaryState> next_;
 
-  MasslessBody const bubble_body_;
+  MasslessBody const body_;
 };
 
 }  // namespace ksp_plugin

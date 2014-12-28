@@ -20,6 +20,9 @@ using principia::quantities::Time;
 namespace principia {
 namespace ksp_plugin {
 
+PhysicsBubble::PhysicsBubble()
+    : body_() {}
+
 void PhysicsBubble::AddVesselToNext(Vessel* vessel,
                                     std::vector<IdAndOwnedPart> parts) {
   VLOG(1) << __FUNCTION__ << '\n' << NAMED(vessel) << '\n' << NAMED(parts);
@@ -64,13 +67,16 @@ void PhysicsBubble::Prepare(PlanetariumRotation const& planetarium_rotation,
           std::make_unique<
               std::vector<std::pair<Part<World>*, Part<World>*>>>();
       Vector<Acceleration, World> const intrinsic_acceleration =
-          IntrinsicAcceleration(current_time, next_time, common_parts.get());
+          IntrinsicAcceleration(current_time,
+                                next_time,
+                                common_parts.get(),
+                                next.get());
       if (common_parts->empty()) {
         // The current and next set of parts are disjoint, i.e., the next
         // physics bubble is unrelated to the current one.
         RestartNext(current_time, next.get());
       } else {
-        if (common_parts->size() == next_->parts.size() &&
+        if (common_parts->size() == next->parts.size() &&
             common_parts->size() == current_->parts.size()) {
           // The set of parts has not changed.
           next->centre_of_mass_trajectory =
@@ -230,10 +236,10 @@ void PhysicsBubble::ComputeNextCentreOfMassWorldDegreesOfFreedom(
   VLOG(1) << __FUNCTION__;
   CHECK_NOTNULL(next);
   std::vector<DegreesOfFreedom<World>> part_degrees_of_freedom;
-  part_degrees_of_freedom.reserve(next_->parts.size());
+  part_degrees_of_freedom.reserve(next->parts.size());
   std::vector<Mass> part_masses;
-  part_masses.reserve(next_->parts.size());
-  for (auto const& id_part : next_->parts) {
+  part_masses.reserve(next->parts.size());
+  for (auto const& id_part : next->parts) {
     std::unique_ptr<Part<World>> const& part = id_part.second;
     part_degrees_of_freedom.push_back(part->degrees_of_freedom);
     part_masses.push_back(part->mass);
@@ -255,8 +261,8 @@ void PhysicsBubble::ComputeNextVesselOffsets(
   next->velocities_from_centre_of_mass =
       std::make_unique<std::map<Vessel const* const,
                                 Velocity<Barycentric>>>();
-  VLOG(1) << NAMED(next_->vessels.size());
-  for (auto const& vessel_parts : next_->vessels) {
+  VLOG(1) << NAMED(next->vessels.size());
+  for (auto const& vessel_parts : next->vessels) {
     Vessel const* const vessel = vessel_parts.first;
     std::vector<Part<World>* const> const& parts = vessel_parts.second;
     VLOG(1) << NAMED(vessel) << ", " << NAMED(parts.size());
@@ -295,10 +301,10 @@ void PhysicsBubble::RestartNext(Instant const& current_time,
   VLOG(1) << __FUNCTION__;
   CHECK_NOTNULL(next);
   std::vector<DegreesOfFreedom<Barycentric>> vessel_degrees_of_freedom;
-  vessel_degrees_of_freedom.reserve(next_->vessels.size());
+  vessel_degrees_of_freedom.reserve(next->vessels.size());
   std::vector<Mass> vessel_masses;
-  vessel_masses.reserve(next_->vessels.size());
-  for (auto const& vessel_parts : next_->vessels) {
+  vessel_masses.reserve(next->vessels.size());
+  for (auto const& vessel_parts : next->vessels) {
     Vessel const* vessel = vessel_parts.first;
     std::vector<Part<World>* const> const& parts = vessel_parts.second;
     vessel_degrees_of_freedom.push_back(
@@ -309,7 +315,7 @@ void PhysicsBubble::RestartNext(Instant const& current_time,
     }
   }
   next->centre_of_mass_trajectory =
-      std::make_unique<Trajectory<Barycentric>>(bubble_body_);
+      std::make_unique<Trajectory<Barycentric>>(body_);
   next->centre_of_mass_trajectory->Append(
       current_time,
       physics::Barycentre(vessel_degrees_of_freedom, vessel_masses));
@@ -318,7 +324,8 @@ void PhysicsBubble::RestartNext(Instant const& current_time,
 Vector<Acceleration, World> PhysicsBubble::IntrinsicAcceleration(
     Instant const& current_time,
     Instant const& next_time,
-    std::vector<PartCorrespondence>* const common_parts) {
+    std::vector<PartCorrespondence>* const common_parts,
+    FullState* next) {
   VLOG(1) << __FUNCTION__ << '\n'
           << NAMED(next_time) << '\n' << NAMED(common_parts);
   CHECK_NOTNULL(common_parts);
@@ -330,9 +337,9 @@ Vector<Acceleration, World> PhysicsBubble::IntrinsicAcceleration(
       acceleration_calculator;
   Time const δt = next_time - current_time;
   for (auto it_in_current_parts = current_->parts.cbegin(),
-            it_in_next_parts = next_->parts.cbegin();
+            it_in_next_parts = next->parts.cbegin();
        it_in_current_parts != current_->parts.end() &&
-       it_in_next_parts != next_->parts.end();) {
+       it_in_next_parts != next->parts.end();) {
     PartId current_part_id = it_in_current_parts->first;
     PartId next_part_id = it_in_next_parts->first;
     if (current_part_id < next_part_id) {
@@ -406,7 +413,7 @@ void PhysicsBubble::Shift(
       current_->
           centre_of_mass_trajectory->last().degrees_of_freedom();
   next->centre_of_mass_trajectory =
-      std::make_unique<Trajectory<Barycentric>>(bubble_body_);
+      std::make_unique<Trajectory<Barycentric>>(body_);
   // Using the identity as the map |World| -> |WorldSun| is valid for
   // velocities too since we assume |World| is currently nonrotating, i.e.,
   // it is stationary with respect to |WorldSun|.

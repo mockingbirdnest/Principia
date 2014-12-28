@@ -125,7 +125,7 @@ void Plugin::EvolveHistories(Instant const& t) {
   for (auto const& pair : vessels_) {
     Vessel* const vessel = pair.second.get();
     if (vessel->is_synchronized() &&
-        !bubble_->contains(vessel) &&
+        !bubble_.contains(vessel) &&
         !is_dirty(vessel)) {
       trajectories.push_back(vessel->mutable_history());
     }
@@ -147,37 +147,37 @@ void Plugin::SynchronizeNewVesselsAndCleanDirtyVessels() {
   VLOG(1) << __FUNCTION__;
   NBodySystem<Barycentric>::Trajectories trajectories;
   trajectories.reserve(celestials_.size() + unsynchronized_vessels_.size() +
-                       bubble_->size());
+                       bubble_.size());
   for (auto const& pair : celestials_) {
     std::unique_ptr<Celestial> const& celestial = pair.second;
     trajectories.push_back(celestial->mutable_prolongation());
   }
   for (Vessel* const vessel : unsynchronized_vessels_) {
-    if (!bubble_->contains(vessel)) {
+    if (!bubble_.contains(vessel)) {
       trajectories.push_back(vessel->mutable_prolongation());
     }
   }
   for (Vessel* const vessel : dirty_vessels_) {
-    if (!bubble_->contains(vessel) && vessel->is_synchronized()) {
+    if (!bubble_.contains(vessel) && vessel->is_synchronized()) {
       trajectories.push_back(vessel->mutable_prolongation());
     }
   }
-  if (!bubble_->empty()) {
-    trajectories.push_back(bubble_->mutable_centre_of_mass_trajectory());
+  if (!bubble_.empty()) {
+    trajectories.push_back(bubble_.mutable_centre_of_mass_trajectory());
   }
   VLOG(1) << "Starting the synchronization of the new vessels"
-          << (bubble_->empty() ? "" : " and of the bubble");
+          << (bubble_.empty() ? "" : " and of the bubble");
   n_body_system_->Integrate(prolongation_integrator_,  // integrator
                             HistoryTime(),             // tmax
                             Δt_,                       // Δt
                             0,                         // sampling_period
                             true,                      // tmax_is_exact
                             trajectories);             // trajectories
-  if (!bubble_->empty()) {
+  if (!bubble_.empty()) {
     SynchronizeBubbleHistories();
   }
   for (Vessel* const vessel : unsynchronized_vessels_) {
-    CHECK(!bubble_->contains(vessel));
+    CHECK(!bubble_.contains(vessel));
     vessel->CreateHistoryAndForkProlongation(
         HistoryTime(),
         vessel->prolongation().last().degrees_of_freedom());
@@ -185,26 +185,25 @@ void Plugin::SynchronizeNewVesselsAndCleanDirtyVessels() {
   }
   unsynchronized_vessels_.clear();
   for (Vessel* const vessel : dirty_vessels_) {
-    CHECK(!bubble_->contains(vessel));
+    CHECK(!bubble_.contains(vessel));
     vessel->mutable_history()->Append(
         HistoryTime(),
         vessel->prolongation().last().degrees_of_freedom());
   }
   dirty_vessels_.clear();
   VLOG(1) << "Synchronized the new vessels"
-          << (bubble_->empty() ? "" : " and the bubble");
+          << (bubble_.empty() ? "" : " and the bubble");
 }
 
 void Plugin::SynchronizeBubbleHistories() {
   VLOG(1) << __FUNCTION__;
   DegreesOfFreedom<Barycentric> const& centre_of_mass =
-      bubble_->centre_of_mass_trajectory().
-          last().degrees_of_freedom();
-  for (Vessel* vessel : bubble_->vessels()) {
+      bubble_.centre_of_mass_trajectory().last().degrees_of_freedom();
+  for (Vessel* vessel : bubble_.vessels()) {
     Displacement<Barycentric> const& displacement =
-        bubble_->displacements_from_centre_of_mass(vessel);
+        bubble_.displacements_from_centre_of_mass(vessel);
     Velocity<Barycentric> const& velocity =
-        bubble_->velocities_from_centre_of_mass(vessel);
+        bubble_.velocities_from_centre_of_mass(vessel);
     if (vessel->is_synchronized()) {
       vessel->mutable_history()->Append(
           HistoryTime(),
@@ -238,22 +237,22 @@ void Plugin::EvolveProlongationsAndBubble(Instant const& t) {
   VLOG(1) << __FUNCTION__ << '\n' << NAMED(t);
   NBodySystem<Barycentric>::Trajectories trajectories;
   trajectories.reserve(vessels_.size() + celestials_.size() -
-                       bubble_->number_of_vessels() + bubble_->size());
+                       bubble_.number_of_vessels() + bubble_.size());
   for (auto const& pair : celestials_) {
     std::unique_ptr<Celestial> const& celestial = pair.second;
     trajectories.push_back(celestial->mutable_prolongation());
   }
   for (auto const& pair : vessels_) {
     Vessel* const vessel = pair.second.get();
-    if (!bubble_->contains(vessel)) {
+    if (!bubble_.contains(vessel)) {
       trajectories.push_back(vessel->mutable_prolongation());
     }
   }
-  if (!bubble_->empty()) {
-    trajectories.push_back(bubble_->mutable_centre_of_mass_trajectory());
+  if (!bubble_.empty()) {
+    trajectories.push_back(bubble_.mutable_centre_of_mass_trajectory());
   }
   VLOG(1) << "Evolving prolongations"
-          << (bubble_->empty() ? "" : " and bubble") << '\n'
+          << (bubble_.empty() ? "" : " and bubble") << '\n'
           << "from : " << trajectories.front()->last().time() << '\n'
           << "to   : " << t;
   n_body_system_->Integrate(prolongation_integrator_,  // integrator
@@ -262,15 +261,14 @@ void Plugin::EvolveProlongationsAndBubble(Instant const& t) {
                             0,                         // sampling_period
                             true,                      // tmax_is_exact
                             trajectories);             // trajectories
-  if (!bubble_->empty()) {
+  if (!bubble_.empty()) {
     DegreesOfFreedom<Barycentric> const& centre_of_mass =
-        bubble_->centre_of_mass_trajectory().
-            last().degrees_of_freedom();
-    for (Vessel* vessel : bubble_->vessels()) {
+        bubble_.centre_of_mass_trajectory().last().degrees_of_freedom();
+    for (Vessel* vessel : bubble_.vessels()) {
       Displacement<Barycentric> const& displacement =
-          bubble_->displacements_from_centre_of_mass(vessel);
+          bubble_.displacements_from_centre_of_mass(vessel);
       Velocity<Barycentric> const& velocity =
-          bubble_->velocities_from_centre_of_mass(vessel);
+          bubble_.velocities_from_centre_of_mass(vessel);
       vessel->mutable_prolongation()->Append(
           t,
           {centre_of_mass.position + displacement,
@@ -415,15 +413,15 @@ void Plugin::AdvanceTime(Instant const& t, Angle const& planetarium_rotation) {
   CHECK(!initializing);
   CHECK_GT(t, current_time_);
   CleanUpVessels();
-  bubble_->Prepare(PlanetariumRotation(), current_time_, t);
+  bubble_.Prepare(PlanetariumRotation(), current_time_, t);
   if (HistoryTime() + Δt_ < t) {
     // The histories are far enough behind that we can advance them at least one
     // step and reset the prolongations.
     EvolveHistories(t);
-    // TODO(egg): I think |!bubble_->empty()| => |has_dirty_vessels()|.
+    // TODO(egg): I think |!bubble_.empty()| => |has_dirty_vessels()|.
     if (has_unsynchronized_vessels() ||
         has_dirty_vessels() ||
-        !bubble_->empty()) {
+        !bubble_.empty()) {
       SynchronizeNewVesselsAndCleanDirtyVessels();
     }
     ResetProlongations();
@@ -616,15 +614,15 @@ void Plugin::AddVesselToNextPhysicsBubble(
   std::unique_ptr<Vessel> const& vessel =
       find_vessel_by_guid_or_die(vessel_guid);
   dirty_vessels_.insert(vessel.get());
-  bubble_->AddVesselToNext(vessel.get(), std::move(parts));
+  bubble_.AddVesselToNext(vessel.get(), std::move(parts));
 }
 
 Displacement<World> Plugin::BubbleDisplacementCorrection(
     Position<World> const& sun_world_position) const {
   VLOG(1) << __FUNCTION__ << '\n' << NAMED(sun_world_position);
-  VLOG_AND_RETURN(1, bubble_->DisplacementCorrection(PlanetariumRotation(),
-                                                     *sun_,
-                                                     sun_world_position));
+  VLOG_AND_RETURN(1, bubble_.DisplacementCorrection(PlanetariumRotation(),
+                                                    *sun_,
+                                                    sun_world_position));
 }
 
 Velocity<World> Plugin::BubbleVelocityCorrection(
@@ -633,8 +631,8 @@ Velocity<World> Plugin::BubbleVelocityCorrection(
   auto const found = celestials_.find(reference_body_index);
   CHECK(found != celestials_.end());
   Celestial const& reference_body = *found->second;
-  VLOG_AND_RETURN(1, bubble_->VelocityCorrection(PlanetariumRotation(),
-                                                 reference_body));
+  VLOG_AND_RETURN(1, bubble_.VelocityCorrection(PlanetariumRotation(),
+                                                reference_body));
 }
 
 
