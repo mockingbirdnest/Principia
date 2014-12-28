@@ -20,9 +20,8 @@ using principia::quantities::Time;
 namespace principia {
 namespace ksp_plugin {
 
-void PhysicsBubble::AddVesselToNextPhysicsBubble(
-    Vessel* vessel,
-    std::vector<IdAndOwnedPart> parts) {
+void PhysicsBubble::AddVesselToNext(Vessel* vessel,
+                                    std::vector<IdAndOwnedPart> parts) {
   VLOG(1) << __FUNCTION__ << '\n' << NAMED(vessel) << '\n' << NAMED(parts);
   if (next_ == nullptr) {
     next_ = std::make_unique<PreliminaryState>();
@@ -171,14 +170,14 @@ std::size_t PhysicsBubble::number_of_vessels() const {
   }
 }
 
-bool PhysicsBubble::is_in_physics_bubble(Vessel* const vessel) const {
+bool PhysicsBubble::contains(Vessel* const vessel) const {
   return !empty() &&
          current_->vessels.find(vessel) != current_->vessels.end();
 }
 
-std::vector<Vessel const*> PhysicsBubble::vessels() const {
+std::vector<Vessel*> PhysicsBubble::vessels() const {
   CHECK(!empty());
-  std::vector<Vessel const*> vessels;
+  std::vector<Vessel*> vessels;
   for (auto const& pair : current_->vessels) {
     Vessel* const vessel = pair.first;
     vessels.push_back(vessel);
@@ -187,7 +186,8 @@ std::vector<Vessel const*> PhysicsBubble::vessels() const {
 }
 
 Displacement<Barycentric> const&
-PhysicsBubble::displacements_from_centre_of_mass(Vessel* const vessel) const {
+PhysicsBubble::displacements_from_centre_of_mass(
+    Vessel const* const vessel) const {
   CHECK(!empty());
   CHECK(current_->displacements_from_centre_of_mass != nullptr);
   auto const it = current_->displacements_from_centre_of_mass->find(vessel);
@@ -196,7 +196,8 @@ PhysicsBubble::displacements_from_centre_of_mass(Vessel* const vessel) const {
 }
 
 Velocity<Barycentric> const&
-PhysicsBubble::velocities_from_centre_of_mass(Vessel* const vessel) const {
+PhysicsBubble::velocities_from_centre_of_mass(
+    Vessel const* const vessel) const {
   CHECK(!empty());
   CHECK(current_->velocities_from_centre_of_mass != nullptr);
   auto const it = current_->velocities_from_centre_of_mass->find(vessel);

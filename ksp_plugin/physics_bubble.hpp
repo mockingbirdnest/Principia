@@ -29,9 +29,8 @@ class PhysicsBubble {
   // a list of pointers to the Parts in |parts|.  Merges |parts| into
   // |next_->parts|.  The |vessel| must not already be in |next_->vessels|.
   // |parts| must not contain a |PartId| already in |next_->parts|.
-  void PhysicsBubble::AddVesselToNextPhysicsBubble(
-      Vessel* vessel,
-      std::vector<IdAndOwnedPart> parts);
+  void PhysicsBubble::AddVesselToNext(Vessel* vessel,
+                                      std::vector<IdAndOwnedPart> parts);
 
   // If |next_| is not null, computes the world centre of mass, trajectory
   // (including intrinsic acceleration) of |*next_|. Moves |next_| into
@@ -67,14 +66,14 @@ class PhysicsBubble {
 
   // Returns true if, and only if, |vessel| is in |current_->vessels|.
   // |current_| may be null, in that case, returns false.
-  bool is_in_physics_bubble(Vessel* const vessel) const;
+  bool contains(Vessel* const vessel) const;
 
   // Selectors for the data in |current_|.
-  std::vector<Vessel const*> vessels() const;
+  std::vector<Vessel*> vessels() const;
   Displacement<Barycentric> const& displacements_from_centre_of_mass(
-      Vessel* const vessel) const;
+      Vessel const* const vessel) const;
   Velocity<Barycentric> const& velocities_from_centre_of_mass(
-      Vessel* const vessel) const;
+      Vessel const* const vessel) const;
   Trajectory<Barycentric> const& centre_of_mass_trajectory() const;
   Trajectory<Barycentric>* mutable_centre_of_mass_trajectory() const;
 
