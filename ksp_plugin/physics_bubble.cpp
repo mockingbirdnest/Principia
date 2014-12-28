@@ -129,7 +129,7 @@ Displacement<World> PhysicsBubble::DisplacementCorrection(
   VLOG(1) << __FUNCTION__ << '\n'
           << NAMED(&reference_celestial) << '\n'
           << NAMED(reference_celestial_world_position);
-  CHECK(!empty());
+  CHECK(!empty()) << "Empty bubble";
   CHECK(current_->displacement_correction == nullptr);
   current_->displacement_correction =
       std::make_unique<Displacement<World>>(
@@ -147,7 +147,7 @@ Velocity<World> PhysicsBubble::VelocityCorrection(
     PlanetariumRotation const& planetarium_rotation,
     Celestial const& reference_celestial) const {
   VLOG(1) << __FUNCTION__ << '\n' << NAMED(&reference_celestial);
-  CHECK(!empty());
+  CHECK(!empty()) << "Empty bubble";
   CHECK(current_->velocity_correction == nullptr);
   current_->velocity_correction =
       std::make_unique<Velocity<World>>(
