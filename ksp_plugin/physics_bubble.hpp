@@ -78,15 +78,18 @@ class PhysicsBubble {
   Trajectory<Barycentric> const& centre_of_mass_trajectory() const;
   Trajectory<Barycentric>* mutable_centre_of_mass_trajectory() const;
 
-private:
+ private:
   struct PreliminaryState {
+    PreliminaryState();
     std::map<Vessel* const, std::vector<Part<World>* const>> vessels;
     PartIdToOwnedPart parts;
   };
 
   struct FullState : public PreliminaryState {
-    // TODO(egg): the following six should be |std::optional| when that
-    // becomes a thing.
+    explicit FullState(PreliminaryState&& preliminary_state);
+
+    // TODO(egg): these fields should be |std::optional| when that becomes a
+    // thing.
     std::unique_ptr<DegreesOfFreedom<World>> centre_of_mass;
     std::unique_ptr<Trajectory<Barycentric>> centre_of_mass_trajectory;
     std::unique_ptr<
@@ -95,8 +98,8 @@ private:
     std::unique_ptr<
         std::map<Vessel const* const,
                  Velocity<Barycentric>>> velocities_from_centre_of_mass;
-    std::unique_ptr<Displacement<World>> displacement_correction;  // Only for current_.
-    std::unique_ptr<Velocity<World>> velocity_correction;  // Only for current_.
+    std::unique_ptr<Displacement<World>> displacement_correction;
+    std::unique_ptr<Velocity<World>> velocity_correction;
   };
 
   // Computes the world degrees of freedom of the centre of mass of

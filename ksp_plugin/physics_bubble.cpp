@@ -1,5 +1,7 @@
 ﻿#include "ksp_plugin/physics_bubble.hpp"
 
+#include <map>
+#include <utility>
 #include <vector>
 
 #include "base/macros.hpp"
@@ -49,9 +51,7 @@ void PhysicsBubble::Prepare(PlanetariumRotation const& planetarium_rotation,
   VLOG(1) << __FUNCTION__ << '\n' << NAMED(next_time);
   std::unique_ptr<FullState> next;
   if (next_ != nullptr) {
-    next = std::make_unique<FullState>();
-    next->parts = std::move(next_->parts);
-    next->vessels = std::move(next_->vessels);
+    next = std::make_unique<FullState>(std::move(*next_));
     next_.reset();
     ComputeNextCentreOfMassWorldDegreesOfFreedom(next.get());
     ComputeNextVesselOffsets(planetarium_rotation, next.get());
@@ -133,7 +133,7 @@ Displacement<World> PhysicsBubble::DisplacementCorrection(
                 last().degrees_of_freedom().position -
             reference_celestial.prolongation().
                 last().degrees_of_freedom().position)) +
-        reference_celestial_world_position - 
+        reference_celestial_world_position -
             current_->centre_of_mass->position);
   VLOG_AND_RETURN(1, *current_->displacement_correction);
 }
@@ -210,10 +210,18 @@ PhysicsBubble::centre_of_mass_trajectory() const {
   return *current_->centre_of_mass_trajectory;
 }
 
-Trajectory<Barycentric>* 
+Trajectory<Barycentric>*
 PhysicsBubble::mutable_centre_of_mass_trajectory() const {
   CHECK(!empty());
   return current_->centre_of_mass_trajectory.get();
+}
+
+PhysicsBubble::PreliminaryState::PreliminaryState() {}
+
+PhysicsBubble::FullState::FullState(PreliminaryState&& preliminary_state)
+    : PreliminaryState() {
+  parts = std::move(preliminary_state.parts);
+  vessels = std::move(preliminary_state.vessels);
 }
 
 void PhysicsBubble::ComputeNextCentreOfMassWorldDegreesOfFreedom(
