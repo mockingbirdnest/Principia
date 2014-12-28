@@ -172,9 +172,9 @@ class not_null {
   // optimization.
 
   // Returns |false|.
-  bool operator==(nullptr_t const other) const;
+  bool operator==(std::nullptr_t const other) const;
   // Returns |true|.
-  bool operator!=(nullptr_t const other) const;
+  bool operator!=(std::nullptr_t const other) const;
   // Returns |true|.
   operator bool() const;
 
