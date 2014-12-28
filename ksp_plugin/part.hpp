@@ -1,10 +1,20 @@
 #pragma once
 
+#include <map>
+#include <memory>
+
+#include "ksp_plugin/frames.hpp"
+#include "geometry/grassmann.hpp"
 #include "geometry/named_quantities.hpp"
+#include "physics/degrees_of_freedom.hpp"
+#include "quantities/named_quantities.hpp"
 #include "quantities/quantities.hpp"
 
 using principia::geometry::Position;
+using principia::geometry::Vector;
 using principia::geometry::Velocity;
+using principia::physics::DegreesOfFreedom;
+using principia::quantities::Acceleration;
 using principia::quantities::Mass;
 
 namespace principia {
@@ -32,6 +42,9 @@ struct Part {
 
 template<typename Frame>
 std::ostream& operator<<(std::ostream& out, Part<Frame> const& part);
+
+using PartIdToOwnedPart = std::map<PartId, std::unique_ptr<Part<World>>>;
+using IdAndOwnedPart = PartIdToOwnedPart::value_type;
 
 }  // namespace ksp_plugin
 }  // namespace principia
