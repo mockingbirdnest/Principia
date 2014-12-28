@@ -182,7 +182,7 @@ bool PhysicsBubble::contains(Vessel* const vessel) const {
 }
 
 std::vector<Vessel*> PhysicsBubble::vessels() const {
-  CHECK(!empty());
+  CHECK(!empty()) << "Empty bubble";
   std::vector<Vessel*> vessels;
   for (auto const& pair : current_->vessels) {
     Vessel* const vessel = pair.first;
@@ -194,7 +194,7 @@ std::vector<Vessel*> PhysicsBubble::vessels() const {
 Displacement<Barycentric> const&
 PhysicsBubble::displacements_from_centre_of_mass(
     Vessel const* const vessel) const {
-  CHECK(!empty());
+  CHECK(!empty()) << "Empty bubble";
   CHECK(current_->displacements_from_centre_of_mass != nullptr);
   auto const it = current_->displacements_from_centre_of_mass->find(vessel);
   CHECK(it != current_->displacements_from_centre_of_mass->end());
@@ -204,7 +204,7 @@ PhysicsBubble::displacements_from_centre_of_mass(
 Velocity<Barycentric> const&
 PhysicsBubble::velocities_from_centre_of_mass(
     Vessel const* const vessel) const {
-  CHECK(!empty());
+  CHECK(!empty()) << "Empty bubble";
   CHECK(current_->velocities_from_centre_of_mass != nullptr);
   auto const it = current_->velocities_from_centre_of_mass->find(vessel);
   CHECK(it != current_->velocities_from_centre_of_mass->end());
@@ -213,13 +213,13 @@ PhysicsBubble::velocities_from_centre_of_mass(
 
 Trajectory<Barycentric> const&
 PhysicsBubble::centre_of_mass_trajectory() const {
-  CHECK(!empty());
+  CHECK(!empty()) << "Empty bubble";
   return *current_->centre_of_mass_trajectory;
 }
 
 Trajectory<Barycentric>*
 PhysicsBubble::mutable_centre_of_mass_trajectory() const {
-  CHECK(!empty());
+  CHECK(!empty()) << "Empty bubble";
   return current_->centre_of_mass_trajectory.get();
 }
 
