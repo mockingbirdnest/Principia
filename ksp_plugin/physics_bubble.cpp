@@ -391,12 +391,12 @@ void PhysicsBubble::Shift(
   std::vector<Mass> next_common_masses;
   next_common_masses.reserve(common_parts->size());
   for (auto const& current_next : *common_parts) {
-    current_common_degrees_of_freedom.emplace_back(
-        current_next.first->degrees_of_freedom);
-    current_common_masses.emplace_back(current_next.first->mass);
-    next_common_degrees_of_freedom.emplace_back(
-        current_next.second->degrees_of_freedom);
-    next_common_masses.emplace_back(current_next.second->mass);
+    Part<World>* const current = current_next.first;
+    Part<World>* const next = current_next.second;
+    current_common_degrees_of_freedom.emplace_back(current->degrees_of_freedom);
+    current_common_masses.emplace_back(current->mass);
+    next_common_degrees_of_freedom.emplace_back(next->degrees_of_freedom);
+    next_common_masses.emplace_back(next->mass);
   }
   DegreesOfFreedom<World> const current_common_centre_of_mass =
       physics::Barycentre(current_common_degrees_of_freedom,
@@ -412,6 +412,10 @@ void PhysicsBubble::Shift(
            current_common_centre_of_mass.position);
   // The change in the velocity of the overall centre of mass resulting from
   // fixing the velocity of the centre of mass of the intersection.
+  LOG(INFO)<<next->centre_of_mass->velocity;
+  LOG(INFO)<<next_common_centre_of_mass.velocity;
+  LOG(INFO)<<current_->centre_of_mass->velocity;
+  LOG(INFO)<<current_common_centre_of_mass.velocity;
   Velocity<World> const velocity_change =
       (next->centre_of_mass->velocity -
            next_common_centre_of_mass.velocity) -
