@@ -1,5 +1,7 @@
 #include "ksp_plugin/physics_bubble.hpp"
 
+#include "geometry/grassmann.hpp"
+#include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "ksp_plugin/celestial.hpp"
 #include "ksp_plugin/frames.hpp"
@@ -7,11 +9,21 @@
 #include "ksp_plugin/vessel.hpp"
 #include "physics/body.hpp"
 #include "quantities/quantities.hpp"
+#include "quantities/si.hpp"
+#include "testing_utilities/almost_equals.hpp"
+#include "testing_utilities/componentwise.hpp"
+#include "testing_utilities/vanishes_before.hpp"
 
+using principia::geometry::Bivector;
 using principia::quantities::Acceleration;
 using principia::quantities::Speed;
 using principia::quantities::SIUnit;
 using principia::quantities::Time;
+using principia::si::Degree;
+using principia::testing_utilities::AlmostEquals;
+using principia::testing_utilities::Componentwise;
+using principia::testing_utilities::VanishesBefore;
+using testing::ElementsAre;
 
 namespace principia {
 namespace ksp_plugin {
@@ -19,7 +31,29 @@ namespace ksp_plugin {
 class PhysicsBubbleTest : public testing::Test {
  protected:
   PhysicsBubbleTest()
-    : p1a_(std::make_unique<Part<World>>(
+    : rotation_(90 * Degree, Bivector<double, Barycentric>({0, 0, 1})),
+      celestial_dof_(Position<Barycentric>(Displacement<Barycentric>(
+                         {-4 * SIUnit<Length>(),
+                          -5 * SIUnit<Length>(),
+                          -6 * SIUnit<Length>()})),
+                     Velocity<Barycentric>({-4 * SIUnit<Speed>(),
+                                            -5 * SIUnit<Speed>(),
+                                            -6 * SIUnit<Speed>()})),
+      dof1_(Position<Barycentric>(Displacement<Barycentric>(
+                {104 * SIUnit<Length>(),
+                 105 * SIUnit<Length>(),
+                 106 * SIUnit<Length>()})),
+            Velocity<Barycentric>({104 * SIUnit<Speed>(),
+                                   105 * SIUnit<Speed>(),
+                                   106 * SIUnit<Speed>()})),
+      dof2_(Position<Barycentric>(Displacement<Barycentric>(
+                {204 * SIUnit<Length>(),
+                 205 * SIUnit<Length>(),
+                 206 * SIUnit<Length>()})),
+            Velocity<Barycentric>({204 * SIUnit<Speed>(),
+                                   205 * SIUnit<Speed>(),
+                                   206 * SIUnit<Speed>()})),
+      p1a_(std::make_unique<Part<World>>(
                DegreesOfFreedom<World>(
                    Position<World>(Displacement<World>(
                        {14 * SIUnit<Length>(),
@@ -90,19 +124,35 @@ class PhysicsBubbleTest : public testing::Test {
                     235 * SIUnit<Acceleration>(),
                     236 * SIUnit<Acceleration>()}))),
       celestial_(std::make_unique<MassiveBody>(100 * SIUnit<Mass>())),
+      celestial_world_position_(Position<World>(Displacement<World>(
+                                    {99 * SIUnit<Length>(),
+                                     98 * SIUnit<Length>(),
+                                     97 * SIUnit<Length>()}))),
       vessel1_(&celestial_),
       vessel2_(&celestial_),
       t1_(1 * SIUnit<Time>()),
-      t2_(2 * SIUnit<Time>()) {}
+      t2_(2 * SIUnit<Time>()) {
+    celestial_.CreateHistoryAndForkProlongation(t1_, celestial_dof_);
+    vessel1_.CreateProlongation(t1_, dof1_);
+    vessel2_.CreateProlongation(t1_, dof2_);
+
+    google::SetStderrLogging(google::INFO);
+    FLAGS_v = 1;
+    FLAGS_logbuflevel = google::INFO - 1;
+  }
 
   PhysicsBubble bubble_;
   PhysicsBubble::PlanetariumRotation rotation_;
+  DegreesOfFreedom<Barycentric> celestial_dof_;
+  DegreesOfFreedom<Barycentric> dof1_;
+  DegreesOfFreedom<Barycentric> dof2_;
   std::unique_ptr<Part<World>> p1a_;
   std::unique_ptr<Part<World>> p1b_;
   std::unique_ptr<Part<World>> p2a_;
   std::unique_ptr<Part<World>> p2b_;
   std::unique_ptr<Part<World>> p2c_;
   Celestial celestial_;
+  Position<World> celestial_world_position_;
   Vessel vessel1_;
   Vessel vessel2_;
   Instant t1_;
@@ -116,10 +166,10 @@ TEST_F(PhysicsBubbleDeathTest, EmptyError) {
     bubble_.vessels();
   }, "Empty bubble");
   EXPECT_DEATH({
-    bubble_.displacements_from_centre_of_mass(&vessel1_);
+    bubble_.displacement_from_centre_of_mass(&vessel1_);
   }, "Empty bubble");
   EXPECT_DEATH({
-    bubble_.velocities_from_centre_of_mass(&vessel1_);
+    bubble_.velocity_from_centre_of_mass(&vessel1_);
   }, "Empty bubble");
   EXPECT_DEATH({
     bubble_.centre_of_mass_trajectory();
@@ -150,7 +200,50 @@ TEST_F(PhysicsBubbleTest, OneVessel) {
   parts.push_back({12, std::move(p1b_)});
   bubble_.AddVesselToNext(&vessel1_, std::move(parts));
   EXPECT_TRUE(bubble_.empty());
+
   bubble_.Prepare(rotation_, t1_, t2_);
+  EXPECT_FALSE(bubble_.empty());
+  EXPECT_EQ(1, bubble_.number_of_vessels());
+  EXPECT_TRUE(bubble_.contains(&vessel1_));
+  EXPECT_THAT(bubble_.vessels(), ElementsAre(&vessel1_));
+
+  // Since we have only one vessel, it is at the centre of mass of the bubble.
+  EXPECT_THAT(bubble_.displacement_from_centre_of_mass(&vessel1_),
+              Componentwise(VanishesBefore(1 * SIUnit<Length>(), 0),
+                            VanishesBefore(1 * SIUnit<Length>(), 0),
+                            VanishesBefore(1 * SIUnit<Length>(), 0)));
+  EXPECT_THAT(bubble_.velocity_from_centre_of_mass(&vessel1_),
+              Componentwise(VanishesBefore(1 * SIUnit<Speed>(), 0),
+                            VanishesBefore(1 * SIUnit<Speed>(), 0),
+                            VanishesBefore(1 * SIUnit<Speed>(), 0)));
+
+  // The trajectory of the centre of mass has only one point and matches that of
+  // the vessel.
+  Trajectory<Barycentric> const& trajectory =
+      bubble_.centre_of_mass_trajectory();
+  EXPECT_THAT(trajectory.Times(), ElementsAre(t1_));
+  EXPECT_EQ(trajectory.last().degrees_of_freedom(), dof1_);
+  Trajectory<Barycentric>* mutable_trajectory =
+      bubble_.mutable_centre_of_mass_trajectory();
+  EXPECT_THAT(mutable_trajectory->Times(), ElementsAre(t1_));
+  EXPECT_EQ(mutable_trajectory->last().degrees_of_freedom(), dof1_);
+
+  Displacement<World> const displacement_correction =
+      bubble_.DisplacementCorrection(
+          rotation_, celestial_, celestial_world_position_);
+  EXPECT_THAT(displacement_correction,
+              AlmostEquals(Displacement<World>({-25 * SIUnit<Length>(),
+                                                191 * SIUnit<Length>(),
+                                                193 * SIUnit<Length>()}),
+                           8));
+  Velocity<World> const velocity_correction =
+      bubble_.VelocityCorrection(rotation_, celestial_);
+  EXPECT_THAT(velocity_correction,
+              AlmostEquals(Velocity<World>(
+                  {(-110.0 - 2742.0 / 23.0) * SIUnit<Speed>(),
+                   (108.0 - 2765.0 / 23.0) * SIUnit<Speed>(),
+                   (112.0 - 2788.0 / 23.0) * SIUnit<Speed>()}),
+                  16));
 }
 
 }  // namespace ksp_plugin

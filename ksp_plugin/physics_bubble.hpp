@@ -64,9 +64,9 @@ class PhysicsBubble {
 
   // Selectors for the data in |current_|.
   std::vector<Vessel*> vessels() const;
-  Displacement<Barycentric> const& displacements_from_centre_of_mass(
+  Displacement<Barycentric> const& displacement_from_centre_of_mass(
       Vessel const* const vessel) const;
-  Velocity<Barycentric> const& velocities_from_centre_of_mass(
+  Velocity<Barycentric> const& velocity_from_centre_of_mass(
       Vessel const* const vessel) const;
   Trajectory<Barycentric> const& centre_of_mass_trajectory() const;
   Trajectory<Barycentric>* mutable_centre_of_mass_trajectory() const;

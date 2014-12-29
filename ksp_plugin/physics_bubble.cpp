@@ -98,19 +98,16 @@ void PhysicsBubble::Prepare(PlanetariumRotation const& planetarium_rotation,
             planetarium_rotation.Inverse()(
                 Identity<World, WorldSun>()(intrinsic_acceleration));
         VLOG(1) << NAMED(barycentric_intrinsic_acceleration);
-        if (next->centre_of_mass_trajectory->
-                has_intrinsic_acceleration()) {
-          next->centre_of_mass_trajectory->
-              clear_intrinsic_acceleration();
+        if (next->centre_of_mass_trajectory->has_intrinsic_acceleration()) {
+          next->centre_of_mass_trajectory->clear_intrinsic_acceleration();
         }
         // TODO(egg): this makes the intrinsic acceleration a step function.
         // Might something smoother be better?  We need to be careful not to be
         // one step or half a step in the past though.
-        next->centre_of_mass_trajectory->
-              set_intrinsic_acceleration(
-                  [barycentric_intrinsic_acceleration](Instant const& t) {
-                    return barycentric_intrinsic_acceleration;
-                  });
+        next->centre_of_mass_trajectory->set_intrinsic_acceleration(
+            [barycentric_intrinsic_acceleration](Instant const& t) {
+              return barycentric_intrinsic_acceleration;
+            });
       }
     }
   }
@@ -192,7 +189,7 @@ std::vector<Vessel*> PhysicsBubble::vessels() const {
 }
 
 Displacement<Barycentric> const&
-PhysicsBubble::displacements_from_centre_of_mass(
+PhysicsBubble::displacement_from_centre_of_mass(
     Vessel const* const vessel) const {
   CHECK(!empty()) << "Empty bubble";
   CHECK(current_->displacements_from_centre_of_mass != nullptr);
@@ -202,7 +199,7 @@ PhysicsBubble::displacements_from_centre_of_mass(
 }
 
 Velocity<Barycentric> const&
-PhysicsBubble::velocities_from_centre_of_mass(
+PhysicsBubble::velocity_from_centre_of_mass(
     Vessel const* const vessel) const {
   CHECK(!empty()) << "Empty bubble";
   CHECK(current_->velocities_from_centre_of_mass != nullptr);
@@ -277,6 +274,7 @@ void PhysicsBubble::ComputeNextVesselOffsets(
     }
     DegreesOfFreedom<World> const vessel_degrees_of_freedom =
         physics::Barycentre(part_degrees_of_freedom, part_masses);
+    VLOG(1)<<vessel_degrees_of_freedom;
     Displacement<Barycentric> const displacement_from_centre_of_mass =
         planetarium_rotation.Inverse()(
             Identity<World, WorldSun>()(
