@@ -53,7 +53,27 @@ class PhysicsBubbleTest : public testing::Test {
             Velocity<Barycentric>({204 * SIUnit<Speed>(),
                                    205 * SIUnit<Speed>(),
                                    206 * SIUnit<Speed>()})),
-      p1a_(std::make_unique<Part<World>>(
+      celestial_(std::make_unique<MassiveBody>(100 * SIUnit<Mass>())),
+      celestial_world_position_(Position<World>(Displacement<World>(
+                                    {99 * SIUnit<Length>(),
+                                     98 * SIUnit<Length>(),
+                                     97 * SIUnit<Length>()}))),
+      vessel1_(&celestial_),
+      vessel2_(&celestial_),
+      t1_(1 * SIUnit<Time>()),
+      t2_(1.5 * SIUnit<Time>()),
+      t3_(2 * SIUnit<Time>()) {
+    celestial_.CreateHistoryAndForkProlongation(t1_, celestial_dof_);
+    vessel1_.CreateProlongation(t1_, dof1_);
+    vessel2_.CreateProlongation(t1_, dof2_);
+
+    google::SetStderrLogging(google::INFO);
+    FLAGS_v = 1;
+    FLAGS_logbuflevel = google::INFO - 1;
+  }
+
+  void CreateParts() {
+    p1a_ = std::make_unique<Part<World>>(
                DegreesOfFreedom<World>(
                    Position<World>(Displacement<World>(
                        {14 * SIUnit<Length>(),
@@ -66,8 +86,8 @@ class PhysicsBubbleTest : public testing::Test {
                Vector<Acceleration, World>(
                    {114 * SIUnit<Acceleration>(),
                     115 * SIUnit<Acceleration>(),
-                    116 * SIUnit<Acceleration>()}))),
-      p1b_(std::make_unique<Part<World>>(
+                    116 * SIUnit<Acceleration>()}));
+    p1b_ = std::make_unique<Part<World>>(
                DegreesOfFreedom<World>(
                    Position<World>(Displacement<World>(
                        {14 * SIUnit<Length>(),
@@ -80,8 +100,8 @@ class PhysicsBubbleTest : public testing::Test {
                Vector<Acceleration, World>(
                    {124 * SIUnit<Acceleration>(),
                     125 * SIUnit<Acceleration>(),
-                    126 * SIUnit<Acceleration>()}))),
-      p2a_(std::make_unique<Part<World>>(
+                    126 * SIUnit<Acceleration>()}));
+    p2a_ = std::make_unique<Part<World>>(
                DegreesOfFreedom<World>(
                    Position<World>(Displacement<World>(
                        {24 * SIUnit<Length>(),
@@ -94,8 +114,8 @@ class PhysicsBubbleTest : public testing::Test {
                Vector<Acceleration, World>(
                    {214 * SIUnit<Acceleration>(),
                     215 * SIUnit<Acceleration>(),
-                    216 * SIUnit<Acceleration>()}))),
-      p2b_(std::make_unique<Part<World>>(
+                    216 * SIUnit<Acceleration>()}));
+    p2b_ = std::make_unique<Part<World>>(
                DegreesOfFreedom<World>(
                    Position<World>(Displacement<World>(
                        {24 * SIUnit<Length>(),
@@ -104,12 +124,12 @@ class PhysicsBubbleTest : public testing::Test {
                    Velocity<World>({224 * SIUnit<Speed>(),
                                     225 * SIUnit<Speed>(),
                                     226 * SIUnit<Speed>()})),
-                22 * SIUnit<Mass>(),
-                Vector<Acceleration, World>(
-                    {224 * SIUnit<Acceleration>(),
-                     225 * SIUnit<Acceleration>(),
-                     226 * SIUnit<Acceleration>()}))),
-      p2c_(std::make_unique<Part<World>>(
+               22 * SIUnit<Mass>(),
+               Vector<Acceleration, World>(
+                   {224 * SIUnit<Acceleration>(),
+                    225 * SIUnit<Acceleration>(),
+                    226 * SIUnit<Acceleration>()}));
+    p2c_ = std::make_unique<Part<World>>(
                DegreesOfFreedom<World>(
                    Position<World>(Displacement<World>(
                        {24 * SIUnit<Length>(),
@@ -122,23 +142,7 @@ class PhysicsBubbleTest : public testing::Test {
                Vector<Acceleration, World>(
                    {234 * SIUnit<Acceleration>(),
                     235 * SIUnit<Acceleration>(),
-                    236 * SIUnit<Acceleration>()}))),
-      celestial_(std::make_unique<MassiveBody>(100 * SIUnit<Mass>())),
-      celestial_world_position_(Position<World>(Displacement<World>(
-                                    {99 * SIUnit<Length>(),
-                                     98 * SIUnit<Length>(),
-                                     97 * SIUnit<Length>()}))),
-      vessel1_(&celestial_),
-      vessel2_(&celestial_),
-      t1_(1 * SIUnit<Time>()),
-      t2_(2 * SIUnit<Time>()) {
-    celestial_.CreateHistoryAndForkProlongation(t1_, celestial_dof_);
-    vessel1_.CreateProlongation(t1_, dof1_);
-    vessel2_.CreateProlongation(t1_, dof2_);
-
-    google::SetStderrLogging(google::INFO);
-    FLAGS_v = 1;
-    FLAGS_logbuflevel = google::INFO - 1;
+                    236 * SIUnit<Acceleration>()}));
   }
 
   PhysicsBubble bubble_;
@@ -157,6 +161,7 @@ class PhysicsBubbleTest : public testing::Test {
   Vessel vessel2_;
   Instant t1_;
   Instant t2_;
+  Instant t3_;
 };
 
 using PhysicsBubbleDeathTest = PhysicsBubbleTest;
@@ -194,8 +199,9 @@ TEST_F(PhysicsBubbleTest, EmptySuccess) {
   bubble_.Prepare(rotation_, t1_, t2_);
 }
 
-TEST_F(PhysicsBubbleTest, OneVessel) {
+TEST_F(PhysicsBubbleTest, OneVesselOneStep) {
   std::vector<IdAndOwnedPart> parts;
+  CreateParts();
   parts.push_back({11, std::move(p1a_)});
   parts.push_back({12, std::move(p1b_)});
   bubble_.AddVesselToNext(&vessel1_, std::move(parts));
@@ -223,27 +229,85 @@ TEST_F(PhysicsBubbleTest, OneVessel) {
       bubble_.centre_of_mass_trajectory();
   EXPECT_THAT(trajectory.Times(), ElementsAre(t1_));
   EXPECT_EQ(trajectory.last().degrees_of_freedom(), dof1_);
+  EXPECT_FALSE(trajectory.has_intrinsic_acceleration());
   Trajectory<Barycentric>* mutable_trajectory =
       bubble_.mutable_centre_of_mass_trajectory();
   EXPECT_THAT(mutable_trajectory->Times(), ElementsAre(t1_));
   EXPECT_EQ(mutable_trajectory->last().degrees_of_freedom(), dof1_);
+  EXPECT_FALSE(mutable_trajectory->has_intrinsic_acceleration());
 
-  Displacement<World> const displacement_correction =
-      bubble_.DisplacementCorrection(
-          rotation_, celestial_, celestial_world_position_);
-  EXPECT_THAT(displacement_correction,
+  // These values were computed exactly based on the formulae in the code.
+  EXPECT_THAT(bubble_.DisplacementCorrection(
+                  rotation_, celestial_, celestial_world_position_),
               AlmostEquals(Displacement<World>({-25 * SIUnit<Length>(),
                                                 191 * SIUnit<Length>(),
-                                                193 * SIUnit<Length>()}),
-                           8));
-  Velocity<World> const velocity_correction =
-      bubble_.VelocityCorrection(rotation_, celestial_);
-  EXPECT_THAT(velocity_correction,
+                                                193 * SIUnit<Length>()}), 8));
+  EXPECT_THAT(bubble_.VelocityCorrection(rotation_, celestial_),
               AlmostEquals(Velocity<World>(
                   {(-110.0 - 2742.0 / 23.0) * SIUnit<Speed>(),
                    (108.0 - 2765.0 / 23.0) * SIUnit<Speed>(),
-                   (112.0 - 2788.0 / 23.0) * SIUnit<Speed>()}),
-                  16));
+                   (112.0 - 2788.0 / 23.0) * SIUnit<Speed>()}), 16));
+}
+
+TEST_F(PhysicsBubbleTest, OneVesselTwoSteps) {
+  std::vector<IdAndOwnedPart> parts;
+  CreateParts();
+  parts.push_back({11, std::move(p1a_)});
+  parts.push_back({12, std::move(p1b_)});
+  bubble_.AddVesselToNext(&vessel1_, std::move(parts));
+  EXPECT_TRUE(bubble_.empty());
+
+  bubble_.Prepare(rotation_, t1_, t2_);
+  EXPECT_FALSE(bubble_.empty());
+  // Necessary for the second call to Prepare to compute the acceleration.
+  bubble_.VelocityCorrection(rotation_, celestial_);
+
+  CreateParts();
+  parts.push_back({11, std::move(p1a_)});
+  parts.push_back({12, std::move(p1b_)});
+  bubble_.AddVesselToNext(&vessel1_, std::move(parts));
+
+  bubble_.Prepare(rotation_, t2_, t3_);
+  EXPECT_FALSE(bubble_.empty());
+  EXPECT_EQ(1, bubble_.number_of_vessels());
+  EXPECT_TRUE(bubble_.contains(&vessel1_));
+  EXPECT_THAT(bubble_.vessels(), ElementsAre(&vessel1_));
+
+  // The trajectory now has an intrinsic acceleration.  The acceleration was
+  // computed exactly based on the formulae in the code.
+  Trajectory<Barycentric> const& trajectory =
+      bubble_.centre_of_mass_trajectory();
+  EXPECT_THAT(trajectory.Times(), ElementsAre(t1_));
+  EXPECT_EQ(trajectory.last().degrees_of_freedom(), dof1_);
+  EXPECT_TRUE(trajectory.has_intrinsic_acceleration());
+  EXPECT_THAT(trajectory.evaluate_intrinsic_acceleration(t2_),
+              AlmostEquals(Vector<Acceleration, Barycentric>(
+                               {(-2203.0 / 23.0) * SIUnit<Acceleration>(),
+                                (-7802.0 / 23.0) * SIUnit<Acceleration>(),
+                                (-2364.0 / 23.0) * SIUnit<Acceleration>()}),
+                           3));
+
+  // All the other assertions remain as in the previous test since we didn't
+  // restart or shift the bubble.
+  EXPECT_THAT(bubble_.displacement_from_centre_of_mass(&vessel1_),
+              Componentwise(VanishesBefore(1 * SIUnit<Length>(), 0),
+                            VanishesBefore(1 * SIUnit<Length>(), 0),
+                            VanishesBefore(1 * SIUnit<Length>(), 0)));
+  EXPECT_THAT(bubble_.velocity_from_centre_of_mass(&vessel1_),
+              Componentwise(VanishesBefore(1 * SIUnit<Speed>(), 0),
+                            VanishesBefore(1 * SIUnit<Speed>(), 0),
+                            VanishesBefore(1 * SIUnit<Speed>(), 0)));
+
+  EXPECT_THAT(bubble_.DisplacementCorrection(
+                  rotation_, celestial_, celestial_world_position_),
+              AlmostEquals(Displacement<World>({-25 * SIUnit<Length>(),
+                                                191 * SIUnit<Length>(),
+                                                193 * SIUnit<Length>()}), 8));
+  EXPECT_THAT(bubble_.VelocityCorrection(rotation_, celestial_),
+              AlmostEquals(Velocity<World>(
+                  {(-110.0 - 2742.0 / 23.0) * SIUnit<Speed>(),
+                   (108.0 - 2765.0 / 23.0) * SIUnit<Speed>(),
+                   (112.0 - 2788.0 / 23.0) * SIUnit<Speed>()}), 16));
 }
 
 }  // namespace ksp_plugin

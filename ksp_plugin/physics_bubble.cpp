@@ -339,8 +339,8 @@ Vector<Acceleration, World> PhysicsBubble::IntrinsicAcceleration(
             it_in_next_parts = next->parts.cbegin();
        it_in_current_parts != current_->parts.end() &&
        it_in_next_parts != next->parts.end();) {
-    PartId current_part_id = it_in_current_parts->first;
-    PartId next_part_id = it_in_next_parts->first;
+    PartId const current_part_id = it_in_current_parts->first;
+    PartId const next_part_id = it_in_next_parts->first;
     if (current_part_id < next_part_id) {
       ++it_in_current_parts;
     } else if (next_part_id < current_part_id) {
@@ -350,6 +350,15 @@ Vector<Acceleration, World> PhysicsBubble::IntrinsicAcceleration(
           it_in_current_parts->second;
       std::unique_ptr<Part<World>> const& next_part = it_in_next_parts->second;
       common_parts->emplace_back(current_part.get(), next_part.get());
+      LOG(INFO)<<next_part->degrees_of_freedom.velocity;
+      LOG(INFO)<<current_part->degrees_of_freedom.velocity;
+      LOG(INFO)<<*current_->velocity_correction;
+      LOG(INFO)<<current_part->gravitational_acceleration_to_be_applied_by_ksp;
+      LOG(INFO)<<δt;
+      LOG(INFO)<<(next_part->degrees_of_freedom.velocity -
+           (current_part->degrees_of_freedom.velocity +
+            *current_->velocity_correction)) / δt -
+          current_part->gravitational_acceleration_to_be_applied_by_ksp;
       acceleration_calculator.Add(
           (next_part->degrees_of_freedom.velocity -
            (current_part->degrees_of_freedom.velocity +
