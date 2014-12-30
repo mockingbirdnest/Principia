@@ -123,8 +123,8 @@ class PhysicsBubble {
   Vector<Acceleration, World> IntrinsicAcceleration(
       Instant const& current_time,
       Instant const& next_time,
-      std::vector<PartCorrespondence>* const common_parts,
-      FullState* next);
+      FullState const& next,
+      std::vector<PartCorrespondence>* const common_parts);
 
   // Given the vector of common parts produced by |IntrinsicAcceleration|,
   // constructs |next->centre_of_mass_trajectory| and appends degrees of
