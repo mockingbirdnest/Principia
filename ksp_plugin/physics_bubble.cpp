@@ -121,6 +121,11 @@ Displacement<World> PhysicsBubble::DisplacementCorrection(
           << NAMED(reference_celestial_world_position);
   CHECK(!empty()) << "Empty bubble";
   CHECK(current_->displacement_correction == nullptr);
+  LOG(INFO)<<current_->centre_of_mass_trajectory->
+                  last().degrees_of_freedom().position;
+  LOG(INFO)<<reference_celestial.prolongation().
+                  last().degrees_of_freedom().position;
+  LOG(INFO)<<current_->centre_of_mass->position;
   current_->displacement_correction =
       std::make_unique<Displacement<World>>(
         Identity<WorldSun, World>()(planetarium_rotation(
@@ -240,6 +245,7 @@ void PhysicsBubble::ComputeNextCentreOfMassWorldDegreesOfFreedom(
     part_degrees_of_freedom.push_back(part->degrees_of_freedom);
     part_masses.push_back(part->mass);
   }
+  //TODO(phl): Use a calculator.
   next->centre_of_mass =
       std::make_unique<DegreesOfFreedom<World>>(
           physics::Barycentre(part_degrees_of_freedom, part_masses));
@@ -273,6 +279,7 @@ void PhysicsBubble::ComputeNextVesselOffsets(
     DegreesOfFreedom<World> const vessel_degrees_of_freedom =
         physics::Barycentre(part_degrees_of_freedom, part_masses);
     VLOG(1)<<vessel_degrees_of_freedom;
+    VLOG(1)<<*next->centre_of_mass;
     Displacement<Barycentric> const displacement_from_centre_of_mass =
         planetarium_rotation.Inverse()(
             Identity<World, WorldSun>()(
