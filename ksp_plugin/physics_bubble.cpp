@@ -50,7 +50,7 @@ void PhysicsBubble::AddVesselToNext(Vessel* vessel,
 void PhysicsBubble::Prepare(PlanetariumRotation const& planetarium_rotation,
                             Instant const& current_time,
                             Instant const& next_time) {
-  VLOG(1) << __FUNCTION__ << '\n' 
+  VLOG(1) << __FUNCTION__ << '\n'
           << NAMED(current_time) << '\n' << NAMED(next_time);
   std::unique_ptr<FullState> next;
   if (next_ != nullptr) {
@@ -296,7 +296,7 @@ void PhysicsBubble::RestartNext(Instant const& current_time,
   }
   next->centre_of_mass_trajectory =
       std::make_unique<Trajectory<Barycentric>>(body_);
-  next->centre_of_mass_trajectory->Append(current_time, 
+  next->centre_of_mass_trajectory->Append(current_time,
                                           bubble_calculator.Get());
 }
 

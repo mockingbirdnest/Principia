@@ -1,5 +1,7 @@
 #include "ksp_plugin/physics_bubble.hpp"
 
+#include <vector>
+
 #include "geometry/grassmann.hpp"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
