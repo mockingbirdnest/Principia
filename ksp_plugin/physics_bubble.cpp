@@ -64,7 +64,8 @@ void PhysicsBubble::Prepare(PlanetariumRotation const& planetarium_rotation,
     } else {
       // The IDs of the parts that are both in the current and in the next
       // physics bubble.
-      auto const common_parts = ComputeCommonParts(*next);
+      std::vector<PartCorrespondence> const common_parts =
+          ComputeCommonParts(*next);
       if (common_parts.empty()) {
         // The current and next set of parts are disjoint, i.e., the next
         // physics bubble is unrelated to the current one.
