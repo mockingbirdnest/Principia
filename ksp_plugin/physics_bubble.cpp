@@ -228,19 +228,13 @@ void PhysicsBubble::ComputeNextCentreOfMassWorldDegreesOfFreedom(
     FullState* next) {
   VLOG(1) << __FUNCTION__;
   CHECK_NOTNULL(next);
-  std::vector<DegreesOfFreedom<World>> part_degrees_of_freedom;
-  part_degrees_of_freedom.reserve(next->parts.size());
-  std::vector<Mass> part_masses;
-  part_masses.reserve(next->parts.size());
+  DegreesOfFreedom<World>::BarycentreCalculator<Mass> centre_of_mass_calculator;
   for (auto const& id_part : next->parts) {
     std::unique_ptr<Part<World>> const& part = id_part.second;
-    part_degrees_of_freedom.push_back(part->degrees_of_freedom);
-    part_masses.push_back(part->mass);
+    centre_of_mass_calculator.Add(part->degrees_of_freedom, part->mass);
   }
-  //TODO(phl): Use a calculator.
-  next->centre_of_mass =
-      std::make_unique<DegreesOfFreedom<World>>(
-          physics::Barycentre(part_degrees_of_freedom, part_masses));
+  next->centre_of_mass = std::make_unique<DegreesOfFreedom<World>>(
+                             centre_of_mass_calculator.Get());
   VLOG(1) << NAMED(*next->centre_of_mass);
 }
 
@@ -260,16 +254,12 @@ void PhysicsBubble::ComputeNextVesselOffsets(
     Vessel const* const vessel = vessel_parts.first;
     std::vector<Part<World>* const> const& parts = vessel_parts.second;
     VLOG(1) << NAMED(vessel) << ", " << NAMED(parts.size());
-    std::vector<DegreesOfFreedom<World>> part_degrees_of_freedom;
-    std::vector<Mass> part_masses;
-    part_degrees_of_freedom.reserve(parts.size());
-    part_masses.reserve(parts.size());
+    DegreesOfFreedom<World>::BarycentreCalculator<Mass> vessel_calculator;
     for (auto const part : parts) {
-      part_degrees_of_freedom.emplace_back(part->degrees_of_freedom);
-      part_masses.emplace_back(part->mass);
+      vessel_calculator.Add(part->degrees_of_freedom, part->mass);
     }
     DegreesOfFreedom<World> const vessel_degrees_of_freedom =
-        physics::Barycentre(part_degrees_of_freedom, part_masses);
+        vessel_calculator.Get();
     Displacement<Barycentric> const displacement_from_centre_of_mass =
         planetarium_rotation.Inverse()(
             Identity<World, WorldSun>()(
@@ -295,25 +285,19 @@ void PhysicsBubble::RestartNext(Instant const& current_time,
                                 FullState* next) {
   VLOG(1) << __FUNCTION__<< '\n' << NAMED(current_time);
   CHECK_NOTNULL(next);
-  std::vector<DegreesOfFreedom<Barycentric>> vessel_degrees_of_freedom;
-  vessel_degrees_of_freedom.reserve(next->vessels.size());
-  std::vector<Mass> vessel_masses;
-  vessel_masses.reserve(next->vessels.size());
+  DegreesOfFreedom<Barycentric>::BarycentreCalculator<Mass> bubble_calculator;
   for (auto const& vessel_parts : next->vessels) {
     Vessel const* vessel = vessel_parts.first;
     std::vector<Part<World>* const> const& parts = vessel_parts.second;
-    vessel_degrees_of_freedom.push_back(
-        vessel->prolongation().last().degrees_of_freedom());
-    vessel_masses.push_back(Mass());
     for (Part<World> const* const part : parts) {
-      vessel_masses.back() += part->mass;
+      bubble_calculator.Add(vessel->prolongation().last().degrees_of_freedom(),
+                            part->mass);
     }
   }
   next->centre_of_mass_trajectory =
       std::make_unique<Trajectory<Barycentric>>(body_);
-  next->centre_of_mass_trajectory->Append(
-      current_time,
-      physics::Barycentre(vessel_degrees_of_freedom, vessel_masses));
+  next->centre_of_mass_trajectory->Append(current_time, 
+                                          bubble_calculator.Get());
 }
 
 std::vector<PhysicsBubble::PartCorrespondence>
@@ -376,28 +360,20 @@ void PhysicsBubble::Shift(PlanetariumRotation const& planetarium_rotation,
   VLOG(1) << __FUNCTION__ << '\n'
           << NAMED(current_time) << '\n' << NAMED(common_parts);
   CHECK_NOTNULL(next);
-  std::vector<DegreesOfFreedom<World>> current_common_degrees_of_freedom;
-  current_common_degrees_of_freedom.reserve(common_parts.size());
-  std::vector<Mass> current_common_masses;
-  current_common_masses.reserve(common_parts.size());
-  std::vector<DegreesOfFreedom<World>> next_common_degrees_of_freedom;
-  next_common_degrees_of_freedom.reserve(common_parts.size());
-  std::vector<Mass> next_common_masses;
-  next_common_masses.reserve(common_parts.size());
+  DegreesOfFreedom<World>::BarycentreCalculator<Mass> current_common_calculator;
+  DegreesOfFreedom<World>::BarycentreCalculator<Mass> next_common_calculator;
   for (auto const& current_next : common_parts) {
     Part<World>* const current_part = current_next.first;
     Part<World>* const next_part = current_next.second;
-    current_common_degrees_of_freedom.emplace_back(
-        current_part->degrees_of_freedom);
-    current_common_masses.emplace_back(current_part->mass);
-    next_common_degrees_of_freedom.emplace_back(next_part->degrees_of_freedom);
-    next_common_masses.emplace_back(next_part->mass);
+    current_common_calculator.Add(current_part->degrees_of_freedom,
+                                  current_part->mass);
+    next_common_calculator.Add(next_part->degrees_of_freedom,
+                               next_part->mass);
   }
   DegreesOfFreedom<World> const current_common_centre_of_mass =
-      physics::Barycentre(current_common_degrees_of_freedom,
-                          current_common_masses);
+      current_common_calculator.Get();
   DegreesOfFreedom<World> const next_common_centre_of_mass =
-      physics::Barycentre(next_common_degrees_of_freedom, next_common_masses);
+      next_common_calculator.Get();
   // The change in the position of the overall centre of mass resulting from
   // fixing the centre of mass of the intersection.
   Displacement<World> const position_change =
