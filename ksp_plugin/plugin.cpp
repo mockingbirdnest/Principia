@@ -201,9 +201,9 @@ void Plugin::SynchronizeBubbleHistories() {
       bubble_.centre_of_mass_trajectory().last().degrees_of_freedom();
   for (Vessel* vessel : bubble_.vessels()) {
     Displacement<Barycentric> const& displacement =
-        bubble_.displacements_from_centre_of_mass(vessel);
+        bubble_.displacement_from_centre_of_mass(vessel);
     Velocity<Barycentric> const& velocity =
-        bubble_.velocities_from_centre_of_mass(vessel);
+        bubble_.velocity_from_centre_of_mass(vessel);
     if (vessel->is_synchronized()) {
       vessel->mutable_history()->Append(
           HistoryTime(),
@@ -266,9 +266,9 @@ void Plugin::EvolveProlongationsAndBubble(Instant const& t) {
         bubble_.centre_of_mass_trajectory().last().degrees_of_freedom();
     for (Vessel* vessel : bubble_.vessels()) {
       Displacement<Barycentric> const& displacement =
-          bubble_.displacements_from_centre_of_mass(vessel);
+          bubble_.displacement_from_centre_of_mass(vessel);
       Velocity<Barycentric> const& velocity =
-          bubble_.velocities_from_centre_of_mass(vessel);
+          bubble_.velocity_from_centre_of_mass(vessel);
       vessel->mutable_prolongation()->Append(
           t,
           {centre_of_mass.position + displacement,
