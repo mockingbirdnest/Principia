@@ -327,6 +327,7 @@ TEST_F(PhysicsBubbleTest, OneVesselPartRemoved) {
   CreateParts();
   parts.push_back({12, std::move(p1b_)});
   bubble_.AddVesselToNext(&vessel1_, std::move(parts));
+  EXPECT_FALSE(bubble_.empty());
 
   bubble_.Prepare(rotation_, t2_, t3_);
   EXPECT_FALSE(bubble_.empty());
@@ -548,11 +549,6 @@ TEST_F(PhysicsBubbleTest, TwoVessels) {
   EXPECT_THAT(trajectory.Times(), ElementsAre(t1_));
   EXPECT_EQ(expected_dof, trajectory.last().degrees_of_freedom());
   EXPECT_FALSE(trajectory.has_intrinsic_acceleration());
-  Trajectory<Barycentric>* mutable_trajectory =
-      bubble_.mutable_centre_of_mass_trajectory();
-  EXPECT_THAT(mutable_trajectory->Times(), ElementsAre(t1_));
-  EXPECT_EQ(expected_dof, mutable_trajectory->last().degrees_of_freedom());
-  EXPECT_FALSE(mutable_trajectory->has_intrinsic_acceleration());
 
   EXPECT_THAT(bubble_.DisplacementCorrection(
                   rotation_, celestial_, celestial_world_position_),
@@ -566,7 +562,83 @@ TEST_F(PhysicsBubbleTest, TwoVessels) {
                    16212.0 / 89.0 * SIUnit<Speed>(),
                    16568.0 / 89.0 * SIUnit<Speed>()}) - cdm_velocity, 32));
 
-  //TODO(phl): 2nd step here.
+  // The second step.
+  CreateParts();
+  parts.push_back({11, std::move(p1a_)});
+  parts.push_back({12, std::move(p1b_)});
+  bubble_.AddVesselToNext(&vessel1_, std::move(parts));
+  parts.push_back({21, std::move(p2a_)});
+  parts.push_back({22, std::move(p2b_)});
+  parts.push_back({23, std::move(p2c_)});
+  bubble_.AddVesselToNext(&vessel2_, std::move(parts));
+  EXPECT_FALSE(bubble_.empty());
+
+  bubble_.Prepare(rotation_, t2_, t3_);
+  EXPECT_FALSE(bubble_.empty());
+  EXPECT_EQ(2, bubble_.number_of_vessels());
+  EXPECT_TRUE(bubble_.contains(&vessel1_));
+  EXPECT_TRUE(bubble_.contains(&vessel2_));
+  EXPECT_THAT(bubble_.vessels(), ElementsAre(&vessel1_, &vessel2_));
+
+  // Not much has changed, except that we now have an acceleration.
+  //TODO(phl): Factor all this mess.
+  EXPECT_THAT(bubble_.displacement_from_centre_of_mass(&vessel1_),
+              AlmostEquals(Displacement<Barycentric>(
+                  {15 * SIUnit<Length>() -
+                      cdm_position.coordinates().y,
+                   -14 * SIUnit<Length>() +
+                      cdm_position.coordinates().x,
+                   16 * SIUnit<Length>() -
+                      cdm_position.coordinates().z}), 1));
+  EXPECT_THAT(bubble_.displacement_from_centre_of_mass(&vessel2_),
+              AlmostEquals(Displacement<Barycentric>(
+                  {25 * SIUnit<Length>() -
+                      cdm_position.coordinates().y,
+                   -24 * SIUnit<Length>() +
+                      cdm_position.coordinates().x,
+                   26 * SIUnit<Length>() -
+                      cdm_position.coordinates().z}), 2));
+  EXPECT_THAT(bubble_.velocity_from_centre_of_mass(&vessel1_),
+              AlmostEquals(Velocity<Barycentric>(
+                  {2765.0 / 23.0 * SIUnit<Speed>() -
+                      cdm_velocity.coordinates().y,
+                   -2742.0 / 23.0 * SIUnit<Speed>() +
+                      cdm_velocity.coordinates().x,
+                   2788.0 / 23.0 * SIUnit<Speed>() -
+                      cdm_velocity.coordinates().z}), 1));
+  EXPECT_THAT(bubble_.velocity_from_centre_of_mass(&vessel2_),
+              AlmostEquals(Velocity<Barycentric>(
+                  {7435.0 / 33.0 * SIUnit<Speed>() -
+                      cdm_velocity.coordinates().y,
+                   -7402.0 / 33.0 * SIUnit<Speed>() +
+                      cdm_velocity.coordinates().x,
+                   7468.0 / 33.0 * SIUnit<Speed>() -
+                      cdm_velocity.coordinates().z}), 2));
+
+  // The trajectory of the centre of mass has only one point.
+  EXPECT_THAT(trajectory.Times(), ElementsAre(t1_));
+  EXPECT_EQ(expected_dof, trajectory.last().degrees_of_freedom());
+  auto acceleration_correction = bubble_.VelocityCorrection(rotation_, celestial_) / (t3_ - t2_);
+  EXPECT_TRUE(trajectory.has_intrinsic_acceleration());
+  EXPECT_THAT(trajectory.evaluate_intrinsic_acceleration(t2_),
+            AlmostEquals(Vector<Acceleration, Barycentric>(
+                              { -acceleration_correction.coordinates().y - 17635.0 / 89.0 * SIUnit<Acceleration>(),
+                               acceleration_correction.coordinates().x + 17546.0 / 89.0 * SIUnit<Acceleration>(),
+                              -acceleration_correction.coordinates().z - 17724.0 / 89.0 * SIUnit<Acceleration>()}),
+                          2));
+  return;
+
+  EXPECT_THAT(bubble_.DisplacementCorrection(
+                  rotation_, celestial_, celestial_world_position_),
+              AlmostEquals(Displacement<World>(
+                  {-7579.0 / 89.0 * SIUnit<Length>(),
+                   24934.0 / 89.0 * SIUnit<Length>(),
+                   25201 / 89.0  * SIUnit<Length>()}) - cdm_position, 5));
+  EXPECT_THAT(bubble_.VelocityCorrection(rotation_, celestial_),
+              AlmostEquals(Velocity<World>(
+                  {-16390.0 / 89.0 * SIUnit<Speed>(),
+                   16212.0 / 89.0 * SIUnit<Speed>(),
+                   16568.0 / 89.0 * SIUnit<Speed>()}) - cdm_velocity, 32));
 }
 
 }  // namespace ksp_plugin

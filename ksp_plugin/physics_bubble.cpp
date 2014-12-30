@@ -375,12 +375,12 @@ Vector<Acceleration, World> PhysicsBubble::IntrinsicAcceleration(
     LOG(INFO)<<δt;
     LOG(INFO)<<(next_part->degrees_of_freedom.velocity -
           (current_part->degrees_of_freedom.velocity +
-          *current_->velocity_correction)) / δt -
+           *current_->velocity_correction)) / δt -
         current_part->gravitational_acceleration_to_be_applied_by_ksp;
     acceleration_calculator.Add(
         (next_part->degrees_of_freedom.velocity -
-          (current_part->degrees_of_freedom.velocity +
-          *current_->velocity_correction)) / δt -
+            (current_part->degrees_of_freedom.velocity +
+             *current_->velocity_correction)) / δt -
         current_part->gravitational_acceleration_to_be_applied_by_ksp,
         // TODO(egg): not sure what we actually want to do here.
         (next_part->mass + current_part->mass) / 2.0);
