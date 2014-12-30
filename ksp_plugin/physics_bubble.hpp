@@ -28,7 +28,8 @@ class PhysicsBubble {
 
   // If |next_| is not null, computes the world centre of mass, trajectory
   // (including intrinsic acceleration) of |*next_|. Moves |next_| into
-  // |current_|.
+  // |current_|.  The trajectory of the centre of mass is reset to a single
+  // point at |current_time| if the composition of the bubble changes.
   // TODO(phl): Document the parameters!
   void Prepare(PlanetariumRotation const& planetarium_rotation,
                Instant const& current_time,

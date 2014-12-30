@@ -146,6 +146,11 @@ Velocity<World> PhysicsBubble::VelocityCorrection(
   VLOG(1) << __FUNCTION__ << '\n' << NAMED(&reference_celestial);
   CHECK(!empty()) << "Empty bubble";
   CHECK(current_->velocity_correction == nullptr);
+  LOG(INFO)<<current_->centre_of_mass_trajectory->
+                  last().degrees_of_freedom().velocity;
+  LOG(INFO)<<reference_celestial.prolongation().
+                  last().degrees_of_freedom().velocity;
+  LOG(INFO)<<current_->centre_of_mass->velocity;
   current_->velocity_correction =
       std::make_unique<Velocity<World>>(
           Identity<WorldSun, World>()(planetarium_rotation(
@@ -422,8 +427,7 @@ void PhysicsBubble::Shift(
       (current_->centre_of_mass->velocity -
            current_common_centre_of_mass.velocity);
   DegreesOfFreedom<Barycentric> const& current_centre_of_mass =
-      current_->
-          centre_of_mass_trajectory->last().degrees_of_freedom();
+      current_->centre_of_mass_trajectory->last().degrees_of_freedom();
   next->centre_of_mass_trajectory =
       std::make_unique<Trajectory<Barycentric>>(body_);
   // Using the identity as the map |World| -> |WorldSun| is valid for
