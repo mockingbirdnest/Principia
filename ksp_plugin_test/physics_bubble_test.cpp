@@ -28,6 +28,8 @@ using testing::ElementsAre;
 namespace principia {
 namespace ksp_plugin {
 
+// All the numerical values in the tests below were computed exactly based on
+// the formulae in the code and the data set up at construction.
 class PhysicsBubbleTest : public testing::Test {
  protected:
   PhysicsBubbleTest()
@@ -236,7 +238,6 @@ TEST_F(PhysicsBubbleTest, OneVesselOneStep) {
   EXPECT_EQ(dof1_, mutable_trajectory->last().degrees_of_freedom());
   EXPECT_FALSE(mutable_trajectory->has_intrinsic_acceleration());
 
-  // These values were computed exactly based on the formulae in the code.
   EXPECT_THAT(bubble_.DisplacementCorrection(
                   rotation_, celestial_, celestial_world_position_),
               AlmostEquals(Displacement<World>({-25 * SIUnit<Length>(),
@@ -273,8 +274,7 @@ TEST_F(PhysicsBubbleTest, OneVesselTwoSteps) {
   EXPECT_TRUE(bubble_.contains(&vessel1_));
   EXPECT_THAT(bubble_.vessels(), ElementsAre(&vessel1_));
 
-  // The trajectory now has an intrinsic acceleration.  The acceleration was
-  // computed exactly based on the formulae in the code.
+  // The trajectory now has an intrinsic acceleration.
   Trajectory<Barycentric> const& trajectory =
       bubble_.centre_of_mass_trajectory();
   EXPECT_THAT(trajectory.Times(), ElementsAre(t1_));
