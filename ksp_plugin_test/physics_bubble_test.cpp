@@ -69,9 +69,12 @@ class PhysicsBubbleTest : public testing::Test {
     vessel1_.CreateProlongation(t1_, dof1_);
     vessel2_.CreateProlongation(t1_, dof2_);
 
+#if 0
+    // Useful for debugging.
     google::SetStderrLogging(google::INFO);
     FLAGS_v = 1;
     FLAGS_logbuflevel = google::INFO - 1;
+#endif
   }
 
   void CreateParts() {
