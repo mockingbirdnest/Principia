@@ -115,24 +115,26 @@ class PhysicsBubble {
   void RestartNext(Instant const& current_time,
                    FullState* next);
 
+  // Returns the parts common to |current_| and |next|.  The returned vector
+  // contains pair of pointers to parts (current_part, next_part) for all parts
+  // common to the two bubbles
+  std::vector<PhysicsBubble::PartCorrespondence>
+  PhysicsBubble::ComputeCommonParts(FullState const& next);
+
   // Returns the intrinsic acceleration measured on the parts that are common to
-  // the current and next bubbles.  Stores a pair of pointers to parts
-  // (current, next) in |common_parts| for all parts common to the current and
-  // next bubbles.  |common_parts| must not be null.  |*common_parts| must be
-  // empty.  No transfer of ownership.
+  // the current and next bubbles.
   Vector<Acceleration, World> IntrinsicAcceleration(
       Instant const& current_time,
       Instant const& next_time,
-      FullState const& next,
-      std::vector<PartCorrespondence>* const common_parts);
+      std::vector<PartCorrespondence>const& common_parts);
 
-  // Given the vector of common parts produced by |IntrinsicAcceleration|,
-  // constructs |next->centre_of_mass_trajectory| and appends degrees of
-  // freedom at |current_time| that conserve the degrees of freedom of the
-  // centre of mass of the parts in |common_parts|.  No transfer of ownership.
+  // Given the vector of common parts, constructs
+  // |next->centre_of_mass_trajectory| and appends degrees of freedom at
+  // |current_time| that conserve the degrees of freedom of the centre of mass
+  // of the parts in |common_parts|.
   void Shift(PlanetariumRotation const& planetarium_rotation,
              Instant const& current_time,
-             std::vector<PartCorrespondence> const* const common_parts,
+             std::vector<PartCorrespondence> const& common_parts,
              FullState* next);
 
   std::unique_ptr<FullState> current_;
