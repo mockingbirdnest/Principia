@@ -287,7 +287,7 @@ TEST_F(PhysicsBubbleTest, OneVesselTwoSteps) {
                                 (-2364.0 / 23.0) * SIUnit<Acceleration>()}),
                            3));
 
-  // All the other assertions remain as in the previous test since we didn't
+  // All the other assertions remain as in |OneVesselOneStep| since we didn't
   // restart or shift the bubble.
   EXPECT_THAT(bubble_.displacement_from_centre_of_mass(&vessel1_),
               Componentwise(VanishesBefore(1 * SIUnit<Length>(), 0),
@@ -354,8 +354,8 @@ TEST_F(PhysicsBubbleTest, OneVesselPartRemoved) {
                                 (-2474.0 / 23.0) * SIUnit<Acceleration>()}),
                            2));
 
-  // The corrections are unchanged except that the velocity is a bit more
-  // precise (probably because we do less computations).
+  // The corrections are as in |OneVesselOneStep| except that the velocity is a
+  // bit more precise (probably because we do less computations).
   EXPECT_THAT(bubble_.DisplacementCorrection(
                   rotation_, celestial_, celestial_world_position_),
               AlmostEquals(Displacement<World>({-25 * SIUnit<Length>(),
@@ -395,7 +395,8 @@ TEST_F(PhysicsBubbleTest, OneVesselPartAdded) {
 
   // The trajectory was reset by Shift.  Its intrinsic acceleration comes only
   // from |p1b_|.  The velocity of the centre of mass was updated to reflect the
-  // change of parts, the adjustment is opposite to that of the previous test.
+  // change of parts, the adjustment is opposite to that of
+  // |OneVesselPartRemoved|.
   Trajectory<Barycentric> const& trajectory =
       bubble_.centre_of_mass_trajectory();
   EXPECT_THAT(trajectory.Times(), ElementsAre(t2_));
@@ -422,6 +423,60 @@ TEST_F(PhysicsBubbleTest, OneVesselPartAdded) {
                   {-234 * SIUnit<Speed>(),
                    -17 * SIUnit<Speed>(),
                    -14 * SIUnit<Speed>()}), 8));
+}
+
+
+TEST_F(PhysicsBubbleTest, OneVesselNoCommonParts) {
+  std::vector<IdAndOwnedPart> parts;
+  CreateParts();
+  parts.push_back({21, std::move(p2a_)});
+  bubble_.AddVesselToNext(&vessel1_, std::move(parts));
+  EXPECT_TRUE(bubble_.empty());
+
+  bubble_.Prepare(rotation_, t1_, t2_);
+  EXPECT_FALSE(bubble_.empty());
+  // Necessary for the second call to Prepare to compute the acceleration.
+  bubble_.VelocityCorrection(rotation_, celestial_);
+
+  CreateParts();
+  parts.push_back({11, std::move(p1a_)});
+  parts.push_back({12, std::move(p1b_)});
+  bubble_.AddVesselToNext(&vessel1_, std::move(parts));
+
+  bubble_.Prepare(rotation_, t2_, t3_);
+  EXPECT_FALSE(bubble_.empty());
+  EXPECT_EQ(1, bubble_.number_of_vessels());
+  EXPECT_TRUE(bubble_.contains(&vessel1_));
+  EXPECT_THAT(bubble_.vessels(), ElementsAre(&vessel1_));
+
+  // The bubble was restarted.
+  Trajectory<Barycentric> const& trajectory =
+      bubble_.centre_of_mass_trajectory();
+  EXPECT_THAT(trajectory.Times(), ElementsAre(t2_));
+  EXPECT_EQ(dof1_, trajectory.last().degrees_of_freedom());
+  EXPECT_FALSE(trajectory.has_intrinsic_acceleration());
+
+  // All the other assertions remain as in |OneVesselOneStep| since we restarted
+  // the bubble with parts |p1a_| and |p1b_|.
+  EXPECT_THAT(bubble_.displacement_from_centre_of_mass(&vessel1_),
+              Componentwise(VanishesBefore(1 * SIUnit<Length>(), 0),
+                            VanishesBefore(1 * SIUnit<Length>(), 0),
+                            VanishesBefore(1 * SIUnit<Length>(), 0)));
+  EXPECT_THAT(bubble_.velocity_from_centre_of_mass(&vessel1_),
+              Componentwise(VanishesBefore(1 * SIUnit<Speed>(), 0),
+                            VanishesBefore(1 * SIUnit<Speed>(), 0),
+                            VanishesBefore(1 * SIUnit<Speed>(), 0)));
+
+  EXPECT_THAT(bubble_.DisplacementCorrection(
+                  rotation_, celestial_, celestial_world_position_),
+              AlmostEquals(Displacement<World>({-25 * SIUnit<Length>(),
+                                                191 * SIUnit<Length>(),
+                                                193 * SIUnit<Length>()}), 8));
+  EXPECT_THAT(bubble_.VelocityCorrection(rotation_, celestial_),
+              AlmostEquals(Velocity<World>(
+                  {(-110.0 - 2742.0 / 23.0) * SIUnit<Speed>(),
+                   (108.0 - 2765.0 / 23.0) * SIUnit<Speed>(),
+                   (112.0 - 2788.0 / 23.0) * SIUnit<Speed>()}), 16));
 }
 
 }  // namespace ksp_plugin
