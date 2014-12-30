@@ -618,15 +618,18 @@ TEST_F(PhysicsBubbleTest, TwoVessels) {
   // The trajectory of the centre of mass has only one point.
   EXPECT_THAT(trajectory.Times(), ElementsAre(t1_));
   EXPECT_EQ(expected_dof, trajectory.last().degrees_of_freedom());
-  auto acceleration_correction = bubble_.VelocityCorrection(rotation_, celestial_) / (t3_ - t2_);
+  Vector<Acceleration, World> const acceleration_correction =
+      bubble_.VelocityCorrection(rotation_, celestial_) / (t3_ - t2_);
   EXPECT_TRUE(trajectory.has_intrinsic_acceleration());
   EXPECT_THAT(trajectory.evaluate_intrinsic_acceleration(t2_),
             AlmostEquals(Vector<Acceleration, Barycentric>(
-                              { -acceleration_correction.coordinates().y - 17635.0 / 89.0 * SIUnit<Acceleration>(),
-                               acceleration_correction.coordinates().x + 17546.0 / 89.0 * SIUnit<Acceleration>(),
-                              -acceleration_correction.coordinates().z - 17724.0 / 89.0 * SIUnit<Acceleration>()}),
-                          2));
-  return;
+                              {-acceleration_correction.coordinates().y -
+                                  17635.0 / 89.0 * SIUnit<Acceleration>(),
+                               acceleration_correction.coordinates().x +
+                                  17546.0 / 89.0 * SIUnit<Acceleration>(),
+                               -acceleration_correction.coordinates().z -
+                                  17724.0 / 89.0 * SIUnit<Acceleration>()}),
+                         2));
 
   EXPECT_THAT(bubble_.DisplacementCorrection(
                   rotation_, celestial_, celestial_world_position_),

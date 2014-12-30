@@ -120,21 +120,22 @@ Displacement<World> PhysicsBubble::DisplacementCorrection(
           << NAMED(&reference_celestial) << '\n'
           << NAMED(reference_celestial_world_position);
   CHECK(!empty()) << "Empty bubble";
-  CHECK(current_->displacement_correction == nullptr);
-  LOG(INFO)<<current_->centre_of_mass_trajectory->
-                  last().degrees_of_freedom().position;
-  LOG(INFO)<<reference_celestial.prolongation().
-                  last().degrees_of_freedom().position;
-  LOG(INFO)<<current_->centre_of_mass->position;
-  current_->displacement_correction =
-      std::make_unique<Displacement<World>>(
-        Identity<WorldSun, World>()(planetarium_rotation(
-            current_->centre_of_mass_trajectory->
-                last().degrees_of_freedom().position -
-            reference_celestial.prolongation().
-                last().degrees_of_freedom().position)) +
-        reference_celestial_world_position -
-            current_->centre_of_mass->position);
+  if (current_->displacement_correction == nullptr) {
+    LOG(INFO)<<current_->centre_of_mass_trajectory->
+                    last().degrees_of_freedom().position;
+    LOG(INFO)<<reference_celestial.prolongation().
+                    last().degrees_of_freedom().position;
+    LOG(INFO)<<current_->centre_of_mass->position;
+    current_->displacement_correction =
+        std::make_unique<Displacement<World>>(
+          Identity<WorldSun, World>()(planetarium_rotation(
+              current_->centre_of_mass_trajectory->
+                  last().degrees_of_freedom().position -
+              reference_celestial.prolongation().
+                  last().degrees_of_freedom().position)) +
+          reference_celestial_world_position -
+              current_->centre_of_mass->position);
+  }
   VLOG_AND_RETURN(1, *current_->displacement_correction);
 }
 
@@ -143,20 +144,21 @@ Velocity<World> PhysicsBubble::VelocityCorrection(
     Celestial const& reference_celestial) const {
   VLOG(1) << __FUNCTION__ << '\n' << NAMED(&reference_celestial);
   CHECK(!empty()) << "Empty bubble";
-  CHECK(current_->velocity_correction == nullptr);
-  LOG(INFO)<<current_->centre_of_mass_trajectory->
-                  last().degrees_of_freedom().velocity;
-  LOG(INFO)<<reference_celestial.prolongation().
-                  last().degrees_of_freedom().velocity;
-  LOG(INFO)<<current_->centre_of_mass->velocity;
-  current_->velocity_correction =
-      std::make_unique<Velocity<World>>(
-          Identity<WorldSun, World>()(planetarium_rotation(
-              current_->centre_of_mass_trajectory->
-                  last().degrees_of_freedom().velocity -
-              reference_celestial.prolongation().
-                  last().degrees_of_freedom().velocity)) -
-          current_->centre_of_mass->velocity);
+  if (current_->velocity_correction == nullptr) {
+    LOG(INFO)<<current_->centre_of_mass_trajectory->
+                    last().degrees_of_freedom().velocity;
+    LOG(INFO)<<reference_celestial.prolongation().
+                    last().degrees_of_freedom().velocity;
+    LOG(INFO)<<current_->centre_of_mass->velocity;
+    current_->velocity_correction =
+        std::make_unique<Velocity<World>>(
+            Identity<WorldSun, World>()(planetarium_rotation(
+                current_->centre_of_mass_trajectory->
+                    last().degrees_of_freedom().velocity -
+                reference_celestial.prolongation().
+                    last().degrees_of_freedom().velocity)) -
+            current_->centre_of_mass->velocity);
+  }
   VLOG_AND_RETURN(1, *current_->velocity_correction);
 }
 
