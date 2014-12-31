@@ -402,12 +402,13 @@ TEST_F(PhysicsBubbleTest, OneVesselPartRemoved) {
   Trajectory<Barycentric> const& trajectory =
       bubble_.centre_of_mass_trajectory();
   EXPECT_THAT(trajectory.Times(), ElementsAre(t2_));
-  EXPECT_EQ(dof1_.position, trajectory.last().degrees_of_freedom().position);
-  EXPECT_EQ(dof1_.velocity + Velocity<Barycentric>(
-                                 {(125.0 - 2765.0 / 23.0) * SIUnit<Speed>(),
-                                  (-124.0 + 2742.0 / 23.0) * SIUnit<Speed>(),
-                                  (126.0 - 2788.0 / 23.0) * SIUnit<Speed>()}),
-            trajectory.last().degrees_of_freedom().velocity);
+  EXPECT_EQ(dof1_.position(),
+            trajectory.last().degrees_of_freedom().position());
+  EXPECT_EQ(dof1_.velocity() +
+            Velocity<Barycentric>({(125.0 - 2765.0 / 23.0) * SIUnit<Speed>(),
+                                   (-124.0 + 2742.0 / 23.0) * SIUnit<Speed>(),
+                                   (126.0 - 2788.0 / 23.0) * SIUnit<Speed>()}),
+            trajectory.last().degrees_of_freedom().velocity());
   EXPECT_TRUE(trajectory.has_intrinsic_acceleration());
   EXPECT_THAT(trajectory.evaluate_intrinsic_acceleration(t2_),
               AlmostEquals(Vector<Acceleration, Barycentric>(
@@ -462,12 +463,13 @@ TEST_F(PhysicsBubbleTest, OneVesselPartAdded) {
   Trajectory<Barycentric> const& trajectory =
       bubble_.centre_of_mass_trajectory();
   EXPECT_THAT(trajectory.Times(), ElementsAre(t2_));
-  EXPECT_EQ(dof1_.position, trajectory.last().degrees_of_freedom().position);
-  EXPECT_EQ(dof1_.velocity + Velocity<Barycentric>(
-                                 {(-125.0 + 2765.0 / 23.0) * SIUnit<Speed>(),
-                                  (124.0 - 2742.0 / 23.0) * SIUnit<Speed>(),
-                                  (-126.0 + 2788.0 / 23.0) * SIUnit<Speed>()}),
-            trajectory.last().degrees_of_freedom().velocity);
+  EXPECT_EQ(dof1_.position(),
+            trajectory.last().degrees_of_freedom().position());
+  EXPECT_EQ(dof1_.velocity() +
+            Velocity<Barycentric>({(-125.0 + 2765.0 / 23.0) * SIUnit<Speed>(),
+                                   (124.0 - 2742.0 / 23.0) * SIUnit<Speed>(),
+                                   (-126.0 + 2788.0 / 23.0) * SIUnit<Speed>()}),
+            trajectory.last().degrees_of_freedom().velocity());
   EXPECT_TRUE(trajectory.has_intrinsic_acceleration());
   EXPECT_THAT(trajectory.evaluate_intrinsic_acceleration(t2_),
               AlmostEquals(Vector<Acceleration, Barycentric>(

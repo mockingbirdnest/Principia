@@ -4,6 +4,7 @@
 
 #include "geometry/grassmann.hpp"
 #include "geometry/named_quantities.hpp"
+#include "geometry/pair.hpp"
 #include "geometry/point.hpp"
 #include "quantities/named_quantities.hpp"
 
@@ -17,12 +18,16 @@ namespace principia {
 namespace physics {
 
 template<typename Frame>
-struct DegreesOfFreedom {
+class DegreesOfFreedom
+    : public principia::geometry::Pair<Position<Frame>, Velocity<Frame>> {
+ public:
   DegreesOfFreedom(Position<Frame> const& position,
                    Velocity<Frame> const& velocity);
-  Position<Frame> position;
-  Velocity<Frame> velocity;
 
+  Position<Frame> const& position() const;
+  Velocity<Frame> const& velocity() const;
+
+  //TODO(phl): Move to Pair.
   template<typename Weight>
   class BarycentreCalculator {
    public:
@@ -47,22 +52,10 @@ struct DegreesOfFreedom {
   };
 };
 
-template<typename Frame>
-bool operator==(DegreesOfFreedom<Frame> const& left,
-                DegreesOfFreedom<Frame> const& right);
-
-template<typename Frame>
-bool operator!=(DegreesOfFreedom<Frame> const& left,
-                DegreesOfFreedom<Frame> const& right);
-
 template<typename Frame, typename Weight>
 DegreesOfFreedom<Frame> Barycentre(
     std::vector<DegreesOfFreedom<Frame>> const& degrees_of_freedom,
     std::vector<Weight> const& weights);
-
-template<typename Frame>
-std::ostream& operator<<(std::ostream& out,
-                         DegreesOfFreedom<Frame> const& degrees_of_freedom);
 
 }  // namespace physics
 }  // namespace principia

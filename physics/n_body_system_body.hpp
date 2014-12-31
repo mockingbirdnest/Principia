@@ -115,10 +115,10 @@ void NBodySystem<Frame>::Integrate(
         // NOTE(phl): Using |const&| below doesn't work, even though 12.2/5
         // seems to indicate that it should.  A bug in Visual Studio 2013?
         R3Element<Length> const position =
-            (trajectory->last().degrees_of_freedom().position -
+            (trajectory->last().degrees_of_freedom().position() -
              reference_position).coordinates();
         R3Element<Speed> const& velocity =
-            trajectory->last().degrees_of_freedom().velocity.coordinates();
+            trajectory->last().degrees_of_freedom().velocity().coordinates();
         Instant const& time = trajectory->last().time();
         for (int i = 0; i < 3; ++i) {
           parameters.initial.positions.emplace_back(position[i]);
