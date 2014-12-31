@@ -27,6 +27,7 @@ TEST_F(PairTest, Nothing) {
   P p1(t1_, t2_);
   P p2(t1_, t2_);
   auto q = p1 - p2;
+  q = 3.0 * (q - (-q));
   p1 = p2 + q;
 }
 
