@@ -11,24 +11,27 @@ Pair<T1, T2>::Pair(T1 const& t1, T2 const& t2)
       t2_(t2) {}
 
 template<typename T1, typename T2>
-typename VectorOf<Pair<T1, T2>>::type Pair<T1, T2>::operator-(Pair const& from) const {
-  return typename VectorOf<Pair<T1, T2>>::type(t1_ - from.t1_, t2_ - from.t2_);
+template<typename U1, typename U2>
+typename vector_of<Pair<T1, T2>>::type Pair<T1, T2>::operator-(
+    typename enable_if_affine<Pair<U1, U2>>::type const& from) const {
+  return typename vector_of<Pair<T1, T2>>::type(t1_ - from.t1_, t2_ - from.t2_);
 }
 
 template<typename T1, typename T2>
-Pair<T1, T2> Pair<T1, T2>::operator+(typename VectorOf<Pair>::type const& translation) const {
+Pair<T1, T2> Pair<T1, T2>::operator+(typename vector_of<Pair>::type const& translation) const {
+  return Pair<T1, T2>(t1_ + translation.t1_, t2_ + translation.t2_);
 }
 
 template<typename T1, typename T2>
-Pair<T1, T2> Pair<T1, T2>::operator-(typename VectorOf<Pair>::type const& translation) const {
+Pair<T1, T2> Pair<T1, T2>::operator-(typename vector_of<Pair>::type const& translation) const {
 }
 
 template<typename T1, typename T2>
-Pair<T1, T2>& Pair<T1, T2>::operator+=(typename VectorOf<Pair>::type const& translation) {
+Pair<T1, T2>& Pair<T1, T2>::operator+=(typename vector_of<Pair>::type const& translation) {
 }
 
 template<typename T1, typename T2>
-Pair<T1, T2>& Pair<T1, T2>::operator-=(typename VectorOf<Pair>::type const& translation) {
+Pair<T1, T2>& Pair<T1, T2>::operator-=(typename vector_of<Pair>::type const& translation) {
 }
 
 template<typename T1, typename T2>
