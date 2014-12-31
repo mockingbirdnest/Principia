@@ -79,18 +79,46 @@ operator*(Scalar const left, Pair<T1, T2> const& right) {
       left * right.t1_, left * right.t2_);
 }
 
-template<typename T1, typename T2>
-typename enable_if_vector<Pair<T1, T2>>::type operator*(
-    Pair<T1, T2> const& left,
-    double const right) {
+template<typename Scalar, typename T1, typename T2>
+typename enable_if_vector<
+    Pair<T1, T2>,
+    Pair<decltype(std::declval<T1>() * std::declval<Scalar>()),
+         decltype(std::declval<T2>() * std::declval<Scalar>())>>::type
+operator*(Pair<T1, T2> const& left, Scalar const right) {
   return Pair<T1, T2>(left.t1_ * right, left.t2_ * right);
 }
 
-template<typename T1, typename T2>
-typename enable_if_vector<Pair<T1, T2>>::type operator/(
-    Pair<T1, T2> const& left,
-    double const right) {
+template<typename Scalar, typename T1, typename T2>
+typename enable_if_vector<
+    Pair<T1, T2>,
+    Pair<decltype(std::declval<T1>() * std::declval<Scalar>()),
+         decltype(std::declval<T2>() * std::declval<Scalar>())>>::type
+operator/(Pair<T1, T2> const& left, Scalar const right) {
   return Pair<T1, T2>(left.t1_ / right, left.t2_ / right);
+}
+
+template<typename T1, typename T2>
+typename enable_if_vector<Pair<T1, T2>>::type& operator*=(
+    Pair<T1, T2>& left,  // NOLINT(runtime/references)
+    double const right) {
+  left.t1_ *= right;
+  left.t2_ *= right;
+  return left;
+}
+
+template<typename T1, typename T2>
+typename enable_if_vector<Pair<T1, T2>>::type& operator/=(
+    Pair<T1, T2>& left,  // NOLINT(runtime/references)
+    double const right) {
+  left.t1_ /= right;
+  left.t2_ /= right;
+  return left;
+}
+
+template<typename T1, typename T2>
+std::ostream& operator<<(std::ostream& out, Pair<T1, T2> const& pair) {
+  out << "{" << pair.t1_ << ", " << pair.t2_ << "}";
+  return out;
 }
 
 }  // namespace geometry

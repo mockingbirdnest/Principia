@@ -27,8 +27,10 @@ TEST_F(PairTest, Nothing) {
   P p1(t1_, t2_);
   P p2(t1_, t2_);
   auto q = p1 - p2;
-  q = 3.0 * (q - (-q));
+  q = ((3.0 * (q - (-q))) * 2.0) / 5.0;
+  q *= 4.0;
   p1 = p2 + q;
+  LOG(ERROR) << "p1 = " << p1 << "\nq = " << q;
 }
 
 }  // namespace geometry

@@ -110,6 +110,32 @@ class Pair {
            decltype(std::declval<Scalar>() * std::declval<T2>())>>::type
   operator*(Scalar const left, Pair<T1, T2> const& right);
 
+  template<typename Scalar, typename T1, typename T2>
+  friend typename enable_if_vector<
+      Pair<T1, T2>,
+      Pair<decltype(std::declval<T1>() * std::declval<Scalar>()),
+           decltype(std::declval<T2>() * std::declval<Scalar>())>>::type
+  operator*(Pair<T1, T2> const& left, Scalar const right);
+
+  template<typename Scalar, typename T1, typename T2>
+  friend typename enable_if_vector<
+      Pair<T1, T2>,
+      Pair<decltype(std::declval<T1>() * std::declval<Scalar>()),
+           decltype(std::declval<T2>() * std::declval<Scalar>())>>::type
+  operator/(Pair<T1, T2> const& left, Scalar const right);
+
+  template<typename T1, typename T2>
+  friend typename enable_if_vector<Pair<T1, T2>>::type& operator*=(
+      Pair<T1, T2>& left,  // NOLINT(runtime/references)
+      double const right);
+
+  template<typename T1, typename T2>
+  friend typename enable_if_vector<Pair<T1, T2>>::type& operator/=(
+      Pair<T1, T2>& left,  // NOLINT(runtime/references)
+      double const right);
+
+  template<typename T1, typename T2>
+  friend std::ostream& operator<<(std::ostream& out, Pair<T1, T2> const& pair);
 };
 
 // NOTE(phl): Would like to put the enable_if_affine<> on the return type, but
@@ -134,15 +160,32 @@ typename enable_if_vector<
          decltype(std::declval<Scalar>() * std::declval<T2>())>>::type
 operator*(Scalar const left, Pair<T1, T2> const& right);
 
+template<typename Scalar, typename T1, typename T2>
+typename enable_if_vector<
+    Pair<T1, T2>,
+    Pair<decltype(std::declval<T1>() * std::declval<Scalar>()),
+         decltype(std::declval<T2>() * std::declval<Scalar>())>>::type
+operator*(Pair<T1, T2> const& left, Scalar const right);
+
+template<typename Scalar, typename T1, typename T2>
+typename enable_if_vector<
+    Pair<T1, T2>,
+    Pair<decltype(std::declval<T1>() / std::declval<Scalar>()),
+         decltype(std::declval<T2>() / std::declval<Scalar>())>>::type
+operator/(Pair<T1, T2> const& left, Scalar const right);
+
 template<typename T1, typename T2>
-typename enable_if_vector<Pair<T1, T2>>::type operator*(
-    Pair<T1, T2> const& left,
+typename enable_if_vector<Pair<T1, T2>>::type& operator*=(
+    Pair<T1, T2>& left,  // NOLINT(runtime/references)
     double const right);
 
 template<typename T1, typename T2>
-typename enable_if_vector<Pair<T1, T2>>::type operator/(
-    Pair<T1, T2> const& left,
+typename enable_if_vector<Pair<T1, T2>>::type& operator/=(
+    Pair<T1, T2>& left,  // NOLINT(runtime/references)
     double const right);
+
+template<typename T1, typename T2>
+std::ostream& operator<<(std::ostream& out, Pair<T1, T2> const& pair);
 
 }  // namespace geometry
 }  // namespace principia
