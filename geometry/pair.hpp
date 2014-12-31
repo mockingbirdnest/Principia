@@ -27,27 +27,8 @@ class vector_of<Point<T>> {
   using type = T;
 };
 
-// A template to determine if a type represents a vector space (as opposed to an
-// affine space).
-template<typename T>
-class is_vector {
- public:
-  static bool const value = true;
-};
-
-template<typename T1, typename T2>
-class is_vector<Pair<T1, T2>> {
- public:
-  static bool const value = is_vector<T1>::value && is_vector<T2>::value;
-};
-
-template<typename T>
-class is_vector<Point<T>> {
- public:
-  static bool const value = false;
-};
-
-// 
+// A template to enable declarations on affine pairs (i.e., when one of the
+// components is a Point).
 template<typename T>
 class enable_if_affine {};
 
@@ -74,9 +55,12 @@ class Pair {
  public:
   Pair(T1 const& t1, T2 const& t2);
 
+  // This odd template "hides" the operator unless it is actually needed.
+  // That's necessary because if T1 and T2 are vector spaces, we would end up
+  // with two operator- with the same profile.
   template<typename U1 = T1, typename U2 = T2>
   typename vector_of<Pair<T1, T2>>::type operator-(
-      typename enable_if_affine<Pair<U1, U2>>::type const& from) const;
+      Pair<T1, T2> const& from) const;
 
   Pair operator+(typename vector_of<Pair>::type const& translation) const;
   Pair operator-(typename vector_of<Pair>::type const& translation) const;
