@@ -50,7 +50,7 @@ class enable_if_affine<Pair<Point<T1>, Point<T2>>> {
   using type = Pair<Point<T1>, Point<T2>>;
 };
 
-// A template to enable declarations on vector pairs (i.e., none of the
+// A template to enable declarations on vector pairs (i.e., when none of the
 // components is a Point).
 template<typename T, typename U = T>
 class enable_if_vector {
@@ -67,6 +67,10 @@ class enable_if_vector<Pair<T1, Point<T2>>> {};
 template<typename T1, typename T2>
 class enable_if_vector<Pair<Point<T1>, Point<T2>>> {};
 
+// This class represents a pair of two values which can be members of an affine
+// space (i.e., Points) or of a vector space (such as double, Quantity, Vector,
+// Bivector or Trivector).  Only the operations that make sense are defined,
+// depending on the nature of the parameters T1 and T2.
 template<typename T1, typename T2>
 class Pair {
  public:
