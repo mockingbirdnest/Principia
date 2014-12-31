@@ -244,10 +244,10 @@ TEST_F(NBodySystemTest, Moon) {
                      false,  // tmax_is_exact
                      {trajectory2_.get()});
 
-  Length const q2 = (trajectory2_->last().degrees_of_freedom().position -
+  Length const q2 = (trajectory2_->last().degrees_of_freedom().position() -
                      reference_position).coordinates().y;
   Speed const v2 =
-      trajectory2_->last().degrees_of_freedom().velocity.coordinates().x;
+      trajectory2_->last().degrees_of_freedom().velocity().coordinates().x;
   std::vector<Vector<Length, EarthMoonOrbitPlane>> const positions =
       ValuesOf(trajectory2_->Positions(), reference_position);
   LOG(INFO) << ToMathematicaString(positions);
@@ -271,12 +271,12 @@ TEST_F(NBodySystemTest, EarthProbe) {
       Position<EarthMoonOrbitPlane>();
   Length const distance = 1E9 * SIUnit<Length>();
   trajectory3_->Append(trajectory1_->last().time(),
-                       {trajectory1_->last().degrees_of_freedom().position +
+                       {trajectory1_->last().degrees_of_freedom().position() +
                             Vector<Length, EarthMoonOrbitPlane>(
                                 {0 * SIUnit<Length>(),
                                  distance,
                                  0 * SIUnit<Length>()}),
-                        trajectory1_->last().degrees_of_freedom().velocity});
+                        trajectory1_->last().degrees_of_freedom().velocity()});
   trajectory3_->set_intrinsic_acceleration(
       [this, distance](Instant const& t) {
     return Vector<Acceleration, EarthMoonOrbitPlane>(
@@ -291,10 +291,10 @@ TEST_F(NBodySystemTest, EarthProbe) {
                      false,  // tmax_is_exact
                      {trajectory1_.get(), trajectory3_.get()});
 
-  Length const q1 = (trajectory1_->last().degrees_of_freedom().position -
+  Length const q1 = (trajectory1_->last().degrees_of_freedom().position() -
                      reference_position).coordinates().y;
   Speed const v1 =
-      trajectory1_->last().degrees_of_freedom().velocity.coordinates().x;
+      trajectory1_->last().degrees_of_freedom().velocity().coordinates().x;
   std::vector<Vector<Length, EarthMoonOrbitPlane>> const positions1 =
       ValuesOf(trajectory1_->Positions(), reference_position);
   LOG(INFO) << ToMathematicaString(positions1);
@@ -312,10 +312,10 @@ TEST_F(NBodySystemTest, EarthProbe) {
               AlmostEquals(1.00 * period_ * v1, 1));
   EXPECT_THAT(positions1[100].coordinates().y, Eq(q1));
 
-  Length const q3 = (trajectory3_->last().degrees_of_freedom().position -
+  Length const q3 = (trajectory3_->last().degrees_of_freedom().position() -
                      reference_position).coordinates().y;
   Speed const v3 =
-      trajectory3_->last().degrees_of_freedom().velocity.coordinates().x;
+      trajectory3_->last().degrees_of_freedom().velocity().coordinates().x;
   std::vector<Vector<Length, EarthMoonOrbitPlane>> const positions3 =
       ValuesOf(trajectory3_->Positions(), reference_position);
   LOG(INFO) << ToMathematicaString(positions3);
@@ -443,14 +443,14 @@ TEST_F(NBodySystemTest, Sputnik1ToSputnik2) {
     SolarSystem::Index const index = static_cast<SolarSystem::Index>(i);
     double const position_error = RelativeError(
         at_спутник_2_launch->trajectories()[i]->
-            last().degrees_of_freedom().position - kSolarSystemBarycentre,
+            last().degrees_of_freedom().position() - kSolarSystemBarycentre,
         evolved_system->trajectories()[i]->
-            last().degrees_of_freedom().position - kSolarSystemBarycentre);
+            last().degrees_of_freedom().position() - kSolarSystemBarycentre);
     double const velocity_error = RelativeError(
         at_спутник_2_launch->trajectories()[i]->
-            last().degrees_of_freedom().velocity,
+            last().degrees_of_freedom().velocity(),
         evolved_system->trajectories()[i]->
-            last().degrees_of_freedom().velocity);
+            last().degrees_of_freedom().velocity());
     EXPECT_THAT(position_error, Lt(expected_position_error.at(index)))
         << SolarSystem::name(i);
     EXPECT_THAT(position_error, Gt(expected_position_error.at(index) / 10.0))
@@ -463,14 +463,14 @@ TEST_F(NBodySystemTest, Sputnik1ToSputnik2) {
       // Look at the error in the position relative to the parent.
       Vector<Length, ICRFJ2000Ecliptic> expected =
           at_спутник_2_launch->trajectories()[i]->
-              last().degrees_of_freedom().position -
+              last().degrees_of_freedom().position() -
           at_спутник_2_launch->trajectories()[SolarSystem::parent(i)]->
-              last().degrees_of_freedom().position;
+              last().degrees_of_freedom().position();
       Vector<Length, ICRFJ2000Ecliptic> actual =
           evolved_system->trajectories()[i]->
-              last().degrees_of_freedom().position -
+              last().degrees_of_freedom().position() -
           evolved_system->trajectories()[SolarSystem::parent(i)]->
-              last().degrees_of_freedom().position;
+              last().degrees_of_freedom().position();
       if (expected_angle_error.find(index) != expected_angle_error.end()) {
         Area const product_of_norms = expected.Norm() * actual.Norm();
         Angle const angle = ArcTan(

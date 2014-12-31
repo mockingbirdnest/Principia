@@ -47,11 +47,11 @@ void FromBasisOfBarycentricFrameToStandardBasis(
   CHECK_NOTNULL(rotation);
   CHECK_NOTNULL(angular_frequency);
   Displacement<FromFrame> const reference_direction =
-      primary_degrees_of_freedom.position -
-      barycentre_degrees_of_freedom.position;
+      primary_degrees_of_freedom.position() -
+      barycentre_degrees_of_freedom.position();
   Velocity<FromFrame> reference_normal =
-      primary_degrees_of_freedom.velocity -
-      barycentre_degrees_of_freedom.velocity;
+      primary_degrees_of_freedom.velocity() -
+      barycentre_degrees_of_freedom.velocity();
   reference_direction.Orthogonalize(&reference_normal);
   Bivector<Product<Length, Speed>, FromFrame> const reference_binormal =
       Wedge(reference_direction, reference_normal);
@@ -97,15 +97,15 @@ Transforms<FromFrame, ThroughFrame, ToFrame>::BodyCentredNonRotating(
         centre_it.degrees_of_freedom();
 
     AffineMap<FromFrame, ThroughFrame, Length, Identity> const position_map(
-        centre_degrees_of_freedom.position,
+        centre_degrees_of_freedom.position(),
         ThroughFrame::origin,
         Identity<FromFrame, ThroughFrame>());
     // TODO(phl): Should |velocity_map| be an affine map?
     Identity<FromFrame, ThroughFrame> const velocity_map;
     DegreesOfFreedom<ThroughFrame> through_degrees_of_freedom =
-        {position_map(from_degrees_of_freedom.position),
-         velocity_map(from_degrees_of_freedom.velocity -
-                      centre_degrees_of_freedom.velocity)};
+        {position_map(from_degrees_of_freedom.position()),
+         velocity_map(from_degrees_of_freedom.velocity() -
+                      centre_degrees_of_freedom.velocity())};
 
     // Cache the result before returning it.
     that->first_cache_.emplace(std::make_pair(trajectory, t),
@@ -124,11 +124,11 @@ Transforms<FromFrame, ThroughFrame, ToFrame>::BodyCentredNonRotating(
 
     AffineMap<ThroughFrame, ToFrame, Length, Identity> const position_map(
         ThroughFrame::origin,
-        last_centre_degrees_of_freedom.position,
+        last_centre_degrees_of_freedom.position(),
         Identity<ThroughFrame, ToFrame>());
     Identity<ThroughFrame, ToFrame> const velocity_map;
-    return {position_map(through_degrees_of_freedom.position),
-            velocity_map(through_degrees_of_freedom.velocity)};
+    return {position_map(through_degrees_of_freedom.position()),
+            velocity_map(through_degrees_of_freedom.velocity())};
   };
 
   return transforms;
@@ -191,7 +191,7 @@ Transforms<FromFrame, ThroughFrame, ToFrame>::BarycentricRotating(
         &angular_frequency);
 
     AffineMap<FromFrame, ThroughFrame, Length, Rotation> const position_map(
-        barycentre_degrees_of_freedom.position,
+        barycentre_degrees_of_freedom.position(),
         ThroughFrame::origin,
         from_basis_of_barycentric_frame_to_standard_basis);
     // TODO(phl): This is where we wonder if |velocity_map| should be an affine
@@ -199,12 +199,12 @@ Transforms<FromFrame, ThroughFrame, ToFrame>::BarycentricRotating(
     Rotation<FromFrame, ThroughFrame> const& velocity_map =
         from_basis_of_barycentric_frame_to_standard_basis;
     DegreesOfFreedom<ThroughFrame> through_degrees_of_freedom =
-        {position_map(from_degrees_of_freedom.position),
-         velocity_map(from_degrees_of_freedom.velocity -
-                      barycentre_degrees_of_freedom.velocity -
+        {position_map(from_degrees_of_freedom.position()),
+         velocity_map(from_degrees_of_freedom.velocity() -
+                      barycentre_degrees_of_freedom.velocity() -
                         angular_frequency *
-                          (from_degrees_of_freedom.position -
-                           barycentre_degrees_of_freedom.position) / Radian)};
+                          (from_degrees_of_freedom.position() -
+                           barycentre_degrees_of_freedom.position()) / Radian)};
 
     // Cache the result before returning it.
     that->first_cache_.emplace(std::make_pair(trajectory, t),
@@ -245,12 +245,12 @@ Transforms<FromFrame, ThroughFrame, ToFrame>::BarycentricRotating(
 
     AffineMap<ThroughFrame, ToFrame, Length, Rotation> const position_map(
         ThroughFrame::origin,
-        last_barycentre_degrees_of_freedom.position,
+        last_barycentre_degrees_of_freedom.position(),
         from_standard_basis_to_basis_of_last_barycentric_frame);
     Rotation<ThroughFrame, ToFrame> const& velocity_map =
         from_standard_basis_to_basis_of_last_barycentric_frame;
-    return {position_map(through_degrees_of_freedom.position),
-            velocity_map(through_degrees_of_freedom.velocity)};
+    return {position_map(through_degrees_of_freedom.position()),
+            velocity_map(through_degrees_of_freedom.velocity())};
   };
 
   return transforms;
