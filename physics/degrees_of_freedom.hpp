@@ -29,7 +29,9 @@ class DegreesOfFreedom : public Pair<Position<Frame>, Velocity<Frame>> {
                    Velocity<Frame> const& velocity);
 
   // Not explicit, the point of this constructor is to convert implicitly.
-  DegreesOfFreedom(Pair<Position<Frame>, Velocity<Frame>> const& base);
+  DegreesOfFreedom(
+      Pair<Position<Frame>, 
+           Velocity<Frame>> const& base);  // NOLINT(runtime/explicit)
 
   Position<Frame> const& position() const;
   Velocity<Frame> const& velocity() const;
@@ -44,7 +46,8 @@ class RelativeDegreesOfFreedom
  public:
   // Not explicit, the point of this constructor is to convert implicitly.
   RelativeDegreesOfFreedom(
-      Pair<Displacement<Frame>, Velocity<Frame>> const& base);
+      Pair<Displacement<Frame>, 
+           Velocity<Frame>> const& base);  // NOLINT(runtime/explicit)
 
   Displacement<Frame> const& displacement() const;
   Velocity<Frame> const& velocity() const;

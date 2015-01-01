@@ -328,7 +328,8 @@ TEST_F(TrajectoryTest, ForgetAfterSuccess) {
   times = fork->Times();
   EXPECT_THAT(positions, ElementsAre(testing::Pair(t1_, q1_),
                                      testing::Pair(t2_, q2_)));
-  EXPECT_THAT(velocities, ElementsAre(testing::Pair(t1_, p1_), testing::Pair(t2_, p2_)));
+  EXPECT_THAT(velocities, ElementsAre(testing::Pair(t1_, p1_),
+                                      testing::Pair(t2_, p2_)));
   EXPECT_THAT(times, ElementsAre(t1_, t2_));
   EXPECT_EQ(q2_, fork->last().degrees_of_freedom().position());
   EXPECT_EQ(p2_, fork->last().degrees_of_freedom().velocity());
