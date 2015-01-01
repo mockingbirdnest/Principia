@@ -85,6 +85,30 @@ class Pair {
   bool operator==(Pair const& right) const;
   bool operator!=(Pair const& right) const;
 
+  template<typename Weight>
+  class BarycentreCalculator {
+   public:
+    BarycentreCalculator() = default;
+    ~BarycentreCalculator() = default;
+
+    void Add(Pair const& pair, Weight const& weight);
+    Pair const Get() const;
+
+   private:
+    bool empty_ = true;
+    decltype(std::declval<typename vector_of<T1>::type>() *
+             std::declval<Weight>()) t1_weighted_sum_;
+    decltype(std::declval<typename vector_of<T2>::type>() *
+             std::declval<Weight>()) t2_weighted_sum_;
+    Weight weight_;
+
+    // We need reference values to convert points into vectors, if needed.  We
+    // pick default-constructed objects as they don't introduce any inaccuracies
+    // in the computations.
+    static T1 const reference_t1_;
+    static T2 const reference_t2_;
+  };
+
  protected:
   // The subclasses can access the members directly to implement accessors.
   T1 t1_;
