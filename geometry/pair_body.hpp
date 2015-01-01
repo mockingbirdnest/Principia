@@ -85,16 +85,20 @@ typename enable_if_vector<
     Pair<decltype(std::declval<T1>() * std::declval<Scalar>()),
          decltype(std::declval<T2>() * std::declval<Scalar>())>>::type
 operator*(Pair<T1, T2> const& left, Scalar const right) {
-  return Pair<T1, T2>(left.t1_ * right, left.t2_ * right);
+  return Pair<decltype(std::declval<T1>() * std::declval<Scalar>()),
+              decltype(std::declval<T2>() * std::declval<Scalar>())>(
+      left.t1_ * right, left.t2_ * right);
 }
 
 template<typename Scalar, typename T1, typename T2>
 typename enable_if_vector<
     Pair<T1, T2>,
-    Pair<decltype(std::declval<T1>() * std::declval<Scalar>()),
-         decltype(std::declval<T2>() * std::declval<Scalar>())>>::type
+    Pair<decltype(std::declval<T1>() / std::declval<Scalar>()),
+         decltype(std::declval<T2>() / std::declval<Scalar>())>>::type
 operator/(Pair<T1, T2> const& left, Scalar const right) {
-  return Pair<T1, T2>(left.t1_ / right, left.t2_ / right);
+  return Pair<decltype(std::declval<T1>() / std::declval<Scalar>()),
+              decltype(std::declval<T2>() / std::declval<Scalar>())>(
+      left.t1_ / right, left.t2_ / right);
 }
 
 template<typename T1, typename T2>

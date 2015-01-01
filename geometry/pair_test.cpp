@@ -4,8 +4,20 @@
 #include "geometry/point.hpp"
 #include "gtest/gtest.h"
 #include "quantities/named_quantities.hpp"
+#include "quantities/quantities.hpp"
 
+// Define this to check that the illegal operations are actually rejected.
+#undef CHECK_ILLEGAL
+
+using principia::geometry::Vector;
 using principia::quantities::Action;
+using principia::quantities::Angle;
+using principia::quantities::Dimensions;
+using principia::quantities::Energy;
+using principia::quantities::Frequency;
+using principia::quantities::Quantity;
+using principia::quantities::SolidAngle;
+using principia::quantities::Time;
 using principia::quantities::Winding;
 
 namespace principia {
@@ -52,16 +64,6 @@ class PairTest : public testing::Test {
   VV vv_;
 };
 
-TEST_F(PairTest, Nothing) {
-  //VP a(t1_, t2_);
-  //P p2(t1_, t2_);
-  //auto q = p1 - p2;
-  //q = ((3.0 * (q - (-q))) * 2.0) / 5.0;
-  //q *= 4.0;
-  //p1 = p2 + q;
-  //LOG(ERROR) << "p1 = " << p1 << "\nq = " << q;
-}
-
 TEST_F(PairTest, MemberAddition) {
   EXPECT_EQ(PP(P1(V1({5 * SIUnit<Action>(),
                       7 * SIUnit<Action>(),
@@ -91,6 +93,337 @@ TEST_F(PairTest, MemberAddition) {
                    24 * SIUnit<Winding>(),
                    22 * SIUnit<Winding>()})),
             vv_ + vv_);
+}
+
+TEST_F(PairTest, MemberSubtraction) {
+  EXPECT_EQ(PP(P1(V1({3 * SIUnit<Action>(),
+                      3 * SIUnit<Action>(),
+                      3 * SIUnit<Action>()})),
+               P2(V2({3 * SIUnit<Winding>(),
+                      3 * SIUnit<Winding>(),
+                      3 * SIUnit<Winding>()}))),
+            pp_ - vv_);
+  EXPECT_EQ(PV(P1(V1({3 * SIUnit<Action>(),
+                      3 * SIUnit<Action>(),
+                      3 * SIUnit<Action>()})),
+               V2({0 * SIUnit<Winding>(),
+                   0 * SIUnit<Winding>(),
+                   0 * SIUnit<Winding>()})),
+            pv_ - vv_);
+  EXPECT_EQ(VP(V1({0 * SIUnit<Action>(),
+                   0 * SIUnit<Action>(),
+                   0 * SIUnit<Action>()}),
+               P2(V2({3 * SIUnit<Winding>(),
+                      3 * SIUnit<Winding>(),
+                      3 * SIUnit<Winding>()}))),
+            vp_ - vv_);
+  EXPECT_EQ(VV(V1({0 * SIUnit<Action>(),
+                   0 * SIUnit<Action>(),
+                   0 * SIUnit<Action>()}),
+               V2({0 * SIUnit<Winding>(),
+                   0 * SIUnit<Winding>(),
+                   0 * SIUnit<Winding>()})),
+            vv_ - vv_);
+}
+
+TEST_F(PairTest, MemberAdditionTo) {
+  pp_ += vv_;
+  EXPECT_EQ(PP(P1(V1({5 * SIUnit<Action>(),
+                      7 * SIUnit<Action>(),
+                      9 * SIUnit<Action>()})),
+               P2(V2({29 * SIUnit<Winding>(),
+                      27 * SIUnit<Winding>(),
+                      25 * SIUnit<Winding>()}))),
+            pp_);
+  pv_ += vv_;
+  EXPECT_EQ(PV(P1(V1({5 * SIUnit<Action>(),
+                      7 * SIUnit<Action>(),
+                      9 * SIUnit<Action>()})),
+               V2({26 * SIUnit<Winding>(),
+                   24 * SIUnit<Winding>(),
+                   22 * SIUnit<Winding>()})),
+            pv_);
+  vp_ += vv_;
+  EXPECT_EQ(VP(V1({2 * SIUnit<Action>(),
+                   4 * SIUnit<Action>(),
+                   6 * SIUnit<Action>()}),
+               P2(V2({29 * SIUnit<Winding>(),
+                      27 * SIUnit<Winding>(),
+                      25 * SIUnit<Winding>()}))),
+            vp_);
+  vv_ += vv_;
+  EXPECT_EQ(VV(V1({2 * SIUnit<Action>(),
+                   4 * SIUnit<Action>(),
+                   6 * SIUnit<Action>()}),
+               V2({26 * SIUnit<Winding>(),
+                   24 * SIUnit<Winding>(),
+                   22 * SIUnit<Winding>()})),
+            vv_);
+}
+
+TEST_F(PairTest, MemberSubtractionFrom) {
+  pp_ -= vv_;
+  EXPECT_EQ(PP(P1(V1({3 * SIUnit<Action>(),
+                      3 * SIUnit<Action>(),
+                      3 * SIUnit<Action>()})),
+               P2(V2({3 * SIUnit<Winding>(),
+                      3 * SIUnit<Winding>(),
+                      3 * SIUnit<Winding>()}))),
+            pp_);
+  pv_ -= vv_;
+  EXPECT_EQ(PV(P1(V1({3 * SIUnit<Action>(),
+                      3 * SIUnit<Action>(),
+                      3 * SIUnit<Action>()})),
+               V2({0 * SIUnit<Winding>(),
+                   0 * SIUnit<Winding>(),
+                   0 * SIUnit<Winding>()})),
+            pv_);
+  vp_ -= vv_;
+  EXPECT_EQ(VP(V1({0 * SIUnit<Action>(),
+                   0 * SIUnit<Action>(),
+                   0 * SIUnit<Action>()}),
+               P2(V2({3 * SIUnit<Winding>(),
+                      3 * SIUnit<Winding>(),
+                      3 * SIUnit<Winding>()}))),
+            vp_);
+  vv_ -= vv_;
+  EXPECT_EQ(VV(V1({0 * SIUnit<Action>(),
+                   0 * SIUnit<Action>(),
+                   0 * SIUnit<Action>()}),
+               V2({0 * SIUnit<Winding>(),
+                   0 * SIUnit<Winding>(),
+                   0 * SIUnit<Winding>()})),
+            vv_);
+}
+
+TEST_F(PairTest, MemberEquality) {
+  EXPECT_TRUE(pp_ == PP(P1(V1({4 * SIUnit<Action>(),
+                               5 * SIUnit<Action>(),
+                               6 * SIUnit<Action>()})),
+                        P2(V2({16 * SIUnit<Winding>(),
+                               15 * SIUnit<Winding>(),
+                               14 * SIUnit<Winding>()}))));
+  EXPECT_FALSE(pp_ == PP(P1(V1({4 * SIUnit<Action>(),
+                                5 * SIUnit<Action>(),
+                                6 * SIUnit<Action>()})),
+                         P2(V2({26 * SIUnit<Winding>(),
+                                15 * SIUnit<Winding>(),
+                                14 * SIUnit<Winding>()}))));
+  EXPECT_TRUE(pv_ == PV(P1(V1({4 * SIUnit<Action>(),
+                               5 * SIUnit<Action>(),
+                               6 * SIUnit<Action>()})),
+                        V2({13 * SIUnit<Winding>(),
+                            12 * SIUnit<Winding>(),
+                            11 * SIUnit<Winding>()})));
+  EXPECT_FALSE(pv_ == PV(P1(V1({4 * SIUnit<Action>(),
+                                15 * SIUnit<Action>(),
+                                6 * SIUnit<Action>()})),
+                         V2({13 * SIUnit<Winding>(),
+                             12 * SIUnit<Winding>(),
+                             11 * SIUnit<Winding>()})));
+  EXPECT_TRUE(vp_ == VP(V1({1 * SIUnit<Action>(),
+                            2 * SIUnit<Action>(),
+                            3 * SIUnit<Action>()}),
+                        P2(V2({16 * SIUnit<Winding>(),
+                               15 * SIUnit<Winding>(),
+                               14 * SIUnit<Winding>()}))));
+  EXPECT_FALSE(vp_ == VP(V1({1 * SIUnit<Action>(),
+                             2 * SIUnit<Action>(),
+                             13 * SIUnit<Action>()}),
+                         P2(V2({16 * SIUnit<Winding>(),
+                                15 * SIUnit<Winding>(),
+                                14 * SIUnit<Winding>()}))));
+  EXPECT_TRUE(vv_ == VV(V1({1 * SIUnit<Action>(),
+                            2 * SIUnit<Action>(),
+                            3 * SIUnit<Action>()}),
+                        V2({13 * SIUnit<Winding>(),
+                            12 * SIUnit<Winding>(),
+                            11 * SIUnit<Winding>()})));
+  EXPECT_FALSE(vv_ == VV(V1({1 * SIUnit<Action>(),
+                             2 * SIUnit<Action>(),
+                             3 * SIUnit<Action>()}),
+                         V2({13 * SIUnit<Winding>(),
+                             12 * SIUnit<Winding>(),
+                             1 * SIUnit<Winding>()})));
+}
+
+TEST_F(PairTest, MemberInequality) {
+  EXPECT_FALSE(pp_ != PP(P1(V1({4 * SIUnit<Action>(),
+                                5 * SIUnit<Action>(),
+                                6 * SIUnit<Action>()})),
+                         P2(V2({16 * SIUnit<Winding>(),
+                                15 * SIUnit<Winding>(),
+                                14 * SIUnit<Winding>()}))));
+  EXPECT_TRUE(pp_ != PP(P1(V1({4 * SIUnit<Action>(),
+                               5 * SIUnit<Action>(),
+                               6 * SIUnit<Action>()})),
+                        P2(V2({26 * SIUnit<Winding>(),
+                               15 * SIUnit<Winding>(),
+                               14 * SIUnit<Winding>()}))));
+  EXPECT_FALSE(pv_ != PV(P1(V1({4 * SIUnit<Action>(),
+                                5 * SIUnit<Action>(),
+                                6 * SIUnit<Action>()})),
+                         V2({13 * SIUnit<Winding>(),
+                             12 * SIUnit<Winding>(),
+                             11 * SIUnit<Winding>()})));
+  EXPECT_TRUE(pv_ != PV(P1(V1({4 * SIUnit<Action>(),
+                               15 * SIUnit<Action>(),
+                               6 * SIUnit<Action>()})),
+                        V2({13 * SIUnit<Winding>(),
+                            12 * SIUnit<Winding>(),
+                            11 * SIUnit<Winding>()})));
+  EXPECT_FALSE(vp_ != VP(V1({1 * SIUnit<Action>(),
+                             2 * SIUnit<Action>(),
+                             3 * SIUnit<Action>()}),
+                         P2(V2({16 * SIUnit<Winding>(),
+                                15 * SIUnit<Winding>(),
+                                14 * SIUnit<Winding>()}))));
+  EXPECT_TRUE(vp_ != VP(V1({1 * SIUnit<Action>(),
+                            2 * SIUnit<Action>(),
+                            13 * SIUnit<Action>()}),
+                        P2(V2({16 * SIUnit<Winding>(),
+                               15 * SIUnit<Winding>(),
+                               14 * SIUnit<Winding>()}))));
+  EXPECT_FALSE(vv_ != VV(V1({1 * SIUnit<Action>(),
+                             2 * SIUnit<Action>(),
+                             3 * SIUnit<Action>()}),
+                         V2({13 * SIUnit<Winding>(),
+                             12 * SIUnit<Winding>(),
+                             11 * SIUnit<Winding>()})));
+  EXPECT_TRUE(vv_ != VV(V1({1 * SIUnit<Action>(),
+                            2 * SIUnit<Action>(),
+                            3 * SIUnit<Action>()}),
+                        V2({13 * SIUnit<Winding>(),
+                            12 * SIUnit<Winding>(),
+                            1 * SIUnit<Winding>()})));
+}
+
+TEST_F(PairTest, AffineSubtraction) {
+  PP const pp = pp_ + vv_;
+  EXPECT_EQ(vv_, pp - pp_);
+  PV const pv = pv_ + vv_;
+  EXPECT_EQ(vv_, pv - pv_);
+  VP const vp = vp_ + vv_;
+  EXPECT_EQ(vv_, vp - vp_);
+  // No test for VV, that would be a vector subtraction.
+}
+
+TEST_F(PairTest, UnaryPlus) {
+  VV const vv = +vv_;
+  EXPECT_EQ(vv_, vv);
+#ifdef CHECK_ILLEGAL
+  auto const pp = +pp_;
+  auto const pv = +pv_;
+  auto const vp = +vp_;
+#endif
+}
+
+TEST_F(PairTest, UnaryMinus) {
+  VV const vv = -vv_;
+  EXPECT_EQ(VV(V1({-1 * SIUnit<Action>(),
+                   -2 * SIUnit<Action>(),
+                   -3 * SIUnit<Action>()}),
+               V2({-13 * SIUnit<Winding>(),
+                   -12 * SIUnit<Winding>(),
+                   -11 * SIUnit<Winding>()})),
+            vv);
+#ifdef CHECK_ILLEGAL
+  auto const pp = -pp_;
+  auto const pv = -pv_;
+  auto const vp = -vp_;
+#endif
+}
+
+TEST_F(PairTest, LeftMultiplication) {
+  EXPECT_EQ(VV(V1({3 * SIUnit<Action>(),
+                   6 * SIUnit<Action>(),
+                   9 * SIUnit<Action>()}),
+               V2({39 * SIUnit<Winding>(),
+                   36 * SIUnit<Winding>(),
+                   33 * SIUnit<Winding>()})),
+            3 * vv_);
+#ifdef CHECK_ILLEGAL
+  auto const pp = 3 * pp_;
+  auto const pv = 3 * pv_;
+  auto const vp = 3 * vp_;
+#endif
+}
+
+TEST_F(PairTest, RightMultiplication) {
+  using Whatever1 = Quantity<Dimensions<2, 1, -1, 0, 0, 0, 0, 0, 0, 1>>;
+  using Whatever2 = Quantity<Dimensions<0, 0, 0, 0, 0, 0, 0, 1, 0, 1>>;
+  using VWhatever1 = Vector<Whatever1, World>;
+  using VWhatever2 = Vector<Whatever2, World>;
+  using Pear = Pair<VWhatever1, VWhatever2>;
+  EXPECT_EQ(Pear(VWhatever1({1.5 * SIUnit<Whatever1>(),
+                             3.0 * SIUnit<Whatever1>(),
+                             4.5 * SIUnit<Whatever1>()}),
+                 VWhatever2({19.5 * SIUnit<Whatever2>(),
+                             18.0 * SIUnit<Whatever2>(),
+                             16.5 * SIUnit<Whatever2>()})),
+            vv_ * (1.5 * SIUnit<SolidAngle>()));
+#ifdef CHECK_ILLEGAL
+  auto const pp = pp_ * (1.5 * SIUnit<SolidAngle>());
+  auto const pv = pv_ * (1.5 * SIUnit<SolidAngle>());
+  auto const vp = vp_ * (1.5 * SIUnit<SolidAngle>());
+#endif
+}
+
+TEST_F(PairTest, RightDivision) {
+  using VEnergy = Vector<Energy, World>;
+  using VFrequency = Vector<Frequency, World>;
+  using Pear = Pair<VEnergy, VFrequency>;
+  EXPECT_EQ(Pear(VEnergy({0.5 * SIUnit<Energy>(),
+                          1.0 * SIUnit<Energy>(),
+                          1.5 * SIUnit<Energy>()}),
+                VFrequency({6.5 * SIUnit<Frequency>(),
+                            6.0 * SIUnit<Frequency>(),
+                            5.5 * SIUnit<Frequency>()})),
+            vv_ / (2 * SIUnit<Time>()));
+#ifdef CHECK_ILLEGAL
+  auto const pp = pp_ / (2 * SIUnit<Time>());
+  auto const pv = pv_ / (2 * SIUnit<Time>())
+  auto const vp = vp_ / (2 * SIUnit<Time>());
+#endif
+}
+
+TEST_F(PairTest, MultiplicationBy) {
+  vv_ *= 4;
+  EXPECT_EQ(VV(V1({4 * SIUnit<Action>(),
+                   8 * SIUnit<Action>(),
+                   12 * SIUnit<Action>()}),
+               V2({52 * SIUnit<Winding>(),
+                   48 * SIUnit<Winding>(),
+                   44 * SIUnit<Winding>()})),
+            vv_);
+#ifdef CHECK_ILLEGAL
+  pp_ *= 4;
+  pv_ *= 4;
+  vp_ *= 4;
+#endif
+}
+
+TEST_F(PairTest, DivisionBy) {
+  vv_ /= 0.25;
+  EXPECT_EQ(VV(V1({4 * SIUnit<Action>(),
+                   8 * SIUnit<Action>(),
+                   12 * SIUnit<Action>()}),
+               V2({52 * SIUnit<Winding>(),
+                   48 * SIUnit<Winding>(),
+                   44 * SIUnit<Winding>()})),
+            vv_);
+#ifdef CHECK_ILLEGAL
+  pp_ /= 0.25;
+  pv_ /= 0.25;
+  vp_ /= 0.25;
+#endif
+}
+
+TEST_F(PairTest, Streaming) {
+  LOG(ERROR) << "pp_ = " << pp_;
+  LOG(ERROR) << "pv_ = " << pv_;
+  LOG(ERROR) << "vp_ = " << vp_;
+  LOG(ERROR) << "vv_ = " << vv_;
 }
 
 }  // namespace geometry
