@@ -53,6 +53,27 @@ DegreesOfFreedom<Frame>::BarycentreCalculator<Weight>::Get() const {
           Velocity<Frame>(velocities_weighted_sum_ / weight_)};
 }
 
+template<typename Frame>
+template<typename Weight>
+Position<Frame> const
+DegreesOfFreedom<Frame>::BarycentreCalculator<Weight>::reference_position_;
+
+template<typename Frame>
+RelativeDegreesOfFreedom<Frame>::RelativeDegreesOfFreedom(
+    Pair<Displacement<Frame>, Velocity<Frame>> const& parent)
+    : Pair<Displacement<Frame>, Velocity<Frame>>(parent) {}
+
+template<typename Frame>
+Displacement<Frame> const&
+RelativeDegreesOfFreedom<Frame>::displacement() const {
+  return t1_;
+}
+
+template<typename Frame>
+Velocity<Frame> const& RelativeDegreesOfFreedom<Frame>::velocity() const {
+  return t2_;
+}
+
 template<typename Frame, typename Weight>
 DegreesOfFreedom<Frame> Barycentre(
     std::vector<DegreesOfFreedom<Frame>> const& degrees_of_freedom,
@@ -69,11 +90,6 @@ DegreesOfFreedom<Frame> Barycentre(
   CHECK_EQ(degrees_of_freedom.size(), weights.size());
   CHECK(!degrees_of_freedom.empty());
 }
-
-template<typename Frame>
-template<typename Weight>
-Position<Frame> const
-DegreesOfFreedom<Frame>::BarycentreCalculator<Weight>::reference_position_;
 
 }  // namespace physics
 }  // namespace principia

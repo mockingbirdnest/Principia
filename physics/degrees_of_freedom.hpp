@@ -9,6 +9,7 @@
 #include "quantities/named_quantities.hpp"
 
 using principia::geometry::Displacement;
+using principia::geometry::Pair;
 using principia::geometry::Position;
 using principia::geometry::Velocity;
 using principia::quantities::Length;
@@ -18,8 +19,7 @@ namespace principia {
 namespace physics {
 
 template<typename Frame>
-class DegreesOfFreedom
-    : public principia::geometry::Pair<Position<Frame>, Velocity<Frame>> {
+class DegreesOfFreedom : public Pair<Position<Frame>, Velocity<Frame>> {
  public:
   DegreesOfFreedom(Position<Frame> const& position,
                    Velocity<Frame> const& velocity);
@@ -50,6 +50,24 @@ class DegreesOfFreedom
     // in the computations.
     static Position<Frame> const reference_position_;
   };
+};
+
+// This class is analogous to the vector class underlying DegreesOfFreedom,
+// except that it exports properly-named selectors.  It is implicitly
+// convertible in both directions, so clients can generally ignore the
+// difference.  Note however that creating a RelativeDegreesOfFreedom involves
+// a copy so clients might want to use the parent type (probably declared as
+// |auto|) when they don't need to access the members.
+template<typename Frame>
+class RelativeDegreesOfFreedom
+    : public Pair<Displacement<Frame>, Velocity<Frame>> {
+ public:
+  // Not explicit, the point of this class is to convert implicitly.
+  RelativeDegreesOfFreedom(
+      Pair<Displacement<Frame>, Velocity<Frame>> const& parent);
+
+  Displacement<Frame> const& displacement() const;
+  Velocity<Frame> const& velocity() const;
 };
 
 template<typename Frame, typename Weight>
