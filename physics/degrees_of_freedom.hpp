@@ -12,59 +12,39 @@ using principia::geometry::Displacement;
 using principia::geometry::Pair;
 using principia::geometry::Position;
 using principia::geometry::Velocity;
-using principia::quantities::Length;
-using principia::quantities::Speed;
 
 namespace principia {
 namespace physics {
 
+// This class is analogous to the pair which is its base class, except that it
+// exports properly-named selectors.  It is implicitly convertible in both
+// directions, so clients can generally ignore the difference.  Note however
+// that creating a DegreesOfFreedom involves a copy so clients might want to use
+// the base type (probably declared as |auto|) when they don't need to access
+// the members.
 template<typename Frame>
 class DegreesOfFreedom : public Pair<Position<Frame>, Velocity<Frame>> {
  public:
   DegreesOfFreedom(Position<Frame> const& position,
                    Velocity<Frame> const& velocity);
 
+  // Not explicit, the point of this constructor is to convert implicitly.
+  DegreesOfFreedom(Pair<Position<Frame>, Velocity<Frame>> const& base);
+
   Position<Frame> const& position() const;
   Velocity<Frame> const& velocity() const;
-
-  //TODO(phl): Move to Pair.
-  template<typename Weight>
-  class BarycentreCalculator {
-   public:
-    BarycentreCalculator() = default;
-    ~BarycentreCalculator() = default;
-
-    void Add(DegreesOfFreedom const& degrees_of_freedom, Weight const& weight);
-    DegreesOfFreedom const Get() const;
-
-   private:
-    bool empty_ = true;
-    decltype(std::declval<Displacement<Frame>>() *
-             std::declval<Weight>()) displacements_weighted_sum_;
-    decltype(std::declval<Velocity<Frame>>() *
-             std::declval<Weight>()) velocities_weighted_sum_;
-    Weight weight_;
-
-    // We need a reference position to convert points into vectors.  We pick a
-    // default constructed Position<> as it doesn't introduce any inaccuracies
-    // in the computations.
-    static Position<Frame> const reference_position_;
-  };
 };
 
 // This class is analogous to the vector class underlying DegreesOfFreedom,
-// except that it exports properly-named selectors.  It is implicitly
-// convertible in both directions, so clients can generally ignore the
-// difference.  Note however that creating a RelativeDegreesOfFreedom involves
-// a copy so clients might want to use the parent type (probably declared as
-// |auto|) when they don't need to access the members.
+// except that it exports properly-named selectors.  The same comments as above
+// apply.
 template<typename Frame>
 class RelativeDegreesOfFreedom
     : public Pair<Displacement<Frame>, Velocity<Frame>> {
  public:
-  // Not explicit, the point of this class is to convert implicitly.
+  // Not explicit, the point of this constructor is to convert implicitly.
   RelativeDegreesOfFreedom(
-      Pair<Displacement<Frame>, Velocity<Frame>> const& parent);
+      Pair<Displacement<Frame>, Velocity<Frame>> const& base);
 
   Displacement<Frame> const& displacement() const;
   Velocity<Frame> const& velocity() const;

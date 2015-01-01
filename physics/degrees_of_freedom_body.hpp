@@ -13,6 +13,11 @@ DegreesOfFreedom<Frame>::DegreesOfFreedom(Position<Frame> const& position,
     : Pair<Position<Frame>, Velocity<Frame>>(position, velocity) {}
 
 template<typename Frame>
+DegreesOfFreedom<Frame>::DegreesOfFreedom(
+    Pair<Position<Frame>, Velocity<Frame>> const& base)
+    : Pair<Position<Frame>, Velocity<Frame>>(base) {}
+
+template<typename Frame>
 Position<Frame> const& DegreesOfFreedom<Frame>::position() const {
   return t1_;
 }
@@ -23,45 +28,9 @@ Velocity<Frame> const& DegreesOfFreedom<Frame>::velocity() const {
 }
 
 template<typename Frame>
-template<typename Weight>
-void DegreesOfFreedom<Frame>::BarycentreCalculator<Weight>::Add(
-    DegreesOfFreedom const& degrees_of_freedom,
-    Weight const& weight) {
-  auto const displacements_weighted_sum_diff =
-      (degrees_of_freedom.position() - reference_position_) * weight;
-  auto const velocity_weighted_sum_diff =
-      degrees_of_freedom.velocity() * weight;
-  if (empty_) {
-    displacements_weighted_sum_ = displacements_weighted_sum_diff;
-    velocities_weighted_sum_ = velocity_weighted_sum_diff;
-    weight_ = weight;
-    empty_ = false;
-  } else {
-    displacements_weighted_sum_ += displacements_weighted_sum_diff;
-    velocities_weighted_sum_ += velocity_weighted_sum_diff;
-    weight_ += weight;
-  }
-}
-
-template<typename Frame>
-template<typename Weight>
-DegreesOfFreedom<Frame> const
-DegreesOfFreedom<Frame>::BarycentreCalculator<Weight>::Get() const {
-  CHECK(!empty_) << "Empty BarycentreCalculator";
-  return {reference_position_ +
-              Displacement<Frame>(displacements_weighted_sum_ / weight_),
-          Velocity<Frame>(velocities_weighted_sum_ / weight_)};
-}
-
-template<typename Frame>
-template<typename Weight>
-Position<Frame> const
-DegreesOfFreedom<Frame>::BarycentreCalculator<Weight>::reference_position_;
-
-template<typename Frame>
 RelativeDegreesOfFreedom<Frame>::RelativeDegreesOfFreedom(
-    Pair<Displacement<Frame>, Velocity<Frame>> const& parent)
-    : Pair<Displacement<Frame>, Velocity<Frame>>(parent) {}
+    Pair<Displacement<Frame>, Velocity<Frame>> const& base)
+    : Pair<Displacement<Frame>, Velocity<Frame>>(base) {}
 
 template<typename Frame>
 Displacement<Frame> const&
