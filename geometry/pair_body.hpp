@@ -71,8 +71,8 @@ template<typename Weight>
 Pair<T1, T2> const
 Pair<T1, T2>::BarycentreCalculator<Weight>::Get() const {
   CHECK(!empty_) << "Empty BarycentreCalculator";
-  return Pair<T1, T2>(reference_t1_ + (displacements_weighted_sum_ / weight_),
-                      reference_t2_ + (velocities_weighted_sum_ / weight_));
+  return Pair<T1, T2>(reference_t1_ + (t1_weighted_sum_ / weight_),
+                      reference_t2_ + (t2_weighted_sum_ / weight_));
 }
 
 template<typename T1, typename T2>

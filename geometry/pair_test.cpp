@@ -14,6 +14,7 @@ using principia::quantities::Action;
 using principia::quantities::Angle;
 using principia::quantities::Dimensions;
 using principia::quantities::Energy;
+using principia::quantities::Entropy;
 using principia::quantities::Frequency;
 using principia::quantities::Quantity;
 using principia::quantities::SolidAngle;
@@ -63,6 +64,8 @@ class PairTest : public testing::Test {
   VP vp_;
   VV vv_;
 };
+
+using PairDeathTest = PairTest;
 
 TEST_F(PairTest, MemberAddition) {
   EXPECT_EQ(PP(P1(V1({5 * SIUnit<Action>(),
@@ -425,6 +428,79 @@ TEST_F(PairTest, Streaming) {
   LOG(ERROR) << "vp_ = " << vp_;
   LOG(ERROR) << "vv_ = " << vv_;
 }
+
+TEST_F(PairDeathTest, BarycentreCalculatorError) {
+  EXPECT_DEATH({
+    PP::BarycentreCalculator<Entropy> calculator;
+    calculator.Get();
+  }, "Empty BarycentreCalculator");
+  EXPECT_DEATH({
+    PV::BarycentreCalculator<Entropy> calculator;
+    calculator.Get();
+  }, "Empty BarycentreCalculator");
+  EXPECT_DEATH({
+    VP::BarycentreCalculator<Entropy> calculator;
+    calculator.Get();
+  }, "Empty BarycentreCalculator");
+  EXPECT_DEATH({
+    VV::BarycentreCalculator<Entropy> calculator;
+    calculator.Get();
+  }, "Empty BarycentreCalculator");
+}
+
+// Because we can't access individual members this test doesn't fully exercise
+// the computations, so we'll redo some testing for DegreesOfFreedom.
+TEST_F(PairTest, BarycentreCalculatorSuccess) {
+  {
+    PP::BarycentreCalculator<double> calculator;
+    calculator.Add(pp_, 3);
+    PP barycentre = calculator.Get();
+    EXPECT_EQ(pp_, barycentre);
+    calculator.Add(pp_ + vv_, 5);
+    barycentre = calculator.Get();
+    EXPECT_EQ(pp_ + 5.0 / 8.0 * vv_, barycentre);
+    calculator.Add(pp_ - 3 * vv_, 8);
+    barycentre = calculator.Get();
+    EXPECT_EQ(pp_ - 19.0 / 16.0 * vv_, barycentre);
+  }
+  {
+    PV::BarycentreCalculator<double> calculator;
+    calculator.Add(pv_, 3);
+    PV barycentre = calculator.Get();
+    EXPECT_EQ(pv_, barycentre);
+    calculator.Add(pv_ + vv_, 5);
+    barycentre = calculator.Get();
+    EXPECT_EQ(pv_ + 5.0 / 8.0 * vv_, barycentre);
+    calculator.Add(pv_ - 3 * vv_, 8);
+    barycentre = calculator.Get();
+    EXPECT_EQ(pv_ - 19.0 / 16.0 * vv_, barycentre);
+  }
+  {
+    VP::BarycentreCalculator<double> calculator;
+    calculator.Add(vp_, 3);
+    VP barycentre = calculator.Get();
+    EXPECT_EQ(vp_, barycentre);
+    calculator.Add(vp_ + vv_, 5);
+    barycentre = calculator.Get();
+    EXPECT_EQ(vp_ + 5.0 / 8.0 * vv_, barycentre);
+    calculator.Add(vp_ - 3 * vv_, 8);
+    barycentre = calculator.Get();
+    EXPECT_EQ(vp_ - 19.0 / 16.0 * vv_, barycentre);
+  }
+  {
+    VV::BarycentreCalculator<double> calculator;
+    calculator.Add(vv_, 3);
+    VV barycentre = calculator.Get();
+    EXPECT_EQ(vv_, barycentre);
+    calculator.Add(vv_ + vv_, 5);
+    barycentre = calculator.Get();
+    EXPECT_EQ(13.0 / 8.0 * vv_, barycentre);
+    calculator.Add(-2 * vv_, 8);
+    barycentre = calculator.Get();
+    EXPECT_EQ(-3.0 / 16.0 * vv_, barycentre);
+  }
+}
+
 
 }  // namespace geometry
 }  // namespace principia
