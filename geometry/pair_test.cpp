@@ -382,7 +382,7 @@ TEST_F(PairTest, RightDivision) {
             vv_ / (2 * SIUnit<Time>()));
 #ifdef CHECK_ILLEGAL
   auto const pp = pp_ / (2 * SIUnit<Time>());
-  auto const pv = pv_ / (2 * SIUnit<Time>())
+  auto const pv = pv_ / (2 * SIUnit<Time>());
   auto const vp = vp_ / (2 * SIUnit<Time>());
 #endif
 }

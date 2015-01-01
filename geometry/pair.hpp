@@ -89,7 +89,7 @@ class Pair {
   // The subclasses can access the members directly to implement accessors.
   T1 t1_;
   T2 t2_;
- 
+
  private:
   // This is needed so that different instantiations of Pair can access the
   // members.
