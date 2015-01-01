@@ -158,14 +158,14 @@ class PluginTest : public testing::Test {
       Index const parent_index = SolarSystem::parent(index);
       Displacement<AliceSun> const from_parent_position = looking_glass_(
           solar_system_->trajectories()[index]->
-              last().degrees_of_freedom().position() -
+              last().degrees_of_freedom().position -
           solar_system_->trajectories()[parent_index]->
-              last().degrees_of_freedom().position());
+              last().degrees_of_freedom().position);
       Velocity<AliceSun> const from_parent_velocity = looking_glass_(
           solar_system_->trajectories()[index]->
-              last().degrees_of_freedom().velocity() -
+              last().degrees_of_freedom().velocity -
           solar_system_->trajectories()[parent_index]->
-              last().degrees_of_freedom().velocity());
+              last().degrees_of_freedom().velocity);
       plugin_->InsertCelestial(index,
                                bodies_[index]->gravitational_parameter(),
                                parent_index,
@@ -229,16 +229,16 @@ TEST_F(PluginTest, Initialization) {
        ++index) {
     Index const parent_index = SolarSystem::parent(index);
     EXPECT_THAT(solar_system_->trajectories()[index]->
-                    last().degrees_of_freedom().position() -
+                    last().degrees_of_freedom().position -
                 solar_system_->trajectories()[parent_index]->
-                    last().degrees_of_freedom().position(),
+                    last().degrees_of_freedom().position,
                 AlmostEquals(looking_glass_.Inverse()(
                     plugin_->CelestialDisplacementFromParent(index)),
                     1, 216320));
     EXPECT_THAT(solar_system_->trajectories()[index]->
-                    last().degrees_of_freedom().velocity() -
+                    last().degrees_of_freedom().velocity -
                 solar_system_->trajectories()[parent_index]->
-                    last().degrees_of_freedom().velocity(),
+                    last().degrees_of_freedom().velocity,
                 AlmostEquals(looking_glass_.Inverse()(
                     plugin_->CelestialParentRelativeVelocity(index)),
                     0, 936));
@@ -248,14 +248,14 @@ TEST_F(PluginTest, Initialization) {
 TEST_F(PluginDeathTest, InsertCelestialError) {
   Displacement<AliceSun> const from_parent_position = looking_glass_(
       solar_system_->trajectories().front()->
-          last().degrees_of_freedom().position() -
+          last().degrees_of_freedom().position -
       solar_system_->trajectories().front()->
-          last().degrees_of_freedom().position());
+          last().degrees_of_freedom().position);
   Velocity<AliceSun> const from_parent_velocity = looking_glass_(
       solar_system_->trajectories().front()->
-          last().degrees_of_freedom().velocity() -
+          last().degrees_of_freedom().velocity -
       solar_system_->trajectories().front()->
-          last().degrees_of_freedom().velocity());
+          last().degrees_of_freedom().velocity);
   EXPECT_DEATH({
     InsertAllSolarSystemBodies();
     plugin_->EndInitialization();
@@ -840,16 +840,16 @@ TEST_F(PluginTest, UpdateCelestialHierarchy) {
        ++index) {
     EXPECT_THAT(
         solar_system_->trajectories()[index]->
-            last().degrees_of_freedom().position() -
+            last().degrees_of_freedom().position -
         solar_system_->trajectories()[SolarSystem::kSun]->
-            last().degrees_of_freedom().position(),
+            last().degrees_of_freedom().position,
         AlmostEquals(looking_glass_.Inverse()(
             plugin_->CelestialDisplacementFromParent(index)), 1, 5056));
     EXPECT_THAT(
         solar_system_->trajectories()[index]->
-            last().degrees_of_freedom().velocity() -
+            last().degrees_of_freedom().velocity -
         solar_system_->trajectories()[SolarSystem::kSun]->
-            last().degrees_of_freedom().velocity(),
+            last().degrees_of_freedom().velocity,
         AlmostEquals(looking_glass_.Inverse()(
             plugin_->CelestialParentRelativeVelocity(index)), 1, 936));
   }
@@ -869,14 +869,14 @@ TEST_F(PluginTest, BodyCentredNonrotatingRenderingIntegration) {
     Index const parent_index = SolarSystem::parent(index);
     Displacement<AliceSun> const from_parent_position = looking_glass_(
         solar_system_->trajectories()[index]->
-            last().degrees_of_freedom().position() -
+            last().degrees_of_freedom().position -
         solar_system_->trajectories()[parent_index]->
-            last().degrees_of_freedom().position());
+            last().degrees_of_freedom().position);
     Velocity<AliceSun> const from_parent_velocity = looking_glass_(
         solar_system_->trajectories()[index]->
-            last().degrees_of_freedom().velocity() -
+            last().degrees_of_freedom().velocity -
         solar_system_->trajectories()[parent_index]->
-            last().degrees_of_freedom().velocity());
+            last().degrees_of_freedom().velocity);
     plugin.InsertCelestial(index,
                            bodies_[index]->gravitational_parameter(),
                            parent_index,
@@ -963,14 +963,14 @@ TEST_F(PluginTest, BarycentricRotatingRenderingIntegration) {
     Index const parent_index = SolarSystem::parent(index);
     Displacement<AliceSun> const from_parent_position = looking_glass_(
         solar_system_->trajectories()[index]->
-            last().degrees_of_freedom().position() -
+            last().degrees_of_freedom().position -
         solar_system_->trajectories()[parent_index]->
-            last().degrees_of_freedom().position());
+            last().degrees_of_freedom().position);
     Velocity<AliceSun> const from_parent_velocity = looking_glass_(
         solar_system_->trajectories()[index]->
-            last().degrees_of_freedom().velocity() -
+            last().degrees_of_freedom().velocity -
         solar_system_->trajectories()[parent_index]->
-            last().degrees_of_freedom().velocity());
+            last().degrees_of_freedom().velocity);
     plugin.InsertCelestial(index,
                            bodies_[index]->gravitational_parameter(),
                            parent_index,
@@ -982,14 +982,14 @@ TEST_F(PluginTest, BarycentricRotatingRenderingIntegration) {
   // A vessel at the Lagrange point L₅.
   Displacement<ICRFJ2000Ecliptic> const from_the_earth_to_the_moon =
       solar_system_->trajectories()[SolarSystem::kMoon]->
-          last().degrees_of_freedom().position() -
+          last().degrees_of_freedom().position -
       solar_system_->trajectories()[SolarSystem::kEarth]->
-          last().degrees_of_freedom().position();
+          last().degrees_of_freedom().position;
   Velocity<ICRFJ2000Ecliptic> const moon_velocity_wrt_earth =
       solar_system_->trajectories()[SolarSystem::kMoon]->
-          last().degrees_of_freedom().velocity() -
+          last().degrees_of_freedom().velocity -
       solar_system_->trajectories()[SolarSystem::kEarth]->
-          last().degrees_of_freedom().velocity();
+          last().degrees_of_freedom().velocity;
   Displacement<ICRFJ2000Ecliptic> const from_the_earth_to_l5 =
       from_the_earth_to_the_moon / 2 -
           Normalize(moon_velocity_wrt_earth) *

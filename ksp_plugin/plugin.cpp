@@ -207,13 +207,13 @@ void Plugin::SynchronizeBubbleHistories() {
     if (vessel->is_synchronized()) {
       vessel->mutable_history()->Append(
           HistoryTime(),
-          {centre_of_mass.position() + displacement,
-           centre_of_mass.velocity() + velocity});
+          {centre_of_mass.position + displacement,
+           centre_of_mass.velocity + velocity});
     } else {
       vessel->CreateHistoryAndForkProlongation(
           HistoryTime(),
-          {centre_of_mass.position() + displacement,
-           centre_of_mass.velocity() + velocity});
+          {centre_of_mass.position + displacement,
+           centre_of_mass.velocity + velocity});
       CHECK(unsynchronized_vessels_.erase(vessel));
     }
     CHECK(dirty_vessels_.erase(vessel));
@@ -271,8 +271,8 @@ void Plugin::EvolveProlongationsAndBubble(Instant const& t) {
           bubble_.velocity_from_centre_of_mass(vessel);
       vessel->mutable_prolongation()->Append(
           t,
-          {centre_of_mass.position() + displacement,
-           centre_of_mass.velocity() + velocity});
+          {centre_of_mass.position + displacement,
+           centre_of_mass.velocity + velocity});
     }
   }
 }
@@ -334,8 +334,8 @@ void Plugin::InsertCelestial(
   auto const last = parent.history().last();
   celestial->CreateHistoryAndForkProlongation(
       current_time_,
-      {last.degrees_of_freedom().position() + displacement,
-       last.degrees_of_freedom().velocity() + relative_velocity});
+      {last.degrees_of_freedom().position + displacement,
+       last.degrees_of_freedom().velocity + relative_velocity});
 }
 
 void Plugin::EndInitialization() {
@@ -401,8 +401,8 @@ void Plugin::SetVesselStateOffset(
   auto const last = vessel->parent().history().last();
   vessel->CreateProlongation(
       current_time_,
-      {last.degrees_of_freedom().position() + displacement,
-       last.degrees_of_freedom().velocity() + relative_velocity});
+      {last.degrees_of_freedom().position + displacement,
+       last.degrees_of_freedom().velocity + relative_velocity});
   auto const inserted = unsynchronized_vessels_.emplace(vessel.get());
   CHECK(inserted.second);
 }
@@ -442,8 +442,8 @@ Displacement<AliceSun> Plugin::VesselDisplacementFromParent(
   CHECK(vessel->is_initialized()) << "Vessel with GUID " << vessel_guid
                                   << " was not given an initial state";
   Displacement<Barycentric> const barycentric_result =
-      vessel->prolongation().last().degrees_of_freedom().position() -
-      vessel->parent().prolongation().last().degrees_of_freedom().position();
+      vessel->prolongation().last().degrees_of_freedom().position -
+      vessel->parent().prolongation().last().degrees_of_freedom().position;
   Displacement<AliceSun> const result =
       kSunLookingGlass(PlanetariumRotation()(barycentric_result));
   VLOG(1) << "Vessel with GUID " << vessel_guid << " is at parent position + "
@@ -459,8 +459,8 @@ Velocity<AliceSun> Plugin::VesselParentRelativeVelocity(
   CHECK(vessel->is_initialized()) << "Vessel with GUID " << vessel_guid
                                   << " was not given an initial state";
   Velocity<Barycentric> const barycentric_result =
-      vessel->prolongation().last().degrees_of_freedom().velocity() -
-      vessel->parent().prolongation().last().degrees_of_freedom().velocity();
+      vessel->prolongation().last().degrees_of_freedom().velocity -
+      vessel->parent().prolongation().last().degrees_of_freedom().velocity;
   Velocity<AliceSun> const result =
       kSunLookingGlass(PlanetariumRotation()(barycentric_result));
   VLOG(1) << "Vessel with GUID " << vessel_guid
@@ -478,8 +478,8 @@ Displacement<AliceSun> Plugin::CelestialDisplacementFromParent(
   CHECK(celestial.has_parent())
       << "Body at index " << celestial_index << " is the sun";
   Displacement<Barycentric> const barycentric_result =
-      celestial.prolongation().last().degrees_of_freedom().position() -
-      celestial.parent().prolongation().last().degrees_of_freedom().position();
+      celestial.prolongation().last().degrees_of_freedom().position -
+      celestial.parent().prolongation().last().degrees_of_freedom().position;
   Displacement<AliceSun> const result =
       kSunLookingGlass(PlanetariumRotation()(barycentric_result));
   VLOG(1) << "Celestial at index " << celestial_index
@@ -497,8 +497,8 @@ Velocity<AliceSun> Plugin::CelestialParentRelativeVelocity(
   CHECK(celestial.has_parent())
       << "Body at index " << celestial_index << " is the sun";
   Velocity<Barycentric> const barycentric_result =
-      celestial.prolongation().last().degrees_of_freedom().velocity() -
-      celestial.parent().prolongation().last().degrees_of_freedom().velocity();
+      celestial.prolongation().last().degrees_of_freedom().velocity -
+      celestial.parent().prolongation().last().degrees_of_freedom().velocity;
   Velocity<AliceSun> const result =
       kSunLookingGlass(PlanetariumRotation()(barycentric_result));
   VLOG(1) << "Celestial at index " << celestial_index
@@ -514,7 +514,7 @@ RenderedTrajectory<World> Plugin::RenderedVesselTrajectory(
   CHECK(!initializing);
   auto const to_world =
       AffineMap<Barycentric, World, Length, Rotation>(
-          sun_->prolongation().last().degrees_of_freedom().position(),
+          sun_->prolongation().last().degrees_of_freedom().position,
           sun_world_position,
           Rotation<WorldSun, World>::Identity() * PlanetariumRotation());
   std::unique_ptr<Vessel> const& vessel =
@@ -538,8 +538,8 @@ RenderedTrajectory<World> Plugin::RenderedVesselTrajectory(
        ++it) {
     final_state = &it.degrees_of_freedom();
     if (initial_state != nullptr) {
-      result.emplace_back(to_world(initial_state->position()),
-                          to_world(final_state->position()));
+      result.emplace_back(to_world(initial_state->position),
+                          to_world(final_state->position));
     }
     std::swap(final_state, initial_state);
   }
@@ -574,14 +574,13 @@ Position<World> Plugin::VesselWorldPosition(
       find_vessel_by_guid_or_die(vessel_guid);
   auto const to_world =
       AffineMap<Barycentric, World, Length, Rotation>(
-          vessel->parent().
-              prolongation().last().degrees_of_freedom().position(),
+          vessel->parent().prolongation().last().degrees_of_freedom().position,
           parent_world_position,
           Rotation<WorldSun, World>::Identity() * PlanetariumRotation());
   CHECK(vessel->is_initialized()) << "Vessel with GUID " << vessel_guid
                                  << " was not given an initial state";
   return to_world(
-      vessel->prolongation().last().degrees_of_freedom().position());
+      vessel->prolongation().last().degrees_of_freedom().position);
 }
 
 Velocity<World> Plugin::VesselWorldVelocity(
@@ -595,11 +594,11 @@ Velocity<World> Plugin::VesselWorldVelocity(
   Rotation<Barycentric, World> to_world =
       Rotation<WorldSun, World>::Identity() * PlanetariumRotation();
   Velocity<Barycentric> const velocity_relative_to_parent =
-      vessel->prolongation().last().degrees_of_freedom().velocity() -
-      vessel->parent().prolongation().last().degrees_of_freedom().velocity();
+      vessel->prolongation().last().degrees_of_freedom().velocity -
+      vessel->parent().prolongation().last().degrees_of_freedom().velocity;
   Displacement<Barycentric> const offset_from_parent =
-      vessel->prolongation().last().degrees_of_freedom().position() -
-      vessel->parent().prolongation().last().degrees_of_freedom().position();
+      vessel->prolongation().last().degrees_of_freedom().position -
+      vessel->parent().prolongation().last().degrees_of_freedom().position;
   AngularVelocity<Barycentric> const world_frame_angular_velocity =
       AngularVelocity<Barycentric>({0 * Radian / Second,
                                     2 * π * Radian / parent_rotation_period,

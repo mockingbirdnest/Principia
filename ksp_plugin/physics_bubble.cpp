@@ -126,11 +126,11 @@ Displacement<World> PhysicsBubble::DisplacementCorrection(
         std::make_unique<Displacement<World>>(
           Identity<WorldSun, World>()(planetarium_rotation(
               current_->centre_of_mass_trajectory->
-                  last().degrees_of_freedom().position() -
+                  last().degrees_of_freedom().position -
               reference_celestial.prolongation().
-                  last().degrees_of_freedom().position())) +
+                  last().degrees_of_freedom().position)) +
           reference_celestial_world_position -
-              current_->centre_of_mass->position());
+              current_->centre_of_mass->position);
   }
   VLOG_AND_RETURN(1, *current_->displacement_correction);
 }
@@ -145,10 +145,10 @@ Velocity<World> PhysicsBubble::VelocityCorrection(
         std::make_unique<Velocity<World>>(
             Identity<WorldSun, World>()(planetarium_rotation(
                 current_->centre_of_mass_trajectory->
-                    last().degrees_of_freedom().velocity() -
+                    last().degrees_of_freedom().velocity -
                 reference_celestial.prolongation().
-                    last().degrees_of_freedom().velocity())) -
-            current_->centre_of_mass->velocity());
+                    last().degrees_of_freedom().velocity)) -
+            current_->centre_of_mass->velocity);
   }
   VLOG_AND_RETURN(1, *current_->velocity_correction);
 }
@@ -264,13 +264,13 @@ void PhysicsBubble::ComputeNextVesselOffsets(
     Displacement<Barycentric> const displacement_from_centre_of_mass =
         planetarium_rotation.Inverse()(
             Identity<World, WorldSun>()(
-                vessel_degrees_of_freedom.position() -
-                next->centre_of_mass->position()));
+                vessel_degrees_of_freedom.position -
+                next->centre_of_mass->position));
     Velocity<Barycentric> const velocity_from_centre_of_mass =
         planetarium_rotation.Inverse()(
             Identity<World, WorldSun>()(
-                vessel_degrees_of_freedom.velocity() -
-                next->centre_of_mass->velocity()));
+                vessel_degrees_of_freedom.velocity -
+                next->centre_of_mass->velocity));
     VLOG(1) << NAMED(displacement_from_centre_of_mass) << ", "
             << NAMED(velocity_from_centre_of_mass);
     next->displacements_from_centre_of_mass->emplace(
@@ -344,8 +344,8 @@ Vector<Acceleration, World> PhysicsBubble::IntrinsicAcceleration(
     Part<World>* const current_part = current_next.first;
     Part<World>* const next_part = current_next.second;
     acceleration_calculator.Add(
-        (next_part->degrees_of_freedom.velocity() -
-            (current_part->degrees_of_freedom.velocity() +
+        (next_part->degrees_of_freedom.velocity -
+            (current_part->degrees_of_freedom.velocity +
              *current_->velocity_correction)) / δt -
         current_part->gravitational_acceleration_to_be_applied_by_ksp,
         // TODO(egg): not sure what we actually want to do here.
@@ -378,17 +378,17 @@ void PhysicsBubble::Shift(PlanetariumRotation const& planetarium_rotation,
   // The change in the position of the overall centre of mass resulting from
   // fixing the centre of mass of the intersection.
   Displacement<World> const position_change =
-      (next->centre_of_mass->position() -
-           next_common_centre_of_mass.position()) -
-      (current_->centre_of_mass->position() -
-           current_common_centre_of_mass.position());
+      (next->centre_of_mass->position -
+           next_common_centre_of_mass.position) -
+      (current_->centre_of_mass->position -
+           current_common_centre_of_mass.position);
   // The change in the velocity of the overall centre of mass resulting from
   // fixing the velocity of the centre of mass of the intersection.
   Velocity<World> const velocity_change =
-      (next->centre_of_mass->velocity() -
-           next_common_centre_of_mass.velocity()) -
-      (current_->centre_of_mass->velocity() -
-           current_common_centre_of_mass.velocity());
+      (next->centre_of_mass->velocity -
+           next_common_centre_of_mass.velocity) -
+      (current_->centre_of_mass->velocity -
+           current_common_centre_of_mass.velocity);
   DegreesOfFreedom<Barycentric> const& current_centre_of_mass =
       current_->centre_of_mass_trajectory->last().degrees_of_freedom();
   next->centre_of_mass_trajectory =
@@ -398,10 +398,10 @@ void PhysicsBubble::Shift(PlanetariumRotation const& planetarium_rotation,
   // it is stationary with respect to |WorldSun|.
   next->centre_of_mass_trajectory->Append(
       current_time,
-      {current_centre_of_mass.position() +
+      {current_centre_of_mass.position +
            planetarium_rotation.Inverse()(
                Identity<World, WorldSun>()(position_change)),
-       current_centre_of_mass.velocity() +
+       current_centre_of_mass.velocity +
            planetarium_rotation.Inverse()(
                Identity<World, WorldSun>()(velocity_change))});
 }
