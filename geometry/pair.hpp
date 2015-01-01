@@ -109,7 +109,7 @@ class Pair {
     static T2 const reference_t2_;
   };
 
-protected:
+ protected:
   // The subclasses can access the members directly to implement accessors.
   T1 t1_;
   T2 t2_;
