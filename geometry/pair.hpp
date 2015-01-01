@@ -85,11 +85,13 @@ class Pair {
   bool operator==(Pair const& right) const;
   bool operator!=(Pair const& right) const;
 
- private:
+ protected:
+  // The subclasses can access the members directly to implement accessors.
   T1 t1_;
   T2 t2_;
-
-  // This is needed so that different instantiations of Pair cannot access the
+ 
+ private:
+  // This is needed so that different instantiations of Pair can access the
   // members.
   template<typename T1, typename T2>
   friend class Pair;
