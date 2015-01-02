@@ -47,6 +47,13 @@ Trivector<Scalar, ToFrame> OrthogonalMap<FromFrame, ToFrame>::operator()(
 }
 
 template<typename FromFrame, typename ToFrame>
+template<typename T>
+typename base::Mappable<OrthogonalMap<FromFrame, ToFrame>, T>::type
+OrthogonalMap<FromFrame, ToFrame>::operator()(T const& t) const {
+  return base::Mappable<OrthogonalMap, T>::Do(*this, t);
+}
+
+template<typename FromFrame, typename ToFrame>
 OrthogonalMap<FromFrame, ToFrame>
 OrthogonalMap<FromFrame, ToFrame>::Identity() {
   return OrthogonalMap(Sign(1), Rotation<FromFrame, ToFrame>::Identity());

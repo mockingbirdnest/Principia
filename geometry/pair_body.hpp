@@ -161,4 +161,23 @@ std::ostream& operator<<(std::ostream& out, Pair<T1, T2> const& pair) {
 }
 
 }  // namespace geometry
+
+namespace base {
+
+template<typename Functor, typename T1, typename T2>
+typename Mappable<Functor,
+                geometry::Pair<T1, T2>,
+                typename geometry::enable_if_vector<
+                    geometry::Pair<T1, T2>, void>::type>::type
+Mappable<Functor,
+       geometry::Pair<T1, T2>,
+       typename geometry::enable_if_vector<
+          geometry::Pair<T1, T2>, void>::type>::Do(
+    Functor const& functor,
+    geometry::Pair<T1, T2> const& pair) {
+  return type(functor(pair.t1_), functor(pair.t2_));
+}
+
+}  // namespace base
+
 }  // namespace principia

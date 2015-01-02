@@ -1,6 +1,7 @@
 #include "geometry/pair.hpp"
 
 #include "geometry/grassmann.hpp"
+#include "geometry/identity.hpp"
 #include "geometry/point.hpp"
 #include "gtest/gtest.h"
 #include "quantities/named_quantities.hpp"
@@ -27,6 +28,7 @@ namespace geometry {
 class PairTest : public testing::Test {
  protected:
   struct World;
+  struct Universe;
 
   PairTest()
       : p1_(V1({4 * SIUnit<Action>(),
@@ -379,9 +381,9 @@ TEST_F(PairTest, RightDivision) {
   EXPECT_EQ(Pear(VEnergy({0.5 * SIUnit<Energy>(),
                           1.0 * SIUnit<Energy>(),
                           1.5 * SIUnit<Energy>()}),
-                VFrequency({6.5 * SIUnit<Frequency>(),
-                            6.0 * SIUnit<Frequency>(),
-                            5.5 * SIUnit<Frequency>()})),
+                 VFrequency({6.5 * SIUnit<Frequency>(),
+                             6.0 * SIUnit<Frequency>(),
+                             5.5 * SIUnit<Frequency>()})),
             vv_ / (2 * SIUnit<Time>()));
 #ifdef CHECK_ILLEGAL
   auto const pp = pp_ / (2 * SIUnit<Time>());
@@ -501,6 +503,25 @@ TEST_F(PairTest, BarycentreCalculatorSuccess) {
   }
 }
 
+TEST_F(PairTest, Mappable) {
+  using VV1U = Vector<Action, Universe>;
+  using VV2U = Vector<Winding, Universe>;
+  using VVU = Pair<VV1U, VV2U>;
+  VVU const vv = Identity<World, Universe>()(vv_);
+  EXPECT_EQ(VVU(VV1U({1 * SIUnit<Action>(),
+                      2 * SIUnit<Action>(),
+                      3 * SIUnit<Action>()}),
+                VV2U({13 * SIUnit<Winding>(),
+                      12 * SIUnit<Winding>(),
+                      11 * SIUnit<Winding>()})),
+            vv);
+
+#ifdef CHECK_ILLEGAL
+  auto const pp = Identity<World, Universe>()(pp_);
+  auto const pv = Identity<World, Universe>()(pv_);
+  auto const vp = Identity<World, Universe>()(vp_);
+#endif
+}
 
 }  // namespace geometry
 }  // namespace principia

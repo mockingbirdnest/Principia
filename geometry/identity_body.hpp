@@ -2,6 +2,7 @@
 
 #include "geometry/identity.hpp"
 
+#include "base/mappable.hpp"
 #include "geometry/grassmann.hpp"
 #include "geometry/sign.hpp"
 
@@ -40,6 +41,13 @@ template<typename Scalar>
 Trivector<Scalar, ToFrame> Identity<FromFrame, ToFrame>::operator()(
     Trivector<Scalar, FromFrame> const& trivector) const {
   return Trivector<Scalar, ToFrame>(trivector.coordinates());
+}
+
+template<typename FromFrame, typename ToFrame>
+template<typename T>
+typename base::Mappable<Identity<FromFrame, ToFrame>, T>::type
+Identity<FromFrame, ToFrame>::operator()(T const& t) const {
+  return base::Mappable<Identity, T>::Do(*this, t);
 }
 
 template<typename FromFrame, typename ToFrame>
