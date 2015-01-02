@@ -121,8 +121,8 @@ class Pair {
   template<typename T1, typename T2>
   friend class Pair;
 
-  template<typename Functor, typename T>
-  friend class base::Mapper;
+  template<typename Functor, typename T, typename>
+  friend class base::Mappable;
 
   template<typename T1, typename T2>
   friend typename vector_of<Pair<T1, T2>>::type operator-(
@@ -227,7 +227,10 @@ std::ostream& operator<<(std::ostream& out, Pair<T1, T2> const& pair);
 namespace base {
 
 template<typename Functor, typename T1, typename T2>
-class Mapper<Functor, geometry::Pair<T1, T2>> {
+class Mappable<Functor,
+               geometry::Pair<T1, T2>,
+               typename geometry::enable_if_vector<
+                   geometry::Pair<T1, T2>, void>::type> {
  public:
   using type = geometry::Pair<
                    decltype(std::declval<Functor>()(std::declval<T1>())),
