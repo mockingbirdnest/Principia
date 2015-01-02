@@ -62,6 +62,13 @@ Trivector<Scalar, ToFrame> Permutation<FromFrame, ToFrame>::operator()(
 }
 
 template<typename FromFrame, typename ToFrame>
+template<typename T>
+typename base::Mappable<Permutation<FromFrame, ToFrame>, T>::type
+Permutation<FromFrame, ToFrame>::operator()(T const& t) const {
+  return base::Mappable<Permutation, T>::Do(*this, t);
+}
+
+template<typename FromFrame, typename ToFrame>
 OrthogonalMap<FromFrame, ToFrame>
 Permutation<FromFrame, ToFrame>::Forget() const {
   static double const sqrt_half = quantities::Sqrt(0.5);

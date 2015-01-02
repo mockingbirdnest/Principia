@@ -1,5 +1,6 @@
 #pragma once
 
+#include "base/mappable.hpp"
 #include "geometry/grassmann.hpp"
 #include "geometry/linear_map.hpp"
 #include "geometry/quaternion.hpp"
@@ -46,6 +47,9 @@ class Rotation : public LinearMap<FromFrame, ToFrame> {
   template<typename Scalar>
   Trivector<Scalar, ToFrame> operator()(
       Trivector<Scalar, FromFrame> const& trivector) const;
+
+  template<typename T>
+  typename base::Mappable<Rotation, T>::type operator()(T const& t) const; 
 
   OrthogonalMap<FromFrame, ToFrame> Forget() const;
 

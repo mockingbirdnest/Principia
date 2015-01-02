@@ -116,6 +116,13 @@ Trivector<Scalar, ToFrame> Rotation<FromFrame, ToFrame>::operator()(
 }
 
 template<typename FromFrame, typename ToFrame>
+template<typename T>
+typename base::Mappable<Rotation<FromFrame, ToFrame>, T>::type
+Rotation<FromFrame, ToFrame>::operator()(T const& t) const {
+  return base::Mappable<Rotation, T>::Do(*this, t);
+}
+
+template<typename FromFrame, typename ToFrame>
 OrthogonalMap<FromFrame, ToFrame> Rotation<FromFrame, ToFrame>::Forget() const {
   return OrthogonalMap<FromFrame, ToFrame>(Sign(1), *this);
 }

@@ -1,5 +1,6 @@
 #pragma once
 
+#include "base/mappable.hpp"
 #include "geometry/grassmann.hpp"
 #include "geometry/linear_map.hpp"
 #include "geometry/r3_element.hpp"
@@ -33,6 +34,9 @@ class OrthogonalMap : public LinearMap<FromFrame, ToFrame> {
   template<typename Scalar>
   Trivector<Scalar, ToFrame> operator()(
       Trivector<Scalar, FromFrame> const& trivector) const;
+
+  template<typename T>
+  typename base::Mappable<OrthogonalMap, T>::type operator()(T const& t) const;
 
   static OrthogonalMap Identity();
 

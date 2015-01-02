@@ -47,7 +47,7 @@ template<typename FromFrame, typename ToFrame>
 template<typename T>
 typename base::Mappable<Identity<FromFrame, ToFrame>, T>::type
 Identity<FromFrame, ToFrame>::operator()(T const& t) const {
-  return base::Mappable<Identity<FromFrame, ToFrame>, T>::Do(*this, t);
+  return base::Mappable<Identity, T>::Do(*this, t);
 }
 
 template<typename FromFrame, typename ToFrame>
