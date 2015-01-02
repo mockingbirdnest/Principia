@@ -121,19 +121,18 @@ Displacement<World> PhysicsBubble::DisplacementCorrection(
           << NAMED(&reference_celestial) << '\n'
           << NAMED(reference_celestial_world_position);
   CHECK(!empty()) << "Empty bubble";
-  if (current_->correction == nullptr) {
-    current_->correction =
-        std::make_unique<RelativeDegreesOfFreedom<World>>(
-            Identity<WorldSun, World>()(planetarium_rotation(
-                current_->centre_of_mass_trajectory->
-                    last().degrees_of_freedom() -
-                reference_celestial.prolongation().
-                    last().degrees_of_freedom())) +
-            (DegreesOfFreedom<World>(reference_celestial_world_position,
-                                     Velocity<World>()) -
-             *current_->centre_of_mass));
+  if (current_->displacement_correction == nullptr) {
+    current_->displacement_correction =
+        std::make_unique<Displacement<World>>(
+          Identity<WorldSun, World>()(planetarium_rotation(
+              current_->centre_of_mass_trajectory->
+                  last().degrees_of_freedom().position() -
+              reference_celestial.prolongation().
+                  last().degrees_of_freedom().position())) +
+          reference_celestial_world_position -
+              current_->centre_of_mass->position());
   }
-  VLOG_AND_RETURN(1, current_->correction->displacement());
+  VLOG_AND_RETURN(1, *current_->displacement_correction);
 }
 
 Velocity<World> PhysicsBubble::VelocityCorrection(
@@ -141,18 +140,17 @@ Velocity<World> PhysicsBubble::VelocityCorrection(
     Celestial const& reference_celestial) const {
   VLOG(1) << __FUNCTION__ << '\n' << NAMED(&reference_celestial);
   CHECK(!empty()) << "Empty bubble";
-  if (current_->correction == nullptr) {
-    current_->correction =
-        std::make_unique<RelativeDegreesOfFreedom<World>>(
+  if (current_->velocity_correction == nullptr) {
+    current_->velocity_correction =
+        std::make_unique<Velocity<World>>(
             Identity<WorldSun, World>()(planetarium_rotation(
                 current_->centre_of_mass_trajectory->
-                    last().degrees_of_freedom() -
+                    last().degrees_of_freedom().velocity() -
                 reference_celestial.prolongation().
-                    last().degrees_of_freedom())) -
-            (DegreesOfFreedom<World>(Position<World>(), Velocity<World>()) -
-             *current_->centre_of_mass));
+                    last().degrees_of_freedom().velocity())) -
+            current_->centre_of_mass->velocity());
   }
-  VLOG_AND_RETURN(1, current_->correction->velocity());
+  VLOG_AND_RETURN(1, *current_->velocity_correction);
 }
 
 bool PhysicsBubble::empty() const {
@@ -324,7 +322,7 @@ Vector<Acceleration, World> PhysicsBubble::IntrinsicAcceleration(
   VLOG(1) << __FUNCTION__ << '\n' << NAMED(current_time) << '\n'
           << NAMED(next_time) << '\n' << NAMED(common_parts);
   CHECK(!common_parts.empty());
-  CHECK(current_->correction != nullptr);
+  CHECK(current_->velocity_correction != nullptr);
   BarycentreCalculator<Vector<Acceleration, World>, Mass>
       acceleration_calculator;
   Time const δt = next_time - current_time;
@@ -334,7 +332,7 @@ Vector<Acceleration, World> PhysicsBubble::IntrinsicAcceleration(
     acceleration_calculator.Add(
         (next_part->degrees_of_freedom.velocity() -
             (current_part->degrees_of_freedom.velocity() +
-             current_->correction->velocity())) / δt -
+             *current_->velocity_correction)) / δt -
         current_part->gravitational_acceleration_to_be_applied_by_ksp,
         // TODO(egg): not sure what we actually want to do here.
         (next_part->mass + current_part->mass) / 2.0);

@@ -96,7 +96,8 @@ class PhysicsBubble {
     std::unique_ptr<std::map<Vessel const* const,
                     RelativeDegreesOfFreedom<Barycentric>>>
         relative_to_centre_of_mass;
-    std::unique_ptr<RelativeDegreesOfFreedom<World>> correction;
+    std::unique_ptr<Displacement<World>> displacement_correction;
+    std::unique_ptr<Velocity<World>> velocity_correction;
   };
 
   // Computes the world degrees of freedom of the centre of mass of
