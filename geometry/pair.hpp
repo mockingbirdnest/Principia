@@ -232,7 +232,9 @@ class Mapper<Functor, geometry::Pair<T1, T2>> {
   using type = geometry::Pair<
                    decltype(std::declval<Functor>()(std::declval<T1>())),
                    decltype(std::declval<Functor>()(std::declval<T2>()))>;
-  static type Do(Functor const& functor, geometry::Pair<T1, T2> const& pair);
+
+  static type Do(Functor const& functor,
+                 geometry::Pair<T1, T2> const& pair);
 };
 
 }  // namespace base

@@ -36,7 +36,8 @@ class Identity : public LinearMap<FromFrame, ToFrame> {
 
   //TODO(phl):enable
   template<typename T>
-  typename base::Mapper<Identity<FromFrame, ToFrame>, T>::type operator()(T const& t) const; 
+  typename base::Mapper<Identity<FromFrame, ToFrame>, T>::type operator()(
+      T const& t) const; 
 
   OrthogonalMap<FromFrame, ToFrame> Forget() const;
 
