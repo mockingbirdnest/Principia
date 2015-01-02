@@ -49,7 +49,7 @@ class Rotation : public LinearMap<FromFrame, ToFrame> {
       Trivector<Scalar, FromFrame> const& trivector) const;
 
   template<typename T>
-  typename base::Mappable<Rotation, T>::type operator()(T const& t) const; 
+  typename base::Mappable<Rotation, T>::type operator()(T const& t) const;
 
   OrthogonalMap<FromFrame, ToFrame> Forget() const;
 

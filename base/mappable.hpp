@@ -6,10 +6,10 @@
 namespace principia {
 namespace base {
 
-// This class helps in declaration that a type is "mappable", i.e., that the
-// maps declared in principia::geometry can be act on it through the operator().
-// To use it, declare a specialization for the proper |Functor| (a class that
-// must have an operator()) and |T| (the class to be made mappable).  The third
+// This class helps in declaring that a type is "mappable", i.e., that the maps
+// declared in principia::geometry can be act on it through the operator().  To
+// use it, declare a specialization for the proper |Functor| (a class that must
+// have an operator()) and |T| (the class to be made mappable).  The third
 // parameter is an enabler and maybe used to restrict specializations with
 // SFINAE.
 // Any specialization must export two declarations in its public part:

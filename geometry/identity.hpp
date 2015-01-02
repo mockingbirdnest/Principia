@@ -35,7 +35,7 @@ class Identity : public LinearMap<FromFrame, ToFrame> {
       Trivector<Scalar, FromFrame> const& trivector) const;
 
   template<typename T>
-  typename base::Mappable<Identity, T>::type operator()(T const& t) const; 
+  typename base::Mappable<Identity, T>::type operator()(T const& t) const;
 
   OrthogonalMap<FromFrame, ToFrame> Forget() const;
 

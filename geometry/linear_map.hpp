@@ -34,7 +34,7 @@ class LinearMap {
 //       Trivector<Scalar, FromFrame> const& trivector) const = 0;
 //
 //  template<typename T>
-//  typename base::Mappable<LinearMap, T>::type operator()(T const& t) const; 
+//  typename base::Mappable<LinearMap, T>::type operator()(T const& t) const;
 //
 // protected:
 //   template<typename Scalar>
