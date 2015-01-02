@@ -188,20 +188,20 @@ Displacement<Barycentric> const&
 PhysicsBubble::displacement_from_centre_of_mass(
     Vessel const* const vessel) const {
   CHECK(!empty()) << "Empty bubble";
-  CHECK(current_->displacements_from_centre_of_mass != nullptr);
-  auto const it = current_->displacements_from_centre_of_mass->find(vessel);
-  CHECK(it != current_->displacements_from_centre_of_mass->end());
-  return it->second;
+  CHECK(current_->relative_to_centre_of_mass != nullptr);
+  auto const it = current_->relative_to_centre_of_mass->find(vessel);
+  CHECK(it != current_->relative_to_centre_of_mass->end());
+  return it->second.displacement();
 }
 
 Velocity<Barycentric> const&
 PhysicsBubble::velocity_from_centre_of_mass(
     Vessel const* const vessel) const {
   CHECK(!empty()) << "Empty bubble";
-  CHECK(current_->velocities_from_centre_of_mass != nullptr);
-  auto const it = current_->velocities_from_centre_of_mass->find(vessel);
-  CHECK(it != current_->velocities_from_centre_of_mass->end());
-  return it->second;
+  CHECK(current_->relative_to_centre_of_mass != nullptr);
+  auto const it = current_->relative_to_centre_of_mass->find(vessel);
+  CHECK(it != current_->relative_to_centre_of_mass->end());
+  return it->second.velocity();
 }
 
 Trajectory<Barycentric> const&
@@ -244,12 +244,9 @@ void PhysicsBubble::ComputeNextVesselOffsets(
     FullState* next) {
   VLOG(1) << __FUNCTION__;
   CHECK_NOTNULL(next);
-  next->displacements_from_centre_of_mass =
+  next->relative_to_centre_of_mass =
       std::make_unique<std::map<Vessel const* const,
-                                Displacement<Barycentric>>>();
-  next->velocities_from_centre_of_mass =
-      std::make_unique<std::map<Vessel const* const,
-                                Velocity<Barycentric>>>();
+                                RelativeDegreesOfFreedom<Barycentric>>>();
   VLOG(1) << NAMED(next->vessels.size());
   for (auto const& vessel_parts : next->vessels) {
     Vessel const* const vessel = vessel_parts.first;
@@ -261,24 +258,13 @@ void PhysicsBubble::ComputeNextVesselOffsets(
     }
     DegreesOfFreedom<World> const vessel_degrees_of_freedom =
         vessel_calculator.Get();
-    Displacement<Barycentric> const displacement_from_centre_of_mass =
+    auto const relative_to_centre_of_mass =
         planetarium_rotation.Inverse()(
             Identity<World, WorldSun>()(
-                vessel_degrees_of_freedom.position() -
-                next->centre_of_mass->position()));
-    Velocity<Barycentric> const velocity_from_centre_of_mass =
-        planetarium_rotation.Inverse()(
-            Identity<World, WorldSun>()(
-                vessel_degrees_of_freedom.velocity() -
-                next->centre_of_mass->velocity()));
-    VLOG(1) << NAMED(displacement_from_centre_of_mass) << ", "
-            << NAMED(velocity_from_centre_of_mass);
-    next->displacements_from_centre_of_mass->emplace(
-        vessel,
-        displacement_from_centre_of_mass);
-    next->velocities_from_centre_of_mass->emplace(
-        vessel,
-        velocity_from_centre_of_mass);
+                vessel_degrees_of_freedom - *next->centre_of_mass));
+    VLOG(1) << NAMED(relative_to_centre_of_mass);
+    next->relative_to_centre_of_mass->emplace(vessel,
+                                              relative_to_centre_of_mass);
   }
 }
 

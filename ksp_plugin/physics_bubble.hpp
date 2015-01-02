@@ -9,6 +9,10 @@
 #include "ksp_plugin/frames.hpp"
 #include "ksp_plugin/part.hpp"
 #include "ksp_plugin/vessel.hpp"
+#include "physics/degrees_of_freedom.hpp"
+
+using principia::physics::DegreesOfFreedom;
+using principia::physics::RelativeDegreesOfFreedom;
 
 namespace principia {
 namespace ksp_plugin {
@@ -89,12 +93,9 @@ class PhysicsBubble {
     // thing.
     std::unique_ptr<DegreesOfFreedom<World>> centre_of_mass;
     std::unique_ptr<Trajectory<Barycentric>> centre_of_mass_trajectory;
-    std::unique_ptr<
-        std::map<Vessel const* const,
-                 Displacement<Barycentric>>> displacements_from_centre_of_mass;
-    std::unique_ptr<
-        std::map<Vessel const* const,
-                 Velocity<Barycentric>>> velocities_from_centre_of_mass;
+    std::unique_ptr<std::map<Vessel const* const,
+                    RelativeDegreesOfFreedom<Barycentric>>>
+        relative_to_centre_of_mass;
     std::unique_ptr<Displacement<World>> displacement_correction;
     std::unique_ptr<Velocity<World>> velocity_correction;
   };
