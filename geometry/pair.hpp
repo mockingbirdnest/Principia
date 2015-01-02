@@ -223,7 +223,7 @@ std::ostream& operator<<(std::ostream& out, Pair<T1, T2> const& pair);
 
 }  // namespace geometry
 
-// Reopen the base namespace to make Pair mappable.
+// Reopen the base namespace to make Pairs of vectors mappable.
 namespace base {
 
 template<typename Functor, typename T1, typename T2>
@@ -241,7 +241,6 @@ class Mappable<Functor,
 };
 
 }  // namespace base
-
 }  // namespace principia
 
 #include "geometry/pair_body.hpp"
