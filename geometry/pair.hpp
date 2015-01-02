@@ -218,6 +218,21 @@ template<typename T1, typename T2>
 std::ostream& operator<<(std::ostream& out, Pair<T1, T2> const& pair);
 
 }  // namespace geometry
+
+// Reopen the base namespace to make Pair mappable.
+namespace base {
+
+//template<typename Functor, typename T1, typename T2>
+//geometry::Pair<T1, T2> Map(Functor const& functor,
+//                           geometry::Pair<T1, T2> const& pair);
+template<typename Functor, typename T1, typename T2>
+geometry::Pair<T1, T2> Map<geometry::Pair<T1, T2>>(Functor const& functor,
+                           geometry::Pair<T1, T2> const& pair) {
+  return geometry::Pair<T1, T2>(/*functor(pair.t1_), functor(pair.t2_)*/);
+}
+
+}  // namespace base
+
 }  // namespace principia
 
 #include "geometry/pair_body.hpp"

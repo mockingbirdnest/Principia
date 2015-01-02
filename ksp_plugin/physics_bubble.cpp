@@ -377,6 +377,10 @@ void PhysicsBubble::Shift(PlanetariumRotation const& planetarium_rotation,
       next_common_calculator.Get();
   // The change in the position of the overall centre of mass resulting from
   // fixing the centre of mass of the intersection.
+  auto const a = *next->centre_of_mass - next_common_centre_of_mass;
+  //auto const b = a.displacement();
+  auto const c = Identity<World, WorldSun>()(a);
+
   Displacement<World> const position_change =
       (next->centre_of_mass->position() -
            next_common_centre_of_mass.position()) -
