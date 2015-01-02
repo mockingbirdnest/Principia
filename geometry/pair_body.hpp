@@ -164,11 +164,15 @@ std::ostream& operator<<(std::ostream& out, Pair<T1, T2> const& pair) {
 
 namespace base {
 
-//template<typename Functor, typename T1, typename T2>
-//geometry::Pair<T1, T2> Map(Functor const& functor,
-//                           geometry::Pair<T1, T2> const& pair) {
-//  return geometry::Pair<T1, T2>(functor(pair.t1_), functor(pair.t2_));
-//}
+template<typename Functor, typename T1, typename T2>
+typename Mapper<Functor, geometry::Pair<T1, T2>>::type
+Mapper<Functor, geometry::Pair<T1, T2>>::Do(
+    Functor const& functor,
+    geometry::Pair<T1, T2> const& pair) {
+  decltype(std::declval<Functor>()(std::declval<T1>())) const t1 = functor(pair.t1_);
+  decltype(std::declval<Functor>()(std::declval<T2>())) const t2 = functor(pair.t2_);
+  return type(/*functor(pair.t1_), functor(pair.t2_)*/t1, t2);
+}
 
 }  // namespace base
 

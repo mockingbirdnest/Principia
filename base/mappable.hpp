@@ -8,9 +8,13 @@ namespace base {
 //TODO(phl): Comment
 
 template<typename Functor, typename T>
-T Map(Functor const& functor, T const& t);
+class Mapper {
+ public:
+  using type = T;
+  static type Do(Functor const& functor, T const& t);
+};
 
-template<typename T, typename = decltype(Map(0, std::declval<T>()))>
+template<typename T, typename = decltype(Mapper<int, T>::Do(0, std::declval<T>()))>
 class enable_if_mappable2 {
  public:
   using type = T;

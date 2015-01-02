@@ -379,6 +379,7 @@ void PhysicsBubble::Shift(PlanetariumRotation const& planetarium_rotation,
   // fixing the centre of mass of the intersection.
   auto const a = *next->centre_of_mass - next_common_centre_of_mass;
   //auto const b = a.displacement();
+  //Pair<Displacement<WorldSun>, Velocity<WorldSun>> d(Displacement<WorldSun>(), Velocity<WorldSun>());
   auto const c = Identity<World, WorldSun>()(a);
 
   Displacement<World> const position_change =

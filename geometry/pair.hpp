@@ -1,5 +1,6 @@
 #pragma once
 
+#include "base/mappable.hpp"
 #include "geometry/point.hpp"
 
 namespace principia {
@@ -120,6 +121,9 @@ class Pair {
   template<typename T1, typename T2>
   friend class Pair;
 
+  template<typename Functor, typename T>
+  friend class base::Mapper;
+
   template<typename T1, typename T2>
   friend typename vector_of<Pair<T1, T2>>::type operator-(
       typename enable_if_affine<Pair<T1, T2>>::type const& left,
@@ -222,14 +226,14 @@ std::ostream& operator<<(std::ostream& out, Pair<T1, T2> const& pair);
 // Reopen the base namespace to make Pair mappable.
 namespace base {
 
-//template<typename Functor, typename T1, typename T2>
-//geometry::Pair<T1, T2> Map(Functor const& functor,
-//                           geometry::Pair<T1, T2> const& pair);
 template<typename Functor, typename T1, typename T2>
-geometry::Pair<T1, T2> Map<geometry::Pair<T1, T2>>(Functor const& functor,
-                           geometry::Pair<T1, T2> const& pair) {
-  return geometry::Pair<T1, T2>(/*functor(pair.t1_), functor(pair.t2_)*/);
-}
+class Mapper<Functor, geometry::Pair<T1, T2>> {
+ public:
+  using type = geometry::Pair<
+                   decltype(std::declval<Functor>()(std::declval<T1>())),
+                   decltype(std::declval<Functor>()(std::declval<T2>()))>;
+  static type Do(Functor const& functor, geometry::Pair<T1, T2> const& pair);
+};
 
 }  // namespace base
 

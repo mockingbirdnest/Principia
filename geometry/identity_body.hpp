@@ -45,9 +45,9 @@ Trivector<Scalar, ToFrame> Identity<FromFrame, ToFrame>::operator()(
 
 template<typename FromFrame, typename ToFrame>
 template<typename T>
-typename base::enable_if_mappable<T>::type
+typename base::Mapper<Identity<FromFrame, ToFrame>, T>::type
 Identity<FromFrame, ToFrame>::operator()(T const& t) const {
-  return base::Map<Identity<FromFrame, ToFrame>, T>(*this, t);
+  return base::Mapper<Identity<FromFrame, ToFrame>, T>::Do(*this, t);
 }
 
 template<typename FromFrame, typename ToFrame>
