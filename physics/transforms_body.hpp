@@ -256,6 +256,12 @@ Transforms<FromFrame, ThroughFrame, ToFrame>::BarycentricRotating(
 }
 
 template<typename FromFrame, typename ThroughFrame, typename ToFrame>
+std::unique_ptr<Transforms<FromFrame, ThroughFrame, ToFrame>>
+Transforms<FromFrame, ThroughFrame, ToFrame>::DummyForTesting() {
+  return std::make_unique<Transforms>();
+}
+
+template<typename FromFrame, typename ThroughFrame, typename ToFrame>
 typename Trajectory<FromFrame>::template TransformingIterator<ThroughFrame>
 Transforms<FromFrame, ThroughFrame, ToFrame>::first(
     Trajectory<FromFrame> const* from_trajectory) {

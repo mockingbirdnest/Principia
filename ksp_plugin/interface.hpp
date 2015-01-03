@@ -168,7 +168,7 @@ principia__NewBarycentricRotatingTransforms(Plugin const* const plugin,
                                             int const primary_index,
                                             int const secondary_index);
 
-// Deletes and nulls |*trasforms|.
+// Deletes and nulls |*transforms|.
 // |transforms| must not be null.  No transfer of ownership of |*transforms|,
 // takes ownership of |**transforms|.
 extern "C" DLLEXPORT
