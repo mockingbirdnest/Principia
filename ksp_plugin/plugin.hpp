@@ -15,7 +15,6 @@
 #include "ksp_plugin/monostable.hpp"
 #include "ksp_plugin/physics_bubble.hpp"
 #include "ksp_plugin/vessel.hpp"
-#include "ksp_plugin/rendering_frame.hpp"
 #include "physics/body.hpp"
 #include "physics/n_body_system.hpp"
 #include "physics/trajectory.hpp"

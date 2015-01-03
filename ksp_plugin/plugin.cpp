@@ -8,10 +8,11 @@
 #include <vector>
 
 #include "base/unique_ptr_logging.hpp"
+#include "geometry/affine_map.hpp"
 #include "geometry/barycentre_calculator.hpp"
 #include "geometry/identity.hpp"
+#include "geometry/named_quantities.hpp"
 #include "geometry/permutation.hpp"
-#include "geometry/affine_map.hpp"
 #include "glog/logging.h"
 #include "glog/stl_logging.h"
 
@@ -19,6 +20,7 @@ namespace principia {
 namespace ksp_plugin {
 
 using geometry::AffineMap;
+using geometry::AngularVelocity;
 using geometry::BarycentreCalculator;
 using geometry::Bivector;
 using geometry::Identity;

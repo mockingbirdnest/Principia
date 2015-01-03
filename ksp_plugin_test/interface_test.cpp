@@ -224,7 +224,7 @@ TEST_F(InterfaceTest, CelestialFromParent) {
   EXPECT_THAT(result, Eq(kParentRelativeDegreesOfFreedom));
 }
 
-TEST_F(InterfaceTest, NewBodyCentredNonRotatingFrame) {
+TEST_F(InterfaceTest, NewBodyCentredNonRotatingTransforms) {
   auto dummy_transforms = Transforms<Barycentric, Rendering, Barycentric>::
                               DummyForTesting().release();
   EXPECT_CALL(*plugin_,
@@ -236,7 +236,7 @@ TEST_F(InterfaceTest, NewBodyCentredNonRotatingFrame) {
   EXPECT_EQ(dummy_transforms, transforms.get());
 }
 
-TEST_F(InterfaceTest, NewBarycentricRotatingFrame) {
+TEST_F(InterfaceTest, NewBarycentricRotatingTransforms) {
   auto dummy_transforms = Transforms<Barycentric, Rendering, Barycentric>::
                               DummyForTesting().release();
   EXPECT_CALL(*plugin_,
@@ -251,7 +251,7 @@ TEST_F(InterfaceTest, NewBarycentricRotatingFrame) {
   EXPECT_EQ(dummy_transforms, transforms.get());
 }
 
-TEST_F(InterfaceTest, DeleteRenderingFrame) {
+TEST_F(InterfaceTest, DeleteTransforms) {
   auto dummy_transforms = Transforms<Barycentric, Rendering, Barycentric>::
                               DummyForTesting().release();
   EXPECT_CALL(*plugin_,

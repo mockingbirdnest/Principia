@@ -20,8 +20,6 @@ struct LineAndIterator {
 }  // namespace principia
 
 using principia::ksp_plugin::Barycentric;
-using principia::ksp_plugin::BarycentricRotatingFrame;
-using principia::ksp_plugin::BodyCentredNonRotatingFrame;
 using principia::ksp_plugin::LineAndIterator;
 using principia::ksp_plugin::Plugin;
 using principia::ksp_plugin::Rendering;
