@@ -19,6 +19,7 @@
 #include "physics/body.hpp"
 #include "physics/n_body_system.hpp"
 #include "physics/trajectory.hpp"
+#include "physics/transforms.hpp"
 #include "quantities/quantities.hpp"
 #include "quantities/named_quantities.hpp"
 #include "quantities/si.hpp"
@@ -32,8 +33,9 @@ using geometry::Point;
 using geometry::Rotation;
 using integrators::SPRKIntegrator;
 using physics::Body;
-using physics::Trajectory;
 using physics::NBodySystem;
+using physics::Trajectory;
+using physics::Transforms;
 using quantities::Angle;
 using si::Second;
 
@@ -174,18 +176,18 @@ class Plugin {
   // with the given |GUID| in |frame|.  |sun_world_position| is the current
   // position of the sun in |World| space as returned by
   // |Planetarium.fetch.Sun.position|.  It is used to define the relation
-  // between |WorldSun| and |World|.
+  // between |WorldSun| and |World|.  No transfer of ownership.
   virtual RenderedTrajectory<World> RenderedVesselTrajectory(
       GUID const& vessel_guid,
-      RenderingFrame const& frame,
+      Transforms<Barycentric, Rendering, Barycentric>* const transforms,
       Position<World> const& sun_world_position) const;
 
-  virtual std::unique_ptr<BodyCentredNonRotatingFrame>
-  NewBodyCentredNonRotatingFrame(Index const reference_body_index) const;
+  virtual std::unique_ptr<Transforms<Barycentric, Rendering, Barycentric>>
+  NewBodyCentredNonRotatingTransforms(Index const reference_body_index) const;
 
-  virtual std::unique_ptr<BarycentricRotatingFrame>
-  NewBarycentricRotatingFrame(Index const primary_index,
-                              Index const secondary_index) const;
+  virtual std::unique_ptr<Transforms<Barycentric, Rendering, Barycentric>>
+  NewBarycentricRotatingTransforms(Index const primary_index,
+                                   Index const secondary_index) const;
 
   virtual Position<World> VesselWorldPosition(
       GUID const& vessel_guid,
