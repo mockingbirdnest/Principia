@@ -146,14 +146,15 @@ TEST_F(InterfaceTest, InsertCelestial) {
                   kCelestialIndex,
                   kGravitationalParameter * SIUnit<GravitationalParameter>(),
                   kParentIndex,
-                  Displacement<AliceSun>(
-                      {kParentPosition.x * SIUnit<Length>(),
-                       kParentPosition.y * SIUnit<Length>(),
-                       kParentPosition.z * SIUnit<Length>()}),
-                  Velocity<AliceSun>(
-                      {kParentVelocity.x * SIUnit<Speed>(),
-                       kParentVelocity.y * SIUnit<Speed>(),
-                       kParentVelocity.z * SIUnit<Speed>()})));
+                  RelativeDegreesOfFreedom<AliceSun>(
+                      Displacement<AliceSun>(
+                          {kParentPosition.x * SIUnit<Length>(),
+                           kParentPosition.y * SIUnit<Length>(),
+                           kParentPosition.z * SIUnit<Length>()}),
+                      Velocity<AliceSun>(
+                          {kParentVelocity.x * SIUnit<Speed>(),
+                           kParentVelocity.y * SIUnit<Speed>(),
+                           kParentVelocity.z * SIUnit<Speed>()}))));
   principia__InsertCelestial(plugin_.get(),
                              kCelestialIndex,
                              kGravitationalParameter,
@@ -186,14 +187,15 @@ TEST_F(InterfaceTest, SetVesselStateOffset) {
   EXPECT_CALL(*plugin_,
               SetVesselStateOffset(
                   kVesselGUID,
-                  Displacement<AliceSun>(
-                      {kParentPosition.x * SIUnit<Length>(),
-                       kParentPosition.y * SIUnit<Length>(),
-                       kParentPosition.z * SIUnit<Length>()}),
-                  Velocity<AliceSun>(
-                      {kParentVelocity.x * SIUnit<Speed>(),
-                       kParentVelocity.y * SIUnit<Speed>(),
-                       kParentVelocity.z * SIUnit<Speed>()})));
+                  RelativeDegreesOfFreedom<AliceSun>(
+                      Displacement<AliceSun>(
+                          {kParentPosition.x * SIUnit<Length>(),
+                           kParentPosition.y * SIUnit<Length>(),
+                           kParentPosition.z * SIUnit<Length>()}),
+                      Velocity<AliceSun>(
+                          {kParentVelocity.x * SIUnit<Speed>(),
+                           kParentVelocity.y * SIUnit<Speed>(),
+                           kParentVelocity.z * SIUnit<Speed>()}))));
   principia__SetVesselStateOffset(plugin_.get(),
                                   kVesselGUID,
                                   kParentPosition,
@@ -209,11 +211,16 @@ TEST_F(InterfaceTest, AdvanceTime) {
 
 TEST_F(InterfaceTest, VesselDisplacementFromParent) {
   EXPECT_CALL(*plugin_,
-              VesselDisplacementFromParent(kVesselGUID))
-      .WillOnce(Return(Displacement<AliceSun>(
-                           {kParentPosition.x * SIUnit<Length>(),
-                            kParentPosition.y * SIUnit<Length>(),
-                            kParentPosition.z * SIUnit<Length>()})));
+              VesselFromParent(kVesselGUID))
+      .WillOnce(Return(RelativeDegreesOfFreedom<AliceSun>(
+                           Displacement<AliceSun>(
+                               {kParentPosition.x * SIUnit<Length>(),
+                                kParentPosition.y * SIUnit<Length>(),
+                                kParentPosition.z * SIUnit<Length>()}),
+                           Velocity<AliceSun>(
+                               {kParentVelocity.x * SIUnit<Speed>(),
+                                kParentVelocity.y * SIUnit<Speed>(),
+                                kParentVelocity.z * SIUnit<Speed>()}))));
   XYZ const result = principia__VesselDisplacementFromParent(plugin_.get(),
                                                              kVesselGUID);
   EXPECT_THAT(result, Eq(kParentPosition));
@@ -221,11 +228,16 @@ TEST_F(InterfaceTest, VesselDisplacementFromParent) {
 
 TEST_F(InterfaceTest, VesselParentRelativeVelocity) {
   EXPECT_CALL(*plugin_,
-              VesselParentRelativeVelocity(kVesselGUID))
-      .WillOnce(Return(Velocity<AliceSun>(
-                           {kParentVelocity.x * SIUnit<Speed>(),
-                            kParentVelocity.y * SIUnit<Speed>(),
-                            kParentVelocity.z * SIUnit<Speed>()})));
+              VesselFromParent(kVesselGUID))
+      .WillOnce(Return(RelativeDegreesOfFreedom<AliceSun>(
+                           Displacement<AliceSun>(
+                               {kParentPosition.x * SIUnit<Length>(),
+                                kParentPosition.y * SIUnit<Length>(),
+                                kParentPosition.z * SIUnit<Length>()}),
+                           Velocity<AliceSun>(
+                               {kParentVelocity.x * SIUnit<Speed>(),
+                                kParentVelocity.y * SIUnit<Speed>(),
+                                kParentVelocity.z * SIUnit<Speed>()}))));
   XYZ const result = principia__VesselParentRelativeVelocity(plugin_.get(),
                                                              kVesselGUID);
   EXPECT_THAT(result, Eq(kParentVelocity));
@@ -233,11 +245,16 @@ TEST_F(InterfaceTest, VesselParentRelativeVelocity) {
 
 TEST_F(InterfaceTest, CelestialDisplacementFromParent) {
   EXPECT_CALL(*plugin_,
-              CelestialDisplacementFromParent(kCelestialIndex))
-      .WillOnce(Return(Displacement<AliceSun>(
-                           {kParentPosition.x * SIUnit<Length>(),
-                            kParentPosition.y * SIUnit<Length>(),
-                            kParentPosition.z * SIUnit<Length>()})));
+              CelestialFromParent(kCelestialIndex))
+      .WillOnce(Return(RelativeDegreesOfFreedom<AliceSun>(
+                           Displacement<AliceSun>(
+                               {kParentPosition.x * SIUnit<Length>(),
+                                kParentPosition.y * SIUnit<Length>(),
+                                kParentPosition.z * SIUnit<Length>()}),
+                           Velocity<AliceSun>(
+                               {kParentVelocity.x * SIUnit<Speed>(),
+                                kParentVelocity.y * SIUnit<Speed>(),
+                                kParentVelocity.z * SIUnit<Speed>()}))));
   XYZ const result = principia__CelestialDisplacementFromParent(
                          plugin_.get(),
                          kCelestialIndex);
@@ -246,11 +263,16 @@ TEST_F(InterfaceTest, CelestialDisplacementFromParent) {
 
 TEST_F(InterfaceTest, CelestialParentRelativeVelocity) {
   EXPECT_CALL(*plugin_,
-              CelestialParentRelativeVelocity(kCelestialIndex))
-      .WillOnce(Return(Velocity<AliceSun>(
-                           {kParentVelocity.x * SIUnit<Speed>(),
-                            kParentVelocity.y * SIUnit<Speed>(),
-                            kParentVelocity.z * SIUnit<Speed>()})));
+              CelestialFromParent(kCelestialIndex))
+      .WillOnce(Return(RelativeDegreesOfFreedom<AliceSun>(
+                           Displacement<AliceSun>(
+                               {kParentPosition.x * SIUnit<Length>(),
+                                kParentPosition.y * SIUnit<Length>(),
+                                kParentPosition.z * SIUnit<Length>()}),
+                           Velocity<AliceSun>(
+                               {kParentVelocity.x * SIUnit<Speed>(),
+                                kParentVelocity.y * SIUnit<Speed>(),
+                                kParentVelocity.z * SIUnit<Speed>()}))));
   XYZ const result = principia__CelestialParentRelativeVelocity(
                          plugin_.get(),
                          kCelestialIndex);
