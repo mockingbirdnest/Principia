@@ -116,16 +116,14 @@ void principia__InsertCelestial(Plugin* const plugin,
                                 int const celestial_index,
                                 double const gravitational_parameter,
                                 int const parent_index,
-                                XYZ const from_parent_position,
-                                XYZ const from_parent_velocity) {
+                                QP const from_parent) {
   CHECK_NOTNULL(plugin)->InsertCelestial(
       celestial_index,
       gravitational_parameter * SIUnit<GravitationalParameter>(),
       parent_index,
       RelativeDegreesOfFreedom<AliceSun>(
-          Displacement<AliceSun>(ToR3Element(from_parent_position) * Metre),
-          Velocity<AliceSun>(
-              ToR3Element(from_parent_velocity) * (Metre / Second))));
+          Displacement<AliceSun>(ToR3Element(from_parent.q) * Metre),
+          Velocity<AliceSun>(ToR3Element(from_parent.p) * (Metre / Second))));
 }
 
 void principia__UpdateCelestialHierarchy(Plugin const* const plugin,
@@ -147,14 +145,12 @@ bool principia__InsertOrKeepVessel(Plugin* const plugin,
 
 void principia__SetVesselStateOffset(Plugin* const plugin,
                                      char const* vessel_guid,
-                                     XYZ const from_parent_position,
-                                     XYZ const from_parent_velocity) {
+                                     QP const from_parent) {
   CHECK_NOTNULL(plugin)->SetVesselStateOffset(
       vessel_guid,
       RelativeDegreesOfFreedom<AliceSun>(
-          Displacement<AliceSun>(ToR3Element(from_parent_position) * Metre),
-          Velocity<AliceSun>(
-              ToR3Element(from_parent_velocity) * (Metre / Second))));
+          Displacement<AliceSun>(ToR3Element(from_parent.q) * Metre),
+          Velocity<AliceSun>(ToR3Element(from_parent.p) * (Metre / Second))));
 }
 
 void principia__AdvanceTime(Plugin* const plugin,
@@ -164,33 +160,20 @@ void principia__AdvanceTime(Plugin* const plugin,
                                      planetarium_rotation * Degree);
 }
 
-XYZ principia__VesselDisplacementFromParent(Plugin const* const plugin,
-                                            char const* vessel_guid) {
-  Displacement<AliceSun> const result =
-      CHECK_NOTNULL(plugin)->VesselFromParent(vessel_guid).displacement();
-  return ToXYZ(result.coordinates() / Metre);
+QP principia__VesselFromParent(Plugin const* const plugin,
+                               char const* vessel_guid) {
+  RelativeDegreesOfFreedom<AliceSun> const result =
+      CHECK_NOTNULL(plugin)->VesselFromParent(vessel_guid);
+  return {ToXYZ(result.displacement().coordinates() / Metre),
+          ToXYZ(result.velocity().coordinates() / (Metre / Second))};
 }
 
-XYZ principia__VesselParentRelativeVelocity(Plugin const* const plugin,
-                                            char const* vessel_guid) {
-  Velocity<AliceSun> const result =
-      CHECK_NOTNULL(plugin)->VesselFromParent(vessel_guid).velocity();
-  return ToXYZ(result.coordinates() / (Metre / Second));
-}
-
-XYZ principia__CelestialDisplacementFromParent(Plugin const* const plugin,
-                                               int const celestial_index) {
-  Displacement<AliceSun> const result =
-      CHECK_NOTNULL(plugin)->
-          CelestialFromParent(celestial_index).displacement();
-  return ToXYZ(result.coordinates() / Metre);
-}
-
-XYZ principia__CelestialParentRelativeVelocity(Plugin const* const plugin,
-                                               int const celestial_index) {
-  Velocity<AliceSun> const result =
-      CHECK_NOTNULL(plugin)->CelestialFromParent(celestial_index).velocity();
-  return ToXYZ(result.coordinates() / (Metre / Second));
+QP principia__CelestialFromParent(Plugin const* const plugin,
+                                   int const celestial_index) {
+  RelativeDegreesOfFreedom<AliceSun> const result =
+      CHECK_NOTNULL(plugin)->CelestialFromParent(celestial_index);
+  return {ToXYZ(result.displacement().coordinates() / Metre),
+          ToXYZ(result.velocity().coordinates() / (Metre / Second))};
 }
 
 BodyCentredNonRotatingFrame const* principia__NewBodyCentredNonRotatingFrame(
