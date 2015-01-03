@@ -466,13 +466,11 @@ public partial class PluginAdapter : UnityEngine.MonoBehaviour {
     Log.Info("active vessel orbit.vel : " + active_vessel.orbit.vel);
     Log.Info("active vessel GetVel : " + active_vessel.orbit.GetVel());
     Log.Info("Principia orbit.pos : " + 
-             (Vector3d)VesselFromParent(
-                 plugin_,
-                 active_vessel.id.ToString()).q);
+             (Vector3d)VesselFromParent(plugin_,
+                                        active_vessel.id.ToString()).q);
     Log.Info("Principia orbit.vel : " + 
-             (Vector3d)VesselFromParent(
-                 plugin_,
-                 active_vessel.id.ToString()).p);
+             (Vector3d)VesselFromParent(plugin_,
+                                        active_vessel.id.ToString()).p);
     Log.Info("Kraken : " + Krakensbane.GetFrameVelocity());
     Log.Info("Root rb velocity (32) : " +
              (Vector3d)active_vessel.rootPart.rb.velocity);

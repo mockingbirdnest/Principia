@@ -139,7 +139,7 @@ void CDECL principia__AdvanceTime(Plugin* const plugin,
                                   double const planetarium_rotation);
 
 // Calls |plugin->VesselFromParent| with the arguments given.
-//|plugin| must not be null.  No transfer of ownership.
+// |plugin| must not be null.  No transfer of ownership.
 extern "C" DLLEXPORT
 QP CDECL principia__VesselFromParent(Plugin const* const plugin,
                                      char const* vessel_guid);
