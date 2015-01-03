@@ -20,7 +20,11 @@ class Transforms {
                 "Both FromFrame and ToFrame must be inertial");
 
  public:
-  //TODO(phl):comment
+  // The trajectories are evaluated lazily because they may be extended or
+  // deallocated/reallocated between the time when the transforms are created
+  // and the time when they are applied.  Thus, the lambdas couldn't capture the
+  // trajectories by value nor by reference.  Instead, they capture a copy of a
+  // function that accesses the trajectories.
   template<typename Frame>
   using LazyTrajectory = std::function<Trajectory<Frame> const&()>;
 
