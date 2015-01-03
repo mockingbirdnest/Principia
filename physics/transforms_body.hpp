@@ -67,15 +67,15 @@ void FromBasisOfBarycentricFrameToStandardBasis(
 template<typename FromFrame, typename ThroughFrame, typename ToFrame>
 std::unique_ptr<Transforms<FromFrame, ThroughFrame, ToFrame>>
 Transforms<FromFrame, ThroughFrame, ToFrame>::BodyCentredNonRotating(
-    Trajectory<FromFrame> const& from_centre_trajectory,
-    Trajectory<ToFrame> const& to_centre_trajectory) {
+    LazyTrajectory<FromFrame> const& from_centre_trajectory,
+    LazyTrajectory<ToFrame> const& to_centre_trajectory) {
   std::unique_ptr<Transforms> transforms = std::make_unique<Transforms>();
 
   // From the perspective of the lambda the following variable is really |this|,
   // hence the name.
   Transforms* that = transforms.get();
   transforms->first_ =
-      [&from_centre_trajectory, that](
+      [from_centre_trajectory, that](
           Instant const& t,
           DegreesOfFreedom<FromFrame> const& from_degrees_of_freedom,
           Trajectory<FromFrame> const* trajectory) ->
@@ -89,7 +89,7 @@ Transforms<FromFrame, ThroughFrame, ToFrame>::BodyCentredNonRotating(
     // on_or_after() is Ln(N), but it doesn't matter unless the map gets very
     // big, in which case we'll have cache misses anyway.
     TYPENAME Trajectory<FromFrame>::NativeIterator const centre_it =
-        from_centre_trajectory.on_or_after(t);
+        from_centre_trajectory().on_or_after(t);
     CHECK_EQ(centre_it.time(), t)
         << "Time " << t << " not in centre trajectory";
     DegreesOfFreedom<FromFrame> const& centre_degrees_of_freedom =
@@ -113,13 +113,13 @@ Transforms<FromFrame, ThroughFrame, ToFrame>::BodyCentredNonRotating(
   };
 
   transforms->second_ =
-      [&to_centre_trajectory](
+      [to_centre_trajectory](
           Instant const& t,
           DegreesOfFreedom<ThroughFrame> const& through_degrees_of_freedom,
           Trajectory<ThroughFrame> const* trajectory) ->
       DegreesOfFreedom<ToFrame> {
     DegreesOfFreedom<ToFrame> const& last_centre_degrees_of_freedom =
-        to_centre_trajectory.last().degrees_of_freedom();
+        to_centre_trajectory().last().degrees_of_freedom();
 
     AffineMap<ThroughFrame, ToFrame, Length, Identity> const position_map(
         ThroughFrame::origin,
@@ -136,17 +136,17 @@ Transforms<FromFrame, ThroughFrame, ToFrame>::BodyCentredNonRotating(
 template<typename FromFrame, typename ThroughFrame, typename ToFrame>
 std::unique_ptr<Transforms<FromFrame, ThroughFrame, ToFrame>>
 Transforms<FromFrame, ThroughFrame, ToFrame>::BarycentricRotating(
-      Trajectory<FromFrame> const& from_primary_trajectory,
-      Trajectory<ToFrame> const& to_primary_trajectory,
-      Trajectory<FromFrame> const& from_secondary_trajectory,
-      Trajectory<ToFrame> const& to_secondary_trajectory) {
+      LazyTrajectory<FromFrame> const& from_primary_trajectory,
+      LazyTrajectory<ToFrame> const& to_primary_trajectory,
+      LazyTrajectory<FromFrame> const& from_secondary_trajectory,
+      LazyTrajectory<ToFrame> const& to_secondary_trajectory) {
   std::unique_ptr<Transforms> transforms = std::make_unique<Transforms>();
 
   // From the perspective of the lambda the following variable is really |this|,
   // hence the name.
   Transforms* that = transforms.get();
   transforms->first_ =
-      [&from_primary_trajectory, &from_secondary_trajectory, that](
+      [from_primary_trajectory, from_secondary_trajectory, that](
           Instant const& t,
           DegreesOfFreedom<FromFrame> const& from_degrees_of_freedom,
           Trajectory<FromFrame> const* trajectory) ->
@@ -159,11 +159,11 @@ Transforms<FromFrame, ThroughFrame, ToFrame>::BarycentricRotating(
 
     // on_or_after() is Ln(N).
     TYPENAME Trajectory<FromFrame>::NativeIterator const primary_it =
-        from_primary_trajectory.on_or_after(t);
+        from_primary_trajectory().on_or_after(t);
     CHECK_EQ(primary_it.time(), t)
         << "Time " << t << " not in primary trajectory";
     TYPENAME Trajectory<FromFrame>::NativeIterator secondary_it =
-        from_secondary_trajectory.on_or_after(t);
+        from_secondary_trajectory().on_or_after(t);
     CHECK_EQ(secondary_it.time(), t)
         << "Time " << t << " not in secondary trajectory";
 
@@ -175,9 +175,9 @@ Transforms<FromFrame, ThroughFrame, ToFrame>::BarycentricRotating(
         Barycentre<FromFrame, GravitationalParameter>(
             {primary_degrees_of_freedom,
              secondary_degrees_of_freedom},
-            {from_primary_trajectory.template body<MassiveBody>().
+            {from_primary_trajectory().template body<MassiveBody>().
                  gravitational_parameter(),
-             from_secondary_trajectory.template body<MassiveBody>().
+             from_secondary_trajectory().template body<MassiveBody>().
                  gravitational_parameter()});
     Rotation<FromFrame, ThroughFrame>
         from_basis_of_barycentric_frame_to_standard_basis;
@@ -212,22 +212,22 @@ Transforms<FromFrame, ThroughFrame, ToFrame>::BarycentricRotating(
   };
 
   transforms->second_ =
-      [&to_primary_trajectory, &to_secondary_trajectory](
+      [to_primary_trajectory, to_secondary_trajectory](
           Instant const& t,
           DegreesOfFreedom<ThroughFrame> const& through_degrees_of_freedom,
           Trajectory<ThroughFrame> const* trajectory) ->
       DegreesOfFreedom<ToFrame> {
     DegreesOfFreedom<ToFrame> const& last_primary_degrees_of_freedom =
-        to_primary_trajectory.last().degrees_of_freedom();
+        to_primary_trajectory().last().degrees_of_freedom();
     DegreesOfFreedom<ToFrame> const& last_secondary_degrees_of_freedom =
-        to_secondary_trajectory.last().degrees_of_freedom();
+        to_secondary_trajectory().last().degrees_of_freedom();
     DegreesOfFreedom<ToFrame> const last_barycentre_degrees_of_freedom =
         Barycentre<ToFrame, GravitationalParameter>(
             {last_primary_degrees_of_freedom,
              last_secondary_degrees_of_freedom},
-            {to_primary_trajectory.template body<MassiveBody>().
+            {to_primary_trajectory().template body<MassiveBody>().
                  gravitational_parameter(),
-             to_secondary_trajectory.template body<MassiveBody>().
+             to_secondary_trajectory().template body<MassiveBody>().
                  gravitational_parameter()});
     Rotation<ToFrame, ThroughFrame>
         from_basis_of_last_barycentric_frame_to_standard_basis;
