@@ -44,6 +44,9 @@ template<typename Frame>
 class RelativeDegreesOfFreedom
     : public Pair<Displacement<Frame>, Velocity<Frame>> {
  public:
+  RelativeDegreesOfFreedom(Displacement<Frame> const& displacement,
+                           Velocity<Frame> const& velocity);
+
   // Not explicit, the point of this constructor is to convert implicitly.
   RelativeDegreesOfFreedom(
       Pair<Displacement<Frame>,
@@ -59,6 +62,22 @@ DegreesOfFreedom<Frame> Barycentre(
     std::vector<Weight> const& weights);
 
 }  // namespace physics
+
+// Reopen the base namespace to make RelativeDegreesOfFreedom mappable.
+namespace base {
+
+template<typename Functor, typename Frame>
+class Mappable<Functor, physics::RelativeDegreesOfFreedom<Frame>> {
+ public:
+  using type = geometry::Pair<
+                   decltype(std::declval<Functor>()(std::declval<Displacement<Frame>>())),
+                   decltype(std::declval<Functor>()(std::declval<Velocity<Frame>>()))>;
+
+  static type Do(Functor const& functor,
+                 physics::RelativeDegreesOfFreedom<Frame> const& relative);
+};
+
+}  // namespace base
 }  // namespace principia
 
 #include "physics/degrees_of_freedom_body.hpp"

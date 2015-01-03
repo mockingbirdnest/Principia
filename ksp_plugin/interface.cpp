@@ -122,8 +122,10 @@ void principia__InsertCelestial(Plugin* const plugin,
       celestial_index,
       gravitational_parameter * SIUnit<GravitationalParameter>(),
       parent_index,
-      Displacement<AliceSun>(ToR3Element(from_parent_position) * Metre),
-      Velocity<AliceSun>(ToR3Element(from_parent_velocity) * (Metre / Second)));
+      RelativeDegreesOfFreedom<AliceSun>(
+          Displacement<AliceSun>(ToR3Element(from_parent_position) * Metre),
+          Velocity<AliceSun>(
+              ToR3Element(from_parent_velocity) * (Metre / Second))));
 }
 
 void principia__UpdateCelestialHierarchy(Plugin const* const plugin,
@@ -149,8 +151,10 @@ void principia__SetVesselStateOffset(Plugin* const plugin,
                                      XYZ const from_parent_velocity) {
   CHECK_NOTNULL(plugin)->SetVesselStateOffset(
       vessel_guid,
-      Displacement<AliceSun>(ToR3Element(from_parent_position) * Metre),
-      Velocity<AliceSun>(ToR3Element(from_parent_velocity) * (Metre / Second)));
+      RelativeDegreesOfFreedom<AliceSun>(
+          Displacement<AliceSun>(ToR3Element(from_parent_position) * Metre),
+          Velocity<AliceSun>(
+              ToR3Element(from_parent_velocity) * (Metre / Second))));
 }
 
 void principia__AdvanceTime(Plugin* const plugin,
@@ -163,28 +167,29 @@ void principia__AdvanceTime(Plugin* const plugin,
 XYZ principia__VesselDisplacementFromParent(Plugin const* const plugin,
                                             char const* vessel_guid) {
   Displacement<AliceSun> const result =
-      CHECK_NOTNULL(plugin)->VesselDisplacementFromParent(vessel_guid);
+      CHECK_NOTNULL(plugin)->VesselFromParent(vessel_guid).displacement();
   return ToXYZ(result.coordinates() / Metre);
 }
 
 XYZ principia__VesselParentRelativeVelocity(Plugin const* const plugin,
                                             char const* vessel_guid) {
   Velocity<AliceSun> const result =
-      CHECK_NOTNULL(plugin)->VesselParentRelativeVelocity(vessel_guid);
+      CHECK_NOTNULL(plugin)->VesselFromParent(vessel_guid).velocity();
   return ToXYZ(result.coordinates() / (Metre / Second));
 }
 
 XYZ principia__CelestialDisplacementFromParent(Plugin const* const plugin,
                                                int const celestial_index) {
   Displacement<AliceSun> const result =
-      CHECK_NOTNULL(plugin)->CelestialDisplacementFromParent(celestial_index);
+      CHECK_NOTNULL(plugin)->
+          CelestialFromParent(celestial_index).displacement();
   return ToXYZ(result.coordinates() / Metre);
 }
 
 XYZ principia__CelestialParentRelativeVelocity(Plugin const* const plugin,
                                                int const celestial_index) {
   Velocity<AliceSun> const result =
-      CHECK_NOTNULL(plugin)->CelestialParentRelativeVelocity(celestial_index);
+      CHECK_NOTNULL(plugin)->CelestialFromParent(celestial_index).velocity();
   return ToXYZ(result.coordinates() / (Metre / Second));
 }
 
