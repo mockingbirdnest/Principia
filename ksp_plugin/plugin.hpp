@@ -94,14 +94,12 @@ class Plugin {
   // |b.flightGlobalsIndex|,
   // |b.gravParameter|,
   // |b.orbit.referenceBody.flightGlobalsIndex|,
-  // |b.orbit.pos|,
-  // |b.orbit.vel|.
+  // {|b.orbit.pos|, |b.orbit.vel|}.
   virtual void InsertCelestial(
     Index const celestial_index,
     GravitationalParameter const& gravitational_parameter,
     Index const parent_index,
-    Displacement<AliceSun> const& from_parent_position,
-    Velocity<AliceSun> const& from_parent_velocity);
+    RelativeDegreesOfFreedom<AliceSun> const& from_parent);
 
   // Ends initialization.
   virtual void EndInitialization();
@@ -134,12 +132,10 @@ class Plugin {
   // be called once per vessel. Must be called after initialization.
   // For a KSP |Vessel| |v|, the arguments correspond to
   // |v.id.ToString()|,
-  // |v.orbit.pos|,
-  // |v.orbit.vel|.
+  // {|v.orbit.pos|, |v.orbit.vel|}.
   virtual void SetVesselStateOffset(
       GUID const& vessel_guid,
-      Displacement<AliceSun> const& from_parent_position,
-      Velocity<AliceSun> const& from_parent_velocity);
+      RelativeDegreesOfFreedom<AliceSun> const& from_parent);
 
   // Simulates the system until instant |t|. All vessels that have not been
   // refreshed by calling |InsertOrKeepVessel| since the last call to
@@ -156,36 +152,22 @@ class Plugin {
   // degrees.
   virtual void AdvanceTime(Instant const& t, Angle const& planetarium_rotation);
 
-  // Returns the position of the vessel with GUID |vessel_guid| relative to its
-  // parent at current time. For a KSP |Vessel| |v|, the argument corresponds to
-  // |v.id.ToString()|, the return value to |v.orbit.pos|.
+  // Returns the displacement and velocity of the vessel with GUID |vessel_guid|
+  // relative to its parent at current time. For a KSP |Vessel| |v|, the
+  // argument corresponds to  |v.id.ToString()|, the return value to
+  // {|v.orbit.pos|, |v.orbit.vel|}.
   // A vessel with GUID |vessel_guid| must have been inserted and kept. Must
   // be called after initialization.
-  virtual Displacement<AliceSun> VesselDisplacementFromParent(
+  virtual RelativeDegreesOfFreedom<AliceSun> VesselFromParent(
       GUID const& vessel_guid) const;
 
-  // Returns the velocity of the vessel with GUID |vessel_guid| relative to its
-  // parent at current time. For a KSP |Vessel| |v|, the argument corresponds to
-  // |v.id.ToString()|, the return value to |v.orbit.vel|.
-  // A vessel with GUID |vessel_guid| must have been inserted and kept. Must
-  // be called after initialization.
-  virtual Velocity<AliceSun> VesselParentRelativeVelocity(
-      GUID const& vessel_guid) const;
-
-  // Returns the position of the celestial at index |celestial_index| relative
-  // to its parent at current time. For a KSP |CelestialBody| |b|, the argument
-  // corresponds to |b.flightGlobalsIndex|, the return value to |b.orbit.pos|.
+  // Returns the displacement and velocity of the celestial at index
+  // |celestial_index| relative to its parent at current time. For a KSP
+  // |CelestialBody| |b|, the argument corresponds to |b.flightGlobalsIndex|,
+  // the return value to {|b.orbit.pos|, |b.orbit.vel|}.
   // A celestial with index |celestial_index| must have been inserted, and it
   // must not be the sun. Must be called after initialization.
-  virtual Displacement<AliceSun> CelestialDisplacementFromParent(
-      Index const celestial_index) const;
-
-  // Returns the velocity of the celestial at index |celestial_index| relative
-  // to its parent at current time. For a KSP |CelestialBody| |b|, the argument
-  // corresponds to |b.flightGlobalsIndex|, the return value to |b.orbit.vel|.
-  // A celestial with index |celestial_index| must have been inserted, and it
-  // must not be the sun. Must be called after initialization.
-  virtual Velocity<AliceSun> CelestialParentRelativeVelocity(
+  virtual RelativeDegreesOfFreedom<AliceSun> CelestialFromParent(
       Index const celestial_index) const;
 
   // Returns a polygon in |World| space depicting the trajectory of the vessel
