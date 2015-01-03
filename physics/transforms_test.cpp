@@ -51,6 +51,14 @@ class TransformsTest : public testing::Test {
     body2_from_ = std::make_unique<Trajectory<From>>(*body2_);
     body1_to_ = std::make_unique<Trajectory<To>>(*body1_);
     body2_to_ = std::make_unique<Trajectory<To>>(*body2_);
+    body1_from_fn_ =
+        [this]() -> Trajectory<From> const& { return *this->body1_from_; };
+    body2_from_fn_ =
+        [this]() -> Trajectory<From> const& { return *this->body2_from_; };
+    body1_to_fn_ =
+        [this]() -> Trajectory<To> const& { return *this->body1_to_; };
+    body2_to_fn_ =
+        [this]() -> Trajectory<To> const& { return *this->body2_to_; };
 
     // The various bodies move have both a position and a velocity that
     // increases linearly with time.  This is not a situation that's physically
@@ -99,6 +107,10 @@ class TransformsTest : public testing::Test {
   std::unique_ptr<Trajectory<From>> body2_from_;
   std::unique_ptr<Trajectory<To>> body1_to_;
   std::unique_ptr<Trajectory<To>> body2_to_;
+  Transforms<From, Through, To>::LazyTrajectory<From> body1_from_fn_;
+  Transforms<From, Through, To>::LazyTrajectory<From> body2_from_fn_;
+  Transforms<From, Through, To>::LazyTrajectory<To> body1_to_fn_;
+  Transforms<From, Through, To>::LazyTrajectory<To> body2_to_fn_;
   std::unique_ptr<Trajectory<From>> satellite_from_;
 
   std::unique_ptr<Transforms<From, Through, To>> transforms_;
@@ -108,7 +120,7 @@ class TransformsTest : public testing::Test {
 // test verifies that we get the expected result both in |Through| and in |To|.
 TEST_F(TransformsTest, BodyCentredNonRotating) {
   transforms_ = Transforms<From, Through, To>::BodyCentredNonRotating(
-                    *body1_from_, *body1_to_);
+                    body1_from_fn_, body1_to_fn_);
   Trajectory<Through> body1_through(*body1_);
 
   int i = 1;
@@ -159,8 +171,8 @@ TEST_F(TransformsTest, BodyCentredNonRotating) {
 // Check that the computations we do match those done using Mathematica.
 TEST_F(TransformsTest, SatelliteBarycentricRotating) {
   transforms_ = Transforms<From, Through, To>::BarycentricRotating(
-                    *body1_from_, *body1_to_,
-                    *body2_from_, *body2_to_);
+                    body1_from_fn_, body1_to_fn_,
+                    body2_from_fn_, body2_to_fn_);
   Trajectory<Through> satellite_through(satellite_);
 
   int i = 1;
@@ -232,8 +244,8 @@ TEST_F(TransformsTest, SatelliteBarycentricRotating) {
 // centre of the coordinates.
 TEST_F(TransformsTest, BodiesBarycentricRotating) {
   transforms_ = Transforms<From, Through, To>::BarycentricRotating(
-                    *body1_from_, *body1_to_,
-                    *body2_from_, *body2_to_);
+                    body1_from_fn_, body1_to_fn_,
+                    body2_from_fn_, body2_to_fn_);
   Trajectory<Through> body1_through(*body1_);
   Trajectory<Through> body2_through(*body2_);
 

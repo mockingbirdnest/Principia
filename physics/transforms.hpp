@@ -1,5 +1,6 @@
 #pragma once
 
+#include <functional>
 #include <map>
 #include <memory>
 #include <utility>
@@ -19,12 +20,20 @@ class Transforms {
                 "Both FromFrame and ToFrame must be inertial");
 
  public:
+  // The trajectories are evaluated lazily because they may be extended or
+  // deallocated/reallocated between the time when the transforms are created
+  // and the time when they are applied.  Thus, the lambdas couldn't capture the
+  // trajectories by value nor by reference.  Instead, they capture a copy of a
+  // function that accesses the trajectories.
+  template<typename Frame>
+  using LazyTrajectory = std::function<Trajectory<Frame> const&()>;
+
   // A factory method where |ThroughFrame| is defined as follows: it has the
   // same axes as |FromFrame| and the body of |centre_trajectory| is the origin
   // of |ThroughFrame|.
   static std::unique_ptr<Transforms> BodyCentredNonRotating(
-      Trajectory<FromFrame> const& from_centre_trajectory,
-      Trajectory<ToFrame> const& to_centre_trajectory);
+      LazyTrajectory<FromFrame> const& from_centre_trajectory,
+      LazyTrajectory<ToFrame> const& to_centre_trajectory);
 
   // A factory method where |ThroughFrame| is defined as follows: its X axis
   // goes from the primary to the secondary bodies, its Y axis is in the plane
@@ -33,10 +42,10 @@ class Transforms {
   // that it is right-handed.  The barycentre of the bodies is the origin of
   // |ThroughFrame|.
   static std::unique_ptr<Transforms> BarycentricRotating(
-      Trajectory<FromFrame> const& from_primary_trajectory,
-      Trajectory<ToFrame> const& to_primary_trajectory,
-      Trajectory<FromFrame> const& from_secondary_trajectory,
-      Trajectory<ToFrame> const& to_secondary_trajectory);
+      LazyTrajectory<FromFrame> const& from_primary_trajectory,
+      LazyTrajectory<ToFrame> const& to_primary_trajectory,
+      LazyTrajectory<FromFrame> const& from_secondary_trajectory,
+      LazyTrajectory<ToFrame> const& to_secondary_trajectory);
 
   // Use this only for testing!
   static std::unique_ptr<Transforms> DummyForTesting();

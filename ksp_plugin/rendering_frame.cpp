@@ -22,10 +22,13 @@ BodyCentredNonRotatingFrame::ApparentTrajectory(
     Trajectory<Barycentric> const& actual_trajectory) const {
   std::unique_ptr<Trajectory<Barycentric>> result =
       std::make_unique<Trajectory<Barycentric>>(actual_trajectory.body<Body>());
+  Transforms<Barycentric, Rendering, Barycentric>::
+      LazyTrajectory<Barycentric> const body_prolongation =
+          std::bind(&Celestial::prolongation, &body_);
   auto transforms(
       Transforms<Barycentric, Rendering, Barycentric>::BodyCentredNonRotating(
-          body_.prolongation(),
-          body_.prolongation()));
+          body_prolongation,
+          body_prolongation));
   auto actual_it = transforms->first(&actual_trajectory);
 
   // First build the trajectory resulting from the first transform.
@@ -57,12 +60,18 @@ BarycentricRotatingFrame::ApparentTrajectory(
     Trajectory<Barycentric> const& actual_trajectory) const {
   std::unique_ptr<Trajectory<Barycentric>> result =
       std::make_unique<Trajectory<Barycentric>>(actual_trajectory.body<Body>());
+  Transforms<Barycentric, Rendering, Barycentric>::
+      LazyTrajectory<Barycentric> const primary_prolongation =
+          std::bind(&Celestial::prolongation, &primary_);
+  Transforms<Barycentric, Rendering, Barycentric>::
+      LazyTrajectory<Barycentric> const secondary_prolongation =
+          std::bind(&Celestial::prolongation, &secondary_);
   auto transforms(
       Transforms<Barycentric, Rendering, Barycentric>::BarycentricRotating(
-          primary_.prolongation(),
-          primary_.prolongation(),
-          secondary_.prolongation(),
-          secondary_.prolongation()));
+          primary_prolongation,
+          primary_prolongation,
+          secondary_prolongation,
+          secondary_prolongation));
   auto actual_it = transforms->first(&actual_trajectory);
 
   // First build the trajectory resulting from the first transform.
