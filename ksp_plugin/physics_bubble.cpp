@@ -188,8 +188,7 @@ RelativeDegreesOfFreedom<Barycentric> const&
 PhysicsBubble::from_centre_of_mass(Vessel const* const vessel) const {
   CHECK(!empty()) << "Empty bubble";
   CHECK(current_->from_centre_of_mass != nullptr);
-  auto const it = 
-      current_->from_centre_of_mass->find(vessel);
+  auto const it = current_->from_centre_of_mass->find(vessel);
   CHECK(it != current_->from_centre_of_mass->end());
   return it->second;
 }
@@ -253,8 +252,7 @@ void PhysicsBubble::ComputeNextVesselOffsets(
             Identity<World, WorldSun>()(
                 vessel_degrees_of_freedom - *next->centre_of_mass));
     VLOG(1) << NAMED(from_centre_of_mass);
-    next->from_centre_of_mass->emplace(
-        vessel, from_centre_of_mass);
+    next->from_centre_of_mass->emplace(vessel, from_centre_of_mass);
   }
 }
 

@@ -45,8 +45,7 @@ class SolarSystemTest : public testing::Test {
         secondary.last().degrees_of_freedom();
     Vector<Length, ICRFJ2000Ecliptic> const& r =
         primary_secondary.displacement();
-    Velocity<ICRFJ2000Ecliptic> const& v =
-        primary_secondary.velocity();
+    Velocity<ICRFJ2000Ecliptic> const& v = primary_secondary.velocity();
     SpecificEnergy const ε = Pow<2>(v.Norm()) / 2 - μ / r.Norm();
     return -μ / (2 * ε);
   }

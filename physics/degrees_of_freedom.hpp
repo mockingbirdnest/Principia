@@ -70,8 +70,10 @@ template<typename Functor, typename Frame>
 class Mappable<Functor, physics::RelativeDegreesOfFreedom<Frame>> {
  public:
   using type = geometry::Pair<
-                   decltype(std::declval<Functor>()(std::declval<Displacement<Frame>>())),
-                   decltype(std::declval<Functor>()(std::declval<Velocity<Frame>>()))>;
+                   decltype(std::declval<Functor>()(
+                                std::declval<Displacement<Frame>>())),
+                   decltype(std::declval<Functor>()(
+                                std::declval<Velocity<Frame>>()))>;
 
   static type Do(Functor const& functor,
                  physics::RelativeDegreesOfFreedom<Frame> const& relative);

@@ -309,7 +309,7 @@ void Plugin::InsertCelestial(
       std::make_unique<Celestial>(
           std::make_unique<MassiveBody>(gravitational_parameter)));
   CHECK(inserted.second) << "Body already exists at index " << celestial_index;
-  LOG(INFO) << "Initial {|orbit.pos|, |orbit.vel|} for celestial at index "
+  LOG(INFO) << "Initial |{orbit.pos, orbit.vel}| for celestial at index "
             << celestial_index << ": " << from_parent;
   auto const relative =
       PlanetariumRotation().Inverse()(
@@ -317,10 +317,9 @@ void Plugin::InsertCelestial(
   LOG(INFO) << "In barycentric coordinates: " << relative;
   Celestial* const celestial = inserted.first->second.get();
   celestial->set_parent(&parent);
-  auto const last = parent.history().last();
   celestial->CreateHistoryAndForkProlongation(
       current_time_,
-      last.degrees_of_freedom() + relative);
+      parent.history().last().degrees_of_freedom() + relative);
 }
 
 void Plugin::EndInitialization() {
@@ -369,15 +368,15 @@ void Plugin::SetVesselStateOffset(
       find_vessel_by_guid_or_die(vessel_guid);
   CHECK(!vessel->is_initialized())
       << "Vessel with GUID " << vessel_guid << " already has a trajectory";
-  LOG(INFO) << "Initial {|orbit.pos|, |orbit.vel|} for vessel with GUID "
+  LOG(INFO) << "Initial |{orbit.pos, orbit.vel}| for vessel with GUID "
             << vessel_guid << ": " << from_parent;
   RelativeDegreesOfFreedom<Barycentric> const relative =
       PlanetariumRotation().Inverse()(
           kSunLookingGlass.Inverse()(from_parent));
   LOG(INFO) << "In barycentric coordinates: " << relative;
-  auto const last = vessel->parent().history().last();
-  vessel->CreateProlongation(current_time_,
-                             last.degrees_of_freedom() + relative);
+  vessel->CreateProlongation(
+      current_time_,
+      vessel->parent().history().last().degrees_of_freedom() + relative);
   auto const inserted = unsynchronized_vessels_.emplace(vessel.get());
   CHECK(inserted.second);
 }
@@ -416,10 +415,10 @@ RelativeDegreesOfFreedom<AliceSun> Plugin::VesselFromParent(
       find_vessel_by_guid_or_die(vessel_guid);
   CHECK(vessel->is_initialized()) << "Vessel with GUID " << vessel_guid
                                   << " was not given an initial state";
-  auto const barycentric_result =
+  RelativeDegreesOfFreedom<Barycentric> const barycentric_result =
       vessel->prolongation().last().degrees_of_freedom() -
       vessel->parent().prolongation().last().degrees_of_freedom();
-  auto const result =
+  RelativeDegreesOfFreedom<AliceSun> const result =
       kSunLookingGlass(PlanetariumRotation()(barycentric_result));
   VLOG(1) << "Vessel with GUID " << vessel_guid
           << " is at parent degrees of freedom + " << barycentric_result
@@ -435,10 +434,10 @@ RelativeDegreesOfFreedom<AliceSun> Plugin::CelestialFromParent(
   Celestial const& celestial = *it->second;
   CHECK(celestial.has_parent())
       << "Body at index " << celestial_index << " is the sun";
-  auto const barycentric_result =
+  RelativeDegreesOfFreedom<Barycentric> const barycentric_result =
       celestial.prolongation().last().degrees_of_freedom() -
       celestial.parent().prolongation().last().degrees_of_freedom();
-  auto const result =
+  RelativeDegreesOfFreedom<AliceSun> const result =
       kSunLookingGlass(PlanetariumRotation()(barycentric_result));
   VLOG(1) << "Celestial at index " << celestial_index
           << " is at parent degrees of freedom + " << barycentric_result
