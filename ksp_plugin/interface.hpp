@@ -41,6 +41,14 @@ static_assert(std::is_standard_layout<XYZSegment>::value,
               "XYZSegment is used for interfacing");
 
 extern "C"
+struct QP {
+  XYZ q, p;
+};
+
+static_assert(std::is_standard_layout<QP>::value,
+              "QP is used for interfacing");
+
+extern "C"
 struct KSPPart {
   XYZ world_position;
   XYZ world_velocity;
@@ -97,8 +105,7 @@ void CDECL principia__InsertCelestial(Plugin* const plugin,
                                       int const celestial_index,
                                       double const gravitational_parameter,
                                       int const parent_index,
-                                      XYZ const from_parent_position,
-                                      XYZ const from_parent_velocity);
+                                      QP const from_parent);
 
 // Calls |plugin->UpdateCelestialHierarchy| with the arguments given.
 // |plugin| must not be null.  No transfer of ownership.
@@ -124,37 +131,24 @@ bool CDECL principia__InsertOrKeepVessel(Plugin* const plugin,
 extern "C" DLLEXPORT
 void CDECL principia__SetVesselStateOffset(Plugin* const plugin,
                                            char const* vessel_guid,
-                                           XYZ const from_parent_position,
-                                           XYZ const from_parent_velocity);
+                                           QP const from_parent);
 
 extern "C" DLLEXPORT
 void CDECL principia__AdvanceTime(Plugin* const plugin,
                                   double const t,
                                   double const planetarium_rotation);
 
-// Calls |plugin->VesselDisplacementFromParent| with the arguments given.
+// Calls |plugin->VesselFromParent| with the arguments given.
 // |plugin| must not be null.  No transfer of ownership.
 extern "C" DLLEXPORT
-XYZ CDECL principia__VesselDisplacementFromParent(Plugin const* const plugin,
-                                                  char const* vessel_guid);
+QP CDECL principia__VesselFromParent(Plugin const* const plugin,
+                                     char const* vessel_guid);
 
-// Calls |plugin->VesselParentRelativeVelocity| with the arguments given.
+// Calls |plugin->CelestialFromParent| with the arguments given.
 // |plugin| must not be null.  No transfer of ownership.
 extern "C" DLLEXPORT
-XYZ CDECL principia__VesselParentRelativeVelocity(Plugin const* const plugin,
-                                                  char const* vessel_guid);
-
-// Calls |plugin->CelestialDisplacementFromParent| with the arguments given.
-// |plugin| must not be null.  No transfer of ownership.
-extern "C" DLLEXPORT
-XYZ CDECL principia__CelestialDisplacementFromParent(Plugin const* const plugin,
-                                                     int const celestial_index);
-
-// Calls |plugin->CelestialParentRelativeVelocity| with the arguments given.
-// |plugin| must not be null.  No transfer of ownership.
-extern "C" DLLEXPORT
-XYZ CDECL principia__CelestialParentRelativeVelocity(Plugin const* const plugin,
-                                                     int const celestial_index);
+QP CDECL principia__CelestialFromParent(Plugin const* const plugin,
+                                        int const celestial_index);
 
 // Calls |plugin->NewBodyCentredNonRotatingFrame| with the arguments given.
 // |plugin| must not be null.  The caller gets ownership of the returned object.
