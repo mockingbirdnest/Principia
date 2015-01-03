@@ -469,8 +469,6 @@ RenderedTrajectory<World> Plugin::RenderedVesselTrajectory(
     VLOG(1) << "Returning an empty trajectory";
     return result;
   }
-  DegreesOfFreedom<Barycentric> const* initial_state = nullptr;
-  DegreesOfFreedom<Barycentric> const* final_state = nullptr;
 
   // Compute the apparent trajectory using the given |transforms|.
   Trajectory<Barycentric> const& actual_trajectory = vessel->history();
@@ -495,6 +493,8 @@ RenderedTrajectory<World> Plugin::RenderedVesselTrajectory(
   }
 
   // Finally use the apparent trajectory to build the result.
+  DegreesOfFreedom<Barycentric> const* initial_state = nullptr;
+  DegreesOfFreedom<Barycentric> const* final_state = nullptr;
   for (auto apparent_it = apparent_trajectory->first();
        !apparent_it.at_end();
        ++apparent_it) {
