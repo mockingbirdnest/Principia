@@ -513,9 +513,12 @@ Plugin::NewBodyCentredNonRotatingTransforms(
   auto const it = celestials_.find(reference_body_index);
   CHECK(it != celestials_.end());
   Celestial const& reference_body = *it->second;
+  Transforms<Barycentric, Rendering, Barycentric>::
+      LazyTrajectory<Barycentric> const reference_body_prolongation =
+          std::bind(&Celestial::prolongation, &reference_body);
   return Transforms<Barycentric, Rendering, Barycentric>::
-             BodyCentredNonRotating(reference_body.prolongation(),
-                                    reference_body.prolongation());
+             BodyCentredNonRotating(reference_body_prolongation,
+                                    reference_body_prolongation);
 }
 
 std::unique_ptr<Transforms<Barycentric, Rendering, Barycentric>>
@@ -527,11 +530,17 @@ Plugin::NewBarycentricRotatingTransforms(Index const primary_index,
   auto const secondary_it = celestials_.find(secondary_index);
   CHECK(secondary_it != celestials_.end());
   Celestial const& secondary = *secondary_it->second;
+  Transforms<Barycentric, Rendering, Barycentric>::
+      LazyTrajectory<Barycentric> const primary_prolongation =
+          std::bind(&Celestial::prolongation, &primary);
+  Transforms<Barycentric, Rendering, Barycentric>::
+      LazyTrajectory<Barycentric> const secondary_prolongation =
+          std::bind(&Celestial::prolongation, &secondary);
   return Transforms<Barycentric, Rendering, Barycentric>::BarycentricRotating(
-             primary.prolongation(),
-             primary.prolongation(),
-             secondary.prolongation(),
-             secondary.prolongation());
+             primary_prolongation,
+             primary_prolongation,
+             secondary_prolongation,
+             secondary_prolongation);
 }
 
 Position<World> Plugin::VesselWorldPosition(
