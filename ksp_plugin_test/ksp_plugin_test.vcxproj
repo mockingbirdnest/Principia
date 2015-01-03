@@ -20,7 +20,6 @@
     <ClCompile Include="..\ksp_plugin\monostable.cpp" />
     <ClCompile Include="..\ksp_plugin\physics_bubble.cpp" />
     <ClCompile Include="..\ksp_plugin\plugin.cpp" />
-    <ClCompile Include="..\ksp_plugin\rendering_frame.cpp" />
     <ClCompile Include="interface_test.cpp" />
     <ClCompile Include="physics_bubble_test.cpp" />
     <ClCompile Include="plugin_test.cpp" />

@@ -835,8 +835,9 @@ TEST_F(PluginTest, BodyCentredNonrotatingRenderingIntegration) {
                               RelativeDegreesOfFreedom<AliceSun>(
                                   satellite_initial_displacement_,
                                   satellite_initial_velocity_));
-  std::unique_ptr<RenderingFrame> const geocentric =
-      plugin.NewBodyCentredNonRotatingFrame(SolarSystem::kEarth);
+  std::unique_ptr<Transforms<Barycentric, Rendering, Barycentric>> const
+      geocentric =
+          plugin.NewBodyCentredNonRotatingTransforms(SolarSystem::kEarth);
   // We'll check that our orbit is rendered as circular (actually, we only check
   // that it is rendered within a thin spherical shell around the Earth).
   Length perigee = std::numeric_limits<double>::infinity() * Metre;
@@ -872,7 +873,7 @@ TEST_F(PluginTest, BodyCentredNonrotatingRenderingIntegration) {
               0.0 * AstronomicalUnit / Hour}) * (t - initial_time_);
     RenderedTrajectory<World> const rendered_trajectory =
         plugin.RenderedVesselTrajectory(satellite,
-                                        *geocentric,
+                                        geocentric.get(),
                                         sun_world_position);
     Position<World> const earth_world_position =
         sun_world_position + alice_sun_to_world(
@@ -941,9 +942,10 @@ TEST_F(PluginTest, BarycentricRotatingRenderingIntegration) {
                                   RelativeDegreesOfFreedom<ICRFJ2000Ecliptic>(
                                       from_the_earth_to_l5,
                                       initial_velocity)));
-  std::unique_ptr<RenderingFrame> const earth_moon_barycentric =
-      plugin.NewBarycentricRotatingFrame(SolarSystem::kEarth,
-                                         SolarSystem::kMoon);
+  std::unique_ptr<Transforms<Barycentric, Rendering, Barycentric>> const
+      earth_moon_barycentric =
+          plugin.NewBarycentricRotatingTransforms(SolarSystem::kEarth,
+                                                  SolarSystem::kMoon);
   Permutation<AliceSun, World> const alice_sun_to_world =
       Permutation<AliceSun, World>(Permutation<AliceSun, World>::XZY);
   Time const δt_long = 1 * Hour;
@@ -978,7 +980,7 @@ TEST_F(PluginTest, BarycentricRotatingRenderingIntegration) {
             0.0 * AstronomicalUnit / Hour}) * (t - initial_time_);
   RenderedTrajectory<World> const rendered_trajectory =
       plugin.RenderedVesselTrajectory(satellite,
-                                      *earth_moon_barycentric,
+                                      earth_moon_barycentric.get(),
                                       sun_world_position);
   Position<World> const earth_world_position =
       sun_world_position + alice_sun_to_world(

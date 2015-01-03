@@ -8,10 +8,11 @@
 #include <vector>
 
 #include "base/unique_ptr_logging.hpp"
+#include "geometry/affine_map.hpp"
 #include "geometry/barycentre_calculator.hpp"
 #include "geometry/identity.hpp"
+#include "geometry/named_quantities.hpp"
 #include "geometry/permutation.hpp"
-#include "geometry/affine_map.hpp"
 #include "glog/logging.h"
 #include "glog/stl_logging.h"
 
@@ -19,6 +20,7 @@ namespace principia {
 namespace ksp_plugin {
 
 using geometry::AffineMap;
+using geometry::AngularVelocity;
 using geometry::BarycentreCalculator;
 using geometry::Bivector;
 using geometry::Identity;
@@ -447,8 +449,9 @@ RelativeDegreesOfFreedom<AliceSun> Plugin::CelestialFromParent(
 
 RenderedTrajectory<World> Plugin::RenderedVesselTrajectory(
     GUID const& vessel_guid,
-    RenderingFrame const& frame,
+    Transforms<Barycentric, Rendering, Barycentric>* const transforms,
     Position<World> const& sun_world_position) const {
+  CHECK_NOTNULL(transforms);
   CHECK(!initializing);
   auto const to_world =
       AffineMap<Barycentric, World, Length, Rotation>(
@@ -466,15 +469,36 @@ RenderedTrajectory<World> Plugin::RenderedVesselTrajectory(
     VLOG(1) << "Returning an empty trajectory";
     return result;
   }
+
+  // Compute the apparent trajectory using the given |transforms|.
+  Trajectory<Barycentric> const& actual_trajectory = vessel->history();
+
+  // First build the trajectory resulting from the first transform.
+  Trajectory<Rendering> intermediate_trajectory(actual_trajectory.body<Body>());
+  for (auto actual_it = transforms->first(&actual_trajectory);
+       !actual_it.at_end();
+       ++actual_it) {
+    intermediate_trajectory.Append(actual_it.time(),
+                                   actual_it.degrees_of_freedom());
+  }
+
+  // Then build the apparent trajectory using the second transform.
+  std::unique_ptr<Trajectory<Barycentric>> apparent_trajectory =
+      std::make_unique<Trajectory<Barycentric>>(actual_trajectory.body<Body>());
+  for (auto intermediate_it = transforms->second(&intermediate_trajectory);
+       !intermediate_it.at_end();
+       ++intermediate_it) {
+    apparent_trajectory->Append(intermediate_it.time(),
+                                intermediate_it.degrees_of_freedom());
+  }
+
+  // Finally use the apparent trajectory to build the result.
   DegreesOfFreedom<Barycentric> const* initial_state = nullptr;
   DegreesOfFreedom<Barycentric> const* final_state = nullptr;
-  std::unique_ptr<Trajectory<Barycentric>> const apparent_trajectory =
-      frame.ApparentTrajectory(vessel->history());
-  for (Trajectory<Barycentric>::NativeIterator
-           it = apparent_trajectory->first();
-       !it.at_end();
-       ++it) {
-    final_state = &it.degrees_of_freedom();
+  for (auto apparent_it = apparent_trajectory->first();
+       !apparent_it.at_end();
+       ++apparent_it) {
+    final_state = &apparent_it.degrees_of_freedom();
     if (initial_state != nullptr) {
       result.emplace_back(to_world(initial_state->position()),
                           to_world(final_state->position()));
@@ -485,24 +509,40 @@ RenderedTrajectory<World> Plugin::RenderedVesselTrajectory(
   return result;
 }
 
-std::unique_ptr<BodyCentredNonRotatingFrame>
-Plugin::NewBodyCentredNonRotatingFrame(Index const reference_body_index) const {
+std::unique_ptr<Transforms<Barycentric, Rendering, Barycentric>>
+Plugin::NewBodyCentredNonRotatingTransforms(
+    Index const reference_body_index) const {
   auto const it = celestials_.find(reference_body_index);
   CHECK(it != celestials_.end());
   Celestial const& reference_body = *it->second;
-  return std::make_unique<BodyCentredNonRotatingFrame>(reference_body);
+  Transforms<Barycentric, Rendering, Barycentric>::
+      LazyTrajectory<Barycentric> const reference_body_prolongation =
+          std::bind(&Celestial::prolongation, &reference_body);
+  return Transforms<Barycentric, Rendering, Barycentric>::
+             BodyCentredNonRotating(reference_body_prolongation,
+                                    reference_body_prolongation);
 }
 
-std::unique_ptr<BarycentricRotatingFrame> Plugin::NewBarycentricRotatingFrame(
-    Index const primary_index,
-    Index const secondary_index) const {
+std::unique_ptr<Transforms<Barycentric, Rendering, Barycentric>>
+Plugin::NewBarycentricRotatingTransforms(Index const primary_index,
+                                         Index const secondary_index) const {
   auto const primary_it = celestials_.find(primary_index);
   CHECK(primary_it != celestials_.end());
   Celestial const& primary = *primary_it->second;
   auto const secondary_it = celestials_.find(secondary_index);
   CHECK(secondary_it != celestials_.end());
   Celestial const& secondary = *secondary_it->second;
-  return std::make_unique<BarycentricRotatingFrame>(primary, secondary);
+  Transforms<Barycentric, Rendering, Barycentric>::
+      LazyTrajectory<Barycentric> const primary_prolongation =
+          std::bind(&Celestial::prolongation, &primary);
+  Transforms<Barycentric, Rendering, Barycentric>::
+      LazyTrajectory<Barycentric> const secondary_prolongation =
+          std::bind(&Celestial::prolongation, &secondary);
+  return Transforms<Barycentric, Rendering, Barycentric>::BarycentricRotating(
+             primary_prolongation,
+             primary_prolongation,
+             secondary_prolongation,
+             secondary_prolongation);
 }
 
 Position<World> Plugin::VesselWorldPosition(

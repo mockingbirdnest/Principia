@@ -47,6 +47,9 @@ class Transforms {
       LazyTrajectory<FromFrame> const& from_secondary_trajectory,
       LazyTrajectory<ToFrame> const& to_secondary_trajectory);
 
+  // Use this only for testing!
+  static std::unique_ptr<Transforms> DummyForTesting();
+
   typename Trajectory<FromFrame>::template TransformingIterator<ThroughFrame>
   first(Trajectory<FromFrame> const* from_trajectory);
 

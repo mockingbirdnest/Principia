@@ -29,7 +29,7 @@ public partial class PluginAdapter : UnityEngine.MonoBehaviour {
   private IntPtr plugin_ = IntPtr.Zero;
   // TODO(egg): rendering only one trajectory at the moment.
   private VectorLine rendered_trajectory_;
-  private IntPtr rendering_frame_ = IntPtr.Zero;
+  private IntPtr transforms_ = IntPtr.Zero;
   private int first_selected_celestial_ = 0;
   private int second_selected_celestial_ = 0;
 
@@ -254,7 +254,7 @@ public partial class PluginAdapter : UnityEngine.MonoBehaviour {
           trajectory_iterator = RenderedVesselTrajectory(
               plugin_,
               active_vessel.id.ToString(),
-              rendering_frame_,
+              transforms_,
               (XYZ)Planetarium.fetch.Sun.position);
 
           LineSegment segment;
@@ -294,7 +294,7 @@ public partial class PluginAdapter : UnityEngine.MonoBehaviour {
 
   private void Cleanup() {
     DeletePlugin(ref plugin_);
-    DeleteRenderingFrame(ref rendering_frame_);
+    DeleteTransforms(ref transforms_);
     if (rendered_trajectory_ != null) {
       Vector.DestroyLine(ref rendered_trajectory_);
     }
@@ -333,34 +333,34 @@ public partial class PluginAdapter : UnityEngine.MonoBehaviour {
       }
     }
     foreach (CelestialBody celestial in FlightGlobals.Bodies) {
-      bool changed_reference_frame = false;
+      bool changed_rendering = false;
       UnityEngine.GUILayout.BeginHorizontal();
       if (UnityEngine.GUILayout.Toggle(
               value : first_selected_celestial_ == celestial.flightGlobalsIndex,
               text  : "") &&
           first_selected_celestial_ != celestial.flightGlobalsIndex) {
         first_selected_celestial_ = celestial.flightGlobalsIndex;
-        changed_reference_frame = true;
+        changed_rendering = true;
       }
       if (UnityEngine.GUILayout.Toggle(
               value : second_selected_celestial_ == celestial.flightGlobalsIndex,
               text  : celestial.name) &&
           second_selected_celestial_ != celestial.flightGlobalsIndex) {
         second_selected_celestial_ = celestial.flightGlobalsIndex;
-        changed_reference_frame = true;
+        changed_rendering = true;
       }
       UnityEngine.GUILayout.EndHorizontal();
-      if (changed_reference_frame && PluginRunning()) {
-        DeleteRenderingFrame(ref rendering_frame_);
+      if (changed_rendering && PluginRunning()) {
+        DeleteTransforms(ref transforms_);
         if (first_selected_celestial_ == second_selected_celestial_) {
-          rendering_frame_ = NewBodyCentredNonRotatingFrame(
-                                 plugin_,
-                                 first_selected_celestial_);
+          transforms_ = NewBodyCentredNonRotatingTransforms(
+                            plugin_,
+                            first_selected_celestial_);
         } else {
-          rendering_frame_ = NewBarycentricRotatingFrame(
-                                 plugin_,
-                                 first_selected_celestial_,
-                                 second_selected_celestial_);
+          transforms_ = NewBarycentricRotatingTransforms(
+                            plugin_,
+                            first_selected_celestial_,
+                            second_selected_celestial_);
         }
       }
     }
@@ -539,8 +539,8 @@ public partial class PluginAdapter : UnityEngine.MonoBehaviour {
     EndInitialization(plugin_);
     first_selected_celestial_ = 0;
     second_selected_celestial_ = 0;
-    rendering_frame_ =
-        NewBodyCentredNonRotatingFrame(plugin_, first_selected_celestial_);
+    transforms_ =
+        NewBodyCentredNonRotatingTransforms(plugin_, first_selected_celestial_);
     VesselProcessor insert_vessel = vessel => {
       Log.Info("Inserting " + vessel.name + "...");
       bool inserted =

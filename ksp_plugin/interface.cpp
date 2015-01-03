@@ -176,34 +176,36 @@ QP principia__CelestialFromParent(Plugin const* const plugin,
           ToXYZ(result.velocity().coordinates() / (Metre / Second))};
 }
 
-BodyCentredNonRotatingFrame const* principia__NewBodyCentredNonRotatingFrame(
-    Plugin const* const plugin,
-    int const reference_body_index) {
+Transforms<Barycentric, Rendering, Barycentric>*
+principia__NewBodyCentredNonRotatingTransforms(Plugin const* const plugin,
+                                               int const reference_body_index) {
   return CHECK_NOTNULL(plugin)->
-      NewBodyCentredNonRotatingFrame(reference_body_index).release();
+      NewBodyCentredNonRotatingTransforms(reference_body_index).release();
 }
 
-BarycentricRotatingFrame const* principia__NewBarycentricRotatingFrame(
-    Plugin const* const plugin,
-    int const primary_index,
-    int const secondary_index) {
+Transforms<Barycentric, Rendering, Barycentric>*
+principia__NewBarycentricRotatingTransforms(Plugin const* const plugin,
+                                            int const primary_index,
+                                            int const secondary_index) {
   return CHECK_NOTNULL(plugin)->
-      NewBarycentricRotatingFrame(primary_index, secondary_index).release();
+      NewBarycentricRotatingTransforms(
+          primary_index, secondary_index).release();
 }
 
-void principia__DeleteRenderingFrame(RenderingFrame const** const frame) {
-  TakeOwnership(frame);
+void principia__DeleteTransforms(
+    Transforms<Barycentric, Rendering, Barycentric>** const transforms) {
+  TakeOwnership(transforms);
 }
 
 LineAndIterator* principia__RenderedVesselTrajectory(
     Plugin const* const plugin,
     char const* vessel_guid,
-    RenderingFrame const* frame,
+    Transforms<Barycentric, Rendering, Barycentric>* const transforms,
     XYZ const sun_world_position) {
   RenderedTrajectory<World> rendered_trajectory = CHECK_NOTNULL(plugin)->
       RenderedVesselTrajectory(
           vessel_guid,
-          *CHECK_NOTNULL(frame),
+          CHECK_NOTNULL(transforms),
           World::origin + Displacement<World>(
                               ToR3Element(sun_world_position) * Metre));
   std::unique_ptr<LineAndIterator> result =
