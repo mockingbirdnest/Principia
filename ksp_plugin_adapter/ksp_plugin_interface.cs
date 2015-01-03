@@ -122,24 +122,25 @@ public partial class PluginAdapter : UnityEngine.MonoBehaviour {
       int celestial_index);
 
   [DllImport(dllName           : kDllPath,
-             EntryPoint        = "principia__NewBodyCentredNonRotatingFrame",
+             EntryPoint        =
+                 "principia__NewBodyCentredNonRotatingTransforms",
              CallingConvention = CallingConvention.Cdecl)]
-  private static extern IntPtr NewBodyCentredNonRotatingFrame(
+  private static extern IntPtr NewBodyCentredNonRotatingTransforms(
       IntPtr plugin,
       int reference_body_index);
 
   [DllImport(dllName           : kDllPath,
-             EntryPoint        = "principia__NewBarycentricRotatingFrame",
+             EntryPoint        = "principia__NewBarycentricRotatingTransforms",
              CallingConvention = CallingConvention.Cdecl)]
-  private static extern IntPtr NewBarycentricRotatingFrame(
+  private static extern IntPtr NewBarycentricRotatingTransforms(
       IntPtr plugin,
       int primary_index,
       int secondary_index);
 
   [DllImport(dllName           : kDllPath,
-             EntryPoint        = "principia__DeleteRenderingFrame",
+             EntryPoint        = "principia__DeleteTransforms",
              CallingConvention = CallingConvention.Cdecl)]
-  private static extern void DeleteRenderingFrame(ref IntPtr frame);
+  private static extern void DeleteTransforms(ref IntPtr transforms);
 
   [DllImport(dllName           : kDllPath,
              EntryPoint        = "principia__RenderedVesselTrajectory",
@@ -147,7 +148,7 @@ public partial class PluginAdapter : UnityEngine.MonoBehaviour {
   private static extern IntPtr RenderedVesselTrajectory(
       IntPtr plugin,
       [MarshalAs(UnmanagedType.LPStr)] String vessel_guid,
-      IntPtr frame,
+      IntPtr transforms,
       XYZ sun_world_position);
 
   [DllImport(dllName           : kDllPath,
