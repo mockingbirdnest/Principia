@@ -9,6 +9,10 @@
 #include "ksp_plugin/frames.hpp"
 #include "ksp_plugin/part.hpp"
 #include "ksp_plugin/vessel.hpp"
+#include "physics/degrees_of_freedom.hpp"
+
+using principia::physics::DegreesOfFreedom;
+using principia::physics::RelativeDegreesOfFreedom;
 
 namespace principia {
 namespace ksp_plugin {
@@ -65,9 +69,7 @@ class PhysicsBubble {
 
   // Selectors for the data in |current_|.
   std::vector<Vessel*> vessels() const;
-  Displacement<Barycentric> const& displacement_from_centre_of_mass(
-      Vessel const* const vessel) const;
-  Velocity<Barycentric> const& velocity_from_centre_of_mass(
+  RelativeDegreesOfFreedom<Barycentric> const& from_centre_of_mass(
       Vessel const* const vessel) const;
   Trajectory<Barycentric> const& centre_of_mass_trajectory() const;
   Trajectory<Barycentric>* mutable_centre_of_mass_trajectory() const;
@@ -89,12 +91,8 @@ class PhysicsBubble {
     // thing.
     std::unique_ptr<DegreesOfFreedom<World>> centre_of_mass;
     std::unique_ptr<Trajectory<Barycentric>> centre_of_mass_trajectory;
-    std::unique_ptr<
-        std::map<Vessel const* const,
-                 Displacement<Barycentric>>> displacements_from_centre_of_mass;
-    std::unique_ptr<
-        std::map<Vessel const* const,
-                 Velocity<Barycentric>>> velocities_from_centre_of_mass;
+    std::unique_ptr<std::map<Vessel const* const,
+                    RelativeDegreesOfFreedom<Barycentric>>> from_centre_of_mass;
     std::unique_ptr<Displacement<World>> displacement_correction;
     std::unique_ptr<Velocity<World>> velocity_correction;
   };

@@ -46,12 +46,11 @@ void FromBasisOfBarycentricFrameToStandardBasis(
     Bivector<AngularFrequency, FromFrame>* angular_frequency) {
   CHECK_NOTNULL(rotation);
   CHECK_NOTNULL(angular_frequency);
-  Displacement<FromFrame> const reference_direction =
-      primary_degrees_of_freedom.position() -
-      barycentre_degrees_of_freedom.position();
-  Velocity<FromFrame> reference_normal =
-      primary_degrees_of_freedom.velocity() -
-      barycentre_degrees_of_freedom.velocity();
+  RelativeDegreesOfFreedom<FromFrame> const reference =
+      primary_degrees_of_freedom - barycentre_degrees_of_freedom;
+  Displacement<FromFrame> const& reference_direction =
+      reference.displacement();
+  Velocity<FromFrame> reference_normal = reference.velocity();
   reference_direction.Orthogonalize(&reference_normal);
   Bivector<Product<Length, Speed>, FromFrame> const reference_binormal =
       Wedge(reference_direction, reference_normal);

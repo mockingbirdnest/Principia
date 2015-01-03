@@ -29,6 +29,12 @@ Velocity<Frame> const& DegreesOfFreedom<Frame>::velocity() const {
 
 template<typename Frame>
 RelativeDegreesOfFreedom<Frame>::RelativeDegreesOfFreedom(
+    Displacement<Frame> const& displacement,
+    Velocity<Frame> const& velocity)
+    : Pair<Displacement<Frame>, Velocity<Frame>>(displacement, velocity) {}
+
+template<typename Frame>
+RelativeDegreesOfFreedom<Frame>::RelativeDegreesOfFreedom(
     Pair<Displacement<Frame>, Velocity<Frame>> const& base)
     : Pair<Displacement<Frame>, Velocity<Frame>>(base) {}
 
@@ -61,4 +67,16 @@ DegreesOfFreedom<Frame> Barycentre(
 }
 
 }  // namespace physics
+
+namespace base {
+
+template<typename Functor, typename Frame>
+typename Mappable<Functor, physics::RelativeDegreesOfFreedom<Frame>>::type
+Mappable<Functor, physics::RelativeDegreesOfFreedom<Frame>>::Do(
+    Functor const& functor,
+    physics::RelativeDegreesOfFreedom<Frame> const& relative) {
+  return type(functor(relative.displacement()), functor(relative.velocity()));
+}
+
+}  // namespace base
 }  // namespace principia

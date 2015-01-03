@@ -156,21 +156,15 @@ class PluginTest : public testing::Test {
          index < bodies_.size();
          ++index) {
       Index const parent_index = SolarSystem::parent(index);
-      Displacement<AliceSun> const from_parent_position = looking_glass_(
+      RelativeDegreesOfFreedom<AliceSun> const from_parent = looking_glass_(
           solar_system_->trajectories()[index]->
-              last().degrees_of_freedom().position() -
+              last().degrees_of_freedom() -
           solar_system_->trajectories()[parent_index]->
-              last().degrees_of_freedom().position());
-      Velocity<AliceSun> const from_parent_velocity = looking_glass_(
-          solar_system_->trajectories()[index]->
-              last().degrees_of_freedom().velocity() -
-          solar_system_->trajectories()[parent_index]->
-              last().degrees_of_freedom().velocity());
+              last().degrees_of_freedom());
       plugin_->InsertCelestial(index,
                                bodies_[index]->gravitational_parameter(),
                                parent_index,
-                               from_parent_position,
-                               from_parent_velocity);
+                               from_parent);
     }
   }
 
@@ -199,8 +193,9 @@ class PluginTest : public testing::Test {
                                                       SolarSystem::kEarth);
     EXPECT_TRUE(inserted) << guid;
     plugin_->SetVesselStateOffset(guid,
-                                  satellite_initial_displacement_,
-                                  satellite_initial_velocity_);
+                                  RelativeDegreesOfFreedom<AliceSun>(
+                                      satellite_initial_displacement_,
+                                      satellite_initial_velocity_));
     ++*CHECK_NOTNULL(number_of_new_vessels);
   }
 
@@ -228,58 +223,47 @@ TEST_F(PluginTest, Initialization) {
        index < bodies_.size();
        ++index) {
     Index const parent_index = SolarSystem::parent(index);
-    EXPECT_THAT(solar_system_->trajectories()[index]->
-                    last().degrees_of_freedom().position() -
-                solar_system_->trajectories()[parent_index]->
-                    last().degrees_of_freedom().position(),
+    RelativeDegreesOfFreedom<ICRFJ2000Ecliptic> const from_parent =
+        solar_system_->trajectories()[index]->
+            last().degrees_of_freedom() -
+        solar_system_->trajectories()[parent_index]->
+            last().degrees_of_freedom();
+    EXPECT_THAT(from_parent.displacement(),
                 AlmostEquals(looking_glass_.Inverse()(
-                    plugin_->CelestialDisplacementFromParent(index)),
+                        plugin_->CelestialFromParent(index).displacement()),
                     1, 216320));
-    EXPECT_THAT(solar_system_->trajectories()[index]->
-                    last().degrees_of_freedom().velocity() -
-                solar_system_->trajectories()[parent_index]->
-                    last().degrees_of_freedom().velocity(),
+    EXPECT_THAT(from_parent.velocity(),
                 AlmostEquals(looking_glass_.Inverse()(
-                    plugin_->CelestialParentRelativeVelocity(index)),
+                        plugin_->CelestialFromParent(index).velocity()),
                     0, 936));
   }
 }
 
 TEST_F(PluginDeathTest, InsertCelestialError) {
-  Displacement<AliceSun> const from_parent_position = looking_glass_(
-      solar_system_->trajectories().front()->
-          last().degrees_of_freedom().position() -
-      solar_system_->trajectories().front()->
-          last().degrees_of_freedom().position());
-  Velocity<AliceSun> const from_parent_velocity = looking_glass_(
-      solar_system_->trajectories().front()->
-          last().degrees_of_freedom().velocity() -
-      solar_system_->trajectories().front()->
-          last().degrees_of_freedom().velocity());
+  RelativeDegreesOfFreedom<AliceSun> const from_parent = looking_glass_(
+      solar_system_->trajectories().front()->last().degrees_of_freedom() -
+      solar_system_->trajectories().front()->last().degrees_of_freedom());
   EXPECT_DEATH({
     InsertAllSolarSystemBodies();
     plugin_->EndInitialization();
     plugin_->InsertCelestial(42,
                              bodies_.front()->gravitational_parameter(),
                              SolarSystem::kSun,
-                             from_parent_position,
-                             from_parent_velocity);
+                             from_parent);
   }, "before the end of initialization");
   EXPECT_DEATH({
     InsertAllSolarSystemBodies();
     plugin_->InsertCelestial(42,
                              bodies_.front()->gravitational_parameter(),
                              kNotABody,
-                             from_parent_position,
-                             from_parent_velocity);
+                             from_parent);
   }, "No body at index");
   EXPECT_DEATH({
     InsertAllSolarSystemBodies();
     plugin_->InsertCelestial(SolarSystem::kEarth,
                              bodies_.front()->gravitational_parameter(),
                              SolarSystem::kSun,
-                             from_parent_position,
-                             from_parent_velocity);
+                             from_parent);
   }, "Body already exists");
 }
 
@@ -318,26 +302,30 @@ TEST_F(PluginDeathTest, SetVesselStateOffsetError) {
   EXPECT_DEATH({
     InsertAllSolarSystemBodies();
     plugin_->SetVesselStateOffset(guid,
-                                  satellite_initial_displacement_,
-                                  satellite_initial_velocity_);
+                                  RelativeDegreesOfFreedom<AliceSun>(
+                                      satellite_initial_displacement_,
+                                      satellite_initial_velocity_));
   }, "Check failed: !initializing");
   EXPECT_DEATH({
     InsertAllSolarSystemBodies();
     plugin_->EndInitialization();
     plugin_->SetVesselStateOffset(guid,
-                                  satellite_initial_displacement_,
-                                  satellite_initial_velocity_);
+                                  RelativeDegreesOfFreedom<AliceSun>(
+                                      satellite_initial_displacement_,
+                                      satellite_initial_velocity_));
   }, "No vessel with GUID");
   EXPECT_DEATH({
     InsertAllSolarSystemBodies();
     plugin_->EndInitialization();
     plugin_->InsertOrKeepVessel(guid, SolarSystem::kSun);
     plugin_->SetVesselStateOffset(guid,
-                                  satellite_initial_displacement_,
-                                  satellite_initial_velocity_);
+                                  RelativeDegreesOfFreedom<AliceSun>(
+                                      satellite_initial_displacement_,
+                                      satellite_initial_velocity_));
     plugin_->SetVesselStateOffset(guid,
-                                  satellite_initial_displacement_,
-                                  satellite_initial_velocity_);
+                                  RelativeDegreesOfFreedom<AliceSun>(
+                                      satellite_initial_displacement_,
+                                      satellite_initial_velocity_));
   }, "already has a trajectory");
 }
 
@@ -348,75 +336,39 @@ TEST_F(PluginDeathTest, AdvanceTimeError) {
   }, "Check failed: !initializing");
 }
 
-TEST_F(PluginDeathTest, VesselDisplacementFromParentError) {
+TEST_F(PluginDeathTest, VesselFromParentError) {
   GUID const guid = "Test Satellite";
   EXPECT_DEATH({
     InsertAllSolarSystemBodies();
-    plugin_->VesselDisplacementFromParent(guid);
+    plugin_->VesselFromParent(guid);
   }, "Check failed: !initializing");
   EXPECT_DEATH({
     InsertAllSolarSystemBodies();
     plugin_->EndInitialization();
-    plugin_->VesselDisplacementFromParent(guid);
+    plugin_->VesselFromParent(guid);
   }, "No vessel with GUID");
   EXPECT_DEATH({
     InsertAllSolarSystemBodies();
     plugin_->EndInitialization();
     plugin_->InsertOrKeepVessel(guid, SolarSystem::kSun);
-    plugin_->VesselDisplacementFromParent(guid);
+    plugin_->VesselFromParent(guid);
   }, "not given an initial state");
 }
 
-TEST_F(PluginDeathTest, VesselParentRelativeVelocityError) {
-  GUID const guid = "Test Satellite";
+TEST_F(PluginDeathTest, CelestialFromParentError) {
   EXPECT_DEATH({
     InsertAllSolarSystemBodies();
-    plugin_->VesselParentRelativeVelocity(guid);
+    plugin_->CelestialFromParent(SolarSystem::kEarth);
   }, "Check failed: !initializing");
   EXPECT_DEATH({
     InsertAllSolarSystemBodies();
     plugin_->EndInitialization();
-    plugin_->VesselParentRelativeVelocity(guid);
-  }, "No vessel with GUID");
-  EXPECT_DEATH({
-    InsertAllSolarSystemBodies();
-    plugin_->EndInitialization();
-    plugin_->InsertOrKeepVessel(guid, SolarSystem::kSun);
-    plugin_->VesselParentRelativeVelocity(guid);
-  }, "not given an initial state");
-}
-
-TEST_F(PluginDeathTest, CelestialDisplacementFromParentError) {
-  EXPECT_DEATH({
-    InsertAllSolarSystemBodies();
-    plugin_->CelestialDisplacementFromParent(SolarSystem::kEarth);
-  }, "Check failed: !initializing");
-  EXPECT_DEATH({
-    InsertAllSolarSystemBodies();
-    plugin_->EndInitialization();
-    plugin_->CelestialDisplacementFromParent(kNotABody);
+    plugin_->CelestialFromParent(kNotABody);
   }, "No body at index");
   EXPECT_DEATH({
     InsertAllSolarSystemBodies();
     plugin_->EndInitialization();
-    plugin_->CelestialDisplacementFromParent(SolarSystem::kSun);
-  }, "is the sun");
-}
-
-TEST_F(PluginDeathTest, CelestialParentRelativeVelocityError) {
-  EXPECT_DEATH({
-    InsertAllSolarSystemBodies();
-    plugin_->CelestialParentRelativeVelocity(SolarSystem::kEarth);
-  }, "Check failed: !initializing");
-  EXPECT_DEATH({
-    InsertAllSolarSystemBodies();
-    plugin_->EndInitialization();
-    plugin_->CelestialParentRelativeVelocity(kNotABody);
-  }, "No body at index");
-  EXPECT_DEATH({
-    InsertAllSolarSystemBodies();
-    plugin_->EndInitialization();
-    plugin_->CelestialParentRelativeVelocity(SolarSystem::kSun);
+    plugin_->CelestialFromParent(SolarSystem::kSun);
   }, "is the sun");
 }
 
@@ -428,11 +380,12 @@ TEST_F(PluginTest, VesselInsertionAtInitialization) {
                                                     SolarSystem::kEarth);
   EXPECT_TRUE(inserted);
   plugin_->SetVesselStateOffset(guid,
-                                satellite_initial_displacement_,
-                                satellite_initial_velocity_);
-  EXPECT_THAT(plugin_->VesselDisplacementFromParent(guid),
+                                RelativeDegreesOfFreedom<AliceSun>(
+                                    satellite_initial_displacement_,
+                                    satellite_initial_velocity_));
+  EXPECT_THAT(plugin_->VesselFromParent(guid).displacement(),
               AlmostEquals(satellite_initial_displacement_, 7460));
-  EXPECT_THAT(plugin_->VesselParentRelativeVelocity(guid),
+  EXPECT_THAT(plugin_->VesselFromParent(guid).velocity(),
               AlmostEquals(satellite_initial_velocity_, 3));
 }
 
@@ -838,20 +791,19 @@ TEST_F(PluginTest, UpdateCelestialHierarchy) {
   for (std::size_t index = SolarSystem::kSun + 1;
        index < bodies_.size();
        ++index) {
-    EXPECT_THAT(
+    RelativeDegreesOfFreedom<ICRFJ2000Ecliptic> const from_parent =
         solar_system_->trajectories()[index]->
-            last().degrees_of_freedom().position() -
+            last().degrees_of_freedom() -
         solar_system_->trajectories()[SolarSystem::kSun]->
-            last().degrees_of_freedom().position(),
-        AlmostEquals(looking_glass_.Inverse()(
-            plugin_->CelestialDisplacementFromParent(index)), 1, 5056));
+            last().degrees_of_freedom();
     EXPECT_THAT(
-        solar_system_->trajectories()[index]->
-            last().degrees_of_freedom().velocity() -
-        solar_system_->trajectories()[SolarSystem::kSun]->
-            last().degrees_of_freedom().velocity(),
+        from_parent.displacement(),
         AlmostEquals(looking_glass_.Inverse()(
-            plugin_->CelestialParentRelativeVelocity(index)), 1, 936));
+            plugin_->CelestialFromParent(index).displacement()), 1, 5056));
+    EXPECT_THAT(
+        from_parent.velocity(),
+        AlmostEquals(looking_glass_.Inverse()(
+            plugin_->CelestialFromParent(index).velocity()), 1, 936));
   }
 }
 
@@ -867,27 +819,22 @@ TEST_F(PluginTest, BodyCentredNonrotatingRenderingIntegration) {
        index < bodies_.size();
        ++index) {
     Index const parent_index = SolarSystem::parent(index);
-    Displacement<AliceSun> const from_parent_position = looking_glass_(
+    RelativeDegreesOfFreedom<AliceSun> const from_parent= looking_glass_(
         solar_system_->trajectories()[index]->
-            last().degrees_of_freedom().position() -
+            last().degrees_of_freedom() -
         solar_system_->trajectories()[parent_index]->
-            last().degrees_of_freedom().position());
-    Velocity<AliceSun> const from_parent_velocity = looking_glass_(
-        solar_system_->trajectories()[index]->
-            last().degrees_of_freedom().velocity() -
-        solar_system_->trajectories()[parent_index]->
-            last().degrees_of_freedom().velocity());
+            last().degrees_of_freedom());
     plugin.InsertCelestial(index,
                            bodies_[index]->gravitational_parameter(),
                            parent_index,
-                           from_parent_position,
-                           from_parent_velocity);
+                           from_parent);
   }
   plugin.EndInitialization();
   plugin.InsertOrKeepVessel(satellite, SolarSystem::kEarth);
   plugin.SetVesselStateOffset(satellite,
-                              satellite_initial_displacement_,
-                              satellite_initial_velocity_);
+                              RelativeDegreesOfFreedom<AliceSun>(
+                                  satellite_initial_displacement_,
+                                  satellite_initial_velocity_));
   std::unique_ptr<RenderingFrame> const geocentric =
       plugin.NewBodyCentredNonRotatingFrame(SolarSystem::kEarth);
   // We'll check that our orbit is rendered as circular (actually, we only check
@@ -929,7 +876,7 @@ TEST_F(PluginTest, BodyCentredNonrotatingRenderingIntegration) {
                                         sun_world_position);
     Position<World> const earth_world_position =
         sun_world_position + alice_sun_to_world(
-            plugin.CelestialDisplacementFromParent(SolarSystem::kEarth));
+            plugin.CelestialFromParent(SolarSystem::kEarth).displacement());
     for (auto const segment : rendered_trajectory) {
       Length const l_min =
           std::min((segment.begin - earth_world_position).Norm(),
@@ -961,47 +908,39 @@ TEST_F(PluginTest, BarycentricRotatingRenderingIntegration) {
        index < bodies_.size();
        ++index) {
     Index const parent_index = SolarSystem::parent(index);
-    Displacement<AliceSun> const from_parent_position = looking_glass_(
+    RelativeDegreesOfFreedom<AliceSun> const from_parent = looking_glass_(
         solar_system_->trajectories()[index]->
-            last().degrees_of_freedom().position() -
+            last().degrees_of_freedom() -
         solar_system_->trajectories()[parent_index]->
-            last().degrees_of_freedom().position());
-    Velocity<AliceSun> const from_parent_velocity = looking_glass_(
-        solar_system_->trajectories()[index]->
-            last().degrees_of_freedom().velocity() -
-        solar_system_->trajectories()[parent_index]->
-            last().degrees_of_freedom().velocity());
+            last().degrees_of_freedom());
     plugin.InsertCelestial(index,
                            bodies_[index]->gravitational_parameter(),
                            parent_index,
-                           from_parent_position,
-                           from_parent_velocity);
+                           from_parent);
   }
   plugin.EndInitialization();
   plugin.InsertOrKeepVessel(satellite, SolarSystem::kEarth);
   // A vessel at the Lagrange point L₅.
-  Displacement<ICRFJ2000Ecliptic> const from_the_earth_to_the_moon =
+  RelativeDegreesOfFreedom<ICRFJ2000Ecliptic> const from_the_earth_to_the_moon =
       solar_system_->trajectories()[SolarSystem::kMoon]->
-          last().degrees_of_freedom().position() -
+          last().degrees_of_freedom() -
       solar_system_->trajectories()[SolarSystem::kEarth]->
-          last().degrees_of_freedom().position();
-  Velocity<ICRFJ2000Ecliptic> const moon_velocity_wrt_earth =
-      solar_system_->trajectories()[SolarSystem::kMoon]->
-          last().degrees_of_freedom().velocity() -
-      solar_system_->trajectories()[SolarSystem::kEarth]->
-          last().degrees_of_freedom().velocity();
+          last().degrees_of_freedom();
   Displacement<ICRFJ2000Ecliptic> const from_the_earth_to_l5 =
-      from_the_earth_to_the_moon / 2 -
-          Normalize(moon_velocity_wrt_earth) *
-              from_the_earth_to_the_moon.Norm() * Sqrt(3) / 2;
+      from_the_earth_to_the_moon.displacement() / 2 -
+          Normalize(from_the_earth_to_the_moon.velocity()) *
+              from_the_earth_to_the_moon.displacement().Norm() * Sqrt(3) / 2;
   Velocity<ICRFJ2000Ecliptic> const initial_velocity =
       Rotation<ICRFJ2000Ecliptic, ICRFJ2000Ecliptic>(
           π / 3 * Radian,
-          Wedge(moon_velocity_wrt_earth, from_the_earth_to_the_moon))(
-              moon_velocity_wrt_earth);
+          Wedge(from_the_earth_to_the_moon.velocity(),
+                from_the_earth_to_the_moon.displacement()))(
+              from_the_earth_to_the_moon.velocity());
   plugin.SetVesselStateOffset(satellite,
-                              looking_glass_(from_the_earth_to_l5),
-                              looking_glass_(initial_velocity));
+                              looking_glass_(
+                                  RelativeDegreesOfFreedom<ICRFJ2000Ecliptic>(
+                                      from_the_earth_to_l5,
+                                      initial_velocity)));
   std::unique_ptr<RenderingFrame> const earth_moon_barycentric =
       plugin.NewBarycentricRotatingFrame(SolarSystem::kEarth,
                                          SolarSystem::kMoon);
@@ -1043,10 +982,10 @@ TEST_F(PluginTest, BarycentricRotatingRenderingIntegration) {
                                       sun_world_position);
   Position<World> const earth_world_position =
       sun_world_position + alice_sun_to_world(
-          plugin.CelestialDisplacementFromParent(SolarSystem::kEarth));
+          plugin.CelestialFromParent(SolarSystem::kEarth).displacement());
   Position<World> const moon_world_position =
       earth_world_position + alice_sun_to_world(
-          plugin.CelestialDisplacementFromParent(SolarSystem::kMoon));
+          plugin.CelestialFromParent(SolarSystem::kMoon).displacement());
   Length const earth_moon =
       (moon_world_position - earth_world_position).Norm();
   for (auto const segment : rendered_trajectory) {

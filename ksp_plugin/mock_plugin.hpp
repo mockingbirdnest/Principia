@@ -14,12 +14,11 @@ class MockPlugin : public Plugin {
   MockPlugin(MockPlugin&&) = delete;
   ~MockPlugin() override = default;
 
-  MOCK_METHOD5(InsertCelestial,
+  MOCK_METHOD4(InsertCelestial,
                void(Index const celestial_index,
                     GravitationalParameter const& gravitational_parameter,
                     Index const parent_index,
-                    Displacement<AliceSun> const& from_parent_position,
-                    Velocity<AliceSun> const& from_parent_velocity));
+                    RelativeDegreesOfFreedom<AliceSun> const& from_parent));
 
   MOCK_METHOD0(EndInitialization,
                void());
@@ -31,25 +30,20 @@ class MockPlugin : public Plugin {
   MOCK_METHOD2(InsertOrKeepVessel,
                bool(GUID const& vessel_guid, Index const parent_index));
 
-  MOCK_METHOD3(SetVesselStateOffset,
+  MOCK_METHOD2(SetVesselStateOffset,
                void(GUID const& vessel_guid,
-                    Displacement<AliceSun> const& from_parent_position,
-                    Velocity<AliceSun> const& from_parent_velocity));
+                    RelativeDegreesOfFreedom<AliceSun> const& from_parent));
 
   MOCK_METHOD2(AdvanceTime,
                void(Instant const& t, Angle const& planetarium_rotation));
 
-  MOCK_CONST_METHOD1(VesselDisplacementFromParent,
-                     Displacement<AliceSun>(GUID const& vessel_guid));
+  MOCK_CONST_METHOD1(VesselFromParent,
+                     RelativeDegreesOfFreedom<AliceSun>(
+                         GUID const& vessel_guid));
 
-  MOCK_CONST_METHOD1(VesselParentRelativeVelocity,
-                     Velocity<AliceSun>(GUID const& vessel_guid));
-
-  MOCK_CONST_METHOD1(CelestialDisplacementFromParent,
-                     Displacement<AliceSun>(Index const celestial_index));
-
-  MOCK_CONST_METHOD1(CelestialParentRelativeVelocity,
-                     Velocity<AliceSun>(Index const celestial_index));
+  MOCK_CONST_METHOD1(CelestialFromParent,
+                     RelativeDegreesOfFreedom<AliceSun>(
+                         Index const celestial_index));
 
   MOCK_CONST_METHOD3(RenderedVesselTrajectory,
                      RenderedTrajectory<World>(
