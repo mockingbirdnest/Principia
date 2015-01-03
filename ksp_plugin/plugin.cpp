@@ -200,16 +200,16 @@ void Plugin::SynchronizeBubbleHistories() {
   DegreesOfFreedom<Barycentric> const& centre_of_mass =
       bubble_.centre_of_mass_trajectory().last().degrees_of_freedom();
   for (Vessel* vessel : bubble_.vessels()) {
-    RelativeDegreesOfFreedom<Barycentric> const& relative_degrees_of_freedom =
-        bubble_.degrees_of_freedom_relative_to_centre_of_mass(vessel);
+    RelativeDegreesOfFreedom<Barycentric> const& from_centre_of_mass =
+        bubble_.from_centre_of_mass(vessel);
     if (vessel->is_synchronized()) {
       vessel->mutable_history()->Append(
           HistoryTime(),
-          centre_of_mass + relative_degrees_of_freedom);
+          centre_of_mass + from_centre_of_mass);
     } else {
       vessel->CreateHistoryAndForkProlongation(
           HistoryTime(),
-          centre_of_mass + relative_degrees_of_freedom);
+          centre_of_mass + from_centre_of_mass);
       CHECK(unsynchronized_vessels_.erase(vessel));
     }
     CHECK(dirty_vessels_.erase(vessel));
@@ -261,11 +261,11 @@ void Plugin::EvolveProlongationsAndBubble(Instant const& t) {
     DegreesOfFreedom<Barycentric> const& centre_of_mass =
         bubble_.centre_of_mass_trajectory().last().degrees_of_freedom();
     for (Vessel* vessel : bubble_.vessels()) {
-      RelativeDegreesOfFreedom<Barycentric> const& relative_degrees_of_freedom =
-          bubble_.degrees_of_freedom_relative_to_centre_of_mass(vessel);
+      RelativeDegreesOfFreedom<Barycentric> const& from_centre_of_mass =
+          bubble_.from_centre_of_mass(vessel);
       vessel->mutable_prolongation()->Append(
           t,
-          centre_of_mass + relative_degrees_of_freedom);
+          centre_of_mass + from_centre_of_mass);
     }
   }
 }

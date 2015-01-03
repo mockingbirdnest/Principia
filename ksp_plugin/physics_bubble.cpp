@@ -185,13 +185,12 @@ std::vector<Vessel*> PhysicsBubble::vessels() const {
 }
 
 RelativeDegreesOfFreedom<Barycentric> const&
-PhysicsBubble::degrees_of_freedom_relative_to_centre_of_mass(
-    Vessel const* const vessel) const {
+PhysicsBubble::from_centre_of_mass(Vessel const* const vessel) const {
   CHECK(!empty()) << "Empty bubble";
-  CHECK(current_->degrees_of_freedom_relative_to_centre_of_mass != nullptr);
+  CHECK(current_->from_centre_of_mass != nullptr);
   auto const it = 
-      current_->degrees_of_freedom_relative_to_centre_of_mass->find(vessel);
-  CHECK(it != current_->degrees_of_freedom_relative_to_centre_of_mass->end());
+      current_->from_centre_of_mass->find(vessel);
+  CHECK(it != current_->from_centre_of_mass->end());
   return it->second;
 }
 
@@ -235,7 +234,7 @@ void PhysicsBubble::ComputeNextVesselOffsets(
     FullState* next) {
   VLOG(1) << __FUNCTION__;
   CHECK_NOTNULL(next);
-  next->degrees_of_freedom_relative_to_centre_of_mass =
+  next->from_centre_of_mass =
       std::make_unique<std::map<Vessel const* const,
                                 RelativeDegreesOfFreedom<Barycentric>>>();
   VLOG(1) << NAMED(next->vessels.size());
@@ -249,13 +248,13 @@ void PhysicsBubble::ComputeNextVesselOffsets(
     }
     DegreesOfFreedom<World> const vessel_degrees_of_freedom =
         vessel_calculator.Get();
-    auto const degrees_of_freedom_relative_to_centre_of_mass =
+    auto const from_centre_of_mass =
         planetarium_rotation.Inverse()(
             Identity<World, WorldSun>()(
                 vessel_degrees_of_freedom - *next->centre_of_mass));
-    VLOG(1) << NAMED(degrees_of_freedom_relative_to_centre_of_mass);
-    next->degrees_of_freedom_relative_to_centre_of_mass->emplace(
-        vessel, degrees_of_freedom_relative_to_centre_of_mass);
+    VLOG(1) << NAMED(from_centre_of_mass);
+    next->from_centre_of_mass->emplace(
+        vessel, from_centre_of_mass);
   }
 }
 

@@ -154,13 +154,13 @@ class PhysicsBubbleTest : public testing::Test {
 
   void CheckOneVesselDegreesOfFreedom() {
     // Since we have only one vessel, it is at the centre of mass of the bubble.
-    RelativeDegreesOfFreedom<Barycentric> const& relative_degrees_of_freedom =
-        bubble_.degrees_of_freedom_relative_to_centre_of_mass(&vessel1_);
-    EXPECT_THAT(relative_degrees_of_freedom.displacement(),
+    RelativeDegreesOfFreedom<Barycentric> const& from_centre_of_mass =
+        bubble_.from_centre_of_mass(&vessel1_);
+    EXPECT_THAT(from_centre_of_mass.displacement(),
                 Componentwise(VanishesBefore(1 * SIUnit<Length>(), 0),
                               VanishesBefore(1 * SIUnit<Length>(), 0),
                               VanishesBefore(1 * SIUnit<Length>(), 0)));
-    EXPECT_THAT(relative_degrees_of_freedom.velocity(),
+    EXPECT_THAT(from_centre_of_mass.velocity(),
                 Componentwise(VanishesBefore(1 * SIUnit<Speed>(), 0),
                               VanishesBefore(1 * SIUnit<Speed>(), 0),
                               VanishesBefore(1 * SIUnit<Speed>(), 0)));
@@ -195,11 +195,11 @@ class PhysicsBubbleTest : public testing::Test {
     Velocity<World> const cdm_velocity({17546.0 / 89.0 * SIUnit<Speed>(),
                                         17635.0 / 89.0 * SIUnit<Speed>(),
                                         17724.0 / 89.0 * SIUnit<Speed>()});
-    RelativeDegreesOfFreedom<Barycentric> const& relative_degrees_of_freedom1 =
-        bubble_.degrees_of_freedom_relative_to_centre_of_mass(&vessel1_);
-    RelativeDegreesOfFreedom<Barycentric> const& relative_degrees_of_freedom2 =
-        bubble_.degrees_of_freedom_relative_to_centre_of_mass(&vessel2_);
-    EXPECT_THAT(relative_degrees_of_freedom1.displacement(),
+    RelativeDegreesOfFreedom<Barycentric> const& from_centre_of_mass1 =
+        bubble_.from_centre_of_mass(&vessel1_);
+    RelativeDegreesOfFreedom<Barycentric> const& from_centre_of_mass2 =
+        bubble_.from_centre_of_mass(&vessel2_);
+    EXPECT_THAT(from_centre_of_mass1.displacement(),
                 AlmostEquals(Displacement<Barycentric>(
                     {15 * SIUnit<Length>() -
                         cdm_position.coordinates().y,
@@ -207,7 +207,7 @@ class PhysicsBubbleTest : public testing::Test {
                         cdm_position.coordinates().x,
                      16 * SIUnit<Length>() -
                         cdm_position.coordinates().z}), 1));
-    EXPECT_THAT(relative_degrees_of_freedom2.displacement(),
+    EXPECT_THAT(from_centre_of_mass2.displacement(),
                 AlmostEquals(Displacement<Barycentric>(
                     {25 * SIUnit<Length>() -
                         cdm_position.coordinates().y,
@@ -215,7 +215,7 @@ class PhysicsBubbleTest : public testing::Test {
                         cdm_position.coordinates().x,
                      26 * SIUnit<Length>() -
                         cdm_position.coordinates().z}), 2));
-    EXPECT_THAT(relative_degrees_of_freedom1.velocity(),
+    EXPECT_THAT(from_centre_of_mass1.velocity(),
                 AlmostEquals(Velocity<Barycentric>(
                     {2765.0 / 23.0 * SIUnit<Speed>() -
                         cdm_velocity.coordinates().y,
@@ -223,7 +223,7 @@ class PhysicsBubbleTest : public testing::Test {
                         cdm_velocity.coordinates().x,
                      2788.0 / 23.0 * SIUnit<Speed>() -
                         cdm_velocity.coordinates().z}), 1));
-    EXPECT_THAT(relative_degrees_of_freedom2.velocity(),
+    EXPECT_THAT(from_centre_of_mass2.velocity(),
                 AlmostEquals(Velocity<Barycentric>(
                     {7435.0 / 33.0 * SIUnit<Speed>() -
                         cdm_velocity.coordinates().y,
@@ -279,7 +279,7 @@ TEST_F(PhysicsBubbleDeathTest, EmptyError) {
     bubble_.vessels();
   }, "Empty bubble");
   EXPECT_DEATH({
-    bubble_.degrees_of_freedom_relative_to_centre_of_mass(&vessel1_);
+    bubble_.from_centre_of_mass(&vessel1_);
   }, "Empty bubble");
   EXPECT_DEATH({
     bubble_.centre_of_mass_trajectory();

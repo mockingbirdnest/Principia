@@ -69,8 +69,7 @@ class PhysicsBubble {
 
   // Selectors for the data in |current_|.
   std::vector<Vessel*> vessels() const;
-  RelativeDegreesOfFreedom<Barycentric> const&
-  degrees_of_freedom_relative_to_centre_of_mass(
+  RelativeDegreesOfFreedom<Barycentric> const& from_centre_of_mass(
       Vessel const* const vessel) const;
   Trajectory<Barycentric> const& centre_of_mass_trajectory() const;
   Trajectory<Barycentric>* mutable_centre_of_mass_trajectory() const;
@@ -93,8 +92,7 @@ class PhysicsBubble {
     std::unique_ptr<DegreesOfFreedom<World>> centre_of_mass;
     std::unique_ptr<Trajectory<Barycentric>> centre_of_mass_trajectory;
     std::unique_ptr<std::map<Vessel const* const,
-                    RelativeDegreesOfFreedom<Barycentric>>>
-        degrees_of_freedom_relative_to_centre_of_mass;
+                    RelativeDegreesOfFreedom<Barycentric>>> from_centre_of_mass;
     std::unique_ptr<Displacement<World>> displacement_correction;
     std::unique_ptr<Velocity<World>> velocity_correction;
   };
