@@ -154,16 +154,14 @@ class PhysicsBubbleTest : public testing::Test {
 
   void CheckOneVesselDegreesOfFreedom() {
     // Since we have only one vessel, it is at the centre of mass of the bubble.
-    RelativeDegreesOfFreedom<Barycentric> const& from_centre_of_mass =
-        bubble_.from_centre_of_mass(&vessel1_);
-    EXPECT_THAT(from_centre_of_mass.displacement(),
-                Componentwise(VanishesBefore(1 * SIUnit<Length>(), 0),
-                              VanishesBefore(1 * SIUnit<Length>(), 0),
-                              VanishesBefore(1 * SIUnit<Length>(), 0)));
-    EXPECT_THAT(from_centre_of_mass.velocity(),
-                Componentwise(VanishesBefore(1 * SIUnit<Speed>(), 0),
-                              VanishesBefore(1 * SIUnit<Speed>(), 0),
-                              VanishesBefore(1 * SIUnit<Speed>(), 0)));
+    EXPECT_THAT(bubble_.from_centre_of_mass(&vessel1_),
+                Componentwise(
+                    Componentwise(VanishesBefore(1 * SIUnit<Length>(), 0),
+                                  VanishesBefore(1 * SIUnit<Length>(), 0),
+                                  VanishesBefore(1 * SIUnit<Length>(), 0)),
+                    Componentwise(VanishesBefore(1 * SIUnit<Speed>(), 0),
+                                  VanishesBefore(1 * SIUnit<Speed>(), 0),
+                                  VanishesBefore(1 * SIUnit<Speed>(), 0))));
 
     // The trajectory of the centre of mass has one point which matches that
     // of the vessel.
@@ -195,42 +193,38 @@ class PhysicsBubbleTest : public testing::Test {
     Velocity<World> const cdm_velocity({17546.0 / 89.0 * SIUnit<Speed>(),
                                         17635.0 / 89.0 * SIUnit<Speed>(),
                                         17724.0 / 89.0 * SIUnit<Speed>()});
-    RelativeDegreesOfFreedom<Barycentric> const& from_centre_of_mass1 =
-        bubble_.from_centre_of_mass(&vessel1_);
-    RelativeDegreesOfFreedom<Barycentric> const& from_centre_of_mass2 =
-        bubble_.from_centre_of_mass(&vessel2_);
-    EXPECT_THAT(from_centre_of_mass1.displacement(),
-                AlmostEquals(Displacement<Barycentric>(
-                    {15 * SIUnit<Length>() -
-                        cdm_position.coordinates().y,
-                     -14 * SIUnit<Length>() +
-                        cdm_position.coordinates().x,
-                     16 * SIUnit<Length>() -
-                        cdm_position.coordinates().z}), 1));
-    EXPECT_THAT(from_centre_of_mass2.displacement(),
-                AlmostEquals(Displacement<Barycentric>(
-                    {25 * SIUnit<Length>() -
-                        cdm_position.coordinates().y,
-                     -24 * SIUnit<Length>() +
-                        cdm_position.coordinates().x,
-                     26 * SIUnit<Length>() -
-                        cdm_position.coordinates().z}), 2));
-    EXPECT_THAT(from_centre_of_mass1.velocity(),
-                AlmostEquals(Velocity<Barycentric>(
-                    {2765.0 / 23.0 * SIUnit<Speed>() -
-                        cdm_velocity.coordinates().y,
-                     -2742.0 / 23.0 * SIUnit<Speed>() +
-                        cdm_velocity.coordinates().x,
-                     2788.0 / 23.0 * SIUnit<Speed>() -
-                        cdm_velocity.coordinates().z}), 1));
-    EXPECT_THAT(from_centre_of_mass2.velocity(),
-                AlmostEquals(Velocity<Barycentric>(
-                    {7435.0 / 33.0 * SIUnit<Speed>() -
-                        cdm_velocity.coordinates().y,
-                     -7402.0 / 33.0 * SIUnit<Speed>() +
-                        cdm_velocity.coordinates().x,
-                     7468.0 / 33.0 * SIUnit<Speed>() -
-                        cdm_velocity.coordinates().z}), 2));
+    EXPECT_THAT(bubble_.from_centre_of_mass(&vessel1_),
+                Componentwise(
+                    AlmostEquals(Displacement<Barycentric>(
+                        {15 * SIUnit<Length>() -
+                            cdm_position.coordinates().y,
+                         -14 * SIUnit<Length>() +
+                            cdm_position.coordinates().x,
+                         16 * SIUnit<Length>() -
+                            cdm_position.coordinates().z}), 1),
+                    AlmostEquals(Velocity<Barycentric>(
+                        {2765.0 / 23.0 * SIUnit<Speed>() -
+                            cdm_velocity.coordinates().y,
+                         -2742.0 / 23.0 * SIUnit<Speed>() +
+                            cdm_velocity.coordinates().x,
+                         2788.0 / 23.0 * SIUnit<Speed>() -
+                            cdm_velocity.coordinates().z}), 1)));
+    EXPECT_THAT(bubble_.from_centre_of_mass(&vessel2_),
+                Componentwise(
+                    AlmostEquals(Displacement<Barycentric>(
+                        {25 * SIUnit<Length>() -
+                            cdm_position.coordinates().y,
+                         -24 * SIUnit<Length>() +
+                            cdm_position.coordinates().x,
+                         26 * SIUnit<Length>() -
+                            cdm_position.coordinates().z}), 2),
+                    AlmostEquals(Velocity<Barycentric>(
+                        {7435.0 / 33.0 * SIUnit<Speed>() -
+                            cdm_velocity.coordinates().y,
+                         -7402.0 / 33.0 * SIUnit<Speed>() +
+                            cdm_velocity.coordinates().x,
+                         7468.0 / 33.0 * SIUnit<Speed>() -
+                            cdm_velocity.coordinates().z}), 2)));
 
     // The trajectory of the centre of mass has only one point which is at the
     // barycentre of the trajectories of the vessels.
