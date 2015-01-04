@@ -116,8 +116,8 @@ class PhysicsBubble {
   // Returns the parts common to |current_| and |next|.  The returned vector
   // contains pair of pointers to parts (current_part, next_part) for all parts
   // common to the two bubbles
-  std::vector<PhysicsBubble::PartCorrespondence>
-  PhysicsBubble::ComputeCommonParts(FullState const& next);
+  std::vector<PhysicsBubble::PartCorrespondence> ComputeCommonParts(
+      FullState const& next);
 
   // Returns the intrinsic acceleration measured on the parts that are common to
   // the current and next bubbles.

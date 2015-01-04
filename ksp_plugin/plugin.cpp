@@ -584,6 +584,7 @@ Velocity<World> Plugin::VesselWorldVelocity(
        relative_to_parent.displacement()) / Radian +
       relative_to_parent.velocity()) + parent_world_velocity;
 }
+
 void Plugin::AddVesselToNextPhysicsBubble(
     GUID const& vessel_guid,
     std::vector<IdAndOwnedPart> parts) {
@@ -611,7 +612,6 @@ Velocity<World> Plugin::BubbleVelocityCorrection(
   VLOG_AND_RETURN(1, bubble_.VelocityCorrection(PlanetariumRotation(),
                                                 reference_body));
 }
-
 
 }  // namespace ksp_plugin
 }  // namespace principia
