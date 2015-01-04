@@ -15,6 +15,7 @@
 #include "physics/mock_n_body_system.hpp"
 #include "quantities/si.hpp"
 #include "testing_utilities/almost_equals.hpp"
+#include "testing_utilities/componentwise.hpp"
 #include "testing_utilities/numerics.hpp"
 #include "testing_utilities/solar_system.hpp"
 
@@ -30,9 +31,10 @@ using principia::si::Minute;
 using principia::si::Radian;
 using principia::si::AstronomicalUnit;
 using principia::testing_utilities::AbsoluteError;
-using principia::testing_utilities::RelativeError;
 using principia::testing_utilities::AlmostEquals;
+using principia::testing_utilities::Componentwise;
 using principia::testing_utilities::ICRFJ2000Ecliptic;
+using principia::testing_utilities::RelativeError;
 using principia::testing_utilities::SolarSystem;
 using testing::AllOf;
 using testing::Contains;
@@ -228,14 +230,14 @@ TEST_F(PluginTest, Initialization) {
             last().degrees_of_freedom() -
         solar_system_->trajectories()[parent_index]->
             last().degrees_of_freedom();
-    EXPECT_THAT(from_parent.displacement(),
-                AlmostEquals(looking_glass_.Inverse()(
-                        plugin_->CelestialFromParent(index).displacement()),
-                    1, 216320));
-    EXPECT_THAT(from_parent.velocity(),
-                AlmostEquals(looking_glass_.Inverse()(
-                        plugin_->CelestialFromParent(index).velocity()),
-                    0, 936));
+    EXPECT_THAT(from_parent,
+                Componentwise(
+                    AlmostEquals(looking_glass_.Inverse()(
+                            plugin_->CelestialFromParent(index).displacement()),
+                        1, 216320),
+                    AlmostEquals(looking_glass_.Inverse()(
+                            plugin_->CelestialFromParent(index).velocity()),
+                        0, 936)));
   }
 }
 
@@ -383,10 +385,10 @@ TEST_F(PluginTest, VesselInsertionAtInitialization) {
                                 RelativeDegreesOfFreedom<AliceSun>(
                                     satellite_initial_displacement_,
                                     satellite_initial_velocity_));
-  EXPECT_THAT(plugin_->VesselFromParent(guid).displacement(),
-              AlmostEquals(satellite_initial_displacement_, 7460));
-  EXPECT_THAT(plugin_->VesselFromParent(guid).velocity(),
-              AlmostEquals(satellite_initial_velocity_, 3));
+  EXPECT_THAT(plugin_->VesselFromParent(guid),
+              Componentwise(
+                  AlmostEquals(satellite_initial_displacement_, 7460),
+                  AlmostEquals(satellite_initial_velocity_, 3)));
 }
 
 // Checks that the plugin correctly uses its 10-second-step history even when
@@ -797,13 +799,12 @@ TEST_F(PluginTest, UpdateCelestialHierarchy) {
         solar_system_->trajectories()[SolarSystem::kSun]->
             last().degrees_of_freedom();
     EXPECT_THAT(
-        from_parent.displacement(),
-        AlmostEquals(looking_glass_.Inverse()(
-            plugin_->CelestialFromParent(index).displacement()), 1, 5056));
-    EXPECT_THAT(
-        from_parent.velocity(),
-        AlmostEquals(looking_glass_.Inverse()(
-            plugin_->CelestialFromParent(index).velocity()), 1, 936));
+        from_parent,
+        Componentwise(
+            AlmostEquals(looking_glass_.Inverse()(
+                plugin_->CelestialFromParent(index).displacement()), 1, 5056),
+            AlmostEquals(looking_glass_.Inverse()(
+                plugin_->CelestialFromParent(index).velocity()), 1, 936)));
   }
 }
 
