@@ -52,8 +52,6 @@ ACTION_TEMPLATE(FillUniquePtr,
   std::tr1::get<k>(args)->reset(ptr);
 }
 
-}  // namespace
-
 class InterfaceTest : public testing::Test {
  protected:
   InterfaceTest()
@@ -334,3 +332,5 @@ TEST_F(InterfaceTest, LineAndIterator) {
   principia__DeleteLineAndIterator(&line_and_iterator);
   EXPECT_THAT(line_and_iterator, IsNull());
 }
+
+}  // namespace

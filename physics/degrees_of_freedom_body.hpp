@@ -19,12 +19,12 @@ DegreesOfFreedom<Frame>::DegreesOfFreedom(
 
 template<typename Frame>
 Position<Frame> const& DegreesOfFreedom<Frame>::position() const {
-  return t1_;
+  return this->t1_;
 }
 
 template<typename Frame>
 Velocity<Frame> const& DegreesOfFreedom<Frame>::velocity() const {
-  return t2_;
+  return this->t2_;
 }
 
 template<typename Frame>
@@ -41,12 +41,12 @@ RelativeDegreesOfFreedom<Frame>::RelativeDegreesOfFreedom(
 template<typename Frame>
 Displacement<Frame> const&
 RelativeDegreesOfFreedom<Frame>::displacement() const {
-  return t1_;
+  return this->t1_;
 }
 
 template<typename Frame>
 Velocity<Frame> const& RelativeDegreesOfFreedom<Frame>::velocity() const {
-  return t2_;
+  return this->t2_;
 }
 
 template<typename Frame, typename Weight>

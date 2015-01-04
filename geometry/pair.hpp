@@ -154,8 +154,8 @@ class Pair {
   template<typename Scalar, typename T1, typename T2>
   friend typename enable_if_vector<
       Pair<T1, T2>,
-      Pair<decltype(std::declval<T1>() * std::declval<Scalar>()),
-           decltype(std::declval<T2>() * std::declval<Scalar>())>>::type
+      Pair<decltype(std::declval<T1>() / std::declval<Scalar>()),
+           decltype(std::declval<T2>() / std::declval<Scalar>())>>::type
   operator/(Pair<T1, T2> const& left, Scalar const right);
 
   template<typename T1, typename T2>
