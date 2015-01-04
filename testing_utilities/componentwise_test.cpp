@@ -3,18 +3,23 @@
 #include <limits>
 
 #include "geometry/grassmann.hpp"
+#include "geometry/pair.hpp"
 #include "geometry/r3_element.hpp"
 #include "glog/logging.h"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
+#include "quantities/named_quantities.hpp"
 #include "quantities/quantities.hpp"
 #include "quantities/si.hpp"
 #include "testing_utilities/almost_equals.hpp"
 #include "testing_utilities/vanishes_before.hpp"
 
 using principia::geometry::Bivector;
+using principia::geometry::Pair;
 using principia::geometry::R3Element;
 using principia::geometry::Vector;
+using principia::quantities::Action;
+using principia::quantities::Winding;
 using principia::quantities::Length;
 using principia::si::Metre;
 using testing::Eq;
@@ -53,6 +58,26 @@ TEST_F(ComponentwiseTest, Grassmann) {
   EXPECT_THAT(b, Componentwise(AlmostEquals(1.0 * Metre, 4504),
                                VanishesBefore(1.0 * Metre, 450360),
                                Eq(3.5 * Metre)));
+}
+
+TEST_F(ComponentwiseTest, Pair) {
+  using VV = Pair<Vector<Action, World>, Vector<Winding, World>>;
+  VV vv(Vector<Action, World>({(1.0 + 1.0E-12) * SIUnit<Action>(),
+                                1.0E-10 *  SIUnit<Action>(),
+                                3.5 *  SIUnit<Action>()}),
+        Vector<Winding, World>({(1.0 + 1.0E-12) * SIUnit<Winding>(),
+                                (2.0 + 1.0E-10) *  SIUnit<Winding>(),
+                                 3.5 *  SIUnit<Winding>()}));
+  EXPECT_THAT(vv, Componentwise(
+                      Componentwise(
+                          AlmostEquals(1.0 * SIUnit<Action>(), 4504),
+                          VanishesBefore(1.0 * SIUnit<Action>(), 450360),
+                          Eq(3.5 * SIUnit<Action>())),
+                      AlmostEquals(
+                          Vector<Winding, World>({1.0 * SIUnit<Winding>(),
+                                                  2.0 *  SIUnit<Winding>(),
+                                                  3.5 *  SIUnit<Winding>()}),
+                          225180)));
 }
 
 }  // namespace testing_utilities
