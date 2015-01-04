@@ -133,7 +133,7 @@ class Pair {
 
   // This is needed for testing.
   template<typename T1Matcher, typename T2Matcher>
-  class testing_utilities::ComponentwiseMatcher2;
+  friend class testing_utilities::ComponentwiseMatcher2;
 
   template<typename T1, typename T2>
   friend typename vector_of<Pair<T1, T2>>::type operator-(

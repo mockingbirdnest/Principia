@@ -63,15 +63,14 @@ TEST_F(ComponentwiseTest, Grassmann) {
 }
 
 TEST_F(ComponentwiseTest, Pair) {
-  using PV = Pair<Point<Vector<Action, World>>, Vector<Winding, World>>;
-  PV pv(Point<Vector<Action, World>>(
-            Vector<Action, World>({(1.0 + 1.0E-12) * SIUnit<Action>(),
-                                    1.0E-10 *  SIUnit<Action>(),
-                                    3.5 *  SIUnit<Action>()})),
+  using VV = Pair<Vector<Action, World>, Vector<Winding, World>>;
+  VV vv(Vector<Action, World>({(1.0 + 1.0E-12) * SIUnit<Action>(),
+                                1.0E-10 *  SIUnit<Action>(),
+                                3.5 *  SIUnit<Action>()}),
         Vector<Winding, World>({(1.0 + 1.0E-12) * SIUnit<Winding>(),
                                 (2.0 + 1.0E-10) *  SIUnit<Winding>(),
                                  3.5 *  SIUnit<Winding>()}));
-  EXPECT_THAT(pv, Componentwise(
+  EXPECT_THAT(vv, Componentwise(
                       Componentwise(
                           AlmostEquals(1.0 * SIUnit<Action>(), 4504),
                           VanishesBefore(1.0 * SIUnit<Action>(), 450360),
@@ -80,7 +79,7 @@ TEST_F(ComponentwiseTest, Pair) {
                           Vector<Winding, World>({1.0 * SIUnit<Winding>(),
                                                   2.0 *  SIUnit<Winding>(),
                                                   3.5 *  SIUnit<Winding>()}),
-                          3)));
+                          225180)));
 }
 
 }  // namespace testing_utilities
