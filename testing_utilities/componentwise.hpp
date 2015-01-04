@@ -40,6 +40,8 @@ class ComponentwiseMatcher2 {
                                  T2Matcher const& t2_matcher);
   ~ComponentwiseMatcher2() = default;
 
+  // Note that at this point this is only useful for vector/vector pairs as we
+  // don't have matchers for |Point|.
   template<typename T1, typename T2>
   bool MatchAndExplain(geometry::Pair<T1, T2> const& actual,
                        testing::MatchResultListener* listener) const;

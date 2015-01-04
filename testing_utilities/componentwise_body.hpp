@@ -20,9 +20,11 @@ namespace {
 // what |T| is because the class |ComponentwiseMatcher| and the factory
 // |Componentwise| cannot take it as a parameter (the template deduction would
 // fail and the usages would get very ugly).  To make things worse, the actual
-// type of the matcher depends on whether it polymorphic, monomorphic or
+// type of the matcher depends on whether it is polymorphic, monomorphic or
 // some other internal helper.  We obtain |T| by peeling away the layers of
 // templates around it.
+// TODO(phl): This is horribly complicated.  One day I'll understand how the
+// matchers work.
 
 template<typename T>
 class MatcherParameterType {
@@ -36,19 +38,23 @@ class MatcherParameterType<U<T>> {
   using type = typename MatcherParameterType<T>::type;
 };
 
+// |type| must be a type for which we implement MatchAndExplain.  We don't care
+// which one exactly, since |MatcherParameterType| is only used for describing
+// the matchers.  So we pick the simplest, |R3Element|.
+template<typename XMatcher, typename YMatcher, typename ZMatcher>
+class MatcherParameterType<
+          ComponentwiseMatcher3<XMatcher, YMatcher, ZMatcher>> {
+ public:
+  using type =
+      geometry::R3Element<typename MatcherParameterType<XMatcher>::type>;
+};
+
 // And now a case that we *don't* want to peel away.  Yes, this smells a bit.
 template<typename T>
 class MatcherParameterType<Quantity<T>> {
  public:
   using type = Quantity<T>;
 };
-
-//template<typename XMatcher, typename YMatcher, typename ZMatcher>
-//class MatcherParameterType<ComponentwiseMatcher3<XMatcher, YMatcher, ZMatcher>> {
-// public:
-//  using type = ComponentwiseMatcher3<XMatcher, YMatcher, ZMatcher>;
-//};
-
 
 }  // namespace
 template<typename T1Matcher, typename T2Matcher>
@@ -98,22 +104,22 @@ template<typename T1Matcher, typename T2Matcher>
 void ComponentwiseMatcher2<T1Matcher, T2Matcher>::DescribeTo(
     std::ostream* out) const {
   *out << "t1 ";
-  //Matcher<typename MatcherParameterType<T1Matcher>::type>(
-  //    t1_matcher_).DescribeTo(out);
+  Matcher<typename MatcherParameterType<T1Matcher>::type>(
+      t1_matcher_).DescribeTo(out);
   *out << " and t2 ";
-  //Matcher<typename MatcherParameterType<T2Matcher>::type>(
-  //    t2_matcher_).DescribeTo(out);
+  Matcher<typename MatcherParameterType<T2Matcher>::type>(
+      t2_matcher_).DescribeTo(out);
 }
 
 template<typename T1Matcher, typename T2Matcher>
 void ComponentwiseMatcher2<T1Matcher, T2Matcher>::DescribeNegationTo(
     std::ostream* out) const {
   *out << "t2 ";
-  //Matcher<typename MatcherParameterType<T1Matcher>::type>(
-  //    t1_matcher_).DescribeNegationTo(out);
+  Matcher<typename MatcherParameterType<T1Matcher>::type>(
+      t1_matcher_).DescribeNegationTo(out);
   *out << " or t2 ";
-  //Matcher<typename MatcherParameterType<T2Matcher>::type>(
-  //    t2_matcher_).DescribeNegationTo(out);
+  Matcher<typename MatcherParameterType<T2Matcher>::type>(
+      t2_matcher_).DescribeNegationTo(out);
 }
 
 template<typename XMatcher, typename YMatcher, typename ZMatcher>
