@@ -44,19 +44,73 @@ class MatcherParameterType<Quantity<T>> {
 };
 
 }  // namespace
+template<typename T1Matcher, typename T2Matcher>
+testing::PolymorphicMatcher<ComponentwiseMatcher2<T1Matcher, T2Matcher>>
+Componentwise(T1Matcher const& t1_matcher,
+              T2Matcher const& t2_matcher) {
+  return testing::MakePolymorphicMatcher(
+      ComponentwiseMatcher2<T1Matcher, T2Matcher>(t1_matcher, t2_matcher));
+}
 
 template<typename XMatcher, typename YMatcher, typename ZMatcher>
-testing::PolymorphicMatcher<ComponentwiseMatcher<XMatcher, YMatcher, ZMatcher>>
+testing::PolymorphicMatcher<ComponentwiseMatcher3<XMatcher, YMatcher, ZMatcher>>
 Componentwise(XMatcher const& x_matcher,
               YMatcher const& y_matcher,
               ZMatcher const& z_matcher) {
   return testing::MakePolymorphicMatcher(
-      ComponentwiseMatcher<XMatcher, YMatcher, ZMatcher>(
+      ComponentwiseMatcher3<XMatcher, YMatcher, ZMatcher>(
           x_matcher, y_matcher, z_matcher));
 }
 
+template<typename T1Matcher, typename T2Matcher>
+ComponentwiseMatcher2<T1Matcher, T2Matcher>::ComponentwiseMatcher2(
+    T1Matcher const& t1_matcher,
+    T2Matcher const& t2_matcher)
+    : t1_matcher_(t1_matcher),
+      t2_matcher_(t2_matcher) {}
+
+template<typename T1Matcher, typename T2Matcher>
+template<typename T1, typename T2>
+bool ComponentwiseMatcher2<T1Matcher, T2Matcher>::MatchAndExplain(
+    geometry::Pair<T1, T2> const& actual,
+    testing::MatchResultListener* listener) const {
+  bool const t1_matches =  Matcher<T1>(t1_matcher_).MatchAndExplain(
+                              actual.t1_, listener);
+  if (!t1_matches) {
+    *listener << " in the t1 coordinate; ";
+  }
+  bool const t2_matches =  Matcher<T2>(t2_matcher_).MatchAndExplain(
+                              actual.t2_, listener);
+  if (!t2_matches) {
+    *listener << " in the t2 coordinate; ";
+  }
+  return t1_matches && t2_matches;
+}
+
+template<typename T1Matcher, typename T2Matcher>
+void ComponentwiseMatcher2<T1Matcher, T2Matcher>::DescribeTo(
+    std::ostream* out) const {
+  *out << "t1 ";
+  Matcher<typename MatcherParameterType<T1Matcher>::type>(
+      t1_matcher_).DescribeTo(out);
+  *out << " and t2 ";
+  Matcher<typename MatcherParameterType<T2Matcher>::type>(
+      t2_matcher_).DescribeTo(out);
+}
+
+template<typename T1Matcher, typename T2Matcher>
+void ComponentwiseMatcher2<T1Matcher, T2Matcher>::DescribeNegationTo(
+    std::ostream* out) const {
+  *out << "t2 ";
+  Matcher<typename MatcherParameterType<T1Matcher>::type>(
+      t1_matcher_).DescribeNegationTo(out);
+  *out << " or t2 ";
+  Matcher<typename MatcherParameterType<T2Matcher>::type>(
+      t2_matcher_).DescribeNegationTo(out);
+}
+
 template<typename XMatcher, typename YMatcher, typename ZMatcher>
-ComponentwiseMatcher<XMatcher, YMatcher, ZMatcher>::ComponentwiseMatcher(
+ComponentwiseMatcher3<XMatcher, YMatcher, ZMatcher>::ComponentwiseMatcher3(
     XMatcher const& x_matcher,
     YMatcher const& y_matcher,
     ZMatcher const& z_matcher)
@@ -66,7 +120,7 @@ ComponentwiseMatcher<XMatcher, YMatcher, ZMatcher>::ComponentwiseMatcher(
 
 template<typename XMatcher, typename YMatcher, typename ZMatcher>
 template<typename Scalar>
-bool ComponentwiseMatcher<XMatcher, YMatcher, ZMatcher>::MatchAndExplain(
+bool ComponentwiseMatcher3<XMatcher, YMatcher, ZMatcher>::MatchAndExplain(
     geometry::R3Element<Scalar> const& actual,
     testing::MatchResultListener* listener) const {
   bool const x_matches =  Matcher<Scalar>(x_matcher_).MatchAndExplain(
@@ -89,7 +143,7 @@ bool ComponentwiseMatcher<XMatcher, YMatcher, ZMatcher>::MatchAndExplain(
 
 template<typename XMatcher, typename YMatcher, typename ZMatcher>
 template<typename Scalar, typename Frame>
-bool ComponentwiseMatcher<XMatcher, YMatcher, ZMatcher>::
+bool ComponentwiseMatcher3<XMatcher, YMatcher, ZMatcher>::
 MatchAndExplain(geometry::Vector<Scalar, Frame> const& actual,
                 testing::MatchResultListener* listener) const {
   bool const x_matches =  Matcher<Scalar>(x_matcher_).MatchAndExplain(
@@ -112,7 +166,7 @@ MatchAndExplain(geometry::Vector<Scalar, Frame> const& actual,
 
 template<typename XMatcher, typename YMatcher, typename ZMatcher>
 template<typename Scalar, typename Frame>
-bool ComponentwiseMatcher<XMatcher, YMatcher, ZMatcher>::
+bool ComponentwiseMatcher3<XMatcher, YMatcher, ZMatcher>::
 MatchAndExplain(geometry::Bivector<Scalar, Frame> const& actual,
                 testing::MatchResultListener* listener) const {
   bool const x_matches =  Matcher<Scalar>(x_matcher_).MatchAndExplain(
@@ -134,7 +188,7 @@ MatchAndExplain(geometry::Bivector<Scalar, Frame> const& actual,
 }
 
 template<typename XMatcher, typename YMatcher, typename ZMatcher>
-void ComponentwiseMatcher<XMatcher, YMatcher, ZMatcher>::DescribeTo(
+void ComponentwiseMatcher3<XMatcher, YMatcher, ZMatcher>::DescribeTo(
     std::ostream* out) const {
   *out << "x ";
   Matcher<typename MatcherParameterType<XMatcher>::type>(
@@ -148,7 +202,7 @@ void ComponentwiseMatcher<XMatcher, YMatcher, ZMatcher>::DescribeTo(
 }
 
 template<typename XMatcher, typename YMatcher, typename ZMatcher>
-void ComponentwiseMatcher<XMatcher, YMatcher, ZMatcher>::DescribeNegationTo(
+void ComponentwiseMatcher3<XMatcher, YMatcher, ZMatcher>::DescribeNegationTo(
     std::ostream* out) const {
   *out << "x ";
   Matcher<typename MatcherParameterType<XMatcher>::type>(

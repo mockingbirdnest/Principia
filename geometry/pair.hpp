@@ -4,6 +4,12 @@
 #include "geometry/point.hpp"
 
 namespace principia {
+
+namespace testing_utilities {
+template<typename T1Matcher, typename T2Matcher>
+class ComponentwiseMatcher2;
+}  // namespace testing_utilities
+
 namespace geometry {
 
 template<typename T1, typename T2>
@@ -121,8 +127,13 @@ class Pair {
   template<typename T1, typename T2>
   friend class Pair;
 
+  // This is needed to make Pair mappable.
   template<typename Functor, typename T, typename>
   friend class base::Mappable;
+
+  // This is needed for testing.
+  template<typename T1Matcher, typename T2Matcher>
+  class testing_utilities::ComponentwiseMatcher2;
 
   template<typename T1, typename T2>
   friend typename vector_of<Pair<T1, T2>>::type operator-(

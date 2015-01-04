@@ -16,16 +16,16 @@ using principia::geometry::R3Element;
 namespace principia {
 namespace testing_utilities {
 
-template<typename QMatcher, typename PMatcher>
+template<typename T1Matcher, typename T2Matcher>
 class ComponentwiseMatcher2;
 
 template<typename XMatcher, typename YMatcher, typename ZMatcher>
 class ComponentwiseMatcher3;
 
-template<typename QMatcher, typename PMatcher>
-testing::PolymorphicMatcher<ComponentwiseMatcher2<QMatcher, PMatcher>>
-Componentwise(QMatcher const& q_matcher,
-              PMatcher const& p_matcher);
+template<typename T1Matcher, typename T2Matcher>
+testing::PolymorphicMatcher<ComponentwiseMatcher2<T1Matcher, T2Matcher>>
+Componentwise(T1Matcher const& t1_matcher,
+              T2Matcher const& t2_matcher);
 
 template<typename XMatcher, typename YMatcher, typename ZMatcher>
 testing::PolymorphicMatcher<ComponentwiseMatcher3<XMatcher, YMatcher, ZMatcher>>
@@ -33,11 +33,11 @@ Componentwise(XMatcher const& x_matcher,
               YMatcher const& y_matcher,
               ZMatcher const& z_matcher);
 
-template<typename QMatcher, typename PMatcher>
+template<typename T1Matcher, typename T2Matcher>
 class ComponentwiseMatcher2 {
  public:
-  explicit ComponentwiseMatcher2(QMatcher const& q_matcher,
-                                 PMatcher const& p_matcher);
+  explicit ComponentwiseMatcher2(T1Matcher const& t1_matcher,
+                                 T2Matcher const& t2_matcher);
   ~ComponentwiseMatcher2() = default;
 
   template<typename T1, typename T2>
@@ -48,8 +48,8 @@ class ComponentwiseMatcher2 {
   void DescribeNegationTo(std::ostream* out) const;
 
  private:
-  QMatcher const& q_matcher_;
-  PMatcher const& p_matcher_;
+  T1Matcher const& t1_matcher_;
+  T2Matcher const& t2_matcher_;
 };
 
 template<typename XMatcher, typename YMatcher, typename ZMatcher>
