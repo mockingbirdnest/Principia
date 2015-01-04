@@ -110,6 +110,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="macros.hpp" />
+    <ClInclude Include="mappable.hpp" />
     <ClInclude Include="not_null.hpp" />
     <ClInclude Include="not_null_body.hpp" />
     <ClInclude Include="unique_ptr_logging.hpp" />

@@ -34,8 +34,10 @@ using std::placeholders::_2;
 using std::placeholders::_3;
 using testing::ElementsAre;
 using testing::Eq;
-using testing::Pair;
 using testing::Ref;
+
+// Note that we cannot have a |using testing::Pair| here as it would conflict
+// with |principia::geometry::Pair|.
 
 namespace principia {
 namespace physics {
@@ -93,10 +95,10 @@ class TrajectoryTest : public testing::Test {
         DegreesOfFreedom<World> {
       CHECK_EQ(expected_trajectory, actual_trajectory);
       return {Position<World>(
-                  2 * (from_degrees_of_freedom.position -
+                  2 * (from_degrees_of_freedom.position() -
                        Position<World>(Vector<Length, World>(
                            {43 * Metre, 42 * Metre, 41 * Metre})))),
-              3 * from_degrees_of_freedom.velocity};
+              3 * from_degrees_of_freedom.velocity()};
     };
     massive_transform_ =
         std::bind(transform_, _1, _2, _3, massive_trajectory_.get());
@@ -153,10 +155,12 @@ TEST_F(TrajectoryTest, AppendSuccess) {
   std::map<Instant, Velocity<World>> const velocities =
       massive_trajectory_->Velocities();
   std::list<Instant> const times = massive_trajectory_->Times();
-  EXPECT_THAT(positions,
-              ElementsAre(Pair(t1_, q1_), Pair(t2_, q2_), Pair(t3_, q3_)));
-  EXPECT_THAT(velocities,
-              ElementsAre(Pair(t1_, p1_), Pair(t2_, p2_), Pair(t3_, p3_)));
+  EXPECT_THAT(positions, ElementsAre(testing::Pair(t1_, q1_),
+                                     testing::Pair(t2_, q2_),
+                                     testing::Pair(t3_, q3_)));
+  EXPECT_THAT(velocities, ElementsAre(testing::Pair(t1_, p1_),
+                                      testing::Pair(t2_, p2_),
+                                      testing::Pair(t3_, p3_)));
   EXPECT_THAT(times, ElementsAre(t1_, t2_, t3_));
   EXPECT_THAT(massive_trajectory_->body<MassiveBody>(), Ref(*massive_body_));
 }
@@ -180,21 +184,25 @@ TEST_F(TrajectoryTest, ForkSuccess) {
   std::map<Instant, Velocity<World>> velocities =
       massive_trajectory_->Velocities();
   std::list<Instant> times = massive_trajectory_->Times();
-  EXPECT_THAT(positions,
-              ElementsAre(Pair(t1_, q1_), Pair(t2_, q2_), Pair(t3_, q3_)));
-  EXPECT_THAT(velocities,
-              ElementsAre(Pair(t1_, p1_), Pair(t2_, p2_), Pair(t3_, p3_)));
+  EXPECT_THAT(positions, ElementsAre(testing::Pair(t1_, q1_),
+                                     testing::Pair(t2_, q2_),
+                                     testing::Pair(t3_, q3_)));
+  EXPECT_THAT(velocities, ElementsAre(testing::Pair(t1_, p1_),
+                                      testing::Pair(t2_, p2_),
+                                      testing::Pair(t3_, p3_)));
   EXPECT_THAT(times, ElementsAre(t1_, t2_, t3_));
   EXPECT_THAT(fork->body<MassiveBody>(), Ref(*massive_body_));
   positions = fork->Positions();
   velocities = fork->Velocities();
   times = fork->Times();
-  EXPECT_THAT(positions,
-              ElementsAre(Pair(t1_, q1_), Pair(t2_, q2_),
-                          Pair(t3_, q3_), Pair(t4_, q4_)));
-  EXPECT_THAT(velocities,
-              ElementsAre(Pair(t1_, p1_), Pair(t2_, p2_),
-                          Pair(t3_, p3_), Pair(t4_, p4_)));
+  EXPECT_THAT(positions, ElementsAre(testing::Pair(t1_, q1_),
+                                     testing::Pair(t2_, q2_),
+                                     testing::Pair(t3_, q3_),
+                                     testing::Pair(t4_, q4_)));
+  EXPECT_THAT(velocities, ElementsAre(testing::Pair(t1_, p1_),
+                                      testing::Pair(t2_, p2_),
+                                      testing::Pair(t3_, p3_),
+                                      testing::Pair(t4_, p4_)));
   EXPECT_THAT(times, ElementsAre(t1_, t2_, t3_, t4_));
   EXPECT_THAT(fork->body<MassiveBody>(), Ref(*massive_body_));
 }
@@ -231,21 +239,25 @@ TEST_F(TrajectoryTest, DeleteForkSuccess) {
   std::map<Instant, Velocity<World>> velocities =
       massive_trajectory_->Velocities();
   std::list<Instant> times = massive_trajectory_->Times();
-  EXPECT_THAT(positions,
-              ElementsAre(Pair(t1_, q1_), Pair(t2_, q2_), Pair(t3_, q3_)));
-  EXPECT_THAT(velocities,
-              ElementsAre(Pair(t1_, p1_), Pair(t2_, p2_), Pair(t3_, p3_)));
+  EXPECT_THAT(positions, ElementsAre(testing::Pair(t1_, q1_),
+                                     testing::Pair(t2_, q2_),
+                                     testing::Pair(t3_, q3_)));
+  EXPECT_THAT(velocities, ElementsAre(testing::Pair(t1_, p1_),
+                                      testing::Pair(t2_, p2_),
+                                      testing::Pair(t3_, p3_)));
   EXPECT_THAT(times, ElementsAre(t1_, t2_, t3_));
   EXPECT_THAT(fork1->body<MassiveBody>(), Ref(*massive_body_));
   positions = fork1->Positions();
   velocities = fork1->Velocities();
   times = fork1->Times();
-  EXPECT_THAT(positions,
-              ElementsAre(Pair(t1_, q1_), Pair(t2_, q2_),
-                          Pair(t3_, q3_), Pair(t4_, q4_)));
-  EXPECT_THAT(velocities,
-              ElementsAre(Pair(t1_, p1_), Pair(t2_, p2_),
-                          Pair(t3_, p3_), Pair(t4_, p4_)));
+  EXPECT_THAT(positions, ElementsAre(testing::Pair(t1_, q1_),
+                                     testing::Pair(t2_, q2_),
+                                     testing::Pair(t3_, q3_),
+                                     testing::Pair(t4_, q4_)));
+  EXPECT_THAT(velocities, ElementsAre(testing::Pair(t1_, p1_),
+                                      testing::Pair(t2_, p2_),
+                                      testing::Pair(t3_, p3_),
+                                      testing::Pair(t4_, p4_)));
   EXPECT_THAT(times, ElementsAre(t1_, t2_, t3_, t4_));
   EXPECT_THAT(fork1->body<MassiveBody>(), Ref(*massive_body_));
   massive_trajectory_.reset();
@@ -261,8 +273,8 @@ TEST_F(TrajectoryTest, LastSuccess) {
   massive_trajectory_->Append(t1_, *d1_);
   massive_trajectory_->Append(t2_, *d2_);
   massive_trajectory_->Append(t3_, *d3_);
-  EXPECT_EQ(q3_, massive_trajectory_->last().degrees_of_freedom().position);
-  EXPECT_EQ(p3_, massive_trajectory_->last().degrees_of_freedom().velocity);
+  EXPECT_EQ(q3_, massive_trajectory_->last().degrees_of_freedom().position());
+  EXPECT_EQ(p3_, massive_trajectory_->last().degrees_of_freedom().velocity());
   EXPECT_EQ(t3_, massive_trajectory_->last().time());
 }
 
@@ -302,38 +314,44 @@ TEST_F(TrajectoryTest, ForgetAfterSuccess) {
   std::map<Instant, Position<World>> positions = fork->Positions();
   std::map<Instant, Velocity<World>> velocities = fork->Velocities();
   std::list<Instant> times = fork->Times();
-  EXPECT_THAT(positions,
-              ElementsAre(Pair(t1_, q1_), Pair(t2_, q2_), Pair(t3_, q3_)));
-  EXPECT_THAT(velocities,
-              ElementsAre(Pair(t1_, p1_), Pair(t2_, p2_), Pair(t3_, p3_)));
+  EXPECT_THAT(positions, ElementsAre(testing::Pair(t1_, q1_),
+                                     testing::Pair(t2_, q2_),
+                                     testing::Pair(t3_, q3_)));
+  EXPECT_THAT(velocities, ElementsAre(testing::Pair(t1_, p1_),
+                                      testing::Pair(t2_, p2_),
+                                      testing::Pair(t3_, p3_)));
   EXPECT_THAT(times, ElementsAre(t1_, t2_, t3_));
 
   fork->ForgetAfter(t2_);
   positions = fork->Positions();
   velocities = fork->Velocities();
   times = fork->Times();
-  EXPECT_THAT(positions, ElementsAre(Pair(t1_, q1_), Pair(t2_, q2_)));
-  EXPECT_THAT(velocities, ElementsAre(Pair(t1_, p1_), Pair(t2_, p2_)));
+  EXPECT_THAT(positions, ElementsAre(testing::Pair(t1_, q1_),
+                                     testing::Pair(t2_, q2_)));
+  EXPECT_THAT(velocities, ElementsAre(testing::Pair(t1_, p1_),
+                                      testing::Pair(t2_, p2_)));
   EXPECT_THAT(times, ElementsAre(t1_, t2_));
-  EXPECT_EQ(q2_, fork->last().degrees_of_freedom().position);
-  EXPECT_EQ(p2_, fork->last().degrees_of_freedom().velocity);
+  EXPECT_EQ(q2_, fork->last().degrees_of_freedom().position());
+  EXPECT_EQ(p2_, fork->last().degrees_of_freedom().velocity());
   EXPECT_EQ(t2_, fork->last().time());
 
   positions = massive_trajectory_->Positions();
   velocities = massive_trajectory_->Velocities();
   times = massive_trajectory_->Times();
-  EXPECT_THAT(positions,
-              ElementsAre(Pair(t1_, q1_), Pair(t2_, q2_), Pair(t3_, q3_)));
-  EXPECT_THAT(velocities,
-              ElementsAre(Pair(t1_, p1_), Pair(t2_, p2_), Pair(t3_, p3_)));
+  EXPECT_THAT(positions, ElementsAre(testing::Pair(t1_, q1_),
+                                     testing::Pair(t2_, q2_),
+                                     testing::Pair(t3_, q3_)));
+  EXPECT_THAT(velocities, ElementsAre(testing::Pair(t1_, p1_),
+                                      testing::Pair(t2_, p2_),
+                                      testing::Pair(t3_, p3_)));
   EXPECT_THAT(times, ElementsAre(t1_, t2_, t3_));
 
   massive_trajectory_->ForgetAfter(t1_);
   positions = massive_trajectory_->Positions();
   velocities = massive_trajectory_->Velocities();
   times = massive_trajectory_->Times();
-  EXPECT_THAT(positions, ElementsAre(Pair(t1_, q1_)));
-  EXPECT_THAT(velocities, ElementsAre(Pair(t1_, p1_)));
+  EXPECT_THAT(positions, ElementsAre(testing::Pair(t1_, q1_)));
+  EXPECT_THAT(velocities, ElementsAre(testing::Pair(t1_, p1_)));
   EXPECT_THAT(times, ElementsAre(t1_));
   // Don't use fork, it is dangling.
 }
@@ -363,24 +381,28 @@ TEST_F(TrajectoryTest, ForgetBeforeSuccess) {
   std::map<Instant, Velocity<World>> velocities =
       massive_trajectory_->Velocities();
   std::list<Instant> times = massive_trajectory_->Times();
-  EXPECT_THAT(positions, ElementsAre(Pair(t2_, q2_), Pair(t3_, q3_)));
-  EXPECT_THAT(velocities, ElementsAre(Pair(t2_, p2_), Pair(t3_, p3_)));
+  EXPECT_THAT(positions, ElementsAre(testing::Pair(t2_, q2_),
+                                     testing::Pair(t3_, q3_)));
+  EXPECT_THAT(velocities, ElementsAre(testing::Pair(t2_, p2_),
+                                      testing::Pair(t3_, p3_)));
   EXPECT_THAT(times, ElementsAre(t2_, t3_));
   positions = fork->Positions();
   velocities = fork->Velocities();
   times = fork->Times();
-  EXPECT_THAT(positions,
-              ElementsAre(Pair(t2_, q2_), Pair(t3_, q3_), Pair(t4_, q4_)));
-  EXPECT_THAT(velocities,
-              ElementsAre(Pair(t2_, p2_), Pair(t3_, p3_), Pair(t4_, p4_)));
+  EXPECT_THAT(positions, ElementsAre(testing::Pair(t2_, q2_),
+                                     testing::Pair(t3_, q3_),
+                                     testing::Pair(t4_, q4_)));
+  EXPECT_THAT(velocities, ElementsAre(testing::Pair(t2_, p2_),
+                                      testing::Pair(t3_, p3_),
+                                      testing::Pair(t4_, p4_)));
   EXPECT_THAT(times, ElementsAre(t2_, t3_, t4_));
 
   massive_trajectory_->ForgetBefore(t2_);
   positions = massive_trajectory_->Positions();
   velocities = massive_trajectory_->Velocities();
   times = massive_trajectory_->Times();
-  EXPECT_THAT(positions, ElementsAre(Pair(t3_, q3_)));
-  EXPECT_THAT(velocities, ElementsAre(Pair(t3_, p3_)));
+  EXPECT_THAT(positions, ElementsAre(testing::Pair(t3_, q3_)));
+  EXPECT_THAT(velocities, ElementsAre(testing::Pair(t3_, p3_)));
   EXPECT_THAT(times, ElementsAre(t3_));
   // Don't use fork, it is dangling.
 }
@@ -526,20 +548,20 @@ TEST_F(TrajectoryTest, TransformingIteratorSuccess) {
   EXPECT_EQ(t1_, it.time());
   EXPECT_EQ(Position<World>(Vector<Length, World>(
                 {-84 * Metre, -80 * Metre, -76 * Metre})),
-            it.degrees_of_freedom().position);
-  EXPECT_EQ(3 * p1_, it.degrees_of_freedom().velocity);
+            it.degrees_of_freedom().position());
+  EXPECT_EQ(3 * p1_, it.degrees_of_freedom().velocity());
   ++it;
   EXPECT_EQ(t2_, it.time());
   EXPECT_EQ(Position<World>(Vector<Length, World>(
                 {-64 * Metre, -60 * Metre, -56 * Metre})),
-            it.degrees_of_freedom().position);
-  EXPECT_EQ(3 * p2_, it.degrees_of_freedom().velocity);
+            it.degrees_of_freedom().position());
+  EXPECT_EQ(3 * p2_, it.degrees_of_freedom().velocity());
   ++it;
   EXPECT_EQ(t3_, it.time());
   EXPECT_EQ(Position<World>(Vector<Length, World>(
                 {-44 * Metre, -40 * Metre, -36 * Metre})),
-            it.degrees_of_freedom().position);
-  EXPECT_EQ(3 * p3_, it.degrees_of_freedom().velocity);
+            it.degrees_of_freedom().position());
+  EXPECT_EQ(3 * p3_, it.degrees_of_freedom().velocity());
   ++it;
   EXPECT_TRUE(it.at_end());
 
@@ -554,26 +576,26 @@ TEST_F(TrajectoryTest, TransformingIteratorSuccess) {
   EXPECT_EQ(t1_, it.time());
   EXPECT_EQ(Position<World>(Vector<Length, World>(
                 {-84 * Metre, -80 * Metre, -76 * Metre})),
-            it.degrees_of_freedom().position);
-  EXPECT_EQ(3 * p1_, it.degrees_of_freedom().velocity);
+            it.degrees_of_freedom().position());
+  EXPECT_EQ(3 * p1_, it.degrees_of_freedom().velocity());
   ++it;
   EXPECT_EQ(t2_, it.time());
   EXPECT_EQ(Position<World>(Vector<Length, World>(
                 {-64 * Metre, -60 * Metre, -56 * Metre})),
-            it.degrees_of_freedom().position);
-  EXPECT_EQ(3 * p2_, it.degrees_of_freedom().velocity);
+            it.degrees_of_freedom().position());
+  EXPECT_EQ(3 * p2_, it.degrees_of_freedom().velocity());
   ++it;
   EXPECT_EQ(t3_, it.time());
   EXPECT_EQ(Position<World>(Vector<Length, World>(
                 {-44 * Metre, -40 * Metre, -36 * Metre})),
-            it.degrees_of_freedom().position);
-  EXPECT_EQ(3 * p3_, it.degrees_of_freedom().velocity);
+            it.degrees_of_freedom().position());
+  EXPECT_EQ(3 * p3_, it.degrees_of_freedom().velocity());
   ++it;
   EXPECT_EQ(t4_, it.time());
   EXPECT_EQ(Position<World>(Vector<Length, World>(
                 {-24 * Metre, -20 * Metre, -16 * Metre})),
-            it.degrees_of_freedom().position);
-  EXPECT_EQ(3 * p4_, it.degrees_of_freedom().velocity);
+            it.degrees_of_freedom().position());
+  EXPECT_EQ(3 * p4_, it.degrees_of_freedom().velocity());
   ++it;
   EXPECT_TRUE(it.at_end());
 }
@@ -628,15 +650,15 @@ TEST_F(TrajectoryTest, TransformingIteratorOnOrAfterSuccess) {
   EXPECT_EQ(t1_, it.time());
   EXPECT_EQ(Position<World>(Vector<Length, World>(
                 {-84 * Metre, -80 * Metre, -76 * Metre})),
-            it.degrees_of_freedom().position);
-  EXPECT_EQ(3 * p1_, it.degrees_of_freedom().velocity);
+            it.degrees_of_freedom().position());
+  EXPECT_EQ(3 * p1_, it.degrees_of_freedom().velocity());
   it = massless_trajectory_->on_or_after_with_transform(t2_,
                                                         massless_transform_);
   EXPECT_EQ(t2_, it.time());
   EXPECT_EQ(Position<World>(Vector<Length, World>(
                 {-64 * Metre, -60 * Metre, -56 * Metre})),
-            it.degrees_of_freedom().position);
-  EXPECT_EQ(3 * p2_, it.degrees_of_freedom().velocity);
+            it.degrees_of_freedom().position());
+  EXPECT_EQ(3 * p2_, it.degrees_of_freedom().velocity());
   it = massless_trajectory_->on_or_after_with_transform(t4_,
                                                         massless_transform_);
   EXPECT_TRUE(it.at_end());
@@ -652,20 +674,20 @@ TEST_F(TrajectoryTest, TransformingIteratorOnOrAfterSuccess) {
   EXPECT_EQ(t1_, it.time());
   EXPECT_EQ(Position<World>(Vector<Length, World>(
                 {-84 * Metre, -80 * Metre, -76 * Metre})),
-            it.degrees_of_freedom().position);
-  EXPECT_EQ(3 * p1_, it.degrees_of_freedom().velocity);
+            it.degrees_of_freedom().position());
+  EXPECT_EQ(3 * p1_, it.degrees_of_freedom().velocity());
   it = fork->on_or_after_with_transform(t2_, fork_transform);
   EXPECT_EQ(t2_, it.time());
   EXPECT_EQ(Position<World>(Vector<Length, World>(
                 {-64 * Metre, -60 * Metre, -56 * Metre})),
-            it.degrees_of_freedom().position);
-  EXPECT_EQ(3 * p2_, it.degrees_of_freedom().velocity);
+            it.degrees_of_freedom().position());
+  EXPECT_EQ(3 * p2_, it.degrees_of_freedom().velocity());
   it = fork->on_or_after_with_transform(t4_, fork_transform);
   EXPECT_EQ(t4_, it.time());
   EXPECT_EQ(Position<World>(Vector<Length, World>(
                 {-24 * Metre, -20 * Metre, -16 * Metre})),
-            it.degrees_of_freedom().position);
-  EXPECT_EQ(3 * p4_, it.degrees_of_freedom().velocity);
+            it.degrees_of_freedom().position());
+  EXPECT_EQ(3 * p4_, it.degrees_of_freedom().velocity());
   it = fork->on_or_after_with_transform(t4_ + 1 * Second, fork_transform);
   EXPECT_TRUE(it.at_end());
 }

@@ -132,6 +132,8 @@
     <ClInclude Include="identity.hpp" />
     <ClInclude Include="identity_body.hpp" />
     <ClInclude Include="named_quantities.hpp" />
+    <ClInclude Include="pair.hpp" />
+    <ClInclude Include="pair_body.hpp" />
     <ClInclude Include="point.hpp" />
     <ClInclude Include="point_body.hpp" />
     <ClInclude Include="grassmann_body.hpp" />
@@ -156,6 +158,7 @@
     <ClCompile Include="barycentre_calculator_test.cpp" />
     <ClCompile Include="grassmann_test.cpp" />
     <ClCompile Include="identity_test.cpp" />
+    <ClCompile Include="pair_test.cpp" />
     <ClCompile Include="point_test.cpp" />
     <ClCompile Include="affine_map_test.cpp" />
     <ClCompile Include="orthogonal_map_test.cpp" />

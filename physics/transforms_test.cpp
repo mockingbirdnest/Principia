@@ -51,6 +51,14 @@ class TransformsTest : public testing::Test {
     body2_from_ = std::make_unique<Trajectory<From>>(*body2_);
     body1_to_ = std::make_unique<Trajectory<To>>(*body1_);
     body2_to_ = std::make_unique<Trajectory<To>>(*body2_);
+    body1_from_fn_ =
+        [this]() -> Trajectory<From> const& { return *this->body1_from_; };
+    body2_from_fn_ =
+        [this]() -> Trajectory<From> const& { return *this->body2_from_; };
+    body1_to_fn_ =
+        [this]() -> Trajectory<To> const& { return *this->body1_to_; };
+    body2_to_fn_ =
+        [this]() -> Trajectory<To> const& { return *this->body2_to_; };
 
     // The various bodies move have both a position and a velocity that
     // increases linearly with time.  This is not a situation that's physically
@@ -99,6 +107,10 @@ class TransformsTest : public testing::Test {
   std::unique_ptr<Trajectory<From>> body2_from_;
   std::unique_ptr<Trajectory<To>> body1_to_;
   std::unique_ptr<Trajectory<To>> body2_to_;
+  Transforms<From, Through, To>::LazyTrajectory<From> body1_from_fn_;
+  Transforms<From, Through, To>::LazyTrajectory<From> body2_from_fn_;
+  Transforms<From, Through, To>::LazyTrajectory<To> body1_to_fn_;
+  Transforms<From, Through, To>::LazyTrajectory<To> body2_to_fn_;
   std::unique_ptr<Trajectory<From>> satellite_from_;
 
   std::unique_ptr<Transforms<From, Through, To>> transforms_;
@@ -108,7 +120,7 @@ class TransformsTest : public testing::Test {
 // test verifies that we get the expected result both in |Through| and in |To|.
 TEST_F(TransformsTest, BodyCentredNonRotating) {
   transforms_ = Transforms<From, Through, To>::BodyCentredNonRotating(
-                    *body1_from_, *body1_to_);
+                    body1_from_fn_, body1_to_fn_);
   Trajectory<Through> body1_through(*body1_);
 
   int i = 1;
@@ -117,11 +129,11 @@ TEST_F(TransformsTest, BodyCentredNonRotating) {
        ++it, ++i) {
     DegreesOfFreedom<Through> const degrees_of_freedom =
         it.degrees_of_freedom();
-    EXPECT_THAT(degrees_of_freedom.position - Position<Through>(),
+    EXPECT_THAT(degrees_of_freedom.position() - Position<Through>(),
                 Eq(Displacement<Through>({9 * i * SIUnit<Length>(),
                                           -22 * i * SIUnit<Length>(),
                                           27 * i * SIUnit<Length>()}))) << i;
-    EXPECT_THAT(degrees_of_freedom.velocity,
+    EXPECT_THAT(degrees_of_freedom.velocity(),
                 Eq(Velocity<Through>({36 * i * SIUnit<Speed>(),
                                       -88 * i * SIUnit<Speed>(),
                                       144 * i * SIUnit<Speed>()}))) << i;
@@ -145,11 +157,11 @@ TEST_F(TransformsTest, BodyCentredNonRotating) {
 
     DegreesOfFreedom<To> const degrees_of_freedom =
         it.degrees_of_freedom();
-    EXPECT_THAT(degrees_of_freedom.position - Position<To>(),
+    EXPECT_THAT(degrees_of_freedom.position() - Position<To>(),
                 Eq(Displacement<To>({12 * i * SIUnit<Length>(),
                                      -21 * i * SIUnit<Length>(),
                                      29 * i * SIUnit<Length>()}))) << i;
-    EXPECT_THAT(degrees_of_freedom.velocity,
+    EXPECT_THAT(degrees_of_freedom.velocity(),
                 Eq(Velocity<To>({36 * i * SIUnit<Speed>(),
                                  -88 * i * SIUnit<Speed>(),
                                  144 * i * SIUnit<Speed>()}))) << i;
@@ -159,8 +171,8 @@ TEST_F(TransformsTest, BodyCentredNonRotating) {
 // Check that the computations we do match those done using Mathematica.
 TEST_F(TransformsTest, SatelliteBarycentricRotating) {
   transforms_ = Transforms<From, Through, To>::BarycentricRotating(
-                    *body1_from_, *body1_to_,
-                    *body2_from_, *body2_to_);
+                    body1_from_fn_, body1_to_fn_,
+                    body2_from_fn_, body2_to_fn_);
   Trajectory<Through> satellite_through(satellite_);
 
   int i = 1;
@@ -169,13 +181,13 @@ TEST_F(TransformsTest, SatelliteBarycentricRotating) {
        ++it, ++i) {
     DegreesOfFreedom<Through> const degrees_of_freedom =
         it.degrees_of_freedom();
-    EXPECT_THAT(degrees_of_freedom.position - Position<Through>(),
+    EXPECT_THAT(degrees_of_freedom.position() - Position<Through>(),
                 AlmostEquals(Displacement<Through>(
                     {-5.5 * sqrt(5.0) * i * SIUnit<Length>(),
                      62.0 * sqrt(5.0 / 21.0) * i * SIUnit<Length>(),
                      53.0 / sqrt(21.0) * i * SIUnit<Length>()}),
                     1, 8)) << i;
-    EXPECT_THAT(degrees_of_freedom.velocity,
+    EXPECT_THAT(degrees_of_freedom.velocity(),
                 AlmostEquals(Velocity<Through>(
                     {(362.0 / sqrt(5.0)) * i * SIUnit<Speed>(),
                      (2776.0 / sqrt(105.0)) * i * SIUnit<Speed>(),
@@ -211,14 +223,14 @@ TEST_F(TransformsTest, SatelliteBarycentricRotating) {
 
     DegreesOfFreedom<To> const degrees_of_freedom =
         it.degrees_of_freedom();
-    EXPECT_THAT(degrees_of_freedom.position - Position<To>(),
+    EXPECT_THAT(degrees_of_freedom.position() - Position<To>(),
                 AlmostEquals(Displacement<To>(
                     {(3.0 + 62.0 * sqrt(5.0 / 21.0)) * i * SIUnit<Length>(),
                      (-6.0 + 106.0 / sqrt(105.0)) * i * SIUnit<Length>(),
                      (-12.0 - 53.0 / sqrt(105.0)) * i * SIUnit<Length>()}),
                     3, 21))
         << i;
-    EXPECT_THAT(degrees_of_freedom.velocity,
+    EXPECT_THAT(degrees_of_freedom.velocity(),
                 AlmostEquals(Velocity<To>(
                     {2776.0 / sqrt(105.0) * i * SIUnit<Speed>(),
                      (72.4 + 352.0 / sqrt(105.0)) * i * SIUnit<Speed>(),
@@ -232,8 +244,8 @@ TEST_F(TransformsTest, SatelliteBarycentricRotating) {
 // centre of the coordinates.
 TEST_F(TransformsTest, BodiesBarycentricRotating) {
   transforms_ = Transforms<From, Through, To>::BarycentricRotating(
-                    *body1_from_, *body1_to_,
-                    *body2_from_, *body2_to_);
+                    body1_from_fn_, body1_to_fn_,
+                    body2_from_fn_, body2_to_fn_);
   Trajectory<Through> body1_through(*body1_);
   Trajectory<Through> body2_through(*body2_);
 
@@ -249,19 +261,19 @@ TEST_F(TransformsTest, BodiesBarycentricRotating) {
     DegreesOfFreedom<Through> const degrees_of_freedom2 =
         it2.degrees_of_freedom();
 
-    EXPECT_THAT(degrees_of_freedom1.position - Position<Through>(),
+    EXPECT_THAT(degrees_of_freedom1.position() - Position<Through>(),
                 Componentwise(AlmostEquals(1.5 * sqrt(5.0) * l, 0, 1),
                               VanishesBefore(l, 0, 4),
                               VanishesBefore(l, 0, 2)));
-    EXPECT_THAT(degrees_of_freedom2.position - Position<Through>(),
+    EXPECT_THAT(degrees_of_freedom2.position() - Position<Through>(),
                 Componentwise(AlmostEquals(-0.5 * sqrt(5.0) * l, 0, 2),
                               VanishesBefore(l, 0, 2),
                               VanishesBefore(l, 0, 1)));
-    EXPECT_THAT(degrees_of_freedom1.velocity,
+    EXPECT_THAT(degrees_of_freedom1.velocity(),
                 Componentwise(AlmostEquals(6.0 / sqrt(5.0) * s, 0, 7),
                               VanishesBefore(s, 0, 34),
                               VanishesBefore(s, 0, 2)));
-    EXPECT_THAT(degrees_of_freedom2.velocity,
+    EXPECT_THAT(degrees_of_freedom2.velocity(),
                 Componentwise(AlmostEquals(-2.0 / sqrt(5.0) * s, 0, 14),
                               VanishesBefore(s, 0, 16),
                               VanishesBefore(s, 0, 1)));
@@ -269,17 +281,17 @@ TEST_F(TransformsTest, BodiesBarycentricRotating) {
     DegreesOfFreedom<Through> const barycentre_degrees_of_freedom =
         Barycentre<Through, Mass>({degrees_of_freedom1, degrees_of_freedom2},
                                   {body1_->mass(), body2_->mass()});
-    EXPECT_THAT(barycentre_degrees_of_freedom.position - Position<Through>(),
+    EXPECT_THAT(barycentre_degrees_of_freedom.position() - Position<Through>(),
                 Componentwise(VanishesBefore(l, 0, 1),
                               VanishesBefore(l, 0, 2),
                               VanishesBefore(l, 0, 1)));
-    EXPECT_THAT(barycentre_degrees_of_freedom.velocity,
+    EXPECT_THAT(barycentre_degrees_of_freedom.velocity(),
                 Componentwise(VanishesBefore(s, 0, 14),
                               VanishesBefore(s, 0, 7),
                               VanishesBefore(s, 0, 1)));
 
-    Length const length = (degrees_of_freedom1.position -
-                           degrees_of_freedom2.position).Norm();
+    Length const length = (degrees_of_freedom1.position() -
+                           degrees_of_freedom2.position()).Norm();
     EXPECT_THAT(length,
                 AlmostEquals(2.0 * sqrt(5.0) * i * SIUnit<Length>(), 0, 2));
   }

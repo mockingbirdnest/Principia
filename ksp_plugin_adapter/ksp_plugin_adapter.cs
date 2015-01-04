@@ -31,7 +31,7 @@ public partial class PluginAdapter : UnityEngine.MonoBehaviour {
   private IntPtr plugin_ = IntPtr.Zero;
   // TODO(egg): rendering only one trajectory at the moment.
   private VectorLine rendered_trajectory_;
-  private IntPtr rendering_frame_ = IntPtr.Zero;
+  private IntPtr transforms_ = IntPtr.Zero;
   private int first_selected_celestial_ = 0;
   private int second_selected_celestial_ = 0;
 
@@ -104,12 +104,7 @@ public partial class PluginAdapter : UnityEngine.MonoBehaviour {
     UpdateCelestialHierarchy(plugin_,
                              body.flightGlobalsIndex,
                              body.orbit.referenceBody.flightGlobalsIndex);
-    Vector3d position =
-        (Vector3d)CelestialDisplacementFromParent(plugin_,
-                                                  body.flightGlobalsIndex);
-    Vector3d velocity =
-        (Vector3d)CelestialParentRelativeVelocity(plugin_,
-                                                  body.flightGlobalsIndex);
+    QP from_parent = CelestialFromParent(plugin_, body.flightGlobalsIndex);
     // TODO(egg): Some of this might be be superfluous and redundant.
     Orbit original = body.orbit;
     Orbit copy = new Orbit(original.inclination, original.eccentricity,
@@ -117,8 +112,8 @@ public partial class PluginAdapter : UnityEngine.MonoBehaviour {
                            original.argumentOfPeriapsis,
                            original.meanAnomalyAtEpoch, original.epoch,
                            original.referenceBody);
-    copy.UpdateFromStateVectors(position,
-                                velocity,
+    copy.UpdateFromStateVectors((Vector3d)from_parent.q,
+                                (Vector3d)from_parent.p,
                                 copy.referenceBody,
                                 universal_time);
     body.orbit.inclination = copy.inclination;
@@ -132,8 +127,8 @@ public partial class PluginAdapter : UnityEngine.MonoBehaviour {
     body.orbit.Init();
     body.orbit.UpdateFromUT(universal_time);
     body.CBUpdate();
-    body.orbit.UpdateFromStateVectors(position,
-                                      velocity,
+    body.orbit.UpdateFromStateVectors((Vector3d)from_parent.q,
+                                      (Vector3d)from_parent.p,
                                       copy.referenceBody,
                                       universal_time);
   }
@@ -146,21 +141,17 @@ public partial class PluginAdapter : UnityEngine.MonoBehaviour {
     if (inserted) {
       SetVesselStateOffset(plugin               : plugin_,
                            vessel_guid          : vessel.id.ToString(),
-                           from_parent_position : (XYZ)vessel.orbit.pos,
-                           from_parent_velocity : (XYZ)vessel.orbit.vel);
+                           from_parent : new QP {q = (XYZ)vessel.orbit.pos,
+                                                 p = (XYZ)vessel.orbit.vel});
     }
-    Vector3d position =
-        (Vector3d)VesselDisplacementFromParent(plugin_,
-                                               vessel.id.ToString());
-    Vector3d velocity =
-        (Vector3d)VesselParentRelativeVelocity(plugin_,
-                                               vessel.id.ToString());
+    QP from_parent = VesselFromParent(plugin_, vessel.id.ToString());
     // NOTE(egg): Here we work around a KSP bug: |Orbit.pos| for a vessel
     // corresponds to the position one timestep in the future.  This is not
     // the case for celestial bodies.
     vessel.orbit.UpdateFromStateVectors(
-        pos     : position + velocity * UnityEngine.Time.deltaTime,
-        vel     : velocity,
+        pos     : (Vector3d)from_parent.q +
+                  (Vector3d)from_parent.p * UnityEngine.Time.deltaTime,
+        vel     : (Vector3d)from_parent.p,
         refBody : vessel.orbit.referenceBody,
         UT      : universal_time);
   }
@@ -174,10 +165,10 @@ public partial class PluginAdapter : UnityEngine.MonoBehaviour {
       // NOTE(egg): these degrees of freedom are off by one Δt, but they
       // should never actually be used.
       // TODO(egg): we shouldn't have to do this.
-      SetVesselStateOffset(plugin               : plugin_,
-                           vessel_guid          : vessel.id.ToString(),
-                           from_parent_position : (XYZ)vessel.orbit.pos,
-                           from_parent_velocity : (XYZ)vessel.orbit.vel);
+      SetVesselStateOffset(plugin      : plugin_,
+                           vessel_guid : vessel.id.ToString(),
+                           from_parent : new QP {q = (XYZ)vessel.orbit.pos,
+                                                 p = (XYZ)vessel.orbit.vel});
     }
     Log.Info("vessel has " + vessel.parts.Count() + " parts");
     Vector3d gravity =
@@ -283,7 +274,8 @@ public partial class PluginAdapter : UnityEngine.MonoBehaviour {
       }
       AdvanceTime(plugin_, universal_time, Planetarium.InverseRotAngle);
       ApplyToBodyTree(body => UpdateBody(body, universal_time));
-      ApplyToVesselsOnRailsOrInInertialPhysicsBubbleInSpace(vessel => UpdateVessel(vessel, universal_time));
+      ApplyToVesselsOnRailsOrInInertialPhysicsBubbleInSpace(
+          vessel => UpdateVessel(vessel, universal_time));
       Vessel active_vessel = FlightGlobals.ActiveVessel;
       if (has_inertial_physics_bubble_in_space()) {
         Vector3d displacement_offset =
@@ -321,7 +313,7 @@ public partial class PluginAdapter : UnityEngine.MonoBehaviour {
           trajectory_iterator = RenderedVesselTrajectory(
               plugin_,
               active_vessel.id.ToString(),
-              rendering_frame_,
+              transforms_,
               (XYZ)Planetarium.fetch.Sun.position);
 
           LineSegment segment;
@@ -384,7 +376,7 @@ public partial class PluginAdapter : UnityEngine.MonoBehaviour {
 
   private void Cleanup() {
     DeletePlugin(ref plugin_);
-    DeleteRenderingFrame(ref rendering_frame_);
+    DeleteTransforms(ref transforms_);
     DestroyRenderedTrajectory();
   }
 
@@ -455,14 +447,14 @@ public partial class PluginAdapter : UnityEngine.MonoBehaviour {
     UnityEngine.GUILayout.TextArea(text: reference_frame_description);
     UnityEngine.GUILayout.Label(text : "Reference frame selection:");
     foreach (CelestialBody celestial in FlightGlobals.Bodies) {
-      bool changed_reference_frame = false;
+      bool changed_rendering = false;
       UnityEngine.GUILayout.BeginHorizontal();
       if (UnityEngine.GUILayout.Toggle(
               value : first_selected_celestial_ == celestial.flightGlobalsIndex,
               text  : "") &&
           first_selected_celestial_ != celestial.flightGlobalsIndex) {
         first_selected_celestial_ = celestial.flightGlobalsIndex;
-        changed_reference_frame = true;
+        changed_rendering = true;
       }
       if (UnityEngine.GUILayout.Toggle(
               value : second_selected_celestial_ ==
@@ -470,10 +462,10 @@ public partial class PluginAdapter : UnityEngine.MonoBehaviour {
               text  : celestial.name) &&
           second_selected_celestial_ != celestial.flightGlobalsIndex) {
         second_selected_celestial_ = celestial.flightGlobalsIndex;
-        changed_reference_frame = true;
+        changed_rendering = true;
       }
       UnityEngine.GUILayout.EndHorizontal();
-      if (changed_reference_frame && PluginRunning()) {
+      if (changed_rendering && PluginRunning()) {
         UpdateRenderingFrame();
       }
     }
@@ -484,16 +476,16 @@ public partial class PluginAdapter : UnityEngine.MonoBehaviour {
   }
 
   private void UpdateRenderingFrame() {
-    DeleteRenderingFrame(ref rendering_frame_);
+    DeleteTransforms(ref transforms_);
     if (first_selected_celestial_ == second_selected_celestial_) {
-      rendering_frame_ = NewBodyCentredNonRotatingFrame(
-                             plugin_,
-                             first_selected_celestial_);
+      transforms_ = NewBodyCentredNonRotatingTransforms(
+                        plugin_,
+                        first_selected_celestial_);
     } else {
-      rendering_frame_ = NewBarycentricRotatingFrame(
-                             plugin_,
-                             first_selected_celestial_,
-                             second_selected_celestial_);
+      transforms_ = NewBarycentricRotatingTransforms(
+                        plugin_,
+                        first_selected_celestial_,
+                        second_selected_celestial_);
     }
   }
 
@@ -511,8 +503,7 @@ public partial class PluginAdapter : UnityEngine.MonoBehaviour {
                       body.flightGlobalsIndex,
                       body.gravParameter,
                       body.orbit.referenceBody.flightGlobalsIndex,
-                      (XYZ)body.orbit.pos,
-                      (XYZ)body.orbit.vel);
+                      new QP{q = (XYZ)body.orbit.pos, p = (XYZ)body.orbit.vel});
     };
     ApplyToBodyTree(insert_body);
     EndInitialization(plugin_);
@@ -528,8 +519,8 @@ public partial class PluginAdapter : UnityEngine.MonoBehaviour {
       } else {
         SetVesselStateOffset(plugin_,
                              vessel.id.ToString(),
-                             (XYZ)vessel.orbit.pos,
-                             (XYZ)vessel.orbit.vel);
+                             new QP{q = (XYZ)vessel.orbit.pos,
+                                    p = (XYZ)vessel.orbit.vel});
       }
     };
     ApplyToVesselsOnRailsOrInInertialPhysicsBubbleInSpace(insert_vessel);

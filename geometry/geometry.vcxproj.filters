@@ -98,6 +98,12 @@
     <ClInclude Include="barycentre_calculator.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="pair.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="pair_body.hpp">
+      <Filter>Source Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="sign_test.cpp">
@@ -134,6 +140,9 @@
       <Filter>Test Files</Filter>
     </ClCompile>
     <ClCompile Include="barycentre_calculator_test.cpp">
+      <Filter>Test Files</Filter>
+    </ClCompile>
+    <ClCompile Include="pair_test.cpp">
       <Filter>Test Files</Filter>
     </ClCompile>
   </ItemGroup>

@@ -14,12 +14,11 @@ class MockPlugin : public Plugin {
   MockPlugin(MockPlugin&&) = delete;
   ~MockPlugin() override = default;
 
-  MOCK_METHOD5(InsertCelestial,
+  MOCK_METHOD4(InsertCelestial,
                void(Index const celestial_index,
                     GravitationalParameter const& gravitational_parameter,
                     Index const parent_index,
-                    Displacement<AliceSun> const& from_parent_position,
-                    Velocity<AliceSun> const& from_parent_velocity));
+                    RelativeDegreesOfFreedom<AliceSun> const& from_parent));
 
   MOCK_METHOD0(EndInitialization,
                void());
@@ -31,50 +30,52 @@ class MockPlugin : public Plugin {
   MOCK_METHOD2(InsertOrKeepVessel,
                bool(GUID const& vessel_guid, Index const parent_index));
 
-  MOCK_METHOD3(SetVesselStateOffset,
+  MOCK_METHOD2(SetVesselStateOffset,
                void(GUID const& vessel_guid,
-                    Displacement<AliceSun> const& from_parent_position,
-                    Velocity<AliceSun> const& from_parent_velocity));
+                    RelativeDegreesOfFreedom<AliceSun> const& from_parent));
 
   MOCK_METHOD2(AdvanceTime,
                void(Instant const& t, Angle const& planetarium_rotation));
 
-  MOCK_CONST_METHOD1(VesselDisplacementFromParent,
-                     Displacement<AliceSun>(GUID const& vessel_guid));
+  MOCK_CONST_METHOD1(VesselFromParent,
+                     RelativeDegreesOfFreedom<AliceSun>(
+                         GUID const& vessel_guid));
 
-  MOCK_CONST_METHOD1(VesselParentRelativeVelocity,
-                     Velocity<AliceSun>(GUID const& vessel_guid));
-
-  MOCK_CONST_METHOD1(CelestialDisplacementFromParent,
-                     Displacement<AliceSun>(Index const celestial_index));
-
-  MOCK_CONST_METHOD1(CelestialParentRelativeVelocity,
-                     Velocity<AliceSun>(Index const celestial_index));
+  MOCK_CONST_METHOD1(CelestialFromParent,
+                     RelativeDegreesOfFreedom<AliceSun>(
+                         Index const celestial_index));
 
   MOCK_CONST_METHOD3(RenderedVesselTrajectory,
                      RenderedTrajectory<World>(
                          GUID const& vessel_guid,
-                         RenderingFrame const& frame,
+                         Transforms<Barycentric, Rendering, Barycentric>* const
+                             transforms,
                          Position<World> const& sun_world_position));
 
   // NOTE(phl): gMock 1.7.0 doesn't support returning a std::unique_ptr<>.  So
   // we override the function of the Plugin class with bona fide functions which
   // call mock functions which fill a std::unique_ptr<> instead of returning it.
-  std::unique_ptr<BodyCentredNonRotatingFrame> NewBodyCentredNonRotatingFrame(
+  std::unique_ptr<Transforms<Barycentric, Rendering, Barycentric>>
+  NewBodyCentredNonRotatingTransforms(
       Index const reference_body_index) const override;
 
-  std::unique_ptr<BarycentricRotatingFrame> NewBarycentricRotatingFrame(
+  std::unique_ptr<Transforms<Barycentric, Rendering, Barycentric>>
+  NewBarycentricRotatingTransforms(
       Index const primary_index,
       Index const secondary_index) const override;
 
-  MOCK_CONST_METHOD2(FillBodyCentredNonRotatingFrame,
+  MOCK_CONST_METHOD2(FillBodyCentredNonRotatingTransforms,
                      void(Index const reference_body_index,
-                          std::unique_ptr<BodyCentredNonRotatingFrame>* frame));
+                          std::unique_ptr<
+                              Transforms<Barycentric, Rendering, Barycentric>>*
+                                  transforms));
 
-  MOCK_CONST_METHOD3(FillBarycentricRotatingFrame,
+  MOCK_CONST_METHOD3(FillBarycentricRotatingTransforms,
                      void(Index const primary_index,
                           Index const secondary_index,
-                          std::unique_ptr<BarycentricRotatingFrame>* frame));
+                          std::unique_ptr<
+                              Transforms<Barycentric, Rendering, Barycentric>>*
+                                  transforms));
 
   MOCK_CONST_METHOD2(VesselWorldPosition,
                      Position<World>(

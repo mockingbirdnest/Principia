@@ -4,6 +4,7 @@
 
 #include "base/macros.hpp"
 #include "ksp_plugin/plugin.hpp"
+#include "physics/transforms.hpp"
 
 namespace principia {
 namespace ksp_plugin {
@@ -18,11 +19,11 @@ struct LineAndIterator {
 }  // namespace ksp_plugin
 }  // namespace principia
 
-using principia::ksp_plugin::BarycentricRotatingFrame;
-using principia::ksp_plugin::BodyCentredNonRotatingFrame;
+using principia::ksp_plugin::Barycentric;
 using principia::ksp_plugin::LineAndIterator;
 using principia::ksp_plugin::Plugin;
-using principia::ksp_plugin::RenderingFrame;
+using principia::ksp_plugin::Rendering;
+using principia::physics::Transforms;
 
 extern "C"
 struct XYZ {
@@ -39,6 +40,14 @@ struct XYZSegment {
 
 static_assert(std::is_standard_layout<XYZSegment>::value,
               "XYZSegment is used for interfacing");
+
+extern "C"
+struct QP {
+  XYZ q, p;
+};
+
+static_assert(std::is_standard_layout<QP>::value,
+              "QP is used for interfacing");
 
 extern "C"
 struct KSPPart {
@@ -97,8 +106,7 @@ void CDECL principia__InsertCelestial(Plugin* const plugin,
                                       int const celestial_index,
                                       double const gravitational_parameter,
                                       int const parent_index,
-                                      XYZ const from_parent_position,
-                                      XYZ const from_parent_velocity);
+                                      QP const from_parent);
 
 // Calls |plugin->UpdateCelestialHierarchy| with the arguments given.
 // |plugin| must not be null.  No transfer of ownership.
@@ -124,58 +132,46 @@ bool CDECL principia__InsertOrKeepVessel(Plugin* const plugin,
 extern "C" DLLEXPORT
 void CDECL principia__SetVesselStateOffset(Plugin* const plugin,
                                            char const* vessel_guid,
-                                           XYZ const from_parent_position,
-                                           XYZ const from_parent_velocity);
+                                           QP const from_parent);
 
 extern "C" DLLEXPORT
 void CDECL principia__AdvanceTime(Plugin* const plugin,
                                   double const t,
                                   double const planetarium_rotation);
 
-// Calls |plugin->VesselDisplacementFromParent| with the arguments given.
+// Calls |plugin->VesselFromParent| with the arguments given.
 // |plugin| must not be null.  No transfer of ownership.
 extern "C" DLLEXPORT
-XYZ CDECL principia__VesselDisplacementFromParent(Plugin const* const plugin,
-                                                  char const* vessel_guid);
+QP CDECL principia__VesselFromParent(Plugin const* const plugin,
+                                     char const* vessel_guid);
 
-// Calls |plugin->VesselParentRelativeVelocity| with the arguments given.
+// Calls |plugin->CelestialFromParent| with the arguments given.
 // |plugin| must not be null.  No transfer of ownership.
 extern "C" DLLEXPORT
-XYZ CDECL principia__VesselParentRelativeVelocity(Plugin const* const plugin,
-                                                  char const* vessel_guid);
-
-// Calls |plugin->CelestialDisplacementFromParent| with the arguments given.
-// |plugin| must not be null.  No transfer of ownership.
-extern "C" DLLEXPORT
-XYZ CDECL principia__CelestialDisplacementFromParent(Plugin const* const plugin,
-                                                     int const celestial_index);
-
-// Calls |plugin->CelestialParentRelativeVelocity| with the arguments given.
-// |plugin| must not be null.  No transfer of ownership.
-extern "C" DLLEXPORT
-XYZ CDECL principia__CelestialParentRelativeVelocity(Plugin const* const plugin,
-                                                     int const celestial_index);
+QP CDECL principia__CelestialFromParent(Plugin const* const plugin,
+                                        int const celestial_index);
 
 // Calls |plugin->NewBodyCentredNonRotatingFrame| with the arguments given.
 // |plugin| must not be null.  The caller gets ownership of the returned object.
 extern "C" DLLEXPORT
-BodyCentredNonRotatingFrame const* CDECL
-principia__NewBodyCentredNonRotatingFrame(Plugin const* const plugin,
-                                          int const reference_body_index);
+Transforms<Barycentric, Rendering, Barycentric>* CDECL
+principia__NewBodyCentredNonRotatingTransforms(Plugin const* const plugin,
+                                               int const reference_body_index);
 
 // Calls |plugin->NewBarycentricRotatingFrame| with the arguments given.
 // |plugin| must not be null.  The caller gets ownership of the returned object.
 extern "C" DLLEXPORT
-BarycentricRotatingFrame const* CDECL principia__NewBarycentricRotatingFrame(
-    Plugin const* const plugin,
-    int const primary_index,
-    int const secondary_index);
+Transforms<Barycentric, Rendering, Barycentric>* CDECL
+principia__NewBarycentricRotatingTransforms(Plugin const* const plugin,
+                                            int const primary_index,
+                                            int const secondary_index);
 
-// Deletes and nulls |*frame|.
-// |frame| must not be null.  No transfer of ownership of |*frame|, takes
-// ownership of |**frame|.
+// Deletes and nulls |*transforms|.
+// |transforms| must not be null.  No transfer of ownership of |*transforms|,
+// takes ownership of |**transforms|.
 extern "C" DLLEXPORT
-void CDECL principia__DeleteRenderingFrame(RenderingFrame const** const frame);
+void CDECL principia__DeleteTransforms(
+    Transforms<Barycentric, Rendering, Barycentric>** const transforms);
 
 // Returns the result of |plugin->RenderedVesselTrajectory| called with the
 // arguments given, together with an iterator to its beginning.
@@ -186,7 +182,7 @@ extern "C" DLLEXPORT
 LineAndIterator* CDECL principia__RenderedVesselTrajectory(
     Plugin const* const plugin,
     char const* vessel_guid,
-    RenderingFrame const* frame,
+    Transforms<Barycentric, Rendering, Barycentric>* const transforms,
     XYZ const sun_world_position);
 
 // Returns |line_and_iterator->rendered_trajectory.size()|.

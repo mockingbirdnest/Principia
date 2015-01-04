@@ -1,6 +1,5 @@
 ﻿#pragma once
 
-#include <array>
 #include <map>
 #include <memory>
 #include <set>
@@ -14,11 +13,12 @@
 #include "ksp_plugin/celestial.hpp"
 #include "ksp_plugin/frames.hpp"
 #include "ksp_plugin/monostable.hpp"
+#include "ksp_plugin/physics_bubble.hpp"
 #include "ksp_plugin/vessel.hpp"
-#include "ksp_plugin/rendering_frame.hpp"
 #include "physics/body.hpp"
 #include "physics/n_body_system.hpp"
 #include "physics/trajectory.hpp"
+#include "physics/transforms.hpp"
 #include "quantities/quantities.hpp"
 #include "quantities/named_quantities.hpp"
 #include "quantities/si.hpp"
@@ -32,8 +32,9 @@ using geometry::Point;
 using geometry::Rotation;
 using integrators::SPRKIntegrator;
 using physics::Body;
-using physics::Trajectory;
 using physics::NBodySystem;
+using physics::Trajectory;
+using physics::Transforms;
 using quantities::Angle;
 using si::Second;
 
@@ -60,9 +61,6 @@ struct LineSegment {
 // We render trajectories as polygons.
 template<typename Frame>
 using RenderedTrajectory = std::vector<LineSegment<Frame>>;
-
-using PartIdToOwnedPart = std::map<PartId, std::unique_ptr<Part<World>>>;
-using IdAndOwnedPart = PartIdToOwnedPart::value_type;
 
 class Plugin {
  public:
@@ -97,14 +95,12 @@ class Plugin {
   // |b.flightGlobalsIndex|,
   // |b.gravParameter|,
   // |b.orbit.referenceBody.flightGlobalsIndex|,
-  // |b.orbit.pos|,
-  // |b.orbit.vel|.
+  // |{b.orbit.pos, b.orbit.vel}|.
   virtual void InsertCelestial(
     Index const celestial_index,
     GravitationalParameter const& gravitational_parameter,
     Index const parent_index,
-    Displacement<AliceSun> const& from_parent_position,
-    Velocity<AliceSun> const& from_parent_velocity);
+    RelativeDegreesOfFreedom<AliceSun> const& from_parent);
 
   // Ends initialization.
   virtual void EndInitialization();
@@ -137,20 +133,18 @@ class Plugin {
   // be called once per vessel. Must be called after initialization.
   // For a KSP |Vessel| |v|, the arguments correspond to
   // |v.id.ToString()|,
-  // |v.orbit.pos|,
-  // |v.orbit.vel|.
+  // |{v.orbit.pos, v.orbit.vel}|.
   virtual void SetVesselStateOffset(
       GUID const& vessel_guid,
-      Displacement<AliceSun> const& from_parent_position,
-      Velocity<AliceSun> const& from_parent_velocity);
+      RelativeDegreesOfFreedom<AliceSun> const& from_parent);
 
   // Simulates the system until instant |t|. All vessels that have not been
   // refreshed by calling |InsertOrKeepVessel| since the last call to
   // |AdvanceTime| will be removed.  Sets |current_time_| to |t|.
   // Must be called after initialization.  |t| must be greater than
-  // |current_time_|.  If |AddVesselToNextPhysicsBubble| was called since the
-  // last call to |AdvanceTime|, |BubbleDisplacementCorrection| and
-  // |BubbleDisplacementVelocity| must have been called too.
+  // |current_time_|.  If |PhysicsBubble::AddVesselToNext| was called since the
+  // last call to |AdvanceTime|, |PhysicsBubble::DisplacementCorrection| and
+  // |PhysicsBubble::DisplacementVelocity| must have been called too.
   // |planetarium_rotation| is the value of KSP's |Planetarium.InverseRotAngle|
   // at instant |t|, which provides the rotation between the |World| axes and
   // the |Barycentric| axes (we don't use Planetarium.Rotation since it
@@ -159,54 +153,40 @@ class Plugin {
   // degrees.
   virtual void AdvanceTime(Instant const& t, Angle const& planetarium_rotation);
 
-  // Returns the position of the vessel with GUID |vessel_guid| relative to its
-  // parent at current time. For a KSP |Vessel| |v|, the argument corresponds to
-  // |v.id.ToString()|, the return value to |v.orbit.pos|.
+  // Returns the displacement and velocity of the vessel with GUID |vessel_guid|
+  // relative to its parent at current time. For a KSP |Vessel| |v|, the
+  // argument corresponds to  |v.id.ToString()|, the return value to
+  // |{v.orbit.pos, v.orbit.vel}|.
   // A vessel with GUID |vessel_guid| must have been inserted and kept. Must
   // be called after initialization.
-  virtual Displacement<AliceSun> VesselDisplacementFromParent(
+  virtual RelativeDegreesOfFreedom<AliceSun> VesselFromParent(
       GUID const& vessel_guid) const;
 
-  // Returns the velocity of the vessel with GUID |vessel_guid| relative to its
-  // parent at current time. For a KSP |Vessel| |v|, the argument corresponds to
-  // |v.id.ToString()|, the return value to |v.orbit.vel|.
-  // A vessel with GUID |vessel_guid| must have been inserted and kept. Must
-  // be called after initialization.
-  virtual Velocity<AliceSun> VesselParentRelativeVelocity(
-      GUID const& vessel_guid) const;
-
-  // Returns the position of the celestial at index |celestial_index| relative
-  // to its parent at current time. For a KSP |CelestialBody| |b|, the argument
-  // corresponds to |b.flightGlobalsIndex|, the return value to |b.orbit.pos|.
+  // Returns the displacement and velocity of the celestial at index
+  // |celestial_index| relative to its parent at current time. For a KSP
+  // |CelestialBody| |b|, the argument corresponds to |b.flightGlobalsIndex|,
+  // the return value to |{b.orbit.pos, b.orbit.vel}|.
   // A celestial with index |celestial_index| must have been inserted, and it
   // must not be the sun. Must be called after initialization.
-  virtual Displacement<AliceSun> CelestialDisplacementFromParent(
-      Index const celestial_index) const;
-
-  // Returns the velocity of the celestial at index |celestial_index| relative
-  // to its parent at current time. For a KSP |CelestialBody| |b|, the argument
-  // corresponds to |b.flightGlobalsIndex|, the return value to |b.orbit.vel|.
-  // A celestial with index |celestial_index| must have been inserted, and it
-  // must not be the sun. Must be called after initialization.
-  virtual Velocity<AliceSun> CelestialParentRelativeVelocity(
+  virtual RelativeDegreesOfFreedom<AliceSun> CelestialFromParent(
       Index const celestial_index) const;
 
   // Returns a polygon in |World| space depicting the trajectory of the vessel
   // with the given |GUID| in |frame|.  |sun_world_position| is the current
   // position of the sun in |World| space as returned by
   // |Planetarium.fetch.Sun.position|.  It is used to define the relation
-  // between |WorldSun| and |World|.
+  // between |WorldSun| and |World|.  No transfer of ownership.
   virtual RenderedTrajectory<World> RenderedVesselTrajectory(
       GUID const& vessel_guid,
-      RenderingFrame const& frame,
+      Transforms<Barycentric, Rendering, Barycentric>* const transforms,
       Position<World> const& sun_world_position) const;
 
-  virtual std::unique_ptr<BodyCentredNonRotatingFrame>
-  NewBodyCentredNonRotatingFrame(Index const reference_body_index) const;
+  virtual std::unique_ptr<Transforms<Barycentric, Rendering, Barycentric>>
+  NewBodyCentredNonRotatingTransforms(Index const reference_body_index) const;
 
-  virtual std::unique_ptr<BarycentricRotatingFrame>
-  NewBarycentricRotatingFrame(Index const primary_index,
-                              Index const secondary_index) const;
+  virtual std::unique_ptr<Transforms<Barycentric, Rendering, Barycentric>>
+  NewBarycentricRotatingTransforms(Index const primary_index,
+                                   Index const secondary_index) const;
 
   virtual Position<World> VesselWorldPosition(
       GUID const& vessel_guid,
@@ -243,28 +223,16 @@ class Plugin {
  private:
   using GUIDToOwnedVessel = std::map<GUID, std::unique_ptr<Vessel>>;
   using GUIDToUnownedVessel = std::map<GUID, Vessel* const>;
-  using PartCorrespondence = std::pair<Part<World>*, Part<World>*>;
 
   std::unique_ptr<Vessel> const& find_vessel_by_guid_or_die(
       GUID const& vessel_guid) const;
 
-  // Returns |current_physics_bubble_ != nullptr|.
-  bool has_physics_bubble() const;
   // Returns |!dirty_vessels_.empty()|.
   bool has_dirty_vessels() const;
   // Returns |!unsynchronized_vessels_.empty()|.
   bool has_unsynchronized_vessels() const;
-  // Returns |current_physics_bubble_->vessels.size()|, or 0 if
-  // |current_physics_bubble_| is null.
-  std::size_t number_of_vessels_in_physics_bubble() const;
-  // Returns 1 if |has_physics_bubble()|, 0 otherwise.
-  std::size_t number_of_physics_bubbles() const;
   // Returns |dirty_vessels_.count(vessel) > 0|.
   bool is_dirty(Vessel* const vessel) const;
-  // Returns true if, and only if, |vessel| is in
-  // |current_physics_bubble_->vessels|.  |current_physics_bubble_| may be null,
-  // in that case, returns false.
-  bool is_in_physics_bubble(Vessel* const vessel) const;
 
   // The common last time of the histories of synchronized vessels and
   // celestials.
@@ -310,43 +278,6 @@ class Plugin {
   // if there is one.
   void EvolveProlongationsAndBubble(Instant const& t);
 
-  // If |next_physics_bubble_| is not null, computes the world centre of mass,
-  // trajectory (including intrinsic acceleration) of |*next_physics_bubble_|.
-  // Moves |next_physics_bubble_| into |current_physics_bubble_|.
-  void PreparePhysicsBubble(Instant const& next_time);
-
-  // Utilities for |PreparePhysicsBubble|.
-
-  // Computes the world degrees of freedom of the centre of mass of
-  // |next_physics_bubble_| using the contents of |next_physics_bubble_->parts|.
-  // |next_physics_bubble_| must not be null.
-  void ComputeNextPhysicsBubbleCentreOfMassWorldDegreesOfFreedom();
-  // Computes |next_physics_bubble_->displacements_from_centre_of_mass| and
-  // |next_physics_bubble_->velocities_from_centre_of_mass|.
-  // |next_physics_bubble_| must not be null.
-  void ComputeNextPhysicsBubbleVesselOffsets();
-  // Creates |next_physics_bubble_->centre_of_mass_trajectory| and appends to it
-  // the barycentre of the degrees of freedom of the vessels in
-  // |next_physics_bubble_->vessels|.  There is no intrinsic acceleration.
-  // |next_physics_bubble_| must not be null.
-  void RestartNextPhysicsBubble();
-  // Returns the intrinsic acceleration measured on the parts that are common to
-  // the current and next physics bubbles.  Stores a pair of pointers to parts
-  // (current, next) in |common_parts| for all parts common to the current and
-  // next physics bubble.
-  // |common_parts| must not be null.  |*common_parts| must be empty.  No
-  // transfer of ownership.
-  Vector<Acceleration, World> IntrinsicAcceleration(
-      Instant const& next_time,
-      std::vector<PartCorrespondence>* const common_parts);
-  // Given the vector of common parts produced by |IntrinsicAcceleration|,
-  // constructs |*next_physics_bubble_->centre_of_mass_trajectory| and appends
-  // degrees of freedom at |current_time_| that conserve the degrees of freedom
-  // of the centre of mass of the parts in |common_parts|.
-  // |common_parts| must not be null.  |next_physics_bubble_| must not be null.
-  // No transfer of ownership.
-  void ShiftBubble(std::vector<PartCorrespondence> const* const common_parts);
-
   // TODO(egg): Constant time step for now.
   Time const Δt_ = 10 * Second;
 
@@ -366,27 +297,7 @@ class Plugin {
   // The vessels that will be kept during the next call to |AdvanceTime|.
   std::set<Vessel const* const> kept_vessels_;
 
-  struct PhysicsBubble {
-    std::map<Vessel* const, std::vector<Part<World>* const>> vessels;
-    PartIdToOwnedPart parts;
-    // TODO(egg): the following six should be |std::optional| when that
-    // becomes a thing.
-    std::unique_ptr<DegreesOfFreedom<World>> centre_of_mass;
-    std::unique_ptr<Trajectory<Barycentric>> centre_of_mass_trajectory;
-    std::unique_ptr<
-        std::map<Vessel const* const,
-                 Displacement<Barycentric>>> displacements_from_centre_of_mass;
-    std::unique_ptr<
-        std::map<Vessel const* const,
-                 Velocity<Barycentric>>> velocities_from_centre_of_mass;
-    std::unique_ptr<Displacement<World>> displacement_correction;
-    std::unique_ptr<Velocity<World>> velocity_correction;
-  };
-
-  std::unique_ptr<PhysicsBubble> current_physics_bubble_;
-  std::unique_ptr<PhysicsBubble> next_physics_bubble_;
-
-  MasslessBody bubble_body_;
+  PhysicsBubble bubble_;
 
   std::unique_ptr<NBodySystem<Barycentric>> n_body_system_;
   // The symplectic integrator computing the synchronized histories.

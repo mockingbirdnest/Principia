@@ -16,12 +16,12 @@ class MockNBodySystem : public NBodySystem<InertialFrame> {
   MOCK_CONST_METHOD6_T(
       Integrate,
       void(SymplecticIntegrator<Length, Speed> const& integrator,
-          Instant const& tmax,
-          Time const& Δt,
-          int const sampling_period,
-          bool const tmax_is_exact,
-          typename NBodySystem<InertialFrame>::Trajectories const&
-              trajectories));
+           Instant const& tmax,
+           Time const& Δt,
+           int const sampling_period,
+           bool const tmax_is_exact,
+           typename NBodySystem<InertialFrame>::Trajectories const&
+               trajectories));
 };
 
 }  // namespace physics

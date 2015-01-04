@@ -24,6 +24,10 @@ bool operator==(XYZ const& left, XYZ const& right) {
   return left.x == right.x && left.y == right.y && left.z == right.z;
 }
 
+bool operator==(QP const& left, QP const& right) {
+  return left.q == right.q && left.p == right.p;
+}
+
 namespace {
 
 char const kVesselGUID[] = "NCC-1701-D";
@@ -37,10 +41,9 @@ double const kTime = 11;
 
 XYZ kParentPosition = {4, 5, 6};
 XYZ kParentVelocity = {7, 8, 9};
+QP kParentRelativeDegreesOfFreedom = {kParentPosition, kParentVelocity};
 
 int const kTrajectorySize = 10;
-
-ACTION_P(FillUniquePtr1, p) { return arg1->reset(p); }
 
 ACTION_TEMPLATE(FillUniquePtr,
                 // Note the comma between int and k:
@@ -52,21 +55,7 @@ ACTION_TEMPLATE(FillUniquePtr,
 class InterfaceTest : public testing::Test {
  protected:
   InterfaceTest()
-      : body_centred_non_rotating_frame_placeholder_(nullptr),
-        barycentric_rotating_frame_placeholder_(nullptr),
-        plugin_(new StrictMock<MockPlugin>) {}
-
-  // Since we cannot create a BodyCentredNonRotatingFrame or a
-  // BarycentricRotatingFrame here, we just create a pointer to a bunch of bytes
-  // having the right size.
-  template<typename T>
-  static T* NewPlaceholder() {
-    return reinterpret_cast<T*>(new char[sizeof(T)]);
-  }
-
-  // These two pointers are not owned.
-  BodyCentredNonRotatingFrame* body_centred_non_rotating_frame_placeholder_;
-  BarycentricRotatingFrame* barycentric_rotating_frame_placeholder_;
+      : plugin_(new StrictMock<MockPlugin>) {}
 
   std::unique_ptr<StrictMock<MockPlugin>> plugin_;
 };
@@ -81,11 +70,10 @@ TEST_F(InterfaceDeathTest, Errors) {
   }, "pointer.*non NULL");
   EXPECT_DEATH({
     principia__InsertCelestial(plugin,
-                    kCelestialIndex,
-                    kGravitationalParameter,
-                    kParentIndex,
-                    kParentPosition,
-                    kParentVelocity);
+                               kCelestialIndex,
+                               kGravitationalParameter,
+                               kParentIndex,
+                               kParentRelativeDegreesOfFreedom);
   }, "plugin.*non NULL");
   EXPECT_DEATH({
     principia__UpdateCelestialHierarchy(plugin, kCelestialIndex, kParentIndex);
@@ -99,23 +87,16 @@ TEST_F(InterfaceDeathTest, Errors) {
   EXPECT_DEATH({
     principia__SetVesselStateOffset(plugin,
                                     kVesselGUID,
-                                    kParentPosition,
-                                    kParentVelocity);
+                                    kParentRelativeDegreesOfFreedom);
   }, "plugin.*non NULL");
   EXPECT_DEATH({
-    principia__VesselDisplacementFromParent(plugin, kVesselGUID);
+    principia__VesselFromParent(plugin, kVesselGUID);
   }, "plugin.*non NULL");
   EXPECT_DEATH({
-    principia__VesselParentRelativeVelocity(plugin, kVesselGUID);
+    principia__CelestialFromParent(plugin, kCelestialIndex);
   }, "plugin.*non NULL");
   EXPECT_DEATH({
-    principia__CelestialDisplacementFromParent(plugin, kCelestialIndex);
-  }, "plugin.*non NULL");
-  EXPECT_DEATH({
-    principia__CelestialParentRelativeVelocity(plugin, kCelestialIndex);
-  }, "plugin.*non NULL");
-  EXPECT_DEATH({
-    principia__NewBodyCentredNonRotatingFrame(plugin, kCelestialIndex);
+    principia__NewBodyCentredNonRotatingTransforms(plugin, kCelestialIndex);
   }, "plugin.*non NULL");
 }
 
@@ -146,20 +127,20 @@ TEST_F(InterfaceTest, InsertCelestial) {
                   kCelestialIndex,
                   kGravitationalParameter * SIUnit<GravitationalParameter>(),
                   kParentIndex,
-                  Displacement<AliceSun>(
-                      {kParentPosition.x * SIUnit<Length>(),
-                       kParentPosition.y * SIUnit<Length>(),
-                       kParentPosition.z * SIUnit<Length>()}),
-                  Velocity<AliceSun>(
-                      {kParentVelocity.x * SIUnit<Speed>(),
-                       kParentVelocity.y * SIUnit<Speed>(),
-                       kParentVelocity.z * SIUnit<Speed>()})));
+                  RelativeDegreesOfFreedom<AliceSun>(
+                      Displacement<AliceSun>(
+                          {kParentPosition.x * SIUnit<Length>(),
+                           kParentPosition.y * SIUnit<Length>(),
+                           kParentPosition.z * SIUnit<Length>()}),
+                      Velocity<AliceSun>(
+                          {kParentVelocity.x * SIUnit<Speed>(),
+                           kParentVelocity.y * SIUnit<Speed>(),
+                           kParentVelocity.z * SIUnit<Speed>()}))));
   principia__InsertCelestial(plugin_.get(),
                              kCelestialIndex,
                              kGravitationalParameter,
                              kParentIndex,
-                             kParentPosition,
-                             kParentVelocity);
+                             kParentRelativeDegreesOfFreedom);
 }
 
 TEST_F(InterfaceTest, UpdateCelestialHierarchy) {
@@ -186,18 +167,18 @@ TEST_F(InterfaceTest, SetVesselStateOffset) {
   EXPECT_CALL(*plugin_,
               SetVesselStateOffset(
                   kVesselGUID,
-                  Displacement<AliceSun>(
-                      {kParentPosition.x * SIUnit<Length>(),
-                       kParentPosition.y * SIUnit<Length>(),
-                       kParentPosition.z * SIUnit<Length>()}),
-                  Velocity<AliceSun>(
-                      {kParentVelocity.x * SIUnit<Speed>(),
-                       kParentVelocity.y * SIUnit<Speed>(),
-                       kParentVelocity.z * SIUnit<Speed>()})));
+                  RelativeDegreesOfFreedom<AliceSun>(
+                      Displacement<AliceSun>(
+                          {kParentPosition.x * SIUnit<Length>(),
+                           kParentPosition.y * SIUnit<Length>(),
+                           kParentPosition.z * SIUnit<Length>()}),
+                      Velocity<AliceSun>(
+                          {kParentVelocity.x * SIUnit<Speed>(),
+                           kParentVelocity.y * SIUnit<Speed>(),
+                           kParentVelocity.z * SIUnit<Speed>()}))));
   principia__SetVesselStateOffset(plugin_.get(),
                                   kVesselGUID,
-                                  kParentPosition,
-                                  kParentVelocity);
+                                  kParentRelativeDegreesOfFreedom);
 }
 
 TEST_F(InterfaceTest, AdvanceTime) {
@@ -207,106 +188,96 @@ TEST_F(InterfaceTest, AdvanceTime) {
   principia__AdvanceTime(plugin_.get(), kTime, kPlanetariumRotation);
 }
 
-TEST_F(InterfaceTest, VesselDisplacementFromParent) {
+TEST_F(InterfaceTest, VesselFromParent) {
   EXPECT_CALL(*plugin_,
-              VesselDisplacementFromParent(kVesselGUID))
-      .WillOnce(Return(Displacement<AliceSun>(
-                           {kParentPosition.x * SIUnit<Length>(),
-                            kParentPosition.y * SIUnit<Length>(),
-                            kParentPosition.z * SIUnit<Length>()})));
-  XYZ const result = principia__VesselDisplacementFromParent(plugin_.get(),
-                                                             kVesselGUID);
-  EXPECT_THAT(result, Eq(kParentPosition));
+              VesselFromParent(kVesselGUID))
+      .WillOnce(Return(RelativeDegreesOfFreedom<AliceSun>(
+                           Displacement<AliceSun>(
+                               {kParentPosition.x * SIUnit<Length>(),
+                                kParentPosition.y * SIUnit<Length>(),
+                                kParentPosition.z * SIUnit<Length>()}),
+                           Velocity<AliceSun>(
+                               {kParentVelocity.x * SIUnit<Speed>(),
+                                kParentVelocity.y * SIUnit<Speed>(),
+                                kParentVelocity.z * SIUnit<Speed>()}))));
+  QP const result = principia__VesselFromParent(plugin_.get(),
+                                                kVesselGUID);
+  EXPECT_THAT(result, Eq(kParentRelativeDegreesOfFreedom));
 }
 
-TEST_F(InterfaceTest, VesselParentRelativeVelocity) {
+TEST_F(InterfaceTest, CelestialFromParent) {
   EXPECT_CALL(*plugin_,
-              VesselParentRelativeVelocity(kVesselGUID))
-      .WillOnce(Return(Velocity<AliceSun>(
-                           {kParentVelocity.x * SIUnit<Speed>(),
-                            kParentVelocity.y * SIUnit<Speed>(),
-                            kParentVelocity.z * SIUnit<Speed>()})));
-  XYZ const result = principia__VesselParentRelativeVelocity(plugin_.get(),
-                                                             kVesselGUID);
-  EXPECT_THAT(result, Eq(kParentVelocity));
+              CelestialFromParent(kCelestialIndex))
+      .WillOnce(Return(RelativeDegreesOfFreedom<AliceSun>(
+                           Displacement<AliceSun>(
+                               {kParentPosition.x * SIUnit<Length>(),
+                                kParentPosition.y * SIUnit<Length>(),
+                                kParentPosition.z * SIUnit<Length>()}),
+                           Velocity<AliceSun>(
+                               {kParentVelocity.x * SIUnit<Speed>(),
+                                kParentVelocity.y * SIUnit<Speed>(),
+                                kParentVelocity.z * SIUnit<Speed>()}))));
+  QP const result = principia__CelestialFromParent(plugin_.get(),
+                                                    kCelestialIndex);
+  EXPECT_THAT(result, Eq(kParentRelativeDegreesOfFreedom));
 }
 
-TEST_F(InterfaceTest, CelestialDisplacementFromParent) {
+TEST_F(InterfaceTest, NewBodyCentredNonRotatingTransforms) {
+  auto dummy_transforms = Transforms<Barycentric, Rendering, Barycentric>::
+                              DummyForTesting().release();
   EXPECT_CALL(*plugin_,
-              CelestialDisplacementFromParent(kCelestialIndex))
-      .WillOnce(Return(Displacement<AliceSun>(
-                           {kParentPosition.x * SIUnit<Length>(),
-                            kParentPosition.y * SIUnit<Length>(),
-                            kParentPosition.z * SIUnit<Length>()})));
-  XYZ const result = principia__CelestialDisplacementFromParent(
-                         plugin_.get(),
-                         kCelestialIndex);
-  EXPECT_THAT(result, Eq(kParentPosition));
+              FillBodyCentredNonRotatingTransforms(kCelestialIndex, _))
+      .WillOnce(FillUniquePtr<1>(dummy_transforms));
+  std::unique_ptr<Transforms<Barycentric, Rendering, Barycentric>> transforms(
+      principia__NewBodyCentredNonRotatingTransforms(plugin_.get(),
+                                                     kCelestialIndex));
+  EXPECT_EQ(dummy_transforms, transforms.get());
 }
 
-TEST_F(InterfaceTest, CelestialParentRelativeVelocity) {
+TEST_F(InterfaceTest, NewBarycentricRotatingTransforms) {
+  auto dummy_transforms = Transforms<Barycentric, Rendering, Barycentric>::
+                              DummyForTesting().release();
   EXPECT_CALL(*plugin_,
-              CelestialParentRelativeVelocity(kCelestialIndex))
-      .WillOnce(Return(Velocity<AliceSun>(
-                           {kParentVelocity.x * SIUnit<Speed>(),
-                            kParentVelocity.y * SIUnit<Speed>(),
-                            kParentVelocity.z * SIUnit<Speed>()})));
-  XYZ const result = principia__CelestialParentRelativeVelocity(
-                         plugin_.get(),
-                         kCelestialIndex);
-  EXPECT_THAT(result, Eq(kParentVelocity));
+              FillBarycentricRotatingTransforms(kCelestialIndex,
+                                                kParentIndex,
+                                                _))
+      .WillOnce(FillUniquePtr<2>(dummy_transforms));
+  std::unique_ptr<Transforms<Barycentric, Rendering, Barycentric>> transforms(
+      principia__NewBarycentricRotatingTransforms(plugin_.get(),
+                                                  kCelestialIndex,
+                                                  kParentIndex));
+  EXPECT_EQ(dummy_transforms, transforms.get());
 }
 
-TEST_F(InterfaceTest, NewBodyCentredNonRotatingFrame) {
-  body_centred_non_rotating_frame_placeholder_ =
-      NewPlaceholder<BodyCentredNonRotatingFrame>();
+TEST_F(InterfaceTest, DeleteTransforms) {
+  auto dummy_transforms = Transforms<Barycentric, Rendering, Barycentric>::
+                              DummyForTesting().release();
   EXPECT_CALL(*plugin_,
-              FillBodyCentredNonRotatingFrame(kCelestialIndex, _))
-      .WillOnce(FillUniquePtr<1>(body_centred_non_rotating_frame_placeholder_));
-  std::unique_ptr<BodyCentredNonRotatingFrame const> frame(
-      principia__NewBodyCentredNonRotatingFrame(plugin_.get(),
-                                                kCelestialIndex));
-  EXPECT_EQ(body_centred_non_rotating_frame_placeholder_, frame.get());
-}
-
-TEST_F(InterfaceTest, NewBarycentricRotatingFrame) {
-  barycentric_rotating_frame_placeholder_ =
-      NewPlaceholder<BarycentricRotatingFrame>();
-  EXPECT_CALL(*plugin_,
-              FillBarycentricRotatingFrame(kCelestialIndex, kParentIndex, _))
-      .WillOnce(FillUniquePtr<2>(barycentric_rotating_frame_placeholder_));
-  std::unique_ptr<BarycentricRotatingFrame const> frame(
-      principia__NewBarycentricRotatingFrame(plugin_.get(),
-                                             kCelestialIndex,
-                                             kParentIndex));
-  EXPECT_EQ(barycentric_rotating_frame_placeholder_, frame.get());
-}
-
-TEST_F(InterfaceTest, DeleteRenderingFrame) {
-  barycentric_rotating_frame_placeholder_ =
-      NewPlaceholder<BarycentricRotatingFrame>();
-  EXPECT_CALL(*plugin_,
-              FillBarycentricRotatingFrame(kCelestialIndex, kParentIndex, _))
-      .WillOnce(FillUniquePtr<2>(barycentric_rotating_frame_placeholder_));
-  RenderingFrame const* frame =
-      principia__NewBarycentricRotatingFrame(plugin_.get(),
-                                             kCelestialIndex,
-                                             kParentIndex);
-  EXPECT_EQ(barycentric_rotating_frame_placeholder_, frame);
-  principia__DeleteRenderingFrame(&frame);
-  EXPECT_THAT(frame, IsNull());
+              FillBarycentricRotatingTransforms(kCelestialIndex,
+                                                kParentIndex,
+                                                _))
+      .WillOnce(FillUniquePtr<2>(dummy_transforms));
+  Transforms<Barycentric, Rendering, Barycentric>* transforms(
+      principia__NewBarycentricRotatingTransforms(plugin_.get(),
+                                                  kCelestialIndex,
+                                                  kParentIndex));
+  EXPECT_EQ(dummy_transforms, transforms);
+  principia__DeleteTransforms(&transforms);
+  EXPECT_THAT(transforms, IsNull());
 }
 
 TEST_F(InterfaceTest, LineAndIterator) {
-  barycentric_rotating_frame_placeholder_ =
-      NewPlaceholder<BarycentricRotatingFrame>();
+  auto dummy_transforms = Transforms<Barycentric, Rendering, Barycentric>::
+                              DummyForTesting().release();
   EXPECT_CALL(*plugin_,
-              FillBarycentricRotatingFrame(kCelestialIndex, kParentIndex, _))
-      .WillOnce(FillUniquePtr<2>(barycentric_rotating_frame_placeholder_));
-  RenderingFrame const* frame =
-      principia__NewBarycentricRotatingFrame(plugin_.get(),
-                                             kCelestialIndex,
-                                             kParentIndex);
+              FillBarycentricRotatingTransforms(kCelestialIndex,
+                                                kParentIndex,
+                                                _))
+      .WillOnce(FillUniquePtr<2>(dummy_transforms));
+  Transforms<Barycentric, Rendering, Barycentric>* transforms =
+      principia__NewBarycentricRotatingTransforms(plugin_.get(),
+                                                  kCelestialIndex,
+                                                  kParentIndex);
 
   // Construct a test rendered trajectory.
   RenderedTrajectory<World> rendered_trajectory;
@@ -329,7 +300,7 @@ TEST_F(InterfaceTest, LineAndIterator) {
   EXPECT_CALL(*plugin_,
               RenderedVesselTrajectory(
                   kVesselGUID,
-                  Ref(*frame),
+                  transforms,
                   World::origin + Displacement<World>(
                                       {kParentPosition.x * SIUnit<Length>(),
                                        kParentPosition.y * SIUnit<Length>(),
@@ -338,7 +309,7 @@ TEST_F(InterfaceTest, LineAndIterator) {
   LineAndIterator* line_and_iterator =
       principia__RenderedVesselTrajectory(plugin_.get(),
                                           kVesselGUID,
-                                          frame,
+                                          transforms,
                                           kParentPosition);
   EXPECT_EQ(kTrajectorySize, line_and_iterator->rendered_trajectory.size());
   EXPECT_EQ(kTrajectorySize, principia__NumberOfSegments(line_and_iterator));

@@ -29,9 +29,6 @@
     <ClInclude Include="celestial.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="rendering_frame.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="frames.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -47,6 +44,9 @@
     <ClInclude Include="part_body.hpp">
       <Filter>Source Files</Filter>
     </ClInclude>
+    <ClInclude Include="physics_bubble.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="interface.cpp">
@@ -58,10 +58,10 @@
     <ClCompile Include="monostable.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="rendering_frame.cpp">
+    <ClCompile Include="mock_plugin.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="mock_plugin.cpp">
+    <ClCompile Include="physics_bubble.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

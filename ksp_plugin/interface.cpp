@@ -6,6 +6,7 @@
 
 #include "base/macros.hpp"
 #include "base/version.hpp"
+#include "ksp_plugin/part.hpp"
 
 using principia::geometry::Displacement;
 using principia::ksp_plugin::AliceSun;
@@ -119,14 +120,14 @@ void principia__InsertCelestial(Plugin* const plugin,
                                 int const celestial_index,
                                 double const gravitational_parameter,
                                 int const parent_index,
-                                XYZ const from_parent_position,
-                                XYZ const from_parent_velocity) {
+                                QP const from_parent) {
   CHECK_NOTNULL(plugin)->InsertCelestial(
       celestial_index,
       gravitational_parameter * SIUnit<GravitationalParameter>(),
       parent_index,
-      Displacement<AliceSun>(ToR3Element(from_parent_position) * Metre),
-      Velocity<AliceSun>(ToR3Element(from_parent_velocity) * (Metre / Second)));
+      RelativeDegreesOfFreedom<AliceSun>(
+          Displacement<AliceSun>(ToR3Element(from_parent.q) * Metre),
+          Velocity<AliceSun>(ToR3Element(from_parent.p) * (Metre / Second))));
 }
 
 void principia__UpdateCelestialHierarchy(Plugin const* const plugin,
@@ -148,12 +149,12 @@ bool principia__InsertOrKeepVessel(Plugin* const plugin,
 
 void principia__SetVesselStateOffset(Plugin* const plugin,
                                      char const* vessel_guid,
-                                     XYZ const from_parent_position,
-                                     XYZ const from_parent_velocity) {
+                                     QP const from_parent) {
   CHECK_NOTNULL(plugin)->SetVesselStateOffset(
       vessel_guid,
-      Displacement<AliceSun>(ToR3Element(from_parent_position) * Metre),
-      Velocity<AliceSun>(ToR3Element(from_parent_velocity) * (Metre / Second)));
+      RelativeDegreesOfFreedom<AliceSun>(
+          Displacement<AliceSun>(ToR3Element(from_parent.q) * Metre),
+          Velocity<AliceSun>(ToR3Element(from_parent.p) * (Metre / Second))));
 }
 
 void principia__AdvanceTime(Plugin* const plugin,
@@ -163,62 +164,52 @@ void principia__AdvanceTime(Plugin* const plugin,
                                      planetarium_rotation * Degree);
 }
 
-XYZ principia__VesselDisplacementFromParent(Plugin const* const plugin,
-                                            char const* vessel_guid) {
-  Displacement<AliceSun> const result =
-      CHECK_NOTNULL(plugin)->VesselDisplacementFromParent(vessel_guid);
-  return ToXYZ(result.coordinates() / Metre);
+QP principia__VesselFromParent(Plugin const* const plugin,
+                               char const* vessel_guid) {
+  RelativeDegreesOfFreedom<AliceSun> const result =
+      CHECK_NOTNULL(plugin)->VesselFromParent(vessel_guid);
+  return {ToXYZ(result.displacement().coordinates() / Metre),
+          ToXYZ(result.velocity().coordinates() / (Metre / Second))};
 }
 
-XYZ principia__VesselParentRelativeVelocity(Plugin const* const plugin,
-                                            char const* vessel_guid) {
-  Velocity<AliceSun> const result =
-      CHECK_NOTNULL(plugin)->VesselParentRelativeVelocity(vessel_guid);
-  return ToXYZ(result.coordinates() / (Metre / Second));
+QP principia__CelestialFromParent(Plugin const* const plugin,
+                                   int const celestial_index) {
+  RelativeDegreesOfFreedom<AliceSun> const result =
+      CHECK_NOTNULL(plugin)->CelestialFromParent(celestial_index);
+  return {ToXYZ(result.displacement().coordinates() / Metre),
+          ToXYZ(result.velocity().coordinates() / (Metre / Second))};
 }
 
-XYZ principia__CelestialDisplacementFromParent(Plugin const* const plugin,
-                                               int const celestial_index) {
-  Displacement<AliceSun> const result =
-      CHECK_NOTNULL(plugin)->CelestialDisplacementFromParent(celestial_index);
-  return ToXYZ(result.coordinates() / Metre);
-}
-
-XYZ principia__CelestialParentRelativeVelocity(Plugin const* const plugin,
-                                               int const celestial_index) {
-  Velocity<AliceSun> const result =
-      CHECK_NOTNULL(plugin)->CelestialParentRelativeVelocity(celestial_index);
-  return ToXYZ(result.coordinates() / (Metre / Second));
-}
-
-BodyCentredNonRotatingFrame const* principia__NewBodyCentredNonRotatingFrame(
-    Plugin const* const plugin,
-    int const reference_body_index) {
+Transforms<Barycentric, Rendering, Barycentric>*
+principia__NewBodyCentredNonRotatingTransforms(Plugin const* const plugin,
+                                               int const reference_body_index) {
   return CHECK_NOTNULL(plugin)->
-      NewBodyCentredNonRotatingFrame(reference_body_index).release();
+      NewBodyCentredNonRotatingTransforms(reference_body_index).release();
 }
 
-BarycentricRotatingFrame const* principia__NewBarycentricRotatingFrame(
-    Plugin const* const plugin,
-    int const primary_index,
-    int const secondary_index) {
+Transforms<Barycentric, Rendering, Barycentric>*
+principia__NewBarycentricRotatingTransforms(Plugin const* const plugin,
+                                            int const primary_index,
+                                            int const secondary_index) {
   return CHECK_NOTNULL(plugin)->
-      NewBarycentricRotatingFrame(primary_index, secondary_index).release();
+      NewBarycentricRotatingTransforms(
+          primary_index, secondary_index).release();
 }
 
-void principia__DeleteRenderingFrame(RenderingFrame const** const frame) {
-  TakeOwnership(frame);
+void principia__DeleteTransforms(
+    Transforms<Barycentric, Rendering, Barycentric>** const transforms) {
+  TakeOwnership(transforms);
 }
 
 LineAndIterator* principia__RenderedVesselTrajectory(
     Plugin const* const plugin,
     char const* vessel_guid,
-    RenderingFrame const* frame,
+    Transforms<Barycentric, Rendering, Barycentric>* const transforms,
     XYZ const sun_world_position) {
   RenderedTrajectory<World> rendered_trajectory = CHECK_NOTNULL(plugin)->
       RenderedVesselTrajectory(
           vessel_guid,
-          *CHECK_NOTNULL(frame),
+          CHECK_NOTNULL(transforms),
           World::origin + Displacement<World>(
                               ToR3Element(sun_world_position) * Metre));
   std::unique_ptr<LineAndIterator> result =

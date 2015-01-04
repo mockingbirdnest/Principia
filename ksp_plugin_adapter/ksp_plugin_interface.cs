@@ -26,6 +26,11 @@ public partial class PluginAdapter : UnityEngine.MonoBehaviour {
   };
 
   [StructLayout(LayoutKind.Sequential)]
+  private struct QP {
+    public XYZ q, p;
+  };
+
+  [StructLayout(LayoutKind.Sequential)]
   struct KSPPart {
     public XYZ world_position;
     public XYZ world_velocity;
@@ -63,8 +68,7 @@ public partial class PluginAdapter : UnityEngine.MonoBehaviour {
       int celestial_index,
       double gravitational_parameter,
       int parent_index,
-      XYZ from_parent_position,
-      XYZ from_parent_velocity);
+      QP from_parent);
 
   [DllImport(dllName           : kDllPath,
              EntryPoint        = "principia__EndInitialization",
@@ -93,8 +97,7 @@ public partial class PluginAdapter : UnityEngine.MonoBehaviour {
   private static extern void SetVesselStateOffset(
       IntPtr plugin,
       [MarshalAs(UnmanagedType.LPStr)] String vessel_guid,
-      XYZ from_parent_position,
-      XYZ from_parent_velocity);
+      QP from_parent);
 
   [DllImport(dllName           : kDllPath,
              EntryPoint        = "principia__AdvanceTime",
@@ -105,52 +108,39 @@ public partial class PluginAdapter : UnityEngine.MonoBehaviour {
       double planetarium_rotation);
 
   [DllImport(dllName           : kDllPath,
-             EntryPoint        = "principia__VesselDisplacementFromParent",
+             EntryPoint        = "principia__VesselFromParent",
              CallingConvention = CallingConvention.Cdecl)]
-  private static extern XYZ VesselDisplacementFromParent(
+  private static extern QP VesselFromParent(
       IntPtr plugin,
       [MarshalAs(UnmanagedType.LPStr)] String vessel_guid);
 
   [DllImport(dllName           : kDllPath,
-             EntryPoint        = "principia__VesselParentRelativeVelocity",
+             EntryPoint        = "principia__CelestialFromParent",
              CallingConvention = CallingConvention.Cdecl)]
-  private static extern XYZ VesselParentRelativeVelocity(
-      IntPtr plugin,
-      [MarshalAs(UnmanagedType.LPStr)] String vessel_guid);
-
-  [DllImport(dllName           : kDllPath,
-             EntryPoint        = "principia__CelestialDisplacementFromParent",
-             CallingConvention = CallingConvention.Cdecl)]
-  private static extern XYZ CelestialDisplacementFromParent(
+  private static extern QP CelestialFromParent(
       IntPtr plugin,
       int celestial_index);
 
   [DllImport(dllName           : kDllPath,
-             EntryPoint        = "principia__CelestialParentRelativeVelocity",
+             EntryPoint        =
+                 "principia__NewBodyCentredNonRotatingTransforms",
              CallingConvention = CallingConvention.Cdecl)]
-  private static extern XYZ CelestialParentRelativeVelocity(
-      IntPtr plugin,
-      int celestial_index);
-
-  [DllImport(dllName           : kDllPath,
-             EntryPoint        = "principia__NewBodyCentredNonRotatingFrame",
-             CallingConvention = CallingConvention.Cdecl)]
-  private static extern IntPtr NewBodyCentredNonRotatingFrame(
+  private static extern IntPtr NewBodyCentredNonRotatingTransforms(
       IntPtr plugin,
       int reference_body_index);
 
   [DllImport(dllName           : kDllPath,
-             EntryPoint        = "principia__NewBarycentricRotatingFrame",
+             EntryPoint        = "principia__NewBarycentricRotatingTransforms",
              CallingConvention = CallingConvention.Cdecl)]
-  private static extern IntPtr NewBarycentricRotatingFrame(
+  private static extern IntPtr NewBarycentricRotatingTransforms(
       IntPtr plugin,
       int primary_index,
       int secondary_index);
 
   [DllImport(dllName           : kDllPath,
-             EntryPoint        = "principia__DeleteRenderingFrame",
+             EntryPoint        = "principia__DeleteTransforms",
              CallingConvention = CallingConvention.Cdecl)]
-  private static extern void DeleteRenderingFrame(ref IntPtr frame);
+  private static extern void DeleteTransforms(ref IntPtr transforms);
 
   [DllImport(dllName           : kDllPath,
              EntryPoint        = "principia__RenderedVesselTrajectory",
@@ -158,7 +148,7 @@ public partial class PluginAdapter : UnityEngine.MonoBehaviour {
   private static extern IntPtr RenderedVesselTrajectory(
       IntPtr plugin,
       [MarshalAs(UnmanagedType.LPStr)] String vessel_guid,
-      IntPtr frame,
+      IntPtr transforms,
       XYZ sun_world_position);
 
   [DllImport(dllName           : kDllPath,
