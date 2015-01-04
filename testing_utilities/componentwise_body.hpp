@@ -87,12 +87,12 @@ template<typename T1, typename T2>
 bool ComponentwiseMatcher2<T1Matcher, T2Matcher>::MatchAndExplain(
     geometry::Pair<T1, T2> const& actual,
     testing::MatchResultListener* listener) const {
-  bool const t1_matches =  Matcher<T1>(t1_matcher_).MatchAndExplain(
+  bool const t1_matches = Matcher<T1>(t1_matcher_).MatchAndExplain(
                               actual.t1_, listener);
   if (!t1_matches) {
     *listener << " in the t1 coordinate; ";
   }
-  bool const t2_matches =  Matcher<T2>(t2_matcher_).MatchAndExplain(
+  bool const t2_matches = Matcher<T2>(t2_matcher_).MatchAndExplain(
                               actual.t2_, listener);
   if (!t2_matches) {
     *listener << " in the t2 coordinate; ";

@@ -4,7 +4,6 @@
 
 #include "geometry/grassmann.hpp"
 #include "geometry/pair.hpp"
-#include "geometry/point.hpp"
 #include "geometry/r3_element.hpp"
 #include "glog/logging.h"
 #include "gmock/gmock.h"
@@ -17,7 +16,6 @@
 
 using principia::geometry::Bivector;
 using principia::geometry::Pair;
-using principia::geometry::Point;
 using principia::geometry::R3Element;
 using principia::geometry::Vector;
 using principia::quantities::Action;
