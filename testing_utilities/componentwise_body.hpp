@@ -4,9 +4,11 @@
 
 #include <string>
 
+#include "geometry/point.hpp"
 #include "gmock/gmock.h"
 #include "quantities/quantities.hpp"
 
+using principia::geometry::Point;
 using principia::quantities::Quantity;
 using testing::Matcher;
 
@@ -49,7 +51,13 @@ class MatcherParameterType<
       geometry::R3Element<typename MatcherParameterType<XMatcher>::type>;
 };
 
-// And now a case that we *don't* want to peel away.  Yes, this smells a bit.
+// And now the cases that we *don't* want to peel away.  Yes, this smells a bit.
+template<typename T>
+class MatcherParameterType<Point<T>> {
+ public:
+  using type = Point<T>;
+};
+
 template<typename T>
 class MatcherParameterType<Quantity<T>> {
  public:

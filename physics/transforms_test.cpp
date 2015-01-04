@@ -129,14 +129,15 @@ TEST_F(TransformsTest, BodyCentredNonRotating) {
        ++it, ++i) {
     DegreesOfFreedom<Through> const degrees_of_freedom =
         it.degrees_of_freedom();
-    EXPECT_THAT(degrees_of_freedom.position() - Position<Through>(),
-                Eq(Displacement<Through>({9 * i * SIUnit<Length>(),
-                                          -22 * i * SIUnit<Length>(),
-                                          27 * i * SIUnit<Length>()}))) << i;
-    EXPECT_THAT(degrees_of_freedom.velocity(),
-                Eq(Velocity<Through>({36 * i * SIUnit<Speed>(),
-                                      -88 * i * SIUnit<Speed>(),
-                                      144 * i * SIUnit<Speed>()}))) << i;
+    EXPECT_THAT(degrees_of_freedom,
+                Componentwise(
+                    Eq(Through::origin +
+                       Displacement<Through>({9 * i * SIUnit<Length>(),
+                                              -22 * i * SIUnit<Length>(),
+                                              27 * i * SIUnit<Length>()})),
+                    Eq(Velocity<Through>({36 * i * SIUnit<Speed>(),
+                                          -88 * i * SIUnit<Speed>(),
+                                          144 * i * SIUnit<Speed>()})))) << i;
     body1_through.Append(Instant(i * SIUnit<Time>()), degrees_of_freedom);
   }
 
@@ -144,27 +145,28 @@ TEST_F(TransformsTest, BodyCentredNonRotating) {
   for (auto it = transforms_->second(&body1_through);
        !it.at_end();
        ++it, ++i) {
-      body1_to_->Append(
-          Instant(i * SIUnit<Time>()),
-                  DegreesOfFreedom<To>(
-                      Position<To>(
-                          Displacement<To>({3 * i * SIUnit<Length>(),
-                                            1 * i * SIUnit<Length>(),
-                                            2 * i * SIUnit<Length>()})),
-                      Velocity<To>({16 * i * SIUnit<Speed>(),
-                                    4 * i * SIUnit<Speed>(),
-                                    8 * i * SIUnit<Speed>()})));
+    body1_to_->Append(
+        Instant(i * SIUnit<Time>()),
+                DegreesOfFreedom<To>(
+                    Position<To>(
+                        Displacement<To>({3 * i * SIUnit<Length>(),
+                                          1 * i * SIUnit<Length>(),
+                                          2 * i * SIUnit<Length>()})),
+                    Velocity<To>({16 * i * SIUnit<Speed>(),
+                                  4 * i * SIUnit<Speed>(),
+                                  8 * i * SIUnit<Speed>()})));
 
     DegreesOfFreedom<To> const degrees_of_freedom =
         it.degrees_of_freedom();
-    EXPECT_THAT(degrees_of_freedom.position() - Position<To>(),
-                Eq(Displacement<To>({12 * i * SIUnit<Length>(),
-                                     -21 * i * SIUnit<Length>(),
-                                     29 * i * SIUnit<Length>()}))) << i;
-    EXPECT_THAT(degrees_of_freedom.velocity(),
-                Eq(Velocity<To>({36 * i * SIUnit<Speed>(),
-                                 -88 * i * SIUnit<Speed>(),
-                                 144 * i * SIUnit<Speed>()}))) << i;
+    EXPECT_THAT(degrees_of_freedom,
+                Componentwise(
+                    Eq(To::origin +
+                        Displacement<To>({12 * i * SIUnit<Length>(),
+                                          -21 * i * SIUnit<Length>(),
+                                          29 * i * SIUnit<Length>()})),
+                    Eq(Velocity<To>({36 * i * SIUnit<Speed>(),
+                                      -88 * i * SIUnit<Speed>(),
+                                      144 * i * SIUnit<Speed>()})))) << i;
   }
 }
 
@@ -223,7 +225,7 @@ TEST_F(TransformsTest, SatelliteBarycentricRotating) {
 
     DegreesOfFreedom<To> const degrees_of_freedom =
         it.degrees_of_freedom();
-    EXPECT_THAT(degrees_of_freedom.position() - Position<To>(),
+    EXPECT_THAT(degrees_of_freedom.position() - To::origin,
                 AlmostEquals(Displacement<To>(
                     {(3.0 + 62.0 * sqrt(5.0 / 21.0)) * i * SIUnit<Length>(),
                      (-6.0 + 106.0 / sqrt(105.0)) * i * SIUnit<Length>(),
@@ -261,11 +263,11 @@ TEST_F(TransformsTest, BodiesBarycentricRotating) {
     DegreesOfFreedom<Through> const degrees_of_freedom2 =
         it2.degrees_of_freedom();
 
-    EXPECT_THAT(degrees_of_freedom1.position() - Position<Through>(),
+    EXPECT_THAT(degrees_of_freedom1.position() - Through::origin,
                 Componentwise(AlmostEquals(1.5 * sqrt(5.0) * l, 0, 1),
                               VanishesBefore(l, 0, 4),
                               VanishesBefore(l, 0, 2)));
-    EXPECT_THAT(degrees_of_freedom2.position() - Position<Through>(),
+    EXPECT_THAT(degrees_of_freedom2.position() - Through::origin,
                 Componentwise(AlmostEquals(-0.5 * sqrt(5.0) * l, 0, 2),
                               VanishesBefore(l, 0, 2),
                               VanishesBefore(l, 0, 1)));
@@ -281,7 +283,7 @@ TEST_F(TransformsTest, BodiesBarycentricRotating) {
     DegreesOfFreedom<Through> const barycentre_degrees_of_freedom =
         Barycentre<Through, Mass>({degrees_of_freedom1, degrees_of_freedom2},
                                   {body1_->mass(), body2_->mass()});
-    EXPECT_THAT(barycentre_degrees_of_freedom.position() - Position<Through>(),
+    EXPECT_THAT(barycentre_degrees_of_freedom.position() - Through::origin,
                 Componentwise(VanishesBefore(l, 0, 1),
                               VanishesBefore(l, 0, 2),
                               VanishesBefore(l, 0, 1)));
