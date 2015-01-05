@@ -16,7 +16,7 @@ namespace principia {
 namespace physics {
 
 template<typename Frame>
-Trajectory<Frame>::Trajectory(Body const* const body)
+Trajectory<Frame>::Trajectory(not_null<Body const*> const body)
     : body_(check_not_null(body)),
       parent_(nullptr) {
   CHECK(body_->is_compatible_with<Frame>())
@@ -220,7 +220,7 @@ Instant const* Trajectory<Frame>::fork_time() const {
 
 template<typename Frame>
 template<typename B>
-std::enable_if_t<std::is_base_of<Body, B>::value, B> const&
+std::enable_if_t<std::is_base_of<Body, B>::value, not_null<B const*>>
 Trajectory<Frame>::body() const {
 // Dynamic casting is expensive, as in 3x slower for the benchmarks.  Do that in
 // debug mode to catch bugs, but not in optimized mode where we want all the
@@ -228,7 +228,7 @@ Trajectory<Frame>::body() const {
 #ifdef _DEBUG
   return *CHECK_NOTNULL(dynamic_cast<B const*>(&body_));
 #else
-  return *static_cast<B const*>(static_cast<Body const*>(body_));
+  return check_not_null(static_cast<B const*>(static_cast<Body const*>(body_)));
 #endif
 }
 
@@ -366,7 +366,7 @@ Trajectory<Frame>::TransformingIterator<ToFrame>::TransformingIterator(
       transform_(transform) {}
 
 template<typename Frame>
-Trajectory<Frame>::Trajectory(Body const* const body,
+Trajectory<Frame>::Trajectory(not_null<Body const*> const body,
                               Trajectory* const parent,
                               typename Timeline::iterator const& fork)
     : body_(check_not_null(body)),

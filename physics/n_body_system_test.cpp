@@ -52,23 +52,19 @@ class NBodySystemTest : public testing::Test {
 
   using EarthMoonOrbitPlane = Frame<Tag, Tag::kEarthMoonOrbitPlane, true>;
 
-  void SetUp() override {
+  NBodySystemTest()
+      : body1_(MassiveBody(6E24 * SIUnit<Mass>())),
+        body2_(MassiveBody(7E22 * SIUnit<Mass>())) {
     integrator_.Initialize(integrator_.Order5Optimal());
 
     // The Earth-Moon system, roughly, with a circular orbit with velocities
     // in the centre-of-mass frame.
-    body1_ = std::make_unique<MassiveBody>(6E24 * SIUnit<Mass>());
-    body2_ = std::make_unique<MassiveBody>(7E22 * SIUnit<Mass>());
-
-    // A massless probe.
-    body3_ = std::make_unique<MasslessBody>();
-
-    trajectory1_ =
-        std::make_unique<Trajectory<EarthMoonOrbitPlane>>(body1_.get());
-    trajectory2_ =
-        std::make_unique<Trajectory<EarthMoonOrbitPlane>>(body2_.get());
-    trajectory3_ =
-        std::make_unique<Trajectory<EarthMoonOrbitPlane>>(body3_.get());
+    trajectory1_ = std::make_unique<Trajectory<EarthMoonOrbitPlane>>(
+                       check_not_null(&body1_));
+    trajectory2_ = std::make_unique<Trajectory<EarthMoonOrbitPlane>>(
+                       check_not_null(&body2_));
+    trajectory3_ = std::make_unique<Trajectory<EarthMoonOrbitPlane>>(
+                       check_not_null(&body3_));
     Position<EarthMoonOrbitPlane> const q1(
         Vector<Length, EarthMoonOrbitPlane>({0 * SIUnit<Length>(),
                                              0 * SIUnit<Length>(),
@@ -79,11 +75,11 @@ class NBodySystemTest : public testing::Test {
                                              0 * SIUnit<Length>()}));
     Length const semi_major_axis = (q1 - q2).Norm();
     period_ = 2 * π * Sqrt(Pow<3>(semi_major_axis) /
-                               (body1_->gravitational_parameter() +
-                                body2_->gravitational_parameter()));
+                               (body1_.gravitational_parameter() +
+                                body2_.gravitational_parameter()));
     centre_of_mass_ =
         geometry::Barycentre<Vector<Length, EarthMoonOrbitPlane>, Mass>(
-            {q1, q2}, {body1_->mass(), body2_->mass()});
+            {q1, q2}, {body1_.mass(), body2_.mass()});
     Velocity<EarthMoonOrbitPlane> const v1(
         {-2 * π * (q1 - centre_of_mass_).Norm() / period_,
          0 * SIUnit<Speed>(),
@@ -139,9 +135,9 @@ class NBodySystemTest : public testing::Test {
     return result;
   }
 
-  std::unique_ptr<MassiveBody> body1_;
-  std::unique_ptr<MassiveBody> body2_;
-  std::unique_ptr<MasslessBody> body3_;
+  MassiveBody body1_;
+  MassiveBody body2_;
+  MasslessBody body3_;  // A massless probe.
   std::unique_ptr<Trajectory<EarthMoonOrbitPlane>> trajectory1_;
   std::unique_ptr<Trajectory<EarthMoonOrbitPlane>> trajectory2_;
   std::unique_ptr<Trajectory<EarthMoonOrbitPlane>> trajectory3_;
@@ -166,7 +162,8 @@ TEST_F(NBodySystemDeathTest, IntegrateError) {
   }, "Multiple trajectories");
   EXPECT_DEATH({
     std::unique_ptr<Trajectory<EarthMoonOrbitPlane>> trajectory =
-        std::make_unique<Trajectory<EarthMoonOrbitPlane>>(body2_.get());
+        std::make_unique<Trajectory<EarthMoonOrbitPlane>>(
+            check_not_null(&body2_));
     trajectory->Append(Instant(1 * SIUnit<Time>()),
                        {Position<EarthMoonOrbitPlane>(),
                         Velocity<EarthMoonOrbitPlane>()});
@@ -281,7 +278,7 @@ TEST_F(NBodySystemTest, EarthProbe) {
       [this, distance](Instant const& t) {
     return Vector<Acceleration, EarthMoonOrbitPlane>(
         {0 * SIUnit<Acceleration>(),
-         body1_->gravitational_parameter() / (distance * distance),
+         body1_.gravitational_parameter() / (distance * distance),
          0 * SIUnit<Acceleration>()});});
 
   system_->Integrate(integrator_,
