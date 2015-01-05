@@ -81,7 +81,7 @@ public partial class PluginAdapter : UnityEngine.MonoBehaviour {
   private void ApplyToVesselsOnRailsOrInInertialPhysicsBubbleInSpace(
       VesselProcessor process_vessel) {
     var vessels = from vessel in FlightGlobals.Vessels
-                  where is_on_rails_in_space(vessel) || 
+                  where is_on_rails_in_space(vessel) ||
                         is_in_inertial_physics_bubble_in_space(vessel)
                   select vessel;
     foreach (Vessel vessel in vessels) {
@@ -234,8 +234,6 @@ public partial class PluginAdapter : UnityEngine.MonoBehaviour {
         top    : UnityEngine.Screen.height / 2.0f,
         width  : 10,
         height : 10);
-    ApplyToBodyTree(body => body.inverseRotThresholdAltitude =
-                                body.maxAtmosphereAltitude);
   }
 
   private void OnGUI() {
@@ -420,7 +418,8 @@ public partial class PluginAdapter : UnityEngine.MonoBehaviour {
     bool barycentric_rotating =
         first_selected_celestial_ != second_selected_celestial_;
     UnityEngine.GUILayout.TextArea(
-        text : "Frame is " + (barycentric_rotating ? " " : "not ") + "rotating");
+        text : "Frame is " + (barycentric_rotating ? " " : "not ") +
+               "rotating");
     String reference_frame_description;
     if (barycentric_rotating) {
       reference_frame_description =
@@ -482,6 +481,8 @@ public partial class PluginAdapter : UnityEngine.MonoBehaviour {
 
   private void ResetPlugin() {
     Cleanup();
+    ApplyToBodyTree(body => body.inverseRotThresholdAltitude =
+                                body.maxAtmosphereAltitude);
     ResetRenderedTrajectory();
     last_plugin_reset_ = DateTime.Now;
     plugin_ = NewPlugin(Planetarium.GetUniversalTime(),
