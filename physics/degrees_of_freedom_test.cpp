@@ -7,7 +7,7 @@
 #include "gtest/gtest.h"
 #include "quantities/named_quantities.hpp"
 #include "quantities/quantities.hpp"
-#include "testing_utilities/almost_equals.hpp"
+#include "testing_utilities/componentwise.hpp"
 
 using principia::geometry::Displacement;
 using principia::geometry::Position;
@@ -16,7 +16,8 @@ using principia::quantities::Entropy;
 using principia::quantities::Length;
 using principia::quantities::Speed;
 using principia::quantities::SIUnit;
-using principia::testing_utilities::AlmostEquals;
+using principia::testing_utilities::Componentwise;
+using testing::Eq;
 
 namespace principia {
 namespace physics {
@@ -79,50 +80,44 @@ TEST_F(DegreesOfFreedomTest, Barycentre) {
                                  {3 * SIUnit<Entropy>(),
                                   4 * SIUnit<Entropy>(),
                                   5 * SIUnit<Entropy>()});
-  EXPECT_THAT(barycentre.position() - origin_,
-              AlmostEquals(
-                  Displacement<World>({(-4.0 / 3.0) * SIUnit<Length>(),
-                                       (13.0 / 6.0) * SIUnit<Length>(),
-                                       -1.0 * SIUnit<Length>()}), 0));
-  EXPECT_THAT(barycentre.velocity(),
-              AlmostEquals(
-                  Velocity<World>({(-40.0 / 3.0) * SIUnit<Speed>(),
-                                   (-35.0 / 3.0) * SIUnit<Speed>(),
-                                   -50.0 * SIUnit<Speed>()}), 0));
+  EXPECT_THAT(barycentre,
+              Componentwise(
+                  Eq(origin_ +
+                     Displacement<World>({(-4.0 / 3.0) * SIUnit<Length>(),
+                                          (13.0 / 6.0) * SIUnit<Length>(),
+                                          -1.0 * SIUnit<Length>()})),
+                  Eq(Velocity<World>({(-40.0 / 3.0) * SIUnit<Speed>(),
+                                      (-35.0 / 3.0) * SIUnit<Speed>(),
+                                      -50.0 * SIUnit<Speed>()}))));
 }
 
 TEST_F(DegreesOfFreedomTest, BarycentreCalculator) {
   DegreesOfFreedom<World>::BarycentreCalculator<double> calculator;
   calculator.Add(d1_, 3);
   DegreesOfFreedom<World> barycentre = calculator.Get();
-  EXPECT_THAT(barycentre.position() - origin_,
-              AlmostEquals(d1_.position() - origin_, 0));
-  EXPECT_THAT(barycentre.velocity(),
-              AlmostEquals(d1_.velocity(), 0));
+  EXPECT_THAT(barycentre, Eq(d1_));
   calculator.Add(d2_, 4);
   barycentre = calculator.Get();
-  EXPECT_THAT(barycentre.position() - origin_,
-              AlmostEquals(
-                  Displacement<World>({(19.0 / 7.0) * SIUnit<Length>(),
-                                       -2.0 * SIUnit<Length>(),
-                                       (33.0 / 7.0) * SIUnit<Length>()}), 0));
-  EXPECT_THAT(barycentre.velocity(),
-              AlmostEquals(
-                  Velocity<World>({(190.0 / 7.0) * SIUnit<Speed>(),
-                                   (260.0 / 7.0) * SIUnit<Speed>(),
-                                   (-150.0 / 7.0) * SIUnit<Speed>()}), 0));
+  EXPECT_THAT(barycentre,
+              Componentwise(
+                  Eq(origin_ +
+                     Displacement<World>({(19.0 / 7.0) * SIUnit<Length>(),
+                                          -2.0 * SIUnit<Length>(),
+                                          (33.0 / 7.0) * SIUnit<Length>()})),
+                  Eq(Velocity<World>({(190.0 / 7.0) * SIUnit<Speed>(),
+                                      (260.0 / 7.0) * SIUnit<Speed>(),
+                                      (-150.0 / 7.0) * SIUnit<Speed>()}))));
   calculator.Add(d3_, 5);
   barycentre = calculator.Get();
-  EXPECT_THAT(barycentre.position() - origin_,
-              AlmostEquals(
-                  Displacement<World>({(-4.0 / 3.0) * SIUnit<Length>(),
-                                        (13.0 / 6.0) * SIUnit<Length>(),
-                                        -1.0 * SIUnit<Length>()}), 0));
-  EXPECT_THAT(barycentre.velocity(),
-              AlmostEquals(
-                  Velocity<World>({(-40.0 / 3.0) * SIUnit<Speed>(),
-                                   (-35.0 / 3.0) * SIUnit<Speed>(),
-                                   -50.0 * SIUnit<Speed>()}), 0));
+  EXPECT_THAT(barycentre,
+              Componentwise(
+                  Eq(origin_ +
+                     Displacement<World>({(-4.0 / 3.0) * SIUnit<Length>(),
+                                          (13.0 / 6.0) * SIUnit<Length>(),
+                                          -1.0 * SIUnit<Length>()})),
+                  Eq(Velocity<World>({(-40.0 / 3.0) * SIUnit<Speed>(),
+                                      (-35.0 / 3.0) * SIUnit<Speed>(),
+                                      -50.0 * SIUnit<Speed>()}))));
 }
 
 }  // namespace physics

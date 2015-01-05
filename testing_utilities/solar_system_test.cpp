@@ -79,12 +79,12 @@ class SolarSystemTest : public testing::Test {
     GravitationalParameter const μ =
         tertiary.body<MassiveBody>().gravitational_parameter() +
         secondary.body<MassiveBody>().gravitational_parameter();
-    Vector<Length, ICRFJ2000Ecliptic> const r =
-        tertiary.last().degrees_of_freedom().position() -
-        secondary.last().degrees_of_freedom().position();
-    Velocity<ICRFJ2000Ecliptic> const v =
-        tertiary.last().degrees_of_freedom().velocity() -
-        secondary.last().degrees_of_freedom().velocity();
+    RelativeDegreesOfFreedom<ICRFJ2000Ecliptic> const tertiary_secondary =
+        tertiary.last().degrees_of_freedom() -
+        secondary.last().degrees_of_freedom();
+    Vector<Length, ICRFJ2000Ecliptic> const& r =
+        tertiary_secondary.displacement();
+    Velocity<ICRFJ2000Ecliptic> const& v = tertiary_secondary.velocity();
     Bivector<SpecificAngularMomentum, ICRFJ2000Ecliptic> const h =
         Wedge(r, v) / Radian;
     SpecificEnergy const ε = Pow<2>(v.Norm()) / 2 - μ / r.Norm();
