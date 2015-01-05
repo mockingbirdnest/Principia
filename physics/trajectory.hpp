@@ -125,7 +125,8 @@ class Trajectory {
   // The body to which this trajectory pertains.  The body is cast to the type
   // B.  An error occurs in debug mode if the cast fails.
   template<typename B>
-  std::enable_if_t<std::is_base_of<Body, B>::value, not_null<B const*>> body() const;
+  std::enable_if_t<std::is_base_of<Body, B>::value,
+                   not_null<B const*>> body() const;
 
   // This function represents the intrinsic acceleration of a body, irrespective
   // of any external field.  It can be due e.g., to an engine burn.
@@ -208,7 +209,7 @@ class Trajectory {
 
   // A constructor for creating a child trajectory during forking.
   Trajectory(not_null<Body const*> const body,
-             Trajectory* const parent,
+             not_null<Trajectory*> const parent,
              typename Timeline::iterator const& fork);
 
   not_null<Body const*> const body_;

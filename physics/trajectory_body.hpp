@@ -161,7 +161,7 @@ Trajectory<Frame>* Trajectory<Frame>::Fork(Instant const& time) {
   CHECK(fork_it != timeline_.end()) << "Fork at nonexistent time";
   // Can't use make_unique below.
   std::unique_ptr<Trajectory<Frame>> child(
-      new Trajectory(body_, this /*parent*/, fork_it));
+      new Trajectory(body_, check_not_null(this) /*parent*/, fork_it));
   child->timeline_.insert(++fork_it, timeline_.end());
   auto const child_it = children_.emplace(time, std::move(child));
   return child_it->second.get();
@@ -226,7 +226,8 @@ Trajectory<Frame>::body() const {
 // debug mode to catch bugs, but not in optimized mode where we want all the
 // performance we can get.
 #ifdef _DEBUG
-  return *CHECK_NOTNULL(dynamic_cast<B const*>(&body_));
+  return check_not_null(
+      dynamic_cast<B const*>(static_cast<Body const*>(body_)));
 #else
   return check_not_null(static_cast<B const*>(static_cast<Body const*>(body_)));
 #endif
@@ -367,10 +368,10 @@ Trajectory<Frame>::TransformingIterator<ToFrame>::TransformingIterator(
 
 template<typename Frame>
 Trajectory<Frame>::Trajectory(not_null<Body const*> const body,
-                              Trajectory* const parent,
+                              not_null<Trajectory*> const parent,
                               typename Timeline::iterator const& fork)
     : body_(check_not_null(body)),
-      parent_(CHECK_NOTNULL(parent)),
+      parent_(parent),
       fork_(new typename Timeline::iterator(fork)) {}
 
 }  // namespace physics
