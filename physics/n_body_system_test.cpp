@@ -64,11 +64,11 @@ class NBodySystemTest : public testing::Test {
     body3_ = std::make_unique<MasslessBody>();
 
     trajectory1_ =
-        std::make_unique<Trajectory<EarthMoonOrbitPlane>>(*body1_);
+        std::make_unique<Trajectory<EarthMoonOrbitPlane>>(body1_.get());
     trajectory2_ =
-        std::make_unique<Trajectory<EarthMoonOrbitPlane>>(*body2_);
+        std::make_unique<Trajectory<EarthMoonOrbitPlane>>(body2_.get());
     trajectory3_ =
-        std::make_unique<Trajectory<EarthMoonOrbitPlane>>(*body3_);
+        std::make_unique<Trajectory<EarthMoonOrbitPlane>>(body3_.get());
     Position<EarthMoonOrbitPlane> const q1(
         Vector<Length, EarthMoonOrbitPlane>({0 * SIUnit<Length>(),
                                              0 * SIUnit<Length>(),
@@ -166,7 +166,7 @@ TEST_F(NBodySystemDeathTest, IntegrateError) {
   }, "Multiple trajectories");
   EXPECT_DEATH({
     std::unique_ptr<Trajectory<EarthMoonOrbitPlane>> trajectory =
-        std::make_unique<Trajectory<EarthMoonOrbitPlane>>(*body2_);
+        std::make_unique<Trajectory<EarthMoonOrbitPlane>>(body2_.get());
     trajectory->Append(Instant(1 * SIUnit<Time>()),
                        {Position<EarthMoonOrbitPlane>(),
                         Velocity<EarthMoonOrbitPlane>()});

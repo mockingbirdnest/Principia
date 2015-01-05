@@ -15,10 +15,10 @@ namespace principia {
 namespace physics {
 
 template<typename Frame>
-Trajectory<Frame>::Trajectory(Body const& body)
-    : body_(body),
+Trajectory<Frame>::Trajectory(Body const* const body)
+    : body_(*body),
       parent_(nullptr) {
-  CHECK(body.is_compatible_with<Frame>())
+  CHECK(body_.is_compatible_with<Frame>())
       << "Oblate body not in the same frame as the trajectory";
 }
 

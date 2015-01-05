@@ -84,8 +84,10 @@ class TrajectoryTest : public testing::Test {
 
     massive_body_ = std::make_unique<MassiveBody>(1 * SIUnit<Mass>());
     massless_body_ = std::make_unique<MasslessBody>();
-    massive_trajectory_ = std::make_unique<Trajectory<World>>(*massive_body_);
-    massless_trajectory_ = std::make_unique<Trajectory<World>>(*massless_body_);
+    massive_trajectory_ =
+        std::make_unique<Trajectory<World>>(massive_body_.get());
+    massless_trajectory_ =
+        std::make_unique<Trajectory<World>>(massless_body_.get());
 
     transform_ = [](
         Instant const& t,
@@ -131,7 +133,7 @@ TEST_F(TrajectoryDeathTest, Construction) {
                                 1.0 /*j2*/,
                                 1 * SIUnit<Length>(),
                                 Vector<double, OtherWorld>({0, 1, 0}));
-    Trajectory<World> trajectory(body);
+    Trajectory<World> trajectory(&body);
   }, "not in the same frame");
 }
 

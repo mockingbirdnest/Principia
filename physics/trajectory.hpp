@@ -39,7 +39,7 @@ class Trajectory {
   // No transfer of ownership.  |body| must live longer than the trajectory as
   // the trajectory holds a reference to it.  If |body| is oblate it must be
   // expressed in the same frame as the trajectory.
-  explicit Trajectory(Body const& body);
+  explicit Trajectory(Body const* const body);
   ~Trajectory() = default;
 
   // Returns an iterator at the first point of the trajectory.  Complexity is

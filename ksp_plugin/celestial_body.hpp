@@ -43,7 +43,7 @@ inline void Celestial::set_parent(Celestial const* parent) {
 inline void Celestial::CreateHistoryAndForkProlongation(
     Instant const& time,
     DegreesOfFreedom<Barycentric> const& degrees_of_freedom) {
-  history_ = std::make_unique<Trajectory<Barycentric>>(*body_);
+  history_ = std::make_unique<Trajectory<Barycentric>>(body_.get());
   history_->Append(time, degrees_of_freedom);
   prolongation_ = history_->Fork(time);
 }

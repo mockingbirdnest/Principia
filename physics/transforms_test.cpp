@@ -46,11 +46,11 @@ class TransformsTest : public testing::Test {
   void SetUp() override {
     body1_ = std::make_unique<MassiveBody>(1 * SIUnit<Mass>());
     body2_ = std::make_unique<MassiveBody>(3 * SIUnit<Mass>());
-    satellite_from_ = std::make_unique<Trajectory<From>>(satellite_);
-    body1_from_ = std::make_unique<Trajectory<From>>(*body1_);
-    body2_from_ = std::make_unique<Trajectory<From>>(*body2_);
-    body1_to_ = std::make_unique<Trajectory<To>>(*body1_);
-    body2_to_ = std::make_unique<Trajectory<To>>(*body2_);
+    satellite_from_ = std::make_unique<Trajectory<From>>(&satellite_);
+    body1_from_ = std::make_unique<Trajectory<From>>(body1_.get());
+    body2_from_ = std::make_unique<Trajectory<From>>(body2_.get());
+    body1_to_ = std::make_unique<Trajectory<To>>(body1_.get());
+    body2_to_ = std::make_unique<Trajectory<To>>(body2_.get());
     body1_from_fn_ =
         [this]() -> Trajectory<From> const& { return *this->body1_from_; };
     body2_from_fn_ =
@@ -121,7 +121,7 @@ class TransformsTest : public testing::Test {
 TEST_F(TransformsTest, BodyCentredNonRotating) {
   transforms_ = Transforms<From, Through, To>::BodyCentredNonRotating(
                     body1_from_fn_, body1_to_fn_);
-  Trajectory<Through> body1_through(*body1_);
+  Trajectory<Through> body1_through(body1_.get());
 
   int i = 1;
   for (auto it = transforms_->first(satellite_from_.get());
@@ -175,7 +175,7 @@ TEST_F(TransformsTest, SatelliteBarycentricRotating) {
   transforms_ = Transforms<From, Through, To>::BarycentricRotating(
                     body1_from_fn_, body1_to_fn_,
                     body2_from_fn_, body2_to_fn_);
-  Trajectory<Through> satellite_through(satellite_);
+  Trajectory<Through> satellite_through(&satellite_);
 
   int i = 1;
   for (auto it = transforms_->first(satellite_from_.get());
@@ -248,8 +248,8 @@ TEST_F(TransformsTest, BodiesBarycentricRotating) {
   transforms_ = Transforms<From, Through, To>::BarycentricRotating(
                     body1_from_fn_, body1_to_fn_,
                     body2_from_fn_, body2_to_fn_);
-  Trajectory<Through> body1_through(*body1_);
-  Trajectory<Through> body2_through(*body2_);
+  Trajectory<Through> body1_through(body1_.get());
+  Trajectory<Through> body2_through(body2_.get());
 
   int i = 1;
   for (auto it1 = transforms_->first(body1_from_.get()),

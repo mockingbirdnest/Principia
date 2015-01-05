@@ -474,7 +474,8 @@ RenderedTrajectory<World> Plugin::RenderedVesselTrajectory(
   Trajectory<Barycentric> const& actual_trajectory = vessel->history();
 
   // First build the trajectory resulting from the first transform.
-  Trajectory<Rendering> intermediate_trajectory(actual_trajectory.body<Body>());
+  Trajectory<Rendering> intermediate_trajectory(
+      &actual_trajectory.body<Body>());
   for (auto actual_it = transforms->first(&actual_trajectory);
        !actual_it.at_end();
        ++actual_it) {
@@ -484,7 +485,8 @@ RenderedTrajectory<World> Plugin::RenderedVesselTrajectory(
 
   // Then build the apparent trajectory using the second transform.
   std::unique_ptr<Trajectory<Barycentric>> apparent_trajectory =
-      std::make_unique<Trajectory<Barycentric>>(actual_trajectory.body<Body>());
+      std::make_unique<Trajectory<Barycentric>>(
+          &actual_trajectory.body<Body>());
   for (auto intermediate_it = transforms->second(&intermediate_trajectory);
        !intermediate_it.at_end();
        ++intermediate_it) {
