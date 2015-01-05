@@ -37,8 +37,6 @@ public partial class PluginAdapter : UnityEngine.MonoBehaviour {
 
   private bool time_is_advancing_;
 
-  private bool should_initialize_ = false;
-  private int fixed_updates_until_initialization_;
   private DateTime last_plugin_reset_;
 
   private static bool an_instance_is_loaded;
@@ -251,14 +249,6 @@ public partial class PluginAdapter : UnityEngine.MonoBehaviour {
   }
 
   private void FixedUpdate() {
-    if (should_initialize_) {
-      if (fixed_updates_until_initialization_ > 0) {
-        --fixed_updates_until_initialization_;
-      } else {
-        ResetPlugin();
-        should_initialize_ = false;
-      }
-    }
     if (PluginRunning()) {
       double universal_time = Planetarium.GetUniversalTime();
       double plugin_time = current_time(plugin_);
@@ -381,8 +371,9 @@ public partial class PluginAdapter : UnityEngine.MonoBehaviour {
   }
 
   private void InitializeOnGameStateLoad(ConfigNode node) {
-    should_initialize_ = true;
-    fixed_updates_until_initialization_ = 1;
+    // TODO(egg): Here loading of the persisted game state should occur, or
+    // initialization should be scheduled.  Without persistence, we get plugin
+    // resets at every scene change or vessel switch, so we do nothing.
   }
 
   private void DrawMainWindow(int window_id) {
