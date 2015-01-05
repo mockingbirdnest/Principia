@@ -9,6 +9,7 @@
 #include "glog/logging.h"
 #include "physics/oblate_body.hpp"
 
+using principia::base::check_not_null;
 using principia::geometry::Instant;
 
 namespace principia {
@@ -16,9 +17,9 @@ namespace physics {
 
 template<typename Frame>
 Trajectory<Frame>::Trajectory(Body const* const body)
-    : body_(*body),
+    : body_(check_not_null(body)),
       parent_(nullptr) {
-  CHECK(body_.is_compatible_with<Frame>())
+  CHECK(body_->is_compatible_with<Frame>())
       << "Oblate body not in the same frame as the trajectory";
 }
 
@@ -227,14 +228,14 @@ Trajectory<Frame>::body() const {
 #ifdef _DEBUG
   return *CHECK_NOTNULL(dynamic_cast<B const*>(&body_));
 #else
-  return *static_cast<B const*>(&body_);
+  return *static_cast<B const*>(static_cast<Body const*>(body_));
 #endif
 }
 
 template<typename Frame>
 void Trajectory<Frame>::set_intrinsic_acceleration(
     IntrinsicAcceleration const acceleration) {
-  CHECK(body_.is_massless()) << "Trajectory is for a massive body";
+  CHECK(body_->is_massless()) << "Trajectory is for a massive body";
   CHECK(intrinsic_acceleration_ == nullptr)
       << "Trajectory already has an intrinsic acceleration";
   intrinsic_acceleration_ =
@@ -365,10 +366,10 @@ Trajectory<Frame>::TransformingIterator<ToFrame>::TransformingIterator(
       transform_(transform) {}
 
 template<typename Frame>
-Trajectory<Frame>::Trajectory(Body const& body,
+Trajectory<Frame>::Trajectory(Body const* const body,
                               Trajectory* const parent,
                               typename Timeline::iterator const& fork)
-    : body_(body),
+    : body_(check_not_null(body)),
       parent_(CHECK_NOTNULL(parent)),
       fork_(new typename Timeline::iterator(fork)) {}
 

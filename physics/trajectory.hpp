@@ -5,11 +5,13 @@
 #include <map>
 #include <memory>
 
+#include "base/not_null.hpp"
 #include "geometry/grassmann.hpp"
 #include "geometry/named_quantities.hpp"
 #include "physics/degrees_of_freedom.hpp"
 #include "quantities/named_quantities.hpp"
 
+using principia::base::not_null;
 using principia::geometry::Instant;
 using principia::geometry::Vector;
 using principia::geometry::Velocity;
@@ -205,11 +207,11 @@ class Trajectory {
   using Timeline = std::map<Instant, DegreesOfFreedom<Frame>>;
 
   // A constructor for creating a child trajectory during forking.
-  Trajectory(Body const& body,
+  Trajectory(Body const* const body,
              Trajectory* const parent,
              typename Timeline::iterator const& fork);
 
-  Body const& body_;
+  not_null<Body const*> const body_;
 
   Trajectory* const parent_;  // Null for a root trajectory.
 
