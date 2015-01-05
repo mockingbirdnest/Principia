@@ -17,7 +17,7 @@ namespace physics {
 
 template<typename Frame>
 Trajectory<Frame>::Trajectory(not_null<Body const*> const body)
-    : body_(check_not_null(body)),
+    : body_(body),
       parent_(nullptr) {
   CHECK(body_->is_compatible_with<Frame>())
       << "Oblate body not in the same frame as the trajectory";
@@ -370,7 +370,7 @@ template<typename Frame>
 Trajectory<Frame>::Trajectory(not_null<Body const*> const body,
                               not_null<Trajectory*> const parent,
                               typename Timeline::iterator const& fork)
-    : body_(check_not_null(body)),
+    : body_(body),
       parent_(parent),
       fork_(new typename Timeline::iterator(fork)) {}
 
