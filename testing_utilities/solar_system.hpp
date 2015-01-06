@@ -4,6 +4,7 @@
 #include <string>
 #include <vector>
 
+#include "base/not_null.hpp"
 #include "geometry/named_quantities.hpp"
 #include "geometry/rotation.hpp"
 #include "physics/frame.hpp"
@@ -11,6 +12,7 @@
 #include "quantities/quantities.hpp"
 #include "quantities/si.hpp"
 
+using principia::base::not_null;
 using principia::physics::Frame;
 
 namespace principia {
@@ -52,7 +54,8 @@ geometry::Position<ICRFJ2000Ecliptic> const kSolarSystemBarycentre;
 
 class SolarSystem {
  public:
-  using Bodies = std::vector<std::unique_ptr<physics::MassiveBody const> const>;
+  using Bodies =
+      std::vector<not_null<std::unique_ptr<physics::MassiveBody const>> const>;
 
   // The indices of the bodies in the |Bodies| vector.
   // The bodies are in decreasing order of mass.
