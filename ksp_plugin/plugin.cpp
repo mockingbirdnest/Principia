@@ -7,6 +7,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/not_null.hpp"
 #include "base/unique_ptr_logging.hpp"
 #include "geometry/affine_map.hpp"
 #include "geometry/barycentre_calculator.hpp"
@@ -19,6 +20,7 @@
 namespace principia {
 namespace ksp_plugin {
 
+using base::make_not_null_unique;
 using geometry::AffineMap;
 using geometry::AngularVelocity;
 using geometry::BarycentreCalculator;
@@ -286,7 +288,7 @@ Plugin::Plugin(Instant const& initial_time,
   auto inserted = celestials_.emplace(
       sun_index,
       std::make_unique<Celestial>(
-          std::make_unique<MassiveBody>(sun_gravitational_parameter)));
+          make_not_null_unique<MassiveBody>(sun_gravitational_parameter)));
   sun_ = inserted.first->second.get();
   sun_->CreateHistoryAndForkProlongation(
       current_time_,
@@ -309,7 +311,7 @@ void Plugin::InsertCelestial(
   auto const inserted = celestials_.emplace(
       celestial_index,
       std::make_unique<Celestial>(
-          std::make_unique<MassiveBody>(gravitational_parameter)));
+          make_not_null_unique<MassiveBody>(gravitational_parameter)));
   CHECK(inserted.second) << "Body already exists at index " << celestial_index;
   LOG(INFO) << "Initial |{orbit.pos, orbit.vel}| for celestial at index "
             << celestial_index << ": " << from_parent;

@@ -2,6 +2,7 @@
 
 #include <vector>
 
+#include "base/not_null.hpp"
 #include "geometry/grassmann.hpp"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
@@ -16,6 +17,7 @@
 #include "testing_utilities/componentwise.hpp"
 #include "testing_utilities/vanishes_before.hpp"
 
+using principia::base::make_not_null_unique;
 using principia::geometry::Bivector;
 using principia::quantities::Acceleration;
 using principia::quantities::Speed;
@@ -57,7 +59,7 @@ class PhysicsBubbleTest : public testing::Test {
             Velocity<Barycentric>({204 * SIUnit<Speed>(),
                                    205 * SIUnit<Speed>(),
                                    206 * SIUnit<Speed>()})),
-      celestial_(std::make_unique<MassiveBody>(100 * SIUnit<Mass>())),
+      celestial_(make_not_null_unique<MassiveBody>(100 * SIUnit<Mass>())),
       celestial_world_position_(Position<World>(Displacement<World>(
                                     {99 * SIUnit<Length>(),
                                      98 * SIUnit<Length>(),
