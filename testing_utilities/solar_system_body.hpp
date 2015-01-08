@@ -191,9 +191,8 @@ std::unique_ptr<SolarSystem> SolarSystem::AtСпутник1Launch(
            { 2.903958257174759E+01 * Kilo(Metre) / Second,
              1.910383147602264E+01 * Kilo(Metre) / Second,
             -1.418780340302349E+00 * Kilo(Metre) / Second})});
-  auto mars_trajectory =
-      std::make_unique<Trajectory<ICRFJ2000Ecliptic>>(
-          solar_system->massive_bodies_[kMars].get());
+  auto mars_trajectory = std::make_unique<Trajectory<ICRFJ2000Ecliptic>>(
+                             solar_system->massive_bodies_[kMars].get());
   mars_trajectory->Append(
       kСпутник1LaunchTime,
       {kSolarSystemBarycentre + Displacement<ICRFJ2000Ecliptic>(
@@ -321,9 +320,8 @@ std::unique_ptr<SolarSystem> SolarSystem::AtСпутник1Launch(
              1.914469843538767E+00 * Kilo(Metre) / Second})});
 
   // Dwarf planet (scattered disc object).
-  auto eris_trajectory =
-      std::make_unique<Trajectory<ICRFJ2000Ecliptic>>(
-          solar_system->massive_bodies_[kEris].get());
+  auto eris_trajectory = std::make_unique<Trajectory<ICRFJ2000Ecliptic>>(
+                             solar_system->massive_bodies_[kEris].get());
   eris_trajectory->Append(
       kСпутник1LaunchTime,
       {kSolarSystemBarycentre + Displacement<ICRFJ2000Ecliptic>(
@@ -618,9 +616,8 @@ std::unique_ptr<SolarSystem> SolarSystem::AtСпутник2Launch(
            { 6.105839497257745E+00 * Kilo(Metre) / Second,
              3.430628991145717E+01 * Kilo(Metre) / Second,
              1.117436366138174E-01 * Kilo(Metre) / Second})});
-  auto mars_trajectory =
-      std::make_unique<Trajectory<ICRFJ2000Ecliptic>>(
-          solar_system->massive_bodies_[kMars].get());
+  auto mars_trajectory = std::make_unique<Trajectory<ICRFJ2000Ecliptic>>(
+                             solar_system->massive_bodies_[kMars].get());
   mars_trajectory->Append(
       kСпутник2LaunchTime,
       {kSolarSystemBarycentre + Displacement<ICRFJ2000Ecliptic>(
