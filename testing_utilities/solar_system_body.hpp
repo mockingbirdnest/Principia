@@ -96,9 +96,8 @@ std::unique_ptr<SolarSystem> SolarSystem::AtСпутник1Launch(
   // All data is from the Jet Propulsion Laboratory's HORIZONS system.
 
   // Star.
-  auto sun_trajectory =
-      std::make_unique<Trajectory<ICRFJ2000Ecliptic>>(
-          solar_system->massive_bodies_[kSun].get());
+  auto sun_trajectory = std::make_unique<Trajectory<ICRFJ2000Ecliptic>>(
+                            solar_system->massive_bodies_[kSun].get());
   sun_trajectory->Append(
       kСпутник1LaunchTime,
       {kSolarSystemBarycentre + Displacement<ICRFJ2000Ecliptic>(
@@ -180,9 +179,8 @@ std::unique_ptr<SolarSystem> SolarSystem::AtСпутник1Launch(
            {-6.635753510543799E+00 * Kilo(Metre) / Second,
              2.904321639216012E+01 * Kilo(Metre) / Second,
              3.125252418990812E-03 * Kilo(Metre) / Second})});
-  auto venus_trajectory =
-      std::make_unique<Trajectory<ICRFJ2000Ecliptic>>(
-          solar_system->massive_bodies_[kVenus].get());
+  auto venus_trajectory = std::make_unique<Trajectory<ICRFJ2000Ecliptic>>(
+                              solar_system->massive_bodies_[kVenus].get());
   venus_trajectory->Append(
       kСпутник1LaunchTime,
       {kSolarSystemBarycentre + Displacement<ICRFJ2000Ecliptic>(
@@ -266,9 +264,8 @@ std::unique_ptr<SolarSystem> SolarSystem::AtСпутник1Launch(
            { 1.091928199422218E+01 * Kilo(Metre) / Second,
             -1.278098875182818E+01 * Kilo(Metre) / Second,
              5.878649120351949E-02 * Kilo(Metre) / Second})});
-  auto io_trajectory =
-      std::make_unique<Trajectory<ICRFJ2000Ecliptic>>(
-          solar_system->massive_bodies_[kIo].get());
+  auto io_trajectory = std::make_unique<Trajectory<ICRFJ2000Ecliptic>>(
+                           solar_system->massive_bodies_[kIo].get());
   io_trajectory->Append(
       kСпутник1LaunchTime,
       {kSolarSystemBarycentre + Displacement<ICRFJ2000Ecliptic>(
@@ -281,9 +278,8 @@ std::unique_ptr<SolarSystem> SolarSystem::AtСпутник1Launch(
              5.469177855959977E-01 * Kilo(Metre) / Second})});
 
   // Satellite of Earth.
-  auto moon_trajectory =
-      std::make_unique<Trajectory<ICRFJ2000Ecliptic>>(
-          solar_system->massive_bodies_[kMoon].get());
+  auto moon_trajectory = std::make_unique<Trajectory<ICRFJ2000Ecliptic>>(
+                             solar_system->massive_bodies_[kMoon].get());
   moon_trajectory->Append(
       kСпутник1LaunchTime,
       {kSolarSystemBarycentre + Displacement<ICRFJ2000Ecliptic>(
@@ -311,9 +307,8 @@ std::unique_ptr<SolarSystem> SolarSystem::AtСпутник1Launch(
              6.162195631257494E-01 * Kilo(Metre) / Second})});
 
   // Satellite of Neptune.
-  auto triton_trajectory =
-      std::make_unique<Trajectory<ICRFJ2000Ecliptic>>(
-          solar_system->massive_bodies_[kTriton].get());
+  auto triton_trajectory = std::make_unique<Trajectory<ICRFJ2000Ecliptic>>(
+                               solar_system->massive_bodies_[kTriton].get());
   triton_trajectory->Append(
       kСпутник1LaunchTime,
       {kSolarSystemBarycentre + Displacement<ICRFJ2000Ecliptic>(
@@ -528,9 +523,8 @@ std::unique_ptr<SolarSystem> SolarSystem::AtСпутник2Launch(
   // All data is from the Jet Propulsion Laboratory's HORIZONS system.
 
   // Star.
-  auto sun_trajectory =
-      std::make_unique<Trajectory<ICRFJ2000Ecliptic>>(
-          solar_system->massive_bodies_[kSun].get());
+  auto sun_trajectory = std::make_unique<Trajectory<ICRFJ2000Ecliptic>>(
+                            solar_system->massive_bodies_[kSun].get());
   sun_trajectory->Append(
       kСпутник2LaunchTime,
       {kSolarSystemBarycentre + Displacement<ICRFJ2000Ecliptic>(
@@ -612,9 +606,8 @@ std::unique_ptr<SolarSystem> SolarSystem::AtСпутник2Launch(
            {-2.003713675265280E+01 * Kilo(Metre) / Second,
              2.237299122930724E+01 * Kilo(Metre) / Second,
              2.796170626009044E-03 * Kilo(Metre) / Second})});
-  auto venus_trajectory =
-      std::make_unique<Trajectory<ICRFJ2000Ecliptic>>(
-          solar_system->massive_bodies_[kVenus].get());
+  auto venus_trajectory = std::make_unique<Trajectory<ICRFJ2000Ecliptic>>(
+                              solar_system->massive_bodies_[kVenus].get());
   venus_trajectory->Append(
       kСпутник2LaunchTime,
       {kSolarSystemBarycentre + Displacement<ICRFJ2000Ecliptic>(
@@ -698,9 +691,8 @@ std::unique_ptr<SolarSystem> SolarSystem::AtСпутник2Launch(
            { 2.841233795859193E+00 * Kilo(Metre) / Second,
             -2.014928300738163E+01 * Kilo(Metre) / Second,
             -3.092683314888902E-01 * Kilo(Metre) / Second})});
-  auto io_trajectory =
-      std::make_unique<Trajectory<ICRFJ2000Ecliptic>>(
-          solar_system->massive_bodies_[kIo].get());
+  auto io_trajectory = std::make_unique<Trajectory<ICRFJ2000Ecliptic>>(
+                           solar_system->massive_bodies_[kIo].get());
   io_trajectory->Append(
       kСпутник2LaunchTime,
       {kSolarSystemBarycentre + Displacement<ICRFJ2000Ecliptic>(
@@ -713,9 +705,8 @@ std::unique_ptr<SolarSystem> SolarSystem::AtСпутник2Launch(
             -4.221293967140784E-01 * Kilo(Metre) / Second})});
 
   // Satellite of Earth.
-  auto moon_trajectory =
-      std::make_unique<Trajectory<ICRFJ2000Ecliptic>>(
-          solar_system->massive_bodies_[kMoon].get());
+  auto moon_trajectory = std::make_unique<Trajectory<ICRFJ2000Ecliptic>>(
+                             solar_system->massive_bodies_[kMoon].get());
   moon_trajectory->Append(
       kСпутник2LaunchTime,
       {kSolarSystemBarycentre + Displacement<ICRFJ2000Ecliptic>(
@@ -758,9 +749,8 @@ std::unique_ptr<SolarSystem> SolarSystem::AtСпутник2Launch(
              1.656135195284262E+00 * Kilo(Metre) / Second})});
 
   // Dwarf planet (scattered disc object).
-  auto eris_trajectory =
-      std::make_unique<Trajectory<ICRFJ2000Ecliptic>>(
-          solar_system->massive_bodies_[kEris].get());
+  auto eris_trajectory = std::make_unique<Trajectory<ICRFJ2000Ecliptic>>(
+                             solar_system->massive_bodies_[kEris].get());
   eris_trajectory->Append(
       kСпутник2LaunchTime,
       {kSolarSystemBarycentre + Displacement<ICRFJ2000Ecliptic>(
@@ -953,9 +943,8 @@ SolarSystem::SolarSystem(Accuracy const accuracy) {
   // otherwise specified.
 
   // Star.
-  auto sun =
-      make_not_null_unique<MassiveBody>(
-          1.3271244004193938E+11 * Pow<3>(Kilo(Metre)) / Pow<2>(Second));
+  auto sun = make_not_null_unique<MassiveBody>(
+                 1.3271244004193938E+11 * Pow<3>(Kilo(Metre)) / Pow<2>(Second));
 
   // Planets.
 

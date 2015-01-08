@@ -48,8 +48,7 @@ class TransformsTest : public testing::Test {
   TransformsTest()
       : body1_(MassiveBody(1 * SIUnit<Mass>())),
         body2_(MassiveBody(3 * SIUnit<Mass>())) {
-    satellite_from_ = std::make_unique<Trajectory<From>>(
-        check_not_null(&satellite_));
+    satellite_from_ = std::make_unique<Trajectory<From>>(check_not_null(&satellite_));
     body1_from_ = std::make_unique<Trajectory<From>>(check_not_null(&body1_));
     body2_from_ = std::make_unique<Trajectory<From>>(check_not_null(&body2_));
     body1_to_ = std::make_unique<Trajectory<To>>(check_not_null(&body1_));

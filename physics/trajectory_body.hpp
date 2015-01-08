@@ -226,8 +226,7 @@ Trajectory<Frame>::body() const {
 // debug mode to catch bugs, but not in optimized mode where we want all the
 // performance we can get.
 #ifdef _DEBUG
-  return check_not_null(
-      dynamic_cast<B const*>(static_cast<Body const*>(body_)));
+  return check_not_null(dynamic_cast<B const*>(static_cast<Body const*>(body_)));
 #else
   return check_not_null(static_cast<B const*>(static_cast<Body const*>(body_)));
 #endif
