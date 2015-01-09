@@ -51,7 +51,7 @@ void FromBasisOfBarycentricFrameToStandardBasis(
   Displacement<FromFrame> const& reference_direction =
       reference.displacement();
   Velocity<FromFrame> reference_normal = reference.velocity();
-  reference_direction.Orthogonalize(&reference_normal);
+  reference_direction.Orthogonalize(check_not_null(&reference_normal));
   Bivector<Product<Length, Speed>, FromFrame> const reference_binormal =
       Wedge(reference_direction, reference_normal);
   *rotation = Rotation<FromFrame, ToFrame>(

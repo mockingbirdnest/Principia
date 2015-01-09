@@ -4,6 +4,8 @@
 
 #include "geometry/rotation.hpp"
 
+using principia::base::check_not_null;
+
 namespace principia {
 namespace geometry {
 
@@ -63,17 +65,15 @@ inline Scalar Multivector<Scalar, Frame, 3>::Norm() const {
 template<typename Scalar, typename Frame>
 template<typename S, typename F>
 void Multivector<Scalar, Frame, 1>::Orthogonalize(
-    Multivector<S, F, 1>* multivector) const {
-  CHECK_NOTNULL(multivector);
-  coordinates_.Orthogonalize(&multivector->coordinates_);
+    not_null<Multivector<S, F, 1>*> const multivector) const {
+  coordinates_.Orthogonalize(check_not_null(&multivector->coordinates_));
 }
 
 template<typename Scalar, typename Frame>
 template<typename S, typename F>
 void Multivector<Scalar, Frame, 2>::Orthogonalize(
-    Multivector<S, F, 2>* multivector) const {
-  CHECK_NOTNULL(multivector);
-  coordinates_.Orthogonalize(&multivector->coordinates_);
+    not_null<Multivector<S, F, 2>*> const multivector) const {
+  coordinates_.Orthogonalize(check_not_null(&multivector->coordinates_));
 }
 
 template<typename LScalar, typename RScalar, typename Frame>
