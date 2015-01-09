@@ -14,6 +14,7 @@
 #include "quantities/named_quantities.hpp"
 #include "quantities/si.hpp"
 
+using principia::base::make_not_null_unique;
 using principia::geometry::AffineMap;
 using principia::geometry::Bivector;
 using principia::geometry::Displacement;
@@ -65,20 +66,21 @@ void FromBasisOfBarycentricFrameToStandardBasis(
 }  // namespace
 
 template<typename FromFrame, typename ThroughFrame, typename ToFrame>
-std::unique_ptr<Transforms<FromFrame, ThroughFrame, ToFrame>>
+not_null<std::unique_ptr<Transforms<FromFrame, ThroughFrame, ToFrame>>>
 Transforms<FromFrame, ThroughFrame, ToFrame>::BodyCentredNonRotating(
     LazyTrajectory<FromFrame> const& from_centre_trajectory,
     LazyTrajectory<ToFrame> const& to_centre_trajectory) {
-  std::unique_ptr<Transforms> transforms = std::make_unique<Transforms>();
+  not_null<std::unique_ptr<Transforms>> transforms =
+      make_not_null_unique<Transforms>();
 
   // From the perspective of the lambda the following variable is really |this|,
   // hence the name.
-  Transforms* that = transforms.get();
+  not_null<Transforms*> that = transforms.get();
   transforms->first_ =
       [from_centre_trajectory, that](
           Instant const& t,
           DegreesOfFreedom<FromFrame> const& from_degrees_of_freedom,
-          Trajectory<FromFrame> const* trajectory) ->
+          not_null<Trajectory<FromFrame> const*> const trajectory) ->
       DegreesOfFreedom<ThroughFrame> {
     // First check if the result is cached.
     auto cache_it = that->first_cache_.find(std::make_pair(trajectory, t));
@@ -134,22 +136,23 @@ Transforms<FromFrame, ThroughFrame, ToFrame>::BodyCentredNonRotating(
 }
 
 template<typename FromFrame, typename ThroughFrame, typename ToFrame>
-std::unique_ptr<Transforms<FromFrame, ThroughFrame, ToFrame>>
+not_null<std::unique_ptr<Transforms<FromFrame, ThroughFrame, ToFrame>>>
 Transforms<FromFrame, ThroughFrame, ToFrame>::BarycentricRotating(
       LazyTrajectory<FromFrame> const& from_primary_trajectory,
       LazyTrajectory<ToFrame> const& to_primary_trajectory,
       LazyTrajectory<FromFrame> const& from_secondary_trajectory,
       LazyTrajectory<ToFrame> const& to_secondary_trajectory) {
-  std::unique_ptr<Transforms> transforms = std::make_unique<Transforms>();
+  not_null<std::unique_ptr<Transforms>> transforms =
+      make_not_null_unique<Transforms>();
 
   // From the perspective of the lambda the following variable is really |this|,
   // hence the name.
-  Transforms* that = transforms.get();
+  not_null<Transforms*> that = transforms.get();
   transforms->first_ =
       [from_primary_trajectory, from_secondary_trajectory, that](
           Instant const& t,
           DegreesOfFreedom<FromFrame> const& from_degrees_of_freedom,
-          Trajectory<FromFrame> const* trajectory) ->
+          not_null<Trajectory<FromFrame> const*> const trajectory) ->
       DegreesOfFreedom<ThroughFrame> {
     // First check if the result is cached.
     auto cache_it = that->first_cache_.find(std::make_pair(trajectory, t));
@@ -256,24 +259,23 @@ Transforms<FromFrame, ThroughFrame, ToFrame>::BarycentricRotating(
 }
 
 template<typename FromFrame, typename ThroughFrame, typename ToFrame>
-std::unique_ptr<Transforms<FromFrame, ThroughFrame, ToFrame>>
+not_null<std::unique_ptr<Transforms<FromFrame, ThroughFrame, ToFrame>>>
 Transforms<FromFrame, ThroughFrame, ToFrame>::DummyForTesting() {
-  return std::make_unique<Transforms>();
+  return check_not_null(std::make_unique<Transforms>());
 }
 
 template<typename FromFrame, typename ThroughFrame, typename ToFrame>
 typename Trajectory<FromFrame>::template TransformingIterator<ThroughFrame>
 Transforms<FromFrame, ThroughFrame, ToFrame>::first(
-    Trajectory<FromFrame> const* from_trajectory) {
-  return CHECK_NOTNULL(from_trajectory)->first_with_transform(first_);
+    not_null<Trajectory<FromFrame> const*> const from_trajectory) {
+  return from_trajectory->first_with_transform(first_);
 }
 
 template<typename FromFrame, typename ThroughFrame, typename ToFrame>
 typename Trajectory<ThroughFrame>::template TransformingIterator<ToFrame>
 Transforms<FromFrame, ThroughFrame, ToFrame>::second(
-    Trajectory<ThroughFrame> const* through_trajectory) {
-  return CHECK_NOTNULL(through_trajectory)->
-             first_with_transform(second_);
+    not_null<Trajectory<ThroughFrame> const*> const through_trajectory) {
+  return through_trajectory->first_with_transform(second_);
 }
 
 }  // namespace physics
