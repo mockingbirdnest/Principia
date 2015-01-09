@@ -4,9 +4,11 @@
 
 #undef TRACE_SYMPLECTIC_PARTITIONED_RUNGE_KUTTA_INTEGRATOR
 
+#include "base/not_null.hpp"
 #include "integrators/symplectic_partitioned_runge_kutta_integrator.hpp"
 #include "testing_utilities/numerical_analysis.hpp"
 
+using principia::base::not_null;
 using principia::integrators::SPRKIntegrator;
 using principia::quantities::Length;
 using principia::quantities::Momentum;
@@ -16,7 +18,8 @@ namespace principia {
 namespace benchmarks {
 
 inline void SolveHarmonicOscillator(
-    std::vector<SPRKIntegrator<Length, Momentum>::SystemState>* solution) {
+    not_null<std::vector<
+        SPRKIntegrator<Length, Momentum>::SystemState>*> const solution) {
   using principia::testing_utilities::ComputeHarmonicOscillatorForce;
   using principia::testing_utilities::ComputeHarmonicOscillatorVelocity;
   SPRKIntegrator<Length, Momentum> integrator;

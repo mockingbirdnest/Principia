@@ -61,9 +61,7 @@ void SPRKIntegrator<Position, Momentum>::Solve(
       RightHandSideComputation compute_force,
       AutonomousRightHandSideComputation compute_velocity,
       Parameters const& parameters,
-      std::vector<SystemState>* solution) const {
-  CHECK_NOTNULL(solution);
-
+      not_null<std::vector<SystemState>*> const solution) const {
   int const dimension = parameters.initial.positions.size();
 
   std::vector<Position> Δqstage0(dimension);

@@ -2,7 +2,10 @@
 
 #include <vector>
 
+#include "base/not_null.hpp"
 #include "integrators/symplectic_integrator.hpp"
+
+using principia::base::not_null;
 
 namespace principia {
 namespace integrators {
@@ -29,7 +32,7 @@ class SPRKIntegrator : public SymplecticIntegrator<Position, Momentum> {
   void Solve(RightHandSideComputation compute_force,
              AutonomousRightHandSideComputation compute_velocity,
              Parameters const& parameters,
-             std::vector<SystemState>* solution) const;
+             not_null<std::vector<SystemState>*> const solution) const;
 
  private:
   int stages_;

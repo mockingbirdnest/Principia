@@ -73,7 +73,7 @@ TEST_F(SPRKTest, HarmonicOscillator) {
   parameters_.sampling_period = 1;
   integrator_.Solve(&ComputeHarmonicOscillatorForce,
                     &ComputeHarmonicOscillatorVelocity,
-                    parameters_, &solution_);
+                    parameters_, check_not_null(&solution_));
   Length q_error;
   Momentum p_error;
   for (std::size_t i = 0; i < solution_.size(); ++i) {
@@ -104,7 +104,7 @@ TEST_F(SPRKTest, ExactInexactTMax) {
   parameters_.tmax_is_exact = false;
   integrator_.Solve(&ComputeHarmonicOscillatorForce,
                     &ComputeHarmonicOscillatorVelocity,
-                    parameters_, &solution_);
+                    parameters_, check_not_null(&solution_));
   EXPECT_EQ(30, solution_.size());
   EXPECT_THAT(solution_.back().time.value, Lt(parameters_.tmax));
   EXPECT_THAT(solution_.back().time.error, Ne(0.0 * SIUnit<Time>()));
@@ -112,7 +112,7 @@ TEST_F(SPRKTest, ExactInexactTMax) {
   parameters_.tmax_is_exact = true;
   integrator_.Solve(&ComputeHarmonicOscillatorForce,
                     &ComputeHarmonicOscillatorVelocity,
-                    parameters_, &solution_);
+                    parameters_, check_not_null(&solution_));
   EXPECT_EQ(30, solution_.size());
   EXPECT_THAT(solution_.back().time.value, Eq(parameters_.tmax));
   EXPECT_THAT(solution_.back().time.error, Eq(0.0 * SIUnit<Time>()));
@@ -121,7 +121,7 @@ TEST_F(SPRKTest, ExactInexactTMax) {
   parameters_.tmax_is_exact = false;
   integrator_.Solve(&ComputeHarmonicOscillatorForce,
                     &ComputeHarmonicOscillatorVelocity,
-                    parameters_, &solution_);
+                    parameters_, check_not_null(&solution_));
   EXPECT_EQ(29, solution_.size());
   EXPECT_THAT(solution_.back().time.value, Lt(parameters_.tmax));
   EXPECT_THAT(solution_.back().time.error, Ne(0.0 * SIUnit<Time>()));
@@ -129,7 +129,7 @@ TEST_F(SPRKTest, ExactInexactTMax) {
   parameters_.tmax_is_exact = true;
   integrator_.Solve(&ComputeHarmonicOscillatorForce,
                     &ComputeHarmonicOscillatorVelocity,
-                    parameters_, &solution_);
+                    parameters_, check_not_null(&solution_));
   EXPECT_EQ(30, solution_.size());
   EXPECT_THAT(solution_.back().time.value, Eq(parameters_.tmax));
   EXPECT_THAT(solution_.back().time.error, Eq(0.0 * SIUnit<Time>()));
@@ -138,13 +138,13 @@ TEST_F(SPRKTest, ExactInexactTMax) {
   parameters_.tmax_is_exact = false;
   integrator_.Solve(&ComputeHarmonicOscillatorForce,
                     &ComputeHarmonicOscillatorVelocity,
-                    parameters_, &solution_);
+                    parameters_, check_not_null(&solution_));
   EXPECT_EQ(0, solution_.size());
 
   parameters_.tmax_is_exact = true;
   integrator_.Solve(&ComputeHarmonicOscillatorForce,
                     &ComputeHarmonicOscillatorVelocity,
-                    parameters_, &solution_);
+                    parameters_, check_not_null(&solution_));
   EXPECT_EQ(1, solution_.size());
   EXPECT_THAT(solution_.back().time.value, Eq(parameters_.tmax));
   EXPECT_THAT(solution_.back().time.error, Eq(0.0 * SIUnit<Time>()));
@@ -153,13 +153,13 @@ TEST_F(SPRKTest, ExactInexactTMax) {
   parameters_.tmax_is_exact = false;
   integrator_.Solve(&ComputeHarmonicOscillatorForce,
                     &ComputeHarmonicOscillatorVelocity,
-                    parameters_, &solution_);
+                    parameters_, check_not_null(&solution_));
   EXPECT_EQ(0, solution_.size());
 
   parameters_.tmax_is_exact = true;
   integrator_.Solve(&ComputeHarmonicOscillatorForce,
                     &ComputeHarmonicOscillatorVelocity,
-                    parameters_, &solution_);
+                    parameters_, check_not_null(&solution_));
   EXPECT_EQ(1, solution_.size());
   EXPECT_THAT(solution_.back().time.value, Eq(parameters_.tmax));
   EXPECT_THAT(solution_.back().time.error, Eq(0.0 * SIUnit<Time>()));
@@ -183,7 +183,7 @@ TEST_F(SPRKTest, Convergence) {
   for (int i = 0; i < step_sizes; ++i, parameters_.Δt /= step_reduction) {
     integrator_.Solve(&ComputeHarmonicOscillatorForce,
                       &ComputeHarmonicOscillatorVelocity,
-                      parameters_, &solution_);
+                      parameters_, check_not_null(&solution_));
     log_step_sizes[i] = std::log10(parameters_.Δt / SIUnit<Time>());
     log_q_errors[i] = std::log10(
         std::abs(solution_[0].positions[0].value / SIUnit<Length>() -
@@ -228,7 +228,7 @@ TEST_F(SPRKTest, Symplecticity) {
   parameters_.sampling_period = 1;
   integrator_.Solve(&ComputeHarmonicOscillatorForce,
                     &ComputeHarmonicOscillatorVelocity,
-                    parameters_, &solution_);
+                    parameters_, check_not_null(&solution_));
   std::size_t const length = solution_.size();
   std::vector<Energy> energy_error(length);
   std::vector<Time> time_steps(length);
