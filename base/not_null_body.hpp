@@ -104,13 +104,13 @@ not_null<Pointer> check_not_null(not_null<Pointer> pointer) {
 template<typename T, typename... Args>
 not_null<std::unique_ptr<T>> make_not_null_unique(Args&&... args) {  // NOLINT
   return not_null<std::unique_ptr<T>>(
-      std::make_unique<T>(std::forward<Args...>(args...)));  // NOLINT
+      std::make_unique<T>(std::forward<Args>(args)...));  // NOLINT
 }
 
 template<typename Pointer>
 std::ostream& operator<<(std::ostream& stream,
                          not_null<Pointer> const& pointer) {
-  return stream << (Pointer)(pointer);
+  return stream << static_cast<Pointer>(pointer);
 }
 
 }  // namespace base

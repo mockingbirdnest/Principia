@@ -51,7 +51,8 @@ class TrajectoryTest : public testing::Test {
 
   using World = Frame<Tag, Tag::kWorld, true>;
 
-  void SetUp() override {
+  TrajectoryTest()
+      : massive_body_(MassiveBody(1 * SIUnit<Mass>())) {
     q1_ = Position<World>(
         Vector<Length, World>({1 * Metre, 2 * Metre, 3 * Metre}));
     q2_ = Position<World>(
@@ -82,10 +83,8 @@ class TrajectoryTest : public testing::Test {
     t3_ = t0_ + 27 * Second;
     t4_ = t0_ + 37 * Second;
 
-    massive_body_ = std::make_unique<MassiveBody>(1 * SIUnit<Mass>());
-    massless_body_ = std::make_unique<MasslessBody>();
-    massive_trajectory_ = std::make_unique<Trajectory<World>>(*massive_body_);
-    massless_trajectory_ = std::make_unique<Trajectory<World>>(*massless_body_);
+    massive_trajectory_ = std::make_unique<Trajectory<World>>(check_not_null(&massive_body_));
+    massless_trajectory_ = std::make_unique<Trajectory<World>>(check_not_null(&massless_body_));
 
     transform_ = [](
         Instant const& t,
@@ -106,12 +105,12 @@ class TrajectoryTest : public testing::Test {
         std::bind(transform_, _1, _2, _3, massless_trajectory_.get());
   }
 
+  MassiveBody massive_body_;
+  MasslessBody massless_body_;
   Position<World> q1_, q2_, q3_, q4_;
   Velocity<World> p1_, p2_, p3_, p4_;
   std::unique_ptr<DegreesOfFreedom<World>> d1_, d2_, d3_, d4_;
   Instant t0_, t1_, t2_, t3_, t4_;
-  std::unique_ptr<MassiveBody> massive_body_;
-  std::unique_ptr<MasslessBody> massless_body_;
   std::unique_ptr<Trajectory<World>> massive_trajectory_;
   std::unique_ptr<Trajectory<World>> massless_trajectory_;
   std::function<DegreesOfFreedom<World>(Instant const&,
@@ -131,7 +130,7 @@ TEST_F(TrajectoryDeathTest, Construction) {
                                 1.0 /*j2*/,
                                 1 * SIUnit<Length>(),
                                 Vector<double, OtherWorld>({0, 1, 0}));
-    Trajectory<World> trajectory(body);
+    Trajectory<World> trajectory(check_not_null(&body));
   }, "not in the same frame");
 }
 
@@ -162,7 +161,7 @@ TEST_F(TrajectoryTest, AppendSuccess) {
                                       testing::Pair(t2_, p2_),
                                       testing::Pair(t3_, p3_)));
   EXPECT_THAT(times, ElementsAre(t1_, t2_, t3_));
-  EXPECT_THAT(massive_trajectory_->body<MassiveBody>(), Ref(*massive_body_));
+  EXPECT_THAT(massive_trajectory_->body<MassiveBody>(), Eq(&massive_body_));
 }
 
 TEST_F(TrajectoryDeathTest, ForkError) {
@@ -191,7 +190,7 @@ TEST_F(TrajectoryTest, ForkSuccess) {
                                       testing::Pair(t2_, p2_),
                                       testing::Pair(t3_, p3_)));
   EXPECT_THAT(times, ElementsAre(t1_, t2_, t3_));
-  EXPECT_THAT(fork->body<MassiveBody>(), Ref(*massive_body_));
+  EXPECT_THAT(fork->body<MassiveBody>(), Eq(&massive_body_));
   positions = fork->Positions();
   velocities = fork->Velocities();
   times = fork->Times();
@@ -204,7 +203,7 @@ TEST_F(TrajectoryTest, ForkSuccess) {
                                       testing::Pair(t3_, p3_),
                                       testing::Pair(t4_, p4_)));
   EXPECT_THAT(times, ElementsAre(t1_, t2_, t3_, t4_));
-  EXPECT_THAT(fork->body<MassiveBody>(), Ref(*massive_body_));
+  EXPECT_THAT(fork->body<MassiveBody>(), Eq(&massive_body_));
 }
 
 TEST_F(TrajectoryDeathTest, DeleteForkError) {
@@ -246,7 +245,7 @@ TEST_F(TrajectoryTest, DeleteForkSuccess) {
                                       testing::Pair(t2_, p2_),
                                       testing::Pair(t3_, p3_)));
   EXPECT_THAT(times, ElementsAre(t1_, t2_, t3_));
-  EXPECT_THAT(fork1->body<MassiveBody>(), Ref(*massive_body_));
+  EXPECT_THAT(fork1->body<MassiveBody>(), Eq(&massive_body_));
   positions = fork1->Positions();
   velocities = fork1->Velocities();
   times = fork1->Times();
@@ -259,7 +258,7 @@ TEST_F(TrajectoryTest, DeleteForkSuccess) {
                                       testing::Pair(t3_, p3_),
                                       testing::Pair(t4_, p4_)));
   EXPECT_THAT(times, ElementsAre(t1_, t2_, t3_, t4_));
-  EXPECT_THAT(fork1->body<MassiveBody>(), Ref(*massive_body_));
+  EXPECT_THAT(fork1->body<MassiveBody>(), Eq(&massive_body_));
   massive_trajectory_.reset();
 }
 

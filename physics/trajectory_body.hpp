@@ -9,16 +9,17 @@
 #include "glog/logging.h"
 #include "physics/oblate_body.hpp"
 
+using principia::base::check_not_null;
 using principia::geometry::Instant;
 
 namespace principia {
 namespace physics {
 
 template<typename Frame>
-Trajectory<Frame>::Trajectory(Body const& body)
+Trajectory<Frame>::Trajectory(not_null<Body const*> const body)
     : body_(body),
       parent_(nullptr) {
-  CHECK(body.is_compatible_with<Frame>())
+  CHECK(body_->is_compatible_with<Frame>())
       << "Oblate body not in the same frame as the trajectory";
 }
 
@@ -160,7 +161,7 @@ Trajectory<Frame>* Trajectory<Frame>::Fork(Instant const& time) {
   CHECK(fork_it != timeline_.end()) << "Fork at nonexistent time";
   // Can't use make_unique below.
   std::unique_ptr<Trajectory<Frame>> child(
-      new Trajectory(body_, this /*parent*/, fork_it));
+      new Trajectory(body_, check_not_null(this) /*parent*/, fork_it));
   child->timeline_.insert(++fork_it, timeline_.end());
   auto const child_it = children_.emplace(time, std::move(child));
   return child_it->second.get();
@@ -219,22 +220,22 @@ Instant const* Trajectory<Frame>::fork_time() const {
 
 template<typename Frame>
 template<typename B>
-std::enable_if_t<std::is_base_of<Body, B>::value, B> const&
+std::enable_if_t<std::is_base_of<Body, B>::value, not_null<B const*>>
 Trajectory<Frame>::body() const {
 // Dynamic casting is expensive, as in 3x slower for the benchmarks.  Do that in
 // debug mode to catch bugs, but not in optimized mode where we want all the
 // performance we can get.
 #ifdef _DEBUG
-  return *CHECK_NOTNULL(dynamic_cast<B const*>(&body_));
+  return check_not_null(dynamic_cast<B const*>(static_cast<Body const*>(body_)));
 #else
-  return *static_cast<B const*>(&body_);
+  return check_not_null(static_cast<B const*>(static_cast<Body const*>(body_)));
 #endif
 }
 
 template<typename Frame>
 void Trajectory<Frame>::set_intrinsic_acceleration(
     IntrinsicAcceleration const acceleration) {
-  CHECK(body_.is_massless()) << "Trajectory is for a massive body";
+  CHECK(body_->is_massless()) << "Trajectory is for a massive body";
   CHECK(intrinsic_acceleration_ == nullptr)
       << "Trajectory already has an intrinsic acceleration";
   intrinsic_acceleration_ =
@@ -365,11 +366,11 @@ Trajectory<Frame>::TransformingIterator<ToFrame>::TransformingIterator(
       transform_(transform) {}
 
 template<typename Frame>
-Trajectory<Frame>::Trajectory(Body const& body,
-                              Trajectory* const parent,
+Trajectory<Frame>::Trajectory(not_null<Body const*> const body,
+                              not_null<Trajectory*> const parent,
                               typename Timeline::iterator const& fork)
     : body_(body),
-      parent_(CHECK_NOTNULL(parent)),
+      parent_(parent),
       fork_(new typename Timeline::iterator(fork)) {}
 
 }  // namespace physics

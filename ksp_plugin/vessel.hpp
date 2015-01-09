@@ -67,7 +67,7 @@ class Vessel {
   void ResetProlongation(Instant const& time);
 
  private:
-  std::unique_ptr<MasslessBody const> const body_;
+  MasslessBody const body_;
   // The parent body for the 2-body approximation. Not owning, must not be
   // null.
   Celestial const* parent_;

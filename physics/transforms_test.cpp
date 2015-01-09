@@ -2,6 +2,7 @@
 
 #include <limits>
 
+#include "base/not_null.hpp"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "physics/degrees_of_freedom.hpp"
@@ -14,6 +15,7 @@
 #include "testing_utilities/componentwise.hpp"
 #include "testing_utilities/vanishes_before.hpp"
 
+using principia::base::check_not_null;
 using principia::quantities::Length;
 using principia::quantities::Mass;
 using principia::quantities::SIUnit;
@@ -43,14 +45,14 @@ class TransformsTest : public testing::Test {
   using Through = Frame<Tag, Tag::kThrough, false>;
   using To = Frame<Tag, Tag::kTo, true>;
 
-  void SetUp() override {
-    body1_ = std::make_unique<MassiveBody>(1 * SIUnit<Mass>());
-    body2_ = std::make_unique<MassiveBody>(3 * SIUnit<Mass>());
-    satellite_from_ = std::make_unique<Trajectory<From>>(satellite_);
-    body1_from_ = std::make_unique<Trajectory<From>>(*body1_);
-    body2_from_ = std::make_unique<Trajectory<From>>(*body2_);
-    body1_to_ = std::make_unique<Trajectory<To>>(*body1_);
-    body2_to_ = std::make_unique<Trajectory<To>>(*body2_);
+  TransformsTest()
+      : body1_(MassiveBody(1 * SIUnit<Mass>())),
+        body2_(MassiveBody(3 * SIUnit<Mass>())) {
+    satellite_from_ = std::make_unique<Trajectory<From>>(check_not_null(&satellite_));
+    body1_from_ = std::make_unique<Trajectory<From>>(check_not_null(&body1_));
+    body2_from_ = std::make_unique<Trajectory<From>>(check_not_null(&body2_));
+    body1_to_ = std::make_unique<Trajectory<To>>(check_not_null(&body1_));
+    body2_to_ = std::make_unique<Trajectory<To>>(check_not_null(&body2_));
     body1_from_fn_ =
         [this]() -> Trajectory<From> const& { return *this->body1_from_; };
     body2_from_fn_ =
@@ -100,8 +102,8 @@ class TransformsTest : public testing::Test {
     }
   }
 
-  std::unique_ptr<MassiveBody> body1_;
-  std::unique_ptr<MassiveBody> body2_;
+  MassiveBody body1_;
+  MassiveBody body2_;
   MasslessBody satellite_;
   std::unique_ptr<Trajectory<From>> body1_from_;
   std::unique_ptr<Trajectory<From>> body2_from_;
@@ -121,7 +123,7 @@ class TransformsTest : public testing::Test {
 TEST_F(TransformsTest, BodyCentredNonRotating) {
   transforms_ = Transforms<From, Through, To>::BodyCentredNonRotating(
                     body1_from_fn_, body1_to_fn_);
-  Trajectory<Through> body1_through(*body1_);
+  Trajectory<Through> body1_through(check_not_null(&body1_));
 
   int i = 1;
   for (auto it = transforms_->first(satellite_from_.get());
@@ -175,7 +177,7 @@ TEST_F(TransformsTest, SatelliteBarycentricRotating) {
   transforms_ = Transforms<From, Through, To>::BarycentricRotating(
                     body1_from_fn_, body1_to_fn_,
                     body2_from_fn_, body2_to_fn_);
-  Trajectory<Through> satellite_through(satellite_);
+  Trajectory<Through> satellite_through(check_not_null(&satellite_));
 
   int i = 1;
   for (auto it = transforms_->first(satellite_from_.get());
@@ -248,8 +250,8 @@ TEST_F(TransformsTest, BodiesBarycentricRotating) {
   transforms_ = Transforms<From, Through, To>::BarycentricRotating(
                     body1_from_fn_, body1_to_fn_,
                     body2_from_fn_, body2_to_fn_);
-  Trajectory<Through> body1_through(*body1_);
-  Trajectory<Through> body2_through(*body2_);
+  Trajectory<Through> body1_through(check_not_null(&body1_));
+  Trajectory<Through> body2_through(check_not_null(&body2_));
 
   int i = 1;
   for (auto it1 = transforms_->first(body1_from_.get()),
@@ -282,7 +284,7 @@ TEST_F(TransformsTest, BodiesBarycentricRotating) {
 
     DegreesOfFreedom<Through> const barycentre_degrees_of_freedom =
         Barycentre<Through, Mass>({degrees_of_freedom1, degrees_of_freedom2},
-                                  {body1_->mass(), body2_->mass()});
+                                  {body1_.mass(), body2_.mass()});
     EXPECT_THAT(barycentre_degrees_of_freedom.position() - Through::origin,
                 Componentwise(VanishesBefore(l, 0, 1),
                               VanishesBefore(l, 0, 2),

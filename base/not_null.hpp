@@ -159,13 +159,13 @@ class not_null {
   // |unique_ptr|.
   operator pointer const&() const;
   // Returns |*pointer_|.
-  decltype(*pointer{}) operator*() const;
-  decltype(std::addressof(*pointer{})) const operator->() const;
+  decltype(*std::declval<pointer>()) operator*() const;
+  decltype(std::addressof(*std::declval<pointer>())) const operator->() const;
 
   // When |pointer| has a |get()| member function, this returns
   // |pointer_.get()|.
-  template<typename P = pointer, typename = decltype(P{}.get())>
-  not_null<decltype(P{}.get())> get() const;
+  template<typename P = pointer, typename = decltype(std::declval<P>().get())>
+  not_null<decltype(std::declval<P>().get())> get() const;
 
   // The following operators are redundant for valid |not_null<Pointer>|s with
   // the implicit conversion to |pointer|, but they should allow some

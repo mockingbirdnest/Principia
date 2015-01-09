@@ -6,7 +6,7 @@ namespace principia {
 namespace ksp_plugin {
 
 inline Vessel::Vessel(Celestial const* parent)
-    : body_(new MasslessBody),
+    : body_(),
       parent_(CHECK_NOTNULL(parent)) {}
 
 inline bool Vessel::is_synchronized() const {
@@ -55,7 +55,7 @@ inline void Vessel::CreateProlongation(
   CHECK(!is_synchronized());
   CHECK(!is_initialized());
   CHECK(owned_prolongation_ == nullptr);
-  owned_prolongation_ = std::make_unique<Trajectory<Barycentric>>(*body_);
+  owned_prolongation_ = std::make_unique<Trajectory<Barycentric>>(check_not_null(&body_));
   owned_prolongation_->Append(time, degrees_of_freedom);
   prolongation_ = owned_prolongation_.get();
 }
@@ -64,7 +64,7 @@ inline void Vessel::CreateHistoryAndForkProlongation(
     Instant const& time,
     DegreesOfFreedom<Barycentric> const& degrees_of_freedom) {
   CHECK(!is_synchronized());
-  history_ = std::make_unique<Trajectory<Barycentric>>(*body_);
+  history_ = std::make_unique<Trajectory<Barycentric>>(check_not_null(&body_));
   history_->Append(time, degrees_of_freedom);
   prolongation_ = history_->Fork(time);
   owned_prolongation_.reset();
