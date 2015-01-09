@@ -10,6 +10,7 @@
 // Mixed assemblies are not supported by Unity/Mono.
 #include "glog/logging.h"
 
+using principia::base::check_not_null;
 using principia::quantities::Quotient;
 
 namespace principia {
@@ -68,10 +69,10 @@ void SPRKIntegrator<Position, Momentum>::Solve(
   std::vector<Position> Δqstage1(dimension);
   std::vector<Momentum> Δpstage0(dimension);
   std::vector<Momentum> Δpstage1(dimension);
-  std::vector<Position>* Δqstage_current = &Δqstage1;
-  std::vector<Position>* Δqstage_previous = &Δqstage0;
-  std::vector<Momentum>* Δpstage_current = &Δpstage1;
-  std::vector<Momentum>* Δpstage_previous = &Δpstage0;
+  not_null<std::vector<Position>*> Δqstage_current = check_not_null(&Δqstage1);
+  not_null<std::vector<Position>*> Δqstage_previous = check_not_null(&Δqstage0);
+  not_null<std::vector<Momentum>*> Δpstage_current = check_not_null(&Δpstage1);
+  not_null<std::vector<Momentum>*> Δpstage_previous = check_not_null(&Δpstage0);
 
   // Dimension the result.
   int const capacity = parameters.sampling_period == 0 ?

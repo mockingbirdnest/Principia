@@ -11,15 +11,15 @@ MockPlugin::MockPlugin()
       1 * SIUnit<GravitationalParameter>(),
       Angle()) {}
 
-std::unique_ptr<Transforms<Barycentric, Rendering, Barycentric>>
+not_null<std::unique_ptr<Transforms<Barycentric, Rendering, Barycentric>>>
 MockPlugin::NewBodyCentredNonRotatingTransforms(
     Index const reference_body_index) const {
   std::unique_ptr<Transforms<Barycentric, Rendering, Barycentric>> transforms;
   FillBodyCentredNonRotatingTransforms(reference_body_index, &transforms);
-  return transforms;
+  return check_not_null(std::move(transforms));  // Remove std::move.
 }
 
-std::unique_ptr<Transforms<Barycentric, Rendering, Barycentric>>
+not_null<std::unique_ptr<Transforms<Barycentric, Rendering, Barycentric>>>
 MockPlugin::NewBarycentricRotatingTransforms(
     Index const primary_index,
     Index const secondary_index) const {
@@ -27,7 +27,7 @@ MockPlugin::NewBarycentricRotatingTransforms(
   FillBarycentricRotatingTransforms(primary_index,
                                     secondary_index,
                                     &transforms);
-  return transforms;
+  return check_not_null(std::move(transforms));  // Remove std::move.
 }
 
 }  // namespace ksp_plugin

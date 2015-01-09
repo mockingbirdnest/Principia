@@ -477,7 +477,7 @@ RenderedTrajectory<World> Plugin::RenderedVesselTrajectory(
 
   // First build the trajectory resulting from the first transform.
   Trajectory<Rendering> intermediate_trajectory(actual_trajectory.body<Body>());
-  for (auto actual_it = transforms->first(&actual_trajectory);
+  for (auto actual_it = transforms->first(check_not_null(&actual_trajectory));
        !actual_it.at_end();
        ++actual_it) {
     intermediate_trajectory.Append(actual_it.time(),
@@ -487,7 +487,7 @@ RenderedTrajectory<World> Plugin::RenderedVesselTrajectory(
   // Then build the apparent trajectory using the second transform.
   std::unique_ptr<Trajectory<Barycentric>> apparent_trajectory =
       std::make_unique<Trajectory<Barycentric>>(actual_trajectory.body<Body>());
-  for (auto intermediate_it = transforms->second(&intermediate_trajectory);
+  for (auto intermediate_it = transforms->second(check_not_null(&intermediate_trajectory));
        !intermediate_it.at_end();
        ++intermediate_it) {
     apparent_trajectory->Append(intermediate_it.time(),
@@ -511,7 +511,7 @@ RenderedTrajectory<World> Plugin::RenderedVesselTrajectory(
   return result;
 }
 
-std::unique_ptr<Transforms<Barycentric, Rendering, Barycentric>>
+not_null<std::unique_ptr<Transforms<Barycentric, Rendering, Barycentric>>>
 Plugin::NewBodyCentredNonRotatingTransforms(
     Index const reference_body_index) const {
   auto const it = celestials_.find(reference_body_index);
@@ -525,7 +525,7 @@ Plugin::NewBodyCentredNonRotatingTransforms(
                                     reference_body_prolongation);
 }
 
-std::unique_ptr<Transforms<Barycentric, Rendering, Barycentric>>
+not_null<std::unique_ptr<Transforms<Barycentric, Rendering, Barycentric>>>
 Plugin::NewBarycentricRotatingTransforms(Index const primary_index,
                                          Index const secondary_index) const {
   auto const primary_it = celestials_.find(primary_index);
