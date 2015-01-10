@@ -5,7 +5,6 @@
 #include <algorithm>
 #include <utility>
 
-#include "base/macros.hpp"
 #include "glog/logging.h"
 
 namespace principia {
