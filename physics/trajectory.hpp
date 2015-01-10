@@ -36,7 +36,7 @@ class Trajectory {
   using Transform = std::function<DegreesOfFreedom<ToFrame>(
                         Instant const&,
                         DegreesOfFreedom<Frame> const&,
-                        not_null<Trajectory<Frame>> const*)>;
+                        not_null<Trajectory<Frame> const*> const)>;
 
   // No transfer of ownership.  |body| must live longer than the trajectory as
   // the trajectory holds a reference to it.  If |body| is oblate it must be
@@ -222,7 +222,7 @@ class Trajectory {
 
   // There may be several forks starting from the same time, hence the multimap.
   // Child trajectories are owned.
-  std::multimap<Instant, std::unique_ptr<Trajectory>> children_;
+  std::multimap<Instant, not_null<std::unique_ptr<Trajectory>>> children_;
 
   Timeline timeline_;
 
