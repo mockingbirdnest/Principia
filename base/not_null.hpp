@@ -241,11 +241,13 @@ class not_null<Pointer&&>;  // NOLINT(build/c++11)
 template<typename Pointer>
 _checked_not_null<Pointer> check_not_null(Pointer pointer);
 
+#if 0
 // While the above factory would cover this case using the implicit
 // conversion, this results in a redundant |CHECK|.
 // This function returns its argument.
 template<typename Pointer>
 not_null<Pointer> check_not_null(not_null<Pointer> pointer);
+#endif
 
 // Factory for a |not_null<std::unique_ptr<T>>|, forwards the arguments to the
 // constructor of T.  |make_not_null_unique<T>(args)| is interchangeable with

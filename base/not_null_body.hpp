@@ -132,10 +132,12 @@ _checked_not_null<Pointer> check_not_null(Pointer pointer) {
       std::move(pointer));
 }
 
+#if 0
 template<typename Pointer>
 not_null<Pointer> check_not_null(not_null<Pointer> pointer) {
   return std::move(pointer);
 }
+#endif
 
 template<typename T, typename... Args>
 not_null<std::unique_ptr<T>> make_not_null_unique(Args&&... args) {  // NOLINT

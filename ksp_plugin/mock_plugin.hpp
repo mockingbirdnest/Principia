@@ -55,11 +55,11 @@ class MockPlugin : public Plugin {
   // NOTE(phl): gMock 1.7.0 doesn't support returning a std::unique_ptr<>.  So
   // we override the function of the Plugin class with bona fide functions which
   // call mock functions which fill a std::unique_ptr<> instead of returning it.
-  std::unique_ptr<Transforms<Barycentric, Rendering, Barycentric>>
+  not_null<std::unique_ptr<Transforms<Barycentric, Rendering, Barycentric>>>
   NewBodyCentredNonRotatingTransforms(
       Index const reference_body_index) const override;
 
-  std::unique_ptr<Transforms<Barycentric, Rendering, Barycentric>>
+  not_null<std::unique_ptr<Transforms<Barycentric, Rendering, Barycentric>>>
   NewBarycentricRotatingTransforms(
       Index const primary_index,
       Index const secondary_index) const override;
