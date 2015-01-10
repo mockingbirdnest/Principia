@@ -9,7 +9,6 @@
 #include <utility>
 #include <vector>
 
-#include "base/not_null.hpp"
 #include "geometry/permutation.hpp"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
@@ -20,7 +19,6 @@
 #include "testing_utilities/numerics.hpp"
 #include "testing_utilities/solar_system.hpp"
 
-using principia::base::not_null;
 using principia::geometry::Bivector;
 using principia::geometry::Permutation;
 using principia::physics::MockNBodySystem;
@@ -838,8 +836,8 @@ TEST_F(PluginTest, BodyCentredNonrotatingRenderingIntegration) {
                               RelativeDegreesOfFreedom<AliceSun>(
                                   satellite_initial_displacement_,
                                   satellite_initial_velocity_));
-  not_null<std::unique_ptr<
-      Transforms<Barycentric, Rendering, Barycentric>>> const geocentric =
+  std::unique_ptr<Transforms<Barycentric, Rendering, Barycentric>> const
+      geocentric =
           plugin.NewBodyCentredNonRotatingTransforms(SolarSystem::kEarth);
   // We'll check that our orbit is rendered as circular (actually, we only check
   // that it is rendered within a thin spherical shell around the Earth).
@@ -945,8 +943,7 @@ TEST_F(PluginTest, BarycentricRotatingRenderingIntegration) {
                                   RelativeDegreesOfFreedom<ICRFJ2000Ecliptic>(
                                       from_the_earth_to_l5,
                                       initial_velocity)));
-  not_null<std::unique_ptr<
-      Transforms<Barycentric, Rendering, Barycentric>>> const
+  std::unique_ptr<Transforms<Barycentric, Rendering, Barycentric>> const
       earth_moon_barycentric =
           plugin.NewBarycentricRotatingTransforms(SolarSystem::kEarth,
                                                   SolarSystem::kMoon);

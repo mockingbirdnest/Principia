@@ -181,12 +181,10 @@ class Plugin {
       Transforms<Barycentric, Rendering, Barycentric>* const transforms,
       Position<World> const& sun_world_position) const;
 
-  virtual not_null<std::unique_ptr<
-      Transforms<Barycentric, Rendering, Barycentric>>>
+  virtual std::unique_ptr<Transforms<Barycentric, Rendering, Barycentric>>
   NewBodyCentredNonRotatingTransforms(Index const reference_body_index) const;
 
-  virtual not_null<std::unique_ptr<
-      Transforms<Barycentric, Rendering, Barycentric>>>
+  virtual std::unique_ptr<Transforms<Barycentric, Rendering, Barycentric>>
   NewBarycentricRotatingTransforms(Index const primary_index,
                                    Index const secondary_index) const;
 
