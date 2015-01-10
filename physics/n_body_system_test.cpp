@@ -5,6 +5,7 @@
 #include <string>
 #include <vector>
 
+#include "base/macros.hpp"
 #include "geometry/grassmann.hpp"
 #include "geometry/named_quantities.hpp"
 #include "geometry/point.hpp"
@@ -21,6 +22,7 @@
 #include "testing_utilities/numerics.hpp"
 #include "testing_utilities/solar_system.hpp"
 
+using principia::base::make_not_null_unique;
 using principia::constants::GravitationalConstant;
 using principia::geometry::Instant;
 using principia::geometry::Point;
@@ -54,17 +56,17 @@ class NBodySystemTest : public testing::Test {
 
   NBodySystemTest()
       : body1_(MassiveBody(6E24 * SIUnit<Mass>())),
-        body2_(MassiveBody(7E22 * SIUnit<Mass>())) {
+        body2_(MassiveBody(7E22 * SIUnit<Mass>())),
+        trajectory1_(make_not_null_unique<Trajectory<EarthMoonOrbitPlane>>(
+                         check_not_null(&body1_))),
+        trajectory2_(make_not_null_unique<Trajectory<EarthMoonOrbitPlane>>(
+                        check_not_null(&body2_))),
+        trajectory3_(make_not_null_unique<Trajectory<EarthMoonOrbitPlane>>(
+                         check_not_null(&body3_))) {
     integrator_.Initialize(integrator_.Order5Optimal());
 
     // The Earth-Moon system, roughly, with a circular orbit with velocities
     // in the centre-of-mass frame.
-    trajectory1_ = std::make_unique<Trajectory<EarthMoonOrbitPlane>>(
-                       check_not_null(&body1_));
-    trajectory2_ = std::make_unique<Trajectory<EarthMoonOrbitPlane>>(
-                       check_not_null(&body2_));
-    trajectory3_ = std::make_unique<Trajectory<EarthMoonOrbitPlane>>(
-                       check_not_null(&body3_));
     Position<EarthMoonOrbitPlane> const q1(
         Vector<Length, EarthMoonOrbitPlane>({0 * SIUnit<Length>(),
                                              0 * SIUnit<Length>(),
@@ -138,9 +140,9 @@ class NBodySystemTest : public testing::Test {
   MassiveBody body1_;
   MassiveBody body2_;
   MasslessBody body3_;  // A massless probe.
-  std::unique_ptr<Trajectory<EarthMoonOrbitPlane>> trajectory1_;
-  std::unique_ptr<Trajectory<EarthMoonOrbitPlane>> trajectory2_;
-  std::unique_ptr<Trajectory<EarthMoonOrbitPlane>> trajectory3_;
+  not_null<std::unique_ptr<Trajectory<EarthMoonOrbitPlane>>> trajectory1_;
+  not_null<std::unique_ptr<Trajectory<EarthMoonOrbitPlane>>> trajectory2_;
+  not_null<std::unique_ptr<Trajectory<EarthMoonOrbitPlane>>> trajectory3_;
   Position<EarthMoonOrbitPlane> centre_of_mass_;
   SPRKIntegrator<Length, Speed> integrator_;
   Time period_;
@@ -161,8 +163,8 @@ TEST_F(NBodySystemDeathTest, IntegrateError) {
                         trajectory1_.get()});
   }, "Multiple trajectories");
   EXPECT_DEATH({
-    std::unique_ptr<Trajectory<EarthMoonOrbitPlane>> trajectory =
-        std::make_unique<Trajectory<EarthMoonOrbitPlane>>(check_not_null(&body2_));
+    not_null<std::unique_ptr<Trajectory<EarthMoonOrbitPlane>>> trajectory =
+        make_not_null_unique<Trajectory<EarthMoonOrbitPlane>>(check_not_null(&body2_));
     trajectory->Append(Instant(1 * SIUnit<Time>()),
                        {Position<EarthMoonOrbitPlane>(),
                         Velocity<EarthMoonOrbitPlane>()});

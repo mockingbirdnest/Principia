@@ -199,7 +199,7 @@ inline void NBodySystem<Frame>::ComputeOneBodyGravitationalAcceleration(
     size_t const b2_begin,
     size_t const b2_end,
     std::vector<Length> const& q,
-    std::vector<Acceleration>* result) {
+    not_null<std::vector<Acceleration>*> const result) {
   // NOTE(phl): Declaring variables for values like 3 * b1 + 1, 3 * b2 + 1, etc.
   // in the code below brings no performance advantage as it seems that the
   // compiler is smart enough to figure common subexpressions.
@@ -278,7 +278,7 @@ void NBodySystem<Frame>::ComputeGravitationalAccelerations(
     Instant const& reference_time,
     Time const& t,
     std::vector<Length> const& q,
-    std::vector<Acceleration>* result) {
+    not_null<std::vector<Acceleration>*> const result) {
   result->assign(result->size(), Acceleration());
   size_t const number_of_massive_oblate_trajectories =
       massive_oblate_trajectories.size();
@@ -377,7 +377,7 @@ void NBodySystem<Frame>::ComputeGravitationalAccelerations(
 template<typename Frame>
 void NBodySystem<Frame>::ComputeGravitationalVelocities(
     std::vector<Speed> const& p,
-    std::vector<Speed>* result) {
+    not_null<std::vector<Speed>*> const result) {
   *result = p;
 }
 

@@ -63,8 +63,8 @@ int const kNotABody = 1729;
 ACTION_TEMPLATE(AppendTimeToTrajectories,
                 HAS_1_TEMPLATE_PARAMS(int, k),
                 AND_1_VALUE_PARAMS(time)) {
-  for (auto* trajectory : static_cast<NBodySystem<Barycentric>::Trajectories>(
-                              std::tr1::get<k>(args))) {
+  for (auto trajectory : static_cast<NBodySystem<Barycentric>::Trajectories>(
+                             std::tr1::get<k>(args))) {
     trajectory->Append(time, trajectory->last().degrees_of_freedom());
   }
 }

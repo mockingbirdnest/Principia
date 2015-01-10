@@ -132,7 +132,7 @@ class SolarSystem {
 
   Bodies massive_bodies_;
   Bodies massless_bodies_;
-  std::vector<std::unique_ptr<physics::Trajectory<ICRFJ2000Ecliptic>>>
+  std::vector<not_null<std::unique_ptr<physics::Trajectory<ICRFJ2000Ecliptic>>>>
       trajectories_;
 };
 
