@@ -79,9 +79,15 @@ not_null<Pointer>::operator->() const {
 
 template<typename Pointer>
 template<typename P, typename>
-not_null<decltype(P{}.get())> not_null<Pointer>::get() const {
+not_null<decltype(std::declval<P>().get())> not_null<Pointer>::get() const {
   // NOTE(egg): no |CHECK| is performed.
-  return not_null<decltype(P{}.get())>(pointer_.get());
+  return not_null<decltype(std::declval<P>().get())>(pointer_.get());
+}
+
+template<typename Pointer>
+template<typename P, typename>
+not_null<decltype(std::declval<P>().release())> not_null<Pointer>::release() {
+  return not_null<decltype(std::declval<P>().release())>(pointer_.release());
 }
 
 template<typename Pointer>
@@ -97,6 +103,26 @@ bool not_null<Pointer>::operator!=(std::nullptr_t const other) const {
 template<typename Pointer>
 not_null<Pointer>::operator bool() const {
   return true;
+}
+
+template<typename Pointer>
+bool not_null<Pointer>::operator<(not_null const other) const {
+  return pointer_ < other.pointer_;
+}
+
+template<typename Pointer>
+bool not_null<Pointer>::operator<=(not_null const other) const {
+  return pointer_ <= other.pointer_;
+}
+
+template<typename Pointer>
+bool not_null<Pointer>::operator>=(not_null const other) const {
+  return pointer_ >= other.pointer_;
+}
+
+template<typename Pointer>
+bool not_null<Pointer>::operator>(not_null const other) const {
+  return pointer_ > other.pointer_;
 }
 
 template<typename Pointer>

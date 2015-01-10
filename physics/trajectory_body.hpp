@@ -156,7 +156,7 @@ void Trajectory<Frame>::ForgetBefore(Instant const& time) {
 }
 
 template<typename Frame>
-Trajectory<Frame>* Trajectory<Frame>::Fork(Instant const& time) {
+not_null<Trajectory<Frame>*> Trajectory<Frame>::Fork(Instant const& time) {
   auto fork_it = timeline_.find(time);
   CHECK(fork_it != timeline_.end()) << "Fork at nonexistent time";
   // Can't use make_unique below.
@@ -192,7 +192,7 @@ bool Trajectory<Frame>::is_root() const {
 }
 
 template<typename Frame>
-Trajectory<Frame> const* Trajectory<Frame>::root() const {
+not_null<Trajectory<Frame> const*> Trajectory<Frame>::root() const {
   Trajectory const* ancestor = this;
   while (ancestor->parent_ != nullptr) {
     ancestor = ancestor->parent_;
@@ -201,7 +201,7 @@ Trajectory<Frame> const* Trajectory<Frame>::root() const {
 }
 
 template<typename Frame>
-Trajectory<Frame>* Trajectory<Frame>::root() {
+not_null<Trajectory<Frame>*> Trajectory<Frame>::root() {
   Trajectory* ancestor = this;
   while (ancestor->parent_ != nullptr) {
     ancestor = ancestor->parent_;

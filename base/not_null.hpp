@@ -181,6 +181,12 @@ class not_null {
   template<typename P = pointer, typename = decltype(std::declval<P>().get())>
   not_null<decltype(std::declval<P>().get())> get() const;
 
+  // When |pointer| has a |release()| member function, this returns
+  // |pointer_.release()|.
+  template<typename P = pointer,
+           typename = decltype(std::declval<P>().release())>
+  not_null<decltype(std::declval<P>().release())> release();
+
   // The following operators are redundant for valid |not_null<Pointer>|s with
   // the implicit conversion to |pointer|, but they should allow some
   // optimization.
@@ -191,6 +197,12 @@ class not_null {
   bool operator!=(std::nullptr_t const other) const;
   // Returns |true|.
   operator bool() const;
+
+  // Ordering.
+  bool operator<(not_null const other) const;
+  bool operator<=(not_null const other) const;
+  bool operator>=(not_null const other) const;
+  bool operator>(not_null const other) const;
 
  private:
   // Creates a |not_null<Pointer>| whose |pointer_| equals the given |pointer|,
