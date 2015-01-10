@@ -5,6 +5,7 @@
 #include <algorithm>
 #include <utility>
 
+#include "base/macros.hpp"
 #include "glog/logging.h"
 
 namespace principia {
@@ -19,6 +20,11 @@ not_null<Pointer>::not_null(not_null<OtherPointer> const& other)
     : pointer_(other.pointer_) {}
 
 template<typename Pointer>
+template<typename OtherPointer, typename, typename>
+not_null<Pointer>::not_null(not_null<OtherPointer> const& other)
+    : pointer_(static_cast<pointer>(other.pointer_)) {}
+
+template<typename Pointer>
 not_null<Pointer>::not_null(not_null&& other)  // NOLINT(build/c++11)
     : pointer_(std::move(other.pointer_)) {}
 
@@ -26,6 +32,11 @@ template<typename Pointer>
 template<typename OtherPointer, typename>
 not_null<Pointer>::not_null(not_null<OtherPointer>&& other)  // NOLINT
     : pointer_(std::move(other.pointer_)) {}
+
+template<typename Pointer>
+template<typename OtherPointer, typename, typename>
+not_null<Pointer>::not_null(not_null<OtherPointer>&& other)  // NOLINT
+    : pointer_(static_cast<pointer>(std::move(other.pointer_))) {}
 
 template<typename Pointer>
 template<typename OtherPointer, typename>
