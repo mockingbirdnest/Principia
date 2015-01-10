@@ -109,7 +109,7 @@ class Trajectory {
 
   // Deletes the child trajectory denoted by |*fork|, which must be a pointer
   // previously returned by Fork for this object.  Nulls |*fork|.
-  void DeleteFork(Trajectory** const fork);
+  void DeleteFork(not_null<Trajectory**> const fork);
 
   // Returns true if this is a root trajectory.
   bool is_root() const;

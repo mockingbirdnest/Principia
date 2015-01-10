@@ -169,8 +169,7 @@ not_null<Trajectory<Frame>*> Trajectory<Frame>::Fork(Instant const& time) {
 }
 
 template<typename Frame>
-void Trajectory<Frame>::DeleteFork(Trajectory** const fork) {
-  CHECK_NOTNULL(fork);
+void Trajectory<Frame>::DeleteFork(not_null<Trajectory**> const fork) {
   CHECK_NOTNULL(*fork);
   Instant const* const fork_time = (*fork)->fork_time();
   CHECK_NOTNULL(fork_time);
