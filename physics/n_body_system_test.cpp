@@ -62,7 +62,8 @@ class NBodySystemTest : public testing::Test {
         trajectory2_(make_not_null_unique<Trajectory<EarthMoonOrbitPlane>>(
                         check_not_null(&body2_))),
         trajectory3_(make_not_null_unique<Trajectory<EarthMoonOrbitPlane>>(
-                         check_not_null(&body3_))) {
+                         check_not_null(&body3_))),
+        system_(make_not_null_unique<NBodySystem<EarthMoonOrbitPlane>>()) {
     integrator_.Initialize(integrator_.Order5Optimal());
 
     // The Earth-Moon system, roughly, with a circular orbit with velocities
@@ -92,7 +93,6 @@ class NBodySystemTest : public testing::Test {
          0 * SIUnit<Speed>()});
     trajectory1_->Append(Instant(0 * SIUnit<Time>()), {q1, v1});
     trajectory2_->Append(Instant(0 * SIUnit<Time>()), {q2, v2});
-    system_ = std::make_unique<NBodySystem<EarthMoonOrbitPlane>>();
   }
 
   template<typename Scalar, typename Frame>
@@ -146,7 +146,7 @@ class NBodySystemTest : public testing::Test {
   Position<EarthMoonOrbitPlane> centre_of_mass_;
   SPRKIntegrator<Length, Speed> integrator_;
   Time period_;
-  std::unique_ptr<NBodySystem<EarthMoonOrbitPlane>> system_;
+  not_null<std::unique_ptr<NBodySystem<EarthMoonOrbitPlane>>> system_;
 };
 
 using NBodySystemDeathTest = NBodySystemTest;

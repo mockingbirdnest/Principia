@@ -2,6 +2,7 @@
 
 #include "physics/transforms.hpp"
 
+#include "base/not_null.hpp"
 #include "geometry/affine_map.hpp"
 #include "geometry/grassmann.hpp"
 #include "geometry/identity.hpp"
@@ -43,10 +44,8 @@ void FromBasisOfBarycentricFrameToStandardBasis(
     DegreesOfFreedom<FromFrame> const& barycentre_degrees_of_freedom,
     DegreesOfFreedom<FromFrame> const& primary_degrees_of_freedom,
     DegreesOfFreedom<FromFrame> const& secondary_degrees_of_freedom,
-    Rotation<FromFrame, ToFrame>* rotation,
-    Bivector<AngularFrequency, FromFrame>* angular_frequency) {
-  CHECK_NOTNULL(rotation);
-  CHECK_NOTNULL(angular_frequency);
+    not_null<Rotation<FromFrame, ToFrame>*> const rotation,
+    not_null<Bivector<AngularFrequency, FromFrame>*> const angular_frequency) {
   RelativeDegreesOfFreedom<FromFrame> const reference =
       primary_degrees_of_freedom - barycentre_degrees_of_freedom;
   Displacement<FromFrame> const& reference_direction =
@@ -189,8 +188,8 @@ Transforms<FromFrame, ThroughFrame, ToFrame>::BarycentricRotating(
         barycentre_degrees_of_freedom,
         primary_degrees_of_freedom,
         secondary_degrees_of_freedom,
-        &from_basis_of_barycentric_frame_to_standard_basis,
-        &angular_frequency);
+        check_not_null(&from_basis_of_barycentric_frame_to_standard_basis),
+        check_not_null(&angular_frequency));
 
     AffineMap<FromFrame, ThroughFrame, Length, Rotation> const position_map(
         barycentre_degrees_of_freedom.position(),
@@ -239,8 +238,8 @@ Transforms<FromFrame, ThroughFrame, ToFrame>::BarycentricRotating(
         last_barycentre_degrees_of_freedom,
         last_primary_degrees_of_freedom,
         last_secondary_degrees_of_freedom,
-        &from_basis_of_last_barycentric_frame_to_standard_basis,
-        &angular_frequency);
+        check_not_null(&from_basis_of_last_barycentric_frame_to_standard_basis),
+        check_not_null(&angular_frequency));
     Rotation<ThroughFrame, ToFrame> const
         from_standard_basis_to_basis_of_last_barycentric_frame =
             from_basis_of_last_barycentric_frame_to_standard_basis.Inverse();
