@@ -124,6 +124,13 @@ class not_null {
            typename = typename std::enable_if<
                std::is_convertible<OtherPointer, pointer>::value>::type>
   not_null(not_null<OtherPointer> const& other);
+  // Explicit copy constructor for static_cast'ing.
+  template<typename OtherPointer,
+           typename = typename std::enable_if<
+               !std::is_convertible<OtherPointer, pointer>::value>::type,
+           typename = decltype(static_cast<pointer>(
+                                   std::declval<OtherPointer>()))>
+  explicit not_null(not_null<OtherPointer> const& other);
 
   // Move constructor from an other |not_null<Pointer>|.  This constructor may
   // invalidate its argument.
@@ -136,6 +143,13 @@ class not_null {
            typename = typename std::enable_if<
                std::is_convertible<OtherPointer, pointer>::value>::type>
   not_null(not_null<OtherPointer>&& other);  // NOLINT(build/c++11)
+  // Explicit move constructor for static_cast'ing.
+  template<typename OtherPointer,
+           typename = typename std::enable_if<
+               !std::is_convertible<OtherPointer, pointer>::value>::type,
+           typename = decltype(static_cast<pointer>(
+                                   std::declval<OtherPointer>()))>
+  explicit not_null(not_null<OtherPointer>&& other);  // NOLINT(build/c++11)
 
   ~not_null() = default;
 

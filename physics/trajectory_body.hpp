@@ -228,7 +228,7 @@ Trajectory<Frame>::body() const {
 #ifdef _DEBUG
   return check_not_null(dynamic_cast<B const*>(static_cast<Body const*>(body_)));
 #else
-  return check_not_null(static_cast<B const*>(static_cast<Body const*>(body_)));
+  return static_cast<not_null<B const*>>(body_);
 #endif
 }
 
