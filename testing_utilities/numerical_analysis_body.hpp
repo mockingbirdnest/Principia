@@ -19,12 +19,13 @@ namespace testing_utilities {
 
 inline void ComputeHarmonicOscillatorForce(Time const& t,
                                            std::vector<Length> const& q,
-                                           std::vector<Force>* result) {
+                                           not_null<std::vector<Force>*> const result) {
   (*result)[0] = -q[0] * SIUnit<Stiffness>();
 }
 
-inline void ComputeHarmonicOscillatorVelocity(std::vector<Momentum> const& p,
-                                              std::vector<Speed>* result) {
+inline void ComputeHarmonicOscillatorVelocity(
+    std::vector<Momentum> const& p,
+    not_null<std::vector<Speed>*> const result) {
   (*result)[0] = p[0] / SIUnit<Mass>();
 }
 

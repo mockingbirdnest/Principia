@@ -48,7 +48,7 @@ void SolarSystemBenchmark(SolarSystem::Accuracy const accuracy,
   while (state->KeepRunning()) {
     state->PauseTiming();
     not_null<std::unique_ptr<SolarSystem>> const solar_system =
-        check_not_null(SolarSystem::AtСпутник1Launch(accuracy));
+        SolarSystem::AtСпутник1Launch(accuracy);
     state->ResumeTiming();
     SimulateSolarSystem(solar_system.get());
     state->PauseTiming();

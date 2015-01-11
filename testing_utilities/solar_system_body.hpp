@@ -84,14 +84,15 @@ Vector<double, ICRFJ2000Equator> Direction(Angle const& right_ascension,
 
 }  // namespace
 
-std::unique_ptr<SolarSystem> SolarSystem::AtСпутник1Launch(
+not_null<std::unique_ptr<SolarSystem>> SolarSystem::AtСпутник1Launch(
     Accuracy const accuracy) {
   // Number of days since the JD epoch. JD2436116.3115 is the time of the launch
   // of Простейший Спутник-1.
   Instant const kСпутник1LaunchTime = JulianDate(2436116.3115);
 
   // Can't use make_unique here.
-  std::unique_ptr<SolarSystem> solar_system(new SolarSystem(accuracy));
+  not_null<std::unique_ptr<SolarSystem>> solar_system(
+      check_not_null(new SolarSystem(accuracy)));
 
   // All data is from the Jet Propulsion Laboratory's HORIZONS system.
 
@@ -509,14 +510,15 @@ std::unique_ptr<SolarSystem> SolarSystem::AtСпутник1Launch(
   return std::move(solar_system);
 }
 
-std::unique_ptr<SolarSystem> SolarSystem::AtСпутник2Launch(
+not_null<std::unique_ptr<SolarSystem>> SolarSystem::AtСпутник2Launch(
     Accuracy const accuracy) {
   // Number of days since the JD epoch. JD2436145.60417 is the time of the
   // launch of Простейший Спутник-2.
   Instant const kСпутник2LaunchTime = JulianDate(2436145.60417);
 
   // Can't use make_unique here.
-  std::unique_ptr<SolarSystem> solar_system(new SolarSystem(accuracy));
+  not_null<std::unique_ptr<SolarSystem>> solar_system(
+      check_not_null(new SolarSystem(accuracy)));
 
   // All data is from the Jet Propulsion Laboratory's HORIZONS system.
 

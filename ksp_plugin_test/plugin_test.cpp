@@ -203,7 +203,7 @@ class PluginTest : public testing::Test {
 
   Permutation<ICRFJ2000Ecliptic, AliceSun> looking_glass_;
   MockNBodySystem<Barycentric>* n_body_system_;  // Not owned.
-  std::unique_ptr<SolarSystem> solar_system_;
+  not_null<std::unique_ptr<SolarSystem>> solar_system_;
   SolarSystem::Bodies bodies_;
   Instant initial_time_;
   GravitationalParameter sun_gravitational_parameter_;
