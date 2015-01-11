@@ -1,13 +1,14 @@
 ﻿#pragma once
 
+#include "base/not_null.hpp"
 #include "integrators/symplectic_partitioned_runge_kutta_integrator.hpp"
 #include "physics/n_body_system.hpp"
 #include "quantities/astronomy.hpp"
 #include "quantities/si.hpp"
 #include "testing_utilities/solar_system.hpp"
 
-
 using principia::astronomy::JulianYear;
+using principia::base::not_null;
 using principia::integrators::SPRKIntegrator;
 using principia::physics::NBodySystem;
 using principia::quantities::Length;
@@ -19,7 +20,7 @@ using principia::testing_utilities::SolarSystem;
 namespace principia {
 namespace benchmarks {
 
-void SimulateSolarSystem(SolarSystem* solar_system) {
+void SimulateSolarSystem(not_null<SolarSystem*> const solar_system) {
   auto const n_body_system = std::make_unique<NBodySystem<ICRFJ2000Ecliptic>>();
   auto const trajectories = solar_system->trajectories();
   SPRKIntegrator<Length, Speed> integrator;
@@ -32,7 +33,6 @@ void SimulateSolarSystem(SolarSystem* solar_system) {
                            false,                             // tmax_is_exact
                            trajectories);
 }
-
 
 }  // namespace benchmarks
 }  // namespace principia

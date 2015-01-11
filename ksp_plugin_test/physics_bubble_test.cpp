@@ -64,8 +64,8 @@ class PhysicsBubbleTest : public testing::Test {
                                     {99 * SIUnit<Length>(),
                                      98 * SIUnit<Length>(),
                                      97 * SIUnit<Length>()}))),
-      vessel1_(&celestial_),
-      vessel2_(&celestial_),
+      vessel1_(check_not_null(&celestial_)),
+      vessel2_(check_not_null(&celestial_)),
       t1_(1 * SIUnit<Time>()),
       t2_(1.5 * SIUnit<Time>()),
       t3_(2 * SIUnit<Time>()) {

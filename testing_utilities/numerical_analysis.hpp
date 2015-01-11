@@ -2,9 +2,11 @@
 
 #include<vector>
 
+#include "base/not_null.hpp"
 #include "quantities/quantities.hpp"
 #include "quantities/named_quantities.hpp"
 
+using principia::base::not_null;
 using principia::quantities::Force;
 using principia::quantities::Length;
 using principia::quantities::Momentum;
@@ -23,10 +25,11 @@ namespace testing_utilities {
 
 void ComputeHarmonicOscillatorForce(Time const& t,
                                     std::vector<Length> const& q,
-                                    std::vector<Force>* result);
+                                    not_null<std::vector<Force>*> const result);
 
-void ComputeHarmonicOscillatorVelocity(std::vector<Momentum> const& p,
-                                       std::vector<Speed>* result);
+void ComputeHarmonicOscillatorVelocity(
+    std::vector<Momentum> const& p,
+    not_null<std::vector<Speed>*> const result);
 
 }  // namespace testing_utilities
 }  // namespace principia

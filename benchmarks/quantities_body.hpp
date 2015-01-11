@@ -1,5 +1,7 @@
 ﻿#pragma once
 
+#include "benchmarks/quantities.hpp"
+
 #include <cmath>
 #include <vector>
 
@@ -21,7 +23,7 @@ std::size_t const kDimension = 100;
 }  // namespace
 
 inline void DimensionfulDiscreteCosineTransform(
-    std::vector<quantities::Momentum>* result) {
+    not_null<std::vector<quantities::Momentum>*> const result) {
   using quantities::Cos;
   using quantities::Momentum;
   using quantities::SIUnit;
@@ -47,7 +49,7 @@ inline void DimensionfulDiscreteCosineTransform(
 }
 
 inline void DoubleDiscreteCosineTransform(
-    std::vector<double>* result) {
+    not_null<std::vector<double>*> const result) {
   std::vector<double> input(kDimension);
   for (std::size_t i = 0; i < kDimension; ++i) {
     input[i] = i;

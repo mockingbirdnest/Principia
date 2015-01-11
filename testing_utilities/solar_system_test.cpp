@@ -99,8 +99,6 @@ class SolarSystemTest : public testing::Test {
           << message;
     }
   }
-
-  std::unique_ptr<SolarSystem> solar_system_;
 };
 
 using SolarSystemDeathTest = SolarSystemTest;
@@ -141,10 +139,10 @@ TEST_F(SolarSystemTest, Parent) {
 // not do a unicode-friendly stringification.  We settle for the English
 // romanization.
 TEST_F(SolarSystemTest, HierarchyAtSputnik1Launch) {
-  solar_system_ = SolarSystem::AtСпутник1Launch(
+  auto const solar_system = SolarSystem::AtСпутник1Launch(
       SolarSystem::Accuracy::kMinorAndMajorBodies);
   NBodySystem<ICRFJ2000Ecliptic>::Trajectories trajectories =
-      solar_system_->trajectories();
+      solar_system->trajectories();
   auto const& sun      = *trajectories[SolarSystem::kSun];
   auto const& jupiter  = *trajectories[SolarSystem::kJupiter];
   auto const& saturn   = *trajectories[SolarSystem::kSaturn];
@@ -212,10 +210,10 @@ TEST_F(SolarSystemTest, HierarchyAtSputnik1Launch) {
 }
 
 TEST_F(SolarSystemTest, HierarchyAtSputnik2Launch) {
-  solar_system_ = SolarSystem::AtСпутник2Launch(
+  auto const solar_system = SolarSystem::AtСпутник2Launch(
       SolarSystem::Accuracy::kMinorAndMajorBodies);
   NBodySystem<ICRFJ2000Ecliptic>::Trajectories trajectories =
-      solar_system_->trajectories();
+      solar_system->trajectories();
   auto const& sun      = *trajectories[SolarSystem::kSun];
   auto const& jupiter  = *trajectories[SolarSystem::kJupiter];
   auto const& saturn   = *trajectories[SolarSystem::kSaturn];

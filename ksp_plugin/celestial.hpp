@@ -36,7 +36,7 @@ class Celestial {
 
   Trajectory<Barycentric>* mutable_history();
   Trajectory<Barycentric>* mutable_prolongation();
-  void set_parent(Celestial const* parent);
+  void set_parent(not_null<Celestial const*> const parent);
 
   // Creates a |history_| for this body and appends a point with the given
   // |time| and |degrees_of_freedom|.  Then forks a |prolongation_| at |time|.
