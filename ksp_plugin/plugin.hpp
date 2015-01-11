@@ -312,6 +312,7 @@ class Plugin {
   Angle planetarium_rotation_;
   // The current in-game universal time.
   Instant current_time_;
+  // TODO(egg): use not_null<>.
   Celestial* sun_;  // Not owning, not null.
 
   friend class TestablePlugin;

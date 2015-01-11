@@ -123,7 +123,7 @@ void Plugin::EvolveHistories(Instant const& t) {
   trajectories.reserve(vessels_.size() - unsynchronized_vessels_.size() +
                        celestials_.size());
   for (auto const& pair : celestials_) {
-    std::unique_ptr<Celestial> const& celestial = pair.second;
+    not_null<std::unique_ptr<Celestial>> const& celestial = pair.second;
     trajectories.push_back(check_not_null(celestial->mutable_history()));
   }
   for (auto const& pair : vessels_) {
@@ -153,16 +153,16 @@ void Plugin::SynchronizeNewVesselsAndCleanDirtyVessels() {
   trajectories.reserve(celestials_.size() + unsynchronized_vessels_.size() +
                        bubble_.size());
   for (auto const& pair : celestials_) {
-    std::unique_ptr<Celestial> const& celestial = pair.second;
+    not_null<std::unique_ptr<Celestial>> const& celestial = pair.second;
     trajectories.push_back(check_not_null(celestial->mutable_prolongation()));
   }
-  for (Vessel* const vessel : unsynchronized_vessels_) {
-    if (!bubble_.contains(check_not_null(vessel))) {
+  for (not_null<Vessel*> const vessel : unsynchronized_vessels_) {
+    if (!bubble_.contains(vessel)) {
       trajectories.push_back(check_not_null(vessel->mutable_prolongation()));
     }
   }
-  for (Vessel* const vessel : dirty_vessels_) {
-    if (!bubble_.contains(check_not_null(vessel)) && vessel->is_synchronized()) {
+  for (not_null<Vessel*> const vessel : dirty_vessels_) {
+    if (!bubble_.contains(vessel) && vessel->is_synchronized()) {
       trajectories.push_back(check_not_null(vessel->mutable_prolongation()));
     }
   }
@@ -188,8 +188,8 @@ void Plugin::SynchronizeNewVesselsAndCleanDirtyVessels() {
     dirty_vessels_.erase(vessel);
   }
   unsynchronized_vessels_.clear();
-  for (Vessel* const vessel : dirty_vessels_) {
-    CHECK(!bubble_.contains(check_not_null(vessel)));
+  for (not_null<Vessel*> const vessel : dirty_vessels_) {
+    CHECK(!bubble_.contains(vessel));
     vessel->mutable_history()->Append(
         HistoryTime(),
         vessel->prolongation().last().degrees_of_freedom());
@@ -223,11 +223,11 @@ void Plugin::SynchronizeBubbleHistories() {
 void Plugin::ResetProlongations() {
   VLOG(1) << __FUNCTION__;
   for (auto const& pair : vessels_) {
-    std::unique_ptr<Vessel> const& vessel = pair.second;
+    not_null<std::unique_ptr<Vessel>> const& vessel = pair.second;
     vessel->ResetProlongation(HistoryTime());
   }
   for (auto const& pair : celestials_) {
-    std::unique_ptr<Celestial> const& celestial = pair.second;
+    not_null<std::unique_ptr<Celestial>> const& celestial = pair.second;
     celestial->ResetProlongation(HistoryTime());
   }
   VLOG(1) << "Prolongations have been reset";
@@ -239,12 +239,12 @@ void Plugin::EvolveProlongationsAndBubble(Instant const& t) {
   trajectories.reserve(vessels_.size() + celestials_.size() -
                        bubble_.number_of_vessels() + bubble_.size());
   for (auto const& pair : celestials_) {
-    std::unique_ptr<Celestial> const& celestial = pair.second;
+    not_null<std::unique_ptr<Celestial>> const& celestial = pair.second;
     trajectories.push_back(check_not_null(celestial->mutable_prolongation()));
   }
   for (auto const& pair : vessels_) {
-    Vessel* const vessel = pair.second.get();
-    if (!bubble_.contains(check_not_null(vessel))) {
+    not_null<Vessel*> const vessel = pair.second.get();
+    if (!bubble_.contains(vessel)) {
       trajectories.push_back(check_not_null(vessel->mutable_prolongation()));
     }
   }
@@ -264,9 +264,9 @@ void Plugin::EvolveProlongationsAndBubble(Instant const& t) {
   if (!bubble_.empty()) {
     DegreesOfFreedom<Barycentric> const& centre_of_mass =
         bubble_.centre_of_mass_trajectory().last().degrees_of_freedom();
-    for (Vessel* vessel : bubble_.vessels()) {
+    for (not_null<Vessel*> vessel : bubble_.vessels()) {
       RelativeDegreesOfFreedom<Barycentric> const& from_centre_of_mass =
-          bubble_.from_centre_of_mass(check_not_null(vessel));
+          bubble_.from_centre_of_mass(vessel);
       vessel->mutable_prolongation()->Append(
           t,
           centre_of_mass + from_centre_of_mass);
@@ -319,7 +319,7 @@ void Plugin::InsertCelestial(
       PlanetariumRotation().Inverse()(
           kSunLookingGlass.Inverse()(from_parent));
   LOG(INFO) << "In barycentric coordinates: " << relative;
-  Celestial* const celestial = inserted.first->second.get();
+  not_null<Celestial*> const celestial = inserted.first->second.get();
   celestial->set_parent(check_not_null(&parent));
   celestial->CreateHistoryAndForkProlongation(
       current_time_,
@@ -484,8 +484,9 @@ RenderedTrajectory<World> Plugin::RenderedVesselTrajectory(
   }
 
   // Then build the apparent trajectory using the second transform.
-  std::unique_ptr<Trajectory<Barycentric>> apparent_trajectory =
-      std::make_unique<Trajectory<Barycentric>>(actual_trajectory.body<Body>());
+  not_null<std::unique_ptr<Trajectory<Barycentric>>> apparent_trajectory =
+      make_not_null_unique<Trajectory<Barycentric>>(
+          actual_trajectory.body<Body>());
   for (auto intermediate_it = transforms->second(check_not_null(&intermediate_trajectory));
        !intermediate_it.at_end();
        ++intermediate_it) {

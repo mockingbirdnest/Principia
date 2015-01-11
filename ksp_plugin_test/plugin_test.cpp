@@ -127,7 +127,13 @@ class PluginTest : public testing::Test {
         initial_time_(solar_system_->trajectories().front()->last().time()),
         sun_gravitational_parameter_(
             bodies_[SolarSystem::kSun]->gravitational_parameter()),
-        planetarium_rotation_(1 * Radian) {
+        planetarium_rotation_(1 * Radian),
+        plugin_(make_not_null_unique<StrictMock<TestablePlugin>>(
+                    initial_time_,
+                    SolarSystem::kSun,
+                    sun_gravitational_parameter_,
+                    planetarium_rotation_,
+                    n_body_system_)) {
     satellite_initial_displacement_ =
         Displacement<AliceSun>({3111.0 * Kilo(Metre),
                                 4400.0 * Kilo(Metre),
@@ -144,13 +150,6 @@ class PluginTest : public testing::Test {
     satellite_initial_velocity_ =
         Sqrt(bodies_[SolarSystem::kEarth]->gravitational_parameter() /
                  satellite_initial_displacement_.Norm()) * unit_tangent;
-
-    plugin_ = std::make_unique<StrictMock<TestablePlugin>>(
-                  initial_time_,
-                  SolarSystem::kSun,
-                  sun_gravitational_parameter_,
-                  planetarium_rotation_,
-                  n_body_system_);
   }
 
   void InsertAllSolarSystemBodies() {
@@ -209,7 +208,7 @@ class PluginTest : public testing::Test {
   GravitationalParameter sun_gravitational_parameter_;
   Angle planetarium_rotation_;
 
-  std::unique_ptr<StrictMock<TestablePlugin>> plugin_;
+  not_null<std::unique_ptr<StrictMock<TestablePlugin>>> plugin_;
 
   // These initial conditions will yield a low circular orbit around Earth.
   Displacement<AliceSun> satellite_initial_displacement_;
