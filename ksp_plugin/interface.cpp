@@ -4,9 +4,12 @@
 #include <utility>
 #include <vector>
 
+#include "base/not_null.hpp"
 #include "base/version.hpp"
 #include "ksp_plugin/part.hpp"
 
+using principia::base::check_not_null;
+using principia::base::make_not_null_unique;
 using principia::geometry::Displacement;
 using principia::ksp_plugin::AliceSun;
 using principia::ksp_plugin::LineSegment;
@@ -90,7 +93,7 @@ Plugin* principia__NewPlugin(double const initial_time,
                              double const sun_gravitational_parameter,
                              double const planetarium_rotation_in_degrees) {
   LOG(INFO) << "Constructing Principia plugin";
-  std::unique_ptr<Plugin> result = std::make_unique<Plugin>(
+  not_null<std::unique_ptr<Plugin>> result = make_not_null_unique<Plugin>(
       Instant(initial_time * Second),
       sun_index,
       sun_gravitational_parameter * SIUnit<GravitationalParameter>(),
@@ -205,11 +208,11 @@ LineAndIterator* principia__RenderedVesselTrajectory(
   RenderedTrajectory<World> rendered_trajectory = CHECK_NOTNULL(plugin)->
       RenderedVesselTrajectory(
           vessel_guid,
-          CHECK_NOTNULL(transforms),
+          check_not_null(transforms),
           World::origin + Displacement<World>(
                               ToR3Element(sun_world_position) * Metre));
-  std::unique_ptr<LineAndIterator> result =
-      std::make_unique<LineAndIterator>(std::move(rendered_trajectory));
+  not_null<std::unique_ptr<LineAndIterator>> result =
+      make_not_null_unique<LineAndIterator>(std::move(rendered_trajectory));
   result->it = result->rendered_trajectory.begin();
   return result.release();
 }
@@ -270,7 +273,7 @@ void principia__AddVesselToNextPhysicsBubble(Plugin* const plugin,
     vessel_parts.push_back(
         std::make_pair(
             part->id,
-            std::make_unique<Part<World>>(
+            make_not_null_unique<Part<World>>(
                 DegreesOfFreedom<World>(
                     World::origin +
                         Displacement<World>(

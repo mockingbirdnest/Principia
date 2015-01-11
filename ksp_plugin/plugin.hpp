@@ -178,7 +178,8 @@ class Plugin {
   // between |WorldSun| and |World|.  No transfer of ownership.
   virtual RenderedTrajectory<World> RenderedVesselTrajectory(
       GUID const& vessel_guid,
-      Transforms<Barycentric, Rendering, Barycentric>* const transforms,
+      not_null<
+          Transforms<Barycentric, Rendering, Barycentric>*> const transforms,
       Position<World> const& sun_world_position) const;
 
   virtual not_null<std::unique_ptr<
@@ -221,10 +222,10 @@ class Plugin {
       Index const reference_body_index) const;
 
  private:
-  using GUIDToOwnedVessel = std::map<GUID, std::unique_ptr<Vessel>>;
-  using GUIDToUnownedVessel = std::map<GUID, Vessel* const>;
+  using GUIDToOwnedVessel = std::map<GUID, not_null<std::unique_ptr<Vessel>>>;
+  using GUIDToUnownedVessel = std::map<GUID, not_null<Vessel*> const>;
 
-  std::unique_ptr<Vessel> const& find_vessel_by_guid_or_die(
+  not_null<std::unique_ptr<Vessel>> const& find_vessel_by_guid_or_die(
       GUID const& vessel_guid) const;
 
   // Returns |!dirty_vessels_.empty()|.
@@ -232,7 +233,7 @@ class Plugin {
   // Returns |!unsynchronized_vessels_.empty()|.
   bool has_unsynchronized_vessels() const;
   // Returns |dirty_vessels_.count(vessel) > 0|.
-  bool is_dirty(Vessel* const vessel) const;
+  bool is_dirty(not_null<Vessel*> const vessel) const;
 
   // The common last time of the histories of synchronized vessels and
   // celestials.
@@ -282,24 +283,24 @@ class Plugin {
   Time const Δt_ = 10 * Second;
 
   GUIDToOwnedVessel vessels_;
-  std::map<Index, std::unique_ptr<Celestial>> celestials_;
+  std::map<Index, not_null<std::unique_ptr<Celestial>>> celestials_;
 
   // The vessels which have been inserted after |HistoryTime()|.  These are the
   // vessels which do not satisfy |is_synchronized()|, i.e., they do not have a
-  // history.  The pointers are not owning and not null.
-  std::set<Vessel* const> unsynchronized_vessels_;
+  // history.  The pointers are not owning.
+  std::set<not_null<Vessel*> const> unsynchronized_vessels_;
   // The vessels that have been added to the physics bubble after
   // |HistoryTime()|.  For these vessels, the prolongation contains information
   // that may not be discarded, and the history will be advanced using the
-  // prolongation.  The pointers are not owning and not null.
-  std::set<Vessel* const> dirty_vessels_;
+  // prolongation.  The pointers are not owning.
+  std::set<not_null<Vessel*> const> dirty_vessels_;
 
   // The vessels that will be kept during the next call to |AdvanceTime|.
-  std::set<Vessel const* const> kept_vessels_;
+  std::set<not_null<Vessel const*> const> kept_vessels_;
 
   PhysicsBubble bubble_;
 
-  std::unique_ptr<NBodySystem<Barycentric>> n_body_system_;
+  not_null<std::unique_ptr<NBodySystem<Barycentric>>> n_body_system_;
   // The symplectic integrator computing the synchronized histories.
   SPRKIntegrator<Length, Speed> history_integrator_;
   // The integrator computing the prolongations.
@@ -311,6 +312,7 @@ class Plugin {
   Angle planetarium_rotation_;
   // The current in-game universal time.
   Instant current_time_;
+  // TODO(egg): use not_null<>.
   Celestial* sun_;  // Not owning, not null.
 
   friend class TestablePlugin;

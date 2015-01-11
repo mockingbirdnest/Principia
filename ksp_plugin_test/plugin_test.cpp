@@ -95,7 +95,7 @@ class TestablePlugin : public Plugin {
                  Index const sun_index,
                  GravitationalParameter const& sun_gravitational_parameter,
                  Angle const& planetarium_rotation,
-                 MockNBodySystem<Barycentric>* n_body_system)
+                 not_null<MockNBodySystem<Barycentric>*> const n_body_system)
       : Plugin(initial_time,
                sun_index,
                sun_gravitational_parameter,
@@ -120,13 +120,20 @@ class PluginTest : public testing::Test {
  protected:
   PluginTest()
       : looking_glass_(Permutation<ICRFJ2000Ecliptic, AliceSun>::XZY),
+        n_body_system_(check_not_null(new MockNBodySystem<Barycentric>())),
         solar_system_(SolarSystem::AtСпутник1Launch(
             SolarSystem::Accuracy::kMajorBodiesOnly)),
         bodies_(solar_system_->massive_bodies()),
         initial_time_(solar_system_->trajectories().front()->last().time()),
         sun_gravitational_parameter_(
             bodies_[SolarSystem::kSun]->gravitational_parameter()),
-        planetarium_rotation_(1 * Radian) {
+        planetarium_rotation_(1 * Radian),
+        plugin_(make_not_null_unique<StrictMock<TestablePlugin>>(
+                    initial_time_,
+                    SolarSystem::kSun,
+                    sun_gravitational_parameter_,
+                    planetarium_rotation_,
+                    n_body_system_)) {
     satellite_initial_displacement_ =
         Displacement<AliceSun>({3111.0 * Kilo(Metre),
                                 4400.0 * Kilo(Metre),
@@ -143,14 +150,6 @@ class PluginTest : public testing::Test {
     satellite_initial_velocity_ =
         Sqrt(bodies_[SolarSystem::kEarth]->gravitational_parameter() /
                  satellite_initial_displacement_.Norm()) * unit_tangent;
-
-    n_body_system_ = new MockNBodySystem<Barycentric>();
-    plugin_ = std::make_unique<StrictMock<TestablePlugin>>(
-                  initial_time_,
-                  SolarSystem::kSun,
-                  sun_gravitational_parameter_,
-                  planetarium_rotation_,
-                  n_body_system_);
   }
 
   void InsertAllSolarSystemBodies() {
@@ -202,14 +201,14 @@ class PluginTest : public testing::Test {
   }
 
   Permutation<ICRFJ2000Ecliptic, AliceSun> looking_glass_;
-  MockNBodySystem<Barycentric>* n_body_system_;  // Not owned.
+  not_null<MockNBodySystem<Barycentric>*> n_body_system_;  // Not owned.
   not_null<std::unique_ptr<SolarSystem>> solar_system_;
   SolarSystem::Bodies bodies_;
   Instant initial_time_;
   GravitationalParameter sun_gravitational_parameter_;
   Angle planetarium_rotation_;
 
-  std::unique_ptr<StrictMock<TestablePlugin>> plugin_;
+  not_null<std::unique_ptr<StrictMock<TestablePlugin>>> plugin_;
 
   // These initial conditions will yield a low circular orbit around Earth.
   Displacement<AliceSun> satellite_initial_displacement_;
@@ -576,7 +575,7 @@ TEST_F(PluginTest, PhysicsBubble) {
   auto const make_enterprise_whole_ship = []() {
     return std::make_pair(
         PartId(0U),
-        std::make_unique<Part<World>>(
+        make_not_null_unique<Part<World>>(
             DegreesOfFreedom<World>(
                 World::origin,
                 Velocity<World>({1 * Metre / Second,
@@ -590,7 +589,7 @@ TEST_F(PluginTest, PhysicsBubble) {
   auto const make_enterprise_d_engineering_section = []() {
     return std::make_pair(
         PartId(1U),
-        std::make_unique<Part<World>>(
+        make_not_null_unique<Part<World>>(
             DegreesOfFreedom<World>(
                 World::origin +
                     Displacement<World>({1 * Metre, 0 * Metre, 0 * Metre}),
@@ -605,7 +604,7 @@ TEST_F(PluginTest, PhysicsBubble) {
   auto const make_enterprise_d_saucer_section = []() {
     return std::make_pair(
         PartId(2U),
-        std::make_unique<Part<World>>(
+        make_not_null_unique<Part<World>>(
             DegreesOfFreedom<World>(
                 World::origin -
                     Displacement<World>({1 * Metre, 0 * Metre, 0 * Metre}),

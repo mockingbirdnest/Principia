@@ -188,6 +188,13 @@ class not_null {
            typename = decltype(std::declval<P>().release())>
   not_null<decltype(std::declval<P>().release())> release();
 
+  // When |pointer| has a |reset()| member function, this calls
+  // |pointer_.reset()|.
+  template<typename Q,
+           typename P = pointer,
+           typename = decltype(std::declval<P>().reset())>
+  void reset(not_null<Q> const ptr);
+
   // The following operators are redundant for valid |not_null<Pointer>|s with
   // the implicit conversion to |pointer|, but they should allow some
   // optimization.
@@ -198,6 +205,10 @@ class not_null {
   bool operator!=(std::nullptr_t const other) const;
   // Returns |true|.
   operator bool() const;
+
+  // Equality.
+  bool operator==(not_null const other) const;
+  bool operator!=(not_null const other) const;
 
   // Ordering.
   bool operator<(not_null const other) const;
@@ -221,6 +232,9 @@ class not_null {
   template<typename T, typename... Args>
   friend not_null<std::unique_ptr<T>> make_not_null_unique(
       Args&&... args);  // NOLINT(build/c++11)
+  template<typename Pointer>
+  friend std::ostream& operator<<(std::ostream& stream,
+                                  not_null<Pointer> const& pointer);
 };
 
 // We want only one way of doing things, and we can't make
