@@ -143,7 +143,8 @@ class not_null {
            typename = typename std::enable_if<
                std::is_convertible<OtherPointer, pointer>::value>::type>
   not_null(not_null<OtherPointer>&& other);  // NOLINT(build/c++11)
-  // Explicit move constructor for static_cast'ing.
+  // Explicit move constructor for static_cast'ing. This constructor may
+  // invalidate its argument.
   template<typename OtherPointer,
            typename = typename std::enable_if<
                !std::is_convertible<OtherPointer, pointer>::value>::type,
@@ -182,7 +183,7 @@ class not_null {
   not_null<decltype(std::declval<P>().get())> get() const;
 
   // When |pointer| has a |release()| member function, this returns
-  // |pointer_.release()|.
+  // |pointer_.release()|.  May invalidate its argument.
   template<typename P = pointer,
            typename = decltype(std::declval<P>().release())>
   not_null<decltype(std::declval<P>().release())> release();
