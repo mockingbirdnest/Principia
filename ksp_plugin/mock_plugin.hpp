@@ -2,7 +2,10 @@
 
 #include "ksp_plugin/plugin.hpp"
 
+#include "base/not_null.hpp"
 #include "gmock/gmock.h"
+
+using principia::base::not_null;
 
 namespace principia {
 namespace ksp_plugin {
@@ -48,7 +51,8 @@ class MockPlugin : public Plugin {
   MOCK_CONST_METHOD3(RenderedVesselTrajectory,
                      RenderedTrajectory<World>(
                          GUID const& vessel_guid,
-                         Transforms<Barycentric, Rendering, Barycentric>* const
+                         not_null<Transforms<
+                             Barycentric, Rendering, Barycentric>*> const
                              transforms,
                          Position<World> const& sun_world_position));
 

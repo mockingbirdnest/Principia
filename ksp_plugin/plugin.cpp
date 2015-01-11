@@ -42,7 +42,7 @@ Permutation<WorldSun, AliceSun> const kSunLookingGlass(
 
 }  // namespace
 
-std::unique_ptr<Vessel> const& Plugin::find_vessel_by_guid_or_die(
+not_null<std::unique_ptr<Vessel>> const& Plugin::find_vessel_by_guid_or_die(
     GUID const& vessel_guid) const {
   VLOG(1) << __FUNCTION__ << '\n' << NAMED(vessel_guid);
   auto const it = vessels_.find(vessel_guid);
@@ -58,7 +58,7 @@ bool Plugin::has_unsynchronized_vessels() const {
   return !unsynchronized_vessels_.empty();
 }
 
-bool Plugin::is_dirty(Vessel* const vessel) const {
+bool Plugin::is_dirty(not_null<Vessel*> const vessel) const {
   return dirty_vessels_.count(vessel) > 0;
 }
 
@@ -72,7 +72,7 @@ Rotation<Barycentric, WorldSun> Plugin::PlanetariumRotation() const {
 
 void Plugin::CheckVesselInvariants(
     GUIDToOwnedVessel::const_iterator const it) const {
-  std::unique_ptr<Vessel> const& vessel = it->second;
+  not_null<std::unique_ptr<Vessel>> const& vessel = it->second;
   CHECK(vessel->is_initialized()) << "Vessel with GUID " << it->first
                                   << " was not given an initial state";
   // TODO(egg): At the moment, if a vessel is inserted when
@@ -94,7 +94,7 @@ void Plugin::CleanUpVessels() {
   for (auto it = vessels_.cbegin(); it != vessels_.cend();) {
     // While we're going over the vessels, check invariants.
     CheckVesselInvariants(it);
-    Vessel* const vessel = it->second.get();
+    not_null<Vessel*> const vessel = it->second.get();
     // Now do the cleanup.
     if (kept_vessels_.erase(vessel)) {
       ++it;
@@ -127,7 +127,7 @@ void Plugin::EvolveHistories(Instant const& t) {
     trajectories.push_back(check_not_null(celestial->mutable_history()));
   }
   for (auto const& pair : vessels_) {
-    not_null<Vessel*> const vessel = check_not_null(pair.second.get());
+    not_null<Vessel*> const vessel = pair.second.get();
     if (vessel->is_synchronized() &&
         !bubble_.contains(vessel) &&
         !is_dirty(vessel)) {
@@ -180,8 +180,8 @@ void Plugin::SynchronizeNewVesselsAndCleanDirtyVessels() {
   if (!bubble_.empty()) {
     SynchronizeBubbleHistories();
   }
-  for (Vessel* const vessel : unsynchronized_vessels_) {
-    CHECK(!bubble_.contains(check_not_null(vessel)));
+  for (not_null<Vessel*> const vessel : unsynchronized_vessels_) {
+    CHECK(!bubble_.contains(vessel));
     vessel->CreateHistoryAndForkProlongation(
         HistoryTime(),
         vessel->prolongation().last().degrees_of_freedom());
@@ -203,9 +203,9 @@ void Plugin::SynchronizeBubbleHistories() {
   VLOG(1) << __FUNCTION__;
   DegreesOfFreedom<Barycentric> const& centre_of_mass =
       bubble_.centre_of_mass_trajectory().last().degrees_of_freedom();
-  for (Vessel* vessel : bubble_.vessels()) {
+  for (not_null<Vessel*> const vessel : bubble_.vessels()) {
     RelativeDegreesOfFreedom<Barycentric> const& from_centre_of_mass =
-        bubble_.from_centre_of_mass(check_not_null(vessel));
+        bubble_.from_centre_of_mass(vessel);
     if (vessel->is_synchronized()) {
       vessel->mutable_history()->Append(
           HistoryTime(),
@@ -282,12 +282,12 @@ Plugin::Plugin(Instant const& initial_time,
                Index const sun_index,
                GravitationalParameter const& sun_gravitational_parameter,
                Angle const& planetarium_rotation)
-    : n_body_system_(new NBodySystem<Barycentric>),
+    : n_body_system_(make_not_null_unique<NBodySystem<Barycentric>>()),
       planetarium_rotation_(planetarium_rotation),
       current_time_(initial_time) {
   auto inserted = celestials_.emplace(
       sun_index,
-      std::make_unique<Celestial>(
+      make_not_null_unique<Celestial>(
           make_not_null_unique<MassiveBody>(sun_gravitational_parameter)));
   sun_ = inserted.first->second.get();
   sun_->CreateHistoryAndForkProlongation(
@@ -310,7 +310,7 @@ void Plugin::InsertCelestial(
   Celestial const& parent= *it->second;
   auto const inserted = celestials_.emplace(
       celestial_index,
-      std::make_unique<Celestial>(
+      make_not_null_unique<Celestial>(
           make_not_null_unique<MassiveBody>(gravitational_parameter)));
   CHECK(inserted.second) << "Body already exists at index " << celestial_index;
   LOG(INFO) << "Initial |{orbit.pos, orbit.vel}| for celestial at index "
@@ -339,7 +339,7 @@ void Plugin::UpdateCelestialHierarchy(Index const celestial_index,
   CHECK(it != celestials_.end()) << "No body at index " << celestial_index;
   auto const it_parent = celestials_.find(parent_index);
   CHECK(it_parent != celestials_.end()) << "No body at index " << parent_index;
-  it->second->set_parent(check_not_null(it_parent->second.get()));
+  it->second->set_parent(it_parent->second.get());
 }
 
 bool Plugin::InsertOrKeepVessel(GUID const& vessel_guid,
@@ -351,8 +351,8 @@ bool Plugin::InsertOrKeepVessel(GUID const& vessel_guid,
   CHECK(it != celestials_.end()) << "No body at index " << parent_index;
   Celestial const& parent = *it->second;
   auto inserted = vessels_.emplace(vessel_guid,
-                                   std::make_unique<Vessel>(check_not_null(&parent)));
-  Vessel* const vessel = inserted.first->second.get();
+                                   make_not_null_unique<Vessel>(check_not_null(&parent)));
+  not_null<Vessel*> const vessel = inserted.first->second.get();
   kept_vessels_.emplace(vessel);
   vessel->set_parent(check_not_null(&parent));
   LOG_IF(INFO, inserted.second) << "Inserted vessel with GUID " << vessel_guid
@@ -368,7 +368,7 @@ void Plugin::SetVesselStateOffset(
   VLOG(1) << __FUNCTION__ << '\n'
           << NAMED(vessel_guid) << '\n' << NAMED(from_parent);
   CHECK(!initializing);
-  std::unique_ptr<Vessel> const& vessel =
+  not_null<std::unique_ptr<Vessel>> const& vessel =
       find_vessel_by_guid_or_die(vessel_guid);
   CHECK(!vessel->is_initialized())
       << "Vessel with GUID " << vessel_guid << " already has a trajectory";
@@ -415,7 +415,7 @@ void Plugin::AdvanceTime(Instant const& t, Angle const& planetarium_rotation) {
 RelativeDegreesOfFreedom<AliceSun> Plugin::VesselFromParent(
     GUID const& vessel_guid) const {
   CHECK(!initializing);
-  std::unique_ptr<Vessel> const& vessel =
+  not_null<std::unique_ptr<Vessel>> const& vessel =
       find_vessel_by_guid_or_die(vessel_guid);
   CHECK(vessel->is_initialized()) << "Vessel with GUID " << vessel_guid
                                   << " was not given an initial state";
@@ -451,16 +451,15 @@ RelativeDegreesOfFreedom<AliceSun> Plugin::CelestialFromParent(
 
 RenderedTrajectory<World> Plugin::RenderedVesselTrajectory(
     GUID const& vessel_guid,
-    Transforms<Barycentric, Rendering, Barycentric>* const transforms,
+    not_null<Transforms<Barycentric, Rendering, Barycentric>*> const transforms,
     Position<World> const& sun_world_position) const {
-  CHECK_NOTNULL(transforms);
   CHECK(!initializing);
   auto const to_world =
       AffineMap<Barycentric, World, Length, Rotation>(
           sun_->prolongation().last().degrees_of_freedom().position(),
           sun_world_position,
           Rotation<WorldSun, World>::Identity() * PlanetariumRotation());
-  std::unique_ptr<Vessel> const& vessel =
+  not_null<std::unique_ptr<Vessel>> const& vessel =
       find_vessel_by_guid_or_die(vessel_guid);
   CHECK(vessel->is_initialized());
   VLOG(1) << "Rendering a trajectory for the vessel with GUID " << vessel_guid;
@@ -550,7 +549,7 @@ Plugin::NewBarycentricRotatingTransforms(Index const primary_index,
 Position<World> Plugin::VesselWorldPosition(
     GUID const& vessel_guid,
     Position<World> const& parent_world_position) const {
-  std::unique_ptr<Vessel> const& vessel =
+  not_null<std::unique_ptr<Vessel>> const& vessel =
       find_vessel_by_guid_or_die(vessel_guid);
   CHECK(vessel->is_initialized()) << "Vessel with GUID " << vessel_guid
                                  << " was not given an initial state";
@@ -568,7 +567,7 @@ Velocity<World> Plugin::VesselWorldVelocity(
       GUID const& vessel_guid,
       Velocity<World> const& parent_world_velocity,
       Time const& parent_rotation_period) const {
-  std::unique_ptr<Vessel> const& vessel =
+  not_null<std::unique_ptr<Vessel>> const& vessel =
       find_vessel_by_guid_or_die(vessel_guid);
   CHECK(vessel->is_initialized()) << "Vessel with GUID " << vessel_guid
                                   << " was not given an initial state";
@@ -591,10 +590,10 @@ void Plugin::AddVesselToNextPhysicsBubble(
     GUID const& vessel_guid,
     std::vector<IdAndOwnedPart> parts) {
   VLOG(1) << __FUNCTION__ << '\n' << NAMED(vessel_guid) << '\n' << NAMED(parts);
-  std::unique_ptr<Vessel> const& vessel =
+  not_null<std::unique_ptr<Vessel>> const& vessel =
       find_vessel_by_guid_or_die(vessel_guid);
   dirty_vessels_.insert(vessel.get());
-  bubble_.AddVesselToNext(check_not_null(vessel.get()), std::move(parts));
+  bubble_.AddVesselToNext(vessel.get(), std::move(parts));
 }
 
 Displacement<World> Plugin::BubbleDisplacementCorrection(

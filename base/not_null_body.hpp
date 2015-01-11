@@ -92,6 +92,12 @@ not_null<decltype(std::declval<P>().release())> not_null<Pointer>::release() {
 }
 
 template<typename Pointer>
+template<typename Q, typename P, typename>
+void not_null<Pointer>::reset(not_null<Q> const ptr) {
+  pointer_.reset(ptr);
+}
+
+template<typename Pointer>
 bool not_null<Pointer>::operator==(std::nullptr_t const other) const {
   return false;
 }

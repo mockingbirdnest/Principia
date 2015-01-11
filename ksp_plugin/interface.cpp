@@ -8,6 +8,7 @@
 #include "base/version.hpp"
 #include "ksp_plugin/part.hpp"
 
+using principia::base::check_not_null;
 using principia::base::make_not_null_unique;
 using principia::geometry::Displacement;
 using principia::ksp_plugin::AliceSun;
@@ -207,7 +208,7 @@ LineAndIterator* principia__RenderedVesselTrajectory(
   RenderedTrajectory<World> rendered_trajectory = CHECK_NOTNULL(plugin)->
       RenderedVesselTrajectory(
           vessel_guid,
-          CHECK_NOTNULL(transforms),
+          check_not_null(transforms),
           World::origin + Displacement<World>(
                               ToR3Element(sun_world_position) * Metre));
   std::unique_ptr<LineAndIterator> result =

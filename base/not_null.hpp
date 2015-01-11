@@ -188,6 +188,13 @@ class not_null {
            typename = decltype(std::declval<P>().release())>
   not_null<decltype(std::declval<P>().release())> release();
 
+  // When |pointer| has a |reset()| member function, this calls
+  // |pointer_.reset()|.
+  template<typename Q,
+           typename P = pointer,
+           typename = decltype(std::declval<P>().reset())>
+  void reset(not_null<Q> const ptr);
+
   // The following operators are redundant for valid |not_null<Pointer>|s with
   // the implicit conversion to |pointer|, but they should allow some
   // optimization.

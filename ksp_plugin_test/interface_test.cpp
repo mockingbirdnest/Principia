@@ -55,9 +55,9 @@ ACTION_TEMPLATE(FillUniquePtr,
 class InterfaceTest : public testing::Test {
  protected:
   InterfaceTest()
-      : plugin_(new StrictMock<MockPlugin>) {}
+      : plugin_(make_not_null_unique<StrictMock<MockPlugin>>()) {}
 
-  std::unique_ptr<StrictMock<MockPlugin>> plugin_;
+  not_null<std::unique_ptr<StrictMock<MockPlugin>>> plugin_;
 };
 
 using InterfaceDeathTest = InterfaceTest;
@@ -300,7 +300,7 @@ TEST_F(InterfaceTest, LineAndIterator) {
   EXPECT_CALL(*plugin_,
               RenderedVesselTrajectory(
                   kVesselGUID,
-                  transforms,
+                  check_not_null(transforms),
                   World::origin + Displacement<World>(
                                       {kParentPosition.x * SIUnit<Length>(),
                                        kParentPosition.y * SIUnit<Length>(),

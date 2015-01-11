@@ -95,7 +95,7 @@ class TestablePlugin : public Plugin {
                  Index const sun_index,
                  GravitationalParameter const& sun_gravitational_parameter,
                  Angle const& planetarium_rotation,
-                 MockNBodySystem<Barycentric>* n_body_system)
+                 not_null<MockNBodySystem<Barycentric>*> const n_body_system)
       : Plugin(initial_time,
                sun_index,
                sun_gravitational_parameter,
@@ -120,6 +120,7 @@ class PluginTest : public testing::Test {
  protected:
   PluginTest()
       : looking_glass_(Permutation<ICRFJ2000Ecliptic, AliceSun>::XZY),
+        n_body_system_(check_not_null(new MockNBodySystem<Barycentric>())),
         solar_system_(SolarSystem::AtСпутник1Launch(
             SolarSystem::Accuracy::kMajorBodiesOnly)),
         bodies_(solar_system_->massive_bodies()),
@@ -144,7 +145,6 @@ class PluginTest : public testing::Test {
         Sqrt(bodies_[SolarSystem::kEarth]->gravitational_parameter() /
                  satellite_initial_displacement_.Norm()) * unit_tangent;
 
-    n_body_system_ = new MockNBodySystem<Barycentric>();
     plugin_ = std::make_unique<StrictMock<TestablePlugin>>(
                   initial_time_,
                   SolarSystem::kSun,
@@ -202,7 +202,7 @@ class PluginTest : public testing::Test {
   }
 
   Permutation<ICRFJ2000Ecliptic, AliceSun> looking_glass_;
-  MockNBodySystem<Barycentric>* n_body_system_;  // Not owned.
+  not_null<MockNBodySystem<Barycentric>*> n_body_system_;  // Not owned.
   not_null<std::unique_ptr<SolarSystem>> solar_system_;
   SolarSystem::Bodies bodies_;
   Instant initial_time_;
