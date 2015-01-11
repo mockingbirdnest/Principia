@@ -22,6 +22,7 @@
 #include <memory>
 #include <vector>
 
+#include "base/not_null.hpp"
 #include "benchmarks/n_body_system.hpp"
 #include "quantities/quantities.hpp"
 #include "quantities/si.hpp"
@@ -29,10 +30,12 @@
 // Must come last to avoid conflicts when defining the CHECK macros.
 #include "benchmark/benchmark.h"
 
-using principia::testing_utilities::ICRFJ2000Ecliptic;
+using principia::base::check_not_null;
+using principia::base::not_null;
 using principia::physics::NBodySystem;
 using principia::quantities::DebugString;
 using principia::si::AstronomicalUnit;
+using principia::testing_utilities::ICRFJ2000Ecliptic;
 
 namespace principia {
 namespace benchmarks {
@@ -40,12 +43,12 @@ namespace benchmarks {
 namespace {
 
 void SolarSystemBenchmark(SolarSystem::Accuracy const accuracy,
-                          benchmark::State* state) {
+                          not_null<benchmark::State*> const state) {
   std::vector<quantities::Momentum> output;
   while (state->KeepRunning()) {
     state->PauseTiming();
-    std::unique_ptr<SolarSystem> solar_system = SolarSystem::AtСпутник1Launch(
-        accuracy);
+    not_null<std::unique_ptr<SolarSystem>> const solar_system =
+        check_not_null(SolarSystem::AtСпутник1Launch(accuracy));
     state->ResumeTiming();
     SimulateSolarSystem(solar_system.get());
     state->PauseTiming();
@@ -65,19 +68,19 @@ void SolarSystemBenchmark(SolarSystem::Accuracy const accuracy,
 void BM_SolarSystemMajorBodiesOnly(
     benchmark::State& state) {  // NOLINT(runtime/references)
   SolarSystemBenchmark(SolarSystem::Accuracy::kMajorBodiesOnly,
-                       &state);
+                       check_not_null(&state));
 }
 
 void BM_SolarSystemMinorAndMajorBodies(
     benchmark::State& state) {  // NOLINT(runtime/references)
   SolarSystemBenchmark(SolarSystem::Accuracy::kMinorAndMajorBodies,
-                       &state);
+                       check_not_null(&state));
 }
 
 void BM_SolarSystemAllBodiesAndOblateness(
     benchmark::State& state) {  // NOLINT(runtime/references)
   SolarSystemBenchmark(SolarSystem::Accuracy::kAllBodiesAndOblateness,
-                       &state);
+                       check_not_null(&state));
 }
 
 BENCHMARK(BM_SolarSystemMajorBodiesOnly);
