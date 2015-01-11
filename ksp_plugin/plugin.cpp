@@ -484,9 +484,8 @@ RenderedTrajectory<World> Plugin::RenderedVesselTrajectory(
   }
 
   // Then build the apparent trajectory using the second transform.
-  not_null<std::unique_ptr<Trajectory<Barycentric>>> apparent_trajectory =
-      make_not_null_unique<Trajectory<Barycentric>>(
-          actual_trajectory.body<Body>());
+  auto apparent_trajectory = make_not_null_unique<Trajectory<Barycentric>>(
+                                 actual_trajectory.body<Body>());
   for (auto intermediate_it = transforms->second(check_not_null(&intermediate_trajectory));
        !intermediate_it.at_end();
        ++intermediate_it) {
