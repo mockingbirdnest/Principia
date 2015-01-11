@@ -31,7 +31,7 @@ class PhysicsBubble {
   // |next_->parts|.  The |vessel| must not already be in |next_->vessels|.
   // |parts| must not contain a |PartId| already in |next_->parts|.
   void AddVesselToNext(not_null<Vessel*> const vessel,
-                       std::vector<IdAndOwnedPart> const& parts);
+                       std::vector<IdAndOwnedPart> parts);
 
   // If |next_| is not null, computes the world centre of mass, trajectory
   // (including intrinsic acceleration) of |*next_|. Moves |next_| into
@@ -141,7 +141,7 @@ class PhysicsBubble {
              std::vector<PartCorrespondence> const& common_parts,
              not_null<FullState*> const next);
 
-  not_null<std::unique_ptr<FullState>> current_;
+  std::unique_ptr<FullState> current_;
   // The following member is only accessed by |AddVesselToNext| and at the
   // beginning of |Prepare|.
   std::unique_ptr<PreliminaryState> next_;

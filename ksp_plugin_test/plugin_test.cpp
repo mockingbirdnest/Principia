@@ -576,7 +576,7 @@ TEST_F(PluginTest, PhysicsBubble) {
   auto const make_enterprise_whole_ship = []() {
     return std::make_pair(
         PartId(0U),
-        std::make_unique<Part<World>>(
+        make_not_null_unique<Part<World>>(
             DegreesOfFreedom<World>(
                 World::origin,
                 Velocity<World>({1 * Metre / Second,
@@ -590,7 +590,7 @@ TEST_F(PluginTest, PhysicsBubble) {
   auto const make_enterprise_d_engineering_section = []() {
     return std::make_pair(
         PartId(1U),
-        std::make_unique<Part<World>>(
+        make_not_null_unique<Part<World>>(
             DegreesOfFreedom<World>(
                 World::origin +
                     Displacement<World>({1 * Metre, 0 * Metre, 0 * Metre}),
@@ -605,7 +605,7 @@ TEST_F(PluginTest, PhysicsBubble) {
   auto const make_enterprise_d_saucer_section = []() {
     return std::make_pair(
         PartId(2U),
-        std::make_unique<Part<World>>(
+        make_not_null_unique<Part<World>>(
             DegreesOfFreedom<World>(
                 World::origin -
                     Displacement<World>({1 * Metre, 0 * Metre, 0 * Metre}),

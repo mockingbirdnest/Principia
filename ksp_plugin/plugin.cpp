@@ -127,7 +127,7 @@ void Plugin::EvolveHistories(Instant const& t) {
     trajectories.push_back(check_not_null(celestial->mutable_history()));
   }
   for (auto const& pair : vessels_) {
-    Vessel* const vessel = pair.second.get();
+    not_null<Vessel*> const vessel = check_not_null(pair.second.get());
     if (vessel->is_synchronized() &&
         !bubble_.contains(vessel) &&
         !is_dirty(vessel)) {
@@ -157,17 +157,17 @@ void Plugin::SynchronizeNewVesselsAndCleanDirtyVessels() {
     trajectories.push_back(check_not_null(celestial->mutable_prolongation()));
   }
   for (Vessel* const vessel : unsynchronized_vessels_) {
-    if (!bubble_.contains(vessel)) {
+    if (!bubble_.contains(check_not_null(vessel))) {
       trajectories.push_back(check_not_null(vessel->mutable_prolongation()));
     }
   }
   for (Vessel* const vessel : dirty_vessels_) {
-    if (!bubble_.contains(vessel) && vessel->is_synchronized()) {
+    if (!bubble_.contains(check_not_null(vessel)) && vessel->is_synchronized()) {
       trajectories.push_back(check_not_null(vessel->mutable_prolongation()));
     }
   }
   if (!bubble_.empty()) {
-    trajectories.push_back(check_not_null(bubble_.mutable_centre_of_mass_trajectory()));
+    trajectories.push_back(bubble_.mutable_centre_of_mass_trajectory());
   }
   VLOG(1) << "Starting the synchronization of the new vessels"
           << (bubble_.empty() ? "" : " and of the bubble");
@@ -181,7 +181,7 @@ void Plugin::SynchronizeNewVesselsAndCleanDirtyVessels() {
     SynchronizeBubbleHistories();
   }
   for (Vessel* const vessel : unsynchronized_vessels_) {
-    CHECK(!bubble_.contains(vessel));
+    CHECK(!bubble_.contains(check_not_null(vessel)));
     vessel->CreateHistoryAndForkProlongation(
         HistoryTime(),
         vessel->prolongation().last().degrees_of_freedom());
@@ -189,7 +189,7 @@ void Plugin::SynchronizeNewVesselsAndCleanDirtyVessels() {
   }
   unsynchronized_vessels_.clear();
   for (Vessel* const vessel : dirty_vessels_) {
-    CHECK(!bubble_.contains(vessel));
+    CHECK(!bubble_.contains(check_not_null(vessel)));
     vessel->mutable_history()->Append(
         HistoryTime(),
         vessel->prolongation().last().degrees_of_freedom());
@@ -205,7 +205,7 @@ void Plugin::SynchronizeBubbleHistories() {
       bubble_.centre_of_mass_trajectory().last().degrees_of_freedom();
   for (Vessel* vessel : bubble_.vessels()) {
     RelativeDegreesOfFreedom<Barycentric> const& from_centre_of_mass =
-        bubble_.from_centre_of_mass(vessel);
+        bubble_.from_centre_of_mass(check_not_null(vessel));
     if (vessel->is_synchronized()) {
       vessel->mutable_history()->Append(
           HistoryTime(),
@@ -244,12 +244,12 @@ void Plugin::EvolveProlongationsAndBubble(Instant const& t) {
   }
   for (auto const& pair : vessels_) {
     Vessel* const vessel = pair.second.get();
-    if (!bubble_.contains(vessel)) {
+    if (!bubble_.contains(check_not_null(vessel))) {
       trajectories.push_back(check_not_null(vessel->mutable_prolongation()));
     }
   }
   if (!bubble_.empty()) {
-    trajectories.push_back(check_not_null(bubble_.mutable_centre_of_mass_trajectory()));
+    trajectories.push_back(bubble_.mutable_centre_of_mass_trajectory());
   }
   VLOG(1) << "Evolving prolongations"
           << (bubble_.empty() ? "" : " and bubble") << '\n'
@@ -266,7 +266,7 @@ void Plugin::EvolveProlongationsAndBubble(Instant const& t) {
         bubble_.centre_of_mass_trajectory().last().degrees_of_freedom();
     for (Vessel* vessel : bubble_.vessels()) {
       RelativeDegreesOfFreedom<Barycentric> const& from_centre_of_mass =
-          bubble_.from_centre_of_mass(vessel);
+          bubble_.from_centre_of_mass(check_not_null(vessel));
       vessel->mutable_prolongation()->Append(
           t,
           centre_of_mass + from_centre_of_mass);
@@ -594,7 +594,7 @@ void Plugin::AddVesselToNextPhysicsBubble(
   std::unique_ptr<Vessel> const& vessel =
       find_vessel_by_guid_or_die(vessel_guid);
   dirty_vessels_.insert(vessel.get());
-  bubble_.AddVesselToNext(vessel.get(), std::move(parts));
+  bubble_.AddVesselToNext(check_not_null(vessel.get()), std::move(parts));
 }
 
 Displacement<World> Plugin::BubbleDisplacementCorrection(

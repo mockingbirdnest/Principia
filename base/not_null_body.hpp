@@ -66,13 +66,14 @@ not_null<Pointer>::operator pointer const&() const {
 }
 
 template<typename Pointer>
-decltype(*typename not_null<Pointer>::pointer{})
+decltype(*std::declval<typename not_null<Pointer>::pointer>())
 not_null<Pointer>::operator*() const {
   return *pointer_;
 }
 
 template<typename Pointer>
-decltype(std::addressof(*typename not_null<Pointer>::pointer{})) const
+decltype(std::addressof(
+    *std::declval<typename not_null<Pointer>::pointer>())) const
 not_null<Pointer>::operator->() const {
   return std::addressof(*pointer_);
 }
@@ -103,6 +104,16 @@ bool not_null<Pointer>::operator!=(std::nullptr_t const other) const {
 template<typename Pointer>
 not_null<Pointer>::operator bool() const {
   return true;
+}
+
+template<typename Pointer>
+bool not_null<Pointer>::operator==(not_null const other) const {
+  return pointer_ == other.pointer_;
+}
+
+template<typename Pointer>
+bool not_null<Pointer>::operator!=(not_null const other) const {
+  return pointer_ != other.pointer_;
 }
 
 template<typename Pointer>
@@ -148,7 +159,7 @@ not_null<std::unique_ptr<T>> make_not_null_unique(Args&&... args) {  // NOLINT
 template<typename Pointer>
 std::ostream& operator<<(std::ostream& stream,
                          not_null<Pointer> const& pointer) {
-  return stream << static_cast<Pointer>(pointer);
+  return stream << pointer.pointer_;
 }
 
 }  // namespace base

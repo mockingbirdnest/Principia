@@ -24,26 +24,26 @@ PhysicsBubble::PhysicsBubble()
     : body_() {}
 
 void PhysicsBubble::AddVesselToNext(not_null<Vessel*> const vessel,
-                                    std::vector<IdAndOwnedPart> const& parts) {
+                                    std::vector<IdAndOwnedPart> parts) {
   VLOG(1) << __FUNCTION__ << '\n' << NAMED(vessel) << '\n' << NAMED(parts);
   if (next_ == nullptr) {
     next_ = std::make_unique<PreliminaryState>();
   }
   auto const inserted_vessel =
-      next_->vessels.emplace(vessel, std::vector<Part<World>* const>());
+      next_->vessels.emplace(vessel,
+                             std::vector<not_null<Part<World>*> const>());
   CHECK(inserted_vessel.second);
   std::vector<not_null<Part<World>*> const>* const vessel_parts =
       &inserted_vessel.first->second;
-  for (IdAndOwnedPart const& id_part : parts) {
+  for (IdAndOwnedPart& id_part : parts) {
     PartId const id = id_part.first;
-    std::unique_ptr<Part<World>> const& part = id_part.second;
+    not_null<std::unique_ptr<Part<World>>> const& part = id_part.second;
     VLOG(1) << "Inserting {id, part}" << '\n' << NAMED(id) << '\n'
             << NAMED(*part);
-    auto const inserted_part =
-        next_->parts.insert(std::move(id_part));
+    auto const inserted_part = next_->parts.insert(std::move(id_part));
     CHECK(inserted_part.second) << id;
     VLOG(1) << "Part is at: " << inserted_part.first->second;
-    vessel_parts->push_back(check_not_null(inserted_part.first->second.get()));
+    vessel_parts->push_back(inserted_part.first->second.get());
   }
 }
 
@@ -105,7 +105,7 @@ void PhysicsBubble::Prepare(PlanetariumRotation const& planetarium_rotation,
       }
     }
   }
-  current_ = check_not_null(std::move(next));
+  current_ = std::move(next);
   CHECK(next_ == nullptr);
   VLOG_IF(1, current_ == nullptr) << "No physics bubble";
   VLOG_IF(1, current_ != nullptr)
@@ -219,7 +219,7 @@ void PhysicsBubble::ComputeNextCentreOfMassWorldDegreesOfFreedom(
   VLOG(1) << __FUNCTION__;
   DegreesOfFreedom<World>::BarycentreCalculator<Mass> centre_of_mass_calculator;
   for (auto const& id_part : next->parts) {
-    std::unique_ptr<Part<World>> const& part = id_part.second;
+    not_null<std::unique_ptr<Part<World>>> const& part = id_part.second;
     centre_of_mass_calculator.Add(part->degrees_of_freedom, part->mass);
   }
   next->centre_of_mass = std::make_unique<DegreesOfFreedom<World>>(
@@ -263,7 +263,7 @@ void PhysicsBubble::RestartNext(Instant const& current_time,
     not_null<Vessel const*> vessel = vessel_parts.first;
     std::vector<not_null<Part<World>*> const> const& parts =
         vessel_parts.second;
-    for (Part<World> const* const part : parts) {
+    for (not_null<Part<World> const*> const part : parts) {
       bubble_calculator.Add(vessel->prolongation().last().degrees_of_freedom(),
                             part->mass);
     }
@@ -291,9 +291,10 @@ PhysicsBubble::ComputeCommonParts(FullState const& next) {
     } else if (next_part_id < current_part_id) {
       ++it_in_next_parts;
     } else {
-      std::unique_ptr<Part<World>> const& current_part =
+      not_null<std::unique_ptr<Part<World>>> const& current_part =
           it_in_current_parts->second;
-      std::unique_ptr<Part<World>> const& next_part = it_in_next_parts->second;
+      not_null<std::unique_ptr<Part<World>>> const& next_part =
+          it_in_next_parts->second;
       common_parts.emplace_back(current_part.get(), next_part.get());
       ++it_in_current_parts;
       ++it_in_next_parts;
@@ -314,8 +315,8 @@ Vector<Acceleration, World> PhysicsBubble::IntrinsicAcceleration(
       acceleration_calculator;
   Time const δt = next_time - current_time;
   for (auto const& current_next : common_parts) {
-    Part<World>* const current_part = current_next.first;
-    Part<World>* const next_part = current_next.second;
+    not_null<Part<World>*> const current_part = current_next.first;
+    not_null<Part<World>*> const next_part = current_next.second;
     acceleration_calculator.Add(
         (next_part->degrees_of_freedom.velocity() -
             (current_part->degrees_of_freedom.velocity() +
@@ -336,8 +337,8 @@ void PhysicsBubble::Shift(PlanetariumRotation const& planetarium_rotation,
   DegreesOfFreedom<World>::BarycentreCalculator<Mass> current_common_calculator;
   DegreesOfFreedom<World>::BarycentreCalculator<Mass> next_common_calculator;
   for (auto const& current_next : common_parts) {
-    Part<World>* const current_part = current_next.first;
-    Part<World>* const next_part = current_next.second;
+    not_null<Part<World>*> const current_part = current_next.first;
+    not_null<Part<World>*> const next_part = current_next.second;
     current_common_calculator.Add(current_part->degrees_of_freedom,
                                   current_part->mass);
     next_common_calculator.Add(next_part->degrees_of_freedom,

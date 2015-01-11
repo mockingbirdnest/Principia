@@ -4,9 +4,11 @@
 #include <utility>
 #include <vector>
 
+#include "base/not_null.hpp"
 #include "base/version.hpp"
 #include "ksp_plugin/part.hpp"
 
+using principia::base::make_not_null_unique;
 using principia::geometry::Displacement;
 using principia::ksp_plugin::AliceSun;
 using principia::ksp_plugin::LineSegment;
@@ -270,7 +272,7 @@ void principia__AddVesselToNextPhysicsBubble(Plugin* const plugin,
     vessel_parts.push_back(
         std::make_pair(
             part->id,
-            std::make_unique<Part<World>>(
+            make_not_null_unique<Part<World>>(
                 DegreesOfFreedom<World>(
                     World::origin +
                         Displacement<World>(

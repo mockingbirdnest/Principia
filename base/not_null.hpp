@@ -199,6 +199,10 @@ class not_null {
   // Returns |true|.
   operator bool() const;
 
+  // Equality.
+  bool operator==(not_null const other) const;
+  bool operator!=(not_null const other) const;
+
   // Ordering.
   bool operator<(not_null const other) const;
   bool operator<=(not_null const other) const;
@@ -221,6 +225,9 @@ class not_null {
   template<typename T, typename... Args>
   friend not_null<std::unique_ptr<T>> make_not_null_unique(
       Args&&... args);  // NOLINT(build/c++11)
+  template<typename Pointer>
+  friend std::ostream& operator<<(std::ostream& stream,
+                                  not_null<Pointer> const& pointer);
 };
 
 // We want only one way of doing things, and we can't make
