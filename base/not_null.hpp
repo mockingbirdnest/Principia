@@ -143,7 +143,8 @@ class not_null {
            typename = typename std::enable_if<
                std::is_convertible<OtherPointer, pointer>::value>::type>
   not_null(not_null<OtherPointer>&& other);  // NOLINT(build/c++11)
-  // Explicit move constructor for static_cast'ing.
+  // Explicit move constructor for static_cast'ing. This constructor may
+  // invalidate its argument.
   template<typename OtherPointer,
            typename = typename std::enable_if<
                !std::is_convertible<OtherPointer, pointer>::value>::type,
@@ -181,6 +182,12 @@ class not_null {
   template<typename P = pointer, typename = decltype(std::declval<P>().get())>
   not_null<decltype(std::declval<P>().get())> get() const;
 
+  // When |pointer| has a |release()| member function, this returns
+  // |pointer_.release()|.  May invalidate its argument.
+  template<typename P = pointer,
+           typename = decltype(std::declval<P>().release())>
+  not_null<decltype(std::declval<P>().release())> release();
+
   // The following operators are redundant for valid |not_null<Pointer>|s with
   // the implicit conversion to |pointer|, but they should allow some
   // optimization.
@@ -191,6 +198,12 @@ class not_null {
   bool operator!=(std::nullptr_t const other) const;
   // Returns |true|.
   operator bool() const;
+
+  // Ordering.
+  bool operator<(not_null const other) const;
+  bool operator<=(not_null const other) const;
+  bool operator>=(not_null const other) const;
+  bool operator>(not_null const other) const;
 
  private:
   // Creates a |not_null<Pointer>| whose |pointer_| equals the given |pointer|,
@@ -229,11 +242,13 @@ class not_null<Pointer&&>;  // NOLINT(build/c++11)
 template<typename Pointer>
 _checked_not_null<Pointer> check_not_null(Pointer pointer);
 
+#if 0
 // While the above factory would cover this case using the implicit
 // conversion, this results in a redundant |CHECK|.
 // This function returns its argument.
 template<typename Pointer>
 not_null<Pointer> check_not_null(not_null<Pointer> pointer);
+#endif
 
 // Factory for a |not_null<std::unique_ptr<T>>|, forwards the arguments to the
 // constructor of T.  |make_not_null_unique<T>(args)| is interchangeable with

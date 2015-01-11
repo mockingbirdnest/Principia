@@ -18,12 +18,14 @@
 #include <algorithm>
 #include <vector>
 
+#include "base/not_null.hpp"
 #include "quantities/elementary_functions.hpp"
 #include "quantities/named_quantities.hpp"
 
 // Must come last to avoid conflicts when defining the CHECK macros.
 #include "benchmark/benchmark.h"
 
+using principia::base::check_not_null;
 using principia::integrators::SPRKIntegrator;
 using principia::quantities::Abs;
 using principia::quantities::AngularFrequency;
@@ -39,7 +41,7 @@ void SolveHarmonicOscillatorAndComputeError(benchmark::State* state,
                                             Momentum* p_error) {
   std::vector<SPRKIntegrator<Length, Momentum>::SystemState> solution;
 
-  SolveHarmonicOscillator(&solution);
+  SolveHarmonicOscillator(check_not_null(&solution));
 
   state->PauseTiming();
   *q_error = Length();

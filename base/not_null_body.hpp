@@ -79,9 +79,15 @@ not_null<Pointer>::operator->() const {
 
 template<typename Pointer>
 template<typename P, typename>
-not_null<decltype(P{}.get())> not_null<Pointer>::get() const {
+not_null<decltype(std::declval<P>().get())> not_null<Pointer>::get() const {
   // NOTE(egg): no |CHECK| is performed.
-  return not_null<decltype(P{}.get())>(pointer_.get());
+  return not_null<decltype(std::declval<P>().get())>(pointer_.get());
+}
+
+template<typename Pointer>
+template<typename P, typename>
+not_null<decltype(std::declval<P>().release())> not_null<Pointer>::release() {
+  return not_null<decltype(std::declval<P>().release())>(pointer_.release());
 }
 
 template<typename Pointer>
@@ -100,16 +106,38 @@ not_null<Pointer>::operator bool() const {
 }
 
 template<typename Pointer>
+bool not_null<Pointer>::operator<(not_null const other) const {
+  return pointer_ < other.pointer_;
+}
+
+template<typename Pointer>
+bool not_null<Pointer>::operator<=(not_null const other) const {
+  return pointer_ <= other.pointer_;
+}
+
+template<typename Pointer>
+bool not_null<Pointer>::operator>=(not_null const other) const {
+  return pointer_ >= other.pointer_;
+}
+
+template<typename Pointer>
+bool not_null<Pointer>::operator>(not_null const other) const {
+  return pointer_ > other.pointer_;
+}
+
+template<typename Pointer>
 _checked_not_null<Pointer> check_not_null(Pointer pointer) {
   CHECK(pointer != nullptr);
   return not_null<typename std::remove_reference<Pointer>::type>(
       std::move(pointer));
 }
 
+#if 0
 template<typename Pointer>
 not_null<Pointer> check_not_null(not_null<Pointer> pointer) {
   return std::move(pointer);
 }
+#endif
 
 template<typename T, typename... Args>
 not_null<std::unique_ptr<T>> make_not_null_unique(Args&&... args) {  // NOLINT

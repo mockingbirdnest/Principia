@@ -75,10 +75,12 @@ TEST_F(NotNullTest, CheckNotNull) {
   int* const constant_access_int = owner_int.get();
   not_null<int*> const constant_not_null_access_int =
       check_not_null(constant_access_int);
+#if 0
   check_not_null(constant_not_null_access_int);
   not_null<std::unique_ptr<int>> not_null_owner_int =
       check_not_null(std::move(owner_int));
   check_not_null(std::move(not_null_owner_int));
+#endif
 }
 
 TEST_F(NotNullTest, Booleans) {
@@ -131,8 +133,10 @@ TEST_F(NotNullTest, CheckArguments) {
   Add(accumulator.get(), check_not_null(twenty_one.get()));
   EXPECT_THAT(*twenty_one, Eq(21));
   EXPECT_THAT(*accumulator, Eq(42));
+#if 0
   Sub(check_not_null(accumulator.get()), check_not_null(twenty_one.get()));
   EXPECT_THAT(*accumulator, Eq(21));
+#endif
 }
 
 }  // namespace base

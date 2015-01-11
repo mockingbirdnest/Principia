@@ -74,7 +74,7 @@ inline void Vessel::ResetProlongation(Instant const& time) {
   CHECK(is_initialized());
   CHECK(is_synchronized());
   CHECK(owned_prolongation_ == nullptr);
-  history_->DeleteFork(&prolongation_);
+  history_->DeleteFork(check_not_null(&prolongation_));
   prolongation_ = history_->Fork(time);
 }
 

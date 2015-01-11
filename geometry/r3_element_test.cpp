@@ -11,6 +11,7 @@
 
 using principia::astronomy::JulianYear;
 using principia::astronomy::Parsec;
+using principia::base::check_not_null;
 using principia::bipm::Knot;
 using principia::constants::SpeedOfLight;
 using principia::quantities::Length;
@@ -88,14 +89,14 @@ TEST_F(R3ElementTest, MixedProduct) {
 TEST_F(R3ElementDeathTest, OrthogonalizeError) {
   R3Element<Speed> v1 = {1 * Knot, -2 * Knot, 5 * Knot};
   EXPECT_DEATH({
-    null_velocity_.Orthogonalize(&v1);
+    null_velocity_.Orthogonalize(check_not_null(&v1));
   }, "0.*!= this_norm");
 }
 
 TEST_F(R3ElementTest, OrthogonalizeSuccess) {
   R3Element<Length> const v1 = {1 * Metre, -2 * Metre, 5 * Metre};
   R3Element<Length> v2 = {3 * Metre, 4 * Metre, -1 * Metre};
-  v1.Orthogonalize(&v2);
+  v1.Orthogonalize(check_not_null(&v2));
   EXPECT_EQ(0 * Metre * Metre, Dot(v1, v2));
   EXPECT_THAT(v2, AlmostEquals(R3Element<Length>({(10.0 / 3.0) * Metre,
                                                   (10.0 / 3.0) * Metre,

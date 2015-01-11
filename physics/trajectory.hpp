@@ -33,10 +33,10 @@ class Trajectory {
 
   // A function that transforms the coordinates to a different frame.
   template<typename ToFrame>
-  using Transform =
-      std::function<DegreesOfFreedom<ToFrame>(Instant const&,
-                                              DegreesOfFreedom<Frame> const&,
-                                              Trajectory<Frame> const*)>;
+  using Transform = std::function<DegreesOfFreedom<ToFrame>(
+                        Instant const&,
+                        DegreesOfFreedom<Frame> const&,
+                        not_null<Trajectory<Frame> const*> const)>;
 
   // No transfer of ownership.  |body| must live longer than the trajectory as
   // the trajectory holds a reference to it.  If |body| is oblate it must be
@@ -105,18 +105,18 @@ class Trajectory {
   // removed deletes the child trajectory.  Deleting the parent trajectory
   // deletes all child trajectories.  |time| must be one of the times of the
   // current trajectory (as returned by Times()).  No transfer of ownership.
-  Trajectory* Fork(Instant const& time);
+  not_null<Trajectory*> Fork(Instant const& time);
 
   // Deletes the child trajectory denoted by |*fork|, which must be a pointer
   // previously returned by Fork for this object.  Nulls |*fork|.
-  void DeleteFork(Trajectory** const fork);
+  void DeleteFork(not_null<Trajectory**> const fork);
 
   // Returns true if this is a root trajectory.
   bool is_root() const;
 
   // Returns the root trajectory.
-  Trajectory const* root() const;
-  Trajectory* root();
+  not_null<Trajectory const*> root() const;
+  not_null<Trajectory*> root();
 
   // Returns the fork time for a nonroot trajectory and null for a root
   // trajectory.
@@ -171,15 +171,16 @@ class Trajectory {
 
     Iterator() = default;
     // No transfer of ownership.
-    void InitializeFirst(Trajectory const* trajectory);
-    void InitializeOnOrAfter(Instant const& time, Trajectory const* trajectory);
-    void InitializeLast(Trajectory const* trajectory);
+    void InitializeFirst(not_null<Trajectory const*> const trajectory);
+    void InitializeOnOrAfter(Instant const& time,
+                             not_null<Trajectory const*> const trajectory);
+    void InitializeLast(not_null<Trajectory const*> const trajectory);
     typename Timeline::const_iterator current() const;
-    Trajectory const* trajectory() const;
+    not_null<Trajectory const*> trajectory() const;
 
    private:
     typename Timeline::const_iterator current_;
-    std::list<Trajectory const*> ancestry_;  // Pointers not owned.
+    std::list<not_null<Trajectory const*>> ancestry_;  // Pointers not owned.
     std::list<typename Timeline::iterator> forks_;
   };
 
@@ -221,7 +222,7 @@ class Trajectory {
 
   // There may be several forks starting from the same time, hence the multimap.
   // Child trajectories are owned.
-  std::multimap<Instant, std::unique_ptr<Trajectory>> children_;
+  std::multimap<Instant, not_null<std::unique_ptr<Trajectory>>> children_;
 
   Timeline timeline_;
 

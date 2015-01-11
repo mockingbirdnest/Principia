@@ -79,7 +79,7 @@ class SymplecticIntegrator {
   // void Solve(RightHandSideComputation const compute_force,
   //            AutonomousRightHandSideComputation const compute_velocity,
   //            Parameters const& parameters,
-  //            std::vector<SystemState>* solution);
+  //            not_null<std::vector<SystemState>*> const solution);
 };
 
 }  // namespace integrators

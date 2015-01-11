@@ -63,8 +63,8 @@ int const kNotABody = 1729;
 ACTION_TEMPLATE(AppendTimeToTrajectories,
                 HAS_1_TEMPLATE_PARAMS(int, k),
                 AND_1_VALUE_PARAMS(time)) {
-  for (auto* trajectory : static_cast<NBodySystem<Barycentric>::Trajectories>(
-                              std::tr1::get<k>(args))) {
+  for (auto trajectory : static_cast<NBodySystem<Barycentric>::Trajectories>(
+                             std::tr1::get<k>(args))) {
     trajectory->Append(time, trajectory->last().degrees_of_freedom());
   }
 }
@@ -836,8 +836,8 @@ TEST_F(PluginTest, BodyCentredNonrotatingRenderingIntegration) {
                               RelativeDegreesOfFreedom<AliceSun>(
                                   satellite_initial_displacement_,
                                   satellite_initial_velocity_));
-  std::unique_ptr<Transforms<Barycentric, Rendering, Barycentric>> const
-      geocentric =
+  not_null<std::unique_ptr<
+      Transforms<Barycentric, Rendering, Barycentric>>> const geocentric =
           plugin.NewBodyCentredNonRotatingTransforms(SolarSystem::kEarth);
   // We'll check that our orbit is rendered as circular (actually, we only check
   // that it is rendered within a thin spherical shell around the Earth).
@@ -943,7 +943,8 @@ TEST_F(PluginTest, BarycentricRotatingRenderingIntegration) {
                                   RelativeDegreesOfFreedom<ICRFJ2000Ecliptic>(
                                       from_the_earth_to_l5,
                                       initial_velocity)));
-  std::unique_ptr<Transforms<Barycentric, Rendering, Barycentric>> const
+  not_null<std::unique_ptr<
+      Transforms<Barycentric, Rendering, Barycentric>>> const
       earth_moon_barycentric =
           plugin.NewBarycentricRotatingTransforms(SolarSystem::kEarth,
                                                   SolarSystem::kMoon);

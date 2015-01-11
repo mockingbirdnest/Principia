@@ -61,9 +61,7 @@ void SPRKIntegrator<Position, Momentum>::Solve(
       RightHandSideComputation compute_force,
       AutonomousRightHandSideComputation compute_velocity,
       Parameters const& parameters,
-      std::vector<SystemState>* solution) const {
-  CHECK_NOTNULL(solution);
-
+      not_null<std::vector<SystemState>*> const solution) const {
   int const dimension = parameters.initial.positions.size();
 
   std::vector<Position> Δqstage0(dimension);
@@ -150,7 +148,7 @@ void SPRKIntegrator<Position, Momentum>::Solve(
 
       // By using |tn.error| below we get a time value which is possibly a wee
       // bit more precise.
-      compute_force(tn.value + (tn.error + c_[i] * h), q_stage, &f);
+      compute_force(tn.value + (tn.error + c_[i] * h), q_stage, check_not_null(&f));
 
       // Beware, the p/q order matters here, the two computations depend on one
       // another.
@@ -159,7 +157,7 @@ void SPRKIntegrator<Position, Momentum>::Solve(
         p_stage[k] = p_last[k].value + Δp;
         (*Δpstage_current)[k] = Δp;
       }
-      compute_velocity(p_stage, &v);
+      compute_velocity(p_stage, check_not_null(&v));
       for (int k = 0; k < dimension; ++k) {
         Position const Δq = (*Δqstage_previous)[k] + h * a_[i] * v[k];
         q_stage[k] = q_last[k].value + Δq;

@@ -4,7 +4,10 @@
 #include <iostream>  // NOLINT(readability/streams)
 #include <string>
 
+#include "base/not_null.hpp"
 #include "quantities/quantities.hpp"
+
+using principia::base::not_null;
 
 namespace principia {
 namespace geometry {
@@ -31,7 +34,7 @@ struct R3Element {
   // Modifies |*r3_element| so as to make it orthogonal to |*this|, using the
   // modified Gram-Schmidt algorithm.  Fails if |*this| is zero.
   template<typename S>
-  void Orthogonalize(R3Element<S>* r3_element) const;
+  void Orthogonalize(not_null<R3Element<S>*> const r3_element) const;
 
   Scalar x;
   Scalar y;
