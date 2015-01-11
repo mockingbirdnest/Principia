@@ -5,9 +5,9 @@
 namespace principia {
 namespace ksp_plugin {
 
-inline Vessel::Vessel(Celestial const* parent)
+inline Vessel::Vessel(not_null<Celestial const*> const parent)
     : body_(),
-      parent_(CHECK_NOTNULL(parent)) {}
+      parent_(parent) {}
 
 inline bool Vessel::is_synchronized() const {
   bool const synchronized = history_ != nullptr;
@@ -45,8 +45,8 @@ inline Trajectory<Barycentric>* Vessel::mutable_prolongation() {
   return prolongation_;
 }
 
-inline void Vessel::set_parent(Celestial const* parent) {
-  parent_ = CHECK_NOTNULL(parent);
+inline void Vessel::set_parent(not_null<Celestial const*> const parent) {
+  parent_ = parent;
 }
 
 inline void Vessel::CreateProlongation(

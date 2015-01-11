@@ -36,8 +36,8 @@ inline Trajectory<Barycentric>* Celestial::mutable_prolongation() {
   return prolongation_;
 }
 
-inline void Celestial::set_parent(Celestial const* parent) {
-  parent_ = CHECK_NOTNULL(parent);
+inline void Celestial::set_parent(not_null<Celestial const*> const parent) {
+  parent_ = parent;
 }
 
 inline void Celestial::CreateHistoryAndForkProlongation(

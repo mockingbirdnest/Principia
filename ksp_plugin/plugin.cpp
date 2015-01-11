@@ -320,7 +320,7 @@ void Plugin::InsertCelestial(
           kSunLookingGlass.Inverse()(from_parent));
   LOG(INFO) << "In barycentric coordinates: " << relative;
   Celestial* const celestial = inserted.first->second.get();
-  celestial->set_parent(&parent);
+  celestial->set_parent(check_not_null(&parent));
   celestial->CreateHistoryAndForkProlongation(
       current_time_,
       parent.history().last().degrees_of_freedom() + relative);
@@ -339,7 +339,7 @@ void Plugin::UpdateCelestialHierarchy(Index const celestial_index,
   CHECK(it != celestials_.end()) << "No body at index " << celestial_index;
   auto const it_parent = celestials_.find(parent_index);
   CHECK(it_parent != celestials_.end()) << "No body at index " << parent_index;
-  it->second->set_parent(it_parent->second.get());
+  it->second->set_parent(check_not_null(it_parent->second.get()));
 }
 
 bool Plugin::InsertOrKeepVessel(GUID const& vessel_guid,
@@ -351,10 +351,10 @@ bool Plugin::InsertOrKeepVessel(GUID const& vessel_guid,
   CHECK(it != celestials_.end()) << "No body at index " << parent_index;
   Celestial const& parent = *it->second;
   auto inserted = vessels_.emplace(vessel_guid,
-                                   std::make_unique<Vessel>(&parent));
+                                   std::make_unique<Vessel>(check_not_null(&parent)));
   Vessel* const vessel = inserted.first->second.get();
   kept_vessels_.emplace(vessel);
-  vessel->set_parent(&parent);
+  vessel->set_parent(check_not_null(&parent));
   LOG_IF(INFO, inserted.second) << "Inserted vessel with GUID " << vessel_guid
                                 << " at " << vessel;
   VLOG(1) << "Parent of vessel with GUID " << vessel_guid <<" is at index "
