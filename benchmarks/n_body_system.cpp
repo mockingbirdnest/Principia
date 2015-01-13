@@ -68,19 +68,19 @@ void SolarSystemBenchmark(SolarSystem::Accuracy const accuracy,
 void BM_SolarSystemMajorBodiesOnly(
     benchmark::State& state) {  // NOLINT(runtime/references)
   SolarSystemBenchmark(SolarSystem::Accuracy::kMajorBodiesOnly,
-                       check_not_null(&state));
+                       &state);
 }
 
 void BM_SolarSystemMinorAndMajorBodies(
     benchmark::State& state) {  // NOLINT(runtime/references)
   SolarSystemBenchmark(SolarSystem::Accuracy::kMinorAndMajorBodies,
-                       check_not_null(&state));
+                       &state);
 }
 
 void BM_SolarSystemAllBodiesAndOblateness(
     benchmark::State& state) {  // NOLINT(runtime/references)
   SolarSystemBenchmark(SolarSystem::Accuracy::kAllBodiesAndOblateness,
-                       check_not_null(&state));
+                       &state);
 }
 
 BENCHMARK(BM_SolarSystemMajorBodiesOnly);

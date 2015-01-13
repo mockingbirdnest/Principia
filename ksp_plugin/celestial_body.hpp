@@ -49,7 +49,7 @@ inline void Celestial::CreateHistoryAndForkProlongation(
 }
 
 inline void Celestial::ResetProlongation(Instant const& time) {
-  history_->DeleteFork(check_not_null(&prolongation_));
+  history_->DeleteFork(&prolongation_);
   prolongation_ = history_->Fork(time);
 }
 

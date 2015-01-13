@@ -151,7 +151,7 @@ TEST_F(RotationTest, Forget) {
 TEST_F(RotationTest, ToQuaternion1) {
   R3Element<double> const v1 = {2, 5, 6};
   R3Element<double> v2 = {-3, 4, 1};
-  v1.Orthogonalize(check_not_null(&v2));
+  v1.Orthogonalize(&v2);
   R3Element<double> v3 = Cross(v1, v2);
   R3Element<double> const w1 = Normalize(v1);
   R3Element<double> const w2 = Normalize(v2);
@@ -166,7 +166,7 @@ TEST_F(RotationTest, ToQuaternion1) {
 TEST_F(RotationTest, ToQuaternion2) {
   R3Element<double> const v1 = {-2, -5, -6};
   R3Element<double> v2 = {-3, 4, 1};
-  v1.Orthogonalize(check_not_null(&v2));
+  v1.Orthogonalize(&v2);
   R3Element<double> v3 = Cross(v1, v2);
   R3Element<double> const w1 = Normalize(v1);
   R3Element<double> const w2 = Normalize(v2);
@@ -181,7 +181,7 @@ TEST_F(RotationTest, ToQuaternion2) {
 TEST_F(RotationTest, ToQuaternion3) {
   R3Element<double> const v1 = {-2, -5, -6};
   R3Element<double> v2 = {-3, -4, 1};
-  v1.Orthogonalize(check_not_null(&v2));
+  v1.Orthogonalize(&v2);
   R3Element<double> v3 = Cross(v1, v2);
   R3Element<double> const w1 = Normalize(v1);
   R3Element<double> const w2 = Normalize(v2);
@@ -196,7 +196,7 @@ TEST_F(RotationTest, ToQuaternion3) {
 TEST_F(RotationTest, ToQuaternion4) {
   R3Element<double> const v1 = {-2, -5, -6};
   R3Element<double> v2 = {-3, -4, -1};
-  v1.Orthogonalize(check_not_null(&v2));
+  v1.Orthogonalize(&v2);
   R3Element<double> v3 = Cross(v1, v2);
   R3Element<double> const w1 = Normalize(v1);
   R3Element<double> const w2 = Normalize(v2);

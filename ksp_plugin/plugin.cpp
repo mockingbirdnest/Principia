@@ -320,7 +320,7 @@ void Plugin::InsertCelestial(
           kSunLookingGlass.Inverse()(from_parent));
   LOG(INFO) << "In barycentric coordinates: " << relative;
   not_null<Celestial*> const celestial = inserted.first->second.get();
-  celestial->set_parent(check_not_null(&parent));
+  celestial->set_parent(&parent);
   celestial->CreateHistoryAndForkProlongation(
       current_time_,
       parent.history().last().degrees_of_freedom() + relative);
@@ -351,10 +351,10 @@ bool Plugin::InsertOrKeepVessel(GUID const& vessel_guid,
   CHECK(it != celestials_.end()) << "No body at index " << parent_index;
   Celestial const& parent = *it->second;
   auto inserted = vessels_.emplace(vessel_guid,
-                                   make_not_null_unique<Vessel>(check_not_null(&parent)));
+                                   make_not_null_unique<Vessel>(&parent));
   not_null<Vessel*> const vessel = inserted.first->second.get();
   kept_vessels_.emplace(vessel);
-  vessel->set_parent(check_not_null(&parent));
+  vessel->set_parent(&parent);
   LOG_IF(INFO, inserted.second) << "Inserted vessel with GUID " << vessel_guid
                                 << " at " << vessel;
   VLOG(1) << "Parent of vessel with GUID " << vessel_guid <<" is at index "
@@ -476,7 +476,7 @@ RenderedTrajectory<World> Plugin::RenderedVesselTrajectory(
 
   // First build the trajectory resulting from the first transform.
   Trajectory<Rendering> intermediate_trajectory(actual_trajectory.body<Body>());
-  for (auto actual_it = transforms->first(check_not_null(&actual_trajectory));
+  for (auto actual_it = transforms->first(&actual_trajectory);
        !actual_it.at_end();
        ++actual_it) {
     intermediate_trajectory.Append(actual_it.time(),
@@ -486,7 +486,7 @@ RenderedTrajectory<World> Plugin::RenderedVesselTrajectory(
   // Then build the apparent trajectory using the second transform.
   auto apparent_trajectory = make_not_null_unique<Trajectory<Barycentric>>(
                                  actual_trajectory.body<Body>());
-  for (auto intermediate_it = transforms->second(check_not_null(&intermediate_trajectory));
+  for (auto intermediate_it = transforms->second(&intermediate_trajectory);
        !intermediate_it.at_end();
        ++intermediate_it) {
     apparent_trajectory->Append(intermediate_it.time(),

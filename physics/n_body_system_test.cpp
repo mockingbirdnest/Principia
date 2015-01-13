@@ -58,11 +58,11 @@ class NBodySystemTest : public testing::Test {
       : body1_(MassiveBody(6E24 * SIUnit<Mass>())),
         body2_(MassiveBody(7E22 * SIUnit<Mass>())),
         trajectory1_(make_not_null_unique<Trajectory<EarthMoonOrbitPlane>>(
-                         check_not_null(&body1_))),
+                         &body1_)),
         trajectory2_(make_not_null_unique<Trajectory<EarthMoonOrbitPlane>>(
-                        check_not_null(&body2_))),
+                        &body2_)),
         trajectory3_(make_not_null_unique<Trajectory<EarthMoonOrbitPlane>>(
-                         check_not_null(&body3_))),
+                         &body3_)),
         system_(make_not_null_unique<NBodySystem<EarthMoonOrbitPlane>>()) {
     integrator_.Initialize(integrator_.Order5Optimal());
 
@@ -164,7 +164,7 @@ TEST_F(NBodySystemDeathTest, IntegrateError) {
   }, "Multiple trajectories");
   EXPECT_DEATH({
     auto trajectory =
-        make_not_null_unique<Trajectory<EarthMoonOrbitPlane>>(check_not_null(&body2_));
+        make_not_null_unique<Trajectory<EarthMoonOrbitPlane>>(&body2_);
     trajectory->Append(Instant(1 * SIUnit<Time>()),
                        {Position<EarthMoonOrbitPlane>(),
                         Velocity<EarthMoonOrbitPlane>()});

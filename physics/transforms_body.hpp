@@ -51,7 +51,7 @@ void FromBasisOfBarycentricFrameToStandardBasis(
   Displacement<FromFrame> const& reference_direction =
       reference.displacement();
   Velocity<FromFrame> reference_normal = reference.velocity();
-  reference_direction.Orthogonalize(check_not_null(&reference_normal));
+  reference_direction.Orthogonalize(&reference_normal);
   Bivector<Product<Length, Speed>, FromFrame> const reference_binormal =
       Wedge(reference_direction, reference_normal);
   *rotation = Rotation<FromFrame, ToFrame>(
@@ -188,8 +188,8 @@ Transforms<FromFrame, ThroughFrame, ToFrame>::BarycentricRotating(
         barycentre_degrees_of_freedom,
         primary_degrees_of_freedom,
         secondary_degrees_of_freedom,
-        check_not_null(&from_basis_of_barycentric_frame_to_standard_basis),
-        check_not_null(&angular_frequency));
+        &from_basis_of_barycentric_frame_to_standard_basis,
+        &angular_frequency);
 
     AffineMap<FromFrame, ThroughFrame, Length, Rotation> const position_map(
         barycentre_degrees_of_freedom.position(),
@@ -238,8 +238,8 @@ Transforms<FromFrame, ThroughFrame, ToFrame>::BarycentricRotating(
         last_barycentre_degrees_of_freedom,
         last_primary_degrees_of_freedom,
         last_secondary_degrees_of_freedom,
-        check_not_null(&from_basis_of_last_barycentric_frame_to_standard_basis),
-        check_not_null(&angular_frequency));
+        &from_basis_of_last_barycentric_frame_to_standard_basis,
+        &angular_frequency);
     Rotation<ThroughFrame, ToFrame> const
         from_standard_basis_to_basis_of_last_barycentric_frame =
             from_basis_of_last_barycentric_frame_to_standard_basis.Inverse();

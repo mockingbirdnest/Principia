@@ -42,7 +42,7 @@ void SolveHarmonicOscillatorAndComputeError(
     not_null<Momentum*> const p_error) {
   std::vector<SPRKIntegrator<Length, Momentum>::SystemState> solution;
 
-  SolveHarmonicOscillator(check_not_null(&solution));
+  SolveHarmonicOscillator(&solution);
 
   state->PauseTiming();
   *q_error = Length();
@@ -67,7 +67,7 @@ void BM_SolveHarmonicOscillator(
   Length   q_error;
   Momentum p_error;
   while (state.KeepRunning()) {
-    SolveHarmonicOscillatorAndComputeError(check_not_null(&state), check_not_null(&q_error), check_not_null(&p_error));
+    SolveHarmonicOscillatorAndComputeError(&state, &q_error, &p_error);
   }
   std::stringstream ss;
   ss << q_error << ", " << p_error;

@@ -160,7 +160,7 @@ void NBodySystem<Frame>::Integrate(
                   std::placeholders::_2,
                   std::placeholders::_3),
         &ComputeGravitationalVelocities,
-        parameters, check_not_null(&solution));
+        parameters, &solution);
 
     // TODO(phl): Ignoring errors for now.
     // Loop over the time steps.

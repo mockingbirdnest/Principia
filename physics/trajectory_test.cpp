@@ -83,8 +83,8 @@ class TrajectoryTest : public testing::Test {
     t3_ = t0_ + 27 * Second;
     t4_ = t0_ + 37 * Second;
 
-    massive_trajectory_ = std::make_unique<Trajectory<World>>(check_not_null(&massive_body_));
-    massless_trajectory_ = std::make_unique<Trajectory<World>>(check_not_null(&massless_body_));
+    massive_trajectory_ = std::make_unique<Trajectory<World>>(&massive_body_);
+    massless_trajectory_ = std::make_unique<Trajectory<World>>(&massless_body_);
 
     transform_ = [](
         Instant const& t,
@@ -130,7 +130,7 @@ TEST_F(TrajectoryDeathTest, Construction) {
                                 1.0 /*j2*/,
                                 1 * SIUnit<Length>(),
                                 Vector<double, OtherWorld>({0, 1, 0}));
-    Trajectory<World> trajectory(check_not_null(&body));
+    Trajectory<World> trajectory(&body);
   }, "not in the same frame");
 }
 
@@ -210,14 +210,14 @@ TEST_F(TrajectoryDeathTest, DeleteForkError) {
   EXPECT_DEATH({
     massive_trajectory_->Append(t1_, d1_);
     Trajectory<World>* root = massive_trajectory_.get();
-    massive_trajectory_->DeleteFork(check_not_null(&root));
+    massive_trajectory_->DeleteFork(&root);
   }, "'fork_time'.* non NULL");
   EXPECT_DEATH({
     massive_trajectory_->Append(t1_, d1_);
     Trajectory<World>* fork1 = massive_trajectory_->Fork(t1_);
     fork1->Append(t2_, d2_);
     Trajectory<World>* fork2 = fork1->Fork(t2_);
-    massive_trajectory_->DeleteFork(check_not_null(&fork2));
+    massive_trajectory_->DeleteFork(&fork2);
   }, "not a child");
 }
 
@@ -228,7 +228,7 @@ TEST_F(TrajectoryTest, DeleteForkSuccess) {
   not_null<Trajectory<World>*> const fork1 = massive_trajectory_->Fork(t2_);
   Trajectory<World>* fork2 = massive_trajectory_->Fork(t2_);
   fork1->Append(t4_, d4_);
-  massive_trajectory_->DeleteFork(check_not_null(&fork2));
+  massive_trajectory_->DeleteFork(&fork2);
   EXPECT_EQ(nullptr, fork2);
   std::map<Instant, Position<World>> positions =
       massive_trajectory_->Positions();
