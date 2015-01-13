@@ -57,12 +57,12 @@ class NBodySystemTest : public testing::Test {
   NBodySystemTest()
       : body1_(MassiveBody(6E24 * SIUnit<Mass>())),
         body2_(MassiveBody(7E22 * SIUnit<Mass>())),
-        trajectory1_(make_not_null_unique<Trajectory<EarthMoonOrbitPlane>>(
-                         &body1_)),
-        trajectory2_(make_not_null_unique<Trajectory<EarthMoonOrbitPlane>>(
-                        &body2_)),
-        trajectory3_(make_not_null_unique<Trajectory<EarthMoonOrbitPlane>>(
-                         &body3_)),
+        trajectory1_(
+            make_not_null_unique<Trajectory<EarthMoonOrbitPlane>>(&body1_)),
+        trajectory2_(
+            make_not_null_unique<Trajectory<EarthMoonOrbitPlane>>(&body2_)),
+        trajectory3_(
+            make_not_null_unique<Trajectory<EarthMoonOrbitPlane>>(&body3_)),
         system_(make_not_null_unique<NBodySystem<EarthMoonOrbitPlane>>()) {
     integrator_.Initialize(integrator_.Order5Optimal());
 
