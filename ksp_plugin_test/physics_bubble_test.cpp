@@ -64,8 +64,8 @@ class PhysicsBubbleTest : public testing::Test {
                                     {99 * SIUnit<Length>(),
                                      98 * SIUnit<Length>(),
                                      97 * SIUnit<Length>()}))),
-      vessel1_(check_not_null(&celestial_)),
-      vessel2_(check_not_null(&celestial_)),
+      vessel1_(&celestial_),
+      vessel2_(&celestial_),
       t1_(1 * SIUnit<Time>()),
       t2_(1.5 * SIUnit<Time>()),
       t3_(2 * SIUnit<Time>()) {
@@ -156,7 +156,7 @@ class PhysicsBubbleTest : public testing::Test {
 
   void CheckOneVesselDegreesOfFreedom() {
     // Since we have only one vessel, it is at the centre of mass of the bubble.
-    EXPECT_THAT(bubble_.from_centre_of_mass(check_not_null(&vessel1_)),
+    EXPECT_THAT(bubble_.from_centre_of_mass(&vessel1_),
                 Componentwise(
                     Componentwise(VanishesBefore(1 * SIUnit<Length>(), 0),
                                   VanishesBefore(1 * SIUnit<Length>(), 0),
@@ -195,7 +195,7 @@ class PhysicsBubbleTest : public testing::Test {
     Velocity<World> const cdm_velocity({17546.0 / 89.0 * SIUnit<Speed>(),
                                         17635.0 / 89.0 * SIUnit<Speed>(),
                                         17724.0 / 89.0 * SIUnit<Speed>()});
-    EXPECT_THAT(bubble_.from_centre_of_mass(check_not_null(&vessel1_)),
+    EXPECT_THAT(bubble_.from_centre_of_mass(&vessel1_),
                 Componentwise(
                     AlmostEquals(Displacement<Barycentric>(
                         {15 * SIUnit<Length>() -
@@ -211,7 +211,7 @@ class PhysicsBubbleTest : public testing::Test {
                             cdm_velocity.coordinates().x,
                          2788.0 / 23.0 * SIUnit<Speed>() -
                             cdm_velocity.coordinates().z}), 1)));
-    EXPECT_THAT(bubble_.from_centre_of_mass(check_not_null(&vessel2_)),
+    EXPECT_THAT(bubble_.from_centre_of_mass(&vessel2_),
                 Componentwise(
                     AlmostEquals(Displacement<Barycentric>(
                         {25 * SIUnit<Length>() -
@@ -275,7 +275,7 @@ TEST_F(PhysicsBubbleDeathTest, EmptyError) {
     bubble_.vessels();
   }, "Empty bubble");
   EXPECT_DEATH({
-    bubble_.from_centre_of_mass(check_not_null(&vessel1_));
+    bubble_.from_centre_of_mass(&vessel1_);
   }, "Empty bubble");
   EXPECT_DEATH({
     bubble_.centre_of_mass_trajectory();
@@ -295,7 +295,7 @@ TEST_F(PhysicsBubbleTest, EmptySuccess) {
   EXPECT_TRUE(bubble_.empty());
   EXPECT_EQ(0, bubble_.size());
   EXPECT_EQ(0, bubble_.number_of_vessels());
-  EXPECT_FALSE(bubble_.contains(check_not_null(&vessel1_)));
+  EXPECT_FALSE(bubble_.contains(&vessel1_));
   // Check that the following doesn't fail.  It does mostly nothing.
   bubble_.Prepare(rotation_, t1_, t2_);
 }
@@ -303,16 +303,16 @@ TEST_F(PhysicsBubbleTest, EmptySuccess) {
 TEST_F(PhysicsBubbleTest, OneVesselOneStep) {
   std::vector<IdAndOwnedPart> parts;
   CreateParts();
-  parts.push_back({11, check_not_null(std::move(p1a_))});
-  parts.push_back({12, check_not_null(std::move(p1b_))});
-  bubble_.AddVesselToNext(check_not_null(&vessel1_), std::move(parts));
+  parts.push_back({11, std::move(p1a_)});
+  parts.push_back({12, std::move(p1b_)});
+  bubble_.AddVesselToNext(&vessel1_, std::move(parts));
   EXPECT_TRUE(bubble_.empty());
 
   bubble_.Prepare(rotation_, t1_, t2_);
   EXPECT_FALSE(bubble_.empty());
   EXPECT_EQ(1, bubble_.number_of_vessels());
-  EXPECT_TRUE(bubble_.contains(check_not_null(&vessel1_)));
-  EXPECT_THAT(bubble_.vessels(), ElementsAre(check_not_null(&vessel1_)));
+  EXPECT_TRUE(bubble_.contains(&vessel1_));
+  EXPECT_THAT(bubble_.vessels(), ElementsAre(&vessel1_));
 
   // The trajectory of the centre of mass has only one point and no
   // acceleration.
@@ -332,9 +332,9 @@ TEST_F(PhysicsBubbleTest, OneVesselOneStep) {
 TEST_F(PhysicsBubbleTest, OneVesselTwoSteps) {
   std::vector<IdAndOwnedPart> parts;
   CreateParts();
-  parts.push_back({11, check_not_null(std::move(p1a_))});
-  parts.push_back({12, check_not_null(std::move(p1b_))});
-  bubble_.AddVesselToNext(check_not_null(&vessel1_), std::move(parts));
+  parts.push_back({11, std::move(p1a_)});
+  parts.push_back({12, std::move(p1b_)});
+  bubble_.AddVesselToNext(&vessel1_, std::move(parts));
   EXPECT_TRUE(bubble_.empty());
 
   bubble_.Prepare(rotation_, t1_, t2_);
@@ -343,15 +343,15 @@ TEST_F(PhysicsBubbleTest, OneVesselTwoSteps) {
   bubble_.VelocityCorrection(rotation_, celestial_);
 
   CreateParts();
-  parts.push_back({11, check_not_null(std::move(p1a_))});
-  parts.push_back({12, check_not_null(std::move(p1b_))});
-  bubble_.AddVesselToNext(check_not_null(&vessel1_), std::move(parts));
+  parts.push_back({11, std::move(p1a_)});
+  parts.push_back({12, std::move(p1b_)});
+  bubble_.AddVesselToNext(&vessel1_, std::move(parts));
 
   bubble_.Prepare(rotation_, t2_, t3_);
   EXPECT_FALSE(bubble_.empty());
   EXPECT_EQ(1, bubble_.number_of_vessels());
-  EXPECT_TRUE(bubble_.contains(check_not_null(&vessel1_)));
-  EXPECT_THAT(bubble_.vessels(), ElementsAre(check_not_null(&vessel1_)));
+  EXPECT_TRUE(bubble_.contains(&vessel1_));
+  EXPECT_THAT(bubble_.vessels(), ElementsAre(&vessel1_));
 
   // The trajectory now has an intrinsic acceleration.
   Trajectory<Barycentric> const& trajectory =
@@ -373,9 +373,9 @@ TEST_F(PhysicsBubbleTest, OneVesselTwoSteps) {
 TEST_F(PhysicsBubbleTest, OneVesselPartRemoved) {
   std::vector<IdAndOwnedPart> parts;
   CreateParts();
-  parts.push_back({11, check_not_null(std::move(p1a_))});
-  parts.push_back({12, check_not_null(std::move(p1b_))});
-  bubble_.AddVesselToNext(check_not_null(&vessel1_), std::move(parts));
+  parts.push_back({11, std::move(p1a_)});
+  parts.push_back({12, std::move(p1b_)});
+  bubble_.AddVesselToNext(&vessel1_, std::move(parts));
   EXPECT_TRUE(bubble_.empty());
 
   bubble_.Prepare(rotation_, t1_, t2_);
@@ -385,15 +385,15 @@ TEST_F(PhysicsBubbleTest, OneVesselPartRemoved) {
 
   // For the second step the vessel only has one part.
   CreateParts();
-  parts.push_back({12, check_not_null(std::move(p1b_))});
-  bubble_.AddVesselToNext(check_not_null(&vessel1_), std::move(parts));
+  parts.push_back({12, std::move(p1b_)});
+  bubble_.AddVesselToNext(&vessel1_, std::move(parts));
   EXPECT_FALSE(bubble_.empty());
 
   bubble_.Prepare(rotation_, t2_, t3_);
   EXPECT_FALSE(bubble_.empty());
   EXPECT_EQ(1, bubble_.number_of_vessels());
-  EXPECT_TRUE(bubble_.contains(check_not_null(&vessel1_)));
-  EXPECT_THAT(bubble_.vessels(), ElementsAre(check_not_null(&vessel1_)));
+  EXPECT_TRUE(bubble_.contains(&vessel1_));
+  EXPECT_THAT(bubble_.vessels(), ElementsAre(&vessel1_));
 
   // The trajectory was reset by Shift.  Its intrinsic acceleration comes only
   // from |p1b_|.  The velocity of the centre of mass was updated to reflect the
@@ -434,8 +434,8 @@ TEST_F(PhysicsBubbleTest, OneVesselPartAdded) {
   std::vector<IdAndOwnedPart> parts;
   // For the first step the vessel has only one part.
   CreateParts();
-  parts.push_back({12, check_not_null(std::move(p1b_))});
-  bubble_.AddVesselToNext(check_not_null(&vessel1_), std::move(parts));
+  parts.push_back({12, std::move(p1b_)});
+  bubble_.AddVesselToNext(&vessel1_, std::move(parts));
   EXPECT_TRUE(bubble_.empty());
 
   bubble_.Prepare(rotation_, t1_, t2_);
@@ -445,15 +445,15 @@ TEST_F(PhysicsBubbleTest, OneVesselPartAdded) {
 
   // For the second step the vessel has two parts.
   CreateParts();
-  parts.push_back({11, check_not_null(std::move(p1a_))});
-  parts.push_back({12, check_not_null(std::move(p1b_))});
-  bubble_.AddVesselToNext(check_not_null(&vessel1_), std::move(parts));
+  parts.push_back({11, std::move(p1a_)});
+  parts.push_back({12, std::move(p1b_)});
+  bubble_.AddVesselToNext(&vessel1_, std::move(parts));
 
   bubble_.Prepare(rotation_, t2_, t3_);
   EXPECT_FALSE(bubble_.empty());
   EXPECT_EQ(1, bubble_.number_of_vessels());
-  EXPECT_TRUE(bubble_.contains(check_not_null(&vessel1_)));
-  EXPECT_THAT(bubble_.vessels(), ElementsAre(check_not_null(&vessel1_)));
+  EXPECT_TRUE(bubble_.contains(&vessel1_));
+  EXPECT_THAT(bubble_.vessels(), ElementsAre(&vessel1_));
 
   // The trajectory was reset by Shift.  Its intrinsic acceleration comes only
   // from |p1b_|.  The velocity of the centre of mass was updated to reflect the
@@ -491,8 +491,8 @@ TEST_F(PhysicsBubbleTest, OneVesselPartAdded) {
 TEST_F(PhysicsBubbleTest, OneVesselNoCommonParts) {
   std::vector<IdAndOwnedPart> parts;
   CreateParts();
-  parts.push_back({21, check_not_null(std::move(p2a_))});
-  bubble_.AddVesselToNext(check_not_null(&vessel1_), std::move(parts));
+  parts.push_back({21, std::move(p2a_)});
+  bubble_.AddVesselToNext(&vessel1_, std::move(parts));
   EXPECT_TRUE(bubble_.empty());
 
   bubble_.Prepare(rotation_, t1_, t2_);
@@ -501,15 +501,15 @@ TEST_F(PhysicsBubbleTest, OneVesselNoCommonParts) {
   bubble_.VelocityCorrection(rotation_, celestial_);
 
   CreateParts();
-  parts.push_back({11, check_not_null(std::move(p1a_))});
-  parts.push_back({12, check_not_null(std::move(p1b_))});
-  bubble_.AddVesselToNext(check_not_null(&vessel1_), std::move(parts));
+  parts.push_back({11, std::move(p1a_)});
+  parts.push_back({12, std::move(p1b_)});
+  bubble_.AddVesselToNext(&vessel1_, std::move(parts));
 
   bubble_.Prepare(rotation_, t2_, t3_);
   EXPECT_FALSE(bubble_.empty());
   EXPECT_EQ(1, bubble_.number_of_vessels());
-  EXPECT_TRUE(bubble_.contains(check_not_null(&vessel1_)));
-  EXPECT_THAT(bubble_.vessels(), ElementsAre(check_not_null(&vessel1_)));
+  EXPECT_TRUE(bubble_.contains(&vessel1_));
+  EXPECT_THAT(bubble_.vessels(), ElementsAre(&vessel1_));
 
   // The bubble was restarted.
   Trajectory<Barycentric> const& trajectory =
@@ -525,21 +525,21 @@ TEST_F(PhysicsBubbleTest, OneVesselNoCommonParts) {
 TEST_F(PhysicsBubbleTest, TwoVessels) {
   std::vector<IdAndOwnedPart> parts;
   CreateParts();
-  parts.push_back({11, check_not_null(std::move(p1a_))});
-  parts.push_back({12, check_not_null(std::move(p1b_))});
-  bubble_.AddVesselToNext(check_not_null(&vessel1_), std::move(parts));
-  parts.push_back({21, check_not_null(std::move(p2a_))});
-  parts.push_back({22, check_not_null(std::move(p2b_))});
-  parts.push_back({23, check_not_null(std::move(p2c_))});
-  bubble_.AddVesselToNext(check_not_null(&vessel2_), std::move(parts));
+  parts.push_back({11, std::move(p1a_)});
+  parts.push_back({12, std::move(p1b_)});
+  bubble_.AddVesselToNext(&vessel1_, std::move(parts));
+  parts.push_back({21, std::move(p2a_)});
+  parts.push_back({22, std::move(p2b_)});
+  parts.push_back({23, std::move(p2c_)});
+  bubble_.AddVesselToNext(&vessel2_, std::move(parts));
   EXPECT_TRUE(bubble_.empty());
 
   bubble_.Prepare(rotation_, t1_, t2_);
   EXPECT_FALSE(bubble_.empty());
   EXPECT_EQ(2, bubble_.number_of_vessels());
-  EXPECT_TRUE(bubble_.contains(check_not_null(&vessel1_)));
-  EXPECT_TRUE(bubble_.contains(check_not_null(&vessel2_)));
-  EXPECT_THAT(bubble_.vessels(), ElementsAre(check_not_null(&vessel1_), check_not_null(&vessel2_)));
+  EXPECT_TRUE(bubble_.contains(&vessel1_));
+  EXPECT_TRUE(bubble_.contains(&vessel2_));
+  EXPECT_THAT(bubble_.vessels(), ElementsAre(&vessel1_, &vessel2_));
 
 
   // The trajectory of the centre of mass has only one point.
@@ -553,21 +553,21 @@ TEST_F(PhysicsBubbleTest, TwoVessels) {
 
   // The second step.
   CreateParts();
-  parts.push_back({11, check_not_null(std::move(p1a_))});
-  parts.push_back({12, check_not_null(std::move(p1b_))});
-  bubble_.AddVesselToNext(check_not_null(&vessel1_), std::move(parts));
-  parts.push_back({21, check_not_null(std::move(p2a_))});
-  parts.push_back({22, check_not_null(std::move(p2b_))});
-  parts.push_back({23, check_not_null(std::move(p2c_))});
-  bubble_.AddVesselToNext(check_not_null(&vessel2_), std::move(parts));
+  parts.push_back({11, std::move(p1a_)});
+  parts.push_back({12, std::move(p1b_)});
+  bubble_.AddVesselToNext(&vessel1_, std::move(parts));
+  parts.push_back({21, std::move(p2a_)});
+  parts.push_back({22, std::move(p2b_)});
+  parts.push_back({23, std::move(p2c_)});
+  bubble_.AddVesselToNext(&vessel2_, std::move(parts));
   EXPECT_FALSE(bubble_.empty());
 
   bubble_.Prepare(rotation_, t2_, t3_);
   EXPECT_FALSE(bubble_.empty());
   EXPECT_EQ(2, bubble_.number_of_vessels());
-  EXPECT_TRUE(bubble_.contains(check_not_null(&vessel1_)));
-  EXPECT_TRUE(bubble_.contains(check_not_null(&vessel2_)));
-  EXPECT_THAT(bubble_.vessels(), ElementsAre(check_not_null(&vessel1_), check_not_null(&vessel2_)));
+  EXPECT_TRUE(bubble_.contains(&vessel1_));
+  EXPECT_TRUE(bubble_.contains(&vessel2_));
+  EXPECT_THAT(bubble_.vessels(), ElementsAre(&vessel1_, &vessel2_));
 
   // Not much has changed, except that the trajectory now has an acceleration.
   EXPECT_THAT(trajectory.Times(), ElementsAre(t1_));

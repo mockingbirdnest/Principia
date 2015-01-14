@@ -15,7 +15,6 @@
 #include "physics/oblate_body.hpp"
 #include "quantities/quantities.hpp"
 
-using principia::base::check_not_null;
 using principia::geometry::InnerProduct;
 using principia::geometry::Instant;
 using principia::geometry::R3Element;
@@ -160,7 +159,7 @@ void NBodySystem<Frame>::Integrate(
                   std::placeholders::_2,
                   std::placeholders::_3),
         &ComputeGravitationalVelocities,
-        parameters, check_not_null(&solution));
+        parameters, &solution);
 
     // TODO(phl): Ignoring errors for now.
     // Loop over the time steps.

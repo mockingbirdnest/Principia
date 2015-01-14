@@ -4,15 +4,13 @@
 
 #include "physics/oblate_body.hpp"
 
-using principia::base::check_not_null;
-
 namespace principia {
 namespace physics {
 
 template<typename Frame>
 bool Body::is_compatible_with() const {
   return CompatibilityHelper<Frame,
-                             Frame::is_inertial>::is_compatible_with(check_not_null(this));
+                             Frame::is_inertial>::is_compatible_with(this);
 }
 
 template<typename Frame>

@@ -6,6 +6,7 @@
 #include <vector>
 
 #include "base/macros.hpp"
+#include "base/not_null.hpp"
 #include "geometry/epoch.hpp"
 #include "geometry/grassmann.hpp"
 #include "geometry/named_quantities.hpp"
@@ -18,6 +19,7 @@
 #include "quantities/quantities.hpp"
 #include "quantities/si.hpp"
 
+using principia::base::check_not_null;
 using principia::base::make_not_null_unique;
 using principia::geometry::Bivector;
 using principia::geometry::Displacement;

@@ -71,11 +71,11 @@ TEST_F(NotNullTest, Copy) {
 }
 
 TEST_F(NotNullTest, CheckNotNull) {
+#if 0
   std::unique_ptr<int> owner_int = std::make_unique<int>(3);
   int* const constant_access_int = owner_int.get();
   not_null<int*> const constant_not_null_access_int =
       check_not_null(constant_access_int);
-#if 0
   check_not_null(constant_not_null_access_int);
   not_null<std::unique_ptr<int>> not_null_owner_int =
       check_not_null(std::move(owner_int));

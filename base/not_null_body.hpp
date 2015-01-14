@@ -11,9 +11,6 @@ namespace principia {
 namespace base {
 
 template<typename Pointer>
-not_null<Pointer>::not_null(pointer ptr) : pointer_(std::move(ptr)) {}
-
-template<typename Pointer>
 template<typename OtherPointer, typename>
 not_null<Pointer>::not_null(not_null<OtherPointer> const& other)
     : pointer_(other.pointer_) {}
@@ -22,6 +19,12 @@ template<typename Pointer>
 template<typename OtherPointer, typename, typename>
 not_null<Pointer>::not_null(not_null<OtherPointer> const& other)
     : pointer_(static_cast<pointer>(other.pointer_)) {}
+
+template<typename Pointer>
+not_null<Pointer>::not_null(pointer other) {
+  CHECK(other != nullptr);
+  pointer_ = std::move(other);
+}
 
 template<typename Pointer>
 not_null<Pointer>::not_null(not_null&& other)  // NOLINT(build/c++11)
@@ -82,7 +85,8 @@ template<typename Pointer>
 template<typename P, typename>
 not_null<decltype(std::declval<P>().get())> not_null<Pointer>::get() const {
   // NOTE(egg): no |CHECK| is performed.
-  return not_null<decltype(std::declval<P>().get())>(pointer_.get());
+  using type = decltype(std::declval<P>().get());
+  return not_null<type>(pointer_.get(), not_null<type>::unchecked_tag_);
 }
 
 template<typename Pointer>
@@ -113,8 +117,18 @@ not_null<Pointer>::operator bool() const {
 }
 
 template<typename Pointer>
+bool not_null<Pointer>::operator==(pointer const other) const {
+  return pointer_ == other;
+}
+
+template<typename Pointer>
 bool not_null<Pointer>::operator==(not_null const other) const {
   return pointer_ == other.pointer_;
+}
+
+template<typename Pointer>
+bool not_null<Pointer>::operator!=(pointer const other) const {
+  return pointer_ != other;
 }
 
 template<typename Pointer>
@@ -143,10 +157,19 @@ bool not_null<Pointer>::operator>(not_null const other) const {
 }
 
 template<typename Pointer>
+not_null<Pointer>::not_null(pointer other, unchecked_tag const tag)
+    : pointer_(std::move(other)) {}
+
+template<typename Pointer>
+typename not_null<Pointer>::unchecked_tag const
+    not_null<Pointer>::unchecked_tag_ = {};
+
+template<typename Pointer>
 _checked_not_null<Pointer> check_not_null(Pointer pointer) {
   CHECK(pointer != nullptr);
   return not_null<typename std::remove_reference<Pointer>::type>(
-      std::move(pointer));
+      std::move(pointer),
+      not_null<Pointer>::unchecked_tag_);
 }
 
 #if 0
@@ -159,7 +182,8 @@ not_null<Pointer> check_not_null(not_null<Pointer> pointer) {
 template<typename T, typename... Args>
 not_null<std::unique_ptr<T>> make_not_null_unique(Args&&... args) {  // NOLINT
   return not_null<std::unique_ptr<T>>(
-      std::make_unique<T>(std::forward<Args>(args)...));  // NOLINT
+      std::make_unique<T>(std::forward<Args>(args)...),  // NOLINT
+      not_null<std::unique_ptr<T>>::unchecked_tag_);
 }
 
 template<typename Pointer>

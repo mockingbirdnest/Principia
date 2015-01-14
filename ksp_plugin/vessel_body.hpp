@@ -55,7 +55,7 @@ inline void Vessel::CreateProlongation(
   CHECK(!is_synchronized());
   CHECK(!is_initialized());
   CHECK(owned_prolongation_ == nullptr);
-  owned_prolongation_ = std::make_unique<Trajectory<Barycentric>>(check_not_null(&body_));
+  owned_prolongation_ = std::make_unique<Trajectory<Barycentric>>(&body_);
   owned_prolongation_->Append(time, degrees_of_freedom);
   prolongation_ = owned_prolongation_.get();
 }
@@ -64,7 +64,7 @@ inline void Vessel::CreateHistoryAndForkProlongation(
     Instant const& time,
     DegreesOfFreedom<Barycentric> const& degrees_of_freedom) {
   CHECK(!is_synchronized());
-  history_ = std::make_unique<Trajectory<Barycentric>>(check_not_null(&body_));
+  history_ = std::make_unique<Trajectory<Barycentric>>(&body_);
   history_->Append(time, degrees_of_freedom);
   prolongation_ = history_->Fork(time);
   owned_prolongation_.reset();
@@ -74,7 +74,7 @@ inline void Vessel::ResetProlongation(Instant const& time) {
   CHECK(is_initialized());
   CHECK(is_synchronized());
   CHECK(owned_prolongation_ == nullptr);
-  history_->DeleteFork(check_not_null(&prolongation_));
+  history_->DeleteFork(&prolongation_);
   prolongation_ = history_->Fork(time);
 }
 

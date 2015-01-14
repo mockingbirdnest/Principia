@@ -17,9 +17,10 @@ using principia::quantities::Time;
 namespace principia {
 namespace testing_utilities {
 
-inline void ComputeHarmonicOscillatorForce(Time const& t,
-                                           std::vector<Length> const& q,
-                                           not_null<std::vector<Force>*> const result) {
+inline void ComputeHarmonicOscillatorForce(
+    Time const& t,
+    std::vector<Length> const& q,
+    not_null<std::vector<Force>*> const result) {
   (*result)[0] = -q[0] * SIUnit<Stiffness>();
 }
 

@@ -51,7 +51,7 @@ void FromBasisOfBarycentricFrameToStandardBasis(
   Displacement<FromFrame> const& reference_direction =
       reference.displacement();
   Velocity<FromFrame> reference_normal = reference.velocity();
-  reference_direction.Orthogonalize(check_not_null(&reference_normal));
+  reference_direction.Orthogonalize<Speed, FromFrame>(&reference_normal);
   Bivector<Product<Length, Speed>, FromFrame> const reference_binormal =
       Wedge(reference_direction, reference_normal);
   *rotation = Rotation<FromFrame, ToFrame>(
@@ -184,12 +184,12 @@ Transforms<FromFrame, ThroughFrame, ToFrame>::BarycentricRotating(
     Rotation<FromFrame, ThroughFrame>
         from_basis_of_barycentric_frame_to_standard_basis;
     Bivector<AngularFrequency, FromFrame> angular_frequency;
-    FromBasisOfBarycentricFrameToStandardBasis(
+    FromBasisOfBarycentricFrameToStandardBasis<FromFrame, ThroughFrame>(
         barycentre_degrees_of_freedom,
         primary_degrees_of_freedom,
         secondary_degrees_of_freedom,
-        check_not_null(&from_basis_of_barycentric_frame_to_standard_basis),
-        check_not_null(&angular_frequency));
+        &from_basis_of_barycentric_frame_to_standard_basis,
+        &angular_frequency);
 
     AffineMap<FromFrame, ThroughFrame, Length, Rotation> const position_map(
         barycentre_degrees_of_freedom.position(),
@@ -234,12 +234,12 @@ Transforms<FromFrame, ThroughFrame, ToFrame>::BarycentricRotating(
     Rotation<ToFrame, ThroughFrame>
         from_basis_of_last_barycentric_frame_to_standard_basis;
     Bivector<AngularFrequency, ToFrame> angular_frequency;
-    FromBasisOfBarycentricFrameToStandardBasis(
+    FromBasisOfBarycentricFrameToStandardBasis<ToFrame, ThroughFrame>(
         last_barycentre_degrees_of_freedom,
         last_primary_degrees_of_freedom,
         last_secondary_degrees_of_freedom,
-        check_not_null(&from_basis_of_last_barycentric_frame_to_standard_basis),
-        check_not_null(&angular_frequency));
+        &from_basis_of_last_barycentric_frame_to_standard_basis,
+        &angular_frequency);
     Rotation<ThroughFrame, ToFrame> const
         from_standard_basis_to_basis_of_last_barycentric_frame =
             from_basis_of_last_barycentric_frame_to_standard_basis.Inverse();
@@ -260,7 +260,7 @@ Transforms<FromFrame, ThroughFrame, ToFrame>::BarycentricRotating(
 template<typename FromFrame, typename ThroughFrame, typename ToFrame>
 not_null<std::unique_ptr<Transforms<FromFrame, ThroughFrame, ToFrame>>>
 Transforms<FromFrame, ThroughFrame, ToFrame>::DummyForTesting() {
-  return check_not_null(std::make_unique<Transforms>());
+  return make_not_null_unique<Transforms>();
 }
 
 template<typename FromFrame, typename ThroughFrame, typename ToFrame>

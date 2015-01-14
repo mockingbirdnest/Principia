@@ -1,10 +1,12 @@
 #include "ksp_plugin/interface.hpp"
 
+#include "base/not_null.hpp"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "quantities/si.hpp"
 #include "ksp_plugin/mock_plugin.hpp"
 
+using principia::base::check_not_null;
 using principia::geometry::Displacement;
 using principia::ksp_plugin::AliceSun;
 using principia::ksp_plugin::Index;

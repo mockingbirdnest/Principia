@@ -30,7 +30,6 @@
 // Must come last to avoid conflicts when defining the CHECK macros.
 #include "benchmark/benchmark.h"
 
-using principia::base::check_not_null;
 using principia::base::not_null;
 using principia::physics::NBodySystem;
 using principia::quantities::DebugString;
@@ -67,20 +66,17 @@ void SolarSystemBenchmark(SolarSystem::Accuracy const accuracy,
 
 void BM_SolarSystemMajorBodiesOnly(
     benchmark::State& state) {  // NOLINT(runtime/references)
-  SolarSystemBenchmark(SolarSystem::Accuracy::kMajorBodiesOnly,
-                       check_not_null(&state));
+  SolarSystemBenchmark(SolarSystem::Accuracy::kMajorBodiesOnly, &state);
 }
 
 void BM_SolarSystemMinorAndMajorBodies(
     benchmark::State& state) {  // NOLINT(runtime/references)
-  SolarSystemBenchmark(SolarSystem::Accuracy::kMinorAndMajorBodies,
-                       check_not_null(&state));
+  SolarSystemBenchmark(SolarSystem::Accuracy::kMinorAndMajorBodies, &state);
 }
 
 void BM_SolarSystemAllBodiesAndOblateness(
     benchmark::State& state) {  // NOLINT(runtime/references)
-  SolarSystemBenchmark(SolarSystem::Accuracy::kAllBodiesAndOblateness,
-                       check_not_null(&state));
+  SolarSystemBenchmark(SolarSystem::Accuracy::kAllBodiesAndOblateness, &state);
 }
 
 BENCHMARK(BM_SolarSystemMajorBodiesOnly);

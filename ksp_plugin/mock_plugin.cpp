@@ -16,7 +16,7 @@ MockPlugin::NewBodyCentredNonRotatingTransforms(
     Index const reference_body_index) const {
   std::unique_ptr<Transforms<Barycentric, Rendering, Barycentric>> transforms;
   FillBodyCentredNonRotatingTransforms(reference_body_index, &transforms);
-  return check_not_null(std::move(transforms));  // Remove std::move.
+  return std::move(transforms);
 }
 
 not_null<std::unique_ptr<Transforms<Barycentric, Rendering, Barycentric>>>
@@ -27,7 +27,7 @@ MockPlugin::NewBarycentricRotatingTransforms(
   FillBarycentricRotatingTransforms(primary_index,
                                     secondary_index,
                                     &transforms);
-  return check_not_null(std::move(transforms));  // Remove std::move.
+  return std::move(transforms);
 }
 
 }  // namespace ksp_plugin
