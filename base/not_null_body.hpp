@@ -157,9 +157,8 @@ bool not_null<Pointer>::operator>(not_null const other) const {
 }
 
 template<typename Pointer>
-not_null<Pointer>::not_null(pointer other, unchecked_tag const tag) {
-  pointer_ = std::move(other);
-}
+not_null<Pointer>::not_null(pointer other, unchecked_tag const tag)
+    : pointer_(std::move(other)) {}
 
 template<typename Pointer>
 typename not_null<Pointer>::unchecked_tag const
