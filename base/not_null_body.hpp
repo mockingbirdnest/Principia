@@ -20,11 +20,11 @@ template<typename OtherPointer, typename, typename>
 not_null<Pointer>::not_null(not_null<OtherPointer> const& other)
     : pointer_(static_cast<pointer>(other.pointer_)) {}
 
-//template<typename Pointer>
-//not_null<Pointer>::not_null(pointer other) {
-//  CHECK(other != nullptr);
-//  pointer_ = std::move(other);
-//}
+template<typename Pointer>
+not_null<Pointer>::not_null(pointer other) {
+  CHECK(other != nullptr);
+  pointer_ = std::move(other);
+}
 
 template<typename Pointer>
 not_null<Pointer>::not_null(not_null&& other)  // NOLINT(build/c++11)
