@@ -30,7 +30,6 @@
 // Must come last to avoid conflicts when defining the CHECK macros.
 #include "benchmark/benchmark.h"
 
-using principia::base::check_not_null;
 using principia::base::not_null;
 using principia::physics::NBodySystem;
 using principia::quantities::DebugString;

@@ -56,11 +56,11 @@ void PhysicsBubble::Prepare(PlanetariumRotation const& planetarium_rotation,
   if (next_ != nullptr) {
     next = std::make_unique<FullState>(std::move(*next_));
     next_.reset();
-    ComputeNextCentreOfMassWorldDegreesOfFreedom(check_not_null(next.get()));
-    ComputeNextVesselOffsets(planetarium_rotation, check_not_null(next.get()));
+    ComputeNextCentreOfMassWorldDegreesOfFreedom(next.get());
+    ComputeNextVesselOffsets(planetarium_rotation, next.get());
     if (current_ == nullptr) {
       // There was no physics bubble.
-      RestartNext(current_time, check_not_null(next.get()));
+      RestartNext(current_time, next.get());
     } else {
       // The IDs of the parts that are both in the current and in the next
       // physics bubble.
@@ -69,7 +69,7 @@ void PhysicsBubble::Prepare(PlanetariumRotation const& planetarium_rotation,
       if (common_parts.empty()) {
         // The current and next set of parts are disjoint, i.e., the next
         // physics bubble is unrelated to the current one.
-        RestartNext(current_time, check_not_null(next.get()));
+        RestartNext(current_time, next.get());
       } else {
         Vector<Acceleration, World> const intrinsic_acceleration =
             IntrinsicAcceleration(current_time, next_time, common_parts);
@@ -85,7 +85,7 @@ void PhysicsBubble::Prepare(PlanetariumRotation const& planetarium_rotation,
           // intersection is nonempty.  We fix the degrees of freedom of the
           // centre of mass of the intersection, and we use its measured
           // acceleration as the intrinsic acceleration of the |body_|.
-          Shift(planetarium_rotation, current_time, common_parts, check_not_null(next.get()));
+          Shift(planetarium_rotation, current_time, common_parts, next.get());
         }
         // Correct since |World| is currently nonrotating.
         Vector<Acceleration, Barycentric> barycentric_intrinsic_acceleration =
@@ -202,7 +202,7 @@ PhysicsBubble::centre_of_mass_trajectory() const {
 not_null<Trajectory<Barycentric>*>
 PhysicsBubble::mutable_centre_of_mass_trajectory() const {
   CHECK(!empty()) << "Empty bubble";
-  return check_not_null(current_->centre_of_mass_trajectory.get());
+  return current_->centre_of_mass_trajectory.get();
 }
 
 PhysicsBubble::PreliminaryState::PreliminaryState() {}

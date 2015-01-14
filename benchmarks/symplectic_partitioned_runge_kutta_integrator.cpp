@@ -25,7 +25,6 @@
 // Must come last to avoid conflicts when defining the CHECK macros.
 #include "benchmark/benchmark.h"
 
-using principia::base::check_not_null;
 using principia::integrators::SPRKIntegrator;
 using principia::quantities::Abs;
 using principia::quantities::AngularFrequency;

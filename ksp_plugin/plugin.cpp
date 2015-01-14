@@ -124,14 +124,14 @@ void Plugin::EvolveHistories(Instant const& t) {
                        celestials_.size());
   for (auto const& pair : celestials_) {
     not_null<std::unique_ptr<Celestial>> const& celestial = pair.second;
-    trajectories.push_back(check_not_null(celestial->mutable_history()));
+    trajectories.push_back(celestial->mutable_history());
   }
   for (auto const& pair : vessels_) {
     not_null<Vessel*> const vessel = pair.second.get();
     if (vessel->is_synchronized() &&
         !bubble_.contains(vessel) &&
         !is_dirty(vessel)) {
-      trajectories.push_back(check_not_null(vessel->mutable_history()));
+      trajectories.push_back(vessel->mutable_history());
     }
   }
   VLOG(1) << "Starting the evolution of the histories" << '\n'
@@ -154,16 +154,16 @@ void Plugin::SynchronizeNewVesselsAndCleanDirtyVessels() {
                        bubble_.size());
   for (auto const& pair : celestials_) {
     not_null<std::unique_ptr<Celestial>> const& celestial = pair.second;
-    trajectories.push_back(check_not_null(celestial->mutable_prolongation()));
+    trajectories.push_back(celestial->mutable_prolongation());
   }
   for (not_null<Vessel*> const vessel : unsynchronized_vessels_) {
     if (!bubble_.contains(vessel)) {
-      trajectories.push_back(check_not_null(vessel->mutable_prolongation()));
+      trajectories.push_back(vessel->mutable_prolongation());
     }
   }
   for (not_null<Vessel*> const vessel : dirty_vessels_) {
     if (!bubble_.contains(vessel) && vessel->is_synchronized()) {
-      trajectories.push_back(check_not_null(vessel->mutable_prolongation()));
+      trajectories.push_back(vessel->mutable_prolongation());
     }
   }
   if (!bubble_.empty()) {
@@ -240,12 +240,12 @@ void Plugin::EvolveProlongationsAndBubble(Instant const& t) {
                        bubble_.number_of_vessels() + bubble_.size());
   for (auto const& pair : celestials_) {
     not_null<std::unique_ptr<Celestial>> const& celestial = pair.second;
-    trajectories.push_back(check_not_null(celestial->mutable_prolongation()));
+    trajectories.push_back(celestial->mutable_prolongation());
   }
   for (auto const& pair : vessels_) {
     not_null<Vessel*> const vessel = pair.second.get();
     if (!bubble_.contains(vessel)) {
-      trajectories.push_back(check_not_null(vessel->mutable_prolongation()));
+      trajectories.push_back(vessel->mutable_prolongation());
     }
   }
   if (!bubble_.empty()) {

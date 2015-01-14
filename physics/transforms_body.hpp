@@ -260,7 +260,7 @@ Transforms<FromFrame, ThroughFrame, ToFrame>::BarycentricRotating(
 template<typename FromFrame, typename ThroughFrame, typename ToFrame>
 not_null<std::unique_ptr<Transforms<FromFrame, ThroughFrame, ToFrame>>>
 Transforms<FromFrame, ThroughFrame, ToFrame>::DummyForTesting() {
-  return check_not_null(std::make_unique<Transforms>());
+  return make_not_null_unique<Transforms>();
 }
 
 template<typename FromFrame, typename ThroughFrame, typename ToFrame>

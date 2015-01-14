@@ -15,7 +15,6 @@
 #include "physics/oblate_body.hpp"
 #include "quantities/quantities.hpp"
 
-using principia::base::check_not_null;
 using principia::geometry::InnerProduct;
 using principia::geometry::Instant;
 using principia::geometry::R3Element;

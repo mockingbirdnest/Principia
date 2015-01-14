@@ -124,8 +124,8 @@ class not_null {
            typename = typename std::enable_if<
                std::is_convertible<OtherPointer, pointer>::value>::type>
   not_null(not_null<OtherPointer> const& other);
-  // Copy constructor from a nullable pointer, performs a null check.
-  not_null(pointer other);
+  // Constructor from a nullable pointer, performs a null check.
+  not_null(pointer other);  // NOLINT(runtime/explicit)
   // Explicit copy constructor for static_cast'ing.
   template<typename OtherPointer,
            typename = typename std::enable_if<

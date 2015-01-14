@@ -6,8 +6,6 @@
 // Must come last to avoid conflicts when defining the CHECK macros.
 #include "benchmark/benchmark.h"
 
-using principia::base::check_not_null;
-
 namespace principia {
 namespace benchmarks {
 

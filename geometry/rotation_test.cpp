@@ -11,7 +11,6 @@
 namespace principia {
 namespace geometry {
 
-using base::check_not_null;
 using si::Metre;
 using testing::Eq;
 using testing_utilities::AlmostEquals;

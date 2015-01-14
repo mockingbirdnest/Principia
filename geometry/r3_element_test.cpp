@@ -11,7 +11,6 @@
 
 using principia::astronomy::JulianYear;
 using principia::astronomy::Parsec;
-using principia::base::check_not_null;
 using principia::bipm::Knot;
 using principia::constants::SpeedOfLight;
 using principia::quantities::Length;

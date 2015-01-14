@@ -15,7 +15,6 @@
 #include "testing_utilities/componentwise.hpp"
 #include "testing_utilities/vanishes_before.hpp"
 
-using principia::base::check_not_null;
 using principia::base::make_not_null_unique;
 using principia::quantities::Length;
 using principia::quantities::Mass;

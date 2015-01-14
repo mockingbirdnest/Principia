@@ -120,7 +120,7 @@ class PluginTest : public testing::Test {
  protected:
   PluginTest()
       : looking_glass_(Permutation<ICRFJ2000Ecliptic, AliceSun>::XZY),
-        n_body_system_(check_not_null(new MockNBodySystem<Barycentric>())),
+        n_body_system_(new MockNBodySystem<Barycentric>()),
         solar_system_(SolarSystem::AtСпутник1Launch(
             SolarSystem::Accuracy::kMajorBodiesOnly)),
         bodies_(solar_system_->massive_bodies()),

@@ -9,7 +9,6 @@
 #include "glog/logging.h"
 #include "physics/oblate_body.hpp"
 
-using principia::base::check_not_null;
 using principia::base::make_not_null_unique;
 using principia::geometry::Instant;
 
@@ -27,7 +26,7 @@ Trajectory<Frame>::Trajectory(not_null<Body const*> const body)
 template<typename Frame>
 typename Trajectory<Frame>::NativeIterator Trajectory<Frame>::first() const {
   NativeIterator it;
-  it.InitializeFirst(check_not_null(this));
+  it.InitializeFirst(this);
   return it;
 }
 
@@ -35,14 +34,14 @@ template<typename Frame>
 typename Trajectory<Frame>::NativeIterator Trajectory<Frame>::on_or_after(
     Instant const& time) const {
   NativeIterator it;
-  it.InitializeOnOrAfter(time, check_not_null(this));
+  it.InitializeOnOrAfter(time, this);
   return it;
 }
 
 template<typename Frame>
 typename Trajectory<Frame>::NativeIterator Trajectory<Frame>::last() const {
   NativeIterator it;
-  it.InitializeLast(check_not_null(this));
+  it.InitializeLast(this);
   return it;
 }
 
@@ -52,7 +51,7 @@ typename Trajectory<Frame>::TEMPLATE TransformingIterator<ToFrame>
 Trajectory<Frame>::first_with_transform(
     Transform<ToFrame> const& transform) const {
   TransformingIterator<ToFrame> it(transform);
-  it.InitializeFirst(check_not_null(this));
+  it.InitializeFirst(this);
   return it;
 }
 
@@ -63,7 +62,7 @@ Trajectory<Frame>::on_or_after_with_transform(
     Instant const& time,
     Transform<ToFrame> const& transform) const {
   TransformingIterator<ToFrame> it(transform);
-  it.InitializeOnOrAfter(time, check_not_null(this));
+  it.InitializeOnOrAfter(time, this);
   return it;
 }
 
@@ -73,7 +72,7 @@ typename Trajectory<Frame>::TEMPLATE TransformingIterator<ToFrame>
 Trajectory<Frame>::last_with_transform(
     Transform<ToFrame> const& transform) const {
   TransformingIterator<ToFrame> it(transform);
-  it.InitializeLast(check_not_null(this));
+  it.InitializeLast(this);
   return it;
 }
 
@@ -162,9 +161,9 @@ not_null<Trajectory<Frame>*> Trajectory<Frame>::Fork(Instant const& time) {
   CHECK(fork_it != timeline_.end()) << "Fork at nonexistent time";
   // Can't use make_unique below.
   std::unique_ptr<Trajectory<Frame>> child(
-      new Trajectory(body_, check_not_null(this) /*parent*/, fork_it));
+      new Trajectory(body_, this /*parent*/, fork_it));
   child->timeline_.insert(++fork_it, timeline_.end());
-  auto const child_it = children_.emplace(time, check_not_null(std::move(child)));
+  auto const child_it = children_.emplace(time, std::move(child));
   return child_it->second.get();
 }
 
@@ -206,7 +205,7 @@ not_null<Trajectory<Frame>*> Trajectory<Frame>::root() {
   while (ancestor->parent_ != nullptr) {
     ancestor = ancestor->parent_;
   }
-  return check_not_null(ancestor);
+  return ancestor;
 }
 
 template<typename Frame>
@@ -226,7 +225,7 @@ Trajectory<Frame>::body() const {
 // debug mode to catch bugs, but not in optimized mode where we want all the
 // performance we can get.
 #ifdef _DEBUG
-  return check_not_null(dynamic_cast<B const*>(static_cast<Body const*>(body_)));
+  return dynamic_cast<B const*>(static_cast<Body const*>(body_));
 #else
   return static_cast<not_null<B const*>>(body_);
 #endif
@@ -297,7 +296,7 @@ void Trajectory<Frame>::Iterator::InitializeFirst(
   while (ancestor->parent_ != nullptr) {
     ancestry_.push_front(ancestor);
     forks_.push_front(*ancestor->fork_);
-    ancestor = check_not_null(ancestor->parent_);
+    ancestor = ancestor->parent_;
   }
   ancestry_.push_front(ancestor);
   current_ = ancestor->timeline_.begin();
@@ -310,7 +309,7 @@ void Trajectory<Frame>::Iterator::InitializeOnOrAfter(
   while (ancestor->fork_ != nullptr && time <= (*ancestor->fork_)->first) {
     ancestry_.push_front(ancestor);
     forks_.push_front(*ancestor->fork_);
-    ancestor = check_not_null(ancestor->parent_);
+    ancestor = ancestor->parent_;
   }
   ancestry_.push_front(ancestor);
   current_ = ancestor->timeline_.lower_bound(time);
@@ -322,7 +321,7 @@ void Trajectory<Frame>::Iterator::InitializeLast(
   // We don't need to really keep track of the forks or of the ancestry.
   if (trajectory->timeline_.empty()) {
     CHECK(trajectory->fork_ != nullptr) << "Empty trajectory";
-    ancestry_.push_front(check_not_null(trajectory->parent_));
+    ancestry_.push_front(trajectory->parent_);
     current_ = *trajectory->fork_;
   } else {
     ancestry_.push_front(trajectory);
