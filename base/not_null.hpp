@@ -221,14 +221,12 @@ class not_null {
   bool operator>(not_null const other) const;
 
  private:
-  struct unchecked_tag {
-    inline unchecked_tag() {}
-  };
+  struct unchecked_tag {};
 
   // Creates a |not_null<Pointer>| whose |pointer_| equals the given |pointer|,
   // dawg.  The constructor does *not* perform a null check.  Callers must
   // perform one if needed before using it.
-  explicit not_null(pointer ptr, unchecked_tag const tag);
+  explicit not_null(pointer other, unchecked_tag const tag);
 
   pointer pointer_;
 
