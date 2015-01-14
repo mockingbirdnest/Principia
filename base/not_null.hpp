@@ -125,7 +125,7 @@ class not_null {
                std::is_convertible<OtherPointer, pointer>::value>::type>
   not_null(not_null<OtherPointer> const& other);
   // Copy constructor from a nullable pointer, performs a null check.
-  not_null(pointer other);
+  //not_null(pointer other);
   // Explicit copy constructor for static_cast'ing.
   template<typename OtherPointer,
            typename = typename std::enable_if<
@@ -221,7 +221,18 @@ class not_null {
   bool operator>(not_null const other) const;
 
  private:
+  struct unchecked_tag {
+    inline unchecked_tag() {}
+  };
+
+  // Creates a |not_null<Pointer>| whose |pointer_| equals the given |pointer|,
+  // dawg.  The constructor does *not* perform a null check.  Callers must
+  // perform one if needed before using it.
+  explicit not_null(pointer ptr, unchecked_tag const tag);
+
   pointer pointer_;
+
+  static unchecked_tag const unchecked_tag_;
 
   template<typename OtherPointer>
   friend class not_null;
