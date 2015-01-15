@@ -70,14 +70,14 @@ bool VanishesBeforeMatcher<T>::MatchAndExplain(
 
 template<typename T>
 void VanishesBeforeMatcher<T>::DescribeTo(std::ostream* out) const {
-  *out << "is within "<< min_ulps_
-       << " to " << max_ulps_ << " ulps of " << reference_;
+  *out << "vanishes before " << reference_ << " to within "
+       << min_ulps_ << " to " << max_ulps_ << " ULPs";
 }
 
 template<typename T>
 void VanishesBeforeMatcher<T>::DescribeNegationTo(std::ostream* out) const {
-  *out << "is not within " << min_ulps_
-       << " to " << max_ulps_ << " ulps of " << reference_;
+  *out << "does not vanish before " << reference_ << " to within "
+       << min_ulps_ << " to " << max_ulps_ << " ULP";
 }
 
 }  // namespace testing_utilities

@@ -1,6 +1,7 @@
 ﻿#include "testing_utilities/vanishes_before.hpp"
 
 #include <limits>
+#include <sstream>
 
 #include "glog/logging.h"
 #include "gmock/gmock.h"
@@ -46,6 +47,24 @@ TEST_F(VanishesBeforeTest, Quantity) {
   EXPECT_THAT(v_accumulated, Ne(v1));
   EXPECT_THAT(v_accumulated - v1, Not(VanishesBefore(v1, 8)));
   EXPECT_THAT(v_accumulated - v1, VanishesBefore(v1, 4));
+}
+
+TEST_F(VanishesBeforeTest, Describe) {
+  Speed v1 = 1 * SIUnit<Speed>();
+  {
+    std::ostringstream out;
+    VanishesBefore(v1, 2, 6).impl().DescribeTo(&out);
+    EXPECT_EQ("vanishes before +1.00000000000000000e+00 m s^-1 "
+              "to within 2 to 6 ULPs",
+              out.str());
+  }
+  {
+    std::ostringstream out;
+    VanishesBefore(v1, 2, 6).impl().DescribeNegationTo(&out);
+    EXPECT_EQ("does not vanish before +1.00000000000000000e+00 m s^-1 "
+              "to within 2 to 6 ULP",
+              out.str());
+  }
 }
 
 }  // namespace testing_utilities
