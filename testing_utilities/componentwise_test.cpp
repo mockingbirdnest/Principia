@@ -52,12 +52,18 @@ TEST_F(ComponentwiseTest, Grassmann) {
   EXPECT_THAT(v, Componentwise(AlmostEquals(1.0 * Metre, 4504),
                                VanishesBefore(1.0 * Metre, 450360),
                                Eq(3.5 * Metre)));
+  EXPECT_THAT(v, Not(Componentwise(AlmostEquals(1.0 * Metre, 4),
+                                   VanishesBefore(1.0 * Metre, 4),
+                                   Eq(3.5 * Metre))));
   Bivector<Length, World> b({(1.0 + 1.0E-12) * Metre,
                               1.0E-10 * Metre,
                               3.5 * Metre});
   EXPECT_THAT(b, Componentwise(AlmostEquals(1.0 * Metre, 4504),
                                VanishesBefore(1.0 * Metre, 450360),
                                Eq(3.5 * Metre)));
+  EXPECT_THAT(b, Not(Componentwise(AlmostEquals(1.0 * Metre, 4),
+                                   VanishesBefore(1.0 * Metre, 4),
+                                   Eq(3.5 * Metre))));
 }
 
 TEST_F(ComponentwiseTest, Pair) {
@@ -78,6 +84,29 @@ TEST_F(ComponentwiseTest, Pair) {
                                                   2.0 *  SIUnit<Winding>(),
                                                   3.5 *  SIUnit<Winding>()}),
                           225180)));
+}
+
+TEST_F(ComponentwiseTest, Describe) {
+  {
+    std::ostringstream out;
+    Componentwise(AlmostEquals(1.0, 2),
+                  VanishesBefore(1.0, 4),
+                  Eq(3.5)).impl().DescribeTo(&out);
+    EXPECT_EQ("x is within 2 to 2 ULPs of 1 and "
+              "y vanishes before 1 to within 4 to 4 ULPs and "
+              "z is equal to 3.5",
+              out.str());
+  }
+  {
+    std::ostringstream out;
+    Componentwise(AlmostEquals(1.0, 2),
+                  VanishesBefore(1.0, 4),
+                  Eq(3.5)).impl().DescribeNegationTo(&out);
+    EXPECT_EQ("x is not within 2 to 2 ULPs of 1 or "
+              "y does not vanish before 1 to within 4 to 4 ULP or "
+              "z isn't equal to 3.5",
+              out.str());
+  }
 }
 
 }  // namespace testing_utilities

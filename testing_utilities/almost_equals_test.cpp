@@ -1,5 +1,7 @@
 ﻿#include "testing_utilities/almost_equals.hpp"
 
+#include <sstream>
+
 #include "geometry/grassmann.hpp"
 #include "glog/logging.h"
 #include "gmock/gmock.h"
@@ -116,6 +118,22 @@ TEST_F(AlmostEqualsTest, Trivector) {
   }
   EXPECT_THAT(v_accumulated, Ne(v1));
   EXPECT_THAT(v_accumulated, AlmostEquals(v1, 9));
+}
+
+TEST_F(AlmostEqualsTest, Describe) {
+  Speed v1 = 1 * SIUnit<Speed>();
+  {
+    std::ostringstream out;
+    AlmostEquals(v1, 2, 6).impl().DescribeTo(&out);
+    EXPECT_EQ("is within 2 to 6 ULPs of +1.00000000000000000e+00 m s^-1",
+              out.str());
+  }
+  {
+    std::ostringstream out;
+    AlmostEquals(v1, 2, 6).impl().DescribeNegationTo(&out);
+    EXPECT_EQ("is not within 2 to 6 ULPs of +1.00000000000000000e+00 m s^-1",
+              out.str());
+  }
 }
 
 }  // namespace testing_utilities
