@@ -6,6 +6,7 @@
 #include <set>
 #include <vector>
 
+#include "base/not_null.hpp"
 #include "base/macros.hpp"
 #include "geometry/named_quantities.hpp"
 #include "geometry/r3_element.hpp"
@@ -96,7 +97,7 @@ void NBodySystem<Frame>::Integrate(
       for (auto const& trajectory : trajectories) {
         // See if this trajectory should be processed in this iteration and
         // update the appropriate vector.
-        Body const* const body = &trajectory->template body<Body>();
+        not_null<Body const*> const body = trajectory->template body<Body>();
         if (body->is_massless() != is_massless ||
             body->is_oblate() != is_oblate) {
           continue;
@@ -197,7 +198,7 @@ inline void NBodySystem<Frame>::ComputeOneBodyGravitationalAcceleration(
     size_t const b2_begin,
     size_t const b2_end,
     std::vector<Length> const& q,
-    std::vector<Acceleration>* result) {
+    not_null<std::vector<Acceleration>*> const result) {
   // NOTE(phl): Declaring variables for values like 3 * b1 + 1, 3 * b2 + 1, etc.
   // in the code below brings no performance advantage as it seems that the
   // compiler is smart enough to figure common subexpressions.
@@ -228,8 +229,7 @@ inline void NBodySystem<Frame>::ComputeOneBodyGravitationalAcceleration(
       // Lex. III. Actioni contrariam semper & æqualem esse reactionem:
       // sive corporum duorum actiones in se mutuo semper esse æquales &
       // in partes contrarias dirigi.
-      body2 = &body2_trajectories[b2 - b2_begin]->
-          template body<MassiveBody>();
+      body2 = body2_trajectories[b2 - b2_begin]->template body<MassiveBody>();
       GravitationalParameter const& body2_gravitational_parameter =
           body2->gravitational_parameter();
       auto const μ2_over_r_cubed =
@@ -277,7 +277,7 @@ void NBodySystem<Frame>::ComputeGravitationalAccelerations(
     Instant const& reference_time,
     Time const& t,
     std::vector<Length> const& q,
-    std::vector<Acceleration>* result) {
+    not_null<std::vector<Acceleration>*> const result) {
   result->assign(result->size(), Acceleration());
   size_t const number_of_massive_oblate_trajectories =
       massive_oblate_trajectories.size();
@@ -287,7 +287,7 @@ void NBodySystem<Frame>::ComputeGravitationalAccelerations(
 
   for (std::size_t b1 = 0; b1 < number_of_massive_oblate_trajectories; ++b1) {
     OblateBody<Frame> const& body1 =
-        massive_oblate_trajectories[b1]->template body<OblateBody<Frame>>();
+        *massive_oblate_trajectories[b1]->template body<OblateBody<Frame>>();
     ComputeOneBodyGravitationalAcceleration<true /*body1_is_oblate*/,
                                             true /*body2_is_oblate*/,
                                             true /*body2_is_massive*/>(
@@ -325,7 +325,7 @@ void NBodySystem<Frame>::ComputeGravitationalAccelerations(
             number_of_massive_spherical_trajectories;
        ++b1) {
     MassiveBody const& body1 =
-        massive_spherical_trajectories[
+        *massive_spherical_trajectories[
             b1 - number_of_massive_oblate_trajectories]->
                 template body<MassiveBody>();
     ComputeOneBodyGravitationalAcceleration<false /*body1_is_oblate*/,
@@ -376,7 +376,7 @@ void NBodySystem<Frame>::ComputeGravitationalAccelerations(
 template<typename Frame>
 void NBodySystem<Frame>::ComputeGravitationalVelocities(
     std::vector<Speed> const& p,
-    std::vector<Speed>* result) {
+    not_null<std::vector<Speed>*> const result) {
   *result = p;
 }
 

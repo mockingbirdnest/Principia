@@ -4,8 +4,11 @@
 #include <iostream>  // NOLINT(readability/streams)
 #include <string>
 
+#include "base/not_null.hpp"
 #include "geometry/r3_element.hpp"
 #include "quantities/quantities.hpp"
+
+using principia::base::not_null;
 
 namespace principia {
 namespace geometry {
@@ -29,7 +32,7 @@ class Multivector<Scalar, Frame, 1> {
   Scalar Norm() const;
 
   template<typename S, typename F>
-  void Orthogonalize(Multivector<S, F, 1>* multivector) const;
+  void Orthogonalize(not_null<Multivector<S, F, 1>*> const multivector) const;
 
  private:
   R3Element<Scalar> coordinates_;
@@ -49,7 +52,7 @@ class Multivector<Scalar, Frame, 2> {
   Scalar Norm() const;
 
   template<typename S, typename F>
-  void Orthogonalize(Multivector<S, F, 2>* multivector) const;
+  void Orthogonalize(not_null<Multivector<S, F, 2>*> const multivector) const;
 
  private:
   R3Element<Scalar> coordinates_;

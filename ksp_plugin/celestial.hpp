@@ -2,6 +2,7 @@
 
 #include <memory>
 
+#include "base/not_null.hpp"
 #include "ksp_plugin/frames.hpp"
 #include "physics/body.hpp"
 #include "physics/degrees_of_freedom.hpp"
@@ -9,6 +10,7 @@
 #include "physics/trajectory.hpp"
 #include "quantities/named_quantities.hpp"
 
+using principia::base::not_null;
 using principia::physics::Body;
 using principia::physics::DegreesOfFreedom;
 using principia::physics::MassiveBody;
@@ -21,7 +23,7 @@ namespace ksp_plugin {
 // Represents a KSP |CelestialBody|.
 class Celestial {
  public:
-  explicit Celestial(std::unique_ptr<MassiveBody const> body);
+  explicit Celestial(not_null<std::unique_ptr<MassiveBody const>> body);
   Celestial(Celestial const&) = delete;
   Celestial(Celestial&&) = delete;
   ~Celestial() = default;
@@ -34,7 +36,7 @@ class Celestial {
 
   Trajectory<Barycentric>* mutable_history();
   Trajectory<Barycentric>* mutable_prolongation();
-  void set_parent(Celestial const* parent);
+  void set_parent(not_null<Celestial const*> const parent);
 
   // Creates a |history_| for this body and appends a point with the given
   // |time| and |degrees_of_freedom|.  Then forks a |prolongation_| at |time|.
@@ -46,7 +48,7 @@ class Celestial {
   void ResetProlongation(Instant const& time);
 
  private:
-  std::unique_ptr<MassiveBody const> const body_;
+  not_null<std::unique_ptr<MassiveBody const>> const body_;
   // The parent body for the 2-body approximation. Not owning, must only
   // be null for the sun.
   Celestial const* parent_ = nullptr;
@@ -57,7 +59,7 @@ class Celestial {
   // non-constant timestep, which breaks symplecticity. |history| is advanced
   // with a constant timestep as soon as possible, and |prolongation| is then
   // restarted from this new end of |history|.
-  // Not owning, not null.
+  // Not owning.
   Trajectory<Barycentric>* prolongation_ = nullptr;
 };
 

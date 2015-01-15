@@ -43,7 +43,8 @@ struct Part {
 template<typename Frame>
 std::ostream& operator<<(std::ostream& out, Part<Frame> const& part);
 
-using PartIdToOwnedPart = std::map<PartId, std::unique_ptr<Part<World>>>;
+using PartIdToOwnedPart = std::map<PartId,
+                                   not_null<std::unique_ptr<Part<World>>>>;
 using IdAndOwnedPart = PartIdToOwnedPart::value_type;
 
 }  // namespace ksp_plugin

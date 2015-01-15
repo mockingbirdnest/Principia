@@ -38,8 +38,8 @@ class SolarSystemTest : public testing::Test {
   Length SemiMajorAxis(Trajectory<ICRFJ2000Ecliptic> const& primary,
                        Trajectory<ICRFJ2000Ecliptic> const& secondary) {
     GravitationalParameter const μ =
-        primary.body<MassiveBody>().gravitational_parameter() +
-        secondary.body<MassiveBody>().gravitational_parameter();
+        primary.body<MassiveBody>()->gravitational_parameter() +
+        secondary.body<MassiveBody>()->gravitational_parameter();
     RelativeDegreesOfFreedom<ICRFJ2000Ecliptic> const primary_secondary =
         primary.last().degrees_of_freedom() -
         secondary.last().degrees_of_freedom();
@@ -60,8 +60,8 @@ class SolarSystemTest : public testing::Test {
       Trajectory<ICRFJ2000Ecliptic> const& secondary) {
     // Assuming secondary.mass << primary.mass.
     return SemiMajorAxis(primary, secondary) *
-        std::pow(secondary.body<MassiveBody>().mass() /
-                 primary.body<MassiveBody>().mass(), 2.0 / 5.0);
+        std::pow(secondary.body<MassiveBody>()->mass() /
+                 primary.body<MassiveBody>()->mass(), 2.0 / 5.0);
   }
 
   // Tests whether |tertiary| orbits |secondary| in an orbit with excentricity
@@ -77,8 +77,8 @@ class SolarSystemTest : public testing::Test {
       Trajectory<ICRFJ2000Ecliptic> const* const primary,
       std::string message) {
     GravitationalParameter const μ =
-        tertiary.body<MassiveBody>().gravitational_parameter() +
-        secondary.body<MassiveBody>().gravitational_parameter();
+        tertiary.body<MassiveBody>()->gravitational_parameter() +
+        secondary.body<MassiveBody>()->gravitational_parameter();
     RelativeDegreesOfFreedom<ICRFJ2000Ecliptic> const tertiary_secondary =
         tertiary.last().degrees_of_freedom() -
         secondary.last().degrees_of_freedom();
@@ -99,8 +99,6 @@ class SolarSystemTest : public testing::Test {
           << message;
     }
   }
-
-  std::unique_ptr<SolarSystem> solar_system_;
 };
 
 using SolarSystemDeathTest = SolarSystemTest;
@@ -141,10 +139,10 @@ TEST_F(SolarSystemTest, Parent) {
 // not do a unicode-friendly stringification.  We settle for the English
 // romanization.
 TEST_F(SolarSystemTest, HierarchyAtSputnik1Launch) {
-  solar_system_ = SolarSystem::AtСпутник1Launch(
+  auto const solar_system = SolarSystem::AtСпутник1Launch(
       SolarSystem::Accuracy::kMinorAndMajorBodies);
   NBodySystem<ICRFJ2000Ecliptic>::Trajectories trajectories =
-      solar_system_->trajectories();
+      solar_system->trajectories();
   auto const& sun      = *trajectories[SolarSystem::kSun];
   auto const& jupiter  = *trajectories[SolarSystem::kJupiter];
   auto const& saturn   = *trajectories[SolarSystem::kSaturn];
@@ -212,10 +210,10 @@ TEST_F(SolarSystemTest, HierarchyAtSputnik1Launch) {
 }
 
 TEST_F(SolarSystemTest, HierarchyAtSputnik2Launch) {
-  solar_system_ = SolarSystem::AtСпутник2Launch(
+  auto const solar_system = SolarSystem::AtСпутник2Launch(
       SolarSystem::Accuracy::kMinorAndMajorBodies);
   NBodySystem<ICRFJ2000Ecliptic>::Trajectories trajectories =
-      solar_system_->trajectories();
+      solar_system->trajectories();
   auto const& sun      = *trajectories[SolarSystem::kSun];
   auto const& jupiter  = *trajectories[SolarSystem::kJupiter];
   auto const& saturn   = *trajectories[SolarSystem::kSaturn];

@@ -51,41 +51,40 @@ class TrajectoryTest : public testing::Test {
 
   using World = Frame<Tag, Tag::kWorld, true>;
 
-  void SetUp() override {
-    q1_ = Position<World>(
-        Vector<Length, World>({1 * Metre, 2 * Metre, 3 * Metre}));
-    q2_ = Position<World>(
-        Vector<Length, World>({11 * Metre, 12 * Metre, 13 * Metre}));
-    q3_ = Position<World>(
-        Vector<Length, World>({21 * Metre, 22 * Metre, 23 * Metre}));
-    q4_ = Position<World>(
-        Vector<Length, World>({31 * Metre, 32 * Metre, 33 * Metre}));
-    p1_ = Velocity<World>({4 * Metre / Second,
-                           5 * Metre / Second,
-                           6 * Metre / Second});
-    p2_ = Velocity<World>({14 * Metre / Second,
-                           15 * Metre / Second,
-                           16 * Metre / Second});
-    p3_ = Velocity<World>({24 * Metre / Second,
-                           25 * Metre / Second,
-                           26 * Metre / Second});
-    p4_ = Velocity<World>({34 * Metre / Second,
-                           35 * Metre / Second,
-                           36 * Metre / Second});
-    d1_ = std::make_unique<DegreesOfFreedom<World>>(q1_, p1_);
-    d2_ = std::make_unique<DegreesOfFreedom<World>>(q2_, p2_);
-    d3_ = std::make_unique<DegreesOfFreedom<World>>(q3_, p3_);
-    d4_ = std::make_unique<DegreesOfFreedom<World>>(q4_, p4_);
+  TrajectoryTest()
+      : massive_body_(MassiveBody(1 * SIUnit<Mass>())),
+        q1_(Position<World>(
+            Vector<Length, World>({1 * Metre, 2 * Metre, 3 * Metre}))),
+        q2_(Position<World>(
+            Vector<Length, World>({11 * Metre, 12 * Metre, 13 * Metre}))),
+        q3_(Position<World>(
+            Vector<Length, World>({21 * Metre, 22 * Metre, 23 * Metre}))),
+        q4_(Position<World>(
+            Vector<Length, World>({31 * Metre, 32 * Metre, 33 * Metre}))),
+        p1_(Velocity<World>({4 * Metre / Second,
+                               5 * Metre / Second,
+                               6 * Metre / Second})),
+        p2_(Velocity<World>({14 * Metre / Second,
+                               15 * Metre / Second,
+                               16 * Metre / Second})),
+        p3_(Velocity<World>({24 * Metre / Second,
+                               25 * Metre / Second,
+                               26 * Metre / Second})),
+        p4_(Velocity<World>({34 * Metre / Second,
+                               35 * Metre / Second,
+                               36 * Metre / Second})),
+        d1_(DegreesOfFreedom<World>(q1_, p1_)),
+        d2_(DegreesOfFreedom<World>(q2_, p2_)),
+        d3_(DegreesOfFreedom<World>(q3_, p3_)),
+        d4_(DegreesOfFreedom<World>(q4_, p4_)) {
     t0_ = Instant(0 * Second);
     t1_ = t0_ + 7 * Second;
     t2_ = t0_ + 17 * Second;
     t3_ = t0_ + 27 * Second;
     t4_ = t0_ + 37 * Second;
 
-    massive_body_ = std::make_unique<MassiveBody>(1 * SIUnit<Mass>());
-    massless_body_ = std::make_unique<MasslessBody>();
-    massive_trajectory_ = std::make_unique<Trajectory<World>>(*massive_body_);
-    massless_trajectory_ = std::make_unique<Trajectory<World>>(*massless_body_);
+    massive_trajectory_ = std::make_unique<Trajectory<World>>(&massive_body_);
+    massless_trajectory_ = std::make_unique<Trajectory<World>>(&massless_body_);
 
     transform_ = [](
         Instant const& t,
@@ -106,12 +105,12 @@ class TrajectoryTest : public testing::Test {
         std::bind(transform_, _1, _2, _3, massless_trajectory_.get());
   }
 
+  MassiveBody massive_body_;
+  MasslessBody massless_body_;
   Position<World> q1_, q2_, q3_, q4_;
   Velocity<World> p1_, p2_, p3_, p4_;
-  std::unique_ptr<DegreesOfFreedom<World>> d1_, d2_, d3_, d4_;
+  DegreesOfFreedom<World> d1_, d2_, d3_, d4_;
   Instant t0_, t1_, t2_, t3_, t4_;
-  std::unique_ptr<MassiveBody> massive_body_;
-  std::unique_ptr<MasslessBody> massless_body_;
   std::unique_ptr<Trajectory<World>> massive_trajectory_;
   std::unique_ptr<Trajectory<World>> massless_trajectory_;
   std::function<DegreesOfFreedom<World>(Instant const&,
@@ -131,25 +130,25 @@ TEST_F(TrajectoryDeathTest, Construction) {
                                 1.0 /*j2*/,
                                 1 * SIUnit<Length>(),
                                 Vector<double, OtherWorld>({0, 1, 0}));
-    Trajectory<World> trajectory(body);
+    Trajectory<World> trajectory(&body);
   }, "not in the same frame");
 }
 
 TEST_F(TrajectoryDeathTest, AppendError) {
   EXPECT_DEATH({
-    massive_trajectory_->Append(t2_, *d2_);
-    massive_trajectory_->Append(t1_, *d1_);
+    massive_trajectory_->Append(t2_, d2_);
+    massive_trajectory_->Append(t1_, d1_);
   }, "out of order");
   EXPECT_DEATH({
-    massive_trajectory_->Append(t1_, *d1_);
-    massive_trajectory_->Append(t1_, *d1_);
+    massive_trajectory_->Append(t1_, d1_);
+    massive_trajectory_->Append(t1_, d1_);
   }, "existing time");
 }
 
 TEST_F(TrajectoryTest, AppendSuccess) {
-  massive_trajectory_->Append(t1_, *d1_);
-  massive_trajectory_->Append(t2_, *d2_);
-  massive_trajectory_->Append(t3_, *d3_);
+  massive_trajectory_->Append(t1_, d1_);
+  massive_trajectory_->Append(t2_, d2_);
+  massive_trajectory_->Append(t3_, d3_);
   std::map<Instant, Position<World>> const positions =
       massive_trajectory_->Positions();
   std::map<Instant, Velocity<World>> const velocities =
@@ -162,23 +161,23 @@ TEST_F(TrajectoryTest, AppendSuccess) {
                                       testing::Pair(t2_, p2_),
                                       testing::Pair(t3_, p3_)));
   EXPECT_THAT(times, ElementsAre(t1_, t2_, t3_));
-  EXPECT_THAT(massive_trajectory_->body<MassiveBody>(), Ref(*massive_body_));
+  EXPECT_THAT(massive_trajectory_->body<MassiveBody>(), Eq(&massive_body_));
 }
 
 TEST_F(TrajectoryDeathTest, ForkError) {
   EXPECT_DEATH({
-    massive_trajectory_->Append(t1_, *d1_);
-    massive_trajectory_->Append(t3_, *d3_);
+    massive_trajectory_->Append(t1_, d1_);
+    massive_trajectory_->Append(t3_, d3_);
     massive_trajectory_->Fork(t2_);
   }, "nonexistent time");
 }
 
 TEST_F(TrajectoryTest, ForkSuccess) {
-  massive_trajectory_->Append(t1_, *d1_);
-  massive_trajectory_->Append(t2_, *d2_);
-  massive_trajectory_->Append(t3_, *d3_);
-  Trajectory<World>* fork = massive_trajectory_->Fork(t2_);
-  fork->Append(t4_, *d4_);
+  massive_trajectory_->Append(t1_, d1_);
+  massive_trajectory_->Append(t2_, d2_);
+  massive_trajectory_->Append(t3_, d3_);
+  not_null<Trajectory<World>*> const fork = massive_trajectory_->Fork(t2_);
+  fork->Append(t4_, d4_);
   std::map<Instant, Position<World>> positions =
       massive_trajectory_->Positions();
   std::map<Instant, Velocity<World>> velocities =
@@ -191,7 +190,7 @@ TEST_F(TrajectoryTest, ForkSuccess) {
                                       testing::Pair(t2_, p2_),
                                       testing::Pair(t3_, p3_)));
   EXPECT_THAT(times, ElementsAre(t1_, t2_, t3_));
-  EXPECT_THAT(fork->body<MassiveBody>(), Ref(*massive_body_));
+  EXPECT_THAT(fork->body<MassiveBody>(), Eq(&massive_body_));
   positions = fork->Positions();
   velocities = fork->Velocities();
   times = fork->Times();
@@ -204,34 +203,31 @@ TEST_F(TrajectoryTest, ForkSuccess) {
                                       testing::Pair(t3_, p3_),
                                       testing::Pair(t4_, p4_)));
   EXPECT_THAT(times, ElementsAre(t1_, t2_, t3_, t4_));
-  EXPECT_THAT(fork->body<MassiveBody>(), Ref(*massive_body_));
+  EXPECT_THAT(fork->body<MassiveBody>(), Eq(&massive_body_));
 }
 
 TEST_F(TrajectoryDeathTest, DeleteForkError) {
   EXPECT_DEATH({
-    massive_trajectory_->DeleteFork(nullptr);
-  }, "'fork'.* non NULL");
-  EXPECT_DEATH({
-    massive_trajectory_->Append(t1_, *d1_);
+    massive_trajectory_->Append(t1_, d1_);
     Trajectory<World>* root = massive_trajectory_.get();
     massive_trajectory_->DeleteFork(&root);
   }, "'fork_time'.* non NULL");
   EXPECT_DEATH({
-    massive_trajectory_->Append(t1_, *d1_);
+    massive_trajectory_->Append(t1_, d1_);
     Trajectory<World>* fork1 = massive_trajectory_->Fork(t1_);
-    fork1->Append(t2_, *d2_);
+    fork1->Append(t2_, d2_);
     Trajectory<World>* fork2 = fork1->Fork(t2_);
     massive_trajectory_->DeleteFork(&fork2);
   }, "not a child");
 }
 
 TEST_F(TrajectoryTest, DeleteForkSuccess) {
-  massive_trajectory_->Append(t1_, *d1_);
-  massive_trajectory_->Append(t2_, *d2_);
-  massive_trajectory_->Append(t3_, *d3_);
-  Trajectory<World>* fork1 = massive_trajectory_->Fork(t2_);
+  massive_trajectory_->Append(t1_, d1_);
+  massive_trajectory_->Append(t2_, d2_);
+  massive_trajectory_->Append(t3_, d3_);
+  not_null<Trajectory<World>*> const fork1 = massive_trajectory_->Fork(t2_);
   Trajectory<World>* fork2 = massive_trajectory_->Fork(t2_);
-  fork1->Append(t4_, *d4_);
+  fork1->Append(t4_, d4_);
   massive_trajectory_->DeleteFork(&fork2);
   EXPECT_EQ(nullptr, fork2);
   std::map<Instant, Position<World>> positions =
@@ -246,7 +242,7 @@ TEST_F(TrajectoryTest, DeleteForkSuccess) {
                                       testing::Pair(t2_, p2_),
                                       testing::Pair(t3_, p3_)));
   EXPECT_THAT(times, ElementsAre(t1_, t2_, t3_));
-  EXPECT_THAT(fork1->body<MassiveBody>(), Ref(*massive_body_));
+  EXPECT_THAT(fork1->body<MassiveBody>(), Eq(&massive_body_));
   positions = fork1->Positions();
   velocities = fork1->Velocities();
   times = fork1->Times();
@@ -259,7 +255,7 @@ TEST_F(TrajectoryTest, DeleteForkSuccess) {
                                       testing::Pair(t3_, p3_),
                                       testing::Pair(t4_, p4_)));
   EXPECT_THAT(times, ElementsAre(t1_, t2_, t3_, t4_));
-  EXPECT_THAT(fork1->body<MassiveBody>(), Ref(*massive_body_));
+  EXPECT_THAT(fork1->body<MassiveBody>(), Eq(&massive_body_));
   massive_trajectory_.reset();
 }
 
@@ -270,19 +266,19 @@ TEST_F(TrajectoryDeathTest, LastError) {
 }
 
 TEST_F(TrajectoryTest, LastSuccess) {
-  massive_trajectory_->Append(t1_, *d1_);
-  massive_trajectory_->Append(t2_, *d2_);
-  massive_trajectory_->Append(t3_, *d3_);
+  massive_trajectory_->Append(t1_, d1_);
+  massive_trajectory_->Append(t2_, d2_);
+  massive_trajectory_->Append(t3_, d3_);
   EXPECT_EQ(q3_, massive_trajectory_->last().degrees_of_freedom().position());
   EXPECT_EQ(p3_, massive_trajectory_->last().degrees_of_freedom().velocity());
   EXPECT_EQ(t3_, massive_trajectory_->last().time());
 }
 
 TEST_F(TrajectoryTest, Root) {
-  massive_trajectory_->Append(t1_, *d1_);
-  massive_trajectory_->Append(t2_, *d2_);
-  massive_trajectory_->Append(t3_, *d3_);
-  Trajectory<World>* fork = massive_trajectory_->Fork(t2_);
+  massive_trajectory_->Append(t1_, d1_);
+  massive_trajectory_->Append(t2_, d2_);
+  massive_trajectory_->Append(t3_, d3_);
+  not_null<Trajectory<World>*> const fork = massive_trajectory_->Fork(t2_);
   EXPECT_TRUE(massive_trajectory_->is_root());
   EXPECT_FALSE(fork->is_root());
   EXPECT_EQ(massive_trajectory_.get(), massive_trajectory_->root());
@@ -293,22 +289,22 @@ TEST_F(TrajectoryTest, Root) {
 
 TEST_F(TrajectoryDeathTest, ForgetAfterError) {
   EXPECT_DEATH({
-    massive_trajectory_->Append(t1_, *d1_);
+    massive_trajectory_->Append(t1_, d1_);
     massive_trajectory_->ForgetAfter(t2_);
   }, "nonexistent time.* root");
   EXPECT_DEATH({
-    massive_trajectory_->Append(t1_, *d1_);
-    Trajectory<World>* fork = massive_trajectory_->Fork(t1_);
+    massive_trajectory_->Append(t1_, d1_);
+    not_null<Trajectory<World>*> const fork = massive_trajectory_->Fork(t1_);
     fork->ForgetAfter(t2_);
   }, "nonexistent time.* nonroot");
 }
 
 TEST_F(TrajectoryTest, ForgetAfterSuccess) {
-  massive_trajectory_->Append(t1_, *d1_);
-  massive_trajectory_->Append(t2_, *d2_);
-  massive_trajectory_->Append(t3_, *d3_);
-  Trajectory<World>* fork = massive_trajectory_->Fork(t2_);
-  fork->Append(t4_, *d4_);
+  massive_trajectory_->Append(t1_, d1_);
+  massive_trajectory_->Append(t2_, d2_);
+  massive_trajectory_->Append(t3_, d3_);
+  not_null<Trajectory<World>*> const fork = massive_trajectory_->Fork(t2_);
+  fork->Append(t4_, d4_);
 
   fork->ForgetAfter(t3_);
   std::map<Instant, Position<World>> positions = fork->Positions();
@@ -358,22 +354,22 @@ TEST_F(TrajectoryTest, ForgetAfterSuccess) {
 
 TEST_F(TrajectoryDeathTest, ForgetBeforeError) {
   EXPECT_DEATH({
-    massive_trajectory_->Append(t1_, *d1_);
-    Trajectory<World>* fork = massive_trajectory_->Fork(t1_);
+    massive_trajectory_->Append(t1_, d1_);
+    not_null<Trajectory<World>*> const fork = massive_trajectory_->Fork(t1_);
     fork->ForgetBefore(t1_);
   }, "nonroot");
   EXPECT_DEATH({
-    massive_trajectory_->Append(t1_, *d1_);
+    massive_trajectory_->Append(t1_, d1_);
     massive_trajectory_->ForgetBefore(t2_);
   }, "nonexistent time");
 }
 
 TEST_F(TrajectoryTest, ForgetBeforeSuccess) {
-  massive_trajectory_->Append(t1_, *d1_);
-  massive_trajectory_->Append(t2_, *d2_);
-  massive_trajectory_->Append(t3_, *d3_);
-  Trajectory<World>* fork = massive_trajectory_->Fork(t2_);
-  fork->Append(t4_, *d4_);
+  massive_trajectory_->Append(t1_, d1_);
+  massive_trajectory_->Append(t2_, d2_);
+  massive_trajectory_->Append(t3_, d3_);
+  not_null<Trajectory<World>*> const fork = massive_trajectory_->Fork(t2_);
+  fork->Append(t4_, d4_);
 
   massive_trajectory_->ForgetBefore(t1_);
   std::map<Instant, Position<World>> positions =
@@ -421,11 +417,11 @@ TEST_F(TrajectoryDeathTest, IntrinsicAccelerationError) {
 }
 
 TEST_F(TrajectoryDeathTest, IntrinsicAccelerationSuccess) {
-  massless_trajectory_->Append(t1_, *d1_);
-  massless_trajectory_->Append(t2_, *d2_);
-  massless_trajectory_->Append(t3_, *d3_);
-  Trajectory<World>* fork = massless_trajectory_->Fork(t2_);
-  fork->Append(t4_, *d4_);
+  massless_trajectory_->Append(t1_, d1_);
+  massless_trajectory_->Append(t2_, d2_);
+  massless_trajectory_->Append(t3_, d3_);
+  not_null<Trajectory<World>*> const fork = massless_trajectory_->Fork(t2_);
+  fork->Append(t4_, d4_);
 
   EXPECT_FALSE(massless_trajectory_->has_intrinsic_acceleration());
   massless_trajectory_->set_intrinsic_acceleration(
@@ -485,39 +481,39 @@ TEST_F(TrajectoryTest, NativeIteratorSuccess) {
   Trajectory<World>::NativeIterator it = massive_trajectory_->first();
   EXPECT_TRUE(it.at_end());
 
-  massless_trajectory_->Append(t1_, *d1_);
-  massless_trajectory_->Append(t2_, *d2_);
-  massless_trajectory_->Append(t3_, *d3_);
+  massless_trajectory_->Append(t1_, d1_);
+  massless_trajectory_->Append(t2_, d2_);
+  massless_trajectory_->Append(t3_, d3_);
 
   it = massless_trajectory_->first();
   EXPECT_FALSE(it.at_end());
   EXPECT_EQ(t1_, it.time());
-  EXPECT_EQ(*d1_, it.degrees_of_freedom());
+  EXPECT_EQ(d1_, it.degrees_of_freedom());
   ++it;
   EXPECT_EQ(t2_, it.time());
-  EXPECT_EQ(*d2_, it.degrees_of_freedom());
+  EXPECT_EQ(d2_, it.degrees_of_freedom());
   ++it;
   EXPECT_EQ(t3_, it.time());
-  EXPECT_EQ(*d3_, it.degrees_of_freedom());
+  EXPECT_EQ(d3_, it.degrees_of_freedom());
   ++it;
   EXPECT_TRUE(it.at_end());
 
-  Trajectory<World>* fork = massless_trajectory_->Fork(t2_);
-  fork->Append(t4_, *d4_);
+  not_null<Trajectory<World>*> const fork = massless_trajectory_->Fork(t2_);
+  fork->Append(t4_, d4_);
 
   it = fork->first();
   EXPECT_FALSE(it.at_end());
   EXPECT_EQ(t1_, it.time());
-  EXPECT_EQ(*d1_, it.degrees_of_freedom());
+  EXPECT_EQ(d1_, it.degrees_of_freedom());
   ++it;
   EXPECT_EQ(t2_, it.time());
-  EXPECT_EQ(*d2_, it.degrees_of_freedom());
+  EXPECT_EQ(d2_, it.degrees_of_freedom());
   ++it;
   EXPECT_EQ(t3_, it.time());
-  EXPECT_EQ(*d3_, it.degrees_of_freedom());
+  EXPECT_EQ(d3_, it.degrees_of_freedom());
   ++it;
   EXPECT_EQ(t4_, it.time());
-  EXPECT_EQ(*d4_, it.degrees_of_freedom());
+  EXPECT_EQ(d4_, it.degrees_of_freedom());
   ++it;
   EXPECT_TRUE(it.at_end());
 }
@@ -539,9 +535,9 @@ TEST_F(TrajectoryTest, TransformingIteratorSuccess) {
       massive_trajectory_->first_with_transform(massive_transform_);
   EXPECT_TRUE(it.at_end());
 
-  massless_trajectory_->Append(t1_, *d1_);
-  massless_trajectory_->Append(t2_, *d2_);
-  massless_trajectory_->Append(t3_, *d3_);
+  massless_trajectory_->Append(t1_, d1_);
+  massless_trajectory_->Append(t2_, d2_);
+  massless_trajectory_->Append(t3_, d3_);
 
   it = massless_trajectory_->first_with_transform(massless_transform_);
   EXPECT_FALSE(it.at_end());
@@ -565,8 +561,8 @@ TEST_F(TrajectoryTest, TransformingIteratorSuccess) {
   ++it;
   EXPECT_TRUE(it.at_end());
 
-  Trajectory<World>* fork = massless_trajectory_->Fork(t2_);
-  fork->Append(t4_, *d4_);
+  not_null<Trajectory<World>*> const fork = massless_trajectory_->Fork(t2_);
+  fork->Append(t4_, d4_);
   Trajectory<World>::Transform<World> const fork_transform =
       std::bind(transform_, _1, _2, _3, fork);
 
@@ -604,33 +600,33 @@ TEST_F(TrajectoryTest, NativeIteratorOnOrAfterSuccess) {
   Trajectory<World>::NativeIterator it = massive_trajectory_->on_or_after(t0_);
   EXPECT_TRUE(it.at_end());
 
-  massless_trajectory_->Append(t1_, *d1_);
-  massless_trajectory_->Append(t2_, *d2_);
-  massless_trajectory_->Append(t3_, *d3_);
+  massless_trajectory_->Append(t1_, d1_);
+  massless_trajectory_->Append(t2_, d2_);
+  massless_trajectory_->Append(t3_, d3_);
 
   it = massless_trajectory_->on_or_after(t0_);
   EXPECT_FALSE(it.at_end());
   EXPECT_EQ(t1_, it.time());
-  EXPECT_EQ(*d1_, it.degrees_of_freedom());
+  EXPECT_EQ(d1_, it.degrees_of_freedom());
   it = massless_trajectory_->on_or_after(t2_);
   EXPECT_EQ(t2_, it.time());
-  EXPECT_EQ(*d2_, it.degrees_of_freedom());
+  EXPECT_EQ(d2_, it.degrees_of_freedom());
   it = massless_trajectory_->on_or_after(t4_);
   EXPECT_TRUE(it.at_end());
 
-  Trajectory<World>* fork = massless_trajectory_->Fork(t2_);
-  fork->Append(t4_, *d4_);
+  not_null<Trajectory<World>*> const fork = massless_trajectory_->Fork(t2_);
+  fork->Append(t4_, d4_);
 
   it = fork->on_or_after(t0_);
   EXPECT_FALSE(it.at_end());
   EXPECT_EQ(t1_, it.time());
-  EXPECT_EQ(*d1_, it.degrees_of_freedom());
+  EXPECT_EQ(d1_, it.degrees_of_freedom());
   it = fork->on_or_after(t2_);
   EXPECT_EQ(t2_, it.time());
-  EXPECT_EQ(*d2_, it.degrees_of_freedom());
+  EXPECT_EQ(d2_, it.degrees_of_freedom());
   it = fork->on_or_after(t4_);
   EXPECT_EQ(t4_, it.time());
-  EXPECT_EQ(*d4_, it.degrees_of_freedom());
+  EXPECT_EQ(d4_, it.degrees_of_freedom());
   it = fork->on_or_after(t4_ + 1 * Second);
   EXPECT_TRUE(it.at_end());
 }
@@ -640,9 +636,9 @@ TEST_F(TrajectoryTest, TransformingIteratorOnOrAfterSuccess) {
       massive_trajectory_->on_or_after_with_transform(t0_, massive_transform_);
   EXPECT_TRUE(it.at_end());
 
-  massless_trajectory_->Append(t1_, *d1_);
-  massless_trajectory_->Append(t2_, *d2_);
-  massless_trajectory_->Append(t3_, *d3_);
+  massless_trajectory_->Append(t1_, d1_);
+  massless_trajectory_->Append(t2_, d2_);
+  massless_trajectory_->Append(t3_, d3_);
 
   it = massless_trajectory_->on_or_after_with_transform(t0_,
                                                         massless_transform_);
@@ -663,8 +659,8 @@ TEST_F(TrajectoryTest, TransformingIteratorOnOrAfterSuccess) {
                                                         massless_transform_);
   EXPECT_TRUE(it.at_end());
 
-  Trajectory<World>* fork = massless_trajectory_->Fork(t2_);
-  fork->Append(t4_, *d4_);
+  not_null<Trajectory<World>*> const fork = massless_trajectory_->Fork(t2_);
+  fork->Append(t4_, d4_);
   Trajectory<World>::Transform<World> const fork_transform =
       std::bind(transform_, _1, _2, _3, fork);
 

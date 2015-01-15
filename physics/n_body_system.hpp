@@ -4,6 +4,7 @@
 #include <set>
 #include <vector>
 
+#include "base/not_null.hpp"
 #include "geometry/named_quantities.hpp"
 #include "integrators/symplectic_integrator.hpp"
 #include "physics/body.hpp"
@@ -11,6 +12,7 @@
 #include "physics/trajectory.hpp"
 #include "quantities/quantities.hpp"
 
+using principia::base::not_null;
 using principia::geometry::Instant;
 using principia::integrators::SymplecticIntegrator;
 using principia::quantities::Acceleration;
@@ -26,7 +28,7 @@ class NBodySystem {
   static_assert(Frame::is_inertial, "Frame must be inertial");
 
  public:
-  using Trajectories = std::vector<Trajectory<Frame>*>;  // Not owned.
+  using Trajectories = std::vector<not_null<Trajectory<Frame>*>>;  // Not owned.
 
   NBodySystem() = default;
   virtual ~NBodySystem() = default;
@@ -42,7 +44,7 @@ class NBodySystem {
                          Trajectories const& trajectories) const;
 
  private:
-  using ReadonlyTrajectories = std::vector<Trajectory<Frame> const*>;
+  using ReadonlyTrajectories = std::vector<not_null<Trajectory<Frame> const*>>;
 
   // Computes the acceleration due to one body, |body1| (with index |b1| in the
   // |q| and |result| arrays) on the bodies with indices [b2_begin, b2_end[ in
@@ -58,7 +60,7 @@ class NBodySystem {
       size_t const b2_begin,
       size_t const b2_end,
       std::vector<Length> const& q,
-      std::vector<Acceleration>* result);
+      not_null<std::vector<Acceleration>*> const result);
 
   // No transfer of ownership.
   static void ComputeGravitationalAccelerations(
@@ -68,11 +70,12 @@ class NBodySystem {
       Instant const& reference_time,
       Time const& t,
       std::vector<Length> const& q,
-      std::vector<Acceleration>* result);
+      not_null<std::vector<Acceleration>*> const result);
 
   // No transfer of ownership.
-  static void ComputeGravitationalVelocities(std::vector<Speed> const& p,
-                                             std::vector<Speed>* result);
+  static void ComputeGravitationalVelocities(
+      std::vector<Speed> const& p,
+      not_null<std::vector<Speed>*> const result);
 };
 
 }  // namespace physics

@@ -5,9 +5,9 @@
 namespace principia {
 namespace ksp_plugin {
 
-inline Vessel::Vessel(Celestial const* parent)
-    : body_(new MasslessBody),
-      parent_(CHECK_NOTNULL(parent)) {}
+inline Vessel::Vessel(not_null<Celestial const*> const parent)
+    : body_(),
+      parent_(parent) {}
 
 inline bool Vessel::is_synchronized() const {
   bool const synchronized = history_ != nullptr;
@@ -45,8 +45,8 @@ inline Trajectory<Barycentric>* Vessel::mutable_prolongation() {
   return prolongation_;
 }
 
-inline void Vessel::set_parent(Celestial const* parent) {
-  parent_ = CHECK_NOTNULL(parent);
+inline void Vessel::set_parent(not_null<Celestial const*> const parent) {
+  parent_ = parent;
 }
 
 inline void Vessel::CreateProlongation(
@@ -55,7 +55,7 @@ inline void Vessel::CreateProlongation(
   CHECK(!is_synchronized());
   CHECK(!is_initialized());
   CHECK(owned_prolongation_ == nullptr);
-  owned_prolongation_ = std::make_unique<Trajectory<Barycentric>>(*body_);
+  owned_prolongation_ = std::make_unique<Trajectory<Barycentric>>(&body_);
   owned_prolongation_->Append(time, degrees_of_freedom);
   prolongation_ = owned_prolongation_.get();
 }
@@ -64,7 +64,7 @@ inline void Vessel::CreateHistoryAndForkProlongation(
     Instant const& time,
     DegreesOfFreedom<Barycentric> const& degrees_of_freedom) {
   CHECK(!is_synchronized());
-  history_ = std::make_unique<Trajectory<Barycentric>>(*body_);
+  history_ = std::make_unique<Trajectory<Barycentric>>(&body_);
   history_->Append(time, degrees_of_freedom);
   prolongation_ = history_->Fork(time);
   owned_prolongation_.reset();

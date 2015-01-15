@@ -5,11 +5,13 @@
 #include <map>
 #include <memory>
 
+#include "base/not_null.hpp"
 #include "geometry/grassmann.hpp"
 #include "geometry/named_quantities.hpp"
 #include "physics/degrees_of_freedom.hpp"
 #include "quantities/named_quantities.hpp"
 
+using principia::base::not_null;
 using principia::geometry::Instant;
 using principia::geometry::Vector;
 using principia::geometry::Velocity;
@@ -31,15 +33,15 @@ class Trajectory {
 
   // A function that transforms the coordinates to a different frame.
   template<typename ToFrame>
-  using Transform =
-      std::function<DegreesOfFreedom<ToFrame>(Instant const&,
-                                              DegreesOfFreedom<Frame> const&,
-                                              Trajectory<Frame> const*)>;
+  using Transform = std::function<DegreesOfFreedom<ToFrame>(
+                        Instant const&,
+                        DegreesOfFreedom<Frame> const&,
+                        not_null<Trajectory<Frame> const*> const)>;
 
   // No transfer of ownership.  |body| must live longer than the trajectory as
   // the trajectory holds a reference to it.  If |body| is oblate it must be
   // expressed in the same frame as the trajectory.
-  explicit Trajectory(Body const& body);
+  explicit Trajectory(not_null<Body const*> const body);
   ~Trajectory() = default;
 
   // Returns an iterator at the first point of the trajectory.  Complexity is
@@ -103,18 +105,18 @@ class Trajectory {
   // removed deletes the child trajectory.  Deleting the parent trajectory
   // deletes all child trajectories.  |time| must be one of the times of the
   // current trajectory (as returned by Times()).  No transfer of ownership.
-  Trajectory* Fork(Instant const& time);
+  not_null<Trajectory*> Fork(Instant const& time);
 
   // Deletes the child trajectory denoted by |*fork|, which must be a pointer
   // previously returned by Fork for this object.  Nulls |*fork|.
-  void DeleteFork(Trajectory** const fork);
+  void DeleteFork(not_null<Trajectory**> const fork);
 
   // Returns true if this is a root trajectory.
   bool is_root() const;
 
   // Returns the root trajectory.
-  Trajectory const* root() const;
-  Trajectory* root();
+  not_null<Trajectory const*> root() const;
+  not_null<Trajectory*> root();
 
   // Returns the fork time for a nonroot trajectory and null for a root
   // trajectory.
@@ -123,7 +125,8 @@ class Trajectory {
   // The body to which this trajectory pertains.  The body is cast to the type
   // B.  An error occurs in debug mode if the cast fails.
   template<typename B>
-  std::enable_if_t<std::is_base_of<Body, B>::value, B> const& body() const;
+  std::enable_if_t<std::is_base_of<Body, B>::value,
+                   not_null<B const*>> body() const;
 
   // This function represents the intrinsic acceleration of a body, irrespective
   // of any external field.  It can be due e.g., to an engine burn.
@@ -168,15 +171,16 @@ class Trajectory {
 
     Iterator() = default;
     // No transfer of ownership.
-    void InitializeFirst(Trajectory const* trajectory);
-    void InitializeOnOrAfter(Instant const& time, Trajectory const* trajectory);
-    void InitializeLast(Trajectory const* trajectory);
+    void InitializeFirst(not_null<Trajectory const*> const trajectory);
+    void InitializeOnOrAfter(Instant const& time,
+                             not_null<Trajectory const*> const trajectory);
+    void InitializeLast(not_null<Trajectory const*> const trajectory);
     typename Timeline::const_iterator current() const;
-    Trajectory const* trajectory() const;
+    not_null<Trajectory const*> trajectory() const;
 
    private:
     typename Timeline::const_iterator current_;
-    std::list<Trajectory const*> ancestry_;  // Pointers not owned.
+    std::list<not_null<Trajectory const*>> ancestry_;  // Pointers not owned.
     std::list<typename Timeline::iterator> forks_;
   };
 
@@ -205,11 +209,11 @@ class Trajectory {
   using Timeline = std::map<Instant, DegreesOfFreedom<Frame>>;
 
   // A constructor for creating a child trajectory during forking.
-  Trajectory(Body const& body,
-             Trajectory* const parent,
+  Trajectory(not_null<Body const*> const body,
+             not_null<Trajectory*> const parent,
              typename Timeline::iterator const& fork);
 
-  Body const& body_;
+  not_null<Body const*> const body_;
 
   Trajectory* const parent_;  // Null for a root trajectory.
 
@@ -218,7 +222,7 @@ class Trajectory {
 
   // There may be several forks starting from the same time, hence the multimap.
   // Child trajectories are owned.
-  std::multimap<Instant, std::unique_ptr<Trajectory>> children_;
+  std::multimap<Instant, not_null<std::unique_ptr<Trajectory>>> children_;
 
   Timeline timeline_;
 

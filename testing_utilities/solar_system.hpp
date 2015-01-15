@@ -4,6 +4,7 @@
 #include <string>
 #include <vector>
 
+#include "base/not_null.hpp"
 #include "geometry/named_quantities.hpp"
 #include "geometry/rotation.hpp"
 #include "physics/frame.hpp"
@@ -11,6 +12,7 @@
 #include "quantities/quantities.hpp"
 #include "quantities/si.hpp"
 
+using principia::base::not_null;
 using principia::physics::Frame;
 
 namespace principia {
@@ -52,7 +54,8 @@ geometry::Position<ICRFJ2000Ecliptic> const kSolarSystemBarycentre;
 
 class SolarSystem {
  public:
-  using Bodies = std::vector<std::unique_ptr<physics::MassiveBody const> const>;
+  using Bodies =
+      std::vector<not_null<std::unique_ptr<physics::MassiveBody const>> const>;
 
   // The indices of the bodies in the |Bodies| vector.
   // The bodies are in decreasing order of mass.
@@ -100,12 +103,14 @@ class SolarSystem {
   // Factory.  The caller gets ownership of the pointers.
   // A solar system at the time of the launch of Простейший Спутник-1,
   // 1957-10-04T19:28:34Z (JD2436116.31150).
-  static std::unique_ptr<SolarSystem> AtСпутник1Launch(Accuracy const accuracy);
+  static not_null<std::unique_ptr<SolarSystem>> AtСпутник1Launch(
+      Accuracy const accuracy);
 
   // Factory.  The caller gets ownership of the pointers.
   // A solar system at the time of the launch of Простейший Спутник-2,
   // 1957-11-03T02:30:00Z (JD 2436145.60417)
-  static std::unique_ptr<SolarSystem> AtСпутник2Launch(Accuracy const accuracy);
+  static not_null<std::unique_ptr<SolarSystem>> AtСпутник2Launch(
+      Accuracy const accuracy);
 
   ~SolarSystem() = default;
 
@@ -129,7 +134,7 @@ class SolarSystem {
 
   Bodies massive_bodies_;
   Bodies massless_bodies_;
-  std::vector<std::unique_ptr<physics::Trajectory<ICRFJ2000Ecliptic>>>
+  std::vector<not_null<std::unique_ptr<physics::Trajectory<ICRFJ2000Ecliptic>>>>
       trajectories_;
 };
 

@@ -5,7 +5,7 @@
 namespace principia {
 namespace ksp_plugin {
 
-inline Celestial::Celestial(std::unique_ptr<MassiveBody const> body)
+inline Celestial::Celestial(not_null<std::unique_ptr<MassiveBody const>> body)
     : body_(std::move(body)) {}
 
 inline MassiveBody const& Celestial::body() const {
@@ -36,14 +36,14 @@ inline Trajectory<Barycentric>* Celestial::mutable_prolongation() {
   return prolongation_;
 }
 
-inline void Celestial::set_parent(Celestial const* parent) {
-  parent_ = CHECK_NOTNULL(parent);
+inline void Celestial::set_parent(not_null<Celestial const*> const parent) {
+  parent_ = parent;
 }
 
 inline void Celestial::CreateHistoryAndForkProlongation(
     Instant const& time,
     DegreesOfFreedom<Barycentric> const& degrees_of_freedom) {
-  history_ = std::make_unique<Trajectory<Barycentric>>(*body_);
+  history_ = std::make_unique<Trajectory<Barycentric>>(body_.get());
   history_->Append(time, degrees_of_freedom);
   prolongation_ = history_->Fork(time);
 }

@@ -124,6 +124,15 @@ class not_null {
            typename = typename std::enable_if<
                std::is_convertible<OtherPointer, pointer>::value>::type>
   not_null(not_null<OtherPointer> const& other);
+  // Constructor from a nullable pointer, performs a null check.
+  not_null(pointer other);  // NOLINT(runtime/explicit)
+  // Explicit copy constructor for static_cast'ing.
+  template<typename OtherPointer,
+           typename = typename std::enable_if<
+               !std::is_convertible<OtherPointer, pointer>::value>::type,
+           typename = decltype(static_cast<pointer>(
+                                   std::declval<OtherPointer>()))>
+  explicit not_null(not_null<OtherPointer> const& other);
 
   // Move constructor from an other |not_null<Pointer>|.  This constructor may
   // invalidate its argument.
@@ -136,6 +145,14 @@ class not_null {
            typename = typename std::enable_if<
                std::is_convertible<OtherPointer, pointer>::value>::type>
   not_null(not_null<OtherPointer>&& other);  // NOLINT(build/c++11)
+  // Explicit move constructor for static_cast'ing. This constructor may
+  // invalidate its argument.
+  template<typename OtherPointer,
+           typename = typename std::enable_if<
+               !std::is_convertible<OtherPointer, pointer>::value>::type,
+           typename = decltype(static_cast<pointer>(
+                                   std::declval<OtherPointer>()))>
+  explicit not_null(not_null<OtherPointer>&& other);  // NOLINT(build/c++11)
 
   ~not_null() = default;
 
@@ -159,13 +176,26 @@ class not_null {
   // |unique_ptr|.
   operator pointer const&() const;
   // Returns |*pointer_|.
-  decltype(*pointer{}) operator*() const;
-  decltype(std::addressof(*pointer{})) const operator->() const;
+  decltype(*std::declval<pointer>()) operator*() const;
+  decltype(std::addressof(*std::declval<pointer>())) const operator->() const;
 
   // When |pointer| has a |get()| member function, this returns
   // |pointer_.get()|.
-  template<typename P = pointer, typename = decltype(P{}.get())>
-  not_null<decltype(P{}.get())> get() const;
+  template<typename P = pointer, typename = decltype(std::declval<P>().get())>
+  not_null<decltype(std::declval<P>().get())> get() const;
+
+  // When |pointer| has a |release()| member function, this returns
+  // |pointer_.release()|.  May invalidate its argument.
+  template<typename P = pointer,
+           typename = decltype(std::declval<P>().release())>
+  not_null<decltype(std::declval<P>().release())> release();
+
+  // When |pointer| has a |reset()| member function, this calls
+  // |pointer_.reset()|.
+  template<typename Q,
+           typename P = pointer,
+           typename = decltype(std::declval<P>().reset())>
+  void reset(not_null<Q> const ptr);
 
   // The following operators are redundant for valid |not_null<Pointer>|s with
   // the implicit conversion to |pointer|, but they should allow some
@@ -178,13 +208,29 @@ class not_null {
   // Returns |true|.
   operator bool() const;
 
+  // Equality.
+  bool operator==(pointer const other) const;
+  bool operator==(not_null const other) const;
+  bool operator!=(pointer const other) const;
+  bool operator!=(not_null const other) const;
+
+  // Ordering.
+  bool operator<(not_null const other) const;
+  bool operator<=(not_null const other) const;
+  bool operator>=(not_null const other) const;
+  bool operator>(not_null const other) const;
+
  private:
+  struct unchecked_tag {};
+
   // Creates a |not_null<Pointer>| whose |pointer_| equals the given |pointer|,
   // dawg.  The constructor does *not* perform a null check.  Callers must
   // perform one if needed before using it.
-  explicit not_null(pointer ptr);
+  explicit not_null(pointer other, unchecked_tag const tag);
 
   pointer pointer_;
+
+  static unchecked_tag const unchecked_tag_;
 
   template<typename OtherPointer>
   friend class not_null;
@@ -194,6 +240,9 @@ class not_null {
   template<typename T, typename... Args>
   friend not_null<std::unique_ptr<T>> make_not_null_unique(
       Args&&... args);  // NOLINT(build/c++11)
+  template<typename Pointer>
+  friend std::ostream& operator<<(std::ostream& stream,
+                                  not_null<Pointer> const& pointer);
 };
 
 // We want only one way of doing things, and we can't make
@@ -215,11 +264,13 @@ class not_null<Pointer&&>;  // NOLINT(build/c++11)
 template<typename Pointer>
 _checked_not_null<Pointer> check_not_null(Pointer pointer);
 
+#if 0
 // While the above factory would cover this case using the implicit
 // conversion, this results in a redundant |CHECK|.
 // This function returns its argument.
 template<typename Pointer>
 not_null<Pointer> check_not_null(not_null<Pointer> pointer);
+#endif
 
 // Factory for a |not_null<std::unique_ptr<T>>|, forwards the arguments to the
 // constructor of T.  |make_not_null_unique<T>(args)| is interchangeable with

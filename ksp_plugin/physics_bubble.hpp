@@ -5,12 +5,14 @@
 #include <utility>
 #include <vector>
 
+#include "base/not_null.hpp"
 #include "geometry/rotation.hpp"
 #include "ksp_plugin/frames.hpp"
 #include "ksp_plugin/part.hpp"
 #include "ksp_plugin/vessel.hpp"
 #include "physics/degrees_of_freedom.hpp"
 
+using principia::base::not_null;
 using principia::physics::DegreesOfFreedom;
 using principia::physics::RelativeDegreesOfFreedom;
 
@@ -28,7 +30,8 @@ class PhysicsBubble {
   // a list of pointers to the Parts in |parts|.  Merges |parts| into
   // |next_->parts|.  The |vessel| must not already be in |next_->vessels|.
   // |parts| must not contain a |PartId| already in |next_->parts|.
-  void AddVesselToNext(Vessel* vessel, std::vector<IdAndOwnedPart> parts);
+  void AddVesselToNext(not_null<Vessel*> const vessel,
+                       std::vector<IdAndOwnedPart> parts);
 
   // If |next_| is not null, computes the world centre of mass, trajectory
   // (including intrinsic acceleration) of |*next_|. Moves |next_| into
@@ -65,21 +68,23 @@ class PhysicsBubble {
 
   // Returns true if, and only if, |vessel| is in |current_->vessels|.
   // |current_| may be null, in that case, returns false.
-  bool contains(Vessel* const vessel) const;
+  bool contains(not_null<Vessel*> const vessel) const;
 
   // Selectors for the data in |current_|.
-  std::vector<Vessel*> vessels() const;
+  std::vector<not_null<Vessel*>> vessels() const;
   RelativeDegreesOfFreedom<Barycentric> const& from_centre_of_mass(
-      Vessel const* const vessel) const;
+      not_null<Vessel const*> const vessel) const;
   Trajectory<Barycentric> const& centre_of_mass_trajectory() const;
-  Trajectory<Barycentric>* mutable_centre_of_mass_trajectory() const;
+  not_null<Trajectory<Barycentric>*> mutable_centre_of_mass_trajectory() const;
 
  private:
-  using PartCorrespondence = std::pair<Part<World>*, Part<World>*>;
+  using PartCorrespondence = std::pair<not_null<Part<World>*>,
+                                       not_null<Part<World>*>>;
 
   struct PreliminaryState {
     PreliminaryState();
-    std::map<Vessel* const, std::vector<Part<World>* const>> vessels;
+    std::map<not_null<Vessel*> const,
+             std::vector<not_null<Part<World>*> const>> vessels;
     PartIdToOwnedPart parts;
   };
 
@@ -91,7 +96,7 @@ class PhysicsBubble {
     // thing.
     std::unique_ptr<DegreesOfFreedom<World>> centre_of_mass;
     std::unique_ptr<Trajectory<Barycentric>> centre_of_mass_trajectory;
-    std::unique_ptr<std::map<Vessel const* const,
+    std::unique_ptr<std::map<not_null<Vessel const*> const,
                     RelativeDegreesOfFreedom<Barycentric>>> from_centre_of_mass;
     std::unique_ptr<Displacement<World>> displacement_correction;
     std::unique_ptr<Velocity<World>> velocity_correction;
@@ -99,19 +104,20 @@ class PhysicsBubble {
 
   // Computes the world degrees of freedom of the centre of mass of
   // |next| using the contents of |next->parts|.
-  void ComputeNextCentreOfMassWorldDegreesOfFreedom(FullState* next);
+  void ComputeNextCentreOfMassWorldDegreesOfFreedom(
+      not_null<FullState*> const next);
 
   // Computes |next->displacements_from_centre_of_mass| and
   // |next->velocities_from_centre_of_mass|.
   void ComputeNextVesselOffsets(
       PlanetariumRotation const& planetarium_rotation,
-      FullState* next);
+      not_null<FullState*> const next);
 
   // Creates |next->centre_of_mass_trajectory| and appends to it the barycentre
   // of the degrees of freedom of the vessels in |next->vessels|.  There is no
   // intrinsic acceleration.
   void RestartNext(Instant const& current_time,
-                   FullState* next);
+                   not_null<FullState*> const next);
 
   // Returns the parts common to |current_| and |next|.  The returned vector
   // contains pair of pointers to parts (current_part, next_part) for all parts
@@ -133,7 +139,7 @@ class PhysicsBubble {
   void Shift(PlanetariumRotation const& planetarium_rotation,
              Instant const& current_time,
              std::vector<PartCorrespondence> const& common_parts,
-             FullState* next);
+             not_null<FullState*> const next);
 
   std::unique_ptr<FullState> current_;
   // The following member is only accessed by |AddVesselToNext| and at the

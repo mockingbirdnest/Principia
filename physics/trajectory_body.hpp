@@ -9,16 +9,17 @@
 #include "glog/logging.h"
 #include "physics/oblate_body.hpp"
 
+using principia::base::make_not_null_unique;
 using principia::geometry::Instant;
 
 namespace principia {
 namespace physics {
 
 template<typename Frame>
-Trajectory<Frame>::Trajectory(Body const& body)
+Trajectory<Frame>::Trajectory(not_null<Body const*> const body)
     : body_(body),
       parent_(nullptr) {
-  CHECK(body.is_compatible_with<Frame>())
+  CHECK(body_->is_compatible_with<Frame>())
       << "Oblate body not in the same frame as the trajectory";
 }
 
@@ -155,7 +156,7 @@ void Trajectory<Frame>::ForgetBefore(Instant const& time) {
 }
 
 template<typename Frame>
-Trajectory<Frame>* Trajectory<Frame>::Fork(Instant const& time) {
+not_null<Trajectory<Frame>*> Trajectory<Frame>::Fork(Instant const& time) {
   auto fork_it = timeline_.find(time);
   CHECK(fork_it != timeline_.end()) << "Fork at nonexistent time";
   // Can't use make_unique below.
@@ -167,8 +168,7 @@ Trajectory<Frame>* Trajectory<Frame>::Fork(Instant const& time) {
 }
 
 template<typename Frame>
-void Trajectory<Frame>::DeleteFork(Trajectory** const fork) {
-  CHECK_NOTNULL(fork);
+void Trajectory<Frame>::DeleteFork(not_null<Trajectory**> const fork) {
   CHECK_NOTNULL(*fork);
   Instant const* const fork_time = (*fork)->fork_time();
   CHECK_NOTNULL(fork_time);
@@ -191,7 +191,7 @@ bool Trajectory<Frame>::is_root() const {
 }
 
 template<typename Frame>
-Trajectory<Frame> const* Trajectory<Frame>::root() const {
+not_null<Trajectory<Frame> const*> Trajectory<Frame>::root() const {
   Trajectory const* ancestor = this;
   while (ancestor->parent_ != nullptr) {
     ancestor = ancestor->parent_;
@@ -200,7 +200,7 @@ Trajectory<Frame> const* Trajectory<Frame>::root() const {
 }
 
 template<typename Frame>
-Trajectory<Frame>* Trajectory<Frame>::root() {
+not_null<Trajectory<Frame>*> Trajectory<Frame>::root() {
   Trajectory* ancestor = this;
   while (ancestor->parent_ != nullptr) {
     ancestor = ancestor->parent_;
@@ -219,22 +219,22 @@ Instant const* Trajectory<Frame>::fork_time() const {
 
 template<typename Frame>
 template<typename B>
-std::enable_if_t<std::is_base_of<Body, B>::value, B> const&
+std::enable_if_t<std::is_base_of<Body, B>::value, not_null<B const*>>
 Trajectory<Frame>::body() const {
 // Dynamic casting is expensive, as in 3x slower for the benchmarks.  Do that in
 // debug mode to catch bugs, but not in optimized mode where we want all the
 // performance we can get.
 #ifdef _DEBUG
-  return *CHECK_NOTNULL(dynamic_cast<B const*>(&body_));
+  return dynamic_cast<B const*>(static_cast<Body const*>(body_));
 #else
-  return *static_cast<B const*>(&body_);
+  return static_cast<not_null<B const*>>(body_);
 #endif
 }
 
 template<typename Frame>
 void Trajectory<Frame>::set_intrinsic_acceleration(
     IntrinsicAcceleration const acceleration) {
-  CHECK(body_.is_massless()) << "Trajectory is for a massive body";
+  CHECK(body_->is_massless()) << "Trajectory is for a massive body";
   CHECK(intrinsic_acceleration_ == nullptr)
       << "Trajectory already has an intrinsic acceleration";
   intrinsic_acceleration_ =
@@ -291,9 +291,8 @@ Instant const& Trajectory<Frame>::Iterator::time() const {
 
 template<typename Frame>
 void Trajectory<Frame>::Iterator::InitializeFirst(
-    Trajectory const* trajectory) {
-  CHECK_NOTNULL(trajectory);
-  Trajectory const* ancestor = trajectory;
+    not_null<Trajectory const*> const trajectory) {
+  not_null<Trajectory const*> ancestor = trajectory;
   while (ancestor->parent_ != nullptr) {
     ancestry_.push_front(ancestor);
     forks_.push_front(*ancestor->fork_);
@@ -305,9 +304,8 @@ void Trajectory<Frame>::Iterator::InitializeFirst(
 
 template<typename Frame>
 void Trajectory<Frame>::Iterator::InitializeOnOrAfter(
-  Instant const& time, Trajectory const* trajectory) {
-  CHECK_NOTNULL(trajectory);
-  Trajectory const* ancestor = trajectory;
+  Instant const& time, not_null<Trajectory const*> const trajectory) {
+  not_null<Trajectory const*> ancestor = trajectory;
   while (ancestor->fork_ != nullptr && time <= (*ancestor->fork_)->first) {
     ancestry_.push_front(ancestor);
     forks_.push_front(*ancestor->fork_);
@@ -319,8 +317,7 @@ void Trajectory<Frame>::Iterator::InitializeOnOrAfter(
 
 template<typename Frame>
 void Trajectory<Frame>::Iterator::InitializeLast(
-    Trajectory const* trajectory) {
-  CHECK_NOTNULL(trajectory);
+    not_null<Trajectory const*> const trajectory) {
   // We don't need to really keep track of the forks or of the ancestry.
   if (trajectory->timeline_.empty()) {
     CHECK(trajectory->fork_ != nullptr) << "Empty trajectory";
@@ -339,7 +336,8 @@ Trajectory<Frame>::Iterator::current() const {
 }
 
 template<typename Frame>
-Trajectory<Frame> const* Trajectory<Frame>::Iterator::trajectory() const {
+not_null<Trajectory<Frame> const*>
+Trajectory<Frame>::Iterator::trajectory() const {
   return ancestry_.back();
 }
 
@@ -365,11 +363,11 @@ Trajectory<Frame>::TransformingIterator<ToFrame>::TransformingIterator(
       transform_(transform) {}
 
 template<typename Frame>
-Trajectory<Frame>::Trajectory(Body const& body,
-                              Trajectory* const parent,
+Trajectory<Frame>::Trajectory(not_null<Body const*> const body,
+                              not_null<Trajectory*> const parent,
                               typename Timeline::iterator const& fork)
     : body_(body),
-      parent_(CHECK_NOTNULL(parent)),
+      parent_(parent),
       fork_(new typename Timeline::iterator(fork)) {}
 
 }  // namespace physics

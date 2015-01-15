@@ -5,7 +5,10 @@
 #include <memory>
 #include <utility>
 
+#include "base/not_null.hpp"
 #include "physics/trajectory.hpp"
+
+using principia::base::not_null;
 
 namespace principia {
 namespace physics {
@@ -31,7 +34,7 @@ class Transforms {
   // A factory method where |ThroughFrame| is defined as follows: it has the
   // same axes as |FromFrame| and the body of |centre_trajectory| is the origin
   // of |ThroughFrame|.
-  static std::unique_ptr<Transforms> BodyCentredNonRotating(
+  static not_null<std::unique_ptr<Transforms>> BodyCentredNonRotating(
       LazyTrajectory<FromFrame> const& from_centre_trajectory,
       LazyTrajectory<ToFrame> const& to_centre_trajectory);
 
@@ -41,20 +44,20 @@ class Transforms {
   // side of the X axis as the velocity of the primary body, its Z axis is such
   // that it is right-handed.  The barycentre of the bodies is the origin of
   // |ThroughFrame|.
-  static std::unique_ptr<Transforms> BarycentricRotating(
+  static not_null<std::unique_ptr<Transforms>> BarycentricRotating(
       LazyTrajectory<FromFrame> const& from_primary_trajectory,
       LazyTrajectory<ToFrame> const& to_primary_trajectory,
       LazyTrajectory<FromFrame> const& from_secondary_trajectory,
       LazyTrajectory<ToFrame> const& to_secondary_trajectory);
 
   // Use this only for testing!
-  static std::unique_ptr<Transforms> DummyForTesting();
+  static not_null<std::unique_ptr<Transforms>> DummyForTesting();
 
   typename Trajectory<FromFrame>::template TransformingIterator<ThroughFrame>
-  first(Trajectory<FromFrame> const* from_trajectory);
+  first(not_null<Trajectory<FromFrame> const*> const from_trajectory);
 
   typename Trajectory<ThroughFrame>:: template TransformingIterator<ToFrame>
-  second(Trajectory<ThroughFrame> const* through_trajectory);
+  second(not_null<Trajectory<ThroughFrame> const*> const through_trajectory);
 
  private:
   typename Trajectory<FromFrame>::template Transform<ThroughFrame> first_;
@@ -63,7 +66,7 @@ class Transforms {
   // A cache for the result of the |first_| transform.  This cache assumes that
   // the iterator is never called with the same time but different degrees of
   // freedom.
-  std::map<std::pair<Trajectory<FromFrame> const*, Instant const>,
+  std::map<std::pair<not_null<Trajectory<FromFrame> const*>, Instant const>,
            DegreesOfFreedom<ThroughFrame>> first_cache_;
 };
 

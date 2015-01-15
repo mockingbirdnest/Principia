@@ -12,7 +12,7 @@ quantities::Permeability const VacuumPermeability =
     4e-7 * π * si::Steradian * si::Henry / si::Metre;
 quantities::Permittivity const VacuumPermittivity =
     1 / (VacuumPermeability * quantities::Pow<2>(SpeedOfLight));
-// We use the 2010 CODATA recommended values. We do not support uncertainties.
+// We use the 2010 CODATA recommended values.  We do not support uncertainties.
 quantities::AngularMomentum const ReducedPlanckConstant =
     1.054571726e-34 * si::Joule * si::Second / si::Radian;
 quantities::Quotient<quantities::GravitationalParameter,
