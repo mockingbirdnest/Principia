@@ -54,7 +54,7 @@ TEST_F(ComponentwiseTest, Grassmann) {
                                Eq(3.5 * Metre)));
   EXPECT_THAT(v, Not(Componentwise(AlmostEquals(1.0 * Metre, 4),
                                    VanishesBefore(1.0 * Metre, 4),
-                                   Eq(3.5 * Metre))));
+                                   Eq(2.5 * Metre))));
   Bivector<Length, World> b({(1.0 + 1.0E-12) * Metre,
                               1.0E-10 * Metre,
                               3.5 * Metre});
@@ -63,7 +63,7 @@ TEST_F(ComponentwiseTest, Grassmann) {
                                Eq(3.5 * Metre)));
   EXPECT_THAT(b, Not(Componentwise(AlmostEquals(1.0 * Metre, 4),
                                    VanishesBefore(1.0 * Metre, 4),
-                                   Eq(3.5 * Metre))));
+                                   Eq(2.5 * Metre))));
 }
 
 TEST_F(ComponentwiseTest, Pair) {
