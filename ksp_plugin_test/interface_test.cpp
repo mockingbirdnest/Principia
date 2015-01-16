@@ -100,6 +100,9 @@ TEST_F(InterfaceDeathTest, Errors) {
   EXPECT_DEATH({
     principia__NewBodyCentredNonRotatingTransforms(plugin, kCelestialIndex);
   }, "plugin.*non NULL");
+  EXPECT_DEATH({
+    principia__LogFatal("bar");
+  }, "foo");
 }
 
 TEST_F(InterfaceTest, Log) {
@@ -333,6 +336,16 @@ TEST_F(InterfaceTest, LineAndIterator) {
   EXPECT_THAT(line_and_iterator, Not(IsNull()));
   principia__DeleteLineAndIterator(&line_and_iterator);
   EXPECT_THAT(line_and_iterator, IsNull());
+}
+
+TEST_F(InterfaceTest, PhysicsBubble) {
+  KSPPart parts[3] = {{{1, 2, 3}, {10, 20, 30}, 300.0, 0.0, 1},
+                      {{4, 5, 6}, {40, 50, 60}, 600.0, 0, 4},
+                      {{7, 8, 9}, {70, 80, 90}, 900.0, 0, 7}};
+  principia__AddVesselToNextPhysicsBubble(plugin_.get(),
+                                          kVesselGUID,
+                                          &parts[0],
+                                          3);
 }
 
 }  // namespace

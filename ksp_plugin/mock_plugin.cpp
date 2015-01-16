@@ -30,5 +30,11 @@ MockPlugin::NewBarycentricRotatingTransforms(
   return std::move(transforms);
 }
 
+void MockPlugin::AddVesselToNextPhysicsBubble(
+    GUID const& vessel_guid,
+    std::vector<IdAndOwnedPart> parts) {
+  AddVesselToNextPhysicsBubbleConstRef(vessel_guid, parts);
+}
+
 }  // namespace ksp_plugin
 }  // namespace principia

@@ -91,6 +91,23 @@ class MockPlugin : public Plugin {
                          GUID const& vessel_guid,
                          Velocity<World> const& parent_world_velocity,
                          Time const& parent_rotation_period));
+
+  // NOTE(phl): Another wrapper needed because gMock 1.7.0 wants to copy the
+  // vector of unique_ptr<>.
+  void AddVesselToNextPhysicsBubble(GUID const& vessel_guid,
+                                    std::vector<IdAndOwnedPart> parts) override;
+
+  MOCK_METHOD2(AddVesselToNextPhysicsBubbleConstRef,
+               void(GUID const& vessel_guid,
+                    std::vector<IdAndOwnedPart> const& parts));
+
+  MOCK_CONST_METHOD1(BubbleDisplacementCorrection,
+                     Displacement<World>(
+                         Position<World> const& sun_world_position));
+
+  MOCK_CONST_METHOD1(BubbleVelocityCorrection,
+                     Velocity<World> (
+                         Index const reference_body_index));
 };
 
 }  // namespace ksp_plugin

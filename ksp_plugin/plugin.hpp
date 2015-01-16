@@ -208,17 +208,17 @@ class Plugin {
   // vessel with GUID |vessel_guid| must not already be in
   // |next_physics_bubble_->vessels|.  |parts| must not contain a |PartId|
   // already in |next_physics_bubble_->parts|.
-  void AddVesselToNextPhysicsBubble(GUID const& vessel_guid,
-                                    std::vector<IdAndOwnedPart> parts);
+  virtual void AddVesselToNextPhysicsBubble(GUID const& vessel_guid,
+                                            std::vector<IdAndOwnedPart> parts);
   // Computes and returns |current_physics_bubble_->displacement_correction|.
   // This is the |World| shift to be applied to the physics bubble in order for
   // it to be in the correct position.
-  Displacement<World> BubbleDisplacementCorrection(
+  virtual Displacement<World> BubbleDisplacementCorrection(
       Position<World> const& sun_world_position) const;
   // Computes and returns |current_physics_bubble_->velocity_correction|.
   // This is the |World| shift to be applied to the physics bubble in order for
   // it to have the correct velocity.
-  Velocity<World> BubbleVelocityCorrection(
+  virtual Velocity<World> BubbleVelocityCorrection(
       Index const reference_body_index) const;
 
  private:
