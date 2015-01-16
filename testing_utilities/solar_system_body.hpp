@@ -1098,10 +1098,6 @@ SolarSystem::Bodies SolarSystem::massive_bodies() {
   return std::move(massive_bodies_);
 }
 
-SolarSystem::Bodies SolarSystem::massless_bodies() {
-  return std::move(massless_bodies_);
-}
-
 physics::NBodySystem<ICRFJ2000Ecliptic>::Trajectories
 SolarSystem::trajectories() const {
   physics::NBodySystem<ICRFJ2000Ecliptic>::Trajectories result;

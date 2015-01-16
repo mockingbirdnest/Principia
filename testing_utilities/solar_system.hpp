@@ -114,10 +114,9 @@ class SolarSystem {
 
   ~SolarSystem() = default;
 
-  // The caller gets ownership of the bodies.  These functions should only be
+  // The caller gets ownership of the bodies.  This function should only be
   // called once.
   Bodies massive_bodies();
-  Bodies massless_bodies();
 
   // This class retains ownership of the trajectories.
   physics::NBodySystem<ICRFJ2000Ecliptic>::Trajectories trajectories() const;
@@ -133,7 +132,6 @@ class SolarSystem {
   explicit SolarSystem(Accuracy const accuracy);
 
   Bodies massive_bodies_;
-  Bodies massless_bodies_;
   std::vector<not_null<std::unique_ptr<physics::Trajectory<ICRFJ2000Ecliptic>>>>
       trajectories_;
 };
