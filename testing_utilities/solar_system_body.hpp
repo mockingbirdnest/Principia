@@ -63,7 +63,8 @@ not_null<std::unique_ptr<MassiveBody>> NewBody(
       return make_not_null_unique<OblateBody<ICRFJ2000Ecliptic>>(
           gravitational_parameter, j2, radius, axis);
     default:
-      LOG(FATAL) << "Unexpected accuracy " << static_cast<int>(accuracy);
+      LOG(FATAL) << __FUNCSIG__ << "Unexpected accuracy "
+                 << static_cast<int>(accuracy);
       base::noreturn();
   }
 }
@@ -1097,10 +1098,6 @@ SolarSystem::Bodies SolarSystem::massive_bodies() {
   return std::move(massive_bodies_);
 }
 
-SolarSystem::Bodies SolarSystem::massless_bodies() {
-  return std::move(massless_bodies_);
-}
-
 physics::NBodySystem<ICRFJ2000Ecliptic>::Trajectories
 SolarSystem::trajectories() const {
   physics::NBodySystem<ICRFJ2000Ecliptic>::Trajectories result;
@@ -1113,8 +1110,8 @@ SolarSystem::trajectories() const {
 int SolarSystem::parent(int const index) {
   switch (index) {
     case kSun:
-      LOG(FATAL) << "The Sun has no parent";
-      return kSun;  // Silly compiler is silly.
+      LOG(FATAL) << __FUNCSIG__ << "The Sun has no parent";
+      base::noreturn();
     case kJupiter:
     case kSaturn:
     case kNeptune:
@@ -1149,8 +1146,8 @@ int SolarSystem::parent(int const index) {
     case kCharon:
       return kPluto;
     default:
-      LOG(FATAL) << "Undefined index";
-      return kSun;
+      LOG(FATAL) << __FUNCSIG__ << "Undefined index";
+      base::noreturn();
   }
 }
 
@@ -1185,8 +1182,8 @@ std::string SolarSystem::name(int const index) {
     BODY_NAME(Dione);
     BODY_NAME(Tethys);
     default:
-      LOG(FATAL) << "Undefined index";
-      return "";
+      LOG(FATAL) << __FUNCSIG__ << "Undefined index";
+      base::noreturn();
   }
 #undef BODY_NAME
 }

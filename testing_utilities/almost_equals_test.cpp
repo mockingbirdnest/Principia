@@ -3,6 +3,7 @@
 #include <sstream>
 
 #include "geometry/grassmann.hpp"
+#include "geometry/quaternion.hpp"
 #include "glog/logging.h"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
@@ -18,6 +19,7 @@ namespace testing_utilities {
 
 using bipm::Knot;
 using geometry::Bivector;
+using geometry::Quaternion;
 using geometry::R3Element;
 using geometry::Vector;
 using geometry::Trivector;
@@ -39,6 +41,7 @@ class AlmostEqualsTest : public testing::Test {};
 TEST_F(AlmostEqualsTest, Dimensionless) {
   double const y = e;
   EXPECT_THAT(y, AlmostEquals(e, 0));
+  EXPECT_THAT(y, Not(AlmostEquals(e, 1)));
   EXPECT_THAT(2 * y, Not(AlmostEquals(y, 4)));
   double const δy = e / 100.0;
   double e_accumulated = 0.0;
@@ -76,6 +79,20 @@ TEST_F(AlmostEqualsTest, R3Element) {
   }
   EXPECT_THAT(v_accumulated, Ne(v1));
   EXPECT_THAT(v_accumulated, AlmostEquals(v1, 8));
+}
+
+TEST_F(AlmostEqualsTest, Quaternion) {
+  Quaternion const q1 = {1, {2, 3, 4}};
+  Quaternion const q2 = q1;
+  EXPECT_THAT(q2, AlmostEquals(q1, 0));
+  EXPECT_THAT(2 * q2, Not(AlmostEquals(q1, 4)));
+  Quaternion const δq = q1 / 100;
+  Quaternion q_accumulated;
+  for (int i = 1; i <= 100; ++i) {
+    q_accumulated += δq;
+  }
+  EXPECT_THAT(q_accumulated, Ne(q1));
+  EXPECT_THAT(q_accumulated, AlmostEquals(q1, 11));
 }
 
 TEST_F(AlmostEqualsTest, Vector) {

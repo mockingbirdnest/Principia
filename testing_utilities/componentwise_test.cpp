@@ -40,8 +40,8 @@ TEST_F(ComponentwiseTest, R3Element) {
   EXPECT_THAT(r, Componentwise(AlmostEquals(1.0, 4504),
                                VanishesBefore(1.0, 450360),
                                Not(Eq(2.5))));
-  EXPECT_THAT(r, Not(Componentwise(AlmostEquals(1.0, 4504),
-                                   VanishesBefore(1.0, 450360),
+  EXPECT_THAT(r, Not(Componentwise(AlmostEquals(1.0, 4),
+                                   VanishesBefore(1.0, 4),
                                    Eq(2.5))));
 }
 
@@ -54,7 +54,7 @@ TEST_F(ComponentwiseTest, Grassmann) {
                                Eq(3.5 * Metre)));
   EXPECT_THAT(v, Not(Componentwise(AlmostEquals(1.0 * Metre, 4),
                                    VanishesBefore(1.0 * Metre, 4),
-                                   Eq(3.5 * Metre))));
+                                   Eq(2.5 * Metre))));
   Bivector<Length, World> b({(1.0 + 1.0E-12) * Metre,
                               1.0E-10 * Metre,
                               3.5 * Metre});
@@ -63,7 +63,7 @@ TEST_F(ComponentwiseTest, Grassmann) {
                                Eq(3.5 * Metre)));
   EXPECT_THAT(b, Not(Componentwise(AlmostEquals(1.0 * Metre, 4),
                                    VanishesBefore(1.0 * Metre, 4),
-                                   Eq(3.5 * Metre))));
+                                   Eq(2.5 * Metre))));
 }
 
 TEST_F(ComponentwiseTest, Pair) {
@@ -84,6 +84,16 @@ TEST_F(ComponentwiseTest, Pair) {
                                                   2.0 *  SIUnit<Winding>(),
                                                   3.5 *  SIUnit<Winding>()}),
                           225180)));
+  EXPECT_THAT(vv, Not(Componentwise(
+                      Componentwise(
+                          AlmostEquals(1.0 * SIUnit<Action>(), 4504),
+                          VanishesBefore(1.0 * SIUnit<Action>(), 450360),
+                          Eq(2.5 * SIUnit<Action>())),
+                      AlmostEquals(
+                          Vector<Winding, World>({1.0 * SIUnit<Winding>(),
+                                                  2.0 *  SIUnit<Winding>(),
+                                                  3.5 *  SIUnit<Winding>()}),
+                          2))));
 }
 
 TEST_F(ComponentwiseTest, Describe) {
@@ -105,6 +115,22 @@ TEST_F(ComponentwiseTest, Describe) {
     EXPECT_EQ("x is not within 2 to 2 ULPs of 1 or "
               "y does not vanish before 1 to within 4 to 4 ULP or "
               "z isn't equal to 3.5",
+              out.str());
+  }
+  {
+    std::ostringstream out;
+    Componentwise(AlmostEquals(1.0, 2),
+                  VanishesBefore(1.0, 4)).impl().DescribeTo(&out);
+    EXPECT_EQ("t1 is within 2 to 2 ULPs of 1 and "
+              "t2 vanishes before 1 to within 4 to 4 ULPs",
+              out.str());
+  }
+  {
+    std::ostringstream out;
+    Componentwise(AlmostEquals(1.0, 2),
+                  VanishesBefore(1.0, 4)).impl().DescribeNegationTo(&out);
+    EXPECT_EQ("t2 is not within 2 to 2 ULPs of 1 or "
+              "t2 does not vanish before 1 to within 4 to 4 ULP",
               out.str());
   }
 }
