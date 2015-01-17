@@ -160,9 +160,10 @@ public partial class PluginAdapter : UnityEngine.MonoBehaviour {
         vessel.id.ToString(),
         vessel.orbit.referenceBody.flightGlobalsIndex);
     if (inserted) {
-      // NOTE(egg): these degrees of freedom are off by one Δt, but they
-      // should never actually be used.
-      // TODO(egg): actually they are used when getting out of the atmosphere.
+      // NOTE(egg): this is only used when a (plugin-managed) physics bubble
+      // appears with a new vessel (e.g. when exiting the atmosphere).
+      // TODO(egg): these degrees of freedom are off by one Δt and we don't
+      // compensate for the pos/vel synchronization bug.
       SetVesselStateOffset(plugin      : plugin_,
                            vessel_guid : vessel.id.ToString(),
                            from_parent : new QP {q = (XYZ)vessel.orbit.pos,
