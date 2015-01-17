@@ -237,6 +237,9 @@ extern "C" DLLEXPORT
 XYZ CDECL principia__BubbleVelocityCorrection(Plugin const* const plugin,
                                               int const reference_body_index);
 
+extern "C" DLLEXPORT
+double CDECL principia__current_time(Plugin const* const plugin);
+
 // Says hello, convenient for checking that calls to the DLL work.
 extern "C" DLLEXPORT
 char const* CDECL principia__SayHello();

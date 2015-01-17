@@ -50,6 +50,10 @@ not_null<std::unique_ptr<Vessel>> const& Plugin::find_vessel_by_guid_or_die(
   VLOG_AND_RETURN(1, it->second);
 }
 
+Instant Plugin::current_time() const {
+  return current_time_;
+}
+
 bool Plugin::has_dirty_vessels() const {
   return !dirty_vessels_.empty();
 }
@@ -380,7 +384,7 @@ void Plugin::SetVesselStateOffset(
   LOG(INFO) << "In barycentric coordinates: " << relative;
   vessel->CreateProlongation(
       current_time_,
-      vessel->parent().history().last().degrees_of_freedom() + relative);
+      vessel->parent().prolongation().last().degrees_of_freedom() + relative);
   auto const inserted = unsynchronized_vessels_.emplace(vessel.get());
   CHECK(inserted.second);
 }

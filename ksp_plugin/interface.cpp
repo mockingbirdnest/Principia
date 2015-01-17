@@ -4,6 +4,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/macros.hpp"
 #include "base/not_null.hpp"
 #include "base/version.hpp"
 #include "ksp_plugin/part.hpp"
@@ -66,8 +67,11 @@ void principia__InitGoogleLogging() {
     google::InitGoogleLogging("Principia");
     LOG(INFO) << "Initialized Google logging for Principia";
     LOG(INFO) << "Principia version " << principia::base::kVersion
-              << " built on " << principia::base::kBuildDate;
-    // TODO(egg): by (compiler) for (ARCH, OS).
+              << " built on " << principia::base::kBuildDate
+              << " by " << principia::base::kCompilerName
+              << " version " << principia::base::kCompilerVersion
+              << " for " << principia::base::kOperatingSystem
+              << " " << principia::base::kArchitecture;
   }
 }
 
@@ -303,6 +307,10 @@ XYZ principia__BubbleVelocityCorrection(Plugin const* const plugin,
   Velocity<World> const result =
       CHECK_NOTNULL(plugin)->BubbleVelocityCorrection(reference_body_index);
   return ToXYZ(result.coordinates() / (Metre / Second));
+}
+
+double principia__current_time(Plugin const* const plugin) {
+  return (CHECK_NOTNULL(plugin)->current_time() - Instant()) / Second;
 }
 
 char const* principia__SayHello() {

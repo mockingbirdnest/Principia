@@ -221,6 +221,8 @@ class Plugin {
   Velocity<World> BubbleVelocityCorrection(
       Index const reference_body_index) const;
 
+  Instant current_time() const;
+
  private:
   using GUIDToOwnedVessel = std::map<GUID, not_null<std::unique_ptr<Vessel>>>;
   using GUIDToUnownedVessel = std::map<GUID, not_null<Vessel*> const>;
