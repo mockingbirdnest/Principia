@@ -115,6 +115,9 @@ class not_null {
   // This follows the naming convention from |std::unique_ptr|.
   using pointer = typename remove_not_null<Pointer>::type;
 
+  // Smart pointers define this type.
+  using element_type = std::remove_reference_t<decltype(*std::declval<pointer>())>;
+
   not_null() = delete;
 
   // Copy constructor from an other |not_null<Pointer>|.
