@@ -263,8 +263,6 @@ void PhysicsBubble::RestartNext(Instant const& current_time,
     not_null<Vessel const*> vessel = vessel_parts.first;
     std::vector<not_null<Part<World>*> const> const& parts =
         vessel_parts.second;
-    LOG(INFO)<<NAMED(vessel->prolongation().last().degrees_of_freedom());
-    LOG(INFO)<<NAMED(vessel->parent().prolongation().last().degrees_of_freedom());
     for (not_null<Part<World> const*> const part : parts) {
       bubble_calculator.Add(vessel->prolongation().last().degrees_of_freedom(),
                             part->mass);

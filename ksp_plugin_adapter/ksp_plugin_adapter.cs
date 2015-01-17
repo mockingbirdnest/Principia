@@ -388,11 +388,11 @@ public partial class PluginAdapter : UnityEngine.MonoBehaviour {
     UnityEngine.GUILayout.BeginVertical();
     String plugin_state;
     if (PluginRunning()) {
-      if (UnityEngine.GUILayout.Button(text : "Force Stop")) {
+      if (UnityEngine.GUILayout.Button(text : "Stop Plugin")) {
         Cleanup();
       }
     } else {
-      if (UnityEngine.GUILayout.Button(text : "Force Start")) {
+      if (UnityEngine.GUILayout.Button(text : "Start Plugin")) {
         ResetPlugin();
       }
     }
@@ -417,21 +417,18 @@ public partial class PluginAdapter : UnityEngine.MonoBehaviour {
     UnityEngine.GUILayout.TextArea(last_reset_information);
     bool barycentric_rotating =
         first_selected_celestial_ != second_selected_celestial_;
-    UnityEngine.GUILayout.TextArea(
-        text : "Frame is " + (barycentric_rotating ? " " : "not ") +
-               "rotating");
-    String reference_frame_description;
+    String reference_frame_description =
+        "The trajectory of the active vessel is plotted in ";
     if (barycentric_rotating) {
       reference_frame_description =
-          "The trajectory of the active vessel is plotted in the reference " +
-          "frame fixing the barycentre of " +
+          "the reference frame fixing the barycentre of " +
           FlightGlobals.Bodies[first_selected_celestial_].theName + " and " +
           FlightGlobals.Bodies[second_selected_celestial_].theName + ", " +
           "the line through them, and the plane in which they move about the " +
           "barycentre.";
     } else {
       reference_frame_description =
-          "The nonrotating reference frame fixing the centre of " +
+          "the nonrotating reference frame fixing the centre of " +
           FlightGlobals.Bodies[first_selected_celestial_].theName + ".";
     }
     UnityEngine.GUILayout.TextArea(text: reference_frame_description);
