@@ -19,6 +19,7 @@ using principia::si::Degree;
 using principia::si::Tonne;
 using testing::Eq;
 using testing::ElementsAre;
+using testing::ExitedWithCode;
 using testing::Field;
 using testing::IsNull;
 using testing::Pointee;
@@ -108,6 +109,15 @@ TEST_F(InterfaceDeathTest, Errors) {
   EXPECT_DEATH({
     principia__LogFatal("a fatal error");
   }, "a fatal error");
+}
+
+TEST_F(InterfaceDeathTest, InitGoogleLogging) {
+  // This is done as an exit test to avoid polluting the rest of the tests.
+  EXPECT_EXIT({
+    principia__InitGoogleLogging();
+    principia__InitGoogleLogging();
+    exit(42);
+  }, ExitedWithCode(42), "");
 }
 
 TEST_F(InterfaceTest, Log) {

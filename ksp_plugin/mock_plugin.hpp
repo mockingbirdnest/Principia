@@ -1,11 +1,10 @@
 #pragma once
 
-#include "ksp_plugin/plugin.hpp"
-
 #include <vector>
 
 #include "base/not_null.hpp"
 #include "gmock/gmock.h"
+#include "ksp_plugin/plugin.hpp"
 
 using principia::base::not_null;
 
