@@ -363,6 +363,27 @@ TEST_F(InterfaceTest, PhysicsBubble) {
                                           kVesselGUID,
                                           &parts[0],
                                           3);
+
+  EXPECT_CALL(*plugin_,
+              BubbleDisplacementCorrection(
+                  World::origin + Displacement<World>(
+                                      {kParentPosition.x * SIUnit<Length>(),
+                                       kParentPosition.y * SIUnit<Length>(),
+                                       kParentPosition.z * SIUnit<Length>()})))
+      .WillOnce(Return(Displacement<World>({77 * SIUnit<Length>(),
+                                            88 * SIUnit<Length>(),
+                                            99 * SIUnit<Length>()})));
+  XYZ const displacement =
+      principia__BubbleDisplacementCorrection(plugin_.get(), kParentPosition);
+  EXPECT_THAT(displacement, Eq(XYZ{77, 88, 99}));
+
+  EXPECT_CALL(*plugin_, BubbleVelocityCorrection(kParentIndex))
+      .WillOnce(Return(Velocity<World>({66 * SIUnit<Speed>(),
+                                        55 * SIUnit<Speed>(),
+                                        44 * SIUnit<Speed>()})));
+  XYZ const velocity =
+      principia__BubbleVelocityCorrection(plugin_.get(), kParentIndex);
+  EXPECT_THAT(velocity, Eq(XYZ{66, 55, 44}));
 }
 
 }  // namespace
