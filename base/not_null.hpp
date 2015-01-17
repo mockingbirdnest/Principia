@@ -243,13 +243,6 @@ class not_null {
   template<typename T, typename... Args>
   friend not_null<std::unique_ptr<T>> make_not_null_unique(
       Args&&... args);  // NOLINT(build/c++11)
-  template<typename Pointer>
-  friend std::ostream& operator<<(std::ostream& stream,
-                                  not_null<Pointer> const& pointer);
-  template<typename Pointer>
-  friend std::ostream& operator<<(
-      std::ostream& stream,
-      not_null<std::unique_ptr<Pointer>> const& pointer);
 };
 
 // We want only one way of doing things, and we can't make
@@ -291,9 +284,6 @@ not_null<std::unique_ptr<T>> make_not_null_unique(
 template<typename Pointer>
 std::ostream& operator<<(std::ostream& stream,
                          not_null<Pointer> const& pointer);
-template<typename Pointer>
-std::ostream& operator<<(std::ostream& stream,
-                         not_null<std::unique_ptr<Pointer>> const& pointer);
 
 }  // namespace base
 }  // namespace principia

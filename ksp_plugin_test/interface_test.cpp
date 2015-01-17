@@ -16,8 +16,6 @@ using principia::ksp_plugin::Part;
 using principia::ksp_plugin::RenderedTrajectory;
 using principia::ksp_plugin::World;
 using principia::si::Degree;
-using principia::si::Metre;
-using principia::si::Second;
 using principia::si::Tonne;
 using testing::Eq;
 using testing::ElementsAre;

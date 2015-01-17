@@ -5,10 +5,7 @@
 #include <algorithm>
 #include <utility>
 
-#include "base/unique_ptr_logging.hpp"
 #include "glog/logging.h"
-
-using ::operator<<;
 
 namespace principia {
 namespace base {
@@ -192,13 +189,7 @@ not_null<std::unique_ptr<T>> make_not_null_unique(Args&&... args) {  // NOLINT
 template<typename Pointer>
 std::ostream& operator<<(std::ostream& stream,
                          not_null<Pointer> const& pointer) {
-  return stream << pointer.pointer_;
-}
-
-template<typename Pointer>
-std::ostream& operator<<(std::ostream& stream,
-                         not_null<std::unique_ptr<Pointer>> const& pointer) {
-  return stream << pointer.pointer_.get();
+  return stream << &*pointer;
 }
 
 }  // namespace base
