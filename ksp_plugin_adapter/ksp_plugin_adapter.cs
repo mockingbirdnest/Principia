@@ -162,7 +162,7 @@ public partial class PluginAdapter : UnityEngine.MonoBehaviour {
     if (inserted) {
       // NOTE(egg): these degrees of freedom are off by one Δt, but they
       // should never actually be used.
-      // TODO(egg): we shouldn't have to do this.
+      // TODO(egg): actually they are used when getting out of the atmosphere.
       SetVesselStateOffset(plugin      : plugin_,
                            vessel_guid : vessel.id.ToString(),
                            from_parent : new QP {q = (XYZ)vessel.orbit.pos,

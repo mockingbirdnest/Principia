@@ -384,7 +384,7 @@ void Plugin::SetVesselStateOffset(
   LOG(INFO) << "In barycentric coordinates: " << relative;
   vessel->CreateProlongation(
       current_time_,
-      vessel->parent().history().last().degrees_of_freedom() + relative);
+      vessel->parent().prolongation().last().degrees_of_freedom() + relative);
   auto const inserted = unsynchronized_vessels_.emplace(vessel.get());
   CHECK(inserted.second);
 }
