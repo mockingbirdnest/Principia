@@ -116,7 +116,8 @@ class not_null {
   using pointer = typename remove_not_null<Pointer>::type;
 
   // Smart pointers define this type.
-  using element_type = std::remove_reference_t<decltype(*std::declval<pointer>())>;
+  using element_type =
+      std::remove_reference_t<decltype(*std::declval<pointer>())>;
 
   not_null() = delete;
 

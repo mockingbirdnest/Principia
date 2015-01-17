@@ -2,6 +2,8 @@
 
 #include "ksp_plugin/plugin.hpp"
 
+#include <vector>
+
 #include "base/not_null.hpp"
 #include "gmock/gmock.h"
 

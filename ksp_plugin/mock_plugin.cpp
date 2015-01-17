@@ -1,5 +1,7 @@
 #include "ksp_plugin/mock_plugin.hpp"
 
+#include <vector>
+
 #include "gmock/gmock.h"
 
 namespace principia {
