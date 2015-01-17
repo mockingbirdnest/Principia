@@ -39,7 +39,7 @@ public partial class PluginAdapter : UnityEngine.MonoBehaviour {
 
   private DateTime last_plugin_reset_;
 
-  private static bool an_instance_is_loaded;
+  private static bool an_instance_is_loaded_;
 
   PluginAdapter() {
     // We create this directory here so we do not need to worry about cross-
@@ -137,10 +137,10 @@ public partial class PluginAdapter : UnityEngine.MonoBehaviour {
         vessel.id.ToString(),
         vessel.orbit.referenceBody.flightGlobalsIndex);
     if (inserted) {
-      SetVesselStateOffset(plugin               : plugin_,
-                           vessel_guid          : vessel.id.ToString(),
-                           from_parent : new QP {q = (XYZ)vessel.orbit.pos,
-                                                 p = (XYZ)vessel.orbit.vel});
+      SetVesselStateOffset(plugin      : plugin_,
+                           vessel_guid : vessel.id.ToString(),
+                           from_parent : new QP{q = (XYZ)vessel.orbit.pos,
+                                                p = (XYZ)vessel.orbit.vel});
     }
     QP from_parent = VesselFromParent(plugin_, vessel.id.ToString());
     // NOTE(egg): Here we work around a KSP bug: |Orbit.pos| for a vessel
@@ -166,8 +166,8 @@ public partial class PluginAdapter : UnityEngine.MonoBehaviour {
       // compensate for the pos/vel synchronization bug.
       SetVesselStateOffset(plugin      : plugin_,
                            vessel_guid : vessel.id.ToString(),
-                           from_parent : new QP {q = (XYZ)vessel.orbit.pos,
-                                                 p = (XYZ)vessel.orbit.vel});
+                           from_parent : new QP{q = (XYZ)vessel.orbit.pos,
+                                                p = (XYZ)vessel.orbit.vel});
     }
     Log.Info("vessel has " + vessel.parts.Count() + " parts");
     Vector3d gravity =
@@ -222,12 +222,12 @@ public partial class PluginAdapter : UnityEngine.MonoBehaviour {
   // Awake is called once.
   private void Awake() {
     Log.Info("principia.ksp_plugin_adapter.PluginAdapter.Awake()");
-    if (an_instance_is_loaded) {
+    if (an_instance_is_loaded_) {
       Log.Info("an instance was loaded");
       UnityEngine.Object.Destroy(gameObject);
     } else {
       UnityEngine.Object.DontDestroyOnLoad(gameObject);
-      an_instance_is_loaded = true;
+      an_instance_is_loaded_ = true;
     }
     GameEvents.onGameStateLoad.Add(InitializeOnGameStateLoad);
     main_window_position_ = new UnityEngine.Rect(
@@ -421,14 +421,14 @@ public partial class PluginAdapter : UnityEngine.MonoBehaviour {
     String reference_frame_description =
         "The trajectory of the active vessel is plotted in ";
     if (barycentric_rotating) {
-      reference_frame_description =
+      reference_frame_description +=
           "the reference frame fixing the barycentre of " +
           FlightGlobals.Bodies[first_selected_celestial_].theName + " and " +
           FlightGlobals.Bodies[second_selected_celestial_].theName + ", " +
           "the line through them, and the plane in which they move about the " +
           "barycentre.";
     } else {
-      reference_frame_description =
+      reference_frame_description +=
           "the nonrotating reference frame fixing the centre of " +
           FlightGlobals.Bodies[first_selected_celestial_].theName + ".";
     }
