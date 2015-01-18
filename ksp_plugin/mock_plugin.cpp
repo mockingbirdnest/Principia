@@ -1,5 +1,7 @@
 #include "ksp_plugin/mock_plugin.hpp"
 
+#include <vector>
+
 #include "gmock/gmock.h"
 
 namespace principia {
@@ -28,6 +30,12 @@ MockPlugin::NewBarycentricRotatingTransforms(
                                     secondary_index,
                                     &transforms);
   return std::move(transforms);
+}
+
+void MockPlugin::AddVesselToNextPhysicsBubble(
+    GUID const& vessel_guid,
+    std::vector<IdAndOwnedPart> parts) {
+  AddVesselToNextPhysicsBubbleConstRef(vessel_guid, parts);
 }
 
 }  // namespace ksp_plugin

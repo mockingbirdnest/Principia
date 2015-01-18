@@ -189,7 +189,7 @@ not_null<std::unique_ptr<T>> make_not_null_unique(Args&&... args) {  // NOLINT
 template<typename Pointer>
 std::ostream& operator<<(std::ostream& stream,
                          not_null<Pointer> const& pointer) {
-  return stream << pointer.pointer_;
+  return stream << &*pointer;
 }
 
 }  // namespace base

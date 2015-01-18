@@ -12,11 +12,16 @@ using principia::ksp_plugin::AliceSun;
 using principia::ksp_plugin::Index;
 using principia::ksp_plugin::LineSegment;
 using principia::ksp_plugin::MockPlugin;
+using principia::ksp_plugin::Part;
 using principia::ksp_plugin::RenderedTrajectory;
 using principia::ksp_plugin::World;
 using principia::si::Degree;
+using principia::si::Tonne;
 using testing::Eq;
+using testing::ElementsAre;
+using testing::Field;
 using testing::IsNull;
+using testing::Pointee;
 using testing::Ref;
 using testing::Return;
 using testing::StrictMock;
@@ -100,6 +105,13 @@ TEST_F(InterfaceDeathTest, Errors) {
   EXPECT_DEATH({
     principia__NewBodyCentredNonRotatingTransforms(plugin, kCelestialIndex);
   }, "plugin.*non NULL");
+  EXPECT_DEATH({
+    principia__LogFatal("a fatal error");
+  }, "a fatal error");
+}
+
+TEST_F(InterfaceTest, InitGoogleLogging) {
+  principia__InitGoogleLogging();
 }
 
 TEST_F(InterfaceTest, Log) {
@@ -333,6 +345,47 @@ TEST_F(InterfaceTest, LineAndIterator) {
   EXPECT_THAT(line_and_iterator, Not(IsNull()));
   principia__DeleteLineAndIterator(&line_and_iterator);
   EXPECT_THAT(line_and_iterator, IsNull());
+}
+
+TEST_F(InterfaceTest, PhysicsBubble) {
+  KSPPart parts[3] = {{{1, 2, 3}, {10, 20, 30}, 300.0, {0, 0, 0}, 1},
+                      {{4, 5, 6}, {40, 50, 60}, 600.0, {3, 3, 3}, 4},
+                      {{7, 8, 9}, {70, 80, 90}, 900.0, {6, 6, 6}, 7}};
+  EXPECT_CALL(*plugin_,
+              AddVesselToNextPhysicsBubbleConstRef(
+                  kVesselGUID,
+                  ElementsAre(
+                      testing::Pair(1, Pointee(Field(&Part<World>::mass,
+                                                     300.0 * Tonne))),
+                      testing::Pair(4, Pointee(Field(&Part<World>::mass,
+                                                     600.0 * Tonne))),
+                      testing::Pair(7, Pointee(Field(&Part<World>::mass,
+                                                     900.0 * Tonne))))));
+  principia__AddVesselToNextPhysicsBubble(plugin_.get(),
+                                          kVesselGUID,
+                                          &parts[0],
+                                          3);
+
+  EXPECT_CALL(*plugin_,
+              BubbleDisplacementCorrection(
+                  World::origin + Displacement<World>(
+                                      {kParentPosition.x * SIUnit<Length>(),
+                                       kParentPosition.y * SIUnit<Length>(),
+                                       kParentPosition.z * SIUnit<Length>()})))
+      .WillOnce(Return(Displacement<World>({77 * SIUnit<Length>(),
+                                            88 * SIUnit<Length>(),
+                                            99 * SIUnit<Length>()})));
+  XYZ const displacement =
+      principia__BubbleDisplacementCorrection(plugin_.get(), kParentPosition);
+  EXPECT_THAT(displacement, Eq(XYZ{77, 88, 99}));
+
+  EXPECT_CALL(*plugin_, BubbleVelocityCorrection(kParentIndex))
+      .WillOnce(Return(Velocity<World>({66 * SIUnit<Speed>(),
+                                        55 * SIUnit<Speed>(),
+                                        44 * SIUnit<Speed>()})));
+  XYZ const velocity =
+      principia__BubbleVelocityCorrection(plugin_.get(), kParentIndex);
+  EXPECT_THAT(velocity, Eq(XYZ{66, 55, 44}));
 }
 
 }  // namespace

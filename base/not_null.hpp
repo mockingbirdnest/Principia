@@ -115,6 +115,10 @@ class not_null {
   // This follows the naming convention from |std::unique_ptr|.
   using pointer = typename remove_not_null<Pointer>::type;
 
+  // Smart pointers define this type.
+  using element_type =
+      std::remove_reference_t<decltype(*std::declval<pointer>())>;
+
   not_null() = delete;
 
   // Copy constructor from an other |not_null<Pointer>|.
@@ -240,9 +244,6 @@ class not_null {
   template<typename T, typename... Args>
   friend not_null<std::unique_ptr<T>> make_not_null_unique(
       Args&&... args);  // NOLINT(build/c++11)
-  template<typename Pointer>
-  friend std::ostream& operator<<(std::ostream& stream,
-                                  not_null<Pointer> const& pointer);
 };
 
 // We want only one way of doing things, and we can't make
