@@ -1516,3 +1516,54 @@ index 37dd54a..7f81080 100644
 -- 
 1.8.4.msysgit.0
 
+From 21dbaccdf2dda3435a951dbbe6ff93afec3e0564 Mon Sep 17 00:00:00 2001
+From: pleroy <phl+personal@google.com>
+Date: Sun, 18 Jan 2015 21:50:18 +0100
+Subject: [PATCH] Properly defined macros.
+
+---
+ src/windows/glog/logging.h | 26 ++++++++++++++++++--------
+ 1 file changed, 18 insertions(+), 8 deletions(-)
+
+diff --git a/src/windows/glog/logging.h b/src/windows/glog/logging.h
+index 7f81080..650f609 100644
+--- a/src/windows/glog/logging.h
++++ b/src/windows/glog/logging.h
+@@ -130,16 +130,26 @@ typedef unsigned __int64 uint64;
+ // Giving it this information can help it optimize for the common case in
+ // the absence of better information (ie. -fprofile-arcs).
+ //
+-#ifndef GOOGLE_PREDICT_BRANCH_NOT_TAKEN
+ #if 0
+-#define GOOGLE_PREDICT_BRANCH_NOT_TAKEN(x) (__builtin_expect(x, 0))
+-#define GOOGLE_PREDICT_FALSE(x) (__builtin_expect(x, 0))
+-#define GOOGLE_PREDICT_TRUE(x) (__builtin_expect(!!(x), 1))
++#  ifndef GOOGLE_PREDICT_BRANCH_NOT_TAKEN
++#  define GOOGLE_PREDICT_BRANCH_NOT_TAKEN(x) (__builtin_expect(x, 0))
++#  endif
++#  ifndef GOOGLE_PREDICT_FALSE
++#  define GOOGLE_PREDICT_FALSE(x) (__builtin_expect(x, 0))
++#  endif
++#  ifndef GOOGLE_PREDICT_TRUE
++#  define GOOGLE_PREDICT_TRUE(x) (__builtin_expect(!!(x), 1))
++#  endif
+ #else
+-#define GOOGLE_PREDICT_BRANCH_NOT_TAKEN(x) x
+-#define GOOGLE_PREDICT_FALSE(x) x
+-#define GOOGLE_PREDICT_TRUE(x) x
+-#endif
++#  ifndef GOOGLE_PREDICT_BRANCH_NOT_TAKEN
++#  define GOOGLE_PREDICT_BRANCH_NOT_TAKEN(x) x
++#  endif
++#  ifndef GOOGLE_PREDICT_FALSE
++#  define GOOGLE_PREDICT_FALSE(x) x
++#  endif
++#  ifndef GOOGLE_PREDICT_TRUE
++#  define GOOGLE_PREDICT_TRUE(x) x
++#  endif
+ #endif
+ 
+ // Make a bunch of macros for logging.  The way to log things is to stream
+-- 
+1.8.4.msysgit.0
+
