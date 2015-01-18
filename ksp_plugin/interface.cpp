@@ -62,7 +62,7 @@ void principia__InitGoogleLogging() {
     google::SetLogDestination(google::WARNING, "glog/Principia/WARNING.");
     google::SetLogDestination(google::INFO, "glog/Principia/INFO.");
     FLAGS_v = 1;
-    // Buffer severities <= |INFO|, i.e., don't buffer.
+    // Buffer severities <= |INFO| - 1, i.e., don't buffer.
     FLAGS_logbuflevel = google::INFO - 1;
     google::InitGoogleLogging("Principia");
     LOG(INFO) << "Initialized Google logging for Principia";
@@ -73,6 +73,48 @@ void principia__InitGoogleLogging() {
               << " for " << principia::base::kOperatingSystem
               << " " << principia::base::kArchitecture;
   }
+}
+
+void principia__SetBufferedLogging(int const max_severity) {
+  FLAGS_logbuflevel = max_severity;
+}
+
+int principia__GetBufferedLogging() {
+  return FLAGS_logbuflevel;
+}
+
+void principia__SetBufferDuration(int const seconds) {
+  FLAGS_logbufsecs = seconds;
+}
+
+int principia__GetBufferDuration() {
+  return FLAGS_logbufsecs;
+}
+
+void principia__SetSupressedLogging(int const min_severity) {
+  FLAGS_minloglevel = min_severity;
+}
+
+int principia__GetSupressedLogging() {
+  return FLAGS_minloglevel;
+}
+
+void principia__SetVerboseLogging(int const level) {
+  FLAGS_v = level;
+}
+
+int principia__GetVerboseLogging() {
+  return FLAGS_v;
+}
+
+void principia__SetStderrLogging(int const min_severity) {
+  // NOTE(egg): We could use |FLAGS_stderrthreshold| instead, the difference
+  // seems to be a mutex.
+  google::SetStderrLogging(min_severity);
+}
+
+int principia__GetStderrLogging() {
+  return FLAGS_stderrthreshold;
 }
 
 void principia__LogInfo(char const* message) {

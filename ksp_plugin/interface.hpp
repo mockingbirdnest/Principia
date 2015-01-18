@@ -71,6 +71,35 @@ static_assert(std::is_standard_layout<KSPPart>::value,
 extern "C" DLLEXPORT
 void CDECL principia__InitGoogleLogging();
 
+// Log messages at a level |<= max_severity| are buffered.
+// Log messages at a higher level are flushed immediately.
+extern "C" DLLEXPORT
+void CDECL principia__SetBufferedLogging(int const max_severity);
+extern "C" DLLEXPORT
+int CDECL principia__GetBufferedLogging();
+// Sets the maximum number of seconds which logs may be buffered for.
+extern "C" DLLEXPORT
+void CDECL principia__SetBufferDuration(int const seconds);
+extern "C" DLLEXPORT
+int CDECL principia__GetBufferDuration();
+// Log suppression level: messages logged at a lower level than this are
+// suppressed.
+extern "C" DLLEXPORT
+void CDECL principia__SetSupressedLogging(int const min_severity);
+extern "C" DLLEXPORT
+int CDECL principia__GetSupressedLogging();
+// Show all VLOG(m) messages for |m <= level|.
+extern "C" DLLEXPORT
+void CDECL principia__SetVerboseLogging(int const level);
+extern "C" DLLEXPORT
+int CDECL principia__GetVerboseLogging();
+// Make it so that all log messages of at least |min_severity| are logged to
+// stderr (in addition to logging to the usual log file(s)).
+extern "C" DLLEXPORT
+void CDECL principia__SetStderrLogging(int const min_severity);
+extern "C" DLLEXPORT
+int CDECL principia__GetStderrLogging();
+
 // Exports |LOG(SEVERITY) << message| for fast logging from the C# adapter.
 // This will always evaluate its argument even if the corresponding log severity
 // is disabled, so it is less efficient than LOG(INFO).  It will not report the
