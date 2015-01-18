@@ -34,7 +34,9 @@ public partial class PluginAdapter : UnityEngine.MonoBehaviour {
   private IntPtr transforms_ = IntPtr.Zero;
   private int first_selected_celestial_ = 0;
   private int second_selected_celestial_ = 0;
+
   private bool show_logging_settings_ = false;
+  private bool show_reference_frame_selection_ = true;
 
   private bool time_is_advancing_;
 
@@ -417,6 +419,37 @@ public partial class PluginAdapter : UnityEngine.MonoBehaviour {
           last_plugin_reset_.ToUniversalTime().ToString("O");
     }
     UnityEngine.GUILayout.TextArea(last_reset_information);
+    String reference_frame_selection_toggle =
+        show_reference_frame_selection_ ? "↑ Reference Frame Selection ↑"
+                                        : "↓ Reference Frame Selection ↓";
+    if (UnityEngine.GUILayout.Button(reference_frame_selection_toggle)) {
+      show_reference_frame_selection_ = !show_reference_frame_selection_;
+      if (!show_reference_frame_selection_) {
+        ShrinkMainWindow();
+      }
+    }
+    if (show_reference_frame_selection_) {
+      ReferenceFrameSelection();
+    }
+    String logging_settings_toggle =
+        show_logging_settings_ ? "↑ Logging Settings ↑"
+                               : "↓ Logging Settings ↓";
+    if (UnityEngine.GUILayout.Button(logging_settings_toggle)) {
+      show_logging_settings_ = !show_logging_settings_;
+      if (!show_logging_settings_) {
+        ShrinkMainWindow();
+      }
+    }
+    if (show_logging_settings_) {
+      LoggingSettings();
+    }
+    UnityEngine.GUILayout.EndVertical();
+    UnityEngine.GUI.DragWindow(
+        position : new UnityEngine.Rect(left : 0f, top : 0f, width : 10000f,
+                                        height : 20f));
+  }
+
+  private void ReferenceFrameSelection() {
     bool barycentric_rotating =
         first_selected_celestial_ != second_selected_celestial_;
     String reference_frame_description =
@@ -458,22 +491,6 @@ public partial class PluginAdapter : UnityEngine.MonoBehaviour {
         UpdateRenderingFrame();
       }
     }
-    String logging_settings_toggle =
-        show_logging_settings_ ? "↑ Logging Settings ↑"
-                               : "↓ Logging Settings ↓";
-    if (UnityEngine.GUILayout.Button(logging_settings_toggle)) {
-      show_logging_settings_ = !show_logging_settings_;
-      if (!show_logging_settings_) {
-        ShrinkMainWindow();
-      }
-    }
-    if (show_logging_settings_) {
-      LoggingSettings();
-    }
-    UnityEngine.GUILayout.EndVertical();
-    UnityEngine.GUI.DragWindow(
-        position : new UnityEngine.Rect(left : 0f, top : 0f, width : 10000f,
-                                        height : 20f));
   }
 
   private void LoggingSettings() {
