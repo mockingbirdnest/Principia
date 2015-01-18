@@ -379,16 +379,6 @@ public partial class PluginAdapter : UnityEngine.MonoBehaviour {
   }
 
   private void DrawMainWindow(int window_id) {
-    UnityEngine.GUIStyle style = new UnityEngine.GUIStyle(
-        UnityEngine.GUI.skin.button);
-    style.normal.textColor = style.focused.textColor = UnityEngine.Color.white;
-    style.hover.textColor = style.active.textColor = UnityEngine.Color.yellow;
-    style.onNormal.textColor  = UnityEngine.Color.green;
-    style.onFocused.textColor = UnityEngine.Color.green;
-    style.onHover.textColor   = UnityEngine.Color.green;
-    style.onActive.textColor  = UnityEngine.Color.green;
-    style.padding             = new UnityEngine.RectOffset(8, 8, 8, 8);
-
     UnityEngine.GUILayout.BeginVertical();
     String plugin_state;
     if (PluginRunning()) {
@@ -419,34 +409,34 @@ public partial class PluginAdapter : UnityEngine.MonoBehaviour {
           last_plugin_reset_.ToUniversalTime().ToString("O");
     }
     UnityEngine.GUILayout.TextArea(last_reset_information);
-    String reference_frame_selection_toggle =
-        show_reference_frame_selection_ ? "↑ Reference Frame Selection ↑"
-                                        : "↓ Reference Frame Selection ↓";
-    if (UnityEngine.GUILayout.Button(reference_frame_selection_toggle)) {
-      show_reference_frame_selection_ = !show_reference_frame_selection_;
-      if (!show_reference_frame_selection_) {
-        ShrinkMainWindow();
-      }
-    }
-    if (show_reference_frame_selection_) {
-      ReferenceFrameSelection();
-    }
-    String logging_settings_toggle =
-        show_logging_settings_ ? "↑ Logging Settings ↑"
-                               : "↓ Logging Settings ↓";
-    if (UnityEngine.GUILayout.Button(logging_settings_toggle)) {
-      show_logging_settings_ = !show_logging_settings_;
-      if (!show_logging_settings_) {
-        ShrinkMainWindow();
-      }
-    }
-    if (show_logging_settings_) {
-      LoggingSettings();
-    }
+    ToggleableSection(name   : "Reference Frame Selection",
+                      show   : ref show_reference_frame_selection_,
+                      render : ReferenceFrameSelection);
+    ToggleableSection(name   : "Logging Settings",
+                      show   : ref show_logging_settings_,
+                      render : LoggingSettings);
     UnityEngine.GUILayout.EndVertical();
     UnityEngine.GUI.DragWindow(
         position : new UnityEngine.Rect(left : 0f, top : 0f, width : 10000f,
-                                        height : 20f));
+                                        height : 10000f));
+  }
+
+  delegate void GUIRenderer();
+
+  private void ToggleableSection(String name,
+                                 ref bool show,
+                                 GUIRenderer render) {
+    String toggle = show ? "↑ " + name + " ↑"
+                         : "↓ " + name + " ↓";
+    if (UnityEngine.GUILayout.Button(toggle)) {
+      show = !show;
+      if (!show) {
+        ShrinkMainWindow();
+      }
+    }
+    if (show) {
+      render();
+    }
   }
 
   private void ReferenceFrameSelection() {
@@ -466,8 +456,9 @@ public partial class PluginAdapter : UnityEngine.MonoBehaviour {
           "the nonrotating reference frame fixing the centre of " +
           FlightGlobals.Bodies[first_selected_celestial_].theName + ".";
     }
-    UnityEngine.GUILayout.TextArea(text: reference_frame_description);
-    UnityEngine.GUILayout.Label(text : "Reference frame selection:");
+    UnityEngine.GUILayout.TextArea(
+        text    : reference_frame_description,
+        options : UnityEngine.GUILayout.Height(100));
     foreach (CelestialBody celestial in FlightGlobals.Bodies) {
       bool changed_rendering = false;
       UnityEngine.GUILayout.BeginHorizontal();
