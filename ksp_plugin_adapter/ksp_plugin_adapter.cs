@@ -519,7 +519,7 @@ public partial class PluginAdapter : UnityEngine.MonoBehaviour {
     if (UnityEngine.GUILayout.Button(
             text    : "↑",
             options : UnityEngine.GUILayout.Width(column_width))) {
-      Log.SetSupressedLogging(Math.Max(Log.GetSupressedLogging() - 1, 0));
+      Log.SetSuppressedLogging(Math.Max(Log.GetSuppressedLogging() - 1, 0));
     }
     if (UnityEngine.GUILayout.Button(
             text    : "↑",
@@ -538,7 +538,7 @@ public partial class PluginAdapter : UnityEngine.MonoBehaviour {
           text    : Log.kSeverityNames[severity],
           options : UnityEngine.GUILayout.Width(column_width));
       UnityEngine.GUILayout.Toggle(
-          value   : severity >= Log.GetSupressedLogging(),
+          value   : severity >= Log.GetSuppressedLogging(),
           text    : "",
           options : UnityEngine.GUILayout.Width(column_width));
       UnityEngine.GUILayout.Toggle(
@@ -556,7 +556,7 @@ public partial class PluginAdapter : UnityEngine.MonoBehaviour {
     if (UnityEngine.GUILayout.Button(
             text    : "↓",
             options : UnityEngine.GUILayout.Width(column_width))) {
-      Log.SetSupressedLogging(Math.Min(Log.GetSupressedLogging() + 1, 3));
+      Log.SetSuppressedLogging(Math.Min(Log.GetSuppressedLogging() + 1, 3));
     }
     if (UnityEngine.GUILayout.Button(
             text    : "↓",

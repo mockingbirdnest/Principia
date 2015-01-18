@@ -35,14 +35,14 @@ internal static class Log {
   internal static extern int GetBufferDuration();
 
   [DllImport(dllName           : PluginAdapter.kDllPath,
-             EntryPoint        = "principia__SetSupressedLogging",
+             EntryPoint        = "principia__SetSuppressedLogging",
              CallingConvention = CallingConvention.Cdecl)]
-  internal static extern void SetSupressedLogging(int min_severity);
+  internal static extern void SetSuppressedLogging(int min_severity);
 
   [DllImport(dllName           : PluginAdapter.kDllPath,
-             EntryPoint        = "principia__GetSupressedLogging",
+             EntryPoint        = "principia__GetSuppressedLogging",
              CallingConvention = CallingConvention.Cdecl)]
-  internal static extern int GetSupressedLogging();
+  internal static extern int GetSuppressedLogging();
 
   [DllImport(dllName           : PluginAdapter.kDllPath,
              EntryPoint        = "principia__SetVerboseLogging",

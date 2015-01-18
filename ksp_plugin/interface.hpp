@@ -85,9 +85,9 @@ int CDECL principia__GetBufferDuration();
 // Log suppression level: messages logged at a lower level than this are
 // suppressed.
 extern "C" DLLEXPORT
-void CDECL principia__SetSupressedLogging(int const min_severity);
+void CDECL principia__SetSuppressedLogging(int const min_severity);
 extern "C" DLLEXPORT
-int CDECL principia__GetSupressedLogging();
+int CDECL principia__GetSuppressedLogging();
 // Show all VLOG(m) messages for |m <= level|.
 extern "C" DLLEXPORT
 void CDECL principia__SetVerboseLogging(int const level);

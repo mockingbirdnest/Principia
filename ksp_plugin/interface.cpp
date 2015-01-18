@@ -87,11 +87,11 @@ int principia__GetBufferDuration() {
   return FLAGS_logbufsecs;
 }
 
-void principia__SetSupressedLogging(int const min_severity) {
+void principia__SetSuppressedLogging(int const min_severity) {
   FLAGS_minloglevel = min_severity;
 }
 
-int principia__GetSupressedLogging() {
+int principia__GetSuppressedLogging() {
   return FLAGS_minloglevel;
 }
 
