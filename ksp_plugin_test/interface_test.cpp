@@ -19,7 +19,6 @@ using principia::si::Degree;
 using principia::si::Tonne;
 using testing::Eq;
 using testing::ElementsAre;
-using testing::ExitedWithCode;
 using testing::Field;
 using testing::IsNull;
 using testing::Pointee;
