@@ -7,10 +7,62 @@ namespace ksp_plugin_adapter {
 
 internal static class Log {
 
+  internal static String[] kSeverityNames = {"INFO", "WARNING", "ERROR", "FATAL"};
+
   [DllImport(dllName           : PluginAdapter.kDllPath,
              EntryPoint        = "principia__InitGoogleLogging",
              CallingConvention = CallingConvention.Cdecl)]
   internal static extern void InitGoogleLogging();
+
+  [DllImport(dllName           : PluginAdapter.kDllPath,
+             EntryPoint        = "principia__SetBufferedLogging",
+             CallingConvention = CallingConvention.Cdecl)]
+  internal static extern void SetBufferedLogging(int max_severity);
+
+  [DllImport(dllName           : PluginAdapter.kDllPath,
+             EntryPoint        = "principia__GetBufferedLogging",
+             CallingConvention = CallingConvention.Cdecl)]
+  internal static extern int GetBufferedLogging();
+
+  [DllImport(dllName           : PluginAdapter.kDllPath,
+             EntryPoint        = "principia__SetBufferDuration",
+             CallingConvention = CallingConvention.Cdecl)]
+  internal static extern void SetBufferDuration(int seconds);
+
+  [DllImport(dllName           : PluginAdapter.kDllPath,
+             EntryPoint        = "principia__GetBufferDuration",
+             CallingConvention = CallingConvention.Cdecl)]
+  internal static extern int GetBufferDuration();
+
+  [DllImport(dllName           : PluginAdapter.kDllPath,
+             EntryPoint        = "principia__SetSuppressedLogging",
+             CallingConvention = CallingConvention.Cdecl)]
+  internal static extern void SetSuppressedLogging(int min_severity);
+
+  [DllImport(dllName           : PluginAdapter.kDllPath,
+             EntryPoint        = "principia__GetSuppressedLogging",
+             CallingConvention = CallingConvention.Cdecl)]
+  internal static extern int GetSuppressedLogging();
+
+  [DllImport(dllName           : PluginAdapter.kDllPath,
+             EntryPoint        = "principia__SetVerboseLogging",
+             CallingConvention = CallingConvention.Cdecl)]
+  internal static extern void SetVerboseLogging(int level);
+
+  [DllImport(dllName           : PluginAdapter.kDllPath,
+             EntryPoint        = "principia__GetVerboseLogging",
+             CallingConvention = CallingConvention.Cdecl)]
+  internal static extern int GetVerboseLogging();
+
+  [DllImport(dllName           : PluginAdapter.kDllPath,
+             EntryPoint        = "principia__SetStderrLogging",
+             CallingConvention = CallingConvention.Cdecl)]
+  internal static extern void SetStderrLogging(int min_severity);
+
+  [DllImport(dllName           : PluginAdapter.kDllPath,
+             EntryPoint        = "principia__GetStderrLogging",
+             CallingConvention = CallingConvention.Cdecl)]
+  internal static extern int GetStderrLogging();
 
   [DllImport(dllName           : PluginAdapter.kDllPath,
              EntryPoint        = "principia__LogInfo",

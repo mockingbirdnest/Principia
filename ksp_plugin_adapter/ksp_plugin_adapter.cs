@@ -27,13 +27,16 @@ public partial class PluginAdapter : UnityEngine.MonoBehaviour {
 
   private const int kGUIQueueSpot = 3;
 
-  private UnityEngine.Rect main_window_position_;
+  private UnityEngine.Rect main_window_rectangle_;
   private IntPtr plugin_ = IntPtr.Zero;
   // TODO(egg): rendering only one trajectory at the moment.
   private VectorLine rendered_trajectory_;
   private IntPtr transforms_ = IntPtr.Zero;
   private int first_selected_celestial_ = 0;
   private int second_selected_celestial_ = 0;
+
+  private bool show_logging_settings_ = false;
+  private bool show_reference_frame_selection_ = true;
 
   private bool time_is_advancing_;
 
@@ -230,18 +233,18 @@ public partial class PluginAdapter : UnityEngine.MonoBehaviour {
       an_instance_is_loaded_ = true;
     }
     GameEvents.onGameStateLoad.Add(InitializeOnGameStateLoad);
-    main_window_position_ = new UnityEngine.Rect(
+    main_window_rectangle_ = new UnityEngine.Rect(
         left   : UnityEngine.Screen.width / 2.0f,
-        top    : UnityEngine.Screen.height / 2.0f,
+        top    : UnityEngine.Screen.height / 3.0f,
         width  : 10,
         height : 10);
   }
 
   private void OnGUI() {
     UnityEngine.GUI.skin = HighLogic.Skin;
-    main_window_position_ = UnityEngine.GUILayout.Window(
+    main_window_rectangle_ = UnityEngine.GUILayout.Window(
         id         : 1,
-        screenRect : main_window_position_,
+        screenRect : main_window_rectangle_,
         func       : DrawMainWindow,
         text       : "Traces of Various Descriptions",
         options    : UnityEngine.GUILayout.MinWidth(500));
@@ -376,16 +379,6 @@ public partial class PluginAdapter : UnityEngine.MonoBehaviour {
   }
 
   private void DrawMainWindow(int window_id) {
-    UnityEngine.GUIStyle style = new UnityEngine.GUIStyle(
-        UnityEngine.GUI.skin.button);
-    style.normal.textColor = style.focused.textColor = UnityEngine.Color.white;
-    style.hover.textColor = style.active.textColor = UnityEngine.Color.yellow;
-    style.onNormal.textColor  = UnityEngine.Color.green;
-    style.onFocused.textColor = UnityEngine.Color.green;
-    style.onHover.textColor   = UnityEngine.Color.green;
-    style.onActive.textColor  = UnityEngine.Color.green;
-    style.padding             = new UnityEngine.RectOffset(8, 8, 8, 8);
-
     UnityEngine.GUILayout.BeginVertical();
     String plugin_state;
     if (PluginRunning()) {
@@ -416,6 +409,37 @@ public partial class PluginAdapter : UnityEngine.MonoBehaviour {
           last_plugin_reset_.ToUniversalTime().ToString("O");
     }
     UnityEngine.GUILayout.TextArea(last_reset_information);
+    ToggleableSection(name   : "Reference Frame Selection",
+                      show   : ref show_reference_frame_selection_,
+                      render : ReferenceFrameSelection);
+    ToggleableSection(name   : "Logging Settings",
+                      show   : ref show_logging_settings_,
+                      render : LoggingSettings);
+    UnityEngine.GUILayout.EndVertical();
+    UnityEngine.GUI.DragWindow(
+        position : new UnityEngine.Rect(left : 0f, top : 0f, width : 10000f,
+                                        height : 10000f));
+  }
+
+  delegate void GUIRenderer();
+
+  private void ToggleableSection(String name,
+                                 ref bool show,
+                                 GUIRenderer render) {
+    String toggle = show ? "↑ " + name + " ↑"
+                         : "↓ " + name + " ↓";
+    if (UnityEngine.GUILayout.Button(toggle)) {
+      show = !show;
+      if (!show) {
+        ShrinkMainWindow();
+      }
+    }
+    if (show) {
+      render();
+    }
+  }
+
+  private void ReferenceFrameSelection() {
     bool barycentric_rotating =
         first_selected_celestial_ != second_selected_celestial_;
     String reference_frame_description =
@@ -432,8 +456,9 @@ public partial class PluginAdapter : UnityEngine.MonoBehaviour {
           "the nonrotating reference frame fixing the centre of " +
           FlightGlobals.Bodies[first_selected_celestial_].theName + ".";
     }
-    UnityEngine.GUILayout.TextArea(text: reference_frame_description);
-    UnityEngine.GUILayout.Label(text : "Reference frame selection:");
+    UnityEngine.GUILayout.TextArea(
+        text    : reference_frame_description,
+        options : UnityEngine.GUILayout.Height(100));
     foreach (CelestialBody celestial in FlightGlobals.Bodies) {
       bool changed_rendering = false;
       UnityEngine.GUILayout.BeginHorizontal();
@@ -457,10 +482,98 @@ public partial class PluginAdapter : UnityEngine.MonoBehaviour {
         UpdateRenderingFrame();
       }
     }
-    UnityEngine.GUILayout.EndVertical();
-    UnityEngine.GUI.DragWindow(
-        position : new UnityEngine.Rect(left : 0f, top : 0f, width : 10000f,
-                                        height : 20f));
+  }
+
+  private void LoggingSettings() {
+    UnityEngine.GUILayout.BeginHorizontal();
+    UnityEngine.GUILayout.Label(text : "Verbose level:");
+    if (UnityEngine.GUILayout.Button(
+            text    : "←",
+            options : UnityEngine.GUILayout.Width(50))) {
+      Log.SetVerboseLogging(Math.Max(Log.GetVerboseLogging() - 1, 0));
+    }
+    UnityEngine.GUILayout.TextArea(
+        text    : Log.GetVerboseLogging().ToString(),
+        options : UnityEngine.GUILayout.Width(50));
+    if (UnityEngine.GUILayout.Button(
+            text    : "→",
+            options : UnityEngine.GUILayout.Width(50))) {
+      Log.SetVerboseLogging(Math.Min(Log.GetVerboseLogging() + 1, 4));
+    }
+    UnityEngine.GUILayout.EndHorizontal();
+    int column_width = 75;
+    UnityEngine.GUILayout.BeginHorizontal();
+    UnityEngine.GUILayout.Space(column_width);
+    UnityEngine.GUILayout.Label(
+        text    : "Log",
+        options : UnityEngine.GUILayout.Width(column_width));
+    UnityEngine.GUILayout.Label(
+        text    : "stderr",
+        options : UnityEngine.GUILayout.Width(column_width));
+    UnityEngine.GUILayout.Label(
+        text    : "Flush",
+        options : UnityEngine.GUILayout.Width(column_width));
+    UnityEngine.GUILayout.EndHorizontal();
+    UnityEngine.GUILayout.BeginHorizontal();
+    UnityEngine.GUILayout.Space(column_width);
+    if (UnityEngine.GUILayout.Button(
+            text    : "↑",
+            options : UnityEngine.GUILayout.Width(column_width))) {
+      Log.SetSuppressedLogging(Math.Max(Log.GetSuppressedLogging() - 1, 0));
+    }
+    if (UnityEngine.GUILayout.Button(
+            text    : "↑",
+            options : UnityEngine.GUILayout.Width(column_width))) {
+      Log.SetStderrLogging(Math.Max(Log.GetStderrLogging() - 1, 0));
+    }
+    if (UnityEngine.GUILayout.Button(
+            text    : "↑",
+            options : UnityEngine.GUILayout.Width(column_width))) {
+      Log.SetBufferedLogging(Math.Max(Log.GetBufferedLogging() - 1, -1));
+    }
+    UnityEngine.GUILayout.EndHorizontal();
+    for (int severity = 0; severity <= 3; ++severity) {
+      UnityEngine.GUILayout.BeginHorizontal();
+      UnityEngine.GUILayout.Label(
+          text    : Log.kSeverityNames[severity],
+          options : UnityEngine.GUILayout.Width(column_width));
+      UnityEngine.GUILayout.Toggle(
+          value   : severity >= Log.GetSuppressedLogging(),
+          text    : "",
+          options : UnityEngine.GUILayout.Width(column_width));
+      UnityEngine.GUILayout.Toggle(
+          value   : severity >= Log.GetStderrLogging(),
+          text    : "",
+          options : UnityEngine.GUILayout.Width(column_width));
+      UnityEngine.GUILayout.Toggle(
+          value   : severity > Log.GetBufferedLogging(),
+          text    : "",
+          options : UnityEngine.GUILayout.Width(column_width));
+      UnityEngine.GUILayout.EndHorizontal();
+    }
+    UnityEngine.GUILayout.BeginHorizontal();
+    UnityEngine.GUILayout.Space(column_width);
+    if (UnityEngine.GUILayout.Button(
+            text    : "↓",
+            options : UnityEngine.GUILayout.Width(column_width))) {
+      Log.SetSuppressedLogging(Math.Min(Log.GetSuppressedLogging() + 1, 3));
+    }
+    if (UnityEngine.GUILayout.Button(
+            text    : "↓",
+            options : UnityEngine.GUILayout.Width(column_width))) {
+      Log.SetStderrLogging(Math.Min(Log.GetStderrLogging() + 1, 3));
+    }
+    if (UnityEngine.GUILayout.Button(
+            text    : "↓",
+            options : UnityEngine.GUILayout.Width(column_width))) {
+      Log.SetBufferedLogging(Math.Min(Log.GetBufferedLogging() + 1, 3));
+    }
+    UnityEngine.GUILayout.EndHorizontal();
+  }
+
+  private void ShrinkMainWindow() {
+    main_window_rectangle_.height = 0.0f;
+    main_window_rectangle_.width = 0.0f;
   }
 
   private void UpdateRenderingFrame() {
