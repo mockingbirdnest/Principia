@@ -148,7 +148,12 @@
     <ClCompile Include="quantities_test.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="quantities.proto" />
+    <CustomBuild Include="quantities.proto">
+      <FileType>Document</FileType>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(SolutionDir)..\Google\protobuf\vsprojects\Release\protoc -I$(SolutionDir) --cpp_out=.. %(FullPath)</Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Generating C++ files for %(FullPath)</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">quantities.pb.h;quantities.pb.cc;%(Outputs)</Outputs>
+    </CustomBuild>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
