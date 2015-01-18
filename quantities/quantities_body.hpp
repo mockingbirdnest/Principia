@@ -204,8 +204,14 @@ inline bool Quantity<D>::operator==(Quantity const& right) const {
 }
 
 template<typename D>
-inline bool Quantity<D>::operator!=(Quantity<D> const& right) const {
+inline bool Quantity<D>::operator!=(Quantity const& right) const {
   return magnitude_ != right.magnitude_;
+}
+
+template<typename D>
+void Quantity<D>::SerializeTo(serialization::Quantity* quantity) const {
+  quantity->set_dimensions(0);
+  quantity->set_magnitude(magnitude_);
 }
 
 // Multiplicative group

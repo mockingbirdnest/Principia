@@ -1,0 +1,8 @@
+syntax = "proto2";
+
+package principia.serialization;
+
+message Quantity {
+  required fixed32 dimensions = 1;
+  required double magnitude = 2;
+}

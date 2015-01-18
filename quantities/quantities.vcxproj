@@ -137,13 +137,18 @@
     <ClInclude Include="named_quantities.hpp" />
     <ClInclude Include="numbers.hpp" />
     <ClInclude Include="quantities.hpp" />
+    <ClInclude Include="quantities.pb.h" />
     <ClInclude Include="quantities_body.hpp" />
     <ClInclude Include="si.hpp" />
     <ClInclude Include="si_body.hpp" />
     <ClInclude Include="uk.hpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="quantities.pb.cc" />
     <ClCompile Include="quantities_test.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="quantities.proto" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

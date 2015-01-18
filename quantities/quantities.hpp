@@ -5,8 +5,11 @@
 #include <limits>
 #include <string>
 
+#include "quantities/quantities.pb.h"
+
 namespace principia {
 namespace quantities {
+
 template<int LengthExponent, int MassExponent, int TimeExponent,
          int CurrentExponent, int TemperatureExponent, int AmountExponent,
          int LuminousIntensityExponent, int WindingExponent,
@@ -132,6 +135,8 @@ class Quantity {
   bool operator<=(Quantity const& right) const;
   bool operator==(Quantity const& right) const;
   bool operator!=(Quantity const& right) const;
+
+  void SerializeTo(serialization::Quantity* quantity) const;
 
  private:
   explicit Quantity(double const magnitude);
