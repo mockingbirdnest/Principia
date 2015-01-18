@@ -58,6 +58,7 @@
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
     <Import Project="..\include_solution.props" />
     <Import Project="..\google_test_framework.props" />
+    <Import Project="..\google_protobuf.props" />
     <Import Project="..\suppress_useless_warnings.props" />
     <Import Project="..\warnings_as_errors.props" />
     <Import Project="..\generate_version_header.props" />
