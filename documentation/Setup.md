@@ -86,12 +86,25 @@ copy "..\..\Principia\documentation\setup files\gmock.patch"
 git am "gmock.patch"
 rm "gmock.patch"
   ```
+0. In `<root>\Google`, run the following:
+  ```powershell
+git clone https://github.com/google/protobuf.git --depth 1 -b v3.0.0-alpha-1
+cd protobuf
+copy "..\..\Principia\documentation\setup files\protobuf.patch"
+git am .\protobuf.patch
+rm .\protobuf.patch
+git rm --cached -r .
+git reset --hard
+  ```
+0. In `<root>\Google`, run `git clone https://github.com/pleroy/benchmark.git`.
 0. Open `<root>\Google\glog-0.3.3\google-glog.sln` with Visual Studio 2013.
   Build for Debug and Release. Ignore any warnings. Close the solution.
 0. Open `<root>\Google\gmock-1.7.0\msvc\2010\gmock.sln` with Visual
   Studio 2013. Build for Debug and Release. Ignore any warnings. Close the
   solution.
-0. In `<root>\Google`, run `git clone https://github.com/pleroy/benchmark.git`.
+0. Open `<root>\Google\protobuf\vsprojects\protobuf.sln` with Visual
+  Studio 2013. Build for Debug and Release, twice. The first attempt should
+  fail with one error. Close the solution.
 0. Open `<root>\Google\benchmark\msvc\google-benchmark.sln` with Visual
   Studio 2013. Build for Debug and Release. Ignore any warnings. Close the
   solution.
