@@ -5,7 +5,10 @@
 #include <limits>
 #include <string>
 
+#include "base/not_null.hpp"
 #include "quantities/quantities.pb.h"
+
+using principia::base::not_null;
 
 namespace principia {
 namespace quantities {
@@ -136,7 +139,7 @@ class Quantity {
   bool operator==(Quantity const& right) const;
   bool operator!=(Quantity const& right) const;
 
-  void SerializeTo(serialization::Quantity* quantity) const;
+  void SerializeTo(not_null<serialization::Quantity*> const quantity) const;
 
  private:
   explicit Quantity(double const magnitude);
