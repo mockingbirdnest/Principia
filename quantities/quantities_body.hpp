@@ -25,8 +25,8 @@ struct Dimensions {
     SolidAngle        = SolidAngleExponent
   };
 
-  static int const kMinExponent = -32;
-  static int const kMaxExponent = 31;
+  static int const kMinExponent = -16;
+  static int const kMaxExponent = 15;
   static int const kExponentBits = 5;
   static int const kExponentMask = 0x1F;
 
