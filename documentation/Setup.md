@@ -97,7 +97,7 @@ rm "protobuf.patch"
 git rm --cached -r .
 git reset --hard
   ```
-0. In `<root>\Google`, run
+0. In `<root>\Google`, run:
 
   ```powershell
 git clone "https://github.com/pleroy/benchmark.git"
