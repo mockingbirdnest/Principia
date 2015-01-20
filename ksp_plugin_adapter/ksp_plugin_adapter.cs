@@ -42,6 +42,8 @@ public partial class PluginAdapter : UnityEngine.MonoBehaviour {
 
   private DateTime last_plugin_reset_;
 
+  private Krakensbane krakensbane_;
+
   private static bool an_instance_is_loaded_;
 
   PluginAdapter() {
@@ -278,10 +280,11 @@ public partial class PluginAdapter : UnityEngine.MonoBehaviour {
             (Vector3d)BubbleVelocityCorrection(
                           plugin_,
                           active_vessel.orbit.referenceBody.flightGlobalsIndex);
-        Krakensbane krakensbane =
-            (Krakensbane)FindObjectOfType(typeof(Krakensbane));
-        krakensbane.setOffset(displacement_offset);
-        krakensbane.FrameVel += velocity_offset;
+        if (krakensbane_ == null) {
+          krakensbane_ = (Krakensbane)FindObjectOfType(typeof(Krakensbane));
+        }
+        krakensbane_.setOffset(displacement_offset);
+        krakensbane_.FrameVel += velocity_offset;
       }
       if (MapView.MapIsEnabled &&
           active_vessel != null &&
