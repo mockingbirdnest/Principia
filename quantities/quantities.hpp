@@ -14,9 +14,10 @@ namespace principia {
 namespace quantities {
 
 template<int64_t LengthExponent, int64_t MassExponent, int64_t TimeExponent,
-         int64_t CurrentExponent, int64_t TemperatureExponent, int64_t AmountExponent,
-         int64_t LuminousIntensityExponent, int64_t WindingExponent,
-         int64_t AngleExponent, int64_t SolidAngleExponent>
+         int64_t CurrentExponent, int64_t TemperatureExponent,
+         int64_t AmountExponent, int64_t LuminousIntensityExponent,
+         int64_t WindingExponent, int64_t AngleExponent,
+         int64_t SolidAngleExponent>
 struct Dimensions;
 template<typename D> class Quantity;
 

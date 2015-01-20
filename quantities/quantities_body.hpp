@@ -7,9 +7,10 @@ namespace principia {
 namespace quantities {
 
 template<int64_t LengthExponent, int64_t MassExponent, int64_t TimeExponent,
-         int64_t CurrentExponent, int64_t TemperatureExponent, int64_t AmountExponent,
-         int64_t LuminousIntensityExponent, int64_t WindingExponent,
-         int64_t AngleExponent, int64_t SolidAngleExponent>
+         int64_t CurrentExponent, int64_t TemperatureExponent,
+         int64_t AmountExponent, int64_t LuminousIntensityExponent,
+         int64_t WindingExponent, int64_t AngleExponent,
+         int64_t SolidAngleExponent>
 struct Dimensions {
   enum {
     Length            = LengthExponent,
@@ -60,17 +61,18 @@ struct Dimensions {
                 WindingExponent <= kMaxExponent,
                 "Invalid winding exponent");
 
+  // The NOLINT are because glint is confused by the binary and.  I kid you not.
   static int64_t const representation =
-      (LengthExponent & kExponentMask) |
-      (MassExponent & kExponentMask) << 1 * kExponentBits |
-      (TimeExponent & kExponentMask) << 2 * kExponentBits |
-      (CurrentExponent & kExponentMask) << 3 * kExponentBits |
-      (TemperatureExponent & kExponentMask) << 4 * kExponentBits |
-      (AmountExponent & kExponentMask) << 5 * kExponentBits |
-      (LuminousIntensityExponent & kExponentMask) << 6 * kExponentBits |
-      (AngleExponent & kExponentMask) << 7 * kExponentBits |
-      (SolidAngleExponent & kExponentMask) << 8 * kExponentBits |
-      (WindingExponent & kExponentMask) << 9 * kExponentBits;
+      (LengthExponent & kExponentMask)                                 |  // NOLINT
+      (MassExponent & kExponentMask)              << 1 * kExponentBits |  // NOLINT
+      (TimeExponent & kExponentMask)              << 2 * kExponentBits |  // NOLINT
+      (CurrentExponent & kExponentMask)           << 3 * kExponentBits |  // NOLINT
+      (TemperatureExponent & kExponentMask)       << 4 * kExponentBits |  // NOLINT
+      (AmountExponent & kExponentMask)            << 5 * kExponentBits |  // NOLINT
+      (LuminousIntensityExponent & kExponentMask) << 6 * kExponentBits |  // NOLINT
+      (AngleExponent & kExponentMask)             << 7 * kExponentBits |  // NOLINT
+      (SolidAngleExponent & kExponentMask)        << 8 * kExponentBits |  // NOLINT
+      (WindingExponent & kExponentMask)           << 9 * kExponentBits;   // NOLINT
 };
 
 namespace type_generators {
