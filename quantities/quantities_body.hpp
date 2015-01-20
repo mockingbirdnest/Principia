@@ -27,6 +27,7 @@ struct Dimensions {
   static int const kMinExponent = -32;
   static int const kMaxExponent = 31;
   static int const kExponentBits = 5;
+  static int const kExponentMask = 0x1F;
 
   static_assert(LengthExponent >= kMinExponent &&
                 LengthExponent <= kMaxExponent,
@@ -60,16 +61,16 @@ struct Dimensions {
                 "Invalid winding exponent");
 
   static int64_t const representation =
-      LengthExponent + 
-      MassExponent << 1 * kExponentBits +
-      TimeExponent << 2 * kExponentBits +
-      CurrentExponent << 3 * kExponentBits +
-      TemperatureExponent << 4 * kExponentBits +
-      AmountExponent << 5 * kExponentBits +
-      LuminousIntensityExponent << 6 * kExponentBits +
-      AngleExponent << 7 * kExponentBits +
-      SolidAngleExponent << 8 * kExponentBits +
-      WindingExponent << 9 * kExponentBits;
+      (LengthExponent & kExponentMask) |
+      (MassExponent & kExponentMask) << 1 * kExponentBits |
+      (TimeExponent & kExponentMask) << 2 * kExponentBits |
+      (CurrentExponent & kExponentMask) << 3 * kExponentBits |
+      (TemperatureExponent & kExponentMask) << 4 * kExponentBits |
+      (AmountExponent & kExponentMask) << 5 * kExponentBits |
+      (LuminousIntensityExponent & kExponentMask) << 6 * kExponentBits |
+      (AngleExponent & kExponentMask) << 7 * kExponentBits |
+      (SolidAngleExponent & kExponentMask) << 8 * kExponentBits |
+      (WindingExponent & kExponentMask) << 9 * kExponentBits;
 };
 
 namespace type_generators {
@@ -266,7 +267,7 @@ template<typename D>
 Quantity<D> Quantity<D>::ReadFromMessage(
     serialization::Quantity const& message) {
   CHECK_EQ(D::representation, message.dimensions());
-  magnitude_ = message.magnitude();
+  return Quantity(message.magnitude());
 }
 
 // Multiplicative group
