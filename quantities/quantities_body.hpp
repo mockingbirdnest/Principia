@@ -6,10 +6,11 @@
 namespace principia {
 namespace quantities {
 
-template<int LengthExponent, int MassExponent, int TimeExponent,
-         int CurrentExponent, int TemperatureExponent, int AmountExponent,
-         int LuminousIntensityExponent, int WindingExponent,
-         int AngleExponent, int SolidAngleExponent>
+template<int64_t LengthExponent, int64_t MassExponent, int64_t TimeExponent,
+         int64_t CurrentExponent, int64_t TemperatureExponent,
+         int64_t AmountExponent, int64_t LuminousIntensityExponent,
+         int64_t WindingExponent, int64_t AngleExponent,
+         int64_t SolidAngleExponent>
 struct Dimensions {
   enum {
     Length            = LengthExponent,
@@ -23,6 +24,55 @@ struct Dimensions {
     Angle             = AngleExponent,
     SolidAngle        = SolidAngleExponent
   };
+
+  static int const kMinExponent = -16;
+  static int const kMaxExponent = 15;
+  static int const kExponentBits = 5;
+  static int const kExponentMask = 0x1F;
+
+  static_assert(LengthExponent >= kMinExponent &&
+                LengthExponent <= kMaxExponent,
+                "Invalid length exponent");
+  static_assert(MassExponent >= kMinExponent &&
+                MassExponent <= kMaxExponent,
+                "Invalid mass exponent");
+  static_assert(TimeExponent >= kMinExponent &&
+                TimeExponent <= kMaxExponent,
+                "Invalid time exponent");
+  static_assert(CurrentExponent >= kMinExponent &&
+                CurrentExponent <= kMaxExponent,
+                "Invalid current exponent");
+  static_assert(TemperatureExponent >= kMinExponent &&
+                TemperatureExponent <= kMaxExponent,
+                "Invalid temperature exponent");
+  static_assert(AmountExponent >= kMinExponent &&
+                AmountExponent <= kMaxExponent,
+                "Invalid amount exponent");
+  static_assert(LuminousIntensityExponent >= kMinExponent &&
+                LuminousIntensityExponent <= kMaxExponent,
+                "Invalid luminous intensity exponent");
+  static_assert(AngleExponent >= kMinExponent &&
+                AngleExponent <= kMaxExponent,
+                "Invalid angle exponent");
+  static_assert(SolidAngleExponent >= kMinExponent &&
+                SolidAngleExponent <= kMaxExponent,
+                "Invalid solid angle exponent");
+  static_assert(WindingExponent >= kMinExponent &&
+                WindingExponent <= kMaxExponent,
+                "Invalid winding exponent");
+
+  // The NOLINT are because glint is confused by the binary and.  I kid you not.
+  static int64_t const representation =
+      (LengthExponent & kExponentMask)                                 |  // NOLINT
+      (MassExponent & kExponentMask)              << 1 * kExponentBits |  // NOLINT
+      (TimeExponent & kExponentMask)              << 2 * kExponentBits |  // NOLINT
+      (CurrentExponent & kExponentMask)           << 3 * kExponentBits |  // NOLINT
+      (TemperatureExponent & kExponentMask)       << 4 * kExponentBits |  // NOLINT
+      (AmountExponent & kExponentMask)            << 5 * kExponentBits |  // NOLINT
+      (LuminousIntensityExponent & kExponentMask) << 6 * kExponentBits |  // NOLINT
+      (AngleExponent & kExponentMask)             << 7 * kExponentBits |  // NOLINT
+      (SolidAngleExponent & kExponentMask)        << 8 * kExponentBits |  // NOLINT
+      (WindingExponent & kExponentMask)           << 9 * kExponentBits;   // NOLINT
 };
 
 namespace type_generators {
@@ -209,10 +259,17 @@ inline bool Quantity<D>::operator!=(Quantity const& right) const {
 }
 
 template<typename D>
-void Quantity<D>::SerializeTo(
-    not_null<serialization::Quantity*> const quantity) const {
-  quantity->set_dimensions(0);
-  quantity->set_magnitude(magnitude_);
+void Quantity<D>::WriteToMessage(
+    not_null<serialization::Quantity*> const message) const {
+  message->set_dimensions(D::representation);
+  message->set_magnitude(magnitude_);
+}
+
+template<typename D>
+Quantity<D> Quantity<D>::ReadFromMessage(
+    serialization::Quantity const& message) {
+  CHECK_EQ(D::representation, message.dimensions());
+  return Quantity(message.magnitude());
 }
 
 // Multiplicative group

@@ -213,9 +213,12 @@ TEST_F(QuantitiesTest, ExpLogAndSqrt) {
 }
 
 TEST_F(QuantitiesTest, Serialization) {
-  serialization::Quantity quantity;
-  SpeedOfLight.SerializeTo(&quantity);
-  EXPECT_EQ(299792458.0, quantity.magnitude());
+  serialization::Quantity message;
+  SpeedOfLight.WriteToMessage(&message);
+  EXPECT_EQ(0x7C01, message.dimensions());
+  EXPECT_EQ(299792458.0, message.magnitude());
+  Speed const speed_of_light = Speed::ReadFromMessage(message);
+  EXPECT_EQ(SpeedOfLight, speed_of_light);
 }
 
 }  // namespace quantities
