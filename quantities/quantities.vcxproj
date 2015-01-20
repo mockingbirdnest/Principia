@@ -154,6 +154,9 @@
       <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">"$(SolutionDir)..\Google\protobuf\vsprojects\Release\protoc" -I"$(SolutionDir)." --cpp_out=.. "%(FullPath)"</Command>
       <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Generating C++ files for %(FullPath)</Message>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">quantities.pb.h;quantities.pb.cc;%(Outputs)</Outputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">"$(SolutionDir)..\Google\protobuf\vsprojects\Release\protoc" -I"$(SolutionDir)." --cpp_out=.. "%(FullPath)"</Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Generating C++ files for %(FullPath)</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">quantities.pb.h;quantities.pb.cc;%(Outputs)</Outputs>
       <Command Condition="'$(Configuration)|$(Platform)'=='Release_LLVM|Win32'">"$(SolutionDir)..\Google\protobuf\vsprojects\Release\protoc" -I"$(SolutionDir)." --cpp_out=.. "%(FullPath)"</Command>
       <Message Condition="'$(Configuration)|$(Platform)'=='Release_LLVM|Win32'">Generating C++ files for %(FullPath)</Message>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Release_LLVM|Win32'">quantities.pb.h;quantities.pb.cc;%(Outputs)</Outputs>
