@@ -108,8 +108,8 @@ git clone "https://github.com/pleroy/benchmark.git"
   Studio 2013. Build for Debug and Release. Ignore any warnings. Close the
   solution.
 0. Open `<root>\Google\protobuf\vsprojects\protobuf.sln` with Visual
-  Studio 2013. Build for Debug and Release, twice. The first attempt should
-  fail with one error. Close the solution.
+  Studio 2013. Build for Debug and Release, twice (the first attempt should
+  fail with one error). Close the solution.
 0. Open `<root>\Google\benchmark\msvc\google-benchmark.sln` with Visual
   Studio 2013. Build for Debug and Release. Ignore any warnings. Close the
   solution.
