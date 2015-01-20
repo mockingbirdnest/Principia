@@ -13,10 +13,10 @@ using principia::base::not_null;
 namespace principia {
 namespace quantities {
 
-template<int LengthExponent, int MassExponent, int TimeExponent,
-         int CurrentExponent, int TemperatureExponent, int AmountExponent,
-         int LuminousIntensityExponent, int WindingExponent,
-         int AngleExponent, int SolidAngleExponent>
+template<int64_t LengthExponent, int64_t MassExponent, int64_t TimeExponent,
+         int64_t CurrentExponent, int64_t TemperatureExponent, int64_t AmountExponent,
+         int64_t LuminousIntensityExponent, int64_t WindingExponent,
+         int64_t AngleExponent, int64_t SolidAngleExponent>
 struct Dimensions;
 template<typename D> class Quantity;
 
@@ -139,7 +139,8 @@ class Quantity {
   bool operator==(Quantity const& right) const;
   bool operator!=(Quantity const& right) const;
 
-  void SerializeTo(not_null<serialization::Quantity*> const quantity) const;
+  void WriteToMessage(not_null<serialization::Quantity*> const message) const;
+  static Quantity ReadFromMessage(serialization::Quantity const& message);
 
  private:
   explicit Quantity(double const magnitude);

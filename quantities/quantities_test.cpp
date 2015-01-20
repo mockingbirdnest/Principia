@@ -214,7 +214,7 @@ TEST_F(QuantitiesTest, ExpLogAndSqrt) {
 
 TEST_F(QuantitiesTest, Serialization) {
   serialization::Quantity quantity;
-  SpeedOfLight.SerializeTo(&quantity);
+  SpeedOfLight.WriteToMessage(&quantity);
   EXPECT_EQ(299792458.0, quantity.magnitude());
 }
 

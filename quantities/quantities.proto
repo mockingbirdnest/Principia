@@ -3,6 +3,8 @@ syntax = "proto2";
 package principia.serialization;
 
 message Quantity {
-  required fixed32 dimensions = 1;
+  // The following is encoded as a varint 128 because the exponents that are
+  // generally non-zero occupy the low bits.
+  required uint64 dimensions = 1;
   required double magnitude = 2;
 }
