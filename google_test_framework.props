@@ -11,7 +11,7 @@
       <PreprocessorDefinitions>GOOGLE_GLOG_DLL_DECL=;_UNICODE;UNICODE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
-      <AdditionalLibraryDirectories>$(SolutionDir)\..\Google\glog-0.3.3\$(ConfigurationName);$(SolutionDir)\..\Google\gmock-1.7.0\msvc\2010\$(ConfigurationName);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(SolutionDir)..\Google\glog-0.3.3\$(ConfigurationName);$(SolutionDir)..\Google\gmock-1.7.0\msvc\2010\$(ConfigurationName);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>libglog_static.lib;gmock.lib;gmock_main.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>

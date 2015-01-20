@@ -93,5 +93,9 @@ packages/
 *.synctex.gz
 *.thm
 
+#Protocol buffers
+*.pb.h
+*.pb.cc
+
 #git version header
 base/version.hpp

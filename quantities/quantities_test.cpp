@@ -212,5 +212,11 @@ TEST_F(QuantitiesTest, ExpLogAndSqrt) {
   EXPECT_EQ(std::exp(std::log(Rood / Pow<2>(Foot)) / 2) * Foot, Sqrt(Rood));
 }
 
+TEST_F(QuantitiesTest, Serialization) {
+  serialization::Quantity quantity;
+  SpeedOfLight.SerializeTo(&quantity);
+  EXPECT_EQ(299792458.0, quantity.magnitude());
+}
+
 }  // namespace quantities
 }  // namespace principia
