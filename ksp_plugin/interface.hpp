@@ -259,6 +259,9 @@ void CDECL principia__AddVesselToNextPhysicsBubble(Plugin* const plugin,
                                                    int count);
 
 extern "C" DLLEXPORT
+bool CDECL principia__PhysicsBubbleIsEmpty(Plugin const* const plugin);
+
+extern "C" DLLEXPORT
 XYZ CDECL principia__BubbleDisplacementCorrection(Plugin const* const plugin,
                                                   XYZ const sun_position);
 

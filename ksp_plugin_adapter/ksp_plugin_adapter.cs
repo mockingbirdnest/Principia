@@ -42,6 +42,8 @@ public partial class PluginAdapter : UnityEngine.MonoBehaviour {
 
   private DateTime last_plugin_reset_;
 
+  private Krakensbane krakensbane_;
+
   private static bool an_instance_is_loaded_;
 
   PluginAdapter() {
@@ -158,21 +160,6 @@ public partial class PluginAdapter : UnityEngine.MonoBehaviour {
   }
 
   private void AddToPhysicsBubble(Vessel vessel) {
-    bool inserted = InsertOrKeepVessel(
-        plugin_,
-        vessel.id.ToString(),
-        vessel.orbit.referenceBody.flightGlobalsIndex);
-    if (inserted) {
-      // NOTE(egg): this is only used when a (plugin-managed) physics bubble
-      // appears with a new vessel (e.g. when exiting the atmosphere).
-      // TODO(egg): these degrees of freedom are off by one Δt and we don't
-      // compensate for the pos/vel synchronization bug.
-      SetVesselStateOffset(plugin      : plugin_,
-                           vessel_guid : vessel.id.ToString(),
-                           from_parent : new QP{q = (XYZ)vessel.orbit.pos,
-                                                p = (XYZ)vessel.orbit.vel});
-    }
-    Log.Info("vessel has " + vessel.parts.Count() + " parts");
     Vector3d gravity =
         FlightGlobals.getGeeForceAtPosition(vessel.findWorldCenterOfMass());
     Vector3d kraken_velocity = Krakensbane.GetFrameVelocity();
@@ -185,16 +172,33 @@ public partial class PluginAdapter : UnityEngine.MonoBehaviour {
              mass = (double)part.mass + (double)part.GetResourceMass(),
              gravitational_acceleration_to_be_applied_by_ksp = (XYZ)gravity,
              id = part.flightID}).ToArray();
-    AddVesselToNextPhysicsBubble(plugin      : plugin_,
-                                 vessel_guid : vessel.id.ToString(),
-                                 parts       : parts,
-                                 count       : parts.Count());
+    if (parts.Count() > 0) {
+      bool inserted = InsertOrKeepVessel(
+          plugin_,
+          vessel.id.ToString(),
+          vessel.orbit.referenceBody.flightGlobalsIndex);
+      if (inserted) {
+        // NOTE(egg): this is only used when a (plugin-managed) physics bubble
+        // appears with a new vessel (e.g. when exiting the atmosphere).
+        // TODO(egg): these degrees of freedom are off by one Δt and we don't
+        // compensate for the pos/vel synchronization bug.
+        SetVesselStateOffset(plugin      : plugin_,
+                             vessel_guid : vessel.id.ToString(),
+                             from_parent : new QP{q = (XYZ)vessel.orbit.pos,
+                                                  p = (XYZ)vessel.orbit.vel});
+      }
+      AddVesselToNextPhysicsBubble(plugin      : plugin_,
+                                   vessel_guid : vessel.id.ToString(),
+                                   parts       : parts,
+                                   count       : parts.Count());
+    }
   }
 
   private bool is_in_space(Vessel vessel) {
-    return vessel.situation == Vessel.Situations.SUB_ORBITAL ||
-           vessel.situation == Vessel.Situations.ORBITING ||
-           vessel.situation == Vessel.Situations.ESCAPING;
+    return vessel.state != Vessel.State.DEAD &&
+           (vessel.situation == Vessel.Situations.SUB_ORBITAL ||
+            vessel.situation == Vessel.Situations.ORBITING ||
+            vessel.situation == Vessel.Situations.ESCAPING);
   }
 
   private bool is_on_rails_in_space(Vessel vessel) {
@@ -269,7 +273,7 @@ public partial class PluginAdapter : UnityEngine.MonoBehaviour {
       ApplyToVesselsOnRailsOrInInertialPhysicsBubbleInSpace(
           vessel => UpdateVessel(vessel, universal_time));
       Vessel active_vessel = FlightGlobals.ActiveVessel;
-      if (has_inertial_physics_bubble_in_space()) {
+      if (!PhysicsBubbleIsEmpty(plugin_)) {
         Vector3d displacement_offset =
             (Vector3d)BubbleDisplacementCorrection(
                           plugin_,
@@ -278,10 +282,11 @@ public partial class PluginAdapter : UnityEngine.MonoBehaviour {
             (Vector3d)BubbleVelocityCorrection(
                           plugin_,
                           active_vessel.orbit.referenceBody.flightGlobalsIndex);
-        Krakensbane krakensbane =
-            (Krakensbane)FindObjectOfType(typeof(Krakensbane));
-        krakensbane.setOffset(displacement_offset);
-        krakensbane.FrameVel += velocity_offset;
+        if (krakensbane_ == null) {
+          krakensbane_ = (Krakensbane)FindObjectOfType(typeof(Krakensbane));
+        }
+        krakensbane_.setOffset(displacement_offset);
+        krakensbane_.FrameVel += velocity_offset;
       }
       if (MapView.MapIsEnabled &&
           active_vessel != null &&
@@ -394,7 +399,7 @@ public partial class PluginAdapter : UnityEngine.MonoBehaviour {
       plugin_state = "not started";
     } else if (!time_is_advancing_) {
       plugin_state = "holding";
-    } else if (!has_inertial_physics_bubble_in_space()) {
+    } else if (PhysicsBubbleIsEmpty(plugin_)) {
       plugin_state = "running";
     } else {
       plugin_state = "managing physics bubble";
@@ -593,7 +598,7 @@ public partial class PluginAdapter : UnityEngine.MonoBehaviour {
   private void ResetPlugin() {
     Cleanup();
     ApplyToBodyTree(body => body.inverseRotThresholdAltitude =
-                                body.maxAtmosphereAltitude);
+                                body.timeWarpAltitudeLimits[1]);
     ResetRenderedTrajectory();
     last_plugin_reset_ = DateTime.Now;
     plugin_ = NewPlugin(Planetarium.GetUniversalTime(),

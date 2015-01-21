@@ -331,6 +331,10 @@ void principia__AddVesselToNextPhysicsBubble(Plugin* const plugin,
                                                       std::move(vessel_parts));
 }
 
+bool principia__PhysicsBubbleIsEmpty(Plugin const* const plugin) {
+  return CHECK_NOTNULL(plugin)->PhysicsBubbleIsEmpty();
+}
+
 XYZ principia__BubbleDisplacementCorrection(Plugin const* const plugin,
                                             XYZ const sun_position) {
   Displacement<World> const result =

@@ -102,6 +102,8 @@ class MockPlugin : public Plugin {
                void(GUID const& vessel_guid,
                     std::vector<IdAndOwnedPart> const& parts));
 
+  MOCK_CONST_METHOD0(PhysicsBubbleIsEmpty, bool());
+
   MOCK_CONST_METHOD1(BubbleDisplacementCorrection,
                      Displacement<World>(
                          Position<World> const& sun_world_position));
@@ -109,6 +111,8 @@ class MockPlugin : public Plugin {
   MOCK_CONST_METHOD1(BubbleVelocityCorrection,
                      Velocity<World> (
                          Index const reference_body_index));
+
+  MOCK_CONST_METHOD0(current_time, Instant());
 };
 
 }  // namespace ksp_plugin

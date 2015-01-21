@@ -57,7 +57,7 @@ class PhysicsBubble {
       PlanetariumRotation const& planetarium_rotation,
       Celestial const& reference_celestial) const;
 
-  // Returns |current_ != nullptr|.
+  // Returns |current_ == nullptr|.
   bool empty() const;
 
   // Returns 0 if |empty()|, 1 otherwise.

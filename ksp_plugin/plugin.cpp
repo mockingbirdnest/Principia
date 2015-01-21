@@ -608,6 +608,11 @@ Displacement<World> Plugin::BubbleDisplacementCorrection(
                                                     sun_world_position));
 }
 
+bool Plugin::PhysicsBubbleIsEmpty() const {
+  VLOG(1) << __FUNCTION__;
+  VLOG_AND_RETURN(1, bubble_.empty());
+}
+
 Velocity<World> Plugin::BubbleVelocityCorrection(
     Index const reference_body_index) const {
   VLOG(1) << __FUNCTION__ << '\n' << NAMED(reference_body_index);
