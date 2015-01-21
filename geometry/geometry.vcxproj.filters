@@ -104,9 +104,6 @@
     <ClInclude Include="pair_body.hpp">
       <Filter>Source Files</Filter>
     </ClInclude>
-    <ClInclude Include="geometry.pb.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="sign_test.cpp">
@@ -148,14 +145,5 @@
     <ClCompile Include="pair_test.cpp">
       <Filter>Test Files</Filter>
     </ClCompile>
-    <ClCompile Include="geometry.pb.cc">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\quantities\quantities.pb.cc">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-  </ItemGroup>
-  <ItemGroup>
-    <CustomBuild Include="geometry.proto" />
   </ItemGroup>
 </Project>

@@ -53,19 +53,10 @@
     <ClInclude Include="si_body.hpp">
       <Filter>Source Files</Filter>
     </ClInclude>
-    <ClInclude Include="quantities.pb.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="quantities_test.cpp">
       <Filter>Test Files</Filter>
     </ClCompile>
-    <ClCompile Include="quantities.pb.cc">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-  </ItemGroup>
-  <ItemGroup>
-    <CustomBuild Include="quantities.proto" />
   </ItemGroup>
 </Project>
