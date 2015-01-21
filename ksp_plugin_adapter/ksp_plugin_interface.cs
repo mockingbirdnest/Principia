@@ -198,6 +198,11 @@ public partial class PluginAdapter : UnityEngine.MonoBehaviour {
       int count);
 
   [DllImport(dllName           : kDllPath,
+             EntryPoint        = "principia__PhysicsBubbleIsEmpty",
+             CallingConvention = CallingConvention.Cdecl)]
+  private static extern bool PhysicsBubbleIsEmpty(IntPtr plugin);
+
+  [DllImport(dllName           : kDllPath,
              EntryPoint        = "principia__BubbleDisplacementCorrection",
              CallingConvention = CallingConvention.Cdecl)]
   private static extern XYZ BubbleDisplacementCorrection(IntPtr plugin,
