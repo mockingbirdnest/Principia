@@ -5,8 +5,8 @@
 #include <string>
 
 #include "base/not_null.hpp"
-#include "geometry/geometry.pb.h"
 #include "quantities/quantities.hpp"
+#include "serialization/geometry.pb.h"
 
 using principia::base::not_null;
 
