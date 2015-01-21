@@ -110,5 +110,34 @@ TEST_F(R3ElementTest, Normalize) {
                                               5.0 / sqrt(30.0)}), 0));
 }
 
+TEST_F(R3ElementDeathTest, SerializationError) {
+  R3Element<Speed> const v = {1 * Metre / Second,
+                              -2 * Metre / Second,
+                              5 * Metre / Second};
+  R3Element<Length> l;
+  EXPECT_DEATH({
+    serialization::R3Element message;
+    v.WriteToMessage(&message);
+    l = R3Element<Length>::ReadFromMessage(message);
+  }, "representation.*dimensions");
+}
+
+TEST_F(R3ElementTest, SerializationSuccess) {
+  R3Element<Speed> const v1 = {1 * Metre / Second,
+                               -2 * Metre / Second,
+                               5 * Metre / Second};
+  serialization::R3Element message;
+  v1.WriteToMessage(&message);
+  EXPECT_EQ(0x7C01, message.x().dimensions());
+  EXPECT_EQ(1.0, message.x().magnitude());
+  EXPECT_EQ(0x7C01, message.y().dimensions());
+  EXPECT_EQ(-2.0, message.y().magnitude());
+  EXPECT_EQ(0x7C01, message.z().dimensions());
+  EXPECT_EQ(5.0, message.z().magnitude());
+  R3Element<Speed> const v2 = R3Element<Speed>::ReadFromMessage(message);
+  EXPECT_EQ(v1, v2);
+}
+
+
 }  // namespace geometry
 }  // namespace principia

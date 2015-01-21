@@ -6,6 +6,7 @@
 
 #include "base/not_null.hpp"
 #include "quantities/quantities.hpp"
+#include "serialization/geometry.pb.h"
 
 using principia::base::not_null;
 
@@ -35,6 +36,9 @@ struct R3Element {
   // modified Gram-Schmidt algorithm.  Fails if |*this| is zero.
   template<typename S>
   void Orthogonalize(not_null<R3Element<S>*> const r3_element) const;
+
+  void WriteToMessage(not_null<serialization::R3Element*> const message) const;
+  static R3Element ReadFromMessage(serialization::R3Element const& message);
 
   Scalar x;
   Scalar y;

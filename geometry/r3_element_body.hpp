@@ -88,6 +88,22 @@ void R3Element<Scalar>::Orthogonalize(
 }
 
 template<typename Scalar>
+void R3Element<Scalar>::WriteToMessage(
+    not_null<serialization::R3Element*> const message) const {
+  x.WriteToMessage(message->mutable_x());
+  y.WriteToMessage(message->mutable_y());
+  z.WriteToMessage(message->mutable_z());
+}
+
+template<typename Scalar>
+R3Element<Scalar> R3Element<Scalar>::ReadFromMessage(
+    serialization::R3Element const& message) {
+  return {Scalar::ReadFromMessage(message.x()),
+          Scalar::ReadFromMessage(message.y()),
+          Scalar::ReadFromMessage(message.z())};
+}
+
+template<typename Scalar>
 inline R3Element<Scalar> operator+(R3Element<Scalar> const& right) {
   return R3Element<Scalar>(+right.x, +right.y, +right.z);
 }

@@ -6,7 +6,7 @@
 #include <string>
 
 #include "base/not_null.hpp"
-#include "quantities/quantities.pb.h"
+#include "serialization/quantities.pb.h"
 
 using principia::base::not_null;
 
