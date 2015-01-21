@@ -392,7 +392,7 @@ TEST_F(InterfaceTest, PhysicsBubble) {
 
   EXPECT_CALL(*plugin_, PhysicsBubbleIsEmpty()).WillOnce(Return(true));
   bool const empty = principia__PhysicsBubbleIsEmpty(plugin_.get());
-  EXPECT_THAT(empty, Eq(true));
+  EXPECT_TRUE(empty);
 }
 
 TEST_F(InterfaceTest, CurrentTime) {

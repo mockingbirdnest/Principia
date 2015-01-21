@@ -210,7 +210,10 @@ class Plugin {
   // already in |next_physics_bubble_->parts|.
   virtual void AddVesselToNextPhysicsBubble(GUID const& vessel_guid,
                                             std::vector<IdAndOwnedPart> parts);
+
+  // Returns |bubble_.empty()|.
   virtual bool PhysicsBubbleIsEmpty() const;
+
   // Computes and returns |current_physics_bubble_->displacement_correction|.
   // This is the |World| shift to be applied to the physics bubble in order for
   // it to be in the correct position.
