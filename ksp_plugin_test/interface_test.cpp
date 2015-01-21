@@ -1,6 +1,7 @@
 #include "ksp_plugin/interface.hpp"
 
 #include "base/not_null.hpp"
+#include "geometry/epoch.hpp"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "quantities/si.hpp"
@@ -8,6 +9,7 @@
 
 using principia::base::check_not_null;
 using principia::geometry::Displacement;
+using principia::geometry::kUnixEpoch;
 using principia::ksp_plugin::AliceSun;
 using principia::ksp_plugin::Index;
 using principia::ksp_plugin::LineSegment;
@@ -16,6 +18,7 @@ using principia::ksp_plugin::Part;
 using principia::ksp_plugin::RenderedTrajectory;
 using principia::ksp_plugin::World;
 using principia::si::Degree;
+using principia::si::Second;
 using principia::si::Tonne;
 using testing::Eq;
 using testing::ElementsAre;
@@ -386,6 +389,16 @@ TEST_F(InterfaceTest, PhysicsBubble) {
   XYZ const velocity =
       principia__BubbleVelocityCorrection(plugin_.get(), kParentIndex);
   EXPECT_THAT(velocity, Eq(XYZ{66, 55, 44}));
+
+  EXPECT_CALL(*plugin_, PhysicsBubbleIsEmpty()).WillOnce(Return(true));
+  bool const empty = principia__PhysicsBubbleIsEmpty(plugin_.get());
+  EXPECT_THAT(empty, Eq(true));
+}
+
+TEST_F(InterfaceTest, CurrentTime) {
+  EXPECT_CALL(*plugin_, current_time()).WillOnce(Return(kUnixEpoch));
+  double const current_time = principia__current_time(plugin_.get());
+  EXPECT_THAT(Instant(current_time * Second), Eq(kUnixEpoch));
 }
 
 }  // namespace
