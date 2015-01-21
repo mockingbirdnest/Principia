@@ -195,9 +195,10 @@ public partial class PluginAdapter : UnityEngine.MonoBehaviour {
   }
 
   private bool is_in_space(Vessel vessel) {
-    return vessel.situation == Vessel.Situations.SUB_ORBITAL ||
-           vessel.situation == Vessel.Situations.ORBITING ||
-           vessel.situation == Vessel.Situations.ESCAPING;
+    return vessel.state != Vessel.State.DEAD &&
+           (vessel.situation == Vessel.Situations.SUB_ORBITAL ||
+            vessel.situation == Vessel.Situations.ORBITING ||
+            vessel.situation == Vessel.Situations.ESCAPING);
   }
 
   private bool is_on_rails_in_space(Vessel vessel) {
