@@ -61,6 +61,8 @@ class QuantitiesTest : public testing::Test {
  protected:
 };
 
+using QuantitiesDeathTest = QuantitiesTest;
+
 TEST_F(QuantitiesTest, AbsoluteValue) {
   EXPECT_EQ(Abs(-1729), 1729);
   EXPECT_EQ(Abs(1729), 1729);
@@ -212,7 +214,16 @@ TEST_F(QuantitiesTest, ExpLogAndSqrt) {
   EXPECT_EQ(std::exp(std::log(Rood / Pow<2>(Foot)) / 2) * Foot, Sqrt(Rood));
 }
 
-TEST_F(QuantitiesTest, Serialization) {
+TEST_F(QuantitiesDeathTest, SerializationError) {
+  EXPECT_DEATH({
+    serialization::Quantity message;
+    message.set_dimensions(0x7C00);
+    message.set_magnitude(1.0);
+    Speed const speed_of_light = Speed::ReadFromMessage(message);
+  }, "representation.*dimensions");
+}
+
+TEST_F(QuantitiesTest, SerializationSuccess) {
   serialization::Quantity message;
   SpeedOfLight.WriteToMessage(&message);
   EXPECT_EQ(0x7C01, message.dimensions());

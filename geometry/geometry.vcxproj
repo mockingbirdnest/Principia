@@ -131,6 +131,7 @@
     <ClInclude Include="barycentre_calculator_body.hpp" />
     <ClInclude Include="epoch.hpp" />
     <ClInclude Include="epoch_body.hpp" />
+    <ClInclude Include="geometry.pb.h" />
     <ClInclude Include="identity.hpp" />
     <ClInclude Include="identity_body.hpp" />
     <ClInclude Include="named_quantities.hpp" />
@@ -157,7 +158,9 @@
     <ClInclude Include="sign.hpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\quantities\quantities.pb.cc" />
     <ClCompile Include="barycentre_calculator_test.cpp" />
+    <ClCompile Include="geometry.pb.cc" />
     <ClCompile Include="grassmann_test.cpp" />
     <ClCompile Include="identity_test.cpp" />
     <ClCompile Include="pair_test.cpp" />
@@ -170,6 +173,25 @@
     <ClCompile Include="r3_element_test.cpp" />
     <ClCompile Include="rotation_test.cpp" />
     <ClCompile Include="sign_test.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="geometry.proto">
+      <FileType>Document</FileType>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">"$(SolutionDir)..\Google\protobuf\vsprojects\Release\protoc" -I"$(SolutionDir)." --cpp_out=.. "%(FullPath)"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">"$(SolutionDir)..\Google\protobuf\vsprojects\Release\protoc" -I"$(SolutionDir)." --cpp_out=.. "%(FullPath)"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release_LLVM|Win32'">"$(SolutionDir)..\Google\protobuf\vsprojects\Release\protoc" -I"$(SolutionDir)." --cpp_out=.. "%(FullPath)"</Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Generating C++ files for %(FullPath)</Message>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Generating C++ files for %(FullPath)</Message>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release_LLVM|Win32'">Generating C++ files for %(FullPath)</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">%(Filename).pb.h;%(Filename).pb.cc;%(Outputs)</Outputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">%(Filename).pb.h;%(Filename).pb.cc;%(Outputs)</Outputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release_LLVM|Win32'">%(Filename).pb.h;%(Filename).pb.cc;%(Outputs)</Outputs>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\quantities\quantities.vcxproj">
+      <Project>{273987f9-5e73-43e6-868e-e9d3c137f01a}</Project>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

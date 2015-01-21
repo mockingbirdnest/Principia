@@ -1,0 +1,11 @@
+syntax = "proto2";
+
+import "quantities/quantities.proto";
+
+package principia.serialization;
+
+message R3Element {
+  required Quantity x = 1;
+  required Quantity y = 2;
+  required Quantity z = 3;
+}
