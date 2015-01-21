@@ -398,7 +398,7 @@ public partial class PluginAdapter : UnityEngine.MonoBehaviour {
       plugin_state = "not started";
     } else if (!time_is_advancing_) {
       plugin_state = "holding";
-    } else if (!has_inertial_physics_bubble_in_space()) {
+    } else if (PhysicsBubbleIsEmpty(plugin_)) {
       plugin_state = "running";
     } else {
       plugin_state = "managing physics bubble";
@@ -597,7 +597,7 @@ public partial class PluginAdapter : UnityEngine.MonoBehaviour {
   private void ResetPlugin() {
     Cleanup();
     ApplyToBodyTree(body => body.inverseRotThresholdAltitude =
-                                body.maxAtmosphereAltitude);
+                                body.timeWarpAltitudeLimits[1]);
     ResetRenderedTrajectory();
     last_plugin_reset_ = DateTime.Now;
     plugin_ = NewPlugin(Planetarium.GetUniversalTime(),
