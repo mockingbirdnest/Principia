@@ -1,6 +1,6 @@
 syntax = "proto2";
 
-import "quantities/quantities.proto";
+import "serialization/quantities.proto";
 
 package principia.serialization;
 

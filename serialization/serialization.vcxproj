@@ -54,6 +54,14 @@
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">%(Filename).pb.h;%(Filename).pb.cc;%(Outputs)</Outputs>
     </CustomBuild>
   </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="geometry.pb.h" />
+    <ClInclude Include="quantities.pb.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="geometry.pb.cc" />
+    <ClCompile Include="quantities.pb.cc" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>
