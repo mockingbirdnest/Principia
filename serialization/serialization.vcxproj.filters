@@ -11,8 +11,8 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <None Include="geometry.proto" />
-    <None Include="quantities.proto" />
+    <CustomBuild Include="geometry.proto" />
+    <CustomBuild Include="quantities.proto" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="geometry.pb.h">
