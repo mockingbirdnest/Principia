@@ -10,6 +10,7 @@ message R3Element {
   required Quantity z = 3;
 }
 
+// TODO(phl): This should probably include the tag of the frame.
 message Multivector {
   oneof rank {
     R3Element vector = 1;

@@ -21,13 +21,17 @@
 using principia::astronomy::JulianYear;
 using principia::astronomy::Parsec;
 using principia::constants::SpeedOfLight;
+using principia::quantities::Charge;
 using principia::quantities::Length;
+using principia::quantities::Pressure;
 using principia::quantities::Product;
 using principia::quantities::Speed;
 using principia::quantities::Sqrt;
 using principia::quantities::Time;
+using principia::si::Coulomb;
 using principia::si::Day;
 using principia::si::Metre;
+using principia::si::Pascal;
 using principia::si::Second;
 using principia::testing_utilities::AlmostEquals;
 using principia::testing_utilities::Times;
@@ -68,6 +72,8 @@ class GrassmannTest : public testing::Test {
   R3Element<Length> const w_ = {2 * Metre, 2 * Metre, 2 * Metre};
   R3Element<Length> const a_ = {1 * Inch, 2 * Foot, 3 * Fathom};
 };
+
+using GrassmannDeathTest = GrassmannTest;
 
 TEST_F(GrassmannTest, Operators) {
   testing_utilities::TestEquality(Bivector<Length, World>(u_),
@@ -236,6 +242,69 @@ TEST_F(GrassmannTest, Normalize) {
                                           6 / Sqrt(77)})));
   Trivector<Length, World> const u(-4 * Furlong);
   EXPECT_THAT(Normalize(u), Eq(Trivector<double, World>(-1)));
+}
+
+TEST_F(GrassmannDeathTest, SerializationError) {
+  using V = Vector<Length, World>;
+  using B = Bivector<Length, World>;
+  using T = Trivector<Length, World>;
+
+  EXPECT_DEATH({
+    serialization::Multivector message;
+    V const v({-1 * Metre, 2 * Metre, 3 * Metre});
+    v.WriteToMessage(&message);
+    B const b = B::ReadFromMessage(message);
+  }, "has_bivector");
+  EXPECT_DEATH({
+    serialization::Multivector message;
+    B const b({-1 * Metre, 2 * Metre, 3 * Metre});
+    b.WriteToMessage(&message);
+    T const t = T::ReadFromMessage(message);
+  }, "has_trivector");
+  EXPECT_DEATH({
+    serialization::Multivector message;
+    T const t(1 * Metre);
+    t.WriteToMessage(&message);
+    V const v = V::ReadFromMessage(message);
+  }, "has_vector");
+}
+
+TEST_F(GrassmannTest, SerializationSuccess) {
+  serialization::Multivector message;
+
+  Vector<Length, World> const v({-1 * Metre, 2 * Metre, 3 * Metre});
+  v.WriteToMessage(&message);
+  EXPECT_TRUE(message.has_vector());
+  EXPECT_FALSE(message.has_bivector());
+  EXPECT_FALSE(message.has_trivector());
+  EXPECT_EQ(-1, message.vector().x().magnitude());
+  EXPECT_EQ(2, message.vector().y().magnitude());
+  EXPECT_EQ(3, message.vector().z().magnitude());
+  Vector<Length, World> const w =
+      Vector<Length, World>::ReadFromMessage(message);
+  EXPECT_EQ(v, w);
+
+  Bivector<Pressure, World> const b({-4 * Pascal, -5 * Pascal, 6 * Pascal});
+  b.WriteToMessage(&message);
+  EXPECT_FALSE(message.has_vector());
+  EXPECT_TRUE(message.has_bivector());
+  EXPECT_FALSE(message.has_trivector());
+  EXPECT_EQ(-4, message.bivector().x().magnitude());
+  EXPECT_EQ(-5, message.bivector().y().magnitude());
+  EXPECT_EQ(6, message.bivector().z().magnitude());
+  Bivector<Pressure, World> const c =
+      Bivector<Pressure, World>::ReadFromMessage(message);
+  EXPECT_EQ(b, c);
+
+  Trivector<Charge, World> const t(-7 * Coulomb);
+  t.WriteToMessage(&message);
+  EXPECT_FALSE(message.has_vector());
+  EXPECT_FALSE(message.has_bivector());
+  EXPECT_TRUE(message.has_trivector());
+  EXPECT_EQ(-7, message.trivector().magnitude());
+  Trivector<Charge, World> const u =
+      Trivector<Charge, World>::ReadFromMessage(message);
+  EXPECT_EQ(t, u);
 }
 
 }  // namespace geometry
