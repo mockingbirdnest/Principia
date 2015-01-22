@@ -7,6 +7,7 @@
 #include "base/not_null.hpp"
 #include "geometry/r3_element.hpp"
 #include "quantities/quantities.hpp"
+#include "serialization/geometry.pb.h"
 
 using principia::base::not_null;
 
@@ -34,7 +35,11 @@ class Multivector<Scalar, Frame, 1> {
   template<typename S, typename F>
   void Orthogonalize(not_null<Multivector<S, F, 1>*> const multivector) const;
 
- private:
+  void WriteToMessage(
+      not_null<serialization::Multivector*> const message) const;
+  static Multivector ReadFromMessage(serialization::Multivector const& message);
+
+private:
   R3Element<Scalar> coordinates_;
 
   template<typename S, typename F, int r>
@@ -54,7 +59,11 @@ class Multivector<Scalar, Frame, 2> {
   template<typename S, typename F>
   void Orthogonalize(not_null<Multivector<S, F, 2>*> const multivector) const;
 
- private:
+  void WriteToMessage(
+      not_null<serialization::Multivector*> const message) const;
+  static Multivector ReadFromMessage(serialization::Multivector const& message);
+
+private:
   R3Element<Scalar> coordinates_;
 };
 
@@ -68,7 +77,11 @@ class Multivector<Scalar, Frame, 3> {
   Scalar const& coordinates() const;
   Scalar Norm() const;
 
- private:
+  void WriteToMessage(
+      not_null<serialization::Multivector*> const message) const;
+  static Multivector ReadFromMessage(serialization::Multivector const& message);
+
+private:
   Scalar coordinates_;
 };
 
