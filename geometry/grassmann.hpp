@@ -39,7 +39,7 @@ class Multivector<Scalar, Frame, 1> {
       not_null<serialization::Multivector*> const message) const;
   static Multivector ReadFromMessage(serialization::Multivector const& message);
 
-private:
+ private:
   R3Element<Scalar> coordinates_;
 
   template<typename S, typename F, int r>
@@ -63,7 +63,7 @@ class Multivector<Scalar, Frame, 2> {
       not_null<serialization::Multivector*> const message) const;
   static Multivector ReadFromMessage(serialization::Multivector const& message);
 
-private:
+ private:
   R3Element<Scalar> coordinates_;
 };
 
@@ -81,7 +81,7 @@ class Multivector<Scalar, Frame, 3> {
       not_null<serialization::Multivector*> const message) const;
   static Multivector ReadFromMessage(serialization::Multivector const& message);
 
-private:
+ private:
   Scalar coordinates_;
 };
 
