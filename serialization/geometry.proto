@@ -18,3 +18,10 @@ message Multivector {
     Quantity trivector = 3;
   }
 }
+
+message Point {
+  oneof vector {
+    Multivector multivector = 1;
+    Quantity scalar = 2;
+  }
+}
