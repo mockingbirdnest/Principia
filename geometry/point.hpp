@@ -5,6 +5,7 @@
 #include <vector>
 
 #include "quantities/quantities.hpp"
+#include "serialization/geometry.pb.h"
 
 using principia::quantities::is_quantity;
 
@@ -31,6 +32,9 @@ class Point {
 
   bool operator==(Point const& right) const;
   bool operator!=(Point const& right) const;
+
+  void WriteToMessage(not_null<serialization::Point*> const message) const;
+  static Point ReadFromMessage(serialization::Point const& message);
 
   template<typename Weight>
   class BarycentreCalculator {
