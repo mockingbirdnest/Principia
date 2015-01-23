@@ -16,29 +16,32 @@ using quantities::Time;
 using quantities::Volume;
 using si::Day;
 using si::Litre;
+using si::Metre;
+using si::Second;
 using testing::Eq;
 using testing_utilities::AlmostEquals;
 
-class AffineSpaceTest : public testing::Test {
+class PointTest : public testing::Test {
  protected:
+  struct World;
 };
 
-using AffineSpaceDeathTest = AffineSpaceTest;
+using PointDeathTest = PointTest;
 
-TEST_F(AffineSpaceTest, Comparisons) {
+TEST_F(PointTest, Comparisons) {
   EXPECT_TRUE(kUnixEpoch == kUnixEpoch);
   EXPECT_FALSE(kUnixEpoch == kJ2000);
   EXPECT_TRUE(kUnixEpoch != kJ2000);
   EXPECT_FALSE(kUnixEpoch != kUnixEpoch);
 }
 
-TEST_F(AffineSpaceTest, PlusMinus) {
+TEST_F(PointTest, PlusMinus) {
   EXPECT_THAT(ModifiedJulianDate(0) - JulianDate(0), Eq(2400000.5 * Day));
   EXPECT_THAT(JulianDate(2451545.0), Eq(kJ2000));
   EXPECT_THAT(ModifiedJulianDate(0) - 2400000.5 * Day, Eq(JulianDate(0)));
 }
 
-TEST_F(AffineSpaceTest, AssignmentOperators) {
+TEST_F(PointTest, AssignmentOperators) {
   Instant accumulator = kUnixEpoch;
   Instant assignment_result;
   assignment_result = (accumulator += 365 * Day);
@@ -51,7 +54,7 @@ TEST_F(AffineSpaceTest, AssignmentOperators) {
   EXPECT_THAT(accumulator, Eq(kUnixEpoch));
 }
 
-TEST_F(AffineSpaceTest, Ordering) {
+TEST_F(PointTest, Ordering) {
   // Check that is_quantity works for double.
   Point<double> d1(1.0);
   Point<double> d2(-3.0);
@@ -69,7 +72,46 @@ TEST_F(AffineSpaceTest, Ordering) {
   EXPECT_TRUE(t1 >= t1);
 }
 
-TEST_F(AffineSpaceDeathTest, BarycentreError) {
+TEST_F(PointDeathTest, SerializationError) {
+  EXPECT_DEATH({
+    serialization::Point message;
+    Instant const t1(10 * Second);
+    t1.WriteToMessage(&message);
+    Position<World> const d2 = Position<World>::ReadFromMessage(message);
+  }, "has_multivector");
+  EXPECT_DEATH({
+    serialization::Point message;
+    Position<World> const d1(
+        Displacement<World>({-1 * Metre, 2 * Metre, 3 * Metre}));
+    d1.WriteToMessage(&message);
+    Instant const t2 = Instant::ReadFromMessage(message);
+  }, "has_scalar");
+}
+
+TEST_F(PointTest, SerializationSuccess) {
+  serialization::Point message;
+
+  Instant const t1(10 * Second);
+  t1.WriteToMessage(&message);
+  EXPECT_TRUE(message.has_scalar());
+  EXPECT_FALSE(message.has_multivector());
+  EXPECT_EQ(10, message.scalar().magnitude());
+  Instant const t2 = Instant::ReadFromMessage(message);
+  EXPECT_EQ(t1, t2);
+
+  Position<World> const d1(
+      Displacement<World>({-1 * Metre, 2 * Metre, 3 * Metre}));
+  d1.WriteToMessage(&message);
+  EXPECT_FALSE(message.has_scalar());
+  EXPECT_TRUE(message.has_multivector());
+  EXPECT_EQ(-1, message.multivector().vector().x().magnitude());
+  EXPECT_EQ(2, message.multivector().vector().y().magnitude());
+  EXPECT_EQ(3, message.multivector().vector().z().magnitude());
+  Position<World> const d2 = Position<World>::ReadFromMessage(message);
+  EXPECT_EQ(d1, d2);
+}
+
+TEST_F(PointDeathTest, BarycentreError) {
   // The <> seem to confuse EXPECT_DEATH, hence the lambda.
   auto barycentre =
       [](std::vector<Instant> const& instants,
@@ -90,7 +132,7 @@ TEST_F(AffineSpaceDeathTest, BarycentreError) {
   }, "Empty BarycentreCalculator");
 }
 
-TEST_F(AffineSpaceTest, Barycentres) {
+TEST_F(PointTest, Barycentres) {
   Instant const t1 = kUnixEpoch + 1 * Day;
   Instant const t2 = kUnixEpoch - 3 * Day;
   Instant const b1 = Barycentre<Time, Volume>({t1, t2}, {3 * Litre, 1 * Litre});
@@ -99,7 +141,7 @@ TEST_F(AffineSpaceTest, Barycentres) {
   EXPECT_THAT(b2, Eq(kUnixEpoch - 1 * Day));
 }
 
-TEST_F(AffineSpaceTest, InstantBarycentreCalculator) {
+TEST_F(PointTest, InstantBarycentreCalculator) {
   Instant::BarycentreCalculator<double> calculator;
   Instant const t1 = kUnixEpoch + 2 * Day;
   Instant const t2 = kUnixEpoch - 3 * Day;
@@ -113,7 +155,7 @@ TEST_F(AffineSpaceTest, InstantBarycentreCalculator) {
   EXPECT_THAT(calculator.Get(), Eq(kUnixEpoch - 1.7 * Day));
 }
 
-TEST_F(AffineSpaceTest, DoubleBarycentreCalculator) {
+TEST_F(PointTest, DoubleBarycentreCalculator) {
   Point<double>::BarycentreCalculator<double> calculator;
   Point<double> const d1 = Point<double>(2);
   Point<double> const d2 = Point<double>(-3);

@@ -2,14 +2,55 @@
 
 #include <vector>
 
+#include "geometry/grassmann.hpp"
 #include "glog/logging.h"
 #include "quantities/quantities.hpp"
 
+using principia::geometry::Multivector;
 using principia::quantities::Product;
+using principia::quantities::Quantity;
 using principia::quantities::SIUnit;
 
 namespace principia {
 namespace geometry {
+
+namespace {
+
+template<typename Vector>
+class Serialization {};
+
+template<typename Dimensions>
+class Serialization<Quantity<Dimensions>> {
+ public:
+  using Vector = Quantity<Dimensions>;
+  static void WriteToMessage(Vector const& coordinates,
+                             not_null<serialization::Point*> const message) {
+    coordinates.WriteToMessage(message->mutable_scalar());
+  }
+
+  static Vector ReadFromMessage(serialization::Point const& message) {
+    CHECK(message.has_scalar());
+    return Vector::ReadFromMessage(message.scalar());
+  }
+};
+
+template<typename Scalar, typename Frame, int rank>
+class Serialization<Multivector<Scalar, Frame, rank>> {
+ public:
+  using Vector = Multivector<Scalar, Frame, rank>;
+  static void WriteToMessage(
+      Vector const& coordinates,
+      not_null<serialization::Point*> const message) {
+    coordinates.WriteToMessage(message->mutable_multivector());
+  }
+
+  static Vector ReadFromMessage(serialization::Point const& message) {
+    CHECK(message.has_multivector());
+    return Vector::ReadFromMessage(message.multivector());
+  }
+};
+
+}  // namespace
 
 template<typename Vector>
 Point<Vector>::Point() {}
@@ -52,6 +93,18 @@ bool Point<Vector>::operator==(Point<Vector> const& right) const {
 template<typename Vector>
 bool Point<Vector>::operator!=(Point<Vector> const& right) const {
   return coordinates_ != right.coordinates_;
+}
+
+template<typename Vector>
+void Point<Vector>::WriteToMessage(
+    not_null<serialization::Point*> const message) const {
+  Serialization<Vector>::WriteToMessage(coordinates_, message);
+}
+
+template<typename Vector>
+Point<Vector> Point<Vector>::ReadFromMessage(
+    serialization::Point const& message) {
+  return Point(Serialization<Vector>::ReadFromMessage(message));
 }
 
 template<typename Vector>
