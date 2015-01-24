@@ -81,7 +81,6 @@ inline Quaternion Quaternion::ReadFromMessage(
                         message.imaginary_part()));
 }
 
-
 inline bool operator==(Quaternion const& left, Quaternion const& right) {
   return left.real_part() == right.real_part() &&
          left.imaginary_part() == left.imaginary_part();
