@@ -265,6 +265,30 @@ Vector<Acceleration, Frame> Trajectory<Frame>::evaluate_intrinsic_acceleration(
 }
 
 template<typename Frame>
+void Trajectory<Frame>::WriteToMessage(
+    not_null<serialization::Trajectory*> const message) const {
+  std::unique_ptr<Instant> last_instant = nullptr;
+  serialization::Trajectory_Litter* serialized_litter = nullptr;
+  for (auto const& litter : children_) {
+    if (last_instant == nullptr || litter.first != last_instant) {
+      last_instant = std::make_unique<Instant>(litter.first);
+      serialized_litter = message->add_children();
+      litter.first.WriteToMessage(serialized_litter->mutable_fork_time());
+    }
+    litter.second->WriteToMessage(serialized_litter->add_trajectories());
+  }
+  for (auto const& instantaneous_degrees_of_freedom : timeline_) {
+    auto const serialized_instantaneous_degrees_of_freedom =
+        message->add_timeline();
+    instantaneous_degrees_of_freedom.first.WriteToMessage(
+        serialized_instantaneous_degrees_of_freedom->mutable_instant());
+    instantaneous_degrees_of_freedom.second.WriteToMessage(
+        serialized_instantaneous_degrees_of_freedom->
+            mutable_degrees_of_freedom());
+  }
+}
+
+template<typename Frame>
 typename Trajectory<Frame>::Iterator&
 Trajectory<Frame>::Iterator::operator++() {
   if (!forks_.empty() && current_ == forks_.front()) {
