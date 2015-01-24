@@ -57,6 +57,16 @@ OrthogonalMap<FromFrame, ToFrame> Identity<FromFrame, ToFrame>::Forget() const {
       Rotation<FromFrame, ToFrame>());
 }
 
+template<typename FromFrame, typename ToFrame>
+void Identity<FromFrame, ToFrame>::WriteToMessage(
+    not_null<serialization::Identity*> const message) const {}
+
+template<typename FromFrame, typename ToFrame>
+Identity<FromFrame, ToFrame> Identity<FromFrame, ToFrame>::ReadFromMessage(
+    serialization::Identity const& message) {
+  return Identity();
+}
+
 template<typename FromFrame, typename ThroughFrame, typename ToFrame>
 Identity<FromFrame, ToFrame> operator*(
     Identity<ThroughFrame, ToFrame> const& left,

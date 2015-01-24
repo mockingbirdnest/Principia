@@ -32,5 +32,20 @@ TEST_F(SignTest, ScalarMultiplication) {
   EXPECT_EQ(3, negative_ * -3);
 }
 
+TEST_F(SignTest, Serialization) {
+  serialization::Sign message;
+  Sign s(1);
+
+  positive_.WriteToMessage(&message);
+  EXPECT_FALSE(message.negative());
+  s = Sign::ReadFromMessage(message);
+  EXPECT_FALSE(s.Negative());
+
+  negative_.WriteToMessage(&message);
+  EXPECT_TRUE(message.negative());
+  s = Sign::ReadFromMessage(message);
+  EXPECT_TRUE(s.Negative());
+}
+
 }  // namespace geometry
 }  // namespace principia

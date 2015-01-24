@@ -4,6 +4,7 @@
 #include "geometry/grassmann.hpp"
 #include "geometry/linear_map.hpp"
 #include "geometry/sign.hpp"
+#include "serialization/geometry.pb.h"
 
 namespace principia {
 namespace geometry {
@@ -38,6 +39,9 @@ class Identity : public LinearMap<FromFrame, ToFrame> {
   typename base::Mappable<Identity, T>::type operator()(T const& t) const;
 
   OrthogonalMap<FromFrame, ToFrame> Forget() const;
+
+  void WriteToMessage(not_null<serialization::Identity*> const message) const;
+  static Identity ReadFromMessage(serialization::Identity const& message);
 
  private:
   template<typename Scalar>

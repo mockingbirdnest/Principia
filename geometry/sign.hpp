@@ -1,5 +1,10 @@
 #pragma once
 
+#include "base/not_null.hpp"
+#include "serialization/geometry.pb.h"
+
+using principia::base::not_null;
+
 namespace principia {
 namespace geometry {
 
@@ -12,6 +17,9 @@ class Sign {
 
   bool Negative() const;
   bool Positive() const;
+
+  void WriteToMessage(not_null<serialization::Sign*> const message) const;
+  static Sign ReadFromMessage(serialization::Sign const& message);
 
  private:
   bool negative_;
