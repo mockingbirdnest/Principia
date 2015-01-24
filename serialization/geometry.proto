@@ -53,7 +53,3 @@ message R3x3Matrix {
   required R3Element row_y = 2;
   required R3Element row_z = 3;
 }
-
-message Rotation {
-  required Quaternion quaternion = 1;
-}
