@@ -2,6 +2,7 @@
 
 #include "base/mappable.hpp"
 #include "geometry/point.hpp"
+#include "serialization/geometry.pb.h"
 
 namespace principia {
 
@@ -91,6 +92,9 @@ class Pair {
 
   bool operator==(Pair const& right) const;
   bool operator!=(Pair const& right) const;
+
+  void WriteToMessage(not_null<serialization::Pair*> const message) const;
+  static Pair ReadFromMessage(serialization::Pair const& message);
 
   template<typename Weight>
   class BarycentreCalculator {

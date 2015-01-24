@@ -431,6 +431,56 @@ TEST_F(PairTest, Streaming) {
   LOG(ERROR) << "vv_ = " << vv_;
 }
 
+TEST_F(PairDeathTest, SerializationError) {
+  serialization::Pair message;
+  pv_.WriteToMessage(&message);
+  EXPECT_DEATH({
+    PP const pp = PP::ReadFromMessage(message);
+  }, "has_point");
+  EXPECT_DEATH({
+    VP const vp = VP::ReadFromMessage(message);
+  }, "has_multivector");
+  EXPECT_DEATH({
+    VV const vv = VV::ReadFromMessage(message);
+  }, "has_multivector");
+}
+
+TEST_F(PairTest, SerializationSuccess) {
+  serialization::Pair message;
+
+  pp_.WriteToMessage(&message);
+  EXPECT_TRUE(message.t1().has_point());
+  EXPECT_FALSE(message.t1().has_multivector());
+  EXPECT_TRUE(message.t2().has_point());
+  EXPECT_FALSE(message.t2().has_multivector());
+  PP const pp = PP::ReadFromMessage(message);
+  EXPECT_EQ(pp_, pp);
+
+  pv_.WriteToMessage(&message);
+  EXPECT_TRUE(message.t1().has_point());
+  EXPECT_FALSE(message.t1().has_multivector());
+  EXPECT_FALSE(message.t2().has_point());
+  EXPECT_TRUE(message.t2().has_multivector());
+  PV const pv = PV::ReadFromMessage(message);
+  EXPECT_EQ(pv_, pv);
+
+  vp_.WriteToMessage(&message);
+  EXPECT_FALSE(message.t1().has_point());
+  EXPECT_TRUE(message.t1().has_multivector());
+  EXPECT_TRUE(message.t2().has_point());
+  EXPECT_FALSE(message.t2().has_multivector());
+  VP const vp = VP::ReadFromMessage(message);
+  EXPECT_EQ(vp_, vp);
+
+  vv_.WriteToMessage(&message);
+  EXPECT_FALSE(message.t1().has_point());
+  EXPECT_TRUE(message.t1().has_multivector());
+  EXPECT_FALSE(message.t2().has_point());
+  EXPECT_TRUE(message.t2().has_multivector());
+  VV const vv = VV::ReadFromMessage(message);
+  EXPECT_EQ(vv_, vv);
+}
+
 TEST_F(PairDeathTest, BarycentreCalculatorError) {
   EXPECT_DEATH({
     PP::BarycentreCalculator<Entropy> calculator;

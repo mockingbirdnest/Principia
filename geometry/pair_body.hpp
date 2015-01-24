@@ -1,9 +1,46 @@
 #pragma once
 
+#include "geometry/grassmann.hpp"
 #include "geometry/pair.hpp"
+#include "geometry/point.hpp"
 
 namespace principia {
 namespace geometry {
+
+template<typename T>
+class PairSerializer {};
+
+template<typename Scalar>
+class PairSerializer<Point<Scalar>> {
+ public:
+  using T = Point<Scalar>;
+  static void WriteToMessage(
+      T const& t,
+      not_null<serialization::Pair::Element*> const message) {
+    t.WriteToMessage(message->mutable_point());
+  }
+
+  static T ReadFromMessage(serialization::Pair::Element const& message) {
+    CHECK(message.has_point());
+    return T::ReadFromMessage(message.point());
+  }
+};
+
+template<typename Scalar, typename Frame, int rank>
+class PairSerializer<Multivector<Scalar, Frame, rank>> {
+ public:
+  using T = Multivector<Scalar, Frame, rank>;
+  static void WriteToMessage(
+      T const& t,
+      not_null<serialization::Pair::Element*> const message) {
+    t.WriteToMessage(message->mutable_multivector());
+  }
+
+  static T ReadFromMessage(serialization::Pair::Element const& message) {
+    CHECK(message.has_multivector());
+    return T::ReadFromMessage(message.multivector());
+  }
+};
 
 template<typename T1, typename T2>
 Pair<T1, T2>::Pair(T1 const& t1, T2 const& t2)
@@ -46,6 +83,20 @@ bool Pair<T1, T2>::operator==(Pair const& right) const {
 template<typename T1, typename T2>
 bool Pair<T1, T2>::operator!=(Pair const& right) const {
   return t1_ != right.t1_ || t2_ != right.t2_;
+}
+
+template<typename T1, typename T2>
+void Pair<T1, T2>::WriteToMessage(
+    not_null<serialization::Pair*> const message) const {
+  PairSerializer<T1>::WriteToMessage(t1_, message->mutable_t1());
+  PairSerializer<T2>::WriteToMessage(t2_, message->mutable_t2());
+}
+
+template<typename T1, typename T2>
+Pair<T1, T2> Pair<T1, T2>::ReadFromMessage(serialization::Pair const& message) {
+  T1 const t1 = PairSerializer<T1>::ReadFromMessage(message.t1());
+  T2 const t2 = PairSerializer<T2>::ReadFromMessage(message.t2());
+  return {t1, t2};
 }
 
 template<typename T1, typename T2>

@@ -14,13 +14,11 @@ using principia::quantities::SIUnit;
 namespace principia {
 namespace geometry {
 
-namespace {
-
 template<typename Vector>
-class Serialization {};
+class PointSerializer {};
 
 template<typename Dimensions>
-class Serialization<Quantity<Dimensions>> {
+class PointSerializer<Quantity<Dimensions>> {
  public:
   using Vector = Quantity<Dimensions>;
   static void WriteToMessage(Vector const& coordinates,
@@ -35,7 +33,7 @@ class Serialization<Quantity<Dimensions>> {
 };
 
 template<typename Scalar, typename Frame, int rank>
-class Serialization<Multivector<Scalar, Frame, rank>> {
+class PointSerializer<Multivector<Scalar, Frame, rank>> {
  public:
   using Vector = Multivector<Scalar, Frame, rank>;
   static void WriteToMessage(
@@ -49,8 +47,6 @@ class Serialization<Multivector<Scalar, Frame, rank>> {
     return Vector::ReadFromMessage(message.multivector());
   }
 };
-
-}  // namespace
 
 template<typename Vector>
 Point<Vector>::Point() {}
@@ -98,13 +94,13 @@ bool Point<Vector>::operator!=(Point<Vector> const& right) const {
 template<typename Vector>
 void Point<Vector>::WriteToMessage(
     not_null<serialization::Point*> const message) const {
-  Serialization<Vector>::WriteToMessage(coordinates_, message);
+  PointSerializer<Vector>::WriteToMessage(coordinates_, message);
 }
 
 template<typename Vector>
 Point<Vector> Point<Vector>::ReadFromMessage(
     serialization::Point const& message) {
-  return Point(Serialization<Vector>::ReadFromMessage(message));
+  return Point(PointSerializer<Vector>::ReadFromMessage(message));
 }
 
 template<typename Vector>
