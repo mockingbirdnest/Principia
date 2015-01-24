@@ -210,8 +210,8 @@ TEST_F(TrajectoryTest, Serialization) {
   massive_trajectory_->Append(t1_, d1_);
   massive_trajectory_->Append(t2_, d2_);
   massive_trajectory_->Append(t3_, d3_);
-  not_null<Trajectory<World>*> const fork1 = massive_trajectory_->Fork(t2_);
-  not_null<Trajectory<World>*> const fork2 = massive_trajectory_->Fork(t2_);
+  not_null<Trajectory<World>*> const fork1 = massive_trajectory_->Fork(t1_);
+  not_null<Trajectory<World>*> const fork2 = massive_trajectory_->Fork(t1_);
   not_null<Trajectory<World>*> const fork3 = massive_trajectory_->Fork(t3_);
   fork3->Append(t4_, d4_);
   serialization::Trajectory message;
@@ -221,8 +221,8 @@ TEST_F(TrajectoryTest, Serialization) {
   EXPECT_THAT(message.children(0).trajectories_size(), Eq(2));
   EXPECT_THAT(message.children(0).trajectories(0).children_size(), Eq(0));
   EXPECT_THAT(message.children(0).trajectories(1).children_size(), Eq(0));
-  EXPECT_THAT(message.children(0).trajectories(0).timeline_size(), Eq(0));
-  EXPECT_THAT(message.children(0).trajectories(1).timeline_size(), Eq(0));
+  EXPECT_THAT(message.children(0).trajectories(0).timeline_size(), Eq(2));
+  EXPECT_THAT(message.children(0).trajectories(1).timeline_size(), Eq(2));
   EXPECT_THAT(message.children(1).trajectories_size(), Eq(1));
   EXPECT_THAT(message.children(1).trajectories(0).children_size(), Eq(0));
   EXPECT_THAT(message.children(1).trajectories(0).timeline_size(), Eq(1));
