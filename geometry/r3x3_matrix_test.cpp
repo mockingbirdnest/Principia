@@ -113,5 +113,30 @@ TEST_F(R3x3MatrixTest, Assignment) {
                             {-0.25, 0.5, 0.25})));
 }
 
+TEST_F(R3x3MatrixTest, Serialization) {
+  serialization::R3x3Matrix message;
+  m1_.WriteToMessage(&message);
+  EXPECT_TRUE(message.row_x().x().has_double_());
+  EXPECT_EQ(-9.0, message.row_x().x().double_());
+  EXPECT_TRUE(message.row_x().y().has_double_());
+  EXPECT_EQ(6.0, message.row_x().y().double_());
+  EXPECT_TRUE(message.row_x().z().has_double_());
+  EXPECT_EQ(6.0, message.row_x().z().double_());
+  EXPECT_TRUE(message.row_y().x().has_double_());
+  EXPECT_EQ(7.0, message.row_y().x().double_());
+  EXPECT_TRUE(message.row_y().y().has_double_());
+  EXPECT_EQ(-5.0, message.row_y().y().double_());
+  EXPECT_TRUE(message.row_y().z().has_double_());
+  EXPECT_EQ(-4.0, message.row_y().z().double_());
+  EXPECT_TRUE(message.row_z().x().has_double_());
+  EXPECT_EQ(-1.0, message.row_z().x().double_());
+  EXPECT_TRUE(message.row_z().y().has_double_());
+  EXPECT_EQ(2.0, message.row_z().y().double_());
+  EXPECT_TRUE(message.row_z().z().has_double_());
+  EXPECT_EQ(1.0, message.row_z().z().double_());
+  R3x3Matrix const m = R3x3Matrix::ReadFromMessage(message);
+  EXPECT_EQ(m1_, m);
+}
+
 }  // namespace geometry
 }  // namespace principia

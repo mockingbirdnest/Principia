@@ -7,6 +7,7 @@
 
 #include "geometry/r3_element.hpp"
 #include "quantities/quantities.hpp"
+#include "serialization/geometry.pb.h"
 
 namespace principia {
 namespace geometry {
@@ -31,6 +32,9 @@ class R3x3Matrix {
   R3x3Matrix& operator*=(R3x3Matrix const& right);
   R3x3Matrix& operator*=(double const right);
   R3x3Matrix& operator/=(double const right);
+
+  void WriteToMessage(not_null<serialization::R3x3Matrix*> const message) const;
+  static R3x3Matrix ReadFromMessage(serialization::R3x3Matrix const& message);
 
  private:
   R3Element<double> row_x_;
