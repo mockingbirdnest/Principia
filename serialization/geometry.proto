@@ -4,10 +4,22 @@ import "serialization/quantities.proto";
 
 package principia.serialization;
 
-message R3Element {
-  required Quantity x = 1;
-  required Quantity y = 2;
-  required Quantity z = 3;
+message Pair {
+  message Element {
+    oneof element {
+      Multivector multivector = 1;
+      Point point = 2;
+    }
+  }
+  required Element t1 = 1;
+  required Element t2 = 2;
+}
+
+message Point {
+  oneof vector {
+    Multivector multivector = 1;
+    Quantity scalar = 2;
+  }
 }
 
 // TODO(phl): This should probably include the tag of the frame.
@@ -19,20 +31,29 @@ message Multivector {
   }
 }
 
-message Point {
-  oneof vector {
-    Multivector multivector = 1;
-    Quantity scalar = 2;
-  }
+message Quaternion {
+  required Quantity real_part = 1;
+  required R3Element imaginary_part = 2;
 }
 
-message Pair {
-  message Element {
-    oneof element {
-      Multivector multivector = 1;
-      Point point = 2;
+message R3Element {
+  message Coordinate {
+    oneof coordinate {
+      double double = 1;
+      Quantity quantity = 2;
     }
   }
-  required Element t1 = 1;
-  required Element t2 = 2;
+  required Coordinate x = 1;
+  required Coordinate y = 2;
+  required Coordinate z = 3;
+}
+
+message R3x3Matrix {
+  required R3Element row_x = 1;
+  required R3Element row_y = 2;
+  required R3Element row_z = 3;
+}
+
+message Rotation {
+  required Quaternion quaternion = 1;
 }

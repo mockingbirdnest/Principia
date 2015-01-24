@@ -111,31 +111,58 @@ TEST_F(R3ElementTest, Normalize) {
 }
 
 TEST_F(R3ElementDeathTest, SerializationError) {
-  R3Element<Speed> const v = {1 * Metre / Second,
-                              -2 * Metre / Second,
-                              5 * Metre / Second};
-  R3Element<Length> l;
+  R3Element<Speed> v = {1 * Metre / Second,
+                        -2 * Metre / Second,
+                        5 * Metre / Second};
+  R3Element<double> d = {7, 8, -1};
+
   EXPECT_DEATH({
     serialization::R3Element message;
     v.WriteToMessage(&message);
-    l = R3Element<Length>::ReadFromMessage(message);
-  }, "representation.*dimensions");
+    d = R3Element<double>::ReadFromMessage(message);
+  }, "has_double");
+  EXPECT_DEATH({
+    serialization::R3Element message;
+    d.WriteToMessage(&message);
+    v = R3Element<Speed>::ReadFromMessage(message);
+  }, "has_quantity");
 }
 
 TEST_F(R3ElementTest, SerializationSuccess) {
+  serialization::R3Element message;
+
   R3Element<Speed> const v1 = {1 * Metre / Second,
                                -2 * Metre / Second,
                                5 * Metre / Second};
-  serialization::R3Element message;
   v1.WriteToMessage(&message);
-  EXPECT_EQ(0x7C01, message.x().dimensions());
-  EXPECT_EQ(1.0, message.x().magnitude());
-  EXPECT_EQ(0x7C01, message.y().dimensions());
-  EXPECT_EQ(-2.0, message.y().magnitude());
-  EXPECT_EQ(0x7C01, message.z().dimensions());
-  EXPECT_EQ(5.0, message.z().magnitude());
+  EXPECT_FALSE(message.x().has_double_());
+  EXPECT_TRUE(message.x().has_quantity());
+  EXPECT_EQ(0x7C01, message.x().quantity().dimensions());
+  EXPECT_EQ(1.0, message.x().quantity().magnitude());
+  EXPECT_FALSE(message.y().has_double_());
+  EXPECT_TRUE(message.y().has_quantity());
+  EXPECT_EQ(0x7C01, message.y().quantity().dimensions());
+  EXPECT_EQ(-2.0, message.y().quantity().magnitude());
+  EXPECT_FALSE(message.z().has_double_());
+  EXPECT_TRUE(message.z().has_quantity());
+  EXPECT_EQ(0x7C01, message.z().quantity().dimensions());
+  EXPECT_EQ(5.0, message.z().quantity().magnitude());
   R3Element<Speed> const v2 = R3Element<Speed>::ReadFromMessage(message);
   EXPECT_EQ(v1, v2);
+
+  R3Element<double> const d1 = {-1, 2, 5};
+  d1.WriteToMessage(&message);
+  EXPECT_TRUE(message.x().has_double_());
+  EXPECT_FALSE(message.x().has_quantity());
+  EXPECT_EQ(-1.0, message.x().double_());
+  EXPECT_TRUE(message.y().has_double_());
+  EXPECT_FALSE(message.y().has_quantity());
+  EXPECT_EQ(2.0, message.y().double_());
+  EXPECT_TRUE(message.z().has_double_());
+  EXPECT_FALSE(message.z().has_quantity());
+  EXPECT_EQ(5.0, message.z().double_());
+  R3Element<double> const d2 = R3Element<double>::ReadFromMessage(message);
+  EXPECT_EQ(d1, d2);
 }
 
 
