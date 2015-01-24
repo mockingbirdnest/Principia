@@ -75,7 +75,7 @@ message OrthogonalMap {
   extend LinearMap {
     optional OrthogonalMap orthogonal_map = 1001;
   }
-  required Sign sign = 1;
+  required Sign determinant = 1;
   required Rotation rotation = 2;
 }
 

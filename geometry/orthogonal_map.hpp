@@ -6,6 +6,7 @@
 #include "geometry/r3_element.hpp"
 #include "geometry/rotation.hpp"
 #include "geometry/sign.hpp"
+#include "serialization/geometry.pb.h"
 
 namespace principia {
 namespace geometry {
@@ -39,6 +40,11 @@ class OrthogonalMap : public LinearMap<FromFrame, ToFrame> {
   typename base::Mappable<OrthogonalMap, T>::type operator()(T const& t) const;
 
   static OrthogonalMap Identity();
+
+  void WriteToMessage(
+      not_null<serialization::OrthogonalMap*> const message) const;
+  static OrthogonalMap ReadFromMessage(
+      serialization::OrthogonalMap const& message);
 
  private:
   OrthogonalMap(Sign const& determinant,

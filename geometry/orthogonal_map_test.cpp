@@ -117,5 +117,21 @@ TEST_F(OrthogonalMapTest, Composition) {
   EXPECT_TRUE((orthogonal_b_ * orthogonal_c_).Determinant().Negative());
 }
 
+TEST_F(OrthogonalMapTest, Serialization) {
+  serialization::OrthogonalMap message;
+  orthogonal_a_.WriteToMessage(&message);
+  EXPECT_TRUE(message.determinant().negative());
+  EXPECT_THAT(message.rotation().quaternion().real_part(),
+              AlmostEquals(0.5, 1));
+  EXPECT_EQ(0.5,
+            message.rotation().quaternion().imaginary_part().x().double_());
+  EXPECT_EQ(0.5,
+            message.rotation().quaternion().imaginary_part().y().double_());
+  EXPECT_EQ(0.5,
+            message.rotation().quaternion().imaginary_part().z().double_());
+  Orth const o = Orth::ReadFromMessage(message);
+  EXPECT_EQ(orthogonal_a_(vector_), o(vector_));
+}
+
 }  // namespace geometry
 }  // namespace principia
