@@ -13,6 +13,7 @@
   <ItemGroup>
     <CustomBuild Include="geometry.proto" />
     <CustomBuild Include="quantities.proto" />
+    <CustomBuild Include="physics.proto" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="geometry.pb.h">
