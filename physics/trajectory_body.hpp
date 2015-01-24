@@ -272,30 +272,6 @@ void Trajectory<Frame>::WriteToMessage(
 }
 
 template<typename Frame>
-void Trajectory<Frame>::WriteSubTreeToMessage(
-    not_null<serialization::Trajectory*> const message) const {
-  std::unique_ptr<Instant> last_instant = nullptr;
-  serialization::Trajectory::Litter* serialized_litter = nullptr;
-  for (auto const& child : children_) {
-    if (last_instant == nullptr || child.first != *last_instant) {
-      last_instant = std::make_unique<Instant>(child.first);
-      serialized_litter = message->add_children();
-      child.first.WriteToMessage(serialized_litter->mutable_fork_time());
-    }
-    child.second->WriteSubTreeToMessage(serialized_litter->add_trajectories());
-  }
-  for (auto const& instantaneous_degrees_of_freedom : timeline_) {
-    auto const serialized_instantaneous_degrees_of_freedom =
-        message->add_timeline();
-    instantaneous_degrees_of_freedom.first.WriteToMessage(
-        serialized_instantaneous_degrees_of_freedom->mutable_instant());
-    instantaneous_degrees_of_freedom.second.WriteToMessage(
-        serialized_instantaneous_degrees_of_freedom->
-            mutable_degrees_of_freedom());
-  }
-}
-
-template<typename Frame>
 typename Trajectory<Frame>::Iterator&
 Trajectory<Frame>::Iterator::operator++() {
   if (!forks_.empty() && current_ == forks_.front()) {
@@ -400,6 +376,33 @@ Trajectory<Frame>::Trajectory(not_null<Body const*> const body,
     : body_(body),
       parent_(parent),
       fork_(new typename Timeline::iterator(fork)) {}
+
+template<typename Frame>
+void Trajectory<Frame>::WriteSubTreeToMessage(
+    not_null<serialization::Trajectory*> const message) const {
+  Instant last_instant;
+  bool is_first = true;
+  serialization::Trajectory::Litter* litter = nullptr;
+  for (auto const& pair : children_) {
+    Instant const& fork_time = pair.first;
+    not_null<std::unique_ptr<Trajectory>> const& child = pair.second;
+    if (is_first || fork_time != last_instant) {
+      is_first = false;
+      last_instant = fork_time;
+      litter = message->add_children();
+      fork_time.WriteToMessage(litter->mutable_fork_time());
+    }
+    child->WriteSubTreeToMessage(litter->add_trajectories());
+  }
+  for (auto const& pair : timeline_) {
+    Instant const& instant = pair.first;
+    DegreesOfFreedom<Frame> const& degrees_of_freedom = pair.second;
+    auto const instantaneous_degrees_of_freedom = message->add_timeline();
+    instant.WriteToMessage(instantaneous_degrees_of_freedom->mutable_instant());
+    degrees_of_freedom.WriteToMessage(
+        instantaneous_degrees_of_freedom->mutable_degrees_of_freedom());
+  }
+}
 
 }  // namespace physics
 }  // namespace principia

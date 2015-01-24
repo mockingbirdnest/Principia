@@ -159,8 +159,7 @@ class Trajectory {
   Vector<Acceleration, Frame> evaluate_intrinsic_acceleration(
       Instant const& time) const;
 
-  // Writes the subtree spanned by |*this| to |message|. This trajectory must be
-  // a root.
+  // This trajectory must be a root.
   void WriteToMessage(not_null<serialization::Trajectory*> const message) const;
   // TODO(egg): implement when |Body| is serializable.
   static Trajectory ReadFromMessage(serialization::Trajectory const& message);
@@ -219,10 +218,10 @@ class Trajectory {
   Trajectory(not_null<Body const*> const body,
              not_null<Trajectory*> const parent,
              typename Timeline::iterator const& fork);
-  // Writes the subtree spanned by |*this| to |message|. This trajectory need
-  // not be a root.
+
+  // This trajectory need not be a root.
   void WriteSubTreeToMessage(
-    not_null<serialization::Trajectory*> const message) const;
+      not_null<serialization::Trajectory*> const message) const;
 
   not_null<Body const*> const body_;
 
