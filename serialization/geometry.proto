@@ -58,7 +58,8 @@ message Sign {
   required bool negative = 1;
 }
 
-// Linear maps follow:
+// Linear maps follow.
+// TODO(phl): All the linear maps should serialize their frames.
 
 message LinearMap {
   extensions 1000 to 9999;  // Last used: 1003.
@@ -66,13 +67,13 @@ message LinearMap {
 
 message Identity {
   extend LinearMap {
-    optional int32 identity = 1000;
+    optional Identity identity = 1000;
   }
 }
 
 message OrthogonalMap {
   extend LinearMap {
-    optional int32 orthogonal_map = 1001;
+    optional OrthogonalMap orthogonal_map = 1001;
   }
   required Sign sign = 1;
   required Rotation rotation = 2;
@@ -80,7 +81,7 @@ message OrthogonalMap {
 
 message Permutation {
   extend LinearMap {
-    optional int32 permutation = 1002;
+    optional Permutation permutation = 1002;
   }
 
   // These enums are used in the definition of the field
@@ -109,7 +110,7 @@ message Permutation {
 
 message Rotation {
   extend LinearMap {
-    optional int32 permutation = 1003;
+    optional Rotation rotation = 1003;
   }
   required Quaternion quaternion = 1;
 }

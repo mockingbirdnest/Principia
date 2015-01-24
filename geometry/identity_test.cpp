@@ -98,5 +98,13 @@ TEST_F(IdentityTest, Compose) {
   }
 }
 
+TEST_F(IdentityTest, Serialization) {
+  serialization::Identity message;
+  Identity<World1, World2> id12a;
+  id12a.WriteToMessage(&message);
+  Identity<World1, World2> const id12b =
+      Identity<World1, World2>::ReadFromMessage(message);
+}
+
 }  // namespace geometry
 }  // namespace principia
