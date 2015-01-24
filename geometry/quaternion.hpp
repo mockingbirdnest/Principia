@@ -1,6 +1,7 @@
 ﻿#pragma once
 
 #include "geometry/r3_element.hpp"
+#include "serialization/geometry.pb.h"
 
 namespace principia {
 namespace geometry {
@@ -27,6 +28,9 @@ class Quaternion {
 
   Quaternion& operator*=(double const right);
   Quaternion& operator/=(double const right);
+
+  void WriteToMessage(not_null<serialization::Quaternion*> const message) const;
+  static Quaternion ReadFromMessage(serialization::Quaternion const& message);
 
  private:
   double real_part_;

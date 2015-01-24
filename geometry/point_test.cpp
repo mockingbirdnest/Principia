@@ -95,7 +95,6 @@ TEST_F(PointTest, SerializationSuccess) {
   t1.WriteToMessage(&message);
   EXPECT_TRUE(message.has_scalar());
   EXPECT_FALSE(message.has_multivector());
-  EXPECT_EQ(10, message.scalar().magnitude());
   Instant const t2 = Instant::ReadFromMessage(message);
   EXPECT_EQ(t1, t2);
 
@@ -104,9 +103,6 @@ TEST_F(PointTest, SerializationSuccess) {
   d1.WriteToMessage(&message);
   EXPECT_FALSE(message.has_scalar());
   EXPECT_TRUE(message.has_multivector());
-  EXPECT_EQ(-1, message.multivector().vector().x().magnitude());
-  EXPECT_EQ(2, message.multivector().vector().y().magnitude());
-  EXPECT_EQ(3, message.multivector().vector().z().magnitude());
   Position<World> const d2 = Position<World>::ReadFromMessage(message);
   EXPECT_EQ(d1, d2);
 }

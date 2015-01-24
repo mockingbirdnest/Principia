@@ -277,9 +277,6 @@ TEST_F(GrassmannTest, SerializationSuccess) {
   EXPECT_TRUE(message.has_vector());
   EXPECT_FALSE(message.has_bivector());
   EXPECT_FALSE(message.has_trivector());
-  EXPECT_EQ(-1, message.vector().x().magnitude());
-  EXPECT_EQ(2, message.vector().y().magnitude());
-  EXPECT_EQ(3, message.vector().z().magnitude());
   Vector<Length, World> const w =
       Vector<Length, World>::ReadFromMessage(message);
   EXPECT_EQ(v, w);
@@ -289,9 +286,6 @@ TEST_F(GrassmannTest, SerializationSuccess) {
   EXPECT_FALSE(message.has_vector());
   EXPECT_TRUE(message.has_bivector());
   EXPECT_FALSE(message.has_trivector());
-  EXPECT_EQ(-4, message.bivector().x().magnitude());
-  EXPECT_EQ(-5, message.bivector().y().magnitude());
-  EXPECT_EQ(6, message.bivector().z().magnitude());
   Bivector<Pressure, World> const c =
       Bivector<Pressure, World>::ReadFromMessage(message);
   EXPECT_EQ(b, c);

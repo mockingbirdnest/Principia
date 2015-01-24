@@ -68,6 +68,19 @@ inline Quaternion& Quaternion::operator/=(double const right) {
   return *this;
 }
 
+inline void Quaternion::WriteToMessage(
+    not_null<serialization::Quaternion*> const message) const {
+  message->set_real_part(real_part_);
+  imaginary_part_.WriteToMessage(message->mutable_imaginary_part());
+}
+
+inline Quaternion Quaternion::ReadFromMessage(
+    serialization::Quaternion const& message) {
+  return Quaternion(message.real_part(),
+                    R3Element<double>::ReadFromMessage(
+                        message.imaginary_part()));
+}
+
 inline bool operator==(Quaternion const& left, Quaternion const& right) {
   return left.real_part() == right.real_part() &&
          left.imaginary_part() == left.imaginary_part();

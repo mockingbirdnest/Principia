@@ -69,6 +69,20 @@ inline R3x3Matrix& R3x3Matrix::operator/=(double const right) {
   return *this = *this / right;
 }
 
+inline void R3x3Matrix::WriteToMessage(
+    not_null<serialization::R3x3Matrix*> const message) const {
+  row_x_.WriteToMessage(message->mutable_row_x());
+  row_y_.WriteToMessage(message->mutable_row_y());
+  row_z_.WriteToMessage(message->mutable_row_z());
+}
+
+inline R3x3Matrix R3x3Matrix::ReadFromMessage(
+    serialization::R3x3Matrix const& message) {
+  return R3x3Matrix(R3Element<double>::ReadFromMessage(message.row_x()),
+                    R3Element<double>::ReadFromMessage(message.row_y()),
+                    R3Element<double>::ReadFromMessage(message.row_z()));
+}
+
 inline R3x3Matrix operator+(R3x3Matrix const& right) {
   return R3x3Matrix(+right.row_x_, +right.row_y_, +right.row_z_);
 }
