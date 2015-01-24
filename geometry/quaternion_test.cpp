@@ -135,5 +135,19 @@ TEST_F(QuaternionTest, SkewField) {
       Quaternion(6, {1, -3, 4}), Quaternion(0, {8, 9, -1}), 0, 1);
 }
 
+TEST_F(QuaternionTest, Serialization) {
+  serialization::Quaternion message;
+  q2_.WriteToMessage(&message);
+  EXPECT_EQ(-2.0, message.real_part());
+  EXPECT_TRUE(message.imaginary_part().x().has_double_());
+  EXPECT_EQ(1.0, message.imaginary_part().x().double_());
+  EXPECT_TRUE(message.imaginary_part().y().has_double_());
+  EXPECT_EQ(-3.0, message.imaginary_part().y().double_());
+  EXPECT_TRUE(message.imaginary_part().z().has_double_());
+  EXPECT_EQ(4.0, message.imaginary_part().z().double_());
+  Quaternion const q = Quaternion::ReadFromMessage(message);
+  EXPECT_EQ(q2_, q);
+}
+
 }  // namespace geometry
 }  // namespace principia
