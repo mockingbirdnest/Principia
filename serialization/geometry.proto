@@ -53,3 +53,63 @@ message R3x3Matrix {
   required R3Element row_y = 2;
   required R3Element row_z = 3;
 }
+
+message Sign {
+  required bool negative = 1;
+}
+
+// Linear maps follow:
+
+message LinearMap {
+  extensions 1000 to 9999;  // Last used: 1003.
+}
+
+message Identity {
+  extend LinearMap {
+    optional int32 identity = 1000;
+  }
+}
+
+message OrthogonalMap {
+  extend LinearMap {
+    optional int32 orthogonal_map = 1001;
+  }
+  required Sign sign = 1;
+  required Rotation rotation = 2;
+}
+
+message Permutation {
+  extend LinearMap {
+    optional int32 permutation = 1002;
+  }
+
+  // These enums are used in the definition of the field
+  // |coordinate_permutation|.
+
+  // Three two-bit fields which indicate how each coordinate get mapped by the
+  // permutation.
+  enum Coordinate {
+    X = 0;
+    Y = 1;
+    Z = 2;
+  }
+  // A three bit field used when using |coordinate_permutation| to index arrays.
+  enum Index {
+    INDEX = 6;
+  }
+  // The sign bit gives the sign of the permutation.
+  enum Parity {
+    EVEN = 0;
+    ODD = -2147483648;  // 0x80000000
+  }
+
+  // See permutation.hpp for the structure of this field.
+  required uint32 coordinate_permutation = 1;
+}
+
+message Rotation {
+  extend LinearMap {
+    optional int32 permutation = 1003;
+  }
+  required Quaternion quaternion = 1;
+}
