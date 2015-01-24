@@ -25,3 +25,14 @@ message Point {
     Quantity scalar = 2;
   }
 }
+
+message Pair {
+  message Element {
+    oneof element {
+      Multivector multivector = 1;
+      Point point = 2;
+    }
+  }
+  required Element t1 = 1;
+  required Element t2 = 2;
+}
