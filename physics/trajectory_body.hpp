@@ -267,7 +267,13 @@ Vector<Acceleration, Frame> Trajectory<Frame>::evaluate_intrinsic_acceleration(
 template<typename Frame>
 void Trajectory<Frame>::WriteToMessage(
     not_null<serialization::Trajectory*> const message) const {
-  LOG(ERROR)<<"TRAJECTORY!";
+  CHECK(is_root());
+  WriteSubTreeToMessage(message);
+}
+
+template<typename Frame>
+void Trajectory<Frame>::WriteSubTreeToMessage(
+    not_null<serialization::Trajectory*> const message) const {
   std::unique_ptr<Instant> last_instant = nullptr;
   serialization::Trajectory::Litter* serialized_litter = nullptr;
   for (auto const& child : children_) {
@@ -276,11 +282,9 @@ void Trajectory<Frame>::WriteToMessage(
       serialized_litter = message->add_children();
       child.first.WriteToMessage(serialized_litter->mutable_fork_time());
     }
-    child.second->WriteToMessage(serialized_litter->add_trajectories());
+    child.second->WriteSubTreeToMessage(serialized_litter->add_trajectories());
   }
-  LOG(ERROR)<<timeline_.size();
   for (auto const& instantaneous_degrees_of_freedom : timeline_) {
-    LOG(ERROR)<<"LOGGING!"<<instantaneous_degrees_of_freedom.first;
     auto const serialized_instantaneous_degrees_of_freedom =
         message->add_timeline();
     instantaneous_degrees_of_freedom.first.WriteToMessage(
@@ -289,7 +293,6 @@ void Trajectory<Frame>::WriteToMessage(
         serialized_instantaneous_degrees_of_freedom->
             mutable_degrees_of_freedom());
   }
-  LOG(ERROR)<<"POP!";
 }
 
 template<typename Frame>

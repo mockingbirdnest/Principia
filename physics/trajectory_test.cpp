@@ -206,7 +206,16 @@ TEST_F(TrajectoryTest, ForkSuccess) {
   EXPECT_THAT(fork->body<MassiveBody>(), Eq(&massive_body_));
 }
 
-TEST_F(TrajectoryTest, Serialization) {
+TEST_F(TrajectoryDeathTest, SerializationError) {
+  EXPECT_DEATH({
+    massive_trajectory_->Append(t1_, d1_);
+    not_null<Trajectory<World>*> const fork = massive_trajectory_->Fork(t1_);
+    serialization::Trajectory message;
+    fork->WriteToMessage(&message);
+  }, "is_root");
+}
+
+TEST_F(TrajectoryTest, SerializationSuccess) {
   massive_trajectory_->Append(t1_, d1_);
   massive_trajectory_->Append(t2_, d2_);
   massive_trajectory_->Append(t3_, d3_);
