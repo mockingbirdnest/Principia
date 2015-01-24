@@ -207,5 +207,16 @@ TEST_F(RotationTest, ToQuaternion4) {
   EXPECT_THAT(rotation(e3_).coordinates(), AlmostEquals(w3, 2));
 }
 
+TEST_F(RotationTest, Serialization) {
+  serialization::Rotation message;
+  rotation_a_.WriteToMessage(&message);
+  EXPECT_THAT(message.quaternion().real_part(), AlmostEquals(0.5, 1));
+  EXPECT_EQ(0.5, message.quaternion().imaginary_part().x().double_());
+  EXPECT_EQ(0.5, message.quaternion().imaginary_part().y().double_());
+  EXPECT_EQ(0.5, message.quaternion().imaginary_part().z().double_());
+  Rot const r = Rot::ReadFromMessage(message);
+  EXPECT_EQ(rotation_a_(vector_), r(vector_));
+}
+
 }  // namespace geometry
 }  // namespace principia

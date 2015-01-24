@@ -7,6 +7,7 @@
 #include "geometry/r3_element.hpp"
 #include "geometry/r3x3_matrix.hpp"
 #include "geometry/sign.hpp"
+#include "serialization/geometry.pb.h"
 
 namespace principia {
 namespace geometry {
@@ -54,6 +55,9 @@ class Rotation : public LinearMap<FromFrame, ToFrame> {
   OrthogonalMap<FromFrame, ToFrame> Forget() const;
 
   static Rotation Identity();
+
+  void WriteToMessage(not_null<serialization::Rotation*> const message) const;
+  static Rotation ReadFromMessage(serialization::Rotation const& message);
 
  private:
   template<typename Scalar>

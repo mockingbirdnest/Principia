@@ -133,6 +133,18 @@ Rotation<FromFrame, ToFrame> Rotation<FromFrame, ToFrame>::Identity() {
 }
 
 template<typename FromFrame, typename ToFrame>
+void Rotation<FromFrame, ToFrame>::WriteToMessage(
+    not_null<serialization::Rotation*> const message) const {
+  quaternion_.WriteToMessage(message->mutable_quaternion());
+}
+
+template<typename FromFrame, typename ToFrame>
+Rotation<FromFrame, ToFrame> Rotation<FromFrame, ToFrame>::ReadFromMessage(
+    serialization::Rotation const& message) {
+  return Rotation(Quaternion::ReadFromMessage(message.quaternion()));
+}
+
+template<typename FromFrame, typename ToFrame>
 template<typename Scalar>
 R3Element<Scalar> Rotation<FromFrame, ToFrame>::operator()(
     R3Element<Scalar> const& r3_element) const {
