@@ -32,7 +32,7 @@ message Multivector {
 }
 
 message Quaternion {
-  required Quantity real_part = 1;
+  required double real_part = 1;
   required R3Element imaginary_part = 2;
 }
 
