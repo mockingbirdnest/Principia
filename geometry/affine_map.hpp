@@ -2,6 +2,7 @@
 
 #include "geometry/point.hpp"
 #include "geometry/grassmann.hpp"
+#include "serialization/geometry.pb.h"
 
 namespace principia {
 namespace geometry {
@@ -20,6 +21,9 @@ class AffineMap {
 
   AffineMap<ToFrame, FromFrame, Scalar, LinearMap> Inverse() const;
   Point<ToVector> operator()(Point<FromVector> const& point) const;
+
+  void WriteToMessage(not_null<serialization::AffineMap*> const message) const;
+  static AffineMap ReadFromMessage(serialization::AffineMap const& message);
 
  private:
   Point<FromVector> from_origin_;
