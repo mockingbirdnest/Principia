@@ -1,9 +1,9 @@
+#include "geometry/permutation.hpp"
 
 #include <vector>
 
 #include "geometry/identity.hpp"
 #include "geometry/orthogonal_map.hpp"
-#include "geometry/permutation.hpp"
 #include "geometry/r3_element.hpp"
 #include "glog/logging.h"
 #include "gmock/gmock.h"

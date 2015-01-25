@@ -1,7 +1,7 @@
+#include "geometry/identity.hpp"
 
 #include <vector>
 
-#include "geometry/identity.hpp"
 #include "geometry/orthogonal_map.hpp"
 #include "geometry/r3_element.hpp"
 #include "glog/logging.h"

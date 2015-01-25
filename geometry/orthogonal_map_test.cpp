@@ -1,6 +1,7 @@
+#include "geometry/orthogonal_map.hpp"
+
 #include "geometry/grassmann.hpp"
 #include "geometry/identity.hpp"
-#include "geometry/orthogonal_map.hpp"
 #include "geometry/rotation.hpp"
 #include "glog/logging.h"
 #include "gmock/gmock.h"
