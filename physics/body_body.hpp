@@ -17,15 +17,11 @@ bool Body::is_compatible_with() const {
 
 inline not_null<std::unique_ptr<Body>> Body::ReadFromMessage(
     serialization::Body const& message) {
-  if (message.HasExtension(serialization::MasslessBody::massless_body)) {
-    return MasslessBody::ReadFromMessage(
-        message.GetExtension(serialization::MasslessBody::massless_body));
-  } else if (message.HasExtension(serialization::MassiveBody::massive_body)) {
-    return MassiveBody::ReadFromMessage(
-        message.GetExtension(serialization::MassiveBody::massive_body));
+  if (message.has_massless_body) {
+    return MasslessBody::ReadFromMessage(message.massless_body());
   } else {
-    LOG(FATAL) << "serialization::Body is neither massive nor massless";
-    base::noreturn();
+    CHECK(message.has_massive_body());
+    return MassiveBody::ReadFromMessage(message.massive_body());
   }
 }
 

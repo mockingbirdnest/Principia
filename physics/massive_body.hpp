@@ -38,7 +38,10 @@ class MassiveBody : public Body {
 
   void WriteToMessage(not_null<serialization::Body*> message) const override;
 
-  // Fails if the |MassiveBody| extension is absent from the message.
+  virtual void WriteToMessage(
+      not_null<serialization::MassiveBody*> message) const;
+
+  // Fails unless |message.has_massless_body()|.
   static not_null<std::unique_ptr<MassiveBody>> ReadFromMessage(
       serialization::Body const& message);
 

@@ -44,11 +44,20 @@ inline bool MassiveBody::is_oblate() const {
   return false;
 }
 
+inline void MassiveBody::WriteToMessage(
+    not_null<serialization::Body*> message) const {
+  WriteToMessage(message->massive_body());
+}
+
+inline void MassiveBody::WriteToMessage(
+    not_null<serialization::MassiveBody*> message) const {
+  gravitational_parameter_.WriteToMessage(message->gravitational_parameter());
+}
+
 inline not_null<std::unique_ptr<MassiveBody>> MassiveBody::ReadFromMessage(
     serialization::Body const& message) {
-  CHECK(message.HasExtension(serialization::MassiveBody::massive_body));
-  return ReadFromMessage(
-      message.GetExtension(serialization::MassiveBody::massive_body));
+  CHECK(message.has_massive_body());
+  return ReadFromMessage(message.massive_body());
 }
 
 inline not_null<std::unique_ptr<MassiveBody>> MassiveBody::ReadFromMessage(

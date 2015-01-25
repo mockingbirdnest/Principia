@@ -78,11 +78,28 @@ bool OblateBody<Frame>::is_oblate() const {
 }
 
 template<typename Frame>
+inline void OblateBody<Frame>::WriteToMessage(
+    not_null<serialization::Body*> message) const {
+  WriteToMessage(message->massive_body());
+}
+
+template<typename Frame>
+inline void OblateBody<Frame>::WriteToMessage(
+    not_null<serialization::MassiveBody*> message) const {
+  MassiveBody::WriteToMessage(message);
+  serialization::OblateBody oblate_body_information;
+  j2_.WriteToMessage(oblate_body_information.j2());
+  axis_.WriteToMessage(oblate_body_information.axis());
+  message->SetExtension(serialization::OblateBody::oblate_body,
+                        oblate_body_information);
+}
+
+
+template<typename Frame>
 not_null<std::unique_ptr<OblateBody<Frame>>> OblateBody<Frame>::ReadFromMessage(
     serialization::Body const& message) {
-  CHECK(message.HasExtension(serialization::MassiveBody::massive_body));
-  return ReadFromMessage(
-      message.GetExtension(serialization::MassiveBody::massive_body));
+  CHECK(message.has_massive_body());
+  return ReadFromMessage(message.massive_body());
 }
 
 template<typename Frame>

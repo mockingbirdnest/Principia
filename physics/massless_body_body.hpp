@@ -15,13 +15,12 @@ inline bool MasslessBody::is_oblate() const {
 
 inline not_null<std::unique_ptr<MasslessBody>> MasslessBody::ReadFromMessage(
     serialization::Body const& message) {
-  CHECK(message.HasExtension(serialization::MasslessBody::massless_body));
-  return ReadFromMessage(
-      message.GetExtension(serialization::MasslessBody::massless_body));
+  CHECK(message.has_massless_body());
+  return ReadFromMessage(message.has_massless_body());
 }
 
 not_null<std::unique_ptr<MasslessBody>> MasslessBody::ReadFromMessage(
-      serialization::MasslessBody const& message) {
+    serialization::MasslessBody const& message) {
   return std::make_unique<MasslessBody>();
 }
 

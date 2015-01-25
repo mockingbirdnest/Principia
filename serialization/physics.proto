@@ -6,26 +6,23 @@ import "serialization/quantities.proto";
 package principia.serialization;
 
 message Body {
-  extensions 2000 to 2999;  // Last used: TODO.
+  oneof body {
+    MassiveBody massive_body = 1;
+    MasslessBody massless_body = 2;
+  }
 }
 
 message MasslessBody {
-  extend Body {
-    optional MasslessBody massless_body = 2001;
-  }
 }
 
 message MassiveBody {
-  extend Body {
-    optional MassiveBody massive_body = 2002;
-  }
   required Quantity gravitational_parameter = 1;
-  extensions 3000 to 3999;  // Last used: TODO.
+  extensions 2000 to 2999;  // Last used: TODO.
 }
 
 message OblateBody {
   extend MassiveBody {
-    optional OblateBody oblate_body = 3001;
+    optional OblateBody oblate_body = 2001;
   }
   required Quantity j2 = 1;
   required Multivector axis = 2;

@@ -28,7 +28,7 @@ class MasslessBody : public Body {
 
   void WriteToMessage(not_null<serialization::Body*> message) const override;
 
-  // Fails if the |MasslessBody| extension is absent from the message.
+  // Fails unless |message.has_massless_body()|.
   static not_null<std::unique_ptr<MasslessBody>> ReadFromMessage(
       serialization::Body const& message);
 
