@@ -120,7 +120,7 @@ TEST_F(AffineMapTest, Serialization) {
   RigidTransformation const map2 =
       RigidTransformation::ReadFromMessage(message);
   EXPECT_EQ(map1(back_right_bottom_) - origin_,
-            map2(front_right_bottom_) - origin_);
+            map2(back_right_bottom_) - origin_);
   EXPECT_EQ(map1(front_left_top_) - origin_,
             map2(front_left_top_) - origin_);
 }

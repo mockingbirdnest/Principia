@@ -185,7 +185,7 @@ TEST_F(PermutationDeathTest, SerializationError) {
     serialization::LinearMap message;
     id.WriteToMessage(&message);
     Perm const p = Perm::ReadFromMessage(message);
-  }, ",,,");
+  }, "HasExtension.*Permutation");
 }
 
 TEST_F(PermutationTest, SerializationSuccess) {

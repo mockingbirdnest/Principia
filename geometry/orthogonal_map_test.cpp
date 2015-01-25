@@ -126,7 +126,7 @@ TEST_F(OrthogonalMapDeathTest, SerializationError) {
     serialization::LinearMap message;
     id.WriteToMessage(&message);
     Orth const o = Orth::ReadFromMessage(message);
-  }, ",,,");
+  }, "HasExtension.*OrthogonalMap");
 }
 
 TEST_F(OrthogonalMapTest, SerializationSuccess) {

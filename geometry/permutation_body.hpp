@@ -92,9 +92,8 @@ Permutation<FromFrame, ToFrame> Permutation<FromFrame, ToFrame>::Identity() {
 template<typename FromFrame, typename ToFrame>
 void Permutation<FromFrame, ToFrame>::WriteToMessage(
       not_null<serialization::LinearMap*> const message) const {
-  serialization::Permutation* extension =
-      message->MutableExtension(serialization::Permutation::permutation);
-  extension->set_coordinate_permutation(coordinate_permutation_);
+  WriteToMessage(
+      message->MutableExtension(serialization::Permutation::permutation));
 }
 
 template<typename FromFrame, typename ToFrame>
@@ -102,10 +101,22 @@ Permutation<FromFrame, ToFrame>
 Permutation<FromFrame, ToFrame>::ReadFromMessage(
     serialization::LinearMap const& message) {
   CHECK(message.HasExtension(serialization::Permutation::permutation));
-  serialization::Permutation const& extension =
-      message.GetExtension(serialization::Permutation::permutation);
+  return ReadFromMessage(
+      message.GetExtension(serialization::Permutation::permutation));
+}
+
+template<typename FromFrame, typename ToFrame>
+void Permutation<FromFrame, ToFrame>::WriteToMessage(
+      not_null<serialization::Permutation*> const message) const {
+  message->set_coordinate_permutation(coordinate_permutation_);
+}
+
+template<typename FromFrame, typename ToFrame>
+Permutation<FromFrame, ToFrame>
+Permutation<FromFrame, ToFrame>::ReadFromMessage(
+    serialization::Permutation const& message) {
   return Permutation(static_cast<CoordinatePermutation>(
-      extension.coordinate_permutation()));
+      message.coordinate_permutation()));
 }
 
 template<typename FromFrame, typename ToFrame>

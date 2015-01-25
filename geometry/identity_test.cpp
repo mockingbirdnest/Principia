@@ -105,7 +105,7 @@ TEST_F(IdentityDeathTest, SerializationError) {
   EXPECT_DEATH({
     serialization::LinearMap message;
     Id12 const id = Id12::ReadFromMessage(message);
-  }, ",,");
+  }, "HasExtension.*Identity");
 }
 
 TEST_F(IdentityTest, SerializationSuccess) {

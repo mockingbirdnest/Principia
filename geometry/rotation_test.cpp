@@ -217,7 +217,7 @@ TEST_F(RotationDeathTest, SerializationError) {
     serialization::LinearMap message;
     id.WriteToMessage(&message);
     Rot const r = Rot::ReadFromMessage(message);
-  }, ",,,");
+  }, "HasExtension.*Rotation");
 }
 
 TEST_F(RotationTest, SerializationSuccess) {
