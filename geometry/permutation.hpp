@@ -26,6 +26,7 @@ class Permutation : public LinearMap<FromFrame, ToFrame> {
   static int const Y = serialization::Permutation::Y;
   static int const Z = serialization::Permutation::Z;
   static int const INDEX = serialization::Permutation::INDEX;
+
  public:
   // Danger, Will Robinson!  This enum is stored in the serialized
   // representation.  Any change to the formulae below is likely to make it
