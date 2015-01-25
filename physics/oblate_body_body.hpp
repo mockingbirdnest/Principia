@@ -77,5 +77,28 @@ bool OblateBody<Frame>::is_oblate() const {
   return true;
 }
 
+template<typename Frame>
+not_null<std::unique_ptr<OblateBody<Frame>>> OblateBody<Frame>::ReadFromMessage(
+    serialization::Body const& message) {
+  CHECK(message.HasExtension(serialization::MassiveBody::massive_body));
+  return ReadFromMessage(
+      message.GetExtension(serialization::MassiveBody::massive_body));
+}
+
+template<typename Frame>
+not_null<std::unique_ptr<OblateBody<Frame>>> OblateBody<Frame>::ReadFromMessage(
+    serialization::MassiveBody const& message) {
+  CHECK(message.HasExtension(serialization::OblateBody::oblate_body));
+  serialization::OblateBody oblateness_information =
+      message.GetExtension(serialization::OblateBody::oblate_body);
+  return std::make_unique<OblateBody<Frame>>(
+      GravitationalParameter::ReadFromMessage(
+          message.gravitational_parameter()),
+      Order2ZonalCoefficient::ReadFromMessage(
+          oblateness_information.j2()),
+      Vector<double, Frame>::ReadFromMessage(
+          oblateness_information.axis()));
+}
+
 }  // namespace physics
 }  // namespace principia

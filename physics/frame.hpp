@@ -16,6 +16,15 @@ class Frame {
   Frame() = delete;
 };
 
+enum UncheckedTag {
+  kUnchecked,
+};
+
+// This frame should be used for objects whose reference frame cannot be known
+// at compile time.
+using UncheckedInertialFrame =
+    Frame<UncheckedTag, UncheckedTag::kUnchecked, true>;
+
 }  // namespace physics
 }  // namespace principia
 

@@ -2,6 +2,7 @@
 
 #include "physics/massive_body.hpp"
 
+#include "physics/frame.hpp"
 #include "glog/logging.h"
 #include "physics/oblate_body.hpp"
 #include "quantities/constants.hpp"
@@ -41,6 +42,24 @@ inline bool MassiveBody::is_massless() const {
 
 inline bool MassiveBody::is_oblate() const {
   return false;
+}
+
+inline not_null<std::unique_ptr<MassiveBody>> MassiveBody::ReadFromMessage(
+    serialization::Body const& message) {
+  CHECK(message.HasExtension(serialization::MassiveBody::massive_body));
+  return ReadFromMessage(
+      message.GetExtension(serialization::MassiveBody::massive_body));
+}
+
+inline not_null<std::unique_ptr<MassiveBody>> MassiveBody::ReadFromMessage(
+    serialization::MassiveBody const& message) {
+  if (message.HasExtension(serialization::OblateBody::oblate_body)) {
+    return OblateBody<UncheckedInertialFrame>::ReadFromMessage(message);
+  } else {
+    return std::make_unique<MassiveBody>(
+        GravitationalParameter::ReadFromMessage(
+            message.gravitational_parameter()));
+  }
 }
 
 }  // namespace physics

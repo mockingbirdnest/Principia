@@ -40,6 +40,8 @@ class MassiveBody : public Body {
 
   static not_null<std::unique_ptr<MassiveBody>> ReadFromMessage(
       serialization::Body const& message);
+  static not_null<std::unique_ptr<MassiveBody>> ReadFromMessage(
+      serialization::MassiveBody const& message);
 
  private:
   GravitationalParameter const gravitational_parameter_;

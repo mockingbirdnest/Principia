@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "physics/body.hpp"
+#include "serialization/physics.pb.h"
 
 namespace principia {
 namespace physics {
@@ -26,6 +27,10 @@ class MasslessBody : public Body {
   bool is_oblate() const override;
 
   void WriteToMessage(not_null<serialization::Body*> message) const override;
+  static not_null<std::unique_ptr<MasslessBody>> ReadFromMessage(
+      serialization::Body const& message);
+  static not_null<std::unique_ptr<MasslessBody>> ReadFromMessage(
+      serialization::MasslessBody const& message);
 };
 
 }  // namespace physics

@@ -19,7 +19,7 @@ message MassiveBody {
   extend Body {
     optional MassiveBody massive_body = 2002;
   }
-  required Quantity mass = 1;
+  required Quantity gravitational_parameter = 1;
   extensions 3000 to 3999;  // Last used: TODO.
 }
 

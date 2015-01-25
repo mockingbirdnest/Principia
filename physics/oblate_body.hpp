@@ -56,6 +56,11 @@ class OblateBody : public MassiveBody {
   // Returns true.
   bool is_oblate() const;
 
+  static not_null<std::unique_ptr<OblateBody<Frame>>> ReadFromMessage(
+      serialization::Body const& message);
+  static not_null<std::unique_ptr<OblateBody<Frame>>> ReadFromMessage(
+      serialization::MassiveBody const& message);
+
  private:
   Order2ZonalCoefficient const j2_;
   Vector<double, Frame> const axis_;

@@ -15,12 +15,14 @@ bool Body::is_compatible_with() const {
                              Frame::is_inertial>::is_compatible_with(this);
 }
 
-not_null<std::unique_ptr<Body>> Body::ReadFromMessage(
+inline not_null<std::unique_ptr<Body>> Body::ReadFromMessage(
     serialization::Body const& message) {
   if (message.HasExtension(serialization::MasslessBody::massless_body)) {
-    return MasslessBody::ReadFromMessage(message);
+    return MasslessBody::ReadFromMessage(
+        message.GetExtension(serialization::MasslessBody::massless_body));
   } else if (message.HasExtension(serialization::MassiveBody::massive_body)) {
-    return MassiveBody::ReadFromMessage(message);
+    return MassiveBody::ReadFromMessage(
+        message.GetExtension(serialization::MassiveBody::massive_body));
   } else {
     LOG(FATAL) << "serialization::Body is neither massive nor massless";
     base::noreturn();
