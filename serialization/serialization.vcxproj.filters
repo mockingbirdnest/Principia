@@ -13,6 +13,7 @@
   <ItemGroup>
     <CustomBuild Include="geometry.proto" />
     <CustomBuild Include="quantities.proto" />
+    <CustomBuild Include="physics.proto" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="geometry.pb.h">
@@ -21,12 +22,18 @@
     <ClInclude Include="quantities.pb.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="physics.pb.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="geometry.pb.cc">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="quantities.pb.cc">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="physics.pb.cc">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

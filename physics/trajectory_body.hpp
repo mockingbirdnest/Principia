@@ -265,6 +265,13 @@ Vector<Acceleration, Frame> Trajectory<Frame>::evaluate_intrinsic_acceleration(
 }
 
 template<typename Frame>
+void Trajectory<Frame>::WriteToMessage(
+    not_null<serialization::Trajectory*> const message) const {
+  CHECK(is_root());
+  WriteSubTreeToMessage(message);
+}
+
+template<typename Frame>
 typename Trajectory<Frame>::Iterator&
 Trajectory<Frame>::Iterator::operator++() {
   if (!forks_.empty() && current_ == forks_.front()) {
@@ -369,6 +376,33 @@ Trajectory<Frame>::Trajectory(not_null<Body const*> const body,
     : body_(body),
       parent_(parent),
       fork_(new typename Timeline::iterator(fork)) {}
+
+template<typename Frame>
+void Trajectory<Frame>::WriteSubTreeToMessage(
+    not_null<serialization::Trajectory*> const message) const {
+  Instant last_instant;
+  bool is_first = true;
+  serialization::Trajectory::Litter* litter = nullptr;
+  for (auto const& pair : children_) {
+    Instant const& fork_time = pair.first;
+    not_null<std::unique_ptr<Trajectory>> const& child = pair.second;
+    if (is_first || fork_time != last_instant) {
+      is_first = false;
+      last_instant = fork_time;
+      litter = message->add_children();
+      fork_time.WriteToMessage(litter->mutable_fork_time());
+    }
+    child->WriteSubTreeToMessage(litter->add_trajectories());
+  }
+  for (auto const& pair : timeline_) {
+    Instant const& instant = pair.first;
+    DegreesOfFreedom<Frame> const& degrees_of_freedom = pair.second;
+    auto const instantaneous_degrees_of_freedom = message->add_timeline();
+    instant.WriteToMessage(instantaneous_degrees_of_freedom->mutable_instant());
+    degrees_of_freedom.WriteToMessage(
+        instantaneous_degrees_of_freedom->mutable_degrees_of_freedom());
+  }
+}
 
 }  // namespace physics
 }  // namespace principia
