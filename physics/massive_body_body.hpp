@@ -3,6 +3,7 @@
 #include "physics/massive_body.hpp"
 
 #include "glog/logging.h"
+#include "physics/oblate_body.hpp"
 #include "quantities/constants.hpp"
 
 using principia::constants::GravitationalConstant;

@@ -1,6 +1,8 @@
-﻿#pragma once
+﻿#ifndef PRINCIPIA_PHYSICS_BODY_HPP_
+#define PRINCIPIA_PHYSICS_BODY_HPP_
 
 #include "base/not_null.hpp"
+#include "serialization/physics.pb.h"
 
 using principia::base::not_null;
 
@@ -23,6 +25,12 @@ class Body {
   template<typename Frame>
   bool is_compatible_with() const;
 
+  virtual void WriteToMessage(not_null<serialization::Body*> message) const = 0;
+
+  // Dispatches to children depending on the contents of the message.
+  static not_null<std::unique_ptr<Body>> ReadFromMessage(
+      serialization::Body const& message);
+
  protected:
   Body() = default;
 
@@ -43,3 +51,6 @@ class Body {
 }  // namespace principia
 
 #include "physics/body_body.hpp"
+
+#define PRINCIPIA_PHYSICS_BODY_HPP_DONE
+#endif  // PRINCIPIA_PHYSICS_BODY_HPP_

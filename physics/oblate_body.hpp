@@ -1,4 +1,11 @@
-﻿#pragma once
+﻿// The files containing the tree of of child classes of |Body| must be included
+// in the order of inheritance to avoid circular dependencies.  This class will
+// end up being included as part of the implementation of its parent.
+#ifndef PRINCIPIA_PHYSICS_MASSIVE_BODY_HPP_
+#include "physics/massive_body.hpp"
+#else
+#ifndef PRINCIPIA_PHYSICS_OBLATE_BODY_HPP_
+#define PRINCIPIA_PHYSICS_OBLATE_BODY_HPP_
 
 #include <vector>
 
@@ -58,3 +65,7 @@ class OblateBody : public MassiveBody {
 }  // namespace principia
 
 #include "physics/oblate_body_body.hpp"
+
+#define PRINCIPIA_PHYSICS_OBLATE_BODY_HPP_DONE
+#endif  // PRINCIPIA_PHYSICS_OBLATE_BODY_HPP_
+#endif  // PRINCIPIA_PHYSICS_MASSIVE_BODY_HPP_
