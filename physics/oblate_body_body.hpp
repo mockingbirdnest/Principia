@@ -80,18 +80,17 @@ bool OblateBody<Frame>::is_oblate() const {
 template<typename Frame>
 inline void OblateBody<Frame>::WriteToMessage(
     not_null<serialization::Body*> message) const {
-  WriteToMessage(message->massive_body());
+  WriteToMessage(message->mutable_massive_body());
 }
 
 template<typename Frame>
 inline void OblateBody<Frame>::WriteToMessage(
     not_null<serialization::MassiveBody*> message) const {
   MassiveBody::WriteToMessage(message);
-  serialization::OblateBody oblate_body_information;
-  j2_.WriteToMessage(oblate_body_information.j2());
-  axis_.WriteToMessage(oblate_body_information.axis());
-  message->SetExtension(serialization::OblateBody::oblate_body,
-                        oblate_body_information);
+  not_null<serialization::OblateBody*> const oblate_body_information =
+      message->MutableExtension(serialization::OblateBody::oblate_body);
+  j2_.WriteToMessage(oblate_body_information->mutable_j2());
+  axis_.WriteToMessage(oblate_body_information->mutable_axis());
 }
 
 
@@ -106,7 +105,7 @@ template<typename Frame>
 not_null<std::unique_ptr<OblateBody<Frame>>> OblateBody<Frame>::ReadFromMessage(
     serialization::MassiveBody const& message) {
   CHECK(message.HasExtension(serialization::OblateBody::oblate_body));
-  serialization::OblateBody oblateness_information =
+  serialization::OblateBody const& oblateness_information =
       message.GetExtension(serialization::OblateBody::oblate_body);
   return std::make_unique<OblateBody<Frame>>(
       GravitationalParameter::ReadFromMessage(

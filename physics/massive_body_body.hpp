@@ -46,12 +46,13 @@ inline bool MassiveBody::is_oblate() const {
 
 inline void MassiveBody::WriteToMessage(
     not_null<serialization::Body*> message) const {
-  WriteToMessage(message->massive_body());
+  WriteToMessage(message->mutable_massive_body());
 }
 
 inline void MassiveBody::WriteToMessage(
     not_null<serialization::MassiveBody*> message) const {
-  gravitational_parameter_.WriteToMessage(message->gravitational_parameter());
+  gravitational_parameter_.WriteToMessage(
+      message->mutable_gravitational_parameter());
 }
 
 inline not_null<std::unique_ptr<MassiveBody>> MassiveBody::ReadFromMessage(

@@ -28,6 +28,9 @@ class MasslessBody : public Body {
 
   void WriteToMessage(not_null<serialization::Body*> message) const override;
 
+  virtual void WriteToMessage(
+      not_null<serialization::MasslessBody*> message) const;
+
   // Fails unless |message.has_massless_body()|.
   static not_null<std::unique_ptr<MasslessBody>> ReadFromMessage(
       serialization::Body const& message);
