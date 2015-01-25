@@ -104,8 +104,9 @@ message Permutation {
     ODD = -2147483648;  // 0x80000000
   }
 
-  // See permutation.hpp for the structure of this field.
-  required uint32 coordinate_permutation = 1;
+  // See permutation.hpp for the structure of this field.  We make it signed
+  // because the enums above are signed.
+  required int32 coordinate_permutation = 1;
 }
 
 message Rotation {

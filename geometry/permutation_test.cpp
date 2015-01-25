@@ -176,5 +176,20 @@ TEST_F(PermutationTest, Compose) {
   }
 }
 
+TEST_F(PermutationTest, Serialization) {
+  using Perm12 = Permutation<World1, World2>;
+  std::vector<Perm12::CoordinatePermutation> const all12 =
+      {Perm12::XYZ, Perm12::YZX, Perm12::ZXY,
+       Perm12::XZY, Perm12::ZYX, Perm12::YXZ};
+  serialization::Permutation message;
+  for (Perm12::CoordinatePermutation const cp : all12) {
+    Perm12 const perm_a(cp);
+    perm_a.WriteToMessage(&message);
+    EXPECT_EQ(cp, message.coordinate_permutation());
+    Perm12 const perm_b = Perm12::ReadFromMessage(message);
+    EXPECT_EQ(perm_a(vector_), perm_b(vector_));
+  }
+}
+
 }  // namespace geometry
 }  // namespace principia
