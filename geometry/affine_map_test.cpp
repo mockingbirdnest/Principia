@@ -81,13 +81,13 @@ class AffineMapTest : public testing::Test {
 };
 
 TEST_F(AffineMapTest, Cube) {
-  Rot rotate_left(π / 2 * Radian,
-                  Bivector<Length, World>(upward_.coordinates()));
+  Rot const rotate_left(π / 2 * Radian,
+                        Bivector<Length, World>(upward_.coordinates()));
   EXPECT_THAT(RelativeError(leftward_, rotate_left(forward_)),
               Lt(2 * std::numeric_limits<double>::epsilon()));
-  RigidTransformation map = RigidTransformation(back_right_bottom_,
-                                                front_right_bottom_,
-                                                rotate_left);
+  RigidTransformation const map = RigidTransformation(back_right_bottom_,
+                                                      front_right_bottom_,
+                                                      rotate_left);
   EXPECT_THAT(map(back_right_bottom_) - origin_,
               Eq(front_right_bottom_ - origin_));
   EXPECT_THAT(map(front_left_top_) - origin_,
@@ -103,6 +103,26 @@ TEST_F(AffineMapTest, Cube) {
                 AlmostEquals((map.Inverse() * map)
                                  (vertices_[i]) - origin_, 0));
   }
+}
+
+TEST_F(AffineMapTest, Serialization) {
+  serialization::AffineMap message;
+  Rot const rotate_left(π / 2 * Radian,
+                        Bivector<Length, World>(upward_.coordinates()));
+  RigidTransformation const map1 = RigidTransformation(back_right_bottom_,
+                                                       front_right_bottom_,
+                                                       rotate_left);
+  map1.WriteToMessage(&message);
+  EXPECT_TRUE(message.from_origin().has_multivector());
+  EXPECT_TRUE(message.to_origin().has_multivector());
+  EXPECT_TRUE(message.linear_map().HasExtension(
+      serialization::Rotation::rotation));
+  RigidTransformation const map2 =
+      RigidTransformation::ReadFromMessage(message);
+  EXPECT_EQ(map1(back_right_bottom_) - origin_,
+            map2(front_right_bottom_) - origin_);
+  EXPECT_EQ(map1(front_left_top_) - origin_,
+            map2(front_left_top_) - origin_);
 }
 
 }  // namespace geometry

@@ -4,6 +4,12 @@ import "serialization/quantities.proto";
 
 package principia.serialization;
 
+message AffineMap {
+  required Point from_origin = 1;
+  required Point to_origin = 2;
+  required LinearMap linear_map = 3;
+}
+
 message Pair {
   message Element {
     oneof element {
