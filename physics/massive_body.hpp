@@ -38,8 +38,12 @@ class MassiveBody : public Body {
 
   void WriteToMessage(not_null<serialization::Body*> message) const override;
 
+  // Fails if the |MassiveBody| extension is absent from the message.
   static not_null<std::unique_ptr<MassiveBody>> ReadFromMessage(
       serialization::Body const& message);
+
+  // Dispatches to |OblateBody<UncheckedInertialFrame>| if the |OblateBody|
+  // extension is present in the message.
   static not_null<std::unique_ptr<MassiveBody>> ReadFromMessage(
       serialization::MassiveBody const& message);
 

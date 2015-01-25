@@ -27,7 +27,8 @@ class Body {
 
   virtual void WriteToMessage(not_null<serialization::Body*> message) const = 0;
 
-  // Dispatches to children depending on the contents of the message.
+  // Dispatches to |MassiveBody| or |MasslessBody| depending on the contents of
+  // the message.  Fails if neither extension is present in the message.
   static not_null<std::unique_ptr<Body>> ReadFromMessage(
       serialization::Body const& message);
 

@@ -56,8 +56,11 @@ class OblateBody : public MassiveBody {
   // Returns true.
   bool is_oblate() const;
 
+  // Fails if the |MassiveBody| extension is absent from the message.
   static not_null<std::unique_ptr<OblateBody<Frame>>> ReadFromMessage(
       serialization::Body const& message);
+
+  // Fails if the |OblateBody| extension is absent from the message.
   static not_null<std::unique_ptr<OblateBody<Frame>>> ReadFromMessage(
       serialization::MassiveBody const& message);
 

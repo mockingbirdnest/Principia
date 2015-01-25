@@ -27,8 +27,11 @@ class MasslessBody : public Body {
   bool is_oblate() const override;
 
   void WriteToMessage(not_null<serialization::Body*> message) const override;
+
+  // Fails if the |MasslessBody| extension is absent from the message.
   static not_null<std::unique_ptr<MasslessBody>> ReadFromMessage(
       serialization::Body const& message);
+
   static not_null<std::unique_ptr<MasslessBody>> ReadFromMessage(
       serialization::MasslessBody const& message);
 };
