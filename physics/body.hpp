@@ -52,5 +52,4 @@ class Body {
 
 #include "physics/body_body.hpp"
 
-#define PRINCIPIA_PHYSICS_BODY_HPP_DONE
 #endif  // PRINCIPIA_PHYSICS_BODY_HPP_
