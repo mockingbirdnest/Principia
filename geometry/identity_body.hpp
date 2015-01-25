@@ -59,6 +59,20 @@ OrthogonalMap<FromFrame, ToFrame> Identity<FromFrame, ToFrame>::Forget() const {
 
 template<typename FromFrame, typename ToFrame>
 void Identity<FromFrame, ToFrame>::WriteToMessage(
+    not_null<serialization::LinearMap*> const message) const {
+  WriteToMessage(message->MutableExtension(serialization::Identity::identity));
+}
+
+template<typename FromFrame, typename ToFrame>
+Identity<FromFrame, ToFrame> Identity<FromFrame, ToFrame>::ReadFromMessage(
+    serialization::LinearMap const& message) {
+  CHECK(message.HasExtension(serialization::Identity::identity));
+  return ReadFromMessage(
+      message.GetExtension(serialization::Identity::identity));
+}
+
+template<typename FromFrame, typename ToFrame>
+void Identity<FromFrame, ToFrame>::WriteToMessage(
     not_null<serialization::Identity*> const message) const {}
 
 template<typename FromFrame, typename ToFrame>

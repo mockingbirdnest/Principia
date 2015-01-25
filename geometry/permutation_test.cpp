@@ -1,7 +1,8 @@
+#include "geometry/permutation.hpp"
 
 #include <vector>
 
-#include "geometry/permutation.hpp"
+#include "geometry/identity.hpp"
 #include "geometry/orthogonal_map.hpp"
 #include "geometry/r3_element.hpp"
 #include "glog/logging.h"
@@ -38,6 +39,8 @@ class PermutationTest : public testing::Test {
   Bivector<quantities::Length, World1> bivector_;
   Trivector<quantities::Length, World1> trivector_;
 };
+
+using PermutationDeathTest = PermutationTest;
 
 TEST_F(PermutationTest, Identity) {
   EXPECT_THAT(Perm::Identity()(vector_.coordinates()),
@@ -173,6 +176,32 @@ TEST_F(PermutationTest, Compose) {
                     AlmostEquals(o13(modified_vector), 0, 12));
       }
     }
+  }
+}
+
+TEST_F(PermutationDeathTest, SerializationError) {
+  Identity<World1, World2> id;
+  EXPECT_DEATH({
+    serialization::LinearMap message;
+    id.WriteToMessage(&message);
+    Perm const p = Perm::ReadFromMessage(message);
+  }, "HasExtension.*Permutation");
+}
+
+TEST_F(PermutationTest, SerializationSuccess) {
+  std::vector<Perm::CoordinatePermutation> const all12 =
+      {Perm::XYZ, Perm::YZX, Perm::ZXY,
+       Perm::XZY, Perm::ZYX, Perm::YXZ};
+  serialization::LinearMap message;
+  for (Perm::CoordinatePermutation const cp : all12) {
+    Perm const perm_a(cp);
+    perm_a.WriteToMessage(&message);
+    EXPECT_TRUE(message.HasExtension(serialization::Permutation::permutation));
+    serialization::Permutation const& extension =
+        message.GetExtension(serialization::Permutation::permutation);
+    EXPECT_EQ(cp, extension.coordinate_permutation());
+    Perm const perm_b = Perm::ReadFromMessage(message);
+    EXPECT_EQ(perm_a(vector_), perm_b(vector_));
   }
 }
 

@@ -41,6 +41,9 @@ class OrthogonalMap : public LinearMap<FromFrame, ToFrame> {
 
   static OrthogonalMap Identity();
 
+  void WriteToMessage(not_null<serialization::LinearMap*> const message) const;
+  static OrthogonalMap ReadFromMessage(serialization::LinearMap const& message);
+
   void WriteToMessage(
       not_null<serialization::OrthogonalMap*> const message) const;
   static OrthogonalMap ReadFromMessage(

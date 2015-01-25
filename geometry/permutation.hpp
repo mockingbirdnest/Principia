@@ -6,6 +6,7 @@
 #include "geometry/r3_element.hpp"
 #include "geometry/sign.hpp"
 #include "gtest/gtest_prod.h"
+#include "serialization/geometry.pb.h"
 
 namespace principia {
 namespace geometry {
@@ -18,23 +19,25 @@ class OrthogonalMap;
 // permutations.
 template<typename FromFrame, typename ToFrame>
 class Permutation : public LinearMap<FromFrame, ToFrame> {
-  // These constants are used in the definition of type CoordinatePermutation.
-  // The sign bit gives the sign of the permutation.
-  static int const even = 0, odd = 0x80000000;
-  // Three two-bit fields which indicate how each coordinate get mapped by the
-  // permutation.
-  static int const x = 0, y = 1, z = 2;
-  // A three bit field used when using this enum to index arrays.
-  static int const index = 6;
+  // Declare shorter names for the protocol buffer enums.
+  static int const EVEN = serialization::Permutation::EVEN;
+  static int const ODD = serialization::Permutation::ODD;
+  static int const X = serialization::Permutation::X;
+  static int const Y = serialization::Permutation::Y;
+  static int const Z = serialization::Permutation::Z;
+  static int const INDEX = serialization::Permutation::INDEX;
 
  public:
+  // Danger, Will Robinson!  This enum is stored in the serialized
+  // representation.  Any change to the formulae below is likely to make it
+  // impossible to read existing files.
   enum CoordinatePermutation {
-    XYZ = even + (x << x * 2) + (y << y * 2) + (z << z * 2) + (0 << index),
-    YZX = even + (y << x * 2) + (z << y * 2) + (x << z * 2) + (1 << index),
-    ZXY = even + (z << x * 2) + (x << y * 2) + (y << z * 2) + (2 << index),
-    XZY = odd  + (x << x * 2) + (z << y * 2) + (y << z * 2) + (3 << index),
-    ZYX = odd  + (z << x * 2) + (y << y * 2) + (x << z * 2) + (4 << index),
-    YXZ = odd  + (y << x * 2) + (x << y * 2) + (z << z * 2) + (5 << index)
+    XYZ = EVEN + (X << X * 2) + (Y << Y * 2) + (Z << Z * 2) + (0 << INDEX),
+    YZX = EVEN + (Y << X * 2) + (Z << Y * 2) + (X << Z * 2) + (1 << INDEX),
+    ZXY = EVEN + (Z << X * 2) + (X << Y * 2) + (Y << Z * 2) + (2 << INDEX),
+    XZY = ODD  + (X << X * 2) + (Z << Y * 2) + (Y << Z * 2) + (3 << INDEX),
+    ZYX = ODD  + (Z << X * 2) + (Y << Y * 2) + (X << Z * 2) + (4 << INDEX),
+    YXZ = ODD  + (Y << X * 2) + (X << Y * 2) + (Z << Z * 2) + (5 << INDEX)
   };
 
   explicit Permutation(CoordinatePermutation const coordinate_permutation);
@@ -62,6 +65,13 @@ class Permutation : public LinearMap<FromFrame, ToFrame> {
   OrthogonalMap<FromFrame, ToFrame> Forget() const;
 
   static Permutation Identity();
+
+  void WriteToMessage(not_null<serialization::LinearMap*> const message) const;
+  static Permutation ReadFromMessage(serialization::LinearMap const& message);
+
+  void WriteToMessage(
+      not_null<serialization::Permutation*> const message) const;
+  static Permutation ReadFromMessage(serialization::Permutation const& message);
 
  private:
   template<typename Scalar>

@@ -90,11 +90,41 @@ Permutation<FromFrame, ToFrame> Permutation<FromFrame, ToFrame>::Identity() {
 }
 
 template<typename FromFrame, typename ToFrame>
+void Permutation<FromFrame, ToFrame>::WriteToMessage(
+      not_null<serialization::LinearMap*> const message) const {
+  WriteToMessage(
+      message->MutableExtension(serialization::Permutation::permutation));
+}
+
+template<typename FromFrame, typename ToFrame>
+Permutation<FromFrame, ToFrame>
+Permutation<FromFrame, ToFrame>::ReadFromMessage(
+    serialization::LinearMap const& message) {
+  CHECK(message.HasExtension(serialization::Permutation::permutation));
+  return ReadFromMessage(
+      message.GetExtension(serialization::Permutation::permutation));
+}
+
+template<typename FromFrame, typename ToFrame>
+void Permutation<FromFrame, ToFrame>::WriteToMessage(
+      not_null<serialization::Permutation*> const message) const {
+  message->set_coordinate_permutation(coordinate_permutation_);
+}
+
+template<typename FromFrame, typename ToFrame>
+Permutation<FromFrame, ToFrame>
+Permutation<FromFrame, ToFrame>::ReadFromMessage(
+    serialization::Permutation const& message) {
+  return Permutation(static_cast<CoordinatePermutation>(
+      message.coordinate_permutation()));
+}
+
+template<typename FromFrame, typename ToFrame>
 template<typename Scalar>
 R3Element<Scalar> Permutation<FromFrame, ToFrame>::operator()(
     R3Element<Scalar> const& r3_element) const {
   R3Element<Scalar> result;
-  for (int coordinate = x; coordinate <= z; ++coordinate) {
+  for (int coordinate = X; coordinate <= Z; ++coordinate) {
     result[coordinate] = r3_element[
         0x3 &
         (static_cast<int>(coordinate_permutation_) >> (coordinate * 2))];
