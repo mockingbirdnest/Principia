@@ -1,8 +1,9 @@
 
 #include <vector>
 
-#include "geometry/permutation.hpp"
+#include "geometry/identity.hpp"
 #include "geometry/orthogonal_map.hpp"
+#include "geometry/permutation.hpp"
 #include "geometry/r3_element.hpp"
 #include "glog/logging.h"
 #include "gmock/gmock.h"
@@ -38,6 +39,8 @@ class PermutationTest : public testing::Test {
   Bivector<quantities::Length, World1> bivector_;
   Trivector<quantities::Length, World1> trivector_;
 };
+
+using PermutationDeathTest = PermutationTest;
 
 TEST_F(PermutationTest, Identity) {
   EXPECT_THAT(Perm::Identity()(vector_.coordinates()),
@@ -176,17 +179,28 @@ TEST_F(PermutationTest, Compose) {
   }
 }
 
-TEST_F(PermutationTest, Serialization) {
-  using Perm12 = Permutation<World1, World2>;
-  std::vector<Perm12::CoordinatePermutation> const all12 =
-      {Perm12::XYZ, Perm12::YZX, Perm12::ZXY,
-       Perm12::XZY, Perm12::ZYX, Perm12::YXZ};
-  serialization::Permutation message;
-  for (Perm12::CoordinatePermutation const cp : all12) {
-    Perm12 const perm_a(cp);
+TEST_F(PermutationDeathTest, SerializationError) {
+  Identity<World1, World2> id;
+  EXPECT_DEATH({
+    serialization::LinearMap message;
+    id.WriteToMessage(&message);
+    Perm const p = Perm::ReadFromMessage(message);
+  }, ",,,");
+}
+
+TEST_F(PermutationTest, SerializationSuccess) {
+  std::vector<Perm::CoordinatePermutation> const all12 =
+      {Perm::XYZ, Perm::YZX, Perm::ZXY,
+       Perm::XZY, Perm::ZYX, Perm::YXZ};
+  serialization::LinearMap message;
+  for (Perm::CoordinatePermutation const cp : all12) {
+    Perm const perm_a(cp);
     perm_a.WriteToMessage(&message);
-    EXPECT_EQ(cp, message.coordinate_permutation());
-    Perm12 const perm_b = Perm12::ReadFromMessage(message);
+    EXPECT_TRUE(message.HasExtension(serialization::Permutation::permutation));
+    serialization::Permutation const& extension =
+        message.GetExtension(serialization::Permutation::permutation);
+    EXPECT_EQ(cp, extension.coordinate_permutation());
+    Perm const perm_b = Perm::ReadFromMessage(message);
     EXPECT_EQ(perm_a(vector_), perm_b(vector_));
   }
 }

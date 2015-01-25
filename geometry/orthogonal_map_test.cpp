@@ -1,4 +1,5 @@
 #include "geometry/grassmann.hpp"
+#include "geometry/identity.hpp"
 #include "geometry/orthogonal_map.hpp"
 #include "geometry/rotation.hpp"
 #include "glog/logging.h"
@@ -44,6 +45,8 @@ class OrthogonalMapTest : public testing::Test {
   Orth orthogonal_b_;
   Orth orthogonal_c_;
 };
+
+using OrthogonalMapDeathTest = OrthogonalMapTest;
 
 TEST_F(OrthogonalMapTest, Identity) {
   EXPECT_THAT(vector_, Eq(Orth::Identity()(vector_)));
@@ -117,18 +120,31 @@ TEST_F(OrthogonalMapTest, Composition) {
   EXPECT_TRUE((orthogonal_b_ * orthogonal_c_).Determinant().Negative());
 }
 
-TEST_F(OrthogonalMapTest, Serialization) {
-  serialization::OrthogonalMap message;
+TEST_F(OrthogonalMapDeathTest, SerializationError) {
+  Identity<World, World> id;
+  EXPECT_DEATH({
+    serialization::LinearMap message;
+    id.WriteToMessage(&message);
+    Orth const o = Orth::ReadFromMessage(message);
+  }, ",,,");
+}
+
+TEST_F(OrthogonalMapTest, SerializationSuccess) {
+  serialization::LinearMap message;
   orthogonal_a_.WriteToMessage(&message);
-  EXPECT_TRUE(message.determinant().negative());
-  EXPECT_THAT(message.rotation().quaternion().real_part(),
+  EXPECT_TRUE(message.HasExtension(
+      serialization::OrthogonalMap::orthogonal_map));
+  serialization::OrthogonalMap const& extension =
+      message.GetExtension(serialization::OrthogonalMap::orthogonal_map);
+  EXPECT_TRUE(extension.determinant().negative());
+  EXPECT_THAT(extension.rotation().quaternion().real_part(),
               AlmostEquals(0.5, 1));
   EXPECT_EQ(0.5,
-            message.rotation().quaternion().imaginary_part().x().double_());
+            extension.rotation().quaternion().imaginary_part().x().double_());
   EXPECT_EQ(0.5,
-            message.rotation().quaternion().imaginary_part().y().double_());
+            extension.rotation().quaternion().imaginary_part().y().double_());
   EXPECT_EQ(0.5,
-            message.rotation().quaternion().imaginary_part().z().double_());
+            extension.rotation().quaternion().imaginary_part().z().double_());
   Orth const o = Orth::ReadFromMessage(message);
   EXPECT_EQ(orthogonal_a_(vector_), o(vector_));
 }

@@ -134,14 +134,19 @@ Rotation<FromFrame, ToFrame> Rotation<FromFrame, ToFrame>::Identity() {
 
 template<typename FromFrame, typename ToFrame>
 void Rotation<FromFrame, ToFrame>::WriteToMessage(
-    not_null<serialization::Rotation*> const message) const {
-  quaternion_.WriteToMessage(message->mutable_quaternion());
+    not_null<serialization::LinearMap*> const message) const {
+  serialization::Rotation* extension =
+      message->MutableExtension(serialization::Rotation::rotation);
+  quaternion_.WriteToMessage(extension->mutable_quaternion());
 }
 
 template<typename FromFrame, typename ToFrame>
 Rotation<FromFrame, ToFrame> Rotation<FromFrame, ToFrame>::ReadFromMessage(
-    serialization::Rotation const& message) {
-  return Rotation(Quaternion::ReadFromMessage(message.quaternion()));
+    serialization::LinearMap const& message) {
+  CHECK(message.HasExtension(serialization::Rotation::rotation));
+  serialization::Rotation const& extension =
+      message.GetExtension(serialization::Rotation::rotation);
+  return Rotation(Quaternion::ReadFromMessage(extension.quaternion()));
 }
 
 template<typename FromFrame, typename ToFrame>

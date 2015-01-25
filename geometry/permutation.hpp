@@ -65,9 +65,8 @@ class Permutation : public LinearMap<FromFrame, ToFrame> {
 
   static Permutation Identity();
 
-  void WriteToMessage(
-      not_null<serialization::Permutation*> const message) const;
-  static Permutation ReadFromMessage(serialization::Permutation const& message);
+  void WriteToMessage(not_null<serialization::LinearMap*> const message) const;
+  static Permutation ReadFromMessage(serialization::LinearMap const& message);
 
  private:
   template<typename Scalar>

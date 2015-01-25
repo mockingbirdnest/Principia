@@ -1,7 +1,9 @@
+#include "geometry/rotation.hpp"
+
 #include "geometry/grassmann.hpp"
+#include "geometry/identity.hpp"
 #include "geometry/orthogonal_map.hpp"
 #include "geometry/r3_element.hpp"
-#include "geometry/rotation.hpp"
 #include "glog/logging.h"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
@@ -49,6 +51,8 @@ class RotationTest : public testing::Test {
   Rot rotation_b_;
   Rot rotation_c_;
 };
+
+using RotationDeathTest = RotationTest;
 
 TEST_F(RotationTest, Identity) {
   EXPECT_THAT(vector_, Eq(Rot::Identity()(vector_)));
@@ -207,13 +211,25 @@ TEST_F(RotationTest, ToQuaternion4) {
   EXPECT_THAT(rotation(e3_).coordinates(), AlmostEquals(w3, 2));
 }
 
-TEST_F(RotationTest, Serialization) {
-  serialization::Rotation message;
+TEST_F(RotationDeathTest, SerializationError) {
+  Identity<World, World> id;
+  EXPECT_DEATH({
+    serialization::LinearMap message;
+    id.WriteToMessage(&message);
+    Rot const r = Rot::ReadFromMessage(message);
+  }, ",,,");
+}
+
+TEST_F(RotationTest, SerializationSuccess) {
+  serialization::LinearMap message;
   rotation_a_.WriteToMessage(&message);
-  EXPECT_THAT(message.quaternion().real_part(), AlmostEquals(0.5, 1));
-  EXPECT_EQ(0.5, message.quaternion().imaginary_part().x().double_());
-  EXPECT_EQ(0.5, message.quaternion().imaginary_part().y().double_());
-  EXPECT_EQ(0.5, message.quaternion().imaginary_part().z().double_());
+  EXPECT_TRUE(message.HasExtension(serialization::Rotation::rotation));
+  serialization::Rotation const& extension =
+      message.GetExtension(serialization::Rotation::rotation);
+  EXPECT_THAT(extension.quaternion().real_part(), AlmostEquals(0.5, 1));
+  EXPECT_EQ(0.5, extension.quaternion().imaginary_part().x().double_());
+  EXPECT_EQ(0.5, extension.quaternion().imaginary_part().y().double_());
+  EXPECT_EQ(0.5, extension.quaternion().imaginary_part().z().double_());
   Rot const r = Rot::ReadFromMessage(message);
   EXPECT_EQ(rotation_a_(vector_), r(vector_));
 }

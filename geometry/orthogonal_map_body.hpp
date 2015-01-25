@@ -61,18 +61,23 @@ OrthogonalMap<FromFrame, ToFrame>::Identity() {
 
 template<typename FromFrame, typename ToFrame>
 void OrthogonalMap<FromFrame, ToFrame>::WriteToMessage(
-      not_null<serialization::OrthogonalMap*> const message) const {
-  determinant_.WriteToMessage(message->mutable_determinant());
-  rotation_.WriteToMessage(message->mutable_rotation());
+      not_null<serialization::LinearMap*> const message) const {
+  serialization::OrthogonalMap* extension =
+      message->MutableExtension(serialization::OrthogonalMap::orthogonal_map);
+  determinant_.WriteToMessage(extension->mutable_determinant());
+  rotation_.WriteToMessage(extension->mutable_rotation());
 }
 
 template<typename FromFrame, typename ToFrame>
 OrthogonalMap<FromFrame, ToFrame>
 OrthogonalMap<FromFrame, ToFrame>::ReadFromMessage(
-    serialization::OrthogonalMap const& message) {
-  return OrthogonalMap(Sign::ReadFromMessage(message.determinant()),
+    serialization::LinearMap const& message) {
+  CHECK(message.HasExtension(serialization::Identity::identity));
+  serialization::OrthogonalMap const& extension =
+      message.GetExtension(serialization::Identity::identity);
+  return OrthogonalMap(Sign::ReadFromMessage(extension.determinant()),
                        Rotation<FromFrame, ToFrame>::ReadFromMessage(
-                           message.rotation()));
+                           extension.rotation()));
 }
 
 template<typename FromFrame, typename ToFrame>

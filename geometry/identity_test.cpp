@@ -38,6 +38,8 @@ class IdentityTest : public testing::Test {
   Trivector<quantities::Length, World1> trivector_;
 };
 
+using IdentityDeathTest = IdentityTest;
+
 TEST_F(IdentityTest, Determinant) {
   Id identity;
   EXPECT_TRUE(identity.Determinant().Positive());
@@ -98,12 +100,21 @@ TEST_F(IdentityTest, Compose) {
   }
 }
 
-TEST_F(IdentityTest, Serialization) {
-  serialization::Identity message;
+TEST_F(IdentityDeathTest, SerializationError) {
+  using Id12 = Identity<World1, World2>;
+  EXPECT_DEATH({
+    serialization::LinearMap message;
+    Id12 const id = Id12::ReadFromMessage(message);
+  }, ",,");
+}
+
+TEST_F(IdentityTest, SerializationSuccess) {
+  serialization::LinearMap message;
   Identity<World1, World2> id12a;
   id12a.WriteToMessage(&message);
   Identity<World1, World2> const id12b =
       Identity<World1, World2>::ReadFromMessage(message);
+  EXPECT_THAT(id12a(vector_), id12b(vector_));
 }
 
 }  // namespace geometry
