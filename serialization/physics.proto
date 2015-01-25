@@ -1,0 +1,20 @@
+syntax = "proto2";
+
+import "serialization/geometry.proto";
+
+package principia.serialization;
+
+message Trajectory {
+  message Litter {
+    required Point fork_time = 1;
+    repeated Trajectory trajectories = 2;
+  }
+  message InstantaneousDegreesOfFreedom {
+    required Point instant = 1;
+    required Pair degrees_of_freedom = 2;
+  }
+  // TODO(egg): Body.
+  repeated Litter children = 1;
+  repeated InstantaneousDegreesOfFreedom timeline = 2;
+  // TODO(egg): Intrinsic acceleration.
+}

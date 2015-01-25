@@ -10,6 +10,7 @@
 #include "geometry/named_quantities.hpp"
 #include "physics/degrees_of_freedom.hpp"
 #include "quantities/named_quantities.hpp"
+#include "serialization/physics.pb.h"
 
 using principia::base::not_null;
 using principia::geometry::Instant;
@@ -158,6 +159,11 @@ class Trajectory {
   Vector<Acceleration, Frame> evaluate_intrinsic_acceleration(
       Instant const& time) const;
 
+  // This trajectory must be a root.
+  void WriteToMessage(not_null<serialization::Trajectory*> const message) const;
+  // TODO(egg): implement when |Body| is serializable.
+  static Trajectory ReadFromMessage(serialization::Trajectory const& message);
+
   // A base class for iterating over the timeline of a trajectory, taking forks
   // into account.  Objects of this class cannot be created.
   class Iterator {
@@ -212,6 +218,10 @@ class Trajectory {
   Trajectory(not_null<Body const*> const body,
              not_null<Trajectory*> const parent,
              typename Timeline::iterator const& fork);
+
+  // This trajectory need not be a root.
+  void WriteSubTreeToMessage(
+      not_null<serialization::Trajectory*> const message) const;
 
   not_null<Body const*> const body_;
 
