@@ -66,6 +66,13 @@ DegreesOfFreedom<Frame> Barycentre(
   CHECK(!degrees_of_freedom.empty());
 }
 
+template<typename Frame>
+std::ostream& operator<<(std::ostream& out,
+                         DegreesOfFreedom<Frame> const& degrees_of_freedom) {
+  out << "{" << degrees_of_freedom.position() << ", "
+      << degrees_of_freedom.velocity() << "}";
+  return out;
+}
 }  // namespace physics
 
 namespace base {
