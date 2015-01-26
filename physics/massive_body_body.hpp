@@ -64,7 +64,7 @@ inline not_null<std::unique_ptr<MassiveBody>> MassiveBody::ReadFromMessage(
 inline not_null<std::unique_ptr<MassiveBody>> MassiveBody::ReadFromMessage(
     serialization::MassiveBody const& message) {
   if (message.HasExtension(serialization::OblateBody::oblate_body)) {
-    return OblateBody<UncheckedInertialFrame>::ReadFromMessage(message);
+    return OblateBody<UnknownInertialFrame>::ReadFromMessage(message);
   } else {
     return std::make_unique<MassiveBody>(
         GravitationalParameter::ReadFromMessage(
