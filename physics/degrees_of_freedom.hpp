@@ -61,6 +61,10 @@ DegreesOfFreedom<Frame> Barycentre(
     std::vector<DegreesOfFreedom<Frame>> const& degrees_of_freedom,
     std::vector<Weight> const& weights);
 
+template<typename Frame>
+std::ostream& operator<<(std::ostream& out,
+                         DegreesOfFreedom<Frame> const& degrees_of_freedom);
+
 }  // namespace physics
 
 // Reopen the base namespace to make RelativeDegreesOfFreedom mappable.
