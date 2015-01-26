@@ -73,6 +73,7 @@ std::ostream& operator<<(std::ostream& out,
       << degrees_of_freedom.velocity() << "}";
   return out;
 }
+
 }  // namespace physics
 
 namespace base {
