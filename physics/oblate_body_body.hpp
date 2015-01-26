@@ -79,13 +79,13 @@ bool OblateBody<Frame>::is_oblate() const {
 
 template<typename Frame>
 inline void OblateBody<Frame>::WriteToMessage(
-    not_null<serialization::Body*> message) const {
+    not_null<serialization::Body*> const message) const {
   WriteToMessage(message->mutable_massive_body());
 }
 
 template<typename Frame>
 inline void OblateBody<Frame>::WriteToMessage(
-    not_null<serialization::MassiveBody*> message) const {
+    not_null<serialization::MassiveBody*> const message) const {
   MassiveBody::WriteToMessage(message);
   not_null<serialization::OblateBody*> const oblate_body_information =
       message->MutableExtension(serialization::OblateBody::oblate_body);

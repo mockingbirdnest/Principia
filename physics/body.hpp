@@ -29,9 +29,9 @@ class Body {
 
   // Dispatches to |MassiveBody| or |MasslessBody| depending on the contents of
   // the message.
-  // Beware the Jabberwock: if it dispatches to |OblateBody|, this method will
-  // return an |OblateBody<UnknownFrame>|.  Use |reinterpret_cast| afterwards as
-  // appropriate if the frame is known.
+  // Beware the Jabberwock, my son!  If it dispatches to |OblateBody|, this
+  // method will return an |OblateBody<UnknownFrame>|.  Use |reinterpret_cast|
+  // afterwards as appropriate if the frame is known.
   static not_null<std::unique_ptr<Body>> ReadFromMessage(
       serialization::Body const& message);
 

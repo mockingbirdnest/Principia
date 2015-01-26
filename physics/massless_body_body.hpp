@@ -14,12 +14,12 @@ inline bool MasslessBody::is_oblate() const {
 }
 
 inline void MasslessBody::WriteToMessage(
-    not_null<serialization::Body*> message) const {
+    not_null<serialization::Body*> const message) const {
   WriteToMessage(message->mutable_massless_body());
 }
 
 inline void MasslessBody::WriteToMessage(
-    not_null<serialization::MasslessBody*> message) const {}
+    not_null<serialization::MasslessBody*> const message) const {}
 
 inline not_null<std::unique_ptr<MasslessBody>> MasslessBody::ReadFromMessage(
     serialization::Body const& message) {

@@ -1,4 +1,5 @@
-﻿// The files containing the tree of of child classes of |Body| must be included
+﻿
+// The files containing the tree of of child classes of |Body| must be included
 // in the order of inheritance to avoid circular dependencies.  This class will
 // end up being reincluded as part of the implementation of its parent.
 #ifndef PRINCIPIA_PHYSICS_BODY_HPP_
@@ -9,7 +10,6 @@
 
 #include <vector>
 
-#include "physics/body.hpp"
 #include "serialization/physics.pb.h"
 
 namespace principia {
@@ -31,7 +31,7 @@ class MasslessBody : public Body {
   virtual void WriteToMessage(
       not_null<serialization::MasslessBody*> message) const;
 
-  // Fails unless |message.has_massless_body()|.
+  // |message.has_massless_body()| must be true.
   static not_null<std::unique_ptr<MasslessBody>> ReadFromMessage(
       serialization::Body const& message);
 

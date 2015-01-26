@@ -2,8 +2,8 @@
 
 #include "physics/massive_body.hpp"
 
-#include "physics/frame.hpp"
 #include "glog/logging.h"
+#include "physics/frame.hpp"
 #include "physics/oblate_body.hpp"
 #include "quantities/constants.hpp"
 
@@ -45,12 +45,12 @@ inline bool MassiveBody::is_oblate() const {
 }
 
 inline void MassiveBody::WriteToMessage(
-    not_null<serialization::Body*> message) const {
+    not_null<serialization::Body*> const message) const {
   WriteToMessage(message->mutable_massive_body());
 }
 
 inline void MassiveBody::WriteToMessage(
-    not_null<serialization::MassiveBody*> message) const {
+    not_null<serialization::MassiveBody*> const message) const {
   gravitational_parameter_.WriteToMessage(
       message->mutable_gravitational_parameter());
 }

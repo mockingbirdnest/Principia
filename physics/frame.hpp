@@ -22,7 +22,8 @@ enum UnknownTag {
 
 // This frame should be used for objects whose reference frame cannot be known
 // at compile time.
-using UnknownInertialFrame = Frame<UnknownTag, kUnchecked, true>;
+using UnknownInertialFrame = Frame<UnknownTag, kUnchecked,
+                                   true /*frame_is_inertial*/>;
 
 }  // namespace physics
 }  // namespace principia

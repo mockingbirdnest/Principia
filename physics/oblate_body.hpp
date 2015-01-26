@@ -1,4 +1,5 @@
-﻿// The files containing the tree of of child classes of |Body| must be included
+﻿
+// The files containing the tree of of child classes of |Body| must be included
 // in the order of inheritance to avoid circular dependencies.  This class will
 // end up being reincluded as part of the implementation of its parent.
 #ifndef PRINCIPIA_PHYSICS_MASSIVE_BODY_HPP_
@@ -10,7 +11,6 @@
 #include <vector>
 
 #include "geometry/grassmann.hpp"
-#include "physics/massive_body.hpp"
 #include "quantities/named_quantities.hpp"
 #include "quantities/quantities.hpp"
 

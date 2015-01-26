@@ -12,12 +12,11 @@ message Body {
   }
 }
 
-message MasslessBody {
-}
+message MasslessBody {}
 
 message MassiveBody {
   required Quantity gravitational_parameter = 1;
-  extensions 2000 to 2999;  // Last used: TODO.
+  extensions 2000 to 2999;  // Last used: 2001.
 }
 
 message OblateBody {

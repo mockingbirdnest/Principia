@@ -4,9 +4,8 @@
 #include "gtest/gtest.h"
 
 using principia::geometry::Normalize;
-using testing::Eq;
-using testing::NotNull;
 using testing::IsNull;
+using testing::NotNull;
 
 namespace principia {
 namespace physics {
@@ -46,11 +45,12 @@ TEST_F(BodyTest, MasslessSerializationSuccess) {
   massless_body_ = *MasslessBody::ReadFromMessage(message);
 
   // Dispatching from |Body|.
-  not_null<std::unique_ptr<Body>> body = Body::ReadFromMessage(message);
+  not_null<std::unique_ptr<Body const>> const body =
+      Body::ReadFromMessage(message);
   // NOTE(egg): The &* is a quick way to explicitly forget |not_null|ness. We
   // cannot strip the |not_null| from the previous line because MSVC does not
   // support move conversion at the moment.
-  cast_massless_body = dynamic_cast<MasslessBody*>(&*body);
+  cast_massless_body = dynamic_cast<MasslessBody const*>(&*body);
   EXPECT_THAT(cast_massless_body, NotNull());
 }
 
@@ -61,20 +61,19 @@ TEST_F(BodyTest, MassiveSerializationSuccess) {
   massive_body_.WriteToMessage(&message);
   EXPECT_TRUE(message.has_massive_body());
   EXPECT_FALSE(message.has_massless_body());
-  EXPECT_THAT(message.massive_body().gravitational_parameter().magnitude(),
-              Eq(42));
+  EXPECT_EQ(42, message.massive_body().gravitational_parameter().magnitude());
 
   // Direct deserialization.
   MassiveBody const massive_body = *MassiveBody::ReadFromMessage(message);
-  EXPECT_THAT(massive_body.gravitational_parameter(),
-              Eq(massive_body_.gravitational_parameter()));
+  EXPECT_EQ(massive_body_.gravitational_parameter(),
+            massive_body.gravitational_parameter());
 
   // Dispatching from |Body|.
   not_null<std::unique_ptr<Body>> body = Body::ReadFromMessage(message);
   cast_massive_body = dynamic_cast<MassiveBody*>(&*body);
   EXPECT_THAT(cast_massive_body, NotNull());
-  EXPECT_THAT(cast_massive_body->gravitational_parameter(),
-              Eq(massive_body_.gravitational_parameter()));
+  EXPECT_EQ(massive_body_.gravitational_parameter(),
+            cast_massive_body->gravitational_parameter());
 }
 
 TEST_F(BodyTest, OblateSerializationSuccess) {
@@ -87,28 +86,26 @@ TEST_F(BodyTest, OblateSerializationSuccess) {
   EXPECT_TRUE(
       message.massive_body().HasExtension(
           serialization::OblateBody::oblate_body));
-  EXPECT_THAT(message.massive_body().gravitational_parameter().magnitude(),
-              Eq(17));
+  EXPECT_EQ(17, message.massive_body().gravitational_parameter().magnitude());
   serialization::OblateBody const oblateness_information =
       message.massive_body().GetExtension(
           serialization::OblateBody::oblate_body);
-  EXPECT_THAT(oblateness_information.j2().magnitude(), Eq(163));
-  EXPECT_THAT(
-      Direction::ReadFromMessage(oblateness_information.axis()),
-      Eq(axis_));
+  EXPECT_EQ(163, oblateness_information.j2().magnitude());
+  EXPECT_EQ(axis_, Direction::ReadFromMessage(oblateness_information.axis()));
 
   // Direct deserialization.
-  OblateBody<World> oblate_body = *OblateBody<World>::ReadFromMessage(message);
-  EXPECT_THAT(oblate_body.gravitational_parameter(),
-              Eq(oblate_body_.gravitational_parameter()));
-  EXPECT_THAT(oblate_body.j2(), Eq(oblate_body_.j2()));
-  EXPECT_THAT(oblate_body.axis(), Eq(oblate_body_.axis()));
+  OblateBody<World> const oblate_body =
+      *OblateBody<World>::ReadFromMessage(message);
+  EXPECT_EQ(oblate_body_.gravitational_parameter(), 
+            oblate_body.gravitational_parameter());
+  EXPECT_EQ(oblate_body_.j2(), oblate_body.j2());
+  EXPECT_EQ(oblate_body_.axis(), oblate_body.axis());
 
   // Dispatching from |MassiveBody|.
-  not_null<std::unique_ptr<MassiveBody>> massive_body =
+  not_null<std::unique_ptr<MassiveBody const>> const massive_body =
       MassiveBody::ReadFromMessage(message);
-  EXPECT_THAT(massive_body->gravitational_parameter(),
-              Eq(oblate_body_.gravitational_parameter()));
+  EXPECT_EQ(oblate_body_.gravitational_parameter(),
+            massive_body->gravitational_parameter());
   unknown_cast_oblate_body =
       dynamic_cast<OblateBody<UnknownInertialFrame> const*>(&*massive_body);
   EXPECT_THAT(unknown_cast_oblate_body, NotNull());
@@ -116,14 +113,15 @@ TEST_F(BodyTest, OblateSerializationSuccess) {
   EXPECT_THAT(cast_oblate_body, IsNull());
   cast_oblate_body =
       reinterpret_cast<OblateBody<World> const*>(unknown_cast_oblate_body);
-  EXPECT_THAT(cast_oblate_body->gravitational_parameter(),
-              Eq(oblate_body_.gravitational_parameter()));
-  EXPECT_THAT(cast_oblate_body->j2(), Eq(oblate_body_.j2()));
-  EXPECT_THAT(cast_oblate_body->axis(), Eq(oblate_body_.axis()));
+  EXPECT_EQ(oblate_body_.gravitational_parameter(),
+            cast_oblate_body->gravitational_parameter());
+  EXPECT_EQ(oblate_body_.j2(), cast_oblate_body->j2());
+  EXPECT_EQ(oblate_body_.axis(), cast_oblate_body->axis());
 
   // Dispatching from |Body|.
-  not_null<std::unique_ptr<Body>> body = Body::ReadFromMessage(message);
-  cast_oblate_body = dynamic_cast<OblateBody<World>*>(&*body);
+  not_null<std::unique_ptr<Body const>> const body =
+      Body::ReadFromMessage(message);
+  cast_oblate_body = dynamic_cast<OblateBody<World> const*>(&*body);
   unknown_cast_oblate_body =
       dynamic_cast<OblateBody<UnknownInertialFrame> const*>(&*body);
   EXPECT_THAT(unknown_cast_oblate_body, NotNull());
@@ -131,10 +129,10 @@ TEST_F(BodyTest, OblateSerializationSuccess) {
   EXPECT_THAT(cast_oblate_body, IsNull());
   cast_oblate_body =
       reinterpret_cast<OblateBody<World> const*>(unknown_cast_oblate_body);
-  EXPECT_THAT(cast_oblate_body->gravitational_parameter(),
-              Eq(oblate_body_.gravitational_parameter()));
-  EXPECT_THAT(cast_oblate_body->j2(), Eq(oblate_body_.j2()));
-  EXPECT_THAT(cast_oblate_body->axis(), Eq(oblate_body_.axis()));
+  EXPECT_EQ(oblate_body_.gravitational_parameter(),
+            cast_oblate_body->gravitational_parameter());
+  EXPECT_EQ(oblate_body_.j2(), cast_oblate_body->j2());
+  EXPECT_EQ(oblate_body_.axis(), cast_oblate_body->axis());;
 }
 
 }  // namespace physics
