@@ -179,6 +179,12 @@ class not_null {
   // Returns |pointer_|, by const reference to avoid a copy if |pointer| is
   // |unique_ptr|.
   operator pointer const&() const;
+
+  // NOTE(egg): When MSVC supports it, we'll want
+  // operator pointer()&&
+  // which will support |unique_ptr| properly, the above is not good for much.
+  // The 2013 CTP seems to support it, so it's probably not far away.
+
   // Returns |*pointer_|.
   decltype(*std::declval<pointer>()) operator*() const;
   decltype(std::addressof(*std::declval<pointer>())) const operator->() const;

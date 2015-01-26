@@ -85,5 +85,8 @@
     <ClCompile Include="degrees_of_freedom_test.cpp">
       <Filter>Test Files</Filter>
     </ClCompile>
+    <ClCompile Include="body_test.cpp">
+      <Filter>Test Files</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>
