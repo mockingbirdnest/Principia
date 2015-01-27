@@ -99,13 +99,16 @@ class Trajectory {
   void ForgetBefore(Instant const& time);
 
   // Creates a new child trajectory forked at time |time|, and returns it.  The
-  // child trajectory may be changed independently from the parent trajectory
-  // for any time (strictly) greater than |time|.  The child trajectory is owned
-  // by its parent trajectory.  Calling ForgetAfter or ForgetBefore on the
-  // parent trajectory with an argument that causes the time |time| to be
-  // removed deletes the child trajectory.  Deleting the parent trajectory
-  // deletes all child trajectories.  |time| must be one of the times of the
-  // current trajectory (as returned by Times()).  No transfer of ownership.
+  // child trajectory shares its data with the current trajectory for times less
+  // than or equal to |time|, and is an exact copy of the current trajectory for
+  // times greater than |time|.  It may be changed independently from the
+  // parent trajectory for any time (strictly) greater than |time|.  The child
+  // trajectory is owned by its parent trajectory.  Calling ForgetAfter or
+  // ForgetBefore on the parent trajectory with an argument that causes the time
+  // |time| to be removed deletes the child trajectory.  Deleting the parent
+  // trajectory deletes all child trajectories.  |time| must be one of the times
+  // of the current trajectory (as returned by Times()).  No transfer of
+  // ownership.
   not_null<Trajectory*> Fork(Instant const& time);
 
   // Deletes the child trajectory denoted by |*fork|, which must be a pointer
