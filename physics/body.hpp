@@ -1,6 +1,8 @@
-﻿#pragma once
+﻿#ifndef PRINCIPIA_PHYSICS_BODY_HPP_
+#define PRINCIPIA_PHYSICS_BODY_HPP_
 
 #include "base/not_null.hpp"
+#include "serialization/physics.pb.h"
 
 using principia::base::not_null;
 
@@ -23,6 +25,16 @@ class Body {
   template<typename Frame>
   bool is_compatible_with() const;
 
+  virtual void WriteToMessage(not_null<serialization::Body*> message) const = 0;
+
+  // Dispatches to |MassiveBody| or |MasslessBody| depending on the contents of
+  // the message.
+  // Beware the Jabberwock, my son!  If it dispatches to |OblateBody|, this
+  // method will return an |OblateBody<UnknownFrame>|.  Use |reinterpret_cast|
+  // afterwards as appropriate if the frame is known.
+  static not_null<std::unique_ptr<Body>> ReadFromMessage(
+      serialization::Body const& message);
+
  protected:
   Body() = default;
 
@@ -43,3 +55,5 @@ class Body {
 }  // namespace principia
 
 #include "physics/body_body.hpp"
+
+#endif  // PRINCIPIA_PHYSICS_BODY_HPP_

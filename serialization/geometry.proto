@@ -68,7 +68,7 @@ message Sign {
 // TODO(phl): All the linear maps should serialize their frames.
 
 message LinearMap {
-  extensions 1000 to 9999;  // Last used: 1003.
+  extensions 1000 to 1999;  // Last used: 1003.
 }
 
 message Identity {

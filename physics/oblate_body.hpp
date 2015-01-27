@@ -1,9 +1,16 @@
-﻿#pragma once
+﻿
+// The files containing the tree of of child classes of |Body| must be included
+// in the order of inheritance to avoid circular dependencies.  This class will
+// end up being reincluded as part of the implementation of its parent.
+#ifndef PRINCIPIA_PHYSICS_MASSIVE_BODY_HPP_
+#include "physics/massive_body.hpp"
+#else
+#ifndef PRINCIPIA_PHYSICS_OBLATE_BODY_HPP_
+#define PRINCIPIA_PHYSICS_OBLATE_BODY_HPP_
 
 #include <vector>
 
 #include "geometry/grassmann.hpp"
-#include "physics/massive_body.hpp"
 #include "quantities/named_quantities.hpp"
 #include "quantities/quantities.hpp"
 
@@ -49,6 +56,19 @@ class OblateBody : public MassiveBody {
   // Returns true.
   bool is_oblate() const;
 
+  void WriteToMessage(not_null<serialization::Body*> message) const override;
+
+  void WriteToMessage(
+      not_null<serialization::MassiveBody*> message) const override;
+
+  // Fails unless |message.has_massless_body()|.
+  static not_null<std::unique_ptr<OblateBody<Frame>>> ReadFromMessage(
+      serialization::Body const& message);
+
+  // Fails if the |OblateBody| extension is absent from the message.
+  static not_null<std::unique_ptr<OblateBody<Frame>>> ReadFromMessage(
+      serialization::MassiveBody const& message);
+
  private:
   Order2ZonalCoefficient const j2_;
   Vector<double, Frame> const axis_;
@@ -58,3 +78,6 @@ class OblateBody : public MassiveBody {
 }  // namespace principia
 
 #include "physics/oblate_body_body.hpp"
+
+#endif  // PRINCIPIA_PHYSICS_OBLATE_BODY_HPP_
+#endif  // PRINCIPIA_PHYSICS_MASSIVE_BODY_HPP_

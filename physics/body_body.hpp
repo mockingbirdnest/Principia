@@ -3,6 +3,8 @@
 #include "physics/body.hpp"
 
 #include "physics/oblate_body.hpp"
+#include "physics/massive_body.hpp"
+#include "physics/massless_body.hpp"
 
 namespace principia {
 namespace physics {
@@ -11,6 +13,18 @@ template<typename Frame>
 bool Body::is_compatible_with() const {
   return CompatibilityHelper<Frame,
                              Frame::is_inertial>::is_compatible_with(this);
+}
+
+inline not_null<std::unique_ptr<Body>> Body::ReadFromMessage(
+    serialization::Body const& message) {
+  if (message.has_massless_body()) {
+    return MasslessBody::ReadFromMessage(message.massless_body());
+  } else if (message.has_massive_body()) {
+    return MassiveBody::ReadFromMessage(message.massive_body());
+  } else {
+    LOG(FATAL) << "Body is neither massive nor massless";
+    base::noreturn();
+  }
 }
 
 template<typename Frame>

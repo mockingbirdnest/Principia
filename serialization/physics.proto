@@ -1,8 +1,31 @@
 syntax = "proto2";
 
 import "serialization/geometry.proto";
+import "serialization/quantities.proto";
 
 package principia.serialization;
+
+message Body {
+  oneof body {
+    MassiveBody massive_body = 1;
+    MasslessBody massless_body = 2;
+  }
+}
+
+message MasslessBody {}
+
+message MassiveBody {
+  required Quantity gravitational_parameter = 1;
+  extensions 2000 to 2999;  // Last used: 2001.
+}
+
+message OblateBody {
+  extend MassiveBody {
+    optional OblateBody oblate_body = 2001;
+  }
+  required Quantity j2 = 1;
+  required Multivector axis = 2;
+}
 
 message Trajectory {
   message Litter {
