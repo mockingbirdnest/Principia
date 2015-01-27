@@ -99,8 +99,9 @@ class Trajectory {
   void ForgetBefore(Instant const& time);
 
   // Creates a new child trajectory forked at time |time|, and returns it.  The
-  // child trajectory is an exact copy of the current trajectory (including for
-  // times greater than |time|).  It may be changed independently from the
+  // child trajectory shares its data with the current trajectory for times less
+  // than or equal to |time|, and is an exact copy of the current trajectory for
+  // times greater than |time|.  It may be changed independently from the
   // parent trajectory for any time (strictly) greater than |time|.  The child
   // trajectory is owned by its parent trajectory.  Calling ForgetAfter or
   // ForgetBefore on the parent trajectory with an argument that causes the time
