@@ -1,6 +1,7 @@
 #pragma once
 
 #include "geometry/named_quantities.hpp"
+#include "serialization/physics.pb.h"
 
 using principia::geometry::Position;
 
@@ -14,6 +15,9 @@ class Frame {
   static bool const is_inertial = frame_is_inertial;
 
   Frame() = delete;
+
+  static void WriteToMessage(not_null<serialization::Frame*> const message);
+  static void ReadFromMessage(serialization::Frame const& message);
 };
 
 enum UnknownTag {
