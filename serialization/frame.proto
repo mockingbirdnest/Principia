@@ -19,6 +19,11 @@ message Frame {
     ICRF_J2000_EQUATOR = 2;
   }
 
+  // The frame tags used in tests.
+  enum TestTag {
+    TEST = 1;
+  }
+
   required fixed32 tag_type_fingerprint = 1;
   required int32 tag = 2;
   required bool is_inertial = 3;

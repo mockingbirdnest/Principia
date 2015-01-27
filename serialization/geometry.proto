@@ -31,12 +31,12 @@ message Point {
 
 // TODO(phl): This should probably include the tag of the frame.
 message Multivector {
+  required Frame frame = 4;
   oneof rank {
     R3Element vector = 1;
     R3Element bivector = 2;
     Quantity trivector = 3;
   }
-  required Frame frame = 4;
 }
 
 message Quaternion {
