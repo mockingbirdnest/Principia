@@ -96,7 +96,7 @@ TEST_F(BodyTest, OblateSerializationSuccess) {
   // Direct deserialization.
   OblateBody<World> const oblate_body =
       *OblateBody<World>::ReadFromMessage(message);
-  EXPECT_EQ(oblate_body_.gravitational_parameter(), 
+  EXPECT_EQ(oblate_body_.gravitational_parameter(),
             oblate_body.gravitational_parameter());
   EXPECT_EQ(oblate_body_.j2(), oblate_body.j2());
   EXPECT_EQ(oblate_body_.axis(), oblate_body.axis());
