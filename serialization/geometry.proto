@@ -1,5 +1,6 @@
 syntax = "proto2";
 
+import "serialization/frame.proto";
 import "serialization/quantities.proto";
 
 package principia.serialization;
@@ -35,6 +36,7 @@ message Multivector {
     R3Element bivector = 2;
     Quantity trivector = 3;
   }
+  required Frame frame = 4;
 }
 
 message Quaternion {

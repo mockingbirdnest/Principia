@@ -1,7 +1,7 @@
 #pragma once
 
 #include "geometry/named_quantities.hpp"
-#include "serialization/physics.pb.h"
+#include "serialization/frame.pb.h"
 
 using principia::geometry::Position;
 

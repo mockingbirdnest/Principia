@@ -12,28 +12,6 @@ message Body {
   }
 }
 
-message Frame {
-  // The frame tags used in the plugin.
-  enum PluginTag {
-    ALICE_SUN = 1;
-    ALICE_WORLD = 2;
-    BARYCENTRIC = 3;
-    RENDERING = 4;
-    WORLD = 5;
-    WORLD_SUN = 6;
-  }
-
-  // The frame tags used in the solar system simulation.
-  enum SolarSystemTag {
-    ICRF_J2000_ECLIPTIC = 1;
-    ICRF_J2000_EQUATOR = 2;
-  }
-
-  required fixed32 tag_type_fingerprint = 1;
-  required int32 tag = 2;
-  required bool is_inertial = 3;
-}
-
 message MassiveBody {
   required Quantity gravitational_parameter = 1;
   extensions 2000 to 2999;  // Last used: 2001.
