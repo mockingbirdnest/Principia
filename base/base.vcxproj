@@ -109,6 +109,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="fingerprint2011.hpp" />
     <ClInclude Include="macros.hpp" />
     <ClInclude Include="mappable.hpp" />
     <ClInclude Include="not_null.hpp" />
