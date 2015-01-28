@@ -25,7 +25,7 @@
 // default valid pointer.  The only ways to construct a |not_null| pointer,
 // other than from existing instances of |not_null|, are (implicit) conversion
 // from a nullable pointer, the factory |check_not_null|, and
-// |make_unique_not_null|.
+// |make_not_null_unique|.
 //
 // The following example shows uses of |not_null|:
 //   void Accumulate(not_null<int*> const accumulator,
