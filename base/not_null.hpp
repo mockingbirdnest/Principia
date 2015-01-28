@@ -23,8 +23,9 @@
 //   not_null<std::unique_ptr<int>> p // non-null unique pointer to an |int|.
 // |not_null| does not have a default constructor, since there is no non-null
 // default valid pointer.  The only ways to construct a |not_null| pointer,
-// other than from existing instances of |not_null|, are |check_not_null| and
-// |make_unique_not_null|.
+// other than from existing instances of |not_null|, are (implicit) conversion
+// from a nullable pointer, the factory |check_not_null|, and
+// |make_not_null_unique|.
 //
 // The following example shows uses of |not_null|:
 //   void Accumulate(not_null<int*> const accumulator,
@@ -36,9 +37,6 @@
 //                             int const* const term_of_dubious_c_provenance) {
 //     // The call below performs two checks.  If either parameter is null, the
 //     // program will fail (through a glog |CHECK|) at the callsite.
-//     Accumulate(check_not_null(dubious_accumulator),
-//                check_not_null(term_of_dubious_c_provenance));
-//     // The call below fails to compile: we need to check the arguments.
 //     Accumulate(dubious_accumulator, term_of_dubious_c_provenance);
 //   }
 //
@@ -51,12 +49,20 @@
 //     // ...
 //   }
 //
-// The following redundant checks are not performed.  This is useful, since
-// in a template we may not know whether a pointer is |not_null|.
-//   not_null<std::unique_ptr<int>> accumulator = // ...
-//   not_null<int> term = // ...
-// |check_not_null| does not perform a check.
-//   Accumulate(check_not_null(accumulator.get()), check_not_null(term));
+// If implicit conversion from a nullable pointer to |not_null| does not work,
+// e.g. for template deduction, use the factory |check_not_null|.
+//   template<typename T>
+//   void Foo(not_null<T*> not_null_ptr);
+//
+//   SomeType* ptr;
+//   // The following will not compile:
+//   Foo(ptr);
+//   // The following works:
+//   Foo(check_not_null(ptr));
+//   // It is more concise than the alternative:
+//   Foo(not_null<SomeType*>(ptr))
+//
+// The following optimization is made possible by the use of |not_null|:
 // |term == nullptr| can be expanded to false through inlining, so the branch
 // will likely be optimized away.
 //   if (term == nullptr) // ...
