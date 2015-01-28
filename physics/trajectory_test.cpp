@@ -6,19 +6,20 @@
 #include <string>
 
 #include "body.hpp"
+#include "geometry/frame.hpp"
 #include "geometry/grassmann.hpp"
 #include "geometry/named_quantities.hpp"
 #include "geometry/point.hpp"
 #include "geometry/r3_element.hpp"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
-#include "physics/frame.hpp"
 #include "physics/massive_body.hpp"
 #include "physics/massless_body.hpp"
 #include "physics/oblate_body.hpp"
 #include "quantities/quantities.hpp"
 #include "quantities/si.hpp"
 
+using principia::geometry::Frame;
 using principia::geometry::Instant;
 using principia::geometry::Point;
 using principia::geometry::R3Element;
@@ -44,12 +45,8 @@ namespace physics {
 
 class TrajectoryTest : public testing::Test {
  protected:
-  enum class Tag {
-    kWorld,
-    kOtherWorld,
-  };
-
-  using World = Frame<Tag, Tag::kWorld, true>;
+  using World = Frame<serialization::Frame::TestTag,
+                      serialization::Frame::TEST1, true>;
 
   TrajectoryTest()
       : massive_body_(MassiveBody(1 * SIUnit<Mass>())),
@@ -124,7 +121,8 @@ class TrajectoryTest : public testing::Test {
 using TrajectoryDeathTest = TrajectoryTest;
 
 TEST_F(TrajectoryDeathTest, Construction) {
-  using OtherWorld = Frame<Tag, Tag::kOtherWorld, true>;
+  using OtherWorld = Frame<serialization::Frame::TestTag,
+                           serialization::Frame::TEST2, true>;
   EXPECT_DEATH({
     OblateBody<OtherWorld> body(1 * SIUnit<GravitationalParameter>(),
                                 1.0 /*j2*/,

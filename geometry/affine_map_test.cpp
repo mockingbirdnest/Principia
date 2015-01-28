@@ -3,6 +3,7 @@
 #include <limits>
 #include <vector>
 
+#include "geometry/frame.hpp"
 #include "geometry/grassmann.hpp"
 #include "geometry/named_quantities.hpp"
 #include "geometry/orthogonal_map.hpp"
@@ -13,6 +14,7 @@
 #include "gtest/gtest.h"
 #include "quantities/numbers.hpp"
 #include "quantities/si.hpp"
+#include "serialization/frame.pb.h"
 #include "testing_utilities/almost_equals.hpp"
 #include "testing_utilities/numerics.hpp"
 
@@ -30,7 +32,9 @@ using testing_utilities::RelativeError;
 
 class AffineMapTest : public testing::Test {
  protected:
-  struct World;
+  using World = Frame<serialization::Frame::TestTag,
+                      serialization::Frame::TEST, true>;
+
   using Orth = OrthogonalMap<World, World>;
   using Perm = Permutation<World, World>;
   using Rot = Rotation<World, World>;

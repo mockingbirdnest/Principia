@@ -5,23 +5,19 @@
 #include <vector>
 
 #include "base/not_null.hpp"
+#include "geometry/frame.hpp"
 #include "geometry/named_quantities.hpp"
 #include "geometry/rotation.hpp"
-#include "physics/frame.hpp"
 #include "physics/n_body_system.hpp"
 #include "quantities/quantities.hpp"
 #include "quantities/si.hpp"
+#include "serialization/frame.pb.h"
 
 using principia::base::not_null;
-using principia::physics::Frame;
+using principia::geometry::Frame;
 
 namespace principia {
 namespace testing_utilities {
-
-enum Tag {
-  kICRFJ2000Ecliptic,
-  kICRFJ2000Equator,
-};
 
 // A reference frame with a basis.
 // The frame is the International Celestial Reference Frame.
@@ -32,7 +28,9 @@ enum Tag {
 // The z axis is perpendicular to the xy-plane in the directional (+ or -) sense
 // of Earth's north pole at J2000.0.
 // The basis is right-handed and orthonormal.
-using ICRFJ2000Ecliptic = Frame<Tag, Tag::kICRFJ2000Ecliptic, true>;
+using ICRFJ2000Ecliptic =
+    Frame<serialization::Frame::SolarSystemTag,
+          serialization::Frame::ICRF_J2000_ECLIPTIC, true>;
 
 // The xy plane is the plane of the Earth's mean equator at J2000.0.
 // The x axis is out along the ascending node of the instantaneous plane of the
@@ -40,7 +38,9 @@ using ICRFJ2000Ecliptic = Frame<Tag, Tag::kICRFJ2000Ecliptic, true>;
 // The z axis is along the Earth's mean north pole at J2000.0.
 // The basis is right-handed and orthonormal.
 // Note that |ICRFJ2000Equator| and |ICRFJ2000Ecliptic| share their x axis.
-using ICRFJ2000Equator = Frame<Tag, Tag::kICRFJ2000Equator, true>;
+using ICRFJ2000Equator =
+    Frame<serialization::Frame::SolarSystemTag,
+          serialization::Frame::ICRF_J2000_EQUATOR, true>;
 
 // Rotation around the common x axis mapping equatorial coordinates to ecliptic
 // coordinates.  The angle is the one defined by the XVIth General Assembly of

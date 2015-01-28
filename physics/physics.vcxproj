@@ -132,8 +132,6 @@
     <ClInclude Include="body_body.hpp" />
     <ClInclude Include="degrees_of_freedom.hpp" />
     <ClInclude Include="degrees_of_freedom_body.hpp" />
-    <ClInclude Include="frame.hpp" />
-    <ClInclude Include="frame_body.hpp" />
     <ClInclude Include="massive_body.hpp" />
     <ClInclude Include="massive_body_body.hpp" />
     <ClInclude Include="massless_body.hpp" />

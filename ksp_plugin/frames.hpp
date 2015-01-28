@@ -2,12 +2,12 @@
 
 #include <functional>
 
+#include "geometry/frame.hpp"
 #include "geometry/named_quantities.hpp"
-#include "physics/frame.hpp"
 
+using principia::geometry::Frame;
 using principia::geometry::Instant;
 using principia::geometry::Position;
-using principia::physics::Frame;
 
 namespace principia {
 namespace ksp_plugin {

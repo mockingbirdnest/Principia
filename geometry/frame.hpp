@@ -3,10 +3,8 @@
 #include "geometry/named_quantities.hpp"
 #include "serialization/frame.pb.h"
 
-using principia::geometry::Position;
-
 namespace principia {
-namespace physics {
+namespace geometry {
 
 template<typename Tag, Tag tag, bool frame_is_inertial>
 class Frame {
@@ -20,16 +18,13 @@ class Frame {
   static void ReadFromMessage(serialization::Frame const& message);
 };
 
-enum UnknownTag {
-  kUnchecked
-};
-
 // This frame should be used for objects whose reference frame cannot be known
 // at compile time.
-using UnknownInertialFrame = Frame<UnknownTag, kUnchecked,
+using UnknownInertialFrame = Frame<serialization::Frame::UnknownTag,
+                                   serialization::Frame::UNKNOWN,
                                    true /*frame_is_inertial*/>;
 
-}  // namespace physics
+}  // namespace geometry
 }  // namespace principia
 
-#include "physics/frame_body.hpp"
+#include "geometry/frame_body.hpp"

@@ -2,8 +2,11 @@
 
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
+#include "serialization/frame.pb.h"
 
+using principia::geometry::Frame;
 using principia::geometry::Normalize;
+using principia::geometry::UnknownInertialFrame;
 using testing::IsNull;
 using testing::NotNull;
 
@@ -12,11 +15,8 @@ namespace physics {
 
 class BodyTest : public testing::Test {
  protected:
-  enum class Tag {
-    kWorld,
-  };
-
-  using World = Frame<Tag, Tag::kWorld, true>;
+  using World = Frame<serialization::Frame::TestTag,
+                      serialization::Frame::TEST, true>;
 
   // We need that so the comma doesn't get caught in macros.
   using Direction = Vector<double, World>;

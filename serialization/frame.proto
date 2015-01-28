@@ -22,9 +22,19 @@ message Frame {
   // The frame tags used in tests.
   enum TestTag {
     TEST = 1;
+    TEST1 = 2;
+    TEST2 = 3;
+    FROM = 4;
+    THROUGH = 5;
+    TO = 6;
   }
 
-  required fixed32 tag_type_fingerprint = 1;
+  // Hopefully this will go away somehow...
+  enum UnknownTag {
+    UNKNOWN = 1;
+  }
+
+  required fixed64 tag_type_fingerprint = 1;
   required int32 tag = 2;
   required bool is_inertial = 3;
 }

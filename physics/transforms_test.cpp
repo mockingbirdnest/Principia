@@ -2,20 +2,22 @@
 
 #include <limits>
 
+#include "geometry/frame.hpp"
 #include "base/not_null.hpp"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "physics/degrees_of_freedom.hpp"
-#include "physics/frame.hpp"
 #include "physics/massive_body.hpp"
 #include "physics/massless_body.hpp"
 #include "quantities/named_quantities.hpp"
 #include "quantities/quantities.hpp"
+#include "serialization/frame.pb.h"
 #include "testing_utilities/almost_equals.hpp"
 #include "testing_utilities/componentwise.hpp"
 #include "testing_utilities/vanishes_before.hpp"
 
 using principia::base::make_not_null_unique;
+using principia::geometry::Frame;
 using principia::quantities::Length;
 using principia::quantities::Mass;
 using principia::quantities::SIUnit;
@@ -36,14 +38,12 @@ const int kNumberOfPoints = 20;
 
 class TransformsTest : public testing::Test {
  protected:
-  enum class Tag {
-    kFrom,
-    kThrough,
-    kTo,
-  };
-  using From = Frame<Tag, Tag::kFrom, true>;
-  using Through = Frame<Tag, Tag::kThrough, false>;
-  using To = Frame<Tag, Tag::kTo, true>;
+  using From = Frame<serialization::Frame::TestTag,
+                     serialization::Frame::FROM, true>;
+  using Through = Frame<serialization::Frame::TestTag,
+                        serialization::Frame::THROUGH, false>;
+  using To = Frame<serialization::Frame::TestTag,
+                   serialization::Frame::TO, true>;
 
   TransformsTest()
       : body1_(MassiveBody(1 * SIUnit<Mass>())),

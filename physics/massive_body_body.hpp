@@ -2,12 +2,13 @@
 
 #include "physics/massive_body.hpp"
 
+#include "geometry/frame.hpp"
 #include "glog/logging.h"
-#include "physics/frame.hpp"
 #include "physics/oblate_body.hpp"
 #include "quantities/constants.hpp"
 
 using principia::constants::GravitationalConstant;
+using principia::geometry::UnknownInertialFrame;
 
 namespace principia {
 namespace physics {

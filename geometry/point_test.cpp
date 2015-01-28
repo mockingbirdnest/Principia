@@ -2,11 +2,13 @@
 
 #include <vector>
 
+#include "geometry/frame.hpp"
 #include "geometry/epoch.hpp"
 #include "gmock/gmock.h"
 #include "quantities/quantities.hpp"
 #include "quantities/named_quantities.hpp"
 #include "quantities/si.hpp"
+#include "serialization/frame.pb.h"
 #include "testing_utilities/almost_equals.hpp"
 
 namespace principia {
@@ -23,7 +25,8 @@ using testing_utilities::AlmostEquals;
 
 class PointTest : public testing::Test {
  protected:
-  struct World;
+  using World = Frame<serialization::Frame::TestTag,
+                      serialization::Frame::TEST, true>;
 };
 
 using PointDeathTest = PointTest;
