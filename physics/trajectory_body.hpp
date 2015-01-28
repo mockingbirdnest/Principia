@@ -271,6 +271,10 @@ void Trajectory<Frame>::WriteToMessage(
   WriteSubTreeToMessage(message);
 }
 
+static Trajectory ReadFromMessage(
+    serialization::Trajectory const& message,
+    not_null<Body const*> body);
+
 template<typename Frame>
 typename Trajectory<Frame>::Iterator&
 Trajectory<Frame>::Iterator::operator++() {

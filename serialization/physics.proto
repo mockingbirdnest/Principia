@@ -36,8 +36,6 @@ message Trajectory {
     required Point instant = 1;
     required Pair degrees_of_freedom = 2;
   }
-  // TODO(egg): Body.
   repeated Litter children = 1;
   repeated InstantaneousDegreesOfFreedom timeline = 2;
-  // TODO(egg): Intrinsic acceleration.
 }
