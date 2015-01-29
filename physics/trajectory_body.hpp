@@ -419,7 +419,8 @@ void Trajectory<Frame>::FillSubTreeFromMessage(
   auto timeline_iterator = message.timeline().begin();
   for (serialization::Trajectory::Litter const& litter : message.children()) {
     Instant const fork_time = Instant::ReadFromMessage(litter.fork_time());
-    for(; Instant::ReadFromMessage(timeline_iterator->instant()) <= fork_time;
+    for(; timeline_iterator != message.timeline().end() &&
+          Instant::ReadFromMessage(timeline_iterator->instant()) <= fork_time;
           ++timeline_iterator) {
       Append(Instant::ReadFromMessage(timeline_iterator->instant()),
              DegreesOfFreedom<Frame>::ReadFromMessage(
