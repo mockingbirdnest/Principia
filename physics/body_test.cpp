@@ -2,7 +2,7 @@
 
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
-#include "serialization/frame.pb.h"
+#include "serialization/geometry.pb.h"
 
 using principia::geometry::Frame;
 using principia::geometry::Normalize;

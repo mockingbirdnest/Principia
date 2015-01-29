@@ -7,7 +7,7 @@
 #include "gtest/gtest.h"
 #include "quantities/named_quantities.hpp"
 #include "quantities/quantities.hpp"
-#include "serialization/frame.pb.h"
+#include "serialization/geometry.pb.h"
 
 // Define this to check that the illegal operations are actually rejected.
 #undef CHECK_ILLEGAL

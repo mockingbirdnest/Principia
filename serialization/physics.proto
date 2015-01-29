@@ -1,6 +1,5 @@
 syntax = "proto2";
 
-import "serialization/frame.proto";
 import "serialization/geometry.proto";
 import "serialization/quantities.proto";
 

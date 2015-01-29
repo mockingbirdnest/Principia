@@ -14,7 +14,7 @@
 #include "gtest/gtest.h"
 #include "quantities/numbers.hpp"
 #include "quantities/si.hpp"
-#include "serialization/frame.pb.h"
+#include "serialization/geometry.pb.h"
 #include "testing_utilities/almost_equals.hpp"
 #include "testing_utilities/numerics.hpp"
 

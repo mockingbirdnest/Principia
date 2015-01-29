@@ -5,7 +5,7 @@
 
 #include "geometry/named_quantities.hpp"
 #include "google/protobuf/descriptor.h"
-#include "serialization/frame.pb.h"
+#include "serialization/geometry.pb.h"
 
 namespace principia {
 namespace geometry {

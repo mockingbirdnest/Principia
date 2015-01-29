@@ -1,6 +1,5 @@
 syntax = "proto2";
 
-import "serialization/frame.proto";
 import "serialization/quantities.proto";
 
 package principia.serialization;
@@ -121,4 +120,44 @@ message Rotation {
     optional Rotation rotation = 1003;
   }
   required Quaternion quaternion = 1;
+}
+
+// Frames follow.  Note that the names of the enum types are part of the
+// serialized representation (|tag_type_fingerprint| field).
+
+message Frame {
+  // The frame tags used in the plugin.
+  enum PluginTag {
+    ALICE_SUN = 1;
+    ALICE_WORLD = 2;
+    BARYCENTRIC = 3;
+    RENDERING = 4;
+    WORLD = 5;
+    WORLD_SUN = 6;
+  }
+
+  // The frame tags used in the solar system simulation.
+  enum SolarSystemTag {
+    ICRF_J2000_ECLIPTIC = 1;
+    ICRF_J2000_EQUATOR = 2;
+  }
+
+  // The frame tags used in tests.
+  enum TestTag {
+    TEST = 1;
+    TEST1 = 2;
+    TEST2 = 3;
+    FROM = 4;
+    THROUGH = 5;
+    TO = 6;
+  }
+
+  // Hopefully this will go away somehow...
+  enum UnknownTag {
+    UNKNOWN = 1;
+  }
+
+  required fixed32 tag_type_fingerprint = 1;
+  required int32 tag = 2;
+  required bool is_inertial = 3;
 }

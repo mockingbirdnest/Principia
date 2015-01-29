@@ -11,7 +11,7 @@
 #include "physics/n_body_system.hpp"
 #include "quantities/quantities.hpp"
 #include "quantities/si.hpp"
-#include "serialization/frame.pb.h"
+#include "serialization/geometry.pb.h"
 
 using principia::base::not_null;
 using principia::geometry::Frame;

@@ -10,7 +10,7 @@
 #include "google/protobuf/descriptor.h"
 #include "physics/oblate_body.hpp"
 #include "quantities/constants.hpp"
-#include "serialization/frame.pb.h"
+#include "serialization/geometry.pb.h"
 
 using principia::constants::GravitationalConstant;
 using principia::geometry::Frame;

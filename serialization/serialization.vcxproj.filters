@@ -25,9 +25,6 @@
     <ClInclude Include="physics.pb.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="frame.pb.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="geometry.pb.cc">
@@ -39,11 +36,5 @@
     <ClCompile Include="physics.pb.cc">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="frame.pb.cc">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="frame.proto" />
   </ItemGroup>
 </Project>

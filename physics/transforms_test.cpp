@@ -11,7 +11,7 @@
 #include "physics/massless_body.hpp"
 #include "quantities/named_quantities.hpp"
 #include "quantities/quantities.hpp"
-#include "serialization/frame.pb.h"
+#include "serialization/geometry.pb.h"
 #include "testing_utilities/almost_equals.hpp"
 #include "testing_utilities/componentwise.hpp"
 #include "testing_utilities/vanishes_before.hpp"
