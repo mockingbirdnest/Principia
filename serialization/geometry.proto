@@ -29,7 +29,6 @@ message Point {
   }
 }
 
-// TODO(phl): This should probably include the tag of the frame.
 message Multivector {
   required Frame frame = 4;
   oneof rank {

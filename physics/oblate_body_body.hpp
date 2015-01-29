@@ -87,10 +87,11 @@ template<typename Frame>
 inline void OblateBody<Frame>::WriteToMessage(
     not_null<serialization::MassiveBody*> const message) const {
   MassiveBody::WriteToMessage(message);
-  not_null<serialization::OblateBody*> const oblate_body_information =
+  not_null<serialization::OblateBody*> const oblate_body =
       message->MutableExtension(serialization::OblateBody::oblate_body);
-  j2_.WriteToMessage(oblate_body_information->mutable_j2());
-  axis_.WriteToMessage(oblate_body_information->mutable_axis());
+  Frame::WriteToMessage(oblate_body->mutable_frame());
+  j2_.WriteToMessage(oblate_body->mutable_j2());
+  axis_.WriteToMessage(oblate_body->mutable_axis());
 }
 
 

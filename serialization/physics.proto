@@ -1,5 +1,6 @@
 syntax = "proto2";
 
+import "serialization/frame.proto";
 import "serialization/geometry.proto";
 import "serialization/quantities.proto";
 
@@ -23,6 +24,7 @@ message OblateBody {
   extend MassiveBody {
     optional OblateBody oblate_body = 2001;
   }
+  required Frame frame = 3;
   required Quantity j2 = 1;
   required Multivector axis = 2;
 }

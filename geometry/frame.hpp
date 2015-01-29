@@ -28,12 +28,6 @@ void ReadFrameFromMessage(
         enum_value_descriptor,
     not_null<bool*> const is_inertial);
 
-// This frame should be used for objects whose reference frame cannot be known
-// at compile time.
-using UnknownInertialFrame = Frame<serialization::Frame::UnknownTag,
-                                   serialization::Frame::UNKNOWN,
-                                   true /*frame_is_inertial*/>;
-
 }  // namespace geometry
 }  // namespace principia
 

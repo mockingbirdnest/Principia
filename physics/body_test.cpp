@@ -6,7 +6,6 @@
 
 using principia::geometry::Frame;
 using principia::geometry::Normalize;
-using principia::geometry::UnknownInertialFrame;
 using testing::IsNull;
 using testing::NotNull;
 
@@ -78,7 +77,6 @@ TEST_F(BodyTest, MassiveSerializationSuccess) {
 
 TEST_F(BodyTest, OblateSerializationSuccess) {
   serialization::Body message;
-  OblateBody<UnknownInertialFrame> const* unknown_cast_oblate_body;
   OblateBody<World> const* cast_oblate_body;
   oblate_body_.WriteToMessage(&message);
   EXPECT_TRUE(message.has_massive_body());
@@ -106,13 +104,8 @@ TEST_F(BodyTest, OblateSerializationSuccess) {
       MassiveBody::ReadFromMessage(message);
   EXPECT_EQ(oblate_body_.gravitational_parameter(),
             massive_body->gravitational_parameter());
-  unknown_cast_oblate_body =
-      dynamic_cast<OblateBody<UnknownInertialFrame> const*>(&*massive_body);
-  EXPECT_THAT(unknown_cast_oblate_body, NotNull());
   cast_oblate_body = dynamic_cast<OblateBody<World> const*>(&*massive_body);
-  EXPECT_THAT(cast_oblate_body, IsNull());
-  cast_oblate_body =
-      reinterpret_cast<OblateBody<World> const*>(unknown_cast_oblate_body);
+  EXPECT_THAT(cast_oblate_body, Not(IsNull()));
   EXPECT_EQ(oblate_body_.gravitational_parameter(),
             cast_oblate_body->gravitational_parameter());
   EXPECT_EQ(oblate_body_.j2(), cast_oblate_body->j2());
@@ -122,13 +115,7 @@ TEST_F(BodyTest, OblateSerializationSuccess) {
   not_null<std::unique_ptr<Body const>> const body =
       Body::ReadFromMessage(message);
   cast_oblate_body = dynamic_cast<OblateBody<World> const*>(&*body);
-  unknown_cast_oblate_body =
-      dynamic_cast<OblateBody<UnknownInertialFrame> const*>(&*body);
-  EXPECT_THAT(unknown_cast_oblate_body, NotNull());
-  cast_oblate_body = dynamic_cast<OblateBody<World> const*>(&*body);
-  EXPECT_THAT(cast_oblate_body, IsNull());
-  cast_oblate_body =
-      reinterpret_cast<OblateBody<World> const*>(unknown_cast_oblate_body);
+  EXPECT_THAT(cast_oblate_body, Not(IsNull()));
   EXPECT_EQ(oblate_body_.gravitational_parameter(),
             cast_oblate_body->gravitational_parameter());
   EXPECT_EQ(oblate_body_.j2(), cast_oblate_body->j2());
