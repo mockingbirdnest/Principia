@@ -26,7 +26,7 @@ void Frame<Tag, tag, frame_is_inertial>::WriteToMessage(
 template<typename Tag, Tag tag, bool frame_is_inertial>
 void Frame<Tag, tag, frame_is_inertial>::ReadFromMessage(
     serialization::Frame const& message) {
-  string const& tag_type_full_name =
+  std::string const& tag_type_full_name =
       google::protobuf::GetEnumDescriptor<Tag>()->full_name();
 
   CHECK_EQ(Fingerprint2011(tag_type_full_name.c_str(),
@@ -40,6 +40,32 @@ void Frame<Tag, tag, frame_is_inertial>::ReadFromMessage(
 template<typename Tag, Tag tag, bool frame_is_inertial>
 Position<Frame<Tag, tag, frame_is_inertial>> const
 Frame<Tag, tag, frame_is_inertial>::origin;
+
+inline void ReadFrameFromMessage(
+    serialization::Frame const& message,
+    not_null<google::protobuf::EnumValueDescriptor const**> const
+        enum_value_descriptor,
+    not_null<bool*> const is_inertial) {
+  // Look at the enumeration types nested in serialization::Frame for one that
+  // matches our fingerprint.
+  const google::protobuf::Descriptor* frame_descriptor =
+      serialization::Frame::descriptor();
+  *enum_value_descriptor = nullptr;
+  for (int i = 0; i < frame_descriptor->enum_type_count() ; ++i) {
+    const google::protobuf::EnumDescriptor* enum_type_descriptor =
+        frame_descriptor->enum_type(i);
+    std::string const& enum_type_full_name = enum_type_descriptor->full_name();
+    if (Fingerprint2011(enum_type_full_name.c_str(),
+                        enum_type_full_name.size()) ==
+        message.tag_type_fingerprint()) {
+      *enum_value_descriptor =
+          enum_type_descriptor->FindValueByNumber(message.tag());
+      break;
+    }
+  }
+  CHECK_NOTNULL(*enum_value_descriptor);
+  *is_inertial = message.is_inertial();
+}
 
 }  // namespace geometry
 }  // namespace principia
