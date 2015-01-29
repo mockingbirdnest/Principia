@@ -166,7 +166,7 @@ class Trajectory {
   // serialized.  The body is not owned, and therefore is not serialized.
   void WriteToMessage(not_null<serialization::Trajectory*> const message) const;
 
-  static Trajectory ReadFromMessage(
+  static not_null<std::unique_ptr<Trajectory>> ReadFromMessage(
       serialization::Trajectory const& message,
       not_null<Body const*> body);
 
@@ -228,6 +228,8 @@ class Trajectory {
   // This trajectory need not be a root.
   void WriteSubTreeToMessage(
       not_null<serialization::Trajectory*> const message) const;
+
+  void FillSubTreeFromMessage(serialization::Trajectory const& message);
 
   not_null<Body const*> const body_;
 

@@ -33,6 +33,8 @@ class DegreesOfFreedom : public Pair<Position<Frame>, Velocity<Frame>> {
       Pair<Position<Frame>,
            Velocity<Frame>> const& base);  // NOLINT(runtime/explicit)
 
+  static DegreesOfFreedom ReadFromMessage(serialization::Pair const& message);
+
   Position<Frame> const& position() const;
   Velocity<Frame> const& velocity() const;
 };

@@ -268,6 +268,8 @@ TEST_F(TrajectoryTest, SerializationSuccess) {
       DegreesOfFreedom<World>::ReadFromMessage(
           message.children(1).trajectories(0).timeline(0).degrees_of_freedom()),
       Eq(d4_));
+  not_null<std::unique_ptr<Trajectory<World>>> const deserialized_trajectory =
+      Trajectory<World>::ReadFromMessage(message, &massive_body_);
 }
 
 TEST_F(TrajectoryDeathTest, DeleteForkError) {
