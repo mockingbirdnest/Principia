@@ -34,7 +34,7 @@ message Frame {
     UNKNOWN = 1;
   }
 
-  required fixed64 tag_type_fingerprint = 1;
+  required fixed32 tag_type_fingerprint = 1;
   required int32 tag = 2;
   required bool is_inertial = 3;
 }

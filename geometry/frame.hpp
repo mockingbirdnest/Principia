@@ -1,5 +1,8 @@
 #pragma once
 
+#include <cstdint>
+#include <string>
+
 #include "geometry/named_quantities.hpp"
 #include "google/protobuf/descriptor.h"
 #include "serialization/frame.pb.h"
