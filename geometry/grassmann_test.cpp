@@ -3,6 +3,7 @@
 #include <functional>
 #include <iostream>  // NOLINT(readability/streams)
 
+#include "geometry/frame.hpp"
 #include "geometry/grassmann.hpp"
 #include "geometry/r3_element.hpp"
 #include "gmock/gmock.h"
@@ -47,7 +48,8 @@ namespace geometry {
 
 class GrassmannTest : public testing::Test {
  protected:
-  struct World;
+  using World = Frame<serialization::Frame::TestTag,
+                      serialization::Frame::TEST, true>;
 
   template<typename LScalar, typename RScalar, typename Frame, int rank>
   static Product<LScalar, RScalar> MultivectorInnerProduct(

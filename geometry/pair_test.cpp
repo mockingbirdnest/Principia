@@ -1,11 +1,13 @@
 #include "geometry/pair.hpp"
 
+#include "geometry/frame.hpp"
 #include "geometry/grassmann.hpp"
 #include "geometry/identity.hpp"
 #include "geometry/point.hpp"
 #include "gtest/gtest.h"
 #include "quantities/named_quantities.hpp"
 #include "quantities/quantities.hpp"
+#include "serialization/geometry.pb.h"
 
 // Define this to check that the illegal operations are actually rejected.
 #undef CHECK_ILLEGAL
@@ -27,7 +29,9 @@ namespace geometry {
 
 class PairTest : public testing::Test {
  protected:
-  struct World;
+  using World = Frame<serialization::Frame::TestTag,
+                      serialization::Frame::TEST, true>;
+
   struct Universe;
 
   PairTest()
