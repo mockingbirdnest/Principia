@@ -14,7 +14,47 @@ class FrameTest : public testing::Test {
                         serialization::Frame::TEST1, true>;
    using World2 = Frame<serialization::Frame::TestTag,
                         serialization::Frame::TEST2, true>;
+   using World3 = Frame<serialization::Frame::TestTag,
+                        serialization::Frame::TEST1, false>;
+   using World4 = Frame<serialization::Frame::SolarSystemTag,
+                        serialization::Frame::ICRF_J2000_EQUATOR, true>;
 };
+
+using FrameDeathTest = FrameTest;
+
+TEST_F(FrameDeathTest, SerializationError) {
+  EXPECT_DEATH({
+    serialization::Frame message;
+    World1::WriteToMessage(&message);
+    World2::ReadFromMessage(message);
+  }, "tag ==");
+  EXPECT_DEATH({
+    serialization::Frame message;
+    World1::WriteToMessage(&message);
+    World3::ReadFromMessage(message);
+  }, "frame_is_inertial ==");
+  EXPECT_DEATH({
+    serialization::Frame message;
+    World1::WriteToMessage(&message);
+    World4::ReadFromMessage(message);
+  }, "Fingerprint");
+  EXPECT_DEATH({
+    serialization::Frame message;
+    World1::WriteToMessage(&message);
+    message.set_tag_type_fingerprint(0xDEADBEEF);
+    google::protobuf::EnumValueDescriptor const* enum_value_descriptor;
+    bool is_inertial;
+    ReadFrameFromMessage(message, &enum_value_descriptor, &is_inertial);
+  }, "enum_value_descriptor");
+  EXPECT_DEATH({
+    serialization::Frame message;
+    World1::WriteToMessage(&message);
+    message.set_tag(666);
+    google::protobuf::EnumValueDescriptor const* enum_value_descriptor;
+    bool is_inertial;
+    ReadFrameFromMessage(message, &enum_value_descriptor, &is_inertial);
+  }, "enum_value_descriptor");
+}
 
 TEST_F(FrameTest, SerializationSuccess) {
   serialization::Frame message;
