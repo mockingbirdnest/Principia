@@ -1,0 +1,41 @@
+#include "geometry/frame.hpp"
+
+#include "glog/logging.h"
+#include "google/protobuf/descriptor.h"
+#include "gtest/gtest.h"
+#include "serialization/geometry.pb.h"
+
+namespace principia {
+namespace geometry {
+
+class FrameTest : public testing::Test {
+ protected:
+   using World1 = Frame<serialization::Frame::TestTag,
+                        serialization::Frame::TEST1, true>;
+   using World2 = Frame<serialization::Frame::TestTag,
+                        serialization::Frame::TEST2, true>;
+};
+
+TEST_F(FrameTest, SerializationSuccess) {
+  serialization::Frame message;
+  World1::WriteToMessage(&message);
+  EXPECT_TRUE(message.has_tag_type_fingerprint());
+  // Be very worried if the following test fails: you have changed the
+  // fingerprints and all your frames are belong to us.
+  EXPECT_EQ(3211394049, message.tag_type_fingerprint());
+  EXPECT_TRUE(message.has_tag());
+  EXPECT_EQ(2, message.tag());
+  EXPECT_TRUE(message.is_inertial());
+
+  World1::ReadFromMessage(message);
+
+  google::protobuf::EnumValueDescriptor const* enum_value_descriptor;
+  bool is_inertial;
+  ReadFrameFromMessage(message, &enum_value_descriptor, &is_inertial);
+  EXPECT_EQ("principia.serialization.Frame.TEST1",
+            enum_value_descriptor->full_name());
+  EXPECT_TRUE(is_inertial);
+}
+
+}  // namespace geometry
+}  // namespace principia

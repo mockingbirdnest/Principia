@@ -160,6 +160,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="barycentre_calculator_test.cpp" />
+    <ClCompile Include="frame_test.cpp" />
     <ClCompile Include="grassmann_test.cpp" />
     <ClCompile Include="identity_test.cpp" />
     <ClCompile Include="pair_test.cpp" />

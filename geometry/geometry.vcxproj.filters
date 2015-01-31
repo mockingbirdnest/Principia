@@ -151,5 +151,8 @@
     <ClCompile Include="pair_test.cpp">
       <Filter>Test Files</Filter>
     </ClCompile>
+    <ClCompile Include="frame_test.cpp">
+      <Filter>Test Files</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>
