@@ -2,12 +2,19 @@
 
 #include "physics/massive_body.hpp"
 
+#include <string>
+
+#include "base/macros.hpp"
+#include "geometry/frame.hpp"
 #include "glog/logging.h"
-#include "physics/frame.hpp"
+#include "google/protobuf/descriptor.h"
 #include "physics/oblate_body.hpp"
 #include "quantities/constants.hpp"
+#include "serialization/geometry.pb.h"
 
 using principia::constants::GravitationalConstant;
+using principia::geometry::Frame;
+using principia::geometry::ReadFrameFromMessage;
 
 namespace principia {
 namespace physics {
@@ -61,16 +68,73 @@ inline not_null<std::unique_ptr<MassiveBody>> MassiveBody::ReadFromMessage(
   return ReadFromMessage(message.massive_body());
 }
 
+// This macro is a bit ugly, but trust me, it's better than the alternatives.
+#define OBLATE_BODY_TAG_VALUE_CASE(value)                                      \
+  case serialization::Frame::value:                                            \
+    return OblateBody<                                                         \
+                Frame<Tag, serialization::Frame::value, true>>::               \
+                ReadFromMessage(message)
+
 inline not_null<std::unique_ptr<MassiveBody>> MassiveBody::ReadFromMessage(
     serialization::MassiveBody const& message) {
   if (message.HasExtension(serialization::OblateBody::oblate_body)) {
-    return OblateBody<UnknownInertialFrame>::ReadFromMessage(message);
+    serialization::OblateBody const& extension =
+        message.GetExtension(serialization::OblateBody::oblate_body);
+
+    const google::protobuf::EnumValueDescriptor* enum_value_descriptor;
+    bool is_inertial;
+    ReadFrameFromMessage(extension.frame(),
+                         &enum_value_descriptor,
+                         &is_inertial);
+    CHECK(is_inertial);
+
+    const google::protobuf::EnumDescriptor* enum_descriptor =
+        enum_value_descriptor->type();
+    {
+      using Tag = serialization::Frame::PluginTag;
+      if (enum_descriptor == google::protobuf::GetEnumDescriptor<Tag>()) {
+        switch (static_cast<Tag>(enum_value_descriptor->number())) {
+          OBLATE_BODY_TAG_VALUE_CASE(ALICE_SUN);
+          OBLATE_BODY_TAG_VALUE_CASE(ALICE_WORLD);
+          OBLATE_BODY_TAG_VALUE_CASE(BARYCENTRIC);
+          OBLATE_BODY_TAG_VALUE_CASE(RENDERING);
+          OBLATE_BODY_TAG_VALUE_CASE(WORLD);
+          OBLATE_BODY_TAG_VALUE_CASE(WORLD_SUN);
+        }
+      }
+    }
+    {
+      using Tag = serialization::Frame::SolarSystemTag;
+      if (enum_descriptor == google::protobuf::GetEnumDescriptor<Tag>()) {
+        switch (static_cast<Tag>(enum_value_descriptor->number())) {
+          OBLATE_BODY_TAG_VALUE_CASE(ICRF_J2000_ECLIPTIC);
+          OBLATE_BODY_TAG_VALUE_CASE(ICRF_J2000_EQUATOR);
+        }
+      }
+    }
+    {
+      using Tag = serialization::Frame::TestTag;
+      if (enum_descriptor == google::protobuf::GetEnumDescriptor<Tag>()) {
+        switch (static_cast<Tag>(enum_value_descriptor->number())) {
+          OBLATE_BODY_TAG_VALUE_CASE(TEST);
+          OBLATE_BODY_TAG_VALUE_CASE(TEST1);
+          OBLATE_BODY_TAG_VALUE_CASE(TEST2);
+          OBLATE_BODY_TAG_VALUE_CASE(FROM);
+          OBLATE_BODY_TAG_VALUE_CASE(THROUGH);
+          OBLATE_BODY_TAG_VALUE_CASE(TO);
+        }
+      }
+    }
+    LOG(FATAL) << enum_descriptor->name();
+    base::noreturn();
   } else {
     return std::make_unique<MassiveBody>(
         GravitationalParameter::ReadFromMessage(
             message.gravitational_parameter()));
   }
 }
+
+#undef OBLATE_BODY_TAG_VALUE_CASE
 
 }  // namespace physics
 }  // namespace principia

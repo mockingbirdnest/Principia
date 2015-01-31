@@ -52,7 +52,8 @@ class NBodySystemTest : public testing::Test {
     kEarthMoonOrbitPlane,
   };
 
-  using EarthMoonOrbitPlane = Frame<Tag, Tag::kEarthMoonOrbitPlane, true>;
+  using EarthMoonOrbitPlane = Frame<serialization::Frame::TestTag,
+                                    serialization::Frame::TEST, true>;
 
   NBodySystemTest()
       : body1_(MassiveBody(6E24 * SIUnit<Mass>())),

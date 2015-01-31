@@ -61,7 +61,7 @@ class OblateBody : public MassiveBody {
   void WriteToMessage(
       not_null<serialization::MassiveBody*> message) const override;
 
-  // Fails unless |message.has_massless_body()|.
+  // Fails unless |message.has_massive_body()|.
   static not_null<std::unique_ptr<OblateBody<Frame>>> ReadFromMessage(
       serialization::Body const& message);
 

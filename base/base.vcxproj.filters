@@ -32,6 +32,9 @@
     <ClInclude Include="mappable.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="fingerprint2011.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="not_null_test.cpp">
