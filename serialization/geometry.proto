@@ -67,7 +67,6 @@ message Sign {
 }
 
 // Linear maps follow.
-// TODO(phl): All the linear maps should serialize their frames.
 
 message LinearMap {
   required Frame from_frame = 1;
@@ -154,11 +153,6 @@ message Frame {
     FROM = 4;
     THROUGH = 5;
     TO = 6;
-  }
-
-  // Hopefully this will go away somehow...
-  enum UnknownTag {
-    UNKNOWN = 1;
   }
 
   required fixed32 tag_type_fingerprint = 1;
