@@ -133,6 +133,8 @@ class Trajectory {
   std::enable_if_t<std::is_base_of<Body, B>::value,
                    not_null<B const*>> body() const;
 
+  std::multimap<Instant, Trajectory> const& children() const;
+
   // This function represents the intrinsic acceleration of a body, irrespective
   // of any external field.  It can be due e.g., to an engine burn.
   using IntrinsicAcceleration =
