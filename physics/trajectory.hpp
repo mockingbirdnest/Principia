@@ -44,6 +44,7 @@ class Trajectory {
   // expressed in the same frame as the trajectory.
   explicit Trajectory(not_null<Body const*> const body);
   ~Trajectory() = default;
+  Trajectory(Trajectory&&);  // NOLINT(build/c++11)
 
   // Returns an iterator at the first point of the trajectory.  Complexity is
   // O(|depth|).  The result may be at end if the trajectory is empty.
@@ -166,9 +167,8 @@ class Trajectory {
   // serialized.  The body is not owned, and therefore is not serialized.
   void WriteToMessage(not_null<serialization::Trajectory*> const message) const;
 
-  static not_null<std::unique_ptr<Trajectory>> ReadFromMessage(
-      serialization::Trajectory const& message,
-      not_null<Body const*> const body);
+  static Trajectory ReadFromMessage(serialization::Trajectory const& message,
+                                    not_null<Body const*> const body);
 
   // A base class for iterating over the timeline of a trajectory, taking forks
   // into account.  Objects of this class cannot be created.
@@ -235,12 +235,12 @@ class Trajectory {
 
   Trajectory* const parent_;  // Null for a root trajectory.
 
-  // Null for a root trajectory.
+  // Null for a root trajectory.  |*fork_| is never a past-the-end iterator, so
+  // it is not invalidated by swapping the |timeline_| of the |*parent_|.
   std::unique_ptr<typename Timeline::iterator> fork_;
 
   // There may be several forks starting from the same time, hence the multimap.
-  // Child trajectories are owned.
-  std::multimap<Instant, not_null<std::unique_ptr<Trajectory>>> children_;
+  std::multimap<Instant, Trajectory> children_;
 
   Timeline timeline_;
 
