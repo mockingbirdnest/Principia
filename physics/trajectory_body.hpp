@@ -275,9 +275,9 @@ template<typename Frame>
 not_null<std::unique_ptr<Trajectory<Frame>>> Trajectory<Frame>::ReadFromMessage(
     serialization::Trajectory const& message,
     not_null<Body const*> const body) {
-  auto result = make_not_null_unique<Trajectory>(body);
-  result->FillSubTreeFromMessage(message);
-  return result;
+  auto trajectory = make_not_null_unique<Trajectory>(body);
+  trajectory->FillSubTreeFromMessage(message);
+  return trajectory;
 }
 
 template<typename Frame>
@@ -416,25 +416,25 @@ void Trajectory<Frame>::WriteSubTreeToMessage(
 template<typename Frame>
 void Trajectory<Frame>::FillSubTreeFromMessage(
     serialization::Trajectory const& message) {
-  auto timeline_iterator = message.timeline().begin();
+  auto timeline_it = message.timeline().begin();
   for (serialization::Trajectory::Litter const& litter : message.children()) {
     Instant const fork_time = Instant::ReadFromMessage(litter.fork_time());
     for (;
-         timeline_iterator != message.timeline().end() &&
-         Instant::ReadFromMessage(timeline_iterator->instant()) <= fork_time;
-         ++timeline_iterator) {
-      Append(Instant::ReadFromMessage(timeline_iterator->instant()),
+         timeline_it != message.timeline().end() &&
+         Instant::ReadFromMessage(timeline_it->instant()) <= fork_time;
+         ++timeline_it) {
+      Append(Instant::ReadFromMessage(timeline_it->instant()),
              DegreesOfFreedom<Frame>::ReadFromMessage(
-                 timeline_iterator->degrees_of_freedom()));
+                 timeline_it->degrees_of_freedom()));
     }
     for (serialization::Trajectory const& child : litter.trajectories()) {
       Fork(fork_time)->FillSubTreeFromMessage(child);
     }
   }
-  for (; timeline_iterator != message.timeline().end(); ++timeline_iterator) {
-    Append(Instant::ReadFromMessage(timeline_iterator->instant()),
+  for (; timeline_it != message.timeline().end(); ++timeline_it) {
+    Append(Instant::ReadFromMessage(timeline_it->instant()),
            DegreesOfFreedom<Frame>::ReadFromMessage(
-               timeline_iterator->degrees_of_freedom()));
+               timeline_it->degrees_of_freedom()));
   }
 }
 

@@ -168,7 +168,7 @@ class Trajectory {
 
   static not_null<std::unique_ptr<Trajectory>> ReadFromMessage(
       serialization::Trajectory const& message,
-      not_null<Body const*> body);
+      not_null<Body const*> const body);
 
   // A base class for iterating over the timeline of a trajectory, taking forks
   // into account.  Objects of this class cannot be created.
