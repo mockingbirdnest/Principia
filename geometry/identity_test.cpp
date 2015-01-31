@@ -109,13 +109,21 @@ TEST_F(IdentityDeathTest, SerializationError) {
   EXPECT_DEATH({
     serialization::LinearMap message;
     Id12 const id = Id12::ReadFromMessage(message);
-  }, "HasExtension.*Identity");
+  }, "Fingerprint");
 }
 
 TEST_F(IdentityTest, SerializationSuccess) {
   serialization::LinearMap message;
   Identity<World1, World2> id12a;
   id12a.WriteToMessage(&message);
+  EXPECT_TRUE(message.has_from_frame());
+  EXPECT_TRUE(message.has_to_frame());
+  EXPECT_EQ(message.from_frame().tag_type_fingerprint(),
+            message.to_frame().tag_type_fingerprint());
+  EXPECT_NE(message.from_frame().tag(),
+            message.to_frame().tag());
+  EXPECT_EQ(message.from_frame().is_inertial(),
+            message.to_frame().is_inertial());
   Identity<World1, World2> const id12b =
       Identity<World1, World2>::ReadFromMessage(message);
   EXPECT_THAT(id12a(vector_), id12b(vector_));

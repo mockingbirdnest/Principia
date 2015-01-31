@@ -200,6 +200,14 @@ TEST_F(PermutationTest, SerializationSuccess) {
   for (Perm::CoordinatePermutation const cp : all12) {
     Perm const perm_a(cp);
     perm_a.WriteToMessage(&message);
+    EXPECT_TRUE(message.has_from_frame());
+    EXPECT_TRUE(message.has_to_frame());
+    EXPECT_EQ(message.from_frame().tag_type_fingerprint(),
+              message.to_frame().tag_type_fingerprint());
+    EXPECT_NE(message.from_frame().tag(),
+              message.to_frame().tag());
+    EXPECT_EQ(message.from_frame().is_inertial(),
+              message.to_frame().is_inertial());
     EXPECT_TRUE(message.HasExtension(serialization::Permutation::permutation));
     serialization::Permutation const& extension =
         message.GetExtension(serialization::Permutation::permutation);

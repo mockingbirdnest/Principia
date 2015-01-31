@@ -136,6 +136,14 @@ TEST_F(OrthogonalMapDeathTest, SerializationError) {
 TEST_F(OrthogonalMapTest, SerializationSuccess) {
   serialization::LinearMap message;
   orthogonal_a_.WriteToMessage(&message);
+  EXPECT_TRUE(message.has_from_frame());
+  EXPECT_TRUE(message.has_to_frame());
+  EXPECT_EQ(message.from_frame().tag_type_fingerprint(),
+            message.to_frame().tag_type_fingerprint());
+  EXPECT_EQ(message.from_frame().tag(),
+            message.to_frame().tag());
+  EXPECT_EQ(message.from_frame().is_inertial(),
+            message.to_frame().is_inertial());
   EXPECT_TRUE(message.HasExtension(
       serialization::OrthogonalMap::orthogonal_map));
   serialization::OrthogonalMap const& extension =

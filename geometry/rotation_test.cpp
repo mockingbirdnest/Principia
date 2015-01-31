@@ -226,6 +226,14 @@ TEST_F(RotationDeathTest, SerializationError) {
 TEST_F(RotationTest, SerializationSuccess) {
   serialization::LinearMap message;
   rotation_a_.WriteToMessage(&message);
+  EXPECT_TRUE(message.has_from_frame());
+  EXPECT_TRUE(message.has_to_frame());
+  EXPECT_EQ(message.from_frame().tag_type_fingerprint(),
+            message.to_frame().tag_type_fingerprint());
+  EXPECT_EQ(message.from_frame().tag(),
+            message.to_frame().tag());
+  EXPECT_EQ(message.from_frame().is_inertial(),
+            message.to_frame().is_inertial());
   EXPECT_TRUE(message.HasExtension(serialization::Rotation::rotation));
   serialization::Rotation const& extension =
       message.GetExtension(serialization::Rotation::rotation);
