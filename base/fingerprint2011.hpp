@@ -2,7 +2,7 @@
 
 // This code comes from:
 // https://code.google.com/p/or-tools/source/browse/trunk/src/base/fingerprint2011.h
-// and was adapted to Visual Studio 2013.
+// and was adapted to Visual Studio 2013 and to the needs of this project.
 
 // Copyright 2010-2014 Google
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -18,6 +18,9 @@
 // limitations under the License.
 
 #include <cstdint>
+
+namespace principia {
+namespace base {
 
 inline std::uint64_t FingerprintCat2011(std::uint64_t fp1, std::uint64_t fp2) {
   // Two big prime numbers.
@@ -51,3 +54,6 @@ inline std::uint64_t Fingerprint2011(const char* bytes, size_t len) {
   }
   return FingerprintCat2011(fp, last_bytes);
 }
+
+}  // namespace base
+}  // namespace principia

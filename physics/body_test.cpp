@@ -105,7 +105,7 @@ TEST_F(BodyTest, OblateSerializationSuccess) {
   EXPECT_EQ(oblate_body_.gravitational_parameter(),
             massive_body->gravitational_parameter());
   cast_oblate_body = dynamic_cast<OblateBody<World> const*>(&*massive_body);
-  EXPECT_THAT(cast_oblate_body, Not(IsNull()));
+  EXPECT_THAT(cast_oblate_body, NotNull());
   EXPECT_EQ(oblate_body_.gravitational_parameter(),
             cast_oblate_body->gravitational_parameter());
   EXPECT_EQ(oblate_body_.j2(), cast_oblate_body->j2());
@@ -115,7 +115,7 @@ TEST_F(BodyTest, OblateSerializationSuccess) {
   not_null<std::unique_ptr<Body const>> const body =
       Body::ReadFromMessage(message);
   cast_oblate_body = dynamic_cast<OblateBody<World> const*>(&*body);
-  EXPECT_THAT(cast_oblate_body, Not(IsNull()));
+  EXPECT_THAT(cast_oblate_body, NotNull());
   EXPECT_EQ(oblate_body_.gravitational_parameter(),
             cast_oblate_body->gravitational_parameter());
   EXPECT_EQ(oblate_body_.j2(), cast_oblate_body->j2());
