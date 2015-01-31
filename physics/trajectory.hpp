@@ -162,10 +162,13 @@ class Trajectory {
   Vector<Acceleration, Frame> evaluate_intrinsic_acceleration(
       Instant const& time) const;
 
-  // This trajectory must be a root.
+  // This trajectory must be a root.  The intrinsic acceleration is not
+  // serialized.  The body is not owned, and therefore is not serialized.
   void WriteToMessage(not_null<serialization::Trajectory*> const message) const;
-  // TODO(egg): implement when |Body| is serializable.
-  static Trajectory ReadFromMessage(serialization::Trajectory const& message);
+
+  static not_null<std::unique_ptr<Trajectory>> ReadFromMessage(
+      serialization::Trajectory const& message,
+      not_null<Body const*> const body);
 
   // A base class for iterating over the timeline of a trajectory, taking forks
   // into account.  Objects of this class cannot be created.
@@ -225,6 +228,8 @@ class Trajectory {
   // This trajectory need not be a root.
   void WriteSubTreeToMessage(
       not_null<serialization::Trajectory*> const message) const;
+
+  void FillSubTreeFromMessage(serialization::Trajectory const& message);
 
   not_null<Body const*> const body_;
 

@@ -222,7 +222,13 @@ TEST_F(TrajectoryTest, SerializationSuccess) {
   not_null<Trajectory<World>*> const fork3 = massive_trajectory_->Fork(t3_);
   fork3->Append(t4_, d4_);
   serialization::Trajectory message;
+  // TODO(egg): test deserialization directly once appropriate accessors are
+  // available.
   massive_trajectory_->WriteToMessage(&message);
+  not_null<std::unique_ptr<Trajectory<World>>> const deserialized_trajectory =
+      Trajectory<World>::ReadFromMessage(message, &massive_body_);
+  message.Clear();
+  deserialized_trajectory->WriteToMessage(&message);
   EXPECT_THAT(message.children_size(), Eq(2));
   EXPECT_THAT(message.timeline_size(), Eq(3));
   EXPECT_THAT(Instant::ReadFromMessage(message.timeline(0).instant()), Eq(t1_));

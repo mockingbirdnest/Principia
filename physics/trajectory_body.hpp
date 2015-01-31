@@ -272,6 +272,15 @@ void Trajectory<Frame>::WriteToMessage(
 }
 
 template<typename Frame>
+not_null<std::unique_ptr<Trajectory<Frame>>> Trajectory<Frame>::ReadFromMessage(
+    serialization::Trajectory const& message,
+    not_null<Body const*> const body) {
+  auto trajectory = make_not_null_unique<Trajectory>(body);
+  trajectory->FillSubTreeFromMessage(message);
+  return trajectory;
+}
+
+template<typename Frame>
 typename Trajectory<Frame>::Iterator&
 Trajectory<Frame>::Iterator::operator++() {
   if (!forks_.empty() && current_ == forks_.front()) {
@@ -401,6 +410,31 @@ void Trajectory<Frame>::WriteSubTreeToMessage(
     instant.WriteToMessage(instantaneous_degrees_of_freedom->mutable_instant());
     degrees_of_freedom.WriteToMessage(
         instantaneous_degrees_of_freedom->mutable_degrees_of_freedom());
+  }
+}
+
+template<typename Frame>
+void Trajectory<Frame>::FillSubTreeFromMessage(
+    serialization::Trajectory const& message) {
+  auto timeline_it = message.timeline().begin();
+  for (serialization::Trajectory::Litter const& litter : message.children()) {
+    Instant const fork_time = Instant::ReadFromMessage(litter.fork_time());
+    for (;
+         timeline_it != message.timeline().end() &&
+         Instant::ReadFromMessage(timeline_it->instant()) <= fork_time;
+         ++timeline_it) {
+      Append(Instant::ReadFromMessage(timeline_it->instant()),
+             DegreesOfFreedom<Frame>::ReadFromMessage(
+                 timeline_it->degrees_of_freedom()));
+    }
+    for (serialization::Trajectory const& child : litter.trajectories()) {
+      Fork(fork_time)->FillSubTreeFromMessage(child);
+    }
+  }
+  for (; timeline_it != message.timeline().end(); ++timeline_it) {
+    Append(Instant::ReadFromMessage(timeline_it->instant()),
+           DegreesOfFreedom<Frame>::ReadFromMessage(
+               timeline_it->degrees_of_freedom()));
   }
 }
 
