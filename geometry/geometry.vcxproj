@@ -135,6 +135,7 @@
     <ClInclude Include="frame_body.hpp" />
     <ClInclude Include="identity.hpp" />
     <ClInclude Include="identity_body.hpp" />
+    <ClInclude Include="linear_map_body.hpp" />
     <ClInclude Include="named_quantities.hpp" />
     <ClInclude Include="pair.hpp" />
     <ClInclude Include="pair_body.hpp" />

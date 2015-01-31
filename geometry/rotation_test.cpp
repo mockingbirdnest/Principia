@@ -1,5 +1,6 @@
 #include "geometry/rotation.hpp"
 
+#include "geometry/frame.hpp"
 #include "geometry/grassmann.hpp"
 #include "geometry/identity.hpp"
 #include "geometry/orthogonal_map.hpp"
@@ -8,6 +9,7 @@
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "quantities/si.hpp"
+#include "serialization/geometry.pb.h"
 #include "testing_utilities/almost_equals.hpp"
 
 namespace principia {
@@ -19,7 +21,8 @@ using testing_utilities::AlmostEquals;
 
 class RotationTest : public testing::Test {
  protected:
-  struct World;
+  using World = Frame<serialization::Frame::TestTag,
+                      serialization::Frame::TEST, true>;
   using Orth = OrthogonalMap<World, World>;
   using Rot = Rotation<World, World>;
 

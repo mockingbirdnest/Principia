@@ -36,7 +36,11 @@ class LinearMap {
 //  template<typename T>
 //  typename base::Mappable<LinearMap, T>::type operator()(T const& t) const;
 //
-// protected:
+protected:
+  // Serialization of the frames.
+  static void WriteToMessage(not_null<serialization::LinearMap*> const message);
+  static void ReadFromMessage(serialization::LinearMap const& message);
+
 //   template<typename Scalar>
 //   virtual R3Element<Scalar> operator()(
 //       R3Element<Scalar> const& r3_element) const = 0;
@@ -44,3 +48,5 @@ class LinearMap {
 
 }  // namespace geometry
 }  // namespace principia
+
+#include "geometry/linear_map_body.hpp"

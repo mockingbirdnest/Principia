@@ -2,6 +2,7 @@
 
 #include <vector>
 
+#include "geometry/frame.hpp"
 #include "geometry/identity.hpp"
 #include "geometry/orthogonal_map.hpp"
 #include "geometry/r3_element.hpp"
@@ -9,6 +10,7 @@
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "quantities/si.hpp"
+#include "serialization/geometry.pb.h"
 #include "testing_utilities/almost_equals.hpp"
 
 using principia::quantities::Length;
@@ -21,8 +23,10 @@ namespace geometry {
 
 class PermutationTest : public testing::Test {
  protected:
-  struct World1;
-  struct World2;
+  using World1 = Frame<serialization::Frame::TestTag,
+                       serialization::Frame::TEST1, true>;
+  using World2 = Frame<serialization::Frame::TestTag,
+                       serialization::Frame::TEST2, true>;
   using Orth = OrthogonalMap<World1, World2>;
   using Perm = Permutation<World1, World2>;
   using R3 = R3Element<quantities::Length>;

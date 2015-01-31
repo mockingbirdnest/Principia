@@ -45,6 +45,8 @@ template<typename FromFrame, typename ToFrame, typename Scalar,
          template<typename, typename> class LinearMap>
 void AffineMap<FromFrame, ToFrame, Scalar, LinearMap>::WriteToMessage(
     not_null<serialization::AffineMap*> const message) const {
+  FromFrame::WriteToMessage(message->mutable_from_frame());
+  ToFrame::WriteToMessage(message->mutable_to_frame());
   from_origin_.WriteToMessage(message->mutable_from_origin());
   to_origin_.WriteToMessage(message->mutable_to_origin());
   linear_map_.WriteToMessage(message->mutable_linear_map());
@@ -55,6 +57,8 @@ template<typename FromFrame, typename ToFrame, typename Scalar,
 AffineMap<FromFrame, ToFrame, Scalar, LinearMap>
 AffineMap<FromFrame, ToFrame, Scalar, LinearMap>::ReadFromMessage(
     serialization::AffineMap const& message) {
+  FromFrame::ReadFromMessage(message.from_frame());
+  ToFrame::ReadFromMessage(message.to_frame());
   return AffineMap(Point<FromVector>::ReadFromMessage(message.from_origin()),
                    Point<ToVector>::ReadFromMessage(message.to_origin()),
                    LinearMap<FromFrame, ToFrame>::ReadFromMessage(
