@@ -170,12 +170,10 @@ template<typename Frame>
 not_null<Trajectory<Frame>*> Trajectory<Frame>::Fork(Instant const& time) {
   auto fork_it = timeline_.find(time);
   CHECK(fork_it != timeline_.end()) << "Fork at nonexistent time";
-  // Can't use make_unique below.
-  std::unique_ptr<Trajectory<Frame>> child(
-      new Trajectory(body_, this /*parent*/, fork_it));
-  child->timeline_.insert(++fork_it, timeline_.end());
+  Trajectory<Frame> child(body_, this /*parent*/, fork_it);
+  child.timeline_.insert(++fork_it, timeline_.end());
   auto const child_it = children_.emplace(time, std::move(child));
-  return child_it->second.get();
+  return &child_it->second;
 }
 
 template<typename Frame>
@@ -186,7 +184,7 @@ void Trajectory<Frame>::DeleteFork(not_null<Trajectory**> const fork) {
   // Find the position of |*fork| among our children and remove it.
   auto const range = children_.equal_range(*fork_time);
   for (auto it = range.first; it != range.second; ++it) {
-    if (it->second.get() == *fork) {
+    if (&it->second == *fork) {
       children_.erase(it);
       *fork = nullptr;
       return;
@@ -405,14 +403,14 @@ void Trajectory<Frame>::WriteSubTreeToMessage(
   serialization::Trajectory::Litter* litter = nullptr;
   for (auto const& pair : children_) {
     Instant const& fork_time = pair.first;
-    not_null<std::unique_ptr<Trajectory>> const& child = pair.second;
+    Trajectory const& child = pair.second;
     if (is_first || fork_time != last_instant) {
       is_first = false;
       last_instant = fork_time;
       litter = message->add_children();
       fork_time.WriteToMessage(litter->mutable_fork_time());
     }
-    child->WriteSubTreeToMessage(litter->add_trajectories());
+    child.WriteSubTreeToMessage(litter->add_trajectories());
   }
   for (auto const& pair : timeline_) {
     Instant const& instant = pair.first;

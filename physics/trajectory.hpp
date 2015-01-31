@@ -167,9 +167,8 @@ class Trajectory {
   // serialized.  The body is not owned, and therefore is not serialized.
   void WriteToMessage(not_null<serialization::Trajectory*> const message) const;
 
-  static Trajectory ReadFromMessage(
-      serialization::Trajectory const& message,
-      not_null<Body const*> const body);
+  static Trajectory ReadFromMessage(serialization::Trajectory const& message,
+                                    not_null<Body const*> const body);
 
   // A base class for iterating over the timeline of a trajectory, taking forks
   // into account.  Objects of this class cannot be created.
@@ -241,8 +240,7 @@ class Trajectory {
   std::unique_ptr<typename Timeline::iterator> fork_;
 
   // There may be several forks starting from the same time, hence the multimap.
-  // Child trajectories are owned.
-  std::multimap<Instant, not_null<std::unique_ptr<Trajectory>>> children_;
+  std::multimap<Instant, Trajectory> children_;
 
   Timeline timeline_;
 
