@@ -30,8 +30,9 @@ Trajectory<Frame>::Trajectory(Trajectory&& other)  // NOLINT(build/c++11)
     parent_(std::move(other.parent_)),
     fork_(std::move(other.fork_)),
     intrinsic_acceleration_(std::move(other.intrinsic_acceleration_)) {
-  std::swap(children_, other.children_);
-  std::swap(timeline_, other.timeline_);
+  using std::swap;
+  swap(children_, other.children_);
+  swap(timeline_, other.timeline_);
 }
 
 template<typename Frame>
