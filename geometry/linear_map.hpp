@@ -36,7 +36,7 @@ class LinearMap {
 //  template<typename T>
 //  typename base::Mappable<LinearMap, T>::type operator()(T const& t) const;
 //
-protected:
+ protected:
   // Serialization of the frames.
   static void WriteToMessage(not_null<serialization::LinearMap*> const message);
   static void ReadFromMessage(serialization::LinearMap const& message);
