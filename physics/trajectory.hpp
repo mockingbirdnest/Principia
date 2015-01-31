@@ -44,6 +44,7 @@ class Trajectory {
   // expressed in the same frame as the trajectory.
   explicit Trajectory(not_null<Body const*> const body);
   ~Trajectory() = default;
+  Trajectory(Trajectory&&);  // NOLINT(build/c++11)
 
   // Returns an iterator at the first point of the trajectory.  Complexity is
   // O(|depth|).  The result may be at end if the trajectory is empty.
@@ -235,7 +236,8 @@ class Trajectory {
 
   Trajectory* const parent_;  // Null for a root trajectory.
 
-  // Null for a root trajectory.
+  // Null for a root trajectory.  |*fork_| is never a past-the-end iterator, so
+  // it is not invalidated by swapping the |timeline_| of the |*parent_|.
   std::unique_ptr<typename Timeline::iterator> fork_;
 
   // There may be several forks starting from the same time, hence the multimap.

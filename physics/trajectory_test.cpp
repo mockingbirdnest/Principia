@@ -228,7 +228,7 @@ TEST_F(TrajectoryTest, SerializationSuccess) {
   // available.
   massive_trajectory_->WriteToMessage(&message);
   Trajectory<World> const deserialized_trajectory =
-      std::move(Trajectory<World>::ReadFromMessage(message, &massive_body_));
+      Trajectory<World>::ReadFromMessage(message, &massive_body_);
   message.Clear();
   deserialized_trajectory.WriteToMessage(&message);
   EXPECT_THAT(message.children_size(), Eq(2));
