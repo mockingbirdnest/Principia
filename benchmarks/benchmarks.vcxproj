@@ -76,6 +76,7 @@
     <Import Project="..\llvm_compatibility.props" />
     <Import Project="..\profiling.props" />
     <Import Project="..\generate_version_header.props" />
+    <Import Project="..\google_protobuf.props" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" />

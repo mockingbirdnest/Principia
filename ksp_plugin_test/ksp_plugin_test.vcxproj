@@ -82,6 +82,7 @@
     <Import Project="..\include_solution.props" />
     <Import Project="..\llvm_compatibility.props" />
     <Import Project="..\generate_version_header.props" />
+    <Import Project="..\google_protobuf.props" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup />

@@ -166,7 +166,7 @@ class Trajectory {
   // serialized.  The body is not owned, and therefore is not serialized.
   void WriteToMessage(not_null<serialization::Trajectory*> const message) const;
 
-  static not_null<std::unique_ptr<Trajectory>> ReadFromMessage(
+  static Trajectory ReadFromMessage(
       serialization::Trajectory const& message,
       not_null<Body const*> const body);
 
