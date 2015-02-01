@@ -1,5 +1,6 @@
 #include "geometry/orthogonal_map.hpp"
 
+#include "geometry/frame.hpp"
 #include "geometry/grassmann.hpp"
 #include "geometry/identity.hpp"
 #include "geometry/rotation.hpp"
@@ -7,6 +8,7 @@
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "quantities/si.hpp"
+#include "serialization/geometry.pb.h"
 #include "testing_utilities/almost_equals.hpp"
 
 namespace principia {
@@ -18,7 +20,8 @@ using testing_utilities::AlmostEquals;
 
 class OrthogonalMapTest : public testing::Test {
  protected:
-  struct World;
+  using World = Frame<serialization::Frame::TestTag,
+                      serialization::Frame::TEST, true>;
   using Orth = OrthogonalMap<World, World>;
   using Rot = Rotation<World, World>;
 
@@ -133,6 +136,14 @@ TEST_F(OrthogonalMapDeathTest, SerializationError) {
 TEST_F(OrthogonalMapTest, SerializationSuccess) {
   serialization::LinearMap message;
   orthogonal_a_.WriteToMessage(&message);
+  EXPECT_TRUE(message.has_from_frame());
+  EXPECT_TRUE(message.has_to_frame());
+  EXPECT_EQ(message.from_frame().tag_type_fingerprint(),
+            message.to_frame().tag_type_fingerprint());
+  EXPECT_EQ(message.from_frame().tag(),
+            message.to_frame().tag());
+  EXPECT_EQ(message.from_frame().is_inertial(),
+            message.to_frame().is_inertial());
   EXPECT_TRUE(message.HasExtension(
       serialization::OrthogonalMap::orthogonal_map));
   serialization::OrthogonalMap const& extension =

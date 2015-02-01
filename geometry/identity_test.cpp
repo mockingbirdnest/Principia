@@ -2,12 +2,14 @@
 
 #include <vector>
 
+#include "geometry/frame.hpp"
 #include "geometry/orthogonal_map.hpp"
 #include "geometry/r3_element.hpp"
 #include "glog/logging.h"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "quantities/si.hpp"
+#include "serialization/geometry.pb.h"
 #include "testing_utilities/almost_equals.hpp"
 
 using principia::quantities::Length;
@@ -19,8 +21,10 @@ namespace geometry {
 
 class IdentityTest : public testing::Test {
  protected:
-  struct World1;
-  struct World2;
+  using World1 = Frame<serialization::Frame::TestTag,
+                       serialization::Frame::TEST1, true>;
+  using World2 = Frame<serialization::Frame::TestTag,
+                       serialization::Frame::TEST2, true>;
   using Orth = OrthogonalMap<World1, World2>;
   using Id = Identity<World1, World2>;
   using R3 = R3Element<quantities::Length>;
@@ -105,13 +109,21 @@ TEST_F(IdentityDeathTest, SerializationError) {
   EXPECT_DEATH({
     serialization::LinearMap message;
     Id12 const id = Id12::ReadFromMessage(message);
-  }, "HasExtension.*Identity");
+  }, "Fingerprint");
 }
 
 TEST_F(IdentityTest, SerializationSuccess) {
   serialization::LinearMap message;
   Identity<World1, World2> id12a;
   id12a.WriteToMessage(&message);
+  EXPECT_TRUE(message.has_from_frame());
+  EXPECT_TRUE(message.has_to_frame());
+  EXPECT_EQ(message.from_frame().tag_type_fingerprint(),
+            message.to_frame().tag_type_fingerprint());
+  EXPECT_NE(message.from_frame().tag(),
+            message.to_frame().tag());
+  EXPECT_EQ(message.from_frame().is_inertial(),
+            message.to_frame().is_inertial());
   Identity<World1, World2> const id12b =
       Identity<World1, World2>::ReadFromMessage(message);
   EXPECT_THAT(id12a(vector_), id12b(vector_));

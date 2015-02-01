@@ -117,6 +117,14 @@ TEST_F(AffineMapTest, Serialization) {
                                                        front_right_bottom_,
                                                        rotate_left);
   map1.WriteToMessage(&message);
+  EXPECT_TRUE(message.has_from_frame());
+  EXPECT_TRUE(message.has_to_frame());
+  EXPECT_EQ(message.from_frame().tag_type_fingerprint(),
+            message.to_frame().tag_type_fingerprint());
+  EXPECT_EQ(message.from_frame().tag(),
+            message.to_frame().tag());
+  EXPECT_EQ(message.from_frame().is_inertial(),
+            message.to_frame().is_inertial());
   EXPECT_TRUE(message.from_origin().has_multivector());
   EXPECT_TRUE(message.to_origin().has_multivector());
   EXPECT_TRUE(message.linear_map().HasExtension(

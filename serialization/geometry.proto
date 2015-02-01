@@ -5,6 +5,8 @@ import "serialization/quantities.proto";
 package principia.serialization;
 
 message AffineMap {
+  required Frame from_frame = 4;
+  required Frame to_frame = 5;
   required Point from_origin = 1;
   required Point to_origin = 2;
   required LinearMap linear_map = 3;
@@ -65,9 +67,10 @@ message Sign {
 }
 
 // Linear maps follow.
-// TODO(phl): All the linear maps should serialize their frames.
 
 message LinearMap {
+  required Frame from_frame = 1;
+  required Frame to_frame = 2;
   extensions 1000 to 1999;  // Last used: 1003.
 }
 
@@ -150,11 +153,6 @@ message Frame {
     FROM = 4;
     THROUGH = 5;
     TO = 6;
-  }
-
-  // Hopefully this will go away somehow...
-  enum UnknownTag {
-    UNKNOWN = 1;
   }
 
   required fixed32 tag_type_fingerprint = 1;

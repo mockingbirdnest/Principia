@@ -2,6 +2,7 @@
 
 #include <vector>
 
+#include "geometry/frame.hpp"
 #include "geometry/identity.hpp"
 #include "geometry/orthogonal_map.hpp"
 #include "geometry/r3_element.hpp"
@@ -9,6 +10,7 @@
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "quantities/si.hpp"
+#include "serialization/geometry.pb.h"
 #include "testing_utilities/almost_equals.hpp"
 
 using principia::quantities::Length;
@@ -21,8 +23,10 @@ namespace geometry {
 
 class PermutationTest : public testing::Test {
  protected:
-  struct World1;
-  struct World2;
+  using World1 = Frame<serialization::Frame::TestTag,
+                       serialization::Frame::TEST1, true>;
+  using World2 = Frame<serialization::Frame::TestTag,
+                       serialization::Frame::TEST2, true>;
   using Orth = OrthogonalMap<World1, World2>;
   using Perm = Permutation<World1, World2>;
   using R3 = R3Element<quantities::Length>;
@@ -196,6 +200,14 @@ TEST_F(PermutationTest, SerializationSuccess) {
   for (Perm::CoordinatePermutation const cp : all12) {
     Perm const perm_a(cp);
     perm_a.WriteToMessage(&message);
+    EXPECT_TRUE(message.has_from_frame());
+    EXPECT_TRUE(message.has_to_frame());
+    EXPECT_EQ(message.from_frame().tag_type_fingerprint(),
+              message.to_frame().tag_type_fingerprint());
+    EXPECT_NE(message.from_frame().tag(),
+              message.to_frame().tag());
+    EXPECT_EQ(message.from_frame().is_inertial(),
+              message.to_frame().is_inertial());
     EXPECT_TRUE(message.HasExtension(serialization::Permutation::permutation));
     serialization::Permutation const& extension =
         message.GetExtension(serialization::Permutation::permutation);
