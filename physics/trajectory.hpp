@@ -27,6 +27,18 @@ class Body;
 
 template<typename Frame>
 class Trajectory {
+  // There may be several forks starting from the same time, hence the multimap.
+  using Children = std::multimap<Instant, Trajectory>;
+  using Timeline = std::map<Instant, DegreesOfFreedom<Frame>>;
+
+  // The two iterators denote entries in the containers of the parent, and they
+  // are never past the end.  Therefore, they are not invalidated by swapping
+  // the containers of the parent.
+  struct Foork {
+    typename Timeline::iterator timeline;
+    typename Children::iterator children;
+  };
+
  public:
   class NativeIterator;
   template<typename ToFrame>
@@ -190,10 +202,15 @@ class Trajectory {
     typename Timeline::const_iterator current() const;
     not_null<Trajectory const*> trajectory() const;
 
+    void WriteToMessage(
+        not_null<serialization::Trajectory::Iterator*> const message) const;
+    static Iterator ReadFromMessage(
+        serialization::Trajectory::Iterator const& message);
+
    private:
     typename Timeline::const_iterator current_;
     std::list<not_null<Trajectory const*>> ancestry_;  // Pointers not owned.
-    std::list<typename Timeline::iterator> forks_;
+    std::list<Foork> forks_;
   };
 
   // An iterator which returns the coordinates in the native frame of the
@@ -218,12 +235,10 @@ class Trajectory {
   };
 
  private:
-  using Timeline = std::map<Instant, DegreesOfFreedom<Frame>>;
-
   // A constructor for creating a child trajectory during forking.
   Trajectory(not_null<Body const*> const body,
              not_null<Trajectory*> const parent,
-             typename Timeline::iterator const& fork);
+             Foork const& fork);
 
   // This trajectory need not be a root.
   void WriteSubTreeToMessage(
@@ -233,15 +248,11 @@ class Trajectory {
 
   not_null<Body const*> const body_;
 
-  Trajectory* const parent_;  // Null for a root trajectory.
+  // Both of these members are null for a root trajectory.
+  std::unique_ptr<Foork> fork_;
+  Trajectory* const parent_;
 
-  // Null for a root trajectory.  |*fork_| is never a past-the-end iterator, so
-  // it is not invalidated by swapping the |timeline_| of the |*parent_|.
-  std::unique_ptr<typename Timeline::iterator> fork_;
-
-  // There may be several forks starting from the same time, hence the multimap.
-  std::multimap<Instant, Trajectory> children_;
-
+  Children children_;
   Timeline timeline_;
 
   std::unique_ptr<IntrinsicAcceleration> intrinsic_acceleration_;

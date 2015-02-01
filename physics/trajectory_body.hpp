@@ -133,7 +133,7 @@ void Trajectory<Frame>::ForgetAfter(Instant const& time) {
   if (it == timeline_.end()) {
     CHECK(fork_ != nullptr)
         << "ForgetAfter a nonexistent time for a root trajectory";
-    CHECK_EQ((*fork_)->first, time)
+    CHECK_EQ(fork_->timeline->first, time)
         << "ForgetAfter a nonexistent time for a nonroot trajectory";
   }
 
@@ -171,9 +171,13 @@ template<typename Frame>
 not_null<Trajectory<Frame>*> Trajectory<Frame>::Fork(Instant const& time) {
   auto fork_it = timeline_.find(time);
   CHECK(fork_it != timeline_.end()) << "Fork at nonexistent time";
-  Trajectory<Frame> child(body_, this /*parent*/, fork_it);
+  // We cannot know the iterator into children_ until after we have done the
+  // insertion in children_.
+  Foork foork = {fork_it, children_.end()};
+  Trajectory<Frame> child(body_, this /*parent*/, foork);
   child.timeline_.insert(++fork_it, timeline_.end());
   auto const child_it = children_.emplace(time, std::move(child));
+  child_it->second.fork_->children = child_it;
   return &child_it->second;
 }
 
@@ -223,7 +227,7 @@ Instant const* Trajectory<Frame>::fork_time() const {
   if (parent_ == nullptr) {
     return nullptr;
   } else {
-    return &((*fork_)->first);
+    return &(fork_->timeline->first);
   }
 }
 
@@ -265,7 +269,7 @@ template<typename Frame>
 Vector<Acceleration, Frame> Trajectory<Frame>::evaluate_intrinsic_acceleration(
     Instant const& time) const {
   if (intrinsic_acceleration_ != nullptr &&
-      (fork_ == nullptr || time > (*fork_)->first)) {
+      (fork_ == nullptr || time > fork_->timeline->first)) {
     return (*intrinsic_acceleration_)(time);
   } else {
     return Vector<Acceleration, Frame>({0 * SIUnit<Acceleration>(),
@@ -293,7 +297,7 @@ Trajectory<Frame> Trajectory<Frame>::ReadFromMessage(
 template<typename Frame>
 typename Trajectory<Frame>::Iterator&
 Trajectory<Frame>::Iterator::operator++() {
-  if (!forks_.empty() && current_ == forks_.front()) {
+  if (!forks_.empty() && current_ == forks_.front().timeline) {
     ancestry_.pop_front();
     forks_.pop_front();
     current_ = ancestry_.front()->timeline_.begin();
@@ -332,7 +336,8 @@ template<typename Frame>
 void Trajectory<Frame>::Iterator::InitializeOnOrAfter(
   Instant const& time, not_null<Trajectory const*> const trajectory) {
   not_null<Trajectory const*> ancestor = trajectory;
-  while (ancestor->fork_ != nullptr && time <= (*ancestor->fork_)->first) {
+  while (ancestor->fork_ != nullptr &&
+         time <= ancestor->fork_->timeline->first) {
     ancestry_.push_front(ancestor);
     forks_.push_front(*ancestor->fork_);
     ancestor = ancestor->parent_;
@@ -348,7 +353,7 @@ void Trajectory<Frame>::Iterator::InitializeLast(
   if (trajectory->timeline_.empty()) {
     CHECK(trajectory->fork_ != nullptr) << "Empty trajectory";
     ancestry_.push_front(trajectory->parent_);
-    current_ = *trajectory->fork_;
+    current_ = trajectory->fork_->timeline;
   } else {
     ancestry_.push_front(trajectory);
     current_ = --trajectory->timeline_.end();
@@ -365,6 +370,17 @@ template<typename Frame>
 not_null<Trajectory<Frame> const*>
 Trajectory<Frame>::Iterator::trajectory() const {
   return ancestry_.back();
+}
+
+template<typename Frame>
+void Trajectory<Frame>::Iterator::WriteToMessage(
+        not_null<serialization::Trajectory::Iterator*> const message) const {
+}
+
+template<typename Frame>
+typename Trajectory<Frame>::Iterator
+Trajectory<Frame>::Iterator::ReadFromMessage(
+    serialization::Trajectory::Iterator const& message) {
 }
 
 template<typename Frame>
@@ -391,10 +407,10 @@ Trajectory<Frame>::TransformingIterator<ToFrame>::TransformingIterator(
 template<typename Frame>
 Trajectory<Frame>::Trajectory(not_null<Body const*> const body,
                               not_null<Trajectory*> const parent,
-                              typename Timeline::iterator const& fork)
+                              Foork const& fork)
     : body_(body),
       parent_(parent),
-      fork_(new typename Timeline::iterator(fork)) {}
+      fork_(new Foork(fork)) {}
 
 template<typename Frame>
 void Trajectory<Frame>::WriteSubTreeToMessage(
