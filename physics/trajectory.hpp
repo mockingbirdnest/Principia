@@ -35,8 +35,8 @@ class Trajectory {
   // are never past the end.  Therefore, they are not invalidated by swapping
   // the containers of the parent.
   struct Foork {
-    typename Timeline::iterator timeline;
-    typename Children::iterator children;
+    typename Children::const_iterator children;
+    typename Timeline::const_iterator timeline;
   };
 
  public:
@@ -202,12 +202,20 @@ class Trajectory {
     typename Timeline::const_iterator current() const;
     not_null<Trajectory const*> trajectory() const;
 
+    // Helper functions for serialization of the subclasses.
     void WriteToMessage(
-        not_null<serialization::Trajectory::Iterator*> const message) const;
-    static Iterator ReadFromMessage(
-        serialization::Trajectory::Iterator const& message);
+       not_null<serialization::Trajectory::Iterator*> const message) const;
+
+    // The |trajectory| must be a root.
+    static void ReadFromMessage(
+        serialization::Trajectory::Iterator const& message,
+        not_null<Trajectory const*> const trajectory,
+        not_null<Iterator*> const iterator);
 
    private:
+    // |ancestry_| has one more element than |forks_|.  The first element in
+    // |ancestry_| is the root.  There is no element in |forks_| for the root.
+    // It is therefore empty for a root trajectory.
     typename Timeline::const_iterator current_;
     std::list<not_null<Trajectory const*>> ancestry_;  // Pointers not owned.
     std::list<Foork> forks_;
@@ -218,6 +226,15 @@ class Trajectory {
   class NativeIterator : public Iterator {
    public:
     DegreesOfFreedom<Frame> const& degrees_of_freedom() const;
+
+    void WriteToMessage(
+        not_null<serialization::Trajectory::Iterator*> const message) const;
+
+    // The |trajectory| must be a root.
+    static NativeIterator ReadFromMessage(
+        serialization::Trajectory::Iterator const& message,
+        not_null<Trajectory const*> const trajectory);
+
    private:
     NativeIterator() = default;
     friend class Trajectory;

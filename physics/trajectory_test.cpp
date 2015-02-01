@@ -204,7 +204,90 @@ TEST_F(TrajectoryTest, ForkSuccess) {
   EXPECT_THAT(fork->body<MassiveBody>(), Eq(&massive_body_));
 }
 
-TEST_F(TrajectoryDeathTest, SerializationError) {
+TEST_F(TrajectoryTest, IteratorSerializationSuccess) {
+  massive_trajectory_->Append(t1_, d1_);
+  massive_trajectory_->Append(t2_, d2_);
+  massive_trajectory_->Append(t3_, d3_);
+  not_null<Trajectory<World>*> const fork1 = massive_trajectory_->Fork(t2_);
+  not_null<Trajectory<World>*> const fork2 = massive_trajectory_->Fork(t2_);
+  not_null<Trajectory<World>*> const fork3 = massive_trajectory_->Fork(t3_);
+  fork2->ForgetAfter(t2_);
+  fork3->Append(t4_, d4_);
+
+  {
+    serialization::Trajectory::Iterator message;
+    massive_trajectory_->first().WriteToMessage(&message);
+    EXPECT_EQ(0, message.children_distance_size());
+    EXPECT_EQ(0, message.timeline_distance_size());
+    auto it = Trajectory<World>::NativeIterator::ReadFromMessage(
+                  message,
+                  massive_trajectory_.get());
+    EXPECT_EQ(it.time(), t1_);
+    ++it;
+    EXPECT_EQ(it.time(), t2_);
+    ++it;
+    EXPECT_EQ(it.time(), t3_);
+  }
+
+  {
+    serialization::Trajectory::Iterator message;
+    fork1->first().WriteToMessage(&message);
+    EXPECT_EQ(1, message.children_distance_size());
+    EXPECT_EQ(0, message.children_distance(0));
+    EXPECT_EQ(1, message.timeline_distance_size());
+    EXPECT_EQ(1, message.timeline_distance(0));
+    auto it = Trajectory<World>::NativeIterator::ReadFromMessage(
+                  message,
+                  massive_trajectory_.get());
+    EXPECT_EQ(it.time(), t1_);
+    ++it;
+    EXPECT_EQ(it.time(), t2_);
+    ++it;
+    EXPECT_EQ(it.time(), t3_);
+    ++it;
+    EXPECT_TRUE(it.at_end());
+  }
+
+  {
+    serialization::Trajectory::Iterator message;
+    fork2->first().WriteToMessage(&message);
+    EXPECT_EQ(1, message.children_distance_size());
+    EXPECT_EQ(1, message.children_distance(0));
+    EXPECT_EQ(1, message.timeline_distance_size());
+    EXPECT_EQ(1, message.timeline_distance(0));
+    auto it = Trajectory<World>::NativeIterator::ReadFromMessage(
+                  message,
+                  massive_trajectory_.get());
+    EXPECT_EQ(it.time(), t1_);
+    ++it;
+    EXPECT_EQ(it.time(), t2_);
+    ++it;
+    EXPECT_TRUE(it.at_end());
+  }
+
+  {
+    serialization::Trajectory::Iterator message;
+    fork3->first().WriteToMessage(&message);
+    EXPECT_EQ(1, message.children_distance_size());
+    EXPECT_EQ(2, message.children_distance(0));
+    EXPECT_EQ(1, message.timeline_distance_size());
+    EXPECT_EQ(2, message.timeline_distance(0));
+    auto it = Trajectory<World>::NativeIterator::ReadFromMessage(
+                  message,
+                  massive_trajectory_.get());
+    EXPECT_EQ(it.time(), t1_);
+    ++it;
+    EXPECT_EQ(it.time(), t2_);
+    ++it;
+    EXPECT_EQ(it.time(), t3_);
+    ++it;
+    EXPECT_EQ(it.time(), t4_);
+    ++it;
+    EXPECT_TRUE(it.at_end());
+  }
+}
+
+TEST_F(TrajectoryDeathTest, TrajectorySerializationError) {
   EXPECT_DEATH({
     massive_trajectory_->Append(t1_, d1_);
     not_null<Trajectory<World>*> const fork = massive_trajectory_->Fork(t1_);
@@ -213,7 +296,7 @@ TEST_F(TrajectoryDeathTest, SerializationError) {
   }, "is_root");
 }
 
-TEST_F(TrajectoryTest, SerializationSuccess) {
+TEST_F(TrajectoryTest, TrajectorySerializationSuccess) {
   massive_trajectory_->Append(t1_, d1_);
   massive_trajectory_->Append(t2_, d2_);
   massive_trajectory_->Append(t3_, d3_);
