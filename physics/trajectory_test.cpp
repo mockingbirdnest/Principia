@@ -224,8 +224,6 @@ TEST_F(TrajectoryTest, SerializationSuccess) {
   fork3->Append(t4_, d4_);
   serialization::Trajectory message;
   serialization::Trajectory reference_message;
-  // TODO(egg): test deserialization directly once appropriate accessors are
-  // available.
   massive_trajectory_->WriteToMessage(&message);
   massive_trajectory_->WriteToMessage(&reference_message);
   Trajectory<World> const deserialized_trajectory =
