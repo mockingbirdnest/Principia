@@ -242,12 +242,6 @@ Trajectory<Frame>::body() const {
 }
 
 template<typename Frame>
-std::multimap<Instant, Trajectory<Frame>> const&
-Trajectory<Frame>::children() const {
-  return children_;
-}
-
-template<typename Frame>
 void Trajectory<Frame>::set_intrinsic_acceleration(
     IntrinsicAcceleration const acceleration) {
   CHECK(body_->is_massless()) << "Trajectory is for a massive body";

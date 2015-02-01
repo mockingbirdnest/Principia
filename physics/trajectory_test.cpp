@@ -204,24 +204,6 @@ TEST_F(TrajectoryTest, ForkSuccess) {
   EXPECT_THAT(fork->body<MassiveBody>(), Eq(&massive_body_));
 }
 
-TEST_F(TrajectoryTest, Children) {
-  massive_trajectory_->Append(t1_, d1_);
-  massive_trajectory_->Append(t2_, d2_);
-  massive_trajectory_->Append(t3_, d3_);
-  not_null<Trajectory<World>*> const fork1 = massive_trajectory_->Fork(t2_);
-  not_null<Trajectory<World>*> const fork2 = massive_trajectory_->Fork(t2_);
-  not_null<Trajectory<World>*> const fork3 = massive_trajectory_->Fork(t3_);
-  fork3->Append(t4_, d4_);
-  std::multimap<Instant, Trajectory<World>> const& children =
-      massive_trajectory_->children();
-  EXPECT_EQ(children.size(), 3);
-  auto it = children.begin();
-  EXPECT_EQ(fork1, &it++->second);
-  EXPECT_EQ(fork2, &it++->second);
-  EXPECT_EQ(fork3, &it++->second);
-  EXPECT_EQ(children.end(), it);
-}
-
 TEST_F(TrajectoryDeathTest, SerializationError) {
   EXPECT_DEATH({
     massive_trajectory_->Append(t1_, d1_);
