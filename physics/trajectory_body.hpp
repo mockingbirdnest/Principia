@@ -375,9 +375,10 @@ Trajectory<Frame>::Iterator::trajectory() const {
 template<typename Frame>
 void Trajectory<Frame>::Iterator::WriteToMessage(
     not_null<serialization::Trajectory::Iterator*> const message) const {
-  //TODO(phl): Only works at first().
   auto ancestry_it = ancestry_.begin();
   auto fork_it = forks_.begin();
+  message->set_current_distance(
+      std::distance((*ancestry_it)->timeline_.begin(), current_));
   for (;
        fork_it != forks_.end() && ancestry_it != ancestry_.end();
        ++ancestry_it, ++fork_it) {
@@ -387,7 +388,6 @@ void Trajectory<Frame>::Iterator::WriteToMessage(
         std::distance((*ancestry_it)->timeline_.begin(), fork_it->timeline);
     message->add_children_distance(children_distance);
     message->add_timeline_distance(timeline_distance);
-    LOG(ERROR)<<children_distance<<" "<<timeline_distance;
   }
 }
 
@@ -396,12 +396,12 @@ void Trajectory<Frame>::Iterator::ReadFromMessage(
     serialization::Trajectory::Iterator const& message,
     not_null<Trajectory const*> const trajectory,
     not_null<Iterator*> const iterator) {
-  CHECK(trajectory->parent_ == nullptr) << "Trajectory should be root";
   CHECK_EQ(message.children_distance_size(),
            message.timeline_distance_size());
   not_null<Trajectory const*> ancestor = trajectory;
+  iterator->current_ = ancestor->timeline_.begin();
+  std::advance(iterator->current_, message.current_distance());
   iterator->ancestry_.push_back(ancestor);
-  iterator->current_ = trajectory->timeline_.begin();//TODO(phl):Improve.
   for (int i = 0; i < message.children_distance_size(); ++i) {
     int const children_distance = message.children_distance(i);
     int const timeline_distance = message.timeline_distance(i);
@@ -424,6 +424,8 @@ Trajectory<Frame>::NativeIterator::degrees_of_freedom() const {
 template<typename Frame>
 void Trajectory<Frame>::NativeIterator::WriteToMessage(
     not_null<serialization::Trajectory::Iterator*> const message) const {
+  auto first = trajectory()->first();
+  CHECK(current() == first.current());
   Iterator::WriteToMessage(message);
 }
 
@@ -432,6 +434,7 @@ typename Trajectory<Frame>::NativeIterator
 Trajectory<Frame>::NativeIterator::ReadFromMessage(
     serialization::Trajectory::Iterator const& message,
     not_null<Trajectory const*> const trajectory) {
+  CHECK(trajectory->is_root());
   NativeIterator it;
   Iterator::ReadFromMessage(message, trajectory, &it);
   return it;

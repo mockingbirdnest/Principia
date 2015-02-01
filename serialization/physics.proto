@@ -36,6 +36,7 @@ message Trajectory {
   message Iterator {
     repeated int32 children_distance = 1;
     repeated int32 timeline_distance = 2;
+    required int32 current_distance = 3;
   }
   message Litter {
     required Point fork_time = 1;

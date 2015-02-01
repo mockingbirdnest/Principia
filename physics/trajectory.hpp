@@ -202,11 +202,13 @@ class Trajectory {
     typename Timeline::const_iterator current() const;
     not_null<Trajectory const*> trajectory() const;
 
-    // Helper functions for serialization of the subclasses.
+    // Helper functions for serialization of the subclasses.  The |trajectory|
+    // passed to |ReadFromMessage| must match the one that was denoted by the
+    // iterator when |WriteToMessage| was called.  Most of the time, this means
+    // that |WriteToMessage| should be called by an iterator returned by |first|
+    // and |ReadFromMessage| should be called with a root trajectory.
     void WriteToMessage(
        not_null<serialization::Trajectory::Iterator*> const message) const;
-
-    // The |trajectory| must be a root.
     static void ReadFromMessage(
         serialization::Trajectory::Iterator const& message,
         not_null<Trajectory const*> const trajectory,
@@ -227,10 +229,11 @@ class Trajectory {
    public:
     DegreesOfFreedom<Frame> const& degrees_of_freedom() const;
 
+    // In |WriteToMessage|, the iterator must be at |first|.  In
+    // |ReadFromMessage|, the trajectory must be a root.  This could be relaxed
+    // if needed.
     void WriteToMessage(
         not_null<serialization::Trajectory::Iterator*> const message) const;
-
-    // The |trajectory| must be a root.
     static NativeIterator ReadFromMessage(
         serialization::Trajectory::Iterator const& message,
         not_null<Trajectory const*> const trajectory);

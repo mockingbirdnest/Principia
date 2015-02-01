@@ -217,6 +217,7 @@ TEST_F(TrajectoryTest, IteratorSerializationSuccess) {
   {
     serialization::Trajectory::Iterator message;
     massive_trajectory_->first().WriteToMessage(&message);
+    EXPECT_EQ(0, message.current_distance());
     EXPECT_EQ(0, message.children_distance_size());
     EXPECT_EQ(0, message.timeline_distance_size());
     auto it = Trajectory<World>::NativeIterator::ReadFromMessage(
@@ -232,6 +233,7 @@ TEST_F(TrajectoryTest, IteratorSerializationSuccess) {
   {
     serialization::Trajectory::Iterator message;
     fork1->first().WriteToMessage(&message);
+    EXPECT_EQ(0, message.current_distance());
     EXPECT_EQ(1, message.children_distance_size());
     EXPECT_EQ(0, message.children_distance(0));
     EXPECT_EQ(1, message.timeline_distance_size());
@@ -251,6 +253,7 @@ TEST_F(TrajectoryTest, IteratorSerializationSuccess) {
   {
     serialization::Trajectory::Iterator message;
     fork2->first().WriteToMessage(&message);
+    EXPECT_EQ(0, message.current_distance());
     EXPECT_EQ(1, message.children_distance_size());
     EXPECT_EQ(1, message.children_distance(0));
     EXPECT_EQ(1, message.timeline_distance_size());
@@ -268,6 +271,7 @@ TEST_F(TrajectoryTest, IteratorSerializationSuccess) {
   {
     serialization::Trajectory::Iterator message;
     fork3->first().WriteToMessage(&message);
+    EXPECT_EQ(0, message.current_distance());
     EXPECT_EQ(1, message.children_distance_size());
     EXPECT_EQ(2, message.children_distance(0));
     EXPECT_EQ(1, message.timeline_distance_size());
