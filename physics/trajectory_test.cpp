@@ -302,16 +302,18 @@ TEST_F(TrajectoryTest, TrajectorySerializationSuccess) {
   massive_trajectory_->Append(t3_, d3_);
   not_null<Trajectory<World>*> const fork1 = massive_trajectory_->NewFork(t2_);
   not_null<Trajectory<World>*> const fork2 = massive_trajectory_->NewFork(t2_);
+  fork2->Append(t4_, d4_);
   not_null<Trajectory<World>*> const fork3 = massive_trajectory_->NewFork(t3_);
   fork3->Append(t4_, d4_);
   serialization::Trajectory message;
-  // TODO(egg): test deserialization directly once appropriate accessors are
-  // available.
+  serialization::Trajectory reference_message;
   massive_trajectory_->WriteToMessage(&message);
+  massive_trajectory_->WriteToMessage(&reference_message);
   Trajectory<World> const deserialized_trajectory =
       Trajectory<World>::ReadFromMessage(message, &massive_body_);
   message.Clear();
   deserialized_trajectory.WriteToMessage(&message);
+  EXPECT_EQ(reference_message.SerializeAsString(), message.SerializeAsString());
   EXPECT_THAT(message.children_size(), Eq(2));
   EXPECT_THAT(message.timeline_size(), Eq(3));
   EXPECT_THAT(Instant::ReadFromMessage(message.timeline(0).instant()), Eq(t1_));
@@ -337,7 +339,7 @@ TEST_F(TrajectoryTest, TrajectorySerializationSuccess) {
           message.children(0).trajectories(0).timeline(0).degrees_of_freedom()),
       Eq(d3_));
   EXPECT_THAT(message.children(0).trajectories(1).children_size(), Eq(0));
-  EXPECT_THAT(message.children(0).trajectories(1).timeline_size(), Eq(1));
+  EXPECT_THAT(message.children(0).trajectories(1).timeline_size(), Eq(2));
   EXPECT_THAT(
       Instant::ReadFromMessage(
           message.children(0).trajectories(1).timeline(0).instant()), Eq(t3_));
@@ -345,6 +347,13 @@ TEST_F(TrajectoryTest, TrajectorySerializationSuccess) {
       DegreesOfFreedom<World>::ReadFromMessage(
           message.children(0).trajectories(1).timeline(0).degrees_of_freedom()),
       Eq(d3_));
+  EXPECT_THAT(
+      Instant::ReadFromMessage(
+          message.children(0).trajectories(1).timeline(1).instant()), Eq(t4_));
+  EXPECT_THAT(
+      DegreesOfFreedom<World>::ReadFromMessage(
+          message.children(0).trajectories(1).timeline(1).degrees_of_freedom()),
+      Eq(d4_));
   EXPECT_THAT(message.children(1).trajectories_size(), Eq(1));
   EXPECT_THAT(message.children(1).trajectories(0).children_size(), Eq(0));
   EXPECT_THAT(message.children(1).trajectories(0).timeline_size(), Eq(1));
