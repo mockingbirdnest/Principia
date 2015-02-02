@@ -66,7 +66,7 @@ inline void Vessel::CreateHistoryAndForkProlongation(
   CHECK(!is_synchronized());
   history_ = std::make_unique<Trajectory<Barycentric>>(&body_);
   history_->Append(time, degrees_of_freedom);
-  prolongation_ = history_->Fork(time);
+  prolongation_ = history_->NewFork(time);
   owned_prolongation_.reset();
 }
 
@@ -75,7 +75,7 @@ inline void Vessel::ResetProlongation(Instant const& time) {
   CHECK(is_synchronized());
   CHECK(owned_prolongation_ == nullptr);
   history_->DeleteFork(&prolongation_);
-  prolongation_ = history_->Fork(time);
+  prolongation_ = history_->NewFork(time);
 }
 
 }  // namespace ksp_plugin

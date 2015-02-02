@@ -45,12 +45,12 @@ inline void Celestial::CreateHistoryAndForkProlongation(
     DegreesOfFreedom<Barycentric> const& degrees_of_freedom) {
   history_ = std::make_unique<Trajectory<Barycentric>>(body_.get());
   history_->Append(time, degrees_of_freedom);
-  prolongation_ = history_->Fork(time);
+  prolongation_ = history_->NewFork(time);
 }
 
 inline void Celestial::ResetProlongation(Instant const& time) {
   history_->DeleteFork(&prolongation_);
-  prolongation_ = history_->Fork(time);
+  prolongation_ = history_->NewFork(time);
 }
 
 }  // namespace ksp_plugin

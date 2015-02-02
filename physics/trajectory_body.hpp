@@ -27,8 +27,8 @@ Trajectory<Frame>::Trajectory(not_null<Body const*> const body)
 template<typename Frame>
 Trajectory<Frame>::Trajectory(Trajectory&& other)  // NOLINT(build/c++11)
   : body_(std::move(other.body_)),
-    parent_(std::move(other.parent_)),
     fork_(std::move(other.fork_)),
+    parent_(std::move(other.parent_)),
     intrinsic_acceleration_(std::move(other.intrinsic_acceleration_)) {
   using std::swap;
   swap(children_, other.children_);
@@ -133,7 +133,7 @@ void Trajectory<Frame>::ForgetAfter(Instant const& time) {
   if (it == timeline_.end()) {
     CHECK(fork_ != nullptr)
         << "ForgetAfter a nonexistent time for a root trajectory";
-    CHECK_EQ((*fork_)->first, time)
+    CHECK_EQ(fork_->timeline->first, time)
         << "ForgetAfter a nonexistent time for a nonroot trajectory";
   }
 
@@ -168,12 +168,16 @@ void Trajectory<Frame>::ForgetBefore(Instant const& time) {
 }
 
 template<typename Frame>
-not_null<Trajectory<Frame>*> Trajectory<Frame>::Fork(Instant const& time) {
+not_null<Trajectory<Frame>*> Trajectory<Frame>::NewFork(Instant const& time) {
   auto fork_it = timeline_.find(time);
-  CHECK(fork_it != timeline_.end()) << "Fork at nonexistent time";
-  Trajectory<Frame> child(body_, this /*parent*/, fork_it);
+  CHECK(fork_it != timeline_.end()) << "NewFork at nonexistent time";
+  // We cannot know the iterator into children_ until after we have done the
+  // insertion in children_.
+  Fork fork = {children_.end(), fork_it};
+  Trajectory<Frame> child(body_, this /*parent*/, fork);
   child.timeline_.insert(++fork_it, timeline_.end());
   auto const child_it = children_.emplace(time, std::move(child));
+  child_it->second.fork_->children = child_it;
   return &child_it->second;
 }
 
@@ -223,7 +227,7 @@ Instant const* Trajectory<Frame>::fork_time() const {
   if (parent_ == nullptr) {
     return nullptr;
   } else {
-    return &((*fork_)->first);
+    return &(fork_->timeline->first);
   }
 }
 
@@ -265,7 +269,7 @@ template<typename Frame>
 Vector<Acceleration, Frame> Trajectory<Frame>::evaluate_intrinsic_acceleration(
     Instant const& time) const {
   if (intrinsic_acceleration_ != nullptr &&
-      (fork_ == nullptr || time > (*fork_)->first)) {
+      (fork_ == nullptr || time > fork_->timeline->first)) {
     return (*intrinsic_acceleration_)(time);
   } else {
     return Vector<Acceleration, Frame>({0 * SIUnit<Acceleration>(),
@@ -293,7 +297,7 @@ Trajectory<Frame> Trajectory<Frame>::ReadFromMessage(
 template<typename Frame>
 typename Trajectory<Frame>::Iterator&
 Trajectory<Frame>::Iterator::operator++() {
-  if (!forks_.empty() && current_ == forks_.front()) {
+  if (!forks_.empty() && current_ == forks_.front().timeline) {
     ancestry_.pop_front();
     forks_.pop_front();
     current_ = ancestry_.front()->timeline_.begin();
@@ -332,7 +336,8 @@ template<typename Frame>
 void Trajectory<Frame>::Iterator::InitializeOnOrAfter(
   Instant const& time, not_null<Trajectory const*> const trajectory) {
   not_null<Trajectory const*> ancestor = trajectory;
-  while (ancestor->fork_ != nullptr && time <= (*ancestor->fork_)->first) {
+  while (ancestor->fork_ != nullptr &&
+         time <= ancestor->fork_->timeline->first) {
     ancestry_.push_front(ancestor);
     forks_.push_front(*ancestor->fork_);
     ancestor = ancestor->parent_;
@@ -348,7 +353,7 @@ void Trajectory<Frame>::Iterator::InitializeLast(
   if (trajectory->timeline_.empty()) {
     CHECK(trajectory->fork_ != nullptr) << "Empty trajectory";
     ancestry_.push_front(trajectory->parent_);
-    current_ = *trajectory->fork_;
+    current_ = trajectory->fork_->timeline;
   } else {
     ancestry_.push_front(trajectory);
     current_ = --trajectory->timeline_.end();
@@ -368,9 +373,71 @@ Trajectory<Frame>::Iterator::trajectory() const {
 }
 
 template<typename Frame>
+void Trajectory<Frame>::Iterator::WriteToMessage(
+    not_null<serialization::Trajectory::Iterator*> const message) const {
+  auto ancestry_it = ancestry_.begin();
+  auto fork_it = forks_.begin();
+  message->set_current_distance(
+      std::distance((*ancestry_it)->timeline_.begin(), current_));
+  for (;
+       fork_it != forks_.end() && ancestry_it != ancestry_.end();
+       ++ancestry_it, ++fork_it) {
+    int const children_distance =
+        std::distance((*ancestry_it)->children_.begin(), fork_it->children);
+    int const timeline_distance =
+        std::distance((*ancestry_it)->timeline_.begin(), fork_it->timeline);
+    auto* const fork = message->add_fork();
+    fork->set_children_distance(children_distance);
+    fork->set_timeline_distance(timeline_distance);
+  }
+}
+
+template<typename Frame>
+void Trajectory<Frame>::Iterator::ReadFromMessage(
+    serialization::Trajectory::Iterator const& message,
+    not_null<Trajectory const*> const trajectory,
+    not_null<Iterator*> const iterator) {
+  not_null<Trajectory const*> ancestor = trajectory;
+  iterator->current_ = ancestor->timeline_.begin();
+  std::advance(iterator->current_, message.current_distance());
+  iterator->ancestry_.push_back(ancestor);
+  for (int i = 0; i < message.fork_size(); ++i) {
+    auto const& fork = message.fork(i);
+    int const children_distance = fork.children_distance();
+    int const timeline_distance = fork.timeline_distance();
+    auto children_it = ancestor->children_.begin();
+    auto timeline_it = ancestor->timeline_.begin();
+    std::advance(children_it, children_distance);
+    std::advance(timeline_it, timeline_distance);
+    iterator->forks_.push_back({children_it, timeline_it});
+    ancestor = &children_it->second;
+    iterator->ancestry_.push_back(ancestor);
+  }
+}
+
+template<typename Frame>
 DegreesOfFreedom<Frame> const&
 Trajectory<Frame>::NativeIterator::degrees_of_freedom() const {
   return this->current()->second;
+}
+
+template<typename Frame>
+void Trajectory<Frame>::NativeIterator::WriteToMessage(
+    not_null<serialization::Trajectory::Iterator*> const message) const {
+  auto first = trajectory()->first();
+  CHECK(current() == first.current());
+  Iterator::WriteToMessage(message);
+}
+
+template<typename Frame>
+typename Trajectory<Frame>::NativeIterator
+Trajectory<Frame>::NativeIterator::ReadFromMessage(
+    serialization::Trajectory::Iterator const& message,
+    not_null<Trajectory const*> const trajectory) {
+  CHECK(trajectory->is_root());
+  NativeIterator it;
+  Iterator::ReadFromMessage(message, trajectory, &it);
+  return it;
 }
 
 template<typename Frame>
@@ -391,10 +458,10 @@ Trajectory<Frame>::TransformingIterator<ToFrame>::TransformingIterator(
 template<typename Frame>
 Trajectory<Frame>::Trajectory(not_null<Body const*> const body,
                               not_null<Trajectory*> const parent,
-                              typename Timeline::iterator const& fork)
+                              Fork const& fork)
     : body_(body),
-      parent_(parent),
-      fork_(new typename Timeline::iterator(fork)) {}
+      fork_(new Fork(fork)),
+      parent_(parent) {}
 
 template<typename Frame>
 void Trajectory<Frame>::WriteSubTreeToMessage(
@@ -438,7 +505,7 @@ void Trajectory<Frame>::FillSubTreeFromMessage(
                  timeline_it->degrees_of_freedom()));
     }
     for (serialization::Trajectory const& child : litter.trajectories()) {
-      Fork(fork_time)->FillSubTreeFromMessage(child);
+      NewFork(fork_time)->FillSubTreeFromMessage(child);
     }
   }
   for (; timeline_it != message.timeline().end(); ++timeline_it) {

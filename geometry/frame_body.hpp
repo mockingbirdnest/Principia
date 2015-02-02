@@ -25,7 +25,7 @@ inline uint32_t Fingerprint(std::string const& s) {
 template<typename Tag, Tag tag, bool frame_is_inertial>
 void Frame<Tag, tag, frame_is_inertial>::WriteToMessage(
     not_null<serialization::Frame*> const message) {
-  string const& tag_type_full_name =
+  std::string const& tag_type_full_name =
       google::protobuf::GetEnumDescriptor<Tag>()->full_name();
 
   message->set_tag_type_fingerprint(Fingerprint(tag_type_full_name));

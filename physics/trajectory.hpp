@@ -27,6 +27,18 @@ class Body;
 
 template<typename Frame>
 class Trajectory {
+  // There may be several forks starting from the same time, hence the multimap.
+  using Children = std::multimap<Instant, Trajectory>;
+  using Timeline = std::map<Instant, DegreesOfFreedom<Frame>>;
+
+  // The two iterators denote entries in the containers of the parent, and they
+  // are never past the end.  Therefore, they are not invalidated by swapping
+  // the containers of the parent.
+  struct Fork {
+    typename Children::const_iterator children;
+    typename Timeline::const_iterator timeline;
+  };
+
  public:
   class NativeIterator;
   template<typename ToFrame>
@@ -110,10 +122,10 @@ class Trajectory {
   // trajectory deletes all child trajectories.  |time| must be one of the times
   // of the current trajectory (as returned by Times()).  No transfer of
   // ownership.
-  not_null<Trajectory*> Fork(Instant const& time);
+  not_null<Trajectory*> NewFork(Instant const& time);
 
   // Deletes the child trajectory denoted by |*fork|, which must be a pointer
-  // previously returned by Fork for this object.  Nulls |*fork|.
+  // previously returned by NewFork for this object.  Nulls |*fork|.
   void DeleteFork(not_null<Trajectory**> const fork);
 
   // Returns true if this is a root trajectory.
@@ -190,10 +202,25 @@ class Trajectory {
     typename Timeline::const_iterator current() const;
     not_null<Trajectory const*> trajectory() const;
 
+    // Helper functions for serialization of the subclasses.  The |trajectory|
+    // passed to |ReadFromMessage| must match the one that was denoted by the
+    // iterator when |WriteToMessage| was called.  Most of the time, this means
+    // that |WriteToMessage| should be called by an iterator returned by |first|
+    // and |ReadFromMessage| should be called with a root trajectory.
+    void WriteToMessage(
+       not_null<serialization::Trajectory::Iterator*> const message) const;
+    static void ReadFromMessage(
+        serialization::Trajectory::Iterator const& message,
+        not_null<Trajectory const*> const trajectory,
+        not_null<Iterator*> const iterator);
+
    private:
+    // |ancestry_| has one more element than |forks_|.  The first element in
+    // |ancestry_| is the root.  There is no element in |forks_| for the root.
+    // It is therefore empty for a root trajectory.
     typename Timeline::const_iterator current_;
     std::list<not_null<Trajectory const*>> ancestry_;  // Pointers not owned.
-    std::list<typename Timeline::iterator> forks_;
+    std::list<Fork> forks_;
   };
 
   // An iterator which returns the coordinates in the native frame of the
@@ -201,6 +228,16 @@ class Trajectory {
   class NativeIterator : public Iterator {
    public:
     DegreesOfFreedom<Frame> const& degrees_of_freedom() const;
+
+    // In |WriteToMessage|, the iterator must be at |first|.  In
+    // |ReadFromMessage|, the trajectory must be a root.  This could be relaxed
+    // if needed.
+    void WriteToMessage(
+        not_null<serialization::Trajectory::Iterator*> const message) const;
+    static NativeIterator ReadFromMessage(
+        serialization::Trajectory::Iterator const& message,
+        not_null<Trajectory const*> const trajectory);
+
    private:
     NativeIterator() = default;
     friend class Trajectory;
@@ -218,12 +255,10 @@ class Trajectory {
   };
 
  private:
-  using Timeline = std::map<Instant, DegreesOfFreedom<Frame>>;
-
   // A constructor for creating a child trajectory during forking.
   Trajectory(not_null<Body const*> const body,
              not_null<Trajectory*> const parent,
-             typename Timeline::iterator const& fork);
+             Fork const& fork);
 
   // This trajectory need not be a root.
   void WriteSubTreeToMessage(
@@ -233,15 +268,11 @@ class Trajectory {
 
   not_null<Body const*> const body_;
 
-  Trajectory* const parent_;  // Null for a root trajectory.
+  // Both of these members are null for a root trajectory.
+  std::unique_ptr<Fork> fork_;
+  Trajectory* const parent_;
 
-  // Null for a root trajectory.  |*fork_| is never a past-the-end iterator, so
-  // it is not invalidated by swapping the |timeline_| of the |*parent_|.
-  std::unique_ptr<typename Timeline::iterator> fork_;
-
-  // There may be several forks starting from the same time, hence the multimap.
-  std::multimap<Instant, Trajectory> children_;
-
+  Children children_;
   Timeline timeline_;
 
   std::unique_ptr<IntrinsicAcceleration> intrinsic_acceleration_;
