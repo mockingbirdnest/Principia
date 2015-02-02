@@ -168,13 +168,13 @@ void Trajectory<Frame>::ForgetBefore(Instant const& time) {
 }
 
 template<typename Frame>
-not_null<Trajectory<Frame>*> Trajectory<Frame>::Fork(Instant const& time) {
+not_null<Trajectory<Frame>*> Trajectory<Frame>::NewFork(Instant const& time) {
   auto fork_it = timeline_.find(time);
-  CHECK(fork_it != timeline_.end()) << "Fork at nonexistent time";
+  CHECK(fork_it != timeline_.end()) << "NewFork at nonexistent time";
   // We cannot know the iterator into children_ until after we have done the
   // insertion in children_.
-  Foork foork = {children_.end(), fork_it};
-  Trajectory<Frame> child(body_, this /*parent*/, foork);
+  Fork fork = {children_.end(), fork_it};
+  Trajectory<Frame> child(body_, this /*parent*/, fork);
   child.timeline_.insert(++fork_it, timeline_.end());
   auto const child_it = children_.emplace(time, std::move(child));
   child_it->second.fork_->children = child_it;
@@ -386,8 +386,9 @@ void Trajectory<Frame>::Iterator::WriteToMessage(
         std::distance((*ancestry_it)->children_.begin(), fork_it->children);
     int const timeline_distance =
         std::distance((*ancestry_it)->timeline_.begin(), fork_it->timeline);
-    message->add_children_distance(children_distance);
-    message->add_timeline_distance(timeline_distance);
+    auto* const fork = message->add_fork();
+    fork->set_children_distance(children_distance);
+    fork->set_timeline_distance(timeline_distance);
   }
 }
 
@@ -396,15 +397,14 @@ void Trajectory<Frame>::Iterator::ReadFromMessage(
     serialization::Trajectory::Iterator const& message,
     not_null<Trajectory const*> const trajectory,
     not_null<Iterator*> const iterator) {
-  CHECK_EQ(message.children_distance_size(),
-           message.timeline_distance_size());
   not_null<Trajectory const*> ancestor = trajectory;
   iterator->current_ = ancestor->timeline_.begin();
   std::advance(iterator->current_, message.current_distance());
   iterator->ancestry_.push_back(ancestor);
-  for (int i = 0; i < message.children_distance_size(); ++i) {
-    int const children_distance = message.children_distance(i);
-    int const timeline_distance = message.timeline_distance(i);
+  for (int i = 0; i < message.fork_size(); ++i) {
+    auto const& fork = message.fork(i);
+    int const children_distance = fork.children_distance();
+    int const timeline_distance = fork.timeline_distance();
     auto children_it = ancestor->children_.begin();
     auto timeline_it = ancestor->timeline_.begin();
     std::advance(children_it, children_distance);
@@ -458,9 +458,9 @@ Trajectory<Frame>::TransformingIterator<ToFrame>::TransformingIterator(
 template<typename Frame>
 Trajectory<Frame>::Trajectory(not_null<Body const*> const body,
                               not_null<Trajectory*> const parent,
-                              Foork const& fork)
+                              Fork const& fork)
     : body_(body),
-      fork_(new Foork(fork)),
+      fork_(new Fork(fork)),
       parent_(parent) {}
 
 template<typename Frame>
@@ -505,7 +505,7 @@ void Trajectory<Frame>::FillSubTreeFromMessage(
                  timeline_it->degrees_of_freedom()));
     }
     for (serialization::Trajectory const& child : litter.trajectories()) {
-      Fork(fork_time)->FillSubTreeFromMessage(child);
+      NewFork(fork_time)->FillSubTreeFromMessage(child);
     }
   }
   for (; timeline_it != message.timeline().end(); ++timeline_it) {

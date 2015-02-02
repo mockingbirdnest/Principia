@@ -166,7 +166,7 @@ TEST_F(TrajectoryDeathTest, ForkError) {
   EXPECT_DEATH({
     massive_trajectory_->Append(t1_, d1_);
     massive_trajectory_->Append(t3_, d3_);
-    massive_trajectory_->Fork(t2_);
+    massive_trajectory_->NewFork(t2_);
   }, "nonexistent time");
 }
 
@@ -174,7 +174,7 @@ TEST_F(TrajectoryTest, ForkSuccess) {
   massive_trajectory_->Append(t1_, d1_);
   massive_trajectory_->Append(t2_, d2_);
   massive_trajectory_->Append(t3_, d3_);
-  not_null<Trajectory<World>*> const fork = massive_trajectory_->Fork(t2_);
+  not_null<Trajectory<World>*> const fork = massive_trajectory_->NewFork(t2_);
   fork->Append(t4_, d4_);
   std::map<Instant, Position<World>> positions =
       massive_trajectory_->Positions();
@@ -208,9 +208,9 @@ TEST_F(TrajectoryTest, IteratorSerializationSuccess) {
   massive_trajectory_->Append(t1_, d1_);
   massive_trajectory_->Append(t2_, d2_);
   massive_trajectory_->Append(t3_, d3_);
-  not_null<Trajectory<World>*> const fork1 = massive_trajectory_->Fork(t2_);
-  not_null<Trajectory<World>*> const fork2 = massive_trajectory_->Fork(t2_);
-  not_null<Trajectory<World>*> const fork3 = massive_trajectory_->Fork(t3_);
+  not_null<Trajectory<World>*> const fork1 = massive_trajectory_->NewFork(t2_);
+  not_null<Trajectory<World>*> const fork2 = massive_trajectory_->NewFork(t2_);
+  not_null<Trajectory<World>*> const fork3 = massive_trajectory_->NewFork(t3_);
   fork2->ForgetAfter(t2_);
   fork3->Append(t4_, d4_);
 
@@ -218,8 +218,7 @@ TEST_F(TrajectoryTest, IteratorSerializationSuccess) {
     serialization::Trajectory::Iterator message;
     massive_trajectory_->first().WriteToMessage(&message);
     EXPECT_EQ(0, message.current_distance());
-    EXPECT_EQ(0, message.children_distance_size());
-    EXPECT_EQ(0, message.timeline_distance_size());
+    EXPECT_EQ(0, message.fork_size());
     auto it = Trajectory<World>::NativeIterator::ReadFromMessage(
                   message,
                   massive_trajectory_.get());
@@ -234,10 +233,9 @@ TEST_F(TrajectoryTest, IteratorSerializationSuccess) {
     serialization::Trajectory::Iterator message;
     fork1->first().WriteToMessage(&message);
     EXPECT_EQ(0, message.current_distance());
-    EXPECT_EQ(1, message.children_distance_size());
-    EXPECT_EQ(0, message.children_distance(0));
-    EXPECT_EQ(1, message.timeline_distance_size());
-    EXPECT_EQ(1, message.timeline_distance(0));
+    EXPECT_EQ(1, message.fork_size());
+    EXPECT_EQ(0, message.fork(0).children_distance());
+    EXPECT_EQ(1, message.fork(0).timeline_distance());
     auto it = Trajectory<World>::NativeIterator::ReadFromMessage(
                   message,
                   massive_trajectory_.get());
@@ -254,10 +252,9 @@ TEST_F(TrajectoryTest, IteratorSerializationSuccess) {
     serialization::Trajectory::Iterator message;
     fork2->first().WriteToMessage(&message);
     EXPECT_EQ(0, message.current_distance());
-    EXPECT_EQ(1, message.children_distance_size());
-    EXPECT_EQ(1, message.children_distance(0));
-    EXPECT_EQ(1, message.timeline_distance_size());
-    EXPECT_EQ(1, message.timeline_distance(0));
+    EXPECT_EQ(1, message.fork_size());
+    EXPECT_EQ(1, message.fork(0).children_distance());
+    EXPECT_EQ(1, message.fork(0).timeline_distance());
     auto it = Trajectory<World>::NativeIterator::ReadFromMessage(
                   message,
                   massive_trajectory_.get());
@@ -272,10 +269,9 @@ TEST_F(TrajectoryTest, IteratorSerializationSuccess) {
     serialization::Trajectory::Iterator message;
     fork3->first().WriteToMessage(&message);
     EXPECT_EQ(0, message.current_distance());
-    EXPECT_EQ(1, message.children_distance_size());
-    EXPECT_EQ(2, message.children_distance(0));
-    EXPECT_EQ(1, message.timeline_distance_size());
-    EXPECT_EQ(2, message.timeline_distance(0));
+    EXPECT_EQ(1, message.fork_size());
+    EXPECT_EQ(2, message.fork(0).children_distance());
+    EXPECT_EQ(2, message.fork(0).timeline_distance());
     auto it = Trajectory<World>::NativeIterator::ReadFromMessage(
                   message,
                   massive_trajectory_.get());
@@ -294,7 +290,7 @@ TEST_F(TrajectoryTest, IteratorSerializationSuccess) {
 TEST_F(TrajectoryDeathTest, TrajectorySerializationError) {
   EXPECT_DEATH({
     massive_trajectory_->Append(t1_, d1_);
-    not_null<Trajectory<World>*> const fork = massive_trajectory_->Fork(t1_);
+    not_null<Trajectory<World>*> const fork = massive_trajectory_->NewFork(t1_);
     serialization::Trajectory message;
     fork->WriteToMessage(&message);
   }, "is_root");
@@ -304,9 +300,9 @@ TEST_F(TrajectoryTest, TrajectorySerializationSuccess) {
   massive_trajectory_->Append(t1_, d1_);
   massive_trajectory_->Append(t2_, d2_);
   massive_trajectory_->Append(t3_, d3_);
-  not_null<Trajectory<World>*> const fork1 = massive_trajectory_->Fork(t2_);
-  not_null<Trajectory<World>*> const fork2 = massive_trajectory_->Fork(t2_);
-  not_null<Trajectory<World>*> const fork3 = massive_trajectory_->Fork(t3_);
+  not_null<Trajectory<World>*> const fork1 = massive_trajectory_->NewFork(t2_);
+  not_null<Trajectory<World>*> const fork2 = massive_trajectory_->NewFork(t2_);
+  not_null<Trajectory<World>*> const fork3 = massive_trajectory_->NewFork(t3_);
   fork3->Append(t4_, d4_);
   serialization::Trajectory message;
   // TODO(egg): test deserialization directly once appropriate accessors are
@@ -369,9 +365,9 @@ TEST_F(TrajectoryDeathTest, DeleteForkError) {
   }, "'fork_time'.* non NULL");
   EXPECT_DEATH({
     massive_trajectory_->Append(t1_, d1_);
-    Trajectory<World>* fork1 = massive_trajectory_->Fork(t1_);
+    Trajectory<World>* fork1 = massive_trajectory_->NewFork(t1_);
     fork1->Append(t2_, d2_);
-    Trajectory<World>* fork2 = fork1->Fork(t2_);
+    Trajectory<World>* fork2 = fork1->NewFork(t2_);
     massive_trajectory_->DeleteFork(&fork2);
   }, "not a child");
 }
@@ -380,8 +376,8 @@ TEST_F(TrajectoryTest, DeleteForkSuccess) {
   massive_trajectory_->Append(t1_, d1_);
   massive_trajectory_->Append(t2_, d2_);
   massive_trajectory_->Append(t3_, d3_);
-  not_null<Trajectory<World>*> const fork1 = massive_trajectory_->Fork(t2_);
-  Trajectory<World>* fork2 = massive_trajectory_->Fork(t2_);
+  not_null<Trajectory<World>*> const fork1 = massive_trajectory_->NewFork(t2_);
+  Trajectory<World>* fork2 = massive_trajectory_->NewFork(t2_);
   fork1->Append(t4_, d4_);
   massive_trajectory_->DeleteFork(&fork2);
   EXPECT_EQ(nullptr, fork2);
@@ -433,7 +429,7 @@ TEST_F(TrajectoryTest, Root) {
   massive_trajectory_->Append(t1_, d1_);
   massive_trajectory_->Append(t2_, d2_);
   massive_trajectory_->Append(t3_, d3_);
-  not_null<Trajectory<World>*> const fork = massive_trajectory_->Fork(t2_);
+  not_null<Trajectory<World>*> const fork = massive_trajectory_->NewFork(t2_);
   EXPECT_TRUE(massive_trajectory_->is_root());
   EXPECT_FALSE(fork->is_root());
   EXPECT_EQ(massive_trajectory_.get(), massive_trajectory_->root());
@@ -449,7 +445,7 @@ TEST_F(TrajectoryDeathTest, ForgetAfterError) {
   }, "nonexistent time.* root");
   EXPECT_DEATH({
     massive_trajectory_->Append(t1_, d1_);
-    not_null<Trajectory<World>*> const fork = massive_trajectory_->Fork(t1_);
+    not_null<Trajectory<World>*> const fork = massive_trajectory_->NewFork(t1_);
     fork->ForgetAfter(t2_);
   }, "nonexistent time.* nonroot");
 }
@@ -458,7 +454,7 @@ TEST_F(TrajectoryTest, ForgetAfterSuccess) {
   massive_trajectory_->Append(t1_, d1_);
   massive_trajectory_->Append(t2_, d2_);
   massive_trajectory_->Append(t3_, d3_);
-  not_null<Trajectory<World>*> const fork = massive_trajectory_->Fork(t2_);
+  not_null<Trajectory<World>*> const fork = massive_trajectory_->NewFork(t2_);
   fork->Append(t4_, d4_);
 
   fork->ForgetAfter(t3_);
@@ -510,7 +506,7 @@ TEST_F(TrajectoryTest, ForgetAfterSuccess) {
 TEST_F(TrajectoryDeathTest, ForgetBeforeError) {
   EXPECT_DEATH({
     massive_trajectory_->Append(t1_, d1_);
-    not_null<Trajectory<World>*> const fork = massive_trajectory_->Fork(t1_);
+    not_null<Trajectory<World>*> const fork = massive_trajectory_->NewFork(t1_);
     fork->ForgetBefore(t1_);
   }, "nonroot");
   EXPECT_DEATH({
@@ -523,7 +519,7 @@ TEST_F(TrajectoryTest, ForgetBeforeSuccess) {
   massive_trajectory_->Append(t1_, d1_);
   massive_trajectory_->Append(t2_, d2_);
   massive_trajectory_->Append(t3_, d3_);
-  not_null<Trajectory<World>*> const fork = massive_trajectory_->Fork(t2_);
+  not_null<Trajectory<World>*> const fork = massive_trajectory_->NewFork(t2_);
   fork->Append(t4_, d4_);
 
   massive_trajectory_->ForgetBefore(t1_);
@@ -575,7 +571,7 @@ TEST_F(TrajectoryDeathTest, IntrinsicAccelerationSuccess) {
   massless_trajectory_->Append(t1_, d1_);
   massless_trajectory_->Append(t2_, d2_);
   massless_trajectory_->Append(t3_, d3_);
-  not_null<Trajectory<World>*> const fork = massless_trajectory_->Fork(t2_);
+  not_null<Trajectory<World>*> const fork = massless_trajectory_->NewFork(t2_);
   fork->Append(t4_, d4_);
 
   EXPECT_FALSE(massless_trajectory_->has_intrinsic_acceleration());
@@ -653,7 +649,7 @@ TEST_F(TrajectoryTest, NativeIteratorSuccess) {
   ++it;
   EXPECT_TRUE(it.at_end());
 
-  not_null<Trajectory<World>*> const fork = massless_trajectory_->Fork(t2_);
+  not_null<Trajectory<World>*> const fork = massless_trajectory_->NewFork(t2_);
   fork->Append(t4_, d4_);
 
   it = fork->first();
@@ -716,7 +712,7 @@ TEST_F(TrajectoryTest, TransformingIteratorSuccess) {
   ++it;
   EXPECT_TRUE(it.at_end());
 
-  not_null<Trajectory<World>*> const fork = massless_trajectory_->Fork(t2_);
+  not_null<Trajectory<World>*> const fork = massless_trajectory_->NewFork(t2_);
   fork->Append(t4_, d4_);
   Trajectory<World>::Transform<World> const fork_transform =
       std::bind(transform_, _1, _2, _3, fork);
@@ -769,7 +765,7 @@ TEST_F(TrajectoryTest, NativeIteratorOnOrAfterSuccess) {
   it = massless_trajectory_->on_or_after(t4_);
   EXPECT_TRUE(it.at_end());
 
-  not_null<Trajectory<World>*> const fork = massless_trajectory_->Fork(t2_);
+  not_null<Trajectory<World>*> const fork = massless_trajectory_->NewFork(t2_);
   fork->Append(t4_, d4_);
 
   it = fork->on_or_after(t0_);
@@ -814,7 +810,7 @@ TEST_F(TrajectoryTest, TransformingIteratorOnOrAfterSuccess) {
                                                         massless_transform_);
   EXPECT_TRUE(it.at_end());
 
-  not_null<Trajectory<World>*> const fork = massless_trajectory_->Fork(t2_);
+  not_null<Trajectory<World>*> const fork = massless_trajectory_->NewFork(t2_);
   fork->Append(t4_, d4_);
   Trajectory<World>::Transform<World> const fork_transform =
       std::bind(transform_, _1, _2, _3, fork);
