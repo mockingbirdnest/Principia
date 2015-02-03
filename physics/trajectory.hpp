@@ -182,6 +182,13 @@ class Trajectory {
   static Trajectory ReadFromMessage(serialization::Trajectory const& message,
                                     not_null<Body const*> const body);
 
+  void WritePointerToMessage(
+      not_null<serialization::Trajectory::Iterator*> const message) const;
+
+  static not_null<Trajectory*> ReadPointerFromMessage(
+      serialization::Trajectory::Iterator const& message,
+      not_null<Trajectory const*> const root);
+
   // A base class for iterating over the timeline of a trajectory, taking forks
   // into account.  Objects of this class cannot be created.
   class Iterator {

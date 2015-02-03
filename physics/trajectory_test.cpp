@@ -287,6 +287,36 @@ TEST_F(TrajectoryTest, IteratorSerializationSuccess) {
   }
 }
 
+TEST_F(TrajectoryTest, PointerSerializationSuccess) {
+  massive_trajectory_->Append(t1_, d1_);
+  massive_trajectory_->Append(t2_, d2_);
+  massive_trajectory_->Append(t3_, d3_);
+  not_null<Trajectory<World>*> const fork1 = massive_trajectory_->NewFork(t2_);
+  not_null<Trajectory<World>*> const fork2 = massive_trajectory_->NewFork(t2_);
+  fork2->Append(t4_, d4_);
+  not_null<Trajectory<World>*> const fork3 = massive_trajectory_->NewFork(t3_);
+  fork3->Append(t4_, d4_);
+  serialization::Trajectory root;
+  serialization::Trajectory::Iterator root_it;
+  serialization::Trajectory::Iterator fork2_it;
+  massive_trajectory_->WriteToMessage(&root);
+  massive_trajectory_->WritePointerToMessage(&root_it);
+  fork2->WritePointerToMessage(&fork2_it);
+  EXPECT_EQ(fork2,
+            Trajectory<World>::ReadPointerFromMessage(
+                fork2_it,
+                massive_trajectory_.get()));
+  EXPECT_EQ(massive_trajectory_.get(),
+            Trajectory<World>::ReadPointerFromMessage(
+                root_it,
+                massive_trajectory_.get()));
+  Trajectory<World> massive_trajectory =
+      Trajectory<World>::ReadFromMessage(root, &massive_body_);
+  EXPECT_EQ(&massive_trajectory,
+            Trajectory<World>::ReadPointerFromMessage(root_it,
+                                                      &massive_trajectory));
+}
+
 TEST_F(TrajectoryDeathTest, TrajectorySerializationError) {
   EXPECT_DEATH({
     massive_trajectory_->Append(t1_, d1_);
