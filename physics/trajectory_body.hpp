@@ -296,15 +296,15 @@ Trajectory<Frame> Trajectory<Frame>::ReadFromMessage(
 
 template<typename Frame>
 void Trajectory<Frame>::WritePointerToMessage(
-    not_null<serialization::Trajectory::Iterator*> const message) const {
+    not_null<serialization::Trajectory::Pointer*> const message) const {
   not_null<Trajectory const*> ancestor = this;
   while (ancestor->parent_ != nullptr) {
     const Fork& fork = *ancestor->fork_;
     ancestor = ancestor->parent_;
     int const children_distance =
-        std::distance(ancestor->children_.begin(), fork->children);
+        std::distance(ancestor->children_.begin(), fork.children);
     int const timeline_distance =
-        std::distance(ancestror->timeline_.begin(), fork->timeline);
+        std::distance(ancestor->timeline_.begin(), fork.timeline);
     auto* const fork_message = message->add_fork();
     fork_message->set_children_distance(children_distance);
     fork_message->set_timeline_distance(timeline_distance);
@@ -313,11 +313,21 @@ void Trajectory<Frame>::WritePointerToMessage(
 
 template<typename Frame>
 not_null<Trajectory<Frame>*> Trajectory<Frame>::ReadPointerFromMessage(
-    serialization::Trajectory::Iterator const& message,
-    not_null<Trajectory const*> const root) {
-  // TODO(phl): This is bad.
-  return const_cast<Trajectory<Frame>*>(
-      &*NativeIterator::ReadFromMessage(message, root).trajectory());
+    serialization::Trajectory::Pointer const& message,
+    not_null<Trajectory*> const trajectory) {
+  CHECK(trajectory->is_root());
+  not_null<Trajectory*> descendant = trajectory;
+  for (int i = 0; i < message.fork_size(); ++i) {
+    auto const& fork_message = message.fork(i);
+    int const children_distance = fork_message.children_distance();
+    int const timeline_distance = fork_message.timeline_distance();
+    auto children_it = descendant->children_.begin();
+    auto timeline_it = descendant->timeline_.begin();
+    std::advance(children_it, children_distance);
+    std::advance(timeline_it, timeline_distance);
+    descendant = &children_it->second;
+  }
+  return descendant;
 }
 
 template<typename Frame>
@@ -399,71 +409,9 @@ Trajectory<Frame>::Iterator::trajectory() const {
 }
 
 template<typename Frame>
-void Trajectory<Frame>::Iterator::WriteToMessage(
-    not_null<serialization::Trajectory::Iterator*> const message) const {
-  auto ancestry_it = ancestry_.begin();
-  auto fork_it = forks_.begin();
-  message->set_current_distance(
-      std::distance((*ancestry_it)->timeline_.begin(), current_));
-  for (;
-       fork_it != forks_.end() && ancestry_it != ancestry_.end();
-       ++ancestry_it, ++fork_it) {
-    int const children_distance =
-        std::distance((*ancestry_it)->children_.begin(), fork_it->children);
-    int const timeline_distance =
-        std::distance((*ancestry_it)->timeline_.begin(), fork_it->timeline);
-    auto* const fork = message->add_fork();
-    fork->set_children_distance(children_distance);
-    fork->set_timeline_distance(timeline_distance);
-  }
-}
-
-template<typename Frame>
-void Trajectory<Frame>::Iterator::ReadFromMessage(
-    serialization::Trajectory::Iterator const& message,
-    not_null<Trajectory const*> const trajectory,
-    not_null<Iterator*> const iterator) {
-  not_null<Trajectory const*> ancestor = trajectory;
-  iterator->current_ = ancestor->timeline_.begin();
-  std::advance(iterator->current_, message.current_distance());
-  iterator->ancestry_.push_back(ancestor);
-  for (int i = 0; i < message.fork_size(); ++i) {
-    auto const& fork = message.fork(i);
-    int const children_distance = fork.children_distance();
-    int const timeline_distance = fork.timeline_distance();
-    auto children_it = ancestor->children_.begin();
-    auto timeline_it = ancestor->timeline_.begin();
-    std::advance(children_it, children_distance);
-    std::advance(timeline_it, timeline_distance);
-    iterator->forks_.push_back({children_it, timeline_it});
-    ancestor = &children_it->second;
-    iterator->ancestry_.push_back(ancestor);
-  }
-}
-
-template<typename Frame>
 DegreesOfFreedom<Frame> const&
 Trajectory<Frame>::NativeIterator::degrees_of_freedom() const {
   return this->current()->second;
-}
-
-template<typename Frame>
-void Trajectory<Frame>::NativeIterator::WriteToMessage(
-    not_null<serialization::Trajectory::Iterator*> const message) const {
-  auto first = trajectory()->first();
-  CHECK(current() == first.current());
-  Iterator::WriteToMessage(message);
-}
-
-template<typename Frame>
-typename Trajectory<Frame>::NativeIterator
-Trajectory<Frame>::NativeIterator::ReadFromMessage(
-    serialization::Trajectory::Iterator const& message,
-    not_null<Trajectory const*> const trajectory) {
-  CHECK(trajectory->is_root());
-  NativeIterator it;
-  Iterator::ReadFromMessage(message, trajectory, &it);
-  return it;
 }
 
 template<typename Frame>
