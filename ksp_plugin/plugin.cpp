@@ -288,12 +288,12 @@ Plugin::Plugin(Instant const& initial_time,
                Angle const& planetarium_rotation)
     : n_body_system_(make_not_null_unique<NBodySystem<Barycentric>>()),
       planetarium_rotation_(planetarium_rotation),
-      current_time_(initial_time) {
-  auto inserted = celestials_.emplace(
-      sun_index,
-      make_not_null_unique<Celestial>(
-          make_not_null_unique<MassiveBody>(sun_gravitational_parameter)));
-  sun_ = inserted.first->second.get();
+      current_time_(initial_time),
+      sun_(celestials_.emplace(sun_index,
+                               make_not_null_unique<Celestial>(
+                                   make_not_null_unique<MassiveBody>(
+                                       sun_gravitational_parameter))).
+               first->second.get()) {
   sun_->CreateHistoryAndForkProlongation(
       current_time_,
       {Position<Barycentric>(), Velocity<Barycentric>()});
