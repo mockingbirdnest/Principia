@@ -320,6 +320,9 @@ public partial class PluginAdapter : UnityEngine.MonoBehaviour {
             FetchAndIncrement(trajectory_iterator);
             index_in_line_points += 2;
           }
+          if (rendered_trajectory_ == null) {
+            ResetRenderedTrajectory();
+          }
           while (!AtEnd(trajectory_iterator)) {
             segment = FetchAndIncrement(trajectory_iterator);
             // TODO(egg): should we do the |LocalToScaledSpace| conversion in
@@ -342,7 +345,7 @@ public partial class PluginAdapter : UnityEngine.MonoBehaviour {
           Vector.DrawLine(rendered_trajectory_);
         }
       } else {
-        ResetRenderedTrajectory();
+        DestroyRenderedTrajectory();
       }
     }
   }
