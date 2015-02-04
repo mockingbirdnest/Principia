@@ -96,11 +96,13 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="geometry.pb.h" />
+    <ClInclude Include="ksp_plugin.pb.h" />
     <ClInclude Include="physics.pb.h" />
     <ClInclude Include="quantities.pb.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="geometry.pb.cc" />
+    <ClCompile Include="ksp_plugin.pb.cc" />
     <ClCompile Include="physics.pb.cc" />
     <ClCompile Include="quantities.pb.cc" />
   </ItemGroup>
