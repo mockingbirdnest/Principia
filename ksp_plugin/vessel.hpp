@@ -8,6 +8,7 @@
 #include "physics/massless_body.hpp"
 #include "physics/trajectory.hpp"
 #include "quantities/named_quantities.hpp"
+#include "serialization/ksp_plugin.pb.h"
 
 using principia::physics::MasslessBody;
 using principia::physics::Trajectory;
@@ -65,6 +66,11 @@ class Vessel {
   // The vessel must satisfy |is_synchronized()| and |is_initialized()|,
   // |owned_prolongation_| must be null.
   void ResetProlongation(Instant const& time);
+
+  // The vessel must satisfy |is_initialized()|.
+  void WriteToMessage(not_null<serialization::Vessel*> const message) const;
+  static Vessel ReadFromMessage(serialization::Vessel const& message,
+                                not_null<Celestial const*> const parent);
 
  private:
   MasslessBody const body_;

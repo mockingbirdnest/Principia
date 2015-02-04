@@ -78,5 +78,44 @@ inline void Vessel::ResetProlongation(Instant const& time) {
   prolongation_ = history_->NewFork(time);
 }
 
+inline void Vessel::WriteToMessage(
+    not_null<serialization::Vessel*> const message) const {
+  CHECK(is_initialized());
+  body_.WriteToMessage(message->mutable_body());
+  if (is_synchronized()) {
+    history_->WriteToMessage(
+        message->mutable_history_and_prolongation()->mutable_history());
+    prolongation_->WritePointerToMessage(
+        message->mutable_history_and_prolongation()->mutable_prolongation());
+  } else {
+    owned_prolongation_->WriteToMessage(message->mutable_owned_prolongation());
+  }
+}
+
+inline Vessel Vessel::ReadFromMessage(serialization::Vessel const& message,
+                                      not_null<Celestial const*> const parent) {
+  Vessel vessel(parent);
+  // NOTE(egg): for now we do not read the |MassiveBody| as can contain no
+  // information.
+  if (message.has_history_and_prolongation()) {
+    vessel.history_ =
+        std::make_unique<Trajectory<Barycentric>>(
+            Trajectory<Barycentric>::ReadFromMessage(
+                message.history_and_prolongation().history(), &vessel.body_));
+    vessel.prolongation_ =
+        Trajectory<Barycentric>::ReadPointerFromMessage(
+            message.history_and_prolongation().prolongation(),
+            vessel.history_.get());
+  } else if (message.has_owned_prolongation()) {
+    vessel.owned_prolongation_ =
+        std::make_unique<Trajectory<Barycentric>>(
+            Trajectory<Barycentric>::ReadFromMessage(
+                message.owned_prolongation(), &vessel.body_));
+  } else {
+    LOG(FATAL) << "message does not represent an initialized Vessel";
+    base::noreturn();
+  }
+}
+
 }  // namespace ksp_plugin
 }  // namespace principia
