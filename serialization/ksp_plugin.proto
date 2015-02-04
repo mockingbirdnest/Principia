@@ -32,13 +32,19 @@ message Part {
 
 message PhysicsBubble {
   message FullState {
-    // The uint64 is the std::distance from Plugin::vessels_.begin();
-    repeated int64 vessels = 1;
-    map<uint32, Part> parts = 2;
+    message PartIdToPart {
+      required fixed32 part_id = 1;
+      required Part part = 2;
+    }
+    message VesselPointerToDegreesOfFreedom {
+      required Plugin.VesselPointer vessel = 1;
+      required Pair degrees_of_freedom = 2;
+    }
+    repeated Plugin.VesselPointer vessels = 1;
+    repeated PartIdToPart parts = 2;
     required Pair centre_of_mass = 3;
     required Trajectory centre_of_mass_trajectory = 4;
-    // The uint64 is the std::distance from Plugin::vessels_.begin();
-    map<uint64, Pair> from_centre_of_mass = 5;
+    repeated VesselPointerToDegreesOfFreedom from_centre_of_mass = 5;
     required Pair correction = 6;
   }
   required MasslessBody body = 1;
@@ -46,13 +52,25 @@ message PhysicsBubble {
 }
 
 message Plugin {
-  map<string, Vessel> vessels = 1;
-  map<int32, Celestial> celestials = 2;
-  // The uint64 is the std::distance from Plugin::vessels_.begin();
-  repeated uint64 dirty_vessels = 3;
+  message VesselPointer {
+    required uint64 distance_from_vessels_begin = 1;
+  }
+  message CelestialPointer {
+    required uint64 distance_from_celestials_begin = 1;
+  }
+  message GuidToVessel {
+    required string guid = 1;
+    required Vessel vessel = 2;
+  }
+  message IndexToCelestial {
+    required int32 index = 1;
+    required Celestial celestial = 2;
+  }
+  repeated GuidToVessel vessels = 1;
+  repeated IndexToCelestial celestials = 2;
+  repeated VesselPointer dirty_vessels = 3;
   required PhysicsBubble bubble = 4;
   required Quantity planetarium_rotation = 5;
   required Point current_time = 6;
-  // The uint64 is the std::distance from Plugin::celestials_.begin();
-  required uint64 sun = 7;
+  required CelestialPointer sun = 7;
 }
