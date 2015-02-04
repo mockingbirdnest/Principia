@@ -297,7 +297,18 @@ Trajectory<Frame> Trajectory<Frame>::ReadFromMessage(
 template<typename Frame>
 void Trajectory<Frame>::WritePointerToMessage(
     not_null<serialization::Trajectory::Iterator*> const message) const {
-  first().WriteToMessage(message);
+  not_null<Trajectory const*> ancestor = this;
+  while (ancestor->parent_ != nullptr) {
+    const Fork& fork = *ancestor->fork_;
+    ancestor = ancestor->parent_;
+    int const children_distance =
+        std::distance(ancestor->children_.begin(), fork->children);
+    int const timeline_distance =
+        std::distance(ancestror->timeline_.begin(), fork->timeline);
+    auto* const fork_message = message->add_fork();
+    fork_message->set_children_distance(children_distance);
+    fork_message->set_timeline_distance(timeline_distance);
+  }
 }
 
 template<typename Frame>
