@@ -295,6 +295,21 @@ Trajectory<Frame> Trajectory<Frame>::ReadFromMessage(
 }
 
 template<typename Frame>
+void Trajectory<Frame>::WritePointerToMessage(
+    not_null<serialization::Trajectory::Iterator*> const message) const {
+  first().WriteToMessage(message);
+}
+
+template<typename Frame>
+not_null<Trajectory<Frame>*> Trajectory<Frame>::ReadPointerFromMessage(
+    serialization::Trajectory::Iterator const& message,
+    not_null<Trajectory const*> const root) {
+  // TODO(phl): This is bad.
+  return const_cast<Trajectory<Frame>*>(
+      &*NativeIterator::ReadFromMessage(message, root).trajectory());
+}
+
+template<typename Frame>
 typename Trajectory<Frame>::Iterator&
 Trajectory<Frame>::Iterator::operator++() {
   if (!forks_.empty() && current_ == forks_.front().timeline) {
