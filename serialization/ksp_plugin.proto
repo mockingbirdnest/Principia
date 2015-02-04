@@ -52,11 +52,21 @@ message PhysicsBubble {
 }
 
 message Plugin {
+  // NOTE(egg): Assuming 32-bit. If we have 2^32 vessels we'll probably
+  // encounter other issues on the way.
   message VesselPointer {
-    required uint64 distance_from_vessels_begin = 1;
+    required uint32 distance_from_vessels_begin = 1;
   }
   message CelestialPointer {
-    required uint64 distance_from_celestials_begin = 1;
+    required uint32 distance_from_celestials_begin = 1;
+  }
+  message VesselPointerToParent {
+    required VesselPointer vessel = 1;
+    required CelestialPointer parent = 2;
+  }
+  message CelestialPointerToParent {
+    required CelestialPointer celestial = 1;
+    optional CelestialPointer parent = 2;
   }
   message GuidToVessel {
     required string guid = 1;
@@ -68,9 +78,11 @@ message Plugin {
   }
   repeated GuidToVessel vessels = 1;
   repeated IndexToCelestial celestials = 2;
-  repeated VesselPointer dirty_vessels = 3;
-  required PhysicsBubble bubble = 4;
-  required Quantity planetarium_rotation = 5;
-  required Point current_time = 6;
-  required CelestialPointer sun = 7;
+  repeated VesselPointerToParent vessel_parents = 3;
+  repeated CelestialPointerToParent celestial_parents = 4;
+  repeated VesselPointer dirty_vessels = 5;
+  required PhysicsBubble bubble = 6;
+  required Quantity planetarium_rotation = 7;
+  required Point current_time = 8;
+  required CelestialPointer sun = 9;
 }
