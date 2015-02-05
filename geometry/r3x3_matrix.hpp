@@ -16,8 +16,6 @@ namespace geometry {
 // over ℝ, represented by |double|.
 class R3x3Matrix {
  public:
-  // The identity matrix.
-  R3x3Matrix();
   R3x3Matrix(R3Element<double> const& row_x,
              R3Element<double> const& row_y,
              R3Element<double> const& row_z);
@@ -32,6 +30,8 @@ class R3x3Matrix {
   R3x3Matrix& operator*=(R3x3Matrix const& right);
   R3x3Matrix& operator*=(double const right);
   R3x3Matrix& operator/=(double const right);
+
+  static R3x3Matrix Identity();
 
   void WriteToMessage(not_null<serialization::R3x3Matrix*> const message) const;
   static R3x3Matrix ReadFromMessage(serialization::R3x3Matrix const& message);

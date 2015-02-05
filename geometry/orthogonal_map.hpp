@@ -17,7 +17,6 @@ namespace geometry {
 template<typename FromFrame, typename ToFrame>
 class OrthogonalMap : public LinearMap<FromFrame, ToFrame> {
  public:
-  OrthogonalMap();
   ~OrthogonalMap() override = default;
 
   Sign Determinant() const override;
