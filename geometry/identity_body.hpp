@@ -54,7 +54,7 @@ template<typename FromFrame, typename ToFrame>
 OrthogonalMap<FromFrame, ToFrame> Identity<FromFrame, ToFrame>::Forget() const {
   return OrthogonalMap<FromFrame, ToFrame>(
       Determinant(),
-      Rotation<FromFrame, ToFrame>());
+      Rotation<FromFrame, ToFrame>::Identity());
 }
 
 template<typename FromFrame, typename ToFrame>

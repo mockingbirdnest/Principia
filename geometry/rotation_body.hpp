@@ -59,9 +59,6 @@ inline Quaternion ToQuaternion(R3x3Matrix const& matrix) {
 }  // namespace
 
 template<typename FromFrame, typename ToFrame>
-Rotation<FromFrame, ToFrame>::Rotation() : quaternion_(Quaternion(1)) {}
-
-template<typename FromFrame, typename ToFrame>
 Rotation<FromFrame, ToFrame>::Rotation(Quaternion const& quaternion)
     : quaternion_(quaternion) {}
 

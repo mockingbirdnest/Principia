@@ -26,23 +26,22 @@ class RotationTest : public testing::Test {
   using Orth = OrthogonalMap<World, World>;
   using Rot = Rotation<World, World>;
 
-  void SetUp() override {
-    vector_ = Vector<quantities::Length, World>(
-        R3Element<quantities::Length>(1.0 * Metre, 2.0 * Metre, 3.0 * Metre));
-    bivector_ = Bivector<quantities::Length, World>(
-        R3Element<quantities::Length>(1.0 * Metre, 2.0 * Metre, 3.0 * Metre));
-    trivector_ = Trivector<quantities::Length, World>(4.0 * Metre);
-    e1_ = Vector<double, World>(R3Element<double>({1, 0, 0}));
-    e2_ = Vector<double, World>(R3Element<double>({0, 1, 0}));
-    e3_ = Vector<double, World>(R3Element<double>({0, 0, 1}));
-    rotation_a_ = Rot(120 * si::Degree,
-                      Bivector<double, World>({1, 1, 1}));
-    rotation_b_ = Rot(90 * si::Degree,
-                      Bivector<double, World>({1, 0, 0}));
-    rotation_c_ = Rot(R3x3Matrix({{0.5, 0.5 * sqrt(3), 0},
-                                  {-0.5 * sqrt(3), 0.5, 0},
-                                  {0, 0, 1}}));
-  }
+  RotationTest()
+      : vector_(Vector<quantities::Length, World>(
+            R3Element<quantities::Length>(
+                1.0 * Metre, 2.0 * Metre, 3.0 * Metre))),
+        bivector_(Bivector<quantities::Length, World>(
+            R3Element<quantities::Length>(
+                1.0 * Metre, 2.0 * Metre, 3.0 * Metre))),
+        trivector_(Trivector<quantities::Length, World>(4.0 * Metre)),
+        e1_(Vector<double, World>(R3Element<double>({1, 0, 0}))),
+        e2_(Vector<double, World>(R3Element<double>({0, 1, 0}))),
+        e3_(Vector<double, World>(R3Element<double>({0, 0, 1}))),
+        rotation_a_(Rot(120 * si::Degree, Bivector<double, World>({1, 1, 1}))),
+        rotation_b_(Rot(90 * si::Degree, Bivector<double, World>({1, 0, 0}))),
+        rotation_c_(Rot(R3x3Matrix({{0.5, 0.5 * sqrt(3), 0},
+                                    {-0.5 * sqrt(3), 0.5, 0},
+                                    {0, 0, 1}}))) {}
 
   Vector<quantities::Length, World> vector_;
   Bivector<quantities::Length, World> bivector_;

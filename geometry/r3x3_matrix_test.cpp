@@ -14,14 +14,12 @@ class R3x3MatrixTest : public testing::Test {
  protected:
   using R3 = R3Element<double>;
 
-  void SetUp() override {
-    m1_ = R3x3Matrix({-9, 6, 6}, {7, -5, -4}, {-1, 2, 1});
-    m2_ = R3x3Matrix({1, 2, 2}, {-1, -1, 2}, {3, 4, 1});
-  }
+  R3x3MatrixTest()
+      : m1_(R3x3Matrix({-9, 6, 6}, {7, -5, -4}, {-1, 2, 1})),
+        m2_(R3x3Matrix({1, 2, 2}, {-1, -1, 2}, {3, 4, 1})) {}
 
   R3x3Matrix m1_;
   R3x3Matrix m2_;
-  R3x3Matrix m3_;
 };
 
 using R3x3MatrixDeathTest = R3x3MatrixTest;
