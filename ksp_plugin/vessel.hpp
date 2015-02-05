@@ -22,12 +22,13 @@ class Vessel {
  public:
   Vessel() = delete;
   Vessel(Vessel const&) = delete;
-  Vessel(Vessel&&) = delete;
+  Vessel(Vessel&&);
   ~Vessel() = default;
 
   // Constructs a vessel whose parent is initially |*parent|.  No transfer of
   // ownership.
   explicit Vessel(not_null<Celestial const*> const parent);
+
 
   // True if, and only if, |history_| is not null.
   bool is_synchronized() const;

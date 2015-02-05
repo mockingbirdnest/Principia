@@ -5,6 +5,13 @@
 namespace principia {
 namespace ksp_plugin {
 
+inline Vessel::Vessel(Vessel&& other)  // NOLINT(build/c++11)
+    : body_(),
+      parent_(std::move(other.parent_)),
+      history_(std::move(other.history_)),
+      prolongation_(std::move(other.prolongation_)),
+      owned_prolongation_(std::move(other.owned_prolongation_)) {}
+
 inline Vessel::Vessel(not_null<Celestial const*> const parent)
     : body_(),
       parent_(parent) {}
@@ -111,10 +118,12 @@ inline Vessel Vessel::ReadFromMessage(serialization::Vessel const& message,
         std::make_unique<Trajectory<Barycentric>>(
             Trajectory<Barycentric>::ReadFromMessage(
                 message.owned_prolongation(), &vessel.body_));
+    vessel.prolongation_ = vessel.owned_prolongation_.get();
   } else {
     LOG(FATAL) << "message does not represent an initialized Vessel";
     base::noreturn();
   }
+  return vessel;
 }
 
 }  // namespace ksp_plugin
