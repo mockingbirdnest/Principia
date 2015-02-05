@@ -22,7 +22,7 @@ class Vessel {
  public:
   Vessel() = delete;
   Vessel(Vessel const&) = delete;
-  Vessel(Vessel&&);
+  Vessel(Vessel&&);  // NOLINT(build/c++11)
   ~Vessel() = default;
 
   // Constructs a vessel whose parent is initially |*parent|.  No transfer of

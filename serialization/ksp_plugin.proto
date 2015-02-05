@@ -8,7 +8,7 @@ package principia.serialization;
 
 message HistoryAndProlongation {
   required Trajectory history = 1;
-  required Trajectory.Iterator prolongation = 2;
+  required Trajectory.Pointer prolongation = 2;
 }
 
 message Vessel {
