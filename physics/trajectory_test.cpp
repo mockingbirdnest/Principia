@@ -215,13 +215,14 @@ TEST_F(TrajectoryTest, IteratorSerializationSuccess) {
   fork3->Append(t4_, d4_);
 
   {
-    serialization::Trajectory::Iterator message;
-    massive_trajectory_->first().WriteToMessage(&message);
-    EXPECT_EQ(0, message.current_distance());
+    serialization::Trajectory::Pointer message;
+    massive_trajectory_->WritePointerToMessage(&message);
     EXPECT_EQ(0, message.fork_size());
-    auto it = Trajectory<World>::NativeIterator::ReadFromMessage(
-                  message,
-                  massive_trajectory_.get());
+    auto trajectory = Trajectory<World>::ReadPointerFromMessage(
+                          message,
+                          massive_trajectory_.get());
+    EXPECT_EQ(massive_trajectory_.get(), trajectory);
+    auto it = trajectory->first();
     EXPECT_EQ(it.time(), t1_);
     ++it;
     EXPECT_EQ(it.time(), t2_);
@@ -230,15 +231,16 @@ TEST_F(TrajectoryTest, IteratorSerializationSuccess) {
   }
 
   {
-    serialization::Trajectory::Iterator message;
-    fork1->first().WriteToMessage(&message);
-    EXPECT_EQ(0, message.current_distance());
+    serialization::Trajectory::Pointer message;
+    fork1->WritePointerToMessage(&message);
     EXPECT_EQ(1, message.fork_size());
     EXPECT_EQ(0, message.fork(0).children_distance());
     EXPECT_EQ(1, message.fork(0).timeline_distance());
-    auto it = Trajectory<World>::NativeIterator::ReadFromMessage(
-                  message,
-                  massive_trajectory_.get());
+    auto trajectory = Trajectory<World>::ReadPointerFromMessage(
+                          message,
+                          massive_trajectory_.get());
+    EXPECT_EQ(fork1, trajectory);
+    auto it = trajectory->first();
     EXPECT_EQ(it.time(), t1_);
     ++it;
     EXPECT_EQ(it.time(), t2_);
@@ -249,15 +251,16 @@ TEST_F(TrajectoryTest, IteratorSerializationSuccess) {
   }
 
   {
-    serialization::Trajectory::Iterator message;
-    fork2->first().WriteToMessage(&message);
-    EXPECT_EQ(0, message.current_distance());
+    serialization::Trajectory::Pointer message;
+    fork2->WritePointerToMessage(&message);
     EXPECT_EQ(1, message.fork_size());
     EXPECT_EQ(1, message.fork(0).children_distance());
     EXPECT_EQ(1, message.fork(0).timeline_distance());
-    auto it = Trajectory<World>::NativeIterator::ReadFromMessage(
-                  message,
-                  massive_trajectory_.get());
+    auto trajectory = Trajectory<World>::ReadPointerFromMessage(
+                          message,
+                          massive_trajectory_.get());
+    EXPECT_EQ(fork2, trajectory);
+    auto it = trajectory->first();
     EXPECT_EQ(it.time(), t1_);
     ++it;
     EXPECT_EQ(it.time(), t2_);
@@ -266,15 +269,16 @@ TEST_F(TrajectoryTest, IteratorSerializationSuccess) {
   }
 
   {
-    serialization::Trajectory::Iterator message;
-    fork3->first().WriteToMessage(&message);
-    EXPECT_EQ(0, message.current_distance());
+    serialization::Trajectory::Pointer message;
+    fork3->WritePointerToMessage(&message);
     EXPECT_EQ(1, message.fork_size());
     EXPECT_EQ(2, message.fork(0).children_distance());
     EXPECT_EQ(2, message.fork(0).timeline_distance());
-    auto it = Trajectory<World>::NativeIterator::ReadFromMessage(
-                  message,
-                  massive_trajectory_.get());
+    auto trajectory = Trajectory<World>::ReadPointerFromMessage(
+                          message,
+                          massive_trajectory_.get());
+    EXPECT_EQ(fork3, trajectory);
+    auto it = trajectory->first();
     EXPECT_EQ(it.time(), t1_);
     ++it;
     EXPECT_EQ(it.time(), t2_);
@@ -297,8 +301,8 @@ TEST_F(TrajectoryTest, PointerSerializationSuccess) {
   not_null<Trajectory<World>*> const fork3 = massive_trajectory_->NewFork(t3_);
   fork3->Append(t4_, d4_);
   serialization::Trajectory root;
-  serialization::Trajectory::Iterator root_it;
-  serialization::Trajectory::Iterator fork2_it;
+  serialization::Trajectory::Pointer root_it;
+  serialization::Trajectory::Pointer fork2_it;
   massive_trajectory_->WriteToMessage(&root);
   massive_trajectory_->WritePointerToMessage(&root_it);
   fork2->WritePointerToMessage(&fork2_it);

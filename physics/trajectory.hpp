@@ -183,11 +183,12 @@ class Trajectory {
                                     not_null<Body const*> const body);
 
   void WritePointerToMessage(
-      not_null<serialization::Trajectory::Iterator*> const message) const;
+      not_null<serialization::Trajectory::Pointer*> const message) const;
 
+  // |trajectory| must be a root.
   static not_null<Trajectory*> ReadPointerFromMessage(
-      serialization::Trajectory::Iterator const& message,
-      not_null<Trajectory const*> const root);
+      serialization::Trajectory::Pointer const& message,
+      not_null<Trajectory*> const trajectory);
 
   // A base class for iterating over the timeline of a trajectory, taking forks
   // into account.  Objects of this class cannot be created.
@@ -209,18 +210,6 @@ class Trajectory {
     typename Timeline::const_iterator current() const;
     not_null<Trajectory const*> trajectory() const;
 
-    // Helper functions for serialization of the subclasses.  The |trajectory|
-    // passed to |ReadFromMessage| must match the one that was denoted by the
-    // iterator when |WriteToMessage| was called.  Most of the time, this means
-    // that |WriteToMessage| should be called by an iterator returned by |first|
-    // and |ReadFromMessage| should be called with a root trajectory.
-    void WriteToMessage(
-       not_null<serialization::Trajectory::Iterator*> const message) const;
-    static void ReadFromMessage(
-        serialization::Trajectory::Iterator const& message,
-        not_null<Trajectory const*> const trajectory,
-        not_null<Iterator*> const iterator);
-
    private:
     // |ancestry_| has one more element than |forks_|.  The first element in
     // |ancestry_| is the root.  There is no element in |forks_| for the root.
@@ -235,15 +224,6 @@ class Trajectory {
   class NativeIterator : public Iterator {
    public:
     DegreesOfFreedom<Frame> const& degrees_of_freedom() const;
-
-    // In |WriteToMessage|, the iterator must be at |first|.  In
-    // |ReadFromMessage|, the trajectory must be a root.  This could be relaxed
-    // if needed.
-    void WriteToMessage(
-        not_null<serialization::Trajectory::Iterator*> const message) const;
-    static NativeIterator ReadFromMessage(
-        serialization::Trajectory::Iterator const& message,
-        not_null<Trajectory const*> const trajectory);
 
    private:
     NativeIterator() = default;
