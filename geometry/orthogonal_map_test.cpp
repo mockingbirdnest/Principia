@@ -25,22 +25,23 @@ class OrthogonalMapTest : public testing::Test {
   using Orth = OrthogonalMap<World, World>;
   using Rot = Rotation<World, World>;
 
-  void SetUp() override {
-    vector_ = Vector<quantities::Length, World>(
-        R3Element<quantities::Length>(1.0 * Metre, 2.0 * Metre, 3.0 * Metre));
-    bivector_ = Bivector<quantities::Length, World>(
-        R3Element<quantities::Length>(1.0 * Metre, 2.0 * Metre, 3.0 * Metre));
-    trivector_ = Trivector<quantities::Length, World>(4.0 * Metre);
-    orthogonal_a_ = Orth(Sign(-1),
+  OrthogonalMapTest()
+    : vector_(Vector<quantities::Length, World>(
+          R3Element<quantities::Length>(
+              1.0 * Metre, 2.0 * Metre, 3.0 * Metre))),
+      bivector_(Bivector<quantities::Length, World>(
+          R3Element<quantities::Length>(
+              1.0 * Metre, 2.0 * Metre, 3.0 * Metre))),
+      trivector_(Trivector<quantities::Length, World>(4.0 * Metre)),
+      orthogonal_a_(Orth(Sign(-1),
                          Rot(120 * si::Degree,
-                             Bivector<double, World>({1, 1, 1})));
-    orthogonal_b_ = Orth(Sign(1),
+                             Bivector<double, World>({1, 1, 1})))),
+      orthogonal_b_(Orth(Sign(1),
                          Rot(90 * si::Degree,
-                             Bivector<double, World>({1, 0, 0})));
-    orthogonal_c_ = Orth(Sign(-1),
+                             Bivector<double, World>({1, 0, 0})))),
+      orthogonal_c_(Orth(Sign(-1),
                          Rot(90 * si::Degree,
-                             Bivector<double, World>({1, 0, 0})));
-  }
+                             Bivector<double, World>({1, 0, 0})))) {}
 
   Vector<quantities::Length, World> vector_;
   Bivector<quantities::Length, World> bivector_;
