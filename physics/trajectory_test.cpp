@@ -317,8 +317,8 @@ TEST_F(TrajectoryTest, PointerSerializationSuccess) {
   not_null<std::unique_ptr<Trajectory<World>>> const massive_trajectory =
       Trajectory<World>::ReadFromMessage(root, &massive_body_);
   EXPECT_EQ(massive_trajectory.get(),
-            Trajectory<World>::ReadPointerFromMessage(root_it,
-                                                      massive_trajectory.get()));
+            Trajectory<World>::ReadPointerFromMessage(
+                root_it, massive_trajectory.get()));
 }
 
 TEST_F(TrajectoryDeathTest, TrajectorySerializationError) {
