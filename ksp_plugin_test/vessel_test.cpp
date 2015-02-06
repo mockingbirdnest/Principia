@@ -78,8 +78,7 @@ TEST_F(VesselTest, SerializationSuccess) {
   vessel_->WriteToMessage(&message);
   EXPECT_TRUE(message.has_owned_prolongation());
   EXPECT_FALSE(message.has_history_and_prolongation());
-  vessel_ = make_not_null_unique<Vessel>(
-                Vessel::ReadFromMessage(message, &parent_));
+  vessel_ = Vessel::ReadFromMessage(message, &parent_));
   EXPECT_TRUE(vessel_->is_initialized());
   EXPECT_FALSE(vessel_->is_synchronized());
   vessel_->CreateHistoryAndForkProlongation(t2_, d2_);
@@ -87,8 +86,7 @@ TEST_F(VesselTest, SerializationSuccess) {
   vessel_->WriteToMessage(&message);
   EXPECT_FALSE(message.has_owned_prolongation());
   EXPECT_TRUE(message.has_history_and_prolongation());
-  vessel_ = make_not_null_unique<Vessel>(
-                Vessel::ReadFromMessage(message, &parent_));
+  vessel_ = Vessel::ReadFromMessage(message, &parent_));
   EXPECT_TRUE(vessel_->is_initialized());
   EXPECT_TRUE(vessel_->is_synchronized());
 }
