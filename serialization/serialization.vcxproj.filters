@@ -25,6 +25,9 @@
     <ClInclude Include="physics.pb.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="ksp_plugin.pb.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="geometry.pb.cc">
@@ -36,5 +39,11 @@
     <ClCompile Include="physics.pb.cc">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="ksp_plugin.pb.cc">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="ksp_plugin.proto" />
   </ItemGroup>
 </Project>

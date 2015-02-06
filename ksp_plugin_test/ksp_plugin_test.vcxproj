@@ -23,6 +23,7 @@
     <ClCompile Include="interface_test.cpp" />
     <ClCompile Include="physics_bubble_test.cpp" />
     <ClCompile Include="plugin_test.cpp" />
+    <ClCompile Include="vessel_test.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\serialization\serialization.vcxproj">
