@@ -5,13 +5,6 @@
 namespace principia {
 namespace ksp_plugin {
 
-inline Vessel::Vessel(Vessel&& other)  // NOLINT(build/c++11)
-    : body_(),
-      parent_(std::move(other.parent_)),
-      history_(std::move(other.history_)),
-      prolongation_(std::move(other.prolongation_)),
-      owned_prolongation_(std::move(other.owned_prolongation_)) {}
-
 inline Vessel::Vessel(not_null<Celestial const*> const parent)
     : body_(),
       parent_(parent) {}
@@ -99,26 +92,25 @@ inline void Vessel::WriteToMessage(
   }
 }
 
-inline Vessel Vessel::ReadFromMessage(serialization::Vessel const& message,
-                                      not_null<Celestial const*> const parent) {
-  Vessel vessel(parent);
+inline std::unique_ptr<Vessel> Vessel::ReadFromMessage(
+    serialization::Vessel const& message,
+    not_null<Celestial const*> const parent) {
+  auto vessel = std::make_unique<Vessel>(parent);
   // NOTE(egg): for now we do not read the |MasslessBody| as it can contain no
   // information.
   if (message.has_history_and_prolongation()) {
-    vessel.history_ =
-        std::make_unique<Trajectory<Barycentric>>(
-            Trajectory<Barycentric>::ReadFromMessage(
-                message.history_and_prolongation().history(), &vessel.body_));
-    vessel.prolongation_ =
+    vessel->history_ =
+        Trajectory<Barycentric>::ReadFromMessage(
+            message.history_and_prolongation().history(), &vessel->body_);
+    vessel->prolongation_ =
         Trajectory<Barycentric>::ReadPointerFromMessage(
             message.history_and_prolongation().prolongation(),
-            vessel.history_.get());
+            vessel->history_.get());
   } else if (message.has_owned_prolongation()) {
-    vessel.owned_prolongation_ =
-        std::make_unique<Trajectory<Barycentric>>(
-            Trajectory<Barycentric>::ReadFromMessage(
-                message.owned_prolongation(), &vessel.body_));
-    vessel.prolongation_ = vessel.owned_prolongation_.get();
+    vessel->owned_prolongation_ =
+        Trajectory<Barycentric>::ReadFromMessage(message.owned_prolongation(),
+                                                 &vessel->body_);
+    vessel->prolongation_ = vessel->owned_prolongation_.get();
   } else {
     LOG(FATAL) << "message does not represent an initialized Vessel";
     base::noreturn();

@@ -22,7 +22,9 @@ class Vessel {
  public:
   Vessel() = delete;
   Vessel(Vessel const&) = delete;
-  Vessel(Vessel&&);  // NOLINT(build/c++11)
+  Vessel(Vessel&&) = delete;
+  Vessel& operator=(Vessel const&) = delete;
+  Vessel& operator=(Vessel&&) = delete;
   ~Vessel() = default;
 
   // Constructs a vessel whose parent is initially |*parent|.  No transfer of
@@ -69,8 +71,12 @@ class Vessel {
 
   // The vessel must satisfy |is_initialized()|.
   void WriteToMessage(not_null<serialization::Vessel*> const message) const;
-  static Vessel ReadFromMessage(serialization::Vessel const& message,
-                                not_null<Celestial const*> const parent);
+  // NOTE(egg): This should return a |not_null|, but we can't do that until
+  // |not_null<std::unique_ptr<T>>| is convertible to |std::unique_ptr<T>|, and
+  // that requires a VS 2015 feature (rvalue references for |*this|).
+  static std::unique_ptr<Vessel> ReadFromMessage(
+      serialization::Vessel const& message,
+      not_null<Celestial const*> const parent);
 
  private:
   MasslessBody const body_;

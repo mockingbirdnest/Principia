@@ -314,11 +314,11 @@ TEST_F(TrajectoryTest, PointerSerializationSuccess) {
             Trajectory<World>::ReadPointerFromMessage(
                 root_it,
                 massive_trajectory_.get()));
-  Trajectory<World> massive_trajectory =
+  not_null<std::unique_ptr<Trajectory<World>>> const massive_trajectory =
       Trajectory<World>::ReadFromMessage(root, &massive_body_);
-  EXPECT_EQ(&massive_trajectory,
-            Trajectory<World>::ReadPointerFromMessage(root_it,
-                                                      &massive_trajectory));
+  EXPECT_EQ(massive_trajectory.get(),
+            Trajectory<World>::ReadPointerFromMessage(
+                root_it, massive_trajectory.get()));
 }
 
 TEST_F(TrajectoryDeathTest, TrajectorySerializationError) {
@@ -343,10 +343,10 @@ TEST_F(TrajectoryTest, TrajectorySerializationSuccess) {
   serialization::Trajectory reference_message;
   massive_trajectory_->WriteToMessage(&message);
   massive_trajectory_->WriteToMessage(&reference_message);
-  Trajectory<World> const deserialized_trajectory =
+  not_null<std::unique_ptr<Trajectory<World>>> const deserialized_trajectory =
       Trajectory<World>::ReadFromMessage(message, &massive_body_);
   message.Clear();
-  deserialized_trajectory.WriteToMessage(&message);
+  deserialized_trajectory->WriteToMessage(&message);
   EXPECT_EQ(reference_message.SerializeAsString(), message.SerializeAsString());
   EXPECT_THAT(message.children_size(), Eq(2));
   EXPECT_THAT(message.timeline_size(), Eq(3));
