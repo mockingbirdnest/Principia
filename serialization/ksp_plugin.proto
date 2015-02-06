@@ -6,22 +6,14 @@ import "serialization/quantities.proto";
 
 package principia.serialization;
 
-message HistoryAndProlongation {
-  required Trajectory history = 1;
-  required Trajectory.Pointer prolongation = 2;
-}
-
-message Vessel {
-  required MasslessBody body = 1;
-  oneof trajectory_bundle {
-    HistoryAndProlongation history_and_prolongation = 2;
-    Trajectory owned_prolongation = 3;
-  }
-}
-
 message Celestial {
   required MassiveBody body = 1;
   required HistoryAndProlongation history_and_prolongation = 2;
+}
+
+message HistoryAndProlongation {
+  required Trajectory history = 1;
+  required Trajectory.Pointer prolongation = 2;
 }
 
 message Part {
@@ -36,15 +28,15 @@ message PhysicsBubble {
       required fixed32 part_id = 1;
       required Part part = 2;
     }
-    message VesselPointerToDegreesOfFreedom {
-      required Plugin.VesselPointer vessel = 1;
+    message VesselToDegreesOfFreedom {
+      required string vessel_guid = 1;
       required Pair degrees_of_freedom = 2;
     }
-    repeated Plugin.VesselPointer vessels = 1;
+    repeated string vessel_guids = 1;
     repeated PartIdToPart parts = 2;
     required Pair centre_of_mass = 3;
     required Trajectory centre_of_mass_trajectory = 4;
-    repeated VesselPointerToDegreesOfFreedom from_centre_of_mass = 5;
+    repeated VesselToDegreesOfFreedom from_centre_of_mass = 5;
     required Pair correction = 6;
   }
   required MasslessBody body = 1;
@@ -52,37 +44,31 @@ message PhysicsBubble {
 }
 
 message Plugin {
-  // NOTE(egg): Assuming 32-bit. If we have 2^32 vessels we'll probably
-  // encounter other issues on the way.
-  message VesselPointer {
-    required uint32 distance_from_vessels_begin = 1;
-  }
-  message CelestialPointer {
-    required uint32 distance_from_celestials_begin = 1;
-  }
-  message VesselPointerToParent {
-    required VesselPointer vessel = 1;
-    required CelestialPointer parent = 2;
-  }
-  message CelestialPointerToParent {
-    required CelestialPointer celestial = 1;
-    optional CelestialPointer parent = 2;
-  }
+  // TODO(egg): Find better identifiers for the following |message|s, they are
+  // more than just map entries now.
   message GuidToVessel {
     required string guid = 1;
     required Vessel vessel = 2;
+    required int32 parent_index = 3;
+    required bool dirty = 4;
   }
   message IndexToCelestial {
     required int32 index = 1;
     required Celestial celestial = 2;
+    optional int32 parent_index = 3;
   }
   repeated GuidToVessel vessels = 1;
   repeated IndexToCelestial celestials = 2;
-  repeated VesselPointerToParent vessel_parents = 3;
-  repeated CelestialPointerToParent celestial_parents = 4;
-  repeated VesselPointer dirty_vessels = 5;
-  required PhysicsBubble bubble = 6;
-  required Quantity planetarium_rotation = 7;
-  required Point current_time = 8;
-  required CelestialPointer sun = 9;
+  required PhysicsBubble bubble = 3;
+  required Quantity planetarium_rotation = 4;
+  required Point current_time = 5;
+  required int32 sun_index = 6;
+}
+
+message Vessel {
+  required MasslessBody body = 1;
+  oneof trajectory_bundle {
+    HistoryAndProlongation history_and_prolongation = 2;
+    Trajectory owned_prolongation = 3;
+  }
 }

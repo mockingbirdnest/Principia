@@ -102,7 +102,7 @@ inline void Vessel::WriteToMessage(
 inline Vessel Vessel::ReadFromMessage(serialization::Vessel const& message,
                                       not_null<Celestial const*> const parent) {
   Vessel vessel(parent);
-  // NOTE(egg): for now we do not read the |MassiveBody| as can contain no
+  // NOTE(egg): for now we do not read the |MasslessBody| as it can contain no
   // information.
   if (message.has_history_and_prolongation()) {
     vessel.history_ =

@@ -29,7 +29,6 @@ class Vessel {
   // ownership.
   explicit Vessel(not_null<Celestial const*> const parent);
 
-
   // True if, and only if, |history_| is not null.
   bool is_synchronized() const;
   // True if, and only if, |prolongation_| is not null, i.e., if either
