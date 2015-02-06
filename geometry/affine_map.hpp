@@ -13,8 +13,7 @@ class AffineMap {
  public:
   using FromVector = Vector<Scalar, FromFrame>;
   using ToVector = Vector<Scalar, ToFrame>;
-  // The identity map.
-  AffineMap() = default;
+
   AffineMap(Point<FromVector> const& from_origin,
             Point<ToVector> const& to_origin,
             LinearMap<FromFrame, ToFrame> const& linear_map);
@@ -22,10 +21,14 @@ class AffineMap {
   AffineMap<ToFrame, FromFrame, Scalar, LinearMap> Inverse() const;
   Point<ToVector> operator()(Point<FromVector> const& point) const;
 
+  static AffineMap Identity();
+
   void WriteToMessage(not_null<serialization::AffineMap*> const message) const;
   static AffineMap ReadFromMessage(serialization::AffineMap const& message);
 
  private:
+  AffineMap() = default;
+
   Point<FromVector> from_origin_;
   Point<ToVector> to_origin_;
   LinearMap<FromFrame, ToFrame> linear_map_;

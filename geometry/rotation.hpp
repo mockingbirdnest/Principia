@@ -25,7 +25,6 @@ std::ostream& operator<<(std::ostream& out,
 template<typename FromFrame, typename ToFrame>
 class Rotation : public LinearMap<FromFrame, ToFrame> {
  public:
-  Rotation();
   explicit Rotation(Quaternion const& quaternion);
   explicit Rotation(R3x3Matrix const& matrix);
   template<typename Scalar>

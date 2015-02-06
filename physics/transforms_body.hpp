@@ -183,7 +183,8 @@ Transforms<FromFrame, ThroughFrame, ToFrame>::BarycentricRotating(
              from_secondary_trajectory().template body<MassiveBody>()->
                  gravitational_parameter()});
     Rotation<FromFrame, ThroughFrame>
-        from_basis_of_barycentric_frame_to_standard_basis;
+        from_basis_of_barycentric_frame_to_standard_basis =
+            Rotation<FromFrame, ThroughFrame>::Identity();
     Bivector<AngularFrequency, FromFrame> angular_frequency;
     FromBasisOfBarycentricFrameToStandardBasis<FromFrame, ThroughFrame>(
         barycentre_degrees_of_freedom,
@@ -233,7 +234,8 @@ Transforms<FromFrame, ThroughFrame, ToFrame>::BarycentricRotating(
              to_secondary_trajectory().template body<MassiveBody>()->
                  gravitational_parameter()});
     Rotation<ToFrame, ThroughFrame>
-        from_basis_of_last_barycentric_frame_to_standard_basis;
+        from_basis_of_last_barycentric_frame_to_standard_basis =
+            Rotation<ToFrame, ThroughFrame>::Identity();
     Bivector<AngularFrequency, ToFrame> angular_frequency;
     FromBasisOfBarycentricFrameToStandardBasis<ToFrame, ThroughFrame>(
         last_barycentre_degrees_of_freedom,

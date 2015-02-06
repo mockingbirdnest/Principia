@@ -10,11 +10,6 @@ namespace principia {
 namespace geometry {
 
 template<typename FromFrame, typename ToFrame>
-OrthogonalMap<FromFrame, ToFrame>::OrthogonalMap()
-    : determinant_(Sign(1)),
-      rotation_(Rotation<FromFrame, ToFrame>::Identity()) {}
-
-template<typename FromFrame, typename ToFrame>
 Sign OrthogonalMap<FromFrame, ToFrame>::Determinant() const {
   return determinant_;
 }

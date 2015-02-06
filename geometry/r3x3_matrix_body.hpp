@@ -11,11 +11,6 @@
 namespace principia {
 namespace geometry {
 
-inline R3x3Matrix::R3x3Matrix()
-    : row_x_({1, 0, 0}),
-      row_y_({0, 1, 0}),
-      row_z_({0, 0, 1}) {}
-
 inline R3x3Matrix::R3x3Matrix(R3Element<double> const& row_x,
                               R3Element<double> const& row_y,
                               R3Element<double> const& row_z)
@@ -67,6 +62,12 @@ inline R3x3Matrix& R3x3Matrix::operator*=(double const right) {
 
 inline R3x3Matrix& R3x3Matrix::operator/=(double const right) {
   return *this = *this / right;
+}
+
+inline R3x3Matrix R3x3Matrix::Identity() {
+  return R3x3Matrix({1, 0, 0},
+                    {0, 1, 0},
+                    {0, 0, 1});
 }
 
 inline void R3x3Matrix::WriteToMessage(
