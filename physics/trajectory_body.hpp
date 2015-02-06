@@ -25,17 +25,6 @@ Trajectory<Frame>::Trajectory(not_null<Body const*> const body)
 }
 
 template<typename Frame>
-Trajectory<Frame>::Trajectory(Trajectory&& other)  // NOLINT(build/c++11)
-  : body_(std::move(other.body_)),
-    fork_(std::move(other.fork_)),
-    parent_(std::move(other.parent_)),
-    intrinsic_acceleration_(std::move(other.intrinsic_acceleration_)) {
-  using std::swap;
-  swap(children_, other.children_);
-  swap(timeline_, other.timeline_);
-}
-
-template<typename Frame>
 typename Trajectory<Frame>::NativeIterator Trajectory<Frame>::first() const {
   NativeIterator it;
   it.InitializeFirst(this);
@@ -174,11 +163,13 @@ not_null<Trajectory<Frame>*> Trajectory<Frame>::NewFork(Instant const& time) {
   // We cannot know the iterator into children_ until after we have done the
   // insertion in children_.
   Fork fork = {children_.end(), fork_it};
-  Trajectory<Frame> child(body_, this /*parent*/, fork);
-  child.timeline_.insert(++fork_it, timeline_.end());
+  // Can't use make_unique below.
+  std::unique_ptr<Trajectory<Frame>> child(
+      new Trajectory(body_, this /*parent*/, fork));
+  child->timeline_.insert(++fork_it, timeline_.end());
   auto const child_it = children_.emplace(time, std::move(child));
-  child_it->second.fork_->children = child_it;
-  return &child_it->second;
+  child_it->second->fork_->children = child_it;
+  return child_it->second.get();
 }
 
 template<typename Frame>
@@ -189,7 +180,7 @@ void Trajectory<Frame>::DeleteFork(not_null<Trajectory**> const fork) {
   // Find the position of |*fork| among our children and remove it.
   auto const range = children_.equal_range(*fork_time);
   for (auto it = range.first; it != range.second; ++it) {
-    if (&it->second == *fork) {
+    if (it->second.get() == *fork) {
       children_.erase(it);
       *fork = nullptr;
       return;
@@ -286,11 +277,11 @@ void Trajectory<Frame>::WriteToMessage(
 }
 
 template<typename Frame>
-Trajectory<Frame> Trajectory<Frame>::ReadFromMessage(
+not_null<std::unique_ptr<Trajectory<Frame>>> Trajectory<Frame>::ReadFromMessage(
     serialization::Trajectory const& message,
     not_null<Body const*> const body) {
-  Trajectory trajectory(body);
-  trajectory.FillSubTreeFromMessage(message);
+  auto trajectory = make_not_null_unique<Trajectory>(body);
+  trajectory->FillSubTreeFromMessage(message);
   return trajectory;
 }
 
@@ -325,7 +316,7 @@ not_null<Trajectory<Frame>*> Trajectory<Frame>::ReadPointerFromMessage(
     auto timeline_it = descendant->timeline_.begin();
     std::advance(children_it, children_distance);
     std::advance(timeline_it, timeline_distance);
-    descendant = &children_it->second;
+    descendant = children_it->second.get();
   }
   return descendant;
 }
@@ -445,14 +436,14 @@ void Trajectory<Frame>::WriteSubTreeToMessage(
   serialization::Trajectory::Litter* litter = nullptr;
   for (auto const& pair : children_) {
     Instant const& fork_time = pair.first;
-    Trajectory const& child = pair.second;
+    not_null<std::unique_ptr<Trajectory>> const& child = pair.second;
     if (is_first || fork_time != last_instant) {
       is_first = false;
       last_instant = fork_time;
       litter = message->add_children();
       fork_time.WriteToMessage(litter->mutable_fork_time());
     }
-    child.WriteSubTreeToMessage(litter->add_trajectories());
+    child->WriteSubTreeToMessage(litter->add_trajectories());
   }
   for (auto const& pair : timeline_) {
     Instant const& instant = pair.first;

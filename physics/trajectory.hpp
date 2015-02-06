@@ -28,7 +28,8 @@ class Body;
 template<typename Frame>
 class Trajectory {
   // There may be several forks starting from the same time, hence the multimap.
-  using Children = std::multimap<Instant, Trajectory>;
+  using Children =
+      std::multimap<Instant, not_null<std::unique_ptr<Trajectory>>>;
   using Timeline = std::map<Instant, DegreesOfFreedom<Frame>>;
 
   // The two iterators denote entries in the containers of the parent, and they
@@ -56,7 +57,11 @@ class Trajectory {
   // expressed in the same frame as the trajectory.
   explicit Trajectory(not_null<Body const*> const body);
   ~Trajectory() = default;
-  Trajectory(Trajectory&&);  // NOLINT(build/c++11)
+
+  Trajectory(Trajectory const&) = delete;
+  Trajectory(Trajectory&&) = delete;
+  Trajectory& operator=(Trajectory const&) = delete;
+  Trajectory& operator=(Trajectory&&) = delete;
 
   // Returns an iterator at the first point of the trajectory.  Complexity is
   // O(|depth|).  The result may be at end if the trajectory is empty.
@@ -179,8 +184,9 @@ class Trajectory {
   // serialized.  The body is not owned, and therefore is not serialized.
   void WriteToMessage(not_null<serialization::Trajectory*> const message) const;
 
-  static Trajectory ReadFromMessage(serialization::Trajectory const& message,
-                                    not_null<Body const*> const body);
+  static not_null<std::unique_ptr<Trajectory>> ReadFromMessage(
+      serialization::Trajectory const& message,
+      not_null<Body const*> const body);
 
   void WritePointerToMessage(
       not_null<serialization::Trajectory::Pointer*> const message) const;
