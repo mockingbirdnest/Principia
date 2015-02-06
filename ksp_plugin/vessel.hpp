@@ -71,7 +71,10 @@ class Vessel {
 
   // The vessel must satisfy |is_initialized()|.
   void WriteToMessage(not_null<serialization::Vessel*> const message) const;
-  static not_null<std::unique_ptr<Vessel>> ReadFromMessage(
+  // NOTE(egg): This should return a |not_null|, but we can't do that until
+  // |not_null<std::unique_ptr<T>>| is convertible to |std::unique_ptr<T>|, and
+  // that requires a VS 2015 feature (rvalue references for |*this|).
+  static std::unique_ptr<Vessel> ReadFromMessage(
       serialization::Vessel const& message,
       not_null<Celestial const*> const parent);
 

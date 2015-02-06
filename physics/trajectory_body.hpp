@@ -277,10 +277,10 @@ void Trajectory<Frame>::WriteToMessage(
 }
 
 template<typename Frame>
-not_null<std::unique_ptr<Trajectory<Frame>>> Trajectory<Frame>::ReadFromMessage(
+std::unique_ptr<Trajectory<Frame>> Trajectory<Frame>::ReadFromMessage(
     serialization::Trajectory const& message,
     not_null<Body const*> const body) {
-  auto trajectory = make_not_null_unique<Trajectory>(body);
+  auto trajectory = std::make_unique<Trajectory>(body);
   trajectory->FillSubTreeFromMessage(message);
   return trajectory;
 }

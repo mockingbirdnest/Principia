@@ -92,10 +92,10 @@ inline void Vessel::WriteToMessage(
   }
 }
 
-inline not_null<std::unique_ptr<Vessel>> Vessel::ReadFromMessage(
+inline std::unique_ptr<Vessel> Vessel::ReadFromMessage(
     serialization::Vessel const& message,
     not_null<Celestial const*> const parent) {
-  auto vessel = make_not_null_unique<Vessel>(parent);
+  auto vessel = std::make_unique<Vessel>(parent);
   // NOTE(egg): for now we do not read the |MasslessBody| as it can contain no
   // information.
   if (message.has_history_and_prolongation()) {
