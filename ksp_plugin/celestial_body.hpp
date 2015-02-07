@@ -69,6 +69,7 @@ inline void Celestial::ResetProlongation(Instant const& time) {
 
 inline void Celestial::WriteToMessage(
     not_null<serialization::Celestial*> const message) const {
+  CHECK(is_initialized());
   body_->WriteToMessage(message->mutable_body());
   history_->WriteToMessage(
       message->mutable_history_and_prolongation()->mutable_history());
@@ -84,7 +85,7 @@ inline std::unique_ptr<Celestial> Celestial::ReadFromMessage(
       Trajectory<Barycentric>::ReadFromMessage(
           message.history_and_prolongation().history(),
           celestial->body_.get());
-  celestial->prolongation_ = 
+  celestial->prolongation_ =
       Trajectory<Barycentric>::ReadPointerFromMessage(
           message.history_and_prolongation().prolongation(),
           celestial->history_.get());
