@@ -37,6 +37,7 @@ class Vessel {
   // |CreateProlongation| or |CreateHistoryAndForkProlongation| was called at
   // some point.
   bool is_initialized() const;
+
   Celestial const& parent() const;
   void set_parent(not_null<Celestial const*> const parent);
 

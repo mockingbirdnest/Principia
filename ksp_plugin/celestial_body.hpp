@@ -8,6 +8,16 @@ namespace ksp_plugin {
 inline Celestial::Celestial(not_null<std::unique_ptr<MassiveBody const>> body)
     : body_(std::move(body)) {}
 
+inline bool Celestial::is_initialized() const {
+  bool const initialized = history_ != nullptr;
+  if (initialized) {
+    CHECK_NOTNULL(prolongation_);
+  } else {
+    CHECK_EQ(prolongation_, nullptr);
+  }
+  return initialized;
+}
+
 inline MassiveBody const& Celestial::body() const {
   return *body_;
 }
@@ -20,24 +30,28 @@ inline Celestial const& Celestial::parent() const {
   return *CHECK_NOTNULL(parent_);
 }
 
+inline void Celestial::set_parent(not_null<Celestial const*> const parent) {
+  parent_ = parent;
+}
+
 inline Trajectory<Barycentric> const& Celestial::history() const {
+  CHECK(is_initialized());
   return *history_;
 }
 
-inline Trajectory<Barycentric> const& Celestial::prolongation() const {
-  return *prolongation_;
-}
-
 inline Trajectory<Barycentric>* Celestial::mutable_history() {
+  CHECK(is_initialized());
   return history_.get();
 }
 
-inline Trajectory<Barycentric>* Celestial::mutable_prolongation() {
-  return prolongation_;
+inline Trajectory<Barycentric> const& Celestial::prolongation() const {
+  CHECK(is_initialized());
+  return *prolongation_;
 }
 
-inline void Celestial::set_parent(not_null<Celestial const*> const parent) {
-  parent_ = parent;
+inline Trajectory<Barycentric>* Celestial::mutable_prolongation() {
+  CHECK(is_initialized());
+  return prolongation_;
 }
 
 inline void Celestial::CreateHistoryAndForkProlongation(
