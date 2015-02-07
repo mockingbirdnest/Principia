@@ -43,11 +43,11 @@ class Vessel {
 
   // Both accessors require |is_synchronized()|.
   Trajectory<Barycentric> const& history() const;
-  Trajectory<Barycentric>* mutable_history();
+  not_null<Trajectory<Barycentric>*> mutable_history();
 
   // Both accessors require |is_initialized()|.
   Trajectory<Barycentric> const& prolongation() const;
-  Trajectory<Barycentric>* mutable_prolongation();
+  not_null<Trajectory<Barycentric>*> mutable_prolongation();
 
   // Creates an |owned_prolongation_| for this vessel and appends a point with
   // the given |time| and |degrees_of_freedom|.  The vessel must not satisfy

@@ -9,6 +9,7 @@
 #include "physics/massive_body.hpp"
 #include "physics/trajectory.hpp"
 #include "quantities/named_quantities.hpp"
+#include "serialization/ksp_plugin.pb.h"
 
 using principia::base::not_null;
 using principia::physics::Body;
@@ -38,9 +39,9 @@ class Celestial {
 
   // The following accessors require |is_initialized()|.
   Trajectory<Barycentric> const& history() const;
-  Trajectory<Barycentric>* mutable_history();
+  not_null<Trajectory<Barycentric>*> mutable_history();
   Trajectory<Barycentric> const& prolongation() const;
-  Trajectory<Barycentric>* mutable_prolongation();
+  not_null<Trajectory<Barycentric>*> mutable_prolongation();
 
   // Creates a |history_| for this body and appends a point with the given
   // |time| and |degrees_of_freedom|.  Then forks a |prolongation_| at |time|.
@@ -51,6 +52,14 @@ class Celestial {
 
   // Deletes the |prolongation_| and forks a new one at |time|.
   void ResetProlongation(Instant const& time);
+
+  // The celestial must satisfy |is_initialized()|.
+  void WriteToMessage(not_null<serialization::Celestial*> const message) const;
+  // NOTE(egg): This should return a |not_null|, but we can't do that until
+  // |not_null<std::unique_ptr<T>>| is convertible to |std::unique_ptr<T>|, and
+  // that requires a VS 2015 feature (rvalue references for |*this|).
+  static std::unique_ptr<Celestial> ReadFromMessage(
+      serialization::Celestial const& message);
 
  private:
   not_null<std::unique_ptr<MassiveBody const>> const body_;

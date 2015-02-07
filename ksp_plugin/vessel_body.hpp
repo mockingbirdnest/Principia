@@ -38,7 +38,7 @@ inline Trajectory<Barycentric> const& Vessel::history() const {
   return *history_;
 }
 
-inline Trajectory<Barycentric>* Vessel::mutable_history() {
+inline not_null<Trajectory<Barycentric>*> Vessel::mutable_history() {
   CHECK(is_synchronized());
   return history_.get();
 }
@@ -48,7 +48,7 @@ inline Trajectory<Barycentric> const& Vessel::prolongation() const {
   return *prolongation_;
 }
 
-inline Trajectory<Barycentric>* Vessel::mutable_prolongation() {
+inline not_null<Trajectory<Barycentric>*> Vessel::mutable_prolongation() {
   CHECK(is_initialized());
   return prolongation_;
 }

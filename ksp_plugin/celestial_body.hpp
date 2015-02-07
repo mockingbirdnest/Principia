@@ -13,7 +13,7 @@ inline bool Celestial::is_initialized() const {
   if (initialized) {
     CHECK_NOTNULL(prolongation_);
   } else {
-    CHECK_EQ(prolongation_, nullptr);
+    CHECK(prolongation_ == nullptr);
   }
   return initialized;
 }
@@ -39,7 +39,7 @@ inline Trajectory<Barycentric> const& Celestial::history() const {
   return *history_;
 }
 
-inline Trajectory<Barycentric>* Celestial::mutable_history() {
+inline not_null<Trajectory<Barycentric>*> Celestial::mutable_history() {
   CHECK(is_initialized());
   return history_.get();
 }
@@ -49,7 +49,7 @@ inline Trajectory<Barycentric> const& Celestial::prolongation() const {
   return *prolongation_;
 }
 
-inline Trajectory<Barycentric>* Celestial::mutable_prolongation() {
+inline not_null<Trajectory<Barycentric>*> Celestial::mutable_prolongation() {
   CHECK(is_initialized());
   return prolongation_;
 }
@@ -65,6 +65,30 @@ inline void Celestial::CreateHistoryAndForkProlongation(
 inline void Celestial::ResetProlongation(Instant const& time) {
   history_->DeleteFork(&prolongation_);
   prolongation_ = history_->NewFork(time);
+}
+
+inline void Celestial::WriteToMessage(
+    not_null<serialization::Celestial*> const message) const {
+  body_->WriteToMessage(message->mutable_body());
+  history_->WriteToMessage(
+      message->mutable_history_and_prolongation()->mutable_history());
+  prolongation_->WritePointerToMessage(
+      message->mutable_history_and_prolongation()->mutable_prolongation());
+}
+
+inline std::unique_ptr<Celestial> Celestial::ReadFromMessage(
+    serialization::Celestial const& message) {
+  auto celestial =
+      std::make_unique<Celestial>(MassiveBody::ReadFromMessage(message.body()));
+  celestial->history_ =
+      Trajectory<Barycentric>::ReadFromMessage(
+          message.history_and_prolongation().history(),
+          celestial->body_.get());
+  celestial->prolongation_ = 
+      Trajectory<Barycentric>::ReadPointerFromMessage(
+          message.history_and_prolongation().prolongation(),
+          celestial->history_.get());
+  return celestial;
 }
 
 }  // namespace ksp_plugin
