@@ -33,6 +33,28 @@ Vector<Acceleration, Frame>
 }
 
 template<typename Frame>
+void Part<Frame>::WriteToMessage(
+    not_null<serialization::Part*> const message) const {
+  degrees_of_freedom_.WriteToMessage(message->mutable_degrees_of_freedom());
+  mass_.WriteToMessage(message->mutable_mass());
+  gravitational_acceleration_to_be_applied_by_ksp_.WriteToMessage(
+      message->mutable_gravitational_acceleration_to_be_applied_by_ksp());
+}
+
+template<typename Frame>
+static Part<Frame> Part<Frame>::ReadFromMessage(
+    serialization::Part const& message) {
+  Part part;
+  part.degrees_of_freedom_ = DegreesOfFreedom<Frame>::ReadFromMessage(
+                                 message.degrees_of_freedom());
+  part.mass_ = Mass::ReadFromMessage(message.mass());
+  part.gravitational_acceleration_to_be_applied_by_ksp_ =
+      Vector<Acceleration, Frame>::ReadFromMessage(
+          message.gravitational_acceleration_to_be_applied_by_ksp());
+  return part;
+}
+
+template<typename Frame>
 std::ostream& operator<<(std::ostream& out, Part<Frame> const& part) {
   return out << "{"
       << part.degrees_of_freedom() << ", "

@@ -9,6 +9,7 @@
 #include "physics/degrees_of_freedom.hpp"
 #include "quantities/named_quantities.hpp"
 #include "quantities/quantities.hpp"
+#include "serialization/ksp_plugin.pb.h"
 
 using principia::geometry::Position;
 using principia::geometry::Vector;
@@ -38,7 +39,10 @@ class Part {
   Vector<Acceleration, Frame>
       gravitational_acceleration_to_be_applied_by_ksp() const;
 
- private:
+  void WriteToMessage(not_null<serialization::Part*> const message) const;
+  static Part ReadFromMessage(serialization::Part const& message);
+
+private:
   DegreesOfFreedom<Frame> degrees_of_freedom_;
   Mass mass_;
   Vector<Acceleration, Frame>
