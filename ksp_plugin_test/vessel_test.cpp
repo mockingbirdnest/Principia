@@ -39,18 +39,33 @@ class VesselTest : public testing::Test {
 
 using VesselDeathTest = VesselTest;
 
+TEST_F(VesselDeathTest, Uninitialized) {
+  EXPECT_DEATH(vessel_->history();, "is_synchronized");
+  EXPECT_DEATH(vessel_->mutable_history();, "is_synchronized");
+  EXPECT_DEATH(vessel_->prolongation();, "is_initialized");
+  EXPECT_DEATH(vessel_->mutable_prolongation();, "is_initialized");
+}
+
+TEST_F(VesselDeathTest, Unsynchronized) {
+  EXPECT_DEATH({
+    vessel_->CreateProlongation(t1_, d1_);
+    vessel_->history();
+  }, "is_synchronized");
+  EXPECT_DEATH({
+    vessel_->CreateProlongation(t1_, d1_);
+    vessel_->mutable_history();
+  }, "is_synchronized");
+}
+
 TEST_F(VesselTest, InitializationAndSynchronization) {
   // TODO(egg): mutable_history() should probably return a |not_null| and check
   // that |is_initialized()|.  This is even more confusing for the non-mutable
   // versions, which return a |const&|.
   EXPECT_FALSE(vessel_->is_initialized());
   EXPECT_FALSE(vessel_->is_synchronized());
-  EXPECT_THAT(vessel_->mutable_history(), IsNull());
-  EXPECT_THAT(vessel_->mutable_prolongation(), IsNull());
   vessel_->CreateProlongation(t1_, d1_);
   EXPECT_TRUE(vessel_->is_initialized());
   EXPECT_FALSE(vessel_->is_synchronized());
-  EXPECT_THAT(vessel_->mutable_history(), IsNull());
   EXPECT_THAT(vessel_->mutable_prolongation(), NotNull());
   vessel_->CreateHistoryAndForkProlongation(t2_, d2_);
   EXPECT_TRUE(vessel_->is_initialized());
