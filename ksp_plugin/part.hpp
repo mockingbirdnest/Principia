@@ -34,15 +34,20 @@ class Part {
        Vector<Acceleration, Frame> const&
            gravitational_acceleration_to_be_applied_by_ksp);
 
-  DegreesOfFreedom<Frame> degrees_of_freedom() const;
-  Mass mass() const;
-  Vector<Acceleration, Frame>
+  Part(Part&&) = delete;
+  Part& operator=(Part&&) = delete;
+  Part(Part const&) = delete;
+  Part& operator=(Part const&) = delete;
+
+  DegreesOfFreedom<Frame> const& degrees_of_freedom() const;
+  Mass const& mass() const;
+  Vector<Acceleration, Frame> const&
       gravitational_acceleration_to_be_applied_by_ksp() const;
 
   void WriteToMessage(not_null<serialization::Part*> const message) const;
   static Part ReadFromMessage(serialization::Part const& message);
 
-private:
+ private:
   DegreesOfFreedom<Frame> degrees_of_freedom_;
   Mass mass_;
   Vector<Acceleration, Frame>

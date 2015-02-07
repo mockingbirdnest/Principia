@@ -17,17 +17,17 @@ Part<Frame>::Part(
           gravitational_acceleration_to_be_applied_by_ksp) {}
 
 template<typename Frame>
-DegreesOfFreedom<Frame> Part<Frame>::degrees_of_freedom() const {
+DegreesOfFreedom<Frame> const& Part<Frame>::degrees_of_freedom() const {
   return degrees_of_freedom_;
 }
 
 template<typename Frame>
-Mass Part<Frame>::mass() const {
+Mass const& Part<Frame>::mass() const {
   return mass_;
 }
 
 template<typename Frame>
-Vector<Acceleration, Frame>
+Vector<Acceleration, Frame> const&
     Part<Frame>::gravitational_acceleration_to_be_applied_by_ksp() const {
   return gravitational_acceleration_to_be_applied_by_ksp_;
 }
