@@ -22,9 +22,9 @@ using principia::si::Second;
 using principia::si::Tonne;
 using testing::Eq;
 using testing::ElementsAre;
-using testing::Field;
 using testing::IsNull;
 using testing::Pointee;
+using testing::Property;
 using testing::Ref;
 using testing::Return;
 using testing::StrictMock;
@@ -358,12 +358,12 @@ TEST_F(InterfaceTest, PhysicsBubble) {
               AddVesselToNextPhysicsBubbleConstRef(
                   kVesselGUID,
                   ElementsAre(
-                      testing::Pair(1, Pointee(Field(&Part<World>::mass,
-                                                     300.0 * Tonne))),
-                      testing::Pair(4, Pointee(Field(&Part<World>::mass,
-                                                     600.0 * Tonne))),
-                      testing::Pair(7, Pointee(Field(&Part<World>::mass,
-                                                     900.0 * Tonne))))));
+                      testing::Pair(1, Pointee(Property(&Part<World>::mass,
+                                                        300.0 * Tonne))),
+                      testing::Pair(4, Pointee(Property(&Part<World>::mass,
+                                                        600.0 * Tonne))),
+                      testing::Pair(7, Pointee(Property(&Part<World>::mass,
+                                                        900.0 * Tonne))))));
   principia__AddVesselToNextPhysicsBubble(plugin_.get(),
                                           kVesselGUID,
                                           &parts[0],

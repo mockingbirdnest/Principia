@@ -220,7 +220,7 @@ void PhysicsBubble::ComputeNextCentreOfMassWorldDegreesOfFreedom(
   DegreesOfFreedom<World>::BarycentreCalculator<Mass> centre_of_mass_calculator;
   for (auto const& id_part : next->parts) {
     not_null<std::unique_ptr<Part<World>>> const& part = id_part.second;
-    centre_of_mass_calculator.Add(part->degrees_of_freedom, part->mass);
+    centre_of_mass_calculator.Add(part->degrees_of_freedom(), part->mass());
   }
   next->centre_of_mass = std::make_unique<DegreesOfFreedom<World>>(
                              centre_of_mass_calculator.Get());
@@ -242,7 +242,7 @@ void PhysicsBubble::ComputeNextVesselOffsets(
     VLOG(1) << NAMED(vessel) << ", " << NAMED(parts.size());
     DegreesOfFreedom<World>::BarycentreCalculator<Mass> vessel_calculator;
     for (auto const part : parts) {
-      vessel_calculator.Add(part->degrees_of_freedom, part->mass);
+      vessel_calculator.Add(part->degrees_of_freedom(), part->mass());
     }
     DegreesOfFreedom<World> const vessel_degrees_of_freedom =
         vessel_calculator.Get();
@@ -265,7 +265,7 @@ void PhysicsBubble::RestartNext(Instant const& current_time,
         vessel_parts.second;
     for (not_null<Part<World> const*> const part : parts) {
       bubble_calculator.Add(vessel->prolongation().last().degrees_of_freedom(),
-                            part->mass);
+                            part->mass());
     }
   }
   next->centre_of_mass_trajectory =
@@ -318,12 +318,12 @@ Vector<Acceleration, World> PhysicsBubble::IntrinsicAcceleration(
     not_null<Part<World>*> const current_part = current_next.first;
     not_null<Part<World>*> const next_part = current_next.second;
     acceleration_calculator.Add(
-        (next_part->degrees_of_freedom.velocity() -
-            (current_part->degrees_of_freedom.velocity() +
+        (next_part->degrees_of_freedom().velocity() -
+            (current_part->degrees_of_freedom().velocity() +
              *current_->velocity_correction)) / δt -
-        current_part->gravitational_acceleration_to_be_applied_by_ksp,
+        current_part->gravitational_acceleration_to_be_applied_by_ksp(),
         // TODO(egg): not sure what we actually want to do here.
-        (next_part->mass + current_part->mass) / 2.0);
+        (next_part->mass() + current_part->mass()) / 2.0);
   }
   VLOG_AND_RETURN(1, acceleration_calculator.Get());
 }
@@ -339,10 +339,10 @@ void PhysicsBubble::Shift(PlanetariumRotation const& planetarium_rotation,
   for (auto const& current_next : common_parts) {
     not_null<Part<World>*> const current_part = current_next.first;
     not_null<Part<World>*> const next_part = current_next.second;
-    current_common_calculator.Add(current_part->degrees_of_freedom,
-                                  current_part->mass);
-    next_common_calculator.Add(next_part->degrees_of_freedom,
-                               next_part->mass);
+    current_common_calculator.Add(current_part->degrees_of_freedom(),
+                                  current_part->mass());
+    next_common_calculator.Add(next_part->degrees_of_freedom(),
+                               next_part->mass());
   }
   auto const current_common_centre_of_mass = current_common_calculator.Get();
   auto const next_common_centre_of_mass = next_common_calculator.Get();

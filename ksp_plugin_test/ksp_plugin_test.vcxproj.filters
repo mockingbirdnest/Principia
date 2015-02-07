@@ -41,5 +41,8 @@
     <ClCompile Include="vessel_test.cpp">
       <Filter>Test Files</Filter>
     </ClCompile>
+    <ClCompile Include="part_test.cpp">
+      <Filter>Test Files</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>
