@@ -42,16 +42,12 @@ void Part<Frame>::WriteToMessage(
 }
 
 template<typename Frame>
-static Part<Frame> Part<Frame>::ReadFromMessage(
-    serialization::Part const& message) {
-  Part part;
-  part.degrees_of_freedom_ = DegreesOfFreedom<Frame>::ReadFromMessage(
-                                 message.degrees_of_freedom());
-  part.mass_ = Mass::ReadFromMessage(message.mass());
-  part.gravitational_acceleration_to_be_applied_by_ksp_ =
-      Vector<Acceleration, Frame>::ReadFromMessage(
-          message.gravitational_acceleration_to_be_applied_by_ksp());
-  return part;
+Part<Frame> Part<Frame>::ReadFromMessage(serialization::Part const& message) {
+  return Part(DegreesOfFreedom<Frame>::ReadFromMessage(
+                  message.degrees_of_freedom()),
+              Mass::ReadFromMessage(message.mass()),
+              Vector<Acceleration, Frame>::ReadFromMessage(
+                  message.gravitational_acceleration_to_be_applied_by_ksp()));
 }
 
 template<typename Frame>
