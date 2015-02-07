@@ -26,16 +26,23 @@ using PartId = uint32_t;
 
 // Represents a KSP part.
 template<typename Frame>
-struct Part {
+class Part {
+ public:
   Part(DegreesOfFreedom<Frame> const& degrees_of_freedom,
        Mass const& mass,
        Vector<Acceleration, Frame> const&
            gravitational_acceleration_to_be_applied_by_ksp);
 
-  DegreesOfFreedom<Frame> degrees_of_freedom;
-  Mass mass;
+  DegreesOfFreedom<Frame> degrees_of_freedom() const;
+  Mass mass() const;
   Vector<Acceleration, Frame>
-      gravitational_acceleration_to_be_applied_by_ksp;
+      gravitational_acceleration_to_be_applied_by_ksp() const;
+
+ private:
+  DegreesOfFreedom<Frame> degrees_of_freedom_;
+  Mass mass_;
+  Vector<Acceleration, Frame>
+      gravitational_acceleration_to_be_applied_by_ksp_;
   // TODO(egg): we may want to keep track of the moment of inertia, angular
   // momentum, etc.
 };
