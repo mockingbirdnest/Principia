@@ -38,11 +38,11 @@ class Vessel {
   Celestial const& parent() const;
   void set_parent(not_null<Celestial const*> const parent);
 
-  // Requires |is_synchronized()|.
+  // Both accessors require |is_synchronized()|.
   Trajectory<Barycentric> const& history() const;
   Trajectory<Barycentric>* mutable_history();
 
-  // Requires |is_initialized()|.
+  // Both accessors require |is_initialized()|.
   Trajectory<Barycentric> const& prolongation() const;
   Trajectory<Barycentric>* mutable_prolongation();
 
