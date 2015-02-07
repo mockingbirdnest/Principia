@@ -38,12 +38,15 @@ class Vessel {
   // some point.
   bool is_initialized() const;
   Celestial const& parent() const;
-  Trajectory<Barycentric> const& history() const;
-  Trajectory<Barycentric> const& prolongation() const;
-
-  Trajectory<Barycentric>* mutable_history();
-  Trajectory<Barycentric>* mutable_prolongation();
   void set_parent(not_null<Celestial const*> const parent);
+
+  // Both accessors require |is_synchronized()|.
+  Trajectory<Barycentric> const& history() const;
+  Trajectory<Barycentric>* mutable_history();
+
+  // Both accessors require |is_initialized()|.
+  Trajectory<Barycentric> const& prolongation() const;
+  Trajectory<Barycentric>* mutable_prolongation();
 
   // Creates an |owned_prolongation_| for this vessel and appends a point with
   // the given |time| and |degrees_of_freedom|.  The vessel must not satisfy

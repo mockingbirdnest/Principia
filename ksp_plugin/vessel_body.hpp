@@ -29,24 +29,28 @@ inline Celestial const& Vessel::parent() const {
   return *parent_;
 }
 
+inline void Vessel::set_parent(not_null<Celestial const*> const parent) {
+  parent_ = parent;
+}
+
 inline Trajectory<Barycentric> const& Vessel::history() const {
+  CHECK(is_synchronized());
   return *history_;
 }
 
-inline Trajectory<Barycentric> const& Vessel::prolongation() const {
-  return *prolongation_;
-}
-
 inline Trajectory<Barycentric>* Vessel::mutable_history() {
+  CHECK(is_synchronized());
   return history_.get();
 }
 
-inline Trajectory<Barycentric>* Vessel::mutable_prolongation() {
-  return prolongation_;
+inline Trajectory<Barycentric> const& Vessel::prolongation() const {
+  CHECK(is_initialized());
+  return *prolongation_;
 }
 
-inline void Vessel::set_parent(not_null<Celestial const*> const parent) {
-  parent_ = parent;
+inline Trajectory<Barycentric>* Vessel::mutable_prolongation() {
+  CHECK(is_initialized());
+  return prolongation_;
 }
 
 inline void Vessel::CreateProlongation(
