@@ -82,6 +82,7 @@ class PhysicsBubble {
       std::function<std::string(not_null<Vessel const*>)> const guid,
       not_null<serialization::PhysicsBubble*> const message) const;
   static std::unique_ptr<PhysicsBubble> ReadFromMessage(
+      std::function<not_null<Vessel*>(std::string)> const vessel,
       serialization::PhysicsBubble const& message);
 
  private:

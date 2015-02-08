@@ -34,8 +34,8 @@ class Part {
        Vector<Acceleration, Frame> const&
            gravitational_acceleration_to_be_applied_by_ksp);
 
-  Part(Part&&) = delete;
-  Part& operator=(Part&&) = delete;
+  //Part(Part&&) = delete;
+  //Part& operator=(Part&&) = delete;
   Part(Part const&) = delete;
   Part& operator=(Part const&) = delete;
 
