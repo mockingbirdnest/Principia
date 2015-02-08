@@ -52,9 +52,7 @@ TEST_F(CelestialDeathTest, SerializationError) {
 
 TEST_F(CelestialTest, SerializationSuccess) {
   serialization::Celestial message;
-  EXPECT_FALSE(message.has_history_and_prolongation());
   celestial_->CreateHistoryAndForkProlongation(t1_, d1_);
-  message.Clear();
   celestial_->WriteToMessage(&message);
   EXPECT_TRUE(message.has_history_and_prolongation());
   celestial_ = Celestial::ReadFromMessage(message);

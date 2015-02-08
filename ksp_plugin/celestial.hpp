@@ -37,9 +37,11 @@ class Celestial {
   Celestial const& parent() const;
   void set_parent(not_null<Celestial const*> const parent);
 
-  // The following accessors require |is_initialized()|.
+  // Both accessors require |is_initialized()|.
   Trajectory<Barycentric> const& history() const;
   not_null<Trajectory<Barycentric>*> mutable_history();
+
+  // Both accessors require |is_initialized()|.
   Trajectory<Barycentric> const& prolongation() const;
   not_null<Trajectory<Barycentric>*> mutable_prolongation();
 
