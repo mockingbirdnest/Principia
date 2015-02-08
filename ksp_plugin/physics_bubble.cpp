@@ -210,19 +210,31 @@ void PhysicsBubble::WriteToMessage(
     not_null<serialization::PhysicsBubble*> const message) const {
   body_.WriteToMessage(message->mutable_body());
   if (current_ != nullptr) {
+    // An inverted map for obtaining part ids.
+    std::map<Part<World> const*, PartId> part_to_part_id;
+
     serialization::PhysicsBubble::FullState* full_state =
         message->mutable_current();
-    for (auto const& pair : current_->vessels) {
-      not_null<Vessel*> vessel = pair.first;
-      full_state->add_vessel_guid(guid(vessel));
-    }
     for (auto const& pair : current_->parts) {
       PartId const part_id = pair.first;
       not_null<std::unique_ptr<Part<World>>> const& part = pair.second;
-      serialization::PhysicsBubble::FullState::PartIdToPart* serialized_part =
+      part_to_part_id.insert(std::make_pair(part.get(), part_id));
+      serialization::PhysicsBubble::FullState::PartIdAndPart* part_id_and_part =
           full_state->add_part();
-      serialized_part->set_part_id(part_id);
-      part->WriteToMessage(serialized_part->mutable_part());
+      part_id_and_part->set_part_id(part_id);
+      part->WriteToMessage(part_id_and_part->mutable_part());
+    }
+    for (auto const& pair : current_->vessels) {
+      not_null<Vessel*> vessel = pair.first;
+      std::vector<not_null<Part<World>*> const> const& parts = pair.second;
+      serialization::PhysicsBubble::FullState::GuidAndPartIds*
+          guid_and_part_ids = full_state->add_vessel();
+      guid_and_part_ids->set_guid(guid(vessel));
+      for (auto const& part : parts) {
+        auto it = part_to_part_id.find(part);
+        CHECK(it != part_to_part_id.end());
+        guid_and_part_ids->add_part_id(it->second);
+      }
     }
     current_->centre_of_mass->WriteToMessage(
         full_state->mutable_centre_of_mass());
@@ -232,11 +244,11 @@ void PhysicsBubble::WriteToMessage(
       not_null<Vessel const*> vessel = pair.first;
       RelativeDegreesOfFreedom<Barycentric> const& degrees_of_freedom =
           pair.second;
-      serialization::PhysicsBubble::FullState::VesselToDegreesOfFreedom*
-          from_centre_of_mass = full_state->add_from_centre_of_mass();
-      from_centre_of_mass->set_vessel_guid(guid(vessel));
+      serialization::PhysicsBubble::FullState::GuidAndDegreesOfFreedom*
+          guid_and_degrees_of_freedom = full_state->add_from_centre_of_mass();
+      guid_and_degrees_of_freedom->set_guid(guid(vessel));
       degrees_of_freedom.WriteToMessage(
-          from_centre_of_mass->mutable_degrees_of_freedom());
+          guid_and_degrees_of_freedom->mutable_degrees_of_freedom());
     }
     current_->displacement_correction->WriteToMessage(
         full_state->mutable_displacement_correction());
