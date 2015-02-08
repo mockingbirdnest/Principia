@@ -247,7 +247,43 @@ void PhysicsBubble::WriteToMessage(
 
 std::unique_ptr<PhysicsBubble> PhysicsBubble::ReadFromMessage(
       serialization::PhysicsBubble const& message) {
+  // NOTE(phl): No need to deserialize the |body_|, it has no state.
+  PreliminaryState preliminary_state;
+  serialization::PhysicsBubble::FullState const& full_state = message.current();
+  for (std::string const& guid : full_state.vessel_guid()) {
+    preliminary_state.vessels[guid] = ;
+  }
+  for (auto const& serialized_part : full_state.part()) {
+    preliminary_state[serialized_part.part_id()] =
+        Part<World>::ReadFromMessage(serialized_part.part());
+  }
+
   PhysicsBubble bubble;
+  bubble.current_ = std::make_unique<FullState>(preliminary_state);
+  FullState* current = bubble.current_.get();
+  current->centre_of_mass = std::make_unique<DegreesOfFreedom<World>>(
+      DegreesOfFreedom<World>::ReadFromMessage(full_state.centre_of_mass()));
+  current->centre_of_mass_trajectory =
+      std::make_unique<Trajectory<Barycentric>>(
+          Trajectory<Barycentric>::ReadFromMessage(
+              full_state.centre_of_mass_trajectory()));
+  current->from_centre_of_mass =
+      std::make_unique<std::map<not_null<Vessel const*> const,
+                       RelativeDegreesOfFreedom<Barycentric>>>();
+  for (auto const& from_centre_of_mass : full_state.from_centre_of_mass()) {
+    current->from_centre_of_mass[from_centre_of_mass.vessel_guid()] = 
+        RelativeDegreesOfFreedom<Barycentric>::ReadFromMessage(
+            from_centre_of_mass.degrees_of_freedom());
+  }
+  current->displacement_correction =
+      std::make_unique<Displacement<World>>(
+          Displacement<World>::ReadFromMessage(
+              full_state.displacement_correction()));
+  current->velocity_correction =
+      std::make_unique<Velocity<World>>(
+          Velocity<World>::ReadFromMessage(
+              full_state.displacement_correction()));
+  return std::make_unique<PhysicsBubble>(std::move(bubble));
 }
 
 PhysicsBubble::PreliminaryState::PreliminaryState() {}
