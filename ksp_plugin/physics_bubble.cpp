@@ -205,6 +205,51 @@ PhysicsBubble::mutable_centre_of_mass_trajectory() const {
   return current_->centre_of_mass_trajectory.get();
 }
 
+void PhysicsBubble::WriteToMessage(
+    std::function<std::string(not_null<Vessel const*>)> const guid,
+    not_null<serialization::PhysicsBubble*> const message) const {
+  body_.WriteToMessage(message->mutable_body());
+  if (current_ != nullptr) {
+    serialization::PhysicsBubble::FullState* full_state =
+        message->mutable_current();
+    for (auto const& pair : current_->vessels) {
+      not_null<Vessel*> vessel = pair.first;
+      full_state->add_vessel_guid(guid(vessel));
+    }
+    for (auto const& pair : current_->parts) {
+      PartId const part_id = pair.first;
+      not_null<std::unique_ptr<Part<World>>> const& part = pair.second;
+      serialization::PhysicsBubble::FullState::PartIdToPart* serialized_part =
+          full_state->add_part();
+      serialized_part->set_part_id(part_id);
+      part->WriteToMessage(serialized_part->mutable_part());
+    }
+    current_->centre_of_mass->WriteToMessage(
+        full_state->mutable_centre_of_mass());
+    current_->centre_of_mass_trajectory->WriteToMessage(
+        full_state->mutable_centre_of_mass_trajectory());
+    for (auto const& pair : *current_->from_centre_of_mass) {
+      not_null<Vessel const*> vessel = pair.first;
+      RelativeDegreesOfFreedom<Barycentric> const& degrees_of_freedom =
+          pair.second;
+      serialization::PhysicsBubble::FullState::VesselToDegreesOfFreedom*
+          from_centre_of_mass = full_state->add_from_centre_of_mass();
+      from_centre_of_mass->set_vessel_guid(guid(vessel));
+      degrees_of_freedom.WriteToMessage(
+          from_centre_of_mass->mutable_degrees_of_freedom());
+    }
+    current_->displacement_correction->WriteToMessage(
+        full_state->mutable_displacement_correction());
+    current_->velocity_correction->WriteToMessage(
+        full_state->mutable_velocity_correction());
+  }
+}
+
+std::unique_ptr<PhysicsBubble> PhysicsBubble::ReadFromMessage(
+      serialization::PhysicsBubble const& message) {
+  PhysicsBubble bubble;
+}
+
 PhysicsBubble::PreliminaryState::PreliminaryState() {}
 
 PhysicsBubble::FullState::FullState(

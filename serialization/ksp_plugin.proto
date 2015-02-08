@@ -32,12 +32,13 @@ message PhysicsBubble {
       required string vessel_guid = 1;
       required Pair degrees_of_freedom = 2;
     }
-    repeated string vessel_guids = 1;
-    repeated PartIdToPart parts = 2;
+    repeated string vessel_guid = 1;
+    repeated PartIdToPart part = 2;
     required Pair centre_of_mass = 3;
     required Trajectory centre_of_mass_trajectory = 4;
     repeated VesselToDegreesOfFreedom from_centre_of_mass = 5;
-    required Pair correction = 6;
+    required Multivector displacement_correction = 6;
+    required Multivector velocity_correction = 7;
   }
   required MasslessBody body = 1;
   optional FullState current = 2;
