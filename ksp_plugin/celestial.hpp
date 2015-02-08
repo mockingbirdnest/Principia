@@ -9,6 +9,7 @@
 #include "physics/massive_body.hpp"
 #include "physics/trajectory.hpp"
 #include "quantities/named_quantities.hpp"
+#include "serialization/ksp_plugin.pb.h"
 
 using principia::base::not_null;
 using principia::physics::Body;
@@ -28,24 +29,39 @@ class Celestial {
   Celestial(Celestial&&) = delete;
   ~Celestial() = default;
 
+  // True if, and only if, |history_| is not null.
+  bool is_initialized() const;
+
   MassiveBody const& body() const;
   bool has_parent() const;
   Celestial const& parent() const;
-  Trajectory<Barycentric> const& history() const;
-  Trajectory<Barycentric> const& prolongation() const;
-
-  Trajectory<Barycentric>* mutable_history();
-  Trajectory<Barycentric>* mutable_prolongation();
   void set_parent(not_null<Celestial const*> const parent);
+
+  // Both accessors require |is_initialized()|.
+  Trajectory<Barycentric> const& history() const;
+  not_null<Trajectory<Barycentric>*> mutable_history();
+
+  // Both accessors require |is_initialized()|.
+  Trajectory<Barycentric> const& prolongation() const;
+  not_null<Trajectory<Barycentric>*> mutable_prolongation();
 
   // Creates a |history_| for this body and appends a point with the given
   // |time| and |degrees_of_freedom|.  Then forks a |prolongation_| at |time|.
+  // The celestial |is_initialized()| after the call.
   void CreateHistoryAndForkProlongation(
       Instant const& time,
       DegreesOfFreedom<Barycentric> const& degrees_of_freedom);
 
   // Deletes the |prolongation_| and forks a new one at |time|.
   void ResetProlongation(Instant const& time);
+
+  // The celestial must satisfy |is_initialized()|.
+  void WriteToMessage(not_null<serialization::Celestial*> const message) const;
+  // NOTE(egg): This should return a |not_null|, but we can't do that until
+  // |not_null<std::unique_ptr<T>>| is convertible to |std::unique_ptr<T>|, and
+  // that requires a VS 2015 feature (rvalue references for |*this|).
+  static std::unique_ptr<Celestial> ReadFromMessage(
+      serialization::Celestial const& message);
 
  private:
   not_null<std::unique_ptr<MassiveBody const>> const body_;
