@@ -22,6 +22,7 @@
 #include "quantities/quantities.hpp"
 #include "quantities/named_quantities.hpp"
 #include "quantities/si.hpp"
+#include "serialization/ksp_plugin.pb.h"
 
 namespace principia {
 namespace ksp_plugin {
