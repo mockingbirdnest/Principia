@@ -24,25 +24,20 @@ message Part {
 
 message PhysicsBubble {
   message FullState {
-    message GuidAndDegreesOfFreedom {
+    message Vessel {
+      message PartIdAndPart {
+        required int32 part_id = 1;
+        required Part part = 2;
+      }
       required string guid = 1;
-      required Pair degrees_of_freedom = 2;
+      required Pair degrees_of_freedom = 2;  // From centre of mass.
+      repeated PartIdAndPart part = 3;
     }
-    message GuidAndPartIds {
-      required string guid = 1;
-      repeated int32 part_id = 2;
-    }
-    message PartIdAndPart {
-      required int32 part_id = 1;
-      required Part part = 2;
-    }
-    repeated PartIdAndPart part = 1;
-    repeated GuidAndPartIds vessel = 2;
-    required Pair centre_of_mass = 3;
-    required Trajectory centre_of_mass_trajectory = 4;
-    repeated GuidAndDegreesOfFreedom from_centre_of_mass = 5;
-    required Multivector displacement_correction = 6;
-    required Multivector velocity_correction = 7;
+    repeated Vessel vessel = 1;
+    required Pair centre_of_mass = 2;
+    required Trajectory centre_of_mass_trajectory = 3;
+    required Multivector displacement_correction = 4;
+    required Multivector velocity_correction = 5;
   }
   required MasslessBody body = 1;
   optional FullState current = 2;

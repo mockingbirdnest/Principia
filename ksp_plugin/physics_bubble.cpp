@@ -250,9 +250,9 @@ void PhysicsBubble::WriteToMessage(
       degrees_of_freedom.WriteToMessage(
           guid_and_degrees_of_freedom->mutable_degrees_of_freedom());
     }
-    current_->displacement_correction->WriteToMessage(
+    CHECK_NOTNULL(current_->displacement_correction.get())->WriteToMessage(
         full_state->mutable_displacement_correction());
-    current_->velocity_correction->WriteToMessage(
+    CHECK_NOTNULL(current_->velocity_correction.get())->WriteToMessage(
         full_state->mutable_velocity_correction());
   }
 }
@@ -305,7 +305,7 @@ std::unique_ptr<PhysicsBubble> PhysicsBubble::ReadFromMessage(
   current->velocity_correction =
       std::make_unique<Velocity<World>>(
           Velocity<World>::ReadFromMessage(
-              full_state.displacement_correction()));
+              full_state.velocity_correction()));
   return bubble;
 }
 
