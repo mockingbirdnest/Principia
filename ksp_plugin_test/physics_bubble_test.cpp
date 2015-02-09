@@ -588,10 +588,7 @@ TEST_F(PhysicsBubbleTest, TwoVessels) {
   CheckTwoVesselsDegreesOfFreedom(bubble_);
 }
 
-TEST_F(PhysicsBubbleTest, SerializationError) {
-}
-
-TEST_F(PhysicsBubbleTest, SerializationSuccess) {
+TEST_F(PhysicsBubbleTest, Serialization) {
   // Build a bubble similar to OneVesselOneStep.
   std::vector<IdAndOwnedPart> parts;
   CreateParts();
