@@ -67,6 +67,8 @@ class Plugin {
   Plugin() = delete;
   Plugin(Plugin const&) = delete;
   Plugin(Plugin&&) = delete;
+  Plugin& operator=(Plugin const&) = delete;
+  Plugin& operator=(Plugin&&) = delete;
   virtual ~Plugin() = default;
 
   // Constructs a |Plugin|. The current time of that instance is |initial_time|.
@@ -226,6 +228,13 @@ class Plugin {
       Index const reference_body_index) const;
 
   virtual Instant current_time() const;
+
+  void WriteToMessage(not_null<serialization::Plugin*> const message) const;
+  // NOTE(egg): This should return a |not_null|, but we can't do that until
+  // |not_null<std::unique_ptr<T>>| is convertible to |std::unique_ptr<T>|, and
+  // that requires a VS 2015 feature (rvalue references for |*this|).
+  static std::unique_ptr<Plugin> ReadFromMessage(
+      serialization::Plugin const& message);
 
  private:
   using GUIDToOwnedVessel = std::map<GUID, not_null<std::unique_ptr<Vessel>>>;
