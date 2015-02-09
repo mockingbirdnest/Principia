@@ -34,11 +34,6 @@ class Part {
        Vector<Acceleration, Frame> const&
            gravitational_acceleration_to_be_applied_by_ksp);
 
-  //Part(Part&&) = delete;
-  //Part& operator=(Part&&) = delete;
-  Part(Part const&) = delete;
-  Part& operator=(Part const&) = delete;
-
   DegreesOfFreedom<Frame> const& degrees_of_freedom() const;
   Mass const& mass() const;
   Vector<Acceleration, Frame> const&

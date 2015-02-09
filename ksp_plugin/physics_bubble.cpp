@@ -264,9 +264,11 @@ std::unique_ptr<PhysicsBubble> PhysicsBubble::ReadFromMessage(
   serialization::PhysicsBubble::FullState const& full_state = message.current();
   PreliminaryState preliminary_state;
   for (auto const& part_id_and_part : full_state.part()) {
-    preliminary_state.parts[part_id_and_part.part_id()] =
+    auto p = Part<World>::ReadFromMessage(part_id_and_part.part());
+    preliminary_state.parts.emplace(
+        part_id_and_part.part_id(),
         std::make_unique<Part<World>>(
-            std::move(Part<World>::ReadFromMessage(part_id_and_part.part())));
+            std::move(Part<World>::ReadFromMessage(part_id_and_part.part()))));
   }
   for (auto const& guid_and_part_ids : full_state.vessel()) {
     std::vector<not_null<Part<World>*> const> parts;
