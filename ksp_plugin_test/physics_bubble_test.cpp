@@ -588,5 +588,35 @@ TEST_F(PhysicsBubbleTest, TwoVessels) {
   CheckTwoVesselsDegreesOfFreedom();
 }
 
+TEST_F(PhysicsBubbleTest, SerializationSuccess) {
+  // Build a bubble similar to OneVesselOneStep.
+  std::vector<IdAndOwnedPart> parts;
+  CreateParts();
+  parts.push_back({11, std::move(p1a_)});
+  parts.push_back({12, std::move(p1b_)});
+  bubble_.AddVesselToNext(&vessel1_, std::move(parts));
+  bubble_.Prepare(rotation_, t1_, t2_);
+  Trajectory<Barycentric> const& trajectory =
+      bubble_.centre_of_mass_trajectory();
+  Trajectory<Barycentric>* mutable_trajectory =
+      bubble_.mutable_centre_of_mass_trajectory();
+
+  std::map<std::string, not_null<Vessel*>> guid_to_vessel = {{"v1", &vessel1_}};
+  std::map<not_null<Vessel const*>, std::string> vessel_to_guid =
+      {{&vessel1_, "v1"}};
+
+  serialization::PhysicsBubble message;
+  bubble_.WriteToMessage([&vessel_to_guid](not_null<Vessel const*> const v) {
+                           return vessel_to_guid.find(v)->second;
+                         },
+                         &message);
+  auto const b = PhysicsBubble::ReadFromMessage(
+                     [&guid_to_vessel](std::string const& v) {
+                       return guid_to_vessel.find(v)->second;
+                     },
+                     message);
+}
+
+
 }  // namespace ksp_plugin
 }  // namespace principia
