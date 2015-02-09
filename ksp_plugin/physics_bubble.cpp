@@ -1,6 +1,7 @@
 ﻿#include "ksp_plugin/physics_bubble.hpp"
 
 #include <map>
+#include <string>
 #include <utility>
 #include <vector>
 
@@ -203,6 +204,110 @@ not_null<Trajectory<Barycentric>*>
 PhysicsBubble::mutable_centre_of_mass_trajectory() const {
   CHECK(!empty()) << "Empty bubble";
   return current_->centre_of_mass_trajectory.get();
+}
+
+void PhysicsBubble::WriteToMessage(
+    std::function<std::string(not_null<Vessel const*>)> const guid,
+    not_null<serialization::PhysicsBubble*> const message) const {
+  body_.WriteToMessage(message->mutable_body());
+  if (current_ != nullptr) {
+    // An inverted map for obtaining part ids.
+    std::map<Part<World> const*, PartId> part_to_part_id;
+
+    serialization::PhysicsBubble::FullState* full_state =
+        message->mutable_current();
+    for (auto const& pair : current_->parts) {
+      PartId const part_id = pair.first;
+      not_null<std::unique_ptr<Part<World>>> const& part = pair.second;
+      part_to_part_id.insert(std::make_pair(part.get(), part_id));
+      serialization::PhysicsBubble::FullState::PartIdAndPart* part_id_and_part =
+          full_state->add_part();
+      part_id_and_part->set_part_id(part_id);
+      part->WriteToMessage(part_id_and_part->mutable_part());
+    }
+    for (auto const& pair : current_->vessels) {
+      not_null<Vessel*> vessel = pair.first;
+      std::vector<not_null<Part<World>*> const> const& parts = pair.second;
+      serialization::PhysicsBubble::FullState::GuidAndPartIds*
+          guid_and_part_ids = full_state->add_vessel();
+      guid_and_part_ids->set_guid(guid(vessel));
+      for (auto const& part : parts) {
+        auto it = part_to_part_id.find(part);
+        CHECK(it != part_to_part_id.end());
+        guid_and_part_ids->add_part_id(it->second);
+      }
+    }
+    current_->centre_of_mass->WriteToMessage(
+        full_state->mutable_centre_of_mass());
+    current_->centre_of_mass_trajectory->WriteToMessage(
+        full_state->mutable_centre_of_mass_trajectory());
+    for (auto const& pair : *current_->from_centre_of_mass) {
+      not_null<Vessel const*> vessel = pair.first;
+      RelativeDegreesOfFreedom<Barycentric> const& degrees_of_freedom =
+          pair.second;
+      serialization::PhysicsBubble::FullState::GuidAndDegreesOfFreedom*
+          guid_and_degrees_of_freedom = full_state->add_from_centre_of_mass();
+      guid_and_degrees_of_freedom->set_guid(guid(vessel));
+      degrees_of_freedom.WriteToMessage(
+          guid_and_degrees_of_freedom->mutable_degrees_of_freedom());
+    }
+    CHECK_NOTNULL(current_->displacement_correction.get())->WriteToMessage(
+        full_state->mutable_displacement_correction());
+    CHECK_NOTNULL(current_->velocity_correction.get())->WriteToMessage(
+        full_state->mutable_velocity_correction());
+  }
+}
+
+std::unique_ptr<PhysicsBubble> PhysicsBubble::ReadFromMessage(
+    std::function<not_null<Vessel*>(std::string)> const vessel,
+    serialization::PhysicsBubble const& message) {
+  // NOTE(phl): No need to deserialize the |body_|, it has no state.
+  serialization::PhysicsBubble::FullState const& full_state = message.current();
+  PreliminaryState preliminary_state;
+  for (auto const& part_id_and_part : full_state.part()) {
+    auto p = Part<World>::ReadFromMessage(part_id_and_part.part());
+    preliminary_state.parts.emplace(
+        part_id_and_part.part_id(),
+        std::make_unique<Part<World>>(
+            std::move(Part<World>::ReadFromMessage(part_id_and_part.part()))));
+  }
+  for (auto const& guid_and_part_ids : full_state.vessel()) {
+    std::vector<not_null<Part<World>*> const> parts;
+    for (PartId const part_id : guid_and_part_ids.part_id()) {
+      auto it = preliminary_state.parts.find(part_id);
+      CHECK(it != preliminary_state.parts.end());
+      parts.push_back(it->second.get());
+    }
+    preliminary_state.vessels[vessel(guid_and_part_ids.guid())] = parts;
+  }
+
+  std::unique_ptr<PhysicsBubble> bubble = std::make_unique<PhysicsBubble>();
+  bubble->current_ = std::make_unique<FullState>(std::move(preliminary_state));
+  FullState* current = bubble->current_.get();
+  current->centre_of_mass = std::make_unique<DegreesOfFreedom<World>>(
+      DegreesOfFreedom<World>::ReadFromMessage(full_state.centre_of_mass()));
+  current->centre_of_mass_trajectory =
+      Trajectory<Barycentric>::ReadFromMessage(
+          full_state.centre_of_mass_trajectory(), &bubble->body_);
+  current->from_centre_of_mass =
+      std::make_unique<std::map<not_null<Vessel const*> const,
+                       RelativeDegreesOfFreedom<Barycentric>>>();
+  for (auto const& guid_and_degrees_of_freedom :
+           full_state.from_centre_of_mass()) {
+    current->from_centre_of_mass->insert(
+        std::make_pair(vessel(guid_and_degrees_of_freedom.guid()),
+                       RelativeDegreesOfFreedom<Barycentric>::ReadFromMessage(
+                           guid_and_degrees_of_freedom.degrees_of_freedom())));
+  }
+  current->displacement_correction =
+      std::make_unique<Displacement<World>>(
+          Displacement<World>::ReadFromMessage(
+              full_state.displacement_correction()));
+  current->velocity_correction =
+      std::make_unique<Velocity<World>>(
+          Velocity<World>::ReadFromMessage(
+              full_state.velocity_correction()));
+  return bubble;
 }
 
 PhysicsBubble::PreliminaryState::PreliminaryState() {}
