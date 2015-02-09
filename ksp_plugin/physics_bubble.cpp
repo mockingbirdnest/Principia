@@ -1,6 +1,7 @@
 ﻿#include "ksp_plugin/physics_bubble.hpp"
 
 #include <map>
+#include <string>
 #include <utility>
 #include <vector>
 
