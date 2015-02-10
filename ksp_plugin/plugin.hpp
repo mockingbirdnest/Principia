@@ -230,6 +230,7 @@ class Plugin {
 
   virtual Instant current_time() const;
 
+  // Must be called after initialization.
   void WriteToMessage(not_null<serialization::Plugin*> const message) const;
   // NOTE(egg): This should return a |not_null|, but we can't do that until
   // |not_null<std::unique_ptr<T>>| is convertible to |std::unique_ptr<T>|, and
@@ -240,6 +241,16 @@ class Plugin {
  private:
   using GUIDToOwnedVessel = std::map<GUID, not_null<std::unique_ptr<Vessel>>>;
   using GUIDToUnownedVessel = std::map<GUID, not_null<Vessel*> const>;
+  using IndexToOwnedCelestial =
+      std::map<Index, not_null<std::unique_ptr<Celestial>>>;
+
+  Plugin(GUIDToOwnedVessel vessels,
+         IndexToOwnedCelestial celestials,
+         std::set<not_null<Vessel*> const> dirty_vessels,
+         not_null<std::unique_ptr<PhysicsBubble>> bubble,
+         Angle planetarium_rotation,
+         Instant current_time,
+         Index sun_index);
 
   not_null<std::unique_ptr<Vessel>> const& find_vessel_by_guid_or_die(
       GUID const& vessel_guid) const;
@@ -299,7 +310,7 @@ class Plugin {
   Time const Δt_ = 10 * Second;
 
   GUIDToOwnedVessel vessels_;
-  std::map<Index, not_null<std::unique_ptr<Celestial>>> celestials_;
+  IndexToOwnedCelestial celestials_;
 
   // The vessels which have been inserted after |HistoryTime()|.  These are the
   // vessels which do not satisfy |is_synchronized()|, i.e., they do not have a
@@ -314,7 +325,7 @@ class Plugin {
   // The vessels that will be kept during the next call to |AdvanceTime|.
   std::set<not_null<Vessel const*> const> kept_vessels_;
 
-  PhysicsBubble bubble_;
+  not_null<std::unique_ptr<PhysicsBubble>> const bubble_;
 
   not_null<std::unique_ptr<NBodySystem<Barycentric>>> n_body_system_;
   // The symplectic integrator computing the synchronized histories.
@@ -323,7 +334,7 @@ class Plugin {
   SPRKIntegrator<Length, Speed> prolongation_integrator_;
 
   // Whether initialization is ongoing.
-  Monostable initializing;
+  Monostable initializing_;
 
   Angle planetarium_rotation_;
   // The current in-game universal time.
