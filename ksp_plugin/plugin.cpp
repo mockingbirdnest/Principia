@@ -311,7 +311,7 @@ void Plugin::InsertCelestial(
                       << "of initialization";
   auto const it = celestials_.find(parent_index);
   CHECK(it != celestials_.end()) << "No body at index " << parent_index;
-  Celestial const& parent= *it->second;
+  not_null<Celestial const*> parent= it->second.get();
   auto const inserted = celestials_.emplace(
       celestial_index,
       make_not_null_unique<Celestial>(
@@ -324,10 +324,10 @@ void Plugin::InsertCelestial(
           kSunLookingGlass.Inverse()(from_parent));
   LOG(INFO) << "In barycentric coordinates: " << relative;
   not_null<Celestial*> const celestial = inserted.first->second.get();
-  celestial->set_parent(&parent);
+  celestial->set_parent(parent);
   celestial->CreateHistoryAndForkProlongation(
       current_time_,
-      parent.history().last().degrees_of_freedom() + relative);
+      parent->history().last().degrees_of_freedom() + relative);
 }
 
 void Plugin::EndInitialization() {
@@ -353,12 +353,12 @@ bool Plugin::InsertOrKeepVessel(GUID const& vessel_guid,
   CHECK(!initializing);
   auto const it = celestials_.find(parent_index);
   CHECK(it != celestials_.end()) << "No body at index " << parent_index;
-  Celestial const& parent = *it->second;
+  not_null<Celestial const*> parent = it->second.get();
   auto inserted = vessels_.emplace(vessel_guid,
-                                   make_not_null_unique<Vessel>(&parent));
+                                   make_not_null_unique<Vessel>(parent));
   not_null<Vessel*> const vessel = inserted.first->second.get();
   kept_vessels_.emplace(vessel);
-  vessel->set_parent(&parent);
+  vessel->set_parent(parent);
   LOG_IF(INFO, inserted.second) << "Inserted vessel with GUID " << vessel_guid
                                 << " at " << vessel;
   VLOG(1) << "Parent of vessel with GUID " << vessel_guid <<" is at index "
@@ -503,6 +503,7 @@ RenderedTrajectory<World> Plugin::RenderedVesselTrajectory(
   for (auto apparent_it = apparent_trajectory->first();
        !apparent_it.at_end();
        ++apparent_it) {
+    //TODO(phl):Fix
     final_state = &apparent_it.degrees_of_freedom();
     if (initial_state != nullptr) {
       result.emplace_back(to_world(initial_state->position()),
@@ -519,10 +520,10 @@ Plugin::NewBodyCentredNonRotatingTransforms(
     Index const reference_body_index) const {
   auto const it = celestials_.find(reference_body_index);
   CHECK(it != celestials_.end());
-  Celestial const& reference_body = *it->second;
+  not_null<Celestial const*> reference_body = it->second.get();
   Transforms<Barycentric, Rendering, Barycentric>::
       LazyTrajectory<Barycentric> const reference_body_prolongation =
-          std::bind(&Celestial::prolongation, &reference_body);
+          std::bind(&Celestial::prolongation, reference_body);
   return Transforms<Barycentric, Rendering, Barycentric>::
              BodyCentredNonRotating(reference_body_prolongation,
                                     reference_body_prolongation);
@@ -533,16 +534,16 @@ Plugin::NewBarycentricRotatingTransforms(Index const primary_index,
                                          Index const secondary_index) const {
   auto const primary_it = celestials_.find(primary_index);
   CHECK(primary_it != celestials_.end());
-  Celestial const& primary = *primary_it->second;
+  not_null<Celestial const*> primary = primary_it->second.get();
   auto const secondary_it = celestials_.find(secondary_index);
   CHECK(secondary_it != celestials_.end());
-  Celestial const& secondary = *secondary_it->second;
+  not_null<Celestial const*> secondary = secondary_it->second.get();
   Transforms<Barycentric, Rendering, Barycentric>::
       LazyTrajectory<Barycentric> const primary_prolongation =
-          std::bind(&Celestial::prolongation, &primary);
+          std::bind(&Celestial::prolongation, primary);
   Transforms<Barycentric, Rendering, Barycentric>::
       LazyTrajectory<Barycentric> const secondary_prolongation =
-          std::bind(&Celestial::prolongation, &secondary);
+          std::bind(&Celestial::prolongation, secondary);
   return Transforms<Barycentric, Rendering, Barycentric>::BarycentricRotating(
              primary_prolongation,
              primary_prolongation,
