@@ -648,12 +648,12 @@ void Plugin::WriteToMessage(
     vessel_to_guid.emplace(vessel, guid);
     auto const vessel_message = message->add_vessel();
     vessel_message->set_guid(guid);
-    vessel_message->set_dirty(is_dirty(vessel));
+    vessel->WriteToMessage(vessel_message->mutable_vessel());
     auto const it = celestial_to_index.find(&vessel->parent());
     CHECK(it != celestial_to_index.end());
     Index const parent_index = it->second;
     vessel_message->set_parent_index(parent_index);
-    vessel->WriteToMessage(vessel_message->mutable_vessel());
+    vessel_message->set_dirty(is_dirty(vessel));
   }
   bubble_.WriteToMessage(
       [&vessel_to_guid](not_null<Vessel const*> const vessel) -> GUID {
