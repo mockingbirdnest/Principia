@@ -641,9 +641,11 @@ void Plugin::WriteToMessage(
     celestial_message->set_parent_index(parent_index);
     celestial->WriteToMessage(celestial_message->mutable_celestial());
   }
+  std::map<not_null<Vessel const*>, GUID const> vessel_to_guid;
   for (auto const& guid_vessel : vessels_) {
     std::string const& guid = guid_vessel.first;
     not_null<Vessel*> const vessel = guid_vessel.second.get();
+    vessel_to_guid.emplace(vessel, guid);
     auto const vessel_message = message->add_vessel();
     vessel_message->set_guid(guid);
     vessel_message->set_dirty(is_dirty(vessel));
@@ -653,7 +655,13 @@ void Plugin::WriteToMessage(
     vessel_message->set_parent_index(parent_index);
     vessel->WriteToMessage(vessel_message->mutable_vessel());
   }
-  // TODO(egg): bubble.
+  bubble_.WriteToMessage(
+      [&vessel_to_guid](not_null<Vessel const*> const vessel) -> GUID {
+        auto const it = vessel_to_guid.find(vessel);
+        CHECK(it != vessel_to_guid.end());
+        return it->second;
+      },
+      message->mutable_bubble());
   planetarium_rotation_.WriteToMessage(message->mutable_planetarium_rotation());
   current_time_.WriteToMessage(message->mutable_current_time());
   auto const it = celestial_to_index.find(sun_);
