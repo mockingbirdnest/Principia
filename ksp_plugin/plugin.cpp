@@ -311,7 +311,7 @@ void Plugin::InsertCelestial(
                       << "of initialization";
   auto const it = celestials_.find(parent_index);
   CHECK(it != celestials_.end()) << "No body at index " << parent_index;
-  Celestial const& parent= *it->second;
+  not_null<Celestial const*> parent = it->second.get();
   auto const inserted = celestials_.emplace(
       celestial_index,
       make_not_null_unique<Celestial>(
@@ -324,10 +324,10 @@ void Plugin::InsertCelestial(
           kSunLookingGlass.Inverse()(from_parent));
   LOG(INFO) << "In barycentric coordinates: " << relative;
   not_null<Celestial*> const celestial = inserted.first->second.get();
-  celestial->set_parent(&parent);
+  celestial->set_parent(parent);
   celestial->CreateHistoryAndForkProlongation(
       current_time_,
-      parent.history().last().degrees_of_freedom() + relative);
+      parent->history().last().degrees_of_freedom() + relative);
 }
 
 void Plugin::EndInitialization() {
@@ -353,12 +353,12 @@ bool Plugin::InsertOrKeepVessel(GUID const& vessel_guid,
   CHECK(!initializing);
   auto const it = celestials_.find(parent_index);
   CHECK(it != celestials_.end()) << "No body at index " << parent_index;
-  Celestial const& parent = *it->second;
+  not_null<Celestial const*> parent = it->second.get();
   auto inserted = vessels_.emplace(vessel_guid,
-                                   make_not_null_unique<Vessel>(&parent));
+                                   make_not_null_unique<Vessel>(parent));
   not_null<Vessel*> const vessel = inserted.first->second.get();
   kept_vessels_.emplace(vessel);
-  vessel->set_parent(&parent);
+  vessel->set_parent(parent);
   LOG_IF(INFO, inserted.second) << "Inserted vessel with GUID " << vessel_guid
                                 << " at " << vessel;
   VLOG(1) << "Parent of vessel with GUID " << vessel_guid <<" is at index "
@@ -480,7 +480,7 @@ RenderedTrajectory<World> Plugin::RenderedVesselTrajectory(
 
   // First build the trajectory resulting from the first transform.
   Trajectory<Rendering> intermediate_trajectory(actual_trajectory.body<Body>());
-  for (auto actual_it = transforms->first(&actual_trajectory);
+  for (auto actual_it = transforms->first(actual_trajectory);
        !actual_it.at_end();
        ++actual_it) {
     intermediate_trajectory.Append(actual_it.time(),
@@ -490,7 +490,7 @@ RenderedTrajectory<World> Plugin::RenderedVesselTrajectory(
   // Then build the apparent trajectory using the second transform.
   auto apparent_trajectory = make_not_null_unique<Trajectory<Barycentric>>(
                                  actual_trajectory.body<Body>());
-  for (auto intermediate_it = transforms->second(&intermediate_trajectory);
+  for (auto intermediate_it = transforms->second(intermediate_trajectory);
        !intermediate_it.at_end();
        ++intermediate_it) {
     apparent_trajectory->Append(intermediate_it.time(),
@@ -498,17 +498,14 @@ RenderedTrajectory<World> Plugin::RenderedVesselTrajectory(
   }
 
   // Finally use the apparent trajectory to build the result.
-  DegreesOfFreedom<Barycentric> const* initial_state = nullptr;
-  DegreesOfFreedom<Barycentric> const* final_state = nullptr;
-  for (auto apparent_it = apparent_trajectory->first();
-       !apparent_it.at_end();
-       ++apparent_it) {
-    final_state = &apparent_it.degrees_of_freedom();
-    if (initial_state != nullptr) {
-      result.emplace_back(to_world(initial_state->position()),
-                          to_world(final_state->position()));
+  auto initial_it = apparent_trajectory->first();
+  if (!initial_it.at_end()) {
+    for (auto final_it = initial_it;
+         ++final_it, !final_it.at_end();
+         initial_it = final_it) {
+      result.emplace_back(to_world(initial_it.degrees_of_freedom().position()),
+                          to_world(final_it.degrees_of_freedom().position()));
     }
-    std::swap(final_state, initial_state);
   }
   VLOG(1) << "Returning a " << result.size() << "-segment trajectory";
   return result;
@@ -519,10 +516,10 @@ Plugin::NewBodyCentredNonRotatingTransforms(
     Index const reference_body_index) const {
   auto const it = celestials_.find(reference_body_index);
   CHECK(it != celestials_.end());
-  Celestial const& reference_body = *it->second;
+  not_null<Celestial const*> reference_body = it->second.get();
   Transforms<Barycentric, Rendering, Barycentric>::
       LazyTrajectory<Barycentric> const reference_body_prolongation =
-          std::bind(&Celestial::prolongation, &reference_body);
+          std::bind(&Celestial::prolongation, reference_body);
   return Transforms<Barycentric, Rendering, Barycentric>::
              BodyCentredNonRotating(reference_body_prolongation,
                                     reference_body_prolongation);
@@ -533,16 +530,16 @@ Plugin::NewBarycentricRotatingTransforms(Index const primary_index,
                                          Index const secondary_index) const {
   auto const primary_it = celestials_.find(primary_index);
   CHECK(primary_it != celestials_.end());
-  Celestial const& primary = *primary_it->second;
+  not_null<Celestial const*> primary = primary_it->second.get();
   auto const secondary_it = celestials_.find(secondary_index);
   CHECK(secondary_it != celestials_.end());
-  Celestial const& secondary = *secondary_it->second;
+  not_null<Celestial const*> secondary = secondary_it->second.get();
   Transforms<Barycentric, Rendering, Barycentric>::
       LazyTrajectory<Barycentric> const primary_prolongation =
-          std::bind(&Celestial::prolongation, &primary);
+          std::bind(&Celestial::prolongation, primary);
   Transforms<Barycentric, Rendering, Barycentric>::
       LazyTrajectory<Barycentric> const secondary_prolongation =
-          std::bind(&Celestial::prolongation, &secondary);
+          std::bind(&Celestial::prolongation, secondary);
   return Transforms<Barycentric, Rendering, Barycentric>::BarycentricRotating(
              primary_prolongation,
              primary_prolongation,
