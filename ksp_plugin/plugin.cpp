@@ -29,7 +29,6 @@ using geometry::Identity;
 using geometry::Permutation;
 using quantities::Force;
 using si::Radian;
-using std::swap;
 
 namespace {
 
