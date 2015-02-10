@@ -29,6 +29,7 @@ using geometry::Identity;
 using geometry::Permutation;
 using quantities::Force;
 using si::Radian;
+using std::swap;
 
 namespace {
 
@@ -498,18 +499,14 @@ RenderedTrajectory<World> Plugin::RenderedVesselTrajectory(
   }
 
   // Finally use the apparent trajectory to build the result.
-  DegreesOfFreedom<Barycentric> const* initial_state = nullptr;
-  DegreesOfFreedom<Barycentric> const* final_state = nullptr;
-  for (auto apparent_it = apparent_trajectory->first();
-       !apparent_it.at_end();
-       ++apparent_it) {
-    //TODO(phl):Fix
-    final_state = &apparent_it.degrees_of_freedom();
-    if (initial_state != nullptr) {
-      result.emplace_back(to_world(initial_state->position()),
-                          to_world(final_state->position()));
+  auto initial_it = apparent_trajectory->first();
+  if (!initial_it.at_end()) {
+    auto final_it = initial_it;
+    for (; ++final_it, !final_it.at_end();) {
+      result.emplace_back(to_world(initial_it.degrees_of_freedom().position()),
+                          to_world(final_it.degrees_of_freedom().position()));
+      initial_it = final_it;
     }
-    std::swap(final_state, initial_state);
   }
   VLOG(1) << "Returning a " << result.size() << "-segment trajectory";
   return result;
