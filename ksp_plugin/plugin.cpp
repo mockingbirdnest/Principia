@@ -311,7 +311,7 @@ void Plugin::InsertCelestial(
                       << "of initialization";
   auto const it = celestials_.find(parent_index);
   CHECK(it != celestials_.end()) << "No body at index " << parent_index;
-  not_null<Celestial const*> parent= it->second.get();
+  not_null<Celestial const*> parent = it->second.get();
   auto const inserted = celestials_.emplace(
       celestial_index,
       make_not_null_unique<Celestial>(
@@ -500,11 +500,11 @@ RenderedTrajectory<World> Plugin::RenderedVesselTrajectory(
   // Finally use the apparent trajectory to build the result.
   auto initial_it = apparent_trajectory->first();
   if (!initial_it.at_end()) {
-    auto final_it = initial_it;
-    for (; ++final_it, !final_it.at_end();) {
+    for (auto final_it = initial_it;
+         ++final_it, !final_it.at_end();
+         initial_it = final_it) {
       result.emplace_back(to_world(initial_it.degrees_of_freedom().position()),
                           to_world(final_it.degrees_of_freedom().position()));
-      initial_it = final_it;
     }
   }
   VLOG(1) << "Returning a " << result.size() << "-segment trajectory";
