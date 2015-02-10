@@ -623,5 +623,49 @@ Velocity<World> Plugin::BubbleVelocityCorrection(
                                                 reference_body));
 }
 
+void Plugin::WriteToMessage(
+    not_null<serialization::Plugin*> const message) const {
+  std::map<not_null<Celestial const*>, Index const> celestial_to_index;
+  for (auto const& index_celestial : celestials_) {
+    celestial_to_index.emplace(index_celestial.second.get(),
+                               index_celestial.first);
+  }
+  for (auto const& celestial_index : celestial_to_index) {
+    not_null<Celestial const*> const celestial = celestial_index.first;
+    Index const index = celestial_index.second;
+    auto const celestial_message = message->add_celestial();
+    celestial_message->set_index(index);
+    auto const it = celestial_to_index.find(&celestial->parent());
+    CHECK(it != celestial_to_index.end());
+    Index const parent_index = it->second;
+    celestial_message->set_parent_index(parent_index);
+    celestial->WriteToMessage(celestial_message->mutable_celestial());
+  }
+  for (auto const& guid_vessel : vessels_) {
+    std::string const& guid = guid_vessel.first;
+    not_null<Vessel*> const vessel = guid_vessel.second.get();
+    auto const vessel_message = message->add_vessel();
+    vessel_message->set_guid(guid);
+    vessel_message->set_dirty(is_dirty(vessel));
+    auto const it = celestial_to_index.find(&vessel->parent());
+    CHECK(it != celestial_to_index.end());
+    Index const parent_index = it->second;
+    vessel_message->set_parent_index(parent_index);
+    vessel->WriteToMessage(vessel_message->mutable_vessel());
+  }
+  // TODO(egg): bubble.
+  planetarium_rotation_.WriteToMessage(message->mutable_planetarium_rotation());
+  current_time_.WriteToMessage(message->mutable_current_time());
+  auto const it = celestial_to_index.find(sun_);
+  CHECK(it != celestial_to_index.end());
+  Index const sun_index = it->second;
+  message->set_sun_index(sun_index);
+}
+
+std::unique_ptr<Plugin> Plugin::ReadFromMessage(
+    serialization::Plugin const& message) {
+
+}
+
 }  // namespace ksp_plugin
 }  // namespace principia
