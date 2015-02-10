@@ -480,7 +480,7 @@ RenderedTrajectory<World> Plugin::RenderedVesselTrajectory(
 
   // First build the trajectory resulting from the first transform.
   Trajectory<Rendering> intermediate_trajectory(actual_trajectory.body<Body>());
-  for (auto actual_it = transforms->first(&actual_trajectory);
+  for (auto actual_it = transforms->first(actual_trajectory);
        !actual_it.at_end();
        ++actual_it) {
     intermediate_trajectory.Append(actual_it.time(),
@@ -490,7 +490,7 @@ RenderedTrajectory<World> Plugin::RenderedVesselTrajectory(
   // Then build the apparent trajectory using the second transform.
   auto apparent_trajectory = make_not_null_unique<Trajectory<Barycentric>>(
                                  actual_trajectory.body<Body>());
-  for (auto intermediate_it = transforms->second(&intermediate_trajectory);
+  for (auto intermediate_it = transforms->second(intermediate_trajectory);
        !intermediate_it.at_end();
        ++intermediate_it) {
     apparent_trajectory->Append(intermediate_it.time(),

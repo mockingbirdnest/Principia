@@ -124,7 +124,7 @@ TEST_F(TransformsTest, BodyCentredNonRotating) {
   Trajectory<Through> body1_through(&body1_);
 
   int i = 1;
-  for (auto it = transforms->first(satellite_from_.get());
+  for (auto it = transforms->first(*satellite_from_);
        !it.at_end();
        ++it, ++i) {
     DegreesOfFreedom<Through> const degrees_of_freedom =
@@ -142,7 +142,7 @@ TEST_F(TransformsTest, BodyCentredNonRotating) {
   }
 
   i = 1;
-  for (auto it = transforms->second(&body1_through);
+  for (auto it = transforms->second(body1_through);
        !it.at_end();
        ++it, ++i) {
     body1_to_->Append(
@@ -178,7 +178,7 @@ TEST_F(TransformsTest, SatelliteBarycentricRotating) {
   Trajectory<Through> satellite_through(&satellite_);
 
   int i = 1;
-  for (auto it = transforms->first(satellite_from_.get());
+  for (auto it = transforms->first(*satellite_from_);
        !it.at_end();
        ++it, ++i) {
     DegreesOfFreedom<Through> const degrees_of_freedom =
@@ -199,7 +199,7 @@ TEST_F(TransformsTest, SatelliteBarycentricRotating) {
   }
 
   i = 1;
-  for (auto it = transforms->second(&satellite_through);
+  for (auto it = transforms->second(satellite_through);
        !it.at_end();
        ++it, ++i) {
       body1_to_->Append(
@@ -252,8 +252,8 @@ TEST_F(TransformsTest, BodiesBarycentricRotating) {
   Trajectory<Through> body2_through(&body2_);
 
   int i = 1;
-  for (auto it1 = transforms->first(body1_from_.get()),
-            it2 = transforms->first(body2_from_.get());
+  for (auto it1 = transforms->first(*body1_from_),
+            it2 = transforms->first(*body2_from_);
        !it1.at_end() && !it2.at_end();
        ++it1, ++it2, ++i) {
     Length const l = i * SIUnit<Length>();
