@@ -2,6 +2,7 @@
 
 #include <map>
 #include <memory>
+#include <string>
 #include <utility>
 #include <vector>
 
@@ -11,6 +12,7 @@
 #include "ksp_plugin/part.hpp"
 #include "ksp_plugin/vessel.hpp"
 #include "physics/degrees_of_freedom.hpp"
+#include "serialization/ksp_plugin.pb.h"
 
 using principia::base::not_null;
 using principia::physics::DegreesOfFreedom;
@@ -77,6 +79,13 @@ class PhysicsBubble {
   Trajectory<Barycentric> const& centre_of_mass_trajectory() const;
   not_null<Trajectory<Barycentric>*> mutable_centre_of_mass_trajectory() const;
 
+  void WriteToMessage(
+      std::function<std::string(not_null<Vessel const*>)> const guid,
+      not_null<serialization::PhysicsBubble*> const message) const;
+  static std::unique_ptr<PhysicsBubble> ReadFromMessage(
+      std::function<not_null<Vessel*>(std::string)> const vessel,
+      serialization::PhysicsBubble const& message);
+
  private:
   using PartCorrespondence = std::pair<not_null<Part<World>*>,
                                        not_null<Part<World>*>>;
@@ -97,7 +106,8 @@ class PhysicsBubble {
     std::unique_ptr<DegreesOfFreedom<World>> centre_of_mass;
     std::unique_ptr<Trajectory<Barycentric>> centre_of_mass_trajectory;
     std::unique_ptr<std::map<not_null<Vessel const*> const,
-                    RelativeDegreesOfFreedom<Barycentric>>> from_centre_of_mass;
+                             RelativeDegreesOfFreedom<Barycentric>>>
+        from_centre_of_mass;
     std::unique_ptr<Displacement<World>> displacement_correction;
     std::unique_ptr<Velocity<World>> velocity_correction;
   };

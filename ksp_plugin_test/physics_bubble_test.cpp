@@ -1,5 +1,7 @@
 #include "ksp_plugin/physics_bubble.hpp"
 
+#include <map>
+#include <string>
 #include <vector>
 
 #include "base/not_null.hpp"
@@ -154,9 +156,9 @@ class PhysicsBubbleTest : public testing::Test {
                     236 * SIUnit<Acceleration>()}));
   }
 
-  void CheckOneVesselDegreesOfFreedom() {
+  void CheckOneVesselDegreesOfFreedom(PhysicsBubble const& bubble) {
     // Since we have only one vessel, it is at the centre of mass of the bubble.
-    EXPECT_THAT(bubble_.from_centre_of_mass(&vessel1_),
+    EXPECT_THAT(bubble.from_centre_of_mass(&vessel1_),
                 Componentwise(
                     Componentwise(VanishesBefore(1 * SIUnit<Length>(), 0),
                                   VanishesBefore(1 * SIUnit<Length>(), 0),
@@ -168,25 +170,25 @@ class PhysicsBubbleTest : public testing::Test {
     // The trajectory of the centre of mass has one point which matches that
     // of the vessel.
     Trajectory<Barycentric> const& trajectory =
-        bubble_.centre_of_mass_trajectory();
+        bubble.centre_of_mass_trajectory();
     EXPECT_EQ(dof1_, trajectory.last().degrees_of_freedom());
     Trajectory<Barycentric>* mutable_trajectory =
-        bubble_.mutable_centre_of_mass_trajectory();
+        bubble.mutable_centre_of_mass_trajectory();
     EXPECT_EQ(dof1_, mutable_trajectory->last().degrees_of_freedom());
 
-    EXPECT_THAT(bubble_.DisplacementCorrection(
+    EXPECT_THAT(bubble.DisplacementCorrection(
                     rotation_, celestial_, celestial_world_position_),
                 AlmostEquals(Displacement<World>({-25 * SIUnit<Length>(),
                                                   191 * SIUnit<Length>(),
                                                   193 * SIUnit<Length>()}), 8));
-    EXPECT_THAT(bubble_.VelocityCorrection(rotation_, celestial_),
+    EXPECT_THAT(bubble.VelocityCorrection(rotation_, celestial_),
                 AlmostEquals(Velocity<World>(
                     {(-110.0 - 2742.0 / 23.0) * SIUnit<Speed>(),
                      (108.0 - 2765.0 / 23.0) * SIUnit<Speed>(),
                      (112.0 - 2788.0 / 23.0) * SIUnit<Speed>()}), 16));
   }
 
-  void CheckTwoVesselsDegreesOfFreedom() {
+  void CheckTwoVesselsDegreesOfFreedom(PhysicsBubble const& bubble) {
     // Check the degrees of freedom of the vessels with respect to the centre of
     // mass.
     Displacement<World> const cdm_position({1906.0 / 89.0 * SIUnit<Length>(),
@@ -195,7 +197,7 @@ class PhysicsBubbleTest : public testing::Test {
     Velocity<World> const cdm_velocity({17546.0 / 89.0 * SIUnit<Speed>(),
                                         17635.0 / 89.0 * SIUnit<Speed>(),
                                         17724.0 / 89.0 * SIUnit<Speed>()});
-    EXPECT_THAT(bubble_.from_centre_of_mass(&vessel1_),
+    EXPECT_THAT(bubble.from_centre_of_mass(&vessel1_),
                 Componentwise(
                     AlmostEquals(Displacement<Barycentric>(
                         {15 * SIUnit<Length>() -
@@ -211,7 +213,7 @@ class PhysicsBubbleTest : public testing::Test {
                             cdm_velocity.coordinates().x,
                          2788.0 / 23.0 * SIUnit<Speed>() -
                             cdm_velocity.coordinates().z}), 1)));
-    EXPECT_THAT(bubble_.from_centre_of_mass(&vessel2_),
+    EXPECT_THAT(bubble.from_centre_of_mass(&vessel2_),
                 Componentwise(
                     AlmostEquals(Displacement<Barycentric>(
                         {25 * SIUnit<Length>() -
@@ -231,18 +233,18 @@ class PhysicsBubbleTest : public testing::Test {
     // The trajectory of the centre of mass has only one point which is at the
     // barycentre of the trajectories of the vessels.
     Trajectory<Barycentric> const& trajectory =
-        bubble_.centre_of_mass_trajectory();
+        bubble.centre_of_mass_trajectory();
     DegreesOfFreedom<Barycentric> const expected_dof =
         physics::Barycentre<Barycentric, double>({dof1_, dof2_}, {23, 66});
     EXPECT_EQ(expected_dof, trajectory.last().degrees_of_freedom());
 
-    EXPECT_THAT(bubble_.DisplacementCorrection(
+    EXPECT_THAT(bubble.DisplacementCorrection(
                     rotation_, celestial_, celestial_world_position_),
                 AlmostEquals(Displacement<World>(
                     {-7579.0 / 89.0 * SIUnit<Length>(),
                      24934.0 / 89.0 * SIUnit<Length>(),
                      25201 / 89.0  * SIUnit<Length>()}) - cdm_position, 5));
-    EXPECT_THAT(bubble_.VelocityCorrection(rotation_, celestial_),
+    EXPECT_THAT(bubble.VelocityCorrection(rotation_, celestial_),
                 AlmostEquals(Velocity<World>(
                     {-16390.0 / 89.0 * SIUnit<Speed>(),
                      16212.0 / 89.0 * SIUnit<Speed>(),
@@ -326,7 +328,7 @@ TEST_F(PhysicsBubbleTest, OneVesselOneStep) {
   EXPECT_FALSE(mutable_trajectory->has_intrinsic_acceleration());
 
   // Check the positions and velocities.
-  CheckOneVesselDegreesOfFreedom();
+  CheckOneVesselDegreesOfFreedom(bubble_);
 }
 
 TEST_F(PhysicsBubbleTest, OneVesselTwoSteps) {
@@ -367,7 +369,7 @@ TEST_F(PhysicsBubbleTest, OneVesselTwoSteps) {
 
   // All the other assertions remain as in |OneVesselOneStep| since we didn't
   // restart or shift the bubble.
-  CheckOneVesselDegreesOfFreedom();
+  CheckOneVesselDegreesOfFreedom(bubble_);
 }
 
 TEST_F(PhysicsBubbleTest, OneVesselPartRemoved) {
@@ -519,7 +521,7 @@ TEST_F(PhysicsBubbleTest, OneVesselNoCommonParts) {
 
   // All the other assertions remain as in |OneVesselOneStep| since we restarted
   // the bubble with parts |p1a_| and |p1b_|.
-  CheckOneVesselDegreesOfFreedom();
+  CheckOneVesselDegreesOfFreedom(bubble_);
 }
 
 TEST_F(PhysicsBubbleTest, TwoVessels) {
@@ -549,7 +551,7 @@ TEST_F(PhysicsBubbleTest, TwoVessels) {
   EXPECT_FALSE(trajectory.has_intrinsic_acceleration());
 
   // Check the positions and velocities.
-  CheckTwoVesselsDegreesOfFreedom();
+  CheckTwoVesselsDegreesOfFreedom(bubble_);
 
   // The second step.
   CreateParts();
@@ -585,8 +587,74 @@ TEST_F(PhysicsBubbleTest, TwoVessels) {
                          2));
 
   // All the rest is identical since we didn't restart the bubble.
-  CheckTwoVesselsDegreesOfFreedom();
+  CheckTwoVesselsDegreesOfFreedom(bubble_);
 }
+
+TEST_F(PhysicsBubbleTest, Serialization) {
+  // Build a bubble similar to OneVesselOneStep.
+  std::vector<IdAndOwnedPart> parts;
+  CreateParts();
+  parts.push_back({11, std::move(p1a_)});
+  parts.push_back({12, std::move(p1b_)});
+  bubble_.AddVesselToNext(&vessel1_, std::move(parts));
+  bubble_.Prepare(rotation_, t1_, t2_);
+  Trajectory<Barycentric> const& trajectory =
+      bubble_.centre_of_mass_trajectory();
+  Trajectory<Barycentric>* mutable_trajectory =
+      bubble_.mutable_centre_of_mass_trajectory();
+  bubble_.DisplacementCorrection(rotation_,
+                                 celestial_,
+                                 celestial_world_position_);
+  bubble_.VelocityCorrection(rotation_, celestial_);
+
+  std::map<std::string, not_null<Vessel*>> guid_to_vessel = {{"v1", &vessel1_}};
+  std::map<not_null<Vessel const*>, std::string> vessel_to_guid =
+      {{&vessel1_, "v1"}};
+
+  serialization::PhysicsBubble message;
+  bubble_.WriteToMessage([&vessel_to_guid](not_null<Vessel const*> const v) {
+                           return vessel_to_guid.find(v)->second;
+                         },
+                         &message);
+  EXPECT_TRUE(message.has_body());
+  EXPECT_TRUE(message.has_current());
+  EXPECT_EQ(2, message.current().part_size());
+  EXPECT_EQ(11, message.current().part(0).part_id());
+  EXPECT_EQ(11, message.current().part(0).part().mass().magnitude());
+  EXPECT_EQ(12, message.current().part(1).part_id());
+  EXPECT_EQ(12, message.current().part(1).part().mass().magnitude());
+  EXPECT_EQ(1, message.current().vessel_size());
+  EXPECT_EQ("v1", message.current().vessel(0).guid());
+  EXPECT_EQ(2, message.current().vessel(0).part_id_size());
+  EXPECT_EQ(11, message.current().vessel(0).part_id(0));
+  EXPECT_EQ(12, message.current().vessel(0).part_id(1));
+  EXPECT_TRUE(message.current().has_centre_of_mass());
+  EXPECT_TRUE(message.current().has_centre_of_mass_trajectory());
+  EXPECT_EQ(1, message.current().from_centre_of_mass_size());
+  EXPECT_EQ("v1", message.current().from_centre_of_mass(0).guid());
+  EXPECT_EQ(0, message.current().from_centre_of_mass(0).degrees_of_freedom().
+                   t1().multivector().vector().x().quantity().magnitude());
+  EXPECT_EQ(0, message.current().from_centre_of_mass(0).degrees_of_freedom().
+                   t1().multivector().vector().y().quantity().magnitude());
+  EXPECT_EQ(0, message.current().from_centre_of_mass(0).degrees_of_freedom().
+                   t1().multivector().vector().z().quantity().magnitude());
+  EXPECT_EQ(0, message.current().from_centre_of_mass(0).degrees_of_freedom().
+                   t2().multivector().vector().x().quantity().magnitude());
+  EXPECT_EQ(0, message.current().from_centre_of_mass(0).degrees_of_freedom().
+                   t2().multivector().vector().y().quantity().magnitude());
+  EXPECT_EQ(0, message.current().from_centre_of_mass(0).degrees_of_freedom().
+                   t2().multivector().vector().z().quantity().magnitude());
+  EXPECT_TRUE(message.current().has_displacement_correction());
+  EXPECT_TRUE(message.current().has_velocity_correction());
+
+  auto const bubble = PhysicsBubble::ReadFromMessage(
+                          [&guid_to_vessel](std::string const& v) {
+                            return guid_to_vessel.find(v)->second;
+                          },
+                          message);
+  CheckOneVesselDegreesOfFreedom(*bubble);
+}
+
 
 }  // namespace ksp_plugin
 }  // namespace principia
