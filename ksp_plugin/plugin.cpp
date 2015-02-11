@@ -660,16 +660,18 @@ void Plugin::WriteToMessage(
     celestial_to_index.emplace(index_celestial.second.get(),
                                index_celestial.first);
   }
-  for (auto const& celestial_index : celestial_to_index) {
-    not_null<Celestial const*> const celestial = celestial_index.first;
-    Index const index = celestial_index.second;
+  for (auto const& index_celestial : celestials_) {
+    not_null<Celestial const*> const celestial = index_celestial.second.get();
+    Index const index = index_celestial.first;
     auto const celestial_message = message->add_celestial();
     celestial_message->set_index(index);
     celestial->WriteToMessage(celestial_message->mutable_celestial());
-    auto const it = celestial_to_index.find(&celestial->parent());
-    CHECK(it != celestial_to_index.end());
-    Index const parent_index = it->second;
-    celestial_message->set_parent_index(parent_index);
+    if (celestial->has_parent()) {
+      auto const it = celestial_to_index.find(&celestial->parent());
+      CHECK(it != celestial_to_index.end());
+      Index const parent_index = it->second;
+      celestial_message->set_parent_index(parent_index);
+    }
   }
   std::map<not_null<Vessel const*>, GUID const> vessel_to_guid;
   for (auto const& guid_vessel : vessels_) {
@@ -713,7 +715,7 @@ std::unique_ptr<Plugin> Plugin::ReadFromMessage(
       auto const it = celestials.find(celestial_message.index());
       CHECK(it != celestials.end());
       not_null<std::unique_ptr<Celestial>> const& celestial = it->second;
-      auto const parent_it = celestials.find(celestial_message.index());
+      auto const parent_it = celestials.find(celestial_message.parent_index());
       CHECK(parent_it != celestials.end());
       not_null<Celestial const*> const parent = parent_it->second.get();
       celestial->set_parent(parent);

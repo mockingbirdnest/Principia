@@ -11,6 +11,7 @@
 
 #include "geometry/permutation.hpp"
 #include "gmock/gmock.h"
+#include "google/protobuf/text_format.h"
 #include "gtest/gtest.h"
 #include "physics/mock_n_body_system.hpp"
 #include "quantities/si.hpp"
@@ -216,6 +217,61 @@ class PluginTest : public testing::Test {
 };
 
 using PluginDeathTest = PluginTest;
+
+TEST_F(PluginDeathTest, SerializationError) {
+  EXPECT_DEATH({
+    auto plugin =
+        make_not_null_unique<Plugin>(
+            initial_time_,
+            SolarSystem::kSun,
+            sun_gravitational_parameter_,
+            planetarium_rotation_);
+    serialization::Plugin message;
+    plugin->WriteToMessage(&message);
+  }, "!initializing");
+}
+
+TEST_F(PluginTest, Serialization) {
+  GUID const satellite = "satellite";
+  // We need an actual |Plugin| here rather than a |TestablePlugin|, since
+  // that's what |ReadFromMessage| returns.
+  auto plugin =
+      make_not_null_unique<Plugin>(
+          initial_time_,
+          SolarSystem::kSun,
+          sun_gravitational_parameter_,
+          planetarium_rotation_);
+  for (std::size_t index = SolarSystem::kSun + 1;
+       index < bodies_.size();
+       ++index) {
+    Index const parent_index = SolarSystem::parent(index);
+    RelativeDegreesOfFreedom<AliceSun> const from_parent= looking_glass_(
+        solar_system_->trajectories()[index]->
+            last().degrees_of_freedom() -
+        solar_system_->trajectories()[parent_index]->
+            last().degrees_of_freedom());
+    plugin->InsertCelestial(index,
+                            bodies_[index]->gravitational_parameter(),
+                            parent_index,
+                            from_parent);
+  }
+  plugin->EndInitialization();
+  plugin->InsertOrKeepVessel(satellite, SolarSystem::kEarth);
+  plugin->SetVesselStateOffset(satellite,
+                               RelativeDegreesOfFreedom<AliceSun>(
+                                   satellite_initial_displacement_,
+                                   satellite_initial_velocity_));
+  serialization::Plugin message;
+  plugin->WriteToMessage(&message);
+  plugin = Plugin::ReadFromMessage(message);
+  serialization::Plugin second_message;
+  plugin->WriteToMessage(&second_message);
+  EXPECT_EQ(message.SerializeAsString(), second_message.SerializeAsString());
+  EXPECT_EQ(bodies_.size(), message.celestial_size());
+  EXPECT_EQ(1, message.vessel_size());
+  EXPECT_EQ(SolarSystem::kEarth, message.vessel(0).parent_index());
+  EXPECT_FALSE(message.bubble().has_current());
+}
 
 TEST_F(PluginTest, Initialization) {
   InsertAllSolarSystemBodies();
