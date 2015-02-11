@@ -6,6 +6,7 @@
 #include <string>
 #include <utility>
 #include <vector>
+#include <set>
 
 #include "base/not_null.hpp"
 #include "base/unique_ptr_logging.hpp"
