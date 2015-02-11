@@ -54,10 +54,10 @@ class Transforms {
   static not_null<std::unique_ptr<Transforms>> DummyForTesting();
 
   typename Trajectory<FromFrame>::template TransformingIterator<ThroughFrame>
-  first(not_null<Trajectory<FromFrame> const*> const from_trajectory);
+  first(Trajectory<FromFrame> const& from_trajectory);
 
   typename Trajectory<ThroughFrame>:: template TransformingIterator<ToFrame>
-  second(not_null<Trajectory<ThroughFrame> const*> const through_trajectory);
+  second(Trajectory<ThroughFrame> const& through_trajectory);
 
  private:
   typename Trajectory<FromFrame>::template Transform<ThroughFrame> first_;

@@ -269,15 +269,15 @@ Transforms<FromFrame, ThroughFrame, ToFrame>::DummyForTesting() {
 template<typename FromFrame, typename ThroughFrame, typename ToFrame>
 typename Trajectory<FromFrame>::template TransformingIterator<ThroughFrame>
 Transforms<FromFrame, ThroughFrame, ToFrame>::first(
-    not_null<Trajectory<FromFrame> const*> const from_trajectory) {
-  return from_trajectory->first_with_transform(first_);
+    Trajectory<FromFrame> const& from_trajectory) {
+  return from_trajectory.first_with_transform(first_);
 }
 
 template<typename FromFrame, typename ThroughFrame, typename ToFrame>
 typename Trajectory<ThroughFrame>::template TransformingIterator<ToFrame>
 Transforms<FromFrame, ThroughFrame, ToFrame>::second(
-    not_null<Trajectory<ThroughFrame> const*> const through_trajectory) {
-  return through_trajectory->first_with_transform(second_);
+    Trajectory<ThroughFrame> const& through_trajectory) {
+  return through_trajectory.first_with_transform(second_);
 }
 
 }  // namespace physics
