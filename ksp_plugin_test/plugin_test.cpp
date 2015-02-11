@@ -234,12 +234,11 @@ TEST_F(PluginTest, Serialization) {
   GUID const satellite = "satellite";
   // We need an actual |Plugin| here rather than a |TestablePlugin|, since
   // that's what |ReadFromMessage| returns.
-  auto plugin =
-      make_not_null_unique<Plugin>(
-          initial_time_,
-          SolarSystem::kSun,
-          sun_gravitational_parameter_,
-          planetarium_rotation_);
+  auto plugin = make_not_null_unique<Plugin>(
+                    initial_time_,
+                    SolarSystem::kSun,
+                    sun_gravitational_parameter_,
+                    planetarium_rotation_);
   for (std::size_t index = SolarSystem::kSun + 1;
        index < bodies_.size();
        ++index) {

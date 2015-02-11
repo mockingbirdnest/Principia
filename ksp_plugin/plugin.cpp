@@ -659,8 +659,8 @@ void Plugin::WriteToMessage(
                                index_celestial.first);
   }
   for (auto const& index_celestial : celestials_) {
-    not_null<Celestial const*> const celestial = index_celestial.second.get();
     Index const index = index_celestial.first;
+    not_null<Celestial const*> const celestial = index_celestial.second.get();
     auto const celestial_message = message->add_celestial();
     celestial_message->set_index(index);
     celestial->WriteToMessage(celestial_message->mutable_celestial());
@@ -676,7 +676,7 @@ void Plugin::WriteToMessage(
     std::string const& guid = guid_vessel.first;
     not_null<Vessel*> const vessel = guid_vessel.second.get();
     vessel_to_guid.emplace(vessel, guid);
-    auto const vessel_message = message->add_vessel();
+    auto* const vessel_message = message->add_vessel();
     vessel_message->set_guid(guid);
     vessel->WriteToMessage(vessel_message->mutable_vessel());
     auto const it = celestial_to_index.find(&vessel->parent());
@@ -685,6 +685,7 @@ void Plugin::WriteToMessage(
     vessel_message->set_parent_index(parent_index);
     vessel_message->set_dirty(is_dirty(vessel));
   }
+
   bubble_->WriteToMessage(
       [&vessel_to_guid](not_null<Vessel const*> const vessel) -> GUID {
         auto const it = vessel_to_guid.find(vessel);
@@ -692,6 +693,7 @@ void Plugin::WriteToMessage(
         return it->second;
       },
       message->mutable_bubble());
+
   planetarium_rotation_.WriteToMessage(message->mutable_planetarium_rotation());
   current_time_.WriteToMessage(message->mutable_current_time());
   auto const it = celestial_to_index.find(sun_);
@@ -725,14 +727,14 @@ std::unique_ptr<Plugin> Plugin::ReadFromMessage(
     auto const parent_it = celestials.find(vessel_message.parent_index());
     CHECK(parent_it != celestials.end());
     not_null<Celestial const*> const parent = parent_it->second.get();
-    auto const inserted_vessel =
-        vessels.emplace(vessel_message.guid(),
-                        Vessel::ReadFromMessage(vessel_message.vessel(),
-                                                parent));
-    not_null<Vessel*> const vessel = inserted_vessel.first->second.get();
+    not_null<std::unique_ptr<Vessel>> vessel =
+        Vessel::ReadFromMessage(vessel_message.vessel(), parent);
     if (vessel_message.dirty()) {
-      dirty_vessels.emplace(vessel);
+      dirty_vessels.emplace(vessel.get());
     }
+    auto const inserted =
+        vessels.emplace(vessel_message.guid(), std::move(vessel));
+    CHECK(inserted.second);
   }
   not_null<std::unique_ptr<PhysicsBubble>> bubble =
       PhysicsBubble::ReadFromMessage(
