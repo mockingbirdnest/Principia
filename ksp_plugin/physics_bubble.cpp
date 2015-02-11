@@ -262,51 +262,57 @@ std::unique_ptr<PhysicsBubble> PhysicsBubble::ReadFromMessage(
     std::function<not_null<Vessel*>(std::string)> const vessel,
     serialization::PhysicsBubble const& message) {
   // NOTE(phl): No need to deserialize the |body_|, it has no state.
-  serialization::PhysicsBubble::FullState const& full_state = message.current();
-  PreliminaryState preliminary_state;
-  for (auto const& part_id_and_part : full_state.part()) {
-    auto p = Part<World>::ReadFromMessage(part_id_and_part.part());
-    preliminary_state.parts.emplace(
-        part_id_and_part.part_id(),
-        std::make_unique<Part<World>>(
-            std::move(Part<World>::ReadFromMessage(part_id_and_part.part()))));
-  }
-  for (auto const& guid_and_part_ids : full_state.vessel()) {
-    std::vector<not_null<Part<World>*> const> parts;
-    for (PartId const part_id : guid_and_part_ids.part_id()) {
-      auto it = preliminary_state.parts.find(part_id);
-      CHECK(it != preliminary_state.parts.end());
-      parts.push_back(it->second.get());
-    }
-    preliminary_state.vessels[vessel(guid_and_part_ids.guid())] = parts;
-  }
-
   std::unique_ptr<PhysicsBubble> bubble = std::make_unique<PhysicsBubble>();
-  bubble->current_ = std::make_unique<FullState>(std::move(preliminary_state));
-  FullState* current = bubble->current_.get();
-  current->centre_of_mass = std::make_unique<DegreesOfFreedom<World>>(
-      DegreesOfFreedom<World>::ReadFromMessage(full_state.centre_of_mass()));
-  current->centre_of_mass_trajectory =
-      Trajectory<Barycentric>::ReadFromMessage(
-          full_state.centre_of_mass_trajectory(), &bubble->body_);
-  current->from_centre_of_mass =
-      std::make_unique<std::map<not_null<Vessel const*> const,
-                       RelativeDegreesOfFreedom<Barycentric>>>();
-  for (auto const& guid_and_degrees_of_freedom :
-           full_state.from_centre_of_mass()) {
-    current->from_centre_of_mass->insert(
-        std::make_pair(vessel(guid_and_degrees_of_freedom.guid()),
-                       RelativeDegreesOfFreedom<Barycentric>::ReadFromMessage(
-                           guid_and_degrees_of_freedom.degrees_of_freedom())));
+  if (message.has_current()) {
+    serialization::PhysicsBubble::FullState const& full_state =
+        message.current();
+    PreliminaryState preliminary_state;
+    for (auto const& part_id_and_part : full_state.part()) {
+      auto p = Part<World>::ReadFromMessage(part_id_and_part.part());
+      preliminary_state.parts.emplace(
+          part_id_and_part.part_id(),
+          std::make_unique<Part<World>>(
+              std::move(
+                  Part<World>::ReadFromMessage(part_id_and_part.part()))));
+    }
+    for (auto const& guid_and_part_ids : full_state.vessel()) {
+      std::vector<not_null<Part<World>*> const> parts;
+      for (PartId const part_id : guid_and_part_ids.part_id()) {
+        auto it = preliminary_state.parts.find(part_id);
+        CHECK(it != preliminary_state.parts.end());
+        parts.push_back(it->second.get());
+      }
+      preliminary_state.vessels[vessel(guid_and_part_ids.guid())] = parts;
+    }
+
+    bubble->current_ =
+        std::make_unique<FullState>(std::move(preliminary_state));
+    FullState* current = bubble->current_.get();
+    current->centre_of_mass = std::make_unique<DegreesOfFreedom<World>>(
+        DegreesOfFreedom<World>::ReadFromMessage(full_state.centre_of_mass()));
+    current->centre_of_mass_trajectory =
+        Trajectory<Barycentric>::ReadFromMessage(
+            full_state.centre_of_mass_trajectory(), &bubble->body_);
+    current->from_centre_of_mass =
+        std::make_unique<std::map<not_null<Vessel const*> const,
+                         RelativeDegreesOfFreedom<Barycentric>>>();
+    for (auto const& guid_and_degrees_of_freedom :
+             full_state.from_centre_of_mass()) {
+      current->from_centre_of_mass->insert(
+          std::make_pair(vessel(guid_and_degrees_of_freedom.guid()),
+                         RelativeDegreesOfFreedom<Barycentric>::ReadFromMessage(
+                             guid_and_degrees_of_freedom.
+                                 degrees_of_freedom())));
+    }
+    current->displacement_correction =
+        std::make_unique<Displacement<World>>(
+            Displacement<World>::ReadFromMessage(
+                full_state.displacement_correction()));
+    current->velocity_correction =
+        std::make_unique<Velocity<World>>(
+            Velocity<World>::ReadFromMessage(
+                full_state.velocity_correction()));
   }
-  current->displacement_correction =
-      std::make_unique<Displacement<World>>(
-          Displacement<World>::ReadFromMessage(
-              full_state.displacement_correction()));
-  current->velocity_correction =
-      std::make_unique<Velocity<World>>(
-          Velocity<World>::ReadFromMessage(
-              full_state.velocity_correction()));
   return bubble;
 }
 
