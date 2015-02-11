@@ -11,7 +11,6 @@
 
 #include "geometry/permutation.hpp"
 #include "gmock/gmock.h"
-#include "google/protobuf/text_format.h"
 #include "gtest/gtest.h"
 #include "physics/mock_n_body_system.hpp"
 #include "quantities/si.hpp"
