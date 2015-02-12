@@ -112,6 +112,8 @@
     <ClInclude Include="fingerprint2011.hpp" />
     <ClInclude Include="macros.hpp" />
     <ClInclude Include="mappable.hpp" />
+    <ClInclude Include="monostable.hpp" />
+    <ClInclude Include="monostable_body.hpp" />
     <ClInclude Include="not_null.hpp" />
     <ClInclude Include="not_null_body.hpp" />
     <ClInclude Include="unique_ptr_logging.hpp" />

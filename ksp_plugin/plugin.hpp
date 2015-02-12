@@ -7,12 +7,12 @@
 #include <utility>
 #include <vector>
 
+#include "base/monostable.hpp"
 #include "geometry/named_quantities.hpp"
 #include "geometry/point.hpp"
 #include "gtest/gtest.h"
 #include "ksp_plugin/celestial.hpp"
 #include "ksp_plugin/frames.hpp"
-#include "ksp_plugin/monostable.hpp"
 #include "ksp_plugin/physics_bubble.hpp"
 #include "ksp_plugin/vessel.hpp"
 #include "physics/body.hpp"
@@ -337,7 +337,7 @@ class Plugin {
   SPRKIntegrator<Length, Speed> prolongation_integrator_;
 
   // Whether initialization is ongoing.
-  Monostable initializing_;
+  base::Monostable initializing_;
 
   Angle planetarium_rotation_;
   // The current in-game universal time.
