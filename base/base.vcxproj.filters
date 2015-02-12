@@ -38,13 +38,13 @@
     <ClInclude Include="monostable.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="monostable_body.hpp">
+      <Filter>Source Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="not_null_test.cpp">
       <Filter>Test Files</Filter>
-    </ClCompile>
-    <ClCompile Include="monostable.cpp">
-      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

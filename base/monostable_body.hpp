@@ -1,13 +1,15 @@
+#pragma once
+
 #include "base/monostable.hpp"
 
 namespace principia {
 namespace base {
 
-void Monostable::Flop() {
+inline void Monostable::Flop() {
   transient_ = false;
 }
 
-Monostable::operator bool() const {
+inline Monostable::operator bool() const {
   return transient_;
 }
 

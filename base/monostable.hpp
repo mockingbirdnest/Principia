@@ -23,3 +23,5 @@ class Monostable {
 
 }  // namespace base
 }  // namespace principia
+
+#include "base/monostable_body.hpp"

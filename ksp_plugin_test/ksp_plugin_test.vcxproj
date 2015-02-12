@@ -17,7 +17,6 @@
   <ItemGroup>
     <ClCompile Include="..\ksp_plugin\interface.cpp" />
     <ClCompile Include="..\ksp_plugin\mock_plugin.cpp" />
-    <ClCompile Include="..\ksp_plugin\monostable.cpp" />
     <ClCompile Include="..\ksp_plugin\physics_bubble.cpp" />
     <ClCompile Include="..\ksp_plugin\plugin.cpp" />
     <ClCompile Include="celestial_test.cpp" />

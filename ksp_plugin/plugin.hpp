@@ -337,7 +337,7 @@ class Plugin {
   SPRKIntegrator<Length, Speed> prolongation_integrator_;
 
   // Whether initialization is ongoing.
-  Monostable initializing_;
+  base::Monostable initializing_;
 
   Angle planetarium_rotation_;
   // The current in-game universal time.
