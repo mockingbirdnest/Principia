@@ -27,6 +27,7 @@ using testing::Pointee;
 using testing::Property;
 using testing::Ref;
 using testing::Return;
+using testing::SetArgPointee;
 using testing::StrictMock;
 using testing::_;
 
@@ -399,6 +400,30 @@ TEST_F(InterfaceTest, CurrentTime) {
   EXPECT_CALL(*plugin_, current_time()).WillOnce(Return(kUnixEpoch));
   double const current_time = principia__current_time(plugin_.get());
   EXPECT_THAT(Instant(current_time * Second), Eq(kUnixEpoch));
+}
+
+/*
+TEST_F(InterfaceTest, SerializePlugin) {
+  EXPECT_CALL(*plugin_, WriteToMessage(_))
+      .WillOnce(SetArgPointee<0>(std::string("\x00\xFFghij\n\7", 8)));
+  std::string const serialization = principia__SerializePlugin(plugin_.get());
+  EXPECT_EQ("00FF464748490A07", serialization);
+}
+*/
+
+std::string HexadecimalBytes(std::string const& bytes) {
+  std::ostringstream hexadecimal;
+  for (char const character : bytes) {
+    hexadecimal << std::hex << std::setfill('0') << std::setw(2)
+                            << std::uppercase
+                            << (0xFF & static_cast<int>(character));
+  }
+  return hexadecimal.str().c_str();
+}
+
+TEST_F(InterfaceTest, HexadecimalBytes) {
+  EXPECT_EQ("00""7F""80""FF""67""68""0A""07",
+            HexadecimalBytes(std::string("\0\x7F\x80\xFFgh\n\7", 8)));
 }
 
 }  // namespace

@@ -8,6 +8,7 @@
 #include "base/not_null.hpp"
 #include "base/version.hpp"
 #include "ksp_plugin/part.hpp"
+#include "serialization/ksp_plugin.pb.h"
 
 using principia::base::make_not_null_unique;
 using principia::geometry::Displacement;
@@ -353,6 +354,20 @@ XYZ principia__BubbleVelocityCorrection(Plugin const* const plugin,
 
 double principia__current_time(Plugin const* const plugin) {
   return (CHECK_NOTNULL(plugin)->current_time() - Instant()) / Second;
+}
+
+char const* principia__SerializePlugin(Plugin const* const plugin) {
+  CHECK_NOTNULL(plugin);
+  principia::serialization::Plugin message;
+  plugin->WriteToMessage(&message);
+  std::string const serialization = message.SerializeAsString();
+  std::ostringstream hexadecimal_serialization;
+  for (char const character : serialization) {
+    hexadecimal_serialization << std::hex << std::setfill('0') << std::setw(2)
+                              << std::uppercase
+                              << character;
+  }
+  return hexadecimal_serialization.str().c_str();
 }
 
 char const* principia__SayHello() {

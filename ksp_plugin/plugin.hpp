@@ -231,7 +231,8 @@ class Plugin {
   virtual Instant current_time() const;
 
   // Must be called after initialization.
-  void WriteToMessage(not_null<serialization::Plugin*> const message) const;
+  virtual void WriteToMessage(
+      not_null<serialization::Plugin*> const message) const;
   // NOTE(egg): This should return a |not_null|, but we can't do that until
   // |not_null<std::unique_ptr<T>>| is convertible to |std::unique_ptr<T>|, and
   // that requires a VS 2015 feature (rvalue references for |*this|).
