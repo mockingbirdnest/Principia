@@ -272,6 +272,13 @@ XYZ CDECL principia__BubbleVelocityCorrection(Plugin const* const plugin,
 extern "C" DLLEXPORT
 double CDECL principia__current_time(Plugin const* const plugin);
 
+extern "C" DLLEXPORT
+char const* CDECL principia__SerializePlugin(Plugin const* const plugin);
+
+extern "C" DLLEXPORT
+Plugin* CDECL principia__DeserializePlugin(
+    char const* const hexadecimal_message);
+
 // Says hello, convenient for checking that calls to the DLL work.
 extern "C" DLLEXPORT
 char const* CDECL principia__SayHello();
