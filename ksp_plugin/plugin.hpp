@@ -7,12 +7,12 @@
 #include <utility>
 #include <vector>
 
+#include "base/monostable.hpp"
 #include "geometry/named_quantities.hpp"
 #include "geometry/point.hpp"
 #include "gtest/gtest.h"
 #include "ksp_plugin/celestial.hpp"
 #include "ksp_plugin/frames.hpp"
-#include "ksp_plugin/monostable.hpp"
 #include "ksp_plugin/physics_bubble.hpp"
 #include "ksp_plugin/vessel.hpp"
 #include "physics/body.hpp"

@@ -1,7 +1,7 @@
 #pragma once
 
 namespace principia {
-namespace ksp_plugin {
+namespace base {
 
 // A boolean which is constructed true and becomes false when |Flop| is called.
 class Monostable {
@@ -21,5 +21,5 @@ class Monostable {
   bool transient_ = true;
 };
 
-}  // namespace ksp_plugin
+}  // namespace base
 }  // namespace principia
