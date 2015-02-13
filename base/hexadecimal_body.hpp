@@ -137,7 +137,6 @@ HexadecimalEncode(Container const& input, not_null<Container*> output) {
   Container const& bytes = input;
   Container digits;
   digits.resize(bytes.size() * 2);
-  char const* reference_digit;
   // The following was undefined behaviour pre-C++11, but it is now well-defined
   // even when |digits.size() == 0|.  We do not use |digits.data()| because this
   // only works for |std::vector| (it is read-only in a |std::basic_string|).
