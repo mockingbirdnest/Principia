@@ -61,72 +61,14 @@ static char const kPi500Bytes[] =
 
 int const kCopiesOfPi = 10000;
 
-template<typename Container>
-std::enable_if_t<
-    std::is_convertible<typename Container::value_type, uint8_t>::value,
-    void>
-HexadecimalEncodeNoMemcpy(Container const& input, not_null<Container*> output) {
-  Container const& bytes = input;
-  Container digits;
-  digits.resize(bytes.size() * 2);
-  // The following was undefined behaviour pre-C++11, but it is now well-defined
-  // even when |digits.size() == 0|.  We do not use |digits.data()| because this
-  // only works for |std::vector| (it is read-only in a |std::basic_string|).
-  char* digit = &digits[0];
-  for (uint8_t const byte : bytes) {
-    auto blurp = byte << 1;
-    *digit = base::kByteToHexadecimalDigits[blurp];
-    *++digit = base::kByteToHexadecimalDigits[++blurp];
-    ++digit;
-  }
-  *output = std::move(digits);
-}
-
-void HexEncodeNoMemcpy(not_null<benchmark::State*> const state,
-                      not_null<bool*> const correct,
-                      std::string const& input_bytes,
-                      std::string const& expected_digits,
-                      std::string* const digits) {
-  HexadecimalEncodeNoMemcpy<std::string>(input_bytes, digits);
-  state->PauseTiming();
-  *correct = *digits == expected_digits;
-  state->ResumeTiming();
-}
-
-void BM_EncodePiNoMemcpy(benchmark::State& state) {  // NOLINT(runtime/references)
-  bool correct;
-  state.PauseTiming();
-  std::string const pi_bytes(kPi500Bytes, 500);
-  std::string input_bytes;
-  std::string expected_digits;
-  input_bytes.reserve(500 * kCopiesOfPi);
-  expected_digits.reserve(1000 * kCopiesOfPi);
-  for (int i = kCopiesOfPi; i > 0; --i) {
-    input_bytes += pi_bytes;
-    expected_digits += kPi1000HexadecimalDigits;
-  }
-  state.ResumeTiming();
-  while (state.KeepRunning()) {
-    state.PauseTiming();
-    std::string buffer;
-    state.ResumeTiming();
-    HexEncodeNoMemcpy(&state, &correct, input_bytes, expected_digits, &buffer);
-  }
-  std::stringstream ss;
-  ss << correct;
-  state.SetLabel(ss.str());
-}
-
-BENCHMARK(BM_EncodePiNoMemcpy);
-
 void HexEncode(not_null<benchmark::State*> const state,
               not_null<bool*> const correct,
               std::string const& input_bytes,
-              std::string const& expected_digits,
-              std::string* const digits) {
-  HexadecimalEncode<std::string>(input_bytes, digits);
+              std::string const& expected_digits) {
+  std::string digits;
+  HexadecimalEncode<std::string>(input_bytes, &digits);
   state->PauseTiming();
-  *correct = *digits == expected_digits;
+  *correct = digits == expected_digits;
   state->ResumeTiming();
 }
 
@@ -144,10 +86,7 @@ void BM_EncodePi(benchmark::State& state) {  // NOLINT(runtime/references)
   }
   state.ResumeTiming();
   while (state.KeepRunning()) {
-    state.PauseTiming();
-    std::string buffer;
-    state.ResumeTiming();
-    HexEncode(&state, &correct, input_bytes, expected_digits, &buffer);
+    HexEncode(&state, &correct, input_bytes, expected_digits);
   }
   std::stringstream ss;
   ss << correct;
@@ -155,58 +94,6 @@ void BM_EncodePi(benchmark::State& state) {  // NOLINT(runtime/references)
 }
 
 BENCHMARK(BM_EncodePi);
-
-void BM_EncodePiNoMemcpyPreallocated(
-    benchmark::State& state) {  // NOLINT(runtime/references)
-  bool correct;
-  state.PauseTiming();
-  std::string const pi_bytes(kPi500Bytes, 500);
-  std::string input_bytes;
-  std::string expected_digits;
-  input_bytes.reserve(500 * kCopiesOfPi);
-  expected_digits.reserve(1000 * kCopiesOfPi);
-  for (int i = kCopiesOfPi; i > 0; --i) {
-    input_bytes += pi_bytes;
-    expected_digits += kPi1000HexadecimalDigits;
-  }
-  std::string buffer;
-  buffer.resize(expected_digits.size());
-  state.ResumeTiming();
-  while (state.KeepRunning()) {
-    HexEncodeNoMemcpy(&state, &correct, input_bytes, expected_digits, &buffer);
-  }
-  std::stringstream ss;
-  ss << correct;
-  state.SetLabel(ss.str());
-}
-
-BENCHMARK(BM_EncodePiNoMemcpyPreallocated);
-
-void BM_EncodePiPreallocated(
-    benchmark::State& state) {  // NOLINT(runtime/references)
-  bool correct;
-  state.PauseTiming();
-  std::string const pi_bytes(kPi500Bytes, 500);
-  std::string input_bytes;
-  std::string expected_digits;
-  input_bytes.reserve(500 * kCopiesOfPi);
-  expected_digits.reserve(1000 * kCopiesOfPi);
-  for (int i = kCopiesOfPi; i > 0; --i) {
-    input_bytes += pi_bytes;
-    expected_digits += kPi1000HexadecimalDigits;
-  }
-  std::string buffer;
-  buffer.resize(expected_digits.size());
-  state.ResumeTiming();
-  while (state.KeepRunning()) {
-    HexEncode(&state, &correct, input_bytes, expected_digits, &buffer);
-  }
-  std::stringstream ss;
-  ss << correct;
-  state.SetLabel(ss.str());
-}
-
-BENCHMARK(BM_EncodePiPreallocated);
 
 }  // namespace benchmarks
 }  // namespace principia
