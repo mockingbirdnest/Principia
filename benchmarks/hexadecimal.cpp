@@ -26,7 +26,8 @@ static char const kPiHexadecimalDigits[] =
 "98575b1dc262302eb651b8823893e81d396acc50f6d6ff383f442392e0b4482a484200469c"
 "8f04a9e1f9b5e21c66842f6e96c9a670c9c61abd388f06a51a0d2d8542f68960fa728ab513"
 "3a36eef0b6c137a3be4ba3bf0507efb2a98a1f1651d39af017666ca593e82430e888cee861"
-"9456f9fb47d84a5c33b8b5ebee06f75d885c12073401a449f56c16aa64ed3aa62363f77061";
+"9456f9fb47d84a5c33b8b5ebee06f75d885c12073401a449f56c16aa64ed3aa62363f77061"
+"bfedf72429b023d37d0d724d00a1248db0fead3";
 
 static char const kPiBytes[] =
 "\x32\x43\xf6\xa8\x88\x5a\x30\x8d\x31\x31\x98\xa2\xe0\x37\x07\x34\x4a\x40"
@@ -55,15 +56,62 @@ static char const kPiBytes[] =
 "\xa3\xbe\x4b\xa3\xbf\x05\x07\xef\xb2\xa9\x8a\x1f\x16\x51\xd3\x9a\xf0\x17"
 "\x66\x6c\xa5\x93\xe8\x24\x30\xe8\x88\xce\xe8\x61\x94\x56\xf9\xfb\x47\xd8"
 "\x4a\x5c\x33\xb8\xb5\xeb\xee\x06\xf7\x5d\x88\x5c\x12\x07\x34\x01\xa4\x49"
-"\xf5\x6c\x16\xaa\x64\xed\x3a\xa6\x23\x63\xf7\x70\x61\xbf\xed\xf7\x24\x29";
+"\xf5\x6c\x16\xaa\x64\xed\x3a\xa6\x23\x63\xf7\x70\x61\xbf\xed\xf7\x24\x29"
+"\xb0\x23\xd3\x7d\x0d\x72\x4d\x00\xa1\x24\x8d\xb0\xfe\xad";
+
+template<typename Container>
+std::enable_if_t<
+    std::is_convertible<typename Container::value_type, uint8_t>::value,
+    void>
+HexadecimalEncodeNoMemcpy(Container const& input, not_null<Container*> output) {
+  Container const& bytes = input;
+  Container digits;
+  digits.resize(bytes.size() * 2);
+  // The following was undefined behaviour pre-C++11, but it is now well-defined
+  // even when |digits.size() == 0|.  We do not use |digits.data()| because this
+  // only works for |std::vector| (it is read-only in a |std::basic_string|).
+  char* digit = &digits[0];
+  for (uint8_t const byte : bytes) {
+    // The following is four times faster than copying both bytes by hand.
+    const char* reference_digit = base::kByteToHexadecimalDigits[byte];
+    *digit = *reference_digit;
+    *++digit = *++reference_digit;
+    ++digit;
+  }
+  *output = std::move(digits);
+}
+
+void EncodePiNoMemcpy(not_null<benchmark::State*> const state,
+              not_null<bool*> const correct) {
+  state->PauseTiming();
+  std::string const pi_bytes(kPiBytes, 500);
+  std::string digits;
+  state->ResumeTiming();
+  HexadecimalEncodeNoMemcpy<std::string>(pi_bytes, &digits);
+  state->PauseTiming();
+  *correct = digits == kPiHexadecimalDigits;
+  state->ResumeTiming();
+}
+
+void BM_EncodePiNoMemcpy(benchmark::State& state) {  // NOLINT(runtime/references)
+  bool correct;
+  while (state.KeepRunning()) {
+    EncodePiNoMemcpy(&state, &correct);
+  }
+  std::stringstream ss;
+  ss << correct;
+  state.SetLabel(ss.str());
+}
+
+BENCHMARK(BM_EncodePiNoMemcpy);
 
 void EncodePi(not_null<benchmark::State*> const state,
               not_null<bool*> const correct) {
   state->PauseTiming();
-  std::string const pi_bytes(kPiBytes);
+  std::string const pi_bytes(kPiBytes, 500);
   std::string digits;
   state->ResumeTiming();
-  base::HexadecimalEncode<std::string>(pi_bytes, &digits);
+  HexadecimalEncode<std::string>(pi_bytes, &digits);
   state->PauseTiming();
   *correct = digits == kPiHexadecimalDigits;
   state->ResumeTiming();
