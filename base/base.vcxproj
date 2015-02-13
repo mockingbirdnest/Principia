@@ -110,6 +110,8 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="fingerprint2011.hpp" />
+    <ClInclude Include="hexadecimal.hpp" />
+    <ClInclude Include="hexadecimal_body.hpp" />
     <ClInclude Include="macros.hpp" />
     <ClInclude Include="mappable.hpp" />
     <ClInclude Include="not_null.hpp" />
@@ -118,6 +120,7 @@
     <ClInclude Include="unique_ptr_logging_body.hpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="hexadecimal_test.cpp" />
     <ClCompile Include="not_null_test.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
