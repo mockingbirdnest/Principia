@@ -414,7 +414,7 @@ void Plugin::SetVesselStateOffset(
   LOG(INFO) << "In barycentric coordinates: " << relative;
   vessel->CreateProlongation(
       current_time_,
-      vessel->parent().prolongation().last().degrees_of_freedom() + relative);
+      vessel->parent()->prolongation().last().degrees_of_freedom() + relative);
   auto const inserted = unsynchronized_vessels_.emplace(vessel.get());
   CHECK(inserted.second);
 }
@@ -455,7 +455,7 @@ RelativeDegreesOfFreedom<AliceSun> Plugin::VesselFromParent(
                                   << " was not given an initial state";
   RelativeDegreesOfFreedom<Barycentric> const barycentric_result =
       vessel->prolongation().last().degrees_of_freedom() -
-      vessel->parent().prolongation().last().degrees_of_freedom();
+      vessel->parent()->prolongation().last().degrees_of_freedom();
   RelativeDegreesOfFreedom<AliceSun> const result =
       kSunLookingGlass(PlanetariumRotation()(barycentric_result));
   VLOG(1) << "Vessel with GUID " << vessel_guid
@@ -474,7 +474,7 @@ RelativeDegreesOfFreedom<AliceSun> Plugin::CelestialFromParent(
       << "Body at index " << celestial_index << " is the sun";
   RelativeDegreesOfFreedom<Barycentric> const barycentric_result =
       celestial.prolongation().last().degrees_of_freedom() -
-      celestial.parent().prolongation().last().degrees_of_freedom();
+      celestial.parent()->prolongation().last().degrees_of_freedom();
   RelativeDegreesOfFreedom<AliceSun> const result =
       kSunLookingGlass(PlanetariumRotation()(barycentric_result));
   VLOG(1) << "Celestial at index " << celestial_index
@@ -586,7 +586,7 @@ Position<World> Plugin::VesselWorldPosition(
                                  << " was not given an initial state";
   auto const to_world =
       AffineMap<Barycentric, World, Length, Rotation>(
-          vessel->parent().
+          vessel->parent()->
               prolongation().last().degrees_of_freedom().position(),
           parent_world_position,
           Rotation<WorldSun, World>::Identity() * PlanetariumRotation());
@@ -606,7 +606,7 @@ Velocity<World> Plugin::VesselWorldVelocity(
       Rotation<WorldSun, World>::Identity() * PlanetariumRotation();
   RelativeDegreesOfFreedom<Barycentric> const relative_to_parent =
       vessel->prolongation().last().degrees_of_freedom() -
-      vessel->parent().prolongation().last().degrees_of_freedom();
+      vessel->parent()->prolongation().last().degrees_of_freedom();
   AngularVelocity<Barycentric> const world_frame_angular_velocity =
       AngularVelocity<Barycentric>({0 * Radian / Second,
                                     2 * π * Radian / parent_rotation_period,
@@ -665,7 +665,7 @@ void Plugin::WriteToMessage(
     celestial_message->set_index(index);
     celestial->WriteToMessage(celestial_message->mutable_celestial());
     if (celestial->has_parent()) {
-      auto const it = celestial_to_index.find(&celestial->parent());
+      auto const it = celestial_to_index.find(celestial->parent());
       CHECK(it != celestial_to_index.end());
       Index const parent_index = it->second;
       celestial_message->set_parent_index(parent_index);
@@ -679,7 +679,7 @@ void Plugin::WriteToMessage(
     auto* const vessel_message = message->add_vessel();
     vessel_message->set_guid(guid);
     vessel->WriteToMessage(vessel_message->mutable_vessel());
-    auto const it = celestial_to_index.find(&vessel->parent());
+    auto const it = celestial_to_index.find(vessel->parent());
     CHECK(it != celestial_to_index.end());
     Index const parent_index = it->second;
     vessel_message->set_parent_index(parent_index);

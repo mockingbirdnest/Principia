@@ -38,7 +38,7 @@ class Vessel {
   // some point.
   bool is_initialized() const;
 
-  Celestial const& parent() const;
+  not_null<Celestial const*> parent() const;
   void set_parent(not_null<Celestial const*> const parent);
 
   // Both accessors require |is_synchronized()|.
