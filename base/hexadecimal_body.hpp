@@ -1,5 +1,7 @@
 #pragma once
 
+#include <string.h>
+
 #include "base/hexadecimal.hpp"
 
 namespace principia {
@@ -136,12 +138,14 @@ HexadecimalEncode(Container const& input, not_null<Container*> output) {
   Container digits;
   digits.resize(bytes.size() * 2);
   char const* reference_digit;
-  auto digit = digits.begin();
+  // The following was undefined behaviour pre-C++11, but it is now well-defined
+  // even when |digits.size() == 0|.  We do not use |digits.data()| because this
+  // only works for |std::vector| (it is read-only in a |std::basic_string|).
+  char* digit = &digits[0];
   for (uint8_t const byte : bytes) {
-    reference_digit = kByteToHexadecimalDigits[byte];
-    *digit = *reference_digit;
-    *++digit = *++reference_digit;
-    ++digit;
+    // The following is four times faster than copying both bytes by hand.
+    memcpy(digit, kByteToHexadecimalDigits[byte], 2);
+    digit += 2;
   }
   *output = std::move(digits);
 }
