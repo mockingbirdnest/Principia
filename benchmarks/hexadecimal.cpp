@@ -74,9 +74,9 @@ HexadecimalEncodeNoMemcpy(Container const& input, not_null<Container*> output) {
   // only works for |std::vector| (it is read-only in a |std::basic_string|).
   char* digit = &digits[0];
   for (uint8_t const byte : bytes) {
-    const char* reference_digit = base::kByteToHexadecimalDigits[byte];
-    *digit = *reference_digit;
-    *++digit = *++reference_digit;
+    auto blurp = byte << 1;
+    *digit = base::kByteToHexadecimalDigits[blurp];
+    *++digit = base::kByteToHexadecimalDigits[++blurp];
     ++digit;
   }
   *output = std::move(digits);
