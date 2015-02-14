@@ -26,8 +26,8 @@ inline bool Celestial::has_parent() const {
   return parent_ != nullptr;
 }
 
-inline Celestial const& Celestial::parent() const {
-  return *CHECK_NOTNULL(parent_);
+inline Celestial const* Celestial::parent() const {
+  return parent_;
 }
 
 inline void Celestial::set_parent(not_null<Celestial const*> const parent) {

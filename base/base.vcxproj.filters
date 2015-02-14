@@ -47,6 +47,12 @@
     <ClInclude Include="buffer_body.hpp">
       <Filter>Source Files</Filter>
     </ClInclude>
+    <ClInclude Include="monostable.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="monostable_body.hpp">
+      <Filter>Source Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="not_null_test.cpp">

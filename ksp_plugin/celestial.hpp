@@ -34,7 +34,7 @@ class Celestial {
 
   MassiveBody const& body() const;
   bool has_parent() const;
-  Celestial const& parent() const;
+  Celestial const* parent() const;  // Null for the Sun.
   void set_parent(not_null<Celestial const*> const parent);
 
   // Both accessors require |is_initialized()|.

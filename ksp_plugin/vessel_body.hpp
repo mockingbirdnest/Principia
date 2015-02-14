@@ -25,8 +25,8 @@ inline bool Vessel::is_initialized() const {
   return initialized;
 }
 
-inline Celestial const& Vessel::parent() const {
-  return *parent_;
+inline not_null<Celestial const*> Vessel::parent() const {
+  return parent_;
 }
 
 inline void Vessel::set_parent(not_null<Celestial const*> const parent) {

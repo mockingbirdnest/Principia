@@ -20,6 +20,32 @@ class BodyTest : public testing::Test {
   // We need that so the comma doesn't get caught in macros.
   using Direction = Vector<double, World>;
 
+  template<typename Tag, Tag tag>
+  void TestOblateBody() {
+    using F = Frame<Tag, tag, true>;
+
+    auto const axis = Normalize(Vector<double, F>({-1, 2, 5}));
+    auto const oblate_body =
+        OblateBody<F>(17 * SIUnit<GravitationalParameter>(),
+                      163 * SIUnit<Order2ZonalCoefficient>(),
+                      axis);
+
+    serialization::Body message;
+    OblateBody<F> const* cast_oblate_body;
+    oblate_body.WriteToMessage(&message);
+    EXPECT_TRUE(message.has_massive_body());
+    EXPECT_FALSE(message.has_massless_body());
+    EXPECT_TRUE(message.massive_body().HasExtension(
+                    serialization::OblateBody::oblate_body));
+
+    not_null<std::unique_ptr<MassiveBody const>> const massive_body =
+        MassiveBody::ReadFromMessage(message);
+    EXPECT_EQ(oblate_body.gravitational_parameter(),
+              massive_body->gravitational_parameter());
+    cast_oblate_body = dynamic_cast<OblateBody<F> const*>(&*massive_body);
+    EXPECT_THAT(cast_oblate_body, NotNull());
+  }
+
   Direction axis_ = Normalize(Direction({-1, 2, 5}));
   MasslessBody massless_body_;
   MassiveBody massive_body_ =
@@ -120,6 +146,39 @@ TEST_F(BodyTest, OblateSerializationSuccess) {
             cast_oblate_body->gravitational_parameter());
   EXPECT_EQ(oblate_body_.j2(), cast_oblate_body->j2());
   EXPECT_EQ(oblate_body_.axis(), cast_oblate_body->axis());;
+}
+
+TEST_F(BodyTest, AllFrames) {
+  TestOblateBody<serialization::Frame::PluginTag,
+                 serialization::Frame::ALICE_SUN>();
+  TestOblateBody<serialization::Frame::PluginTag,
+                 serialization::Frame::ALICE_WORLD>();
+  TestOblateBody<serialization::Frame::PluginTag,
+                 serialization::Frame::BARYCENTRIC>();
+  TestOblateBody<serialization::Frame::PluginTag,
+                 serialization::Frame::RENDERING>();
+  TestOblateBody<serialization::Frame::PluginTag,
+                 serialization::Frame::WORLD>();
+  TestOblateBody<serialization::Frame::PluginTag,
+                 serialization::Frame::WORLD_SUN>();
+
+  TestOblateBody<serialization::Frame::SolarSystemTag,
+                 serialization::Frame::ICRF_J2000_ECLIPTIC>();
+  TestOblateBody<serialization::Frame::SolarSystemTag,
+                 serialization::Frame::ICRF_J2000_EQUATOR>();
+
+  TestOblateBody<serialization::Frame::TestTag,
+                 serialization::Frame::TEST>();
+  TestOblateBody<serialization::Frame::TestTag,
+                 serialization::Frame::TEST1>();
+  TestOblateBody<serialization::Frame::TestTag,
+                 serialization::Frame::TEST2>();
+  TestOblateBody<serialization::Frame::TestTag,
+                 serialization::Frame::FROM>();
+  TestOblateBody<serialization::Frame::TestTag,
+                 serialization::Frame::THROUGH>();
+  TestOblateBody<serialization::Frame::TestTag,
+                 serialization::Frame::TO>();
 }
 
 }  // namespace physics

@@ -20,8 +20,9 @@ using principia::ksp_plugin::World;
 using principia::si::Degree;
 using principia::si::Second;
 using principia::si::Tonne;
-using testing::Eq;
 using testing::ElementsAre;
+using testing::Eq;
+using testing::ExitedWithCode;
 using testing::IsNull;
 using testing::NotNull;
 using testing::Pointee;
@@ -136,8 +137,20 @@ TEST_F(InterfaceDeathTest, Errors) {
   }, "a fatal error");
 }
 
-TEST_F(InterfaceTest, InitGoogleLogging) {
+TEST_F(InterfaceTest, InitGoogleLogging1) {
   principia__InitGoogleLogging();
+}
+
+TEST_F(InterfaceDeathTest, InitGoogleLogging2) {
+  // We use EXPECT_EXIT in this test to avoid interfering with the execution of
+  // the other tests.
+  int const kExitCode = 66;
+
+  EXPECT_EXIT({
+    google::ShutdownGoogleLogging();
+    principia__InitGoogleLogging();
+    exit(kExitCode);
+  }, ExitedWithCode(kExitCode), "");
 }
 
 TEST_F(InterfaceTest, Log) {
@@ -444,6 +457,48 @@ TEST_F(InterfaceTest, DeserializePlugin) {
           sizeof(kHexadecimalBoringPlugin) / sizeof(char) - 1));
   EXPECT_THAT(plugin, NotNull());
   EXPECT_EQ(Instant(), plugin->current_time());
+}
+
+TEST_F(InterfaceDeathTest, SettersAndGetters) {
+  // We use EXPECT_EXITs in this test to avoid interfering with the execution of
+  // the other tests.
+  int const kExitCode = 66;
+  char const kExitMessage[] = "Exiting";
+
+  EXPECT_EXIT({
+    principia__SetBufferedLogging(100);
+    ASSERT_EQ(100, principia__GetBufferedLogging());
+    std::cerr << kExitMessage;
+    exit(kExitCode);
+  }, ExitedWithCode(kExitCode), kExitMessage);
+
+  EXPECT_EXIT({
+    principia__SetBufferDuration(101);
+    ASSERT_EQ(101, principia__GetBufferDuration());
+    std::cerr << kExitMessage;
+    exit(kExitCode);
+  }, ExitedWithCode(kExitCode), kExitMessage);
+
+  EXPECT_EXIT({
+    principia__SetSuppressedLogging(102);
+    ASSERT_EQ(102, principia__GetSuppressedLogging());
+    std::cerr << kExitMessage;
+    exit(kExitCode);
+  }, ExitedWithCode(kExitCode), kExitMessage);
+
+  EXPECT_EXIT({
+    principia__SetVerboseLogging(103);
+    ASSERT_EQ(103, principia__GetVerboseLogging());
+    std::cerr << kExitMessage;
+    exit(kExitCode);
+  }, ExitedWithCode(kExitCode), kExitMessage);
+
+  EXPECT_EXIT({
+    principia__SetStderrLogging(2);
+    ASSERT_EQ(2, principia__GetStderrLogging());
+    std::cerr << kExitMessage;
+    exit(kExitCode);
+  }, ExitedWithCode(kExitCode), kExitMessage);
 }
 
 }  // namespace
