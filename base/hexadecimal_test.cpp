@@ -81,6 +81,19 @@ TEST_F(HexadecimalDeathTest, Overlap) {
   }, "bad overlap");
 }
 
+TEST_F(HexadecimalDeathTest, Size) {
+  std::vector<uint8_t> bytes(kBytes);
+  std::vector<uint8_t> digits(kDigits);
+  EXPECT_DEATH({
+    HexadecimalEncode(bytes.data(), bytes.size(),
+                      digits.data(), digits.size() - 1);
+  }, "too small");
+  EXPECT_DEATH({
+    HexadecimalDecode(digits.data(), digits.size(),
+                      bytes.data(), bytes.size() - 1);
+  }, "too small");
+}
+
 TEST_F(HexadecimalTest, CaseInsensitive) {
   std::vector<uint8_t> bytes(kBytes);
   HexadecimalDecode(lowercase_digits_.data(), lowercase_digits_.size(),
