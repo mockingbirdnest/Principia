@@ -95,5 +95,39 @@ void BM_EncodePi(benchmark::State& state) {  // NOLINT(runtime/references)
 
 BENCHMARK(BM_EncodePi);
 
+void HexDecode(not_null<benchmark::State*> const state,
+              not_null<bool*> const correct,
+              std::string const& input_digits,
+              std::string const& expected_bytes) {
+  std::string bytes;
+  HexadecimalDecode<std::string>(input_digits, &bytes);
+  state->PauseTiming();
+  *correct = bytes == expected_bytes;
+  state->ResumeTiming();
+}
+
+void BM_DecodePi(benchmark::State& state) {  // NOLINT(runtime/references)
+  bool correct;
+  state.PauseTiming();
+  std::string const pi_bytes(kPi500Bytes, 500);
+  std::string input_digits;
+  std::string expected_bytes;
+  input_digits.reserve(1000 * kCopiesOfPi);
+  expected_bytes.reserve(500 * kCopiesOfPi);
+  for (int i = kCopiesOfPi; i > 0; --i) {
+    input_digits += kPi1000HexadecimalDigits;
+    expected_bytes += pi_bytes;
+  }
+  state.ResumeTiming();
+  while (state.KeepRunning()) {
+    HexDecode(&state, &correct, input_digits, expected_bytes);
+  }
+  std::stringstream ss;
+  ss << correct;
+  state.SetLabel(ss.str());
+}
+
+BENCHMARK(BM_DecodePi);
+
 }  // namespace benchmarks
 }  // namespace principia

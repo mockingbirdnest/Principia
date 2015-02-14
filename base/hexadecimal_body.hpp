@@ -93,6 +93,11 @@ static uint8_t const kHexadecimalDigitsToByte[256][256] = {
     {SKIP_48, '\xf0', '\xf1', '\xf2', '\xf3', '\xf4', '\xf5', '\xf6', '\xf7',
     '\xf8', '\xf9', SKIP_7, '\xfa', '\xfb', '\xfc', '\xfd', '\xfe', '\xff',
     SKIP_26, '\xfa', '\xfb', '\xfc', '\xfd', '\xfe', '\xff'}};
+
+static uint8_t const kHexadecimalDigitsToNibble[256] = {
+    SKIP_48, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9,
+    SKIP_7, '\xa', '\xb', '\xc', '\xd', '\xe', '\xf',
+    SKIP_26, '\xa', '\xb', '\xc', '\xd', '\xe', '\xf'};
 #undef SKIP_7_ROWS
 #undef SKIP_26_ROWS
 #undef SKIP_48_ROWS
@@ -100,6 +105,7 @@ static uint8_t const kHexadecimalDigitsToByte[256][256] = {
 #undef SKIP_26
 #undef SKIP_48
 #endif
+
 
 template<typename Container>
 std::enable_if_t<
@@ -138,7 +144,8 @@ HexadecimalDecode(Container const& input, not_null<Container*> output) {
   for (auto digit = digits.begin();
        digit != digits.end() - digits.size() % 2;
        ++digit, ++byte) {
-    *byte = kHexadecimalDigitsToByte[*digit][*++digit];
+    *byte = (kHexadecimalDigitsToNibble[*digit] << 4) + 
+            kHexadecimalDigitsToNibble[*++digit];
   }
   bytes.resize(digits.size() / 2);
   return true;
