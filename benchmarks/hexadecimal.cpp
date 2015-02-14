@@ -1,4 +1,34 @@
 
+// .\Release\benchmarks.exe --benchmark_min_time=2 --benchmark_repetitions=10 --benchmark_filter=codePi  // NOLINT(whitespace/line_length)
+// Benchmarking on 1 X 2672 MHz CPU
+// 2015/02/14-23:12:32
+// Benchmark            Time(ns)    CPU(ns) Iterations
+// ---------------------------------------------------
+// BM_EncodePi           6151167    5794323         35                                 1                 // NOLINT(whitespace/line_length)
+// BM_EncodePi           5849158    6825044         32                                 1                 // NOLINT(whitespace/line_length)
+// BM_EncodePi           6467310    7341224         34                                 1                 // NOLINT(whitespace/line_length)
+// BM_EncodePi           6149554    5505918         34                                 1                 // NOLINT(whitespace/line_length)
+// BM_EncodePi           6154540    7341224         34                                 1                 // NOLINT(whitespace/line_length)
+// BM_EncodePi           6150650    7280047         30                                 1                 // NOLINT(whitespace/line_length)
+// BM_EncodePi           6146090    5047091         34                                 1                 // NOLINT(whitespace/line_length)
+// BM_EncodePi           6158986    6882397         34                                 1                 // NOLINT(whitespace/line_length)
+// BM_EncodePi           6347038    4902889         35                                 1                 // NOLINT(whitespace/line_length)
+// BM_EncodePi           6206210    7280047         30                                 1                 // NOLINT(whitespace/line_length)
+// BM_EncodePi_mean      6180471    6390402        332                                 1                 // NOLINT(whitespace/line_length)
+// BM_EncodePi_stddev     149989     952281        332                                 1                 // NOLINT(whitespace/line_length)
+// BM_DecodePi           7872402    8400054         26                                 1                 // NOLINT(whitespace/line_length)
+// BM_DecodePi           7872063    7800050         26                                 1                 // NOLINT(whitespace/line_length)
+// BM_DecodePi           7860619    6933378         27                                 1                 // NOLINT(whitespace/line_length)
+// BM_DecodePi           7849166    7200046         26                                 1                 // NOLINT(whitespace/line_length)
+// BM_DecodePi           7436041    9000058         26                                 1                 // NOLINT(whitespace/line_length)
+// BM_DecodePi           7881490    8400054         26                                 1                 // NOLINT(whitespace/line_length)
+// BM_DecodePi           8343985    9600062         26                                 1                 // NOLINT(whitespace/line_length)
+// BM_DecodePi           7855071    6600042         26                                 1                 // NOLINT(whitespace/line_length)
+// BM_DecodePi           7833916    8088941         27                                 1                 // NOLINT(whitespace/line_length)
+// BM_DecodePi           7852779    8400054         26                                 1                 // NOLINT(whitespace/line_length)
+// BM_DecodePi_mean      7865612    8038219        262                                 1                 // NOLINT(whitespace/line_length)
+// BM_DecodePi_stddev     203016     882904        262                                 1                 // NOLINT(whitespace/line_length)
+
 #define GLOG_NO_ABBREVIATED_SEVERITIES
 #include "base/hexadecimal.hpp"
 #include "base/not_null.hpp"
