@@ -114,8 +114,20 @@ TEST_F(InterfaceDeathTest, Errors) {
   }, "a fatal error");
 }
 
-TEST_F(InterfaceTest, InitGoogleLogging) {
+TEST_F(InterfaceTest, InitGoogleLogging1) {
   principia__InitGoogleLogging();
+}
+
+TEST_F(InterfaceDeathTest, InitGoogleLogging2) {
+  // We use EXPECT_EXIT in this test to avoid interfering with the execution of
+  // the other tests.
+  int const kExitCode = 66;
+
+  EXPECT_EXIT({
+    google::ShutdownGoogleLogging();
+    principia__InitGoogleLogging();
+    exit(kExitCode);
+  }, ExitedWithCode(kExitCode), "");
 }
 
 TEST_F(InterfaceTest, Log) {
