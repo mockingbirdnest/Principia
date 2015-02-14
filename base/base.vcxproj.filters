@@ -41,12 +41,18 @@
     <ClInclude Include="hexadecimal_body.hpp">
       <Filter>Source Files</Filter>
     </ClInclude>
+    <ClInclude Include="allocators.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="not_null_test.cpp">
       <Filter>Test Files</Filter>
     </ClCompile>
     <ClCompile Include="hexadecimal_test.cpp">
+      <Filter>Test Files</Filter>
+    </ClCompile>
+    <ClCompile Include="allocators_test.cpp">
       <Filter>Test Files</Filter>
     </ClCompile>
   </ItemGroup>

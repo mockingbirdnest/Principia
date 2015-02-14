@@ -129,26 +129,23 @@ HexadecimalEncode(Container const& input, not_null<Container*> output) {
 
 template<typename Container>
 std::enable_if_t<
-    std::is_convertible<typename Container::value_type, uint8_t>::value,
-    bool>
-HexadecimalDecode(Container const& input, not_null<Container*> output) {
-  bool valid = true;
+    std::is_convertible<typename Container::value_type, uint8_t>::value>
+HexadecimalDecode(Container const& input, not_null<Container*> output) {;
   Container const& digits = input;
   Container& bytes = *output;
-  if (digits.size() % 2 != 0) {
-    valid = false;
-  }
+  std::size_t const odd = digits.size() % 2;
+  CHECK(bytes.data() >= &digits.data()[input.size()] ||
+        bytes.data() <= &digits.data()[1]);
   // Do not shrink |bytes| in case we are decoding in-place.
   bytes.resize(std::max(bytes.size(), digits.size() / 2));
   auto byte = bytes.begin();
   for (auto digit = digits.begin();
-       digit != digits.end() - digits.size() % 2;
+       digit != digits.end() - odd;
        ++digit, ++byte) {
     *byte = (kHexadecimalDigitsToNibble[*digit] << 4) + 
-            kHexadecimalDigitsToNibble[*++digit];
+             kHexadecimalDigitsToNibble[*++digit];
   }
   bytes.resize(digits.size() / 2);
-  return true;
 }
 
 }  // namespace base

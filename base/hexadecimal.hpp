@@ -15,14 +15,13 @@ std::enable_if_t<
     void>
 HexadecimalEncode(Container const& input, not_null<Container*> output);
 
-// Invalid digit pairs are decoded to NUL.  The decoding can be done in-place.
-// Returns true if, and only if, all digit pairs were valid and |input.size()|
-// was even. If |input.size()| is odd, the last character of the input is
-// ignored.  Ignores case.
+// Invalid digits are read as 0.  If |input.size()| is odd, the last
+// character of the input is ignored.  Ignores case.
+// The decoding can be done in-place, but if the containers overlap,
+// |output.data()| shall not exceed |&input.data()[1]|.
 template<typename Container>
 std::enable_if_t<
-    std::is_convertible<typename Container::value_type, uint8_t>::value,
-    bool>
+    std::is_convertible<typename Container::value_type, uint8_t>::value>
 HexadecimalDecode(Container const& input, not_null<Container*> output);
 
 }  // namespace base
