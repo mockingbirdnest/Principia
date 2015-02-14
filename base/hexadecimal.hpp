@@ -1,28 +1,24 @@
 #pragma once
 
-#include <string>
-#include <type_traits>
-
-#include "base/not_null.hpp"
+#include <stddef.h>
+#include <stdint.h>
 
 namespace principia {
 namespace base {
 
-// The encoding can be done in-place.  The result is upper-case.
-template<typename Container>
-std::enable_if_t<
-    std::is_convertible<typename Container::value_type, uint8_t>::value,
-    void>
-HexadecimalEncode(Container const& input, not_null<Container*> output);
+// The result is upper-case.  Either |&input[input_size] <= output| or
+// |&output[input_size] <= input| must hold.  |output_size| must be at least
+// twice |input_size|.
+void HexadecimalEncode(uint8_t const* input, size_t input_size,
+                       uint8_t* output, size_t output_size);
 
-// Invalid digits are read as 0.  If |input.size()| is odd, the last
+// Invalid digits are read as 0.  If |input_size| is odd, the last
 // character of the input is ignored.  Ignores case.
-// The decoding can be done in-place, but if the containers overlap,
-// |output.data()| shall not exceed |&input.data()[1]|.
-template<typename Container>
-std::enable_if_t<
-    std::is_convertible<typename Container::value_type, uint8_t>::value>
-HexadecimalDecode(Container const& input, not_null<Container*> output);
+// Either |output <= &input[1]| or |&input[input_size & ~1] <= output| must
+// hold, in particular, |input == output| is valid.  |output_size| must be at
+// least |input_size / 2|.
+void HexadecimalDecode(uint8_t const* input, size_t input_size,
+                       uint8_t* output, size_t output_size);
 
 }  // namespace base
 }  // namespace principia
