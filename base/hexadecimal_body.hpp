@@ -131,7 +131,7 @@ inline void HexadecimalDecode(uint8_t const* input, size_t input_size,
        input != input_end;
        input += 2, ++output) {
     *output = (kHexadecimalDigitsToNibble[*input] << 4) |
-              kHexadecimalDigitsToNibble[*(input+1)];
+              kHexadecimalDigitsToNibble[*(input + 1)];
   }
 }
 

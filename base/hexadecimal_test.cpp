@@ -30,43 +30,58 @@ using HexadecimalDeathTest = HexadecimalTest;
 
 TEST_F(HexadecimalTest, EncodeAndDecode) {
   std::vector<uint8_t> digits(kDigits);
-  HexadecimalEncode(&bytes_[0], bytes_.size(), &digits[0], digits.size());
+  HexadecimalEncode(bytes_.data(), bytes_.size(), digits.data(), digits.size());
   EXPECT_EQ(uppercase_digits_, digits);
   std::vector<uint8_t> bytes(kBytes);
-  HexadecimalDecode(&digits[0], digits.size(), &bytes[0], bytes.size());
+  HexadecimalDecode(digits.data(), digits.size(), bytes.data(), bytes.size());
   EXPECT_EQ(bytes_, bytes);
 }
 
 TEST_F(HexadecimalTest, InPlace) {
-  std::vector<uint8_t> str(kDigits);
-  memcpy(&str[kBytes], &bytes_[0], kBytes);
-  HexadecimalEncode(&str[kBytes], kBytes, &str[0], str.size());
-  EXPECT_EQ(uppercase_digits_, str);
-  HexadecimalDecode(&str[0], str.size(), &str[1], kBytes);
-  EXPECT_EQ(bytes_, std::vector<uint8_t>(&str[1], &str[kBytes + 1]));
-  str = uppercase_digits_;
-  HexadecimalDecode(&str[0], str.size(), &str[0], kBytes);
-  EXPECT_EQ(bytes_, std::vector<uint8_t>(&str[0], &str[kBytes]));
+  std::vector<uint8_t> buffer(kDigits);
+  memcpy(&buffer[kBytes], bytes_.data(), kBytes);
+  HexadecimalEncode(&buffer[kBytes], kBytes, &buffer[0], kDigits);
+  EXPECT_EQ(uppercase_digits_, buffer);
+  HexadecimalDecode(&buffer[0], kDigits, &buffer[1], kBytes);
+  EXPECT_EQ(bytes_, std::vector<uint8_t>(&buffer[1], &buffer[kBytes + 1]));
+  buffer = uppercase_digits_;
+  HexadecimalDecode(&buffer[0], kDigits, &buffer[0], kBytes);
+  EXPECT_EQ(bytes_, std::vector<uint8_t>(&buffer[0], &buffer[kBytes]));
+}
+
+TEST_F(HexadecimalTest, Adjacent) {
+  std::vector<uint8_t> buffer(kDigits + kBytes);
+  memcpy(&buffer[0], bytes_.data(), kBytes);
+  HexadecimalEncode(&buffer[0], kBytes, &buffer[kBytes], kDigits);
+  EXPECT_EQ(uppercase_digits_,
+            std::vector<uint8_t>(&buffer[kBytes], &buffer[kBytes + kDigits]));
+  memcpy(&buffer[0], uppercase_digits_.data(), kDigits);
+  HexadecimalDecode(&buffer[0], kDigits, &buffer[kDigits], kBytes);
+  EXPECT_EQ(bytes_,
+            std::vector<uint8_t>(&buffer[kDigits], &buffer[kDigits + kBytes]));
+  HexadecimalDecode(&buffer[0], kDigits + 1, &buffer[kDigits], kBytes);
+  EXPECT_EQ(bytes_,
+            std::vector<uint8_t>(&buffer[kDigits], &buffer[kDigits + kBytes]));
 }
 
 TEST_F(HexadecimalTest, CaseInsensitive) {
   std::vector<uint8_t> bytes(kBytes);
-  HexadecimalDecode(&lowercase_digits_[0], lowercase_digits_.size(),
-                    &bytes[0], bytes.size());
+  HexadecimalDecode(lowercase_digits_.data(), lowercase_digits_.size(),
+                    bytes.data(), bytes.size());
   EXPECT_EQ(bytes_, bytes);
-  HexadecimalDecode(&uppercase_digits_[0], uppercase_digits_.size(),
-                    &bytes[0], bytes.size());
+  HexadecimalDecode(uppercase_digits_.data(), uppercase_digits_.size(),
+                    bytes.data(), bytes.size());
   EXPECT_EQ(bytes_, bytes);
 }
 
 TEST_F(HexadecimalTest, Invalid) {
   std::vector<uint8_t> bytes(1);
   std::vector<uint8_t> digits = {'a', 'b', 'c'};
-  HexadecimalDecode(&digits[0], digits.size(), &bytes[0], bytes.size());
-  EXPECT_THAT(bytes, ElementsAre('\xAB'));;
+  HexadecimalDecode(digits.data(), digits.size(), bytes.data(), bytes.size());
+  EXPECT_THAT(bytes, ElementsAre('\xAB'));
   digits = {'0', 'a', 'g', 'c', 'd', 'e'};
   bytes.resize(3);
-  HexadecimalDecode(&digits[0], digits.size(), &bytes[0], bytes.size());
+  HexadecimalDecode(digits.data(), digits.size(), bytes.data(), bytes.size());
   EXPECT_THAT(bytes, ElementsAre('\x0A', '\x0C', '\xDE'));
 }
 
