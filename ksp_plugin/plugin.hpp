@@ -194,15 +194,6 @@ class Plugin {
   NewBarycentricRotatingTransforms(Index const primary_index,
                                    Index const secondary_index) const;
 
-  virtual Position<World> VesselWorldPosition(
-      GUID const& vessel_guid,
-      Position<World> const& parent_world_position) const;
-
-  virtual Velocity<World> VesselWorldVelocity(
-      GUID const& vessel_guid,
-      Velocity<World> const& parent_world_velocity,
-      Time const& parent_rotation_period) const;
-
   // Creates |next_physics_bubble_| if it is null.  Adds the vessel with GUID
   // |vessel_guid| to |next_physics_bubble_->vessels| with a list of pointers to
   // the |Part|s in |parts|.  Merges |parts| into |next_physics_bubble_->parts|.

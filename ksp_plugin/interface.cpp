@@ -282,27 +282,6 @@ void principia__DeleteLineAndIterator(
   TakeOwnership(line_and_iterator);
 }
 
-XYZ principia__VesselWorldPosition(Plugin const* const plugin,
-                                   char const* vessel_guid,
-                                   XYZ const parent_world_position) {
-  Position<World> const result = CHECK_NOTNULL(plugin)->VesselWorldPosition(
-      vessel_guid,
-      World::origin + Displacement<World>(
-                          ToR3Element(parent_world_position) * Metre));
-  return ToXYZ((result - World::origin).coordinates() / Metre);
-}
-
-XYZ principia__VesselWorldVelocity(Plugin const* const plugin,
-                                   char const* vessel_guid,
-                                   XYZ const parent_world_velocity,
-                                   double const parent_rotation_period) {
-  Velocity<World> const result = CHECK_NOTNULL(plugin)->VesselWorldVelocity(
-      vessel_guid,
-      Velocity<World>(ToR3Element(parent_world_velocity) * (Metre / Second)),
-      parent_rotation_period * Second);
-  return ToXYZ(result.coordinates() / (Metre / Second));
-}
-
 void principia__AddVesselToNextPhysicsBubble(Plugin* const plugin,
                                              char const* vessel_guid,
                                              KSPPart const* const parts,

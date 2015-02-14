@@ -242,17 +242,6 @@ void CDECL principia__DeleteLineAndIterator(
     LineAndIterator** const line_and_iterator);
 
 extern "C" DLLEXPORT
-XYZ CDECL principia__VesselWorldPosition(Plugin const* const plugin,
-                                         char const* vessel_guid,
-                                         XYZ const parent_world_position);
-
-extern "C" DLLEXPORT
-XYZ CDECL principia__VesselWorldVelocity(Plugin const* const plugin,
-                                         char const* vessel_guid,
-                                         XYZ const parent_world_velocity,
-                                         double const parent_rotation_period);
-
-extern "C" DLLEXPORT
 void CDECL principia__AddVesselToNextPhysicsBubble(Plugin* const plugin,
                                                    char const* vessel_guid,
                                                    KSPPart const* const parts,

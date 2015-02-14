@@ -172,23 +172,6 @@ public partial class PluginAdapter : UnityEngine.MonoBehaviour {
   private static extern void DeleteLineAndIterator(ref IntPtr line);
 
   [DllImport(dllName           : kDllPath,
-             EntryPoint        = "principia__VesselWorldPosition",
-             CallingConvention = CallingConvention.Cdecl)]
-  private static extern XYZ VesselWorldPosition(
-      IntPtr plugin,
-      [MarshalAs(UnmanagedType.LPStr)] String vessel_guid,
-      XYZ parent_world_position);
-
-  [DllImport(dllName           : kDllPath,
-             EntryPoint        = "principia__VesselWorldVelocity",
-             CallingConvention = CallingConvention.Cdecl)]
-  private static extern XYZ VesselWorldVelocity(
-      IntPtr plugin,
-      [MarshalAs(UnmanagedType.LPStr)] String vessel_guid,
-      XYZ parent_world_velocity,
-      double parent_rotation_period);
-
-  [DllImport(dllName           : kDllPath,
              EntryPoint        = "principia__AddVesselToNextPhysicsBubble",
              CallingConvention = CallingConvention.Cdecl)]
   private static extern void AddVesselToNextPhysicsBubble(
