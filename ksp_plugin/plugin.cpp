@@ -577,46 +577,6 @@ Plugin::NewBarycentricRotatingTransforms(Index const primary_index,
              secondary_prolongation);
 }
 
-Position<World> Plugin::VesselWorldPosition(
-    GUID const& vessel_guid,
-    Position<World> const& parent_world_position) const {
-  not_null<std::unique_ptr<Vessel>> const& vessel =
-      find_vessel_by_guid_or_die(vessel_guid);
-  CHECK(vessel->is_initialized()) << "Vessel with GUID " << vessel_guid
-                                 << " was not given an initial state";
-  auto const to_world =
-      AffineMap<Barycentric, World, Length, Rotation>(
-          vessel->parent()->
-              prolongation().last().degrees_of_freedom().position(),
-          parent_world_position,
-          Rotation<WorldSun, World>::Identity() * PlanetariumRotation());
-  return to_world(
-      vessel->prolongation().last().degrees_of_freedom().position());
-}
-
-Velocity<World> Plugin::VesselWorldVelocity(
-      GUID const& vessel_guid,
-      Velocity<World> const& parent_world_velocity,
-      Time const& parent_rotation_period) const {
-  not_null<std::unique_ptr<Vessel>> const& vessel =
-      find_vessel_by_guid_or_die(vessel_guid);
-  CHECK(vessel->is_initialized()) << "Vessel with GUID " << vessel_guid
-                                  << " was not given an initial state";
-  Rotation<Barycentric, World> to_world =
-      Rotation<WorldSun, World>::Identity() * PlanetariumRotation();
-  RelativeDegreesOfFreedom<Barycentric> const relative_to_parent =
-      vessel->prolongation().last().degrees_of_freedom() -
-      vessel->parent()->prolongation().last().degrees_of_freedom();
-  AngularVelocity<Barycentric> const world_frame_angular_velocity =
-      AngularVelocity<Barycentric>({0 * Radian / Second,
-                                    2 * π * Radian / parent_rotation_period,
-                                    0 * Radian / Second});
-  return to_world(
-      (world_frame_angular_velocity *
-       relative_to_parent.displacement()) / Radian +
-      relative_to_parent.velocity()) + parent_world_velocity;
-}
-
 void Plugin::AddVesselToNextPhysicsBubble(
     GUID const& vessel_guid,
     std::vector<IdAndOwnedPart> parts) {

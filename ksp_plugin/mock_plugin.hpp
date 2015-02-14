@@ -82,17 +82,6 @@ class MockPlugin : public Plugin {
                               Transforms<Barycentric, Rendering, Barycentric>>*
                                   transforms));
 
-  MOCK_CONST_METHOD2(VesselWorldPosition,
-                     Position<World>(
-                         GUID const& vessel_guid,
-                         Position<World> const& parent_world_position));
-
-  MOCK_CONST_METHOD3(VesselWorldVelocity,
-                     Velocity<World>(
-                         GUID const& vessel_guid,
-                         Velocity<World> const& parent_world_velocity,
-                         Time const& parent_rotation_period));
-
   // NOTE(phl): Another wrapper needed because gMock 1.7.0 wants to copy the
   // vector of unique_ptr<>.
   void AddVesselToNextPhysicsBubble(GUID const& vessel_guid,
