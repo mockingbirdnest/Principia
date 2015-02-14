@@ -68,10 +68,17 @@ TEST_F(HexadecimalDeathTest, Overlap) {
   std::vector<uint8_t> buffer(kDigits + kBytes - 1);
   EXPECT_DEATH({
     HexadecimalEncode(&buffer[0], kBytes, &buffer[kBytes - 1], kDigits);
-  }, "");
+  }, "bad overlap");
   EXPECT_DEATH({
     HexadecimalDecode(&buffer[0], kDigits, &buffer[kDigits - 1], kBytes);
-  }, "");
+  }, "bad overlap");
+  buffer = std::vector<uint8_t>(kDigits);
+  EXPECT_DEATH({
+    HexadecimalEncode(&buffer[kBytes - 1], kBytes, &buffer[0], kDigits);
+  }, "bad overlap");
+  EXPECT_DEATH({
+    HexadecimalDecode(&buffer[0], kDigits, &buffer[2], kBytes);
+  }, "bad overlap");
 }
 
 TEST_F(HexadecimalTest, CaseInsensitive) {
