@@ -42,7 +42,7 @@ inline void HexadecimalEncode(uint8_t const* input, size_t input_size,
                               uint8_t* output, size_t output_size) {
   CHECK(&input[input_size] <= output || &output[input_size] <= input)
       << "bad overlap";
-  CHECK(output_size >= input_size << 1)
+  CHECK_GE(output_size, input_size << 1)
       << "output too small";
   for (uint8_t const* const input_end = input + input_size; 
        input != input_end;
@@ -56,7 +56,7 @@ inline void HexadecimalDecode(uint8_t const* input, size_t input_size,
   input_size &= ~1;
   CHECK(output <= &input[1] || &input[input_size] <= output)
       << "bad overlap";
-  CHECK(output_size >= input_size / 2)
+  CHECK_GE(output_size, input_size / 2)
       << "output too small";
   for (uint8_t const* const input_end = input + input_size; 
        input != input_end;

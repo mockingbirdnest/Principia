@@ -272,12 +272,23 @@ XYZ CDECL principia__BubbleVelocityCorrection(Plugin const* const plugin,
 extern "C" DLLEXPORT
 double CDECL principia__current_time(Plugin const* const plugin);
 
+// |plugin| must not be null.  The caller takes ownership of the result.  No
+// transfer of ownership of |*plugin|. 
 extern "C" DLLEXPORT
 char const* CDECL principia__SerializePlugin(Plugin const* const plugin);
 
+// Deletes and nulls |*serialization|.
+// |serialization| must not be null.  No transfer of ownership of
+// |*serialization|, takes ownership of |**serialization|.
 extern "C" DLLEXPORT
-Plugin* CDECL principia__DeserializePlugin(
-    char const* const hexadecimal_message);
+void CDECL principia__DeletePluginSerialization(
+    char const** const serialization);
+
+// The caller takes ownership of the result.  No transfer of ownership of
+// |*serialization|.
+extern "C" DLLEXPORT
+Plugin* CDECL principia__DeserializePlugin(char const* const serialization,
+                                           int const serialization_size);
 
 // Says hello, convenient for checking that calls to the DLL work.
 extern "C" DLLEXPORT

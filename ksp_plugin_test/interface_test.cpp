@@ -23,6 +23,7 @@ using principia::si::Tonne;
 using testing::Eq;
 using testing::ElementsAre;
 using testing::IsNull;
+using testing::NotNull;
 using testing::Pointee;
 using testing::Property;
 using testing::Ref;
@@ -424,26 +425,25 @@ TEST_F(InterfaceTest, CurrentTime) {
 }
 
 TEST_F(InterfaceTest, SerializePlugin) {
-  not_null<std::unique_ptr<Plugin>> plugin = make_not_null_unique<Plugin>(
-                    Instant(),
-                    0,
-                    SIUnit<GravitationalParameter>(),
-                    0 * Radian);
-  plugin->EndInitialization();
-  principia::serialization::Plugin other_message;
-  plugin->WriteToMessage(&other_message);
   std::string const message_bytes =
       std::string(kSerializedBoringPlugin,
                   sizeof(kSerializedBoringPlugin) / sizeof(char) - 1);
-  EXPECT_EQ(message_bytes, other_message.SerializeAsString());
   principia::serialization::Plugin message;
   message.ParseFromString(message_bytes);
-  LOG(ERROR)<<message.sun_index();
   EXPECT_CALL(*plugin_, WriteToMessage(_)).WillOnce(SetArgPointee<0>(message));
-  char const* foo = principia__SerializePlugin(plugin_.get());
-  LOG(ERROR)<<(void*)foo;
-  std::string const serialization = foo;
-  EXPECT_EQ(kHexadecimalBoringPlugin, serialization);
+  char const* serialization = principia__SerializePlugin(plugin_.get());
+  EXPECT_STREQ(kHexadecimalBoringPlugin, serialization);
+  principia__DeletePluginSerialization(&serialization);
+  EXPECT_THAT(serialization, IsNull());
+}
+
+TEST_F(InterfaceTest, DeserializePlugin) {
+  std::unique_ptr<Plugin> plugin(
+      principia__DeserializePlugin(
+          kHexadecimalBoringPlugin,
+          sizeof(kHexadecimalBoringPlugin) / sizeof(char) - 1));
+  EXPECT_THAT(plugin, NotNull());
+  EXPECT_EQ(Instant(), plugin->current_time());
 }
 
 }  // namespace

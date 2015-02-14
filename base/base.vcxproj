@@ -109,7 +109,6 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="allocators.hpp" />
     <ClInclude Include="buffer.hpp" />
     <ClInclude Include="buffer_body.hpp" />
     <ClInclude Include="fingerprint2011.hpp" />
@@ -123,7 +122,6 @@
     <ClInclude Include="unique_ptr_logging_body.hpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="allocators_test.cpp" />
     <ClCompile Include="hexadecimal_test.cpp" />
     <ClCompile Include="not_null_test.cpp" />
   </ItemGroup>
