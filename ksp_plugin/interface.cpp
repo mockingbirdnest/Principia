@@ -4,12 +4,17 @@
 #include <utility>
 #include <vector>
 
+#include "base/allocators.hpp"
+#include "base/hexadecimal.hpp"
 #include "base/macros.hpp"
 #include "base/not_null.hpp"
 #include "base/version.hpp"
 #include "ksp_plugin/part.hpp"
 #include "serialization/ksp_plugin.pb.h"
 
+using principia::base::DefaultInitializationAllocator;
+using principia::base::HexadecimalEncode;
+using principia::base::HexadecimalDecode;
 using principia::base::make_not_null_unique;
 using principia::geometry::Displacement;
 using principia::ksp_plugin::AliceSun;
@@ -25,6 +30,9 @@ using principia::si::Second;
 using principia::si::Tonne;
 
 namespace {
+
+using ByteBuffer =
+    std::vector<char, DefaultInitializationAllocator<char>>;
 
 // Takes ownership of |**pointer| and returns it to the caller.  Nulls
 // |*pointer|.  |pointer| must not be null.  No transfer of ownership of
@@ -360,14 +368,13 @@ char const* principia__SerializePlugin(Plugin const* const plugin) {
   CHECK_NOTNULL(plugin);
   principia::serialization::Plugin message;
   plugin->WriteToMessage(&message);
-  std::string const serialization = message.SerializeAsString();
-  std::ostringstream hexadecimal_serialization;
-  for (char const character : serialization) {
-    hexadecimal_serialization << std::hex << std::setfill('0') << std::setw(2)
-                              << std::uppercase
-                              << character;
-  }
-  return hexadecimal_serialization.str().c_str();
+  ByteBuffer serialization(message.ByteSize());
+  message.SerializeToArray(serialization.data(), serialization.size());
+  HexadecimalEncode<ByteBuffer>(serialization, &serialization);
+  serialization.push_back('\0');
+  LOG(ERROR)<<serialization.data();
+  LOG(ERROR)<<(void*)serialization.data();
+  return serialization.data();
 }
 
 char const* principia__SayHello() {
