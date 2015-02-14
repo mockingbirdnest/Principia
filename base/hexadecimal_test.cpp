@@ -64,6 +64,16 @@ TEST_F(HexadecimalTest, Adjacent) {
             std::vector<uint8_t>(&buffer[kDigits], &buffer[kDigits + kBytes]));
 }
 
+TEST_F(HexadecimalDeathTest, Overlap) {
+  std::vector<uint8_t> buffer(kDigits + kBytes - 1);
+  EXPECT_DEATH({
+    HexadecimalEncode(&buffer[0], kBytes, &buffer[kBytes - 1], kDigits);
+  }, "");
+  EXPECT_DEATH({
+    HexadecimalDecode(&buffer[0], kDigits, &buffer[kDigits - 1], kBytes);
+  }, "");
+}
+
 TEST_F(HexadecimalTest, CaseInsensitive) {
   std::vector<uint8_t> bytes(kBytes);
   HexadecimalDecode(lowercase_digits_.data(), lowercase_digits_.size(),
