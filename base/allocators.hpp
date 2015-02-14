@@ -10,7 +10,7 @@ namespace base {
 
 // Allocator adaptor that interposes |construct| calls to convert value
 // initialization into default initialization.
-// Using this allocator in a container yields a ~10% performance gain in
+// Using this allocator in a container of ints yields a ~10% performance gain in
 // calls to |resize()| or construction with a given size.
 // http://en.cppreference.com/w/cpp/language/value_initialization,
 // http://en.cppreference.com/w/cpp/language/default_initialization,
