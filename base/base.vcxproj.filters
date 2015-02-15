@@ -41,12 +41,6 @@
     <ClInclude Include="hexadecimal_body.hpp">
       <Filter>Source Files</Filter>
     </ClInclude>
-    <ClInclude Include="buffer.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="buffer_body.hpp">
-      <Filter>Source Files</Filter>
-    </ClInclude>
     <ClInclude Include="monostable.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>

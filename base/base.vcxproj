@@ -109,8 +109,6 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="buffer.hpp" />
-    <ClInclude Include="buffer_body.hpp" />
     <ClInclude Include="fingerprint2011.hpp" />
     <ClInclude Include="hexadecimal.hpp" />
     <ClInclude Include="hexadecimal_body.hpp" />
