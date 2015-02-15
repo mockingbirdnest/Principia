@@ -1,5 +1,7 @@
 #include "ksp_plugin/interface.hpp"
 
+#include <string>
+
 #include "base/not_null.hpp"
 #include "geometry/epoch.hpp"
 #include "gmock/gmock.h"
@@ -19,10 +21,12 @@ using ::testing::ElementsAre;
 using ::testing::Eq;
 using ::testing::ExitedWithCode;
 using ::testing::IsNull;
+using ::testing::NotNull;
 using ::testing::Pointee;
 using ::testing::Property;
 using ::testing::Ref;
 using ::testing::Return;
+using ::testing::SetArgPointee;
 using ::testing::StrictMock;
 using ::testing::_;
 
@@ -35,6 +39,27 @@ bool operator==(XYZ const& left, XYZ const& right) {
 bool operator==(QP const& left, QP const& right) {
   return left.q == right.q && left.p == right.p;
 }
+
+char const kSerializedBoringPlugin[] =
+    "\x12\xD2\x1\b\0\x12\xCD\x1\n\xF\n\r\b\x83\xF0\x1\x11\0\0\0\0\0\0\xF0?\x12"
+    "\xB9\x1\n\xAE\x1\n\x12\n\xE\x12\f\b\x80\b\x11\0\0\0\0\0\0\0\0\x12\0\x12"
+    "\x97\x1\n\xE\x12\f\b\x80\b\x11\0\0\0\0\0\0\0\0\x12\x84\x1\n>\x12<\n:\n-\n"
+    "\r\x12\v\b\x1\x11\0\0\0\0\0\0\0\0\x12\r\x12\v\b\x1\x11\0\0\0\0\0\0\0\0\x1A"
+    "\r\x12\v\b\x1\x11\0\0\0\0\0\0\0\0\"\t\r\xAF\x1F\xB1y\x10\x3\x18\x1\x12"
+    "B\n@\n3\n\xF\x12\r\b\x81\xF8\x1\x11\0\0\0\0\0\0\0\0\x12\xF\x12\r\b\x81\xF8"
+    "\x1\x11\0\0\0\0\0\0\0\0\x1A\xF\x12\r\b\x81\xF8\x1\x11\0\0\0\0\0\0\0\0\"\t"
+    "\r\xAF\x1F\xB1y\x10\x3\x18\x1\x12\x6\n\x4\b\0\x10\0\x1A\x2\n\0\"\x10\b\x80"
+    "\x80\x80\x80\x80\x1\x11\0\0\0\0\0\0\0\0*\xE\x12\f\b\x80\b\x11\0\0\0\0\0\0"
+    "\0\0""0\0";
+
+char const kHexadecimalBoringPlugin[] =
+    "12D201080012CD010A0F0A0D0883F00111000000000000F03F12B9010AAE010A120A0E120C"
+    "08800811000000000000000012001297010A0E120C0880081100000000000000001284010A"
+    "3E123C0A3A0A2D0A0D120B0801110000000000000000120D120B0801110000000000000000"
+    "1A0D120B080111000000000000000022090DAF1FB1791003180112420A400A330A0F120D08"
+    "81F801110000000000000000120F120D0881F8011100000000000000001A0F120D0881F801"
+    "11000000000000000022090DAF1FB1791003180112060A04080010001A020A002210088080"
+    "808080011100000000000000002A0E120C0880081100000000000000003000";
 
 char const kVesselGUID[] = "NCC-1701-D";
 
@@ -407,6 +432,28 @@ TEST_F(InterfaceTest, CurrentTime) {
   EXPECT_CALL(*plugin_, current_time()).WillOnce(Return(kUnixEpoch));
   double const current_time = principia__current_time(plugin_.get());
   EXPECT_THAT(Instant(current_time * Second), Eq(kUnixEpoch));
+}
+
+TEST_F(InterfaceTest, SerializePlugin) {
+  std::string const message_bytes =
+      std::string(kSerializedBoringPlugin,
+                  (sizeof(kSerializedBoringPlugin) - 1) / sizeof(char));
+  principia::serialization::Plugin message;
+  message.ParseFromString(message_bytes);
+  EXPECT_CALL(*plugin_, WriteToMessage(_)).WillOnce(SetArgPointee<0>(message));
+  char const* serialization = principia__SerializePlugin(plugin_.get());
+  EXPECT_STREQ(kHexadecimalBoringPlugin, serialization);
+  principia__DeletePluginSerialization(&serialization);
+  EXPECT_THAT(serialization, IsNull());
+}
+
+TEST_F(InterfaceTest, DeserializePlugin) {
+  std::unique_ptr<Plugin> plugin(
+      principia__DeserializePlugin(
+          kHexadecimalBoringPlugin,
+          (sizeof(kHexadecimalBoringPlugin) - 1) / sizeof(char)));
+  EXPECT_THAT(plugin, NotNull());
+  EXPECT_EQ(Instant(), plugin->current_time());
 }
 
 TEST_F(InterfaceDeathTest, SettersAndGetters) {
