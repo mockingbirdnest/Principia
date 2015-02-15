@@ -19,31 +19,32 @@
 #include "testing_utilities/almost_equals.hpp"
 #include "testing_utilities/explicit_operators.hpp"
 
-using principia::astronomy::JulianYear;
-using principia::astronomy::Parsec;
-using principia::constants::SpeedOfLight;
-using principia::quantities::Charge;
-using principia::quantities::Length;
-using principia::quantities::Pressure;
-using principia::quantities::Product;
-using principia::quantities::Speed;
-using principia::quantities::Sqrt;
-using principia::quantities::Time;
-using principia::si::Coulomb;
-using principia::si::Day;
-using principia::si::Metre;
-using principia::si::Pascal;
-using principia::si::Second;
-using principia::testing_utilities::AlmostEquals;
-using principia::testing_utilities::Times;
-using principia::uk::admiralty::Fathom;
-using principia::uk::Foot;
-using principia::uk::Furlong;
-using principia::uk::Inch;
-using principia::uk::Rod;
-using testing::Eq;
-
 namespace principia {
+
+using astronomy::JulianYear;
+using astronomy::Parsec;
+using constants::SpeedOfLight;
+using quantities::Charge;
+using quantities::Length;
+using quantities::Pressure;
+using quantities::Product;
+using quantities::Speed;
+using quantities::Sqrt;
+using quantities::Time;
+using si::Coulomb;
+using si::Day;
+using si::Metre;
+using si::Pascal;
+using si::Second;
+using testing_utilities::AlmostEquals;
+using testing_utilities::Times;
+using uk::admiralty::Fathom;
+using uk::Foot;
+using uk::Furlong;
+using uk::Inch;
+using uk::Rod;
+using ::testing::Eq;
+
 namespace geometry {
 
 class GrassmannTest : public testing::Test {

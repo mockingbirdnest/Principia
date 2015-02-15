@@ -8,9 +8,10 @@
 #include "base/not_null.hpp"
 #include "serialization/quantities.pb.h"
 
-using principia::base::not_null;
-
 namespace principia {
+
+using base::not_null;
+
 namespace quantities {
 
 template<int64_t LengthExponent, int64_t MassExponent, int64_t TimeExponent,

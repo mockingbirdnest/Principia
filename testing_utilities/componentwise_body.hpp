@@ -8,11 +8,12 @@
 #include "gmock/gmock.h"
 #include "quantities/quantities.hpp"
 
-using principia::geometry::Point;
-using principia::quantities::Quantity;
-using testing::Matcher;
-
 namespace principia {
+
+using geometry::Point;
+using quantities::Quantity;
+using ::testing::Matcher;
+
 namespace testing_utilities {
 
 namespace {

@@ -10,10 +10,11 @@
 #include "glog/logging.h"
 #include "physics/oblate_body.hpp"
 
-using principia::base::make_not_null_unique;
-using principia::geometry::Instant;
-
 namespace principia {
+
+using base::make_not_null_unique;
+using geometry::Instant;
+
 namespace physics {
 
 template<typename Frame>

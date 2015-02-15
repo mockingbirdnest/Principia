@@ -11,14 +11,15 @@
 #include "quantities/named_quantities.hpp"
 #include "serialization/ksp_plugin.pb.h"
 
-using principia::base::not_null;
-using principia::physics::Body;
-using principia::physics::DegreesOfFreedom;
-using principia::physics::MassiveBody;
-using principia::physics::Trajectory;
-using principia::quantities::GravitationalParameter;
-
 namespace principia {
+
+using base::not_null;
+using physics::Body;
+using physics::DegreesOfFreedom;
+using physics::MassiveBody;
+using physics::Trajectory;
+using quantities::GravitationalParameter;
+
 namespace ksp_plugin {
 
 // Represents a KSP |CelestialBody|.

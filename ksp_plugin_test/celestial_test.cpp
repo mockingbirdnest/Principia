@@ -4,11 +4,12 @@
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 
-using principia::si::Kilogram;
-using principia::si::Metre;
-using principia::si::Second;
-
 namespace principia {
+
+using si::Kilogram;
+using si::Metre;
+using si::Second;
+
 namespace ksp_plugin {
 
 class CelestialTest : public testing::Test {

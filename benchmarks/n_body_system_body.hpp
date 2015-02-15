@@ -7,17 +7,18 @@
 #include "quantities/si.hpp"
 #include "testing_utilities/solar_system.hpp"
 
-using principia::astronomy::JulianYear;
-using principia::base::not_null;
-using principia::integrators::SPRKIntegrator;
-using principia::physics::NBodySystem;
-using principia::quantities::Length;
-using principia::quantities::Speed;
-using principia::si::Minute;
-using principia::testing_utilities::ICRFJ2000Ecliptic;
-using principia::testing_utilities::SolarSystem;
-
 namespace principia {
+
+using astronomy::JulianYear;
+using base::not_null;
+using integrators::SPRKIntegrator;
+using physics::NBodySystem;
+using quantities::Length;
+using quantities::Speed;
+using si::Minute;
+using testing_utilities::ICRFJ2000Ecliptic;
+using testing_utilities::SolarSystem;
+
 namespace benchmarks {
 
 void SimulateSolarSystem(not_null<SolarSystem*> const solar_system) {

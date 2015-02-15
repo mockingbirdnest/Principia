@@ -9,26 +9,27 @@
 #include "testing_utilities/algebra.hpp"
 #include "testing_utilities/explicit_operators.hpp"
 
-using principia::astronomy::JulianYear;
-using principia::astronomy::Parsec;
-using principia::bipm::Knot;
-using principia::constants::SpeedOfLight;
-using principia::quantities::Length;
-using principia::quantities::Speed;
-using principia::quantities::Time;
-using principia::si::Day;
-using principia::si::Hour;
-using principia::si::Kilo;
-using principia::si::Metre;
-using principia::si::Minute;
-using principia::si::Second;
-using principia::testing_utilities::AlmostEquals;
-using principia::testing_utilities::Times;
-using principia::uk::Furlong;
-using principia::uk::Mile;
-using principia::uk::Rod;
-
 namespace principia {
+
+using astronomy::JulianYear;
+using astronomy::Parsec;
+using bipm::Knot;
+using constants::SpeedOfLight;
+using quantities::Length;
+using quantities::Speed;
+using quantities::Time;
+using si::Day;
+using si::Hour;
+using si::Kilo;
+using si::Metre;
+using si::Minute;
+using si::Second;
+using testing_utilities::AlmostEquals;
+using testing_utilities::Times;
+using uk::Furlong;
+using uk::Mile;
+using uk::Rod;
+
 namespace geometry {
 
 class R3ElementTest : public testing::Test {

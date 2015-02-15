@@ -14,11 +14,12 @@
 #include "physics/degrees_of_freedom.hpp"
 #include "serialization/ksp_plugin.pb.h"
 
-using principia::base::not_null;
-using principia::physics::DegreesOfFreedom;
-using principia::physics::RelativeDegreesOfFreedom;
-
 namespace principia {
+
+using base::not_null;
+using physics::DegreesOfFreedom;
+using physics::RelativeDegreesOfFreedom;
+
 namespace ksp_plugin {
 
 class PhysicsBubble {

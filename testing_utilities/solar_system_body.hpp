@@ -19,32 +19,33 @@
 #include "quantities/quantities.hpp"
 #include "quantities/si.hpp"
 
-using principia::base::check_not_null;
-using principia::base::make_not_null_unique;
-using principia::geometry::Bivector;
-using principia::geometry::Displacement;
-using principia::geometry::Instant;
-using principia::geometry::JulianDate;
-using principia::geometry::Point;
-using principia::geometry::Rotation;
-using principia::geometry::Vector;
-using principia::physics::MassiveBody;
-using principia::physics::NBodySystem;
-using principia::physics::OblateBody;
-using principia::physics::Trajectory;
-using principia::quantities::Angle;
-using principia::quantities::GravitationalParameter;
-using principia::quantities::Pow;
-using principia::quantities::SIUnit;
-using principia::quantities::Time;
-using principia::si::Day;
-using principia::si::Degree;
-using principia::si::Kilo;
-using principia::si::Kilogram;
-using principia::si::Metre;
-using principia::si::Second;
-
 namespace principia {
+
+using base::check_not_null;
+using base::make_not_null_unique;
+using geometry::Bivector;
+using geometry::Displacement;
+using geometry::Instant;
+using geometry::JulianDate;
+using geometry::Point;
+using geometry::Rotation;
+using geometry::Vector;
+using physics::MassiveBody;
+using physics::NBodySystem;
+using physics::OblateBody;
+using physics::Trajectory;
+using quantities::Angle;
+using quantities::GravitationalParameter;
+using quantities::Pow;
+using quantities::SIUnit;
+using quantities::Time;
+using si::Day;
+using si::Degree;
+using si::Kilo;
+using si::Kilogram;
+using si::Metre;
+using si::Second;
+
 namespace testing_utilities {
 
 namespace {

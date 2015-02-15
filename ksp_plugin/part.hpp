@@ -11,14 +11,15 @@
 #include "quantities/quantities.hpp"
 #include "serialization/ksp_plugin.pb.h"
 
-using principia::geometry::Position;
-using principia::geometry::Vector;
-using principia::geometry::Velocity;
-using principia::physics::DegreesOfFreedom;
-using principia::quantities::Acceleration;
-using principia::quantities::Mass;
-
 namespace principia {
+
+using geometry::Position;
+using geometry::Vector;
+using geometry::Velocity;
+using physics::DegreesOfFreedom;
+using quantities::Acceleration;
+using quantities::Mass;
+
 namespace ksp_plugin {
 
 // Corresponds to KSP's |Part.flightID|, *not* to |Part.uid|.  C#'s |uint|

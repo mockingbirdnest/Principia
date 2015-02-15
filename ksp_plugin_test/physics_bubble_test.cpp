@@ -19,19 +19,20 @@
 #include "testing_utilities/componentwise.hpp"
 #include "testing_utilities/vanishes_before.hpp"
 
-using principia::base::make_not_null_unique;
-using principia::geometry::Bivector;
-using principia::quantities::Acceleration;
-using principia::quantities::Speed;
-using principia::quantities::SIUnit;
-using principia::quantities::Time;
-using principia::si::Degree;
-using principia::testing_utilities::AlmostEquals;
-using principia::testing_utilities::Componentwise;
-using principia::testing_utilities::VanishesBefore;
-using testing::ElementsAre;
-
 namespace principia {
+
+using base::make_not_null_unique;
+using geometry::Bivector;
+using quantities::Acceleration;
+using quantities::Speed;
+using quantities::SIUnit;
+using quantities::Time;
+using si::Degree;
+using testing_utilities::AlmostEquals;
+using testing_utilities::Componentwise;
+using testing_utilities::VanishesBefore;
+using ::testing::ElementsAre;
+
 namespace ksp_plugin {
 
 // All the numerical values in the tests below were computed exactly based on

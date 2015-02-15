@@ -14,13 +14,14 @@
 #include "quantities/named_quantities.hpp"
 #include "quantities/quantities.hpp"
 
-using principia::geometry::Vector;
-using principia::quantities::GravitationalParameter;
-using principia::quantities::Length;
-using principia::quantities::Mass;
-using principia::quantities::Order2ZonalCoefficient;
-
 namespace principia {
+
+using geometry::Vector;
+using quantities::GravitationalParameter;
+using quantities::Length;
+using quantities::Mass;
+using quantities::Order2ZonalCoefficient;
+
 namespace physics {
 
 template<typename Frame>

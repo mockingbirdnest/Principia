@@ -8,9 +8,10 @@
 #include "base/not_null.hpp"
 #include "physics/trajectory.hpp"
 
-using principia::base::not_null;
-
 namespace principia {
+
+using base::not_null;
+
 namespace physics {
 
 // This class represent a pair of transformations of a trajectory from

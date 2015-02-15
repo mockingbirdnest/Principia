@@ -11,10 +11,11 @@
 #include "quantities/named_quantities.hpp"
 #include "quantities/quantities.hpp"
 
-using principia::quantities::GravitationalParameter;
-using principia::quantities::Mass;
-
 namespace principia {
+
+using quantities::GravitationalParameter;
+using quantities::Mass;
+
 namespace physics {
 
 class MassiveBody : public Body {

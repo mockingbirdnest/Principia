@@ -10,11 +10,12 @@
 #include "quantities/named_quantities.hpp"
 #include "serialization/ksp_plugin.pb.h"
 
-using principia::physics::MasslessBody;
-using principia::physics::Trajectory;
-using principia::quantities::GravitationalParameter;
-
 namespace principia {
+
+using physics::MasslessBody;
+using physics::Trajectory;
+using quantities::GravitationalParameter;
+
 namespace ksp_plugin {
 
 // Represents a KSP |Vessel|.

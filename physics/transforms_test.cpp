@@ -16,20 +16,21 @@
 #include "testing_utilities/componentwise.hpp"
 #include "testing_utilities/vanishes_before.hpp"
 
-using principia::base::make_not_null_unique;
-using principia::geometry::Frame;
-using principia::quantities::Length;
-using principia::quantities::Mass;
-using principia::quantities::SIUnit;
-using principia::quantities::Speed;
-using principia::quantities::Time;
-using principia::testing_utilities::AlmostEquals;
-using principia::testing_utilities::Componentwise;
-using principia::testing_utilities::VanishesBefore;
-using testing::Eq;
-using testing::Lt;
-
 namespace principia {
+
+using base::make_not_null_unique;
+using geometry::Frame;
+using quantities::Length;
+using quantities::Mass;
+using quantities::SIUnit;
+using quantities::Speed;
+using quantities::Time;
+using testing_utilities::AlmostEquals;
+using testing_utilities::Componentwise;
+using testing_utilities::VanishesBefore;
+using ::testing::Eq;
+using ::testing::Lt;
+
 namespace physics {
 
 namespace {

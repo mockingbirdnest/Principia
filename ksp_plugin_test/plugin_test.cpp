@@ -19,37 +19,38 @@
 #include "testing_utilities/numerics.hpp"
 #include "testing_utilities/solar_system.hpp"
 
-using principia::geometry::Bivector;
-using principia::geometry::Permutation;
-using principia::physics::MockNBodySystem;
-using principia::quantities::Abs;
-using principia::quantities::ArcTan;
-using principia::quantities::Sqrt;
-using principia::si::Day;
-using principia::si::Hour;
-using principia::si::Minute;
-using principia::si::Radian;
-using principia::si::AstronomicalUnit;
-using principia::testing_utilities::AbsoluteError;
-using principia::testing_utilities::AlmostEquals;
-using principia::testing_utilities::Componentwise;
-using principia::testing_utilities::ICRFJ2000Ecliptic;
-using principia::testing_utilities::RelativeError;
-using principia::testing_utilities::SolarSystem;
-using testing::AllOf;
-using testing::Contains;
-using testing::Eq;
-using testing::Ge;
-using testing::Gt;
-using testing::InSequence;
-using testing::Le;
-using testing::Lt;
-using testing::Ref;
-using testing::SizeIs;
-using testing::StrictMock;
-using testing::_;
-
 namespace principia {
+
+using geometry::Bivector;
+using geometry::Permutation;
+using physics::MockNBodySystem;
+using quantities::Abs;
+using quantities::ArcTan;
+using quantities::Sqrt;
+using si::Day;
+using si::Hour;
+using si::Minute;
+using si::Radian;
+using si::AstronomicalUnit;
+using testing_utilities::AbsoluteError;
+using testing_utilities::AlmostEquals;
+using testing_utilities::Componentwise;
+using testing_utilities::ICRFJ2000Ecliptic;
+using testing_utilities::RelativeError;
+using testing_utilities::SolarSystem;
+using ::testing::AllOf;
+using ::testing::Contains;
+using ::testing::Eq;
+using ::testing::Ge;
+using ::testing::Gt;
+using ::testing::InSequence;
+using ::testing::Le;
+using ::testing::Lt;
+using ::testing::Ref;
+using ::testing::SizeIs;
+using ::testing::StrictMock;
+using ::testing::_;
+
 namespace ksp_plugin {
 
 namespace {

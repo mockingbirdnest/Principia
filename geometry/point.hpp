@@ -7,9 +7,10 @@
 #include "quantities/quantities.hpp"
 #include "serialization/geometry.pb.h"
 
-using principia::quantities::is_quantity;
-
 namespace principia {
+
+using quantities::is_quantity;
+
 namespace geometry {
 
 // Point<Vector> is an affine space on the vector space Vector. Vector should

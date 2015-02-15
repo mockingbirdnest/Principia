@@ -6,18 +6,19 @@
 #include "quantities/quantities.hpp"
 #include "quantities/named_quantities.hpp"
 
-using principia::base::not_null;
-using principia::quantities::Force;
-using principia::quantities::Length;
-using principia::quantities::Momentum;
-using principia::quantities::Speed;
-using principia::quantities::Time;
+namespace principia {
+
+using base::not_null;
+using quantities::Force;
+using quantities::Length;
+using quantities::Momentum;
+using quantities::Speed;
+using quantities::Time;
+
+namespace testing_utilities {
 
 // Right-hand sides for various differential equations frequently used to test
 // the properties of integrators.
-
-namespace principia {
-namespace testing_utilities {
 
 // The one-dimensional unit harmonic oscillator,
 // q' = p,  |ComputeHarmonicOscillatorVelocity|,

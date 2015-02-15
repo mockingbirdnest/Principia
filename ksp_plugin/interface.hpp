@@ -7,6 +7,9 @@
 #include "physics/transforms.hpp"
 
 namespace principia {
+
+using physics::Transforms;
+
 namespace ksp_plugin {
 
 struct LineAndIterator {
@@ -15,15 +18,6 @@ struct LineAndIterator {
   RenderedTrajectory<World> const rendered_trajectory;
   RenderedTrajectory<World>::const_iterator it;
 };
-
-}  // namespace ksp_plugin
-}  // namespace principia
-
-using principia::ksp_plugin::Barycentric;
-using principia::ksp_plugin::LineAndIterator;
-using principia::ksp_plugin::Plugin;
-using principia::ksp_plugin::Rendering;
-using principia::physics::Transforms;
 
 extern "C"
 struct XYZ {
@@ -283,5 +277,5 @@ Plugin* CDECL principia__DeserializePlugin(char const* const serialization,
 extern "C" DLLEXPORT
 char const* CDECL principia__SayHello();
 
-#undef CDECL
-#undef DLLEXPORT
+}  // namespace ksp_plugin
+}  // namespace principia

@@ -15,18 +15,19 @@
 #include "physics/oblate_body.hpp"
 #include "quantities/quantities.hpp"
 
-using principia::geometry::InnerProduct;
-using principia::geometry::Instant;
-using principia::geometry::R3Element;
-using principia::integrators::SPRKIntegrator;
-using principia::integrators::SymplecticIntegrator;
-using principia::quantities::Acceleration;
-using principia::quantities::Exponentiation;
-using principia::quantities::GravitationalParameter;
-using principia::quantities::Length;
-using principia::quantities::Speed;
-
 namespace principia {
+
+using geometry::InnerProduct;
+using geometry::Instant;
+using geometry::R3Element;
+using integrators::SPRKIntegrator;
+using integrators::SymplecticIntegrator;
+using quantities::Acceleration;
+using quantities::Exponentiation;
+using quantities::GravitationalParameter;
+using quantities::Length;
+using quantities::Speed;
+
 namespace physics {
 
 namespace {

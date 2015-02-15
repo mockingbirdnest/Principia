@@ -9,9 +9,10 @@
 #include "quantities/quantities.hpp"
 #include "serialization/geometry.pb.h"
 
-using principia::base::not_null;
-
 namespace principia {
+
+using base::not_null;
+
 namespace geometry {
 
 // A multivector of rank |rank| on a three-dimensional real inner product

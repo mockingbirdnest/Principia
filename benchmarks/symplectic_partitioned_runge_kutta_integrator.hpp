@@ -8,12 +8,13 @@
 #include "integrators/symplectic_partitioned_runge_kutta_integrator.hpp"
 #include "quantities/named_quantities.hpp"
 
-using principia::base::not_null;
-using principia::integrators::SPRKIntegrator;
-using principia::quantities::Length;
-using principia::quantities::Momentum;
-
 namespace principia {
+
+using base::not_null;
+using integrators::SPRKIntegrator;
+using quantities::Length;
+using quantities::Momentum;
+
 namespace benchmarks {
 
 inline void SolveHarmonicOscillator(

@@ -4,12 +4,13 @@
 #include "gtest/gtest.h"
 #include "serialization/geometry.pb.h"
 
-using principia::geometry::Frame;
-using principia::geometry::Normalize;
-using testing::IsNull;
-using testing::NotNull;
-
 namespace principia {
+
+using geometry::Frame;
+using geometry::Normalize;
+using ::testing::IsNull;
+using ::testing::NotNull;
+
 namespace physics {
 
 class BodyTest : public testing::Test {

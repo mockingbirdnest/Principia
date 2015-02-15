@@ -11,9 +11,10 @@
 #include "gmock/gmock.h"
 #include "quantities/quantities.hpp"
 
-using principia::geometry::R3Element;
-
 namespace principia {
+
+using geometry::R3Element;
+
 namespace testing_utilities {
 
 template<typename T1Matcher, typename T2Matcher>

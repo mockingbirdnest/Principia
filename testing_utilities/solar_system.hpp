@@ -13,10 +13,11 @@
 #include "quantities/si.hpp"
 #include "serialization/geometry.pb.h"
 
-using principia::base::not_null;
-using principia::geometry::Frame;
-
 namespace principia {
+
+using base::not_null;
+using geometry::Frame;
+
 namespace testing_utilities {
 
 // A reference frame with a basis.

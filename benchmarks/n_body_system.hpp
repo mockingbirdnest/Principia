@@ -6,11 +6,12 @@
 #include "physics/n_body_system.hpp"
 #include "testing_utilities/solar_system.hpp"
 
-using principia::base::not_null;
-using principia::physics::NBodySystem;
-using principia::testing_utilities::SolarSystem;
-
 namespace principia {
+
+using base::not_null;
+using physics::NBodySystem;
+using testing_utilities::SolarSystem;
+
 namespace benchmarks {
 
 // Simulates the given |solar_system| for 100 years with a 45 min time step.

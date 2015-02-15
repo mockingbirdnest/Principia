@@ -4,9 +4,10 @@
 #include "base/not_null.hpp"
 #include "serialization/physics.pb.h"
 
-using principia::base::not_null;
-
 namespace principia {
+
+using base::not_null;
+
 namespace physics {
 
 class Body {

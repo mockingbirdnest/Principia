@@ -12,11 +12,12 @@
 #include "quantities/constants.hpp"
 #include "serialization/geometry.pb.h"
 
-using principia::constants::GravitationalConstant;
-using principia::geometry::Frame;
-using principia::geometry::ReadFrameFromMessage;
-
 namespace principia {
+
+using constants::GravitationalConstant;
+using geometry::Frame;
+using geometry::ReadFrameFromMessage;
+
 namespace physics {
 
 inline MassiveBody::MassiveBody(

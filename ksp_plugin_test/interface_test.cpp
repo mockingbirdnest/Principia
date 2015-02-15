@@ -9,31 +9,28 @@
 #include "quantities/si.hpp"
 #include "ksp_plugin/mock_plugin.hpp"
 
-using principia::base::check_not_null;
-using principia::geometry::Displacement;
-using principia::geometry::kUnixEpoch;
-using principia::ksp_plugin::AliceSun;
-using principia::ksp_plugin::Index;
-using principia::ksp_plugin::LineSegment;
-using principia::ksp_plugin::MockPlugin;
-using principia::ksp_plugin::Part;
-using principia::ksp_plugin::RenderedTrajectory;
-using principia::ksp_plugin::World;
-using principia::si::Degree;
-using principia::si::Second;
-using principia::si::Tonne;
-using testing::ElementsAre;
-using testing::Eq;
-using testing::ExitedWithCode;
-using testing::IsNull;
-using testing::NotNull;
-using testing::Pointee;
-using testing::Property;
-using testing::Ref;
-using testing::Return;
-using testing::SetArgPointee;
-using testing::StrictMock;
-using testing::_;
+namespace principia {
+
+using base::check_not_null;
+using geometry::Displacement;
+using geometry::kUnixEpoch;
+using si::Degree;
+using si::Second;
+using si::Tonne;
+using ::testing::ElementsAre;
+using ::testing::Eq;
+using ::testing::ExitedWithCode;
+using ::testing::IsNull;
+using ::testing::NotNull;
+using ::testing::Pointee;
+using ::testing::Property;
+using ::testing::Ref;
+using ::testing::Return;
+using ::testing::SetArgPointee;
+using ::testing::StrictMock;
+using ::testing::_;
+
+namespace ksp_plugin {
 
 bool operator==(XYZ const& left, XYZ const& right) {
   return left.x == right.x && left.y == right.y && left.z == right.z;
@@ -42,8 +39,6 @@ bool operator==(XYZ const& left, XYZ const& right) {
 bool operator==(QP const& left, QP const& right) {
   return left.q == right.q && left.p == right.p;
 }
-
-namespace {
 
 char const kSerializedBoringPlugin[] =
     "\x12\xD2\x1\b\0\x12\xCD\x1\n\xF\n\r\b\x83\xF0\x1\x11\0\0\0\0\0\0\xF0?\x12"
@@ -503,4 +498,5 @@ TEST_F(InterfaceDeathTest, SettersAndGetters) {
   }, ExitedWithCode(kExitCode), kExitMessage);
 }
 
-}  // namespace
+}  // namespace ksp_plugin
+}  // namespace principia

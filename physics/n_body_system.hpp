@@ -12,15 +12,16 @@
 #include "physics/trajectory.hpp"
 #include "quantities/quantities.hpp"
 
-using principia::base::not_null;
-using principia::geometry::Instant;
-using principia::integrators::SymplecticIntegrator;
-using principia::quantities::Acceleration;
-using principia::quantities::Length;
-using principia::quantities::Speed;
-using principia::quantities::Time;
-
 namespace principia {
+
+using base::not_null;
+using geometry::Instant;
+using integrators::SymplecticIntegrator;
+using quantities::Acceleration;
+using quantities::Length;
+using quantities::Speed;
+using quantities::Time;
+
 namespace physics {
 
 template<typename Frame>

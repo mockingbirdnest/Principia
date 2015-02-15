@@ -5,9 +5,10 @@
 #include "base/not_null.hpp"
 #include "quantities/named_quantities.hpp"
 
-using principia::base::not_null;
-
 namespace principia {
+
+using base::not_null;
+
 namespace benchmarks {
 
 inline void DimensionfulDiscreteCosineTransform(
