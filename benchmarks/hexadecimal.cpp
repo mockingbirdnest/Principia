@@ -31,10 +31,11 @@
 
 #define GLOG_NO_ABBREVIATED_SEVERITIES
 #include "base/hexadecimal.hpp"
-#include "base/not_null.hpp"
 
 #include <string>
 #include <vector>
+
+#include "base/not_null.hpp"
 
 // Must come last to avoid conflicts when defining the CHECK macros.
 #include "benchmark/benchmark.h"
