@@ -9,19 +9,17 @@
 #include "base/version.hpp"
 #include "ksp_plugin/part.hpp"
 
-using principia::base::make_not_null_unique;
-using principia::geometry::Displacement;
-using principia::ksp_plugin::AliceSun;
-using principia::ksp_plugin::LineSegment;
-using principia::ksp_plugin::Part;
-using principia::ksp_plugin::PartId;
-using principia::ksp_plugin::RenderedTrajectory;
-using principia::ksp_plugin::World;
-using principia::quantities::Pow;
-using principia::si::Degree;
-using principia::si::Metre;
-using principia::si::Second;
-using principia::si::Tonne;
+namespace principia {
+
+using base::make_not_null_unique;
+using geometry::Displacement;
+using quantities::Pow;
+using si::Degree;
+using si::Metre;
+using si::Second;
+using si::Tonne;
+
+namespace ksp_plugin {
 
 namespace {
 
@@ -337,3 +335,6 @@ double principia__current_time(Plugin const* const plugin) {
 char const* principia__SayHello() {
   return "Hello from native C++!";
 }
+
+}  // namespace ksp_plugin
+}  // namespace principia
