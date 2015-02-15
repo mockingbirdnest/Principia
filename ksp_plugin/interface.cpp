@@ -11,8 +11,8 @@
 #include "ksp_plugin/part.hpp"
 #include "serialization/ksp_plugin.pb.h"
 
-using principia::base::HexadecimalEncode;
 using principia::base::HexadecimalDecode;
+using principia::base::HexadecimalEncode;
 using principia::base::make_not_null_unique;
 using principia::geometry::Displacement;
 using principia::ksp_plugin::AliceSun;

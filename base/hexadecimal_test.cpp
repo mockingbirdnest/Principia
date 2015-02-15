@@ -4,6 +4,7 @@
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 
+using testing::Each;
 using testing::ElementsAre;
 
 namespace principia {
@@ -19,8 +20,10 @@ class HexadecimalTest : public testing::Test {
     str = "00""7F""80""FF""67""68""0A""07";
     uppercase_digits_.assign(str.begin(), str.end());
   }
-  static std::size_t const kBytes = 8;
-  static std::size_t const kDigits = kBytes << 1;
+
+  static int64_t const kBytes = 8;
+  static int64_t const kDigits = kBytes << 1;
+
   std::vector<uint8_t> bytes_;
   std::vector<uint8_t> lowercase_digits_;
   std::vector<uint8_t> uppercase_digits_;
@@ -39,14 +42,32 @@ TEST_F(HexadecimalTest, EncodeAndDecode) {
 
 TEST_F(HexadecimalTest, InPlace) {
   std::vector<uint8_t> buffer(kDigits);
-  memcpy(&buffer[kBytes], bytes_.data(), kBytes);
-  HexadecimalEncode(&buffer[kBytes], kBytes, &buffer[0], kDigits);
+  memcpy(&buffer[1], bytes_.data(), kBytes);
+  HexadecimalEncode(&buffer[1], kBytes, &buffer[0], kDigits);
+  EXPECT_EQ(uppercase_digits_, buffer);
+  memcpy(&buffer[0], bytes_.data(), kBytes);
+  HexadecimalEncode(&buffer[0], kBytes, &buffer[0], kDigits);
   EXPECT_EQ(uppercase_digits_, buffer);
   HexadecimalDecode(&buffer[0], kDigits, &buffer[1], kBytes);
   EXPECT_EQ(bytes_, std::vector<uint8_t>(&buffer[1], &buffer[kBytes + 1]));
   buffer = uppercase_digits_;
   HexadecimalDecode(&buffer[0], kDigits, &buffer[0], kBytes);
   EXPECT_EQ(bytes_, std::vector<uint8_t>(&buffer[0], &buffer[kBytes]));
+}
+
+TEST_F(HexadecimalTest, LargeOutput) {
+  std::vector<uint8_t> digits(kDigits + 42, 'X');
+  HexadecimalEncode(bytes_.data(), bytes_.size(), digits.data(), digits.size());
+  EXPECT_EQ(uppercase_digits_,
+            std::vector<uint8_t>(&digits[0], &digits[kDigits]));
+  EXPECT_THAT(std::vector<uint8_t>(&digits[kDigits], &digits[digits.size()]),
+              Each('X'));
+  std::vector<uint8_t> bytes(kBytes + 42, 'Y');
+  HexadecimalDecode(uppercase_digits_.data(), uppercase_digits_.size(),
+                    bytes.data(), bytes.size());
+  EXPECT_EQ(bytes_, std::vector<uint8_t>(&bytes[0], &bytes[kBytes]));
+  EXPECT_THAT(std::vector<uint8_t>(&bytes[kBytes], &bytes[bytes.size()]),
+              Each('Y'));
 }
 
 TEST_F(HexadecimalTest, Adjacent) {
@@ -67,14 +88,14 @@ TEST_F(HexadecimalTest, Adjacent) {
 TEST_F(HexadecimalDeathTest, Overlap) {
   std::vector<uint8_t> buffer(kDigits + kBytes - 1);
   EXPECT_DEATH({
-    HexadecimalEncode(&buffer[0], kBytes, &buffer[kBytes - 1], kDigits);
+    HexadecimalEncode(&buffer[kDigits - 1], kBytes, &buffer[0], kDigits);
   }, "bad overlap");
   EXPECT_DEATH({
     HexadecimalDecode(&buffer[0], kDigits, &buffer[kDigits - 1], kBytes);
   }, "bad overlap");
   buffer = std::vector<uint8_t>(kDigits);
   EXPECT_DEATH({
-    HexadecimalEncode(&buffer[kBytes - 1], kBytes, &buffer[0], kDigits);
+    HexadecimalEncode(&buffer[2], kBytes, &buffer[0], kDigits);
   }, "bad overlap");
   EXPECT_DEATH({
     HexadecimalDecode(&buffer[0], kDigits, &buffer[2], kBytes);

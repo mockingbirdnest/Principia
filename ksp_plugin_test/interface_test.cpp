@@ -440,7 +440,7 @@ TEST_F(InterfaceTest, CurrentTime) {
 TEST_F(InterfaceTest, SerializePlugin) {
   std::string const message_bytes =
       std::string(kSerializedBoringPlugin,
-                  sizeof(kSerializedBoringPlugin) / sizeof(char) - 1);
+                  (sizeof(kSerializedBoringPlugin) - 1) / sizeof(char));
   principia::serialization::Plugin message;
   message.ParseFromString(message_bytes);
   EXPECT_CALL(*plugin_, WriteToMessage(_)).WillOnce(SetArgPointee<0>(message));
@@ -454,7 +454,7 @@ TEST_F(InterfaceTest, DeserializePlugin) {
   std::unique_ptr<Plugin> plugin(
       principia__DeserializePlugin(
           kHexadecimalBoringPlugin,
-          sizeof(kHexadecimalBoringPlugin) / sizeof(char) - 1));
+          (sizeof(kHexadecimalBoringPlugin) - 1) / sizeof(char)));
   EXPECT_THAT(plugin, NotNull());
   EXPECT_EQ(Instant(), plugin->current_time());
 }
