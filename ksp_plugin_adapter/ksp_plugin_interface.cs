@@ -219,6 +219,24 @@ public partial class PluginAdapter : UnityEngine.MonoBehaviour {
              CallingConvention = CallingConvention.Cdecl)]
   private static extern double current_time(IntPtr plugin);
 
+  [DllImport(dllName           : kDllPath,
+             EntryPoint        = "principia__SerializePlugin",
+             CallingConvention = CallingConvention.Cdecl)]
+  private static extern IntPtr SerializePlugin(IntPtr plugin);
+
+  [DllImport(dllName           : kDllPath,
+             EntryPoint        = "principia__DeletePluginSerialization",
+             CallingConvention = CallingConvention.Cdecl)]
+  private static extern void DeletePluginSerialization(
+      ref IntPtr serialization);
+
+  [DllImport(dllName           : kDllPath,
+             EntryPoint        = "principia__SerializePlugin",
+             CallingConvention = CallingConvention.Cdecl)]
+  private static extern IntPtr DeserializePlugin(
+      [MarshalAs(UnmanagedType.LPStr)] String serialization,
+      int serialization_size);
+
 }
 
 }  // namespace ksp_plugin_adapter
