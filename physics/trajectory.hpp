@@ -12,15 +12,16 @@
 #include "quantities/named_quantities.hpp"
 #include "serialization/physics.pb.h"
 
-using principia::base::not_null;
-using principia::geometry::Instant;
-using principia::geometry::Vector;
-using principia::geometry::Velocity;
-using principia::quantities::Acceleration;
-using principia::quantities::Length;
-using principia::quantities::Speed;
-
 namespace principia {
+
+using base::not_null;
+using geometry::Instant;
+using geometry::Vector;
+using geometry::Velocity;
+using quantities::Acceleration;
+using quantities::Length;
+using quantities::Speed;
+
 namespace physics {
 
 class Body;

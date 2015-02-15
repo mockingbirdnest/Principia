@@ -5,9 +5,10 @@
 #include "base/not_null.hpp"
 #include "integrators/symplectic_integrator.hpp"
 
-using principia::base::not_null;
-
 namespace principia {
+
+using base::not_null;
+
 namespace integrators {
 
 template<typename Position, typename Momentum>

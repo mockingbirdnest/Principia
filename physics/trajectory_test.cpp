@@ -19,28 +19,29 @@
 #include "quantities/quantities.hpp"
 #include "quantities/si.hpp"
 
-using principia::geometry::Frame;
-using principia::geometry::Instant;
-using principia::geometry::Point;
-using principia::geometry::R3Element;
-using principia::geometry::Vector;
-using principia::quantities::Length;
-using principia::quantities::Mass;
-using principia::quantities::Speed;
-using principia::quantities::SIUnit;
-using principia::si::Metre;
-using principia::si::Second;
-using std::placeholders::_1;
-using std::placeholders::_2;
-using std::placeholders::_3;
-using testing::ElementsAre;
-using testing::Eq;
-using testing::Ref;
+namespace principia {
 
-// Note that we cannot have a |using testing::Pair| here as it would conflict
+using geometry::Frame;
+using geometry::Instant;
+using geometry::Point;
+using geometry::R3Element;
+using geometry::Vector;
+using quantities::Length;
+using quantities::Mass;
+using quantities::Speed;
+using quantities::SIUnit;
+using si::Metre;
+using si::Second;
+using ::std::placeholders::_1;
+using ::std::placeholders::_2;
+using ::std::placeholders::_3;
+using ::testing::ElementsAre;
+using ::testing::Eq;
+using ::testing::Ref;
+
+// Note that we cannot have a |using ::testing::Pair| here as it would conflict
 // with |principia::geometry::Pair|.
 
-namespace principia {
 namespace physics {
 
 class TrajectoryTest : public testing::Test {

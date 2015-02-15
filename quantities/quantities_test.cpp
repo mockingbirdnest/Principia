@@ -16,45 +16,46 @@
 #include "testing_utilities/numerics.hpp"
 #include "testing_utilities/vanishes_before.hpp"
 
-using principia::astronomy::EarthMass;
-using principia::astronomy::JulianYear;
-using principia::astronomy::JupiterMass;
-using principia::astronomy::LightYear;
-using principia::astronomy::LunarDistance;
-using principia::astronomy::Parsec;
-using principia::astronomy::SolarMass;
-using principia::constants::ElectronMass;
-using principia::constants::GravitationalConstant;
-using principia::constants::SpeedOfLight;
-using principia::constants::StandardGravity;
-using principia::constants::VacuumPermeability;
-using principia::constants::VacuumPermittivity;
-using principia::si::Ampere;
-using principia::si::AstronomicalUnit;
-using principia::si::Candela;
-using principia::si::Cycle;
-using principia::si::Day;
-using principia::si::Degree;
-using principia::si::Hour;
-using principia::si::Kelvin;
-using principia::si::Kilogram;
-using principia::si::Mega;
-using principia::si::Metre;
-using principia::si::Mole;
-using principia::si::Radian;
-using principia::si::Second;
-using principia::si::Steradian;
-using principia::testing_utilities::AlmostEquals;
-using principia::testing_utilities::RelativeError;
-using principia::testing_utilities::Times;
-using principia::testing_utilities::VanishesBefore;
-using principia::uk::Foot;
-using principia::uk::Furlong;
-using principia::uk::Mile;
-using principia::uk::Rood;
-using testing::Lt;
-
 namespace principia {
+
+using astronomy::EarthMass;
+using astronomy::JulianYear;
+using astronomy::JupiterMass;
+using astronomy::LightYear;
+using astronomy::LunarDistance;
+using astronomy::Parsec;
+using astronomy::SolarMass;
+using constants::ElectronMass;
+using constants::GravitationalConstant;
+using constants::SpeedOfLight;
+using constants::StandardGravity;
+using constants::VacuumPermeability;
+using constants::VacuumPermittivity;
+using si::Ampere;
+using si::AstronomicalUnit;
+using si::Candela;
+using si::Cycle;
+using si::Day;
+using si::Degree;
+using si::Hour;
+using si::Kelvin;
+using si::Kilogram;
+using si::Mega;
+using si::Metre;
+using si::Mole;
+using si::Radian;
+using si::Second;
+using si::Steradian;
+using testing_utilities::AlmostEquals;
+using testing_utilities::RelativeError;
+using testing_utilities::Times;
+using testing_utilities::VanishesBefore;
+using uk::Foot;
+using uk::Furlong;
+using uk::Mile;
+using uk::Rood;
+using ::testing::Lt;
+
 namespace quantities {
 
 class QuantitiesTest : public testing::Test {

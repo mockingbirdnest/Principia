@@ -8,13 +8,13 @@
 #include "quantities/quantities.hpp"
 #include "testing_utilities/almost_equals.hpp"
 
-using principia::geometry::Bivector;
-using principia::quantities::Entropy;
-using principia::quantities::KinematicViscosity;
-using principia::quantities::SIUnit;
-using principia::testing_utilities::AlmostEquals;
-
 namespace principia {
+
+using quantities::Entropy;
+using quantities::KinematicViscosity;
+using quantities::SIUnit;
+using testing_utilities::AlmostEquals;
+
 namespace geometry {
 
 class BarycentreCalculatorTest : public testing::Test {

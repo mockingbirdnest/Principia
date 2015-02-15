@@ -14,18 +14,19 @@
 #include "testing_utilities/almost_equals.hpp"
 #include "testing_utilities/vanishes_before.hpp"
 
-using principia::geometry::Bivector;
-using principia::geometry::Pair;
-using principia::geometry::R3Element;
-using principia::geometry::Vector;
-using principia::quantities::Action;
-using principia::quantities::Winding;
-using principia::quantities::Length;
-using principia::si::Metre;
-using testing::Eq;
-using testing::Not;
-
 namespace principia {
+
+using geometry::Bivector;
+using geometry::Pair;
+using geometry::R3Element;
+using geometry::Vector;
+using quantities::Action;
+using quantities::Winding;
+using quantities::Length;
+using si::Metre;
+using ::testing::Eq;
+using ::testing::Not;
+
 namespace testing_utilities {
 
 struct World;

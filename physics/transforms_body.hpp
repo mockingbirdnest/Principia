@@ -15,21 +15,22 @@
 #include "quantities/named_quantities.hpp"
 #include "quantities/si.hpp"
 
-using principia::base::make_not_null_unique;
-using principia::geometry::AffineMap;
-using principia::geometry::Bivector;
-using principia::geometry::Displacement;
-using principia::geometry::Identity;
-using principia::geometry::Permutation;
-using principia::geometry::Position;
-using principia::geometry::R3x3Matrix;
-using principia::geometry::Rotation;
-using principia::geometry::Wedge;
-using principia::quantities::AngularFrequency;
-using principia::quantities::Pow;
-using principia::si::Radian;
-
 namespace principia {
+
+using base::make_not_null_unique;
+using geometry::AffineMap;
+using geometry::Bivector;
+using geometry::Displacement;
+using geometry::Identity;
+using geometry::Permutation;
+using geometry::Position;
+using geometry::R3x3Matrix;
+using geometry::Rotation;
+using geometry::Wedge;
+using quantities::AngularFrequency;
+using quantities::Pow;
+using si::Radian;
+
 namespace physics {
 
 namespace {

@@ -17,31 +17,32 @@
 #include "testing_utilities/numerics.hpp"
 #include "testing_utilities/statistics.hpp"
 
-using principia::quantities::Abs;
-using principia::quantities::AngularFrequency;
-using principia::quantities::Energy;
-using principia::quantities::Force;
-using principia::quantities::Length;
-using principia::quantities::Mass;
-using principia::quantities::Momentum;
-using principia::quantities::Pow;
-using principia::quantities::Power;
-using principia::quantities::SIUnit;
-using principia::quantities::Speed;
-using principia::quantities::Stiffness;
-using principia::quantities::Time;
-using principia::testing_utilities::BidimensionalDatasetMathematicaInput;
-using principia::testing_utilities::ComputeHarmonicOscillatorForce;
-using principia::testing_utilities::ComputeHarmonicOscillatorVelocity;
-using principia::testing_utilities::PearsonProductMomentCorrelationCoefficient;
-using principia::testing_utilities::Slope;
-using testing::AllOf;
-using testing::Eq;
-using testing::Gt;
-using testing::Lt;
-using testing::Ne;
-
 namespace principia {
+
+using quantities::Abs;
+using quantities::AngularFrequency;
+using quantities::Energy;
+using quantities::Force;
+using quantities::Length;
+using quantities::Mass;
+using quantities::Momentum;
+using quantities::Pow;
+using quantities::Power;
+using quantities::SIUnit;
+using quantities::Speed;
+using quantities::Stiffness;
+using quantities::Time;
+using testing_utilities::BidimensionalDatasetMathematicaInput;
+using testing_utilities::ComputeHarmonicOscillatorForce;
+using testing_utilities::ComputeHarmonicOscillatorVelocity;
+using testing_utilities::PearsonProductMomentCorrelationCoefficient;
+using testing_utilities::Slope;
+using ::testing::AllOf;
+using ::testing::Eq;
+using ::testing::Gt;
+using ::testing::Lt;
+using ::testing::Ne;
+
 namespace integrators {
 
 class SPRKTest : public testing::Test {

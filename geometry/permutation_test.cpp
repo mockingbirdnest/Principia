@@ -13,12 +13,13 @@
 #include "serialization/geometry.pb.h"
 #include "testing_utilities/almost_equals.hpp"
 
-using principia::quantities::Length;
-using principia::si::Metre;
-using principia::testing_utilities::AlmostEquals;
-using testing::Eq;
-
 namespace principia {
+
+using quantities::Length;
+using si::Metre;
+using testing_utilities::AlmostEquals;
+using ::testing::Eq;
+
 namespace geometry {
 
 class PermutationTest : public testing::Test {

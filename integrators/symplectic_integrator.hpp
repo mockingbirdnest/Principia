@@ -4,9 +4,10 @@
 
 #include "quantities/quantities.hpp"
 
-using principia::quantities::Time;
-
 namespace principia {
+
+using quantities::Time;
+
 namespace integrators {
 
 // A simple container for a scalar value and the related error.  The

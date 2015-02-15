@@ -12,11 +12,12 @@
 #include "serialization/geometry.pb.h"
 #include "testing_utilities/almost_equals.hpp"
 
-using principia::quantities::Length;
-using principia::si::Metre;
-using testing::Eq;
-
 namespace principia {
+
+using quantities::Length;
+using si::Metre;
+using ::testing::Eq;
+
 namespace geometry {
 
 class IdentityTest : public testing::Test {

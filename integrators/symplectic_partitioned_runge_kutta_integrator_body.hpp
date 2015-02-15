@@ -10,9 +10,10 @@
 // Mixed assemblies are not supported by Unity/Mono.
 #include "glog/logging.h"
 
-using principia::quantities::Quotient;
-
 namespace principia {
+
+using quantities::Quotient;
+
 namespace integrators {
 
 template<typename Position, typename Momentum>

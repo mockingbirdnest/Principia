@@ -2,9 +2,10 @@
 
 #include "geometry/epoch.hpp"
 
-using principia::si::Day;
-
 namespace principia {
+
+using si::Day;
+
 namespace geometry {
 
 Instant const kJD0  = kJ2000 - 2451545.0 * Day;

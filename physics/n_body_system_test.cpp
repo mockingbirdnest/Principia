@@ -22,28 +22,29 @@
 #include "testing_utilities/numerics.hpp"
 #include "testing_utilities/solar_system.hpp"
 
-using principia::base::make_not_null_unique;
-using principia::constants::GravitationalConstant;
-using principia::geometry::Instant;
-using principia::geometry::Point;
-using principia::geometry::Vector;
-using principia::quantities::Angle;
-using principia::quantities::ArcTan;
-using principia::quantities::Area;
-using principia::quantities::Pow;
-using principia::quantities::SIUnit;
-using principia::testing_utilities::AlmostEquals;
-using principia::testing_utilities::ICRFJ2000Ecliptic;
-using principia::testing_utilities::kSolarSystemBarycentre;
-using principia::testing_utilities::RelativeError;
-using principia::testing_utilities::SolarSystem;
-using principia::si::Degree;
-using principia::si::Minute;
-using testing::Eq;
-using testing::Gt;
-using testing::Lt;
-
 namespace principia {
+
+using base::make_not_null_unique;
+using constants::GravitationalConstant;
+using geometry::Instant;
+using geometry::Point;
+using geometry::Vector;
+using quantities::Angle;
+using quantities::ArcTan;
+using quantities::Area;
+using quantities::Pow;
+using quantities::SIUnit;
+using testing_utilities::AlmostEquals;
+using testing_utilities::ICRFJ2000Ecliptic;
+using testing_utilities::kSolarSystemBarycentre;
+using testing_utilities::RelativeError;
+using testing_utilities::SolarSystem;
+using si::Degree;
+using si::Minute;
+using ::testing::Eq;
+using ::testing::Gt;
+using ::testing::Lt;
+
 namespace physics {
 
 class NBodySystemTest : public testing::Test {

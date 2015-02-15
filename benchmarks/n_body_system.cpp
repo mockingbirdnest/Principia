@@ -30,13 +30,14 @@
 // Must come last to avoid conflicts when defining the CHECK macros.
 #include "benchmark/benchmark.h"
 
-using principia::base::not_null;
-using principia::physics::NBodySystem;
-using principia::quantities::DebugString;
-using principia::si::AstronomicalUnit;
-using principia::testing_utilities::ICRFJ2000Ecliptic;
-
 namespace principia {
+
+using base::not_null;
+using physics::NBodySystem;
+using quantities::DebugString;
+using si::AstronomicalUnit;
+using testing_utilities::ICRFJ2000Ecliptic;
+
 namespace benchmarks {
 
 namespace {

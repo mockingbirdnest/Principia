@@ -4,10 +4,11 @@
 #include "gtest/gtest.h"
 #include "testing_utilities/algebra.hpp"
 
-using principia::testing_utilities::TestSkewField;
-using testing::Eq;
-
 namespace principia {
+
+using testing_utilities::TestSkewField;
+using ::testing::Eq;
+
 namespace geometry {
 
 class QuaternionTest : public testing::Test {

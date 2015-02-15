@@ -6,10 +6,11 @@
 #include "glog/logging.h"
 #include "quantities/quantities.hpp"
 
-using principia::quantities::Quantity;
-using principia::quantities::SIUnit;
-
 namespace principia {
+
+using quantities::Quantity;
+using quantities::SIUnit;
+
 namespace geometry {
 
 template<typename T>

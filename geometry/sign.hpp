@@ -3,9 +3,10 @@
 #include "base/not_null.hpp"
 #include "serialization/geometry.pb.h"
 
-using principia::base::not_null;
-
 namespace principia {
+
+using base::not_null;
+
 namespace geometry {
 
 // An element of the multiplicative group ({+1, -1}, *). Useful for instance to

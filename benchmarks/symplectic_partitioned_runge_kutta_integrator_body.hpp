@@ -8,20 +8,21 @@
 #include "integrators/symplectic_partitioned_runge_kutta_integrator.hpp"
 #include "testing_utilities/numerical_analysis.hpp"
 
-using principia::base::not_null;
-using principia::integrators::SPRKIntegrator;
-using principia::quantities::Length;
-using principia::quantities::Momentum;
-using principia::quantities::SIUnit;
-
 namespace principia {
+
+using base::not_null;
+using integrators::SPRKIntegrator;
+using quantities::Length;
+using quantities::Momentum;
+using quantities::SIUnit;
+using testing_utilities::ComputeHarmonicOscillatorForce;
+using testing_utilities::ComputeHarmonicOscillatorVelocity;
+
 namespace benchmarks {
 
 inline void SolveHarmonicOscillator(
     not_null<std::vector<
         SPRKIntegrator<Length, Momentum>::SystemState>*> const solution) {
-  using principia::testing_utilities::ComputeHarmonicOscillatorForce;
-  using principia::testing_utilities::ComputeHarmonicOscillatorVelocity;
   SPRKIntegrator<Length, Momentum> integrator;
   SPRKIntegrator<Length, Momentum>::Parameters parameters;
 

@@ -14,11 +14,12 @@
 #include "physics/degrees_of_freedom.hpp"
 #include "quantities/quantities.hpp"
 
-using principia::geometry::BarycentreCalculator;
-using principia::geometry::Identity;
-using principia::quantities::Time;
-
 namespace principia {
+
+using geometry::BarycentreCalculator;
+using geometry::Identity;
+using quantities::Time;
+
 namespace ksp_plugin {
 
 PhysicsBubble::PhysicsBubble()

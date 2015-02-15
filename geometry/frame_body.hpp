@@ -8,9 +8,10 @@
 #include "geometry/named_quantities.hpp"
 #include "google/protobuf/descriptor.h"
 
-using principia::base::Fingerprint2011;
-
 namespace principia {
+
+using base::Fingerprint2011;
+
 namespace geometry {
 
 namespace {

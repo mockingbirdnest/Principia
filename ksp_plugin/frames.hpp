@@ -5,11 +5,12 @@
 #include "geometry/frame.hpp"
 #include "geometry/named_quantities.hpp"
 
-using principia::geometry::Frame;
-using principia::geometry::Instant;
-using principia::geometry::Position;
-
 namespace principia {
+
+using geometry::Frame;
+using geometry::Instant;
+using geometry::Position;
+
 namespace ksp_plugin {
 
 // Universal time 0, time of game creation.

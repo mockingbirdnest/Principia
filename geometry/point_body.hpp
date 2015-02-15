@@ -6,12 +6,12 @@
 #include "glog/logging.h"
 #include "quantities/quantities.hpp"
 
-using principia::geometry::Multivector;
-using principia::quantities::Product;
-using principia::quantities::Quantity;
-using principia::quantities::SIUnit;
-
 namespace principia {
+
+using quantities::Product;
+using quantities::Quantity;
+using quantities::SIUnit;
+
 namespace geometry {
 
 template<typename Vector>

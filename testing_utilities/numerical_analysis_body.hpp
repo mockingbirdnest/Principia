@@ -5,16 +5,17 @@
 #include "quantities/quantities.hpp"
 #include "quantities/named_quantities.hpp"
 
-using principia::quantities::Force;
-using principia::quantities::Length;
-using principia::quantities::Mass;
-using principia::quantities::Momentum;
-using principia::quantities::SIUnit;
-using principia::quantities::Speed;
-using principia::quantities::Stiffness;
-using principia::quantities::Time;
-
 namespace principia {
+
+using quantities::Force;
+using quantities::Length;
+using quantities::Mass;
+using quantities::Momentum;
+using quantities::SIUnit;
+using quantities::Speed;
+using quantities::Stiffness;
+using quantities::Time;
+
 namespace testing_utilities {
 
 inline void ComputeHarmonicOscillatorForce(

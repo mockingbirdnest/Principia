@@ -8,12 +8,13 @@
 #include "geometry/point.hpp"
 #include "quantities/named_quantities.hpp"
 
-using principia::geometry::Displacement;
-using principia::geometry::Pair;
-using principia::geometry::Position;
-using principia::geometry::Velocity;
-
 namespace principia {
+
+using geometry::Displacement;
+using geometry::Pair;
+using geometry::Position;
+using geometry::Velocity;
+
 namespace physics {
 
 // This class is analogous to the pair which is its base class, except that it

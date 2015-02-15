@@ -6,9 +6,10 @@
 #include "gmock/gmock.h"
 #include "ksp_plugin/plugin.hpp"
 
-using principia::base::not_null;
-
 namespace principia {
+
+using base::not_null;
+
 namespace ksp_plugin {
 
 class MockPlugin : public Plugin {

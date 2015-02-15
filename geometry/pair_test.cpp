@@ -12,19 +12,19 @@
 // Define this to check that the illegal operations are actually rejected.
 #undef CHECK_ILLEGAL
 
-using principia::geometry::Vector;
-using principia::quantities::Action;
-using principia::quantities::Angle;
-using principia::quantities::Dimensions;
-using principia::quantities::Energy;
-using principia::quantities::Entropy;
-using principia::quantities::Frequency;
-using principia::quantities::Quantity;
-using principia::quantities::SolidAngle;
-using principia::quantities::Time;
-using principia::quantities::Winding;
-
 namespace principia {
+
+using quantities::Action;
+using quantities::Angle;
+using quantities::Dimensions;
+using quantities::Energy;
+using quantities::Entropy;
+using quantities::Frequency;
+using quantities::Quantity;
+using quantities::SolidAngle;
+using quantities::Time;
+using quantities::Winding;
+
 namespace geometry {
 
 class PairTest : public testing::Test {

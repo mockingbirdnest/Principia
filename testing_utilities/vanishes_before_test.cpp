@@ -11,11 +11,12 @@
 #include "quantities/numbers.hpp"
 #include "quantities/quantities.hpp"
 
-using principia::bipm::Knot;
-using principia::quantities::Speed;
-using testing::Ne;
-
 namespace principia {
+
+using bipm::Knot;
+using quantities::Speed;
+using ::testing::Ne;
+
 namespace testing_utilities {
 
 class VanishesBeforeTest : public testing::Test {};

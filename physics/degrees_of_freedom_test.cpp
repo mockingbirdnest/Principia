@@ -9,17 +9,18 @@
 #include "quantities/quantities.hpp"
 #include "testing_utilities/componentwise.hpp"
 
-using principia::geometry::Displacement;
-using principia::geometry::Position;
-using principia::geometry::Velocity;
-using principia::quantities::Entropy;
-using principia::quantities::Length;
-using principia::quantities::Speed;
-using principia::quantities::SIUnit;
-using principia::testing_utilities::Componentwise;
-using testing::Eq;
-
 namespace principia {
+
+using geometry::Displacement;
+using geometry::Position;
+using geometry::Velocity;
+using quantities::Entropy;
+using quantities::Length;
+using quantities::Speed;
+using quantities::SIUnit;
+using testing_utilities::Componentwise;
+using ::testing::Eq;
+
 namespace physics {
 
 class DegreesOfFreedomTest : public testing::Test {

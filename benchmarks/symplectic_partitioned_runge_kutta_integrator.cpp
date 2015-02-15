@@ -25,14 +25,15 @@
 // Must come last to avoid conflicts when defining the CHECK macros.
 #include "benchmark/benchmark.h"
 
-using principia::integrators::SPRKIntegrator;
-using principia::quantities::Abs;
-using principia::quantities::AngularFrequency;
-using principia::quantities::Cos;
-using principia::quantities::Length;
-using principia::quantities::Momentum;
-
 namespace principia {
+
+using integrators::SPRKIntegrator;
+using quantities::Abs;
+using quantities::AngularFrequency;
+using quantities::Cos;
+using quantities::Length;
+using quantities::Momentum;
+
 namespace benchmarks {
 
 void SolveHarmonicOscillatorAndComputeError(

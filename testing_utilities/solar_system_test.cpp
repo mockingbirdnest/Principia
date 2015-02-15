@@ -10,25 +10,26 @@
 #include "physics/degrees_of_freedom.hpp"
 #include "testing_utilities/numerics.hpp"
 
-using principia::geometry::Bivector;
-using principia::geometry::Wedge;
-using principia::physics::RelativeDegreesOfFreedom;
-using principia::physics::Body;
-using principia::physics::NBodySystem;
-using principia::quantities::SpecificAngularMomentum;
-using principia::quantities::SpecificEnergy;
-using principia::quantities::GravitationalParameter;
-using principia::quantities::Mass;
-using principia::quantities::Pow;
-using principia::quantities::Quotient;
-using principia::quantities::Speed;
-using principia::quantities::Sqrt;
-using principia::si::Radian;
-using testing::ElementsAreArray;
-using testing::Lt;
-using testing::Ge;
-
 namespace principia {
+
+using geometry::Bivector;
+using geometry::Wedge;
+using physics::RelativeDegreesOfFreedom;
+using physics::Body;
+using physics::NBodySystem;
+using quantities::SpecificAngularMomentum;
+using quantities::SpecificEnergy;
+using quantities::GravitationalParameter;
+using quantities::Mass;
+using quantities::Pow;
+using quantities::Quotient;
+using quantities::Speed;
+using quantities::Sqrt;
+using si::Radian;
+using ::testing::ElementsAreArray;
+using ::testing::Lt;
+using ::testing::Ge;
+
 namespace testing_utilities {
 
 class SolarSystemTest : public testing::Test {
