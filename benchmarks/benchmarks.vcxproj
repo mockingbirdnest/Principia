@@ -140,6 +140,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="hexadecimal.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="n_body_system.cpp" />
     <ClCompile Include="quantities.cpp" />

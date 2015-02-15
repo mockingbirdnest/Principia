@@ -23,6 +23,9 @@
     <ClCompile Include="n_body_system.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="hexadecimal.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="symplectic_partitioned_runge_kutta_integrator.hpp">

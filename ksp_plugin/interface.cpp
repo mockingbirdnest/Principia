@@ -4,11 +4,15 @@
 #include <utility>
 #include <vector>
 
+#include "base/hexadecimal.hpp"
 #include "base/macros.hpp"
 #include "base/not_null.hpp"
 #include "base/version.hpp"
 #include "ksp_plugin/part.hpp"
+#include "serialization/ksp_plugin.pb.h"
 
+using principia::base::HexadecimalDecode;
+using principia::base::HexadecimalEncode;
 using principia::base::make_not_null_unique;
 using principia::geometry::Displacement;
 using principia::ksp_plugin::AliceSun;
@@ -332,6 +336,38 @@ XYZ principia__BubbleVelocityCorrection(Plugin const* const plugin,
 
 double principia__current_time(Plugin const* const plugin) {
   return (CHECK_NOTNULL(plugin)->current_time() - Instant()) / Second;
+}
+
+char const* principia__SerializePlugin(Plugin const* const plugin) {
+  CHECK_NOTNULL(plugin);
+  principia::serialization::Plugin message;
+  plugin->WriteToMessage(&message);
+  // TODO(egg): reimplement with |ZeroCopyStream|.
+  std::vector<uint8_t> bytes(message.ByteSize());
+  message.SerializeWithCachedSizesToArray(bytes.data());
+  // Leave room for the null terminator.
+  std::size_t const hexadecimal_size = (bytes.size() << 1) + 1;
+  auto hexadecimal = std::make_unique<uint8_t[]>(hexadecimal_size);
+  HexadecimalEncode(bytes.data(), bytes.size(),
+                    hexadecimal.get(), hexadecimal_size);
+  hexadecimal[hexadecimal_size] = '\0';
+  return reinterpret_cast<char const*>(hexadecimal.release());
+}
+
+void principia__DeletePluginSerialization(char const** const serialization) {
+  TakeOwnership(reinterpret_cast<uint8_t const**>(serialization));
+}
+
+Plugin* principia__DeserializePlugin(char const* const serialization,
+                                     int const serialization_size) {
+  uint8_t const* const hexadecimal =
+      reinterpret_cast<uint8_t const*>(serialization);
+  int const hexadecimal_size = serialization_size;
+  std::vector<uint8_t> bytes(hexadecimal_size / 2);
+  HexadecimalDecode(hexadecimal, hexadecimal_size, bytes.data(), bytes.size());
+  principia::serialization::Plugin message;
+  message.ParseFromArray(bytes.data(), bytes.size());
+  return Plugin::ReadFromMessage(message).release();
 }
 
 char const* principia__SayHello() {

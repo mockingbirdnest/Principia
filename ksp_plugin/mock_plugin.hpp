@@ -98,10 +98,13 @@ class MockPlugin : public Plugin {
                          Position<World> const& sun_world_position));
 
   MOCK_CONST_METHOD1(BubbleVelocityCorrection,
-                     Velocity<World> (
+                     Velocity<World>(
                          Index const reference_body_index));
 
   MOCK_CONST_METHOD0(current_time, Instant());
+
+  MOCK_CONST_METHOD1(WriteToMessage,
+                     void(not_null<serialization::Plugin*> const message));
 };
 
 }  // namespace ksp_plugin
