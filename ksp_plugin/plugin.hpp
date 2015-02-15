@@ -246,8 +246,8 @@ class Plugin {
       std::map<Index, not_null<std::unique_ptr<Celestial>>>;
 
   // This constructor should only be used during deserialization.
-  // |unsynchronized_vessels_| is initialized consistently.  The resulting
-  // plugin is not |initializing_|.
+  // |unsynchronized_vessels_| is initialized consistently.  All vessels are
+  // added to |kept_vessels_|  The resulting plugin is not |initializing_|.
   Plugin(GUIDToOwnedVessel vessels,
          IndexToOwnedCelestial celestials,
          std::set<not_null<Vessel*> const> dirty_vessels,

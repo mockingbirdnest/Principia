@@ -61,6 +61,7 @@ Plugin::Plugin(GUIDToOwnedVessel vessels,
       sun_(celestials_.find(sun_index)->second.get()) {
   for (auto const& guid_vessel : vessels_) {
     auto const& vessel = guid_vessel.second;
+    kept_vessels_.emplace(vessel.get());
     if (!vessel->is_synchronized()) {
       unsynchronized_vessels_.emplace(vessel.get());
     }

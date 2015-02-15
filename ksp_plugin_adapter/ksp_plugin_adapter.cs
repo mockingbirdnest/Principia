@@ -28,8 +28,6 @@ public partial class PluginAdapter : ScenarioModule {
   // the evaluation of the cubic).
   private const int kLinePoints = 10000;
 
-  private const int kGUIQueueSpot = 3;
-
   private const String kPrincipiaKey = "PrincipiaSerializedPlugin";
 
   private UnityEngine.Rect main_window_rectangle_;
@@ -49,8 +47,6 @@ public partial class PluginAdapter : ScenarioModule {
   private bool plugin_from_save_;
 
   private Krakensbane krakensbane_;
-
-  private static bool an_instance_is_loaded_;
 
   PluginAdapter() {
     // We create this directory here so we do not need to worry about cross-
@@ -233,17 +229,9 @@ public partial class PluginAdapter : ScenarioModule {
   // http://docs.unity3d.com/Manual/ExecutionOrder.html
 
   // Awake is called once.
-  private void Awake() {
+  public override void OnAwake() {
+    base.OnAwake();
     Log.Info("principia.ksp_plugin_adapter.PluginAdapter.Awake()");
-    if (an_instance_is_loaded_) {
-      Log.Info("an instance was loaded");
-      UnityEngine.Object.Destroy(gameObject);
-    } else {
-      UnityEngine.Object.DontDestroyOnLoad(gameObject);
-      an_instance_is_loaded_ = true;
-    }
-    GameEvents.onGameStateLoad.Add(InitializeOnGameStateLoad);
-    GameEvents.onGameStateSave.Add(WriteToConfigNode);
     main_window_rectangle_ = new UnityEngine.Rect(
         left   : UnityEngine.Screen.width / 2.0f,
         top    : UnityEngine.Screen.height / 3.0f,
@@ -251,12 +239,8 @@ public partial class PluginAdapter : ScenarioModule {
         height : 10);
   }
 
-  private void OnDestroy() {
-    GameEvents.onGameStateLoad.Remove(InitializeOnGameStateLoad);
-    GameEvents.onGameStateSave.Remove(WriteToConfigNode);
-  }
-
   private void OnGUI() {
+    Log.Info("principia.ksp_plugin_adapter.PluginAdapter.OnGUI()");
     UnityEngine.GUI.skin = HighLogic.Skin;
     main_window_rectangle_ = UnityEngine.GUILayout.Window(
         id         : 1,
@@ -267,6 +251,7 @@ public partial class PluginAdapter : ScenarioModule {
   }
 
   private void FixedUpdate() {
+    Log.Info("principia.ksp_plugin_adapter.PluginAdapter.FixedUpdate()");
     if (PluginRunning()) {
       double universal_time = Planetarium.GetUniversalTime();
       double plugin_time = current_time(plugin_);
@@ -392,23 +377,27 @@ public partial class PluginAdapter : ScenarioModule {
     DestroyRenderedTrajectory();
   }
 
-  private void WriteToConfigNode(ConfigNode node) {
+  public override void OnSave(ConfigNode node) {
+    base.OnSave(node);
     if (PluginRunning()) {
       IntPtr serialization = IntPtr.Zero;
       try {
         serialization = SerializePlugin(plugin_);
-        node.SetValue(kPrincipiaKey, Marshal.PtrToStringAnsi(serialization));
+        node.AddValue(kPrincipiaKey, Marshal.PtrToStringAnsi(serialization));
       } finally {
         DeletePluginSerialization(ref serialization);
       }
     }
   }
 
-  private void InitializeOnGameStateLoad(ConfigNode node) {
+  public override void OnLoad(ConfigNode node) {
+    base.OnLoad(node);
     if (node.HasValue(kPrincipiaKey)) {
       Cleanup();
       String serialization = node.GetValue(kPrincipiaKey);
+      Log.Info("serialization is " + serialization.Length + " characters long");
       plugin_ = DeserializePlugin(serialization, serialization.Length);
+      UpdateRenderingFrame();
       plugin_construction_ = DateTime.Now;
       plugin_from_save_ = true;
     } else {
