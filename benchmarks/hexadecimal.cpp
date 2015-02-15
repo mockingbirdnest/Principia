@@ -33,6 +33,9 @@
 #include "base/hexadecimal.hpp"
 #include "base/not_null.hpp"
 
+#include <string>
+#include <vector>
+
 // Must come last to avoid conflicts when defining the CHECK macros.
 #include "benchmark/benchmark.h"
 

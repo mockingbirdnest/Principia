@@ -116,7 +116,6 @@ class MockPlugin : public Plugin {
 
   MOCK_CONST_METHOD1(WriteToMessage,
                      void(not_null<serialization::Plugin*> const message));
-
 };
 
 }  // namespace ksp_plugin

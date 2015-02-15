@@ -1,5 +1,7 @@
 #include "ksp_plugin/interface.hpp"
 
+#include <string>
+
 #include "base/not_null.hpp"
 #include "geometry/epoch.hpp"
 #include "gmock/gmock.h"

@@ -273,7 +273,7 @@ extern "C" DLLEXPORT
 double CDECL principia__current_time(Plugin const* const plugin);
 
 // |plugin| must not be null.  The caller takes ownership of the result.  No
-// transfer of ownership of |*plugin|. 
+// transfer of ownership of |*plugin|.
 extern "C" DLLEXPORT
 char const* CDECL principia__SerializePlugin(Plugin const* const plugin);
 
