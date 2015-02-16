@@ -10,7 +10,7 @@ namespace ksp_plugin_adapter {
              tgtScenes: new GameScenes[]{GameScenes.SPACECENTER,
                                          GameScenes.EDITOR, GameScenes.FLIGHT,
                                          GameScenes.TRACKSTATION})]
-public partial class PluginAdapter : ScenarioModule {
+public partial class PrincipiaPluginAdapter : ScenarioModule {
   // This constant can be at most 32766, since Vectrosity imposes a maximum of
   // 65534 vertices, where there are 2 vertices per point on discrete lines.  We
   // want this to be even since we have two points per line segment.
@@ -28,7 +28,7 @@ public partial class PluginAdapter : ScenarioModule {
   // the evaluation of the cubic).
   private const int kLinePoints = 10000;
 
-  private const String kPrincipiaKey = "PrincipiaSerializedPlugin";
+  private const String kPrincipiaKey = "serialized_plugin";
 
   private static UnityEngine.Rect main_window_rectangle_ =
       new UnityEngine.Rect(left   : UnityEngine.Screen.width / 2.0f,
@@ -53,14 +53,14 @@ public partial class PluginAdapter : ScenarioModule {
 
   private Krakensbane krakensbane_;
 
-  PluginAdapter() {
+  PrincipiaPluginAdapter() {
     // We create this directory here so we do not need to worry about cross-
     // platform problems in C++.
     System.IO.Directory.CreateDirectory("glog/Principia");
     Log.InitGoogleLogging();
   }
 
-  ~PluginAdapter() {
+  ~PrincipiaPluginAdapter() {
     Cleanup();
   }
 

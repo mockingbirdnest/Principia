@@ -5,7 +5,7 @@ using System.Runtime.InteropServices;
 namespace principia {
 namespace ksp_plugin_adapter {
 
-public partial class PluginAdapter : ScenarioModule {
+public partial class PrincipiaPluginAdapter : ScenarioModule {
 
   internal const string kDllPath = "GameData/Principia/principia.dll";
 
