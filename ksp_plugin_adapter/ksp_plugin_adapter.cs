@@ -30,7 +30,12 @@ public partial class PluginAdapter : ScenarioModule {
 
   private const String kPrincipiaKey = "PrincipiaSerializedPlugin";
 
-  private UnityEngine.Rect main_window_rectangle_;
+  private static UnityEngine.Rect main_window_rectangle_ =
+      new UnityEngine.Rect(left   : UnityEngine.Screen.width / 2.0f,
+                           top    : UnityEngine.Screen.height / 3.0f,
+                           width  : 0,
+                           height : 0);
+
   private IntPtr plugin_ = IntPtr.Zero;
   // TODO(egg): rendering only one trajectory at the moment.
   private VectorLine rendered_trajectory_;
@@ -223,24 +228,55 @@ public partial class PluginAdapter : ScenarioModule {
            is_in_inertial_physics_bubble_in_space(active_vessel);
   }
 
-  #region Unity Lifecycle
-  // See the Unity manual on execution order for more information on |Start()|,
-  // |OnDestroy()| and |FixedUpdate()|.
-  // http://docs.unity3d.com/Manual/ExecutionOrder.html
+  #region ScenarioModule lifecycle
+  // These functions override virtual ones from |ScenarioModule|, but it seems
+  // that they're actually called by reflection, so that bad things happen
+  // if you don't have, e.g., a function called |OnAwake()| that calls
+  // |base.OnAwake()|.  It doesn't matter whether the functions are public or
+  // private, overriding or hiding though.
 
-  // Awake is called once.
   public override void OnAwake() {
     base.OnAwake();
-    Log.Info("principia.ksp_plugin_adapter.PluginAdapter.Awake()");
-    main_window_rectangle_ = new UnityEngine.Rect(
-        left   : UnityEngine.Screen.width / 2.0f,
-        top    : UnityEngine.Screen.height / 3.0f,
-        width  : 10,
-        height : 10);
+    // While we're here, we might as well log.
+    Log.Info("principia.ksp_plugin_adapter.PluginAdapter.OnAwake()");
   }
 
+  public override void OnSave(ConfigNode node) {
+    base.OnSave(node);
+    if (PluginRunning()) {
+      IntPtr serialization = IntPtr.Zero;
+      try {
+        serialization = SerializePlugin(plugin_);
+        node.AddValue(kPrincipiaKey, Marshal.PtrToStringAnsi(serialization));
+      } finally {
+        DeletePluginSerialization(ref serialization);
+      }
+    }
+  }
+
+  public override void OnLoad(ConfigNode node) {
+    base.OnLoad(node);
+    if (node.HasValue(kPrincipiaKey)) {
+      Cleanup();
+      String serialization = node.GetValue(kPrincipiaKey);
+      Log.Info("serialization is " + serialization.Length + " characters long");
+      plugin_ = DeserializePlugin(serialization, serialization.Length);
+      UpdateRenderingFrame();
+      plugin_construction_ = DateTime.Now;
+      plugin_from_save_ = true;
+    } else {
+      Log.Warning("No principia state found, creating one");
+      ResetPlugin();
+    }
+  }
+
+  #endregion
+
+  #region Unity Lifecycle
+  // See the Unity manual on execution order for more information.
+  // http://docs.unity3d.com/Manual/ExecutionOrder.html
+
   private void OnGUI() {
-    Log.Info("principia.ksp_plugin_adapter.PluginAdapter.OnGUI()");
     UnityEngine.GUI.skin = HighLogic.Skin;
     main_window_rectangle_ = UnityEngine.GUILayout.Window(
         id         : 1,
@@ -251,7 +287,6 @@ public partial class PluginAdapter : ScenarioModule {
   }
 
   private void FixedUpdate() {
-    Log.Info("principia.ksp_plugin_adapter.PluginAdapter.FixedUpdate()");
     if (PluginRunning()) {
       double universal_time = Planetarium.GetUniversalTime();
       double plugin_time = current_time(plugin_);
@@ -375,35 +410,6 @@ public partial class PluginAdapter : ScenarioModule {
     DeletePlugin(ref plugin_);
     DeleteTransforms(ref transforms_);
     DestroyRenderedTrajectory();
-  }
-
-  public override void OnSave(ConfigNode node) {
-    base.OnSave(node);
-    if (PluginRunning()) {
-      IntPtr serialization = IntPtr.Zero;
-      try {
-        serialization = SerializePlugin(plugin_);
-        node.AddValue(kPrincipiaKey, Marshal.PtrToStringAnsi(serialization));
-      } finally {
-        DeletePluginSerialization(ref serialization);
-      }
-    }
-  }
-
-  public override void OnLoad(ConfigNode node) {
-    base.OnLoad(node);
-    if (node.HasValue(kPrincipiaKey)) {
-      Cleanup();
-      String serialization = node.GetValue(kPrincipiaKey);
-      Log.Info("serialization is " + serialization.Length + " characters long");
-      plugin_ = DeserializePlugin(serialization, serialization.Length);
-      UpdateRenderingFrame();
-      plugin_construction_ = DateTime.Now;
-      plugin_from_save_ = true;
-    } else {
-      Log.Warning("No principia state found, creating one");
-      ResetPlugin();
-    }
   }
 
   private void DrawMainWindow(int window_id) {
