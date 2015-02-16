@@ -61,6 +61,7 @@ Plugin::Plugin(GUIDToOwnedVessel vessels,
       sun_(celestials_.find(sun_index)->second.get()) {
   for (auto const& guid_vessel : vessels_) {
     auto const& vessel = guid_vessel.second;
+    kept_vessels_.emplace(vessel.get());
     if (!vessel->is_synchronized()) {
       unsynchronized_vessels_.emplace(vessel.get());
     }
@@ -612,6 +613,7 @@ Velocity<World> Plugin::BubbleVelocityCorrection(
 
 void Plugin::WriteToMessage(
     not_null<serialization::Plugin*> const message) const {
+  LOG(INFO) << __FUNCTION__;
   CHECK(!initializing_);
   std::map<not_null<Celestial const*>, Index const> celestial_to_index;
   for (auto const& index_celestial : celestials_) {
@@ -664,6 +666,7 @@ void Plugin::WriteToMessage(
 
 std::unique_ptr<Plugin> Plugin::ReadFromMessage(
     serialization::Plugin const& message) {
+  LOG(INFO) << __FUNCTION__;
   IndexToOwnedCelestial celestials;
   for (auto const& celestial_message : message.celestial()) {
     celestials.emplace(

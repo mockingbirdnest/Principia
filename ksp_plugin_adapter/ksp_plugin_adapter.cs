@@ -6,8 +6,12 @@ using System.Runtime.InteropServices;
 namespace principia {
 namespace ksp_plugin_adapter {
 
-[KSPAddon(startup : KSPAddon.Startup.MainMenu, once : false)]
-public partial class PluginAdapter : UnityEngine.MonoBehaviour {
+[KSPScenario(createOptions: ScenarioCreationOptions.AddToAllGames,
+             tgtScenes: new GameScenes[]{GameScenes.SPACECENTER,
+                                         GameScenes.EDITOR,
+                                         GameScenes.FLIGHT,
+                                         GameScenes.TRACKSTATION})]
+public partial class PrincipiaPluginAdapter : ScenarioModule {
   // This constant can be at most 32766, since Vectrosity imposes a maximum of
   // 65534 vertices, where there are 2 vertices per point on discrete lines.  We
   // want this to be even since we have two points per line segment.
@@ -25,9 +29,14 @@ public partial class PluginAdapter : UnityEngine.MonoBehaviour {
   // the evaluation of the cubic).
   private const int kLinePoints = 10000;
 
-  private const int kGUIQueueSpot = 3;
+  private const String kPrincipiaKey = "serialized_plugin";
 
-  private UnityEngine.Rect main_window_rectangle_;
+  private static UnityEngine.Rect main_window_rectangle_ =
+      new UnityEngine.Rect(left   : UnityEngine.Screen.width / 2.0f,
+                           top    : UnityEngine.Screen.height / 3.0f,
+                           width  : 0,
+                           height : 0);
+
   private IntPtr plugin_ = IntPtr.Zero;
   // TODO(egg): rendering only one trajectory at the moment.
   private VectorLine rendered_trajectory_;
@@ -40,20 +49,19 @@ public partial class PluginAdapter : UnityEngine.MonoBehaviour {
 
   private bool time_is_advancing_;
 
-  private DateTime last_plugin_reset_;
+  private DateTime plugin_construction_;
+  private bool plugin_from_save_;
 
   private Krakensbane krakensbane_;
 
-  private static bool an_instance_is_loaded_;
-
-  PluginAdapter() {
+  PrincipiaPluginAdapter() {
     // We create this directory here so we do not need to worry about cross-
     // platform problems in C++.
     System.IO.Directory.CreateDirectory("glog/Principia");
     Log.InitGoogleLogging();
   }
 
-  ~PluginAdapter() {
+  ~PrincipiaPluginAdapter() {
     Cleanup();
   }
 
@@ -221,28 +229,53 @@ public partial class PluginAdapter : UnityEngine.MonoBehaviour {
            is_in_inertial_physics_bubble_in_space(active_vessel);
   }
 
-  #region Unity Lifecycle
-  // See the Unity manual on execution order for more information on |Start()|,
-  // |OnDestroy()| and |FixedUpdate()|.
-  // http://docs.unity3d.com/Manual/ExecutionOrder.html
+  #region ScenarioModule lifecycle
+  // These functions override virtual ones from |ScenarioModule|, but it seems
+  // that they're actually called by reflection, so that bad things happen
+  // if you don't have, e.g., a function called |OnAwake()| that calls
+  // |base.OnAwake()|.  It doesn't matter whether the functions are public or
+  // private, overriding or hiding though.
 
-  // Awake is called once.
-  private void Awake() {
-    Log.Info("principia.ksp_plugin_adapter.PluginAdapter.Awake()");
-    if (an_instance_is_loaded_) {
-      Log.Info("an instance was loaded");
-      UnityEngine.Object.Destroy(gameObject);
-    } else {
-      UnityEngine.Object.DontDestroyOnLoad(gameObject);
-      an_instance_is_loaded_ = true;
-    }
-    GameEvents.onGameStateLoad.Add(InitializeOnGameStateLoad);
-    main_window_rectangle_ = new UnityEngine.Rect(
-        left   : UnityEngine.Screen.width / 2.0f,
-        top    : UnityEngine.Screen.height / 3.0f,
-        width  : 10,
-        height : 10);
+  public override void OnAwake() {
+    base.OnAwake();
+    // While we're here, we might as well log.
+    Log.Info("principia.ksp_plugin_adapter.PrincipiaPluginAdapter.OnAwake()");
   }
+
+  public override void OnSave(ConfigNode node) {
+    base.OnSave(node);
+    if (PluginRunning()) {
+      IntPtr serialization = IntPtr.Zero;
+      try {
+        serialization = SerializePlugin(plugin_);
+        node.AddValue(kPrincipiaKey, Marshal.PtrToStringAnsi(serialization));
+      } finally {
+        DeletePluginSerialization(ref serialization);
+      }
+    }
+  }
+
+  public override void OnLoad(ConfigNode node) {
+    base.OnLoad(node);
+    if (node.HasValue(kPrincipiaKey)) {
+      Cleanup();
+      String serialization = node.GetValue(kPrincipiaKey);
+      Log.Info("serialization is " + serialization.Length + " characters long");
+      plugin_ = DeserializePlugin(serialization, serialization.Length);
+      UpdateRenderingFrame();
+      plugin_construction_ = DateTime.Now;
+      plugin_from_save_ = true;
+    } else {
+      Log.Warning("No principia state found, creating one");
+      ResetPlugin();
+    }
+  }
+
+  #endregion
+
+  #region Unity Lifecycle
+  // See the Unity manual on execution order for more information.
+  // http://docs.unity3d.com/Manual/ExecutionOrder.html
 
   private void OnGUI() {
     UnityEngine.GUI.skin = HighLogic.Skin;
@@ -380,12 +413,6 @@ public partial class PluginAdapter : UnityEngine.MonoBehaviour {
     DestroyRenderedTrajectory();
   }
 
-  private void InitializeOnGameStateLoad(ConfigNode node) {
-    // TODO(egg): Here loading of the persisted game state should occur, or
-    // initialization should be scheduled.  Without persistence, we get plugin
-    // resets at every scene change or vessel switch, so we do nothing.
-  }
-
   private void DrawMainWindow(int window_id) {
     UnityEngine.GUILayout.BeginVertical();
     String plugin_state;
@@ -413,8 +440,9 @@ public partial class PluginAdapter : UnityEngine.MonoBehaviour {
       last_reset_information = "";
     } else {
       last_reset_information =
-          "Plugin was started at " +
-          last_plugin_reset_.ToUniversalTime().ToString("O");
+          "Plugin was constructed at " +
+          plugin_construction_.ToUniversalTime().ToString("O") +
+          (plugin_from_save_ ? " from a saved state" : " from scratch");
     }
     UnityEngine.GUILayout.TextArea(last_reset_information);
     ToggleableSection(name   : "Reference Frame Selection",
@@ -603,7 +631,8 @@ public partial class PluginAdapter : UnityEngine.MonoBehaviour {
     ApplyToBodyTree(body => body.inverseRotThresholdAltitude =
                                 body.timeWarpAltitudeLimits[1]);
     ResetRenderedTrajectory();
-    last_plugin_reset_ = DateTime.Now;
+    plugin_construction_ = DateTime.Now;
+    plugin_from_save_ = false;
     plugin_ = NewPlugin(Planetarium.GetUniversalTime(),
                         Planetarium.fetch.Sun.flightGlobalsIndex,
                         Planetarium.fetch.Sun.gravParameter,

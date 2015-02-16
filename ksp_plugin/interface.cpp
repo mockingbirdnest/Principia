@@ -337,6 +337,7 @@ double principia__current_time(Plugin const* const plugin) {
 }
 
 char const* principia__SerializePlugin(Plugin const* const plugin) {
+  LOG(INFO) << __FUNCTION__;
   CHECK_NOTNULL(plugin);
   principia::serialization::Plugin message;
   plugin->WriteToMessage(&message);
@@ -353,11 +354,13 @@ char const* principia__SerializePlugin(Plugin const* const plugin) {
 }
 
 void principia__DeletePluginSerialization(char const** const serialization) {
+  LOG(INFO) << __FUNCTION__;
   TakeOwnership(reinterpret_cast<uint8_t const**>(serialization));
 }
 
 Plugin* principia__DeserializePlugin(char const* const serialization,
                                      int const serialization_size) {
+  LOG(INFO) << __FUNCTION__;
   uint8_t const* const hexadecimal =
       reinterpret_cast<uint8_t const*>(serialization);
   int const hexadecimal_size = serialization_size;

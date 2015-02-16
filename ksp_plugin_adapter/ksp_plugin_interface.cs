@@ -5,7 +5,7 @@ using System.Runtime.InteropServices;
 namespace principia {
 namespace ksp_plugin_adapter {
 
-public partial class PluginAdapter : UnityEngine.MonoBehaviour {
+public partial class PrincipiaPluginAdapter : ScenarioModule {
 
   internal const string kDllPath = "GameData/Principia/principia.dll";
 
@@ -201,6 +201,24 @@ public partial class PluginAdapter : UnityEngine.MonoBehaviour {
              EntryPoint        = "principia__current_time",
              CallingConvention = CallingConvention.Cdecl)]
   private static extern double current_time(IntPtr plugin);
+
+  [DllImport(dllName           : kDllPath,
+             EntryPoint        = "principia__SerializePlugin",
+             CallingConvention = CallingConvention.Cdecl)]
+  private static extern IntPtr SerializePlugin(IntPtr plugin);
+
+  [DllImport(dllName           : kDllPath,
+             EntryPoint        = "principia__DeletePluginSerialization",
+             CallingConvention = CallingConvention.Cdecl)]
+  private static extern void DeletePluginSerialization(
+      ref IntPtr serialization);
+
+  [DllImport(dllName           : kDllPath,
+             EntryPoint        = "principia__DeserializePlugin",
+             CallingConvention = CallingConvention.Cdecl)]
+  private static extern IntPtr DeserializePlugin(
+      [MarshalAs(UnmanagedType.LPStr)] String serialization,
+      int serialization_size);
 
 }
 
