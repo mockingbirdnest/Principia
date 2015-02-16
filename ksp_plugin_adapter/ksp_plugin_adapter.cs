@@ -8,7 +8,8 @@ namespace ksp_plugin_adapter {
 
 [KSPScenario(createOptions: ScenarioCreationOptions.AddToAllGames,
              tgtScenes: new GameScenes[]{GameScenes.SPACECENTER,
-                                         GameScenes.EDITOR, GameScenes.FLIGHT,
+                                         GameScenes.EDITOR,
+                                         GameScenes.FLIGHT,
                                          GameScenes.TRACKSTATION})]
 public partial class PrincipiaPluginAdapter : ScenarioModule {
   // This constant can be at most 32766, since Vectrosity imposes a maximum of
@@ -238,7 +239,7 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
   public override void OnAwake() {
     base.OnAwake();
     // While we're here, we might as well log.
-    Log.Info("principia.ksp_plugin_adapter.PluginAdapter.OnAwake()");
+    Log.Info("principia.ksp_plugin_adapter.PrincipiaPluginAdapter.OnAwake()");
   }
 
   public override void OnSave(ConfigNode node) {
