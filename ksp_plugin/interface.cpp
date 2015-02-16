@@ -366,18 +366,13 @@ char const* principia__SerializePlugin(Plugin const* const plugin) {
   plugin->WriteToMessage(&message);
   // TODO(egg): reimplement with |ZeroCopyStream|.
   std::vector<uint8_t> bytes(message.ByteSize());
-  LOG(INFO) << "allocated vector for serialization";
   message.SerializeWithCachedSizesToArray(bytes.data());
-  LOG(INFO) << "serialized";
   // Leave room for the null terminator.
   std::size_t const hexadecimal_size = (bytes.size() << 1) + 1;
   auto hexadecimal = std::make_unique<uint8_t[]>(hexadecimal_size);
-  LOG(INFO) << "allocated buffer for hex string";
   HexadecimalEncode(bytes.data(), bytes.size(),
                     hexadecimal.get(), hexadecimal_size);
-  LOG(INFO) << "wrote hex string";
   hexadecimal[hexadecimal_size] = '\0';
-  LOG(INFO) << "null-terminated hex string";
   return reinterpret_cast<char const*>(hexadecimal.release());
 }
 
