@@ -417,11 +417,11 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
     UnityEngine.GUILayout.BeginVertical();
     String plugin_state;
     if (PluginRunning()) {
-      if (UnityEngine.GUILayout.Button(text : "Stop Plugin")) {
+      if (UnityEngine.GUILayout.Button(text : "Force Stop")) {
         Cleanup();
       }
     } else {
-      if (UnityEngine.GUILayout.Button(text : "Start Plugin")) {
+      if (UnityEngine.GUILayout.Button(text : "Force Start")) {
         ResetPlugin();
       }
     }
