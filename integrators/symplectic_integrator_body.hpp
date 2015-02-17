@@ -1,5 +1,7 @@
 #pragma once
 
+#include "base/macros.hpp"
+
 namespace principia {
 namespace integrators {
 
@@ -8,7 +10,7 @@ inline DoublePrecision<Scalar>::DoublePrecision(Scalar const& value)
     : value(value) {}
 
 template<typename Scalar>
-__forceinline void DoublePrecision<Scalar>::Increment(Scalar const& increment) {
+FORCE_INLINE DoublePrecision<Scalar>::Increment(Scalar const& increment) {
   // The naming conventions follow Higham, Accuracy and Stability of Numerical
   // Algorithms, Algorithm 4.2.
   Scalar const temp = value;
