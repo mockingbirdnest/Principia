@@ -320,6 +320,8 @@ class Plugin {
   // The vessels that will be kept during the next call to |AdvanceTime|.
   std::set<not_null<Vessel const*> const> kept_vessels_;
 
+  not_null<std::unique_ptr<Trajectory<Barycentric>>> prediction_;
+
   not_null<std::unique_ptr<PhysicsBubble>> const bubble_;
 
   not_null<std::unique_ptr<NBodySystem<Barycentric>>> n_body_system_;
