@@ -185,6 +185,15 @@ class Plugin {
           Transforms<Barycentric, Rendering, Barycentric>*> const transforms,
       Position<World> const& sun_world_position) const;
 
+  virtual RenderedTrajectory<World> RenderedPrediction(
+      not_null<
+          Transforms<Barycentric, Rendering, Barycentric>*> const transforms,
+      Position<World> const& sun_world_position) const;
+
+  virtual void SetPredictedVessel(GUID const& vessel_guid);
+
+  virtual void SetPredictionLength(Time const t);
+
   virtual not_null<std::unique_ptr<
       Transforms<Barycentric, Rendering, Barycentric>>>
   NewBodyCentredNonRotatingTransforms(Index const reference_body_index) const;
@@ -320,7 +329,10 @@ class Plugin {
   // The vessels that will be kept during the next call to |AdvanceTime|.
   std::set<not_null<Vessel const*> const> kept_vessels_;
 
-  not_null<std::unique_ptr<Trajectory<Barycentric>>> prediction_;
+  // Only one prediction tree for now.
+  Vessel* predicted_vessel_;
+  Time prediction_length_;
+  Trajectory<Barycentric>* prediction_;
 
   not_null<std::unique_ptr<PhysicsBubble>> const bubble_;
 
