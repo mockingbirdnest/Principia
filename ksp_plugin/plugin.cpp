@@ -273,6 +273,26 @@ RenderedTrajectory<World> Plugin::RenderedVesselTrajectory(
   return result;
 }
 
+virtual void Plugin::set_predicted_vessel(GUID const& vessel_guid) {
+  clear_predicted_vessel();
+  predicted_vessel_ = find_vessel_by_guid_or_die(vessel_guid);
+}
+
+virtual void Plugin::clear_predicted_vessel() {
+  if (has_prediction()) {
+    predicted_vessel_->mutable_history()->DeleteFork(&prediction_);
+  }
+  predicted_vessel_ = nullptr;
+}
+
+virtual void Plugin::set_prediction_length(Time const& t) {
+  prediction_length_ = t;
+}
+
+virtual void Plugin::set_prediction_step(Time const& t) {
+  prediction_step_ = t;
+}
+
 not_null<std::unique_ptr<Transforms<Barycentric, Rendering, Barycentric>>>
 Plugin::NewBodyCentredNonRotatingTransforms(
     Index const reference_body_index) const {
@@ -500,6 +520,15 @@ bool Plugin::has_unsynchronized_vessels() const {
 
 bool Plugin::is_dirty(not_null<Vessel*> const vessel) const {
   return dirty_vessels_.count(vessel) > 0;
+}
+
+bool Plugin::has_prediction() const {
+  if (prediction_ == nullptr) {
+    return false;
+  } else {
+    CHECK_NOTNULL(predicted_vessel_);
+    return true;
+  }
 }
 
 Instant const& Plugin::HistoryTime() const {

@@ -190,9 +190,13 @@ class Plugin {
           Transforms<Barycentric, Rendering, Barycentric>*> const transforms,
       Position<World> const& sun_world_position) const;
 
-  virtual void SetPredictedVessel(GUID const& vessel_guid);
+  virtual void set_predicted_vessel(GUID const& vessel_guid);
+  // If |has_prediction()|, deletes |prediction_|.  Nulls |predicted_vessel_|.
+  virtual void clear_predicted_vessel();
 
-  virtual void SetPredictionLength(Time const t);
+  virtual void set_prediction_length(Time const& t);
+
+  virtual void set_prediction_step(Time const& t);
 
   virtual not_null<std::unique_ptr<
       Transforms<Barycentric, Rendering, Barycentric>>>
@@ -265,6 +269,9 @@ class Plugin {
   bool has_unsynchronized_vessels() const;
   // Returns |dirty_vessels_.count(vessel) > 0|.
   bool is_dirty(not_null<Vessel*> const vessel) const;
+  // Returns |prediction_ != nullptr| and checks that |prediction_| is null if
+  // |predicted_vessel_| is.
+  bool has_prediction() const;
 
   // The common last time of the histories of synchronized vessels and
   // celestials.
@@ -306,7 +313,7 @@ class Plugin {
   // All vessels must satisfy |is_synchronized()|.
   void ResetProlongations();
   // Evolves the prolongations of all celestials and vessels up to exactly
-  // instant |t|.  Also evolves the trajectory/ of the |current_physics_bubble_|
+  // instant |t|.  Also evolves the trajectory of the |current_physics_bubble_|
   // if there is one.
   void EvolveProlongationsAndBubble(Instant const& t);
 
@@ -329,9 +336,10 @@ class Plugin {
   // The vessels that will be kept during the next call to |AdvanceTime|.
   std::set<not_null<Vessel const*> const> kept_vessels_;
 
-  // Only one prediction tree for now.
+  // Only one prediction tree for now, using constant timestep.
   Vessel* predicted_vessel_;
   Time prediction_length_;
+  Time prediction_step_;
   Trajectory<Barycentric>* prediction_;
 
   not_null<std::unique_ptr<PhysicsBubble>> const bubble_;
