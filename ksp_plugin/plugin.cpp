@@ -775,6 +775,7 @@ void Plugin::ComputePrediction() {
   trajectories.pop_back();
   while (!trajectories.empty()) {
     Trajectory<Barycentric>* trajectory = trajectories.back();
+    trajectories.pop_back();
     trajectory->root()->DeleteFork(&trajectory);
   }
 }
