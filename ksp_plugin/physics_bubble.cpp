@@ -277,9 +277,7 @@ std::unique_ptr<PhysicsBubble> PhysicsBubble::ReadFromMessage(
     for (auto const& guid_and_part_ids : full_state.vessel()) {
       std::vector<not_null<Part<World>*> const> parts;
       for (PartId const part_id : guid_and_part_ids.part_id()) {
-        auto it = preliminary_state.parts.find(part_id);
-        CHECK(it != preliminary_state.parts.end());
-        parts.push_back(it->second.get());
+        parts.push_back(FindOrDie(preliminary_state.parts, part_id).get());
       }
       preliminary_state.vessels[vessel(guid_and_part_ids.guid())] = parts;
     }
