@@ -273,21 +273,21 @@ RenderedTrajectory<World> Plugin::RenderedVesselTrajectory(
   return result;
 }
 
-virtual void Plugin::set_predicted_vessel(GUID const& vessel_guid) {
+void Plugin::set_predicted_vessel(GUID const& vessel_guid) {
   clear_predicted_vessel();
-  predicted_vessel_ = find_vessel_by_guid_or_die(vessel_guid);
+  predicted_vessel_ = find_vessel_by_guid_or_die(vessel_guid).get();
 }
 
-virtual void Plugin::clear_predicted_vessel() {
+void Plugin::clear_predicted_vessel() {
   clear_prediction();
   predicted_vessel_ = nullptr;
 }
 
-virtual void Plugin::set_prediction_length(Time const& t) {
+void Plugin::set_prediction_length(Time const& t) {
   prediction_length_ = t;
 }
 
-virtual void Plugin::set_prediction_step(Time const& t) {
+void Plugin::set_prediction_step(Time const& t) {
   prediction_step_ = t;
 }
 
@@ -752,7 +752,31 @@ void Plugin::EvolveProlongationsAndBubble(Instant const& t) {
 }
 
 void Plugin::ComputePrediction() {
-  prediction
+  clear_prediction();
+  prediction_ = predicted_vessel_->mutable_prolongation()->NewFork(
+                    predicted_vessel_->prolongation().last().time());
+  NBodySystem<Barycentric>::Trajectories trajectories;
+  trajectories.reserve(celestials_.size());
+  for (auto const& index_celestial : celestials_) {
+    auto const& celestial = index_celestial.second;
+    trajectories.emplace_back(
+        celestial->mutable_prolongation()->NewFork(
+            celestial->prolongation().last().time()));
+  }
+  trajectories.emplace_back(prediction_);
+  n_body_system_->Integrate(
+      prolongation_integrator_,
+      current_time_ + prediction_length_,
+      prediction_step_,
+      1,  // sampling_period
+      false,  // tmax_is_exact
+      trajectories);
+  // Do not delete |prediction_| which is at the end of |trajectories|.
+  trajectories.pop_back();
+  while (!trajectories.empty()) {
+    Trajectory<Barycentric>* trajectory = trajectories.back();
+    trajectory->root()->DeleteFork(&trajectory);
+  }
 }
 
 }  // namespace ksp_plugin
