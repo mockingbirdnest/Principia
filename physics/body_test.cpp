@@ -146,7 +146,7 @@ TEST_F(BodyTest, OblateSerializationSuccess) {
   EXPECT_EQ(oblate_body_.gravitational_parameter(),
             cast_oblate_body->gravitational_parameter());
   EXPECT_EQ(oblate_body_.j2(), cast_oblate_body->j2());
-  EXPECT_EQ(oblate_body_.axis(), cast_oblate_body->axis());;
+  EXPECT_EQ(oblate_body_.axis(), cast_oblate_body->axis());
 }
 
 TEST_F(BodyTest, AllFrames) {
