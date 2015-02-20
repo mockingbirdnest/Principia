@@ -6,6 +6,7 @@
 #include <vector>
 
 #include "base/macros.hpp"
+#include "base/map_util.hpp"
 #include "base/unique_ptr_logging.hpp"
 #include "geometry/barycentre_calculator.hpp"
 #include "geometry/identity.hpp"
@@ -16,6 +17,7 @@
 
 namespace principia {
 
+using base::FindOrDie;
 using geometry::BarycentreCalculator;
 using geometry::Identity;
 using quantities::Time;
@@ -190,9 +192,7 @@ RelativeDegreesOfFreedom<Barycentric> const&
 PhysicsBubble::from_centre_of_mass(not_null<Vessel const*> const vessel) const {
   CHECK(!empty()) << "Empty bubble";
   CHECK(current_->from_centre_of_mass != nullptr);
-  auto const it = current_->from_centre_of_mass->find(vessel);
-  CHECK(it != current_->from_centre_of_mass->end());
-  return it->second;
+  return FindOrDie(*current_->from_centre_of_mass, vessel);
 }
 
 Trajectory<Barycentric> const&
@@ -233,9 +233,7 @@ void PhysicsBubble::WriteToMessage(
           guid_and_part_ids = full_state->add_vessel();
       guid_and_part_ids->set_guid(guid(vessel));
       for (auto const& part : parts) {
-        auto it = part_to_part_id.find(part);
-        CHECK(it != part_to_part_id.end());
-        guid_and_part_ids->add_part_id(it->second);
+        guid_and_part_ids->add_part_id(FindOrDie(part_to_part_id, part));
       }
     }
     current_->centre_of_mass->WriteToMessage(
