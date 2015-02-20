@@ -191,7 +191,7 @@ class Plugin {
       Position<World> const& sun_world_position) const;
 
   virtual void set_predicted_vessel(GUID const& vessel_guid);
-  // If |has_prediction()|, deletes |prediction_|.  Nulls |predicted_vessel_|.
+  // Calls |clear_prediction()| and nulls |predicted_vessel_|.
   virtual void clear_predicted_vessel();
 
   virtual void set_prediction_length(Time const& t);
@@ -272,6 +272,8 @@ class Plugin {
   // Returns |prediction_ != nullptr| and checks that |prediction_| is null if
   // |predicted_vessel_| is.
   bool has_prediction() const;
+  // If |has_prediction()|, deletes |prediction_|.
+  void clear_prediction();
 
   // The common last time of the histories of synchronized vessels and
   // celestials.
@@ -316,6 +318,8 @@ class Plugin {
   // instant |t|.  Also evolves the trajectory of the |current_physics_bubble_|
   // if there is one.
   void EvolveProlongationsAndBubble(Instant const& t);
+  // Computes |prediction_|.
+  void ComputePrediction();
 
   // TODO(egg): Constant time step for now.
   Time const Δt_ = 10 * Second;

@@ -279,9 +279,7 @@ virtual void Plugin::set_predicted_vessel(GUID const& vessel_guid) {
 }
 
 virtual void Plugin::clear_predicted_vessel() {
-  if (has_prediction()) {
-    predicted_vessel_->mutable_history()->DeleteFork(&prediction_);
-  }
+  clear_prediction();
   predicted_vessel_ = nullptr;
 }
 
@@ -531,6 +529,12 @@ bool Plugin::has_prediction() const {
   }
 }
 
+void Plugin::clear_prediction() {
+  if (has_prediction()) {
+    predicted_vessel_->mutable_history()->DeleteFork(&prediction_);
+  }
+}
+
 Instant const& Plugin::HistoryTime() const {
   return sun_->history().last().time();
 }
@@ -745,6 +749,10 @@ void Plugin::EvolveProlongationsAndBubble(Instant const& t) {
           centre_of_mass + from_centre_of_mass);
     }
   }
+}
+
+void Plugin::ComputePrediction() {
+  prediction
 }
 
 }  // namespace ksp_plugin
