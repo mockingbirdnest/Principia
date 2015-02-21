@@ -54,7 +54,7 @@ FindOrDie(const Collection& collection,
 // Same as above, but returns a non-const reference.
 template <class Collection>
 typename Collection::value_type::second_type&
-FindOrDie(Collection& collection,  // NOLINT
+FindOrDie(Collection& collection,  // NOLINT(runtime/references)
           const typename Collection::value_type::first_type& key) {
   typename Collection::iterator it = collection.find(key);
   CHECK(it != collection.end()) << "Map key not found: " << key;
