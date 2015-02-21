@@ -313,7 +313,7 @@ TEST_F(PluginDeathTest, InsertCelestialError) {
                              bodies_.front()->gravitational_parameter(),
                              kNotABody,
                              from_parent);
-  }, "No body at index");
+  }, "Map key not found");
   EXPECT_DEATH({
     InsertAllSolarSystemBodies();
     plugin_->InsertCelestial(SolarSystem::kEarth,
@@ -332,12 +332,12 @@ TEST_F(PluginDeathTest, UpdateCelestialHierarchyError) {
     InsertAllSolarSystemBodies();
     plugin_->EndInitialization();
     plugin_->UpdateCelestialHierarchy(kNotABody, SolarSystem::kPluto);
-  }, "No body at index");
+  }, "Map key not found");
   EXPECT_DEATH({
     InsertAllSolarSystemBodies();
     plugin_->EndInitialization();
     plugin_->UpdateCelestialHierarchy(SolarSystem::kSun, kNotABody);
-  }, "No body at index");
+  }, "Map key not found");
 }
 
 TEST_F(PluginDeathTest, InsertOrKeepVesselError) {
@@ -350,7 +350,7 @@ TEST_F(PluginDeathTest, InsertOrKeepVesselError) {
     InsertAllSolarSystemBodies();
     plugin_->EndInitialization();
     plugin_->InsertOrKeepVessel(guid, kNotABody);
-  }, "No body at index");
+  }, "Map key not found");
 }
 
 TEST_F(PluginDeathTest, SetVesselStateOffsetError) {
@@ -369,7 +369,7 @@ TEST_F(PluginDeathTest, SetVesselStateOffsetError) {
                                   RelativeDegreesOfFreedom<AliceSun>(
                                       satellite_initial_displacement_,
                                       satellite_initial_velocity_));
-  }, "No vessel with GUID");
+  }, "Map key not found");
   EXPECT_DEATH({
     InsertAllSolarSystemBodies();
     plugin_->EndInitialization();
@@ -402,7 +402,7 @@ TEST_F(PluginDeathTest, VesselFromParentError) {
     InsertAllSolarSystemBodies();
     plugin_->EndInitialization();
     plugin_->VesselFromParent(guid);
-  }, "No vessel with GUID");
+  }, "Map key not found");
   EXPECT_DEATH({
     InsertAllSolarSystemBodies();
     plugin_->EndInitialization();
@@ -420,7 +420,7 @@ TEST_F(PluginDeathTest, CelestialFromParentError) {
     InsertAllSolarSystemBodies();
     plugin_->EndInitialization();
     plugin_->CelestialFromParent(kNotABody);
-  }, "No body at index");
+  }, "Map key not found");
   EXPECT_DEATH({
     InsertAllSolarSystemBodies();
     plugin_->EndInitialization();
