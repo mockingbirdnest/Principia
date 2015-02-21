@@ -191,7 +191,7 @@ class Plugin {
       Position<World> const& sun_world_position) const;
 
   virtual void set_predicted_vessel(GUID const& vessel_guid);
-  // Calls |clear_prediction()| and nulls |predicted_vessel_|.
+  // Calls |clear_predictions()| and nulls |predicted_vessel_|.
   virtual void clear_predicted_vessel();
 
   virtual void set_prediction_length(Time const& t);
@@ -269,11 +269,14 @@ class Plugin {
   bool has_unsynchronized_vessels() const;
   // Returns |dirty_vessels_.count(vessel) > 0|.
   bool is_dirty(not_null<Vessel*> const vessel) const;
-  // Returns |prediction_ != nullptr| and checks that |prediction_| is null if
-  // |predicted_vessel_| is.
-  bool has_prediction() const;
-  // If |has_prediction()|, deletes |prediction_|.
-  void clear_prediction();
+  // Returns |predicted_vessel_ != nullptr|.
+  bool has_predicted_vessel() const;
+  // Returns |!predictions_.empty()| and checks that |has_predictions()| implies
+  // |has_predicted_vessel()|.
+  bool has_predictions() const;
+  // If |has_predictions()|, deletes the trajectories in |predictions_| and
+  // clears it.
+  void clear_predictions();
 
   // The common last time of the histories of synchronized vessels and
   // celestials.
@@ -318,8 +321,8 @@ class Plugin {
   // instant |t|.  Also evolves the trajectory of the |current_physics_bubble_|
   // if there is one.
   void EvolveProlongationsAndBubble(Instant const& t);
-  // Computes |prediction_|.
-  void ComputePrediction();
+  // Updates |predictions_|.
+  void UpdatePredictions();
 
   // TODO(egg): Constant time step for now.
   Time const Δt_ = 10 * Second;
@@ -340,11 +343,11 @@ class Plugin {
   // The vessels that will be kept during the next call to |AdvanceTime|.
   std::set<not_null<Vessel const*> const> kept_vessels_;
 
-  // Only one prediction tree for now, using constant timestep.
+  // Only one prediction for now, using constant timestep.
   Vessel* predicted_vessel_;
   Time prediction_length_;
   Time prediction_step_;
-  Trajectory<Barycentric>* prediction_;
+  NBodySystem<Barycentric>::Trajectories predictions_;
 
   not_null<std::unique_ptr<PhysicsBubble>> const bubble_;
 

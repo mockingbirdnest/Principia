@@ -176,6 +176,7 @@ void Plugin::AdvanceTime(Instant const& t, Angle const& planetarium_rotation) {
           << "to   : " << t;
   current_time_ = t;
   planetarium_rotation_ = planetarium_rotation;
+  UpdatePredictions();
 }
 
 RelativeDegreesOfFreedom<AliceSun> Plugin::VesselFromParent(
@@ -279,7 +280,7 @@ void Plugin::set_predicted_vessel(GUID const& vessel_guid) {
 }
 
 void Plugin::clear_predicted_vessel() {
-  clear_prediction();
+  clear_predictions();
   predicted_vessel_ = nullptr;
 }
 
@@ -520,18 +521,24 @@ bool Plugin::is_dirty(not_null<Vessel*> const vessel) const {
   return dirty_vessels_.count(vessel) > 0;
 }
 
-bool Plugin::has_prediction() const {
-  if (prediction_ == nullptr) {
+bool Plugin::has_predicted_vessel() const {
+  return predicted_vessel_ != nullptr;
+}
+
+bool Plugin::has_predictions() const {
+  if (predictions_.empty()) {
     return false;
   } else {
-    CHECK_NOTNULL(predicted_vessel_);
+    CHECK(has_predicted_vessel());
     return true;
   }
 }
 
-void Plugin::clear_prediction() {
-  if (has_prediction()) {
-    predicted_vessel_->mutable_history()->DeleteFork(&prediction_);
+void Plugin::clear_predictions() {
+  while (has_predictions()) {
+    Trajectory<Barycentric>* trajectory = predictions_.back();
+    predictions_.pop_back();
+    trajectory->root()->DeleteFork(&trajectory);
   }
 }
 
@@ -751,32 +758,26 @@ void Plugin::EvolveProlongationsAndBubble(Instant const& t) {
   }
 }
 
-void Plugin::ComputePrediction() {
-  clear_prediction();
-  prediction_ = predicted_vessel_->mutable_prolongation()->NewFork(
-                    predicted_vessel_->prolongation().last().time());
-  NBodySystem<Barycentric>::Trajectories trajectories;
-  trajectories.reserve(celestials_.size());
-  for (auto const& index_celestial : celestials_) {
-    auto const& celestial = index_celestial.second;
-    trajectories.emplace_back(
-        celestial->mutable_prolongation()->NewFork(
-            celestial->prolongation().last().time()));
-  }
-  trajectories.emplace_back(prediction_);
-  n_body_system_->Integrate(
-      prolongation_integrator_,
-      current_time_ + prediction_length_,
-      prediction_step_,
-      1,  // sampling_period
-      false,  // tmax_is_exact
-      trajectories);
-  // Do not delete |prediction_| which is at the end of |trajectories|.
-  trajectories.pop_back();
-  while (!trajectories.empty()) {
-    Trajectory<Barycentric>* trajectory = trajectories.back();
-    trajectories.pop_back();
-    trajectory->root()->DeleteFork(&trajectory);
+void Plugin::UpdatePredictions() {
+  clear_predictions();
+  if (has_predicted_vessel()) {
+    predictions_.reserve(celestials_.size() + 1);
+    for (auto const& index_celestial : celestials_) {
+      auto const& celestial = index_celestial.second;
+      predictions_.emplace_back(
+          celestial->mutable_prolongation()->NewFork(
+              celestial->prolongation().last().time()));
+    }
+    predictions_.emplace_back(
+        predicted_vessel_->mutable_prolongation()->NewFork(
+            predicted_vessel_->prolongation().last().time()));
+    n_body_system_->Integrate(
+        prolongation_integrator_,
+        current_time_ + prediction_length_,
+        prediction_step_,
+        1,  // sampling_period
+        false,  // tmax_is_exact
+        predictions_);
   }
 }
 
