@@ -47,6 +47,9 @@
     <ClInclude Include="monostable_body.hpp">
       <Filter>Source Files</Filter>
     </ClInclude>
+    <ClInclude Include="map_util.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="not_null_test.cpp">

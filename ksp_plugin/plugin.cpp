@@ -8,6 +8,7 @@
 #include <vector>
 #include <set>
 
+#include "base/map_util.hpp"
 #include "base/not_null.hpp"
 #include "base/unique_ptr_logging.hpp"
 #include "geometry/affine_map.hpp"
@@ -21,6 +22,7 @@
 namespace principia {
 namespace ksp_plugin {
 
+using base::FindOrDie;
 using base::make_not_null_unique;
 using geometry::AffineMap;
 using geometry::AngularVelocity;
@@ -71,9 +73,8 @@ void Plugin::InsertCelestial(
     RelativeDegreesOfFreedom<AliceSun> const& from_parent) {
   CHECK(initializing_) << "Celestial bodies should be inserted before the end "
                        << "of initialization";
-  auto const it = celestials_.find(parent_index);
-  CHECK(it != celestials_.end()) << "No body at index " << parent_index;
-  not_null<Celestial const*> parent = it->second.get();
+  not_null<Celestial const*> parent =
+      FindOrDie(celestials_, parent_index).get();
   auto const inserted = celestials_.emplace(
       celestial_index,
       make_not_null_unique<Celestial>(
@@ -101,11 +102,8 @@ void Plugin::UpdateCelestialHierarchy(Index const celestial_index,
   VLOG(1) << __FUNCTION__ << '\n'
           << NAMED(celestial_index) << '\n' << NAMED(parent_index);
   CHECK(!initializing_);
-  auto const it = celestials_.find(celestial_index);
-  CHECK(it != celestials_.end()) << "No body at index " << celestial_index;
-  auto const it_parent = celestials_.find(parent_index);
-  CHECK(it_parent != celestials_.end()) << "No body at index " << parent_index;
-  it->second->set_parent(it_parent->second.get());
+  FindOrDie(celestials_, celestial_index)->set_parent(
+      FindOrDie(celestials_, parent_index).get());
 }
 
 bool Plugin::InsertOrKeepVessel(GUID const& vessel_guid,
@@ -113,9 +111,8 @@ bool Plugin::InsertOrKeepVessel(GUID const& vessel_guid,
   VLOG(1) << __FUNCTION__ << '\n'
           << NAMED(vessel_guid) << '\n' << NAMED(parent_index);
   CHECK(!initializing_);
-  auto const it = celestials_.find(parent_index);
-  CHECK(it != celestials_.end()) << "No body at index " << parent_index;
-  not_null<Celestial const*> parent = it->second.get();
+  not_null<Celestial const*> parent =
+      FindOrDie(celestials_, parent_index).get();
   auto inserted = vessels_.emplace(vessel_guid,
                                    make_not_null_unique<Vessel>(parent));
   not_null<Vessel*> const vessel = inserted.first->second.get();
@@ -200,9 +197,7 @@ RelativeDegreesOfFreedom<AliceSun> Plugin::VesselFromParent(
 RelativeDegreesOfFreedom<AliceSun> Plugin::CelestialFromParent(
     Index const celestial_index) const {
   CHECK(!initializing_);
-  auto const it = celestials_.find(celestial_index);
-  CHECK(it != celestials_.end()) << "No body at index " << celestial_index;
-  Celestial const& celestial = *it->second;
+  Celestial const& celestial = *FindOrDie(celestials_, celestial_index);
   CHECK(celestial.has_parent())
       << "Body at index " << celestial_index << " is the sun";
   RelativeDegreesOfFreedom<Barycentric> const barycentric_result =
@@ -295,9 +290,8 @@ void Plugin::set_prediction_step(Time const& t) {
 not_null<std::unique_ptr<Transforms<Barycentric, Rendering, Barycentric>>>
 Plugin::NewBodyCentredNonRotatingTransforms(
     Index const reference_body_index) const {
-  auto const it = celestials_.find(reference_body_index);
-  CHECK(it != celestials_.end());
-  not_null<Celestial const*> reference_body = it->second.get();
+  not_null<Celestial const*> reference_body =
+      FindOrDie(celestials_, reference_body_index).get();
   Transforms<Barycentric, Rendering, Barycentric>::
       LazyTrajectory<Barycentric> const reference_body_prolongation =
           [this, reference_body] {
@@ -315,12 +309,10 @@ Plugin::NewBodyCentredNonRotatingTransforms(
 not_null<std::unique_ptr<Transforms<Barycentric, Rendering, Barycentric>>>
 Plugin::NewBarycentricRotatingTransforms(Index const primary_index,
                                          Index const secondary_index) const {
-  auto const primary_it = celestials_.find(primary_index);
-  CHECK(primary_it != celestials_.end());
-  not_null<Celestial const*> primary = primary_it->second.get();
-  auto const secondary_it = celestials_.find(secondary_index);
-  CHECK(secondary_it != celestials_.end());
-  not_null<Celestial const*> secondary = secondary_it->second.get();
+  not_null<Celestial const*> primary =
+      FindOrDie(celestials_, primary_index).get();
+  not_null<Celestial const*> secondary =
+      FindOrDie(celestials_, secondary_index).get();
   Transforms<Barycentric, Rendering, Barycentric>::
       LazyTrajectory<Barycentric> const primary_prolongation =
           std::bind(&Celestial::prolongation, primary);
@@ -360,9 +352,8 @@ Displacement<World> Plugin::BubbleDisplacementCorrection(
 Velocity<World> Plugin::BubbleVelocityCorrection(
     Index const reference_body_index) const {
   VLOG(1) << __FUNCTION__ << '\n' << NAMED(reference_body_index);
-  auto const found = celestials_.find(reference_body_index);
-  CHECK(found != celestials_.end());
-  Celestial const& reference_body = *found->second;
+  Celestial const& reference_body =
+      *FindOrDie(celestials_, reference_body_index);
   VLOG_AND_RETURN(1, bubble_->VelocityCorrection(PlanetariumRotation(),
                                                 reference_body));
 }
@@ -387,9 +378,8 @@ void Plugin::WriteToMessage(
     celestial_message->set_index(index);
     celestial->WriteToMessage(celestial_message->mutable_celestial());
     if (celestial->has_parent()) {
-      auto const it = celestial_to_index.find(celestial->parent());
-      CHECK(it != celestial_to_index.end());
-      Index const parent_index = it->second;
+      Index const parent_index =
+          FindOrDie(celestial_to_index, celestial->parent());
       celestial_message->set_parent_index(parent_index);
     }
   }
@@ -401,26 +391,20 @@ void Plugin::WriteToMessage(
     auto* const vessel_message = message->add_vessel();
     vessel_message->set_guid(guid);
     vessel->WriteToMessage(vessel_message->mutable_vessel());
-    auto const it = celestial_to_index.find(vessel->parent());
-    CHECK(it != celestial_to_index.end());
-    Index const parent_index = it->second;
+    Index const parent_index = FindOrDie(celestial_to_index, vessel->parent());
     vessel_message->set_parent_index(parent_index);
     vessel_message->set_dirty(is_dirty(vessel));
   }
 
   bubble_->WriteToMessage(
       [&vessel_to_guid](not_null<Vessel const*> const vessel) -> GUID {
-        auto const it = vessel_to_guid.find(vessel);
-        CHECK(it != vessel_to_guid.end());
-        return it->second;
+        return FindOrDie(vessel_to_guid, vessel);
       },
       message->mutable_bubble());
 
   planetarium_rotation_.WriteToMessage(message->mutable_planetarium_rotation());
   current_time_.WriteToMessage(message->mutable_current_time());
-  auto const it = celestial_to_index.find(sun_);
-  CHECK(it != celestial_to_index.end());
-  Index const sun_index = it->second;
+  Index const sun_index = FindOrDie(celestial_to_index, sun_);
   message->set_sun_index(sun_index);
 }
 
@@ -435,21 +419,18 @@ std::unique_ptr<Plugin> Plugin::ReadFromMessage(
   }
   for (auto const& celestial_message : message.celestial()) {
     if (celestial_message.has_parent_index()) {
-      auto const it = celestials.find(celestial_message.index());
-      CHECK(it != celestials.end());
-      not_null<std::unique_ptr<Celestial>> const& celestial = it->second;
-      auto const parent_it = celestials.find(celestial_message.parent_index());
-      CHECK(parent_it != celestials.end());
-      not_null<Celestial const*> const parent = parent_it->second.get();
+      not_null<std::unique_ptr<Celestial>> const& celestial =
+          FindOrDie(celestials, celestial_message.index());
+      not_null<Celestial const*> const parent =
+          FindOrDie(celestials, celestial_message.parent_index()).get();
       celestial->set_parent(parent);
     }
   }
   GUIDToOwnedVessel vessels;
   std::set<not_null<Vessel*> const> dirty_vessels;
   for (auto const& vessel_message : message.vessel()) {
-    auto const parent_it = celestials.find(vessel_message.parent_index());
-    CHECK(parent_it != celestials.end());
-    not_null<Celestial const*> const parent = parent_it->second.get();
+    not_null<Celestial const*> const parent =
+        FindOrDie(celestials, vessel_message.parent_index()).get();
     not_null<std::unique_ptr<Vessel>> vessel =
         Vessel::ReadFromMessage(vessel_message.vessel(), parent);
     if (vessel_message.dirty()) {
@@ -462,9 +443,7 @@ std::unique_ptr<Plugin> Plugin::ReadFromMessage(
   not_null<std::unique_ptr<PhysicsBubble>> bubble =
       PhysicsBubble::ReadFromMessage(
           [&vessels](GUID guid) -> not_null<Vessel*> {
-            auto const it = vessels.find(guid);
-            CHECK(it != vessels.end());
-            return it->second.get();
+            return FindOrDie(vessels, guid).get();
           },
           message.bubble());
   // Can't use |make_unique| here without implementation-dependent friendships.
@@ -492,8 +471,7 @@ Plugin::Plugin(GUIDToOwnedVessel vessels,
       n_body_system_(make_not_null_unique<NBodySystem<Barycentric>>()),
       planetarium_rotation_(planetarium_rotation),
       current_time_(current_time),
-      // TODO(egg): don't use |find|, use |FindOrDie|.
-      sun_(celestials_.find(sun_index)->second.get()) {
+      sun_(FindOrDie(celestials_, sun_index).get()) {
   for (auto const& guid_vessel : vessels_) {
     auto const& vessel = guid_vessel.second;
     kept_vessels_.emplace(vessel.get());
@@ -510,9 +488,7 @@ Plugin::Plugin(GUIDToOwnedVessel vessels,
 not_null<std::unique_ptr<Vessel>> const& Plugin::find_vessel_by_guid_or_die(
     GUID const& vessel_guid) const {
   VLOG(1) << __FUNCTION__ << '\n' << NAMED(vessel_guid);
-  auto const it = vessels_.find(vessel_guid);
-  CHECK(it != vessels_.end()) << "No vessel with GUID " << vessel_guid;
-  VLOG_AND_RETURN(1, it->second);
+  VLOG_AND_RETURN(1, FindOrDie(vessels_, vessel_guid));
 }
 
 bool Plugin::has_dirty_vessels() const {
