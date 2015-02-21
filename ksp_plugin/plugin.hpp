@@ -271,11 +271,12 @@ class Plugin {
   bool is_dirty(not_null<Vessel*> const vessel) const;
   // Returns |predicted_vessel_ != nullptr|.
   bool has_predicted_vessel() const;
-  // Returns |!predictions_.empty()| and checks that |has_predictions()| implies
-  // |has_predicted_vessel()|.
+  // Returns |!system_predictions_.empty()| and checks that
+  // --- |system_predictions_.empty()| is equivalent to |prediction_ == null|;
+  // --- |has_predictions()| implies |has_predicted_vessel()|.
   bool has_predictions() const;
-  // If |has_predictions()|, deletes the trajectories in |predictions_| and
-  // clears it.
+  // If |has_predictions()|, deletes the trajectories in |system_predictions_|
+  // and clears it, deletes |prediction_|.
   void clear_predictions();
 
   // The common last time of the histories of synchronized vessels and
@@ -347,7 +348,11 @@ class Plugin {
   Vessel* predicted_vessel_;
   Time prediction_length_;
   Time prediction_step_;
-  NBodySystem<Barycentric>::Trajectories predictions_;
+  std::map<not_null<Celestial const*> const,
+           not_null<Trajectory<Barycentric>*>> system_predictions_;
+  Trajectory<Barycentric>* prediction_;
+  // TODO(phl): This is really ugly.
+  bool transforms_are_operating_on_predictions_ = false;
 
   not_null<std::unique_ptr<PhysicsBubble>> const bubble_;
 
