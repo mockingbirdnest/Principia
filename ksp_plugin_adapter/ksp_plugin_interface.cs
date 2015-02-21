@@ -152,6 +152,14 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
       XYZ sun_world_position);
 
   [DllImport(dllName           : kDllPath,
+             EntryPoint        = "principia__RenderedPrediction",
+             CallingConvention = CallingConvention.Cdecl)]
+  private static extern IntPtr RenderedPrediction(
+      IntPtr plugin,
+      IntPtr transforms,
+      XYZ sun_world_position);
+
+  [DllImport(dllName           : kDllPath,
              EntryPoint        = "principia__NumberOfSegments",
              CallingConvention = CallingConvention.Cdecl)]
   private static extern int NumberOfSegments(IntPtr line);
@@ -170,6 +178,28 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
              EntryPoint        = "principia__DeleteLineAndIterator",
              CallingConvention = CallingConvention.Cdecl)]
   private static extern void DeleteLineAndIterator(ref IntPtr line);
+
+  [DllImport(dllName           : kDllPath,
+             EntryPoint        = "principia__set_predicted_vessel",
+             CallingConvention = CallingConvention.Cdecl)]
+  private static extern void set_predicted_vessel(
+      IntPtr plugin,
+      [MarshalAs(UnmanagedType.LPStr)] String vessel_guid);
+
+  [DllImport(dllName           : kDllPath,
+             EntryPoint        = "principia__clear_predicted_vessel",
+             CallingConvention = CallingConvention.Cdecl)]
+  private static extern void clear_predicted_vessel(IntPtr plugin);
+
+  [DllImport(dllName           : kDllPath,
+             EntryPoint        = "principia__set_prediction_length",
+             CallingConvention = CallingConvention.Cdecl)]
+  private static extern void set_prediction_length(IntPtr plugin, double t);
+
+  [DllImport(dllName           : kDllPath,
+             EntryPoint        = "principia__set_prediction_step",
+             CallingConvention = CallingConvention.Cdecl)]
+  private static extern void set_prediction_step(IntPtr plugin, double t);
 
   [DllImport(dllName           : kDllPath,
              EntryPoint        = "principia__AddVesselToNextPhysicsBubble",

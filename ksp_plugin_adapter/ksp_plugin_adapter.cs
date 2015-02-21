@@ -40,6 +40,7 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
   private IntPtr plugin_ = IntPtr.Zero;
   // TODO(egg): rendering only one trajectory at the moment.
   private VectorLine rendered_trajectory_;
+  private VectorLine rendered_prediction_;
   private IntPtr transforms_ = IntPtr.Zero;
   private int first_selected_celestial_ = 0;
   private int second_selected_celestial_ = 0;
@@ -229,6 +230,14 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
            is_in_inertial_physics_bubble_in_space(active_vessel);
   }
 
+  private bool draw_active_vessel_trajectory() {
+    Vessel active_vessel = FlightGlobals.ActiveVessel;
+    return MapView.MapIsEnabled &&
+            active_vessel != null &&
+            (is_on_rails_in_space(active_vessel) ||
+            is_in_inertial_physics_bubble_in_space(active_vessel));
+  }
+
   #region ScenarioModule lifecycle
   // These functions override virtual ones from |ScenarioModule|, but it seems
   // that they're actually called by reflection, so that bad things happen
@@ -301,11 +310,16 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
       if (has_inertial_physics_bubble_in_space()) {
         ApplyToVesselsInPhysicsBubble(AddToPhysicsBubble);
       }
+      Vessel active_vessel = FlightGlobals.ActiveVessel;
+      if (draw_active_vessel_trajectory()) {
+        set_predicted_vessel(plugin_, active_vessel.id.ToString());
+      } else {
+        clear_predicted_vessel(plugin_);
+      }
       AdvanceTime(plugin_, universal_time, Planetarium.InverseRotAngle);
       ApplyToBodyTree(body => UpdateBody(body, universal_time));
       ApplyToVesselsOnRailsOrInInertialPhysicsBubbleInSpace(
           vessel => UpdateVessel(vessel, universal_time));
-      Vessel active_vessel = FlightGlobals.ActiveVessel;
       if (!PhysicsBubbleIsEmpty(plugin_)) {
         Vector3d displacement_offset =
             (Vector3d)BubbleDisplacementCorrection(
@@ -321,10 +335,7 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
         krakensbane_.setOffset(displacement_offset);
         krakensbane_.FrameVel += velocity_offset;
       }
-      if (MapView.MapIsEnabled &&
-          active_vessel != null &&
-          (is_on_rails_in_space(active_vessel) ||
-           is_in_inertial_physics_bubble_in_space(active_vessel))) {
+      if (draw_active_vessel_trajectory()) {
         if (active_vessel.orbitDriver.Renderer.drawMode !=
                 OrbitRenderer.DrawMode.OFF ||
             active_vessel.orbitDriver.Renderer.drawIcons !=
@@ -339,39 +350,19 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
           active_vessel.patchedConicRenderer = null;
         }
         IntPtr trajectory_iterator = IntPtr.Zero;
-        try {
-          trajectory_iterator = RenderedVesselTrajectory(
-              plugin_,
-              active_vessel.id.ToString(),
-              transforms_,
-              (XYZ)Planetarium.fetch.Sun.position);
-
-          LineSegment segment;
-          int index_in_line_points = kLinePoints -
-              NumberOfSegments(trajectory_iterator) * 2;
-          while (index_in_line_points < 0) {
-            FetchAndIncrement(trajectory_iterator);
-            index_in_line_points += 2;
-          }
-          if (rendered_trajectory_ == null) {
-            ResetRenderedTrajectory();
-          }
-          while (!AtEnd(trajectory_iterator)) {
-            segment = FetchAndIncrement(trajectory_iterator);
-            // TODO(egg): should we do the |LocalToScaledSpace| conversion in
-            // native code?
-            // TODO(egg): could we directly assign to
-            // |rendered_trajectory_.points3| from C++ using unsafe code and
-            // something like the following?
-            // |fixed (UnityEngine.Vector3* pts = rendered_trajectory_.points3)|
-            rendered_trajectory_.points3[index_in_line_points++] =
-                ScaledSpace.LocalToScaledSpace((Vector3d)segment.begin);
-            rendered_trajectory_.points3[index_in_line_points++] =
-                ScaledSpace.LocalToScaledSpace((Vector3d)segment.end);
-          }
-        } finally {
-          DeleteLineAndIterator(ref trajectory_iterator);
-        }
+        trajectory_iterator = RenderedVesselTrajectory(
+                                  plugin_,
+                                  active_vessel.id.ToString(),
+                                  transforms_,
+                                  (XYZ)Planetarium.fetch.Sun.position);
+        RenderAndDeleteTrajectory(ref trajectory_iterator,
+                                  rendered_trajectory_);
+        trajectory_iterator = RenderedPrediction(
+                                  plugin_,
+                                  transforms_,
+                                  (XYZ)Planetarium.fetch.Sun.position);
+        RenderAndDeleteTrajectory(ref trajectory_iterator,
+                                  rendered_prediction_);
         if (MapView.Draw3DLines) {
           Vector.DrawLine3D(rendered_trajectory_);
         } else {
@@ -384,6 +375,38 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
   }
 
   #endregion
+
+  private void RenderAndDeleteTrajectory(ref IntPtr trajectory_iterator,
+                                         VectorLine vector_line) {
+    try {
+
+      LineSegment segment;
+      int index_in_line_points = kLinePoints -
+          NumberOfSegments(trajectory_iterator) * 2;
+      while (index_in_line_points < 0) {
+        FetchAndIncrement(trajectory_iterator);
+        index_in_line_points += 2;
+      }
+      if (vector_line == null) {
+        ResetRenderedTrajectory();
+      }
+      while (!AtEnd(trajectory_iterator)) {
+        segment = FetchAndIncrement(trajectory_iterator);
+        // TODO(egg): should we do the |LocalToScaledSpace| conversion in
+        // native code?
+        // TODO(egg): could we directly assign to
+        // |vector_line.points3| from C++ using unsafe code and
+        // something like the following?
+        // |fixed (UnityEngine.Vector3* pts = vector_line.points3)|
+        vector_line.points3[index_in_line_points++] =
+            ScaledSpace.LocalToScaledSpace((Vector3d)segment.begin);
+        vector_line.points3[index_in_line_points++] =
+            ScaledSpace.LocalToScaledSpace((Vector3d)segment.end);
+      }
+    } finally {
+      DeleteLineAndIterator(ref trajectory_iterator);
+    }
+  }
 
   private void ResetRenderedTrajectory() {
     DestroyRenderedTrajectory();
@@ -399,11 +422,26 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
     rendered_trajectory_.vectorObject.renderer.castShadows = false;
     rendered_trajectory_.vectorObject.renderer.receiveShadows = false;
     rendered_trajectory_.layer = 31;
+    rendered_prediction_ = new VectorLine(
+        lineName     : "rendered_prediction_",
+        linePoints   : new UnityEngine.Vector3[kLinePoints],
+        lineMaterial : MapView.OrbitLinesMaterial,
+        color        : XKCDColors.Fuchsia,
+        width        : 5,
+        lineType     : LineType.Discrete);
+    rendered_prediction_.vectorObject.transform.parent =
+        ScaledSpace.Instance.transform;
+    rendered_prediction_.vectorObject.renderer.castShadows = false;
+    rendered_prediction_.vectorObject.renderer.receiveShadows = false;
+    rendered_prediction_.layer = 31;
   }
 
   private void DestroyRenderedTrajectory() {
     if (rendered_trajectory_ != null) {
       Vector.DestroyLine(ref rendered_trajectory_);
+    }
+    if (rendered_prediction_ != null) {
+      Vector.DestroyLine(ref rendered_prediction_);
     }
   }
 

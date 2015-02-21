@@ -38,6 +38,7 @@ using physics::Trajectory;
 using physics::Transforms;
 using quantities::Angle;
 using si::Second;
+using si::Hour;
 
 // The GUID of a vessel, obtained by |v.id.ToString()| in C#. We use this as a
 // key in an |std::map|.
@@ -354,8 +355,8 @@ class Plugin {
 
   // Only one prediction for now, using constant timestep.
   Vessel* predicted_vessel_;
-  Time prediction_length_;
-  Time prediction_step_;
+  Time prediction_length_ = 1 * Hour;
+  Time prediction_step_ = Δt_;
   std::map<not_null<Celestial const*> const,
            not_null<Trajectory<Barycentric>*>> system_predictions_;
   Trajectory<Barycentric>* prediction_;
