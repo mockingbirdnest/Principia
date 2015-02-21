@@ -300,7 +300,13 @@ Plugin::NewBodyCentredNonRotatingTransforms(
   not_null<Celestial const*> reference_body = it->second.get();
   Transforms<Barycentric, Rendering, Barycentric>::
       LazyTrajectory<Barycentric> const reference_body_prolongation =
-          std::bind(&Celestial::prolongation, reference_body);
+          [this, reference_body] {
+            if (transforms_are_operating_on_predictions_) {
+              return *FindOrDie(system_predictions_, reference_body);
+            } else {
+              return reference_body->Celestial::prolongation();
+            }
+          };
   return Transforms<Barycentric, Rendering, Barycentric>::
              BodyCentredNonRotating(reference_body_prolongation,
                                     reference_body_prolongation);
@@ -527,7 +533,7 @@ bool Plugin::has_predicted_vessel() const {
 
 bool Plugin::has_predictions() const {
   if (system_predictions_.empty()) {
-    CHECK_EQ(prediction_, nullptr);
+    CHECK(prediction_ == nullptr);
     return false;
   } else {
     CHECK_NOTNULL(prediction_);
@@ -767,8 +773,8 @@ void Plugin::EvolveProlongationsAndBubble(Instant const& t) {
 void Plugin::UpdatePredictions() {
   clear_predictions();
   if (has_predicted_vessel()) {
-    NBodySystem<Barycentric>::Trajectories trajectories;
-    trajectories.reserve(celestials_.size() + 1);
+    NBodySystem<Barycentric>::Trajectories predictions;
+    predictions.reserve(celestials_.size() + 1);
     for (auto const& index_celestial : celestials_) {
       auto const& celestial = index_celestial.second;
       auto const inserted =
@@ -779,18 +785,18 @@ void Plugin::UpdatePredictions() {
       CHECK(inserted.second);
       not_null<Trajectory<Barycentric>*> const trajectory =
           inserted.first->second;
-      trajectories.emplace_back(trajectory);
+      predictions.emplace_back(trajectory);
     }
     prediction_ = predicted_vessel_->mutable_prolongation()->NewFork(
-                      predicted_vessel_->prolongation().last().time()));
-    trajectories.emplace_back(prediction_);
+                      predicted_vessel_->prolongation().last().time());
+    predictions.emplace_back(prediction_);
     n_body_system_->Integrate(
         prolongation_integrator_,
         current_time_ + prediction_length_,
         prediction_step_,
         1,  // sampling_period
         false,  // tmax_is_exact
-        system_predictions_);
+        predictions);
   }
 }
 
