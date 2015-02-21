@@ -185,10 +185,12 @@ class Plugin {
           Transforms<Barycentric, Rendering, Barycentric>*> const transforms,
       Position<World> const& sun_world_position) const;
 
+  // Not const because of the stupid global variable
+  // |transforms_are_operating_on_predictions_|.
   virtual RenderedTrajectory<World> RenderedPrediction(
       not_null<
           Transforms<Barycentric, Rendering, Barycentric>*> const transforms,
-      Position<World> const& sun_world_position) const;
+      Position<World> const& sun_world_position);
 
   virtual void set_predicted_vessel(GUID const& vessel_guid);
   // Calls |clear_predictions()| and nulls |predicted_vessel_|.
@@ -324,6 +326,12 @@ class Plugin {
   void EvolveProlongationsAndBubble(Instant const& t);
   // Updates |predictions_|.
   void UpdatePredictions();
+
+  RenderedTrajectory<World> RenderTrajectory(
+      Trajectory<Barycentric> const& actual_trajectory,
+      not_null<
+          Transforms<Barycentric, Rendering, Barycentric>*> const transforms,
+      Position<World> const& sun_world_position) const;
 
   // TODO(egg): Constant time step for now.
   Time const Δt_ = 10 * Second;

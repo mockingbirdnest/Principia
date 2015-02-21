@@ -216,56 +216,35 @@ RenderedTrajectory<World> Plugin::RenderedVesselTrajectory(
     not_null<Transforms<Barycentric, Rendering, Barycentric>*> const transforms,
     Position<World> const& sun_world_position) const {
   CHECK(!initializing_);
-  auto const to_world =
-      AffineMap<Barycentric, World, Length, Rotation>(
-          sun_->prolongation().last().degrees_of_freedom().position(),
-          sun_world_position,
-          Rotation<WorldSun, World>::Identity() * PlanetariumRotation());
   not_null<std::unique_ptr<Vessel>> const& vessel =
       find_vessel_by_guid_or_die(vessel_guid);
   CHECK(vessel->is_initialized());
   VLOG(1) << "Rendering a trajectory for the vessel with GUID " << vessel_guid;
-  RenderedTrajectory<World> result;
   if (!vessel->is_synchronized()) {
     // TODO(egg): We render neither unsynchronized histories nor prolongations
     // at the moment.
     VLOG(1) << "Returning an empty trajectory";
-    return result;
+    return RenderedTrajectory<World>();
   }
 
   // Compute the apparent trajectory using the given |transforms|.
   Trajectory<Barycentric> const& actual_trajectory = vessel->history();
+  return RenderTrajectory(actual_trajectory, transforms, sun_world_position);
+}
 
-  // First build the trajectory resulting from the first transform.
-  Trajectory<Rendering> intermediate_trajectory(actual_trajectory.body<Body>());
-  for (auto actual_it = transforms->first(actual_trajectory);
-       !actual_it.at_end();
-       ++actual_it) {
-    intermediate_trajectory.Append(actual_it.time(),
-                                   actual_it.degrees_of_freedom());
+RenderedTrajectory<World> Plugin::RenderedPrediction(
+    not_null<
+        Transforms<Barycentric, Rendering, Barycentric>*> const transforms,
+    Position<World> const& sun_world_position) {
+  CHECK(!initializing_);
+  if (!has_predictions()) {
+    return RenderedTrajectory<World>();
   }
-
-  // Then build the apparent trajectory using the second transform.
-  auto apparent_trajectory = make_not_null_unique<Trajectory<Barycentric>>(
-                                 actual_trajectory.body<Body>());
-  for (auto intermediate_it = transforms->second(intermediate_trajectory);
-       !intermediate_it.at_end();
-       ++intermediate_it) {
-    apparent_trajectory->Append(intermediate_it.time(),
-                                intermediate_it.degrees_of_freedom());
-  }
-
-  // Finally use the apparent trajectory to build the result.
-  auto initial_it = apparent_trajectory->first();
-  if (!initial_it.at_end()) {
-    for (auto final_it = initial_it;
-         ++final_it, !final_it.at_end();
-         initial_it = final_it) {
-      result.emplace_back(to_world(initial_it.degrees_of_freedom().position()),
-                          to_world(final_it.degrees_of_freedom().position()));
-    }
-  }
-  VLOG(1) << "Returning a " << result.size() << "-segment trajectory";
+  Trajectory<Barycentric> const& actual_trajectory = *prediction_;
+  transforms_are_operating_on_predictions_ = true;
+  RenderedTrajectory<World> result =
+      RenderTrajectory(actual_trajectory, transforms, sun_world_position);
+  transforms_are_operating_on_predictions_ = false;
   return result;
 }
 
@@ -786,6 +765,48 @@ void Plugin::UpdatePredictions() {
         false,  // tmax_is_exact
         predictions);
   }
+}
+
+RenderedTrajectory<World> Plugin::RenderTrajectory(
+    Trajectory<Barycentric> const& actual_trajectory,
+    not_null<Transforms<Barycentric, Rendering, Barycentric>*> const transforms,
+    Position<World> const& sun_world_position) const {
+  RenderedTrajectory<World> result;
+  auto const to_world =
+      AffineMap<Barycentric, World, Length, Rotation>(
+          sun_->prolongation().last().degrees_of_freedom().position(),
+          sun_world_position,
+          Rotation<WorldSun, World>::Identity() * PlanetariumRotation());
+  Trajectory<Rendering> intermediate_trajectory(actual_trajectory.body<Body>());
+  for (auto actual_it = transforms->first(actual_trajectory);
+       !actual_it.at_end();
+       ++actual_it) {
+    intermediate_trajectory.Append(actual_it.time(),
+                                   actual_it.degrees_of_freedom());
+  }
+
+  // Then build the apparent trajectory using the second transform.
+  auto apparent_trajectory = make_not_null_unique<Trajectory<Barycentric>>(
+                                 actual_trajectory.body<Body>());
+  for (auto intermediate_it = transforms->second(intermediate_trajectory);
+       !intermediate_it.at_end();
+       ++intermediate_it) {
+    apparent_trajectory->Append(intermediate_it.time(),
+                                intermediate_it.degrees_of_freedom());
+  }
+
+  // Finally use the apparent trajectory to build the result.
+  auto initial_it = apparent_trajectory->first();
+  if (!initial_it.at_end()) {
+    for (auto final_it = initial_it;
+         ++final_it, !final_it.at_end();
+         initial_it = final_it) {
+      result.emplace_back(to_world(initial_it.degrees_of_freedom().position()),
+                          to_world(final_it.degrees_of_freedom().position()));
+    }
+  }
+  VLOG(1) << "Returning a " << result.size() << "-segment trajectory";
+  return result;
 }
 
 }  // namespace ksp_plugin
