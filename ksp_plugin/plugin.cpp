@@ -294,7 +294,7 @@ Plugin::NewBodyCentredNonRotatingTransforms(
       FindOrDie(celestials_, reference_body_index).get();
   Transforms<Barycentric, Rendering, Barycentric>::
       LazyTrajectory<Barycentric> const reference_body_prolongation =
-          [this, reference_body] {
+          [this, reference_body]() -> Trajectory<Barycentric> const& {
             if (transforms_are_operating_on_predictions_) {
               return *FindOrDie(system_predictions_, reference_body);
             } else {
@@ -315,10 +315,22 @@ Plugin::NewBarycentricRotatingTransforms(Index const primary_index,
       FindOrDie(celestials_, secondary_index).get();
   Transforms<Barycentric, Rendering, Barycentric>::
       LazyTrajectory<Barycentric> const primary_prolongation =
-          std::bind(&Celestial::prolongation, primary);
+          [this, primary]() -> Trajectory<Barycentric> const& {
+            if (transforms_are_operating_on_predictions_) {
+              return *FindOrDie(system_predictions_, primary);
+            } else {
+              return primary->Celestial::prolongation();
+            }
+          };
   Transforms<Barycentric, Rendering, Barycentric>::
       LazyTrajectory<Barycentric> const secondary_prolongation =
-          std::bind(&Celestial::prolongation, secondary);
+          [this, primary]() -> Trajectory<Barycentric> const& {
+            if (transforms_are_operating_on_predictions_) {
+              return *FindOrDie(system_predictions_, primary);
+            } else {
+              return primary->Celestial::prolongation();
+            }
+          };
   return Transforms<Barycentric, Rendering, Barycentric>::BarycentricRotating(
              primary_prolongation,
              primary_prolongation,
