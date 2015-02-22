@@ -349,6 +349,9 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
           active_vessel.DetachPatchedConicsSolver();
           active_vessel.patchedConicRenderer = null;
         }
+       if (rendered_trajectory_ == null || rendered_prediction_ == null) {
+          ResetRenderedTrajectory();
+        }
         IntPtr trajectory_iterator = IntPtr.Zero;
         trajectory_iterator = RenderedVesselTrajectory(
                                   plugin_,
@@ -365,8 +368,10 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
                                   rendered_prediction_);
         if (MapView.Draw3DLines) {
           Vector.DrawLine3D(rendered_trajectory_);
+          Vector.DrawLine3D(rendered_prediction_);
         } else {
           Vector.DrawLine(rendered_trajectory_);
+          Vector.DrawLine(rendered_prediction_);
         }
       } else {
         DestroyRenderedTrajectory();
@@ -379,16 +384,12 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
   private void RenderAndDeleteTrajectory(ref IntPtr trajectory_iterator,
                                          VectorLine vector_line) {
     try {
-
       LineSegment segment;
       int index_in_line_points = kLinePoints -
           NumberOfSegments(trajectory_iterator) * 2;
       while (index_in_line_points < 0) {
         FetchAndIncrement(trajectory_iterator);
         index_in_line_points += 2;
-      }
-      if (vector_line == null) {
-        ResetRenderedTrajectory();
       }
       while (!AtEnd(trajectory_iterator)) {
         segment = FetchAndIncrement(trajectory_iterator);

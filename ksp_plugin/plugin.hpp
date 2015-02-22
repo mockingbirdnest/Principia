@@ -330,6 +330,7 @@ class Plugin {
 
   RenderedTrajectory<World> RenderTrajectory(
       Trajectory<Barycentric> const& actual_trajectory,
+      Trajectory<Barycentric>::TransformingIterator<Rendering> const& actual_it,
       not_null<
           Transforms<Barycentric, Rendering, Barycentric>*> const transforms,
       Position<World> const& sun_world_position) const;
@@ -357,7 +358,7 @@ class Plugin {
   Vessel* predicted_vessel_;
   Time prediction_length_ = 1 * Hour;
   Time prediction_step_ = Δt_;
-  std::map<not_null<Celestial const*> const,
+  std::map<not_null<Celestial*> const,
            not_null<Trajectory<Barycentric>*>> system_predictions_;
   Trajectory<Barycentric>* prediction_;
   // TODO(phl): This is really ugly.
