@@ -487,9 +487,6 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
           (plugin_from_save_ ? " from a saved state" : " from scratch");
     }
     UnityEngine.GUILayout.TextArea(last_reset_information);
-    ToggleableSection(name   : "CRASH",
-                      show   : ref show_crash_options_,
-                      render : CrashOptions);
     ToggleableSection(name   : "Reference Frame Selection",
                       show   : ref show_reference_frame_selection_,
                       render : ReferenceFrameSelection);
