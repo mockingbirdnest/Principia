@@ -46,6 +46,7 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
 
   private bool show_logging_settings_ = false;
   private bool show_reference_frame_selection_ = true;
+  private bool show_crash_options_ = false;
 
   private bool time_is_advancing_;
 
@@ -445,6 +446,9 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
           (plugin_from_save_ ? " from a saved state" : " from scratch");
     }
     UnityEngine.GUILayout.TextArea(last_reset_information);
+    ToggleableSection(name   : "CRASH",
+                      show   : ref show_crash_options_,
+                      render : CrashOptions);
     ToggleableSection(name   : "Reference Frame Selection",
                       show   : ref show_reference_frame_selection_,
                       render : ReferenceFrameSelection);
@@ -472,6 +476,20 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
     }
     if (show) {
       render();
+    }
+  }
+
+  private void CrashOptions() {
+    if (UnityEngine.GUILayout.Button(text : "CRASH ON MAP VIEW")) {
+      first_selected_celestial_ = second_selected_celestial_;
+      DeleteTransforms(ref transforms_);
+      transforms_ = NewBarycentricRotatingTransforms(
+                        plugin_,
+                        first_selected_celestial_,
+                        second_selected_celestial_);
+    }
+    if (UnityEngine.GUILayout.Button(text : "CRASH NOW")) {
+      Log.Fatal("You asked for it!");
     }
   }
 
