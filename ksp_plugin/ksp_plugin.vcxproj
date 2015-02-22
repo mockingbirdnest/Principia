@@ -77,7 +77,6 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <OutDir>$(SolutionDir)$(Configuration)\GameData\Principia\</OutDir>
     <TargetName>principia</TargetName>
-    <LinkIncremental>false</LinkIncremental>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release_LLVM|Win32'">
     <OutDir>$(SolutionDir)$(Configuration)\GameData\Principia\</OutDir>
