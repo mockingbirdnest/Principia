@@ -46,7 +46,9 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
 
   private bool show_logging_settings_ = false;
   private bool show_reference_frame_selection_ = true;
+#if CRASH_BUTTON
   private bool show_crash_options_ = false;
+#endif
 
   private bool time_is_advancing_;
 
@@ -483,6 +485,7 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
     }
   }
 
+#if CRASH_BUTTON
   private void CrashOptions() {
     if (UnityEngine.GUILayout.Button(text : "CRASH ON MAP VIEW")) {
       first_selected_celestial_ = second_selected_celestial_;
@@ -496,6 +499,7 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
       Log.Fatal("You asked for it!");
     }
   }
+#endif
 
   private void ReferenceFrameSelection() {
     bool barycentric_rotating =
