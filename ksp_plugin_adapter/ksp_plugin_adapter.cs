@@ -493,9 +493,11 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
     ToggleableSection(name   : "Logging Settings",
                       show   : ref show_logging_settings_,
                       render : LoggingSettings);
+#if CRASH_BUTTON
     ToggleableSection(name   : "CRASH",
                       show   : ref show_crash_options_,
                       render : CrashOptions);
+#endif
     UnityEngine.GUILayout.EndVertical();
     UnityEngine.GUI.DragWindow(
         position : new UnityEngine.Rect(left : 0f, top : 0f, width : 10000f,
