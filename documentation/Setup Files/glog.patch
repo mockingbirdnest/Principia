@@ -1567,3 +1567,28 @@ index 7f81080..650f609 100644
 -- 
 1.8.4.msysgit.0
 
+From 028aef476e4b21813fc51dab0692efc1df720250 Mon Sep 17 00:00:00 2001
+From: Robin Leroy <egg.robin.leroy@gmail.com>
+Date: Sun, 22 Feb 2015 18:45:56 +0100
+Subject: [PATCH] log stacktrace everywhere
+
+---
+ src/logging.cc | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/src/logging.cc b/src/logging.cc
+index fa1d899..b186275 100644
+--- a/src/logging.cc
++++ b/src/logging.cc
+@@ -1993,7 +1993,7 @@ LogMessageFatal::~LogMessageFatal() {
+   if (FLAGS_log_backtrace_on_fatal) {
+     std::string stacktrace;
+     DumpStackTraceToString(&stacktrace);
+-    LogDestination::MaybeLogToLogfile(
++    LogDestination::LogToAllLogfiles(
+         GLOG_FATAL, timestamp(), stacktrace.c_str(), stacktrace.size());
+   }
+   Flush();
+-- 
+1.9.5.github.0
+
