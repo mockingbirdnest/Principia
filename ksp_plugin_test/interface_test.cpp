@@ -15,6 +15,7 @@ using base::check_not_null;
 using geometry::Displacement;
 using geometry::kUnixEpoch;
 using si::Degree;
+using si::Milli;
 using si::Second;
 using si::Tonne;
 using ::testing::ElementsAre;
@@ -316,6 +317,70 @@ TEST_F(InterfaceTest, DeleteTransforms) {
   EXPECT_THAT(transforms, IsNull());
 }
 
+TEST_F(InterfaceTest, RenderedPrediction) {
+  auto dummy_transforms = Transforms<Barycentric, Rendering, Barycentric>::
+                              DummyForTesting().release();
+  EXPECT_CALL(*plugin_,
+              FillBarycentricRotatingTransforms(kCelestialIndex,
+                                                kParentIndex,
+                                                _))
+      .WillOnce(FillUniquePtr<2>(dummy_transforms));
+  Transforms<Barycentric, Rendering, Barycentric>* transforms =
+      principia__NewBarycentricRotatingTransforms(plugin_.get(),
+                                                  kCelestialIndex,
+                                                  kParentIndex);
+
+  // Construct a test rendered trajectory.
+  RenderedTrajectory<World> rendered_trajectory;
+  Position<World> position =
+      World::origin + Displacement<World>(
+                          {1 * SIUnit<Length>(),
+                           2 * SIUnit<Length>(),
+                           3 * SIUnit<Length>()});
+  for (int i = 0; i < kTrajectorySize; ++i) {
+    Position<World> next_position =
+        position + Displacement<World>({10 * SIUnit<Length>(),
+                                        20 * SIUnit<Length>(),
+                                        30 * SIUnit<Length>()});
+    LineSegment<World> line_segment(position, next_position);
+    rendered_trajectory.push_back(line_segment);
+    position = next_position;
+  }
+
+  EXPECT_CALL(*plugin_,
+              RenderedPrediction(
+                  check_not_null(transforms),
+                  World::origin + Displacement<World>(
+                                      {kParentPosition.x * SIUnit<Length>(),
+                                       kParentPosition.y * SIUnit<Length>(),
+                                       kParentPosition.z * SIUnit<Length>()})))
+      .WillOnce(Return(rendered_trajectory));
+  LineAndIterator* line_and_iterator =
+      principia__RenderedPrediction(plugin_.get(),
+                                    transforms,
+                                    kParentPosition);
+  EXPECT_EQ(kTrajectorySize, line_and_iterator->rendered_trajectory.size());
+  EXPECT_EQ(kTrajectorySize, principia__NumberOfSegments(line_and_iterator));
+
+  // Traverse it and check that we get the right data.
+  for (int i = 0; i < kTrajectorySize; ++i) {
+    EXPECT_FALSE(principia__AtEnd(line_and_iterator));
+    XYZSegment const segment = principia__FetchAndIncrement(line_and_iterator);
+    EXPECT_EQ(1 + 10 * i, segment.begin.x);
+    EXPECT_EQ(2 + 20 * i, segment.begin.y);
+    EXPECT_EQ(3 + 30 * i, segment.begin.z);
+    EXPECT_EQ(11 + 10 * i, segment.end.x);
+    EXPECT_EQ(22 + 20 * i, segment.end.y);
+    EXPECT_EQ(33 + 30 * i, segment.end.z);
+  }
+  EXPECT_TRUE(principia__AtEnd(line_and_iterator));
+
+  // Delete it.
+  EXPECT_THAT(line_and_iterator, Not(IsNull()));
+  principia__DeleteLineAndIterator(&line_and_iterator);
+  EXPECT_THAT(line_and_iterator, IsNull());
+}
+
 TEST_F(InterfaceTest, LineAndIterator) {
   auto dummy_transforms = Transforms<Barycentric, Rendering, Barycentric>::
                               DummyForTesting().release();
@@ -381,6 +446,17 @@ TEST_F(InterfaceTest, LineAndIterator) {
   EXPECT_THAT(line_and_iterator, Not(IsNull()));
   principia__DeleteLineAndIterator(&line_and_iterator);
   EXPECT_THAT(line_and_iterator, IsNull());
+}
+
+TEST_F(InterfaceTest, PredictionGettersAndSetters) {
+  EXPECT_CALL(*plugin_, set_predicted_vessel(kVesselGUID));
+  principia__set_predicted_vessel(plugin_.get(), kVesselGUID);
+  EXPECT_CALL(*plugin_, clear_predicted_vessel());
+  principia__clear_predicted_vessel(plugin_.get());
+  EXPECT_CALL(*plugin_, set_prediction_length(42 * Second));
+  principia__set_prediction_length(plugin_.get(), 42);
+  EXPECT_CALL(*plugin_, set_prediction_step(20 * Milli(Second)));
+  principia__set_prediction_step(plugin_.get(), 0.02);
 }
 
 TEST_F(InterfaceTest, PhysicsBubble) {
