@@ -1101,7 +1101,7 @@ TEST_F(PluginTest, Prediction) {
       plugin.RenderedPrediction(transforms.get(), World::origin);
   EXPECT_EQ(n, rendered_prediction.size());
   Angle const α = 2 * π * Radian / n;
-  for(int k = 0; k < n; ++k) {
+  for (int k = 0; k < n; ++k) {
     EXPECT_THAT(
         RelativeError(rendered_prediction[k].begin - World::origin,
                       Displacement<World>({Cos(k * α) * Metre,
