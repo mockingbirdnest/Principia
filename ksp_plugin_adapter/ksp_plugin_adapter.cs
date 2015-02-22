@@ -260,6 +260,8 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
     base.OnLoad(node);
     if (node.HasValue(kPrincipiaKey)) {
       Cleanup();
+      ApplyToBodyTree(body => body.inverseRotThresholdAltitude =
+                                  body.timeWarpAltitudeLimits[1]);
       String serialization = node.GetValue(kPrincipiaKey);
       Log.Info("serialization is " + serialization.Length + " characters long");
       plugin_ = DeserializePlugin(serialization, serialization.Length);
@@ -446,15 +448,15 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
           (plugin_from_save_ ? " from a saved state" : " from scratch");
     }
     UnityEngine.GUILayout.TextArea(last_reset_information);
-    ToggleableSection(name   : "CRASH",
-                      show   : ref show_crash_options_,
-                      render : CrashOptions);
     ToggleableSection(name   : "Reference Frame Selection",
                       show   : ref show_reference_frame_selection_,
                       render : ReferenceFrameSelection);
     ToggleableSection(name   : "Logging Settings",
                       show   : ref show_logging_settings_,
                       render : LoggingSettings);
+    ToggleableSection(name   : "CRASH",
+                      show   : ref show_crash_options_,
+                      render : CrashOptions);
     UnityEngine.GUILayout.EndVertical();
     UnityEngine.GUI.DragWindow(
         position : new UnityEngine.Rect(left : 0f, top : 0f, width : 10000f,
