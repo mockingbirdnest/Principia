@@ -3,6 +3,11 @@
 #include <string>
 #include <utility>
 #include <vector>
+#if OS_WIN
+#define NOGDI
+#include <windows.h>
+#include <psapi.h>
+#endif
 
 #include "base/hexadecimal.hpp"
 #include "base/macros.hpp"
@@ -70,6 +75,15 @@ void principia__InitGoogleLogging() {
               << " version " << principia::base::kCompilerVersion
               << " for " << principia::base::kOperatingSystem
               << " " << principia::base::kArchitecture;
+#if OS_WIN
+  MODULEINFO module_info;
+  memset(&module_info, 0, sizeof(module_info));
+  CHECK(GetModuleInformation(GetCurrentProcess(),
+                             GetModuleHandle(TEXT("principia")),
+                             &module_info,
+                             sizeof(module_info)));
+  LOG(INFO) << "Base address is " << module_info.lpBaseOfDll;
+#endif
   }
 }
 

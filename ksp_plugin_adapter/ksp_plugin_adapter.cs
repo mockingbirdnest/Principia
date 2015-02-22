@@ -46,6 +46,9 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
 
   private bool show_logging_settings_ = false;
   private bool show_reference_frame_selection_ = true;
+#if CRASH_BUTTON
+  private bool show_crash_options_ = false;
+#endif
 
   private bool time_is_advancing_;
 
@@ -259,6 +262,8 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
     base.OnLoad(node);
     if (node.HasValue(kPrincipiaKey)) {
       Cleanup();
+      ApplyToBodyTree(body => body.inverseRotThresholdAltitude =
+                                  body.timeWarpAltitudeLimits[1]);
       String serialization = node.GetValue(kPrincipiaKey);
       Log.Info("serialization is " + serialization.Length + " characters long");
       plugin_ = DeserializePlugin(serialization, serialization.Length);
@@ -451,6 +456,11 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
     ToggleableSection(name   : "Logging Settings",
                       show   : ref show_logging_settings_,
                       render : LoggingSettings);
+#if CRASH_BUTTON
+    ToggleableSection(name   : "CRASH",
+                      show   : ref show_crash_options_,
+                      render : CrashOptions);
+#endif
     UnityEngine.GUILayout.EndVertical();
     UnityEngine.GUI.DragWindow(
         position : new UnityEngine.Rect(left : 0f, top : 0f, width : 10000f,
@@ -474,6 +484,22 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
       render();
     }
   }
+
+#if CRASH_BUTTON
+  private void CrashOptions() {
+    if (UnityEngine.GUILayout.Button(text : "CRASH ON MAP VIEW")) {
+      first_selected_celestial_ = second_selected_celestial_;
+      DeleteTransforms(ref transforms_);
+      transforms_ = NewBarycentricRotatingTransforms(
+                        plugin_,
+                        first_selected_celestial_,
+                        second_selected_celestial_);
+    }
+    if (UnityEngine.GUILayout.Button(text : "CRASH NOW")) {
+      Log.Fatal("You asked for it!");
+    }
+  }
+#endif
 
   private void ReferenceFrameSelection() {
     bool barycentric_rotating =
