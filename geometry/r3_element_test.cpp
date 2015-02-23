@@ -80,7 +80,8 @@ TEST_F(R3ElementTest, MixedProduct) {
   testing_utilities::TestBilinearMap(
       std::multiplies<>(), 1 * Second, 1 * JulianYear, u_, v_, 42.0, 0, 1);
   testing_utilities::TestBilinearMap(
-      std::multiplies<>(), u_, v_, -1 * Day, 1 * Parsec / SpeedOfLight, 1);
+      std::multiplies<>(), w_, a_,
+      -1 * Day, 1 * Parsec / SpeedOfLight, -π, 0, 1);
   Time const t = -3 * Second;
   EXPECT_EQ(t * u_, u_ * t);
   EXPECT_THAT((u_ * t) / t, AlmostEquals(u_, 1));
