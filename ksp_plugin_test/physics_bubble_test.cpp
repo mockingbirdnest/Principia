@@ -306,8 +306,8 @@ TEST_F(PhysicsBubbleTest, EmptySuccess) {
 TEST_F(PhysicsBubbleTest, OneVesselOneStep) {
   std::vector<IdAndOwnedPart> parts;
   CreateParts();
-  parts.push_back({11, std::move(p1a_)});
-  parts.push_back({12, std::move(p1b_)});
+  parts.emplace_back(11, std::move(p1a_));
+  parts.emplace_back(12, std::move(p1b_));
   bubble_.AddVesselToNext(&vessel1_, std::move(parts));
   EXPECT_TRUE(bubble_.empty());
 
@@ -335,8 +335,8 @@ TEST_F(PhysicsBubbleTest, OneVesselOneStep) {
 TEST_F(PhysicsBubbleTest, OneVesselTwoSteps) {
   std::vector<IdAndOwnedPart> parts;
   CreateParts();
-  parts.push_back({11, std::move(p1a_)});
-  parts.push_back({12, std::move(p1b_)});
+  parts.emplace_back(11, std::move(p1a_));
+  parts.emplace_back(12, std::move(p1b_));
   bubble_.AddVesselToNext(&vessel1_, std::move(parts));
   EXPECT_TRUE(bubble_.empty());
 
@@ -346,8 +346,8 @@ TEST_F(PhysicsBubbleTest, OneVesselTwoSteps) {
   bubble_.VelocityCorrection(rotation_, celestial_);
 
   CreateParts();
-  parts.push_back({11, std::move(p1a_)});
-  parts.push_back({12, std::move(p1b_)});
+  parts.emplace_back(11, std::move(p1a_));
+  parts.emplace_back(12, std::move(p1b_));
   bubble_.AddVesselToNext(&vessel1_, std::move(parts));
 
   bubble_.Prepare(rotation_, t2_, t3_);
@@ -376,8 +376,8 @@ TEST_F(PhysicsBubbleTest, OneVesselTwoSteps) {
 TEST_F(PhysicsBubbleTest, OneVesselPartRemoved) {
   std::vector<IdAndOwnedPart> parts;
   CreateParts();
-  parts.push_back({11, std::move(p1a_)});
-  parts.push_back({12, std::move(p1b_)});
+  parts.emplace_back(11, std::move(p1a_));
+  parts.emplace_back(12, std::move(p1b_));
   bubble_.AddVesselToNext(&vessel1_, std::move(parts));
   EXPECT_TRUE(bubble_.empty());
 
@@ -388,7 +388,7 @@ TEST_F(PhysicsBubbleTest, OneVesselPartRemoved) {
 
   // For the second step the vessel only has one part.
   CreateParts();
-  parts.push_back({12, std::move(p1b_)});
+  parts.emplace_back(12, std::move(p1b_));
   bubble_.AddVesselToNext(&vessel1_, std::move(parts));
   EXPECT_FALSE(bubble_.empty());
 
@@ -437,7 +437,7 @@ TEST_F(PhysicsBubbleTest, OneVesselPartAdded) {
   std::vector<IdAndOwnedPart> parts;
   // For the first step the vessel has only one part.
   CreateParts();
-  parts.push_back({12, std::move(p1b_)});
+  parts.emplace_back(12, std::move(p1b_));
   bubble_.AddVesselToNext(&vessel1_, std::move(parts));
   EXPECT_TRUE(bubble_.empty());
 
@@ -448,8 +448,8 @@ TEST_F(PhysicsBubbleTest, OneVesselPartAdded) {
 
   // For the second step the vessel has two parts.
   CreateParts();
-  parts.push_back({11, std::move(p1a_)});
-  parts.push_back({12, std::move(p1b_)});
+  parts.emplace_back(11, std::move(p1a_));
+  parts.emplace_back(12, std::move(p1b_));
   bubble_.AddVesselToNext(&vessel1_, std::move(parts));
 
   bubble_.Prepare(rotation_, t2_, t3_);
@@ -494,7 +494,7 @@ TEST_F(PhysicsBubbleTest, OneVesselPartAdded) {
 TEST_F(PhysicsBubbleTest, OneVesselNoCommonParts) {
   std::vector<IdAndOwnedPart> parts;
   CreateParts();
-  parts.push_back({21, std::move(p2a_)});
+  parts.emplace_back(21, std::move(p2a_));
   bubble_.AddVesselToNext(&vessel1_, std::move(parts));
   EXPECT_TRUE(bubble_.empty());
 
@@ -504,8 +504,8 @@ TEST_F(PhysicsBubbleTest, OneVesselNoCommonParts) {
   bubble_.VelocityCorrection(rotation_, celestial_);
 
   CreateParts();
-  parts.push_back({11, std::move(p1a_)});
-  parts.push_back({12, std::move(p1b_)});
+  parts.emplace_back(11, std::move(p1a_));
+  parts.emplace_back(12, std::move(p1b_));
   bubble_.AddVesselToNext(&vessel1_, std::move(parts));
 
   bubble_.Prepare(rotation_, t2_, t3_);
@@ -528,12 +528,12 @@ TEST_F(PhysicsBubbleTest, OneVesselNoCommonParts) {
 TEST_F(PhysicsBubbleTest, TwoVessels) {
   std::vector<IdAndOwnedPart> parts;
   CreateParts();
-  parts.push_back({11, std::move(p1a_)});
-  parts.push_back({12, std::move(p1b_)});
+  parts.emplace_back(11, std::move(p1a_));
+  parts.emplace_back(12, std::move(p1b_));
   bubble_.AddVesselToNext(&vessel1_, std::move(parts));
-  parts.push_back({21, std::move(p2a_)});
-  parts.push_back({22, std::move(p2b_)});
-  parts.push_back({23, std::move(p2c_)});
+  parts.emplace_back(21, std::move(p2a_));
+  parts.emplace_back(22, std::move(p2b_));
+  parts.emplace_back(23, std::move(p2c_));
   bubble_.AddVesselToNext(&vessel2_, std::move(parts));
   EXPECT_TRUE(bubble_.empty());
 
@@ -556,12 +556,12 @@ TEST_F(PhysicsBubbleTest, TwoVessels) {
 
   // The second step.
   CreateParts();
-  parts.push_back({11, std::move(p1a_)});
-  parts.push_back({12, std::move(p1b_)});
+  parts.emplace_back(11, std::move(p1a_));
+  parts.emplace_back(12, std::move(p1b_));
   bubble_.AddVesselToNext(&vessel1_, std::move(parts));
-  parts.push_back({21, std::move(p2a_)});
-  parts.push_back({22, std::move(p2b_)});
-  parts.push_back({23, std::move(p2c_)});
+  parts.emplace_back(21, std::move(p2a_));
+  parts.emplace_back(22, std::move(p2b_));
+  parts.emplace_back(23, std::move(p2c_));
   bubble_.AddVesselToNext(&vessel2_, std::move(parts));
   EXPECT_FALSE(bubble_.empty());
 
@@ -595,8 +595,8 @@ TEST_F(PhysicsBubbleTest, Serialization) {
   // Build a bubble similar to OneVesselOneStep.
   std::vector<IdAndOwnedPart> parts;
   CreateParts();
-  parts.push_back({11, std::move(p1a_)});
-  parts.push_back({12, std::move(p1b_)});
+  parts.emplace_back(11, std::move(p1a_));
+  parts.emplace_back(12, std::move(p1b_));
   bubble_.AddVesselToNext(&vessel1_, std::move(parts));
   bubble_.Prepare(rotation_, t1_, t2_);
   Trajectory<Barycentric> const& trajectory =
