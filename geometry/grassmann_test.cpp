@@ -2,6 +2,7 @@
 
 #include <functional>
 #include <iostream>  // NOLINT(readability/streams)
+#include <utility>
 
 #include "geometry/frame.hpp"
 #include "geometry/grassmann.hpp"
@@ -17,7 +18,6 @@
 #include "quantities/uk.hpp"
 #include "testing_utilities/algebra.hpp"
 #include "testing_utilities/almost_equals.hpp"
-#include "testing_utilities/explicit_operators.hpp"
 
 namespace principia {
 
@@ -37,7 +37,6 @@ using si::Metre;
 using si::Pascal;
 using si::Second;
 using testing_utilities::AlmostEquals;
-using testing_utilities::Times;
 using uk::admiralty::Fathom;
 using uk::Foot;
 using uk::Furlong;
@@ -47,25 +46,36 @@ using ::testing::Eq;
 
 namespace geometry {
 
+// NOTE(egg): unqualified NOLINTs below because there are a lot of these and the
+// stupid linter talks about [whitespace/operators] on every other line anyway.
+// If this kind of transparent functor proves useful we may want a macro to make
+// those.
+
+struct TransparentInnerProduct {
+  template<typename Left, typename Right>
+  decltype(
+      InnerProduct(std::forward<Left>(std::declval<Left&&>()),     // NOLINT
+                   std::forward<Right>(std::declval<Right&&>())))  // NOLINT
+  operator()(Left&& left, Right&& right) const {                   // NOLINT
+    return InnerProduct(std::forward<Left>(left),                  // NOLINT
+                        std::forward<Right>(right));               // NOLINT
+  }
+};
+
+struct TransparentWedge {
+  template<typename Left, typename Right>
+  decltype(Wedge(std::forward<Left>(std::declval<Left&&>()),     // NOLINT
+                 std::forward<Right>(std::declval<Right&&>())))  // NOLINT
+  operator()(Left&& left, Right&& right) const {                 // NOLINT
+    return Wedge(std::forward<Left>(left),                       // NOLINT
+                 std::forward<Right>(right));                    // NOLINT
+  }
+};
+
 class GrassmannTest : public testing::Test {
  protected:
   using World = Frame<serialization::Frame::TestTag,
                       serialization::Frame::TEST, true>;
-
-  template<typename LScalar, typename RScalar, typename Frame, int rank>
-  static Product<LScalar, RScalar> MultivectorInnerProduct(
-      Multivector<LScalar, Frame, rank> const& left,
-      Multivector<RScalar, Frame, rank> const& right) {
-    return InnerProduct(left, right);
-  }
-
-  template<typename LScalar, typename RScalar, typename Frame, int LRank,
-          int RRank>
-  static Multivector<Product<LScalar, RScalar>, Frame, LRank + RRank>
-  Multivectorwedge(Multivector<LScalar, Frame, LRank> const& left,
-                   Multivector<RScalar, Frame, RRank> const& right) {
-    return Wedge(left, right);
-  }
 
   R3Element<Length> const null_displacement_ = {0 * Metre,
                                                 0 * Metre,
@@ -99,7 +109,7 @@ TEST_F(GrassmannTest, SpecialOrthogonalLieAlgebra) {
 
 TEST_F(GrassmannTest, MixedScalarMultiplication) {
   testing_utilities::TestBilinearMap(
-      Times<Vector<Speed, World>, Time::Inverse, Vector<Length, World>>,
+      std::multiplies<>(),
       1 / Second,
       1 / JulianYear,
       Vector<Length, World>(u_),
@@ -107,7 +117,7 @@ TEST_F(GrassmannTest, MixedScalarMultiplication) {
       42,
       0, 1);
   testing_utilities::TestBilinearMap(
-      Times<Vector<Speed, World>, Vector<Length, World>, Time::Inverse>,
+      std::multiplies<>(),
       Vector<Length, World>(w_),
       Vector<Length, World>(a_),
       -1 / Day,
@@ -121,7 +131,7 @@ TEST_F(GrassmannTest, MixedScalarMultiplication) {
 
 TEST_F(GrassmannTest, VectorSpaces) {
   testing_utilities::TestInnerProductSpace(
-      MultivectorInnerProduct<Length, Length, World, 1>,
+      TransparentInnerProduct(),
       Vector<Length, World>(null_displacement_),
       Vector<Length, World>(u_),
       Vector<Length, World>(v_),
@@ -129,7 +139,7 @@ TEST_F(GrassmannTest, VectorSpaces) {
       Vector<Length, World>(a_),
       0.0, 1.0, Sqrt(163), -Sqrt(2), 0, 18);
   testing_utilities::TestInnerProductSpace(
-      MultivectorInnerProduct<Length, Length, World, 2>,
+      TransparentInnerProduct(),
       Bivector<Length, World>(null_displacement_),
       Bivector<Length, World>(u_),
       Bivector<Length, World>(v_),
@@ -137,7 +147,7 @@ TEST_F(GrassmannTest, VectorSpaces) {
       Bivector<Length, World>(a_),
       0.0, 1.0, Sqrt(163), -Sqrt(2), 0, 18);
   testing_utilities::TestInnerProductSpace(
-      MultivectorInnerProduct<Length, Length, World, 3>,
+      TransparentInnerProduct(),
       Trivector<Length, World>(null_displacement_.x),
       Trivector<Length, World>(u_.y),
       Trivector<Length, World>(v_.z),
@@ -145,7 +155,7 @@ TEST_F(GrassmannTest, VectorSpaces) {
       Trivector<Length, World>(a_.y),
       0.0, 1.0, Sqrt(163), -Sqrt(2), 0, 1);
   testing_utilities::TestInnerProductSpace(
-      MultivectorInnerProduct<double, double, World, 1>,
+      TransparentInnerProduct(),
       Vector<double, World>(null_displacement_ / Metre),
       Vector<double, World>(u_ / Metre),
       Vector<double, World>(v_ / Metre),
@@ -153,7 +163,7 @@ TEST_F(GrassmannTest, VectorSpaces) {
       Vector<double, World>(a_ / Metre),
       0.0, 1.0, Sqrt(163), -Sqrt(2), 0, 18);
   testing_utilities::TestInnerProductSpace(
-      MultivectorInnerProduct<double, double, World, 2>,
+      TransparentInnerProduct(),
       Bivector<double, World>(null_displacement_ / Metre),
       Bivector<double, World>(u_ / Metre),
       Bivector<double, World>(v_ / Metre),
@@ -161,7 +171,7 @@ TEST_F(GrassmannTest, VectorSpaces) {
       Bivector<double, World>(a_ / Metre),
       0.0, 1.0, Sqrt(163), -Sqrt(2), 0, 18);
   testing_utilities::TestInnerProductSpace(
-      MultivectorInnerProduct<double, double, World, 3>,
+      TransparentInnerProduct(),
       Trivector<double, World>(null_displacement_.x / Metre),
       Trivector<double, World>(u_.y / Metre),
       Trivector<double, World>(v_.z / Metre),
@@ -172,7 +182,7 @@ TEST_F(GrassmannTest, VectorSpaces) {
 
 TEST_F(GrassmannTest, GrassmannAlgebra) {
   testing_utilities::TestAlternatingBilinearMap(
-      Multivectorwedge<double, double, World, 1, 1>,
+      TransparentWedge(),
       Vector<double, World>(u_ / Metre),
       Vector<double, World>(v_ / Metre),
       Vector<double, World>(w_ / Metre),
@@ -180,7 +190,7 @@ TEST_F(GrassmannTest, GrassmannAlgebra) {
       6.0 * 9.0,
       0, 1);
   testing_utilities::TestBilinearMap(
-      Multivectorwedge<Length, Speed, World, 1, 2>,
+      TransparentWedge(),
       Vector<Length, World>(u_),
       Vector<Length, World>(v_),
       Bivector<Speed, World>(w_ / Second),
@@ -188,7 +198,7 @@ TEST_F(GrassmannTest, GrassmannAlgebra) {
       6.0 * 9.0,
       0, 1);
   testing_utilities::TestBilinearMap(
-      Multivectorwedge<Length, Speed, World, 2, 1>,
+      TransparentWedge(),
       Bivector<Length, World>(u_),
       Bivector<Length, World>(v_),
       Vector<Speed, World>(w_ / Second),
