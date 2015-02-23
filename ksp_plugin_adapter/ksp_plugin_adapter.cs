@@ -8,7 +8,6 @@ namespace ksp_plugin_adapter {
 
 [KSPScenario(createOptions: ScenarioCreationOptions.AddToAllGames,
              tgtScenes: new GameScenes[]{GameScenes.SPACECENTER,
-                                         GameScenes.EDITOR,
                                          GameScenes.FLIGHT,
                                          GameScenes.TRACKSTATION})]
 public partial class PrincipiaPluginAdapter : ScenarioModule {
