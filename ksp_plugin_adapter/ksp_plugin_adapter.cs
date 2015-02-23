@@ -296,7 +296,6 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
     if (PluginRunning()) {
       double universal_time = Planetarium.GetUniversalTime();
       double plugin_time = current_time(plugin_);
-      Log.Error("{" + DateTime.Now.Ticks + "," + universal_time + "," + plugin_time + "}");
       if (plugin_time > universal_time) {
         Log.Fatal("Closed Timelike Curve");
       } else if (plugin_time == universal_time) {
