@@ -10,7 +10,7 @@ The following will create and push a tag for the current state of mockingbirdnes
 $mathematician = "<Mathematician>"
 git fetch la-vache
 git checkout la-vache/master
-git tag ((get-date).ToString("yyyyMMddhh-") + $mathematician) -m $mathematician
+git tag ((get-date).ToString("yyyyMMddHH-") + $mathematician) -m $mathematician
 git push la-vache --tags
 ```
 After this is done, rebuild the solution for Release, and zip the contents of the
