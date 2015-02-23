@@ -1,6 +1,8 @@
-﻿#include <functional>
-
+﻿
 #include "geometry/r3_element.hpp"
+
+#include <functional>
+
 #include "glog/logging.h"
 #include "gtest/gtest.h"
 #include "quantities/astronomy.hpp"
