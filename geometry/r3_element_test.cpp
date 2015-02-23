@@ -1,4 +1,8 @@
-﻿#include "geometry/r3_element.hpp"
+﻿
+#include "geometry/r3_element.hpp"
+
+#include <functional>
+
 #include "glog/logging.h"
 #include "gtest/gtest.h"
 #include "quantities/astronomy.hpp"
@@ -7,7 +11,6 @@
 #include "quantities/named_quantities.hpp"
 #include "quantities/uk.hpp"
 #include "testing_utilities/algebra.hpp"
-#include "testing_utilities/explicit_operators.hpp"
 
 namespace principia {
 
@@ -25,7 +28,6 @@ using si::Metre;
 using si::Minute;
 using si::Second;
 using testing_utilities::AlmostEquals;
-using testing_utilities::Times;
 using uk::Furlong;
 using uk::Mile;
 using uk::Rod;
@@ -76,10 +78,9 @@ TEST_F(R3ElementTest, Dumb3Vector) {
 
 TEST_F(R3ElementTest, MixedProduct) {
   testing_utilities::TestBilinearMap(
-      Times<R3Element<Length>, Time, R3Element<Speed>>,
-      1 * Second, 1 * JulianYear, u_, v_, 42.0, 0, 1);
+      std::multiplies<>(), 1 * Second, 1 * JulianYear, u_, v_, 42.0, 0, 1);
   testing_utilities::TestBilinearMap(
-      Times<R3Element<Length>, R3Element<Speed>, Time>, w_, a_,
+      std::multiplies<>(), w_, a_,
       -1 * Day, 1 * Parsec / SpeedOfLight, -π, 0, 1);
   Time const t = -3 * Second;
   EXPECT_EQ(t * u_, u_ * t);

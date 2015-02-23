@@ -32,12 +32,6 @@
     <ClInclude Include="algebra_body.hpp">
       <Filter>Source Files</Filter>
     </ClInclude>
-    <ClInclude Include="explicit_operators.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="explicit_operators_body.hpp">
-      <Filter>Source Files</Filter>
-    </ClInclude>
     <ClInclude Include="statistics.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>

@@ -63,9 +63,9 @@ void TestAdditiveGroup(T const& zero, T const& a, T const& b, T const& c,
 }
 
 
-template<typename T>
+template<typename T, typename Operation, typename Inverse>
 void TestGroup(T const& identity, T const& a, T const& b, T const& c,
-               T (*operation)(T const&, T const&), T (*inverse)(T const&),
+               Operation operation, Inverse inverse,
                std::int64_t const min_ulps,
                std::int64_t const max_ulps) {
   EXPECT_EQ(operation(a, identity), a);

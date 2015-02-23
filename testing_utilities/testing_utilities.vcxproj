@@ -21,8 +21,6 @@
     <ClInclude Include="almost_equals_body.hpp" />
     <ClInclude Include="componentwise.hpp" />
     <ClInclude Include="componentwise_body.hpp" />
-    <ClInclude Include="explicit_operators.hpp" />
-    <ClInclude Include="explicit_operators_body.hpp" />
     <ClInclude Include="numerical_analysis.hpp" />
     <ClInclude Include="numerical_analysis_body.hpp" />
     <ClInclude Include="numerics.hpp" />

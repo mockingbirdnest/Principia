@@ -1,4 +1,5 @@
 ﻿
+#include <functional>
 #include <string>
 
 #include "glog/logging.h"
@@ -12,7 +13,6 @@
 #include "quantities/uk.hpp"
 #include "testing_utilities/algebra.hpp"
 #include "testing_utilities/almost_equals.hpp"
-#include "testing_utilities/explicit_operators.hpp"
 #include "testing_utilities/numerics.hpp"
 #include "testing_utilities/vanishes_before.hpp"
 
@@ -48,7 +48,6 @@ using si::Second;
 using si::Steradian;
 using testing_utilities::AlmostEquals;
 using testing_utilities::RelativeError;
-using testing_utilities::Times;
 using testing_utilities::VanishesBefore;
 using uk::Foot;
 using uk::Furlong;
@@ -82,7 +81,7 @@ TEST_F(QuantitiesTest, DimensionlfulOperations) {
       -340.29 * Metre / Second, 0.0, 1.0, -2 * π, 1729.0, 0, 2);
   // Dimensionful multiplication is a tensor product, see [Tao 2012].
   testing_utilities::TestBilinearMap(
-      Times<Product<Mass, Speed>, Mass, Speed>, SolarMass,
+      std::multiplies<>(), SolarMass,
       ElectronMass, SpeedOfLight, 1 * Furlong / JulianYear, -e, 0, 2);
 }
 
