@@ -119,7 +119,7 @@ void Point<Vector>::BarycentreCalculator<Weight>::Add(Point const& point,
 
 template<typename Vector>
 template<typename Weight>
-Point<Vector> const Point<Vector>::BarycentreCalculator<Weight>::Get() const {
+Point<Vector> Point<Vector>::BarycentreCalculator<Weight>::Get() const {
   CHECK(!empty_) << "Empty BarycentreCalculator";
   return Point<Vector>(weighted_sum_ / weight_);
 }
