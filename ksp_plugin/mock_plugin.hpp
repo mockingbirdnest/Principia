@@ -59,11 +59,10 @@ class MockPlugin : public Plugin {
                          Position<World> const& sun_world_position));
 
   MOCK_METHOD2(RenderedPrediction,
-                     RenderedTrajectory<World>(
-                         not_null<Transforms<
-                             Barycentric, Rendering, Barycentric>*> const
-                             transforms,
-                         Position<World> const& sun_world_position));
+               RenderedTrajectory<World>(
+                   not_null<Transforms<
+                       Barycentric, Rendering, Barycentric>*> const transforms,
+                   Position<World> const& sun_world_position));
 
   MOCK_METHOD1(set_predicted_vessel, void(GUID const& vessel_guid));
 
