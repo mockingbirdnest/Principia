@@ -173,6 +173,7 @@ void Plugin::AdvanceTime(Instant const& t, Angle const& planetarium_rotation) {
           << "to   : " << t;
   current_time_ = t;
   planetarium_rotation_ = planetarium_rotation;
+  UpdatePredictions();
 }
 
 RelativeDegreesOfFreedom<AliceSun> Plugin::VesselFromParent(
@@ -215,89 +216,124 @@ RenderedTrajectory<World> Plugin::RenderedVesselTrajectory(
     not_null<Transforms<Barycentric, Rendering, Barycentric>*> const transforms,
     Position<World> const& sun_world_position) const {
   CHECK(!initializing_);
-  auto const to_world =
-      AffineMap<Barycentric, World, Length, Rotation>(
-          sun_->prolongation().last().degrees_of_freedom().position(),
-          sun_world_position,
-          Rotation<WorldSun, World>::Identity() * PlanetariumRotation());
   not_null<std::unique_ptr<Vessel>> const& vessel =
       find_vessel_by_guid_or_die(vessel_guid);
   CHECK(vessel->is_initialized());
   VLOG(1) << "Rendering a trajectory for the vessel with GUID " << vessel_guid;
-  RenderedTrajectory<World> result;
   if (!vessel->is_synchronized()) {
     // TODO(egg): We render neither unsynchronized histories nor prolongations
     // at the moment.
     VLOG(1) << "Returning an empty trajectory";
-    return result;
+    return RenderedTrajectory<World>();
   }
 
   // Compute the apparent trajectory using the given |transforms|.
   Trajectory<Barycentric> const& actual_trajectory = vessel->history();
+  return RenderTrajectory(actual_trajectory,
+                          transforms->first(actual_trajectory),
+                          transforms,
+                          sun_world_position);
+}
 
-  // First build the trajectory resulting from the first transform.
-  Trajectory<Rendering> intermediate_trajectory(actual_trajectory.body<Body>());
-  for (auto actual_it = transforms->first(actual_trajectory);
-       !actual_it.at_end();
-       ++actual_it) {
-    intermediate_trajectory.Append(actual_it.time(),
-                                   actual_it.degrees_of_freedom());
+RenderedTrajectory<World> Plugin::RenderedPrediction(
+    not_null<
+        Transforms<Barycentric, Rendering, Barycentric>*> const transforms,
+    Position<World> const& sun_world_position) {
+  CHECK(!initializing_);
+  if (!has_predictions()) {
+    return RenderedTrajectory<World>();
   }
-
-  // Then build the apparent trajectory using the second transform.
-  auto apparent_trajectory = make_not_null_unique<Trajectory<Barycentric>>(
-                                 actual_trajectory.body<Body>());
-  for (auto intermediate_it = transforms->second(intermediate_trajectory);
-       !intermediate_it.at_end();
-       ++intermediate_it) {
-    apparent_trajectory->Append(intermediate_it.time(),
-                                intermediate_it.degrees_of_freedom());
-  }
-
-  // Finally use the apparent trajectory to build the result.
-  auto initial_it = apparent_trajectory->first();
-  if (!initial_it.at_end()) {
-    for (auto final_it = initial_it;
-         ++final_it, !final_it.at_end();
-         initial_it = final_it) {
-      result.emplace_back(to_world(initial_it.degrees_of_freedom().position()),
-                          to_world(final_it.degrees_of_freedom().position()));
-    }
-  }
-  VLOG(1) << "Returning a " << result.size() << "-segment trajectory";
+  Trajectory<Barycentric> const& actual_trajectory = *prediction_;
+  transforms_are_operating_on_predictions_ = true;
+  RenderedTrajectory<World> result =
+      RenderTrajectory(actual_trajectory,
+                       transforms->first_on_or_after(
+                           actual_trajectory,
+                           *actual_trajectory.fork_time()),
+                       transforms,
+                       sun_world_position);
+  transforms_are_operating_on_predictions_ = false;
   return result;
+}
+
+void Plugin::set_predicted_vessel(GUID const& vessel_guid) {
+  clear_predicted_vessel();
+  predicted_vessel_ = find_vessel_by_guid_or_die(vessel_guid).get();
+}
+
+void Plugin::clear_predicted_vessel() {
+  clear_predictions();
+  predicted_vessel_ = nullptr;
+}
+
+void Plugin::set_prediction_length(Time const& t) {
+  prediction_length_ = t;
+}
+
+void Plugin::set_prediction_step(Time const& t) {
+  prediction_step_ = t;
 }
 
 not_null<std::unique_ptr<Transforms<Barycentric, Rendering, Barycentric>>>
 Plugin::NewBodyCentredNonRotatingTransforms(
     Index const reference_body_index) const {
-  not_null<Celestial const*> reference_body =
+  // TODO(egg): this should be const, use a custom comparator in the map.
+  not_null<Celestial*> reference_body =
       FindOrDie(celestials_, reference_body_index).get();
   Transforms<Barycentric, Rendering, Barycentric>::
-      LazyTrajectory<Barycentric> const reference_body_prolongation =
+      LazyTrajectory<Barycentric> const
+          reference_body_prolongation_or_prediction =
+              [this, reference_body]() -> Trajectory<Barycentric> const& {
+                  if (transforms_are_operating_on_predictions_) {
+                  return *FindOrDie(system_predictions_, reference_body);
+                } else {
+                  return reference_body->Celestial::prolongation();
+                }
+              };
+  Transforms<Barycentric, Rendering, Barycentric>::
+      LazyTrajectory<Barycentric> reference_body_prolongation =
           std::bind(&Celestial::prolongation, reference_body);
   return Transforms<Barycentric, Rendering, Barycentric>::
-             BodyCentredNonRotating(reference_body_prolongation,
+             BodyCentredNonRotating(reference_body_prolongation_or_prediction,
                                     reference_body_prolongation);
 }
 
 not_null<std::unique_ptr<Transforms<Barycentric, Rendering, Barycentric>>>
 Plugin::NewBarycentricRotatingTransforms(Index const primary_index,
                                          Index const secondary_index) const {
-  not_null<Celestial const*> primary =
+  // TODO(egg): these should be const, use a custom comparator in the map.
+  not_null<Celestial*> primary =
       FindOrDie(celestials_, primary_index).get();
-  not_null<Celestial const*> secondary =
+  not_null<Celestial*> secondary =
       FindOrDie(celestials_, secondary_index).get();
+  Transforms<Barycentric, Rendering, Barycentric>::
+      LazyTrajectory<Barycentric> const primary_prolongation_or_prediction =
+          [this, primary]() -> Trajectory<Barycentric> const& {
+            if (transforms_are_operating_on_predictions_) {
+              return *FindOrDie(system_predictions_, primary);
+            } else {
+              return primary->Celestial::prolongation();
+            }
+          };
   Transforms<Barycentric, Rendering, Barycentric>::
       LazyTrajectory<Barycentric> const primary_prolongation =
           std::bind(&Celestial::prolongation, primary);
   Transforms<Barycentric, Rendering, Barycentric>::
+      LazyTrajectory<Barycentric> const secondary_prolongation_or_prediction =
+          [this, secondary]() -> Trajectory<Barycentric> const& {
+            if (transforms_are_operating_on_predictions_) {
+              return *FindOrDie(system_predictions_, secondary);
+            } else {
+              return secondary->Celestial::prolongation();
+            }
+          };
+  Transforms<Barycentric, Rendering, Barycentric>::
       LazyTrajectory<Barycentric> const secondary_prolongation =
           std::bind(&Celestial::prolongation, secondary);
   return Transforms<Barycentric, Rendering, Barycentric>::BarycentricRotating(
+             primary_prolongation_or_prediction,
              primary_prolongation,
-             primary_prolongation,
-             secondary_prolongation,
+             secondary_prolongation_or_prediction,
              secondary_prolongation);
 }
 
@@ -476,6 +512,34 @@ bool Plugin::has_unsynchronized_vessels() const {
 
 bool Plugin::is_dirty(not_null<Vessel*> const vessel) const {
   return dirty_vessels_.count(vessel) > 0;
+}
+
+bool Plugin::has_predicted_vessel() const {
+  return predicted_vessel_ != nullptr;
+}
+
+bool Plugin::has_predictions() const {
+  if (system_predictions_.empty()) {
+    CHECK(prediction_ == nullptr);
+    return false;
+  } else {
+    CHECK_NOTNULL(prediction_);
+    CHECK(has_predicted_vessel());
+    return true;
+  }
+}
+
+void Plugin::clear_predictions() {
+  if (has_predictions()) {
+    predicted_vessel_->mutable_prolongation()->DeleteFork(&prediction_);
+    for (auto it = system_predictions_.begin();
+         it != system_predictions_.end();
+         it = system_predictions_.erase(it)) {
+      not_null<Celestial*> const celestial = it->first;
+      Trajectory<Barycentric>* trajectory = it->second;
+      celestial->mutable_prolongation()->DeleteFork(&trajectory);
+    }
+  }
 }
 
 Instant const& Plugin::HistoryTime() const {
@@ -692,6 +756,79 @@ void Plugin::EvolveProlongationsAndBubble(Instant const& t) {
           centre_of_mass + from_centre_of_mass);
     }
   }
+}
+
+void Plugin::UpdatePredictions() {
+  clear_predictions();
+  if (has_predicted_vessel()) {
+    NBodySystem<Barycentric>::Trajectories predictions;
+    // Room for all the celestials and for the vessel.
+    predictions.reserve(celestials_.size() + 1);
+    for (auto const& index_celestial : celestials_) {
+      auto const& celestial = index_celestial.second;
+      auto const inserted =
+          system_predictions_.emplace(
+              celestial.get(),
+              celestial->mutable_prolongation()->NewFork(
+                  celestial->prolongation().last().time()));
+      CHECK(inserted.second);
+      not_null<Trajectory<Barycentric>*> const trajectory =
+          inserted.first->second;
+      predictions.emplace_back(trajectory);
+    }
+    prediction_ = predicted_vessel_->mutable_prolongation()->NewFork(
+                      predicted_vessel_->prolongation().last().time());
+    predictions.emplace_back(prediction_);
+    n_body_system_->Integrate(
+        prolongation_integrator_,
+        current_time_ + prediction_length_,
+        prediction_step_,
+        1,  // sampling_period
+        false,  // tmax_is_exact
+        predictions);
+  }
+}
+
+RenderedTrajectory<World> Plugin::RenderTrajectory(
+    Trajectory<Barycentric> const& actual_trajectory,
+    Trajectory<Barycentric>::TransformingIterator<Rendering> const& actual_it,
+    not_null<Transforms<Barycentric, Rendering, Barycentric>*> const transforms,
+    Position<World> const& sun_world_position) const {
+  RenderedTrajectory<World> result;
+  auto const to_world =
+      AffineMap<Barycentric, World, Length, Rotation>(
+          sun_->prolongation().last().degrees_of_freedom().position(),
+          sun_world_position,
+          Rotation<WorldSun, World>::Identity() * PlanetariumRotation());
+
+  // First build the trajectory resulting from the first transform.
+  Trajectory<Rendering> intermediate_trajectory(actual_trajectory.body<Body>());
+  for (auto it = actual_it; !it.at_end(); ++it) {
+    intermediate_trajectory.Append(it.time(), it.degrees_of_freedom());
+  }
+
+  // Then build the apparent trajectory using the second transform.
+  auto apparent_trajectory = make_not_null_unique<Trajectory<Barycentric>>(
+                                 actual_trajectory.body<Body>());
+  for (auto intermediate_it = transforms->second(intermediate_trajectory);
+       !intermediate_it.at_end();
+       ++intermediate_it) {
+    apparent_trajectory->Append(intermediate_it.time(),
+                                intermediate_it.degrees_of_freedom());
+  }
+
+  // Finally use the apparent trajectory to build the result.
+  auto initial_it = apparent_trajectory->first();
+  if (!initial_it.at_end()) {
+    for (auto final_it = initial_it;
+         ++final_it, !final_it.at_end();
+         initial_it = final_it) {
+      result.emplace_back(to_world(initial_it.degrees_of_freedom().position()),
+                          to_world(final_it.degrees_of_freedom().position()));
+    }
+  }
+  VLOG(1) << "Returning a " << result.size() << "-segment trajectory";
+  return result;
 }
 
 }  // namespace ksp_plugin

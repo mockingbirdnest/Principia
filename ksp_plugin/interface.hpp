@@ -208,6 +208,12 @@ LineAndIterator* CDECL principia__RenderedVesselTrajectory(
     Transforms<Barycentric, Rendering, Barycentric>* const transforms,
     XYZ const sun_world_position);
 
+extern "C" DLLEXPORT
+LineAndIterator* CDECL principia__RenderedPrediction(
+    Plugin* const plugin,
+    Transforms<Barycentric, Rendering, Barycentric>* const transforms,
+    XYZ const sun_world_position);
+
 // Returns |line_and_iterator->rendered_trajectory.size()|.
 // |line_and_iterator| must not be null.  No transfer of ownership.
 extern "C" DLLEXPORT
@@ -234,6 +240,21 @@ bool CDECL principia__AtEnd(LineAndIterator* const line_and_iterator);
 extern "C" DLLEXPORT
 void CDECL principia__DeleteLineAndIterator(
     LineAndIterator** const line_and_iterator);
+
+extern "C" DLLEXPORT
+void CDECL principia__set_predicted_vessel(Plugin* const plugin,
+                                           char const* vessel_guid);
+
+extern "C" DLLEXPORT
+void CDECL principia__clear_predicted_vessel(Plugin* const plugin);
+
+extern "C" DLLEXPORT
+void CDECL principia__set_prediction_length(Plugin* const plugin,
+                                            double const t);
+
+extern "C" DLLEXPORT
+void CDECL principia__set_prediction_step(Plugin* const plugin,
+                                          double const t);
 
 extern "C" DLLEXPORT
 void CDECL principia__AddVesselToNextPhysicsBubble(Plugin* const plugin,

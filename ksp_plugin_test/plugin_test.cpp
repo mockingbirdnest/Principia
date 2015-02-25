@@ -26,6 +26,8 @@ using geometry::Permutation;
 using physics::MockNBodySystem;
 using quantities::Abs;
 using quantities::ArcTan;
+using quantities::Cos;
+using quantities::Sin;
 using quantities::Sqrt;
 using si::Day;
 using si::Hour;
@@ -1073,6 +1075,51 @@ TEST_F(PluginTest, BarycentricRotatingRenderingIntegration) {
                  rendered_trajectory[i + 1].end).Norm()) / 1.5)) << i;
   }
 #endif
+}
+
+// Checks that we correctly predict a full circular orbit around a massive body
+// with unit gravitational parameter at unit distance, in 8 steps.  Since
+// predictions are only computed on |AdvanceTime()|, we advance time by a small
+// amount.
+TEST_F(PluginTest, Prediction) {
+  GUID const satellite = "satellite";
+  Index const celestial = 0;
+  int const n = 8;
+  Plugin plugin(Instant(),
+                celestial,
+                SIUnit<GravitationalParameter>(),
+                0 * Radian);
+  plugin.EndInitialization();
+  EXPECT_TRUE(plugin.InsertOrKeepVessel(satellite, celestial));
+  auto transforms = plugin.NewBodyCentredNonRotatingTransforms(celestial);
+  plugin.SetVesselStateOffset(
+      satellite,
+      {Displacement<AliceSun>({1 * Metre, 0 * Metre, 0 * Metre}),
+       Velocity<AliceSun>(
+           {0 * Metre / Second, 1 * Metre / Second, 0 * Metre / Second})});
+  plugin.set_predicted_vessel(satellite);
+  plugin.set_prediction_length(2 * π * Second);
+  plugin.set_prediction_step(2 * π / n * Second);
+  plugin.AdvanceTime(Instant(1e-10 * Second), 0 * Radian);
+  RenderedTrajectory<World> rendered_prediction =
+      plugin.RenderedPrediction(transforms.get(), World::origin);
+  EXPECT_EQ(n, rendered_prediction.size());
+  Angle const α = 2 * π * Radian / n;
+  for (int k = 0; k < n; ++k) {
+    EXPECT_THAT(
+        RelativeError(rendered_prediction[k].begin - World::origin,
+                      Displacement<World>({Cos(k * α) * Metre,
+                                           0 * Metre,
+                                           Sin(k * α) * Metre})),
+        Lt(0.011));
+    EXPECT_THAT(
+        RelativeError(rendered_prediction[k].end - World::origin,
+                      Displacement<World>({Cos((k + 1) * α) * Metre,
+                                           0 * Metre,
+                                           Sin((k + 1) * α) * Metre})),
+        Lt(0.011));
+  }
+  plugin.clear_predicted_vessel();
 }
 
 }  // namespace ksp_plugin

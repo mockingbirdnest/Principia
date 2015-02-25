@@ -275,6 +275,14 @@ Transforms<FromFrame, ThroughFrame, ToFrame>::first(
 }
 
 template<typename FromFrame, typename ThroughFrame, typename ToFrame>
+typename Trajectory<FromFrame>::template TransformingIterator<ThroughFrame>
+Transforms<FromFrame, ThroughFrame, ToFrame>::first_on_or_after(
+    Trajectory<FromFrame> const& from_trajectory,
+    Instant const& time) {
+  return from_trajectory.on_or_after_with_transform(time, first_);
+}
+
+template<typename FromFrame, typename ThroughFrame, typename ToFrame>
 typename Trajectory<ThroughFrame>::template TransformingIterator<ToFrame>
 Transforms<FromFrame, ThroughFrame, ToFrame>::second(
     Trajectory<ThroughFrame> const& through_trajectory) {

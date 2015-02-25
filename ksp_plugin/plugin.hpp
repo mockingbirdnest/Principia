@@ -38,6 +38,7 @@ using physics::Trajectory;
 using physics::Transforms;
 using quantities::Angle;
 using si::Second;
+using si::Hour;
 
 // The GUID of a vessel, obtained by |v.id.ToString()| in C#. We use this as a
 // key in an |std::map|.
@@ -175,15 +176,38 @@ class Plugin {
       Index const celestial_index) const;
 
   // Returns a polygon in |World| space depicting the trajectory of the vessel
-  // with the given |GUID| in |frame|.  |sun_world_position| is the current
-  // position of the sun in |World| space as returned by
-  // |Planetarium.fetch.Sun.position|.  It is used to define the relation
-  // between |WorldSun| and |World|.  No transfer of ownership.
+  // with the given |GUID| in the frame defined by |transforms|.
+  // |sun_world_position| is the current position of the sun in |World| space as
+  // returned by |Planetarium.fetch.Sun.position|.  It is used to define the
+  // relation between |WorldSun| and |World|.  No transfer of ownership.
   virtual RenderedTrajectory<World> RenderedVesselTrajectory(
       GUID const& vessel_guid,
       not_null<
           Transforms<Barycentric, Rendering, Barycentric>*> const transforms,
       Position<World> const& sun_world_position) const;
+
+  // Returns a polygon in |World| space depicting the trajectory of
+  // |predicted_vessel_| from |current_time()| to
+  // |current_time() + prediction_length_| in the frame defined by |transforms|.
+  // |sun_world_position| is the current  position of the sun in |World| space
+  // as returned by |Planetarium.fetch.Sun.position|.  It is used to define the
+  // relation between |WorldSun| and |World|.  No transfer of ownership.
+  // |predicted_vessel_| must have been set, and |AdvanceTime()| must have been
+  // called after |predicted_vessel_| was set.  Not const because of the stupid
+  // global variable |transforms_are_operating_on_predictions_|.
+  virtual RenderedTrajectory<World> RenderedPrediction(
+      not_null<
+          Transforms<Barycentric, Rendering, Barycentric>*> const transforms,
+      Position<World> const& sun_world_position);
+
+  virtual void set_predicted_vessel(GUID const& vessel_guid);
+  // Calls |clear_predictions()| and nulls |predicted_vessel_|.
+  virtual void clear_predicted_vessel();
+
+  virtual void set_prediction_length(Time const& t);
+
+  // The step used when computing the prediction.
+  virtual void set_prediction_step(Time const& t);
 
   virtual not_null<std::unique_ptr<
       Transforms<Barycentric, Rendering, Barycentric>>>
@@ -256,6 +280,15 @@ class Plugin {
   bool has_unsynchronized_vessels() const;
   // Returns |dirty_vessels_.count(vessel) > 0|.
   bool is_dirty(not_null<Vessel*> const vessel) const;
+  // Returns |predicted_vessel_ != nullptr|.
+  bool has_predicted_vessel() const;
+  // Returns |!system_predictions_.empty()| and checks that
+  //   |system_predictions_.empty()| is equivalent to |prediction_ == null|;
+  //   |has_predictions()| implies |has_predicted_vessel()|.
+  bool has_predictions() const;
+  // If |has_predictions()|, deletes the trajectories in |system_predictions_|
+  // and clears it, deletes |prediction_|.
+  void clear_predictions();
 
   // The common last time of the histories of synchronized vessels and
   // celestials.
@@ -297,9 +330,24 @@ class Plugin {
   // All vessels must satisfy |is_synchronized()|.
   void ResetProlongations();
   // Evolves the prolongations of all celestials and vessels up to exactly
-  // instant |t|.  Also evolves the trajectory/ of the |current_physics_bubble_|
+  // instant |t|.  Also evolves the trajectory of the |current_physics_bubble_|
   // if there is one.
   void EvolveProlongationsAndBubble(Instant const& t);
+  // Calls |clear_predictions()|.  If |has_predicted_vessel()|, computes
+  // |system_predictions_| and |prediction_| for the |predicted_vessel_|
+  // according to |prediction_length_| and |prediction_step_|.
+  void UpdatePredictions();
+
+  // A utility for |RenderedPrediction| and |RenderedVesselTrajectory|,
+  // returns a |RenderedTrajectory| as computed by the given |transforms|
+  // from |actual_trajectory|, starting at |actual_it|.  |actual_it| should be
+  // an iterator to |actual_trajectory|.
+  RenderedTrajectory<World> RenderTrajectory(
+      Trajectory<Barycentric> const& actual_trajectory,
+      Trajectory<Barycentric>::TransformingIterator<Rendering> const& actual_it,
+      not_null<
+          Transforms<Barycentric, Rendering, Barycentric>*> const transforms,
+      Position<World> const& sun_world_position) const;
 
   // TODO(egg): Constant time step for now.
   Time const Δt_ = 10 * Second;
@@ -319,6 +367,16 @@ class Plugin {
 
   // The vessels that will be kept during the next call to |AdvanceTime|.
   std::set<not_null<Vessel const*> const> kept_vessels_;
+
+  // Only one prediction for now, using constant timestep.
+  Vessel* predicted_vessel_;
+  Trajectory<Barycentric>* prediction_;
+  Time prediction_length_ = 1 * Hour;
+  Time prediction_step_ = Δt_;
+  std::map<not_null<Celestial*> const,
+           not_null<Trajectory<Barycentric>*>> system_predictions_;
+  // TODO(phl): This is really ugly.
+  bool transforms_are_operating_on_predictions_ = false;
 
   not_null<std::unique_ptr<PhysicsBubble>> const bubble_;
 

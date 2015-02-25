@@ -274,6 +274,40 @@ LineAndIterator* principia__RenderedVesselTrajectory(
   return result.release();
 }
 
+LineAndIterator* principia__RenderedPrediction(
+    Plugin* const plugin,
+    Transforms<Barycentric, Rendering, Barycentric>* const transforms,
+    XYZ const sun_world_position) {
+  RenderedTrajectory<World> rendered_trajectory =
+      CHECK_NOTNULL(plugin)->RenderedPrediction(
+          transforms,
+          World::origin + Displacement<World>(
+                              ToR3Element(sun_world_position) * Metre));
+  not_null<std::unique_ptr<LineAndIterator>> result =
+      make_not_null_unique<LineAndIterator>(std::move(rendered_trajectory));
+  result->it = result->rendered_trajectory.begin();
+  return result.release();
+}
+
+void principia__set_predicted_vessel(Plugin* const plugin,
+                                     char const* vessel_guid) {
+  CHECK_NOTNULL(plugin)->set_predicted_vessel(vessel_guid);
+}
+
+void principia__clear_predicted_vessel(Plugin* const plugin) {
+  CHECK_NOTNULL(plugin)->clear_predicted_vessel();
+}
+
+void principia__set_prediction_length(Plugin* const plugin,
+                                      double const t) {
+  CHECK_NOTNULL(plugin)->set_prediction_length(t * Second);
+}
+
+void principia__set_prediction_step(Plugin* const plugin,
+                                    double const t) {
+  CHECK_NOTNULL(plugin)->set_prediction_step(t * Second);
+}
+
 int principia__NumberOfSegments(LineAndIterator const* line_and_iterator) {
   return CHECK_NOTNULL(line_and_iterator)->rendered_trajectory.size();
 }
