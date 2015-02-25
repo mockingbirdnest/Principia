@@ -176,18 +176,25 @@ class Plugin {
       Index const celestial_index) const;
 
   // Returns a polygon in |World| space depicting the trajectory of the vessel
-  // with the given |GUID| in |frame|.  |sun_world_position| is the current
-  // position of the sun in |World| space as returned by
-  // |Planetarium.fetch.Sun.position|.  It is used to define the relation
-  // between |WorldSun| and |World|.  No transfer of ownership.
+  // with the given |GUID| in the frame defined by |transforms|.
+  // |sun_world_position| is the current position of the sun in |World| space as
+  // returned by |Planetarium.fetch.Sun.position|.  It is used to define the
+  // relation between |WorldSun| and |World|.  No transfer of ownership.
   virtual RenderedTrajectory<World> RenderedVesselTrajectory(
       GUID const& vessel_guid,
       not_null<
           Transforms<Barycentric, Rendering, Barycentric>*> const transforms,
       Position<World> const& sun_world_position) const;
 
-  // Not const because of the stupid global variable
-  // |transforms_are_operating_on_predictions_|.
+  // Returns a polygon in |World| space depicting the trajectory of
+  // |predicted_vessel_| from |current_time()| to
+  // |current_time() + prediction_length_| in the frame defined by |transforms|.
+  // |sun_world_position| is the current  position of the sun in |World| space
+  // as returned by |Planetarium.fetch.Sun.position|.  It is used to define the
+  // relation between |WorldSun| and |World|.  No transfer of ownership.
+  // |predicted_vessel_| must have been set, and |AdvanceTime()| must have been
+  // called after |predicted_vessel_| was set.  Not const because of the stupid
+  // global variable |transforms_are_operating_on_predictions_|.
   virtual RenderedTrajectory<World> RenderedPrediction(
       not_null<
           Transforms<Barycentric, Rendering, Barycentric>*> const transforms,
@@ -199,6 +206,7 @@ class Plugin {
 
   virtual void set_prediction_length(Time const& t);
 
+  // The step used when computing the prediction.
   virtual void set_prediction_step(Time const& t);
 
   virtual not_null<std::unique_ptr<
@@ -275,8 +283,8 @@ class Plugin {
   // Returns |predicted_vessel_ != nullptr|.
   bool has_predicted_vessel() const;
   // Returns |!system_predictions_.empty()| and checks that
-  // --- |system_predictions_.empty()| is equivalent to |prediction_ == null|;
-  // --- |has_predictions()| implies |has_predicted_vessel()|.
+  //   |system_predictions_.empty()| is equivalent to |prediction_ == null|;
+  //   |has_predictions()| implies |has_predicted_vessel()|.
   bool has_predictions() const;
   // If |has_predictions()|, deletes the trajectories in |system_predictions_|
   // and clears it, deletes |prediction_|.
@@ -325,9 +333,15 @@ class Plugin {
   // instant |t|.  Also evolves the trajectory of the |current_physics_bubble_|
   // if there is one.
   void EvolveProlongationsAndBubble(Instant const& t);
-  // Updates |predictions_|.
+  // Calls |clear_predictions()|.  If |has_predicted_vessel()|, computes
+  // |system_predictions_| and |prediction_| for the |predicted_vessel_|
+  // according to |prediction_length_| and |prediction_step_|.
   void UpdatePredictions();
 
+  // A utility for |RenderedPrediction| and |RenderedVesselTrajectory|,
+  // returns a |RenderedTrajectory| as computed by the given |transforms|
+  // from |actual_trajectory|, starting at |actual_it|.  |actual_it| should be
+  // an iterator to |actual_trajectory|.
   RenderedTrajectory<World> RenderTrajectory(
       Trajectory<Barycentric> const& actual_trajectory,
       Trajectory<Barycentric>::TransformingIterator<Rendering> const& actual_it,
@@ -356,11 +370,11 @@ class Plugin {
 
   // Only one prediction for now, using constant timestep.
   Vessel* predicted_vessel_;
+  Trajectory<Barycentric>* prediction_;
   Time prediction_length_ = 1 * Hour;
   Time prediction_step_ = Δt_;
   std::map<not_null<Celestial*> const,
            not_null<Trajectory<Barycentric>*>> system_predictions_;
-  Trajectory<Barycentric>* prediction_;
   // TODO(phl): This is really ugly.
   bool transforms_are_operating_on_predictions_ = false;
 

@@ -39,8 +39,8 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
 
   private IntPtr plugin_ = IntPtr.Zero;
   // TODO(egg): rendering only one trajectory at the moment.
-  private VectorLine rendered_trajectory_;
   private VectorLine rendered_prediction_;
+  private VectorLine rendered_trajectory_;
   private IntPtr transforms_ = IntPtr.Zero;
   private int first_selected_celestial_ = 0;
   private int second_selected_celestial_ = 0;
@@ -236,9 +236,9 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
   private bool draw_active_vessel_trajectory() {
     Vessel active_vessel = FlightGlobals.ActiveVessel;
     return MapView.MapIsEnabled &&
-            active_vessel != null &&
-            (is_on_rails_in_space(active_vessel) ||
-            is_in_inertial_physics_bubble_in_space(active_vessel));
+           active_vessel != null &&
+           (is_on_rails_in_space(active_vessel) ||
+           is_in_inertial_physics_bubble_in_space(active_vessel));
   }
 
   #region ScenarioModule lifecycle
@@ -354,7 +354,7 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
           active_vessel.DetachPatchedConicsSolver();
           active_vessel.patchedConicRenderer = null;
         }
-       if (rendered_trajectory_ == null || rendered_prediction_ == null) {
+        if (rendered_trajectory_ == null || rendered_prediction_ == null) {
           ResetRenderedTrajectory();
         }
         IntPtr trajectory_iterator = IntPtr.Zero;
@@ -391,7 +391,7 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
     try {
       LineSegment segment;
       int index_in_line_points = kLinePoints -
-          NumberOfSegments(trajectory_iterator) * 2;
+          2 * NumberOfSegments(trajectory_iterator);
       while (index_in_line_points < 0) {
         FetchAndIncrement(trajectory_iterator);
         index_in_line_points += 2;

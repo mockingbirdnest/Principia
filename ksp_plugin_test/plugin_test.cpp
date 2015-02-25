@@ -1077,6 +1077,10 @@ TEST_F(PluginTest, BarycentricRotatingRenderingIntegration) {
 #endif
 }
 
+// Checks that we correctly predict a full circular orbit around a massive body
+// with unit gravitational parameter at unit distance, in 8 steps.  Since
+// predictions are only computed on |AdvanceTime()|, we advance time by a small
+// amount.
 TEST_F(PluginTest, Prediction) {
   GUID const satellite = "satellite";
   Index const celestial = 0;

@@ -333,10 +333,9 @@ TEST_F(InterfaceTest, RenderedPrediction) {
   // Construct a test rendered trajectory.
   RenderedTrajectory<World> rendered_trajectory;
   Position<World> position =
-      World::origin + Displacement<World>(
-                          {1 * SIUnit<Length>(),
-                           2 * SIUnit<Length>(),
-                           3 * SIUnit<Length>()});
+      World::origin + Displacement<World>({1 * SIUnit<Length>(),
+                                           2 * SIUnit<Length>(),
+                                           3 * SIUnit<Length>()});
   for (int i = 0; i < kTrajectorySize; ++i) {
     Position<World> next_position =
         position + Displacement<World>({10 * SIUnit<Length>(),

@@ -282,14 +282,14 @@ Plugin::NewBodyCentredNonRotatingTransforms(
       FindOrDie(celestials_, reference_body_index).get();
   Transforms<Barycentric, Rendering, Barycentric>::
       LazyTrajectory<Barycentric> const
-  reference_body_prolongation_or_prediction =
-      [this, reference_body]() -> Trajectory<Barycentric> const& {
-        if (transforms_are_operating_on_predictions_) {
-          return *FindOrDie(system_predictions_, reference_body);
-        } else {
-          return reference_body->Celestial::prolongation();
-        }
-      };
+          reference_body_prolongation_or_prediction =
+              [this, reference_body]() -> Trajectory<Barycentric> const& {
+                  if (transforms_are_operating_on_predictions_) {
+                  return *FindOrDie(system_predictions_, reference_body);
+                } else {
+                  return reference_body->Celestial::prolongation();
+                }
+              };
   Transforms<Barycentric, Rendering, Barycentric>::
       LazyTrajectory<Barycentric> reference_body_prolongation =
           std::bind(&Celestial::prolongation, reference_body);
@@ -762,6 +762,7 @@ void Plugin::UpdatePredictions() {
   clear_predictions();
   if (has_predicted_vessel()) {
     NBodySystem<Barycentric>::Trajectories predictions;
+    // Room for all the celestials and for the vessel.
     predictions.reserve(celestials_.size() + 1);
     for (auto const& index_celestial : celestials_) {
       auto const& celestial = index_celestial.second;
@@ -799,6 +800,8 @@ RenderedTrajectory<World> Plugin::RenderTrajectory(
           sun_->prolongation().last().degrees_of_freedom().position(),
           sun_world_position,
           Rotation<WorldSun, World>::Identity() * PlanetariumRotation());
+
+  // First build the trajectory resulting from the first transform.
   Trajectory<Rendering> intermediate_trajectory(actual_trajectory.body<Body>());
   for (auto it = actual_it; !it.at_end(); ++it) {
     intermediate_trajectory.Append(it.time(), it.degrees_of_freedom());
