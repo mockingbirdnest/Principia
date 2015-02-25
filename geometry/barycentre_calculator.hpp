@@ -13,7 +13,7 @@ class BarycentreCalculator {
   ~BarycentreCalculator() = default;
 
   void Add(Vector const& vector, Scalar const& weight);
-  Vector const Get() const;
+  Vector Get() const;
 
  private:
   bool empty_ = true;

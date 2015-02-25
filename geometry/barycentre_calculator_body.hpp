@@ -23,7 +23,7 @@ void BarycentreCalculator<Vector, Scalar>::Add(Vector const& vector,
 }
 
 template<typename Vector, typename Scalar>
-Vector const BarycentreCalculator<Vector, Scalar>::Get() const {
+Vector BarycentreCalculator<Vector, Scalar>::Get() const {
   CHECK(!empty_) << "Empty BarycentreCalculator";
   return Vector(weighted_sum_ / weight_);
 }

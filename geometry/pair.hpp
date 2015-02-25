@@ -103,7 +103,7 @@ class Pair {
     ~BarycentreCalculator() = default;
 
     void Add(Pair const& pair, Weight const& weight);
-    Pair const Get() const;
+    Pair Get() const;
 
    private:
     bool empty_ = true;

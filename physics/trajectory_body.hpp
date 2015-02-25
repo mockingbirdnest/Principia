@@ -291,7 +291,7 @@ void Trajectory<Frame>::WritePointerToMessage(
     not_null<serialization::Trajectory::Pointer*> const message) const {
   not_null<Trajectory const*> ancestor = this;
   while (ancestor->parent_ != nullptr) {
-    const Fork& fork = *ancestor->fork_;
+    Fork const& fork = *ancestor->fork_;
     ancestor = ancestor->parent_;
     int const children_distance =
         std::distance(ancestor->children_.begin(), fork.children);

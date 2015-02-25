@@ -44,7 +44,7 @@ class Point {
     ~BarycentreCalculator() = default;
 
     void Add(Point const& point, Weight const& weight);
-    Point const Get() const;
+    Point Get() const;
 
    private:
     bool empty_ = true;

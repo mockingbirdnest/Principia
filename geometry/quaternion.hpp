@@ -15,7 +15,7 @@ class Quaternion {
   Quaternion(double const real_part,
              R3Element<double> const& imaginary_part);
 
-  double const real_part() const;
+  double real_part() const;
   R3Element<double> const& imaginary_part() const;
 
   Quaternion Conjugate() const;
