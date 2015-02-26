@@ -47,9 +47,11 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
 
   private bool display_patched_conics_ = false;
 
-  private double[] prediction_steps_ = {1e1, 1e2, 1e3, 1e4, 1e5, 1e6};
+  private double[] prediction_steps_ =
+    {1e1, 3e1, 1e2, 3e2, 1e3, 3e3, 1e4, 3e4, 1e5, 3e5, 1e6};
   private int prediction_step_index_ = 0;
-  private double[] prediction_lengths_ = {1e3, 1e4, 1e5, 1e6, 1e7, 1e8};
+  private double[] prediction_lengths_ =
+    {1e3, 3e3, 1e4, 3e4, 1e5, 3e5, 1e6, 3e6, 1e7, 3e7, 1e8};
   private int prediction_length_index_ = 0;
 
   private bool show_reference_frame_selection_ = true;
@@ -363,17 +365,19 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
               OrbitRenderer.DrawMode.OFF;
           active_vessel.orbitDriver.Renderer.drawIcons =
               OrbitRenderer.DrawIcons.OBJ;
+          active_vessel.DetachPatchedConicsSolver();
+          active_vessel.patchedConicRenderer = null;
         }
-        if (active_vessel.patchedConicRenderer.renderEnabled &&
+        if (active_vessel.patchedConicRenderer != null &&
             !display_patched_conics_) {
           Log.Info("Disabling patched conics");
-          active_vessel.patchedConicRenderer.renderEnabled = false;
-        } else if ((!active_vessel.patchedConicRenderer.renderEnabled ||
-                    active_vessel.patchedConicRenderer.relativityMode !=
-                        PatchRendering.RelativityMode.RELATIVE) &&
+          UnityEngine.Object.Destroy(active_vessel.patchedConicRenderer);
+          active_vessel.patchedConicRenderer = null;
+        } else if (active_vessel.patchedConicRenderer == null &&
                    display_patched_conics_) {
           Log.Info("Enabling patched conics");
-          active_vessel.patchedConicRenderer.renderEnabled = true;
+          active_vessel.DetachPatchedConicsSolver();
+          active_vessel.AttachPatchedConicsSolver();
           active_vessel.patchedConicRenderer.relativityMode =
               PatchRendering.RelativityMode.RELATIVE;
         }
@@ -620,7 +624,8 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
       String label,
       ref bool changed) {
     UnityEngine.GUILayout.BeginHorizontal();
-    UnityEngine.GUILayout.Label(text : label + ":");
+    UnityEngine.GUILayout.Label(text    : label + ":",
+                                options : UnityEngine.GUILayout.Width(200));
     if (UnityEngine.GUILayout.Button(
             text    : index == 0 ? "min" : "-",
             options : UnityEngine.GUILayout.Width(50)) &&
