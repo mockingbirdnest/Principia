@@ -41,11 +41,20 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
   private VectorLine rendered_prediction_;
   private VectorLine rendered_trajectory_;
   private IntPtr transforms_ = IntPtr.Zero;
+
   private int first_selected_celestial_ = 0;
   private int second_selected_celestial_ = 0;
 
-  private bool show_logging_settings_ = false;
+  private bool display_patched_conics_ = false;
+
+  private double[] prediction_steps_ = {1e1, 1e2, 1e3, 1e4, 1e5, 1e6};
+  private int prediction_step_index_ = 0;
+  private double[] prediction_lengths_ = {1e3, 1e4, 1e5, 1e6, 1e7, 1e8};
+  private int prediction_length_index_ = 0;
+
   private bool show_reference_frame_selection_ = true;
+  private bool show_prediction_settings_ = true;
+  private bool show_logging_settings_ = false;
 #if CRASH_BUTTON
   private bool show_crash_options_ = false;
 #endif
@@ -344,15 +353,24 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
         if (active_vessel.orbitDriver.Renderer.drawMode !=
                 OrbitRenderer.DrawMode.OFF ||
             active_vessel.orbitDriver.Renderer.drawIcons !=
-                OrbitRenderer.DrawIcons.OBJ ||
-            active_vessel.patchedConicRenderer != null) {
+                OrbitRenderer.DrawIcons.OBJ) {
           Log.Info("Removing orbit rendering for the active vessel");
           active_vessel.orbitDriver.Renderer.drawMode =
               OrbitRenderer.DrawMode.OFF;
           active_vessel.orbitDriver.Renderer.drawIcons =
               OrbitRenderer.DrawIcons.OBJ;
+        }
+        if (active_vessel.PatchedConicsAttached && !display_patched_conics_) {
+          Log.Info("Detaching patched conics");
           active_vessel.DetachPatchedConicsSolver();
           active_vessel.patchedConicRenderer = null;
+          active_vessel.patchedConicSolver = null;
+        } else if (!active_vessel.PatchedConicsAttached &&
+                   display_patched_conics_) {
+          Log.Info("Attaching patched conics");
+          active_vessel.AttachPatchedConicsSolver();
+          active_vessel.patchedConicRenderer.relativityMode =
+              PatchRendering.RelativityMode.RELATIVE;
         }
         if (rendered_trajectory_ == null || rendered_prediction_ == null) {
           ResetRenderedTrajectory();
@@ -390,7 +408,7 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
                                          VectorLine vector_line) {
     try {
       LineSegment segment;
-      int index_in_line_points = kLinePoints -
+      int index_in_line_points = vector_line.points3.Length -
           2 * NumberOfSegments(trajectory_iterator);
       while (index_in_line_points < 0) {
         FetchAndIncrement(trajectory_iterator);
@@ -430,7 +448,10 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
     rendered_trajectory_.layer = 31;
     rendered_prediction_ = new VectorLine(
         lineName     : "rendered_prediction_",
-        linePoints   : new UnityEngine.Vector3[kLinePoints],
+        linePoints   : new UnityEngine.Vector3[
+                           (int)(prediction_lengths_[prediction_length_index_] /
+                                 prediction_steps_[prediction_step_index_]) *
+                           2],
         lineMaterial : MapView.OrbitLinesMaterial,
         color        : XKCDColors.Fuchsia,
         width        : 5,
@@ -492,6 +513,9 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
     ToggleableSection(name   : "Reference Frame Selection",
                       show   : ref show_reference_frame_selection_,
                       render : ReferenceFrameSelection);
+    ToggleableSection(name   : "Prediction Settings",
+                      show   : ref show_prediction_settings_,
+                      render : PredictionSettings);
     ToggleableSection(name   : "Logging Settings",
                       show   : ref show_logging_settings_,
                       render : LoggingSettings);
@@ -582,6 +606,55 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
       if (changed_rendering && PluginRunning()) {
         UpdateRenderingFrame();
       }
+    }
+  }
+
+  private void DurationSelector(
+      double[] array,
+      ref int index,
+      String label,
+      ref bool changed) {
+    UnityEngine.GUILayout.BeginHorizontal();
+    UnityEngine.GUILayout.Label(text : label + ":");
+    if (UnityEngine.GUILayout.Button(
+            text    : index == 0 ? "min" : "-",
+            options : UnityEngine.GUILayout.Width(50)) &&
+        index != 0) {
+      --index;
+      changed = true;
+    }
+    UnityEngine.GUILayout.TextArea(
+        text    : array[index].ToString("0e0") + " s",
+        options : UnityEngine.GUILayout.Width(50));
+    if (UnityEngine.GUILayout.Button(
+            text    : index == array.Length - 1 ? "max" : "+",
+            options : UnityEngine.GUILayout.Width(50)) &&
+        index != array.Length - 1) {
+      ++index;
+      changed = true;
+    }
+    UnityEngine.GUILayout.EndHorizontal();
+  }
+
+  private void PredictionSettings() {
+    display_patched_conics_ =
+        UnityEngine.GUILayout.Toggle(value : display_patched_conics_,
+                                     text  : "Display patched conics");
+    bool changed_settings = false;
+    DurationSelector(prediction_steps_,
+                     ref prediction_step_index_,
+                     "Prediction step",
+                     ref changed_settings);
+    DurationSelector(prediction_lengths_,
+                     ref prediction_length_index_,
+                     "Prediction length",
+                     ref changed_settings);
+    if (changed_settings) {
+      while (prediction_lengths_[prediction_length_index_] <
+             prediction_steps_[prediction_step_index_]) {
+        ++prediction_length_index_;
+      }
+      ResetRenderedTrajectory();
     }
   }
 
