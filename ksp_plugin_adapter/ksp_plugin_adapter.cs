@@ -270,8 +270,7 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
     base.OnLoad(node);
     if (node.HasValue(kPrincipiaKey)) {
       Cleanup();
-      ApplyToBodyTree(body => body.inverseRotThresholdAltitude =
-                                  body.timeWarpAltitudeLimits[1]);
+      SetRotatingFrameThresholds();
       String serialization = node.GetValue(kPrincipiaKey);
       Log.Info("serialization is " + serialization.Length + " characters long");
       plugin_ = DeserializePlugin(serialization, serialization.Length);
@@ -693,8 +692,7 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
 
   private void ResetPlugin() {
     Cleanup();
-    ApplyToBodyTree(body => body.inverseRotThresholdAltitude =
-                                body.timeWarpAltitudeLimits[1]);
+    SetRotatingFrameThresholds();
     ResetRenderedTrajectory();
     plugin_construction_ = DateTime.Now;
     plugin_from_save_ = false;
@@ -730,6 +728,13 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
     };
     ApplyToVesselsOnRailsOrInInertialPhysicsBubbleInSpace(insert_vessel);
   }
+
+  private void SetRotatingFrameThresholds() {
+    ApplyToBodyTree(body => body.inverseRotThresholdAltitude =
+                                Math.Max(body.timeWarpAltitudeLimits[1],
+                                         body.maxAtmosphereAltitude));
+  }
+
 }
 
 }  // namespace ksp_plugin_adapter
