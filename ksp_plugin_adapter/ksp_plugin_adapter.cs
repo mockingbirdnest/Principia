@@ -356,6 +356,8 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
         krakensbane_.FrameVel += velocity_offset;
       }
       if (draw_active_vessel_trajectory()) {
+        active_vessel.patchedConicRenderer.relativityMode =
+            PatchRendering.RelativityMode.RELATIVE;
         if (active_vessel.orbitDriver.Renderer.drawMode !=
                 OrbitRenderer.DrawMode.OFF ||
             active_vessel.orbitDriver.Renderer.drawIcons !=
@@ -365,21 +367,27 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
               OrbitRenderer.DrawMode.OFF;
           active_vessel.orbitDriver.Renderer.drawIcons =
               OrbitRenderer.DrawIcons.OBJ;
-          active_vessel.DetachPatchedConicsSolver();
-          active_vessel.patchedConicRenderer = null;
         }
-        if (active_vessel.patchedConicRenderer != null &&
-            !display_patched_conics_) {
-          Log.Info("Disabling patched conics");
-          UnityEngine.Object.Destroy(active_vessel.patchedConicRenderer);
-          active_vessel.patchedConicRenderer = null;
-        } else if (active_vessel.patchedConicRenderer == null &&
-                   display_patched_conics_) {
-          Log.Info("Enabling patched conics");
-          active_vessel.DetachPatchedConicsSolver();
-          active_vessel.AttachPatchedConicsSolver();
-          active_vessel.patchedConicRenderer.relativityMode =
-              PatchRendering.RelativityMode.RELATIVE;
+        if (display_patched_conics_) {
+          foreach (PatchRendering patch_rendering in
+                   active_vessel.patchedConicRenderer.patchRenders) {
+            patch_rendering.visible = true;
+          }
+          for (int i = 1;
+               i < active_vessel.patchedConicRenderer.flightPlanRenders.Count;
+               ++i) {
+            active_vessel.patchedConicRenderer.flightPlanRenders[i].visible =
+                true;
+          }
+        } else {
+          foreach (PatchRendering patch_rendering in
+                   active_vessel.patchedConicRenderer.patchRenders) {
+            patch_rendering.visible = false;
+          }
+          foreach (PatchRendering patch_rendering in
+                   active_vessel.patchedConicRenderer.flightPlanRenders) {
+            patch_rendering.visible = false;
+          }
         }
         if (rendered_trajectory_ == null || rendered_prediction_ == null) {
           ResetRenderedTrajectory();
