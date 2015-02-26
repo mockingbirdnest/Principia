@@ -327,6 +327,10 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
       Vessel active_vessel = FlightGlobals.ActiveVessel;
       if (draw_active_vessel_trajectory()) {
         set_predicted_vessel(plugin_, active_vessel.id.ToString());
+        set_prediction_step(plugin_,
+                            prediction_steps_[prediction_step_index_]);
+        set_prediction_length(plugin_,
+                              prediction_lengths_[prediction_length_index_]);
       } else {
         clear_predicted_vessel(plugin_);
       }
@@ -360,15 +364,16 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
           active_vessel.orbitDriver.Renderer.drawIcons =
               OrbitRenderer.DrawIcons.OBJ;
         }
-        if (active_vessel.PatchedConicsAttached && !display_patched_conics_) {
-          Log.Info("Detaching patched conics");
-          active_vessel.DetachPatchedConicsSolver();
-          active_vessel.patchedConicRenderer = null;
-          active_vessel.patchedConicSolver = null;
-        } else if (!active_vessel.PatchedConicsAttached &&
+        if (active_vessel.patchedConicRenderer.renderEnabled &&
+            !display_patched_conics_) {
+          Log.Info("Disabling patched conics");
+          active_vessel.patchedConicRenderer.renderEnabled = false;
+        } else if ((!active_vessel.patchedConicRenderer.renderEnabled ||
+                    active_vessel.patchedConicRenderer.relativityMode !=
+                        PatchRendering.RelativityMode.RELATIVE) &&
                    display_patched_conics_) {
-          Log.Info("Attaching patched conics");
-          active_vessel.AttachPatchedConicsSolver();
+          Log.Info("Enabling patched conics");
+          active_vessel.patchedConicRenderer.renderEnabled = true;
           active_vessel.patchedConicRenderer.relativityMode =
               PatchRendering.RelativityMode.RELATIVE;
         }
