@@ -61,7 +61,7 @@ inline void ReadFrameFromMessage(
   const google::protobuf::Descriptor* frame_descriptor =
       serialization::Frame::descriptor();
   *enum_value_descriptor = nullptr;
-  for (int i = 0; i < frame_descriptor->enum_type_count() ; ++i) {
+  for (int i = 0; i < frame_descriptor->enum_type_count(); ++i) {
     const google::protobuf::EnumDescriptor* enum_type_descriptor =
         frame_descriptor->enum_type(i);
     std::string const& enum_type_full_name = enum_type_descriptor->full_name();
