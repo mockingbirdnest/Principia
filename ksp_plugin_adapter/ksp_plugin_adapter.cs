@@ -373,6 +373,9 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
                    active_vessel.patchedConicRenderer.patchRenders) {
             patch_rendering.visible = true;
           }
+          // For reasons that are unlikely to become clear again at this time,
+          // I think the first element of |flightPlanRenders| should not be
+          // visible.
           for (int i = 1;
                i < active_vessel.patchedConicRenderer.flightPlanRenders.Count;
                ++i) {
@@ -466,9 +469,10 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
     rendered_prediction_ = new VectorLine(
         lineName     : "rendered_prediction_",
         linePoints   : new UnityEngine.Vector3[
-                           (int)(prediction_lengths_[prediction_length_index_] /
-                                 prediction_steps_[prediction_step_index_]) *
-                           2],
+                           2 * (int)(prediction_lengths_[
+                                         prediction_length_index_] /
+                                     prediction_steps_[
+                                         prediction_step_index_])],
         lineMaterial : MapView.OrbitLinesMaterial,
         color        : XKCDColors.Fuchsia,
         width        : 5,
