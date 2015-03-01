@@ -3,6 +3,7 @@
 #include <cstdint>
 #include <google/protobuf/message.h>
 #include <google/protobuf/io/zero_copy_stream.h>
+#include <memory>
 #include <thread>
 
 #include "base/not_null.hpp"
@@ -13,7 +14,7 @@ namespace serialization {
 class SynchronizingArrayOutputString
     : public google::protobuf::io::ZeroCopyOutputStream {
  public:
-  SynchronizingArrayOutputString(void* data, int size, int block_size = -1);
+  SynchronizingArrayOutputString(std::uint8_t* data, int const size);
 
   bool Next(void** data, int* size) override;
   void BackUp(int count) override;
@@ -22,7 +23,6 @@ class SynchronizingArrayOutputString
  private:
   std::uint8_t* const data_;  // The byte array.
   const int size_;            // Total size of the array.
-  const int block_size_;      // How many bytes to return at a time.
 
   int position_;
   int last_returned_size_;   // How many bytes we returned last time Next()
@@ -38,6 +38,7 @@ class Serializer {
   base::not_null<std::string const*> Get();
 
 private:
+  std::unique_ptr<std::uint8_t[]> data_;
   SynchronizingArrayOutputString stream_;
   std::thread thread_;
 };
