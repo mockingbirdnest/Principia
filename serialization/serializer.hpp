@@ -25,7 +25,7 @@ class SynchronizingArrayOutputString
   std::int64_t ByteCount() const override;
 
  private:
-  const int size_;
+  int const size_;
   base::not_null<std::uint8_t*> data1_;
   base::not_null<std::uint8_t*> data2_;
   std::function<void(base::not_null<std::uint8_t const*> const data,
@@ -39,6 +39,7 @@ class SynchronizingArrayOutputString
 class Serializer {
  public:
   explicit Serializer(int const chunk_size);
+  ~Serializer();
 
   void Start(base::not_null<google::protobuf::Message const*> const message);
 
@@ -47,7 +48,7 @@ class Serializer {
 private:
   std::unique_ptr<std::uint8_t[]> data_;
   SynchronizingArrayOutputString stream_;
-  std::thread thread_;
+  std::unique_ptr<std::thread> thread_;
 };
 
 }  // namespace serialization

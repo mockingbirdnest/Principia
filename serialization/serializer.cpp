@@ -5,6 +5,15 @@ using std::swap;
 namespace principia {
 namespace serialization {
 
+namespace {
+
+void Serialize(google::protobuf::Message const& message,
+               google::protobuf::io::ZeroCopyOutputStream* const stream) {
+  CHECK(message.SerializeToZeroCopyStream(stream));
+}
+
+}  // namespace
+
 SynchronizingArrayOutputString::SynchronizingArrayOutputString(
     base::not_null<std::uint8_t*> data,
     int const size,
@@ -53,8 +62,16 @@ Serializer::Serializer(int const chunk_size)
     : data_(std::make_unique<std::uint8_t[]>(chunk_size)),
       stream_(data_.get(), chunk_size) {}
 
+Serializer::~Serializer() {
+  if (thread_ != nullptr) {
+    thread_->join();
+  }
+}
+
 void Serializer::Start(
-    base::not_null<google::protobuf::Message const*> const message) {}
+    base::not_null<google::protobuf::Message const*> const message) {
+  thread_ = std::make_unique<std::thread>(Serialize, message, &stream_);
+}
 
 base::not_null<std::string const*> Serializer::Get() {}
 
