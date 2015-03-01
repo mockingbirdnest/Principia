@@ -37,6 +37,7 @@
     <Import Project="..\google_protobuf.props" />
     <Import Project="..\suppress_useless_warnings.props" />
     <Import Project="..\warnings_as_errors.props" />
+    <Import Project="..\google_test_framework.props" />
   </ImportGroup>
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
@@ -44,6 +45,7 @@
     <Import Project="..\google_protobuf.props" />
     <Import Project="..\suppress_useless_warnings.props" />
     <Import Project="..\warnings_as_errors.props" />
+    <Import Project="..\google_test_framework.props" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup />
@@ -106,6 +108,7 @@
     <ClCompile Include="ksp_plugin.pb.cc" />
     <ClCompile Include="physics.pb.cc" />
     <ClCompile Include="quantities.pb.cc" />
+    <ClCompile Include="serializer.cpp" />
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="physics.proto">

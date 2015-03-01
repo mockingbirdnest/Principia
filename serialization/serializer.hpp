@@ -14,9 +14,19 @@ class SynchronizingArrayOutputString
     : public google::protobuf::io::ZeroCopyOutputStream {
  public:
   SynchronizingArrayOutputString(void* data, int size, int block_size = -1);
+
   bool Next(void** data, int* size) override;
   void BackUp(int count) override;
   std::int64_t ByteCount() const override;
+
+ private:
+  std::uint8_t* const data_;  // The byte array.
+  const int size_;            // Total size of the array.
+  const int block_size_;      // How many bytes to return at a time.
+
+  int position_;
+  int last_returned_size_;   // How many bytes we returned last time Next()
+                             // was called (used for error checking only).
 };
 
 class Serializer {
@@ -28,7 +38,7 @@ class Serializer {
   base::not_null<std::string const*> Get();
 
 private:
-  base::not_null<google::protobuf::Message const*> const message_;
+  SynchronizingArrayOutputString stream_;
   std::thread thread_;
 };
 
