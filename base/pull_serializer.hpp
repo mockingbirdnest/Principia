@@ -50,6 +50,10 @@ class DelegatingTwoArrayOutputStream
                              // was called (used for error checking only).
 };
 
+// This class support serialization which is "pulled" by the client.  That is,
+// the client creates a |PullSerializer| object, calls |Start| to start the
+// serialization process, repeatedly calls |Get| to obtain a chunk of data, and
+// finally destroys the |PullSerializer|.
 class PullSerializer {
  public:
   // Similar to a StringPiece.  |data| is not owned.
@@ -71,12 +75,12 @@ class PullSerializer {
   // Obtain the next chunk of data from the serializer.  Blocks if no data is
   // available.  Returns a |Data| object of |size| 0 at the end of the
   // serialization.
-  Data Get();
+  Data Pull();
 
 private:
-  // Sets the chunk of data to be returned to |Get|.  Used as a callback for the
-  // underlying |DelegatingTwoArrayOutputStream|.
-  void Set(not_null<std::uint8_t const*> const data, int const size);
+  // Sets the chunk of data to be returned to |Pull|.  Used as a callback for
+  // the underlying |DelegatingTwoArrayOutputStream|.
+  void Push(not_null<std::uint8_t const*> const data, int const size);
 
   // Placeholders for an empty |Data| object.
   static std::uint8_t no_data_data_;
@@ -87,7 +91,8 @@ private:
   std::unique_ptr<std::thread> thread_;
 
   // Synchronization objects for the |holder_|, which contains the |Data|
-  // object filled by |Set| and not yet consumed by |Get|.
+  // object filled by |Set| and not yet consumed by |Get|.  The |holder_| is
+  // effectively a 1-element queue.
   std::mutex lock_;
   std::condition_variable holder_is_empty_;
   std::condition_variable holder_is_full_;
@@ -100,4 +105,4 @@ private:
 }  // namespace base
 }  // namespace principia
 
-#include "base/PullSerializer_body.hpp"
+#include "base/pull_serializer_body.hpp"

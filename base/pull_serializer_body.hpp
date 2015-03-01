@@ -1,6 +1,6 @@
 #pragma once
 
-#include "base/serializer.hpp"
+#include "base/pull_serializer.hpp"
 
 namespace principia {
 
@@ -62,7 +62,7 @@ PullSerializer::PullSerializer(int const max_size)
     : data_(std::make_unique<std::uint8_t[]>(max_size << 1)),
       stream_(data_.get(),
               max_size,
-              std::bind(&PullSerializer::Set, this, _1, _2)) {}
+              std::bind(&PullSerializer::Push, this, _1, _2)) {}
 
 PullSerializer::~PullSerializer() {
   if (thread_ != nullptr) {
@@ -82,7 +82,7 @@ void PullSerializer::Start(
   });
 }
 
-PullSerializer::Data PullSerializer::Get() {
+PullSerializer::Data PullSerializer::Pull() {
   Data* result;
   {
     std::unique_lock<std::mutex> l(lock_);
@@ -98,8 +98,8 @@ PullSerializer::Data PullSerializer::Get() {
   return *result;
 }
 
-void PullSerializer::Set(base::not_null<std::uint8_t const*> const data,
-                         int const size) {
+void PullSerializer::Push(base::not_null<std::uint8_t const*> const data,
+                          int const size) {
   {
     std::unique_lock<std::mutex> l(lock_);
     holder_is_empty_.wait(l, [this](){ return holder_ == nullptr; });

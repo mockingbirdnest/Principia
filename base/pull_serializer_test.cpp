@@ -1,4 +1,4 @@
-#include "base/serializer.hpp"
+#include "base/pull_serializer.hpp"
 
 #include <vector>
 
@@ -15,12 +15,12 @@ using ::testing::ElementsAreArray;
 
 namespace base {
 
-class SerializerTest : public ::testing::Test {
+class PullSerializerTest : public ::testing::Test {
  protected:
   int const kChunkSize = 99;
 
-  SerializerTest()
-      : serializer_(kChunkSize) {
+  PullSerializerTest()
+      : pull_serializer_(kChunkSize) {
     // Build a biggish protobuf for serialization.
     for (int i = 0; i < 100; ++i) {
       Trajectory::InstantaneousDegreesOfFreedom* idof =
@@ -43,17 +43,17 @@ class SerializerTest : public ::testing::Test {
     }
   }
 
-  Serializer serializer_;
+  PullSerializer pull_serializer_;
   Trajectory trajectory_;
 };
 
-TEST_F(SerializerTest, Test) {
-  serializer_.Start(&trajectory_);
+TEST_F(PullSerializerTest, Test) {
+  pull_serializer_.Start(&trajectory_);
   std::vector<int> actual_sizes;
   std::vector<int> expected_sizes(53, kChunkSize);
   expected_sizes.push_back(53);
   for(;;) {
-    Serializer::Data const data = serializer_.Get();
+    PullSerializer::Data const data = pull_serializer_.Pull();
     if (data.size == 0) {
       break;
     }
