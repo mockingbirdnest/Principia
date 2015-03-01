@@ -14,15 +14,22 @@ namespace serialization {
 class SynchronizingArrayOutputString
     : public google::protobuf::io::ZeroCopyOutputStream {
  public:
-  SynchronizingArrayOutputString(std::uint8_t* data, int const size);
+  SynchronizingArrayOutputString(
+      base::not_null<std::uint8_t*> data,
+      int const size,
+      std::function<void(base::not_null<std::uint8_t const*> const data,
+                         int const size)> on_full);
 
   bool Next(void** data, int* size) override;
   void BackUp(int count) override;
   std::int64_t ByteCount() const override;
 
  private:
-  std::uint8_t* const data_;  // The byte array.
-  const int size_;            // Total size of the array.
+  const int size_;
+  base::not_null<std::uint8_t*> data1_;
+  base::not_null<std::uint8_t*> data2_;
+  std::function<void(base::not_null<std::uint8_t const*> const data,
+                     int const size)> on_full_;
 
   int position_;
   int last_returned_size_;   // How many bytes we returned last time Next()

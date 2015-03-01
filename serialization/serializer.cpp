@@ -1,27 +1,39 @@
 #include "serialization/serializer.hpp"
 
+using std::swap;
+
 namespace principia {
 namespace serialization {
 
 SynchronizingArrayOutputString::SynchronizingArrayOutputString(
-    std::uint8_t* data, int size)
-    : data_(data),
-      size_(size),
+    base::not_null<std::uint8_t*> data,
+    int const size,
+    std::function<void(base::not_null<std::uint8_t const*> const data,
+                       int const size)> on_full)
+    : size_(size >> 1),
+      data1_(&data[0]),
+      data2_(&data[size_]),
+      on_full_(std::move(on_full)),
       position_(0),
-      last_returned_size_(0) {}
+      last_returned_size_(0) {
+  CHECK_EQ(0, size % 2);
+}
 
 bool SynchronizingArrayOutputString::Next(void** data, int* size) {
   if (position_ < size_) {
     last_returned_size_ = size_ - position_;
-    *data = data_ + position_;
+    *data = &data1_[position_];
     *size = last_returned_size_;
     position_ += last_returned_size_;
-    return true;
   } else {
-    // We're at the end of the array.
-    last_returned_size_ = 0;   // Don't let caller back up.
-    return false;
+    // We're at the end of the array.  Hand the current array over to the
+    // callback and start filling the other array.
+    on_full_(data1_, size_);
+    position_ = 0;
+    last_returned_size_ = 0;
+    swap(data1_, data2_);
   }
+  return true;
 }
 
 void SynchronizingArrayOutputString::BackUp(int count) {
