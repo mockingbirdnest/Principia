@@ -36,9 +36,34 @@ class SPRKIntegrator : public SymplecticIntegrator<Position, Momentum> {
              not_null<std::vector<SystemState>*> const solution) const;
 
  private:
+
+  struct FirstSameAsLast {
+    double a_first;
+    double a_last;
+  };
+
+  template<bool first_same_as_last,
+           typename AutonomousRightHandSideComputation,
+           typename RightHandSideComputation>
+  void SolveOptimized(RightHandSideComputation compute_force,
+                      AutonomousRightHandSideComputation compute_velocity,
+                      Parameters const& parameters,
+                      not_null<std::vector<SystemState>*> const solution) const;
+
+  // Not null if the first b coefficient vanishes, in that case we can spare a
+  // force computation and a velocity computation at every step.
+  // NOTE(egg): should be |std::optional|.
+  std::unique_ptr<FirstSameAsLast> first_same_as_last_;
+
+  // The number of stages, or the number of stages minus one for a
+  // first-same-as-last integrator.
   int stages_;
 
-  // The position and momentum nodes.
+  // The position and momentum nodes.  For a first-same-as-last integrator,
+  // we do not store the first b coefficient, and the last entry of |a_|
+  // is the sum of the first and last a coefficients.  Use
+  // |first_same_as_last_->a_first| and |first_same_as_last_->a_last| to
+  // desynchronize and synchronize.
   std::vector<double> a_;
   std::vector<double> b_;
 

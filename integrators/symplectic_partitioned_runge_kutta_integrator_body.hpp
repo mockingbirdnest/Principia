@@ -42,10 +42,23 @@ template<typename Position, typename Momentum>
 inline void SPRKIntegrator<Position, Momentum>::Initialize(
     Coefficients const& coefficients) {
   CHECK_EQ(2, coefficients.size());
-  a_ = coefficients[0];
-  b_ = coefficients[1];
-  stages_ = b_.size();
-  CHECK_EQ(stages_, a_.size());
+  if (coefficients[1].front() == 0.0) {
+    first_same_as_last_ =
+      std::make_unique<FirstSameAsLast>({coefficients[0].front();
+                                         coefficients[0].back()});
+    a_ = std::vector<double>(coefficients[0].begin() + 1,
+                             coefficients[0].end());
+    b_ = std::vector<double>(coefficients[0].begin() + 1,
+                             coefficients[0].end());
+    a_.back() += a_first;
+    stages_ = b_.size();
+    CHECK_EQ(stages_, a_.size());
+  } else {
+    a_ = coefficients[0];
+    b_ = coefficients[1];
+    stages_ = b_.size();
+    CHECK_EQ(stages_, a_.size());
+  }
 
   // Runge-Kutta time weights.
   c_.resize(stages_);
@@ -59,6 +72,25 @@ template<typename Position, typename Momentum>
 template<typename AutonomousRightHandSideComputation,
          typename RightHandSideComputation>
 void SPRKIntegrator<Position, Momentum>::Solve(
+      RightHandSideComputation compute_force,
+      AutonomousRightHandSideComputation compute_velocity,
+      Parameters const& parameters,
+      not_null<std::vector<SystemState>*> const solution) const {
+  if (first_same_as_last_) {
+    SolveOptimized<true>(compute_force, compute_velocity, parameters, solution);
+  } else {
+    SolveOptimized<false>(compute_force,
+                          compute_velocity,
+                          parameters,
+                          solution);
+  }
+}
+
+template<typename Position, typename Momentum>
+template<bool first_same_as_last,
+         typename AutonomousRightHandSideComputation,
+         typename RightHandSideComputation>
+void SPRKIntegrator<Position, Momentum>::SolveOptimized(
       RightHandSideComputation compute_force,
       AutonomousRightHandSideComputation compute_velocity,
       Parameters const& parameters,
@@ -102,13 +134,10 @@ void SPRKIntegrator<Position, Momentum>::Solve(
   // sure that we don't have drifts.
   DoublePrecision<Time> tn = parameters.initial.time;
 
-#ifdef TRACE_SYMPLECTIC_PARTITIONED_RUNGE_KUTTA_INTEGRATOR
-  int percentage = 0;
-  // Initialize |running_time| so that, when we reach the end of the iteration
-  // and add clock(), |running_time| will contain the time actually spent in the
-  // iteration.
-  clock_t running_time = -clock();
-#endif
+  // Whether position and force are synchronized between steps, relevant for
+  // first-same-as-last (FSAL) integrators.
+  bool synchronized = true;
+  bool should_synchronize = false;
 
   // Integration.  For details see Wolfram Reference,
   // http://reference.wolfram.com/mathematica/tutorial/NDSolveSPRK.html#74387056
@@ -143,6 +172,24 @@ void SPRKIntegrator<Position, Momentum>::Solve(
       (*Δpstage_current)[k] = Momentum();
       q_stage[k] = q_last[k].value;
     }
+
+    if (first_same_as_last) {
+      if (synchronized) {
+        // Desynchronize.
+        for (int k = 0; k < dimension; ++k) {
+          p_stage[k] = p_last[k].value;
+        }
+        compute_velocity(p_stage, &v);
+        for (int k = 0; k < dimension; ++k) {
+          Position const Δq = (*Δqstage_previous)[k] + h * a_first * v[k];
+          q_stage[k] = q_last[k].value + Δq;
+          (*Δqstage_current)[k] = Δq;
+        }
+      }
+      should_synchronize = at_end ||
+                           (parameters.sampling_period != 0 &&
+                            sampling_phase % parameters.sampling_period == 0);
+    }
     for (int i = 0; i < stages_; ++i) {
       std::swap(Δqstage_current, Δqstage_previous);
       std::swap(Δpstage_current, Δpstage_previous);
@@ -159,6 +206,17 @@ void SPRKIntegrator<Position, Momentum>::Solve(
         (*Δpstage_current)[k] = Δp;
       }
       compute_velocity(p_stage, &v);
+      if (first_same_as_last) {
+        if (should_synchronize && i == stages_ - 1) {
+          for (int k = 0; k < dimension; ++k) {
+            Position const Δq = (*Δqstage_previous)[k] + h * a_last * v[k];
+            q_stage[k] = q_last[k].value + Δq;
+            (*Δqstage_current)[k] = Δq;
+          }
+          synchronized = true;
+          break;
+        }
+      }
       for (int k = 0; k < dimension; ++k) {
         Position const Δq = (*Δqstage_previous)[k] + h * a_[i] * v[k];
         q_stage[k] = q_last[k].value + Δq;
@@ -190,18 +248,6 @@ void SPRKIntegrator<Position, Momentum>::Solve(
       ++sampling_phase;
     }
 
-#ifdef TRACE_SYMPLECTIC_PARTITIONED_RUNGE_KUTTA_INTEGRATOR
-    running_time += clock();
-    while (floor(100 * (tn.value - parameters.initial.time.value) /
-                 (parameters.tmax - parameters.initial.time.value)) >
-           percentage) {
-      LOG(INFO) << "SPRK: " << percentage << "%\ttn = " << tn.value
-                << "\tRunning time: " << running_time / (CLOCKS_PER_SEC / 1000)
-                << " ms";
-      ++percentage;
-    }
-    running_time -= clock();
-#endif
   }
   if (parameters.sampling_period == 0) {
     solution->emplace_back();
@@ -215,11 +261,6 @@ void SPRKIntegrator<Position, Momentum>::Solve(
     }
   }
 
-#ifdef TRACE_SYMPLECTIC_PARTITIONED_RUNGE_KUTTA_INTEGRATOR
-  running_time += clock();
-  LOG(INFO) << "SPRK: final running time: "
-            << running_time / (CLOCKS_PER_SEC / 1000) << " ms";
-#endif
 }
 
 }  // namespace integrators
