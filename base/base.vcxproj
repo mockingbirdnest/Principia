@@ -119,12 +119,15 @@
     <ClInclude Include="monostable_body.hpp" />
     <ClInclude Include="not_null.hpp" />
     <ClInclude Include="not_null_body.hpp" />
+    <ClInclude Include="serializer.hpp" />
+    <ClInclude Include="serializer_body.hpp" />
     <ClInclude Include="unique_ptr_logging.hpp" />
     <ClInclude Include="unique_ptr_logging_body.hpp" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="hexadecimal_test.cpp" />
     <ClCompile Include="not_null_test.cpp" />
+    <ClCompile Include="serializer_test.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
