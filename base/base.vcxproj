@@ -49,6 +49,7 @@
     <Import Project="..\suppress_useless_warnings.props" />
     <Import Project="..\profiling.props" />
     <Import Project="..\generate_version_header.props" />
+    <Import Project="..\google_protobuf.props" />
   </ImportGroup>
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
@@ -56,6 +57,7 @@
     <Import Project="..\google_test_framework.props" />
     <Import Project="..\suppress_useless_warnings.props" />
     <Import Project="..\generate_version_header.props" />
+    <Import Project="..\google_protobuf.props" />
   </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release_LLVM|Win32'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
@@ -128,6 +130,11 @@
     <ClCompile Include="hexadecimal_test.cpp" />
     <ClCompile Include="not_null_test.cpp" />
     <ClCompile Include="serializer_test.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\serialization\serialization.vcxproj">
+      <Project>{5c482c18-bbae-484d-a211-a25c86370061}</Project>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -1,10 +1,16 @@
-#include "serialization/serializer.hpp"
+#include "base/serializer.hpp"
 
 #include "gmock/gmock.h"
 #include "serialization/physics.pb.h"
 
 namespace principia {
-namespace serialization {
+
+using serialization::Pair;
+using serialization::Point;
+using serialization::Quantity;
+using serialization::Trajectory;
+
+namespace base {
 
 class SerializerTest : public ::testing::Test {
  protected:
@@ -38,10 +44,14 @@ class SerializerTest : public ::testing::Test {
 
 TEST_F(SerializerTest, Test) {
   serializer_.Start(&trajectory_);
-  for (int i = 0; i < 5; ++i) {
+  bool done = false;
+  do {
     Serializer::Data data = serializer_.Get();
-  }
+    LOG(ERROR)<<data.size;
+    done = data.size == 0;
+  } while (!done);
+  LOG(ERROR)<<"exiting";
 }
 
-}  // namespace serialization
+}  // namespace base
 }  // namespace principia

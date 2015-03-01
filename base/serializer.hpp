@@ -12,15 +12,15 @@
 #include "base/not_null.hpp"
 
 namespace principia {
-namespace serialization {
+namespace base {
 
 class SynchronizingArrayOutputString
     : public google::protobuf::io::ZeroCopyOutputStream {
  public:
   SynchronizingArrayOutputString(
-      base::not_null<std::uint8_t*> data,
+      not_null<std::uint8_t*> data,
       int const size,
-      std::function<void(base::not_null<std::uint8_t const*> const data,
+      std::function<void(not_null<std::uint8_t const*> const data,
                          int const size)> on_full);
 
   bool Next(void** data, int* size) override;
@@ -29,9 +29,9 @@ class SynchronizingArrayOutputString
 
  private:
   int const size_;
-  base::not_null<std::uint8_t*> data1_;
-  base::not_null<std::uint8_t*> data2_;
-  std::function<void(base::not_null<std::uint8_t const*> const data,
+  not_null<std::uint8_t*> data1_;
+  not_null<std::uint8_t*> data2_;
+  std::function<void(not_null<std::uint8_t const*> const data,
                      int const size)> on_full_;
 
   int position_;
@@ -42,21 +42,23 @@ class SynchronizingArrayOutputString
 class Serializer {
  public:
   struct Data {
-    Data(base::not_null<std::uint8_t const*> const data, int const size);
-    base::not_null<std::uint8_t const*> const data;
+    Data(not_null<std::uint8_t const*> const data, int const size);
+    not_null<std::uint8_t const*> const data;
     int const size;
   };
 
   explicit Serializer(int const chunk_size);
   ~Serializer();
 
-  void Start(base::not_null<google::protobuf::Message const*> const message);
+  void Start(not_null<google::protobuf::Message const*> const message);
 
   Data Get();
 
 private:
-
-  void Set(base::not_null<std::uint8_t const*> const data, int const size);
+  void Set(not_null<std::uint8_t const*> const data, int const size);
+  
+  static std::uint8_t no_data_data_;
+  static Data* no_data_;
 
   std::unique_ptr<std::uint8_t[]> data_;
   SynchronizingArrayOutputString stream_;
@@ -66,7 +68,10 @@ private:
   std::condition_variable holder_is_empty_;
   std::condition_variable holder_is_full_;
   std::unique_ptr<Data> holder_ GUARDED_BY(lock_);
+  bool done_ GUARDED_BY(lock_);
 };
 
-}  // namespace serialization
+}  // namespace base
 }  // namespace principia
+
+#include "base/serializer_body.hpp"
