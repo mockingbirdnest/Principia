@@ -9,15 +9,11 @@
       <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
       <Extensions>h;hh;hpp;hxx;hm;inl;inc;xsd</Extensions>
     </Filter>
-    <Filter Include="Test Files">
-      <UniqueIdentifier>{4106bee4-f9d3-4a3f-89d4-9eb25e1d327a}</UniqueIdentifier>
-    </Filter>
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="geometry.proto" />
     <CustomBuild Include="quantities.proto" />
     <CustomBuild Include="physics.proto" />
-    <CustomBuild Include="ksp_plugin.proto" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="geometry.pb.h">
@@ -30,9 +26,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="ksp_plugin.pb.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="serializer.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -49,11 +42,8 @@
     <ClCompile Include="ksp_plugin.pb.cc">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="serializer.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="serializer_test.cpp">
-      <Filter>Test Files</Filter>
-    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="ksp_plugin.proto" />
   </ItemGroup>
 </Project>
