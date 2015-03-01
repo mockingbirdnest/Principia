@@ -52,7 +52,7 @@ TEST_F(PullSerializerTest, Test) {
   std::vector<int> actual_sizes;
   std::vector<int> expected_sizes(53, kChunkSize);
   expected_sizes.push_back(53);
-  for(;;) {
+  for (;;) {
     PullSerializer::Data const data = pull_serializer_.Pull();
     if (data.size == 0) {
       break;

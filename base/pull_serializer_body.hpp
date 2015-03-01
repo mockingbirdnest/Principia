@@ -2,6 +2,8 @@
 
 #include "base/pull_serializer.hpp"
 
+#include <algorithm>
+
 namespace principia {
 
 using std::placeholders::_1;
@@ -45,9 +47,16 @@ void DelegatingTwoArrayOutputStream::BackUp(int count) {
   CHECK_LE(count, last_returned_size_);
   CHECK_GE(count, 0);
   position_ -= count;
-  last_returned_size_ = 0;  // Don't let caller back up further.
-  //TODO(phl):odd 
-  on_full_(data1_, position_);
+  // This is called at the end of the stream, in which case we must notify the
+  // client about any data remaining in the stream.  If this is called at other
+  // times, well, notifying the client doesn't hurt as long as we don't pass a
+  // size of 0.
+  if (position_ > 0) {
+    on_full_(data1_, position_);
+    position_ = 0;
+  }
+  last_returned_size_ = 0;
+  swap(data1_, data2_);
 }
 
 std::int64_t DelegatingTwoArrayOutputStream::ByteCount() const {

@@ -1,15 +1,15 @@
 #pragma once
 
 #include <cstdint>
-#include <condition_variable>
-#include <google/protobuf/message.h>
-#include <google/protobuf/io/zero_copy_stream.h>
+#include <condition_variable>  // NOLINT(build/c++11)
 #include <memory>
-#include <mutex>
-#include <thread>
+#include <mutex>  // NOLINT(build/c++11)
+#include <thread>  // NOLINT(build/c++11)
 
 #include "base/macros.hpp"
 #include "base/not_null.hpp"
+#include "google/protobuf/message.h"
+#include "google/protobuf/io/zero_copy_stream.h"
 
 namespace principia {
 namespace base {
@@ -77,7 +77,7 @@ class PullSerializer {
   // serialization.
   Data Pull();
 
-private:
+ private:
   // Sets the chunk of data to be returned to |Pull|.  Used as a callback for
   // the underlying |DelegatingTwoArrayOutputStream|.
   void Push(not_null<std::uint8_t const*> const data, int const size);
