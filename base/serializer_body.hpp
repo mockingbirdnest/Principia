@@ -10,7 +10,7 @@ using std::swap;
 
 namespace base {
 
-SynchronizingArrayOutputString::SynchronizingArrayOutputString(
+DelegatingTwoArrayOutputStream::DelegatingTwoArrayOutputStream(
     base::not_null<std::uint8_t*> data,
     int const size,
     std::function<void(base::not_null<std::uint8_t const*> const data,
@@ -20,12 +20,9 @@ SynchronizingArrayOutputString::SynchronizingArrayOutputString(
       data2_(&data[size_]),
       on_full_(std::move(on_full)),
       position_(0),
-      last_returned_size_(0) {
-  CHECK_EQ(0, size % 2);
-}
+      last_returned_size_(0) {}
 
-bool SynchronizingArrayOutputString::Next(void** data, int* size) {
-  LOG(ERROR)<<"Next "<<size;
+bool DelegatingTwoArrayOutputStream::Next(void** data, int* size) {
   if (position_ == size_) {
     // We're at the end of the array.  Hand the current array over to the
     // callback and start filling the other array.
@@ -42,8 +39,7 @@ bool SynchronizingArrayOutputString::Next(void** data, int* size) {
   return true;
 }
 
-void SynchronizingArrayOutputString::BackUp(int count) {
-  LOG(ERROR)<<"Backup "<<count;
+void DelegatingTwoArrayOutputStream::BackUp(int count) {
   CHECK_GT(last_returned_size_, 0)
       << "BackUp() can only be called after a successful Next().";
   CHECK_LE(count, last_returned_size_);
@@ -54,27 +50,27 @@ void SynchronizingArrayOutputString::BackUp(int count) {
   on_full_(data1_, position_);
 }
 
-std::int64_t SynchronizingArrayOutputString::ByteCount() const {
+std::int64_t DelegatingTwoArrayOutputStream::ByteCount() const {
   return position_;
 }
 
-Serializer::Data::Data(base::not_null<std::uint8_t const*> const data,
-                       int const size)
+PullSerializer::Data::Data(base::not_null<std::uint8_t const*> const data,
+                           int const size)
     : data(data), size(size) {}
 
-Serializer::Serializer(int const chunk_size)
-    : data_(std::make_unique<std::uint8_t[]>(chunk_size << 1)),
+PullSerializer::PullSerializer(int const max_size)
+    : data_(std::make_unique<std::uint8_t[]>(max_size << 1)),
       stream_(data_.get(),
-              chunk_size,
-              std::bind(&Serializer::Set, this, _1, _2)) {}
+              max_size,
+              std::bind(&PullSerializer::Set, this, _1, _2)) {}
 
-Serializer::~Serializer() {
+PullSerializer::~PullSerializer() {
   if (thread_ != nullptr) {
     thread_->join();
   }
 }
 
-void Serializer::Start(
+void PullSerializer::Start(
     base::not_null<google::protobuf::Message const*> const message) {
   CHECK(thread_ == nullptr);
   done_ = false;
@@ -83,11 +79,10 @@ void Serializer::Start(
     std::unique_lock<std::mutex> l(lock_);
     done_ = true;
     holder_is_full_.notify_all();
-    LOG(ERROR)<<"done";
   });
 }
 
-Serializer::Data Serializer::Get() {
+PullSerializer::Data PullSerializer::Get() {
   Data* result;
   {
     std::unique_lock<std::mutex> l(lock_);
@@ -99,25 +94,23 @@ Serializer::Data Serializer::Get() {
       result = holder_.release();
     }
   }
-  LOG(ERROR)<<"Got "<<result->size;
   holder_is_empty_.notify_all();
   return *result;
 }
 
-void Serializer::Set(base::not_null<std::uint8_t const*> const data,
-                     int const size) {
+void PullSerializer::Set(base::not_null<std::uint8_t const*> const data,
+                         int const size) {
   {
     std::unique_lock<std::mutex> l(lock_);
     holder_is_empty_.wait(l, [this](){ return holder_ == nullptr; });
     holder_ = std::make_unique<Data>(data, size);
   }
-  LOG(ERROR)<<"Set "<<size;
   holder_is_full_.notify_all();
 }
 
-std::uint8_t Serializer::no_data_data_ = 0;
-Serializer::Data* Serializer::no_data_ =
-    new Data(&Serializer::no_data_data_, 0);
+std::uint8_t PullSerializer::no_data_data_ = 0;
+PullSerializer::Data* PullSerializer::no_data_ =
+    new Data(&PullSerializer::no_data_data_, 0);
 
 }  // namespace base
 }  // namespace principia

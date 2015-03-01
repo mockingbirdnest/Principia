@@ -1,5 +1,7 @@
 #include "base/serializer.hpp"
 
+#include <vector>
+
 #include "gmock/gmock.h"
 #include "serialization/physics.pb.h"
 
@@ -9,13 +11,16 @@ using serialization::Pair;
 using serialization::Point;
 using serialization::Quantity;
 using serialization::Trajectory;
+using ::testing::ElementsAreArray;
 
 namespace base {
 
 class SerializerTest : public ::testing::Test {
  protected:
+  int const kChunkSize = 99;
+
   SerializerTest()
-      : serializer_(12) {
+      : serializer_(kChunkSize) {
     // Build a biggish protobuf for serialization.
     for (int i = 0; i < 100; ++i) {
       Trajectory::InstantaneousDegreesOfFreedom* idof =
@@ -44,13 +49,17 @@ class SerializerTest : public ::testing::Test {
 
 TEST_F(SerializerTest, Test) {
   serializer_.Start(&trajectory_);
-  bool done = false;
-  do {
-    Serializer::Data data = serializer_.Get();
-    LOG(ERROR)<<data.size;
-    done = data.size == 0;
-  } while (!done);
-  LOG(ERROR)<<"exiting";
+  std::vector<int> actual_sizes;
+  std::vector<int> expected_sizes(53, kChunkSize);
+  expected_sizes.push_back(53);
+  for(;;) {
+    Serializer::Data const data = serializer_.Get();
+    if (data.size == 0) {
+      break;
+    }
+    actual_sizes.push_back(data.size);
+  }
+  EXPECT_THAT(actual_sizes, ElementsAreArray(expected_sizes));
 }
 
 }  // namespace base
