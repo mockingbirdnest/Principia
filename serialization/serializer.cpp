@@ -1,20 +1,12 @@
 #include "serialization/serializer.hpp"
 
+namespace principia {
+
 using std::placeholders::_1;
 using std::placeholders::_2;
 using std::swap;
 
-namespace principia {
 namespace serialization {
-
-namespace {
-
-void Serialize(base::not_null<google::protobuf::Message const*> const message,
-               google::protobuf::io::ZeroCopyOutputStream* const stream) {
-  CHECK(message->SerializeToZeroCopyStream(stream));
-}
-
-}  // namespace
 
 SynchronizingArrayOutputString::SynchronizingArrayOutputString(
     base::not_null<std::uint8_t*> data,
