@@ -1,11 +1,14 @@
 #pragma once
 
 #include <cstdint>
+#include <condition_variable>
 #include <google/protobuf/message.h>
 #include <google/protobuf/io/zero_copy_stream.h>
 #include <memory>
+#include <mutex>
 #include <thread>
 
+#include "base/macros.hpp"
 #include "base/not_null.hpp"
 
 namespace principia {
@@ -38,17 +41,31 @@ class SynchronizingArrayOutputString
 
 class Serializer {
  public:
+  struct Data {
+    Data(base::not_null<std::uint8_t const*> const data, int const size);
+    base::not_null<std::uint8_t const*> const data;
+    int const size;
+  };
+
   explicit Serializer(int const chunk_size);
   ~Serializer();
 
   void Start(base::not_null<google::protobuf::Message const*> const message);
 
-  base::not_null<std::string const*> Get();
+  Data Get();
 
 private:
+
+  void Set(base::not_null<std::uint8_t const*> const data, int const size);
+
   std::unique_ptr<std::uint8_t[]> data_;
   SynchronizingArrayOutputString stream_;
   std::unique_ptr<std::thread> thread_;
+
+  std::mutex lock_;
+  std::condition_variable holder_is_empty_;
+  std::condition_variable holder_is_full_;
+  std::unique_ptr<Data> holder_ GUARDED_BY(lock_);
 };
 
 }  // namespace serialization

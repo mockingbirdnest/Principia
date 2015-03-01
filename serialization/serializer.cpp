@@ -1,5 +1,7 @@
 #include "serialization/serializer.hpp"
 
+using std::placeholders::_1;
+using std::placeholders::_2;
 using std::swap;
 
 namespace principia {
@@ -7,9 +9,9 @@ namespace serialization {
 
 namespace {
 
-void Serialize(google::protobuf::Message const& message,
+void Serialize(base::not_null<google::protobuf::Message const*> const message,
                google::protobuf::io::ZeroCopyOutputStream* const stream) {
-  CHECK(message.SerializeToZeroCopyStream(stream));
+  CHECK(message->SerializeToZeroCopyStream(stream));
 }
 
 }  // namespace
@@ -58,9 +60,15 @@ std::int64_t SynchronizingArrayOutputString::ByteCount() const {
   return position_;
 }
 
+Serializer::Data::Data(base::not_null<std::uint8_t const*> const data,
+                       int const size)
+    : data(data), size(size) {}
+
 Serializer::Serializer(int const chunk_size)
     : data_(std::make_unique<std::uint8_t[]>(chunk_size)),
-      stream_(data_.get(), chunk_size) {}
+      stream_(data_.get(),
+              chunk_size,
+              std::bind(&Serializer::Set, this, _1, _2)) {}
 
 Serializer::~Serializer() {
   if (thread_ != nullptr) {
@@ -70,10 +78,31 @@ Serializer::~Serializer() {
 
 void Serializer::Start(
     base::not_null<google::protobuf::Message const*> const message) {
-  thread_ = std::make_unique<std::thread>(Serialize, message, &stream_);
+  thread_ = std::make_unique<std::thread>([this, message](){
+    CHECK(message->SerializeToZeroCopyStream(&stream_));
+  });
 }
 
-base::not_null<std::string const*> Serializer::Get() {}
+Serializer::Data Serializer::Get() {
+  Data* result;
+  {
+    std::unique_lock<std::mutex> l(lock_);
+    holder_is_full_.wait(l, [this](){ return holder_ != nullptr; });
+    result = holder_.release();
+  }
+  holder_is_empty_.notify_all();
+  return *result;
+}
+
+void Serializer::Set(base::not_null<std::uint8_t const*> const data,
+                     int const size) {
+  {
+    std::unique_lock<std::mutex> l(lock_);
+    holder_is_empty_.wait(l, [this](){ return holder_ == nullptr; });
+    holder_ = std::make_unique<Data>(data, size);
+  }
+  holder_is_full_.notify_all();
+}
 
 }  // namespace serialization
 }  // namespace principia

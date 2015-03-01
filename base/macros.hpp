@@ -127,6 +127,11 @@ inline void noreturn() { exit(0); }
 #  error "What compiler is this?"
 #endif
 
+// Thread-safety analysis.
+#if !PRINCIPIA_COMPILER_CLANG
+#  define GUARDED_BY(x)
+#endif
+
 // A workaround for a MSVC bug wherein a |typename| is required by the standard
 // and by clang but forbidden by MSVC.
 #if PRINCIPIA_COMPILER_MSVC
