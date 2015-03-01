@@ -14,6 +14,7 @@
     <CustomBuild Include="geometry.proto" />
     <CustomBuild Include="quantities.proto" />
     <CustomBuild Include="physics.proto" />
+    <CustomBuild Include="ksp_plugin.proto" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="geometry.pb.h">
@@ -26,6 +27,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="ksp_plugin.pb.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="serializer.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -42,8 +46,5 @@
     <ClCompile Include="ksp_plugin.pb.cc">
       <Filter>Source Files</Filter>
     </ClCompile>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="ksp_plugin.proto" />
   </ItemGroup>
 </Project>

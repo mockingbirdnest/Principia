@@ -99,6 +99,7 @@
     <ClInclude Include="ksp_plugin.pb.h" />
     <ClInclude Include="physics.pb.h" />
     <ClInclude Include="quantities.pb.h" />
+    <ClInclude Include="serializer.hpp" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="geometry.pb.cc" />
