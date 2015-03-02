@@ -111,6 +111,8 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="bytes.hpp" />
+    <ClInclude Include="bytes_body.hpp" />
     <ClInclude Include="fingerprint2011.hpp" />
     <ClInclude Include="hexadecimal.hpp" />
     <ClInclude Include="hexadecimal_body.hpp" />

@@ -7,16 +7,16 @@
 namespace principia {
 
 using std::placeholders::_1;
-using std::placeholders::_2;
 using std::swap;
 
 namespace base {
 
+namespace internal {
+
 DelegatingTwoArrayOutputStream::DelegatingTwoArrayOutputStream(
     base::not_null<std::uint8_t*> data,
     int const size,
-    std::function<void(base::not_null<std::uint8_t const*> const data,
-                       int const size)> on_full)
+    std::function<void(Bytes const bytes)> on_full)
     : size_(size),
       data1_(&data[0]),
       data2_(&data[size_]),
@@ -28,7 +28,7 @@ bool DelegatingTwoArrayOutputStream::Next(void** data, int* size) {
   if (position_ == size_) {
     // We're at the end of the array.  Hand the current array over to the
     // callback and start filling the other array.
-    on_full_(data1_, size_);
+    on_full_(Bytes(data1_, size_));
     position_ = 0;
     last_returned_size_ = 0;
     swap(data1_, data2_);
@@ -52,7 +52,7 @@ void DelegatingTwoArrayOutputStream::BackUp(int count) {
   // times, well, notifying the client doesn't hurt as long as we don't pass a
   // size of 0.
   if (position_ > 0) {
-    on_full_(data1_, position_);
+    on_full_(Bytes(data1_, position_));
     position_ = 0;
   }
   last_returned_size_ = 0;
@@ -63,15 +63,13 @@ std::int64_t DelegatingTwoArrayOutputStream::ByteCount() const {
   return position_;
 }
 
-PullSerializer::Data::Data(base::not_null<std::uint8_t const*> const data,
-                           int const size)
-    : data(data), size(size) {}
+}  // namespace internal
 
 PullSerializer::PullSerializer(int const max_size)
     : data_(std::make_unique<std::uint8_t[]>(max_size << 1)),
       stream_(data_.get(),
               max_size,
-              std::bind(&PullSerializer::Push, this, _1, _2)) {}
+              std::bind(&PullSerializer::Push, this, _1)) {}
 
 PullSerializer::~PullSerializer() {
   if (thread_ != nullptr) {
@@ -91,14 +89,14 @@ void PullSerializer::Start(
   });
 }
 
-PullSerializer::Data PullSerializer::Pull() {
-  Data* result;
+Bytes PullSerializer::Pull() {
+  const Bytes* result;
   {
     std::unique_lock<std::mutex> l(lock_);
     holder_is_full_.wait(l, [this](){ return done_ || holder_ != nullptr; });
     if (holder_ == nullptr) {
       // Done.
-      result = no_data_;
+      result = &Bytes::Null;
     } else {
       result = holder_.release();
     }
@@ -107,19 +105,14 @@ PullSerializer::Data PullSerializer::Pull() {
   return *result;
 }
 
-void PullSerializer::Push(base::not_null<std::uint8_t const*> const data,
-                          int const size) {
+void PullSerializer::Push(Bytes const bytes) {
   {
     std::unique_lock<std::mutex> l(lock_);
     holder_is_empty_.wait(l, [this](){ return holder_ == nullptr; });
-    holder_ = std::make_unique<Data>(data, size);
+    holder_ = std::make_unique<Bytes>(bytes.data, bytes.size);
   }
   holder_is_full_.notify_all();
 }
-
-std::uint8_t PullSerializer::no_data_data_ = 0;
-PullSerializer::Data* PullSerializer::no_data_ =
-    new Data(&PullSerializer::no_data_data_, 0);
 
 }  // namespace base
 }  // namespace principia
