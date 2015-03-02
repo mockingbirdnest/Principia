@@ -127,6 +127,14 @@ inline void noreturn() { exit(0); }
 #  error "What compiler is this?"
 #endif
 
+// Thread-safety analysis.
+#if PRINCIPIA_COMPILER_CLANG || PRINCIPIA_COMPILER_CLANG_CL
+#  define THREAD_ANNOTATION_ATTRIBUTE__(x) __attribute__((x))
+#  define GUARDED_BY(x) THREAD_ANNOTATION_ATTRIBUTE__(guarded_by(x))
+#else
+#  define GUARDED_BY(x)
+#endif
+
 // A workaround for a MSVC bug wherein a |typename| is required by the standard
 // and by clang but forbidden by MSVC.
 #if PRINCIPIA_COMPILER_MSVC
