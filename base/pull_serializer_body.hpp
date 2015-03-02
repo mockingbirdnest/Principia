@@ -95,7 +95,7 @@ Bytes PullSerializer::Pull() {
   std::unique_ptr<Bytes const> result;
   {
     std::unique_lock<std::mutex> l(lock_);
-    holder_is_full_.wait(l, [this](){ return done_ || holder_ != nullptr; });
+    holder_is_full_.wait(l, [this]() { return done_ || holder_ != nullptr; });
     if (holder_ != nullptr) {
       result = std::move(holder_);
     }
@@ -112,7 +112,7 @@ Bytes PullSerializer::Pull() {
 void PullSerializer::Push(Bytes const bytes) {
   {
     std::unique_lock<std::mutex> l(lock_);
-    holder_is_empty_.wait(l, [this](){ return holder_ == nullptr; });
+    holder_is_empty_.wait(l, [this]() { return holder_ == nullptr; });
     holder_ = std::make_unique<Bytes>(bytes.data, bytes.size);
   }
   holder_is_full_.notify_all();
