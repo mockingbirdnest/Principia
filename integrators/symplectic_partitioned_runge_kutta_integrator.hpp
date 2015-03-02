@@ -24,7 +24,12 @@ class SPRKIntegrator : public SymplecticIntegrator<Position, Momentum> {
   SPRKIntegrator();
   ~SPRKIntegrator() override = default;
 
-  std::vector<std::vector<double>> const& Order5Optimal() const;
+  // Coefficients from Robert I. McLachlan and Pau Atela (1992),
+  // The accuracy of symplectic integrators, table 2.
+  // http://eaton.math.rpi.edu/CSUMS/Papers/Symplectic/McLachlan_Atela_92.pdf
+  Coefficients const& Leapfrog() const;
+  Coefficients const& Order4FirstSameAsLast() const;
+  Coefficients const& Order5Optimal() const;
 
   void Initialize(Coefficients const& coefficients) override;
 

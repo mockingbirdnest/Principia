@@ -20,9 +20,31 @@ template<typename Position, typename Momentum>
 inline SPRKIntegrator<Position, Momentum>::SPRKIntegrator() : stages_(0) {}
 
 template<typename Position, typename Momentum>
-inline std::vector<std::vector<double>> const&
+inline SPRKIntegrator<Position, Momentum>::Coefficients const&
+SPRKIntegrator<Position, Momentum>::Leapfrog() const {
+  static Coefficients const leapfrog = {{ 0.5, 0.5}, { 0.0, 1.0}};
+  return leapfrog;
+}
+
+template<typename Position, typename Momentum>
+inline SPRKIntegrator<Position, Momentum>::Coefficients const&
+SPRKIntegrator<Position, Momentum>::Order4FirstSameAsLast() const {
+  static Coefficients const order_4_first_same_as_last = {
+      { 0.6756035959798288170,
+       -0.1756035959798288170,
+       -0.1756035959798288170,
+        0.6756035959798288170},
+      { 0.0,
+        1.351207191959657634,
+       -1.702414383919315268,
+        1.351207191959657634}};
+  return order_4_first_same_as_last;
+}
+
+template<typename Position, typename Momentum>
+inline SPRKIntegrator<Position, Momentum>::Coefficients const&
 SPRKIntegrator<Position, Momentum>::Order5Optimal() const {
-  static std::vector<std::vector<double>> const order_5_optimal = {
+  static Coefficients const order_5_optimal = {
       { 0.339839625839110000,
        -0.088601336903027329,
         0.5858564768259621188,
@@ -181,7 +203,8 @@ void SPRKIntegrator<Position, Momentum>::SolveOptimized(
         }
         compute_velocity(p_stage, &v);
         for (int k = 0; k < dimension; ++k) {
-          Position const Δq = (*Δqstage_previous)[k] + h * a_first * v[k];
+          Position const Δq = (*Δqstage_previous)[k] +
+                              h * first_same_as_last_->a_first * v[k];
           q_stage[k] = q_last[k].value + Δq;
           (*Δqstage_current)[k] = Δq;
         }
@@ -206,22 +229,23 @@ void SPRKIntegrator<Position, Momentum>::SolveOptimized(
         (*Δpstage_current)[k] = Δp;
       }
       compute_velocity(p_stage, &v);
-      if (first_same_as_last) {
-        if (should_synchronize && i == stages_ - 1) {
-          for (int k = 0; k < dimension; ++k) {
-            Position const Δq = (*Δqstage_previous)[k] + h * a_last * v[k];
-            q_stage[k] = q_last[k].value + Δq;
-            (*Δqstage_current)[k] = Δq;
-          }
-          synchronized = true;
-          break;
-        }
+      if (first_same_as_last && should_synchronize && i == stages_ - 1) {
+        break;
       }
       for (int k = 0; k < dimension; ++k) {
         Position const Δq = (*Δqstage_previous)[k] + h * a_[i] * v[k];
         q_stage[k] = q_last[k].value + Δq;
         (*Δqstage_current)[k] = Δq;
       }
+    }
+    if (first_same_as_last && should_synchronize) {
+      for (int k = 0; k < dimension; ++k) {
+        Position const Δq = (*Δqstage_previous)[k] +
+                            h * first_same_as_last_->a_last * v[k];
+        q_stage[k] = q_last[k].value + Δq;
+        (*Δqstage_current)[k] = Δq;
+      }
+      synchronized = true;
     }
     // Compensated summation from "'SymplecticPartitionedRungeKutta' Method
     // for NDSolve", algorithm 2.
