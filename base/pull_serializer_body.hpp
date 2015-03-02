@@ -83,8 +83,11 @@ void PullSerializer::Start(
   CHECK(thread_ == nullptr);
   thread_ = std::make_unique<std::thread>([this, message](){
     CHECK(message->SerializeToZeroCopyStream(&stream_));
-    std::unique_lock<std::mutex> l(lock_);
-    done_ = true;
+    {
+      std::unique_lock<std::mutex> l(lock_);
+      done_ = true;
+    }
+    holder_is_full_.notify_all();
   });
 }
 
@@ -92,16 +95,18 @@ Bytes PullSerializer::Pull() {
   std::unique_ptr<Bytes const> result;
   {
     std::unique_lock<std::mutex> l(lock_);
-    holder_is_full_.wait(l, [this](){ return holder_ != nullptr; });
-    result = std::move(holder_);
+    holder_is_full_.wait(l, [this](){ return done_ || holder_ != nullptr; });
+    if (holder_ != nullptr) {
+      result = std::move(holder_);
+    }
   }
   holder_is_empty_.notify_all();
-  return *result;
-}
-
-bool PullSerializer::done() const {
-  std::unique_lock<std::mutex> l(lock_);
-  return done_ && holder_ == nullptr;
+  if (result == nullptr) {
+    // Done.
+    return Bytes::Null;
+  } else {
+    return *result;
+  }
 }
 
 void PullSerializer::Push(Bytes const bytes) {

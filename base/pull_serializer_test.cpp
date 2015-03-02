@@ -52,8 +52,11 @@ TEST_F(PullSerializerTest, Test) {
   std::vector<int> actual_sizes;
   std::vector<int> expected_sizes(53, kChunkSize);
   expected_sizes.push_back(53);
-  while (!pull_serializer_.done()) {
+  for (;;) {
     Bytes const bytes = pull_serializer_.Pull();
+    if (bytes.size == 0) {
+      break;
+    }
     actual_sizes.push_back(bytes.size);
   }
   EXPECT_THAT(actual_sizes, ElementsAreArray(expected_sizes));

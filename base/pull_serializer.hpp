@@ -75,10 +75,6 @@ class PullSerializer {
   // serialization.
   Bytes Pull();
 
-  // Returns true if the serialization is complete.  Calling |Pull| after this
-  // function returns true will result in plague and pestilence.
-  bool done() const;
-
  private:
   // Sets the chunk of data to be returned to |Pull|.  Used as a callback for
   // the underlying |DelegatingTwoArrayOutputStream|.
@@ -91,7 +87,7 @@ class PullSerializer {
   // Synchronization objects for the |holder_|, which contains the |Bytes|
   // object filled by |Set| and not yet consumed by |Get|.  The |holder_| is
   // effectively a 1-element queue.
-  mutable std::mutex lock_;
+  std::mutex lock_;
   std::condition_variable holder_is_empty_;
   std::condition_variable holder_is_full_;
   std::unique_ptr<Bytes> holder_ GUARDED_BY(lock_);  // std::optional, really.
