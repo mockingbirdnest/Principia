@@ -69,7 +69,8 @@ PullSerializer::PullSerializer(int const max_size)
     : data_(std::make_unique<std::uint8_t[]>(max_size << 1)),
       stream_(data_.get(),
               max_size,
-              std::bind(&PullSerializer::Push, this, _1)) {}
+              std::bind(&PullSerializer::Push, this, _1)),
+      done_(false) {}
 
 PullSerializer::~PullSerializer() {
   if (thread_ != nullptr) {
@@ -80,7 +81,6 @@ PullSerializer::~PullSerializer() {
 void PullSerializer::Start(
     base::not_null<google::protobuf::Message const*> const message) {
   CHECK(thread_ == nullptr);
-  done_ = false;
   thread_ = std::make_unique<std::thread>([this, message](){
     CHECK(message->SerializeToZeroCopyStream(&stream_));
     std::unique_lock<std::mutex> l(lock_);
@@ -89,11 +89,11 @@ void PullSerializer::Start(
 }
 
 Bytes PullSerializer::Pull() {
-  const Bytes* result;
+  std::unique_ptr<Bytes const> result;
   {
     std::unique_lock<std::mutex> l(lock_);
     holder_is_full_.wait(l, [this](){ return holder_ != nullptr; });
-    result = holder_.release();
+    result = std::move(holder_);
   }
   holder_is_empty_.notify_all();
   return *result;

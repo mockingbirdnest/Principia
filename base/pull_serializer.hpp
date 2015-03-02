@@ -25,7 +25,7 @@ class DelegatingTwoArrayOutputStream
   // The stream is supported by |data| which has size |size << 1|.  Internally,
   // |data| is split into two pieces of size |size| and |on_full| is called when
   // one of the pieces is full.  Output can continue with the other piece.
-  // |on_full| isexpected to somehow consume the data of the array.  Note that
+  // |on_full| is expected to somehow consume the data of the array.  Note that
   // two successive calls to |on_full| are always passed different pointers, so
   // the caller can assume that it's fine to operate on that pointer in between
   // two calls to |on_full|.
@@ -88,7 +88,7 @@ class PullSerializer {
   internal::DelegatingTwoArrayOutputStream stream_;
   std::unique_ptr<std::thread> thread_;
 
-  // Synchronization objects for the |holder_|, which contains the |Data|
+  // Synchronization objects for the |holder_|, which contains the |Bytes|
   // object filled by |Set| and not yet consumed by |Get|.  The |holder_| is
   // effectively a 1-element queue.
   mutable std::mutex lock_;

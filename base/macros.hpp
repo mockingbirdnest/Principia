@@ -128,7 +128,10 @@ inline void noreturn() { exit(0); }
 #endif
 
 // Thread-safety analysis.
-#if !PRINCIPIA_COMPILER_CLANG
+#if PRINCIPIA_COMPILER_CLANG || PRINCIPIA_COMPILER_CLANG_CL
+#  define THREAD_ANNOTATION_ATTRIBUTE__(x) __attribute__((x))
+#  define GUARDED_BY(x) THREAD_ANNOTATION_ATTRIBUTE__(guarded_by(x))
+#else
 #  define GUARDED_BY(x)
 #endif
 
