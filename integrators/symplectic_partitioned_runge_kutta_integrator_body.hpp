@@ -89,6 +89,7 @@ inline void SPRKIntegrator<Position, Momentum>::Initialize(
     stages_ = b_.size();
     CHECK_EQ(stages_, a_.size());
   } else {
+    vanishing_coefficients_ = None;
     a_ = coefficients[0];
     b_ = coefficients[1];
     stages_ = b_.size();
