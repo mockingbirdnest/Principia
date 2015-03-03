@@ -126,6 +126,7 @@
     <ClInclude Include="not_null_body.hpp" />
     <ClInclude Include="pull_serializer.hpp" />
     <ClInclude Include="pull_serializer_body.hpp" />
+    <ClInclude Include="push_deserializer.hpp" />
     <ClInclude Include="unique_ptr_logging.hpp" />
     <ClInclude Include="unique_ptr_logging_body.hpp" />
   </ItemGroup>
