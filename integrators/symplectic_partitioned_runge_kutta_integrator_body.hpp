@@ -188,25 +188,25 @@ void SPRKIntegrator<Position, Momentum>::SolveOptimized(
   bool q_and_p_are_synchronized = true;
   bool should_synchronize = false;
 
-  #define ADVANCE_ΔQSTAGE(step) \
-  do {  \
-    compute_velocity(p_stage, &v);  \
-    for (int k = 0; k < dimension; ++k) {  \
+#define ADVANCE_ΔQSTAGE(step)                                    \
+  do {                                                           \
+    compute_velocity(p_stage, &v);                               \
+    for (int k = 0; k < dimension; ++k) {                        \
       Position const Δq = (*Δqstage_previous)[k] + step * v[k];  \
-      q_stage[k] = q_last[k].value + Δq;  \
-      (*Δqstage_current)[k] = Δq;  \
-    }  \
-  } while (false);
+      q_stage[k] = q_last[k].value + Δq;                         \
+      (*Δqstage_current)[k] = Δq;                                \
+    }                                                            \
+  } while (false)
 
-  #define ADVANCE_ΔPSTAGE(step, q_clock) \
-  do { \
-    compute_force(q_clock, q_stage, &f); \
-    for (int k = 0; k < dimension; ++k) { \
-      Momentum const Δp = (*Δpstage_previous)[k] + step * f[k];\
-      p_stage[k] = p_last[k].value + Δp;\
-      (*Δpstage_current)[k] = Δp;\
-    } \
-  } while (false);
+#define ADVANCE_ΔPSTAGE(step, q_clock)                           \
+  do {                                                           \
+    compute_force(q_clock, q_stage, &f);                         \
+    for (int k = 0; k < dimension; ++k) {                        \
+      Momentum const Δp = (*Δpstage_previous)[k] + step * f[k];  \
+      p_stage[k] = p_last[k].value + Δp;                         \
+      (*Δpstage_current)[k] = Δp;                                \
+    }                                                            \
+  } while (false)
 
   // Integration.  For details see Wolfram Reference,
   // http://reference.wolfram.com/mathematica/tutorial/NDSolveSPRK.html#74387056
@@ -315,6 +315,10 @@ void SPRKIntegrator<Position, Momentum>::SolveOptimized(
     }
 
   }
+
+#undef ADVANCE_ΔQSTAGE
+#undef ADVANCE_ΔPSTAGE
+
   if (parameters.sampling_period == 0) {
     solution->emplace_back();
     SystemState* state = &solution->back();
