@@ -65,6 +65,9 @@
     <ClInclude Include="push_deserializer.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="push_deserializer_body.hpp">
+      <Filter>Source Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="not_null_test.cpp">

@@ -18,7 +18,9 @@ namespace internal {
 
 class MyStream : public google::protobuf::io::ZeroCopyInputStream {
  public:
-  MyStream(const void* data, int size, int block_size = -1);
+  MyStream(not_null<std::uint8_t*> data,
+           int const size,
+           std::function<void(Bytes const bytes)> on_empty);
   ~MyStream() = default;
 
   bool Next(const void** data, int* size) override;
@@ -27,9 +29,10 @@ class MyStream : public google::protobuf::io::ZeroCopyInputStream {
   std::int64_t ByteCount() const override;
 
  private:
-  const std::uint8_t* const data_;  // The byte array.
-  const int size_;           // Total size of the array.
-  const int block_size_;     // How many bytes to return at a time.
+  int const size_;
+  not_null<std::uint8_t*> data1_;
+  not_null<std::uint8_t*> data2_;
+  std::function<void(Bytes const bytes)> on_empty_;
 
   int position_;
   int last_returned_size_;   // How many bytes we returned last time Next()
