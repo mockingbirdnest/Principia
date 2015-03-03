@@ -20,14 +20,14 @@ template<typename Position, typename Momentum>
 inline SPRKIntegrator<Position, Momentum>::SPRKIntegrator() : stages_(0) {}
 
 template<typename Position, typename Momentum>
-inline SPRKIntegrator<Position, Momentum>::Coefficients const&
+inline typename SPRKIntegrator<Position, Momentum>::Coefficients const&
 SPRKIntegrator<Position, Momentum>::Leapfrog() const {
   static Coefficients const leapfrog = {{ 0.5, 0.5}, { 0.0, 1.0}};
   return leapfrog;
 }
 
 template<typename Position, typename Momentum>
-inline SPRKIntegrator<Position, Momentum>::Coefficients const&
+inline typename SPRKIntegrator<Position, Momentum>::Coefficients const&
 SPRKIntegrator<Position, Momentum>::Order4FirstSameAsLast() const {
   static Coefficients const order_4_first_same_as_last = {
       { 0.6756035959798288170,
@@ -42,7 +42,7 @@ SPRKIntegrator<Position, Momentum>::Order4FirstSameAsLast() const {
 }
 
 template<typename Position, typename Momentum>
-inline SPRKIntegrator<Position, Momentum>::Coefficients const&
+inline typename SPRKIntegrator<Position, Momentum>::Coefficients const&
 SPRKIntegrator<Position, Momentum>::Order5Optimal() const {
   static Coefficients const order_5_optimal = {
       { 0.339839625839110000,
@@ -65,14 +65,27 @@ inline void SPRKIntegrator<Position, Momentum>::Initialize(
     Coefficients const& coefficients) {
   CHECK_EQ(2, coefficients.size());
   if (coefficients[1].front() == 0.0) {
-    first_same_as_last_ =
-      std::make_unique<FirstSameAsLast>({coefficients[0].front();
-                                         coefficients[0].back()});
+    vanishing_coefficients_ = FirstBVanishes;
+    first_same_as_last_ = std::make_unique<FirstSameAsLast>();
+    first_same_as_last_->first = coefficients[0].front();
+    first_same_as_last_->last = coefficients[0].back();
     a_ = std::vector<double>(coefficients[0].begin() + 1,
                              coefficients[0].end());
     b_ = std::vector<double>(coefficients[0].begin() + 1,
                              coefficients[0].end());
-    a_.back() += a_first;
+    a_.back() += first_same_as_last_->first;
+    stages_ = b_.size();
+    CHECK_EQ(stages_, a_.size());
+  } else if (coefficients[0].back() == 0.0) {
+    vanishing_coefficients_ = LastAVanishes;
+    first_same_as_last_ = std::make_unique<FirstSameAsLast>();
+    first_same_as_last_->first = coefficients[1].front();
+    first_same_as_last_->last = coefficients[1].back();
+    a_ = std::vector<double>(coefficients[0].begin(),
+                             coefficients[0].end() - 1);
+    b_ = std::vector<double>(coefficients[0].begin(),
+                             coefficients[0].end() - 1);
+    b_.front() += first_same_as_last_->last;
     stages_ = b_.size();
     CHECK_EQ(stages_, a_.size());
   } else {
@@ -84,9 +97,13 @@ inline void SPRKIntegrator<Position, Momentum>::Initialize(
 
   // Runge-Kutta time weights.
   c_.resize(stages_);
-  c_[0] = 0.0;
+  if (vanishing_coefficients_ == FirstBVanishes) {
+    c_[0] = first_same_as_last_->first;
+  } else {
+    c_[0] = 0.0;
+  }
   for (int j = 1; j < stages_; ++j) {
-    c_[j] = c_[j - 1] + b_[j - 1];
+    c_[j] = c_[j - 1] + a_[j - 1];
   }
 }
 
@@ -98,18 +115,26 @@ void SPRKIntegrator<Position, Momentum>::Solve(
       AutonomousRightHandSideComputation compute_velocity,
       Parameters const& parameters,
       not_null<std::vector<SystemState>*> const solution) const {
-  if (first_same_as_last_) {
-    SolveOptimized<true>(compute_force, compute_velocity, parameters, solution);
-  } else {
-    SolveOptimized<false>(compute_force,
-                          compute_velocity,
-                          parameters,
-                          solution);
+  switch (vanishing_coefficients_) {
+    case None:
+      SolveOptimized<None>(
+          compute_force, compute_velocity, parameters, solution);
+      break;
+    case FirstBVanishes:
+      SolveOptimized<FirstBVanishes>(
+          compute_force, compute_velocity, parameters, solution);
+      break;
+    case LastAVanishes:
+      SolveOptimized<LastAVanishes>(
+          compute_force, compute_velocity, parameters, solution);
+      break;
+    default:
+      LOG(FATAL) << "Invalid vanishing coefficients";
   }
 }
 
 template<typename Position, typename Momentum>
-template<bool first_same_as_last,
+template<VanishingCoefficients vanishing_coefficients,
          typename AutonomousRightHandSideComputation,
          typename RightHandSideComputation>
 void SPRKIntegrator<Position, Momentum>::SolveOptimized(
@@ -156,8 +181,9 @@ void SPRKIntegrator<Position, Momentum>::SolveOptimized(
   // sure that we don't have drifts.
   DoublePrecision<Time> tn = parameters.initial.time;
 
-  // Whether position and force are synchronized between steps, relevant for
-  // first-same-as-last (FSAL) integrators.
+  // Whether position and momentum are synchronized between steps, relevant for
+  // first-same-as-last (FSAL) integrators. Time is always synchronous with
+  // position.
   bool synchronized = true;
   bool should_synchronize = false;
 

@@ -11,6 +11,12 @@ using base::not_null;
 
 namespace integrators {
 
+enum VanishingCoefficients {
+  None,
+  FirstBVanishes,
+  LastAVanishes,
+};
+
 template<typename Position, typename Momentum>
 class SPRKIntegrator : public SymplecticIntegrator<Position, Momentum> {
  public:
@@ -44,11 +50,13 @@ class SPRKIntegrator : public SymplecticIntegrator<Position, Momentum> {
  private:
 
   struct FirstSameAsLast {
-    double a_first;
-    double a_last;
+    double first;
+    double last;
   };
 
-  template<bool first_same_as_last,
+  // TODO(egg): either get rid of the non-autonomous RHS, or have neither of
+  // them be autonomous, this is messy.
+  template<VanishingCoefficients vanishing_coefficients_,
            typename AutonomousRightHandSideComputation,
            typename RightHandSideComputation>
   void SolveOptimized(RightHandSideComputation compute_force,
@@ -56,23 +64,32 @@ class SPRKIntegrator : public SymplecticIntegrator<Position, Momentum> {
                       Parameters const& parameters,
                       not_null<std::vector<SystemState>*> const solution) const;
 
-  // Not null if the first b coefficient vanishes, in that case we can spare a
-  // force computation and a velocity computation at every step.
-  // NOTE(egg): should be |std::optional|.
+  VanishingCoefficients vanishing_coefficients_;
+  // Null if, and only if, |vanishing_coefficients_| is |None|.
+  // If |vanishing_coefficients_| is |FirstBVanishes|, this contains the first
+  // and last a coefficients.
+  // If |vanishing_coefficients_| is |FirstAVanishes|, this contains the first
+  // and last b coefficients.
+  // These are used to desynchronize and synchronize first-same-as-last
+  // integrators.
   std::unique_ptr<FirstSameAsLast> first_same_as_last_;
 
   // The number of stages, or the number of stages minus one for a
   // first-same-as-last integrator.
   int stages_;
 
-  // The position and momentum nodes.  For a first-same-as-last integrator,
-  // we do not store the first b coefficient, and the last entry of |a_|
-  // is the sum of the first and last a coefficients.  Use
-  // |first_same_as_last_->a_first| and |first_same_as_last_->a_last| to
-  // desynchronize and synchronize.
+  // The position and momentum nodes.
+  // If |vanishing_coefficients_| is |FirstBVanishes|, we do not store the first
+  // b coefficient, and the last entry of |a_| is the sum of the first and last
+  // a coefficients.
+  // If |vanishing_coefficients_| is |LastAVanishes|, we do not store the last
+  // a coefficient, and the first entry of |b_| is the sum of the first and last
+  // b coefficients.
   std::vector<double> a_;
   std::vector<double> b_;
 
+  // TODO(egg): remove when we find a way to use only autonomous
+  // right-hand-sides.
   // The weights.
   std::vector<double> c_;
 };

@@ -50,7 +50,6 @@ class SPRKTest : public testing::Test {
   }
 
  protected:
-  SPRKIntegrator<Length, Momentum>::Coefficients (SPRKIntegrator<Length, Momentum>::*CoefficientComputation)
 
   SPRKIntegrator<Length, Momentum>                           integrator_;
   SPRKIntegrator<Length, Momentum>::Parameters               parameters_;
