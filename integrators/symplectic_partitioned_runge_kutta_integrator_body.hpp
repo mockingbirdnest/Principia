@@ -188,27 +188,25 @@ void SPRKIntegrator<Position, Momentum>::SolveOptimized(
   bool q_and_p_are_synchronized = true;
   bool should_synchronize = false;
 
-  auto const advance_Δqstage =
-      [&Δqstage_previous, &Δqstage_current, &dimension, &compute_velocity,
-       &p_stage, &v, &q_stage, &q_last](Time step) {
-        compute_velocity(p_stage, &v);
-        for (int k = 0; k < dimension; ++k) {
-          Position const Δq = (*Δqstage_previous)[k] + step * v[k];
-          q_stage[k] = q_last[k].value + Δq;
-          (*Δqstage_current)[k] = Δq;
-        }
-      };
+  #define ADVANCE_ΔQSTAGE(step) \
+  do {  \
+    compute_velocity(p_stage, &v);  \
+    for (int k = 0; k < dimension; ++k) {  \
+      Position const Δq = (*Δqstage_previous)[k] + step * v[k];  \
+      q_stage[k] = q_last[k].value + Δq;  \
+      (*Δqstage_current)[k] = Δq;  \
+    }  \
+  } while (false);
 
-  auto const advance_Δpstage =
-      [&compute_force, &q_stage, &f, &dimension, &Δpstage_previous,
-       &Δpstage_current, &p_stage, &p_last](Time step, Time q_clock) {
-        compute_force(q_clock, q_stage, &f);
-        for (int k = 0; k < dimension; ++k) {
-          Momentum const Δp = (*Δpstage_previous)[k] + step * f[k];
-          p_stage[k] = p_last[k].value + Δp;
-          (*Δpstage_current)[k] = Δp;
-        }
-      };
+  #define ADVANCE_ΔPSTAGE(step, q_clock) \
+  do { \
+    compute_force(q_clock, q_stage, &f); \
+    for (int k = 0; k < dimension; ++k) { \
+      Momentum const Δp = (*Δpstage_previous)[k] + step * f[k];\
+      p_stage[k] = p_last[k].value + Δp;\
+      (*Δpstage_current)[k] = Δp;\
+    } \
+  } while (false);
 
   // Integration.  For details see Wolfram Reference,
   // http://reference.wolfram.com/mathematica/tutorial/NDSolveSPRK.html#74387056
@@ -256,7 +254,7 @@ void SPRKIntegrator<Position, Momentum>::SolveOptimized(
       for (int k = 0; k < dimension; ++k) {
         p_stage[k] = p_last[k].value;
       }
-      advance_Δqstage(first_same_as_last_->first * h);
+      ADVANCE_ΔQSTAGE(first_same_as_last_->first * h);
       q_and_p_are_synchronized = false;
     }
     for (int i = 0; i < stages_; ++i) {
@@ -270,24 +268,24 @@ void SPRKIntegrator<Position, Momentum>::SolveOptimized(
       // bit more precise.
       if (vanishing_coefficients_ == LastAVanishes &&
           q_and_p_are_synchronized && i == 0) {
-        advance_Δpstage(first_same_as_last_->first * h,
+        ADVANCE_ΔPSTAGE(first_same_as_last_->first * h,
                         tn.value + (tn.error + c_[i] * h));
         q_and_p_are_synchronized = false;
       } else {
-        advance_Δpstage(b_[i] * h, tn.value + (tn.error + c_[i] * h));
+        ADVANCE_ΔPSTAGE(b_[i] * h, tn.value + (tn.error + c_[i] * h));
       }
 
       if (vanishing_coefficients_ == FirstBVanishes &&
           should_synchronize && i == stages_ - 1) {
-        advance_Δqstage(first_same_as_last_->last * h);
+        ADVANCE_ΔQSTAGE(first_same_as_last_->last * h);
         q_and_p_are_synchronized = true;
       } else {
-        advance_Δqstage(a_[i] * h);
+        ADVANCE_ΔQSTAGE(a_[i] * h);
       }
     }
     if (vanishing_coefficients_ == LastAVanishes && should_synchronize) {
       // TODO(egg): the second parameter below is really just tn.value + h.
-      advance_Δpstage(first_same_as_last_->last * h,
+      ADVANCE_ΔPSTAGE(first_same_as_last_->last * h,
                       tn.value + (tn.error + c_.back() * h));
       q_and_p_are_synchronized = true;
     }
