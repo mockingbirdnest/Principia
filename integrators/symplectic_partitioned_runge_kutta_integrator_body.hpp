@@ -184,8 +184,30 @@ void SPRKIntegrator<Position, Momentum>::SolveOptimized(
   // Whether position and momentum are synchronized between steps, relevant for
   // first-same-as-last (FSAL) integrators. Time is always synchronous with
   // position.
-  bool synchronized = true;
+  bool q_and_p_are_synchronized = true;
   bool should_synchronize = false;
+
+  auto const advance_Δqstage =
+      [&Δqstage_previous, &Δqstage_current, &dimension, &compute_velocity,
+       &p_stage, &v, &q_stage, &q_last](Time step) {
+        compute_velocity(p_stage, &v);
+        for (int k = 0; k < dimension; ++k) {
+          Position const Δq = (*Δqstage_previous)[k] + step * v[k];
+          q_stage[k] = q_last[k].value + Δq;
+          (*Δqstage_current)[k] = Δq;
+        }
+      };
+
+  auto const advance_Δpstage =
+      [&compute_force, &q_stage, &f, &dimension, &Δpstage_previous,
+       &Δpstage_current, &p_stage, &p_last](Time step, Time q_clock) {
+        compute_force(q_clock, q_stage, &f);
+        for (int k = 0; k < dimension; ++k) {
+          Momentum const Δp = (*Δpstage_previous)[k] + step * f[k];
+          p_stage[k] = p_last[k].value + Δp;
+          (*Δpstage_current)[k] = Δp;
+        }
+      };
 
   // Integration.  For details see Wolfram Reference,
   // http://reference.wolfram.com/mathematica/tutorial/NDSolveSPRK.html#74387056
@@ -221,57 +243,52 @@ void SPRKIntegrator<Position, Momentum>::SolveOptimized(
       q_stage[k] = q_last[k].value;
     }
 
-    if (first_same_as_last) {
-      if (synchronized) {
-        // Desynchronize.
-        for (int k = 0; k < dimension; ++k) {
-          p_stage[k] = p_last[k].value;
-        }
-        compute_velocity(p_stage, &v);
-        for (int k = 0; k < dimension; ++k) {
-          Position const Δq = (*Δqstage_previous)[k] +
-                              h * first_same_as_last_->a_first * v[k];
-          q_stage[k] = q_last[k].value + Δq;
-          (*Δqstage_current)[k] = Δq;
-        }
-      }
+
+    if (vanishing_coefficients_ != None) {
       should_synchronize = at_end ||
                            (parameters.sampling_period != 0 &&
                             sampling_phase % parameters.sampling_period == 0);
+    }
+
+    if (vanishing_coefficients_ == FirstBVanishes && q_and_p_are_synchronized) {
+      // Desynchronize.
+      for (int k = 0; k < dimension; ++k) {
+        p_stage[k] = p_last[k].value;
+      }
+      advance_Δqstage(first_same_as_last_->first * h);
+      q_and_p_are_synchronized = false;
     }
     for (int i = 0; i < stages_; ++i) {
       std::swap(Δqstage_current, Δqstage_previous);
       std::swap(Δpstage_current, Δpstage_previous);
 
-      // By using |tn.error| below we get a time value which is possibly a wee
-      // bit more precise.
-      compute_force(tn.value + (tn.error + c_[i] * h), q_stage, &f);
-
       // Beware, the p/q order matters here, the two computations depend on one
       // another.
-      for (int k = 0; k < dimension; ++k) {
-        Momentum const Δp = (*Δpstage_previous)[k] + h * b_[i] * f[k];
-        p_stage[k] = p_last[k].value + Δp;
-        (*Δpstage_current)[k] = Δp;
+
+      // By using |tn.error| below we get a time value which is possibly a wee
+      // bit more precise.
+      if (vanishing_coefficients_ == LastAVanishes &&
+          q_and_p_are_synchronized && i == 0) {
+        advance_Δpstage(first_same_as_last_->first * h,
+                        tn.value + (tn.error + c_[i] * h));
+        q_and_p_are_synchronized = false;
+      } else {
+        advance_Δpstage(b_[i] * h, tn.value + (tn.error + c_[i] * h));
       }
-      compute_velocity(p_stage, &v);
-      if (first_same_as_last && should_synchronize && i == stages_ - 1) {
-        break;
-      }
-      for (int k = 0; k < dimension; ++k) {
-        Position const Δq = (*Δqstage_previous)[k] + h * a_[i] * v[k];
-        q_stage[k] = q_last[k].value + Δq;
-        (*Δqstage_current)[k] = Δq;
+
+      if (vanishing_coefficients_ == FirstBVanishes &&
+          should_synchronize && i == stages_ - 1) {
+        advance_Δqstage(first_same_as_last_->last * h);
+        q_and_p_are_synchronized = true;
+      } else {
+        advance_Δqstage(a_[i] * h);
       }
     }
-    if (first_same_as_last && should_synchronize) {
-      for (int k = 0; k < dimension; ++k) {
-        Position const Δq = (*Δqstage_previous)[k] +
-                            h * first_same_as_last_->a_last * v[k];
-        q_stage[k] = q_last[k].value + Δq;
-        (*Δqstage_current)[k] = Δq;
-      }
-      synchronized = true;
+    if (vanishing_coefficients_ == LastAVanishes && should_synchronize) {
+      // TODO(egg): the second parameter below is really just tn.value + h.
+      advance_Δpstage(first_same_as_last_->last * h,
+                      tn.value + (tn.error + c_.back() * h));
+      q_and_p_are_synchronized = true;
     }
     // Compensated summation from "'SymplecticPartitionedRungeKutta' Method
     // for NDSolve", algorithm 2.

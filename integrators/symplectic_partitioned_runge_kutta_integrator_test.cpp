@@ -50,6 +50,9 @@ class SPRKTest : public testing::Test {
   }
 
  protected:
+  SPRKTest() {
+    integrator_.Initialize(integrator_.Order5Optimal());
+  }
 
   SPRKIntegrator<Length, Momentum>                           integrator_;
   SPRKIntegrator<Length, Momentum>::Parameters               parameters_;
