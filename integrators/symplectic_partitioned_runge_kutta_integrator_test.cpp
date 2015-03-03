@@ -1,6 +1,4 @@
 ﻿
-#define TRACE_SYMPLECTIC_PARTITIONED_RUNGE_KUTTA_INTEGRATOR
-
 #include "integrators/symplectic_partitioned_runge_kutta_integrator.hpp"
 
 #include <algorithm>
@@ -52,9 +50,7 @@ class SPRKTest : public testing::Test {
   }
 
  protected:
-  void SetUp() override {
-    integrator_.Initialize(integrator_.Order5Optimal());
-  }
+  SPRKIntegrator<Length, Momentum>::Coefficients (SPRKIntegrator<Length, Momentum>::*CoefficientComputation)
 
   SPRKIntegrator<Length, Momentum>                           integrator_;
   SPRKIntegrator<Length, Momentum>::Parameters               parameters_;

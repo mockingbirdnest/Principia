@@ -30,6 +30,7 @@ class SPRKIntegrator : public SymplecticIntegrator<Position, Momentum> {
   Coefficients const& Leapfrog() const;
   Coefficients const& Order4FirstSameAsLast() const;
   Coefficients const& Order5Optimal() const;
+  // http://sixtrack.web.cern.ch/SixTrack/doc/yoshida00.pdf
 
   void Initialize(Coefficients const& coefficients) override;
 
