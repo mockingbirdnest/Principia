@@ -20,7 +20,7 @@ class MyStream : public google::protobuf::io::ZeroCopyInputStream {
  public:
   MyStream(not_null<std::uint8_t*> data,
            int const size,
-           std::function<void(Bytes const bytes)> on_empty);
+           std::function<Bytes()> on_empty);
   ~MyStream() = default;
 
   bool Next(const void** data, int* size) override;
@@ -32,7 +32,7 @@ class MyStream : public google::protobuf::io::ZeroCopyInputStream {
   int const size_;
   not_null<std::uint8_t*> data1_;
   not_null<std::uint8_t*> data2_;
-  std::function<void(Bytes const bytes)> on_empty_;
+  std::function<Bytes()> on_empty_;
 
   int position_;
   int last_returned_size_;   // How many bytes we returned last time Next()
@@ -46,7 +46,13 @@ class PushDeserializer {
   explicit PushDeserializer(int const max_size);
   ~PushDeserializer();
 
+  void Start(not_null<google::protobuf::Message const*> const message);
+
+  void Push(Bytes const bytes);
+
  private:
+  Bytes Pull();
+
   std::unique_ptr<std::uint8_t[]> data_;
   internal::MyStream stream_;
   std::unique_ptr<std::thread> thread_;

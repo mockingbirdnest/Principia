@@ -12,7 +12,7 @@ namespace internal {
 
 MyStream::MyStream(not_null<std::uint8_t*> data,
                    int const size,
-                   std::function<void(Bytes const bytes)> on_empty)
+                   std::function<Bytes()> on_empty)
     : size_(size),
       data1_(&data[0]),
       data2_(&data[size_]),
@@ -25,7 +25,8 @@ bool MyStream::Next(const void** data, int* size) {
     // We're at the end of the array.  Hand the current array over to the
     // callback to be filled.
     //TODO(phl): What if it doesn't fill it completely?
-    on_empty_(Bytes(data1_, size_));
+    Bytes const bytes = on_empty_();
+    //TODO(phl): and then?
     position_ = 0;
     last_returned_size_ = 0;
     swap(data1_, data2_);
