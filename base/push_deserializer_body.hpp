@@ -2,6 +2,8 @@
 
 #include "base/push_deserializer.hpp"
 
+#include "glog/logging.h"
+
 namespace principia {
 
 using std::swap;
@@ -65,6 +67,59 @@ std::int64_t MyStream::ByteCount() const {
 }
 
 }  // namespace internal
+
+PushDeserializer::PushDeserializer(int const max_size)
+    : data_(std::make_unique<std::uint8_t[]>(max_size << 1)),
+      stream_(data_.get(),
+              max_size,
+              std::bind(&PushDeserializer::Pull, this)),
+      done_(false) {}
+
+PushDeserializer::~PushDeserializer() {
+  if (thread_ != nullptr) {
+    thread_->join();
+  }
+}
+
+void PushDeserializer::Start(
+    not_null<google::protobuf::Message*> const message) {
+  CHECK(thread_ == nullptr);
+  thread_ = std::make_unique<std::thread>([this, message](){
+    CHECK(message->ParseFromZeroCopyStream(&stream_));
+    {
+      std::unique_lock<std::mutex> l(lock_);
+      done_ = true;
+    }
+    holder_is_full_.notify_all();
+  });
+}
+
+void PushDeserializer::Push(Bytes const bytes) {
+  {
+    std::unique_lock<std::mutex> l(lock_);
+    holder_is_empty_.wait(l, [this]() { return holder_ == nullptr; });
+    holder_ = std::make_unique<Bytes>(bytes.data, bytes.size);
+  }
+  holder_is_full_.notify_all();
+}
+
+Bytes PushDeserializer::Pull() {
+  std::unique_ptr<Bytes const> result;
+  {
+    std::unique_lock<std::mutex> l(lock_);
+    holder_is_full_.wait(l, [this]() { return done_ || holder_ != nullptr; });
+    if (holder_ != nullptr) {
+      result = std::move(holder_);
+    }
+  }
+  holder_is_empty_.notify_all();
+  if (result == nullptr) {
+    // Done.
+    return Bytes::Null;
+  } else {
+    return *result;
+  }
+}
 
 }  // namespace base
 }  // namespace principia

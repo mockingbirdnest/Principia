@@ -85,7 +85,7 @@ class PullSerializer {
   std::unique_ptr<std::thread> thread_;
 
   // Synchronization objects for the |holder_|, which contains the |Bytes|
-  // object filled by |Set| and not yet consumed by |Get|.  The |holder_| is
+  // object filled by |Push| and not yet consumed by |Pull|.  The |holder_| is
   // effectively a 1-element queue.
   std::mutex lock_;
   std::condition_variable holder_is_empty_;

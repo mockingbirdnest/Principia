@@ -7,6 +7,7 @@
 #include <thread>  // NOLINT(build/c++11)
 
 #include "base/bytes.hpp"
+#include "base/macros.hpp"
 #include "base/not_null.hpp"
 #include "google/protobuf/message.h"
 #include "google/protobuf/io/zero_copy_stream.h"
@@ -46,7 +47,7 @@ class PushDeserializer {
   explicit PushDeserializer(int const max_size);
   ~PushDeserializer();
 
-  void Start(not_null<google::protobuf::Message const*> const message);
+  void Start(not_null<google::protobuf::Message*> const message);
 
   void Push(Bytes const bytes);
 
@@ -57,6 +58,16 @@ class PushDeserializer {
   internal::MyStream stream_;
   std::unique_ptr<std::thread> thread_;
 
+  // Synchronization objects for the |holder_|, which contains the |Bytes|
+  // object filled by |Push| and not yet consumed by |Pull|.  The |holder_| is
+  // effectively a 1-element queue.
+  std::mutex lock_;
+  std::condition_variable holder_is_empty_;
+  std::condition_variable holder_is_full_;
+  std::unique_ptr<Bytes> holder_ GUARDED_BY(lock_);  // std::optional, really.
+
+  // Set to true when the |thread_| completes.
+  bool done_ GUARDED_BY(lock_);
 };
 
 }  // namespace base
