@@ -137,8 +137,8 @@ inline void SPRKIntegrator<Position, Momentum>::Initialize(
   c_.resize(stages_);
   if (vanishing_coefficients_ == FirstBVanishes) {
     c_[0] = first_same_as_last_->first;
-  } else {
-    c_[0] = 0.0;
+  } else if (vanishing_coefficients_ == LastAVanishes) {
+    c_[0] = a_[0];
   }
   for (int j = 1; j < stages_; ++j) {
     c_[j] = c_[j - 1] + a_[j - 1];
