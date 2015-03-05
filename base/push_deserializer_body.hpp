@@ -16,10 +16,11 @@ MyStream::MyStream(std::function<Bytes()> on_empty)
     : size_(0),
       data_(Bytes().data),
       on_empty_(std::move(on_empty)),
+      byte_count_(0),
       position_(0),
       last_returned_size_(0) {}
 
-bool MyStream::Next(const void** data, int* size) {
+bool MyStream::Next(const void** const data, int* const size) {
   if (position_ == size_) {
     // We're at the end of the array.  Obtain a new one.
     Bytes const bytes = on_empty_();
@@ -30,39 +31,51 @@ bool MyStream::Next(const void** data, int* size) {
     size_ = bytes.size;
     data_ = bytes.data;
     position_ = 0;
-    last_returned_size_ = 0;
+    last_returned_size_ = 0;  // Don't let caller back up.
   }
   CHECK_LT(position_, size_);
   last_returned_size_ = size_ - position_;
   *data = &data_[position_];
   *size = last_returned_size_;
+  byte_count_ += last_returned_size_;
   position_ += last_returned_size_;
   return true;
 }
 
-void MyStream::BackUp(int count) {
+void MyStream::BackUp(int const count) {
   CHECK_GT(last_returned_size_, 0)
       << "BackUp() can only be called after a successful Next().";
   CHECK_LE(count, last_returned_size_);
   CHECK_GE(count, 0);
   position_ -= count;
-  last_returned_size_ = 0;  // Don't let caller back up further.
+  byte_count_ -= count;
+  last_returned_size_ = 0;  // Don't let caller back up.
 }
 
-bool MyStream::Skip(int count) {
+bool MyStream::Skip(int const count) {
   CHECK_GE(count, 0);
   last_returned_size_ = 0;   // Don't let caller back up.
-  if (count > size_ - position_) {
-    position_ = size_;
-    return false;
-  } else {
-    position_ += count;
-    return true;
+  int remaining = count;
+  while (remaining > size_ - position_) {
+    byte_count_ += size_ - position_;
+    remaining -= size_ - position_;
+    // We're at the end of the array.  Obtain a new one.
+    Bytes const bytes = on_empty_();
+    if (bytes.size == 0) {
+      // At end of input data.
+      return false;
+    }
+    size_ = bytes.size;
+    data_ = bytes.data;
+    position_ = 0;
   }
+  byte_count_ += remaining;
+  position_ += remaining;
+  return true;
 }
 
 std::int64_t MyStream::ByteCount() const {
-  return position_;
+  return byte_count_;
 }
 
 }  // namespace internal
@@ -103,7 +116,7 @@ void PushDeserializer::Push(Bytes const bytes) {
       queue_has_room_.wait(l, [this]() {
         return queue_.size() < number_of_chunks_;
       });
-      queue_.emplace(bytes.data, bytes.size);
+      queue_.emplace(current.data, std::min(current.size, chunk_size_));
     }
     queue_has_elements_.notify_all();
     current.data = &current.data[chunk_size_];
@@ -116,10 +129,8 @@ Bytes PushDeserializer::Pull() {
   {
     std::unique_lock<std::mutex> l(lock_);
     queue_has_elements_.wait(l, [this]() { return !queue_.empty(); });
-
-    if (!queue_.empty()) {
-      result = queue_.front();
-    }
+    result = queue_.front();
+    queue_.pop();
   }
   queue_has_room_.notify_all();
   return result;

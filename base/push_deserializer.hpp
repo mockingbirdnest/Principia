@@ -33,6 +33,7 @@ class MyStream : public google::protobuf::io::ZeroCopyInputStream {
   not_null<std::uint8_t const*> data_;
   std::function<Bytes()> on_empty_;
 
+  int byte_count_;
   int position_;
   int last_returned_size_;   // How many bytes we returned last time Next()
                              // was called (used for error checking only).
