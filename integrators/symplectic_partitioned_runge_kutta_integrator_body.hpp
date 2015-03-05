@@ -10,6 +10,36 @@
 // Mixed assemblies are not supported by Unity/Mono.
 #include "glog/logging.h"
 
+#ifdef ADVANCE_ΔQSTAGE
+#error ADVANCE_ΔQSTAGE already defined
+#else
+#define ADVANCE_ΔQSTAGE(step)                                    \
+  do {                                                           \
+    LOG(ERROR)<<"ADVANCE_ΔQSTAGE " << step; \
+    compute_velocity(p_stage, &v);                               \
+    for (int k = 0; k < dimension; ++k) {                        \
+      Position const Δq = (*Δqstage_previous)[k] + step * v[k];  \
+      q_stage[k] = q_last[k].value + Δq;                         \
+      (*Δqstage_current)[k] = Δq;                                \
+    }                                                            \
+  } while (false)
+#endif
+
+#ifdef ADVANCE_ΔPSTAGE
+#error ADVANCE_ΔPSTAGE already defined
+#else
+#define ADVANCE_ΔPSTAGE(step, q_clock)                           \
+  do {                                                           \
+    LOG(ERROR)<<"ADVANCE_ΔPSTAGE " << step; \
+    compute_force(q_clock, q_stage, &f);                         \
+    for (int k = 0; k < dimension; ++k) {                        \
+      Momentum const Δp = (*Δpstage_previous)[k] + step * f[k];  \
+      p_stage[k] = p_last[k].value + Δp;                         \
+      (*Δpstage_current)[k] = Δp;                                \
+    }                                                            \
+  } while (false)
+#endif
+
 namespace principia {
 
 using quantities::Quotient;
@@ -78,8 +108,8 @@ inline void SPRKIntegrator<Position, Momentum>::Initialize(
     first_same_as_last_->last = coefficients[0].back();
     a_ = std::vector<double>(coefficients[0].begin() + 1,
                              coefficients[0].end());
-    b_ = std::vector<double>(coefficients[0].begin() + 1,
-                             coefficients[0].end());
+    b_ = std::vector<double>(coefficients[1].begin() + 1,
+                             coefficients[1].end());
     a_.back() += first_same_as_last_->first;
     stages_ = b_.size();
     CHECK_EQ(stages_, a_.size());
@@ -90,8 +120,8 @@ inline void SPRKIntegrator<Position, Momentum>::Initialize(
     first_same_as_last_->last = coefficients[1].back();
     a_ = std::vector<double>(coefficients[0].begin(),
                              coefficients[0].end() - 1);
-    b_ = std::vector<double>(coefficients[0].begin(),
-                             coefficients[0].end() - 1);
+    b_ = std::vector<double>(coefficients[1].begin(),
+                             coefficients[1].end() - 1);
     b_.front() += first_same_as_last_->last;
     stages_ = b_.size();
     CHECK_EQ(stages_, a_.size());
@@ -195,26 +225,6 @@ void SPRKIntegrator<Position, Momentum>::SolveOptimized(
   bool q_and_p_are_synchronized = true;
   bool should_synchronize = false;
 
-#define ADVANCE_ΔQSTAGE(step)                                    \
-  do {                                                           \
-    compute_velocity(p_stage, &v);                               \
-    for (int k = 0; k < dimension; ++k) {                        \
-      Position const Δq = (*Δqstage_previous)[k] + step * v[k];  \
-      q_stage[k] = q_last[k].value + Δq;                         \
-      (*Δqstage_current)[k] = Δq;                                \
-    }                                                            \
-  } while (false)
-
-#define ADVANCE_ΔPSTAGE(step, q_clock)                           \
-  do {                                                           \
-    compute_force(q_clock, q_stage, &f);                         \
-    for (int k = 0; k < dimension; ++k) {                        \
-      Momentum const Δp = (*Δpstage_previous)[k] + step * f[k];  \
-      p_stage[k] = p_last[k].value + Δp;                         \
-      (*Δpstage_current)[k] = Δp;                                \
-    }                                                            \
-  } while (false)
-
   // Integration.  For details see Wolfram Reference,
   // http://reference.wolfram.com/mathematica/tutorial/NDSolveSPRK.html#74387056
   bool at_end = !parameters.tmax_is_exact && parameters.tmax < tn.value + h;
@@ -258,6 +268,8 @@ void SPRKIntegrator<Position, Momentum>::SolveOptimized(
 
     if (vanishing_coefficients_ == FirstBVanishes && q_and_p_are_synchronized) {
       // Desynchronize.
+      std::swap(Δqstage_current, Δqstage_previous);
+      std::swap(Δpstage_current, Δpstage_previous);
       for (int k = 0; k < dimension; ++k) {
         p_stage[k] = p_last[k].value;
       }
@@ -291,6 +303,8 @@ void SPRKIntegrator<Position, Momentum>::SolveOptimized(
       }
     }
     if (vanishing_coefficients_ == LastAVanishes && should_synchronize) {
+      std::swap(Δqstage_current, Δqstage_previous);
+      std::swap(Δpstage_current, Δpstage_previous);
       // TODO(egg): the second parameter below is really just tn.value + h.
       ADVANCE_ΔPSTAGE(first_same_as_last_->last * h,
                       tn.value + (tn.error + c_.back() * h));
@@ -323,9 +337,6 @@ void SPRKIntegrator<Position, Momentum>::SolveOptimized(
 
   }
 
-#undef ADVANCE_ΔQSTAGE
-#undef ADVANCE_ΔPSTAGE
-
   if (parameters.sampling_period == 0) {
     solution->emplace_back();
     SystemState* state = &solution->back();
@@ -342,3 +353,6 @@ void SPRKIntegrator<Position, Momentum>::SolveOptimized(
 
 }  // namespace integrators
 }  // namespace principia
+
+#undef ADVANCE_ΔQSTAGE
+#undef ADVANCE_ΔPSTAGE

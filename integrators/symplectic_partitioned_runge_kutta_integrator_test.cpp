@@ -30,6 +30,10 @@ using quantities::SIUnit;
 using quantities::Speed;
 using quantities::Stiffness;
 using quantities::Time;
+using si::Kilogram;
+using si::Metre;
+using si::Newton;
+using si::Second;
 using testing_utilities::BidimensionalDatasetMathematicaInput;
 using testing_utilities::ComputeHarmonicOscillatorForce;
 using testing_utilities::ComputeHarmonicOscillatorVelocity;
@@ -50,14 +54,54 @@ class SPRKTest : public testing::Test {
   }
 
  protected:
+  using Integrator = SPRKIntegrator<Length, Momentum>;
+
   SPRKTest() {
     integrator_.Initialize(integrator_.Order5Optimal());
+    schemes_ = {&Integrator::Leapfrog, &Integrator::PseudoLeapfrog,
+                &Integrator::Order4FirstSameAsLast, &Integrator::Order5Optimal};
   }
 
-  SPRKIntegrator<Length, Momentum>                           integrator_;
-  SPRKIntegrator<Length, Momentum>::Parameters               parameters_;
-  std::vector<SPRKIntegrator<Length, Momentum>::SystemState> solution_;
+  std::vector<Integrator::Coefficients const& (Integrator::*)() const> schemes_;
+
+  Integrator                           integrator_;
+  Integrator::Parameters               parameters_;
+  std::vector<Integrator::SystemState> solution_;
 };
+
+TEST_F(SPRKTest, ConsistentWeights) {
+  // Check that the time argument of the force computation is correct by
+  // integrating uniform linear motion.
+  // We check this for all schemes.
+  Speed const v = 1 * Metre / Second;
+  Mass const m = 1 * Kilogram;
+  int i;  // Declared here for Lambda capture.
+  auto compute_force = [&i, v](Time const& t,
+                           std::vector<Length> const& q,
+                           not_null<std::vector<Force>*> const result) {
+    // EXPECT_EQ(v * t, q[0]) << i;
+    LOG(ERROR)<<"x = " << q[0];
+    LOG(ERROR)<<"t = " << t;
+    (*result)[0] = 0 * Newton;
+  };
+  auto compute_velocity = [&i, m, v](std::vector<Momentum> const& p,
+                                 not_null<std::vector<Speed>*> const result) {
+    EXPECT_EQ(v, p[0] / m) << i;
+    (*result)[0] = p[0] / m;
+  };
+  parameters_.initial.positions.emplace_back(0 * Metre);
+  parameters_.initial.momenta.emplace_back(m * v);
+  parameters_.initial.time = 0 * Second;
+  parameters_.tmax = 15 * Second;
+  parameters_.Δt = 1 * Second;
+  parameters_.sampling_period = 5;
+  for (i = 0; i != schemes_.size(); ++i) {
+    integrator_.Initialize((integrator_.*schemes_[i])());
+    integrator_.Solve(compute_force, compute_velocity, parameters_, &solution_);
+    EXPECT_EQ(v * parameters_.tmax,
+              solution_.back().positions.back().value) << i;
+  }
+}
 
 TEST_F(SPRKTest, HarmonicOscillator) {
   parameters_.initial.positions.emplace_back(SIUnit<Length>());
