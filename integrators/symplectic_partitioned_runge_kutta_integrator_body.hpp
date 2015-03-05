@@ -137,8 +137,8 @@ inline void SPRKIntegrator<Position, Momentum>::Initialize(
   c_.resize(stages_);
   if (vanishing_coefficients_ == FirstBVanishes) {
     c_[0] = first_same_as_last_->first;
-  } else if (vanishing_coefficients_ == LastAVanishes) {
-    c_[0] = a_[0];
+  } else {
+    c_[0] = 0;
   }
   for (int j = 1; j < stages_; ++j) {
     c_[j] = c_[j - 1] + a_[j - 1];
@@ -269,7 +269,6 @@ void SPRKIntegrator<Position, Momentum>::SolveOptimized(
     if (vanishing_coefficients_ == FirstBVanishes && q_and_p_are_synchronized) {
       // Desynchronize.
       std::swap(Δqstage_current, Δqstage_previous);
-      std::swap(Δpstage_current, Δpstage_previous);
       for (int k = 0; k < dimension; ++k) {
         p_stage[k] = p_last[k].value;
       }
@@ -288,7 +287,7 @@ void SPRKIntegrator<Position, Momentum>::SolveOptimized(
       if (vanishing_coefficients_ == LastAVanishes &&
           q_and_p_are_synchronized && i == 0) {
         ADVANCE_ΔPSTAGE(first_same_as_last_->first * h,
-                        tn.value + (tn.error + c_[i] * h));
+                        tn.value);
         q_and_p_are_synchronized = false;
       } else {
         ADVANCE_ΔPSTAGE(b_[i] * h, tn.value + (tn.error + c_[i] * h));
@@ -303,11 +302,10 @@ void SPRKIntegrator<Position, Momentum>::SolveOptimized(
       }
     }
     if (vanishing_coefficients_ == LastAVanishes && should_synchronize) {
-      std::swap(Δqstage_current, Δqstage_previous);
       std::swap(Δpstage_current, Δpstage_previous);
       // TODO(egg): the second parameter below is really just tn.value + h.
       ADVANCE_ΔPSTAGE(first_same_as_last_->last * h,
-                      tn.value + (tn.error + c_.back() * h));
+                      tn.value + h);
       q_and_p_are_synchronized = true;
     }
     // Compensated summation from "'SymplecticPartitionedRungeKutta' Method
