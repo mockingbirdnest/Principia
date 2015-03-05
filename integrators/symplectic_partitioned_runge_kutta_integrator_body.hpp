@@ -28,6 +28,13 @@ SPRKIntegrator<Position, Momentum>::Leapfrog() const {
 
 template<typename Position, typename Momentum>
 inline typename SPRKIntegrator<Position, Momentum>::Coefficients const&
+SPRKIntegrator<Position, Momentum>::PseudoLeapfrog() const {
+  static Coefficients const pseudo_leapfrog = {{ 1.0, 0.0}, { 0.5, 0.5}};
+  return pseudo_leapfrog;
+}
+
+template<typename Position, typename Momentum>
+inline typename SPRKIntegrator<Position, Momentum>::Coefficients const&
 SPRKIntegrator<Position, Momentum>::Order4FirstSameAsLast() const {
   static Coefficients const order_4_first_same_as_last = {
       { 0.6756035959798288170,
