@@ -18,10 +18,11 @@ namespace base {
 
 namespace internal {
 
-class MyStream : public google::protobuf::io::ZeroCopyInputStream {
+class DelegatingArrayInputStream
+    : public google::protobuf::io::ZeroCopyInputStream {
  public:
-  explicit MyStream(std::function<Bytes()> on_empty);
-  ~MyStream() = default;
+  explicit DelegatingArrayInputStream(std::function<Bytes()> on_empty);
+  ~DelegatingArrayInputStream() = default;
 
   bool Next(const void** data, int* size) override;
   void BackUp(int count) override;
@@ -56,7 +57,7 @@ class PushDeserializer {
 
   int const chunk_size_;
   int const number_of_chunks_;
-  internal::MyStream stream_;
+  internal::DelegatingArrayInputStream stream_;
   std::unique_ptr<std::thread> thread_;
 
   // Synchronization objects for the |queue_|, which contains the |Bytes|

@@ -12,7 +12,8 @@ namespace base {
 
 namespace internal {
 
-MyStream::MyStream(std::function<Bytes()> on_empty)
+DelegatingArrayInputStream::DelegatingArrayInputStream(
+    std::function<Bytes()> on_empty)
     : size_(0),
       data_(Bytes().data),
       on_empty_(std::move(on_empty)),
@@ -20,7 +21,8 @@ MyStream::MyStream(std::function<Bytes()> on_empty)
       position_(0),
       last_returned_size_(0) {}
 
-bool MyStream::Next(const void** const data, int* const size) {
+bool DelegatingArrayInputStream::Next(const void** const data,
+                                      int* const size) {
   if (position_ == size_) {
     // We're at the end of the array.  Obtain a new one.
     Bytes const bytes = on_empty_();
@@ -42,7 +44,7 @@ bool MyStream::Next(const void** const data, int* const size) {
   return true;
 }
 
-void MyStream::BackUp(int const count) {
+void DelegatingArrayInputStream::BackUp(int const count) {
   CHECK_GT(last_returned_size_, 0)
       << "BackUp() can only be called after a successful Next().";
   CHECK_LE(count, last_returned_size_);
@@ -52,7 +54,7 @@ void MyStream::BackUp(int const count) {
   last_returned_size_ = 0;  // Don't let caller back up.
 }
 
-bool MyStream::Skip(int const count) {
+bool DelegatingArrayInputStream::Skip(int const count) {
   CHECK_GE(count, 0);
   last_returned_size_ = 0;   // Don't let caller back up.
   int remaining = count;
@@ -74,7 +76,7 @@ bool MyStream::Skip(int const count) {
   return true;
 }
 
-std::int64_t MyStream::ByteCount() const {
+std::int64_t DelegatingArrayInputStream::ByteCount() const {
   return byte_count_;
 }
 
