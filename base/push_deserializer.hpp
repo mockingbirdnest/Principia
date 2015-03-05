@@ -42,7 +42,8 @@ class MyStream : public google::protobuf::io::ZeroCopyInputStream {
 
 class PushDeserializer {
  public:
-  explicit PushDeserializer(int const number_of_slots);
+  PushDeserializer(int const chunk_size,
+                   int const number_of_chunks);
   ~PushDeserializer();
 
   void Start(not_null<google::protobuf::Message*> const message);
@@ -52,8 +53,8 @@ class PushDeserializer {
  private:
   Bytes Pull();
 
-  int const number_of_slots_;
-  std::unique_ptr<std::uint8_t[]> data_;
+  int const chunk_size_;
+  int const number_of_chunks_;
   internal::MyStream stream_;
   std::unique_ptr<std::thread> thread_;
 
@@ -63,9 +64,6 @@ class PushDeserializer {
   std::condition_variable queue_has_room_;
   std::condition_variable queue_has_elements_;
   std::queue<Bytes> queue_ GUARDED_BY(lock_);
-
-  // Set to true when the |thread_| completes.
-  bool done_ GUARDED_BY(lock_);
 };
 
 }  // namespace base

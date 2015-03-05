@@ -67,10 +67,11 @@ std::int64_t MyStream::ByteCount() const {
 
 }  // namespace internal
 
-PushDeserializer::PushDeserializer(int const number_of_slots)
-    : number_of_slots_(number_of_slots),
-      stream_(std::bind(&PushDeserializer::Pull, this)),
-      done_(false) {}
+PushDeserializer::PushDeserializer(int const chunk_size,
+                                   int const number_of_chunks)
+    : chunk_size_(chunk_size),
+      number_of_chunks_(number_of_chunks),
+      stream_(std::bind(&PushDeserializer::Pull, this)) {}
 
 PushDeserializer::~PushDeserializer() {
   if (thread_ != nullptr) {
@@ -84,29 +85,37 @@ void PushDeserializer::Start(
   thread_ = std::make_unique<std::thread>([this, message](){
     CHECK(message->ParseFromZeroCopyStream(&stream_));
     {
+      // Append a sentinel.  It doesn't count against the queue capacity.
       std::unique_lock<std::mutex> l(lock_);
-      done_ = true;
+      queue_.emplace(Bytes().data, 0);
     }
     queue_has_elements_.notify_all();
   });
 }
 
 void PushDeserializer::Push(Bytes const bytes) {
-  {
-    std::unique_lock<std::mutex> l(lock_);
-    queue_has_room_.wait(l, [this]() {
-      return queue_.size() < number_of_slots_;
-    });
-    queue_.emplace(bytes.data, bytes.size);
+  // Slice the incoming data in chunks of size at most |chunk_size|.  Release
+  // the lock after each chunk to give the deserializer a chance to run.
+  Bytes current = bytes;
+  while (current.size > 0) {
+    {
+      std::unique_lock<std::mutex> l(lock_);
+      queue_has_room_.wait(l, [this]() {
+        return queue_.size() < number_of_chunks_;
+      });
+      queue_.emplace(bytes.data, bytes.size);
+    }
+    queue_has_elements_.notify_all();
+    current.data = &current.data[chunk_size_];
+    current.size -= chunk_size_;
   }
-  queue_has_elements_.notify_all();
 }
 
 Bytes PushDeserializer::Pull() {
   Bytes result;
   {
     std::unique_lock<std::mutex> l(lock_);
-    queue_has_elements_.wait(l, [this]() { return done_ || !queue_.empty(); });
+    queue_has_elements_.wait(l, [this]() { return !queue_.empty(); });
 
     if (!queue_.empty()) {
       result = queue_.front();
