@@ -11,6 +11,7 @@
 #include "gtest/gtest.h"
 #include "quantities/quantities.hpp"
 #include "quantities/named_quantities.hpp"
+#include "testing_utilities/almost_equals.hpp"
 #include "testing_utilities/numerical_analysis.hpp"
 #include "testing_utilities/numerics.hpp"
 #include "testing_utilities/statistics.hpp"
@@ -34,6 +35,7 @@ using si::Kilogram;
 using si::Metre;
 using si::Newton;
 using si::Second;
+using testing_utilities::AlmostEquals;
 using testing_utilities::BidimensionalDatasetMathematicaInput;
 using testing_utilities::ComputeHarmonicOscillatorForce;
 using testing_utilities::ComputeHarmonicOscillatorVelocity;
@@ -79,9 +81,7 @@ TEST_F(SPRKTest, ConsistentWeights) {
   auto compute_force = [&i, v](Time const& t,
                            std::vector<Length> const& q,
                            not_null<std::vector<Force>*> const result) {
-    // EXPECT_EQ(v * t, q[0]) << i;
-    LOG(ERROR)<<"x = " << q[0];
-    LOG(ERROR)<<"t = " << t;
+    EXPECT_THAT(q[0], AlmostEquals(v * t, 0, 1)) << i;
     (*result)[0] = 0 * Newton;
   };
   auto compute_velocity = [&i, m, v](std::vector<Momentum> const& p,
@@ -92,7 +92,7 @@ TEST_F(SPRKTest, ConsistentWeights) {
   parameters_.initial.positions.emplace_back(0 * Metre);
   parameters_.initial.momenta.emplace_back(m * v);
   parameters_.initial.time = 0 * Second;
-  parameters_.tmax = 15 * Second;
+  parameters_.tmax = 16 * Second;
   parameters_.Δt = 1 * Second;
   parameters_.sampling_period = 5;
   for (i = 0; i != schemes_.size(); ++i) {

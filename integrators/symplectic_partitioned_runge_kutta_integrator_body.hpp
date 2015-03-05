@@ -15,7 +15,6 @@
 #else
 #define ADVANCE_ΔQSTAGE(step)                                    \
   do {                                                           \
-    LOG(ERROR)<<"ADVANCE_ΔQSTAGE " << step; \
     compute_velocity(p_stage, &v);                               \
     for (int k = 0; k < dimension; ++k) {                        \
       Position const Δq = (*Δqstage_previous)[k] + step * v[k];  \
@@ -30,7 +29,6 @@
 #else
 #define ADVANCE_ΔPSTAGE(step, q_clock)                           \
   do {                                                           \
-    LOG(ERROR)<<"ADVANCE_ΔPSTAGE " << step; \
     compute_force(q_clock, q_stage, &f);                         \
     for (int k = 0; k < dimension; ++k) {                        \
       Momentum const Δp = (*Δpstage_previous)[k] + step * f[k];  \
