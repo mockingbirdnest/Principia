@@ -4,6 +4,7 @@
 #include <condition_variable>  // NOLINT(build/c++11)
 #include <memory>
 #include <mutex>  // NOLINT(build/c++11)
+#include <queue>
 #include <thread>  // NOLINT(build/c++11)
 
 #include "base/bytes.hpp"
@@ -19,9 +20,7 @@ namespace internal {
 
 class MyStream : public google::protobuf::io::ZeroCopyInputStream {
  public:
-  MyStream(not_null<std::uint8_t*> data,
-           int const size,
-           std::function<Bytes()> on_empty);
+  explicit MyStream(std::function<Bytes()> on_empty);
   ~MyStream() = default;
 
   bool Next(const void** data, int* size) override;
@@ -30,9 +29,8 @@ class MyStream : public google::protobuf::io::ZeroCopyInputStream {
   std::int64_t ByteCount() const override;
 
  private:
-  int const size_;
-  not_null<std::uint8_t*> data1_;
-  not_null<std::uint8_t*> data2_;
+  int size_;
+  not_null<std::uint8_t const*> data_;
   std::function<Bytes()> on_empty_;
 
   int position_;
@@ -44,7 +42,7 @@ class MyStream : public google::protobuf::io::ZeroCopyInputStream {
 
 class PushDeserializer {
  public:
-  explicit PushDeserializer(int const max_size);
+  explicit PushDeserializer(int const number_of_slots);
   ~PushDeserializer();
 
   void Start(not_null<google::protobuf::Message*> const message);
@@ -54,17 +52,17 @@ class PushDeserializer {
  private:
   Bytes Pull();
 
+  int const number_of_slots_;
   std::unique_ptr<std::uint8_t[]> data_;
   internal::MyStream stream_;
   std::unique_ptr<std::thread> thread_;
 
-  // Synchronization objects for the |holder_|, which contains the |Bytes|
-  // object filled by |Push| and not yet consumed by |Pull|.  The |holder_| is
-  // effectively a 1-element queue.
+  // Synchronization objects for the |queue_|, which contains the |Bytes|
+  // object filled by |Push| and not yet consumed by |Pull|.
   std::mutex lock_;
-  std::condition_variable holder_is_empty_;
-  std::condition_variable holder_is_full_;
-  std::unique_ptr<Bytes> holder_ GUARDED_BY(lock_);  // std::optional, really.
+  std::condition_variable queue_has_room_;
+  std::condition_variable queue_has_elements_;
+  std::queue<Bytes> queue_ GUARDED_BY(lock_);
 
   // Set to true when the |thread_| completes.
   bool done_ GUARDED_BY(lock_);

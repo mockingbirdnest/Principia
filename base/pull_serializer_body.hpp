@@ -103,7 +103,7 @@ Bytes PullSerializer::Pull() {
   holder_is_empty_.notify_all();
   if (result == nullptr) {
     // Done.
-    return Bytes::Null;
+    return Bytes();
   } else {
     return *result;
   }

@@ -12,30 +12,29 @@ namespace base {
 
 namespace internal {
 
-MyStream::MyStream(not_null<std::uint8_t*> data,
-                   int const size,
-                   std::function<Bytes()> on_empty)
-    : size_(size),
-      data1_(&data[0]),
-      data2_(&data[size_]),
+MyStream::MyStream(std::function<Bytes()> on_empty)
+    : size_(0),
+      data_(Bytes().data),
       on_empty_(std::move(on_empty)),
       position_(0),
       last_returned_size_(0) {}
 
 bool MyStream::Next(const void** data, int* size) {
   if (position_ == size_) {
-    // We're at the end of the array.  Hand the current array over to the
-    // callback to be filled.
-    //TODO(phl): What if it doesn't fill it completely?
+    // We're at the end of the array.  Obtain a new one.
     Bytes const bytes = on_empty_();
-    //TODO(phl): and then?
+    if (bytes.size == 0) {
+      // At end of input data.
+      return false;
+    }
+    size_ = bytes.size;
+    data_ = bytes.data;
     position_ = 0;
     last_returned_size_ = 0;
-    swap(data1_, data2_);
   }
   CHECK_LT(position_, size_);
   last_returned_size_ = size_ - position_;
-  *data = &data1_[position_];
+  *data = &data_[position_];
   *size = last_returned_size_;
   position_ += last_returned_size_;
   return true;
@@ -68,11 +67,9 @@ std::int64_t MyStream::ByteCount() const {
 
 }  // namespace internal
 
-PushDeserializer::PushDeserializer(int const max_size)
-    : data_(std::make_unique<std::uint8_t[]>(max_size << 1)),
-      stream_(data_.get(),
-              max_size,
-              std::bind(&PushDeserializer::Pull, this)),
+PushDeserializer::PushDeserializer(int const number_of_slots)
+    : number_of_slots_(number_of_slots),
+      stream_(std::bind(&PushDeserializer::Pull, this)),
       done_(false) {}
 
 PushDeserializer::~PushDeserializer() {
@@ -90,35 +87,33 @@ void PushDeserializer::Start(
       std::unique_lock<std::mutex> l(lock_);
       done_ = true;
     }
-    holder_is_full_.notify_all();
+    queue_has_elements_.notify_all();
   });
 }
 
 void PushDeserializer::Push(Bytes const bytes) {
   {
     std::unique_lock<std::mutex> l(lock_);
-    holder_is_empty_.wait(l, [this]() { return holder_ == nullptr; });
-    holder_ = std::make_unique<Bytes>(bytes.data, bytes.size);
+    queue_has_room_.wait(l, [this]() {
+      return queue_.size() < number_of_slots_;
+    });
+    queue_.emplace(bytes.data, bytes.size);
   }
-  holder_is_full_.notify_all();
+  queue_has_elements_.notify_all();
 }
 
 Bytes PushDeserializer::Pull() {
-  std::unique_ptr<Bytes const> result;
+  Bytes result;
   {
     std::unique_lock<std::mutex> l(lock_);
-    holder_is_full_.wait(l, [this]() { return done_ || holder_ != nullptr; });
-    if (holder_ != nullptr) {
-      result = std::move(holder_);
+    queue_has_elements_.wait(l, [this]() { return done_ || !queue_.empty(); });
+
+    if (!queue_.empty()) {
+      result = queue_.front();
     }
   }
-  holder_is_empty_.notify_all();
-  if (result == nullptr) {
-    // Done.
-    return Bytes::Null;
-  } else {
-    return *result;
-  }
+  queue_has_room_.notify_all();
+  return result;
 }
 
 }  // namespace base
