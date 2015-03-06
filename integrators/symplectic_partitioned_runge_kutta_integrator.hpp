@@ -35,6 +35,7 @@ class SPRKIntegrator : public SymplecticIntegrator<Position, Momentum> {
   // http://eaton.math.rpi.edu/CSUMS/Papers/Symplectic/McLachlan_Atela_92.pdf
   Coefficients const& Leapfrog() const;
   Coefficients const& PseudoLeapfrog() const;
+  Coefficients const& Order2Optimal() const;
   Coefficients const& Ruth1983() const;
   Coefficients const& Order4FirstSameAsLast() const;
   Coefficients const& Order5Optimal() const;
@@ -64,12 +65,12 @@ class SPRKIntegrator : public SymplecticIntegrator<Position, Momentum> {
                       Parameters const& parameters,
                       not_null<std::vector<SystemState>*> const solution) const;
 
-  // We follow the convention of McLachlan Atela, calling the position steps
-  // a_i and the momentum steps b_i.  (a, b) here corresponds to:
+  // We follow the convention of McLachlan Atela, calling the position nodes
+  // a_i and the momentum nodes b_i.  (a, b) here corresponds to:
   //   (d, c) in Ruth, Yoshida, as well as Forest & Ruth;
   //   (B, b) in Sofroniou & Spaletta.
   // Moreover, we follow the convention of Sofroniou & Spaletta in calling the
-  // time weights corresponding to position c_i, with
+  // positions weights c_i, with
   // c_1 = 0, c_i = c_i-1 + a_i-1 for i > 1.
 
   VanishingCoefficients vanishing_coefficients_;
@@ -96,7 +97,7 @@ class SPRKIntegrator : public SymplecticIntegrator<Position, Momentum> {
   std::vector<double> a_;
   std::vector<double> b_;
 
-  // The weights.  Note that the first c coefficient is not  stored if
+  // The position weights.  Note that the first c coefficient is not stored if
   // |vanishing_coefficients_ == FirstBVanishes|.
   std::vector<double> c_;
 };

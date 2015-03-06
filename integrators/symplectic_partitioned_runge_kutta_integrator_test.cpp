@@ -63,6 +63,7 @@ class SPRKTest : public testing::Test {
     schemes_ = {
       &Integrator::Leapfrog,
       &Integrator::PseudoLeapfrog,
+      &Integrator::Order2Optimal,
       &Integrator::Ruth1983,
       &Integrator::Order4FirstSameAsLast,
       &Integrator::Order5Optimal};

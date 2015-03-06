@@ -45,24 +45,36 @@ using quantities::Quotient;
 namespace integrators {
 
 template<typename Position, typename Momentum>
-inline SPRKIntegrator<Position, Momentum>::SPRKIntegrator() : stages_(0) {}
+SPRKIntegrator<Position, Momentum>::SPRKIntegrator() : stages_(0) {}
 
 template<typename Position, typename Momentum>
-inline typename SPRKIntegrator<Position, Momentum>::Coefficients const&
+typename SPRKIntegrator<Position, Momentum>::Coefficients const&
 SPRKIntegrator<Position, Momentum>::Leapfrog() const {
   static Coefficients const leapfrog = {{ 0.5, 0.5}, { 0.0, 1.0}};
   return leapfrog;
 }
 
 template<typename Position, typename Momentum>
-inline typename SPRKIntegrator<Position, Momentum>::Coefficients const&
+typename SPRKIntegrator<Position, Momentum>::Coefficients const&
 SPRKIntegrator<Position, Momentum>::PseudoLeapfrog() const {
   static Coefficients const pseudo_leapfrog = {{ 1.0, 0.0}, { 0.5, 0.5}};
   return pseudo_leapfrog;
 }
 
 template<typename Position, typename Momentum>
-inline typename SPRKIntegrator<Position, Momentum>::Coefficients const&
+typename SPRKIntegrator<Position, Momentum>::Coefficients const&
+SPRKIntegrator<Position, Momentum>::Order2Optimal() const {
+  static Coefficients const order_2_optimal = {
+      { 0.7071067811865475244,
+        0.2928932188134524756},
+      { 0.7071067811865475244,
+        0.2928932188134524756}};
+  return order_2_optimal;
+}
+
+
+template<typename Position, typename Momentum>
+typename SPRKIntegrator<Position, Momentum>::Coefficients const&
 SPRKIntegrator<Position, Momentum>::Ruth1983() const {
   static Coefficients const ruth_1983 = {{ 2. / 3., -2. / 3., 1.},
                                          { 7. / 24., 3. / 4., -1. / 24.}};
@@ -70,7 +82,7 @@ SPRKIntegrator<Position, Momentum>::Ruth1983() const {
 }
 
 template<typename Position, typename Momentum>
-inline typename SPRKIntegrator<Position, Momentum>::Coefficients const&
+typename SPRKIntegrator<Position, Momentum>::Coefficients const&
 SPRKIntegrator<Position, Momentum>::Order4FirstSameAsLast() const {
   static Coefficients const order_4_first_same_as_last = {
       { 0.6756035959798288170,
@@ -85,7 +97,7 @@ SPRKIntegrator<Position, Momentum>::Order4FirstSameAsLast() const {
 }
 
 template<typename Position, typename Momentum>
-inline typename SPRKIntegrator<Position, Momentum>::Coefficients const&
+typename SPRKIntegrator<Position, Momentum>::Coefficients const&
 SPRKIntegrator<Position, Momentum>::Order5Optimal() const {
   static Coefficients const order_5_optimal = {
       { 0.339839625839110000,
@@ -104,7 +116,7 @@ SPRKIntegrator<Position, Momentum>::Order5Optimal() const {
 }
 
 template<typename Position, typename Momentum>
-inline void SPRKIntegrator<Position, Momentum>::Initialize(
+void SPRKIntegrator<Position, Momentum>::Initialize(
     Coefficients const& coefficients) {
   CHECK_EQ(2, coefficients.size());
   if (coefficients[1].front() == 0.0) {
