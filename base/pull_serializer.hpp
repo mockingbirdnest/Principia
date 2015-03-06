@@ -54,13 +54,13 @@ class DelegatingTwoArrayOutputStream
 
 // This class support serialization which is "pulled" by the client.  That is,
 // the client creates a |PullSerializer| object, calls |Start| to start the
-// serialization process, repeatedly calls |Get| to obtain a chunk of data, and
+// serialization process, repeatedly calls |Pull| to obtain a chunk of data, and
 // finally destroys the |PullSerializer|.  |PullSerializer| is intended for use
 // in memory-critical contexts as it bounds the amount of memory used
 // irrespective of the size of the message to serialize.
 class PullSerializer {
  public:
-  // The |size| of the data objects returned by |Get| are never greater than
+  // The |size| of the data objects returned by |Pull| are never greater than
   // |max_size|.  This class uses at most |2 * max_size| bytes (plus some small
   // overhead).
   explicit PullSerializer(int const max_size);

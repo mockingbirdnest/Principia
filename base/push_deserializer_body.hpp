@@ -103,6 +103,7 @@ void PushDeserializer::Start(
       // Append a sentinel.  It doesn't count against the queue capacity.
       std::unique_lock<std::mutex> l(lock_);
       queue_.emplace(Bytes().data, 0);
+      //TODO(phl):Does that work?
     }
     queue_has_elements_.notify_all();
   });
