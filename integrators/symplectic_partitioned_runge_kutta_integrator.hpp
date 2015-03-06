@@ -56,8 +56,6 @@ class SPRKIntegrator : public SymplecticIntegrator<Position, Momentum> {
     double last;
   };
 
-  // TODO(egg): either get rid of the non-autonomous RHS, or have neither of
-  // them be autonomous, this is messy.
   template<VanishingCoefficients vanishing_coefficients_,
            typename AutonomousRightHandSideComputation,
            typename RightHandSideComputation>
@@ -65,6 +63,14 @@ class SPRKIntegrator : public SymplecticIntegrator<Position, Momentum> {
                       AutonomousRightHandSideComputation compute_velocity,
                       Parameters const& parameters,
                       not_null<std::vector<SystemState>*> const solution) const;
+
+  // We follow the convention of McLachlan Atela, calling the position steps
+  // a_i and the momentum steps b_i.  (a, b) here corresponds to:
+  //   (d, c) in Ruth, Yoshida, as well as Forest & Ruth;
+  //   (B, b) in Sofroniou & Spaletta.
+  // Moreover, we follow the convention of Sofroniou & Spaletta in calling the
+  // time weights corresponding to position c_i, with
+  // c_1 = 0, c_i = c_i-1 + a_i-1 for i > 1.
 
   VanishingCoefficients vanishing_coefficients_;
   // Null if, and only if, |vanishing_coefficients_| is |None|.
@@ -81,18 +87,17 @@ class SPRKIntegrator : public SymplecticIntegrator<Position, Momentum> {
   int stages_;
 
   // The position and momentum nodes.
-  // If |vanishing_coefficients_| is |FirstBVanishes|, we do not store the first
-  // b coefficient, and the last entry of |a_| is the sum of the first and last
-  // a coefficients.
-  // If |vanishing_coefficients_| is |LastAVanishes|, we do not store the last
-  // a coefficient, and the first entry of |b_| is the sum of the first and last
-  // b coefficients.
+  // If |vanishing_coefficients_ == FirstBVanishes|, we do not store the first b
+  // coefficient, and the last entry of |a_| is the sum of the first and last a
+  // coefficients.
+  // If |vanishing_coefficients_ == LastAVanishes|, we do not store the last a
+  // coefficient, and the first entry of |b_| is the sum of the first and last b
+  // coefficients.
   std::vector<double> a_;
   std::vector<double> b_;
 
-  // TODO(egg): remove when we find a way to use only autonomous
-  // right-hand-sides.
-  // The weights.
+  // The weights.  Note that the first c coefficient is not  stored if
+  // |vanishing_coefficients_ == FirstBVanishes|.
   std::vector<double> c_;
 };
 
