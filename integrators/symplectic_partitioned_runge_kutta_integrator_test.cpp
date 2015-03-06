@@ -60,8 +60,12 @@ class SPRKTest : public testing::Test {
 
   SPRKTest() {
     integrator_.Initialize(integrator_.Order5Optimal());
-    schemes_ = {&Integrator::Leapfrog, &Integrator::PseudoLeapfrog,
-                &Integrator::Order4FirstSameAsLast, &Integrator::Order5Optimal};
+    schemes_ = {
+      &Integrator::Leapfrog,
+      &Integrator::PseudoLeapfrog,
+      &Integrator::Ruth1983,
+      &Integrator::Order4FirstSameAsLast,
+      &Integrator::Order5Optimal};
   }
 
   std::vector<Integrator::Coefficients const& (Integrator::*)() const> schemes_;

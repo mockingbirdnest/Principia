@@ -63,6 +63,14 @@ SPRKIntegrator<Position, Momentum>::PseudoLeapfrog() const {
 
 template<typename Position, typename Momentum>
 inline typename SPRKIntegrator<Position, Momentum>::Coefficients const&
+SPRKIntegrator<Position, Momentum>::Ruth1983() const {
+  static Coefficients const ruth_1983 = {{ 2. / 3., -2. / 3., 1.},
+                                         { 7. / 24., 3. / 4., -1. / 24.}};
+  return ruth_1983;
+}
+
+template<typename Position, typename Momentum>
+inline typename SPRKIntegrator<Position, Momentum>::Coefficients const&
 SPRKIntegrator<Position, Momentum>::Order4FirstSameAsLast() const {
   static Coefficients const order_4_first_same_as_last = {
       { 0.6756035959798288170,

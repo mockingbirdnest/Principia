@@ -35,6 +35,7 @@ class SPRKIntegrator : public SymplecticIntegrator<Position, Momentum> {
   // http://eaton.math.rpi.edu/CSUMS/Papers/Symplectic/McLachlan_Atela_92.pdf
   Coefficients const& Leapfrog() const;
   Coefficients const& PseudoLeapfrog() const;
+  Coefficients const& Ruth1983() const;
   Coefficients const& Order4FirstSameAsLast() const;
   Coefficients const& Order5Optimal() const;
   // http://sixtrack.web.cern.ch/SixTrack/doc/yoshida00.pdf
