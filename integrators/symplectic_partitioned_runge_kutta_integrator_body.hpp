@@ -83,7 +83,21 @@ SPRKIntegrator<Position, Momentum>::Ruth1983() const {
 
 template<typename Position, typename Momentum>
 typename SPRKIntegrator<Position, Momentum>::Scheme const&
-SPRKIntegrator<Position, Momentum>::CandyRozmus1991ForestRuth1990SynchronousMomenta() const {
+SPRKIntegrator<Position, Momentum>::McLachlanAtela1992Order3Optimal() const {
+  static Scheme const scheme = {
+      { 0.9196615230173998571,
+       -0.1879916187991597820,
+        0.2683300957817599250},
+      { 0.2683300957817599250,
+       -0.1879916187991597820,
+        0.9196615230173998571}};
+  return scheme;
+}
+
+template<typename Position, typename Momentum>
+typename SPRKIntegrator<Position, Momentum>::Scheme const&
+SPRKIntegrator<Position, Momentum>::
+    CandyRozmus1991ForestRuth1990SynchronousMomenta() const {
   static Scheme const scheme = {
       { 0.6756035959798288170,
        -0.1756035959798288170,
@@ -98,7 +112,8 @@ SPRKIntegrator<Position, Momentum>::CandyRozmus1991ForestRuth1990SynchronousMome
 
 template<typename Position, typename Momentum>
 typename SPRKIntegrator<Position, Momentum>::Scheme const&
-SPRKIntegrator<Position, Momentum>::CandyRozmus1991ForestRuth1990SynchronousPositions() const {
+SPRKIntegrator<Position, Momentum>::
+    CandyRozmus1991ForestRuth1990SynchronousPositions() const {
   static Scheme const scheme = {
       { 1.351207191959657634,
        -1.702414383919315268,

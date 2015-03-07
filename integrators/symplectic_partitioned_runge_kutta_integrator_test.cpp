@@ -65,6 +65,7 @@ class SPRKTest : public testing::Test {
       &Integrator::PseudoLeapfrog,
       &Integrator::McLachlanAtela1992Order2Optimal,
       &Integrator::Ruth1983,
+      &Integrator::McLachlanAtela1992Order3Optimal,
       &Integrator::CandyRozmus1991ForestRuth1990SynchronousMomenta,
       &Integrator::CandyRozmus1991ForestRuth1990SynchronousPositions,
       &Integrator::McLachlanAtela1992Order4Optimal;

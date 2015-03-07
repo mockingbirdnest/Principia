@@ -46,14 +46,17 @@ class SPRKIntegrator : public SymplecticIntegrator<Position, Momentum> {
   Scheme const& McLachlanAtela1992Order2Optimal() const;
   // Third order, 3 stages.
   Scheme const& Ruth1983() const;
+  // Third order, 3 stages.  This method minimizes the error constant.
+  // Coefficients from Robert I. McLachlan and Pau Atela (1992),
+  // The accuracy of symplectic integrators, table 2.
+  // http://eaton.math.rpi.edu/CSUMS/Papers/Symplectic/McLachlan_Atela_92.pdf
+  Scheme const& McLachlanAtela1992Order3Optimal() const;
   // Fourth order, 4 stages, FSAL (synchronous momenta).
   // Coefficients from Forest and Ruth (1990),
   // Fourth-order symplectic integration, equation 4.8.
   // http://zwe.web.cern.ch/zwe/CAS/biblio/ruth-forest.pdf
   // This scheme was independently discovered by J. Candy and W. Rozmus (1991)  // A Symplectic Integration Algorithm for Separable Hamiltonian Functions
   // (submitted earlier and published later than the Forest and Ruth paper).
-  // Yoshida (1990) also attributes it to Neri (1988),
-  // Lie algebras and canonical integration.
   Scheme const& CandyRozmus1991ForestRuth1990SynchronousMomenta() const;
   // Fourth order, 4 stages, FSAL (synchronous positions).
   // Coefficients from Forest and Ruth (1990),
@@ -61,8 +64,6 @@ class SPRKIntegrator : public SymplecticIntegrator<Position, Momentum> {
   // http://zwe.web.cern.ch/zwe/CAS/biblio/ruth-forest.pdf
   // This scheme was independently discovered by J. Candy and W. Rozmus (1991)  // A Symplectic Integration Algorithm for Separable Hamiltonian Functions
   // (submitted earlier and published later than the Forest and Ruth paper).
-  // Yoshida (1990) also attributes it to Neri (1988),
-  // Lie algebras and canonical integration.
   Scheme const& CandyRozmus1991ForestRuth1990SynchronousPositions() const;
   // Fourth order, 4 stages.  This method minimizes the error constant.
   // Coefficients from Robert I. McLachlan and Pau Atela (1992),
