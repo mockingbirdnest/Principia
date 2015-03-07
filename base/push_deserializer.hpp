@@ -70,13 +70,13 @@ class PushDeserializer {
 
   // Pushes in the internal queue chunks of data that will be extracted by
   // |Pull|.  Splits |bytes| into chunks of at most |chunk_size|.  May block to
-  // stay within the maximum size of the queue.
+  // stay within the maximum size of the queue.  The caller must push an object
+  // of size 0 to signal the end of input.
   void Push(Bytes const bytes);
 
  private:
   // Obtains the next chunk of data from the internal queue.  Blocks if no data
-  // is available.  Returns a |Bytes| object of |size| 0 at the end of the
-  // deserialization.  Used as a callback for the underlying
+  // is available.  Used as a callback for the underlying
   // |DelegatingArrayOutputStream|.
   Bytes Pull();
 

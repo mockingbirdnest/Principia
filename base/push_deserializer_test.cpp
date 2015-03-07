@@ -2,10 +2,12 @@
 
 #include <list>
 #include <string>
+#include <thread>
 #include <vector>
 
 #include "base/bytes.hpp"
 #include "base/not_null.hpp"
+#include "base/pull_serializer.hpp"
 #include "gmock/gmock.h"
 #include "serialization/physics.pb.h"
 
@@ -25,11 +27,14 @@ const char kStart[] = "START";
 
 class PushDeserializerTest : public ::testing::Test {
  protected:
-  int const kChunkSize = 99;
+  int const kDeserializerChunkSize = 97;
+  int const kSerializerChunkSize = 99;
   int const kNumberOfChunks = 3;
 
   PushDeserializerTest()
-      : push_deserializer_(kChunkSize, kNumberOfChunks),
+      : pull_serializer_(kSerializerChunkSize),
+        push_deserializer_(std::make_unique<PushDeserializer>(
+            kDeserializerChunkSize, kNumberOfChunks)),
         stream_(std::bind(&PushDeserializerTest::OnEmpty, this, &strings_)) {
     // Build a biggish protobuf for serialization.
     for (int i = 0; i < 100; ++i) {
@@ -63,7 +68,8 @@ class PushDeserializerTest : public ::testing::Test {
                  front.size());
   }
 
-  PushDeserializer push_deserializer_;
+  PullSerializer pull_serializer_;
+  std::unique_ptr<PushDeserializer> push_deserializer_;
   Trajectory trajectory_;
   internal::DelegatingArrayInputStream stream_;
   std::list<std::string> strings_;
@@ -113,18 +119,24 @@ TEST_F(PushDeserializerTest, Stream) {
 }
 
 TEST_F(PushDeserializerTest, Test) {
-  //push_deserializer_.Start(&trajectory_);
-  //std::vector<int> actual_sizes;
-  //std::vector<int> expected_sizes(53, kChunkSize);
-  //expected_sizes.push_back(53);
-  //for (;;) {
-  //  Bytes const bytes = push_deserializer_.Push();
-  //  if (bytes.size == 0) {
-  //    break;
-  //  }
-  //  actual_sizes.push_back(bytes.size);
-  //}
-  //EXPECT_THAT(actual_sizes, ElementsAreArray(expected_sizes));
+  auto storage = std::make_unique<std::uint8_t[]>(trajectory_.ByteSize());
+  std::uint8_t* data = &storage[0];
+  Trajectory read_trajectory;
+  pull_serializer_.Start(&trajectory_);
+  push_deserializer_->Start(&read_trajectory);
+  for (;;) {
+    Bytes const bytes = pull_serializer_.Pull();
+    std::memcpy(data, bytes.data, bytes.size);
+    push_deserializer_->Push(Bytes(data, bytes.size));
+    data = &data[bytes.size];
+    if (bytes.size == 0) {
+      break;
+    }
+  }
+
+  // Destroying the deserializer waits until deserialization is done.  It is
+  // important that this happens before |storage| is destroyed.
+  push_deserializer_.reset();
 }
 
 }  // namespace base
