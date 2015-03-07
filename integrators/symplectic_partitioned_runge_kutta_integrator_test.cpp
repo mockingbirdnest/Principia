@@ -311,8 +311,10 @@ TEST_P(SPRKTest, Convergence) {
   LOG(INFO) << GetParam();
   LOG(INFO) << "Convergence order in q : " << q_convergence_order;
   LOG(INFO) << "Correlation            : " << q_correlation;
-  //LOG(INFO) << "Convergence data for q :\n" <<
-  //    BidimensionalDatasetMathematicaInput(log_step_sizes, log_q_errors);
+#if 0
+  LOG(INFO) << "Convergence data for q :\n" <<
+      BidimensionalDatasetMathematicaInput(log_step_sizes, log_q_errors);
+#endif
   EXPECT_THAT(RelativeError(GetParam().convergence_order, q_convergence_order),
               Lt(0.1));
   EXPECT_THAT(q_correlation, AllOf(Gt(0.99), Lt(1.01)));
@@ -321,8 +323,10 @@ TEST_P(SPRKTest, Convergence) {
       PearsonProductMomentCorrelationCoefficient(log_step_sizes, log_p_errors);
   LOG(INFO) << "Convergence order in p : " << p_convergence_order;
   LOG(INFO) << "Correlation            : " << p_correlation;
-  //LOG(INFO) << "Convergence data for p :\n" <<
-  //    BidimensionalDatasetMathematicaInput(log_step_sizes, log_q_errors);
+#if 0
+  LOG(INFO) << "Convergence data for p :\n" <<
+      BidimensionalDatasetMathematicaInput(log_step_sizes, log_q_errors);
+#endif
   // SPRKs with odd convergence order have a higher convergence order in p.
   EXPECT_THAT(
      RelativeError(((GetParam().convergence_order + 1) / 2) * 2,
@@ -358,8 +362,10 @@ TEST_P(SPRKTest, Symplecticity) {
                           initial_energy);
     max_energy_error = std::max(energy_error[i], max_energy_error);
   }
-  //LOG(INFO) << "Energy error as a function of time:\n" <<
-  //    BidimensionalDatasetMathematicaInput(time_steps, energy_error);
+#if 0
+  LOG(INFO) << "Energy error as a function of time:\n" <<
+      BidimensionalDatasetMathematicaInput(time_steps, energy_error);
+#endif
   double const correlation =
       PearsonProductMomentCorrelationCoefficient(time_steps, energy_error);
   LOG(INFO) << GetParam();
