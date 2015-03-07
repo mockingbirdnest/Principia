@@ -47,22 +47,24 @@ class SPRKIntegrator : public SymplecticIntegrator<Position, Momentum> {
   // Third order, 3 stages.
   Scheme const& Ruth1983() const;
   // Third order, 3 stages.  This method minimizes the error constant.
-  // Coefficients from Robert I. McLachlan and Pau Atela (1992),
-  // The accuracy of symplectic integrators, table 2.
+  // Coefficients from McLachlan and Atela (1992),
+  // The accuracy of symplectic integrators, equation 3.3.
   // http://eaton.math.rpi.edu/CSUMS/Papers/Symplectic/McLachlan_Atela_92.pdf
+  // NOTE(egg): the coefficients give in table 2 for this integrator are
+  // incorrect (b1 and b2 are swapped).
   Scheme const& McLachlanAtela1992Order3Optimal() const;
   // Fourth order, 4 stages, FSAL (synchronous momenta).
   // Coefficients from Forest and Ruth (1990),
   // Fourth-order symplectic integration, equation 4.8.
   // http://zwe.web.cern.ch/zwe/CAS/biblio/ruth-forest.pdf
-  // This scheme was independently discovered by J. Candy and W. Rozmus (1991)  // A Symplectic Integration Algorithm for Separable Hamiltonian Functions
+  // This scheme was independently discovered by Candy and Rozmus (1991),  // A Symplectic Integration Algorithm for Separable Hamiltonian Functions
   // (submitted earlier and published later than the Forest and Ruth paper).
   Scheme const& CandyRozmus1991ForestRuth1990SynchronousMomenta() const;
   // Fourth order, 4 stages, FSAL (synchronous positions).
   // Coefficients from Forest and Ruth (1990),
   // Fourth-order symplectic integration, equation 4.9.
   // http://zwe.web.cern.ch/zwe/CAS/biblio/ruth-forest.pdf
-  // This scheme was independently discovered by J. Candy and W. Rozmus (1991)  // A Symplectic Integration Algorithm for Separable Hamiltonian Functions
+  // This scheme was independently discovered by Candy and Rozmus (1991),  // A Symplectic Integration Algorithm for Separable Hamiltonian Functions
   // (submitted earlier and published later than the Forest and Ruth paper).
   Scheme const& CandyRozmus1991ForestRuth1990SynchronousPositions() const;
   // Fourth order, 4 stages.  This method minimizes the error constant.
@@ -71,7 +73,7 @@ class SPRKIntegrator : public SymplecticIntegrator<Position, Momentum> {
   // http://eaton.math.rpi.edu/CSUMS/Papers/Symplectic/McLachlan_Atela_92.pdf
   Scheme const& McLachlanAtela1992Order4Optimal() const;
   // Fifth order, 6 stages.  This method minimizes the error constant.
-  // Coefficients from Robert I. McLachlan and Pau Atela (1992),
+  // Coefficients from McLachlan and Atela (1992),
   // The accuracy of symplectic integrators, table 2.
   // http://eaton.math.rpi.edu/CSUMS/Papers/Symplectic/McLachlan_Atela_92.pdf
   Scheme const& McLachlanAtela1992Order5Optimal() const;

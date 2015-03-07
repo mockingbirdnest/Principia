@@ -31,6 +31,7 @@ using quantities::SIUnit;
 using quantities::Speed;
 using quantities::Stiffness;
 using quantities::Time;
+using si::Joule;
 using si::Kilogram;
 using si::Metre;
 using si::Newton;
@@ -40,61 +41,118 @@ using testing_utilities::BidimensionalDatasetMathematicaInput;
 using testing_utilities::ComputeHarmonicOscillatorForce;
 using testing_utilities::ComputeHarmonicOscillatorVelocity;
 using testing_utilities::PearsonProductMomentCorrelationCoefficient;
+using testing_utilities::RelativeError;
 using testing_utilities::Slope;
 using ::testing::AllOf;
 using ::testing::Eq;
 using ::testing::Gt;
 using ::testing::Lt;
 using ::testing::Ne;
+using ::testing::ValuesIn;
 
 namespace integrators {
 
-class SPRKTest : public testing::Test {
+namespace {
+using Integrator = SPRKIntegrator<Length, Momentum>;
+
+struct SPRKTestableProperties {
+  Integrator::Scheme const& (Integrator::*scheme)() const;
+  std::string name;
+  int convergence_order;
+  // The expected errors when integrating the unit harmonic oscillator for
+  // 1000 s with a 1 ms timestep.
+  Length expected_position_error;
+  Momentum expected_momentum_error;
+  // The expected errors when integrating the unit harmonic oscillator for
+  // 500 s with a 1 s timestep.
+  Energy expected_energy_error;
+};
+
+// This allows the test output to be legible, i.e.,
+// "where GetParam() = Leapfrog" rather than
+// "where GetParam() = n-byte object <hex>"
+std::ostream& operator<<(std::ostream& stream, SPRKTestableProperties param) {
+  return stream << param.name;
+}
+
+std::vector<SPRKTestableProperties> Instances() {
+  return {
+      {&Integrator::Leapfrog, "Leapfrog", 2,
+       +4.15606749774469300e-05 * Metre,
+       +4.16264386218978200e-05 * Kilogram * Metre / Second,
+       +1.25000000000000000e-01 * Joule},
+      {&Integrator::PseudoLeapfrog, "PseudoLeapfrog", 2,
+       +4.15606749774360880e-05 * Metre,
+       +4.16261832564750020e-05 * Kilogram * Metre / Second,
+       +9.37500000000000000e-02 * Joule},
+      {&Integrator::McLachlanAtela1992Order2Optimal,
+       "McLachlanAtela1992Order2Optimal", 2,
+       +2.01685999379921760e-05 * Metre,
+       +2.02003819904818380e-05 * Kilogram * Metre / Second,
+       +1.28869320917870400e-02 * Joule},
+      {&Integrator::Ruth1983, "Ruth1983", 3,
+       +2.77767866216707680e-11 * Metre,
+       +7.01570745942348140e-13 * Kilogram * Metre / Second,
+       +1.79248948993825370e-02 * Joule},
+      {&Integrator::McLachlanAtela1992Order3Optimal,
+       "McLachlanAtela1992Order3Optimal", 3,
+       +1.21425465168800710e-11 * Metre,
+       +3.68977418063742850e-13 * Kilogram * Metre / Second,
+       +6.41094324383406630e-03 * Joule},
+      {&Integrator::CandyRozmus1991ForestRuth1990SynchronousMomenta,
+       "CandyRozmus1991ForestRuth1990SynchronousMomenta", 4,
+       +6.63488482904872610e-11 * Metre,
+       +6.64555094981311710e-11 * Kilogram * Metre / Second,
+       +6.98808139117831350e-02 * Joule},
+      // {&Integrator::CandyRozmus1991ForestRuth1990SynchronousPositions, 4, 0},
+      {&Integrator::McLachlanAtela1992Order4Optimal,
+       "McLachlanAtela1992Order4Optimal", 4,
+       +1.88161985992252310e-13 * Metre,
+       +1.88491583452687910e-13 * Kilogram * Metre / Second,
+       +5.73140348145262380e-04 * Joule},
+      {&Integrator::McLachlanAtela1992Order5Optimal,
+       "McLachlanAtela1992Order5Optimal", 5,
+       +7.51005160837259210e-14 * Metre,
+       +7.50823014872281650e-14 * Kilogram * Metre / Second,
+       +1.14708664439744370e-04 * Joule}};
+}
+
+}  // namespace
+
+class SPRKTest : public testing::TestWithParam<SPRKTestableProperties> {
  public:
   static void SetUpTestCase() {
     google::LogToStderr();
   }
 
  protected:
-  using Integrator = SPRKIntegrator<Length, Momentum>;
 
   SPRKTest() {
-    integrator_.Initialize(integrator_.McLachlanAtela1992Order5Optimal());
-    schemes_ = {
-      &Integrator::Leapfrog,
-      &Integrator::PseudoLeapfrog,
-      &Integrator::McLachlanAtela1992Order2Optimal,
-      &Integrator::Ruth1983,
-      &Integrator::McLachlanAtela1992Order3Optimal,
-      &Integrator::CandyRozmus1991ForestRuth1990SynchronousMomenta,
-      &Integrator::CandyRozmus1991ForestRuth1990SynchronousPositions,
-      &Integrator::McLachlanAtela1992Order4Optimal;
-      &Integrator::McLachlanAtela1992Order5Optimal};
+    integrator_.Initialize((integrator_.*GetParam().scheme)());
   }
-
-  std::vector<Integrator::Scheme const& (Integrator::*)() const> schemes_;
 
   Integrator                           integrator_;
   Integrator::Parameters               parameters_;
   std::vector<Integrator::SystemState> solution_;
 };
 
-TEST_F(SPRKTest, ConsistentWeights) {
+INSTANTIATE_TEST_CASE_P(SPRKTests, SPRKTest, ValuesIn(Instances()));
+
+TEST_P(SPRKTest, ConsistentWeights) {
   // Check that the time argument of the force computation is correct by
   // integrating uniform linear motion.
   // We check this for all schemes.
   Speed const v = 1 * Metre / Second;
   Mass const m = 1 * Kilogram;
-  int i;  // Declared here for Lambda capture.
-  auto compute_force = [&i, v](Time const& t,
+  auto compute_force = [v](Time const& t,
                            std::vector<Length> const& q,
                            not_null<std::vector<Force>*> const result) {
-    EXPECT_THAT(q[0], AlmostEquals(v * t, 0, 1)) << i;
+    EXPECT_THAT(q[0], AlmostEquals(v * t, 0, 1));
     (*result)[0] = 0 * Newton;
   };
-  auto compute_velocity = [&i, m, v](std::vector<Momentum> const& p,
+  auto compute_velocity = [m, v](std::vector<Momentum> const& p,
                                  not_null<std::vector<Speed>*> const result) {
-    EXPECT_EQ(v, p[0] / m) << i;
+    EXPECT_EQ(v, p[0] / m);
     (*result)[0] = p[0] / m;
   };
   parameters_.initial.positions.emplace_back(0 * Metre);
@@ -103,15 +161,11 @@ TEST_F(SPRKTest, ConsistentWeights) {
   parameters_.tmax = 16 * Second;
   parameters_.Δt = 1 * Second;
   parameters_.sampling_period = 5;
-  for (i = 0; i != schemes_.size(); ++i) {
-    integrator_.Initialize((integrator_.*schemes_[i])());
-    integrator_.Solve(compute_force, compute_velocity, parameters_, &solution_);
-    EXPECT_EQ(v * parameters_.tmax,
-              solution_.back().positions.back().value) << i;
-  }
+  integrator_.Solve(compute_force, compute_velocity, parameters_, &solution_);
+  EXPECT_EQ(v * parameters_.tmax, solution_.back().positions.back().value);
 }
 
-TEST_F(SPRKTest, HarmonicOscillator) {
+TEST_P(SPRKTest, HarmonicOscillator) {
   parameters_.initial.positions.emplace_back(SIUnit<Length>());
   parameters_.initial.momenta.emplace_back(Momentum());
   parameters_.initial.time = Time();
@@ -120,7 +174,7 @@ TEST_F(SPRKTest, HarmonicOscillator) {
 #else
   parameters_.tmax = 1000.0 * SIUnit<Time>();
 #endif
-  parameters_.Δt = 1.0E-4 * SIUnit<Time>();
+  parameters_.Δt = 1.0E-3 * SIUnit<Time>();
   parameters_.sampling_period = 1;
   integrator_.Solve(&ComputeHarmonicOscillatorForce,
                     &ComputeHarmonicOscillatorVelocity,
@@ -139,13 +193,14 @@ TEST_F(SPRKTest, HarmonicOscillator) {
                            Sin(solution_[i].time.value *
                                SIUnit<AngularFrequency>())));
   }
+  LOG(INFO) << GetParam();
   LOG(INFO) << "q_error = " << q_error;
   LOG(INFO) << "p_error = " << p_error;
-  EXPECT_THAT(q_error, Lt(2E-16 * parameters_.tmax * SIUnit<Speed>()));
-  EXPECT_THAT(p_error, Lt(2E-16 * parameters_.tmax * SIUnit<Force>()));
+  EXPECT_EQ(GetParam().expected_position_error, q_error);
+  EXPECT_EQ(GetParam().expected_momentum_error, p_error);
 }
 
-TEST_F(SPRKTest, ExactInexactTMax) {
+TEST_P(SPRKTest, ExactInexactTMax) {
   parameters_.initial.positions.emplace_back(SIUnit<Length>());
   parameters_.initial.momenta.emplace_back(Momentum());
   parameters_.initial.time = Time();
@@ -216,7 +271,7 @@ TEST_F(SPRKTest, ExactInexactTMax) {
   EXPECT_THAT(solution_.back().time.error, Eq(0.0 * SIUnit<Time>()));
 }
 
-TEST_F(SPRKTest, Convergence) {
+TEST_P(SPRKTest, Convergence) {
   parameters_.initial.positions.emplace_back(SIUnit<Length>());
   parameters_.initial.momenta.emplace_back(Momentum());
   parameters_.initial.time = Time();
@@ -248,24 +303,30 @@ TEST_F(SPRKTest, Convergence) {
   double const q_convergence_order = Slope(log_step_sizes, log_q_errors);
   double const q_correlation =
       PearsonProductMomentCorrelationCoefficient(log_step_sizes, log_q_errors);
+  LOG(INFO) << GetParam();
   LOG(INFO) << "Convergence order in q : " << q_convergence_order;
   LOG(INFO) << "Correlation            : " << q_correlation;
-  LOG(INFO) << "Convergence data for q :\n" <<
-      BidimensionalDatasetMathematicaInput(log_step_sizes, log_q_errors);
-  EXPECT_THAT(q_convergence_order, AllOf(Gt(4.9), Lt(5.1)));
-  EXPECT_THAT(q_correlation, AllOf(Gt(0.999), Lt(1.01)));
+  //LOG(INFO) << "Convergence data for q :\n" <<
+  //    BidimensionalDatasetMathematicaInput(log_step_sizes, log_q_errors);
+  EXPECT_THAT(RelativeError(GetParam().convergence_order, q_convergence_order),
+              Lt(0.1));
+  EXPECT_THAT(q_correlation, AllOf(Gt(0.99), Lt(1.01)));
   double const p_convergence_order = Slope(log_step_sizes, log_p_errors);
   double const p_correlation =
       PearsonProductMomentCorrelationCoefficient(log_step_sizes, log_p_errors);
   LOG(INFO) << "Convergence order in p : " << p_convergence_order;
   LOG(INFO) << "Correlation            : " << p_correlation;
-  LOG(INFO) << "Convergence data for p :\n" <<
-      BidimensionalDatasetMathematicaInput(log_step_sizes, log_q_errors);
-  EXPECT_THAT(p_convergence_order, AllOf(Gt(5.9), Lt(6.1)));
-  EXPECT_THAT(p_correlation, AllOf(Gt(0.999), Lt(1.01)));
+  //LOG(INFO) << "Convergence data for p :\n" <<
+  //    BidimensionalDatasetMathematicaInput(log_step_sizes, log_q_errors);
+  // SPRKs with odd convergence order have a higher convergence order in p.
+  EXPECT_THAT(
+     RelativeError(((GetParam().convergence_order + 1) / 2) * 2,
+                   p_convergence_order),
+     Lt(0.1));
+  EXPECT_THAT(p_correlation, AllOf(Gt(0.999), Lt(1.001)));
 }
 
-TEST_F(SPRKTest, Symplecticity) {
+TEST_P(SPRKTest, Symplecticity) {
   parameters_.initial.positions.emplace_back(SIUnit<Length>());
   parameters_.initial.momenta.emplace_back(Momentum());
   parameters_.initial.time = Time();
@@ -292,19 +353,19 @@ TEST_F(SPRKTest, Symplecticity) {
                           initial_energy);
     max_energy_error = std::max(energy_error[i], max_energy_error);
   }
-  LOG(INFO) << "Energy error as a function of time:\n" <<
-      BidimensionalDatasetMathematicaInput(time_steps, energy_error);
+  //LOG(INFO) << "Energy error as a function of time:\n" <<
+  //    BidimensionalDatasetMathematicaInput(time_steps, energy_error);
   double const correlation =
       PearsonProductMomentCorrelationCoefficient(time_steps, energy_error);
+  LOG(INFO) << GetParam();
   LOG(INFO) << "Correlation between time and energy error : " << correlation;
-  EXPECT_THAT(correlation, Lt(1E-3));
+  EXPECT_THAT(correlation, Lt(2E-3));
   Power const slope = Slope(time_steps, energy_error);
   LOG(INFO) << "Slope                                     : " << slope;
-  EXPECT_THAT(slope, Lt(1E-10 * SIUnit<Power>()));
+  EXPECT_THAT(Abs(slope), Lt(1E-6 * SIUnit<Power>()));
   LOG(INFO) << "Maximum energy error                      : " <<
       max_energy_error;
-  EXPECT_THAT(max_energy_error, AllOf(Gt(1E-4 * SIUnit<Energy>()),
-                                      Lt(1E-3 * SIUnit<Energy>())));
+  EXPECT_EQ(GetParam().expected_energy_error, max_energy_error);
 }
 
 }  // namespace integrators

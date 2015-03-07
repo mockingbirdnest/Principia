@@ -67,8 +67,8 @@ SPRKIntegrator<Position, Momentum>::McLachlanAtela1992Order2Optimal() const {
   static Scheme const scheme = {
       { 0.7071067811865475244,
         0.2928932188134524756},
-      { 0.7071067811865475244,
-        0.2928932188134524756}};
+      { 0.2928932188134524756,
+        0.7071067811865475244}};
   return scheme;
 }
 
@@ -115,9 +115,9 @@ typename SPRKIntegrator<Position, Momentum>::Scheme const&
 SPRKIntegrator<Position, Momentum>::
     CandyRozmus1991ForestRuth1990SynchronousPositions() const {
   static Scheme const scheme = {
-      { 1.351207191959657634,
-       -1.702414383919315268,
-        1.351207191959657634,
+      { 1.3512071919596576340,
+       -1.7024143839193152681,
+        1.3512071919596576340,
         0.0},
       { 0.6756035959798288170,
        -0.1756035959798288170,
