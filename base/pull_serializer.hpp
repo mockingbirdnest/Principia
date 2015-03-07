@@ -4,6 +4,8 @@
 #include <condition_variable>  // NOLINT(build/c++11)
 #include <memory>
 #include <mutex>  // NOLINT(build/c++11)
+#include <queue>
+#include <set>
 #include <thread>  // NOLINT(build/c++11)
 
 #include "base/bytes.hpp"
@@ -30,10 +32,8 @@ class DelegatingArrayOutputStream
   // two successive calls to |on_full| are always passed different pointers, so
   // the caller can assume that it's fine to operate on that pointer in between
   // two calls to |on_full|.
-  DelegatingArrayOutputStream(
-      not_null<std::uint8_t*> data,
-      int const size,
-      std::function<void(Bytes const bytes)> on_full);
+  DelegatingArrayOutputStream(Bytes const bytes,
+                              std::function<Bytes(Bytes const bytes)> on_full);
 
   // The ZeroCopyOutputStream API.
   bool Next(void** data, int* size) override;
@@ -41,9 +41,9 @@ class DelegatingArrayOutputStream
   std::int64_t ByteCount() const override;
 
  private:
-  int const size_;
+  int size_;
   not_null<std::uint8_t*> data_;
-  std::function<void(Bytes const bytes)> on_full_;
+  std::function<Bytes(Bytes const bytes)> on_full_;
 
   int position_;
   int last_returned_size_;   // How many bytes we returned last time Next()
@@ -63,7 +63,7 @@ class PullSerializer {
   // The |size| of the data objects returned by |Pull| are never greater than
   // |max_size|.  This class uses at most |2 * max_size| bytes (plus some small
   // overhead).
-  explicit PullSerializer(int const max_size);
+  PullSerializer(int const chunk_size, int const number_of_chunks);
   ~PullSerializer();
 
   // Starts the serializer, which will proceed to serialize |message|.  This
@@ -78,22 +78,22 @@ class PullSerializer {
  private:
   // Sets the chunk of data to be returned to |Pull|.  Used as a callback for
   // the underlying |DelegatingTwoArrayOutputStream|.
-  void Push(Bytes const bytes);
+  Bytes Push(Bytes const bytes);
+
+  int const chunk_size_;
+  int const number_of_chunks_;
 
   std::unique_ptr<std::uint8_t[]> data_;
   internal::DelegatingArrayOutputStream stream_;
   std::unique_ptr<std::thread> thread_;
 
-  // Synchronization objects for the |holder_|, which contains the |Bytes|
-  // object filled by |Push| and not yet consumed by |Pull|.  The |holder_| is
-  // effectively a 1-element queue.
+  // Synchronization objects for the |queue_|, which contains the |Bytes|
+  // object filled by |Push| and not yet consumed by |Pull|.
   std::mutex lock_;
-  std::condition_variable holder_is_empty_;
-  std::condition_variable holder_is_full_;
-  std::unique_ptr<Bytes> holder_ GUARDED_BY(lock_);  // std::optional, really.
-
-  // Set to true when the |thread_| completes.
-  bool done_ GUARDED_BY(lock_);
+  std::condition_variable queue_has_room_;
+  std::condition_variable queue_has_elements_;
+  std::queue<Bytes> queue_ GUARDED_BY(lock_);
+  std::set<not_null<std::uint8_t*>> free_ GUARDED_BY(lock_);
 };
 
 }  // namespace base

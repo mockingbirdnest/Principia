@@ -6,9 +6,9 @@ namespace principia {
 namespace base {
 
 inline Bytes::Bytes()
-    : data(reinterpret_cast<std::uint8_t const*>(0xDEADBEEF)), size(0) {}
+    : data(reinterpret_cast<std::uint8_t*>(0xDEADBEEF)), size(0) {}
 
-inline Bytes::Bytes(base::not_null<std::uint8_t const*> const data,
+inline Bytes::Bytes(base::not_null<std::uint8_t*> const data,
                     int const size)
     : data(data), size(size) {}
 

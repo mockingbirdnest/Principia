@@ -11,8 +11,8 @@ namespace base {
 // is not owned.
 struct Bytes {
   Bytes();  // An object of size 0.
-  Bytes(not_null<std::uint8_t const*> const data, int const size);
-  not_null<std::uint8_t const*> data;
+  Bytes(not_null<std::uint8_t*> const data, int const size);
+  not_null<std::uint8_t*> data;
   int size;
 };
 

@@ -18,9 +18,11 @@ namespace base {
 class PullSerializerTest : public ::testing::Test {
  protected:
   int const kChunkSize = 99;
+  int const kNumberOfChunks = 3;
 
   PullSerializerTest()
-      : pull_serializer_(std::make_unique<PullSerializer>(kChunkSize)) {
+      : pull_serializer_(
+            std::make_unique<PullSerializer>(kChunkSize, kNumberOfChunks)) {
     // Build a biggish protobuf for serialization.
     for (int i = 0; i < 100; ++i) {
       Trajectory::InstantaneousDegreesOfFreedom* idof =
@@ -72,7 +74,7 @@ TEST_F(PullSerializerTest, SerializationThreading) {
   for (int i = 0; i < 100; ++i) {
     LOG(ERROR)<<"START "<<trajectory_.ByteSize();
     pull_serializer_ =
-        std::make_unique<PullSerializer>(kChunkSize);
+        std::make_unique<PullSerializer>(kChunkSize, kNumberOfChunks);
 
     auto storage = std::make_unique<std::uint8_t[]>(trajectory_.ByteSize() + 200);
     std::uint8_t* data = &storage[0];
