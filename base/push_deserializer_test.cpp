@@ -27,12 +27,13 @@ const char kStart[] = "START";
 
 class PushDeserializerTest : public ::testing::Test {
  protected:
-  int const kDeserializerChunkSize = 97;
+  int const kDeserializerChunkSize = 99;
   int const kSerializerChunkSize = 99;
   int const kNumberOfChunks = 3;
 
   PushDeserializerTest()
-      : pull_serializer_(kSerializerChunkSize),
+      : pull_serializer_(
+            std::make_unique<PullSerializer>(kSerializerChunkSize)),
         push_deserializer_(std::make_unique<PushDeserializer>(
             kDeserializerChunkSize, kNumberOfChunks)),
         stream_(std::bind(&PushDeserializerTest::OnEmpty, this, &strings_)) {
@@ -68,7 +69,8 @@ class PushDeserializerTest : public ::testing::Test {
                  front.size());
   }
 
-  PullSerializer pull_serializer_;
+  //TODO(phl):not_null
+  std::unique_ptr<PullSerializer> pull_serializer_;
   std::unique_ptr<PushDeserializer> push_deserializer_;
   Trajectory trajectory_;
   internal::DelegatingArrayInputStream stream_;
@@ -118,26 +120,73 @@ TEST_F(PushDeserializerTest, Stream) {
   EXPECT_EQ(23, stream_.ByteCount());
 }
 
-TEST_F(PushDeserializerTest, Test) {
-  auto storage = std::make_unique<std::uint8_t[]>(trajectory_.ByteSize());
-  std::uint8_t* data = &storage[0];
-  Trajectory read_trajectory;
-  pull_serializer_.Start(&trajectory_);
-  push_deserializer_->Start(&read_trajectory);
-  for (;;) {
-    Bytes const bytes = pull_serializer_.Pull();
-    std::memcpy(data, bytes.data, bytes.size);
-    push_deserializer_->Push(Bytes(data, bytes.size));
-    data = &data[bytes.size];
-    if (bytes.size == 0) {
-      break;
-    }
-  }
+TEST_F(PushDeserializerTest, Deserialization) {
+  for (int i = 0; i < 100; ++i) {
+    LOG(ERROR)<<"START "<<trajectory_.ByteSize();
+    pull_serializer_ =
+        std::make_unique<PullSerializer>(kSerializerChunkSize);
+    push_deserializer_ = std::make_unique<PushDeserializer>(
+        kDeserializerChunkSize, kNumberOfChunks);
 
-  // Destroying the deserializer waits until deserialization is done.  It is
-  // important that this happens before |storage| is destroyed.
-  push_deserializer_.reset();
+    auto storage = std::make_unique<std::uint8_t[]>(trajectory_.ByteSize() + 200);
+    std::uint8_t* data = &storage[0];
+    Trajectory read_trajectory;
+    pull_serializer_->Start(&trajectory_);
+    for (;;) {
+      Bytes const bytes = pull_serializer_->Pull();
+      std::memcpy(data, bytes.data, bytes.size);
+      data = &data[bytes.size];
+      LOG(ERROR)<<"size "<<data - &storage[0];
+      if (bytes.size == 0) {
+        break;
+      }
+    }
+    pull_serializer_.reset();
+
+    int sz = data - &storage[0];
+    CHECK(read_trajectory.ParseFromArray(&storage[0], sz));
+
+    push_deserializer_->Start(&read_trajectory);
+    data = &storage[0];
+    push_deserializer_->Push(Bytes(data, sz));
+    push_deserializer_->Push(Bytes());
+
+    // Destroying the deserializer waits until deserialization is done.  It is
+    // important that this happens before |storage| is destroyed.
+    push_deserializer_.reset();
+  }
 }
+
+//TEST_F(PushDeserializerTest, Deserialization) {
+//  for (int i = 0; i < 100; ++i) {
+//    LOG(ERROR)<<"START "<<trajectory_.ByteSize();
+//    pull_serializer_ =
+//        std::make_unique<PullSerializer>(kSerializerChunkSize);
+//    push_deserializer_ = std::make_unique<PushDeserializer>(
+//        kDeserializerChunkSize, kNumberOfChunks);
+//
+//    auto storage = std::make_unique<std::uint8_t[]>(trajectory_.ByteSize() + 200);
+//    std::uint8_t* data = &storage[0];
+//    Trajectory read_trajectory;
+//    pull_serializer_->Start(&trajectory_);
+//    push_deserializer_->Start(&read_trajectory);
+//    for (;;) {
+//      Bytes const bytes = pull_serializer_->Pull();
+//      std::memcpy(data, bytes.data, bytes.size);
+//      push_deserializer_->Push(Bytes(data, bytes.size));
+//      data = &data[bytes.size];
+//      LOG(ERROR)<<"size "<<data - &storage[0];
+//      if (bytes.size == 0) {
+//        break;
+//      }
+//    }
+//
+//    // Destroying the deserializer waits until deserialization is done.  It is
+//    // important that this happens before |storage| is destroyed.
+//    pull_serializer_.reset();
+//    push_deserializer_.reset();
+//  }
+//}
 
 }  // namespace base
 }  // namespace principia

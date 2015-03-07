@@ -23,11 +23,11 @@ inline DelegatingArrayInputStream::DelegatingArrayInputStream(
 
 inline bool DelegatingArrayInputStream::Next(void const** const data,
                                              int* const size) {
-  LOG(ERROR)<<"next "<<position_<<" "<<size_;
+  //LOG(ERROR)<<"next "<<position_<<" "<<size_;
   if (position_ == size_) {
     // We're at the end of the array.  Obtain a new one.
     Bytes const bytes = on_empty_();
-    LOG(ERROR)<<"got "<<bytes.size;
+    //LOG(ERROR)<<"got "<<bytes.size;
     size_ = bytes.size;
     data_ = bytes.data;
     position_ = 0;
@@ -43,12 +43,12 @@ inline bool DelegatingArrayInputStream::Next(void const** const data,
   *size = last_returned_size_;
   byte_count_ += last_returned_size_;
   position_ += last_returned_size_;
-  LOG(ERROR)<<"ret "<<*size;
+  //LOG(ERROR)<<"ret "<<*size;
   return true;
 }
 
 inline void DelegatingArrayInputStream::BackUp(int const count) {
-  LOG(ERROR)<<"backup";
+  //LOG(ERROR)<<"backup";
   CHECK_GT(last_returned_size_, 0)
       << "BackUp() can only be called after a successful Next().";
   CHECK_LE(count, last_returned_size_);
@@ -59,7 +59,7 @@ inline void DelegatingArrayInputStream::BackUp(int const count) {
 }
 
 inline bool DelegatingArrayInputStream::Skip(int const count) {
-  LOG(ERROR)<<"skip";
+  //LOG(ERROR)<<"skip";
   CHECK_GE(count, 0);
   last_returned_size_ = 0;   // Don't let caller back up.
   int remaining = count;
@@ -82,7 +82,7 @@ inline bool DelegatingArrayInputStream::Skip(int const count) {
 }
 
 inline std::int64_t DelegatingArrayInputStream::ByteCount() const {
-  LOG(ERROR)<<"bc";
+  //LOG(ERROR)<<"bc";
   return byte_count_;
 }
 
@@ -96,10 +96,10 @@ inline PushDeserializer::PushDeserializer(int const chunk_size,
 
 inline PushDeserializer::~PushDeserializer() {
   if (thread_ != nullptr) {
-    LOG(ERROR)<<"join";
+    //LOG(ERROR)<<"join";
     thread_->join();
   }
-  LOG(ERROR)<<"destroyed";
+  //LOG(ERROR)<<"destroyed";
 }
 
 inline void PushDeserializer::Start(
@@ -107,6 +107,7 @@ inline void PushDeserializer::Start(
   CHECK(thread_ == nullptr);
   thread_ = std::make_unique<std::thread>([this, message](){
     CHECK(message->ParseFromZeroCopyStream(&stream_));
+    //LOG(ERROR)<<"stop";
   });
 }
 
@@ -125,7 +126,7 @@ inline void PushDeserializer::Push(Bytes const bytes) {
         return queue_.size() < static_cast<size_t>(number_of_chunks_);
       });
       queue_.emplace(current.data, std::min(current.size, chunk_size_));
-      LOG(ERROR)<<"push "<<queue_.back().size;
+      LOG(ERROR)<<"push "<<queue_.size()<<" "<<queue_.back().size<<" "<<(void*)(&*current.data);
     }
     queue_has_elements_.notify_all();
     current.data = &current.data[chunk_size_];
@@ -138,12 +139,12 @@ inline Bytes PushDeserializer::Pull() {
   {
     std::unique_lock<std::mutex> l(lock_);
     LOG(ERROR)<<"pulling "<<queue_.size();
-    queue_has_elements_.wait(l, [this]() { LOG(ERROR)<<queue_.empty();return !queue_.empty(); });
-    LOG(ERROR)<<"waited "<<queue_.size();
+    queue_has_elements_.wait(l, [this]() { return !queue_.empty(); });
+    //LOG(ERROR)<<"waited "<<queue_.size();
     result = queue_.front();
     queue_.pop();
   }
-  LOG(ERROR)<<"pull "<<result.size;
+  LOG(ERROR)<<"pull "<<result.size<<" "<<(void*)(&*result.data);
   queue_has_room_.notify_all();
   return result;
 }
