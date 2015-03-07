@@ -12,15 +12,17 @@
 // BM_SolveHarmonicOscillator_mean   2976131957 2962978993          3                                 1.3701886847350409e-13 m, 1.3705703238997557e-13 m kg s^-1  // NOLINT(whitespace/line_length)
 // BM_SolveHarmonicOscillator_stddev   33270202   26186699          0                                 1.3701886847350409e-13 m, 1.3705703238997557e-13 m kg s^-1  // NOLINT(whitespace/line_length)
 
-#include "benchmarks/symplectic_partitioned_runge_kutta_integrator.hpp"
-
 #define GLOG_NO_ABBREVIATED_SEVERITIES
+
+#include "integrators/symplectic_partitioned_runge_kutta_integrator.hpp"
+
 #include <algorithm>
 #include <vector>
 
 #include "base/not_null.hpp"
 #include "quantities/elementary_functions.hpp"
 #include "quantities/named_quantities.hpp"
+#include "testing_utilities/numerical_analysis.hpp"
 
 // Must come last to avoid conflicts when defining the CHECK macros.
 #include "benchmark/benchmark.h"
@@ -33,16 +35,39 @@ using quantities::AngularFrequency;
 using quantities::Cos;
 using quantities::Length;
 using quantities::Momentum;
+using quantities::SIUnit;
+using testing_utilities::ComputeHarmonicOscillatorForce;
+using testing_utilities::ComputeHarmonicOscillatorVelocity;
 
 namespace benchmarks {
+
+using Integrator = SPRKIntegrator<Length, Momentum>;
 
 void SolveHarmonicOscillatorAndComputeError(
     not_null<benchmark::State*> const state,
     not_null<Length*> const q_error,
-    not_null<Momentum*> const p_error) {
-  std::vector<SPRKIntegrator<Length, Momentum>::SystemState> solution;
+    not_null<Momentum*> const p_error,
+    Integrator::Scheme const& (Integrator::*scheme)() const) {
+  std::vector<Integrator::SystemState> solution;
+  Integrator integrator;
+  Integrator::Parameters parameters;
 
-  SolveHarmonicOscillator(&solution);
+  integrator.Initialize((integrator.*scheme)());
+
+  parameters.initial.positions.emplace_back(SIUnit<Length>());
+  parameters.initial.momenta.emplace_back(Momentum());
+  parameters.initial.time = Time();
+#ifdef _DEBUG
+  parameters.tmax = 100.0 * SIUnit<Time>();
+#else
+  parameters.tmax = 1000.0 * SIUnit<Time>();
+#endif
+  parameters.Δt = 1.0E-4 * SIUnit<Time>();
+  parameters.sampling_period = 1;
+  integrator.Solve(&ComputeHarmonicOscillatorForce,
+                   &ComputeHarmonicOscillatorVelocity,
+                   parameters,
+                   &solution);
 
   state->PauseTiming();
   *q_error = Length();
@@ -62,18 +87,36 @@ void SolveHarmonicOscillatorAndComputeError(
   state->ResumeTiming();
 }
 
+template<Integrator::Scheme const& (Integrator::*scheme)() const>
 void BM_SolveHarmonicOscillator(
     benchmark::State& state) {  // NOLINT(runtime/references)
   Length   q_error;
   Momentum p_error;
   while (state.KeepRunning()) {
-    SolveHarmonicOscillatorAndComputeError(&state, &q_error, &p_error);
+    SolveHarmonicOscillatorAndComputeError(&state, &q_error, &p_error, scheme);
   }
   std::stringstream ss;
   ss << q_error << ", " << p_error;
   state.SetLabel(ss.str());
 }
-BENCHMARK(BM_SolveHarmonicOscillator);
+
+BENCHMARK_TEMPLATE(BM_SolveHarmonicOscillator, &Integrator::Leapfrog);
+BENCHMARK_TEMPLATE(BM_SolveHarmonicOscillator, &Integrator::PseudoLeapfrog);
+BENCHMARK_TEMPLATE(BM_SolveHarmonicOscillator,
+                   &Integrator::McLachlanAtela1992Order2Optimal);
+BENCHMARK_TEMPLATE(BM_SolveHarmonicOscillator, &Integrator::Ruth1983);
+BENCHMARK_TEMPLATE(BM_SolveHarmonicOscillator,
+                   &Integrator::McLachlanAtela1992Order3Optimal);
+BENCHMARK_TEMPLATE(
+    BM_SolveHarmonicOscillator,
+    &Integrator::CandyRozmus1991ForestRuth1990SynchronousMomenta);
+BENCHMARK_TEMPLATE(
+    BM_SolveHarmonicOscillator,
+    &Integrator::CandyRozmus1991ForestRuth1990SynchronousPositions);
+BENCHMARK_TEMPLATE(BM_SolveHarmonicOscillator,
+                   &Integrator::McLachlanAtela1992Order4Optimal);
+BENCHMARK_TEMPLATE(BM_SolveHarmonicOscillator,
+                   &Integrator::McLachlanAtela1992Order5Optimal);
 
 }  // namespace benchmarks
 }  // namespace principia

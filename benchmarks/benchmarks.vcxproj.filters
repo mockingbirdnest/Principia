@@ -28,12 +28,6 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="symplectic_partitioned_runge_kutta_integrator.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="symplectic_partitioned_runge_kutta_integrator_body.hpp">
-      <Filter>Source Files</Filter>
-    </ClInclude>
     <ClInclude Include="quantities.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>

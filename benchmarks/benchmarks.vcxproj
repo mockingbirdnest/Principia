@@ -151,8 +151,6 @@
     <ClInclude Include="n_body_system_body.hpp" />
     <ClInclude Include="quantities.hpp" />
     <ClInclude Include="quantities_body.hpp" />
-    <ClInclude Include="symplectic_partitioned_runge_kutta_integrator.hpp" />
-    <ClInclude Include="symplectic_partitioned_runge_kutta_integrator_body.hpp" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\serialization\serialization.vcxproj">
