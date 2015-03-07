@@ -5,7 +5,6 @@
 #include <memory>
 #include <mutex>  // NOLINT(build/c++11)
 #include <queue>
-#include <set>
 #include <thread>  // NOLINT(build/c++11)
 
 #include "base/bytes.hpp"
@@ -93,7 +92,8 @@ class PullSerializer {
   std::condition_variable queue_has_room_;
   std::condition_variable queue_has_elements_;
   std::queue<Bytes> queue_ GUARDED_BY(lock_);
-  std::set<not_null<std::uint8_t*>> free_ GUARDED_BY(lock_);
+  std::queue<not_null<std::uint8_t*>> free_ GUARDED_BY(lock_);
+  bool is_first_pull_ GUARDED_BY(lock_);
 };
 
 }  // namespace base

@@ -71,10 +71,11 @@ inline PullSerializer::PullSerializer(int const chunk_size,
       number_of_chunks_(number_of_chunks),
       data_(std::make_unique<std::uint8_t[]>(chunk_size_ * number_of_chunks_)),
       stream_(Bytes(data_.get(), chunk_size_),
-              std::bind(&PullSerializer::Push, this, _1)) {
-  // Mark all the chunks as free except for the first one.
-  for (int i = 1; i < number_of_chunks_; ++i) {
-    free_.insert(data_.get() + i * chunk_size_);
+              std::bind(&PullSerializer::Push, this, _1)),
+      is_first_pull_(true) {
+  // Mark all the chunks as free.
+  for (int i = 0; i < number_of_chunks_; ++i) {
+    free_.push(data_.get() + i * chunk_size_);
   }
 }
 
@@ -107,9 +108,16 @@ inline Bytes PullSerializer::Pull() {
     LOG(ERROR)<<"pulling "<<queue_.size();
     queue_has_elements_.wait(l, [this]() { return !queue_.empty(); });
     //LOG(ERROR)<<"waited "<<queue_.size();
+    // The element at the front of the queue is the one that was last returned
+    // by |Pull| and must be dropped and freed, except the first time |Pull| is
+    // called.
+    if (is_first_pull_) {
+      is_first_pull_ = false;
+    } else {
+      free_.push(queue_.front().data);
+      queue_.pop();
+    }
     result = queue_.front();
-    queue_.pop();
-    free_.insert(result.data);
   }
   LOG(ERROR)<<"pull "<<result.size<<" "<<(void*)(&*result.data);
   queue_has_room_.notify_all();
@@ -122,12 +130,13 @@ inline Bytes PullSerializer::Push(Bytes const bytes) {
   {
     std::unique_lock<std::mutex> l(lock_);
     queue_has_room_.wait(l, [this]() {
-      return queue_.size() < static_cast<size_t>(number_of_chunks_);
+      return queue_.size() < static_cast<size_t>(number_of_chunks_) - 1;
     });
     queue_.emplace(bytes.data, bytes.size);
     CHECK(!free_.empty());
+    CHECK_EQ(free_.front(), bytes.data);
+    free_.pop();
     result = Bytes(free_.front(), chunk_size_);
-    free_.pop_front();
     LOG(ERROR)<<"push "<<queue_.size()<<" "<<queue_.back().size;
   }
   queue_has_elements_.notify_all();
