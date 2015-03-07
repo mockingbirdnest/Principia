@@ -104,7 +104,11 @@ std::vector<SPRKTestableProperties> Instances() {
        +6.63488482904872610e-11 * Metre,
        +6.64555094981311710e-11 * Kilogram * Metre / Second,
        +6.98808139117831350e-02 * Joule},
-      // {&Integrator::CandyRozmus1991ForestRuth1990SynchronousPositions, 4, 0},
+      {&Integrator::CandyRozmus1991ForestRuth1990SynchronousPositions,
+       "CandyRozmus1991ForestRuth1990SynchronousPositions", 4,
+       +6.63488188001881700e-11 * Metre,
+       +6.64553134743783860e-11 * Kilogram * Metre / Second,
+       +8.12345434555920010e-02 * Joule},
       {&Integrator::McLachlanAtela1992Order4Optimal,
        "McLachlanAtela1992Order4Optimal", 4,
        +1.88161985992252310e-13 * Metre,
@@ -147,7 +151,7 @@ TEST_P(SPRKTest, ConsistentWeights) {
   auto compute_force = [v](Time const& t,
                            std::vector<Length> const& q,
                            not_null<std::vector<Force>*> const result) {
-    EXPECT_THAT(q[0], AlmostEquals(v * t, 0, 1));
+    EXPECT_THAT(q[0], AlmostEquals(v * t, 0, 2));
     (*result)[0] = 0 * Newton;
   };
   auto compute_velocity = [m, v](std::vector<Momentum> const& p,
@@ -162,7 +166,8 @@ TEST_P(SPRKTest, ConsistentWeights) {
   parameters_.Δt = 1 * Second;
   parameters_.sampling_period = 5;
   integrator_.Solve(compute_force, compute_velocity, parameters_, &solution_);
-  EXPECT_EQ(v * parameters_.tmax, solution_.back().positions.back().value);
+  EXPECT_THAT(v * parameters_.tmax,
+              AlmostEquals(solution_.back().positions.back().value, 0, 2));
 }
 
 TEST_P(SPRKTest, HarmonicOscillator) {
