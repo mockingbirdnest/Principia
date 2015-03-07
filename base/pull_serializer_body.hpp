@@ -13,7 +13,7 @@ namespace base {
 
 namespace internal {
 
-inline DelegatingTwoArrayOutputStream::DelegatingTwoArrayOutputStream(
+DelegatingTwoArrayOutputStream::DelegatingTwoArrayOutputStream(
     base::not_null<std::uint8_t*> data,
     int const size,
     std::function<void(Bytes const bytes)> on_full)
@@ -24,7 +24,7 @@ inline DelegatingTwoArrayOutputStream::DelegatingTwoArrayOutputStream(
       position_(0),
       last_returned_size_(0) {}
 
-inline bool DelegatingTwoArrayOutputStream::Next(void** data, int* size) {
+bool DelegatingTwoArrayOutputStream::Next(void** data, int* size) {
   if (position_ == size_) {
     // We're at the end of the array.  Hand the current array over to the
     // callback and start filling the other array.
@@ -41,7 +41,7 @@ inline bool DelegatingTwoArrayOutputStream::Next(void** data, int* size) {
   return true;
 }
 
-inline void DelegatingTwoArrayOutputStream::BackUp(int count) {
+void DelegatingTwoArrayOutputStream::BackUp(int count) {
   CHECK_GT(last_returned_size_, 0)
       << "BackUp() can only be called after a successful Next().";
   CHECK_LE(count, last_returned_size_);
@@ -59,26 +59,26 @@ inline void DelegatingTwoArrayOutputStream::BackUp(int count) {
   swap(data1_, data2_);
 }
 
-inline std::int64_t DelegatingTwoArrayOutputStream::ByteCount() const {
+std::int64_t DelegatingTwoArrayOutputStream::ByteCount() const {
   return position_;
 }
 
 }  // namespace internal
 
-inline PullSerializer::PullSerializer(int const max_size)
+PullSerializer::PullSerializer(int const max_size)
     : data_(std::make_unique<std::uint8_t[]>(max_size << 1)),
       stream_(data_.get(),
               max_size,
               std::bind(&PullSerializer::Push, this, _1)),
       done_(false) {}
 
-inline PullSerializer::~PullSerializer() {
+PullSerializer::~PullSerializer() {
   if (thread_ != nullptr) {
     thread_->join();
   }
 }
 
-inline void PullSerializer::Start(
+void PullSerializer::Start(
     base::not_null<google::protobuf::Message const*> const message) {
   CHECK(thread_ == nullptr);
   thread_ = std::make_unique<std::thread>([this, message](){
@@ -91,7 +91,7 @@ inline void PullSerializer::Start(
   });
 }
 
-inline Bytes PullSerializer::Pull() {
+Bytes PullSerializer::Pull() {
   std::unique_ptr<Bytes const> result;
   {
     std::unique_lock<std::mutex> l(lock_);
@@ -103,13 +103,13 @@ inline Bytes PullSerializer::Pull() {
   holder_is_empty_.notify_all();
   if (result == nullptr) {
     // Done.
-    return Bytes();
+    return Bytes::Null;
   } else {
     return *result;
   }
 }
 
-inline void PullSerializer::Push(Bytes const bytes) {
+void PullSerializer::Push(Bytes const bytes) {
   {
     std::unique_lock<std::mutex> l(lock_);
     holder_is_empty_.wait(l, [this]() { return holder_ == nullptr; });

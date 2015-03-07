@@ -54,13 +54,13 @@ class DelegatingTwoArrayOutputStream
 
 // This class support serialization which is "pulled" by the client.  That is,
 // the client creates a |PullSerializer| object, calls |Start| to start the
-// serialization process, repeatedly calls |Pull| to obtain a chunk of data, and
+// serialization process, repeatedly calls |Get| to obtain a chunk of data, and
 // finally destroys the |PullSerializer|.  |PullSerializer| is intended for use
 // in memory-critical contexts as it bounds the amount of memory used
 // irrespective of the size of the message to serialize.
 class PullSerializer {
  public:
-  // The |size| of the data objects returned by |Pull| are never greater than
+  // The |size| of the data objects returned by |Get| are never greater than
   // |max_size|.  This class uses at most |2 * max_size| bytes (plus some small
   // overhead).
   explicit PullSerializer(int const max_size);
@@ -85,7 +85,7 @@ class PullSerializer {
   std::unique_ptr<std::thread> thread_;
 
   // Synchronization objects for the |holder_|, which contains the |Bytes|
-  // object filled by |Push| and not yet consumed by |Pull|.  The |holder_| is
+  // object filled by |Set| and not yet consumed by |Get|.  The |holder_| is
   // effectively a 1-element queue.
   std::mutex lock_;
   std::condition_variable holder_is_empty_;
