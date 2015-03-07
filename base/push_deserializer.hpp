@@ -28,7 +28,7 @@ class DelegatingArrayInputStream
   ~DelegatingArrayInputStream() = default;
 
   // The ZeroCopyInputStream API.
-  bool Next(const void** data, int* size) override;
+  bool Next(void const** data, int* size) override;
   void BackUp(int count) override;
   bool Skip(int count) override;
   std::int64_t ByteCount() const override;

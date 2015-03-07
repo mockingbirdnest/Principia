@@ -79,5 +79,8 @@
     <ClCompile Include="pull_serializer_test.cpp">
       <Filter>Test Files</Filter>
     </ClCompile>
+    <ClCompile Include="push_deserializer_test.cpp">
+      <Filter>Test Files</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

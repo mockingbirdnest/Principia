@@ -21,19 +21,19 @@ DelegatingArrayInputStream::DelegatingArrayInputStream(
       position_(0),
       last_returned_size_(0) {}
 
-bool DelegatingArrayInputStream::Next(const void** const data,
+bool DelegatingArrayInputStream::Next(void const** const data,
                                       int* const size) {
   if (position_ == size_) {
     // We're at the end of the array.  Obtain a new one.
     Bytes const bytes = on_empty_();
-    if (bytes.size == 0) {
-      // At end of input data.
-      return false;
-    }
     size_ = bytes.size;
     data_ = bytes.data;
     position_ = 0;
     last_returned_size_ = 0;  // Don't let caller back up.
+    if (size_ == 0) {
+      // At end of input data.
+      return false;
+    }
   }
   CHECK_LT(position_, size_);
   last_returned_size_ = size_ - position_;
@@ -63,13 +63,13 @@ bool DelegatingArrayInputStream::Skip(int const count) {
     remaining -= size_ - position_;
     // We're at the end of the array.  Obtain a new one.
     Bytes const bytes = on_empty_();
-    if (bytes.size == 0) {
-      // At end of input data.
-      return false;
-    }
     size_ = bytes.size;
     data_ = bytes.data;
     position_ = 0;
+    if (size_ == 0) {
+      // At end of input data.
+      return false;
+    }
   }
   byte_count_ += remaining;
   position_ += remaining;
@@ -117,7 +117,7 @@ void PushDeserializer::Push(Bytes const bytes) {
     {
       std::unique_lock<std::mutex> l(lock_);
       queue_has_room_.wait(l, [this]() {
-        return queue_.size() < number_of_chunks_;
+        return queue_.size() < static_cast<size_t>(number_of_chunks_);
       });
       queue_.emplace(current.data, std::min(current.size, chunk_size_));
     }

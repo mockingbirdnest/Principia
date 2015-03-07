@@ -14,10 +14,6 @@ struct Bytes {
   Bytes(not_null<std::uint8_t const*> const data, int const size);
   not_null<std::uint8_t const*> data;
   int size;
-
- private:
-  // Placeholder for an empty |Bytes| object.
-  static std::uint8_t null_data_;
 };
 
 }  // namespace base
