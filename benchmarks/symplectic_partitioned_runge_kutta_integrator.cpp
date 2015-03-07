@@ -120,6 +120,9 @@ BENCHMARK_TEMPLATE(BM_SolveHarmonicOscillator,
 BENCHMARK_TEMPLATE(BM_SolveHarmonicOscillator, &Integrator::Yoshida1990Order6A);
 BENCHMARK_TEMPLATE(BM_SolveHarmonicOscillator, &Integrator::Yoshida1990Order6B);
 BENCHMARK_TEMPLATE(BM_SolveHarmonicOscillator, &Integrator::Yoshida1990Order6C);
+BENCHMARK_TEMPLATE(BM_SolveHarmonicOscillator, &Integrator::Yoshida1990Order8A);
+BENCHMARK_TEMPLATE(BM_SolveHarmonicOscillator, &Integrator::Yoshida1990Order8B);
+BENCHMARK_TEMPLATE(BM_SolveHarmonicOscillator, &Integrator::Yoshida1990Order8C);
 
 }  // namespace benchmarks
 }  // namespace principia

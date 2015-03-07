@@ -130,6 +130,18 @@ std::vector<SPRKTestableProperties> Instances() {
       {&Integrator::Yoshida1990Order6C, "Yoshida1990Order6C", 6,
        +9.56665302531689580e-14 * Metre,
        +9.57515317034918210e-14 * Kilogram * Metre / Second,
+       +9.43263722475094490e-02 * Joule},
+      {&Integrator::Yoshida1990Order8A, "Yoshida1990Order8A", 8,
+       +8.31001933931929670e-14 * Metre,
+       +8.30759072645292920e-14 * Kilogram * Metre / Second,
+       +2.54517718121372030e-03 * Joule},
+      {&Integrator::Yoshida1990Order8B, "Yoshida1990Order8B", 8,
+       +3.32536082003898060e-13 * Metre,
+       +3.32810168313102390e-13 * Kilogram * Metre / Second,
+       +8.66720827531614060e-02 * Joule},
+      {&Integrator::Yoshida1990Order8C, "Yoshida1990Order8C", 8,
+       +9.56665302531689580e-14 * Metre,
+       +9.57515317034918210e-14 * Kilogram * Metre / Second,
        +9.43263722475094490e-02 * Joule}};
 }
 
@@ -374,7 +386,7 @@ TEST_P(SPRKTest, Symplecticity) {
                           initial_energy);
     max_energy_error = std::max(energy_error[i], max_energy_error);
   }
-#if 0
+#if 1
   LOG(INFO) << "Energy error as a function of time:\n" <<
       BidimensionalDatasetMathematicaInput(time_steps, energy_error);
 #endif
