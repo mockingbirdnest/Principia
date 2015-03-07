@@ -20,8 +20,7 @@ enum VanishingCoefficients {
 template<typename Position, typename Momentum>
 class SPRKIntegrator : public SymplecticIntegrator<Position, Momentum> {
  public:
-  using Coefficients = typename SymplecticIntegrator<Position,
-                                                     Momentum>::Coefficients;
+  using Scheme = typename SymplecticIntegrator<Position, Momentum>::Scheme;
   using Parameters = typename SymplecticIntegrator<Position,
                                                    Momentum>::Parameters;
   using SystemState = typename SymplecticIntegrator<Position,
@@ -30,18 +29,57 @@ class SPRKIntegrator : public SymplecticIntegrator<Position, Momentum> {
   SPRKIntegrator();
   ~SPRKIntegrator() override = default;
 
+  // First-same-as-last (FSAL) methods with k stages require k - 1 force
+  // and velocity evaluations for sparse output.  For dense output, methods
+  // with synchronous momenta require k - 1 force evalutations and k velocity
+  // evaluations, methods with synchronous positions require k force evaluations
+  // evaluations and k - 1 velocity evaluations.
+
+  // Second order, 2 stages, FSAL (synchronous momenta).
+  Scheme const& Leapfrog() const;
+  // Second order, 2 stages, FSAL (synchronous positions).
+  Scheme const& PseudoLeapfrog() const;
+  // Second order, 2 stages.  This method minimizes the error constant.
+  // Coefficients from McLachlan and Atela (1992),
+  // The accuracy of symplectic integrators, table 2.
+  // http://eaton.math.rpi.edu/CSUMS/Papers/Symplectic/McLachlan_Atela_92.pdf
+  Scheme const& McLachlanAtela1992Order2Optimal() const;
+  // Third order, 3 stages.
+  Scheme const& Ruth1983() const;
+  // Fourth order, 4 stages, FSAL (synchronous momenta).
+  // Coefficients from Forest and Ruth (1990),
+  // Fourth-order symplectic integration, equation 4.8.
+  // http://zwe.web.cern.ch/zwe/CAS/biblio/ruth-forest.pdf
+  // This scheme was independently discovered by J. Candy and W. Rozmus (1991)  // A Symplectic Integration Algorithm for Separable Hamiltonian Functions
+  // (submitted earlier and published later than the Forest and Ruth paper).
+  // Yoshida (1990) also attributes it to Neri (1988),
+  // Lie algebras and canonical integration.
+  Scheme const& CandyRozmus1991ForestRuth1990SynchronousMomenta() const;
+  // Fourth order, 4 stages, FSAL (synchronous positions).
+  // Coefficients from Forest and Ruth (1990),
+  // Fourth-order symplectic integration, equation 4.9.
+  // http://zwe.web.cern.ch/zwe/CAS/biblio/ruth-forest.pdf
+  // This scheme was independently discovered by J. Candy and W. Rozmus (1991)  // A Symplectic Integration Algorithm for Separable Hamiltonian Functions
+  // (submitted earlier and published later than the Forest and Ruth paper).
+  // Yoshida (1990) also attributes it to Neri (1988),
+  // Lie algebras and canonical integration.
+  Scheme const& CandyRozmus1991ForestRuth1990SynchronousPositions() const;
+  // Fourth order, 4 stages.  This method minimizes the error constant.
   // Coefficients from Robert I. McLachlan and Pau Atela (1992),
   // The accuracy of symplectic integrators, table 2.
   // http://eaton.math.rpi.edu/CSUMS/Papers/Symplectic/McLachlan_Atela_92.pdf
-  Coefficients const& Leapfrog() const;
-  Coefficients const& PseudoLeapfrog() const;
-  Coefficients const& Order2Optimal() const;
-  Coefficients const& Ruth1983() const;
-  Coefficients const& Order4FirstSameAsLast() const;
-  Coefficients const& Order5Optimal() const;
+  Scheme const& McLachlanAtela1992Order4Optimal() const;
+  // Fifth order, 6 stages.  This method minimizes the error constant.
+  // Coefficients from Robert I. McLachlan and Pau Atela (1992),
+  // The accuracy of symplectic integrators, table 2.
+  // http://eaton.math.rpi.edu/CSUMS/Papers/Symplectic/McLachlan_Atela_92.pdf
+  Scheme const& McLachlanAtela1992Order5Optimal() const;
+  // TODO(egg): Recompute the coefficients given in Yoshida (1990),
+  // Construction of higher order symplectic integrators
   // http://sixtrack.web.cern.ch/SixTrack/doc/yoshida00.pdf
+  // with sufficient precision, and add the resulting schemes.
 
-  void Initialize(Coefficients const& coefficients) override;
+  void Initialize(Scheme const& coefficients) override;
 
   template<typename AutonomousRightHandSideComputation,
            typename RightHandSideComputation>
@@ -65,12 +103,14 @@ class SPRKIntegrator : public SymplecticIntegrator<Position, Momentum> {
                       Parameters const& parameters,
                       not_null<std::vector<SystemState>*> const solution) const;
 
-  // We follow the convention of McLachlan Atela, calling the position nodes
-  // a_i and the momentum nodes b_i.  (a, b) here corresponds to:
+  // We follow the convention of McLachlan & Atela, calling the position nodes
+  // a_i and the momentum nodes b_i.  The following notations appear in the
+  // litterature:
+  //   (a, b) in McLachlan & Atela, as well as Candy & Rozmus;
   //   (d, c) in Ruth, Yoshida, as well as Forest & Ruth;
   //   (B, b) in Sofroniou & Spaletta.
   // Moreover, we follow the convention of Sofroniou & Spaletta in calling the
-  // positions weights c_i, with
+  // position weights c_i, with
   // c_1 = 0, c_i = c_i-1 + a_i-1 for i > 1.
 
   VanishingCoefficients vanishing_coefficients_;

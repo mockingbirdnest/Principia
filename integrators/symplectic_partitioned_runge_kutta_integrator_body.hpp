@@ -48,43 +48,43 @@ template<typename Position, typename Momentum>
 SPRKIntegrator<Position, Momentum>::SPRKIntegrator() : stages_(0) {}
 
 template<typename Position, typename Momentum>
-typename SPRKIntegrator<Position, Momentum>::Coefficients const&
+typename SPRKIntegrator<Position, Momentum>::Scheme const&
 SPRKIntegrator<Position, Momentum>::Leapfrog() const {
-  static Coefficients const leapfrog = {{ 0.5, 0.5}, { 0.0, 1.0}};
-  return leapfrog;
+  static Scheme const scheme = {{ 0.5, 0.5}, { 0.0, 1.0}};
+  return scheme;
 }
 
 template<typename Position, typename Momentum>
-typename SPRKIntegrator<Position, Momentum>::Coefficients const&
+typename SPRKIntegrator<Position, Momentum>::Scheme const&
 SPRKIntegrator<Position, Momentum>::PseudoLeapfrog() const {
-  static Coefficients const pseudo_leapfrog = {{ 1.0, 0.0}, { 0.5, 0.5}};
-  return pseudo_leapfrog;
+  static Scheme const scheme = {{ 1.0, 0.0}, { 0.5, 0.5}};
+  return scheme;
 }
 
 template<typename Position, typename Momentum>
-typename SPRKIntegrator<Position, Momentum>::Coefficients const&
-SPRKIntegrator<Position, Momentum>::Order2Optimal() const {
-  static Coefficients const order_2_optimal = {
+typename SPRKIntegrator<Position, Momentum>::Scheme const&
+SPRKIntegrator<Position, Momentum>::McLachlanAtela1992Order2Optimal() const {
+  static Scheme const scheme = {
       { 0.7071067811865475244,
         0.2928932188134524756},
       { 0.7071067811865475244,
         0.2928932188134524756}};
-  return order_2_optimal;
+  return scheme;
 }
 
 
 template<typename Position, typename Momentum>
-typename SPRKIntegrator<Position, Momentum>::Coefficients const&
+typename SPRKIntegrator<Position, Momentum>::Scheme const&
 SPRKIntegrator<Position, Momentum>::Ruth1983() const {
-  static Coefficients const ruth_1983 = {{ 2. / 3., -2. / 3., 1.},
-                                         { 7. / 24., 3. / 4., -1. / 24.}};
-  return ruth_1983;
+  static Scheme const scheme = {{ 2. / 3., -2. / 3., 1.},
+                                { 7. / 24., 3. / 4., -1. / 24.}};
+  return scheme;
 }
 
 template<typename Position, typename Momentum>
-typename SPRKIntegrator<Position, Momentum>::Coefficients const&
-SPRKIntegrator<Position, Momentum>::Order4FirstSameAsLast() const {
-  static Coefficients const order_4_first_same_as_last = {
+typename SPRKIntegrator<Position, Momentum>::Scheme const&
+SPRKIntegrator<Position, Momentum>::CandyRozmus1991ForestRuth1990SynchronousMomenta() const {
+  static Scheme const scheme = {
       { 0.6756035959798288170,
        -0.1756035959798288170,
        -0.1756035959798288170,
@@ -93,13 +93,43 @@ SPRKIntegrator<Position, Momentum>::Order4FirstSameAsLast() const {
         1.351207191959657634,
        -1.702414383919315268,
         1.351207191959657634}};
-  return order_4_first_same_as_last;
+  return scheme;
 }
 
 template<typename Position, typename Momentum>
-typename SPRKIntegrator<Position, Momentum>::Coefficients const&
-SPRKIntegrator<Position, Momentum>::Order5Optimal() const {
-  static Coefficients const order_5_optimal = {
+typename SPRKIntegrator<Position, Momentum>::Scheme const&
+SPRKIntegrator<Position, Momentum>::CandyRozmus1991ForestRuth1990SynchronousPositions() const {
+  static Scheme const scheme = {
+      { 1.351207191959657634,
+       -1.702414383919315268,
+        1.351207191959657634,
+        0.0},
+      { 0.6756035959798288170,
+       -0.1756035959798288170,
+       -0.1756035959798288170,
+        0.6756035959798288170}};
+  return scheme;
+}
+
+template<typename Position, typename Momentum>
+typename SPRKIntegrator<Position, Momentum>::Scheme const&
+SPRKIntegrator<Position, Momentum>::McLachlanAtela1992Order4Optimal() const {
+  static Scheme const scheme = {
+      { 0.5153528374311229364,
+       -0.085782019412973646,
+        0.4415830236164665242,
+        0.1288461583653841854},
+      { 0.1344961992774310892,
+       -0.2248198030794208058,
+        0.7563200005156682911,
+        0.3340036032863214255}};
+  return scheme;
+}
+
+template<typename Position, typename Momentum>
+typename SPRKIntegrator<Position, Momentum>::Scheme const&
+SPRKIntegrator<Position, Momentum>::McLachlanAtela1992Order5Optimal() const {
+  static Scheme const scheme = {
       { 0.339839625839110000,
        -0.088601336903027329,
         0.5858564768259621188,
@@ -112,12 +142,12 @@ SPRKIntegrator<Position, Momentum>::Order5Optimal() const {
         0.4012695022513534480,
         0.0107050818482359840,
        -0.0589796254980311632}};
-  return order_5_optimal;
+  return scheme;
 }
 
 template<typename Position, typename Momentum>
 void SPRKIntegrator<Position, Momentum>::Initialize(
-    Coefficients const& coefficients) {
+    Scheme const& coefficients) {
   CHECK_EQ(2, coefficients.size());
   if (coefficients[1].front() == 0.0) {
     vanishing_coefficients_ = FirstBVanishes;

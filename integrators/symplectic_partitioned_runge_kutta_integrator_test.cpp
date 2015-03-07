@@ -59,17 +59,19 @@ class SPRKTest : public testing::Test {
   using Integrator = SPRKIntegrator<Length, Momentum>;
 
   SPRKTest() {
-    integrator_.Initialize(integrator_.Order5Optimal());
+    integrator_.Initialize(integrator_.McLachlanAtela1992Order5Optimal());
     schemes_ = {
       &Integrator::Leapfrog,
       &Integrator::PseudoLeapfrog,
-      &Integrator::Order2Optimal,
+      &Integrator::McLachlanAtela1992Order2Optimal,
       &Integrator::Ruth1983,
-      &Integrator::Order4FirstSameAsLast,
-      &Integrator::Order5Optimal};
+      &Integrator::CandyRozmus1991ForestRuth1990SynchronousMomenta,
+      &Integrator::CandyRozmus1991ForestRuth1990SynchronousPositions,
+      &Integrator::McLachlanAtela1992Order4Optimal;
+      &Integrator::McLachlanAtela1992Order5Optimal};
   }
 
-  std::vector<Integrator::Coefficients const& (Integrator::*)() const> schemes_;
+  std::vector<Integrator::Scheme const& (Integrator::*)() const> schemes_;
 
   Integrator                           integrator_;
   Integrator::Parameters               parameters_;

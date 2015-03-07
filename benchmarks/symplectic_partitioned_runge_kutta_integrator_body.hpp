@@ -26,7 +26,7 @@ inline void SolveHarmonicOscillator(
   SPRKIntegrator<Length, Momentum> integrator;
   SPRKIntegrator<Length, Momentum>::Parameters parameters;
 
-  integrator.Initialize(integrator.Order5Optimal());
+  integrator.Initialize(integrator.McLachlanAtela1992Order5Optimal());
 
   parameters.initial.positions.emplace_back(SIUnit<Length>());
   parameters.initial.momenta.emplace_back(Momentum());
