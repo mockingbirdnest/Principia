@@ -118,7 +118,19 @@ std::vector<SPRKTestableProperties> Instances() {
        "McLachlanAtela1992Order5Optimal", 5,
        +7.51005160837259210e-14 * Metre,
        +7.50823014872281650e-14 * Kilogram * Metre / Second,
-       +1.14708664439744370e-04 * Joule}};
+       +1.14708664439744370e-04 * Joule},
+      {&Integrator::Yoshida1990Order6A, "Yoshida1990Order6A", 6,
+       +8.31001933931929670e-14 * Metre,
+       +8.30759072645292920e-14 * Kilogram * Metre / Second,
+       +2.54517718121372030e-03 * Joule},
+      {&Integrator::Yoshida1990Order6B, "Yoshida1990Order6B", 6,
+       +3.32536082003898060e-13 * Metre,
+       +3.32810168313102390e-13 * Kilogram * Metre / Second,
+       +8.66720827531614060e-02 * Joule},
+      {&Integrator::Yoshida1990Order6C, "Yoshida1990Order6C", 6,
+       +9.56665302531689580e-14 * Metre,
+       +9.57515317034918210e-14 * Kilogram * Metre / Second,
+       +9.43263722475094490e-02 * Joule}};
 }
 
 }  // namespace
@@ -151,7 +163,7 @@ TEST_P(SPRKTest, ConsistentWeights) {
   auto compute_force = [v](Time const& t,
                            std::vector<Length> const& q,
                            not_null<std::vector<Force>*> const result) {
-    EXPECT_THAT(q[0], AlmostEquals(v * t, 0, 2));
+    EXPECT_THAT(q[0], AlmostEquals(v * t, 0, 8));
     (*result)[0] = 0 * Newton;
   };
   auto compute_velocity = [m, v](std::vector<Momentum> const& p,
@@ -373,7 +385,7 @@ TEST_P(SPRKTest, Symplecticity) {
   EXPECT_THAT(correlation, Lt(2E-3));
   Power const slope = Slope(time_steps, energy_error);
   LOG(INFO) << "Slope                                     : " << slope;
-  EXPECT_THAT(Abs(slope), Lt(1E-6 * SIUnit<Power>()));
+  EXPECT_THAT(Abs(slope), Lt(2E-6 * SIUnit<Power>()));
   LOG(INFO) << "Maximum energy error                      : " <<
       max_energy_error;
   EXPECT_EQ(GetParam().expected_energy_error, max_energy_error);
