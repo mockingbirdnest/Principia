@@ -135,23 +135,23 @@ std::vector<SPRKTestableProperties> Instances() {
        +9.56665302531689580e-14 * Metre,
        +9.57515317034918210e-14 * Kilogram * Metre / Second,
        +9.43263722475094490e-02 * Joule},
-      {&Integrator::Yoshida1990Order8A, "Yoshida1990Order8A", 8, 0.8 * Second,
+      {&Integrator::Yoshida1990Order8A, "Yoshida1990Order8A", 8, 0.043 * Second,
        +8.31001933931929670e-14 * Metre,
        +8.30759072645292920e-14 * Kilogram * Metre / Second,
        +2.54517718121372030e-03 * Joule},
-      {&Integrator::Yoshida1990Order8B, "Yoshida1990Order8B", 8, 1 * Second,
+      {&Integrator::Yoshida1990Order8B, "Yoshida1990Order8B", 8, 0.043 * Second,
        +3.32536082003898060e-13 * Metre,
        +3.32810168313102390e-13 * Kilogram * Metre / Second,
        +8.66720827531614060e-02 * Joule},
-      {&Integrator::Yoshida1990Order8C, "Yoshida1990Order8C", 8, 1 * Second,
+      {&Integrator::Yoshida1990Order8C, "Yoshida1990Order8C", 8, 0.5 * Second,
        +9.56665302531689580e-14 * Metre,
        +9.57515317034918210e-14 * Kilogram * Metre / Second,
        +9.43263722475094490e-02 * Joule},
-      {&Integrator::Yoshida1990Order8B, "Yoshida1990Order8D", 8, 1 * Second,
+      {&Integrator::Yoshida1990Order8B, "Yoshida1990Order8D", 8, 0.043 * Second,
        +3.32536082003898060e-13 * Metre,
        +3.32810168313102390e-13 * Kilogram * Metre / Second,
        +8.66720827531614060e-02 * Joule},
-      {&Integrator::Yoshida1990Order8C, "Yoshida1990Order8E", 8, 1 * Second,
+      {&Integrator::Yoshida1990Order8C, "Yoshida1990Order8E", 8, 0.5 * Second,
        +9.56665302531689580e-14 * Metre,
        +9.57515317034918210e-14 * Kilogram * Metre / Second,
        +9.43263722475094490e-02 * Joule}};
@@ -378,7 +378,7 @@ TEST_P(SPRKTest, Convergence) {
      RelativeError(((GetParam().convergence_order + 1) / 2) * 2,
                    p_convergence_order),
      Lt(0.02));
-  EXPECT_THAT(p_correlation, AllOf(Gt(0.999), Lt(1.001)));
+  EXPECT_THAT(p_correlation, AllOf(Gt(0.99), Lt(1.01)));
 }
 
 TEST_P(SPRKTest, Symplecticity) {
