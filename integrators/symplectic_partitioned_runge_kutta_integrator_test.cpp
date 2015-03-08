@@ -138,23 +138,23 @@ std::vector<SPRKTestableProperties> Instances() {
       {&Integrator::Yoshida1990Order8A, "Yoshida1990Order8A", 8, 0.043 * Second,
        +8.31001933931929670e-14 * Metre,
        +8.30759072645292920e-14 * Kilogram * Metre / Second,
-       +2.54517718121372030e-03 * Joule},
-      {&Integrator::Yoshida1990Order8B, "Yoshida1990Order8B", 8, 0.043 * Second,
+       +1.49030436414898660e-05 * Joule},
+      {&Integrator::Yoshida1990Order8B, "Yoshida1990Order8B", 8, 0.5 * Second,
        +3.32536082003898060e-13 * Metre,
        +3.32810168313102390e-13 * Kilogram * Metre / Second,
        +1.49030436414898660e-05 * Joule},
-      {&Integrator::Yoshida1990Order8C, "Yoshida1990Order8C", 8, 0.5 * Second,
+      {&Integrator::Yoshida1990Order8C, "Yoshida1990Order8C", 8, 0.9 * Second,
        +9.56665302531689580e-14 * Metre,
        +9.57515317034918210e-14 * Kilogram * Metre / Second,
        +1.33083072562101280e-07 * Joule},
       {&Integrator::Yoshida1990Order8D, "Yoshida1990Order8D", 8, 1.1 * Second,
        +3.32536082003898060e-13 * Metre,
        +3.32810168313102390e-13 * Kilogram * Metre / Second,
-       +1.49030436414898660e-05 * Joule},
+       +1.58094926039353820e-10 * Joule},
       {&Integrator::Yoshida1990Order8E, "Yoshida1990Order8E", 8, 0.3 * Second,
        +9.56665302531689580e-14 * Metre,
        +9.57515317034918210e-14 * Kilogram * Metre / Second,
-       +1.33083072562101280e-07 * Joule}};
+       +3.42872149006190340e-08 * Joule}};
 }
 
 }  // namespace
@@ -357,7 +357,7 @@ TEST_P(SPRKTest, Convergence) {
   LOG(INFO) << GetParam();
   LOG(INFO) << "Convergence order in q : " << q_convergence_order;
   LOG(INFO) << "Correlation            : " << q_correlation;
-#if 0
+#if 1
   LOG(INFO) << "Convergence data for q :\n" <<
       BidimensionalDatasetMathematicaInput(log_step_sizes, log_q_errors);
 #endif
