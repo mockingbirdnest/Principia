@@ -99,7 +99,7 @@ std::vector<SPRKTestableProperties> Instances() {
        +7.01570745942348140e-13 * Kilogram * Metre / Second,
        +1.79248948993825370e-02 * Joule},
       {&Integrator::McLachlanAtela1992Order3Optimal,
-       "McLachlanAtela1992Order3Optimal", 3, 0.1 * Second,
+       "McLachlanAtela1992Order3Optimal", 3, 0.09 * Second,
        +1.21425465168800710e-11 * Metre,
        +3.68977418063742850e-13 * Kilogram * Metre / Second,
        +6.41094324383406630e-03 * Joule},
