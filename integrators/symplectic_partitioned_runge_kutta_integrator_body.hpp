@@ -594,7 +594,8 @@ void SPRKIntegrator<Position, Momentum>::SolveOptimized(
                             sampling_phase % parameters.sampling_period == 0);
     }
 
-    if (vanishing_coefficients_ == kFirstBVanishes && q_and_p_are_synchronized) {
+    if (vanishing_coefficients_ == kFirstBVanishes &&
+        q_and_p_are_synchronized) {
       // Desynchronize.
       std::swap(Δqstage_current, Δqstage_previous);
       for (int k = 0; k < dimension; ++k) {
@@ -660,7 +661,6 @@ void SPRKIntegrator<Position, Momentum>::SolveOptimized(
       }
       ++sampling_phase;
     }
-
   }
 
   if (parameters.sampling_period == 0) {
@@ -674,7 +674,6 @@ void SPRKIntegrator<Position, Momentum>::SolveOptimized(
       state->momenta.emplace_back(p_last[k]);
     }
   }
-
 }
 
 }  // namespace integrators

@@ -1,4 +1,5 @@
-﻿#pragma once
+﻿
+#pragma once
 
 #include <vector>
 
@@ -69,14 +70,16 @@ class SPRKIntegrator : public SymplecticIntegrator<Position, Momentum> {
   // Coefficients from Forest and Ruth (1990),
   // Fourth-order symplectic integration, equation 4.8.
   // http://zwe.web.cern.ch/zwe/CAS/biblio/ruth-forest.pdf.
-  // This scheme was independently discovered by Candy and Rozmus (1991),  // A Symplectic Integration Algorithm for Separable Hamiltonian Functions
+  // This scheme was independently discovered by Candy and Rozmus (1991),
+  // A Symplectic Integration Algorithm for Separable Hamiltonian Functions
   // (submitted earlier and published later than the Forest and Ruth paper).
   Scheme const& CandyRozmus1991ForestRuth1990SynchronousMomenta() const;
   // Fourth order, 4 stages, FSAL (synchronous positions).
   // Coefficients from Forest and Ruth (1990),
   // Fourth-order symplectic integration, equation 4.9.
   // http://zwe.web.cern.ch/zwe/CAS/biblio/ruth-forest.pdf.
-  // This scheme was independently discovered by Candy and Rozmus (1991),  // A Symplectic Integration Algorithm for Separable Hamiltonian Functions
+  // This scheme was independently discovered by Candy and Rozmus (1991),
+  // A Symplectic Integration Algorithm for Separable Hamiltonian Functions
   // (submitted earlier and published later than the Forest and Ruth paper).
   Scheme const& CandyRozmus1991ForestRuth1990SynchronousPositions() const;
   // Fourth order, 4 stages.  This method minimizes the error constant.
@@ -119,7 +122,6 @@ class SPRKIntegrator : public SymplecticIntegrator<Position, Momentum> {
              not_null<std::vector<SystemState>*> const solution) const;
 
  private:
-
   struct FirstSameAsLast {
     double first;
     double last;
