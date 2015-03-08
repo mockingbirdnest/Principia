@@ -12,6 +12,23 @@ using base::not_null;
 
 namespace integrators {
 
+// The integrator defined in this class integrates Hamilton's equations for
+// Hamiltonians of the form
+//   H(q, p, t) = T(p) + V(q, t),
+// where dT/dpᵢ(q) and dV/dqᵢ(q,t) are known.
+// The assymmetric support for time dependence arises in the treatment of t as a
+// variable in the extended phase space (q, t, p, ϖ), where with the extended
+// Hamiltonian  H(q, t, p, ϖ) = (T(p) + ϖ) + V(q, t), which can then be 
+// integrated with methods for time-independent separable Hamiltonians
+// H(Q, P) = T(P) + V(Q).
+// For practical purposes, this reduces to evaluating the force computations
+// with an additional parameter given by the weights (in the usual Runge-Kutta
+// sense) corresponding to the positions.
+// See McLachlan and Quispel (2006), Geometric Integrators for ODEs,
+// http://www.massey.ac.nz/~rmclachl/JPAReview.pdf,
+// or Sofroniou and Spaletta (2002),
+// Symplectic Methods for Separable Hamiltonian Systems.
+
 // We follow the convention of McLachlan & Atela, calling the position nodes
 // aᵢ and the momentum nodes bᵢ.  The following notations appear in the
 // litterature:
@@ -19,7 +36,7 @@ namespace integrators {
 //   (d, c) in Ruth, Yoshida, as well as Forest & Ruth;
 //   (B, b) in Sofroniou & Spaletta.
 // Moreover, we follow the convention of Sofroniou & Spaletta in calling the
-// position weights cᵢ, with
+// weights used for the time argument of the force computation cᵢ, with
 // c₁ = 0, cᵢ = cᵢ₋₁ + aᵢ₋₁ for i > 1.
 
 enum VanishingCoefficients {
@@ -31,9 +48,9 @@ enum VanishingCoefficients {
 template<typename Position, typename Momentum>
 class SPRKIntegrator : public SymplecticIntegrator<Position, Momentum> {
  public:
-  using Scheme = typename SymplecticIntegrator<Position, Momentum>::Scheme;
   using Parameters = typename SymplecticIntegrator<Position,
                                                    Momentum>::Parameters;
+  using Scheme = typename SymplecticIntegrator<Position, Momentum>::Scheme;
   using SystemState = typename SymplecticIntegrator<Position,
                                                     Momentum>::SystemState;
 
@@ -42,9 +59,9 @@ class SPRKIntegrator : public SymplecticIntegrator<Position, Momentum> {
 
   // First-same-as-last (FSAL) methods with k stages require k - 1 force
   // and velocity evaluations for sparse output.  For dense output, methods
-  // with synchronous momenta require k - 1 force evalutations and k velocity
+  // with synchronous momenta require k - 1 force evaluations and k velocity
   // evaluations, methods with synchronous positions require k force evaluations
-  // evaluations and k - 1 velocity evaluations.
+  // and k - 1 velocity evaluations.
 
   // Second order, 2 stages, FSAL (synchronous momenta).
   Scheme const& Leapfrog() const;
@@ -63,7 +80,7 @@ class SPRKIntegrator : public SymplecticIntegrator<Position, Momentum> {
   // Coefficients from McLachlan and Atela (1992),
   // The accuracy of symplectic integrators, equation 3.3.
   // http://eaton.math.rpi.edu/CSUMS/Papers/Symplectic/McLachlan_Atela_92.pdf.
-  // NOTE(egg): the coefficients give in table 2 for this integrator are
+  // NOTE(egg): the coefficients given in table 2 for this integrator are
   // incorrect (b1 and b2 are swapped).
   Scheme const& McLachlanAtela1992Order3Optimal() const;
   // Fourth order, 4 stages, FSAL (synchronous momenta).
@@ -114,10 +131,12 @@ class SPRKIntegrator : public SymplecticIntegrator<Position, Momentum> {
 
   void Initialize(Scheme const& coefficients) override;
 
+  // The functors |compute_velocity| and |compute_force| compute
+  // dT/dpᵢ(p) and dV/dqᵢ(q,t) respectively.
   template<typename AutonomousRightHandSideComputation,
            typename RightHandSideComputation>
-  void Solve(RightHandSideComputation compute_force,
-             AutonomousRightHandSideComputation compute_velocity,
+  void Solve(RightHandSideComputation const compute_force,
+             AutonomousRightHandSideComputation const compute_velocity,
              Parameters const& parameters,
              not_null<std::vector<SystemState>*> const solution) const;
 
@@ -127,14 +146,13 @@ class SPRKIntegrator : public SymplecticIntegrator<Position, Momentum> {
     double last;
   };
 
-  template<VanishingCoefficients vanishing_coefficients_,
+  template<VanishingCoefficients vanishing_coefficients,
            typename AutonomousRightHandSideComputation,
            typename RightHandSideComputation>
-  void SolveOptimized(RightHandSideComputation compute_force,
-                      AutonomousRightHandSideComputation compute_velocity,
+  void SolveOptimized(RightHandSideComputation const compute_force,
+                      AutonomousRightHandSideComputation const compute_velocity,
                       Parameters const& parameters,
                       not_null<std::vector<SystemState>*> const solution) const;
-
 
   VanishingCoefficients vanishing_coefficients_;
   // Null if, and only if, |vanishing_coefficients_ == kNone|.

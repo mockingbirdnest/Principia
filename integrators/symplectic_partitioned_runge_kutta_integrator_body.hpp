@@ -72,7 +72,6 @@ SPRKIntegrator<Position, Momentum>::McLachlanAtela1992Order2Optimal() const {
   return scheme;
 }
 
-
 template<typename Position, typename Momentum>
 typename SPRKIntegrator<Position, Momentum>::Scheme const&
 SPRKIntegrator<Position, Momentum>::Ruth1983() const {
@@ -455,6 +454,7 @@ void SPRKIntegrator<Position, Momentum>::Initialize(
     CHECK_EQ(stages_, a_.size());
   } else {
     vanishing_coefficients_ = kNone;
+    first_same_as_last_.reset();
     a_ = coefficients[0];
     b_ = coefficients[1];
     stages_ = b_.size();
@@ -466,7 +466,7 @@ void SPRKIntegrator<Position, Momentum>::Initialize(
   if (vanishing_coefficients_ == kFirstBVanishes) {
     c_[0] = first_same_as_last_->first;
   } else {
-    c_[0] = 0;
+    c_[0] = 0.0;
   }
   for (int j = 1; j < stages_; ++j) {
     c_[j] = c_[j - 1] + a_[j - 1];
@@ -477,8 +477,8 @@ template<typename Position, typename Momentum>
 template<typename AutonomousRightHandSideComputation,
          typename RightHandSideComputation>
 void SPRKIntegrator<Position, Momentum>::Solve(
-      RightHandSideComputation compute_force,
-      AutonomousRightHandSideComputation compute_velocity,
+      RightHandSideComputation const compute_force,
+      AutonomousRightHandSideComputation const compute_velocity,
       Parameters const& parameters,
       not_null<std::vector<SystemState>*> const solution) const {
   switch (vanishing_coefficients_) {
@@ -504,8 +504,8 @@ template<VanishingCoefficients vanishing_coefficients,
          typename AutonomousRightHandSideComputation,
          typename RightHandSideComputation>
 void SPRKIntegrator<Position, Momentum>::SolveOptimized(
-      RightHandSideComputation compute_force,
-      AutonomousRightHandSideComputation compute_velocity,
+      RightHandSideComputation const compute_force,
+      AutonomousRightHandSideComputation const compute_velocity,
       Parameters const& parameters,
       not_null<std::vector<SystemState>*> const solution) const {
   int const dimension = parameters.initial.positions.size();
@@ -587,14 +587,13 @@ void SPRKIntegrator<Position, Momentum>::SolveOptimized(
       q_stage[k] = q_last[k].value;
     }
 
-
-    if (vanishing_coefficients_ != kNone) {
+    if (vanishing_coefficients != kNone) {
       should_synchronize = at_end ||
                            (parameters.sampling_period != 0 &&
                             sampling_phase % parameters.sampling_period == 0);
     }
 
-    if (vanishing_coefficients_ == kFirstBVanishes &&
+    if (vanishing_coefficients == kFirstBVanishes &&
         q_and_p_are_synchronized) {
       // Desynchronize.
       std::swap(Δqstage_current, Δqstage_previous);
@@ -613,7 +612,7 @@ void SPRKIntegrator<Position, Momentum>::SolveOptimized(
 
       // By using |tn.error| below we get a time value which is possibly a wee
       // bit more precise.
-      if (vanishing_coefficients_ == kLastAVanishes &&
+      if (vanishing_coefficients == kLastAVanishes &&
           q_and_p_are_synchronized && i == 0) {
         ADVANCE_ΔPSTAGE(first_same_as_last_->first * h,
                         tn.value);
@@ -622,7 +621,7 @@ void SPRKIntegrator<Position, Momentum>::SolveOptimized(
         ADVANCE_ΔPSTAGE(b_[i] * h, tn.value + (tn.error + c_[i] * h));
       }
 
-      if (vanishing_coefficients_ == kFirstBVanishes &&
+      if (vanishing_coefficients == kFirstBVanishes &&
           should_synchronize && i == stages_ - 1) {
         ADVANCE_ΔQSTAGE(first_same_as_last_->last * h);
         q_and_p_are_synchronized = true;
@@ -630,7 +629,7 @@ void SPRKIntegrator<Position, Momentum>::SolveOptimized(
         ADVANCE_ΔQSTAGE(a_[i] * h);
       }
     }
-    if (vanishing_coefficients_ == kLastAVanishes && should_synchronize) {
+    if (vanishing_coefficients == kLastAVanishes && should_synchronize) {
       std::swap(Δpstage_current, Δpstage_previous);
       // TODO(egg): the second parameter below is really just tn.value + h.
       ADVANCE_ΔPSTAGE(first_same_as_last_->last * h,

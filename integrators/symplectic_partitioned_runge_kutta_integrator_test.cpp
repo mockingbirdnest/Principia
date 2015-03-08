@@ -50,6 +50,8 @@ using ::testing::Lt;
 using ::testing::Ne;
 using ::testing::ValuesIn;
 
+#define INTEGRATOR(name) &Integrator::name, #name
+
 namespace integrators {
 
 namespace {
@@ -81,77 +83,73 @@ std::ostream& operator<<(std::ostream& stream, SPRKTestableProperties param) {
 
 std::vector<SPRKTestableProperties> Instances() {
   return {
-      {&Integrator::Leapfrog, "Leapfrog", 2, 0.4 * Second,
+      {INTEGRATOR(Leapfrog), 2, 0.4 * Second,
        +4.15606749774469300e-05 * Metre,
        +4.16264386218978200e-05 * Kilogram * Metre / Second,
        +5.05049535215751360e-03 * Joule},
-      {&Integrator::PseudoLeapfrog, "PseudoLeapfrog", 2, 0.4 * Second,
+      {INTEGRATOR(PseudoLeapfrog), 2, 0.4 * Second,
        +4.15606749774360880e-05 * Metre,
        +4.16261832564750020e-05 * Kilogram * Metre / Second,
        +4.99999039863535670e-03 * Joule},
-      {&Integrator::McLachlanAtela1992Order2Optimal,
-       "McLachlanAtela1992Order2Optimal", 2, 0.7 * Second,
+      {INTEGRATOR(McLachlanAtela1992Order2Optimal), 2, 0.7 * Second,
        +2.01685999379921760e-05 * Metre,
        +2.02003819904818380e-05 * Kilogram * Metre / Second,
        +8.63068191495619530e-05 * Joule},
-      {&Integrator::Ruth1983, "Ruth1983", 3, 0.1 * Second,
+      {INTEGRATOR(Ruth1983), 3, 0.1 * Second,
        +2.77767866216707680e-11 * Metre,
        +7.01570745942348140e-13 * Kilogram * Metre / Second,
        +1.15535032619074050e-04 * Joule},
-      {&Integrator::McLachlanAtela1992Order3Optimal,
-       "McLachlanAtela1992Order3Optimal", 3, 0.09 * Second,
+      {INTEGRATOR(McLachlanAtela1992Order3Optimal), 3, 0.09 * Second,
        +1.21425465168800710e-11 * Metre,
        +3.68977418063742850e-13 * Kilogram * Metre / Second,
        +4.72513762963533420e-05 * Joule},
-      {&Integrator::CandyRozmus1991ForestRuth1990SynchronousMomenta,
-       "CandyRozmus1991ForestRuth1990SynchronousMomenta", 4, 0.5 * Second,
+      {INTEGRATOR(CandyRozmus1991ForestRuth1990SynchronousMomenta), 4,
+       0.5 * Second,
        +6.63488482904872610e-11 * Metre,
        +6.64555094981311710e-11 * Kilogram * Metre / Second,
        +6.26780491450595890e-05 * Joule},
-      {&Integrator::CandyRozmus1991ForestRuth1990SynchronousPositions,
-       "CandyRozmus1991ForestRuth1990SynchronousPositions", 4, 0.5 * Second,
+      {INTEGRATOR(CandyRozmus1991ForestRuth1990SynchronousPositions), 4,
+       0.5 * Second,
        +6.63488188001881700e-11 * Metre,
        +6.64553134743783860e-11 * Kilogram * Metre / Second,
        +6.26859072369034820e-05 * Joule},
-      {&Integrator::McLachlanAtela1992Order4Optimal,
-       "McLachlanAtela1992Order4Optimal", 4, 1.0 * Second,
+      {INTEGRATOR(McLachlanAtela1992Order4Optimal), 4, 1.0 * Second,
        +1.88161985992252310e-13 * Metre,
        +1.88491583452687910e-13 * Kilogram * Metre / Second,
        +7.52285331973023830e-07 * Joule},
-      {&Integrator::McLachlanAtela1992Order5Optimal,
-       "McLachlanAtela1992Order5Optimal", 5, 1.1 * Second,
+      {INTEGRATOR(McLachlanAtela1992Order5Optimal), 5, 1.1 * Second,
        +7.51005160837259210e-14 * Metre,
        +7.50823014872281650e-14 * Kilogram * Metre / Second,
        +3.06327349042234690e-08 * Joule},
-      {&Integrator::Yoshida1990Order6A, "Yoshida1990Order6A", 6, 1.5 * Second,
+      {INTEGRATOR(Yoshida1990Order6A), 6, 1.5 * Second,
        +8.31001933931929670e-14 * Metre,
        +8.30759072645292920e-14 * Kilogram * Metre / Second,
        +1.28253664799515830e-07 * Joule},
-      {&Integrator::Yoshida1990Order6B, "Yoshida1990Order6B", 6, 1.0 * Second,
+      {INTEGRATOR(Yoshida1990Order6B), 6, 1.0 * Second,
        +3.32536082003898060e-13 * Metre,
        +3.32810168313102390e-13 * Kilogram * Metre / Second,
        +3.39431978740867280e-06 * Joule},
-      {&Integrator::Yoshida1990Order6C, "Yoshida1990Order6C", 6, 1.0 * Second,
+      {INTEGRATOR(Yoshida1990Order6C), 6, 1.0 * Second,
        +9.56665302531689580e-14 * Metre,
        +9.57515317034918210e-14 * Kilogram * Metre / Second,
        +3.58056353211289040e-06 * Joule},
-      {&Integrator::Yoshida1990Order8A, "Yoshida1990Order8A", 8, 0.043 * Second,
+      {INTEGRATOR(Yoshida1990Order8A), 8, 0.043 * Second,
        +6.05702987765965870e-13 * Metre,
        +6.06313610429509710e-13 * Kilogram * Metre / Second,
        +1.49030436414898660e-05 * Joule},
-      {&Integrator::Yoshida1990Order8B, "Yoshida1990Order8B", 8, 0.5 * Second,
+      {INTEGRATOR(Yoshida1990Order8B), 8, 0.5 * Second,
        +4.91471446872893130e-13 * Metre,
        +4.91932883317502960e-13 * Kilogram * Metre / Second,
        +1.33083072562101280e-07 * Joule},
-      {&Integrator::Yoshida1990Order8C, "Yoshida1990Order8C", 8, 0.9 * Second,
+      {INTEGRATOR(Yoshida1990Order8C), 8, 0.9 * Second,
        +3.12770642718618320e-13 * Metre,
        +3.13027381793062890e-13 * Kilogram * Metre / Second,
        +4.68151011290274250e-08 * Joule},
-      {&Integrator::Yoshida1990Order8D, "Yoshida1990Order8D", 8, 1.1 * Second,
+      {INTEGRATOR(Yoshida1990Order8D), 8, 1.1 * Second,
        +2.20323759236862320e-13 * Metre,
        +2.20518048266171720e-13 * Kilogram * Metre / Second,
        +1.58094926039353820e-10 * Joule},
-      {&Integrator::Yoshida1990Order8E, "Yoshida1990Order8E", 8, 0.3 * Second,
+      {INTEGRATOR(Yoshida1990Order8E), 8, 0.3 * Second,
        +1.38892369827559040e-13 * Metre,
        +1.38979106001357880e-13 * Kilogram * Metre / Second,
        +3.42872149006190340e-08 * Joule}};
@@ -338,11 +336,11 @@ TEST_P(SPRKTest, Convergence) {
     integrator_.Solve(&ComputeHarmonicOscillatorForce,
                       &ComputeHarmonicOscillatorVelocity,
                       parameters_, &solution_);
-    double log_q_error = std::log10(
+    double const log_q_error = std::log10(
         std::abs(solution_[0].positions[0].value / SIUnit<Length>() -
                  Cos(solution_[0].time.value *
                      SIUnit<AngularFrequency>())));
-    double log_p_error = std::log10(
+    double const log_p_error = std::log10(
         std::abs(solution_[0].momenta[0].value / SIUnit<Momentum>() +
                  Sin(solution_[0].time.value *
                      SIUnit<AngularFrequency>())));
@@ -361,7 +359,7 @@ TEST_P(SPRKTest, Convergence) {
   LOG(INFO) << GetParam();
   LOG(INFO) << "Convergence order in q : " << q_convergence_order;
   LOG(INFO) << "Correlation            : " << q_correlation;
-#if 1
+#if 0
   LOG(INFO) << "Convergence data for q :\n" <<
       BidimensionalDatasetMathematicaInput(log_step_sizes, log_q_errors);
 #endif
