@@ -23,6 +23,7 @@ namespace base {
 
 namespace {
 int const kDeserializerChunkSize = 99;
+int const kRunsPerTest = 1000;
 int const kSerializerChunkSize = 99;
 int const kNumberOfChunks = 3;
 const char kStart[] = "START";
@@ -119,73 +120,56 @@ TEST_F(PushDeserializerTest, Stream) {
   EXPECT_EQ(23, stream_.ByteCount());
 }
 
-TEST_F(PushDeserializerTest, Deserialization) {
-  for (int i = 0; i < 100; ++i) {
-    LOG(ERROR)<<"START "<<trajectory_.ByteSize();
+TEST_F(PushDeserializerTest, DeserializationThreading) {
+  Trajectory read_trajectory;
+  auto expected_serialized_trajectory =
+      std::make_unique<std::uint8_t[]>(trajectory_.ByteSize());
+  trajectory_.SerializePartialToArray(&expected_serialized_trajectory[0],
+                                      trajectory_.ByteSize());
+
+  for (int i = 0; i < kRunsPerTest; ++i) {
+    push_deserializer_ = std::make_unique<PushDeserializer>(
+        kDeserializerChunkSize, kNumberOfChunks);
+
+    push_deserializer_->Start(&read_trajectory);
+    push_deserializer_->Push(Bytes(expected_serialized_trajectory.get(),
+                                   trajectory_.ByteSize()));
+    push_deserializer_->Push(Bytes());
+
+    // Destroying the deserializer waits until deserialization is done.
+    push_deserializer_.reset();
+  }
+}
+
+TEST_F(PushDeserializerTest, SerializationDeserialization) {
+  Trajectory read_trajectory;
+  for (int i = 0; i < kRunsPerTest; ++i) {
+    auto storage = std::make_unique<std::uint8_t[]>(trajectory_.ByteSize());
+    std::uint8_t* data = &storage[0];
+
     pull_serializer_ =
         std::make_unique<PullSerializer>(kSerializerChunkSize, kNumberOfChunks);
     push_deserializer_ = std::make_unique<PushDeserializer>(
         kDeserializerChunkSize, kNumberOfChunks);
 
-    auto storage = std::make_unique<std::uint8_t[]>(trajectory_.ByteSize() + 200);
-    std::uint8_t* data = &storage[0];
-    Trajectory read_trajectory;
     pull_serializer_->Start(&trajectory_);
+    push_deserializer_->Start(&read_trajectory);
     for (;;) {
       Bytes const bytes = pull_serializer_->Pull();
       std::memcpy(data, bytes.data, static_cast<size_t>(bytes.size));
+      push_deserializer_->Push(Bytes(data, bytes.size));
       data = &data[bytes.size];
-      LOG(ERROR)<<"size "<<data - &storage[0];
       if (bytes.size == 0) {
         break;
       }
     }
-    pull_serializer_.reset();
-
-    int sz = data - &storage[0];
-    CHECK(read_trajectory.ParseFromArray(&storage[0], sz));
-
-    push_deserializer_->Start(&read_trajectory);
-    data = &storage[0];
-    push_deserializer_->Push(Bytes(data, sz));
-    push_deserializer_->Push(Bytes());
 
     // Destroying the deserializer waits until deserialization is done.  It is
     // important that this happens before |storage| is destroyed.
+    pull_serializer_.reset();
     push_deserializer_.reset();
   }
 }
-
-//TEST_F(PushDeserializerTest, Deserialization) {
-//  for (int i = 0; i < 100; ++i) {
-//    LOG(ERROR)<<"START "<<trajectory_.ByteSize();
-//    pull_serializer_ =
-//        std::make_unique<PullSerializer>(kSerializerChunkSize);
-//    push_deserializer_ = std::make_unique<PushDeserializer>(
-//        kDeserializerChunkSize, kNumberOfChunks);
-//
-//    auto storage = std::make_unique<std::uint8_t[]>(trajectory_.ByteSize() + 200);
-//    std::uint8_t* data = &storage[0];
-//    Trajectory read_trajectory;
-//    pull_serializer_->Start(&trajectory_);
-//    push_deserializer_->Start(&read_trajectory);
-//    for (;;) {
-//      Bytes const bytes = pull_serializer_->Pull();
-//      std::memcpy(data, bytes.data, bytes.size);
-//      push_deserializer_->Push(Bytes(data, bytes.size));
-//      data = &data[bytes.size];
-//      LOG(ERROR)<<"size "<<data - &storage[0];
-//      if (bytes.size == 0) {
-//        break;
-//      }
-//    }
-//
-//    // Destroying the deserializer waits until deserialization is done.  It is
-//    // important that this happens before |storage| is destroyed.
-//    pull_serializer_.reset();
-//    push_deserializer_.reset();
-//  }
-//}
 
 }  // namespace base
 }  // namespace principia

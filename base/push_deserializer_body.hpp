@@ -122,7 +122,7 @@ inline void PushDeserializer::Push(Bytes const bytes) {
       queue_.emplace(current.data,
                      std::min(current.size, 
                               static_cast<std::int64_t>(chunk_size_)));
-      LOG(ERROR)<<"push "<<queue_.size()<<" "<<queue_.back().size<<" "<<(void*)(&*current.data);
+      //LOG(ERROR)<<"push "<<queue_.size()<<" "<<queue_.back().size<<" "<<(void*)(&*current.data);
     }
     queue_has_elements_.notify_all();
     current.data = &current.data[chunk_size_];
@@ -134,13 +134,13 @@ inline Bytes PushDeserializer::Pull() {
   Bytes result;
   {
     std::unique_lock<std::mutex> l(lock_);
-    LOG(ERROR)<<"pulling "<<queue_.size();
+    //LOG(ERROR)<<"pulling "<<queue_.size();
     queue_has_elements_.wait(l, [this]() { return !queue_.empty(); });
     //LOG(ERROR)<<"waited "<<queue_.size();
     result = queue_.front();
     queue_.pop();
   }
-  LOG(ERROR)<<"pull "<<result.size<<" "<<(void*)(&*result.data);
+  //LOG(ERROR)<<"pull "<<result.size<<" "<<(void*)(&*result.data);
   queue_has_room_.notify_all();
   return result;
 }
