@@ -34,14 +34,13 @@ class DelegatingArrayInputStream
   std::int64_t ByteCount() const override;
 
  private:
-  int size_;
-  not_null<std::uint8_t const*> data_;
+  Bytes bytes_;
   std::function<Bytes()> on_empty_;
 
-  int byte_count_;
-  int position_;
-  int last_returned_size_;   // How many bytes we returned last time Next()
-                             // was called (used for error checking only).
+  std::int64_t byte_count_;
+  std::int64_t position_;
+  std::int64_t last_returned_size_;  // How many bytes we returned last time
+                                     // Next() was called.
 };
 
 }  // namespace internal

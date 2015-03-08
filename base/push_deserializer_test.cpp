@@ -22,20 +22,19 @@ using ::testing::ElementsAreArray;
 namespace base {
 
 namespace {
+int const kDeserializerChunkSize = 99;
+int const kSerializerChunkSize = 99;
+int const kNumberOfChunks = 3;
 const char kStart[] = "START";
 }  // namespace
 
 class PushDeserializerTest : public ::testing::Test {
  protected:
-  int const kDeserializerChunkSize = 99;
-  int const kSerializerChunkSize = 99;
-  int const kNumberOfChunks = 3;
-
   PushDeserializerTest()
-      : pull_serializer_(
-            std::make_unique<PullSerializer>(kSerializerChunkSize)),
+      : pull_serializer_(std::make_unique<PullSerializer>(
+                             kSerializerChunkSize, kNumberOfChunks)),
         push_deserializer_(std::make_unique<PushDeserializer>(
-            kDeserializerChunkSize, kNumberOfChunks)),
+                               kDeserializerChunkSize, kNumberOfChunks)),
         stream_(std::bind(&PushDeserializerTest::OnEmpty, this, &strings_)) {
     // Build a biggish protobuf for serialization.
     for (int i = 0; i < 100; ++i) {
@@ -65,8 +64,8 @@ class PushDeserializerTest : public ::testing::Test {
     strings->pop_front();
     CHECK(!strings->empty());
     std::string& front = strings->front();
-    return Bytes(reinterpret_cast<std::uint8_t const*>(front.c_str()),
-                 front.size());
+    return Bytes(reinterpret_cast<std::uint8_t*>(&front[0]),
+                 static_cast<std::int64_t>(front.size()));
   }
 
   //TODO(phl):not_null
@@ -124,7 +123,7 @@ TEST_F(PushDeserializerTest, Deserialization) {
   for (int i = 0; i < 100; ++i) {
     LOG(ERROR)<<"START "<<trajectory_.ByteSize();
     pull_serializer_ =
-        std::make_unique<PullSerializer>(kSerializerChunkSize);
+        std::make_unique<PullSerializer>(kSerializerChunkSize, kNumberOfChunks);
     push_deserializer_ = std::make_unique<PushDeserializer>(
         kDeserializerChunkSize, kNumberOfChunks);
 
@@ -134,7 +133,7 @@ TEST_F(PushDeserializerTest, Deserialization) {
     pull_serializer_->Start(&trajectory_);
     for (;;) {
       Bytes const bytes = pull_serializer_->Pull();
-      std::memcpy(data, bytes.data, bytes.size);
+      std::memcpy(data, bytes.data, static_cast<size_t>(bytes.size));
       data = &data[bytes.size];
       LOG(ERROR)<<"size "<<data - &storage[0];
       if (bytes.size == 0) {

@@ -14,9 +14,7 @@ namespace internal {
 
 inline DelegatingArrayInputStream::DelegatingArrayInputStream(
     std::function<Bytes()> on_empty)
-    : size_(0),
-      data_(Bytes().data),
-      on_empty_(std::move(on_empty)),
+    : on_empty_(std::move(on_empty)),
       byte_count_(0),
       position_(0),
       last_returned_size_(0) {}
@@ -24,23 +22,21 @@ inline DelegatingArrayInputStream::DelegatingArrayInputStream(
 inline bool DelegatingArrayInputStream::Next(void const** const data,
                                              int* const size) {
   //LOG(ERROR)<<"next "<<position_<<" "<<size_;
-  if (position_ == size_) {
+  if (position_ == bytes_.size) {
     // We're at the end of the array.  Obtain a new one.
-    Bytes const bytes = on_empty_();
+    bytes_ = on_empty_();
     //LOG(ERROR)<<"got "<<bytes.size;
-    size_ = bytes.size;
-    data_ = bytes.data;
     position_ = 0;
     last_returned_size_ = 0;  // Don't let caller back up.
-    if (size_ == 0) {
+    if (bytes_.size == 0) {
       // At end of input data.
       return false;
     }
   }
-  CHECK_LT(position_, size_);
-  last_returned_size_ = size_ - position_;
-  *data = &data_[position_];
-  *size = last_returned_size_;
+  CHECK_LT(position_, bytes_.size);
+  last_returned_size_ = bytes_.size - position_;
+  *data = &bytes_.data[position_];
+  *size = static_cast<int>(last_returned_size_);
   byte_count_ += last_returned_size_;
   position_ += last_returned_size_;
   //LOG(ERROR)<<"ret "<<*size;
@@ -62,16 +58,14 @@ inline bool DelegatingArrayInputStream::Skip(int const count) {
   //LOG(ERROR)<<"skip";
   CHECK_GE(count, 0);
   last_returned_size_ = 0;   // Don't let caller back up.
-  int remaining = count;
-  while (remaining > size_ - position_) {
-    byte_count_ += size_ - position_;
-    remaining -= size_ - position_;
+  std::int64_t remaining = count;
+  while (remaining > bytes_.size - position_) {
+    byte_count_ += bytes_.size - position_;
+    remaining -= bytes_.size - position_;
     // We're at the end of the array.  Obtain a new one.
-    Bytes const bytes = on_empty_();
-    size_ = bytes.size;
-    data_ = bytes.data;
+    bytes_ = on_empty_();
     position_ = 0;
-    if (size_ == 0) {
+    if (bytes_.size == 0) {
       // At end of input data.
       return false;
     }
@@ -125,7 +119,9 @@ inline void PushDeserializer::Push(Bytes const bytes) {
       queue_has_room_.wait(l, [this]() {
         return queue_.size() < static_cast<size_t>(number_of_chunks_);
       });
-      queue_.emplace(current.data, std::min(current.size, chunk_size_));
+      queue_.emplace(current.data,
+                     std::min(current.size, 
+                              static_cast<std::int64_t>(chunk_size_)));
       LOG(ERROR)<<"push "<<queue_.size()<<" "<<queue_.back().size<<" "<<(void*)(&*current.data);
     }
     queue_has_elements_.notify_all();
