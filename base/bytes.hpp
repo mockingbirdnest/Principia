@@ -10,16 +10,10 @@ namespace base {
 // A simple container for a pointer and size, similar to a StringPiece.  |data|
 // is not owned.
 struct Bytes {
-  Bytes(not_null<std::uint8_t const*> const data, int const size);
-  not_null<std::uint8_t const*> const data;
-  int const size;
-
-  // A |Bytes| object of size 0.
-  static Bytes const Null;
-
- private:
-  // Placeholder for an empty |Bytes| object.
-  static std::uint8_t null_data_;
+  Bytes();  // An object of size 0.
+  Bytes(not_null<std::uint8_t*> const data, std::int64_t const size);
+  not_null<std::uint8_t*> data;
+  std::int64_t size;
 };
 
 }  // namespace base

@@ -4,6 +4,7 @@
 #include <condition_variable>  // NOLINT(build/c++11)
 #include <memory>
 #include <mutex>  // NOLINT(build/c++11)
+#include <queue>
 #include <thread>  // NOLINT(build/c++11)
 
 #include "base/bytes.hpp"
@@ -16,23 +17,19 @@ namespace principia {
 namespace base {
 
 namespace internal {
-// An output stream based on two arrays that delegates to a function the
-// handling of the case where one array is full.  It calls the |on_full|
-// function passed at construction and proceeds with filling the other array.
-class DelegatingTwoArrayOutputStream
+// An output stream based on an array that delegates to a function the handling
+// of the case where one array is full.  It calls the |on_full| function passed
+// at construction and proceeds with filling the array returned by that
+// function.
+class DelegatingArrayOutputStream
     : public google::protobuf::io::ZeroCopyOutputStream {
  public:
-  // The stream is supported by |data| which has size |size << 1|.  Internally,
-  // |data| is split into two pieces of size |size| and |on_full| is called when
-  // one of the pieces is full.  Output can continue with the other piece.
-  // |on_full| is expected to somehow consume the data of the array.  Note that
-  // two successive calls to |on_full| are always passed different pointers, so
-  // the caller can assume that it's fine to operate on that pointer in between
-  // two calls to |on_full|.
-  DelegatingTwoArrayOutputStream(
-      not_null<std::uint8_t*> data,
-      int const size,
-      std::function<void(Bytes const bytes)> on_full);
+  // The stream is supported by |bytes.data| which has size |bytes.size|.  Once
+  // that array has been filled, |on_full| is called to somehow consume the
+  // data.  |on_full| also returns another array where the stream may output
+  // more data.
+  DelegatingArrayOutputStream(Bytes const bytes,
+                              std::function<Bytes(Bytes const bytes)> on_full);
 
   // The ZeroCopyOutputStream API.
   bool Next(void** data, int* size) override;
@@ -40,30 +37,30 @@ class DelegatingTwoArrayOutputStream
   std::int64_t ByteCount() const override;
 
  private:
-  int const size_;
-  not_null<std::uint8_t*> data1_;
-  not_null<std::uint8_t*> data2_;
-  std::function<void(Bytes const bytes)> on_full_;
+  Bytes bytes_;
+  std::function<Bytes(Bytes const bytes)> on_full_;
 
-  int position_;
-  int last_returned_size_;   // How many bytes we returned last time Next()
-                             // was called (used for error checking only).
+  std::int64_t byte_count_;
+  std::int64_t position_;
+  std::int64_t last_returned_size_;  // How many bytes we returned last time
+                                     // Next() was called.
 };
 
 }  // namespace internal
 
 // This class support serialization which is "pulled" by the client.  That is,
 // the client creates a |PullSerializer| object, calls |Start| to start the
-// serialization process, repeatedly calls |Get| to obtain a chunk of data, and
+// serialization process, repeatedly calls |Pull| to obtain a chunk of data, and
 // finally destroys the |PullSerializer|.  |PullSerializer| is intended for use
 // in memory-critical contexts as it bounds the amount of memory used
 // irrespective of the size of the message to serialize.
 class PullSerializer {
  public:
-  // The |size| of the data objects returned by |Get| are never greater than
-  // |max_size|.  This class uses at most |2 * max_size| bytes (plus some small
-  // overhead).
-  explicit PullSerializer(int const max_size);
+  // The |size| of the data objects returned by |Pull| are never greater than
+  // |chunk_size|.  At most |number_of_chunks| chunks are held in the internal
+  // queue.  This class uses at most
+  // |number_of_chunks * (chunk_size + O(1)) + O(1)| bytes.
+  PullSerializer(int const chunk_size, int const number_of_chunks);
   ~PullSerializer();
 
   // Starts the serializer, which will proceed to serialize |message|.  This
@@ -72,28 +69,41 @@ class PullSerializer {
 
   // Obtain the next chunk of data from the serializer.  Blocks if no data is
   // available.  Returns a |Bytes| object of |size| 0 at the end of the
-  // serialization.
+  // serialization.  The returned object may become invalid the next time |Pull|
+  // is called.
   Bytes Pull();
 
  private:
-  // Sets the chunk of data to be returned to |Pull|.  Used as a callback for
-  // the underlying |DelegatingTwoArrayOutputStream|.
-  void Push(Bytes const bytes);
+  // Enqueues the chunk of data to be returned to |Pull| and returns a free
+  // chunk.  Blocks if there are no free chunks.  Used as a callback for the
+  // underlying |DelegatingArrayOutputStream|.
+  Bytes Push(Bytes const bytes);
 
+  int const chunk_size_;
+  int const number_of_chunks_;
+
+  // The array supporting the stream and the stream itself.
   std::unique_ptr<std::uint8_t[]> data_;
-  internal::DelegatingTwoArrayOutputStream stream_;
+  internal::DelegatingArrayOutputStream stream_;
+
+  // The thread doing the actual serialization.
   std::unique_ptr<std::thread> thread_;
 
-  // Synchronization objects for the |holder_|, which contains the |Bytes|
-  // object filled by |Set| and not yet consumed by |Get|.  The |holder_| is
-  // effectively a 1-element queue.
+  // Synchronization objects for the |queue_|.
   std::mutex lock_;
-  std::condition_variable holder_is_empty_;
-  std::condition_variable holder_is_full_;
-  std::unique_ptr<Bytes> holder_ GUARDED_BY(lock_);  // std::optional, really.
+  std::condition_variable queue_has_room_;
+  std::condition_variable queue_has_elements_;
 
-  // Set to true when the |thread_| completes.
-  bool done_ GUARDED_BY(lock_);
+  // The |queue_| contains the |Bytes| objects filled by |Push| and not yet
+  // consumed by |Pull|.  If a |Bytes| object has been handed over to the caller
+  // by |Pull| it stays in the queue until the next call to |Pull|, to make sure
+  // that the pointer is not reused while the caller processes it.
+  std::queue<Bytes> queue_ GUARDED_BY(lock_);
+
+  // The |free_| queue contains the start addresses of chunks that are not yet
+  // ready to be returned by |Pull|.  That includes the chunk currently being
+  // filled by the stream.
+  std::queue<not_null<std::uint8_t*>> free_ GUARDED_BY(lock_);
 };
 
 }  // namespace base

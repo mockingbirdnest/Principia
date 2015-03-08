@@ -13,109 +13,131 @@ namespace base {
 
 namespace internal {
 
-DelegatingTwoArrayOutputStream::DelegatingTwoArrayOutputStream(
-    base::not_null<std::uint8_t*> data,
-    int const size,
-    std::function<void(Bytes const bytes)> on_full)
-    : size_(size),
-      data1_(&data[0]),
-      data2_(&data[size_]),
+inline DelegatingArrayOutputStream::DelegatingArrayOutputStream(
+    Bytes const bytes,
+    std::function<Bytes(Bytes const bytes)> on_full)
+    : bytes_(bytes),
       on_full_(std::move(on_full)),
+      byte_count_(0),
       position_(0),
       last_returned_size_(0) {}
 
-bool DelegatingTwoArrayOutputStream::Next(void** data, int* size) {
-  if (position_ == size_) {
+inline bool DelegatingArrayOutputStream::Next(void** const data,
+                                              int* const size) {
+  if (position_ == bytes_.size) {
     // We're at the end of the array.  Hand the current array over to the
-    // callback and start filling the other array.
-    on_full_(Bytes(data1_, size_));
+    // callback and start filling the next one.
+    bytes_ = on_full_(bytes_);
     position_ = 0;
-    last_returned_size_ = 0;
-    swap(data1_, data2_);
   }
-  CHECK_LT(position_, size_);
-  last_returned_size_ = size_ - position_;
-  *data = &data1_[position_];
-  *size = last_returned_size_;
+  CHECK_LT(position_, bytes_.size);
+  last_returned_size_ = bytes_.size - position_;
+  *data = &bytes_.data[position_];
+  *size = static_cast<int>(last_returned_size_);
+  byte_count_ += last_returned_size_;
   position_ += last_returned_size_;
   return true;
 }
 
-void DelegatingTwoArrayOutputStream::BackUp(int count) {
+inline void DelegatingArrayOutputStream::BackUp(int count) {
   CHECK_GT(last_returned_size_, 0)
       << "BackUp() can only be called after a successful Next().";
   CHECK_LE(count, last_returned_size_);
   CHECK_GE(count, 0);
+  byte_count_ -= count;
   position_ -= count;
   // This is called at the end of the stream, in which case we must notify the
   // client about any data remaining in the stream.  If this is called at other
   // times, well, notifying the client doesn't hurt as long as we don't pass a
   // size of 0.
   if (position_ > 0) {
-    on_full_(Bytes(data1_, position_));
+    bytes_ = on_full_(Bytes(bytes_.data, position_));
     position_ = 0;
   }
   last_returned_size_ = 0;
-  swap(data1_, data2_);
 }
 
-std::int64_t DelegatingTwoArrayOutputStream::ByteCount() const {
-  return position_;
+inline std::int64_t DelegatingArrayOutputStream::ByteCount() const {
+  return byte_count_;
 }
 
 }  // namespace internal
 
-PullSerializer::PullSerializer(int const max_size)
-    : data_(std::make_unique<std::uint8_t[]>(max_size << 1)),
-      stream_(data_.get(),
-              max_size,
-              std::bind(&PullSerializer::Push, this, _1)),
-      done_(false) {}
+inline PullSerializer::PullSerializer(int const chunk_size,
+                                      int const number_of_chunks)
+    : chunk_size_(chunk_size),
+      number_of_chunks_(number_of_chunks),
+      data_(std::make_unique<std::uint8_t[]>(chunk_size_ * number_of_chunks_)),
+      stream_(Bytes(data_.get(), chunk_size_),
+              std::bind(&PullSerializer::Push, this, _1)) {
+  // Mark all the chunks as free except the last one which is a sentinel for the
+  // |queue_|.  The 0th chunk has been passed to the stream, but it's still free
+  // until the first call to |on_full|.
+  for (int i = 0; i < number_of_chunks_ - 1; ++i) {
+    free_.push(data_.get() + i * chunk_size_);
+  }
+  queue_.push(Bytes(data_.get() + (number_of_chunks_ - 1) * chunk_size_, 0));
+}
 
-PullSerializer::~PullSerializer() {
+inline PullSerializer::~PullSerializer() {
   if (thread_ != nullptr) {
     thread_->join();
   }
 }
 
-void PullSerializer::Start(
+inline void PullSerializer::Start(
     base::not_null<google::protobuf::Message const*> const message) {
   CHECK(thread_ == nullptr);
   thread_ = std::make_unique<std::thread>([this, message](){
     CHECK(message->SerializeToZeroCopyStream(&stream_));
+    // Put a sentinel at the end of the serialized stream so that the client
+    // knows that this is the end.
+    Bytes bytes;
     {
       std::unique_lock<std::mutex> l(lock_);
-      done_ = true;
+      CHECK(!free_.empty());
+      bytes = Bytes(free_.front(), 0);
     }
-    holder_is_full_.notify_all();
+    Push(bytes);
   });
 }
 
-Bytes PullSerializer::Pull() {
-  std::unique_ptr<Bytes const> result;
+inline Bytes PullSerializer::Pull() {
+  Bytes result;
   {
     std::unique_lock<std::mutex> l(lock_);
-    holder_is_full_.wait(l, [this]() { return done_ || holder_ != nullptr; });
-    if (holder_ != nullptr) {
-      result = std::move(holder_);
-    }
+    // The element at the front of the queue is the one that was last returned
+    // by |Pull| and must be dropped and freed.
+    queue_has_elements_.wait(l, [this]() { return queue_.size() > 1; });
+    CHECK_GE(2ULL, queue_.size());
+    free_.push(queue_.front().data);
+    queue_.pop();
+    result = queue_.front();
+    CHECK_EQ(number_of_chunks_, queue_.size() + free_.size());
   }
-  holder_is_empty_.notify_all();
-  if (result == nullptr) {
-    // Done.
-    return Bytes::Null;
-  } else {
-    return *result;
-  }
+  queue_has_room_.notify_all();
+  return result;
 }
 
-void PullSerializer::Push(Bytes const bytes) {
+inline Bytes PullSerializer::Push(Bytes const bytes) {
+  Bytes result;
+  CHECK_GE(chunk_size_, bytes.size);
   {
     std::unique_lock<std::mutex> l(lock_);
-    holder_is_empty_.wait(l, [this]() { return holder_ == nullptr; });
-    holder_ = std::make_unique<Bytes>(bytes.data, bytes.size);
+    queue_has_room_.wait(l, [this]() {
+      // -1 here is because we want to ensure that there is an entry in the
+      // (real) free list.
+      return queue_.size() < static_cast<size_t>(number_of_chunks_) - 1;
+    });
+    queue_.emplace(bytes.data, bytes.size);
+    CHECK_LE(2ULL, free_.size());
+    CHECK_EQ(free_.front(), bytes.data);
+    free_.pop();
+    result = Bytes(free_.front(), chunk_size_);
+    CHECK_EQ(number_of_chunks_, queue_.size() + free_.size());
   }
-  holder_is_full_.notify_all();
+  queue_has_elements_.notify_all();
+  return result;
 }
 
 }  // namespace base
