@@ -21,7 +21,8 @@ inline DelegatingArrayOutputStream::DelegatingArrayOutputStream(
       position_(0),
       last_returned_size_(0) {}
 
-inline bool DelegatingArrayOutputStream::Next(void** data, int* size) {
+inline bool DelegatingArrayOutputStream::Next(void** const data,
+                                              int* const size) {
   if (position_ == bytes_.size) {
     // We're at the end of the array.  Hand the current array over to the
     // callback and start filling the next one.

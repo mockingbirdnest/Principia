@@ -1,5 +1,6 @@
 #include "base/pull_serializer.hpp"
 
+#include <list>
 #include <vector>
 
 #include "gmock/gmock.h"
@@ -11,18 +12,25 @@ using serialization::Pair;
 using serialization::Point;
 using serialization::Quantity;
 using serialization::Trajectory;
+using ::std::placeholders::_1;
+using ::testing::ElementsAre;
 using ::testing::ElementsAreArray;
 
 namespace base {
 
-class PullSerializerTest : public ::testing::Test {
- protected:
+namespace {
   int const kChunkSize = 99;
   int const kNumberOfChunks = 3;
+  int const kSmallChunkSize = 3;
+}  // namespace
 
+class PullSerializerTest : public ::testing::Test {
+ protected:
   PullSerializerTest()
       : pull_serializer_(
-            std::make_unique<PullSerializer>(kChunkSize, kNumberOfChunks)) {
+            std::make_unique<PullSerializer>(kChunkSize, kNumberOfChunks)),
+        stream_(Bytes(data_, kSmallChunkSize),
+                std::bind(&PullSerializerTest::OnFull, this, _1, &strings_)) {
     // Build a biggish protobuf for serialization.
     for (int i = 0; i < 100; ++i) {
       Trajectory::InstantaneousDegreesOfFreedom* idof =
@@ -45,9 +53,39 @@ class PullSerializerTest : public ::testing::Test {
     }
   }
 
+  // Returns the first string in the list.  Note that the very first string is
+  // always discarded.
+  Bytes OnFull(Bytes const bytes,
+               not_null<std::list<std::string>*> const strings) {
+    strings->push_back(
+        std::string(reinterpret_cast<const char*>(&bytes.data[0]), bytes.size));
+    return Bytes(data_, kSmallChunkSize);
+  }
+
   std::unique_ptr<PullSerializer> pull_serializer_;
   Trajectory trajectory_;
+  internal::DelegatingArrayOutputStream stream_;
+  std::list<std::string> strings_;
+  std::uint8_t data_[kSmallChunkSize];
 };
+
+TEST_F(PullSerializerTest, Stream) {
+  void* data;
+  int size;
+
+  EXPECT_TRUE(stream_.Next(&data, &size));
+  EXPECT_EQ(3, size);
+  memcpy(data, "abc", 3);
+  EXPECT_TRUE(stream_.Next(&data, &size));
+  EXPECT_EQ(3, size);
+  memcpy(data, "xy", 2);
+  stream_.BackUp(1);
+  EXPECT_TRUE(stream_.Next(&data, &size));
+  EXPECT_EQ(3, size);
+  memcpy(data, "uvw", 3);
+  stream_.BackUp(2);
+  EXPECT_THAT(strings_, ElementsAre("abc", "xy", "u"));
+}
 
 TEST_F(PullSerializerTest, SerializationSizes) {
   pull_serializer_->Start(&trajectory_);
