@@ -119,7 +119,7 @@ std::vector<SPRKTestableProperties> Instances() {
        +1.88491583452687910e-13 * Kilogram * Metre / Second,
        +5.73140348145262380e-04 * Joule},
       {&Integrator::McLachlanAtela1992Order5Optimal,
-       "McLachlanAtela1992Order5Optimal", 5, 1 * Second,
+       "McLachlanAtela1992Order5Optimal", 5, 1.1 * Second,
        +7.51005160837259210e-14 * Metre,
        +7.50823014872281650e-14 * Kilogram * Metre / Second,
        +1.14708664439744370e-04 * Joule},
@@ -324,22 +324,32 @@ TEST_P(SPRKTest, Convergence) {
   parameters_.Δt = GetParam().beginning_of_convergence;
   int const step_sizes = 50;
   double const step_reduction = 1.1;
-  std::vector<double> log_step_sizes(step_sizes);
-  std::vector<double> log_q_errors(step_sizes);
-  std::vector<double> log_p_errors(step_sizes);
+  std::vector<double> log_step_sizes;
+  log_step_sizes.reserve(step_sizes);
+  std::vector<double> log_q_errors;
+  log_step_sizes.reserve(step_sizes);
+  std::vector<double> log_p_errors;
+  log_step_sizes.reserve(step_sizes);
   for (int i = 0; i < step_sizes; ++i, parameters_.Δt /= step_reduction) {
     integrator_.Solve(&ComputeHarmonicOscillatorForce,
                       &ComputeHarmonicOscillatorVelocity,
                       parameters_, &solution_);
-    log_step_sizes[i] = std::log10(parameters_.Δt / SIUnit<Time>());
-    log_q_errors[i] = std::log10(
+    double log_q_error = std::log10(
         std::abs(solution_[0].positions[0].value / SIUnit<Length>() -
                  Cos(solution_[0].time.value *
                      SIUnit<AngularFrequency>())));
-    log_p_errors[i] = std::log10(
+    double log_p_error = std::log10(
         std::abs(solution_[0].momenta[0].value / SIUnit<Momentum>() +
                  Sin(solution_[0].time.value *
                      SIUnit<AngularFrequency>())));
+    if (log_q_error <= -13 || log_p_error <= -13) {
+      // If we keep going the effects of finite precision will drown out
+      // convergence.
+      break;
+    }
+    log_step_sizes.push_back(std::log10(parameters_.Δt / SIUnit<Time>()));
+    log_q_errors.push_back(log_q_error);
+    log_p_errors.push_back(log_p_error);
   }
   double const q_convergence_order = Slope(log_step_sizes, log_q_errors);
   double const q_correlation =
