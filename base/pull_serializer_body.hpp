@@ -69,13 +69,14 @@ inline PullSerializer::PullSerializer(int const chunk_size,
       number_of_chunks_(number_of_chunks),
       data_(std::make_unique<std::uint8_t[]>(chunk_size_ * number_of_chunks_)),
       stream_(Bytes(data_.get(), chunk_size_),
-              std::bind(&PullSerializer::Push, this, _1)),
-      is_first_pull_(true) {
-  // Mark all the chunks as free.  The 0th chunk has been passed to the stream,
-  // but it's still free until the first call to |on_full|.
-  for (int i = 0; i < number_of_chunks_; ++i) {
+              std::bind(&PullSerializer::Push, this, _1)) {
+  // Mark all the chunks as free except the last one which is a sentinel for the
+  // |queue_|.  The 0th chunk has been passed to the stream, but it's still free
+  // until the first call to |on_full|.
+  for (int i = 0; i < number_of_chunks_ - 1; ++i) {
     free_.push(data_.get() + i * chunk_size_);
   }
+  queue_.push(Bytes(data_.get() + (number_of_chunks_ - 1) * chunk_size_, 0));
 }
 
 inline PullSerializer::~PullSerializer() {
@@ -90,10 +91,14 @@ inline void PullSerializer::Start(
   thread_ = std::make_unique<std::thread>([this, message](){
     CHECK(message->SerializeToZeroCopyStream(&stream_));
     // Put a sentinel at the end of the serialized stream so that the client
-    // knows that this is the end.  No need to hold the lock here because the
-    // stream is no longer calling |Push| so the front of the free list cannot
-    // change.
-    Push(Bytes(free_.front(), 0));
+    // knows that this is the end.
+    Bytes bytes;
+    {
+      std::unique_lock<std::mutex> l(lock_);
+      CHECK(!free_.empty());
+      bytes = Bytes(free_.front(), 0);
+    }
+    Push(bytes);
   });
 }
 
@@ -102,16 +107,11 @@ inline Bytes PullSerializer::Pull() {
   {
     std::unique_lock<std::mutex> l(lock_);
     // The element at the front of the queue is the one that was last returned
-    // by |Pull| and must be dropped and freed, except the first time |Pull| is
-    // called.
-    if (is_first_pull_) {
-      queue_has_elements_.wait(l, [this]() { return !queue_.empty(); });
-      is_first_pull_ = false;
-    } else {
-      queue_has_elements_.wait(l, [this]() { return queue_.size() > 1; });
-      free_.push(queue_.front().data);
-      queue_.pop();
-    }
+    // by |Pull| and must be dropped and freed.
+    queue_has_elements_.wait(l, [this]() { return queue_.size() > 1; });
+    CHECK_GE(2ULL, queue_.size());
+    free_.push(queue_.front().data);
+    queue_.pop();
     result = queue_.front();
     CHECK_EQ(number_of_chunks_, queue_.size() + free_.size());
   }
@@ -126,10 +126,11 @@ inline Bytes PullSerializer::Push(Bytes const bytes) {
     std::unique_lock<std::mutex> l(lock_);
     queue_has_room_.wait(l, [this]() {
       // -1 here is because we want to ensure that there is an entry in the
-      // free list.
+      // (real) free list.
       return queue_.size() < static_cast<size_t>(number_of_chunks_) - 1;
     });
     queue_.emplace(bytes.data, bytes.size);
+    CHECK_LE(2ULL, free_.size());
     CHECK_EQ(free_.front(), bytes.data);
     free_.pop();
     result = Bytes(free_.front(), chunk_size_);

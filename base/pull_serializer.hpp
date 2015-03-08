@@ -104,12 +104,6 @@ class PullSerializer {
   // ready to be returned by |Pull|.  That includes the chunk currently being
   // filled by the stream.
   std::queue<not_null<std::uint8_t*>> free_ GUARDED_BY(lock_);
-
-  // Indicates whether the first call to |Pull| has been executed.  In normal
-  // operation, the object at the front of |queue_| has already been handed over
-  // to the caller and must be freed by the next call to |Pull|.  This is not
-  // true the first time |Pull| is called, though.
-  bool is_first_pull_ GUARDED_BY(lock_);
 };
 
 }  // namespace base
