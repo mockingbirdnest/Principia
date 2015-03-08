@@ -13,7 +13,6 @@
 #include "google/protobuf/message.h"
 #include "google/protobuf/io/zero_copy_stream.h"
 
-//TODO(phl): Revise all the comments.
 namespace principia {
 namespace base {
 
@@ -74,7 +73,7 @@ class PullSerializer {
   Bytes Pull();
 
  private:
-  // Enqueues the chunk of data to be returned to |Pull| and return a free
+  // Enqueues the chunk of data to be returned to |Pull| and returns a free
   // chunk.  Blocks if there are no free chunks.  Used as a callback for the
   // underlying |DelegatingArrayOutputStream|.
   Bytes Push(Bytes const bytes);

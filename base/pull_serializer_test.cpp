@@ -21,6 +21,7 @@ namespace base {
 namespace {
   int const kChunkSize = 99;
   int const kNumberOfChunks = 3;
+  int const kRunsPerTest = 200;
   int const kSmallChunkSize = 3;
 }  // namespace
 
@@ -104,36 +105,44 @@ TEST_F(PullSerializerTest, SerializationSizes) {
 
 TEST_F(PullSerializerTest, SerializationThreading) {
   Trajectory read_trajectory;
-  auto serialized_trajectory =
+  auto expected_serialized_trajectory =
       std::make_unique<std::uint8_t[]>(trajectory_.ByteSize());
-  trajectory_.SerializePartialToArray(&serialized_trajectory[0],
+  trajectory_.SerializePartialToArray(&expected_serialized_trajectory[0],
                                       trajectory_.ByteSize());
 
-  for (int i = 0; i < 100; ++i) {
-    LOG(ERROR)<<"START "<<trajectory_.ByteSize();
+  // Run this test repeatedly to detect threading issues (it will flake in case
+  // of problems).
+  for (int i = 0; i < kRunsPerTest; ++i) {
+    auto actual_serialized_trajectory =
+        std::make_unique<std::uint8_t[]>(trajectory_.ByteSize());
+    std::uint8_t* data = &actual_serialized_trajectory[0];
+
+    // The serialization happens concurrently with the test.
     pull_serializer_ =
         std::make_unique<PullSerializer>(kChunkSize, kNumberOfChunks);
-
-    auto storage = std::make_unique<std::uint8_t[]>(trajectory_.ByteSize() + 200);
-    std::uint8_t* data = &storage[0];
     pull_serializer_->Start(&trajectory_);
     for (;;) {
       Bytes const bytes = pull_serializer_->Pull();
       std::memcpy(data, bytes.data, bytes.size);
       data = &data[bytes.size];
-      LOG(ERROR)<<"size "<<data - &storage[0];
       if (bytes.size == 0) {
         break;
       }
     }
     pull_serializer_.reset();
 
-    if (!read_trajectory.ParseFromArray(&storage[0], trajectory_.ByteSize())) {
+    // Check if the serialized version can be parsed and if not print the first
+    // difference.
+    if (!read_trajectory.ParseFromArray(&actual_serialized_trajectory[0],
+                                        trajectory_.ByteSize())) {
       for (int i = 0; i < trajectory_.ByteSize(); ++i) {
-        if (serialized_trajectory[i] != storage[i]) {
+        if (expected_serialized_trajectory[i] !=
+            actual_serialized_trajectory[i]) {
           LOG(FATAL) << "position=" << i
-                     << ", expected=" << static_cast<int>(serialized_trajectory[i])
-                     << ", actual=" << static_cast<int>(storage[i]);
+                     << ", expected="
+                     << static_cast<int>(expected_serialized_trajectory[i])
+                     << ", actual="
+                     << static_cast<int>(actual_serialized_trajectory[i]);
         }
       }
     }
