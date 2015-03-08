@@ -1,6 +1,7 @@
 #include "base/pull_serializer.hpp"
 
 #include <list>
+#include <string>
 #include <vector>
 
 #include "gmock/gmock.h"
@@ -21,7 +22,7 @@ namespace base {
 namespace {
   int const kChunkSize = 99;
   int const kNumberOfChunks = 3;
-  int const kRunsPerTest = 200;
+  int const kRunsPerTest = 1000;
   int const kSmallChunkSize = 3;
 }  // namespace
 
@@ -59,7 +60,8 @@ class PullSerializerTest : public ::testing::Test {
   Bytes OnFull(Bytes const bytes,
                not_null<std::list<std::string>*> const strings) {
     strings->push_back(
-        std::string(reinterpret_cast<const char*>(&bytes.data[0]), bytes.size));
+        std::string(reinterpret_cast<const char*>(&bytes.data[0]),
+                    static_cast<size_t>(bytes.size)));
     return Bytes(data_, kSmallChunkSize);
   }
 
@@ -76,22 +78,27 @@ TEST_F(PullSerializerTest, Stream) {
 
   EXPECT_TRUE(stream_.Next(&data, &size));
   EXPECT_EQ(3, size);
+  EXPECT_EQ(3, stream_.ByteCount());
   memcpy(data, "abc", 3);
   EXPECT_TRUE(stream_.Next(&data, &size));
   EXPECT_EQ(3, size);
+  EXPECT_EQ(6, stream_.ByteCount());
   memcpy(data, "xy", 2);
   stream_.BackUp(1);
+  EXPECT_EQ(5, stream_.ByteCount());
   EXPECT_TRUE(stream_.Next(&data, &size));
   EXPECT_EQ(3, size);
+  EXPECT_EQ(8, stream_.ByteCount());
   memcpy(data, "uvw", 3);
   stream_.BackUp(2);
+  EXPECT_EQ(6, stream_.ByteCount());
   EXPECT_THAT(strings_, ElementsAre("abc", "xy", "u"));
 }
 
 TEST_F(PullSerializerTest, SerializationSizes) {
   pull_serializer_->Start(&trajectory_);
-  std::vector<int> actual_sizes;
-  std::vector<int> expected_sizes(53, kChunkSize);
+  std::vector<std::int64_t> actual_sizes;
+  std::vector<std::int64_t> expected_sizes(53, kChunkSize);
   expected_sizes.push_back(53);
   for (;;) {
     Bytes const bytes = pull_serializer_->Pull();
@@ -123,7 +130,7 @@ TEST_F(PullSerializerTest, SerializationThreading) {
     pull_serializer_->Start(&trajectory_);
     for (;;) {
       Bytes const bytes = pull_serializer_->Pull();
-      std::memcpy(data, bytes.data, bytes.size);
+      std::memcpy(data, bytes.data, static_cast<size_t>(bytes.size));
       data = &data[bytes.size];
       if (bytes.size == 0) {
         break;

@@ -18,6 +18,7 @@ inline DelegatingArrayOutputStream::DelegatingArrayOutputStream(
     std::function<Bytes(Bytes const bytes)> on_full)
     : bytes_(bytes),
       on_full_(std::move(on_full)),
+      byte_count_(0),
       position_(0),
       last_returned_size_(0) {}
 
@@ -28,12 +29,12 @@ inline bool DelegatingArrayOutputStream::Next(void** const data,
     // callback and start filling the next one.
     bytes_ = on_full_(bytes_);
     position_ = 0;
-    last_returned_size_ = 0;
   }
   CHECK_LT(position_, bytes_.size);
   last_returned_size_ = bytes_.size - position_;
   *data = &bytes_.data[position_];
-  *size = last_returned_size_;
+  *size = static_cast<int>(last_returned_size_);
+  byte_count_ += last_returned_size_;
   position_ += last_returned_size_;
   return true;
 }
@@ -43,6 +44,7 @@ inline void DelegatingArrayOutputStream::BackUp(int count) {
       << "BackUp() can only be called after a successful Next().";
   CHECK_LE(count, last_returned_size_);
   CHECK_GE(count, 0);
+  byte_count_ -= count;
   position_ -= count;
   // This is called at the end of the stream, in which case we must notify the
   // client about any data remaining in the stream.  If this is called at other
@@ -56,7 +58,7 @@ inline void DelegatingArrayOutputStream::BackUp(int count) {
 }
 
 inline std::int64_t DelegatingArrayOutputStream::ByteCount() const {
-  return position_;
+  return byte_count_;
 }
 
 }  // namespace internal
@@ -69,7 +71,7 @@ inline PullSerializer::PullSerializer(int const chunk_size,
       stream_(Bytes(data_.get(), chunk_size_),
               std::bind(&PullSerializer::Push, this, _1)),
       is_first_pull_(true) {
-  // Mark all the chunks as free.  The 0th chunk has been passed to the strem,
+  // Mark all the chunks as free.  The 0th chunk has been passed to the stream,
   // but it's still free until the first call to |on_full|.
   for (int i = 0; i < number_of_chunks_; ++i) {
     free_.push(data_.get() + i * chunk_size_);

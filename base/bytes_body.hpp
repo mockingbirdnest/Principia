@@ -9,7 +9,7 @@ inline Bytes::Bytes()
     : data(reinterpret_cast<std::uint8_t*>(0xDEADBEEF)), size(0) {}
 
 inline Bytes::Bytes(base::not_null<std::uint8_t*> const data,
-                    int const size)
+                    std::int64_t const size)
     : data(data), size(size) {}
 
 }  // namespace base

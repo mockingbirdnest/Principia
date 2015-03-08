@@ -40,9 +40,10 @@ class DelegatingArrayOutputStream
   Bytes bytes_;
   std::function<Bytes(Bytes const bytes)> on_full_;
 
-  int position_;
-  int last_returned_size_;   // How many bytes we returned last time Next()
-                             // was called (used for error checking only).
+  std::int64_t byte_count_;
+  std::int64_t position_;
+  std::int64_t last_returned_size_;  // How many bytes we returned last time
+                                     // Next() was called.
 };
 
 }  // namespace internal
@@ -58,7 +59,7 @@ class PullSerializer {
   // The |size| of the data objects returned by |Pull| are never greater than
   // |chunk_size|.  At most |number_of_chunks| chunks are held in the internal
   // queue.  This class uses at most
-  // |number_of_chunks + (chunk_size + O(1)) + O(1)| bytes.
+  // |number_of_chunks * (chunk_size + O(1)) + O(1)| bytes.
   PullSerializer(int const chunk_size, int const number_of_chunks);
   ~PullSerializer();
 
@@ -101,7 +102,7 @@ class PullSerializer {
 
   // The |free_| queue contains the start addresses of chunks that are not yet
   // ready to be returned by |Pull|.  That includes the chunk currently being
-  // fille by the stream.
+  // filled by the stream.
   std::queue<not_null<std::uint8_t*>> free_ GUARDED_BY(lock_);
 
   // Indicates whether the first call to |Pull| has been executed.  In normal
