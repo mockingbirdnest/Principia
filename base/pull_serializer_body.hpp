@@ -87,13 +87,10 @@ inline void PullSerializer::Start(
   thread_ = std::make_unique<std::thread>([this, message](){
     CHECK(message->SerializeToZeroCopyStream(&stream_));
     // Put a sentinel at the end of the serialized stream so that the client
-    // knows that this is the end.  The sentinel doesn't count towards the queue
-    // size.
-    {
-      std::unique_lock<std::mutex> l(lock_);
-      queue_.push(Bytes());
-    }
-    queue_has_elements_.notify_all();
+    // knows that this is the end.  No need to hold the lock here because the
+    // stream is no longer calling |Push| so the front of the free list cannot
+    // change.
+    Push(Bytes(free_.front(), 0));
   });
 }
 
@@ -101,17 +98,19 @@ inline Bytes PullSerializer::Pull() {
   Bytes result;
   {
     std::unique_lock<std::mutex> l(lock_);
-    queue_has_elements_.wait(l, [this]() { return !queue_.empty(); });
     // The element at the front of the queue is the one that was last returned
     // by |Pull| and must be dropped and freed, except the first time |Pull| is
     // called.
     if (is_first_pull_) {
+      queue_has_elements_.wait(l, [this]() { return !queue_.empty(); });
       is_first_pull_ = false;
     } else {
+      queue_has_elements_.wait(l, [this]() { return queue_.size() > 1; });
       free_.push(queue_.front().data);
       queue_.pop();
     }
     result = queue_.front();
+    CHECK_EQ(number_of_chunks_, queue_.size() + free_.size());
   }
   queue_has_room_.notify_all();
   return result;
@@ -128,10 +127,10 @@ inline Bytes PullSerializer::Push(Bytes const bytes) {
       return queue_.size() < static_cast<size_t>(number_of_chunks_) - 1;
     });
     queue_.emplace(bytes.data, bytes.size);
-    CHECK(!free_.empty());
     CHECK_EQ(free_.front(), bytes.data);
     free_.pop();
     result = Bytes(free_.front(), chunk_size_);
+    CHECK_EQ(number_of_chunks_, queue_.size() + free_.size());
   }
   queue_has_elements_.notify_all();
   return result;
