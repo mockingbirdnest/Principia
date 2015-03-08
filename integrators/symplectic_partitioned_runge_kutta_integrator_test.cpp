@@ -59,6 +59,10 @@ struct SPRKTestableProperties {
   Integrator::Scheme const& (Integrator::*scheme)() const;
   std::string name;
   int convergence_order;
+  // Convergence, in the sense tested below, of the above order occurs for
+  // timesteps smaller than |beginning_of_convergence| when integrating the unit
+  // harmonic oscillator.
+  Time beginning_of_convergence;
   // The expected errors when integrating the unit harmonic oscillator for
   // 1000 s with a 1 ms timestep.
   Length expected_position_error;
@@ -77,69 +81,77 @@ std::ostream& operator<<(std::ostream& stream, SPRKTestableProperties param) {
 
 std::vector<SPRKTestableProperties> Instances() {
   return {
-      {&Integrator::Leapfrog, "Leapfrog", 2,
+      {&Integrator::Leapfrog, "Leapfrog", 2, 0.4 * Second,
        +4.15606749774469300e-05 * Metre,
        +4.16264386218978200e-05 * Kilogram * Metre / Second,
        +1.25000000000000000e-01 * Joule},
-      {&Integrator::PseudoLeapfrog, "PseudoLeapfrog", 2,
+      {&Integrator::PseudoLeapfrog, "PseudoLeapfrog", 2, 0.4 * Second,
        +4.15606749774360880e-05 * Metre,
        +4.16261832564750020e-05 * Kilogram * Metre / Second,
        +9.37500000000000000e-02 * Joule},
       {&Integrator::McLachlanAtela1992Order2Optimal,
-       "McLachlanAtela1992Order2Optimal", 2,
+       "McLachlanAtela1992Order2Optimal", 2, 0.7 * Second,
        +2.01685999379921760e-05 * Metre,
        +2.02003819904818380e-05 * Kilogram * Metre / Second,
        +1.28869320917870400e-02 * Joule},
-      {&Integrator::Ruth1983, "Ruth1983", 3,
+      {&Integrator::Ruth1983, "Ruth1983", 3, 0.1 * Second,
        +2.77767866216707680e-11 * Metre,
        +7.01570745942348140e-13 * Kilogram * Metre / Second,
        +1.79248948993825370e-02 * Joule},
       {&Integrator::McLachlanAtela1992Order3Optimal,
-       "McLachlanAtela1992Order3Optimal", 3,
+       "McLachlanAtela1992Order3Optimal", 3, 0.1 * Second,
        +1.21425465168800710e-11 * Metre,
        +3.68977418063742850e-13 * Kilogram * Metre / Second,
        +6.41094324383406630e-03 * Joule},
       {&Integrator::CandyRozmus1991ForestRuth1990SynchronousMomenta,
-       "CandyRozmus1991ForestRuth1990SynchronousMomenta", 4,
+       "CandyRozmus1991ForestRuth1990SynchronousMomenta", 4, 0.5 * Second,
        +6.63488482904872610e-11 * Metre,
        +6.64555094981311710e-11 * Kilogram * Metre / Second,
        +6.98808139117831350e-02 * Joule},
       {&Integrator::CandyRozmus1991ForestRuth1990SynchronousPositions,
-       "CandyRozmus1991ForestRuth1990SynchronousPositions", 4,
+       "CandyRozmus1991ForestRuth1990SynchronousPositions", 4, 0.5 * Second,
        +6.63488188001881700e-11 * Metre,
        +6.64553134743783860e-11 * Kilogram * Metre / Second,
        +8.12345434555920010e-02 * Joule},
       {&Integrator::McLachlanAtela1992Order4Optimal,
-       "McLachlanAtela1992Order4Optimal", 4,
+       "McLachlanAtela1992Order4Optimal", 4, 1.0 * Second,
        +1.88161985992252310e-13 * Metre,
        +1.88491583452687910e-13 * Kilogram * Metre / Second,
        +5.73140348145262380e-04 * Joule},
       {&Integrator::McLachlanAtela1992Order5Optimal,
-       "McLachlanAtela1992Order5Optimal", 5,
+       "McLachlanAtela1992Order5Optimal", 5, 1 * Second,
        +7.51005160837259210e-14 * Metre,
        +7.50823014872281650e-14 * Kilogram * Metre / Second,
        +1.14708664439744370e-04 * Joule},
-      {&Integrator::Yoshida1990Order6A, "Yoshida1990Order6A", 6,
+      {&Integrator::Yoshida1990Order6A, "Yoshida1990Order6A", 6, 1 * Second,
        +8.31001933931929670e-14 * Metre,
        +8.30759072645292920e-14 * Kilogram * Metre / Second,
        +2.54517718121372030e-03 * Joule},
-      {&Integrator::Yoshida1990Order6B, "Yoshida1990Order6B", 6,
+      {&Integrator::Yoshida1990Order6B, "Yoshida1990Order6B", 6, 1 * Second,
        +3.32536082003898060e-13 * Metre,
        +3.32810168313102390e-13 * Kilogram * Metre / Second,
        +8.66720827531614060e-02 * Joule},
-      {&Integrator::Yoshida1990Order6C, "Yoshida1990Order6C", 6,
+      {&Integrator::Yoshida1990Order6C, "Yoshida1990Order6C", 6, 1 * Second,
        +9.56665302531689580e-14 * Metre,
        +9.57515317034918210e-14 * Kilogram * Metre / Second,
        +9.43263722475094490e-02 * Joule},
-      {&Integrator::Yoshida1990Order8A, "Yoshida1990Order8A", 8,
+      {&Integrator::Yoshida1990Order8A, "Yoshida1990Order8A", 8, 1 * Second,
        +8.31001933931929670e-14 * Metre,
        +8.30759072645292920e-14 * Kilogram * Metre / Second,
        +2.54517718121372030e-03 * Joule},
-      {&Integrator::Yoshida1990Order8B, "Yoshida1990Order8B", 8,
+      {&Integrator::Yoshida1990Order8B, "Yoshida1990Order8B", 8, 1 * Second,
        +3.32536082003898060e-13 * Metre,
        +3.32810168313102390e-13 * Kilogram * Metre / Second,
        +8.66720827531614060e-02 * Joule},
-      {&Integrator::Yoshida1990Order8C, "Yoshida1990Order8C", 8,
+      {&Integrator::Yoshida1990Order8C, "Yoshida1990Order8C", 8, 1 * Second,
+       +9.56665302531689580e-14 * Metre,
+       +9.57515317034918210e-14 * Kilogram * Metre / Second,
+       +9.43263722475094490e-02 * Joule},
+      {&Integrator::Yoshida1990Order8B, "Yoshida1990Order8D", 8, 1 * Second,
+       +3.32536082003898060e-13 * Metre,
+       +3.32810168313102390e-13 * Kilogram * Metre / Second,
+       +8.66720827531614060e-02 * Joule},
+      {&Integrator::Yoshida1990Order8C, "Yoshida1990Order8E", 8, 1 * Second,
        +9.56665302531689580e-14 * Metre,
        +9.57515317034918210e-14 * Kilogram * Metre / Second,
        +9.43263722475094490e-02 * Joule}};
@@ -309,8 +321,8 @@ TEST_P(SPRKTest, Convergence) {
   // For 0.2 * 1.1⁻²¹ < |Δt| < 0.2 , the correlation between step size and error
   // is very strong. It the step is small enough to converge and large enough to
   // stay clear of floating point inaccuracy.
-  parameters_.Δt = 0.2 * SIUnit<Time>();
-  int const step_sizes = 22;
+  parameters_.Δt = GetParam().beginning_of_convergence;
+  int const step_sizes = 50;
   double const step_reduction = 1.1;
   std::vector<double> log_step_sizes(step_sizes);
   std::vector<double> log_q_errors(step_sizes);
@@ -335,12 +347,12 @@ TEST_P(SPRKTest, Convergence) {
   LOG(INFO) << GetParam();
   LOG(INFO) << "Convergence order in q : " << q_convergence_order;
   LOG(INFO) << "Correlation            : " << q_correlation;
-#if 0
+#if 1
   LOG(INFO) << "Convergence data for q :\n" <<
       BidimensionalDatasetMathematicaInput(log_step_sizes, log_q_errors);
 #endif
   EXPECT_THAT(RelativeError(GetParam().convergence_order, q_convergence_order),
-              Lt(0.1));
+              Lt(0.02));
   EXPECT_THAT(q_correlation, AllOf(Gt(0.99), Lt(1.01)));
   double const p_convergence_order = Slope(log_step_sizes, log_p_errors);
   double const p_correlation =
@@ -355,7 +367,7 @@ TEST_P(SPRKTest, Convergence) {
   EXPECT_THAT(
      RelativeError(((GetParam().convergence_order + 1) / 2) * 2,
                    p_convergence_order),
-     Lt(0.1));
+     Lt(0.02));
   EXPECT_THAT(p_correlation, AllOf(Gt(0.999), Lt(1.001)));
 }
 
