@@ -131,7 +131,7 @@ std::vector<SPRKTestableProperties> Instances() {
        +3.32536082003898060e-13 * Metre,
        +3.32810168313102390e-13 * Kilogram * Metre / Second,
        +8.66720827531614060e-02 * Joule},
-      {&Integrator::Yoshida1990Order6C, "Yoshida1990Order6C", 6, 0.9 * Second,
+      {&Integrator::Yoshida1990Order6C, "Yoshida1990Order6C", 6, 1.0 * Second,
        +9.56665302531689580e-14 * Metre,
        +9.57515317034918210e-14 * Kilogram * Metre / Second,
        +9.43263722475094490e-02 * Joule},
