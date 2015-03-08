@@ -477,8 +477,8 @@ template<typename Position, typename Momentum>
 template<typename AutonomousRightHandSideComputation,
          typename RightHandSideComputation>
 void SPRKIntegrator<Position, Momentum>::Solve(
-      RightHandSideComputation const compute_force,
-      AutonomousRightHandSideComputation const compute_velocity,
+      RightHandSideComputation compute_force,
+      AutonomousRightHandSideComputation compute_velocity,
       Parameters const& parameters,
       not_null<std::vector<SystemState>*> const solution) const {
   switch (vanishing_coefficients_) {
@@ -504,8 +504,8 @@ template<VanishingCoefficients vanishing_coefficients,
          typename AutonomousRightHandSideComputation,
          typename RightHandSideComputation>
 void SPRKIntegrator<Position, Momentum>::SolveOptimized(
-      RightHandSideComputation const compute_force,
-      AutonomousRightHandSideComputation const compute_velocity,
+      RightHandSideComputation compute_force,
+      AutonomousRightHandSideComputation compute_velocity,
       Parameters const& parameters,
       not_null<std::vector<SystemState>*> const solution) const {
   int const dimension = parameters.initial.positions.size();

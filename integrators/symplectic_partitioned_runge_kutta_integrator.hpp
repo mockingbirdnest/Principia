@@ -15,9 +15,9 @@ namespace integrators {
 // The integrator defined in this class integrates Hamilton's equations for
 // Hamiltonians of the form
 //   H(q, p, t) = T(p) + V(q, t),
-// where dT/dpᵢ(q) and dV/dqᵢ(q,t) are known.
-// The assymmetric support for time dependence arises in the treatment of t as a
-// variable in the extended phase space (q, t, p, ϖ), where with the extended
+// where ∂T/∂pᵢ(q) and ∂V/∂qᵢ(q,t) are known.
+// The asymmetric support for time dependence arises in the treatment of t as a
+// variable in the extended phase space (q, t, p, ϖ) with the extended
 // Hamiltonian  H(q, t, p, ϖ) = (T(p) + ϖ) + V(q, t), which can then be 
 // integrated with methods for time-independent separable Hamiltonians
 // H(Q, P) = T(P) + V(Q).
@@ -132,11 +132,11 @@ class SPRKIntegrator : public SymplecticIntegrator<Position, Momentum> {
   void Initialize(Scheme const& coefficients) override;
 
   // The functors |compute_velocity| and |compute_force| compute
-  // dT/dpᵢ(p) and dV/dqᵢ(q,t) respectively.
+  // ∂T/∂pᵢ(p) and ∂V/∂qᵢ(q,t) respectively.
   template<typename AutonomousRightHandSideComputation,
            typename RightHandSideComputation>
-  void Solve(RightHandSideComputation const compute_force,
-             AutonomousRightHandSideComputation const compute_velocity,
+  void Solve(RightHandSideComputation compute_force,
+             AutonomousRightHandSideComputation compute_velocity,
              Parameters const& parameters,
              not_null<std::vector<SystemState>*> const solution) const;
 
@@ -149,8 +149,8 @@ class SPRKIntegrator : public SymplecticIntegrator<Position, Momentum> {
   template<VanishingCoefficients vanishing_coefficients,
            typename AutonomousRightHandSideComputation,
            typename RightHandSideComputation>
-  void SolveOptimized(RightHandSideComputation const compute_force,
-                      AutonomousRightHandSideComputation const compute_velocity,
+  void SolveOptimized(RightHandSideComputation compute_force,
+                      AutonomousRightHandSideComputation compute_velocity,
                       Parameters const& parameters,
                       not_null<std::vector<SystemState>*> const solution) const;
 
