@@ -68,7 +68,7 @@ struct SPRKTestableProperties {
   Length expected_position_error;
   Momentum expected_momentum_error;
   // The expected errors when integrating the unit harmonic oscillator for
-  // 500 s with a 1 s timestep.
+  // 500 s with a 0.2 s timestep.
   Energy expected_energy_error;
 };
 
@@ -142,19 +142,19 @@ std::vector<SPRKTestableProperties> Instances() {
       {&Integrator::Yoshida1990Order8B, "Yoshida1990Order8B", 8, 0.043 * Second,
        +3.32536082003898060e-13 * Metre,
        +3.32810168313102390e-13 * Kilogram * Metre / Second,
-       +8.66720827531614060e-02 * Joule},
+       +1.49030436414898660e-05 * Joule},
       {&Integrator::Yoshida1990Order8C, "Yoshida1990Order8C", 8, 0.5 * Second,
        +9.56665302531689580e-14 * Metre,
        +9.57515317034918210e-14 * Kilogram * Metre / Second,
-       +9.43263722475094490e-02 * Joule},
-      {&Integrator::Yoshida1990Order8B, "Yoshida1990Order8D", 8, 0.043 * Second,
+       +1.33083072562101280e-07 * Joule},
+      {&Integrator::Yoshida1990Order8D, "Yoshida1990Order8D", 8, 1.1 * Second,
        +3.32536082003898060e-13 * Metre,
        +3.32810168313102390e-13 * Kilogram * Metre / Second,
-       +8.66720827531614060e-02 * Joule},
-      {&Integrator::Yoshida1990Order8C, "Yoshida1990Order8E", 8, 0.5 * Second,
+       +1.49030436414898660e-05 * Joule},
+      {&Integrator::Yoshida1990Order8E, "Yoshida1990Order8E", 8, 0.3 * Second,
        +9.56665302531689580e-14 * Metre,
        +9.57515317034918210e-14 * Kilogram * Metre / Second,
-       +9.43263722475094490e-02 * Joule}};
+       +1.33083072562101280e-07 * Joule}};
 }
 
 }  // namespace
@@ -357,7 +357,7 @@ TEST_P(SPRKTest, Convergence) {
   LOG(INFO) << GetParam();
   LOG(INFO) << "Convergence order in q : " << q_convergence_order;
   LOG(INFO) << "Correlation            : " << q_correlation;
-#if 1
+#if 0
   LOG(INFO) << "Convergence data for q :\n" <<
       BidimensionalDatasetMathematicaInput(log_step_sizes, log_q_errors);
 #endif
@@ -391,7 +391,7 @@ TEST_P(SPRKTest, Symplecticity) {
   Momentum const p0 = parameters_.initial.momenta[0].value;
   Energy const initial_energy = 0.5 * Pow<2>(p0) / m + 0.5 * k * Pow<2>(q0);
   parameters_.tmax = 500.0 * SIUnit<Time>();
-  parameters_.Δt = SIUnit<Time>();
+  parameters_.Δt = 0.2 * Second;
   parameters_.sampling_period = 1;
   integrator_.Solve(&ComputeHarmonicOscillatorForce,
                     &ComputeHarmonicOscillatorVelocity,
@@ -408,7 +408,7 @@ TEST_P(SPRKTest, Symplecticity) {
                           initial_energy);
     max_energy_error = std::max(energy_error[i], max_energy_error);
   }
-#if 1
+#if 0
   LOG(INFO) << "Energy error as a function of time:\n" <<
       BidimensionalDatasetMathematicaInput(time_steps, energy_error);
 #endif
