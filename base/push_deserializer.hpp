@@ -18,9 +18,9 @@ namespace base {
 
 namespace internal {
 // An input stream based on an array that delegates to a function the handling
-// of the case where one array is empty.  It calls the |on_empty|
-// function passed at construction and proceeds with deserializing the array
-// returned by that function.
+// of the case where the array is empty.  It calls the |on_empty| function
+// passed at construction and proceeds with deserializing the array returned by
+// that function.
 class DelegatingArrayInputStream
     : public google::protobuf::io::ZeroCopyInputStream {
  public:
@@ -70,7 +70,10 @@ class PushDeserializer {
   // Pushes in the internal queue chunks of data that will be extracted by
   // |Pull|.  Splits |bytes| into chunks of at most |chunk_size|.  May block to
   // stay within the maximum size of the queue.  The caller must push an object
-  // of size 0 to signal the end of input.
+  // of size 0 to signal the end of input.  The |bytes| objects send by the
+  // client must remain live until the end of the deserialization.
+  // TODO(phl): The last sentence will probably turn out to be problematic for
+  // the client.  We might want to transfer ownership here.
   void Push(Bytes const bytes);
 
  private:

@@ -21,11 +21,9 @@ inline DelegatingArrayInputStream::DelegatingArrayInputStream(
 
 inline bool DelegatingArrayInputStream::Next(void const** const data,
                                              int* const size) {
-  //LOG(ERROR)<<"next "<<position_<<" "<<size_;
   if (position_ == bytes_.size) {
     // We're at the end of the array.  Obtain a new one.
     bytes_ = on_empty_();
-    //LOG(ERROR)<<"got "<<bytes.size;
     position_ = 0;
     last_returned_size_ = 0;  // Don't let caller back up.
     if (bytes_.size == 0) {
@@ -39,12 +37,10 @@ inline bool DelegatingArrayInputStream::Next(void const** const data,
   *size = static_cast<int>(last_returned_size_);
   byte_count_ += last_returned_size_;
   position_ += last_returned_size_;
-  //LOG(ERROR)<<"ret "<<*size;
   return true;
 }
 
 inline void DelegatingArrayInputStream::BackUp(int const count) {
-  //LOG(ERROR)<<"backup";
   CHECK_GT(last_returned_size_, 0)
       << "BackUp() can only be called after a successful Next().";
   CHECK_LE(count, last_returned_size_);
@@ -55,7 +51,6 @@ inline void DelegatingArrayInputStream::BackUp(int const count) {
 }
 
 inline bool DelegatingArrayInputStream::Skip(int const count) {
-  //LOG(ERROR)<<"skip";
   CHECK_GE(count, 0);
   last_returned_size_ = 0;   // Don't let caller back up.
   std::int64_t remaining = count;
@@ -76,7 +71,6 @@ inline bool DelegatingArrayInputStream::Skip(int const count) {
 }
 
 inline std::int64_t DelegatingArrayInputStream::ByteCount() const {
-  //LOG(ERROR)<<"bc";
   return byte_count_;
 }
 
@@ -90,10 +84,8 @@ inline PushDeserializer::PushDeserializer(int const chunk_size,
 
 inline PushDeserializer::~PushDeserializer() {
   if (thread_ != nullptr) {
-    //LOG(ERROR)<<"join";
     thread_->join();
   }
-  //LOG(ERROR)<<"destroyed";
 }
 
 inline void PushDeserializer::Start(
@@ -101,14 +93,13 @@ inline void PushDeserializer::Start(
   CHECK(thread_ == nullptr);
   thread_ = std::make_unique<std::thread>([this, message](){
     CHECK(message->ParseFromZeroCopyStream(&stream_));
-    //LOG(ERROR)<<"stop";
   });
 }
 
 inline void PushDeserializer::Push(Bytes const bytes) {
   // Slice the incoming data in chunks of size at most |chunk_size|.  Release
   // the lock after each chunk to give the deserializer a chance to run.  This
-  // method can be called with |bytes| of size 0 to terminate the
+  // method should be called with |bytes| of size 0 to terminate the
   // deserialization, but it never generates a chunk of size 0 in other
   // circumstances.
   Bytes current = bytes;
@@ -122,7 +113,6 @@ inline void PushDeserializer::Push(Bytes const bytes) {
       queue_.emplace(current.data,
                      std::min(current.size, 
                               static_cast<std::int64_t>(chunk_size_)));
-      //LOG(ERROR)<<"push "<<queue_.size()<<" "<<queue_.back().size<<" "<<(void*)(&*current.data);
     }
     queue_has_elements_.notify_all();
     current.data = &current.data[chunk_size_];
@@ -134,13 +124,10 @@ inline Bytes PushDeserializer::Pull() {
   Bytes result;
   {
     std::unique_lock<std::mutex> l(lock_);
-    //LOG(ERROR)<<"pulling "<<queue_.size();
     queue_has_elements_.wait(l, [this]() { return !queue_.empty(); });
-    //LOG(ERROR)<<"waited "<<queue_.size();
     result = queue_.front();
     queue_.pop();
   }
-  //LOG(ERROR)<<"pull "<<result.size<<" "<<(void*)(&*result.data);
   queue_has_room_.notify_all();
   return result;
 }
