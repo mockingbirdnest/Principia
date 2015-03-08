@@ -2,6 +2,8 @@
 
 #include "base/push_deserializer.hpp"
 
+#include <algorithm>
+
 #include "glog/logging.h"
 
 namespace principia {
@@ -111,7 +113,7 @@ inline void PushDeserializer::Push(Bytes const bytes) {
         return queue_.size() < static_cast<size_t>(number_of_chunks_);
       });
       queue_.emplace(current.data,
-                     std::min(current.size, 
+                     std::min(current.size,
                               static_cast<std::int64_t>(chunk_size_)));
     }
     queue_has_elements_.notify_all();

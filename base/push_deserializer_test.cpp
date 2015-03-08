@@ -2,7 +2,7 @@
 
 #include <list>
 #include <string>
-#include <thread>
+#include <thread>  // NOLINT(build/c++11)
 #include <vector>
 
 #include "base/bytes.hpp"
@@ -69,7 +69,6 @@ class PushDeserializerTest : public ::testing::Test {
                  static_cast<std::int64_t>(front.size()));
   }
 
-  //TODO(phl):not_null
   std::unique_ptr<PullSerializer> pull_serializer_;
   std::unique_ptr<PushDeserializer> push_deserializer_;
   Trajectory trajectory_;
