@@ -178,7 +178,7 @@ class SPRKIntegrator : public SymplecticIntegrator<Position, Momentum> {
   std::vector<double> a_;
   std::vector<double> b_;
 
-  // The position weights.  Note that the first c coefficient is not stored if
+  // The weights.  Note that the first c coefficient is not stored if
   // |vanishing_coefficients_ == kFirstBVanishes|.
   std::vector<double> c_;
 };
