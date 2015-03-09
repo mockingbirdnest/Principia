@@ -61,9 +61,11 @@ Plugin::Plugin(Instant const& initial_time,
   sun_->CreateHistoryAndForkProlongation(
       current_time_,
       {Position<Barycentric>(), Velocity<Barycentric>()});
-  history_integrator_.Initialize(history_integrator_.Order5Optimal());
+  history_integrator_.Initialize(
+      history_integrator_.McLachlanAtela1992Order5Optimal());
   // NOTE(egg): perhaps a lower order would be appropriate.
-  prolongation_integrator_.Initialize(history_integrator_.Order5Optimal());
+  prolongation_integrator_.Initialize(
+      history_integrator_.McLachlanAtela1992Order5Optimal());
 }
 
 void Plugin::InsertCelestial(
@@ -490,9 +492,11 @@ Plugin::Plugin(GUIDToOwnedVessel vessels,
       unsynchronized_vessels_.emplace(vessel.get());
     }
   }
-  history_integrator_.Initialize(history_integrator_.Order5Optimal());
+  history_integrator_.Initialize(
+      history_integrator_.McLachlanAtela1992Order5Optimal());
   // NOTE(egg): perhaps a lower order would be appropriate.
-  prolongation_integrator_.Initialize(history_integrator_.Order5Optimal());
+  prolongation_integrator_.Initialize(
+      history_integrator_.McLachlanAtela1992Order5Optimal());
   EndInitialization();
 }
 

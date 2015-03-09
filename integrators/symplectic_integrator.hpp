@@ -31,7 +31,7 @@ class SymplecticIntegrator {
   virtual ~SymplecticIntegrator() = default;
 
   // The coefficients of the integrator.
-  using Coefficients = std::vector<std::vector<double>>;
+  using Scheme = std::vector<std::vector<double>>;
 
   // The entire state of the system at a given time.  The vectors are indexed by
   // dimension.
@@ -69,7 +69,7 @@ class SymplecticIntegrator {
 
   // Initialize the integrator with the given |coefficients|.  Must be called
   // before calling Solve.
-  virtual void Initialize(Coefficients const& coefficients) = 0;
+  virtual void Initialize(Scheme const& coefficients) = 0;
 
   // NOTE(phl): This is part of the contract of SymplecticIntegrator but it
   // cannot be written in C++ because a template cannot be virtual.

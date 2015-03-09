@@ -66,7 +66,7 @@ class NBodySystemTest : public testing::Test {
         trajectory3_(
             make_not_null_unique<Trajectory<EarthMoonOrbitPlane>>(&body3_)),
         system_(make_not_null_unique<NBodySystem<EarthMoonOrbitPlane>>()) {
-    integrator_.Initialize(integrator_.Order5Optimal());
+    integrator_.Initialize(integrator_.McLachlanAtela1992Order5Optimal());
 
     // The Earth-Moon system, roughly, with a circular orbit with velocities
     // in the centre-of-mass frame.
