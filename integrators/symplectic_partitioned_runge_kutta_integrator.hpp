@@ -18,7 +18,7 @@ namespace integrators {
 // where ∂T/∂pᵢ(q) and ∂V/∂qᵢ(q,t) are known.
 // The asymmetric support for time dependence arises in the treatment of t as a
 // variable in the extended phase space (q, t, p, ϖ) with the extended
-// Hamiltonian  H(q, t, p, ϖ) = (T(p) + ϖ) + V(q, t), which can then be 
+// Hamiltonian  H(q, t, p, ϖ) = (T(p) + ϖ) + V(q, t), which can then be
 // integrated with methods for time-independent separable Hamiltonians
 // H(Q, P) = T(P) + V(Q).
 // For practical purposes, this reduces to evaluating the force computations
@@ -112,7 +112,7 @@ class SPRKIntegrator : public SymplecticIntegrator<Position, Momentum> {
   // http://sixtrack.web.cern.ch/SixTrack/doc/yoshida00.pdf.
   // NOTE(egg): The coefficients were derived from equations 5.4 through 5.17
   // rather than computed from the wᵢ given in tables 1 and 2.  The results were
-  // then cross-checked agains those obtained from the tables.
+  // then cross-checked against those obtained from the tables.
   Scheme const& Yoshida1990Order6A() const;
   // Sixth order, 8 stages, FSAL (synchronous positions).  Ibidem.
   Scheme const& Yoshida1990Order6B() const;
