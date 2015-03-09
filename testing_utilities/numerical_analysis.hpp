@@ -2,13 +2,11 @@
 
 #include<vector>
 
-#include "base/not_null.hpp"
 #include "quantities/quantities.hpp"
 #include "quantities/named_quantities.hpp"
 
 namespace principia {
 
-using base::not_null;
 using quantities::Force;
 using quantities::Length;
 using quantities::Momentum;
@@ -18,7 +16,8 @@ using quantities::Time;
 namespace testing_utilities {
 
 // Right-hand sides for various differential equations frequently used to test
-// the properties of integrators.
+// the properties of integrators.  Logically the result should be a not_null<>
+// but this costs 20% in the benchmark of the harmonic oscillator.
 
 // The one-dimensional unit harmonic oscillator,
 // q' = p,  |ComputeHarmonicOscillatorVelocity|,
