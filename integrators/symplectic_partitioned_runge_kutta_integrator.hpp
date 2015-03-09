@@ -45,14 +45,15 @@ enum VanishingCoefficients {
   kLastAVanishes,
 };
 
+struct SRKNScheme {
+  std::vector<std::vector<double>> coefficients;
+};
+
 template<typename Position, typename Momentum>
-class SPRKIntegrator : public SymplecticIntegrator<Position, Momentum> {
+class SRKNIntegrator : public SymplecticIntegrator<Position, Momentum> {
  public:
-  using Parameters = typename SymplecticIntegrator<Position,
-                                                   Momentum>::Parameters;
-  using Scheme = typename SymplecticIntegrator<Position, Momentum>::Scheme;
-  using SystemState = typename SymplecticIntegrator<Position,
-                                                    Momentum>::SystemState;
+  //using Parameters = Parameters;
+  //using SystemState = SystemState;
 
   SPRKIntegrator();
   ~SPRKIntegrator() override = default;
@@ -103,9 +104,9 @@ class SPRKIntegrator : public SymplecticIntegrator<Position, Momentum> {
   // Coefficients from Robert I. McLachlan and Pau Atela (1992),
   // The accuracy of symplectic integrators, table 2.
   // http://eaton.math.rpi.edu/CSUMS/Papers/Symplectic/McLachlan_Atela_92.pdf.
-  Scheme const& McLachlanAtela1992Order4Optimal() const;
+  SRKNScheme const& McLachlanAtela1992Order4Optimal() const;
   // Fifth order, 6 stages.  This method minimizes the error constant  Ibidem.
-  Scheme const& McLachlanAtela1992Order5Optimal() const;
+  SRKNScheme const& McLachlanAtela1992Order5Optimal() const;
   // Sixth order, 8 stages, FSAL (synchronous positions).
   // Coefficients from Yoshida (1990),
   // Construction of higher order symplectic integrators

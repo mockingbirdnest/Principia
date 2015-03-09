@@ -66,21 +66,6 @@ class SymplecticIntegrator {
     // It never exceeds |tmax|.
     bool tmax_is_exact = false;
   };
-
-  // Initialize the integrator with the given |coefficients|.  Must be called
-  // before calling Solve.
-  virtual void Initialize(Scheme const& coefficients) = 0;
-
-  // NOTE(phl): This is part of the contract of SymplecticIntegrator but it
-  // cannot be written in C++ because a template cannot be virtual.
-  //
-  // Takes ownership of the pointers in |parameters|.
-  // template<typename AutonomousRightHandSideComputation,
-  //          typename RightHandSideComputation>
-  // void Solve(RightHandSideComputation const compute_force,
-  //            AutonomousRightHandSideComputation const compute_velocity,
-  //            Parameters const& parameters,
-  //            not_null<std::vector<SystemState>*> const solution);
 };
 
 }  // namespace integrators
