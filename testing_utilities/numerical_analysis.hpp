@@ -26,11 +26,11 @@ namespace testing_utilities {
 
 void ComputeHarmonicOscillatorForce(Time const& t,
                                     std::vector<Length> const& q,
-                                    not_null<std::vector<Force>*> const result);
+                                    std::vector<Force>* const result);
 
 void ComputeHarmonicOscillatorVelocity(
     std::vector<Momentum> const& p,
-    not_null<std::vector<Speed>*> const result);
+    std::vector<Speed>* const result);
 
 }  // namespace testing_utilities
 }  // namespace principia
