@@ -3,8 +3,6 @@
 #include <cmath>
 #include <string>
 
-#include "base/macros.hpp"
-
 namespace principia {
 namespace quantities {
 
@@ -303,9 +301,8 @@ inline Quotient<Quantity<LDimensions>, Quantity<RDimensions>> operator/(
 }
 
 template<typename RDimensions>
-inline Quantity<RDimensions> operator*(
-    double const left,
-    Quantity<RDimensions> const& right) {
+inline Quantity<RDimensions> operator*(double const left,
+                                       Quantity<RDimensions> const& right) {
   return Quantity<RDimensions>(left * right.magnitude_);
 }
 
