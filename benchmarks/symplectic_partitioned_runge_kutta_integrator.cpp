@@ -2,8 +2,8 @@
 // .\Release\benchmarks.exe --benchmark_repetitions=5 --benchmark_min_time=30 --benchmark_filter=HarmonicOscillator                                                                                                                 // NOLINT(whitespace/line_length)
 // Benchmarking on 1 X 3310 MHz CPU
 // 2015/03/09-23:14:45
-// Benchmark                                                                                           Time(ns)    CPU(ns) Iterations
-// ----------------------------------------------------------------------------------------------------------------------------------
+// Benchmark                                                                                           Time(ns)    CPU(ns) Iterations                                                                                               // NOLINT(whitespace/line_length)
+// ----------------------------------------------------------------------------------------------------------------------------------                                                                                               // NOLINT(whitespace/line_length)
 // BM_SolveHarmonicOscillator<&Integrator::Leapfrog>                                                 2485034999 2485615933          3                               +4.15606773735669070e-07 m, +4.16264394754398830e-07 m kg s^-1  // NOLINT(whitespace/line_length)
 // BM_SolveHarmonicOscillator<&Integrator::Leapfrog>                                                 2451504525 2444015667          3                               +4.15606773735669070e-07 m, +4.16264394754398830e-07 m kg s^-1  // NOLINT(whitespace/line_length)
 // BM_SolveHarmonicOscillator<&Integrator::Leapfrog>                                                 2446403957 2438815633          3                               +4.15606773735669070e-07 m, +4.16264394754398830e-07 m kg s^-1  // NOLINT(whitespace/line_length)
