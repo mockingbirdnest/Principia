@@ -13,28 +13,30 @@
 #ifdef ADVANCE_ΔQSTAGE
 #error ADVANCE_ΔQSTAGE already defined
 #else
-#define ADVANCE_ΔQSTAGE(step)                                    \
-  do {                                                           \
-    compute_velocity(p_stage, &v);                               \
-    for (int k = 0; k < dimension; ++k) {                        \
-      Position const Δq = (*Δqstage_previous)[k] + step * v[k];  \
-      q_stage[k] = q_last[k].value + Δq;                         \
-      (*Δqstage_current)[k] = Δq;                                \
-    }                                                            \
+#define ADVANCE_ΔQSTAGE(step)                                              \
+  do {                                                                     \
+    Time const step_evaluated = (step);                                    \
+    compute_velocity(p_stage, &v);                                         \
+    for (int k = 0; k < dimension; ++k) {                                  \
+      Position const Δq = (*Δqstage_previous)[k] + step_evaluated * v[k];  \
+      q_stage[k] = q_last[k].value + Δq;                                   \
+      (*Δqstage_current)[k] = Δq;                                          \
+    }                                                                      \
   } while (false)
 #endif
 
 #ifdef ADVANCE_ΔPSTAGE
 #error ADVANCE_ΔPSTAGE already defined
 #else
-#define ADVANCE_ΔPSTAGE(step, q_clock)                           \
-  do {                                                           \
-    compute_force(q_clock, q_stage, &f);                         \
-    for (int k = 0; k < dimension; ++k) {                        \
-      Momentum const Δp = (*Δpstage_previous)[k] + step * f[k];  \
-      p_stage[k] = p_last[k].value + Δp;                         \
-      (*Δpstage_current)[k] = Δp;                                \
-    }                                                            \
+#define ADVANCE_ΔPSTAGE(step, q_clock)                                     \
+  do {                                                                     \
+    Time const step_evaluated = (step);                                    \
+    compute_force((q_clock), q_stage, &f);                                 \
+    for (int k = 0; k < dimension; ++k) {                                  \
+      Momentum const Δp = (*Δpstage_previous)[k] + step_evaluated * f[k];  \
+      p_stage[k] = p_last[k].value + Δp;                                   \
+      (*Δpstage_current)[k] = Δp;                                          \
+    }                                                                      \
   } while (false)
 #endif
 
