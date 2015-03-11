@@ -16,16 +16,18 @@ namespace integrators {
 // Hamiltonians of the form
 //   H(q, p, t) = T(q, p) + V(q, t),
 // with T quadratic in p, i.e.,
-//  T(q, p) = ½ pᵀM(q)⁻¹p
+//   T(q, p) = ½ pᵀM(q)⁻¹p
 // where M(q)⁻¹ is a nonsingular matrix.  The flows of T and V must be known.
-// A special treatment is provided for hamiltonians where M⁻¹ is independent of
-// q and ∂V/∂qᵢ(q, t) is known.  In those cases the differential equation can be
+// A special treatment is provided when M⁻¹(q) = M⁻¹ is independent of q and
+// ∂V/∂qᵢ(q, t) is known.  In that case the differential equation can be
 // reformulated as q" = M⁻¹ F(q, t), where Fᵢ = ∂V/∂qᵢ.
+// TODO(egg): only the latter is implemented at this time.
 
-// NOTE(egg): only the latter is implemented at this time.
+// TODO(egg): a blurb on non-autonomy.
 
-// TODO(egg): a blurb on non-autonomy, it's slightly trickier than in the SPRK
-// case.
+// NOTE(egg): we could implement support for time-dependent M⁻¹(q, t), see Diele
+// and Marangi (2011), Explicit symplectic partitioned Runge-Kutta-Nyström
+// methods for non-autonomous dynamics.
 
 // We follow the convention of McLachlan & Atela, calling the position nodes
 // aᵢ and the momentum nodes bᵢ.  The following notations appear in the
