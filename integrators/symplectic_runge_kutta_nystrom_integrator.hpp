@@ -16,11 +16,11 @@ namespace integrators {
 // Hamiltonians of the form
 //   H(q, p, t) = T(q, p) + V(q, t),
 // with T quadratic in p, i.e.,
-//  T(q, p) = M(q)⁻¹(p, p)
-// where M(q)⁻¹ is a quadratic form.
-// The flows of T and V must be known.
-// A special case is provided for the case where M(q)⁻¹ is the standard metric
-// and ∂V/∂qᵢ(q, t) is known.
+//  T(q, p) = ½ M(q)⁻¹(p, p)
+// where M(q)⁻¹ is bilinear.  The flows of T and V must be known.
+// A special treatment is provided for hamiltonians where M⁻¹ is independent of
+// q and ∂V/∂qᵢ(q, t) is known.  In those cases the differential equation can be
+// reformulated as q" = M⁻¹ F(q, t), where Fᵢ = ∂V/∂qᵢ.
 
 // NOTE(egg): only the latter is implemented at this time.
 
@@ -53,19 +53,22 @@ class SRKNIntegrator : public SymplecticIntegrator {
 
  public:
 
-  // The functor |compute_force| computes ∂V/∂qᵢ(q, t).
+  // The functors |evolve_kinetic| and |evolve_potential| respectively compute
+  // exp(h{·, T})(q, p) given (q, p), and exp(h{·, V})(q, p) given (q, p, t).
   template<typename Position, typename Momentum,
-           typename RightHandSideComputation>
+           typename KineticFlow
+           typename PotentialFlow>
   void SolveQuadraticKineticEnergy(
-      RightHandSideComputation compute_force,
+      KineticFlow evolve_kinetic,
+      PotentialFlow evolve_potential,
       Parameters<Position, Momentum> const& parameters,
       not_null<Solution<Position, Momentum>*> const solution) const;
 
-  // The functor |compute_force| computes ∂V/∂qᵢ(q, t).
+  // The functor |compute_acceleration| computes M⁻¹ F(q, t).
   template<typename Position, typename Velocity,
            typename RightHandSideComputation>
   void SolveTrivialKineticEnergyIncrement(
-      RightHandSideComputation compute_force,
+      RightHandSideComputation compute_acceleration,
       Parameters<Position, Velocity> const& parameters,
       not_null<Solution<Position, Velocity>*> const solution) const;
 
