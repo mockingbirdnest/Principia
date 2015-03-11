@@ -16,8 +16,8 @@ namespace integrators {
 // Hamiltonians of the form
 //   H(q, p, t) = T(q, p) + V(q, t),
 // with T quadratic in p, i.e.,
-//  T(q, p) = ½ M(q)⁻¹(p, p)
-// where M(q)⁻¹ is bilinear.  The flows of T and V must be known.
+//  T(q, p) = ½ pᵀM(q)⁻¹p
+// where M(q)⁻¹ is a nonsingular matrix.  The flows of T and V must be known.
 // A special treatment is provided for hamiltonians where M⁻¹ is independent of
 // q and ∂V/∂qᵢ(q, t) is known.  In those cases the differential equation can be
 // reformulated as q" = M⁻¹ F(q, t), where Fᵢ = ∂V/∂qᵢ.
