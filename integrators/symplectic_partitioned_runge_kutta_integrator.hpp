@@ -45,12 +45,7 @@ enum VanishingCoefficients {
   kLastAVanishes,
 };
 
-struct SRKNScheme {
-  std::vector<std::vector<double>> coefficients;
-};
-
-template<typename Position, typename Momentum>
-class SRKNIntegrator : public SymplecticIntegrator<Position, Momentum> {
+class SRKNIntegrator : public SymplecticIntegrator {
  public:
   //using Parameters = Parameters;
   //using SystemState = SystemState;

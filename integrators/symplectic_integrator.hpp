@@ -24,26 +24,27 @@ struct DoublePrecision {
   Scalar error;
 };
 
-template<typename Position, typename Momentum>
 class SymplecticIntegrator {
  public:
   SymplecticIntegrator() = default;
   virtual ~SymplecticIntegrator() = default;
 
-  // The coefficients of the integrator.
-  using Scheme = std::vector<std::vector<double>>;
-
   // The entire state of the system at a given time.  The vectors are indexed by
   // dimension.
+  template<typename Position, typename Momentum>
   struct SystemState {
     std::vector<DoublePrecision<Position>> positions;
     std::vector<DoublePrecision<Momentum>> momenta;
     DoublePrecision<Time> time;
   };
 
+  template<typename Position, typename Momentum>
+  using Solution = std::vector<SystemState<Position, Momentum>>;
+
+  template<typename Position, typename Momentum>
   struct Parameters {
     // The initial state of the system.
-    SystemState initial;
+    SystemState<Position, Momentum> initial;
     // The ending time of the resolution.
     Time tmax;
     // The time step.

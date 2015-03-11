@@ -133,6 +133,7 @@
     <ClInclude Include="symplectic_integrator_body.hpp" />
     <ClInclude Include="symplectic_partitioned_runge_kutta_integrator.hpp" />
     <ClInclude Include="symplectic_partitioned_runge_kutta_integrator_body.hpp" />
+    <ClInclude Include="symplectic_runge_kutta_nystrom_integrator.hpp" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="symplectic_partitioned_runge_kutta_integrator_test.cpp" />
