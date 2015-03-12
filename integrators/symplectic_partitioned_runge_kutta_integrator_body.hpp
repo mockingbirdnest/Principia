@@ -101,34 +101,6 @@ SPRKIntegrator const& CandyRozmus1991ForestRuth1990SynchronousPositions() {
   return integrator;
 }
 
-SPRKIntegrator const& McLachlanAtela1992Order4Optimal() {
-  static SPRKIntegrator const integrator({ 0.5153528374311229364,
-                                          -0.085782019412973646,
-                                           0.4415830236164665242,
-                                           0.1288461583653841854},
-                                         { 0.1344961992774310892,
-                                          -0.2248198030794208058,
-                                           0.7563200005156682911,
-                                           0.3340036032863214255});
-  return integrator;
-}
-
-SPRKIntegrator const& McLachlanAtela1992Order5Optimal() {
-  static SPRKIntegrator const integrator({ 0.339839625839110000,
-                                          -0.088601336903027329,
-                                           0.5858564768259621188,
-                                          -0.603039356536491888,
-                                           0.3235807965546976394,
-                                           0.4423637942197494587},
-                                         { 0.1193900292875672758,
-                                           0.6989273703824752308,
-                                          -0.1713123582716007754,
-                                           0.4012695022513534480,
-                                           0.0107050818482359840,
-                                          -0.0589796254980311632});
-  return integrator;
-}
-
 SPRKIntegrator const& Yoshida1990Order6A() {
   static SPRKIntegrator const integrator({ 0.78451361047755726382,
                                            0.23557321335935813369,

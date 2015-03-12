@@ -119,6 +119,14 @@ class SRKNIntegrator : public SymplecticIntegrator {
       not_null<Solution<Position, Velocity>*> const solution) const;
 };
 
+// Fourth order, 4 stages.  This method minimizes the error constant.
+// Coefficients from Robert I. McLachlan and Pau Atela (1992),
+// The accuracy of symplectic integrators, table 2.
+// http://eaton.math.rpi.edu/CSUMS/Papers/Symplectic/McLachlan_Atela_92.pdf.
+SRKNIntegrator const& McLachlanAtela1992Order4Optimal();
+// Fifth order, 6 stages.  This method minimizes the error constant  Ibidem.
+SRKNIntegrator const& McLachlanAtela1992Order5Optimal();
+
 }  // namespace integrators
 }  // namespace principia
 
