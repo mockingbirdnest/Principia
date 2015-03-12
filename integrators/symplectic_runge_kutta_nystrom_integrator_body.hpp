@@ -18,7 +18,7 @@
     Time const step_evaluated = (step);                                    \
     for (int k = 0; k < dimension; ++k) {                                  \
       Position const Δq = (*Δqstage_previous)[k] +                         \
-                              step_evaluated * p_stage[k];                 \
+                              step_evaluated * v_stage[k];                 \
       q_stage[k] = q_last[k].value + Δq;                                   \
       (*Δqstage_current)[k] = Δq;                                          \
     }                                                                      \
@@ -31,11 +31,11 @@
 #define ADVANCE_ΔVSTAGE(step, q_clock)                                     \
   do {                                                                     \
     Time const step_evaluated = (step);                                    \
-    compute_acceleration((q_clock), q_stage, &f);                          \
+    compute_acceleration((q_clock), q_stage, &a);                          \
     for (int k = 0; k < dimension; ++k) {                                  \
-      Velocity const Δp = (*Δpstage_previous)[k] + step_evaluated * f[k];  \
-      p_stage[k] = p_last[k].value + Δp;                                   \
-      (*Δpstage_current)[k] = Δp;                                          \
+      Velocity const Δv = (*Δvstage_previous)[k] + step_evaluated * a[k];  \
+      v_stage[k] = v_last[k].value + Δv;                                   \
+      (*Δvstage_current)[k] = Δv;                                          \
     }                                                                      \
   } while (false)
 #endif
@@ -132,8 +132,8 @@ void SRKNIntegrator::SolveTrivialKineticEnergyIncrementOptimized(
   std::vector<Velocity> Δpstage1(dimension);
   std::vector<Position>* Δqstage_current = &Δqstage1;
   std::vector<Position>* Δqstage_previous = &Δqstage0;
-  std::vector<Velocity>* Δpstage_current = &Δpstage1;
-  std::vector<Velocity>* Δpstage_previous = &Δpstage0;
+  std::vector<Velocity>* Δvstage_current = &Δpstage1;
+  std::vector<Velocity>* Δvstage_previous = &Δpstage0;
 
   // Dimension the result.
   int const capacity = parameters.sampling_period == 0 ?
@@ -146,12 +146,12 @@ void SRKNIntegrator::SolveTrivialKineticEnergyIncrementOptimized(
   solution->reserve(capacity);
 
   std::vector<DoublePrecision<Position>> q_last(parameters.initial.positions);
-  std::vector<DoublePrecision<Velocity>> p_last(parameters.initial.momenta);
+  std::vector<DoublePrecision<Velocity>> v_last(parameters.initial.momenta);
   int sampling_phase = 0;
 
   std::vector<Position> q_stage(dimension);
-  std::vector<Velocity> p_stage(dimension);
-  std::vector<Quotient<Velocity, Time>> f(dimension);  // Current forces.
+  std::vector<Velocity> v_stage(dimension);
+  std::vector<Quotient<Velocity, Time>> a(dimension);  // Current forces.
   std::vector<Quotient<Position, Time>> v(dimension);  // Current velocities.
 
   // The following quantity is generally equal to |Δt|, but during the last
@@ -163,10 +163,10 @@ void SRKNIntegrator::SolveTrivialKineticEnergyIncrementOptimized(
   // sure that we don't have drifts.
   DoublePrecision<Time> tn = parameters.initial.time;
 
-  // Whether position and momentum are synchronized between steps, relevant for
+  // Whether position and velocity are synchronized between steps, relevant for
   // first-same-as-last (FSAL) integrators. Time is always synchronous with
   // position.
-  bool q_and_p_are_synchronized = true;
+  bool q_and_v_are_synchronized = true;
   bool should_synchronize = false;
 
   // Integration.  For details see Wolfram Reference,
@@ -199,7 +199,7 @@ void SRKNIntegrator::SolveTrivialKineticEnergyIncrementOptimized(
     // for NDSolve", algorithm 3.
     for (int k = 0; k < dimension; ++k) {
       (*Δqstage_current)[k] = Position();
-      (*Δpstage_current)[k] = Velocity();
+      (*Δvstage_current)[k] = Velocity();
       q_stage[k] = q_last[k].value;
     }
 
@@ -210,18 +210,18 @@ void SRKNIntegrator::SolveTrivialKineticEnergyIncrementOptimized(
     }
 
     if (vanishing_coefficients == kFirstBVanishes &&
-        q_and_p_are_synchronized) {
+        q_and_v_are_synchronized) {
       // Desynchronize.
       std::swap(Δqstage_current, Δqstage_previous);
       for (int k = 0; k < dimension; ++k) {
-        p_stage[k] = p_last[k].value;
+        v_stage[k] = v_last[k].value;
       }
       ADVANCE_ΔQSTAGE(first_same_as_last_->first * h);
-      q_and_p_are_synchronized = false;
+      q_and_v_are_synchronized = false;
     }
     for (int i = 0; i < stages_; ++i) {
       std::swap(Δqstage_current, Δqstage_previous);
-      std::swap(Δpstage_current, Δpstage_previous);
+      std::swap(Δvstage_current, Δvstage_previous);
 
       // Beware, the p/q order matters here, the two computations depend on one
       // another.
@@ -229,10 +229,10 @@ void SRKNIntegrator::SolveTrivialKineticEnergyIncrementOptimized(
       // By using |tn.error| below we get a time value which is possibly a wee
       // bit more precise.
       if (vanishing_coefficients == kLastAVanishes &&
-          q_and_p_are_synchronized && i == 0) {
+          q_and_v_are_synchronized && i == 0) {
         ADVANCE_ΔVSTAGE(first_same_as_last_->first * h,
                         tn.value);
-        q_and_p_are_synchronized = false;
+        q_and_v_are_synchronized = false;
       } else {
         ADVANCE_ΔVSTAGE(b_[i] * h, tn.value + (tn.error + c_[i] * h));
       }
@@ -240,25 +240,25 @@ void SRKNIntegrator::SolveTrivialKineticEnergyIncrementOptimized(
       if (vanishing_coefficients == kFirstBVanishes &&
           should_synchronize && i == stages_ - 1) {
         ADVANCE_ΔQSTAGE(first_same_as_last_->last * h);
-        q_and_p_are_synchronized = true;
+        q_and_v_are_synchronized = true;
       } else {
         ADVANCE_ΔQSTAGE(a_[i] * h);
       }
     }
     if (vanishing_coefficients == kLastAVanishes && should_synchronize) {
-      std::swap(Δpstage_current, Δpstage_previous);
+      std::swap(Δvstage_current, Δvstage_previous);
       // TODO(egg): the second parameter below is really just tn.value + h.
       ADVANCE_ΔVSTAGE(first_same_as_last_->last * h,
                       tn.value + h);
-      q_and_p_are_synchronized = true;
+      q_and_v_are_synchronized = true;
     }
     // Compensated summation from "'SymplecticPartitionedRungeKutta' Method
     // for NDSolve", algorithm 2.
     for (int k = 0; k < dimension; ++k) {
       q_last[k].Increment((*Δqstage_current)[k]);
-      p_last[k].Increment((*Δpstage_current)[k]);
+      v_last[k].Increment((*Δvstage_current)[k]);
       q_stage[k] = q_last[k].value;
-      p_stage[k] = p_last[k].value;
+      v_stage[k] = v_last[k].value;
     }
     tn.Increment(h);
 
@@ -271,7 +271,7 @@ void SRKNIntegrator::SolveTrivialKineticEnergyIncrementOptimized(
         state->momenta.reserve(dimension);
         for (int k = 0; k < dimension; ++k) {
           state->positions.emplace_back(q_last[k]);
-          state->momenta.emplace_back(p_last[k]);
+          state->momenta.emplace_back(v_last[k]);
         }
       }
       ++sampling_phase;
@@ -286,7 +286,7 @@ void SRKNIntegrator::SolveTrivialKineticEnergyIncrementOptimized(
     state->momenta.reserve(dimension);
     for (int k = 0; k < dimension; ++k) {
       state->positions.emplace_back(q_last[k]);
-      state->momenta.emplace_back(p_last[k]);
+      state->momenta.emplace_back(v_last[k]);
     }
   }
 }
