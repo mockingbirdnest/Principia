@@ -98,28 +98,32 @@ inline void PushDeserializer::Start(
   });
 }
 
-inline void PushDeserializer::Push(Bytes const bytes) {
+inline void PushDeserializer::Push(Bytes const bytes,
+                                   std::function<void()> done) {
   // Slice the incoming data in chunks of size at most |chunk_size|.  Release
   // the lock after each chunk to give the deserializer a chance to run.  This
   // method should be called with |bytes| of size 0 to terminate the
   // deserialization, but it never generates a chunk of size 0 in other
-  // circumstances.
+  // circumstances.  The |done| callback is attached to the last chunk.
   Bytes current = bytes;
   CHECK_LE(0, bytes.size);
+  bool is_last;
   do {
     {
+      is_last = current.size <= chunk_size_;
       std::unique_lock<std::mutex> l(lock_);
       queue_has_room_.wait(l, [this]() {
         return queue_.size() < static_cast<size_t>(number_of_chunks_);
       });
       queue_.emplace(current.data,
                      std::min(current.size,
-                              static_cast<std::int64_t>(chunk_size_)));
+                              static_cast<std::int64_t>(chunk_size_)),
+                     is_last ? std::move(done) : nullptr);
     }
     queue_has_elements_.notify_all();
     current.data = &current.data[chunk_size_];
     current.size -= chunk_size_;
-  } while (current.size > 0);
+  } while (!is_last);
 }
 
 inline Bytes PushDeserializer::Pull() {
@@ -127,12 +131,22 @@ inline Bytes PushDeserializer::Pull() {
   {
     std::unique_lock<std::mutex> l(lock_);
     queue_has_elements_.wait(l, [this]() { return !queue_.empty(); });
-    result = queue_.front();
+    auto const element = queue_.front();
+    result = element.bytes;
+    if (element.done != nullptr) {
+      element.done();
+    }
     queue_.pop();
   }
   queue_has_room_.notify_all();
   return result;
 }
+
+PushDeserializer::QueueElement::QueueElement(not_null<std::uint8_t*> const data,
+                                             std::int64_t const size,
+                                             std::function<void()> done)
+    : bytes(data, size), done(std::move(done)) {}
+
 
 }  // namespace base
 }  // namespace principia

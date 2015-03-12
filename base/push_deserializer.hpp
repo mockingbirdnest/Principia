@@ -70,11 +70,11 @@ class PushDeserializer {
   // Pushes in the internal queue chunks of data that will be extracted by
   // |Pull|.  Splits |bytes| into chunks of at most |chunk_size|.  May block to
   // stay within the maximum size of the queue.  The caller must push an object
-  // of size 0 to signal the end of input.  The |bytes| objects send by the
-  // client must remain live until the end of the deserialization.
-  // TODO(phl): The last sentence will probably turn out to be problematic for
-  // the client.  We might want to transfer ownership here.
-  void Push(Bytes const bytes);
+  // of size 0 to signal the end of input.  |done| is called once the
+  // serialization of |bytes| is complete.  The client must ensure that |bytes|
+  // remains live until the call to |done|.  It may reclaim any memory
+  // associated with |bytes| in |done|.
+  void Push(Bytes const bytes, std::function<void()> done);
 
  private:
   // Obtains the next chunk of data from the internal queue.  Blocks if no data
@@ -87,12 +87,20 @@ class PushDeserializer {
   internal::DelegatingArrayInputStream stream_;
   std::unique_ptr<std::thread> thread_;
 
+  struct QueueElement {
+    QueueElement(not_null<std::uint8_t*> const data,
+                 std::int64_t const size,
+                 std::function<void()> done);
+    Bytes bytes;
+    std::function<void()> done;
+  };
+
   // Synchronization objects for the |queue_|, which contains the |Bytes|
   // object filled by |Push| and not yet consumed by |Pull|.
   std::mutex lock_;
   std::condition_variable queue_has_room_;
   std::condition_variable queue_has_elements_;
-  std::queue<Bytes> queue_ GUARDED_BY(lock_);
+  std::queue<QueueElement> queue_ GUARDED_BY(lock_);
 };
 
 }  // namespace base

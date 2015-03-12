@@ -130,10 +130,11 @@ TEST_F(PushDeserializerTest, DeserializationThreading) {
     push_deserializer_ = std::make_unique<PushDeserializer>(
         kDeserializerChunkSize, kNumberOfChunks);
 
+    //TODO(phl):Test done.
     push_deserializer_->Start(&read_trajectory);
     push_deserializer_->Push(Bytes(expected_serialized_trajectory.get(),
-                                   trajectory_.ByteSize()));
-    push_deserializer_->Push(Bytes());
+                                   trajectory_.ByteSize()), nullptr);
+    push_deserializer_->Push(Bytes(), nullptr);
 
     // Destroying the deserializer waits until deserialization is done.
     push_deserializer_.reset();
@@ -156,7 +157,8 @@ TEST_F(PushDeserializerTest, SerializationDeserialization) {
     for (;;) {
       Bytes const bytes = pull_serializer_->Pull();
       std::memcpy(data, bytes.data, static_cast<size_t>(bytes.size));
-      push_deserializer_->Push(Bytes(data, bytes.size));
+      //TODO(phl): Done
+      push_deserializer_->Push(Bytes(data, bytes.size), nullptr);
       data = &data[bytes.size];
       if (bytes.size == 0) {
         break;
