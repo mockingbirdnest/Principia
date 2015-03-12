@@ -10,6 +10,36 @@
 #include "glog/logging.h"
 #include "quantities/quantities.hpp"
 
+#ifdef ADVANCE_ΔQSTAGE
+#error ADVANCE_ΔQSTAGE already defined
+#else
+#define ADVANCE_ΔQSTAGE(step)                                              \
+  do {                                                                     \
+    Time const step_evaluated = (step);                                    \
+    for (int k = 0; k < dimension; ++k) {                                  \
+      Position const Δq = (*Δqstage_previous)[k] +                         \
+                              step_evaluated * p_stage[k];                 \
+      q_stage[k] = q_last[k].value + Δq;                                   \
+      (*Δqstage_current)[k] = Δq;                                          \
+    }                                                                      \
+  } while (false)
+#endif
+
+#ifdef ADVANCE_ΔVSTAGE
+#error ADVANCE_ΔVSTAGE already defined
+#else
+#define ADVANCE_ΔVSTAGE(step, q_clock)                                     \
+  do {                                                                     \
+    Time const step_evaluated = (step);                                    \
+    compute_acceleration((q_clock), q_stage, &f);                          \
+    for (int k = 0; k < dimension; ++k) {                                  \
+      Velocity const Δp = (*Δpstage_previous)[k] + step_evaluated * f[k];  \
+      p_stage[k] = p_last[k].value + Δp;                                   \
+      (*Δpstage_current)[k] = Δp;                                          \
+    }                                                                      \
+  } while (false)
+#endif
+
 namespace principia {
 namespace integrators {
 
@@ -98,12 +128,12 @@ void SRKNIntegrator::SolveTrivialKineticEnergyIncrementOptimized(
 
   std::vector<Position> Δqstage0(dimension);
   std::vector<Position> Δqstage1(dimension);
-  std::vector<Momentum> Δpstage0(dimension);
-  std::vector<Momentum> Δpstage1(dimension);
+  std::vector<Velocity> Δpstage0(dimension);
+  std::vector<Velocity> Δpstage1(dimension);
   std::vector<Position>* Δqstage_current = &Δqstage1;
   std::vector<Position>* Δqstage_previous = &Δqstage0;
-  std::vector<Momentum>* Δpstage_current = &Δpstage1;
-  std::vector<Momentum>* Δpstage_previous = &Δpstage0;
+  std::vector<Velocity>* Δpstage_current = &Δpstage1;
+  std::vector<Velocity>* Δpstage_previous = &Δpstage0;
 
   // Dimension the result.
   int const capacity = parameters.sampling_period == 0 ?
@@ -116,12 +146,12 @@ void SRKNIntegrator::SolveTrivialKineticEnergyIncrementOptimized(
   solution->reserve(capacity);
 
   std::vector<DoublePrecision<Position>> q_last(parameters.initial.positions);
-  std::vector<DoublePrecision<Momentum>> p_last(parameters.initial.momenta);
+  std::vector<DoublePrecision<Velocity>> p_last(parameters.initial.momenta);
   int sampling_phase = 0;
 
   std::vector<Position> q_stage(dimension);
-  std::vector<Momentum> p_stage(dimension);
-  std::vector<Quotient<Momentum, Time>> f(dimension);  // Current forces.
+  std::vector<Velocity> p_stage(dimension);
+  std::vector<Quotient<Velocity, Time>> f(dimension);  // Current forces.
   std::vector<Quotient<Position, Time>> v(dimension);  // Current velocities.
 
   // The following quantity is generally equal to |Δt|, but during the last
@@ -169,7 +199,7 @@ void SRKNIntegrator::SolveTrivialKineticEnergyIncrementOptimized(
     // for NDSolve", algorithm 3.
     for (int k = 0; k < dimension; ++k) {
       (*Δqstage_current)[k] = Position();
-      (*Δpstage_current)[k] = Momentum();
+      (*Δpstage_current)[k] = Velocity();
       q_stage[k] = q_last[k].value;
     }
 
@@ -200,11 +230,11 @@ void SRKNIntegrator::SolveTrivialKineticEnergyIncrementOptimized(
       // bit more precise.
       if (vanishing_coefficients == kLastAVanishes &&
           q_and_p_are_synchronized && i == 0) {
-        ADVANCE_ΔPSTAGE(first_same_as_last_->first * h,
+        ADVANCE_ΔVSTAGE(first_same_as_last_->first * h,
                         tn.value);
         q_and_p_are_synchronized = false;
       } else {
-        ADVANCE_ΔPSTAGE(b_[i] * h, tn.value + (tn.error + c_[i] * h));
+        ADVANCE_ΔVSTAGE(b_[i] * h, tn.value + (tn.error + c_[i] * h));
       }
 
       if (vanishing_coefficients == kFirstBVanishes &&
@@ -218,7 +248,7 @@ void SRKNIntegrator::SolveTrivialKineticEnergyIncrementOptimized(
     if (vanishing_coefficients == kLastAVanishes && should_synchronize) {
       std::swap(Δpstage_current, Δpstage_previous);
       // TODO(egg): the second parameter below is really just tn.value + h.
-      ADVANCE_ΔPSTAGE(first_same_as_last_->last * h,
+      ADVANCE_ΔVSTAGE(first_same_as_last_->last * h,
                       tn.value + h);
       q_and_p_are_synchronized = true;
     }
@@ -235,7 +265,7 @@ void SRKNIntegrator::SolveTrivialKineticEnergyIncrementOptimized(
     if (parameters.sampling_period != 0) {
       if (sampling_phase % parameters.sampling_period == 0) {
         solution->emplace_back();
-        SystemState* state = &solution->back();
+        SystemState<Position, Velocity>* state = &solution->back();
         state->time = tn;
         state->positions.reserve(dimension);
         state->momenta.reserve(dimension);
@@ -250,7 +280,7 @@ void SRKNIntegrator::SolveTrivialKineticEnergyIncrementOptimized(
 
   if (parameters.sampling_period == 0) {
     solution->emplace_back();
-    SystemState* state = &solution->back();
+    SystemState<Position, Velocity>* state = &solution->back();
     state->time = tn;
     state->positions.reserve(dimension);
     state->momenta.reserve(dimension);
@@ -263,3 +293,6 @@ void SRKNIntegrator::SolveTrivialKineticEnergyIncrementOptimized(
 
 }  // namespace integrators
 }  // namespace principia
+
+#undef ADVANCE_ΔQSTAGE
+#undef ADVANCE_ΔVSTAGE

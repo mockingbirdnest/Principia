@@ -7,6 +7,7 @@
 
 namespace principia {
 
+using quantities::Acceleration;
 using quantities::Force;
 using quantities::Length;
 using quantities::Momentum;
@@ -33,6 +34,7 @@ void ComputeHarmonicOscillatorVelocity(
 
 // The Runge-Kutta-Nyström formulation.
 void ComputeHarmonicOscillatorAcceleration(
+    Time const& t,
     std::vector<Length> const& q,
     std::vector<Acceleration>* const result);
 

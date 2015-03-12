@@ -31,5 +31,12 @@ inline void ComputeHarmonicOscillatorVelocity(
   (*result)[0] = p[0] / SIUnit<Mass>();
 }
 
+inline void ComputeHarmonicOscillatorAcceleration(
+    Time const& t,
+    std::vector<Length> const& q,
+    std::vector<Acceleration>* const result) {
+  (*result)[0] = -q[0] * (SIUnit<Stiffness>() / SIUnit<Mass>());
+}
+
 }  // namespace testing_utilities
 }  // namespace principia
