@@ -26,8 +26,12 @@ struct DoublePrecision {
 
 class SymplecticIntegrator {
  public:
-  SymplecticIntegrator() = default;
   virtual ~SymplecticIntegrator() = default;
+
+  SymplecticIntegrator(SymplecticIntegrator const&) = delete;
+  SymplecticIntegrator(SymplecticIntegrator&&) = delete;
+  SymplecticIntegrator& operator=(SymplecticIntegrator const&) = delete;
+  SymplecticIntegrator& operator=(SymplecticIntegrator&&) = delete;
 
   // The entire state of the system at a given time.  The vectors are indexed by
   // dimension.
@@ -67,6 +71,8 @@ class SymplecticIntegrator {
     // It never exceeds |tmax|.
     bool tmax_is_exact = false;
   };
+ protected:
+  SymplecticIntegrator() = default;
 };
 
 }  // namespace integrators

@@ -1,10 +1,9 @@
-﻿
-#pragma once
+﻿#pragma once
 
 #include <vector>
 
 #include "base/not_null.hpp"
-#include "integrators/symplectic_integrator.hpp"
+#include "integrators/symplectic_runge_kutta_nystrom_integrator.hpp"
 
 namespace principia {
 
@@ -29,13 +28,13 @@ namespace integrators {
 // or Sofroniou and Spaletta (2002),
 // Symplectic Methods for Separable Hamiltonian Systems.
 
-// We follow the convention of McLachlan & Atela, calling the position nodes
+// We follow the convention of McLachlan and Atela, calling the position nodes
 // aᵢ and the momentum nodes bᵢ.  The following notations appear in the
 // litterature:
-//   (a, b) in McLachlan & Atela, as well as Candy & Rozmus;
-//   (d, c) in Ruth, Yoshida, as well as Forest & Ruth;
-//   (B, b) in Sofroniou & Spaletta.
-// Moreover, we follow the convention of Sofroniou & Spaletta in calling the
+//   (a, b) in McLachlan and Atela, as well as Candy and Rozmus;
+//   (d, c) in Ruth, Yoshida, as well as Forest and Ruth;
+//   (B, b) in Sofroniou and Spaletta.
+// Moreover, we follow the convention of Sofroniou and Spaletta in calling the
 // weights used for the time argument of the force computation cᵢ, with
 // c₁ = 0, cᵢ = cᵢ₋₁ + aᵢ₋₁ for i > 1.
 
@@ -45,7 +44,7 @@ enum VanishingCoefficients {
   kLastAVanishes,
 };
 
-class SRKNIntegrator : public SymplecticIntegrator {
+class SPRKIntegrator : public SRKNIntegrator {
  public:
   //using Parameters = Parameters;
   //using SystemState = SystemState;

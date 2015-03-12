@@ -29,21 +29,16 @@ namespace integrators {
 // and Marangi (2011), Explicit symplectic partitioned Runge-Kutta-Nyström
 // methods for non-autonomous dynamics.
 
+// TODO(egg): update the comments below to reflect the papers.
 // We follow the convention of McLachlan & Atela, calling the position nodes
 // aᵢ and the momentum nodes bᵢ.  The following notations appear in the
 // litterature:
-//   (a, b) in McLachlan & Atela, as well as Candy & Rozmus;
-//   (d, c) in Ruth, Yoshida, as well as Forest & Ruth;
-//   (B, b) in Sofroniou & Spaletta.
-// Moreover, we follow the convention of Sofroniou & Spaletta in calling the
+//   (a, b) in McLachlan and Atela, as well as Candy and Rozmus;
+//   (d, c) in Ruth, Yoshida, as well as Forest and Ruth;
+//   (B, b) in Sofroniou and Spaletta.
+// Moreover, we follow the convention of Sofroniou and Spaletta in calling the
 // weights used for the time argument of the force computation cᵢ, with
 // c₁ = 0, cᵢ = cᵢ₋₁ + aᵢ₋₁ for i > 1.
-
-enum VanishingCoefficients {
-  kNone,
-  kFirstBVanishes,
-  kLastAVanishes,
-};
 
 class SRKNIntegrator : public SymplecticIntegrator {
  protected:
@@ -54,11 +49,21 @@ class SRKNIntegrator : public SymplecticIntegrator {
  };
 
  public:
+  SRKNIntegrator(std::vector<double> const a,
+                 std::vector<double> const b);
+
+  virtual ~SRKNIntegrator() = default;
+
+  SRKNIntegrator() = delete;
+  SRKNIntegrator(SRKNIntegrator const&) = delete;
+  SRKNIntegrator(SRKNIntegrator&&) = delete;
+  SRKNIntegrator& operator=(SRKNIntegrator const&) = delete;
+  SRKNIntegrator& operator=(SRKNIntegrator&&) = delete;
 
   // The functors |evolve_kinetic| and |evolve_potential| respectively compute
   // exp(h{·, T})(q, p) given (q, p), and exp(h{·, V})(q, p) given (q, p, t).
   template<typename Position, typename Momentum,
-           typename KineticFlow
+           typename KineticFlow,
            typename PotentialFlow>
   void SolveQuadraticKineticEnergy(
       KineticFlow evolve_kinetic,
@@ -88,9 +93,9 @@ class SRKNIntegrator : public SymplecticIntegrator {
   // and last b coefficients.
   // These are used to desynchronize and synchronize first-same-as-last
   // integrators.
-  std::unique_ptr<FirstSameAsLast> first_same_as_last_
+  std::unique_ptr<FirstSameAsLast> first_same_as_last_;
 
-  int const stages_;
+  int stages_;
 
   // The position and momentum nodes.
   // If |vanishing_coefficients_ == kFirstBVanishes|, we do not store the first
@@ -102,10 +107,18 @@ class SRKNIntegrator : public SymplecticIntegrator {
   // The weights.  Note that the first c coefficient is not stored if
   // |vanishing_coefficients_ == kFirstBVanishes|.
   std::vector<double> c_;
+
  private:
+  template<VanishingCoefficients vanishing_coefficients,
+           typename Position, typename Velocity,
+           typename RightHandSideComputation>
+  void SolveTrivialKineticEnergyIncrementOptimized(
+      RightHandSideComputation compute_acceleration,
+      Parameters<Position, Velocity> const& parameters,
+      not_null<Solution<Position, Velocity>*> const solution) const;
 };
 
 }  // namespace integrators
 }  // namespace principia
 
-#include "integrators/symplectic_partitioned_runge_kutta_integrator_body.hpp"
+#include "integrators/symplectic_runge_kutta_nystrom_integrator_body.hpp"

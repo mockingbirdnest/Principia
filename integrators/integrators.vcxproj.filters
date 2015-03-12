@@ -29,6 +29,9 @@
     <ClInclude Include="symplectic_runge_kutta_nystrom_integrator.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="symplectic_runge_kutta_nystrom_integrator_body.hpp">
+      <Filter>Source Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="symplectic_partitioned_runge_kutta_integrator_test.cpp">

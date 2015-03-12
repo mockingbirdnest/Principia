@@ -5,10 +5,8 @@
 #include <ctime>
 #include <vector>
 
-#include "quantities/quantities.hpp"
-
-// Mixed assemblies are not supported by Unity/Mono.
 #include "glog/logging.h"
+#include "quantities/quantities.hpp"
 
 #ifdef ADVANCE_ΔQSTAGE
 #error ADVANCE_ΔQSTAGE already defined
