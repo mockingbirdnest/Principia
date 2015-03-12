@@ -13,8 +13,8 @@
 namespace principia {
 namespace integrators {
 
-SRKNIntegrator::SRKNIntegrator(std::vector<double> const a,
-                               std::vector<double> const b)
+SRKNIntegrator::SRKNIntegrator(std::vector<double> const& a,
+                               std::vector<double> const& b)
     : a_(std::move(a)),
       b_(std::move(b)) {
   if (b.front() == 0.0) {

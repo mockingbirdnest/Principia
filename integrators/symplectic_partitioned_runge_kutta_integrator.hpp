@@ -46,17 +46,24 @@ enum VanishingCoefficients {
 
 class SPRKIntegrator : public SRKNIntegrator {
  public:
-  //using Parameters = Parameters;
-  //using SystemState = SystemState;
+  // NOTE(egg): this should be a using when we have VS 2015.
+  SPRKIntegrator(std::vector<double> const& a, std::vector<double> const& b);
 
-  SPRKIntegrator();
-  ~SPRKIntegrator() override = default;
+  virtual ~SPRKIntegrator() = default;
+
+  SPRKIntegrator() = delete;
+  SPRKIntegrator(SPRKIntegrator const&) = delete;
+  SPRKIntegrator(SPRKIntegrator&&) = delete;
+  SPRKIntegrator& operator=(SPRKIntegrator const&) = delete;
+  SPRKIntegrator& operator=(SPRKIntegrator&&) = delete;
 
   // First-same-as-last (FSAL) methods with k stages require k - 1 force
   // and velocity evaluations for sparse output.  For dense output, methods
   // with synchronous momenta require k - 1 force evaluations and k velocity
   // evaluations, methods with synchronous positions require k force evaluations
   // and k - 1 velocity evaluations.
+
+  /*
 
   // Second order, 2 stages, FSAL (synchronous momenta).
   Scheme const& Leapfrog() const;
@@ -124,58 +131,29 @@ class SPRKIntegrator : public SRKNIntegrator {
   // Eighth order, 16 stages, FSAL (synchronous positions).  Ibidem.
   Scheme const& Yoshida1990Order8E() const;
 
-  void Initialize(Scheme const& coefficients) override;
+  */
 
   // The functors |compute_velocity| and |compute_force| compute
   // ∂T/∂pᵢ(p) and ∂V/∂qᵢ(q,t) respectively.
-  template<typename AutonomousRightHandSideComputation,
-           typename RightHandSideComputation>
-  void Solve(RightHandSideComputation compute_force,
-             AutonomousRightHandSideComputation compute_velocity,
-             Parameters const& parameters,
-             not_null<std::vector<SystemState>*> const solution) const;
-
- private:
-  struct FirstSameAsLast {
-    double first;
-    double last;
-  };
-
-  template<VanishingCoefficients vanishing_coefficients,
+  template<typename Position, typename Momentum,
            typename AutonomousRightHandSideComputation,
            typename RightHandSideComputation>
-  void SolveOptimized(RightHandSideComputation compute_force,
-                      AutonomousRightHandSideComputation compute_velocity,
-                      Parameters const& parameters,
-                      not_null<std::vector<SystemState>*> const solution) const;
+  void SolveIncrement(
+      RightHandSideComputation compute_force,
+      AutonomousRightHandSideComputation compute_velocity,
+      Parameters<Position, Momentum> const& parameters,
+      not_null<Solution<Position, Momentum>*> const solution) const;
 
-  VanishingCoefficients vanishing_coefficients_;
-  // Null if, and only if, |vanishing_coefficients_ == kNone|.
-  // If |vanishing_coefficients_ == kFirstBVanishes|, this contains the first
-  // and last a coefficients.
-  // If |vanishing_coefficients_ == FirstAVanishes|, this contains the first
-  // and last b coefficients.
-  // These are used to desynchronize and synchronize first-same-as-last
-  // integrators.
-  std::unique_ptr<FirstSameAsLast> first_same_as_last_;
-
-  // The number of stages, or the number of stages minus one for a
-  // first-same-as-last integrator.
-  int stages_;
-
-  // The position and momentum nodes.
-  // If |vanishing_coefficients_ == kFirstBVanishes|, we do not store the first
-  // b coefficient, and the last entry of |a_| is the sum of the first and last
-  // a coefficients.
-  // If |vanishing_coefficients_ == kLastAVanishes|, we do not store the last a
-  // coefficient, and the first entry of |b_| is the sum of the first and last b
-  // coefficients.
-  std::vector<double> a_;
-  std::vector<double> b_;
-
-  // The weights.  Note that the first c coefficient is not stored if
-  // |vanishing_coefficients_ == kFirstBVanishes|.
-  std::vector<double> c_;
+ private:
+  template<VanishingCoefficients vanishing_coefficients,
+           typename Position, typename Momentum,
+           typename AutonomousRightHandSideComputation,
+           typename RightHandSideComputation>
+  void SolveIncrementOptimized(
+      RightHandSideComputation compute_force,
+      AutonomousRightHandSideComputation compute_velocity,
+      Parameters<Position, Momentum> const& parameters,
+      not_null<Solution<Position, Momentum>*> const solution) const;
 };
 
 }  // namespace integrators

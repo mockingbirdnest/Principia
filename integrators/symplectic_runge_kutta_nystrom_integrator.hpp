@@ -27,7 +27,8 @@ namespace integrators {
 
 // NOTE(egg): we could implement support for time-dependent M⁻¹(q, t), see Diele
 // and Marangi (2011), Explicit symplectic partitioned Runge-Kutta-Nyström
-// methods for non-autonomous dynamics.
+// methods for non-autonomous dynamics, but this would be a job for another
+// class since it also requires a choice of a quadrature.
 
 // TODO(egg): update the comments below to reflect the papers.
 // We follow the convention of McLachlan & Atela, calling the position nodes
@@ -42,15 +43,9 @@ namespace integrators {
 
 class SRKNIntegrator : public SymplecticIntegrator {
  protected:
-  enum VanishingCoefficients {
-   kNone,
-   kFirstBVanishes,
-   kLastAVanishes,
- };
 
  public:
-  SRKNIntegrator(std::vector<double> const a,
-                 std::vector<double> const b);
+  SRKNIntegrator(std::vector<double> const& a, std::vector<double> const& b);
 
   virtual ~SRKNIntegrator() = default;
 
@@ -80,6 +75,12 @@ class SRKNIntegrator : public SymplecticIntegrator {
       not_null<Solution<Position, Velocity>*> const solution) const;
 
  protected:
+  enum VanishingCoefficients {
+    kNone,
+    kFirstBVanishes,
+    kLastAVanishes,
+  };
+
   struct FirstSameAsLast {
     double first;
     double last;

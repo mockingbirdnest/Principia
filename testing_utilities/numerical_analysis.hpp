@@ -32,6 +32,11 @@ void ComputeHarmonicOscillatorVelocity(
     std::vector<Momentum> const& p,
     not_null<std::vector<Speed>*> const result);
 
+// The Runge-Kutta-Nyström formulation.
+void ComputeHarmonicOscillatorAcceleration(
+    std::vector<Length> const& q,
+    std::vector<Acceleration>* const result);
+
 }  // namespace testing_utilities
 }  // namespace principia
 

@@ -19,6 +19,7 @@
 namespace principia {
 
 using quantities::Abs;
+using quantities::Acceleration;
 using quantities::AngularFrequency;
 using quantities::Energy;
 using quantities::Force;
@@ -50,15 +51,14 @@ using ::testing::Lt;
 using ::testing::Ne;
 using ::testing::ValuesIn;
 
-#define INTEGRATOR(name) &Integrator::name, #name
+#define INTEGRATOR(name) &name(), #name
 
 namespace integrators {
 
 namespace {
-using Integrator = SPRKIntegrator<Length, Momentum>;
 
-struct SPRKTestableProperties {
-  Integrator::Scheme const& (Integrator::*scheme)() const;
+struct SRKNTestableProperties {
+  not_null<SRKNIntegrator const*> integrator;
   std::string name;
   int convergence_order;
   // Convergence, in the sense tested below, of the above order occurs for
@@ -77,11 +77,11 @@ struct SPRKTestableProperties {
 // This allows the test output to be legible, i.e.,
 // "where GetParam() = Leapfrog" rather than
 // "where GetParam() = n-byte object <hex>"
-std::ostream& operator<<(std::ostream& stream, SPRKTestableProperties param) {
+std::ostream& operator<<(std::ostream& stream, SRKNTestableProperties param) {
   return stream << param.name;
 }
 
-std::vector<SPRKTestableProperties> Instances() {
+std::vector<SRKNTestableProperties> Instances() {
   return {
       {INTEGRATOR(Leapfrog), 2, 0.4 * Second,
        +4.15606749774469300e-05 * Metre,
@@ -157,40 +157,34 @@ std::vector<SPRKTestableProperties> Instances() {
 
 }  // namespace
 
-class SPRKTest : public testing::TestWithParam<SPRKTestableProperties> {
+class SRKNTest : public testing::TestWithParam<SRKNTestableProperties> {
  public:
   static void SetUpTestCase() {
     google::LogToStderr();
   }
 
  protected:
-  SPRKTest() {
-    integrator_.Initialize((integrator_.*GetParam().scheme)());
-  }
+  SRKNTest() : integrator_(GetParam().integrator) {}
 
-  Integrator                           integrator_;
-  Integrator::Parameters               parameters_;
-  std::vector<Integrator::SystemState> solution_;
+  not_null<SRKNIntegrator const*> const     integrator_;
+  SRKNIntegrator::Parameters<Length, Speed> parameters_;
+  SRKNIntegrator::Solution<Length, Speed>   solution_;
 };
 
-INSTANTIATE_TEST_CASE_P(SPRKTests, SPRKTest, ValuesIn(Instances()));
+INSTANTIATE_TEST_CASE_P(SRKNTests, SRKNTest, ValuesIn(Instances()));
 
-TEST_P(SPRKTest, ConsistentWeights) {
+TEST_P(SRKNTest, ConsistentWeights) {
   // Check that the time argument of the force computation is correct by
   // integrating uniform linear motion.
   // We check this for all schemes.
   Speed const v = 1 * Metre / Second;
   Mass const m = 1 * Kilogram;
-  auto compute_force = [v](Time const& t,
-                           std::vector<Length> const& q,
-                           not_null<std::vector<Force>*> const result) {
+  auto compute_acceleration = [v](
+      Time const& t,
+      std::vector<Length> const& q,
+      not_null<std::vector<Acceleration>*> const result) {
     EXPECT_THAT(q[0], AlmostEquals(v * t, 0, 4096));
-    (*result)[0] = 0 * Newton;
-  };
-  auto compute_velocity = [m, v](std::vector<Momentum> const& p,
-                                 not_null<std::vector<Speed>*> const result) {
-    EXPECT_EQ(v, p[0] / m);
-    (*result)[0] = p[0] / m;
+    (*result)[0] = 0 * Metre / Pow<2>(Second);
   };
   parameters_.initial.positions.emplace_back(0 * Metre);
   parameters_.initial.momenta.emplace_back(m * v);
@@ -198,12 +192,13 @@ TEST_P(SPRKTest, ConsistentWeights) {
   parameters_.tmax = 16 * Second;
   parameters_.Δt = 1 * Second;
   parameters_.sampling_period = 5;
-  integrator_.Solve(compute_force, compute_velocity, parameters_, &solution_);
+  integrator_->SolveTrivialKineticEnergyIncrement<Length, Speed>(
+      compute_acceleration, parameters_, &solution_);
   EXPECT_THAT(solution_.back().positions.back().value,
               AlmostEquals(v * parameters_.tmax, 0, 4));
 }
 
-TEST_P(SPRKTest, HarmonicOscillator) {
+TEST_P(SRKNTest, HarmonicOscillator) {
   parameters_.initial.positions.emplace_back(SIUnit<Length>());
   parameters_.initial.momenta.emplace_back(Momentum());
   parameters_.initial.time = Time();
@@ -214,9 +209,10 @@ TEST_P(SPRKTest, HarmonicOscillator) {
 #endif
   parameters_.Δt = 1.0E-3 * SIUnit<Time>();
   parameters_.sampling_period = 1;
-  integrator_.Solve(&ComputeHarmonicOscillatorForce,
-                    &ComputeHarmonicOscillatorVelocity,
-                    parameters_, &solution_);
+  integrator_.SolveTrivialKineticEnergyIncrement(
+      &ComputeHarmonicOscillatorForce,
+      &ComputeHarmonicOscillatorVelocity,
+      parameters_, &solution_);
   Length q_error;
   Momentum p_error;
   for (std::size_t i = 0; i < solution_.size(); ++i) {
@@ -243,7 +239,7 @@ TEST_P(SPRKTest, HarmonicOscillator) {
 #endif
 }
 
-TEST_P(SPRKTest, ExactInexactTMax) {
+TEST_P(SRKNTest, ExactInexactTMax) {
   parameters_.initial.positions.emplace_back(SIUnit<Length>());
   parameters_.initial.momenta.emplace_back(Momentum());
   parameters_.initial.time = Time();
@@ -314,7 +310,7 @@ TEST_P(SPRKTest, ExactInexactTMax) {
   EXPECT_THAT(solution_.back().time.error, Eq(0.0 * SIUnit<Time>()));
 }
 
-TEST_P(SPRKTest, Convergence) {
+TEST_P(SRKNTest, Convergence) {
   parameters_.initial.positions.emplace_back(SIUnit<Length>());
   parameters_.initial.momenta.emplace_back(Momentum());
   parameters_.initial.time = Time();
@@ -383,7 +379,7 @@ TEST_P(SPRKTest, Convergence) {
   EXPECT_THAT(p_correlation, AllOf(Gt(0.99), Lt(1.01)));
 }
 
-TEST_P(SPRKTest, Symplecticity) {
+TEST_P(SRKNTest, Symplecticity) {
   parameters_.initial.positions.emplace_back(SIUnit<Length>());
   parameters_.initial.momenta.emplace_back(Momentum());
   parameters_.initial.time = Time();
