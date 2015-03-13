@@ -142,32 +142,26 @@
 namespace principia {
 
 using integrators::SPRKIntegrator;
+using integrators::SRKNIntegrator;
 using quantities::Abs;
 using quantities::AngularFrequency;
 using quantities::Cos;
 using quantities::Length;
-using quantities::Momentum;
 using quantities::SIUnit;
-using testing_utilities::ComputeHarmonicOscillatorForce;
-using testing_utilities::ComputeHarmonicOscillatorVelocity;
+using testing_utilities::ComputeHarmonicOscillatorAcceleration;
 
 namespace benchmarks {
-
-using Integrator = SPRKIntegrator<Length, Momentum>;
 
 void SolveHarmonicOscillatorAndComputeError(
     not_null<benchmark::State*> const state,
     not_null<Length*> const q_error,
-    not_null<Momentum*> const p_error,
-    Integrator::Scheme const& (Integrator::*scheme)() const) {
-  std::vector<Integrator::SystemState> solution;
-  Integrator integrator;
-  Integrator::Parameters parameters;
-
-  integrator.Initialize((integrator.*scheme)());
+    not_null<Speed*> const v_error,
+    SRKNIntegrator const& integrator) {
+  SRKNIntegrator::Solution<Length, Speed> solution;
+  SRKNIntegrator::Parameters<Length, Speed> parameters;
 
   parameters.initial.positions.emplace_back(SIUnit<Length>());
-  parameters.initial.momenta.emplace_back(Momentum());
+  parameters.initial.momenta.emplace_back(Speed());
   parameters.initial.time = Time();
 #ifdef _DEBUG
   parameters.tmax = 100.0 * SIUnit<Time>();
@@ -176,67 +170,79 @@ void SolveHarmonicOscillatorAndComputeError(
 #endif
   parameters.Δt = 1.0E-4 * SIUnit<Time>();
   parameters.sampling_period = 1;
-  integrator.Solve(&ComputeHarmonicOscillatorForce,
-                   &ComputeHarmonicOscillatorVelocity,
-                   parameters,
-                   &solution);
+  integrator.SolveTrivialKineticEnergyIncrement<Length, Speed>(
+      &ComputeHarmonicOscillatorAcceleration,
+      parameters,
+      &solution);
 
   state->PauseTiming();
   *q_error = Length();
-  *p_error = Momentum();
+  *v_error = Speed();
   for (std::size_t i = 0; i < solution.size(); ++i) {
     *q_error = std::max(*q_error,
                         Abs(solution[i].positions[0].value -
                             SIUnit<Length>() *
                             Cos(solution[i].time.value *
                                 SIUnit<AngularFrequency>())));
-    *p_error = std::max(*p_error,
+    *v_error = std::max(*v_error,
                         Abs(solution[i].momenta[0].value +
-                            SIUnit<Momentum>() *
+                            SIUnit<Speed>() *
                             Sin(solution[i].time.value *
                                 SIUnit<AngularFrequency>())));
   }
   state->ResumeTiming();
 }
 
-template<Integrator::Scheme const& (Integrator::*scheme)() const>
+template<typename Integrator, Integrator const& (*integrator)()>
 void BM_SolveHarmonicOscillator(
     benchmark::State& state) {  // NOLINT(runtime/references)
-  Length   q_error;
-  Momentum p_error;
+  Length q_error;
+  Speed v_error;
   while (state.KeepRunning()) {
-    SolveHarmonicOscillatorAndComputeError(&state, &q_error, &p_error, scheme);
+    SolveHarmonicOscillatorAndComputeError(&state, &q_error, &v_error,
+                                           integrator());
   }
   std::stringstream ss;
-  ss << q_error << ", " << p_error;
+  ss << q_error << ", " << v_error;
   state.SetLabel(ss.str());
 }
 
-BENCHMARK_TEMPLATE(BM_SolveHarmonicOscillator, &Integrator::Leapfrog);
-BENCHMARK_TEMPLATE(BM_SolveHarmonicOscillator, &Integrator::PseudoLeapfrog);
-BENCHMARK_TEMPLATE(BM_SolveHarmonicOscillator,
-                   &Integrator::McLachlanAtela1992Order2Optimal);
-BENCHMARK_TEMPLATE(BM_SolveHarmonicOscillator, &Integrator::Ruth1983);
-BENCHMARK_TEMPLATE(BM_SolveHarmonicOscillator,
-                   &Integrator::McLachlanAtela1992Order3Optimal);
-BENCHMARK_TEMPLATE(
-    BM_SolveHarmonicOscillator,
-    &Integrator::CandyRozmus1991ForestRuth1990SynchronousMomenta);
-BENCHMARK_TEMPLATE(
-    BM_SolveHarmonicOscillator,
-    &Integrator::CandyRozmus1991ForestRuth1990SynchronousPositions);
-BENCHMARK_TEMPLATE(BM_SolveHarmonicOscillator,
-                   &Integrator::McLachlanAtela1992Order4Optimal);
-BENCHMARK_TEMPLATE(BM_SolveHarmonicOscillator,
-                   &Integrator::McLachlanAtela1992Order5Optimal);
-BENCHMARK_TEMPLATE(BM_SolveHarmonicOscillator, &Integrator::Yoshida1990Order6A);
-BENCHMARK_TEMPLATE(BM_SolveHarmonicOscillator, &Integrator::Yoshida1990Order6B);
-BENCHMARK_TEMPLATE(BM_SolveHarmonicOscillator, &Integrator::Yoshida1990Order6C);
-BENCHMARK_TEMPLATE(BM_SolveHarmonicOscillator, &Integrator::Yoshida1990Order8A);
-BENCHMARK_TEMPLATE(BM_SolveHarmonicOscillator, &Integrator::Yoshida1990Order8B);
-BENCHMARK_TEMPLATE(BM_SolveHarmonicOscillator, &Integrator::Yoshida1990Order8C);
-BENCHMARK_TEMPLATE(BM_SolveHarmonicOscillator, &Integrator::Yoshida1990Order8D);
-BENCHMARK_TEMPLATE(BM_SolveHarmonicOscillator, &Integrator::Yoshida1990Order8E);
+BENCHMARK_TEMPLATE2(BM_SolveHarmonicOscillator, SPRKIntegrator,
+                    &integrators::Leapfrog);
+BENCHMARK_TEMPLATE2(BM_SolveHarmonicOscillator, SPRKIntegrator,
+                    &integrators::PseudoLeapfrog);
+BENCHMARK_TEMPLATE2(BM_SolveHarmonicOscillator, SPRKIntegrator,
+                    &integrators::McLachlanAtela1992Order2Optimal);
+BENCHMARK_TEMPLATE2(BM_SolveHarmonicOscillator, SPRKIntegrator,
+                    &integrators::Ruth1983);
+BENCHMARK_TEMPLATE2(BM_SolveHarmonicOscillator, SPRKIntegrator,
+                    &integrators::McLachlanAtela1992Order3Optimal);
+BENCHMARK_TEMPLATE2(
+    BM_SolveHarmonicOscillator, SPRKIntegrator,
+    &integrators::CandyRozmus1991ForestRuth1990SynchronousMomenta);
+BENCHMARK_TEMPLATE2(
+    BM_SolveHarmonicOscillator, SPRKIntegrator,
+    &integrators::CandyRozmus1991ForestRuth1990SynchronousPositions);
+BENCHMARK_TEMPLATE2(BM_SolveHarmonicOscillator, SRKNIntegrator,
+                    &integrators::McLachlanAtela1992Order4Optimal);
+BENCHMARK_TEMPLATE2(BM_SolveHarmonicOscillator, SRKNIntegrator,
+                    &integrators::McLachlanAtela1992Order5Optimal);
+BENCHMARK_TEMPLATE2(BM_SolveHarmonicOscillator, SPRKIntegrator,
+                    &integrators::Yoshida1990Order6A);
+BENCHMARK_TEMPLATE2(BM_SolveHarmonicOscillator, SPRKIntegrator,
+                    &integrators::Yoshida1990Order6B);
+BENCHMARK_TEMPLATE2(BM_SolveHarmonicOscillator, SPRKIntegrator,
+                    &integrators::Yoshida1990Order6C);
+BENCHMARK_TEMPLATE2(BM_SolveHarmonicOscillator, SPRKIntegrator,
+                    &integrators::Yoshida1990Order8A);
+BENCHMARK_TEMPLATE2(BM_SolveHarmonicOscillator, SPRKIntegrator,
+                    &integrators::Yoshida1990Order8B);
+BENCHMARK_TEMPLATE2(BM_SolveHarmonicOscillator, SPRKIntegrator,
+                    &integrators::Yoshida1990Order8C);
+BENCHMARK_TEMPLATE2(BM_SolveHarmonicOscillator, SPRKIntegrator,
+                    &integrators::Yoshida1990Order8D);
+BENCHMARK_TEMPLATE2(BM_SolveHarmonicOscillator, SPRKIntegrator,
+                    &integrators::Yoshida1990Order8E);
 
 }  // namespace benchmarks
 }  // namespace principia

@@ -110,12 +110,12 @@ class TestablePlugin : public Plugin {
     return Δt_;
   }
 
-  SPRKIntegrator<Length, Speed> const& prolongation_integrator() const {
-    return prolongation_integrator_;
+  SRKNIntegrator const& prolongation_integrator() const {
+    return *prolongation_integrator_;
   }
 
-  SPRKIntegrator<Length, Speed> const& history_integrator() const {
-    return history_integrator_;
+  SRKNIntegrator const& history_integrator() const {
+    return *history_integrator_;
   }
 };
 

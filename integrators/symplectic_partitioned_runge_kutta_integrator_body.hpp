@@ -44,16 +44,16 @@ using quantities::Quotient;
 
 namespace integrators {
 
-SPRKIntegrator const& Leapfrog() {
+inline SPRKIntegrator const& Leapfrog() {
   static SPRKIntegrator const integrator({ 0.5, 0.5}, { 0.0, 1.0});
   return integrator;
 }
-SPRKIntegrator const& PseudoLeapfrog() {
+inline SPRKIntegrator const& PseudoLeapfrog() {
   static SPRKIntegrator const integrator ({ 1.0, 0.0}, { 0.5, 0.5});
   return integrator;
 }
 
-SPRKIntegrator const& McLachlanAtela1992Order2Optimal() {
+inline SPRKIntegrator const& McLachlanAtela1992Order2Optimal() {
   static SPRKIntegrator const integrator({ 0.7071067811865475244,
                                            0.2928932188134524756},
                                          { 0.2928932188134524756,
@@ -61,13 +61,13 @@ SPRKIntegrator const& McLachlanAtela1992Order2Optimal() {
   return integrator;
 }
 
-SPRKIntegrator const& Ruth1983() {
+inline SPRKIntegrator const& Ruth1983() {
   static SPRKIntegrator const integrator({ 2. / 3., -2. / 3., 1.},
                                          { 7. / 24., 3. / 4., -1. / 24.});
   return integrator;
 }
 
-SPRKIntegrator const& McLachlanAtela1992Order3Optimal() {
+inline SPRKIntegrator const& McLachlanAtela1992Order3Optimal() {
   static SPRKIntegrator const integrator({ 0.9196615230173998571,
                                           -0.1879916187991597820,
                                            0.2683300957817599250},
@@ -77,7 +77,8 @@ SPRKIntegrator const& McLachlanAtela1992Order3Optimal() {
   return integrator;
 }
 
-SPRKIntegrator const& CandyRozmus1991ForestRuth1990SynchronousMomenta() {
+inline SPRKIntegrator const&
+CandyRozmus1991ForestRuth1990SynchronousMomenta() {
   static SPRKIntegrator const integrator({ 0.6756035959798288170,
                                           -0.1756035959798288170,
                                           -0.1756035959798288170,
@@ -89,7 +90,8 @@ SPRKIntegrator const& CandyRozmus1991ForestRuth1990SynchronousMomenta() {
   return integrator;
 }
 
-SPRKIntegrator const& CandyRozmus1991ForestRuth1990SynchronousPositions() {
+inline SPRKIntegrator const&
+CandyRozmus1991ForestRuth1990SynchronousPositions() {
   static SPRKIntegrator const integrator({ 1.3512071919596576340,
                                           -1.7024143839193152681,
                                            1.3512071919596576340,
@@ -101,7 +103,7 @@ SPRKIntegrator const& CandyRozmus1991ForestRuth1990SynchronousPositions() {
   return integrator;
 }
 
-SPRKIntegrator const& Yoshida1990Order6A() {
+inline SPRKIntegrator const& Yoshida1990Order6A() {
   static SPRKIntegrator const integrator({ 0.78451361047755726382,
                                            0.23557321335935813369,
                                           -1.17767998417887100695,
@@ -121,7 +123,7 @@ SPRKIntegrator const& Yoshida1990Order6A() {
   return integrator;
 }
 
-SPRKIntegrator const& Yoshida1990Order6B() {
+inline SPRKIntegrator const& Yoshida1990Order6B() {
   static SPRKIntegrator const integrator({ 1.43984816797678309102,
                                            0.00426068187079201616,
                                           -2.13228522200145152088,
@@ -141,7 +143,7 @@ SPRKIntegrator const& Yoshida1990Order6B() {
   return integrator;
 }
 
-SPRKIntegrator const& Yoshida1990Order6C() {
+inline SPRKIntegrator const& Yoshida1990Order6C() {
   static SPRKIntegrator const integrator({ 1.44778256239929793290,
                                           -2.14403531630538931060,
                                            0.00152886228424927025338,
@@ -161,7 +163,7 @@ SPRKIntegrator const& Yoshida1990Order6C() {
   return integrator;
 }
 
-SPRKIntegrator const& Yoshida1990Order8A() {
+inline SPRKIntegrator const& Yoshida1990Order8A() {
   static SPRKIntegrator const integrator({ 1.04242620869970426435,
                                            1.82020630970698006933,
                                            0.157739928123708321343,
@@ -197,7 +199,7 @@ SPRKIntegrator const& Yoshida1990Order8A() {
   return integrator;
 }
 
-SPRKIntegrator const& Yoshida1990Order8B() {
+inline SPRKIntegrator const& Yoshida1990Order8B() {
   static SPRKIntegrator const integrator({ 1.48819229202921310080,
                                           -2.33864815101041943098,
                                            2.89105148972198900311,
@@ -233,7 +235,7 @@ SPRKIntegrator const& Yoshida1990Order8B() {
   return integrator;
 }
 
-SPRKIntegrator const& Yoshida1990Order8C() {
+inline SPRKIntegrator const& Yoshida1990Order8C() {
   static SPRKIntegrator const integrator({ 0.629030650210427818049,
                                            1.36934946416874222370,
                                           -1.06458714789183904181,
@@ -269,7 +271,7 @@ SPRKIntegrator const& Yoshida1990Order8C() {
   return integrator;
 }
 
-SPRKIntegrator const& Yoshida1990Order8D() {
+inline SPRKIntegrator const& Yoshida1990Order8D() {
   static SPRKIntegrator const integrator({ 0.914844246229642658287,
                                            0.253693336566286009974,
                                           -1.44485223686030647660,
@@ -305,7 +307,7 @@ SPRKIntegrator const& Yoshida1990Order8D() {
   return integrator;
 }
 
-SPRKIntegrator const& Yoshida1990Order8E() {
+inline SPRKIntegrator const& Yoshida1990Order8E() {
   static SPRKIntegrator const integrator({ 1.30300165757516838484,
                                            0.107990467718098279648,
                                           -2.04809795883490205633,
@@ -341,8 +343,8 @@ SPRKIntegrator const& Yoshida1990Order8E() {
   return integrator;
 }
 
-SPRKIntegrator::SPRKIntegrator(std::vector<double> const& a,
-                               std::vector<double> const& b)
+inline SPRKIntegrator::SPRKIntegrator(std::vector<double> const& a,
+                                      std::vector<double> const& b)
     : SRKNIntegrator(a, b) {}
 
 template<typename Position, typename Momentum,

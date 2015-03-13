@@ -30,6 +30,7 @@ using geometry::BarycentreCalculator;
 using geometry::Bivector;
 using geometry::Identity;
 using geometry::Permutation;
+using integrators::McLachlanAtela1992Order5Optimal;
 using quantities::Force;
 using si::Radian;
 
@@ -51,6 +52,8 @@ Plugin::Plugin(Instant const& initial_time,
                Angle const& planetarium_rotation)
     : bubble_(make_not_null_unique<PhysicsBubble>()),
       n_body_system_(make_not_null_unique<NBodySystem<Barycentric>>()),
+      history_integrator_(&McLachlanAtela1992Order5Optimal()),
+      prolongation_integrator_(&McLachlanAtela1992Order5Optimal()),
       planetarium_rotation_(planetarium_rotation),
       current_time_(initial_time),
       sun_(celestials_.emplace(sun_index,
@@ -61,11 +64,7 @@ Plugin::Plugin(Instant const& initial_time,
   sun_->CreateHistoryAndForkProlongation(
       current_time_,
       {Position<Barycentric>(), Velocity<Barycentric>()});
-  history_integrator_.Initialize(
-      history_integrator_.McLachlanAtela1992Order5Optimal());
   // NOTE(egg): perhaps a lower order would be appropriate.
-  prolongation_integrator_.Initialize(
-      history_integrator_.McLachlanAtela1992Order5Optimal());
 }
 
 void Plugin::InsertCelestial(
@@ -482,6 +481,8 @@ Plugin::Plugin(GUIDToOwnedVessel vessels,
       dirty_vessels_(std::move(dirty_vessels)),
       bubble_(std::move(bubble)),
       n_body_system_(make_not_null_unique<NBodySystem<Barycentric>>()),
+      history_integrator_(&McLachlanAtela1992Order5Optimal()),
+      prolongation_integrator_(&McLachlanAtela1992Order5Optimal()),
       planetarium_rotation_(planetarium_rotation),
       current_time_(current_time),
       sun_(FindOrDie(celestials_, sun_index).get()) {
@@ -492,11 +493,6 @@ Plugin::Plugin(GUIDToOwnedVessel vessels,
       unsynchronized_vessels_.emplace(vessel.get());
     }
   }
-  history_integrator_.Initialize(
-      history_integrator_.McLachlanAtela1992Order5Optimal());
-  // NOTE(egg): perhaps a lower order would be appropriate.
-  prolongation_integrator_.Initialize(
-      history_integrator_.McLachlanAtela1992Order5Optimal());
   EndInitialization();
 }
 
@@ -624,12 +620,12 @@ void Plugin::EvolveHistories(Instant const& t) {
   }
   VLOG(1) << "Starting the evolution of the histories" << '\n'
           << "from : " << HistoryTime();
-  n_body_system_->Integrate(history_integrator_,  // integrator
-                            t,                    // tmax
-                            Δt_,                  // Δt
-                            0,                    // sampling_period
-                            false,                // tmax_is_exact
-                            trajectories);        // trajectories
+  n_body_system_->Integrate(*history_integrator_,  // integrator
+                            t,                     // tmax
+                            Δt_,                   // Δt
+                            0,                     // sampling_period
+                            false,                 // tmax_is_exact
+                            trajectories);         // trajectories
   CHECK_GE(HistoryTime(), current_time_);
   VLOG(1) << "Evolved the histories" << '\n'
           << "to   : " << HistoryTime();
@@ -659,12 +655,12 @@ void Plugin::SynchronizeNewVesselsAndCleanDirtyVessels() {
   }
   VLOG(1) << "Starting the synchronization of the new vessels"
           << (bubble_->empty() ? "" : " and of the bubble");
-  n_body_system_->Integrate(prolongation_integrator_,  // integrator
-                            HistoryTime(),             // tmax
-                            Δt_,                       // Δt
-                            0,                         // sampling_period
-                            true,                      // tmax_is_exact
-                            trajectories);             // trajectories
+  n_body_system_->Integrate(*prolongation_integrator_,  // integrator
+                            HistoryTime(),              // tmax
+                            Δt_,                        // Δt
+                            0,                          // sampling_period
+                            true,                       // tmax_is_exact
+                            trajectories);              // trajectories
   if (!bubble_->empty()) {
     SynchronizeBubbleHistories();
   }
@@ -743,12 +739,12 @@ void Plugin::EvolveProlongationsAndBubble(Instant const& t) {
           << (bubble_->empty() ? "" : " and bubble") << '\n'
           << "from : " << trajectories.front()->last().time() << '\n'
           << "to   : " << t;
-  n_body_system_->Integrate(prolongation_integrator_,  // integrator
-                            t,                         // tmax
-                            Δt_,                       // Δt
-                            0,                         // sampling_period
-                            true,                      // tmax_is_exact
-                            trajectories);             // trajectories
+  n_body_system_->Integrate(*prolongation_integrator_,  // integrator
+                            t,                          // tmax
+                            Δt_,                        // Δt
+                            0,                          // sampling_period
+                            true,                       // tmax_is_exact
+                            trajectories);              // trajectories
   if (!bubble_->empty()) {
     DegreesOfFreedom<Barycentric> const& centre_of_mass =
         bubble_->centre_of_mass_trajectory().last().degrees_of_freedom();
@@ -784,7 +780,7 @@ void Plugin::UpdatePredictions() {
                       predicted_vessel_->prolongation().last().time());
     predictions.emplace_back(prediction_);
     n_body_system_->Integrate(
-        prolongation_integrator_,
+        *prolongation_integrator_,
         current_time_ + prediction_length_,
         prediction_step_,
         1,  // sampling_period

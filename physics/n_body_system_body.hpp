@@ -62,15 +62,14 @@ FORCE_INLINE Vector<Acceleration, Frame>
 }  // namespace
 
 template<typename Frame>
-void NBodySystem<Frame>::Integrate(
-    SymplecticIntegrator<Length, Speed> const& integrator,
-    Instant const& tmax,
-    Time const& Δt,
-    int const sampling_period,
-    bool const tmax_is_exact,
-    Trajectories const& trajectories) const {
-  SymplecticIntegrator<Length, Speed>::Parameters parameters;
-  std::vector<SymplecticIntegrator<Length, Speed>::SystemState> solution;
+void NBodySystem<Frame>::Integrate(SRKNIntegrator const& integrator,
+                                   Instant const& tmax,
+                                   Time const& Δt,
+                                   int const sampling_period,
+                                   bool const tmax_is_exact,
+                                   Trajectories const& trajectories) const {
+  SRKNIntegrator::Parameters<Length, Speed> parameters;
+  SRKNIntegrator::Solution<Length, Speed> solution;
 
   // TODO(phl): Use a position based on the first mantissa bits of the
   // centre-of-mass referential and a time in the middle of the integration
@@ -150,7 +149,7 @@ void NBodySystem<Frame>::Integrate(
     parameters.Δt = Δt;
     parameters.sampling_period = sampling_period;
     parameters.tmax_is_exact = tmax_is_exact;
-    dynamic_cast<const SPRKIntegrator<Length, Speed>*>(&integrator)->Solve(
+    integrator.SolveTrivialKineticEnergyIncrement<Length, Speed>(
         std::bind(&NBodySystem::ComputeGravitationalAccelerations,
                   massive_oblate_trajectories,
                   massive_spherical_trajectories,
@@ -159,14 +158,12 @@ void NBodySystem<Frame>::Integrate(
                   std::placeholders::_1,
                   std::placeholders::_2,
                   std::placeholders::_3),
-        &ComputeGravitationalVelocities,
         parameters, &solution);
 
     // TODO(phl): Ignoring errors for now.
     // Loop over the time steps.
     for (std::size_t i = 0; i < solution.size(); ++i) {
-      SymplecticIntegrator<Length, Speed>::SystemState const& state =
-          solution[i];
+      SRKNIntegrator::SystemState<Length, Speed> const& state = solution[i];
       Instant const time = state.time.value + reference_time;
       CHECK_EQ(state.positions.size(), state.momenta.size());
       // Loop over the dimensions.
@@ -372,13 +369,6 @@ void NBodySystem<Frame>::ComputeGravitationalAccelerations(
       (*result)[three_b2 + 2] += acceleration.z;
     }
   }
-}
-
-template<typename Frame>
-void NBodySystem<Frame>::ComputeGravitationalVelocities(
-    std::vector<Speed> const& p,
-    not_null<std::vector<Speed>*> const result) {
-  *result = p;
 }
 
 }  // namespace physics

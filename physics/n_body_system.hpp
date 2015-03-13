@@ -72,11 +72,6 @@ class NBodySystem {
       Time const& t,
       std::vector<Length> const& q,
       not_null<std::vector<Acceleration>*> const result);
-
-  // No transfer of ownership.
-  static void ComputeGravitationalVelocities(
-      std::vector<Speed> const& p,
-      not_null<std::vector<Speed>*> const result);
 };
 
 }  // namespace physics

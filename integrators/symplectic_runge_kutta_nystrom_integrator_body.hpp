@@ -43,7 +43,7 @@
 namespace principia {
 namespace integrators {
 
-SRKNIntegrator const& McLachlanAtela1992Order4Optimal() {
+inline SRKNIntegrator const& McLachlanAtela1992Order4Optimal() {
   static SRKNIntegrator const integrator({ 0.5153528374311229364,
                                           -0.085782019412973646,
                                            0.4415830236164665242,
@@ -55,7 +55,7 @@ SRKNIntegrator const& McLachlanAtela1992Order4Optimal() {
   return integrator;
 }
 
-SRKNIntegrator const& McLachlanAtela1992Order5Optimal() {
+inline SRKNIntegrator const& McLachlanAtela1992Order5Optimal() {
   static SRKNIntegrator const integrator({ 0.339839625839110000,
                                           -0.088601336903027329,
                                            0.5858564768259621188,
@@ -72,8 +72,8 @@ SRKNIntegrator const& McLachlanAtela1992Order5Optimal() {
 }
 
 
-SRKNIntegrator::SRKNIntegrator(std::vector<double> const& a,
-                               std::vector<double> const& b)
+inline SRKNIntegrator::SRKNIntegrator(std::vector<double> const& a,
+                                      std::vector<double> const& b)
     : a_(std::move(a)),
       b_(std::move(b)) {
   if (b.front() == 0.0) {
