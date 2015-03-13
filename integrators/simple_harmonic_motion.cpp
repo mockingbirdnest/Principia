@@ -1,6 +1,4 @@
 ﻿
-#include "integrators/symplectic_partitioned_runge_kutta_integrator.hpp"
-
 #include <algorithm>
 #include <string>
 #include <vector>
@@ -9,6 +7,7 @@
 #include "glog/logging.h"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
+#include "integrators/symplectic_partitioned_runge_kutta_integrator.hpp"
 #include "quantities/quantities.hpp"
 #include "quantities/named_quantities.hpp"
 #include "testing_utilities/almost_equals.hpp"
@@ -78,7 +77,8 @@ struct SimpleHarmonicMotionTestableProperties {
 // This allows the test output to be legible, i.e.,
 // "where GetParam() = Leapfrog" rather than
 // "where GetParam() = n-byte object <hex>"
-std::ostream& operator<<(std::ostream& stream, SimpleHarmonicMotionTestableProperties param) {
+std::ostream& operator<<(std::ostream& stream,
+                         SimpleHarmonicMotionTestableProperties param) {
   return stream << param.name;
 }
 

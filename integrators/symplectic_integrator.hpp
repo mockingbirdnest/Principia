@@ -71,6 +71,7 @@ class SymplecticIntegrator {
     // It never exceeds |tmax|.
     bool tmax_is_exact = false;
   };
+
  protected:
   SymplecticIntegrator() = default;
 };

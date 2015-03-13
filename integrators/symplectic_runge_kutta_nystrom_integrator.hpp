@@ -47,6 +47,7 @@ class SRKNIntegrator : public SymplecticIntegrator {
   // The dimension of the time derivative.
   template<typename T>
   using Variation = Quotient<T, Time>;
+
  public:
   SRKNIntegrator(std::vector<double> const& a, std::vector<double> const& b);
 

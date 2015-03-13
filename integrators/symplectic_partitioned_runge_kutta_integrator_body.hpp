@@ -49,7 +49,7 @@ inline SPRKIntegrator const& Leapfrog() {
   return integrator;
 }
 inline SPRKIntegrator const& PseudoLeapfrog() {
-  static SPRKIntegrator const integrator ({ 1.0, 0.0}, { 0.5, 0.5});
+  static SPRKIntegrator const integrator({ 1.0, 0.0}, { 0.5, 0.5});
   return integrator;
 }
 
