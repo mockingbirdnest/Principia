@@ -138,6 +138,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="simple_harmonic_motion.cpp" />
+    <ClCompile Include="symplectic_partitioned_runge_kutta_integrator_test.cpp" />
     <ClCompile Include="symplectic_runge_kutta_nystrom_integrator_test.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

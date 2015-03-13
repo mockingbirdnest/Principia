@@ -40,5 +40,8 @@
     <ClCompile Include="symplectic_runge_kutta_nystrom_integrator_test.cpp">
       <Filter>Test Files</Filter>
     </ClCompile>
+    <ClCompile Include="symplectic_partitioned_runge_kutta_integrator_test.cpp">
+      <Filter>Test Files</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>
