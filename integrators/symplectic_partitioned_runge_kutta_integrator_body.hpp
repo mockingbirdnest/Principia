@@ -357,15 +357,15 @@ void SPRKIntegrator::SolveIncrement(
     not_null<Solution<Position, Momentum>*> const solution) const {
   switch (vanishing_coefficients_) {
     case kNone:
-      SolveOptimized<kNone>(
+      SolveIncrementOptimized<kNone>(
           compute_force, compute_velocity, parameters, solution);
       break;
     case kFirstBVanishes:
-      SolveOptimized<kFirstBVanishes>(
+      SolveIncrementOptimized<kFirstBVanishes>(
           compute_force, compute_velocity, parameters, solution);
       break;
     case kLastAVanishes:
-      SolveOptimized<kLastAVanishes>(
+      SolveIncrementOptimized<kLastAVanishes>(
           compute_force, compute_velocity, parameters, solution);
       break;
     default:
@@ -523,7 +523,7 @@ void SPRKIntegrator::SolveIncrementOptimized(
     if (parameters.sampling_period != 0) {
       if (sampling_phase % parameters.sampling_period == 0) {
         solution->emplace_back();
-        SystemState* state = &solution->back();
+        SystemState<Position, Momentum>* state = &solution->back();
         state->time = tn;
         state->positions.reserve(dimension);
         state->momenta.reserve(dimension);
@@ -538,7 +538,7 @@ void SPRKIntegrator::SolveIncrementOptimized(
 
   if (parameters.sampling_period == 0) {
     solution->emplace_back();
-    SystemState* state = &solution->back();
+    SystemState<Position, Momentum>* state = &solution->back();
     state->time = tn;
     state->positions.reserve(dimension);
     state->momenta.reserve(dimension);
