@@ -58,17 +58,6 @@ class SRKNIntegrator : public SymplecticIntegrator {
   SRKNIntegrator& operator=(SRKNIntegrator const&) = delete;
   SRKNIntegrator& operator=(SRKNIntegrator&&) = delete;
 
-  // The functors |evolve_kinetic| and |evolve_potential| respectively compute
-  // exp(h{·, T})(q, p) given (q, p), and exp(h{·, V})(q, p) given (q, p, t).
-  template<typename Position, typename Momentum,
-           typename KineticFlow,
-           typename PotentialFlow>
-  void SolveQuadraticKineticEnergy(
-      KineticFlow evolve_kinetic,
-      PotentialFlow evolve_potential,
-      Parameters<Position, Momentum> const& parameters,
-      not_null<Solution<Position, Momentum>*> const solution) const;
-
   // The functor |compute_acceleration| computes M⁻¹ F(q, t).
   template<typename Position, typename RightHandSideComputation>
   void SolveTrivialKineticEnergyIncrement(

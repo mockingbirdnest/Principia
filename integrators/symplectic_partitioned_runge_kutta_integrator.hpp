@@ -38,12 +38,6 @@ namespace integrators {
 // weights used for the time argument of the force computation cᵢ, with
 // c₁ = 0, cᵢ = cᵢ₋₁ + aᵢ₋₁ for i > 1.
 
-enum VanishingCoefficients {
-  kNone,
-  kFirstBVanishes,
-  kLastAVanishes,
-};
-
 class SPRKIntegrator : public SRKNIntegrator {
  public:
   // NOTE(egg): this should be a using when we have VS 2015.
