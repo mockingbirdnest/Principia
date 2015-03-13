@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 #include<vector>
 
@@ -32,7 +32,7 @@ void ComputeHarmonicOscillatorVelocity(
     std::vector<Momentum> const& p,
     std::vector<Speed>* const result);
 
-// The Runge-Kutta-Nystr�m formulation.
+// The Runge-Kutta-Nyström formulation.
 void ComputeHarmonicOscillatorAcceleration(
     Time const& t,
     std::vector<Length> const& q,
