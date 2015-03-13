@@ -137,7 +137,7 @@
     <ClInclude Include="symplectic_runge_kutta_nystrom_integrator_body.hpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="symplectic_runge_kutta_nystrom_integrator_test.cpp" />
+    <ClCompile Include="simple_harmonic_motion.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

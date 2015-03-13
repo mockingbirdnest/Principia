@@ -34,7 +34,7 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="symplectic_runge_kutta_nystrom_integrator_test.cpp">
+    <ClCompile Include="simple_harmonic_motion.cpp">
       <Filter>Test Files</Filter>
     </ClCompile>
   </ItemGroup>
