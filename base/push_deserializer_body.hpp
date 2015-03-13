@@ -131,22 +131,12 @@ inline Bytes PushDeserializer::Pull() {
   {
     std::unique_lock<std::mutex> l(lock_);
     queue_has_elements_.wait(l, [this]() { return !queue_.empty(); });
-    auto const element = queue_.front();
-    result = element.bytes;
-    if (element.done != nullptr) {
-      element.done();
-    }
+    result = queue_.front();
     queue_.pop();
   }
   queue_has_room_.notify_all();
   return result;
 }
-
-PushDeserializer::QueueElement::QueueElement(not_null<std::uint8_t*> const data,
-                                             std::int64_t const size,
-                                             std::function<void()> done)
-    : bytes(data, size), done(std::move(done)) {}
-
 
 }  // namespace base
 }  // namespace principia

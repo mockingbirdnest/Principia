@@ -87,20 +87,17 @@ class PushDeserializer {
   internal::DelegatingArrayInputStream stream_;
   std::unique_ptr<std::thread> thread_;
 
-  struct QueueElement {
-    QueueElement(not_null<std::uint8_t*> const data,
-                 std::int64_t const size,
-                 std::function<void()> done);
-    Bytes bytes;
-    std::function<void()> done;
-  };
-
-  // Synchronization objects for the |queue_|, which contains the |Bytes|
-  // object filled by |Push| and not yet consumed by |Pull|.
+  // Synchronization objects for the |queue_|.
   std::mutex lock_;
   std::condition_variable queue_has_room_;
   std::condition_variable queue_has_elements_;
-  std::queue<QueueElement> queue_ GUARDED_BY(lock_);
+  // The |queue_| contains the |Bytes| object filled by |Push| and not yet
+  // consumed by |Pull|.  The two queues are not synchronized: the front entry
+  // is removed from |queue_| by |Pull| when it returns a chunk to the stream,
+  // but the front entry is removed from |done_| when |Pull| returns to indicate
+  // that the chunk may be destroyed.
+  std::queue<Bytes> queue_ GUARDED_BY(lock_);
+  std::queue<std::function<void()>> done_ GUARDED_BY(lock_);
 };
 
 }  // namespace base
