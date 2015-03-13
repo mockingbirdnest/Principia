@@ -9,6 +9,7 @@
 namespace principia {
 
 using base::not_null;
+using quantities::Quotient;
 
 namespace integrators {
 
@@ -43,7 +44,9 @@ namespace integrators {
 
 class SRKNIntegrator : public SymplecticIntegrator {
  protected:
-
+  // The dimension of the time derivative.
+  template<typename T>
+  using Variation = Quotient<T, Time>;
  public:
   SRKNIntegrator(std::vector<double> const& a, std::vector<double> const& b);
 
@@ -67,12 +70,11 @@ class SRKNIntegrator : public SymplecticIntegrator {
       not_null<Solution<Position, Momentum>*> const solution) const;
 
   // The functor |compute_acceleration| computes M⁻¹ F(q, t).
-  template<typename Position, typename Velocity,
-           typename RightHandSideComputation>
+  template<typename Position, typename RightHandSideComputation>
   void SolveTrivialKineticEnergyIncrement(
       RightHandSideComputation compute_acceleration,
-      Parameters<Position, Velocity> const& parameters,
-      not_null<Solution<Position, Velocity>*> const solution) const;
+      Parameters<Position, Variation<Position>> const& parameters,
+      not_null<Solution<Position, Variation<Position>>*> const solution) const;
 
  protected:
   enum VanishingCoefficients {
@@ -111,12 +113,11 @@ class SRKNIntegrator : public SymplecticIntegrator {
 
  private:
   template<VanishingCoefficients vanishing_coefficients,
-           typename Position, typename Velocity,
-           typename RightHandSideComputation>
+           typename Position, typename RightHandSideComputation>
   void SolveTrivialKineticEnergyIncrementOptimized(
       RightHandSideComputation compute_acceleration,
-      Parameters<Position, Velocity> const& parameters,
-      not_null<Solution<Position, Velocity>*> const solution) const;
+      Parameters<Position, Variation<Position>> const& parameters,
+      not_null<Solution<Position, Variation<Position>>*> const solution) const;
 };
 
 // Fourth order, 4 stages.  This method minimizes the error constant.

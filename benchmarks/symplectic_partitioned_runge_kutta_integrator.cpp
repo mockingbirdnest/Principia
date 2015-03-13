@@ -170,7 +170,7 @@ void SolveHarmonicOscillatorAndComputeError(
 #endif
   parameters.Δt = 1.0E-4 * SIUnit<Time>();
   parameters.sampling_period = 1;
-  integrator.SolveTrivialKineticEnergyIncrement<Length, Speed>(
+  integrator.SolveTrivialKineticEnergyIncrement<Length>(
       &ComputeHarmonicOscillatorAcceleration,
       parameters,
       &solution);

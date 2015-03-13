@@ -149,7 +149,7 @@ void NBodySystem<Frame>::Integrate(SRKNIntegrator const& integrator,
     parameters.Δt = Δt;
     parameters.sampling_period = sampling_period;
     parameters.tmax_is_exact = tmax_is_exact;
-    integrator.SolveTrivialKineticEnergyIncrement<Length, Speed>(
+    integrator.SolveTrivialKineticEnergyIncrement<Length>(
         std::bind(&NBodySystem::ComputeGravitationalAccelerations,
                   massive_oblate_trajectories,
                   massive_spherical_trajectories,

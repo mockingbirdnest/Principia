@@ -187,7 +187,7 @@ TEST_P(SimpleHarmonicMotionTest, Error) {
 #endif
   parameters_.Δt = 1.0E-3 * SIUnit<Time>();
   parameters_.sampling_period = 1;
-  integrator_->SolveTrivialKineticEnergyIncrement<Length, Speed>(
+  integrator_->SolveTrivialKineticEnergyIncrement<Length>(
       ComputeHarmonicOscillatorAcceleration,
       parameters_, &solution_);
   Length q_error;
@@ -263,7 +263,7 @@ TEST_P(SimpleHarmonicMotionTest, Convergence) {
   std::vector<double> log_p_errors;
   log_step_sizes.reserve(step_sizes);
   for (int i = 0; i < step_sizes; ++i, parameters_.Δt /= step_reduction) {
-    integrator_->SolveTrivialKineticEnergyIncrement<Length, Speed>(
+    integrator_->SolveTrivialKineticEnergyIncrement<Length>(
         &ComputeHarmonicOscillatorAcceleration,
         parameters_,
         &solution_);
@@ -326,7 +326,7 @@ TEST_P(SimpleHarmonicMotionTest, Symplecticity) {
   parameters_.tmax = 500.0 * SIUnit<Time>();
   parameters_.Δt = 0.2 * Second;
   parameters_.sampling_period = 1;
-  integrator_->SolveTrivialKineticEnergyIncrement<Length, Speed>(
+  integrator_->SolveTrivialKineticEnergyIncrement<Length>(
       &ComputeHarmonicOscillatorAcceleration,
       parameters_,
       &solution_);

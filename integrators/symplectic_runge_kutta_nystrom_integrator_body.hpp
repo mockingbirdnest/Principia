@@ -117,12 +117,11 @@ inline SRKNIntegrator::SRKNIntegrator(std::vector<double> const& a,
   }
 }
 
-template<typename Position, typename Velocity,
-         typename RightHandSideComputation>
+template<typename Position, typename RightHandSideComputation>
 void SRKNIntegrator::SolveTrivialKineticEnergyIncrement(
     RightHandSideComputation compute_acceleration,
-    Parameters<Position, Velocity> const& parameters,
-    not_null<Solution<Position, Velocity>*> const solution) const {
+    Parameters<Position, Variation<Position>> const& parameters,
+    not_null<Solution<Position, Variation<Position>>*> const solution) const {
   switch (vanishing_coefficients_) {
     case kNone:
       SolveTrivialKineticEnergyIncrementOptimized<kNone>(compute_acceleration,
@@ -147,12 +146,12 @@ void SRKNIntegrator::SolveTrivialKineticEnergyIncrement(
 }
 
 template<SRKNIntegrator::VanishingCoefficients vanishing_coefficients,
-         typename Position, typename Velocity,
-         typename RightHandSideComputation>
+         typename Position, typename RightHandSideComputation>
 void SRKNIntegrator::SolveTrivialKineticEnergyIncrementOptimized(
     RightHandSideComputation compute_acceleration,
-    SRKNIntegrator::Parameters<Position, Velocity> const& parameters,
-    not_null<Solution<Position, Velocity>*> const solution) const {
+    Parameters<Position, Variation<Position>> const& parameters,
+    not_null<Solution<Position, Variation<Position>>*> const solution) const {
+  using Velocity = Variation<Position>;
   int const dimension = parameters.initial.positions.size();
 
   std::vector<Position> Δqstage0(dimension);
