@@ -115,7 +115,7 @@ class SRKNIntegrator : public SymplecticIntegrator {
 // The accuracy of symplectic integrators, table 2.
 // http://eaton.math.rpi.edu/CSUMS/Papers/Symplectic/McLachlan_Atela_92.pdf.
 SRKNIntegrator const& McLachlanAtela1992Order4Optimal();
-// Fifth order, 6 stages.  This method minimizes the error constant  Ibidem.
+// Fifth order, 6 stages.  This method minimizes the error constant.  Ibidem.
 SRKNIntegrator const& McLachlanAtela1992Order5Optimal();
 
 }  // namespace integrators
