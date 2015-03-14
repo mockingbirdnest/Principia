@@ -71,11 +71,10 @@ inline SRKNIntegrator const& McLachlanAtela1992Order5Optimal() {
   return integrator;
 }
 
-
 inline SRKNIntegrator::SRKNIntegrator(std::vector<double> const& a,
                                       std::vector<double> const& b)
-    : a_(std::move(a)),
-      b_(std::move(b)) {
+    : a_(a),
+      b_(b) {
   if (b.front() == 0.0) {
     vanishing_coefficients_ = kFirstBVanishes;
     first_same_as_last_ = std::make_unique<FirstSameAsLast>();
@@ -156,12 +155,12 @@ void SRKNIntegrator::SolveTrivialKineticEnergyIncrementOptimized(
 
   std::vector<Position> Δqstage0(dimension);
   std::vector<Position> Δqstage1(dimension);
-  std::vector<Velocity> Δpstage0(dimension);
-  std::vector<Velocity> Δpstage1(dimension);
+  std::vector<Velocity> Δvstage0(dimension);
+  std::vector<Velocity> Δvstage1(dimension);
   std::vector<Position>* Δqstage_current = &Δqstage1;
   std::vector<Position>* Δqstage_previous = &Δqstage0;
-  std::vector<Velocity>* Δvstage_current = &Δpstage1;
-  std::vector<Velocity>* Δvstage_previous = &Δpstage0;
+  std::vector<Velocity>* Δvstage_current = &Δvstage1;
+  std::vector<Velocity>* Δvstage_previous = &Δvstage0;
 
   // Dimension the result.
   int const capacity = parameters.sampling_period == 0 ?
@@ -179,8 +178,7 @@ void SRKNIntegrator::SolveTrivialKineticEnergyIncrementOptimized(
 
   std::vector<Position> q_stage(dimension);
   std::vector<Velocity> v_stage(dimension);
-  std::vector<Quotient<Velocity, Time>> a(dimension);  // Current forces.
-  std::vector<Quotient<Position, Time>> v(dimension);  // Current velocities.
+  std::vector<Quotient<Velocity, Time>> a(dimension);  // Current accelerations.
 
   // The following quantity is generally equal to |Δt|, but during the last
   // iteration, if |tmax_is_exact|, it may differ significantly from |Δt|.

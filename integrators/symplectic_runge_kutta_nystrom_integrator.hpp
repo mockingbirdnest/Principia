@@ -78,6 +78,7 @@ class SRKNIntegrator : public SymplecticIntegrator {
     double last;
   };
 
+  // Indicates whether some nodes vanish in a way that enables optimizations.
   VanishingCoefficients vanishing_coefficients_;
   // Null if, and only if, |vanishing_coefficients_ == kNone|.
   // If |vanishing_coefficients_ == kFirstBVanishes|, this contains the first
@@ -86,6 +87,7 @@ class SRKNIntegrator : public SymplecticIntegrator {
   // and last b coefficients.
   // These are used to desynchronize and synchronize first-same-as-last
   // integrators.
+  // NOTE(egg): should be std::optional.
   std::unique_ptr<FirstSameAsLast> first_same_as_last_;
 
   int stages_;
