@@ -82,7 +82,10 @@ inline PushDeserializer::PushDeserializer(int const chunk_size,
                                           int const number_of_chunks)
     : chunk_size_(chunk_size),
       number_of_chunks_(number_of_chunks),
-      stream_(std::bind(&PushDeserializer::Pull, this)) {}
+      stream_(std::bind(&PushDeserializer::Pull, this)) {
+  // This sentinel ensures that the two queue are correctly out of step.
+  done_.push(nullptr);
+}
 
 inline PushDeserializer::~PushDeserializer() {
   if (thread_ != nullptr) {
@@ -117,8 +120,8 @@ inline void PushDeserializer::Push(Bytes const bytes,
       });
       queue_.emplace(current.data,
                      std::min(current.size,
-                              static_cast<std::int64_t>(chunk_size_)),
-                     is_last ? std::move(done) : nullptr);
+                              static_cast<std::int64_t>(chunk_size_)));
+      done_.emplace(is_last ? std::move(done) : nullptr);
     }
     queue_has_elements_.notify_all();
     current.data = &current.data[chunk_size_];
@@ -131,6 +134,15 @@ inline Bytes PushDeserializer::Pull() {
   {
     std::unique_lock<std::mutex> l(lock_);
     queue_has_elements_.wait(l, [this]() { return !queue_.empty(); });
+    // The front of |done_| is the callback for the |Bytes| object that was just
+    // processed.  Run it now.
+    CHECK(!done_.empty());
+    const auto done = done_.front();
+    if (done != nullptr) {
+      done();
+    }
+    done_.pop();
+    // Get the next |Bytes| object to process and remove it from |queue_|.
     result = queue_.front();
     queue_.pop();
   }
