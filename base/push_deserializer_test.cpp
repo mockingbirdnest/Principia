@@ -59,6 +59,12 @@ class PushDeserializerTest : public ::testing::Test {
     }
   }
 
+  static void Stomp(const Bytes& bytes) {
+    for (int i = 0; i < bytes.size; ++i) {
+      bytes.data[i] = 0xCD;
+    }
+  }
+
   // Returns the first string in the list.  Note that the very first string is
   // always discarded.
   Bytes OnEmpty(not_null<std::list<std::string>*> const strings) {
@@ -75,6 +81,8 @@ class PushDeserializerTest : public ::testing::Test {
   internal::DelegatingArrayInputStream stream_;
   std::list<std::string> strings_;
 };
+
+using PushDeserializerDeathTest = PushDeserializerTest;
 
 TEST_F(PushDeserializerTest, Stream) {
   void const* data;
@@ -121,19 +129,19 @@ TEST_F(PushDeserializerTest, Stream) {
 
 TEST_F(PushDeserializerTest, DeserializationThreading) {
   Trajectory read_trajectory;
-  auto expected_serialized_trajectory =
+  auto serialized_trajectory =
       std::make_unique<std::uint8_t[]>(trajectory_.ByteSize());
-  trajectory_.SerializePartialToArray(&expected_serialized_trajectory[0],
-                                      trajectory_.ByteSize());
 
   for (int i = 0; i < kRunsPerTest; ++i) {
     push_deserializer_ = std::make_unique<PushDeserializer>(
         kDeserializerChunkSize, kNumberOfChunks);
 
-    //TODO(phl):Test done.
+    trajectory_.SerializePartialToArray(&serialized_trajectory[0],
+                                        trajectory_.ByteSize());
     push_deserializer_->Start(&read_trajectory);
-    push_deserializer_->Push(Bytes(expected_serialized_trajectory.get(),
-                                   trajectory_.ByteSize()), nullptr);
+    Bytes bytes(serialized_trajectory.get(), trajectory_.ByteSize());
+    push_deserializer_->Push(bytes,
+                             std::bind(&PushDeserializerTest::Stomp, bytes));
     push_deserializer_->Push(Bytes(), nullptr);
 
     // Destroying the deserializer waits until deserialization is done.
@@ -141,6 +149,7 @@ TEST_F(PushDeserializerTest, DeserializationThreading) {
   }
 }
 
+// Exercise concurrent serialization and deserialization.
 TEST_F(PushDeserializerTest, SerializationDeserialization) {
   Trajectory read_trajectory;
   for (int i = 0; i < kRunsPerTest; ++i) {
@@ -157,8 +166,9 @@ TEST_F(PushDeserializerTest, SerializationDeserialization) {
     for (;;) {
       Bytes const bytes = pull_serializer_->Pull();
       std::memcpy(data, bytes.data, static_cast<size_t>(bytes.size));
-      //TODO(phl): Done
-      push_deserializer_->Push(Bytes(data, bytes.size), nullptr);
+      push_deserializer_->Push(Bytes(data, bytes.size), 
+                               std::bind(&PushDeserializerTest::Stomp,
+                                         Bytes(data, bytes.size)));
       data = &data[bytes.size];
       if (bytes.size == 0) {
         break;
@@ -170,6 +180,29 @@ TEST_F(PushDeserializerTest, SerializationDeserialization) {
     pull_serializer_.reset();
     push_deserializer_.reset();
   }
+}
+
+// Check that deserialization fails if we stomp on one extra bytes.
+TEST_F(PushDeserializerDeathTest, Stomp) {
+  EXPECT_DEATH({
+  const int kStompChunk = 77;
+  Trajectory read_trajectory;
+  auto serialized_trajectory =
+      std::make_unique<std::uint8_t[]>(trajectory_.ByteSize());
+  trajectory_.SerializePartialToArray(&serialized_trajectory[0],
+                                      trajectory_.ByteSize());
+  push_deserializer_->Start(&read_trajectory);
+  int left = trajectory_.ByteSize();
+  for (int i = 0; i < trajectory_.ByteSize(); i += kStompChunk) {
+    Bytes bytes(&serialized_trajectory[i], std::min(left, kStompChunk));
+    push_deserializer_->Push(bytes,
+                              std::bind(&PushDeserializerTest::Stomp,
+                                        Bytes(bytes.data, bytes.size + 1)));
+    left -= kStompChunk;
+  }
+  push_deserializer_->Push(Bytes(), nullptr);
+  push_deserializer_.reset();
+  }, "failed.*Parse");
 }
 
 }  // namespace base
