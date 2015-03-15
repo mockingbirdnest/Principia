@@ -82,7 +82,10 @@ inline PushDeserializer::PushDeserializer(int const chunk_size,
                                           int const number_of_chunks)
     : chunk_size_(chunk_size),
       number_of_chunks_(number_of_chunks),
-      stream_(std::bind(&PushDeserializer::Pull, this)) {}
+      stream_(std::bind(&PushDeserializer::Pull, this)) {
+  // This sentinel ensures that the two queue are correctly out of step.
+  done_.push(nullptr);
+}
 
 inline PushDeserializer::~PushDeserializer() {
   if (thread_ != nullptr) {
@@ -95,19 +98,31 @@ inline void PushDeserializer::Start(
   CHECK(thread_ == nullptr);
   thread_ = std::make_unique<std::thread>([this, message](){
     CHECK(message->ParseFromZeroCopyStream(&stream_));
+
+    // Run any remainining callback.
+    std::unique_lock<std::mutex> l(lock_);
+    CHECK_EQ(1, done_.size());
+    auto const done = done_.front();
+    if (done != nullptr) {
+      done();
+    }
+    done_.pop();
   });
 }
 
-inline void PushDeserializer::Push(Bytes const bytes) {
+inline void PushDeserializer::Push(Bytes const bytes,
+                                   std::function<void()> done) {
   // Slice the incoming data in chunks of size at most |chunk_size|.  Release
   // the lock after each chunk to give the deserializer a chance to run.  This
   // method should be called with |bytes| of size 0 to terminate the
   // deserialization, but it never generates a chunk of size 0 in other
-  // circumstances.
+  // circumstances.  The |done| callback is attached to the last chunk.
   Bytes current = bytes;
   CHECK_LE(0, bytes.size);
+  bool is_last;
   do {
     {
+      is_last = current.size <= chunk_size_;
       std::unique_lock<std::mutex> l(lock_);
       queue_has_room_.wait(l, [this]() {
         return queue_.size() < static_cast<size_t>(number_of_chunks_);
@@ -115,11 +130,12 @@ inline void PushDeserializer::Push(Bytes const bytes) {
       queue_.emplace(current.data,
                      std::min(current.size,
                               static_cast<std::int64_t>(chunk_size_)));
+      done_.emplace(is_last ? std::move(done) : nullptr);
     }
     queue_has_elements_.notify_all();
     current.data = &current.data[chunk_size_];
     current.size -= chunk_size_;
-  } while (current.size > 0);
+  } while (!is_last);
 }
 
 inline Bytes PushDeserializer::Pull() {
@@ -127,6 +143,15 @@ inline Bytes PushDeserializer::Pull() {
   {
     std::unique_lock<std::mutex> l(lock_);
     queue_has_elements_.wait(l, [this]() { return !queue_.empty(); });
+    // The front of |done_| is the callback for the |Bytes| object that was just
+    // processed.  Run it now.
+    CHECK(!done_.empty());
+    auto const done = done_.front();
+    if (done != nullptr) {
+      done();
+    }
+    done_.pop();
+    // Get the next |Bytes| object to process and remove it from |queue_|.
     result = queue_.front();
     queue_.pop();
   }
