@@ -24,26 +24,31 @@ struct DoublePrecision {
   Scalar error;
 };
 
-template<typename Position, typename Momentum>
 class SymplecticIntegrator {
  public:
-  SymplecticIntegrator() = default;
   virtual ~SymplecticIntegrator() = default;
 
-  // The coefficients of the integrator.
-  using Scheme = std::vector<std::vector<double>>;
+  SymplecticIntegrator(SymplecticIntegrator const&) = delete;
+  SymplecticIntegrator(SymplecticIntegrator&&) = delete;
+  SymplecticIntegrator& operator=(SymplecticIntegrator const&) = delete;
+  SymplecticIntegrator& operator=(SymplecticIntegrator&&) = delete;
 
   // The entire state of the system at a given time.  The vectors are indexed by
   // dimension.
+  template<typename Position, typename Momentum>
   struct SystemState {
     std::vector<DoublePrecision<Position>> positions;
     std::vector<DoublePrecision<Momentum>> momenta;
     DoublePrecision<Time> time;
   };
 
+  template<typename Position, typename Momentum>
+  using Solution = std::vector<SystemState<Position, Momentum>>;
+
+  template<typename Position, typename Momentum>
   struct Parameters {
     // The initial state of the system.
-    SystemState initial;
+    SystemState<Position, Momentum> initial;
     // The ending time of the resolution.
     Time tmax;
     // The time step.
@@ -67,20 +72,8 @@ class SymplecticIntegrator {
     bool tmax_is_exact = false;
   };
 
-  // Initialize the integrator with the given |coefficients|.  Must be called
-  // before calling Solve.
-  virtual void Initialize(Scheme const& coefficients) = 0;
-
-  // NOTE(phl): This is part of the contract of SymplecticIntegrator but it
-  // cannot be written in C++ because a template cannot be virtual.
-  //
-  // Takes ownership of the pointers in |parameters|.
-  // template<typename AutonomousRightHandSideComputation,
-  //          typename RightHandSideComputation>
-  // void Solve(RightHandSideComputation const compute_force,
-  //            AutonomousRightHandSideComputation const compute_velocity,
-  //            Parameters const& parameters,
-  //            not_null<std::vector<SystemState>*> const solution);
+ protected:
+  SymplecticIntegrator() = default;
 };
 
 }  // namespace integrators

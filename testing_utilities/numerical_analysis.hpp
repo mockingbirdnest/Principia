@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 #include<vector>
 
@@ -7,6 +7,7 @@
 
 namespace principia {
 
+using quantities::Acceleration;
 using quantities::Force;
 using quantities::Length;
 using quantities::Momentum;
@@ -30,6 +31,12 @@ void ComputeHarmonicOscillatorForce(Time const& t,
 void ComputeHarmonicOscillatorVelocity(
     std::vector<Momentum> const& p,
     std::vector<Speed>* const result);
+
+// The Runge-Kutta-Nyström formulation.
+void ComputeHarmonicOscillatorAcceleration(
+    Time const& t,
+    std::vector<Length> const& q,
+    std::vector<Acceleration>* const result);
 
 }  // namespace testing_utilities
 }  // namespace principia

@@ -29,6 +29,7 @@ using constants::GravitationalConstant;
 using geometry::Instant;
 using geometry::Point;
 using geometry::Vector;
+using integrators::McLachlanAtela1992Order5Optimal;
 using quantities::Angle;
 using quantities::ArcTan;
 using quantities::Area;
@@ -65,9 +66,8 @@ class NBodySystemTest : public testing::Test {
             make_not_null_unique<Trajectory<EarthMoonOrbitPlane>>(&body2_)),
         trajectory3_(
             make_not_null_unique<Trajectory<EarthMoonOrbitPlane>>(&body3_)),
+        integrator_(&McLachlanAtela1992Order5Optimal()),
         system_(make_not_null_unique<NBodySystem<EarthMoonOrbitPlane>>()) {
-    integrator_.Initialize(integrator_.McLachlanAtela1992Order5Optimal());
-
     // The Earth-Moon system, roughly, with a circular orbit with velocities
     // in the centre-of-mass frame.
     Position<EarthMoonOrbitPlane> const q1(
@@ -146,7 +146,7 @@ class NBodySystemTest : public testing::Test {
   not_null<std::unique_ptr<Trajectory<EarthMoonOrbitPlane>>> trajectory2_;
   not_null<std::unique_ptr<Trajectory<EarthMoonOrbitPlane>>> trajectory3_;
   Position<EarthMoonOrbitPlane> centre_of_mass_;
-  SPRKIntegrator<Length, Speed> integrator_;
+  not_null<SRKNIntegrator const*> integrator_;
   Time period_;
   not_null<std::unique_ptr<NBodySystem<EarthMoonOrbitPlane>>> system_;
 };
@@ -155,7 +155,7 @@ using NBodySystemDeathTest = NBodySystemTest;
 
 TEST_F(NBodySystemDeathTest, IntegrateError) {
   EXPECT_DEATH({
-    system_->Integrate(integrator_,
+    system_->Integrate(*integrator_,
                        trajectory1_->last().time() + period_,
                        period_ / 100,
                        1,      // sampling_period
@@ -170,7 +170,7 @@ TEST_F(NBodySystemDeathTest, IntegrateError) {
     trajectory->Append(Instant(1 * SIUnit<Time>()),
                        {Position<EarthMoonOrbitPlane>(),
                         Velocity<EarthMoonOrbitPlane>()});
-    system_->Integrate(integrator_,
+    system_->Integrate(*integrator_,
                        trajectory1_->last().time() + period_,
                        period_ / 100,
                        1,      // sampling_period
@@ -182,7 +182,7 @@ TEST_F(NBodySystemDeathTest, IntegrateError) {
 // The canonical Earth-Moon system, tuned to produce circular orbits.
 TEST_F(NBodySystemTest, EarthMoon) {
   std::vector<Vector<Length, EarthMoonOrbitPlane>> positions;
-  system_->Integrate(integrator_,
+  system_->Integrate(*integrator_,
                      trajectory1_->last().time() + period_,
                      period_ / 100,
                      1,      // sampling_period
@@ -209,7 +209,7 @@ TEST_F(NBodySystemTest, EarthMoon) {
 // Same as above, but the trajectories are passed in the reverse order.
 TEST_F(NBodySystemTest, MoonEarth) {
   std::vector<Vector<Length, EarthMoonOrbitPlane>> positions;
-  system_->Integrate(integrator_,
+  system_->Integrate(*integrator_,
                      trajectory1_->last().time() + period_,
                      period_ / 100,
                      1,      // sampling_period
@@ -237,7 +237,7 @@ TEST_F(NBodySystemTest, MoonEarth) {
 TEST_F(NBodySystemTest, Moon) {
   Position<EarthMoonOrbitPlane> const reference_position =
       Position<EarthMoonOrbitPlane>();
-  system_->Integrate(integrator_,
+  system_->Integrate(*integrator_,
                      trajectory1_->last().time() + period_,
                      period_ / 100,
                      1,      // sampling_period
@@ -284,7 +284,7 @@ TEST_F(NBodySystemTest, EarthProbe) {
          body1_.gravitational_parameter() / (distance * distance),
          0 * SIUnit<Acceleration>()});});
 
-  system_->Integrate(integrator_,
+  system_->Integrate(*integrator_,
                      trajectory1_->last().time() + period_,
                      period_ / 100,
                      1,      // sampling_period
@@ -343,7 +343,7 @@ TEST_F(NBodySystemTest, Sputnik1ToSputnik2) {
           SolarSystem::Accuracy::kAllBodiesAndOblateness);
   NBodySystem<ICRFJ2000Ecliptic> system;
   system.Integrate(
-      integrator_,
+      *integrator_,
       at_спутник_2_launch->trajectories().front()->last().time(),  // tmax
       45 * Minute,  // Δt
       0,  // sampling_period

@@ -5,10 +5,8 @@
 #include <ctime>
 #include <vector>
 
-#include "quantities/quantities.hpp"
-
-// Mixed assemblies are not supported by Unity/Mono.
 #include "glog/logging.h"
+#include "quantities/quantities.hpp"
 
 #ifdef ADVANCE_ΔQSTAGE
 #error ADVANCE_ΔQSTAGE already defined
@@ -46,454 +44,328 @@ using quantities::Quotient;
 
 namespace integrators {
 
-template<typename Position, typename Momentum>
-SPRKIntegrator<Position, Momentum>::SPRKIntegrator() : stages_(0) {}
-
-template<typename Position, typename Momentum>
-typename SPRKIntegrator<Position, Momentum>::Scheme const&
-SPRKIntegrator<Position, Momentum>::Leapfrog() const {
-  static Scheme const scheme = {{ 0.5, 0.5}, { 0.0, 1.0}};
-  return scheme;
+inline SPRKIntegrator const& Leapfrog() {
+  static SPRKIntegrator const integrator({ 0.5, 0.5}, { 0.0, 1.0});
+  return integrator;
+}
+inline SPRKIntegrator const& PseudoLeapfrog() {
+  static SPRKIntegrator const integrator({ 1.0, 0.0}, { 0.5, 0.5});
+  return integrator;
 }
 
-template<typename Position, typename Momentum>
-typename SPRKIntegrator<Position, Momentum>::Scheme const&
-SPRKIntegrator<Position, Momentum>::PseudoLeapfrog() const {
-  static Scheme const scheme = {{ 1.0, 0.0}, { 0.5, 0.5}};
-  return scheme;
+inline SPRKIntegrator const& McLachlanAtela1992Order2Optimal() {
+  static SPRKIntegrator const integrator({ 0.7071067811865475244,
+                                           0.2928932188134524756},
+                                         { 0.2928932188134524756,
+                                           0.7071067811865475244});
+  return integrator;
 }
 
-template<typename Position, typename Momentum>
-typename SPRKIntegrator<Position, Momentum>::Scheme const&
-SPRKIntegrator<Position, Momentum>::McLachlanAtela1992Order2Optimal() const {
-  static Scheme const scheme = {
-      { 0.7071067811865475244,
-        0.2928932188134524756},
-      { 0.2928932188134524756,
-        0.7071067811865475244}};
-  return scheme;
+inline SPRKIntegrator const& Ruth1983() {
+  static SPRKIntegrator const integrator({ 2. / 3., -2. / 3., 1.},
+                                         { 7. / 24., 3. / 4., -1. / 24.});
+  return integrator;
 }
 
-template<typename Position, typename Momentum>
-typename SPRKIntegrator<Position, Momentum>::Scheme const&
-SPRKIntegrator<Position, Momentum>::Ruth1983() const {
-  static Scheme const scheme = {{ 2. / 3., -2. / 3., 1.},
-                                { 7. / 24., 3. / 4., -1. / 24.}};
-  return scheme;
+inline SPRKIntegrator const& McLachlanAtela1992Order3Optimal() {
+  static SPRKIntegrator const integrator({ 0.9196615230173998571,
+                                          -0.1879916187991597820,
+                                           0.2683300957817599250},
+                                         { 0.2683300957817599250,
+                                          -0.1879916187991597820,
+                                           0.9196615230173998571});
+  return integrator;
 }
 
-template<typename Position, typename Momentum>
-typename SPRKIntegrator<Position, Momentum>::Scheme const&
-SPRKIntegrator<Position, Momentum>::McLachlanAtela1992Order3Optimal() const {
-  static Scheme const scheme = {
-      { 0.9196615230173998571,
-       -0.1879916187991597820,
-        0.2683300957817599250},
-      { 0.2683300957817599250,
-       -0.1879916187991597820,
-        0.9196615230173998571}};
-  return scheme;
+inline SPRKIntegrator const&
+CandyRozmus1991ForestRuth1990SynchronousMomenta() {
+  static SPRKIntegrator const integrator({ 0.6756035959798288170,
+                                          -0.1756035959798288170,
+                                          -0.1756035959798288170,
+                                           0.6756035959798288170},
+                                         { 0.0,
+                                           1.351207191959657634,
+                                          -1.702414383919315268,
+                                           1.351207191959657634});
+  return integrator;
 }
 
-template<typename Position, typename Momentum>
-typename SPRKIntegrator<Position, Momentum>::Scheme const&
-SPRKIntegrator<Position, Momentum>::
-    CandyRozmus1991ForestRuth1990SynchronousMomenta() const {
-  static Scheme const scheme = {
-      { 0.6756035959798288170,
-       -0.1756035959798288170,
-       -0.1756035959798288170,
-        0.6756035959798288170},
-      { 0.0,
-        1.351207191959657634,
-       -1.702414383919315268,
-        1.351207191959657634}};
-  return scheme;
+inline SPRKIntegrator const&
+CandyRozmus1991ForestRuth1990SynchronousPositions() {
+  static SPRKIntegrator const integrator({ 1.3512071919596576340,
+                                          -1.7024143839193152681,
+                                           1.3512071919596576340,
+                                           0.0},
+                                         { 0.6756035959798288170,
+                                          -0.1756035959798288170,
+                                          -0.1756035959798288170,
+                                           0.6756035959798288170});
+  return integrator;
 }
 
-template<typename Position, typename Momentum>
-typename SPRKIntegrator<Position, Momentum>::Scheme const&
-SPRKIntegrator<Position, Momentum>::
-    CandyRozmus1991ForestRuth1990SynchronousPositions() const {
-  static Scheme const scheme = {
-      { 1.3512071919596576340,
-       -1.7024143839193152681,
-        1.3512071919596576340,
-        0.0},
-      { 0.6756035959798288170,
-       -0.1756035959798288170,
-       -0.1756035959798288170,
-        0.6756035959798288170}};
-  return scheme;
+inline SPRKIntegrator const& Yoshida1990Order6A() {
+  static SPRKIntegrator const integrator({ 0.78451361047755726382,
+                                           0.23557321335935813369,
+                                          -1.17767998417887100695,
+                                           1.31518632068391121889,
+                                          -1.17767998417887100695,
+                                           0.23557321335935813369,
+                                           0.78451361047755726382,
+                                           0.0},
+                                         { 0.392256805238778631910,
+                                           0.51004341191845769875,
+                                          -0.47105338540975643663,
+                                           0.06875316825252010597,
+                                           0.06875316825252010597,
+                                          -0.47105338540975643663,
+                                           0.51004341191845769875,
+                                           0.392256805238778631910});
+  return integrator;
 }
 
-template<typename Position, typename Momentum>
-typename SPRKIntegrator<Position, Momentum>::Scheme const&
-SPRKIntegrator<Position, Momentum>::McLachlanAtela1992Order4Optimal() const {
-  static Scheme const scheme = {
-      { 0.5153528374311229364,
-       -0.085782019412973646,
-        0.4415830236164665242,
-        0.1288461583653841854},
-      { 0.1344961992774310892,
-       -0.2248198030794208058,
-        0.7563200005156682911,
-        0.3340036032863214255}};
-  return scheme;
+inline SPRKIntegrator const& Yoshida1990Order6B() {
+  static SPRKIntegrator const integrator({ 1.43984816797678309102,
+                                           0.00426068187079201616,
+                                          -2.13228522200145152088,
+                                           2.37635274430775282740,
+                                          -2.13228522200145152088,
+                                           0.00426068187079201616,
+                                           1.43984816797678309102,
+                                           0.0},
+                                         { 0.71992408398839154551,
+                                           0.72205442492378755359,
+                                          -1.06401227006532975236,
+                                           0.12203376115315065326,
+                                           0.12203376115315065326,
+                                          -1.06401227006532975236,
+                                           0.72205442492378755359,
+                                           0.71992408398839154551});
+  return integrator;
 }
 
-template<typename Position, typename Momentum>
-typename SPRKIntegrator<Position, Momentum>::Scheme const&
-SPRKIntegrator<Position, Momentum>::McLachlanAtela1992Order5Optimal() const {
-  static Scheme const scheme = {
-      { 0.339839625839110000,
-       -0.088601336903027329,
-        0.5858564768259621188,
-       -0.603039356536491888,
-        0.3235807965546976394,
-        0.4423637942197494587},
-      { 0.1193900292875672758,
-        0.6989273703824752308,
-       -0.1713123582716007754,
-        0.4012695022513534480,
-        0.0107050818482359840,
-       -0.0589796254980311632}};
-  return scheme;
+inline SPRKIntegrator const& Yoshida1990Order6C() {
+  static SPRKIntegrator const integrator({ 1.44778256239929793290,
+                                          -2.14403531630538931060,
+                                           0.00152886228424927025338,
+                                           2.38944778324368421490,
+                                           0.00152886228424927025338,
+                                          -2.14403531630538931060,
+                                           1.44778256239929793290,
+                                           0.0},
+                                         { 0.72389128119964896645,
+                                          -0.34812637695304568885,
+                                          -1.07125322701057002017,
+                                           1.19548832276396674257,
+                                           1.19548832276396674257,
+                                          -1.07125322701057002017,
+                                          -0.34812637695304568885,
+                                           0.72389128119964896645});
+  return integrator;
 }
 
-template<typename Position, typename Momentum>
-typename SPRKIntegrator<Position, Momentum>::Scheme const&
-SPRKIntegrator<Position, Momentum>::Yoshida1990Order6A() const {
-  static Scheme const scheme = {
-      { 0.78451361047755726382,
-        0.23557321335935813369,
-       -1.17767998417887100695,
-        1.31518632068391121889,
-       -1.17767998417887100695,
-        0.23557321335935813369,
-        0.78451361047755726382,
-        0.0},
-      { 0.392256805238778631910,
-        0.51004341191845769875,
-       -0.47105338540975643663,
-        0.06875316825252010597,
-        0.06875316825252010597,
-       -0.47105338540975643663,
-        0.51004341191845769875,
-        0.392256805238778631910}};
-  return scheme;
+inline SPRKIntegrator const& Yoshida1990Order8A() {
+  static SPRKIntegrator const integrator({ 1.04242620869970426435,
+                                           1.82020630970698006933,
+                                           0.157739928123708321343,
+                                           2.44002732616634406382,
+                                          -0.00716989419709533209981,
+                                          -2.44699182370424588929,
+                                          -1.61582374150065378479,
+                                          -1.7808286265894834253,
+                                          -1.61582374150065378479,
+                                          -2.44699182370424588929,
+                                          -0.00716989419709533209981,
+                                           2.44002732616634406382,
+                                           0.157739928123708321343,
+                                           1.82020630970698006933,
+                                           1.04242620869970426435,
+                                           0.0},
+                                         { 0.521213104349852132174,
+                                           1.43131625920334216684,
+                                           0.988973118915344195337,
+                                           1.29888362714502619258,
+                                           1.21642871598462436586,
+                                          -1.22708085895067061070,
+                                          -2.03140778260244983704,
+                                          -1.6983261840450686051,
+                                          -1.6983261840450686051,
+                                          -2.03140778260244983704,
+                                          -1.22708085895067061070,
+                                           1.21642871598462436586,
+                                           1.29888362714502619258,
+                                           0.988973118915344195337,
+                                           1.43131625920334216684,
+                                           0.521213104349852132174});
+  return integrator;
 }
 
-template<typename Position, typename Momentum>
-typename SPRKIntegrator<Position, Momentum>::Scheme const&
-SPRKIntegrator<Position, Momentum>::Yoshida1990Order6B() const {
-  static Scheme const scheme = {
-      { 1.43984816797678309102,
-        0.00426068187079201616,
-       -2.13228522200145152088,
-        2.37635274430775282740,
-       -2.13228522200145152088,
-        0.00426068187079201616,
-        1.43984816797678309102,
-        0.0},
-      { 0.71992408398839154551,
-        0.72205442492378755359,
-       -1.06401227006532975236,
-        0.12203376115315065326,
-        0.12203376115315065326,
-       -1.06401227006532975236,
-        0.72205442492378755359,
-        0.71992408398839154551}};
-  return scheme;
+inline SPRKIntegrator const& Yoshida1990Order8B() {
+  static SPRKIntegrator const integrator({ 1.48819229202921310080,
+                                          -2.33864815101041943098,
+                                           2.89105148972198900311,
+                                          -2.89688250330423987105,
+                                           0.00378039588362668223674,
+                                           2.89195744315817391244,
+                                          -0.00169248587771706559145,
+                                          -3.0755169612012526619,
+                                          -0.00169248587771706559145,
+                                           2.89195744315817391244,
+                                           0.00378039588362668223674,
+                                          -2.89688250330423987105,
+                                           2.89105148972198900311,
+                                          -2.33864815101041943098,
+                                           1.48819229202921310080,
+                                           0.0},
+                                         { 0.744096146014606550401,
+                                          -0.42522792949060316509,
+                                           0.27620166935578478606,
+                                          -0.00291550679112543397,
+                                          -1.44655105371030659441,
+                                           1.44786891952090029734,
+                                           1.44513247864022842343,
+                                          -1.5386047235394848638,
+                                          -1.5386047235394848638,
+                                           1.44513247864022842343,
+                                           1.44786891952090029734,
+                                          -1.44655105371030659441,
+                                          -0.00291550679112543397,
+                                           0.27620166935578478606,
+                                          -0.42522792949060316509,
+                                           0.744096146014606550401});
+  return integrator;
 }
 
-template<typename Position, typename Momentum>
-typename SPRKIntegrator<Position, Momentum>::Scheme const&
-SPRKIntegrator<Position, Momentum>::Yoshida1990Order6C() const {
-  static Scheme const scheme = {
-      { 1.44778256239929793290,
-       -2.14403531630538931060,
-        0.00152886228424927025338,
-        2.38944778324368421490,
-        0.00152886228424927025338,
-       -2.14403531630538931060,
-        1.44778256239929793290,
-        0.0},
-      { 0.72389128119964896645,
-       -0.34812637695304568885,
-       -1.07125322701057002017,
-        1.19548832276396674257,
-        1.19548832276396674257,
-       -1.07125322701057002017,
-       -0.34812637695304568885,
-        0.72389128119964896645}};
-  return scheme;
+inline SPRKIntegrator const& Yoshida1990Order8C() {
+  static SPRKIntegrator const integrator({ 0.629030650210427818049,
+                                           1.36934946416874222370,
+                                          -1.06458714789183904181,
+                                           1.66335809963311356298,
+                                          -1.67896928259637402925,
+                                          -1.55946803821449795876,
+                                           0.311790812418431890510,
+                                           1.6589908845439910692,
+                                           0.311790812418431890510,
+                                          -1.55946803821449795876,
+                                          -1.67896928259637402925,
+                                           1.66335809963311356298,
+                                          -1.06458714789183904181,
+                                           1.36934946416874222370,
+                                           0.629030650210427818049,
+                                           0.0},
+                                         { 0.314515325105213909024,
+                                           0.999190057189585020872,
+                                           0.15238115813845159094,
+                                           0.29938547587063726059,
+                                          -0.00780559148163023314,
+                                          -1.61921866040543599400,
+                                          -0.623838612898033034124,
+                                           0.98539084848121147984,
+                                           0.98539084848121147984,
+                                          -0.623838612898033034124,
+                                          -1.61921866040543599400,
+                                          -0.00780559148163023314,
+                                           0.29938547587063726059,
+                                           0.15238115813845159094,
+                                           0.999190057189585020872,
+                                           0.314515325105213909024});
+  return integrator;
 }
 
-template<typename Position, typename Momentum>
-typename SPRKIntegrator<Position, Momentum>::Scheme const&
-SPRKIntegrator<Position, Momentum>::Yoshida1990Order8A() const {
-  static Scheme const scheme = {
-      { 1.04242620869970426435,
-        1.82020630970698006933,
-        0.157739928123708321343,
-        2.44002732616634406382,
-       -0.00716989419709533209981,
-       -2.44699182370424588929,
-       -1.61582374150065378479,
-       -1.7808286265894834253,
-       -1.61582374150065378479,
-       -2.44699182370424588929,
-       -0.00716989419709533209981,
-        2.44002732616634406382,
-        0.157739928123708321343,
-        1.82020630970698006933,
-        1.04242620869970426435,
-        0.0},
-      { 0.521213104349852132174,
-        1.43131625920334216684,
-        0.988973118915344195337,
-        1.29888362714502619258,
-        1.21642871598462436586,
-       -1.22708085895067061070,
-       -2.03140778260244983704,
-       -1.6983261840450686051,
-       -1.6983261840450686051,
-       -2.03140778260244983704,
-       -1.22708085895067061070,
-        1.21642871598462436586,
-        1.29888362714502619258,
-        0.988973118915344195337,
-        1.43131625920334216684,
-        0.521213104349852132174}};
-  return scheme;
+inline SPRKIntegrator const& Yoshida1990Order8D() {
+  static SPRKIntegrator const integrator({ 0.914844246229642658287,
+                                           0.253693336566286009974,
+                                          -1.44485223686030647660,
+                                          -0.158240635368502468458,
+                                           1.93813913762291232471,
+                                          -1.96061023297558163691,
+                                           0.102799849392219431139,
+                                           1.7084530707866603157,
+                                           0.102799849392219431139,
+                                          -1.96061023297558163691,
+                                           1.93813913762291232471,
+                                          -0.158240635368502468458,
+                                          -1.44485223686030647660,
+                                           0.253693336566286009974,
+                                           0.914844246229642658287,
+                                           0.0},
+                                         { 0.457422123114821329143,
+                                           0.584268791397964334130,
+                                          -0.595579450147010233314,
+                                          -0.801546436114404472530,
+                                           0.88994925112720492813,
+                                          -0.01123554767633465610,
+                                          -0.92890519179168110289,
+                                           0.90562646008943987343,
+                                           0.90562646008943987343,
+                                          -0.92890519179168110289,
+                                          -0.01123554767633465610,
+                                           0.88994925112720492813,
+                                          -0.801546436114404472530,
+                                          -0.595579450147010233314,
+                                           0.584268791397964334130,
+                                           0.457422123114821329143});
+  return integrator;
 }
 
-template<typename Position, typename Momentum>
-typename SPRKIntegrator<Position, Momentum>::Scheme const&
-SPRKIntegrator<Position, Momentum>::Yoshida1990Order8B() const {
-  static Scheme const scheme = {
-      { 1.48819229202921310080,
-       -2.33864815101041943098,
-        2.89105148972198900311,
-       -2.89688250330423987105,
-        0.00378039588362668223674,
-        2.89195744315817391244,
-       -0.00169248587771706559145,
-       -3.0755169612012526619,
-       -0.00169248587771706559145,
-        2.89195744315817391244,
-        0.00378039588362668223674,
-       -2.89688250330423987105,
-        2.89105148972198900311,
-       -2.33864815101041943098,
-        1.48819229202921310080,
-        0.0},
-      { 0.744096146014606550401,
-       -0.42522792949060316509,
-        0.27620166935578478606,
-       -0.00291550679112543397,
-       -1.44655105371030659441,
-        1.44786891952090029734,
-        1.44513247864022842343,
-       -1.5386047235394848638,
-       -1.5386047235394848638,
-        1.44513247864022842343,
-        1.44786891952090029734,
-       -1.44655105371030659441,
-       -0.00291550679112543397,
-        0.27620166935578478606,
-       -0.42522792949060316509,
-        0.744096146014606550401}};
-  return scheme;
+inline SPRKIntegrator const& Yoshida1990Order8E() {
+  static SPRKIntegrator const integrator({ 1.30300165757516838484,
+                                           0.107990467718098279648,
+                                          -2.04809795883490205633,
+                                           0.00536018921375238082832,
+                                          -0.0719180053650705075005,
+                                           2.52778927318028339169,
+                                           0.0227738840126312259937,
+                                          -2.6937990149999221983,
+                                           0.0227738840126312259937,
+                                           2.52778927318028339169,
+                                          -0.0719180053650705075005,
+                                           0.00536018921375238082832,
+                                          -2.04809795883490205633,
+                                           0.107990467718098279648,
+                                           1.30300165757516838484,
+                                           0.0},
+                                         { 0.651500828787584192418,
+                                           0.705496062646633332241,
+                                          -0.97005374555840188834,
+                                          -1.02136888481057483775,
+                                          -0.0332789080756590633361,
+                                           1.22793563390760644210,
+                                           1.27528157859645730884,
+                                          -1.33551256549364548617,
+                                          -1.33551256549364548617,
+                                           1.27528157859645730884,
+                                           1.22793563390760644210,
+                                          -0.0332789080756590633361,
+                                          -1.02136888481057483775,
+                                          -0.97005374555840188834,
+                                           0.705496062646633332241,
+                                           0.651500828787584192418});
+  return integrator;
 }
 
-template<typename Position, typename Momentum>
-typename SPRKIntegrator<Position, Momentum>::Scheme const&
-SPRKIntegrator<Position, Momentum>::Yoshida1990Order8C() const {
-  static Scheme const scheme = {
-      { 0.629030650210427818049,
-        1.36934946416874222370,
-       -1.06458714789183904181,
-        1.66335809963311356298,
-       -1.67896928259637402925,
-       -1.55946803821449795876,
-        0.311790812418431890510,
-        1.6589908845439910692,
-        0.311790812418431890510,
-       -1.55946803821449795876,
-       -1.67896928259637402925,
-        1.66335809963311356298,
-       -1.06458714789183904181,
-        1.36934946416874222370,
-        0.629030650210427818049,
-        0.0},
-      { 0.314515325105213909024,
-        0.999190057189585020872,
-        0.15238115813845159094,
-        0.29938547587063726059,
-       -0.00780559148163023314,
-       -1.61921866040543599400,
-       -0.623838612898033034124,
-        0.98539084848121147984,
-        0.98539084848121147984,
-       -0.623838612898033034124,
-       -1.61921866040543599400,
-       -0.00780559148163023314,
-        0.29938547587063726059,
-        0.15238115813845159094,
-        0.999190057189585020872,
-        0.314515325105213909024}};
-  return scheme;
-}
+inline SPRKIntegrator::SPRKIntegrator(std::vector<double> const& a,
+                                      std::vector<double> const& b)
+    : SRKNIntegrator(a, b) {}
 
-template<typename Position, typename Momentum>
-typename SPRKIntegrator<Position, Momentum>::Scheme const&
-SPRKIntegrator<Position, Momentum>::Yoshida1990Order8D() const {
-  static Scheme const scheme = {
-      { 0.914844246229642658287,
-        0.253693336566286009974,
-       -1.44485223686030647660,
-       -0.158240635368502468458,
-        1.93813913762291232471,
-       -1.96061023297558163691,
-        0.102799849392219431139,
-        1.7084530707866603157,
-        0.102799849392219431139,
-       -1.96061023297558163691,
-        1.93813913762291232471,
-       -0.158240635368502468458,
-       -1.44485223686030647660,
-        0.253693336566286009974,
-        0.914844246229642658287,
-        0.0},
-      { 0.457422123114821329143,
-        0.584268791397964334130,
-       -0.595579450147010233314,
-       -0.801546436114404472530,
-        0.88994925112720492813,
-       -0.01123554767633465610,
-       -0.92890519179168110289,
-        0.90562646008943987343,
-        0.90562646008943987343,
-       -0.92890519179168110289,
-       -0.01123554767633465610,
-        0.88994925112720492813,
-       -0.801546436114404472530,
-       -0.595579450147010233314,
-        0.584268791397964334130,
-        0.457422123114821329143}};
-  return scheme;
-}
-
-template<typename Position, typename Momentum>
-typename SPRKIntegrator<Position, Momentum>::Scheme const&
-SPRKIntegrator<Position, Momentum>::Yoshida1990Order8E() const {
-  static Scheme const scheme = {
-      { 1.30300165757516838484,
-        0.107990467718098279648,
-       -2.04809795883490205633,
-        0.00536018921375238082832,
-       -0.0719180053650705075005,
-        2.52778927318028339169,
-        0.0227738840126312259937,
-       -2.6937990149999221983,
-        0.0227738840126312259937,
-        2.52778927318028339169,
-       -0.0719180053650705075005,
-        0.00536018921375238082832,
-       -2.04809795883490205633,
-        0.107990467718098279648,
-        1.30300165757516838484,
-        0.0},
-      { 0.651500828787584192418,
-        0.705496062646633332241,
-       -0.97005374555840188834,
-       -1.02136888481057483775,
-       -0.0332789080756590633361,
-        1.22793563390760644210,
-        1.27528157859645730884,
-       -1.33551256549364548617,
-       -1.33551256549364548617,
-        1.27528157859645730884,
-        1.22793563390760644210,
-       -0.0332789080756590633361,
-       -1.02136888481057483775,
-       -0.97005374555840188834,
-        0.705496062646633332241,
-        0.651500828787584192418}};
-  return scheme;
-}
-
-
-template<typename Position, typename Momentum>
-void SPRKIntegrator<Position, Momentum>::Initialize(
-    Scheme const& coefficients) {
-  CHECK_EQ(2, coefficients.size());
-  if (coefficients[1].front() == 0.0) {
-    vanishing_coefficients_ = kFirstBVanishes;
-    first_same_as_last_ = std::make_unique<FirstSameAsLast>();
-    first_same_as_last_->first = coefficients[0].front();
-    first_same_as_last_->last = coefficients[0].back();
-    a_ = std::vector<double>(coefficients[0].begin() + 1,
-                             coefficients[0].end());
-    b_ = std::vector<double>(coefficients[1].begin() + 1,
-                             coefficients[1].end());
-    a_.back() += first_same_as_last_->first;
-    stages_ = b_.size();
-    CHECK_EQ(stages_, a_.size());
-  } else if (coefficients[0].back() == 0.0) {
-    vanishing_coefficients_ = kLastAVanishes;
-    first_same_as_last_ = std::make_unique<FirstSameAsLast>();
-    first_same_as_last_->first = coefficients[1].front();
-    first_same_as_last_->last = coefficients[1].back();
-    a_ = std::vector<double>(coefficients[0].begin(),
-                             coefficients[0].end() - 1);
-    b_ = std::vector<double>(coefficients[1].begin(),
-                             coefficients[1].end() - 1);
-    b_.front() += first_same_as_last_->last;
-    stages_ = b_.size();
-    CHECK_EQ(stages_, a_.size());
-  } else {
-    vanishing_coefficients_ = kNone;
-    first_same_as_last_.reset();
-    a_ = coefficients[0];
-    b_ = coefficients[1];
-    stages_ = b_.size();
-    CHECK_EQ(stages_, a_.size());
-  }
-
-  // Runge-Kutta time weights.
-  c_.resize(stages_);
-  if (vanishing_coefficients_ == kFirstBVanishes) {
-    c_[0] = first_same_as_last_->first;
-  } else {
-    c_[0] = 0.0;
-  }
-  for (int j = 1; j < stages_; ++j) {
-    c_[j] = c_[j - 1] + a_[j - 1];
-  }
-}
-
-template<typename Position, typename Momentum>
-template<typename AutonomousRightHandSideComputation,
+template<typename Position, typename Momentum,
+         typename AutonomousRightHandSideComputation,
          typename RightHandSideComputation>
-void SPRKIntegrator<Position, Momentum>::Solve(
-      RightHandSideComputation compute_force,
-      AutonomousRightHandSideComputation compute_velocity,
-      Parameters const& parameters,
-      not_null<std::vector<SystemState>*> const solution) const {
+void SPRKIntegrator::SolveIncrement(
+    RightHandSideComputation compute_force,
+    AutonomousRightHandSideComputation compute_velocity,
+    Parameters<Position, Momentum> const& parameters,
+    not_null<Solution<Position, Momentum>*> const solution) const {
   switch (vanishing_coefficients_) {
     case kNone:
-      SolveOptimized<kNone>(
+      SolveIncrementOptimized<kNone>(
           compute_force, compute_velocity, parameters, solution);
       break;
     case kFirstBVanishes:
-      SolveOptimized<kFirstBVanishes>(
+      SolveIncrementOptimized<kFirstBVanishes>(
           compute_force, compute_velocity, parameters, solution);
       break;
     case kLastAVanishes:
-      SolveOptimized<kLastAVanishes>(
+      SolveIncrementOptimized<kLastAVanishes>(
           compute_force, compute_velocity, parameters, solution);
       break;
     default:
@@ -501,15 +373,15 @@ void SPRKIntegrator<Position, Momentum>::Solve(
   }
 }
 
-template<typename Position, typename Momentum>
-template<VanishingCoefficients vanishing_coefficients,
+template<SPRKIntegrator::VanishingCoefficients vanishing_coefficients,
+         typename Position, typename Momentum,
          typename AutonomousRightHandSideComputation,
          typename RightHandSideComputation>
-void SPRKIntegrator<Position, Momentum>::SolveOptimized(
-      RightHandSideComputation compute_force,
-      AutonomousRightHandSideComputation compute_velocity,
-      Parameters const& parameters,
-      not_null<std::vector<SystemState>*> const solution) const {
+void SPRKIntegrator::SolveIncrementOptimized(
+    RightHandSideComputation compute_force,
+    AutonomousRightHandSideComputation compute_velocity,
+    Parameters<Position, Momentum> const& parameters,
+    not_null<Solution<Position, Momentum>*> const solution) const {
   int const dimension = parameters.initial.positions.size();
 
   std::vector<Position> Δqstage0(dimension);
@@ -651,7 +523,7 @@ void SPRKIntegrator<Position, Momentum>::SolveOptimized(
     if (parameters.sampling_period != 0) {
       if (sampling_phase % parameters.sampling_period == 0) {
         solution->emplace_back();
-        SystemState* state = &solution->back();
+        SystemState<Position, Momentum>* state = &solution->back();
         state->time = tn;
         state->positions.reserve(dimension);
         state->momenta.reserve(dimension);
@@ -666,7 +538,7 @@ void SPRKIntegrator<Position, Momentum>::SolveOptimized(
 
   if (parameters.sampling_period == 0) {
     solution->emplace_back();
-    SystemState* state = &solution->back();
+    SystemState<Position, Momentum>* state = &solution->back();
     state->time = tn;
     state->positions.reserve(dimension);
     state->momenta.reserve(dimension);

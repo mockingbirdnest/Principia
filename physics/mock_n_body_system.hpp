@@ -15,7 +15,7 @@ class MockNBodySystem : public NBodySystem<InertialFrame> {
 
   MOCK_CONST_METHOD6_T(
       Integrate,
-      void(SymplecticIntegrator<Length, Speed> const& integrator,
+      void(SRKNIntegrator const& integrator,
            Instant const& tmax,
            Time const& Δt,
            int const sampling_period,

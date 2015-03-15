@@ -382,9 +382,9 @@ class Plugin {
 
   not_null<std::unique_ptr<NBodySystem<Barycentric>>> n_body_system_;
   // The symplectic integrator computing the synchronized histories.
-  SPRKIntegrator<Length, Speed> history_integrator_;
+  not_null<SRKNIntegrator const*> const history_integrator_;
   // The integrator computing the prolongations.
-  SPRKIntegrator<Length, Speed> prolongation_integrator_;
+  not_null<SRKNIntegrator const*> const prolongation_integrator_;
 
   // Whether initialization is ongoing.
   base::Monostable initializing_;

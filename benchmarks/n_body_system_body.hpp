@@ -11,6 +11,7 @@ namespace principia {
 
 using astronomy::JulianYear;
 using base::not_null;
+using integrators::McLachlanAtela1992Order5Optimal;
 using integrators::SPRKIntegrator;
 using physics::NBodySystem;
 using quantities::Length;
@@ -24,8 +25,7 @@ namespace benchmarks {
 void SimulateSolarSystem(not_null<SolarSystem*> const solar_system) {
   auto const n_body_system = std::make_unique<NBodySystem<ICRFJ2000Ecliptic>>();
   auto const trajectories = solar_system->trajectories();
-  SPRKIntegrator<Length, Speed> integrator;
-  integrator.Initialize(integrator.McLachlanAtela1992Order5Optimal());
+  SRKNIntegrator const& integrator = McLachlanAtela1992Order5Optimal();
   n_body_system->Integrate(integrator,
                            trajectories.front()->last().time() +
                                100 * JulianYear,              // t_max

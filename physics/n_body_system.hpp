@@ -6,7 +6,7 @@
 
 #include "base/not_null.hpp"
 #include "geometry/named_quantities.hpp"
-#include "integrators/symplectic_integrator.hpp"
+#include "integrators/symplectic_runge_kutta_nystrom_integrator.hpp"
 #include "physics/body.hpp"
 #include "physics/massive_body.hpp"
 #include "physics/trajectory.hpp"
@@ -16,7 +16,7 @@ namespace principia {
 
 using base::not_null;
 using geometry::Instant;
-using integrators::SymplecticIntegrator;
+using integrators::SRKNIntegrator;
 using quantities::Acceleration;
 using quantities::Length;
 using quantities::Speed;
@@ -37,7 +37,7 @@ class NBodySystem {
   // The |integrator| must already have been initialized.  All the
   // |trajectories| must have the same |last_time()| and must be for distinct
   // bodies.
-  virtual void Integrate(SymplecticIntegrator<Length, Speed> const& integrator,
+  virtual void Integrate(SRKNIntegrator const& integrator,
                          Instant const& tmax,
                          Time const& Δt,
                          int const sampling_period,
@@ -72,11 +72,6 @@ class NBodySystem {
       Time const& t,
       std::vector<Length> const& q,
       not_null<std::vector<Acceleration>*> const result);
-
-  // No transfer of ownership.
-  static void ComputeGravitationalVelocities(
-      std::vector<Speed> const& p,
-      not_null<std::vector<Speed>*> const result);
 };
 
 }  // namespace physics
