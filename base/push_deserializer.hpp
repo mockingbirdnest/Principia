@@ -92,10 +92,10 @@ class PushDeserializer {
   std::condition_variable queue_has_room_;
   std::condition_variable queue_has_elements_;
   // The |queue_| contains the |Bytes| object filled by |Push| and not yet
-  // consumed by |Pull|.  The two queues are out of step: an element is removed
-  // from |queue_| by |Pull| when it returns a chunk to the stream, but the
-  // corresponding element is removed from |done_| when |Pull| returns.  It is
-  // executed at this point to destroy the chunk.
+  // consumed by |Pull|.  The |done_| queue contains the callbacks.  The two
+  // queues are out of step: an element is removed from |queue_| by |Pull| when
+  // it returns a chunk to the stream, but the corresponding callback is removed
+  // from |done_| (and executed) when |Pull| returns.
   std::queue<Bytes> queue_ GUARDED_BY(lock_);
   std::queue<std::function<void()>> done_ GUARDED_BY(lock_);
 };

@@ -98,6 +98,15 @@ inline void PushDeserializer::Start(
   CHECK(thread_ == nullptr);
   thread_ = std::make_unique<std::thread>([this, message](){
     CHECK(message->ParseFromZeroCopyStream(&stream_));
+
+    // Run any remainining callback.
+    std::unique_lock<std::mutex> l(lock_);
+    CHECK_EQ(1, done_.size());
+    auto const done = done_.front();
+    if (done != nullptr) {
+      done();
+    }
+    done_.pop();
   });
 }
 
@@ -137,7 +146,7 @@ inline Bytes PushDeserializer::Pull() {
     // The front of |done_| is the callback for the |Bytes| object that was just
     // processed.  Run it now.
     CHECK(!done_.empty());
-    const auto done = done_.front();
+    auto const done = done_.front();
     if (done != nullptr) {
       done();
     }
