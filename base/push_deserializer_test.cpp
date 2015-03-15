@@ -1,5 +1,6 @@
 #include "base/push_deserializer.hpp"
 
+#include <algorithm>
 #include <list>
 #include <string>
 #include <thread>  // NOLINT(build/c++11)
@@ -166,7 +167,7 @@ TEST_F(PushDeserializerTest, SerializationDeserialization) {
     for (;;) {
       Bytes const bytes = pull_serializer_->Pull();
       std::memcpy(data, bytes.data, static_cast<size_t>(bytes.size));
-      push_deserializer_->Push(Bytes(data, bytes.size), 
+      push_deserializer_->Push(Bytes(data, bytes.size),
                                std::bind(&PushDeserializerTest::Stomp,
                                          Bytes(data, bytes.size)));
       data = &data[bytes.size];
