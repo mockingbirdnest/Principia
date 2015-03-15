@@ -1,6 +1,7 @@
 #include "base/push_deserializer.hpp"
 
 #include <algorithm>
+#include <cstring>
 #include <list>
 #include <string>
 #include <thread>  // NOLINT(build/c++11)
@@ -60,10 +61,8 @@ class PushDeserializerTest : public ::testing::Test {
     }
   }
 
-  static void Stomp(const Bytes& bytes) {
-    for (int i = 0; i < bytes.size; ++i) {
-      bytes.data[i] = 0xCD;
-    }
+  static void Stomp(Bytes const& bytes) {
+    std::memset(bytes.data, 0xCD, static_cast<size_t>(bytes.size));
   }
 
   // Returns the first string in the list.  Note that the very first string is
@@ -186,24 +185,24 @@ TEST_F(PushDeserializerTest, SerializationDeserialization) {
 // Check that deserialization fails if we stomp on one extra bytes.
 TEST_F(PushDeserializerDeathTest, Stomp) {
   EXPECT_DEATH({
-  const int kStompChunk = 77;
-  Trajectory read_trajectory;
-  auto serialized_trajectory =
-      std::make_unique<std::uint8_t[]>(trajectory_.ByteSize());
-  trajectory_.SerializePartialToArray(&serialized_trajectory[0],
-                                      trajectory_.ByteSize());
-  push_deserializer_->Start(&read_trajectory);
-  int left = trajectory_.ByteSize();
-  for (int i = 0; i < trajectory_.ByteSize(); i += kStompChunk) {
-    Bytes bytes(&serialized_trajectory[i], std::min(left, kStompChunk));
-    push_deserializer_->Push(bytes,
-                              std::bind(&PushDeserializerTest::Stomp,
-                                        Bytes(bytes.data, bytes.size + 1)));
-    left -= kStompChunk;
-  }
-  push_deserializer_->Push(Bytes(), nullptr);
-  push_deserializer_.reset();
-  }, "failed.*Parse");
+    const int kStompChunk = 77;
+    Trajectory read_trajectory;
+    auto serialized_trajectory =
+        std::make_unique<std::uint8_t[]>(trajectory_.ByteSize());
+    trajectory_.SerializePartialToArray(&serialized_trajectory[0],
+                                        trajectory_.ByteSize());
+    push_deserializer_->Start(&read_trajectory);
+    int left = trajectory_.ByteSize();
+    for (int i = 0; i < trajectory_.ByteSize(); i += kStompChunk) {
+      Bytes bytes(&serialized_trajectory[i], std::min(left, kStompChunk));
+      push_deserializer_->Push(bytes,
+                               std::bind(&PushDeserializerTest::Stomp,
+                                         Bytes(bytes.data, bytes.size + 1)));
+      left -= kStompChunk;
+    }
+    push_deserializer_->Push(Bytes(), nullptr);
+    push_deserializer_.reset();
+    }, "failed.*Parse");
 }
 
 }  // namespace base
