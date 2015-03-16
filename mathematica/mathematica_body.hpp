@@ -2,6 +2,7 @@
 
 #include "mathematica/mathematica.hpp"
 
+#include <cmath>
 #include <string>
 #include <vector>
 
@@ -11,27 +12,13 @@ using quantities::DebugString;
 
 namespace mathematica {
 
-  /*
-template<typename T>
-std::string Function(std::string const& function,
-                                std::vector<T> const& arguments) {
-  std::string result;
-  result += function;
-  result += "[";
-  for (int i = 0; i != arguments.size(); ++i) {
-    result += ToMathematica(arguments[i]);
-    result += (i + 1 == arguments.size() ? "]" : ",");
-  }
-  return result;
-}*/
-
 inline std::string Apply(
     std::string const& function,
     std::vector<std::string> const& arguments) {
   std::string result;
   result += function;
   result += "[";
-  for (int i = 0; i != arguments.size(); ++i) {
+  for (int i = 0; i < arguments.size(); ++i) {
     result += arguments[i];
     result += (i + 1 == arguments.size() ? "]" : ",");
   }
@@ -70,13 +57,13 @@ std::string ToMathematica(std::vector<T> list) {
 }
 
 inline std::string ToMathematica(double const& real) {
-  if (isinf(real)) {
-    if (real > 0) {
+  if (std::isinf(real)) {
+    if (real > 0.0) {
       return "Infinity";
     } else {
       return Apply("Minus", {"Infinity"});
     }
-  } else if (isnan(real)) {
+  } else if (std::isnan(real)) {
     return "Indeterminate";
   } else {
     std::string s = DebugString(real);
@@ -89,12 +76,16 @@ template<typename D>
 std::string ToMathematica(Quantity<D> const& quantity) {
   std::string s = DebugString(quantity);
   s.replace(s.find("e"), 1, "*^");
-  std::string number = ToMathematica(quantity / SIUnit<Quantity<D>>());
-  std::size_t split = s.find(" ");
-  std::string units = Escape(s.substr(split, s.size()));
+  std::string const number = ToMathematica(quantity / SIUnit<Quantity<D>>());
+  std::size_t const split = s.find(" ");
+  std::string const units = Escape(s.substr(split, s.size()));
   return Apply(
       "SetPrecision",
       {Apply("Quantity", {number, units}), "MachinePrecision"});
+}
+
+inline std::string ToMathematica(std::string const& str) {
+  return str;
 }
 
 // Wraps the string in quotes.
@@ -104,10 +95,6 @@ inline std::string Escape(std::string const& str) {
   result += str;
   result += "\"";
   return result;
-}
-
-inline std::string ToMathematica(std::string const& str) {
-  return str;
 }
 
 }  // namespace mathematica
