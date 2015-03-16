@@ -21,9 +21,12 @@ namespace principia {
 using base::not_null;
 using quantities::AngularFrequency;
 using quantities::Cos;
-using quantities::Sin;
+using quantities::Energy;
 using quantities::Length;
+using quantities::Pow;
+using quantities::Sin;
 using quantities::Speed;
+using si::Joule;
 using si::Kilogram;
 using si::Metre;
 using si::Radian;
@@ -70,6 +73,11 @@ std::vector<SimpleHarmonicMotionPlottedIntegrator> Methods() {
 }  // namespace
 
 class MathematicaPlots : public testing::Test {
+ public:
+  static void SetUpTestCase() {
+    google::LogToStderr();
+  }
+
  protected:
   SRKNIntegrator::Parameters<Length, Speed> parameters_;
   SRKNIntegrator::Solution<Length, Speed> solution_;
@@ -77,13 +85,13 @@ class MathematicaPlots : public testing::Test {
 
 TEST_F(MathematicaPlots, SimpleHarmonicMotionWorkErrorGraphs) {
   std::ofstream file;
-  file.open("SimpleHarmonicMotionWorkErrorGraphs.m");
+  file.open("simple_harmonic_motion_graphs.m");
   Length const q_amplitude = 1 * Metre;
   Speed const v_amplitude = 1 * Metre / Second;
   AngularFrequency const ω = 1 * Radian / Second;
   Stiffness const k = SIUnit<Stiffness>();
   Mass const m = 1 * Kilogram;
-  double const step_reduction = 1.1;
+  double const step_reduction = 1.014;
   parameters_.initial.positions.emplace_back(q_amplitude);
   parameters_.initial.momenta.emplace_back(0 * Metre / Second);
   parameters_.initial.time = 0 * Second;
@@ -91,13 +99,17 @@ TEST_F(MathematicaPlots, SimpleHarmonicMotionWorkErrorGraphs) {
   parameters_.sampling_period = 0;
   std::vector<std::string> q_plots;
   std::vector<std::string> v_plots;
+  std::vector<std::string> e_plots;
   std::vector<std::string> names;
   for (auto const& method : Methods()) {
+    LOG(INFO) << method.name;
     parameters_.Δt = method.stages * 0.5 * Second;
     std::vector<Length> q_errors;
     std::vector<Speed> v_errors;
+    std::vector<Energy> e_errors;
     std::vector<double> evaluations;
-    for (int i = 0; i < 100; ++i, parameters_.Δt /= step_reduction) {
+    for (int i = 0; i < 500; ++i, parameters_.Δt /= step_reduction) {
+      LOG_EVERY_N(INFO, 50) << parameters_.Δt;
       method.integrator->SolveTrivialKineticEnergyIncrement<Length>(
           &ComputeHarmonicOscillatorAcceleration,
           parameters_,
@@ -106,17 +118,24 @@ TEST_F(MathematicaPlots, SimpleHarmonicMotionWorkErrorGraphs) {
           AbsoluteError(q_amplitude * Cos(ω * solution_[0].time.value),
                         solution_[0].positions[0].value));
       v_errors.emplace_back(
-          AbsoluteError(v_amplitude * Sin(ω * solution_[0].time.value),
+          AbsoluteError(-v_amplitude * Sin(ω * solution_[0].time.value),
                         solution_[0].momenta[0].value));
+      e_errors.emplace_back(
+          AbsoluteError(
+              0.5 * Joule,
+              (m * Pow<2>(solution_[0].momenta[0].value) +
+               k * Pow<2>(solution_[0].positions[0].value)) / 2));
       evaluations.emplace_back(
           method.stages * parameters_.tmax / parameters_.Δt);
     }
     q_plots.emplace_back(MathematicaPlottableDataset(evaluations, q_errors));
     v_plots.emplace_back(MathematicaPlottableDataset(evaluations, v_errors));
+    e_plots.emplace_back(MathematicaPlottableDataset(evaluations, e_errors));
     names.emplace_back(MathematicaEscape(method.name));
   }
   file << MathematicaAssign("qErrorPlots", q_plots);
   file << MathematicaAssign("vErrorPlots", v_plots);
+  file << MathematicaAssign("eErrorPlots", e_plots);
   file << MathematicaAssign("names", names);
   file.close();
 }

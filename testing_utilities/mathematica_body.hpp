@@ -53,18 +53,27 @@ std::string ToMathematica(std::vector<T> list) {
 }
 
 inline std::string ToMathematica(double const& real) {
-  std::string s = DebugString(real);
-  s.replace(s.find("e"), 1, "*^");
-  return MathematicaFunction(
-      "SetPrecision", {s, "MachinePrecision"});
+  if (isinf(real)) {
+    if (real > 0) {
+      return "Infinity";
+    } else {
+      return MathematicaFunction("Minus", {"Infinity"});
+    }
+  } else if (isnan(real)) {
+    return "Indeterminate";
+  } else {
+    std::string s = DebugString(real);
+    s.replace(s.find("e"), 1, "*^");
+    return MathematicaFunction("SetPrecision", {s, "MachinePrecision"});
+  }
 }
 
 template<typename D>
 std::string ToMathematica(Quantity<D> const& quantity) {
   std::string s = DebugString(quantity);
   s.replace(s.find("e"), 1, "*^");
+  std::string number = ToMathematica(quantity / SIUnit<Quantity<D>>());
   std::size_t split = s.find(" ");
-  std::string number = s.substr(0, split);
   std::string units = MathematicaEscape(s.substr(split, s.size()));
   return MathematicaFunction(
       "SetPrecision",
