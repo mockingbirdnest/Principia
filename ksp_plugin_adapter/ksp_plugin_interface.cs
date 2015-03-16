@@ -235,7 +235,8 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
   [DllImport(dllName           : kDllPath,
              EntryPoint        = "principia__SerializePlugin",
              CallingConvention = CallingConvention.Cdecl)]
-  private static extern IntPtr SerializePlugin(IntPtr plugin);
+  private static extern IntPtr SerializePlugin(IntPtr plugin,
+                                               ref IntPtr serializer);
 
   [DllImport(dllName           : kDllPath,
              EntryPoint        = "principia__DeletePluginSerialization",

@@ -268,9 +268,15 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
     base.OnSave(node);
     if (PluginRunning()) {
       IntPtr serialization = IntPtr.Zero;
+      IntPtr serializer = IntPtr.Zero;
       try {
-        serialization = SerializePlugin(plugin_);
-        node.AddValue(kPrincipiaKey, Marshal.PtrToStringAnsi(serialization));
+        for (;;) {
+          serialization = SerializePlugin(plugin_, ref serializer);
+          if (serialization == IntPtr.Zero) {
+            break;
+          }
+          node.AddValue(kPrincipiaKey, Marshal.PtrToStringAnsi(serialization));
+        }
       } finally {
         DeletePluginSerialization(ref serialization);
       }

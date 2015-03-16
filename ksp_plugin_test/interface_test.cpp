@@ -3,6 +3,7 @@
 #include <string>
 
 #include "base/not_null.hpp"
+#include "base/pull_serializer.hpp"
 #include "geometry/epoch.hpp"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
@@ -12,6 +13,7 @@
 namespace principia {
 
 using base::check_not_null;
+using base::PullSerializer;
 using geometry::Displacement;
 using geometry::kUnixEpoch;
 using si::Degree;
@@ -510,13 +512,16 @@ TEST_F(InterfaceTest, CurrentTime) {
 }
 
 TEST_F(InterfaceTest, SerializePlugin) {
+  PullSerializer* serializer = nullptr;
   std::string const message_bytes =
       std::string(kSerializedBoringPlugin,
                   (sizeof(kSerializedBoringPlugin) - 1) / sizeof(char));
   principia::serialization::Plugin message;
   message.ParseFromString(message_bytes);
+
   EXPECT_CALL(*plugin_, WriteToMessage(_)).WillOnce(SetArgPointee<0>(message));
-  char const* serialization = principia__SerializePlugin(plugin_.get());
+  char const* serialization =
+      principia__SerializePlugin(plugin_.get(), &serializer);
   EXPECT_STREQ(kHexadecimalBoringPlugin, serialization);
   principia__DeletePluginSerialization(&serialization);
   EXPECT_THAT(serialization, IsNull());

@@ -9,18 +9,24 @@
 #include <psapi.h>
 #endif
 
+#include "base/bytes.hpp"
 #include "base/hexadecimal.hpp"
 #include "base/macros.hpp"
 #include "base/not_null.hpp"
+#include "base/pull_serializer.hpp"
+#include "base/push_deserializer.hpp"
 #include "base/version.hpp"
 #include "ksp_plugin/part.hpp"
 #include "serialization/ksp_plugin.pb.h"
 
 namespace principia {
 
+using base::Bytes;
 using base::HexadecimalDecode;
 using base::HexadecimalEncode;
 using base::make_not_null_unique;
+using base::PullSerializer;
+using base::PushDeserializer;
 using geometry::Displacement;
 using quantities::Pow;
 using si::Degree;
@@ -31,6 +37,9 @@ using si::Tonne;
 namespace ksp_plugin {
 
 namespace {
+
+const int kChunkSize = 64 << 10;
+const int kNumberOfChunks = 8;
 
 // Takes ownership of |**pointer| and returns it to the caller.  Nulls
 // |*pointer|.  |pointer| must not be null.  No transfer of ownership of
@@ -384,18 +393,36 @@ double principia__current_time(Plugin const* const plugin) {
   return (CHECK_NOTNULL(plugin)->current_time() - Instant()) / Second;
 }
 
-char const* principia__SerializePlugin(Plugin const* const plugin) {
+char const* principia__SerializePlugin(Plugin const* const plugin,
+                                       PullSerializer** const serializer) {
   LOG(INFO) << __FUNCTION__;
   CHECK_NOTNULL(plugin);
-  principia::serialization::Plugin message;
-  plugin->WriteToMessage(&message);
-  // TODO(egg): reimplement with |ZeroCopyStream|.
-  std::vector<uint8_t> bytes(message.ByteSize());
-  message.SerializeWithCachedSizesToArray(bytes.data());
-  // Leave room for the null terminator.
-  std::size_t const hexadecimal_size = (bytes.size() << 1) + 1;
+  CHECK_NOTNULL(serializer);
+
+  // Create and start a serializer if the caller didn't provide one.
+  if (*serializer == nullptr) {
+    *serializer = new PullSerializer(kChunkSize, kNumberOfChunks);
+    principia::serialization::Plugin message;
+    plugin->WriteToMessage(&message);
+    (*serializer)->Start(&message);
+  }
+
+  // Get a chunk.
+  Bytes bytes;
+  bytes = (*serializer)->Pull();
+
+  // If this is the end of the serialization, delete the serializer and return a
+  // nullptr.
+  if (bytes.size == 0) {
+    TakeOwnership(serializer);
+    return nullptr;
+  }
+
+  // Convert to hexadecimal and return to the client.
+  std::size_t const hexadecimal_size =
+      static_cast<std::size_t>((bytes.size << 1) + 1);
   auto hexadecimal = std::make_unique<uint8_t[]>(hexadecimal_size);
-  HexadecimalEncode(bytes.data(), bytes.size(),
+  HexadecimalEncode(bytes.data, bytes.size,
                     hexadecimal.get(), hexadecimal_size);
   hexadecimal[hexadecimal_size] = '\0';
   return reinterpret_cast<char const*>(hexadecimal.release());
