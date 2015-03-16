@@ -91,7 +91,7 @@ TEST_F(MathematicaPlots, SimpleHarmonicMotionWorkErrorGraphs) {
   AngularFrequency const ω = 1 * Radian / Second;
   Stiffness const k = SIUnit<Stiffness>();
   Mass const m = 1 * Kilogram;
-  double const step_reduction = 1.014;
+  double const step_reduction = 1.015;
   parameters_.initial.positions.emplace_back(q_amplitude);
   parameters_.initial.momenta.emplace_back(0 * Metre / Second);
   parameters_.initial.time = 0 * Second;
@@ -103,7 +103,7 @@ TEST_F(MathematicaPlots, SimpleHarmonicMotionWorkErrorGraphs) {
   std::vector<std::string> names;
   for (auto const& method : Methods()) {
     LOG(INFO) << method.name;
-    parameters_.Δt = method.stages * 0.5 * Second;
+    parameters_.Δt = method.stages * 1 * Second;
     std::vector<Length> q_errors;
     std::vector<Speed> v_errors;
     std::vector<Energy> e_errors;
