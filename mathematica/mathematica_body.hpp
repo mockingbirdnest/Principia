@@ -40,7 +40,7 @@ inline std::string Apply(
 
 template<typename T>
 std::string Option(std::string const& name, T const& right) {
-  return Apply("Rule", {right});
+  return Apply("Rule", {name, ToMathematica(right)});
 }
 
 template<typename T>
@@ -50,7 +50,7 @@ std::string Assign(std::string const& name, T const& right) {
 
 inline std::string Export(std::string const& file,
                           std::string const& expression) {
-  return Apply("Export", {file, expression}) + ";\n";
+  return Apply("Export", {Escape(file), expression}) + ";\n";
 }
 
 template<typename T, typename U>

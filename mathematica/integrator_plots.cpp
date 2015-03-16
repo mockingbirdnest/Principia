@@ -67,7 +67,8 @@ std::vector<SimpleHarmonicMotionPlottedIntegrator> Methods() {
 std::string ErrorPlot(std::string const& data, std::string const& legend,
                       std::string const& error_kind) {
   std::vector<double> const range = {1e-16, 1};
-  std::vector<std::string> const axes_label = {"Evaluations", error_kind};
+  std::vector<std::string> const axes_label = {"Evaluations",
+                                               Escape(error_kind)};
   return Apply(
       "ListLogLogPlot",
       {data,
