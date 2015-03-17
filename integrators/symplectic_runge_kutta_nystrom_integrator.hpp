@@ -117,8 +117,29 @@ class SRKNIntegrator : public SymplecticIntegrator {
 // The accuracy of symplectic integrators, table 2.
 // http://eaton.math.rpi.edu/CSUMS/Papers/Symplectic/McLachlan_Atela_92.pdf.
 SRKNIntegrator const& McLachlanAtela1992Order4Optimal();
+// Fourth order, 5 stages, FSAL (synchronous momenta).
+// Coefficients from McLachlan (1995),
+// On the numerical integration of ordinary differential equations by symmetric
+// composition methods, http://www.massey.ac.nz/~rmclachl/sisc95.pdf.
+SRKNIntegrator const& McLachlan1995SB3A4();
+// Fourth order, 6 stages, FSAL (synchronous momenta).
+// Coefficients from McLachlan (1995),
+// On the numerical integration of ordinary differential equations by symmetric
+// composition methods, http://www.massey.ac.nz/~rmclachl/sisc95.pdf.
+SRKNIntegrator const& McLachlan1995SB3A5();
 // Fifth order, 6 stages.  This method minimizes the error constant.  Ibidem.
 SRKNIntegrator const& McLachlanAtela1992Order5Optimal();
+// Sixth order, 8 stages, FSAL (synchronous momenta).
+// Coefficients from Okunbor and Skeel (1994),
+// Canonical Runge-Kutta-Nyström methods of orders 5 and 6,
+// http://bionum.cs.purdue.edu/94OkSk.pdf.
+// NOTE(egg): The coefficients were actually copied from McLachlan (1995), they
+// seem to differ after a dozen significant figures or so.  Okunbor and Skeel
+// remark "we did not use HYBRIDJ1 to improve the accuracy of method
+// coefficients as we did in section 3.1".  We assume McLachlan's version is
+// accurate.
+// TODO(egg): Derive the coefficients with Mathematica.
+SRKNIntegrator const& OkunborSkeel1994Order6Method13();
 
 }  // namespace integrators
 }  // namespace principia

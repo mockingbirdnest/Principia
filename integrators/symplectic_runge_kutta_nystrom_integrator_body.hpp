@@ -55,6 +55,36 @@ inline SRKNIntegrator const& McLachlanAtela1992Order4Optimal() {
   return integrator;
 }
 
+inline SRKNIntegrator const& McLachlan1995SB3A4() {
+  static SRKNIntegrator const integrator({ 0.18819521776883821787,
+                                          -0.021528551102171551201,
+                                           0.66666666666666666667,
+                                          -0.021528551102171551201,
+                                           0.18819521776883821787},
+                                         { 0.0,
+                                           1.0,
+                                          -0.5,
+                                          -0.5,
+                                           1.0});
+  return integrator;
+}
+
+inline SRKNIntegrator const& McLachlan1995SB3A5() {
+  static SRKNIntegrator const integrator({ 0.4051886183952522772,
+                                          -0.2871440408165240890,
+                                           0.3819554224212718118,
+                                           0.3819554224212718118,
+                                          -0.2871440408165240890,
+                                           0.4051886183952522772},
+                                         { 0.0,
+                                          -0.041095890410958904110,
+                                           0.28813559322033898305,
+                                           0.50592059438123984212,
+                                           0.28813559322033898305,
+                                          -0.041095890410958904110});
+  return integrator;
+}
+
 inline SRKNIntegrator const& McLachlanAtela1992Order5Optimal() {
   static SRKNIntegrator const integrator({ 0.339839625839110000,
                                           -0.088601336903027329,
@@ -68,6 +98,26 @@ inline SRKNIntegrator const& McLachlanAtela1992Order5Optimal() {
                                            0.4012695022513534480,
                                            0.0107050818482359840,
                                           -0.0589796254980311632});
+  return integrator;
+}
+
+inline SRKNIntegrator const& OkunborSkeel1994Order6Method13() {
+  static SRKNIntegrator const integrator({-1.0130879789171747298,
+                                           1.1874295737325427070,
+                                          -0.018335852096460590340,
+                                           0.34399425728109261313,
+                                           0.34399425728109261313,
+                                          -0.018335852096460590340,
+                                           1.1874295737325427070,
+                                          -1.0130879789171747298},
+                                         { 0.0,
+                                           0.00016600692650009894,
+                                          -0.37962421426377360608,
+                                           0.68913741185181063674,
+                                           0.38064159097092574080,
+                                           0.68913741185181063674,
+                                          -0.37962421426377360608,
+                                           0.00016600692650009894});
   return integrator;
 }
 

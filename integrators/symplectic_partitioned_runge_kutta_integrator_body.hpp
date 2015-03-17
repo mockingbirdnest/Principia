@@ -61,6 +61,13 @@ inline SPRKIntegrator const& McLachlanAtela1992Order2Optimal() {
   return integrator;
 }
 
+inline SPRKIntegrator const& McLachlan1995S2() {
+  static SPRKIntegrator const integrator(
+      {0.19318332750378357396, 0.61363334499243285207, 0.19318332750378357396},
+      {0.0, 0.5, 0.5});
+  return integrator;
+}
+
 inline SPRKIntegrator const& Ruth1983() {
   static SPRKIntegrator const integrator({ 2. / 3., -2. / 3., 1.},
                                          { 7. / 24., 3. / 4., -1. / 24.});
@@ -100,6 +107,52 @@ CandyRozmus1991ForestRuth1990SynchronousPositions() {
                                           -0.1756035959798288170,
                                           -0.1756035959798288170,
                                            0.6756035959798288170});
+  return integrator;
+}
+
+inline SPRKIntegrator const& McLachlan1995SS5() {
+  static SPRKIntegrator const integrator({ 0.14,
+                                           0.45273321423383502251,
+                                          -0.0927332142338350225,
+                                          -0.0927332142338350225,
+                                           0.45273321423383502251,
+                                           0.14},
+                                         { 0.0,
+                                           0.28,
+                                           0.6254664284676700450,
+                                          -0.8109328569353400900,
+                                           0.6254664284676700450,
+                                           0.28});
+  return integrator;
+}
+
+inline SPRKIntegrator const& McLachlan1995S4() {
+  static SPRKIntegrator const integrator({ 0.16913927992207204518,
+                                          -0.29918620390405079951,
+                                           1.2600938479639575087,
+                                          -0.29918620390405079951,
+                                           0.16913927992207204518},
+                                         { 0.0,
+                                           0.54545454545454545455,
+                                          -0.045454545454545454545,
+                                          -0.045454545454545454545,
+                                           0.54545454545454545455});
+  return integrator;
+}
+
+inline SPRKIntegrator const& McLachlan1995S5() {
+  static SPRKIntegrator const integrator({ 0.089269454226475244887,
+                                          -0.097336042636895508015,
+                                           0.50806658841042026313,
+                                           0.50806658841042026313,
+                                          -0.097336042636895508015,
+                                           0.089269454226475244887},
+                                         { 0.0,
+                                           0.4,
+                                          -0.1,
+                                           0.4,
+                                          -0.1,
+                                           0.4});
   return integrator;
 }
 
@@ -160,6 +213,30 @@ inline SPRKIntegrator const& Yoshida1990Order6C() {
                                           -1.07125322701057002017,
                                           -0.34812637695304568885,
                                            0.72389128119964896645});
+  return integrator;
+}
+
+inline SPRKIntegrator const& McLachlan1995SS9() {
+  static SPRKIntegrator const integrator({ 0.09335,
+                                           0.37109851185623919958,
+                                           0.34248198631297687861,
+                                          -0.35689933723712962525,
+                                           0.0499688390679135471,
+                                           0.0499688390679135471,
+                                          -0.35689933723712962525,
+                                           0.34248198631297687861,
+                                           0.37109851185623919958,
+                                           0.09335},
+                                         { 0.0,
+                                           0.1867,
+                                           0.55549702371247839916,
+                                           0.12946694891347535806,
+                                          -0.84326562338773460855,
+                                           0.9432033015235617027,
+                                          -0.84326562338773460855,
+                                           0.12946694891347535806,
+                                           0.55549702371247839916,
+                                           0.1867});
   return integrator;
 }
 
