@@ -52,6 +52,14 @@ std::unique_ptr<T> TakeOwnership(T** const pointer) {
   return owned_pointer;
 }
 
+template<typename T>
+std::unique_ptr<T[]> TakeOwnershipArray(T** const pointer) {
+  CHECK_NOTNULL(pointer);
+  std::unique_ptr<T[]> owned_pointer(*pointer);
+  *pointer = nullptr;
+  return owned_pointer;
+}
+
 R3Element<double> ToR3Element(XYZ const& xyz) {
   return {xyz.x, xyz.y, xyz.z};
 }
@@ -402,9 +410,10 @@ char const* principia__SerializePlugin(Plugin const* const plugin,
   // Create and start a serializer if the caller didn't provide one.
   if (*serializer == nullptr) {
     *serializer = new PullSerializer(kChunkSize, kNumberOfChunks);
-    principia::serialization::Plugin message;
-    plugin->WriteToMessage(&message);
-    (*serializer)->Start(&message);
+    not_null<std::unique_ptr<serialization::Plugin>> message =
+        make_not_null_unique<serialization::Plugin>();
+    plugin->WriteToMessage(message.get());
+    (*serializer)->Start(std::move(message));
   }
 
   // Get a chunk.
@@ -424,13 +433,13 @@ char const* principia__SerializePlugin(Plugin const* const plugin,
   auto hexadecimal = std::make_unique<uint8_t[]>(hexadecimal_size);
   HexadecimalEncode(bytes.data, bytes.size,
                     hexadecimal.get(), hexadecimal_size);
-  hexadecimal[hexadecimal_size] = '\0';
+  hexadecimal[hexadecimal_size - 1] = '\0';
   return reinterpret_cast<char const*>(hexadecimal.release());
 }
 
 void principia__DeletePluginSerialization(char const** const serialization) {
   LOG(INFO) << __FUNCTION__;
-  TakeOwnership(reinterpret_cast<uint8_t const**>(serialization));
+  TakeOwnershipArray(reinterpret_cast<uint8_t const**>(serialization));
 }
 
 Plugin* principia__DeserializePlugin(char const* const serialization,

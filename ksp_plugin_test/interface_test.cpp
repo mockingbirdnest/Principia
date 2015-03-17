@@ -523,6 +523,7 @@ TEST_F(InterfaceTest, SerializePlugin) {
   char const* serialization =
       principia__SerializePlugin(plugin_.get(), &serializer);
   EXPECT_STREQ(kHexadecimalBoringPlugin, serialization);
+  EXPECT_EQ(nullptr, principia__SerializePlugin(plugin_.get(), &serializer));
   principia__DeletePluginSerialization(&serialization);
   EXPECT_THAT(serialization, IsNull());
 }

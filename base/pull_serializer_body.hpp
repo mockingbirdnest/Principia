@@ -110,7 +110,7 @@ inline Bytes PullSerializer::Pull() {
     // The element at the front of the queue is the one that was last returned
     // by |Pull| and must be dropped and freed.
     queue_has_elements_.wait(l, [this]() { return queue_.size() > 1; });
-    CHECK_GE(2ULL, queue_.size());
+    CHECK_LE(2ULL, queue_.size());
     free_.push(queue_.front().data);
     queue_.pop();
     result = queue_.front();
