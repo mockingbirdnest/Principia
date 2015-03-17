@@ -71,7 +71,9 @@ std::vector<SimpleHarmonicMotionPlottedIntegrator> Methods() {
       {INTEGRATOR(Yoshida1990Order8B), 15},
       {INTEGRATOR(Yoshida1990Order8C), 15},
       {INTEGRATOR(Yoshida1990Order8D), 15},
-      {INTEGRATOR(Yoshida1990Order8E), 15}};
+      {INTEGRATOR(Yoshida1990Order8E), 15},
+      {INTEGRATOR(McLachlan1995SS15), 15},
+      {INTEGRATOR(McLachlan1995SS17), 17}};
 }
 
 std::string ErrorPlot(std::string const& data, std::string const& legend,
@@ -118,7 +120,9 @@ void GenerateSimpleHarmonicMotionWorkErrorGraphs() {
     std::vector<Energy> e_errors;
     std::vector<double> evaluations;
     for (int i = 0; i < 500; ++i, parameters.Δt /= step_reduction) {
-      LOG_IF(INFO, (i + 1) % 10 == 0) << parameters.Δt;
+      int const number_of_evaluations =
+          method.stages * std::ceil(parameters.tmax / parameters.Δt);
+      LOG_IF(INFO, (i + 1) % 50 == 0) << number_of_evaluations;
       method.integrator->SolveTrivialKineticEnergyIncrement<Length>(
           &ComputeHarmonicOscillatorAcceleration,
           parameters,
@@ -134,8 +138,7 @@ void GenerateSimpleHarmonicMotionWorkErrorGraphs() {
               0.5 * Joule,
               (m * Pow<2>(solution[0].momenta[0].value) +
                k * Pow<2>(solution[0].positions[0].value)) / 2));
-      evaluations.emplace_back(
-          method.stages * parameters.tmax / parameters.Δt);
+      evaluations.emplace_back(number_of_evaluations);
     }
     q_plots.emplace_back(PlottableDataset(evaluations, q_errors));
     v_plots.emplace_back(PlottableDataset(evaluations, v_errors));

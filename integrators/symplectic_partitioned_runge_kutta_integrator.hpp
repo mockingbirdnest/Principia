@@ -127,15 +127,9 @@ SPRKIntegrator const& CandyRozmus1991ForestRuth1990SynchronousPositions();
 // On the numerical integration of ordinary differential equations by symmetric
 // composition methods, http://www.massey.ac.nz/~rmclachl/sisc95.pdf.
 SPRKIntegrator const& McLachlan1995SS5();
-// Fourth order, 5 stages, FSAL (synchronous momenta).
-// Coefficients from McLachlan (1995),
-// On the numerical integration of ordinary differential equations by symmetric
-// composition methods, http://www.massey.ac.nz/~rmclachl/sisc95.pdf.
+// Fourth order, 5 stages, FSAL (synchronous momenta).  Ibidem.
 SPRKIntegrator const& McLachlan1995S4();
-// Fourth order, 6 stages, FSAL (synchronous momenta).
-// Coefficients from McLachlan (1995),
-// On the numerical integration of ordinary differential equations by symmetric
-// composition methods, http://www.massey.ac.nz/~rmclachl/sisc95.pdf.
+// Fourth order, 6 stages, FSAL (synchronous momenta).  Ibidem.
 SPRKIntegrator const& McLachlan1995S5();
 // Sixth order, 8 stages, FSAL (synchronous positions).
 // Coefficients from Yoshida (1990),
@@ -150,6 +144,9 @@ SPRKIntegrator const& Yoshida1990Order6B();
 // Sixth order, 8 stages, FSAL (synchronous positions).  Ibidem.
 SPRKIntegrator const& Yoshida1990Order6C();
 // Sixth order, 10 stages, FSAL (synchronous momenta).
+// Coefficients from McLachlan (1995),
+// On the numerical integration of ordinary differential equations by symmetric
+// composition methods, http://www.massey.ac.nz/~rmclachl/sisc95.pdf.
 SPRKIntegrator const& McLachlan1995SS9();
 // Eighth order, 16 stages, FSAL (synchronous positions).
 // Coefficients from Yoshida (1990),
@@ -164,6 +161,13 @@ SPRKIntegrator const& Yoshida1990Order8C();
 SPRKIntegrator const& Yoshida1990Order8D();
 // Eighth order, 16 stages, FSAL (synchronous positions).  Ibidem.
 SPRKIntegrator const& Yoshida1990Order8E();
+// Eighth order, 16 stages, FSAL (synchronous momenta).
+// Coefficients from McLachlan (1995),
+// On the numerical integration of ordinary differential equations by symmetric
+// composition methods, http://www.massey.ac.nz/~rmclachl/sisc95.pdf.
+SPRKIntegrator const& McLachlan1995SS15();
+// Eighth order, 18 stages, FSAL (synchronous momenta).  Ibidem.
+SPRKIntegrator const& McLachlan1995SS17();
 
 }  // namespace integrators
 }  // namespace principia
