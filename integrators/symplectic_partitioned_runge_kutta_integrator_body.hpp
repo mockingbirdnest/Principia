@@ -140,6 +140,22 @@ inline SPRKIntegrator const& McLachlan1995S4() {
   return integrator;
 }
 
+inline SPRKIntegrator const& Suzuki1990() {
+  static SPRKIntegrator const integrator({ 0.20724538589718786857,
+                                           0.41449077179437573714,
+                                          -0.12173615769156360571,
+                                          -0.12173615769156360571,
+                                           0.41449077179437573714,
+                                           0.20724538589718786857},
+                                         { 0.0,
+                                           0.41449077179437573714,
+                                           0.41449077179437573714,
+                                          -0.65796308717750294857,
+                                           0.41449077179437573714,
+                                           0.41449077179437573714});
+  return integrator;
+}
+
 inline SPRKIntegrator const& McLachlan1995S5() {
   static SPRKIntegrator const integrator({ 0.089269454226475244887,
                                           -0.097336042636895508015,

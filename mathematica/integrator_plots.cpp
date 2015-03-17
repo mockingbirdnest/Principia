@@ -55,6 +55,7 @@ std::vector<SimpleHarmonicMotionPlottedIntegrator> Methods() {
       {INTEGRATOR(McLachlanAtela1992Order3Optimal), 3},
       {INTEGRATOR(CandyRozmus1991ForestRuth1990SynchronousMomenta), 3},
       {INTEGRATOR(CandyRozmus1991ForestRuth1990SynchronousPositions), 3},
+      {INTEGRATOR(Suzuki1990), 5},
       {INTEGRATOR(McLachlan1995SS5), 5},
       {INTEGRATOR(McLachlan1995S4), 4},
       {INTEGRATOR(McLachlan1995S5), 5},

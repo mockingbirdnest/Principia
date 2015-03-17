@@ -121,7 +121,11 @@ SPRKIntegrator const& CandyRozmus1991ForestRuth1990SynchronousMomenta();
 // A Symplectic Integration Algorithm for Separable Hamiltonian Functions
 // (submitted earlier and published later than the Forest and Ruth paper).
 SPRKIntegrator const& CandyRozmus1991ForestRuth1990SynchronousPositions();
-// TODO(egg): Suzuki 1990.
+// Fourth order, 6 stages, FSAL (synchronous momenta).
+// Coefficients from Suzuki (1990), Fractal decompositions of exponential
+// operators with applications to many-body theories and monte carlo
+// simulations, 
+SPRKIntegrator const& Suzuki1990();
 // Fourth order, 6 stages, FSAL (synchronous momenta).
 // Coefficients from McLachlan (1995),
 // On the numerical integration of ordinary differential equations by symmetric
