@@ -416,7 +416,7 @@ char const* principia__SerializePlugin(Plugin const* const plugin,
     (*serializer)->Start(std::move(message));
   }
 
-  // Get a chunk.
+  // Pull a chunk.
   Bytes bytes;
   bytes = (*serializer)->Pull();
 
@@ -443,13 +443,28 @@ void principia__DeletePluginSerialization(char const** const serialization) {
 }
 
 Plugin* principia__DeserializePlugin(char const* const serialization,
-                                     int const serialization_size) {
+                                     int const serialization_size,
+                                     PushDeserializer** const deserializer) {
   LOG(INFO) << __FUNCTION__;
+  CHECK_NOTNULL(serialization);
+
+  // Create and start a deserializer if the caller didn't provide one.
+  if (*deserializer == nullptr) {
+    *deserializer = new PushDeserializer(kChunkSize, kNumberOfChunks);
+    not_null<std::unique_ptr<serialization::Plugin>> message =
+        make_not_null_unique<serialization::Plugin>();
+    plugin->WriteToMessage(message.get());
+    (*deserializer)->Start(message);
+  }
   uint8_t const* const hexadecimal =
       reinterpret_cast<uint8_t const*>(serialization);
   int const hexadecimal_size = serialization_size;
   std::vector<uint8_t> bytes(hexadecimal_size / 2);
   HexadecimalDecode(hexadecimal, hexadecimal_size, bytes.data(), bytes.size());
+
+  // Push the data.
+  (*deserializer)->Push(Bytes(bytes.data(), bytes.size()), nullptr/**/);
+
   principia::serialization::Plugin message;
   message.ParseFromArray(bytes.data(), bytes.size());
   return Plugin::ReadFromMessage(message).release();
