@@ -454,7 +454,7 @@ Plugin* principia__DeserializePlugin(char const* const serialization,
     not_null<std::unique_ptr<serialization::Plugin>> message =
         make_not_null_unique<serialization::Plugin>();
     plugin->WriteToMessage(message.get());
-    (*deserializer)->Start(message);
+    (*deserializer)->Start(message.get());
   }
   uint8_t const* const hexadecimal =
       reinterpret_cast<uint8_t const*>(serialization);
