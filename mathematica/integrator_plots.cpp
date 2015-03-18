@@ -13,7 +13,6 @@
 #include "mathematica/mathematica.hpp"
 #include "testing_utilities/numerical_analysis.hpp"
 #include "testing_utilities/numerics.hpp"
-#include "testing_utilities/statistics.hpp"
 
 #define INTEGRATOR(name) &integrators::name(), #name
 
@@ -35,7 +34,6 @@ using si::Radian;
 using si::Second;
 using testing_utilities::AbsoluteError;
 using testing_utilities::ComputeHarmonicOscillatorAcceleration;
-using testing_utilities::Mean;
 
 namespace mathematica {
 
