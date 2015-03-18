@@ -13,6 +13,7 @@
 #include "mathematica/mathematica.hpp"
 #include "testing_utilities/numerical_analysis.hpp"
 #include "testing_utilities/numerics.hpp"
+#include "testing_utilities/statistics.hpp"
 
 #define INTEGRATOR(name) &integrators::name(), #name
 
@@ -34,6 +35,7 @@ using si::Radian;
 using si::Second;
 using testing_utilities::AbsoluteError;
 using testing_utilities::ComputeHarmonicOscillatorAcceleration;
+using testing_utilities::Mean;
 
 namespace mathematica {
 
@@ -108,7 +110,9 @@ void GenerateSimpleHarmonicMotionWorkErrorGraphs() {
   parameters.initial.momenta.emplace_back(0 * Metre / Second);
   parameters.initial.time = 0 * Second;
   parameters.tmax = 50 * Second;
-  parameters.sampling_period = 0;
+  // We use dense sampling in order to compute average errors, this leads to
+  // more evaluations than reported for FSAL methods.
+  parameters.sampling_period = 1;
   std::vector<std::string> q_plots;
   std::vector<std::string> v_plots;
   std::vector<std::string> e_plots;
@@ -128,17 +132,25 @@ void GenerateSimpleHarmonicMotionWorkErrorGraphs() {
           &ComputeHarmonicOscillatorAcceleration,
           parameters,
           &solution);
-      q_errors.emplace_back(
-          AbsoluteError(q_amplitude * Cos(ω * solution[0].time.value),
-                        solution[0].positions[0].value));
-      v_errors.emplace_back(
-          AbsoluteError(-v_amplitude * Sin(ω * solution[0].time.value),
-                        solution[0].momenta[0].value));
-      e_errors.emplace_back(
-          AbsoluteError(
-              0.5 * Joule,
-              (m * Pow<2>(solution[0].momenta[0].value) +
-               k * Pow<2>(solution[0].positions[0].value)) / 2));
+      std::vector<Length> q_error;
+      std::vector<Speed> v_error;
+      std::vector<Energy> e_error;
+      for (auto const& system_state : solution) {
+        q_error.emplace_back(
+            AbsoluteError(q_amplitude * Cos(ω * system_state.time.value),
+                          system_state.positions[0].value));
+        v_error.emplace_back(
+            AbsoluteError(-v_amplitude * Sin(ω * system_state.time.value),
+                          system_state.momenta[0].value));
+        e_error.emplace_back(
+            AbsoluteError(
+                0.5 * Joule,
+                (m * Pow<2>(system_state.momenta[0].value) +
+                 k * Pow<2>(system_state.positions[0].value)) / 2));
+      }
+      q_errors.emplace_back(*std::max_element(q_error.begin(), q_error.end()));
+      v_errors.emplace_back(*std::max_element(v_error.begin(), v_error.end()));
+      e_errors.emplace_back(*std::max_element(e_error.begin(), e_error.end()));
       evaluations.emplace_back(number_of_evaluations);
     }
     q_plots.emplace_back(PlottableDataset(evaluations, q_errors));
