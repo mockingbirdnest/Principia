@@ -146,6 +146,9 @@ void GenerateSimpleHarmonicMotionWorkErrorGraphs() {
                 (m * Pow<2>(system_state.momenta[0].value) +
                  k * Pow<2>(system_state.positions[0].value)) / 2));
       }
+      // We plot the maximum error, i.e., the L∞ norm of the error.
+      // Blanes and Moan (2002), or Blanes, Casas and Ros (2001) tend to use
+      // the average error (the normalized L¹ norm) instead.
       q_errors.emplace_back(*std::max_element(q_error.begin(), q_error.end()));
       v_errors.emplace_back(*std::max_element(v_error.begin(), v_error.end()));
       e_errors.emplace_back(*std::max_element(e_error.begin(), e_error.end()));
