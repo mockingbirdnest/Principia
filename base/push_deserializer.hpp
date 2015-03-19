@@ -65,7 +65,9 @@ class PushDeserializer {
   // Starts the deserializer, which will proceed to deserialize data into
   // |message|.  This method must be called at most once for each deserializer
   // object.
-  void Start(not_null<google::protobuf::Message*> const message);
+  //TODO(phl):comment
+  void Start(not_null<std::unique_ptr<google::protobuf::Message>> message,
+             std::function<void(google::protobuf::Message const&)> done);
 
   // Pushes in the internal queue chunks of data that will be extracted by
   // |Pull|.  Splits |bytes| into chunks of at most |chunk_size|.  May block to
