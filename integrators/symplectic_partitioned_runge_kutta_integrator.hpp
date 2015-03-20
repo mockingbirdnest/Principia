@@ -135,6 +135,11 @@ SPRKIntegrator const& McLachlan1995SS5();
 SPRKIntegrator const& McLachlan1995S4();
 // Fourth order, 6 stages, FSAL (synchronous momenta).  Ibidem.
 SPRKIntegrator const& McLachlan1995S5();
+// Fourth order, 7 stages, FSAL (synchronous momenta).
+// Coefficients from Blanes and Moan (2002),
+// Practical symplectic partitioned Runge–Kutta and Runge–Kutta–Nyström methods,
+// http://personales.upv.es/serblaza/2002JCAM.pdf.
+SPRKIntegrator const& BlanesMoan2002S6();
 // Sixth order, 8 stages, FSAL (synchronous positions).
 // Coefficients from Yoshida (1990),
 // Construction of higher order symplectic integrators
@@ -152,6 +157,11 @@ SPRKIntegrator const& Yoshida1990Order6C();
 // On the numerical integration of ordinary differential equations by symmetric
 // composition methods, http://www.massey.ac.nz/~rmclachl/sisc95.pdf.
 SPRKIntegrator const& McLachlan1995SS9();
+// Sixth order, 11 stages, FSAL (synchronous momenta).
+// Coefficients from Blanes and Moan (2002),
+// Practical symplectic partitioned Runge–Kutta and Runge–Kutta–Nyström methods,
+// http://personales.upv.es/serblaza/2002JCAM.pdf.
+SPRKIntegrator const& BlanesMoan2002S10();
 // Eighth order, 16 stages, FSAL (synchronous positions).
 // Coefficients from Yoshida (1990),
 // Construction of higher order symplectic integrators

@@ -127,6 +127,11 @@ SRKNIntegrator const& McLachlan1995SB3A4();
 // On the numerical integration of ordinary differential equations by symmetric
 // composition methods, http://www.massey.ac.nz/~rmclachl/sisc95.pdf.
 SRKNIntegrator const& McLachlan1995SB3A5();
+// Fourth order, 7 stages, FSAL (synchronous positions).
+// Coefficients from Blanes and Moan (2002),
+// Practical symplectic partitioned Runge–Kutta and Runge–Kutta–Nyström methods,
+// http://personales.upv.es/serblaza/2002JCAM.pdf.
+SRKNIntegrator const& BlanesMoan2002SRKN6B();
 // Fifth order, 6 stages.  This method minimizes the error constant.  Ibidem.
 SRKNIntegrator const& McLachlanAtela1992Order5Optimal();
 // Sixth order, 8 stages, FSAL (synchronous momenta).
@@ -139,6 +144,16 @@ SRKNIntegrator const& McLachlanAtela1992Order5Optimal();
 // as we did in section 3.1".  We assume McLachlan's version is accurate.
 // TODO(egg): Derive the coefficients with Mathematica.
 SRKNIntegrator const& OkunborSkeel1994Order6Method13();
+// Sixth order, 12 stages, FSAL (synchronous positions).
+// Coefficients from Blanes and Moan (2002),
+// Practical symplectic partitioned Runge–Kutta and Runge–Kutta–Nyström methods,
+// http://personales.upv.es/serblaza/2002JCAM.pdf.
+SRKNIntegrator const& BlanesMoan2002SRKN11B();
+// Sixth order, 15 stages, FSAL (synchronous momenta).
+// Coefficients from Blanes and Moan (2002),
+// Practical symplectic partitioned Runge–Kutta and Runge–Kutta–Nyström methods,
+// http://personales.upv.es/serblaza/2002JCAM.pdf.
+SRKNIntegrator const& BlanesMoan2002SRKN14A();
 
 }  // namespace integrators
 }  // namespace principia
