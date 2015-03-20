@@ -84,6 +84,8 @@ class PushDeserializer {
   // |DelegatingArrayOutputStream|.
   Bytes Pull();
 
+  std::unique_ptr<google::protobuf::Message> message_;
+
   int const chunk_size_;
   int const number_of_chunks_;
   internal::DelegatingArrayInputStream stream_;
