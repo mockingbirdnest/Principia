@@ -288,9 +288,22 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
     if (node.HasValue(kPrincipiaKey)) {
       Cleanup();
       SetRotatingFrameThresholds();
-      String serialization = node.GetValue(kPrincipiaKey);
-      Log.Info("serialization is " + serialization.Length + " characters long");
-      plugin_ = DeserializePlugin(serialization, serialization.Length);
+
+      IntPtr deserializer = IntPtr.Zero;
+      plugin_ = IntPtr.Zero;
+
+      String[] serializations = node.GetValues(kPrincipiaKey);
+      Log.Info("Serialization has " + serializations.Length + " chunks");
+      foreach (String serialization in serializations) {
+        Log.Info("serialization is " + serialization.Length +
+                 " characters long");
+        DeserializePlugin(serialization,
+                          serialization.Length,
+                          ref deserializer,
+                          ref plugin_);
+      }
+      DeserializePlugin("", 0, ref deserializer, ref plugin_);
+
       UpdateRenderingFrame();
       plugin_construction_ = DateTime.Now;
       plugin_from_save_ = true;
