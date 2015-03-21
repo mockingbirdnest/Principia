@@ -31,18 +31,8 @@ std::string Option(std::string const& name, T const& right) {
 }
 
 template<typename T>
-std::string Set(std::string const& name, T const& right) {
-  return Apply("Set", {name, ToMathematica(right)});
-}
-
-template<typename T>
 std::string Assign(std::string const& name, T const& right) {
-  return Set(name, right) + ";\n";
-}
-
-inline std::string Export(std::string const& file,
-                          std::string const& expression) {
-  return Apply("Export", {Escape(file), expression}) + ";\n";
+  return Apply("Set", {name, ToMathematica(right)}) + ";\n";
 }
 
 template<typename T, typename U>

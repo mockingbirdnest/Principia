@@ -97,5 +97,9 @@ packages/
 *.pb.h
 *.pb.cc
 
+#Generated Mathematica
+*.generated.wl
+*.cdf
+
 #git version header
 base/version.hpp
