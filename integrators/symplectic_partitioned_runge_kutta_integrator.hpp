@@ -124,7 +124,7 @@ SPRKIntegrator const& CandyRozmus1991ForestRuth1990SynchronousPositions();
 // Fourth order, 6 stages, FSAL (synchronous momenta).
 // Coefficients from Suzuki (1990), Fractal decompositions of exponential
 // operators with applications to many-body theories and monte carlo
-// simulations, 
+// simulations,
 SPRKIntegrator const& Suzuki1990();
 // Fourth order, 6 stages, FSAL (synchronous momenta).
 // Coefficients from McLachlan (1995),
