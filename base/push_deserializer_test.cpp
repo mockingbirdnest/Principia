@@ -74,7 +74,7 @@ class PushDeserializerTest : public ::testing::Test {
     std::string const expected_serialized =
         BuildTrajectory()->SerializeAsString();
     EXPECT_EQ(actual_serialized, expected_serialized);
-  };
+  }
 
 
   static void Stomp(Bytes const& bytes) {

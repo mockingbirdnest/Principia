@@ -64,8 +64,9 @@ class PushDeserializer {
 
   // Starts the deserializer, which will proceed to deserialize data into
   // |message|.  This method must be called at most once for each deserializer
-  // object.
-  //TODO(phl):comment
+  // object.  The |done| callback is called once deserialization has completed
+  // (which only happens once the client has called |Push| with a chunk of size
+  // 0).
   void Start(not_null<std::unique_ptr<google::protobuf::Message>> message,
              std::function<void(google::protobuf::Message const&)> done);
 
