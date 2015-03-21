@@ -294,8 +294,8 @@ extern "C" DLLEXPORT
 void CDECL principia__DeletePluginSerialization(
     char const** const serialization);
 
-// The caller takes ownership of |*plugin| when it is not null.  No transfer of
-// ownership of |*serialization| or |*deserializer|.  |*deserializer| and
+// The caller takes ownership of |**plugin| when it is not null.  No transfer of
+// ownership of |*serialization| or |**deserializer|.  |*deserializer| and
 // |*plugin| must be null on the first call and must be passed unchanged to the
 // successive calls.  The caller must perform an extra call with
 // |serialization_size| set to 0 to indicate the end of the input stream.  When

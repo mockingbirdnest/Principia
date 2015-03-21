@@ -38,8 +38,8 @@ namespace ksp_plugin {
 
 namespace {
 
-const int kChunkSize = 64 << 10;
-const int kNumberOfChunks = 8;
+int const kChunkSize = 64 << 10;
+int const kNumberOfChunks = 8;
 
 // Takes ownership of |**pointer| and returns it to the caller.  Nulls
 // |*pointer|.  |pointer| must not be null.  No transfer of ownership of
