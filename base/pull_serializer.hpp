@@ -65,7 +65,8 @@ class PullSerializer {
 
   // Starts the serializer, which will proceed to serialize |message|.  This
   // method must be called at most once for each serializer object.
-  void Start(not_null<google::protobuf::Message const*> const message);
+  void Start(
+      not_null<std::unique_ptr<google::protobuf::Message const>> message);
 
   // Obtain the next chunk of data from the serializer.  Blocks if no data is
   // available.  Returns a |Bytes| object of |size| 0 at the end of the
@@ -78,6 +79,8 @@ class PullSerializer {
   // chunk.  Blocks if there are no free chunks.  Used as a callback for the
   // underlying |DelegatingArrayOutputStream|.
   Bytes Push(Bytes const bytes);
+
+  std::unique_ptr<google::protobuf::Message const> message_;
 
   int const chunk_size_;
   int const number_of_chunks_;

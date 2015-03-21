@@ -1,7 +1,9 @@
 #include "base/push_deserializer.hpp"
 
 #include <algorithm>
+#include <cstdint>
 #include <cstring>
+#include <functional>
 #include <list>
 #include <string>
 #include <thread>  // NOLINT(build/c++11)
@@ -15,10 +17,12 @@
 
 namespace principia {
 
+using base::not_null;
 using serialization::Pair;
 using serialization::Point;
 using serialization::Quantity;
 using serialization::Trajectory;
+using ::std::placeholders::_1;
 using ::testing::ElementsAreArray;
 
 namespace base {
@@ -38,11 +42,14 @@ class PushDeserializerTest : public ::testing::Test {
                              kSerializerChunkSize, kNumberOfChunks)),
         push_deserializer_(std::make_unique<PushDeserializer>(
                                kDeserializerChunkSize, kNumberOfChunks)),
-        stream_(std::bind(&PushDeserializerTest::OnEmpty, this, &strings_)) {
+        stream_(std::bind(&PushDeserializerTest::OnEmpty, this, &strings_)) {}
+
+  static not_null<std::unique_ptr<Trajectory const>> BuildTrajectory() {
+    not_null<std::unique_ptr<Trajectory>> result =
+        make_not_null_unique<Trajectory>();
     // Build a biggish protobuf for serialization.
     for (int i = 0; i < 100; ++i) {
-      Trajectory::InstantaneousDegreesOfFreedom* idof =
-          trajectory_.add_timeline();
+      Trajectory::InstantaneousDegreesOfFreedom* idof = result->add_timeline();
       Point* instant = idof->mutable_instant();
       Quantity* scalar = instant->mutable_scalar();
       scalar->set_dimensions(3);
@@ -59,7 +66,16 @@ class PushDeserializerTest : public ::testing::Test {
       scalar2->set_dimensions(2);
       scalar2->set_magnitude(2 * i);
     }
+    return std::move(result);
   }
+
+  static void CheckSerialization(google::protobuf::Message const& message) {
+    std::string const actual_serialized = message.SerializeAsString();
+    std::string const expected_serialized =
+        BuildTrajectory()->SerializeAsString();
+    EXPECT_EQ(actual_serialized, expected_serialized);
+  }
+
 
   static void Stomp(Bytes const& bytes) {
     std::memset(bytes.data, 0xCD, static_cast<size_t>(bytes.size));
@@ -77,7 +93,6 @@ class PushDeserializerTest : public ::testing::Test {
 
   std::unique_ptr<PullSerializer> pull_serializer_;
   std::unique_ptr<PushDeserializer> push_deserializer_;
-  Trajectory trajectory_;
   internal::DelegatingArrayInputStream stream_;
   std::list<std::string> strings_;
 };
@@ -128,18 +143,21 @@ TEST_F(PushDeserializerTest, Stream) {
 }
 
 TEST_F(PushDeserializerTest, DeserializationThreading) {
-  Trajectory read_trajectory;
-  auto serialized_trajectory =
-      std::make_unique<std::uint8_t[]>(trajectory_.ByteSize());
+  auto const written_trajectory = BuildTrajectory();
+  int const byte_size = written_trajectory->ByteSize();
+  auto const serialized_trajectory =
+      std::make_unique<std::uint8_t[]>(byte_size);
 
   for (int i = 0; i < kRunsPerTest; ++i) {
+    auto read_trajectory = make_not_null_unique<Trajectory>();
     push_deserializer_ = std::make_unique<PushDeserializer>(
         kDeserializerChunkSize, kNumberOfChunks);
 
-    trajectory_.SerializePartialToArray(&serialized_trajectory[0],
-                                        trajectory_.ByteSize());
-    push_deserializer_->Start(&read_trajectory);
-    Bytes bytes(serialized_trajectory.get(), trajectory_.ByteSize());
+    written_trajectory->SerializePartialToArray(&serialized_trajectory[0],
+                                                byte_size);
+    push_deserializer_->Start(
+      std::move(read_trajectory), &PushDeserializerTest::CheckSerialization);
+    Bytes bytes(serialized_trajectory.get(), byte_size);
     push_deserializer_->Push(bytes,
                              std::bind(&PushDeserializerTest::Stomp, bytes));
     push_deserializer_->Push(Bytes(), nullptr);
@@ -151,9 +169,12 @@ TEST_F(PushDeserializerTest, DeserializationThreading) {
 
 // Exercise concurrent serialization and deserialization.
 TEST_F(PushDeserializerTest, SerializationDeserialization) {
-  Trajectory read_trajectory;
+  auto const trajectory = BuildTrajectory();
+  int const byte_size = trajectory->ByteSize();
   for (int i = 0; i < kRunsPerTest; ++i) {
-    auto storage = std::make_unique<std::uint8_t[]>(trajectory_.ByteSize());
+    auto read_trajectory = make_not_null_unique<Trajectory>();
+    auto written_trajectory = BuildTrajectory();
+    auto storage = std::make_unique<std::uint8_t[]>(byte_size);
     std::uint8_t* data = &storage[0];
 
     pull_serializer_ =
@@ -161,8 +182,9 @@ TEST_F(PushDeserializerTest, SerializationDeserialization) {
     push_deserializer_ = std::make_unique<PushDeserializer>(
         kDeserializerChunkSize, kNumberOfChunks);
 
-    pull_serializer_->Start(&trajectory_);
-    push_deserializer_->Start(&read_trajectory);
+    pull_serializer_->Start(std::move(written_trajectory));
+    push_deserializer_->Start(
+        std::move(read_trajectory), PushDeserializerTest::CheckSerialization);
     for (;;) {
       Bytes const bytes = pull_serializer_->Pull();
       std::memcpy(data, bytes.data, static_cast<size_t>(bytes.size));
@@ -186,14 +208,16 @@ TEST_F(PushDeserializerTest, SerializationDeserialization) {
 TEST_F(PushDeserializerDeathTest, Stomp) {
   EXPECT_DEATH({
     const int kStompChunk = 77;
-    Trajectory read_trajectory;
+    auto read_trajectory = make_not_null_unique<Trajectory>();
+    auto const trajectory = BuildTrajectory();
+    int const byte_size = trajectory->ByteSize();
     auto serialized_trajectory =
-        std::make_unique<std::uint8_t[]>(trajectory_.ByteSize());
-    trajectory_.SerializePartialToArray(&serialized_trajectory[0],
-                                        trajectory_.ByteSize());
-    push_deserializer_->Start(&read_trajectory);
-    int left = trajectory_.ByteSize();
-    for (int i = 0; i < trajectory_.ByteSize(); i += kStompChunk) {
+        std::make_unique<std::uint8_t[]>(byte_size);
+    trajectory->SerializePartialToArray(&serialized_trajectory[0], byte_size);
+    push_deserializer_->Start(
+      std::move(read_trajectory), &PushDeserializerTest::CheckSerialization);
+    int left = byte_size;
+    for (int i = 0; i < byte_size; i += kStompChunk) {
       Bytes bytes(&serialized_trajectory[i], std::min(left, kStompChunk));
       push_deserializer_->Push(bytes,
                                std::bind(&PushDeserializerTest::Stomp,

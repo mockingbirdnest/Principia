@@ -94,19 +94,26 @@ inline PushDeserializer::~PushDeserializer() {
 }
 
 inline void PushDeserializer::Start(
-    not_null<google::protobuf::Message*> const message) {
+    not_null<std::unique_ptr<google::protobuf::Message>> message,
+    std::function<void(google::protobuf::Message const&)> done) {
   CHECK(thread_ == nullptr);
-  thread_ = std::make_unique<std::thread>([this, message](){
-    CHECK(message->ParseFromZeroCopyStream(&stream_));
+  message_.reset(message.release());  // Should std::move but VS is not ready.
+  thread_ = std::make_unique<std::thread>([this, done](){
+    CHECK(message_->ParseFromZeroCopyStream(&stream_));
 
-    // Run any remainining callback.
+    // Run any remainining chunk callback.
     std::unique_lock<std::mutex> l(lock_);
     CHECK_EQ(1, done_.size());
-    auto const done = done_.front();
-    if (done != nullptr) {
-      done();
+    auto const done_front = done_.front();
+    if (done_front != nullptr) {
+      done_front();
     }
     done_.pop();
+
+    // Run the final callback.
+    if (done != nullptr) {
+      done(*message_);
+    }
   });
 }
 
