@@ -16,9 +16,9 @@ With[{
                     " ("<>ToString[i]<>"/"<>ToString[series]<>")"]];
          ListLogLogPlot[
            errorDataAndEmpty[[i]],
-           PlotRange->{{minWork, maxWork}, {1*^-17, 1}},
-           ImageSize->1200,
-           PlotStyle->{colour[i], PointSize[0.001]}]]/@Range[series+1],
+           PlotRange -> {{minWork, maxWork}, {1*^-17, 1}},
+           ImageSize -> 1200,
+           PlotStyle -> {colour[i], PointSize[0.001]}]]~ParallelMap~Range[series+1],
      visible = Append[ConstantArray[False, series], True]},
     Dynamic[
       Row[
@@ -26,5 +26,5 @@ With[{
        SwatchLegend[
          If[visible[[#]], colour[#], Transparent]&/@Range[series],
          Toggler[Dynamic[visible[[#]]],
-                 {True->names[[#]], False->names[[#]]}]&/@(Range[series])]}]],
+                 {True -> names[[#]], False -> names[[#]]}]&/@(Range[series])]}]],
     SaveDefinitions->True]]
