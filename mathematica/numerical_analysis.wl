@@ -13,13 +13,14 @@ With[{
        Function[
          i,
 	     If[i <= series,
-            Print["Rendering "<>errorKind<>" data for "<>names[[i]]<>
+            PrintTemporary["Rendering "<>errorKind<>" for "<>names[[i]]<>
                     " ("<>ToString[i]<>"/"<>ToString[series]<>")"]];
          ListLogLogPlot[
            errorDataAndEmpty[[i]],
            PlotRange -> {{minWork, maxWork}, {1*^-17, 1}},
            ImageSize -> 1200,
-           AxesLabel -> {"Evaluations", errorKind<>" ("<>unit<>")"}
+           AxesLabel -> {"Evaluations", errorKind<>
+                           " ("<>ToString[unit, TraditionalForm]<>")"}
            PlotStyle -> {colour[i], PointSize[0.001]}]]~ParallelMap~Range[series+1],
      visible = Append[ConstantArray[False, series], True]},
     Dynamic[
