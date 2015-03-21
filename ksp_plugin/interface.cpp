@@ -444,7 +444,7 @@ void principia__DeletePluginSerialization(char const** const serialization) {
 void principia__DeserializePlugin(char const* const serialization,
                                   int const serialization_size,
                                   PushDeserializer** const deserializer,
-                                  Plugin** const plugin) {
+                                  Plugin const** const plugin) {
   LOG(INFO) << __FUNCTION__;
   CHECK_NOTNULL(serialization);
   CHECK_NOTNULL(deserializer);

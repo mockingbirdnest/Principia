@@ -4,6 +4,7 @@
 
 #include "base/not_null.hpp"
 #include "base/pull_serializer.hpp"
+#include "base/push_deserializer.hpp"
 #include "geometry/epoch.hpp"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
@@ -14,6 +15,7 @@ namespace principia {
 
 using base::check_not_null;
 using base::PullSerializer;
+using base::PushDeserializer;
 using geometry::Displacement;
 using geometry::kUnixEpoch;
 using si::Degree;
@@ -529,12 +531,20 @@ TEST_F(InterfaceTest, SerializePlugin) {
 }
 
 TEST_F(InterfaceTest, DeserializePlugin) {
-  std::unique_ptr<Plugin> plugin(
-      principia__DeserializePlugin(
+  PushDeserializer* deserializer = nullptr;
+  Plugin const* plugin = nullptr;
+  principia__DeserializePlugin(
           kHexadecimalBoringPlugin,
-          (sizeof(kHexadecimalBoringPlugin) - 1) / sizeof(char)));
+          (sizeof(kHexadecimalBoringPlugin) - 1) / sizeof(char),
+          &deserializer,
+          &plugin);
+  principia__DeserializePlugin(kHexadecimalBoringPlugin,
+                               0,
+                               &deserializer,
+                               &plugin);
   EXPECT_THAT(plugin, NotNull());
   EXPECT_EQ(Instant(), plugin->current_time());
+  principia__DeletePlugin(&plugin);
 }
 
 TEST_F(InterfaceDeathTest, SettersAndGetters) {
