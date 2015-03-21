@@ -269,16 +269,16 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
     if (PluginRunning()) {
       IntPtr serialization = IntPtr.Zero;
       IntPtr serializer = IntPtr.Zero;
-      try {
-        for (;;) {
+      for (;;) {
+        try {
           serialization = SerializePlugin(plugin_, ref serializer);
           if (serialization == IntPtr.Zero) {
             break;
           }
           node.AddValue(kPrincipiaKey, Marshal.PtrToStringAnsi(serialization));
+        } finally {
+          DeletePluginSerialization(ref serialization);
         }
-      } finally {
-        DeletePluginSerialization(ref serialization);
       }
     }
   }
@@ -290,8 +290,6 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
       SetRotatingFrameThresholds();
 
       IntPtr deserializer = IntPtr.Zero;
-      plugin_ = IntPtr.Zero;
-
       String[] serializations = node.GetValues(kPrincipiaKey);
       Log.Info("Serialization has " + serializations.Length + " chunks");
       foreach (String serialization in serializations) {

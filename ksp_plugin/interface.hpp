@@ -281,7 +281,7 @@ double CDECL principia__current_time(Plugin const* const plugin);
 // |plugin| must not be null.  The caller takes ownership of the result, except
 // when it is null (at the end of the stream).  No transfer of ownership of
 // |*plugin|.  |*serializer| must be null on the first call and must be passed
-// unchanged to the successive calls.
+// unchanged to the successive calls; its ownership is not transferred.
 extern "C" DLLEXPORT
 char const* CDECL principia__SerializePlugin(
     Plugin const* const plugin,
