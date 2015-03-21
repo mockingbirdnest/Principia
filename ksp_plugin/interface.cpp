@@ -410,8 +410,7 @@ char const* principia__SerializePlugin(Plugin const* const plugin,
   // Create and start a serializer if the caller didn't provide one.
   if (*serializer == nullptr) {
     *serializer = new PullSerializer(kChunkSize, kNumberOfChunks);
-    not_null<std::unique_ptr<serialization::Plugin>> message =
-        make_not_null_unique<serialization::Plugin>();
+    auto message = make_not_null_unique<serialization::Plugin>();
     plugin->WriteToMessage(message.get());
     (*serializer)->Start(std::move(message));
   }
@@ -442,32 +441,46 @@ void principia__DeletePluginSerialization(char const** const serialization) {
   TakeOwnershipArray(reinterpret_cast<uint8_t const**>(serialization));
 }
 
-Plugin* principia__DeserializePlugin(char const* const serialization,
-                                     int const serialization_size,
-                                     PushDeserializer** const deserializer) {
+void principia__DeserializePlugin(char const* const serialization,
+                                  int const serialization_size,
+                                  PushDeserializer** const deserializer,
+                                  Plugin** const plugin) {
   LOG(INFO) << __FUNCTION__;
   CHECK_NOTNULL(serialization);
+  CHECK_NOTNULL(deserializer);
+  CHECK_NOTNULL(plugin);
 
   // Create and start a deserializer if the caller didn't provide one.
   if (*deserializer == nullptr) {
     *deserializer = new PushDeserializer(kChunkSize, kNumberOfChunks);
-    not_null<std::unique_ptr<serialization::Plugin>> message =
-        make_not_null_unique<serialization::Plugin>();
-    plugin->WriteToMessage(message.get());
-    (*deserializer)->Start(message.get());
+    auto message = make_not_null_unique<serialization::Plugin>();
+    (*deserializer)->Start(
+        std::move(message),
+        [plugin](google::protobuf::Message const& message) {
+          *plugin = Plugin::ReadFromMessage(
+              static_cast<serialization::Plugin const&>(message)).release();
+        });
   }
+
+  // Decode the hexadecimal representation.
   uint8_t const* const hexadecimal =
       reinterpret_cast<uint8_t const*>(serialization);
   int const hexadecimal_size = serialization_size;
-  std::vector<uint8_t> bytes(hexadecimal_size / 2);
-  HexadecimalDecode(hexadecimal, hexadecimal_size, bytes.data(), bytes.size());
+  int const byte_size = hexadecimal_size >> 1;
+  // Ownership of the following pointer is transfered to the deserializer using
+  // the callback to |Push|.
+  std::uint8_t* bytes = new uint8_t[byte_size];
+  HexadecimalDecode(hexadecimal, hexadecimal_size, &bytes[0], byte_size);
 
-  // Push the data.
-  (*deserializer)->Push(Bytes(bytes.data(), bytes.size()), nullptr/**/);
+  // Push the data, taking ownership of it.
+  (*deserializer)->Push(Bytes(&bytes[0], byte_size),
+                        [bytes]() { delete bytes; });
 
-  principia::serialization::Plugin message;
-  message.ParseFromArray(bytes.data(), bytes.size());
-  return Plugin::ReadFromMessage(message).release();
+  // If the data was empty, delete the deserializer.  This ensures that
+  // |*plugin| is filled.
+  if (byte_size == 0) {
+    delete *deserializer;
+  }
 }
 
 char const* principia__SayHello() {
