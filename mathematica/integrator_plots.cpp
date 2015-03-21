@@ -85,15 +85,42 @@ std::vector<SimpleHarmonicMotionPlottedIntegrator> Methods() {
 std::string ErrorPlot(std::string const& data, std::string const& legend,
                       std::string const& error_kind) {
   std::vector<double> const range = {1e-16, 1};
-  std::vector<std::string> const axes_label = {"Evaluations",
+  std::vector<std::string> const axes_label = {Escape("Evaluations"),
                                                Escape(error_kind)};
+  std::vector<std::string> const variables = {
+      Set(data, data),
+      Set(legend, legend),
+      Set("visible", 
+          Apply("ConstantArray", {"True", Apply("Length", {legend})}))};
+  std::string const plot_style =
+      Apply("Map",
+            {Apply("Function",
+                   {"x", Apply("Opacity", {Apply("Boole", {"x"})})}),
+             "visible"});
+  std::vector<std::string> const legend_label = {
+      Option("True", Apply("Part", {legend, "i"})),
+      Option("False", Apply("Part", {legend, "i"}))};
+  std::string const plot_legend =
+      Apply("Map",
+            {Apply("Function",
+                   {"i",
+                    Apply("Toggler",
+                          {Apply("Dynamic", {
+                                 Apply("Part", {"visible", "i"})}),
+                           ToMathematica(legend_label)})}),
+             Apply("Range", {Apply("Length", {legend})})});
   return Apply(
-      "ListLogLogPlot",
-      {data,
-       Option("PlotLegends", Apply("SwatchLegend", {legend})),
-       Option("PlotRange", ToMathematica(range)),
-       Option("AxesLabel", ToMathematica(axes_label)),
-       Option("ImageSize", "1200")});
+      "DynamicModule",
+      {ToMathematica(variables),
+       Apply("Dynamic",
+             {Apply("ListLogLogPlot",
+                    {data,
+                     Option("PlotStyle", plot_style),
+                     Option("PlotLegends",
+                            Apply("SwatchLegend", {plot_legend})),
+                     Option("PlotRange", ToMathematica(range)),
+                     Option("AxesLabel", ToMathematica(axes_label)),
+                     Option("ImageSize", "1200")})})});
 }
 
 }  // namespace
@@ -168,11 +195,11 @@ void GenerateSimpleHarmonicMotionWorkErrorGraphs() {
   file << Assign("vErrorPlots", v_plots);
   file << Assign("eErrorPlots", e_plots);
   file << Assign("names", names);
-  file << Export("shm_q_error.png",
+  file << Export("shm_q_error.cdf",
                  ErrorPlot("qErrorPlots", "names", "Position error (m)"));
-  file << Export("shm_v_error.png",
+  file << Export("shm_v_error.cdf",
                  ErrorPlot("vErrorPlots", "names", "Velocity error (m/s)"));
-  file << Export("shm_e_error.png",
+  file << Export("shm_e_error.cdf",
                  ErrorPlot("eErrorPlots", "names", "Energy error (J)"));
   file.close();
 }

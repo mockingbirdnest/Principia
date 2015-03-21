@@ -18,6 +18,9 @@ template<typename T>
 std::string Option(std::string const& name, T const& right);
 
 template<typename T>
+std::string Set(std::string const& name, T const& right);
+
+template<typename T>
 std::string Assign(std::string const& name, T const& right);
 
 std::string Export(std::string const& file, std::string const& expression);
