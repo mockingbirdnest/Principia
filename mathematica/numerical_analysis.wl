@@ -33,7 +33,7 @@ With[
                PlotStyle -> {colour[i], PointSize[0.001]}]]~ParallelMap~Range[series+1]),
        visible = Append[ConstantArray[False, series], True]},
       NotebookDelete@temporaryCell;
-      PrintTemporary["Done."]
+      PrintTemporary["Done."];
       Dynamic[
         Row[
         {Show[plots[[Select[Range[series+1], visible[[#]]&]]]],
