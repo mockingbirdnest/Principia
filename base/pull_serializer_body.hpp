@@ -86,10 +86,11 @@ inline PullSerializer::~PullSerializer() {
 }
 
 inline void PullSerializer::Start(
-    base::not_null<google::protobuf::Message const*> const message) {
+    not_null<std::unique_ptr<google::protobuf::Message const>> message) {
   CHECK(thread_ == nullptr);
-  thread_ = std::make_unique<std::thread>([this, message](){
-    CHECK(message->SerializeToZeroCopyStream(&stream_));
+  message_.reset(message.release());  // Should std::move but VS is not ready.
+  thread_ = std::make_unique<std::thread>([this](){
+    CHECK(message_->SerializeToZeroCopyStream(&stream_));
     // Put a sentinel at the end of the serialized stream so that the client
     // knows that this is the end.
     Bytes bytes;
@@ -109,7 +110,7 @@ inline Bytes PullSerializer::Pull() {
     // The element at the front of the queue is the one that was last returned
     // by |Pull| and must be dropped and freed.
     queue_has_elements_.wait(l, [this]() { return queue_.size() > 1; });
-    CHECK_GE(2ULL, queue_.size());
+    CHECK_LE(2ULL, queue_.size());
     free_.push(queue_.front().data);
     queue_.pop();
     result = queue_.front();

@@ -32,11 +32,14 @@ class PullSerializerTest : public ::testing::Test {
       : pull_serializer_(
             std::make_unique<PullSerializer>(kChunkSize, kNumberOfChunks)),
         stream_(Bytes(data_, kSmallChunkSize),
-                std::bind(&PullSerializerTest::OnFull, this, _1, &strings_)) {
+                std::bind(&PullSerializerTest::OnFull, this, _1, &strings_)) {}
+
+  static not_null<std::unique_ptr<Trajectory const>> BuildTrajectory() {
+    not_null<std::unique_ptr<Trajectory>> result =
+        make_not_null_unique<Trajectory>();
     // Build a biggish protobuf for serialization.
     for (int i = 0; i < 100; ++i) {
-      Trajectory::InstantaneousDegreesOfFreedom* idof =
-          trajectory_.add_timeline();
+      Trajectory::InstantaneousDegreesOfFreedom* idof = result->add_timeline();
       Point* instant = idof->mutable_instant();
       Quantity* scalar = instant->mutable_scalar();
       scalar->set_dimensions(3);
@@ -53,6 +56,7 @@ class PullSerializerTest : public ::testing::Test {
       scalar2->set_dimensions(2);
       scalar2->set_magnitude(2 * i);
     }
+    return std::move(result);
   }
 
   // Returns the first string in the list.  Note that the very first string is
@@ -66,7 +70,6 @@ class PullSerializerTest : public ::testing::Test {
   }
 
   std::unique_ptr<PullSerializer> pull_serializer_;
-  Trajectory trajectory_;
   internal::DelegatingArrayOutputStream stream_;
   std::list<std::string> strings_;
   std::uint8_t data_[kSmallChunkSize];
@@ -96,7 +99,8 @@ TEST_F(PullSerializerTest, Stream) {
 }
 
 TEST_F(PullSerializerTest, SerializationSizes) {
-  pull_serializer_->Start(&trajectory_);
+  auto trajectory = BuildTrajectory();
+  pull_serializer_->Start(std::move(trajectory));
   std::vector<std::int64_t> actual_sizes;
   std::vector<std::int64_t> expected_sizes(53, kChunkSize);
   expected_sizes.push_back(53);
@@ -112,22 +116,25 @@ TEST_F(PullSerializerTest, SerializationSizes) {
 
 TEST_F(PullSerializerTest, SerializationThreading) {
   Trajectory read_trajectory;
+  auto const trajectory = BuildTrajectory();
+  int const byte_size = trajectory->ByteSize();
   auto expected_serialized_trajectory =
-      std::make_unique<std::uint8_t[]>(trajectory_.ByteSize());
-  trajectory_.SerializePartialToArray(&expected_serialized_trajectory[0],
-                                      trajectory_.ByteSize());
+      std::make_unique<std::uint8_t[]>(byte_size);
+  trajectory->SerializePartialToArray(&expected_serialized_trajectory[0],
+                                      byte_size);
 
   // Run this test repeatedly to detect threading issues (it will flake in case
   // of problems).
   for (int i = 0; i < kRunsPerTest; ++i) {
+    auto trajectory = BuildTrajectory();
     auto actual_serialized_trajectory =
-        std::make_unique<std::uint8_t[]>(trajectory_.ByteSize());
+        std::make_unique<std::uint8_t[]>(byte_size);
     std::uint8_t* data = &actual_serialized_trajectory[0];
 
     // The serialization happens concurrently with the test.
     pull_serializer_ =
         std::make_unique<PullSerializer>(kChunkSize, kNumberOfChunks);
-    pull_serializer_->Start(&trajectory_);
+    pull_serializer_->Start(std::move(trajectory));
     for (;;) {
       Bytes const bytes = pull_serializer_->Pull();
       std::memcpy(data, bytes.data, static_cast<size_t>(bytes.size));
@@ -141,8 +148,8 @@ TEST_F(PullSerializerTest, SerializationThreading) {
     // Check if the serialized version can be parsed and if not print the first
     // difference.
     if (!read_trajectory.ParseFromArray(&actual_serialized_trajectory[0],
-                                        trajectory_.ByteSize())) {
-      for (int i = 0; i < trajectory_.ByteSize(); ++i) {
+                                        byte_size)) {
+      for (int i = 0; i < byte_size; ++i) {
         if (expected_serialized_trajectory[i] !=
             actual_serialized_trajectory[i]) {
           LOG(FATAL) << "position=" << i

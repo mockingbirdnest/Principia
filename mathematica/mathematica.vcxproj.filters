@@ -9,6 +9,9 @@
       <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
       <Extensions>h;hh;hpp;hxx;hm;inl;inc;xsd</Extensions>
     </Filter>
+    <Filter Include="Scripts">
+      <UniqueIdentifier>{4e3369e9-9c33-43ea-8662-581a7f97470b}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -28,5 +31,13 @@
     <ClInclude Include="integrator_plots.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="generate_graphs.wl">
+      <Filter>Scripts</Filter>
+    </None>
+    <None Include="numerical_analysis.wl">
+      <Filter>Scripts</Filter>
+    </None>
   </ItemGroup>
 </Project>

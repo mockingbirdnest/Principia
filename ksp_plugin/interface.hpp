@@ -3,6 +3,8 @@
 #include <type_traits>
 
 #include "base/macros.hpp"
+#include "base/pull_serializer.hpp"
+#include "base/push_deserializer.hpp"
 #include "ksp_plugin/plugin.hpp"
 #include "physics/transforms.hpp"
 
@@ -276,10 +278,14 @@ XYZ CDECL principia__BubbleVelocityCorrection(Plugin const* const plugin,
 extern "C" DLLEXPORT
 double CDECL principia__current_time(Plugin const* const plugin);
 
-// |plugin| must not be null.  The caller takes ownership of the result.  No
-// transfer of ownership of |*plugin|.
+// |plugin| must not be null.  The caller takes ownership of the result, except
+// when it is null (at the end of the stream).  No transfer of ownership of
+// |*plugin|.  |*serializer| must be null on the first call and must be passed
+// unchanged to the successive calls; its ownership is not transferred.
 extern "C" DLLEXPORT
-char const* CDECL principia__SerializePlugin(Plugin const* const plugin);
+char const* CDECL principia__SerializePlugin(
+    Plugin const* const plugin,
+    base::PullSerializer** const serializer);
 
 // Deletes and nulls |*serialization|.
 // |serialization| must not be null.  No transfer of ownership of
@@ -288,11 +294,18 @@ extern "C" DLLEXPORT
 void CDECL principia__DeletePluginSerialization(
     char const** const serialization);
 
-// The caller takes ownership of the result.  No transfer of ownership of
-// |*serialization|.
+// The caller takes ownership of |**plugin| when it is not null.  No transfer of
+// ownership of |*serialization| or |**deserializer|.  |*deserializer| and
+// |*plugin| must be null on the first call and must be passed unchanged to the
+// successive calls.  The caller must perform an extra call with
+// |serialization_size| set to 0 to indicate the end of the input stream.  When
+// this last call returns, |*plugin| is not null and may be used by the caller.
 extern "C" DLLEXPORT
-Plugin* CDECL principia__DeserializePlugin(char const* const serialization,
-                                           int const serialization_size);
+void CDECL principia__DeserializePlugin(
+    char const* const serialization,
+    int const serialization_size,
+    base::PushDeserializer** const deserializer,
+    Plugin const** const plugin);
 
 // Says hello, convenient for checking that calls to the DLL work.
 extern "C" DLLEXPORT
