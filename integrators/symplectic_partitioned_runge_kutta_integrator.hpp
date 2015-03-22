@@ -89,6 +89,11 @@ SPRKIntegrator const& PseudoLeapfrog();
 // The accuracy of symplectic integrators, table 2.
 // http://eaton.math.rpi.edu/CSUMS/Papers/Symplectic/McLachlan_Atela_92.pdf.
 SPRKIntegrator const& McLachlanAtela1992Order2Optimal();
+// Second order, 3 stages, FSAL (synchronous momenta).
+// Coefficients from McLachlan (1995),
+// On the numerical integration of ordinary differential equations by symmetric
+// composition methods, http://www.massey.ac.nz/~rmclachl/sisc95.pdf.
+SPRKIntegrator const& McLachlan1995S2();
 // Third order, 3 stages.
 // Coefficients from Ruth (1983), A canonical integration technique,
 // https://accelconf.web.cern.ch/accelconf/p83/PDF/PAC1983_2669.PDF.
@@ -116,6 +121,25 @@ SPRKIntegrator const& CandyRozmus1991ForestRuth1990SynchronousMomenta();
 // A Symplectic Integration Algorithm for Separable Hamiltonian Functions
 // (submitted earlier and published later than the Forest and Ruth paper).
 SPRKIntegrator const& CandyRozmus1991ForestRuth1990SynchronousPositions();
+// Fourth order, 6 stages, FSAL (synchronous momenta).
+// Coefficients from Suzuki (1990), Fractal decompositions of exponential
+// operators with applications to many-body theories and Monte Carlo
+// simulations,
+SPRKIntegrator const& Suzuki1990();
+// Fourth order, 6 stages, FSAL (synchronous momenta).
+// Coefficients from McLachlan (1995),
+// On the numerical integration of ordinary differential equations by symmetric
+// composition methods, http://www.massey.ac.nz/~rmclachl/sisc95.pdf.
+SPRKIntegrator const& McLachlan1995SS5();
+// Fourth order, 5 stages, FSAL (synchronous momenta).  Ibidem.
+SPRKIntegrator const& McLachlan1995S4();
+// Fourth order, 6 stages, FSAL (synchronous momenta).  Ibidem.
+SPRKIntegrator const& McLachlan1995S5();
+// Fourth order, 7 stages, FSAL (synchronous momenta).
+// Coefficients from Blanes and Moan (2002),
+// Practical symplectic partitioned Runge–Kutta and Runge–Kutta–Nyström methods,
+// http://personales.upv.es/serblaza/2002JCAM.pdf.
+SPRKIntegrator const& BlanesMoan2002S6();
 // Sixth order, 8 stages, FSAL (synchronous positions).
 // Coefficients from Yoshida (1990),
 // Construction of higher order symplectic integrators
@@ -128,7 +152,20 @@ SPRKIntegrator const& Yoshida1990Order6A();
 SPRKIntegrator const& Yoshida1990Order6B();
 // Sixth order, 8 stages, FSAL (synchronous positions).  Ibidem.
 SPRKIntegrator const& Yoshida1990Order6C();
-// Eighth order, 16 stages, FSAL (synchronous positions).  Ibidem.
+// Sixth order, 10 stages, FSAL (synchronous momenta).
+// Coefficients from McLachlan (1995),
+// On the numerical integration of ordinary differential equations by symmetric
+// composition methods, http://www.massey.ac.nz/~rmclachl/sisc95.pdf.
+SPRKIntegrator const& McLachlan1995SS9();
+// Sixth order, 11 stages, FSAL (synchronous momenta).
+// Coefficients from Blanes and Moan (2002),
+// Practical symplectic partitioned Runge–Kutta and Runge–Kutta–Nyström methods,
+// http://personales.upv.es/serblaza/2002JCAM.pdf.
+SPRKIntegrator const& BlanesMoan2002S10();
+// Eighth order, 16 stages, FSAL (synchronous positions).
+// Coefficients from Yoshida (1990),
+// Construction of higher order symplectic integrators
+// http://sixtrack.web.cern.ch/SixTrack/doc/yoshida00.pdf.
 SPRKIntegrator const& Yoshida1990Order8A();
 // Eighth order, 16 stages, FSAL (synchronous positions).  Ibidem.
 SPRKIntegrator const& Yoshida1990Order8B();
@@ -138,6 +175,13 @@ SPRKIntegrator const& Yoshida1990Order8C();
 SPRKIntegrator const& Yoshida1990Order8D();
 // Eighth order, 16 stages, FSAL (synchronous positions).  Ibidem.
 SPRKIntegrator const& Yoshida1990Order8E();
+// Eighth order, 16 stages, FSAL (synchronous momenta).
+// Coefficients from McLachlan (1995),
+// On the numerical integration of ordinary differential equations by symmetric
+// composition methods, http://www.massey.ac.nz/~rmclachl/sisc95.pdf.
+SPRKIntegrator const& McLachlan1995SS15();
+// Eighth order, 18 stages, FSAL (synchronous momenta).  Ibidem.
+SPRKIntegrator const& McLachlan1995SS17();
 
 }  // namespace integrators
 }  // namespace principia

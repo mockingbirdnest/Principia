@@ -35,11 +35,6 @@ std::string Assign(std::string const& name, T const& right) {
   return Apply("Set", {name, ToMathematica(right)}) + ";\n";
 }
 
-inline std::string Export(std::string const& file,
-                          std::string const& expression) {
-  return Apply("Export", {Escape(file), expression}) + ";\n";
-}
-
 template<typename T, typename U>
 std::string PlottableDataset(std::vector<T> x, std::vector<U> y) {
   std::vector<std::string> const xy = {ToMathematica(x), ToMathematica(y)};
