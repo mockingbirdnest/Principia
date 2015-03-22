@@ -19,7 +19,7 @@ inline void Bytes::CheckNotNull() const {
 }
 
 inline Bytes Bytes::New(std::int64_t const size) {
-  return Bytes(new std::uint8_t[size], size);
+  return Bytes(new std::uint8_t[static_cast<size_t>(size)], size);
 }
 
 inline Bytes Bytes::New(std::string s) {
@@ -35,7 +35,9 @@ inline bool operator==(Bytes left, Bytes right) {
   if (left.size != right.size) {
     return false;
   }
-  return std::memcmp(left.data, right.data, right.size) == 0;
+  return std::memcmp(left.data,
+                     right.data,
+                     static_cast<size_t>(right.size)) == 0;
 }
 
 inline void BytesDeleter::operator()(Bytes* const bytes) const {

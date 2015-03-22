@@ -16,6 +16,7 @@ struct Bytes {
   //TODO(phl):Comment
   void CheckNotNull() const;
 
+  //TODO(phl):Comment
   static Bytes New(std::int64_t const size);
   static Bytes New(std::string s);
   static void Delete(Bytes const bytes);
@@ -29,10 +30,7 @@ static bool operator==(Bytes left, Bytes right);
 
 // A helper class for UniqueBytes.
 struct BytesDeleter {
-  void operator()(Bytes* const bytes) const {
-  Bytes::Delete(*bytes);
-  delete bytes;
-    }
+  void operator()(Bytes* const bytes) const;
 };
 
 // An RAII object which takes ownership of the |data|.
