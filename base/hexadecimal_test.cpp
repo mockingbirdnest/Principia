@@ -22,31 +22,23 @@ class HexadecimalTest : public testing::Test {
       lowercase_digits_(Bytes::New("00""7f""80""ff""67""68""0a""07")),
       uppercase_digits_(Bytes::New("00""7F""80""FF""67""68""0A""07")) {}
 
-  ~HexadecimalTest() override {
-    Bytes::Delete(bytes_);
-    Bytes::Delete(digits_);
-    Bytes::Delete(lowercase_digits_);
-    Bytes::Delete(uppercase_digits_);
-  }
-
   static int64_t const kBytes = 8;
   static int64_t const kDigits = kBytes << 1;
 
-  Bytes bytes_;
-  Bytes digits_;
-  Bytes lowercase_digits_;
-  Bytes uppercase_digits_;
+  UniqueBytes bytes_;
+  UniqueBytes digits_;
+  UniqueBytes lowercase_digits_;
+  UniqueBytes uppercase_digits_;
 };
 
 using HexadecimalDeathTest = HexadecimalTest;
 
 TEST_F(HexadecimalTest, EncodeAndDecode) {
-  HexadecimalEncode(bytes_, &digits_);
+  HexadecimalEncode(*bytes_, digits_.get());
   EXPECT_EQ(uppercase_digits_, digits_);
-  Bytes bytes = Bytes::New(kBytes);
-  HexadecimalDecode(digits_, &bytes);
+  UniqueBytes bytes(Bytes::New(kBytes));
+  HexadecimalDecode(*digits_, bytes.get());
   EXPECT_EQ(bytes_, bytes);
-  Bytes::Delete(bytes);
 }
 
 TEST_F(HexadecimalTest, InPlace) {
