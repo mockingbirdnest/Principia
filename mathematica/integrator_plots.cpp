@@ -6,8 +6,10 @@
 #include <string>
 #include <vector>
 
+#include "geometry/frame.hpp"
 #include "glog/logging.h"
 #include "integrators/symplectic_partitioned_runge_kutta_integrator.hpp"
+#include "quantities/constants.hpp"
 #include "quantities/quantities.hpp"
 #include "quantities/named_quantities.hpp"
 #include "mathematica/mathematica.hpp"
@@ -19,6 +21,8 @@
 namespace principia {
 
 using base::not_null;
+using constants::GravitationalConstant;
+using geometry::Frame;
 using integrators::SRKNIntegrator;
 using quantities::AngularFrequency;
 using quantities::Cos;
@@ -34,6 +38,7 @@ using si::Radian;
 using si::Second;
 using testing_utilities::AbsoluteError;
 using testing_utilities::ComputeHarmonicOscillatorAcceleration;
+using testing_utilities::ComputeKeplerAcceleration;
 
 namespace mathematica {
 
@@ -81,6 +86,9 @@ std::vector<SimpleHarmonicMotionPlottedIntegrator> Methods() {
       {INTEGRATOR(McLachlan1995SS15), 15},
       {INTEGRATOR(McLachlan1995SS17), 17}};
 }
+
+using Barycentre = Frame<serialization::Frame::TestTag,
+                         serialization::Frame::TEST, true>;
 
 }  // namespace
 
@@ -136,6 +144,107 @@ void GenerateSimpleHarmonicMotionWorkErrorGraphs() {
                 0.5 * Joule,
                 (m * Pow<2>(system_state.momenta[0].value) +
                  k * Pow<2>(system_state.positions[0].value)) / 2));
+      }
+      // We plot the maximum error, i.e., the L∞ norm of the error.
+      // Blanes and Moan (2002), or Blanes, Casas and Ros (2001) tend to use
+      // the average error (the normalized L¹ norm) instead.
+      q_errors.emplace_back(*std::max_element(q_error.begin(), q_error.end()));
+      v_errors.emplace_back(*std::max_element(v_error.begin(), v_error.end()));
+      e_errors.emplace_back(*std::max_element(e_error.begin(), e_error.end()));
+      evaluations.emplace_back(number_of_evaluations);
+    }
+    q_plots.emplace_back(PlottableDataset(evaluations, q_errors));
+    v_plots.emplace_back(PlottableDataset(evaluations, v_errors));
+    e_plots.emplace_back(PlottableDataset(evaluations, e_errors));
+    names.emplace_back(Escape(method.name));
+  }
+  file << Assign("qErrorData", q_plots);
+  file << Assign("vErrorData", v_plots);
+  file << Assign("eErrorData", e_plots);
+  file << Assign("names", names);
+  file.close();
+}
+
+void GenerateKeplerProblemWorkErrorGraphs() {
+  SRKNIntegrator::Parameters<Position<Barycentre>,
+                             Velocity<Barycentre>> parameters;
+  SRKNIntegrator::Solution<Position<Barycentre>,
+                           Velocity<Barycentre>> solution;
+  std::ofstream file;
+  file.open("kepler_problem_graphs.generated.wl");
+  Length const a = 1 * Metre;
+  AngularFrequency const ω = 1 * Radian / Second;
+  Speed const v = 1 * Metre / Second;
+  Mass const m = 0.5 * SIUnit<GravitationalParameter>() / GravitationalConstant;
+  double const step_reduction = 1.015;
+  parameters.initial.positions.emplace_back(
+      Barycentre::origin + Displacement<Barycentre>({a, 0 * Metre, 0 * Metre}));
+  parameters.initial.positions.emplace_back(
+      Barycentre::origin - Displacement<Barycentre>({a, 0 * Metre, 0 * Metre}));
+  parameters.initial.momenta.emplace_back(
+      Velocity<Barycentre>({0 * Metre / Second, v, 0 * Metre / Second}));
+  parameters.initial.momenta.emplace_back(
+      -Velocity<Barycentre>({0 * Metre / Second, v, 0 * Metre / Second}));;
+  parameters.initial.time = 0 * Second;
+  parameters.tmax = 50 * Second;
+  // We use dense sampling in order to compute average errors, this leads to
+  // more evaluations than reported for FSAL methods.
+  parameters.sampling_period = 1;
+  std::vector<std::string> q_plots;
+  std::vector<std::string> v_plots;
+  std::vector<std::string> e_plots;
+  std::vector<std::string> names;
+  for (auto const& method : Methods()) {
+    LOG(INFO) << method.name;
+    parameters.Δt = method.stages * 1 * Second;
+    std::vector<Length> q_errors;
+    std::vector<Speed> v_errors;
+    std::vector<Energy> e_errors;
+    std::vector<double> evaluations;
+    for (int i = 0; i < 500; ++i, parameters.Δt /= step_reduction) {
+      int const number_of_evaluations =
+          method.stages * std::floor(parameters.tmax / parameters.Δt);
+      LOG_IF(INFO, (i + 1) % 50 == 0) << number_of_evaluations;
+      method.integrator->
+          SolveTrivialKineticEnergyIncrement<Position<Barycentre>>(
+              &ComputeKeplerAcceleration<Barycentre>,
+              parameters,
+              &solution);
+      std::vector<Length> q_error;
+      std::vector<Speed> v_error;
+      std::vector<Energy> e_error;
+      for (auto const& system_state : solution) {
+        Position<Barycentre> q0 =
+            Barycentre::origin +
+            Displacement<Barycentre>({a * Cos(ω * system_state.time.value),
+                                      a * Sin(ω * system_state.time.value),
+                                      0 * Metre});
+        Position<Barycentre> q1 = Barycentre::origin - q0 + Barycentre::origin;
+        Velocity<Barycentre> v0({-v * Sin(ω * system_state.time.value),
+                                 v * Cos(ω * system_state.time.value),
+                                 0 * Metre / Second});
+        Velocity<Barycentre> v1 = -v0;
+        q_error.emplace_back(
+            std::max(
+                AbsoluteError(
+                    q0 - Barycentre::origin,
+                    system_state.positions[0].value - Barycentre::origin),
+                AbsoluteError(
+                    q1 - Barycentre::origin,
+                    system_state.positions[1].value - Barycentre::origin)));
+        v_error.emplace_back(
+            std::max(AbsoluteError(v0, system_state.momenta[0].value),
+                     AbsoluteError(v1, system_state.momenta[1].value)));
+        e_error.emplace_back(
+            AbsoluteError(
+                0.5 * Joule,
+                (m * InnerProduct(system_state.momenta[0].value,
+                                  system_state.momenta[0].value) +
+                 m * InnerProduct(system_state.momenta[1].value,
+                                  system_state.momenta[1].value)) / 2 -
+                GravitationalConstant * m * m /
+                    (system_state.positions[0].value -
+                     system_state.positions[1].value).Norm()));
       }
       // We plot the maximum error, i.e., the L∞ norm of the error.
       // Blanes and Moan (2002), or Blanes, Casas and Ros (2001) tend to use
