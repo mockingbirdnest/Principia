@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cstdint>
+#include <memory>
 #include <string>
 
 namespace principia {
@@ -22,6 +23,20 @@ struct Bytes {
   std::uint8_t* data;
   std::int64_t size;
 };
+
+// Performs a deep comparison.
+static bool operator==(Bytes left, Bytes right);
+
+// A helper class for UniqueBytes.
+struct BytesDeleter {
+  void operator()(Bytes* const bytes) const {
+  Bytes::Delete(*bytes);
+  delete bytes;
+    }
+};
+
+// An RAII object which takes ownership of the |data|.
+using UniqueBytes = std::unique_ptr<Bytes, BytesDeleter>;
 
 }  // namespace base
 }  // namespace principia

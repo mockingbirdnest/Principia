@@ -18,17 +18,29 @@ inline void Bytes::CheckNotNull() const {
   CHECK_NOTNULL(data);
 }
 
-Bytes Bytes::New(std::int64_t const size) {
+inline Bytes Bytes::New(std::int64_t const size) {
   return Bytes(new std::uint8_t[size], size);
 }
 
-Bytes Bytes::New(std::string s) {
+inline Bytes Bytes::New(std::string s) {
   Bytes result = New(s.size());
   std::memcpy(result.data, s.c_str(), s.size());
 }
 
-void Bytes::Delete(Bytes const bytes) {
+inline void Bytes::Delete(Bytes const bytes) {
   delete[] bytes.data;
+}
+
+inline bool operator==(Bytes left, Bytes right) {
+  if (left.size != right.size) {
+    return false;
+  }
+  return std::memcmp(left.data, right.data, right.size) == 0;
+}
+
+inline void BytesDeleter::operator()(Bytes* const bytes) const {
+  Bytes::Delete(*bytes);
+  delete bytes;
 }
 
 }  // namespace base
