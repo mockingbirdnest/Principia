@@ -2,6 +2,8 @@
 
 #include <string.h>
 
+#include <cstdint>
+
 #include "base/hexadecimal.hpp"
 #include "glog/logging.h"
 
@@ -35,42 +37,45 @@ static uint8_t const kHexadecimalDigitsToNibble[256] = {
 #endif
 
 
-inline void HexadecimalEncode(uint8_t const* input, int64_t const input_size,
-                              uint8_t* output, int64_t const output_size) {
+inline void HexadecimalEncode(Bytes input, not_null<Bytes*> output) {
+  input.CheckNotNull();
+  output->CheckNotNull();
   // We iterate backward.
   // |input <= &output[1]| is still valid because we write two bytes of output
   // from reading one byte of input, so output[1] and output[0] are written
   // after reading input[0].  Greater values of |output| would
   // overwrite input data before it is read, unless there is no overlap, i.e.,
   // |&output[input_size << 1] <= input|.
-  CHECK(input <= &output[1] || &output[input_size << 1] <= input)
-      << "bad overlap";
-  CHECK_GE(output_size, input_size << 1) << "output too small";
-  // We want the result to start at |output[0]|.
-  output = output + ((input_size - 1) << 1);
-  input = input + input_size - 1;
-  for (uint8_t const* const input_rend = input - input_size;
-       input != input_rend;
-       --input, output -= 2) {
-    memcpy(output, &kByteToHexadecimalDigits[*input << 1], 2);
+  CHECK(input.data <= &output->data[1] ||
+        &output->data[input.size << 1] <= input.data) << "bad overlap";
+  CHECK_GE(output->size, input.size << 1) << "output too small";
+  // We want the result to start at |output->data[0]|.
+  output->data = output->data + ((input.size - 1) << 1);
+  input.data = input.data + input.size - 1;
+  for (std::uint8_t const* const input_rend = input.data - input.size;
+       input.data != input_rend;
+       --input.data, output->data -= 2) {
+    memcpy(output, &kByteToHexadecimalDigits[*input.data << 1], 2);
   }
 }
 
-inline void HexadecimalDecode(uint8_t const* input, int64_t input_size,
-                              uint8_t* output, int64_t const output_size) {
-  input_size &= ~1;
+inline void HexadecimalDecode(Bytes input, not_null<Bytes*> output) {
+  input.CheckNotNull();
+  output->CheckNotNull();
+  input.size &= ~1;
   // |output <= &input[1]| is still valid because we write one byte of output
   // from reading two bytes of input, so output[0] is written after reading
   // input[0] and input[1].  Greater values of |output| would overwrite input
   // data before it is read, unless there is no overlap, i.e.,
   // |&input[input_size] <= output|.
-  CHECK(output <= &input[1] || &input[input_size] <= output) << "bad overlap";
-  CHECK_GE(output_size, input_size / 2) << "output too small";
-  for (uint8_t const* const input_end = input + input_size;
-       input != input_end;
-       input += 2, ++output) {
-    *output = (kHexadecimalDigitsToNibble[*input] << 4) |
-              kHexadecimalDigitsToNibble[*(input + 1)];
+  CHECK(output->data <= &input.data[1] ||
+        &input.data[input.size] <= output->data) << "bad overlap";
+  CHECK_GE(output->size, input.size / 2) << "output too small";
+  for (uint8_t const* const input_end = input.data + input.size;
+       input.data != input_end;
+       input.data += 2, ++output->data) {
+    *output->data = (kHexadecimalDigitsToNibble[*input.data] << 4) |
+                     kHexadecimalDigitsToNibble[*(input.data + 1)];
   }
 }
 
