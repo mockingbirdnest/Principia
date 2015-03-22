@@ -13,7 +13,6 @@ using geometry::InnerProduct;
 using geometry::Position;
 using geometry::Vector;
 using geometry::Velocity;
-using quantities::Area;
 using quantities::Force;
 using quantities::GravitationalParameter;
 using quantities::Length;
@@ -51,11 +50,11 @@ template<typename Frame>
 inline void ComputeKeplerAcceleration(
     Time const& t,
     std::vector<Position<Frame>> const& q,
-    std::vector<Vector<Acceleration, Frame>>* const result) {
+    std::vector<Vector<Acceleration, Frame>>* const) {
   Displacement<Frame> const r = q[1] - q[0];
-  Area const r_squared = InnerProduct(r, r);
+  Length const r_squared = InnerProduct(r, r);
   auto const μ_over_r_cubed =
-      (0.5 * SIUnit<GravitationalParameter>() * Sqrt(r_squared)) /
+      (SIUnit<GravitationalParameter>() * Sqrt(r_squared)) /
           (r_squared * r_squared);
   (*result)[0] = r * μ_over_r_cubed;
   (*result)[1] = -(*result)[0];
