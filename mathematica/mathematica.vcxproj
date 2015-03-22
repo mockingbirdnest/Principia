@@ -38,6 +38,7 @@
     <Import Project="..\suppress_useless_warnings.props" />
     <Import Project="..\generate_version_header.props" />
     <Import Project="..\google_protobuf.props" />
+    <Import Project="..\warnings_as_errors.props" />
   </ImportGroup>
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
@@ -46,6 +47,7 @@
     <Import Project="..\suppress_useless_warnings.props" />
     <Import Project="..\generate_version_header.props" />
     <Import Project="..\google_protobuf.props" />
+    <Import Project="..\warnings_as_errors.props" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
@@ -86,6 +88,10 @@
     <ClInclude Include="integrator_plots.hpp" />
     <ClInclude Include="mathematica.hpp" />
     <ClInclude Include="mathematica_body.hpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="generate_graphs.wl" />
+    <None Include="numerical_analysis.wl" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
