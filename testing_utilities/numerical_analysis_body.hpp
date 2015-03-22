@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 #include<vector>
 
@@ -53,8 +53,10 @@ inline void ComputeKeplerAcceleration(
     std::vector<Vector<Acceleration, Frame>>* const) {
   Displacement<Frame> const r = q[1] - q[0];
   Length const r_squared = InnerProduct(r, r);
-  Length const r_norm = Sqrt(r_squared);
-  (*result)[0] = SIUnit<GravitationalParameter>() * r / (r_squared * r_norm);
+  auto const μ_over_r_cubed =
+      (SIUnit<GravitationalParameter>() * Sqrt(r_squared)) /
+          (r_squared * r_squared);
+  (*result)[0] = r * μ_over_r_cubed;
   (*result)[1] = -(*result)[0];
 }
 
