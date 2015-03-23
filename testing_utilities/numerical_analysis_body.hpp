@@ -1,23 +1,19 @@
 ﻿#pragma once
 
-#include<vector>
+#include <vector>
 
-#include "geometry/named_quantities.hpp"
+#include "quantities/elementary_functions.hpp"
 #include "quantities/quantities.hpp"
 #include "quantities/named_quantities.hpp"
 
 namespace principia {
 
-using geometry::Displacement;
-using geometry::InnerProduct;
-using geometry::Position;
-using geometry::Vector;
-using geometry::Velocity;
 using quantities::Force;
 using quantities::GravitationalParameter;
 using quantities::Length;
 using quantities::Mass;
 using quantities::Momentum;
+using quantities::Pow;
 using quantities::SIUnit;
 using quantities::Speed;
 using quantities::Sqrt;
@@ -46,18 +42,16 @@ inline void ComputeHarmonicOscillatorAcceleration(
   (*result)[0] = -q[0] * (SIUnit<Stiffness>() / SIUnit<Mass>());
 }
 
-template<typename Frame>
 inline void ComputeKeplerAcceleration(
     Time const& t,
-    std::vector<Position<Frame>> const& q,
-    std::vector<Vector<Acceleration, Frame>>* const) {
-  Displacement<Frame> const r = q[1] - q[0];
-  Length const r_squared = InnerProduct(r, r);
-  auto const μ_over_r_cubed =
-      (SIUnit<GravitationalParameter>() * Sqrt(r_squared)) /
+    std::vector<Length> const& q,
+    std::vector<Acceleration>* const result) {
+  auto const r_squared = q[0] * q[0] + q[1] * q[1];
+  auto const minus_μ_over_r_cubed =
+      -SIUnit<GravitationalParameter>() * Sqrt(r_squared) /
           (r_squared * r_squared);
-  (*result)[0] = r * μ_over_r_cubed;
-  (*result)[1] = -(*result)[0];
+  (*result)[0] = q[0] * minus_μ_over_r_cubed;
+  (*result)[1] = q[1] * minus_μ_over_r_cubed;
 }
 
 }  // namespace testing_utilities

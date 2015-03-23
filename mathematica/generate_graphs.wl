@@ -13,3 +13,13 @@ Export[
 Export[
  "shm_velocity_error.cdf",
  IntegrationErrorPlot[vErrorData, names, "maximal velocity error"]];
+<<"kepler_problem_graphs.generated.wl";
+Export[
+ "kepler_energy_error.cdf",
+ IntegrationErrorPlot[eErrorData, names, "maximal energy error"]];
+Export[
+ "kepler_position_error.cdf",
+ IntegrationErrorPlot[qErrorData, names, "maximal position error"]];
+Export[
+ "kepler_velocity_error.cdf",
+ IntegrationErrorPlot[vErrorData, names, "maximal velocity error"]];
