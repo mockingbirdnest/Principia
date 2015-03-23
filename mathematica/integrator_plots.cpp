@@ -34,7 +34,6 @@ using si::Kilogram;
 using si::Metre;
 using si::Radian;
 using si::Second;
-using testing_utilities::RelativeError;
 using testing_utilities::AbsoluteError;
 using testing_utilities::ComputeHarmonicOscillatorAcceleration;
 using testing_utilities::ComputeKeplerAcceleration;
@@ -211,7 +210,7 @@ void GenerateKeplerProblemWorkErrorGraphs() {
     parameters.Δt = method.stages * 1 * Second;
     std::vector<Length> q_errors;
     std::vector<Speed> v_errors;
-    std::vector<double> e_errors;
+    std::vector<Energy> e_errors;
     std::vector<double> evaluations;
     for (int i = 0; i < 500; ++i, parameters.Δt /= step_reduction) {
       int const number_of_evaluations =
@@ -224,7 +223,7 @@ void GenerateKeplerProblemWorkErrorGraphs() {
           &solution);
       std::vector<Length> q_error;
       std::vector<Speed> v_error;
-      std::vector<double> e_error;
+      std::vector<Energy> e_error;
       for (auto const& system_state : solution) {
         q_error.emplace_back(
             Sqrt(Pow<2>(system_state.positions[0].value -
@@ -243,7 +242,7 @@ void GenerateKeplerProblemWorkErrorGraphs() {
             Sqrt(Pow<2>(system_state.momenta[0].value) +
                  Pow<2>(system_state.momenta[1].value)) / 2;
         e_error.emplace_back(
-            RelativeError(
+            AbsoluteError(
                 2 * (m * v * v / 2) - GravitationalConstant * m * m / (2 * a),
                 2 * (m * v_actual * v_actual / 2) -
                     GravitationalConstant * m * m / r_actual));

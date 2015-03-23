@@ -16,7 +16,7 @@ Export[
 <<"kepler_problem_graphs.generated.wl";
 Export[
  "kepler_energy_error.cdf",
- IntegrationErrorPlot[eErrorData, names, "maximal energy error"]];
+ IntegrationErrorPlot[eErrorData, names, "maximal energy error", 2.*^9]];
 Export[
  "kepler_position_error.cdf",
  IntegrationErrorPlot[qErrorData, names, "maximal position error"]];
