@@ -205,6 +205,15 @@ TEST_F(TrajectoryTest, ForkSuccess) {
   EXPECT_THAT(fork->body<MassiveBody>(), Eq(&massive_body_));
 }
 
+TEST_F(TrajectoryTest, ForkAtLast) {
+  massive_trajectory_->Append(t1_, d1_);
+  massive_trajectory_->Append(t2_, d2_);
+  massive_trajectory_->Append(t3_, d3_);
+  not_null<Trajectory<World>*> const fork1 = massive_trajectory_->NewFork(t3_);
+  not_null<Trajectory<World>*> const fork2 =
+      fork1->NewFork(fork1->last().time());
+}
+
 TEST_F(TrajectoryTest, IteratorSerializationSuccess) {
   massive_trajectory_->Append(t1_, d1_);
   massive_trajectory_->Append(t2_, d2_);
