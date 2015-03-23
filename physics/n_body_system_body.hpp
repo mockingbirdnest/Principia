@@ -138,6 +138,16 @@ void NBodySystem<Frame>::Integrate(SRKNIntegrator const& integrator,
       }
     }
   }
+
+  // If |tmax_is_exact| and the trajectories already end at |tmax|, do not call
+  // the integrator: it would want to overwrite the last point of each
+  // trajectory, which is not something we allow.  It is better to handle this
+  // case here than in all the callers.
+  CHECK_LE(*times_in_trajectories.cbegin(), tmax);
+  if (tmax_is_exact && *times_in_trajectories.cbegin() == tmax) {
+    return;
+  }
+
   {
     // Beyond this point we must not use the |trajectories| parameter as it is
     // in the wrong order with respect to the data passed to the integrator.  We
