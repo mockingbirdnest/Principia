@@ -114,7 +114,7 @@ void Trajectory<Frame>::Append(
   auto inserted = timeline_.emplace(time, degrees_of_freedom);
   CHECK(timeline_.end() == ++inserted.first) << "Append out of order";
   CHECK(inserted.second) << "Append at existing time " << time
-                         << ", time range = [" << Times().front() << ", " 
+                         << ", time range = [" << Times().front() << ", "
                          << Times().back() << "]";
 }
 
