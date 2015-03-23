@@ -192,6 +192,8 @@ void GenerateKeplerProblemWorkErrorGraphs() {
   Mass const m = (μ / GravitationalConstant) / 2;
   AngularFrequency const ω = 1 * Radian / Second;
   double const step_reduction = 1.015;
+  // Initial conditions for the two bodies orbiting their barycentre in circular
+  // orbits with semi-major axis |a|.
   parameters.initial.positions.emplace_back(2 * a);             // q_x
   parameters.initial.positions.emplace_back(0 * Metre);         // q_y
   parameters.initial.momenta.emplace_back(0 * Metre / Second);  // v_x
