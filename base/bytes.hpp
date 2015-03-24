@@ -13,28 +13,23 @@ struct Bytes {
   Bytes();  // An object of size 0.
   Bytes(std::uint8_t* const data, std::int64_t const size);
 
-  //TODO(phl):Comment
-  void CheckNotNull() const;
-
-  //TODO(phl):Comment
-  static Bytes New(std::int64_t const size);
-  static Bytes New(std::string s);
-  static void Delete(Bytes const bytes);
-
   std::uint8_t* data;
+  std::int64_t size;
+};
+
+struct UniqueBytes {
+  UniqueBytes();  // An object of size 0.
+  UniqueBytes(std::int64_t const size);
+  UniqueBytes(std::unique_ptr<std::uint8_t[]> data,
+              std::int64_t const size);
+
+  std::unique_ptr<std::uint8_t[]> data;
   std::int64_t size;
 };
 
 // Performs a deep comparison.
 static bool operator==(Bytes left, Bytes right);
-
-// A helper class for UniqueBytes.
-struct BytesDeleter {
-  void operator()(Bytes* const bytes) const;
-};
-
-// An RAII object which takes ownership of the |data|.
-using UniqueBytes = std::unique_ptr<Bytes, BytesDeleter>;
+static bool operator==(UniqueBytes left, UniqueBytes right);
 
 }  // namespace base
 }  // namespace principia

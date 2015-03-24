@@ -14,22 +14,16 @@ inline Bytes::Bytes(std::uint8_t* const data,
                     std::int64_t const size)
     : data(data), size(size) {}
 
-inline void Bytes::CheckNotNull() const {
-  CHECK_NOTNULL(data);
-}
+UniqueBytes::UniqueBytes() : size(0) {}
 
-inline Bytes Bytes::New(std::int64_t const size) {
-  return Bytes(new std::uint8_t[static_cast<size_t>(size)], size);
-}
+UniqueBytes::UniqueBytes(std::int64_t const size)
+    : data(std::make_unique<std::uint8_t[]>(static_cast<size_t>(size))),
+      size(size) {}
 
-inline Bytes Bytes::New(std::string s) {
-  Bytes result = New(s.size());
-  std::memcpy(result.data, s.c_str(), s.size());
-}
-
-inline void Bytes::Delete(Bytes const bytes) {
-  delete[] bytes.data;
-}
+UniqueBytes::UniqueBytes(std::unique_ptr<std::uint8_t[]> data,
+                         std::int64_t const size)
+    : data(std::move(data)),
+      size(size) {}
 
 inline bool operator==(Bytes left, Bytes right) {
   if (left.size != right.size) {
@@ -40,9 +34,13 @@ inline bool operator==(Bytes left, Bytes right) {
                      static_cast<size_t>(right.size)) == 0;
 }
 
-inline void BytesDeleter::operator()(Bytes* const bytes) const {
-  Bytes::Delete(*bytes);
-  delete bytes;
+inline bool operator==(UniqueBytes left, UniqueBytes right) {
+  if (left.size != right.size) {
+    return false;
+  }
+  return std::memcmp(left.data.get(),
+                     right.data.get(),
+                     static_cast<size_t>(right.size)) == 0;
 }
 
 }  // namespace base
