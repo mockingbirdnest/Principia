@@ -10,10 +10,10 @@ BIN=$(BIN_DIR)/principia
 INCLUDE=-I. -Iglog/src -Iprotobuf/protobuf-2.6.1/src -Ibenchmark/include
 
 CPPC=clang++
-SHARED_ARGS=-std=c++1y -Ofast -g -ggdb -m64 -mmmx -msse -msse2 -m3dnow -fexceptions -Wall -Wpedantic -DDEBUG -DNO_SHOCKWAVE_DEBUG -DVSYNC -ferror-limit=-1
+SHARED_ARGS=-std=c++1y -Ofast -g -ggdb -m64 -mmmx -msse -msse2 -m3dnow -fexceptions -Wall -Wpedantic -ferror-limit=0
 COMPILE_ARGS=-c $(SHARED_ARGS) $(INCLUDE)
 LINK_ARGS=$(SHARED_ARGS)
-LIBS=-lglfw -lGL -lGLEW
+LIBS=
 
 $(BIN): $(PROTO_HEADERS) $(OBJECTS) Makefile $(BIN_DIR)
 	$(CPPC) $(LINK_ARGS) $(OBJECTS) $(INCLUDE) $(LIBS) -o $(BIN)
@@ -29,12 +29,6 @@ $(BIN_DIR):
 
 run: $(BIN)
 	./$(BIN)
-
-debug: $(BIN)
-	gdb ./$(BIN)
-
-valg: $(BIN)
-	valgrind --leak-check=full $(BIN)
 
 clean:
 	rm $(BIN) $(PROTO_HEADERS) $(OBJECTS); true
