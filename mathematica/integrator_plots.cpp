@@ -256,7 +256,6 @@ void GenerateKeplerProblemWorkErrorGraphs() {
       v_errors.emplace_back(*std::max_element(v_error.begin(), v_error.end()));
       e_errors.emplace_back(*std::max_element(e_error.begin(), e_error.end()));
       evaluations.emplace_back(number_of_evaluations);
-
     }
     q_error_data.emplace_back(PlottableDataset(evaluations, q_errors));
     v_error_data.emplace_back(PlottableDataset(evaluations, v_errors));
