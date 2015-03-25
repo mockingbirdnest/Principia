@@ -12,7 +12,7 @@ struct UniqueBytes {
   UniqueBytes();  // An object of size 0.
   template<typename T,
            typename = std::enable_if_t<std::is_integral<T>::value, T>>
-  UniqueBytes(T const size);
+  explicit UniqueBytes(T const size);
   template<typename T,
            typename = std::enable_if_t<std::is_integral<T>::value, T>>
   UniqueBytes(std::unique_ptr<std::uint8_t[]> data, T const size);
@@ -28,7 +28,7 @@ struct UniqueBytes {
 // is not owned.
 struct Bytes {
   Bytes();  // An object of size 0.
-  Bytes(UniqueBytes const& bytes);  // No transfer of ownership.
+  Bytes(UniqueBytes const& bytes);  // Implicit, no transfer of ownership.
   template<typename T,
            typename = std::enable_if_t<std::is_integral<T>::value, T>>
   Bytes(std::uint8_t* const data, T const size);

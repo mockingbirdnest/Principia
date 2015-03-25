@@ -47,7 +47,7 @@ using HexadecimalDeathTest = HexadecimalTest;
 TEST_F(HexadecimalTest, EncodeAndDecode) {
   HexadecimalEncode(bytes_, digits_);
   EXPECT_EQ(uppercase_digits_, digits_);
-  Bytes bytes(kBytes);
+  UniqueBytes bytes(kBytes);
   HexadecimalDecode(digits_, bytes);
   EXPECT_EQ(bytes_, bytes);
 }
@@ -61,7 +61,7 @@ TEST_F(HexadecimalTest, InPlace) {
   HexadecimalEncode({&buffer[0], kBytes}, {&buffer[0], kDigits});
   EXPECT_EQ(uppercase_digits_, Bytes(&buffer[0], kDigits));
   HexadecimalDecode({&buffer[0], kDigits}, {&buffer[1], kBytes});
-  EXPECT_EQ(bytes_, Bytes(&buffer[1], kBytes + 1));
+  EXPECT_EQ(bytes_, Bytes(&buffer[1], kBytes));
   std::memcpy(&buffer[0], uppercase_digits_.data.get(), kDigits);
   HexadecimalDecode({&buffer[0], kDigits}, {&buffer[0], kBytes});
   EXPECT_EQ(bytes_, Bytes(&buffer[0], kBytes));
@@ -69,18 +69,18 @@ TEST_F(HexadecimalTest, InPlace) {
 
 TEST_F(HexadecimalTest, LargeOutput) {
   int64_t const digits_size = kDigits + 42;
-  Bytes digits(digits_size);
-  std::memset(digits.data, 'X', digits_size);
+  UniqueBytes digits(digits_size);
+  std::memset(digits.data.get(), 'X', digits_size);
   HexadecimalEncode(bytes_, digits);
-  EXPECT_EQ(uppercase_digits_, Bytes(digits.data, kDigits));
+  EXPECT_EQ(uppercase_digits_, Bytes(digits.data.get(), kDigits));
   EXPECT_THAT(std::vector<uint8_t>(&digits.data[kDigits],
                                    &digits.data[digits_size]),
               Each('X'));
   int64_t const bytes_size = kBytes + 42;
-  Bytes bytes(bytes_size);
-  std::memset(bytes.data, 'Y', bytes_size);
+  UniqueBytes bytes(bytes_size);
+  std::memset(bytes.data.get(), 'Y', bytes_size);
   HexadecimalDecode(uppercase_digits_, bytes);
-  EXPECT_EQ(bytes_, Bytes(bytes.data, kBytes));
+  EXPECT_EQ(bytes_, Bytes(bytes.data.get(), kBytes));
   EXPECT_THAT(std::vector<uint8_t>(&bytes.data[kBytes],
                                    &bytes.data[bytes_size]),
               Each('Y'));

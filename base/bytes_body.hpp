@@ -7,16 +7,6 @@
 namespace principia {
 namespace base {
 
-inline Bytes::Bytes()
-    : data(nullptr), size(0) {}
-
-inline Bytes::Bytes(UniqueBytes const& bytes)
-    : data(bytes.data.get()), size(bytes.size) {}
-
-template<typename T, typename>
-Bytes::Bytes(std::uint8_t* const data, T const size)
-    : data(data), size(static_cast<std::int64_t>(size)) {}
-
 inline UniqueBytes::UniqueBytes() : size(0) {}
 
 template<typename T, typename>
@@ -37,6 +27,16 @@ inline UniqueBytes& UniqueBytes::operator=(UniqueBytes&& bytes) {
   size = bytes.size;
   return *this;
 }
+
+inline Bytes::Bytes()
+    : data(nullptr), size(0) {}
+
+inline Bytes::Bytes(UniqueBytes const& bytes)
+    : data(bytes.data.get()), size(bytes.size) {}
+
+template<typename T, typename>
+Bytes::Bytes(std::uint8_t* const data, T const size)
+    : data(data), size(static_cast<std::int64_t>(size)) {}
 
 inline bool operator==(Bytes left, Bytes right) {
   if (left.size != right.size) {
