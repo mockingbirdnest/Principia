@@ -7,26 +7,31 @@
 namespace principia {
 namespace base {
 
+//TODO(phl):comment, order.
+struct UniqueBytes {
+  UniqueBytes();  // An object of size 0.
+  template<typename T,
+           typename = std::enable_if_t<std::is_integral<T>::value, T>>
+  UniqueBytes(T const size);
+  template<typename T,
+           typename = std::enable_if_t<std::is_integral<T>::value, T>>
+  UniqueBytes(std::unique_ptr<std::uint8_t[]> data, T const size);
+
+  UniqueBytes(UniqueBytes&& bytes);
+  UniqueBytes& operator=(UniqueBytes&& bytes);
+
+  std::unique_ptr<std::uint8_t[]> data;
+  std::int64_t size;
+};
+
 // A simple container for a pointer and size, similar to a StringPiece.  |data|
 // is not owned.
 struct Bytes {
   Bytes();  // An object of size 0.
-  template<typename T>
+  Bytes(UniqueBytes const& bytes);  // No transfer of ownership.
+  template<typename T,
+           typename = std::enable_if_t<std::is_integral<T>::value, T>>
   Bytes(std::uint8_t* const data, T const size);
-
-  std::uint8_t* data;
-  std::int64_t size;
-};
-
-//TODO(phl):comment.
-struct UniqueBytes {
-  UniqueBytes();  // An object of size 0.
-  template<typename T>
-  UniqueBytes(T const size);
-  template<typename T>
-  UniqueBytes(std::unique_ptr<std::uint8_t[]> data,
-              T const size);
-  ~UniqueBytes();
 
   std::uint8_t* data;
   std::int64_t size;
@@ -34,9 +39,9 @@ struct UniqueBytes {
 
 // Performs a deep comparison.
 bool operator==(Bytes left, Bytes right);
-bool operator==(Bytes left, UniqueBytes right);
-bool operator==(UniqueBytes left, Bytes right);
-bool operator==(UniqueBytes left, UniqueBytes right);
+bool operator==(Bytes left, UniqueBytes const& right);
+bool operator==(UniqueBytes const& left, Bytes right);
+bool operator==(UniqueBytes const& left, UniqueBytes const& right);
 
 }  // namespace base
 }  // namespace principia

@@ -2,7 +2,7 @@
 
 #include <stdint.h>
 
-#include "base/not_null.hpp"
+#include "base/bytes.hpp"
 
 namespace principia {
 namespace base {
@@ -13,8 +13,7 @@ namespace base {
 // |input.size|.  The range
 // [&output->data[input.size << 1], &output->data[output->size][ is left
 // unmodified.
-template<typename B1, typename B2 = B1>
-void HexadecimalEncode(B1 input, B2 output);
+void HexadecimalEncode(Bytes input, Bytes output);
 
 // Invalid digits are read as 0.  If |input.size| is odd, the last
 // character of the input is ignored.  Ignores case.  Either
@@ -23,8 +22,7 @@ void HexadecimalEncode(B1 input, B2 output);
 // |input.data == output->data| is valid.  |output->size| must be at least
 // |input.size / 2|.  The range
 // [&output[input.size / 2], &output[output->size][ is left unmodified.
-template<typename B1, typename B2 = B1>
-void HexadecimalDecode(B1 input, B2 output);
+void HexadecimalDecode(Bytes input, Bytes output);
 
 }  // namespace base
 }  // namespace principia
