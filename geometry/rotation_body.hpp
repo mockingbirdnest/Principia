@@ -132,14 +132,14 @@ Rotation<FromFrame, ToFrame> Rotation<FromFrame, ToFrame>::Identity() {
 template<typename FromFrame, typename ToFrame>
 void Rotation<FromFrame, ToFrame>::WriteToMessage(
     not_null<serialization::LinearMap*> const message) const {
-  LinearMap::WriteToMessage(message);
+  LinearMap<FromFrame, ToFrame>::WriteToMessage(message);
   WriteToMessage(message->MutableExtension(serialization::Rotation::rotation));
 }
 
 template<typename FromFrame, typename ToFrame>
 Rotation<FromFrame, ToFrame> Rotation<FromFrame, ToFrame>::ReadFromMessage(
     serialization::LinearMap const& message) {
-  LinearMap::ReadFromMessage(message);
+  LinearMap<FromFrame, ToFrame>::ReadFromMessage(message);
   CHECK(message.HasExtension(serialization::Rotation::rotation));
   return ReadFromMessage(
       message.GetExtension(serialization::Rotation::rotation));

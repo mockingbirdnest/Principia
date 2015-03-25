@@ -10,7 +10,7 @@ BIN=$(BIN_DIR)/principia
 INCLUDE=-I. -Iglog/src -Iprotobuf/protobuf-2.6.1/src -Ibenchmark/include
 
 CPPC=clang++
-SHARED_ARGS=-std=c++1y -Ofast -g -ggdb -m64 -mmmx -msse -msse2 -m3dnow -fexceptions -Wall -Wpedantic -ferror-limit=0
+SHARED_ARGS=-std=c++1y -Ofast -g -ggdb -m64 -mmmx -msse -msse2 -m3dnow -fexceptions -ferror-limit=0 # -Wall -Wpedantic 
 COMPILE_ARGS=-c $(SHARED_ARGS) $(INCLUDE)
 LINK_ARGS=$(SHARED_ARGS)
 LIBS=

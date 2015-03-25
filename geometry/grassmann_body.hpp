@@ -71,7 +71,7 @@ template<typename Scalar, typename Frame>
 template<typename S, typename F>
 void Multivector<Scalar, Frame, 2>::Orthogonalize(
     not_null<Multivector<S, F, 2>*> const multivector) const {
-  coordinates_.Orthogonalize<S>(&multivector->coordinates_);
+  coordinates_.template Orthogonalize<S>(&multivector->coordinates_);
 }
 
 template<typename Scalar, typename Frame>
