@@ -4,6 +4,14 @@
 
 namespace principia {
 namespace quantities {
+
+template<typename Left, typename Right>
+using Quotient = decltype(std::declval<Left>() / std::declval<Right>());
+template<typename Left, typename Right>
+using Product = decltype(std::declval<Left>() * std::declval<Right>());
+template<typename Left, typename Right>
+using Difference = decltype(std::declval<Left>() - std::declval<Right>());
+
 // General mechanics
 using Speed        = Quotient<Length, Time>;
 using Acceleration = Quotient<Speed, Time>;

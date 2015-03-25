@@ -75,7 +75,7 @@ struct Dimensions {
       (WindingExponent & kExponentMask)           << 9 * kExponentBits;   // NOLINT
 };
 
-namespace type_generators {
+namespace internal {
 template<typename Q>
 struct Collapse { using ResultType = Q; };
 template<>
@@ -172,7 +172,7 @@ template<typename Q, int Exponent>
 struct PowerGenerator<Q, Exponent, Range<(Exponent == 1)>>{
   using ResultType = Q;
 };
-}  // namespace type_generators
+}  // namespace internal
 
 template<typename D>
 inline Quantity<D>::Quantity() : magnitude_(0) {}
@@ -285,17 +285,17 @@ inline Quantity<D> Quantity<D>::operator*(double const right) const {
 }
 
 template<typename LDimensions, typename RDimensions>
-inline Product<Quantity<LDimensions>, Quantity<RDimensions>> operator*(
-    Quantity<LDimensions> const& left,
-    Quantity<RDimensions> const& right) {
+inline internal::Product<Quantity<LDimensions>, Quantity<RDimensions>>
+operator*(Quantity<LDimensions> const& left,
+          Quantity<RDimensions> const& right) {
   return Product<Quantity<LDimensions>,
                  Quantity<RDimensions>>(left.magnitude_ * right.magnitude_);
 }
 
 template<typename LDimensions, typename RDimensions>
-inline Quotient<Quantity<LDimensions>, Quantity<RDimensions>> operator/(
-    Quantity<LDimensions> const& left,
-    Quantity<RDimensions> const& right) {
+inline internal::Quotient<Quantity<LDimensions>, Quantity<RDimensions>>
+operator/(Quantity<LDimensions> const& left,
+          Quantity<RDimensions> const& right) {
   return Quotient<Quantity<LDimensions>,
                   Quantity<RDimensions>>(left.magnitude_ / right.magnitude_);
 }

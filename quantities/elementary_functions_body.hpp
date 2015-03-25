@@ -7,7 +7,7 @@
 namespace principia {
 namespace quantities {
 
-namespace type_generators {
+namespace internal {
 
 template<typename Q>
 struct SquareRootGenerator<
@@ -39,7 +39,7 @@ struct SquareRootGenerator<
                                           SolidAngle>>;
 };
 
-}  // namespace type_generators
+}  // namespace internal
 
 inline double Sqrt(double const x) {
   return std::sqrt(x);
