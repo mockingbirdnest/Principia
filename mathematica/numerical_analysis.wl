@@ -1,6 +1,11 @@
 (* ::Package:: *)
 
-IntegrationErrorPlot[errorData_, names_, errorKind_] :=
+IntegrationErrorPlot[
+  errorData_,
+  names_,
+  errorKind_,
+  upperError_: 1,
+  lowerRelative_: 1.*^-17] :=
  With[
   {series = Length[names],
    errorDataAndEmpty = Append[errorData, {0, 0}],
@@ -31,7 +36,8 @@ IntegrationErrorPlot[errorData_, names_, errorKind_] :=
             ToString[series] <> ")"];
          ListLogLogPlot[
           errorDataAndEmpty[[i]],
-          PlotRange -> {{minWork, maxWork}, {1*^-17, 1}},
+          PlotRange -> {{minWork, maxWork},
+                         {lowerRelative upperError, upperError}},
           ImageSize -> 1200,
           AxesLabel -> {"Evaluations", errorKind <>
              " (" <> ToString[unit, TraditionalForm] <> ")"},
