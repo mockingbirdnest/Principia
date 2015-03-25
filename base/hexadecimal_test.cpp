@@ -17,10 +17,20 @@ namespace base {
 class HexadecimalTest : public testing::Test {
  protected:
   HexadecimalTest() 
-    : bytes_(Bytes::New(std::string("\0\x7F\x80\xFFgh\n\7", kBytes))),
-      digits_(Bytes::New(kDigits)),
-      lowercase_digits_(Bytes::New("00""7f""80""ff""67""68""0a""07")),
-      uppercase_digits_(Bytes::New("00""7F""80""FF""67""68""0A""07")) {}
+    : bytes_(kBytes),
+      digits_(kDigits) {
+    std::string const lowercase_digits = "00""7f""80""ff""67""68""0a""07";
+    std::string const uppercase_digits = "00""7F""80""FF""67""68""0A""07";
+    std::memcpy(bytes_.data.get(), "\0\x7F\x80\xFFgh\n\7", kBytes);
+    lowercase_digits_ = UniqueBytes(lowercase_digits.size());
+    uppercase_digits_ = UniqueBytes(uppercase_digits.size());
+    std::memcpy(lowercase_digits_.data.get(),
+                lowercase_digits.c_str(),
+                lowercase_digits.size());
+    std::memcpy(uppercase_digits_.data.get(),
+                uppercase_digits.c_str(),
+                uppercase_digits.size());
+  }
 
   static int64_t const kBytes = 8;
   static int64_t const kDigits = kBytes << 1;

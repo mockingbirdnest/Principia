@@ -38,8 +38,8 @@ static uint8_t const kHexadecimalDigitsToNibble[256] = {
 
 
 inline void HexadecimalEncode(Bytes input, not_null<Bytes*> output) {
-  input.CheckNotNull();
-  output->CheckNotNull();
+  CHECK_NOTNULL(input.data);
+  CHECK_NOTNULL(output->data);
   // We iterate backward.
   // |input <= &output[1]| is still valid because we write two bytes of output
   // from reading one byte of input, so output[1] and output[0] are written
@@ -60,8 +60,8 @@ inline void HexadecimalEncode(Bytes input, not_null<Bytes*> output) {
 }
 
 inline void HexadecimalDecode(Bytes input, not_null<Bytes*> output) {
-  input.CheckNotNull();
-  output->CheckNotNull();
+  CHECK_NOTNULL(input.data);
+  CHECK_NOTNULL(output->data);
   input.size &= ~1;
   // |output <= &input[1]| is still valid because we write one byte of output
   // from reading two bytes of input, so output[0] is written after reading
