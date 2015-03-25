@@ -21,8 +21,9 @@ namespace testing_utilities {
 // but this costs 20% in the benchmark of the harmonic oscillator.
 
 // The one-dimensional unit harmonic oscillator,
-// q' = p,  |ComputeHarmonicOscillatorVelocity|,
-// p' = -q, |ComputeHarmonicOscillatorForce|.
+//   q' = p / m,  |ComputeHarmonicOscillatorVelocity|,
+//   p' = -k q, |ComputeHarmonicOscillatorForce|,
+// where m = 1 kg, k = 1 N / m.
 
 void ComputeHarmonicOscillatorForce(Time const& t,
                                     std::vector<Length> const& q,
@@ -32,11 +33,21 @@ void ComputeHarmonicOscillatorVelocity(
     std::vector<Momentum> const& p,
     std::vector<Speed>* const result);
 
-// The Runge-Kutta-Nyström formulation.
+// The Runge-Kutta-Nyström formulation
+//   q" = -q k / m.
 void ComputeHarmonicOscillatorAcceleration(
     Time const& t,
     std::vector<Length> const& q,
     std::vector<Acceleration>* const result);
+
+// The Kepler problem with unit gravitational parameter, where the
+// two-dimensional configuration space is the separation between the bodies, in
+// the Runge-Kutta-Nyström formulation
+//   q" = -q μ / |q|³,
+// where μ = 1 m³ s⁻².
+void ComputeKeplerAcceleration(Time const& t,
+                               std::vector<Length> const& q,
+                               std::vector<Acceleration>* const result);
 
 }  // namespace testing_utilities
 }  // namespace principia
