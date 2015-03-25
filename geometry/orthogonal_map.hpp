@@ -78,4 +78,4 @@ OrthogonalMap<FromFrame, ToFrame> operator*(
 }  // namespace geometry
 }  // namespace principia
 
-#include "Geometry/orthogonal_map_body.hpp"
+#include "geometry/orthogonal_map_body.hpp"
