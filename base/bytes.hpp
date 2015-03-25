@@ -11,25 +11,32 @@ namespace base {
 // is not owned.
 struct Bytes {
   Bytes();  // An object of size 0.
-  Bytes(std::uint8_t* const data, std::int64_t const size);
+  template<typename T>
+  Bytes(std::uint8_t* const data, T const size);
 
   std::uint8_t* data;
   std::int64_t size;
 };
 
+//TODO(phl):comment.
 struct UniqueBytes {
   UniqueBytes();  // An object of size 0.
-  UniqueBytes(std::int64_t const size);
+  template<typename T>
+  UniqueBytes(T const size);
+  template<typename T>
   UniqueBytes(std::unique_ptr<std::uint8_t[]> data,
-              std::int64_t const size);
+              T const size);
+  ~UniqueBytes();
 
-  std::unique_ptr<std::uint8_t[]> data;
+  std::uint8_t* data;
   std::int64_t size;
 };
 
 // Performs a deep comparison.
-static bool operator==(Bytes left, Bytes right);
-static bool operator==(UniqueBytes left, UniqueBytes right);
+bool operator==(Bytes left, Bytes right);
+bool operator==(Bytes left, UniqueBytes right);
+bool operator==(UniqueBytes left, Bytes right);
+bool operator==(UniqueBytes left, UniqueBytes right);
 
 }  // namespace base
 }  // namespace principia

@@ -1,8 +1,7 @@
 #pragma once
 
-#include <string.h>
-
 #include <cstdint>
+#include <cstring>
 
 #include "base/hexadecimal.hpp"
 #include "glog/logging.h"
@@ -36,45 +35,46 @@ static uint8_t const kHexadecimalDigitsToNibble[256] = {
 #undef SKIP_48
 #endif
 
-
-inline void HexadecimalEncode(Bytes input, not_null<Bytes*> output) {
+template<typename B1, typename B2>
+void HexadecimalEncode(B1 input, B2 output) {
   CHECK_NOTNULL(input.data);
-  CHECK_NOTNULL(output->data);
+  CHECK_NOTNULL(output.data);
   // We iterate backward.
   // |input <= &output[1]| is still valid because we write two bytes of output
   // from reading one byte of input, so output[1] and output[0] are written
   // after reading input[0].  Greater values of |output| would
   // overwrite input data before it is read, unless there is no overlap, i.e.,
   // |&output[input_size << 1] <= input|.
-  CHECK(input.data <= &output->data[1] ||
-        &output->data[input.size << 1] <= input.data) << "bad overlap";
-  CHECK_GE(output->size, input.size << 1) << "output too small";
-  // We want the result to start at |output->data[0]|.
-  output->data = output->data + ((input.size - 1) << 1);
+  CHECK(input.data <= &output.data[1] ||
+        &output.data[input.size << 1] <= input.data) << "bad overlap";
+  CHECK_GE(output.size, input.size << 1) << "output too small";
+  // We want the result to start at |output.data[0]|.
+  output.data = output.data + ((input.size - 1) << 1);
   input.data = input.data + input.size - 1;
   for (std::uint8_t const* const input_rend = input.data - input.size;
        input.data != input_rend;
-       --input.data, output->data -= 2) {
-    memcpy(output, &kByteToHexadecimalDigits[*input.data << 1], 2);
+       --input.data, output.data -= 2) {
+    std::memcpy(output.data, &kByteToHexadecimalDigits[*input.data << 1], 2);
   }
 }
 
-inline void HexadecimalDecode(Bytes input, not_null<Bytes*> output) {
+template<typename B1, typename B2>
+inline void HexadecimalDecode(B1 input, B2 output) {
   CHECK_NOTNULL(input.data);
-  CHECK_NOTNULL(output->data);
+  CHECK_NOTNULL(output.data);
   input.size &= ~1;
   // |output <= &input[1]| is still valid because we write one byte of output
   // from reading two bytes of input, so output[0] is written after reading
   // input[0] and input[1].  Greater values of |output| would overwrite input
   // data before it is read, unless there is no overlap, i.e.,
   // |&input[input_size] <= output|.
-  CHECK(output->data <= &input.data[1] ||
-        &input.data[input.size] <= output->data) << "bad overlap";
-  CHECK_GE(output->size, input.size / 2) << "output too small";
+  CHECK(output.data <= &input.data[1] ||
+        &input.data[input.size] <= output.data) << "bad overlap";
+  CHECK_GE(output.size, input.size / 2) << "output too small";
   for (uint8_t const* const input_end = input.data + input.size;
        input.data != input_end;
-       input.data += 2, ++output->data) {
-    *output->data = (kHexadecimalDigitsToNibble[*input.data] << 4) |
+       input.data += 2, ++output.data) {
+    *output.data = (kHexadecimalDigitsToNibble[*input.data] << 4) |
                      kHexadecimalDigitsToNibble[*(input.data + 1)];
   }
 }
