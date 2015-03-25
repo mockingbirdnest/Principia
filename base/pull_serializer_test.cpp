@@ -137,7 +137,7 @@ TEST_F(PullSerializerTest, SerializationThreading) {
     pull_serializer_->Start(std::move(trajectory));
     for (;;) {
       Bytes const bytes = pull_serializer_->Pull();
-      std::memcpy(data, bytes.data, static_cast<size_t>(bytes.size));
+      memcpy(data, bytes.data, static_cast<size_t>(bytes.size));
       data = &data[bytes.size];
       if (bytes.size == 0) {
         break;
