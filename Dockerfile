@@ -3,21 +3,23 @@ FROM ubuntu:14.10
 RUN apt-get update
 RUN DEBIAN_FRONTEND=noninteractive apt-get upgrade -y
 RUN DEBIAN_FRONTEND=noninteractive apt-get install -y clang git unzip wget
-RUN DEBIAN_FRONTEND=noninteractive apt-get install -y binutils make 
-RUN DEBIAN_FRONTEND=noninteractive apt-get install -y dos2unix
+RUN DEBIAN_FRONTEND=noninteractive apt-get install -y binutils make automake libtool curl
+
+RUN git config --global user.email "docker@example.com"
+RUN git config --global user.name docker
 
 ADD documentation/ /opt/principia/documentation/
 
 WORKDIR /opt/principia/
-RUN wget https://github.com/google/protobuf/releases/download/v2.6.1/protobuf-2.6.1.tar.bz2
-RUN tar xf protobuf-2.6.1.tar.bz2
-WORKDIR /opt/principia/protobuf-2.6.1
-RUN patch -p 1 -i "../documentation/Setup Files/protobuf.patch"; true
+RUN git clone "https://github.com/google/protobuf.git" --depth 1 -b "v3.0.0-alpha-1"
+WORKDIR /opt/principia/protobuf
+RUN git am "../documentation/Setup Files/protobuf.patch"
+RUN ./autogen.sh
 RUN ./configure
-RUN make -j 8
+RUN make -j 8 install
 
 WORKDIR /opt/principia/
-RUN git clone https://github.com/google/glog
+RUN git clone https://github.com/google/glog -b "v0.3.3"
 WORKDIR /opt/principia/glog
 # RUN patch -p 1 -i "../documentation/Setup Files/glog.patch"; true
 RUN ./configure
@@ -36,6 +38,14 @@ RUN git clone https://github.com/pleroy/benchmark
 # WORKDIR /opt/principia/benchmark
 # RUN ./configure
 # RUN make -j 8
+
+RUN git clone "https://chromium.googlesource.com/chromium/src.git" chromium -n --depth 1 -b "40.0.2193.1"
+# $GitPromptSettings.RepositoriesInWhichToDisableFileStatus += join-path  (gi -path .).FullName chromium
+WORKDIR /opt/principia/chromium
+RUN git config core.sparsecheckout true
+RUN cp "../documentation/Setup Files/chromium_sparse_checkout.txt" .git/info/sparse-checkout
+RUN git checkout
+RUN git am "../documentation/Setup Files/chromium.patch"
 
 ADD . /opt/principia
 WORKDIR /opt/principia/

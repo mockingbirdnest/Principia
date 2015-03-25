@@ -22,7 +22,7 @@ $(BIN_DIR):
 	mkdir -p $(BIN_DIR)
 
 %.pb.h: %.proto
-	protobuf-2.6.1/src/protoc $< --cpp_out=.
+	protobuf/src/protoc $< --cpp_out=.
 
 %.o: %.cpp Makefile
 	$(CPPC) $(COMPILE_ARGS) $< -o $@ -MMD
