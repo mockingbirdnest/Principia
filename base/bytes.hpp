@@ -7,41 +7,59 @@
 namespace principia {
 namespace base {
 
-//TODO(phl):comment, order.
-struct UniqueBytes {
-  UniqueBytes();  // An object of size 0.
-  template<typename T,
-           typename = std::enable_if_t<std::is_integral<T>::value, T>>
-  explicit UniqueBytes(T const size);
-  template<typename T,
-           typename = std::enable_if_t<std::is_integral<T>::value, T>>
-  UniqueBytes(std::unique_ptr<std::uint8_t[]> data, T const size);
+template<typename T>
+struct Array;//TODO(phl):rorer
 
-  UniqueBytes(UniqueBytes&& bytes);
-  UniqueBytes& operator=(UniqueBytes&& bytes);
+//UODO(phl):comment.
+template<typename T>
+struct UniqueArray {
+  UniqueArray();  // An object of size 0.
+  template<typename U,
+           typename = std::enable_if_t<std::is_integral<U>::value, U>>
+  explicit UniqueArray(U const size);
+  template<typename U,
+           typename = std::enable_if_t<std::is_integral<U>::value, U>>
+  UniqueArray(std::unique_ptr<T[]> data, U const size);
 
-  std::unique_ptr<std::uint8_t[]> data;
-  std::int64_t size;
+  UniqueArray(UniqueArray&& other);
+  UniqueArray& operator=(UniqueArray&& other);
+
+  Array<T> get() const;
+
+  std::unique_ptr<T[]> data;
+  std::int64_t size;  // In number of |T| elements.
 };
 
 // A simple container for a pointer and size, similar to a StringPiece.  |data|
 // is not owned.
-struct Bytes {
-  Bytes();  // An object of size 0.
-  Bytes(UniqueBytes const& bytes);  // Implicit, no transfer of ownership.
-  template<typename T,
-           typename = std::enable_if_t<std::is_integral<T>::value, T>>
-  Bytes(std::uint8_t* const data, T const size);
+template<typename T>//UODO(phl): names
+struct Array {
+  Array();  // An object of size 0.
+  template<typename W,
+           typename = typename std::enable_if<
+               std::is_convertible<W, T>::value>::type>
+  Array(Array<W> const& other);
+  template<typename U,
+           typename = std::enable_if_t<std::is_integral<U>::value, U>>
+  Array(T* const data, U const size);
 
-  std::uint8_t* data;
-  std::int64_t size;
+  T* data;
+  std::int64_t size;  // In number of |T| elements.
 };
 
+// Specializations.
+using Bytes = Array<std::uint8_t>;
+using UniqueBytes = UniqueArray<std::uint8_t>;
+
 // Performs a deep comparison.
-bool operator==(Bytes left, Bytes right);
-bool operator==(Bytes left, UniqueBytes const& right);
-bool operator==(UniqueBytes const& left, Bytes right);
-bool operator==(UniqueBytes const& left, UniqueBytes const& right);
+template<typename T>
+bool operator==(Array<T> left, Array<T> right);
+template<typename T>
+bool operator==(Array<T> left, UniqueArray<T> const& right);
+template<typename T>
+bool operator==(UniqueArray<T> const& left, Array<T> right);
+template<typename T>
+bool operator==(UniqueArray<T> const& left, UniqueArray<T> const& right);
 
 }  // namespace base
 }  // namespace principia

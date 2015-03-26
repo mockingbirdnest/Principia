@@ -35,7 +35,8 @@ static uint8_t const kHexadecimalDigitsToNibble[256] = {
 #undef SKIP_48
 #endif
 
-void HexadecimalEncode(Bytes input, Bytes output) {
+void HexadecimalEncode(Array<std::uint8_t const> input,
+                       Array<std::uint8_t> output) {
   CHECK_NOTNULL(input.data);
   CHECK_NOTNULL(output.data);
   // We iterate backward.
@@ -57,7 +58,8 @@ void HexadecimalEncode(Bytes input, Bytes output) {
   }
 }
 
-inline void HexadecimalDecode(Bytes input, Bytes output) {
+void HexadecimalDecode(Array<std::uint8_t const> input,
+                       Array<std::uint8_t> output) {
   CHECK_NOTNULL(input.data);
   CHECK_NOTNULL(output.data);
   input.size &= ~1;

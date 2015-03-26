@@ -45,10 +45,10 @@ class HexadecimalTest : public testing::Test {
 using HexadecimalDeathTest = HexadecimalTest;
 
 TEST_F(HexadecimalTest, EncodeAndDecode) {
-  HexadecimalEncode(bytes_, digits_);
+  HexadecimalEncode(bytes_.get(), digits_.get());
   EXPECT_EQ(uppercase_digits_, digits_);
   UniqueBytes bytes(kBytes);
-  HexadecimalDecode(digits_, bytes);
+  HexadecimalDecode(digits_.get(), bytes.get());
   EXPECT_EQ(bytes_, bytes);
 }
 
@@ -71,7 +71,7 @@ TEST_F(HexadecimalTest, LargeOutput) {
   int64_t const digits_size = kDigits + 42;
   UniqueBytes digits(digits_size);
   std::memset(digits.data.get(), 'X', digits_size);
-  HexadecimalEncode(bytes_, digits);
+  HexadecimalEncode(bytes_.get(), digits.get());
   EXPECT_EQ(uppercase_digits_, Bytes(digits.data.get(), kDigits));
   EXPECT_THAT(std::vector<uint8_t>(&digits.data[kDigits],
                                    &digits.data[digits_size]),
@@ -79,7 +79,7 @@ TEST_F(HexadecimalTest, LargeOutput) {
   int64_t const bytes_size = kBytes + 42;
   UniqueBytes bytes(bytes_size);
   std::memset(bytes.data.get(), 'Y', bytes_size);
-  HexadecimalDecode(uppercase_digits_, bytes);
+  HexadecimalDecode(uppercase_digits_.get(), bytes.get());
   EXPECT_EQ(bytes_, Bytes(bytes.data.get(), kBytes));
   EXPECT_THAT(std::vector<uint8_t>(&bytes.data[kBytes],
                                    &bytes.data[bytes_size]),
@@ -135,10 +135,10 @@ TEST_F(HexadecimalDeathTest, Size) {
 
 TEST_F(HexadecimalTest, CaseInsensitive) {
   std::vector<uint8_t> bytes(kBytes);
-  HexadecimalDecode(lowercase_digits_,
+  HexadecimalDecode(lowercase_digits_.get(),
                                         {bytes.data(), bytes.size()});
   EXPECT_EQ(bytes_, Bytes(bytes.data(), bytes.size()));
-  HexadecimalDecode(uppercase_digits_,
+  HexadecimalDecode(uppercase_digits_.get(),
                                         {bytes.data(), bytes.size()});
   EXPECT_EQ(bytes_, Bytes(bytes.data(), bytes.size()));
 }
