@@ -19,7 +19,7 @@ RUN ./configure
 RUN make -j 8 install
 
 WORKDIR /opt/principia/
-RUN git clone https://github.com/google/glog
+RUN git clone https://github.com/Norgg/glog
 WORKDIR /opt/principia/glog
 # RUN patch -p 1 -i "../documentation/Setup Files/glog.patch"; true
 RUN ./configure
