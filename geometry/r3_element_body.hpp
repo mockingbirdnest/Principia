@@ -5,6 +5,7 @@
 #include "base/macros.hpp"
 #include "glog/logging.h"
 #include "quantities/quantities.hpp"
+#include "quantities/elementary_functions.hpp"
 
 namespace principia {
 
