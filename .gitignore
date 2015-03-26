@@ -31,6 +31,10 @@ ipch/
 [Rr]elease*/
 Ankh.NoLoad
 
+#Clang output
+*.o
+*.d
+
 #MonoDevelop
 *.pidb
 *.userprefs
