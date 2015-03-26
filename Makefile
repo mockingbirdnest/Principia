@@ -7,7 +7,7 @@ PROTO_HEADERS=$(PROTO_SOURCES:.proto=.pb.h)
 BIN_DIR=bin
 BIN=$(BIN_DIR)/principia.so
 
-INCLUDE=-I. -Iglog/src -Iprotobuf-2.6.1/src -Ibenchmark/include -Igmock-1.7.0/gtest/include -Igmock-1.7.0/include
+INCLUDE=-I. -I../glog/src -I../protobuf-2.6.1/src -I../benchmark/include -I../gmock-1.7.0/gtest/include -I../gmock-1.7.0/include
 
 CPPC=clang++
 SHARED_ARGS=-std=c++1y -Ofast -g -ggdb -m64 -mmmx -msse -msse2 -m3dnow -fexceptions -ferror-limit=0 # -Wall -Wpedantic 
@@ -22,7 +22,7 @@ $(BIN_DIR):
 	mkdir -p $(BIN_DIR)
 
 %.pb.h: %.proto
-	protobuf/src/protoc $< --cpp_out=.
+	../protobuf/src/protoc $< --cpp_out=.
 
 %.o: %.cpp Makefile
 	$(CPPC) $(COMPILE_ARGS) $< -o $@ -MMD

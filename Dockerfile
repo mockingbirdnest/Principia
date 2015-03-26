@@ -47,6 +47,5 @@ RUN cp "../documentation/Setup Files/chromium_sparse_checkout.txt" .git/info/spa
 RUN git checkout
 RUN git am "../documentation/Setup Files/chromium.patch"
 
-ADD . /opt/principia
-WORKDIR /opt/principia/
-RUN make
+WORKDIR /opt/principia/src
+CMD make
