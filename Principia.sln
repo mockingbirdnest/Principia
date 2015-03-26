@@ -70,6 +70,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "serialization", "serializat
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "mathematica", "mathematica\mathematica.vcxproj", "{83A31DA7-3F62-464D-9F6B-09CCE07A865A}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "stacktrace_decoder", "stacktrace_decoder\stacktrace_decoder.csproj", "{0AC374A7-36CD-40FC-B831-112389B6D9ED}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -278,11 +280,27 @@ Global
 		{83A31DA7-3F62-464D-9F6B-09CCE07A865A}.Release|Mixed Platforms.Build.0 = Release|Win32
 		{83A31DA7-3F62-464D-9F6B-09CCE07A865A}.Release|Win32.ActiveCfg = Release|Win32
 		{83A31DA7-3F62-464D-9F6B-09CCE07A865A}.Release|Win32.Build.0 = Release|Win32
+		{0AC374A7-36CD-40FC-B831-112389B6D9ED}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0AC374A7-36CD-40FC-B831-112389B6D9ED}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0AC374A7-36CD-40FC-B831-112389B6D9ED}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{0AC374A7-36CD-40FC-B831-112389B6D9ED}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{0AC374A7-36CD-40FC-B831-112389B6D9ED}.Debug|Win32.ActiveCfg = Debug|Any CPU
+		{0AC374A7-36CD-40FC-B831-112389B6D9ED}.Release_LLVM|Any CPU.ActiveCfg = Release|Any CPU
+		{0AC374A7-36CD-40FC-B831-112389B6D9ED}.Release_LLVM|Any CPU.Build.0 = Release|Any CPU
+		{0AC374A7-36CD-40FC-B831-112389B6D9ED}.Release_LLVM|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{0AC374A7-36CD-40FC-B831-112389B6D9ED}.Release_LLVM|Mixed Platforms.Build.0 = Release|Any CPU
+		{0AC374A7-36CD-40FC-B831-112389B6D9ED}.Release_LLVM|Win32.ActiveCfg = Release|Any CPU
+		{0AC374A7-36CD-40FC-B831-112389B6D9ED}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0AC374A7-36CD-40FC-B831-112389B6D9ED}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0AC374A7-36CD-40FC-B831-112389B6D9ED}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{0AC374A7-36CD-40FC-B831-112389B6D9ED}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{0AC374A7-36CD-40FC-B831-112389B6D9ED}.Release|Win32.ActiveCfg = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{06E78A3D-AAA0-4CD9-8F23-B5BBBBE6F14F} = {B0F47E49-0EDF-4D58-AB27-F99CCCE4253A}
+		{0AC374A7-36CD-40FC-B831-112389B6D9ED} = {B0F47E49-0EDF-4D58-AB27-F99CCCE4253A}
 	EndGlobalSection
 EndGlobal

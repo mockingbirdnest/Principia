@@ -77,9 +77,9 @@ struct Dimensions {
 
 namespace internal {
 template<typename Q>
-struct Collapse { using ResultType = Q; };
+struct Collapse { using Type = Q; };
 template<>
-struct Collapse<Quantity<NoDimensions>> { using ResultType = double; };
+struct Collapse<Quantity<NoDimensions>> { using Type = double; };
 template<typename Left, typename Right>
 struct ProductGenerator {
   enum {
@@ -97,18 +97,18 @@ struct ProductGenerator {
     SolidAngle        = Left::Dimensions::SolidAngle +
                         Right::Dimensions::SolidAngle
   };
-  using ResultType = typename Collapse<
+  using Type = typename Collapse<
       Quantity<Dimensions<Length, Mass, Time, Current, Temperature, Amount,
                           LuminousIntensity, Winding, Angle,
-                          SolidAngle>>>::ResultType;
+                          SolidAngle>>>::Type;
 };
 template<typename Left>
-struct ProductGenerator<Left, double> { using ResultType = Left; };
+struct ProductGenerator<Left, double> { using Type = Left; };
 template<typename Right>
-struct ProductGenerator<double, Right> { using ResultType = Right; };
+struct ProductGenerator<double, Right> { using Type = Right; };
 template<>
 struct ProductGenerator<double, double> {
-  using ResultType = double;
+  using Type = double;
 };
 template<typename Left, typename Right>
 struct QuotientGenerator {
@@ -127,16 +127,16 @@ struct QuotientGenerator {
     SolidAngle        = Left::Dimensions::SolidAngle -
                         Right::Dimensions::SolidAngle
   };
-  using ResultType = typename Collapse<
+  using Type = typename Collapse<
       Quantity<Dimensions<Length, Mass, Time, Current, Temperature, Amount,
                           LuminousIntensity, Winding, Angle,
-                          SolidAngle>>>::ResultType;
+                          SolidAngle>>>::Type;
 };
 template<typename Left>
-struct QuotientGenerator<Left, double> { using ResultType = Left; };
+struct QuotientGenerator<Left, double> { using Type = Left; };
 template<>
 struct QuotientGenerator<double, double> {
-  using ResultType = double;
+  using Type = double;
 };
 template<typename Right>
 struct QuotientGenerator<double, Right> {
@@ -152,7 +152,7 @@ struct QuotientGenerator<double, Right> {
     Angle             = -Right::Dimensions::Angle,
     SolidAngle        = -Right::Dimensions::SolidAngle
   };
-  using ResultType = Quantity<
+  using Type = Quantity<
       Dimensions<Length, Mass, Time, Current, Temperature, Amount,
                  LuminousIntensity, Winding, Angle, SolidAngle>>;
 };
@@ -160,17 +160,17 @@ template<typename Q, int Exponent, typename>
 struct PowerGenerator {};
 template<typename Q, int Exponent>
 struct PowerGenerator<Q, Exponent, Range<(Exponent > 1)>> {
-  using ResultType =
-      Product<typename PowerGenerator<Q, Exponent - 1>::ResultType, Q>;
+  using Type =
+      Product<typename PowerGenerator<Q, Exponent - 1>::Type, Q>;
 };
 template<typename Q, int Exponent>
 struct PowerGenerator<Q, Exponent, Range<(Exponent < 1)>>{
-  using ResultType =
-      Quotient<typename PowerGenerator<Q, Exponent + 1>::ResultType, Q>;
+  using Type =
+      Quotient<typename PowerGenerator<Q, Exponent + 1>::Type, Q>;
 };
 template<typename Q, int Exponent>
 struct PowerGenerator<Q, Exponent, Range<(Exponent == 1)>>{
-  using ResultType = Q;
+  using Type = Q;
 };
 }  // namespace internal
 

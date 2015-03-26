@@ -50,16 +50,16 @@ template<bool> struct Condition;
 template<typename Q, typename = Condition<true>> struct SquareRootGenerator;
 
 template<typename Left, typename Right>
-using Quotient = typename QuotientGenerator<Left, Right>::ResultType;
+using Quotient = typename QuotientGenerator<Left, Right>::Type;
 template<typename Left, typename Right>
-using Product = typename ProductGenerator<Left, Right>::ResultType;
+using Product = typename ProductGenerator<Left, Right>::Type;
 }  // namespace internal
 
 template<typename Left, int Exponent>
 using Exponentiation =
-    typename internal::PowerGenerator<Left, Exponent>::ResultType;
+    typename internal::PowerGenerator<Left, Exponent>::Type;
 template<typename Q>
-using SquareRoot = typename internal::SquareRootGenerator<Q>::ResultType;
+using SquareRoot = typename internal::SquareRootGenerator<Q>::Type;
 
 // Returns the base or derived SI Unit of |Q|.
 // For instance, |SIUnit<Action>() == Joule * Second|.

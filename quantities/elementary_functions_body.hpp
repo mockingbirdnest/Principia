@@ -33,10 +33,9 @@ struct SquareRootGenerator<
     Angle             = Q::Dimensions::Angle / 2,
     SolidAngle        = Q::Dimensions::SolidAngle / 2
   };
-  using ResultType = Quantity<Dimensions<Length, Mass, Time, Current,
-                                          Temperature, Amount,
-                                          LuminousIntensity, Winding, Angle,
-                                          SolidAngle>>;
+  using Type = Quantity<Dimensions<Length, Mass, Time, Current, Temperature,
+                                   Amount, LuminousIntensity, Winding, Angle,
+                                   SolidAngle>>;
 };
 
 }  // namespace internal
