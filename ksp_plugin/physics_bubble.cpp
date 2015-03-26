@@ -35,10 +35,12 @@ void PhysicsBubble::AddVesselToNext(not_null<Vessel*> const vessel,
   }
   auto const inserted_vessel =
       next_->vessels.emplace(vessel,
-                             std::vector<not_null<Part<World>*> const>());
+                             // NOTE(Norgg) Removed const here too.
+                             std::vector<not_null<Part<World>*>>());
   CHECK(inserted_vessel.second);
-  std::vector<not_null<Part<World>*> const>* const vessel_parts =
-      &inserted_vessel.first->second;
+  // NOTE(Norgg) TODO(Egg) Removed const from vector, custom allocator?
+  std::vector<not_null<Part<World>*>>* const vessel_parts = 
+    &inserted_vessel.first->second;
   for (IdAndOwnedPart& id_part : parts) {
     PartId const id = id_part.first;
     not_null<std::unique_ptr<Part<World>>> const& part = id_part.second;
@@ -228,7 +230,8 @@ void PhysicsBubble::WriteToMessage(
     }
     for (auto const& pair : current_->vessels) {
       not_null<Vessel*> vessel = pair.first;
-      std::vector<not_null<Part<World>*> const> const& parts = pair.second;
+      // NOTE(Norgg) TODO(Egg) Removed const from vector, custom allocator?
+      std::vector<not_null<Part<World>*>> const& parts = pair.second;
       serialization::PhysicsBubble::FullState::GuidAndPartIds*
           guid_and_part_ids = full_state->add_vessel();
       guid_and_part_ids->set_guid(guid(vessel));
@@ -274,7 +277,8 @@ std::unique_ptr<PhysicsBubble> PhysicsBubble::ReadFromMessage(
                   Part<World>::ReadFromMessage(part_id_and_part.part()))));
     }
     for (auto const& guid_and_part_ids : full_state.vessel()) {
-      std::vector<not_null<Part<World>*> const> parts;
+      // NOTE(Norgg) TODO(Egg) Removed const from vector, custom allocator?
+      std::vector<not_null<Part<World>*>> parts;
       for (PartId const part_id : guid_and_part_ids.part_id()) {
         parts.push_back(FindOrDie(preliminary_state.parts, part_id).get());
       }
@@ -346,7 +350,8 @@ void PhysicsBubble::ComputeNextVesselOffsets(
   VLOG(1) << NAMED(next->vessels.size());
   for (auto const& vessel_parts : next->vessels) {
     not_null<Vessel const*> const vessel = vessel_parts.first;
-    std::vector<not_null<Part<World>*> const> const& parts =
+    // NOTE(Norgg) TODO(Egg) Removed const from vector, custom allocator?
+    std::vector<not_null<Part<World>*>> const& parts =
         vessel_parts.second;
     VLOG(1) << NAMED(vessel) << ", " << NAMED(parts.size());
     DegreesOfFreedom<World>::BarycentreCalculator<Mass> vessel_calculator;
@@ -370,7 +375,8 @@ void PhysicsBubble::RestartNext(Instant const& current_time,
   DegreesOfFreedom<Barycentric>::BarycentreCalculator<Mass> bubble_calculator;
   for (auto const& vessel_parts : next->vessels) {
     not_null<Vessel const*> vessel = vessel_parts.first;
-    std::vector<not_null<Part<World>*> const> const& parts =
+    // NOTE(Norgg) TODO(Egg) Removed const from vector, custom allocator?
+    std::vector<not_null<Part<World>*>> const& parts =
         vessel_parts.second;
     for (not_null<Part<World> const*> const part : parts) {
       bubble_calculator.Add(vessel->prolongation().last().degrees_of_freedom(),
