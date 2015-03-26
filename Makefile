@@ -10,7 +10,7 @@ BIN=$(BIN_DIR)/principia.so
 INCLUDE=-I. -I../glog/src -I../protobuf-2.6.1/src -I../benchmark/include -I../gmock-1.7.0/gtest/include -I../gmock-1.7.0/include
 
 CPPC=clang++
-SHARED_ARGS=-std=c++1y -Ofast -g -ggdb -m64 -mmmx -msse -msse2 -m3dnow -fexceptions -ferror-limit=0 # -Wall -Wpedantic 
+SHARED_ARGS=-std=c++1y -stdlib=libc++ -O3 -g -ggdb -m64 -mmmx -msse -msse2 -m3dnow -fexceptions -ferror-limit=0 # -Wall -Wpedantic 
 COMPILE_ARGS=-c $(SHARED_ARGS) $(INCLUDE)
 LINK_ARGS=$(SHARED_ARGS)
 LIBS=

@@ -2,7 +2,7 @@ FROM ubuntu:14.10
 
 RUN apt-get update
 RUN DEBIAN_FRONTEND=noninteractive apt-get upgrade -y
-RUN DEBIAN_FRONTEND=noninteractive apt-get install -y clang git unzip wget
+RUN DEBIAN_FRONTEND=noninteractive apt-get install -y clang git unzip wget libc++-dev
 RUN DEBIAN_FRONTEND=noninteractive apt-get install -y binutils make automake libtool curl
 
 RUN git config --global user.email "docker@example.com"
@@ -19,7 +19,7 @@ RUN ./configure
 RUN make -j 8 install
 
 WORKDIR /opt/principia/
-RUN git clone https://github.com/google/glog -b "v0.3.3"
+RUN git clone https://github.com/google/glog
 WORKDIR /opt/principia/glog
 # RUN patch -p 1 -i "../documentation/Setup Files/glog.patch"; true
 RUN ./configure
