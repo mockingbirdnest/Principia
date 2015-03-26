@@ -2,6 +2,7 @@ SOURCES=$(wildcard *.cpp) $(wildcard quantities/*.cpp) $(wildcard base/*.cpp) $(
 PROTO_SOURCES=$(wildcard */*.proto)
 
 OBJECTS=$(SOURCES:.cpp=.o)
+VERSIOON_HEADER=base/version.hpp
 PROTO_HEADERS=$(PROTO_SOURCES:.proto=.pb.h)
 
 BIN_DIR=bin
@@ -15,11 +16,14 @@ COMPILE_ARGS=-c $(SHARED_ARGS) $(INCLUDE)
 LINK_ARGS=$(SHARED_ARGS)
 LIBS=
 
-$(BIN): $(PROTO_HEADERS) $(OBJECTS) Makefile $(BIN_DIR)
+$(BIN): $(VERSION_HEADER) $(PROTO_HEADERS) $(OBJECTS) Makefile $(BIN_DIR)
 	$(CPPC) $(LINK_ARGS) $(OBJECTS) $(INCLUDE) $(LIBS) -o $(BIN)
 
 $(BIN_DIR):
 	mkdir -p $(BIN_DIR)
+
+$(VERSION_HEADER): .git
+	./generate_version_header.sh
 
 %.pb.h: %.proto
 	../protobuf/src/protoc $< --cpp_out=.
