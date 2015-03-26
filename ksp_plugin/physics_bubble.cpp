@@ -267,7 +267,6 @@ std::unique_ptr<PhysicsBubble> PhysicsBubble::ReadFromMessage(
         message.current();
     PreliminaryState preliminary_state;
     for (auto const& part_id_and_part : full_state.part()) {
-      auto p = Part<World>::ReadFromMessage(part_id_and_part.part());
       preliminary_state.parts.emplace(
           part_id_and_part.part_id(),
           std::make_unique<Part<World>>(
@@ -279,7 +278,8 @@ std::unique_ptr<PhysicsBubble> PhysicsBubble::ReadFromMessage(
       for (PartId const part_id : guid_and_part_ids.part_id()) {
         parts.push_back(FindOrDie(preliminary_state.parts, part_id).get());
       }
-      preliminary_state.vessels[vessel(guid_and_part_ids.guid())] = parts;
+      auto const inserted = preliminary_state.vessels.emplace(
+          vessel(guid_and_part_ids.guid()), std::move(parts));
     }
 
     bubble->current_ =
