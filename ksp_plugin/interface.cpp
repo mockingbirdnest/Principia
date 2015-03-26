@@ -27,6 +27,7 @@ using base::HexadecimalEncode;
 using base::make_not_null_unique;
 using base::PullSerializer;
 using base::PushDeserializer;
+using base::UniqueBytes;
 using geometry::Displacement;
 using quantities::Pow;
 using si::Degree;
@@ -427,12 +428,11 @@ char const* principia__SerializePlugin(Plugin const* const plugin,
   }
 
   // Convert to hexadecimal and return to the client.
-  std::size_t const hexadecimal_size =
-      static_cast<std::size_t>((bytes.size << 1) + 1);
-  auto hexadecimal = std::make_unique<uint8_t[]>(hexadecimal_size);
-  HexadecimalEncode(bytes, {hexadecimal.get(), hexadecimal_size});
-  hexadecimal[hexadecimal_size - 1] = '\0';
-  return reinterpret_cast<char const*>(hexadecimal.release());
+  std::int64_t const hexadecimal_size = ((bytes.size << 1) + 1);
+  UniqueBytes hexadecimal(hexadecimal_size);
+  HexadecimalEncode(bytes, hexadecimal.get());
+  hexadecimal.data.get()[hexadecimal_size - 1] = '\0';
+  return reinterpret_cast<char const*>(hexadecimal.data.release());
 }
 
 void principia__DeletePluginSerialization(char const** const serialization) {
