@@ -9,10 +9,9 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 namespace principia {
-namespace stacktrace_decoder {
+namespace tools {
 
 class StackTraceDecoder {
-
   const string kDBH =
       @"\Program Files (x86)\Windows Kits\8.1\Debuggers\x86\dbh.exe";
 
@@ -51,8 +50,9 @@ class StackTraceDecoder {
          stack_match.Success;
          stack_match = stack_regex.Match(stream.ReadLine())) {
       Int64 address = Convert.ToInt64(stack_match.Groups[1].ToString(), 16);
+      Int64 dbh_base_address = 0x1000000;
       string rebased_address =
-          Convert.ToString(address - base_address + 0x1000000, 16);
+          Convert.ToString(address - base_address + dbh_base_address, 16);
       var p = new Process();
       p.StartInfo.UseShellExecute = false;
       p.StartInfo.RedirectStandardOutput = true;
@@ -72,10 +72,8 @@ class StackTraceDecoder {
         Console.WriteLine("[`" + file + ":" + line + "`](" + url + ")");
       }
     }
-
   }
-
 }
 
-}  // namespace stacktrace_decoder
+}  // namespace tools
 }  // namespace principia
