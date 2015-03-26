@@ -29,7 +29,7 @@ $(VERSION_HEADER): .git
 	../protobuf/src/protoc $< --cpp_out=.
 
 %.o: %.cpp Makefile
-	$(CPPC) $(COMPILE_ARGS) $< -o $@ -MMD
+	$(CPPC) $(COMPILE_ARGS) $< -o $@ 
 
 run: $(BIN)
 	./$(BIN)
