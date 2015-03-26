@@ -280,6 +280,7 @@ std::unique_ptr<PhysicsBubble> PhysicsBubble::ReadFromMessage(
       }
       auto const inserted = preliminary_state.vessels.emplace(
           vessel(guid_and_part_ids.guid()), std::move(parts));
+      CHECK(inserted.second);
     }
 
     bubble->current_ =
