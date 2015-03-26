@@ -2,7 +2,7 @@ SOURCES=$(wildcard *.cpp) $(wildcard quantities/*.cpp) $(wildcard base/*.cpp) $(
 PROTO_SOURCES=$(wildcard */*.proto)
 
 OBJECTS=$(SOURCES:.cpp=.o)
-VERSIOON_HEADER=base/version.hpp
+VERSION_HEADER=base/version.hpp
 PROTO_HEADERS=$(PROTO_SOURCES:.proto=.pb.h)
 
 BIN_DIR=bin
