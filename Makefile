@@ -1,4 +1,4 @@
-SOURCES=$(wildcard *.cpp) $(wildcard quantities/*.cpp) $(wildcard base/*.cpp) $(wildcard integrators/*.cpp) $(wildcard ksp_plugin/*.cpp) $(wildcard geometry/*.cpp)
+SOURCES=$(wildcard *.cpp) $(wildcard quantities/*.cpp) $(wildcard base/*.cpp) $(wildcard integrators/*.cpp) $(wildcard ksp_plugin/*.cpp) $(wildcard geometry/*.cpp) $(wildcard physics/*.cpp) $(wildcard benchmarks/*.cpp)
 PROTO_SOURCES=$(wildcard */*.proto)
 
 OBJECTS=$(SOURCES:.cpp=.o)
