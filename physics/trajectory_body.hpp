@@ -167,7 +167,8 @@ not_null<Trajectory<Frame>*> Trajectory<Frame>::NewFork(Instant const& time) {
   // insertion in children_.
   Fork fork = {children_.end(), fork_it};
   // Can't use make_unique below.
-  std::unique_ptr<Trajectory<Frame>> child(
+  // NOTE(Norgg) TODO(Egg) Switched to a shared_ptr here, see trajectory.hpp:34
+  std::shared_ptr<Trajectory<Frame>> child(
       new Trajectory(body_, this /*parent*/, fork));
   child->timeline_.insert(++fork_it, timeline_.end());
   auto const child_it = children_.emplace(time, std::move(child));
@@ -439,7 +440,9 @@ void Trajectory<Frame>::WriteSubTreeToMessage(
   serialization::Trajectory::Litter* litter = nullptr;
   for (auto const& pair : children_) {
     Instant const& fork_time = pair.first;
-    not_null<std::unique_ptr<Trajectory>> const& child = pair.second;
+
+    // NOTE(Norgg) TODO(Egg) Switched to a shared_ptr here, see trajectory.hpp:34
+    not_null<std::shared_ptr<Trajectory>>const& child = pair.second;
     if (is_first || fork_time != last_instant) {
       is_first = false;
       last_instant = fork_time;
