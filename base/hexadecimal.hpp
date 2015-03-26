@@ -2,7 +2,7 @@
 
 #include <cstdint>
 
-#include "base/bytes.hpp"
+#include "base/array.hpp"
 
 namespace principia {
 namespace base {

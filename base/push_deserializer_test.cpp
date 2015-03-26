@@ -9,7 +9,7 @@
 #include <thread>  // NOLINT(build/c++11)
 #include <vector>
 
-#include "base/bytes.hpp"
+#include "base/array.hpp"
 #include "base/not_null.hpp"
 #include "base/pull_serializer.hpp"
 #include "gmock/gmock.h"

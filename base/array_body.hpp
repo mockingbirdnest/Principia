@@ -1,6 +1,6 @@
 #pragma once
 
-#include "base/bytes.hpp"
+#include "base/array.hpp"
 
 #include "glog/logging.h"
 

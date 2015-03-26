@@ -9,7 +9,7 @@
 #include <psapi.h>
 #endif
 
-#include "base/bytes.hpp"
+#include "base/array.hpp"
 #include "base/hexadecimal.hpp"
 #include "base/macros.hpp"
 #include "base/not_null.hpp"
@@ -428,7 +428,7 @@ char const* principia__SerializePlugin(Plugin const* const plugin,
   }
 
   // Convert to hexadecimal and return to the client.
-  std::int64_t const hexadecimal_size = ((bytes.size << 1) + 1);
+  std::int64_t const hexadecimal_size = (bytes.size << 1) + 1;
   UniqueBytes hexadecimal(hexadecimal_size);
   HexadecimalEncode(bytes, hexadecimal.get());
   hexadecimal.data.get()[hexadecimal_size - 1] = '\0';
