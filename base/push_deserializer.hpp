@@ -7,7 +7,7 @@
 #include <queue>
 #include <thread>  // NOLINT(build/c++11)
 
-#include "base/bytes.hpp"
+#include "base/array.hpp"
 #include "base/macros.hpp"
 #include "base/not_null.hpp"
 #include "google/protobuf/message.h"
