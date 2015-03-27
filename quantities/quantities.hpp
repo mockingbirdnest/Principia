@@ -41,23 +41,11 @@ using Angle             = Quantity<Dimensions<0, 0, 0, 0, 0, 0, 0, 0, 1, 0>>;
 using SolidAngle        = Quantity<Dimensions<0, 0, 0, 0, 0, 0, 0, 0, 0, 1>>;
 
 namespace internal {
-template<typename Left, typename Right> struct ProductGenerator;
-template<typename Left, typename Right> struct QuotientGenerator;
-template<bool> struct Range;
-template<typename Q, int Exponent, typename = Range<true>>
-struct PowerGenerator;
-template<bool> struct Condition;
-template<typename Q, typename = Condition<true>> struct SquareRootGenerator;
 
-template<typename Left, typename Right>
-using Quotient = typename QuotientGenerator<Left, Right>::Type;
-template<typename Left, typename Right>
-using Product = typename ProductGenerator<Left, Right>::Type;
+template<typename Q, typename> struct SquareRootGenerator;
+
 }  // namespace internal
 
-template<typename Left, int Exponent>
-using Exponentiation =
-    typename internal::PowerGenerator<Left, Exponent>::Type;
 template<typename Q>
 using SquareRoot = typename internal::SquareRootGenerator<Q>::Type;
 
