@@ -15,9 +15,9 @@ INCLUDE=-I. -I../glog/src -I../protobuf-2.6.1/src -I../benchmark/include -I../gm
 CPPC=clang++
 SHARED_ARGS=-std=c++1y -stdlib=libc++ -O3 -g -ggdb -m64 -mmmx -msse -msse2 -m3dnow -fPIC -fexceptions -ferror-limit=0 # -Wall -Wpedantic 
 COMPILE_ARGS=-c $(SHARED_ARGS) $(INCLUDE)
-LINK_ARGS=-shared $(SHARED_ARGS) 
+LINK_ARGS=-shared -static $(SHARED_ARGS) 
 LD_LIBRARY_PATH=$(LD_LIBRARY_PATH):/opt/principa/glog/.libs:/opt/principa/benchmark/src/:/opt/principa/protobuf/src/.libs:/opt/principa/gmock-1.7.0/lib/.libs/
-LIBS=-lprotobuf -lprotoc -lglog -lpthread 
+LIBS=-lc++ -lprotobuf -lprotoc -lglog -lpthread 
 
 $(LIB): $(VERSION_HEADER) $(PROTO_HEADERS) $(OBJECTS) Makefile $(LIB_DIR)
 	$(CPPC) $(LINK_ARGS) $(OBJECTS) $(INCLUDE) $(LIBS) -o $(LIB)
