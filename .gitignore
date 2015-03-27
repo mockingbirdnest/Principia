@@ -107,3 +107,4 @@ packages/
 
 #git version header
 base/version.hpp
+deps/

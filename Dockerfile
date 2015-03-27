@@ -16,21 +16,21 @@ WORKDIR /opt/principia/protobuf
 RUN git am "../documentation/Setup Files/protobuf.patch"
 RUN ./autogen.sh
 RUN ./configure CC=clang CXX=clang++ CXXFLAGS='-fPIC -m64 -std=c++11 -stdlib=libc++ -O3 -g' LDFLAGS='-stdlib=libc++'
-RUN make -j 8 install
+RUN make -j 8
 
 WORKDIR /opt/principia/
 RUN git clone https://github.com/Norgg/glog
 WORKDIR /opt/principia/glog
 # RUN patch -p 1 -i "../documentation/Setup Files/glog.patch"; true
 RUN ./configure CC=clang CXX=clang++ CXXFLAGS='-fPIC -m64 -std=c++11 -stdlib=libc++ -O3 -g' LDFLAGS='-stdlib=libc++'
-RUN make -j 8 install
+RUN make -j 8
 
 WORKDIR /opt/principia/
 RUN wget https://googlemock.googlecode.com/files/gmock-1.7.0.zip
 RUN unzip gmock-1.7.0.zip
 WORKDIR /opt/principia/gmock-1.7.0
 RUN patch -p 1 -i "../documentation/Setup Files/gmock.patch"; true
-RUN ./configure CC=clang CXX=clang++ CXXFLAGS='-fPIC -m64 -std=c++11 -stdlib=libc++ -O3 -g' LDFLAGS='-stdlib=libc++'
+RUN ./configure CC=clang CXX=clang++ CXXFLAGS='-fPIC -m64 -std=c++11 -I../glog/src -stdlib=libc++ -O3 -g' LDFLAGS='-stdlib=libc++'
 RUN make -j 8
 
 RUN DEBIAN_FRONTEND=noninteractive apt-get install -y cmake
@@ -50,4 +50,4 @@ RUN git checkout
 RUN git am "../documentation/Setup Files/chromium.patch"
 
 WORKDIR /opt/principia/src
-CMD make
+CMD make -j4 DEP_DIR=..
