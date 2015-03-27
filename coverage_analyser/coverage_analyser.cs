@@ -9,10 +9,9 @@ using System.Threading.Tasks;
 using Microsoft.VisualStudio.Coverage.Analysis;
 
 namespace principia {
-namespace coverage_analyser {
+namespace tools {
 
 class CoverageAnalyser {
-
   private struct CodeLine {
     public Int64 line_number;
     public string file;
@@ -132,8 +131,7 @@ class CoverageAnalyser {
       csv = csv + ", " + value;
     }
   }
-
 }
 
-}  // namespace coverage_analyser
+}  // namespace tools
 }  // namespace principia
