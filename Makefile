@@ -13,14 +13,14 @@ LIB=$(LIB_DIR)/principia.so
 INCLUDE=-I. -I../glog/src -I../protobuf-2.6.1/src -I../benchmark/include -I../gmock-1.7.0/gtest/include -I../gmock-1.7.0/include
 
 CPPC=clang++
-SHARED_ARGS=-std=c++1y -stdlib=libc++ -O3 -g -ggdb -m64 -mmmx -msse -msse2 -m3dnow -fPIC -fexceptions -ferror-limit=0 # -Wall -Wpedantic 
+SHARED_ARGS=-std=c++1y -stdlib=libc++ -O3 -g -ggdb -m64 -fPIC -fexceptions -ferror-limit=0 # -Wall -Wpedantic 
 COMPILE_ARGS=-c $(SHARED_ARGS) $(INCLUDE)
-LINK_ARGS=-shared -static $(SHARED_ARGS) 
+LINK_ARGS=-shared $(SHARED_ARGS) 
 LD_LIBRARY_PATH=$(LD_LIBRARY_PATH):/opt/principa/glog/.libs:/opt/principa/benchmark/src/:/opt/principa/protobuf/src/.libs:/opt/principa/gmock-1.7.0/lib/.libs/
-LIBS=-lc++ -lprotobuf -lprotoc -lglog -lpthread 
+LIBS=-l:libc++.a -l:libprotobuf.a -l:libglog.a -lpthread
 
 $(LIB): $(VERSION_HEADER) $(PROTO_HEADERS) $(OBJECTS) Makefile $(LIB_DIR)
-	$(CPPC) $(LINK_ARGS) $(OBJECTS) $(INCLUDE) $(LIBS) -o $(LIB)
+	$(CPPC) $(LINK_ARGS) $(OBJECTS) $(INCLUDE) -o $(LIB) $(LIBS) 
 
 $(LIB_DIR):
 	mkdir -p $(LIB_DIR)
