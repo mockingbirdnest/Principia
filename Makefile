@@ -1,4 +1,4 @@
-CPP_SOURCES=ksp_plugin/plugin.cpp ksp_plugin/physics_bubble.cpp
+CPP_SOURCES=ksp_plugin/plugin.cpp ksp_plugin/interface.cpp ksp_plugin/physics_bubble.cpp
 CC_SOURCES=$(wildcard serialization/*.cc)
 #$(wildcard *.cpp) $(wildcard quantities/*.cpp) $(wildcard base/*.cpp) $(wildcard integrators/*.cpp) $(wildcard ksp_plugin/*.cpp) $(wildcard geometry/*.cpp) $(wildcard physics/*.cpp) $(wildcard benchmarks/*.cpp)
 PROTO_SOURCES=$(wildcard */*.proto)
