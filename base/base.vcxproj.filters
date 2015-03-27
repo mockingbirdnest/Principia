@@ -56,16 +56,16 @@
     <ClInclude Include="pull_serializer_body.hpp">
       <Filter>Source Files</Filter>
     </ClInclude>
-    <ClInclude Include="bytes.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="bytes_body.hpp">
-      <Filter>Source Files</Filter>
-    </ClInclude>
     <ClInclude Include="push_deserializer.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="push_deserializer_body.hpp">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="array.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="array_body.hpp">
       <Filter>Source Files</Filter>
     </ClInclude>
   </ItemGroup>
