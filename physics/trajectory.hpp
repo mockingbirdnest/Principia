@@ -29,8 +29,7 @@ class Body;
 template<typename Frame>
 class Trajectory {
   // There may be several forks starting from the same time, hence the multimap.
-  using Children =
-      std::multimap<Instant, not_null<std::unique_ptr<Trajectory>>>;
+  using Children = std::multimap<Instant, Trajectory>;
   using Timeline = std::map<Instant, DegreesOfFreedom<Frame>>;
 
   // The two iterators denote entries in the containers of the parent, and they
@@ -251,11 +250,11 @@ class Trajectory {
     friend class Trajectory;
   };
 
- private:
   // A constructor for creating a child trajectory during forking.
   Trajectory(not_null<Body const*> const body,
              not_null<Trajectory*> const parent,
              Fork const& fork);
+ private:
 
   // This trajectory need not be a root.
   void WriteSubTreeToMessage(
