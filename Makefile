@@ -23,13 +23,16 @@ LINK_ARGS=$(SHARED_ARGS)
 LIB_PATHS=-L$(DEP_DIR)/glog/.libs/ -L$(DEP_DIR)/benchmark/src/ -L$(DEP_DIR)/protobuf/src/.libs/ -L$(DEP_DIR)/gmock-1.7.0/lib/.libs/
 LIBS=-l:libc++.a -l:libprotobuf.a -l:libglog.a -lpthread
 
-all: $(LIB) run_tests
+all: $(DEP_DIR) $(LIB) run_tests
 
 $(LIB): $(VERSION_HEADER) $(PROTO_HEADERS) $(OBJECTS) Makefile $(LIB_DIR)
 	$(CPPC) -shared $(LINK_ARGS) $(OBJECTS) $(INCLUDE) -o $(LIB) $(LIB_PATHS) $(LIBS) 
 
 $(LIB_DIR):
 	mkdir -p $(LIB_DIR)
+
+$(DEP_DIR):
+	./install_deps.sh
 
 $(VERSION_HEADER): .git
 	./generate_version_header.sh
