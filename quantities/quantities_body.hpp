@@ -157,6 +157,23 @@ struct QuotientGenerator<double, Right> {
                  LuminousIntensity, Winding, Angle, SolidAngle>>;
 };
 
+template<typename T, int exponent>
+struct ExponentiationGenerator<T, exponent, std::enable_if_t<(exponent > 1)>> {
+  using Type = Product<typename ExponentiationGenerator<T, exponent - 1>::Type,
+                       T>;
+};
+
+template<typename T, int exponent>
+struct ExponentiationGenerator<T, exponent, std::enable_if_t<(exponent < 1)>>{
+  using Type = Quotient<typename ExponentiationGenerator<T, exponent + 1>::Type,
+                        T>;
+};
+
+template<typename T, int exponent>
+struct ExponentiationGenerator<T, exponent, std::enable_if_t<(exponent == 1)>>{
+  using Type = T;
+};
+
 }  // namespace internal
 
 template<typename D>

@@ -7,12 +7,10 @@
 #include <type_traits>
 
 #include "base/not_null.hpp"
-#include "base/operator_types.hpp"
 #include "serialization/quantities.pb.h"
 
 namespace principia {
 
-using base::Exponentiation;
 using base::not_null;
 
 namespace quantities {
@@ -47,6 +45,8 @@ namespace internal {
 template<typename Left, typename Right> struct ProductGenerator;
 template<typename Left, typename Right> struct QuotientGenerator;
 template<typename Q, typename = void> struct SquareRootGenerator;
+template<typename T, int exponent, typename = void>
+struct ExponentiationGenerator;
 
 template<typename Left, typename Right>
 using Product = typename ProductGenerator<Left, Right>::Type;
@@ -55,6 +55,28 @@ using Quotient = typename QuotientGenerator<Left, Right>::Type;
 
 }  // namespace internal
 
+// The result type of +, -, * and / on arguments of types |Left| and |Right|.
+template<typename Left, typename Right>
+using Sum = decltype(std::declval<Left>() = std::declval<Right>());
+template<typename Left, typename Right>
+using Difference = decltype(std::declval<Left>() - std::declval<Right>());
+template<typename Left, typename Right>
+using Product = decltype(std::declval<Left>() * std::declval<Right>());
+template<typename Left, typename Right>
+using Quotient = decltype(std::declval<Left>() / std::declval<Right>());
+
+// |Exponentiation<T, n>| is an alias for the following, where t is a value of
+// type |T|:
+//   The type of ( ... (t * t) * ... * t), with n factors, if n >= 1;
+//   The type of t / ( ... (t * t) * ... * t), with n + 1 factors in the
+//   denominator, if n < 1.
+template<typename T, int exponent>
+using Exponentiation =
+    typename internal::ExponentiationGenerator<T, exponent>::Type;
+
+// |SquareRoot<T>| is only defined if |T| is an instance of |Quantity| with only
+// even dimensions.  In that case, it is the unique instance |S| of |Quantity|
+// such that |Product<S, S>| is |T|.
 template<typename Q>
 using SquareRoot = typename internal::SquareRootGenerator<Q>::Type;
 

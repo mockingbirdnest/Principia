@@ -1,6 +1,5 @@
 ﻿#pragma once
 
-#include "base/operator_types.hpp"
 #include "quantities/named_quantities.hpp"
 #include "quantities/quantities.hpp"
 #include "quantities/si.hpp"
@@ -16,8 +15,8 @@ quantities::Permittivity const VacuumPermittivity =
 // We use the 2010 CODATA recommended values.  We do not support uncertainties.
 quantities::AngularMomentum const ReducedPlanckConstant =
     1.054571726e-34 * si::Joule * si::Second / si::Radian;
-base::Quotient<quantities::GravitationalParameter,
-               quantities::Mass> const GravitationalConstant =
+quantities::Quotient<quantities::GravitationalParameter,
+                     quantities::Mass> const GravitationalConstant =
     6.67384e-11 * si::Newton * quantities::Pow<2>(si::Metre) /
         quantities::Pow<2>(si::Kilogram);
 quantities::Entropy const BoltzmannConstant =

@@ -1,14 +1,8 @@
 #pragma once
 
-#include "base/operator_types.hpp"
 #include "quantities/quantities.hpp"
 
 namespace principia {
-
-using base::Difference;
-using base::Exponentiation;
-using base::Product;
-using base::Quotient;
 
 namespace quantities {
 
