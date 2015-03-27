@@ -7,8 +7,7 @@
 namespace principia {
 namespace base {
 
-// A simple container for a pointer and size, similar to a StringPiece.  |data|
-// is not owned.
+// A simple container for a pointer and size.  |data| is not owned.
 template<typename Element>
 struct Array {
   // An object of size 0.
@@ -27,8 +26,7 @@ struct Array {
   std::int64_t size;  // In number of elements.
 };
 
-// A simple container for a pointer and size, similar to a StringPiece.  |data|
-// is owned.
+// A simple container for a pointer and size.  |data| is owned.
 template<typename Element>
 struct UniqueArray {
   // An object of size 0.
@@ -43,6 +41,7 @@ struct UniqueArray {
   UniqueArray(std::unique_ptr<Element[]> data, Size const size);
 
   // Move it, move it!
+  // TODO(phl): The following should be = default when MSVC supports it.
   UniqueArray(UniqueArray&& other);  // NOLINT(build/c++11)
   UniqueArray& operator=(UniqueArray&& other);  // NOLINT(build/c++11)
 

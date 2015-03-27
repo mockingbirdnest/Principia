@@ -75,7 +75,7 @@ void HexadecimalDecode(Array<std::uint8_t const> input,
        input.data != input_end;
        input.data += 2, ++output.data) {
     *output.data = (kHexadecimalDigitsToNibble[*input.data] << 4) |
-                     kHexadecimalDigitsToNibble[*(input.data + 1)];
+                   kHexadecimalDigitsToNibble[*(input.data + 1)];
   }
 }
 
