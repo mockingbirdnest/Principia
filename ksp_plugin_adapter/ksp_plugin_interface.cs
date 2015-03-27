@@ -7,7 +7,12 @@ namespace ksp_plugin_adapter {
 
 public partial class PrincipiaPluginAdapter : ScenarioModule {
 
+#if __MonoCS__
+  internal const string kDllPath = "GameData/Principia/libprincipia.so";
+#else
   internal const string kDllPath = "GameData/Principia/principia.dll";
+#endif
+
 
   [StructLayout(LayoutKind.Sequential)]
   private struct XYZ {
