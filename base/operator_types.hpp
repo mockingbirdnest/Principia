@@ -34,7 +34,8 @@ using Quotient = decltype(std::declval<Left>() / std::declval<Right>());
 //   The type of t / ( ... (t * t) * ... * t), with n + 1 factors in the
 //   denominator, if n < 1.
 template<typename T, int exponent>
-using Exponentiation = typename ExponentiationGenerator<T, exponent>::Type;
+using Exponentiation =
+    typename internal::ExponentiationGenerator<T, exponent>::Type;
 
 // Implementation of |Exponentiation|.
 namespace internal {

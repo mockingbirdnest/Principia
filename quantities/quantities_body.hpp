@@ -156,22 +156,7 @@ struct QuotientGenerator<double, Right> {
       Dimensions<Length, Mass, Time, Current, Temperature, Amount,
                  LuminousIntensity, Winding, Angle, SolidAngle>>;
 };
-template<typename Q, int Exponent, typename>
-struct PowerGenerator {};
-template<typename Q, int Exponent>
-struct PowerGenerator<Q, Exponent, Range<(Exponent > 1)>> {
-  using Type =
-      Product<typename PowerGenerator<Q, Exponent - 1>::Type, Q>;
-};
-template<typename Q, int Exponent>
-struct PowerGenerator<Q, Exponent, Range<(Exponent < 1)>>{
-  using Type =
-      Quotient<typename PowerGenerator<Q, Exponent + 1>::Type, Q>;
-};
-template<typename Q, int Exponent>
-struct PowerGenerator<Q, Exponent, Range<(Exponent == 1)>>{
-  using Type = Q;
-};
+
 }  // namespace internal
 
 template<typename D>

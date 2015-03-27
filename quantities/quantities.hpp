@@ -7,10 +7,12 @@
 #include <type_traits>
 
 #include "base/not_null.hpp"
+#include "base/operator_types.hpp"
 #include "serialization/quantities.pb.h"
 
 namespace principia {
 
+using base::Exponentiation;
 using base::not_null;
 
 namespace quantities {
@@ -42,7 +44,14 @@ using SolidAngle        = Quantity<Dimensions<0, 0, 0, 0, 0, 0, 0, 0, 0, 1>>;
 
 namespace internal {
 
-template<typename Q, typename> struct SquareRootGenerator;
+template<typename Left, typename Right> struct ProductGenerator;
+template<typename Left, typename Right> struct QuotientGenerator;
+template<typename Q, typename = void> struct SquareRootGenerator;
+
+template<typename Left, typename Right>
+using Product = typename ProductGenerator<Left, Right>::Type;
+template<typename Left, typename Right>
+using Quotient = typename QuotientGenerator<Left, Right>::Type;
 
 }  // namespace internal
 

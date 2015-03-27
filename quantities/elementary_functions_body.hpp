@@ -11,16 +11,16 @@ namespace quantities {
 namespace internal {
 
 template<typename Q,
-         std::enable_if_t<!(Q::Dimensions::Length & 1 ||
-                            Q::Dimensions::Mass & 1 ||
-                            Q::Dimensions::Time & 1 ||
-                            Q::Dimensions::Current & 1 ||
-                            Q::Dimensions::Temperature & 1 ||
-                            Q::Dimensions::Amount & 1 ||
-                            Q::Dimensions::LuminousIntensity & 1 ||
-                            Q::Dimensions::Winding & 1 ||
-                            Q::Dimensions::Angle & 1 ||
-                            Q::Dimensions::SolidAngle & 1)>>
+         typename = std::enable_if_t<!(Q::Dimensions::Length & 1 ||
+                                     Q::Dimensions::Mass & 1 ||
+                                     Q::Dimensions::Time & 1 ||
+                                     Q::Dimensions::Current & 1 ||
+                                     Q::Dimensions::Temperature & 1 ||
+                                     Q::Dimensions::Amount & 1 ||
+                                     Q::Dimensions::LuminousIntensity & 1 ||
+                                     Q::Dimensions::Winding & 1 ||
+                                     Q::Dimensions::Angle & 1 ||
+                                     Q::Dimensions::SolidAngle & 1)>>
 struct SquareRootGenerator {
   enum {
     Length            = Q::Dimensions::Length / 2,
