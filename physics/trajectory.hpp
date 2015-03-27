@@ -30,11 +30,7 @@ template<typename Frame>
 class Trajectory {
   // There may be several forks starting from the same time, hence the multimap.
   using Children =
-    std::multimap<Instant, not_null<std::shared_ptr<Trajectory>>>;
-    // NOTE(Norgg) TODO(Egg) Changed this from a unique_ptr since it wouldn't
-    // allow this incomplete a type, see:
-    // http://stackoverflow.com/questions/9954518/stdunique-ptr-with-an-incomplete-type-wont-compile
-    // Not sure if this is safe.
+      std::multimap<Instant, not_null<std::unique_ptr<Trajectory>>>;
   using Timeline = std::map<Instant, DegreesOfFreedom<Frame>>;
 
   // The two iterators denote entries in the containers of the parent, and they
