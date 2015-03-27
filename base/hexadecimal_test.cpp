@@ -17,7 +17,7 @@ namespace base {
 
 class HexadecimalTest : public testing::Test {
  protected:
-  HexadecimalTest() 
+  HexadecimalTest()
     : bytes_(kBytes),
       digits_(kDigits) {
     std::string const lowercase_digits = "00""7f""80""ff""67""68""0a""07";

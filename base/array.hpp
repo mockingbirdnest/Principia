@@ -20,7 +20,7 @@ struct Array {
   Array(Array<OtherElement> const& other);
   // No allocation of memory.
   template<typename Size,
-           typename = std::enable_if_t<std::is_integral<Size>::value, Size>>
+           typename = std::enable_if<std::is_integral<Size>::value>::type>
   Array(Element* const data, Size const size);
 
   Element* data;
@@ -35,16 +35,16 @@ struct UniqueArray {
   UniqueArray();
   // Allocates memory for |size| elements.
   template<typename Size,
-           typename = std::enable_if_t<std::is_integral<Size>::value, Size>>
+           typename = std::enable_if<std::is_integral<Size>::value>::type>
   explicit UniqueArray(Size const size);
   // Takes ownership of an existing array.
   template<typename Size,
-           typename = std::enable_if_t<std::is_integral<Size>::value, Size>>
+           typename = std::enable_if<std::is_integral<Size>::value>::type>
   UniqueArray(std::unique_ptr<Element[]> data, Size const size);
 
   // Move it, move it!
-  UniqueArray(UniqueArray&& other);
-  UniqueArray& operator=(UniqueArray&& other);
+  UniqueArray(UniqueArray&& other);  // NOLINT(build/c++11)
+  UniqueArray& operator=(UniqueArray&& other);  // NOLINT(build/c++11)
 
   // No transfer of ownership.
   Array<Element> get() const;

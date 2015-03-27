@@ -37,11 +37,12 @@ UniqueArray<Element>::UniqueArray(std::unique_ptr<Element[]> data,
       size(static_cast<std::int64_t>(size)) {}
 
 template<typename Element>
-UniqueArray<Element>::UniqueArray(UniqueArray&& other)
+UniqueArray<Element>::UniqueArray(UniqueArray&& other)  // NOLINT(build/c++11)
     : data(std::move(other.data)), size(other.size) {}
 
 template<typename Element>
-UniqueArray<Element>& UniqueArray<Element>::operator=(UniqueArray&& other) {
+UniqueArray<Element>& UniqueArray<Element>::operator=(
+    UniqueArray&& other) {  // NOLINT(build/c++11)
   data = std::move(other.data);
   size = other.size;
   return *this;
