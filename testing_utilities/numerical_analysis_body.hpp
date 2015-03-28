@@ -25,7 +25,7 @@ namespace testing_utilities {
 inline void ComputeHarmonicOscillatorForce(
     Time const& t,
     std::vector<Length> const& q,
-    std::vector<Force>* const result) {
+    std::vector<Force>* const result) {!
   (*result)[0] = -q[0] * SIUnit<Stiffness>();
 }
 

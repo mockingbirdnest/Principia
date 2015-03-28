@@ -2,11 +2,14 @@
 
 #include<vector>
 
+#include "geometry/named_quantities.hpp"
 #include "quantities/quantities.hpp"
 #include "quantities/named_quantities.hpp"
 
 namespace principia {
 
+using geometry::Position;
+using geometry::Vector;
 using quantities::Acceleration;
 using quantities::Force;
 using quantities::Length;
@@ -48,6 +51,12 @@ void ComputeHarmonicOscillatorAcceleration(
 void ComputeKeplerAcceleration(Time const& t,
                                std::vector<Length> const& q,
                                std::vector<Acceleration>* const result);
+
+template<typename Frame>
+void ComputeGravitationalAcceleration(
+    Time const& t,
+    std::vector<Position<Frame>> const& q,
+    std::vector<Vector<Acceleration, Frame>>* const result);
 
 }  // namespace testing_utilities
 }  // namespace principia
