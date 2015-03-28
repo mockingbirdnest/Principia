@@ -108,12 +108,14 @@ class Trajectory {
               DegreesOfFreedom<Frame> const& degrees_of_freedom);
 
   // Removes all data for times (strictly) greater than |time|, as well as all
-  // child trajectories forked at times (strictly) greater than |time|.
+  // child trajectories forked at times (strictly) greater than |time|.  |time|
+  // must exist in this trajectory, and must be at or after the fork time, if
+  // any.
   void ForgetAfter(Instant const& time);
 
   // Removes all data for times less than or equal to |time|, as well as all
   // child trajectories forked at times less than or equal to |time|.  This
-  // trajectory must be a root.
+  // trajectory must be a root.  |time| must exist in this trajectory.
   void ForgetBefore(Instant const& time);
 
   // Creates a new child trajectory forked at time |time|, and returns it.  The
@@ -125,8 +127,8 @@ class Trajectory {
   // ForgetBefore on the parent trajectory with an argument that causes the time
   // |time| to be removed deletes the child trajectory.  Deleting the parent
   // trajectory deletes all child trajectories.  |time| must be one of the times
-  // of the current trajectory (as returned by Times()).  No transfer of
-  // ownership.
+  // of this trajectory, and must be at or after the fork time, if any.  No
+  // transfer of ownership.
   not_null<Trajectory*> NewFork(Instant const& time);
 
   // Deletes the child trajectory denoted by |*fork|, which must be a pointer

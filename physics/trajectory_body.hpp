@@ -146,7 +146,7 @@ template<typename Frame>
 void Trajectory<Frame>::ForgetBefore(Instant const& time) {
   // Check that this is a root.
   CHECK(is_root()) << "ForgetBefore on a nonroot trajectory";
-  // Check that |time| is the time of one of our Timeline or the time of fork.
+  // Check that |time| is the time of one of our Timeline.
   CHECK(timeline_.find(time) != timeline_.end())
       << "ForgetBefore a nonexistent time";
   {
@@ -162,15 +162,22 @@ void Trajectory<Frame>::ForgetBefore(Instant const& time) {
 template<typename Frame>
 not_null<Trajectory<Frame>*> Trajectory<Frame>::NewFork(Instant const& time) {
   auto fork_it = timeline_.find(time);
-  CHECK(fork_it != timeline_.end()) << "NewFork at nonexistent time";
+  if (fork_it == timeline_.end()) {
+    CHECK(fork_ != nullptr)
+        << "NewFork at nonexistent time for a root trajectory";
+    CHECK_EQ(fork_->timeline->first, time)
+        << "NewFork at nonexistent time for a nonroot trajectory";
+  }
   // We cannot know the iterator into children_ until after we have done the
   // insertion in children_.
-  Fork fork = {children_.end(), fork_it};
+  Fork const fork = {children_.end(), fork_it};
   auto const child_it = children_.emplace(
       std::piecewise_construct,
       std::forward_as_tuple(time),
       std::forward_as_tuple(body_, this /*parent*/, fork));
-  child_it->second.timeline_.insert(++fork_it, timeline_.end());
+  if (fork_it != timeline_.end()) {
+    child_it->second.timeline_.insert(++fork_it, timeline_.end());
+  }
   child_it->second.fork_->children = child_it;
   return &child_it->second;
 }
@@ -379,14 +386,18 @@ void Trajectory<Frame>::Iterator::InitializeOnOrAfter(
 template<typename Frame>
 void Trajectory<Frame>::Iterator::InitializeLast(
     not_null<Trajectory const*> const trajectory) {
-  // We don't need to really keep track of the forks or of the ancestry.
-  if (trajectory->timeline_.empty()) {
-    CHECK(trajectory->fork_ != nullptr) << "Empty trajectory";
-    ancestry_.push_front(trajectory->parent_);
-    current_ = trajectory->fork_->timeline;
-  } else {
-    ancestry_.push_front(trajectory);
-    current_ = --trajectory->timeline_.end();
+  // We don't need to keep track of the forks or of the ancestry.
+  bool has_empty_timeline = false;
+  not_null<Trajectory const*> ancestor = trajectory;
+  while (ancestor->timeline_.empty()) {
+    has_empty_timeline = true;
+    CHECK(ancestor->fork_ != nullptr) << "Empty trajectory";
+    current_ = ancestor->fork_->timeline;
+    ancestor = ancestor->parent_;
+  }
+  ancestry_.push_front(ancestor);
+  if (!has_empty_timeline) {
+    current_ = --ancestor->timeline_.end();
   }
 }
 

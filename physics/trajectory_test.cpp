@@ -212,6 +212,8 @@ TEST_F(TrajectoryTest, ForkAtLast) {
   not_null<Trajectory<World>*> const fork1 = massive_trajectory_->NewFork(t3_);
   not_null<Trajectory<World>*> const fork2 =
       fork1->NewFork(fork1->last().time());
+  EXPECT_EQ(massive_trajectory_->last().time(), fork1->last().time());
+  EXPECT_EQ(massive_trajectory_->last().time(), fork2->last().time());
 }
 
 TEST_F(TrajectoryTest, IteratorSerializationSuccess) {
