@@ -10,6 +10,7 @@
 namespace principia {
 
 using base::not_null;
+using quantities::Difference;
 using quantities::Quotient;
 using quantities::Variation;
 

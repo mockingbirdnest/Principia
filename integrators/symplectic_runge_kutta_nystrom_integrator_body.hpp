@@ -285,14 +285,15 @@ void SRKNIntegrator::SolveTrivialKineticEnergyIncrementOptimized(
     Parameters<Position, Variation<Position>> const& parameters,
     not_null<Solution<Position, Variation<Position>>*> const solution) const {
   using Velocity = Variation<Position>;
+  using Displacement = Difference<Position>;
   int const dimension = parameters.initial.positions.size();
 
-  std::vector<Position> Δqstage0(dimension);
-  std::vector<Position> Δqstage1(dimension);
+  std::vector<Displacement> Δqstage0(dimension);
+  std::vector<Displacement> Δqstage1(dimension);
   std::vector<Velocity> Δvstage0(dimension);
   std::vector<Velocity> Δvstage1(dimension);
-  std::vector<Position>* Δqstage_current = &Δqstage1;
-  std::vector<Position>* Δqstage_previous = &Δqstage0;
+  std::vector<Displacement>* Δqstage_current = &Δqstage1;
+  std::vector<Displacement>* Δqstage_previous = &Δqstage0;
   std::vector<Velocity>* Δvstage_current = &Δvstage1;
   std::vector<Velocity>* Δvstage_previous = &Δvstage0;
 
@@ -358,7 +359,7 @@ void SRKNIntegrator::SolveTrivialKineticEnergyIncrementOptimized(
     // Increment SRKN step from "'SymplecticPartitionedRungeKutta' Method
     // for NDSolve", algorithm 3.
     for (int k = 0; k < dimension; ++k) {
-      (*Δqstage_current)[k] = Position();
+      (*Δqstage_current)[k] = Displacement();
       (*Δvstage_current)[k] = Velocity();
       q_stage[k] = q_last[k].value;
     }

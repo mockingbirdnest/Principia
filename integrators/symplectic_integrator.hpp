@@ -6,6 +6,7 @@
 
 namespace principia {
 
+using quantities::Difference;
 using quantities::Time;
 
 namespace integrators {
@@ -13,15 +14,16 @@ namespace integrators {
 // A simple container for a scalar value and the related error.  The
 // constructor is not explicit to make it easy to construct an object with no
 // error.
+// TODO(egg): not a scalar anymore
 template<typename Scalar>
 struct DoublePrecision {
   DoublePrecision() = default;
   DoublePrecision(Scalar const& value);  // NOLINT(runtime/explicit)
 
-  void Increment(Scalar const& increment);
+  void Increment(Difference<Scalar> const& increment);
 
   Scalar value;
-  Scalar error;
+  Difference<Scalar> error;
 };
 
 class SymplecticIntegrator {

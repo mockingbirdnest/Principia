@@ -8,7 +8,7 @@ namespace quantities {
 
 // |Variation<T>| is the type of the time derivative of a |T|-valued function.
 template<typename T>
-using Variation = Quotient<Difference<T, T>, Time>;
+using Variation = Quotient<Difference<T>, Time>;
 
 // General mechanics
 using Speed        = Variation<Length>;

@@ -58,7 +58,7 @@ using Quotient = typename QuotientGenerator<Left, Right>::Type;
 // The result type of +, -, * and / on arguments of types |Left| and |Right|.
 template<typename Left, typename Right>
 using Sum = decltype(std::declval<Left>() = std::declval<Right>());
-template<typename Left, typename Right>
+template<typename Left, typename Right = Left>
 using Difference = decltype(std::declval<Left>() - std::declval<Right>());
 template<typename Left, typename Right>
 using Product = decltype(std::declval<Left>() * std::declval<Right>());
