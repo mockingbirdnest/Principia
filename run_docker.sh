@@ -1,2 +1,2 @@
 #!/bin/bash
-docker run -t -v $PWD:/opt/principia/src principia
+docker run -t --rm -v $PWD:/opt/principia/src principia

@@ -1,6 +1,6 @@
 #!/bin/bash
 
-echo "apt-get installing: clang git unzip wget libc++-dev binutils make automake libtool curl cmake"
+echo "apt-get installing: clang git unzip wget libc++-dev binutils make automake libtool curl cmake subversion"
 sudo apt-get install clang git unzip wget libc++-dev binutils make automake libtool curl cmake
 
 mkdir -p deps
@@ -21,12 +21,15 @@ pushd glog
 make -j 8
 
 popd
-wget https://googlemock.googlecode.com/files/gmock-1.7.0.zip
-unzip gmock-1.7.0.zip
-pushd gmock-1.7.0
+RUN svn checkout http://googlemock.googlecode.com/svn/trunk/ gmock
+RUN svn checkout http://googletest.googlecode.com/svn/trunk/ gtest
+pushd gtest
+wget "https://googletest.googlecode.com/issues/attachment?aid=4640000000&name=GetThreadCountForLinux.patch&token=ABZ6GAdR6MB7HLYD00TNsyrZ2EonGnqpWQ%3A1427585369726" -O thread_count.patch
+patch -p 0 -i thread_count.patch
+
+popd
+pushd gmock
 patch -p 1 -i "../../documentation/Setup Files/gmock.patch"; true
-./configure CC=clang CXX=clang++ CXXFLAGS='-fPIC -m64 -std=c++11 -I../glog/src -stdlib=libc++ -O3 -g' LDFLAGS='-stdlib=libc++'
-make -j 8
 
 popd
 git clone https://github.com/pleroy/benchmark
