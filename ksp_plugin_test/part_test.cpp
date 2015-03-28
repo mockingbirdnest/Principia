@@ -15,27 +15,23 @@ namespace ksp_plugin {
 class PartTest : public testing::Test {
  protected:
   PartTest()
-      : degrees_of_freedom_({
-            Barycentric::origin +
-                Displacement<Barycentric>({1 * Metre, 2 * Metre, 3 * Metre}),
-            Velocity<Barycentric>({4 * Metre / Second,
-                                   5 * Metre / Second,
-                                   6 * Metre / Second})}),
-        mass_(7 * Kilogram),
-        gravitational_acceleration_to_be_applied_by_ksp_(
-            Vector<Acceleration, Barycentric>(
-                {8 * Metre / Second / Second,
-                 9 * Metre / Second / Second,
-                 10 * Metre / Second / Second})),
-        part_(degrees_of_freedom_,
+      : part_(degrees_of_freedom_,
               mass_,
               gravitational_acceleration_to_be_applied_by_ksp_) {}
 
-  DegreesOfFreedom<Barycentric> degrees_of_freedom_;
-  Mass mass_;
-  Vector<Acceleration, Barycentric>
-      gravitational_acceleration_to_be_applied_by_ksp_;
-  Part<Barycentric> part_;
+  DegreesOfFreedom<Barycentric> const degrees_of_freedom_ = {
+      Barycentric::origin +
+          Displacement<Barycentric>({1 * Metre, 2 * Metre, 3 * Metre}),
+      Velocity<Barycentric>({4 * Metre / Second,
+                             5 * Metre / Second,
+                             6 * Metre / Second})};
+  Mass const mass_ = 7 * Kilogram;
+  Vector<Acceleration, Barycentric> const
+      gravitational_acceleration_to_be_applied_by_ksp_ =
+          Vector<Acceleration, Barycentric>({8 * Metre / Second / Second,
+                                             9 * Metre / Second / Second,
+                                             10 * Metre / Second / Second});
+  Part<Barycentric> const part_;
 };
 
 TEST_F(PartTest, Serialization) {
