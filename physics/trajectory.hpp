@@ -250,11 +250,11 @@ class Trajectory {
     friend class Trajectory;
   };
 
+ private:
   // A constructor for creating a child trajectory during forking.
   Trajectory(not_null<Body const*> const body,
              not_null<Trajectory*> const parent,
              Fork const& fork);
- private:
 
   // This trajectory need not be a root.
   void WriteSubTreeToMessage(
@@ -272,6 +272,10 @@ class Trajectory {
   Timeline timeline_;
 
   std::unique_ptr<IntrinsicAcceleration> intrinsic_acceleration_;
+
+  // For using the private constructor in maps.
+  template<typename, typename>
+  friend struct std::pair;
 };
 
 }  // namespace physics
