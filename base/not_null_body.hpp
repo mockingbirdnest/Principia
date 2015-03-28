@@ -69,14 +69,13 @@ not_null<Pointer>::operator pointer const&() const {
 }
 
 template<typename Pointer>
-decltype(*std::declval<typename not_null<Pointer>::pointer>())
+std::add_lvalue_reference_t<typename not_null<Pointer>::element_type>
 not_null<Pointer>::operator*() const {
   return *pointer_;
 }
 
 template<typename Pointer>
-decltype(std::addressof(
-    *std::declval<typename not_null<Pointer>::pointer>())) const
+std::add_pointer_t<typename not_null<Pointer>::element_type>
 not_null<Pointer>::operator->() const {
   return std::addressof(*pointer_);
 }
