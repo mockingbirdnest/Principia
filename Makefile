@@ -48,18 +48,52 @@ $(VERSION_HEADER): .git
 	$(CPPC) $(COMPILE_ARGS) $< -o $@ 
 
 ##### TESTS #####
+run_tests: base/test geometry/test integrators/test ksp_plugin_test/test physics/test quantities/test testing_utilities/test
+	base/test
+	geometry/test
+	integrators/test
+	ksp_plugin_test/test
+	physics/test
+	quantities/test
+	testing_utilities/test
 
-TEST_BIN=principia_tests
-TEST_SOURCE=$(wildcard base/*test.cpp) $(wildcard geometry/*test.cpp) $(wildcard integrators/*test.cpp) $(wildcard quantities/*test.cpp)
-TEST_OBJS=$(TEST_SOURCE:.cpp=.o)
 GMOCK_SOURCE=$(wildcard $(DEP_DIR)/gmock-1.7.0/fused-src/*.cc)
-GMOCK_OBJS=$(GMOCK_SOURCE:.cc=.o)
+GMOCK_OBJECTS=$(GMOCK_SOURCE:.cc=.o)
 
-$(TEST_BIN): $(GMOCK_OBJS) $(TEST_OBJS) $(PROTO_OBJECTS) Makefile
-	$(CPPC) $(LINK_ARGS)$(TEST_OBJS) $(GMOCK_OBJS) $(PROTO_OBJECTS) $(INCLUDE) $(LIB_PATHS) $(LIBS) -o $(TEST_BIN)
+BASE_TEST_SOURCES=$(wildcard base/*.cpp)
+BASE_TEST_OBJECTS=$(BASE_TEST_SOURCES:.cpp=.o)
+base/test: $(GMOCK_OBJECTS) $(BASE_TEST_OBJECTS) $(PROTO_OBJECTS) Makefile
+	$(CPPC) $(LINK_ARGS) $(BASE_TEST_OBJECTS) $(GMOCK_OBJECTS) $(PROTO_OBJECTS) $(INCLUDE) $(LIB_PATHS) $(LIBS) -o $@
 
-run_tests: $(TEST_BIN)
-	./$(TEST_BIN)
+GEOMETRY_TEST_SOURCES=$(wildcard geometry/*.cpp)
+GEOMETRY_TEST_OBJECTS=$(GEOMETRY_TEST_SOURCES:.cpp=.o)
+geometry/test: $(GMOCK_OBJECTS) $(GEOMETRY_TEST_OBJECTS) $(PROTO_OBJECTS) Makefile
+	$(CPPC) $(LINK_ARGS) $(GEOMETRY_TEST_OBJECTS) $(GMOCK_OBJECTS) $(PROTO_OBJECTS) $(INCLUDE) $(LIB_PATHS) $(LIBS) -o $@
+
+INTEGRATOR_TEST_SOURCES=$(wildcard integrators/*.cpp)
+INTEGRATOR_TEST_OBJECTS=$(INTEGRATOR_TEST_SOURCES:.cpp=.o)
+integrators/test: $(GMOCK_OBJECTS) $(INTEGRATOR_TEST_OBJECTS) $(PROTO_OBJECTS) Makefile
+	$(CPPC) $(LINK_ARGS) $(INTEGRATOR_TEST_OBJECTS) $(GMOCK_OBJECTS) $(PROTO_OBJECTS) $(INCLUDE) $(LIB_PATHS) $(LIBS) -o $@
+
+PLUGIN_TEST_SOURCES=$(wildcard ksp_plugin_test/*.cpp)
+PLUGIN_TEST_OBJECTS=$(PLUGIN_TEST_SOURCES:.cpp=.o)
+ksp_plugin_test/test: $(GMOCK_OBJECTS) $(PLUGIN_TEST_OBJECTS) $(PROTO_OBJECTS) Makefile
+	$(CPPC) $(LINK_ARGS) $(PLUGIN_TEST_OBJECTS) $(GMOCK_OBJECTS) $(PROTO_OBJECTS) $(INCLUDE) $(LIB_PATHS) $(LIBS) -o $@
+
+PHYSICS_TEST_SOURCES=$(wildcard physics/*.cpp)
+PHYSICS_TEST_OBJECTS=$(PHYSICS_TEST_SOURCES:.cpp=.o)
+physics/test: $(GMOCK_OBJECTS) $(PHYSICS_TEST_OBJECTS) $(PROTO_OBJECTS) Makefile
+	$(CPPC) $(LINK_ARGS) $(PHYSICS_TEST_OBJECTS) $(GMOCK_OBJECTS) $(PROTO_OBJECTS) $(INCLUDE) $(LIB_PATHS) $(LIBS) -o $@
+
+QUANTITIES_TEST_SOURCES=$(wildcard quantities/*.cpp)
+QUANTITIES_TEST_OBJECTS=$(QUANTITIES_TEST_SOURCES:.cpp=.o)
+quantities/test: $(GMOCK_OBJECTS) $(QUANTITIES_TEST_OBJECTS) $(PROTO_OBJECTS) Makefile
+	$(CPPC) $(LINK_ARGS) $(QUANTITIES_TEST_OBJECTS) $(GMOCK_OBJECTS) $(PROTO_OBJECTS) $(INCLUDE) $(LIB_PATHS) $(LIBS) -o $@
+
+TESTING_UTILITIES_TEST_SOURCES=$(wildcard testing_utilities/*.cpp)
+TESTING_UTILITIES_TEST_OBJECTS=$(TESTING_UTILITIES_TEST_SOURCES:.cpp=.o)
+testing_utilities/test: $(GMOCK_OBJECTS) $(TESTING_UTILITIES_TEST_OBJECTS) $(PROTO_OBJECTS) Makefile
+	$(CPPC) $(LINK_ARGS) $(TESTING_UTILITIES_TEST_OBJECTS) $(GMOCK_OBJECTS) $(PROTO_OBJECTS) $(INCLUDE) $(LIB_PATHS) $(LIBS) -o $@
 
 clean:
 	rm $(LIB) $(PROTO_HEADERS) $(OBJECTS) $(PROTO_OBJECTS) $(TEST_OBJS); true
