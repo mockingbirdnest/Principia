@@ -1,26 +1,29 @@
 #pragma once
 
-#include <stdint.h>
+#include <cstdint>
+
+#include "base/array.hpp"
 
 namespace principia {
 namespace base {
 
-// The result is upper-case.  Either |input <= &output[1]| or
-// |&output[input_size << 1] <= input| must hold, in particular,
-// |input == output| is valid.  |output_size| must be at least twice
-// |input_size|.  The range [&output[input_size << 1], &output[output_size])
-// is left unmodified.
-void HexadecimalEncode(uint8_t const* input, int64_t const input_size,
-                       uint8_t* output, int64_t const output_size);
+// The result is upper-case.  Either |input.data <= &output.data[1]| or
+// |&output.data[input.size << 1] <= input.data| must hold, in particular,
+// |input.data == output.data| is valid.  |output.size| must be at least twice
+// |input.size|.  The range
+// [&output.data[input.size << 1], &output.data[output.size][ is left
+// unmodified.
+void HexadecimalEncode(Array<std::uint8_t const> input,
+                       Array<std::uint8_t> output);
 
-// Invalid digits are read as 0.  If |input_size| is odd, the last
-// character of the input is ignored.  Ignores case.
-// Either |output <= &input[1]| or |&input[input_size & ~1] <= output| must
-// hold, in particular, |input == output| is valid.  |output_size| must be at
-// least |input_size / 2|.  The range
-// [&output[input_size / 2], &output[output_size]) is left unmodified.
-void HexadecimalDecode(uint8_t const* input, int64_t input_size,
-                       uint8_t* output, int64_t const output_size);
+// Invalid digits are read as 0.  If |input.size| is odd, the last character of
+// the input is ignored.  Ignores case.  Either |output.data <= &input.data[1]|
+// or |&input.data[input.size & ~1] <= output.data| must hold, in particular,
+// |input.data == output.data| is valid.  |output.size| must be at least
+// |input.size / 2|.  The range
+// [&output[input.size / 2], &output[output.size][ is left unmodified.
+void HexadecimalDecode(Array<std::uint8_t const> input,
+                       Array<std::uint8_t> output);
 
 }  // namespace base
 }  // namespace principia

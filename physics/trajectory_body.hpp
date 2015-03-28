@@ -113,7 +113,9 @@ void Trajectory<Frame>::Append(
     DegreesOfFreedom<Frame> const& degrees_of_freedom) {
   auto inserted = timeline_.emplace(time, degrees_of_freedom);
   CHECK(timeline_.end() == ++inserted.first) << "Append out of order";
-  CHECK(inserted.second) << "Append at existing time";
+  CHECK(inserted.second) << "Append at existing time " << time
+                         << ", time range = [" << Times().front() << ", "
+                         << Times().back() << "]";
 }
 
 template<typename Frame>
@@ -164,13 +166,13 @@ not_null<Trajectory<Frame>*> Trajectory<Frame>::NewFork(Instant const& time) {
   // We cannot know the iterator into children_ until after we have done the
   // insertion in children_.
   Fork fork = {children_.end(), fork_it};
-  // Can't use make_unique below.
-  std::unique_ptr<Trajectory<Frame>> child(
-      new Trajectory(body_, this /*parent*/, fork));
-  child->timeline_.insert(++fork_it, timeline_.end());
-  auto const child_it = children_.emplace(time, std::move(child));
-  child_it->second->fork_->children = child_it;
-  return child_it->second.get();
+  auto const child_it = children_.emplace(
+      std::piecewise_construct,
+      std::forward_as_tuple(time),
+      std::forward_as_tuple(body_, this /*parent*/, fork));
+  child_it->second.timeline_.insert(++fork_it, timeline_.end());
+  child_it->second.fork_->children = child_it;
+  return &child_it->second;
 }
 
 template<typename Frame>
@@ -181,7 +183,7 @@ void Trajectory<Frame>::DeleteFork(not_null<Trajectory**> const fork) {
   // Find the position of |*fork| among our children and remove it.
   auto const range = children_.equal_range(*fork_time);
   for (auto it = range.first; it != range.second; ++it) {
-    if (it->second.get() == *fork) {
+    if (&it->second == *fork) {
       children_.erase(it);
       *fork = nullptr;
       return;
@@ -317,7 +319,7 @@ not_null<Trajectory<Frame>*> Trajectory<Frame>::ReadPointerFromMessage(
     auto timeline_it = descendant->timeline_.begin();
     std::advance(children_it, children_distance);
     std::advance(timeline_it, timeline_distance);
-    descendant = children_it->second.get();
+    descendant = &children_it->second;
   }
   return descendant;
 }
@@ -437,14 +439,14 @@ void Trajectory<Frame>::WriteSubTreeToMessage(
   serialization::Trajectory::Litter* litter = nullptr;
   for (auto const& pair : children_) {
     Instant const& fork_time = pair.first;
-    not_null<std::unique_ptr<Trajectory>> const& child = pair.second;
+    Trajectory const& child = pair.second;
     if (is_first || fork_time != last_instant) {
       is_first = false;
       last_instant = fork_time;
       litter = message->add_children();
       fork_time.WriteToMessage(litter->mutable_fork_time());
     }
-    child->WriteSubTreeToMessage(litter->add_trajectories());
+    child.WriteSubTreeToMessage(litter->add_trajectories());
   }
   for (auto const& pair : timeline_) {
     Instant const& instant = pair.first;

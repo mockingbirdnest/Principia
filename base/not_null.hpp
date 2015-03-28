@@ -122,8 +122,7 @@ class not_null {
   using pointer = typename remove_not_null<Pointer>::type;
 
   // Smart pointers define this type.
-  using element_type =
-      std::remove_reference_t<decltype(*std::declval<pointer>())>;
+  using element_type = typename std::pointer_traits<pointer>::element_type;
 
   not_null() = delete;
 
@@ -192,8 +191,8 @@ class not_null {
   // The 2013 CTP seems to support it, so it's probably not far away.
 
   // Returns |*pointer_|.
-  decltype(*std::declval<pointer>()) operator*() const;
-  decltype(std::addressof(*std::declval<pointer>())) const operator->() const;
+  std::add_lvalue_reference_t<element_type> operator*() const;
+  std::add_pointer_t<element_type> operator->() const;
 
   // When |pointer| has a |get()| member function, this returns
   // |pointer_.get()|.

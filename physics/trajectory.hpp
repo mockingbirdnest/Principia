@@ -29,8 +29,7 @@ class Body;
 template<typename Frame>
 class Trajectory {
   // There may be several forks starting from the same time, hence the multimap.
-  using Children =
-      std::multimap<Instant, not_null<std::unique_ptr<Trajectory>>>;
+  using Children = std::multimap<Instant, Trajectory>;
   using Timeline = std::map<Instant, DegreesOfFreedom<Frame>>;
 
   // The two iterators denote entries in the containers of the parent, and they
@@ -273,6 +272,10 @@ class Trajectory {
   Timeline timeline_;
 
   std::unique_ptr<IntrinsicAcceleration> intrinsic_acceleration_;
+
+  // For using the private constructor in maps.
+  template<typename, typename>
+  friend struct std::pair;
 };
 
 }  // namespace physics

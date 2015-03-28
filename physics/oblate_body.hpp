@@ -52,10 +52,10 @@ class OblateBody : public MassiveBody {
   Vector<double, Frame> const& axis() const;
 
   // Returns false.
-  bool is_massless() const;
+  bool is_massless() const override;
 
   // Returns true.
-  bool is_oblate() const;
+  bool is_oblate() const override;
 
   void WriteToMessage(not_null<serialization::Body*> message) const override;
 
