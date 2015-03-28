@@ -49,13 +49,13 @@ $(VERSION_HEADER): .git
 
 ##### TESTS #####
 run_tests: base/test geometry/test integrators/test ksp_plugin_test/test physics/test quantities/test testing_utilities/test
-	base/test
-	geometry/test
-	integrators/test
-	ksp_plugin_test/test
-	physics/test
-	quantities/test
-	testing_utilities/test
+	base/test; true
+	geometry/test; true
+	integrators/test; true
+	ksp_plugin_test/test; true
+	physics/test; true
+	quantities/test; true
+	testing_utilities/test; true
 
 GMOCK_SOURCE=$(wildcard $(DEP_DIR)/gmock-1.7.0/fused-src/*.cc)
 GMOCK_OBJECTS=$(GMOCK_SOURCE:.cc=.o)
@@ -75,7 +75,7 @@ INTEGRATOR_TEST_OBJECTS=$(INTEGRATOR_TEST_SOURCES:.cpp=.o)
 integrators/test: $(GMOCK_OBJECTS) $(INTEGRATOR_TEST_OBJECTS) $(PROTO_OBJECTS) Makefile
 	$(CPPC) $(LINK_ARGS) $(INTEGRATOR_TEST_OBJECTS) $(GMOCK_OBJECTS) $(PROTO_OBJECTS) $(INCLUDE) $(LIB_PATHS) $(LIBS) -o $@
 
-PLUGIN_TEST_SOURCES=$(wildcard ksp_plugin_test/*.cpp)
+PLUGIN_TEST_SOURCES=$(wildcard ksp_plugin_test/*.cpp) $(wildcard ksp_plugin/*.cpp)
 PLUGIN_TEST_OBJECTS=$(PLUGIN_TEST_SOURCES:.cpp=.o)
 ksp_plugin_test/test: $(GMOCK_OBJECTS) $(PLUGIN_TEST_OBJECTS) $(PROTO_OBJECTS) Makefile
 	$(CPPC) $(LINK_ARGS) $(PLUGIN_TEST_OBJECTS) $(GMOCK_OBJECTS) $(PROTO_OBJECTS) $(INCLUDE) $(LIB_PATHS) $(LIBS) -o $@
