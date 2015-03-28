@@ -251,20 +251,24 @@ void SRKNIntegrator::SolveTrivialKineticEnergyIncrement(
     RightHandSideComputation compute_acceleration,
     Parameters<Position, Variation<Position>> const& parameters,
     not_null<Solution<Position, Variation<Position>>*> const solution) const {
+  // NOTE(egg): we need to explicitly give the second template argument here
+  // because MSVC doesn't want to deduce it.  Clang-cl deduces it without any
+  // issues.
   switch (vanishing_coefficients_) {
     case kNone:
-      SolveTrivialKineticEnergyIncrementOptimized<kNone>(compute_acceleration,
-                                                         parameters,
-                                                         solution);
+      SolveTrivialKineticEnergyIncrementOptimized<kNone, Position>(
+          compute_acceleration,
+          parameters,
+          solution);
       break;
     case kFirstBVanishes:
-      SolveTrivialKineticEnergyIncrementOptimized<kFirstBVanishes>(
+      SolveTrivialKineticEnergyIncrementOptimized<kFirstBVanishes, Position>(
           compute_acceleration,
           parameters,
           solution);
       break;
     case kLastAVanishes:
-      SolveTrivialKineticEnergyIncrementOptimized<kLastAVanishes>(
+      SolveTrivialKineticEnergyIncrementOptimized<kLastAVanishes, Position>(
           compute_acceleration,
           parameters,
           solution);
