@@ -3,6 +3,7 @@
 #include<vector>
 
 #include "geometry/named_quantities.hpp"
+#include "physics/massive_body.hpp"
 #include "quantities/quantities.hpp"
 #include "quantities/named_quantities.hpp"
 
@@ -10,6 +11,7 @@ namespace principia {
 
 using geometry::Position;
 using geometry::Vector;
+using physics::MassiveBody;
 using quantities::Acceleration;
 using quantities::Force;
 using quantities::Length;
@@ -56,7 +58,8 @@ template<typename Frame>
 void ComputeGravitationalAcceleration(
     Time const& t,
     std::vector<Position<Frame>> const& q,
-    std::vector<Vector<Acceleration, Frame>>* const result);
+    std::vector<Vector<Acceleration, Frame>>* const result,
+    std::vector<MassiveBody> const& bodies);
 
 }  // namespace testing_utilities
 }  // namespace principia

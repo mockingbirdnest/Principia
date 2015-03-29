@@ -6,21 +6,27 @@
 #include <string>
 #include <vector>
 
+#include "geometry/barycentre_calculator.hpp"
 #include "glog/logging.h"
 #include "integrators/symplectic_partitioned_runge_kutta_integrator.hpp"
+#include "quantities/astronomy.hpp"
 #include "quantities/constants.hpp"
 #include "quantities/quantities.hpp"
 #include "quantities/named_quantities.hpp"
 #include "mathematica/mathematica.hpp"
 #include "testing_utilities/numerical_analysis.hpp"
 #include "testing_utilities/numerics.hpp"
+#include "testing_utilities/solar_system.hpp"
 
 #define INTEGRATOR(name) &integrators::name(), #name
 
 namespace principia {
 
+using astronomy::JulianYear;
 using base::not_null;
 using constants::GravitationalConstant;
+using geometry::InnerProduct;
+using geometry::BarycentreCalculator;
 using integrators::SRKNIntegrator;
 using quantities::AngularFrequency;
 using quantities::Cos;
@@ -29,14 +35,21 @@ using quantities::Length;
 using quantities::Pow;
 using quantities::Sin;
 using quantities::Speed;
+using si::Minute;
 using si::Joule;
 using si::Kilogram;
 using si::Metre;
 using si::Radian;
 using si::Second;
+using testing_utilities::ICRFJ2000Ecliptic;
 using testing_utilities::AbsoluteError;
+using testing_utilities::ComputeGravitationalAcceleration;
 using testing_utilities::ComputeHarmonicOscillatorAcceleration;
 using testing_utilities::ComputeKeplerAcceleration;
+using testing_utilities::SolarSystem;
+using ::std::placeholders::_1;
+using ::std::placeholders::_2;
+using ::std::placeholders::_3;
 
 namespace mathematica {
 
@@ -98,6 +111,26 @@ std::vector<SimpleHarmonicMotionPlottedIntegrator> Methods() {
       {INTEGRATOR(Yoshida1990Order8C), 15},
       {INTEGRATOR(Yoshida1990Order8D), 15},
       {INTEGRATOR(Yoshida1990Order8E), 15},
+      {INTEGRATOR(McLachlan1995SS15), 15},
+      {INTEGRATOR(McLachlan1995SS17), 17}};
+}
+
+// Those methods which have converged to the limits of double-precision floating
+// point error on the circular Kepler problem tested by
+// |GenerateKeplerProblemWorkErrorGraphs| with less than 8e4 evaluations.
+std::vector<SimpleHarmonicMotionPlottedIntegrator> ReferenceMethods() {
+  return {
+      // Order 5
+      {INTEGRATOR(McLachlanAtela1992Order5Optimal), 6},
+      // Order 6
+      //   SPRKs
+      {INTEGRATOR(McLachlan1995SS9), 9},
+      {INTEGRATOR(BlanesMoan2002S10), 10},
+      //   SRKNs
+      {INTEGRATOR(OkunborSkeel1994Order6Method13), 7},
+      {INTEGRATOR(BlanesMoan2002SRKN11B), 11},
+      {INTEGRATOR(BlanesMoan2002SRKN14A), 14},
+      // Order 8
       {INTEGRATOR(McLachlan1995SS15), 15},
       {INTEGRATOR(McLachlan1995SS17), 17}};
 }
@@ -249,6 +282,147 @@ void GenerateKeplerProblemWorkErrorGraphs() {
                 2 * (m * v_actual * v_actual / 2) -
                     GravitationalConstant * m * m / r_actual));
       }
+      // We plot the maximum error, i.e., the L∞ norm of the error.
+      // Blanes and Moan (2002), or Blanes, Casas and Ros (2001) tend to use
+      // the average error (the normalized L¹ norm) instead.
+      q_errors.emplace_back(*std::max_element(q_error.begin(), q_error.end()));
+      v_errors.emplace_back(*std::max_element(v_error.begin(), v_error.end()));
+      e_errors.emplace_back(*std::max_element(e_error.begin(), e_error.end()));
+      evaluations.emplace_back(number_of_evaluations);
+    }
+    q_error_data.emplace_back(PlottableDataset(evaluations, q_errors));
+    v_error_data.emplace_back(PlottableDataset(evaluations, v_errors));
+    e_error_data.emplace_back(PlottableDataset(evaluations, e_errors));
+    names.emplace_back(Escape(method.name));
+  }
+  file << Assign("qErrorData", q_error_data);
+  file << Assign("vErrorData", v_error_data);
+  file << Assign("eErrorData", e_error_data);
+  file << Assign("names", names);
+  file.close();
+}
+
+void GenerateSolarSystemPlanetsWorkErrorGraph() {
+  std::ofstream file;
+  file.open("planets_graphs.generated.wl");
+  SRKNIntegrator::Parameters<Position<ICRFJ2000Ecliptic>,
+                             Velocity<ICRFJ2000Ecliptic>> parameters;
+  SRKNIntegrator::Solution<Position<ICRFJ2000Ecliptic>,
+                           Velocity<ICRFJ2000Ecliptic>> solution;
+  Energy initial_energy;
+  std::vector<MassiveBody> bodies;
+  int const last_planet = SolarSystem::kMercury;
+  {
+    not_null<std::unique_ptr<SolarSystem>> const solar_system =
+        SolarSystem::AtСпутник1Launch(SolarSystem::Accuracy::kMajorBodiesOnly);
+    SolarSystem::Bodies const solar_system_bodies =
+        solar_system->massive_bodies();
+    for (int i = SolarSystem::kSun; i <= last_planet; ++i) {
+      Trajectory<ICRFJ2000Ecliptic> const& trajectory =
+          *solar_system->trajectories()[i];
+      bodies.emplace_back(*solar_system_bodies[i]);
+      MassiveBody const& body = bodies.back();
+      parameters.initial.positions.emplace_back(
+          trajectory.last().degrees_of_freedom().position());
+      Velocity<ICRFJ2000Ecliptic> const& v =
+          trajectory.last().degrees_of_freedom().velocity();
+      parameters.initial.momenta.emplace_back(v);
+      initial_energy += 0.5 * body.mass() * InnerProduct(v, v);
+    }
+  }
+  parameters.initial.time = 0 * Second;
+  parameters.tmax = 5 * JulianYear;
+  // We use dense sampling in order to compute average errors, this leads to
+  // more evaluations than reported for FSAL methods.
+  parameters.sampling_period = 1;
+
+  SRKNIntegrator::Solution<Position<ICRFJ2000Ecliptic>,
+                           Velocity<ICRFJ2000Ecliptic>> reference_solution;
+  {
+    std::vector<
+      SRKNIntegrator::Solution<Position<ICRFJ2000Ecliptic>,
+      Velocity<ICRFJ2000Ecliptic>>> reference_solutions;
+    LOG(INFO) << "Computing reference solutions";
+    for (auto const& method : ReferenceMethods()) {
+      LOG(INFO) << method.name;
+      parameters.Δt = 10 * Minute;
+      reference_solutions.emplace_back();
+      method.integrator->
+          SolveTrivialKineticEnergyIncrement<Position<ICRFJ2000Ecliptic>>(
+              std::bind(ComputeGravitationalAcceleration<ICRFJ2000Ecliptic>,
+                        _1, _2, _3, std::cref(bodies)),
+              parameters,
+              &reference_solutions.back());
+    }
+    std::size_t const reference_size = reference_solutions.front().size();
+    for (auto const& solution : reference_solutions) {
+      CHECK(solution.size() == reference_size);
+    }
+    for (std::size_t i = 0; i <= reference_size; ++i) {
+      reference_solution.emplace_back();
+    }
+    for (int b = 0; b <= last_planet; ++b) {
+      for (std::size_t i = 0; i <= reference_size; ++i) {
+        Position<ICRFJ2000Ecliptic>::BarycentreCalculator<double> reference_q;
+        BarycentreCalculator<Velocity<ICRFJ2000Ecliptic>, double> reference_v;
+        for (auto const& solution : reference_solutions) {
+          reference_q.Add(solution[i].positions[b].value, 1);
+          reference_v.Add(solution[i].momenta[b].value, 1);
+        }
+        solution[i].positions.emplace_back(reference_q.Get());
+        solution[i].momenta.emplace_back(reference_v.Get());
+      }
+    }
+    LOG(INFO) << "Done";
+  }
+  std::vector<std::string> q_error_data;
+  std::vector<std::string> v_error_data;
+  std::vector<std::string> e_error_data;
+  std::vector<std::string> names;
+  for (auto const& method : Methods()) {
+    LOG(INFO) << method.name;
+    parameters.Δt = method.stages * 1 * Second;
+    std::vector<Length> q_errors;
+    std::vector<Speed> v_errors;
+    std::vector<Energy> e_errors;
+    std::vector<double> evaluations;
+    for (int i = 0; i < 500; ++i, parameters.Δt /= step_reduction) {
+      int const number_of_evaluations =
+          method.stages *
+              static_cast<int>(std::floor(parameters.tmax / parameters.Δt));
+      LOG_IF(INFO, (i + 1) % 50 == 0) << number_of_evaluations;
+      method.integrator->
+          SolveTrivialKineticEnergyIncrement<Position<ICRFJ2000Ecliptic>>(
+              std::bind(ComputeGravitationalAcceleration<ICRFJ2000Ecliptic>,
+                        _1, _2, _3, std::cref(bodies)),
+              parameters,
+              &solution);
+      std::vector<Length> q_error;
+      std::vector<Speed> v_error;
+      std::vector<Energy> e_error;/*
+      for (auto const& system_state : solution) {
+        q_error.emplace_back(
+            Sqrt(Pow<2>(system_state.positions[0].value -
+                        2 * a * Cos(ω * system_state.time.value)) +
+                 Pow<2>(system_state.positions[1].value -
+                        2 * a * Sin(ω * system_state.time.value))));
+        v_error.emplace_back(
+            Sqrt(Pow<2>(system_state.momenta[0].value -
+                        -2 * v * Sin(ω * system_state.time.value)) +
+                 Pow<2>(system_state.momenta[1].value -
+                        2 * v * Cos(ω * system_state.time.value))));
+        Length const r_actual =
+            Sqrt(Pow<2>(system_state.positions[0].value) +
+                 Pow<2>(system_state.positions[1].value));
+        Speed const v_actual =
+            Sqrt(Pow<2>(system_state.momenta[0].value) +
+                 Pow<2>(system_state.momenta[1].value)) / 2;
+        e_error.emplace_back(
+            AbsoluteError(
+                2 * (m * v * v / 2) - GravitationalConstant * m * m / (2 * a),
+                2 * (m * v_actual * v_actual / 2) -
+                    GravitationalConstant * m * m / r_actual)); 
+      }*/
       // We plot the maximum error, i.e., the L∞ norm of the error.
       // Blanes and Moan (2002), or Blanes, Casas and Ros (2001) tend to use
       // the average error (the normalized L¹ norm) instead.

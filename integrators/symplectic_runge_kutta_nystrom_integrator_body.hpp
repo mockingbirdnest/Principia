@@ -17,7 +17,7 @@
   do {                                                                     \
     Time const step_evaluated = (step);                                    \
     for (int k = 0; k < dimension; ++k) {                                  \
-      Position const Δq = (*Δqstage_previous)[k] +                         \
+      Displacement const Δq = (*Δqstage_previous)[k] +                     \
                               step_evaluated * v_stage[k];                 \
       q_stage[k] = q_last[k].value + Δq;                                   \
       (*Δqstage_current)[k] = Δq;                                          \

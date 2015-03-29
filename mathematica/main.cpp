@@ -5,7 +5,8 @@
 int main(int argc, char const* argv[]) {
   google::InitGoogleLogging(argv[0]);
   google::LogToStderr();
-  principia::mathematica::GenerateSimpleHarmonicMotionWorkErrorGraphs();
-  principia::mathematica::GenerateKeplerProblemWorkErrorGraphs();
+  //principia::mathematica::GenerateSimpleHarmonicMotionWorkErrorGraphs();
+  //principia::mathematica::GenerateKeplerProblemWorkErrorGraphs();
+  principia::mathematica::GenerateSolarSystemPlanetsWorkErrorGraph();
   return 0;
 }
