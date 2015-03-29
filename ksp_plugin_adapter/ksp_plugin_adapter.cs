@@ -337,6 +337,8 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
         Log.Error("Closed Timelike Curve: " +
                   plugin_time + " > " + universal_time +
                   " plugin-universal=" + (plugin_time - universal_time));
+        time_is_advancing_ = false;
+        return;
       } else if (plugin_time == universal_time) {
         time_is_advancing_ = false;
         return;
