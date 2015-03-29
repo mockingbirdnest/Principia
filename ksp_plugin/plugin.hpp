@@ -370,7 +370,7 @@ class Plugin {
 
   // Only one prediction for now, using constant timestep.
   Vessel* predicted_vessel_;
-  Trajectory<Barycentric>* prediction_;
+  Trajectory<Barycentric>* prediction_ = nullptr;
   Time prediction_length_ = 1 * Hour;
   Time prediction_step_ = Δt_;
   std::map<not_null<Celestial*> const,
