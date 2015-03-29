@@ -332,8 +332,11 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
       double universal_time = Planetarium.GetUniversalTime();
       double plugin_time = current_time(plugin_);
       if (plugin_time > universal_time) {
-        Log.Fatal("Closed Timelike Curve: " +
-                  plugin_time + " > " + universal_time);
+        // TODO(Egg): Make this resistant to bad floating points up to 2ULPs,
+        // and make it fatal again.
+        Log.Error("Closed Timelike Curve: " +
+                  plugin_time + " > " + universal_time +
+                  " plugin-universal=" + (plugin_time - universal_time));
       } else if (plugin_time == universal_time) {
         time_is_advancing_ = false;
         return;
