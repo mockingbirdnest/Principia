@@ -63,6 +63,7 @@ void ComputeGravitationalAcceleration(
     std::vector<Position<Frame>> const& q,
     std::vector<Vector<Acceleration, Frame>>* const result,
     std::vector<MassiveBody> const& bodies) {
+  result->assign(result->size(), Vector<Acceleration, Frame>());
   for (int b1 = 1; b1 < q.size(); ++b1) {
     GravitationalParameter const& μ1 = bodies[b1].gravitational_parameter();
     for (int b2 = 0; b2 < b1; ++b2) {

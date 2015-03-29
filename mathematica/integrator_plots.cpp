@@ -140,8 +140,6 @@ std::vector<SimpleHarmonicMotionPlottedIntegrator> ReferenceMethods() {
 void GenerateSimpleHarmonicMotionWorkErrorGraphs() {
   SRKNIntegrator::Parameters<Length, Speed> parameters;
   SRKNIntegrator::Solution<Length, Speed> solution;
-  std::ofstream file;
-  file.open("simple_harmonic_motion_graphs.generated.wl");
   Length const q_amplitude = 1 * Metre;
   Speed const v_amplitude = 1 * Metre / Second;
   AngularFrequency const ω = 1 * Radian / Second;
@@ -204,6 +202,8 @@ void GenerateSimpleHarmonicMotionWorkErrorGraphs() {
     e_error_data.emplace_back(PlottableDataset(evaluations, e_errors));
     names.emplace_back(Escape(method.name));
   }
+  std::ofstream file;
+  file.open("simple_harmonic_motion_graphs.generated.wl");
   file << Assign("qErrorData", q_error_data);
   file << Assign("vErrorData", v_error_data);
   file << Assign("eErrorData", e_error_data);
@@ -214,8 +214,6 @@ void GenerateSimpleHarmonicMotionWorkErrorGraphs() {
 void GenerateKeplerProblemWorkErrorGraphs() {
   SRKNIntegrator::Parameters<Length, Speed> parameters;
   SRKNIntegrator::Solution<Length, Speed> solution;
-  std::ofstream file;
-  file.open("kepler_problem_graphs.generated.wl");
   // Semi-major axis.
   Length const a = 0.5 * Metre;
   // Velocity.
@@ -295,6 +293,8 @@ void GenerateKeplerProblemWorkErrorGraphs() {
     e_error_data.emplace_back(PlottableDataset(evaluations, e_errors));
     names.emplace_back(Escape(method.name));
   }
+  std::ofstream file;
+  file.open("kepler_problem_graphs.generated.wl");
   file << Assign("qErrorData", q_error_data);
   file << Assign("vErrorData", v_error_data);
   file << Assign("eErrorData", e_error_data);
@@ -303,12 +303,8 @@ void GenerateKeplerProblemWorkErrorGraphs() {
 }
 
 void GenerateSolarSystemPlanetsWorkErrorGraph() {
-  std::ofstream file;
-  file.open("planets_graphs.generated.wl");
   SRKNIntegrator::Parameters<Position<ICRFJ2000Ecliptic>,
                              Velocity<ICRFJ2000Ecliptic>> parameters;
-  SRKNIntegrator::Solution<Position<ICRFJ2000Ecliptic>,
-                           Velocity<ICRFJ2000Ecliptic>> solution;
   Energy initial_energy;
   std::vector<MassiveBody> bodies;
   int const last_planet = SolarSystem::kMercury;
@@ -343,7 +339,7 @@ void GenerateSolarSystemPlanetsWorkErrorGraph() {
     }
   }
   parameters.initial.time = 0 * Second;
-  parameters.tmax = 5 * JulianYear;
+  parameters.tmax = 31 * Day;//5 * JulianYear;
   // We use dense sampling in order to compute average errors, this leads to
   // more evaluations than reported for FSAL methods.
   parameters.sampling_period = 1;
@@ -370,23 +366,25 @@ void GenerateSolarSystemPlanetsWorkErrorGraph() {
     for (auto const& solution : reference_solutions) {
       CHECK(solution.size() == reference_size);
     }
-    for (int i = 0; i <= reference_size; ++i) {
+    for (int i = 0; i < reference_size; ++i) {
       reference_solution.emplace_back();
     }
     for (int b = 0; b <= last_planet; ++b) {
-      for (int i = 0; i <= reference_size; ++i) {
+      for (int i = 0; i < reference_size; ++i) {
         Position<ICRFJ2000Ecliptic>::BarycentreCalculator<double> reference_q;
         BarycentreCalculator<Velocity<ICRFJ2000Ecliptic>, double> reference_v;
         for (auto const& solution : reference_solutions) {
           reference_q.Add(solution[i].positions[b].value, 1);
           reference_v.Add(solution[i].momenta[b].value, 1);
         }
-        solution[i].positions.emplace_back(reference_q.Get());
-        solution[i].momenta.emplace_back(reference_v.Get());
+        reference_solution[i].positions.emplace_back(reference_q.Get());
+        reference_solution[i].momenta.emplace_back(reference_v.Get());
       }
     }
     LOG(INFO) << "Done";
   }
+  SRKNIntegrator::Solution<Position<ICRFJ2000Ecliptic>,
+                           Velocity<ICRFJ2000Ecliptic>> solution;
   std::vector<std::string> q_error_data;
   std::vector<std::string> v_error_data;
   std::vector<std::string> e_error_data;
@@ -421,7 +419,7 @@ void GenerateSolarSystemPlanetsWorkErrorGraph() {
         Energy energy;
         for (int body = 0; body <= last_planet; ++body) {
           int t = static_cast<int>(
-                      std::round(system_state.time.value / Δt_reference));
+                      std::round(system_state.time.value / Δt_reference)) - 1;
           q_error =
               std::max(q_error,
                        (system_state.positions[body].value -
@@ -459,6 +457,8 @@ void GenerateSolarSystemPlanetsWorkErrorGraph() {
     e_error_data.emplace_back(PlottableDataset(evaluations, e_errors));
     names.emplace_back(Escape(method.name));
   }
+  std::ofstream file;
+  file.open("planets_graphs.generated.wl");
   file << Assign("qErrorData", q_error_data);
   file << Assign("vErrorData", v_error_data);
   file << Assign("eErrorData", e_error_data);
