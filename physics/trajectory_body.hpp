@@ -125,7 +125,15 @@ void Trajectory<Frame>::ForgetAfter(Instant const& time) {
   if (it == timeline_.end()) {
     CHECK(fork_ != nullptr)
         << "ForgetAfter a nonexistent time for a root trajectory";
-    CHECK_EQ(fork_->timeline->first, time)
+
+    // Skip over empty timelines to check that this is the fork time.
+    Trajectory const* ancestor = parent_;
+    Fork fork = *fork_;
+    while (ancestor != nullptr && fork.timeline == ancestor->timeline_.end()) {
+      fork = *ancestor->fork_;
+      ancestor = ancestor->parent_;
+    }
+    CHECK(ancestor != nullptr && fork.timeline->first == time)
         << "ForgetAfter a nonexistent time for a nonroot trajectory";
   }
 
@@ -335,14 +343,18 @@ template<typename Frame>
 typename Trajectory<Frame>::Iterator&
 Trajectory<Frame>::Iterator::operator++() {
   if (!forks_.empty() && current_ == forks_.front().timeline) {
-    ancestry_.pop_front();
-    forks_.pop_front();
-    current_ = ancestry_.front()->timeline_.begin();
+    // Skip over any empty timeline.
+    do {
+      ancestry_.pop_front();
+      forks_.pop_front();
+      current_ = ancestry_.front()->timeline_.begin();
+    } while (!forks_.empty() && current_ == ancestry_.front()->timeline_.end());
   } else {
     CHECK(current_ != ancestry_.front()->timeline_.end())
         << "Incrementing beyond end of trajectory";
     ++current_;
   }
+  CHECK(!current_is_misplaced());
   return *this;
 }
 
@@ -367,6 +379,7 @@ void Trajectory<Frame>::Iterator::InitializeFirst(
   }
   ancestry_.push_front(ancestor);
   current_ = ancestor->timeline_.begin();
+  CHECK(!current_is_misplaced());
 }
 
 template<typename Frame>
@@ -381,6 +394,7 @@ void Trajectory<Frame>::Iterator::InitializeOnOrAfter(
   }
   ancestry_.push_front(ancestor);
   current_ = ancestor->timeline_.lower_bound(time);
+  CHECK(!current_is_misplaced());
 }
 
 template<typename Frame>
@@ -399,6 +413,7 @@ void Trajectory<Frame>::Iterator::InitializeLast(
   if (!has_empty_timeline) {
     current_ = --ancestor->timeline_.end();
   }
+  CHECK(!current_is_misplaced());
 }
 
 template<typename Frame>
@@ -411,6 +426,11 @@ template<typename Frame>
 not_null<Trajectory<Frame> const*>
 Trajectory<Frame>::Iterator::trajectory() const {
   return ancestry_.back();
+}
+
+template<typename Frame>
+bool Trajectory<Frame>::Iterator::current_is_misplaced() const {
+  return !forks_.empty() && current_ == ancestry_.front()->timeline_.end();
 }
 
 template<typename Frame>

@@ -222,6 +222,8 @@ class Trajectory {
     not_null<Trajectory const*> trajectory() const;
 
    private:
+    // Detects inconsistencies in the placement of |current_|.
+    bool current_is_misplaced() const;
     // |ancestry_| has one more element than |forks_|.  The first element in
     // |ancestry_| is the root.  There is no element in |forks_| for the root.
     // It is therefore empty for a root trajectory.
