@@ -20,10 +20,10 @@ INCLUDE=-I. -I$(DEP_DIR)/glog/src -I$(DEP_DIR)/protobuf/src -I$(DEP_DIR)/benchma
 
 CPPC=clang++
 SHARED_ARGS=-std=c++1y -O3 -g -ggdb -m64 -fPIC -fexceptions -ferror-limit=0 # -Wall -Wpedantic 
-COMPILE_ARGS=-c -stdlib=libc++ -pthread $(SHARED_ARGS) $(INCLUDE)
+COMPILE_ARGS=-c -stdlib=libc++ $(SHARED_ARGS) $(INCLUDE)
 LINK_ARGS=-nostdlib $(SHARED_ARGS) 
 LIB_PATHS=-L$(DEP_DIR)/glog/.libs/ -L$(DEP_DIR)/benchmark/src/ -L$(DEP_DIR)/protobuf/src/.libs/ -L$(DEP_DIR)/gmock/lib/.libs/
-LIBS=-l:libc++.a -l:libprotobuf.a -l:libglog.a
+LIBS=-l:libc++.a -l:libprotobuf.a -l:libglog.a -lpthread
 
 all: $(DEP_DIR) $(LIB) run_tests
 
