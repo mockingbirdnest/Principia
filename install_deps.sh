@@ -4,7 +4,7 @@ echo "apt-get installing: clang git unzip wget libc++-dev binutils make automake
 sudo apt-get install clang git unzip wget libc++-dev binutils make automake libtool curl cmake subversion
 
 mkdir -p deps
-pushd deps
+cd deps
 
 git clone "https://github.com/google/protobuf.git" --depth 1 -b "v3.0.0-alpha-1"
 pushd protobuf
