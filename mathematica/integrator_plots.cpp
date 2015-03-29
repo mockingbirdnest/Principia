@@ -339,7 +339,7 @@ void GenerateSolarSystemPlanetsWorkErrorGraph() {
     }
   }
   parameters.initial.time = 0 * Second;
-  parameters.tmax = 31 * Day;//5 * JulianYear;
+  parameters.tmax = 1 * JulianYear;
   // We use dense sampling in order to compute average errors, this leads to
   // more evaluations than reported for FSAL methods.
   parameters.sampling_period = 1;
