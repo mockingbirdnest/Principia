@@ -1,7 +1,7 @@
 #!/bin/bash
 
 echo "apt-get installing: clang git unzip wget libc++-dev binutils make automake libtool curl cmake subversion"
-sudo apt-get install clang git unzip wget libc++-dev binutils make automake libtool curl cmake
+sudo apt-get install clang git unzip wget libc++-dev binutils make automake libtool curl cmake subversion
 
 mkdir -p deps
 pushd deps
@@ -21,8 +21,8 @@ pushd glog
 make -j 8
 
 popd
-RUN svn checkout http://googlemock.googlecode.com/svn/trunk/ gmock
-RUN svn checkout http://googletest.googlecode.com/svn/trunk/ gtest
+svn checkout http://googlemock.googlecode.com/svn/trunk/ gmock
+svn checkout http://googletest.googlecode.com/svn/trunk/ gtest
 pushd gtest
 wget "https://googletest.googlecode.com/issues/attachment?aid=4640000000&name=GetThreadCountForLinux.patch&token=ABZ6GAdR6MB7HLYD00TNsyrZ2EonGnqpWQ%3A1427585369726" -O thread_count.patch
 patch -p 0 -i thread_count.patch
