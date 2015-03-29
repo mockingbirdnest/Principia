@@ -16,7 +16,7 @@ TEST_INCLUDE=-I$(DEP_DIR)/gmock/include -I$(DEP_DIR)/gtest/include -I$(DEP_DIR)/
 INCLUDE=-I. -I$(DEP_DIR)/glog/src -I$(DEP_DIR)/protobuf/src -I$(DEP_DIR)/benchmark/include $(TEST_INCLUDE)
 
 CPPC=clang++
-SHARED_ARGS=-std=c++1y -stdlib=libc++ -O3 -g -m64 -fPIC -fexceptions -ferror-limit=0 -fno-omit-frame-pointer -fsanitize=address # -Wall -Wpedantic 
+SHARED_ARGS=-std=c++1y -stdlib=libc++ -O3 -g -m64 -fPIC -fexceptions -ferror-limit=0 -fno-omit-frame-pointer # -Wall -Wpedantic 
 COMPILE_ARGS=-c $(SHARED_ARGS) $(INCLUDE)
 LINK_ARGS=$(SHARED_ARGS) 
 LIB_PATHS=-L$(DEP_DIR)/glog/.libs/ -L$(DEP_DIR)/benchmark/src/ -L$(DEP_DIR)/protobuf/src/.libs/ -L$(DEP_DIR)/gmock/lib/.libs/
