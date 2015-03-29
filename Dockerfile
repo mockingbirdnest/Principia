@@ -50,5 +50,7 @@ RUN cp "../documentation/Setup Files/chromium_sparse_checkout.txt" .git/info/spa
 RUN git checkout
 RUN git am "../documentation/Setup Files/chromium.patch"
 
+ENV ASAN_SYMBOLIZER_PATH=/usr/bin/llvm-symbolizer-3.5
+
 WORKDIR /opt/principia/src
 CMD make -j4 DEP_DIR=..

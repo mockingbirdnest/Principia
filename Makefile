@@ -1,7 +1,4 @@
 CPP_SOURCES=ksp_plugin/plugin.cpp ksp_plugin/interface.cpp ksp_plugin/physics_bubble.cpp 
-#CPP_SOURCES=$(wildcard testing_utilities/*.cpp) 
-#CPP_SOURCES=physics/n_body_system_test.cpp
-#$(wildcard quantities/*.cpp) $(wildcard base/*.cpp) $(wildcard integrators/*.cpp) $(wildcard ksp_plugin/*.cpp) $(wildcard geometry/*.cpp) $(wildcard physics/*.cpp) $(wildcard benchmarks/*.cpp)
 PROTO_SOURCES=$(wildcard */*.proto)
 PROTO_CC_SOURCES=$(wildcard serialization/*.cc)
 PROTO_OBJECTS=$(PROTO_CC_SOURCES:.cc=.o)
@@ -19,7 +16,7 @@ TEST_INCLUDE=-I$(DEP_DIR)/gmock/include -I$(DEP_DIR)/gtest/include -I$(DEP_DIR)/
 INCLUDE=-I. -I$(DEP_DIR)/glog/src -I$(DEP_DIR)/protobuf/src -I$(DEP_DIR)/benchmark/include $(TEST_INCLUDE)
 
 CPPC=clang++
-SHARED_ARGS=-std=c++1y -stdlib=libc++ -O3 -g -ggdb -m64 -fPIC -fexceptions -ferror-limit=0 # -Wall -Wpedantic 
+SHARED_ARGS=-std=c++1y -stdlib=libc++ -O3 -g -m64 -fPIC -fexceptions -ferror-limit=0 -fno-omit-frame-pointer -fsanitize=address # -Wall -Wpedantic 
 COMPILE_ARGS=-c $(SHARED_ARGS) $(INCLUDE)
 LINK_ARGS=$(SHARED_ARGS) 
 LIB_PATHS=-L$(DEP_DIR)/glog/.libs/ -L$(DEP_DIR)/benchmark/src/ -L$(DEP_DIR)/protobuf/src/.libs/ -L$(DEP_DIR)/gmock/lib/.libs/
