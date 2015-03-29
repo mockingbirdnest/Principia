@@ -212,6 +212,8 @@ TEST_F(TrajectoryTest, ForkAtLast) {
   not_null<Trajectory<World>*> const fork1 = massive_trajectory_->NewFork(t3_);
   not_null<Trajectory<World>*> const fork2 =
       fork1->NewFork(fork1->last().time());
+  not_null<Trajectory<World>*> const fork3 =
+      fork2->NewFork(fork1->last().time());
   EXPECT_EQ(t3_, massive_trajectory_->last().time());
   EXPECT_EQ(t3_, fork1->last().time());
 
@@ -526,12 +528,12 @@ TEST_F(TrajectoryDeathTest, ForgetAfterError) {
   EXPECT_DEATH({
     massive_trajectory_->Append(t1_, d1_);
     massive_trajectory_->ForgetAfter(t2_);
-  }, "nonexistent time.* root");
+  }, "nonexistent time");
   EXPECT_DEATH({
     massive_trajectory_->Append(t1_, d1_);
     not_null<Trajectory<World>*> const fork = massive_trajectory_->NewFork(t1_);
     fork->ForgetAfter(t2_);
-  }, "nonexistent time.* nonroot");
+  }, "nonexistent time");
 }
 
 TEST_F(TrajectoryTest, ForgetAfterSuccess) {

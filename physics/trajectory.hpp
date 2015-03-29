@@ -260,6 +260,10 @@ class Trajectory {
              not_null<Trajectory*> const parent,
              Fork const& fork);
 
+  // Return true if the |time| is in the timeline of this trajectory or at its
+  // fork point.
+  bool InTimelineOrAtFork(Instant const time) const;
+
   // This trajectory need not be a root.
   void WriteSubTreeToMessage(
       not_null<serialization::Trajectory*> const message) const;
