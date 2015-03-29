@@ -312,12 +312,13 @@ void GenerateSolarSystemPlanetsWorkErrorGraph() {
   Energy initial_energy;
   std::vector<MassiveBody> bodies;
   int const last_planet = SolarSystem::kMercury;
+  Time const Δt_reference = 10 * Minute;
   {
     not_null<std::unique_ptr<SolarSystem>> const solar_system =
         SolarSystem::AtСпутник1Launch(SolarSystem::Accuracy::kMajorBodiesOnly);
     SolarSystem::Bodies const solar_system_bodies =
         solar_system->massive_bodies();
-    for (int i = SolarSystem::kSun; i <= last_planet; ++i) {
+    for (int i = 0; i <= last_planet; ++i) {
       Trajectory<ICRFJ2000Ecliptic> const& trajectory =
           *solar_system->trajectories()[i];
       bodies.emplace_back(*solar_system_bodies[i]);
@@ -327,7 +328,18 @@ void GenerateSolarSystemPlanetsWorkErrorGraph() {
       Velocity<ICRFJ2000Ecliptic> const& v =
           trajectory.last().degrees_of_freedom().velocity();
       parameters.initial.momenta.emplace_back(v);
+      // Kinetic energy.
       initial_energy += 0.5 * body.mass() * InnerProduct(v, v);
+    }
+
+    for (int i = 1; i <= last_planet; ++i) {
+      for (int j = 0; j < i; ++j) {
+        // Potential energy.
+        initial_energy -=
+            GravitationalConstant * bodies[i].mass() * bodies[j].mass() /
+                (parameters.initial.positions[i].value -
+                 parameters.initial.positions[j].value).Norm();
+      }
     }
   }
   parameters.initial.time = 0 * Second;
@@ -345,7 +357,7 @@ void GenerateSolarSystemPlanetsWorkErrorGraph() {
     LOG(INFO) << "Computing reference solutions";
     for (auto const& method : ReferenceMethods()) {
       LOG(INFO) << method.name;
-      parameters.Δt = 10 * Minute;
+      parameters.Δt = Δt_reference;
       reference_solutions.emplace_back();
       method.integrator->
           SolveTrivialKineticEnergyIncrement<Position<ICRFJ2000Ecliptic>>(
@@ -354,15 +366,15 @@ void GenerateSolarSystemPlanetsWorkErrorGraph() {
               parameters,
               &reference_solutions.back());
     }
-    std::size_t const reference_size = reference_solutions.front().size();
+    int const reference_size = reference_solutions.front().size();
     for (auto const& solution : reference_solutions) {
       CHECK(solution.size() == reference_size);
     }
-    for (std::size_t i = 0; i <= reference_size; ++i) {
+    for (int i = 0; i <= reference_size; ++i) {
       reference_solution.emplace_back();
     }
     for (int b = 0; b <= last_planet; ++b) {
-      for (std::size_t i = 0; i <= reference_size; ++i) {
+      for (int i = 0; i <= reference_size; ++i) {
         Position<ICRFJ2000Ecliptic>::BarycentreCalculator<double> reference_q;
         BarycentreCalculator<Velocity<ICRFJ2000Ecliptic>, double> reference_v;
         for (auto const& solution : reference_solutions) {
@@ -379,14 +391,19 @@ void GenerateSolarSystemPlanetsWorkErrorGraph() {
   std::vector<std::string> v_error_data;
   std::vector<std::string> e_error_data;
   std::vector<std::string> names;
+  double const step_reduction = 1.015;
   for (auto const& method : Methods()) {
     LOG(INFO) << method.name;
-    parameters.Δt = method.stages * 1 * Second;
+    parameters.Δt = method.stages * 30 * Day;
     std::vector<Length> q_errors;
     std::vector<Speed> v_errors;
     std::vector<Energy> e_errors;
     std::vector<double> evaluations;
-    for (int i = 0; i < 500; ++i, parameters.Δt /= step_reduction) {
+    for (int i = 0;
+         parameters.Δt > 0 * Second;
+         ++i,
+         parameters.Δt = Δt_reference *
+             std::floor((parameters.Δt / step_reduction) / Δt_reference)) {
       int const number_of_evaluations =
           method.stages *
               static_cast<int>(std::floor(parameters.tmax / parameters.Δt));
@@ -397,38 +414,44 @@ void GenerateSolarSystemPlanetsWorkErrorGraph() {
                         _1, _2, _3, std::cref(bodies)),
               parameters,
               &solution);
-      std::vector<Length> q_error;
-      std::vector<Speed> v_error;
-      std::vector<Energy> e_error;/*
+      Length q_error;
+      Speed v_error;
+      Energy e_error;
       for (auto const& system_state : solution) {
-        q_error.emplace_back(
-            Sqrt(Pow<2>(system_state.positions[0].value -
-                        2 * a * Cos(ω * system_state.time.value)) +
-                 Pow<2>(system_state.positions[1].value -
-                        2 * a * Sin(ω * system_state.time.value))));
-        v_error.emplace_back(
-            Sqrt(Pow<2>(system_state.momenta[0].value -
-                        -2 * v * Sin(ω * system_state.time.value)) +
-                 Pow<2>(system_state.momenta[1].value -
-                        2 * v * Cos(ω * system_state.time.value))));
-        Length const r_actual =
-            Sqrt(Pow<2>(system_state.positions[0].value) +
-                 Pow<2>(system_state.positions[1].value));
-        Speed const v_actual =
-            Sqrt(Pow<2>(system_state.momenta[0].value) +
-                 Pow<2>(system_state.momenta[1].value)) / 2;
-        e_error.emplace_back(
-            AbsoluteError(
-                2 * (m * v * v / 2) - GravitationalConstant * m * m / (2 * a),
-                2 * (m * v_actual * v_actual / 2) -
-                    GravitationalConstant * m * m / r_actual)); 
-      }*/
+        Energy energy;
+        for (int body = 0; body <= last_planet; ++body) {
+          int t = static_cast<int>(
+                      std::round(system_state.time.value / Δt_reference));
+          q_error =
+              std::max(q_error,
+                       (system_state.positions[body].value -
+                        reference_solution[t].positions[body].value).Norm());
+          v_error =
+              std::max(v_error,
+                       (system_state.momenta[body].value -
+                        reference_solution[t].momenta[body].value).Norm());
+          // Kinetic energy.
+          energy += 0.5 * bodies[body].mass() *
+                        InnerProduct(system_state.momenta[body].value,
+                                     system_state.momenta[body].value);
+        }
+        for (int i = 1; i <= last_planet; ++i) {
+          for (int j = 0; j < i; ++j) {
+            // Potential energy.
+            energy -=
+                GravitationalConstant * bodies[i].mass() * bodies[j].mass() /
+                    (system_state.positions[i].value -
+                     system_state.positions[j].value).Norm();
+          }
+        }
+        e_error = std::max(e_error, AbsoluteError(initial_energy, energy));
+      }
       // We plot the maximum error, i.e., the L∞ norm of the error.
       // Blanes and Moan (2002), or Blanes, Casas and Ros (2001) tend to use
       // the average error (the normalized L¹ norm) instead.
-      q_errors.emplace_back(*std::max_element(q_error.begin(), q_error.end()));
-      v_errors.emplace_back(*std::max_element(v_error.begin(), v_error.end()));
-      e_errors.emplace_back(*std::max_element(e_error.begin(), e_error.end()));
+      q_errors.emplace_back(q_error);
+      v_errors.emplace_back(v_error);
+      e_errors.emplace_back(e_error);
       evaluations.emplace_back(number_of_evaluations);
     }
     q_error_data.emplace_back(PlottableDataset(evaluations, q_errors));
