@@ -37,5 +37,5 @@ Export[
  "planets_velocity_error.cdf",
  IntegrationErrorPlot[vErrorData, names, "maximal velocity error", 1.*^4], "CDF"];
 Export[
- "planets_velocity_error.cdf",
- IntegrationErrorPlot[vErrorData, names, "maximal energy error", 1.*^35], "CDF"];
+ "planets_energy_error.cdf",
+ IntegrationErrorPlot[eErrorData, names, "maximal energy error", 1.*^35], "CDF"];
