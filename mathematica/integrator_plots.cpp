@@ -1,6 +1,7 @@
 ﻿
 #include "mathematica/integrator_plots.hpp"
 
+#include <algorithm>
 #include <fstream>  // NOLINT(readability/streams)
 #include <iostream>  // NOLINT(readability/streams)
 #include <string>
