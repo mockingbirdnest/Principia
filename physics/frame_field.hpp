@@ -16,8 +16,13 @@ namespace physics {
 // time |Instant|, described in the coordinates of the global spacetime chart
 // |Frame| as a rotation of the standard basis.
 template<typename Frame>
-using SpacelikeFrameField =
+using FrameField =
     std::function<Rotation<Frame, Frame>(Position<Frame>, Instant)>;
+
+template<typename Frame>
+FrameField<Frame> CoordinateField();
 
 }  // namespace physics
 }  // namespace principia
+
+#include "physics/frame_field_body.hpp"
