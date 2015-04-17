@@ -9,12 +9,12 @@ namespace principia {
 namespace physics {
 
 template<typename Frame>
-FrameField<Frame> CoordinateField() {
-  auto const identity =
-      [](Position<Frame>, Instant) {
+FrameField<Frame> CoordinateFrame() {
+  auto const identically_identity =
+      [](Position<Frame>, Instant) -> Rotation<Frame, Frame> {
         return Rotation<Frame, Frame>::Identity();
       };
-  return identity;
+  return identically_identity;
 }
 
 }  // namespace physics

@@ -20,7 +20,7 @@ using FrameField =
     std::function<Rotation<Frame, Frame>(Position<Frame>, Instant)>;
 
 template<typename Frame>
-FrameField<Frame> CoordinateField();
+FrameField<Frame> CoordinateFrame();
 
 }  // namespace physics
 }  // namespace principia
