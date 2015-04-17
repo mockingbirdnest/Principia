@@ -349,8 +349,9 @@ void GenerateSolarSystemPlanetsWorkErrorGraph() {
                            Velocity<ICRFJ2000Ecliptic>> reference_solution;
   {
     std::vector<
-      SRKNIntegrator::Solution<Position<ICRFJ2000Ecliptic>,
-      Velocity<ICRFJ2000Ecliptic>>> reference_solutions;
+        SRKNIntegrator::Solution<
+            Position<ICRFJ2000Ecliptic>,
+            Velocity<ICRFJ2000Ecliptic>>> reference_solutions;
     LOG(INFO) << "Computing reference solutions";
     for (auto const& method : ReferenceMethods()) {
       LOG(INFO) << method.name;
@@ -365,7 +366,7 @@ void GenerateSolarSystemPlanetsWorkErrorGraph() {
     }
     int const reference_size = reference_solutions.front().size();
     for (auto const& solution : reference_solutions) {
-      CHECK(solution.size() == reference_size);
+      CHECK_EQ(solution.size(), reference_size);
     }
     for (int i = 0; i < reference_size; ++i) {
       reference_solution.emplace_back();

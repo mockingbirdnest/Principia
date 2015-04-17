@@ -10,8 +10,8 @@ namespace principia {
 
 using geometry::Displacement;
 using geometry::InnerProduct;
-using quantities::Force;
 using quantities::Exponentiation;
+using quantities::Force;
 using quantities::GravitationalParameter;
 using quantities::Length;
 using quantities::Mass;

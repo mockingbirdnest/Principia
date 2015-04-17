@@ -169,14 +169,12 @@ class Quantity {
 
   template<typename LDimensions, typename RDimensions>
   friend internal::Product<Quantity<LDimensions>, Quantity<RDimensions>>
-  operator*(
-      Quantity<LDimensions> const& left,
-      Quantity<RDimensions> const& right);
+  operator*(Quantity<LDimensions> const& left,
+            Quantity<RDimensions> const& right);
   template<typename LDimensions, typename RDimensions>
   friend internal::Quotient<Quantity<LDimensions>, Quantity<RDimensions>>
-  operator/(
-      Quantity<LDimensions> const& left,
-      Quantity<RDimensions> const& right);
+  operator/(Quantity<LDimensions> const& left,
+            Quantity<RDimensions> const& right);
   template<typename RDimensions>
   friend Quantity<RDimensions> operator*(double const left,
                                          Quantity<RDimensions> const& right);

@@ -41,6 +41,10 @@
 #endif
 
 namespace principia {
+
+using quantities::Difference;
+using quantities::Quotient;
+
 namespace integrators {
 
 inline SRKNIntegrator const& McLachlanAtela1992Order4Optimal() {
