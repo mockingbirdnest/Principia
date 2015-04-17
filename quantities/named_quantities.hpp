@@ -3,22 +3,28 @@
 #include "quantities/quantities.hpp"
 
 namespace principia {
+
 namespace quantities {
+
+// |Variation<T>| is the type of the time derivative of a |T|-valued function.
+template<typename T>
+using Variation = Quotient<Difference<T>, Time>;
+
 // General mechanics
-using Speed        = Quotient<Length, Time>;
-using Acceleration = Quotient<Speed, Time>;
+using Speed        = Variation<Length>;
+using Acceleration = Variation<Speed>;
 using Momentum     = Product<Mass, Speed>;
-using Force        = Quotient<Momentum, Time>;
+using Force        = Variation<Momentum>;
 using Stiffness    = Quotient<Force, Length>;
 
 using Energy = Product<Force, Length>;
-using Power  = Quotient<Energy, Time>;
+using Power  = Variation<Energy>;
 using Action = Product<Energy, Time>;
 
-using AngularFrequency    = Quotient<Angle, Time>;
-using AngularAcceleration = Quotient<AngularFrequency, Time>;
+using AngularFrequency    = Variation<Angle>;
+using AngularAcceleration = Variation<AngularFrequency>;
 using AngularMomentum     = Quotient<Action, Angle>;
-using Torque              = Quotient<AngularMomentum, Time>;
+using Torque              = Variation<AngularMomentum>;
 using MomentOfInertia     = Quotient<Torque, AngularAcceleration>;
 
 using GravitationalParameter = Product<Length, Product<Speed, Speed>>;
