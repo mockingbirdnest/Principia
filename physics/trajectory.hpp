@@ -32,9 +32,10 @@ class Trajectory {
   using Children = std::multimap<Instant, Trajectory>;
   using Timeline = std::map<Instant, DegreesOfFreedom<Frame>>;
 
-  // The two iterators denote entries in the containers of the parent, and they
-  // are never past the end.  Therefore, they are not invalidated by swapping
-  // the containers of the parent.
+  // The two iterators denote entries in the containers of the parent.
+  // |timeline| is past the end if the fork happened at the fork point of the
+  // grandparent.  Note that this implies that the containers should not be
+  // swapped.
   struct Fork {
     typename Children::const_iterator children;
     typename Timeline::const_iterator timeline;
@@ -108,12 +109,14 @@ class Trajectory {
               DegreesOfFreedom<Frame> const& degrees_of_freedom);
 
   // Removes all data for times (strictly) greater than |time|, as well as all
-  // child trajectories forked at times (strictly) greater than |time|.
+  // child trajectories forked at times (strictly) greater than |time|.  |time|
+  // must exist in this trajectory, and must be at or after the fork time, if
+  // any.
   void ForgetAfter(Instant const& time);
 
   // Removes all data for times less than or equal to |time|, as well as all
   // child trajectories forked at times less than or equal to |time|.  This
-  // trajectory must be a root.
+  // trajectory must be a root.  |time| must exist in this trajectory.
   void ForgetBefore(Instant const& time);
 
   // Creates a new child trajectory forked at time |time|, and returns it.  The
@@ -125,8 +128,8 @@ class Trajectory {
   // ForgetBefore on the parent trajectory with an argument that causes the time
   // |time| to be removed deletes the child trajectory.  Deleting the parent
   // trajectory deletes all child trajectories.  |time| must be one of the times
-  // of the current trajectory (as returned by Times()).  No transfer of
-  // ownership.
+  // of this trajectory, and must be at or after the fork time, if any.  No
+  // transfer of ownership.
   not_null<Trajectory*> NewFork(Instant const& time);
 
   // Deletes the child trajectory denoted by |*fork|, which must be a pointer
@@ -220,6 +223,8 @@ class Trajectory {
     not_null<Trajectory const*> trajectory() const;
 
    private:
+    // Detects inconsistencies in the placement of |current_|.
+    bool current_is_misplaced() const;
     // |ancestry_| has one more element than |forks_|.  The first element in
     // |ancestry_| is the root.  There is no element in |forks_| for the root.
     // It is therefore empty for a root trajectory.
@@ -255,6 +260,10 @@ class Trajectory {
   Trajectory(not_null<Body const*> const body,
              not_null<Trajectory*> const parent,
              Fork const& fork);
+
+  // Returns true if the |time| is in the timeline of this trajectory or at its
+  // fork point.
+  bool InTimelineOrAtFork(Instant const time) const;
 
   // This trajectory need not be a root.
   void WriteSubTreeToMessage(

@@ -205,6 +205,77 @@ TEST_F(TrajectoryTest, ForkSuccess) {
   EXPECT_THAT(fork->body<MassiveBody>(), Eq(&massive_body_));
 }
 
+TEST_F(TrajectoryTest, ForkAtLast) {
+  massive_trajectory_->Append(t1_, d1_);
+  massive_trajectory_->Append(t2_, d2_);
+  massive_trajectory_->Append(t3_, d3_);
+  not_null<Trajectory<World>*> const fork1 = massive_trajectory_->NewFork(t3_);
+  not_null<Trajectory<World>*> const fork2 =
+      fork1->NewFork(fork1->last().time());
+  not_null<Trajectory<World>*> const fork3 =
+      fork2->NewFork(fork1->last().time());
+  EXPECT_EQ(t3_, massive_trajectory_->last().time());
+  EXPECT_EQ(t3_, fork1->last().time());
+
+  std::map<Instant, Position<World>> positions = fork2->Positions();
+  std::map<Instant, Velocity<World>> velocities = fork2->Velocities();
+  std::list<Instant> times = fork2->Times();
+  EXPECT_THAT(positions, ElementsAre(testing::Pair(t1_, q1_),
+                                     testing::Pair(t2_, q2_),
+                                     testing::Pair(t3_, q3_)));
+  EXPECT_THAT(velocities, ElementsAre(testing::Pair(t1_, p1_),
+                                      testing::Pair(t2_, p2_),
+                                      testing::Pair(t3_, p3_)));
+  EXPECT_THAT(times, ElementsAre(t1_, t2_, t3_));
+  EXPECT_EQ(q3_, fork2->last().degrees_of_freedom().position());
+  EXPECT_EQ(p3_, fork2->last().degrees_of_freedom().velocity());
+  EXPECT_EQ(t3_, fork2->last().time());
+
+  fork2->ForgetAfter(t3_);
+  positions = fork2->Positions();
+  velocities = fork2->Velocities();
+  times = fork2->Times();
+  EXPECT_THAT(positions, ElementsAre(testing::Pair(t1_, q1_),
+                                     testing::Pair(t2_, q2_),
+                                     testing::Pair(t3_, q3_)));
+  EXPECT_THAT(velocities, ElementsAre(testing::Pair(t1_, p1_),
+                                      testing::Pair(t2_, p2_),
+                                      testing::Pair(t3_, p3_)));
+  EXPECT_THAT(times, ElementsAre(t1_, t2_, t3_));
+  EXPECT_EQ(q3_, fork2->last().degrees_of_freedom().position());
+  EXPECT_EQ(p3_, fork2->last().degrees_of_freedom().velocity());
+  EXPECT_EQ(t3_, fork2->last().time());
+
+  fork1->Append(t4_, d4_);
+  positions = fork2->Positions();
+  velocities = fork2->Velocities();
+  times = fork2->Times();
+  EXPECT_THAT(positions, ElementsAre(testing::Pair(t1_, q1_),
+                                     testing::Pair(t2_, q2_),
+                                     testing::Pair(t3_, q3_)));
+  EXPECT_THAT(velocities, ElementsAre(testing::Pair(t1_, p1_),
+                                      testing::Pair(t2_, p2_),
+                                      testing::Pair(t3_, p3_)));
+  EXPECT_THAT(times, ElementsAre(t1_, t2_, t3_));
+  EXPECT_EQ(q3_, fork2->last().degrees_of_freedom().position());
+  EXPECT_EQ(p3_, fork2->last().degrees_of_freedom().velocity());
+  EXPECT_EQ(t3_, fork2->last().time());
+
+  positions = fork3->Positions();
+  velocities = fork3->Velocities();
+  times = fork3->Times();
+  EXPECT_THAT(positions, ElementsAre(testing::Pair(t1_, q1_),
+                                     testing::Pair(t2_, q2_),
+                                     testing::Pair(t3_, q3_)));
+  EXPECT_THAT(velocities, ElementsAre(testing::Pair(t1_, p1_),
+                                      testing::Pair(t2_, p2_),
+                                      testing::Pair(t3_, p3_)));
+  EXPECT_THAT(times, ElementsAre(t1_, t2_, t3_));
+  EXPECT_EQ(q3_, fork3->last().degrees_of_freedom().position());
+  EXPECT_EQ(p3_, fork3->last().degrees_of_freedom().velocity());
+  EXPECT_EQ(t3_, fork3->last().time());
+}
+
 TEST_F(TrajectoryTest, IteratorSerializationSuccess) {
   massive_trajectory_->Append(t1_, d1_);
   massive_trajectory_->Append(t2_, d2_);
@@ -486,12 +557,12 @@ TEST_F(TrajectoryDeathTest, ForgetAfterError) {
   EXPECT_DEATH({
     massive_trajectory_->Append(t1_, d1_);
     massive_trajectory_->ForgetAfter(t2_);
-  }, "nonexistent time.* root");
+  }, "nonexistent time");
   EXPECT_DEATH({
     massive_trajectory_->Append(t1_, d1_);
     not_null<Trajectory<World>*> const fork = massive_trajectory_->NewFork(t1_);
     fork->ForgetAfter(t2_);
-  }, "nonexistent time.* nonroot");
+  }, "nonexistent time");
 }
 
 TEST_F(TrajectoryTest, ForgetAfterSuccess) {
