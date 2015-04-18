@@ -260,7 +260,7 @@ class Trajectory {
              not_null<Trajectory*> const parent,
              Fork const& fork);
 
-  // Return true if the |time| is in the timeline of this trajectory or at its
+  // Returns true if the |time| is in the timeline of this trajectory or at its
   // fork point.
   bool InTimelineOrAtFork(Instant const time) const;
 
