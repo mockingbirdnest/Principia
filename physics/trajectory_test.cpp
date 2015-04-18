@@ -260,6 +260,20 @@ TEST_F(TrajectoryTest, ForkAtLast) {
   EXPECT_EQ(q3_, fork2->last().degrees_of_freedom().position());
   EXPECT_EQ(p3_, fork2->last().degrees_of_freedom().velocity());
   EXPECT_EQ(t3_, fork2->last().time());
+
+  positions = fork3->Positions();
+  velocities = fork3->Velocities();
+  times = fork3->Times();
+  EXPECT_THAT(positions, ElementsAre(testing::Pair(t1_, q1_),
+                                     testing::Pair(t2_, q2_),
+                                     testing::Pair(t3_, q3_)));
+  EXPECT_THAT(velocities, ElementsAre(testing::Pair(t1_, p1_),
+                                      testing::Pair(t2_, p2_),
+                                      testing::Pair(t3_, p3_)));
+  EXPECT_THAT(times, ElementsAre(t1_, t2_, t3_));
+  EXPECT_EQ(q3_, fork3->last().degrees_of_freedom().position());
+  EXPECT_EQ(p3_, fork3->last().degrees_of_freedom().velocity());
+  EXPECT_EQ(t3_, fork3->last().time());
 }
 
 TEST_F(TrajectoryTest, IteratorSerializationSuccess) {

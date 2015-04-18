@@ -326,12 +326,16 @@ template<typename Frame>
 typename Trajectory<Frame>::Iterator&
 Trajectory<Frame>::Iterator::operator++() {
   if (!forks_.empty() && current_ == forks_.front().timeline) {
-    // Skip over any empty timeline.
+    // Skip over any timeline where the fork is at |end()|.  These are the ones
+    // that were forked at the fork point of their parent.  Looking at the
+    // |begin()| of the parent would be wrong (the fork would see changes to its
+    // parent after the fork point).
     do {
       ancestry_.pop_front();
       forks_.pop_front();
-      current_ = ancestry_.front()->timeline_.begin();
-    } while (!forks_.empty() && current_ == ancestry_.front()->timeline_.end());
+    } while (!forks_.empty() &&
+             forks_.front().timeline == ancestry_.front()->timeline_.end());
+    current_ = ancestry_.front()->timeline_.begin();
   } else {
     CHECK(current_ != ancestry_.front()->timeline_.end())
         << "Incrementing beyond end of trajectory";
@@ -383,17 +387,23 @@ void Trajectory<Frame>::Iterator::InitializeOnOrAfter(
 template<typename Frame>
 void Trajectory<Frame>::Iterator::InitializeLast(
     not_null<Trajectory const*> const trajectory) {
-  // We don't need to keep track of the forks or of the ancestry.
-  bool has_empty_timeline = false;
   not_null<Trajectory const*> ancestor = trajectory;
-  while (ancestor->timeline_.empty()) {
-    has_empty_timeline = true;
-    CHECK(ancestor->fork_ != nullptr) << "Empty trajectory";
+  if (ancestor->timeline_.empty()) {
+    // The last trajectory is empty.  We go up until we find a trajectory which
+    // is not forked at the fork point of its parent.  We must keep track of
+    // that part of the ancestry so that |operator++| correctly detect the end
+    // of the iteration.
+    while (ancestor->parent_ != nullptr &&
+           ancestor->fork_->timeline == ancestor->parent_->timeline_.end()) {
+      ancestry_.push_front(ancestor);
+      forks_.push_front(*ancestor->fork_);
+      ancestor = ancestor->parent_;
+    }
+    CHECK(ancestor->parent_ != nullptr) << "Empty trajectory";
+    ancestry_.push_front(ancestor->parent_);
     current_ = ancestor->fork_->timeline;
-    ancestor = ancestor->parent_;
-  }
-  ancestry_.push_front(ancestor);
-  if (!has_empty_timeline) {
+  } else {
+    ancestry_.push_front(ancestor);
     current_ = --ancestor->timeline_.end();
   }
   CHECK(!current_is_misplaced());
