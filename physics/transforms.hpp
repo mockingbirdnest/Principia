@@ -6,6 +6,7 @@
 #include <utility>
 
 #include "base/not_null.hpp"
+#include "physics/frame_field.hpp"
 #include "physics/trajectory.hpp"
 
 namespace principia {
@@ -64,6 +65,12 @@ class Transforms {
   typename Trajectory<ThroughFrame>:: template TransformingIterator<ToFrame>
   second(Trajectory<ThroughFrame> const& through_trajectory);
 
+  // The coordinate frame of |ThroughFrame|, expressed in the coordinates of
+  // |ToFrame|.
+  // This need only return a result when t is the common last time of the to_*
+  // trajectories of the defining bodies, it may fail otherwise.
+  FrameField<ToFrame> coordinate_frame() const;
+
  private:
   typename Trajectory<FromFrame>::template Transform<ThroughFrame> first_;
   typename Trajectory<ThroughFrame>::template Transform<ToFrame> second_;
@@ -73,6 +80,8 @@ class Transforms {
   // freedom.
   std::map<std::pair<not_null<Trajectory<FromFrame> const*>, Instant const>,
            DegreesOfFreedom<ThroughFrame>> first_cache_;
+
+  FrameField<ToFrame> coordinate_frame_;
 };
 
 }  // namespace physics

@@ -74,6 +74,8 @@ Transforms<FromFrame, ThroughFrame, ToFrame>::BodyCentredNonRotating(
   not_null<std::unique_ptr<Transforms>> transforms =
       make_not_null_unique<Transforms>();
 
+  transforms->coordinate_frame_ = CoordinateFrame<ToFrame>();
+
   // From the perspective of the lambda the following variable is really |this|,
   // hence the name.
   not_null<Transforms*> that = transforms.get();
@@ -145,6 +147,40 @@ Transforms<FromFrame, ThroughFrame, ToFrame>::BarycentricRotating(
       LazyTrajectory<ToFrame> const& to_secondary_trajectory) {
   not_null<std::unique_ptr<Transforms>> transforms =
       make_not_null_unique<Transforms>();
+
+  transforms->coordinate_frame_ =
+      [to_primary_trajectory, to_secondary_trajectory](
+          Position<ToFrame> q,
+          Instant t) {
+    CHECK_EQ(t, to_primary_trajectory().last().time());
+    DegreesOfFreedom<ToFrame> const& last_primary_degrees_of_freedom =
+        to_primary_trajectory().last().degrees_of_freedom();
+    DegreesOfFreedom<ToFrame> const& last_secondary_degrees_of_freedom =
+        to_secondary_trajectory().last().degrees_of_freedom();
+    DegreesOfFreedom<ToFrame> const last_barycentre_degrees_of_freedom =
+        Barycentre<ToFrame, GravitationalParameter>(
+            {last_primary_degrees_of_freedom,
+             last_secondary_degrees_of_freedom},
+            {to_primary_trajectory().template body<MassiveBody>()->
+                 gravitational_parameter(),
+             to_secondary_trajectory().template body<MassiveBody>()->
+                 gravitational_parameter()});
+    Rotation<ToFrame, ThroughFrame>
+        from_basis_of_last_barycentric_frame_to_standard_basis =
+            Rotation<ToFrame, ThroughFrame>::Identity();
+    Bivector<AngularFrequency, ToFrame> angular_frequency;
+    FromBasisOfBarycentricFrameToStandardBasis<ToFrame, ThroughFrame>(
+        last_barycentre_degrees_of_freedom,
+        last_primary_degrees_of_freedom,
+        last_secondary_degrees_of_freedom,
+        &from_basis_of_last_barycentric_frame_to_standard_basis,
+        &angular_frequency);
+    Rotation<ThroughFrame, ToFrame> const
+        from_standard_basis_to_basis_of_last_barycentric_frame =
+            from_basis_of_last_barycentric_frame_to_standard_basis.Inverse();
+        return from_standard_basis_to_basis_of_last_barycentric_frame *
+                   Rotation<ToFrame, ThroughFrame>::Identity();
+  };
 
   // From the perspective of the lambda the following variable is really |this|,
   // hence the name.
