@@ -66,7 +66,7 @@ class Transforms {
   second(Trajectory<ThroughFrame> const& through_trajectory);
 
   // The coordinate frame of |ThroughFrame|, expressed in the coordinates of
-  // |ToFrame|.
+  // |ToFrame| at the current time.
   FrameField<ToFrame> coordinate_frame() const;
 
  private:

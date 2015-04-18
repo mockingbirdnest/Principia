@@ -370,6 +370,27 @@ Velocity<World> Plugin::BubbleVelocityCorrection(
                                                 reference_body));
 }
 
+FrameField<World> Plugin::NavBall(
+    not_null<
+        Transforms<Barycentric,
+                   Rendering,
+                   Barycentric>*> const transforms,
+    Position<World> const& sun_world_position) const {
+  auto const rotate_to_world =
+      Rotation<WorldSun, World>::Identity() * PlanetariumRotation();
+  auto const positions_from_world =
+      AffineMap<World, Barycentric, Length, Rotation>(
+          sun_world_position,
+          sun_->prolongation().last().degrees_of_freedom().position(),
+          rotate_to_world.Inverse());
+  return [transforms, rotate_to_world, positions_from_world](
+      Position<World> const& q) {
+    return rotate_to_world *
+        transforms->coordinate_frame()(positions_from_world(q)) *
+        Rotation<World, Barycentric>::Identity();
+  };
+}
+
 Instant Plugin::current_time() const {
   return current_time_;
 }

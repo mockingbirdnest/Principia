@@ -21,6 +21,17 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
   };
 
   [StructLayout(LayoutKind.Sequential)]
+  private struct WXYZ {
+    public double w, x, y, z;
+    public static explicit operator WXYZ(UnityEngine.QuaternionD q) {
+      return new WXYZ {w = q.w, x = q.x, y = q.y, z = q.z};
+    }
+    public static explicit operator UnityEngine.QuaternionD(WXYZ q) {
+      return new UnityEngine.QuaternionD {w = q.w, x = q.x, y = q.y, z = q.z};
+    }
+  };
+
+  [StructLayout(LayoutKind.Sequential)]
   private struct LineSegment {
     public XYZ begin, end;
   };
@@ -226,6 +237,14 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
              CallingConvention = CallingConvention.Cdecl)]
   private static extern XYZ BubbleVelocityCorrection(IntPtr plugin,
                                                      int reference_body_index);
+
+  [DllImport(dllName           : kDllPath,
+             EntryPoint        = "principia_NavBall",
+             CallingConvention = CallingConvention.Cdecl)]
+  private static extern WXYZ principia_NavBall(IntPtr plugin,
+                                               IntPtr transforms,
+                                               XYZ sun_world_position,
+                                               XYZ ship_world_position);
 
   [DllImport(dllName           : kDllPath,
              EntryPoint        = "principia__current_time",

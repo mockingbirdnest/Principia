@@ -33,6 +33,7 @@ using geometry::Point;
 using geometry::Rotation;
 using integrators::SPRKIntegrator;
 using physics::Body;
+using physics::FrameField;
 using physics::NBodySystem;
 using physics::Trajectory;
 using physics::Transforms;
@@ -242,6 +243,12 @@ class Plugin {
   // it to have the correct velocity.
   virtual Velocity<World> BubbleVelocityCorrection(
       Index const reference_body_index) const;
+
+  // The navball field at |current_time| for the given |transforms|.
+  virtual FrameField<World> NavBall(
+      not_null<
+          Transforms<Barycentric, Rendering, Barycentric>*> const transforms,
+      Position<World> const& sun_world_position) const;
 
   virtual Instant current_time() const;
 

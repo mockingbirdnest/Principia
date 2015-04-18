@@ -151,7 +151,6 @@ Transforms<FromFrame, ThroughFrame, ToFrame>::BarycentricRotating(
   transforms->coordinate_frame_ =
       [to_primary_trajectory, to_secondary_trajectory](
           Position<ToFrame> const& q) {
-    CHECK_EQ(t, to_primary_trajectory().last().time());
     DegreesOfFreedom<ToFrame> const& last_primary_degrees_of_freedom =
         to_primary_trajectory().last().degrees_of_freedom();
     DegreesOfFreedom<ToFrame> const& last_secondary_degrees_of_freedom =
@@ -322,6 +321,12 @@ typename Trajectory<ThroughFrame>::template TransformingIterator<ToFrame>
 Transforms<FromFrame, ThroughFrame, ToFrame>::second(
     Trajectory<ThroughFrame> const& through_trajectory) {
   return through_trajectory.first_with_transform(second_);
+}
+
+template<typename FromFrame, typename ThroughFrame, typename ToFrame>
+FrameField<ToFrame>
+Transforms<FromFrame, ThroughFrame, ToFrame>::coordinate_frame() const {
+  return coordinate_frame_;
 }
 
 }  // namespace physics
