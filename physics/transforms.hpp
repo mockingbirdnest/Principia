@@ -67,8 +67,6 @@ class Transforms {
 
   // The coordinate frame of |ThroughFrame|, expressed in the coordinates of
   // |ToFrame|.
-  // This need only return a result when t is the common last time of the to_*
-  // trajectories of the defining bodies, it may fail otherwise.
   FrameField<ToFrame> coordinate_frame() const;
 
  private:

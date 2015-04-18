@@ -150,8 +150,7 @@ Transforms<FromFrame, ThroughFrame, ToFrame>::BarycentricRotating(
 
   transforms->coordinate_frame_ =
       [to_primary_trajectory, to_secondary_trajectory](
-          Position<ToFrame> q,
-          Instant t) {
+          Position<ToFrame> const& q) {
     CHECK_EQ(t, to_primary_trajectory().last().time());
     DegreesOfFreedom<ToFrame> const& last_primary_degrees_of_freedom =
         to_primary_trajectory().last().degrees_of_freedom();

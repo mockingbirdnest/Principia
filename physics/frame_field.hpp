@@ -12,13 +12,16 @@ using geometry::Rotation;
 
 namespace physics {
 
-// An orthonormal basis for the tangent space to the manifold of |Position|s at
-// time |Instant|, described in the coordinates of the global spacetime chart
-// |Frame| as a rotation of the standard basis.
+// A section of the frame bundle of the manifold |Position|, i.e.,
+// a smooth assignment of an orthonormal basis to the tangent space of positions
+// to every |Position| q.
+// The orthonormal basis is described as a rotation of the standard basis of
+// |Frame|.
 template<typename Frame>
 using FrameField =
-    std::function<Rotation<Frame, Frame>(Position<Frame>, Instant)>;
+    std::function<Rotation<Frame, Frame>(Position<Frame> const& q)>;
 
+// The identity everywhere.
 template<typename Frame>
 FrameField<Frame> CoordinateFrame();
 
