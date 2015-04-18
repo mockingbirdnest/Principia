@@ -32,9 +32,10 @@ class Trajectory {
   using Children = std::multimap<Instant, Trajectory>;
   using Timeline = std::map<Instant, DegreesOfFreedom<Frame>>;
 
-  // The two iterators denote entries in the containers of the parent, and they
-  // are never past the end.  Therefore, they are not invalidated by swapping
-  // the containers of the parent.
+  // The two iterators denote entries in the containers of the parent.
+  // |timeline| is past the end if the fork happened at the fork point of the
+  // grandparent.  Note that this implies that the containers should not be
+  // swapped.
   struct Fork {
     typename Children::const_iterator children;
     typename Timeline::const_iterator timeline;
