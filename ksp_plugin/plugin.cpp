@@ -244,7 +244,8 @@ RenderedTrajectory<World> Plugin::RenderedPrediction(
   if (!has_predictions()) {
     return RenderedTrajectory<World>();
   }
-  Trajectory<Barycentric> const& actual_trajectory = *prediction_;
+  Trajectory<Barycentric> const& actual_trajectory =
+      predicted_vessel_->prediction();
   transforms_are_operating_on_predictions_ = true;
   RenderedTrajectory<World> result =
       RenderTrajectory(actual_trajectory,
@@ -519,20 +520,22 @@ bool Plugin::has_predicted_vessel() const {
 }
 
 bool Plugin::has_predictions() const {
-  bool const has_prediction = prediction_ != nullptr;
-  if (has_prediction) {
-    CHECK(has_predicted_vessel());
+  if (has_predicted_vessel()) {
+    bool const has_prediction =
+      predicted_vessel_->mutable_prediction() != nullptr;
+    for (auto const& pair : celestials_) {
+      not_null<std::unique_ptr<Celestial>> const& celestial = pair.second;
+      CHECK_EQ(celestial->mutable_prediction() != nullptr, has_prediction);
+    }
+    return has_prediction;
+  } else {
+    return false;
   }
-  for (auto const& pair : celestials_) {
-    not_null<std::unique_ptr<Celestial>> const& celestial = pair.second;
-    CHECK_EQ(celestial->mutable_prediction() != nullptr, has_prediction);
-  }
-  return has_prediction;
 }
 
 void Plugin::clear_predictions() {
   if (has_predictions()) {
-    predicted_vessel_->mutable_prolongation()->DeleteFork(&prediction_);
+    predicted_vessel_->DeletePrediction();
     for (auto const& pair : celestials_) {
       not_null<std::unique_ptr<Celestial>> const& celestial = pair.second;
       celestial->DeletePrediction();
@@ -767,9 +770,8 @@ void Plugin::UpdatePredictions() {
       celestial->ForkPrediction();
       predictions.emplace_back(celestial->mutable_prediction());
     }
-    prediction_ = predicted_vessel_->mutable_prolongation()->NewFork(
-                      predicted_vessel_->prolongation().last().time());
-    predictions.emplace_back(prediction_);
+    predicted_vessel_->ForkPrediction();
+    predictions.emplace_back(predicted_vessel_->mutable_prediction());
     n_body_system_->Integrate(
         *prolongation_integrator_,
         current_time_ + prediction_length_,

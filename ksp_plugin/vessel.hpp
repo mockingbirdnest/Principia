@@ -50,6 +50,11 @@ class Vessel {
   Trajectory<Barycentric> const& prolongation() const;
   not_null<Trajectory<Barycentric>*> mutable_prolongation();
 
+  // Both accessors require |is_initialized()|.  In addition the first one
+  // requires that a |prediction_| currently exist.
+  Trajectory<Barycentric> const& prediction() const;
+  Trajectory<Barycentric>* mutable_prediction();
+
   // Creates an |owned_prolongation_| for this vessel and appends a point with
   // the given |time| and |degrees_of_freedom|.  The vessel must not satisfy
   // |is_initialized()| nor |is_synchronized()|, |owned_prolongation_| must be
@@ -73,6 +78,12 @@ class Vessel {
   // The vessel must satisfy |is_synchronized()| and |is_initialized()|,
   // |owned_prolongation_| must be null.
   void ResetProlongation(Instant const& time);
+
+  // Creates a |prediction_| forked at the end of the |prolongation_|.
+  void ForkPrediction();
+
+  // Deletes the |prediction_|.
+  void DeletePrediction();
 
   // The vessel must satisfy |is_initialized()|.
   void WriteToMessage(not_null<serialization::Vessel*> const message) const;
@@ -101,6 +112,8 @@ class Vessel {
   // and celestials, there is no |history_|.  The prolongation is directly owned
   // during that time.  Null if, and only if, |history_| is not null.
   std::unique_ptr<Trajectory<Barycentric>> owned_prolongation_;
+  // A child trajectory of |*prolongation_|.
+  Trajectory<Barycentric>* prediction_ = nullptr;
 };
 
 }  // namespace ksp_plugin
