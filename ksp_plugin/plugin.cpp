@@ -241,7 +241,7 @@ RenderedTrajectory<World> Plugin::RenderedPrediction(
         Transforms<Barycentric, Rendering, Barycentric>*> const transforms,
     Position<World> const& sun_world_position) {
   CHECK(!initializing_);
-  if (!has_predictions()) {
+  if (!HasPredictions()) {
     return RenderedTrajectory<World>();
   }
   Trajectory<Barycentric> const& actual_trajectory =
@@ -264,7 +264,7 @@ void Plugin::set_predicted_vessel(GUID const& vessel_guid) {
 }
 
 void Plugin::clear_predicted_vessel() {
-  clear_predictions();
+  DeletePredictions();
   predicted_vessel_ = nullptr;
 }
 
@@ -519,7 +519,7 @@ bool Plugin::has_predicted_vessel() const {
   return predicted_vessel_ != nullptr;
 }
 
-bool Plugin::has_predictions() const {
+bool Plugin::HasPredictions() const {
   if (has_predicted_vessel()) {
     bool const has_prediction =
       predicted_vessel_->mutable_prediction() != nullptr;
@@ -533,8 +533,8 @@ bool Plugin::has_predictions() const {
   }
 }
 
-void Plugin::clear_predictions() {
-  if (has_predictions()) {
+void Plugin::DeletePredictions() {
+  if (HasPredictions()) {
     predicted_vessel_->DeletePrediction();
     for (auto const& pair : celestials_) {
       not_null<std::unique_ptr<Celestial>> const& celestial = pair.second;
@@ -760,7 +760,7 @@ void Plugin::EvolveProlongationsAndBubble(Instant const& t) {
 }
 
 void Plugin::UpdatePredictions() {
-  clear_predictions();
+  DeletePredictions();
   if (has_predicted_vessel()) {
     NBodySystem<Barycentric>::Trajectories predictions;
     // Room for all the celestials and for the vessel.
