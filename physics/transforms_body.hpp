@@ -84,9 +84,10 @@ Transforms<FromFrame, ThroughFrame, ToFrame>::BodyCentredNonRotating(
           not_null<Trajectory<FromFrame> const*> const trajectory) ->
       DegreesOfFreedom<ThroughFrame> {
     // First check if the result is cached.
-    auto cache_it = that->first_cache_.find(std::make_pair(trajectory, t));
-    if (cache_it != that->first_cache_.end()) {
-      return cache_it->second;
+    DegreesOfFreedom<ThroughFrame>* cached_through_degrees_of_freedom = nullptr;
+    if (that->first_cache_.Lookup(trajectory, t,
+                                  &cached_through_degrees_of_freedom)) {
+      return *cached_through_degrees_of_freedom;
     }
 
     // on_or_after() is Ln(N), but it doesn't matter unless the map gets very
@@ -110,9 +111,8 @@ Transforms<FromFrame, ThroughFrame, ToFrame>::BodyCentredNonRotating(
                       centre_degrees_of_freedom.velocity())};
 
     // Cache the result before returning it.
-    that->first_cache_.emplace(std::make_pair(trajectory, t),
-                               through_degrees_of_freedom);
-    return std::move(through_degrees_of_freedom);
+    that->first_cache_.Insert(trajectory, t, through_degrees_of_freedom);
+    return through_degrees_of_freedom;
   };
 
   transforms->second_ =
@@ -156,12 +156,13 @@ Transforms<FromFrame, ThroughFrame, ToFrame>::BarycentricRotating(
           not_null<Trajectory<FromFrame> const*> const trajectory) ->
       DegreesOfFreedom<ThroughFrame> {
     // First check if the result is cached.
-    auto cache_it = that->first_cache_.find(std::make_pair(trajectory, t));
-    if (cache_it != that->first_cache_.end()) {
-      return cache_it->second;
+    DegreesOfFreedom<ThroughFrame>* cached_through_degrees_of_freedom = nullptr;
+    if (that->first_cache_.Lookup(trajectory, t,
+                                  &cached_through_degrees_of_freedom)) {
+      return *cached_through_degrees_of_freedom;
     }
 
-    // on_or_after() is Ln(N).
+    // |on_or_after()| is Ln(N).
     TYPENAME Trajectory<FromFrame>::NativeIterator const primary_it =
         from_primary_trajectory().on_or_after(t);
     CHECK_EQ(primary_it.time(), t)
@@ -211,9 +212,8 @@ Transforms<FromFrame, ThroughFrame, ToFrame>::BarycentricRotating(
                            barycentre_degrees_of_freedom.position()) / Radian)};
 
     // Cache the result before returning it.
-    that->first_cache_.emplace(std::make_pair(trajectory, t),
-                               through_degrees_of_freedom);
-    return std::move(through_degrees_of_freedom);
+    that->first_cache_.Insert(trajectory, t, through_degrees_of_freedom);
+    return through_degrees_of_freedom;
   };
 
   transforms->second_ =
@@ -287,6 +287,38 @@ typename Trajectory<ThroughFrame>::template TransformingIterator<ToFrame>
 Transforms<FromFrame, ThroughFrame, ToFrame>::second(
     Trajectory<ThroughFrame> const& through_trajectory) {
   return through_trajectory.first_with_transform(second_);
+}
+
+
+template<typename FromFrame, typename ThroughFrame, typename ToFrame>
+template<typename Frame1, typename Frame2>
+bool
+Transforms<FromFrame, ThroughFrame, ToFrame>::Cache<Frame1, Frame2>::Lookup(
+    not_null<Trajectory<Frame1> const*> const trajectory,
+    Instant const& time,
+    not_null<DegreesOfFreedom<Frame2>**> degrees_of_freedom) {
+  bool found = false;
+  ++number_of_lookups_[trajectory];
+  auto const it = map_.find(std::make_pair(trajectory, time));
+  if (it != map_.end()) {
+    ++number_of_hits_[trajectory];
+    *degrees_of_freedom = &it->second;
+    found = true;
+  }
+  VLOG_EVERY_N(1, 1000) << "Hit ratio for trajectory " << trajectory << " is "
+                        << static_cast<double>(number_of_hits_[trajectory]) /
+                           number_of_lookups_[trajectory];
+  return found;
+}
+
+template<typename FromFrame, typename ThroughFrame, typename ToFrame>
+template<typename Frame1, typename Frame2>
+void
+Transforms<FromFrame, ThroughFrame, ToFrame>::Cache<Frame1, Frame2>::Insert(
+    not_null<Trajectory<Frame1> const*> const trajectory,
+    Instant const& time,
+    DegreesOfFreedom<Frame2> const& degrees_of_freedom) {
+  map_.emplace(std::make_pair(trajectory, time), degrees_of_freedom);
 }
 
 }  // namespace physics
