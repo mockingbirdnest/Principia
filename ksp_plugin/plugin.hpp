@@ -373,8 +373,6 @@ class Plugin {
   Trajectory<Barycentric>* prediction_;
   Time prediction_length_ = 1 * Hour;
   Time prediction_step_ = Δt_;
-  std::map<not_null<Celestial*> const,
-           not_null<Trajectory<Barycentric>*>> system_predictions_;
   // TODO(phl): This is really ugly.
   bool transforms_are_operating_on_predictions_ = false;
 

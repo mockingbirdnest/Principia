@@ -46,6 +46,11 @@ class Celestial {
   Trajectory<Barycentric> const& prolongation() const;
   not_null<Trajectory<Barycentric>*> mutable_prolongation();
 
+  // Both accessors require |is_initialized()|.  In addition the first one
+  // requires that a |prediction_| currently exist.
+  Trajectory<Barycentric> const& prediction() const;
+  Trajectory<Barycentric>* mutable_prediction();
+
   // Creates a |history_| for this body and appends a point with the given
   // |time| and |degrees_of_freedom|.  Then forks a |prolongation_| at |time|.
   // The celestial |is_initialized()| after the call.
@@ -55,6 +60,12 @@ class Celestial {
 
   // Deletes the |prolongation_| and forks a new one at |time|.
   void ResetProlongation(Instant const& time);
+
+  // Creates a |prediction_| forked at the end of the |prolongation_|.
+  void ForkPrediction();
+
+  // Deletes the |prediction_|.
+  void DeletePrediction();
 
   // The celestial must satisfy |is_initialized()|.
   void WriteToMessage(not_null<serialization::Celestial*> const message) const;
@@ -78,6 +89,8 @@ class Celestial {
   // restarted from this new end of |history|.
   // Not owning.
   Trajectory<Barycentric>* prolongation_ = nullptr;
+  // A child trajectory of |*prolongation_|.
+  Trajectory<Barycentric>* prediction_ = nullptr;
 };
 
 }  // namespace ksp_plugin
