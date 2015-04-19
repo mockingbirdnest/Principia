@@ -301,11 +301,15 @@ class Plugin {
   // celestials.
   Instant const& HistoryTime() const;
 
-  // The rotation between the |World| basis at |current_time_| and the
-  // |Barycentric| axes. Since |WorldSun| is not a rotating reference frame,
+  // The rotation between the |AliceWorld| basis at |current_time_| and the
+  // |Barycentric| axes. Since |AliceSun| is not a rotating reference frame,
   // this change of basis is all that's required to convert relative velocities
   // or displacements between simultaneous events.
-  Rotation<Barycentric, WorldSun> PlanetariumRotation() const;
+  Rotation<Barycentric, AliceSun> PlanetariumRotation() const;
+
+  // returns
+  // |kSunLookingGlass.Inverse().Forget() * PlanetariumRotation().Forget()|.
+  OrthogonalMap<Barycentric, WorldSun> BarycentricToWorldSun() const;
 
   // Utilities for |AdvanceTime|.
 

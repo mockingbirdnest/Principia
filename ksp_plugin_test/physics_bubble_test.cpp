@@ -253,7 +253,7 @@ class PhysicsBubbleTest : public testing::Test {
   }
 
   PhysicsBubble bubble_;
-  PhysicsBubble::PlanetariumRotation rotation_;
+  PhysicsBubble::ToWorld rotation_;
   DegreesOfFreedom<Barycentric> celestial_dof_;
   DegreesOfFreedom<Barycentric> dof1_;
   DegreesOfFreedom<Barycentric> dof2_;
