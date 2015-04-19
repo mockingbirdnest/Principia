@@ -64,6 +64,10 @@ inline Trajectory<Barycentric>* Celestial::mutable_prediction() {
   return prediction_;
 }
 
+inline bool Celestial::has_prediction() const {
+  return prediction_ != nullptr;
+}
+
 inline void Celestial::CreateHistoryAndForkProlongation(
     Instant const& time,
     DegreesOfFreedom<Barycentric> const& degrees_of_freedom) {

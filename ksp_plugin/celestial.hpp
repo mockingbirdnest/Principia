@@ -47,9 +47,10 @@ class Celestial {
   not_null<Trajectory<Barycentric>*> mutable_prolongation();
 
   // Both accessors require |is_initialized()|.  In addition the first one
-  // requires that a |prediction_| currently exist.
+  // requires |has_prediction()|.
   Trajectory<Barycentric> const& prediction() const;
   Trajectory<Barycentric>* mutable_prediction();
+  bool has_prediction() const;
 
   // Creates a |history_| for this body and appends a point with the given
   // |time| and |degrees_of_freedom|.  Then forks a |prolongation_| at |time|.
@@ -62,6 +63,7 @@ class Celestial {
   void ResetProlongation(Instant const& time);
 
   // Creates a |prediction_| forked at the end of the |prolongation_|.
+  // Requires |is_initialized()| and |!has_prediction()|.
   void ForkPrediction();
 
   // Deletes the |prediction_|.

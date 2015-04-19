@@ -289,6 +289,8 @@ Plugin::NewBodyCentredNonRotatingTransforms(
                   if (transforms_are_operating_on_predictions_) {
                   return reference_body->Celestial::prediction();
                 } else {
+                  // TODO(phl): Investigate why Celestial:: is here once we have
+                  // a working LLVM.
                   return reference_body->Celestial::prolongation();
                 }
               };
@@ -521,11 +523,10 @@ bool Plugin::has_predicted_vessel() const {
 
 bool Plugin::HasPredictions() const {
   if (has_predicted_vessel()) {
-    bool const has_prediction =
-      predicted_vessel_->mutable_prediction() != nullptr;
+    bool const has_prediction = predicted_vessel_->has_prediction();
     for (auto const& pair : celestials_) {
       not_null<std::unique_ptr<Celestial>> const& celestial = pair.second;
-      CHECK_EQ(celestial->mutable_prediction() != nullptr, has_prediction);
+      CHECK_EQ(celestial->has_prediction(), has_prediction);
     }
     return has_prediction;
   } else {

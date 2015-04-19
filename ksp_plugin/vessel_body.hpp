@@ -63,13 +63,8 @@ inline Trajectory<Barycentric>* Vessel::mutable_prediction() {
   return prediction_;
 }
 
-inline void Vessel::ForkPrediction() {
-  CHECK(prediction_ == nullptr);
-  prediction_ = mutable_prolongation()->NewFork(prolongation().last().time());
-}
-
-inline void Vessel::DeletePrediction() {
-  prolongation_->DeleteFork(&prediction_);
+inline bool Vessel::has_prediction() const {
+  return prediction_ != nullptr;
 }
 
 inline void Vessel::CreateProlongation(
@@ -99,6 +94,15 @@ inline void Vessel::ResetProlongation(Instant const& time) {
   CHECK(owned_prolongation_ == nullptr);
   history_->DeleteFork(&prolongation_);
   prolongation_ = history_->NewFork(time);
+}
+
+inline void Vessel::ForkPrediction() {
+  CHECK(prediction_ == nullptr);
+  prediction_ = mutable_prolongation()->NewFork(prolongation().last().time());
+}
+
+inline void Vessel::DeletePrediction() {
+  prolongation_->DeleteFork(&prediction_);
 }
 
 inline void Vessel::WriteToMessage(
