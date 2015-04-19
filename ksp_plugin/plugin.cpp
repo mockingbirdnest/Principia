@@ -154,8 +154,7 @@ void Plugin::AdvanceTime(Instant const& t, Angle const& planetarium_rotation) {
   CHECK(!initializing_);
   CHECK_GT(t, current_time_);
   CleanUpVessels();
-  bubble_->Prepare(kSunLookingGlass.Inverse().Forget() *
-                   PlanetariumRotation().Forget(), current_time_, t);
+  bubble_->Prepare(BarycentricToWorldSun(), current_time_, t);
   if (HistoryTime() + Δt_ < t) {
     // The histories are far enough behind that we can advance them at least one
     // step and reset the prolongations.

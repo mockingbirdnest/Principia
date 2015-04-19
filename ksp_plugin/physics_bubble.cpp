@@ -51,9 +51,10 @@ void PhysicsBubble::AddVesselToNext(not_null<Vessel*> const vessel,
   }
 }
 
-void PhysicsBubble::Prepare(ToWorld const& to_world,
-                            Instant const& current_time,
-                            Instant const& next_time) {
+void PhysicsBubble::Prepare(
+    BarycentricToWorldSun const& barycentric_to_world_sun,
+    Instant const& current_time,
+    Instant const& next_time) {
   VLOG(1) << __FUNCTION__ << '\n'
           << NAMED(current_time) << '\n' << NAMED(next_time);
   std::unique_ptr<FullState> next;
@@ -61,7 +62,7 @@ void PhysicsBubble::Prepare(ToWorld const& to_world,
     next = std::make_unique<FullState>(std::move(*next_));
     next_.reset();
     ComputeNextCentreOfMassWorldDegreesOfFreedom(next.get());
-    ComputeNextVesselOffsets(to_world, next.get());
+    ComputeNextVesselOffsets(barycentric_to_world_sun, next.get());
     if (current_ == nullptr) {
       // There was no physics bubble.
       RestartNext(current_time, next.get());
@@ -89,11 +90,14 @@ void PhysicsBubble::Prepare(ToWorld const& to_world,
           // intersection is nonempty.  We fix the degrees of freedom of the
           // centre of mass of the intersection, and we use its measured
           // acceleration as the intrinsic acceleration of the |body_|.
-          Shift(to_world, current_time, common_parts, next.get());
+          Shift(barycentric_to_world_sun,
+                current_time,
+                common_parts,
+                next.get());
         }
         // Correct since |World| is currently nonrotating.
         Vector<Acceleration, Barycentric> barycentric_intrinsic_acceleration =
-            to_world.Inverse()(
+            barycentric_to_world_sun.Inverse()(
                 Identity<World, WorldSun>()(intrinsic_acceleration));
         VLOG(1) << NAMED(barycentric_intrinsic_acceleration);
         if (next->centre_of_mass_trajectory->has_intrinsic_acceleration()) {
@@ -118,7 +122,7 @@ void PhysicsBubble::Prepare(ToWorld const& to_world,
 }
 
 Displacement<World> PhysicsBubble::DisplacementCorrection(
-    ToWorld const& to_world,
+    BarycentricToWorldSun const& barycentric_to_world_sun,
     Celestial const& reference_celestial,
     Position<World> const& reference_celestial_world_position) const {
   VLOG(1) << __FUNCTION__ << '\n'
@@ -128,7 +132,7 @@ Displacement<World> PhysicsBubble::DisplacementCorrection(
   if (current_->displacement_correction == nullptr) {
     current_->displacement_correction =
         std::make_unique<Displacement<World>>(
-          Identity<WorldSun, World>()(to_world(
+          Identity<WorldSun, World>()(barycentric_to_world_sun(
               current_->centre_of_mass_trajectory->
                   last().degrees_of_freedom().position() -
               reference_celestial.prolongation().
@@ -140,14 +144,14 @@ Displacement<World> PhysicsBubble::DisplacementCorrection(
 }
 
 Velocity<World> PhysicsBubble::VelocityCorrection(
-    ToWorld const& to_world,
+    BarycentricToWorldSun const& barycentric_to_world_sun,
     Celestial const& reference_celestial) const {
   VLOG(1) << __FUNCTION__ << '\n' << NAMED(&reference_celestial);
   CHECK(!empty()) << "Empty bubble";
   if (current_->velocity_correction == nullptr) {
     current_->velocity_correction =
         std::make_unique<Velocity<World>>(
-            Identity<WorldSun, World>()(to_world(
+            Identity<WorldSun, World>()(barycentric_to_world_sun(
                 current_->centre_of_mass_trajectory->
                     last().degrees_of_freedom().velocity() -
                 reference_celestial.prolongation().
@@ -336,7 +340,7 @@ void PhysicsBubble::ComputeNextCentreOfMassWorldDegreesOfFreedom(
 }
 
 void PhysicsBubble::ComputeNextVesselOffsets(
-    ToWorld const& to_world,
+    BarycentricToWorldSun const& barycentric_to_world_sun,
     not_null<FullState*> const next) {
   VLOG(1) << __FUNCTION__;
   next->from_centre_of_mass =
@@ -355,7 +359,7 @@ void PhysicsBubble::ComputeNextVesselOffsets(
     DegreesOfFreedom<World> const vessel_degrees_of_freedom =
         vessel_calculator.Get();
     auto const from_centre_of_mass =
-        to_world.Inverse()(
+        barycentric_to_world_sun.Inverse()(
             Identity<World, WorldSun>()(
                 vessel_degrees_of_freedom - *next->centre_of_mass));
     VLOG(1) << NAMED(from_centre_of_mass);
@@ -436,7 +440,7 @@ Vector<Acceleration, World> PhysicsBubble::IntrinsicAcceleration(
   VLOG_AND_RETURN(1, acceleration_calculator.Get());
 }
 
-void PhysicsBubble::Shift(ToWorld const& to_world,
+void PhysicsBubble::Shift(BarycentricToWorldSun const& barycentric_to_world_sun,
                           Instant const& current_time,
                           std::vector<PartCorrespondence> const& common_parts,
                           not_null<FullState*> const next) {
@@ -469,7 +473,7 @@ void PhysicsBubble::Shift(ToWorld const& to_world,
   // it is stationary with respect to |WorldSun|.
   next->centre_of_mass_trajectory->Append(
       current_time,
-      current_centre_of_mass + to_world.Inverse()(
+      current_centre_of_mass + barycentric_to_world_sun.Inverse()(
                                    Identity<World, WorldSun>()(change)));
 }
 
