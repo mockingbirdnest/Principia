@@ -201,7 +201,7 @@ class Plugin {
       Position<World> const& sun_world_position);
 
   virtual void set_predicted_vessel(GUID const& vessel_guid);
-  // Calls |clear_predictions()| and nulls |predicted_vessel_|.
+  // Calls |DeletePredictions()| and nulls |predicted_vessel_|.
   virtual void clear_predicted_vessel();
 
   virtual void set_prediction_length(Time const& t);
@@ -282,13 +282,10 @@ class Plugin {
   bool is_dirty(not_null<Vessel*> const vessel) const;
   // Returns |predicted_vessel_ != nullptr|.
   bool has_predicted_vessel() const;
-  // Returns |!system_predictions_.empty()| and checks that
-  //   |system_predictions_.empty()| is equivalent to |prediction_ == null|;
-  //   |has_predictions()| implies |has_predicted_vessel()|.
-  bool has_predictions() const;
-  // If |has_predictions()|, deletes the trajectories in |system_predictions_|
-  // and clears it, deletes |prediction_|.
-  void clear_predictions();
+  // Returns true if there is a |predicted_vessel_| and it has a prediction.
+  bool HasPredictions() const;
+  // Deletes all the predictions.
+  void DeletePredictions();
 
   // The common last time of the histories of synchronized vessels and
   // celestials.
@@ -333,7 +330,7 @@ class Plugin {
   // instant |t|.  Also evolves the trajectory of the |current_physics_bubble_|
   // if there is one.
   void EvolveProlongationsAndBubble(Instant const& t);
-  // Calls |clear_predictions()|.  If |has_predicted_vessel()|, computes
+  // Calls |DeletePredictions()|.  If |has_predicted_vessel()|, computes
   // |system_predictions_| and |prediction_| for the |predicted_vessel_|
   // according to |prediction_length_| and |prediction_step_|.
   void UpdatePredictions();
@@ -370,11 +367,8 @@ class Plugin {
 
   // Only one prediction for now, using constant timestep.
   Vessel* predicted_vessel_;
-  Trajectory<Barycentric>* prediction_;
   Time prediction_length_ = 1 * Hour;
   Time prediction_step_ = Δt_;
-  std::map<not_null<Celestial*> const,
-           not_null<Trajectory<Barycentric>*>> system_predictions_;
   // TODO(phl): This is really ugly.
   bool transforms_are_operating_on_predictions_ = false;
 

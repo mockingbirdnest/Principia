@@ -54,6 +54,20 @@ inline not_null<Trajectory<Barycentric>*> Celestial::mutable_prolongation() {
   return prolongation_;
 }
 
+inline Trajectory<Barycentric> const& Celestial::prediction() const {
+  CHECK(is_initialized());
+  return *CHECK_NOTNULL(prediction_);
+}
+
+inline Trajectory<Barycentric>* Celestial::mutable_prediction() {
+  CHECK(is_initialized());
+  return prediction_;
+}
+
+inline bool Celestial::has_prediction() const {
+  return prediction_ != nullptr;
+}
+
 inline void Celestial::CreateHistoryAndForkProlongation(
     Instant const& time,
     DegreesOfFreedom<Barycentric> const& degrees_of_freedom) {
@@ -65,6 +79,15 @@ inline void Celestial::CreateHistoryAndForkProlongation(
 inline void Celestial::ResetProlongation(Instant const& time) {
   history_->DeleteFork(&prolongation_);
   prolongation_ = history_->NewFork(time);
+}
+
+inline void Celestial::ForkPrediction() {
+  CHECK(prediction_ == nullptr);
+  prediction_ = mutable_prolongation()->NewFork(prolongation().last().time());
+}
+
+inline void Celestial::DeletePrediction() {
+  prolongation_->DeleteFork(&prediction_);
 }
 
 inline void Celestial::WriteToMessage(
