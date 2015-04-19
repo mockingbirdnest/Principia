@@ -399,7 +399,7 @@ XYZ principia__BubbleVelocityCorrection(Plugin const* const plugin,
   return ToXYZ(result.coordinates() / (Metre / Second));
 }
 
-WXYZ principia__NavBall(
+WXYZ principia__NavBallOrientation(
     Plugin const* const plugin,
     Transforms<Barycentric, Rendering, Barycentric>* const transforms,
     XYZ const sun_world_position,

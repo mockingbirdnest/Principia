@@ -239,12 +239,13 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
                                                      int reference_body_index);
 
   [DllImport(dllName           : kDllPath,
-             EntryPoint        = "principia_NavBall",
+             EntryPoint        = "principia__NavBallOrientation",
              CallingConvention = CallingConvention.Cdecl)]
-  private static extern WXYZ principia_NavBall(IntPtr plugin,
-                                               IntPtr transforms,
-                                               XYZ sun_world_position,
-                                               XYZ ship_world_position);
+  private static extern WXYZ NavBallOrientation(
+      IntPtr plugin,
+      IntPtr transforms,
+      XYZ sun_world_position,
+      XYZ ship_world_position);
 
   [DllImport(dllName           : kDllPath,
              EntryPoint        = "principia__current_time",
