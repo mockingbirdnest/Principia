@@ -1122,5 +1122,26 @@ TEST_F(PluginTest, Prediction) {
   plugin.clear_predicted_vessel();
 }
 
+TEST_F(PluginTest, NavBall) {
+  // Create a plugin with planetarium rotation 0.
+  auto plugin = Plugin(initial_time_,
+                       SolarSystem::kSun,
+                       sun_gravitational_parameter_,
+                       0 * Radian);
+  not_null<std::unique_ptr<
+      Transforms<Barycentric, Rendering, Barycentric>>> const heliocentric =
+          plugin.NewBodyCentredNonRotatingTransforms(SolarSystem::kSun);
+  Vector<double, World> x({1, 0, 0});
+  Vector<double, World> y({0, 1, 0});
+  Vector<double, World> z({0, 0, 1});
+  auto nav_ball = plugin.NavBall(heliocentric.get(), World::origin);
+  EXPECT_THAT(AbsoluteError(-z, nav_ball(World::origin)(x)),
+              Lt(2 * std::numeric_limits<double>::epsilon()));
+  EXPECT_THAT(AbsoluteError(y, nav_ball(World::origin)(y)),
+              Lt(std::numeric_limits<double>::epsilon()));
+  EXPECT_THAT(AbsoluteError(x, nav_ball(World::origin)(z)),
+              Lt(2 * std::numeric_limits<double>::epsilon()));
+}
+
 }  // namespace ksp_plugin
 }  // namespace principia
