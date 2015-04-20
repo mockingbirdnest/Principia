@@ -19,6 +19,7 @@
 namespace principia {
 
 using base::make_not_null_unique;
+using geometry::Rotation;
 using geometry::Frame;
 using quantities::Length;
 using quantities::Mass;
@@ -169,6 +170,9 @@ TEST_F(TransformsTest, BodyCentredNonRotating) {
                                       -88 * i * SIUnit<Speed>(),
                                       144 * i * SIUnit<Speed>()})))) << i;
   }
+  auto const identity = Rotation<To, To>::Identity();
+  EXPECT_EQ(identity.quaternion(),
+            transforms->coordinate_frame()(To::origin).quaternion());
 }
 
 // Check that the computations we do match those done using Mathematica.
