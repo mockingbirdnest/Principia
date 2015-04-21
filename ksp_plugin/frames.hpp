@@ -37,6 +37,8 @@ using AliceWorld = Frame<serialization::Frame::PluginTag,
 // the velocity of the sun at the time of construction as our reference.
 // The origin is the position of the sun at the instant |initial_time| passed at
 // construction.
+// TODO(egg): this has been flipped, change the value of the protobuf enum and
+// make a compatibility handler in order not to flip the universe...
 using Barycentric = Frame<serialization::Frame::PluginTag,
                           serialization::Frame::BARYCENTRIC, true>;
 
