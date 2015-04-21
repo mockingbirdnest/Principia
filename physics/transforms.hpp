@@ -69,7 +69,14 @@ class Transforms {
          LazyTrajectory<ThroughFrame> const& through_trajectory);
 
  private:
-  typename Trajectory<FromFrame>::template Transform<ThroughFrame> first_;
+  template<typename Frame1, typename Frame2>
+  using LazyTransform = std::function<DegreesOfFreedom<Frame2>(
+                            LazyTrajectory<Frame1> const&,
+                            Instant const&,
+                            DegreesOfFreedom<Frame1> const&,
+                            not_null<Trajectory<Frame1> const*> const)>;
+
+  LazyTransform<FromFrame, ThroughFrame> first_;
   typename Trajectory<ThroughFrame>::template Transform<ToFrame> second_;
 
   // A simple cache with no eviction, which monitors the hit rate.

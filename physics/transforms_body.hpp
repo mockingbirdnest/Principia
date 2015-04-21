@@ -30,6 +30,9 @@ using geometry::Wedge;
 using quantities::AngularFrequency;
 using quantities::Pow;
 using si::Radian;
+using ::std::placeholders::_1;
+using ::std::placeholders::_2;
+using ::std::placeholders::_3;
 
 namespace physics {
 
@@ -79,7 +82,8 @@ Transforms<Object, FromFrame, ThroughFrame, ToFrame>::BodyCentredNonRotating(
   // hence the name.
   not_null<Transforms*> that = transforms.get();
   transforms->first_ =
-      [from_centre_trajectory, that](
+      [&centre, that](
+          LazyTrajectory<FromFrame> const& from_trajectory,
           Instant const& t,
           DegreesOfFreedom<FromFrame> const& from_degrees_of_freedom,
           not_null<Trajectory<FromFrame> const*> const trajectory) ->
@@ -94,7 +98,7 @@ Transforms<Object, FromFrame, ThroughFrame, ToFrame>::BodyCentredNonRotating(
     // on_or_after() is Ln(N), but it doesn't matter unless the map gets very
     // big, in which case we'll have cache misses anyway.
     TYPENAME Trajectory<FromFrame>::NativeIterator const centre_it =
-        from_centre_trajectory().on_or_after(t);
+        (centre.*from_trajectory)().on_or_after(t);
     CHECK_EQ(centre_it.time(), t)
         << "Time " << t << " not in centre trajectory";
     DegreesOfFreedom<FromFrame> const& centre_degrees_of_freedom =
@@ -117,13 +121,13 @@ Transforms<Object, FromFrame, ThroughFrame, ToFrame>::BodyCentredNonRotating(
   };
 
   transforms->second_ =
-      [to_centre_trajectory](
+      [&centre, to_trajectory](
           Instant const& t,
           DegreesOfFreedom<ThroughFrame> const& through_degrees_of_freedom,
           Trajectory<ThroughFrame> const* trajectory) ->
       DegreesOfFreedom<ToFrame> {
     DegreesOfFreedom<ToFrame> const& last_centre_degrees_of_freedom =
-        to_centre_trajectory().last().degrees_of_freedom();
+        (centre.*to_trajectory)().last().degrees_of_freedom();
 
     AffineMap<ThroughFrame, ToFrame, Length, Identity> const position_map(
         ThroughFrame::origin,
@@ -151,7 +155,8 @@ Transforms<Object, FromFrame, ThroughFrame, ToFrame>::BarycentricRotating(
   // hence the name.
   not_null<Transforms*> that = transforms.get();
   transforms->first_ =
-      [from_primary_trajectory, from_secondary_trajectory, that](
+      [&primary, &secondary, that](
+          LazyTrajectory<FromFrame> const& from_trajectory,
           Instant const& t,
           DegreesOfFreedom<FromFrame> const& from_degrees_of_freedom,
           not_null<Trajectory<FromFrame> const*> const trajectory) ->
@@ -165,11 +170,11 @@ Transforms<Object, FromFrame, ThroughFrame, ToFrame>::BarycentricRotating(
 
     // |on_or_after()| is Ln(N).
     TYPENAME Trajectory<FromFrame>::NativeIterator const primary_it =
-        from_primary_trajectory().on_or_after(t);
+        (primary.*from_trajectory)().on_or_after(t);
     CHECK_EQ(primary_it.time(), t)
         << "Time " << t << " not in primary trajectory";
     TYPENAME Trajectory<FromFrame>::NativeIterator secondary_it =
-        from_secondary_trajectory().on_or_after(t);
+        (secondary.*from_trajectory)().on_or_after(t);
     CHECK_EQ(secondary_it.time(), t)
         << "Time " << t << " not in secondary trajectory";
 
@@ -181,9 +186,9 @@ Transforms<Object, FromFrame, ThroughFrame, ToFrame>::BarycentricRotating(
         Barycentre<FromFrame, GravitationalParameter>(
             {primary_degrees_of_freedom,
              secondary_degrees_of_freedom},
-            {from_primary_trajectory().template body<MassiveBody>()->
+            {(primary.*from_trajectory)().template body<MassiveBody>()->
                  gravitational_parameter(),
-             from_secondary_trajectory().template body<MassiveBody>()->
+             (secondary.*from_trajectory)().template body<MassiveBody>()->
                  gravitational_parameter()});
     Rotation<FromFrame, ThroughFrame>
         from_basis_of_barycentric_frame_to_standard_basis =
@@ -218,22 +223,22 @@ Transforms<Object, FromFrame, ThroughFrame, ToFrame>::BarycentricRotating(
   };
 
   transforms->second_ =
-      [to_primary_trajectory, to_secondary_trajectory](
+      [&primary, &secondary, to_trajectory](
           Instant const& t,
           DegreesOfFreedom<ThroughFrame> const& through_degrees_of_freedom,
           Trajectory<ThroughFrame> const* trajectory) ->
       DegreesOfFreedom<ToFrame> {
     DegreesOfFreedom<ToFrame> const& last_primary_degrees_of_freedom =
-        to_primary_trajectory().last().degrees_of_freedom();
+        (primary.*to_trajectory)().last().degrees_of_freedom();
     DegreesOfFreedom<ToFrame> const& last_secondary_degrees_of_freedom =
-        to_secondary_trajectory().last().degrees_of_freedom();
+        (secondary.*to_trajectory)().last().degrees_of_freedom();
     DegreesOfFreedom<ToFrame> const last_barycentre_degrees_of_freedom =
         Barycentre<ToFrame, GravitationalParameter>(
             {last_primary_degrees_of_freedom,
              last_secondary_degrees_of_freedom},
-            {to_primary_trajectory().template body<MassiveBody>()->
+            {(primary.*to_trajectory)().template body<MassiveBody>()->
                  gravitational_parameter(),
-             to_secondary_trajectory().template body<MassiveBody>()->
+             (secondary.*to_trajectory)().template body<MassiveBody>()->
                  gravitational_parameter()});
     Rotation<ToFrame, ThroughFrame>
         from_basis_of_last_barycentric_frame_to_standard_basis =
@@ -275,7 +280,9 @@ typename Trajectory<FromFrame>::template TransformingIterator<ThroughFrame>
 Transforms<Object, FromFrame, ThroughFrame, ToFrame>::first(
     Object const& object,
     LazyTrajectory<FromFrame> const& from_trajectory) {
-  return from_trajectory.first_with_transform(first_);
+  typename Trajectory<FromFrame>::template Transform<ThroughFrame> const first =
+      std::bind(first_, from_trajectory, _1, _2, _3);
+  return (object.*from_trajectory)().first_with_transform(first);
 }
 
 template<typename Object,
@@ -285,7 +292,9 @@ Transforms<Object, FromFrame, ThroughFrame, ToFrame>::first_on_or_after(
     Object const& object,
     LazyTrajectory<FromFrame> const& from_trajectory,
     Instant const& time) {
-  return from_trajectory.on_or_after_with_transform(time, first_);
+  typename Trajectory<FromFrame>::template Transform<ThroughFrame> const first =
+      std::bind(first_, from_trajectory, _1, _2, _3);
+  return (object.*from_trajectory)().on_or_after_with_transform(time, first);
 }
 
 template<typename Object,
@@ -294,7 +303,7 @@ typename Trajectory<ThroughFrame>::template TransformingIterator<ToFrame>
 Transforms<Object, FromFrame, ThroughFrame, ToFrame>::second(
     Object const& object,
     LazyTrajectory<ThroughFrame> const& through_trajectory) {
-  return through_trajectory.first_with_transform(second_);
+  return (object.*through_trajectory)().first_with_transform(second_);
 }
 
 
