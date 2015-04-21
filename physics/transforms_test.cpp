@@ -47,9 +47,9 @@ class TransformsTest : public testing::Test {
                    serialization::Frame::TO, true>;
 
   struct Functors {
-    Trajectory<From> const& from_trajectory() const;
-    Trajectory<Through> const& through_trajectory() const;
-    Trajectory<To> const& to_trajectory() const;
+    Trajectory<From> const& from_trajectory() const { return *from; }
+    Trajectory<Through> const& through_trajectory() const { return *through; }
+    Trajectory<To> const& to_trajectory() const { return *to; }
 
     Trajectory<From>* from;
     Trajectory<Through>* through;
