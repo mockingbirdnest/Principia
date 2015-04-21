@@ -66,11 +66,12 @@ void FromBasisOfBarycentricFrameToStandardBasis(
 
 }  // namespace
 
-template<typename FromFrame, typename ThroughFrame, typename ToFrame>
-not_null<std::unique_ptr<Transforms<FromFrame, ThroughFrame, ToFrame>>>
-Transforms<FromFrame, ThroughFrame, ToFrame>::BodyCentredNonRotating(
-    LazyTrajectory<FromFrame> const& from_centre_trajectory,
-    LazyTrajectory<ToFrame> const& to_centre_trajectory) {
+template<typename Object,
+         typename FromFrame, typename ThroughFrame, typename ToFrame>
+not_null<std::unique_ptr<Transforms<Object, FromFrame, ThroughFrame, ToFrame>>>
+Transforms<Object, FromFrame, ThroughFrame, ToFrame>::BodyCentredNonRotating(
+    Object const& centre,
+    LazyTrajectory<ToFrame> const& to_trajectory) {
   not_null<std::unique_ptr<Transforms>> transforms =
       make_not_null_unique<Transforms>();
 
@@ -136,13 +137,13 @@ Transforms<FromFrame, ThroughFrame, ToFrame>::BodyCentredNonRotating(
   return transforms;
 }
 
-template<typename FromFrame, typename ThroughFrame, typename ToFrame>
-not_null<std::unique_ptr<Transforms<FromFrame, ThroughFrame, ToFrame>>>
-Transforms<FromFrame, ThroughFrame, ToFrame>::BarycentricRotating(
-      LazyTrajectory<FromFrame> const& from_primary_trajectory,
-      LazyTrajectory<ToFrame> const& to_primary_trajectory,
-      LazyTrajectory<FromFrame> const& from_secondary_trajectory,
-      LazyTrajectory<ToFrame> const& to_secondary_trajectory) {
+template<typename Object,
+         typename FromFrame, typename ThroughFrame, typename ToFrame>
+not_null<std::unique_ptr<Transforms<Object, FromFrame, ThroughFrame, ToFrame>>>
+Transforms<Object, FromFrame, ThroughFrame, ToFrame>::BarycentricRotating(
+    Object const& primary,
+    Object const& secondary,
+    LazyTrajectory<ToFrame> const& to_trajectory) {
   not_null<std::unique_ptr<Transforms>> transforms =
       make_not_null_unique<Transforms>();
 
@@ -261,39 +262,47 @@ Transforms<FromFrame, ThroughFrame, ToFrame>::BarycentricRotating(
   return transforms;
 }
 
-template<typename FromFrame, typename ThroughFrame, typename ToFrame>
-not_null<std::unique_ptr<Transforms<FromFrame, ThroughFrame, ToFrame>>>
-Transforms<FromFrame, ThroughFrame, ToFrame>::DummyForTesting() {
+template<typename Object,
+         typename FromFrame, typename ThroughFrame, typename ToFrame>
+not_null<std::unique_ptr<Transforms<Object, FromFrame, ThroughFrame, ToFrame>>>
+Transforms<Object, FromFrame, ThroughFrame, ToFrame>::DummyForTesting() {
   return make_not_null_unique<Transforms>();
 }
 
-template<typename FromFrame, typename ThroughFrame, typename ToFrame>
+template<typename Object,
+         typename FromFrame, typename ThroughFrame, typename ToFrame>
 typename Trajectory<FromFrame>::template TransformingIterator<ThroughFrame>
-Transforms<FromFrame, ThroughFrame, ToFrame>::first(
-    Trajectory<FromFrame> const& from_trajectory) {
+Transforms<Object, FromFrame, ThroughFrame, ToFrame>::first(
+    Object const& object,
+    LazyTrajectory<FromFrame> const& from_trajectory) {
   return from_trajectory.first_with_transform(first_);
 }
 
-template<typename FromFrame, typename ThroughFrame, typename ToFrame>
+template<typename Object,
+         typename FromFrame, typename ThroughFrame, typename ToFrame>
 typename Trajectory<FromFrame>::template TransformingIterator<ThroughFrame>
-Transforms<FromFrame, ThroughFrame, ToFrame>::first_on_or_after(
-    Trajectory<FromFrame> const& from_trajectory,
+Transforms<Object, FromFrame, ThroughFrame, ToFrame>::first_on_or_after(
+    Object const& object,
+    LazyTrajectory<FromFrame> const& from_trajectory,
     Instant const& time) {
   return from_trajectory.on_or_after_with_transform(time, first_);
 }
 
-template<typename FromFrame, typename ThroughFrame, typename ToFrame>
+template<typename Object,
+         typename FromFrame, typename ThroughFrame, typename ToFrame>
 typename Trajectory<ThroughFrame>::template TransformingIterator<ToFrame>
-Transforms<FromFrame, ThroughFrame, ToFrame>::second(
-    Trajectory<ThroughFrame> const& through_trajectory) {
+Transforms<Object, FromFrame, ThroughFrame, ToFrame>::second(
+    Object const& object,
+    LazyTrajectory<ThroughFrame> const& through_trajectory) {
   return through_trajectory.first_with_transform(second_);
 }
 
 
-template<typename FromFrame, typename ThroughFrame, typename ToFrame>
+template<typename Object,
+         typename FromFrame, typename ThroughFrame, typename ToFrame>
 template<typename Frame1, typename Frame2>
 bool
-Transforms<FromFrame, ThroughFrame, ToFrame>::Cache<Frame1, Frame2>::Lookup(
+Transforms<Object, FromFrame, ThroughFrame, ToFrame>::Cache<Frame1, Frame2>::Lookup(
     not_null<Trajectory<Frame1> const*> const trajectory,
     Instant const& time,
     not_null<DegreesOfFreedom<Frame2>**> degrees_of_freedom) {
@@ -311,10 +320,11 @@ Transforms<FromFrame, ThroughFrame, ToFrame>::Cache<Frame1, Frame2>::Lookup(
   return found;
 }
 
-template<typename FromFrame, typename ThroughFrame, typename ToFrame>
+template<typename Object,
+         typename FromFrame, typename ThroughFrame, typename ToFrame>
 template<typename Frame1, typename Frame2>
 void
-Transforms<FromFrame, ThroughFrame, ToFrame>::Cache<Frame1, Frame2>::Insert(
+Transforms<Object, FromFrame, ThroughFrame, ToFrame>::Cache<Frame1, Frame2>::Insert(
     not_null<Trajectory<Frame1> const*> const trajectory,
     Instant const& time,
     DegreesOfFreedom<Frame2> const& degrees_of_freedom) {

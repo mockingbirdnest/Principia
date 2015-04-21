@@ -61,7 +61,7 @@ class Transforms {
 
   typename Trajectory<FromFrame>::template TransformingIterator<ThroughFrame>
   first_on_or_after(Object const& object,
-                    Trajectory<FromFrame> const& from_trajectory,
+                    LazyTrajectory<FromFrame> const& from_trajectory,
                     Instant const& time);
 
   typename Trajectory<ThroughFrame>:: template TransformingIterator<ToFrame>
