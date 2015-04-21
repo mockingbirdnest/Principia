@@ -46,6 +46,16 @@ class TransformsTest : public testing::Test {
   using To = Frame<serialization::Frame::TestTag,
                    serialization::Frame::TO, true>;
 
+  struct Functors {
+    Trajectory<From> const& from_trajectory() const;
+    Trajectory<Through> const& through_trajectory() const;
+    Trajectory<To> const& to_trajectory() const;
+
+    Trajectory<From>* from;
+    Trajectory<Through>* through;
+    Trajectory<To>* to;
+  };
+
   TransformsTest()
       : body1_(MassiveBody(1 * SIUnit<Mass>())),
         body2_(MassiveBody(3 * SIUnit<Mass>())),
@@ -53,15 +63,10 @@ class TransformsTest : public testing::Test {
         body2_from_(make_not_null_unique<Trajectory<From>>(&body2_)),
         body1_to_(make_not_null_unique<Trajectory<To>>(&body1_)),
         body2_to_(make_not_null_unique<Trajectory<To>>(&body2_)),
-        satellite_from_(make_not_null_unique<Trajectory<From>>(&satellite_)) {
-    body1_from_fn_ =
-        [this]() -> Trajectory<From> const& { return *this->body1_from_; };
-    body2_from_fn_ =
-        [this]() -> Trajectory<From> const& { return *this->body2_from_; };
-    body1_to_fn_ =
-        [this]() -> Trajectory<To> const& { return *this->body1_to_; };
-    body2_to_fn_ =
-        [this]() -> Trajectory<To> const& { return *this->body2_to_; };
+        satellite_from_(make_not_null_unique<Trajectory<From>>(&satellite_)),
+        body1_fn_({body1_from_.get(), nullptr, body1_to_.get()}),
+        body2_fn_({body2_from_.get(), nullptr, body2_to_.get()}),
+        satellite_fn_({satellite_from_.get(), nullptr, nullptr}) {
 
     // The various bodies move have both a position and a velocity that
     // increases linearly with time.  This is not a situation that's physically
@@ -111,21 +116,21 @@ class TransformsTest : public testing::Test {
   not_null<std::unique_ptr<Trajectory<To>>> body1_to_;
   not_null<std::unique_ptr<Trajectory<To>>> body2_to_;
   not_null<std::unique_ptr<Trajectory<From>>> satellite_from_;
-  Transforms<From, Through, To>::LazyTrajectory<From> body1_from_fn_;
-  Transforms<From, Through, To>::LazyTrajectory<From> body2_from_fn_;
-  Transforms<From, Through, To>::LazyTrajectory<To> body1_to_fn_;
-  Transforms<From, Through, To>::LazyTrajectory<To> body2_to_fn_;
+  Functors body1_fn_;
+  Functors body2_fn_;
+  Functors satellite_fn_;
 };
 
 // This transform is simple enough that we can compute its effect by hand.  This
 // test verifies that we get the expected result both in |Through| and in |To|.
 TEST_F(TransformsTest, BodyCentredNonRotating) {
-  auto const transforms = Transforms<From, Through, To>::BodyCentredNonRotating(
-                    body1_from_fn_, body1_to_fn_);
+  auto const transforms =
+      Transforms<Functors, From, Through, To>::BodyCentredNonRotating(
+          body1_fn_, &Functors::to_trajectory);
   Trajectory<Through> body1_through(&body1_);
 
   int i = 1;
-  for (auto it = transforms->first(*satellite_from_);
+  for (auto it = transforms->first(satellite_fn_, &Functors::from_trajectory);
        !it.at_end();
        ++it, ++i) {
     DegreesOfFreedom<Through> const degrees_of_freedom =
@@ -141,9 +146,10 @@ TEST_F(TransformsTest, BodyCentredNonRotating) {
                                           144 * i * SIUnit<Speed>()})))) << i;
     body1_through.Append(Instant(i * SIUnit<Time>()), degrees_of_freedom);
   }
+  body1_fn_.through = &body1_through;
 
   i = 1;
-  for (auto it = transforms->second(body1_through);
+  for (auto it = transforms->second(body1_fn_, &Functors::through_trajectory);
        !it.at_end();
        ++it, ++i) {
     body1_to_->Append(
@@ -173,13 +179,13 @@ TEST_F(TransformsTest, BodyCentredNonRotating) {
 
 // Check that the computations we do match those done using Mathematica.
 TEST_F(TransformsTest, SatelliteBarycentricRotating) {
-  auto const transforms = Transforms<From, Through, To>::BarycentricRotating(
-                              body1_from_fn_, body1_to_fn_,
-                              body2_from_fn_, body2_to_fn_);
+  auto const transforms =
+      Transforms<Functors, From, Through, To>::BarycentricRotating(
+          body1_fn_, body2_fn_, &Functors::to_trajectory);
   Trajectory<Through> satellite_through(&satellite_);
 
   int i = 1;
-  for (auto it = transforms->first(*satellite_from_);
+  for (auto it = transforms->first(satellite_fn_, &Functors::from_trajectory);
        !it.at_end();
        ++it, ++i) {
     DegreesOfFreedom<Through> const degrees_of_freedom =
@@ -198,9 +204,11 @@ TEST_F(TransformsTest, SatelliteBarycentricRotating) {
                     1, 10)) << i;
     satellite_through.Append(Instant(i * SIUnit<Time>()), degrees_of_freedom);
   }
+  satellite_fn_.through = &satellite_through;
 
   i = 1;
-  for (auto it = transforms->second(satellite_through);
+  for (auto it = transforms->second(satellite_fn_,
+                                    &Functors::through_trajectory);
        !it.at_end();
        ++it, ++i) {
       body1_to_->Append(
@@ -246,15 +254,15 @@ TEST_F(TransformsTest, SatelliteBarycentricRotating) {
 // from each other and from the barycentre, and that the barycentre is the
 // centre of the coordinates.
 TEST_F(TransformsTest, BodiesBarycentricRotating) {
-  auto const transforms = Transforms<From, Through, To>::BarycentricRotating(
-                              body1_from_fn_, body1_to_fn_,
-                              body2_from_fn_, body2_to_fn_);
+  auto const transforms =
+      Transforms<Functors, From, Through, To>::BarycentricRotating(
+          body1_fn_, body2_fn_, &Functors::to_trajectory);
   Trajectory<Through> body1_through(&body1_);
   Trajectory<Through> body2_through(&body2_);
 
   int i = 1;
-  for (auto it1 = transforms->first(*body1_from_),
-            it2 = transforms->first(*body2_from_);
+  for (auto it1 = transforms->first(body1_fn_, &Functors::from_trajectory),
+            it2 = transforms->first(body2_fn_, &Functors::from_trajectory);
        !it1.at_end() && !it2.at_end();
        ++it1, ++it2, ++i) {
     Length const l = i * SIUnit<Length>();
