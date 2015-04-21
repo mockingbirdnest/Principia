@@ -17,7 +17,8 @@ namespace physics {
 // This class represent a pair of transformations of a trajectory from
 // |FromFrame| to |ToFrame| with an intermediate representation in
 // |ThroughFrame|.  Note that the trajectory in |ToFrame| is not the trajectory
-// of a body since its past changes from moment to moment.
+// of a body since its past changes from moment to moment.  The type |Object|
+// holds one or more trajectories which are selected using a |LazyTrajectory|.
 template<typename Object,
          typename FromFrame, typename ThroughFrame, typename ToFrame>
 class Transforms {
@@ -28,9 +29,11 @@ class Transforms {
   // The trajectories are evaluated lazily because they may be extended or
   // deallocated/reallocated between the time when the transforms are created
   // and the time when they are applied.  Thus, the lambdas couldn't capture the
-  // trajectories by value nor by reference.  Instead, they capture a copy of a
-  // function that accesses the trajectories.
-  //TODO(phl): Fix comment
+  // trajectories by value nor by reference.  Instead, they capture an |Object|
+  // by reference and a pointer-to-member function by copy.
+  // This technique also makes it possible to dynamically select the trajectory
+  // that's used for the |Object|: it is the one denoted by the same member
+  // function that was passed to |first| or |first_on_or_after|.
   template<typename Frame>
   using LazyTrajectory = Trajectory<Frame> const& (Object::*)() const;
 
@@ -69,6 +72,8 @@ class Transforms {
          LazyTrajectory<ThroughFrame> const& through_trajectory);
 
  private:
+  // Just like a |Trajectory::Transform|, except that the first parameter is
+  // only bound when we know which trajectory to extract from the |Objects|.
   template<typename Frame1, typename Frame2>
   using LazyTransform = std::function<DegreesOfFreedom<Frame2>(
                             LazyTrajectory<Frame1> const&,
