@@ -13,19 +13,25 @@ MockPlugin::MockPlugin()
       1 * SIUnit<GravitationalParameter>(),
       Angle()) {}
 
-not_null<std::unique_ptr<Transforms<Barycentric, Rendering, Barycentric>>>
+not_null<std::unique_ptr<
+    Transforms<MobileInterface, Barycentric, Rendering, Barycentric>>>
 MockPlugin::NewBodyCentredNonRotatingTransforms(
     Index const reference_body_index) const {
-  std::unique_ptr<Transforms<Barycentric, Rendering, Barycentric>> transforms;
+  std::unique_ptr<
+      Transforms<MobileInterface, Barycentric, Rendering, Barycentric>>
+      transforms;
   FillBodyCentredNonRotatingTransforms(reference_body_index, &transforms);
   return std::move(transforms);
 }
 
-not_null<std::unique_ptr<Transforms<Barycentric, Rendering, Barycentric>>>
+not_null<std::unique_ptr<
+    Transforms<MobileInterface, Barycentric, Rendering, Barycentric>>>
 MockPlugin::NewBarycentricRotatingTransforms(
     Index const primary_index,
     Index const secondary_index) const {
-  std::unique_ptr<Transforms<Barycentric, Rendering, Barycentric>> transforms;
+  std::unique_ptr<
+      Transforms<MobileInterface, Barycentric, Rendering, Barycentric>>
+      transforms;
   FillBarycentricRotatingTransforms(primary_index,
                                     secondary_index,
                                     &transforms);

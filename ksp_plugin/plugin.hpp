@@ -183,7 +183,8 @@ class Plugin {
   virtual RenderedTrajectory<World> RenderedVesselTrajectory(
       GUID const& vessel_guid,
       not_null<
-          Transforms<Barycentric, Rendering, Barycentric>*> const transforms,
+          Transforms<MobileInterface, Barycentric, Rendering, Barycentric>*>
+          const transforms,
       Position<World> const& sun_world_position) const;
 
   // Returns a polygon in |World| space depicting the trajectory of
@@ -197,7 +198,8 @@ class Plugin {
   // global variable |transforms_are_operating_on_predictions_|.
   virtual RenderedTrajectory<World> RenderedPrediction(
       not_null<
-          Transforms<Barycentric, Rendering, Barycentric>*> const transforms,
+          Transforms<MobileInterface, Barycentric, Rendering, Barycentric>*>
+          const transforms,
       Position<World> const& sun_world_position);
 
   virtual void set_predicted_vessel(GUID const& vessel_guid);
@@ -210,11 +212,11 @@ class Plugin {
   virtual void set_prediction_step(Time const& t);
 
   virtual not_null<std::unique_ptr<
-      Transforms<Barycentric, Rendering, Barycentric>>>
+      Transforms<MobileInterface, Barycentric, Rendering, Barycentric>>>
   NewBodyCentredNonRotatingTransforms(Index const reference_body_index) const;
 
   virtual not_null<std::unique_ptr<
-      Transforms<Barycentric, Rendering, Barycentric>>>
+      Transforms<MobileInterface, Barycentric, Rendering, Barycentric>>>
   NewBarycentricRotatingTransforms(Index const primary_index,
                                    Index const secondary_index) const;
 
@@ -337,13 +339,13 @@ class Plugin {
 
   // A utility for |RenderedPrediction| and |RenderedVesselTrajectory|,
   // returns a |RenderedTrajectory| as computed by the given |transforms|
-  // from |actual_trajectory|, starting at |actual_it|.  |actual_it| should be
-  // an iterator to |actual_trajectory|.
+  // from the trajectory of |body| starting at |actual_it|.
   RenderedTrajectory<World> RenderTrajectory(
-      Trajectory<Barycentric> const& actual_trajectory,
+      not_null<Body const*> const body,
       Trajectory<Barycentric>::TransformingIterator<Rendering> const& actual_it,
       not_null<
-          Transforms<Barycentric, Rendering, Barycentric>*> const transforms,
+          Transforms<MobileInterface, Barycentric, Rendering, Barycentric>*>
+          const transforms,
       Position<World> const& sun_world_position) const;
 
   // TODO(egg): Constant time step for now.
@@ -369,8 +371,6 @@ class Plugin {
   Vessel* predicted_vessel_;
   Time prediction_length_ = 1 * Hour;
   Time prediction_step_ = Δt_;
-  // TODO(phl): This is really ugly.
-  bool transforms_are_operating_on_predictions_ = false;
 
   not_null<std::unique_ptr<PhysicsBubble>> const bubble_;
 

@@ -33,6 +33,8 @@ class Vessel : public MobileInterface {
   // ownership.
   explicit Vessel(not_null<Celestial const*> const parent);
 
+  not_null<MasslessBody const*> body() const;
+
   // True if, and only if, |history_| is not null.
   bool is_synchronized() const;
   // True if, and only if, |prolongation_| is not null, i.e., if either
