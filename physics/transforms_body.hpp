@@ -69,11 +69,11 @@ void FromBasisOfBarycentricFrameToStandardBasis(
 
 }  // namespace
 
-template<typename Object,
+template<typename Mobile,
          typename FromFrame, typename ThroughFrame, typename ToFrame>
-not_null<std::unique_ptr<Transforms<Object, FromFrame, ThroughFrame, ToFrame>>>
-Transforms<Object, FromFrame, ThroughFrame, ToFrame>::BodyCentredNonRotating(
-    Object const& centre,
+not_null<std::unique_ptr<Transforms<Mobile, FromFrame, ThroughFrame, ToFrame>>>
+Transforms<Mobile, FromFrame, ThroughFrame, ToFrame>::BodyCentredNonRotating(
+    Mobile const& centre,
     LazyTrajectory<ToFrame> const& to_trajectory) {
   not_null<std::unique_ptr<Transforms>> transforms =
       make_not_null_unique<Transforms>();
@@ -141,12 +141,12 @@ Transforms<Object, FromFrame, ThroughFrame, ToFrame>::BodyCentredNonRotating(
   return transforms;
 }
 
-template<typename Object,
+template<typename Mobile,
          typename FromFrame, typename ThroughFrame, typename ToFrame>
-not_null<std::unique_ptr<Transforms<Object, FromFrame, ThroughFrame, ToFrame>>>
-Transforms<Object, FromFrame, ThroughFrame, ToFrame>::BarycentricRotating(
-    Object const& primary,
-    Object const& secondary,
+not_null<std::unique_ptr<Transforms<Mobile, FromFrame, ThroughFrame, ToFrame>>>
+Transforms<Mobile, FromFrame, ThroughFrame, ToFrame>::BarycentricRotating(
+    Mobile const& primary,
+    Mobile const& secondary,
     LazyTrajectory<ToFrame> const& to_trajectory) {
   not_null<std::unique_ptr<Transforms>> transforms =
       make_not_null_unique<Transforms>();
@@ -267,54 +267,54 @@ Transforms<Object, FromFrame, ThroughFrame, ToFrame>::BarycentricRotating(
   return transforms;
 }
 
-template<typename Object,
+template<typename Mobile,
          typename FromFrame, typename ThroughFrame, typename ToFrame>
-not_null<std::unique_ptr<Transforms<Object, FromFrame, ThroughFrame, ToFrame>>>
-Transforms<Object, FromFrame, ThroughFrame, ToFrame>::DummyForTesting() {
+not_null<std::unique_ptr<Transforms<Mobile, FromFrame, ThroughFrame, ToFrame>>>
+Transforms<Mobile, FromFrame, ThroughFrame, ToFrame>::DummyForTesting() {
   return make_not_null_unique<Transforms>();
 }
 
-template<typename Object,
+template<typename Mobile,
          typename FromFrame, typename ThroughFrame, typename ToFrame>
 typename Trajectory<FromFrame>::template TransformingIterator<ThroughFrame>
-Transforms<Object, FromFrame, ThroughFrame, ToFrame>::first(
-    Object const& object,
+Transforms<Mobile, FromFrame, ThroughFrame, ToFrame>::first(
+    Mobile const& mobile,
     LazyTrajectory<FromFrame> const& from_trajectory) {
   typename Trajectory<FromFrame>::template Transform<ThroughFrame> const first =
       std::bind(first_, from_trajectory, _1, _2, _3);
-  return (object.*from_trajectory)().first_with_transform(first);
+  return (mobile.*from_trajectory)().first_with_transform(first);
 }
 
-template<typename Object,
+template<typename Mobile,
          typename FromFrame, typename ThroughFrame, typename ToFrame>
 typename Trajectory<FromFrame>::template TransformingIterator<ThroughFrame>
-Transforms<Object, FromFrame, ThroughFrame, ToFrame>::first_on_or_after(
-    Object const& object,
+Transforms<Mobile, FromFrame, ThroughFrame, ToFrame>::first_on_or_after(
+    Mobile const& mobile,
     LazyTrajectory<FromFrame> const& from_trajectory,
     Instant const& time) {
   typename Trajectory<FromFrame>::template Transform<ThroughFrame> const first =
       std::bind(first_, from_trajectory, _1, _2, _3);
-  return (object.*from_trajectory)().on_or_after_with_transform(time, first);
+  return (mobile.*from_trajectory)().on_or_after_with_transform(time, first);
 }
 
-template<typename Object,
+template<typename Mobile,
          typename FromFrame, typename ThroughFrame, typename ToFrame>
 typename Trajectory<ThroughFrame>::template TransformingIterator<ToFrame>
-Transforms<Object, FromFrame, ThroughFrame, ToFrame>::second(
-    Object const& object,
+Transforms<Mobile, FromFrame, ThroughFrame, ToFrame>::second(
+    Mobile const& mobile,
     LazyTrajectory<ThroughFrame> const& through_trajectory) {
-  return (object.*through_trajectory)().first_with_transform(second_);
+  return (mobile.*through_trajectory)().first_with_transform(second_);
 }
 
 
-template<typename Object,
+template<typename Mobile,
          typename FromFrame, typename ThroughFrame, typename ToFrame>
 template<typename Frame1, typename Frame2>
 bool
-Transforms<Object, FromFrame, ThroughFrame, ToFrame>::Cache<Frame1, Frame2>::Lookup(
-    not_null<Trajectory<Frame1> const*> const trajectory,
-    Instant const& time,
-    not_null<DegreesOfFreedom<Frame2>**> degrees_of_freedom) {
+Transforms<Mobile, FromFrame, ThroughFrame, ToFrame>::Cache<Frame1, Frame2>::
+Lookup(not_null<Trajectory<Frame1> const*> const trajectory,
+       Instant const& time,
+       not_null<DegreesOfFreedom<Frame2>**> degrees_of_freedom) {
   bool found = false;
   ++number_of_lookups_[trajectory];
   auto const it = map_.find(std::make_pair(trajectory, time));
@@ -329,14 +329,14 @@ Transforms<Object, FromFrame, ThroughFrame, ToFrame>::Cache<Frame1, Frame2>::Loo
   return found;
 }
 
-template<typename Object,
+template<typename Mobile,
          typename FromFrame, typename ThroughFrame, typename ToFrame>
 template<typename Frame1, typename Frame2>
 void
-Transforms<Object, FromFrame, ThroughFrame, ToFrame>::Cache<Frame1, Frame2>::Insert(
-    not_null<Trajectory<Frame1> const*> const trajectory,
-    Instant const& time,
-    DegreesOfFreedom<Frame2> const& degrees_of_freedom) {
+Transforms<Mobile, FromFrame, ThroughFrame, ToFrame>::Cache<Frame1, Frame2>::
+Insert(not_null<Trajectory<Frame1> const*> const trajectory,
+       Instant const& time,
+       DegreesOfFreedom<Frame2> const& degrees_of_freedom) {
   map_.emplace(std::make_pair(trajectory, time), degrees_of_freedom);
 }
 
