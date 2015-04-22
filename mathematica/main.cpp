@@ -7,5 +7,6 @@ int main(int argc, char const* argv[]) {
   google::LogToStderr();
   principia::mathematica::GenerateSimpleHarmonicMotionWorkErrorGraphs();
   principia::mathematica::GenerateKeplerProblemWorkErrorGraphs();
+  principia::mathematica::GenerateSolarSystemPlanetsWorkErrorGraph();
   return 0;
 }

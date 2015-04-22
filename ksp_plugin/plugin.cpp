@@ -240,10 +240,11 @@ RenderedTrajectory<World> Plugin::RenderedPrediction(
         Transforms<Barycentric, Rendering, Barycentric>*> const transforms,
     Position<World> const& sun_world_position) {
   CHECK(!initializing_);
-  if (!has_predictions()) {
+  if (!HasPredictions()) {
     return RenderedTrajectory<World>();
   }
-  Trajectory<Barycentric> const& actual_trajectory = *prediction_;
+  Trajectory<Barycentric> const& actual_trajectory =
+      predicted_vessel_->prediction();
   transforms_are_operating_on_predictions_ = true;
   RenderedTrajectory<World> result =
       RenderTrajectory(actual_trajectory,
@@ -262,7 +263,7 @@ void Plugin::set_predicted_vessel(GUID const& vessel_guid) {
 }
 
 void Plugin::clear_predicted_vessel() {
-  clear_predictions();
+  DeletePredictions();
   predicted_vessel_ = nullptr;
 }
 
@@ -285,8 +286,10 @@ Plugin::NewBodyCentredNonRotatingTransforms(
           reference_body_prolongation_or_prediction =
               [this, reference_body]() -> Trajectory<Barycentric> const& {
                   if (transforms_are_operating_on_predictions_) {
-                  return *FindOrDie(system_predictions_, reference_body);
+                  return reference_body->Celestial::prediction();
                 } else {
+                  // TODO(phl): Investigate why Celestial:: is here once we have
+                  // a working LLVM.
                   return reference_body->Celestial::prolongation();
                 }
               };
@@ -310,7 +313,7 @@ Plugin::NewBarycentricRotatingTransforms(Index const primary_index,
       LazyTrajectory<Barycentric> const primary_prolongation_or_prediction =
           [this, primary]() -> Trajectory<Barycentric> const& {
             if (transforms_are_operating_on_predictions_) {
-              return *FindOrDie(system_predictions_, primary);
+              return primary->Celestial::prediction();
             } else {
               return primary->Celestial::prolongation();
             }
@@ -322,7 +325,7 @@ Plugin::NewBarycentricRotatingTransforms(Index const primary_index,
       LazyTrajectory<Barycentric> const secondary_prolongation_or_prediction =
           [this, secondary]() -> Trajectory<Barycentric> const& {
             if (transforms_are_operating_on_predictions_) {
-              return *FindOrDie(system_predictions_, secondary);
+              return secondary->Celestial::prediction();
             } else {
               return secondary->Celestial::prolongation();
             }
@@ -545,26 +548,25 @@ bool Plugin::has_predicted_vessel() const {
   return predicted_vessel_ != nullptr;
 }
 
-bool Plugin::has_predictions() const {
-  if (system_predictions_.empty()) {
-    CHECK(prediction_ == nullptr);
-    return false;
+bool Plugin::HasPredictions() const {
+  if (has_predicted_vessel()) {
+    bool const has_prediction = predicted_vessel_->has_prediction();
+    for (auto const& pair : celestials_) {
+      not_null<std::unique_ptr<Celestial>> const& celestial = pair.second;
+      CHECK_EQ(celestial->has_prediction(), has_prediction);
+    }
+    return has_prediction;
   } else {
-    CHECK_NOTNULL(prediction_);
-    CHECK(has_predicted_vessel());
-    return true;
+    return false;
   }
 }
 
-void Plugin::clear_predictions() {
-  if (has_predictions()) {
-    predicted_vessel_->mutable_prolongation()->DeleteFork(&prediction_);
-    for (auto it = system_predictions_.begin();
-         it != system_predictions_.end();
-         it = system_predictions_.erase(it)) {
-      not_null<Celestial*> const celestial = it->first;
-      Trajectory<Barycentric>* trajectory = it->second;
-      celestial->mutable_prolongation()->DeleteFork(&trajectory);
+void Plugin::DeletePredictions() {
+  if (HasPredictions()) {
+    predicted_vessel_->DeletePrediction();
+    for (auto const& pair : celestials_) {
+      not_null<std::unique_ptr<Celestial>> const& celestial = pair.second;
+      celestial->DeletePrediction();
     }
   }
 }
@@ -790,26 +792,18 @@ void Plugin::EvolveProlongationsAndBubble(Instant const& t) {
 }
 
 void Plugin::UpdatePredictions() {
-  clear_predictions();
+  DeletePredictions();
   if (has_predicted_vessel()) {
     NBodySystem<Barycentric>::Trajectories predictions;
     // Room for all the celestials and for the vessel.
     predictions.reserve(celestials_.size() + 1);
     for (auto const& index_celestial : celestials_) {
       auto const& celestial = index_celestial.second;
-      auto const inserted =
-          system_predictions_.emplace(
-              celestial.get(),
-              celestial->mutable_prolongation()->NewFork(
-                  celestial->prolongation().last().time()));
-      CHECK(inserted.second);
-      not_null<Trajectory<Barycentric>*> const trajectory =
-          inserted.first->second;
-      predictions.emplace_back(trajectory);
+      celestial->ForkPrediction();
+      predictions.emplace_back(celestial->mutable_prediction());
     }
-    prediction_ = predicted_vessel_->mutable_prolongation()->NewFork(
-                      predicted_vessel_->prolongation().last().time());
-    predictions.emplace_back(prediction_);
+    predicted_vessel_->ForkPrediction();
+    predictions.emplace_back(predicted_vessel_->mutable_prediction());
     n_body_system_->Integrate(
         *prolongation_integrator_,
         current_time_ + prediction_length_,

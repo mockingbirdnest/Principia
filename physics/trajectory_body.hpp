@@ -120,14 +120,7 @@ void Trajectory<Frame>::Append(
 
 template<typename Frame>
 void Trajectory<Frame>::ForgetAfter(Instant const& time) {
-  // Check that |time| is the time of one of our Timeline or the time of fork.
-  auto const it = timeline_.find(time);
-  if (it == timeline_.end()) {
-    CHECK(fork_ != nullptr)
-        << "ForgetAfter a nonexistent time for a root trajectory";
-    CHECK_EQ(fork_->timeline->first, time)
-        << "ForgetAfter a nonexistent time for a nonroot trajectory";
-  }
+  CHECK(InTimelineOrAtFork(time)) << "ForgetAfter a nonexistent time " << time;
 
   // Each of these blocks gets an iterator denoting the first entry with
   // time > |time|.  It then removes that entry and all the entries that follow
@@ -146,7 +139,7 @@ template<typename Frame>
 void Trajectory<Frame>::ForgetBefore(Instant const& time) {
   // Check that this is a root.
   CHECK(is_root()) << "ForgetBefore on a nonroot trajectory";
-  // Check that |time| is the time of one of our Timeline or the time of fork.
+  // Check that |time| is the time of one of our Timeline.
   CHECK(timeline_.find(time) != timeline_.end())
       << "ForgetBefore a nonexistent time";
   {
@@ -161,16 +154,21 @@ void Trajectory<Frame>::ForgetBefore(Instant const& time) {
 
 template<typename Frame>
 not_null<Trajectory<Frame>*> Trajectory<Frame>::NewFork(Instant const& time) {
+  CHECK(InTimelineOrAtFork(time)) << "NewFork at nonexistent time " << time;
+
+  // May be at |end()|.
   auto fork_it = timeline_.find(time);
-  CHECK(fork_it != timeline_.end()) << "NewFork at nonexistent time";
+
   // We cannot know the iterator into children_ until after we have done the
   // insertion in children_.
-  Fork fork = {children_.end(), fork_it};
+  Fork const fork = {children_.end(), fork_it};
   auto const child_it = children_.emplace(
       std::piecewise_construct,
       std::forward_as_tuple(time),
       std::forward_as_tuple(body_, this /*parent*/, fork));
-  child_it->second.timeline_.insert(++fork_it, timeline_.end());
+  if (fork_it != timeline_.end()) {
+    child_it->second.timeline_.insert(++fork_it, timeline_.end());
+  }
   child_it->second.fork_->children = child_it;
   return &child_it->second;
 }
@@ -328,14 +326,22 @@ template<typename Frame>
 typename Trajectory<Frame>::Iterator&
 Trajectory<Frame>::Iterator::operator++() {
   if (!forks_.empty() && current_ == forks_.front().timeline) {
-    ancestry_.pop_front();
-    forks_.pop_front();
+    // Skip over any timeline where the fork is at |end()|.  These are the ones
+    // that were forked at the fork point of their parent.  Looking at the
+    // |begin()| of the parent would be wrong (the fork would see changes to its
+    // parent after the fork point).
+    do {
+      ancestry_.pop_front();
+      forks_.pop_front();
+    } while (!forks_.empty() &&
+             forks_.front().timeline == ancestry_.front()->timeline_.end());
     current_ = ancestry_.front()->timeline_.begin();
   } else {
     CHECK(current_ != ancestry_.front()->timeline_.end())
         << "Incrementing beyond end of trajectory";
     ++current_;
   }
+  CHECK(!current_is_misplaced());
   return *this;
 }
 
@@ -360,6 +366,7 @@ void Trajectory<Frame>::Iterator::InitializeFirst(
   }
   ancestry_.push_front(ancestor);
   current_ = ancestor->timeline_.begin();
+  CHECK(!current_is_misplaced());
 }
 
 template<typename Frame>
@@ -374,20 +381,32 @@ void Trajectory<Frame>::Iterator::InitializeOnOrAfter(
   }
   ancestry_.push_front(ancestor);
   current_ = ancestor->timeline_.lower_bound(time);
+  CHECK(!current_is_misplaced());
 }
 
 template<typename Frame>
 void Trajectory<Frame>::Iterator::InitializeLast(
     not_null<Trajectory const*> const trajectory) {
-  // We don't need to really keep track of the forks or of the ancestry.
-  if (trajectory->timeline_.empty()) {
-    CHECK(trajectory->fork_ != nullptr) << "Empty trajectory";
-    ancestry_.push_front(trajectory->parent_);
-    current_ = trajectory->fork_->timeline;
+  not_null<Trajectory const*> ancestor = trajectory;
+  if (ancestor->timeline_.empty()) {
+    // The last trajectory is empty.  We go up until we find a trajectory which
+    // is not forked at the fork point of its parent.  We must keep track of
+    // that part of the ancestry so that |operator++| correctly detect the end
+    // of the iteration.
+    while (ancestor->parent_ != nullptr &&
+           ancestor->fork_->timeline == ancestor->parent_->timeline_.end()) {
+      ancestry_.push_front(ancestor);
+      forks_.push_front(*ancestor->fork_);
+      ancestor = ancestor->parent_;
+    }
+    CHECK(ancestor->parent_ != nullptr) << "Empty trajectory";
+    ancestry_.push_front(ancestor->parent_);
+    current_ = ancestor->fork_->timeline;
   } else {
-    ancestry_.push_front(trajectory);
-    current_ = --trajectory->timeline_.end();
+    ancestry_.push_front(ancestor);
+    current_ = --ancestor->timeline_.end();
   }
+  CHECK(!current_is_misplaced());
 }
 
 template<typename Frame>
@@ -400,6 +419,11 @@ template<typename Frame>
 not_null<Trajectory<Frame> const*>
 Trajectory<Frame>::Iterator::trajectory() const {
   return ancestry_.back();
+}
+
+template<typename Frame>
+bool Trajectory<Frame>::Iterator::current_is_misplaced() const {
+  return !forks_.empty() && current_ == ancestry_.front()->timeline_.end();
 }
 
 template<typename Frame>
@@ -430,6 +454,29 @@ Trajectory<Frame>::Trajectory(not_null<Body const*> const body,
     : body_(body),
       fork_(new Fork(fork)),
       parent_(parent) {}
+
+template<typename Frame>
+bool Trajectory<Frame>::InTimelineOrAtFork(Instant const time) const {
+  // Check that |time| is the time of one of our Timeline or the time of fork.
+  auto const it = timeline_.find(time);
+  if (it == timeline_.end()) {
+    if (fork_ == nullptr) {
+      return false;
+    }
+
+    // Skip over empty timelines to check that this is the fork time.
+    Trajectory const* ancestor = parent_;
+    Fork fork = *fork_;
+    while (ancestor != nullptr && fork.timeline == ancestor->timeline_.end()) {
+      fork = *ancestor->fork_;
+      ancestor = ancestor->parent_;
+    }
+
+    return ancestor != nullptr && fork.timeline->first == time;
+  } else {
+    return true;
+  }
+}
 
 template<typename Frame>
 void Trajectory<Frame>::WriteSubTreeToMessage(

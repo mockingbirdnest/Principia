@@ -17,7 +17,7 @@
   do {                                                                     \
     Time const step_evaluated = (step);                                    \
     for (int k = 0; k < dimension; ++k) {                                  \
-      Position const Δq = (*Δqstage_previous)[k] +                         \
+      Displacement const Δq = (*Δqstage_previous)[k] +                     \
                               step_evaluated * v_stage[k];                 \
       q_stage[k] = q_last[k].value + Δq;                                   \
       (*Δqstage_current)[k] = Δq;                                          \
@@ -41,6 +41,10 @@
 #endif
 
 namespace principia {
+
+using quantities::Difference;
+using quantities::Quotient;
+
 namespace integrators {
 
 inline SRKNIntegrator const& McLachlanAtela1992Order4Optimal() {
@@ -251,20 +255,24 @@ void SRKNIntegrator::SolveTrivialKineticEnergyIncrement(
     RightHandSideComputation compute_acceleration,
     Parameters<Position, Variation<Position>> const& parameters,
     not_null<Solution<Position, Variation<Position>>*> const solution) const {
+  // NOTE(egg): we need to explicitly give the second template argument here
+  // because MSVC doesn't want to deduce it.  Clang-cl deduces it without any
+  // issues.
   switch (vanishing_coefficients_) {
     case kNone:
-      SolveTrivialKineticEnergyIncrementOptimized<kNone>(compute_acceleration,
-                                                         parameters,
-                                                         solution);
+      SolveTrivialKineticEnergyIncrementOptimized<kNone, Position>(
+          compute_acceleration,
+          parameters,
+          solution);
       break;
     case kFirstBVanishes:
-      SolveTrivialKineticEnergyIncrementOptimized<kFirstBVanishes>(
+      SolveTrivialKineticEnergyIncrementOptimized<kFirstBVanishes, Position>(
           compute_acceleration,
           parameters,
           solution);
       break;
     case kLastAVanishes:
-      SolveTrivialKineticEnergyIncrementOptimized<kLastAVanishes>(
+      SolveTrivialKineticEnergyIncrementOptimized<kLastAVanishes, Position>(
           compute_acceleration,
           parameters,
           solution);
@@ -281,14 +289,15 @@ void SRKNIntegrator::SolveTrivialKineticEnergyIncrementOptimized(
     Parameters<Position, Variation<Position>> const& parameters,
     not_null<Solution<Position, Variation<Position>>*> const solution) const {
   using Velocity = Variation<Position>;
+  using Displacement = Difference<Position>;
   int const dimension = parameters.initial.positions.size();
 
-  std::vector<Position> Δqstage0(dimension);
-  std::vector<Position> Δqstage1(dimension);
+  std::vector<Displacement> Δqstage0(dimension);
+  std::vector<Displacement> Δqstage1(dimension);
   std::vector<Velocity> Δvstage0(dimension);
   std::vector<Velocity> Δvstage1(dimension);
-  std::vector<Position>* Δqstage_current = &Δqstage1;
-  std::vector<Position>* Δqstage_previous = &Δqstage0;
+  std::vector<Displacement>* Δqstage_current = &Δqstage1;
+  std::vector<Displacement>* Δqstage_previous = &Δqstage0;
   std::vector<Velocity>* Δvstage_current = &Δvstage1;
   std::vector<Velocity>* Δvstage_previous = &Δvstage0;
 
@@ -354,7 +363,7 @@ void SRKNIntegrator::SolveTrivialKineticEnergyIncrementOptimized(
     // Increment SRKN step from "'SymplecticPartitionedRungeKutta' Method
     // for NDSolve", algorithm 3.
     for (int k = 0; k < dimension; ++k) {
-      (*Δqstage_current)[k] = Position();
+      (*Δqstage_current)[k] = Displacement();
       (*Δvstage_current)[k] = Velocity();
       q_stage[k] = q_last[k].value;
     }

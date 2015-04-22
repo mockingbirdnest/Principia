@@ -4,6 +4,7 @@
 #include <iostream>  // NOLINT(readability/streams)
 #include <limits>
 #include <string>
+#include <type_traits>
 
 #include "base/not_null.hpp"
 #include "serialization/quantities.pb.h"
@@ -39,27 +40,45 @@ using Winding           = Quantity<Dimensions<0, 0, 0, 0, 0, 0, 0, 1, 0, 0>>;
 using Angle             = Quantity<Dimensions<0, 0, 0, 0, 0, 0, 0, 0, 1, 0>>;
 using SolidAngle        = Quantity<Dimensions<0, 0, 0, 0, 0, 0, 0, 0, 0, 1>>;
 
-namespace type_generators {
+namespace internal {
+
 template<typename Left, typename Right> struct ProductGenerator;
 template<typename Left, typename Right> struct QuotientGenerator;
-template<bool> struct Range;
-template<typename Q, int Exponent, typename = Range<true>>
-struct PowerGenerator;
-template<bool> struct Condition;
-template<typename Q, typename = Condition<true>> struct SquareRootGenerator;
-}  // namespace type_generators
+template<typename Q, typename = void> struct SquareRootGenerator;
+template<typename T, int exponent, typename = void>
+struct ExponentiationGenerator;
 
 template<typename Left, typename Right>
-using Quotient =
-    typename type_generators::QuotientGenerator<Left, Right>::ResultType;
+using Product = typename ProductGenerator<Left, Right>::Type;
 template<typename Left, typename Right>
-using Product =
-    typename type_generators::ProductGenerator<Left, Right>::ResultType;
-template<typename Left, int Exponent>
+using Quotient = typename QuotientGenerator<Left, Right>::Type;
+
+}  // namespace internal
+
+// The result type of +, -, * and / on arguments of types |Left| and |Right|.
+template<typename Left, typename Right>
+using Sum = decltype(std::declval<Left>() = std::declval<Right>());
+template<typename Left, typename Right = Left>
+using Difference = decltype(std::declval<Left>() - std::declval<Right>());
+template<typename Left, typename Right>
+using Product = decltype(std::declval<Left>() * std::declval<Right>());
+template<typename Left, typename Right>
+using Quotient = decltype(std::declval<Left>() / std::declval<Right>());
+
+// |Exponentiation<T, n>| is an alias for the following, where t is a value of
+// type |T|:
+//   The type of ( ... (t * t) * ... * t), with n factors, if n >= 1;
+//   The type of t / ( ... (t * t) * ... * t), with n + 1 factors in the
+//   denominator, if n < 1.
+template<typename T, int exponent>
 using Exponentiation =
-    typename type_generators::PowerGenerator<Left, Exponent>::ResultType;
+    typename internal::ExponentiationGenerator<T, exponent>::Type;
+
+// |SquareRoot<T>| is only defined if |T| is an instance of |Quantity| with only
+// even dimensions.  In that case, it is the unique instance |S| of |Quantity|
+// such that |Product<S, S>| is |T|.
 template<typename Q>
-using SquareRoot = typename type_generators::SquareRootGenerator<Q>::ResultType;
+using SquareRoot = typename internal::SquareRootGenerator<Q>::Type;
 
 // Returns the base or derived SI Unit of |Q|.
 // For instance, |SIUnit<Action>() == Joule * Second|.
@@ -70,11 +89,11 @@ template<>
 double SIUnit<double>();
 
 template<typename LDimensions, typename RDimensions>
-Product<Quantity<LDimensions>, Quantity<RDimensions>> operator*(
+internal::Product<Quantity<LDimensions>, Quantity<RDimensions>> operator*(
     Quantity<LDimensions> const&,
     Quantity<RDimensions> const&);
 template<typename LDimensions, typename RDimensions>
-Quotient<Quantity<LDimensions>, Quantity<RDimensions>> operator/(
+internal::Quotient<Quantity<LDimensions>, Quantity<RDimensions>> operator/(
     Quantity<LDimensions> const&,
     Quantity<RDimensions> const&);
 template<typename RDimensions>
@@ -116,7 +135,7 @@ template<typename D>
 class Quantity {
  public:
   using Dimensions = D;
-  using Inverse = Quotient<double, Quantity>;
+  using Inverse = internal::Quotient<double, Quantity>;
 
   Quantity();
   ~Quantity() = default;
@@ -149,13 +168,13 @@ class Quantity {
   double magnitude_;
 
   template<typename LDimensions, typename RDimensions>
-  friend Product<Quantity<LDimensions>, Quantity<RDimensions>> operator*(
-      Quantity<LDimensions> const& left,
-      Quantity<RDimensions> const& right);
+  friend internal::Product<Quantity<LDimensions>, Quantity<RDimensions>>
+  operator*(Quantity<LDimensions> const& left,
+            Quantity<RDimensions> const& right);
   template<typename LDimensions, typename RDimensions>
-  friend Quotient<Quantity<LDimensions>, Quantity<RDimensions>> operator/(
-      Quantity<LDimensions> const& left,
-      Quantity<RDimensions> const& right);
+  friend internal::Quotient<Quantity<LDimensions>, Quantity<RDimensions>>
+  operator/(Quantity<LDimensions> const& left,
+            Quantity<RDimensions> const& right);
   template<typename RDimensions>
   friend Quantity<RDimensions> operator*(double const left,
                                          Quantity<RDimensions> const& right);

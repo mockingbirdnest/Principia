@@ -73,11 +73,30 @@ class Transforms {
   typename Trajectory<FromFrame>::template Transform<ThroughFrame> first_;
   typename Trajectory<ThroughFrame>::template Transform<ToFrame> second_;
 
+  // A simple cache with no eviction, which monitors the hit rate.
+  template<typename Frame1, typename Frame2>
+  class Cache {
+   public:
+    bool Lookup(not_null<Trajectory<Frame1> const*> const trajectory,
+                Instant const& time,
+                not_null<DegreesOfFreedom<Frame2>**> degrees_of_freedom);
+
+    void Insert(not_null<Trajectory<Frame1> const*> const trajectory,
+                Instant const& time,
+                DegreesOfFreedom<Frame2> const& degrees_of_freedom);
+
+   private:
+    std::map<std::pair<not_null<Trajectory<Frame1> const*>, Instant const>,
+             DegreesOfFreedom<Frame2>> map_;
+    std::map<not_null<Trajectory<Frame1> const*>, std::int64_t>
+        number_of_lookups_;
+    std::map<not_null<Trajectory<Frame1> const*>, std::int64_t> number_of_hits_;
+  };
+
   // A cache for the result of the |first_| transform.  This cache assumes that
   // the iterator is never called with the same time but different degrees of
   // freedom.
-  std::map<std::pair<not_null<Trajectory<FromFrame> const*>, Instant const>,
-           DegreesOfFreedom<ThroughFrame>> first_cache_;
+  Cache<FromFrame, ThroughFrame> first_cache_;
 
   FrameField<ToFrame> coordinate_frame_;
 };
