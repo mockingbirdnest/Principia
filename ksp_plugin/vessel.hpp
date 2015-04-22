@@ -33,6 +33,7 @@ class Vessel : public MobileInterface {
   // ownership.
   explicit Vessel(not_null<Celestial const*> const parent);
 
+  // Returns the body for this vessel.
   not_null<MasslessBody const*> body() const;
 
   // True if, and only if, |history_| is not null.

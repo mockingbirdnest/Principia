@@ -893,8 +893,9 @@ TEST_F(PluginTest, BodyCentredNonrotatingRenderingIntegration) {
                                   satellite_initial_displacement_,
                                   satellite_initial_velocity_));
   not_null<std::unique_ptr<
-      Transforms<Barycentric, Rendering, Barycentric>>> const geocentric =
-          plugin.NewBodyCentredNonRotatingTransforms(SolarSystem::kEarth);
+      Transforms<MobileInterface, Barycentric, Rendering, Barycentric>>> const
+          geocentric =
+              plugin.NewBodyCentredNonRotatingTransforms(SolarSystem::kEarth);
   // We'll check that our orbit is rendered as circular (actually, we only check
   // that it is rendered within a thin spherical shell around the Earth).
   Length perigee = std::numeric_limits<double>::infinity() * Metre;
@@ -1000,7 +1001,7 @@ TEST_F(PluginTest, BarycentricRotatingRenderingIntegration) {
                                       from_the_earth_to_l5,
                                       initial_velocity)));
   not_null<std::unique_ptr<
-      Transforms<Barycentric, Rendering, Barycentric>>> const
+      Transforms<MobileInterface, Barycentric, Rendering, Barycentric>>> const
       earth_moon_barycentric =
           plugin.NewBarycentricRotatingTransforms(SolarSystem::kEarth,
                                                   SolarSystem::kMoon);

@@ -301,9 +301,8 @@ template<typename Mobile,
          typename FromFrame, typename ThroughFrame, typename ToFrame>
 typename Trajectory<ThroughFrame>::template TransformingIterator<ToFrame>
 Transforms<Mobile, FromFrame, ThroughFrame, ToFrame>::second(
-    Mobile const& mobile,
-    LazyTrajectory<ThroughFrame> const& through_trajectory) {
-  return (mobile.*through_trajectory)().first_with_transform(second_);
+    Trajectory<ThroughFrame> const& through_trajectory) {
+  return through_trajectory.first_with_transform(second_);
 }
 
 

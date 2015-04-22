@@ -68,8 +68,7 @@ class Transforms {
                     Instant const& time);
 
   typename Trajectory<ThroughFrame>:: template TransformingIterator<ToFrame>
-  second(Mobile const& mobile,
-         LazyTrajectory<ThroughFrame> const& through_trajectory);
+  second(Trajectory<ThroughFrame> const& through_trajectory);
 
  private:
   // Just like a |Trajectory::Transform|, except that the first parameter is

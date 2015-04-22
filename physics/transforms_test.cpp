@@ -48,11 +48,9 @@ class TransformsTest : public testing::Test {
 
   struct Functors {
     Trajectory<From> const& from_trajectory() const { return *from; }
-    Trajectory<Through> const& through_trajectory() const { return *through; }
     Trajectory<To> const& to_trajectory() const { return *to; }
 
     Trajectory<From>* from;
-    Trajectory<Through>* through;
     Trajectory<To>* to;
   };
 
@@ -64,9 +62,9 @@ class TransformsTest : public testing::Test {
         body1_to_(make_not_null_unique<Trajectory<To>>(&body1_)),
         body2_to_(make_not_null_unique<Trajectory<To>>(&body2_)),
         satellite_from_(make_not_null_unique<Trajectory<From>>(&satellite_)),
-        body1_fn_({body1_from_.get(), nullptr, body1_to_.get()}),
-        body2_fn_({body2_from_.get(), nullptr, body2_to_.get()}),
-        satellite_fn_({satellite_from_.get(), nullptr, nullptr}) {
+        body1_fn_({body1_from_.get(), body1_to_.get()}),
+        body2_fn_({body2_from_.get(), body2_to_.get()}),
+        satellite_fn_({satellite_from_.get(), nullptr}) {
 
     // The various bodies move have both a position and a velocity that
     // increases linearly with time.  This is not a situation that's physically
@@ -146,10 +144,9 @@ TEST_F(TransformsTest, BodyCentredNonRotating) {
                                           144 * i * SIUnit<Speed>()})))) << i;
     body1_through.Append(Instant(i * SIUnit<Time>()), degrees_of_freedom);
   }
-  body1_fn_.through = &body1_through;
 
   i = 1;
-  for (auto it = transforms->second(body1_fn_, &Functors::through_trajectory);
+  for (auto it = transforms->second(body1_through);
        !it.at_end();
        ++it, ++i) {
     body1_to_->Append(
@@ -204,11 +201,9 @@ TEST_F(TransformsTest, SatelliteBarycentricRotating) {
                     1, 10)) << i;
     satellite_through.Append(Instant(i * SIUnit<Time>()), degrees_of_freedom);
   }
-  satellite_fn_.through = &satellite_through;
 
   i = 1;
-  for (auto it = transforms->second(satellite_fn_,
-                                    &Functors::through_trajectory);
+  for (auto it = transforms->second(satellite_through);
        !it.at_end();
        ++it, ++i) {
       body1_to_->Append(
