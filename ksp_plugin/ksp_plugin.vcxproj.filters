@@ -44,6 +44,9 @@
     <ClInclude Include="physics_bubble.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="mobile_interface.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="interface.cpp">
