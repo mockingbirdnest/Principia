@@ -65,7 +65,6 @@ class TransformsTest : public testing::Test {
         body1_fn_({body1_from_.get(), body1_to_.get()}),
         body2_fn_({body2_from_.get(), body2_to_.get()}),
         satellite_fn_({satellite_from_.get(), nullptr}) {
-
     // The various bodies move have both a position and a velocity that
     // increases linearly with time.  This is not a situation that's physically
     // possible, but we don't care, all we want is to make sure that the
