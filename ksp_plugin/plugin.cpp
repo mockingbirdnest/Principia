@@ -214,9 +214,7 @@ RelativeDegreesOfFreedom<AliceSun> Plugin::CelestialFromParent(
 
 RenderedTrajectory<World> Plugin::RenderedVesselTrajectory(
     GUID const& vessel_guid,
-    not_null<
-        Transforms<MobileInterface, Barycentric, Rendering, Barycentric>*> const
-        transforms,
+    not_null<RenderingTransforms*> const transforms,
     Position<World> const& sun_world_position) const {
   CHECK(!initializing_);
   not_null<std::unique_ptr<Vessel>> const& vessel =
@@ -239,9 +237,7 @@ RenderedTrajectory<World> Plugin::RenderedVesselTrajectory(
 }
 
 RenderedTrajectory<World> Plugin::RenderedPrediction(
-    not_null<
-        Transforms<MobileInterface, Barycentric, Rendering, Barycentric>*> const
-        transforms,
+    not_null<RenderingTransforms*> const transforms,
     Position<World> const& sun_world_position) {
   CHECK(!initializing_);
   if (!HasPredictions()) {
@@ -276,20 +272,18 @@ void Plugin::set_prediction_step(Time const& t) {
   prediction_step_ = t;
 }
 
-not_null<std::unique_ptr<
-    Transforms<MobileInterface, Barycentric, Rendering, Barycentric>>>
+not_null<std::unique_ptr<RenderingTransforms>>
 Plugin::NewBodyCentredNonRotatingTransforms(
     Index const reference_body_index) const {
   // TODO(egg): this should be const, use a custom comparator in the map.
   not_null<Celestial*> reference_body =
       FindOrDie(celestials_, reference_body_index).get();
-  return Transforms<MobileInterface, Barycentric, Rendering, Barycentric>::
-             BodyCentredNonRotating(*reference_body,
-                                    &MobileInterface::prolongation);
+  return RenderingTransforms::BodyCentredNonRotating(
+             *reference_body,
+             &MobileInterface::prolongation);
 }
 
-not_null<std::unique_ptr<
-    Transforms<MobileInterface, Barycentric, Rendering, Barycentric>>>
+not_null<std::unique_ptr<RenderingTransforms>>
 Plugin::NewBarycentricRotatingTransforms(Index const primary_index,
                                          Index const secondary_index) const {
   // TODO(egg): these should be const, use a custom comparator in the map.
@@ -297,10 +291,9 @@ Plugin::NewBarycentricRotatingTransforms(Index const primary_index,
       FindOrDie(celestials_, primary_index).get();
   not_null<Celestial*> secondary =
       FindOrDie(celestials_, secondary_index).get();
-  return Transforms<MobileInterface, Barycentric, Rendering, Barycentric>::
-      BarycentricRotating(*primary,
-                          *secondary,
-                          &MobileInterface::prolongation);
+  return RenderingTransforms::BarycentricRotating(*primary,
+             *secondary,
+             &MobileInterface::prolongation);
 }
 
 void Plugin::AddVesselToNextPhysicsBubble(
@@ -748,8 +741,7 @@ void Plugin::UpdatePredictions() {
 RenderedTrajectory<World> Plugin::RenderTrajectory(
     not_null<Body const*> const body,
     Trajectory<Barycentric>::TransformingIterator<Rendering> const& actual_it,
-    not_null<Transforms<MobileInterface, Barycentric, Rendering, Barycentric>*>
-        const transforms,
+    not_null<RenderingTransforms*> const transforms,
     Position<World> const& sun_world_position) const {
   RenderedTrajectory<World> result;
   auto const to_world =

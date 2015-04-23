@@ -278,48 +278,38 @@ TEST_F(InterfaceTest, CelestialFromParent) {
 }
 
 TEST_F(InterfaceTest, NewBodyCentredNonRotatingTransforms) {
-  auto dummy_transforms =
-      Transforms<MobileInterface, Barycentric, Rendering, Barycentric>::
-          DummyForTesting().release();
+  auto dummy_transforms = RenderingTransforms::DummyForTesting().release();
   EXPECT_CALL(*plugin_,
               FillBodyCentredNonRotatingTransforms(kCelestialIndex, _))
       .WillOnce(FillUniquePtr<1>(dummy_transforms));
-  std::unique_ptr<
-      Transforms<MobileInterface, Barycentric, Rendering, Barycentric>>
-      transforms(
-          principia__NewBodyCentredNonRotatingTransforms(plugin_.get(),
-                                                         kCelestialIndex));
+  std::unique_ptr<RenderingTransforms> transforms(
+      principia__NewBodyCentredNonRotatingTransforms(plugin_.get(),
+                                                      kCelestialIndex));
   EXPECT_EQ(dummy_transforms, transforms.get());
 }
 
 TEST_F(InterfaceTest, NewBarycentricRotatingTransforms) {
-  auto dummy_transforms =
-      Transforms<MobileInterface, Barycentric, Rendering, Barycentric>::
-          DummyForTesting().release();
+  auto dummy_transforms = RenderingTransforms::DummyForTesting().release();
   EXPECT_CALL(*plugin_,
               FillBarycentricRotatingTransforms(kCelestialIndex,
                                                 kParentIndex,
                                                 _))
       .WillOnce(FillUniquePtr<2>(dummy_transforms));
-  std::unique_ptr<
-      Transforms<MobileInterface, Barycentric, Rendering, Barycentric>>
-      transforms(
-          principia__NewBarycentricRotatingTransforms(plugin_.get(),
-                                                      kCelestialIndex,
-                                                      kParentIndex));
+  std::unique_ptr<RenderingTransforms> transforms(
+      principia__NewBarycentricRotatingTransforms(plugin_.get(),
+                                                  kCelestialIndex,
+                                                  kParentIndex));
   EXPECT_EQ(dummy_transforms, transforms.get());
 }
 
 TEST_F(InterfaceTest, DeleteTransforms) {
-  auto dummy_transforms =
-      Transforms<MobileInterface, Barycentric, Rendering, Barycentric>::
-          DummyForTesting().release();
+  auto dummy_transforms = RenderingTransforms::DummyForTesting().release();
   EXPECT_CALL(*plugin_,
               FillBarycentricRotatingTransforms(kCelestialIndex,
                                                 kParentIndex,
                                                 _))
       .WillOnce(FillUniquePtr<2>(dummy_transforms));
-  Transforms<MobileInterface, Barycentric, Rendering, Barycentric>* transforms(
+  RenderingTransforms* transforms(
       principia__NewBarycentricRotatingTransforms(plugin_.get(),
                                                   kCelestialIndex,
                                                   kParentIndex));
@@ -329,15 +319,13 @@ TEST_F(InterfaceTest, DeleteTransforms) {
 }
 
 TEST_F(InterfaceTest, RenderedPrediction) {
-  auto dummy_transforms =
-      Transforms<MobileInterface, Barycentric, Rendering, Barycentric>::
-          DummyForTesting().release();
+  auto dummy_transforms = RenderingTransforms::DummyForTesting().release();
   EXPECT_CALL(*plugin_,
               FillBarycentricRotatingTransforms(kCelestialIndex,
                                                 kParentIndex,
                                                 _))
       .WillOnce(FillUniquePtr<2>(dummy_transforms));
-  Transforms<MobileInterface, Barycentric, Rendering, Barycentric>* transforms =
+  RenderingTransforms* transforms =
       principia__NewBarycentricRotatingTransforms(plugin_.get(),
                                                   kCelestialIndex,
                                                   kParentIndex);
@@ -393,15 +381,13 @@ TEST_F(InterfaceTest, RenderedPrediction) {
 }
 
 TEST_F(InterfaceTest, LineAndIterator) {
-  auto dummy_transforms =
-      Transforms<MobileInterface, Barycentric, Rendering, Barycentric>::
-          DummyForTesting().release();
+  auto dummy_transforms = RenderingTransforms::DummyForTesting().release();
   EXPECT_CALL(*plugin_,
               FillBarycentricRotatingTransforms(kCelestialIndex,
                                                 kParentIndex,
                                                 _))
       .WillOnce(FillUniquePtr<2>(dummy_transforms));
-  Transforms<MobileInterface, Barycentric, Rendering, Barycentric>* transforms =
+  RenderingTransforms* transforms =
       principia__NewBarycentricRotatingTransforms(plugin_.get(),
                                                   kCelestialIndex,
                                                   kParentIndex);

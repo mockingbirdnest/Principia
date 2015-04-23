@@ -64,6 +64,9 @@ struct LineSegment {
 template<typename Frame>
 using RenderedTrajectory = std::vector<LineSegment<Frame>>;
 
+using RenderingTransforms =
+    Transforms<MobileInterface, Barycentric, Rendering, Barycentric>;
+
 class Plugin {
  public:
   Plugin() = delete;
@@ -182,9 +185,7 @@ class Plugin {
   // relation between |WorldSun| and |World|.  No transfer of ownership.
   virtual RenderedTrajectory<World> RenderedVesselTrajectory(
       GUID const& vessel_guid,
-      not_null<
-          Transforms<MobileInterface, Barycentric, Rendering, Barycentric>*>
-          const transforms,
+      not_null<RenderingTransforms*> const transforms,
       Position<World> const& sun_world_position) const;
 
   // Returns a polygon in |World| space depicting the trajectory of
@@ -197,9 +198,7 @@ class Plugin {
   // called after |predicted_vessel_| was set.  Not const because of the stupid
   // global variable |transforms_are_operating_on_predictions_|.
   virtual RenderedTrajectory<World> RenderedPrediction(
-      not_null<
-          Transforms<MobileInterface, Barycentric, Rendering, Barycentric>*>
-          const transforms,
+      not_null<RenderingTransforms*> const transforms,
       Position<World> const& sun_world_position);
 
   virtual void set_predicted_vessel(GUID const& vessel_guid);
@@ -211,12 +210,10 @@ class Plugin {
   // The step used when computing the prediction.
   virtual void set_prediction_step(Time const& t);
 
-  virtual not_null<std::unique_ptr<
-      Transforms<MobileInterface, Barycentric, Rendering, Barycentric>>>
+  virtual not_null<std::unique_ptr<RenderingTransforms>>
   NewBodyCentredNonRotatingTransforms(Index const reference_body_index) const;
 
-  virtual not_null<std::unique_ptr<
-      Transforms<MobileInterface, Barycentric, Rendering, Barycentric>>>
+  virtual not_null<std::unique_ptr<RenderingTransforms>>
   NewBarycentricRotatingTransforms(Index const primary_index,
                                    Index const secondary_index) const;
 
@@ -343,9 +340,7 @@ class Plugin {
   RenderedTrajectory<World> RenderTrajectory(
       not_null<Body const*> const body,
       Trajectory<Barycentric>::TransformingIterator<Rendering> const& actual_it,
-      not_null<
-          Transforms<MobileInterface, Barycentric, Rendering, Barycentric>*>
-          const transforms,
+      not_null<RenderingTransforms*>const transforms,
       Position<World> const& sun_world_position) const;
 
   // TODO(egg): Constant time step for now.
