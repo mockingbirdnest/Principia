@@ -10,6 +10,7 @@ git clone "https://github.com/google/protobuf.git" --depth 1 -b "v3.0.0-alpha-1"
 pushd protobuf
 git am "../../documentation/Setup Files/protobuf.patch"
 ./autogen.sh
+./autogen.sh # Makefile.in ends up being missing unless we run this twice??
 ./configure CC=clang CXX=clang++ CXXFLAGS='-fPIC -m64 -std=c++11 -stdlib=libc++ -O3 -g' LDFLAGS='-stdlib=libc++'
 make -j 8
 
@@ -24,25 +25,25 @@ popd
 svn checkout http://googlemock.googlecode.com/svn/trunk/ gmock
 svn checkout http://googletest.googlecode.com/svn/trunk/ gtest
 pushd gtest
-wget "https://googletest.googlecode.com/issues/attachment?aid=4640000000&name=GetThreadCountForLinux.patch&token=ABZ6GAdR6MB7HLYD00TNsyrZ2EonGnqpWQ%3A1427585369726" -O thread_count.patch
+wget "https://gist.githubusercontent.com/Norgg/241ee11d278c0a55cc96/raw/4b23a866c6631ba0077229be366e67cde18fb035/gtest_linux_thread_count.patch" -O thread_count.patch
 patch -p 0 -i thread_count.patch
 
 popd
 pushd gmock
 patch -p 1 -i "../../documentation/Setup Files/gmock.patch"; true
 
-popd
-git clone https://github.com/pleroy/benchmark
-pushd benchmark
-cmake .
-make
+#popd
+#git clone https://github.com/pleroy/benchmark
+#pushd benchmark
+#cmake .
+#make
 
-popd
-git clone "https://chromium.googlesource.com/chromium/src.git" chromium -n --depth 1 -b "40.0.2193.1"
-# $GitPromptSettings.RepositoriesInWhichToDisableFileStatus += join-path  (gi -path .).FullName chromium
-pushd chromium
-git config core.sparsecheckout true
-cp "../../documentation/Setup Files/chromium_sparse_checkout.txt" .git/info/sparse-checkout
-git checkout
-git am "../../documentation/Setup Files/chromium.patch"
+#popd
+#git clone "https://chromium.googlesource.com/chromium/src.git" chromium -n --depth 1 -b "40.0.2193.1"
+## $GitPromptSettings.RepositoriesInWhichToDisableFileStatus += join-path  (gi -path .).FullName chromium
+#pushd chromium
+#git config core.sparsecheckout true
+#cp "../../documentation/Setup Files/chromium_sparse_checkout.txt" .git/info/sparse-checkout
+#git checkout
+#git am "../../documentation/Setup Files/chromium.patch"
 
