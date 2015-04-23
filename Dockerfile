@@ -29,7 +29,7 @@ RUN svn checkout http://googlemock.googlecode.com/svn/trunk/ gmock
 RUN svn checkout http://googletest.googlecode.com/svn/trunk/ gtest
 
 WORKDIR /opt/principia/gtest/
-RUN wget "https://googletest.googlecode.com/issues/attachment?aid=4640000000&name=GetThreadCountForLinux.patch&token=ABZ6GAdR6MB7HLYD00TNsyrZ2EonGnqpWQ%3A1427585369726" -O thread_count.patch
+RUN wget "https://gist.githubusercontent.com/Norgg/241ee11d278c0a55cc96/raw/4b23a866c6631ba0077229be366e67cde18fb035/gtest_linux_thread_count.patch" -O thread_count.patch
 RUN patch -p 0 -i thread_count.patch
 
 WORKDIR /opt/principia/gmock
