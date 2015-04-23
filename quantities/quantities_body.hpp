@@ -75,11 +75,11 @@ struct Dimensions {
       (WindingExponent & kExponentMask)           << 9 * kExponentBits;   // NOLINT
 };
 
-namespace type_generators {
+namespace internal {
 template<typename Q>
-struct Collapse { using ResultType = Q; };
+struct Collapse { using Type = Q; };
 template<>
-struct Collapse<Quantity<NoDimensions>> { using ResultType = double; };
+struct Collapse<Quantity<NoDimensions>> { using Type = double; };
 template<typename Left, typename Right>
 struct ProductGenerator {
   enum {
@@ -97,18 +97,18 @@ struct ProductGenerator {
     SolidAngle        = Left::Dimensions::SolidAngle +
                         Right::Dimensions::SolidAngle
   };
-  using ResultType = typename Collapse<
+  using Type = typename Collapse<
       Quantity<Dimensions<Length, Mass, Time, Current, Temperature, Amount,
                           LuminousIntensity, Winding, Angle,
-                          SolidAngle>>>::ResultType;
+                          SolidAngle>>>::Type;
 };
 template<typename Left>
-struct ProductGenerator<Left, double> { using ResultType = Left; };
+struct ProductGenerator<Left, double> { using Type = Left; };
 template<typename Right>
-struct ProductGenerator<double, Right> { using ResultType = Right; };
+struct ProductGenerator<double, Right> { using Type = Right; };
 template<>
 struct ProductGenerator<double, double> {
-  using ResultType = double;
+  using Type = double;
 };
 template<typename Left, typename Right>
 struct QuotientGenerator {
@@ -127,16 +127,16 @@ struct QuotientGenerator {
     SolidAngle        = Left::Dimensions::SolidAngle -
                         Right::Dimensions::SolidAngle
   };
-  using ResultType = typename Collapse<
+  using Type = typename Collapse<
       Quantity<Dimensions<Length, Mass, Time, Current, Temperature, Amount,
                           LuminousIntensity, Winding, Angle,
-                          SolidAngle>>>::ResultType;
+                          SolidAngle>>>::Type;
 };
 template<typename Left>
-struct QuotientGenerator<Left, double> { using ResultType = Left; };
+struct QuotientGenerator<Left, double> { using Type = Left; };
 template<>
 struct QuotientGenerator<double, double> {
-  using ResultType = double;
+  using Type = double;
 };
 template<typename Right>
 struct QuotientGenerator<double, Right> {
@@ -152,27 +152,29 @@ struct QuotientGenerator<double, Right> {
     Angle             = -Right::Dimensions::Angle,
     SolidAngle        = -Right::Dimensions::SolidAngle
   };
-  using ResultType = Quantity<
+  using Type = Quantity<
       Dimensions<Length, Mass, Time, Current, Temperature, Amount,
                  LuminousIntensity, Winding, Angle, SolidAngle>>;
 };
-template<typename Q, int Exponent, typename>
-struct PowerGenerator {};
-template<typename Q, int Exponent>
-struct PowerGenerator<Q, Exponent, Range<(Exponent > 1)>> {
-  using ResultType =
-      Product<typename PowerGenerator<Q, Exponent - 1>::ResultType, Q>;
+
+template<typename T, int exponent>
+struct ExponentiationGenerator<T, exponent, std::enable_if_t<(exponent > 1)>> {
+  using Type = Product<typename ExponentiationGenerator<T, exponent - 1>::Type,
+                       T>;
 };
-template<typename Q, int Exponent>
-struct PowerGenerator<Q, Exponent, Range<(Exponent < 1)>>{
-  using ResultType =
-      Quotient<typename PowerGenerator<Q, Exponent + 1>::ResultType, Q>;
+
+template<typename T, int exponent>
+struct ExponentiationGenerator<T, exponent, std::enable_if_t<(exponent < 1)>>{
+  using Type = Quotient<typename ExponentiationGenerator<T, exponent + 1>::Type,
+                        T>;
 };
-template<typename Q, int Exponent>
-struct PowerGenerator<Q, Exponent, Range<(Exponent == 1)>>{
-  using ResultType = Q;
+
+template<typename T, int exponent>
+struct ExponentiationGenerator<T, exponent, std::enable_if_t<(exponent == 1)>>{
+  using Type = T;
 };
-}  // namespace type_generators
+
+}  // namespace internal
 
 template<typename D>
 inline Quantity<D>::Quantity() : magnitude_(0) {}
@@ -285,17 +287,17 @@ inline Quantity<D> Quantity<D>::operator*(double const right) const {
 }
 
 template<typename LDimensions, typename RDimensions>
-inline Product<Quantity<LDimensions>, Quantity<RDimensions>> operator*(
-    Quantity<LDimensions> const& left,
-    Quantity<RDimensions> const& right) {
+inline internal::Product<Quantity<LDimensions>, Quantity<RDimensions>>
+operator*(Quantity<LDimensions> const& left,
+          Quantity<RDimensions> const& right) {
   return Product<Quantity<LDimensions>,
                  Quantity<RDimensions>>(left.magnitude_ * right.magnitude_);
 }
 
 template<typename LDimensions, typename RDimensions>
-inline Quotient<Quantity<LDimensions>, Quantity<RDimensions>> operator/(
-    Quantity<LDimensions> const& left,
-    Quantity<RDimensions> const& right) {
+inline internal::Quotient<Quantity<LDimensions>, Quantity<RDimensions>>
+operator/(Quantity<LDimensions> const& left,
+          Quantity<RDimensions> const& right) {
   return Quotient<Quantity<LDimensions>,
                   Quantity<RDimensions>>(left.magnitude_ / right.magnitude_);
 }

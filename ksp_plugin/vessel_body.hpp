@@ -53,6 +53,20 @@ inline not_null<Trajectory<Barycentric>*> Vessel::mutable_prolongation() {
   return prolongation_;
 }
 
+inline Trajectory<Barycentric> const& Vessel::prediction() const {
+  CHECK(is_initialized());
+  return *CHECK_NOTNULL(prediction_);
+}
+
+inline Trajectory<Barycentric>* Vessel::mutable_prediction() {
+  CHECK(is_initialized());
+  return prediction_;
+}
+
+inline bool Vessel::has_prediction() const {
+  return prediction_ != nullptr;
+}
+
 inline void Vessel::CreateProlongation(
     Instant const& time,
     DegreesOfFreedom<Barycentric> const& degrees_of_freedom) {
@@ -80,6 +94,15 @@ inline void Vessel::ResetProlongation(Instant const& time) {
   CHECK(owned_prolongation_ == nullptr);
   history_->DeleteFork(&prolongation_);
   prolongation_ = history_->NewFork(time);
+}
+
+inline void Vessel::ForkPrediction() {
+  CHECK(prediction_ == nullptr);
+  prediction_ = mutable_prolongation()->NewFork(prolongation().last().time());
+}
+
+inline void Vessel::DeletePrediction() {
+  prolongation_->DeleteFork(&prediction_);
 }
 
 inline void Vessel::WriteToMessage(

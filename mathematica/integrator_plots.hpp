@@ -5,6 +5,7 @@ namespace mathematica {
 
 void GenerateSimpleHarmonicMotionWorkErrorGraphs();
 void GenerateKeplerProblemWorkErrorGraphs();
+void GenerateSolarSystemPlanetsWorkErrorGraph();
 
 }  // namespace mathematica
 }  // namespace principia

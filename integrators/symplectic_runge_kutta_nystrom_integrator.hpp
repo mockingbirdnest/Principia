@@ -5,11 +5,12 @@
 
 #include "base/not_null.hpp"
 #include "integrators/symplectic_integrator.hpp"
+#include "quantities/named_quantities.hpp"
 
 namespace principia {
 
 using base::not_null;
-using quantities::Quotient;
+using quantities::Variation;
 
 namespace integrators {
 
@@ -43,11 +44,6 @@ namespace integrators {
 // c₁ = 0, cᵢ = cᵢ₋₁ + aᵢ₋₁ for i > 1.
 
 class SRKNIntegrator : public SymplecticIntegrator {
- protected:
-  // The dimension of the time derivative.
-  template<typename T>
-  using Variation = Quotient<T, Time>;
-
  public:
   SRKNIntegrator(std::vector<double> const& a, std::vector<double> const& b);
 
