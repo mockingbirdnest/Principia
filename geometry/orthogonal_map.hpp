@@ -58,10 +58,9 @@ class OrthogonalMap : public LinearMap<FromFrame, ToFrame> {
   Rotation<FromFrame, ToFrame> rotation_;
 
   template<typename From, typename To>
-  friend class OrthogonalMap;
-
-  template<typename From, typename To>
   friend class Identity;
+  template<typename From, typename To>
+  friend class OrthogonalMap;
   template<typename From, typename To>
   friend class Permutation;
   template<typename From, typename To>
