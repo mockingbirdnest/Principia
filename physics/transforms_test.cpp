@@ -21,8 +21,8 @@ namespace principia {
 using base::make_not_null_unique;
 using geometry::Frame;
 using geometry::InnerProduct;
-using geometry::Rotation;
 using geometry::Normalize;
+using geometry::Rotation;
 using quantities::Abs;
 using quantities::Length;
 using quantities::Mass;
