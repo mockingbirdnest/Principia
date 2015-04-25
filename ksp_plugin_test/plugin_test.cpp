@@ -443,7 +443,7 @@ TEST_F(PluginTest, VesselInsertionAtInitialization) {
                                     satellite_initial_velocity_));
   EXPECT_THAT(plugin_->VesselFromParent(guid),
               Componentwise(
-                  AlmostEquals(satellite_initial_displacement_, 7460),
+                  AlmostEquals(satellite_initial_displacement_, 13906),
                   AlmostEquals(satellite_initial_velocity_, 3)));
 }
 
@@ -858,9 +858,9 @@ TEST_F(PluginTest, UpdateCelestialHierarchy) {
         from_parent,
         Componentwise(
             AlmostEquals(looking_glass_.Inverse()(
-                plugin_->CelestialFromParent(index).displacement()), 1, 5056),
+                plugin_->CelestialFromParent(index).displacement()), 1, 37824),
             AlmostEquals(looking_glass_.Inverse()(
-                plugin_->CelestialFromParent(index).velocity()), 1, 936)));
+                plugin_->CelestialFromParent(index).velocity()), 0, 936)));
   }
 }
 
@@ -1120,6 +1120,27 @@ TEST_F(PluginTest, Prediction) {
         Lt(0.011));
   }
   plugin.clear_predicted_vessel();
+}
+
+TEST_F(PluginTest, NavBall) {
+  // Create a plugin with planetarium rotation 0.
+  auto plugin = Plugin(initial_time_,
+                       SolarSystem::kSun,
+                       sun_gravitational_parameter_,
+                       0 * Radian);
+  not_null<std::unique_ptr<
+      Transforms<Barycentric, Rendering, Barycentric>>> const heliocentric =
+          plugin.NewBodyCentredNonRotatingTransforms(SolarSystem::kSun);
+  Vector<double, World> x({1, 0, 0});
+  Vector<double, World> y({0, 1, 0});
+  Vector<double, World> z({0, 0, 1});
+  auto nav_ball = plugin.NavBall(heliocentric.get(), World::origin);
+  EXPECT_THAT(AbsoluteError(-z, nav_ball(World::origin)(x)),
+              Lt(2 * std::numeric_limits<double>::epsilon()));
+  EXPECT_THAT(AbsoluteError(y, nav_ball(World::origin)(y)),
+              Lt(std::numeric_limits<double>::epsilon()));
+  EXPECT_THAT(AbsoluteError(x, nav_ball(World::origin)(z)),
+              Lt(2 * std::numeric_limits<double>::epsilon()));
 }
 
 }  // namespace ksp_plugin

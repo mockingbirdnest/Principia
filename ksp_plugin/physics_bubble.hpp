@@ -8,6 +8,7 @@
 
 #include "base/not_null.hpp"
 #include "geometry/rotation.hpp"
+#include "geometry/orthogonal_map.hpp"
 #include "ksp_plugin/frames.hpp"
 #include "ksp_plugin/part.hpp"
 #include "ksp_plugin/vessel.hpp"
@@ -17,6 +18,7 @@
 namespace principia {
 
 using base::not_null;
+using geometry::OrthogonalMap;
 using physics::DegreesOfFreedom;
 using physics::RelativeDegreesOfFreedom;
 
@@ -24,7 +26,7 @@ namespace ksp_plugin {
 
 class PhysicsBubble {
  public:
-  using PlanetariumRotation = geometry::Rotation<Barycentric, WorldSun>;
+  using BarycentricToWorldSun = geometry::OrthogonalMap<Barycentric, WorldSun>;
 
   PhysicsBubble();
   ~PhysicsBubble() = default;
@@ -41,7 +43,7 @@ class PhysicsBubble {
   // |current_|.  The trajectory of the centre of mass is reset to a single
   // point at |current_time| if the composition of the bubble changes.
   // TODO(phl): Document the parameters!
-  void Prepare(PlanetariumRotation const& planetarium_rotation,
+  void Prepare(BarycentricToWorldSun const& barycentric_to_world_sun,
                Instant const& current_time,
                Instant const& next_time);
 
@@ -49,7 +51,7 @@ class PhysicsBubble {
   // |World| shift to be applied to the bubble in order for it to be in the
   // correct position.
   Displacement<World> DisplacementCorrection(
-      PlanetariumRotation const& planetarium_rotation,
+      BarycentricToWorldSun const& barycentric_to_world_sun,
       Celestial const& reference_celestial,
       Position<World> const& reference_celestial_world_position) const;
 
@@ -57,7 +59,7 @@ class PhysicsBubble {
   // shift to be applied to the physics bubble in order for it to have the
   // correct velocity.
   Velocity<World> VelocityCorrection(
-      PlanetariumRotation const& planetarium_rotation,
+      BarycentricToWorldSun const& barycentric_to_world_sun,
       Celestial const& reference_celestial) const;
 
   // Returns |current_ == nullptr|.
@@ -121,7 +123,7 @@ class PhysicsBubble {
   // Computes |next->displacements_from_centre_of_mass| and
   // |next->velocities_from_centre_of_mass|.
   void ComputeNextVesselOffsets(
-      PlanetariumRotation const& planetarium_rotation,
+      BarycentricToWorldSun const& barycentric_to_world_sun,
       not_null<FullState*> const next);
 
   // Creates |next->centre_of_mass_trajectory| and appends to it the barycentre
@@ -147,7 +149,7 @@ class PhysicsBubble {
   // |next->centre_of_mass_trajectory| and appends degrees of freedom at
   // |current_time| that conserve the degrees of freedom of the centre of mass
   // of the parts in |common_parts|.
-  void Shift(PlanetariumRotation const& planetarium_rotation,
+  void Shift(BarycentricToWorldSun const& barycentric_to_world_sun,
              Instant const& current_time,
              std::vector<PartCorrespondence> const& common_parts,
              not_null<FullState*> const next);

@@ -33,6 +33,7 @@ using geometry::Point;
 using geometry::Rotation;
 using integrators::SPRKIntegrator;
 using physics::Body;
+using physics::FrameField;
 using physics::NBodySystem;
 using physics::Trajectory;
 using physics::Transforms;
@@ -243,6 +244,12 @@ class Plugin {
   virtual Velocity<World> BubbleVelocityCorrection(
       Index const reference_body_index) const;
 
+  // The navball field at |current_time| for the given |transforms|.
+  virtual FrameField<World> NavBall(
+      not_null<
+          Transforms<Barycentric, Rendering, Barycentric>*> const transforms,
+      Position<World> const& sun_world_position) const;
+
   virtual Instant current_time() const;
 
   // Must be called after initialization.
@@ -291,11 +298,15 @@ class Plugin {
   // celestials.
   Instant const& HistoryTime() const;
 
-  // The rotation between the |World| basis at |current_time_| and the
-  // |Barycentric| axes. Since |WorldSun| is not a rotating reference frame,
+  // The rotation between the |AliceWorld| basis at |current_time_| and the
+  // |Barycentric| axes. Since |AliceSun| is not a rotating reference frame,
   // this change of basis is all that's required to convert relative velocities
   // or displacements between simultaneous events.
-  Rotation<Barycentric, WorldSun> PlanetariumRotation() const;
+  Rotation<Barycentric, AliceSun> PlanetariumRotation() const;
+
+  // returns
+  // |kSunLookingGlass.Inverse().Forget() * PlanetariumRotation().Forget()|.
+  OrthogonalMap<Barycentric, WorldSun> BarycentricToWorldSun() const;
 
   // Utilities for |AdvanceTime|.
 

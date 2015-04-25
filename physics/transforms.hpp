@@ -6,6 +6,7 @@
 #include <utility>
 
 #include "base/not_null.hpp"
+#include "physics/frame_field.hpp"
 #include "physics/trajectory.hpp"
 
 namespace principia {
@@ -64,6 +65,10 @@ class Transforms {
   typename Trajectory<ThroughFrame>:: template TransformingIterator<ToFrame>
   second(Trajectory<ThroughFrame> const& through_trajectory);
 
+  // The coordinate frame of |ThroughFrame|, expressed in the coordinates of
+  // |ToFrame| at the current time.
+  FrameField<ToFrame> coordinate_frame() const;
+
  private:
   typename Trajectory<FromFrame>::template Transform<ThroughFrame> first_;
   typename Trajectory<ThroughFrame>::template Transform<ToFrame> second_;
@@ -92,6 +97,8 @@ class Transforms {
   // the iterator is never called with the same time but different degrees of
   // freedom.
   Cache<FromFrame, ThroughFrame> first_cache_;
+
+  FrameField<ToFrame> coordinate_frame_;
 };
 
 }  // namespace physics

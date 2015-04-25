@@ -29,6 +29,7 @@ using base::PullSerializer;
 using base::PushDeserializer;
 using base::UniqueBytes;
 using geometry::Displacement;
+using geometry::Quaternion;
 using quantities::Pow;
 using si::Degree;
 using si::Metre;
@@ -67,6 +68,13 @@ R3Element<double> ToR3Element(XYZ const& xyz) {
 
 XYZ ToXYZ(R3Element<double> const& r3_element) {
   return {r3_element.x, r3_element.y, r3_element.z};
+}
+
+WXYZ ToWXYZ(Quaternion const& quaternion) {
+  return {quaternion.real_part(),
+          quaternion.imaginary_part().x,
+          quaternion.imaginary_part().y,
+          quaternion.imaginary_part().z};
 }
 
 }  // namespace
@@ -396,6 +404,22 @@ XYZ principia__BubbleVelocityCorrection(Plugin const* const plugin,
   Velocity<World> const result =
       CHECK_NOTNULL(plugin)->BubbleVelocityCorrection(reference_body_index);
   return ToXYZ(result.coordinates() / (Metre / Second));
+}
+
+WXYZ principia__NavBallOrientation(
+    Plugin const* const plugin,
+    Transforms<Barycentric, Rendering, Barycentric>* const transforms,
+    XYZ const sun_world_position,
+    XYZ const ship_world_position) {
+  FrameField<World> const frame_field = CHECK_NOTNULL(plugin)->NavBall(
+      transforms,
+      World::origin +
+          Displacement<World>(ToR3Element(sun_world_position) * Metre));
+  return ToWXYZ(
+      frame_field(
+          World::origin +
+              Displacement<World>(
+                  ToR3Element(ship_world_position) * Metre)).quaternion());
 }
 
 double principia__current_time(Plugin const* const plugin) {

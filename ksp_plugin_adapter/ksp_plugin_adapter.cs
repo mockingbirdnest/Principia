@@ -46,6 +46,7 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
   private int second_selected_celestial_ = 0;
 
   private bool display_patched_conics_ = false;
+  private bool fix_nav_ball_in_plotting_frame = false;
 
   private double[] prediction_steps_ =
     {1e1, 3e1, 1e2, 3e2, 1e3, 3e3, 1e4, 3e4, 1e5, 3e5, 1e6};
@@ -67,6 +68,7 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
   private bool plugin_from_save_;
 
   private Krakensbane krakensbane_;
+  private NavBall nav_ball_;
 
   PrincipiaPluginAdapter() {
     // We create this directory here so we do not need to worry about cross-
@@ -243,12 +245,16 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
            is_in_inertial_physics_bubble_in_space(active_vessel);
   }
 
-  private bool draw_active_vessel_trajectory() {
+  private bool has_active_vessel_in_space() {
     Vessel active_vessel = FlightGlobals.ActiveVessel;
-    return MapView.MapIsEnabled &&
-           active_vessel != null &&
+    return active_vessel != null &&
            (is_on_rails_in_space(active_vessel) ||
            is_in_inertial_physics_bubble_in_space(active_vessel));
+  }
+
+  private bool draw_active_vessel_trajectory() {
+    return MapView.MapIsEnabled &&
+           has_active_vessel_in_space();
   }
 
   #region ScenarioModule lifecycle
@@ -325,6 +331,23 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
         func       : DrawMainWindow,
         text       : "Traces of Various Descriptions",
         options    : UnityEngine.GUILayout.MinWidth(500));
+  }
+
+  private void Update() {
+    if (fix_nav_ball_in_plotting_frame &&
+        has_active_vessel_in_space()) {
+      if (nav_ball_ == null) {
+        nav_ball_ = (NavBall)FindObjectOfType(typeof(NavBall));
+      }
+      nav_ball_.navBall.rotation =
+          (UnityEngine.QuaternionD)nav_ball_.attitudeGymbal *  // sic.
+              (UnityEngine.QuaternionD)NavBallOrientation(
+                  plugin_,
+                  transforms_,
+                  (XYZ)Planetarium.fetch.Sun.position,
+                  (XYZ)(Vector3d)
+                      FlightGlobals.ActiveVessel.ReferenceTransform.position);
+    }
   }
 
   private void FixedUpdate() {
@@ -602,6 +625,10 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
 #endif
 
   private void ReferenceFrameSelection() {
+    fix_nav_ball_in_plotting_frame = 
+        UnityEngine.GUILayout.Toggle(
+            value : fix_nav_ball_in_plotting_frame,
+            text  : "Fix nav ball in plotting frame");
     bool barycentric_rotating =
         first_selected_celestial_ != second_selected_celestial_;
     String reference_frame_description =

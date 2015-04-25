@@ -55,6 +55,8 @@ class Rotation : public LinearMap<FromFrame, ToFrame> {
 
   static Rotation Identity();
 
+  Quaternion const& quaternion() const;
+
   void WriteToMessage(not_null<serialization::LinearMap*> const message) const;
   static Rotation ReadFromMessage(serialization::LinearMap const& message);
 

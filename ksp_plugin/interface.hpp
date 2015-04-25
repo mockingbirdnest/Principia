@@ -46,6 +46,14 @@ static_assert(std::is_standard_layout<QP>::value,
               "QP is used for interfacing");
 
 extern "C"
+struct WXYZ {
+  double w, x, y, z;
+};
+
+static_assert(std::is_standard_layout<WXYZ>::value,
+              "WXYZ is used for interfacing");
+
+extern "C"
 struct KSPPart {
   XYZ world_position;
   XYZ world_velocity;
@@ -274,6 +282,13 @@ XYZ CDECL principia__BubbleDisplacementCorrection(Plugin const* const plugin,
 extern "C" DLLEXPORT
 XYZ CDECL principia__BubbleVelocityCorrection(Plugin const* const plugin,
                                               int const reference_body_index);
+
+extern "C" DLLEXPORT
+WXYZ CDECL principia__NavBallOrientation(
+    Plugin const* const plugin,
+    Transforms<Barycentric, Rendering, Barycentric>* const transforms,
+    XYZ const sun_world_position,
+    XYZ const ship_world_position);
 
 extern "C" DLLEXPORT
 double CDECL principia__current_time(Plugin const* const plugin);

@@ -30,6 +30,7 @@ using geometry::BarycentreCalculator;
 using geometry::Bivector;
 using geometry::Identity;
 using geometry::Permutation;
+using geometry::Sign;
 using integrators::McLachlanAtela1992Order5Optimal;
 using quantities::Force;
 using si::Radian;
@@ -84,8 +85,7 @@ void Plugin::InsertCelestial(
   LOG(INFO) << "Initial |{orbit.pos, orbit.vel}| for celestial at index "
             << celestial_index << ": " << from_parent;
   auto const relative =
-      PlanetariumRotation().Inverse()(
-          kSunLookingGlass.Inverse()(from_parent));
+      PlanetariumRotation().Inverse()(from_parent);
   LOG(INFO) << "In barycentric coordinates: " << relative;
   not_null<Celestial*> const celestial = inserted.first->second.get();
   celestial->set_parent(parent);
@@ -139,8 +139,7 @@ void Plugin::SetVesselStateOffset(
   LOG(INFO) << "Initial |{orbit.pos, orbit.vel}| for vessel with GUID "
             << vessel_guid << ": " << from_parent;
   RelativeDegreesOfFreedom<Barycentric> const relative =
-      PlanetariumRotation().Inverse()(
-          kSunLookingGlass.Inverse()(from_parent));
+      PlanetariumRotation().Inverse()(from_parent);
   LOG(INFO) << "In barycentric coordinates: " << relative;
   vessel->CreateProlongation(
       current_time_,
@@ -155,7 +154,7 @@ void Plugin::AdvanceTime(Instant const& t, Angle const& planetarium_rotation) {
   CHECK(!initializing_);
   CHECK_GT(t, current_time_);
   CleanUpVessels();
-  bubble_->Prepare(PlanetariumRotation(), current_time_, t);
+  bubble_->Prepare(BarycentricToWorldSun(), current_time_, t);
   if (HistoryTime() + Δt_ < t) {
     // The histories are far enough behind that we can advance them at least one
     // step and reset the prolongations.
@@ -188,7 +187,7 @@ RelativeDegreesOfFreedom<AliceSun> Plugin::VesselFromParent(
       vessel->prolongation().last().degrees_of_freedom() -
       vessel->parent()->prolongation().last().degrees_of_freedom();
   RelativeDegreesOfFreedom<AliceSun> const result =
-      kSunLookingGlass(PlanetariumRotation()(barycentric_result));
+      PlanetariumRotation()(barycentric_result);
   VLOG(1) << "Vessel with GUID " << vessel_guid
           << " is at parent degrees of freedom + " << barycentric_result
           << " Barycentre (" << result << " AliceSun)";
@@ -205,7 +204,7 @@ RelativeDegreesOfFreedom<AliceSun> Plugin::CelestialFromParent(
       celestial.prolongation().last().degrees_of_freedom() -
       celestial.parent()->prolongation().last().degrees_of_freedom();
   RelativeDegreesOfFreedom<AliceSun> const result =
-      kSunLookingGlass(PlanetariumRotation()(barycentric_result));
+      PlanetariumRotation()(barycentric_result);
   VLOG(1) << "Celestial at index " << celestial_index
           << " is at parent degrees of freedom + " << barycentric_result
           << " Barycentre (" << result << " AliceSun)";
@@ -359,9 +358,9 @@ bool Plugin::PhysicsBubbleIsEmpty() const {
 Displacement<World> Plugin::BubbleDisplacementCorrection(
     Position<World> const& sun_world_position) const {
   VLOG(1) << __FUNCTION__ << '\n' << NAMED(sun_world_position);
-  VLOG_AND_RETURN(1, bubble_->DisplacementCorrection(PlanetariumRotation(),
-                                                    *sun_,
-                                                    sun_world_position));
+  VLOG_AND_RETURN(1, bubble_->DisplacementCorrection(BarycentricToWorldSun(),
+                                                     *sun_,
+                                                     sun_world_position));
 }
 
 Velocity<World> Plugin::BubbleVelocityCorrection(
@@ -369,8 +368,36 @@ Velocity<World> Plugin::BubbleVelocityCorrection(
   VLOG(1) << __FUNCTION__ << '\n' << NAMED(reference_body_index);
   Celestial const& reference_body =
       *FindOrDie(celestials_, reference_body_index);
-  VLOG_AND_RETURN(1, bubble_->VelocityCorrection(PlanetariumRotation(),
-                                                reference_body));
+  VLOG_AND_RETURN(1, bubble_->VelocityCorrection(BarycentricToWorldSun(),
+                                                 reference_body));
+}
+
+FrameField<World> Plugin::NavBall(
+    not_null<
+        Transforms<Barycentric,
+                   Rendering,
+                   Barycentric>*> const transforms,
+    Position<World> const& sun_world_position) const {
+  auto const to_world =
+      OrthogonalMap<WorldSun, World>::Identity() * BarycentricToWorldSun();
+  auto const positions_from_world =
+      AffineMap<World, Barycentric, Length, OrthogonalMap>(
+          sun_world_position,
+          sun_->prolongation().last().degrees_of_freedom().position(),
+          to_world.Inverse());
+  return [transforms, to_world, positions_from_world](
+      Position<World> const& q) -> Rotation<World, World> {
+    // KSP's navball has x west, y up, z south.
+    // we want x north, y west, z up.
+    auto const orthogonal_map = to_world *
+        transforms->coordinate_frame()(positions_from_world(q)).Forget() *
+        Permutation<World, Barycentric>(
+            Permutation<World, Barycentric>::XZY).Forget() *
+        Rotation<World, World>(π / 2 * Radian,
+                               Bivector<double, World>({0, 1, 0})).Forget();
+    CHECK(orthogonal_map.Determinant().Positive());
+    return orthogonal_map.rotation();
+  };
 }
 
 Instant Plugin::current_time() const {
@@ -548,12 +575,16 @@ Instant const& Plugin::HistoryTime() const {
   return sun_->history().last().time();
 }
 
-// The map between the vector spaces of |Barycentric| and |WorldSun| at
+// The map between the vector spaces of |Barycentric| and |AliceSun| at
 // |current_time_|.
-Rotation<Barycentric, WorldSun> Plugin::PlanetariumRotation() const {
-  return Rotation<Barycentric, WorldSun>(
+Rotation<Barycentric, AliceSun> Plugin::PlanetariumRotation() const {
+  return Rotation<Barycentric, AliceSun>(
       planetarium_rotation_,
-      Bivector<double, Barycentric>({0, 1, 0}));
+      Bivector<double, Barycentric>({0, 0, 1}));
+}
+
+OrthogonalMap<Barycentric, WorldSun> Plugin::BarycentricToWorldSun() const {
+  return kSunLookingGlass.Inverse().Forget() * PlanetariumRotation().Forget();
 }
 
 void Plugin::CleanUpVessels() {
@@ -790,10 +821,10 @@ RenderedTrajectory<World> Plugin::RenderTrajectory(
     Position<World> const& sun_world_position) const {
   RenderedTrajectory<World> result;
   auto const to_world =
-      AffineMap<Barycentric, World, Length, Rotation>(
+      AffineMap<Barycentric, World, Length, OrthogonalMap>(
           sun_->prolongation().last().degrees_of_freedom().position(),
           sun_world_position,
-          Rotation<WorldSun, World>::Identity() * PlanetariumRotation());
+          OrthogonalMap<WorldSun, World>::Identity() * BarycentricToWorldSun());
 
   // First build the trajectory resulting from the first transform.
   Trajectory<Rendering> intermediate_trajectory(actual_trajectory.body<Body>());
