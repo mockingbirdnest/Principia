@@ -10,11 +10,9 @@ namespace physics {
 
 template<typename Frame>
 FrameField<Frame> CoordinateFrame() {
-  auto const identically_identity =
-      [](Position<Frame> const&) -> Rotation<Frame, Frame> {
-        return Rotation<Frame, Frame>::Identity();
-      };
-  return identically_identity;
+  return [](Position<Frame> const&) -> Rotation<Frame, Frame> {
+           return Rotation<Frame, Frame>::Identity();
+         };
 }
 
 }  // namespace physics

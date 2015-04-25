@@ -340,7 +340,7 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
         nav_ball_ = (NavBall)FindObjectOfType(typeof(NavBall));
       }
       nav_ball_.navBall.rotation =
-          (UnityEngine.QuaternionD)nav_ball_.attitudeGymbal *
+          (UnityEngine.QuaternionD)nav_ball_.attitudeGymbal *  // sic.
               (UnityEngine.QuaternionD)NavBallOrientation(
                   plugin_,
                   transforms_,

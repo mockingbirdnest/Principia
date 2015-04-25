@@ -15,7 +15,7 @@ Sign OrthogonalMap<FromFrame, ToFrame>::Determinant() const {
 }
 
 template<typename FromFrame, typename ToFrame>
-Rotation<FromFrame, ToFrame>
+Rotation<FromFrame, ToFrame> const&
 OrthogonalMap<FromFrame, ToFrame>::rotation() const {
   return rotation_;
 }

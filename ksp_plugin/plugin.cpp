@@ -386,7 +386,7 @@ FrameField<World> Plugin::NavBall(
           sun_->prolongation().last().degrees_of_freedom().position(),
           to_world.Inverse());
   return [transforms, to_world, positions_from_world](
-      Position<World> const& q) {
+      Position<World> const& q) -> Rotation<World, World> {
     // KSP's navball has x west, y up, z south.
     // we want x north, y west, z up.
     auto const orthogonal_map = to_world *

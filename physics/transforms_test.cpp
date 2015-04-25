@@ -342,11 +342,11 @@ TEST_F(TransformsTest, BodiesBarycentricRotating) {
           transforms->coordinate_frame()(To::origin)(y),
           Normalize(body1_to_->last().degrees_of_freedom().velocity())),
       0);
-  EXPECT_LE(
-      Abs(InnerProduct(
+  EXPECT_THAT(
+      InnerProduct(
               transforms->coordinate_frame()(To::origin)(z),
-              Normalize(body1_to_->last().degrees_of_freedom().velocity()))),
-      4 * std::numeric_limits<double>::epsilon());
+              Normalize(body1_to_->last().degrees_of_freedom().velocity())),
+      VanishesBefore(1, 8));
 }
 
 }  // namespace physics

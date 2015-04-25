@@ -13,10 +13,10 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
   private struct XYZ {
     public double x, y, z;
     public static explicit operator XYZ(Vector3d v) {
-      return new XYZ {x = v.x, y = v.y, z = v.z};
+      return new XYZ{x = v.x, y = v.y, z = v.z};
     }
     public static explicit operator Vector3d(XYZ v) {
-      return new Vector3d {x = v.x, y = v.y, z = v.z};
+      return new Vector3d{x = v.x, y = v.y, z = v.z};
     }
   };
 
@@ -24,10 +24,10 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
   private struct WXYZ {
     public double w, x, y, z;
     public static explicit operator WXYZ(UnityEngine.QuaternionD q) {
-      return new WXYZ {w = q.w, x = q.x, y = q.y, z = q.z};
+      return new WXYZ{w = q.w, x = q.x, y = q.y, z = q.z};
     }
     public static explicit operator UnityEngine.QuaternionD(WXYZ q) {
-      return new UnityEngine.QuaternionD {w = q.w, x = q.x, y = q.y, z = q.z};
+      return new UnityEngine.QuaternionD{w = q.w, x = q.x, y = q.y, z = q.z};
     }
   };
 

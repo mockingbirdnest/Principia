@@ -21,7 +21,7 @@ class OrthogonalMap : public LinearMap<FromFrame, ToFrame> {
 
   Sign Determinant() const override;
 
-  Rotation<FromFrame, ToFrame> rotation() const;
+  Rotation<FromFrame, ToFrame> const& rotation() const;
 
   OrthogonalMap<ToFrame, FromFrame> Inverse() const;
 

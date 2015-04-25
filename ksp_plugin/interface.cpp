@@ -70,6 +70,13 @@ XYZ ToXYZ(R3Element<double> const& r3_element) {
   return {r3_element.x, r3_element.y, r3_element.z};
 }
 
+WXYZ ToWXYZ(Quaternion const& quaternion) {
+  return {quaternion.real_part(),
+          quaternion.imaginary_part().x,
+          quaternion.imaginary_part().y,
+          quaternion.imaginary_part().z};
+}
+
 }  // namespace
 
 void principia__InitGoogleLogging() {
@@ -404,19 +411,15 @@ WXYZ principia__NavBallOrientation(
     Transforms<Barycentric, Rendering, Barycentric>* const transforms,
     XYZ const sun_world_position,
     XYZ const ship_world_position) {
-  auto const frame_field = CHECK_NOTNULL(plugin)->NavBall(
+  FrameField<World> const frame_field = CHECK_NOTNULL(plugin)->NavBall(
       transforms,
       World::origin +
           Displacement<World>(ToR3Element(sun_world_position) * Metre));
-  Quaternion const& quaternion = 
+  return ToWXYZ(
       frame_field(
           World::origin +
               Displacement<World>(
-                  ToR3Element(ship_world_position) * Metre)).quaternion();
-  return {quaternion.real_part(),
-          quaternion.imaginary_part().x,
-          quaternion.imaginary_part().y,
-          quaternion.imaginary_part().z};
+                  ToR3Element(ship_world_position) * Metre)).quaternion());
 }
 
 double principia__current_time(Plugin const* const plugin) {
