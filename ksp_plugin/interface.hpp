@@ -187,17 +187,17 @@ QP CDECL principia__CelestialFromParent(Plugin const* const plugin,
 // Calls |plugin->NewBodyCentredNonRotatingFrame| with the arguments given.
 // |plugin| must not be null.  The caller gets ownership of the returned object.
 extern "C" DLLEXPORT
-RenderingTransforms* CDECL
-principia__NewBodyCentredNonRotatingTransforms(Plugin const* const plugin,
-                                               int const reference_body_index);
+RenderingTransforms* CDECL principia__NewBodyCentredNonRotatingTransforms(
+    Plugin const* const plugin,
+    int const reference_body_index);
 
 // Calls |plugin->NewBarycentricRotatingFrame| with the arguments given.
 // |plugin| must not be null.  The caller gets ownership of the returned object.
 extern "C" DLLEXPORT
-RenderingTransforms* CDECL
-principia__NewBarycentricRotatingTransforms(Plugin const* const plugin,
-                                            int const primary_index,
-                                            int const secondary_index);
+RenderingTransforms* CDECL principia__NewBarycentricRotatingTransforms(
+    Plugin const* const plugin,
+    int const primary_index,
+    int const secondary_index);
 
 // Deletes and nulls |*transforms|.
 // |transforms| must not be null.  No transfer of ownership of |*transforms|,

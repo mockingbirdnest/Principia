@@ -14,12 +14,9 @@ class MobileInterface {
   virtual Trajectory<Barycentric> const& history() const = 0;
   virtual not_null<Trajectory<Barycentric>*> mutable_history() = 0;
 
-  // Both accessors require |is_initialized()|.
   virtual Trajectory<Barycentric> const& prolongation() const = 0;
   virtual not_null<Trajectory<Barycentric>*> mutable_prolongation() = 0;
 
-  // Both accessors require |is_initialized()|.  In addition the first one
-  // requires |has_prediction()|.
   virtual Trajectory<Barycentric> const& prediction() const = 0;
   virtual Trajectory<Barycentric>* mutable_prediction() = 0;
   virtual bool has_prediction() const = 0;

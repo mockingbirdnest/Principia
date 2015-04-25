@@ -262,17 +262,17 @@ QP principia__CelestialFromParent(Plugin const* const plugin,
           ToXYZ(result.velocity().coordinates() / (Metre / Second))};
 }
 
-RenderingTransforms*
-principia__NewBodyCentredNonRotatingTransforms(Plugin const* const plugin,
-                                               int const reference_body_index) {
+RenderingTransforms* principia__NewBodyCentredNonRotatingTransforms(
+    Plugin const* const plugin,
+    int const reference_body_index) {
   return CHECK_NOTNULL(plugin)->
       NewBodyCentredNonRotatingTransforms(reference_body_index).release();
 }
 
-RenderingTransforms*
-principia__NewBarycentricRotatingTransforms(Plugin const* const plugin,
-                                            int const primary_index,
-                                            int const secondary_index) {
+RenderingTransforms* principia__NewBarycentricRotatingTransforms(
+    Plugin const* const plugin,
+    int const primary_index,
+    int const secondary_index) {
   return CHECK_NOTNULL(plugin)->
       NewBarycentricRotatingTransforms(
           primary_index, secondary_index).release();
