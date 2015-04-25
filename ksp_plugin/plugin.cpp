@@ -213,7 +213,7 @@ RelativeDegreesOfFreedom<AliceSun> Plugin::CelestialFromParent(
 
 RenderedTrajectory<World> Plugin::RenderedVesselTrajectory(
     GUID const& vessel_guid,
-    not_null<Transforms<Barycentric, Rendering, Barycentric>*> const transforms,
+    not_null<RenderingTransforms*> const transforms,
     Position<World> const& sun_world_position) const {
   CHECK(!initializing_);
   not_null<std::unique_ptr<Vessel>> const& vessel =
@@ -228,32 +228,28 @@ RenderedTrajectory<World> Plugin::RenderedVesselTrajectory(
   }
 
   // Compute the apparent trajectory using the given |transforms|.
-  Trajectory<Barycentric> const& actual_trajectory = vessel->history();
-  return RenderTrajectory(actual_trajectory,
-                          transforms->first(actual_trajectory),
+  return RenderTrajectory(vessel->body(),
+                          transforms->first(*vessel,
+                                            &MobileInterface::history),
                           transforms,
                           sun_world_position);
 }
 
 RenderedTrajectory<World> Plugin::RenderedPrediction(
-    not_null<
-        Transforms<Barycentric, Rendering, Barycentric>*> const transforms,
+    not_null<RenderingTransforms*> const transforms,
     Position<World> const& sun_world_position) {
   CHECK(!initializing_);
   if (!HasPredictions()) {
     return RenderedTrajectory<World>();
   }
-  Trajectory<Barycentric> const& actual_trajectory =
-      predicted_vessel_->prediction();
-  transforms_are_operating_on_predictions_ = true;
   RenderedTrajectory<World> result =
-      RenderTrajectory(actual_trajectory,
+      RenderTrajectory(predicted_vessel_->body(),
                        transforms->first_on_or_after(
-                           actual_trajectory,
-                           *actual_trajectory.fork_time()),
+                           *predicted_vessel_,
+                           &MobileInterface::prediction,
+                           *predicted_vessel_->prediction().fork_time()),
                        transforms,
                        sun_world_position);
-  transforms_are_operating_on_predictions_ = false;
   return result;
 }
 
@@ -275,33 +271,18 @@ void Plugin::set_prediction_step(Time const& t) {
   prediction_step_ = t;
 }
 
-not_null<std::unique_ptr<Transforms<Barycentric, Rendering, Barycentric>>>
+not_null<std::unique_ptr<RenderingTransforms>>
 Plugin::NewBodyCentredNonRotatingTransforms(
     Index const reference_body_index) const {
   // TODO(egg): this should be const, use a custom comparator in the map.
   not_null<Celestial*> reference_body =
       FindOrDie(celestials_, reference_body_index).get();
-  Transforms<Barycentric, Rendering, Barycentric>::
-      LazyTrajectory<Barycentric> const
-          reference_body_prolongation_or_prediction =
-              [this, reference_body]() -> Trajectory<Barycentric> const& {
-                  if (transforms_are_operating_on_predictions_) {
-                  return reference_body->Celestial::prediction();
-                } else {
-                  // TODO(phl): Investigate why Celestial:: is here once we have
-                  // a working LLVM.
-                  return reference_body->Celestial::prolongation();
-                }
-              };
-  Transforms<Barycentric, Rendering, Barycentric>::
-      LazyTrajectory<Barycentric> reference_body_prolongation =
-          std::bind(&Celestial::prolongation, reference_body);
-  return Transforms<Barycentric, Rendering, Barycentric>::
-             BodyCentredNonRotating(reference_body_prolongation_or_prediction,
-                                    reference_body_prolongation);
+  return RenderingTransforms::BodyCentredNonRotating(
+             *reference_body,
+             &MobileInterface::prolongation);
 }
 
-not_null<std::unique_ptr<Transforms<Barycentric, Rendering, Barycentric>>>
+not_null<std::unique_ptr<RenderingTransforms>>
 Plugin::NewBarycentricRotatingTransforms(Index const primary_index,
                                          Index const secondary_index) const {
   // TODO(egg): these should be const, use a custom comparator in the map.
@@ -309,35 +290,9 @@ Plugin::NewBarycentricRotatingTransforms(Index const primary_index,
       FindOrDie(celestials_, primary_index).get();
   not_null<Celestial*> secondary =
       FindOrDie(celestials_, secondary_index).get();
-  Transforms<Barycentric, Rendering, Barycentric>::
-      LazyTrajectory<Barycentric> const primary_prolongation_or_prediction =
-          [this, primary]() -> Trajectory<Barycentric> const& {
-            if (transforms_are_operating_on_predictions_) {
-              return primary->Celestial::prediction();
-            } else {
-              return primary->Celestial::prolongation();
-            }
-          };
-  Transforms<Barycentric, Rendering, Barycentric>::
-      LazyTrajectory<Barycentric> const primary_prolongation =
-          std::bind(&Celestial::prolongation, primary);
-  Transforms<Barycentric, Rendering, Barycentric>::
-      LazyTrajectory<Barycentric> const secondary_prolongation_or_prediction =
-          [this, secondary]() -> Trajectory<Barycentric> const& {
-            if (transforms_are_operating_on_predictions_) {
-              return secondary->Celestial::prediction();
-            } else {
-              return secondary->Celestial::prolongation();
-            }
-          };
-  Transforms<Barycentric, Rendering, Barycentric>::
-      LazyTrajectory<Barycentric> const secondary_prolongation =
-          std::bind(&Celestial::prolongation, secondary);
-  return Transforms<Barycentric, Rendering, Barycentric>::BarycentricRotating(
-             primary_prolongation_or_prediction,
-             primary_prolongation,
-             secondary_prolongation_or_prediction,
-             secondary_prolongation);
+  return RenderingTransforms::BarycentricRotating(*primary,
+             *secondary,
+             &MobileInterface::prolongation);
 }
 
 void Plugin::AddVesselToNextPhysicsBubble(
@@ -373,10 +328,7 @@ Velocity<World> Plugin::BubbleVelocityCorrection(
 }
 
 FrameField<World> Plugin::NavBall(
-    not_null<
-        Transforms<Barycentric,
-                   Rendering,
-                   Barycentric>*> const transforms,
+    not_null<RenderingTransforms*> const transforms,
     Position<World> const& sun_world_position) const {
   auto const to_world =
       OrthogonalMap<WorldSun, World>::Identity() * BarycentricToWorldSun();
@@ -815,9 +767,9 @@ void Plugin::UpdatePredictions() {
 }
 
 RenderedTrajectory<World> Plugin::RenderTrajectory(
-    Trajectory<Barycentric> const& actual_trajectory,
+    not_null<Body const*> const body,
     Trajectory<Barycentric>::TransformingIterator<Rendering> const& actual_it,
-    not_null<Transforms<Barycentric, Rendering, Barycentric>*> const transforms,
+    not_null<RenderingTransforms*> const transforms,
     Position<World> const& sun_world_position) const {
   RenderedTrajectory<World> result;
   auto const to_world =
@@ -827,14 +779,14 @@ RenderedTrajectory<World> Plugin::RenderTrajectory(
           OrthogonalMap<WorldSun, World>::Identity() * BarycentricToWorldSun());
 
   // First build the trajectory resulting from the first transform.
-  Trajectory<Rendering> intermediate_trajectory(actual_trajectory.body<Body>());
+  Trajectory<Rendering> intermediate_trajectory(body);
   for (auto it = actual_it; !it.at_end(); ++it) {
     intermediate_trajectory.Append(it.time(), it.degrees_of_freedom());
   }
 
   // Then build the apparent trajectory using the second transform.
-  auto apparent_trajectory = make_not_null_unique<Trajectory<Barycentric>>(
-                                 actual_trajectory.body<Body>());
+  auto apparent_trajectory =
+      make_not_null_unique<Trajectory<Barycentric>>(body);
   for (auto intermediate_it = transforms->second(intermediate_trajectory);
        !intermediate_it.at_end();
        ++intermediate_it) {

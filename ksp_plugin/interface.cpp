@@ -262,31 +262,30 @@ QP principia__CelestialFromParent(Plugin const* const plugin,
           ToXYZ(result.velocity().coordinates() / (Metre / Second))};
 }
 
-Transforms<Barycentric, Rendering, Barycentric>*
-principia__NewBodyCentredNonRotatingTransforms(Plugin const* const plugin,
-                                               int const reference_body_index) {
+RenderingTransforms* principia__NewBodyCentredNonRotatingTransforms(
+    Plugin const* const plugin,
+    int const reference_body_index) {
   return CHECK_NOTNULL(plugin)->
       NewBodyCentredNonRotatingTransforms(reference_body_index).release();
 }
 
-Transforms<Barycentric, Rendering, Barycentric>*
-principia__NewBarycentricRotatingTransforms(Plugin const* const plugin,
-                                            int const primary_index,
-                                            int const secondary_index) {
+RenderingTransforms* principia__NewBarycentricRotatingTransforms(
+    Plugin const* const plugin,
+    int const primary_index,
+    int const secondary_index) {
   return CHECK_NOTNULL(plugin)->
       NewBarycentricRotatingTransforms(
           primary_index, secondary_index).release();
 }
 
-void principia__DeleteTransforms(
-    Transforms<Barycentric, Rendering, Barycentric>** const transforms) {
+void principia__DeleteTransforms(RenderingTransforms** const transforms) {
   TakeOwnership(transforms);
 }
 
 LineAndIterator* principia__RenderedVesselTrajectory(
     Plugin const* const plugin,
     char const* vessel_guid,
-    Transforms<Barycentric, Rendering, Barycentric>* const transforms,
+    RenderingTransforms* const transforms,
     XYZ const sun_world_position) {
   RenderedTrajectory<World> rendered_trajectory = CHECK_NOTNULL(plugin)->
       RenderedVesselTrajectory(
@@ -302,7 +301,7 @@ LineAndIterator* principia__RenderedVesselTrajectory(
 
 LineAndIterator* principia__RenderedPrediction(
     Plugin* const plugin,
-    Transforms<Barycentric, Rendering, Barycentric>* const transforms,
+    RenderingTransforms* const transforms,
     XYZ const sun_world_position) {
   RenderedTrajectory<World> rendered_trajectory =
       CHECK_NOTNULL(plugin)->RenderedPrediction(
@@ -408,7 +407,7 @@ XYZ principia__BubbleVelocityCorrection(Plugin const* const plugin,
 
 WXYZ principia__NavBallOrientation(
     Plugin const* const plugin,
-    Transforms<Barycentric, Rendering, Barycentric>* const transforms,
+    RenderingTransforms* const transforms,
     XYZ const sun_world_position,
     XYZ const ship_world_position) {
   FrameField<World> const frame_field = CHECK_NOTNULL(plugin)->NavBall(

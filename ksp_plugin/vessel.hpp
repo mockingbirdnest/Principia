@@ -3,6 +3,7 @@
 #include <memory>
 
 #include "ksp_plugin/celestial.hpp"
+#include "ksp_plugin/mobile_interface.hpp"
 #include "ksp_plugin/vessel.hpp"
 #include "ksp_plugin/part.hpp"
 #include "physics/massless_body.hpp"
@@ -19,7 +20,7 @@ using quantities::GravitationalParameter;
 namespace ksp_plugin {
 
 // Represents a KSP |Vessel|.
-class Vessel {
+class Vessel : public MobileInterface {
  public:
   Vessel() = delete;
   Vessel(Vessel const&) = delete;
@@ -32,6 +33,9 @@ class Vessel {
   // ownership.
   explicit Vessel(not_null<Celestial const*> const parent);
 
+  // Returns the body for this vessel.
+  not_null<MasslessBody const*> body() const;
+
   // True if, and only if, |history_| is not null.
   bool is_synchronized() const;
   // True if, and only if, |prolongation_| is not null, i.e., if either
@@ -43,18 +47,18 @@ class Vessel {
   void set_parent(not_null<Celestial const*> const parent);
 
   // Both accessors require |is_synchronized()|.
-  Trajectory<Barycentric> const& history() const;
-  not_null<Trajectory<Barycentric>*> mutable_history();
+  Trajectory<Barycentric> const& history() const override;
+  not_null<Trajectory<Barycentric>*> mutable_history() override;
 
   // Both accessors require |is_initialized()|.
-  Trajectory<Barycentric> const& prolongation() const;
-  not_null<Trajectory<Barycentric>*> mutable_prolongation();
+  Trajectory<Barycentric> const& prolongation() const override;
+  not_null<Trajectory<Barycentric>*> mutable_prolongation() override;
 
   // Both accessors require |is_initialized()|.  In addition the first one
   // requires |has_prediction()|.
-  Trajectory<Barycentric> const& prediction() const;
-  Trajectory<Barycentric>* mutable_prediction();
-  bool has_prediction() const;
+  Trajectory<Barycentric> const& prediction() const override;
+  Trajectory<Barycentric>* mutable_prediction() override;
+  bool has_prediction() const override;
 
   // Creates an |owned_prolongation_| for this vessel and appends a point with
   // the given |time| and |degrees_of_freedom|.  The vessel must not satisfy

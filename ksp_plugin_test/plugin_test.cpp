@@ -892,9 +892,8 @@ TEST_F(PluginTest, BodyCentredNonrotatingRenderingIntegration) {
                               RelativeDegreesOfFreedom<AliceSun>(
                                   satellite_initial_displacement_,
                                   satellite_initial_velocity_));
-  not_null<std::unique_ptr<
-      Transforms<Barycentric, Rendering, Barycentric>>> const geocentric =
-          plugin.NewBodyCentredNonRotatingTransforms(SolarSystem::kEarth);
+  not_null<std::unique_ptr<RenderingTransforms>> const geocentric =
+      plugin.NewBodyCentredNonRotatingTransforms(SolarSystem::kEarth);
   // We'll check that our orbit is rendered as circular (actually, we only check
   // that it is rendered within a thin spherical shell around the Earth).
   Length perigee = std::numeric_limits<double>::infinity() * Metre;
@@ -999,11 +998,9 @@ TEST_F(PluginTest, BarycentricRotatingRenderingIntegration) {
                                   RelativeDegreesOfFreedom<ICRFJ2000Ecliptic>(
                                       from_the_earth_to_l5,
                                       initial_velocity)));
-  not_null<std::unique_ptr<
-      Transforms<Barycentric, Rendering, Barycentric>>> const
-      earth_moon_barycentric =
-          plugin.NewBarycentricRotatingTransforms(SolarSystem::kEarth,
-                                                  SolarSystem::kMoon);
+  not_null<std::unique_ptr<RenderingTransforms>> const earth_moon_barycentric =
+      plugin.NewBarycentricRotatingTransforms(SolarSystem::kEarth,
+                                              SolarSystem::kMoon);
   Permutation<AliceSun, World> const alice_sun_to_world =
       Permutation<AliceSun, World>(Permutation<AliceSun, World>::XZY);
   Time const δt_long = 1 * Hour;
@@ -1128,8 +1125,7 @@ TEST_F(PluginTest, NavBall) {
                        SolarSystem::kSun,
                        sun_gravitational_parameter_,
                        0 * Radian);
-  not_null<std::unique_ptr<
-      Transforms<Barycentric, Rendering, Barycentric>>> const heliocentric =
+  not_null<std::unique_ptr<RenderingTransforms>> const heliocentric =
           plugin.NewBodyCentredNonRotatingTransforms(SolarSystem::kSun);
   Vector<double, World> x({1, 0, 0});
   Vector<double, World> y({0, 1, 0});

@@ -4,6 +4,7 @@
 
 #include "base/not_null.hpp"
 #include "ksp_plugin/frames.hpp"
+#include "ksp_plugin/mobile_interface.hpp"
 #include "physics/body.hpp"
 #include "physics/degrees_of_freedom.hpp"
 #include "physics/massive_body.hpp"
@@ -17,13 +18,12 @@ using base::not_null;
 using physics::Body;
 using physics::DegreesOfFreedom;
 using physics::MassiveBody;
-using physics::Trajectory;
 using quantities::GravitationalParameter;
 
 namespace ksp_plugin {
 
 // Represents a KSP |CelestialBody|.
-class Celestial {
+class Celestial : public MobileInterface {
  public:
   explicit Celestial(not_null<std::unique_ptr<MassiveBody const>> body);
   Celestial(Celestial const&) = delete;
@@ -39,18 +39,18 @@ class Celestial {
   void set_parent(not_null<Celestial const*> const parent);
 
   // Both accessors require |is_initialized()|.
-  Trajectory<Barycentric> const& history() const;
-  not_null<Trajectory<Barycentric>*> mutable_history();
+  Trajectory<Barycentric> const& history() const override;
+  not_null<Trajectory<Barycentric>*> mutable_history() override;
 
   // Both accessors require |is_initialized()|.
-  Trajectory<Barycentric> const& prolongation() const;
-  not_null<Trajectory<Barycentric>*> mutable_prolongation();
+  Trajectory<Barycentric> const& prolongation() const override;
+  not_null<Trajectory<Barycentric>*> mutable_prolongation() override;
 
   // Both accessors require |is_initialized()|.  In addition the first one
   // requires |has_prediction()|.
-  Trajectory<Barycentric> const& prediction() const;
-  Trajectory<Barycentric>* mutable_prediction();
-  bool has_prediction() const;
+  Trajectory<Barycentric> const& prediction() const override;
+  Trajectory<Barycentric>* mutable_prediction() override;
+  bool has_prediction() const override;
 
   // Creates a |history_| for this body and appends a point with the given
   // |time| and |degrees_of_freedom|.  Then forks a |prolongation_| at |time|.

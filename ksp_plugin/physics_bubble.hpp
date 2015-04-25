@@ -7,8 +7,8 @@
 #include <vector>
 
 #include "base/not_null.hpp"
-#include "geometry/rotation.hpp"
 #include "geometry/orthogonal_map.hpp"
+#include "geometry/rotation.hpp"
 #include "ksp_plugin/frames.hpp"
 #include "ksp_plugin/part.hpp"
 #include "ksp_plugin/vessel.hpp"
