@@ -21,6 +21,8 @@ class OrthogonalMap : public LinearMap<FromFrame, ToFrame> {
 
   Sign Determinant() const override;
 
+  Rotation<FromFrame, ToFrame> const& rotation() const;
+
   OrthogonalMap<ToFrame, FromFrame> Inverse() const;
 
   template<typename Scalar>
@@ -58,6 +60,8 @@ class OrthogonalMap : public LinearMap<FromFrame, ToFrame> {
   template<typename From, typename To>
   friend class Identity;
   template<typename From, typename To>
+  friend class OrthogonalMap;
+  template<typename From, typename To>
   friend class Permutation;
   template<typename From, typename To>
   friend class Rotation;
@@ -78,4 +82,4 @@ OrthogonalMap<FromFrame, ToFrame> operator*(
 }  // namespace geometry
 }  // namespace principia
 
-#include "Geometry/orthogonal_map_body.hpp"
+#include "geometry/orthogonal_map_body.hpp"

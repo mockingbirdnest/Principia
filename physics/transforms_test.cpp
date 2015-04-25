@@ -20,6 +20,10 @@ namespace principia {
 
 using base::make_not_null_unique;
 using geometry::Frame;
+using geometry::InnerProduct;
+using geometry::Normalize;
+using geometry::Rotation;
+using quantities::Abs;
 using quantities::Length;
 using quantities::Mass;
 using quantities::SIUnit;
@@ -171,6 +175,9 @@ TEST_F(TransformsTest, BodyCentredNonRotating) {
                                       -88 * i * SIUnit<Speed>(),
                                       144 * i * SIUnit<Speed>()})))) << i;
   }
+  auto const identity = Rotation<To, To>::Identity();
+  EXPECT_EQ(identity.quaternion(),
+            transforms->coordinate_frame()(To::origin).quaternion());
 }
 
 // Check that the computations we do match those done using Mathematica.
@@ -300,6 +307,48 @@ TEST_F(TransformsTest, BodiesBarycentricRotating) {
     EXPECT_THAT(length,
                 AlmostEquals(2.0 * sqrt(5.0) * i * SIUnit<Length>(), 0, 2));
   }
+
+  body1_to_->Append(
+      Instant(i * SIUnit<Time>()),
+              DegreesOfFreedom<To>(
+                  Position<To>(
+                      Displacement<To>({1 * SIUnit<Length>(),
+                                        -1 * SIUnit<Length>(),
+                                        2 * SIUnit<Length>()})),
+                  Velocity<To>({-3 * SIUnit<Speed>(),
+                                5 * SIUnit<Speed>(),
+                                -8 * SIUnit<Speed>()})));
+
+  body2_to_->Append(
+      Instant(i * SIUnit<Time>()),
+              DegreesOfFreedom<To>(
+                  Position<To>(
+                      Displacement<To>({13 * SIUnit<Length>(),
+                                        -21 * SIUnit<Length>(),
+                                        34 * SIUnit<Length>()})),
+                  Velocity<To>({-55 * SIUnit<Speed>(),
+                                89 * SIUnit<Speed>(),
+                                -144 * SIUnit<Speed>()})));
+
+  Vector<double, To> const x({1, 0, 0});
+  Vector<double, To> const y({0, 1, 0});
+  Vector<double, To> const z({0, 0, 1});
+  EXPECT_THAT(
+      transforms->coordinate_frame()(To::origin)(x),
+      AlmostEquals(
+          Normalize(body1_to_->last().degrees_of_freedom().position() -
+                    body2_to_->last().degrees_of_freedom().position()),
+          118));
+  EXPECT_GT(
+      InnerProduct(
+          transforms->coordinate_frame()(To::origin)(y),
+          Normalize(body1_to_->last().degrees_of_freedom().velocity())),
+      0);
+  EXPECT_THAT(
+      InnerProduct(
+              transforms->coordinate_frame()(To::origin)(z),
+              Normalize(body1_to_->last().degrees_of_freedom().velocity())),
+      VanishesBefore(1, 8));
 }
 
 }  // namespace physics

@@ -113,6 +113,14 @@ class MockPlugin : public Plugin {
                      Velocity<World>(
                          Index const reference_body_index));
 
+  MOCK_CONST_METHOD2(NavBall,
+                     FrameField<World>(
+                         not_null<
+                             Transforms<Barycentric,
+                                        Rendering,
+                                        Barycentric>*> const transforms,
+                         Position<World> const& sun_world_position));
+
   MOCK_CONST_METHOD0(current_time, Instant());
 
   MOCK_CONST_METHOD1(WriteToMessage,

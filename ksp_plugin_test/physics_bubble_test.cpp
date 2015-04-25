@@ -23,6 +23,7 @@ namespace principia {
 
 using base::make_not_null_unique;
 using geometry::Bivector;
+using geometry::Rotation;
 using quantities::Acceleration;
 using quantities::Speed;
 using quantities::SIUnit;
@@ -40,7 +41,10 @@ namespace ksp_plugin {
 class PhysicsBubbleTest : public testing::Test {
  protected:
   PhysicsBubbleTest()
-    : rotation_(90 * Degree, Bivector<double, Barycentric>({0, 0, 1})),
+    : rotation_(
+          Rotation<Barycentric, WorldSun>(
+              90 * Degree,
+              Bivector<double, Barycentric>({0, 0, 1})).Forget()),
       celestial_dof_(Position<Barycentric>(Displacement<Barycentric>(
                          {-4 * SIUnit<Length>(),
                           -5 * SIUnit<Length>(),
@@ -253,7 +257,7 @@ class PhysicsBubbleTest : public testing::Test {
   }
 
   PhysicsBubble bubble_;
-  PhysicsBubble::PlanetariumRotation rotation_;
+  PhysicsBubble::BarycentricToWorldSun rotation_;
   DegreesOfFreedom<Barycentric> celestial_dof_;
   DegreesOfFreedom<Barycentric> dof1_;
   DegreesOfFreedom<Barycentric> dof2_;
