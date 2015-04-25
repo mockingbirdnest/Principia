@@ -328,10 +328,7 @@ Velocity<World> Plugin::BubbleVelocityCorrection(
 }
 
 FrameField<World> Plugin::NavBall(
-    not_null<
-        Transforms<Barycentric,
-                   Rendering,
-                   Barycentric>*> const transforms,
+    not_null<RenderingTransforms*> const transforms,
     Position<World> const& sun_world_position) const {
   auto const to_world =
       OrthogonalMap<WorldSun, World>::Identity() * BarycentricToWorldSun();

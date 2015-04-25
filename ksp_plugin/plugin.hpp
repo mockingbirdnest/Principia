@@ -245,8 +245,7 @@ class Plugin {
 
   // The navball field at |current_time| for the given |transforms|.
   virtual FrameField<World> NavBall(
-      not_null<
-          Transforms<Barycentric, Rendering, Barycentric>*> const transforms,
+      not_null<RenderingTransforms*> const transforms,
       Position<World> const& sun_world_position) const;
 
   virtual Instant current_time() const;

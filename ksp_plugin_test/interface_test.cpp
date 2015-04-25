@@ -510,14 +510,13 @@ TEST_F(InterfaceTest, PhysicsBubble) {
 }
 
 TEST_F(InterfaceTest, NavBallOrientation) {
-  auto dummy_transforms = Transforms<Barycentric, Rendering, Barycentric>::
-                              DummyForTesting().release();
+  auto dummy_transforms = RenderingTransforms::DummyForTesting().release();
   EXPECT_CALL(*plugin_,
               FillBarycentricRotatingTransforms(kCelestialIndex,
                                                 kParentIndex,
                                                 _))
       .WillOnce(FillUniquePtr<2>(dummy_transforms));
-  Transforms<Barycentric, Rendering, Barycentric>* transforms =
+  RenderingTransforms* transforms =
       principia__NewBarycentricRotatingTransforms(plugin_.get(),
                                                   kCelestialIndex,
                                                   kParentIndex);

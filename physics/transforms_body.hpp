@@ -67,24 +67,24 @@ void FromBasisOfBarycentricFrameToStandardBasis(
       (Radian / Pow<2>(reference_direction.Norm())) * reference_binormal;
 }
 
-template<typename ThroughFrame, typename ToFrame, typename LazyTrajectory>
+template<typename ThroughFrame, typename ToFrame>
 void FromStandardBasisToBasisOfLastBarycentricFrame(
-    LazyTrajectory const& to_primary_trajectory,
-    LazyTrajectory const& to_secondary_trajectory,
+    Trajectory<ToFrame> const& to_primary_trajectory,
+    Trajectory<ToFrame> const& to_secondary_trajectory,
     not_null<Rotation<ThroughFrame, ToFrame>*> const rotation,
     not_null<DegreesOfFreedom<ToFrame>*> const
         last_barycentre_degrees_of_freedom) {
   DegreesOfFreedom<ToFrame> const& last_primary_degrees_of_freedom =
-      to_primary_trajectory().last().degrees_of_freedom();
+      to_primary_trajectory.last().degrees_of_freedom();
   DegreesOfFreedom<ToFrame> const& last_secondary_degrees_of_freedom =
-      to_secondary_trajectory().last().degrees_of_freedom();
+      to_secondary_trajectory.last().degrees_of_freedom();
   *last_barycentre_degrees_of_freedom =
       Barycentre<ToFrame, GravitationalParameter>(
           {last_primary_degrees_of_freedom,
            last_secondary_degrees_of_freedom},
-          {to_primary_trajectory().template body<MassiveBody>()->
+          {to_primary_trajectory.template body<MassiveBody>()->
                gravitational_parameter(),
-           to_secondary_trajectory().template body<MassiveBody>()->
+           to_secondary_trajectory.template body<MassiveBody>()->
                gravitational_parameter()});
   Rotation<ToFrame, ThroughFrame>
       from_basis_of_last_barycentric_frame_to_standard_basis =
@@ -186,15 +186,15 @@ Transforms<Mobile, FromFrame, ThroughFrame, ToFrame>::BarycentricRotating(
       make_not_null_unique<Transforms>();
 
   transforms->coordinate_frame_ =
-      [to_primary_trajectory, to_secondary_trajectory](
+      [&primary, &secondary, to_trajectory](
           Position<ToFrame> const& q) {
     Rotation<ThroughFrame, ToFrame>
         from_standard_basis_to_basis_of_last_barycentric_frame =
             Rotation<ThroughFrame, ToFrame>::Identity();
     DegreesOfFreedom<ToFrame> dummy = {ToFrame::origin, Velocity<ToFrame>()};
     FromStandardBasisToBasisOfLastBarycentricFrame<ThroughFrame, ToFrame>(
-        to_primary_trajectory,
-        to_secondary_trajectory,
+        (primary.*to_trajectory)(),
+        (secondary.*to_trajectory)(),
         &from_standard_basis_to_basis_of_last_barycentric_frame,
         &dummy);
 
@@ -285,8 +285,8 @@ Transforms<Mobile, FromFrame, ThroughFrame, ToFrame>::BarycentricRotating(
     DegreesOfFreedom<ToFrame> last_barycentre_degrees_of_freedom =
         {ToFrame::origin, Velocity<ToFrame>()};
     FromStandardBasisToBasisOfLastBarycentricFrame<ThroughFrame, ToFrame>(
-        to_primary_trajectory,
-        to_secondary_trajectory,
+        (primary.*to_trajectory)(),
+        (secondary.*to_trajectory)(),
         &from_standard_basis_to_basis_of_last_barycentric_frame,
         &last_barycentre_degrees_of_freedom);
 
@@ -341,9 +341,10 @@ Transforms<Mobile, FromFrame, ThroughFrame, ToFrame>::second(
   return through_trajectory.first_with_transform(second_);
 }
 
-template<typename FromFrame, typename ThroughFrame, typename ToFrame>
+template<typename Mobile,
+         typename FromFrame, typename ThroughFrame, typename ToFrame>
 FrameField<ToFrame>
-Transforms<FromFrame, ThroughFrame, ToFrame>::coordinate_frame() const {
+Transforms<Mobile, FromFrame, ThroughFrame, ToFrame>::coordinate_frame() const {
   return coordinate_frame_;
 }
 

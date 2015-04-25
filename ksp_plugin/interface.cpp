@@ -407,7 +407,7 @@ XYZ principia__BubbleVelocityCorrection(Plugin const* const plugin,
 
 WXYZ principia__NavBallOrientation(
     Plugin const* const plugin,
-    Transforms<Barycentric, Rendering, Barycentric>* const transforms,
+    RenderingTransforms* const transforms,
     XYZ const sun_world_position,
     XYZ const ship_world_position) {
   FrameField<World> const frame_field = CHECK_NOTNULL(plugin)->NavBall(

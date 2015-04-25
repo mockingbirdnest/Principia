@@ -1125,8 +1125,7 @@ TEST_F(PluginTest, NavBall) {
                        SolarSystem::kSun,
                        sun_gravitational_parameter_,
                        0 * Radian);
-  not_null<std::unique_ptr<
-      Transforms<Barycentric, Rendering, Barycentric>>> const heliocentric =
+  not_null<std::unique_ptr<RenderingTransforms>> const heliocentric =
           plugin.NewBodyCentredNonRotatingTransforms(SolarSystem::kSun);
   Vector<double, World> x({1, 0, 0});
   Vector<double, World> y({0, 1, 0});
