@@ -185,7 +185,7 @@ Transforms<FromFrame, ThroughFrame, ToFrame>::BarycentricRotating(
           Position<ToFrame> const& q) {
     Rotation<ThroughFrame, ToFrame>
         from_standard_basis_to_basis_of_last_barycentric_frame =
-    Rotation<ThroughFrame, ToFrame>::Identity();
+            Rotation<ThroughFrame, ToFrame>::Identity();
     DegreesOfFreedom<ToFrame> dummy = {ToFrame::origin, Velocity<ToFrame>()};
     FromStandardBasisToBasisOfLastBarycentricFrame<ThroughFrame, ToFrame>(
         to_primary_trajectory,
@@ -275,7 +275,7 @@ Transforms<FromFrame, ThroughFrame, ToFrame>::BarycentricRotating(
       DegreesOfFreedom<ToFrame> {
     Rotation<ThroughFrame, ToFrame>
         from_standard_basis_to_basis_of_last_barycentric_frame =
-    Rotation<ThroughFrame, ToFrame>::Identity();
+            Rotation<ThroughFrame, ToFrame>::Identity();
     DegreesOfFreedom<ToFrame> last_barycentre_degrees_of_freedom =
         {ToFrame::origin, Velocity<ToFrame>()};
     FromStandardBasisToBasisOfLastBarycentricFrame<ThroughFrame, ToFrame>(
