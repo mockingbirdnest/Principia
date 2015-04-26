@@ -46,7 +46,7 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
   private int second_selected_celestial_ = 0;
 
   private bool display_patched_conics_ = false;
-  private bool fix_nav_ball_in_plotting_frame = false;
+  private bool fix_nav_ball_in_plotting_frame = true;
 
   private double[] prediction_steps_ =
     {1e1, 3e1, 1e2, 3e2, 1e3, 3e3, 1e4, 3e4, 1e5, 3e5, 1e6};
@@ -334,19 +334,28 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
   }
 
   private void Update() {
-    if (fix_nav_ball_in_plotting_frame &&
+    if (PluginRunning() &&
+        fix_nav_ball_in_plotting_frame &&
         has_active_vessel_in_space()) {
       if (nav_ball_ == null) {
         nav_ball_ = (NavBall)FindObjectOfType(typeof(NavBall));
       }
+      Vessel active_vessel = FlightGlobals.ActiveVessel;
       nav_ball_.navBall.rotation =
           (UnityEngine.QuaternionD)nav_ball_.attitudeGymbal *  // sic.
               (UnityEngine.QuaternionD)NavBallOrientation(
                   plugin_,
                   transforms_,
                   (XYZ)Planetarium.fetch.Sun.position,
-                  (XYZ)(Vector3d)
-                      FlightGlobals.ActiveVessel.ReferenceTransform.position);
+                  (XYZ)(Vector3d)active_vessel.ReferenceTransform.position);
+      Vector3d prograde =
+            (Vector3d)VesselTangent(plugin_,
+                                    active_vessel.id.ToString(),
+                                    transforms_);
+      nav_ball_.progradeVector.transform.localPosition =
+        (UnityEngine.QuaternionD)nav_ball_.attitudeGymbal * prograde * 0.05;
+      nav_ball_.retrogradeVector.transform.localPosition =
+        -nav_ball_.progradeVector.transform.localPosition;
     }
   }
 

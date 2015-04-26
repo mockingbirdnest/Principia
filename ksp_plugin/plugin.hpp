@@ -248,6 +248,12 @@ class Plugin {
       not_null<RenderingTransforms*> const transforms,
       Position<World> const& sun_world_position) const;
 
+  // The unit tangent vector to the trajectory of the vessel the given GUID in
+  // the frame given by |transforms|.
+  virtual Vector<double, World> VesselTangent(
+      GUID const& vessel_guid,
+      not_null<RenderingTransforms*> const transforms) const;
+
   virtual Instant current_time() const;
 
   // Must be called after initialization.

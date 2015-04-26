@@ -421,6 +421,13 @@ WXYZ principia__NavBallOrientation(
                   ToR3Element(ship_world_position) * Metre)).quaternion());
 }
 
+XYZ principia__VesselTangent(Plugin const* const plugin,
+                             char const* vessel_guid,
+                             RenderingTransforms* const transforms) {
+  return ToXYZ(CHECK_NOTNULL(plugin)->
+                   VesselTangent(vessel_guid, transforms).coordinates());
+}
+
 double principia__current_time(Plugin const* const plugin) {
   return (CHECK_NOTNULL(plugin)->current_time() - Instant()) / Second;
 }

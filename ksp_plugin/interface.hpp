@@ -289,6 +289,11 @@ WXYZ CDECL principia__NavBallOrientation(Plugin const* const plugin,
                                          XYZ const ship_world_position);
 
 extern "C" DLLEXPORT
+XYZ CDECL principia__VesselTangent(Plugin const* const plugin,
+                                   char const* vessel_guid,
+                                   RenderingTransforms* const transforms);
+
+extern "C" DLLEXPORT
 double CDECL principia__current_time(Plugin const* const plugin);
 
 // |plugin| must not be null.  The caller takes ownership of the result, except

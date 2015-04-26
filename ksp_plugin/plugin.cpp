@@ -29,6 +29,7 @@ using geometry::AngularVelocity;
 using geometry::BarycentreCalculator;
 using geometry::Bivector;
 using geometry::Identity;
+using geometry::Normalize;
 using geometry::Permutation;
 using geometry::Sign;
 using integrators::McLachlanAtela1992Order5Optimal;
@@ -350,6 +351,27 @@ FrameField<World> Plugin::NavBall(
     CHECK(orthogonal_map.Determinant().Positive());
     return orthogonal_map.rotation();
   };
+}
+
+Vector<double, World> Plugin::VesselTangent(
+    GUID const& vessel_guid,
+    not_null<RenderingTransforms*> const transforms) const {
+  Vessel const& vessel = *find_vessel_by_guid_or_die(vessel_guid);
+  auto actual_it =
+      transforms->first_on_or_after(vessel,
+                                    &MobileInterface::prolongation,
+                                    vessel.prolongation().last().time());
+  Trajectory<Rendering> intermediate_trajectory(vessel.body());
+  intermediate_trajectory.Append(actual_it.time(),
+                                 actual_it.degrees_of_freedom());
+  auto intermediate_it = transforms->second(intermediate_trajectory);
+  Trajectory<Barycentric> apparent_trajectory(vessel.body());
+  apparent_trajectory.Append(intermediate_it.time(),
+                             intermediate_it.degrees_of_freedom());
+  return Normalize(
+    Identity<WorldSun, World>()(
+        BarycentricToWorldSun()(
+            apparent_trajectory.last().degrees_of_freedom().velocity())));
 }
 
 Instant Plugin::current_time() const {
@@ -785,6 +807,7 @@ RenderedTrajectory<World> Plugin::RenderTrajectory(
   }
 
   // Then build the apparent trajectory using the second transform.
+  // TODO(egg): why is this a pointer?
   auto apparent_trajectory =
       make_not_null_unique<Trajectory<Barycentric>>(body);
   for (auto intermediate_it = transforms->second(intermediate_trajectory);
