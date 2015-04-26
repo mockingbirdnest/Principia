@@ -2,14 +2,10 @@
 
 #include <string>
 
-#include "base/not_null.hpp"
 #include "geometry/permutation.hpp"
 #include "geometry/rotation.hpp"
 
 namespace principia {
-
-using base::not_null;
-
 namespace geometry {
 
 namespace {
