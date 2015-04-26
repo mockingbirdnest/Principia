@@ -508,5 +508,63 @@ TEST_F(NBodySystemTest, Sputnik1ToSputnik2) {
   }
 }
 
+TEST_F(NBodySystemTest, Sputnik1ToSputnik2Multistep) {
+  std::vector<not_null<std::unique_ptr<SolarSystem>>> evolved_systems;
+  not_null<std::unique_ptr<SolarSystem>> const at_спутник_2_launch =
+      SolarSystem::AtСпутник2Launch(
+          SolarSystem::Accuracy::kAllBodiesAndOblateness);
+  NBodySystem<ICRFJ2000Ecliptic> system;
+  for (int k = 1; k <= 1 << 16; k *= 2) {
+    evolved_systems.push_back(
+        SolarSystem::AtСпутник1Launch(
+            SolarSystem::Accuracy::kAllBodiesAndOblateness));
+    SolarSystem const& reference = *evolved_systems.front();
+    SolarSystem const& actual = *evolved_systems.back();
+    system.Integrate(
+        *integrator_,
+        at_спутник_2_launch->trajectories().front()->last().time(),  // tmax
+        k * 10 * Second,  // Δt
+        1,  // sampling_period
+        true,  // tmax_is_exact
+        actual.trajectories());  // trajectories
+
+    double maximum_position_error = 0.0;
+    double maximum_velocity_error = 0.0;
+    SolarSystem::Index maximum_position_error_index = SolarSystem::kSun;
+    SolarSystem::Index maximum_velocity_error_index = SolarSystem::kSun;
+    for (std::size_t i = 0; i < reference.trajectories().size(); ++i) {
+      SolarSystem::Index const index = static_cast<SolarSystem::Index>(i);
+      for (auto reference_it = reference.trajectories()[i]->first(),
+                actual_it = actual.trajectories()[i]->first();
+           !actual_it.at_end();
+           ++actual_it) {
+        while (reference_it.time() < actual_it.time()) {
+          ++reference_it;
+        }
+        CHECK_EQ(reference_it.time(), actual_it.time());
+        double const position_error = RelativeError(
+            reference_it.degrees_of_freedom().position() -
+                kSolarSystemBarycentre,
+            actual_it.degrees_of_freedom().position() -
+                kSolarSystemBarycentre);
+        double const velocity_error = RelativeError(
+            reference_it.degrees_of_freedom().velocity(),
+            actual_it.degrees_of_freedom().velocity());
+        if (position_error > maximum_position_error) {
+          maximum_position_error = position_error;
+          maximum_position_error_index = index;
+        }
+        if (velocity_error > maximum_velocity_error) {
+          maximum_velocity_error = velocity_error;
+          maximum_velocity_error_index = index;
+        }
+      }
+    }
+    LOG(ERROR)<<"k = "<<k
+      <<" mpe = "<<maximum_position_error<<"("<<maximum_position_error_index
+      <<") mve = "<<maximum_velocity_error<<"("<<maximum_velocity_error_index<<")";
+  }
+}
+
 }  // namespace physics
 }  // namespace principia
