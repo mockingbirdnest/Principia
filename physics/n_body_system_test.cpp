@@ -11,6 +11,7 @@
 #include "geometry/point.hpp"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
+#include "mathematica/mathematica.hpp"
 #include "physics/body.hpp"
 #include "physics/massive_body.hpp"
 #include "physics/massless_body.hpp"
@@ -563,6 +564,9 @@ TEST_F(NBodySystemTest, Sputnik1ToSputnik2Multistep) {
     LOG(ERROR)<<"k = "<<k
       <<" mpe = "<<maximum_position_error<<"("<<maximum_position_error_index
       <<") mve = "<<maximum_velocity_error<<"("<<maximum_velocity_error_index<<")";
+    LOG(ERROR)<<mathematica::ToMathematica(
+        std::make_tuple(k, maximum_position_error, maximum_position_error_index,
+                        maximum_velocity_error, maximum_velocity_error_index));
   }
 }
 

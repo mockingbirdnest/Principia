@@ -79,6 +79,33 @@ std::string ToMathematica(Quantity<D> const& quantity) {
       {Apply("Quantity", {number, units}), "MachinePrecision"});
 }
 
+template<typename... Types>
+std::string ToMathematica(std::tuple<Types...> const& tuple) {
+  std::vector<std::string> expressions;
+  expressions.reserve(sizeof...(Types));
+  //TODO(phl): There has to be a better way...
+  for (int i = 0; i < sizeof...(Types); ++i) {
+    switch (i) {
+    case 0:
+      expressions.emplace_back(ToMathematica(std::get<0>(tuple)));
+      break;
+    case 1:
+      expressions.emplace_back(ToMathematica(std::get<1>(tuple)));
+      break;
+    case 2:
+      expressions.emplace_back(ToMathematica(std::get<2>(tuple)));
+      break;
+    case 3:
+      expressions.emplace_back(ToMathematica(std::get<3>(tuple)));
+      break;
+    case 4:
+      expressions.emplace_back(ToMathematica(std::get<4>(tuple)));
+      break;
+    }
+  }
+  return Apply("List", expressions);
+}
+
 inline std::string ToMathematica(std::string const& str) {
   return str;
 }
