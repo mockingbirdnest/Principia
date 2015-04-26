@@ -69,6 +69,9 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
 
   private Krakensbane krakensbane_;
   private NavBall nav_ball_;
+  private bool override_rsas_target = false;
+  private Vector3d rsas_target;
+  private bool reset_rsas_target = false;
 
   PrincipiaPluginAdapter() {
     // We create this directory here so we do not need to worry about cross-
@@ -257,6 +260,15 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
            has_active_vessel_in_space();
   }
 
+  private void OverrideRSASTarget(FlightCtrlState state) {
+    if (override_rsas_target) {
+      FlightGlobals.ActiveVessel.Autopilot.RSAS.SetTargetOrientation(
+          rsas_target,
+          reset_rsas_target);
+    }
+    reset_rsas_target = false;
+  }
+
   #region ScenarioModule lifecycle
   // These functions override virtual ones from |ScenarioModule|, but it seems
   // that they're actually called by reflection, so that bad things happen
@@ -334,6 +346,7 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
   }
 
   private void Update() {
+    override_rsas_target = false;
     if (PluginRunning() &&
         fix_nav_ball_in_plotting_frame &&
         has_active_vessel_in_space()) {
@@ -356,6 +369,28 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
         (UnityEngine.QuaternionD)nav_ball_.attitudeGymbal * prograde * 0.05;
       nav_ball_.retrogradeVector.transform.localPosition =
         -nav_ball_.progradeVector.transform.localPosition;
+      if (active_vessel.OnAutopilotUpdate.GetInvocationList()[0] !=
+          (Delegate)(FlightInputCallback)OverrideRSASTarget) {
+        Log.Info("prepending overrider");
+        active_vessel.OnAutopilotUpdate =
+            (FlightInputCallback)Delegate.Combine(
+                new FlightInputCallback(OverrideRSASTarget),
+                active_vessel.OnAutopilotUpdate);
+      }
+      if (active_vessel.Autopilot.Enabled) {
+        override_rsas_target = true;
+        switch (active_vessel.Autopilot.Mode) {
+          case VesselAutopilot.AutopilotMode.Prograde:
+            rsas_target = prograde;
+            break;
+          case VesselAutopilot.AutopilotMode.Retrograde:
+            rsas_target = -prograde;
+            break;
+          default:
+            override_rsas_target = false;
+            break;
+        }
+      }
     }
   }
 
@@ -678,6 +713,7 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
       UnityEngine.GUILayout.EndHorizontal();
       if (changed_rendering && PluginRunning()) {
         UpdateRenderingFrame();
+        reset_rsas_target = true;
       }
     }
   }
