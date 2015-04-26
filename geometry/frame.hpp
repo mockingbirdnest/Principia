@@ -10,13 +10,13 @@
 namespace principia {
 namespace geometry {
 
-template<typename Tag_, Tag_ tag, bool is_inertial>
+template<typename FrameTag, FrameTag frame_tag, bool frame_is_inertial>
 class Frame {
  public:
-  using Tag = Tag_;
+  using Tag = FrameTag;
   static Position<Frame> const origin;
-  static Tag const tag = tag;
-  static bool const is_inertial = is_inertial;
+  static Tag const tag = frame_tag;
+  static bool const is_inertial = frame_is_inertial;
 
   Frame() = delete;
 
