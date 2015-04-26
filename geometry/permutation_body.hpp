@@ -92,7 +92,7 @@ Permutation<FromFrame, ToFrame> Permutation<FromFrame, ToFrame>::Identity() {
 template<typename FromFrame, typename ToFrame>
 void Permutation<FromFrame, ToFrame>::WriteToMessage(
       not_null<serialization::LinearMap*> const message) const {
-  LinearMap::WriteToMessage(message);
+  LinearMap<FromFrame, ToFrame>::WriteToMessage(message);
   WriteToMessage(
       message->MutableExtension(serialization::Permutation::permutation));
 }
@@ -101,7 +101,7 @@ template<typename FromFrame, typename ToFrame>
 Permutation<FromFrame, ToFrame>
 Permutation<FromFrame, ToFrame>::ReadFromMessage(
     serialization::LinearMap const& message) {
-  LinearMap::ReadFromMessage(message);
+  LinearMap<FromFrame, ToFrame>::ReadFromMessage(message);
   CHECK(message.HasExtension(serialization::Permutation::permutation));
   return ReadFromMessage(
       message.GetExtension(serialization::Permutation::permutation));

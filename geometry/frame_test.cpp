@@ -32,7 +32,7 @@ TEST_F(FrameDeathTest, SerializationError) {
     serialization::Frame message;
     World1::WriteToMessage(&message);
     World3::ReadFromMessage(message);
-  }, "frame_is_inertial ==");
+  }, "is_inertial ==");
   EXPECT_DEATH({
     serialization::Frame message;
     World1::WriteToMessage(&message);
