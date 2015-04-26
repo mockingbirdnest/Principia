@@ -2,10 +2,60 @@
 
 #include <string>
 
+#include "base/not_null.hpp"
+#include "geometry/permutation.hpp"
 #include "geometry/rotation.hpp"
 
 namespace principia {
+
+using base::not_null;
+
 namespace geometry {
+
+namespace {
+
+// This class helps in reading coordinates in compatilibity mode.  We used to
+// use a left-handed OLD_BARYCENTRIC frame, and switched to use a BARYCENTRIC
+// one in Borel.  As a consequence, reading old serialized data results in a
+// frame tag mismatch and must flip the multivectors.
+template<typename Multivector,
+         typename Frame,
+         typename Tag = typename Frame::Tag>
+class CompatibilityHelper {
+ public:
+  CompatibilityHelper() = delete;
+
+  static bool MustFlip(serialization::Frame const& frame);
+};
+
+template<typename Multivector, typename Frame>
+class CompatibilityHelper<Multivector, Frame, serialization::Frame::PluginTag> {
+ public:
+  CompatibilityHelper() = delete;
+
+  static bool MustFlip(serialization::Frame const& frame);
+};
+
+template<typename Multivector, typename Frame, typename Tag>
+bool CompatibilityHelper<Multivector, Frame, Tag>::MustFlip(
+    serialization::Frame const& frame) {
+  Frame::ReadFromMessage(frame);
+  return false;
+}
+
+template<typename Multivector, typename Frame>
+bool CompatibilityHelper<Multivector, Frame, serialization::Frame::PluginTag>::
+    MustFlip(serialization::Frame const& frame) {
+  if (frame.tag() == serialization::Frame::OLD_BARYCENTRIC &&
+      Frame::tag == serialization::Frame::BARYCENTRIC) {
+    return true;
+  } else {
+    Frame::ReadFromMessage(frame);
+    return false;
+  }
+}
+
+}  // namespace
 
 template<typename Scalar, typename Frame>
 Multivector<Scalar, Frame, 1>::Multivector() {}
@@ -98,25 +148,40 @@ void Multivector<Scalar, Frame, 3>::WriteToMessage(
 template<typename Scalar, typename Frame>
 Multivector<Scalar, Frame, 1> Multivector<Scalar, Frame, 1>::ReadFromMessage(
     serialization::Multivector const& message) {
-  Frame::ReadFromMessage(message.frame());
   CHECK(message.has_vector());
-  return Multivector(R3Element<Scalar>::ReadFromMessage(message.vector()));
+  auto multivector =
+      Multivector(R3Element<Scalar>::ReadFromMessage(message.vector()));
+  if (CompatibilityHelper<Multivector, Frame>::MustFlip(message.frame())) {
+    multivector =
+        Permutation<Frame, Frame>(Permutation<Frame, Frame>::XZY)(multivector);
+  }
+  return multivector;
 }
 
 template<typename Scalar, typename Frame>
 Multivector<Scalar, Frame, 2> Multivector<Scalar, Frame, 2>::ReadFromMessage(
     serialization::Multivector const& message) {
-  Frame::ReadFromMessage(message.frame());
   CHECK(message.has_bivector());
-  return Multivector(R3Element<Scalar>::ReadFromMessage(message.bivector()));
+  auto multivector =
+      Multivector(R3Element<Scalar>::ReadFromMessage(message.bivector()));
+  if (CompatibilityHelper<Multivector, Frame>::MustFlip(message.frame())) {
+    multivector =
+        Permutation<Frame, Frame>(Permutation<Frame, Frame>::XZY)(multivector);
+  }
+  return multivector;
 }
 
 template<typename Scalar, typename Frame>
 Multivector<Scalar, Frame, 3> Multivector<Scalar, Frame, 3>::ReadFromMessage(
     serialization::Multivector const& message) {
-  Frame::ReadFromMessage(message.frame());
   CHECK(message.has_trivector());
-  return Multivector(Scalar::ReadFromMessage(message.trivector()));
+  auto multivector =
+      Multivector(Scalar::ReadFromMessage(message.trivector()));
+  if (CompatibilityHelper<Multivector, Frame>::MustFlip(message.frame())) {
+    multivector =
+        Permutation<Frame, Frame>(Permutation<Frame, Frame>::XZY)(multivector);
+  }
+  return multivector;
 }
 
 template<typename LScalar, typename RScalar, typename Frame>

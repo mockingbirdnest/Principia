@@ -23,19 +23,19 @@ inline uint32_t Fingerprint(std::string const& s) {
 
 }  // namespace
 
-template<typename Tag, Tag tag, bool frame_is_inertial>
-void Frame<Tag, tag, frame_is_inertial>::WriteToMessage(
+template<typename Tag, Tag tag, bool is_inertial>
+void Frame<Tag, tag, is_inertial>::WriteToMessage(
     not_null<serialization::Frame*> const message) {
   std::string const& tag_type_full_name =
       google::protobuf::GetEnumDescriptor<Tag>()->full_name();
 
   message->set_tag_type_fingerprint(Fingerprint(tag_type_full_name));
   message->set_tag(tag);
-  message->set_is_inertial(frame_is_inertial);
+  message->set_is_inertial(is_inertial);
 }
 
-template<typename Tag, Tag tag, bool frame_is_inertial>
-void Frame<Tag, tag, frame_is_inertial>::ReadFromMessage(
+template<typename Tag, Tag tag, bool is_inertial>
+void Frame<Tag, tag, is_inertial>::ReadFromMessage(
     serialization::Frame const& message) {
   std::string const& tag_type_full_name =
       google::protobuf::GetEnumDescriptor<Tag>()->full_name();
@@ -43,13 +43,13 @@ void Frame<Tag, tag, frame_is_inertial>::ReadFromMessage(
   CHECK_EQ(Fingerprint(tag_type_full_name), message.tag_type_fingerprint())
       << tag_type_full_name;
   CHECK_EQ(tag, message.tag());
-  CHECK_EQ(frame_is_inertial, message.is_inertial());
+  CHECK_EQ(is_inertial, message.is_inertial());
 }
 
 // Default-initialized to {0, 0, 0}.
-template<typename Tag, Tag tag, bool frame_is_inertial>
-Position<Frame<Tag, tag, frame_is_inertial>> const
-Frame<Tag, tag, frame_is_inertial>::origin;
+template<typename Tag, Tag tag, bool is_inertial>
+Position<Frame<Tag, tag, is_inertial>> const
+Frame<Tag, tag, is_inertial>::origin;
 
 inline void ReadFrameFromMessage(
     serialization::Frame const& message,
