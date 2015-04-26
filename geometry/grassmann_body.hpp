@@ -15,9 +15,9 @@ namespace geometry {
 namespace {
 
 // This class helps in reading coordinates in compatilibity mode.  We used to
-// use a left-handed OLD_BARYCENTRIC frame, and switched to use a BARYCENTRIC
-// one in Borel.  As a consequence, reading old serialized data results in a
-// frame tag mismatch and must flip the multivectors.
+// use a left-handed OLD_BARYCENTRIC frame, and switched to use a right-handed
+// BARYCENTRIC frame in Borel.  As a consequence, reading old serialized data
+// results in a frame tag mismatch and must flip the multivectors.
 template<typename Multivector,
          typename Frame,
          typename Tag = typename Frame::Tag>
