@@ -371,7 +371,7 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
         -nav_ball_.progradeVector.transform.localPosition;
       if (active_vessel.OnAutopilotUpdate.GetInvocationList()[0] !=
           (Delegate)(FlightInputCallback)OverrideRSASTarget) {
-        Log.Info("prepending overrider");
+        Log.Info("Prepending RSAS override");
         active_vessel.OnAutopilotUpdate =
             (FlightInputCallback)Delegate.Combine(
                 new FlightInputCallback(OverrideRSASTarget),
