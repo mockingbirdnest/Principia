@@ -4,6 +4,7 @@
 
 #include <cmath>
 #include <string>
+#include <tuple>
 #include <vector>
 
 namespace principia {
@@ -11,6 +12,30 @@ namespace principia {
 using quantities::DebugString;
 
 namespace mathematica {
+
+namespace {
+
+// A helper class to scan the elements of a tuple and stringify them.
+template<int index, typename... Types>
+class TupleHelper {
+ public:
+  static void ToMathematicaStrings(
+      std::tuple<Types...> const& tuple,
+      not_null<std::vector<std::string>*> const expressions) {
+    expressions->push_back(ToMathematica(std::get<index>(tuple)));
+    TupleHelper<index + 1, Types...>::ToMathematicaStrings(tuple, expressions);
+  }
+};
+
+template<typename... Types>
+class TupleHelper<sizeof...(Types), Types...> {
+ public:
+  static void ToMathematicaStrings(
+      std::tuple<Types...> const& tuple,
+      not_null<std::vector<std::string>*> const expressions) {}
+};
+
+}  // namespace
 
 inline std::string Apply(
     std::string const& function,
@@ -83,26 +108,7 @@ template<typename... Types>
 std::string ToMathematica(std::tuple<Types...> const& tuple) {
   std::vector<std::string> expressions;
   expressions.reserve(sizeof...(Types));
-  //TODO(phl): There has to be a better way...
-  for (int i = 0; i < sizeof...(Types); ++i) {
-    switch (i) {
-    case 0:
-      expressions.emplace_back(ToMathematica(std::get<0>(tuple)));
-      break;
-    case 1:
-      expressions.emplace_back(ToMathematica(std::get<1>(tuple)));
-      break;
-    case 2:
-      expressions.emplace_back(ToMathematica(std::get<2>(tuple)));
-      break;
-    case 3:
-      expressions.emplace_back(ToMathematica(std::get<3>(tuple)));
-      break;
-    case 4:
-      expressions.emplace_back(ToMathematica(std::get<4>(tuple)));
-      break;
-    }
-  }
+  TupleHelper<0, Types...>::ToMathematicaStrings(tuple, &expressions);
   return Apply("List", expressions);
 }
 

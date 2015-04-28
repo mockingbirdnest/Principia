@@ -515,6 +515,7 @@ TEST_F(NBodySystemTest, Sputnik1ToSputnik2Multistep) {
       SolarSystem::AtСпутник2Launch(
           SolarSystem::Accuracy::kAllBodiesAndOblateness);
   NBodySystem<ICRFJ2000Ecliptic> system;
+  std::vector<std::string> mathematica_list;
   for (int k = 1; k <= 1 << 16; k *= 2) {
     evolved_systems.push_back(
         SolarSystem::AtСпутник1Launch(
@@ -564,10 +565,10 @@ TEST_F(NBodySystemTest, Sputnik1ToSputnik2Multistep) {
     LOG(ERROR)<<"k = "<<k
       <<" mpe = "<<maximum_position_error<<"("<<maximum_position_error_index
       <<") mve = "<<maximum_velocity_error<<"("<<maximum_velocity_error_index<<")";
-    LOG(ERROR)<<mathematica::ToMathematica(
-        std::make_tuple(k, maximum_position_error, maximum_position_error_index,
-                        maximum_velocity_error, maximum_velocity_error_index));
+    mathematica_list.push_back(mathematica::ToMathematica(
+        std::make_tuple(k, maximum_position_error, maximum_velocity_error)));
   }
+  LOG(ERROR)<<mathematica::Assign("multistep", mathematica_list);
 }
 
 }  // namespace physics
