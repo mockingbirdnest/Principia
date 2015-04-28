@@ -22,13 +22,13 @@ class TupleHelper {
   static void ToMathematicaStrings(
       std::tuple<Types...> const& tuple,
       not_null<std::vector<std::string>*> const expressions) {
-    expressions->push_back(ToMathematica(std::get<index>(tuple)));
-    TupleHelper<index + 1, Types...>::ToMathematicaStrings(tuple, expressions);
+    TupleHelper<index - 1, Types...>::ToMathematicaStrings(tuple, expressions);
+    expressions->push_back(ToMathematica(std::get<index - 1>(tuple)));
   }
 };
 
 template<typename... Types>
-class TupleHelper<sizeof...(Types), Types...> {
+class TupleHelper<0, Types...> {
  public:
   static void ToMathematicaStrings(
       std::tuple<Types...> const& tuple,
@@ -108,7 +108,8 @@ template<typename... Types>
 std::string ToMathematica(std::tuple<Types...> const& tuple) {
   std::vector<std::string> expressions;
   expressions.reserve(sizeof...(Types));
-  TupleHelper<0, Types...>::ToMathematicaStrings(tuple, &expressions);
+  TupleHelper<3/*sizeof...(Types)*/, Types...>::ToMathematicaStrings(
+      tuple, &expressions);
   return Apply("List", expressions);
 }
 
