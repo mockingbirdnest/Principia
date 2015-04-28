@@ -915,8 +915,8 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
 
   private void SetRotatingFrameThresholds() {
     ApplyToBodyTree(body => body.inverseRotThresholdAltitude =
-                                Math.Max(body.timeWarpAltitudeLimits[1],
-                                         body.maxAtmosphereAltitude));
+                                (float)Math.Max(body.timeWarpAltitudeLimits[1],
+                                                body.atmosphereDepth));
   }
 
 }
