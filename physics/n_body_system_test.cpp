@@ -101,27 +101,22 @@ class NBodySystemTest : public testing::Test {
       not_null<DegreesOfFreedom<Frame>*> const satellite_degrees_of_freedom,
       not_null<Position<Frame>*> const centre_of_mass,
       not_null<Time*> const period) {
-    LOG(ERROR)<<centre_degrees_of_freedom->position();
     Displacement<Frame> const satellite_displacement =
         Vector<Length, Frame>({0 * SIUnit<Length>(),
                                satellite_radius,
                                0 * SIUnit<Length>()});
     Position<Frame> const satellite_position =
         centre_degrees_of_freedom->position() + satellite_displacement;
-    LOG(ERROR)<<satellite_position;
     Length const semi_major_axis = satellite_displacement.Norm();
-    LOG(ERROR)<<semi_major_axis;
     *period = 2 * π * Sqrt(Pow<3>(semi_major_axis) /
                                      (centre_gravitational_parameter +
                                       satellite_gravitational_parameter));
-    LOG(ERROR)<<*period;
     *centre_of_mass =
         geometry::Barycentre<Vector<Length, Frame>, GravitationalParameter>(
             {centre_degrees_of_freedom->position(),
              satellite_position},
             {centre_gravitational_parameter,
              satellite_gravitational_parameter});
-    LOG(ERROR)<<*centre_of_mass;
     Velocity<Frame> const centre_velocity =
         centre_degrees_of_freedom->velocity() +
             Velocity<Frame>(
@@ -129,14 +124,12 @@ class NBodySystemTest : public testing::Test {
                            *centre_of_mass).Norm() / *period,
                  0 * SIUnit<Speed>(),
                  0 * SIUnit<Speed>()});
-    LOG(ERROR)<<centre_velocity;
     Velocity<Frame> const satellite_velocity =
         centre_degrees_of_freedom->velocity() +
             Velocity<Frame>(
                 {2 * π * (satellite_position - *centre_of_mass).Norm() / *period,
                  0 * SIUnit<Speed>(),
                  0 * SIUnit<Speed>()});
-    LOG(ERROR)<<satellite_velocity;
     *centre_degrees_of_freedom =
         DegreesOfFreedom<Frame>(centre_degrees_of_freedom->position(),
                                 centre_velocity);
@@ -556,20 +549,22 @@ TEST_F(NBodySystemTest, Sputnik1ToSputnik2) {
 }
 
 TEST_F(NBodySystemTest, Sputnik1ToSputnik2Multistep) {
-  std::vector<not_null<std::unique_ptr<SolarSystem>>> evolved_systems;
+  not_null<std::unique_ptr<SolarSystem>> const at_спутник_1_launch =
+      SolarSystem::AtСпутник1Launch(
+          SolarSystem::Accuracy::kAllBodiesAndOblateness);
   not_null<std::unique_ptr<SolarSystem>> const at_спутник_2_launch =
       SolarSystem::AtСпутник2Launch(
           SolarSystem::Accuracy::kAllBodiesAndOblateness);
+  std::vector<std::tuple<int, double, double>> mathematica_list;
 
   // Create a satellite orbiting the Earth.
   Trajectory<ICRFJ2000Ecliptic> const& earth_trajectory =
-      *at_спутник_2_launch->trajectories()[SolarSystem::kEarth];
+      *at_спутник_1_launch->trajectories()[SolarSystem::kEarth];
   DegreesOfFreedom<ICRFJ2000Ecliptic> earth_degrees_of_freedom =
       earth_trajectory.last().degrees_of_freedom();
   MasslessBody satellite_body;
   DegreesOfFreedom<ICRFJ2000Ecliptic> satellite_degrees_of_freedom(
       earth_degrees_of_freedom);
-  Trajectory<ICRFJ2000Ecliptic> satellite_trajectory(&satellite_body);
   Position<ICRFJ2000Ecliptic> centre_of_mass;
   Time period;
   MakeSatellite<ICRFJ2000Ecliptic>(
@@ -580,20 +575,28 @@ TEST_F(NBodySystemTest, Sputnik1ToSputnik2Multistep) {
       &satellite_degrees_of_freedom,
       &centre_of_mass,
       &period);
-  satellite_trajectory.Append(earth_trajectory.last().time(),
-                              satellite_degrees_of_freedom);
 
-  NBodySystem<ICRFJ2000Ecliptic> system;
-  std::vector<std::tuple<int, double, double>> mathematica_list;
+  NBodySystem<ICRFJ2000Ecliptic> n_body_system;
+  std::vector<not_null<std::unique_ptr<SolarSystem>>> solar_systems;
+  std::vector<NBodySystem<ICRFJ2000Ecliptic>::Trajectories> trajectories;
+  std::vector<std::unique_ptr<Trajectory<ICRFJ2000Ecliptic>>>
+      satellite_trajectories;
   for (int k = 1; k <= 1 << 16; k *= 2) {
-    evolved_systems.push_back(
+    solar_systems.push_back(
         SolarSystem::AtСпутник1Launch(
             SolarSystem::Accuracy::kAllBodiesAndOblateness));
-    SolarSystem const& reference = *evolved_systems.front();
-    SolarSystem const& actual = *evolved_systems.back();
-    NBodySystem<ICRFJ2000Ecliptic>::Trajectories actual_trajectories =
-        actual.trajectories();
-    system.Integrate(
+    trajectories.push_back(solar_systems.back()->trajectories());
+    auto& reference_trajectories = trajectories.front();
+    auto& actual_trajectories = trajectories.back();
+
+    // Append the satellite trajectory to the solar system.
+    satellite_trajectories.emplace_back(
+        std::make_unique<Trajectory<ICRFJ2000Ecliptic>>(&satellite_body));
+    satellite_trajectories.back()->Append(earth_trajectory.last().time(),
+                                          satellite_degrees_of_freedom);
+    actual_trajectories.push_back(satellite_trajectories.back().get());
+
+    n_body_system.Integrate(
         *integrator_,
         at_спутник_2_launch->trajectories().front()->last().time(),  // tmax
         k * 10 * Second,  // Δt
@@ -601,14 +604,19 @@ TEST_F(NBodySystemTest, Sputnik1ToSputnik2Multistep) {
         true,  // tmax_is_exact
         actual_trajectories);  // trajectories
 
+    LOG(ERROR)<<RelativeDegreesOfFreedom<ICRFJ2000Ecliptic>(
+        actual_trajectories[SolarSystem::kEarth]->last().degrees_of_freedom() -
+        actual_trajectories.back()->last().degrees_of_freedom()).
+            displacement().Norm();
+
     double maximum_position_error = 0.0;
     double maximum_velocity_error = 0.0;
     SolarSystem::Index maximum_position_error_index = SolarSystem::kSun;
     SolarSystem::Index maximum_velocity_error_index = SolarSystem::kSun;
-    for (std::size_t i = 0; i < reference.trajectories().size(); ++i) {
+    for (std::size_t i = 0; i < reference_trajectories.size(); ++i) {
       SolarSystem::Index const index = static_cast<SolarSystem::Index>(i);
-      for (auto reference_it = reference.trajectories()[i]->first(),
-                actual_it = actual.trajectories()[i]->first();
+      for (auto reference_it = reference_trajectories[i]->first(),
+                actual_it = actual_trajectories[i]->first();
            !actual_it.at_end();
            ++actual_it) {
         while (reference_it.time() < actual_it.time()) {
