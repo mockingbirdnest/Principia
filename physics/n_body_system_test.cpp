@@ -71,71 +71,76 @@ class NBodySystemTest : public testing::Test {
         system_(make_not_null_unique<NBodySystem<EarthMoonOrbitPlane>>()) {
     // The Earth-Moon system, roughly, with a circular orbit with velocities
     // in the centre-of-mass frame.
-
-    Position<EarthMoonOrbitPlane> const q1(
-        Vector<Length, EarthMoonOrbitPlane>({0 * SIUnit<Length>(),
-                                             0 * SIUnit<Length>(),
-                                             0 * SIUnit<Length>()}));
-    Position<EarthMoonOrbitPlane> const q2(
-        Vector<Length, EarthMoonOrbitPlane>({0 * SIUnit<Length>(),
-                                             4E8 * SIUnit<Length>(),
-                                             0 * SIUnit<Length>()}));
-    Length const semi_major_axis = (q1 - q2).Norm();
-    period_ = 2 * π * Sqrt(Pow<3>(semi_major_axis) /
-                               (body1_.gravitational_parameter() +
-                                body2_.gravitational_parameter()));
-    centre_of_mass_ =
-        geometry::Barycentre<Vector<Length, EarthMoonOrbitPlane>, Mass>(
-            {q1, q2}, {body1_.mass(), body2_.mass()});
-    Velocity<EarthMoonOrbitPlane> const v1(
-        {-2 * π * (q1 - centre_of_mass_).Norm() / period_,
-         0 * SIUnit<Speed>(),
-         0 * SIUnit<Speed>()});
-    Velocity<EarthMoonOrbitPlane> const v2(
-        {2 * π * (q2 - centre_of_mass_).Norm() / period_,
-         0 * SIUnit<Speed>(),
-         0 * SIUnit<Speed>()});
-    trajectory1_->Append(Instant(0 * SIUnit<Time>()), {q1, v1});
-    trajectory2_->Append(Instant(0 * SIUnit<Time>()), {q2, v2});
+    DegreesOfFreedom<EarthMoonOrbitPlane> dof1(
+        EarthMoonOrbitPlane::origin +
+            Vector<Length, EarthMoonOrbitPlane>({0 * SIUnit<Length>(),
+                                                 0 * SIUnit<Length>(),
+                                                 0 * SIUnit<Length>()}),
+        Vector<Speed, EarthMoonOrbitPlane>({0 * SIUnit<Speed>(),
+                                            0 * SIUnit<Speed>(),
+                                            0 * SIUnit<Speed>()}));
+    DegreesOfFreedom<EarthMoonOrbitPlane> dof2(dof1);
+    MakeSatellite<EarthMoonOrbitPlane>(body1_.gravitational_parameter(),
+                                       &dof1,
+                                       4E8 * SIUnit<Length>(),
+                                       body2_.gravitational_parameter(),
+                                       &dof2,
+                                       &centre_of_mass_,
+                                       &period_);
+    trajectory1_->Append(Instant(0 * SIUnit<Time>()), dof1);
+    trajectory2_->Append(Instant(0 * SIUnit<Time>()), dof2);
   }
 
   template<typename Frame>
   static void MakeSatellite(
-      GravitationalParameter const& satellite_gravitational_parameter,
-      Length const& satellite_radius,
       GravitationalParameter const& centre_gravitational_parameter,
-      DegreesOfFreedom<Frame>*  satellite_degrees_of_freedom,
-      DegreesOfFreedom<Frame>* centre_degrees_of_freedom,
-      Position<Frame>* centre_of_mass,
-      Time* period) {
+      not_null<DegreesOfFreedom<Frame>*> const centre_degrees_of_freedom,
+      Length const& satellite_radius,
+      GravitationalParameter const& satellite_gravitational_parameter,
+      not_null<DegreesOfFreedom<Frame>*> const satellite_degrees_of_freedom,
+      not_null<Position<Frame>*> const centre_of_mass,
+      not_null<Time*> const period) {
+    LOG(ERROR)<<centre_degrees_of_freedom->position();
     Displacement<Frame> const satellite_displacement =
         Vector<Length, Frame>({0 * SIUnit<Length>(),
                                satellite_radius,
                                0 * SIUnit<Length>()});
-    satellite_degrees_of_freedom->position =
-        centre_degrees_of_freedom->position + satellite_displacement;
+    Position<Frame> const satellite_position =
+        centre_degrees_of_freedom->position() + satellite_displacement;
+    LOG(ERROR)<<satellite_position;
     Length const semi_major_axis = satellite_displacement.Norm();
+    LOG(ERROR)<<semi_major_axis;
     *period = 2 * π * Sqrt(Pow<3>(semi_major_axis) /
                                      (centre_gravitational_parameter +
                                       satellite_gravitational_parameter));
+    LOG(ERROR)<<*period;
     *centre_of_mass =
-        geometry::Barycentre<Vector<Length, Frame>, Mass>(
-            {centre_degrees_of_freedom->position,
-             satellite_degrees_of_freedom->position},
+        geometry::Barycentre<Vector<Length, Frame>, GravitationalParameter>(
+            {centre_degrees_of_freedom->position(),
+             satellite_position},
             {centre_gravitational_parameter,
              satellite_gravitational_parameter});
-    centre_degrees_of_freedom->velocity +=
-        {-2 * π *
-             (centre_degrees_of_freedom.position - *centre_of_mass).Norm() /
-                 *period,
-         0 * SIUnit<Speed>(),
-         0 * SIUnit<Speed>()};
-    satellite_degrees_of_freedom->velocity +=
-        {2 * π *
-             (satellite_degrees_of_freedom.position - *centre_of_mass).Norm() /
-                 *period,
-         0 * SIUnit<Speed>(),
-         0 * SIUnit<Speed>()};
+    LOG(ERROR)<<*centre_of_mass;
+    Velocity<Frame> const centre_velocity =
+        centre_degrees_of_freedom->velocity() +
+            Velocity<Frame>(
+                {-2 * π * (centre_degrees_of_freedom->position() -
+                           *centre_of_mass).Norm() / *period,
+                 0 * SIUnit<Speed>(),
+                 0 * SIUnit<Speed>()});
+    LOG(ERROR)<<centre_velocity;
+    Velocity<Frame> const satellite_velocity =
+        centre_degrees_of_freedom->velocity() +
+            Velocity<Frame>(
+                {2 * π * (satellite_position - *centre_of_mass).Norm() / *period,
+                 0 * SIUnit<Speed>(),
+                 0 * SIUnit<Speed>()});
+    LOG(ERROR)<<satellite_velocity;
+    *centre_degrees_of_freedom =
+        DegreesOfFreedom<Frame>(centre_degrees_of_freedom->position(),
+                                centre_velocity);
+    *satellite_degrees_of_freedom =
+        DegreesOfFreedom<Frame>(satellite_position, satellite_velocity);
   }
 
   template<typename Scalar, typename Frame>
