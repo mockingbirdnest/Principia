@@ -1,5 +1,7 @@
 ﻿#include "physics/n_body_system.hpp"
 
+#include <fstream>  // NOLINT(readability/streams)
+#include <iostream>  // NOLINT(readability/streams)
 #include <map>
 #include <memory>
 #include <string>
@@ -555,7 +557,7 @@ TEST_F(NBodySystemTest, Sputnik1ToSputnik2Multistep) {
   not_null<std::unique_ptr<SolarSystem>> const at_спутник_2_launch =
       SolarSystem::AtСпутник2Launch(
           SolarSystem::Accuracy::kAllBodiesAndOblateness);
-  std::vector<std::tuple<int, double, double>> mathematica_list;
+  std::vector<std::tuple<int, double, double>> errors;
 
   // Create a satellite orbiting the Earth.
   Trajectory<ICRFJ2000Ecliptic> const& earth_trajectory =
@@ -604,7 +606,7 @@ TEST_F(NBodySystemTest, Sputnik1ToSputnik2Multistep) {
         true,  // tmax_is_exact
         actual_trajectories);  // trajectories
 
-    LOG(ERROR)<<RelativeDegreesOfFreedom<ICRFJ2000Ecliptic>(
+    LOG(ERROR)<<"dist = "<<RelativeDegreesOfFreedom<ICRFJ2000Ecliptic>(
         actual_trajectories[SolarSystem::kEarth]->last().degrees_of_freedom() -
         actual_trajectories.back()->last().degrees_of_freedom()).
             displacement().Norm();
@@ -644,10 +646,14 @@ TEST_F(NBodySystemTest, Sputnik1ToSputnik2Multistep) {
     LOG(ERROR)<<"k = "<<k
       <<" mpe = "<<maximum_position_error<<"("<<maximum_position_error_index
       <<") mve = "<<maximum_velocity_error<<"("<<maximum_velocity_error_index<<")";
-    mathematica_list.emplace_back(
+    errors.emplace_back(
         k, maximum_position_error, maximum_velocity_error);
   }
-  LOG(ERROR)<<mathematica::Assign("multistep", mathematica_list);
+
+  std::ofstream file;
+  file.open("sputnik1_to_sputnik2_multistep.mma");
+  file << mathematica::Assign("multistep", errors);
+  file.close();
 }
 
 }  // namespace physics
