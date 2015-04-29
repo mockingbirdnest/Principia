@@ -36,6 +36,7 @@ using quantities::ArcTan;
 using quantities::Area;
 using quantities::Pow;
 using quantities::SIUnit;
+using si::Metre;
 using testing_utilities::AlmostEquals;
 using testing_utilities::ICRFJ2000Ecliptic;
 using testing_utilities::kSolarSystemBarycentre;
@@ -82,7 +83,7 @@ class NBodySystemTest : public testing::Test {
     DegreesOfFreedom<EarthMoonOrbitPlane> dof2(dof1);
     MakeSatellite<EarthMoonOrbitPlane>(body1_.gravitational_parameter(),
                                        &dof1,
-                                       4E8 * SIUnit<Length>(),
+                                       4E8 * Metre,
                                        body2_.gravitational_parameter(),
                                        &dof2,
                                        &centre_of_mass_,
@@ -559,6 +560,29 @@ TEST_F(NBodySystemTest, Sputnik1ToSputnik2Multistep) {
   not_null<std::unique_ptr<SolarSystem>> const at_спутник_2_launch =
       SolarSystem::AtСпутник2Launch(
           SolarSystem::Accuracy::kAllBodiesAndOblateness);
+
+  // Create a satellite orbiting the Earth.
+  Trajectory<ICRFJ2000Ecliptic> const& earth_trajectory =
+      *at_спутник_2_launch->trajectories()[SolarSystem::kEarth];
+  DegreesOfFreedom<ICRFJ2000Ecliptic> earth_degrees_of_freedom =
+      earth_trajectory.last().degrees_of_freedom();
+  MasslessBody satellite_body;
+  DegreesOfFreedom<ICRFJ2000Ecliptic> satellite_degrees_of_freedom(
+      earth_degrees_of_freedom);
+  Trajectory<ICRFJ2000Ecliptic> satellite_trajectory(&satellite_body);
+  Position<ICRFJ2000Ecliptic> centre_of_mass;
+  Time period;
+  MakeSatellite<ICRFJ2000Ecliptic>(
+      earth_trajectory.body<MassiveBody>()->gravitational_parameter(),
+      &earth_degrees_of_freedom,
+      1E7 * Metre,
+      0 * SIUnit<GravitationalParameter>(),
+      &satellite_degrees_of_freedom,
+      &centre_of_mass,
+      &period);
+  satellite_trajectory.Append(earth_trajectory.last().time(),
+                              satellite_degrees_of_freedom);
+
   NBodySystem<ICRFJ2000Ecliptic> system;
   std::vector<std::tuple<int, double, double>> mathematica_list;
   for (int k = 1; k <= 1 << 16; k *= 2) {
@@ -567,13 +591,15 @@ TEST_F(NBodySystemTest, Sputnik1ToSputnik2Multistep) {
             SolarSystem::Accuracy::kAllBodiesAndOblateness));
     SolarSystem const& reference = *evolved_systems.front();
     SolarSystem const& actual = *evolved_systems.back();
+    NBodySystem<ICRFJ2000Ecliptic>::Trajectories actual_trajectories =
+        actual.trajectories();
     system.Integrate(
         *integrator_,
         at_спутник_2_launch->trajectories().front()->last().time(),  // tmax
         k * 10 * Second,  // Δt
         1,  // sampling_period
         true,  // tmax_is_exact
-        actual.trajectories());  // trajectories
+        actual_trajectories);  // trajectories
 
     double maximum_position_error = 0.0;
     double maximum_velocity_error = 0.0;
