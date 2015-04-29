@@ -71,6 +71,7 @@ class NBodySystemTest : public testing::Test {
         system_(make_not_null_unique<NBodySystem<EarthMoonOrbitPlane>>()) {
     // The Earth-Moon system, roughly, with a circular orbit with velocities
     // in the centre-of-mass frame.
+
     Position<EarthMoonOrbitPlane> const q1(
         Vector<Length, EarthMoonOrbitPlane>({0 * SIUnit<Length>(),
                                              0 * SIUnit<Length>(),
@@ -96,6 +97,45 @@ class NBodySystemTest : public testing::Test {
          0 * SIUnit<Speed>()});
     trajectory1_->Append(Instant(0 * SIUnit<Time>()), {q1, v1});
     trajectory2_->Append(Instant(0 * SIUnit<Time>()), {q2, v2});
+  }
+
+  template<typename Frame>
+  static void MakeSatellite(
+      GravitationalParameter const& satellite_gravitational_parameter,
+      Length const& satellite_radius,
+      GravitationalParameter const& centre_gravitational_parameter,
+      DegreesOfFreedom<Frame>*  satellite_degrees_of_freedom,
+      DegreesOfFreedom<Frame>* centre_degrees_of_freedom,
+      Position<Frame>* centre_of_mass,
+      Time* period) {
+    Displacement<Frame> const satellite_displacement =
+        Vector<Length, Frame>({0 * SIUnit<Length>(),
+                               satellite_radius,
+                               0 * SIUnit<Length>()});
+    satellite_degrees_of_freedom->position =
+        centre_degrees_of_freedom->position + satellite_displacement;
+    Length const semi_major_axis = satellite_displacement.Norm();
+    *period = 2 * π * Sqrt(Pow<3>(semi_major_axis) /
+                                     (centre_gravitational_parameter +
+                                      satellite_gravitational_parameter));
+    *centre_of_mass =
+        geometry::Barycentre<Vector<Length, Frame>, Mass>(
+            {centre_degrees_of_freedom->position,
+             satellite_degrees_of_freedom->position},
+            {centre_gravitational_parameter,
+             satellite_gravitational_parameter});
+    centre_degrees_of_freedom->velocity +=
+        {-2 * π *
+             (centre_degrees_of_freedom.position - *centre_of_mass).Norm() /
+                 *period,
+         0 * SIUnit<Speed>(),
+         0 * SIUnit<Speed>()};
+    satellite_degrees_of_freedom->velocity +=
+        {2 * π *
+             (satellite_degrees_of_freedom.position - *centre_of_mass).Norm() /
+                 *period,
+         0 * SIUnit<Speed>(),
+         0 * SIUnit<Speed>()};
   }
 
   template<typename Scalar, typename Frame>
