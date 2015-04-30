@@ -716,6 +716,7 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
         reset_rsas_target = true;
       }
       // TODO(egg): change navball texture.
+      // maybe the navball should be a property?
     }
   }
 
