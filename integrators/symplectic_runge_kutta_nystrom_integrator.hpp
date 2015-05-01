@@ -1,6 +1,7 @@
 ﻿
 #pragma once
 
+#include <functional>
 #include <vector>
 
 #include "base/not_null.hpp"
@@ -10,6 +11,7 @@
 namespace principia {
 
 using base::not_null;
+using quantities::Time;
 using quantities::Variation;
 
 namespace integrators {
@@ -55,10 +57,17 @@ class SRKNIntegrator : public SymplecticIntegrator {
   SRKNIntegrator& operator=(SRKNIntegrator const&) = delete;
   SRKNIntegrator& operator=(SRKNIntegrator&&) = delete;
 
+  template<typename Position>
+  using SRKNRightHandSideComputation =
+      std::function<
+          void(Time const& t,
+               std::vector<Position> const&,
+               not_null<std::vector<Variation<Variation<Position>>>*> const)>;
+
   // The functor |compute_acceleration| computes M⁻¹ F(q, t).
-  template<typename Position, typename RightHandSideComputation>
+  template<typename Position>
   void SolveTrivialKineticEnergyIncrement(
-      RightHandSideComputation compute_acceleration,
+      SRKNRightHandSideComputation<Position> compute_acceleration,
       Parameters<Position, Variation<Position>> const& parameters,
       not_null<Solution<Position, Variation<Position>>*> const solution) const;
 
@@ -100,10 +109,9 @@ class SRKNIntegrator : public SymplecticIntegrator {
   std::vector<double> c_;
 
  private:
-  template<VanishingCoefficients vanishing_coefficients,
-           typename Position, typename RightHandSideComputation>
+  template<VanishingCoefficients vanishing_coefficients, typename Position>
   void SolveTrivialKineticEnergyIncrementOptimized(
-      RightHandSideComputation compute_acceleration,
+      SRKNRightHandSideComputation<Position> compute_acceleration,
       Parameters<Position, Variation<Position>> const& parameters,
       not_null<Solution<Position, Variation<Position>>*> const solution) const;
 };

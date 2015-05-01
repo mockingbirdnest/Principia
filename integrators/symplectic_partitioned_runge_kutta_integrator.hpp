@@ -51,25 +51,34 @@ class SPRKIntegrator : public SRKNIntegrator {
   SPRKIntegrator& operator=(SPRKIntegrator const&) = delete;
   SPRKIntegrator& operator=(SPRKIntegrator&&) = delete;
 
+  template<typename Position, typename Momentum>
+  using SPRKRightHandSideComputation =
+      std::function<void(Time const&,
+                         std::vector<Position> const&,
+                         std::vector<Variation<Momentum>>* const)>;
+
+  template<typename Position, typename Momentum>
+  using SPRKAutonomousRightHandSideComputation =
+      std::function<void(std::vector<Momentum> const&,
+                         std::vector<Variation<Position>>* const)>;
+
   // The functors |compute_velocity| and |compute_force| compute
   // ∂T/∂pᵢ(p) and ∂V/∂qᵢ(q,t) respectively.
-  template<typename Position, typename Momentum,
-           typename AutonomousRightHandSideComputation,
-           typename RightHandSideComputation>
+  template<typename Position, typename Momentum>
   void SolveIncrement(
-      RightHandSideComputation compute_force,
-      AutonomousRightHandSideComputation compute_velocity,
+      SPRKRightHandSideComputation<Position, Momentum> compute_force,
+      SPRKAutonomousRightHandSideComputation<Position, Momentum>
+          compute_velocity,
       Parameters<Position, Momentum> const& parameters,
       not_null<Solution<Position, Momentum>*> const solution) const;
 
  private:
   template<VanishingCoefficients vanishing_coefficients,
-           typename Position, typename Momentum,
-           typename AutonomousRightHandSideComputation,
-           typename RightHandSideComputation>
+           typename Position, typename Momentum>
   void SolveIncrementOptimized(
-      RightHandSideComputation compute_force,
-      AutonomousRightHandSideComputation compute_velocity,
+      SPRKRightHandSideComputation<Position, Momentum> compute_force,
+      SPRKAutonomousRightHandSideComputation<Position, Momentum>
+          compute_velocity,
       Parameters<Position, Momentum> const& parameters,
       not_null<Solution<Position, Momentum>*> const solution) const;
 };
