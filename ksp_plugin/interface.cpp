@@ -29,6 +29,7 @@ using base::PullSerializer;
 using base::PushDeserializer;
 using base::UniqueBytes;
 using geometry::Displacement;
+using geometry::Quaternion;
 using quantities::Pow;
 using si::Degree;
 using si::Metre;
@@ -67,6 +68,13 @@ R3Element<double> ToR3Element(XYZ const& xyz) {
 
 XYZ ToXYZ(R3Element<double> const& r3_element) {
   return {r3_element.x, r3_element.y, r3_element.z};
+}
+
+WXYZ ToWXYZ(Quaternion const& quaternion) {
+  return {quaternion.real_part(),
+          quaternion.imaginary_part().x,
+          quaternion.imaginary_part().y,
+          quaternion.imaginary_part().z};
 }
 
 }  // namespace
@@ -254,31 +262,30 @@ QP principia__CelestialFromParent(Plugin const* const plugin,
           ToXYZ(result.velocity().coordinates() / (Metre / Second))};
 }
 
-Transforms<Barycentric, Rendering, Barycentric>*
-principia__NewBodyCentredNonRotatingTransforms(Plugin const* const plugin,
-                                               int const reference_body_index) {
+RenderingTransforms* principia__NewBodyCentredNonRotatingTransforms(
+    Plugin const* const plugin,
+    int const reference_body_index) {
   return CHECK_NOTNULL(plugin)->
       NewBodyCentredNonRotatingTransforms(reference_body_index).release();
 }
 
-Transforms<Barycentric, Rendering, Barycentric>*
-principia__NewBarycentricRotatingTransforms(Plugin const* const plugin,
-                                            int const primary_index,
-                                            int const secondary_index) {
+RenderingTransforms* principia__NewBarycentricRotatingTransforms(
+    Plugin const* const plugin,
+    int const primary_index,
+    int const secondary_index) {
   return CHECK_NOTNULL(plugin)->
       NewBarycentricRotatingTransforms(
           primary_index, secondary_index).release();
 }
 
-void principia__DeleteTransforms(
-    Transforms<Barycentric, Rendering, Barycentric>** const transforms) {
+void principia__DeleteTransforms(RenderingTransforms** const transforms) {
   TakeOwnership(transforms);
 }
 
 LineAndIterator* principia__RenderedVesselTrajectory(
     Plugin const* const plugin,
     char const* vessel_guid,
-    Transforms<Barycentric, Rendering, Barycentric>* const transforms,
+    RenderingTransforms* const transforms,
     XYZ const sun_world_position) {
   RenderedTrajectory<World> rendered_trajectory = CHECK_NOTNULL(plugin)->
       RenderedVesselTrajectory(
@@ -294,7 +301,7 @@ LineAndIterator* principia__RenderedVesselTrajectory(
 
 LineAndIterator* principia__RenderedPrediction(
     Plugin* const plugin,
-    Transforms<Barycentric, Rendering, Barycentric>* const transforms,
+    RenderingTransforms* const transforms,
     XYZ const sun_world_position) {
   RenderedTrajectory<World> rendered_trajectory =
       CHECK_NOTNULL(plugin)->RenderedPrediction(
@@ -396,6 +403,22 @@ XYZ principia__BubbleVelocityCorrection(Plugin const* const plugin,
   Velocity<World> const result =
       CHECK_NOTNULL(plugin)->BubbleVelocityCorrection(reference_body_index);
   return ToXYZ(result.coordinates() / (Metre / Second));
+}
+
+WXYZ principia__NavBallOrientation(
+    Plugin const* const plugin,
+    RenderingTransforms* const transforms,
+    XYZ const sun_world_position,
+    XYZ const ship_world_position) {
+  FrameField<World> const frame_field = CHECK_NOTNULL(plugin)->NavBall(
+      transforms,
+      World::origin +
+          Displacement<World>(ToR3Element(sun_world_position) * Metre));
+  return ToWXYZ(
+      frame_field(
+          World::origin +
+              Displacement<World>(
+                  ToR3Element(ship_world_position) * Metre)).quaternion());
 }
 
 double principia__current_time(Plugin const* const plugin) {

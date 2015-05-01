@@ -130,6 +130,11 @@ Rotation<FromFrame, ToFrame> Rotation<FromFrame, ToFrame>::Identity() {
 }
 
 template<typename FromFrame, typename ToFrame>
+Quaternion const& Rotation<FromFrame, ToFrame>::quaternion() const {
+  return quaternion_;
+}
+
+template<typename FromFrame, typename ToFrame>
 void Rotation<FromFrame, ToFrame>::WriteToMessage(
     not_null<serialization::LinearMap*> const message) const {
   LinearMap<FromFrame, ToFrame>::WriteToMessage(message);

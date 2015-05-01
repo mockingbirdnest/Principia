@@ -23,6 +23,7 @@ namespace principia {
 
 using geometry::Bivector;
 using geometry::Permutation;
+using geometry::Trivector;
 using physics::MockNBodySystem;
 using quantities::Abs;
 using quantities::ArcTan;
@@ -443,7 +444,7 @@ TEST_F(PluginTest, VesselInsertionAtInitialization) {
                                     satellite_initial_velocity_));
   EXPECT_THAT(plugin_->VesselFromParent(guid),
               Componentwise(
-                  AlmostEquals(satellite_initial_displacement_, 7460),
+                  AlmostEquals(satellite_initial_displacement_, 13906),
                   AlmostEquals(satellite_initial_velocity_, 3)));
 }
 
@@ -858,9 +859,9 @@ TEST_F(PluginTest, UpdateCelestialHierarchy) {
         from_parent,
         Componentwise(
             AlmostEquals(looking_glass_.Inverse()(
-                plugin_->CelestialFromParent(index).displacement()), 1, 5056),
+                plugin_->CelestialFromParent(index).displacement()), 1, 37824),
             AlmostEquals(looking_glass_.Inverse()(
-                plugin_->CelestialFromParent(index).velocity()), 1, 936)));
+                plugin_->CelestialFromParent(index).velocity()), 0, 936)));
   }
 }
 
@@ -892,9 +893,8 @@ TEST_F(PluginTest, BodyCentredNonrotatingRenderingIntegration) {
                               RelativeDegreesOfFreedom<AliceSun>(
                                   satellite_initial_displacement_,
                                   satellite_initial_velocity_));
-  not_null<std::unique_ptr<
-      Transforms<Barycentric, Rendering, Barycentric>>> const geocentric =
-          plugin.NewBodyCentredNonRotatingTransforms(SolarSystem::kEarth);
+  not_null<std::unique_ptr<RenderingTransforms>> const geocentric =
+      plugin.NewBodyCentredNonRotatingTransforms(SolarSystem::kEarth);
   // We'll check that our orbit is rendered as circular (actually, we only check
   // that it is rendered within a thin spherical shell around the Earth).
   Length perigee = std::numeric_limits<double>::infinity() * Metre;
@@ -999,11 +999,9 @@ TEST_F(PluginTest, BarycentricRotatingRenderingIntegration) {
                                   RelativeDegreesOfFreedom<ICRFJ2000Ecliptic>(
                                       from_the_earth_to_l5,
                                       initial_velocity)));
-  not_null<std::unique_ptr<
-      Transforms<Barycentric, Rendering, Barycentric>>> const
-      earth_moon_barycentric =
-          plugin.NewBarycentricRotatingTransforms(SolarSystem::kEarth,
-                                                  SolarSystem::kMoon);
+  not_null<std::unique_ptr<RenderingTransforms>> const earth_moon_barycentric =
+      plugin.NewBarycentricRotatingTransforms(SolarSystem::kEarth,
+                                              SolarSystem::kMoon);
   Permutation<AliceSun, World> const alice_sun_to_world =
       Permutation<AliceSun, World>(Permutation<AliceSun, World>::XZY);
   Time const δt_long = 1 * Hour;
@@ -1120,6 +1118,56 @@ TEST_F(PluginTest, Prediction) {
         Lt(0.011));
   }
   plugin.clear_predicted_vessel();
+}
+
+TEST_F(PluginTest, NavBall) {
+  // Create a plugin with planetarium rotation 0.
+  auto plugin = Plugin(initial_time_,
+                       SolarSystem::kSun,
+                       sun_gravitational_parameter_,
+                       0 * Radian);
+  not_null<std::unique_ptr<RenderingTransforms>> const heliocentric =
+          plugin.NewBodyCentredNonRotatingTransforms(SolarSystem::kSun);
+  Vector<double, World> x({1, 0, 0});
+  Vector<double, World> y({0, 1, 0});
+  Vector<double, World> z({0, 0, 1});
+  auto nav_ball = plugin.NavBall(heliocentric.get(), World::origin);
+  EXPECT_THAT(AbsoluteError(-z, nav_ball(World::origin)(x)),
+              Lt(2 * std::numeric_limits<double>::epsilon()));
+  EXPECT_THAT(AbsoluteError(y, nav_ball(World::origin)(y)),
+              Lt(std::numeric_limits<double>::epsilon()));
+  EXPECT_THAT(AbsoluteError(x, nav_ball(World::origin)(z)),
+              Lt(2 * std::numeric_limits<double>::epsilon()));
+}
+
+TEST_F(PluginTest, SerializationCompatibility) {
+  serialization::Multivector message;
+
+  Vector<Length, Barycentric> const v({-1 * Metre, 2 * Metre, 3 * Metre});
+  v.WriteToMessage(&message);
+  message.mutable_frame()->set_tag(serialization::Frame::OLD_BARYCENTRIC);
+  Vector<Length, Barycentric> const w =
+      Vector<Length, Barycentric>::ReadFromMessage(message);
+  Vector<Length, Barycentric> const expected_w(
+      {-1 * Metre, 3 * Metre, 2 * Metre});
+  EXPECT_EQ(expected_w, w);
+
+  Bivector<Length, Barycentric> const b({4 * Metre, 5 * Metre, -6 * Metre});
+  b.WriteToMessage(&message);
+  message.mutable_frame()->set_tag(serialization::Frame::OLD_BARYCENTRIC);
+  Bivector<Length, Barycentric> const c =
+      Bivector<Length, Barycentric>::ReadFromMessage(message);
+  Bivector<Length, Barycentric> const expected_c(
+      {-4 * Metre, 6 * Metre, -5 * Metre});
+  EXPECT_EQ(expected_c, c);
+
+  Trivector<Length, Barycentric> const t(-7 * Metre);
+  t.WriteToMessage(&message);
+  message.mutable_frame()->set_tag(serialization::Frame::OLD_BARYCENTRIC);
+  Trivector<Length, Barycentric> const u =
+      Trivector<Length, Barycentric>::ReadFromMessage(message);
+  Trivector<Length, Barycentric> const expected_u(7 * Metre);
+  EXPECT_EQ(expected_u, u);
 }
 
 }  // namespace ksp_plugin

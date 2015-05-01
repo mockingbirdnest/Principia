@@ -20,6 +20,10 @@ namespace principia {
 
 using base::make_not_null_unique;
 using geometry::Frame;
+using geometry::InnerProduct;
+using geometry::Normalize;
+using geometry::Rotation;
+using quantities::Abs;
 using quantities::Length;
 using quantities::Mass;
 using quantities::SIUnit;
@@ -46,6 +50,14 @@ class TransformsTest : public testing::Test {
   using To = Frame<serialization::Frame::TestTag,
                    serialization::Frame::TO, true>;
 
+  struct Functors {
+    Trajectory<From> const& from_trajectory() const { return *from; }
+    Trajectory<To> const& to_trajectory() const { return *to; }
+
+    Trajectory<From>* from;
+    Trajectory<To>* to;
+  };
+
   TransformsTest()
       : body1_(MassiveBody(1 * SIUnit<Mass>())),
         body2_(MassiveBody(3 * SIUnit<Mass>())),
@@ -53,16 +65,10 @@ class TransformsTest : public testing::Test {
         body2_from_(make_not_null_unique<Trajectory<From>>(&body2_)),
         body1_to_(make_not_null_unique<Trajectory<To>>(&body1_)),
         body2_to_(make_not_null_unique<Trajectory<To>>(&body2_)),
-        satellite_from_(make_not_null_unique<Trajectory<From>>(&satellite_)) {
-    body1_from_fn_ =
-        [this]() -> Trajectory<From> const& { return *this->body1_from_; };
-    body2_from_fn_ =
-        [this]() -> Trajectory<From> const& { return *this->body2_from_; };
-    body1_to_fn_ =
-        [this]() -> Trajectory<To> const& { return *this->body1_to_; };
-    body2_to_fn_ =
-        [this]() -> Trajectory<To> const& { return *this->body2_to_; };
-
+        satellite_from_(make_not_null_unique<Trajectory<From>>(&satellite_)),
+        body1_fn_({body1_from_.get(), body1_to_.get()}),
+        body2_fn_({body2_from_.get(), body2_to_.get()}),
+        satellite_fn_({satellite_from_.get(), nullptr}) {
     // The various bodies move have both a position and a velocity that
     // increases linearly with time.  This is not a situation that's physically
     // possible, but we don't care, all we want is to make sure that the
@@ -111,21 +117,21 @@ class TransformsTest : public testing::Test {
   not_null<std::unique_ptr<Trajectory<To>>> body1_to_;
   not_null<std::unique_ptr<Trajectory<To>>> body2_to_;
   not_null<std::unique_ptr<Trajectory<From>>> satellite_from_;
-  Transforms<From, Through, To>::LazyTrajectory<From> body1_from_fn_;
-  Transforms<From, Through, To>::LazyTrajectory<From> body2_from_fn_;
-  Transforms<From, Through, To>::LazyTrajectory<To> body1_to_fn_;
-  Transforms<From, Through, To>::LazyTrajectory<To> body2_to_fn_;
+  Functors body1_fn_;
+  Functors body2_fn_;
+  Functors satellite_fn_;
 };
 
 // This transform is simple enough that we can compute its effect by hand.  This
 // test verifies that we get the expected result both in |Through| and in |To|.
 TEST_F(TransformsTest, BodyCentredNonRotating) {
-  auto const transforms = Transforms<From, Through, To>::BodyCentredNonRotating(
-                    body1_from_fn_, body1_to_fn_);
+  auto const transforms =
+      Transforms<Functors, From, Through, To>::BodyCentredNonRotating(
+          body1_fn_, &Functors::to_trajectory);
   Trajectory<Through> body1_through(&body1_);
 
   int i = 1;
-  for (auto it = transforms->first(*satellite_from_);
+  for (auto it = transforms->first(satellite_fn_, &Functors::from_trajectory);
        !it.at_end();
        ++it, ++i) {
     DegreesOfFreedom<Through> const degrees_of_freedom =
@@ -169,17 +175,20 @@ TEST_F(TransformsTest, BodyCentredNonRotating) {
                                       -88 * i * SIUnit<Speed>(),
                                       144 * i * SIUnit<Speed>()})))) << i;
   }
+  auto const identity = Rotation<To, To>::Identity();
+  EXPECT_EQ(identity.quaternion(),
+            transforms->coordinate_frame()(To::origin).quaternion());
 }
 
 // Check that the computations we do match those done using Mathematica.
 TEST_F(TransformsTest, SatelliteBarycentricRotating) {
-  auto const transforms = Transforms<From, Through, To>::BarycentricRotating(
-                              body1_from_fn_, body1_to_fn_,
-                              body2_from_fn_, body2_to_fn_);
+  auto const transforms =
+      Transforms<Functors, From, Through, To>::BarycentricRotating(
+          body1_fn_, body2_fn_, &Functors::to_trajectory);
   Trajectory<Through> satellite_through(&satellite_);
 
   int i = 1;
-  for (auto it = transforms->first(*satellite_from_);
+  for (auto it = transforms->first(satellite_fn_, &Functors::from_trajectory);
        !it.at_end();
        ++it, ++i) {
     DegreesOfFreedom<Through> const degrees_of_freedom =
@@ -246,15 +255,15 @@ TEST_F(TransformsTest, SatelliteBarycentricRotating) {
 // from each other and from the barycentre, and that the barycentre is the
 // centre of the coordinates.
 TEST_F(TransformsTest, BodiesBarycentricRotating) {
-  auto const transforms = Transforms<From, Through, To>::BarycentricRotating(
-                              body1_from_fn_, body1_to_fn_,
-                              body2_from_fn_, body2_to_fn_);
+  auto const transforms =
+      Transforms<Functors, From, Through, To>::BarycentricRotating(
+          body1_fn_, body2_fn_, &Functors::to_trajectory);
   Trajectory<Through> body1_through(&body1_);
   Trajectory<Through> body2_through(&body2_);
 
   int i = 1;
-  for (auto it1 = transforms->first(*body1_from_),
-            it2 = transforms->first(*body2_from_);
+  for (auto it1 = transforms->first(body1_fn_, &Functors::from_trajectory),
+            it2 = transforms->first(body2_fn_, &Functors::from_trajectory);
        !it1.at_end() && !it2.at_end();
        ++it1, ++it2, ++i) {
     Length const l = i * SIUnit<Length>();
@@ -298,6 +307,48 @@ TEST_F(TransformsTest, BodiesBarycentricRotating) {
     EXPECT_THAT(length,
                 AlmostEquals(2.0 * sqrt(5.0) * i * SIUnit<Length>(), 0, 2));
   }
+
+  body1_to_->Append(
+      Instant(i * SIUnit<Time>()),
+              DegreesOfFreedom<To>(
+                  Position<To>(
+                      Displacement<To>({1 * SIUnit<Length>(),
+                                        -1 * SIUnit<Length>(),
+                                        2 * SIUnit<Length>()})),
+                  Velocity<To>({-3 * SIUnit<Speed>(),
+                                5 * SIUnit<Speed>(),
+                                -8 * SIUnit<Speed>()})));
+
+  body2_to_->Append(
+      Instant(i * SIUnit<Time>()),
+              DegreesOfFreedom<To>(
+                  Position<To>(
+                      Displacement<To>({13 * SIUnit<Length>(),
+                                        -21 * SIUnit<Length>(),
+                                        34 * SIUnit<Length>()})),
+                  Velocity<To>({-55 * SIUnit<Speed>(),
+                                89 * SIUnit<Speed>(),
+                                -144 * SIUnit<Speed>()})));
+
+  Vector<double, To> const x({1, 0, 0});
+  Vector<double, To> const y({0, 1, 0});
+  Vector<double, To> const z({0, 0, 1});
+  EXPECT_THAT(
+      transforms->coordinate_frame()(To::origin)(x),
+      AlmostEquals(
+          Normalize(body1_to_->last().degrees_of_freedom().position() -
+                    body2_to_->last().degrees_of_freedom().position()),
+          118));
+  EXPECT_GT(
+      InnerProduct(
+          transforms->coordinate_frame()(To::origin)(y),
+          Normalize(body1_to_->last().degrees_of_freedom().velocity())),
+      0);
+  EXPECT_THAT(
+      InnerProduct(
+              transforms->coordinate_frame()(To::origin)(z),
+              Normalize(body1_to_->last().degrees_of_freedom().velocity())),
+      VanishesBefore(1, 8));
 }
 
 }  // namespace physics

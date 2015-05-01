@@ -9,6 +9,10 @@ inline Vessel::Vessel(not_null<Celestial const*> const parent)
     : body_(),
       parent_(parent) {}
 
+inline not_null<MasslessBody const*> Vessel::body() const {
+  return &body_;
+}
+
 inline bool Vessel::is_synchronized() const {
   bool const synchronized = history_ != nullptr;
   if (synchronized) {

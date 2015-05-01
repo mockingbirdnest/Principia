@@ -50,19 +50,18 @@ class MockPlugin : public Plugin {
                      RelativeDegreesOfFreedom<AliceSun>(
                          Index const celestial_index));
 
-  MOCK_CONST_METHOD3(RenderedVesselTrajectory,
-                     RenderedTrajectory<World>(
-                         GUID const& vessel_guid,
-                         not_null<Transforms<
-                             Barycentric, Rendering, Barycentric>*> const
-                             transforms,
-                         Position<World> const& sun_world_position));
+  MOCK_CONST_METHOD3(
+      RenderedVesselTrajectory,
+      RenderedTrajectory<World>(
+          GUID const& vessel_guid,
+          not_null<RenderingTransforms*> const transforms,
+          Position<World> const& sun_world_position));
 
-  MOCK_METHOD2(RenderedPrediction,
-               RenderedTrajectory<World>(
-                   not_null<Transforms<
-                       Barycentric, Rendering, Barycentric>*> const transforms,
-                   Position<World> const& sun_world_position));
+  MOCK_METHOD2(
+      RenderedPrediction,
+      RenderedTrajectory<World>(
+          not_null<RenderingTransforms*> const transforms,
+          Position<World> const& sun_world_position));
 
   MOCK_METHOD1(set_predicted_vessel, void(GUID const& vessel_guid));
 
@@ -75,27 +74,25 @@ class MockPlugin : public Plugin {
   // NOTE(phl): gMock 1.7.0 doesn't support returning a std::unique_ptr<>.  So
   // we override the function of the Plugin class with bona fide functions which
   // call mock functions which fill a std::unique_ptr<> instead of returning it.
-  not_null<std::unique_ptr<Transforms<Barycentric, Rendering, Barycentric>>>
+  not_null<std::unique_ptr<RenderingTransforms>>
   NewBodyCentredNonRotatingTransforms(
       Index const reference_body_index) const override;
 
-  not_null<std::unique_ptr<Transforms<Barycentric, Rendering, Barycentric>>>
+  not_null<std::unique_ptr<RenderingTransforms>>
   NewBarycentricRotatingTransforms(
       Index const primary_index,
       Index const secondary_index) const override;
 
-  MOCK_CONST_METHOD2(FillBodyCentredNonRotatingTransforms,
-                     void(Index const reference_body_index,
-                          std::unique_ptr<
-                              Transforms<Barycentric, Rendering, Barycentric>>*
-                                  transforms));
+  MOCK_CONST_METHOD2(
+      FillBodyCentredNonRotatingTransforms,
+      void(Index const reference_body_index,
+           std::unique_ptr<RenderingTransforms>* transforms));
 
-  MOCK_CONST_METHOD3(FillBarycentricRotatingTransforms,
-                     void(Index const primary_index,
-                          Index const secondary_index,
-                          std::unique_ptr<
-                              Transforms<Barycentric, Rendering, Barycentric>>*
-                                  transforms));
+  MOCK_CONST_METHOD3(
+      FillBarycentricRotatingTransforms,
+      void(Index const primary_index,
+           Index const secondary_index,
+           std::unique_ptr<RenderingTransforms>* transforms));
 
   // NOTE(phl): Another wrapper needed because gMock 1.7.0 wants to copy the
   // vector of unique_ptr<>.
@@ -115,6 +112,11 @@ class MockPlugin : public Plugin {
   MOCK_CONST_METHOD1(BubbleVelocityCorrection,
                      Velocity<World>(
                          Index const reference_body_index));
+
+  MOCK_CONST_METHOD2(NavBall,
+                     FrameField<World>(
+                         not_null<RenderingTransforms*> const transforms,
+                         Position<World> const& sun_world_position));
 
   MOCK_CONST_METHOD0(current_time, Instant());
 
