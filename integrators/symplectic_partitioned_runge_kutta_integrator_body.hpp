@@ -560,25 +560,23 @@ inline SPRKIntegrator::SPRKIntegrator(std::vector<double> const& a,
                                       std::vector<double> const& b)
     : SRKNIntegrator(a, b) {}
 
-template<typename Position, typename Momentum,
-         typename AutonomousRightHandSideComputation,
-         typename RightHandSideComputation>
+template<typename Position, typename Momentum>
 void SPRKIntegrator::SolveIncrement(
-    RightHandSideComputation compute_force,
-    AutonomousRightHandSideComputation compute_velocity,
+    SPRKRightHandSideComputation<Position, Momentum> compute_force,
+    SPRKAutonomousRightHandSideComputation<Position, Momentum> compute_velocity,
     Parameters<Position, Momentum> const& parameters,
     not_null<Solution<Position, Momentum>*> const solution) const {
   switch (vanishing_coefficients_) {
     case kNone:
-      SolveIncrementOptimized<kNone>(
+      SolveIncrementOptimized<kNone, Position, Momentum>(
           compute_force, compute_velocity, parameters, solution);
       break;
     case kFirstBVanishes:
-      SolveIncrementOptimized<kFirstBVanishes>(
+      SolveIncrementOptimized<kFirstBVanishes, Position, Momentum>(
           compute_force, compute_velocity, parameters, solution);
       break;
     case kLastAVanishes:
-      SolveIncrementOptimized<kLastAVanishes>(
+      SolveIncrementOptimized<kLastAVanishes, Position, Momentum>(
           compute_force, compute_velocity, parameters, solution);
       break;
     default:
@@ -587,12 +585,10 @@ void SPRKIntegrator::SolveIncrement(
 }
 
 template<SPRKIntegrator::VanishingCoefficients vanishing_coefficients,
-         typename Position, typename Momentum,
-         typename AutonomousRightHandSideComputation,
-         typename RightHandSideComputation>
+         typename Position, typename Momentum>
 void SPRKIntegrator::SolveIncrementOptimized(
-    RightHandSideComputation compute_force,
-    AutonomousRightHandSideComputation compute_velocity,
+    SPRKRightHandSideComputation<Position, Momentum> compute_force,
+    SPRKAutonomousRightHandSideComputation<Position, Momentum> compute_velocity,
     Parameters<Position, Momentum> const& parameters,
     not_null<Solution<Position, Momentum>*> const solution) const {
   int const dimension = parameters.initial.positions.size();
