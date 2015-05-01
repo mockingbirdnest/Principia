@@ -252,7 +252,7 @@ inline SRKNIntegrator::SRKNIntegrator(std::vector<double> const& a,
 
 template<typename Position>
 void SRKNIntegrator::SolveTrivialKineticEnergyIncrement(
-    RightHandSideComputation<Position> compute_acceleration,
+    SRKNRightHandSideComputation<Position> compute_acceleration,
     Parameters<Position, Variation<Position>> const& parameters,
     not_null<Solution<Position, Variation<Position>>*> const solution) const {
   // NOTE(egg): we need to explicitly give the second template argument here
@@ -285,7 +285,7 @@ void SRKNIntegrator::SolveTrivialKineticEnergyIncrement(
 template<SRKNIntegrator::VanishingCoefficients vanishing_coefficients,
          typename Position>
 void SRKNIntegrator::SolveTrivialKineticEnergyIncrementOptimized(
-    RightHandSideComputation<Position> compute_acceleration,
+    SRKNRightHandSideComputation<Position> compute_acceleration,
     Parameters<Position, Variation<Position>> const& parameters,
     not_null<Solution<Position, Variation<Position>>*> const solution) const {
   using Velocity = Variation<Position>;

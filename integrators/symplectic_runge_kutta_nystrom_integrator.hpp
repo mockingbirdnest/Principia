@@ -58,7 +58,7 @@ class SRKNIntegrator : public SymplecticIntegrator {
   SRKNIntegrator& operator=(SRKNIntegrator&&) = delete;
 
   template<typename Position>
-  using RightHandSideComputation =
+  using SRKNRightHandSideComputation =
       std::function<
           void(Time const& t,
                std::vector<Position> const&,
@@ -67,7 +67,7 @@ class SRKNIntegrator : public SymplecticIntegrator {
   // The functor |compute_acceleration| computes M⁻¹ F(q, t).
   template<typename Position>
   void SolveTrivialKineticEnergyIncrement(
-      RightHandSideComputation<Position> compute_acceleration,
+      SRKNRightHandSideComputation<Position> compute_acceleration,
       Parameters<Position, Variation<Position>> const& parameters,
       not_null<Solution<Position, Variation<Position>>*> const solution) const;
 
@@ -111,7 +111,7 @@ class SRKNIntegrator : public SymplecticIntegrator {
  private:
   template<VanishingCoefficients vanishing_coefficients, typename Position>
   void SolveTrivialKineticEnergyIncrementOptimized(
-      RightHandSideComputation<Position> compute_acceleration,
+      SRKNRightHandSideComputation<Position> compute_acceleration,
       Parameters<Position, Variation<Position>> const& parameters,
       not_null<Solution<Position, Variation<Position>>*> const solution) const;
 };
