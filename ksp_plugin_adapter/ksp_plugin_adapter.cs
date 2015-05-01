@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
 
@@ -69,9 +70,14 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
 
   private Krakensbane krakensbane_;
   private NavBall nav_ball_;
-  private bool override_rsas_target = false;
-  private Vector3d rsas_target;
-  private bool reset_rsas_target = false;
+  private UnityEngine.Texture compass_nav_ball_texture_;
+  private UnityEngine.Texture inertial_nav_ball_texture_;
+  private UnityEngine.Texture barycentric_nav_ball_texture_;
+  private bool nav_ball_changed_ = true;
+
+  private bool override_rsas_target_ = false;
+  private Vector3d rsas_target_;
+  private bool reset_rsas_target_ = false;
 
   PrincipiaPluginAdapter() {
     // We create this directory here so we do not need to worry about cross-
@@ -261,12 +267,41 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
   }
 
   private void OverrideRSASTarget(FlightCtrlState state) {
-    if (override_rsas_target) {
+    if (override_rsas_target_) {
       FlightGlobals.ActiveVessel.Autopilot.RSAS.SetTargetOrientation(
-          rsas_target,
-          reset_rsas_target);
+          rsas_target_,
+          reset_rsas_target_);
     }
-    reset_rsas_target = false;
+    reset_rsas_target_ = false;
+  }
+
+  // Returns false if the file does not exist.
+  private bool LoadTextureIfExists(ref UnityEngine.Texture texture,
+                                   String path) {
+    string full_path =
+        KSPUtil.ApplicationRootPath + Path.DirectorySeparatorChar +
+        "GameData" + Path.DirectorySeparatorChar +
+        "Principia" + Path.DirectorySeparatorChar +
+        path;
+    if (File.Exists(full_path)) {
+      var texture2d = new UnityEngine.Texture2D(2, 2);
+      bool success = texture2d.LoadImage(
+          File.ReadAllBytes(full_path));
+      if (!success) {
+        Log.Fatal("Failed to load texture " + path);
+      }
+      texture = texture2d;
+      return true;
+    } else {
+      return false;
+    }
+  }
+
+  private void LoadTextureOrDie(ref UnityEngine.Texture texture, String path) {
+    bool success = LoadTextureIfExists(ref texture, path);
+    if (!success) {
+      Log.Fatal("Missing texture " + path);
+    }
   }
 
   #region ScenarioModule lifecycle
@@ -280,6 +315,10 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
     base.OnAwake();
     // While we're here, we might as well log.
     Log.Info("principia.ksp_plugin_adapter.PrincipiaPluginAdapter.OnAwake()");
+
+    LoadTextureIfExists(ref compass_nav_ball_texture_, "compass.png");
+    LoadTextureOrDie(ref inertial_nav_ball_texture_, "inertial.png");
+    LoadTextureOrDie(ref barycentric_nav_ball_texture_, "barycentric.png");
   }
 
   public override void OnSave(ConfigNode node) {
@@ -346,49 +385,82 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
   }
 
   private void Update() {
-    override_rsas_target = false;
-    if (PluginRunning() &&
-        fix_nav_ball_in_plotting_frame &&
-        has_active_vessel_in_space()) {
+    override_rsas_target_ = false;
+    Vessel active_vessel = FlightGlobals.ActiveVessel;
+    if (active_vessel != null &&
+        !FlightGlobals.ActiveVessel.isEVA) {
       if (nav_ball_ == null) {
         nav_ball_ = (NavBall)FindObjectOfType(typeof(NavBall));
       }
-      Vessel active_vessel = FlightGlobals.ActiveVessel;
-      nav_ball_.navBall.rotation =
-          (UnityEngine.QuaternionD)nav_ball_.attitudeGymbal *  // sic.
-              (UnityEngine.QuaternionD)NavBallOrientation(
-                  plugin_,
-                  transforms_,
-                  (XYZ)Planetarium.fetch.Sun.position,
-                  (XYZ)(Vector3d)active_vessel.ReferenceTransform.position);
-      Vector3d prograde =
-            (Vector3d)VesselTangent(plugin_,
-                                    active_vessel.id.ToString(),
-                                    transforms_);
-      nav_ball_.progradeVector.transform.localPosition =
-        (UnityEngine.QuaternionD)nav_ball_.attitudeGymbal * prograde * 0.05;
-      nav_ball_.retrogradeVector.transform.localPosition =
-        -nav_ball_.progradeVector.transform.localPosition;
-      if (active_vessel.OnAutopilotUpdate.GetInvocationList()[0] !=
-          (Delegate)(FlightInputCallback)OverrideRSASTarget) {
-        Log.Info("Prepending RSAS override");
-        active_vessel.OnAutopilotUpdate =
-            (FlightInputCallback)Delegate.Combine(
-                new FlightInputCallback(OverrideRSASTarget),
-                active_vessel.OnAutopilotUpdate);
+      if (compass_nav_ball_texture_ == null) {
+        compass_nav_ball_texture_ =
+            nav_ball_.navBall.renderer.material.mainTexture;
       }
-      if (active_vessel.Autopilot.Enabled) {
-        override_rsas_target = true;
-        switch (active_vessel.Autopilot.Mode) {
-          case VesselAutopilot.AutopilotMode.Prograde:
-            rsas_target = prograde;
-            break;
-          case VesselAutopilot.AutopilotMode.Retrograde:
-            rsas_target = -prograde;
-            break;
-          default:
-            override_rsas_target = false;
-            break;
+
+      if (nav_ball_changed_) {
+        // Texture the ball.
+        nav_ball_changed_ = false;
+        if (!fix_nav_ball_in_plotting_frame || !PluginRunning()) {
+          nav_ball_.navBall.renderer.material.mainTexture =
+              compass_nav_ball_texture_;
+        } else {
+          if (first_selected_celestial_ == second_selected_celestial_) {
+            nav_ball_.navBall.renderer.material.mainTexture =
+                inertial_nav_ball_texture_;
+          } else {
+            nav_ball_.navBall.renderer.material.mainTexture =
+                barycentric_nav_ball_texture_;
+          }
+        }
+      }
+
+      if (PluginRunning() && fix_nav_ball_in_plotting_frame) {
+        // Orient the ball.
+        nav_ball_.navBall.rotation =
+            (UnityEngine.QuaternionD)nav_ball_.attitudeGymbal *  // sic.
+                (UnityEngine.QuaternionD)NavBallOrientation(
+                    plugin_,
+                    transforms_,
+                    (XYZ)Planetarium.fetch.Sun.position,
+                    (XYZ)(Vector3d)active_vessel.ReferenceTransform.position);
+        // TODO(egg): the navball should be somewhat independent from the frame
+        // of the Frenet trihedron, but the Frenet trihedron should be in the
+        // same frame as the map view trajectory.
+        if (has_active_vessel_in_space()) {
+          // Orient the Frenet trihedron.
+          // TODO(egg): just the tangent for now.
+          Vector3d prograde =
+                (Vector3d)VesselTangent(plugin_,
+                                        active_vessel.id.ToString(),
+                                        transforms_);
+          nav_ball_.progradeVector.transform.localPosition =
+            (UnityEngine.QuaternionD)nav_ball_.attitudeGymbal * prograde * 0.05;
+          nav_ball_.retrogradeVector.transform.localPosition =
+            -nav_ball_.progradeVector.transform.localPosition;
+          // Make the autopilot target our Frenet trihedron.
+          // TODO(egg): just the tangent for now.
+          if (active_vessel.OnAutopilotUpdate.GetInvocationList()[0] !=
+              (Delegate)(FlightInputCallback)OverrideRSASTarget) {
+            Log.Info("Prepending RSAS override");
+            active_vessel.OnAutopilotUpdate =
+                (FlightInputCallback)Delegate.Combine(
+                    new FlightInputCallback(OverrideRSASTarget),
+                    active_vessel.OnAutopilotUpdate);
+          }
+          if (active_vessel.Autopilot.Enabled) {
+            override_rsas_target_ = true;
+            switch (active_vessel.Autopilot.Mode) {
+              case VesselAutopilot.AutopilotMode.Prograde:
+                rsas_target_ = prograde;
+                break;
+              case VesselAutopilot.AutopilotMode.Retrograde:
+                rsas_target_ = -prograde;
+                break;
+              default:
+                override_rsas_target_ = false;
+                break;
+            }
+          }
         }
       }
     }
@@ -669,10 +741,18 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
 #endif
 
   private void ReferenceFrameSelection() {
+    bool used_to_fix_nav_ball_in_plotting_frame =
+        fix_nav_ball_in_plotting_frame;
     fix_nav_ball_in_plotting_frame = 
         UnityEngine.GUILayout.Toggle(
             value : fix_nav_ball_in_plotting_frame,
             text  : "Fix nav ball in plotting frame");
+    if (PluginRunning() &&
+        used_to_fix_nav_ball_in_plotting_frame !=
+        fix_nav_ball_in_plotting_frame) {
+      nav_ball_changed_ = true;
+      reset_rsas_target_ = true;
+    }
     bool barycentric_rotating =
         first_selected_celestial_ != second_selected_celestial_;
     String reference_frame_description =
@@ -713,10 +793,7 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
       UnityEngine.GUILayout.EndHorizontal();
       if (changed_rendering && PluginRunning()) {
         UpdateRenderingFrame();
-        reset_rsas_target = true;
       }
-      // TODO(egg): change navball texture.
-      // maybe the navball should be a property?
     }
   }
 
@@ -863,6 +940,10 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
   }
 
   private void UpdateRenderingFrame() {
+    if (fix_nav_ball_in_plotting_frame) {
+      nav_ball_changed_ = true;
+      reset_rsas_target_ = true;
+    }
     DeleteTransforms(ref transforms_);
     if (first_selected_celestial_ == second_selected_celestial_) {
       transforms_ = NewBodyCentredNonRotatingTransforms(
