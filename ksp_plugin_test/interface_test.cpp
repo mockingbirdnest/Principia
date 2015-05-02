@@ -553,6 +553,30 @@ TEST_F(InterfaceTest, NavBallOrientation) {
   EXPECT_THAT(transforms, IsNull());
 }
 
+TEST_F(InterfaceTest, VesselTangent) {
+  auto dummy_transforms = RenderingTransforms::DummyForTesting().release();
+  EXPECT_CALL(*plugin_,
+              FillBarycentricRotatingTransforms(kCelestialIndex,
+                                                kParentIndex,
+                                                _))
+      .WillOnce(FillUniquePtr<2>(dummy_transforms));
+  RenderingTransforms* transforms =
+      principia__NewBarycentricRotatingTransforms(plugin_.get(),
+                                                  kCelestialIndex,
+                                                  kParentIndex);
+  auto const tangent = Vector<double, World>({4, 5, 6});
+  EXPECT_CALL(*plugin_, VesselTangent(kVesselGUID, check_not_null(transforms)))
+    .WillOnce(Return(tangent));
+  XYZ t = principia__VesselTangent(plugin_.get(), kVesselGUID, transforms);
+  EXPECT_EQ(t.x, tangent.coordinates().x);
+  EXPECT_EQ(t.y, tangent.coordinates().y);
+  EXPECT_EQ(t.z, tangent.coordinates().z);
+
+  EXPECT_EQ(dummy_transforms, transforms);
+  principia__DeleteTransforms(&transforms);
+  EXPECT_THAT(transforms, IsNull());
+}
+
 TEST_F(InterfaceTest, CurrentTime) {
   EXPECT_CALL(*plugin_, current_time()).WillOnce(Return(kUnixEpoch));
   double const current_time = principia__current_time(plugin_.get());
