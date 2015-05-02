@@ -266,6 +266,10 @@ void CDECL principia__set_prediction_step(Plugin* const plugin,
                                           double const t);
 
 extern "C" DLLEXPORT
+bool CDECL principia__has_vessel(Plugin* const plugin,
+                                 char const* vessel_guid);
+
+extern "C" DLLEXPORT
 void CDECL principia__AddVesselToNextPhysicsBubble(Plugin* const plugin,
                                                    char const* vessel_guid,
                                                    KSPPart const* const parts,

@@ -514,7 +514,9 @@ TEST_F(PluginTest, AdvanceTimeWithVessels) {
   Angle const planetarium_rotation = 42 * Radian;
   std::size_t expected_number_of_new_vessels = 0;
   std::size_t expected_number_of_old_vessels = 0;
+  EXPECT_FALSE(plugin_->has_vessel(enterprise));
   InsertVessel(enterprise, &expected_number_of_new_vessels);
+  EXPECT_TRUE(plugin_->has_vessel(enterprise));
   for (int step = 0; step < 10; ++step) {
     for (Instant t = HistoryTime(step) + 2 * δt;
          t <= HistoryTime(step + 1);
