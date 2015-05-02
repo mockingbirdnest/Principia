@@ -427,7 +427,8 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
         // TODO(egg): the navball should be somewhat independent from the frame
         // of the Frenet trihedron, but the Frenet trihedron should be in the
         // same frame as the map view trajectory.
-        if (has_active_vessel_in_space()) {
+        if (has_active_vessel_in_space() &&
+            has_vessel(plugin_, active_vessel.id.ToString())) {
           // Orient the Frenet trihedron.
           // TODO(egg): just the tangent for now.
           Vector3d prograde =
