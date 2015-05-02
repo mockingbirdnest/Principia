@@ -333,6 +333,11 @@ void principia__set_prediction_step(Plugin* const plugin,
   CHECK_NOTNULL(plugin)->set_prediction_step(t * Second);
 }
 
+bool principia__has_vessel(Plugin* const plugin,
+                           char const* vessel_guid) {
+  return CHECK_NOTNULL(plugin)->has_vessel(vessel_guid);
+}
+
 int principia__NumberOfSegments(LineAndIterator const* line_and_iterator) {
   return CHECK_NOTNULL(line_and_iterator)->rendered_trajectory.size();
 }

@@ -366,7 +366,10 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
         ApplyToVesselsInPhysicsBubble(AddToPhysicsBubble);
       }
       Vessel active_vessel = FlightGlobals.ActiveVessel;
-      if (draw_active_vessel_trajectory()) {
+      bool ready_to_draw_active_vessel_trajectory =
+          draw_active_vessel_trajectory() &&
+          has_vessel(plugin_, active_vessel.id.ToString());
+      if (ready_to_draw_active_vessel_trajectory) {
         set_predicted_vessel(plugin_, active_vessel.id.ToString());
         set_prediction_step(plugin_,
                             prediction_steps_[prediction_step_index_]);
@@ -394,7 +397,7 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
         krakensbane_.setOffset(displacement_offset);
         krakensbane_.FrameVel += velocity_offset;
       }
-      if (draw_active_vessel_trajectory()) {
+      if (ready_to_draw_active_vessel_trajectory) {
         active_vessel.patchedConicRenderer.relativityMode =
             PatchRendering.RelativityMode.RELATIVE;
         if (active_vessel.orbitDriver.Renderer.drawMode !=
