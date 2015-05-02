@@ -1140,6 +1140,29 @@ TEST_F(PluginTest, NavBall) {
               Lt(2 * std::numeric_limits<double>::epsilon()));
 }
 
+TEST_F(PluginTest, Frenet) {
+  // Create a plugin with planetarium rotation 0.
+  auto plugin = Plugin(initial_time_,
+                       SolarSystem::kEarth,
+                       sun_gravitational_parameter_,
+                       0 * Radian);
+  plugin.EndInitialization();
+  Permutation<AliceSun, World> const alice_sun_to_world =
+      Permutation<AliceSun, World>(Permutation<AliceSun, World>::XZY);
+  GUID const satellite = "satellite";
+  plugin.InsertOrKeepVessel(satellite, SolarSystem::kEarth);
+  plugin.SetVesselStateOffset(satellite,
+                              RelativeDegreesOfFreedom<AliceSun>(
+                                  satellite_initial_displacement_,
+                                  satellite_initial_velocity_));
+  Vector<double, World> t = alice_sun_to_world(
+                                Normalize(satellite_initial_velocity_));
+  not_null<std::unique_ptr<RenderingTransforms>> const geocentric =
+          plugin.NewBodyCentredNonRotatingTransforms(SolarSystem::kEarth);
+  EXPECT_THAT(plugin.VesselTangent(satellite, geocentric.get()),
+              AlmostEquals(t, 7));
+}
+
 TEST_F(PluginTest, SerializationCompatibility) {
   serialization::Multivector message;
 

@@ -118,6 +118,11 @@ class MockPlugin : public Plugin {
                          not_null<RenderingTransforms*> const transforms,
                          Position<World> const& sun_world_position));
 
+  MOCK_CONST_METHOD2(VesselTangent,
+                     Vector<double, World>(
+                         GUID const& vessel_guid,
+                         not_null<RenderingTransforms*> const transforms));
+
   MOCK_CONST_METHOD0(current_time, Instant());
 
   MOCK_CONST_METHOD1(WriteToMessage,
