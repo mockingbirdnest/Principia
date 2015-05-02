@@ -267,7 +267,7 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
   }
 
   private void OverrideRSASTarget(FlightCtrlState state) {
-    if (override_rsas_target_) {
+    if (override_rsas_target_ && FlightGlobals.ActiveVessel.Autopilot.Enabled) {
       FlightGlobals.ActiveVessel.Autopilot.RSAS.SetTargetOrientation(
           rsas_target_,
           reset_rsas_target_);
