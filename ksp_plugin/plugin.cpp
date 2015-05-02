@@ -271,6 +271,10 @@ void Plugin::set_prediction_step(Time const& t) {
   prediction_step_ = t;
 }
 
+bool Plugin::has_vessel(GUID const& vessel_guid) const {
+  return vessels_.find(vessel_guid) != vessels_.end();
+}
+
 not_null<std::unique_ptr<RenderingTransforms>>
 Plugin::NewBodyCentredNonRotatingTransforms(
     Index const reference_body_index) const {

@@ -212,7 +212,14 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
              CallingConvention = CallingConvention.Cdecl)]
   private static extern void set_prediction_step(IntPtr plugin, double t);
 
-  [DllImport(dllName           : kDllPath,
+  [DllImport(dllName             : kDllPath,
+             EntryPoint =        "principia__has_vessel",
+             CallingConvention = CallingConvention.Cdecl)]
+  private static extern bool has_vessel(
+      IntPtr plugin,
+      [MarshalAs(UnmanagedType.LPStr)] String vessel_guid);
+
+  [DllImport(dllName: kDllPath,
              EntryPoint        = "principia__AddVesselToNextPhysicsBubble",
              CallingConvention = CallingConvention.Cdecl)]
   private static extern void AddVesselToNextPhysicsBubble(
