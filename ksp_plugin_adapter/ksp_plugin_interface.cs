@@ -119,6 +119,12 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
       double planetarium_rotation);
 
   [DllImport(dllName           : kDllPath,
+             EntryPoint        = "principia__ForgetAllHistoriesBefore",
+             CallingConvention = CallingConvention.Cdecl)]
+  private static extern void ForgetAllHistoriesBefore(IntPtr plugin,
+                                                      double t);
+
+  [DllImport(dllName: kDllPath,
              EntryPoint        = "principia__VesselFromParent",
              CallingConvention = CallingConvention.Cdecl)]
   private static extern QP VesselFromParent(

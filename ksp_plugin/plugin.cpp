@@ -176,6 +176,21 @@ void Plugin::AdvanceTime(Instant const& t, Angle const& planetarium_rotation) {
   UpdatePredictions();
 }
 
+void Plugin::ForgetAllHistoriesBefore(Instant const& t) const {
+  CHECK_LT(t, HistoryTime());
+  for (auto const& pair : celestials_) {
+    not_null<std::unique_ptr<Celestial>> const& celestial = pair.second;
+    celestial->mutable_history()->ForgetBefore(t);
+  }
+  for (auto const& pair : vessels_) {
+    not_null<std::unique_ptr<Vessel>> const& vessel = pair.second;
+    // Only forget the synchronized vessels, the others don't have an history.
+    if (unsynchronized_vessels_.count(vessel.get()) == 0) {
+      vessel->mutable_history()->ForgetBefore(t);
+    }
+  }
+}
+
 RelativeDegreesOfFreedom<AliceSun> Plugin::VesselFromParent(
     GUID const& vessel_guid) const {
   CHECK(!initializing_);

@@ -42,6 +42,8 @@ class MockPlugin : public Plugin {
   MOCK_METHOD2(AdvanceTime,
                void(Instant const& t, Angle const& planetarium_rotation));
 
+  MOCK_CONST_METHOD1(ForgetAllHistoriesBefore, void(Instant const& t));
+
   MOCK_CONST_METHOD1(VesselFromParent,
                      RelativeDegreesOfFreedom<AliceSun>(
                          GUID const& vessel_guid));
