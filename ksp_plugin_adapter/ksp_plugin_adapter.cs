@@ -282,6 +282,7 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
         KSPUtil.ApplicationRootPath + Path.DirectorySeparatorChar +
         "GameData" + Path.DirectorySeparatorChar +
         "Principia" + Path.DirectorySeparatorChar +
+        "assets" + Path.DirectorySeparatorChar +
         path;
     if (File.Exists(full_path)) {
       var texture2d = new UnityEngine.Texture2D(2, 2);
