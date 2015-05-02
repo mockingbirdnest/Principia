@@ -263,6 +263,14 @@ TEST_F(PluginTest, Serialization) {
                                RelativeDegreesOfFreedom<AliceSun>(
                                    satellite_initial_displacement_,
                                    satellite_initial_velocity_));
+
+  // Add a couple of points to the history and then forget some of them.  This
+  // is the most convenient way to check that forgetting works as expected.
+  plugin->AdvanceTime(HistoryTime(3), Angle());
+  plugin->InsertOrKeepVessel(satellite, SolarSystem::kEarth);
+  plugin->AdvanceTime(HistoryTime(6), Angle());
+  plugin->ForgetAllHistoriesBefore(HistoryTime(3));
+
   serialization::Plugin message;
   plugin->WriteToMessage(&message);
   plugin = Plugin::ReadFromMessage(message);
@@ -270,8 +278,19 @@ TEST_F(PluginTest, Serialization) {
   plugin->WriteToMessage(&second_message);
   EXPECT_EQ(message.SerializeAsString(), second_message.SerializeAsString());
   EXPECT_EQ(bodies_.size(), message.celestial_size());
+  auto const& celestial_0_history =
+      message.celestial(0).celestial().history_and_prolongation().history();
+  EXPECT_EQ(1, celestial_0_history.timeline_size());
+  EXPECT_EQ((HistoryTime(6) - Instant()) / (1 * Second),
+            celestial_0_history.timeline(0).instant().scalar().magnitude());
   EXPECT_EQ(1, message.vessel_size());
   EXPECT_EQ(SolarSystem::kEarth, message.vessel(0).parent_index());
+  EXPECT_TRUE(message.vessel(0).vessel().has_history_and_prolongation());
+  auto const& vessel_0_history =
+      message.vessel(0).vessel().history_and_prolongation().history();
+  EXPECT_EQ(1, vessel_0_history.timeline_size());
+  EXPECT_EQ((HistoryTime(6) - Instant()) / (1 * Second),
+            vessel_0_history.timeline(0).instant().scalar().magnitude());
   EXPECT_FALSE(message.bubble().has_current());
 }
 
