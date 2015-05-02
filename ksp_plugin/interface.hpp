@@ -172,6 +172,10 @@ void CDECL principia__AdvanceTime(Plugin* const plugin,
                                   double const t,
                                   double const planetarium_rotation);
 
+extern "C" DLLEXPORT
+void CDECL principia__ForgetAllHistoriesBefore(Plugin* const plugin,
+                                               double const t);
+
 // Calls |plugin->VesselFromParent| with the arguments given.
 // |plugin| must not be null.  No transfer of ownership.
 extern "C" DLLEXPORT

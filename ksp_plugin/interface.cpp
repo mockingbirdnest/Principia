@@ -246,6 +246,11 @@ void principia__AdvanceTime(Plugin* const plugin,
                                      planetarium_rotation * Degree);
 }
 
+void principia__ForgetAllHistoriesBefore(Plugin* const plugin,
+                                         double const t) {
+  CHECK_NOTNULL(plugin)->ForgetAllHistoriesBefore(Instant(t * Second));
+}
+
 QP principia__VesselFromParent(Plugin const* const plugin,
                                char const* vessel_guid) {
   RelativeDegreesOfFreedom<AliceSun> const result =
