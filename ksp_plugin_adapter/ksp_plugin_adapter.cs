@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
@@ -12,22 +13,6 @@ namespace ksp_plugin_adapter {
                                          GameScenes.FLIGHT,
                                          GameScenes.TRACKSTATION})]
 public partial class PrincipiaPluginAdapter : ScenarioModule {
-  // This constant can be at most 32766, since Vectrosity imposes a maximum of
-  // 65534 vertices, where there are 2 vertices per point on discrete lines.  We
-  // want this to be even since we have two points per line segment.
-  // NOTE(egg): Things are fairly slow with the maximum number of points.  We
-  // have to do with fewer.  10000 is mostly ok, even fewer would be better.
-  // TODO(egg): At the moment we store points in the history every
-  // 10 n seconds, where n is maximal such that 10 n seconds is less than the
-  // length of a |FixedUpdate|. This means we sometimes have very large gaps.
-  // We should store *all* points of the history, then decimate for rendering.
-  // This means splines are not needed, since 10 s is small enough to give the
-  // illusion of continuity on the scales we are dealing with, and cubics are
-  // rendered by Vectrosity as line segments, so that a cubic rendered as
-  // 10 segments counts 20 towards |kLinePoints| (and probably takes as long to
-  // render as 10 segments from the actual data, with extra overhead for
-  // the evaluation of the cubic).
-  private const int kLinePoints = 10000;
 
   private const String kPrincipiaKey = "serialized_plugin";
 
@@ -52,16 +37,34 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
   private bool display_patched_conics_ = false;
   private bool fix_navball_in_plotting_frame = true;
 
-  //private double[] prediction_steps_ =
-  //  {1e1, 3e1, 1e2, 3e2, 1e3, 3e3, 1e4, 3e4, 1e5, 3e5, 1e6};
+  // The number of points in a |VectorLine| can be at most 32766, since
+  // Vectrosity imposes a maximum of 65534 vertices, where there are 2 vertices
+  // per point on discrete lines. Moreover there are two points per segment,
+  // so we cannot have 16384 steps (16383 would do).
+  // TODO(egg): At the moment we store points in the history every
+  // 10 n seconds, where n is maximal such that 10 n seconds is less than the
+  // length of a |FixedUpdate|. This means we sometimes have very large gaps.
+  // We should store *all* points of the history, then decimate for rendering.
+  // This means splines are not needed, since 10 s is small enough to give the
+  // illusion of continuity on the scales we are dealing with, and cubics are
+  // rendered by Vectrosity as line segments, so that a cubic rendered as
+  // 10 segments counts 20 towards |kLinePoints| (and probably takes as long to
+  // render as 10 segments from the actual data, with extra overhead for
+  // the evaluation of the cubic).
   private double[] prediction_step_counts_ =
-      {1, 2, 4, 8, 6, 32, 64, 128, 256, 512, 1024, 2048, 4096, 8192, 16384};
+      {1, 2, 4, 8, 16, 32, 64, 128, 256, 512, 1024, 2048, 4096, 8192};
   private int prediction_step_index_ = 0;
   private double[] prediction_lengths_ =
       {1024, 2048, 4096, 8192, 16384, 32768, 65536, 131072, 262144, 524288,
        1048576, 2097152, 4194304, 8388608, 16777216, 33554432, 67108864,
        134217728, 268435456};
   private int prediction_length_index_ = 0;
+  private double[] history_lengths_ =
+      {1024, 2048, 4096, 8192, 16384, 32768, 65536, 131072, 262144, 524288,
+       1048576, 2097152, 4194304, 8388608, 16777216, 33554432, 67108864,
+       134217728, 268435456, 536870912, double.PositiveInfinity};
+  private int history_length_index_ = 6;
+  private const int kMaxHistoryPoints = 32766;
 
   private bool show_reference_frame_selection_ = true;
   private bool show_prediction_settings_ = true;
@@ -290,8 +293,8 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
     reset_rsas_target_ = false;
   }
 
-  // Returns false if the file does not exist.
-  private bool LoadTextureIfExists(ref UnityEngine.Texture texture,
+  // Returns false and nulls |texture| if the file does not exist.
+  private bool LoadTextureIfExists(out UnityEngine.Texture texture,
                                    String path) {
     string full_path =
         KSPUtil.ApplicationRootPath + Path.DirectorySeparatorChar +
@@ -309,12 +312,13 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
       texture = texture2d;
       return true;
     } else {
+      texture = null;
       return false;
     }
   }
 
-  private void LoadTextureOrDie(ref UnityEngine.Texture texture, String path) {
-    bool success = LoadTextureIfExists(ref texture, path);
+  private void LoadTextureOrDie(out UnityEngine.Texture texture, String path) {
+    bool success = LoadTextureIfExists(out texture, path);
     if (!success) {
       Log.Fatal("Missing texture " + path);
     }
@@ -332,9 +336,9 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
     // While we're here, we might as well log.
     Log.Info("principia.ksp_plugin_adapter.PrincipiaPluginAdapter.OnAwake()");
 
-    LoadTextureIfExists(ref compass_navball_texture_, "navball_compass.png");
-    LoadTextureOrDie(ref inertial_navball_texture_, "navball_inertial.png");
-    LoadTextureOrDie(ref barycentric_navball_texture_,
+    LoadTextureIfExists(out compass_navball_texture_, "navball_compass.png");
+    LoadTextureOrDie(out inertial_navball_texture_, "navball_inertial.png");
+    LoadTextureOrDie(out barycentric_navball_texture_,
                      "navball_barycentric.png");
 
     GameEvents.onShowUI.Add(ShowGUI);
@@ -396,16 +400,23 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
 
   private void OnGUI() {
     if (ApplicationLauncher.Ready && toolbar_button_ == null) {
+      UnityEngine.Texture toolbar_button_texture;
+      LoadTextureOrDie(out toolbar_button_texture, "toolbar_button.png");
       toolbar_button_ =
           ApplicationLauncher.Instance.AddModApplication(
-              onTrue          : ToggleMainWindow,
-              onFalse         : ToggleMainWindow,
+              onTrue          : ShowMainWindow,
+              onFalse         : HideMainWindow,
               onHover         : null,
               onHoverOut      : null,
               onEnable        : null,
               onDisable       : null,
               visibleInScenes : ApplicationLauncher.AppScenes.ALWAYS,
-              texture         : new UnityEngine.Texture2D(36, 36));
+              texture         : toolbar_button_texture);
+      if (show_main_window_) {
+        toolbar_button_.SetTrue();
+      } else {
+        toolbar_button_.SetFalse();
+      }
     }
     if (hide_all_gui_) {
       return;
@@ -537,6 +548,9 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
         clear_predicted_vessel(plugin_);
       }
       AdvanceTime(plugin_, universal_time, Planetarium.InverseRotAngle);
+      ForgetAllHistoriesBefore(
+          plugin_,
+          universal_time - history_lengths_[history_length_index_]);
       ApplyToBodyTree(body => UpdateBody(body, universal_time));
       ApplyToVesselsOnRailsOrInInertialPhysicsBubbleInSpace(
           vessel => UpdateVessel(vessel, universal_time));
@@ -627,6 +641,7 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
     if (toolbar_button_ != null) {
       ApplicationLauncher.Instance.RemoveModApplication(toolbar_button_);
     }
+    Cleanup();
   }
 
   #endregion
@@ -637,6 +652,10 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
       LineSegment segment;
       int index_in_line_points = vector_line.points3.Length -
           2 * NumberOfSegments(trajectory_iterator);
+      // If the |VectorLine| is too big, make sure we're not keeping garbage.
+      for (int i = 0; i < index_in_line_points; ++i) {
+        vector_line.points3[i] = UnityEngine.Vector3.zero;
+      }
       while (index_in_line_points < 0) {
         FetchAndIncrement(trajectory_iterator);
         index_in_line_points += 2;
@@ -663,7 +682,11 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
     DestroyRenderedTrajectory();
     rendered_trajectory_ = new VectorLine(
         lineName     : "rendered_trajectory_",
-        linePoints   : new UnityEngine.Vector3[kLinePoints],
+        linePoints   : new UnityEngine.Vector3[
+                           Math.Min(
+                               kMaxHistoryPoints,
+                               2 * (int)(history_lengths_[
+                                             history_length_index_] / 10))],
         lineMaterial : MapView.OrbitLinesMaterial,
         color        : XKCDColors.AcidGreen,
         width        : 5,
@@ -713,8 +736,12 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
     hide_all_gui_ = true;
   }
 
-  private void ToggleMainWindow() {
-    show_main_window_ = !show_main_window_;
+  private void ShowMainWindow() {
+    show_main_window_ = true;
+  }
+
+  private void HideMainWindow() {
+    show_main_window_ = false;
   }
 
   private void DrawMainWindow(int window_id) {
@@ -749,6 +776,15 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
           (plugin_from_save_ ? " from a saved state" : " from scratch");
     }
     UnityEngine.GUILayout.TextArea(last_reset_information);
+    bool changed_history_length = false;
+    Selector(history_lengths_,
+             ref history_length_index_,
+             "Max history length",
+             ref changed_history_length,
+             "{0:0.00e00} s");
+    if (changed_history_length) {
+      ResetRenderedTrajectory();
+    }
     ToggleableSection(name   : "Reference Frame Selection",
                       show   : ref show_reference_frame_selection_,
                       render : ReferenceFrameSelection);
@@ -880,8 +916,13 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
         UnityEngine.GUI.skin.textArea.alignment;
     UnityEngine.GUI.skin.textArea.alignment =
         UnityEngine.TextAnchor.MiddleRight;
+    // Unity/Mono is screwing with the current culture, let's get unambiguous
+    // conventions from a copy of the invariant culture.
+    CultureInfo culture = new CultureInfo("");
+    culture.NumberFormat.NumberGroupSeparator = "'";
+    culture.NumberFormat.PositiveInfinitySymbol = "+∞";
     UnityEngine.GUILayout.TextArea(
-        text    : String.Format(format, array[index]),
+        text    : String.Format(culture, format, array[index]),
         options : UnityEngine.GUILayout.Width(75));
     UnityEngine.GUI.skin.textArea.alignment = old_alignment;
     if (UnityEngine.GUILayout.Button(
@@ -902,7 +943,7 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
     bool changed_settings = false;
     Selector(prediction_step_counts_,
              ref prediction_step_index_,
-             "Step count (computational cost)",
+             "Step count (cost)",
              ref changed_settings,
              "{0:###,###}");
     Selector(prediction_lengths_,
