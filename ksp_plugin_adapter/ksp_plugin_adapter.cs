@@ -31,6 +31,7 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
 
   private const String kPrincipiaKey = "serialized_plugin";
 
+  private bool show_main_window_ = true;
   private static UnityEngine.Rect main_window_rectangle_ =
       new UnityEngine.Rect(left   : UnityEngine.Screen.width / 2.0f,
                            top    : UnityEngine.Screen.height / 3.0f,
@@ -333,6 +334,9 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
     LoadTextureOrDie(ref inertial_navball_texture_, "navball_inertial.png");
     LoadTextureOrDie(ref barycentric_navball_texture_,
                      "navball_barycentric.png");
+
+    GameEvents.onShowUI.Add(ShowGUI);
+    GameEvents.onHideUI.Add(HideGUI);
   }
 
   public override void OnSave(ConfigNode node) {
@@ -389,13 +393,15 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
   // http://docs.unity3d.com/Manual/ExecutionOrder.html
 
   private void OnGUI() {
-    UnityEngine.GUI.skin = HighLogic.Skin;
-    main_window_rectangle_ = UnityEngine.GUILayout.Window(
-        id         : 1,
-        screenRect : main_window_rectangle_,
-        func       : DrawMainWindow,
-        text       : "Traces of Various Descriptions",
-        options    : UnityEngine.GUILayout.MinWidth(500));
+    if (show_main_window_) {
+      UnityEngine.GUI.skin = HighLogic.Skin;
+      main_window_rectangle_ = UnityEngine.GUILayout.Window(
+          id         : 1,
+          screenRect : main_window_rectangle_,
+          func       : DrawMainWindow,
+          text       : "Traces of Various Descriptions",
+          options    : UnityEngine.GUILayout.MinWidth(500));
+    }
   }
 
   private void Update() {
@@ -674,6 +680,14 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
     DeleteTransforms(ref transforms_);
     DestroyRenderedTrajectory();
     navball_changed_ = true;
+  }
+
+  private void ShowGUI() {
+    show_main_window_ = true;
+  }
+
+  private void HideGUI() {
+    show_main_window_ = false;
   }
 
   private void DrawMainWindow(int window_id) {
