@@ -556,13 +556,10 @@ TEST_F(TrajectoryTest, Root) {
 TEST_F(TrajectoryDeathTest, ForgetAfterError) {
   EXPECT_DEATH({
     massive_trajectory_->Append(t1_, d1_);
-    massive_trajectory_->ForgetAfter(t2_);
-  }, "nonexistent time");
-  EXPECT_DEATH({
-    massive_trajectory_->Append(t1_, d1_);
-    not_null<Trajectory<World>*> const fork = massive_trajectory_->NewFork(t1_);
-    fork->ForgetAfter(t2_);
-  }, "nonexistent time");
+    massive_trajectory_->Append(t2_, d2_);
+    not_null<Trajectory<World>*> const fork = massive_trajectory_->NewFork(t2_);
+    fork->ForgetAfter(t1_);
+  }, "before the fork time");
 }
 
 TEST_F(TrajectoryTest, ForgetAfterSuccess) {
@@ -572,7 +569,7 @@ TEST_F(TrajectoryTest, ForgetAfterSuccess) {
   not_null<Trajectory<World>*> const fork = massive_trajectory_->NewFork(t2_);
   fork->Append(t4_, d4_);
 
-  fork->ForgetAfter(t3_);
+  fork->ForgetAfter(t3_ + (t4_ - t3_) / 2);
   std::map<Instant, Position<World>> positions = fork->Positions();
   std::map<Instant, Velocity<World>> velocities = fork->Velocities();
   std::list<Instant> times = fork->Times();
@@ -624,10 +621,6 @@ TEST_F(TrajectoryDeathTest, ForgetBeforeError) {
     not_null<Trajectory<World>*> const fork = massive_trajectory_->NewFork(t1_);
     fork->ForgetBefore(t1_);
   }, "nonroot");
-  EXPECT_DEATH({
-    massive_trajectory_->Append(t1_, d1_);
-    massive_trajectory_->ForgetBefore(t2_);
-  }, "nonexistent time");
 }
 
 TEST_F(TrajectoryTest, ForgetBeforeSuccess) {
@@ -637,7 +630,7 @@ TEST_F(TrajectoryTest, ForgetBeforeSuccess) {
   not_null<Trajectory<World>*> const fork = massive_trajectory_->NewFork(t2_);
   fork->Append(t4_, d4_);
 
-  massive_trajectory_->ForgetBefore(t1_);
+  massive_trajectory_->ForgetBefore(t1_ + (t2_ - t1_) / 2);
   std::map<Instant, Position<World>> positions =
       massive_trajectory_->Positions();
   std::map<Instant, Velocity<World>> velocities =

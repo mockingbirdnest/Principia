@@ -120,13 +120,13 @@ void Trajectory<Frame>::Append(
 
 template<typename Frame>
 void Trajectory<Frame>::ForgetAfter(Instant const& time) {
-  CHECK(InTimelineOrAtFork(time)) << "ForgetAfter a nonexistent time " << time;
-
   // Each of these blocks gets an iterator denoting the first entry with
   // time > |time|.  It then removes that entry and all the entries that follow
   // it.  This preserve any entry with time == |time|.
   {
     auto const it = timeline_.upper_bound(time);
+    CHECK(is_root() || time >= ForkTime())
+        << "ForgetAfter before the fork time";
     timeline_.erase(it, timeline_.end());
   }
   {
@@ -139,9 +139,9 @@ template<typename Frame>
 void Trajectory<Frame>::ForgetBefore(Instant const& time) {
   // Check that this is a root.
   CHECK(is_root()) << "ForgetBefore on a nonroot trajectory";
-  // Check that |time| is the time of one of our Timeline.
-  CHECK(timeline_.find(time) != timeline_.end())
-      << "ForgetBefore a nonexistent time";
+  // Each of these blocks gets an iterator denoting the first entry with
+  // time > |time|.  It then removes that all the entries that precede it.  This
+  // removes any entry with time == |time|.
   {
     auto it = timeline_.upper_bound(time);
     timeline_.erase(timeline_.begin(), it);
@@ -154,7 +154,9 @@ void Trajectory<Frame>::ForgetBefore(Instant const& time) {
 
 template<typename Frame>
 not_null<Trajectory<Frame>*> Trajectory<Frame>::NewFork(Instant const& time) {
-  CHECK(InTimelineOrAtFork(time)) << "NewFork at nonexistent time " << time;
+  CHECK(timeline_.find(time) != timeline_.end() ||
+        (!is_root() && time == ForkTime()))
+      << "NewFork at nonexistent time " << time;
 
   // May be at |end()|.
   auto fork_it = timeline_.find(time);
@@ -456,26 +458,16 @@ Trajectory<Frame>::Trajectory(not_null<Body const*> const body,
       parent_(parent) {}
 
 template<typename Frame>
-bool Trajectory<Frame>::InTimelineOrAtFork(Instant const time) const {
-  // Check that |time| is the time of one of our Timeline or the time of fork.
-  auto const it = timeline_.find(time);
-  if (it == timeline_.end()) {
-    if (fork_ == nullptr) {
-      return false;
-    }
-
-    // Skip over empty timelines to check that this is the fork time.
-    Trajectory const* ancestor = parent_;
-    Fork fork = *fork_;
-    while (ancestor != nullptr && fork.timeline == ancestor->timeline_.end()) {
-      fork = *ancestor->fork_;
-      ancestor = ancestor->parent_;
-    }
-
-    return ancestor != nullptr && fork.timeline->first == time;
-  } else {
-    return true;
+Instant const& Trajectory<Frame>::ForkTime() const {
+  CHECK(!is_root());
+  // Skip over empty timelines to return the fork time.
+  Trajectory const* ancestor = parent_;
+  Fork fork = *fork_;
+  while (ancestor != nullptr && fork.timeline == ancestor->timeline_.end()) {
+    fork = *ancestor->fork_;
+    ancestor = ancestor->parent_;
   }
+  return fork.timeline->first;
 }
 
 template<typename Frame>
