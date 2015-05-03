@@ -412,12 +412,15 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
               onDisable       : null,
               visibleInScenes : ApplicationLauncher.AppScenes.ALWAYS,
               texture         : toolbar_button_texture);
-      if (show_main_window_) {
-        toolbar_button_.SetTrue();
-      } else {
-        toolbar_button_.SetFalse();
-      }
     }
+    // Make sure the state of the toolbar button remains consistent with the
+    // state of the window.
+    if (show_main_window_) {
+      toolbar_button_.SetTrue(makeCall : false);
+    } else {
+      toolbar_button_.SetFalse(makeCall : false);
+    }
+
     if (hide_all_gui_) {
       return;
     } else if (show_main_window_) {
