@@ -31,7 +31,9 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
 
   private const String kPrincipiaKey = "serialized_plugin";
 
-  private bool show_main_window_ = true;
+  private ApplicationLauncherButton toolbar_button_;
+  private bool hide_all_gui_ = false;
+  private static bool show_main_window_ = true;
   private static UnityEngine.Rect main_window_rectangle_ =
       new UnityEngine.Rect(left   : UnityEngine.Screen.width / 2.0f,
                            top    : UnityEngine.Screen.height / 3.0f,
@@ -393,7 +395,21 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
   // http://docs.unity3d.com/Manual/ExecutionOrder.html
 
   private void OnGUI() {
-    if (show_main_window_) {
+    if (ApplicationLauncher.Ready && toolbar_button_ == null) {
+      toolbar_button_ =
+          ApplicationLauncher.Instance.AddModApplication(
+              onTrue          : ToggleMainWindow,
+              onFalse         : ToggleMainWindow,
+              onHover         : null,
+              onHoverOut      : null,
+              onEnable        : null,
+              onDisable       : null,
+              visibleInScenes : ApplicationLauncher.AppScenes.ALWAYS,
+              texture         : new UnityEngine.Texture2D(36, 36));
+    }
+    if (hide_all_gui_) {
+      return;
+    } else if (show_main_window_) {
       UnityEngine.GUI.skin = HighLogic.Skin;
       main_window_rectangle_ = UnityEngine.GUILayout.Window(
           id         : 1,
@@ -606,6 +622,13 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
     }
   }
 
+  private void OnDisable() {
+    Log.Info("principia.ksp_plugin_adapter.PrincipiaPluginAdapter.OnDisable()");
+    if (toolbar_button_ != null) {
+      ApplicationLauncher.Instance.RemoveModApplication(toolbar_button_);
+    }
+  }
+
   #endregion
 
   private void RenderAndDeleteTrajectory(ref IntPtr trajectory_iterator,
@@ -683,11 +706,15 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
   }
 
   private void ShowGUI() {
-    show_main_window_ = true;
+    hide_all_gui_ = false;
   }
 
   private void HideGUI() {
-    show_main_window_ = false;
+    hide_all_gui_ = true;
+  }
+
+  private void ToggleMainWindow() {
+    show_main_window_ = !show_main_window_;
   }
 
   private void DrawMainWindow(int window_id) {
