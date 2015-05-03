@@ -47,7 +47,7 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
   private int second_selected_celestial_ = 0;
 
   private bool display_patched_conics_ = false;
-  private bool fix_nav_ball_in_plotting_frame = true;
+  private bool fix_navball_in_plotting_frame = true;
 
   private double[] prediction_steps_ =
     {1e1, 3e1, 1e2, 3e2, 1e3, 3e3, 1e4, 3e4, 1e5, 3e5, 1e6};
@@ -69,12 +69,20 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
   private bool plugin_from_save_;
 
   private Krakensbane krakensbane_;
-  private NavBall nav_ball_;
-  private UnityEngine.Texture compass_nav_ball_texture_;
-  private UnityEngine.Texture inertial_nav_ball_texture_;
-  private UnityEngine.Texture barycentric_nav_ball_texture_;
-  private bool nav_ball_changed_ = true;
+  private NavBall navball_;
+  private UnityEngine.Texture compass_navball_texture_;
+  private UnityEngine.Texture inertial_navball_texture_;
+  private UnityEngine.Texture barycentric_navball_texture_;
+  private bool navball_changed_ = true;
 
+  // The RSAS is the component of the stock KSP autopilot that deals with
+  // orienting the vessel towards a specific direction (e.g. prograde).
+  // It is, as usual for KSP, an ineffable acronym; it is however likely derived
+  // from the name of the SAS, the component of the autopilot that deals with
+  // stabilizing the vessel's attitude without fixing it to any particular
+  // target.  Note that SAS has several known meanings, none of which are
+  // noteworthy.  The interested reader can refer to
+  // http://wiki.kerbalspaceprogram.com/wiki/SAS.
   private bool override_rsas_target_ = false;
   private Vector3d rsas_target_;
   private bool reset_rsas_target_ = false;
@@ -289,7 +297,7 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
       bool success = texture2d.LoadImage(
           File.ReadAllBytes(full_path));
       if (!success) {
-        Log.Fatal("Failed to load texture " + path);
+        Log.Fatal("Failed to load texture " + full_path);
       }
       texture = texture2d;
       return true;
@@ -317,9 +325,10 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
     // While we're here, we might as well log.
     Log.Info("principia.ksp_plugin_adapter.PrincipiaPluginAdapter.OnAwake()");
 
-    LoadTextureIfExists(ref compass_nav_ball_texture_, "compass.png");
-    LoadTextureOrDie(ref inertial_nav_ball_texture_, "inertial.png");
-    LoadTextureOrDie(ref barycentric_nav_ball_texture_, "barycentric.png");
+    LoadTextureIfExists(ref compass_navball_texture_, "navball_compass.png");
+    LoadTextureOrDie(ref inertial_navball_texture_, "navball_inertial.png");
+    LoadTextureOrDie(ref barycentric_navball_texture_,
+                     "navball_barycentric.png");
   }
 
   public override void OnSave(ConfigNode node) {
@@ -390,55 +399,58 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
     Vessel active_vessel = FlightGlobals.ActiveVessel;
     if (active_vessel != null &&
         !FlightGlobals.ActiveVessel.isEVA) {
-      if (nav_ball_ == null) {
-        nav_ball_ = (NavBall)FindObjectOfType(typeof(NavBall));
+      if (navball_ == null) {
+        navball_ = (NavBall)FindObjectOfType(typeof(NavBall));
       }
-      if (compass_nav_ball_texture_ == null) {
-        compass_nav_ball_texture_ =
-            nav_ball_.navBall.renderer.material.mainTexture;
+      if (compass_navball_texture_ == null) {
+        compass_navball_texture_ =
+            navball_.navBall.renderer.material.mainTexture;
       }
 
-      if (nav_ball_changed_) {
+      if (navball_changed_) {
         // Texture the ball.
-        nav_ball_changed_ = false;
-        if (!fix_nav_ball_in_plotting_frame || !PluginRunning()) {
-          nav_ball_.navBall.renderer.material.mainTexture =
-              compass_nav_ball_texture_;
+        navball_changed_ = false;
+        if (!fix_navball_in_plotting_frame || !PluginRunning()) {
+          navball_.navBall.renderer.material.mainTexture =
+              compass_navball_texture_;
+        } else if (first_selected_celestial_ == second_selected_celestial_) {
+          navball_.navBall.renderer.material.mainTexture =
+              inertial_navball_texture_;
         } else {
-          if (first_selected_celestial_ == second_selected_celestial_) {
-            nav_ball_.navBall.renderer.material.mainTexture =
-                inertial_nav_ball_texture_;
-          } else {
-            nav_ball_.navBall.renderer.material.mainTexture =
-                barycentric_nav_ball_texture_;
-          }
+          navball_.navBall.renderer.material.mainTexture =
+              barycentric_navball_texture_;
         }
       }
 
-      if (PluginRunning() && fix_nav_ball_in_plotting_frame) {
+      if (PluginRunning() && fix_navball_in_plotting_frame) {
         // Orient the ball.
-        nav_ball_.navBall.rotation =
-            (UnityEngine.QuaternionD)nav_ball_.attitudeGymbal *  // sic.
-                (UnityEngine.QuaternionD)NavBallOrientation(
+        navball_.navBall.rotation =
+            (UnityEngine.QuaternionD)navball_.attitudeGymbal *  // sic.
+                (UnityEngine.QuaternionD)NavballOrientation(
                     plugin_,
                     transforms_,
                     (XYZ)Planetarium.fetch.Sun.position,
                     (XYZ)(Vector3d)active_vessel.ReferenceTransform.position);
-        // TODO(egg): the navball should be somewhat independent from the frame
-        // of the Frenet trihedron, but the Frenet trihedron should be in the
-        // same frame as the map view trajectory.
+        // TODO(egg): the navball should be independent from the frame of the
+        // Frenet trihedron (seeing your body-centric velocity with a compass
+        // navball like in stock makes sense, so does seeing your velocity in
+        // any reference frame with the fixed stars navball), although the
+        // Frenet trihedron should be in the same frame as the map view
+        // trajectory.  Right now when in space the navball is always linked to
+        // the frame of the Frenet trihedron and the trajectory.
         if (has_active_vessel_in_space() &&
             has_vessel(plugin_, active_vessel.id.ToString())) {
           // Orient the Frenet trihedron.
           // TODO(egg): just the tangent for now.
           Vector3d prograde =
-                (Vector3d)VesselTangent(plugin_,
-                                        active_vessel.id.ToString(),
-                                        transforms_);
-          nav_ball_.progradeVector.transform.localPosition =
-            (UnityEngine.QuaternionD)nav_ball_.attitudeGymbal * prograde * 0.05;
-          nav_ball_.retrogradeVector.transform.localPosition =
-            -nav_ball_.progradeVector.transform.localPosition;
+              (Vector3d)VesselTangent(plugin_,
+                                      active_vessel.id.ToString(),
+                                      transforms_);
+          navball_.progradeVector.transform.localPosition =
+              (UnityEngine.QuaternionD)navball_.attitudeGymbal *
+                  prograde * 0.05;
+          navball_.retrogradeVector.transform.localPosition =
+              -navball_.progradeVector.transform.localPosition;
           // Make the autopilot target our Frenet trihedron.
           // TODO(egg): just the tangent for now.
           if (active_vessel.OnAutopilotUpdate.GetInvocationList()[0] !=
@@ -657,6 +669,7 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
     DeletePlugin(ref plugin_);
     DeleteTransforms(ref transforms_);
     DestroyRenderedTrajectory();
+    navball_changed_ = true;
   }
 
   private void DrawMainWindow(int window_id) {
@@ -746,16 +759,16 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
 #endif
 
   private void ReferenceFrameSelection() {
-    bool used_to_fix_nav_ball_in_plotting_frame =
-        fix_nav_ball_in_plotting_frame;
-    fix_nav_ball_in_plotting_frame = 
+    bool was_fixing_navball_in_plotting_frame =
+        fix_navball_in_plotting_frame;
+    fix_navball_in_plotting_frame = 
         UnityEngine.GUILayout.Toggle(
-            value : fix_nav_ball_in_plotting_frame,
-            text  : "Fix nav ball in plotting frame");
+            value : fix_navball_in_plotting_frame,
+            text  : "Fix navball in plotting frame");
     if (PluginRunning() &&
-        used_to_fix_nav_ball_in_plotting_frame !=
-        fix_nav_ball_in_plotting_frame) {
-      nav_ball_changed_ = true;
+        was_fixing_navball_in_plotting_frame !=
+        fix_navball_in_plotting_frame) {
+      navball_changed_ = true;
       reset_rsas_target_ = true;
     }
     bool barycentric_rotating =
@@ -945,8 +958,8 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
   }
 
   private void UpdateRenderingFrame() {
-    if (fix_nav_ball_in_plotting_frame) {
-      nav_ball_changed_ = true;
+    if (fix_navball_in_plotting_frame) {
+      navball_changed_ = true;
       reset_rsas_target_ = true;
     }
     DeleteTransforms(ref transforms_);

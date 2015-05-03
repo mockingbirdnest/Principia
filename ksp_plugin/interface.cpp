@@ -410,12 +410,12 @@ XYZ principia__BubbleVelocityCorrection(Plugin const* const plugin,
   return ToXYZ(result.coordinates() / (Metre / Second));
 }
 
-WXYZ principia__NavBallOrientation(
+WXYZ principia__NavballOrientation(
     Plugin const* const plugin,
     RenderingTransforms* const transforms,
     XYZ const sun_world_position,
     XYZ const ship_world_position) {
-  FrameField<World> const frame_field = CHECK_NOTNULL(plugin)->NavBall(
+  FrameField<World> const frame_field = CHECK_NOTNULL(plugin)->Navball(
       transforms,
       World::origin +
           Displacement<World>(ToR3Element(sun_world_position) * Metre));

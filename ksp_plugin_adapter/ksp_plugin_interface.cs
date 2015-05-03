@@ -246,9 +246,9 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
                                                      int reference_body_index);
 
   [DllImport(dllName           : kDllPath,
-             EntryPoint        = "principia__NavBallOrientation",
+             EntryPoint        = "principia__NavballOrientation",
              CallingConvention = CallingConvention.Cdecl)]
-  private static extern WXYZ NavBallOrientation(
+  private static extern WXYZ NavballOrientation(
       IntPtr plugin,
       IntPtr transforms,
       XYZ sun_world_position,
