@@ -117,10 +117,15 @@ class MockPlugin : public Plugin {
                      Velocity<World>(
                          Index const reference_body_index));
 
-  MOCK_CONST_METHOD2(NavBall,
+  MOCK_CONST_METHOD2(Navball,
                      FrameField<World>(
                          not_null<RenderingTransforms*> const transforms,
                          Position<World> const& sun_world_position));
+
+  MOCK_CONST_METHOD2(VesselTangent,
+                     Vector<double, World>(
+                         GUID const& vessel_guid,
+                         not_null<RenderingTransforms*> const transforms));
 
   MOCK_CONST_METHOD0(current_time, Instant());
 

@@ -252,13 +252,21 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
                                                      int reference_body_index);
 
   [DllImport(dllName           : kDllPath,
-             EntryPoint        = "principia__NavBallOrientation",
+             EntryPoint        = "principia__NavballOrientation",
              CallingConvention = CallingConvention.Cdecl)]
-  private static extern WXYZ NavBallOrientation(
+  private static extern WXYZ NavballOrientation(
       IntPtr plugin,
       IntPtr transforms,
       XYZ sun_world_position,
       XYZ ship_world_position);
+
+  [DllImport(dllName           : kDllPath,
+             EntryPoint        = "principia__VesselTangent",
+             CallingConvention = CallingConvention.Cdecl)]
+  private static extern XYZ VesselTangent(
+      IntPtr plugin,
+      [MarshalAs(UnmanagedType.LPStr)] String vessel_guid,
+      IntPtr transforms);
 
   [DllImport(dllName           : kDllPath,
              EntryPoint        = "principia__current_time",

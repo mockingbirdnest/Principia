@@ -250,9 +250,15 @@ class Plugin {
       Index const reference_body_index) const;
 
   // The navball field at |current_time| for the given |transforms|.
-  virtual FrameField<World> NavBall(
+  virtual FrameField<World> Navball(
       not_null<RenderingTransforms*> const transforms,
       Position<World> const& sun_world_position) const;
+
+  // The unit tangent vector to the trajectory of the vessel with the given GUID
+  // in the frame given by |transforms|.
+  virtual Vector<double, World> VesselTangent(
+      GUID const& vessel_guid,
+      not_null<RenderingTransforms*> const transforms) const;
 
   virtual Instant current_time() const;
 

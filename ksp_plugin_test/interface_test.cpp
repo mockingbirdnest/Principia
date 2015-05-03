@@ -521,7 +521,7 @@ TEST_F(InterfaceTest, PhysicsBubble) {
   EXPECT_TRUE(empty);
 }
 
-TEST_F(InterfaceTest, NavBallOrientation) {
+TEST_F(InterfaceTest, NavballOrientation) {
   auto dummy_transforms = RenderingTransforms::DummyForTesting().release();
   EXPECT_CALL(*plugin_,
               FillBarycentricRotatingTransforms(kCelestialIndex,
@@ -545,13 +545,13 @@ TEST_F(InterfaceTest, NavBallOrientation) {
   auto const rotation =
       Rotation<World, World>(π / 2 * Radian,
                              Bivector<double, World>({4, 5, 6}));
-  EXPECT_CALL(*plugin_, NavBall(check_not_null(transforms), sun_position))
+  EXPECT_CALL(*plugin_, Navball(check_not_null(transforms), sun_position))
     .WillOnce(
          Return(
              [rotation](Position<World> const& q) {
                return rotation;
              }));
-  WXYZ q = principia__NavBallOrientation(plugin_.get(),
+  WXYZ q = principia__NavballOrientation(plugin_.get(),
                                          transforms,
                                          {1, 2, 3},
                                          {2, 3, 5});
@@ -559,6 +559,30 @@ TEST_F(InterfaceTest, NavBallOrientation) {
   EXPECT_EQ(q.x, rotation.quaternion().imaginary_part().x);
   EXPECT_EQ(q.y, rotation.quaternion().imaginary_part().y);
   EXPECT_EQ(q.z, rotation.quaternion().imaginary_part().z);
+
+  EXPECT_EQ(dummy_transforms, transforms);
+  principia__DeleteTransforms(&transforms);
+  EXPECT_THAT(transforms, IsNull());
+}
+
+TEST_F(InterfaceTest, VesselTangent) {
+  auto dummy_transforms = RenderingTransforms::DummyForTesting().release();
+  EXPECT_CALL(*plugin_,
+              FillBarycentricRotatingTransforms(kCelestialIndex,
+                                                kParentIndex,
+                                                _))
+      .WillOnce(FillUniquePtr<2>(dummy_transforms));
+  RenderingTransforms* transforms =
+      principia__NewBarycentricRotatingTransforms(plugin_.get(),
+                                                  kCelestialIndex,
+                                                  kParentIndex);
+  auto const tangent = Vector<double, World>({4, 5, 6});
+  EXPECT_CALL(*plugin_, VesselTangent(kVesselGUID, check_not_null(transforms)))
+    .WillOnce(Return(tangent));
+  XYZ t = principia__VesselTangent(plugin_.get(), kVesselGUID, transforms);
+  EXPECT_EQ(t.x, tangent.coordinates().x);
+  EXPECT_EQ(t.y, tangent.coordinates().y);
+  EXPECT_EQ(t.z, tangent.coordinates().z);
 
   EXPECT_EQ(dummy_transforms, transforms);
   principia__DeleteTransforms(&transforms);
