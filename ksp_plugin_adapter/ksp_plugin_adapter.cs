@@ -835,9 +835,14 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
       --index;
       changed = true;
     }
+    UnityEngine.TextAnchor old_alignment =
+        UnityEngine.GUI.skin.textArea.alignment;
+    UnityEngine.GUI.skin.textArea.alignment =
+        UnityEngine.TextAnchor.MiddleRight;
     UnityEngine.GUILayout.TextArea(
         text    : String.Format(format, array[index]),
-        options : UnityEngine.GUILayout.Width(100));
+        options : UnityEngine.GUILayout.Width(75));
+    UnityEngine.GUI.skin.textArea.alignment = old_alignment;
     if (UnityEngine.GUILayout.Button(
             text    : index == array.Length - 1 ? "max" : "+",
             options : UnityEngine.GUILayout.Width(50)) &&
@@ -858,12 +863,12 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
              ref prediction_step_index_,
              "Step count (computational cost)",
              ref changed_settings,
-             "{0,6:###,###}");
+             "{0:###,###}");
     Selector(prediction_lengths_,
              ref prediction_length_index_,
              "Length",
              ref changed_settings,
-             "{0:000e0} s");
+             "{0:0.00e0} s");
     if (changed_settings) {
       ResetRenderedTrajectory();
     }
