@@ -49,11 +49,15 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
   private bool display_patched_conics_ = false;
   private bool fix_navball_in_plotting_frame = true;
 
-  private double[] prediction_steps_ =
-    {1e1, 3e1, 1e2, 3e2, 1e3, 3e3, 1e4, 3e4, 1e5, 3e5, 1e6};
+  //private double[] prediction_steps_ =
+  //  {1e1, 3e1, 1e2, 3e2, 1e3, 3e3, 1e4, 3e4, 1e5, 3e5, 1e6};
+  private double[] prediction_step_counts_ =
+      {1, 2, 4, 8, 6, 32, 64, 128, 256, 512, 1024, 2048, 4096, 8192, 16384};
   private int prediction_step_index_ = 0;
   private double[] prediction_lengths_ =
-    {1e3, 3e3, 1e4, 3e4, 1e5, 3e5, 1e6, 3e6, 1e7, 3e7, 1e8};
+      {1024, 2048, 4096, 8192, 16384, 32768, 65536, 131072, 262144, 524288,
+       1048576, 2097152, 4194304, 8388608, 16777216, 33554432, 67108864,
+       134217728, 268435456};
   private int prediction_length_index_ = 0;
 
   private bool show_reference_frame_selection_ = true;
@@ -501,8 +505,10 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
           has_vessel(plugin_, active_vessel.id.ToString());
       if (ready_to_draw_active_vessel_trajectory) {
         set_predicted_vessel(plugin_, active_vessel.id.ToString());
-        set_prediction_step(plugin_,
-                            prediction_steps_[prediction_step_index_]);
+        set_prediction_step(
+            plugin_,
+            prediction_lengths_[prediction_length_index_] /
+                prediction_step_counts_[prediction_step_index_]);
         set_prediction_length(plugin_,
                               prediction_lengths_[prediction_length_index_]);
       } else {
@@ -641,9 +647,7 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
     rendered_prediction_ = new VectorLine(
         lineName     : "rendered_prediction_",
         linePoints   : new UnityEngine.Vector3[
-                           2 * (int)(prediction_lengths_[
-                                         prediction_length_index_] /
-                                     prediction_steps_[
+                           2 * (int)(prediction_step_counts_[
                                          prediction_step_index_])],
         lineMaterial : MapView.OrbitLinesMaterial,
         color        : XKCDColors.Fuchsia,
@@ -815,11 +819,12 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
     }
   }
 
-  private void DurationSelector(
+  private void Selector(
       double[] array,
       ref int index,
       String label,
-      ref bool changed) {
+      ref bool changed,
+      String format) {
     UnityEngine.GUILayout.BeginHorizontal();
     UnityEngine.GUILayout.Label(text    : label + ":",
                                 options : UnityEngine.GUILayout.Width(200));
@@ -831,8 +836,8 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
       changed = true;
     }
     UnityEngine.GUILayout.TextArea(
-        text    : array[index].ToString("0e0") + " s",
-        options : UnityEngine.GUILayout.Width(50));
+        text    : String.Format(format, array[index]),
+        options : UnityEngine.GUILayout.Width(100));
     if (UnityEngine.GUILayout.Button(
             text    : index == array.Length - 1 ? "max" : "+",
             options : UnityEngine.GUILayout.Width(50)) &&
@@ -847,20 +852,19 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
     display_patched_conics_ =
         UnityEngine.GUILayout.Toggle(value : display_patched_conics_,
                                      text  : "Display patched conics");
+
     bool changed_settings = false;
-    DurationSelector(prediction_steps_,
-                     ref prediction_step_index_,
-                     "Prediction step",
-                     ref changed_settings);
-    DurationSelector(prediction_lengths_,
-                     ref prediction_length_index_,
-                     "Prediction length",
-                     ref changed_settings);
+    Selector(prediction_step_counts_,
+             ref prediction_step_index_,
+             "Step count (computational cost)",
+             ref changed_settings,
+             "{0,6:###,###}");
+    Selector(prediction_lengths_,
+             ref prediction_length_index_,
+             "Length",
+             ref changed_settings,
+             "{0:000e0} s");
     if (changed_settings) {
-      while (prediction_lengths_[prediction_length_index_] <
-             prediction_steps_[prediction_step_index_]) {
-        ++prediction_length_index_;
-      }
       ResetRenderedTrajectory();
     }
   }
