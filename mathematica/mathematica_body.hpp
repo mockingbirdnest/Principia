@@ -108,7 +108,7 @@ template<typename... Types>
 std::string ToMathematica(std::tuple<Types...> const& tuple) {
   std::vector<std::string> expressions;
   expressions.reserve(sizeof...(Types));
-  TupleHelper<3/*sizeof...(Types)*/, Types...>::ToMathematicaStrings(
+  TupleHelper<sizeof...(Types), Types...>::ToMathematicaStrings(
       tuple, &expressions);
   return Apply("List", expressions);
 }
