@@ -1,7 +1,5 @@
 ﻿#include "physics/n_body_system.hpp"
 
-#include <fstream>  // NOLINT(readability/streams)
-#include <iostream>  // NOLINT(readability/streams)
 #include <map>
 #include <memory>
 #include <string>
@@ -13,7 +11,6 @@
 #include "geometry/point.hpp"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
-#include "mathematica/mathematica.hpp"
 #include "physics/body.hpp"
 #include "physics/massive_body.hpp"
 #include "physics/massless_body.hpp"
@@ -38,7 +35,6 @@ using quantities::ArcTan;
 using quantities::Area;
 using quantities::Pow;
 using quantities::SIUnit;
-using si::Metre;
 using testing_utilities::AlmostEquals;
 using testing_utilities::ICRFJ2000Ecliptic;
 using testing_utilities::kSolarSystemBarycentre;
@@ -74,69 +70,31 @@ class NBodySystemTest : public testing::Test {
         system_(make_not_null_unique<NBodySystem<EarthMoonOrbitPlane>>()) {
     // The Earth-Moon system, roughly, with a circular orbit with velocities
     // in the centre-of-mass frame.
-    DegreesOfFreedom<EarthMoonOrbitPlane> dof1(
-        EarthMoonOrbitPlane::origin +
-            Vector<Length, EarthMoonOrbitPlane>({0 * SIUnit<Length>(),
-                                                 0 * SIUnit<Length>(),
-                                                 0 * SIUnit<Length>()}),
-        Vector<Speed, EarthMoonOrbitPlane>({0 * SIUnit<Speed>(),
-                                            0 * SIUnit<Speed>(),
-                                            0 * SIUnit<Speed>()}));
-    DegreesOfFreedom<EarthMoonOrbitPlane> dof2(dof1);
-    MakeSatellite<EarthMoonOrbitPlane>(body1_.gravitational_parameter(),
-                                       &dof1,
-                                       4E8 * Metre,
-                                       body2_.gravitational_parameter(),
-                                       &dof2,
-                                       &centre_of_mass_,
-                                       &period_);
-    trajectory1_->Append(Instant(0 * SIUnit<Time>()), dof1);
-    trajectory2_->Append(Instant(0 * SIUnit<Time>()), dof2);
-  }
-
-  template<typename Frame>
-  static void MakeSatellite(
-      GravitationalParameter const& centre_gravitational_parameter,
-      not_null<DegreesOfFreedom<Frame>*> const centre_degrees_of_freedom,
-      Length const& satellite_radius,
-      GravitationalParameter const& satellite_gravitational_parameter,
-      not_null<DegreesOfFreedom<Frame>*> const satellite_degrees_of_freedom,
-      not_null<Position<Frame>*> const centre_of_mass,
-      not_null<Time*> const period) {
-    Displacement<Frame> const satellite_displacement =
-        Vector<Length, Frame>({0 * SIUnit<Length>(),
-                               satellite_radius,
-                               0 * SIUnit<Length>()});
-    Position<Frame> const satellite_position =
-        centre_degrees_of_freedom->position() + satellite_displacement;
-    Length const semi_major_axis = satellite_displacement.Norm();
-    *period = 2 * π * Sqrt(Pow<3>(semi_major_axis) /
-                                     (centre_gravitational_parameter +
-                                      satellite_gravitational_parameter));
-    *centre_of_mass =
-        geometry::Barycentre<Vector<Length, Frame>, GravitationalParameter>(
-            {centre_degrees_of_freedom->position(),
-             satellite_position},
-            {centre_gravitational_parameter,
-             satellite_gravitational_parameter});
-    Velocity<Frame> const centre_velocity =
-        centre_degrees_of_freedom->velocity() +
-            Velocity<Frame>(
-                {-2 * π * (centre_degrees_of_freedom->position() -
-                           *centre_of_mass).Norm() / *period,
-                 0 * SIUnit<Speed>(),
-                 0 * SIUnit<Speed>()});
-    Velocity<Frame> const satellite_velocity =
-        centre_degrees_of_freedom->velocity() +
-            Velocity<Frame>(
-                {2 * π * (satellite_position - *centre_of_mass).Norm() / *period,
-                 0 * SIUnit<Speed>(),
-                 0 * SIUnit<Speed>()});
-    *centre_degrees_of_freedom =
-        DegreesOfFreedom<Frame>(centre_degrees_of_freedom->position(),
-                                centre_velocity);
-    *satellite_degrees_of_freedom =
-        DegreesOfFreedom<Frame>(satellite_position, satellite_velocity);
+    Position<EarthMoonOrbitPlane> const q1(
+        Vector<Length, EarthMoonOrbitPlane>({0 * SIUnit<Length>(),
+                                             0 * SIUnit<Length>(),
+                                             0 * SIUnit<Length>()}));
+    Position<EarthMoonOrbitPlane> const q2(
+        Vector<Length, EarthMoonOrbitPlane>({0 * SIUnit<Length>(),
+                                             4E8 * SIUnit<Length>(),
+                                             0 * SIUnit<Length>()}));
+    Length const semi_major_axis = (q1 - q2).Norm();
+    period_ = 2 * π * Sqrt(Pow<3>(semi_major_axis) /
+                               (body1_.gravitational_parameter() +
+                                body2_.gravitational_parameter()));
+    centre_of_mass_ =
+        geometry::Barycentre<Vector<Length, EarthMoonOrbitPlane>, Mass>(
+            {q1, q2}, {body1_.mass(), body2_.mass()});
+    Velocity<EarthMoonOrbitPlane> const v1(
+        {-2 * π * (q1 - centre_of_mass_).Norm() / period_,
+         0 * SIUnit<Speed>(),
+         0 * SIUnit<Speed>()});
+    Velocity<EarthMoonOrbitPlane> const v2(
+        {2 * π * (q2 - centre_of_mass_).Norm() / period_,
+         0 * SIUnit<Speed>(),
+         0 * SIUnit<Speed>()});
+    trajectory1_->Append(Instant(0 * SIUnit<Time>()), {q1, v1});
+    trajectory2_->Append(Instant(0 * SIUnit<Time>()), {q2, v2});
   }
 
   template<typename Scalar, typename Frame>
@@ -548,112 +506,6 @@ TEST_F(NBodySystemTest, Sputnik1ToSputnik2) {
       }
     }
   }
-}
-
-TEST_F(NBodySystemTest, Sputnik1ToSputnik2Multistep) {
-  not_null<std::unique_ptr<SolarSystem>> const at_спутник_1_launch =
-      SolarSystem::AtСпутник1Launch(
-          SolarSystem::Accuracy::kAllBodiesAndOblateness);
-  not_null<std::unique_ptr<SolarSystem>> const at_спутник_2_launch =
-      SolarSystem::AtСпутник2Launch(
-          SolarSystem::Accuracy::kAllBodiesAndOblateness);
-  std::vector<std::tuple<int, double, double>> errors;
-
-  // Create a satellite orbiting the Earth.
-  Trajectory<ICRFJ2000Ecliptic> const& earth_trajectory =
-      *at_спутник_1_launch->trajectories()[SolarSystem::kEarth];
-  DegreesOfFreedom<ICRFJ2000Ecliptic> earth_degrees_of_freedom =
-      earth_trajectory.last().degrees_of_freedom();
-  MasslessBody satellite_body;
-  DegreesOfFreedom<ICRFJ2000Ecliptic> satellite_degrees_of_freedom(
-      earth_degrees_of_freedom);
-  Position<ICRFJ2000Ecliptic> centre_of_mass;
-  Time period;
-  MakeSatellite<ICRFJ2000Ecliptic>(
-      earth_trajectory.body<MassiveBody>()->gravitational_parameter(),
-      &earth_degrees_of_freedom,
-      1E7 * Metre,
-      0 * SIUnit<GravitationalParameter>(),
-      &satellite_degrees_of_freedom,
-      &centre_of_mass,
-      &period);
-
-  NBodySystem<ICRFJ2000Ecliptic> n_body_system;
-  std::vector<not_null<std::unique_ptr<SolarSystem>>> solar_systems;
-  std::vector<NBodySystem<ICRFJ2000Ecliptic>::Trajectories> trajectories;
-  std::vector<std::unique_ptr<Trajectory<ICRFJ2000Ecliptic>>>
-      satellite_trajectories;
-  for (int k = 1; k <= 1 << 16; k *= 2) {
-    solar_systems.push_back(
-        SolarSystem::AtСпутник1Launch(
-            SolarSystem::Accuracy::kAllBodiesAndOblateness));
-    trajectories.push_back(solar_systems.back()->trajectories());
-    auto& reference_trajectories = trajectories.front();
-    auto& actual_trajectories = trajectories.back();
-
-    // Append the satellite trajectory to the solar system.
-    satellite_trajectories.emplace_back(
-        std::make_unique<Trajectory<ICRFJ2000Ecliptic>>(&satellite_body));
-    satellite_trajectories.back()->Append(earth_trajectory.last().time(),
-                                          satellite_degrees_of_freedom);
-    actual_trajectories.push_back(satellite_trajectories.back().get());
-
-    n_body_system.Integrate(
-        *integrator_,
-        at_спутник_2_launch->trajectories().front()->last().time(),  // tmax
-        k * 10 * Second,  // Δt
-        1,  // sampling_period
-        true,  // tmax_is_exact
-        actual_trajectories);  // trajectories
-
-    LOG(ERROR)<<"dist = "<<RelativeDegreesOfFreedom<ICRFJ2000Ecliptic>(
-        actual_trajectories[SolarSystem::kEarth]->last().degrees_of_freedom() -
-        actual_trajectories.back()->last().degrees_of_freedom()).
-            displacement().Norm();
-
-    double maximum_position_error = 0.0;
-    double maximum_velocity_error = 0.0;
-    SolarSystem::Index maximum_position_error_index = SolarSystem::kSun;
-    SolarSystem::Index maximum_velocity_error_index = SolarSystem::kSun;
-    for (std::size_t i = 0; i < reference_trajectories.size(); ++i) {
-      SolarSystem::Index const index = static_cast<SolarSystem::Index>(i);
-      for (auto reference_it = reference_trajectories[i]->first(),
-                actual_it = actual_trajectories[i]->first();
-           !actual_it.at_end();
-           ++actual_it) {
-        while (reference_it.time() < actual_it.time()) {
-          ++reference_it;
-        }
-        CHECK_EQ(reference_it.time(), actual_it.time());
-        double const position_error = RelativeError(
-            reference_it.degrees_of_freedom().position() -
-                kSolarSystemBarycentre,
-            actual_it.degrees_of_freedom().position() -
-                kSolarSystemBarycentre);
-        double const velocity_error = RelativeError(
-            reference_it.degrees_of_freedom().velocity(),
-            actual_it.degrees_of_freedom().velocity());
-        if (position_error > maximum_position_error) {
-          maximum_position_error = position_error;
-          maximum_position_error_index = index;
-        }
-        if (velocity_error > maximum_velocity_error) {
-          maximum_velocity_error = velocity_error;
-          maximum_velocity_error_index = index;
-        }
-      }
-    }
-    LOG(ERROR)<<"k = "<<k
-      <<" mpe = "<<maximum_position_error<<"("<<maximum_position_error_index
-      <<") mve = "<<maximum_velocity_error<<"("<<maximum_velocity_error_index<<")";
-    errors.emplace_back(
-        k, maximum_position_error, maximum_velocity_error);
-  }
-
-  std::ofstream file;
-  file.open("sputnik1_to_sputnik2_multistep.mma");
-  file << mathematica::Assign("multistep", errors);
-  file.close();
 }
 
 }  // namespace physics
