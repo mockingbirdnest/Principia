@@ -1,6 +1,7 @@
 #pragma once
 
 #include <string>
+#include <tuple>
 #include <vector>
 
 #include "quantities/quantities.hpp"
@@ -32,6 +33,9 @@ std::string ToMathematica(double const& real);
 
 template<typename D>
 std::string ToMathematica(Quantity<D> const& quantity);
+
+template<typename... Types>
+std::string ToMathematica(std::tuple<Types...> const& tuple);
 
 // Returns its argument.
 std::string ToMathematica(std::string const& str);
