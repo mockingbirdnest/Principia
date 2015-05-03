@@ -35,7 +35,7 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
   private int second_selected_celestial_ = 0;
 
   private bool display_patched_conics_ = false;
-  private bool fix_navball_in_plotting_frame = true;
+  private bool fix_navball_in_plotting_frame_ = true;
 
   // The number of points in a |VectorLine| can be at most 32766, since
   // Vectrosity imposes a maximum of 65534 vertices, where there are 2 vertices
@@ -450,7 +450,7 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
       if (navball_changed_) {
         // Texture the ball.
         navball_changed_ = false;
-        if (!fix_navball_in_plotting_frame || !PluginRunning()) {
+        if (!fix_navball_in_plotting_frame_ || !PluginRunning()) {
           navball_.navBall.renderer.material.mainTexture =
               compass_navball_texture_;
         } else if (first_selected_celestial_ == second_selected_celestial_) {
@@ -462,7 +462,7 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
         }
       }
 
-      if (PluginRunning() && fix_navball_in_plotting_frame) {
+      if (PluginRunning() && fix_navball_in_plotting_frame_) {
         // Orient the ball.
         navball_.navBall.rotation =
             (UnityEngine.QuaternionD)navball_.attitudeGymbal *  // sic.
@@ -844,14 +844,14 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
 
   private void ReferenceFrameSelection() {
     bool was_fixing_navball_in_plotting_frame =
-        fix_navball_in_plotting_frame;
-    fix_navball_in_plotting_frame = 
+        fix_navball_in_plotting_frame_;
+    fix_navball_in_plotting_frame_ = 
         UnityEngine.GUILayout.Toggle(
-            value : fix_navball_in_plotting_frame,
+            value : fix_navball_in_plotting_frame_,
             text  : "Fix navball in plotting frame");
     if (PluginRunning() &&
         was_fixing_navball_in_plotting_frame !=
-        fix_navball_in_plotting_frame) {
+        fix_navball_in_plotting_frame_) {
       navball_changed_ = true;
       reset_rsas_target_ = true;
     }
@@ -1052,7 +1052,7 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
   }
 
   private void UpdateRenderingFrame() {
-    if (fix_navball_in_plotting_frame) {
+    if (fix_navball_in_plotting_frame_) {
       navball_changed_ = true;
       reset_rsas_target_ = true;
     }
