@@ -312,7 +312,8 @@ Plugin::NewBarycentricRotatingTransforms(Index const primary_index,
       FindOrDie(celestials_, primary_index).get();
   not_null<Celestial*> secondary =
       FindOrDie(celestials_, secondary_index).get();
-  auto transforms = RenderingTransforms::BarycentricRotating(*primary,
+  auto transforms = RenderingTransforms::BarycentricRotating(
+                        *primary,
                         *secondary,
                         &MobileInterface::prolongation);
   transforms->set_cacheable(&MobileInterface::history);
