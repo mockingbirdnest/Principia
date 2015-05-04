@@ -3,6 +3,7 @@
 #include <functional>
 #include <map>
 #include <memory>
+#include <set>
 #include <utility>
 
 #include "base/not_null.hpp"
@@ -64,7 +65,8 @@ class Transforms {
         LazyTrajectory<FromFrame> const& from_trajectory);
 
   typename Trajectory<FromFrame>::template TransformingIterator<ThroughFrame>
-  first_on_or_after(Mobile const& mobile,
+  first_on_or_after(bool const cache,
+                    Mobile const& mobile,
                     LazyTrajectory<FromFrame> const& from_trajectory,
                     Instant const& time);
 
@@ -99,6 +101,8 @@ class Transforms {
     void Insert(not_null<Trajectory<Frame1> const*> const trajectory,
                 Instant const& time,
                 DegreesOfFreedom<Frame2> const& degrees_of_freedom);
+
+    std::set<not_null<Trajectory<Frame1> const*>> forgotten_;
 
    private:
     std::map<std::pair<not_null<Trajectory<Frame1> const*>, Instant const>,

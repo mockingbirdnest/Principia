@@ -261,6 +261,7 @@ RenderedTrajectory<World> Plugin::RenderedPrediction(
   RenderedTrajectory<World> result =
       RenderTrajectory(predicted_vessel_->body(),
                        transforms->first_on_or_after(
+                           false,
                            *predicted_vessel_,
                            &MobileInterface::prediction,
                            *predicted_vessel_->prediction().fork_time()),
@@ -377,7 +378,8 @@ Vector<double, World> Plugin::VesselTangent(
     not_null<RenderingTransforms*> const transforms) const {
   Vessel const& vessel = *find_vessel_by_guid_or_die(vessel_guid);
   auto const actual_it =
-      transforms->first_on_or_after(vessel,
+      transforms->first_on_or_after(true,
+                                    vessel,
                                     &MobileInterface::prolongation,
                                     vessel.prolongation().last().time());
   Trajectory<Rendering> intermediate_trajectory(vessel.body());

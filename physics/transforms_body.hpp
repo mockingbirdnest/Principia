@@ -325,9 +325,16 @@ template<typename Mobile,
          typename FromFrame, typename ThroughFrame, typename ToFrame>
 typename Trajectory<FromFrame>::template TransformingIterator<ThroughFrame>
 Transforms<Mobile, FromFrame, ThroughFrame, ToFrame>::first_on_or_after(
+    bool const cache,
     Mobile const& mobile,
     LazyTrajectory<FromFrame> const& from_trajectory,
     Instant const& time) {
+  if (!cache) {
+    Trajectory<FromFrame> const& forgotten_trajectory =
+        (mobile.*from_trajectory)();
+    LOG(INFO) << "Forgetting " << &forgotten_trajectory;
+    first_cache_.forgotten_.insert(&forgotten_trajectory);
+  }
   typename Trajectory<FromFrame>::template Transform<ThroughFrame> const first =
       std::bind(first_, from_trajectory, _1, _2, _3);
   return (mobile.*from_trajectory)().on_or_after_with_transform(time, first);
@@ -354,12 +361,14 @@ template<typename Frame1, typename Frame2>
 bool
 Transforms<Mobile, FromFrame, ThroughFrame, ToFrame>::Cache<Frame1, Frame2>::
 Lookup(not_null<Trajectory<Frame1> const*> const trajectory,
-    Instant const& time,
-    not_null<DegreesOfFreedom<Frame2>**> degrees_of_freedom) {
+       Instant const& time,
+       not_null<DegreesOfFreedom<Frame2>**> degrees_of_freedom) {
   bool found = false;
   ++number_of_lookups_[trajectory];
   auto const it = map_.find(std::make_pair(trajectory, time));
   if (it != map_.end()) {
+    CHECK_EQ(0, forgotten_.count(trajectory))
+        << "Cache entry for forgotten trajectory " << trajectory;
     ++number_of_hits_[trajectory];
     *degrees_of_freedom = &it->second;
     found = true;
@@ -376,8 +385,8 @@ template<typename Frame1, typename Frame2>
 void
 Transforms<Mobile, FromFrame, ThroughFrame, ToFrame>::Cache<Frame1, Frame2>::
 Insert(not_null<Trajectory<Frame1> const*> const trajectory,
-    Instant const& time,
-    DegreesOfFreedom<Frame2> const& degrees_of_freedom) {
+       Instant const& time,
+       DegreesOfFreedom<Frame2> const& degrees_of_freedom) {
   map_.emplace(std::make_pair(trajectory, time), degrees_of_freedom);
 }
 
