@@ -3,7 +3,6 @@
 #include <functional>
 #include <map>
 #include <memory>
-#include <set>
 #include <utility>
 
 #include "base/not_null.hpp"
@@ -60,13 +59,16 @@ class Transforms {
   // Use this only for testing!
   static not_null<std::unique_ptr<Transforms>> DummyForTesting();
 
+  // Indicates that the given |trajectory| is cacheable (for all |Mobile|
+  // objects).  By default, lazy trajectories are not cacheable.
+  void set_cacheable(LazyTrajectory<FromFrame> const& trajectory);
+
   typename Trajectory<FromFrame>::template TransformingIterator<ThroughFrame>
   first(Mobile const& mobile,
         LazyTrajectory<FromFrame> const& from_trajectory);
 
   typename Trajectory<FromFrame>::template TransformingIterator<ThroughFrame>
-  first_on_or_after(bool const cache,
-                    Mobile const& mobile,
+  first_on_or_after(Mobile const& mobile,
                     LazyTrajectory<FromFrame> const& from_trajectory,
                     Instant const& time);
 
@@ -102,8 +104,6 @@ class Transforms {
                 Instant const& time,
                 DegreesOfFreedom<Frame2> const& degrees_of_freedom);
 
-    std::set<not_null<Trajectory<Frame1> const*>> forgotten_;
-
    private:
     std::map<std::pair<not_null<Trajectory<Frame1> const*>, Instant const>,
              DegreesOfFreedom<Frame2>> map_;
@@ -111,6 +111,10 @@ class Transforms {
         number_of_lookups_;
     std::map<not_null<Trajectory<Frame1> const*>, std::int64_t> number_of_hits_;
   };
+
+  // Using a vector, not a set, because (1) this is small and (2) writing a
+  // comparator or a hasher for |LazyTrajectory| is complicated.
+  std::vector<LazyTrajectory<FromFrame>> cacheable_;
 
   // A cache for the result of the |first_| transform.  This cache assumes that
   // the iterator is never called with the same time but different degrees of

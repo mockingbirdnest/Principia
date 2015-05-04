@@ -261,7 +261,6 @@ RenderedTrajectory<World> Plugin::RenderedPrediction(
   RenderedTrajectory<World> result =
       RenderTrajectory(predicted_vessel_->body(),
                        transforms->first_on_or_after(
-                           false,
                            *predicted_vessel_,
                            &MobileInterface::prediction,
                            *predicted_vessel_->prediction().fork_time()),
@@ -298,9 +297,11 @@ Plugin::NewBodyCentredNonRotatingTransforms(
   // TODO(egg): this should be const, use a custom comparator in the map.
   not_null<Celestial*> reference_body =
       FindOrDie(celestials_, reference_body_index).get();
-  return RenderingTransforms::BodyCentredNonRotating(
-             *reference_body,
-             &MobileInterface::prolongation);
+  auto transforms = RenderingTransforms::BodyCentredNonRotating(
+                        *reference_body,
+                        &MobileInterface::prolongation);
+  transforms->set_cacheable(&MobileInterface::history);
+  return transforms;
 }
 
 not_null<std::unique_ptr<RenderingTransforms>>
@@ -311,9 +312,11 @@ Plugin::NewBarycentricRotatingTransforms(Index const primary_index,
       FindOrDie(celestials_, primary_index).get();
   not_null<Celestial*> secondary =
       FindOrDie(celestials_, secondary_index).get();
-  return RenderingTransforms::BarycentricRotating(*primary,
-             *secondary,
-             &MobileInterface::prolongation);
+  auto transforms = RenderingTransforms::BarycentricRotating(*primary,
+                        *secondary,
+                        &MobileInterface::prolongation);
+  transforms->set_cacheable(&MobileInterface::history);
+  return transforms;
 }
 
 void Plugin::AddVesselToNextPhysicsBubble(
@@ -378,8 +381,7 @@ Vector<double, World> Plugin::VesselTangent(
     not_null<RenderingTransforms*> const transforms) const {
   Vessel const& vessel = *find_vessel_by_guid_or_die(vessel_guid);
   auto const actual_it =
-      transforms->first_on_or_after(true,
-                                    vessel,
+      transforms->first_on_or_after(vessel,
                                     &MobileInterface::prolongation,
                                     vessel.prolongation().last().time());
   Trajectory<Rendering> intermediate_trajectory(vessel.body());

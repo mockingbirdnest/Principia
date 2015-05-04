@@ -1,5 +1,7 @@
 #pragma once
 
+#include <algorithm>
+
 #include "physics/transforms.hpp"
 
 #include "base/not_null.hpp"
@@ -150,7 +152,11 @@ Transforms<Mobile, FromFrame, ThroughFrame, ToFrame>::BodyCentredNonRotating(
                       centre_degrees_of_freedom.velocity())};
 
     // Cache the result before returning it.
-    that->first_cache_.Insert(trajectory, t, through_degrees_of_freedom);
+    if (std::find(that->cacheable_.begin(),
+                  that->cacheable_.end(),
+                  from_trajectory) !=  that->cacheable_.end()) {
+      that->first_cache_.Insert(trajectory, t, through_degrees_of_freedom);
+    }
     return through_degrees_of_freedom;
   };
 
@@ -269,7 +275,11 @@ Transforms<Mobile, FromFrame, ThroughFrame, ToFrame>::BarycentricRotating(
                            barycentre_degrees_of_freedom.position()) / Radian)};
 
     // Cache the result before returning it.
-    that->first_cache_.Insert(trajectory, t, through_degrees_of_freedom);
+    if (std::find(that->cacheable_.begin(),
+                  that->cacheable_.end(),
+                  from_trajectory) !=  that->cacheable_.end()) {
+      that->first_cache_.Insert(trajectory, t, through_degrees_of_freedom);
+    }
     return through_degrees_of_freedom;
   };
 
@@ -312,6 +322,13 @@ Transforms<Mobile, FromFrame, ThroughFrame, ToFrame>::DummyForTesting() {
 
 template<typename Mobile,
          typename FromFrame, typename ThroughFrame, typename ToFrame>
+void Transforms<Mobile, FromFrame, ThroughFrame, ToFrame>::set_cacheable(
+    LazyTrajectory<FromFrame> const& trajectory) {
+  cacheable_.push_back(trajectory);
+}
+
+template<typename Mobile,
+         typename FromFrame, typename ThroughFrame, typename ToFrame>
 typename Trajectory<FromFrame>::template TransformingIterator<ThroughFrame>
 Transforms<Mobile, FromFrame, ThroughFrame, ToFrame>::first(
     Mobile const& mobile,
@@ -325,16 +342,9 @@ template<typename Mobile,
          typename FromFrame, typename ThroughFrame, typename ToFrame>
 typename Trajectory<FromFrame>::template TransformingIterator<ThroughFrame>
 Transforms<Mobile, FromFrame, ThroughFrame, ToFrame>::first_on_or_after(
-    bool const cache,
     Mobile const& mobile,
     LazyTrajectory<FromFrame> const& from_trajectory,
     Instant const& time) {
-  if (!cache) {
-    Trajectory<FromFrame> const& forgotten_trajectory =
-        (mobile.*from_trajectory)();
-    LOG(INFO) << "Forgetting " << &forgotten_trajectory;
-    first_cache_.forgotten_.insert(&forgotten_trajectory);
-  }
   typename Trajectory<FromFrame>::template Transform<ThroughFrame> const first =
       std::bind(first_, from_trajectory, _1, _2, _3);
   return (mobile.*from_trajectory)().on_or_after_with_transform(time, first);
@@ -367,8 +377,6 @@ Lookup(not_null<Trajectory<Frame1> const*> const trajectory,
   ++number_of_lookups_[trajectory];
   auto const it = map_.find(std::make_pair(trajectory, time));
   if (it != map_.end()) {
-    CHECK_EQ(0, forgotten_.count(trajectory))
-        << "Cache entry for forgotten trajectory " << trajectory;
     ++number_of_hits_[trajectory];
     *degrees_of_freedom = &it->second;
     found = true;
