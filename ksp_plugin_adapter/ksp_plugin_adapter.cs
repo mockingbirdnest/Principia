@@ -15,6 +15,7 @@ namespace ksp_plugin_adapter {
 public partial class PrincipiaPluginAdapter : ScenarioModule {
 
   private const String kPrincipiaKey = "serialized_plugin";
+  private const double kΔt = 10;
 
   private ApplicationLauncherButton toolbar_button_;
   private bool hide_all_gui_ = false;
@@ -52,17 +53,18 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
   // render as 10 segments from the actual data, with extra overhead for
   // the evaluation of the cubic).
   private double[] prediction_step_counts_ =
-      {1, 2, 4, 8, 16, 32, 64, 128, 256, 512, 1024, 2048, 4096, 8192};
-  private int prediction_step_index_ = 0;
+      {1 << 0, 1 << 1, 1 << 2, 1 << 3, 1 << 4, 1 << 5, 1 << 6, 1 << 7, 1 << 8,
+       1 << 9, 1 << 10, 1 << 11, 1 << 12, 1 << 13};
+  private int prediction_step_index_ = 5;
   private double[] prediction_lengths_ =
-      {1024, 2048, 4096, 8192, 16384, 32768, 65536, 131072, 262144, 524288,
-       1048576, 2097152, 4194304, 8388608, 16777216, 33554432, 67108864,
-       134217728, 268435456};
+      {1 << 10, 1 << 11, 1 << 12, 1 << 13, 1 << 14, 1 << 15, 1 << 16, 1 << 17,
+       1 << 18, 1 << 19, 1 << 20, 1 << 21, 1 << 22, 1 << 23, 1 << 24, 1 << 25,
+       1 << 26, 1 << 27, 1 << 28};
   private int prediction_length_index_ = 0;
   private double[] history_lengths_ =
-      {1024, 2048, 4096, 8192, 16384, 32768, 65536, 131072, 262144, 524288,
-       1048576, 2097152, 4194304, 8388608, 16777216, 33554432, 67108864,
-       134217728, 268435456, 536870912, double.PositiveInfinity};
+      {1 << 10, 1 << 11, 1 << 12, 1 << 13, 1 << 14, 1 << 15, 1 << 16, 1 << 17,
+       1 << 18, 1 << 19, 1 << 20, 1 << 21, 1 << 22, 1 << 23, 1 << 24, 1 << 25,
+       1 << 26, 1 << 27, 1 << 28, 1 << 29, double.PositiveInfinity};
   private int history_length_index_ = 6;
   private const int kMaxHistoryPoints = 32766;
 
@@ -689,7 +691,7 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
                            Math.Min(
                                kMaxHistoryPoints,
                                2 * (int)(history_lengths_[
-                                             history_length_index_] / 10))],
+                                             history_length_index_] / kΔt))],
         lineMaterial : MapView.OrbitLinesMaterial,
         color        : XKCDColors.AcidGreen,
         width        : 5,
