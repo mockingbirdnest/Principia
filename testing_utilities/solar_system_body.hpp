@@ -64,7 +64,7 @@ not_null<std::unique_ptr<MassiveBody>> NewBody(
       return make_not_null_unique<OblateBody<ICRFJ2000Ecliptic>>(
           gravitational_parameter, j2, radius, axis);
     default:
-      LOG(FATAL) << __FUNCSIG__ << "Unexpected accuracy "
+      LOG(FATAL) << FUNCTION_SIGNATURE << "Unexpected accuracy "
                  << static_cast<int>(accuracy);
       base::noreturn();
   }
@@ -1111,7 +1111,7 @@ SolarSystem::trajectories() const {
 int SolarSystem::parent(int const index) {
   switch (index) {
     case kSun:
-      LOG(FATAL) << __FUNCSIG__ << "The Sun has no parent";
+      LOG(FATAL) << FUNCTION_SIGNATURE << "The Sun has no parent";
       base::noreturn();
     case kJupiter:
     case kSaturn:
@@ -1147,7 +1147,7 @@ int SolarSystem::parent(int const index) {
     case kCharon:
       return kPluto;
     default:
-      LOG(FATAL) << __FUNCSIG__ << "Undefined index";
+      LOG(FATAL) << FUNCTION_SIGNATURE << "Undefined index";
       base::noreturn();
   }
 }
@@ -1183,7 +1183,7 @@ std::string SolarSystem::name(int const index) {
     BODY_NAME(Dione);
     BODY_NAME(Tethys);
     default:
-      LOG(FATAL) << __FUNCSIG__ << "Undefined index";
+      LOG(FATAL) << FUNCTION_SIGNATURE << "Undefined index";
       base::noreturn();
   }
 #undef BODY_NAME

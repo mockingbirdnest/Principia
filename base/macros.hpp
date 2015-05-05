@@ -127,6 +127,17 @@ inline void noreturn() { exit(0); }
 #  error "What compiler is this?"
 #endif
 
+// Used to emit the function signature.
+#if PRINCIPIA_COMPILER_CLANG    ||  \
+    PRINCIPIA_COMPILER_CLANG_CL ||  \
+    PRINCIPIA_COMPILER_GCC
+#  define FUNCTION_SIGNATURE __PRETTY_FUNCTION__
+#elif PRINCIPIA_COMPILER_MSVC
+#  define FUNCTION_SIGNATURE __FUNCSIG__
+#else
+#  error "What compiler is this?"
+#endif
+
 // Thread-safety analysis.
 #if PRINCIPIA_COMPILER_CLANG || PRINCIPIA_COMPILER_CLANG_CL
 #  define THREAD_ANNOTATION_ATTRIBUTE__(x) __attribute__((x))
