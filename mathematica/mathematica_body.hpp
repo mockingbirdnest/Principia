@@ -4,6 +4,7 @@
 
 #include <cmath>
 #include <string>
+#include <tuple>
 #include <vector>
 
 namespace principia {
@@ -11,6 +12,30 @@ namespace principia {
 using quantities::DebugString;
 
 namespace mathematica {
+
+namespace {
+
+// A helper class to scan the elements of a tuple and stringify them.
+template<int index, typename... Types>
+class TupleHelper {
+ public:
+  static void ToMathematicaStrings(
+      std::tuple<Types...> const& tuple,
+      not_null<std::vector<std::string>*> const expressions) {
+    TupleHelper<index - 1, Types...>::ToMathematicaStrings(tuple, expressions);
+    expressions->push_back(ToMathematica(std::get<index - 1>(tuple)));
+  }
+};
+
+template<typename... Types>
+class TupleHelper<0, Types...> {
+ public:
+  static void ToMathematicaStrings(
+      std::tuple<Types...> const& tuple,
+      not_null<std::vector<std::string>*> const expressions) {}
+};
+
+}  // namespace
 
 inline std::string Apply(
     std::string const& function,
@@ -77,6 +102,15 @@ std::string ToMathematica(Quantity<D> const& quantity) {
   return Apply(
       "SetPrecision",
       {Apply("Quantity", {number, units}), "MachinePrecision"});
+}
+
+template<typename... Types>
+std::string ToMathematica(std::tuple<Types...> const& tuple) {
+  std::vector<std::string> expressions;
+  expressions.reserve(sizeof...(Types));
+  TupleHelper<sizeof...(Types), Types...>::ToMathematicaStrings(
+      tuple, &expressions);
+  return Apply("List", expressions);
 }
 
 inline std::string ToMathematica(std::string const& str) {

@@ -42,6 +42,8 @@ class MockPlugin : public Plugin {
   MOCK_METHOD2(AdvanceTime,
                void(Instant const& t, Angle const& planetarium_rotation));
 
+  MOCK_CONST_METHOD1(ForgetAllHistoriesBefore, void(Instant const& t));
+
   MOCK_CONST_METHOD1(VesselFromParent,
                      RelativeDegreesOfFreedom<AliceSun>(
                          GUID const& vessel_guid));
@@ -70,6 +72,8 @@ class MockPlugin : public Plugin {
   MOCK_METHOD1(set_prediction_length, void(Time const& t));
 
   MOCK_METHOD1(set_prediction_step, void(Time const& t));
+
+  MOCK_CONST_METHOD1(has_vessel, bool(GUID const& vessel_guid));
 
   // NOTE(phl): gMock 1.7.0 doesn't support returning a std::unique_ptr<>.  So
   // we override the function of the Plugin class with bona fide functions which
@@ -113,10 +117,15 @@ class MockPlugin : public Plugin {
                      Velocity<World>(
                          Index const reference_body_index));
 
-  MOCK_CONST_METHOD2(NavBall,
+  MOCK_CONST_METHOD2(Navball,
                      FrameField<World>(
                          not_null<RenderingTransforms*> const transforms,
                          Position<World> const& sun_world_position));
+
+  MOCK_CONST_METHOD2(VesselTangent,
+                     Vector<double, World>(
+                         GUID const& vessel_guid,
+                         not_null<RenderingTransforms*> const transforms));
 
   MOCK_CONST_METHOD0(current_time, Instant());
 

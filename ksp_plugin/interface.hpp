@@ -172,6 +172,10 @@ void CDECL principia__AdvanceTime(Plugin* const plugin,
                                   double const t,
                                   double const planetarium_rotation);
 
+extern "C" DLLEXPORT
+void CDECL principia__ForgetAllHistoriesBefore(Plugin* const plugin,
+                                               double const t);
+
 // Calls |plugin->VesselFromParent| with the arguments given.
 // |plugin| must not be null.  No transfer of ownership.
 extern "C" DLLEXPORT
@@ -266,6 +270,10 @@ void CDECL principia__set_prediction_step(Plugin* const plugin,
                                           double const t);
 
 extern "C" DLLEXPORT
+bool CDECL principia__has_vessel(Plugin* const plugin,
+                                 char const* vessel_guid);
+
+extern "C" DLLEXPORT
 void CDECL principia__AddVesselToNextPhysicsBubble(Plugin* const plugin,
                                                    char const* vessel_guid,
                                                    KSPPart const* const parts,
@@ -283,10 +291,15 @@ XYZ CDECL principia__BubbleVelocityCorrection(Plugin const* const plugin,
                                               int const reference_body_index);
 
 extern "C" DLLEXPORT
-WXYZ CDECL principia__NavBallOrientation(Plugin const* const plugin,
+WXYZ CDECL principia__NavballOrientation(Plugin const* const plugin,
                                          RenderingTransforms* const transforms,
                                          XYZ const sun_world_position,
                                          XYZ const ship_world_position);
+
+extern "C" DLLEXPORT
+XYZ CDECL principia__VesselTangent(Plugin const* const plugin,
+                                   char const* vessel_guid,
+                                   RenderingTransforms* const transforms);
 
 extern "C" DLLEXPORT
 double CDECL principia__current_time(Plugin const* const plugin);

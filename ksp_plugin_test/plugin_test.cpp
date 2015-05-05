@@ -263,6 +263,14 @@ TEST_F(PluginTest, Serialization) {
                                RelativeDegreesOfFreedom<AliceSun>(
                                    satellite_initial_displacement_,
                                    satellite_initial_velocity_));
+
+  // Add a couple of points to the history and then forget some of them.  This
+  // is the most convenient way to check that forgetting works as expected.
+  plugin->AdvanceTime(HistoryTime(3), Angle());
+  plugin->InsertOrKeepVessel(satellite, SolarSystem::kEarth);
+  plugin->AdvanceTime(HistoryTime(6), Angle());
+  plugin->ForgetAllHistoriesBefore(HistoryTime(3));
+
   serialization::Plugin message;
   plugin->WriteToMessage(&message);
   plugin = Plugin::ReadFromMessage(message);
@@ -270,8 +278,19 @@ TEST_F(PluginTest, Serialization) {
   plugin->WriteToMessage(&second_message);
   EXPECT_EQ(message.SerializeAsString(), second_message.SerializeAsString());
   EXPECT_EQ(bodies_.size(), message.celestial_size());
+  auto const& celestial_0_history =
+      message.celestial(0).celestial().history_and_prolongation().history();
+  EXPECT_EQ(1, celestial_0_history.timeline_size());
+  EXPECT_EQ((HistoryTime(6) - Instant()) / (1 * Second),
+            celestial_0_history.timeline(0).instant().scalar().magnitude());
   EXPECT_EQ(1, message.vessel_size());
   EXPECT_EQ(SolarSystem::kEarth, message.vessel(0).parent_index());
+  EXPECT_TRUE(message.vessel(0).vessel().has_history_and_prolongation());
+  auto const& vessel_0_history =
+      message.vessel(0).vessel().history_and_prolongation().history();
+  EXPECT_EQ(1, vessel_0_history.timeline_size());
+  EXPECT_EQ((HistoryTime(6) - Instant()) / (1 * Second),
+            vessel_0_history.timeline(0).instant().scalar().magnitude());
   EXPECT_FALSE(message.bubble().has_current());
 }
 
@@ -395,6 +414,17 @@ TEST_F(PluginDeathTest, AdvanceTimeError) {
   }, "Check failed: !initializing");
 }
 
+TEST_F(PluginDeathTest, ForgetAllHistoriesBeforeError) {
+  EXPECT_DEATH({
+    EXPECT_CALL(*n_body_system_, Integrate(_, _, _, _, _, _)).Times(2);
+    Instant const t(1 * Second);
+    InsertAllSolarSystemBodies();
+    plugin_->EndInitialization();
+    plugin_->AdvanceTime(t, Angle());
+    plugin_->ForgetAllHistoriesBefore(t);
+  }, "Check failed: t < HistoryTime");
+}
+
 TEST_F(PluginDeathTest, VesselFromParentError) {
   GUID const guid = "Test Satellite";
   EXPECT_DEATH({
@@ -514,7 +544,9 @@ TEST_F(PluginTest, AdvanceTimeWithVessels) {
   Angle const planetarium_rotation = 42 * Radian;
   std::size_t expected_number_of_new_vessels = 0;
   std::size_t expected_number_of_old_vessels = 0;
+  EXPECT_FALSE(plugin_->has_vessel(enterprise));
   InsertVessel(enterprise, &expected_number_of_new_vessels);
+  EXPECT_TRUE(plugin_->has_vessel(enterprise));
   for (int step = 0; step < 10; ++step) {
     for (Instant t = HistoryTime(step) + 2 * δt;
          t <= HistoryTime(step + 1);
@@ -1120,7 +1152,7 @@ TEST_F(PluginTest, Prediction) {
   plugin.clear_predicted_vessel();
 }
 
-TEST_F(PluginTest, NavBall) {
+TEST_F(PluginTest, Navball) {
   // Create a plugin with planetarium rotation 0.
   Plugin plugin(initial_time_,
                 SolarSystem::kSun,
@@ -1131,13 +1163,36 @@ TEST_F(PluginTest, NavBall) {
   Vector<double, World> x({1, 0, 0});
   Vector<double, World> y({0, 1, 0});
   Vector<double, World> z({0, 0, 1});
-  auto nav_ball = plugin.NavBall(heliocentric.get(), World::origin);
-  EXPECT_THAT(AbsoluteError(-z, nav_ball(World::origin)(x)),
+  auto navball = plugin.Navball(heliocentric.get(), World::origin);
+  EXPECT_THAT(AbsoluteError(-z, navball(World::origin)(x)),
               Lt(2 * std::numeric_limits<double>::epsilon()));
-  EXPECT_THAT(AbsoluteError(y, nav_ball(World::origin)(y)),
+  EXPECT_THAT(AbsoluteError(y, navball(World::origin)(y)),
               Lt(std::numeric_limits<double>::epsilon()));
-  EXPECT_THAT(AbsoluteError(x, nav_ball(World::origin)(z)),
+  EXPECT_THAT(AbsoluteError(x, navball(World::origin)(z)),
               Lt(2 * std::numeric_limits<double>::epsilon()));
+}
+
+TEST_F(PluginTest, Frenet) {
+  // Create a plugin with planetarium rotation 0.
+  auto plugin = Plugin(initial_time_,
+                       SolarSystem::kEarth,
+                       sun_gravitational_parameter_,
+                       0 * Radian);
+  plugin.EndInitialization();
+  Permutation<AliceSun, World> const alice_sun_to_world =
+      Permutation<AliceSun, World>(Permutation<AliceSun, World>::XZY);
+  GUID const satellite = "satellite";
+  plugin.InsertOrKeepVessel(satellite, SolarSystem::kEarth);
+  plugin.SetVesselStateOffset(satellite,
+                              RelativeDegreesOfFreedom<AliceSun>(
+                                  satellite_initial_displacement_,
+                                  satellite_initial_velocity_));
+  Vector<double, World> t = alice_sun_to_world(
+                                Normalize(satellite_initial_velocity_));
+  not_null<std::unique_ptr<RenderingTransforms>> const geocentric =
+          plugin.NewBodyCentredNonRotatingTransforms(SolarSystem::kEarth);
+  EXPECT_THAT(plugin.VesselTangent(satellite, geocentric.get()),
+              AlmostEquals(t, 7));
 }
 
 TEST_F(PluginTest, SerializationCompatibility) {

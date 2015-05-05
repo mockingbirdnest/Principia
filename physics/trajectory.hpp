@@ -110,13 +110,12 @@ class Trajectory {
 
   // Removes all data for times (strictly) greater than |time|, as well as all
   // child trajectories forked at times (strictly) greater than |time|.  |time|
-  // must exist in this trajectory, and must be at or after the fork time, if
-  // any.
+  // must be at or after the fork time, if any.
   void ForgetAfter(Instant const& time);
 
   // Removes all data for times less than or equal to |time|, as well as all
   // child trajectories forked at times less than or equal to |time|.  This
-  // trajectory must be a root.  |time| must exist in this trajectory.
+  // trajectory must be a root.
   void ForgetBefore(Instant const& time);
 
   // Creates a new child trajectory forked at time |time|, and returns it.  The
@@ -261,9 +260,8 @@ class Trajectory {
              not_null<Trajectory*> const parent,
              Fork const& fork);
 
-  // Returns true if the |time| is in the timeline of this trajectory or at its
-  // fork point.
-  bool InTimelineOrAtFork(Instant const time) const;
+  // Returns the fork time of this trajectory, which must not be a root.
+  Instant const& ForkTime() const;
 
   // This trajectory need not be a root.
   void WriteSubTreeToMessage(

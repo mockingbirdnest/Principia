@@ -161,6 +161,10 @@ class Plugin {
   // degrees.
   virtual void AdvanceTime(Instant const& t, Angle const& planetarium_rotation);
 
+  // Forgets the histories of the |celestials_| and of the synchronized vessels
+  // before |t|.
+  virtual void ForgetAllHistoriesBefore(Instant const& t) const;
+
   // Returns the displacement and velocity of the vessel with GUID |vessel_guid|
   // relative to its parent at current time. For a KSP |Vessel| |v|, the
   // argument corresponds to  |v.id.ToString()|, the return value to
@@ -211,6 +215,8 @@ class Plugin {
   // The step used when computing the prediction.
   virtual void set_prediction_step(Time const& t);
 
+  virtual bool has_vessel(GUID const& vessel_guid) const;
+
   virtual not_null<std::unique_ptr<RenderingTransforms>>
   NewBodyCentredNonRotatingTransforms(Index const reference_body_index) const;
 
@@ -244,9 +250,15 @@ class Plugin {
       Index const reference_body_index) const;
 
   // The navball field at |current_time| for the given |transforms|.
-  virtual FrameField<World> NavBall(
+  virtual FrameField<World> Navball(
       not_null<RenderingTransforms*> const transforms,
       Position<World> const& sun_world_position) const;
+
+  // The unit tangent vector to the trajectory of the vessel with the given GUID
+  // in the frame given by |transforms|.
+  virtual Vector<double, World> VesselTangent(
+      GUID const& vessel_guid,
+      not_null<RenderingTransforms*> const transforms) const;
 
   virtual Instant current_time() const;
 

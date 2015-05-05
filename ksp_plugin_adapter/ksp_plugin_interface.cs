@@ -124,6 +124,12 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
       double planetarium_rotation);
 
   [DllImport(dllName           : kDllPath,
+             EntryPoint        = "principia__ForgetAllHistoriesBefore",
+             CallingConvention = CallingConvention.Cdecl)]
+  private static extern void ForgetAllHistoriesBefore(IntPtr plugin,
+                                                      double t);
+
+  [DllImport(dllName: kDllPath,
              EntryPoint        = "principia__VesselFromParent",
              CallingConvention = CallingConvention.Cdecl)]
   private static extern QP VesselFromParent(
@@ -217,7 +223,14 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
              CallingConvention = CallingConvention.Cdecl)]
   private static extern void set_prediction_step(IntPtr plugin, double t);
 
-  [DllImport(dllName           : kDllPath,
+  [DllImport(dllName             : kDllPath,
+             EntryPoint =        "principia__has_vessel",
+             CallingConvention = CallingConvention.Cdecl)]
+  private static extern bool has_vessel(
+      IntPtr plugin,
+      [MarshalAs(UnmanagedType.LPStr)] String vessel_guid);
+
+  [DllImport(dllName: kDllPath,
              EntryPoint        = "principia__AddVesselToNextPhysicsBubble",
              CallingConvention = CallingConvention.Cdecl)]
   private static extern void AddVesselToNextPhysicsBubble(
@@ -244,13 +257,21 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
                                                      int reference_body_index);
 
   [DllImport(dllName           : kDllPath,
-             EntryPoint        = "principia__NavBallOrientation",
+             EntryPoint        = "principia__NavballOrientation",
              CallingConvention = CallingConvention.Cdecl)]
-  private static extern WXYZ NavBallOrientation(
+  private static extern WXYZ NavballOrientation(
       IntPtr plugin,
       IntPtr transforms,
       XYZ sun_world_position,
       XYZ ship_world_position);
+
+  [DllImport(dllName           : kDllPath,
+             EntryPoint        = "principia__VesselTangent",
+             CallingConvention = CallingConvention.Cdecl)]
+  private static extern XYZ VesselTangent(
+      IntPtr plugin,
+      [MarshalAs(UnmanagedType.LPStr)] String vessel_guid,
+      IntPtr transforms);
 
   [DllImport(dllName           : kDllPath,
              EntryPoint        = "principia__current_time",
