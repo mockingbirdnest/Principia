@@ -1,5 +1,7 @@
 #pragma once
 
+#include <algorithm>
+
 #include "physics/transforms.hpp"
 
 #include "base/not_null.hpp"
@@ -123,8 +125,13 @@ Transforms<Mobile, FromFrame, ThroughFrame, ToFrame>::BodyCentredNonRotating(
           not_null<Trajectory<FromFrame> const*> const trajectory) ->
       DegreesOfFreedom<ThroughFrame> {
     // First check if the result is cached.
+    bool const cacheable =
+        std::find(that->cacheable_.begin(),
+                  that->cacheable_.end(),
+                  from_trajectory) !=  that->cacheable_.end();
     DegreesOfFreedom<ThroughFrame>* cached_through_degrees_of_freedom = nullptr;
-    if (that->first_cache_.Lookup(trajectory, t,
+    if (cacheable &&
+        that->first_cache_.Lookup(trajectory, t,
                                   &cached_through_degrees_of_freedom)) {
       return *cached_through_degrees_of_freedom;
     }
@@ -150,7 +157,9 @@ Transforms<Mobile, FromFrame, ThroughFrame, ToFrame>::BodyCentredNonRotating(
                       centre_degrees_of_freedom.velocity())};
 
     // Cache the result before returning it.
-    that->first_cache_.Insert(trajectory, t, through_degrees_of_freedom);
+    if (cacheable) {
+      that->first_cache_.Insert(trajectory, t, through_degrees_of_freedom);
+    }
     return through_degrees_of_freedom;
   };
 
@@ -213,8 +222,13 @@ Transforms<Mobile, FromFrame, ThroughFrame, ToFrame>::BarycentricRotating(
           not_null<Trajectory<FromFrame> const*> const trajectory) ->
       DegreesOfFreedom<ThroughFrame> {
     // First check if the result is cached.
+    bool const cacheable =
+        std::find(that->cacheable_.begin(),
+                  that->cacheable_.end(),
+                  from_trajectory) !=  that->cacheable_.end();
     DegreesOfFreedom<ThroughFrame>* cached_through_degrees_of_freedom = nullptr;
-    if (that->first_cache_.Lookup(trajectory, t,
+    if (cacheable &&
+        that->first_cache_.Lookup(trajectory, t,
                                   &cached_through_degrees_of_freedom)) {
       return *cached_through_degrees_of_freedom;
     }
@@ -269,7 +283,9 @@ Transforms<Mobile, FromFrame, ThroughFrame, ToFrame>::BarycentricRotating(
                            barycentre_degrees_of_freedom.position()) / Radian)};
 
     // Cache the result before returning it.
-    that->first_cache_.Insert(trajectory, t, through_degrees_of_freedom);
+    if (cacheable) {
+      that->first_cache_.Insert(trajectory, t, through_degrees_of_freedom);
+    }
     return through_degrees_of_freedom;
   };
 
@@ -308,6 +324,13 @@ template<typename Mobile,
 not_null<std::unique_ptr<Transforms<Mobile, FromFrame, ThroughFrame, ToFrame>>>
 Transforms<Mobile, FromFrame, ThroughFrame, ToFrame>::DummyForTesting() {
   return make_not_null_unique<Transforms>();
+}
+
+template<typename Mobile,
+         typename FromFrame, typename ThroughFrame, typename ToFrame>
+void Transforms<Mobile, FromFrame, ThroughFrame, ToFrame>::set_cacheable(
+    LazyTrajectory<FromFrame> const& trajectory) {
+  cacheable_.push_back(trajectory);
 }
 
 template<typename Mobile,
@@ -354,8 +377,8 @@ template<typename Frame1, typename Frame2>
 bool
 Transforms<Mobile, FromFrame, ThroughFrame, ToFrame>::Cache<Frame1, Frame2>::
 Lookup(not_null<Trajectory<Frame1> const*> const trajectory,
-    Instant const& time,
-    not_null<DegreesOfFreedom<Frame2>**> degrees_of_freedom) {
+       Instant const& time,
+       not_null<DegreesOfFreedom<Frame2>**> degrees_of_freedom) {
   bool found = false;
   ++number_of_lookups_[trajectory];
   auto const it = map_.find(std::make_pair(trajectory, time));
@@ -376,8 +399,8 @@ template<typename Frame1, typename Frame2>
 void
 Transforms<Mobile, FromFrame, ThroughFrame, ToFrame>::Cache<Frame1, Frame2>::
 Insert(not_null<Trajectory<Frame1> const*> const trajectory,
-    Instant const& time,
-    DegreesOfFreedom<Frame2> const& degrees_of_freedom) {
+       Instant const& time,
+       DegreesOfFreedom<Frame2> const& degrees_of_freedom) {
   map_.emplace(std::make_pair(trajectory, time), degrees_of_freedom);
 }
 
