@@ -17,6 +17,21 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
   private const String kPrincipiaKey = "serialized_plugin";
   private const double kΔt = 10;
 
+  // The number of points in a |VectorLine| can be at most 32766, since
+  // Vectrosity imposes a maximum of 65534 vertices, where there are 2 vertices
+  // per point on discrete lines.
+  // TODO(egg): At the moment we store points in the history every
+  // 10 n seconds, where n is maximal such that 10 n seconds is less than the
+  // length of a |FixedUpdate|. This means we sometimes have very large gaps.
+  // We should store *all* points of the history, then decimate for rendering.
+  // This means splines are not needed, since 10 s is small enough to give the
+  // illusion of continuity on the scales we are dealing with, and cubics are
+  // rendered by Vectrosity as line segments, so that a cubic rendered as
+  // 10 segments counts 20 towards |kLinePoints| (and probably takes as long to
+  // render as 10 segments from the actual data, with extra overhead for
+  // the evaluation of the cubic).
+  private const int kMaxVectorLinePoints = 32766;
+
   private ApplicationLauncherButton toolbar_button_;
   private bool hide_all_gui_ = false;
   private static bool show_main_window_ = true;
@@ -38,23 +53,10 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
   private bool display_patched_conics_ = false;
   private bool fix_navball_in_plotting_frame_ = true;
 
-  // The number of points in a |VectorLine| can be at most 32766, since
-  // Vectrosity imposes a maximum of 65534 vertices, where there are 2 vertices
-  // per point on discrete lines. Moreover there are two points per segment,
-  // so we cannot have 16384 steps (16383 would do).
-  // TODO(egg): At the moment we store points in the history every
-  // 10 n seconds, where n is maximal such that 10 n seconds is less than the
-  // length of a |FixedUpdate|. This means we sometimes have very large gaps.
-  // We should store *all* points of the history, then decimate for rendering.
-  // This means splines are not needed, since 10 s is small enough to give the
-  // illusion of continuity on the scales we are dealing with, and cubics are
-  // rendered by Vectrosity as line segments, so that a cubic rendered as
-  // 10 segments counts 20 towards |kLinePoints| (and probably takes as long to
-  // render as 10 segments from the actual data, with extra overhead for
-  // the evaluation of the cubic).
-  private double[] prediction_step_counts_ =
-      {1 << 0, 1 << 1, 1 << 2, 1 << 3, 1 << 4, 1 << 5, 1 << 6, 1 << 7, 1 << 8,
-       1 << 9, 1 << 10, 1 << 11, 1 << 12, 1 << 13};
+  private double[] prediction_step_sizes_ =
+      {1 << 4, 1 << 5, 1 << 6, 1 << 7, 1 << 8, 1 << 9, 1 << 10, 1 << 11,
+       1 << 12, 1 << 13, 1 << 14, 1 << 15, 1 << 16, 1 << 17, 1 << 18, 1 << 19,
+       1 << 20, 1 << 21, 1 << 22};
   private int prediction_step_index_ = 5;
   private double[] prediction_lengths_ =
       {1 << 10, 1 << 11, 1 << 12, 1 << 13, 1 << 14, 1 << 15, 1 << 16, 1 << 17,
@@ -65,8 +67,7 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
       {1 << 10, 1 << 11, 1 << 12, 1 << 13, 1 << 14, 1 << 15, 1 << 16, 1 << 17,
        1 << 18, 1 << 19, 1 << 20, 1 << 21, 1 << 22, 1 << 23, 1 << 24, 1 << 25,
        1 << 26, 1 << 27, 1 << 28, 1 << 29, double.PositiveInfinity};
-  private int history_length_index_ = 6;
-  private const int kMaxHistoryPoints = 32766;
+  private int history_length_index_ = 10;
 
   private bool show_reference_frame_selection_ = true;
   private bool show_prediction_settings_ = true;
@@ -545,8 +546,7 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
         set_predicted_vessel(plugin_, active_vessel.id.ToString());
         set_prediction_step(
             plugin_,
-            prediction_lengths_[prediction_length_index_] /
-                prediction_step_counts_[prediction_step_index_]);
+            prediction_step_sizes_[prediction_step_index_]);
         set_prediction_length(plugin_,
                               prediction_lengths_[prediction_length_index_]);
       } else {
@@ -689,7 +689,7 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
         lineName     : "rendered_trajectory_",
         linePoints   : new UnityEngine.Vector3[
                            Math.Min(
-                               kMaxHistoryPoints,
+                               kMaxVectorLinePoints,
                                2 * (int)(history_lengths_[
                                              history_length_index_] / kΔt))],
         lineMaterial : MapView.OrbitLinesMaterial,
@@ -704,8 +704,12 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
     rendered_prediction_ = new VectorLine(
         lineName     : "rendered_prediction_",
         linePoints   : new UnityEngine.Vector3[
-                           2 * (int)(prediction_step_counts_[
-                                         prediction_step_index_])],
+                           Math.Min(
+                               kMaxVectorLinePoints,
+                               2 * (int)(prediction_lengths_[
+                                             prediction_length_index_] /
+                                         prediction_step_sizes_[
+                                             prediction_step_index_]))],
         lineMaterial : MapView.OrbitLinesMaterial,
         color        : XKCDColors.Fuchsia,
         width        : 5,
@@ -909,7 +913,7 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
       String format) {
     UnityEngine.GUILayout.BeginHorizontal();
     UnityEngine.GUILayout.Label(text    : label + ":",
-                                options : UnityEngine.GUILayout.Width(200));
+                                options : UnityEngine.GUILayout.Width(150));
     if (UnityEngine.GUILayout.Button(
             text    : index == 0 ? "min" : "-",
             options : UnityEngine.GUILayout.Width(50)) &&
@@ -946,11 +950,11 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
                                      text  : "Display patched conics");
 
     bool changed_settings = false;
-    Selector(prediction_step_counts_,
+    Selector(prediction_step_sizes_,
              ref prediction_step_index_,
-             "Step count (cost)",
+             "Step size",
              ref changed_settings,
-             "{0:###,###}");
+             "{0:0.00e0} s");
     Selector(prediction_lengths_,
              ref prediction_length_index_,
              "Length",
