@@ -125,8 +125,13 @@ Transforms<Mobile, FromFrame, ThroughFrame, ToFrame>::BodyCentredNonRotating(
           not_null<Trajectory<FromFrame> const*> const trajectory) ->
       DegreesOfFreedom<ThroughFrame> {
     // First check if the result is cached.
+    bool const cacheable =
+        std::find(that->cacheable_.begin(),
+                  that->cacheable_.end(),
+                  from_trajectory) !=  that->cacheable_.end();
     DegreesOfFreedom<ThroughFrame>* cached_through_degrees_of_freedom = nullptr;
-    if (that->first_cache_.Lookup(trajectory, t,
+    if (cacheable &&
+        that->first_cache_.Lookup(trajectory, t,
                                   &cached_through_degrees_of_freedom)) {
       return *cached_through_degrees_of_freedom;
     }
@@ -152,9 +157,7 @@ Transforms<Mobile, FromFrame, ThroughFrame, ToFrame>::BodyCentredNonRotating(
                       centre_degrees_of_freedom.velocity())};
 
     // Cache the result before returning it.
-    if (std::find(that->cacheable_.begin(),
-                  that->cacheable_.end(),
-                  from_trajectory) !=  that->cacheable_.end()) {
+    if (cacheable) {
       that->first_cache_.Insert(trajectory, t, through_degrees_of_freedom);
     }
     return through_degrees_of_freedom;
@@ -219,8 +222,13 @@ Transforms<Mobile, FromFrame, ThroughFrame, ToFrame>::BarycentricRotating(
           not_null<Trajectory<FromFrame> const*> const trajectory) ->
       DegreesOfFreedom<ThroughFrame> {
     // First check if the result is cached.
+    bool const cacheable =
+        std::find(that->cacheable_.begin(),
+                  that->cacheable_.end(),
+                  from_trajectory) !=  that->cacheable_.end();
     DegreesOfFreedom<ThroughFrame>* cached_through_degrees_of_freedom = nullptr;
-    if (that->first_cache_.Lookup(trajectory, t,
+    if (cacheable &&
+        that->first_cache_.Lookup(trajectory, t,
                                   &cached_through_degrees_of_freedom)) {
       return *cached_through_degrees_of_freedom;
     }
@@ -275,9 +283,7 @@ Transforms<Mobile, FromFrame, ThroughFrame, ToFrame>::BarycentricRotating(
                            barycentre_degrees_of_freedom.position()) / Radian)};
 
     // Cache the result before returning it.
-    if (std::find(that->cacheable_.begin(),
-                  that->cacheable_.end(),
-                  from_trajectory) !=  that->cacheable_.end()) {
+    if (cacheable) {
       that->first_cache_.Insert(trajectory, t, through_degrees_of_freedom);
     }
     return through_degrees_of_freedom;
