@@ -1,9 +1,9 @@
 #include "base/pull_serializer.hpp"
 
+#include <cstring>
 #include <list>
 #include <string>
 #include <vector>
-#include <cstring>
 
 #include "gmock/gmock.h"
 #include "serialization/physics.pb.h"
