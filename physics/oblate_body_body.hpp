@@ -5,6 +5,9 @@
 #include "quantities/constants.hpp"
 
 namespace principia {
+
+using constants::GravitationalConstant;
+
 namespace physics {
 
 namespace {
@@ -29,7 +32,7 @@ OblateBody<Frame>::OblateBody(
     Length const& radius,
     Vector<double, Frame> const& axis)
     : OblateBody(mass,
-                 -j2 * mass * constants::GravitationalConstant * radius * radius,
+                 -j2 * mass * GravitationalConstant * radius * radius,
                  axis) {}
 
 template<typename Frame>
