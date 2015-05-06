@@ -297,9 +297,11 @@ Plugin::NewBodyCentredNonRotatingTransforms(
   // TODO(egg): this should be const, use a custom comparator in the map.
   not_null<Celestial*> reference_body =
       FindOrDie(celestials_, reference_body_index).get();
-  return RenderingTransforms::BodyCentredNonRotating(
-             *reference_body,
-             &MobileInterface::prolongation);
+  auto transforms = RenderingTransforms::BodyCentredNonRotating(
+                        *reference_body,
+                        &MobileInterface::prolongation);
+  transforms->set_cacheable(&MobileInterface::history);
+  return transforms;
 }
 
 not_null<std::unique_ptr<RenderingTransforms>>
@@ -310,9 +312,12 @@ Plugin::NewBarycentricRotatingTransforms(Index const primary_index,
       FindOrDie(celestials_, primary_index).get();
   not_null<Celestial*> secondary =
       FindOrDie(celestials_, secondary_index).get();
-  return RenderingTransforms::BarycentricRotating(*primary,
-             *secondary,
-             &MobileInterface::prolongation);
+  auto transforms = RenderingTransforms::BarycentricRotating(
+                        *primary,
+                        *secondary,
+                        &MobileInterface::prolongation);
+  transforms->set_cacheable(&MobileInterface::history);
+  return transforms;
 }
 
 void Plugin::AddVesselToNextPhysicsBubble(
