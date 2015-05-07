@@ -52,13 +52,23 @@ class R3ElementTest : public testing::Test {
 using R3ElementDeathTest = R3ElementTest;
 
 TEST_F(R3ElementDeathTest, IndexingOperator) {
+  // Sorry about the preprocessing, the regex are not powerful enough to work in
+  // both cases.
+#ifdef PRINCIPIA_COMPILER_MSVC
+  static char const kConstMethod[] =  "\\(const int\\) const\\:";
+  static char const kNonConstMethod[] =  "\\(const int\\)\\:";
+#elif PRINCIPIA_COMPILER_CLANG || PRINCIPIA_COMPILER_CLANG_CL
+  char const kConstMethod[] =  "\\(const int\\) const \\[";
+  char const kNonConstMethod[] =  "\\(const int\\) \\[";
+#endif
+
   EXPECT_DEATH({
     R3Element<Speed> null_velocity = null_velocity_;
     Speed speed = null_velocity[4];
-  }, "\\(const int\\)\\:");
+  }, kNonConstMethod);
   EXPECT_DEATH({
     Speed const& speed = null_velocity_[3];
-  }, "\\(const int\\) const\\:");
+  }, kConstMethod);
 }
 
 TEST_F(R3ElementTest, Dumb3Vector) {

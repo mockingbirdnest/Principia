@@ -105,8 +105,8 @@ TEST_F(QuantitiesTest, DimensionlessExponentiation) {
   positivePower *= number;
   negativePower /= number;
   // This one calls |std::pow|.
-  EXPECT_THAT(positivePower, AlmostEquals(Pow<4>(number), 1));
-  EXPECT_THAT(negativePower, AlmostEquals(Pow<-4>(number), 1));
+  EXPECT_THAT(positivePower, AlmostEquals(Pow<4>(number), 0, 1));
+  EXPECT_THAT(negativePower, AlmostEquals(Pow<-4>(number), 0, 1));
 }
 
 // The Greek letters cause a warning when stringified by the macros, because
@@ -203,10 +203,14 @@ TEST_F(QuantitiesTest, HyperbolicFunctions) {
   EXPECT_EQ(Sinh(-20 * Radian), -Cosh(-20 * Radian));
   EXPECT_EQ(Tanh(-20 * Radian), -1);
 
-  EXPECT_EQ(Sinh(2 * Radian) / Cosh(2 * Radian), Tanh(2 * Radian));
-  EXPECT_THAT(ArcSinh(Sinh(-10 * Degree)), AlmostEquals(-10 * Degree, 1));
-  EXPECT_THAT(ArcCosh(Cosh(-10 * Degree)), AlmostEquals(10 * Degree, 20));
-  EXPECT_THAT(ArcTanh(Tanh(-10 * Degree)), AlmostEquals(-10 * Degree, 1));
+  EXPECT_THAT(Sinh(2 * Radian) / Cosh(2 * Radian),
+              AlmostEquals(Tanh(2 * Radian), 0, 1));
+  EXPECT_THAT(ArcSinh(Sinh(-10 * Degree)),
+              AlmostEquals(-10 * Degree, 0, 1));
+  EXPECT_THAT(ArcCosh(Cosh(-10 * Degree)),
+              AlmostEquals(10 * Degree, 19, 20));
+  EXPECT_THAT(ArcTanh(Tanh(-10 * Degree)),
+              AlmostEquals(-10 * Degree, 0, 1));
 }
 
 TEST_F(QuantitiesTest, ExpLogAndSqrt) {
