@@ -39,25 +39,11 @@ RUN patch -p 0 -i thread_count.patch
 WORKDIR /opt/principia/gmock
 RUN patch -p 1 -i "../documentation/Setup Files/gmock.patch"; true
 
-WORKDIR /opt/principia
-RUN git clone https://github.com/pleroy/benchmark
-WORKDIR /opt/principia/benchmark
-RUN cmake .
-RUN make
-
-WORKDIR /opt/principia
-RUN git clone "https://chromium.googlesource.com/chromium/src.git" chromium -n --depth 1 -b "40.0.2193.1"
-WORKDIR /opt/principia/chromium
-RUN git config core.sparsecheckout true
-RUN cp "../documentation/Setup Files/chromium_sparse_checkout.txt" .git/info/sparse-checkout
-RUN git checkout
-RUN git am "../documentation/Setup Files/chromium.patch"
-
 ENV ASAN_SYMBOLIZER_PATH=/usr/bin/llvm-symbolizer-3.5
 
-WORKDIR /opt/principia
-RUN mkdir "/opt/KSP Assemblies"
-RUN cp ksp_plugin_adapter/*.dll "/opt/KSP Assemblies"
-
 WORKDIR /opt/principia/src
+ADD ksp_plugin_adapter/ /opt/principia/src/ksp_plugin_adapter/
+RUN mkdir "/opt/principia/KSP Assemblies"
+RUN cp ksp_plugin_adapter/*.dll "/opt/principia/KSP Assemblies/"
+
 CMD make -j4 DEP_DIR=..
