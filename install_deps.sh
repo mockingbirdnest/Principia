@@ -17,7 +17,6 @@ make -j 8
 popd
 git clone https://github.com/Norgg/glog
 pushd glog
-# patch -p 1 -i "../../documentation/Setup Files/glog.patch"; true
 ./configure CC=clang CXX=clang++ CXXFLAGS='-fPIC -m64 -std=c++11 -stdlib=libc++ -O3 -g' LDFLAGS='-stdlib=libc++'
 make -j 8
 
