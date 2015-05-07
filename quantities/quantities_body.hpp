@@ -406,7 +406,7 @@ inline std::string DebugString(double const number, int const precision) {
   _set_output_format(old_exponent_format);
 #else
   snprintf(result, sizeof(result),
-           ("%."+ std::to_string(precision) + "e").c_str(), number);
+           ("%+."+ std::to_string(precision) + "e").c_str(), number);
 #endif
   return result;
 }
