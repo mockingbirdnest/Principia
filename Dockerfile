@@ -4,6 +4,11 @@ RUN apt-get update
 RUN DEBIAN_FRONTEND=noninteractive apt-get upgrade -y
 RUN DEBIAN_FRONTEND=noninteractive apt-get install -y clang git unzip wget libc++-dev binutils make automake libtool subversion cmake curl
 
+RUN apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 3FA7E0328081BFF6A14DA29AA6A19B38D3D831EF
+RUN echo "deb http://download.mono-project.com/repo/debian wheezy main" | tee /etc/apt/sources.list.d/mono-xamarin.list
+RUN apt-get update
+RUN DEBIAN_FRONTEND=noninteractive apt-get install monodevelop -y
+
 RUN git config --global user.email "docker@example.com"
 RUN git config --global user.name docker
 
@@ -20,7 +25,6 @@ RUN make -j 8
 WORKDIR /opt/principia/
 RUN git clone https://github.com/Norgg/glog
 WORKDIR /opt/principia/glog
-# RUN patch -p 1 -i "../documentation/Setup Files/glog.patch"; true
 RUN ./configure CC=clang CXX=clang++ CXXFLAGS='-fPIC -m64 -std=c++11 -stdlib=libc++ -O3 -g' LDFLAGS='-stdlib=libc++'
 RUN make -j 8
 
@@ -43,7 +47,6 @@ RUN make
 
 WORKDIR /opt/principia
 RUN git clone "https://chromium.googlesource.com/chromium/src.git" chromium -n --depth 1 -b "40.0.2193.1"
-# $GitPromptSettings.RepositoriesInWhichToDisableFileStatus += join-path  (gi -path .).FullName chromium
 WORKDIR /opt/principia/chromium
 RUN git config core.sparsecheckout true
 RUN cp "../documentation/Setup Files/chromium_sparse_checkout.txt" .git/info/sparse-checkout
@@ -51,6 +54,10 @@ RUN git checkout
 RUN git am "../documentation/Setup Files/chromium.patch"
 
 ENV ASAN_SYMBOLIZER_PATH=/usr/bin/llvm-symbolizer-3.5
+
+WORKDIR /opt/principia
+RUN mkdir "/opt/KSP Assemblies"
+RUN cp ksp_plugin_adapter/*.dll "/opt/KSP Assemblies"
 
 WORKDIR /opt/principia/src
 CMD make -j4 DEP_DIR=..

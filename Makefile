@@ -7,7 +7,7 @@ OBJECTS=$(CPP_SOURCES:.cpp=.o)
 VERSION_HEADER=base/version.hpp
 PROTO_HEADERS=$(PROTO_SOURCES:.proto=.pb.h)
 
-LIB_DIR=lib
+LIB_DIR=Debug/GameData/Principia
 LIB=$(LIB_DIR)/principia.so
 
 DEP_DIR=deps
@@ -24,7 +24,10 @@ LIBS=-l:libc++.a -l:libprotobuf.a -l:libglog.a -lpthread
 
 all: $(DEP_DIR) $(LIB) run_tests
 
-$(LIB): $(VERSION_HEADER) $(PROTO_HEADERS) $(OBJECTS) $(PROTO_OBJECTS) Makefile $(LIB_DIR)
+adapter:
+	mdtool build ksp_plugin_adapter/ksp_plugin_adapter.csproj
+
+$(LIB): $(VERSION_HEADER) $(PROTO_HEADERS) $(OBJECTS) $(PROTO_OBJECTS) Makefile adapter
 	$(CPPC) -shared $(LINK_ARGS) $(OBJECTS) $(PROTO_OBJECTS) $(INCLUDE) -o $(LIB) $(LIB_PATHS) $(LIBS) 
 
 $(LIB_DIR):
