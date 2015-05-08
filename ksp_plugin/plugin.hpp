@@ -385,7 +385,7 @@ class Plugin {
   std::set<not_null<Vessel const*> const> kept_vessels_;
 
   // Only one prediction for now, using constant timestep.
-  Vessel* predicted_vessel_;
+  Vessel* predicted_vessel_ = nullptr;
   Time prediction_length_ = 1 * Hour;
   Time prediction_step_ = Δt_;
 

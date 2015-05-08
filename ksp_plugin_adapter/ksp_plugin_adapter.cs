@@ -432,7 +432,7 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
           id         : 1,
           screenRect : main_window_rectangle_,
           func       : DrawMainWindow,
-          text       : "Traces of Various Descriptions",
+          text       : "Principia",
           options    : UnityEngine.GUILayout.MinWidth(500));
     }
   }
