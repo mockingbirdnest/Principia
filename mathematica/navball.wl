@@ -66,21 +66,52 @@ markings,
 Which[y>0,n,y<0,s,y==0,eq]]
 
 
-lines[markings_]:={markings,
-Thickness[2/1024],
-Table[Line[{{x,-\[Pi]/2},{x,\[Pi]/2}}],{x,\[Pi]/4,7\[Pi]/4,\[Pi]/4}],
+thinParallel[{x_,y_},halfLength_]:=
+Style[Line[{{x-halfLength/Cos[y],y},{x+halfLength/Cos[y],y}}],Antialiasing->False]
+
+
+fullParallel[y_]:=Line[{{0,y},{2\[Pi],y}}]
+
+
+parallelPair[y_]:=fullParallel/@{-y,y}
+
+
+parallels[markings_]:=
+{markings,
 Thickness[3/1024],
-Table[If[Abs[y]!=\[Pi]/2&&y!=0,Style[Line[{{x-\[Pi]/48/Cos[y],y},{x+\[Pi]/48/Cos[y],y}}],Antialiasing->False]],{x,0,2\[Pi],\[Pi]/4},{y,-\[Pi]/2,\[Pi]/2,\[Pi]/12}],
-Table[If[Abs[y]<85\[Degree]&&Mod[y,\[Pi]/12]!=0,Style[Line[{{x-\[Pi]/120/Cos[y],y},{x+\[Pi]/120/Cos[y],y}}],Antialiasing->False]],{x,0,2\[Pi],\[Pi]/4},{y,-\[Pi]/2,\[Pi]/2,\[Pi]/36}],
-Line[{{0,0},{2\[Pi],0}}],
-Table[If[Abs[y]<=\[Pi]/4&&Mod[x,\[Pi]/4]!=0&&Abs[y]!=\[Pi]/2&&y!=0,Style[Line[{{x-\[Pi]/96/Cos[y],y},{x+\[Pi]/96/Cos[y],y}}],Antialiasing->False]],{x,0,2\[Pi],\[Pi]/12},{y,-\[Pi]/2,\[Pi]/2,\[Pi]/12}],
-Table[If[Abs[y]<=\[Pi]/4&&Mod[x,\[Pi]/4]!=0&&Abs[y]<85\[Degree]&&Mod[y,\[Pi]/12]!=0,Style[Line[{{x-\[Pi]/240/Cos[y],y},{x+\[Pi]/240/Cos[y],y}}],Antialiasing->False]],{x,0,2\[Pi],\[Pi]/12},{y,-\[Pi]/2,\[Pi]/2,\[Pi]/36}],
-Line[{{0,#},{2\[Pi],#}}]&/@{-\[Pi]/4,\[Pi]/4},
-Line[{{0,# 17\[Pi]/36},{2\[Pi],# 17\[Pi]/36}}]&/@{-1,1},
+(*Equator*)
+fullParallel[0],
+(*Crosshairs along thick meridians*)
+Table[
+If[
+Abs[y]!=\[Pi]/2&&y!=0,
+thinParallel[{x,y},\[Pi]/48]],
+{x,0,2\[Pi],\[Pi]/4},
+{y,-\[Pi]/2,\[Pi]/2,\[Pi]/12}],
+Table[
+If[
+Abs[y]<85\[Degree]&&Mod[y,\[Pi]/12]!=0,
+thinParallel[{x,y},\[Pi]/120]],
+{x,0,2\[Pi],\[Pi]/4},
+{y,-\[Pi]/2,\[Pi]/2,\[Pi]/36}],
+(*Crosshairs along thin meridians*)
+Table[
+If[Abs[y]<=\[Pi]/4&&Mod[x,\[Pi]/4]!=0&&Abs[y]!=\[Pi]/2&&y!=0,
+thinParallel[{x,y},\[Pi]/96]],
+{x,0,2\[Pi],\[Pi]/12},
+{y,-\[Pi]/2,\[Pi]/2,\[Pi]/12}],
+Table[
+If[Abs[y]<=\[Pi]/4&&Mod[x,\[Pi]/4]!=0&&Abs[y]<85\[Degree]&&Mod[y,\[Pi]/12]!=0,
+thinParallel[{x,y},\[Pi]/240]],
+{x,0,2\[Pi],\[Pi]/12},
+{y,-\[Pi]/2,\[Pi]/2,\[Pi]/36}],
+parallelPair[\[Pi]/4],
+parallelPair[17\[Pi]/36],
+(*Polar caps*)
 Rectangle[{0,# \[Pi]/2},{2\[Pi],#(\[Pi]/2-2.5\[Degree])}]&/@{-1,1}};
 
 
-latitudes15[n_,s_,markings_]:=Table[
+latitudes[n_,s_,markings_]:=Table[
 If[
 y!=0&&Cos[y]!=0&&
 (Mod[x,\[Pi]/4]==\[Pi]/8&&Abs[y]<75\[Degree]||
@@ -88,9 +119,6 @@ Mod[x,\[Pi]/2]==\[Pi]/4&&Abs[y]>=75\[Degree]),
 latitude[{x,y},n,s,markings]],
 {x,0,2\[Pi],\[Pi]/8},
 {y,-\[Pi]/2,\[Pi]/2,\[Pi]/12}];
-
-
-tightTrim=(ImageTake[#,{1,ImageDimensions[#][[2]]-1},{2,ImageDimensions[#][[1]]}]&)@*(ImageTrim[#,Last/@Select[Flatten[MapIndexed[{#1,{#2[[2]]-1,#2[[1]]-1}}&,ImageData[#,DataReversed->True],{2}],1],Function[x,Norm[x[[1]]]>.9]]]&);
 
 
 meridian[\[Lambda]0_,colour_,width_,{minheight_,maxheight_}]:=
@@ -104,33 +132,52 @@ Filling->{1->minheight,2->maxheight,3->maxheight,4->minheight},
 FillingStyle->colour,
 Axes->False],
 Graphics[
+{colour,
+Style[
 Rectangle[
-{\[Lambda]0-ArcCos[width],minheight},
-{\[Pi]+ArcSin[width],maxheight}]]]
+{\[Lambda]0-ArcSin[width],minheight},
+{\[Lambda]0+ArcSin[width],maxheight}],
+Antialiasing->True],
+Thickness[ArcSin[width]/(2\[Pi])],
+Line[{{\[Lambda]0,minheight},{\[Lambda]0,maxheight}}]}]]
 
 
-fullMeridian[\[Lambda]0_,colour_,width_]:=meridian[\[Lambda]0,colour,width,{-\[Pi]/2,\[Pi]/2}]
+symmetricMeridian[\[Lambda]0_,colour_,width_,height_]:=meridian[\[Lambda]0,colour,width,{-height,height}]
 
 
-backgroundAndMeridians[n_,s_,eq_,markings_,prime_,anti_]:=
-{Graphics[
-{s,Rectangle[{0,-\[Pi]/2},{2\[Pi],0}],
-n,Rectangle[{0,0},{2\[Pi],\[Pi]/2}],
-eq,Rectangle[{0,-\[Pi]/36},{2\[Pi],\[Pi]/36}],
-prime,
-Rectangle[{\[Pi]-ArcSin[.03],-\[Pi]/2},{\[Pi]+ArcSin[.03],\[Pi]/2}],
-anti,
-Rectangle[{0,-\[Pi]/2},{ArcSin[.03],\[Pi]/2}],
-Rectangle[{2\[Pi]-ArcSin[.03],-\[Pi]/2},{2\[Pi],\[Pi]/2}],
-markings,
-Table[Rectangle[{x-ArcSin[.01],-\[Pi]/2},{x+ArcSin[.01],\[Pi]/2}],{x,0,2\[Pi],\[Pi]/4}],
-Table[Line[{{x,-\[Pi]/4},{x,\[Pi]/4}}],{x,\[Pi]/12,23\[Pi]/12,\[Pi]/12}]},
-ImageMargins->0,
-ImagePadding->None,
-PlotRange->{{0,2\[Pi]},{-\[Pi]/2,\[Pi]/2}},
-ImageSize->1024],
-meridian[#,markings,.002,{-\[Pi]/4-\[Pi]/48,\[Pi]/4+\[Pi]/48}]&/@Range[\[Pi]/12,23\[Pi]/12,\[Pi]/12],
+fullMeridian[\[Lambda]0_,colour_,width_]:=symmetricMeridian[\[Lambda]0,colour,width,\[Pi]/2]
+
+
+meridians[markings_,prime_,anti_]:=
+Show[
+symmetricMeridian[#,markings,.002,\[Pi]/4+\[Pi]/48]&/@Range[\[Pi]/12,23\[Pi]/12,\[Pi]/12],
 fullMeridian[\[Pi],prime,.03],
 fullMeridian[0,anti,.03],
 fullMeridian[2\[Pi],anti,.03],
-fullMeridian[#,markings,.01]&/@Range[0,2\[Pi],\[Pi]/4]}
+fullMeridian[#,markings,.01]&/@Range[0,2\[Pi],\[Pi]/4]]
+
+
+background[n_,s_,eq_]:=
+Graphics[
+{s,Rectangle[{0,-\[Pi]/2},{2\[Pi],0}],
+n,Rectangle[{0,0},{2\[Pi],\[Pi]/2}],
+eq,Rectangle[{0,-\[Pi]/36},{2\[Pi],\[Pi]/36}]},
+ImageMargins->0,
+ImagePadding->None,
+PlotRange->{{0,2\[Pi]},{-\[Pi]/2,\[Pi]/2}},
+ImageSize->1024]
+
+
+tightTrim=
+(ImageTake[#,{1,ImageDimensions[#][[2]]-1},{2,ImageDimensions[#][[1]]}]&)@*
+(ImageTrim[
+#,
+Last/@
+Select[
+Flatten[
+MapIndexed[
+{#1,{#2[[2]]-1,#2[[1]]-1}}&,
+ImageData[#,DataReversed->True],
+{2}],
+1],
+Function[x,Norm[x[[1]]]>.9]]]&);
