@@ -83,7 +83,7 @@ $(VERSION_HEADER): .git
 	$(CXX) $(CXXFLAGS) $< -o $@ 
 
 ##### DISTRIBUTION #####
-plugin: $(LIB) $(ADAPTER)
+plugin: $(ADAPTER) $(LIB)
 	cd $(LIB_DIR)/..; zip -r Principia-$(UNAME_S)-$(shell git rev-parse --short HEAD)-$(shell date "+%Y-%m-%d").zip Principia/
 
 ##### TESTS #####

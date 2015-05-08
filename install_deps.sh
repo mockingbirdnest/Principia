@@ -13,7 +13,7 @@ if [ "$PLATFORM" == "Darwin" ]; then
     C_FLAGS="$BASE_FLAGS -mmacosx-version-min=10.7 -arch i386"
 elif [ "$PLATFORM" == "Linux" ]; then
 	BITNESS=$(uname -p)
-	if [ "$BITNESS" == "x86_64"]; then
+	if [ "$BITNESS" == "x86_64" ]; then
 	  C_FLAGS="$BASE_FLAGS -m64"
         else
       	   C_FLAGS="$BASE_FLAGS -m32"
@@ -32,6 +32,9 @@ git clone "https://github.com/google/protobuf.git" --depth 1 -b "v3.0.0-alpha-1"
 pushd protobuf
 git am "../../documentation/Setup Files/protobuf.patch"
 ./autogen.sh
+if [ "$PLATFORM" == "Linux" ]; then
+    ./autogen.sh # Really definitely needs to run twice on Linux for some reason.
+fi
 ./configure CC=clang CXX=clang++ CXXFLAGS="$CXX_FLAGS" LDFLAGS="$LD_FLAGS"
 make -j8
 popd
