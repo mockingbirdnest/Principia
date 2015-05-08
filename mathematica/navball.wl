@@ -202,8 +202,8 @@ Center,
 {Automatic,\[Pi]/36}]}
 
 
-horizon=RGBColor[0.4,0.54,0.8]
-sky=RGBColor[0,0.35,0.8]
+horizon=RGBColor[0.4,0.54,0.8];
+sky=RGBColor[0,0.35,0.8];
 
 
 navballTexture[n_,s_,markings_,eq_,prime_,anti_,longitudeFunction_,surtout_:Null]:=
