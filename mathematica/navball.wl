@@ -1,51 +1,69 @@
 (* ::Package:: *)
 
-ClearAll[latitude];
-latitude[{x_,y_},n_,s_,markings_]:=latitude[{x,y},n,s,markings]=Inset[
+hStretch[img_,\[Alpha]_]:=
+ImageResize[img,{\[Alpha] ImageDimensions[img][[1]],ImageDimensions[img][[2]]}]
+
+
+ClearAll[markingImage];
+markingImage[text_,colour_,background_,y_]:=
+markingImage[text,colour,background,y]=
 hStretch[
 Rasterize[
-Style[" "<>ToString[Abs[y/\[Pi]*180]]<>" ",Bold,markings,72,FontFamily->"Helvetica"],
-Background->If[y>0,n,s],RasterSize->100],
-Round[1/Cos[y]]],
+Style[" "<>text<>" ",Bold,colour,72,FontFamily->"Helvetica"],
+Background->background,
+RasterSize->100],
+Round[1/Cos[y]]]
+
+
+marking[{x_,y_},text_,colour_,background_,size_]:=
+Inset[
+markingImage[text,colour,background,y],
 {x,y},
 Center,
-{Automatic,1/8}]
+{Automatic,size}]
 
 
-ClearAll[longitude];
-longitude[{x_,y_},n_,s_,eq_,markings_]:=longitude[{x,y},n,s,eq,markings]=Inset[
-hStretch[
-Rasterize[
-Style[" "<>ToString[Mod[(x-\[Pi]),2\[Pi]]/\[Pi]*180]<>" ",Bold,markings,72,FontFamily->"Helvetica"],
-Background->If[y>0,n,If[y<0,s,eq]],RasterSize->100],
-Round[1/Cos[y]]],
+bigMarking[{x_,y_},text_,colour_,background_]:=
+marking[{x,y},text,colour,background,1/6.4]
+
+
+smallMarking[{x_,y_},text_,colour_,background_]:=
+marking[{x,y},text,colour,background,1/8]
+
+
+latitude[{x_,y_},n_,s_,markings_]:=
+latitude[{x,y},n,s,markings]=
+smallMarking[{x,y},ToString[Abs[y/\[Pi]*180]],markings,If[y>0,n,s]]
+
+
+longitude[{x_,y_},n_,s_,eq_,markings_]:=
+bigMarking[
 {x,y},
-Center,
-{Automatic,1/6.4}]
+ToString[Mod[(x-\[Pi]),2\[Pi]]/\[Pi]*180],
+markings,
+Which[y>0,n,y<0,s,y==0,eq]]
 
 
-ClearAll[ra];
-ra[{x_,y_},n_,s_,eq_,markings_]:=ra[{x,y},n,s,eq,markings]=Inset[
-hStretch[
-Rasterize[
-Style[If[x==\[Pi]&&y==0," \[AriesSign] "," "<>ToString[Mod[(x-\[Pi]),2\[Pi]]/\[Pi]*12]<>" "],Bold,markings,72,FontFamily->"Helvetica"],
-Background->If[y>0,n,If[y<0,s,eq]],RasterSize->100],
-Round[1/Cos[y]]],
+ra[{x_,y_},n_,s_,eq_,markings_]:=
+bigMarking[
 {x,y},
-Center,
-{Automatic,1/6.4}]
+If[
+x==\[Pi]&&y==0,
+"\[AriesSign]",
+ToString[Mod[(x-\[Pi]),2\[Pi]]/\[Pi]*12]],
+markings,
+Which[y>0,n,y<0,s,y==0,eq]]
 
 
-ClearAll[hdg];
-hdg[{x_,y_},n_,s_,eq_,markings_]:=hdg[{x,y},n,s,eq,markings]=Inset[
-hStretch[
-Rasterize[
-Style[If[x==\[Pi]," N "," "<>ToString[Mod[(x-\[Pi]),2\[Pi]]/\[Pi]*180]<>" "],Bold,markings,72,FontFamily->"Helvetica"],
-Background->If[y>0,n,If[y<0,s,eq]],RasterSize->100],
-Round[1/Cos[y]]],
+hdg[{x_,y_},n_,s_,eq_,markings_]:=
+bigMarking[
 {x,y},
-Center,
-{Automatic,1/6.4}]
+If[
+x==\[Pi],
+"N",
+ToString[Mod[(x-\[Pi]),2\[Pi]]/\[Pi]*180]],
+markings,
+Which[y>0,n,y<0,s,y==0,eq]]
 
 
 lines[markings_]:={markings,
@@ -75,6 +93,25 @@ latitude[{x,y},n,s,markings]],
 tightTrim=(ImageTake[#,{1,ImageDimensions[#][[2]]-1},{2,ImageDimensions[#][[1]]}]&)@*(ImageTrim[#,Last/@Select[Flatten[MapIndexed[{#1,{#2[[2]]-1,#2[[1]]-1}}&,ImageData[#,DataReversed->True],{2}],1],Function[x,Norm[x[[1]]]>.9]]]&);
 
 
+meridian[\[Lambda]0_,colour_,width_,{minheight_,maxheight_}]:=
+Show[
+Plot[
+{-ArcCos[width Csc[\[Lambda]-\[Lambda]0]],ArcCos[width Csc[\[Lambda]-\[Lambda]0]],ArcCos[-width Csc[\[Lambda]-\[Lambda]0]],-ArcCos[-width Csc[\[Lambda]-\[Lambda]0]]},
+{\[Lambda],\[Lambda]0-\[Pi]/2,\[Lambda]0+\[Pi]/2},
+PlotRange->{minheight,maxheight},
+PlotStyle->Directive[colour,AbsoluteThickness[0]],(*needed for antialiasing*)
+Filling->{1->minheight,2->maxheight,3->maxheight,4->minheight},
+FillingStyle->colour,
+Axes->False],
+Graphics[
+Rectangle[
+{\[Lambda]0-ArcCos[width],minheight},
+{\[Pi]+ArcSin[width],maxheight}]]]
+
+
+fullMeridian[\[Lambda]0_,colour_,width_]:=meridian[\[Lambda]0,colour,width,{-\[Pi]/2,\[Pi]/2}]
+
+
 backgroundAndMeridians[n_,s_,eq_,markings_,prime_,anti_]:=
 {Graphics[
 {s,Rectangle[{0,-\[Pi]/2},{2\[Pi],0}],
@@ -92,51 +129,8 @@ ImageMargins->0,
 ImagePadding->None,
 PlotRange->{{0,2\[Pi]},{-\[Pi]/2,\[Pi]/2}},
 ImageSize->1024],
-Plot[
-{-ArcCos[.005Sec[\[Lambda]+\[Pi]/4]],ArcCos[.005Sec[\[Lambda]+\[Pi]/4]],ArcCos[-.005Sec[\[Lambda]+\[Pi]/4]],-ArcCos[-.005Sec[\[Lambda]+\[Pi]/4]]},
-{\[Lambda],0,2\[Pi]},
-PlotRange->{-\[Pi]/2,\[Pi]/2},
-PlotStyle->Directive[markings,AbsoluteThickness[.1]],
-Filling->{1->Bottom,2->Top,3->Top,4->Bottom},
-FillingStyle->markings,
-Axes->None],
-Plot[
-{-ArcCos[.005Sec[\[Lambda]-\[Pi]/4]],ArcCos[.005Sec[\[Lambda]-\[Pi]/4]],ArcCos[-.005Sec[\[Lambda]-\[Pi]/4]],-ArcCos[-.005Sec[\[Lambda]-\[Pi]/4]]},
-{\[Lambda],0,2\[Pi]},
-PlotRange->{-\[Pi]/2,\[Pi]/2},
-PlotStyle->Directive[markings,AbsoluteThickness[.1]],
-Filling->{1->Bottom,2->Top,3->Top,4->Bottom},
-FillingStyle->markings,
-Axes->None],
-Plot[
-{-ArcCos[.005Csc[\[Lambda]-#]],ArcCos[.002Csc[\[Lambda]-#]],ArcCos[-.002Csc[\[Lambda]-#]],-ArcCos[-.002Csc[\[Lambda]-#]]},
-{\[Lambda],0,2\[Pi]},
-PlotRange->{-\[Pi]/4-\[Pi]/48,\[Pi]/4+\[Pi]/48},
-PlotStyle->Directive[markings,AbsoluteThickness[.1]],
-Filling->{1->-\[Pi]/4-\[Pi]/48,2->\[Pi]/4+\[Pi]/48,3->\[Pi]/4+\[Pi]/48,4->-\[Pi]/4-\[Pi]/48},
-FillingStyle->markings,
-Axes->None]&/@Range[\[Pi]/12,23\[Pi]/12,\[Pi]/12],
-Plot[
-{-ArcCos[.03Csc[\[Lambda]]],ArcCos[.03Csc[\[Lambda]]],ArcCos[-.03Csc[\[Lambda]]],-ArcCos[-.03Csc[\[Lambda]]]},
-{\[Lambda],\[Pi]/2,3\[Pi]/2},
-PlotRange->{-\[Pi]/2,\[Pi]/2},
-PlotStyle->Directive[prime,AbsoluteThickness[.1]],
-Filling->{1->Bottom,2->Top,3->Top,4->Bottom},
-FillingStyle->prime,
-Axes->None],
-Plot[
-{-ArcCos[.03Csc[\[Lambda]]],ArcCos[.03Csc[\[Lambda]]],ArcCos[-.03Csc[\[Lambda]]],-ArcCos[-.03Csc[\[Lambda]]]},
-{\[Lambda],#,#+\[Pi]/2},
-PlotRange->{-\[Pi]/2,\[Pi]/2},
-PlotStyle->Directive[anti,AbsoluteThickness[.1]],
-Filling->{1->Bottom,2->Top,3->Top,4->Bottom},
-FillingStyle->anti,
-Axes->None]&/@{0,3\[Pi]/2},
-Plot[
-{-ArcCos[.01Sec[\[Lambda]-#]],ArcCos[.01Sec[\[Lambda]-#]],ArcCos[-.01Sec[\[Lambda]-#]],-ArcCos[-.01Sec[\[Lambda]-#]]},
-{\[Lambda],0,2\[Pi]},
-PlotRange->{-\[Pi]/2,\[Pi]/2},
-PlotStyle->Directive[markings,AbsoluteThickness[.1]],
-Filling->{1->Bottom,2->Top,3->Top,4->Bottom},
-FillingStyle->markings,
-Axes->None]&/@Range[0,2\[Pi],\[Pi]/4]}
+meridian[#,markings,.002,{-\[Pi]/4-\[Pi]/48,\[Pi]/4+\[Pi]/48}]&/@Range[\[Pi]/12,23\[Pi]/12,\[Pi]/12],
+fullMeridian[\[Pi],prime,.03],
+fullMeridian[0,anti,.03],
+fullMeridian[2\[Pi],anti,.03],
+fullMeridian[#,markings,.01]&/@Range[0,2\[Pi],\[Pi]/4]}
