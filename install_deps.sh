@@ -57,17 +57,3 @@ pushd gmock
 patch -p 1 -i "../../documentation/Setup Files/gmock.patch"; true
 # gmock does not need to be compiled
 popd
-
-# there's a bug in benchmark on 32-bit
-#git clone https://github.com/google/benchmark
-#pushd benchmark
-#cmake -DCMAKE_CXX_FLAGS="$CXX_FLAGS" .
-#make
-#popd
-
-#git clone "https://chromium.googlesource.com/chromium/src.git" chromium -n --depth 1 -b "40.0.2193.1"
-#pushd chromium
-#git config core.sparsecheckout true
-#cp "../../documentation/Setup Files/chromium_sparse_checkout.txt" .git/info/sparse-checkout
-#git checkout
-#git am "../../documentation/Setup Files/chromium.patch"
