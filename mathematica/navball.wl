@@ -202,24 +202,8 @@ Center,
 {Automatic,\[Pi]/36}]}
 
 
-horizon=\!\(\*
-TagBox[
-StyleBox[
-RowBox[{"RGBColor", "[", 
-RowBox[{"0.4", ",", "0.54", ",", "0.8"}], "]"}],
-ShowSpecialCharacters->False,
-ShowStringCharacters->True,
-NumberMarks->True],
-FullForm]\);
-sky=\!\(\*
-TagBox[
-StyleBox[
-RowBox[{"RGBColor", "[", 
-RowBox[{"0", ",", "0.35", ",", "0.8"}], "]"}],
-ShowSpecialCharacters->False,
-ShowStringCharacters->True,
-NumberMarks->True],
-FullForm]\);
+horizon=RGBColor[0.4,0.54,0.8]
+sky=RGBColor[0,0.35,0.8]
 
 
 navballTexture[n_,s_,markings_,eq_,prime_,anti_,longitudeFunction_,surtout_:Null]:=
@@ -276,7 +260,8 @@ Darker@Green,
 hdg];
 
 
-SetDirectory[ParentDirectory[NotebookDirectory[]]<>"/ksp_plugin_adapter/assets"];
-Export["navball_barycentric.png",barycentric];
-Export["navball_inertial.png",inertial];
-Export["navball_compass.png",compass];
+(* ::Code:: *)
+(*SetDirectory[ParentDirectory[NotebookDirectory[]]<>"/ksp_plugin_adapter/assets"];*)
+(*Export["navball_barycentric.png",barycentric];*)
+(*Export["navball_inertial.png",inertial];*)
+(*Export["navball_compass.png",compass];*)
