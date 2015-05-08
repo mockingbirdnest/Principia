@@ -32,14 +32,13 @@ marking[{x,y},text,colour,background,1/8]
 
 
 latitude[{x_,y_},n_,s_,markings_]:=
-latitude[{x,y},n,s,markings]=
 smallMarking[{x,y},ToString[Abs[y/\[Pi]*180]],markings,If[y>0,n,s]]
 
 
 longitude[{x_,y_},n_,s_,eq_,markings_]:=
 bigMarking[
 {x,y},
-ToString[Mod[(x-\[Pi]),2\[Pi]]/\[Pi]*180],
+ToString[Mod[x,2\[Pi]]/\[Pi]*180],
 markings,
 Which[y>0,n,y<0,s,y==0,eq]]
 
@@ -50,7 +49,7 @@ bigMarking[
 If[
 x==\[Pi]&&y==0,
 "\[AriesSign]",
-ToString[Mod[(x-\[Pi]),2\[Pi]]/\[Pi]*12]],
+ToString[Mod[x,2\[Pi]]/\[Pi]*12]],
 markings,
 Which[y>0,n,y<0,s,y==0,eq]]
 
@@ -61,7 +60,7 @@ bigMarking[
 If[
 x==\[Pi],
 "N",
-ToString[Mod[(x-\[Pi]),2\[Pi]]/\[Pi]*180]],
+ToString[Mod[x,2\[Pi]]/\[Pi]*180]],
 markings,
 Which[y>0,n,y<0,s,y==0,eq]]
 
@@ -70,7 +69,7 @@ thinParallel[{x_,y_},halfLength_]:=
 Style[Line[{{x-halfLength/Cos[y],y},{x+halfLength/Cos[y],y}}],Antialiasing->False]
 
 
-fullParallel[y_]:=Line[{{0,y},{2\[Pi],y}}]
+fullParallel[y_]:=Line[{{-\[Pi],y},{\[Pi],y}}]
 
 
 parallelPair[y_]:=fullParallel/@{-y,y}
@@ -86,38 +85,39 @@ Table[
 If[
 Abs[y]!=\[Pi]/2&&y!=0,
 thinParallel[{x,y},\[Pi]/48]],
-{x,0,2\[Pi],\[Pi]/4},
+{x,-\[Pi],\[Pi],\[Pi]/4},
 {y,-\[Pi]/2,\[Pi]/2,\[Pi]/12}],
 Table[
 If[
 Abs[y]<85\[Degree]&&Mod[y,\[Pi]/12]!=0,
 thinParallel[{x,y},\[Pi]/120]],
-{x,0,2\[Pi],\[Pi]/4},
+{x,-\[Pi],\[Pi],\[Pi]/4},
 {y,-\[Pi]/2,\[Pi]/2,\[Pi]/36}],
 (*Crosshairs along thin meridians*)
 Table[
 If[Abs[y]<=\[Pi]/4&&Mod[x,\[Pi]/4]!=0&&Abs[y]!=\[Pi]/2&&y!=0,
 thinParallel[{x,y},\[Pi]/96]],
-{x,0,2\[Pi],\[Pi]/12},
+{x,-\[Pi],\[Pi],\[Pi]/12},
 {y,-\[Pi]/2,\[Pi]/2,\[Pi]/12}],
 Table[
 If[Abs[y]<=\[Pi]/4&&Mod[x,\[Pi]/4]!=0&&Abs[y]<85\[Degree]&&Mod[y,\[Pi]/12]!=0,
 thinParallel[{x,y},\[Pi]/240]],
-{x,0,2\[Pi],\[Pi]/12},
+{x,-\[Pi],\[Pi],\[Pi]/12},
 {y,-\[Pi]/2,\[Pi]/2,\[Pi]/36}],
 parallelPair[\[Pi]/4],
 parallelPair[17\[Pi]/36],
 (*Polar caps*)
-Rectangle[{0,# \[Pi]/2},{2\[Pi],#(\[Pi]/2-2.5\[Degree])}]&/@{-1,1}};
+Rectangle[{-\[Pi],# \[Pi]/2},{\[Pi],#(\[Pi]/2-2.5\[Degree])}]&/@{-1,1}};
 
 
-latitudes[n_,s_,markings_]:=Table[
+latitudes[n_,s_,markings_]:=
+Table[
 If[
 y!=0&&Cos[y]!=0&&
 (Mod[x,\[Pi]/4]==\[Pi]/8&&Abs[y]<75\[Degree]||
 Mod[x,\[Pi]/2]==\[Pi]/4&&Abs[y]>=75\[Degree]),
 latitude[{x,y},n,s,markings]],
-{x,0,2\[Pi],\[Pi]/8},
+{x,-\[Pi],\[Pi],\[Pi]/8},
 {y,-\[Pi]/2,\[Pi]/2,\[Pi]/12}];
 
 
@@ -150,21 +150,21 @@ fullMeridian[\[Lambda]0_,colour_,width_]:=symmetricMeridian[\[Lambda]0,colour,wi
 
 meridians[markings_,prime_,anti_]:=
 Show[
-symmetricMeridian[#,markings,.002,\[Pi]/4+\[Pi]/48]&/@Range[\[Pi]/12,23\[Pi]/12,\[Pi]/12],
-fullMeridian[\[Pi],prime,.03],
-fullMeridian[0,anti,.03],
-fullMeridian[2\[Pi],anti,.03],
-fullMeridian[#,markings,.01]&/@Range[0,2\[Pi],\[Pi]/4]]
+symmetricMeridian[#,markings,.002,\[Pi]/4+\[Pi]/48]&/@Range[-11\[Pi]/12,11\[Pi]/12,\[Pi]/12],
+fullMeridian[0,prime,.03],
+fullMeridian[-\[Pi],anti,.03],
+fullMeridian[\[Pi],anti,.03],
+fullMeridian[#,markings,.01]&/@Range[-\[Pi],\[Pi],\[Pi]/4]]
 
 
 background[n_,s_,eq_]:=
 Graphics[
-{s,Rectangle[{0,-\[Pi]/2},{2\[Pi],0}],
-n,Rectangle[{0,0},{2\[Pi],\[Pi]/2}],
-eq,Rectangle[{0,-\[Pi]/36},{2\[Pi],\[Pi]/36}]},
+{s,Rectangle[{-\[Pi],-\[Pi]/2},{\[Pi],0}],
+n,Rectangle[{-\[Pi],0},{\[Pi],\[Pi]/2}],
+eq,Rectangle[{-\[Pi],-\[Pi]/36},{\[Pi],\[Pi]/36}]},
 ImageMargins->0,
 ImagePadding->None,
-PlotRange->{{0,2\[Pi]},{-\[Pi]/2,\[Pi]/2}},
+PlotRange->{{-\[Pi],\[Pi]},{-\[Pi]/2,\[Pi]/2}},
 ImageSize->1024]
 
 
@@ -181,3 +181,40 @@ ImageData[#,DataReversed->True],
 {2}],
 1],
 Function[x,Norm[x[[1]]]>.9]]]&);
+
+
+(*Used in the barycentric navball*)
+equatorialDisk[x_,text_,markings_]:=
+{Disk[{x,0},\[Pi]/36],
+Inset[
+tightTrim@Rasterize[
+Style[
+text,
+markings,
+Bold,
+21,
+FontFamily->"Palatino"],
+Background->None],
+{x,0},
+Center,
+{Automatic,\[Pi]/36}]}
+
+
+horizon=\!\(\*
+TagBox[
+StyleBox[
+RowBox[{"RGBColor", "[", 
+RowBox[{"0.4", ",", "0.54", ",", "0.8"}], "]"}],
+ShowSpecialCharacters->False,
+ShowStringCharacters->True,
+NumberMarks->True],
+FullForm]\);
+sky=\!\(\*
+TagBox[
+StyleBox[
+RowBox[{"RGBColor", "[", 
+RowBox[{"0", ",", "0.35", ",", "0.8"}], "]"}],
+ShowSpecialCharacters->False,
+ShowStringCharacters->True,
+NumberMarks->True],
+FullForm]\);
