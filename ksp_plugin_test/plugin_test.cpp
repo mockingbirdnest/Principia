@@ -1154,10 +1154,10 @@ TEST_F(PluginTest, Prediction) {
 
 TEST_F(PluginTest, Navball) {
   // Create a plugin with planetarium rotation 0.
-  auto plugin = Plugin(initial_time_,
-                       SolarSystem::kSun,
-                       sun_gravitational_parameter_,
-                       0 * Radian);
+  Plugin plugin(initial_time_,
+                SolarSystem::kSun,
+                sun_gravitational_parameter_,
+                0 * Radian);
   not_null<std::unique_ptr<RenderingTransforms>> const heliocentric =
           plugin.NewBodyCentredNonRotatingTransforms(SolarSystem::kSun);
   Vector<double, World> x({1, 0, 0});
@@ -1174,10 +1174,10 @@ TEST_F(PluginTest, Navball) {
 
 TEST_F(PluginTest, Frenet) {
   // Create a plugin with planetarium rotation 0.
-  auto plugin = Plugin(initial_time_,
-                       SolarSystem::kEarth,
-                       sun_gravitational_parameter_,
-                       0 * Radian);
+  Plugin plugin(initial_time_,
+                SolarSystem::kEarth,
+                sun_gravitational_parameter_,
+                0 * Radian);
   plugin.EndInitialization();
   Permutation<AliceSun, World> const alice_sun_to_world =
       Permutation<AliceSun, World>(Permutation<AliceSun, World>::XZY);

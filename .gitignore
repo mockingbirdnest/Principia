@@ -31,6 +31,10 @@ ipch/
 [Rr]elease*/
 Ankh.NoLoad
 
+#Clang output
+*.o
+*.d
+
 #MonoDevelop
 *.pidb
 *.userprefs
@@ -103,3 +107,4 @@ packages/
 
 #git version header
 base/version.hpp
+deps/

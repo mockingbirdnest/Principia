@@ -10,7 +10,7 @@
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "quantities/astronomy.hpp"
-#include "quantities/BIPM.hpp"
+#include "quantities/bipm.hpp"
 #include "quantities/constants.hpp"
 #include "quantities/elementary_functions.hpp"
 #include "quantities/quantities.hpp"

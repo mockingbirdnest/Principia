@@ -50,6 +50,10 @@ void Frame<FrameTag, frame_tag, frame_is_inertial>::ReadFromMessage(
 template<typename FrameTag, FrameTag frame_tag, bool frame_is_inertial>
 Position<Frame<FrameTag, frame_tag, frame_is_inertial>> const
 Frame<FrameTag, frame_tag, frame_is_inertial>::origin;
+template<typename FrameTag, FrameTag frame_tag, bool frame_is_inertial>
+FrameTag const Frame<FrameTag, frame_tag, frame_is_inertial>::tag;
+template<typename FrameTag, FrameTag frame_tag, bool frame_is_inertial>
+bool const Frame<FrameTag, frame_tag, frame_is_inertial>::is_inertial;
 
 inline void ReadFrameFromMessage(
     serialization::Frame const& message,
