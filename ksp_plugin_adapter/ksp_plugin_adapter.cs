@@ -34,7 +34,10 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
 
   private ApplicationLauncherButton toolbar_button_;
   private bool hide_all_gui_ = false;
-  private static bool show_main_window_ = true;
+
+  // "Persistant" is a KSP typo.
+  [KSPField(isPersistant = true)]
+  private bool show_main_window_ = true;
   private static UnityEngine.Rect main_window_rectangle_ =
       new UnityEngine.Rect(left   : UnityEngine.Screen.width / 2.0f,
                            top    : UnityEngine.Screen.height / 3.0f,
@@ -46,33 +49,44 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
   private VectorLine rendered_prediction_;
   private VectorLine rendered_trajectory_;
   private IntPtr transforms_ = IntPtr.Zero;
-
+  
+  [KSPField(isPersistant = true)]
   private int first_selected_celestial_ = 0;
+  [KSPField(isPersistant = true)]
   private int second_selected_celestial_ = 0;
-
+  
+  [KSPField(isPersistant = true)]
   private bool display_patched_conics_ = false;
+  [KSPField(isPersistant = true)]
   private bool fix_navball_in_plotting_frame_ = true;
 
   private double[] prediction_step_sizes_ =
       {1 << 4, 1 << 5, 1 << 6, 1 << 7, 1 << 8, 1 << 9, 1 << 10, 1 << 11,
        1 << 12, 1 << 13, 1 << 14, 1 << 15, 1 << 16, 1 << 17, 1 << 18, 1 << 19,
        1 << 20, 1 << 21, 1 << 22};
+  [KSPField(isPersistant = true)]
   private int prediction_step_index_ = 5;
   private double[] prediction_lengths_ =
       {1 << 10, 1 << 11, 1 << 12, 1 << 13, 1 << 14, 1 << 15, 1 << 16, 1 << 17,
        1 << 18, 1 << 19, 1 << 20, 1 << 21, 1 << 22, 1 << 23, 1 << 24, 1 << 25,
        1 << 26, 1 << 27, 1 << 28};
+  [KSPField(isPersistant = true)]
   private int prediction_length_index_ = 0;
   private double[] history_lengths_ =
       {1 << 10, 1 << 11, 1 << 12, 1 << 13, 1 << 14, 1 << 15, 1 << 16, 1 << 17,
        1 << 18, 1 << 19, 1 << 20, 1 << 21, 1 << 22, 1 << 23, 1 << 24, 1 << 25,
        1 << 26, 1 << 27, 1 << 28, 1 << 29, double.PositiveInfinity};
+  [KSPField(isPersistant = true)]
   private int history_length_index_ = 10;
 
+  [KSPField(isPersistant = true)]
   private bool show_reference_frame_selection_ = true;
+  [KSPField(isPersistant = true)]
   private bool show_prediction_settings_ = true;
+  [KSPField(isPersistant = true)]
   private bool show_logging_settings_ = false;
 #if CRASH_BUTTON
+  [KSPField(isPersistant = true)]
   private bool show_crash_options_ = false;
 #endif
 
