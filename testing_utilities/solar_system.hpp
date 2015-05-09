@@ -56,7 +56,8 @@ geometry::Position<ICRFJ2000Ecliptic> const kSolarSystemBarycentre;
 class SolarSystem {
  public:
   using Bodies =
-      // NOTE(Norgg) TODO(Egg) Another instance of removing a const from vector here.
+      // NOTE(Norgg) TODO(Egg) Another instance of removing a const from vector
+      // here.
       std::vector<not_null<std::unique_ptr<physics::MassiveBody const>>>;
 
   // The indices of the bodies in the |Bodies| vector.

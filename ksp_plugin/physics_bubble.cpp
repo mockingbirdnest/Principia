@@ -39,8 +39,8 @@ void PhysicsBubble::AddVesselToNext(not_null<Vessel*> const vessel,
                              std::vector<not_null<Part<World>*>>());
   CHECK(inserted_vessel.second);
   // NOTE(Norgg) TODO(Egg) Removed const from vector, custom allocator?
-  std::vector<not_null<Part<World>*>>* const vessel_parts = 
-    &inserted_vessel.first->second;
+  std::vector<not_null<Part<World>*>>* const vessel_parts =
+      &inserted_vessel.first->second;
   for (IdAndOwnedPart& id_part : parts) {
     PartId const id = id_part.first;
     not_null<std::unique_ptr<Part<World>>> const& part = id_part.second;
