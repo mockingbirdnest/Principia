@@ -15,7 +15,6 @@
 #include "testing_utilities/almost_equals.hpp"
 #include "testing_utilities/numerics.hpp"
 #include "testing_utilities/vanishes_before.hpp"
-
 namespace principia {
 
 using astronomy::EarthMass;
@@ -174,7 +173,7 @@ TEST_F(QuantitiesTest, TrigonometricFunctions) {
     // conditioning.
     if (k % 90 != 0) {
       EXPECT_THAT(Cos((90 - k) * Degree),
-                  AlmostEquals(Sin(k * Degree), 0, 46));
+                  AlmostEquals(Sin(k * Degree), 0, 47));
       EXPECT_THAT(Sin(k * Degree) / Cos(k * Degree),
                   AlmostEquals(Tan(k * Degree), 0, 2));
       EXPECT_THAT(((k + 179) % 360 - 179) * Degree,
