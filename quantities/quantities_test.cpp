@@ -54,6 +54,7 @@ using uk::Furlong;
 using uk::Mile;
 using uk::Rood;
 using ::testing::Lt;
+using ::testing::MatchesRegex;
 
 namespace quantities {
 
@@ -120,10 +121,10 @@ TEST_F(QuantitiesTest, Formatting) {
                                " cd^-1 cycle^-1 rad^-1 sr^-1";
   std::string const actual = DebugString(all_the_units, 0);
   EXPECT_EQ(expected, actual);
-  std::string const π17 = "+3.14159265358979310e+00";
-  EXPECT_EQ(π17, DebugString(π));
-  std::string const minus_e17 = "-2.71828182845904510e+00";
-  EXPECT_EQ(minus_e17, DebugString(-e));
+  std::string const π17 = "\\+3\\.1415926535897931.e\\+00";
+  EXPECT_THAT(DebugString(π), MatchesRegex(π17));
+  std::string const minus_e17 = "\\-2\\.718281828459045..e\\+00";
+  EXPECT_THAT(DebugString(-e), MatchesRegex(minus_e17));
 }
 
 TEST_F(QuantitiesTest, PhysicalConstants) {
