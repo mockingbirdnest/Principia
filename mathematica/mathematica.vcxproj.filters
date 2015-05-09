@@ -39,5 +39,8 @@
     <None Include="numerical_analysis.wl">
       <Filter>Scripts</Filter>
     </None>
+    <None Include="navball.wl">
+      <Filter>Scripts</Filter>
+    </None>
   </ItemGroup>
 </Project>

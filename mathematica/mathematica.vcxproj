@@ -128,6 +128,7 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="generate_graphs.wl" />
+    <None Include="navball.wl" />
     <None Include="numerical_analysis.wl" />
   </ItemGroup>
   <ItemGroup>
