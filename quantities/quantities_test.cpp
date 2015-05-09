@@ -15,7 +15,6 @@
 #include "testing_utilities/almost_equals.hpp"
 #include "testing_utilities/numerics.hpp"
 #include "testing_utilities/vanishes_before.hpp"
-
 namespace principia {
 
 using astronomy::EarthMass;
@@ -54,6 +53,7 @@ using uk::Furlong;
 using uk::Mile;
 using uk::Rood;
 using ::testing::Lt;
+using ::testing::MatchesRegex;
 
 namespace quantities {
 
@@ -105,8 +105,8 @@ TEST_F(QuantitiesTest, DimensionlessExponentiation) {
   positivePower *= number;
   negativePower /= number;
   // This one calls |std::pow|.
-  EXPECT_THAT(positivePower, AlmostEquals(Pow<4>(number), 1));
-  EXPECT_THAT(negativePower, AlmostEquals(Pow<-4>(number), 1));
+  EXPECT_THAT(positivePower, AlmostEquals(Pow<4>(number), 0, 1));
+  EXPECT_THAT(negativePower, AlmostEquals(Pow<-4>(number), 0, 1));
 }
 
 // The Greek letters cause a warning when stringified by the macros, because
@@ -120,10 +120,10 @@ TEST_F(QuantitiesTest, Formatting) {
                                " cd^-1 cycle^-1 rad^-1 sr^-1";
   std::string const actual = DebugString(all_the_units, 0);
   EXPECT_EQ(expected, actual);
-  std::string const π17 = "+3.14159265358979310e+00";
-  EXPECT_EQ(π17, DebugString(π));
-  std::string const minus_e17 = "-2.71828182845904510e+00";
-  EXPECT_EQ(minus_e17, DebugString(-e));
+  std::string const π17 = "\\+3\\.1415926535897931.e\\+00";
+  EXPECT_THAT(DebugString(π), MatchesRegex(π17));
+  std::string const minus_e17 = "\\-2\\.718281828459045..e\\+00";
+  EXPECT_THAT(DebugString(-e), MatchesRegex(minus_e17));
 }
 
 TEST_F(QuantitiesTest, PhysicalConstants) {
@@ -173,7 +173,7 @@ TEST_F(QuantitiesTest, TrigonometricFunctions) {
     // conditioning.
     if (k % 90 != 0) {
       EXPECT_THAT(Cos((90 - k) * Degree),
-                  AlmostEquals(Sin(k * Degree), 0, 46));
+                  AlmostEquals(Sin(k * Degree), 0, 47));
       EXPECT_THAT(Sin(k * Degree) / Cos(k * Degree),
                   AlmostEquals(Tan(k * Degree), 0, 2));
       EXPECT_THAT(((k + 179) % 360 - 179) * Degree,
@@ -203,10 +203,14 @@ TEST_F(QuantitiesTest, HyperbolicFunctions) {
   EXPECT_EQ(Sinh(-20 * Radian), -Cosh(-20 * Radian));
   EXPECT_EQ(Tanh(-20 * Radian), -1);
 
-  EXPECT_EQ(Sinh(2 * Radian) / Cosh(2 * Radian), Tanh(2 * Radian));
-  EXPECT_THAT(ArcSinh(Sinh(-10 * Degree)), AlmostEquals(-10 * Degree, 1));
-  EXPECT_THAT(ArcCosh(Cosh(-10 * Degree)), AlmostEquals(10 * Degree, 20));
-  EXPECT_THAT(ArcTanh(Tanh(-10 * Degree)), AlmostEquals(-10 * Degree, 1));
+  EXPECT_THAT(Sinh(2 * Radian) / Cosh(2 * Radian),
+              AlmostEquals(Tanh(2 * Radian), 0, 1));
+  EXPECT_THAT(ArcSinh(Sinh(-10 * Degree)),
+              AlmostEquals(-10 * Degree, 0, 1));
+  EXPECT_THAT(ArcCosh(Cosh(-10 * Degree)),
+              AlmostEquals(10 * Degree, 19, 20));
+  EXPECT_THAT(ArcTanh(Tanh(-10 * Degree)),
+              AlmostEquals(-10 * Degree, 0, 1));
 }
 
 TEST_F(QuantitiesTest, ExpLogAndSqrt) {

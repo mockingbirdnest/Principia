@@ -60,19 +60,19 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
   [KSPField(isPersistant = true)]
   private bool fix_navball_in_plotting_frame_ = true;
 
-  private double[] prediction_step_sizes_ =
+  private readonly double[] prediction_step_sizes_ =
       {1 << 4, 1 << 5, 1 << 6, 1 << 7, 1 << 8, 1 << 9, 1 << 10, 1 << 11,
        1 << 12, 1 << 13, 1 << 14, 1 << 15, 1 << 16, 1 << 17, 1 << 18, 1 << 19,
        1 << 20, 1 << 21, 1 << 22};
   [KSPField(isPersistant = true)]
-  private int prediction_step_index_ = 5;
-  private double[] prediction_lengths_ =
+  private int prediction_step_index_ = 1;
+  private readonly double[] prediction_lengths_ =
       {1 << 10, 1 << 11, 1 << 12, 1 << 13, 1 << 14, 1 << 15, 1 << 16, 1 << 17,
        1 << 18, 1 << 19, 1 << 20, 1 << 21, 1 << 22, 1 << 23, 1 << 24, 1 << 25,
        1 << 26, 1 << 27, 1 << 28};
   [KSPField(isPersistant = true)]
   private int prediction_length_index_ = 0;
-  private double[] history_lengths_ =
+  private readonly double[] history_lengths_ =
       {1 << 10, 1 << 11, 1 << 12, 1 << 13, 1 << 14, 1 << 15, 1 << 16, 1 << 17,
        1 << 18, 1 << 19, 1 << 20, 1 << 21, 1 << 22, 1 << 23, 1 << 24, 1 << 25,
        1 << 26, 1 << 27, 1 << 28, 1 << 29, double.PositiveInfinity};
@@ -979,6 +979,10 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
              ref changed_settings,
              "{0:0.00e0} s");
     if (changed_settings) {
+      while (prediction_lengths_[prediction_length_index_] <
+             prediction_step_sizes_[prediction_step_index_]) {
+        ++prediction_length_index_;
+      }
       ResetRenderedTrajectory();
     }
   }
