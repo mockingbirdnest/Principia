@@ -58,7 +58,7 @@ lib: $(LIB)
 
 tests: $(TEST_BINS)
 
-check: tests run_tests
+check: run_tests
 
 ##### CORE #####
 $(ADAPTER):
@@ -87,7 +87,7 @@ plugin: $(ADAPTER) $(LIB)
 	cd $(LIB_DIR)/..; zip -r Principia-$(UNAME_S)-$(shell git rev-parse --short HEAD)-$(shell date "+%Y-%m-%d").zip Principia/
 
 ##### TESTS #####
-run_tests:
+run_tests: tests
 	-base/test
 	-geometry/test
 	-integrators/test
