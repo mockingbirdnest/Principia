@@ -96,8 +96,9 @@ class PhysicsBubble {
   struct PreliminaryState {
     PreliminaryState();
     std::map<not_null<Vessel*> const,
-             // NOTE(Norgg) TODO(Egg) Removed const from vector, custom allocator?
-             std::vector<not_null<Part<World>*>>> vessels; 
+             // NOTE(Norgg) TODO(Egg) Removed const from vector,
+             // custom allocator?
+             std::vector<not_null<Part<World>*>>> vessels;
     PartIdToOwnedPart parts;
   };
 
