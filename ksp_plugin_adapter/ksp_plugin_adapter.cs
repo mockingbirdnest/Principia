@@ -49,7 +49,7 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
   private VectorLine rendered_prediction_;
   private VectorLine rendered_trajectory_;
   private IntPtr transforms_ = IntPtr.Zero;
-  
+
   [KSPField(isPersistant = true)]
   private int first_selected_celestial_ = 0;
   [KSPField(isPersistant = true)]
