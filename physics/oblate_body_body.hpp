@@ -2,8 +2,12 @@
 
 #include <algorithm>
 #include <vector>
+#include "quantities/constants.hpp"
 
 namespace principia {
+
+using constants::GravitationalConstant;
+
 namespace physics {
 
 namespace {

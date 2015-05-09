@@ -128,7 +128,7 @@ class Pair {
  private:
   // This is needed so that different instantiations of Pair can access the
   // members.
-  template<typename T1, typename T2>
+  template<typename T3, typename T4>
   friend class Pair;
 
   // This is needed to make Pair mappable.
@@ -139,52 +139,52 @@ class Pair {
   template<typename T1Matcher, typename T2Matcher>
   friend class testing_utilities::ComponentwiseMatcher2;
 
-  template<typename T1, typename T2>
-  friend typename vector_of<Pair<T1, T2>>::type operator-(
-      typename enable_if_affine<Pair<T1, T2>>::type const& left,
-      Pair<T1, T2> const& right);
+  template<typename T3, typename T4>
+  friend typename vector_of<Pair<T3, T4>>::type operator-(
+      typename enable_if_affine<Pair<T3, T4>>::type const& left,
+      Pair<T3, T4> const& right);
 
-  template<typename T1, typename T2>
-  friend typename enable_if_vector<Pair<T1, T2>>::type operator+(
-      Pair<T1, T2> const& right);
+  template<typename T3, typename T4>
+  friend typename enable_if_vector<Pair<T3, T4>>::type operator+(
+      Pair<T3, T4> const& right);
 
-  template<typename T1, typename T2>
-  friend typename enable_if_vector<Pair<T1, T2>>::type operator-(
-      Pair<T1, T2> const& right);
+  template<typename T3, typename T4>
+  friend typename enable_if_vector<Pair<T3, T4>>::type operator-(
+      Pair<T3, T4> const& right);
 
-  template<typename Scalar, typename T1, typename T2>
+  template<typename Scalar, typename T3, typename T4>
   friend typename enable_if_vector<
-      Pair<T1, T2>,
-      Pair<decltype(std::declval<Scalar>() * std::declval<T1>()),
-           decltype(std::declval<Scalar>() * std::declval<T2>())>>::type
-  operator*(Scalar const left, Pair<T1, T2> const& right);
+      Pair<T3, T4>,
+      Pair<decltype(std::declval<Scalar>() * std::declval<T3>()),
+           decltype(std::declval<Scalar>() * std::declval<T4>())>>::type
+  operator*(Scalar const left, Pair<T3, T4> const& right);
 
-  template<typename Scalar, typename T1, typename T2>
+  template<typename Scalar, typename T3, typename T4>
   friend typename enable_if_vector<
-      Pair<T1, T2>,
-      Pair<decltype(std::declval<T1>() * std::declval<Scalar>()),
-           decltype(std::declval<T2>() * std::declval<Scalar>())>>::type
-  operator*(Pair<T1, T2> const& left, Scalar const right);
+      Pair<T3, T4>,
+      Pair<decltype(std::declval<T3>() * std::declval<Scalar>()),
+           decltype(std::declval<T4>() * std::declval<Scalar>())>>::type
+  operator*(Pair<T3, T4> const& left, Scalar const right);
 
-  template<typename Scalar, typename T1, typename T2>
+  template<typename Scalar, typename T3, typename T4>
   friend typename enable_if_vector<
-      Pair<T1, T2>,
-      Pair<decltype(std::declval<T1>() / std::declval<Scalar>()),
-           decltype(std::declval<T2>() / std::declval<Scalar>())>>::type
-  operator/(Pair<T1, T2> const& left, Scalar const right);
+      Pair<T3, T4>,
+      Pair<decltype(std::declval<T3>() / std::declval<Scalar>()),
+           decltype(std::declval<T4>() / std::declval<Scalar>())>>::type
+  operator/(Pair<T3, T4> const& left, Scalar const right);
 
-  template<typename T1, typename T2>
-  friend typename enable_if_vector<Pair<T1, T2>>::type& operator*=(
-      Pair<T1, T2>& left,  // NOLINT(runtime/references)
+  template<typename T3, typename T4>
+  friend typename enable_if_vector<Pair<T3, T4>>::type& operator*=(
+      Pair<T3, T4>& left,  // NOLINT(runtime/references)
       double const right);
 
-  template<typename T1, typename T2>
-  friend typename enable_if_vector<Pair<T1, T2>>::type& operator/=(
-      Pair<T1, T2>& left,  // NOLINT(runtime/references)
+  template<typename T3, typename T4>
+  friend typename enable_if_vector<Pair<T3, T4>>::type& operator/=(
+      Pair<T3, T4>& left,  // NOLINT(runtime/references)
       double const right);
 
-  template<typename T1, typename T2>
-  friend std::ostream& operator<<(std::ostream& out, Pair<T1, T2> const& pair);
+  template<typename T3, typename T4>
+  friend std::ostream& operator<<(std::ostream& out, Pair<T3, T4> const& pair);
 };
 
 // NOTE(phl): Would like to put the enable_if_affine<> on the return type, but

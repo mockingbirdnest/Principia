@@ -1,5 +1,6 @@
 #pragma once
 
+#include <cstdlib>
 #include <string>
 
 namespace principia {
@@ -112,7 +113,7 @@ __attribute__((noreturn))
 #else
 #error "What compiler is this?"
 #endif
-inline void noreturn() { exit(0); }
+inline void noreturn() { std::exit(0); }
 
 // Used to force inlining.
 #if PRINCIPIA_COMPILER_CLANG    ||  \

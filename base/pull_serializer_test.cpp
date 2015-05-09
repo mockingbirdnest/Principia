@@ -1,5 +1,6 @@
 #include "base/pull_serializer.hpp"
 
+#include <cstring>
 #include <list>
 #include <string>
 #include <vector>
@@ -82,17 +83,17 @@ TEST_F(PullSerializerTest, Stream) {
   EXPECT_TRUE(stream_.Next(&data, &size));
   EXPECT_EQ(3, size);
   EXPECT_EQ(3, stream_.ByteCount());
-  memcpy(data, "abc", 3);
+  std::memcpy(data, "abc", 3);
   EXPECT_TRUE(stream_.Next(&data, &size));
   EXPECT_EQ(3, size);
   EXPECT_EQ(6, stream_.ByteCount());
-  memcpy(data, "xy", 2);
+  std::memcpy(data, "xy", 2);
   stream_.BackUp(1);
   EXPECT_EQ(5, stream_.ByteCount());
   EXPECT_TRUE(stream_.Next(&data, &size));
   EXPECT_EQ(3, size);
   EXPECT_EQ(8, stream_.ByteCount());
-  memcpy(data, "uvw", 3);
+  std::memcpy(data, "uvw", 3);
   stream_.BackUp(2);
   EXPECT_EQ(6, stream_.ByteCount());
   EXPECT_THAT(strings_, ElementsAre("abc", "xy", "u"));
