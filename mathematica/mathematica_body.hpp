@@ -10,6 +10,7 @@
 namespace principia {
 
 using quantities::DebugString;
+using quantities::SIUnit;
 
 namespace mathematica {
 

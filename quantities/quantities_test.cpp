@@ -5,7 +5,7 @@
 #include "glog/logging.h"
 #include "gtest/gtest.h"
 #include "quantities/astronomy.hpp"
-#include "quantities/BIPM.hpp"
+#include "quantities/bipm.hpp"
 #include "quantities/constants.hpp"
 #include "quantities/elementary_functions.hpp"
 #include "quantities/quantities.hpp"
@@ -15,7 +15,6 @@
 #include "testing_utilities/almost_equals.hpp"
 #include "testing_utilities/numerics.hpp"
 #include "testing_utilities/vanishes_before.hpp"
-
 namespace principia {
 
 using astronomy::EarthMass;
@@ -54,6 +53,7 @@ using uk::Furlong;
 using uk::Mile;
 using uk::Rood;
 using ::testing::Lt;
+using ::testing::MatchesRegex;
 
 namespace quantities {
 
@@ -120,10 +120,10 @@ TEST_F(QuantitiesTest, Formatting) {
                                " cd^-1 cycle^-1 rad^-1 sr^-1";
   std::string const actual = DebugString(all_the_units, 0);
   EXPECT_EQ(expected, actual);
-  std::string const π17 = "+3.14159265358979310e+00";
-  EXPECT_EQ(π17, DebugString(π));
-  std::string const minus_e17 = "-2.71828182845904510e+00";
-  EXPECT_EQ(minus_e17, DebugString(-e));
+  std::string const π17 = "\\+3\\.1415926535897931.e\\+00";
+  EXPECT_THAT(DebugString(π), MatchesRegex(π17));
+  std::string const minus_e17 = "\\-2\\.718281828459045..e\\+00";
+  EXPECT_THAT(DebugString(-e), MatchesRegex(minus_e17));
 }
 
 TEST_F(QuantitiesTest, PhysicalConstants) {
@@ -173,7 +173,7 @@ TEST_F(QuantitiesTest, TrigonometricFunctions) {
     // conditioning.
     if (k % 90 != 0) {
       EXPECT_THAT(Cos((90 - k) * Degree),
-                  AlmostEquals(Sin(k * Degree), 0, 46));
+                  AlmostEquals(Sin(k * Degree), 0, 47));
       EXPECT_THAT(Sin(k * Degree) / Cos(k * Degree),
                   AlmostEquals(Tan(k * Degree), 0, 2));
       EXPECT_THAT(((k + 179) % 360 - 179) * Degree,
