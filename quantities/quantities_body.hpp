@@ -3,6 +3,8 @@
 #include <cmath>
 #include <string>
 
+#include "base/macros.hpp"
+
 namespace principia {
 namespace quantities {
 

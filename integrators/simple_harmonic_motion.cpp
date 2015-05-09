@@ -3,6 +3,7 @@
 #include <string>
 #include <vector>
 
+#include "base/macros.hpp"
 #include "geometry/sign.hpp"
 #include "glog/logging.h"
 #include "gmock/gmock.h"
