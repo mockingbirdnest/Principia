@@ -54,7 +54,7 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
   private int first_selected_celestial_ = 0;
   [KSPField(isPersistant = true)]
   private int second_selected_celestial_ = 0;
-  
+
   [KSPField(isPersistant = true)]
   private bool display_patched_conics_ = false;
   [KSPField(isPersistant = true)]
