@@ -38,11 +38,11 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
   // "Persistant" is a KSP typo.
   [KSPField(isPersistant = true)]
   private bool show_main_window_ = true;
-  private static UnityEngine.Rect main_window_rectangle_ =
-      new UnityEngine.Rect(left   : UnityEngine.Screen.width / 2.0f,
-                           top    : UnityEngine.Screen.height / 3.0f,
-                           width  : 0,
-                           height : 0);
+  [KSPField(isPersistant = true)]
+  private int main_window_x_ = UnityEngine.Screen.width / 2;
+  [KSPField(isPersistant = true)]
+  private int main_window_y_ = UnityEngine.Screen.height / 3;
+  private UnityEngine.Rect main_window_rectangle_;
 
   private IntPtr plugin_ = IntPtr.Zero;
   // TODO(egg): rendering only one trajectory at the moment.
@@ -442,12 +442,16 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
       return;
     } else if (show_main_window_) {
       UnityEngine.GUI.skin = HighLogic.Skin;
+      main_window_rectangle_.xMin = main_window_x_;
+      main_window_rectangle_.yMin = main_window_y_;
       main_window_rectangle_ = UnityEngine.GUILayout.Window(
           id         : 1,
           screenRect : main_window_rectangle_,
           func       : DrawMainWindow,
           text       : "Principia",
           options    : UnityEngine.GUILayout.MinWidth(500));
+      main_window_x_ = (int)main_window_rectangle_.xMin;
+      main_window_y_ = (int)main_window_rectangle_.yMin;
     }
   }
 
