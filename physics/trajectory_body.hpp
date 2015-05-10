@@ -111,11 +111,10 @@ template<typename Frame>
 void Trajectory<Frame>::Append(
     Instant const& time,
     DegreesOfFreedom<Frame> const& degrees_of_freedom) {
-  auto inserted = timeline_.emplace(time, degrees_of_freedom);
-  CHECK(timeline_.end() == ++inserted.first) << "Append out of order";
-  CHECK(inserted.second) << "Append at existing time " << time
-                         << ", time range = [" << Times().front() << ", "
-                         << Times().back() << "]";
+  auto it = timeline_.emplace_hint(timeline_.end(),
+                                   time,
+                                   degrees_of_freedom);
+  CHECK(timeline_.end() == ++it) << "Append out of order";
 }
 
 template<typename Frame>
