@@ -474,7 +474,7 @@ TEST_F(PluginTest, VesselInsertionAtInitialization) {
                                     satellite_initial_velocity_));
   EXPECT_THAT(plugin_->VesselFromParent(guid),
               Componentwise(
-                  AlmostEquals(satellite_initial_displacement_, 13906),
+                  AlmostEquals(satellite_initial_displacement_, 7460),
                   AlmostEquals(satellite_initial_velocity_, 3)));
 }
 
@@ -891,9 +891,9 @@ TEST_F(PluginTest, UpdateCelestialHierarchy) {
         from_parent,
         Componentwise(
             AlmostEquals(looking_glass_.Inverse()(
-                plugin_->CelestialFromParent(index).displacement()), 1, 37824),
+                plugin_->CelestialFromParent(index).displacement()), 1, 5056),
             AlmostEquals(looking_glass_.Inverse()(
-                plugin_->CelestialFromParent(index).velocity()), 0, 936)));
+                plugin_->CelestialFromParent(index).velocity()), 1, 936)));
   }
 }
 
