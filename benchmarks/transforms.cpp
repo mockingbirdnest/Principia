@@ -41,6 +41,7 @@
 #include "geometry/frame.hpp"
 #include "geometry/grassmann.hpp"
 #include "geometry/named_quantities.hpp"
+#include "glog/logging.h"
 #include "quantities/astronomy.hpp"
 #include "quantities/numbers.hpp"
 #include "quantities/quantities.hpp"
@@ -167,17 +168,8 @@ std::vector<std::pair<Position<World1>,
     intermediate_trajectory.Append(it.time(), it.degrees_of_freedom());
   }
 
-  // Then build the apparent trajectory using the second transform.
-  Trajectory<World1> apparent_trajectory(body);
-  for (auto intermediate_it = transforms->second(intermediate_trajectory);
-       !intermediate_it.at_end();
-       ++intermediate_it) {
-    apparent_trajectory.Append(intermediate_it.time(),
-                               intermediate_it.degrees_of_freedom());
-  }
-
-  // Finally use the apparent trajectory to build the result.
-  auto initial_it = apparent_trajectory.first();
+  // Then build the final result using the second transform.
+  auto initial_it = transforms->second(intermediate_trajectory);
   if (!initial_it.at_end()) {
     for (auto final_it = initial_it;
          ++final_it, !final_it.at_end();
