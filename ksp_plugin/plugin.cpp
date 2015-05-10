@@ -578,7 +578,7 @@ Instant const& Plugin::HistoryTime() const {
 Rotation<Barycentric, AliceSun> Plugin::PlanetariumRotation() const {
   return Rotation<Barycentric, AliceSun>(
       planetarium_rotation_,
-      Bivector<double, Barycentric>({0, 0, 1}));
+      Bivector<double, Barycentric>({0, 0, -1}));
 }
 
 OrthogonalMap<Barycentric, WorldSun> Plugin::BarycentricToWorldSun() const {
