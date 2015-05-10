@@ -157,6 +157,8 @@ std::vector<std::pair<Position<World1>,
 template<bool cache>
 void BM_BodyCentredNonRotating(
     benchmark::State& state) {  // NOLINT(runtime/references)
+  state.PauseTiming();
+
   Time const Δt = 1 * Hour;
   int const steps = state.range_x();
 
@@ -200,16 +202,20 @@ void BM_BodyCentredNonRotating(
   }
 
   while (state.KeepRunning()) {
+    state.ResumeTiming();
     auto v = ApplyTransform(&probe,
                    transforms.get(),
                    transforms->first(probe_holder,
                                      &TrajectoryHolder::trajectory));
+    state.PauseTiming();
   }
 }
 
 template<bool cache>
 void BM_BarycentricRotating(
     benchmark::State& state) {  // NOLINT(runtime/references)
+  state.PauseTiming();
+
   Time const Δt = 1 * Hour;
   int const steps = state.range_x();
 
@@ -274,10 +280,12 @@ void BM_BarycentricRotating(
   }
 
   while (state.KeepRunning()) {
+    state.ResumeTiming();
     auto v = ApplyTransform(&probe,
                    transforms.get(),
                    transforms->first(probe_holder,
                                      &TrajectoryHolder::trajectory));
+    state.PauseTiming();
   }
 }
 
