@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2013
-VisualStudioVersion = 12.0.30501.0
+VisualStudioVersion = 12.0.31101.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "quantities", "quantities\quantities.vcxproj", "{273987F9-5E73-43E6-868E-E9D3C137F01A}"
 EndProject
@@ -302,5 +302,8 @@ Global
 	GlobalSection(NestedProjects) = preSolution
 		{06E78A3D-AAA0-4CD9-8F23-B5BBBBE6F14F} = {B0F47E49-0EDF-4D58-AB27-F99CCCE4253A}
 		{0AC374A7-36CD-40FC-B831-112389B6D9ED} = {B0F47E49-0EDF-4D58-AB27-F99CCCE4253A}
+	EndGlobalSection
+	GlobalSection(Performance) = preSolution
+		HasPerformanceSessions = true
 	EndGlobalSection
 EndGlobal

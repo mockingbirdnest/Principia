@@ -169,7 +169,48 @@ std::vector<std::pair<Position<World1>,
   }
 
   // Then build the final result using the second transform.
-  auto initial_it = transforms->second(intermediate_trajectory);
+  std::unique_ptr<Position<World1>> last_position;  // std::optional.
+  for (auto it = transforms->second(intermediate_trajectory);
+       !it.at_end();
+       ++it) {
+    Position<World1> const& position = it.degrees_of_freedom().position();
+    if (last_position == nullptr) {
+      last_position = std::make_unique<Position<World1>>(position);
+    } else {
+      result.emplace_back(*last_position, position);
+      *last_position = position;
+    }
+  }
+  return result;
+}
+
+// This code is derived from Plugin::RenderTrajectory.
+std::vector<std::pair<Position<World1>,
+                      Position<World1>>> LegacyApplyTransform(
+    not_null<Body const*> const body,
+    not_null<Transforms<TrajectoryHolder, World1, World2, World1>*> const
+        transforms,
+    Trajectory<World1>::TransformingIterator<World2> const& actual_it) {
+  std::vector<std::pair<Position<World1>,
+                        Position<World1>>> result;
+
+  // First build the trajectory resulting from the first transform.
+  Trajectory<World2> intermediate_trajectory(body);
+  for (auto it = actual_it; !it.at_end(); ++it) {
+    intermediate_trajectory.Append(it.time(), it.degrees_of_freedom());
+  }
+
+  // Then build the apparent trajectory using the second transform.
+  Trajectory<World1> apparent_trajectory(body);
+  for (auto intermediate_it = transforms->second(intermediate_trajectory);
+       !intermediate_it.at_end();
+       ++intermediate_it) {
+    apparent_trajectory.Append(intermediate_it.time(),
+                               intermediate_it.degrees_of_freedom());
+  }
+
+  // Finally use the apparent trajectory to build the result.
+  auto initial_it = apparent_trajectory.first();
   if (!initial_it.at_end()) {
     for (auto final_it = initial_it;
          ++final_it, !final_it.at_end();
@@ -311,6 +352,15 @@ void BM_BarycentricRotating(
                    transforms.get(),
                    transforms->first(probe_holder,
                                      &TrajectoryHolder::trajectory));
+    //auto w = LegacyApplyTransform(&probe,
+    //               transforms.get(),
+    //               transforms->first(probe_holder,
+    //                                 &TrajectoryHolder::trajectory));
+    //CHECK_EQ(w.size(), v.size());
+    //for (int i = 0; i < 10; ++i) {
+    //  LOG(INFO)<<w[i].first<<" "<<v[i].first;
+    //  LOG(INFO)<<w[i].second<<" "<<v[i].second;
+    //}
   }
 }
 
