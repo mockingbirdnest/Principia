@@ -1,8 +1,9 @@
 ﻿
+#include <algorithm>
 #include <memory>
+#include <vector>
 
 #include "base/not_null.hpp"
-#include "benchmark/benchmark.h"
 #include "geometry/frame.hpp"
 #include "geometry/grassmann.hpp"
 #include "geometry/named_quantities.hpp"
@@ -17,6 +18,9 @@
 #include "physics/trajectory.hpp"
 #include "physics/transforms.hpp"
 #include "serialization/geometry.pb.h"
+
+// This must come last because apparently it redefines CDECL.
+#include "benchmark/benchmark.h"
 
 namespace principia {
 
@@ -52,13 +56,25 @@ using World1 = Frame<serialization::Frame::TestTag,
 using World2 = Frame<serialization::Frame::TestTag,
                      serialization::Frame::TEST2, false>;
 
-struct TrajectoryHolder {
-  Trajectory<World1> const& primary();
-  Trajectory<World1> const& secondary();
+class TrajectoryHolder {
+ public:
+  explicit TrajectoryHolder(
+      not_null<std::unique_ptr<Trajectory<World1>>> trajectory);
 
-  not_null<std::unique_ptr<Trajectory<World1>>> primary;
-  not_null<std::unique_ptr<Trajectory<World1>>> secondary;
+  Trajectory<World1> const& trajectory() const;
+
+ private:
+  std::unique_ptr<Trajectory<World1>> trajectory_;
 };
+
+TrajectoryHolder::TrajectoryHolder(
+    not_null<std::unique_ptr<Trajectory<World1>>> trajectory)
+    // TODO(phl): Y U NO MOV!
+    : trajectory_(trajectory.release()) {}
+
+Trajectory<World1> const& TrajectoryHolder::trajectory() const {
+  return *trajectory_;
+}
 
 not_null<std::unique_ptr<Trajectory<World1>>> NewCircularTrajectory(
     not_null<Body const*> const body,
@@ -101,13 +117,48 @@ not_null<std::unique_ptr<Trajectory<World1>>> NewLinearTrajectory(
   return trajectory;
 }
 
+// This code is derived from Plugin::RenderTrajectory.
+std::vector<std::pair<Position<World1>,
+                      Position<World1>>> ApplyTransform(
+    not_null<Body const*> const body,
+    not_null<Transforms<TrajectoryHolder, World1, World2, World1>*> const transforms,
+    Trajectory<World1>::TransformingIterator<World2> const& actual_it) {
+  std::vector<std::pair<Position<World1>,
+                        Position<World1>>> result;
+
+  // First build the trajectory resulting from the first transform.
+  Trajectory<World2> intermediate_trajectory(body);
+  for (auto it = actual_it; !it.at_end(); ++it) {
+    intermediate_trajectory.Append(it.time(), it.degrees_of_freedom());
+  }
+
+  // Then build the apparent trajectory using the second transform.
+  Trajectory<World1> apparent_trajectory(body);
+  for (auto intermediate_it = transforms->second(intermediate_trajectory);
+       !intermediate_it.at_end();
+       ++intermediate_it) {
+    apparent_trajectory.Append(intermediate_it.time(),
+                               intermediate_it.degrees_of_freedom());
+  }
+
+  // Finally use the apparent trajectory to build the result.
+  auto initial_it = apparent_trajectory.first();
+  if (!initial_it.at_end()) {
+    for (auto final_it = initial_it;
+         ++final_it, !final_it.at_end();
+         initial_it = final_it) {
+      result.emplace_back(initial_it.degrees_of_freedom().position(),
+                          final_it.degrees_of_freedom().position());
+    }
+  }
+  return result;
+}
+
+template<bool cache>
 void BM_BodyCentredNonRotating(
-    benchmark::State& state) {  // NOLINT(runtime/references)>
-  TrajectoryHolder holder;
-
+    benchmark::State& state) {  // NOLINT(runtime/references)
   Time const Δt = 1 * Hour;
-  int const steps = 100000;
-
+  int const steps = 1E6;
 
   MassiveBody earth(astronomy::EarthMass);
   Position<World1> center = World1::origin;
@@ -119,12 +170,12 @@ void BM_BodyCentredNonRotating(
       AngularVelocity<World1>({0 * SIUnit<AngularFrequency>(),
                                0 * SIUnit<AngularFrequency>(),
                                2 * π * Radian / JulianYear});
-  holder.primary = NewCircularTrajectory(&earth,
-                                         center,
-                                         earth_initial_position,
-                                         earth_angular_velocity,
-                                         Δt,
-                                         steps);
+  TrajectoryHolder earth_holder(NewCircularTrajectory(&earth,
+                                                      center,
+                                                      earth_initial_position,
+                                                      earth_angular_velocity,
+                                                      Δt,
+                                                      steps));
 
   MasslessBody probe;
   Position<World1> probe_initial_position =
@@ -135,18 +186,105 @@ void BM_BodyCentredNonRotating(
       Velocity<World1>({0 * SIUnit<Speed>(),
                         100 * Kilo(Metre) / Second,
                         0 * SIUnit<Speed>()});
-  auto const probe_trajectory = NewLinearTrajectory(&probe,
+  TrajectoryHolder probe_holder(NewLinearTrajectory(&probe,
                                                     probe_initial_position,
                                                     probe_velocity,
                                                     Δt,
-                                                    steps);
+                                                    steps));
 
-  auto transforms = Transforms<TrajectoryHolder, World1, World2, World1>::BodyCentredNonRotating(holder, );
+  auto transforms = Transforms<TrajectoryHolder, World1, World2, World1>::
+      BodyCentredNonRotating(earth_holder,
+                             &TrajectoryHolder::trajectory);
+  if (cache) {
+    transforms->set_cacheable(&TrajectoryHolder::trajectory);
+  }
 
   while (state.KeepRunning()) {
+    auto v = ApplyTransform(&probe,
+                   transforms.get(),
+                   transforms->first(probe_holder,
+                                     &TrajectoryHolder::trajectory));
   }
 }
-BENCHMARK(BM_BodyCentredNonRotating);
+
+template<bool cache>
+void BM_BarycentricRotating(
+    benchmark::State& state) {  // NOLINT(runtime/references)
+  Time const Δt = 1 * Hour;
+  int const steps = 1E6;
+
+  MassiveBody earth(astronomy::EarthMass);
+  Position<World1> earth_center = World1::origin;
+  Position<World1> earth_initial_position =
+      World1::origin + Displacement<World1>({1 * si::AstronomicalUnit,
+                                             0 * si::AstronomicalUnit,
+                                             0 * si::AstronomicalUnit});
+  AngularVelocity<World1> earth_angular_velocity =
+      AngularVelocity<World1>({0 * SIUnit<AngularFrequency>(),
+                               0 * SIUnit<AngularFrequency>(),
+                               2 * π * Radian / JulianYear});
+  TrajectoryHolder earth_holder(NewCircularTrajectory(&earth,
+                                                      earth_center,
+                                                      earth_initial_position,
+                                                      earth_angular_velocity,
+                                                      Δt,
+                                                      steps));
+
+  MassiveBody thera(astronomy::EarthMass);
+  Position<World1> thera_center =
+      World1::origin + Displacement<World1>({2 * si::AstronomicalUnit,
+                                             0 * si::AstronomicalUnit,
+                                             0 * si::AstronomicalUnit});
+  Position<World1> thera_initial_position =
+      World1::origin + Displacement<World1>({-0.5 * si::AstronomicalUnit,
+                                             0 * si::AstronomicalUnit,
+                                             0 * si::AstronomicalUnit});
+  AngularVelocity<World1> thera_angular_velocity =
+      AngularVelocity<World1>({0 * SIUnit<AngularFrequency>(),
+                               0 * SIUnit<AngularFrequency>(),
+                               6 * Radian / JulianYear});
+  TrajectoryHolder thera_holder(NewCircularTrajectory(&thera,
+                                                      thera_center,
+                                                      thera_initial_position,
+                                                      thera_angular_velocity,
+                                                      Δt,
+                                                      steps));
+
+  MasslessBody probe;
+  Position<World1> probe_initial_position =
+      World1::origin + Displacement<World1>({0.5 * si::AstronomicalUnit,
+                                             -1 * si::AstronomicalUnit,
+                                             0 * si::AstronomicalUnit});
+  Velocity<World1> probe_velocity =
+      Velocity<World1>({0 * SIUnit<Speed>(),
+                        100 * Kilo(Metre) / Second,
+                        0 * SIUnit<Speed>()});
+  TrajectoryHolder probe_holder(NewLinearTrajectory(&probe,
+                                                    probe_initial_position,
+                                                    probe_velocity,
+                                                    Δt,
+                                                    steps));
+
+  auto transforms = Transforms<TrajectoryHolder, World1, World2, World1>::
+      BarycentricRotating(earth_holder,
+                          thera_holder,
+                          &TrajectoryHolder::trajectory);
+  if (cache) {
+    transforms->set_cacheable(&TrajectoryHolder::trajectory);
+  }
+
+  while (state.KeepRunning()) {
+    auto v = ApplyTransform(&probe,
+                   transforms.get(),
+                   transforms->first(probe_holder,
+                                     &TrajectoryHolder::trajectory));
+  }
+}
+
+BENCHMARK_TEMPLATE(BM_BodyCentredNonRotating, false);
+BENCHMARK_TEMPLATE(BM_BodyCentredNonRotating, true);
+BENCHMARK_TEMPLATE(BM_BarycentricRotating, false);
+BENCHMARK_TEMPLATE(BM_BarycentricRotating, true);
 
 }  // namespace benchmarks
 }  // namespace principia
