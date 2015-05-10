@@ -1,4 +1,66 @@
 ﻿
+// .\Release\benchmarks.exe --benchmark_filter=Rotating --benchmark_repetitions=5
+// Benchmarking on 1 X 3310 MHz CPU
+// 2015/05/10-13:47:31
+// Benchmark                                       Time(ns)    CPU(ns) Iterations
+// ------------------------------------------------------------------------------
+// BM_BodyCentredNonRotating<false>/100k           95343328   93600600          2
+// BM_BodyCentredNonRotating<false>/100k          127873158  124800800          1
+// BM_BodyCentredNonRotating<false>/100k          127343392  124800800          1
+// BM_BodyCentredNonRotating<false>/100k          130792117  124800800          1
+// BM_BodyCentredNonRotating<false>/100k          128330922  140400900          1
+// BM_BodyCentredNonRotating<false>/100k_mean     117504374  117000750          1
+// BM_BodyCentredNonRotating<false>/100k_stddev    15707324   17441442          0
+// BM_BodyCentredNonRotating<false>/1000k         642744994  639604100          1
+// BM_BodyCentredNonRotating<false>/1000k        1387956357 1388408900          1
+// BM_BodyCentredNonRotating<false>/1000k        1382258868 1388408900          1
+// BM_BodyCentredNonRotating<false>/1000k        1383145785 1372808800          1
+// BM_BodyCentredNonRotating<false>/1000k        1396267152 1388408900          1
+// BM_BodyCentredNonRotating<false>/1000k_mean   1238474631 1235527920          1
+// BM_BodyCentredNonRotating<false>/1000k_stddev  297906266  298023161          0
+// BM_BodyCentredNonRotating<true>/100k           100360251  101400650          2
+// BM_BodyCentredNonRotating<true>/100k           113182998  109200700          1
+// BM_BodyCentredNonRotating<true>/100k           105969405  109200700          1
+// BM_BodyCentredNonRotating<true>/100k           106993890  109200700          1
+// BM_BodyCentredNonRotating<true>/100k           105199790  109200700          1
+// BM_BodyCentredNonRotating<true>/100k_mean      105344431  106600683          1
+// BM_BodyCentredNonRotating<true>/100k_stddev      4363857    3676979          0
+// BM_BodyCentredNonRotating<true>/1000k         1058213210 1045206700          1
+// BM_BodyCentredNonRotating<true>/1000k         1207992053 1201207700          1
+// BM_BodyCentredNonRotating<true>/1000k         1192008948 1201207700          1
+// BM_BodyCentredNonRotating<true>/1000k         1200190759 1201207700          1
+// BM_BodyCentredNonRotating<true>/1000k         1192056871 1201207700          1
+// BM_BodyCentredNonRotating<true>/1000k_mean    1170092368 1170007500          1
+// BM_BodyCentredNonRotating<true>/1000k_stddev    56253037   62400400          0
+// BM_BarycentricRotating<false>/100k             191866612  202801300          1
+// BM_BarycentricRotating<false>/100k             305416560  312002000          1
+// BM_BarycentricRotating<false>/100k             302712894  280801800          1
+// BM_BarycentricRotating<false>/100k             298292375  296401900          1
+// BM_BarycentricRotating<false>/100k             301038241  296401900          1
+// BM_BarycentricRotating<false>/100k_mean        279865336  277681780          1
+// BM_BarycentricRotating<false>/100k_stddev       44060184   38718430          0
+// BM_BarycentricRotating<false>/1000k           1890934682 1887612100          1
+// BM_BarycentricRotating<false>/1000k           3090300775 3073219700          1
+// BM_BarycentricRotating<false>/1000k           3099311090 3073219700          1
+// BM_BarycentricRotating<false>/1000k           3096378779 3104419900          1
+// BM_BarycentricRotating<false>/1000k           3086464858 3057619600          1
+// BM_BarycentricRotating<false>/1000k_mean      2852678037 2839218200          1
+// BM_BarycentricRotating<false>/1000k_stddev     480892720  476045940          0
+// BM_BarycentricRotating<true>/100k              229466176  234001500          1
+// BM_BarycentricRotating<true>/100k              188003993  187201200          1
+// BM_BarycentricRotating<true>/100k              187404132  187201200          1
+// BM_BarycentricRotating<true>/100k              190046525  187201200          1
+// BM_BarycentricRotating<true>/100k              187771058  187201200          1
+// BM_BarycentricRotating<true>/100k_mean         196538377  196561260          1
+// BM_BarycentricRotating<true>/100k_stddev        16489513   18720120          0
+// BM_BarycentricRotating<true>/1000k            2319008565 2308814800          1
+// BM_BarycentricRotating<true>/1000k            2002243018 1996812800          1
+// BM_BarycentricRotating<true>/1000k            1999951100 2012412900          1
+// BM_BarycentricRotating<true>/1000k            1993252492 1996812800          1
+// BM_BarycentricRotating<true>/1000k            1980318046 1965612600          1
+// BM_BarycentricRotating<true>/1000k_mean       2058954644 2056093180          1
+// BM_BarycentricRotating<true>/1000k_stddev      130250647  127272343          0
+
 #include <algorithm>
 #include <memory>
 #include <vector>
@@ -292,10 +354,10 @@ void BM_BarycentricRotating(
 int const kIter1 = 100 << 10;
 int const kIter2 = 1000 << 10;
 
-BENCHMARK_TEMPLATE(BM_BodyCentredNonRotating, false)->Arg(kIter1)->Arg(kIter2);
-BENCHMARK_TEMPLATE(BM_BodyCentredNonRotating, true)->Arg(kIter1)->Arg(kIter2);
-BENCHMARK_TEMPLATE(BM_BarycentricRotating, false)->Arg(kIter1)->Arg(kIter2);
-BENCHMARK_TEMPLATE(BM_BarycentricRotating, true)->Arg(kIter1)->Arg(kIter2);
+// BENCHMARK_TEMPLATE(BM_BodyCentredNonRotating, false)->Arg(kIter1)->Arg(kIter2);
+// BENCHMARK_TEMPLATE(BM_BodyCentredNonRotating, true)->Arg(kIter1)->Arg(kIter2);
+// BENCHMARK_TEMPLATE(BM_BarycentricRotating, false)->Arg(kIter1)->Arg(kIter2);
+// BENCHMARK_TEMPLATE(BM_BarycentricRotating, true)->Arg(kIter1)->Arg(kIter2);
 
 }  // namespace benchmarks
 }  // namespace principia
