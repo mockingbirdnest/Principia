@@ -111,6 +111,10 @@ template<typename Frame>
 void Trajectory<Frame>::Append(
     Instant const& time,
     DegreesOfFreedom<Frame> const& degrees_of_freedom) {
+  CHECK(timeline_.empty() || timeline_.crbegin()->first != time)
+      << "Append at existing time " << time
+      << ", time range = [" << Times().front() << ", "
+      << Times().back() << "]";
   auto it = timeline_.emplace_hint(timeline_.end(),
                                    time,
                                    degrees_of_freedom);

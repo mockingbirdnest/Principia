@@ -138,6 +138,10 @@ TEST_F(TrajectoryDeathTest, AppendError) {
     massive_trajectory_->Append(t2_, d2_);
     massive_trajectory_->Append(t1_, d1_);
   }, "out of order");
+  EXPECT_DEATH({
+    massive_trajectory_->Append(t1_, d1_);
+    massive_trajectory_->Append(t1_, d1_);
+  }, "existing time");
 }
 
 TEST_F(TrajectoryTest, AppendSuccess) {
