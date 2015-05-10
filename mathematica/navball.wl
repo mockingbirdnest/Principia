@@ -49,7 +49,7 @@ ra[{x_,y_},n_,s_,eq_,markings_]:=
   If[
   x==0&&y==0,
   "\[AriesSign]",
-  ToString[Mod[x,2\[Pi]]/\[Pi]*12]],
+  ToString[Mod[-x,2\[Pi]]/\[Pi]*12]],
   markings,
   Which[y>0,n,y<0,s,y==0,eq]]
 
@@ -280,10 +280,11 @@ compass=
   hdg];
 
 
-(* ::Code:: *)
-(*SetDirectory[*)
-(* ParentDirectory[NotebookDirectory[]]<>*)
-(*  "/ksp_plugin_adapter/assets"];*)
-(*Export["navball_barycentric.png",barycentric];*)
-(*Export["navball_inertial.png",inertial];*)
-(*Export["navball_compass.png",compass];*)
+If[
+ True,
+ SetDirectory[
+  ParentDirectory[NotebookDirectory[]]<>
+  "/ksp_plugin_adapter/assets"];
+ Export["navball_barycentric.png",barycentric];
+ Export["navball_inertial.png",inertial];
+ Export["navball_compass.png",compass]];
