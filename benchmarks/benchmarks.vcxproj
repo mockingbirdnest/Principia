@@ -145,6 +145,7 @@
     <ClCompile Include="n_body_system.cpp" />
     <ClCompile Include="quantities.cpp" />
     <ClCompile Include="symplectic_partitioned_runge_kutta_integrator.cpp" />
+    <ClCompile Include="transforms.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="n_body_system.hpp" />
