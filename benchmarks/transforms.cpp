@@ -1,37 +1,37 @@
 ﻿
 // .\Release\benchmarks.exe --benchmark_filter=Rotating --benchmark_repetitions=5  // NOLINT(whitespace/line_length)
 // Benchmarking on 1 X 3310 MHz CPU
-// 2015/05/10-13:47:31
+// 2015/05/10-18:34:50
 // Benchmark                                       Time(ns)    CPU(ns) Iterations  // NOLINT(whitespace/line_length)
 // ------------------------------------------------------------------------------  // NOLINT(whitespace/line_length)
-// BM_BodyCentredNonRotating<false>/1000k         642744994  639604100          1  // NOLINT(whitespace/line_length)
-// BM_BodyCentredNonRotating<false>/1000k        1387956357 1388408900          1  // NOLINT(whitespace/line_length)
-// BM_BodyCentredNonRotating<false>/1000k        1382258868 1388408900          1  // NOLINT(whitespace/line_length)
-// BM_BodyCentredNonRotating<false>/1000k        1383145785 1372808800          1  // NOLINT(whitespace/line_length)
-// BM_BodyCentredNonRotating<false>/1000k        1396267152 1388408900          1  // NOLINT(whitespace/line_length)
-// BM_BodyCentredNonRotating<false>/1000k_mean   1238474631 1235527920          1  // NOLINT(whitespace/line_length)
-// BM_BodyCentredNonRotating<false>/1000k_stddev  297906266  298023161          0  // NOLINT(whitespace/line_length)
-// BM_BodyCentredNonRotating<true>/1000k         1058213210 1045206700          1  // NOLINT(whitespace/line_length)
-// BM_BodyCentredNonRotating<true>/1000k         1207992053 1201207700          1  // NOLINT(whitespace/line_length)
-// BM_BodyCentredNonRotating<true>/1000k         1192008948 1201207700          1  // NOLINT(whitespace/line_length)
-// BM_BodyCentredNonRotating<true>/1000k         1200190759 1201207700          1  // NOLINT(whitespace/line_length)
-// BM_BodyCentredNonRotating<true>/1000k         1192056871 1201207700          1  // NOLINT(whitespace/line_length)
-// BM_BodyCentredNonRotating<true>/1000k_mean    1170092368 1170007500          1  // NOLINT(whitespace/line_length)
-// BM_BodyCentredNonRotating<true>/1000k_stddev    56253037   62400400          0  // NOLINT(whitespace/line_length)
-// BM_BarycentricRotating<false>/1000k           1890934682 1887612100          1  // NOLINT(whitespace/line_length)
-// BM_BarycentricRotating<false>/1000k           3090300775 3073219700          1  // NOLINT(whitespace/line_length)
-// BM_BarycentricRotating<false>/1000k           3099311090 3073219700          1  // NOLINT(whitespace/line_length)
-// BM_BarycentricRotating<false>/1000k           3096378779 3104419900          1  // NOLINT(whitespace/line_length)
-// BM_BarycentricRotating<false>/1000k           3086464858 3057619600          1  // NOLINT(whitespace/line_length)
-// BM_BarycentricRotating<false>/1000k_mean      2852678037 2839218200          1  // NOLINT(whitespace/line_length)
-// BM_BarycentricRotating<false>/1000k_stddev     480892720  476045940          0  // NOLINT(whitespace/line_length)
-// BM_BarycentricRotating<true>/1000k            2319008565 2308814800          1  // NOLINT(whitespace/line_length)
-// BM_BarycentricRotating<true>/1000k            2002243018 1996812800          1  // NOLINT(whitespace/line_length)
-// BM_BarycentricRotating<true>/1000k            1999951100 2012412900          1  // NOLINT(whitespace/line_length)
-// BM_BarycentricRotating<true>/1000k            1993252492 1996812800          1  // NOLINT(whitespace/line_length)
-// BM_BarycentricRotating<true>/1000k            1980318046 1965612600          1  // NOLINT(whitespace/line_length)
-// BM_BarycentricRotating<true>/1000k_mean       2058954644 2056093180          1  // NOLINT(whitespace/line_length)
-// BM_BarycentricRotating<true>/1000k_stddev      130250647  127272343          0  // NOLINT(whitespace/line_length)
+// BM_BodyCentredNonRotating<false>/1000k         917631126  920405900          1  // NOLINT(whitespace/line_length)
+// BM_BodyCentredNonRotating<false>/1000k         912086225  920405900          1  // NOLINT(whitespace/line_length)
+// BM_BodyCentredNonRotating<false>/1000k         907597519  904805800          1  // NOLINT(whitespace/line_length)
+// BM_BodyCentredNonRotating<false>/1000k         910571075  904805800          1  // NOLINT(whitespace/line_length)
+// BM_BodyCentredNonRotating<false>/1000k         911085821  904805800          1  // NOLINT(whitespace/line_length)
+// BM_BodyCentredNonRotating<false>/1000k_mean    911794353  911045840          1  // NOLINT(whitespace/line_length)
+// BM_BodyCentredNonRotating<false>/1000k_stddev    3279175    7642457          0  // NOLINT(whitespace/line_length)
+// BM_BodyCentredNonRotating<true>/1000k         1338898397 1341608600          1  // NOLINT(whitespace/line_length)
+// BM_BodyCentredNonRotating<true>/1000k          740065075  748804800          1  // NOLINT(whitespace/line_length)
+// BM_BodyCentredNonRotating<true>/1000k          731354452  717604600          1  // NOLINT(whitespace/line_length)
+// BM_BodyCentredNonRotating<true>/1000k          734778858  748804800          1  // NOLINT(whitespace/line_length)
+// BM_BodyCentredNonRotating<true>/1000k          732065655  717604600          1  // NOLINT(whitespace/line_length)
+// BM_BodyCentredNonRotating<true>/1000k_mean     855432487  854885480          1  // NOLINT(whitespace/line_length)
+// BM_BodyCentredNonRotating<true>/1000k_stddev   241752335  243761234          0  // NOLINT(whitespace/line_length)
+// BM_BarycentricRotating<false>/1000k           2622258640 2636416900          1  // NOLINT(whitespace/line_length)
+// BM_BarycentricRotating<false>/1000k           2613256193 2605216700          1  // NOLINT(whitespace/line_length)
+// BM_BarycentricRotating<false>/1000k           2611253000 2605216700          1  // NOLINT(whitespace/line_length)
+// BM_BarycentricRotating<false>/1000k           2608254171 2620816800          1  // NOLINT(whitespace/line_length)
+// BM_BarycentricRotating<false>/1000k           2611253477 2574016500          1  // NOLINT(whitespace/line_length)
+// BM_BarycentricRotating<false>/1000k_mean      2613255096 2608336720          1  // NOLINT(whitespace/line_length)
+// BM_BarycentricRotating<false>/1000k_stddev       4776776   20695871          0  // NOLINT(whitespace/line_length)
+// BM_BarycentricRotating<true>/1000k            3042849995 3010819300          1  // NOLINT(whitespace/line_length)
+// BM_BarycentricRotating<true>/1000k            1525146700 1528809800          1  // NOLINT(whitespace/line_length)
+// BM_BarycentricRotating<true>/1000k            1526143528 1528809800          1  // NOLINT(whitespace/line_length)
+// BM_BarycentricRotating<true>/1000k            1526144958 1528809800          1  // NOLINT(whitespace/line_length)
+// BM_BarycentricRotating<true>/1000k            1526146866 1528809800          1  // NOLINT(whitespace/line_length)
+// BM_BarycentricRotating<true>/1000k_mean       1829286409 1825211700          1  // NOLINT(whitespace/line_length)
+// BM_BarycentricRotating<true>/1000k_stddev      606781916  592803800          0  // NOLINT(whitespace/line_length)
 
 #include <memory>
 #include <utility>
@@ -184,44 +184,6 @@ std::vector<std::pair<Position<World1>,
   return result;
 }
 
-// This code is derived from Plugin::RenderTrajectory.
-std::vector<std::pair<Position<World1>,
-                      Position<World1>>> LegacyApplyTransform(
-    not_null<Body const*> const body,
-    not_null<Transforms<TrajectoryHolder, World1, World2, World1>*> const
-        transforms,
-    Trajectory<World1>::TransformingIterator<World2> const& actual_it) {
-  std::vector<std::pair<Position<World1>,
-                        Position<World1>>> result;
-
-  // First build the trajectory resulting from the first transform.
-  Trajectory<World2> intermediate_trajectory(body);
-  for (auto it = actual_it; !it.at_end(); ++it) {
-    intermediate_trajectory.Append(it.time(), it.degrees_of_freedom());
-  }
-
-  // Then build the apparent trajectory using the second transform.
-  Trajectory<World1> apparent_trajectory(body);
-  for (auto intermediate_it = transforms->second(intermediate_trajectory);
-       !intermediate_it.at_end();
-       ++intermediate_it) {
-    apparent_trajectory.Append(intermediate_it.time(),
-                               intermediate_it.degrees_of_freedom());
-  }
-
-  // Finally use the apparent trajectory to build the result.
-  auto initial_it = apparent_trajectory.first();
-  if (!initial_it.at_end()) {
-    for (auto final_it = initial_it;
-         ++final_it, !final_it.at_end();
-         initial_it = final_it) {
-      result.emplace_back(initial_it.degrees_of_freedom().position(),
-                          final_it.degrees_of_freedom().position());
-    }
-  }
-  return result;
-}
-
 template<bool cache>
 void BM_BodyCentredNonRotating(
     benchmark::State& state) {  // NOLINT(runtime/references)
@@ -352,15 +314,6 @@ void BM_BarycentricRotating(
                    transforms.get(),
                    transforms->first(probe_holder,
                                      &TrajectoryHolder::trajectory));
-    //auto w = LegacyApplyTransform(&probe,
-    //               transforms.get(),
-    //               transforms->first(probe_holder,
-    //                                 &TrajectoryHolder::trajectory));
-    //CHECK_EQ(w.size(), v.size());
-    //for (int i = 0; i < 10; ++i) {
-    //  LOG(INFO)<<w[i].first<<" "<<v[i].first;
-    //  LOG(INFO)<<w[i].second<<" "<<v[i].second;
-    //}
   }
 }
 
