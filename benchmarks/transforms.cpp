@@ -228,13 +228,12 @@ void BM_BodyCentredNonRotating(
     transforms->set_cacheable(&TrajectoryHolder::trajectory);
   }
 
+  state.ResumeTiming();
   while (state.KeepRunning()) {
-    state.ResumeTiming();
     auto v = ApplyTransform(&probe,
                    transforms.get(),
                    transforms->first(probe_holder,
                                      &TrajectoryHolder::trajectory));
-    state.PauseTiming();
   }
 }
 
@@ -306,13 +305,12 @@ void BM_BarycentricRotating(
     transforms->set_cacheable(&TrajectoryHolder::trajectory);
   }
 
+  state.ResumeTiming();
   while (state.KeepRunning()) {
-    state.ResumeTiming();
     auto v = ApplyTransform(&probe,
                    transforms.get(),
                    transforms->first(probe_holder,
                                      &TrajectoryHolder::trajectory));
-    state.PauseTiming();
   }
 }
 
