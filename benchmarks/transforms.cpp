@@ -183,7 +183,8 @@ not_null<std::unique_ptr<Trajectory<World1>>> NewLinearTrajectory(
 std::vector<std::pair<Position<World1>,
                       Position<World1>>> ApplyTransform(
     not_null<Body const*> const body,
-    not_null<Transforms<TrajectoryHolder, World1, World2, World1>*> const transforms,
+    not_null<Transforms<TrajectoryHolder, World1, World2, World1>*> const
+        transforms,
     Trajectory<World1>::TransformingIterator<World2> const& actual_it) {
   std::vector<std::pair<Position<World1>,
                         Position<World1>>> result;
