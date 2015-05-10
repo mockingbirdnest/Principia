@@ -281,7 +281,7 @@ compass=
 
 
 If[
- True,
+ False, (*Replace with True to generate the navballs*)
  SetDirectory[
   ParentDirectory[NotebookDirectory[]]<>
   "/ksp_plugin_adapter/assets"];
