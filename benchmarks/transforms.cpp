@@ -158,7 +158,7 @@ template<bool cache>
 void BM_BodyCentredNonRotating(
     benchmark::State& state) {  // NOLINT(runtime/references)
   Time const Δt = 1 * Hour;
-  int const steps = 1E6;
+  int const steps = state.range_x();
 
   MassiveBody earth(astronomy::EarthMass);
   Position<World1> center = World1::origin;
@@ -211,7 +211,7 @@ template<bool cache>
 void BM_BarycentricRotating(
     benchmark::State& state) {  // NOLINT(runtime/references)
   Time const Δt = 1 * Hour;
-  int const steps = 1E6;
+  int const steps = state.range_x();
 
   MassiveBody earth(astronomy::EarthMass);
   Position<World1> earth_center = World1::origin;
@@ -281,10 +281,13 @@ void BM_BarycentricRotating(
   }
 }
 
-BENCHMARK_TEMPLATE(BM_BodyCentredNonRotating, false);
-BENCHMARK_TEMPLATE(BM_BodyCentredNonRotating, true);
-BENCHMARK_TEMPLATE(BM_BarycentricRotating, false);
-BENCHMARK_TEMPLATE(BM_BarycentricRotating, true);
+int const kIter1 = 100 << 10;
+int const kIter2 = 1000 << 10;
+
+BENCHMARK_TEMPLATE(BM_BodyCentredNonRotating, false)->Arg(kIter1)->Arg(kIter2);
+BENCHMARK_TEMPLATE(BM_BodyCentredNonRotating, true)->Arg(kIter1)->Arg(kIter2);
+BENCHMARK_TEMPLATE(BM_BarycentricRotating, false)->Arg(kIter1)->Arg(kIter2);
+BENCHMARK_TEMPLATE(BM_BarycentricRotating, true)->Arg(kIter1)->Arg(kIter2);
 
 }  // namespace benchmarks
 }  // namespace principia
