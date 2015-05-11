@@ -737,7 +737,10 @@ TEST_F(TrajectoryDeathTest, NativeIteratorError) {
 }
 
 TEST_F(TrajectoryTest, NativeIteratorSuccess) {
+  int counter = 0;
   Trajectory<World>::NativeIterator it = massive_trajectory_->first();
+  it.set_on_destroy([&counter]() { ++counter; });
+  EXPECT_EQ(0, counter);
   EXPECT_TRUE(it.at_end());
 
   massless_trajectory_->Append(t1_, d1_);
@@ -745,6 +748,7 @@ TEST_F(TrajectoryTest, NativeIteratorSuccess) {
   massless_trajectory_->Append(t3_, d3_);
 
   it = massless_trajectory_->first();
+  EXPECT_EQ(1, counter);
   EXPECT_FALSE(it.at_end());
   EXPECT_EQ(t1_, it.time());
   EXPECT_EQ(d1_, it.degrees_of_freedom());
@@ -757,7 +761,8 @@ TEST_F(TrajectoryTest, NativeIteratorSuccess) {
   ++it;
   EXPECT_TRUE(it.at_end());
 
-  not_null<Trajectory<World>*> const fork = massless_trajectory_->NewFork(t2_);
+  not_null<Trajectory<World>*> const fork =
+      massless_trajectory_->NewFork(t2_);
   fork->Append(t4_, d4_);
 
   it = fork->first();

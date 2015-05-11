@@ -205,9 +205,16 @@ class Trajectory {
   // into account.  Objects of this class cannot be created.
   class Iterator {
    public:
+    virtual ~Iterator();
+    Iterator& operator=(Iterator const& right);
     Iterator& operator++();
     bool at_end() const;
     Instant const& time() const;
+
+    // The function |on_destroy| will be called exactly once when this object is
+    // destroyed.  It is useful for cleaning up any client state associated with
+    // the iterator.
+    void set_on_destroy(std::function<void()> on_destroy);
 
    protected:
     using Timeline = std::map<Instant, DegreesOfFreedom<Frame>>;
@@ -230,6 +237,7 @@ class Trajectory {
     typename Timeline::const_iterator current_;
     std::list<not_null<Trajectory const*>> ancestry_;  // Pointers not owned.
     std::list<Fork> forks_;
+    std::function<void()> on_destroy_;
   };
 
   // An iterator which returns the coordinates in the native frame of the
