@@ -761,8 +761,7 @@ TEST_F(TrajectoryTest, NativeIteratorSuccess) {
   ++it;
   EXPECT_TRUE(it.at_end());
 
-  not_null<Trajectory<World>*> const fork =
-      massless_trajectory_->NewFork(t2_);
+  not_null<Trajectory<World>*> const fork = massless_trajectory_->NewFork(t2_);
   fork->Append(t4_, d4_);
 
   it = fork->first();
