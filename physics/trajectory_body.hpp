@@ -51,8 +51,9 @@ template<typename Frame>
 template<typename ToFrame>
 typename Trajectory<Frame>::TEMPLATE TransformingIterator<ToFrame>
 Trajectory<Frame>::first_with_transform(
-    Transform<ToFrame> const& transform) const {
-  TransformingIterator<ToFrame> it(transform);
+    Transform<ToFrame> transform,
+    std::function<void()> on_destroy) const {
+  TransformingIterator<ToFrame> it(std::move(transform), std::move(on_destroy));
   it.InitializeFirst(this);
   return it;
 }
@@ -62,8 +63,9 @@ template<typename ToFrame>
 typename Trajectory<Frame>::TEMPLATE TransformingIterator<ToFrame>
 Trajectory<Frame>::on_or_after_with_transform(
     Instant const& time,
-    Transform<ToFrame> const& transform) const {
-  TransformingIterator<ToFrame> it(transform);
+    Transform<ToFrame> transform,
+    std::function<void()> on_destroy) const {
+  TransformingIterator<ToFrame> it(std::move(transform), std::move(on_destroy));
   it.InitializeOnOrAfter(time, this);
   return it;
 }
@@ -72,8 +74,9 @@ template<typename Frame>
 template<typename ToFrame>
 typename Trajectory<Frame>::TEMPLATE TransformingIterator<ToFrame>
 Trajectory<Frame>::last_with_transform(
-    Transform<ToFrame> const& transform) const {
-  TransformingIterator<ToFrame> it(transform);
+    Transform<ToFrame> transform,
+    std::function<void()> on_destroy) const {
+  TransformingIterator<ToFrame> it(std::move(transform), std::move(on_destroy));
   it.InitializeLast(this);
   return it;
 }
@@ -328,26 +331,6 @@ not_null<Trajectory<Frame>*> Trajectory<Frame>::ReadPointerFromMessage(
 }
 
 template<typename Frame>
-Trajectory<Frame>::Iterator::~Iterator() {
-  if (on_destroy_ != nullptr) {
-    on_destroy_();
-  }
-}
-
-template<typename Frame>
-typename Trajectory<Frame>::Iterator& Trajectory<Frame>::Iterator::operator=(
-    Iterator const& right) {
-  current_ = right.current_;
-  ancestry_ = right.ancestry_;
-  forks_ = right.forks_;
-  if (on_destroy_ != nullptr) {
-    on_destroy_();
-  }
-  on_destroy_ = right.on_destroy_;
-  return *this;
-}
-
-template<typename Frame>
 typename Trajectory<Frame>::Iterator&
 Trajectory<Frame>::Iterator::operator++() {
   if (!forks_.empty() && current_ == forks_.front().timeline) {
@@ -378,12 +361,6 @@ bool Trajectory<Frame>::Iterator::at_end() const {
 template<typename Frame>
 Instant const& Trajectory<Frame>::Iterator::time() const {
   return current_->first;
-}
-
-template<typename Frame>
-void Trajectory<Frame>::Iterator::set_on_destroy(
-    std::function<void()> on_destroy) {
-  on_destroy_ = std::move(on_destroy);
 }
 
 template<typename Frame>
@@ -474,9 +451,33 @@ Trajectory<Frame>::TransformingIterator<ToFrame>::degrees_of_freedom() const {
 template<typename Frame>
 template<typename ToFrame>
 Trajectory<Frame>::TransformingIterator<ToFrame>::TransformingIterator(
-    Transform<ToFrame> const& transform)
+    Transform<ToFrame> transform,
+    std::function<void()> on_destroy)
     : Iterator(),
-      transform_(transform) {}
+      transform_(std::move(transform)),
+      on_destroy_(std::move(on_destroy)) {}
+
+template<typename Frame>
+template<typename ToFrame>
+Trajectory<Frame>::TransformingIterator<ToFrame>::~TransformingIterator() {
+  if (on_destroy_ != nullptr) {
+    on_destroy_();
+  }
+}
+
+template<typename Frame>
+template<typename ToFrame>
+typename Trajectory<Frame>::TransformingIterator<ToFrame>&
+Trajectory<Frame>::TransformingIterator<ToFrame>::operator=(
+    TransformingIterator const& right) {
+  if (on_destroy_ != nullptr) {
+    on_destroy_();
+  }
+  Iterator::operator=(right);
+  transform_ = right.transform_;
+  on_destroy_ = right.on_destroy_;
+  return *this;
+}
 
 template<typename Frame>
 Trajectory<Frame>::Trajectory(not_null<Body const*> const body,

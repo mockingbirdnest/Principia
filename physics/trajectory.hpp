@@ -81,7 +81,8 @@ class Trajectory {
   // tranformation to ToFrame.
   template<typename ToFrame>
   TransformingIterator<ToFrame> first_with_transform(
-      Transform<ToFrame> const& transform) const;
+      Transform<ToFrame> transform,
+      std::function<void()> on_destroy) const;
 
   // Returns at the first point of the trajectory which is on or after |time|.
   // Complexity is O(|depth| + Ln(|length|)).  The result may be at end if the
@@ -89,13 +90,15 @@ class Trajectory {
   template<typename ToFrame>
   TransformingIterator<ToFrame> on_or_after_with_transform(
       Instant const& time,
-      Transform<ToFrame> const& transform) const;
+      Transform<ToFrame> transform,
+      std::function<void()> on_destroy) const;
 
   // Same as |last| above, but returns an iterator that performs a coordinate
   // tranformation to ToFrame.
   template<typename ToFrame>
   TransformingIterator<ToFrame> last_with_transform(
-      Transform<ToFrame> const& transform) const;
+      Transform<ToFrame> transform,
+      std::function<void()> on_destroy) const;
 
   // These functions return the series of positions/velocities/times for the
   // trajectory of the body.  All three containers are guaranteed to have the
@@ -205,16 +208,9 @@ class Trajectory {
   // into account.  Objects of this class cannot be created.
   class Iterator {
    public:
-    virtual ~Iterator();
-    Iterator& operator=(Iterator const& right);
     Iterator& operator++();
     bool at_end() const;
     Instant const& time() const;
-
-    // The function |on_destroy| will be called exactly once when this object is
-    // destroyed.  It is useful for cleaning up any client state associated with
-    // the iterator.
-    void set_on_destroy(std::function<void()> on_destroy);
 
    protected:
     using Timeline = std::map<Instant, DegreesOfFreedom<Frame>>;
@@ -237,7 +233,6 @@ class Trajectory {
     typename Timeline::const_iterator current_;
     std::list<not_null<Trajectory const*>> ancestry_;  // Pointers not owned.
     std::list<Fork> forks_;
-    std::function<void()> on_destroy_;
   };
 
   // An iterator which returns the coordinates in the native frame of the
@@ -255,10 +250,18 @@ class Trajectory {
   template<typename ToFrame>
   class TransformingIterator : public Iterator {
    public:
+    virtual ~TransformingIterator();
+    TransformingIterator& operator=(TransformingIterator const& right);
+
     DegreesOfFreedom<ToFrame> degrees_of_freedom() const;
-   private:
-    explicit TransformingIterator(Transform<ToFrame> const& transform);
+
+  private:
+    // The function |transform| is used to transform the degrees of freedom.
+    // The function |on_destroy| is run at destruction of the iterator.
+    explicit TransformingIterator(Transform<ToFrame> transform,
+                                  std::function<void()> on_destroy);
     Transform<ToFrame> transform_;
+    std::function<void()> on_destroy_;
     friend class Trajectory;
   };
 
