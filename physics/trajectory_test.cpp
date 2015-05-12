@@ -780,25 +780,29 @@ TEST_F(TrajectoryTest, NativeIteratorSuccess) {
 TEST_F(TrajectoryDeathTest, TransformingIteratorError) {
   EXPECT_DEATH({
     Trajectory<World>::TransformingIterator<World> it =
-        massive_trajectory_->last_with_transform(massive_transform_);
+        massive_trajectory_->last_with_transform(massive_transform_, nullptr);
   }, "Empty trajectory");
   EXPECT_DEATH({
     Trajectory<World>::TransformingIterator<World> it =
-        massive_trajectory_->first_with_transform(massive_transform_);
+        massive_trajectory_->first_with_transform(massive_transform_, nullptr);
     ++it;
   }, "beyond end");
 }
 
 TEST_F(TrajectoryTest, TransformingIteratorSuccess) {
+  int counter = 0;
   Trajectory<World>::TransformingIterator<World> it =
-      massive_trajectory_->first_with_transform(massive_transform_);
+      massive_trajectory_->first_with_transform(massive_transform_,
+                                                [&counter]() { ++counter; });
+  EXPECT_EQ(0, counter);
   EXPECT_TRUE(it.at_end());
 
   massless_trajectory_->Append(t1_, d1_);
   massless_trajectory_->Append(t2_, d2_);
   massless_trajectory_->Append(t3_, d3_);
 
-  it = massless_trajectory_->first_with_transform(massless_transform_);
+  it = massless_trajectory_->first_with_transform(massless_transform_, nullptr);
+  EXPECT_EQ(1, counter);
   EXPECT_FALSE(it.at_end());
   EXPECT_EQ(t1_, it.time());
   EXPECT_EQ(Position<World>(Vector<Length, World>(
@@ -825,7 +829,7 @@ TEST_F(TrajectoryTest, TransformingIteratorSuccess) {
   Trajectory<World>::Transform<World> const fork_transform =
       std::bind(transform_, _1, _2, _3, fork);
 
-  it = fork->first_with_transform(fork_transform);
+  it = fork->first_with_transform(fork_transform, nullptr);
   EXPECT_FALSE(it.at_end());
   EXPECT_EQ(t1_, it.time());
   EXPECT_EQ(t1_, it.time());
@@ -891,31 +895,35 @@ TEST_F(TrajectoryTest, NativeIteratorOnOrAfterSuccess) {
 }
 
 TEST_F(TrajectoryTest, TransformingIteratorOnOrAfterSuccess) {
+  int counter = 0;
   Trajectory<World>::TransformingIterator<World> it =
-      massive_trajectory_->on_or_after_with_transform(t0_, massive_transform_);
+      massive_trajectory_->on_or_after_with_transform(
+          t0_, massive_transform_, [&counter]() { ++counter; });
+  EXPECT_EQ(0, counter);
   EXPECT_TRUE(it.at_end());
 
   massless_trajectory_->Append(t1_, d1_);
   massless_trajectory_->Append(t2_, d2_);
   massless_trajectory_->Append(t3_, d3_);
 
-  it = massless_trajectory_->on_or_after_with_transform(t0_,
-                                                        massless_transform_);
+  it = massless_trajectory_->on_or_after_with_transform(
+           t0_, massless_transform_, nullptr);
+  EXPECT_EQ(1, counter);
   EXPECT_FALSE(it.at_end());
   EXPECT_EQ(t1_, it.time());
   EXPECT_EQ(Position<World>(Vector<Length, World>(
                 {-84 * Metre, -80 * Metre, -76 * Metre})),
             it.degrees_of_freedom().position());
   EXPECT_EQ(3 * p1_, it.degrees_of_freedom().velocity());
-  it = massless_trajectory_->on_or_after_with_transform(t2_,
-                                                        massless_transform_);
+  it = massless_trajectory_->on_or_after_with_transform(
+           t2_, massless_transform_, nullptr);
   EXPECT_EQ(t2_, it.time());
   EXPECT_EQ(Position<World>(Vector<Length, World>(
                 {-64 * Metre, -60 * Metre, -56 * Metre})),
             it.degrees_of_freedom().position());
   EXPECT_EQ(3 * p2_, it.degrees_of_freedom().velocity());
-  it = massless_trajectory_->on_or_after_with_transform(t4_,
-                                                        massless_transform_);
+  it = massless_trajectory_->on_or_after_with_transform(
+           t4_, massless_transform_, nullptr);
   EXPECT_TRUE(it.at_end());
 
   not_null<Trajectory<World>*> const fork = massless_trajectory_->NewFork(t2_);
@@ -923,7 +931,7 @@ TEST_F(TrajectoryTest, TransformingIteratorOnOrAfterSuccess) {
   Trajectory<World>::Transform<World> const fork_transform =
       std::bind(transform_, _1, _2, _3, fork);
 
-  it = fork->on_or_after_with_transform(t0_, fork_transform);
+  it = fork->on_or_after_with_transform(t0_, fork_transform, nullptr);
   EXPECT_FALSE(it.at_end());
   EXPECT_EQ(t1_, it.time());
   EXPECT_EQ(t1_, it.time());
@@ -931,19 +939,20 @@ TEST_F(TrajectoryTest, TransformingIteratorOnOrAfterSuccess) {
                 {-84 * Metre, -80 * Metre, -76 * Metre})),
             it.degrees_of_freedom().position());
   EXPECT_EQ(3 * p1_, it.degrees_of_freedom().velocity());
-  it = fork->on_or_after_with_transform(t2_, fork_transform);
+  it = fork->on_or_after_with_transform(t2_, fork_transform, nullptr);
   EXPECT_EQ(t2_, it.time());
   EXPECT_EQ(Position<World>(Vector<Length, World>(
                 {-64 * Metre, -60 * Metre, -56 * Metre})),
             it.degrees_of_freedom().position());
   EXPECT_EQ(3 * p2_, it.degrees_of_freedom().velocity());
-  it = fork->on_or_after_with_transform(t4_, fork_transform);
+  it = fork->on_or_after_with_transform(t4_, fork_transform, nullptr);
   EXPECT_EQ(t4_, it.time());
   EXPECT_EQ(Position<World>(Vector<Length, World>(
                 {-24 * Metre, -20 * Metre, -16 * Metre})),
             it.degrees_of_freedom().position());
   EXPECT_EQ(3 * p4_, it.degrees_of_freedom().velocity());
-  it = fork->on_or_after_with_transform(t4_ + 1 * Second, fork_transform);
+  it = fork->on_or_after_with_transform(
+           t4_ + 1 * Second, fork_transform, nullptr);
   EXPECT_TRUE(it.at_end());
 }
 

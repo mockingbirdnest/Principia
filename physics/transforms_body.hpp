@@ -341,7 +341,7 @@ Transforms<Mobile, FromFrame, ThroughFrame, ToFrame>::first(
     LazyTrajectory<FromFrame> const& from_trajectory) {
   typename Trajectory<FromFrame>::template Transform<ThroughFrame> const first =
       std::bind(first_, from_trajectory, _1, _2, _3);
-  return (mobile.*from_trajectory)().first_with_transform(first);
+  return (mobile.*from_trajectory)().first_with_transform(first, nullptr);
 }
 
 template<typename Mobile,
@@ -353,7 +353,8 @@ Transforms<Mobile, FromFrame, ThroughFrame, ToFrame>::first_on_or_after(
     Instant const& time) {
   typename Trajectory<FromFrame>::template Transform<ThroughFrame> const first =
       std::bind(first_, from_trajectory, _1, _2, _3);
-  return (mobile.*from_trajectory)().on_or_after_with_transform(time, first);
+  return (mobile.*from_trajectory)().on_or_after_with_transform(
+             time, first, nullptr);
 }
 
 template<typename Mobile,
@@ -361,7 +362,7 @@ template<typename Mobile,
 typename Trajectory<ThroughFrame>::template TransformingIterator<ToFrame>
 Transforms<Mobile, FromFrame, ThroughFrame, ToFrame>::second(
     Trajectory<ThroughFrame> const& through_trajectory) {
-  return through_trajectory.first_with_transform(second_);
+  return through_trajectory.first_with_transform(second_, nullptr);
 }
 
 template<typename Mobile,

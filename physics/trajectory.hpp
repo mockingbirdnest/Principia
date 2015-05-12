@@ -81,7 +81,8 @@ class Trajectory {
   // tranformation to ToFrame.
   template<typename ToFrame>
   TransformingIterator<ToFrame> first_with_transform(
-      Transform<ToFrame> const& transform) const;
+      Transform<ToFrame> transform,
+      std::function<void()> on_destroy) const;
 
   // Returns at the first point of the trajectory which is on or after |time|.
   // Complexity is O(|depth| + Ln(|length|)).  The result may be at end if the
@@ -89,13 +90,15 @@ class Trajectory {
   template<typename ToFrame>
   TransformingIterator<ToFrame> on_or_after_with_transform(
       Instant const& time,
-      Transform<ToFrame> const& transform) const;
+      Transform<ToFrame> transform,
+      std::function<void()> on_destroy) const;
 
   // Same as |last| above, but returns an iterator that performs a coordinate
   // tranformation to ToFrame.
   template<typename ToFrame>
   TransformingIterator<ToFrame> last_with_transform(
-      Transform<ToFrame> const& transform) const;
+      Transform<ToFrame> transform,
+      std::function<void()> on_destroy) const;
 
   // These functions return the series of positions/velocities/times for the
   // trajectory of the body.  All three containers are guaranteed to have the
@@ -247,10 +250,18 @@ class Trajectory {
   template<typename ToFrame>
   class TransformingIterator : public Iterator {
    public:
+    virtual ~TransformingIterator();
+    TransformingIterator& operator=(TransformingIterator const& right);
+
     DegreesOfFreedom<ToFrame> degrees_of_freedom() const;
+
    private:
-    explicit TransformingIterator(Transform<ToFrame> const& transform);
+    // The function |transform| is used to transform the degrees of freedom.
+    // The function |on_destroy| is run at destruction of the iterator.
+    explicit TransformingIterator(Transform<ToFrame> transform,
+                                  std::function<void()> on_destroy);
     Transform<ToFrame> transform_;
+    std::function<void()> on_destroy_;
     friend class Trajectory;
   };
 
