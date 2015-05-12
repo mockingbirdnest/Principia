@@ -255,7 +255,7 @@ class Trajectory {
 
     DegreesOfFreedom<ToFrame> degrees_of_freedom() const;
 
-  private:
+   private:
     // The function |transform| is used to transform the degrees of freedom.
     // The function |on_destroy| is run at destruction of the iterator.
     explicit TransformingIterator(Transform<ToFrame> transform,
