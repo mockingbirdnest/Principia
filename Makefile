@@ -84,7 +84,7 @@ $(VERSION_HEADER): .git
 
 ##### DISTRIBUTION #####
 plugin: $(ADAPTER) $(LIB)
-	cd $(LIB_DIR)/..; zip -r Principia-$(UNAME_S)-$(shell git rev-parse --short HEAD)-$(shell date "+%Y-%m-%d").zip Principia/
+	cd $(LIB_DIR)/../..; zip -r Principia-$(UNAME_S)-$(shell git describe)-$(shell date "+%Y-%m-%d").zip GameData/
 
 ##### TESTS #####
 run_tests: tests
