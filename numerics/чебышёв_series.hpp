@@ -29,9 +29,10 @@ class ЧебышёвSeries {
  private:
   std::vector<Scalar> const coefficients_;
   int const degree_;
-  Instant const& t_min_;
-  Instant const& t_max_;
-  Time::Inverse inverse_duration_;
+  Instant const t_min_;
+  Instant const t_max_;
+  Instant t_mean_;
+  Time::Inverse two_over_duration_;
 };
 
 }  // namespace numerics
