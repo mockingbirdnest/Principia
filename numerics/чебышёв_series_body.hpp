@@ -25,6 +25,8 @@ template<typename Scalar>
 template<typename Scalar>
 Scalar ЧебышёвSeries<Scalar>::Evaluate(Instant const& t) const {
   double const scaled_t = (t - t_mean_) * two_over_duration_;
+  CHECK_LE(scaled_t, 1.1);
+  CHECK_GE(scaled_t, -1.1);
 
   double b_kplus2 = 0.0;
   double b_kplus1 = 0.0;
