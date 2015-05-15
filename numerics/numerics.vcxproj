@@ -114,6 +114,11 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="чебышёв_series.hpp" />
+    <ClInclude Include="чебышёв_series_body.hpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="чебышёв_series_test.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
