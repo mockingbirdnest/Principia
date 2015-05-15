@@ -2,6 +2,8 @@
 
 #include <vector>
 
+#include "testing_utilities/integration.hpp"
+
 #include "quantities/elementary_functions.hpp"
 #include "quantities/quantities.hpp"
 #include "quantities/named_quantities.hpp"

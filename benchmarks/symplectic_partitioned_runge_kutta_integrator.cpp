@@ -134,7 +134,7 @@
 #include "base/not_null.hpp"
 #include "quantities/elementary_functions.hpp"
 #include "quantities/named_quantities.hpp"
-#include "testing_utilities/numerical_analysis.hpp"
+#include "testing_utilities/integration.hpp"
 
 // Must come last to avoid conflicts when defining the CHECK macros.
 #include "benchmark/benchmark.h"

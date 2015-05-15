@@ -72,6 +72,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "mathematica", "mathematica\
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "stacktrace_decoder", "stacktrace_decoder\stacktrace_decoder.csproj", "{0AC374A7-36CD-40FC-B831-112389B6D9ED}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "numerics", "numerics\numerics.vcxproj", "{9E0AE155-47B1-4090-AF00-038AF87A876D}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -295,6 +297,21 @@ Global
 		{0AC374A7-36CD-40FC-B831-112389B6D9ED}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
 		{0AC374A7-36CD-40FC-B831-112389B6D9ED}.Release|Mixed Platforms.Build.0 = Release|Any CPU
 		{0AC374A7-36CD-40FC-B831-112389B6D9ED}.Release|Win32.ActiveCfg = Release|Any CPU
+		{9E0AE155-47B1-4090-AF00-038AF87A876D}.Debug|Any CPU.ActiveCfg = Debug|Win32
+		{9E0AE155-47B1-4090-AF00-038AF87A876D}.Debug|Mixed Platforms.ActiveCfg = Debug|Win32
+		{9E0AE155-47B1-4090-AF00-038AF87A876D}.Debug|Mixed Platforms.Build.0 = Debug|Win32
+		{9E0AE155-47B1-4090-AF00-038AF87A876D}.Debug|Win32.ActiveCfg = Debug|Win32
+		{9E0AE155-47B1-4090-AF00-038AF87A876D}.Debug|Win32.Build.0 = Debug|Win32
+		{9E0AE155-47B1-4090-AF00-038AF87A876D}.Release_LLVM|Any CPU.ActiveCfg = Release|Win32
+		{9E0AE155-47B1-4090-AF00-038AF87A876D}.Release_LLVM|Mixed Platforms.ActiveCfg = Release_LLVM|Win32
+		{9E0AE155-47B1-4090-AF00-038AF87A876D}.Release_LLVM|Mixed Platforms.Build.0 = Release_LLVM|Win32
+		{9E0AE155-47B1-4090-AF00-038AF87A876D}.Release_LLVM|Win32.ActiveCfg = Release|Win32
+		{9E0AE155-47B1-4090-AF00-038AF87A876D}.Release_LLVM|Win32.Build.0 = Release|Win32
+		{9E0AE155-47B1-4090-AF00-038AF87A876D}.Release|Any CPU.ActiveCfg = Release|Win32
+		{9E0AE155-47B1-4090-AF00-038AF87A876D}.Release|Mixed Platforms.ActiveCfg = Release|Win32
+		{9E0AE155-47B1-4090-AF00-038AF87A876D}.Release|Mixed Platforms.Build.0 = Release|Win32
+		{9E0AE155-47B1-4090-AF00-038AF87A876D}.Release|Win32.ActiveCfg = Release|Win32
+		{9E0AE155-47B1-4090-AF00-038AF87A876D}.Release|Win32.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

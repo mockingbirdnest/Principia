@@ -38,12 +38,6 @@
     <ClInclude Include="statistics_body.hpp">
       <Filter>Source Files</Filter>
     </ClInclude>
-    <ClInclude Include="numerical_analysis.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="numerical_analysis_body.hpp">
-      <Filter>Source Files</Filter>
-    </ClInclude>
     <ClInclude Include="solar_system.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -60,6 +54,12 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="componentwise_body.hpp">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="integration.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="integration_body.hpp">
       <Filter>Source Files</Filter>
     </ClInclude>
   </ItemGroup>
