@@ -14,9 +14,9 @@ template<typename Scalar>
       degree_(static_cast<int>(coefficients_.size()) - 1),
       t_min_(t_min),
       t_max_(t_max) {
-  CHECK_LE(0, degree_);
-  CHECK_LT(t_min_, t_max_);
-  // Precomputed to save the division at the expense of some accuracy loss.
+  CHECK_LE(0, degree_) << "Degree must be at least 0";
+  CHECK_LT(t_min_, t_max_) << "Time interval must not be empty";
+  // Precomputed to save operations at the expense of some accuracy loss.
   Time const duration = t_max_ - t_min_;
   t_mean_ = t_min_ + 0.5 * duration;
   two_over_duration_ = 2 / duration;
@@ -31,7 +31,6 @@ Scalar ЧебышёвSeries<Scalar>::Evaluate(Instant const& t) const {
   double b_k = 0.0;
   for (int k = degree_; k >= 1; --k) {
     b_k = coefficients_[k] + 2 * scaled_t * b_kplus1 - b_kplus2;
-    LOG(ERROR)<<b_k<<" "<<b_kplus1<<" "<<b_kplus2;
     b_kplus2 = b_kplus1;
     b_kplus1 = b_k;
   }

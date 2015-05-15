@@ -22,6 +22,15 @@ class ЧебышёвSeriesTest : public ::testing::Test {
   Instant t_max_;
 };
 
+TEST_F(ЧебышёвSeriesTest, ConstructionErrors) {
+  EXPECT_DEATH({
+    ЧебышёвSeries<double> p({}, t_min_, t_max_);
+  }, "at least 0");
+  EXPECT_DEATH({
+    ЧебышёвSeries<double> p({1}, t_max_, t_min_);
+  }, "not be empty");
+}
+
 TEST_F(ЧебышёвSeriesTest, T0) {
   ЧебышёвSeries<double> t0({1}, t_min_, t_max_);
   EXPECT_EQ(1, t0.Evaluate(Instant(1 * Second)));
