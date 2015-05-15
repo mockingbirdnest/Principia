@@ -14,6 +14,10 @@ using si::Second;
 
 namespace benchmarks {
 
+namespace {
+int const kEvaluationsPerIteration = 1000;
+}  // namespace
+
 void BM_EvaluateDouble(benchmark::State& state) {
   state.PauseTiming();
   int const degree = state.range_x();
@@ -32,8 +36,10 @@ void BM_EvaluateDouble(benchmark::State& state) {
 
   state.ResumeTiming();
   while (state.KeepRunning()) {
-    result += series.Evaluate(t);
-    t += ∆t;
+    for (int i = 0; i < kEvaluationsPerIteration; ++i) {
+      result += series.Evaluate(t);
+      t += ∆t;
+    }
   }
   state.PauseTiming();
 

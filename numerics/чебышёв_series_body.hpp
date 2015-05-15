@@ -25,6 +25,9 @@ template<typename Scalar>
 template<typename Scalar>
 Scalar ЧебышёвSeries<Scalar>::Evaluate(Instant const& t) const {
   double const scaled_t = (t - t_mean_) * two_over_duration_;
+  double const two_scaled_t = scaled_t + scaled_t;
+  // We have to allow |scaled_t| to go slightly out of [-1, 1] because of
+  // computation errors.  But if it goes too far, something is broken.
   CHECK_LE(scaled_t, 1.1);
   CHECK_GE(scaled_t, -1.1);
 
@@ -32,7 +35,7 @@ Scalar ЧебышёвSeries<Scalar>::Evaluate(Instant const& t) const {
   double b_kplus1 = 0.0;
   double b_k = 0.0;
   for (int k = degree_; k >= 1; --k) {
-    b_k = coefficients_[k] + 2 * scaled_t * b_kplus1 - b_kplus2;
+    b_k = coefficients_[k] + two_scaled_t * b_kplus1 - b_kplus2;
     b_kplus2 = b_kplus1;
     b_kplus1 = b_k;
   }
