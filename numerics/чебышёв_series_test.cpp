@@ -31,6 +31,17 @@ TEST_F(ЧебышёвSeriesTest, ConstructionErrors) {
   }, "not be empty");
 }
 
+TEST_F(ЧебышёвSeriesTest, EvaluationErrors) {
+  EXPECT_DEATH({
+    ЧебышёвSeries<double> p({1}, t_min_, t_max_);
+    p.Evaluate(t_min_ - 10 * Second);
+  }, ">= -1.1");
+  EXPECT_DEATH({
+    ЧебышёвSeries<double> p({1}, t_min_, t_max_);
+    p.Evaluate(t_max_ + 10 * Second);
+  }, "<= 1.1");
+}
+
 TEST_F(ЧебышёвSeriesTest, T0) {
   ЧебышёвSeries<double> t0({1}, t_min_, t_max_);
   EXPECT_EQ(1, t0.Evaluate(Instant(1 * Second)));
