@@ -81,4 +81,4 @@ class MotionIntegrator {
 }  // namespace integrators
 }  // namespace principia
 
-#include "integrators/symplectic_integrator_body.hpp"
+#include "integrators/motion_integrator_body.hpp"

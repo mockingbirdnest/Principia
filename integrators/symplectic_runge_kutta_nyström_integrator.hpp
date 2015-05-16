@@ -4,7 +4,7 @@
 #include <vector>
 
 #include "base/not_null.hpp"
-#include "integrators/symplectic_integrator.hpp"
+#include "integrators/motion_integrator.hpp"
 #include "quantities/named_quantities.hpp"
 
 namespace principia {
