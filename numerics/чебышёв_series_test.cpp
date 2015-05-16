@@ -105,12 +105,12 @@ TEST_F(ЧебышёвSeriesDeathTest, SerializationError) {
   EXPECT_DEATH({
     serialization::ЧебышёвSeries message;
     v.WriteToMessage(&message);
-    /*d =*/ ЧебышёвSeries<double>::ReadFromMessage(message);
+    ЧебышёвSeries<double>::ReadFromMessage(message);
   }, "has_double");
   EXPECT_DEATH({
     serialization::ЧебышёвSeries message;
     d.WriteToMessage(&message);
-    /*v =*/ ЧебышёвSeries<Speed>::ReadFromMessage(message);
+    ЧебышёвSeries<Speed>::ReadFromMessage(message);
   }, "has_quantity");
 }
 
