@@ -28,7 +28,7 @@ class QuantityOrDoubleSerializer<Quantity<Dimensions>, Message> {
 template<typename Message>
 class QuantityOrDoubleSerializer<double, Message> {
  public:
-  static void WriteToMessage(double const d, 
+  static void WriteToMessage(double const d,
                              not_null<Message*> const message) {
     message->set_double_(d);
   }
