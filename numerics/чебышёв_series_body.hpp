@@ -27,6 +27,18 @@ template<typename Scalar>
 }
 
 template<typename Scalar>
+bool ЧебышёвSeries<Scalar>::operator==(ЧебышёвSeries const& right) const {
+  return coefficients_ == right.coefficients_ &&
+         t_min_ == right.t_min_ &&
+         t_max_ == right.t_max_;
+}
+
+template<typename Scalar>
+bool ЧебышёвSeries<Scalar>::operator!=(ЧебышёвSeries const& right) const {
+  return !ЧебышёвSeries<Scalar>::operator==(right);
+}
+
+template<typename Scalar>
 Scalar ЧебышёвSeries<Scalar>::Evaluate(Instant const& t) const {
   double const scaled_t = (t - t_mean_) * two_over_duration_;
   double const two_scaled_t = scaled_t + scaled_t;
@@ -60,7 +72,7 @@ void ЧебышёвSeries<Scalar>::WriteToMessage(
 }
 
 template<typename Scalar>
-static ЧебышёвSeries<Scalar> ЧебышёвSeries<Scalar>::ReadFromMessage(
+ЧебышёвSeries<Scalar> ЧебышёвSeries<Scalar>::ReadFromMessage(
     serialization::ЧебышёвSeries const& message) {
   using Serializer =
       QuantityOrDoubleSerializer<Scalar,
@@ -71,8 +83,8 @@ static ЧебышёвSeries<Scalar> ЧебышёвSeries<Scalar>::ReadFromMessag
     coefficients.push_back(Serializer::ReadFromMessage(coefficient));
   }
   return ЧебышёвSeries(coefficients,
-                       Serializer::ReadFromMessage(message.t_min(),
-                       Serializer::ReadFromMessage(message.t_max())));
+                       Instant::ReadFromMessage(message.t_min()),
+                       Instant::ReadFromMessage(message.t_max()));
 }
 
 }  // namespace numerics
