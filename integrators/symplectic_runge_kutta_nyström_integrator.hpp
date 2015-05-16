@@ -4,7 +4,7 @@
 #include <vector>
 
 #include "base/not_null.hpp"
-#include "integrators/symplectic_integrator.hpp"
+#include "integrators/motion_integrator.hpp"
 #include "quantities/named_quantities.hpp"
 
 namespace principia {
@@ -44,7 +44,7 @@ namespace integrators {
 // weights used for the time argument of the force computation cᵢ, with
 // c₁ = 0, cᵢ = cᵢ₋₁ + aᵢ₋₁ for i > 1.
 
-class SRKNIntegrator : public SymplecticIntegrator {
+class SRKNIntegrator : public MotionIntegrator {
  public:
   SRKNIntegrator(std::vector<double> const& a, std::vector<double> const& b);
 
@@ -161,4 +161,4 @@ SRKNIntegrator const& BlanesMoan2002SRKN14A();
 }  // namespace integrators
 }  // namespace principia
 
-#include "integrators/symplectic_runge_kutta_nystrom_integrator_body.hpp"
+#include "integrators/symplectic_runge_kutta_nyström_integrator_body.hpp"

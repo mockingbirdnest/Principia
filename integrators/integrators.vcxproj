@@ -129,17 +129,17 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="symplectic_integrator.hpp" />
-    <ClInclude Include="symplectic_integrator_body.hpp" />
+    <ClInclude Include="motion_integrator.hpp" />
+    <ClInclude Include="motion_integrator_body.hpp" />
     <ClInclude Include="symplectic_partitioned_runge_kutta_integrator.hpp" />
     <ClInclude Include="symplectic_partitioned_runge_kutta_integrator_body.hpp" />
-    <ClInclude Include="symplectic_runge_kutta_nystrom_integrator.hpp" />
-    <ClInclude Include="symplectic_runge_kutta_nystrom_integrator_body.hpp" />
+    <ClInclude Include="symplectic_runge_kutta_nyström_integrator.hpp" />
+    <ClInclude Include="symplectic_runge_kutta_nyström_integrator_body.hpp" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="simple_harmonic_motion.cpp" />
     <ClCompile Include="symplectic_partitioned_runge_kutta_integrator_test.cpp" />
-    <ClCompile Include="symplectic_runge_kutta_nystrom_integrator_test.cpp" />
+    <ClCompile Include="symplectic_runge_kutta_nyström_integrator_test.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

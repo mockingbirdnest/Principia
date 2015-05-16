@@ -21,7 +21,7 @@ using geometry::InnerProduct;
 using geometry::Instant;
 using geometry::R3Element;
 using integrators::SPRKIntegrator;
-using integrators::SymplecticIntegrator;
+using integrators::MotionIntegrator;
 using quantities::Acceleration;
 using quantities::Exponentiation;
 using quantities::GravitationalParameter;
