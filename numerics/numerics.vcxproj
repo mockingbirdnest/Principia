@@ -15,29 +15,29 @@
     </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{83A31DA7-3F62-464D-9F6B-09CCE07A865A}</ProjectGuid>
-    <RootNamespace>mathematica</RootNamespace>
+    <ProjectGuid>{9E0AE155-47B1-4090-AF00-038AF87A876D}</ProjectGuid>
+    <RootNamespace>numerics</RootNamespace>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
     <PlatformToolset>v120</PlatformToolset>
-    <CharacterSet>MultiByte</CharacterSet>
+    <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
     <PlatformToolset>v120</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
-    <CharacterSet>MultiByte</CharacterSet>
+    <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release_LLVM|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>LLVM-vs2013</PlatformToolset>
+    <PlatformToolset>v120</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
-    <CharacterSet>MultiByte</CharacterSet>
+    <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings">
@@ -45,40 +45,36 @@
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
     <Import Project="..\google_test_framework.props" />
+    <Import Project="..\google_protobuf.props" />
     <Import Project="..\include_solution.props" />
     <Import Project="..\suppress_useless_warnings.props" />
-    <Import Project="..\generate_version_header.props" />
-    <Import Project="..\google_protobuf.props" />
     <Import Project="..\warnings_as_errors.props" />
+    <Import Project="..\profiling.props" />
+    <Import Project="..\generate_version_header.props" />
   </ImportGroup>
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
     <Import Project="..\google_test_framework.props" />
+    <Import Project="..\google_protobuf.props" />
     <Import Project="..\include_solution.props" />
     <Import Project="..\suppress_useless_warnings.props" />
-    <Import Project="..\generate_version_header.props" />
-    <Import Project="..\google_protobuf.props" />
     <Import Project="..\warnings_as_errors.props" />
+    <Import Project="..\profiling.props" />
+    <Import Project="..\generate_version_header.props" />
   </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release_LLVM|Win32'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
     <Import Project="..\google_test_framework.props" />
+    <Import Project="..\google_protobuf.props" />
     <Import Project="..\include_solution.props" />
     <Import Project="..\suppress_useless_warnings.props" />
+    <Import Project="..\warnings_as_errors.props" />
+    <Import Project="..\profiling.props" />
     <Import Project="..\generate_version_header.props" />
-    <Import Project="..\google_protobuf.props" />
     <Import Project="..\llvm_compatibility.props" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <TargetName>$(ProjectName)</TargetName>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-    <TargetName>$(ProjectName)</TargetName>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release_LLVM|Win32'">
-    <TargetName>$(ProjectName)</TargetName>
-  </PropertyGroup>
+  <PropertyGroup />
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
@@ -87,6 +83,7 @@
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
+      <SubSystem>Console</SubSystem>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -101,6 +98,7 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
+      <SubSystem>Console</SubSystem>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release_LLVM|Win32'">
@@ -115,26 +113,15 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
+      <SubSystem>Console</SubSystem>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="integrator_plots.cpp" />
-    <ClCompile Include="main.cpp" />
+    <ClInclude Include="чебышёв_series.hpp" />
+    <ClInclude Include="чебышёв_series_body.hpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="integrator_plots.hpp" />
-    <ClInclude Include="mathematica.hpp" />
-    <ClInclude Include="mathematica_body.hpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="generate_graphs.wl" />
-    <None Include="navball.wl" />
-    <None Include="integration.wl" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\serialization\serialization.vcxproj">
-      <Project>{5c482c18-bbae-484d-a211-a25c86370061}</Project>
-    </ProjectReference>
+    <ClCompile Include="чебышёв_series_test.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

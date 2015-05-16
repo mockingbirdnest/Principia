@@ -64,4 +64,4 @@ void ComputeGravitationalAcceleration(
 }  // namespace testing_utilities
 }  // namespace principia
 
-#include "testing_utilities/numerical_analysis_body.hpp"
+#include "testing_utilities/integration_body.hpp"

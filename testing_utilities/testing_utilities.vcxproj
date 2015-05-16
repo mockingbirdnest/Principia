@@ -21,8 +21,8 @@
     <ClInclude Include="almost_equals_body.hpp" />
     <ClInclude Include="componentwise.hpp" />
     <ClInclude Include="componentwise_body.hpp" />
-    <ClInclude Include="numerical_analysis.hpp" />
-    <ClInclude Include="numerical_analysis_body.hpp" />
+    <ClInclude Include="integration.hpp" />
+    <ClInclude Include="integration_body.hpp" />
     <ClInclude Include="numerics.hpp" />
     <ClInclude Include="numerics_body.hpp" />
     <ClInclude Include="solar_system_body.hpp" />

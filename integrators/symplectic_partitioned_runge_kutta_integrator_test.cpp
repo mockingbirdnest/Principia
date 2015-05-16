@@ -12,7 +12,7 @@
 #include "quantities/quantities.hpp"
 #include "quantities/named_quantities.hpp"
 #include "testing_utilities/almost_equals.hpp"
-#include "testing_utilities/numerical_analysis.hpp"
+#include "testing_utilities/integration.hpp"
 #include "testing_utilities/numerics.hpp"
 #include "testing_utilities/statistics.hpp"
 

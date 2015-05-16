@@ -50,7 +50,7 @@
       <LaunchMethod>Executable</LaunchMethod>
       <ExecutablePath>Release\benchmarks.exe</ExecutablePath>
       <StartupDirectory>benchmarks\</StartupDirectory>
-      <Arguments>--benchmark_filter=Rotating</Arguments>
+      <Arguments>--benchmark_filter=Evaluate --benchmark_repetitions=10</Arguments>
       <NetAppHost>IIS</NetAppHost>
       <NetBrowser>InternetExplorer</NetBrowser>
       <ExcludeSmallFuncs>true</ExcludeSmallFuncs>
@@ -68,13 +68,19 @@
   </Binaries>
   <Reports>
     <Report>
-      <Path>benchmarks150510(1).vsp</Path>
+      <Path>benchmarks150512.vsp</Path>
     </Report>
     <Report>
-      <Path>benchmarks150510.vsp</Path>
+      <Path>benchmarks150514.vsp</Path>
     </Report>
     <Report>
-      <Path>benchmarks150510(2).vsp</Path>
+      <Path>benchmarks150514(1).vsp</Path>
+    </Report>
+    <Report>
+      <Path>benchmarks150515.vsp</Path>
+    </Report>
+    <Report>
+      <Path>benchmarks150515(1).vsp</Path>
     </Report>
   </Reports>
   <Launches>

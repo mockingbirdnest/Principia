@@ -1,7 +1,7 @@
 (* ::Package:: *)
 
 SetDirectory[NotebookDirectory[]];
-<<"numerical_analysis.wl";
+<<"integration.wl";
 Run[FileNameJoin[{"..", "Release", "mathematica.exe"}]];
 <<"simple_harmonic_motion_graphs.generated.wl";
 Export[

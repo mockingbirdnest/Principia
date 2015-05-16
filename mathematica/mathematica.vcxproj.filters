@@ -36,10 +36,10 @@
     <None Include="generate_graphs.wl">
       <Filter>Scripts</Filter>
     </None>
-    <None Include="numerical_analysis.wl">
+    <None Include="navball.wl">
       <Filter>Scripts</Filter>
     </None>
-    <None Include="navball.wl">
+    <None Include="integration.wl">
       <Filter>Scripts</Filter>
     </None>
   </ItemGroup>
