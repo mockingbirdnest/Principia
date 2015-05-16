@@ -44,7 +44,7 @@ namespace integrators {
 // weights used for the time argument of the force computation cᵢ, with
 // c₁ = 0, cᵢ = cᵢ₋₁ + aᵢ₋₁ for i > 1.
 
-class SRKNIntegrator : public SymplecticIntegrator {
+class SRKNIntegrator : public MotionIntegrator {
  public:
   SRKNIntegrator(std::vector<double> const& a, std::vector<double> const& b);
 

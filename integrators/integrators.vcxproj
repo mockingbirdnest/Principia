@@ -129,7 +129,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="symplectic_integrator.hpp" />
+    <ClInclude Include="motion_integrator.hpp" />
     <ClInclude Include="symplectic_integrator_body.hpp" />
     <ClInclude Include="symplectic_partitioned_runge_kutta_integrator.hpp" />
     <ClInclude Include="symplectic_partitioned_runge_kutta_integrator_body.hpp" />

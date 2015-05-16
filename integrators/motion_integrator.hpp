@@ -26,14 +26,14 @@ struct DoublePrecision {
   Difference<Scalar> error;
 };
 
-class SymplecticIntegrator {
+class MotionIntegrator {
  public:
-  virtual ~SymplecticIntegrator() = default;
+  virtual ~MotionIntegrator() = default;
 
-  SymplecticIntegrator(SymplecticIntegrator const&) = delete;
-  SymplecticIntegrator(SymplecticIntegrator&&) = delete;
-  SymplecticIntegrator& operator=(SymplecticIntegrator const&) = delete;
-  SymplecticIntegrator& operator=(SymplecticIntegrator&&) = delete;
+  MotionIntegrator(MotionIntegrator const&) = delete;
+  MotionIntegrator(MotionIntegrator&&) = delete;
+  MotionIntegrator& operator=(MotionIntegrator const&) = delete;
+  MotionIntegrator& operator=(MotionIntegrator&&) = delete;
 
   // The entire state of the system at a given time.  The vectors are indexed by
   // dimension.
@@ -75,7 +75,7 @@ class SymplecticIntegrator {
   };
 
  protected:
-  SymplecticIntegrator() = default;
+  MotionIntegrator() = default;
 };
 
 }  // namespace integrators
