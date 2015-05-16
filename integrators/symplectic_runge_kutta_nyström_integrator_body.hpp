@@ -1,6 +1,6 @@
 ﻿#pragma once
 
-#include "integrators/symplectic_runge_kutta_nystrom_integrator.hpp"
+#include "integrators/symplectic_runge_kutta_nyström_integrator.hpp"
 
 #include <algorithm>
 #include <cmath>
