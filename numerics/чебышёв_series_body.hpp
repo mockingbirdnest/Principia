@@ -42,5 +42,20 @@ Scalar ЧебышёвSeries<Scalar>::Evaluate(Instant const& t) const {
   return coefficients_[0] + scaled_t * b_kplus1 - b_kplus2;
 }
 
+template<typename Scalar>
+void ЧебышёвSeries<Scalar>::WriteToMessage(
+    not_null<serialization::ЧебышёвSeries*> const message) const {
+  for (auto const& coefficient : coefficients_) {
+    coefficient.WriteToMessage(message->add_coefficient());
+  }
+  t_min_.WriteToMessage(message->mutable_t_min());
+  t_max_.WriteToMessage(message->mutable_t_max());
+}
+
+template<typename Scalar>
+static ЧебышёвSeries<Scalar> ЧебышёвSeries<Scalar>::ReadFromMessage(
+    serialization::ЧебышёвSeries const& message) {
+}
+
 }  // namespace numerics
 }  // namespace principia
