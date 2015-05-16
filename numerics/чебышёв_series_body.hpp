@@ -2,8 +2,12 @@
 #include "numerics/чебышёв_series.hpp"
 
 #include "glog/logging.h"
+#include "quantities/serialization.hpp"
 
 namespace principia {
+
+using quantities::QuantityOrDoubleSerializer;
+
 namespace numerics {
 
 template<typename Scalar>
@@ -45,8 +49,11 @@ Scalar ЧебышёвSeries<Scalar>::Evaluate(Instant const& t) const {
 template<typename Scalar>
 void ЧебышёвSeries<Scalar>::WriteToMessage(
     not_null<serialization::ЧебышёвSeries*> const message) const {
+  using Serializer =
+      QuantityOrDoubleSerializer<Scalar,
+                                 serialization::ЧебышёвSeries::Coefficient>;
   for (auto const& coefficient : coefficients_) {
-    coefficient.WriteToMessage(message->add_coefficient());
+    Serializer::WriteToMessage(coefficient, message->add_coefficient());
   }
   t_min_.WriteToMessage(message->mutable_t_min());
   t_max_.WriteToMessage(message->mutable_t_max());
@@ -55,6 +62,17 @@ void ЧебышёвSeries<Scalar>::WriteToMessage(
 template<typename Scalar>
 static ЧебышёвSeries<Scalar> ЧебышёвSeries<Scalar>::ReadFromMessage(
     serialization::ЧебышёвSeries const& message) {
+  using Serializer =
+      QuantityOrDoubleSerializer<Scalar,
+                                 serialization::ЧебышёвSeries::Coefficient>;
+  std::vector<Scalar> coefficients;
+  coefficients.reserve(message.coefficient_size());
+  for (auto const& coefficient : message.coefficient()) {
+    coefficients.push_back(Serializer::ReadFromMessage(coefficient));
+  }
+  return ЧебышёвSeries(coefficients,
+                       Serializer::ReadFromMessage(message.t_min(),
+                       Serializer::ReadFromMessage(message.t_max())));
 }
 
 }  // namespace numerics

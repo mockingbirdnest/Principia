@@ -6,49 +6,15 @@
 #include "glog/logging.h"
 #include "quantities/elementary_functions.hpp"
 #include "quantities/quantities.hpp"
+#include "quantities/serialization.hpp"
 
 namespace principia {
 
 using quantities::Quantity;
+using quantities::QuantityOrDoubleSerializer;
 using quantities::SIUnit;
 
 namespace geometry {
-
-template<typename T>
-class R3ElementSerializer {};
-
-template<typename Dimensions>
-class R3ElementSerializer<Quantity<Dimensions>> {
- public:
-  using T = Quantity<Dimensions>;
-  static void WriteToMessage(
-      T const& t,
-      not_null<serialization::R3Element::Coordinate*> const message) {
-    t.WriteToMessage(message->mutable_quantity());
-  }
-
-  static T ReadFromMessage(
-      serialization::R3Element::Coordinate const& message) {
-    CHECK(message.has_quantity());
-    return T::ReadFromMessage(message.quantity());
-  }
-};
-
-template<>
-class R3ElementSerializer<double> {
- public:
-  static void WriteToMessage(
-      double const& d,
-      not_null<serialization::R3Element::Coordinate*> const message) {
-    message->set_double_(d);
-  }
-
-  static double ReadFromMessage(
-      serialization::R3Element::Coordinate const& message) {
-    CHECK(message.has_double_());
-    return message.double_();
-  }
-};
 
 // We want zero initialization here, so the default constructor won't do.
 template<typename Scalar>
@@ -129,17 +95,21 @@ void R3Element<Scalar>::Orthogonalize(
 template<typename Scalar>
 void R3Element<Scalar>::WriteToMessage(
     not_null<serialization::R3Element*> const message) const {
-  R3ElementSerializer<Scalar>::WriteToMessage(x, message->mutable_x());
-  R3ElementSerializer<Scalar>::WriteToMessage(y, message->mutable_y());
-  R3ElementSerializer<Scalar>::WriteToMessage(z, message->mutable_z());
+  using Serializer =
+      QuantityOrDoubleSerializer<Scalar, serialization::R3Element::Coordinate>;
+  Serializer::WriteToMessage(x, message->mutable_x());
+  Serializer::WriteToMessage(y, message->mutable_y());
+  Serializer::WriteToMessage(z, message->mutable_z());
 }
 
 template<typename Scalar>
 R3Element<Scalar> R3Element<Scalar>::ReadFromMessage(
     serialization::R3Element const& message) {
-  return {R3ElementSerializer<Scalar>::ReadFromMessage(message.x()),
-          R3ElementSerializer<Scalar>::ReadFromMessage(message.y()),
-          R3ElementSerializer<Scalar>::ReadFromMessage(message.z())};
+  using Serializer =
+      QuantityOrDoubleSerializer<Scalar, serialization::R3Element::Coordinate>;
+  return {Serializer::ReadFromMessage(message.x()),
+          Serializer::ReadFromMessage(message.y()),
+          Serializer::ReadFromMessage(message.z())};
 }
 
 template<typename Scalar>
