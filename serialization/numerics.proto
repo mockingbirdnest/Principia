@@ -1,0 +1,20 @@
+syntax = "proto2";
+
+import "serialization/geometry.proto";
+import "serialization/quantities.proto";
+
+package principia.serialization;
+
+// We would like to use Cyrillic for the name of this message, but the protobuf
+// language only supports ASCII in identifiers.  Sigh.  Blame Kenton.
+message ChebyshevSeries {
+  message Coefficient {
+    oneof coefficient {
+      double double = 1;
+      Quantity quantity = 2;
+    }
+  }
+  repeated Coefficient coefficient = 1;
+  required Point t_min = 2;
+  required Point t_max = 3;
+}

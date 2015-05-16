@@ -2,8 +2,12 @@
 #include "numerics/чебышёв_series.hpp"
 
 #include "glog/logging.h"
+#include "quantities/serialization.hpp"
 
 namespace principia {
+
+using quantities::QuantityOrDoubleSerializer;
+
 namespace numerics {
 
 template<typename Scalar>
@@ -20,6 +24,18 @@ template<typename Scalar>
   Time const duration = t_max_ - t_min_;
   t_mean_ = t_min_ + 0.5 * duration;
   two_over_duration_ = 2 / duration;
+}
+
+template<typename Scalar>
+bool ЧебышёвSeries<Scalar>::operator==(ЧебышёвSeries const& right) const {
+  return coefficients_ == right.coefficients_ &&
+         t_min_ == right.t_min_ &&
+         t_max_ == right.t_max_;
+}
+
+template<typename Scalar>
+bool ЧебышёвSeries<Scalar>::operator!=(ЧебышёвSeries const& right) const {
+  return !ЧебышёвSeries<Scalar>::operator==(right);
 }
 
 template<typename Scalar>
@@ -40,6 +56,35 @@ Scalar ЧебышёвSeries<Scalar>::Evaluate(Instant const& t) const {
     b_kplus1 = b_k;
   }
   return coefficients_[0] + scaled_t * b_kplus1 - b_kplus2;
+}
+
+template<typename Scalar>
+void ЧебышёвSeries<Scalar>::WriteToMessage(
+    not_null<serialization::ЧебышёвSeries*> const message) const {
+  using Serializer =
+      QuantityOrDoubleSerializer<Scalar,
+                                 serialization::ЧебышёвSeries::Coefficient>;
+  for (auto const& coefficient : coefficients_) {
+    Serializer::WriteToMessage(coefficient, message->add_coefficient());
+  }
+  t_min_.WriteToMessage(message->mutable_t_min());
+  t_max_.WriteToMessage(message->mutable_t_max());
+}
+
+template<typename Scalar>
+ЧебышёвSeries<Scalar> ЧебышёвSeries<Scalar>::ReadFromMessage(
+    serialization::ЧебышёвSeries const& message) {
+  using Serializer =
+      QuantityOrDoubleSerializer<Scalar,
+                                 serialization::ЧебышёвSeries::Coefficient>;
+  std::vector<Scalar> coefficients;
+  coefficients.reserve(message.coefficient_size());
+  for (auto const& coefficient : message.coefficient()) {
+    coefficients.push_back(Serializer::ReadFromMessage(coefficient));
+  }
+  return ЧебышёвSeries(coefficients,
+                       Instant::ReadFromMessage(message.t_min()),
+                       Instant::ReadFromMessage(message.t_max()));
 }
 
 }  // namespace numerics
