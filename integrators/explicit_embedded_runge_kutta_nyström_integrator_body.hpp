@@ -19,6 +19,3 @@ namespace integrators {
 
 }  // namespace integrators
 }  // namespace principia
-
-#undef ADVANCE_ΔQSTAGE
-#undef ADVANCE_ΔVSTAGE

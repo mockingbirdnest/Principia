@@ -64,6 +64,8 @@ class ExplicitEmbeddedRungeKuttaNyströmIntegrator {
  protected:
   int stages_;
   // The Runge-Kutta matrix.
+  // TODO(egg): This is really a strictly lower-triangular matrix, so we should
+  // store it in a smarter way eventually.
   std::vector<std::vector<double>> a_;
   // The nodes.
   std::vector<double> c_;
@@ -75,7 +77,6 @@ class ExplicitEmbeddedRungeKuttaNyströmIntegrator {
   std::vector<double> b_;
   // The weights for the low-order method for the velocities.
   std::vector<double> b_prime_;
-
 }
 
 }  // namespace integrators
