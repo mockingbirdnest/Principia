@@ -56,9 +56,11 @@ void IRKNIntegrator::SolveTrivialKineticEnergyIncrement(
   using Displacement = Difference<Position>;
   int const dimension = parameters.initial.positions.size();
 
-  std::vector<std::vector<Displacement>> Δqstages(stages_);
-  for (auto& Δqstage : Δqstages) {
-    Δqstage.resize(dimension);
+  std::vector<std::vector<Displacement>>* Δqstages_current(stages_);
+  std::vector<std::vector<Displacement>>* Δqstages_previous(stages_);
+  for (int i = 0; i < stages_; ++i) {
+    Δqstages_current[i].resize(dimension);
+    Δqstages_previous[i].resize(dimension);
   }
 
   // Dimension the result.
@@ -119,9 +121,11 @@ void IRKNIntegrator::SolveTrivialKineticEnergyIncrement(
     }
 
     // Fixed-point iteration.
+    // NOTE(egg): this does not work for stiff systems, newton iteration is then
+    // required.
     for (int i = 0; i < stages_; ++i) {
-      std::swap(Δqstage_current, Δqstage_previous);
-      std::swap(Δvstage_current, Δvstage_previous);
+      Δqstages[i]
+    }
 
 
     // Compensated summation from "'SymplecticPartitionedRungeKutta' Method
