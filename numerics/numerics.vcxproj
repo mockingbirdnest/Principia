@@ -117,6 +117,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="newhall_body.hpp" />
     <ClInclude Include="чебышёв_series.hpp" />
     <ClInclude Include="чебышёв_series_body.hpp" />
   </ItemGroup>
