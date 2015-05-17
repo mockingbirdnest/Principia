@@ -10,47 +10,71 @@
 namespace principia {
 
 using base::not_null;
+using quantities::Time;
 using quantities::Variation;
 
 namespace integrators {
 
-class IRKNIntegrator : public MotionIntegrator {
+class ExplicitEmbeddedRungeKuttaNyströmIntegrator {
  public:
-  IRKNIntegrator(std::vector<std::vector<double>> const& a,
-                 std::vector<double> const& b,
-                 std::vector<double> const& c);
+  ExplicitEmbeddedRungeKuttaNyströmIntegrator(
+      std::vector<std::vector<double>> const& a,
+      std::vector<double> const& b,
+      std::vector<double> const& c);
 
-  virtual ~IRKNIntegrator() = default;
+  virtual ~ExplicitEmbeddedRungeKuttaNyströmIntegrator() = default;
 
-  IRKNIntegrator() = delete;
-  IRKNIntegrator(IRKNIntegrator const&) = delete;
-  IRKNIntegrator(IRKNIntegrator&&) = delete;
-  IRKNIntegrator& operator=(IRKNIntegrator const&) = delete;
-  IRKNIntegrator& operator=(IRKNIntegrator&&) = delete;
+  ExplicitEmbeddedRungeKuttaNyströmIntegrator() = delete;
+  ExplicitEmbeddedRungeKuttaNyströmIntegrator(
+      ExplicitEmbeddedRungeKuttaNyströmIntegrator const&) = delete;
+  ExplicitEmbeddedRungeKuttaNyströmIntegrator(
+      ExplicitEmbeddedRungeKuttaNyströmIntegrator&&) = delete;
+  ExplicitEmbeddedRungeKuttaNyströmIntegrator& operator=(
+      ExplicitEmbeddedRungeKuttaNyströmIntegrator const&) = delete;
+  ExplicitEmbeddedRungeKuttaNyströmIntegrator& operator=(
+      ExplicitEmbeddedRungeKuttaNyströmIntegrator&&) = delete;
+
+  // TODO(egg): Copied from MotionIntegrator, unify.
+  template<typename Position, typename Momentum>
+  struct SystemState {
+    std::vector<DoublePrecision<Position>> positions;
+    std::vector<DoublePrecision<Momentum>> momenta;
+    DoublePrecision<Time> time;
+  };
+
+  template<typename Position, typename Momentum>
+  using Solution = std::vector<SystemState<Position, Momentum>>;
 
   template<typename Position>
-  using IRKNRightHandSideComputation =
+  using RightHandSideComputation =
       std::function<
           void(Time const& t,
                std::vector<Position> const&,
                not_null<std::vector<Variation<Variation<Position>>>*> const)>;
 
   template<typename Position>
-  void SolveTrivialKineticEnergyIncrement(
-      IRKNRightHandSideComputation<Position> compute_acceleration,
-      Parameters<Position, Variation<Position>> const& parameters,
+  void Solve(RightHandSideComputation<Position> compute_acceleration,
+      SystemState<Position, Variation<Position>> const& initial_value,
+      Time const& t_final,
+      Time const& first_time_step,
+      Difference<Position> const& position_tolerance,
+      Variation<Position> const& velocity_tolerance,
       not_null<Solution<Position, Variation<Position>>*> const solution) const;
 
  protected:
   int stages_;
   // The Runge-Kutta matrix.
   std::vector<std::vector<double>> a_;
-  // The weights.
-  std::vector<double> b_;
   // The nodes.
   std::vector<double> c_;
-  // dᵀ = bᵀA⁻¹.
-  std::vector<double> d_;
+  // The weights for the high-order method for the positions.
+  std::vector<double> b_hat_;
+  // The weights for the high-order method for the velocities.
+  std::vector<double> b_prime_hat_;
+  // The weights for the low-order method for the positions.
+  std::vector<double> b_;
+  // The weights for the low-order method for the velocities.
+  std::vector<double> b_prime_;
 
 }
 
