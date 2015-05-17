@@ -47,40 +47,46 @@ void ExplicitEmbeddedRungeKuttaNyströmIntegrator::Solve(
   std::vector<Velocity> ∆v(dimension);
   std::vector<DoublePrecision<Position>> q(dimension);
   std::vector<DoublePrecision<Position>> v(dimension);
-  // The low-order integration is not performed using compensated summation.
-  std::vector<Position> q_low_order(dimension);
-  std::vector<Velocity> v_low_order(dimension);
+  std::vector<Position> ∆q_low_order(dimension);
+  std::vector<Velocity> ∆v_low_order(dimension);
   // TODO(egg): this is a rectangular container, use something more appropriate.
   std::vector<std::vector<Acceleration>> g(stages_);
   for (auto& g_stage : g) {
     g_stage.resize(dimension);
   }
   Time t_stage;
-  std::vector<Displacement> q_stage(dimension);
+  std::vector<Position> q_stage(dimension);
 
-  for (int k = 0; k < dimension; ++k) {
-    ∆q[k] *= h;
-  }
+  std::fill(∆q.begin(), ∆q.end(), Displacement());
+
   for (int i = 0; i < stages_; ++i) {
     t_stage = t.value + c[i] * h;
     for (int k = 0; k < dimension; ++k) {
+      Acceleration ∑_a_ij_g_j;
       for (int j = 0; j < i; ++j) {
-        q_stage[k] += g[j][k] * a[i][j]
+        ∑_a_ij_g_j += g[j][k] * a[i][j]
       }
-      q_stage[k] *= h;
-      q_stage[k] += c[i] * v[k].value;
-      q_stage[k] *= h;
-      q_stage[k] += q[k].value;
+      q_stage[k] = q[k].value + h * (c[i] * v[k].value + h * ∑_a_ij_g_j);
     }
     compute_acceleration(t_stage, q_stage, &g[i]);
   }
+
   for (int k = 0; k < dimension; ++k) {
+    Acceleration ∑_b_hat_i_g_i;
+    Acceleration ∑_b_i_g_i;
+    Acceleration ∑_b_prime_hat_i_g_i;
+    Acceleration ∑_b_prime_i_g_i;
+    // TODO(egg): this would be more readable if it were aligned on the += / =.
     for (int i = 0; i < stages_; ++i) {
-      ∆q[k] += b_hat_[i] * g[i][k];
+      ∑_b_hat_i_g_i += b_hat_[i] * g[i][k];
+      ∑_b_i_g_i += b_[i] * g[i][k];
+      ∑_b_prime_hat_i_g_i += b_prime_hat_[i] * g[i][k];
+      ∑_b_prime_i_g_i += b_prime_[i] * g[i][k];
     }
-    ∆q[k] *= h;
-    ∆q[k] += v[k].value;
-    ∆q[k] *= h;
+    ∆q[k] = h * (h * (∑_b_hat_i_g_i) + v[k].value);
+    ∆q_low_order[k] = h * (h * (∑_b_i_g_i) + v[k].value);
+    ∆v[k] = h * ∑_b_prime_hat_i_g_i;
+    ∆v_low_order[k] = h * ∑_b_prime_i_g_i;
   }
 }
 
