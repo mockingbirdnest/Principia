@@ -1,6 +1,6 @@
 ﻿#pragma once
 
-#include "integrators/implicit_runge_kutta_nyström_integrator.hpp"
+#include "integrators/explicit_embedded_runge_kutta_nyström_integrator.hpp"
 
 #include <algorithm>
 #include <cmath>

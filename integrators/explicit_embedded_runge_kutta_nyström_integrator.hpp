@@ -81,4 +81,4 @@ class ExplicitEmbeddedRungeKuttaNyströmIntegrator {
 }  // namespace integrators
 }  // namespace principia
 
-#include "integrators/implicit_runge_kutta_nyström_integrator_body.hpp"
+#include "integrators/explicit_embedded_runge_kutta_nyström_integrator_body.hpp"

@@ -129,8 +129,8 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="implicit_runge_kutta_nyström_integrator.hpp" />
-    <ClInclude Include="implicit_runge_kutta_nyström_integrator_body.hpp" />
+    <ClInclude Include="explicit_embedded_runge_kutta_nyström_integrator.hpp" />
+    <ClInclude Include="explicit_embedded_runge_kutta_nyström_integrator_body.hpp" />
     <ClInclude Include="motion_integrator.hpp" />
     <ClInclude Include="motion_integrator_body.hpp" />
     <ClInclude Include="symplectic_partitioned_runge_kutta_integrator.hpp" />
