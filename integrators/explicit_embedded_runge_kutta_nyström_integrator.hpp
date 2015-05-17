@@ -52,13 +52,17 @@ class ExplicitEmbeddedRungeKuttaNyströmIntegrator {
                std::vector<Position> const&,
                not_null<std::vector<Variation<Variation<Position>>>*> const)>;
 
+  // TODO(egg): maybe wrap that in some sort of Parameters struct when it's
+  // unified with the other integrators.
   template<typename Position>
-  void Solve(RightHandSideComputation<Position> compute_acceleration,
+  void Solve(
+      RightHandSideComputation<Position> compute_acceleration,
       SystemState<Position, Variation<Position>> const& initial_value,
       Time const& t_final,
       Time const& first_time_step,
       Difference<Position> const& position_tolerance,
       Variation<Position> const& velocity_tolerance,
+      double const safety_factor,
       not_null<Solution<Position, Variation<Position>>*> const solution) const;
 
  protected:
@@ -77,7 +81,7 @@ class ExplicitEmbeddedRungeKuttaNyströmIntegrator {
   std::vector<double> b_;
   // The weights for the low-order method for the velocities.
   std::vector<double> b_prime_;
-}
+};
 
 }  // namespace integrators
 }  // namespace principia
