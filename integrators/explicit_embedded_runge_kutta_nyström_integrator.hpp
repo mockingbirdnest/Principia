@@ -52,6 +52,12 @@ class ExplicitEmbeddedRungeKuttaNyströmIntegrator {
                std::vector<Position> const&,
                not_null<std::vector<Variation<Variation<Position>>>*> const)>;
 
+  template<typename Position>
+  using StepSizeController =
+      std::function<
+          double(std::vector<Difference<Position>> const& q_error_estimate,
+                 std::vector<Variation<Position>> const& v_error_estimate)>;
+
   // TODO(egg): maybe wrap that in some sort of Parameters struct when it's
   // unified with the other integrators.
   template<typename Position>
@@ -60,26 +66,26 @@ class ExplicitEmbeddedRungeKuttaNyströmIntegrator {
       SystemState<Position, Variation<Position>> const& initial_value,
       Time const& t_final,
       Time const& first_time_step,
-      Difference<Position> const& position_tolerance,
-      Variation<Position> const& velocity_tolerance,
+      StepSizeController<Position> step_size_controller,
       double const safety_factor,
       not_null<Solution<Position, Variation<Position>>*> const solution) const;
 
  protected:
   int stages_;
+  int lower_order_;
   // The Runge-Kutta matrix.
   // TODO(egg): This is really a strictly lower-triangular matrix, so we should
   // store it in a smarter way eventually.
   std::vector<std::vector<double>> a_;
   // The nodes.
   std::vector<double> c_;
-  // The weights for the high-order method for the positions.
+  // The weights b̂ for the high-order method for the positions.
   std::vector<double> b_hat_;
-  // The weights for the high-order method for the velocities.
+  // The weights b̂′ for the high-order method for the velocities.
   std::vector<double> b_prime_hat_;
-  // The weights for the low-order method for the positions.
+  // The weights b for the low-order method for the positions.
   std::vector<double> b_;
-  // The weights for the low-order method for the velocities.
+  // The weights b′ for the low-order method for the velocities.
   std::vector<double> b_prime_;
 };
 
