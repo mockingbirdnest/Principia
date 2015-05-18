@@ -6,31 +6,54 @@
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "quantities/si.hpp"
+#include "testing_utilities/integration.hpp"
 
 namespace principia {
 
+using quantities::Abs;
 using quantities::Length;
 using si::Metre;
+using si::Milli;
 using si::Second;
+using testing_utilities::ComputeHarmonicOscillatorAcceleration;
+using ::std::placeholders::_1;
+using ::std::placeholders::_2;
 
 namespace integrators {
 
-class ExplicitEmbeddedRungeKuttaNyströmIntegratorTest : public ::testing::Test {
- protected:
-  ExplicitEmbeddedRungeKuttaNyströmIntegratorTest()
-    : integrator_({}, {{0.0}}, {0.0}, {0.0}, {}, {}) {}
-  ExplicitEmbeddedRungeKuttaNyströmIntegrator integrator_;
-};
+namespace {
+
+double HarmonicOscillatorToleranceRatio(
+    std::vector<Length> const& q_error_estimate,
+    std::vector<Speed> const& v_error_estimate,
+    Length const& q_tolerance,
+    Speed const& v_tolerance) {
+  double const r = std::min(q_tolerance / Abs(q_error_estimate[0]),
+                            v_tolerance / Abs(v_error_estimate[0]));
+  LOG(ERROR) << (r > 1.0 ? "Accepting" : "REJECTING") << " step with ratio "
+             << r;
+  return r;
+}
+
+}  // namespace
+
+class ExplicitEmbeddedRungeKuttaNyströmIntegratorTest
+    : public ::testing::Test {};
 
 TEST_F(ExplicitEmbeddedRungeKuttaNyströmIntegratorTest, Dummy) {
-  integrator_.Solve<Length>(
-      nullptr,
-      {{},{},0 * Second},
-      0 * Second,
-      0 * Second,
-      nullptr,
-      0,
-      nullptr);
+  ExplicitEmbeddedRungeKuttaNyströmIntegrator const& integrator =
+      DormandElMikkawyPrince1986RKN434FM();
+
+  ExplicitEmbeddedRungeKuttaNyströmIntegrator::Solution<Length, Speed> solution;
+  integrator.Solve<Length>(
+      ComputeHarmonicOscillatorAcceleration,
+      {{1 * Metre}, {0 * Metre / Second}, 0 * Second},
+      100 * Second,
+      3 * Second,
+      std::bind(HarmonicOscillatorToleranceRatio,
+                _1, _2, 1 * Milli(Metre), 1 * Milli(Metre) / Second),
+      0.9,
+      &solution);
 }
 
 }  // namespace integrators

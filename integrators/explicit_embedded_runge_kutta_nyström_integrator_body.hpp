@@ -25,7 +25,7 @@ DormandElMikkawyPrince1986RKN434FM() {
       // a
       {{},
        {1.0 /   32.0},
-       {7.0 / 1000.0, 119.0 / 500.0}
+       {7.0 / 1000.0, 119.0 / 500.0},
        {1.0 /   14.0,   8.0 /  27.0, 25.0 / 189.0}},
       // b̂
       { 1.0 /  14.0,   8.0 /  27.0,  25.0 / 189.0,  0.0},
@@ -34,7 +34,8 @@ DormandElMikkawyPrince1986RKN434FM() {
       // b
       {-7.0 / 150.0,  67.0 / 150.0,   3.0 /  20.0, -1.0 / 20.0},
       // b′
-      {13.0 /  21.0, -20.0 /  27.0, 275.0 / 189.0, -1.0 /  3.0});
+      {13.0 /  21.0, -20.0 /  27.0, 275.0 / 189.0, -1.0 /  3.0},
+      3);  // lower_order
   return integrator;
 }
 
@@ -45,13 +46,25 @@ inline ExplicitEmbeddedRungeKuttaNyströmIntegrator::
     std::vector<double> const& b_hat,
     std::vector<double> const& b_prime_hat,
     std::vector<double> const& b,
-    std::vector<double> const& b_prime)
-    : c_(c),
+    std::vector<double> const& b_prime,
+    int const lower_order)
+    : stages_(c.size()),
+      lower_order_(lower_order),
+      c_(c),
       a_(a),
       b_hat_(b_hat),
       b_prime_hat_(b_prime_hat),
       b_(b),
-      b_prime_(b_prime) {}
+      b_prime_(b_prime) {
+  CHECK_EQ(a_.size(), stages_);
+  for(int i = 0; i < stages_; ++i) {
+    CHECK_EQ(a_[i].size(), i);
+  }
+  CHECK_EQ(b_hat_.size(), stages_);
+  CHECK_EQ(b_prime_hat_.size(), stages_);
+  CHECK_EQ(b_.size(), stages_);
+  CHECK_EQ(b_prime_.size(), stages_);
+}
 
 template<typename Position>
 void ExplicitEmbeddedRungeKuttaNyströmIntegrator::Solve(
@@ -88,9 +101,9 @@ void ExplicitEmbeddedRungeKuttaNyströmIntegrator::Solve(
   // Velocity increment (high-order).
   std::vector<Velocity> ∆v_hat(dimension);
   // Current position.
-  std::vector<DoublePrecision<Position>> q_hat(dimension);
+  std::vector<DoublePrecision<Position>> q_hat = initial_value.positions;
   // Current velocity.
-  std::vector<DoublePrecision<Velocity>> v_hat(dimension);
+  std::vector<DoublePrecision<Velocity>> v_hat = initial_value.momenta;
 
   // Difference between the low- and high-order approximations of the position.
   std::vector<Displacement> q_error_estimate(dimension);
@@ -106,13 +119,14 @@ void ExplicitEmbeddedRungeKuttaNyströmIntegrator::Solve(
     g_stage.resize(dimension);
   }
 
+  // This yields a first step shorter than first_time_step.  Find an elegant way
+  // to solve that (ideally without tracking a separate h_new or conditional for
+  // the first step).  Maybe this is the right place for a goto?
   double control_factor = 1.0;
   bool at_end = false;
-
   while (!at_end) {
     do {
       h *= safety_factor * std::pow(control_factor, 1.0 / (lower_order_ + 1));
-
       // Termination.
       Time const time_to_end = t_final - t.value - t.error;
       if (forward && h > time_to_end ||

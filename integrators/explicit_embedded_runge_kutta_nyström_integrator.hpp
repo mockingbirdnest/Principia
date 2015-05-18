@@ -23,7 +23,8 @@ class ExplicitEmbeddedRungeKuttaNyströmIntegrator {
       std::vector<double> const& b_hat,
       std::vector<double> const& b_prime_hat,
       std::vector<double> const& b,
-      std::vector<double> const& b_prime);
+      std::vector<double> const& b_prime,
+      int const lower_order);
 
   virtual ~ExplicitEmbeddedRungeKuttaNyströmIntegrator() = default;
 
