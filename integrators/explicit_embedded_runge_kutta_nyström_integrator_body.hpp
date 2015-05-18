@@ -31,10 +31,10 @@ void ExplicitEmbeddedRungeKuttaNyströmIntegrator::Solve(
   CHECK_NE(first_time_step, Time());
   bool const forward = first_time_step > Time();
   if (forward) {
-    CHECK_LT(initial_value.time, t_final);
+    CHECK_LT(initial_value.time.value, t_final);
   } else {
     // Integrating backward.
-    CHECK_GT(initial_value.time, t_final);
+    CHECK_GT(initial_value.time.value, t_final);
   }
   using Displacement = Difference<Position>;
   using Velocity = Variation<Position>;
@@ -45,7 +45,7 @@ void ExplicitEmbeddedRungeKuttaNyströmIntegrator::Solve(
   std::vector<Displacement> ∆q_hat(dimension);
   std::vector<Velocity> ∆v_hat(dimension);
   std::vector<DoublePrecision<Position>> q_hat(dimension);
-  std::vector<DoublePrecision<Position>> v_hat(dimension);
+  std::vector<DoublePrecision<Velocity>> v_hat(dimension);
   std::vector<Displacement> q_error_estimate(dimension);
   std::vector<Velocity> v_error_estimate(dimension);
   // TODO(egg): this is a rectangular container, use something more appropriate.
@@ -60,14 +60,14 @@ void ExplicitEmbeddedRungeKuttaNyströmIntegrator::Solve(
     // TODO(egg): This has to be the silliest way to compute an nth root.
     h = safety_factor * std::pow(control_factor, 1.0 / (lower_order_ + 1)) * h;
     for (int i = 0; i < stages_; ++i) {
-      Time const t_stage = t.value + c[i] * h;
+      Time const t_stage = t.value + c_[i] * h;
       for (int k = 0; k < dimension; ++k) {
         Acceleration ∑_a_ij_g_j;
         for (int j = 0; j < i; ++j) {
-          ∑_a_ij_g_j += g[j][k] * a[i][j]
+          ∑_a_ij_g_j += a_[i][j] * g[j][k];
         }
         q_stage[k] = q_hat[k].value +
-                         h * (c[i] * v_hat[k].value + h * ∑_a_ij_g_j);
+                         h * (c_[i] * v_hat[k].value + h * ∑_a_ij_g_j);
       }
       compute_acceleration(t_stage, q_stage, &g[i]);
     }

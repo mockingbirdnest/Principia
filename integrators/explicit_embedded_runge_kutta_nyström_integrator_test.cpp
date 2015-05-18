@@ -28,8 +28,7 @@ TEST_F(ExplicitEmbeddedRungeKuttaNyströmIntegratorTest, Dummy) {
       {{},{},0 * Second},
       0 * Second,
       0 * Second,
-      0 * Metre,
-      0 * Metre / Second,
+      nullptr,
       0,
       nullptr);
 }
