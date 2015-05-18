@@ -17,6 +17,21 @@ using quantities::Quotient;
 
 namespace integrators {
 
+inline ExplicitEmbeddedRungeKuttaNyströmIntegrator::
+           ExplicitEmbeddedRungeKuttaNyströmIntegrator(
+    std::vector<double> const& c,
+    std::vector<std::vector<double>> const& a,
+    std::vector<double> const& b_hat,
+    std::vector<double> const& b_prime_hat,
+    std::vector<double> const& b,
+    std::vector<double> const& b_prime)
+    : c_(c),
+      a_(a),
+      b_hat_(b_hat),
+      b_prime_hat_(b_prime_hat),
+      b_(b),
+      b_prime_(b_prime) {}
+
 template<typename Position>
 void ExplicitEmbeddedRungeKuttaNyströmIntegrator::Solve(
     RightHandSideComputation<Position> compute_acceleration,
@@ -26,6 +41,11 @@ void ExplicitEmbeddedRungeKuttaNyströmIntegrator::Solve(
     StepSizeController<Position> step_size_controller,
     double const safety_factor,
     not_null<Solution<Position, Variation<Position>>*> const solution) const {
+  using Displacement = Difference<Position>;
+  using Velocity = Variation<Position>;
+  using Acceleration = Variation<Velocity>;
+
+  // Argument checks.
   int const dimension = initial_value.positions.size();
   CHECK_EQ(initial_value.momenta.size(), dimension);
   CHECK_NE(first_time_step, Time());
@@ -36,26 +56,38 @@ void ExplicitEmbeddedRungeKuttaNyströmIntegrator::Solve(
     // Integrating backward.
     CHECK_GT(initial_value.time.value, t_final);
   }
-  using Displacement = Difference<Position>;
-  using Velocity = Variation<Position>;
-  using Acceleration = Variation<Velocity>;
-  // The timestep.
+
+  // Time step.
   Time h = first_time_step;
+  // Current time.
   DoublePrecision<Time> t;
+
+  // Position increment (high-order).
   std::vector<Displacement> ∆q_hat(dimension);
+  // Velocity increment (high-order).
   std::vector<Velocity> ∆v_hat(dimension);
+  // Current position.
   std::vector<DoublePrecision<Position>> q_hat(dimension);
+  // Current velocity.
   std::vector<DoublePrecision<Velocity>> v_hat(dimension);
+
+  // Difference between the low- and high-order approximations of the position.
   std::vector<Displacement> q_error_estimate(dimension);
+  // Difference between the low- and high-order approximations of the velocity.
   std::vector<Velocity> v_error_estimate(dimension);
+
+  // Current Runge-Kutta-Nyström stage.
+  std::vector<Position> q_stage(dimension);
+  // Accelerations at each stage.
   // TODO(egg): this is a rectangular container, use something more appropriate.
   std::vector<std::vector<Acceleration>> g(stages_);
   for (auto& g_stage : g) {
     g_stage.resize(dimension);
   }
-  std::vector<Position> q_stage(dimension);
+
   double control_factor = 1.0;
   bool at_end = false;
+
   while (!at_end) {
     do {
       // TODO(egg): This has to be the silliest way to compute an nth root.
@@ -73,7 +105,7 @@ void ExplicitEmbeddedRungeKuttaNyströmIntegrator::Solve(
         at_end = false;
       }
 
-      // Runge-Kutta-Nyström iteration.
+      // Runge-Kutta-Nyström iteration (fills |g|).
       for (int i = 0; i < stages_; ++i) {
         Time const t_stage = t.value + c_[i] * h;
         for (int k = 0; k < dimension; ++k) {
@@ -86,6 +118,7 @@ void ExplicitEmbeddedRungeKuttaNyströmIntegrator::Solve(
         }
         compute_acceleration(t_stage, q_stage, &g[i]);
       }
+      // TODO(egg): handle the FSAL case.
 
       // Increment computation and step size control.
       for (int k = 0; k < dimension; ++k) {
@@ -93,7 +126,9 @@ void ExplicitEmbeddedRungeKuttaNyströmIntegrator::Solve(
         Acceleration ∑_b_i_g_i;
         Acceleration ∑_b_prime_hat_i_g_i;
         Acceleration ∑_b_prime_i_g_i;
+        // Low-order position increment.
         Displacement ∆q_k;
+        // Low-order velocity increment.
         Velocity ∆v_k;
         // Please keep eight assigments below aligned, they become illegible
         // otherwise.

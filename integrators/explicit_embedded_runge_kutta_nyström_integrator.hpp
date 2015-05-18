@@ -18,9 +18,12 @@ namespace integrators {
 class ExplicitEmbeddedRungeKuttaNyströmIntegrator {
  public:
   ExplicitEmbeddedRungeKuttaNyströmIntegrator(
+      std::vector<double> const& c,
       std::vector<std::vector<double>> const& a,
+      std::vector<double> const& b_hat,
+      std::vector<double> const& b_prime_hat,
       std::vector<double> const& b,
-      std::vector<double> const& c);
+      std::vector<double> const& b_prime);
 
   virtual ~ExplicitEmbeddedRungeKuttaNyströmIntegrator() = default;
 

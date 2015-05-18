@@ -18,7 +18,7 @@ namespace integrators {
 class ExplicitEmbeddedRungeKuttaNyströmIntegratorTest : public ::testing::Test {
  protected:
   ExplicitEmbeddedRungeKuttaNyströmIntegratorTest()
-      : integrator_({{0.0}}, {0.0}, {0.0}) {}
+    : integrator_({}, {{0.0}}, {0.0}, {0.0}, {}, {}) {}
   ExplicitEmbeddedRungeKuttaNyströmIntegrator integrator_;
 };
 
