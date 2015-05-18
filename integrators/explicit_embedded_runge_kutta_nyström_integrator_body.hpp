@@ -17,6 +17,27 @@ using quantities::Quotient;
 
 namespace integrators {
 
+inline ExplicitEmbeddedRungeKuttaNyströmIntegrator const&
+DormandElMikkawyPrince1986RKN434FM() {
+  static ExplicitEmbeddedRungeKuttaNyströmIntegrator const integrator(
+      // c
+      {0.0, 1.0 / 4.0, 7.0 / 10.0, 1.0},
+      // a
+      {{},
+       {1.0 /   32.0},
+       {7.0 / 1000.0, 119.0 / 500.0}
+       {1.0 /   14.0,   8.0 /  27.0, 25.0 / 189.0}},
+      // b̂
+      { 1.0 /  14.0,   8.0 /  27.0,  25.0 / 189.0,  0.0},
+      // b̂′
+      { 1.0 /  14.0,  32.0 /  81.0, 250.0 / 567.0,  5.0 / 54.0},
+      // b
+      {-7.0 / 150.0,  67.0 / 150.0,   3.0 /  20.0, -1.0 / 20.0},
+      // b′
+      {13.0 /  21.0, -20.0 /  27.0, 275.0 / 189.0, -1.0 /  3.0});
+  return integrator;
+}
+
 inline ExplicitEmbeddedRungeKuttaNyströmIntegrator::
            ExplicitEmbeddedRungeKuttaNyströmIntegrator(
     std::vector<double> const& c,
@@ -90,7 +111,6 @@ void ExplicitEmbeddedRungeKuttaNyströmIntegrator::Solve(
 
   while (!at_end) {
     do {
-      // TODO(egg): This has to be the silliest way to compute an nth root.
       h *= safety_factor * std::pow(control_factor, 1.0 / (lower_order_ + 1));
 
       // Termination.

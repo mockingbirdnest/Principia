@@ -92,6 +92,15 @@ class ExplicitEmbeddedRungeKuttaNyströmIntegrator {
   std::vector<double> b_prime_;
 };
 
+// Coefficients form Dormand, El-Mikkawy and Prince (1986),
+// Families of Runge-Kutta-Nyström formulae, table 3 (the RK4(3)4FM).
+// high order: 4;
+// low order:  3;
+// stages:     4;
+// first-same-as-last, minimizes the 4th order truncation error.
+ExplicitEmbeddedRungeKuttaNyströmIntegrator const&
+DormandElMikkawyPrince1986RKN434FM();
+
 }  // namespace integrators
 }  // namespace principia
 
