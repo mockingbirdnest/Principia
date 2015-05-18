@@ -57,7 +57,8 @@ void ExplicitEmbeddedRungeKuttaNyströmIntegrator::Solve(
   double control_factor = 1.0;
 
   do {
-    h = safety_factor * std::pow(control_factor, 1 / (lower_order_ + 1)) * h;
+    // TODO(egg): This has to be the silliest way to compute an nth root.
+    h = safety_factor * std::pow(control_factor, 1.0 / (lower_order_ + 1)) * h;
     for (int i = 0; i < stages_; ++i) {
       Time const t_stage = t.value + c[i] * h;
       for (int k = 0; k < dimension; ++k) {
