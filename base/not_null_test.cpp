@@ -103,7 +103,7 @@ TEST_F(NotNullTest, ImplicitConversions) {
   // Move constructor.
   not_null<std::unique_ptr<int const>> not_null_owner_constant_int =
       make_not_null_unique<int>(5);
-  // Move assigment.
+  // Move assignment.
   not_null_owner_constant_int = std::move(not_null_owner_int);
 }
 
