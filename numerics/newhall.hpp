@@ -5,7 +5,7 @@
 namespace principia {
 namespace numerics {
 
-std::array<double, (3 + 5) * (2 * 8 + 2)> const
+std::array<double, (3 + 1) * (2 * 8 + 2)> const
     newhall_c_matrix_degree_3_divisions_8 =
         {0.5,
          -0.125,
@@ -83,7 +83,7 @@ std::array<double, (3 + 5) * (2 * 8 + 2)> const
          0.0625,
          0.0625};
 
-std::array<double, (4 + 5) * (2 * 8 + 2)> const
+std::array<double, (4 + 1) * (2 * 8 + 2)> const
     newhall_c_matrix_degree_4_divisions_8 =
         {0.3334967362615748,
          -0.028993028819397325,
@@ -180,7 +180,7 @@ std::array<double, (4 + 5) * (2 * 8 + 2)> const
          -0.0555010879128084,
          -0.03200232372686756};
 
-std::array<double, (5 + 5) * (2 * 8 + 2)> const
+std::array<double, (5 + 1) * (2 * 8 + 2)> const
     newhall_c_matrix_degree_5_divisions_8 =
         {0.3334967362615748,
          -0.028993028819397325,
@@ -296,7 +296,7 @@ std::array<double, (5 + 5) * (2 * 8 + 2)> const
          0.0431495299716275,
          0.017453769737792887};
 
-std::array<double, (6 + 5) * (2 * 8 + 2)> const
+std::array<double, (6 + 1) * (2 * 8 + 2)> const
     newhall_c_matrix_degree_6_divisions_8 =
         {0.29219783443707037,
          -0.01650204876937124,
@@ -431,7 +431,7 @@ std::array<double, (6 + 5) * (2 * 8 + 2)> const
          -0.031829953718359554,
          -0.009627067532662011};
 
-std::array<double, (7 + 5) * (2 * 8 + 2)> const
+std::array<double, (7 + 1) * (2 * 8 + 2)> const
     newhall_c_matrix_degree_7_divisions_8 =
         {0.29219783443707037,
          -0.01650204876937124,
@@ -585,7 +585,7 @@ std::array<double, (7 + 5) * (2 * 8 + 2)> const
          0.03165537365655292,
          0.005943610171321292};
 
-std::array<double, (8 + 5) * (2 * 8 + 2)> const
+std::array<double, (8 + 1) * (2 * 8 + 2)> const
     newhall_c_matrix_degree_8_divisions_8 =
         {0.23402045525812332,
          -0.009931834005138064,
@@ -758,7 +758,7 @@ std::array<double, (8 + 5) * (2 * 8 + 2)> const
          -0.042218106185240085,
          -0.0047678673135658585};
 
-std::array<double, (9 + 5) * (2 * 8 + 2)> const
+std::array<double, (9 + 1) * (2 * 8 + 2)> const
     newhall_c_matrix_degree_9_divisions_8 =
         {0.23402045525812332,
          -0.009931834005138064,
@@ -950,7 +950,7 @@ std::array<double, (9 + 5) * (2 * 8 + 2)> const
          0.05598979970865338,
          0.004663720001414206};
 
-std::array<double, (10 + 5) * (2 * 8 + 2)> const
+std::array<double, (10 + 1) * (2 * 8 + 2)> const
     newhall_c_matrix_degree_10_divisions_8 =
         {0.13688929419105048,
          -0.002662007021501462,
@@ -1161,7 +1161,7 @@ std::array<double, (10 + 5) * (2 * 8 + 2)> const
          -0.03858388477609944,
          -0.0028878288244193672};
 
-std::array<double, (11 + 5) * (2 * 8 + 2)> const
+std::array<double, (11 + 1) * (2 * 8 + 2)> const
     newhall_c_matrix_degree_11_divisions_8 =
         {0.13688929419105048,
          -0.002662007021501462,
@@ -1391,7 +1391,7 @@ std::array<double, (11 + 5) * (2 * 8 + 2)> const
          0.02003143030256607,
          0.0014020789186142552};
 
-std::array<double, (12 + 5) * (2 * 8 + 2)> const
+std::array<double, (12 + 1) * (2 * 8 + 2)> const
     newhall_c_matrix_degree_12_divisions_8 =
         {0.1294477795126886,
          -0.002206436214498364,
@@ -1640,7 +1640,7 @@ std::array<double, (12 + 5) * (2 * 8 + 2)> const
          -0.017351668245517208,
          -0.0010622721108709066};
 
-std::array<double, (13 + 5) * (2 * 8 + 2)> const
+std::array<double, (13 + 1) * (2 * 8 + 2)> const
     newhall_c_matrix_degree_13_divisions_8 =
         {0.1294477795126886,
          -0.002206436214498364,
@@ -1908,7 +1908,7 @@ std::array<double, (13 + 5) * (2 * 8 + 2)> const
          0.009790552814963807,
          0.0005609931490456848};
 
-std::array<double, (14 + 5) * (2 * 8 + 2)> const
+std::array<double, (14 + 1) * (2 * 8 + 2)> const
     newhall_c_matrix_degree_14_divisions_8 =
         {0.12390367481831142,
          -0.0019089850568440297,
@@ -2195,7 +2195,7 @@ std::array<double, (14 + 5) * (2 * 8 + 2)> const
          -0.0057134404553152406,
          -0.00030653632485443897};
 
-std::array<double, (15 + 5) * (2 * 8 + 2)> const
+std::array<double, (15 + 1) * (2 * 8 + 2)> const
     newhall_c_matrix_degree_15_divisions_8 =
         {0.12390367481831142,
          -0.0019089850568440297,
@@ -2501,7 +2501,7 @@ std::array<double, (15 + 5) * (2 * 8 + 2)> const
          0.0031883697761380244,
          0.00016147229976212283};
 
-std::array<double, (16 + 5) * (2 * 8 + 2)> const
+std::array<double, (16 + 1) * (2 * 8 + 2)> const
     newhall_c_matrix_degree_16_divisions_8 =
         {0.11923006874707555,
          -0.0016836734693877551,
@@ -2826,7 +2826,7 @@ std::array<double, (16 + 5) * (2 * 8 + 2)> const
          -0.0016723895907569378,
          -0.00008062484252960444};
 
-std::array<double, (17 + 5) * (2 * 8 + 2)> const
+std::array<double, (17 + 1) * (2 * 8 + 2)> const
     newhall_c_matrix_degree_17_divisions_8 =
         {0.11923006874707555,
          -0.0016836734693877551,
