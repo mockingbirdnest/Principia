@@ -93,7 +93,6 @@ void ExplicitEmbeddedRungeKuttaNyströmIntegrator::Solve(
 
   // Time step.
   Time h = first_time_step;
-  Time h_new = h;
   // Current time.
   DoublePrecision<Time> t = initial_value.time;
 
@@ -127,6 +126,8 @@ void ExplicitEmbeddedRungeKuttaNyströmIntegrator::Solve(
   goto runge_kutta_nyström_step;
 
   while (!at_end) {
+    // Compute the next step with decreasing step sizes until the error is
+    // tolerable.
     do {
       // Adapt step size.
       h = * safety_factor * std::pow(tolerance_to_error_ratio,
