@@ -66,23 +66,6 @@
       <ProjName>benchmarks</ProjName>
     </ProjBinary>
   </Binaries>
-  <Reports>
-    <Report>
-      <Path>benchmarks150512.vsp</Path>
-    </Report>
-    <Report>
-      <Path>benchmarks150514.vsp</Path>
-    </Report>
-    <Report>
-      <Path>benchmarks150514(1).vsp</Path>
-    </Report>
-    <Report>
-      <Path>benchmarks150515.vsp</Path>
-    </Report>
-    <Report>
-      <Path>benchmarks150515(1).vsp</Path>
-    </Report>
-  </Reports>
   <Launches>
     <ProjBinary>
       <Path>:PB:{7B174B21-0837-4BEE-864E-08AD3C74046A}|benchmarks\benchmarks.vcxproj</Path>
