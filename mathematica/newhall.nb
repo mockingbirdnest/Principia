@@ -10,10 +10,10 @@
 NotebookFileLineBreakTest
 NotebookFileLineBreakTest
 NotebookDataPosition[       157,          7]
-NotebookDataLength[     24326,        628]
-NotebookOptionsPosition[     22710,        574]
-NotebookOutlinePosition[     23051,        589]
-CellTagsIndexPosition[     23008,        586]
+NotebookDataLength[     24666,        633]
+NotebookOptionsPosition[     23050,        579]
+NotebookOutlinePosition[     23391,        594]
+CellTagsIndexPosition[     23348,        591]
 WindowFrame->Normal*)
 
 (* Beginning of Notebook Content *)
@@ -62,7 +62,7 @@ Cell[BoxData[
   "&"}]], "Output",
  CellChangeTimes->{3.6408549995133853`*^9, 3.6408551285902915`*^9, 
   3.6408553183497667`*^9, 3.64085677400062*^9, 3.640856812041424*^9, 
-  3.640856870574276*^9}]
+  3.640856870574276*^9, 3.6410549471087694`*^9}]
 }, Open  ]],
 
 Cell[TextData[{
@@ -479,11 +479,12 @@ Cell[BoxData[
 Cell[TextData[{
  "Writes all the Newhall ",
  Cell[BoxData[
-  FormBox["C", TraditionalForm]],
-  FormatType->"TraditionalForm"],
- " matrices to a single file."
+  FormBox["C", TraditionalForm]]],
+ " matrices to a single file.  Note that we drop the last 4 rows because they \
+correspond to the Lagrange multipliers."
 }], "Text",
- CellChangeTimes->{{3.6408826935639734`*^9, 3.640882714496066*^9}}],
+ CellChangeTimes->{{3.6408826935639734`*^9, 3.640882714496066*^9}, {
+  3.6410550089579535`*^9, 3.6410550237494326`*^9}}],
 
 Cell[CellGroupData[{
 
@@ -523,12 +524,15 @@ Cell[BoxData[{
          RowBox[{"ToString", "[", "degree", "]"}], "<>", 
          "\"\< + 5) * (2 * 8 + 2)>\>\""}], ",", "\[IndentingNewLine]", 
         RowBox[{"\"\<newhall_c_matrix_degree_\>\"", "<>", 
-         RowBox[{"ToString", "[", "degree", "]"}]}], ",", 
-        "\[IndentingNewLine]", 
-        RowBox[{"NewhallC", "[", 
-         RowBox[{"degree", ",", "8", ",", 
-          RowBox[{"4", "/", "10"}]}], "]"}]}], "\[IndentingNewLine]", "]"}]}],
-      "\[IndentingNewLine]", "]"}], ",", "\[IndentingNewLine]", 
+         RowBox[{"ToString", "[", "degree", "]"}], "<>", 
+         "\"\<_divisions_8\>\""}], ",", "\[IndentingNewLine]", 
+        RowBox[{"Drop", "[", 
+         RowBox[{
+          RowBox[{"NewhallC", "[", 
+           RowBox[{"degree", ",", "8", ",", 
+            RowBox[{"4", "/", "10"}]}], "]"}], ",", 
+          RowBox[{"-", "4"}]}], "]"}]}], "\[IndentingNewLine]", "]"}]}], 
+     "\[IndentingNewLine]", "]"}], ",", "\[IndentingNewLine]", 
     RowBox[{"{", 
      RowBox[{"degree", ",", " ", "3", ",", " ", "17"}], "}"}]}], "]"}], 
   ";"}], "\[IndentingNewLine]", 
@@ -547,7 +551,8 @@ Cell[BoxData[{
    3.6408721784836483`*^9, {3.6408744896339445`*^9, 3.640874697836065*^9}, {
    3.640882308660487*^9, 3.640882443122932*^9}, {3.6408824910527244`*^9, 
    3.6408825377573943`*^9}, {3.640882740269644*^9, 3.6408827442540417`*^9}, {
-   3.640882817697688*^9, 3.640882841442062*^9}, 3.640883007384655*^9}],
+   3.640882817697688*^9, 3.640882841442062*^9}, 3.640883007384655*^9, {
+   3.6410549728233404`*^9, 3.641055004952553*^9}}],
 
 Cell[BoxData["\<\"C:\\\\Users\\\\phl\\\\Projects\\\\GitHub\\\\Principia\\\\\
 numerics\\\\newhall_body.hpp\"\>"], "Output",
@@ -567,7 +572,7 @@ numerics\\\\newhall_body.hpp\"\>"], "Output",
    3.640874442332215*^9, {3.640874678076089*^9, 3.6408747000892897`*^9}, 
    3.6408747658148623`*^9, 3.640882448364456*^9, {3.6408824929399133`*^9, 
    3.640882539967615*^9}, 3.640882747142331*^9, 3.640882844493367*^9, 
-   3.6408830086797843`*^9}]
+   3.6408830086797843`*^9, 3.6410550295620136`*^9}]
 }, Open  ]]
 }, Open  ]]
 }, Open  ]]
@@ -596,37 +601,37 @@ Cell[938, 33, 99, 1, 71, "Section"],
 Cell[1040, 36, 161, 3, 29, "Text"],
 Cell[CellGroupData[{
 Cell[1226, 43, 509, 9, 31, "Input"],
-Cell[1738, 54, 348, 10, 30, "Output"]
+Cell[1738, 54, 372, 10, 30, "Output"]
 }, Open  ]],
-Cell[2101, 67, 817, 19, 47, "Text"],
-Cell[2921, 88, 1744, 40, 192, "Input"],
-Cell[4668, 130, 413, 9, 47, "Text"],
-Cell[5084, 141, 716, 17, 54, "Input"],
-Cell[5803, 160, 429, 12, 29, "Text"],
-Cell[6235, 174, 699, 16, 52, "Input"],
-Cell[6937, 192, 875, 23, 112, "Input"],
-Cell[7815, 217, 385, 8, 31, "Input"],
-Cell[8203, 227, 324, 8, 31, "Input"],
-Cell[8530, 237, 765, 20, 112, "Input"],
-Cell[9298, 259, 427, 12, 29, "Text"],
-Cell[9728, 273, 461, 12, 52, "Input"],
-Cell[10192, 287, 522, 13, 52, "Input"],
-Cell[10717, 302, 551, 15, 72, "Input"],
-Cell[11271, 319, 607, 19, 47, "Text"],
-Cell[11881, 340, 487, 12, 52, "Input"]
+Cell[2125, 67, 817, 19, 47, "Text"],
+Cell[2945, 88, 1744, 40, 192, "Input"],
+Cell[4692, 130, 413, 9, 47, "Text"],
+Cell[5108, 141, 716, 17, 54, "Input"],
+Cell[5827, 160, 429, 12, 29, "Text"],
+Cell[6259, 174, 699, 16, 52, "Input"],
+Cell[6961, 192, 875, 23, 112, "Input"],
+Cell[7839, 217, 385, 8, 31, "Input"],
+Cell[8227, 227, 324, 8, 31, "Input"],
+Cell[8554, 237, 765, 20, 112, "Input"],
+Cell[9322, 259, 427, 12, 29, "Text"],
+Cell[9752, 273, 461, 12, 52, "Input"],
+Cell[10216, 287, 522, 13, 52, "Input"],
+Cell[10741, 302, 551, 15, 72, "Input"],
+Cell[11295, 319, 607, 19, 47, "Text"],
+Cell[11905, 340, 487, 12, 52, "Input"]
 }, Open  ]],
 Cell[CellGroupData[{
-Cell[12405, 357, 108, 1, 71, "Section"],
-Cell[12516, 360, 182, 4, 29, "Text"],
-Cell[12701, 366, 1636, 32, 292, "Input"],
-Cell[14340, 400, 170, 3, 29, "Text"],
-Cell[14513, 405, 2098, 38, 292, "Input"],
-Cell[16614, 445, 141, 1, 29, "Text"],
-Cell[16758, 448, 1469, 28, 252, "Input"],
-Cell[18230, 478, 237, 7, 29, "Text"],
+Cell[12429, 357, 108, 1, 71, "Section"],
+Cell[12540, 360, 182, 4, 29, "Text"],
+Cell[12725, 366, 1636, 32, 292, "Input"],
+Cell[14364, 400, 170, 3, 29, "Text"],
+Cell[14537, 405, 2098, 38, 292, "Input"],
+Cell[16638, 445, 141, 1, 29, "Text"],
+Cell[16782, 448, 1469, 28, 252, "Input"],
+Cell[18254, 478, 347, 8, 47, "Text"],
 Cell[CellGroupData[{
-Cell[18492, 489, 2899, 60, 572, "Input"],
-Cell[21394, 551, 1276, 18, 30, "Output"]
+Cell[18626, 490, 3081, 64, 572, "Input"],
+Cell[21710, 556, 1300, 18, 30, "Output"]
 }, Open  ]]
 }, Open  ]]
 }, Open  ]]
