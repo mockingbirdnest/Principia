@@ -93,8 +93,9 @@ void ExplicitEmbeddedRungeKuttaNyströmIntegrator::Solve(
 
   // Time step.
   Time h = first_time_step;
+  Time h_new = h;
   // Current time.
-  DoublePrecision<Time> t;
+  DoublePrecision<Time> t = initial_value.time;
 
   // Position increment (high-order).
   std::vector<Displacement> ∆q_hat(dimension);
@@ -119,27 +120,29 @@ void ExplicitEmbeddedRungeKuttaNyströmIntegrator::Solve(
     g_stage.resize(dimension);
   }
 
-  // This yields a first step shorter than first_time_step.  Find an elegant way
-  // to solve that (ideally without tracking a separate h_new or conditional for
-  // the first step).  Maybe this is the right place for a goto?
-  double control_factor = 1.0;
   bool at_end = false;
+  double tolerance_to_error_ratio;
+
+  // No step size control on the first step.
+  goto runge_kutta_nyström_step;
+
   while (!at_end) {
     do {
-      h *= safety_factor * std::pow(control_factor, 1.0 / (lower_order_ + 1));
-      // Termination.
+      // Adapt step size.
+      h = * safety_factor * std::pow(tolerance_to_error_ratio,
+                                     1.0 / (lower_order_ + 1));
+
+    runge_kutta_nyström_step:
+      // Termination condition.
       Time const time_to_end = t_final - t.value - t.error;
-      if (forward && h > time_to_end ||
-          !forward && h < time_to_end) {
+      at_end = forward && h >= time_to_end || !forward && h <= time_to_end;
+      if (at_end) {
         // The chosen step size will overshoot.  Clip it to just reach the end,
         // and terminate if the step is accepted.
         h = time_to_end;
-        at_end = true;
-      } else {
-        at_end = false;
       }
 
-      // Runge-Kutta-Nyström iteration (fills |g|).
+      // Runge-Kutta-Nyström iteration; fills |g|.
       for (int i = 0; i < stages_; ++i) {
         Time const t_stage = t.value + c_[i] * h;
         for (int k = 0; k < dimension; ++k) {
@@ -180,8 +183,9 @@ void ExplicitEmbeddedRungeKuttaNyströmIntegrator::Solve(
         q_error_estimate[k] = ∆q_k - ∆q_hat[k];
         v_error_estimate[k] = ∆v_k - ∆v_hat[k];
       }
-      control_factor = step_size_controller(q_error_estimate, v_error_estimate);
-    } while (control_factor < 1.0);
+      tolerance_to_error_ratio =
+          step_size_controller(h, q_error_estimate, v_error_estimate);
+    } while (tolerance_to_error_ratio < 1.0)
 
     // Increment the solution with the high-order approximation.
     t.Increment(h);

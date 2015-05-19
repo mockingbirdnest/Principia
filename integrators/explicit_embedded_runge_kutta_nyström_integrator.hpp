@@ -59,7 +59,8 @@ class ExplicitEmbeddedRungeKuttaNyströmIntegrator {
   template<typename Position>
   using StepSizeController =
       std::function<
-          double(std::vector<Difference<Position>> const& q_error_estimate,
+          double(Time const& current_step_size,
+                 std::vector<Difference<Position>> const& q_error_estimate,
                  std::vector<Variation<Position>> const& v_error_estimate)>;
 
   // TODO(egg): maybe wrap that in some sort of Parameters struct when it's
