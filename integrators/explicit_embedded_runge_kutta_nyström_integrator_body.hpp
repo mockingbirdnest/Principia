@@ -90,6 +90,8 @@ void ExplicitEmbeddedRungeKuttaNyströmIntegrator::Solve(
     // Integrating backward.
     CHECK_GT(initial_value.time.value, t_final);
   }
+  CHECK_GT(safety_factor, 0);
+  CHECK_LT(safety_factor, 1);
 
   // Time step.
   Time h = first_time_step;
@@ -130,8 +132,8 @@ void ExplicitEmbeddedRungeKuttaNyströmIntegrator::Solve(
     // tolerable.
     do {
       // Adapt step size.
-      h = * safety_factor * std::pow(tolerance_to_error_ratio,
-                                     1.0 / (lower_order_ + 1));
+      h *= safety_factor * std::pow(tolerance_to_error_ratio,
+                                    1.0 / (lower_order_ + 1));
 
     runge_kutta_nyström_step:
       // Termination condition.
@@ -186,7 +188,7 @@ void ExplicitEmbeddedRungeKuttaNyströmIntegrator::Solve(
       }
       tolerance_to_error_ratio =
           step_size_controller(h, q_error_estimate, v_error_estimate);
-    } while (tolerance_to_error_ratio < 1.0)
+    } while (tolerance_to_error_ratio < 1.0);
 
     // Increment the solution with the high-order approximation.
     t.Increment(h);
