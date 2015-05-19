@@ -2,6 +2,7 @@
 #include "numerics/чебышёв_series.hpp"
 
 #include "glog/logging.h"
+#include "numerics/newhall.hpp"
 #include "quantities/serialization.hpp"
 
 namespace principia {

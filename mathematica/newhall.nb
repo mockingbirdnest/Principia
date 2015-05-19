@@ -10,10 +10,10 @@
 NotebookFileLineBreakTest
 NotebookFileLineBreakTest
 NotebookDataPosition[       157,          7]
-NotebookDataLength[     25072,        637]
-NotebookOptionsPosition[     23456,        583]
-NotebookOutlinePosition[     23797,        598]
-CellTagsIndexPosition[     23754,        595]
+NotebookDataLength[     25128,        637]
+NotebookOptionsPosition[     23512,        583]
+NotebookOutlinePosition[     23853,        598]
+CellTagsIndexPosition[     23810,        595]
 WindowFrame->Normal*)
 
 (* Beginning of Notebook Content *)
@@ -501,8 +501,7 @@ Cell[BoxData[{
        RowBox[{
         RowBox[{"DirectoryName", "[", 
          RowBox[{"NotebookDirectory", "[", "]"}], "]"}], ",", 
-        "\"\<numerics\>\"", ",", "\"\<newhall_body.hpp\>\""}], "}"}], "]"}], 
-     ",", 
+        "\"\<numerics\>\"", ",", "\"\<newhall.hpp\>\""}], "}"}], "]"}], ",", 
      RowBox[{"BinaryFormat", "\[Rule]", "True"}], ",", 
      RowBox[{"PageWidth", "\[Rule]", "Infinity"}]}], "]"}]}], 
   ";"}], "\[IndentingNewLine]", 
@@ -555,10 +554,11 @@ Cell[BoxData[{
    3.640882308660487*^9, 3.640882443122932*^9}, {3.6408824910527244`*^9, 
    3.6408825377573943`*^9}, {3.640882740269644*^9, 3.6408827442540417`*^9}, {
    3.640882817697688*^9, 3.640882841442062*^9}, 3.640883007384655*^9, {
-   3.6410549728233404`*^9, 3.641055004952553*^9}}],
+   3.6410549728233404`*^9, 3.641055004952553*^9}, {3.641055406823736*^9, 
+   3.641055407894843*^9}}],
 
 Cell[BoxData["\<\"C:\\\\Users\\\\phl\\\\Projects\\\\GitHub\\\\Principia\\\\\
-numerics\\\\newhall_body.hpp\"\>"], "Output",
+numerics\\\\newhall.hpp\"\>"], "Output",
  CellChangeTimes->{
   3.6408690488553095`*^9, 3.6408693076721888`*^9, 3.6408693443268538`*^9, 
    3.6408694078892097`*^9, 3.6408694950360255`*^9, 3.640869680459566*^9, 
@@ -576,7 +576,7 @@ numerics\\\\newhall_body.hpp\"\>"], "Output",
    3.6408747658148623`*^9, 3.640882448364456*^9, {3.6408824929399133`*^9, 
    3.640882539967615*^9}, 3.640882747142331*^9, 3.640882844493367*^9, 
    3.6408830086797843`*^9, 3.6410550295620136`*^9, 3.641055288323887*^9, 
-   3.6410553386689215`*^9}]
+   3.6410553386689215`*^9, 3.641055412995353*^9}]
 }, Open  ]]
 }, Open  ]]
 }, Open  ]]
@@ -634,8 +634,8 @@ Cell[16880, 447, 141, 1, 29, "Text"],
 Cell[17024, 450, 1583, 29, 252, "Input"],
 Cell[18610, 481, 347, 8, 47, "Text"],
 Cell[CellGroupData[{
-Cell[18982, 493, 3081, 64, 572, "Input"],
-Cell[22066, 559, 1350, 19, 30, "Output"]
+Cell[18982, 493, 3120, 64, 572, "Input"],
+Cell[22105, 559, 1367, 19, 30, "Output"]
 }, Open  ]]
 }, Open  ]]
 }, Open  ]]
