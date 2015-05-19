@@ -51,7 +51,7 @@ TEST_F(ExplicitEmbeddedRungeKuttaNyströmIntegratorTest, Dummy) {
       ComputeHarmonicOscillatorAcceleration,
       {{1 * Metre}, {0 * Metre / Second}, 0 * Second},
       100 * Second,
-      3 * Second,
+      100 * Second,
       std::bind(HarmonicOscillatorToleranceRatio,
                 _1, _2, _3, 1 * Milli(Metre), 1 * Milli(Metre) / Second),
       0.9,
