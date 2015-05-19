@@ -12,7 +12,7 @@ PLATFORM=$(uname -s)
 if [ "$PLATFORM" == "Darwin" ]; then
     C_FLAGS="$BASE_FLAGS -mmacosx-version-min=10.7 -arch i386"
 elif [ "$PLATFORM" == "Linux" ]; then
-	BITNESS=$(uname -p)
+	BITNESS=$(uname -m)
 	if [ "$BITNESS" == "x86_64" ]; then
 	  C_FLAGS="$BASE_FLAGS -m64"
         else
