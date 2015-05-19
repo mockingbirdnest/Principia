@@ -10,10 +10,10 @@
 NotebookFileLineBreakTest
 NotebookFileLineBreakTest
 NotebookDataPosition[       157,          7]
-NotebookDataLength[     24666,        633]
-NotebookOptionsPosition[     23050,        579]
-NotebookOutlinePosition[     23391,        594]
-CellTagsIndexPosition[     23348,        591]
+NotebookDataLength[     25072,        637]
+NotebookOptionsPosition[     23456,        583]
+NotebookOutlinePosition[     23797,        598]
+CellTagsIndexPosition[     23754,        595]
 WindowFrame->Normal*)
 
 (* Beginning of Notebook Content *)
@@ -370,8 +370,8 @@ Cell[BoxData[
    RowBox[{"type_String", ",", "variable_String", ",", "matrix_List"}], "]"}],
    ":=", 
   RowBox[{
-  "type", "<>", "\"\< const \>\"", "<>", "variable", "<>", 
-   "\"\< = \\r\\n\>\"", "<>", "\[IndentingNewLine]", 
+  "type", "<>", "\"\< const\\r\\n    \>\"", "<>", "variable", "<>", 
+   "\"\< =\\r\\n\>\"", "<>", "\[IndentingNewLine]", 
    RowBox[{"StringReplace", "[", "\[IndentingNewLine]", 
     RowBox[{
      RowBox[{"ToString", "[", "\[IndentingNewLine]", 
@@ -379,13 +379,13 @@ Cell[BoxData[
      ",", "\[IndentingNewLine]", 
      RowBox[{"{", "\[IndentingNewLine]", 
       RowBox[{
-       RowBox[{"\"\<List(List(\>\"", "\[Rule]", "\"\<    {{\>\""}], ",", 
+       RowBox[{"\"\<List(List(\>\"", "\[Rule]", "\"\<        {{\>\""}], ",", 
        "\[IndentingNewLine]", 
        RowBox[{"\"\<List(\>\"", "\[Rule]", "\"\<{\>\""}], ",", 
        "\[IndentingNewLine]", 
-       RowBox[{"\"\<),\>\"", "\[Rule]", "\"\<},\\r\\n    \>\""}], ",", 
+       RowBox[{"\"\<),\>\"", "\[Rule]", "\"\<},\\r\\n        \>\""}], ",", 
        "\[IndentingNewLine]", 
-       RowBox[{"\"\<,\>\"", "\[Rule]", "\"\<,\\r\\n     \>\""}], ",", 
+       RowBox[{"\"\<,\>\"", "\[Rule]", "\"\<,\\r\\n         \>\""}], ",", 
        "\[IndentingNewLine]", 
        RowBox[{"\"\<))\>\"", "\[Rule]", "\"\<}};\\r\\n\\r\\n\>\""}]}], 
       "\[IndentingNewLine]", "}"}]}], "\[IndentingNewLine]", 
@@ -396,7 +396,8 @@ Cell[BoxData[
    3.640871771621966*^9, 3.6408717737571793`*^9}, {3.6408718178715906`*^9, 
    3.640871822896093*^9}, {3.640871860952898*^9, 3.640871871400943*^9}, {
    3.6408724733271294`*^9, 3.640872505568353*^9}, {3.640874245098493*^9, 
-   3.640874246393623*^9}, 3.6408747449167724`*^9}],
+   3.640874246393623*^9}, 3.6408747449167724`*^9, {3.641055252528308*^9, 
+   3.641055258999955*^9}, {3.6410553154505997`*^9, 3.6410553219702516`*^9}}],
 
 Cell["\<\
 Produces a representation of a matrix as a single, flattened initializer list.\
@@ -409,8 +410,8 @@ Cell[BoxData[
    RowBox[{"type_String", ",", "variable_String", ",", "matrix_List"}], "]"}],
    ":=", 
   RowBox[{
-  "type", "<>", "\"\< const \>\"", "<>", "variable", "<>", 
-   "\"\< = \\r\\n\>\"", "<>", "\[IndentingNewLine]", 
+  "type", "<>", "\"\< const\\r\\n    \>\"", "<>", "variable", "<>", 
+   "\"\< =\\r\\n\>\"", "<>", "\[IndentingNewLine]", 
    RowBox[{"StringReplace", "[", "\[IndentingNewLine]", 
     RowBox[{
      RowBox[{"ToString", "[", "\[IndentingNewLine]", 
@@ -418,13 +419,13 @@ Cell[BoxData[
      ",", "\[IndentingNewLine]", 
      RowBox[{"{", "\[IndentingNewLine]", 
       RowBox[{
-       RowBox[{"\"\<List(List(\>\"", "\[Rule]", "\"\<    {\>\""}], ",", 
+       RowBox[{"\"\<List(List(\>\"", "\[Rule]", "\"\<        {\>\""}], ",", 
        "\[IndentingNewLine]", 
-       RowBox[{"\"\<List(\>\"", "\[Rule]", "\"\<\\r\\n     \>\""}], ",", 
+       RowBox[{"\"\<List(\>\"", "\[Rule]", "\"\<\\r\\n         \>\""}], ",", 
        "\[IndentingNewLine]", 
        RowBox[{"\"\<),\>\"", "\[Rule]", "\"\<,\\r\\n\>\""}], ",", 
        "\[IndentingNewLine]", 
-       RowBox[{"\"\<,\>\"", "\[Rule]", "\"\<,\\r\\n     \>\""}], ",", 
+       RowBox[{"\"\<,\>\"", "\[Rule]", "\"\<,\\r\\n         \>\""}], ",", 
        "\[IndentingNewLine]", 
        RowBox[{"\"\<))\>\"", "\[Rule]", "\"\<};\\r\\n\\r\\n\>\""}]}], 
       "\[IndentingNewLine]", "}"}]}], "\[IndentingNewLine]", 
@@ -441,7 +442,8 @@ Cell[BoxData[
    3.6408740023772235`*^9, {3.640874047938779*^9, 3.6408740806520505`*^9}, {
    3.640874124837468*^9, 3.6408741261495996`*^9}, {3.640874162015186*^9, 
    3.6408742111931033`*^9}, {3.6408742498659697`*^9, 3.6408742514901323`*^9}, 
-   3.6408744376087427`*^9, 3.6408747372680073`*^9}],
+   3.6408744376087427`*^9, 3.6408747372680073`*^9, {3.6410552648555403`*^9, 
+   3.6410552735364084`*^9}, {3.6410553246105156`*^9, 3.641055328873942*^9}}],
 
 Cell["Produces a representation of a list as an initializer list.", "Text",
  CellChangeTimes->{{3.640882654947112*^9, 3.640882678263444*^9}}],
@@ -451,8 +453,8 @@ Cell[BoxData[
   RowBox[{"ListToCDefinition", "[", 
    RowBox[{"type_String", ",", "variable_String", ",", "list_List"}], "]"}], ":=", 
   RowBox[{
-  "type", "<>", "\"\< const \>\"", "<>", "variable", "<>", 
-   "\"\< = \\r\\n\>\"", "<>", "\[IndentingNewLine]", 
+  "type", "<>", "\"\< const\\r\\n    \>\"", "<>", "variable", "<>", 
+   "\"\< =\\r\\n\>\"", "<>", "\[IndentingNewLine]", 
    RowBox[{"StringReplace", "[", "\[IndentingNewLine]", 
     RowBox[{
      RowBox[{"ToString", "[", "\[IndentingNewLine]", 
@@ -460,9 +462,9 @@ Cell[BoxData[
      "\[IndentingNewLine]", 
      RowBox[{"{", "\[IndentingNewLine]", 
       RowBox[{
-       RowBox[{"\"\<List(\>\"", "\[Rule]", "\"\<    {\>\""}], ",", 
+       RowBox[{"\"\<List(\>\"", "\[Rule]", "\"\<        {\>\""}], ",", 
        "\[IndentingNewLine]", 
-       RowBox[{"\"\<,\>\"", "\[Rule]", "\"\<,\\r\\n     \>\""}], ",", 
+       RowBox[{"\"\<,\>\"", "\[Rule]", "\"\<,\\r\\n         \>\""}], ",", 
        "\[IndentingNewLine]", 
        RowBox[{"\"\<)\>\"", "\[Rule]", "\"\<};\\r\\n\\r\\n\>\""}]}], 
       "\[IndentingNewLine]", "}"}]}], "\[IndentingNewLine]", 
@@ -474,7 +476,8 @@ Cell[BoxData[
    3.640871822896093*^9}, {3.640871860952898*^9, 3.640871871400943*^9}, {
    3.6408724733271294`*^9, 3.640872505568353*^9}, {3.6408731435046425`*^9, 
    3.64087318448174*^9}, 3.6408732463239236`*^9, {3.640874725203801*^9, 
-   3.6408747298602667`*^9}}],
+   3.6408747298602667`*^9}, {3.641055278559911*^9, 3.641055282736328*^9}, {
+   3.6410553310581603`*^9, 3.641055333330387*^9}}],
 
 Cell[TextData[{
  "Writes all the Newhall ",
@@ -572,7 +575,8 @@ numerics\\\\newhall_body.hpp\"\>"], "Output",
    3.640874442332215*^9, {3.640874678076089*^9, 3.6408747000892897`*^9}, 
    3.6408747658148623`*^9, 3.640882448364456*^9, {3.6408824929399133`*^9, 
    3.640882539967615*^9}, 3.640882747142331*^9, 3.640882844493367*^9, 
-   3.6408830086797843`*^9, 3.6410550295620136`*^9}]
+   3.6408830086797843`*^9, 3.6410550295620136`*^9, 3.641055288323887*^9, 
+   3.6410553386689215`*^9}]
 }, Open  ]]
 }, Open  ]]
 }, Open  ]]
@@ -623,15 +627,15 @@ Cell[11905, 340, 487, 12, 52, "Input"]
 Cell[CellGroupData[{
 Cell[12429, 357, 108, 1, 71, "Section"],
 Cell[12540, 360, 182, 4, 29, "Text"],
-Cell[12725, 366, 1636, 32, 292, "Input"],
-Cell[14364, 400, 170, 3, 29, "Text"],
-Cell[14537, 405, 2098, 38, 292, "Input"],
-Cell[16638, 445, 141, 1, 29, "Text"],
-Cell[16782, 448, 1469, 28, 252, "Input"],
-Cell[18254, 478, 347, 8, 47, "Text"],
+Cell[12725, 366, 1756, 33, 292, "Input"],
+Cell[14484, 401, 170, 3, 29, "Text"],
+Cell[14657, 406, 2220, 39, 292, "Input"],
+Cell[16880, 447, 141, 1, 29, "Text"],
+Cell[17024, 450, 1583, 29, 252, "Input"],
+Cell[18610, 481, 347, 8, 47, "Text"],
 Cell[CellGroupData[{
-Cell[18626, 490, 3081, 64, 572, "Input"],
-Cell[21710, 556, 1300, 18, 30, "Output"]
+Cell[18982, 493, 3081, 64, 572, "Input"],
+Cell[22066, 559, 1350, 19, 30, "Output"]
 }, Open  ]]
 }, Open  ]]
 }, Open  ]]
