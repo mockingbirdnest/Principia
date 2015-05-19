@@ -1,5 +1,5 @@
-
-#include "integrators/explicit_embedded_runge_kutta_nyström_integrator.hpp"
+ï»¿
+#include "integrators/explicit_embedded_runge_kutta_nystrÃ¶m_integrator.hpp"
 
 #include "base/macros.hpp"
 #include "glog/logging.h"
@@ -39,23 +39,38 @@ double HarmonicOscillatorToleranceRatio(
 
 }  // namespace
 
-class ExplicitEmbeddedRungeKuttaNyströmIntegratorTest
+class ExplicitEmbeddedRungeKuttaNystrÃ¶mIntegratorTest
     : public ::testing::Test {};
 
-TEST_F(ExplicitEmbeddedRungeKuttaNyströmIntegratorTest, Dummy) {
-  ExplicitEmbeddedRungeKuttaNyströmIntegrator const& integrator =
+TEST_F(ExplicitEmbeddedRungeKuttaNystrÃ¶mIntegratorTest, Dummy) {
+  ExplicitEmbeddedRungeKuttaNystrÃ¶mIntegrator const& integrator =
       DormandElMikkawyPrince1986RKN434FM();
 
-  ExplicitEmbeddedRungeKuttaNyströmIntegrator::Solution<Length, Speed> solution;
+  ExplicitEmbeddedRungeKuttaNystrÃ¶mIntegrator::Solution<Length, Speed> solution;
   integrator.Solve<Length>(
       ComputeHarmonicOscillatorAcceleration,
       {{1 * Metre}, {0 * Metre / Second}, 0 * Second},
-      100 * Second,
-      100 * Second,
+      10 * Ï€ * Second,
+      10 * Ï€ * Second,
       std::bind(HarmonicOscillatorToleranceRatio,
                 _1, _2, _3, 1 * Milli(Metre), 1 * Milli(Metre) / Second),
       0.9,
       &solution);
+  LOG(ERROR) << solution.back().positions[0].value;
+  LOG(ERROR) << solution.back().momenta[0].value;
+  LOG(ERROR) << solution.back().time.value;
+  integrator.Solve<Length>(
+      ComputeHarmonicOscillatorAcceleration,
+      solution.back(),
+      0 * Second,
+      -10 * Ï€ * Second,
+      std::bind(HarmonicOscillatorToleranceRatio,
+                _1, _2, _3, 1 * Milli(Metre), 1 * Milli(Metre) / Second),
+      0.9,
+      &solution);
+  LOG(ERROR) << solution.back().positions[0].value;
+  LOG(ERROR) << solution.back().momenta[0].value;
+  LOG(ERROR) << solution.back().time.value;
 }
 
 }  // namespace integrators
