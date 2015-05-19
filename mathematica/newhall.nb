@@ -10,10 +10,10 @@
 NotebookFileLineBreakTest
 NotebookFileLineBreakTest
 NotebookDataPosition[       157,          7]
-NotebookDataLength[     25172,        637]
-NotebookOptionsPosition[     23556,        583]
-NotebookOutlinePosition[     23897,        598]
-CellTagsIndexPosition[     23854,        595]
+NotebookDataLength[     25243,        639]
+NotebookOptionsPosition[     23627,        585]
+NotebookOutlinePosition[     23968,        600]
+CellTagsIndexPosition[     23925,        597]
 WindowFrame->Normal*)
 
 (* Beginning of Notebook Content *)
@@ -501,7 +501,8 @@ Cell[BoxData[{
        RowBox[{
         RowBox[{"DirectoryName", "[", 
          RowBox[{"NotebookDirectory", "[", "]"}], "]"}], ",", 
-        "\"\<numerics\>\"", ",", "\"\<newhall.hpp\>\""}], "}"}], "]"}], ",", 
+        "\"\<numerics\>\"", ",", "\"\<newhall.mathematica.cpp\>\""}], "}"}], 
+      "]"}], ",", 
      RowBox[{"BinaryFormat", "\[Rule]", "True"}], ",", 
      RowBox[{"PageWidth", "\[Rule]", "Infinity"}]}], "]"}]}], 
   ";"}], "\[IndentingNewLine]", 
@@ -555,7 +556,8 @@ Cell[BoxData[{
    3.6408825377573943`*^9}, {3.640882740269644*^9, 3.6408827442540417`*^9}, {
    3.640882817697688*^9, 3.640882841442062*^9}, 3.640883007384655*^9, {
    3.6410549728233404`*^9, 3.641055004952553*^9}, {3.641055406823736*^9, 
-   3.641055407894843*^9}, 3.6410559850527554`*^9}],
+   3.641055407894843*^9}, 3.6410559850527554`*^9, {3.641056477791024*^9, 
+   3.6410564808393292`*^9}}],
 
 Cell[BoxData["\<\"C:\\\\Users\\\\phl\\\\Projects\\\\GitHub\\\\Principia\\\\\
 numerics\\\\newhall.hpp\"\>"], "Output",
@@ -634,8 +636,8 @@ Cell[16880, 447, 141, 1, 29, "Text"],
 Cell[17024, 450, 1583, 29, 252, "Input"],
 Cell[18610, 481, 347, 8, 47, "Text"],
 Cell[CellGroupData[{
-Cell[18982, 493, 3144, 64, 572, "Input"],
-Cell[22129, 559, 1387, 19, 30, "Output"]
+Cell[18982, 493, 3215, 66, 572, "Input"],
+Cell[22200, 561, 1387, 19, 30, "Output"]
 }, Open  ]]
 }, Open  ]]
 }, Open  ]]

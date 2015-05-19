@@ -25,5 +25,8 @@
     <ClCompile Include="чебышёв_series_test.cpp">
       <Filter>Test Files</Filter>
     </ClCompile>
+    <ClCompile Include="newhall.mathematica.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>
