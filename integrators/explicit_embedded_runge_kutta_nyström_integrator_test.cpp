@@ -7,18 +7,24 @@
 #include "gtest/gtest.h"
 #include "quantities/si.hpp"
 #include "testing_utilities/integration.hpp"
+#include "testing_utilities/numerics.hpp"
 
 namespace principia {
 
 using quantities::Abs;
 using quantities::Length;
+using si::Centi;
 using si::Metre;
 using si::Milli;
 using si::Second;
+using testing_utilities::AbsoluteError;
 using testing_utilities::ComputeHarmonicOscillatorAcceleration;
 using ::std::placeholders::_1;
 using ::std::placeholders::_2;
 using ::std::placeholders::_3;
+using ::testing::AllOf;
+using ::testing::Ge;
+using ::testing::Le;
 
 namespace integrators {
 
@@ -32,7 +38,7 @@ double HarmonicOscillatorToleranceRatio(
     Speed const& v_tolerance) {
   double const r = std::min(q_tolerance / Abs(q_error_estimate[0]),
                             v_tolerance / Abs(v_error_estimate[0]));
-  LOG(ERROR) << (r > 1.0 ? "Accepting" : "REJECTING") << " step size "
+  LOG(INFO) << (r > 1.0 ? "Accepting" : "Rejecting") << " step size "
              << h << " with ratio " << r;
   return r;
 }
@@ -42,35 +48,47 @@ double HarmonicOscillatorToleranceRatio(
 class ExplicitEmbeddedRungeKuttaNyströmIntegratorTest
     : public ::testing::Test {};
 
-TEST_F(ExplicitEmbeddedRungeKuttaNyströmIntegratorTest, Dummy) {
+TEST_F(ExplicitEmbeddedRungeKuttaNyströmIntegratorTest,
+       HarmonicOscillatorBackAndForth) {
   ExplicitEmbeddedRungeKuttaNyströmIntegrator const& integrator =
       DormandElMikkawyPrince1986RKN434FM();
+  Length const x_0 = 1 * Metre;
+  Speed const v_0 = 0 * Metre / Second;
+  Time const period = 2 * π * Second;
+  Time const t_0 = 0 * Second;
+  Time const t_final = 10 * period;
 
   ExplicitEmbeddedRungeKuttaNyströmIntegrator::Solution<Length, Speed> solution;
   integrator.Solve<Length>(
       ComputeHarmonicOscillatorAcceleration,
-      {{1 * Metre}, {0 * Metre / Second}, 0 * Second},
-      10 * π * Second,
-      10 * π * Second,
+      {{x_0}, {v_0}, t_0},
+      t_final,
+      t_final - t_0,
       std::bind(HarmonicOscillatorToleranceRatio,
                 _1, _2, _3, 1 * Milli(Metre), 1 * Milli(Metre) / Second),
       0.9,
       &solution);
-  LOG(ERROR) << solution.back().positions[0].value;
-  LOG(ERROR) << solution.back().momenta[0].value;
-  LOG(ERROR) << solution.back().time.value;
+  EXPECT_THAT(AbsoluteError(x_0, solution.back().positions[0].value),
+              AllOf(Ge(1 * Milli(Metre)), Le(2 * Milli(Metre))));
+  EXPECT_THAT(AbsoluteError(v_0, solution.back().momenta[0].value),
+              AllOf(Ge(1 * Centi(Metre) / Second),
+                    Le(2 * Centi(Metre) / Second)));
+  EXPECT_EQ(t_final, solution.back().time.value);
   integrator.Solve<Length>(
       ComputeHarmonicOscillatorAcceleration,
       solution.back(),
-      0 * Second,
-      -10 * π * Second,
+      t_0,
+      t_0 - t_final,
       std::bind(HarmonicOscillatorToleranceRatio,
                 _1, _2, _3, 1 * Milli(Metre), 1 * Milli(Metre) / Second),
       0.9,
       &solution);
-  LOG(ERROR) << solution.back().positions[0].value;
-  LOG(ERROR) << solution.back().momenta[0].value;
-  LOG(ERROR) << solution.back().time.value;
+  EXPECT_THAT(AbsoluteError(x_0, solution.back().positions[0].value),
+              AllOf(Ge(3 * Milli(Metre)), Le(4 * Milli(Metre))));
+  EXPECT_THAT(AbsoluteError(v_0, solution.back().momenta[0].value),
+              AllOf(Ge(1E-5 * Metre / Second),
+                    Le(1E-4 * Centi(Metre) / Second)));
+  EXPECT_EQ(t_0, solution.back().time.value);
 }
 
 }  // namespace integrators
