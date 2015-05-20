@@ -13,11 +13,11 @@ template<typename Scalar, int size>
 class FixedVector {
  public:
   FixedVector();  // Zero-initialized.
-  FixedVector(std::array<Scalar, size> data);
+  FixedVector(std::array<Scalar, size> const& data);
+  FixedVector(std::initializer_list<Scalar> const& data);
 
   bool operator==(FixedVector const& right) const;
 
-  FixedVector& operator=(FixedVector const& right);
   FixedVector& operator=(std::initializer_list<Scalar> const& right);
 
  private:
@@ -33,9 +33,11 @@ template<typename Scalar, int rows, int columns>
 class FixedMatrix {
  public:
   // The |data| must be in row-major format.
-  FixedMatrix(std::array<Scalar, rows * columns> data);
+  FixedMatrix(std::array<Scalar, rows * columns> const& data);
+  FixedMatrix(std::initializer_list<Scalar> const& data);
 
   bool operator==(FixedMatrix const& right) const;
+  FixedMatrix& operator=(std::initializer_list<Scalar> const& right);
 
  private:
   std::array<Scalar, rows * columns> data_;

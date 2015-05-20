@@ -16,19 +16,19 @@ FixedVector<Scalar, size>::FixedVector() {
 }
 
 template<typename Scalar, int size>
-FixedVector<Scalar, size>::FixedVector(std::array<Scalar, size> data)
+FixedVector<Scalar, size>::FixedVector(std::array<Scalar, size> const& data)
     : data_(data) {}
+
+template<typename Scalar, int size>
+FixedVector<Scalar, size>::FixedVector(
+    std::initializer_list<Scalar> const& data) {
+  CHECK_EQ(size, data.size());
+  std::copy(data.begin(), data.end(), data_.begin());
+}
 
 template<typename Scalar, int size>
 bool FixedVector<Scalar, size>::operator==(FixedVector const& right) const {
   return data_ == right.data_;
-}
-
-template<typename Scalar, int size>
-FixedVector<Scalar, size>& FixedVector<Scalar, size>::operator=(
-    FixedVector const& right) {
-  data_ = right.data_;
-  return *this;
 }
 
 template<typename Scalar, int size>
@@ -41,13 +41,29 @@ FixedVector<Scalar, size>& FixedVector<Scalar, size>::operator=(
 
 template<typename Scalar, int rows, int columns>
 FixedMatrix<Scalar, rows, columns>::FixedMatrix(
-    std::array<Scalar, rows * columns> data)
+    std::array<Scalar, rows * columns> const& data)
     : data_(data) {}
+
+template<typename Scalar, int rows, int columns>
+FixedMatrix<Scalar, rows, columns>::FixedMatrix(
+    std::initializer_list<Scalar> const& data) {
+  CHECK_EQ(rows * columns, data.size());
+  std::copy(data.begin(), data.end(), data_.begin());
+}
 
 template<typename Scalar, int rows, int columns>
 bool FixedMatrix<Scalar, rows, columns>::operator==(
     FixedMatrix const& right) const {
   return data_ == right.data_;
+}
+
+template<typename Scalar, int rows, int columns>
+FixedMatrix<Scalar, rows, columns>&
+FixedMatrix<Scalar, rows, columns>::operator=(
+    std::initializer_list<Scalar> const& right) {
+  CHECK_EQ(size, right.size());
+  std::copy(right.begin(), right.end(), data_.begin());
+  return *this;
 }
 
 template<typename Scalar, int rows, int columns>
