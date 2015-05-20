@@ -7,11 +7,13 @@
 #include <ctime>
 #include <vector>
 
+#include "geometry/sign.hpp"
 #include "glog/logging.h"
 #include "quantities/quantities.hpp"
 
 namespace principia {
 
+using geometry::Sign;
 using quantities::Difference;
 using quantities::Quotient;
 
@@ -83,8 +85,9 @@ void ExplicitEmbeddedRungeKuttaNyströmIntegrator::Solve(
   int const dimension = initial_value.positions.size();
   CHECK_EQ(initial_value.momenta.size(), dimension);
   CHECK_NE(first_time_step, Time());
-  bool const forward = first_time_step > Time();
-  if (forward) {
+  Sign const integration_direction = Sign(first_time_step);
+  if (integration_direction.Positive()) {
+    // Integrating forward.
     CHECK_LT(initial_value.time.value, t_final);
   } else {
     // Integrating backward.
@@ -132,13 +135,15 @@ void ExplicitEmbeddedRungeKuttaNyströmIntegrator::Solve(
     // tolerable.
     do {
       // Adapt step size.
+      // TODO(egg): find out whether there's a smarter way to compute that root,
+      // especially if we make the order compile-time.
       h *= safety_factor * std::pow(tolerance_to_error_ratio,
                                     1.0 / (lower_order_ + 1));
 
     runge_kutta_nyström_step:
       // Termination condition.
-      Time const time_to_end = t_final - t.value - t.error;
-      at_end = forward && h >= time_to_end || !forward && h <= time_to_end;
+      Time const time_to_end = (t_final - t.value) - t.error;
+      at_end = integration_direction * h >= integration_direction * time_to_end;
       if (at_end) {
         // The chosen step size will overshoot.  Clip it to just reach the end,
         // and terminate if the step is accepted.
@@ -149,12 +154,12 @@ void ExplicitEmbeddedRungeKuttaNyströmIntegrator::Solve(
       for (int i = 0; i < stages_; ++i) {
         Time const t_stage = t.value + c_[i] * h;
         for (int k = 0; k < dimension; ++k) {
-          Acceleration ∑_a_ij_g_j;
+          Acceleration ∑j_a_ij_g_jk = Acceleration();
           for (int j = 0; j < i; ++j) {
-            ∑_a_ij_g_j += a_[i][j] * g[j][k];
+            ∑j_a_ij_g_jk += a_[i][j] * g[j][k];
           }
           q_stage[k] = q_hat[k].value +
-                           h * (c_[i] * v_hat[k].value + h * ∑_a_ij_g_j);
+                           h * (c_[i] * v_hat[k].value + h * ∑j_a_ij_g_jk);
         }
         compute_acceleration(t_stage, q_stage, &g[i]);
       }
@@ -162,26 +167,26 @@ void ExplicitEmbeddedRungeKuttaNyströmIntegrator::Solve(
 
       // Increment computation and step size control.
       for (int k = 0; k < dimension; ++k) {
-        Acceleration ∑_b_hat_i_g_i;
-        Acceleration ∑_b_i_g_i;
-        Acceleration ∑_b_prime_hat_i_g_i;
-        Acceleration ∑_b_prime_i_g_i;
+        Acceleration ∑i_b_hat_i_g_ik = Acceleration();
+        Acceleration ∑i_b_i_g_ik = Acceleration();
+        Acceleration ∑i_b_prime_hat_i_g_ik = Acceleration();
+        Acceleration ∑i_b_prime_i_g_ik = Acceleration();
         // Low-order position increment.
         Displacement ∆q_k;
         // Low-order velocity increment.
         Velocity ∆v_k;
-        // Please keep eight assigments below aligned, they become illegible
+        // Please keep the eight assigments below aligned, they become illegible
         // otherwise.
         for (int i = 0; i < stages_; ++i) {
-          ∑_b_hat_i_g_i       += b_hat_[i] * g[i][k];
-          ∑_b_i_g_i           += b_[i] * g[i][k];
-          ∑_b_prime_hat_i_g_i += b_prime_hat_[i] * g[i][k];
-          ∑_b_prime_i_g_i     += b_prime_[i] * g[i][k];
+          ∑i_b_hat_i_g_ik       += b_hat_[i] * g[i][k];
+          ∑i_b_i_g_ik           += b_[i] * g[i][k];
+          ∑i_b_prime_hat_i_g_ik += b_prime_hat_[i] * g[i][k];
+          ∑i_b_prime_i_g_ik     += b_prime_[i] * g[i][k];
         }
-        ∆q_hat[k] = h * (h * (∑_b_hat_i_g_i) + v_hat[k].value);
-        ∆q_k      = h * (h * (∑_b_i_g_i) + v_hat[k].value);
-        ∆v_hat[k] = h * ∑_b_prime_hat_i_g_i;
-        ∆v_k      = h * ∑_b_prime_i_g_i;
+        ∆q_hat[k] = h * (h * (∑i_b_hat_i_g_ik) + v_hat[k].value);
+        ∆q_k      = h * (h * (∑i_b_i_g_ik) + v_hat[k].value);
+        ∆v_hat[k] = h * ∑i_b_prime_hat_i_g_ik;
+        ∆v_k      = h * ∑i_b_prime_i_g_ik;
 
         q_error_estimate[k] = ∆q_k - ∆q_hat[k];
         v_error_estimate[k] = ∆v_k - ∆v_hat[k];

@@ -15,6 +15,24 @@ using quantities::Variation;
 
 namespace integrators {
 
+// This class solves ordinary differential equations of the form q″ = f(q, t)
+// using an embedded Runge-Kutta-Nyström method.  The usual notations are used
+// for the coefficients, i.e.,
+//   c for the nodes;
+//   a for the Runge-Kutta matrix;
+//   b̂ for the position weights of the high-order method;
+//   b̂′ for the velocity weights of the high-order method;
+//   b for the for the position weights of the low-order method;
+//   b′ for the for the velocity weights of the low-order method.
+// See Dormand, El-Mikkawy and Prince (1986),
+// Families of Runge-Kutta-Nyström formulae, for an example.
+// In the implementation, we follow Dormand, El-Mikkawy and Prince in calling
+// the results of the right-hand-side evaluations gᵢ.  The notations kᵢ or fᵢ
+// also appear in the litterature.
+// Since we are interested in physical applications, we call the solution q and
+// its derivative v, rather than the more common y and y′ found in the
+// literature on Runge-Kutta-Nyström methods.
+
 class ExplicitEmbeddedRungeKuttaNyströmIntegrator {
  public:
   ExplicitEmbeddedRungeKuttaNyströmIntegrator(
@@ -26,7 +44,7 @@ class ExplicitEmbeddedRungeKuttaNyströmIntegrator {
       std::vector<double> const& b_prime,
       int const lower_order);
 
-  virtual ~ExplicitEmbeddedRungeKuttaNyströmIntegrator() = default;
+  ~ExplicitEmbeddedRungeKuttaNyströmIntegrator() = default;
 
   ExplicitEmbeddedRungeKuttaNyströmIntegrator() = delete;
   ExplicitEmbeddedRungeKuttaNyströmIntegrator(
@@ -53,8 +71,9 @@ class ExplicitEmbeddedRungeKuttaNyströmIntegrator {
   using RightHandSideComputation =
       std::function<
           void(Time const& t,
-               std::vector<Position> const&,
-               not_null<std::vector<Variation<Variation<Position>>>*> const)>;
+               std::vector<Position> const& positions,
+               not_null<std::vector<
+                   Variation<Variation<Position>>>*> const accelerations)>;
 
   template<typename Position>
   using StepSizeController =
@@ -78,19 +97,13 @@ class ExplicitEmbeddedRungeKuttaNyströmIntegrator {
  protected:
   int stages_;
   int lower_order_;
-  // The Runge-Kutta matrix.
+  std::vector<double> c_;
   // TODO(egg): This is really a strictly lower-triangular matrix, so we should
   // store it in a smarter way eventually.
   std::vector<std::vector<double>> a_;
-  // The nodes.
-  std::vector<double> c_;
-  // The weights b̂ for the high-order method for the positions.
   std::vector<double> b_hat_;
-  // The weights b̂′ for the high-order method for the velocities.
   std::vector<double> b_prime_hat_;
-  // The weights b for the low-order method for the positions.
   std::vector<double> b_;
-  // The weights b′ for the low-order method for the velocities.
   std::vector<double> b_prime_;
 };
 

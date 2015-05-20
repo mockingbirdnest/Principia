@@ -57,6 +57,9 @@ TEST_F(ExplicitEmbeddedRungeKuttaNyströmIntegratorTest,
   Time const t_final = 10 * period;
   Length const length_tolerance = 1 * Milli(Metre);
   Speed const speed_tolerance = 1 * Milli(Metre) / Second;
+  int const steps_forward = 132;
+  // We integrate backward with double the tolerance.
+  int const steps_backward = 112;
 
   ExplicitEmbeddedRungeKuttaNyströmIntegrator::Solution<Length, Speed> solution;
   integrator.Solve<Length>(
@@ -73,20 +76,22 @@ TEST_F(ExplicitEmbeddedRungeKuttaNyströmIntegratorTest,
   EXPECT_THAT(AbsoluteError(v_initial, solution.back().momenta[0].value),
               AllOf(Ge(2E-3 * Metre / Second), Le(3E-3 * Metre / Second)));
   EXPECT_EQ(t_final, solution.back().time.value);
+  EXPECT_EQ(steps_forward, solution.size());
   integrator.Solve<Length>(
       ComputeHarmonicOscillatorAcceleration,
       solution.back(),
       t_initial,
       t_initial - t_final,
       std::bind(HarmonicOscillatorToleranceRatio,
-                _1, _2, _3, length_tolerance, speed_tolerance),
+                _1, _2, _3, 2 * length_tolerance, 2 * speed_tolerance),
       0.9,
       &solution);
   EXPECT_THAT(AbsoluteError(x_initial, solution.back().positions[0].value),
-              AllOf(Ge(7E-4 * Metre), Le(8E-4 * Metre)));
+              AllOf(Ge(1E-3 * Metre), Le(2E-3 * Metre)));
   EXPECT_THAT(AbsoluteError(v_initial, solution.back().momenta[0].value),
-              AllOf(Ge(1E-6 * Metre / Second), Le(2E-6 * Metre / Second)));
+              AllOf(Ge(2E-3 * Metre / Second), Le(3E-3 * Metre / Second)));
   EXPECT_EQ(t_initial, solution.back().time.value);
+  EXPECT_EQ(steps_backward, solution.size() - steps_forward);
 }
 
 }  // namespace integrators
