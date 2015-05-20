@@ -117,10 +117,13 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="arrays.hpp" />
+    <ClInclude Include="arrays_body.hpp" />
     <ClInclude Include="чебышёв_series.hpp" />
     <ClInclude Include="чебышёв_series_body.hpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="array_test.cpp" />
     <ClCompile Include="newhall.mathematica.cpp" />
     <ClCompile Include="чебышёв_series_test.cpp" />
   </ItemGroup>
