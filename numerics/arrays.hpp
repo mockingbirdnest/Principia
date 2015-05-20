@@ -17,6 +17,9 @@ class FixedVector {
 
   bool operator==(FixedVector const& right) const;
 
+  FixedVector& operator=(FixedVector const& right);
+  FixedVector& operator=(std::initializer_list<Scalar> const& right);
+
  private:
   std::array<Scalar, size> data_;
 

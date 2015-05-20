@@ -2,6 +2,8 @@
 
 #include "numerics/arrays.hpp"
 
+#include "glog/logging.h"
+
 namespace principia {
 namespace numerics {
 
@@ -20,6 +22,21 @@ FixedVector<Scalar, size>::FixedVector(std::array<Scalar, size> data)
 template<typename Scalar, int size>
 bool FixedVector<Scalar, size>::operator==(FixedVector const& right) const {
   return data_ == right.data_;
+}
+
+template<typename Scalar, int size>
+FixedVector<Scalar, size>& FixedVector<Scalar, size>::operator=(
+    FixedVector const& right) {
+  data_ = right.data_;
+  return *this;
+}
+
+template<typename Scalar, int size>
+FixedVector<Scalar, size>& FixedVector<Scalar, size>::operator=(
+    std::initializer_list<Scalar> const& right) {
+  CHECK_EQ(size, right.size());
+  std::copy(right.begin(), right.end(), data_.begin());
+  return *this;
 }
 
 template<typename Scalar, int rows, int columns>
