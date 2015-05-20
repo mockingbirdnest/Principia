@@ -4,7 +4,7 @@ namespace principia {
 namespace geometry {
 
 template<typename Scalar>
-Sign::Sign(Scalar const& scalar) : negative_(scalar < 0) {}
+Sign::Sign(Scalar const& scalar) : negative_(scalar < Scalar()) {}
 
 inline bool Sign::Negative() const {
   return negative_;
