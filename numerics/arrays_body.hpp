@@ -2,6 +2,8 @@
 
 #include "numerics/arrays.hpp"
 
+#include <algorithm>
+
 #include "glog/logging.h"
 
 namespace principia {

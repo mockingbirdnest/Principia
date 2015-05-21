@@ -6,7 +6,7 @@ namespace principia {
 namespace numerics {
 
 class ArraysTest : public ::testing::Test {
-protected:
+ protected:
   ArraysTest()
     : m34_({-8, -6, -4, -7,
             -4, -10, 9, -5,
