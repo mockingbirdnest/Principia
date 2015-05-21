@@ -22,7 +22,6 @@ class FixedVector {
   FixedVector(std::initializer_list<Scalar> const& data);
 
   bool operator==(FixedVector const& right) const;
-
   FixedVector& operator=(std::initializer_list<Scalar> const& right);
 
  private:

@@ -7,8 +7,6 @@
 namespace principia {
 namespace numerics {
 
-std::array<double, 2> const x{{1,2}};
-
 template<typename Scalar, int size>
 FixedVector<Scalar, size>::FixedVector() {
   Scalar zero{};
@@ -61,7 +59,7 @@ template<typename Scalar, int rows, int columns>
 FixedMatrix<Scalar, rows, columns>&
 FixedMatrix<Scalar, rows, columns>::operator=(
     std::initializer_list<Scalar> const& right) {
-  CHECK_EQ(size, right.size());
+  CHECK_EQ(rows * columns, right.size());
   std::copy(right.begin(), right.end(), data_.begin());
   return *this;
 }
@@ -71,12 +69,12 @@ FixedVector<Product<ScalarLeft, ScalarRight>, rows> operator*(
     FixedMatrix<ScalarLeft, rows, columns> const& left,
     FixedVector<ScalarRight, columns> const& right) {
   FixedVector<Product<ScalarLeft, ScalarRight>, rows> result;
-  auto const* row_start = left.data_.data();
+  auto const* row = left.data_.data();
   for (int i = 0; i < rows; ++i) {
     for (int j = 0; j < columns; ++j) {
-      result.data_[i] += row_start[j] * right.data_[j];
+      result.data_[i] += row[j] * right.data_[j];
     }
-    row_start += columns;
+    row += columns;
   }
   return result;
 }

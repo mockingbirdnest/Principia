@@ -26,6 +26,18 @@ TEST_F(ArraysTest, Assignment) {
   w2 = {1, 2};
   EXPECT_EQ(u2, v2);
   EXPECT_EQ(u2, w2);
+
+  FixedMatrix<double, 2, 3> l23({1, 2, 3,
+                                4, 5, 6});
+  FixedMatrix<double, 2, 3> m23 = {1, 2, 3,
+                                   4, 5, 6};
+  FixedMatrix<double, 2, 3> n23 = {0, 0, 0,
+                                   0, 0, 0};
+  n23 = {1, 2, 3,
+         4, 5, 6};
+  EXPECT_EQ(l23, m23);
+  EXPECT_EQ(l23, n23);
+
 }
 
 TEST_F(ArraysTest, Multiplication) {
