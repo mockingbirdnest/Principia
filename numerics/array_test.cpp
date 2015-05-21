@@ -37,7 +37,6 @@ TEST_F(ArraysTest, Assignment) {
          4, 5, 6};
   EXPECT_EQ(l23, m23);
   EXPECT_EQ(l23, n23);
-
 }
 
 TEST_F(ArraysTest, Multiplication) {
