@@ -11,7 +11,7 @@ std::array<double, 2> const x{{1,2}};
 
 template<typename Scalar, int size>
 FixedVector<Scalar, size>::FixedVector() {
-  Scalar zero{};  // Zero initialization.
+  Scalar zero{};
   data_.fill(zero);
 }
 
