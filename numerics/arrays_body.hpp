@@ -66,11 +66,11 @@ FixedMatrix<Scalar, rows, columns>::operator=(
   return *this;
 }
 
-template<typename Scalar, int rows, int columns>
-FixedVector<Scalar, rows> operator*(
-    FixedMatrix<Scalar, rows, columns> const& left,
-    FixedVector<Scalar, columns> const& right) {
-  FixedVector<Scalar, rows> result;
+template<typename ScalarLeft, typename ScalarRight, int rows, int columns>
+FixedVector<Product<ScalarLeft, ScalarRight>, rows> operator*(
+    FixedMatrix<ScalarLeft, rows, columns> const& left,
+    FixedVector<ScalarRight, columns> const& right) {
+  FixedVector<Product<ScalarLeft, ScalarRight>, rows> result;
   auto const* row_start = left.data_.data();
   for (int i = 0; i < rows; ++i) {
     for (int j = 0; j < columns; ++j) {

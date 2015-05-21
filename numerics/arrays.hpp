@@ -3,7 +3,12 @@
 #include <array>
 #include <initializer_list>
 
+#include "quantities/quantities.hpp"
+
 namespace principia {
+
+using quantities::Product;
+
 namespace numerics {
 
 template<typename Scalar, int rows, int columns>
@@ -23,10 +28,10 @@ class FixedVector {
  private:
   std::array<Scalar, size> data_;
 
-  template<typename S, int r, int c>
-  friend FixedVector<S, r> operator*(
-      FixedMatrix<S, r, c> const& left,
-      FixedVector<S, c> const& right);
+  template<typename L, typename R, int r, int c>
+  friend FixedVector<Product<L, R>, r> operator*(
+      FixedMatrix<L, r, c> const& left,
+      FixedVector<R, c> const& right);
 };
 
 template<typename Scalar, int rows, int columns>
@@ -42,16 +47,16 @@ class FixedMatrix {
  private:
   std::array<Scalar, rows * columns> data_;
 
-  template<typename Scalar, int r, int c>
-  friend FixedVector<Scalar, r> operator*(
-      FixedMatrix<Scalar, r, c> const& left,
-      FixedVector<Scalar, c> const& right);
+  template<typename L, typename R, int r, int c>
+  friend FixedVector<Product<L, R>, r> operator*(
+      FixedMatrix<L, r, c> const& left,
+      FixedVector<R, c> const& right);
 };
 
-template<typename Scalar, int rows, int columns>
-FixedVector<Scalar, rows> operator*(
-    FixedMatrix<Scalar, rows, columns> const& left,
-    FixedVector<Scalar, columns> const& right);
+template<typename ScalarLeft, typename ScalarRight, int rows, int columns>
+FixedVector<Product<ScalarLeft, ScalarRight>, rows> operator*(
+    FixedMatrix<ScalarLeft, rows, columns> const& left,
+    FixedVector<ScalarRight, columns> const& right);
 
 }  // namespace numerics
 }  // namespace principia
