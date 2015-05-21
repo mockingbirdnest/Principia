@@ -16,14 +16,14 @@ using quantities::Variation;
 namespace integrators {
 
 // This class solves ordinary differential equations of the form q″ = f(q, t)
-// using an embedded Runge-Kutta-Nyström method.  The usual notations are used
-// for the coefficients, i.e.,
+// using an embedded Runge-Kutta-Nyström method.  We follow the standard
+// conventions for the coefficients, i.e.,
 //   c for the nodes;
 //   a for the Runge-Kutta matrix;
 //   b̂ for the position weights of the high-order method;
 //   b̂′ for the velocity weights of the high-order method;
-//   b for the for the position weights of the low-order method;
-//   b′ for the for the velocity weights of the low-order method.
+//   b for the position weights of the low-order method;
+//   b′ for the velocity weights of the low-order method.
 // See Dormand, El-Mikkawy and Prince (1986),
 // Families of Runge-Kutta-Nyström formulae, for an example.
 // In the implementation, we follow Dormand, El-Mikkawy and Prince in calling

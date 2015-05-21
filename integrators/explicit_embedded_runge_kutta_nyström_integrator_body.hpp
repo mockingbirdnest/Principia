@@ -37,7 +37,7 @@ DormandElMikkawyPrince1986RKN434FM() {
       {-7.0 / 150.0,  67.0 / 150.0,   3.0 /  20.0, -1.0 / 20.0},
       // b′
       {13.0 /  21.0, -20.0 /  27.0, 275.0 / 189.0, -1.0 /  3.0},
-      3);  // lower_order
+      3 /*lower_order*/);
   return integrator;
 }
 
@@ -154,7 +154,7 @@ void ExplicitEmbeddedRungeKuttaNyströmIntegrator::Solve(
       for (int i = 0; i < stages_; ++i) {
         Time const t_stage = t.value + c_[i] * h;
         for (int k = 0; k < dimension; ++k) {
-          Acceleration ∑j_a_ij_g_jk = Acceleration();
+          Acceleration ∑j_a_ij_g_jk{};
           for (int j = 0; j < i; ++j) {
             ∑j_a_ij_g_jk += a_[i][j] * g[j][k];
           }
@@ -167,14 +167,10 @@ void ExplicitEmbeddedRungeKuttaNyströmIntegrator::Solve(
 
       // Increment computation and step size control.
       for (int k = 0; k < dimension; ++k) {
-        Acceleration ∑i_b_hat_i_g_ik = Acceleration();
-        Acceleration ∑i_b_i_g_ik = Acceleration();
-        Acceleration ∑i_b_prime_hat_i_g_ik = Acceleration();
-        Acceleration ∑i_b_prime_i_g_ik = Acceleration();
-        // Low-order position increment.
-        Displacement ∆q_k;
-        // Low-order velocity increment.
-        Velocity ∆v_k;
+        Acceleration ∑i_b_hat_i_g_ik{};
+        Acceleration ∑i_b_i_g_ik{};
+        Acceleration ∑i_b_prime_hat_i_g_ik{};
+        Acceleration ∑i_b_prime_i_g_ik{};
         // Please keep the eight assigments below aligned, they become illegible
         // otherwise.
         for (int i = 0; i < stages_; ++i) {
@@ -183,10 +179,11 @@ void ExplicitEmbeddedRungeKuttaNyströmIntegrator::Solve(
           ∑i_b_prime_hat_i_g_ik += b_prime_hat_[i] * g[i][k];
           ∑i_b_prime_i_g_ik     += b_prime_[i] * g[i][k];
         }
-        ∆q_hat[k] = h * (h * (∑i_b_hat_i_g_ik) + v_hat[k].value);
-        ∆q_k      = h * (h * (∑i_b_i_g_ik) + v_hat[k].value);
-        ∆v_hat[k] = h * ∑i_b_prime_hat_i_g_ik;
-        ∆v_k      = h * ∑i_b_prime_i_g_ik;
+        // The hat-less ∆q and ∆v are the low-order increments.
+        ∆q_hat[k]               = h * (h * (∑i_b_hat_i_g_ik) + v_hat[k].value);
+        Displacement const ∆q_k = h * (h * (∑i_b_i_g_ik) + v_hat[k].value);
+        ∆v_hat[k]               = h * ∑i_b_prime_hat_i_g_ik;
+        Velocity const ∆v_k     = h * ∑i_b_prime_i_g_ik;
 
         q_error_estimate[k] = ∆q_k - ∆q_hat[k];
         v_error_estimate[k] = ∆v_k - ∆v_hat[k];
