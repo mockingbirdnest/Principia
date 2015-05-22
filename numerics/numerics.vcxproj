@@ -65,13 +65,10 @@
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release_LLVM|Win32'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
     <Import Project="..\google_test_framework.props" />
-    <Import Project="..\google_protobuf.props" />
     <Import Project="..\include_solution.props" />
-    <Import Project="..\suppress_useless_warnings.props" />
-    <Import Project="..\warnings_as_errors.props" />
     <Import Project="..\llvm_compatibility.props" />
-    <Import Project="..\profiling.props" />
     <Import Project="..\generate_version_header.props" />
+    <Import Project="..\google_protobuf.props" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup />
@@ -108,7 +105,6 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <TreatWarningAsError>false</TreatWarningAsError>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
