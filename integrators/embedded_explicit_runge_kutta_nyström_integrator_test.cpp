@@ -1,5 +1,5 @@
 ﻿
-#include "integrators/explicit_embedded_runge_kutta_nyström_integrator.hpp"
+#include "integrators/embedded_explicit_runge_kutta_nyström_integrator.hpp"
 
 #include "base/macros.hpp"
 #include "glog/logging.h"
@@ -43,12 +43,12 @@ double HarmonicOscillatorToleranceRatio(
 
 }  // namespace
 
-class ExplicitEmbeddedRungeKuttaNyströmIntegratorTest
+class EmbeddedExplicitRungeKuttaNyströmIntegratorTest
     : public ::testing::Test {};
 
-TEST_F(ExplicitEmbeddedRungeKuttaNyströmIntegratorTest,
+TEST_F(EmbeddedExplicitRungeKuttaNyströmIntegratorTest,
        HarmonicOscillatorBackAndForth) {
-  ExplicitEmbeddedRungeKuttaNyströmIntegrator const& integrator =
+  EmbeddedExplicitRungeKuttaNyströmIntegrator const& integrator =
       DormandElMikkawyPrince1986RKN434FM();
   Length const x_initial = 1 * Metre;
   Speed const v_initial = 0 * Metre / Second;
@@ -61,7 +61,7 @@ TEST_F(ExplicitEmbeddedRungeKuttaNyströmIntegratorTest,
   // We integrate backward with double the tolerance.
   int const steps_backward = 112;
 
-  ExplicitEmbeddedRungeKuttaNyströmIntegrator::Solution<Length, Speed> solution;
+  EmbeddedExplicitRungeKuttaNyströmIntegrator::Solution<Length, Speed> solution;
   integrator.Solve<Length>(
       ComputeHarmonicOscillatorAcceleration,
       {{x_initial}, {v_initial}, t_initial},

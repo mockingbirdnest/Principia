@@ -32,11 +32,11 @@
     <ClInclude Include="symplectic_runge_kutta_nyström_integrator_body.hpp">
       <Filter>Source Files</Filter>
     </ClInclude>
-    <ClInclude Include="explicit_embedded_runge_kutta_nyström_integrator.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="explicit_embedded_runge_kutta_nyström_integrator_body.hpp">
+    <ClInclude Include="embedded_explicit_runge_kutta_nyström_integrator_body.hpp">
       <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="embedded_explicit_runge_kutta_nyström_integrator.hpp">
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -49,7 +49,7 @@
     <ClCompile Include="symplectic_runge_kutta_nyström_integrator_test.cpp">
       <Filter>Test Files</Filter>
     </ClCompile>
-    <ClCompile Include="explicit_embedded_runge_kutta_nyström_integrator_test.cpp">
+    <ClCompile Include="embedded_explicit_runge_kutta_nyström_integrator_test.cpp">
       <Filter>Test Files</Filter>
     </ClCompile>
   </ItemGroup>

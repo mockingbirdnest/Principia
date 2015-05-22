@@ -33,9 +33,9 @@ namespace integrators {
 // its derivative v, rather than the more common y and y′ found in the
 // literature on Runge-Kutta-Nyström methods.
 
-class ExplicitEmbeddedRungeKuttaNyströmIntegrator {
+class EmbeddedExplicitRungeKuttaNyströmIntegrator {
  public:
-  ExplicitEmbeddedRungeKuttaNyströmIntegrator(
+  EmbeddedExplicitRungeKuttaNyströmIntegrator(
       std::vector<double> const& c,
       std::vector<std::vector<double>> const& a,
       std::vector<double> const& b_hat,
@@ -44,17 +44,17 @@ class ExplicitEmbeddedRungeKuttaNyströmIntegrator {
       std::vector<double> const& b_prime,
       int const lower_order);
 
-  ~ExplicitEmbeddedRungeKuttaNyströmIntegrator() = default;
+  ~EmbeddedExplicitRungeKuttaNyströmIntegrator() = default;
 
-  ExplicitEmbeddedRungeKuttaNyströmIntegrator() = delete;
-  ExplicitEmbeddedRungeKuttaNyströmIntegrator(
-      ExplicitEmbeddedRungeKuttaNyströmIntegrator const&) = delete;
-  ExplicitEmbeddedRungeKuttaNyströmIntegrator(
-      ExplicitEmbeddedRungeKuttaNyströmIntegrator&&) = delete;
-  ExplicitEmbeddedRungeKuttaNyströmIntegrator& operator=(
-      ExplicitEmbeddedRungeKuttaNyströmIntegrator const&) = delete;
-  ExplicitEmbeddedRungeKuttaNyströmIntegrator& operator=(
-      ExplicitEmbeddedRungeKuttaNyströmIntegrator&&) = delete;
+  EmbeddedExplicitRungeKuttaNyströmIntegrator() = delete;
+  EmbeddedExplicitRungeKuttaNyströmIntegrator(
+      EmbeddedExplicitRungeKuttaNyströmIntegrator const&) = delete;
+  EmbeddedExplicitRungeKuttaNyströmIntegrator(
+      EmbeddedExplicitRungeKuttaNyströmIntegrator&&) = delete;
+  EmbeddedExplicitRungeKuttaNyströmIntegrator& operator=(
+      EmbeddedExplicitRungeKuttaNyströmIntegrator const&) = delete;
+  EmbeddedExplicitRungeKuttaNyströmIntegrator& operator=(
+      EmbeddedExplicitRungeKuttaNyströmIntegrator&&) = delete;
 
   // TODO(egg): Copied from MotionIntegrator, unify.
   template<typename Position, typename Momentum>
@@ -113,10 +113,10 @@ class ExplicitEmbeddedRungeKuttaNyströmIntegrator {
 // low order:  3;
 // stages:     4;
 // first-same-as-last, minimizes the 4th order truncation error.
-ExplicitEmbeddedRungeKuttaNyströmIntegrator const&
+EmbeddedExplicitRungeKuttaNyströmIntegrator const&
 DormandElMikkawyPrince1986RKN434FM();
 
 }  // namespace integrators
 }  // namespace principia
 
-#include "integrators/explicit_embedded_runge_kutta_nyström_integrator_body.hpp"
+#include "integrators/embedded_explicit_runge_kutta_nyström_integrator_body.hpp"
