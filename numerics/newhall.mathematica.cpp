@@ -2,11 +2,13 @@
 
 #include <array>
 
+#include "numerics/arrays.hpp"
+
 namespace principia {
 namespace numerics {
 
-std::array<double, (3 + 1) * (2 * 8 + 2)> const
-    newhall_c_matrix_degree_3_divisions_8 =
+FixedMatrix<double, 3 + 1, 2 * 8 + 2> const
+    newhall_c_matrix_degree_3_divisions_8_w04(
         {0.5,
          -0.125,
          0,
@@ -81,10 +83,10 @@ std::array<double, (3 + 1) * (2 * 8 + 2)> const
          0,
          0,
          0.0625,
-         0.0625};
+         0.0625});
 
-std::array<double, (4 + 1) * (2 * 8 + 2)> const
-    newhall_c_matrix_degree_4_divisions_8 =
+FixedMatrix<double, 4 + 1, 2 * 8 + 2> const
+    newhall_c_matrix_degree_4_divisions_8_w04(
         {0.3334967362615748,
          -0.028993028819397325,
          0.014942600591909954,
@@ -178,10 +180,10 @@ std::array<double, (4 + 1) * (2 * 8 + 2)> const
          0.0049808668639699846,
          0.005464722502184212,
          -0.0555010879128084,
-         -0.03200232372686756};
+         -0.03200232372686756});
 
-std::array<double, (5 + 1) * (2 * 8 + 2)> const
-    newhall_c_matrix_degree_5_divisions_8 =
+FixedMatrix<double, 5 + 1, 2 * 8 + 2> const
+    newhall_c_matrix_degree_5_divisions_8_w04(
         {0.3334967362615748,
          -0.028993028819397325,
          0.014942600591909954,
@@ -294,10 +296,10 @@ std::array<double, (5 + 1) * (2 * 8 + 2)> const
          -0.011195911892743163,
          -0.00989505355853872,
          0.0431495299716275,
-         0.017453769737792887};
+         0.017453769737792887});
 
-std::array<double, (6 + 1) * (2 * 8 + 2)> const
-    newhall_c_matrix_degree_6_divisions_8 =
+FixedMatrix<double, 6 + 1, 2 * 8 + 2> const
+    newhall_c_matrix_degree_6_divisions_8_w04(
         {0.29219783443707037,
          -0.01650204876937124,
          0.037277637270234865,
@@ -429,10 +431,10 @@ std::array<double, (6 + 1) * (2 * 8 + 2)> const
          0.01721409413717444,
          0.010688435283141095,
          -0.031829953718359554,
-         -0.009627067532662011};
+         -0.009627067532662011});
 
-std::array<double, (7 + 1) * (2 * 8 + 2)> const
-    newhall_c_matrix_degree_7_divisions_8 =
+FixedMatrix<double, 7 + 1, 2 * 8 + 2> const
+    newhall_c_matrix_degree_7_divisions_8_w04(
         {0.29219783443707037,
          -0.01650204876937124,
          0.037277637270234865,
@@ -583,10 +585,10 @@ std::array<double, (7 + 1) * (2 * 8 + 2)> const
          -0.02190168265988015,
          -0.0056160241173592255,
          0.03165537365655292,
-         0.005943610171321292};
+         0.005943610171321292});
 
-std::array<double, (8 + 1) * (2 * 8 + 2)> const
-    newhall_c_matrix_degree_8_divisions_8 =
+FixedMatrix<double, 8 + 1, 2 * 8 + 2> const
+    newhall_c_matrix_degree_8_divisions_8_w04(
         {0.23402045525812332,
          -0.009931834005138064,
          0.07866731614173555,
@@ -756,10 +758,10 @@ std::array<double, (8 + 1) * (2 * 8 + 2)> const
          0.030035623505748153,
          -0.0037129215090585216,
          -0.042218106185240085,
-         -0.0047678673135658585};
+         -0.0047678673135658585});
 
-std::array<double, (9 + 1) * (2 * 8 + 2)> const
-    newhall_c_matrix_degree_9_divisions_8 =
+FixedMatrix<double, 9 + 1, 2 * 8 + 2> const
+    newhall_c_matrix_degree_9_divisions_8_w04(
         {0.23402045525812332,
          -0.009931834005138064,
          0.07866731614173555,
@@ -948,10 +950,10 @@ std::array<double, (9 + 1) * (2 * 8 + 2)> const
          -0.03227429344361735,
          0.014838088386839173,
          0.05598979970865338,
-         0.004663720001414206};
+         0.004663720001414206});
 
-std::array<double, (10 + 1) * (2 * 8 + 2)> const
-    newhall_c_matrix_degree_10_divisions_8 =
+FixedMatrix<double, 10 + 1, 2 * 8 + 2> const
+    newhall_c_matrix_degree_10_divisions_8_w04(
         {0.13688929419105048,
          -0.002662007021501462,
          0.12802294506066067,
@@ -1159,10 +1161,10 @@ std::array<double, (10 + 1) * (2 * 8 + 2)> const
          0.01960577716089189,
          -0.01284130668680318,
          -0.03858388477609944,
-         -0.0028878288244193672};
+         -0.0028878288244193672});
 
-std::array<double, (11 + 1) * (2 * 8 + 2)> const
-    newhall_c_matrix_degree_11_divisions_8 =
+FixedMatrix<double, 11 + 1, 2 * 8 + 2> const
+    newhall_c_matrix_degree_11_divisions_8_w04(
         {0.13688929419105048,
          -0.002662007021501462,
          0.12802294506066067,
@@ -1389,10 +1391,10 @@ std::array<double, (11 + 1) * (2 * 8 + 2)> const
          -0.004379554772373713,
          0.007987713121444057,
          0.02003143030256607,
-         0.0014020789186142552};
+         0.0014020789186142552});
 
-std::array<double, (12 + 1) * (2 * 8 + 2)> const
-    newhall_c_matrix_degree_12_divisions_8 =
+FixedMatrix<double, 12 + 1, 2 * 8 + 2> const
+    newhall_c_matrix_degree_12_divisions_8_w04(
         {0.1294477795126886,
          -0.002206436214498364,
          0.09857693099697991,
@@ -1638,10 +1640,10 @@ std::array<double, (12 + 1) * (2 * 8 + 2)> const
          -0.06866041246569138,
          -0.013670564003902565,
          -0.017351668245517208,
-         -0.0010622721108709066};
+         -0.0010622721108709066});
 
-std::array<double, (13 + 1) * (2 * 8 + 2)> const
-    newhall_c_matrix_degree_13_divisions_8 =
+FixedMatrix<double, 13 + 1, 2 * 8 + 2> const
+    newhall_c_matrix_degree_13_divisions_8_w04(
         {0.1294477795126886,
          -0.002206436214498364,
          0.09857693099697991,
@@ -1906,10 +1908,10 @@ std::array<double, (13 + 1) * (2 * 8 + 2)> const
          0.06742405198208097,
          0.010106220946811916,
          0.009790552814963807,
-         0.0005609931490456848};
+         0.0005609931490456848});
 
-std::array<double, (14 + 1) * (2 * 8 + 2)> const
-    newhall_c_matrix_degree_14_divisions_8 =
+FixedMatrix<double, 14 + 1, 2 * 8 + 2> const
+    newhall_c_matrix_degree_14_divisions_8_w04(
         {0.12390367481831142,
          -0.0019089850568440297,
          0.0331881228498598,
@@ -2193,10 +2195,10 @@ std::array<double, (14 + 1) * (2 * 8 + 2)> const
          -0.06738600412281205,
          -0.007941256820526297,
          -0.0057134404553152406,
-         -0.00030653632485443897};
+         -0.00030653632485443897});
 
-std::array<double, (15 + 1) * (2 * 8 + 2)> const
-    newhall_c_matrix_degree_15_divisions_8 =
+FixedMatrix<double, 15 + 1, 2 * 8 + 2> const
+    newhall_c_matrix_degree_15_divisions_8_w04(
         {0.12390367481831142,
          -0.0019089850568440297,
          0.0331881228498598,
@@ -2499,10 +2501,10 @@ std::array<double, (15 + 1) * (2 * 8 + 2)> const
          0.058673723302619774,
          0.005819236003118013,
          0.0031883697761380244,
-         0.00016147229976212283};
+         0.00016147229976212283});
 
-std::array<double, (16 + 1) * (2 * 8 + 2)> const
-    newhall_c_matrix_degree_16_divisions_8 =
+FixedMatrix<double, 16 + 1, 2 * 8 + 2> const
+    newhall_c_matrix_degree_16_divisions_8_w04(
         {0.11923006874707555,
          -0.0016836734693877551,
          -0.09020537738905086,
@@ -2824,10 +2826,10 @@ std::array<double, (16 + 1) * (2 * 8 + 2)> const
          -0.044154770903070226,
          -0.0038699924414210126,
          -0.0016723895907569378,
-         -0.00008062484252960444};
+         -0.00008062484252960444});
 
-std::array<double, (17 + 1) * (2 * 8 + 2)> const
-    newhall_c_matrix_degree_17_divisions_8 =
+FixedMatrix<double, 17 + 1, 2 * 8 + 2> const
+    newhall_c_matrix_degree_17_divisions_8_w04(
         {0.11923006874707555,
          -0.0016836734693877551,
          -0.09020537738905086,
@@ -3168,7 +3170,7 @@ std::array<double, (17 + 1) * (2 * 8 + 2)> const
          0.03287650721664327,
          0.002579994960947342,
          0.000876507216643271,
-         0.00004031242126480222};
+         0.00004031242126480222});
 
 }  // namespace numerics
 }  // namespace principia
