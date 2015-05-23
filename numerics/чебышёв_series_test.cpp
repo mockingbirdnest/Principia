@@ -230,22 +230,24 @@ TEST_F(ЧебышёвSeriesTest, SerializationSuccess) {
 TEST_F(ЧебышёвSeriesTest, NewhallApproximation) {
   std::vector<Length> length_absolute_errors;
 
-  auto length_function = [this](Instant const t) -> Length {
-    return 2 * Metre *
-           std::sin((t - t_min_) / (0.3 * Second)) *
-           std::exp((t - t_min_) / (1 * Second));
-  };
-  auto speed_function = [this](Instant const t) -> Speed {
-    return ((2 * Metre) / (0.3 * Second) *
-                 std::cos((t - t_min_) / (0.3 * Second)) +
-            (2 * Metre / Second) *
-                 std::sin((t - t_min_) / (0.3 * Second))) *
-                     std::exp((t - t_min_) / (1 * Second));
-  };
+  {
+    auto length_function = [this](Instant const t) -> Length {
+      return 2 * Metre *
+             std::sin((t - t_min_) / (0.3 * Second)) *
+             std::exp((t - t_min_) / (1 * Second));
+    };
+    auto speed_function = [this](Instant const t) -> Speed {
+      return ((2 * Metre) / (0.3 * Second) *
+                   std::cos((t - t_min_) / (0.3 * Second)) +
+              (2 * Metre / Second) *
+                   std::sin((t - t_min_) / (0.3 * Second))) *
+                       std::exp((t - t_min_) / (1 * Second));
+    };
 
-  NewhallApproximationErrors(length_function,
-                             speed_function,
-                             &length_absolute_errors);
+    NewhallApproximationErrors(length_function,
+                               speed_function,
+                               &length_absolute_errors);
+  }
 
   ExpectMultipart(length_absolute_errors,
                   ElementsAre(Lt(1.7E2 * Metre),
@@ -263,6 +265,39 @@ TEST_F(ЧебышёвSeriesTest, NewhallApproximation) {
                               Lt(4.3E-3 * Metre),
                               Lt(1.7E-3 * Metre),
                               Lt(7.6E-4 * Metre)));
+
+  {
+    auto length_function = [this](Instant const t) -> Length {
+      return 5 * Metre * ((t - t_min_) / (0.3 * Second) +
+                          std::pow((t - t_min_) / (4 * Second), 7));
+    };
+    auto speed_function = [this](Instant const t) -> Speed {
+      return 5 * Metre * (1 / (0.3 * Second) +
+                          (7 / (4 * Second)) *
+                              std::pow((t - t_min_) / (4 * Second), 6));
+    };
+
+    NewhallApproximationErrors(length_function,
+                               speed_function,
+                               &length_absolute_errors);
+  }
+
+  ExpectMultipart(length_absolute_errors,
+                  ElementsAre(Lt(2.0 * Metre),
+                              Lt(2.9E-1 * Metre),
+                              Lt(3.6E-2 * Metre),
+                              Lt(2.3E-3 * Metre),
+                              Lt(2.9E-14 * Metre),
+                              Lt(2.9E-14 * Metre),
+                              Lt(2.9E-14 * Metre),
+                              Lt(2.0E-14 * Metre),
+                              Lt(2.4E-14 * Metre),
+                              Lt(2.9E-14 * Metre)),
+                  ElementsAre(Lt(2.2E-14 * Metre),
+                              Lt(1.5E-14 * Metre),
+                              Lt(2.2E-14 * Metre),
+                              Lt(1.6E-14 * Metre),
+                              Lt(4.3E-14 * Metre)));
 }
 
 }  // namespace numerics
