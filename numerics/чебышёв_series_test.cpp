@@ -6,6 +6,7 @@
 
 #include "geometry/named_quantities.hpp"
 #include "gtest/gtest.h"
+#include "gmock/gmock.h"
 #include "quantities/named_quantities.hpp"
 #include "quantities/si.hpp"
 #include "testing_utilities/numerics.hpp"
@@ -18,6 +19,8 @@ using quantities::Speed;
 using si::Metre;
 using si::Second;
 using testing_utilities::AbsoluteError;
+using ::testing::ElementsAre;
+using ::testing::Lt;
 
 namespace numerics {
 
@@ -26,6 +29,52 @@ class ЧебышёвSeriesTest : public ::testing::Test {
   ЧебышёвSeriesTest()
       : t_min_(-1 * Second),
         t_max_(3 * Second) {}
+
+  // TODO(phl): Support for evaluating the derivative.
+  void NewhallApproximationErrors(
+      std::function<Length(Instant const)> length_function,
+      std::function<Speed(Instant const)> speed_function,
+      not_null<std::vector<Length>*> const length_absolute_errors) {
+    std::vector<Length> lengths;
+    std::vector<Speed> speeds;
+    for (Instant t = t_min_; t <= t_max_; t += 0.5 * Second) {
+      lengths.push_back(length_function(t));
+      speeds.push_back(speed_function(t));
+    }
+
+    length_absolute_errors->clear();
+    for (int degree = 3; degree <= 17; ++degree) {
+      ЧебышёвSeries<Length> const approximation =
+          ЧебышёвSeries<Length>::NewhallApproximation(
+              degree, lengths, speeds, t_min_, t_max_);
+      Length absolute_error;
+      for (Instant t = t_min_; t <= t_max_; t += 0.05 * Second) {
+        Length const expected_length = length_function(t);
+        Length const actual_length = approximation.Evaluate(t);
+        absolute_error = std::max(absolute_error,
+                                  AbsoluteError(expected_length, actual_length));
+      }
+      if (!length_absolute_errors->empty()) {
+        //CHECK_LE(absolute_error, length_absolute_errors->back());
+      }
+      length_absolute_errors->push_back(absolute_error);
+    }
+  }
+
+  // A helper that splits an array in two chunks and applies distinct matchers
+  // to the chunks.  Necessary because ElementsAre only supports 10 elements and
+  // ElementsAreArray does not support matches as arguments.
+  template<typename Matcher1, typename Matcher2>
+  void ExpectMultipart(std::vector<Length> const& v,
+                       Matcher1 const& matcher1,
+                       Matcher2 const& matcher2) {
+    std::vector<Length> v_0_9(10);
+    std::copy(v.begin(), v.begin() + 10, v_0_9.begin());
+    EXPECT_THAT(v_0_9, matcher1);
+    std::vector<Length> v_10_end(v.size() - 10);
+    std::copy(v.begin() + 10, v.end(), v_10_end.begin());
+    EXPECT_THAT(v_10_end, matcher2);
+  }
 
   Instant t_min_;
   Instant t_max_;
@@ -179,8 +228,7 @@ TEST_F(ЧебышёвSeriesTest, SerializationSuccess) {
 }
 
 TEST_F(ЧебышёвSeriesTest, NewhallApproximation) {
-  std::vector<Length> lengths;
-  std::vector<Speed> speeds;
+  std::vector<Length> length_absolute_errors;
 
   auto length_function = [this](Instant const t) -> Length {
     return 2 * Metre *
@@ -195,24 +243,26 @@ TEST_F(ЧебышёвSeriesTest, NewhallApproximation) {
                      std::exp((t - t_min_) / (1 * Second));
   };
 
-  for (Instant t = t_min_; t <= t_max_; t += 0.5 * Second) {
-    lengths.push_back(length_function(t));
-    speeds.push_back(speed_function(t));
-  }
+  NewhallApproximationErrors(length_function,
+                             speed_function,
+                             &length_absolute_errors);
 
-  for (int degree = 3; degree <= 17; ++degree) {
-    ЧебышёвSeries<Length> const approximation =
-        ЧебышёвSeries<Length>::NewhallApproximation(
-            degree, lengths, speeds, t_min_, t_max_);
-    Length absolute_error;
-    for (Instant t = t_min_; t <= t_max_; t += 0.05 * Second) {
-      Length const expected_length = length_function(t);
-      Length const actual_length = approximation.Evaluate(t);
-      absolute_error = std::max(absolute_error,
-                                AbsoluteError(expected_length, actual_length));
-    }
-    LOG(ERROR)<<degree<<" "<<absolute_error;
-  }
+  ExpectMultipart(length_absolute_errors,
+                  ElementsAre(Lt(1.7E2 * Metre),
+                              Lt(4.7E1 * Metre),
+                              Lt(4.3E1 * Metre),
+                              Lt(3.8E1 * Metre),
+                              Lt(1.5E1 * Metre),
+                              Lt(6.3 * Metre),
+                              Lt(4.9 * Metre),
+                              Lt(6.5E-1 * Metre),
+                              Lt(2.0E-1 * Metre),
+                              Lt(7.9E-2 * Metre)),
+                  ElementsAre(Lt(1.3E-2 * Metre),
+                              Lt(1.6E-2 * Metre),
+                              Lt(4.3E-3 * Metre),
+                              Lt(1.7E-3 * Metre),
+                              Lt(7.6E-4 * Metre)));
 }
 
 }  // namespace numerics
