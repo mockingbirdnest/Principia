@@ -26,6 +26,12 @@
     <ClInclude Include="arrays_body.hpp">
       <Filter>Source Files</Filter>
     </ClInclude>
+    <ClInclude Include="double_precision.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="double_precision_body.hpp">
+      <Filter>Source Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="чебышёв_series_test.cpp">

@@ -247,7 +247,7 @@ TEST_F(PluginTest, Serialization) {
        index < bodies_.size();
        ++index) {
     Index const parent_index = SolarSystem::parent(index);
-    RelativeDegreesOfFreedom<AliceSun> const from_parent= looking_glass_(
+    RelativeDegreesOfFreedom<AliceSun> const from_parent = looking_glass_(
         solar_system_->trajectories()[index]->
             last().degrees_of_freedom() -
         solar_system_->trajectories()[parent_index]->
@@ -909,7 +909,7 @@ TEST_F(PluginTest, BodyCentredNonrotatingRenderingIntegration) {
        index < bodies_.size();
        ++index) {
     Index const parent_index = SolarSystem::parent(index);
-    RelativeDegreesOfFreedom<AliceSun> const from_parent= looking_glass_(
+    RelativeDegreesOfFreedom<AliceSun> const from_parent = looking_glass_(
         solar_system_->trajectories()[index]->
             last().degrees_of_freedom() -
         solar_system_->trajectories()[parent_index]->

@@ -116,6 +116,8 @@
   <ItemGroup>
     <ClInclude Include="arrays.hpp" />
     <ClInclude Include="arrays_body.hpp" />
+    <ClInclude Include="double_precision.hpp" />
+    <ClInclude Include="double_precision_body.hpp" />
     <ClInclude Include="чебышёв_series.hpp" />
     <ClInclude Include="чебышёв_series_body.hpp" />
   </ItemGroup>

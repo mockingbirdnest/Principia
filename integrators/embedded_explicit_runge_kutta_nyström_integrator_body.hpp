@@ -59,7 +59,7 @@ inline EmbeddedExplicitRungeKuttaNyströmIntegrator::
       b_(b),
       b_prime_(b_prime) {
   CHECK_EQ(a_.size(), stages_);
-  for(int i = 0; i < stages_; ++i) {
+  for (int i = 0; i < stages_; ++i) {
     CHECK_EQ(a_[i].size(), i);
   }
   CHECK_EQ(b_hat_.size(), stages_);
@@ -70,50 +70,52 @@ inline EmbeddedExplicitRungeKuttaNyströmIntegrator::
 
 template<typename Position>
 void EmbeddedExplicitRungeKuttaNyströmIntegrator::Solve(
-    RightHandSideComputation<Position> compute_acceleration,
-    SystemState<Position, Variation<Position>> const& initial_value,
-    Time const& t_final,
-    Time const& first_time_step,
-    StepSizeController<Position> step_size_controller,
-    double const safety_factor,
-    not_null<Solution<Position, Variation<Position>>*> const solution) const {
-  using Displacement = Difference<Position>;
-  using Velocity = Variation<Position>;
-  using Acceleration = Variation<Velocity>;
+    IntegrationProblem<ODE<Position>> const& problem,
+    AdaptiveStepSize<ODE<Position>> const& adaptive_step_size) const {
+  using Displacement = typename ODE<Position>::Displacement;
+  using Velocity = typename ODE<Position>::Velocity;
+  using Acceleration = typename ODE<Position>::Acceleration;
 
   // Argument checks.
-  int const dimension = initial_value.positions.size();
-  CHECK_EQ(initial_value.momenta.size(), dimension);
-  CHECK_NE(first_time_step, Time());
-  Sign const integration_direction = Sign(first_time_step);
+  CHECK_NOTNULL(problem.initial_state);
+  int const dimension = problem.initial_state->positions.size();
+  CHECK_EQ(dimension, problem.initial_state->velocities.size());
+  CHECK_NE(Time(), adaptive_step_size.first_time_step);
+  Sign const integration_direction =
+      Sign(adaptive_step_size.first_time_step);
   if (integration_direction.Positive()) {
     // Integrating forward.
-    CHECK_LT(initial_value.time.value, t_final);
+    CHECK_LT(problem.initial_state->time.value, problem.t_final);
   } else {
     // Integrating backward.
-    CHECK_GT(initial_value.time.value, t_final);
+    CHECK_GT(problem.initial_state->time.value, problem.t_final);
   }
-  CHECK_GT(safety_factor, 0);
-  CHECK_LT(safety_factor, 1);
+  CHECK_GT(adaptive_step_size.safety_factor, 0);
+  CHECK_LT(adaptive_step_size.safety_factor, 1);
+
+  typename ODE<Position>::SystemState current_state = *problem.initial_state;
 
   // Time step.
-  Time h = first_time_step;
-  // Current time.
-  DoublePrecision<Time> t = initial_value.time;
+  Time h = adaptive_step_size.first_time_step;
+  // Current time.  This is a non-const reference whose purpose is to make the
+  // equations more readable.
+  DoublePrecision<Instant>& t = current_state.time;
 
   // Position increment (high-order).
   std::vector<Displacement> ∆q_hat(dimension);
   // Velocity increment (high-order).
   std::vector<Velocity> ∆v_hat(dimension);
-  // Current position.
-  std::vector<DoublePrecision<Position>> q_hat = initial_value.positions;
-  // Current velocity.
-  std::vector<DoublePrecision<Velocity>> v_hat = initial_value.momenta;
+  // Current position.  This is a non-const reference whose purpose is to make
+  // the equations more readable.
+  std::vector<DoublePrecision<Position>>& q_hat = current_state.positions;
+  // Current velocity.  This is a non-const reference whose purpose is to make
+  // the equations more readable.
+  std::vector<DoublePrecision<Velocity>>& v_hat = current_state.velocities;
 
-  // Difference between the low- and high-order approximations of the position.
-  std::vector<Displacement> q_error_estimate(dimension);
-  // Difference between the low- and high-order approximations of the velocity.
-  std::vector<Velocity> v_error_estimate(dimension);
+  // Difference between the low- and high-order approximations.
+  typename ODE<Position>::SystemStateError error_estimate;
+  error_estimate.position_error.resize(dimension);
+  error_estimate.velocity_error.resize(dimension);
 
   // Current Runge-Kutta-Nyström stage.
   std::vector<Position> q_stage(dimension);
@@ -137,12 +139,12 @@ void EmbeddedExplicitRungeKuttaNyströmIntegrator::Solve(
       // Adapt step size.
       // TODO(egg): find out whether there's a smarter way to compute that root,
       // especially if we make the order compile-time.
-      h *= safety_factor * std::pow(tolerance_to_error_ratio,
-                                    1.0 / (lower_order_ + 1));
+      h *= adaptive_step_size.safety_factor *
+               std::pow(tolerance_to_error_ratio, 1.0 / (lower_order_ + 1));
 
     runge_kutta_nyström_step:
       // Termination condition.
-      Time const time_to_end = (t_final - t.value) - t.error;
+      Time const time_to_end = (problem.t_final - t.value) - t.error;
       at_end = integration_direction * h >= integration_direction * time_to_end;
       if (at_end) {
         // The chosen step size will overshoot.  Clip it to just reach the end,
@@ -152,7 +154,7 @@ void EmbeddedExplicitRungeKuttaNyströmIntegrator::Solve(
 
       // Runge-Kutta-Nyström iteration; fills |g|.
       for (int i = 0; i < stages_; ++i) {
-        Time const t_stage = t.value + c_[i] * h;
+        Instant const t_stage = t.value + c_[i] * h;
         for (int k = 0; k < dimension; ++k) {
           Acceleration ∑j_a_ij_g_jk{};
           for (int j = 0; j < i; ++j) {
@@ -161,7 +163,7 @@ void EmbeddedExplicitRungeKuttaNyströmIntegrator::Solve(
           q_stage[k] = q_hat[k].value +
                            h * (c_[i] * v_hat[k].value + h * ∑j_a_ij_g_jk);
         }
-        compute_acceleration(t_stage, q_stage, &g[i]);
+        problem.equation.compute_acceleration(t_stage, q_stage, &g[i]);
       }
       // TODO(egg): handle the FSAL case.
 
@@ -185,20 +187,20 @@ void EmbeddedExplicitRungeKuttaNyströmIntegrator::Solve(
         ∆v_hat[k]               = h * ∑i_b_prime_hat_i_g_ik;
         Velocity const ∆v_k     = h * ∑i_b_prime_i_g_ik;
 
-        q_error_estimate[k] = ∆q_k - ∆q_hat[k];
-        v_error_estimate[k] = ∆v_k - ∆v_hat[k];
+        error_estimate.position_error[k] = ∆q_k - ∆q_hat[k];
+        error_estimate.velocity_error[k] = ∆v_k - ∆v_hat[k];
       }
       tolerance_to_error_ratio =
-          step_size_controller(h, q_error_estimate, v_error_estimate);
+          adaptive_step_size.tolerance_to_error_ratio(h, error_estimate);
     } while (tolerance_to_error_ratio < 1.0);
 
     // Increment the solution with the high-order approximation.
     t.Increment(h);
-    for(int k = 0; k < dimension; ++k) {
+    for (int k = 0; k < dimension; ++k) {
       q_hat[k].Increment(∆q_hat[k]);
       v_hat[k].Increment(∆v_hat[k]);
     }
-    solution->push_back({q_hat, v_hat, t});
+    problem.append_state(current_state);
   }
 }
 

@@ -4,7 +4,7 @@
 #include <vector>
 
 #include "base/not_null.hpp"
-#include "integrators/motion_integrator.hpp"
+#include "integrators/ordinary_differential_equations.hpp"
 #include "quantities/named_quantities.hpp"
 
 namespace principia {
@@ -50,49 +50,19 @@ class EmbeddedExplicitRungeKuttaNyströmIntegrator {
   EmbeddedExplicitRungeKuttaNyströmIntegrator(
       EmbeddedExplicitRungeKuttaNyströmIntegrator const&) = delete;
   EmbeddedExplicitRungeKuttaNyströmIntegrator(
-      EmbeddedExplicitRungeKuttaNyströmIntegrator&&) = delete;
+      EmbeddedExplicitRungeKuttaNyströmIntegrator&&) = delete;  // NOLINT
   EmbeddedExplicitRungeKuttaNyströmIntegrator& operator=(
       EmbeddedExplicitRungeKuttaNyströmIntegrator const&) = delete;
   EmbeddedExplicitRungeKuttaNyströmIntegrator& operator=(
-      EmbeddedExplicitRungeKuttaNyströmIntegrator&&) = delete;
-
-  // TODO(egg): Copied from MotionIntegrator, unify.
-  template<typename Position, typename Momentum>
-  struct SystemState {
-    std::vector<DoublePrecision<Position>> positions;
-    std::vector<DoublePrecision<Momentum>> momenta;
-    DoublePrecision<Time> time;
-  };
-
-  template<typename Position, typename Momentum>
-  using Solution = std::vector<SystemState<Position, Momentum>>;
+      EmbeddedExplicitRungeKuttaNyströmIntegrator&&) = delete;  // NOLINT
 
   template<typename Position>
-  using RightHandSideComputation =
-      std::function<
-          void(Time const& t,
-               std::vector<Position> const& positions,
-               not_null<std::vector<
-                   Variation<Variation<Position>>>*> const accelerations)>;
+  using ODE = SpecialSecondOrderDifferentialEquation<Position>;
 
-  template<typename Position>
-  using StepSizeController =
-      std::function<
-          double(Time const& current_step_size,
-                 std::vector<Difference<Position>> const& q_error_estimate,
-                 std::vector<Variation<Position>> const& v_error_estimate)>;
-
-  // TODO(egg): maybe wrap that in some sort of Parameters struct when it's
-  // unified with the other integrators.
   template<typename Position>
   void Solve(
-      RightHandSideComputation<Position> compute_acceleration,
-      SystemState<Position, Variation<Position>> const& initial_value,
-      Time const& t_final,
-      Time const& first_time_step,
-      StepSizeController<Position> step_size_controller,
-      double const safety_factor,
-      not_null<Solution<Position, Variation<Position>>*> const solution) const;
+      IntegrationProblem<ODE<Position>> const& problem,
+      AdaptiveStepSize<ODE<Position>> const& adaptive_step_size) const;
 
  protected:
   int stages_;
