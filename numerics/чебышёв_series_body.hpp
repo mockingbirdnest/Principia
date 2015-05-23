@@ -2,6 +2,7 @@
 #include "numerics/чебышёв_series.hpp"
 
 #include "glog/logging.h"
+#include "numerics/arrays.hpp"
 #include "quantities/serialization.hpp"
 
 namespace principia {
@@ -85,6 +86,80 @@ template<typename Scalar>
   return ЧебышёвSeries(coefficients,
                        Instant::ReadFromMessage(message.t_min()),
                        Instant::ReadFromMessage(message.t_max()));
+}
+
+template<typename Scalar>
+ЧебышёвSeries<Scalar> ЧебышёвSeries<Scalar>::NewhallApproximation(
+    int const degree,
+    std::vector<Scalar> const& p,
+    std::vector<Variation<Scalar>> const& v,
+    Instant const& t_min,
+    Instant const& t_max) {
+  // Only supports 8 divisions for now.
+  int const kDivisions = 8
+  CHECK_EQ(kDivisions + 1, p.size());
+  CHECK_EQ(kDivisions + 1, v.size());
+
+  Time const duration_over_two = 0.5 * (t_max - t_min);
+
+  FixedArray<Scalar, 2 * kDivisions + 2> pv;
+  for (int i = 0; i < kDivisions + 1; ++i) {
+    pv[i] = p[i];
+    pv[i + 1] = v[i] * duration_over_two;
+  }
+
+  std::vector<Scalar> coefficients;
+  switch (degree) {
+    case 3:
+      coefficients = newhall_c_matrix_degree_3_divisions_8_w04 * pv;
+      break;
+    case 4:
+      coefficients = newhall_c_matrix_degree_4_divisions_8_w04 * pv;
+      break;
+    case 5:
+      coefficients = newhall_c_matrix_degree_5_divisions_8_w04 * pv;
+      break;
+    case 6:
+      coefficients = newhall_c_matrix_degree_6_divisions_8_w04 * pv;
+      break;
+    case 7:
+      coefficients = newhall_c_matrix_degree_7_divisions_8_w04 * pv;
+      break;
+    case 8:
+      coefficients = newhall_c_matrix_degree_8_divisions_8_w04 * pv;
+      break;
+    case 9:
+      coefficients = newhall_c_matrix_degree_9_divisions_8_w04 * pv;
+      break;
+    case 10:
+      coefficients = newhall_c_matrix_degree_10_divisions_8_w04 * pv;
+      break;
+    case 11:
+      coefficients = newhall_c_matrix_degree_11_divisions_8_w04 * pv;
+      break;
+    case 12:
+      coefficients = newhall_c_matrix_degree_12_divisions_8_w04 * pv;
+      break;
+    case 13:
+      coefficients = newhall_c_matrix_degree_13_divisions_8_w04 * pv;
+      break;
+    case 14:
+      coefficients = newhall_c_matrix_degree_14_divisions_8_w04 * pv;
+      break;
+    case 15:
+      coefficients = newhall_c_matrix_degree_15_divisions_8_w04 * pv;
+      break;
+    case 16:
+      coefficients = newhall_c_matrix_degree_16_divisions_8_w04 * pv;
+      break;
+    case 17:
+      coefficients = newhall_c_matrix_degree_17_divisions_8_w04 * pv;
+      break;
+    default:
+      break;
+  }
+  CHECK_EQ(degree, coefficients.size());
+  return ЧебышёвSeries(coefficients, t_min, t_max);
 }
 
 }  // namespace numerics

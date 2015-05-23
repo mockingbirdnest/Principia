@@ -15,6 +15,7 @@ using ЧебышёвSeries = ChebyshevSeries;
 
 using geometry::Instant;
 using quantities::Time;
+using quantities::Variation;
 
 namespace numerics {
 
@@ -38,6 +39,13 @@ class ЧебышёвSeries {
       not_null<serialization::ЧебышёвSeries*> const message) const;
   static ЧебышёвSeries ReadFromMessage(
       serialization::ЧебышёвSeries const& message);
+
+  static ЧебышёвSeries NewhallApproximation(
+      int const degree,
+      std::vector<Scalar> const& p,
+      std::vector<Variation<Scalar>> const& v,
+      Instant const& t_min,
+      Instant const& t_max);
 
  private:
   std::vector<Scalar> const coefficients_;
