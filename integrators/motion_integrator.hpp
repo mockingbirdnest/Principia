@@ -2,29 +2,16 @@
 
 #include <vector>
 
+#include "numerics/double_precision.hpp"
 #include "quantities/quantities.hpp"
 
 namespace principia {
 
+using numerics::DoublePrecision;
 using quantities::Difference;
 using quantities::Time;
 
 namespace integrators {
-
-// A simple container for a scalar value and the related error.  The
-// constructor is not explicit to make it easy to construct an object with no
-// error.
-// TODO(egg): not a scalar anymore
-template<typename Scalar>
-struct DoublePrecision {
-  DoublePrecision() = default;
-  DoublePrecision(Scalar const& value);  // NOLINT(runtime/explicit)
-
-  void Increment(Difference<Scalar> const& increment);
-
-  Scalar value;
-  Difference<Scalar> error;
-};
 
 class MotionIntegrator {
  public:
