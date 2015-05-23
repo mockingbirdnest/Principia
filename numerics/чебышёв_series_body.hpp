@@ -49,9 +49,9 @@ Scalar ЧебышёвSeries<Scalar>::Evaluate(Instant const& t) const {
   CHECK_LE(scaled_t, 1.1);
   CHECK_GE(scaled_t, -1.1);
 
-  double b_kplus2 = 0.0;
-  double b_kplus1 = 0.0;
-  double b_k = 0.0;
+  Scalar b_kplus2{};
+  Scalar b_kplus1{};
+  Scalar b_k{};
   for (int k = degree_; k >= 1; --k) {
     b_k = coefficients_[k] + two_scaled_t * b_kplus1 - b_kplus2;
     b_kplus2 = b_kplus1;
@@ -110,6 +110,7 @@ template<typename Scalar>
   }
 
   std::vector<Scalar> coefficients;
+  coefficients.reserve(degree);
   switch (degree) {
     case 3:
       coefficients = newhall_c_matrix_degree_3_divisions_8_w04 * pv;

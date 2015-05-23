@@ -1,19 +1,17 @@
 ﻿
 #include "numerics/чебышёв_series.hpp"
 
-#include "geometry/frame.hpp"
+#include <cmath>
+
 #include "geometry/named_quantities.hpp"
 #include "gtest/gtest.h"
 #include "quantities/named_quantities.hpp"
 #include "quantities/si.hpp"
-#include "serialization/geometry.pb.h"
 
 namespace principia {
 
-using geometry::Frame;
 using geometry::Instant;
-using geometry::Position;
-using geometry::Velocity;
+using quantities::Length;
 using quantities::Speed;
 using si::Metre;
 using si::Second;
@@ -22,9 +20,6 @@ namespace numerics {
 
 class ЧебышёвSeriesTest : public ::testing::Test {
  protected:
-  using World = Frame<serialization::Frame::TestTag,
-                      serialization::Frame::TEST1, true>;
-
   ЧебышёвSeriesTest()
       : t_min_(-1 * Second),
         t_max_(3 * Second) {}
@@ -103,6 +98,13 @@ TEST_F(ЧебышёвSeriesTest, X6) {
   EXPECT_EQ(1, x6.Evaluate(Instant(3 * Second)));
 }
 
+TEST_F(ЧебышёвSeriesTest, T2Dimension) {
+  ЧебышёвSeries<Length> t2({0 * Metre, 0 * Metre, 1 * Metre}, t_min_, t_max_);
+  EXPECT_EQ(1 * Metre, t2.Evaluate(Instant(-1 * Second)));
+  EXPECT_EQ(-1 * Metre, t2.Evaluate(Instant(1 * Second)));
+  EXPECT_EQ(1 * Metre, t2.Evaluate(Instant(3 * Second)));
+}
+
 TEST_F(ЧебышёвSeriesDeathTest, SerializationError) {
   ЧебышёвSeries<Speed> v({1 * Metre / Second,
                           -2 * Metre / Second,
@@ -174,11 +176,37 @@ TEST_F(ЧебышёвSeriesTest, SerializationSuccess) {
 }
 
 TEST_F(ЧебышёвSeriesTest, NewhallApproximation) {
-  std::vector<Position<World>> positions;
-  std::vector<Velocity<World>> velocities;
-  ЧебышёвSeries<Position<World>> const approximation =
-      ЧебышёвSeries<Position<World>>::NewhallApproximation(
-          4, positions, velocities, t_min_, t_max_);
+  std::vector<Length> lengths;
+  std::vector<Speed> speeds;
+
+  auto length_function = [this](Instant const t) -> Length {
+    return 2 * Metre *
+           std::sin((t - t_min_) / (0.3 * Second)) *
+           std::exp((t - t_min_) / (1 * Second));
+  };
+  auto speed_function = [this](Instant const t) -> Speed {
+    return ((2 * Metre) / (0.3 * Second) *
+                 std::cos((t - t_min_) / (0.3 * Second)) +
+            (2 * Metre / Second) *
+                 std::sin((t - t_min_) / (0.3 * Second))) *
+                     std::exp((t - t_min_) / (1 * Second));
+  };
+
+  for (Instant t = t_min_; t <= t_max_; t += 0.5 * Second) {
+    lengths.push_back(length_function(t));
+    speeds.push_back(speed_function(t));
+  }
+
+  for (int degree = 3; degree <= 17; ++degree) {
+    ЧебышёвSeries<Length> const approximation =
+        ЧебышёвSeries<Length>::NewhallApproximation(
+            degree, lengths, speeds, t_min_, t_max_);
+    for (Instant t = t_min_; t <= t_max_; t += 0.005 * Second) {
+      Length const expected_length = length_function(t);
+      Length const actual_length = approximation.Evaluate(t);
+      LOG(ERROR)<<expected_length<<" "<<actual_length;
+    }
+  }
 }
 
 }  // namespace numerics
