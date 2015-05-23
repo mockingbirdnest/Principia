@@ -1,6 +1,6 @@
 ﻿#pragma once
 
-#include "integrators/explicit_embedded_runge_kutta_nyström_integrator.hpp"
+#include "integrators/embedded_explicit_runge_kutta_nyström_integrator.hpp"
 
 #include <algorithm>
 #include <cmath>
@@ -19,9 +19,9 @@ using quantities::Quotient;
 
 namespace integrators {
 
-inline ExplicitEmbeddedRungeKuttaNyströmIntegrator const&
+inline EmbeddedExplicitRungeKuttaNyströmIntegrator const&
 DormandElMikkawyPrince1986RKN434FM() {
-  static ExplicitEmbeddedRungeKuttaNyströmIntegrator const integrator(
+  static EmbeddedExplicitRungeKuttaNyströmIntegrator const integrator(
       // c
       {0.0, 1.0 / 4.0, 7.0 / 10.0, 1.0},
       // a
@@ -41,8 +41,8 @@ DormandElMikkawyPrince1986RKN434FM() {
   return integrator;
 }
 
-inline ExplicitEmbeddedRungeKuttaNyströmIntegrator::
-           ExplicitEmbeddedRungeKuttaNyströmIntegrator(
+inline EmbeddedExplicitRungeKuttaNyströmIntegrator::
+           EmbeddedExplicitRungeKuttaNyströmIntegrator(
     std::vector<double> const& c,
     std::vector<std::vector<double>> const& a,
     std::vector<double> const& b_hat,
@@ -69,7 +69,7 @@ inline ExplicitEmbeddedRungeKuttaNyströmIntegrator::
 }
 
 template<typename Position>
-void ExplicitEmbeddedRungeKuttaNyströmIntegrator::Solve(
+void EmbeddedExplicitRungeKuttaNyströmIntegrator::Solve(
     RightHandSideComputation<Position> compute_acceleration,
     SystemState<Position, Variation<Position>> const& initial_value,
     Time const& t_final,
