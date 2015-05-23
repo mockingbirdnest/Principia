@@ -76,7 +76,8 @@ TEST_F(EmbeddedExplicitRungeKuttaNyströmIntegratorTest,
       ComputeHarmonicOscillatorAcceleration;
   IntegrationProblem<ODE> problem;
   problem.equation = harmonic_oscillator;
-  problem.initial_state = {{x_initial}, {v_initial}, t_initial};
+  ODE::SystemState const initial_state = {{x_initial}, {v_initial}, t_initial};
+  problem.initial_state = &initial_state;
   problem.t_final = t_final;
   problem.append_state = [&solution](ODE::SystemState const& state) {
     solution.push_back(state);
@@ -96,7 +97,7 @@ TEST_F(EmbeddedExplicitRungeKuttaNyströmIntegratorTest,
   EXPECT_EQ(t_final, solution.back().time.value);
   EXPECT_EQ(steps_forward, solution.size());
 
-  problem.initial_state = solution.back();
+  problem.initial_state = &solution.back();
   problem.t_final = t_initial;
   adaptive_step_size.first_time_step = t_initial - t_final;
   adaptive_step_size.tolerance_to_error_ratio = 

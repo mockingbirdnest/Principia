@@ -77,22 +77,23 @@ void EmbeddedExplicitRungeKuttaNyströmIntegrator::Solve(
   using Acceleration = typename ODE<Position>::Acceleration;
 
   // Argument checks.
-  int const dimension = problem.initial_state.positions.size();
-  CHECK_EQ(problem.initial_state.velocities.size(), dimension);
+  CHECK_NOTNULL(problem.initial_state);
+  int const dimension = problem.initial_state->positions.size();
+  CHECK_EQ(problem.initial_state->velocities.size(), dimension);
   CHECK_NE(adaptive_step_size.first_time_step, Time());
   Sign const integration_direction =
       Sign(adaptive_step_size.first_time_step);
   if (integration_direction.Positive()) {
     // Integrating forward.
-    CHECK_LT(problem.initial_state.time.value, problem.t_final);
+    CHECK_LT(problem.initial_state->time.value, problem.t_final);
   } else {
     // Integrating backward.
-    CHECK_GT(problem.initial_state.time.value, problem.t_final);
+    CHECK_GT(problem.initial_state->time.value, problem.t_final);
   }
   CHECK_GT(adaptive_step_size.safety_factor, 0);
   CHECK_LT(adaptive_step_size.safety_factor, 1);
 
-  typename ODE<Position>::SystemState current_state = problem.initial_state;
+  typename ODE<Position>::SystemState current_state = *problem.initial_state;
 
   // Time step.
   Time h = adaptive_step_size.first_time_step;

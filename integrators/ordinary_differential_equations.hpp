@@ -43,7 +43,7 @@ struct SpecialSecondOrderDifferentialEquation {
 template<typename ODE>
 struct IntegrationProblem {
   ODE equation;
-  typename ODE::SystemState initial_state;
+  typename ODE::SystemState const* initial_state;
   Instant t_final;
   std::function<void(typename ODE::SystemState const& state)> append_state;
 };
