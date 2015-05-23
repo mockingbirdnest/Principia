@@ -35,6 +35,9 @@
     <ClInclude Include="embedded_explicit_runge_kutta_nyström_integrator.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="ordinary_differential_equations.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="simple_harmonic_motion.cpp">

@@ -67,5 +67,3 @@ class MotionIntegrator {
 
 }  // namespace integrators
 }  // namespace principia
-
-#include "integrators/motion_integrator_body.hpp"
