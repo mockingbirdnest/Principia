@@ -19,7 +19,9 @@ using quantities::Speed;
 using si::Metre;
 using si::Second;
 using testing_utilities::AbsoluteError;
+using ::testing::AllOf;
 using ::testing::ElementsAre;
+using ::testing::Gt;
 using ::testing::Lt;
 
 namespace numerics {
@@ -230,6 +232,10 @@ TEST_F(ЧебышёвSeriesTest, SerializationSuccess) {
 TEST_F(ЧебышёвSeriesTest, NewhallApproximation) {
   std::vector<Length> length_absolute_errors;
 
+  auto near = [](Length const& length) {
+    return AllOf(Gt(0.9 * length), Lt(length));
+  };
+
   {
     auto length_function = [this](Instant const t) -> Length {
       return 2 * Metre *
@@ -250,21 +256,21 @@ TEST_F(ЧебышёвSeriesTest, NewhallApproximation) {
   }
 
   ExpectMultipart(length_absolute_errors,
-                  ElementsAre(Lt(1.7E2 * Metre),
-                              Lt(4.7E1 * Metre),
-                              Lt(4.3E1 * Metre),
-                              Lt(3.8E1 * Metre),
-                              Lt(1.5E1 * Metre),
-                              Lt(6.3 * Metre),
-                              Lt(4.9 * Metre),
-                              Lt(6.5E-1 * Metre),
-                              Lt(2.0E-1 * Metre),
-                              Lt(7.9E-2 * Metre)),
-                  ElementsAre(Lt(1.3E-2 * Metre),
-                              Lt(1.6E-2 * Metre),
-                              Lt(4.3E-3 * Metre),
-                              Lt(1.7E-3 * Metre),
-                              Lt(7.6E-4 * Metre)));
+                  ElementsAre(near(1.7E2 * Metre),
+                              near(4.7E1 * Metre),
+                              near(4.3E1 * Metre),
+                              near(3.8E1 * Metre),
+                              near(1.5E1 * Metre),
+                              near(6.3 * Metre),
+                              near(4.9 * Metre),
+                              near(6.5E-1 * Metre),
+                              near(2.0E-1 * Metre),
+                              near(7.9E-2 * Metre)),
+                  ElementsAre(near(1.3E-2 * Metre),
+                              near(1.6E-2 * Metre),
+                              near(4.3E-3 * Metre),
+                              near(1.7E-3 * Metre),
+                              near(7.6E-4 * Metre)));
 
   {
     auto length_function = [this](Instant const t) -> Length {
@@ -283,21 +289,21 @@ TEST_F(ЧебышёвSeriesTest, NewhallApproximation) {
   }
 
   ExpectMultipart(length_absolute_errors,
-                  ElementsAre(Lt(2.0 * Metre),
-                              Lt(2.9E-1 * Metre),
-                              Lt(3.6E-2 * Metre),
-                              Lt(2.3E-3 * Metre),
-                              Lt(2.9E-14 * Metre),
-                              Lt(2.9E-14 * Metre),
-                              Lt(2.9E-14 * Metre),
-                              Lt(2.0E-14 * Metre),
-                              Lt(2.4E-14 * Metre),
-                              Lt(2.9E-14 * Metre)),
-                  ElementsAre(Lt(2.2E-14 * Metre),
-                              Lt(1.5E-14 * Metre),
-                              Lt(2.2E-14 * Metre),
-                              Lt(1.6E-14 * Metre),
-                              Lt(4.3E-14 * Metre)));
+                  ElementsAre(near(2.0 * Metre),
+                              near(2.9E-1 * Metre),
+                              near(3.6E-2 * Metre),
+                              near(2.3E-3 * Metre),
+                              near(2.9E-14 * Metre),
+                              near(2.9E-14 * Metre),
+                              near(2.9E-14 * Metre),
+                              near(2.0E-14 * Metre),
+                              near(2.4E-14 * Metre),
+                              near(2.9E-14 * Metre)),
+                  ElementsAre(near(2.2E-14 * Metre),
+                              near(1.5E-14 * Metre),
+                              near(2.2E-14 * Metre),
+                              near(1.6E-14 * Metre),
+                              near(4.3E-14 * Metre)));
 }
 
 }  // namespace numerics
