@@ -3,6 +3,7 @@
 
 #include "glog/logging.h"
 #include "numerics/arrays.hpp"
+#include "numerics/newhall.mathematica.cpp"
 #include "quantities/serialization.hpp"
 
 namespace principia {
@@ -96,13 +97,13 @@ template<typename Scalar>
     Instant const& t_min,
     Instant const& t_max) {
   // Only supports 8 divisions for now.
-  int const kDivisions = 8
+  int const kDivisions = 8;
   CHECK_EQ(kDivisions + 1, p.size());
   CHECK_EQ(kDivisions + 1, v.size());
 
   Time const duration_over_two = 0.5 * (t_max - t_min);
 
-  FixedArray<Scalar, 2 * kDivisions + 2> pv;
+  FixedVector<Scalar, 2 * kDivisions + 2> pv;
   for (int i = 0; i < kDivisions + 1; ++i) {
     pv[i] = p[i];
     pv[i + 1] = v[i] * duration_over_two;

@@ -1,14 +1,19 @@
 ﻿
 #include "numerics/чебышёв_series.hpp"
 
+#include "geometry/frame.hpp"
 #include "geometry/named_quantities.hpp"
 #include "gtest/gtest.h"
 #include "quantities/named_quantities.hpp"
 #include "quantities/si.hpp"
+#include "serialization/geometry.pb.h"
 
 namespace principia {
 
+using geometry::Frame;
 using geometry::Instant;
+using geometry::Position;
+using geometry::Velocity;
 using quantities::Speed;
 using si::Metre;
 using si::Second;
@@ -17,6 +22,9 @@ namespace numerics {
 
 class ЧебышёвSeriesTest : public ::testing::Test {
  protected:
+  using World = Frame<serialization::Frame::TestTag,
+                      serialization::Frame::TEST1, true>;
+
   ЧебышёвSeriesTest()
       : t_min_(-1 * Second),
         t_max_(3 * Second) {}
@@ -163,6 +171,14 @@ TEST_F(ЧебышёвSeriesTest, SerializationSuccess) {
         ЧебышёвSeries<double>::ReadFromMessage(message);
     EXPECT_EQ(d1, d2);
   }
+}
+
+TEST_F(ЧебышёвSeriesTest, NewhallApproximation) {
+  std::vector<Position<World>> positions;
+  std::vector<Velocity<World>> velocities;
+  ЧебышёвSeries<Position<World>> const approximation =
+      ЧебышёвSeries<Position<World>>::NewhallApproximation(
+          4, positions, velocities, t_min_, t_max_);
 }
 
 }  // namespace numerics

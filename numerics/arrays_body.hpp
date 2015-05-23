@@ -39,6 +39,23 @@ FixedVector<Scalar, size>& FixedVector<Scalar, size>::operator=(
   return *this;
 }
 
+template<typename Scalar, int size>
+Scalar& FixedVector<Scalar, size>::operator[](int const index) {
+  return data_[index];
+}
+
+template<typename Scalar, int size>
+Scalar const& FixedVector<Scalar, size>::operator[](int const index) const {
+  return data_[index];
+}
+
+template<typename Scalar, int size>
+FixedVector<Scalar, size>::operator std::vector<Scalar>() const {
+  std::vector<Scalar> result;
+  std::copy(data_.begin(), data_.end(), result.begin());
+  return result;
+}
+
 template<typename Scalar, int rows, int columns>
 FixedMatrix<Scalar, rows, columns>::FixedMatrix(
     std::array<Scalar, rows * columns> const& data)

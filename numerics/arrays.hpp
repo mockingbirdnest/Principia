@@ -2,6 +2,7 @@
 
 #include <array>
 #include <initializer_list>
+#include <vector>
 
 #include "quantities/quantities.hpp"
 
@@ -24,6 +25,9 @@ class FixedVector {
 
   bool operator==(FixedVector const& right) const;
   FixedVector& operator=(std::initializer_list<Scalar> const& right);
+
+  Scalar& operator[](int const index);
+  Scalar const& operator[](int const index) const;
 
   operator std::vector<Scalar>() const;
 
