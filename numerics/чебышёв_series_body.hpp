@@ -104,9 +104,11 @@ template<typename Scalar>
   Time const duration_over_two = 0.5 * (t_max - t_min);
 
   FixedVector<Scalar, 2 * kDivisions + 2> pv;
-  for (int i = 0; i < kDivisions + 1; ++i) {
-    pv[i] = p[i];
-    pv[i + 1] = v[i] * duration_over_two;
+  for (int i = 0, j = 2 * kDivisions;
+       i < kDivisions + 1 && j >= 0;
+       ++i, j -= 2) {
+    pv[j] = p[i];
+    pv[j + 1] = v[i] * duration_over_two;
   }
 
   std::vector<Scalar> coefficients;
@@ -160,7 +162,7 @@ template<typename Scalar>
     default:
       break;
   }
-  CHECK_EQ(degree, coefficients.size());
+  CHECK_EQ(degree + 1, coefficients.size());
   return ЧебышёвSeries(coefficients, t_min, t_max);
 }
 

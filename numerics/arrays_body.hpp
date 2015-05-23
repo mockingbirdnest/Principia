@@ -51,7 +51,7 @@ Scalar const& FixedVector<Scalar, size>::operator[](int const index) const {
 
 template<typename Scalar, int size>
 FixedVector<Scalar, size>::operator std::vector<Scalar>() const {
-  std::vector<Scalar> result;
+  std::vector<Scalar> result(data_.size());
   std::copy(data_.begin(), data_.end(), result.begin());
   return result;
 }

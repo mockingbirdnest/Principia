@@ -1,12 +1,14 @@
 ﻿
 #include "numerics/чебышёв_series.hpp"
 
+#include <algorithm>
 #include <cmath>
 
 #include "geometry/named_quantities.hpp"
 #include "gtest/gtest.h"
 #include "quantities/named_quantities.hpp"
 #include "quantities/si.hpp"
+#include "testing_utilities/numerics.hpp"
 
 namespace principia {
 
@@ -15,6 +17,7 @@ using quantities::Length;
 using quantities::Speed;
 using si::Metre;
 using si::Second;
+using testing_utilities::AbsoluteError;
 
 namespace numerics {
 
@@ -201,11 +204,14 @@ TEST_F(ЧебышёвSeriesTest, NewhallApproximation) {
     ЧебышёвSeries<Length> const approximation =
         ЧебышёвSeries<Length>::NewhallApproximation(
             degree, lengths, speeds, t_min_, t_max_);
-    for (Instant t = t_min_; t <= t_max_; t += 0.005 * Second) {
+    Length absolute_error;
+    for (Instant t = t_min_; t <= t_max_; t += 0.05 * Second) {
       Length const expected_length = length_function(t);
       Length const actual_length = approximation.Evaluate(t);
-      LOG(ERROR)<<expected_length<<" "<<actual_length;
+      absolute_error = std::max(absolute_error,
+                                AbsoluteError(expected_length, actual_length));
     }
+    LOG(ERROR)<<degree<<" "<<absolute_error;
   }
 }
 
