@@ -59,7 +59,7 @@ inline EmbeddedExplicitRungeKuttaNyströmIntegrator::
       b_(b),
       b_prime_(b_prime) {
   CHECK_EQ(a_.size(), stages_);
-  for(int i = 0; i < stages_; ++i) {
+  for (int i = 0; i < stages_; ++i) {
     CHECK_EQ(a_[i].size(), i);
   }
   CHECK_EQ(b_hat_.size(), stages_);
@@ -79,8 +79,8 @@ void EmbeddedExplicitRungeKuttaNyströmIntegrator::Solve(
   // Argument checks.
   CHECK_NOTNULL(problem.initial_state);
   int const dimension = problem.initial_state->positions.size();
-  CHECK_EQ(problem.initial_state->velocities.size(), dimension);
-  CHECK_NE(adaptive_step_size.first_time_step, Time());
+  CHECK_EQ(dimension, problem.initial_state->velocities.size());
+  CHECK_NE(Time(), adaptive_step_size.first_time_step);
   Sign const integration_direction =
       Sign(adaptive_step_size.first_time_step);
   if (integration_direction.Positive()) {
@@ -113,7 +113,7 @@ void EmbeddedExplicitRungeKuttaNyströmIntegrator::Solve(
   std::vector<DoublePrecision<Velocity>>& v_hat = current_state.velocities;
 
   // Difference between the low- and high-order approximations.
- typename ODE<Position>::SystemStateError error_estimate;
+  typename ODE<Position>::SystemStateError error_estimate;
   error_estimate.position_error.resize(dimension);
   error_estimate.velocity_error.resize(dimension);
 
@@ -196,7 +196,7 @@ void EmbeddedExplicitRungeKuttaNyströmIntegrator::Solve(
 
     // Increment the solution with the high-order approximation.
     t.Increment(h);
-    for(int k = 0; k < dimension; ++k) {
+    for (int k = 0; k < dimension; ++k) {
       q_hat[k].Increment(∆q_hat[k]);
       v_hat[k].Increment(∆v_hat[k]);
     }

@@ -1,6 +1,9 @@
 ﻿
 #include "integrators/embedded_explicit_runge_kutta_nyström_integrator.hpp"
 
+#include <algorithm>
+#include <vector>
+
 #include "base/macros.hpp"
 #include "glog/logging.h"
 #include "gmock/gmock.h"
@@ -85,7 +88,7 @@ TEST_F(EmbeddedExplicitRungeKuttaNyströmIntegratorTest,
   AdaptiveStepSize<ODE> adaptive_step_size;
   adaptive_step_size.first_time_step = t_final - t_initial;
   adaptive_step_size.safety_factor = 0.9;
-  adaptive_step_size.tolerance_to_error_ratio = 
+  adaptive_step_size.tolerance_to_error_ratio =
       std::bind(HarmonicOscillatorToleranceRatio,
                 _1, _2, length_tolerance, speed_tolerance);
 
@@ -100,7 +103,7 @@ TEST_F(EmbeddedExplicitRungeKuttaNyströmIntegratorTest,
   problem.initial_state = &solution.back();
   problem.t_final = t_initial;
   adaptive_step_size.first_time_step = t_initial - t_final;
-  adaptive_step_size.tolerance_to_error_ratio = 
+  adaptive_step_size.tolerance_to_error_ratio =
       std::bind(HarmonicOscillatorToleranceRatio,
                 _1, _2, 2 * length_tolerance, 2 * speed_tolerance);
 

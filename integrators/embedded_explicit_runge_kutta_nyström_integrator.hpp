@@ -50,11 +50,11 @@ class EmbeddedExplicitRungeKuttaNyströmIntegrator {
   EmbeddedExplicitRungeKuttaNyströmIntegrator(
       EmbeddedExplicitRungeKuttaNyströmIntegrator const&) = delete;
   EmbeddedExplicitRungeKuttaNyströmIntegrator(
-      EmbeddedExplicitRungeKuttaNyströmIntegrator&&) = delete;
+      EmbeddedExplicitRungeKuttaNyströmIntegrator&&) = delete;  // NOLINT
   EmbeddedExplicitRungeKuttaNyströmIntegrator& operator=(
       EmbeddedExplicitRungeKuttaNyströmIntegrator const&) = delete;
   EmbeddedExplicitRungeKuttaNyströmIntegrator& operator=(
-      EmbeddedExplicitRungeKuttaNyströmIntegrator&&) = delete;
+      EmbeddedExplicitRungeKuttaNyströmIntegrator&&) = delete;  // NOLINT
 
   template<typename Position>
   using ODE = SpecialSecondOrderDifferentialEquation<Position>;
