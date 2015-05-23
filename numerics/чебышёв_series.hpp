@@ -40,9 +40,11 @@ class ЧебышёвSeries {
   static ЧебышёвSeries ReadFromMessage(
       serialization::ЧебышёвSeries const& message);
 
+  // Computes a Newhall approximation of the given |degree|.  |q| and |v| are
+  // the positions and velocities over a constant division of [t_min, t_max].
   static ЧебышёвSeries NewhallApproximation(
       int const degree,
-      std::vector<Scalar> const& p,
+      std::vector<Scalar> const& q,
       std::vector<Variation<Scalar>> const& v,
       Instant const& t_min,
       Instant const& t_max);

@@ -92,72 +92,74 @@ template<typename Scalar>
 template<typename Scalar>
 ЧебышёвSeries<Scalar> ЧебышёвSeries<Scalar>::NewhallApproximation(
     int const degree,
-    std::vector<Scalar> const& p,
+    std::vector<Scalar> const& q,
     std::vector<Variation<Scalar>> const& v,
     Instant const& t_min,
     Instant const& t_max) {
   // Only supports 8 divisions for now.
   int const kDivisions = 8;
-  CHECK_EQ(kDivisions + 1, p.size());
+  CHECK_EQ(kDivisions + 1, q.size());
   CHECK_EQ(kDivisions + 1, v.size());
 
   Time const duration_over_two = 0.5 * (t_max - t_min);
 
-  FixedVector<Scalar, 2 * kDivisions + 2> pv;
+  // Tricky.  The order in Newhall's matrices is such that the entries for the
+  // largest time occur first.
+  FixedVector<Scalar, 2 * kDivisions + 2> qv;
   for (int i = 0, j = 2 * kDivisions;
        i < kDivisions + 1 && j >= 0;
        ++i, j -= 2) {
-    pv[j] = p[i];
-    pv[j + 1] = v[i] * duration_over_two;
+    qv[j] = q[i];
+    qv[j + 1] = v[i] * duration_over_two;
   }
 
   std::vector<Scalar> coefficients;
   coefficients.reserve(degree);
   switch (degree) {
     case 3:
-      coefficients = newhall_c_matrix_degree_3_divisions_8_w04 * pv;
+      coefficients = newhall_c_matrix_degree_3_divisions_8_w04 * qv;
       break;
     case 4:
-      coefficients = newhall_c_matrix_degree_4_divisions_8_w04 * pv;
+      coefficients = newhall_c_matrix_degree_4_divisions_8_w04 * qv;
       break;
     case 5:
-      coefficients = newhall_c_matrix_degree_5_divisions_8_w04 * pv;
+      coefficients = newhall_c_matrix_degree_5_divisions_8_w04 * qv;
       break;
     case 6:
-      coefficients = newhall_c_matrix_degree_6_divisions_8_w04 * pv;
+      coefficients = newhall_c_matrix_degree_6_divisions_8_w04 * qv;
       break;
     case 7:
-      coefficients = newhall_c_matrix_degree_7_divisions_8_w04 * pv;
+      coefficients = newhall_c_matrix_degree_7_divisions_8_w04 * qv;
       break;
     case 8:
-      coefficients = newhall_c_matrix_degree_8_divisions_8_w04 * pv;
+      coefficients = newhall_c_matrix_degree_8_divisions_8_w04 * qv;
       break;
     case 9:
-      coefficients = newhall_c_matrix_degree_9_divisions_8_w04 * pv;
+      coefficients = newhall_c_matrix_degree_9_divisions_8_w04 * qv;
       break;
     case 10:
-      coefficients = newhall_c_matrix_degree_10_divisions_8_w04 * pv;
+      coefficients = newhall_c_matrix_degree_10_divisions_8_w04 * qv;
       break;
     case 11:
-      coefficients = newhall_c_matrix_degree_11_divisions_8_w04 * pv;
+      coefficients = newhall_c_matrix_degree_11_divisions_8_w04 * qv;
       break;
     case 12:
-      coefficients = newhall_c_matrix_degree_12_divisions_8_w04 * pv;
+      coefficients = newhall_c_matrix_degree_12_divisions_8_w04 * qv;
       break;
     case 13:
-      coefficients = newhall_c_matrix_degree_13_divisions_8_w04 * pv;
+      coefficients = newhall_c_matrix_degree_13_divisions_8_w04 * qv;
       break;
     case 14:
-      coefficients = newhall_c_matrix_degree_14_divisions_8_w04 * pv;
+      coefficients = newhall_c_matrix_degree_14_divisions_8_w04 * qv;
       break;
     case 15:
-      coefficients = newhall_c_matrix_degree_15_divisions_8_w04 * pv;
+      coefficients = newhall_c_matrix_degree_15_divisions_8_w04 * qv;
       break;
     case 16:
-      coefficients = newhall_c_matrix_degree_16_divisions_8_w04 * pv;
+      coefficients = newhall_c_matrix_degree_16_divisions_8_w04 * qv;
       break;
     case 17:
-      coefficients = newhall_c_matrix_degree_17_divisions_8_w04 * pv;
+      coefficients = newhall_c_matrix_degree_17_divisions_8_w04 * qv;
       break;
     default:
       break;
