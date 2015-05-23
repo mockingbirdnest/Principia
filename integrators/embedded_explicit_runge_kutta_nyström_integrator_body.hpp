@@ -92,26 +92,26 @@ void EmbeddedExplicitRungeKuttaNyströmIntegrator::Solve(
   CHECK_GT(adaptive_step_size.safety_factor, 0);
   CHECK_LT(adaptive_step_size.safety_factor, 1);
 
+  typename ODE<Position>::SystemState current_state = problem.initial_state;
+
   // Time step.
   Time h = adaptive_step_size.first_time_step;
   // Current time.
-  DoublePrecision<Instant> t = problem.initial_state.time;
+  DoublePrecision<Instant>& t = current_state.time;
 
   // Position increment (high-order).
   std::vector<Displacement> ∆q_hat(dimension);
   // Velocity increment (high-order).
   std::vector<Velocity> ∆v_hat(dimension);
   // Current position.
-  std::vector<DoublePrecision<Position>> q_hat =
-      problem.initial_state.positions;
+  std::vector<DoublePrecision<Position>>& q_hat = current_state.positions;
   // Current velocity.
-  std::vector<DoublePrecision<Velocity>> v_hat =
-      problem.initial_state.velocities;
+  std::vector<DoublePrecision<Velocity>>& v_hat = current_state.velocities;
 
-  // Difference between the low- and high-order approximations of the position.
-  std::vector<Displacement> q_error_estimate(dimension);
-  // Difference between the low- and high-order approximations of the velocity.
-  std::vector<Velocity> v_error_estimate(dimension);
+  // Difference between the low- and high-order approximations.
+ typename ODE<Position>::SystemStateError error_estimate;
+  error_estimate.position_error.resize(dimension);
+  error_estimate.velocity_error.resize(dimension);
 
   // Current Runge-Kutta-Nyström stage.
   std::vector<Position> q_stage(dimension);
@@ -183,12 +183,11 @@ void EmbeddedExplicitRungeKuttaNyströmIntegrator::Solve(
         ∆v_hat[k]               = h * ∑i_b_prime_hat_i_g_ik;
         Velocity const ∆v_k     = h * ∑i_b_prime_i_g_ik;
 
-        q_error_estimate[k] = ∆q_k - ∆q_hat[k];
-        v_error_estimate[k] = ∆v_k - ∆v_hat[k];
+        error_estimate.position_error[k] = ∆q_k - ∆q_hat[k];
+        error_estimate.velocity_error[k] = ∆v_k - ∆v_hat[k];
       }
       tolerance_to_error_ratio =
-          adaptive_step_size.tolerance_to_error_ratio(
-              h, {q_error_estimate, v_error_estimate});
+          adaptive_step_size.tolerance_to_error_ratio(h, error_estimate);
     } while (tolerance_to_error_ratio < 1.0);
 
     // Increment the solution with the high-order approximation.
@@ -197,7 +196,7 @@ void EmbeddedExplicitRungeKuttaNyströmIntegrator::Solve(
       q_hat[k].Increment(∆q_hat[k]);
       v_hat[k].Increment(∆v_hat[k]);
     }
-    problem.append_state({q_hat, v_hat, t});
+    problem.append_state(current_state);
   }
 }
 

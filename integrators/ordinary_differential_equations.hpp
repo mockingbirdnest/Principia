@@ -34,8 +34,8 @@ struct SpecialSecondOrderDifferentialEquation {
     DoublePrecision<Instant> time;
   };
   struct SystemStateError {
-    std::vector<Displacement> position_errors;
-    std::vector<Velocity> velocity_errors;
+    std::vector<Displacement> position_error;
+    std::vector<Velocity> velocity_error;
   };
   RightHandSideComputation compute_acceleration;
 };

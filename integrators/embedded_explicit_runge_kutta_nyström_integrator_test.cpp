@@ -45,8 +45,8 @@ double HarmonicOscillatorToleranceRatio(
     ODE::SystemStateError const& error,
     Length const& q_tolerance,
     Speed const& v_tolerance) {
-  double const r = std::min(q_tolerance / Abs(error.position_errors[0]),
-                            v_tolerance / Abs(error.velocity_errors[0]));
+  double const r = std::min(q_tolerance / Abs(error.position_error[0]),
+                            v_tolerance / Abs(error.velocity_error[0]));
   return r;
 }
 
@@ -87,6 +87,7 @@ TEST_F(EmbeddedExplicitRungeKuttaNyströmIntegratorTest,
   adaptive_step_size.tolerance_to_error_ratio = 
       std::bind(HarmonicOscillatorToleranceRatio,
                 _1, _2, length_tolerance, speed_tolerance);
+
   integrator.Solve(problem, adaptive_step_size);
   EXPECT_THAT(AbsoluteError(x_initial, solution.back().positions[0].value),
               AllOf(Ge(3E-4 * Metre), Le(4E-4 * Metre)));
@@ -96,10 +97,12 @@ TEST_F(EmbeddedExplicitRungeKuttaNyströmIntegratorTest,
   EXPECT_EQ(steps_forward, solution.size());
 
   problem.initial_state = solution.back();
+  problem.t_final = t_initial;
   adaptive_step_size.first_time_step = t_initial - t_final;
   adaptive_step_size.tolerance_to_error_ratio = 
       std::bind(HarmonicOscillatorToleranceRatio,
                 _1, _2, 2 * length_tolerance, 2 * speed_tolerance);
+
   integrator.Solve(problem, adaptive_step_size);
   EXPECT_THAT(AbsoluteError(x_initial, solution.back().positions[0].value),
               AllOf(Ge(1E-3 * Metre), Le(2E-3 * Metre)));
