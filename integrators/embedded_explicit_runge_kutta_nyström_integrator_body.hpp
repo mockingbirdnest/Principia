@@ -97,16 +97,19 @@ void EmbeddedExplicitRungeKuttaNyströmIntegrator::Solve(
 
   // Time step.
   Time h = adaptive_step_size.first_time_step;
-  // Current time.
+  // Current time.  This is a non-const reference whose purpose is to make the
+  // equations more readable.
   DoublePrecision<Instant>& t = current_state.time;
 
   // Position increment (high-order).
   std::vector<Displacement> ∆q_hat(dimension);
   // Velocity increment (high-order).
   std::vector<Velocity> ∆v_hat(dimension);
-  // Current position.
+  // Current position.  This is a non-const reference whose purpose is to make
+  // the equations more readable.
   std::vector<DoublePrecision<Position>>& q_hat = current_state.positions;
-  // Current velocity.
+  // Current velocity.  This is a non-const reference whose purpose is to make
+  // the equations more readable.
   std::vector<DoublePrecision<Velocity>>& v_hat = current_state.velocities;
 
   // Difference between the low- and high-order approximations.
