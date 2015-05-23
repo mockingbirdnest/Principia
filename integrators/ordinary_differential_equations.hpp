@@ -42,15 +42,15 @@ struct SpecialSecondOrderDifferentialEquation {
 
 template<typename ODE>
 struct IntegrationProblem {
-   ODE equation;
-   typename ODE::SystemState initial_state;
-   Instant t_final;
-   std::function<void(typename ODE::SystemState const& state)> append_state;
+  ODE equation;
+  typename ODE::SystemState initial_state;
+  Instant t_final;
+  std::function<void(typename ODE::SystemState const& state)> append_state;
 };
 
 template<typename ODE>
 struct AdaptiveStepSize {
-  using ToleranceToErrorRatio = 
+  using ToleranceToErrorRatio =
       std::function<
           double(Time const& current_step_size,
                  typename ODE::SystemStateError const& error)>;
@@ -59,5 +59,5 @@ struct AdaptiveStepSize {
   ToleranceToErrorRatio tolerance_to_error_ratio;
 };
 
-}  // integrators
+}  // namespace integrators
 }  // namespace principia

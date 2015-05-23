@@ -22,7 +22,7 @@ struct DoublePrecision {
   Difference<T> error;
 };
 
-}  // namespace principia
 }  // namespace numerics
+}  // namespace principia
 
 #include "numerics/double_precision_body.hpp"
