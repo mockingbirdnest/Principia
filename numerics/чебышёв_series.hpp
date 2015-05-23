@@ -4,9 +4,14 @@
 
 #include "geometry/named_quantities.hpp"
 #include "quantities/quantities.hpp"
+#include "serialization/numerics.pb.h"
 
 // Spelling: Чебышёв ЧЕБЫШЁВ чебышёв
 namespace principia {
+
+namespace serialization {
+using ЧебышёвSeries = ChebyshevSeries;
+}  // namespace serialization
 
 using geometry::Instant;
 using quantities::Time;
@@ -23,8 +28,16 @@ class ЧебышёвSeries {
                          Instant const& t_min,
                          Instant const& t_max);
 
+  bool operator==(ЧебышёвSeries const& right) const;
+  bool operator!=(ЧебышёвSeries const& right) const;
+
   // Uses the Clenshaw algorithm.  |t| must be in the range [t_min, t_max].
   Scalar Evaluate(Instant const& t) const;
+
+  void WriteToMessage(
+      not_null<serialization::ЧебышёвSeries*> const message) const;
+  static ЧебышёвSeries ReadFromMessage(
+      serialization::ЧебышёвSeries const& message);
 
  private:
   std::vector<Scalar> const coefficients_;

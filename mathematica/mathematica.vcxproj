@@ -130,6 +130,7 @@
     <None Include="generate_graphs.wl" />
     <None Include="navball.wl" />
     <None Include="integration.wl" />
+    <None Include="newhall.nb" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\serialization\serialization.vcxproj">

@@ -20,9 +20,21 @@
     <ClInclude Include="чебышёв_series_body.hpp">
       <Filter>Source Files</Filter>
     </ClInclude>
+    <ClInclude Include="arrays.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="arrays_body.hpp">
+      <Filter>Source Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="чебышёв_series_test.cpp">
+      <Filter>Test Files</Filter>
+    </ClCompile>
+    <ClCompile Include="newhall.mathematica.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="array_test.cpp">
       <Filter>Test Files</Filter>
     </ClCompile>
   </ItemGroup>

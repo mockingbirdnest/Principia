@@ -35,7 +35,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release_LLVM|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v120</PlatformToolset>
+    <PlatformToolset>LLVM-vs2013</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
@@ -65,13 +65,10 @@
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release_LLVM|Win32'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
     <Import Project="..\google_test_framework.props" />
-    <Import Project="..\google_protobuf.props" />
     <Import Project="..\include_solution.props" />
-    <Import Project="..\suppress_useless_warnings.props" />
-    <Import Project="..\warnings_as_errors.props" />
-    <Import Project="..\profiling.props" />
-    <Import Project="..\generate_version_header.props" />
     <Import Project="..\llvm_compatibility.props" />
+    <Import Project="..\generate_version_header.props" />
+    <Import Project="..\google_protobuf.props" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup />
@@ -117,11 +114,20 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="arrays.hpp" />
+    <ClInclude Include="arrays_body.hpp" />
     <ClInclude Include="чебышёв_series.hpp" />
     <ClInclude Include="чебышёв_series_body.hpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="array_test.cpp" />
+    <ClCompile Include="newhall.mathematica.cpp" />
     <ClCompile Include="чебышёв_series_test.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\serialization\serialization.vcxproj">
+      <Project>{5c482c18-bbae-484d-a211-a25c86370061}</Project>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

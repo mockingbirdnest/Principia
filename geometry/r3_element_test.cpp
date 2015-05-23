@@ -177,6 +177,5 @@ TEST_F(R3ElementTest, SerializationSuccess) {
   EXPECT_EQ(d1, d2);
 }
 
-
 }  // namespace geometry
 }  // namespace principia

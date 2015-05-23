@@ -42,5 +42,8 @@
     <None Include="integration.wl">
       <Filter>Scripts</Filter>
     </None>
+    <None Include="newhall.nb">
+      <Filter>Scripts</Filter>
+    </None>
   </ItemGroup>
 </Project>
