@@ -99,5 +99,30 @@ FixedVector<Product<ScalarLeft, ScalarRight>, rows> operator*(
   return result;
 }
 
+template<typename Scalar, int rows>
+FixedStrictlyLowerTriangularMatrix<Scalar, rows>::
+    FixedStrictlyLowerTriangularMatrix(
+        std::array<Scalar, kDimension> const& data)
+    : data_(data) {}
+
+template<typename Scalar, int rows>
+FixedStrictlyLowerTriangularMatrix<Scalar, rows>::
+    FixedStrictlyLowerTriangularMatrix(
+        std::initializer_list<Scalar> const& data) {
+  CHECK_EQ(kDimension, data.size());
+  std::copy(data.begin(), data.end(), data_.begin());
+}
+
+template<typename Scalar, int rows>
+Scalar*  FixedStrictlyLowerTriangularMatrix<Scalar, rows>::operator[](int i) {
+  return &data_[i * (i - 1) / 2];
+}
+
+template<typename Scalar, int rows>
+Scalar const* FixedStrictlyLowerTriangularMatrix<Scalar, rows>::operator[](
+    int i) const {
+  return &data_[i * (i - 1) / 2];
+}
+
 }  // namespace numerics
 }  // namespace principia

@@ -40,7 +40,7 @@
     <ClCompile Include="newhall.mathematica.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="array_test.cpp">
+    <ClCompile Include="fixed_arrays_test.cpp">
       <Filter>Test Files</Filter>
     </ClCompile>
   </ItemGroup>

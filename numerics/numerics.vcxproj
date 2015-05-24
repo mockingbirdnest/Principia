@@ -122,7 +122,7 @@
     <ClInclude Include="чебышёв_series_body.hpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="array_test.cpp" />
+    <ClCompile Include="fixed_arrays_test.cpp" />
     <ClCompile Include="newhall.mathematica.cpp" />
     <ClCompile Include="чебышёв_series_test.cpp" />
   </ItemGroup>
