@@ -19,16 +19,18 @@ using quantities::Quotient;
 
 namespace integrators {
 
-inline EmbeddedExplicitRungeKuttaNyströmIntegrator const&
+template<typename Position>
+EmbeddedExplicitRungeKuttaNyströmIntegrator<4, 3, 4, Position> const&
 DormandElMikkawyPrince1986RKN434FM() {
-  static EmbeddedExplicitRungeKuttaNyströmIntegrator const integrator(
+  static EmbeddedExplicitRungeKuttaNyströmIntegrator<
+             4, 3, 4, Position> const integrator(
       // c
       {0.0, 1.0 / 4.0, 7.0 / 10.0, 1.0},
       // a
-      {{},
-       {1.0 /   32.0},
-       {7.0 / 1000.0, 119.0 / 500.0},
-       {1.0 /   14.0,   8.0 /  27.0, 25.0 / 189.0}},
+      {
+       1.0 /   32.0,
+       7.0 / 1000.0, 119.0 / 500.0,
+       1.0 /   14.0,   8.0 /  27.0, 25.0 / 189.0},
       // b̂
       { 1.0 /  14.0,   8.0 /  27.0,  25.0 / 189.0,  0.0},
       // b̂′
@@ -36,45 +38,37 @@ DormandElMikkawyPrince1986RKN434FM() {
       // b
       {-7.0 / 150.0,  67.0 / 150.0,   3.0 /  20.0, -1.0 / 20.0},
       // b′
-      {13.0 /  21.0, -20.0 /  27.0, 275.0 / 189.0, -1.0 /  3.0},
-      3 /*lower_order*/);
+      {13.0 /  21.0, -20.0 /  27.0, 275.0 / 189.0, -1.0 /  3.0});
   return integrator;
 }
 
-inline EmbeddedExplicitRungeKuttaNyströmIntegrator::
-           EmbeddedExplicitRungeKuttaNyströmIntegrator(
-    std::vector<double> const& c,
-    std::vector<std::vector<double>> const& a,
-    std::vector<double> const& b_hat,
-    std::vector<double> const& b_prime_hat,
-    std::vector<double> const& b,
-    std::vector<double> const& b_prime,
-    int const lower_order)
-    : stages_(c.size()),
-      lower_order_(lower_order),
-      c_(c),
+template<int higher_order, int lower_order, int stages, typename Position>
+EmbeddedExplicitRungeKuttaNyströmIntegrator<higher_order, lower_order, stages,
+                                            Position>::
+EmbeddedExplicitRungeKuttaNyströmIntegrator(
+    FixedVector<double, stages> const& c,
+    FixedStrictlyLowerTriangularMatrix<double, stages> const& a,
+    FixedVector<double, stages> const& b_hat,
+    FixedVector<double, stages> const& b_prime_hat,
+    FixedVector<double, stages> const& b,
+    FixedVector<double, stages> const& b_prime)
+    : c_(c),
       a_(a),
       b_hat_(b_hat),
       b_prime_hat_(b_prime_hat),
       b_(b),
-      b_prime_(b_prime) {
-  CHECK_EQ(a_.size(), stages_);
-  for (int i = 0; i < stages_; ++i) {
-    CHECK_EQ(a_[i].size(), i);
-  }
-  CHECK_EQ(b_hat_.size(), stages_);
-  CHECK_EQ(b_prime_hat_.size(), stages_);
-  CHECK_EQ(b_.size(), stages_);
-  CHECK_EQ(b_prime_.size(), stages_);
-}
+      b_prime_(b_prime) {}
 
-template<typename Position>
-void EmbeddedExplicitRungeKuttaNyströmIntegrator::Solve(
-    IntegrationProblem<ODE<Position>> const& problem,
-    AdaptiveStepSize<ODE<Position>> const& adaptive_step_size) const {
-  using Displacement = typename ODE<Position>::Displacement;
-  using Velocity = typename ODE<Position>::Velocity;
-  using Acceleration = typename ODE<Position>::Acceleration;
+template<int higher_order, int lower_order, int stages, typename Position>
+void EmbeddedExplicitRungeKuttaNyströmIntegrator<higher_order,
+                                                 lower_order,
+                                                 stages,
+                                                 Position>::Solve(
+    IntegrationProblem<ODE> const& problem,
+    AdaptiveStepSize<ODE> const& adaptive_step_size) const {
+  using Displacement = typename ODE::Displacement;
+  using Velocity = typename ODE::Velocity;
+  using Acceleration = typename ODE::Acceleration;
 
   // Argument checks.
   CHECK_NOTNULL(problem.initial_state);
@@ -93,7 +87,7 @@ void EmbeddedExplicitRungeKuttaNyströmIntegrator::Solve(
   CHECK_GT(adaptive_step_size.safety_factor, 0);
   CHECK_LT(adaptive_step_size.safety_factor, 1);
 
-  typename ODE<Position>::SystemState current_state = *problem.initial_state;
+  typename ODE::SystemState current_state = *problem.initial_state;
 
   // Time step.
   Time h = adaptive_step_size.first_time_step;
@@ -113,7 +107,7 @@ void EmbeddedExplicitRungeKuttaNyströmIntegrator::Solve(
   std::vector<DoublePrecision<Velocity>>& v_hat = current_state.velocities;
 
   // Difference between the low- and high-order approximations.
-  typename ODE<Position>::SystemStateError error_estimate;
+  typename ODE::SystemStateError error_estimate;
   error_estimate.position_error.resize(dimension);
   error_estimate.velocity_error.resize(dimension);
 
@@ -121,7 +115,7 @@ void EmbeddedExplicitRungeKuttaNyströmIntegrator::Solve(
   std::vector<Position> q_stage(dimension);
   // Accelerations at each stage.
   // TODO(egg): this is a rectangular container, use something more appropriate.
-  std::vector<std::vector<Acceleration>> g(stages_);
+  std::vector<std::vector<Acceleration>> g(stages);
   for (auto& g_stage : g) {
     g_stage.resize(dimension);
   }
@@ -140,7 +134,7 @@ void EmbeddedExplicitRungeKuttaNyströmIntegrator::Solve(
       // TODO(egg): find out whether there's a smarter way to compute that root,
       // especially if we make the order compile-time.
       h *= adaptive_step_size.safety_factor *
-               std::pow(tolerance_to_error_ratio, 1.0 / (lower_order_ + 1));
+               std::pow(tolerance_to_error_ratio, 1.0 / (lower_order + 1));
 
     runge_kutta_nyström_step:
       // Termination condition.
@@ -153,7 +147,7 @@ void EmbeddedExplicitRungeKuttaNyströmIntegrator::Solve(
       }
 
       // Runge-Kutta-Nyström iteration; fills |g|.
-      for (int i = 0; i < stages_; ++i) {
+      for (int i = 0; i < stages; ++i) {
         Instant const t_stage = t.value + c_[i] * h;
         for (int k = 0; k < dimension; ++k) {
           Acceleration ∑j_a_ij_g_jk{};
@@ -175,7 +169,7 @@ void EmbeddedExplicitRungeKuttaNyströmIntegrator::Solve(
         Acceleration ∑i_b_prime_i_g_ik{};
         // Please keep the eight assigments below aligned, they become illegible
         // otherwise.
-        for (int i = 0; i < stages_; ++i) {
+        for (int i = 0; i < stages; ++i) {
           ∑i_b_hat_i_g_ik       += b_hat_[i] * g[i][k];
           ∑i_b_i_g_ik           += b_[i] * g[i][k];
           ∑i_b_prime_hat_i_g_ik += b_prime_hat_[i] * g[i][k];

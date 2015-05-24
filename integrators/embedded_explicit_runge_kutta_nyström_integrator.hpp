@@ -4,7 +4,7 @@
 #include <vector>
 
 #include "base/not_null.hpp"
-#include "numerics/arrays.hpp"
+#include "numerics/fixed_arrays.hpp"
 #include "integrators/ordinary_differential_equations.hpp"
 #include "quantities/named_quantities.hpp"
 
@@ -12,7 +12,7 @@ namespace principia {
 
 using base::not_null;
 using numerics::FixedVector;
-using numerics::FixedMatrix;
+using numerics::FixedStrictlyLowerTriangularMatrix;
 using quantities::Time;
 using quantities::Variation;
 
@@ -36,17 +36,18 @@ namespace integrators {
 // its derivative v, rather than the more common y and y′ found in the
 // literature on Runge-Kutta-Nyström methods.
 
-template<int stages, int higher_order, int lower_order>
-class EmbeddedExplicitRungeKuttaNyströmIntegrator {
+template<int higher_order, int lower_order, int stages, typename Position>
+class EmbeddedExplicitRungeKuttaNyströmIntegrator
+    : public AdaptiveSizeIntegrator<
+                 SpecialSecondOrderDifferentialEquation<Position>> {
  public:
   EmbeddedExplicitRungeKuttaNyströmIntegrator(
-      std::vector<double> const& c,
-      std::vector<std::vector<double>> const& a,
-      std::vector<double> const& b_hat,
-      std::vector<double> const& b_prime_hat,
-      std::vector<double> const& b,
-      std::vector<double> const& b_prime,
-      int const lower_order);
+      FixedVector<double, stages> const& c,
+      FixedStrictlyLowerTriangularMatrix<double, stages> const& a,
+      FixedVector<double, stages> const& b_hat,
+      FixedVector<double, stages> const& b_prime_hat,
+      FixedVector<double, stages> const& b,
+      FixedVector<double, stages> const& b_prime);
 
   ~EmbeddedExplicitRungeKuttaNyströmIntegrator() = default;
 
@@ -60,32 +61,23 @@ class EmbeddedExplicitRungeKuttaNyströmIntegrator {
   EmbeddedExplicitRungeKuttaNyströmIntegrator& operator=(
       EmbeddedExplicitRungeKuttaNyströmIntegrator&&) = delete;  // NOLINT
 
-  template<typename Position>
-  using ODE = SpecialSecondOrderDifferentialEquation<Position>;
-
-  template<typename Position>
-  void Solve(
-      IntegrationProblem<ODE<Position>> const& problem,
-      AdaptiveStepSize<ODE<Position>> const& adaptive_step_size) const;
+  void Solve(IntegrationProblem<ODE> const& problem,
+             AdaptiveStepSize<ODE> const& adaptive_step_size) const override;
 
  protected:
-  std::vector<double> c_;
-  // TODO(egg): This is really a strictly lower-triangular matrix, so we should
-  // store it in a smarter way eventually.
-  std::vector<std::vector<double>> a_;
-  std::vector<double> b_hat_;
-  std::vector<double> b_prime_hat_;
-  std::vector<double> b_;
-  std::vector<double> b_prime_;
+  FixedVector<double, stages> c_;
+  FixedStrictlyLowerTriangularMatrix<double, stages> a_;
+  FixedVector<double, stages> b_hat_;
+  FixedVector<double, stages> b_prime_hat_;
+  FixedVector<double, stages> b_;
+  FixedVector<double, stages> b_prime_;
 };
 
 // Coefficients form Dormand, El-Mikkawy and Prince (1986),
 // Families of Runge-Kutta-Nyström formulae, table 3 (the RK4(3)4FM).
-// high order: 4;
-// low order:  3;
-// stages:     4;
 // first-same-as-last, minimizes the 4th order truncation error.
-EmbeddedExplicitRungeKuttaNyströmIntegrator const&
+template<typename Position>
+EmbeddedExplicitRungeKuttaNyströmIntegrator<4, 3, 4, Position> const&
 DormandElMikkawyPrince1986RKN434FM();
 
 }  // namespace integrators
