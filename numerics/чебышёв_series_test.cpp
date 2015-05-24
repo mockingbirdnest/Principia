@@ -1,17 +1,28 @@
 ﻿
 #include "numerics/чебышёв_series.hpp"
 
+#include <algorithm>
+#include <cmath>
+
 #include "geometry/named_quantities.hpp"
 #include "gtest/gtest.h"
+#include "gmock/gmock.h"
 #include "quantities/named_quantities.hpp"
 #include "quantities/si.hpp"
+#include "testing_utilities/numerics.hpp"
 
 namespace principia {
 
 using geometry::Instant;
+using quantities::Length;
 using quantities::Speed;
 using si::Metre;
 using si::Second;
+using testing_utilities::AbsoluteError;
+using ::testing::AllOf;
+using ::testing::ElementsAre;
+using ::testing::Gt;
+using ::testing::Lt;
 
 namespace numerics {
 
@@ -20,6 +31,49 @@ class ЧебышёвSeriesTest : public ::testing::Test {
   ЧебышёвSeriesTest()
       : t_min_(-1 * Second),
         t_max_(3 * Second) {}
+
+  // TODO(phl): Support for evaluating the derivative.
+  void NewhallApproximationErrors(
+      std::function<Length(Instant const)> length_function,
+      std::function<Speed(Instant const)> speed_function,
+      not_null<std::vector<Length>*> const length_absolute_errors) {
+    std::vector<Length> lengths;
+    std::vector<Speed> speeds;
+    for (Instant t = t_min_; t <= t_max_; t += 0.5 * Second) {
+      lengths.push_back(length_function(t));
+      speeds.push_back(speed_function(t));
+    }
+
+    length_absolute_errors->clear();
+    for (int degree = 3; degree <= 17; ++degree) {
+      ЧебышёвSeries<Length> const approximation =
+          ЧебышёвSeries<Length>::NewhallApproximation(
+              degree, lengths, speeds, t_min_, t_max_);
+      Length absolute_error;
+      for (Instant t = t_min_; t <= t_max_; t += 0.05 * Second) {
+        Length const expected_length = length_function(t);
+        Length const actual_length = approximation.Evaluate(t);
+        absolute_error = std::max(absolute_error,
+                                  AbsoluteError(expected_length, actual_length));
+      }
+      length_absolute_errors->push_back(absolute_error);
+    }
+  }
+
+  // A helper that splits an array in two chunks and applies distinct matchers
+  // to the chunks.  Necessary because ElementsAre only supports 10 elements and
+  // ElementsAreArray does not support matches as arguments.
+  template<typename Matcher1, typename Matcher2>
+  void ExpectMultipart(std::vector<Length> const& v,
+                       Matcher1 const& matcher1,
+                       Matcher2 const& matcher2) {
+    std::vector<Length> v_0_9(10);
+    std::copy(v.begin(), v.begin() + 10, v_0_9.begin());
+    EXPECT_THAT(v_0_9, matcher1);
+    std::vector<Length> v_10_end(v.size() - 10);
+    std::copy(v.begin() + 10, v.end(), v_10_end.begin());
+    EXPECT_THAT(v_10_end, matcher2);
+  }
 
   Instant t_min_;
   Instant t_max_;
@@ -95,6 +149,13 @@ TEST_F(ЧебышёвSeriesTest, X6) {
   EXPECT_EQ(1, x6.Evaluate(Instant(3 * Second)));
 }
 
+TEST_F(ЧебышёвSeriesTest, T2Dimension) {
+  ЧебышёвSeries<Length> t2({0 * Metre, 0 * Metre, 1 * Metre}, t_min_, t_max_);
+  EXPECT_EQ(1 * Metre, t2.Evaluate(Instant(-1 * Second)));
+  EXPECT_EQ(-1 * Metre, t2.Evaluate(Instant(1 * Second)));
+  EXPECT_EQ(1 * Metre, t2.Evaluate(Instant(3 * Second)));
+}
+
 TEST_F(ЧебышёвSeriesDeathTest, SerializationError) {
   ЧебышёвSeries<Speed> v({1 * Metre / Second,
                           -2 * Metre / Second,
@@ -163,6 +224,83 @@ TEST_F(ЧебышёвSeriesTest, SerializationSuccess) {
         ЧебышёвSeries<double>::ReadFromMessage(message);
     EXPECT_EQ(d1, d2);
   }
+}
+
+TEST_F(ЧебышёвSeriesTest, NewhallApproximation) {
+  std::vector<Length> length_absolute_errors;
+
+  auto near = [](Length const& length) {
+    return AllOf(Gt(0.9 * length), Lt(length));
+  };
+
+  {
+    auto length_function = [this](Instant const t) -> Length {
+      return 2 * Metre *
+             std::sin((t - t_min_) / (0.3 * Second)) *
+             std::exp((t - t_min_) / (1 * Second));
+    };
+    auto speed_function = [this](Instant const t) -> Speed {
+      return ((2 * Metre) / (0.3 * Second) *
+                   std::cos((t - t_min_) / (0.3 * Second)) +
+              (2 * Metre / Second) *
+                   std::sin((t - t_min_) / (0.3 * Second))) *
+                       std::exp((t - t_min_) / (1 * Second));
+    };
+
+    NewhallApproximationErrors(length_function,
+                               speed_function,
+                               &length_absolute_errors);
+  }
+
+  ExpectMultipart(length_absolute_errors,
+                  ElementsAre(near(1.7E2 * Metre),
+                              near(4.7E1 * Metre),
+                              near(4.3E1 * Metre),
+                              near(3.8E1 * Metre),
+                              near(1.5E1 * Metre),
+                              near(6.3 * Metre),
+                              near(4.9 * Metre),
+                              near(6.5E-1 * Metre),
+                              near(2.0E-1 * Metre),
+                              near(7.9E-2 * Metre)),
+                  ElementsAre(near(1.3E-2 * Metre),
+                              near(1.6E-2 * Metre),
+                              near(4.3E-3 * Metre),
+                              near(1.7E-3 * Metre),
+                              near(7.6E-4 * Metre)));
+
+  {
+    auto length_function = [this](Instant const t) -> Length {
+      return 5 * Metre * ((t - t_min_) / (0.3 * Second) +
+                          std::pow((t - t_min_) / (4 * Second), 7));
+    };
+    auto speed_function = [this](Instant const t) -> Speed {
+      return 5 * Metre * (1 / (0.3 * Second) +
+                          (7 / (4 * Second)) *
+                              std::pow((t - t_min_) / (4 * Second), 6));
+    };
+
+    NewhallApproximationErrors(length_function,
+                               speed_function,
+                               &length_absolute_errors);
+  }
+
+  ExpectMultipart(length_absolute_errors,
+                  ElementsAre(near(2.0 * Metre),
+                              near(2.9E-1 * Metre),
+                              near(3.6E-2 * Metre),
+                              near(2.3E-3 * Metre),
+                              near(2.9E-14 * Metre),
+                              near(2.9E-14 * Metre),
+                              near(2.9E-14 * Metre),
+                              near(2.0E-14 * Metre),
+                              near(2.4E-14 * Metre),
+                              near(2.9E-14 * Metre)),
+                  ElementsAre(near(2.2E-14 * Metre),
+                              near(1.5E-14 * Metre),
+                              near(2.2E-14 * Metre),
+                              near(1.6E-14 * Metre),
+                              near(4.3E-14 * Metre)));
 }
 
 }  // namespace numerics

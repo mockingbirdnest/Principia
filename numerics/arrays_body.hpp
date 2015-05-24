@@ -3,6 +3,7 @@
 #include "numerics/arrays.hpp"
 
 #include <algorithm>
+#include <vector>
 
 #include "glog/logging.h"
 
@@ -37,6 +38,23 @@ FixedVector<Scalar, size>& FixedVector<Scalar, size>::operator=(
   CHECK_EQ(size, right.size());
   std::copy(right.begin(), right.end(), data_.begin());
   return *this;
+}
+
+template<typename Scalar, int size>
+Scalar& FixedVector<Scalar, size>::operator[](int const index) {
+  return data_[index];
+}
+
+template<typename Scalar, int size>
+Scalar const& FixedVector<Scalar, size>::operator[](int const index) const {
+  return data_[index];
+}
+
+template<typename Scalar, int size>
+FixedVector<Scalar, size>::operator std::vector<Scalar>() const {
+  std::vector<Scalar> result(data_.size());
+  std::copy(data_.begin(), data_.end(), result.begin());
+  return result;
 }
 
 template<typename Scalar, int rows, int columns>

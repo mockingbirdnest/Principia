@@ -43,5 +43,11 @@ TEST_F(ArraysTest, Multiplication) {
   EXPECT_EQ(v3_, m34_ * v4_);
 }
 
+TEST_F(ArraysTest, Indexing) {
+  EXPECT_EQ(31, v3_[1]);
+  v3_[2] = -666;
+  EXPECT_EQ(-666, v3_[2]);
+}
+
 }  // namespace numerics
 }  // namespace principia
