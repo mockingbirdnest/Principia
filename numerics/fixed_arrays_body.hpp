@@ -1,6 +1,6 @@
 #pragma once
 
-#include "numerics/arrays.hpp"
+#include "numerics/fixed_arrays.hpp"
 
 #include <algorithm>
 #include <vector>

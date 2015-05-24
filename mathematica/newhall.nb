@@ -10,10 +10,10 @@
 NotebookFileLineBreakTest
 NotebookFileLineBreakTest
 NotebookDataPosition[       157,          7]
-NotebookDataLength[     25825,        648]
-NotebookOptionsPosition[     24209,        594]
-NotebookOutlinePosition[     24550,        609]
-CellTagsIndexPosition[     24507,        606]
+NotebookDataLength[     25482,        644]
+NotebookOptionsPosition[     23626,        585]
+NotebookOutlinePosition[     24206,        606]
+CellTagsIndexPosition[     24163,        603]
 WindowFrame->Normal*)
 
 (* Beginning of Notebook Content *)
@@ -23,9 +23,7 @@ Cell[CellGroupData[{
 Cell["Numerical Representation of Planetary Ephemerides", "Title",
  CellChangeTimes->{{3.6408572436716843`*^9, 3.64085726272859*^9}}],
 
-Cell["\<\
-X. X. Newhall, Celestial Mechanics 45:305-310, 1989\
-\>", "Subtitle",
+Cell["X. X. Newhall, Celestial Mechanics 45:305-310, 1989", "Subtitle",
  CellChangeTimes->{{3.6408572972460413`*^9, 3.640857306555972*^9}, {
   3.640857445376853*^9, 3.6408574627925944`*^9}}],
 
@@ -60,9 +58,12 @@ Cell[BoxData[
      RowBox[{
       RowBox[{"-", "1"}], "+", "#1"}], ",", "#2"}], "]"}], " ", "#1"}], 
   "&"}]], "Output",
- CellChangeTimes->{3.6408549995133853`*^9, 3.6408551285902915`*^9, 
-  3.6408553183497667`*^9, 3.64085677400062*^9, 3.640856812041424*^9, 
-  3.640856870574276*^9, 3.6410549471087694`*^9, 3.641225652005228*^9}]
+ CellChangeTimes->{
+  3.6408549995133853`*^9, 3.6408551285902915`*^9, 3.6408553183497667`*^9, 
+   3.64085677400062*^9, 3.640856812041424*^9, 3.640856870574276*^9, 
+   3.6410549471087694`*^9, 3.641225652005228*^9, 3.641454649562676*^9, 
+   3.6414547427469935`*^9, {3.6414549191156282`*^9, 3.6414549255702744`*^9}, {
+   3.641454963873104*^9, 3.6414549836000767`*^9}, 3.6414553923619485`*^9}]
 }, Open  ]],
 
 Cell[TextData[{
@@ -95,7 +96,7 @@ Cell[BoxData[
    RowBox[{
     RowBox[{"Table", "[", "\[IndentingNewLine]", 
      RowBox[{
-      RowBox[{"{", "\[IndentingNewLine]", 
+      RowBox[{"{", 
        RowBox[{
         RowBox[{"Table", "[", 
          RowBox[{
@@ -103,20 +104,19 @@ Cell[BoxData[
            RowBox[{"j", ",", "i"}], "]"}], ",", 
           RowBox[{"{", 
            RowBox[{"j", ",", "0", ",", "degree"}], "}"}]}], "]"}], ",", 
-        "\[IndentingNewLine]", 
         RowBox[{"Table", "[", 
          RowBox[{
           RowBox[{"DChebyshevT", "[", 
            RowBox[{"j", ",", "i"}], "]"}], ",", 
           RowBox[{"{", 
-           RowBox[{"j", ",", "0", ",", "degree"}], "}"}]}], "]"}]}], 
-       "\[IndentingNewLine]", "}"}], ",", "\[IndentingNewLine]", 
+           RowBox[{"j", ",", "0", ",", "degree"}], "}"}]}], "]"}]}], "}"}], 
+      ",", "\[IndentingNewLine]", 
       RowBox[{"{", 
        RowBox[{"i", ",", "1", ",", 
         RowBox[{"-", "1"}], ",", 
         RowBox[{
-         RowBox[{"-", "2"}], "/", "divisions"}]}], "}"}]}], 
-     "\[IndentingNewLine]", "]"}], ",", 
+         RowBox[{"-", "2"}], "/", "divisions"}]}], "}"}]}], "]"}], ",", 
+    "\[IndentingNewLine]", 
     RowBox[{"{", 
      RowBox[{"1", ",", "2"}], "}"}]}], "]"}]}]], "Input",
  CellChangeTimes->{{3.640836488564534*^9, 3.640836605865263*^9}, {
@@ -126,14 +126,14 @@ Cell[BoxData[
   3.64083778611168*^9}, {3.6408389748198414`*^9, 3.640839024541813*^9}, {
   3.6408392742327795`*^9, 3.640839284204777*^9}, {3.640839396058961*^9, 
   3.6408393978211374`*^9}, {3.640853921398981*^9, 3.640853964120253*^9}, {
-  3.6408551885357866`*^9, 3.6408552025941925`*^9}}],
+  3.6408551885357866`*^9, 3.6408552025941925`*^9}, {3.6414541898102026`*^9, 
+  3.641454196019824*^9}}],
 
 Cell[TextData[{
  "This function computes matrix W used in Newhall\[CloseCurlyQuote]s equation \
 (8). The parameter ",
  Cell[BoxData[
-  FormBox["w", TraditionalForm]],
-  FormatType->"TraditionalForm"],
+  FormBox["w", TraditionalForm]]],
  " is the weight of the velocities relative to the positions (0.4 in Newhall)."
 }], "Text",
  CellChangeTimes->{{3.6408570334555626`*^9, 3.6408571098402004`*^9}, {
@@ -161,13 +161,11 @@ Cell[BoxData[
 Cell[TextData[{
  "The following functions compute the four blocks of matrix ",
  Cell[BoxData[
-  FormBox["C1", TraditionalForm]],
-  FormatType->"TraditionalForm"],
+  FormBox["C1", TraditionalForm]]],
  " and assemble them to form ",
  Cell[BoxData[
   FormBox[
-   RowBox[{"C1", "."}], TraditionalForm]],
-  FormatType->"TraditionalForm"]
+   RowBox[{"C1", "."}], TraditionalForm]]]
 }], "Text",
  CellChangeTimes->{{3.6408571245626726`*^9, 3.6408571787170877`*^9}, {
   3.6408575023465495`*^9, 3.640857503690684*^9}}],
@@ -194,7 +192,7 @@ Cell[BoxData[
  RowBox[{
   RowBox[{"NewhallC1UpperRight", "[", "degree_Integer", "]"}], ":=", 
   "\[IndentingNewLine]", 
-  RowBox[{"Table", "[", "\[IndentingNewLine]", 
+  RowBox[{"Table", "[", 
    RowBox[{
     RowBox[{"{", 
      RowBox[{
@@ -209,11 +207,11 @@ Cell[BoxData[
        RowBox[{"i", ",", 
         RowBox[{"-", "1"}]}], "]"}]}], "}"}], ",", 
     RowBox[{"{", 
-     RowBox[{"i", ",", "0", ",", "degree"}], "}"}]}], "\[IndentingNewLine]", 
-   "]"}]}]], "Input",
+     RowBox[{"i", ",", "0", ",", "degree"}], "}"}]}], "]"}]}]], "Input",
  CellChangeTimes->{{3.64085418937838*^9, 3.6408542677952204`*^9}, {
-  3.640855220759009*^9, 3.6408552602889614`*^9}, {3.6408584286307707`*^9, 
-  3.6408584392868366`*^9}}],
+   3.640855220759009*^9, 3.6408552602889614`*^9}, {3.6408584286307707`*^9, 
+   3.6408584392868366`*^9}, {3.641454203502572*^9, 3.6414542050767293`*^9}, {
+   3.6414542544106627`*^9, 3.641454259167138*^9}, 3.6414543979870186`*^9}],
 
 Cell[BoxData[
  RowBox[{
@@ -239,8 +237,8 @@ Cell[BoxData[
  RowBox[{
   RowBox[{"NewhallC1", "[", 
    RowBox[{"degree_Integer", ",", "divisions_Integer", ",", "w_Rational"}], 
-   "]"}], ":=", 
-  RowBox[{"ArrayFlatten", "[", 
+   "]"}], ":=", "\[IndentingNewLine]", 
+  RowBox[{"ArrayFlatten", "[", "\[IndentingNewLine]", 
    RowBox[{"{", 
     RowBox[{
      RowBox[{"{", 
@@ -253,20 +251,18 @@ Cell[BoxData[
       RowBox[{
        RowBox[{"NewhallC1LowerLeft", "[", "degree", "]"}], ",", 
        RowBox[{"NewhallC1LowerRight", "[", "]"}]}], "}"}]}], "}"}], 
-   "\[IndentingNewLine]", "]"}]}]], "Input",
+   "]"}]}]], "Input",
  CellChangeTimes->{{3.640855947659692*^9, 3.6408560587898035`*^9}, 
-   3.640856787869006*^9}],
+   3.640856787869006*^9, {3.641454214774699*^9, 3.641454245458767*^9}}],
 
 Cell[TextData[{
  "The following functions compute the two blocs of matrix ",
  Cell[BoxData[
-  FormBox["C2", TraditionalForm]],
-  FormatType->"TraditionalForm"],
+  FormBox["C2", TraditionalForm]]],
  " and assemble them to form ",
  Cell[BoxData[
   FormBox[
-   RowBox[{"C2", "."}], TraditionalForm]],
-  FormatType->"TraditionalForm"]
+   RowBox[{"C2", "."}], TraditionalForm]]]
 }], "Text",
  CellChangeTimes->{{3.6408571912667933`*^9, 3.640857228497167*^9}, {
   3.6408575122675414`*^9, 3.6408575292262373`*^9}}],
@@ -283,7 +279,7 @@ Cell[BoxData[
    RowBox[{"NewhallW", "[", 
     RowBox[{"divisions", ",", "w"}], "]"}]}]}]], "Input",
  CellChangeTimes->{{3.6408561523691607`*^9, 3.6408561603609595`*^9}, 
-   3.640856787873007*^9}],
+   3.640856787873007*^9, {3.641454277560977*^9, 3.641454288819103*^9}}],
 
 Cell[BoxData[
  RowBox[{
@@ -323,17 +319,14 @@ Cell[TextData[{
   FormBox[
    RowBox[{
     SuperscriptBox["C1", 
-     RowBox[{"-", "1"}]], ".", "C2"}], TraditionalForm]],
-  FormatType->"TraditionalForm"],
+     RowBox[{"-", "1"}]], ".", "C2"}], TraditionalForm]]],
  ". Newhall doesn\[CloseCurlyQuote]t give it a name but calls its elements ",
  Cell[BoxData[
   FormBox[
-   SubscriptBox["c", "k"], TraditionalForm]],
-  FormatType->"TraditionalForm"],
+   SubscriptBox["c", "k"], TraditionalForm]]],
  ", so let\[CloseCurlyQuote]s use the name ",
  Cell[BoxData[
-  FormBox["C", TraditionalForm]],
-  FormatType->"TraditionalForm"],
+  FormBox["C", TraditionalForm]]],
  "."
 }], "Text",
  CellChangeTimes->{{3.64085755035935*^9, 3.6408577002573385`*^9}}],
@@ -374,10 +367,10 @@ Cell[BoxData[
    "\"\<(\\r\\n\>\"", "<>", "\[IndentingNewLine]", 
    RowBox[{"StringReplace", "[", "\[IndentingNewLine]", 
     RowBox[{
-     RowBox[{"ToString", "[", "\[IndentingNewLine]", 
-      RowBox[{"CForm", "[", "matrix", "]"}], "\[IndentingNewLine]", "]"}], 
-     ",", "\[IndentingNewLine]", 
-     RowBox[{"{", "\[IndentingNewLine]", 
+     RowBox[{"ToString", "[", 
+      RowBox[{"CForm", "[", "matrix", "]"}], "]"}], ",", 
+     "\[IndentingNewLine]", 
+     RowBox[{"{", 
       RowBox[{
        RowBox[{"\"\<List(List(\>\"", "\[Rule]", "\"\<        {{\>\""}], ",", 
        "\[IndentingNewLine]", 
@@ -388,8 +381,7 @@ Cell[BoxData[
        RowBox[{"\"\<,\>\"", "\[Rule]", "\"\<,\\r\\n         \>\""}], ",", 
        "\[IndentingNewLine]", 
        RowBox[{"\"\<))\>\"", "\[Rule]", "\"\<}});\\r\\n\\r\\n\>\""}]}], 
-      "\[IndentingNewLine]", "}"}]}], "\[IndentingNewLine]", 
-    "]"}]}]}]], "Input",
+      "}"}]}], "]"}]}]}]], "Input",
  CellChangeTimes->{{3.640870677895302*^9, 3.6408709164751577`*^9}, {
    3.6408713800455103`*^9, 3.6408714014446497`*^9}, {3.6408715712869344`*^9, 
    3.6408715864944553`*^9}, {3.6408716910189066`*^9, 3.640871730579862*^9}, {
@@ -398,7 +390,8 @@ Cell[BoxData[
    3.6408724733271294`*^9, 3.640872505568353*^9}, {3.640874245098493*^9, 
    3.640874246393623*^9}, 3.6408747449167724`*^9, {3.641055252528308*^9, 
    3.641055258999955*^9}, {3.6410553154505997`*^9, 3.6410553219702516`*^9}, {
-   3.6412257405560822`*^9, 3.641225745627589*^9}}],
+   3.6412257405560822`*^9, 3.641225745627589*^9}, {3.641454293751596*^9, 
+   3.6414543031845393`*^9}}],
 
 Cell["\<\
 Produces a representation of a matrix as a single, flattened initializer list.\
@@ -415,10 +408,10 @@ Cell[BoxData[
    "\"\<(\\r\\n\>\"", "<>", "\[IndentingNewLine]", 
    RowBox[{"StringReplace", "[", "\[IndentingNewLine]", 
     RowBox[{
-     RowBox[{"ToString", "[", "\[IndentingNewLine]", 
-      RowBox[{"CForm", "[", "matrix", "]"}], "\[IndentingNewLine]", "]"}], 
-     ",", "\[IndentingNewLine]", 
-     RowBox[{"{", "\[IndentingNewLine]", 
+     RowBox[{"ToString", "[", 
+      RowBox[{"CForm", "[", "matrix", "]"}], "]"}], ",", 
+     "\[IndentingNewLine]", 
+     RowBox[{"{", 
       RowBox[{
        RowBox[{"\"\<List(List(\>\"", "\[Rule]", "\"\<        {\>\""}], ",", 
        "\[IndentingNewLine]", 
@@ -429,8 +422,7 @@ Cell[BoxData[
        RowBox[{"\"\<,\>\"", "\[Rule]", "\"\<,\\r\\n         \>\""}], ",", 
        "\[IndentingNewLine]", 
        RowBox[{"\"\<))\>\"", "\[Rule]", "\"\<});\\r\\n\\r\\n\>\""}]}], 
-      "\[IndentingNewLine]", "}"}]}], "\[IndentingNewLine]", 
-    "]"}]}]}]], "Input",
+      "}"}]}], "]"}]}]}]], "Input",
  CellChangeTimes->{{3.640870677895302*^9, 3.6408709164751577`*^9}, {
    3.6408713800455103`*^9, 3.6408714014446497`*^9}, {3.6408715712869344`*^9, 
    3.6408715864944553`*^9}, {3.6408716910189066`*^9, 3.640871730579862*^9}, {
@@ -445,7 +437,8 @@ Cell[BoxData[
    3.6408742111931033`*^9}, {3.6408742498659697`*^9, 3.6408742514901323`*^9}, 
    3.6408744376087427`*^9, 3.6408747372680073`*^9, {3.6410552648555403`*^9, 
    3.6410552735364084`*^9}, {3.6410553246105156`*^9, 3.641055328873942*^9}, {
-   3.641225750852112*^9, 3.641225754428469*^9}}],
+   3.641225750852112*^9, 3.641225754428469*^9}, {3.6414542998862095`*^9, 
+   3.641454307183939*^9}}],
 
 Cell["Produces a representation of a list as an initializer list.", "Text",
  CellChangeTimes->{{3.640882654947112*^9, 3.640882678263444*^9}}],
@@ -459,18 +452,16 @@ Cell[BoxData[
    "\"\<(\\r\\n\>\"", "<>", "\[IndentingNewLine]", 
    RowBox[{"StringReplace", "[", "\[IndentingNewLine]", 
     RowBox[{
-     RowBox[{"ToString", "[", "\[IndentingNewLine]", 
-      RowBox[{"CForm", "[", "list", "]"}], "\[IndentingNewLine]", "]"}], ",", 
-     "\[IndentingNewLine]", 
-     RowBox[{"{", "\[IndentingNewLine]", 
+     RowBox[{"ToString", "[", 
+      RowBox[{"CForm", "[", "list", "]"}], "]"}], ",", "\[IndentingNewLine]", 
+     RowBox[{"{", 
       RowBox[{
        RowBox[{"\"\<List(\>\"", "\[Rule]", "\"\<        {\>\""}], ",", 
        "\[IndentingNewLine]", 
        RowBox[{"\"\<,\>\"", "\[Rule]", "\"\<,\\r\\n         \>\""}], ",", 
        "\[IndentingNewLine]", 
-       RowBox[{"\"\<)\>\"", "\[Rule]", "\"\<});\\r\\n\\r\\n\>\""}]}], 
-      "\[IndentingNewLine]", "}"}]}], "\[IndentingNewLine]", 
-    "]"}]}]}]], "Input",
+       RowBox[{"\"\<)\>\"", "\[Rule]", "\"\<});\\r\\n\\r\\n\>\""}]}], "}"}]}],
+     "]"}]}]}]], "Input",
  CellChangeTimes->{{3.640870677895302*^9, 3.6408709164751577`*^9}, {
    3.6408713800455103`*^9, 3.6408714014446497`*^9}, {3.6408715712869344`*^9, 
    3.6408715864944553`*^9}, {3.6408716910189066`*^9, 3.640871730579862*^9}, {
@@ -480,7 +471,7 @@ Cell[BoxData[
    3.64087318448174*^9}, 3.6408732463239236`*^9, {3.640874725203801*^9, 
    3.6408747298602667`*^9}, {3.641055278559911*^9, 3.641055282736328*^9}, {
    3.6410553310581603`*^9, 3.641055333330387*^9}, {3.6412257584598722`*^9, 
-   3.6412257617562017`*^9}}],
+   3.6412257617562017`*^9}, {3.6414543096111817`*^9, 3.641454315834804*^9}}],
 
 Cell[TextData[{
  "Writes all the Newhall ",
@@ -492,12 +483,10 @@ correspond to the Lagrange multipliers."
  CellChangeTimes->{{3.6408826935639734`*^9, 3.640882714496066*^9}, {
   3.6410550089579535`*^9, 3.6410550237494326`*^9}}],
 
-Cell[CellGroupData[{
-
 Cell[BoxData[{
  RowBox[{
-  RowBox[{"file", "=", 
-   RowBox[{"OpenWrite", "[", 
+  RowBox[{"file", "=", "\[IndentingNewLine]", 
+   RowBox[{"OpenWrite", "[", "\[IndentingNewLine]", 
     RowBox[{
      RowBox[{"FileNameJoin", "[", 
       RowBox[{"{", 
@@ -512,21 +501,23 @@ Cell[BoxData[{
  RowBox[{
   RowBox[{"WriteString", "[", "\[IndentingNewLine]", 
    RowBox[{
-   "file", ",", "\[IndentingNewLine]", "\"\<#pragma once\\r\\n\>\"", ",", 
-    "\[IndentingNewLine]", "\"\<\\r\\n\>\"", ",", "\[IndentingNewLine]", 
-    "\"\<#include <array>\\r\\n\>\"", ",", "\[IndentingNewLine]", 
+   "file", ",", "\[IndentingNewLine]", 
+    "\"\<// Generated by Mathematica.  DO NOT EDIT!\\r\\n\>\"", ",", 
+    "\[IndentingNewLine]", "\"\<// source: mathematica/newhall.nb\\r\\n\>\"", 
+    ",", "\[IndentingNewLine]", "\"\<\\r\\n\>\"", ",", "\[IndentingNewLine]", 
+    "\"\<#pragma once\\r\\n\>\"", ",", "\[IndentingNewLine]", 
     "\"\<\\r\\n\>\"", ",", "\[IndentingNewLine]", 
-    "\"\<#include \\\"numerics/arrays.hpp\\\"\\r\\n\>\"", ",", 
+    "\"\<#include \\\"numerics/fixed_arrays.hpp\\\"\\r\\n\>\"", ",", 
     "\[IndentingNewLine]", "\"\<\\r\\n\>\"", ",", "\[IndentingNewLine]", 
     "\"\<namespace principia {\\r\\n\>\"", ",", "\[IndentingNewLine]", 
-    "\"\<namespace numerics {\\r\\n\>\"", ",", "\"\<\\r\\n\>\""}], 
-   "\[IndentingNewLine]", "]"}], ";"}], "\[IndentingNewLine]", 
+    "\"\<namespace numerics {\\r\\n\>\"", ",", "\"\<\\r\\n\>\""}], "]"}], 
+  ";"}], "\[IndentingNewLine]", 
  RowBox[{
   RowBox[{"Do", "[", "\[IndentingNewLine]", 
    RowBox[{
     RowBox[{"WriteString", "[", "\[IndentingNewLine]", 
      RowBox[{"file", ",", "\[IndentingNewLine]", 
-      RowBox[{"FlattenedMatrixToCDefinition", "[", 
+      RowBox[{"FlattenedMatrixToCDefinition", "[", "\[IndentingNewLine]", 
        RowBox[{
         RowBox[{"\"\<FixedMatrix<double, \>\"", "<>", 
          RowBox[{"ToString", "[", "degree", "]"}], "<>", 
@@ -539,8 +530,8 @@ Cell[BoxData[{
           RowBox[{"NewhallC", "[", 
            RowBox[{"degree", ",", "8", ",", 
             RowBox[{"4", "/", "10"}]}], "]"}], ",", 
-          RowBox[{"-", "4"}]}], "]"}]}], "\[IndentingNewLine]", "]"}]}], 
-     "\[IndentingNewLine]", "]"}], ",", "\[IndentingNewLine]", 
+          RowBox[{"-", "4"}]}], "]"}]}], "]"}]}], "]"}], ",", 
+    "\[IndentingNewLine]", 
     RowBox[{"{", 
      RowBox[{"degree", ",", " ", "3", ",", " ", "17"}], "}"}]}], "]"}], 
   ";"}], "\[IndentingNewLine]", 
@@ -549,9 +540,10 @@ Cell[BoxData[{
    RowBox[{
    "file", ",", "\[IndentingNewLine]", 
     "\"\<}  // namespace numerics\\r\\n\>\"", ",", "\[IndentingNewLine]", 
-    "\"\<}  // namespace principia\\r\\n\>\""}], "\[IndentingNewLine]", "]"}],
-   ";"}], "\[IndentingNewLine]", 
- RowBox[{"Close", "[", "file", "]"}]}], "Input",
+    "\"\<}  // namespace principia\\r\\n\>\""}], "]"}], 
+  ";"}], "\[IndentingNewLine]", 
+ RowBox[{
+  RowBox[{"Close", "[", "file", "]"}], ";"}]}], "Input",
  CellChangeTimes->{{3.6408690404944735`*^9, 3.6408690482152452`*^9}, {
    3.6408693014015617`*^9, 3.640869306833105*^9}, {3.64086966050257*^9, 
    3.6408696679353137`*^9}, {3.6408719952213235`*^9, 
@@ -564,37 +556,42 @@ Cell[BoxData[{
    3.641055407894843*^9}, 3.6410559850527554`*^9, {3.641056477791024*^9, 
    3.6410564808393292`*^9}, {3.641225627514779*^9, 3.6412256470907364`*^9}, {
    3.6412256903320603`*^9, 3.641225714741501*^9}, {3.6412258377471027`*^9, 
-   3.6412258380261307`*^9}}],
+   3.6412258380261307`*^9}, {3.6414543421094313`*^9, 3.641454378150035*^9}, {
+   3.6414546680715265`*^9, 3.6414547319769163`*^9}, {3.6414549507957964`*^9, 
+   3.6414549814848647`*^9}, {3.6414553862393365`*^9, 3.641455386414354*^9}}],
 
-Cell[BoxData["\<\"C:\\\\Users\\\\phl\\\\Projects\\\\GitHub\\\\Principia\\\\\
-numerics\\\\newhall.mathematica.cpp\"\>"], "Output",
- CellChangeTimes->{
-  3.6408690488553095`*^9, 3.6408693076721888`*^9, 3.6408693443268538`*^9, 
-   3.6408694078892097`*^9, 3.6408694950360255`*^9, 3.640869680459566*^9, 
-   3.6408709521437244`*^9, 3.6408711288543935`*^9, 3.6408713084443507`*^9, 
-   3.640871533212127*^9, 3.6408715937531805`*^9, 3.640871739074712*^9, 
-   3.640871778609665*^9, 3.640871827810584*^9, 3.6408719004028425`*^9, {
-   3.640872081424943*^9, 3.6408721033751383`*^9}, {3.6408721610509048`*^9, 
-   3.6408721796347632`*^9}, 3.640873215590851*^9, 3.6408732790811987`*^9, 
-   3.640873337707061*^9, 3.64087358199819*^9, 3.6408736215511446`*^9, {
-   3.640873658989888*^9, 3.640873685737563*^9}, 3.6408737316031485`*^9, 
-   3.6408738583918266`*^9, 3.6408739057465615`*^9, 3.640873968915878*^9, 
-   3.640874009396926*^9, 3.6408740852555103`*^9, 3.6408741324502296`*^9, 
-   3.640874166242608*^9, 3.640874216084592*^9, 3.6408743166886516`*^9, 
-   3.640874442332215*^9, {3.640874678076089*^9, 3.6408747000892897`*^9}, 
-   3.6408747658148623`*^9, 3.640882448364456*^9, {3.6408824929399133`*^9, 
-   3.640882539967615*^9}, 3.640882747142331*^9, 3.640882844493367*^9, 
-   3.6408830086797843`*^9, 3.6410550295620136`*^9, 3.641055288323887*^9, 
-   3.6410553386689215`*^9, 3.641055412995353*^9, 3.6410559904973*^9, 
-   3.641056489601205*^9, 3.6412256524042683`*^9, 3.6412257663006563`*^9, 
-   3.641225842133541*^9}]
-}, Open  ]]
+Cell["Save a pdf printout of this file for documentation purposes.", "Text",
+ CellChangeTimes->{{3.6414544152977495`*^9, 3.6414544271229315`*^9}}],
+
+Cell[BoxData[{
+ RowBox[{
+  RowBox[{"printout", "=", 
+   RowBox[{"FileNameJoin", "[", 
+    RowBox[{"{", 
+     RowBox[{
+      RowBox[{"DirectoryName", "[", 
+       RowBox[{"NotebookDirectory", "[", "]"}], "]"}], ",", 
+      "\"\<documentation\>\"", ",", "\"\<newhall.pdf\>\""}], "}"}], "]"}]}], 
+  ";"}], "\[IndentingNewLine]", 
+ RowBox[{"NotebookPrint", "[", 
+  RowBox[{
+   RowBox[{"EvaluationNotebook", "[", "]"}], ",", "printout"}], 
+  "]"}]}], "Input",
+ CellChangeTimes->{{3.6414544298021994`*^9, 3.6414544891231313`*^9}, {
+  3.6414545578340015`*^9, 3.6414545647006884`*^9}, {3.641454636493369*^9, 
+  3.6414546409748173`*^9}}]
 }, Open  ]]
 }, Open  ]]
 },
-WindowSize->{707, 755},
-WindowMargins->{{0, Automatic}, {Automatic, 0}},
-FrontEndVersion->"8.0 for Microsoft Windows (64-bit) (October 6, 2011)",
+WindowSize->{1138, 1336},
+WindowMargins->{{Automatic, 0}, {Automatic, 0}},
+PrintingCopies->1,
+PrintingPageRange->{32000, 32000},
+PrintingOptions->{"Magnification"->1.,
+"PaperOrientation"->"Portrait",
+"PaperSize"->{594.96, 842.04}},
+PrivateNotebookOptions->{"VersionedStylesheet"->{"Default.nb"[8.] -> False}},
+FrontEndVersion->"10.0 for Microsoft Windows (64-bit) (December 4, 2014)",
 StyleDefinitions->"Default.nb"
 ]
 (* End of Notebook Content *)
@@ -609,45 +606,44 @@ CellTagsIndex->{}
 (*NotebookFileOutline
 Notebook[{
 Cell[CellGroupData[{
-Cell[579, 22, 133, 1, 137, "Title"],
-Cell[715, 25, 198, 4, 49, "Subtitle"],
+Cell[579, 22, 133, 1, 101, "Title"],
+Cell[715, 25, 190, 2, 56, "Subtitle"],
 Cell[CellGroupData[{
-Cell[938, 33, 99, 1, 71, "Section"],
-Cell[1040, 36, 161, 3, 29, "Text"],
+Cell[930, 31, 99, 1, 70, "Section"],
+Cell[1032, 34, 161, 3, 30, "Text"],
 Cell[CellGroupData[{
-Cell[1226, 43, 509, 9, 31, "Input"],
-Cell[1738, 54, 394, 10, 30, "Output"]
+Cell[1218, 41, 509, 9, 31, "Input"],
+Cell[1730, 52, 575, 13, 31, "Output"]
 }, Open  ]],
-Cell[2147, 67, 817, 19, 47, "Text"],
-Cell[2967, 88, 1744, 40, 192, "Input"],
-Cell[4714, 130, 413, 9, 47, "Text"],
-Cell[5130, 141, 716, 17, 54, "Input"],
-Cell[5849, 160, 429, 12, 29, "Text"],
-Cell[6281, 174, 699, 16, 52, "Input"],
-Cell[6983, 192, 875, 23, 112, "Input"],
-Cell[7861, 217, 385, 8, 31, "Input"],
-Cell[8249, 227, 324, 8, 31, "Input"],
-Cell[8576, 237, 765, 20, 112, "Input"],
-Cell[9344, 259, 427, 12, 29, "Text"],
-Cell[9774, 273, 461, 12, 52, "Input"],
-Cell[10238, 287, 522, 13, 52, "Input"],
-Cell[10763, 302, 551, 15, 72, "Input"],
-Cell[11317, 319, 607, 19, 47, "Text"],
-Cell[11927, 340, 487, 12, 52, "Input"]
+Cell[2320, 68, 817, 19, 49, "Text"],
+Cell[3140, 89, 1715, 40, 132, "Input"],
+Cell[4858, 131, 380, 8, 30, "Text"],
+Cell[5241, 141, 716, 17, 33, "Input"],
+Cell[5960, 160, 363, 10, 30, "Text"],
+Cell[6326, 172, 699, 16, 52, "Input"],
+Cell[7028, 190, 951, 23, 52, "Input"],
+Cell[7982, 215, 385, 8, 31, "Input"],
+Cell[8370, 225, 324, 8, 31, "Input"],
+Cell[8697, 235, 834, 20, 92, "Input"],
+Cell[9534, 257, 361, 10, 30, "Text"],
+Cell[9898, 269, 507, 12, 31, "Input"],
+Cell[10408, 283, 522, 13, 31, "Input"],
+Cell[10933, 298, 551, 15, 52, "Input"],
+Cell[11487, 315, 508, 16, 32, "Text"],
+Cell[11998, 333, 487, 12, 52, "Input"]
 }, Open  ]],
 Cell[CellGroupData[{
-Cell[12451, 357, 108, 1, 71, "Section"],
-Cell[12562, 360, 182, 4, 29, "Text"],
-Cell[12747, 366, 1808, 34, 292, "Input"],
-Cell[14558, 402, 170, 3, 29, "Text"],
-Cell[14731, 407, 2270, 40, 292, "Input"],
-Cell[17004, 449, 141, 1, 29, "Text"],
-Cell[17148, 452, 1637, 30, 252, "Input"],
-Cell[18788, 484, 347, 8, 47, "Text"],
-Cell[CellGroupData[{
-Cell[19160, 496, 3507, 70, 612, "Input"],
-Cell[22670, 568, 1499, 21, 30, "Output"]
-}, Open  ]]
+Cell[12522, 350, 108, 1, 70, "Section"],
+Cell[12633, 353, 182, 4, 30, "Text"],
+Cell[12818, 359, 1740, 34, 172, "Input"],
+Cell[14561, 395, 170, 3, 30, "Text"],
+Cell[14734, 400, 2202, 40, 172, "Input"],
+Cell[16939, 442, 141, 1, 30, "Text"],
+Cell[17083, 445, 1557, 28, 132, "Input"],
+Cell[18643, 475, 347, 8, 30, "Text"],
+Cell[18993, 485, 3825, 75, 572, "Input"],
+Cell[22821, 562, 146, 1, 30, "Text"],
+Cell[22970, 565, 628, 16, 52, "Input"]
 }, Open  ]]
 }, Open  ]]
 }

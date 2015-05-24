@@ -1,4 +1,4 @@
-#include "numerics/arrays.hpp"
+#include "numerics/fixed_arrays.hpp"
 
 #include "gtest/gtest.h"
 
