@@ -61,6 +61,28 @@ Vector ЧебышёвSeries<Vector>::Evaluate(Instant const& t) const {
 }
 
 template<typename Vector>
+Variation<Vector> ЧебышёвSeries<Vector>::EvaluateDerivative(
+    Instant const& t) const {
+  double const scaled_t = (t - t_mean_) * two_over_duration_;
+  double const two_scaled_t = scaled_t + scaled_t;
+  // We have to allow |scaled_t| to go slightly out of [-1, 1] because of
+  // computation errors.  But if it goes too far, something is broken.
+  CHECK_LE(scaled_t, 1.1);
+  CHECK_GE(scaled_t, -1.1);
+
+  Vector b_kplus2{};
+  Vector b_kplus1{};
+  Vector b_k{};
+  for (int k = degree_ - 1; k >= 1; --k) {
+    b_k = coefficients_[k + 1] * (k + 1) + two_scaled_t * b_kplus1 - b_kplus2;
+    b_kplus2 = b_kplus1;
+    b_kplus1 = b_k;
+  }
+  return (coefficients_[1] + two_scaled_t * b_kplus1 - b_kplus2) *
+             two_over_duration_;
+}
+
+template<typename Vector>
 void ЧебышёвSeries<Vector>::WriteToMessage(
     not_null<serialization::ЧебышёвSeries*> const message) const {
   using Serializer =
