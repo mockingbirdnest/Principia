@@ -68,4 +68,4 @@ FixedVector<Product<ScalarLeft, ScalarRight>, rows> operator*(
 }  // namespace numerics
 }  // namespace principia
 
-#include "numerics/arrays_body.hpp"
+#include "numerics/fixed_arrays_body.hpp"

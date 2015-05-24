@@ -2,7 +2,7 @@
 #include "numerics/чебышёв_series.hpp"
 
 #include "glog/logging.h"
-#include "numerics/arrays.hpp"
+#include "numerics/fixed_arrays.hpp"
 #include "numerics/newhall.mathematica.cpp"
 #include "quantities/serialization.hpp"
 
