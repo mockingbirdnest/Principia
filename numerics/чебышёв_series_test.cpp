@@ -34,7 +34,6 @@ class ЧебышёвSeriesTest : public ::testing::Test {
       : t_min_(-1 * Second),
         t_max_(3 * Second) {}
 
-  // TODO(phl): Support for evaluating the derivative.
   void NewhallApproximationErrors(
       std::function<Length(Instant const)> length_function,
       std::function<Speed(Instant const)> speed_function,
@@ -54,7 +53,7 @@ class ЧебышёвSeriesTest : public ::testing::Test {
           ЧебышёвSeries<Length>::NewhallApproximation(
               degree, lengths, speeds, t_min_, t_max_);
 
-      // Compute the absolute error of both function throughout the interval.
+      // Compute the absolute error of both functions throughout the interval.
       Length length_absolute_error;
       Speed speed_absolute_error;
       for (Instant t = t_min_; t <= t_max_; t += 0.05 * Second) {
