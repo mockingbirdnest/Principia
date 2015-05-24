@@ -4,12 +4,15 @@
 #include <vector>
 
 #include "base/not_null.hpp"
+#include "numerics/arrays.hpp"
 #include "integrators/ordinary_differential_equations.hpp"
 #include "quantities/named_quantities.hpp"
 
 namespace principia {
 
 using base::not_null;
+using numerics::FixedVector;
+using numerics::FixedMatrix;
 using quantities::Time;
 using quantities::Variation;
 
@@ -33,6 +36,7 @@ namespace integrators {
 // its derivative v, rather than the more common y and y′ found in the
 // literature on Runge-Kutta-Nyström methods.
 
+template<int stages, int higher_order, int lower_order>
 class EmbeddedExplicitRungeKuttaNyströmIntegrator {
  public:
   EmbeddedExplicitRungeKuttaNyströmIntegrator(
@@ -65,8 +69,6 @@ class EmbeddedExplicitRungeKuttaNyströmIntegrator {
       AdaptiveStepSize<ODE<Position>> const& adaptive_step_size) const;
 
  protected:
-  int stages_;
-  int lower_order_;
   std::vector<double> c_;
   // TODO(egg): This is really a strictly lower-triangular matrix, so we should
   // store it in a smarter way eventually.
