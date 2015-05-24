@@ -114,8 +114,8 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="arrays.hpp" />
-    <ClInclude Include="arrays_body.hpp" />
+    <ClInclude Include="fixed_arrays.hpp" />
+    <ClInclude Include="fixed_arrays_body.hpp" />
     <ClInclude Include="double_precision.hpp" />
     <ClInclude Include="double_precision_body.hpp" />
     <ClInclude Include="чебышёв_series.hpp" />
