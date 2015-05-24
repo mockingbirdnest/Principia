@@ -12,8 +12,8 @@ using quantities::QuantityOrDoubleSerializer;
 
 namespace numerics {
 
-template<typename Scalar>
-ЧебышёвSeries<Scalar>::ЧебышёвSeries(std::vector<Scalar> const& coefficients,
+template<typename Vector>
+ЧебышёвSeries<Vector>::ЧебышёвSeries(std::vector<Vector> const& coefficients,
                                      Instant const& t_min,
                                      Instant const& t_max)
     : coefficients_(coefficients),
@@ -28,20 +28,20 @@ template<typename Scalar>
   two_over_duration_ = 2 / duration;
 }
 
-template<typename Scalar>
-bool ЧебышёвSeries<Scalar>::operator==(ЧебышёвSeries const& right) const {
+template<typename Vector>
+bool ЧебышёвSeries<Vector>::operator==(ЧебышёвSeries const& right) const {
   return coefficients_ == right.coefficients_ &&
          t_min_ == right.t_min_ &&
          t_max_ == right.t_max_;
 }
 
-template<typename Scalar>
-bool ЧебышёвSeries<Scalar>::operator!=(ЧебышёвSeries const& right) const {
-  return !ЧебышёвSeries<Scalar>::operator==(right);
+template<typename Vector>
+bool ЧебышёвSeries<Vector>::operator!=(ЧебышёвSeries const& right) const {
+  return !ЧебышёвSeries<Vector>::operator==(right);
 }
 
-template<typename Scalar>
-Scalar ЧебышёвSeries<Scalar>::Evaluate(Instant const& t) const {
+template<typename Vector>
+Vector ЧебышёвSeries<Vector>::Evaluate(Instant const& t) const {
   double const scaled_t = (t - t_mean_) * two_over_duration_;
   double const two_scaled_t = scaled_t + scaled_t;
   // We have to allow |scaled_t| to go slightly out of [-1, 1] because of
@@ -49,9 +49,9 @@ Scalar ЧебышёвSeries<Scalar>::Evaluate(Instant const& t) const {
   CHECK_LE(scaled_t, 1.1);
   CHECK_GE(scaled_t, -1.1);
 
-  Scalar b_kplus2{};
-  Scalar b_kplus1{};
-  Scalar b_k{};
+  Vector b_kplus2{};
+  Vector b_kplus1{};
+  Vector b_k{};
   for (int k = degree_; k >= 1; --k) {
     b_k = coefficients_[k] + two_scaled_t * b_kplus1 - b_kplus2;
     b_kplus2 = b_kplus1;
@@ -60,11 +60,11 @@ Scalar ЧебышёвSeries<Scalar>::Evaluate(Instant const& t) const {
   return coefficients_[0] + scaled_t * b_kplus1 - b_kplus2;
 }
 
-template<typename Scalar>
-void ЧебышёвSeries<Scalar>::WriteToMessage(
+template<typename Vector>
+void ЧебышёвSeries<Vector>::WriteToMessage(
     not_null<serialization::ЧебышёвSeries*> const message) const {
   using Serializer =
-      QuantityOrDoubleSerializer<Scalar,
+      QuantityOrDoubleSerializer<Vector,
                                  serialization::ЧебышёвSeries::Coefficient>;
   for (auto const& coefficient : coefficients_) {
     Serializer::WriteToMessage(coefficient, message->add_coefficient());
@@ -73,13 +73,13 @@ void ЧебышёвSeries<Scalar>::WriteToMessage(
   t_max_.WriteToMessage(message->mutable_t_max());
 }
 
-template<typename Scalar>
-ЧебышёвSeries<Scalar> ЧебышёвSeries<Scalar>::ReadFromMessage(
+template<typename Vector>
+ЧебышёвSeries<Vector> ЧебышёвSeries<Vector>::ReadFromMessage(
     serialization::ЧебышёвSeries const& message) {
   using Serializer =
-      QuantityOrDoubleSerializer<Scalar,
+      QuantityOrDoubleSerializer<Vector,
                                  serialization::ЧебышёвSeries::Coefficient>;
-  std::vector<Scalar> coefficients;
+  std::vector<Vector> coefficients;
   coefficients.reserve(message.coefficient_size());
   for (auto const& coefficient : message.coefficient()) {
     coefficients.push_back(Serializer::ReadFromMessage(coefficient));
@@ -89,11 +89,11 @@ template<typename Scalar>
                        Instant::ReadFromMessage(message.t_max()));
 }
 
-template<typename Scalar>
-ЧебышёвSeries<Scalar> ЧебышёвSeries<Scalar>::NewhallApproximation(
+template<typename Vector>
+ЧебышёвSeries<Vector> ЧебышёвSeries<Vector>::NewhallApproximation(
     int const degree,
-    std::vector<Scalar> const& q,
-    std::vector<Variation<Scalar>> const& v,
+    std::vector<Vector> const& q,
+    std::vector<Variation<Vector>> const& v,
     Instant const& t_min,
     Instant const& t_max) {
   // Only supports 8 divisions for now.
@@ -105,7 +105,7 @@ template<typename Scalar>
 
   // Tricky.  The order in Newhall's matrices is such that the entries for the
   // largest time occur first.
-  FixedVector<Scalar, 2 * kDivisions + 2> qv;
+  FixedVector<Vector, 2 * kDivisions + 2> qv;
   for (int i = 0, j = 2 * kDivisions;
        i < kDivisions + 1 && j >= 0;
        ++i, j -= 2) {
@@ -113,7 +113,7 @@ template<typename Scalar>
     qv[j + 1] = v[i] * duration_over_two;
   }
 
-  std::vector<Scalar> coefficients;
+  std::vector<Vector> coefficients;
   coefficients.reserve(degree);
   switch (degree) {
     case 3:

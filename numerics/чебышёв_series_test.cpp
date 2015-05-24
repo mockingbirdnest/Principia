@@ -56,9 +56,6 @@ class ЧебышёвSeriesTest : public ::testing::Test {
         absolute_error = std::max(absolute_error,
                                   AbsoluteError(expected_length, actual_length));
       }
-      if (!length_absolute_errors->empty()) {
-        //CHECK_LE(absolute_error, length_absolute_errors->back());
-      }
       length_absolute_errors->push_back(absolute_error);
     }
   }

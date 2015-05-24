@@ -19,13 +19,15 @@ using quantities::Variation;
 
 namespace numerics {
 
-template<typename Scalar>
+// A Чебышёв series with values in the vector space |Vector|.  The argument is
+// an |Instant|.
+template<typename Vector>
 class ЧебышёвSeries {
  public:
   // The element at position i in |coefficients| is the coefficient of Tᵢ.  The
   // polynomials are scaled to the interval [t_min, t_max], which must be
   // nonempty.
-  explicit ЧебышёвSeries(std::vector<Scalar> const& coefficients,
+  explicit ЧебышёвSeries(std::vector<Vector> const& coefficients,
                          Instant const& t_min,
                          Instant const& t_max);
 
@@ -33,7 +35,7 @@ class ЧебышёвSeries {
   bool operator!=(ЧебышёвSeries const& right) const;
 
   // Uses the Clenshaw algorithm.  |t| must be in the range [t_min, t_max].
-  Scalar Evaluate(Instant const& t) const;
+  Vector Evaluate(Instant const& t) const;
 
   void WriteToMessage(
       not_null<serialization::ЧебышёвSeries*> const message) const;
@@ -44,13 +46,13 @@ class ЧебышёвSeries {
   // the positions and velocities over a constant division of [t_min, t_max].
   static ЧебышёвSeries NewhallApproximation(
       int const degree,
-      std::vector<Scalar> const& q,
-      std::vector<Variation<Scalar>> const& v,
+      std::vector<Vector> const& q,
+      std::vector<Variation<Vector>> const& v,
       Instant const& t_min,
       Instant const& t_max);
 
  private:
-  std::vector<Scalar> const coefficients_;
+  std::vector<Vector> const coefficients_;
   int const degree_;
   Instant const t_min_;
   Instant const t_max_;

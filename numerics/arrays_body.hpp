@@ -3,6 +3,7 @@
 #include "numerics/arrays.hpp"
 
 #include <algorithm>
+#include <vector>
 
 #include "glog/logging.h"
 
