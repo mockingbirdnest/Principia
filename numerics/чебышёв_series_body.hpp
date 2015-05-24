@@ -78,7 +78,8 @@ Variation<Vector> ЧебышёвSeries<Vector>::EvaluateDerivative(
     b_kplus2 = b_kplus1;
     b_kplus1 = b_k;
   }
-  return coefficients_[0] + two_scaled_t * b_kplus1 - b_kplus2;
+  return (coefficients_[1] + two_scaled_t * b_kplus1 - b_kplus2) *
+             two_over_duration_;
 }
 
 template<typename Vector>

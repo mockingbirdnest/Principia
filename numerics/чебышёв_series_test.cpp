@@ -36,7 +36,8 @@ class ЧебышёвSeriesTest : public ::testing::Test {
   void NewhallApproximationErrors(
       std::function<Length(Instant const)> length_function,
       std::function<Speed(Instant const)> speed_function,
-      not_null<std::vector<Length>*> const length_absolute_errors) {
+      not_null<std::vector<Length>*> const length_absolute_errors,
+      not_null<std::vector<Speed>*> const speed_absolute_errors) {
     std::vector<Length> lengths;
     std::vector<Speed> speeds;
     for (Instant t = t_min_; t <= t_max_; t += 0.5 * Second) {
@@ -45,32 +46,41 @@ class ЧебышёвSeriesTest : public ::testing::Test {
     }
 
     length_absolute_errors->clear();
+    speed_absolute_errors->clear();
     for (int degree = 3; degree <= 17; ++degree) {
       ЧебышёвSeries<Length> const approximation =
           ЧебышёвSeries<Length>::NewhallApproximation(
               degree, lengths, speeds, t_min_, t_max_);
-      Length absolute_error;
+      Length length_absolute_error;
+      Speed speed_absolute_error;
       for (Instant t = t_min_; t <= t_max_; t += 0.05 * Second) {
         Length const expected_length = length_function(t);
         Length const actual_length = approximation.Evaluate(t);
-        absolute_error = std::max(absolute_error,
-                                  AbsoluteError(expected_length, actual_length));
+        Speed const expected_speed = speed_function(t);
+        Speed const actual_speed = approximation.EvaluateDerivative(t);
+        length_absolute_error =
+            std::max(length_absolute_error,
+                     AbsoluteError(expected_length, actual_length));
+        speed_absolute_error =
+            std::max(speed_absolute_error,
+                     AbsoluteError(expected_speed, actual_speed));
       }
-      length_absolute_errors->push_back(absolute_error);
+      length_absolute_errors->push_back(length_absolute_error);
+      speed_absolute_errors->push_back(speed_absolute_error);
     }
   }
 
   // A helper that splits an array in two chunks and applies distinct matchers
   // to the chunks.  Necessary because ElementsAre only supports 10 elements and
   // ElementsAreArray does not support matches as arguments.
-  template<typename Matcher1, typename Matcher2>
-  void ExpectMultipart(std::vector<Length> const& v,
+  template<typename Vector, typename Matcher1, typename Matcher2>
+  void ExpectMultipart(std::vector<Vector> const& v,
                        Matcher1 const& matcher1,
                        Matcher2 const& matcher2) {
-    std::vector<Length> v_0_9(10);
+    std::vector<Vector> v_0_9(10);
     std::copy(v.begin(), v.begin() + 10, v_0_9.begin());
     EXPECT_THAT(v_0_9, matcher1);
-    std::vector<Length> v_10_end(v.size() - 10);
+    std::vector<Vector> v_10_end(v.size() - 10);
     std::copy(v.begin() + 10, v.end(), v_10_end.begin());
     EXPECT_THAT(v_10_end, matcher2);
   }
@@ -228,9 +238,13 @@ TEST_F(ЧебышёвSeriesTest, SerializationSuccess) {
 
 TEST_F(ЧебышёвSeriesTest, NewhallApproximation) {
   std::vector<Length> length_absolute_errors;
+  std::vector<Speed> speed_absolute_errors;
 
-  auto near = [](Length const& length) {
+  auto near_length = [](Length const& length) {
     return AllOf(Gt(0.9 * length), Lt(length));
+  };
+  auto near_speed = [](Speed const& speed) {
+    return AllOf(Gt(0.9 * speed), Lt(speed));
   };
 
   {
@@ -249,25 +263,42 @@ TEST_F(ЧебышёвSeriesTest, NewhallApproximation) {
 
     NewhallApproximationErrors(length_function,
                                speed_function,
-                               &length_absolute_errors);
+                               &length_absolute_errors,
+                               &speed_absolute_errors);
   }
 
   ExpectMultipart(length_absolute_errors,
-                  ElementsAre(near(1.7E2 * Metre),
-                              near(4.7E1 * Metre),
-                              near(4.3E1 * Metre),
-                              near(3.8E1 * Metre),
-                              near(1.5E1 * Metre),
-                              near(6.3 * Metre),
-                              near(4.9 * Metre),
-                              near(6.5E-1 * Metre),
-                              near(2.0E-1 * Metre),
-                              near(7.9E-2 * Metre)),
-                  ElementsAre(near(1.3E-2 * Metre),
-                              near(1.6E-2 * Metre),
-                              near(4.3E-3 * Metre),
-                              near(1.7E-3 * Metre),
-                              near(7.6E-4 * Metre)));
+                  ElementsAre(near_length(1.7E2 * Metre),
+                              near_length(4.7E1 * Metre),
+                              near_length(4.3E1 * Metre),
+                              near_length(3.8E1 * Metre),
+                              near_length(1.5E1 * Metre),
+                              near_length(6.3 * Metre),
+                              near_length(4.9 * Metre),
+                              near_length(6.5E-1 * Metre),
+                              near_length(2.0E-1 * Metre),
+                              near_length(7.9E-2 * Metre)),
+                  ElementsAre(near_length(1.3E-2 * Metre),
+                              near_length(1.6E-2 * Metre),
+                              near_length(4.3E-3 * Metre),
+                              near_length(1.7E-3 * Metre),
+                              near_length(7.6E-4 * Metre)));
+  ExpectMultipart(speed_absolute_errors,
+                  ElementsAre(near_speed(2.3E2 * Metre / Second),
+                              near_speed(1.3E2 * Metre / Second),
+                              near_speed(1.2E2 * Metre / Second),
+                              near_speed(1.1E2 * Metre / Second),
+                              near_speed(4.5E1 * Metre / Second),
+                              near_speed(2.8E1 * Metre / Second),
+                              near_speed(2.2E1 * Metre / Second),
+                              near_speed(3.6 * Metre / Second),
+                              near_speed(1.6 * Metre / Second),
+                              near_speed(7.3E-1 * Metre / Second)),
+                  ElementsAre(near_speed(1.3E-1 * Metre / Second),
+                              near_speed(1.5E-1 * Metre / Second),
+                              near_speed(4.4E-2 * Metre / Second),
+                              near_speed(1.8E-2 * Metre / Second),
+                              near_speed(8.2E-3 * Metre / Second)));
 
   {
     auto length_function = [this](Instant const t) -> Length {
@@ -282,25 +313,42 @@ TEST_F(ЧебышёвSeriesTest, NewhallApproximation) {
 
     NewhallApproximationErrors(length_function,
                                speed_function,
-                               &length_absolute_errors);
+                               &length_absolute_errors,
+                               &speed_absolute_errors);
   }
 
   ExpectMultipart(length_absolute_errors,
-                  ElementsAre(near(2.0 * Metre),
-                              near(2.9E-1 * Metre),
-                              near(3.6E-2 * Metre),
-                              near(2.3E-3 * Metre),
-                              near(2.9E-14 * Metre),
-                              near(2.9E-14 * Metre),
-                              near(2.9E-14 * Metre),
-                              near(2.0E-14 * Metre),
-                              near(2.4E-14 * Metre),
-                              near(2.9E-14 * Metre)),
-                  ElementsAre(near(2.2E-14 * Metre),
-                              near(1.5E-14 * Metre),
-                              near(2.2E-14 * Metre),
-                              near(1.6E-14 * Metre),
-                              near(4.3E-14 * Metre)));
+                  ElementsAre(near_length(2.0 * Metre),
+                              near_length(2.9E-1 * Metre),
+                              near_length(3.6E-2 * Metre),
+                              near_length(2.3E-3 * Metre),
+                              near_length(2.9E-14 * Metre),
+                              near_length(2.9E-14 * Metre),
+                              near_length(2.9E-14 * Metre),
+                              near_length(2.0E-14 * Metre),
+                              near_length(2.4E-14 * Metre),
+                              near_length(2.9E-14 * Metre)),
+                  ElementsAre(near_length(2.2E-14 * Metre),
+                              near_length(1.5E-14 * Metre),
+                              near_length(2.2E-14 * Metre),
+                              near_length(1.6E-14 * Metre),
+                              near_length(4.3E-14 * Metre)));
+  ExpectMultipart(speed_absolute_errors,
+                  ElementsAre(near_speed(1.8 * Metre / Second),
+                              near_speed(4.6E-1 * Metre / Second),
+                              near_speed(7.4E-2 * Metre / Second),
+                              near_speed(6.0E-3 * Metre / Second),
+                              near_speed(1.1E-14 * Metre / Second),
+                              near_speed(1.8E-14 * Metre / Second),
+                              near_speed(2.5E-14 * Metre / Second),
+                              near_speed(2.9E-14 * Metre / Second),
+                              near_speed(3.6E-14 * Metre / Second),
+                              near_speed(8.6E-14 * Metre / Second)),
+                  ElementsAre(near_speed(9.6E-14 * Metre / Second),
+                              near_speed(4.7E-14 * Metre / Second),
+                              near_speed(1.9E-13 * Metre / Second),
+                              near_speed(1.1E-12 * Metre / Second),
+                              near_speed(1.4E-12 * Metre / Second)));
 }
 
 }  // namespace numerics
