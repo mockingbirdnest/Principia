@@ -9,6 +9,7 @@
 #include "gmock/gmock.h"
 #include "quantities/named_quantities.hpp"
 #include "quantities/si.hpp"
+#include "testing_utilities/almost_equals.hpp"
 #include "testing_utilities/numerics.hpp"
 
 namespace principia {
@@ -19,6 +20,7 @@ using quantities::Speed;
 using si::Metre;
 using si::Second;
 using testing_utilities::AbsoluteError;
+using testing_utilities::AlmostEquals;
 using ::testing::AllOf;
 using ::testing::ElementsAre;
 using ::testing::Gt;
@@ -51,6 +53,8 @@ class ЧебышёвSeriesTest : public ::testing::Test {
       ЧебышёвSeries<Length> const approximation =
           ЧебышёвSeries<Length>::NewhallApproximation(
               degree, lengths, speeds, t_min_, t_max_);
+
+      // Compute the absolute error of both function throughout the interval.
       Length length_absolute_error;
       Speed speed_absolute_error;
       for (Instant t = t_min_; t <= t_max_; t += 0.05 * Second) {
@@ -67,12 +71,22 @@ class ЧебышёвSeriesTest : public ::testing::Test {
       }
       length_absolute_errors->push_back(length_absolute_error);
       speed_absolute_errors->push_back(speed_absolute_error);
+
+      // Check the conditions at the bounds.
+      EXPECT_THAT(approximation.Evaluate(t_min_),
+                  AlmostEquals(length_function(t_min_), 0, 248));
+      EXPECT_THAT(approximation.Evaluate(t_max_),
+                  AlmostEquals(length_function(t_max_), 0, 3));
+      EXPECT_THAT(approximation.EvaluateDerivative(t_min_),
+                  AlmostEquals(speed_function(t_min_), 1, 1185));
+      EXPECT_THAT(approximation.EvaluateDerivative(t_max_),
+                  AlmostEquals(speed_function(t_max_), 0, 339));
     }
   }
 
   // A helper that splits an array in two chunks and applies distinct matchers
   // to the chunks.  Necessary because ElementsAre only supports 10 elements and
-  // ElementsAreArray does not support matches as arguments.
+  // ElementsAreArray does not support matchers as arguments.
   template<typename Vector, typename Matcher1, typename Matcher2>
   void ExpectMultipart(std::vector<Vector> const& v,
                        Matcher1 const& matcher1,
@@ -249,7 +263,7 @@ TEST_F(ЧебышёвSeriesTest, NewhallApproximation) {
 
   {
     auto length_function = [this](Instant const t) -> Length {
-      return 2 * Metre *
+      return 0.5 * Metre + 2 * Metre *
              std::sin((t - t_min_) / (0.3 * Second)) *
              std::exp((t - t_min_) / (1 * Second));
     };
@@ -302,7 +316,7 @@ TEST_F(ЧебышёвSeriesTest, NewhallApproximation) {
 
   {
     auto length_function = [this](Instant const t) -> Length {
-      return 5 * Metre * ((t - t_min_) / (0.3 * Second) +
+      return 5 * Metre * (1 + (t - t_min_) / (0.3 * Second) +
                           std::pow((t - t_min_) / (4 * Second), 7));
     };
     auto speed_function = [this](Instant const t) -> Speed {
@@ -325,30 +339,30 @@ TEST_F(ЧебышёвSeriesTest, NewhallApproximation) {
                               near_length(2.9E-14 * Metre),
                               near_length(2.9E-14 * Metre),
                               near_length(2.9E-14 * Metre),
-                              near_length(2.0E-14 * Metre),
-                              near_length(2.4E-14 * Metre),
+                              near_length(4.3E-14 * Metre),
+                              near_length(3.2E-14 * Metre),
                               near_length(2.9E-14 * Metre)),
-                  ElementsAre(near_length(2.2E-14 * Metre),
+                  ElementsAre(near_length(1.5E-14 * Metre),
                               near_length(1.5E-14 * Metre),
-                              near_length(2.2E-14 * Metre),
-                              near_length(1.6E-14 * Metre),
-                              near_length(4.3E-14 * Metre)));
+                              near_length(2.9E-14 * Metre),
+                              near_length(2.9E-14 * Metre),
+                              near_length(7.2E-14 * Metre)));
   ExpectMultipart(speed_absolute_errors,
                   ElementsAre(near_speed(1.8 * Metre / Second),
                               near_speed(4.6E-1 * Metre / Second),
                               near_speed(7.4E-2 * Metre / Second),
                               near_speed(6.0E-3 * Metre / Second),
-                              near_speed(1.1E-14 * Metre / Second),
-                              near_speed(1.8E-14 * Metre / Second),
                               near_speed(2.5E-14 * Metre / Second),
+                              near_speed(2.2E-14 * Metre / Second),
+                              near_speed(2.2E-14 * Metre / Second),
                               near_speed(2.9E-14 * Metre / Second),
-                              near_speed(3.6E-14 * Metre / Second),
-                              near_speed(8.6E-14 * Metre / Second)),
-                  ElementsAre(near_speed(9.6E-14 * Metre / Second),
-                              near_speed(4.7E-14 * Metre / Second),
-                              near_speed(1.9E-13 * Metre / Second),
-                              near_speed(1.1E-12 * Metre / Second),
-                              near_speed(1.4E-12 * Metre / Second)));
+                              near_speed(2.2E-14 * Metre / Second),
+                              near_speed(2.9E-14 * Metre / Second)),
+                  ElementsAre(near_speed(5.4E-14 * Metre / Second),
+                              near_speed(6.8E-14 * Metre / Second),
+                              near_speed(3.5E-13 * Metre / Second),
+                              near_speed(8.5E-13 * Metre / Second),
+                              near_speed(1.3E-12 * Metre / Second)));
 }
 
 }  // namespace numerics
