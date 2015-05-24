@@ -36,6 +36,7 @@ class ЧебышёвSeries {
 
   // Uses the Clenshaw algorithm.  |t| must be in the range [t_min, t_max].
   Vector Evaluate(Instant const& t) const;
+  Variation<Vector> EvaluateDerivative(Instant const& t) const;
 
   void WriteToMessage(
       not_null<serialization::ЧебышёвSeries*> const message) const;
