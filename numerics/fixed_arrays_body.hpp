@@ -114,14 +114,30 @@ FixedStrictlyLowerTriangularMatrix<Scalar, rows>::
 }
 
 template<typename Scalar, int rows>
-Scalar*  FixedStrictlyLowerTriangularMatrix<Scalar, rows>::operator[](int i) {
-  return &data_[i * (i - 1) / 2];
+bool FixedStrictlyLowerTriangularMatrix<Scalar, rows>::operator==(
+    FixedStrictlyLowerTriangularMatrix const& right) const {
+  return data_ == right.data_;
+}
+
+template<typename Scalar, int rows>
+FixedStrictlyLowerTriangularMatrix<Scalar, rows>&
+FixedStrictlyLowerTriangularMatrix<Scalar, rows>::operator=(
+    std::initializer_list<Scalar> const& right) {
+  CHECK_EQ(kDimension, right.size());
+  std::copy(right.begin(), right.end(), data_.begin());
+  return *this;
+}
+
+template<typename Scalar, int rows>
+Scalar* FixedStrictlyLowerTriangularMatrix<Scalar, rows>::operator[](
+    int const index) {
+  return &data_[index * (index - 1) / 2];
 }
 
 template<typename Scalar, int rows>
 Scalar const* FixedStrictlyLowerTriangularMatrix<Scalar, rows>::operator[](
-    int i) const {
-  return &data_[i * (i - 1) / 2];
+    int const index) const {
+  return &data_[index * (index - 1) / 2];
 }
 
 }  // namespace numerics

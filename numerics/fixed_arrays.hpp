@@ -69,17 +69,22 @@ template<typename Scalar, int rows>
 class FixedStrictlyLowerTriangularMatrix {
  public:
   static int const kDimension = rows * (rows - 1) / 2;
+
   // The |data| must be in row-major format.
   explicit FixedStrictlyLowerTriangularMatrix(
       std::array<Scalar, kDimension> const& data);
   FixedStrictlyLowerTriangularMatrix(
       std::initializer_list<Scalar> const& data);  // NOLINT(runtime/explicit)
 
-  // For  0 < j < i < rows, the entry is a_ij accessed as |a[i][j]|.
+  bool operator==(FixedStrictlyLowerTriangularMatrix const& right) const;
+  FixedStrictlyLowerTriangularMatrix& operator=(
+      std::initializer_list<Scalar> const& right);
+
+  // For  0 < j < i < rows, the entry a_ij is accessed as |a[i][j]|.
   // if i and j do not satisfy these conditions, the expression |a[i][j]| is
   // erroneous.
-  Scalar const* operator[](int i) const;
-  Scalar* operator[](int i);
+  Scalar const* operator[](int const index) const;
+  Scalar* operator[](int const index);
 
  private:
   std::array<Scalar, kDimension> data_;

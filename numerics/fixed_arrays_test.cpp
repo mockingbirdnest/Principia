@@ -33,7 +33,7 @@ TEST_F(FixedArraysTest, Assignment) {
   EXPECT_EQ(u2, w2);
 
   FixedMatrix<double, 2, 3> l23({1, 2, 3,
-                                4, 5, 6});
+                                 4, 5, 6});
   FixedMatrix<double, 2, 3> m23 = {1, 2, 3,
                                    4, 5, 6};
   FixedMatrix<double, 2, 3> n23 = {0, 0, 0,
@@ -42,6 +42,21 @@ TEST_F(FixedArraysTest, Assignment) {
          4, 5, 6};
   EXPECT_EQ(l23, m23);
   EXPECT_EQ(l23, n23);
+
+  FixedStrictlyLowerTriangularMatrix<double, 3> l3({
+                                                    1,
+                                                    2, 3});
+  FixedStrictlyLowerTriangularMatrix<double, 3> m3 = {
+                                                      1,
+                                                      2, 3};
+  FixedStrictlyLowerTriangularMatrix<double, 3> n3 = {
+                                                      0,
+                                                      0, 0};
+  n3 = {
+        1,
+        2, 3};
+  EXPECT_EQ(l3, m3);
+  EXPECT_EQ(l3, n3);
 }
 
 TEST_F(FixedArraysTest, Multiplication) {
