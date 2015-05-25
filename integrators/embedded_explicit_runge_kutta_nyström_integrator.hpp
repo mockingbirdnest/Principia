@@ -78,8 +78,8 @@ class EmbeddedExplicitRungeKuttaNyströmIntegrator
 // first-same-as-last, minimizes the 4th order truncation error.
 template<typename Position>
 EmbeddedExplicitRungeKuttaNyströmIntegrator<Position,
-                                            4, /*higher_order*/
-                                            3, /*lower_order*/
+                                            4 /*higher_order*/,
+                                            3 /*lower_order*/,
                                             4  /*stages*/> const&
 DormandElMikkawyPrince1986RKN434FM();
 
