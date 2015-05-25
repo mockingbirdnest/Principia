@@ -64,7 +64,7 @@ class FixedStepSizeIntegrator {
  public:
   using ODE = DifferentialEquation;
   virtual void Solve(IntegrationProblem<ODE> const& problem,
-                     Time const& step) = 0;
+                     Time const& step) const = 0;
 };
 
 template<typename DifferentialEquation>

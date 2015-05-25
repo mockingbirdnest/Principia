@@ -20,31 +20,31 @@ using quantities::Quotient;
 namespace integrators {
 
 template<typename Position>
-EmbeddedExplicitRungeKuttaNyströmIntegrator<4, 3, 4, Position> const&
+EmbeddedExplicitRungeKuttaNyströmIntegrator<Position, 4, 3, 4> const&
 DormandElMikkawyPrince1986RKN434FM() {
   static EmbeddedExplicitRungeKuttaNyströmIntegrator<
-             4, 3, 4, Position> const integrator(
+             Position, 4, 3, 4> const integrator(
       // c
-      {0.0, 1.0 / 4.0, 7.0 / 10.0, 1.0},
+      { 0.0         ,   1.0 /   4.0,   7.0 /  10.0,  1.0},
       // a
       {
-       1.0 /   32.0,
-       7.0 / 1000.0, 119.0 / 500.0,
-       1.0 /   14.0,   8.0 /  27.0, 25.0 / 189.0},
+        1.0 /   32.0,
+        7.0 / 1000.0, 119.0 / 500.0,
+        1.0 /   14.0,   8.0 /  27.0,  25.0 / 189.0},
       // b̂
-      { 1.0 /  14.0,   8.0 /  27.0,  25.0 / 189.0,  0.0},
+      { 1.0 /   14.0,   8.0 /  27.0,  25.0 / 189.0,  0.0},
       // b̂′
-      { 1.0 /  14.0,  32.0 /  81.0, 250.0 / 567.0,  5.0 / 54.0},
+      { 1.0 /   14.0,  32.0 /  81.0, 250.0 / 567.0,  5.0 / 54.0},
       // b
-      {-7.0 / 150.0,  67.0 / 150.0,   3.0 /  20.0, -1.0 / 20.0},
+      {-7.0 /  150.0,  67.0 / 150.0,   3.0 /  20.0, -1.0 / 20.0},
       // b′
-      {13.0 /  21.0, -20.0 /  27.0, 275.0 / 189.0, -1.0 /  3.0});
+      {13.0 /   21.0, -20.0 /  27.0, 275.0 / 189.0, -1.0 /  3.0});
   return integrator;
 }
 
-template<int higher_order, int lower_order, int stages, typename Position>
-EmbeddedExplicitRungeKuttaNyströmIntegrator<higher_order, lower_order, stages,
-                                            Position>::
+template<typename Position, int higher_order, int lower_order, int stages>
+EmbeddedExplicitRungeKuttaNyströmIntegrator<Position, higher_order, lower_order,
+                                            stages>::
 EmbeddedExplicitRungeKuttaNyströmIntegrator(
     FixedVector<double, stages> const& c,
     FixedStrictlyLowerTriangularMatrix<double, stages> const& a,
@@ -59,11 +59,11 @@ EmbeddedExplicitRungeKuttaNyströmIntegrator(
       b_(b),
       b_prime_(b_prime) {}
 
-template<int higher_order, int lower_order, int stages, typename Position>
-void EmbeddedExplicitRungeKuttaNyströmIntegrator<higher_order,
+template<typename Position, int higher_order, int lower_order, int stages>
+void EmbeddedExplicitRungeKuttaNyströmIntegrator<Position,
+                                                 higher_order,
                                                  lower_order,
-                                                 stages,
-                                                 Position>::Solve(
+                                                 stages>::Solve(
     IntegrationProblem<ODE> const& problem,
     AdaptiveStepSize<ODE> const& adaptive_step_size) const {
   using Displacement = typename ODE::Displacement;

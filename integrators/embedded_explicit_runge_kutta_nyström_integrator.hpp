@@ -11,8 +11,8 @@
 namespace principia {
 
 using base::not_null;
-using numerics::FixedVector;
 using numerics::FixedStrictlyLowerTriangularMatrix;
+using numerics::FixedVector;
 using quantities::Time;
 using quantities::Variation;
 
@@ -36,7 +36,7 @@ namespace integrators {
 // its derivative v, rather than the more common y and y′ found in the
 // literature on Runge-Kutta-Nyström methods.
 
-template<int higher_order, int lower_order, int stages, typename Position>
+template<typename Position, int higher_order, int lower_order, int stages>
 class EmbeddedExplicitRungeKuttaNyströmIntegrator
     : public AdaptiveSizeIntegrator<
                  SpecialSecondOrderDifferentialEquation<Position>> {
@@ -65,19 +65,22 @@ class EmbeddedExplicitRungeKuttaNyströmIntegrator
              AdaptiveStepSize<ODE> const& adaptive_step_size) const override;
 
  protected:
-  FixedVector<double, stages> c_;
-  FixedStrictlyLowerTriangularMatrix<double, stages> a_;
-  FixedVector<double, stages> b_hat_;
-  FixedVector<double, stages> b_prime_hat_;
-  FixedVector<double, stages> b_;
-  FixedVector<double, stages> b_prime_;
+  FixedVector<double, stages> const c_;
+  FixedStrictlyLowerTriangularMatrix<double, stages> const a_;
+  FixedVector<double, stages> const b_hat_;
+  FixedVector<double, stages> const b_prime_hat_;
+  FixedVector<double, stages> const b_;
+  FixedVector<double, stages> const b_prime_;
 };
 
 // Coefficients form Dormand, El-Mikkawy and Prince (1986),
 // Families of Runge-Kutta-Nyström formulae, table 3 (the RK4(3)4FM).
 // first-same-as-last, minimizes the 4th order truncation error.
 template<typename Position>
-EmbeddedExplicitRungeKuttaNyströmIntegrator<4, 3, 4, Position> const&
+EmbeddedExplicitRungeKuttaNyströmIntegrator<Position,
+                                            /*higher_order*/ 4,
+                                            /*lower_order*/ 3,
+                                            /*stages*/ 4> const&
 DormandElMikkawyPrince1986RKN434FM();
 
 }  // namespace integrators
