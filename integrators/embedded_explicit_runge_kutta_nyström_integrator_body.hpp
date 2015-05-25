@@ -59,12 +59,14 @@ EmbeddedExplicitRungeKuttaNyströmIntegrator(
       b_prime_hat_(b_prime_hat),
       b_(b),
       b_prime_(b_prime) {
+  // the first node is always 0 in an explicit method.
+  CHECK_EQ(0.0, c_[0]);
   if (first_same_as_last) {
     // Check that the conditions for the FSAL property are satisfied, see for
     // instance Dormand, El-Mikkawy and Prince (1986),
     // Families of Runge-Kutta-Nyström formulae, equation 3.1.
-    CHECK_EQ(1, c_[stages - 1]);
-    CHECK_EQ(0, b_hat_[stages - 1]);
+    CHECK_EQ(1.0, c_[stages - 1]);
+    CHECK_EQ(0.0, b_hat_[stages - 1]);
     for (int j = 0; j < stages - 1; ++j) {
       CHECK_EQ(b_hat_[j], a_[stages - 1][j]);
     }
@@ -137,6 +139,12 @@ void EmbeddedExplicitRungeKuttaNyströmIntegrator<Position,
   bool at_end = false;
   double tolerance_to_error_ratio;
 
+  // The first step of the Runge-Kutta-Nyström iteration.  In the FSAL case,
+  // i0 = 1 after the first step, since the first RHS evaluation has already
+  // occured in the previous step.  In the non-FSAL case and in the first step
+  // of the FSAL case, i0 = 0.
+  int i0 = 0;
+
   // No step size control on the first step.
   goto runge_kutta_nyström_step;
 
@@ -161,7 +169,7 @@ void EmbeddedExplicitRungeKuttaNyströmIntegrator<Position,
       }
 
       // Runge-Kutta-Nyström iteration; fills |g|.
-      for (int i = 0; i < stages; ++i) {
+      for (int i = i0; i < stages; ++i) {
         Instant const t_stage = t.value + c_[i] * h;
         for (int k = 0; k < dimension; ++k) {
           Acceleration ∑j_a_ij_g_jk{};
@@ -201,6 +209,11 @@ void EmbeddedExplicitRungeKuttaNyströmIntegrator<Position,
       tolerance_to_error_ratio =
           adaptive_step_size.tolerance_to_error_ratio(h, error_estimate);
     } while (tolerance_to_error_ratio < 1.0);
+
+    if (first_same_as_last) {
+      std::swap(g.front(), g.back());
+      i0 = 1;
+    }
 
     // Increment the solution with the high-order approximation.
     t.Increment(h);
