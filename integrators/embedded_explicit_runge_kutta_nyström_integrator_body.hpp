@@ -210,7 +210,7 @@ void EmbeddedExplicitRungeKuttaNyströmIntegrator<Position,
           adaptive_step_size.tolerance_to_error_ratio(h, error_estimate);
     } while (tolerance_to_error_ratio < 1.0);
 
-    if (first_same_as_last && false) {
+    if (first_same_as_last) {
       std::swap(g.front(), g.back());
       i0 = 1;
     }
