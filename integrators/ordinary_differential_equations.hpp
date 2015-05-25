@@ -59,5 +59,21 @@ struct AdaptiveStepSize {
   ToleranceToErrorRatio tolerance_to_error_ratio;
 };
 
+template<typename DifferentialEquation>
+class FixedStepSizeIntegrator {
+ public:
+  using ODE = DifferentialEquation;
+  virtual void Solve(IntegrationProblem<ODE> const& problem,
+                     Time const& step) const = 0;
+};
+
+template<typename DifferentialEquation>
+class AdaptiveSizeIntegrator {
+ public:
+  using ODE = DifferentialEquation;
+  virtual void Solve(IntegrationProblem<ODE> const& problem,
+                     AdaptiveStepSize<ODE> const& adaptive_step_size) const = 0;
+};
+
 }  // namespace integrators
 }  // namespace principia
