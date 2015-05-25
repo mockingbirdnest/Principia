@@ -210,6 +210,7 @@ void EmbeddedExplicitRungeKuttaNyströmIntegrator<Position,
     } while (tolerance_to_error_ratio < 1.0);
 
     if (first_same_as_last) {
+      using std::swap;
       std::swap(g.front(), g.back());
       i0 = 1;
     }

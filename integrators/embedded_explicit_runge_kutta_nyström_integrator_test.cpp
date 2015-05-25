@@ -121,10 +121,9 @@ TEST_F(EmbeddedExplicitRungeKuttaNyströmIntegratorTest,
               AllOf(Ge(2E-3 * Metre / Second), Le(3E-3 * Metre / Second)));
   EXPECT_EQ(t_final, solution.back().time.value);
   EXPECT_EQ(steps_forward, solution.size());
-  EXPECT_EQ(
-      (1 + initial_rejections) * 4 +
-          (steps_forward - 1 + subsequent_rejections) * 3,
-      evaluations);
+  EXPECT_EQ((1 + initial_rejections) * 4 +
+                (steps_forward - 1 + subsequent_rejections) * 3,
+            evaluations);
   EXPECT_EQ(1, initial_rejections);
   EXPECT_EQ(3, subsequent_rejections);
 
@@ -147,10 +146,9 @@ TEST_F(EmbeddedExplicitRungeKuttaNyströmIntegratorTest,
               AllOf(Ge(2E-3 * Metre / Second), Le(3E-3 * Metre / Second)));
   EXPECT_EQ(t_initial, solution.back().time.value);
   EXPECT_EQ(steps_backward, solution.size() - steps_forward);
-  EXPECT_EQ(
-      (1 + initial_rejections) * 4 +
-          (steps_backward - 1 + subsequent_rejections) * 3,
-      evaluations);
+  EXPECT_EQ((1 + initial_rejections) * 4 +
+                (steps_backward - 1 + subsequent_rejections) * 3,
+            evaluations);
   EXPECT_EQ(1, initial_rejections);
   EXPECT_EQ(11, subsequent_rejections);
 }
