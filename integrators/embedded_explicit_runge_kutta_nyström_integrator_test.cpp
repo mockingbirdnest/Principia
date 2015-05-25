@@ -122,12 +122,14 @@ TEST_F(EmbeddedExplicitRungeKuttaNyströmIntegratorTest,
   EXPECT_EQ(t_final, solution.back().time.value);
   EXPECT_EQ(steps_forward, solution.size());
   EXPECT_EQ(
-      (steps_forward + initial_rejections + subsequent_rejections) * 4,
+      (1 + initial_rejections) * 4 +
+          (steps_forward - 1 + subsequent_rejections) * 3,
       evaluations);
 
   evaluations = 0;
   subsequent_rejections = 0;
   initial_rejections = 0;
+  first_step = true;
   problem.initial_state = &solution.back();
   problem.t_final = t_initial;
   adaptive_step_size.first_time_step = t_initial - t_final;
@@ -144,7 +146,8 @@ TEST_F(EmbeddedExplicitRungeKuttaNyströmIntegratorTest,
   EXPECT_EQ(t_initial, solution.back().time.value);
   EXPECT_EQ(steps_backward, solution.size() - steps_forward);
   EXPECT_EQ(
-      (steps_backward + initial_rejections + subsequent_rejections) * 4,
+      (1 + initial_rejections) * 4 +
+          (steps_backward - 1 + subsequent_rejections) * 3,
       evaluations);
 }
 
