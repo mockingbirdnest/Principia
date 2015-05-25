@@ -35,8 +35,12 @@ namespace integrators {
 // Since we are interested in physical applications, we call the solution q and
 // its derivative v, rather than the more common y and y′ found in the
 // literature on Runge-Kutta-Nyström methods.
+// The order of the template parameters follow the notation of Dormand and
+// Prince, whose RKNq(p)sF has higher order q, lower order p, comprises
+// s stages, and has the first-same-as-last property.
 
-template<typename Position, int higher_order, int lower_order, int stages>
+template<typename Position, int higher_order, int lower_order, int stages,
+         bool first_same_as_last>
 class EmbeddedExplicitRungeKuttaNyströmIntegrator
     : public AdaptiveSizeIntegrator<
                  SpecialSecondOrderDifferentialEquation<Position>> {
@@ -73,14 +77,15 @@ class EmbeddedExplicitRungeKuttaNyströmIntegrator
   FixedVector<double, stages> const b_prime_;
 };
 
-// Coefficients form Dormand, El-Mikkawy and Prince (1986),
+// Coefficients from Dormand, El-Mikkawy and Prince (1986),
 // Families of Runge-Kutta-Nyström formulae, table 3 (the RK4(3)4FM).
-// first-same-as-last, minimizes the 4th order truncation error.
+// Minimizes the 4th order truncation error.
 template<typename Position>
 EmbeddedExplicitRungeKuttaNyströmIntegrator<Position,
                                             4 /*higher_order*/,
                                             3 /*lower_order*/,
-                                            4  /*stages*/> const&
+                                            4 /*stages*/,
+                                            true /*first_same_as_last*/> const&
 DormandElMikkawyPrince1986RKN434FM();
 
 }  // namespace integrators

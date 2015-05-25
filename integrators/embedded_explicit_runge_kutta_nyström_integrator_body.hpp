@@ -20,10 +20,10 @@ using quantities::Quotient;
 namespace integrators {
 
 template<typename Position>
-EmbeddedExplicitRungeKuttaNyströmIntegrator<Position, 4, 3, 4> const&
+EmbeddedExplicitRungeKuttaNyströmIntegrator<Position, 4, 3, 4, true> const&
 DormandElMikkawyPrince1986RKN434FM() {
   static EmbeddedExplicitRungeKuttaNyströmIntegrator<
-             Position, 4, 3, 4> const integrator(
+             Position, 4, 3, 4, true> const integrator(
       // c
       { 0.0         ,   1.0 /   4.0,   7.0 /  10.0,  1.0},
       // a
@@ -42,9 +42,10 @@ DormandElMikkawyPrince1986RKN434FM() {
   return integrator;
 }
 
-template<typename Position, int higher_order, int lower_order, int stages>
+template<typename Position, int higher_order, int lower_order, int stages,
+         bool first_same_as_last>
 EmbeddedExplicitRungeKuttaNyströmIntegrator<Position, higher_order, lower_order,
-                                            stages>::
+                                            stages, first_same_as_last>::
 EmbeddedExplicitRungeKuttaNyströmIntegrator(
     FixedVector<double, stages> const& c,
     FixedStrictlyLowerTriangularMatrix<double, stages> const& a,
@@ -57,13 +58,26 @@ EmbeddedExplicitRungeKuttaNyströmIntegrator(
       b_hat_(b_hat),
       b_prime_hat_(b_prime_hat),
       b_(b),
-      b_prime_(b_prime) {}
+      b_prime_(b_prime) {
+  if (first_same_as_last) {
+    // Check that the conditions for the FSAL property are satisfied, see for
+    // instance Dormand, El-Mikkawy and Prince (1986),
+    // Families of Runge-Kutta-Nyström formulae, equation 3.1.
+    CHECK_EQ(1, c_[stages - 1]);
+    CHECK_EQ(0, b_hat_[stages - 1]);
+    for (int j = 0; j < stages - 1; ++j) {
+      CHECK_EQ(b_hat_[j], a_[stages - 1][j]);
+    }
+  }
+}
 
-template<typename Position, int higher_order, int lower_order, int stages>
+template<typename Position, int higher_order, int lower_order, int stages,
+         bool first_same_as_last>
 void EmbeddedExplicitRungeKuttaNyströmIntegrator<Position,
                                                  higher_order,
                                                  lower_order,
-                                                 stages>::Solve(
+                                                 stages,
+                                                 first_same_as_last>::Solve(
     IntegrationProblem<ODE> const& problem,
     AdaptiveStepSize<ODE> const& adaptive_step_size) const {
   using Displacement = typename ODE::Displacement;
