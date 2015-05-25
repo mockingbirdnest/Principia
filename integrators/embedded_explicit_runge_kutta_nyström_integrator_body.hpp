@@ -181,7 +181,6 @@ void EmbeddedExplicitRungeKuttaNyströmIntegrator<Position,
         }
         problem.equation.compute_acceleration(t_stage, q_stage, &g[i]);
       }
-      // TODO(egg): handle the FSAL case.
 
       // Increment computation and step size control.
       for (int k = 0; k < dimension; ++k) {
