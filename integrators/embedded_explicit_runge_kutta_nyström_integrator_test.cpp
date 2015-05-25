@@ -125,6 +125,8 @@ TEST_F(EmbeddedExplicitRungeKuttaNyströmIntegratorTest,
       (1 + initial_rejections) * 4 +
           (steps_forward - 1 + subsequent_rejections) * 3,
       evaluations);
+  EXPECT_EQ(1, initial_rejections);
+  EXPECT_EQ(3, subsequent_rejections);
 
   evaluations = 0;
   subsequent_rejections = 0;
@@ -149,6 +151,8 @@ TEST_F(EmbeddedExplicitRungeKuttaNyströmIntegratorTest,
       (1 + initial_rejections) * 4 +
           (steps_backward - 1 + subsequent_rejections) * 3,
       evaluations);
+  EXPECT_EQ(1, initial_rejections);
+  EXPECT_EQ(11, subsequent_rejections);
 }
 
 }  // namespace integrators
