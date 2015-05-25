@@ -39,17 +39,21 @@ namespace {
 void ComputeHarmonicOscillatorAcceleration(
     Instant const& t,
     std::vector<Length> const& q,
-    std::vector<Acceleration>* const result) {
+    std::vector<Acceleration>* const result,
+    not_null<int*> evaluations) {
   (*result)[0] = -q[0] * (SIUnit<Stiffness>() / SIUnit<Mass>());
+  ++*evaluations;
 }
 
 double HarmonicOscillatorToleranceRatio(
     Time const& h,
     ODE::SystemStateError const& error,
     Length const& q_tolerance,
-    Speed const& v_tolerance) {
+    Speed const& v_tolerance,
+    std::function<void(bool tolerable)> callback) {
   double const r = std::min(q_tolerance / Abs(error.position_error[0]),
                             v_tolerance / Abs(error.velocity_error[0]));
+  callback(r > 1.0);
   return r;
 }
 
@@ -73,10 +77,28 @@ TEST_F(EmbeddedExplicitRungeKuttaNyströmIntegratorTest,
   // We integrate backward with double the tolerance.
   int const steps_backward = 112;
 
+  int evaluations = 0;
+  int initial_rejections = 0;
+  int subsequent_rejections = 0;
+  bool first_step = true;
+  auto const step_size_callback = [&initial_rejections, &subsequent_rejections,
+                                   &first_step](bool tolerable) {
+    if (!tolerable) {
+      if (first_step) {
+        ++initial_rejections;
+      } else {
+        ++subsequent_rejections;
+      }
+    } else if (first_step) {
+      first_step = false;
+    }
+  };
+
   std::vector<ODE::SystemState> solution;
   ODE harmonic_oscillator;
   harmonic_oscillator.compute_acceleration =
-      ComputeHarmonicOscillatorAcceleration;
+      std::bind(ComputeHarmonicOscillatorAcceleration,
+                _1, _2, _3, &evaluations);
   IntegrationProblem<ODE> problem;
   problem.equation = harmonic_oscillator;
   ODE::SystemState const initial_state = {{x_initial}, {v_initial}, t_initial};
@@ -90,7 +112,7 @@ TEST_F(EmbeddedExplicitRungeKuttaNyströmIntegratorTest,
   adaptive_step_size.safety_factor = 0.9;
   adaptive_step_size.tolerance_to_error_ratio =
       std::bind(HarmonicOscillatorToleranceRatio,
-                _1, _2, length_tolerance, speed_tolerance);
+                _1, _2, length_tolerance, speed_tolerance, step_size_callback);
 
   integrator.Solve(problem, adaptive_step_size);
   EXPECT_THAT(AbsoluteError(x_initial, solution.back().positions[0].value),
@@ -99,13 +121,23 @@ TEST_F(EmbeddedExplicitRungeKuttaNyströmIntegratorTest,
               AllOf(Ge(2E-3 * Metre / Second), Le(3E-3 * Metre / Second)));
   EXPECT_EQ(t_final, solution.back().time.value);
   EXPECT_EQ(steps_forward, solution.size());
+  EXPECT_EQ((1 + initial_rejections) * 4 +
+                (steps_forward - 1 + subsequent_rejections) * 3,
+            evaluations);
+  EXPECT_EQ(1, initial_rejections);
+  EXPECT_EQ(3, subsequent_rejections);
 
+  evaluations = 0;
+  subsequent_rejections = 0;
+  initial_rejections = 0;
+  first_step = true;
   problem.initial_state = &solution.back();
   problem.t_final = t_initial;
   adaptive_step_size.first_time_step = t_initial - t_final;
   adaptive_step_size.tolerance_to_error_ratio =
       std::bind(HarmonicOscillatorToleranceRatio,
-                _1, _2, 2 * length_tolerance, 2 * speed_tolerance);
+                _1, _2, 2 * length_tolerance, 2 * speed_tolerance,
+                step_size_callback);
 
   integrator.Solve(problem, adaptive_step_size);
   EXPECT_THAT(AbsoluteError(x_initial, solution.back().positions[0].value),
@@ -114,6 +146,11 @@ TEST_F(EmbeddedExplicitRungeKuttaNyströmIntegratorTest,
               AllOf(Ge(2E-3 * Metre / Second), Le(3E-3 * Metre / Second)));
   EXPECT_EQ(t_initial, solution.back().time.value);
   EXPECT_EQ(steps_backward, solution.size() - steps_forward);
+  EXPECT_EQ((1 + initial_rejections) * 4 +
+                (steps_backward - 1 + subsequent_rejections) * 3,
+            evaluations);
+  EXPECT_EQ(1, initial_rejections);
+  EXPECT_EQ(11, subsequent_rejections);
 }
 
 }  // namespace integrators
