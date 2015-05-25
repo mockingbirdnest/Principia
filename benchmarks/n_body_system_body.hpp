@@ -1,7 +1,7 @@
 ﻿#pragma once
 
 #include "base/not_null.hpp"
-#include "integrators/symplectic_partitioned_runge_kutta_integrator.hpp"
+#include "integrators/sprk_integrator.hpp"
 #include "physics/n_body_system.hpp"
 #include "quantities/astronomy.hpp"
 #include "quantities/si.hpp"

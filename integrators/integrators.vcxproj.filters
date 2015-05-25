@@ -14,20 +14,8 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="symplectic_partitioned_runge_kutta_integrator.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="symplectic_partitioned_runge_kutta_integrator_body.hpp">
-      <Filter>Source Files</Filter>
-    </ClInclude>
     <ClInclude Include="motion_integrator.hpp">
       <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="symplectic_runge_kutta_nyström_integrator.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="symplectic_runge_kutta_nyström_integrator_body.hpp">
-      <Filter>Source Files</Filter>
     </ClInclude>
     <ClInclude Include="embedded_explicit_runge_kutta_nyström_integrator_body.hpp">
       <Filter>Source Files</Filter>
@@ -38,18 +26,30 @@
     <ClInclude Include="ordinary_differential_equations.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="srkn_integrator.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="srkn_integrator_body.hpp">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="sprk_integrator.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="sprk_integrator_body.hpp">
+      <Filter>Source Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="simple_harmonic_motion.cpp">
       <Filter>Test Files</Filter>
     </ClCompile>
-    <ClCompile Include="symplectic_partitioned_runge_kutta_integrator_test.cpp">
-      <Filter>Test Files</Filter>
-    </ClCompile>
-    <ClCompile Include="symplectic_runge_kutta_nyström_integrator_test.cpp">
-      <Filter>Test Files</Filter>
-    </ClCompile>
     <ClCompile Include="embedded_explicit_runge_kutta_nyström_integrator_test.cpp">
+      <Filter>Test Files</Filter>
+    </ClCompile>
+    <ClCompile Include="sprk_integrator_test.cpp">
+      <Filter>Test Files</Filter>
+    </ClCompile>
+    <ClCompile Include="srkn_integrator_test.cpp">
       <Filter>Test Files</Filter>
     </ClCompile>
   </ItemGroup>

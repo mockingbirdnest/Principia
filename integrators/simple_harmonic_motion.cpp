@@ -8,7 +8,7 @@
 #include "glog/logging.h"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
-#include "integrators/symplectic_partitioned_runge_kutta_integrator.hpp"
+#include "integrators/sprk_integrator.hpp"
 #include "quantities/quantities.hpp"
 #include "quantities/named_quantities.hpp"
 #include "testing_utilities/almost_equals.hpp"

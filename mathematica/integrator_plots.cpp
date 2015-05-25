@@ -9,7 +9,7 @@
 
 #include "geometry/barycentre_calculator.hpp"
 #include "glog/logging.h"
-#include "integrators/symplectic_partitioned_runge_kutta_integrator.hpp"
+#include "integrators/sprk_integrator.hpp"
 #include "quantities/astronomy.hpp"
 #include "quantities/constants.hpp"
 #include "quantities/quantities.hpp"

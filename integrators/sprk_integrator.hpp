@@ -3,7 +3,7 @@
 #include <vector>
 
 #include "base/not_null.hpp"
-#include "integrators/symplectic_runge_kutta_nyström_integrator.hpp"
+#include "integrators/srkn_integrator.hpp"
 
 namespace principia {
 
@@ -195,4 +195,4 @@ SPRKIntegrator const& McLachlan1995SS17();
 }  // namespace integrators
 }  // namespace principia
 
-#include "integrators/symplectic_partitioned_runge_kutta_integrator_body.hpp"
+#include "integrators/sprk_integrator_body.hpp"

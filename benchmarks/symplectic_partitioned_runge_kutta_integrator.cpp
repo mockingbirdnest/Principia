@@ -126,7 +126,7 @@
 
 #define GLOG_NO_ABBREVIATED_SEVERITIES
 
-#include "integrators/symplectic_partitioned_runge_kutta_integrator.hpp"
+#include "integrators/sprk_integrator.hpp"
 
 #include <algorithm>
 #include <vector>
