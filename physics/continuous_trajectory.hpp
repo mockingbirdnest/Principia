@@ -1,5 +1,4 @@
-﻿
-#pragma once
+﻿#pragma once
 
 #include <vector>
 
@@ -23,7 +22,8 @@ class ContinuousTrajectory {
   // is passed to all the calls.
   class Hint;
 
-  ContinuousTrajectory();
+  // |degree| is the degree of the approximations.
+  explicit ContinuousTrajectory(int const degree);
   ~ContinuousTrajectory() = default;
 
   ContinuousTrajectory(ContinuousTrajectory const&) = delete;
@@ -39,8 +39,9 @@ class ContinuousTrajectory {
   Instant first_time() const;
   Instant last_time() const;
 
-  // Appends one point to the trajectory.  |time| must be after |last_time()| if
-  // the trajectory is not empty.
+  // Appends one point to the trajectory.  |time| must be after the last time
+  // passed to |Append| if the trajectory is not empty.  The |time|s passed to
+  // successive calls to |Append| must be equally spaced.
   void Append(Instant const& time,
               DegreesOfFreedom<Frame> const& degrees_of_freedom);
 
@@ -71,8 +72,15 @@ class ContinuousTrajectory {
   };
 
 private:
+  // The degree of the approximation.
+  int const degree_;
+
   // The series are in increasing time order.  Their intervals are consecutive.
   std::vector<ЧебышёвSeries> series_;
+
+  // Interval between the points passed to |Append|.  Only set for a trajectory
+  // with at least two points.
+  std::unique_ptr<Time> interval_;  // std::optional.
 
   // The time at which this trajectory starts.  Set for a nonempty trajectory.
   // |first_time_ >= series_.front().t_min()|
@@ -86,3 +94,5 @@ private:
 
 }  // namespace physics
 }  // namespace principia
+
+#include "physics/continuous_trajectory_body.hpp"
