@@ -22,7 +22,7 @@ namespace integrators {
 //   H(q, p, t) = ½ pᵀM⁻¹p + V(q, t).    (4)
 // See below for a proof that these A and B do indeed satisfy
 // [B, [B, [B, A]]] = 0.
-
+//
 // Each step of size h is computed using the composition of evolutions
 //   exp(b₀ h B) exp(a₀ h A) ... exp(bᵣ h B) exp(aᵣ h A).
 // If the appropriate coefficients vanish, this can be reformulated as either
@@ -36,17 +36,12 @@ namespace integrators {
 // applications of the evolution operators in two consecutive steps can be
 // merged when output is not needed, so for sparse outputs r-1 evolutions of B
 // and r of A are required in the ABA case, and vice versa in the BAB case.
-
-// Following common usage, we call the number of stages r - 1 in the ABA and BAB
-// cases, and r otherwise.  Note that this is at odds with the traditions for
-// nonsymplectic Runge-Kutta-Nyström methods, where the number of stages is
-// considered to be the same regardless of the FSAL property.
-
+//
 // When solving equations of type (2), the integrator makes full use of the FSAL
 // property even for dense output: in the BAB case, the two consecutive
 // applications of exp(bᵢ h B) require only one evaluation of B (and similarly
 // in the ABA case).
-
+//
 // A remark on non-autonomy:
 // Most treatments of these integrators write (1) as (q, p)′ = X, with
 // X = A(q, p) + B(q, p), and (4) as H(q, p, t) = ½ pᵀM⁻¹p + V(q).
@@ -56,7 +51,7 @@ namespace integrators {
 // Since B does not advance t, in cases of the form (2) we retain the defining
 // property on the extended phase space,
 //   (exp hB)(q, p, t) = (q, p, t) + (h B(q, p, t), 0).
-
+//
 // For equations of the form (3) it remains to show that Hamilton's equations
 // with quadratic kinetic energy and a time-dependent potential satisfy
 // [B, [B, [B, A]]] = 0.  Introducing t and its conjugate momentum ϖ to the
@@ -70,7 +65,7 @@ namespace integrators {
 // to {V, {V, {L, V}}} = 0, where {·, ·} is the Poisson bracket.  It is
 // immediate every term in that expression will contain a third order partial
 // derivative of L, and since L is quadratic all such derivatives vanish.  □
-
+//
 // See McLachlan and Quispel (2006), Geometric Integrators for ODEs, page 26,
 // http://www.massey.ac.nz/~rmclachl/JPAReview.pdf for a detailed treatment
 // of non-autonomous Hamiltonians using an extended phase space.
@@ -93,6 +88,17 @@ namespace integrators {
 // nodes used for the time argument of the evolution of B, with
 //   c₀ = 0, cᵢ = cᵢ₋₁ + aᵢ₋₁ for i > 0.
 // The notation γᵢ is used for these nodes in Calvo and Sanz-Serna.
+//
+// Following common usage, we call the number of stages r - 1 in the ABA and BAB
+// cases, and r otherwise.  Note that this is at odds with the traditions for
+// nonsymplectic Runge-Kutta-Nyström methods, where the number of stages is
+// considered to be the same regardless of the FSAL property.
+//
+// Note that the derivative weights b′ of general (nonsymplectic)
+// Runge-Kutta-Nyström methods correspond to our momentum weights b; the
+// position weights of the general case (usually denoted b) correspond to our
+// bᵢ(1 - cᵢ), and the Runge-Kutta matrix is given by (usually denoted aᵤᵥ)
+// is given by bᵥ (cᵤ - cᵥ).
 
 enum CompositionFirstSameAsLast {
   kNone,
