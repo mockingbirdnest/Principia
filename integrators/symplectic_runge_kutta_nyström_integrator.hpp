@@ -72,7 +72,11 @@ template<typename Position, int order, int evaluations,
 class SymplecticRungeKuttaNyströmIntegrator
     : public FixedStepSizeIntegrator<
                  SpecialSecondOrderDifferentialEquation<Position>> {
-  
+
+  SymplecticRungeKuttaNyströmIntegrator(FixedVector<double, stages_> const& a,
+                                        FixedVector<double, stages_> const& b,
+                                        FixedVector<double, stages_> const& c)
+
   void Solve(IntegrationProblem<ODE> const& problem,
              Time const& step) const override;
  private:
@@ -85,3 +89,5 @@ class SymplecticRungeKuttaNyströmIntegrator
 
 }  // namespace integrators
 }  // namespace principia
+
+#include "integrators/symplectic_runge_kutta_nyström_integrator_body.hpp"

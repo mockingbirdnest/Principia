@@ -137,6 +137,7 @@
     <ClInclude Include="sprk_integrator_body.hpp" />
     <ClInclude Include="srkn_integrator.hpp" />
     <ClInclude Include="srkn_integrator_body.hpp" />
+    <ClInclude Include="symplectic_runge_kutta_nyström_integrator_body.hpp" />
     <ClInclude Include="symplectic_runge_kutta_nyström_integrator.hpp" />
   </ItemGroup>
   <ItemGroup>
