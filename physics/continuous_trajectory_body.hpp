@@ -98,49 +98,82 @@ template<typename Frame>
 Position<Frame> ContinuousTrajectory<Frame>::EvaluatePosition(
     Instant const& time,
     Hint* const hint) const {
-  bool ignore_hint = true;
-  if (hint != nullptr) {
-    // A shorthand for the index held by the |hint|.
-    int& index = hint->index_;
-    if (index < series_.size() && series_[index].t_min() <= time) {
-      if (time <= series_[index].t_max()) {
-        ignore_hint = false;
-        // Use this interval.
-      } else if (index < series_.size() - 1 &&
-                 time <= series_[index + 1].t_max()) {
-        // Move to the next interval.
-        ignore_hint = false;
-        ++index;
-      }
-    }
-  }
-  if (ignore_hint) {
-    return FindSeriesForInstant(time)->Evaluate(time);
-  } else {
+  if (MayUseHint(time, hint)) {
     return series_[index].Evaluate(time);
+  } else {
+    auto const it = FindSeriesForInstant(time);
+    if (hint != nullptr) {
+      *hint = it - series_.cbegin();
+    }
+    return it->Evaluate(time);
   }
 }
 
 template<typename Frame>
 Velocity<Frame> ContinuousTrajectory<Frame>::EvaluateVelocity(
     Instant const& time,
-    Hint* const hint) const {}
+    Hint* const hint) const {
+  if (MayUseHint(time, hint)) {
+    return series_[index].EvaluateDerivative(time);
+  } else {
+    auto const it = FindSeriesForInstant(time);
+    if (hint != nullptr) {
+      *hint = it - series_.cbegin();
+    }
+    return it->EvaluateDerivative(time);
+  }
+}
 
 template<typename Frame>
 DegreesOfFreedom<Frame> ContinuousTrajectory<Frame>::EvaluateDegreesOfFreedom(
     Instant const& time,
-    Hint* const hint) const {}
+    Hint* const hint) const {
+  if (MayUseHint(time, hint)) {
+    ЧебышёвSeries const& series = series_[index];
+    return DegreesOfFreedom<Frame>(series.Evaluate(time),
+                                   series.EvaluateDerivative(time));
+  } else {
+    auto const it = FindSeriesForInstant(time);
+    if (hint != nullptr) {
+      *hint = it - series_.cbegin();
+    }
+    return DegreesOfFreedom<Frame>(it->Evaluate(time),
+                                   it->EvaluateDerivative(time));
+  }
+}
 
 template<typename Frame>
-ContinuousTrajectory<Frame>::Hint::Hint() {}
+ContinuousTrajectory<Frame>::Hint::Hint()
+    : index_(std::numeric_limits<int>::max()) {}
 
 template<typename Frame>
 std::vector<ЧебышёвSeries>::const_iterator
-ContinuousTrajectory<Frame>::FindSeriesForInstant(Instant const& time) {
+ContinuousTrajectory<Frame>::FindSeriesForInstant(Instant const& time) const {
   return std::upper_bound(series_.begin(), series_.end(), time,
                           [](ЧебышёвSeries const& left, Instant const& right) {
                             return left.t_max() < right;
                           });
+}
+
+template<typename Frame>
+bool ContinuousTrajectory<Frame>::MayUseHint(Instant const& time,
+                                             Hint* const hint) const {
+  if (hint != nullptr) {
+    // A shorthand for the index held by the |hint|.
+    int& index = hint->index_;
+    if (index < series_.size() && series_[index].t_min() <= time) {
+      if (time <= series_[index].t_max()) {
+        // Use this interval.
+        return true;
+      } else if (index < series_.size() - 1 &&
+                 time <= series_[index + 1].t_max()) {
+        // Move to the next interval.
+        ++index;
+        return true;
+      }
+    }
+  }
+  return false;
 }
 
 }  // namespace physics

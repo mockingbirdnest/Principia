@@ -75,7 +75,11 @@ private:
   // |begin()| if |time| is before the first series or |end()| if |time| is
   // after the last series.  Time complexity is O(N Log N).
   std::vector<ЧебышёвSeries>::const_iterator FindSeriesForInstant(
-      Instant const& time);
+      Instant const& time) const;
+
+  // Returns true if the given |hint| is usable for the given |time|.  If it is,
+  // |hint->index| is the index of the series to use.
+  bool MayUseHint(Instant const& time, Hint* const hint) const;
 
   // The degree of the approximation.
   int const degree_;
