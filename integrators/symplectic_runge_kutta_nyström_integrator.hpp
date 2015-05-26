@@ -29,13 +29,18 @@ namespace integrators {
 //   exp(a₀ h A) exp(b₁ h B) ... exp(bᵣ h B) exp(aᵣ h A) or
 //   exp(b₀ h B) exp(a₀ h A) ... exp(aᵣ₋₁ h A) exp(bᵣ h B).
 // The former is called type ABA, the latter type BAB, following the conventions
-// used in Blanes, Casas and Ros (2001), New families of symplectic
-// Runge-Kutta-Nyström integration methods.
-
+// used in Blanes, Casas and Ros (2001),
+// New Families of Symplectic Runge-Kutta-Nyström Integration Methods,
+// http://www.gicas.uji.es/Fernando/Proceedings/2000NAA.pdf.
 // Types ABA and BAB have the first-same-as-last property: the first and last
 // applications of the evolution operators can be merged when output is not
 // needed, so for sparse outputs r-1 evolutions of B and r of A are required
 // in the ABA case, and vice versa in the BAB case.
+
+// Following common usage, we call the number of stages r - 1 in the ABA and BAB
+// cases, and r otherwise.  Note that this is at odds with the traditions for
+// nonsymplectic Runge-Kutta-Nyström methods, where the number of stages is
+// considered to be the same regardless of the FSAL property.
 
 // When solving equations of type (2), the integrator makes full use of the FSAL
 // property even for dense output: in the BAB case, the two consecutive
@@ -58,9 +63,9 @@ namespace integrators {
 // phase space, (3) follows from Hamilton's equations with
 //   H(q, p, t, ϖ) = ½ (p)ᵀM⁻¹(p) + ϖ + V(q, t)
 // since we then get t′ = 1.
-// Writing Q = (q, t), P = (p, ϖ), and L(Q, P) = ½ (p)ᵀM⁻¹(p) + ϖ, the
-// Hamiltonian becomes H(Q, P) = L(Q, P) + V(Q), where L is a quadratic
-// polynomial in Q and P.
+// Writing Q = (q, t), P = (p, ϖ), and L(P) = ½ (p)ᵀM⁻¹(p) + ϖ, the
+// Hamiltonian becomes H(Q, P) = L(P) + V(Q), where L is a quadratic
+// polynomial in P.
 // Here A = {·, L}, and B = {·, V}, so that [B, [B, [B, A]]] = 0 is equivalent
 // to {V, {V, {L, V}}} = 0, where {·, ·} is the Poisson bracket.  It is
 // immediate every term in that expression will contain a third order partial
@@ -71,7 +76,23 @@ namespace integrators {
 // of non-autonomous Hamiltonians using an extended phase space.
 // See McLachlan (1993), Symplectic Integration of Wave Equations, page 8,
 // http://www.massey.ac.nz/~rmclachl/wave.ps for a proof that
-// {V, {V, {L, V}}} = 0 for arbitrary Poisson tensors.
+// {V, {V, {L, V}}} = 0 for arbitrary Poisson tensors and L quadratic in Q as
+// well as P.
+
+// Notations:
+// As above, we the most widespread notation, calling the position weights aᵢ
+// and the momentum weights bᵢ.  Note that our indices are 0-based.
+// The following notations appear in the litterature:
+//   (a, b) in most treatments of the subject;
+//   (d, c) in Ruth, Yoshida, as well as Forest and Ruth;
+//   (B, b) in Sofroniou and Spaletta;
+//   (<unnamed>, B) in Okunbor and Skeel;
+//   (<unnamed>, b) in Calvo and Sanz-Serna.
+// Moreover, we follow the convention of Sofroniou and Spaletta (2002),
+// Symplectic Methods for Separable Hamiltonian Systems, in calling cᵢ the
+// nodes used for the time argument of the evolution of B, with
+//   c₀ = 0, cᵢ = cᵢ₋₁ + aᵢ₋₁ for i > 0.
+// The notation γᵢ is used for these nodes in Calvo and Sanz-Serna.
 
 enum CompositionFirstSameAsLast {
   kNone,
