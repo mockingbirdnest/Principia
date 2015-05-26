@@ -81,12 +81,7 @@ void ContinuousTrajectory<Frame>::Append(
 
 template<typename Frame>
 void ContinuousTrajectory<Frame>::ForgetBefore(Instant const& time) {
-  auto const it =
-      std::upper_bound(series_.begin(), series_.end(), time,
-                       [](ЧебышёвSeries const& left, Instant const& right) {
-                         return left.t_max() < right;
-                       });
-  series_.erase(series_.begin, it);
+  series_.erase(series_.begin, FindSeriesForInstant(time));
 
   // If there are no |series_| left, clear everything.  Otherwise, update the
   // first time.
@@ -100,17 +95,53 @@ void ContinuousTrajectory<Frame>::ForgetBefore(Instant const& time) {
 }
 
 template<typename Frame>
-Position<Frame> ContinuousTrajectory<Frame>::EvaluatePosition(Instant const& time,
-                                 Hint* const hint) const {}
+Position<Frame> ContinuousTrajectory<Frame>::EvaluatePosition(
+    Instant const& time,
+    Hint* const hint) const {
+  bool ignore_hint = true;
+  if (hint != nullptr) {
+    // A shorthand for the index held by the |hint|.
+    int& index = hint->index_;
+    if (index < series_.size() && series_[index].t_min() <= time) {
+      if (time <= series_[index].t_max()) {
+        ignore_hint = false;
+        // Use this interval.
+      } else if (index < series_.size() - 1 &&
+                 time <= series_[index + 1].t_max()) {
+        // Move to the next interval.
+        ignore_hint = false;
+        ++index;
+      }
+    }
+  }
+  if (ignore_hint) {
+    return FindSeriesForInstant(time)->Evaluate(time);
+  } else {
+    return series_[index].Evaluate(time);
+  }
+}
+
 template<typename Frame>
-Velocity<Frame> ContinuousTrajectory<Frame>::EvaluateVelocity(Instant const& time,
-                                 Hint* const hint) const {}
+Velocity<Frame> ContinuousTrajectory<Frame>::EvaluateVelocity(
+    Instant const& time,
+    Hint* const hint) const {}
+
 template<typename Frame>
-DegreesOfFreedom<Frame> ContinuousTrajectory<Frame>::EvaluateDegreesOfFreedom(Instant const& time,
-                                                 Hint* const hint) const {}
+DegreesOfFreedom<Frame> ContinuousTrajectory<Frame>::EvaluateDegreesOfFreedom(
+    Instant const& time,
+    Hint* const hint) const {}
 
 template<typename Frame>
 ContinuousTrajectory<Frame>::Hint::Hint() {}
+
+template<typename Frame>
+std::vector<ЧебышёвSeries>::const_iterator
+ContinuousTrajectory<Frame>::FindSeriesForInstant(Instant const& time) {
+  return std::upper_bound(series_.begin(), series_.end(), time,
+                          [](ЧебышёвSeries const& left, Instant const& right) {
+                            return left.t_max() < right;
+                          });
+}
 
 }  // namespace physics
 }  // namespace principia

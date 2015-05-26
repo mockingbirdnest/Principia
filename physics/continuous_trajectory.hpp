@@ -71,6 +71,12 @@ class ContinuousTrajectory {
   };
 
 private:
+  // Returns an iterator to the series applicable for the given |time|, or
+  // |begin()| if |time| is before the first series or |end()| if |time| is
+  // after the last series.  Time complexity is O(N Log N).
+  std::vector<ЧебышёвSeries>::const_iterator FindSeriesForInstant(
+      Instant const& time);
+
   // The degree of the approximation.
   int const degree_;
 
