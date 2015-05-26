@@ -24,8 +24,9 @@ namespace integrators {
 // [B, [B, [B, A]]] = 0.
 //
 // Each step of size h is computed using the composition of evolutions
-//   exp(b₀ h B) exp(a₀ h A) ... exp(bᵣ h B) exp(aᵣ h A).
-// If the appropriate coefficients vanish, this can be reformulated as either
+//   exp(b₀ h B) exp(a₀ h A) ... exp(bᵣ h B) exp(aᵣ h A),
+// so that the integrator is a composition method.  If the appropriate
+// coefficients vanish, this can be reformulated as either
 //   exp(a₀ h A) exp(b₁ h B) ... exp(bᵣ h B) exp(aᵣ h A) or
 //   exp(b₀ h B) exp(a₀ h A) ... exp(aᵣ₋₁ h A) exp(bᵣ h B).
 // The former is called type ABA, the latter type BAB, following the conventions
@@ -56,9 +57,9 @@ namespace integrators {
 // with quadratic kinetic energy and a time-dependent potential satisfy
 // [B, [B, [B, A]]] = 0.  Introducing t and its conjugate momentum ϖ to the
 // phase space, (3) follows from Hamilton's equations with
-//   H(q, p, t, ϖ) = ½ (p)ᵀM⁻¹(p) + ϖ + V(q, t)
+//   H(q, p, t, ϖ) = ½ pᵀM⁻¹p + ϖ + V(q, t)
 // since we then get t′ = 1.
-// Writing Q = (q, t), P = (p, ϖ), and L(P) = ½ (p)ᵀM⁻¹(p) + ϖ, the
+// Writing Q = (q, t), P = (p, ϖ), and L(P) = ½ pᵀM⁻¹p + ϖ, the
 // Hamiltonian becomes H(Q, P) = L(P) + V(Q), where L is a quadratic
 // polynomial in P.
 // Here A = {·, L}, and B = {·, V}, so that [B, [B, [B, A]]] = 0 is equivalent
@@ -100,14 +101,14 @@ namespace integrators {
 // bᵢ(1 - cᵢ), and the Runge-Kutta matrix is given by (usually denoted aᵤᵥ)
 // is given by bᵥ (cᵤ - cᵥ).
 
-enum CompositionFirstSameAsLast {
-  kNone,
+enum CompositionKind {
+  kNotFirstSameAsLast,
   kABA,
   kBAB,
 };
 
 template<typename Position, int order, int stages,
-         CompositionFirstSameAsLast first_same_as_last>
+         CompositionKind first_same_as_last>
 class SymplecticRungeKuttaNyströmIntegrator
     : public FixedStepSizeIntegrator<
                  SpecialSecondOrderDifferentialEquation<Position>> {
