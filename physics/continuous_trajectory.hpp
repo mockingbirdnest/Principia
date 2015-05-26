@@ -45,8 +45,7 @@ class ContinuousTrajectory {
   void Append(Instant const& time,
               DegreesOfFreedom<Frame> const& degrees_of_freedom);
 
-  // Removes all data for times strictly less than |time|.  |time| must not be
-  // before |first_time()|.
+  // Removes all data for times strictly less than |time|.
   void ForgetBefore(Instant const& time);
 
   // Evaluates the trajectory at the given |time|, which must be in

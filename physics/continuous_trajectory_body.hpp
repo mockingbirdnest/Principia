@@ -1,5 +1,7 @@
 ﻿#pragma once
 
+#include <algorithm>
+
 #include "physics/continuous_trajectory.hpp"
 
 namespace principia {
@@ -78,7 +80,24 @@ void ContinuousTrajectory<Frame>::Append(
 }
 
 template<typename Frame>
-void ContinuousTrajectory<Frame>::ForgetBefore(Instant const& time) {}
+void ContinuousTrajectory<Frame>::ForgetBefore(Instant const& time) {
+  auto const it =
+      std::upper_bound(series_.begin(), series_.end(), time,
+                       [](ЧебышёвSeries const& left, Instant const& right) {
+                         return left.t_max() < right;
+                       });
+  series_.erase(series_.begin, it);
+
+  // If there are no |series_| left, clear everything.  Otherwise, update the
+  // first time.
+  if (series_.empty()) {
+    interval_.reset();
+    first_time_.reset();
+    last_point_.reset();
+  } else {
+    *first_time_ = time;
+  }
+}
 
 template<typename Frame>
 Position<Frame> ContinuousTrajectory<Frame>::EvaluatePosition(Instant const& time,
