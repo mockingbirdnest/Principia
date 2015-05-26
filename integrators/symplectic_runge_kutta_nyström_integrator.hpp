@@ -32,10 +32,10 @@ namespace integrators {
 // used in Blanes, Casas and Ros (2001),
 // New Families of Symplectic Runge-Kutta-Nyström Integration Methods,
 // http://www.gicas.uji.es/Fernando/Proceedings/2000NAA.pdf.
-// Types ABA and BAB have the first-same-as-last property: the first and last
-// applications of the evolution operators can be merged when output is not
-// needed, so for sparse outputs r-1 evolutions of B and r of A are required
-// in the ABA case, and vice versa in the BAB case.
+// Types ABA and BAB have the first-same-as-last property: the last and first
+// applications of the evolution operators in two consecutive steps can be
+// merged when output is not needed, so for sparse outputs r-1 evolutions of B
+// and r of A are required in the ABA case, and vice versa in the BAB case.
 
 // Following common usage, we call the number of stages r - 1 in the ABA and BAB
 // cases, and r otherwise.  Note that this is at odds with the traditions for
