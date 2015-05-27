@@ -1,6 +1,7 @@
 ﻿#pragma once
 
 #include <vector>
+#include <utility>
 
 #include "geometry/named_quantities.hpp"
 #include "numerics/чебышёв_series.hpp"
@@ -22,8 +23,10 @@ class ContinuousTrajectory {
   // is passed to all the calls.
   class Hint;
 
-  // |degree| is the degree of the approximations.
-  explicit ContinuousTrajectory(int const degree);
+  //TODO(phl):comment
+  ContinuousTrajectory(Time const& step,
+                       double const high_tolerance,
+                       double const low_tolerance);
   ~ContinuousTrajectory() = default;
 
   ContinuousTrajectory(ContinuousTrajectory const&) = delete;
@@ -41,7 +44,8 @@ class ContinuousTrajectory {
 
   // Appends one point to the trajectory.  |time| must be after the last time
   // passed to |Append| if the trajectory is not empty.  The |time|s passed to
-  // successive calls to |Append| must be equally spaced.
+  // successive calls to |Append| must be equally spaced with the |step| given
+  // at construction.
   void Append(Instant const& time,
               DegreesOfFreedom<Frame> const& degrees_of_freedom);
 
@@ -81,15 +85,16 @@ private:
   // |hint->index| is the index of the series to use.
   bool MayUseHint(Instant const& time, Hint* const hint) const;
 
+  // Construction parameters;
+  Time const step_;
+  double const high_tolerance_;
+  double const low_tolerance_;
+
   // The degree of the approximation.
   int const degree_;
 
   // The series are in increasing time order.  Their intervals are consecutive.
   std::vector<ЧебышёвSeries> series_;
-
-  // Interval between the points passed to |Append|.  Only set for a trajectory
-  // with at least two points.
-  std::unique_ptr<Time> interval_;  // std::optional.
 
   // The time at which this trajectory starts.  Set for a nonempty trajectory.
   // |first_time_ >= series_.front().t_min()|
@@ -98,7 +103,7 @@ private:
   // The points that have not yet been incorporated in a series.  Nonempty for a
   // nonempty trajectory.
   // |last_points_.begin()->first == series_.back().t_max()|
-  std::map<Instant, DegreesOfFreedom<Frame>> last_points_;
+  std::vector<std::pair<Instant, DegreesOfFreedom<Frame>>> last_points_;
 };
 
 }  // namespace physics

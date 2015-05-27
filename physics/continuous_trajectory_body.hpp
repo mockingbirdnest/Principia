@@ -7,9 +7,24 @@
 namespace principia {
 namespace physics {
 
+namespace {
+
+int const kMaxDegree = 17;
+int const kMinDegree = 3;
+
+// Only supports 8 divisions for now.
+int const kDivisions = 8;
+
+}  // namespace
+
 template<typename Frame>
-ContinuousTrajectory<Frame>::ContinuousTrajectory(int const degree)
-    : degree_(degree) {}
+ContinuousTrajectory<Frame>::ContinuousTrajectory(Time const& step,
+                                                  double const high_tolerance,
+                                                  double const low_tolerance)
+    : step_(step),
+      high_tolerance_(high_tolerance),
+      low_tolerance_(low_tolerance),
+      degree_((kMinDegree + kMaxDegree) / 2) {}
 
 template<typename Frame>
 bool ContinuousTrajectory<Frame>::empty() const {
@@ -32,21 +47,12 @@ template<typename Frame>
 void ContinuousTrajectory<Frame>::Append(
     Instant const& time,
     DegreesOfFreedom<Frame> const& degrees_of_freedom) {
-  // Only supports 8 divisions for now.
-  int const kDivisions = 8;
-
   // Consistency checks.
   if (empty()) {
     first_time_ = std::make_unique<Instant>(time);
   } else {
-    if (interval_ == nullptr) {
-      interval_ = std::make_unique<Time>(time - *first_time_);
-      CHECK_GT(Time{}, *interval_)
-          << "Append before the end of the trajectory";
-    } else {
-      CHECK_EQ(*interval_, time - last_points_.crbegin()->first)
-          << "Append at times that are not equally spaced";
-    }
+    CHECK_EQ(step_, time - last_points_.back().first)
+        << "Append at times that are not equally spaced";
   }
 
   if (last_points_.size() == kDivisions) {
@@ -65,30 +71,46 @@ void ContinuousTrajectory<Frame>::Append(
     q.push_back(degrees_of_freedom.position - Frame::origin);
     v.push_back(degrees_of_freedom.velocity);
 
-    // Compute the approximation.
-    series_.push_back(ЧебышёвSeries::NewhallApproximation(
-        degree_, q, v, last_points_.cbegin()->first, time);
+    // Compute the approximation, adjusting the degree as necessary.
+    for (;;) {
+      series_.push_back(ЧебышёвSeries::NewhallApproximation(
+          degree_, q, v, last_points_.cbegin()->first, time);
 
-    // Wipe-out the map.
+      double const error_estimate = series_.back().error_estimate();
+      if (error_estimate < low_tolerance_) {
+        if (degree_ == kMinDegree) {
+          break;
+        }
+        --degree_;
+      } else if (error_estimate > high_tolerance_) {
+        if (degree_ == kMaxDegree) {
+          break;
+        }
+        ++degree_;
+      } else {
+        break;
+      }
+    }
+
+    // Wipe-out the vector.
     last_points_.clear();
   }
 
   // Note that we only insert the new point in the map *after* computing the
   // approximation, because clearing the map is much more efficient than erasing
   // every element but one.
-  last_points[time] = degrees_of_freedom;
+  last_points.emplace_back(time, degrees_of_freedom);
 }
 
 template<typename Frame>
 void ContinuousTrajectory<Frame>::ForgetBefore(Instant const& time) {
-  series_.erase(series_.begin, FindSeriesForInstant(time));
+  series_.erase(series_.begin(), FindSeriesForInstant(time));
 
   // If there are no |series_| left, clear everything.  Otherwise, update the
   // first time.
   if (series_.empty()) {
-    interval_.reset();
     first_time_.reset();
-    last_point_.reset();
+    last_points_.clear();
   } else {
     *first_time_ = time;
   }
