@@ -1,5 +1,5 @@
 ﻿
-#include "integrators/sprk_integrator.hpp"
+#include "integrators/srkn_integrator.hpp"
 
 #include <algorithm>
 #include <string>
@@ -9,6 +9,7 @@
 #include "glog/logging.h"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
+#include "integrators/sprk_integrator.hpp"
 #include "quantities/quantities.hpp"
 #include "quantities/named_quantities.hpp"
 #include "testing_utilities/almost_equals.hpp"
