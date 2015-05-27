@@ -15,13 +15,8 @@ namespace integrators {
 // (3).  q″ = f(q, t), with known f = -M⁻¹ ∇q V(q, t);
 // Only (3) is implemented at this time.
 
-// Note that (3) is a special case of (2), and thus of (1), with
-//   p = M q′, A = (M⁻¹ p, 0), B = (0, -∇q V(q, t)),
-//   (exp hA)(q, p) = (q + h M⁻¹ p, p), (exp hB)(q, p) = (q, p - h ∇q V(q)).
-// It corresponds to Hamilton's equations with quadratic kinetic energy,
-//   H(q, p, t) = ½ pᵀM⁻¹p + V(q, t).    (4)
-// See the documentation for a proof that these A and B do indeed satisfy
-// [B, [B, [B, A]]] = 0.
+// See the documentation for a proof that (3) is a special case of (2), and thus
+// of (1), and for the relation to Hamiltonian mechanics.
 
 // Each step of size h is computed using the composition of evolutions
 //   exp(b₀ h B) exp(a₀ h A) ... exp(bᵣ h B) exp(aᵣ h A),
@@ -33,17 +28,10 @@ namespace integrators {
 // used in Blanes, Casas and Ros (2001),
 // New Families of Symplectic Runge-Kutta-Nyström Integration Methods,
 // http://www.gicas.uji.es/Fernando/Proceedings/2000NAA.pdf.
-
-// Types ABA and BAB have the first-same-as-last property: the last and first
-// applications of the evolution operators in two consecutive steps can be
-// merged when output is not needed, so for sparse outputs r-1 evolutions of B
-// and r of A are required in the ABA case, and vice versa in the BAB case.
-// When solving equations of type (2), the integrator makes full use of the FSAL
-// property, even for dense output: in the BAB case, the two consecutive
-// applications of exp(bᵢ h B) require only one evaluation of B (and similarly
-// in the ABA case).
 // In the implementation, we call r the number of |stages_|.  The number of
 // |evaluations| is r-1 in the ABA and BAB cases, and r otherwise.
+// See the documentation for an explanation of how types ABA and BAB reduce the
+// computational cost, especially in cases (2) and (3).
 
 // As above, we follow the most widespread notation, calling the position
 // weights a and the momentum weights b.  Note that our indices are 0-based.
@@ -85,7 +73,6 @@ class SymplecticRungeKuttaNyströmIntegrator
   FixedVector<double, stages_> b_;
   FixedVector<double, stages_> c_;
 };
-
 
 }  // namespace integrators
 }  // namespace principia
