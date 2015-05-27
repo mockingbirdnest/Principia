@@ -58,5 +58,8 @@
     <ClCompile Include="srkn_integrator_test.cpp">
       <Filter>Test Files</Filter>
     </ClCompile>
+    <ClCompile Include="symplectic_runge_kutta_nyström_integrator_test.cpp">
+      <Filter>Test Files</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

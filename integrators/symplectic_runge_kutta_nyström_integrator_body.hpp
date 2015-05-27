@@ -2,7 +2,12 @@
 
 #include "integrators/symplectic_runge_kutta_nyström_integrator.hpp"
 
+#include "geometry/sign.hpp"
+
 namespace principia {
+
+using geometry::Sign;
+
 namespace integrators {
 
 template<typename Position, int order, int evaluations,
@@ -16,7 +21,7 @@ SymplecticRungeKuttaNyströmIntegrator(FixedVector<double, stages_> const& a,
   DoublePrecision<double> c_i = 0.0;
   for (int i = 0; i < stages_; ++i) {
     c_[i] = c_i.value;
-    c_i.Increment(a_i);
+    c_i.Increment(a_[i]);
   }
   CHECK_EQ(1.0, c_i.value);
 }
@@ -88,7 +93,7 @@ void SymplecticRungeKuttaNyströmIntegrator<Position, order, evaluations,
       for (int k = 0; k < dimension; ++k) {
         q_stage[k] = q[k].value + ∆q[k];
       }
-      problem.equation.compute_acceleration(q_stage, t.value + c_[i] * h, &g);
+      problem.equation.compute_acceleration(t.value + c_[i] * h, q_stage, &g);
       for (int k = 0; k < dimension; ++k) {
         // TODO(egg): reformulate to reduce roundoff error.
         ∆v[k] += h * b_[i] * g[k];

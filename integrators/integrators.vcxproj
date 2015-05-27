@@ -145,6 +145,7 @@
     <ClCompile Include="simple_harmonic_motion.cpp" />
     <ClCompile Include="sprk_integrator_test.cpp" />
     <ClCompile Include="srkn_integrator_test.cpp" />
+    <ClCompile Include="symplectic_runge_kutta_nyström_integrator_test.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

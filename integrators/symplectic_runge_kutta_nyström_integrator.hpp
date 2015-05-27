@@ -1,8 +1,11 @@
 ﻿#pragma once
 
 #include "integrators/ordinary_differential_equations.hpp"
+#include "numerics/fixed_arrays.hpp"
 
 namespace principia {
+
+using numerics::FixedVector;
 
 namespace integrators {
 
