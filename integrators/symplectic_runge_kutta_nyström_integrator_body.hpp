@@ -100,6 +100,7 @@ void SymplecticRungeKuttaNyströmIntegrator<Position, order, evaluations,
         ∆q[k] += h * a_[i] * (v[k].value + ∆v[k]);
       }
     }
+    // TODO(egg): handle the FSAL case (types ABA and BAB).
 
     // Increment the solution.
     t.Increment(h);
