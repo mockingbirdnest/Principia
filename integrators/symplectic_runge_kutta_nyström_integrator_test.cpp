@@ -1,5 +1,7 @@
 ﻿#include "integrators/symplectic_runge_kutta_nyström_integrator.hpp"
 
+#include <vector>
+
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "quantities/quantities.hpp"
