@@ -6,10 +6,13 @@
 #include "geometry/named_quantities.hpp"
 #include "numerics/чебышёв_series.hpp"
 #include "physics/degrees_of_freedom.hpp"
+#include "quantities/quantities.hpp"
 
 namespace principia {
 
 using geometry::Instant;
+using quantities::Length;
+using quantities::Time;
 using numerics::ЧебышёвSeries;
 
 namespace physics {
@@ -25,8 +28,8 @@ class ContinuousTrajectory {
 
   //TODO(phl):comment
   ContinuousTrajectory(Time const& step,
-                       double const high_tolerance,
-                       double const low_tolerance);
+                       Length const& low_tolerance,
+                       Length const& high_tolerance);
   ~ContinuousTrajectory() = default;
 
   ContinuousTrajectory(ContinuousTrajectory const&) = delete;
@@ -78,8 +81,8 @@ private:
   // Returns an iterator to the series applicable for the given |time|, or
   // |begin()| if |time| is before the first series or |end()| if |time| is
   // after the last series.  Time complexity is O(N Log N).
-  std::vector<ЧебышёвSeries>::const_iterator FindSeriesForInstant(
-      Instant const& time) const;
+  typename std::vector<ЧебышёвSeries<Displacement<Frame>>>::const_iterator
+  FindSeriesForInstant(Instant const& time) const;
 
   // Returns true if the given |hint| is usable for the given |time|.  If it is,
   // |hint->index| is the index of the series to use.
@@ -87,14 +90,14 @@ private:
 
   // Construction parameters;
   Time const step_;
-  double const high_tolerance_;
-  double const low_tolerance_;
+  Length const high_tolerance_;
+  Length const low_tolerance_;
 
   // The degree of the approximation.
-  int const degree_;
+  int degree_;
 
   // The series are in increasing time order.  Their intervals are consecutive.
-  std::vector<ЧебышёвSeries> series_;
+  std::vector<ЧебышёвSeries<Displacement<Frame>>> series_;
 
   // The time at which this trajectory starts.  Set for a nonempty trajectory.
   // |first_time_ >= series_.front().t_min()|

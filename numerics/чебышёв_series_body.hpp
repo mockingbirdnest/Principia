@@ -41,6 +41,21 @@ bool ЧебышёвSeries<Vector>::operator!=(ЧебышёвSeries const& right)
 }
 
 template<typename Vector>
+Instant const& ЧебышёвSeries<Vector>::t_min() const {
+  return t_min_;
+}
+
+template<typename Vector>
+Instant const& ЧебышёвSeries<Vector>::t_max() const {
+  return t_max_;
+}
+
+template<typename Vector>
+Vector const& ЧебышёвSeries<Vector>::last_coefficient() const {
+  return coefficients_[degree_];
+}
+
+template<typename Vector>
 Vector ЧебышёвSeries<Vector>::Evaluate(Instant const& t) const {
   double const scaled_t = (t - t_mean_) * two_over_duration_;
   double const two_scaled_t = scaled_t + scaled_t;

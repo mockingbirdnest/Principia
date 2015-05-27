@@ -19,12 +19,14 @@ int const kDivisions = 8;
 
 template<typename Frame>
 ContinuousTrajectory<Frame>::ContinuousTrajectory(Time const& step,
-                                                  double const high_tolerance,
-                                                  double const low_tolerance)
+                                                  Length const& low_tolerance,
+                                                  Length const& high_tolerance)
     : step_(step),
-      high_tolerance_(high_tolerance),
       low_tolerance_(low_tolerance),
-      degree_((kMinDegree + kMaxDegree) / 2) {}
+      high_tolerance_(high_tolerance),
+      degree_((kMinDegree + kMaxDegree) / 2) {
+  CHECK_LT(low_tolerance_, high_tolerance_);
+}
 
 template<typename Frame>
 bool ContinuousTrajectory<Frame>::empty() const {
@@ -51,32 +53,33 @@ void ContinuousTrajectory<Frame>::Append(
   if (empty()) {
     first_time_ = std::make_unique<Instant>(time);
   } else {
-    CHECK_EQ(step_, time - last_points_.back().first)
+    CHECK_EQ(last_points_.back().first + step_, time)
         << "Append at times that are not equally spaced";
   }
 
   if (last_points_.size() == kDivisions) {
     // These vectors are static to avoid deallocation/reallocation each time we
     // go through this code path.
-    static std::vector<Length> q(kDivisions + 1);
-    static std::vector<Speed> v(kDivisions + 1);
+    static std::vector<Displacement<Frame>> q(kDivisions + 1);
+    static std::vector<Velocity<Frame>> v(kDivisions + 1);
     q.clear();
     v.clear();
 
     for (auto const& pair : last_points_) {
       DegreesOfFreedom<Frame> const& degrees_of_freedom = pair.second;
-      q.push_back(degrees_of_freedom.position - Frame::origin);
-      v.push_back(degrees_of_freedom.velocity);
+      q.push_back(degrees_of_freedom.position() - Frame::origin);
+      v.push_back(degrees_of_freedom.velocity());
     }
-    q.push_back(degrees_of_freedom.position - Frame::origin);
-    v.push_back(degrees_of_freedom.velocity);
+    q.push_back(degrees_of_freedom.position() - Frame::origin);
+    v.push_back(degrees_of_freedom.velocity());
 
     // Compute the approximation, adjusting the degree as necessary.
     for (;;) {
-      series_.push_back(ЧебышёвSeries::NewhallApproximation(
-          degree_, q, v, last_points_.cbegin()->first, time);
+      series_.push_back(
+          ЧебышёвSeries<Displacement<Frame>>::NewhallApproximation(
+              degree_, q, v, last_points_.cbegin()->first, time));
 
-      double const error_estimate = series_.back().error_estimate();
+      Length const error_estimate = series_.back().last_coefficient().Norm();
       if (error_estimate < low_tolerance_) {
         if (degree_ == kMinDegree) {
           break;
@@ -99,7 +102,7 @@ void ContinuousTrajectory<Frame>::Append(
   // Note that we only insert the new point in the map *after* computing the
   // approximation, because clearing the map is much more efficient than erasing
   // every element but one.
-  last_points.emplace_back(time, degrees_of_freedom);
+  last_points_.emplace_back(time, degrees_of_freedom);
 }
 
 template<typename Frame>
@@ -169,7 +172,7 @@ ContinuousTrajectory<Frame>::Hint::Hint()
     : index_(std::numeric_limits<int>::max()) {}
 
 template<typename Frame>
-std::vector<ЧебышёвSeries>::const_iterator
+typename std::vector<ЧебышёвSeries<Displacement<Frame>>>::const_iterator
 ContinuousTrajectory<Frame>::FindSeriesForInstant(Instant const& time) const {
   return std::upper_bound(series_.begin(), series_.end(), time,
                           [](ЧебышёвSeries const& left, Instant const& right) {

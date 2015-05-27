@@ -94,5 +94,8 @@
     <ClCompile Include="body_test.cpp">
       <Filter>Test Files</Filter>
     </ClCompile>
+    <ClCompile Include="continuous_trajectory_test.cpp">
+      <Filter>Test Files</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

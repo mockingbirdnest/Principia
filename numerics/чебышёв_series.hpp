@@ -37,9 +37,9 @@ class ЧебышёвSeries {
   Instant const& t_min() const;
   Instant const& t_max() const;
 
-  // The ratio of the last two coefficients of the series.  Smaller values
-  // indicate a better approximation.
-  double error_estimate() const;
+  // The value of the last coefficient of the series.  Smaller values indicate a
+  // a better approximation.
+  Vector const& last_coefficient() const;
 
   // Uses the Clenshaw algorithm.  |t| must be in the range [t_min, t_max].
   Vector Evaluate(Instant const& t) const;
