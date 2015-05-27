@@ -56,7 +56,7 @@ TEST_F(SymplecticRungeKuttaNyströmIntegratorTest,
   Instant const t_initial;
   Instant const t_final = t_initial + 10 * period;
 
-  int const steps= 100;
+  int const steps = 100;
 
   int evaluations = 0;
 

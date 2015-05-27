@@ -10,7 +10,7 @@ using numerics::FixedVector;
 namespace integrators {
 
 // This class solves ordinary differential equations of following forms using a
-// symplectic Runge-Kutta-Nyström method.
+// symplectic Runge-Kutta-Nyström method:
 // (1).  (q, p)′ = X(q, p, t), with X = A(q, p) + B(q, p, t) and known
 //       evolutions exp hA and exp hB, where [B, [B, [B, A]]] = 0;
 // (2).  The above case, where (exp hB)(q, p, t) = (q, p) + h B(q, p, t),
@@ -21,16 +21,16 @@ namespace integrators {
 // of (1), and for an explanation of the relation to Hamiltonian mechanics.
 
 // Each step of size h is computed using the composition of evolutions
-//   exp(b₀ h B) exp(a₀ h A) ... exp(bᵣ h B) exp(aᵣ h A);
+//   exp(b₀ h B) exp(a₀ h A) ... exp(bᵣ₋₁ h B) exp(aᵣ₋₁ h A);
 // the integrator thus is a composition method.  If the appropriate coefficients
 // vanish, the above can be reformulated as either
-//   exp(a₀ h A) exp(b₁ h B) ... exp(bᵣ h B) exp(aᵣ h A) or
-//   exp(b₀ h B) exp(a₀ h A) ... exp(aᵣ₋₁ h A) exp(bᵣ h B).
+//   exp(a₀ h A) exp(b₁ h B) ... exp(bᵣ₋₁ h B) exp(aᵣ₋₁ h A) or
+//   exp(b₀ h B) exp(a₀ h A) ... exp(aᵣ₋₂ h A) exp(bᵣ₋₁ h B).
 // The former is called type ABA, the latter type BAB, following the conventions
 // used in Blanes, Casas and Ros (2001),
 // New Families of Symplectic Runge-Kutta-Nyström Integration Methods,
 // http://www.gicas.uji.es/Fernando/Proceedings/2000NAA.pdf.
-// In the implementation, we call r the number of |stages_|.  The number of
+// In the implementation, we call |stages_| the integer r above.  The number of
 // |evaluations| is r-1 in the ABA and BAB cases, and r otherwise.
 // See the documentation for an explanation of how types ABA and BAB reduce the
 // number of evaluations required, especially in cases (2) and (3).
@@ -57,7 +57,7 @@ enum CompositionMethod {
   kBAB,  // aᵣ = 0.
 };
 
-template<typename Position, int order, int evaluations,
+template<typename Position, int order, bool time_reversible, int evaluations,
          CompositionMethod composition>
 class SymplecticRungeKuttaNyströmIntegrator
     : public FixedStepSizeIntegrator<
@@ -82,6 +82,7 @@ class SymplecticRungeKuttaNyströmIntegrator
 template<typename Position>
 SymplecticRungeKuttaNyströmIntegrator<Position,
                                       4 /*order*/,
+                                      false /*time_reversible*/,
                                       4 /*evaluations*/,
                                       kBA> const&
 McLachlanAtela1992Order4Optimal();
@@ -91,6 +92,7 @@ McLachlanAtela1992Order4Optimal();
 template<typename Position>
 SymplecticRungeKuttaNyströmIntegrator<Position,
                                       4 /*order*/,
+                                      true /*time_reversible*/,
                                       4 /*evaluations*/,
                                       kABA> const& McLachlan1995SB3A4();
 // Coefficients from McLachlan (1995),
@@ -99,6 +101,7 @@ SymplecticRungeKuttaNyströmIntegrator<Position,
 template<typename Position>
 SymplecticRungeKuttaNyströmIntegrator<Position,
                                       4 /*order*/,
+                                      true /*time_reversible*/,
                                       5 /*evaluations*/,
                                       kABA> const& McLachlan1995SB3A5();
 // Coefficients from Blanes and Moan (2002),
@@ -107,6 +110,7 @@ SymplecticRungeKuttaNyströmIntegrator<Position,
 template<typename Position>
 SymplecticRungeKuttaNyströmIntegrator<Position,
                                       4 /*order*/,
+                                      true /*time_reversible*/,
                                       6 /*evaluations*/,
                                       kBAB> const& BlanesMoan2002SRKN6B();
 // This method minimizes the error constant.
@@ -116,6 +120,7 @@ SymplecticRungeKuttaNyströmIntegrator<Position,
 template<typename Position>
 SymplecticRungeKuttaNyströmIntegrator<Position,
                                       5 /*order*/,
+                                      false /*time_reversible*/,
                                       6 /*evaluations*/,
                                       kBA> const&
 McLachlanAtela1992Order5Optimal();
@@ -130,6 +135,7 @@ McLachlanAtela1992Order5Optimal();
 template<typename Position>
 SymplecticRungeKuttaNyströmIntegrator<Position,
                                       6 /*order*/,
+                                      true /*time_reversible*/,
                                       7 /*evaluations*/,
                                       kABA> const&
 OkunborSkeel1994Order6Method13();
@@ -139,6 +145,7 @@ OkunborSkeel1994Order6Method13();
 template<typename Position>
 SymplecticRungeKuttaNyströmIntegrator<Position,
                                       6 /*order*/,
+                                      true /*time_reversible*/,
                                       11 /*evaluations*/,
                                       kBAB> const& BlanesMoan2002SRKN11B();
 // Coefficients from Blanes and Moan (2002),
@@ -147,6 +154,7 @@ SymplecticRungeKuttaNyströmIntegrator<Position,
 template<typename Position>
 SymplecticRungeKuttaNyströmIntegrator<Position,
                                       6 /*order*/,
+                                      true /*time_reversible*/,
                                       14 /*evaluations*/,
                                       kABA> const& BlanesMoan2002SRKN14A();
 
