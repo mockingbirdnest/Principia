@@ -72,15 +72,15 @@ template<typename Position, int order, int evaluations,
 class SymplecticRungeKuttaNyströmIntegrator
     : public FixedStepSizeIntegrator<
                  SpecialSecondOrderDifferentialEquation<Position>> {
-
+  static int const stages_ = composition == kBA ? evaluations : evaluations + 1;
+ public:
   SymplecticRungeKuttaNyströmIntegrator(FixedVector<double, stages_> const& a,
                                         FixedVector<double, stages_> const& b,
-                                        FixedVector<double, stages_> const& c)
+                                        FixedVector<double, stages_> const& c);
 
   void Solve(IntegrationProblem<ODE> const& problem,
              Time const& step) const override;
  private:
-  static int const stages_ = composition == kBA ? evaluations : evaluations + 1;
   FixedVector<double, stages_> a_;
   FixedVector<double, stages_> b_;
   FixedVector<double, stages_> c_;

@@ -59,14 +59,45 @@ void SymplecticRungeKuttaNyströmIntegrator<Position, order, evaluations,
 
   // Current Runge-Kutta-Nyström stage.
   std::vector<Position> q_stage(dimension);
-  // Accelerations at each stage.
-  // TODO(egg): this is a rectangular container, use something more appropriate.
-  std::vector<std::vector<Acceleration>> g(stages);
-  for (auto& g_stage : g) {
-    g_stage.resize(dimension);
-  }
+  // Accelerations at the current stage.
+  std::vector<Acceleration> g(dimension);
 
   bool at_end = false;
+
+  for (;;) {
+    // TODO(egg): do we want to keep cover the whole integration interval, or
+    // should the last point be in the interval?  This implements the latter.
+    // There's also the possibility of making the caller determine the
+    // termination condition.
+    Time const time_to_end = (problem.t_final - t.value) - t.error;
+    at_end = integration_direction * h > integration_direction * time_to_end;
+    if (at_end) {
+      break;
+    }
+
+    std::fill(∆q.begin(), ∆q.end(), Displacement{});
+    std::fill(∆v.begin(), ∆v.end(), Velocity{});
+    for (int i = 0; i < stages_; ++i) {
+      for (int k = 0; k < dimension; ++k) {
+        q_stage[k] = q[k].value + ∆q[k];
+      }
+      problem.equation.compute_acceleration(q_stage, t.value + c_[i] * h, &g);
+      for (int k = 0; k < dimension; ++k) {
+        // TODO(egg): reformulate to reduce roundoff error.
+        ∆v[k] += h * b_[i] * g[k];
+        ∆q[k] += h * a_[i] * (v[k].value + ∆v[k]);
+      }
+    }
+
+    // Increment the solution.
+    t.Increment(h);
+    for (int k = 0; k < dimension; ++k) {
+      q[k].Increment(∆q[k]);
+      v[k].Increment(∆v[k]);
+    }
+    problem.append_state(current_state);
+  }
+
 }
 
 }  // namespace integrators
