@@ -139,11 +139,11 @@ void EmbeddedExplicitRungeKuttaNyströmIntegrator<Position,
   bool at_end = false;
   double tolerance_to_error_ratio;
 
-  // The first step of the Runge-Kutta-Nyström iteration.  In the FSAL case,
-  // i0 = 1 after the first step, since the first RHS evaluation has already
-  // occured in the previous step.  In the non-FSAL case and in the first step
-  // of the FSAL case, i0 = 0.
-  int i0 = 0;
+  // The first stage of the Runge-Kutta-Nyström iteration.  In the FSAL case,
+  // |first_stage == 1| after the first step, since the first RHS evaluation has
+  // already occured in the previous step.  In the non-FSAL case and in the
+  // first step of the FSAL case, |first_stage == 0|.
+  int first_stage = 0;
 
   // No step size control on the first step.
   goto runge_kutta_nyström_step;
@@ -169,7 +169,7 @@ void EmbeddedExplicitRungeKuttaNyströmIntegrator<Position,
       }
 
       // Runge-Kutta-Nyström iteration; fills |g|.
-      for (int i = i0; i < stages; ++i) {
+      for (int i = first_stage; i < stages; ++i) {
         Instant const t_stage = t.value + c_[i] * h;
         for (int k = 0; k < dimension; ++k) {
           Acceleration ∑j_a_ij_g_jk{};
@@ -212,7 +212,7 @@ void EmbeddedExplicitRungeKuttaNyströmIntegrator<Position,
     if (first_same_as_last) {
       using std::swap;
       swap(g.front(), g.back());
-      i0 = 1;
+      first_stage = 1;
     }
 
     // Increment the solution with the high-order approximation.
