@@ -6,7 +6,7 @@
 
 #include "base/not_null.hpp"
 #include "geometry/named_quantities.hpp"
-#include "integrators/symplectic_runge_kutta_nyström_integrator.hpp"
+#include "integrators/srkn_integrator.hpp"
 #include "physics/body.hpp"
 #include "physics/massive_body.hpp"
 #include "physics/trajectory.hpp"

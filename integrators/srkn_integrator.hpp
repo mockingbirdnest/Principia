@@ -161,4 +161,4 @@ SRKNIntegrator const& BlanesMoan2002SRKN14A();
 }  // namespace integrators
 }  // namespace principia
 
-#include "integrators/symplectic_runge_kutta_nyström_integrator_body.hpp"
+#include "integrators/srkn_integrator_body.hpp"

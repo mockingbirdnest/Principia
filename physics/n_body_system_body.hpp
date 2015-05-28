@@ -11,7 +11,7 @@
 #include "geometry/named_quantities.hpp"
 #include "geometry/r3_element.hpp"
 #include "glog/logging.h"
-#include "integrators/symplectic_partitioned_runge_kutta_integrator.hpp"
+#include "integrators/sprk_integrator.hpp"
 #include "physics/oblate_body.hpp"
 #include "quantities/quantities.hpp"
 
