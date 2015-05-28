@@ -9,6 +9,7 @@
 #include "quantities/quantities.hpp"
 #include "quantities/si.hpp"
 #include "serialization/geometry.pb.h"
+#include "testing_utilities/almost_equals.hpp"
 
 namespace principia {
 
@@ -18,6 +19,7 @@ using geometry::Velocity;
 using quantities::Time;
 using si::Metre;
 using si::Second;
+using testing_utilities::AlmostEquals;
 
 namespace physics {
 
@@ -53,6 +55,7 @@ Time const ContinuousTrajectoryTest::step_ = 0.01 * Second;
 
 TEST_F(ContinuousTrajectoryTest, Test) {
   int const kNumberOfSteps = 20;
+  int const kNumberOfSubsteps = 50;
   Instant t0;
 
   auto position_function =
@@ -74,6 +77,16 @@ TEST_F(ContinuousTrajectoryTest, Test) {
   EXPECT_FALSE(trajectory_.empty());
   EXPECT_EQ(t0 + step_, trajectory_.t_min());
   EXPECT_EQ(t0 + ((kNumberOfSteps / 8) * 8 + 1) * step_, trajectory_.t_max());
+  
+  ContinuousTrajectory<World>::Hint hint;
+  for (Instant time = trajectory_.t_min();
+       time <= trajectory_.t_max();
+       time += step_ / kNumberOfSubsteps) {
+    EXPECT_THAT(trajectory_.EvaluatePosition(time, &hint) - World::origin,
+                AlmostEquals(position_function(time) - World::origin, 0, 7));
+    EXPECT_THAT(trajectory_.EvaluateVelocity(time, &hint),
+                AlmostEquals(velocity_function(time), 1, 3));
+  }
 }
 
 }  // namespace physics

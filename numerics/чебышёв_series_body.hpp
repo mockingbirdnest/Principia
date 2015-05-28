@@ -170,7 +170,6 @@ template<typename Vector>
     qv[j] = q[i];
     qv[j + 1] = v[i] * duration_over_two;
   }
-  LOG(ERROR)<<degree;
 
   std::vector<Vector> coefficients;
   coefficients.reserve(degree);

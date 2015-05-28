@@ -72,7 +72,6 @@ void ContinuousTrajectory<Frame>::Append(
     }
     q.push_back(degrees_of_freedom.position() - Frame::origin);
     v.push_back(degrees_of_freedom.velocity());
-    LOG(ERROR)<<q.size()<<" "<<v.size()<<" "<<degree_;
 
     // Compute the approximation with the current degree.
     series_.push_back(
@@ -106,6 +105,7 @@ void ContinuousTrajectory<Frame>::Append(
         series_.back() = std::move(tentative_series);
       }
     }
+    VLOG(1) << "Using degree " << degree_;
 
     // Wipe-out the vector.
     last_points_.clear();
@@ -136,13 +136,13 @@ Position<Frame> ContinuousTrajectory<Frame>::EvaluatePosition(
     Instant const& time,
     Hint* const hint) const {
   if (MayUseHint(time, hint)) {
-    return series_[index].Evaluate(time);
+    return series_[hint->index_].Evaluate(time) + Frame::origin;
   } else {
     auto const it = FindSeriesForInstant(time);
     if (hint != nullptr) {
-      *hint = it - series_.cbegin();
+      hint->index_ = it - series_.cbegin();
     }
-    return it->Evaluate(time);
+    return it->Evaluate(time) + Frame::origin;
   }
 }
 
@@ -151,11 +151,11 @@ Velocity<Frame> ContinuousTrajectory<Frame>::EvaluateVelocity(
     Instant const& time,
     Hint* const hint) const {
   if (MayUseHint(time, hint)) {
-    return series_[index].EvaluateDerivative(time);
+    return series_[hint->index_].EvaluateDerivative(time);
   } else {
     auto const it = FindSeriesForInstant(time);
     if (hint != nullptr) {
-      *hint = it - series_.cbegin();
+      hint->index_ = it - series_.cbegin();
     }
     return it->EvaluateDerivative(time);
   }
@@ -166,15 +166,15 @@ DegreesOfFreedom<Frame> ContinuousTrajectory<Frame>::EvaluateDegreesOfFreedom(
     Instant const& time,
     Hint* const hint) const {
   if (MayUseHint(time, hint)) {
-    ЧебышёвSeries const& series = series_[index];
-    return DegreesOfFreedom<Frame>(series.Evaluate(time),
+    ЧебышёвSeries const& series = series_[hint->index_];
+    return DegreesOfFreedom<Frame>(series.Evaluate(time) + Frame::origin,
                                    series.EvaluateDerivative(time));
   } else {
     auto const it = FindSeriesForInstant(time);
     if (hint != nullptr) {
-      *hint = it - series_.cbegin();
+      hint->index_ = it - series_.cbegin();
     }
-    return DegreesOfFreedom<Frame>(it->Evaluate(time),
+    return DegreesOfFreedom<Frame>(it->Evaluate(time) + Frame::origin,
                                    it->EvaluateDerivative(time));
   }
 }
@@ -186,8 +186,11 @@ ContinuousTrajectory<Frame>::Hint::Hint()
 template<typename Frame>
 typename std::vector<ЧебышёвSeries<Displacement<Frame>>>::const_iterator
 ContinuousTrajectory<Frame>::FindSeriesForInstant(Instant const& time) const {
-  return std::upper_bound(series_.begin(), series_.end(), time,
-                          [](ЧебышёвSeries const& left, Instant const& right) {
+  // Need to use |lower_bound|, not |upper_bound|, because it allows
+  // heterogeneous arguments.
+  return std::lower_bound(series_.begin(), series_.end(), time,
+                          [](ЧебышёвSeries<Displacement<Frame>> const& left,
+                             Instant const& right) {
                             return left.t_max() < right;
                           });
 }
