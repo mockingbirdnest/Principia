@@ -42,7 +42,7 @@ namespace integrators {
 template<typename Position, int higher_order, int lower_order, int stages,
          bool first_same_as_last>
 class EmbeddedExplicitRungeKuttaNyströmIntegrator
-    : public AdaptiveSizeIntegrator<
+    : public AdaptiveStepSizeIntegrator<
                  SpecialSecondOrderDifferentialEquation<Position>> {
  public:
   EmbeddedExplicitRungeKuttaNyströmIntegrator(

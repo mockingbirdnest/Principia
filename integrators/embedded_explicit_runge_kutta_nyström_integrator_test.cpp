@@ -64,7 +64,7 @@ class EmbeddedExplicitRungeKuttaNyströmIntegratorTest
 
 TEST_F(EmbeddedExplicitRungeKuttaNyströmIntegratorTest,
        HarmonicOscillatorBackAndForth) {
-  AdaptiveSizeIntegrator<ODE> const& integrator =
+  AdaptiveStepSizeIntegrator<ODE> const& integrator =
       DormandElMikkawyPrince1986RKN434FM<Length>();
   Length const x_initial = 1 * Metre;
   Speed const v_initial = 0 * Metre / Second;
