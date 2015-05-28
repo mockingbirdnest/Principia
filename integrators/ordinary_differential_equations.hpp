@@ -66,14 +66,14 @@ class Integrator {
 };
 
 template<typename DifferentialEquation>
-class FixedStepSizeIntegrator : Integrator<DifferentialEquation> {
+class FixedStepSizeIntegrator : public Integrator<DifferentialEquation> {
  public:
   virtual void Solve(IntegrationProblem<ODE> const& problem,
                      Time const& step) const = 0;
 };
 
 template<typename DifferentialEquation>
-class AdaptiveStepSizeIntegrator : Integrator<DifferentialEquation> {
+class AdaptiveStepSizeIntegrator : public Integrator<DifferentialEquation> {
  public:
   virtual void Solve(IntegrationProblem<ODE> const& problem,
                      AdaptiveStepSize<ODE> const& adaptive_step_size) const = 0;
