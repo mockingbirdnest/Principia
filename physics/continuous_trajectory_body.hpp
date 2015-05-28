@@ -73,25 +73,32 @@ void ContinuousTrajectory<Frame>::Append(
     q.push_back(degrees_of_freedom.position() - Frame::origin);
     v.push_back(degrees_of_freedom.velocity());
 
-    // Compute the approximation, adjusting the degree as necessary.
-    for (;;) {
-      series_.push_back(
-          ЧебышёвSeries<Displacement<Frame>>::NewhallApproximation(
-              degree_, q, v, last_points_.cbegin()->first, time));
+    // Compute the approximation with the current degree.
+    series_.push_back(
+        ЧебышёвSeries<Displacement<Frame>>::NewhallApproximation(
+            degree_, q, v, last_points_.cbegin()->first, time));
 
-      Length const error_estimate = series_.back().last_coefficient().Norm();
-      if (error_estimate < low_tolerance_) {
-        if (degree_ == kMinDegree) {
-          break;
-        }
-        --degree_;
-      } else if (error_estimate > high_tolerance_) {
-        if (degree_ == kMaxDegree) {
-          break;
-        }
-        ++degree_;
-      } else {
-        break;
+    Length error_estimate = series_.back().last_coefficient().Norm();
+
+    // Increase the degree if the approximation is not accurate enough.
+    while (error_estimate > high_tolerance_ && ++degree_ <= kMaxDegree) {
+      series_.back() =
+          ЧебышёвSeries<Displacement<Frame>>::NewhallApproximation(
+              degree_, q, v, last_points_.cbegin()->first, time);
+
+      error_estimate = series_.back().last_coefficient().Norm();
+    }
+
+    // Try to decrease the degree if the approximation is too accurate, but make
+    // sure that we don't go above |high_tolerance_|.
+    while (error_estimate < low_tolerance_ && --degree_ >= kMinDegree) {
+      auto tentative_series =
+          ЧебышёвSeries<Displacement<Frame>>::NewhallApproximation(
+              degree_, q, v, last_points_.cbegin()->first, time);
+
+      error_estimate = series_.back().last_coefficient().Norm();
+      if (error_estimate <= high_tolerance_) {
+        series_.back() = std::move(tentative_series);
       }
     }
 
