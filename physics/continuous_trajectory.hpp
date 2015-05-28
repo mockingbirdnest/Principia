@@ -41,9 +41,9 @@ class ContinuousTrajectory {
   bool empty() const;
 
   // The time range for which the trajectory can be evaluated.  Note that
-  // |last_time| may be less than the last time passed to Append.
-  Instant first_time() const;
-  Instant last_time() const;
+  // |t_max| may be less than the last time passed to Append.
+  Instant t_min() const;
+  Instant t_max() const;
 
   // Appends one point to the trajectory.  |time| must be after the last time
   // passed to |Append| if the trajectory is not empty.  The |time|s passed to
@@ -56,7 +56,7 @@ class ContinuousTrajectory {
   void ForgetBefore(Instant const& time);
 
   // Evaluates the trajectory at the given |time|, which must be in
-  // [first_time(), last_time()].  The |hint| may be used to speed up evaluation
+  // [t_min(), t_max()].  The |hint| may be used to speed up evaluation
   // in increasing time order.  It may be a nullptr (in which case no speed-up
   // takes place).
   Position<Frame> EvaluatePosition(Instant const& time,

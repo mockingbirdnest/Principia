@@ -52,19 +52,28 @@ class ContinuousTrajectoryTest : public testing::Test {
 Time const ContinuousTrajectoryTest::step_ = 0.01 * Second;
 
 TEST_F(ContinuousTrajectoryTest, Test) {
+  int const kNumberOfSteps = 20;
   Instant t0;
-  FillTrajectory(20 /*number_of_steps*/,
-                 [t0](Instant const t) {
-                   return World::origin +
-                       Displacement<World>({(t - t0) * 3 * Metre / Second,
-                                            (t - t0) * 5 * Metre / Second,
-                                            (t - t0) * (-2) * Metre / Second});
-                  },
-                 [t0](Instant const time) {
-                   return Velocity<World>({3 * Metre / Second,
-                                           5 * Metre / Second,
-                                           -2 * Metre / Second});
-                 });
+
+  auto position_function =
+      [t0](Instant const t) {
+        return World::origin +
+            Displacement<World>({(t - t0) * 3 * Metre / Second,
+                                (t - t0) * 5 * Metre / Second,
+                                (t - t0) * (-2) * Metre / Second});
+      };
+  auto velocity_function =
+      [t0](Instant const time) {
+        return Velocity<World>({3 * Metre / Second,
+                                5 * Metre / Second,
+                                -2 * Metre / Second});
+      };
+
+  EXPECT_TRUE(trajectory_.empty());
+  FillTrajectory(kNumberOfSteps, position_function, velocity_function);
+  EXPECT_FALSE(trajectory_.empty());
+  EXPECT_EQ(t0 + step_, trajectory_.t_min());
+  EXPECT_EQ(t0 + ((kNumberOfSteps / 8) * 8 + 1) * step_, trajectory_.t_max());
 }
 
 }  // namespace physics

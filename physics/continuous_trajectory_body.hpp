@@ -34,13 +34,13 @@ bool ContinuousTrajectory<Frame>::empty() const {
 }
 
 template<typename Frame>
-Instant ContinuousTrajectory<Frame>::first_time() const {
+Instant ContinuousTrajectory<Frame>::t_min() const {
   CHECK(!empty()) << "Empty trajectory";
   return series_.front().t_min();
 }
 
 template<typename Frame>
-Instant ContinuousTrajectory<Frame>::last_time() const {
+Instant ContinuousTrajectory<Frame>::t_max() const {
   CHECK(!empty()) << "Empty trajectory";
   return series_.back().t_max();
 }
@@ -72,6 +72,7 @@ void ContinuousTrajectory<Frame>::Append(
     }
     q.push_back(degrees_of_freedom.position() - Frame::origin);
     v.push_back(degrees_of_freedom.velocity());
+    LOG(ERROR)<<q.size()<<" "<<v.size()<<" "<<degree_;
 
     // Compute the approximation with the current degree.
     series_.push_back(
@@ -81,7 +82,8 @@ void ContinuousTrajectory<Frame>::Append(
     Length error_estimate = series_.back().last_coefficient().Norm();
 
     // Increase the degree if the approximation is not accurate enough.
-    while (error_estimate > high_tolerance_ && ++degree_ <= kMaxDegree) {
+    while (error_estimate > high_tolerance_ && degree_ < kMaxDegree) {
+      ++degree_;
       series_.back() =
           ЧебышёвSeries<Displacement<Frame>>::NewhallApproximation(
               degree_, q, v, last_points_.cbegin()->first, time);
@@ -91,13 +93,16 @@ void ContinuousTrajectory<Frame>::Append(
 
     // Try to decrease the degree if the approximation is too accurate, but make
     // sure that we don't go above |high_tolerance_|.
-    while (error_estimate < low_tolerance_ && --degree_ >= kMinDegree) {
+    while (error_estimate < low_tolerance_ && degree_ > kMinDegree) {
+      --degree_;
       auto tentative_series =
           ЧебышёвSeries<Displacement<Frame>>::NewhallApproximation(
               degree_, q, v, last_points_.cbegin()->first, time);
 
       error_estimate = series_.back().last_coefficient().Norm();
-      if (error_estimate <= high_tolerance_) {
+      if (error_estimate > high_tolerance_) {
+        ++degree_;
+      } else {
         series_.back() = std::move(tentative_series);
       }
     }

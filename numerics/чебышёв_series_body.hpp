@@ -170,6 +170,7 @@ template<typename Vector>
     qv[j] = q[i];
     qv[j + 1] = v[i] * duration_over_two;
   }
+  LOG(ERROR)<<degree;
 
   std::vector<Vector> coefficients;
   coefficients.reserve(degree);
@@ -220,6 +221,7 @@ template<typename Vector>
       coefficients = newhall_c_matrix_degree_17_divisions_8_w04 * qv;
       break;
     default:
+      LOG(FATAL) << "Unexpected degree " << degree;
       break;
   }
   CHECK_EQ(degree + 1, coefficients.size());
