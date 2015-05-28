@@ -28,6 +28,27 @@ template<typename Vector>
   two_over_duration_ = 2 / duration;
 }
 
+
+template<typename Vector>
+ЧебышёвSeries<Vector>::ЧебышёвSeries(ЧебышёвSeries&& other)
+    : coefficients_(std::move(other.coefficients_)),
+      degree_(other.degree_),
+      t_min_(std::move(other.t_min_)),
+      t_max_(std::move(other.t_max_)),
+      t_mean_(std::move(other.t_mean_)),
+      two_over_duration_(std::move(other.two_over_duration_)) {}
+
+template<typename Vector>
+ЧебышёвSeries<Vector>& ЧебышёвSeries<Vector>::operator=(ЧебышёвSeries&& other) {
+  coefficients_ = std::move(other.coefficients_);
+  degree_ = other.degree_;
+  t_min_ = std::move(other.t_min_);
+  t_max_ = std::move(other.t_max_);
+  t_mean_ = std::move(other.t_mean_);
+  two_over_duration_ = std::move(other.two_over_duration_);
+  return *this;
+}
+
 template<typename Vector>
 bool ЧебышёвSeries<Vector>::operator==(ЧебышёвSeries const& right) const {
   return coefficients_ == right.coefficients_ &&
