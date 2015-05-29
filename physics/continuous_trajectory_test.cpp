@@ -25,6 +25,7 @@ using quantities::AngularFrequency;
 using quantities::Time;
 using si::Kilo;
 using si::Metre;
+using si::Milli;
 using si::Radian;
 using si::Second;
 using testing_utilities::AbsoluteError;
@@ -83,7 +84,8 @@ TEST_F(ContinuousTrajectoryTest, Polynomial) {
   FillTrajectory(kNumberOfSteps, kStep, position_function, velocity_function);
   EXPECT_FALSE(trajectory_->empty());
   EXPECT_EQ(t0 + kStep, trajectory_->t_min());
-  EXPECT_EQ(t0 + ((kNumberOfSteps / 8) * 8 + 1) * kStep, trajectory_->t_max());
+  EXPECT_EQ(t0 + (((kNumberOfSteps - 1) / 8) * 8 + 1) * kStep,
+            trajectory_->t_max());
   
   ContinuousTrajectory<World>::Hint hint;
   for (Instant time = trajectory_->t_min();
@@ -137,14 +139,15 @@ TEST_F(ContinuousTrajectoryTest, Io) {
 
   trajectory_ = std::make_unique<ContinuousTrajectory<World>>(
                     kStep,
-                    /*0.05*/0.0001 * Metre /*low_tolerance*/,
-                    /*0.1*/0.0005 * Metre /*high_tolerance*/);
+                    1 * Milli(Metre) /*low_tolerance*/,
+                    5 * Milli(Metre) /*high_tolerance*/);
 
   EXPECT_TRUE(trajectory_->empty());
   FillTrajectory(kNumberOfSteps, kStep, position_function, velocity_function);
   EXPECT_FALSE(trajectory_->empty());
   EXPECT_EQ(t0 + kStep, trajectory_->t_min());
-  EXPECT_EQ(t0 + ((kNumberOfSteps / 8) * 8 + 1) * kStep, trajectory_->t_max());
+  EXPECT_EQ(t0 + (((kNumberOfSteps - 1) / 8) * 8 + 1) * kStep,
+            trajectory_->t_max());
   
   ContinuousTrajectory<World>::Hint hint;
   for (Instant time = trajectory_->t_min();
@@ -157,12 +160,10 @@ TEST_F(ContinuousTrajectoryTest, Io) {
     Velocity<World> const actual_velocity =
         trajectory_->EvaluateVelocity(time, &hint);
     Velocity<World> const expected_velocity = velocity_function(time);
-    EXPECT_GT(/*0.195*/0.000491 * Metre,
+    EXPECT_GT(0.5 * Milli(Metre),
               AbsoluteError(expected_displacement, actual_displacement));
-    //EXPECT_THAT(actual_displacement,
-    //            AlmostEquals(expected_displacement, 0, 4960359));
-    //EXPECT_THAT(actual_velocity,
-    //            AlmostEquals(expected_velocity, 2505, 124436224337));
+    EXPECT_GT(1.6E-7 * Metre / Second,
+              AbsoluteError(expected_velocity, actual_velocity));
   }
 }
 
