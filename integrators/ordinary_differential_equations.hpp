@@ -60,17 +60,21 @@ struct AdaptiveStepSize {
 };
 
 template<typename DifferentialEquation>
-class FixedStepSizeIntegrator {
+class Integrator {
  public:
   using ODE = DifferentialEquation;
+};
+
+template<typename DifferentialEquation>
+class FixedStepSizeIntegrator : public Integrator<DifferentialEquation> {
+ public:
   virtual void Solve(IntegrationProblem<ODE> const& problem,
                      Time const& step) const = 0;
 };
 
 template<typename DifferentialEquation>
-class AdaptiveSizeIntegrator {
+class AdaptiveStepSizeIntegrator : public Integrator<DifferentialEquation> {
  public:
-  using ODE = DifferentialEquation;
   virtual void Solve(IntegrationProblem<ODE> const& problem,
                      AdaptiveStepSize<ODE> const& adaptive_step_size) const = 0;
 };

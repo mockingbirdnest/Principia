@@ -9,7 +9,8 @@ namespace numerics {
 
 template<typename T>
 inline DoublePrecision<T>::DoublePrecision(T const& value)
-    : value(value) {}
+    : value(value),
+      error() {}
 
 template<typename T>
 FORCE_INLINE void DoublePrecision<T>::Increment(
