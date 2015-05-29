@@ -36,7 +36,7 @@ bool ContinuousTrajectory<Frame>::empty() const {
 template<typename Frame>
 Instant ContinuousTrajectory<Frame>::t_min() const {
   CHECK(!empty()) << "Empty trajectory";
-  return series_.front().t_min();
+  return *first_time_;
 }
 
 template<typename Frame>
@@ -50,7 +50,7 @@ void ContinuousTrajectory<Frame>::Append(
     Instant const& time,
     DegreesOfFreedom<Frame> const& degrees_of_freedom) {
   // Consistency checks.
-  if (empty()) {
+  if (first_time_ == nullptr) {
     first_time_ = std::make_unique<Instant>(time);
   } else {
     CHECK_EQ(last_points_.back().first + step_, time)
