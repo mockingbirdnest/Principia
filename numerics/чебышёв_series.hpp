@@ -28,8 +28,8 @@ class ЧебышёвSeries {
   // polynomials are scaled to the interval [t_min, t_max], which must be
   // nonempty.
   ЧебышёвSeries(std::vector<Vector> const& coefficients,
-                         Instant const& t_min,
-                         Instant const& t_max);
+                Instant const& t_min,
+                Instant const& t_max);
   explicit ЧебышёвSeries(ЧебышёвSeries&& other);
 
   ЧебышёвSeries& operator=(ЧебышёвSeries&& other);
