@@ -33,23 +33,23 @@ SymplecticRungeKuttaNyströmIntegrator(FixedVector<double, stages_> const& a,
   }
   if (time_reversible) {
     switch (composition) {
-    case kABA:
-      for (int i = 0; i < stages_; ++i) {
-        CHECK_EQ(a_[i], a_[stages_ - 1 - i]);
-        CHECK_EQ(b_[i + 1], b_[stages_ - 1 - i]);
-      }
-      break;
-    case kBAB:
-      for (int i = 0; i < stages_; ++i) {
-        CHECK_EQ(b_[i], a_[stages_ - 2 - i]);
-        CHECK_EQ(b_[i], b_[stages_ - 1 - i]);
-      }
-      break;
-    case kBA:
-      LOG(FATAL) << "Time-reversible compositions have the FSAL property";
-      break;
-    default:
-      LOG(FATAL) << "Invalid CompositionMethod";
+      case kABA:
+        for (int i = 0; i < stages_; ++i) {
+          CHECK_EQ(a_[i], a_[stages_ - 1 - i]);
+          CHECK_EQ(b_[i + 1], b_[stages_ - 1 - i]);
+        }
+        break;
+      case kBAB:
+        for (int i = 0; i < stages_; ++i) {
+          CHECK_EQ(b_[i], a_[stages_ - 2 - i]);
+          CHECK_EQ(b_[i], b_[stages_ - 1 - i]);
+        }
+        break;
+      case kBA:
+        LOG(FATAL) << "Time-reversible compositions have the FSAL property";
+        break;
+      default:
+        LOG(FATAL) << "Invalid CompositionMethod";
     }
   }
 }
@@ -105,10 +105,6 @@ void SymplecticRungeKuttaNyströmIntegrator<Position, order, time_reversible,
   bool at_end = false;
 
   for (;;) {
-    // TODO(egg): do we want to keep cover the whole integration interval, or
-    // should the last point be in the interval?  This implements the latter.
-    // There's also the possibility of making the caller determine the
-    // termination condition.
     Time const time_to_end = (problem.t_final - t.value) - t.error;
     at_end = integration_direction * h > integration_direction * time_to_end;
     if (at_end) {
@@ -139,8 +135,6 @@ void SymplecticRungeKuttaNyströmIntegrator<Position, order, time_reversible,
     problem.append_state(current_state);
   }
 }
-
-
 
 template<typename Position>
 SymplecticRungeKuttaNyströmIntegrator<Position, 4, false, 4, kBA> const&

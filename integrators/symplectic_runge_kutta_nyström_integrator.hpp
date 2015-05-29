@@ -69,6 +69,7 @@ class SymplecticRungeKuttaNyströmIntegrator
 
   void Solve(IntegrationProblem<ODE> const& problem,
              Time const& step) const override;
+
  private:
   FixedVector<double, stages_> a_;
   FixedVector<double, stages_> b_;
