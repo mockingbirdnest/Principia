@@ -83,29 +83,37 @@ void ContinuousTrajectory<Frame>::Append(
     // Increase the degree if the approximation is not accurate enough.
     while (error_estimate > high_tolerance_ && degree_ < kMaxDegree) {
       ++degree_;
+      LOG(ERROR) << "Increasing degree for " << this << " to " <<degree_
+                 << " because error estimate was " << error_estimate;
       series_.back() =
           ЧебышёвSeries<Displacement<Frame>>::NewhallApproximation(
               degree_, q, v, last_points_.cbegin()->first, time);
-
       error_estimate = series_.back().last_coefficient().Norm();
     }
 
     // Try to decrease the degree if the approximation is too accurate, but make
     // sure that we don't go above |high_tolerance_|.
     while (error_estimate < low_tolerance_ && degree_ > kMinDegree) {
-      --degree_;
+      int const tentative_degree = degree_ - 1;
+      LOG(ERROR) << "Tentatively decreasing degree for " << this 
+                  << " to " << tentative_degree
+                  << " because error estimate was " << error_estimate;
       auto tentative_series =
           ЧебышёвSeries<Displacement<Frame>>::NewhallApproximation(
-              degree_, q, v, last_points_.cbegin()->first, time);
+              tentative_degree, q, v, last_points_.cbegin()->first, time);
+      Length const tentative_error_estimate =
+        tentative_series.last_coefficient().Norm();
 
-      error_estimate = series_.back().last_coefficient().Norm();
-      if (error_estimate > high_tolerance_) {
-        ++degree_;
+      if (tentative_error_estimate > high_tolerance_) {
+        break;
       } else {
+        degree_ = tentative_degree;
+        error_estimate = tentative_error_estimate;
         series_.back() = std::move(tentative_series);
       }
     }
-    VLOG(1) << "Using degree " << degree_;
+    LOG(ERROR) << "Using degree " << degree_ << " for " << this
+               << " with error estimate " << error_estimate;
 
     // Wipe-out the vector.
     last_points_.clear();
