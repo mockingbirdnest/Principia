@@ -26,7 +26,15 @@ class ContinuousTrajectory {
   // is passed to all the calls.
   class Hint;
 
-  //TODO(phl):comment
+  // Constructs a trajectory with the given time |step|.  Because the Чебышёв
+  // polynomials have values in the range [-1, 1], the error resulting of
+  // truncating the infinite Чебышёв series to a finite degree are a small
+  // multiple of the coefficient of highest degree (assuming that the series
+  // converges reasonably well).  Thus, we pick the degree of the series so that
+  // the coefficient of highest degree is less than |high_tolerance|.  If
+  // possible we also make the coefficient of highest degree greater than
+  // |low_tolerance| (this may not always be possible if the two tolerances are
+  // too close).
   ContinuousTrajectory(Time const& step,
                        Length const& low_tolerance,
                        Length const& high_tolerance);

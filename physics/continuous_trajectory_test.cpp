@@ -95,6 +95,10 @@ TEST_F(ContinuousTrajectoryTest, Polynomial) {
                 AlmostEquals(position_function(time) - World::origin, 0, 7));
     EXPECT_THAT(trajectory_->EvaluateVelocity(time, &hint),
                 AlmostEquals(velocity_function(time), 1, 3));
+    EXPECT_EQ(trajectory_->EvaluateDegreesOfFreedom(time, &hint),
+              DegreesOfFreedom<World>(
+                  trajectory_->EvaluatePosition(time, &hint),
+                  trajectory_->EvaluateVelocity(time, &hint)));
   }
 }
 

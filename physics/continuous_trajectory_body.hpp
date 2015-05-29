@@ -83,8 +83,8 @@ void ContinuousTrajectory<Frame>::Append(
     // Increase the degree if the approximation is not accurate enough.
     while (error_estimate > high_tolerance_ && degree_ < kMaxDegree) {
       ++degree_;
-      LOG(ERROR) << "Increasing degree for " << this << " to " <<degree_
-                 << " because error estimate was " << error_estimate;
+      LOG(INFO) << "Increasing degree for " << this << " to " <<degree_
+                << " because error estimate was " << error_estimate;
       series_.back() =
           ЧебышёвSeries<Displacement<Frame>>::NewhallApproximation(
               degree_, q, v, last_points_.cbegin()->first, time);
@@ -95,9 +95,9 @@ void ContinuousTrajectory<Frame>::Append(
     // sure that we don't go above |high_tolerance_|.
     while (error_estimate < low_tolerance_ && degree_ > kMinDegree) {
       int const tentative_degree = degree_ - 1;
-      LOG(ERROR) << "Tentatively decreasing degree for " << this 
-                  << " to " << tentative_degree
-                  << " because error estimate was " << error_estimate;
+      LOG(INFO) << "Tentatively decreasing degree for " << this 
+                << " to " << tentative_degree
+                << " because error estimate was " << error_estimate;
       auto tentative_series =
           ЧебышёвSeries<Displacement<Frame>>::NewhallApproximation(
               tentative_degree, q, v, last_points_.cbegin()->first, time);
@@ -112,8 +112,8 @@ void ContinuousTrajectory<Frame>::Append(
         series_.back() = std::move(tentative_series);
       }
     }
-    LOG(ERROR) << "Using degree " << degree_ << " for " << this
-               << " with error estimate " << error_estimate;
+    LOG(INFO) << "Using degree " << degree_ << " for " << this
+              << " with error estimate " << error_estimate;
 
     // Wipe-out the vector.
     last_points_.clear();
@@ -174,7 +174,7 @@ DegreesOfFreedom<Frame> ContinuousTrajectory<Frame>::EvaluateDegreesOfFreedom(
     Instant const& time,
     Hint* const hint) const {
   if (MayUseHint(time, hint)) {
-    ЧебышёвSeries const& series = series_[hint->index_];
+    ЧебышёвSeries<Displacement<Frame>> const& series = series_[hint->index_];
     return DegreesOfFreedom<Frame>(series.Evaluate(time) + Frame::origin,
                                    series.EvaluateDerivative(time));
   } else {
