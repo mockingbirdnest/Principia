@@ -131,6 +131,8 @@
   <ItemGroup>
     <ClInclude Include="body.hpp" />
     <ClInclude Include="body_body.hpp" />
+    <ClInclude Include="continuous_trajectory_body.hpp" />
+    <ClInclude Include="continuous_trajectory.hpp" />
     <ClInclude Include="degrees_of_freedom.hpp" />
     <ClInclude Include="degrees_of_freedom_body.hpp" />
     <ClInclude Include="frame_field.hpp" />
@@ -151,6 +153,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="body_test.cpp" />
+    <ClCompile Include="continuous_trajectory_test.cpp" />
     <ClCompile Include="degrees_of_freedom_test.cpp" />
     <ClCompile Include="n_body_system_test.cpp" />
     <ClCompile Include="trajectory_test.cpp" />

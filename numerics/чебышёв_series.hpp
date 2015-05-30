@@ -27,12 +27,22 @@ class ЧебышёвSeries {
   // The element at position i in |coefficients| is the coefficient of Tᵢ.  The
   // polynomials are scaled to the interval [t_min, t_max], which must be
   // nonempty.
-  explicit ЧебышёвSeries(std::vector<Vector> const& coefficients,
-                         Instant const& t_min,
-                         Instant const& t_max);
+  ЧебышёвSeries(std::vector<Vector> const& coefficients,
+                Instant const& t_min,
+                Instant const& t_max);
+  ЧебышёвSeries(ЧебышёвSeries&& other);
+
+  ЧебышёвSeries& operator=(ЧебышёвSeries&& other);
 
   bool operator==(ЧебышёвSeries const& right) const;
   bool operator!=(ЧебышёвSeries const& right) const;
+
+  Instant const& t_min() const;
+  Instant const& t_max() const;
+
+  // The value of the last coefficient of the series.  Smaller values indicate a
+  // a better approximation.
+  Vector const& last_coefficient() const;
 
   // Uses the Clenshaw algorithm.  |t| must be in the range [t_min, t_max].
   Vector Evaluate(Instant const& t) const;
@@ -53,10 +63,10 @@ class ЧебышёвSeries {
       Instant const& t_max);
 
  private:
-  std::vector<Vector> const coefficients_;
-  int const degree_;
-  Instant const t_min_;
-  Instant const t_max_;
+  std::vector<Vector> coefficients_;
+  int degree_;
+  Instant t_min_;
+  Instant t_max_;
   Instant t_mean_;
   Time::Inverse two_over_duration_;
 };

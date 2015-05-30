@@ -28,6 +28,27 @@ template<typename Vector>
   two_over_duration_ = 2 / duration;
 }
 
+
+template<typename Vector>
+ЧебышёвSeries<Vector>::ЧебышёвSeries(ЧебышёвSeries&& other)
+    : coefficients_(std::move(other.coefficients_)),
+      degree_(std::move(other.degree_)),
+      t_min_(std::move(other.t_min_)),
+      t_max_(std::move(other.t_max_)),
+      t_mean_(std::move(other.t_mean_)),
+      two_over_duration_(std::move(other.two_over_duration_)) {}
+
+template<typename Vector>
+ЧебышёвSeries<Vector>& ЧебышёвSeries<Vector>::operator=(ЧебышёвSeries&& other) {
+  coefficients_ = std::move(other.coefficients_);
+  degree_ = other.degree_;
+  t_min_ = std::move(other.t_min_);
+  t_max_ = std::move(other.t_max_);
+  t_mean_ = std::move(other.t_mean_);
+  two_over_duration_ = std::move(other.two_over_duration_);
+  return *this;
+}
+
 template<typename Vector>
 bool ЧебышёвSeries<Vector>::operator==(ЧебышёвSeries const& right) const {
   return coefficients_ == right.coefficients_ &&
@@ -38,6 +59,21 @@ bool ЧебышёвSeries<Vector>::operator==(ЧебышёвSeries const& right)
 template<typename Vector>
 bool ЧебышёвSeries<Vector>::operator!=(ЧебышёвSeries const& right) const {
   return !ЧебышёвSeries<Vector>::operator==(right);
+}
+
+template<typename Vector>
+Instant const& ЧебышёвSeries<Vector>::t_min() const {
+  return t_min_;
+}
+
+template<typename Vector>
+Instant const& ЧебышёвSeries<Vector>::t_max() const {
+  return t_max_;
+}
+
+template<typename Vector>
+Vector const& ЧебышёвSeries<Vector>::last_coefficient() const {
+  return coefficients_[degree_];
 }
 
 template<typename Vector>
@@ -184,6 +220,7 @@ template<typename Vector>
       coefficients = newhall_c_matrix_degree_17_divisions_8_w04 * qv;
       break;
     default:
+      LOG(FATAL) << "Unexpected degree " << degree;
       break;
   }
   CHECK_EQ(degree + 1, coefficients.size());
