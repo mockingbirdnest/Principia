@@ -57,9 +57,7 @@ class Ephemeris {
   // Computes the trajectory of a massless body in the gravitational potential
   // described by |this| and subject to the given |intrinsic_acceleration| up to
   // exactly |t|.
-  // TODO(egg): overloads for state-dependent intrinsic acceleration, either
-  // dependent on the positions (yielding special second-order ODE) or on the
-  // positions and velocities (yielding a general second-order ODE).
+  // If |t > t_max()|, calls |Prolong(t)| beforehand.
   void Advance(
       not_null<Trajectory<Frame>*> const trajectory,
       std::function<
