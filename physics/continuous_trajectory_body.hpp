@@ -1,6 +1,8 @@
 ﻿#pragma once
 
 #include <algorithm>
+#include <limits>
+#include <vector>
 
 #include "physics/continuous_trajectory.hpp"
 
@@ -95,7 +97,7 @@ void ContinuousTrajectory<Frame>::Append(
     // sure that we don't go above |high_tolerance_|.
     while (error_estimate < low_tolerance_ && degree_ > kMinDegree) {
       int const tentative_degree = degree_ - 1;
-      LOG(INFO) << "Tentatively decreasing degree for " << this 
+      LOG(INFO) << "Tentatively decreasing degree for " << this
                 << " to " << tentative_degree
                 << " because error estimate was " << error_estimate;
       auto tentative_series =

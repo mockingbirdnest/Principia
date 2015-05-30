@@ -86,7 +86,7 @@ TEST_F(ContinuousTrajectoryTest, Polynomial) {
   EXPECT_EQ(t0 + kStep, trajectory_->t_min());
   EXPECT_EQ(t0 + (((kNumberOfSteps - 1) / 8) * 8 + 1) * kStep,
             trajectory_->t_max());
-  
+
   ContinuousTrajectory<World>::Hint hint;
   for (Instant time = trajectory_->t_min();
        time <= trajectory_->t_max();
@@ -152,7 +152,7 @@ TEST_F(ContinuousTrajectoryTest, Io) {
   EXPECT_EQ(t0 + kStep, trajectory_->t_min());
   EXPECT_EQ(t0 + (((kNumberOfSteps - 1) / 8) * 8 + 1) * kStep,
             trajectory_->t_max());
-  
+
   ContinuousTrajectory<World>::Hint hint;
   for (Instant time = trajectory_->t_min();
        time <= trajectory_->t_max();
