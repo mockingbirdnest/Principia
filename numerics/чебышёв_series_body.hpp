@@ -32,7 +32,7 @@ template<typename Vector>
 template<typename Vector>
 ЧебышёвSeries<Vector>::ЧебышёвSeries(ЧебышёвSeries&& other)
     : coefficients_(std::move(other.coefficients_)),
-      degree_(other.degree_),
+      degree_(std::move(other.degree_)),
       t_min_(std::move(other.t_min_)),
       t_max_(std::move(other.t_max_)),
       t_mean_(std::move(other.t_mean_)),

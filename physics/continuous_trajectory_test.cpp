@@ -65,8 +65,8 @@ TEST_F(ContinuousTrajectoryTest, Polynomial) {
       [t0](Instant const t) {
         return World::origin +
             Displacement<World>({(t - t0) * 3 * Metre / Second,
-                                (t - t0) * 5 * Metre / Second,
-                                (t - t0) * (-2) * Metre / Second});
+                                 (t - t0) * 5 * Metre / Second,
+                                 (t - t0) * (-2) * Metre / Second});
       };
   auto velocity_function =
       [t0](Instant const t) {

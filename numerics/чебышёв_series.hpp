@@ -30,7 +30,7 @@ class ЧебышёвSeries {
   ЧебышёвSeries(std::vector<Vector> const& coefficients,
                 Instant const& t_min,
                 Instant const& t_max);
-  explicit ЧебышёвSeries(ЧебышёвSeries&& other);
+  ЧебышёвSeries(ЧебышёвSeries&& other);
 
   ЧебышёвSeries& operator=(ЧебышёвSeries&& other);
 
