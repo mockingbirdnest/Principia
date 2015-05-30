@@ -71,6 +71,12 @@
     <ClInclude Include="frame_field_body.hpp">
       <Filter>Source Files</Filter>
     </ClInclude>
+    <ClInclude Include="continuous_trajectory.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="continuous_trajectory_body.hpp">
+      <Filter>Source Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="n_body_system_test.cpp">
@@ -86,6 +92,9 @@
       <Filter>Test Files</Filter>
     </ClCompile>
     <ClCompile Include="body_test.cpp">
+      <Filter>Test Files</Filter>
+    </ClCompile>
+    <ClCompile Include="continuous_trajectory_test.cpp">
       <Filter>Test Files</Filter>
     </ClCompile>
   </ItemGroup>
