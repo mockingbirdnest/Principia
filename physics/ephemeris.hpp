@@ -37,8 +37,8 @@ class Ephemeris {
       std::vector<not_null<std::unique_ptr<MassiveBody>>> bodies,
       std::vector<DegreesOfFreedom<Frame>> initial_state,
       Instant const& initial_time,
-      FixedStepSizeIntegrator<PlanetaryMotion> const& planetary_integrator
-      Time const& );
+      FixedStepSizeIntegrator<PlanetaryMotion> const& planetary_integrator,
+      Time const& step_size);
 
   ContinuousTrajectory<Frame> const& trajectory(
       not_null<MassiveBody const*>) const;
