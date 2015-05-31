@@ -47,7 +47,7 @@ class Ephemeris {
 
   // The maximum of the |t_min|s of the trajectories.
   Instant t_min() const;
-  // The mimimum |t_max|s of the trajectories.
+  // The mimimum of the |t_max|s of the trajectories.
   Instant t_max() const;
 
   // Calls |ForgetBefore| on all trajectories.
