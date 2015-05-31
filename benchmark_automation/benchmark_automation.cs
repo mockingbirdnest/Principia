@@ -71,7 +71,9 @@ class BenchmarkAutomation {
             mathematica_stream.WriteLine("{");
             mathematica_stream.WriteLine("\"" + benchmark_name + "\",");
             mathematica_stream.WriteLine(μ + ",");
-            CommaSeparatedAppend(ref csv_benchmark_names, benchmark_name);
+            CommaSeparatedAppend(
+                ref csv_benchmark_names,
+                "\"" + benchmark_name.Replace("\"", "\"\"") + "\"");
             CommaSeparatedAppend(ref csv_means, μ.ToString());
           } else if (words[0].EndsWith("_stddev")) {
             String benchmark_name = words[0].Substring(0, words[0].Length - 7);
