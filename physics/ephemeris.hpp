@@ -3,6 +3,7 @@
 #include <functional>
 #include <map>
 #include <memory>
+#include <vector>
 
 #include "base/not_null.hpp"
 #include "integrators/ordinary_differential_equations.hpp"
@@ -26,7 +27,6 @@ class Ephemeris {
   // The equation describing the motion of the |bodies_|.
   using PlanetaryMotion =
       SpecialSecondOrderDifferentialEquation<Position<Frame>>;
-  PlanetaryMotion::SystemState last_state_;
   // We don't specify non-autonomy in PlanetaryMotion since there isn't a type
   // for that at this time, so time-dependent intrinsic acceleration yields the
   // same type of map.
@@ -38,14 +38,16 @@ class Ephemeris {
       std::vector<DegreesOfFreedom<Frame>> initial_state,
       Instant const& initial_time,
       FixedStepSizeIntegrator<PlanetaryMotion> const& planetary_integrator,
-      Time const& step_size);
+      Time const& step_size,
+      Length const& low_fitting_tolerance,
+      Length const& high_fitting_tolerance);
 
   ContinuousTrajectory<Frame> const& trajectory(
       not_null<MassiveBody const*>) const;
 
-  // The common |t_min| of the trajectories.
+  // The maximum of the |t_min|s of the trajectories.
   Instant t_min() const;
-  // The common |t_max| of the trajectories.
+  // The mimimum |t_max|s of the trajectories.
   Instant t_max() const;
 
   // Calls |ForgetBefore| on all trajectories.
@@ -54,16 +56,19 @@ class Ephemeris {
   // Prolongs the ephemeris up to at least |t|.  After the call, |t_max() >= t|.
   void Prolong(Instant const& t);
 
-  // Computes the trajectory of a massless body in the gravitational potential
-  // described by |this| and subject to the given |intrinsic_acceleration| up to
-  // exactly |t|.
+  // Integrates, until exactly |t|, the |trajectory| followed by a massless body
+  // in the gravitational potential described by |*this|, and subject to the
+  // given |intrinsic_acceleration|.
   // If |t > t_max()|, calls |Prolong(t)| beforehand.
-  void Advance(
+  // The |length_| and |speed_integration_tolerance|s are used to compute the
+  // |tolerance_to_error_ratio| for step size control.
+  void Flow(
       not_null<Trajectory<Frame>*> const trajectory,
       std::function<
           Vector<Acceleration, Frame>(
               Instant const&)> intrinsic_acceleration,
-      RelativeDegreesOfFreedom const& tolerance,
+      Length const& length_integration_tolerance,
+      Speed const& speed_integration_tolerance,
       AdaptiveStepSizeIntegrator<TimedBurnMotion> integrator,
       Instant const& t);
 
@@ -72,7 +77,12 @@ class Ephemeris {
   std::map<not_null<MassiveBody const*>,
            ContinuousTrajectory<Frame>> trajectories_;
 
+  // This will refer to a static object returned by a factory.
   FixedStepSizeIntegrator<PlanetaryMotion> const& planetary_integrator_;
+  Time const step_size_;
+  Length const low_fitting_tolerance_;
+  Length const high_fitting_tolerance_;
+  PlanetaryMotion::SystemState last_state_;
 };
 
 }  // namespace physics
