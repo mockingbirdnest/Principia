@@ -80,6 +80,15 @@ class Ephemeris {
  private:
   void AppendState(typename NewtonianMotionEquation::SystemState const& state);
 
+  // No transfer of ownership.
+  static void ComputeGravitationalAccelerations(
+      ReadonlyTrajectories const& massive_oblate_trajectories,
+      ReadonlyTrajectories const& massive_spherical_trajectories,
+      Instant const& reference_time,
+      Time const& t,
+      std::vector<Length> const& q,
+      not_null<std::vector<Acceleration>*> const result);
+
   std::vector<std::pair<not_null<std::unique_ptr<MassiveBody>>,
                         ContinuousTrajectory<Frame>>> bodies_and_trajectories_;
   std::map<not_null<MassiveBody const*>,

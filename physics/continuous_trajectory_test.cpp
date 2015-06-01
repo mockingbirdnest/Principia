@@ -6,6 +6,7 @@
 #include "geometry/named_quantities.hpp"
 #include "gtest/gtest.h"
 #include "physics/degrees_of_freedom.hpp"
+#include "physics/massive_body.hpp"
 #include "quantities/astronomy.hpp"
 #include "quantities/numbers.hpp"
 #include "quantities/quantities.hpp"
@@ -23,6 +24,7 @@ using geometry::Velocity;
 using quantities::Angle;
 using quantities::AngularFrequency;
 using quantities::Time;
+using si::Kilogram;
 using si::Kilo;
 using si::Metre;
 using si::Milli;
@@ -38,6 +40,9 @@ class ContinuousTrajectoryTest : public testing::Test {
   using World = Frame<serialization::Frame::TestTag,
                       serialization::Frame::TEST1, true>;
 
+  ContinuousTrajectoryTest()
+    : body_(1 * Kilogram) {}
+
   void FillTrajectory(
       int const number_of_steps,
       Time const& step,
@@ -52,6 +57,7 @@ class ContinuousTrajectoryTest : public testing::Test {
     }
   }
 
+  MassiveBody body_;
   std::unique_ptr<ContinuousTrajectory<World>> trajectory_;
 };
 
@@ -76,6 +82,7 @@ TEST_F(ContinuousTrajectoryTest, Polynomial) {
       };
 
   trajectory_ = std::make_unique<ContinuousTrajectory<World>>(
+                    &body_,
                     kStep,
                     0.05 * Metre /*low_tolerance*/,
                     0.1 * Metre /*high_tolerance*/);
@@ -142,6 +149,7 @@ TEST_F(ContinuousTrajectoryTest, Io) {
       };
 
   trajectory_ = std::make_unique<ContinuousTrajectory<World>>(
+                    &body_,
                     kStep,
                     1 * Milli(Metre) /*low_tolerance*/,
                     5 * Milli(Metre) /*high_tolerance*/);

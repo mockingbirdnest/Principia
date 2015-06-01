@@ -20,14 +20,31 @@ int const kDivisions = 8;
 }  // namespace
 
 template<typename Frame>
-ContinuousTrajectory<Frame>::ContinuousTrajectory(Time const& step,
-                                                  Length const& low_tolerance,
-                                                  Length const& high_tolerance)
-    : step_(step),
+ContinuousTrajectory<Frame>::ContinuousTrajectory(
+    not_null<MassiveBody const*> const body,
+    Time const& step,
+    Length const& low_tolerance,
+    Length const& high_tolerance)
+    : body_(body),
+      step_(step),
       low_tolerance_(low_tolerance),
       high_tolerance_(high_tolerance),
       degree_((kMinDegree + kMaxDegree) / 2) {
   CHECK_LT(low_tolerance_, high_tolerance_);
+}
+
+template<typename Frame>
+template<typename B>
+std::enable_if_t<std::is_base_of<Body, B>::value, not_null<B const*>>
+ContinuousTrajectory<Frame>::body() const {
+// Dynamic casting is expensive, as in 3x slower for the benchmarks.  Do that in
+// debug mode to catch bugs, but not in optimized mode where we want all the
+// performance we can get.
+#ifdef _DEBUG
+  return dynamic_cast<B const*>(static_cast<Body const*>(body_));
+#else
+  return static_cast<not_null<B const*>>(body_);
+#endif
 }
 
 template<typename Frame>
