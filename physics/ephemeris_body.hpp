@@ -17,32 +17,40 @@ Ephemeris<Frame>::Ephemeris(
     std::vector<not_null<std::unique_ptr<MassiveBody>>> bodies,
     std::vector<DegreesOfFreedom<Frame>> initial_state,
     Instant const& initial_time,
-    FixedStepSizeIntegrator<PlanetaryMotion> const& planetary_integrator,
+    FixedStepSizeIntegrator<NewtonianMotionEquation> const&
+        planetary_integrator,
     Time const& step,
     Length const& low_fitting_tolerance,
     Length const& high_fitting_tolerance)
-    : bodies_(std::move(bodies)),
-      planetary_integrator_(planetary_integrator),
+    : planetary_integrator_(planetary_integrator),
       step_(step),
       low_fitting_tolerance_(low_fitting_tolerance),
-      high_fitting_tolerance_(high_fitting_tolerance),
-      last_state_(initial_state) {
+      high_fitting_tolerance_(high_fitting_tolerance) {
   CHECK(!bodies.empty());
   CHECK_EQ(bodies.size(), initial_state.size());
-  for (auto const& body : bodies_) {
-    trajectories_.emplace(body.get(),
-                          ContinuousTrajectory<Frame>(step_,
-                                                      low_fitting_tolerance_,
-                                                      high_fitting_tolerance_));
+  for (auto& body : bodies) {
+    bodies_and_trajectories_.emplace_back(
+        std::move(body),
+        ContinuousTrajectory<Frame>(step_,
+                                    low_fitting_tolerance_,
+                                    high_fitting_tolerance_));
+    bodies_to_trajectories_[bodies_and_trajectories_.back().first.get()] =
+        &bodies_and_trajectories_.back().second;
   }
 
   equation_.compute_acceleration = std::bind(somethingorother);
+
+  last_state_.time = initial_time;
+  for (auto const& degrees_of_freedom : initial_state) {
+    last_state_.positions.push_back(degrees_of_freedom.position());
+    last_state_.velocities.push_back(degrees_of_freedom.velocity());
+  }
 }
 
 template<typename Frame>
 ContinuousTrajectory<Frame> const& Ephemeris<Frame>::trajectory(
     not_null<MassiveBody const*>) const {
-  return FindOrDie(trajectories_, body);
+  return FindOrDie(bodies_to_trajectories_, body);
 }
 
 template<typename Frame>
@@ -99,7 +107,7 @@ void Ephemeris<Frame>::Flow(
 
 template<typename Frame>
 void Ephemeris<Frame>::AppendState(
-    NewtonianMotionEquation::SystemState const& state) {
+    typename NewtonianMotionEquation::SystemState const& state) {
 }
 
 }  // namespace physics

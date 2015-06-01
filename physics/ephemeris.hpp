@@ -6,6 +6,7 @@
 #include <vector>
 
 #include "base/not_null.hpp"
+#include "geometry/named_quantities.hpp"
 #include "integrators/ordinary_differential_equations.hpp"
 #include "physics/continuous_trajectory.hpp"
 #include "physics/massive_body.hpp"
@@ -13,6 +14,7 @@
 
 namespace principia {
 
+using geometry::Position;
 using integrators::AdaptiveStepSizeIntegrator;
 using integrators::FixedStepSizeIntegrator;
 using integrators::SpecialSecondOrderDifferentialEquation;
@@ -76,10 +78,10 @@ class Ephemeris {
       Instant const& t);
 
  private:
-  void AppendState(NewtonianMotionEquation::SystemState const& state);
+  void AppendState(typename NewtonianMotionEquation::SystemState const& state);
 
   std::vector<std::pair<not_null<std::unique_ptr<MassiveBody>>,
-                        ContinuousTrajectory<Frame>>> bodies_;
+                        ContinuousTrajectory<Frame>>> bodies_and_trajectories_;
   std::map<not_null<MassiveBody const*>,
            not_null<ContinuousTrajectory<Frame> const*>>
            bodies_to_trajectories_;
@@ -89,10 +91,12 @@ class Ephemeris {
   Time const step_;
   Length const low_fitting_tolerance_;
   Length const high_fitting_tolerance_;
-  NewtonianMotionEquation::SystemState last_state_;
+  typename NewtonianMotionEquation::SystemState last_state_;
 
   NewtonianMotionEquation equation_;
 };
 
 }  // namespace physics
 }  // namespace principia
+
+#include "physics/ephemeris_body.hpp"
