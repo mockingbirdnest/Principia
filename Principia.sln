@@ -74,6 +74,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "stacktrace_decoder", "stack
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "numerics", "numerics\numerics.vcxproj", "{9E0AE155-47B1-4090-AF00-038AF87A876D}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "benchmark_automation", "benchmark_automation\benchmark_automation.csproj", "{5498EE37-1A80-4DA8-8D81-01892C4C8EEB}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -312,6 +314,21 @@ Global
 		{9E0AE155-47B1-4090-AF00-038AF87A876D}.Release|Mixed Platforms.Build.0 = Release|Win32
 		{9E0AE155-47B1-4090-AF00-038AF87A876D}.Release|Win32.ActiveCfg = Release|Win32
 		{9E0AE155-47B1-4090-AF00-038AF87A876D}.Release|Win32.Build.0 = Release|Win32
+		{5498EE37-1A80-4DA8-8D81-01892C4C8EEB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5498EE37-1A80-4DA8-8D81-01892C4C8EEB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5498EE37-1A80-4DA8-8D81-01892C4C8EEB}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{5498EE37-1A80-4DA8-8D81-01892C4C8EEB}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{5498EE37-1A80-4DA8-8D81-01892C4C8EEB}.Debug|Win32.ActiveCfg = Debug|Any CPU
+		{5498EE37-1A80-4DA8-8D81-01892C4C8EEB}.Release_LLVM|Any CPU.ActiveCfg = Release|Any CPU
+		{5498EE37-1A80-4DA8-8D81-01892C4C8EEB}.Release_LLVM|Any CPU.Build.0 = Release|Any CPU
+		{5498EE37-1A80-4DA8-8D81-01892C4C8EEB}.Release_LLVM|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{5498EE37-1A80-4DA8-8D81-01892C4C8EEB}.Release_LLVM|Mixed Platforms.Build.0 = Release|Any CPU
+		{5498EE37-1A80-4DA8-8D81-01892C4C8EEB}.Release_LLVM|Win32.ActiveCfg = Release|Any CPU
+		{5498EE37-1A80-4DA8-8D81-01892C4C8EEB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5498EE37-1A80-4DA8-8D81-01892C4C8EEB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5498EE37-1A80-4DA8-8D81-01892C4C8EEB}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{5498EE37-1A80-4DA8-8D81-01892C4C8EEB}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{5498EE37-1A80-4DA8-8D81-01892C4C8EEB}.Release|Win32.ActiveCfg = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -319,5 +336,6 @@ Global
 	GlobalSection(NestedProjects) = preSolution
 		{06E78A3D-AAA0-4CD9-8F23-B5BBBBE6F14F} = {B0F47E49-0EDF-4D58-AB27-F99CCCE4253A}
 		{0AC374A7-36CD-40FC-B831-112389B6D9ED} = {B0F47E49-0EDF-4D58-AB27-F99CCCE4253A}
+		{5498EE37-1A80-4DA8-8D81-01892C4C8EEB} = {B0F47E49-0EDF-4D58-AB27-F99CCCE4253A}
 	EndGlobalSection
 EndGlobal
