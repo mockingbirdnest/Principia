@@ -33,6 +33,7 @@ class EphemerisTest : public testing::Test {
 };
 
 TEST_F(EphemerisTest, Test) {
+  ephemeris_.Prolong(t0_ + 2 * Second);
 }
 
 }  // namespace physics

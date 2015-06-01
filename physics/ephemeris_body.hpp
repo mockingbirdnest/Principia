@@ -85,7 +85,7 @@ template<typename Frame>
 void Ephemeris<Frame>::Prolong(Instant const& t) {
   IntegrationProblem<NewtonianMotionEquation> problem;
   problem.equation = equation_;
-  problem.append_state = std::bind();
+  problem.append_state = std::bind(&Ephemeris<Frame>::AppendState, this);
   problem.t_final = t;
   problem.initial_state = &last_state_;
 
@@ -108,6 +108,17 @@ void Ephemeris<Frame>::Flow(
 template<typename Frame>
 void Ephemeris<Frame>::AppendState(
     typename NewtonianMotionEquation::SystemState const& state) {
+  last_state_ = state;
+  int index = 0;
+  for (auto const& pair : bodies_and_trajectories_) {
+    auto const& body = pair.first;
+    auto const& continuous_trajectory = pair.second;
+    continuous_trajectory.append(
+        state.time,
+        DegreesOfFreedom<Frame>(state.positions[index],
+                                state.velocities[index]));
+    ++index;
+  }
 }
 
 }  // namespace physics
