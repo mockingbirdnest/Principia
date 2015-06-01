@@ -80,17 +80,18 @@ class Ephemeris {
  private:
   void AppendState(typename NewtonianMotionEquation::SystemState const& state);
 
-  // No transfer of ownership.
-  static void ComputeGravitationalAccelerations(
-      ReadonlyTrajectories const& massive_oblate_trajectories,
-      ReadonlyTrajectories const& massive_spherical_trajectories,
-      Instant const& reference_time,
-      Time const& t,
-      std::vector<Length> const& q,
+  void ComputeGravitationalAccelerations(
+      Instant const& t,
+      std::vector<Position<Frame>> const& positions,
       not_null<std::vector<Acceleration>*> const result);
 
-  std::vector<std::pair<not_null<std::unique_ptr<MassiveBody>>,
-                        ContinuousTrajectory<Frame>>> bodies_and_trajectories_;
+  // The oblate bodies precede the spherical bodies in this vector.  The system
+  // state is indexed in the same order.
+  std::vector<not_null<std::unique_ptr<MassiveBody>>> bodies_;
+
+  std::vector<ContinuousTrajectory<Frame>> oblate_trajectories_;
+  std::vector<ContinuousTrajectory<Frame>> spherical_trajectories_;
+
   std::map<not_null<MassiveBody const*>,
            not_null<ContinuousTrajectory<Frame> const*>>
            bodies_to_trajectories_;
@@ -101,6 +102,9 @@ class Ephemeris {
   Length const low_fitting_tolerance_;
   Length const high_fitting_tolerance_;
   typename NewtonianMotionEquation::SystemState last_state_;
+
+  int number_of_spherical_bodies_ = 0;
+  int number_of_oblate_bodies_ = 0;
 
   NewtonianMotionEquation equation_;
 };
