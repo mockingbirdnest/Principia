@@ -1,8 +1,8 @@
-#include "physics/ephemeris.hpp"
+﻿#include "physics/ephemeris.hpp"
 
 #include "geometry/frame.hpp"
 #include "gtest/gtest.h"
-#include "integrators/symplectic_runge_kutta_nystr�m_integrator.hpp"
+#include "integrators/symplectic_runge_kutta_nyström_integrator.hpp"
 #include "quantities/si.hpp"
 #include "serialization/geometry.pb.h"
 

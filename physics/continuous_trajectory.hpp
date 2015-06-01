@@ -108,8 +108,8 @@ class ContinuousTrajectory {
   // Construction parameters;
   not_null<MassiveBody const*> const body_;
   Time const step_;
-  Length const high_tolerance_;
   Length const low_tolerance_;
+  Length const high_tolerance_;
 
   // The degree of the approximation.
   int degree_;

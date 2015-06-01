@@ -83,18 +83,20 @@ class Ephemeris {
   void ComputeGravitationalAccelerations(
       Instant const& t,
       std::vector<Position<Frame>> const& positions,
-      not_null<std::vector<Acceleration>*> const result);
+      not_null<std::vector<typename NewtonianMotionEquation::Acceleration>*>
+          const accelerations);
 
   // The oblate bodies precede the spherical bodies in this vector.  The system
   // state is indexed in the same order.
   std::vector<not_null<std::unique_ptr<MassiveBody>>> bodies_;
 
-  std::vector<ContinuousTrajectory<Frame>> oblate_trajectories_;
-  std::vector<ContinuousTrajectory<Frame>> spherical_trajectories_;
+  // The indices in |bodies_| correspond to those in |oblate_trajectories_| and
+  // |spherical_trajectories_|, in sequence.
+  std::vector<not_null<ContinuousTrajectory<Frame>*>> oblate_trajectories_;
+  std::vector<not_null<ContinuousTrajectory<Frame>*>> spherical_trajectories_;
 
-  std::map<not_null<MassiveBody const*>,
-           not_null<ContinuousTrajectory<Frame> const*>>
-           bodies_to_trajectories_;
+  std::map<not_null<MassiveBody const*>, ContinuousTrajectory<Frame>>
+      bodies_to_trajectories_;
 
   // This will refer to a static object returned by a factory.
   FixedStepSizeIntegrator<NewtonianMotionEquation> const& planetary_integrator_;

@@ -2,6 +2,8 @@
 
 #include "physics/ephemeris.hpp"
 
+#include <functional>
+
 #include "base/map_util.hpp"
 #include "physics/continuous_trajectory.hpp"
 
@@ -9,6 +11,9 @@ namespace principia {
 
 using base::FindOrDie;
 using integrators::IntegrationProblem;
+using ::std::placeholders::_1;
+using ::std::placeholders::_2;
+using ::std::placeholders::_3;
 
 namespace physics {
 
@@ -34,35 +39,37 @@ Ephemeris<Frame>::Ephemeris(
   for (int i = 0; i < bodies_.size(); ++i) {
     auto& body = bodies_[i];
     DegreesOfFreedom<Frame> const& degrees_of_freedom = initial_state[i];
-    ContinuousTrajectory<Frame>* trajectory = nullptr;
+
+    auto const inserted = bodies_to_trajectories_.emplace(
+                              std::piecewise_construct,
+                              std::forward_as_tuple(body.get()),
+                              std::forward_as_tuple(body.get(),
+                                                    step_,
+                                                    low_fitting_tolerance_,
+                                                    high_fitting_tolerance_));
+    CHECK(inserted.second);
+    ContinuousTrajectory<Frame>* const trajectory = &inserted.first->second;
+
     if (body->is_oblate()) {
       // Inserting at the beginning of the vectors is O(N).
       bodies_.insert(bodies_.begin(), std::move(body));
-      oblate_trajectories_.emplace(oblate_trajectories_.begin(),
-                                   bodies_.front().get(),
-                                   step_,
-                                   low_fitting_tolerance_,
-                                   high_fitting_tolerance_);
+      oblate_trajectories_.insert(oblate_trajectories_.begin(), trajectory);
       last_state_.positions.insert(last_state_.positions.begin(),
                                    degrees_of_freedom.position());
       last_state_.velocities.insert(last_state_.velocities.begin(),
                                     degrees_of_freedom.velocity());
-      trajectory = &oblate_trajectories_.front();
     } else {
       // Inserting at the end of the vectors is O(1).
       bodies_.push_back(std::move(body));
-      spherical_trajectories_.emplace_back(bodies_.back().get(),
-                                           step_,
-                                           low_fitting_tolerance_,
-                                           high_fitting_tolerance_);
+      spherical_trajectories_.push_back(trajectory);
       last_state_.positions.push_back(degrees_of_freedom.position());
       last_state_.velocities.push_back(degrees_of_freedom.velocity());
-      trajectory = &spherical_trajectories_.back();
     }
-    bodies_to_trajectories_[body.get()] = trajectory;
   }
 
-  equation_.compute_acceleration = std::bind(somethingorother);
+  equation_.compute_acceleration =
+      std::bind(&Ephemeris::ComputeGravitationalAccelerations,
+                this, _1, _2, _3);
 }
 
 template<typename Frame>
@@ -103,7 +110,7 @@ template<typename Frame>
 void Ephemeris<Frame>::Prolong(Instant const& t) {
   IntegrationProblem<NewtonianMotionEquation> problem;
   problem.equation = equation_;
-  problem.append_state = std::bind(&Ephemeris<Frame>::AppendState, this);
+  problem.append_state = std::bind(&Ephemeris::AppendState, this, _1);
   problem.t_final = t;
   problem.initial_state = &last_state_;
 
@@ -128,20 +135,28 @@ void Ephemeris<Frame>::AppendState(
     typename NewtonianMotionEquation::SystemState const& state) {
   last_state_ = state;
   int index = 0;
-  for (auto const& trajectory : oblate_trajectories_) {
-    trajectory.append(
-        state.time,
-        DegreesOfFreedom<Frame>(state.positions[index],
-                                state.velocities[index]));
+  for (auto& trajectory : oblate_trajectories_) {
+    trajectory->Append(
+        state.time.value,
+        DegreesOfFreedom<Frame>(state.positions[index].value,
+                                state.velocities[index].value));
     ++index;
   }
-  for (auto const& trajectory : spherical_trajectories_) {
-    trajectory.append(
-        state.time,
-        DegreesOfFreedom<Frame>(state.positions[index],
-                                state.velocities[index]));
+  for (auto& trajectory : spherical_trajectories_) {
+    trajectory->Append(
+        state.time.value,
+        DegreesOfFreedom<Frame>(state.positions[index].value,
+                                state.velocities[index].value));
     ++index;
   }
+}
+
+template<typename Frame>
+void Ephemeris<Frame>::ComputeGravitationalAccelerations(
+    Instant const& t,
+    std::vector<Position<Frame>> const& positions,
+    not_null<std::vector<typename NewtonianMotionEquation::Acceleration>*>
+        const accelerations) {
 }
 
 }  // namespace physics
