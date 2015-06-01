@@ -25,20 +25,22 @@ class Ephemeris {
 
  public:
   // The equation describing the motion of the |bodies_|.
-  using PlanetaryMotion =
+  using NewtonianMotionEquation =
       SpecialSecondOrderDifferentialEquation<Position<Frame>>;
-  // We don't specify non-autonomy in PlanetaryMotion since there isn't a type
-  // for that at this time, so time-dependent intrinsic acceleration yields the
-  // same type of map.
-  using TimedBurnMotion = PlanetaryMotion;
+  // We don't specify non-autonomy in NewtonianMotionEquation since there isn't
+  // a type for that at this time, so time-dependent intrinsic acceleration
+  // yields the same type of map.
+  using TimedBurnMotion = NewtonianMotionEquation;
 
-  // Constructs an Ephemeris that owns the |bodies|.
+  // Constructs an Ephemeris that owns the |bodies|.  The elements of vectors
+  // |bodies| and |initial_state| correspond to one another.
   Ephemeris(
       std::vector<not_null<std::unique_ptr<MassiveBody>>> bodies,
       std::vector<DegreesOfFreedom<Frame>> initial_state,
       Instant const& initial_time,
-      FixedStepSizeIntegrator<PlanetaryMotion> const& planetary_integrator,
-      Time const& step_size,
+      FixedStepSizeIntegrator<NewtonianMotionEquation> const&
+          planetary_integrator,
+      Time const& step,
       Length const& low_fitting_tolerance,
       Length const& high_fitting_tolerance);
 
@@ -62,6 +64,7 @@ class Ephemeris {
   // If |t > t_max()|, calls |Prolong(t)| beforehand.
   // The |length_| and |speed_integration_tolerance|s are used to compute the
   // |tolerance_to_error_ratio| for step size control.
+  //TODO(phl):Remove intrinsic_acceleration?
   void Flow(
       not_null<Trajectory<Frame>*> const trajectory,
       std::function<
@@ -73,16 +76,22 @@ class Ephemeris {
       Instant const& t);
 
  private:
-  std::vector<not_null<std::unique_ptr<MassiveBody>>> bodies_;
+  void AppendState(NewtonianMotionEquation::SystemState const& state);
+
+  std::vector<std::pair<not_null<std::unique_ptr<MassiveBody>>,
+                        ContinuousTrajectory<Frame>>> bodies_;
   std::map<not_null<MassiveBody const*>,
-           ContinuousTrajectory<Frame>> trajectories_;
+           not_null<ContinuousTrajectory<Frame> const*>>
+           bodies_to_trajectories_;
 
   // This will refer to a static object returned by a factory.
-  FixedStepSizeIntegrator<PlanetaryMotion> const& planetary_integrator_;
-  Time const step_size_;
+  FixedStepSizeIntegrator<NewtonianMotionEquation> const& planetary_integrator_;
+  Time const step_;
   Length const low_fitting_tolerance_;
   Length const high_fitting_tolerance_;
-  PlanetaryMotion::SystemState last_state_;
+  NewtonianMotionEquation::SystemState last_state_;
+
+  NewtonianMotionEquation equation_;
 };
 
 }  // namespace physics

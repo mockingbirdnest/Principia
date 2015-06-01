@@ -8,6 +8,7 @@
 namespace principia {
 
 using base::FindOrDie;
+using integrators::IntegrationProblem;
 
 namespace physics {
 
@@ -17,12 +18,12 @@ Ephemeris<Frame>::Ephemeris(
     std::vector<DegreesOfFreedom<Frame>> initial_state,
     Instant const& initial_time,
     FixedStepSizeIntegrator<PlanetaryMotion> const& planetary_integrator,
-    Time const& step_size,
+    Time const& step,
     Length const& low_fitting_tolerance,
     Length const& high_fitting_tolerance)
     : bodies_(std::move(bodies)),
       planetary_integrator_(planetary_integrator),
-      step_size_(step_size),
+      step_(step),
       low_fitting_tolerance_(low_fitting_tolerance),
       high_fitting_tolerance_(high_fitting_tolerance),
       last_state_(initial_state) {
@@ -30,10 +31,12 @@ Ephemeris<Frame>::Ephemeris(
   CHECK_EQ(bodies.size(), initial_state.size());
   for (auto const& body : bodies_) {
     trajectories_.emplace(body.get(),
-                          ContinuousTrajectory<Frame>(step_size_,
+                          ContinuousTrajectory<Frame>(step_,
                                                       low_fitting_tolerance_,
                                                       high_fitting_tolerance_));
   }
+
+  equation_.compute_acceleration = std::bind(somethingorother);
 }
 
 template<typename Frame>
@@ -71,7 +74,17 @@ void Ephemeris<Frame>::ForgetBefore(Instant const& t) {
 }
 
 template<typename Frame>
-void Ephemeris<Frame>::Prolong(Instant const& t) {}
+void Ephemeris<Frame>::Prolong(Instant const& t) {
+  IntegrationProblem<NewtonianMotionEquation> problem;
+  problem.equation = equation_;
+  problem.append_state = std::bind();
+  problem.t_final = t;
+  problem.initial_state = &last_state_;
+
+  planetary_integrator_.Solve(problem, step_);
+
+  //TODO(phl): Ensure that t_max has reached t.
+}
 
 template<typename Frame>
 void Ephemeris<Frame>::Flow(
@@ -84,6 +97,10 @@ void Ephemeris<Frame>::Flow(
     AdaptiveStepSizeIntegrator<TimedBurnMotion> integrator,
     Instant const& t) {}
 
+template<typename Frame>
+void Ephemeris<Frame>::AppendState(
+    NewtonianMotionEquation::SystemState const& state) {
+}
 
 }  // namespace physics
 }  // namespace principia
