@@ -45,6 +45,7 @@ class BenchmarkAutomation {
             command_line.Split(
                 separator : new String[]{benchmark_executable, "//"},
                 options   : StringSplitOptions.None)[2].Trim();
+        bool has_repetitions = command_line.Contains("--benchmark_repetitions");
         Console.WriteLine(
             "Running benchmarks with arguments from " + file.Name);
         Console.WriteLine(command_line);
@@ -63,22 +64,49 @@ class BenchmarkAutomation {
           String[] words =
               line.Split(separator : new Char[]{' '},
                          options   : StringSplitOptions.RemoveEmptyEntries);
-          if (words[0].EndsWith("_mean")) {
-            String benchmark_name = words[0].Substring(0, words[0].Length - 5);
+          if (has_repetitions) {
+            const String mean_postfix = "_mean";
+            const String stddev_postfix = "_stddev";
+            if (words[0].EndsWith(mean_postfix)) {
+              String benchmark_name =
+                  words[0].Substring(
+                      startIndex : 0,
+                      length     : words[0].Length - mean_postfix.Length);
+              Int64 μ = Int64.Parse(words[1]);
+              Console.WriteLine(benchmark_name + ": μ = " + μ + " ns");
+              mathematica_stream.WriteLine(",");
+              mathematica_stream.WriteLine("{");
+              mathematica_stream.WriteLine("\"" + benchmark_name + "\",");
+              mathematica_stream.WriteLine(μ + ",");
+              CommaSeparatedAppend(
+                  ref csv_benchmark_names,
+                  "\"" + benchmark_name.Replace("\"", "\"\"") + "\"");
+              CommaSeparatedAppend(ref csv_means, μ.ToString());
+            } else if (words[0].EndsWith(stddev_postfix)) {
+              String benchmark_name =
+                  words[0].Substring(
+                      startIndex : 0,
+                      length     : words[0].Length - stddev_postfix.Length);
+              Int64 σ = Int64.Parse(words[1]);
+              Console.WriteLine(benchmark_name + ": σ = " + σ + " ns");
+              mathematica_stream.WriteLine(σ);
+              mathematica_stream.WriteLine("}");
+              mathematica_stream.Flush();
+            }
+          } else if (words[0].StartsWith("BM")) {
+            String benchmark_name = words[0];
             Int64 μ = Int64.Parse(words[1]);
-            Console.WriteLine(benchmark_name + ": μ = " + μ + " ns");
-            mathematica_stream.WriteLine(",");
-            mathematica_stream.WriteLine("{");
-            mathematica_stream.WriteLine("\"" + benchmark_name + "\",");
-            mathematica_stream.WriteLine(μ + ",");
+            Int64 σ = 0;
             CommaSeparatedAppend(
                 ref csv_benchmark_names,
                 "\"" + benchmark_name.Replace("\"", "\"\"") + "\"");
             CommaSeparatedAppend(ref csv_means, μ.ToString());
-          } else if (words[0].EndsWith("_stddev")) {
-            String benchmark_name = words[0].Substring(0, words[0].Length - 7);
-            Int64 σ = Int64.Parse(words[1]);
+            Console.WriteLine(benchmark_name + ": μ = " + μ + " ns");
             Console.WriteLine(benchmark_name + ": σ = " + σ + " ns");
+            mathematica_stream.WriteLine(",");
+            mathematica_stream.WriteLine("{");
+            mathematica_stream.WriteLine("\"" + words[0] + "\",");
+            mathematica_stream.WriteLine(μ + ",");
             mathematica_stream.WriteLine(σ);
             mathematica_stream.WriteLine("}");
             mathematica_stream.Flush();
