@@ -6,6 +6,7 @@
 #include <vector>
 
 #include "base/not_null.hpp"
+#include "geometry/grassmann.hpp"
 #include "geometry/named_quantities.hpp"
 #include "integrators/ordinary_differential_equations.hpp"
 #include "physics/continuous_trajectory.hpp"
@@ -16,6 +17,7 @@
 namespace principia {
 
 using geometry::Position;
+using geometry::Vector;
 using integrators::AdaptiveStepSizeIntegrator;
 using integrators::FixedStepSizeIntegrator;
 using integrators::SpecialSecondOrderDifferentialEquation;
@@ -94,14 +96,12 @@ class Ephemeris {
       size_t const b2_begin,
       size_t const b2_end,
       std::vector<Position<Frame>> const& positions,
-      not_null<std::vector<typename NewtonianMotionEquation::Acceleration>*>
-          const accelerations);
+      not_null<std::vector<Vector<Acceleration, Frame>>*> const accelerations);
 
   void ComputeGravitationalAccelerations(
       Instant const& t,
       std::vector<Position<Frame>> const& positions,
-      not_null<std::vector<typename NewtonianMotionEquation::Acceleration>*>
-          const accelerations);
+      not_null<std::vector<Vector<Acceleration, Frame>>*> const accelerations);
 
   // The oblate bodies precede the spherical bodies in this vector.  The system
   // state is indexed in the same order.
