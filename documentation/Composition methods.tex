@@ -66,17 +66,17 @@ L\of{\tilde\vp} + V\of{\tilde\vq} =
 since we then get $t\der = 1$.		
 The desired property follows from the following lemma:
 \begin{lemma}
-Let $H\of{\tilde\vq,\tilde\vp}=L\of{\tilde\vp} + V\of{\tilde\vq}$ be a
-Hamiltonian, with $L$ a quadratic polynomial in $\tilde\vp$, and
-$\vA=\Poisson\placeholder L$, $\vB=\Poisson\placeholder V$.
+Let $L\of{\tilde\vq,\tilde\vp}$ be a quadratic polynomial in $\tilde\vp$,
+$V\of{\tilde\vq}$ a smooth function, $\vA=\Poisson\placeholder L$, and
+$\vB=\Poisson\placeholder V$.
 Then\[
 \commutator{\vB}{\commutator{\vB}{\commutator{\vB}{\vA}}}=\nullvec\text.\]
 \end{lemma}
 \begin{proof}
 It suffices to show that $\Poisson V{\Poisson V{\Poisson L V}} = 0$. It is
 immediate that every term in that expression will contain a third order
-partial derivative of $L$, and since $L$ is quadratic all such derivatives
-vanish.
+partial derivative in the $\tilde p_i$ of $L$, and since $L$ is quadratic
+all such derivatives vanish.
 \end{proof}
 
 \end{document}
