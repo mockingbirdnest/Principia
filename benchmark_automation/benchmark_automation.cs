@@ -32,6 +32,7 @@ class BenchmarkAutomation {
     mathematica_stream.WriteLine("{");
     mathematica_stream.WriteLine(mathematica_date);
     FileInfo[] files = benchmark_directory.GetFiles("*.cpp");
+    String last_benchmark_name = "";
     foreach (FileInfo file in files) {
       StreamReader stream = file.OpenText();
       String command_line;
@@ -59,7 +60,6 @@ class BenchmarkAutomation {
             }
           };
           process.Start();
-          String last_benchmark_name = "";
           while (!process.StandardOutput.EndOfStream) {
             String line = process.StandardOutput.ReadLine();
             String[] words =
