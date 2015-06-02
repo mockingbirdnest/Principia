@@ -1,6 +1,8 @@
 ﻿
 #include "numerics/чебышёв_series.hpp"
 
+#include <vector>
+
 #include "glog/logging.h"
 #include "numerics/fixed_arrays.hpp"
 #include "numerics/newhall.mathematica.cpp"
@@ -30,7 +32,8 @@ template<typename Vector>
 
 
 template<typename Vector>
-ЧебышёвSeries<Vector>::ЧебышёвSeries(ЧебышёвSeries&& other)
+ЧебышёвSeries<Vector>::ЧебышёвSeries(
+    ЧебышёвSeries&& other)  // NOLINT(build/c++11)
     : coefficients_(std::move(other.coefficients_)),
       degree_(std::move(other.degree_)),
       t_min_(std::move(other.t_min_)),
@@ -39,7 +42,8 @@ template<typename Vector>
       two_over_duration_(std::move(other.two_over_duration_)) {}
 
 template<typename Vector>
-ЧебышёвSeries<Vector>& ЧебышёвSeries<Vector>::operator=(ЧебышёвSeries&& other) {
+ЧебышёвSeries<Vector>& ЧебышёвSeries<Vector>::operator=(
+    ЧебышёвSeries&& other) {  // NOLINT(build/c++11)
   coefficients_ = std::move(other.coefficients_);
   degree_ = other.degree_;
   t_min_ = std::move(other.t_min_);
