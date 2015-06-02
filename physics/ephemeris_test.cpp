@@ -1,6 +1,7 @@
 ﻿#include "physics/ephemeris.hpp"
 
 #include "geometry/frame.hpp"
+#include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "integrators/symplectic_runge_kutta_nyström_integrator.hpp"
 #include "quantities/elementary_functions.hpp"
@@ -10,11 +11,15 @@
 namespace principia {
 
 using integrators::McLachlanAtela1992Order5Optimal;
+using quantities::Abs;
 using quantities::Pow;
 using quantities::Sqrt;
 using si::Kilogram;
 using si::Metre;
+using si::Milli;
 using si::Second;
+using ::testing::Eq;
+using ::testing::Lt;
 
 namespace physics {
 
@@ -22,16 +27,6 @@ class EphemerisTest : public testing::Test {
  protected:
   using EarthMoonOrbitPlane = Frame<serialization::Frame::TestTag,
                                     serialization::Frame::TEST, true>;
-
-  EphemerisTest()
-      : ephemeris_(std::vector<not_null<std::unique_ptr<MassiveBody>>>(),
-                   std::vector<DegreesOfFreedom<EarthMoonOrbitPlane>>(),
-                   t0_,
-                   McLachlanAtela1992Order5Optimal<Position<EarthMoonOrbitPlane>>(),
-                   1 * Second,
-                   1 * Metre,
-                   10 * Metre) {
-  }
 
   void SetUpEarthMoonSystem(
       not_null<std::vector<not_null<std::unique_ptr<MassiveBody>>>*> const
@@ -73,39 +68,58 @@ class EphemerisTest : public testing::Test {
     initial_state->push_back(DegreesOfFreedom<EarthMoonOrbitPlane>(q2, v2));
   }
 
-  Ephemeris<EarthMoonOrbitPlane> ephemeris_;
   Instant t0_;
 };
 
 // The canonical Earth-Moon system, tuned to produce circular orbits.
 TEST_F(EphemerisTest, EarthMoon) {
-  std::vector<Vector<Length, EarthMoonOrbitPlane>> positions;
-  system_->Integrate(*integrator_,
-                     trajectory1_->last().time() + period_,
-                     period_ / 100,
-                     1,      // sampling_period
-                     false,  // tmax_is_exact
-                     {trajectory1_.get(), trajectory2_.get()});
+  std::vector<not_null<std::unique_ptr<MassiveBody>>> bodies;
+  std::vector<DegreesOfFreedom<EarthMoonOrbitPlane>> initial_state;
+  Position<EarthMoonOrbitPlane> centre_of_mass;
+  Time period;
+  SetUpEarthMoonSystem(&bodies, &initial_state, &centre_of_mass, &period);
 
-  positions = ValuesOf(trajectory1_->Positions(), centre_of_mass_);
-  EXPECT_THAT(positions.size(), Eq(101));
-  LOG(INFO) << ToMathematicaString(positions);
-  EXPECT_THAT(Abs(positions[25].coordinates().y), Lt(3E-2 * SIUnit<Length>()));
-  EXPECT_THAT(Abs(positions[50].coordinates().x), Lt(3E-2 * SIUnit<Length>()));
-  EXPECT_THAT(Abs(positions[75].coordinates().y), Lt(3E-2 * SIUnit<Length>()));
-  EXPECT_THAT(Abs(positions[100].coordinates().x), Lt(3E-2 * SIUnit<Length>()));
+  Ephemeris<EarthMoonOrbitPlane>
+      ephemeris(
+          bodies,
+          initial_state,
+          t0_,
+          McLachlanAtela1992Order5Optimal<Position<EarthMoonOrbitPlane>>(),
+          period / 100,
+          0.1 * Milli(Metre),
+          5 * Milli(Metre));
 
-  positions = ValuesOf(trajectory2_->Positions(), centre_of_mass_);
-  LOG(INFO) << ToMathematicaString(positions);
-  EXPECT_THAT(positions.size(), Eq(101));
-  EXPECT_THAT(Abs(positions[25].coordinates().y), Lt(2 * SIUnit<Length>()));
-  EXPECT_THAT(Abs(positions[50].coordinates().x), Lt(2 * SIUnit<Length>()));
-  EXPECT_THAT(Abs(positions[75].coordinates().y), Lt(2 * SIUnit<Length>()));
-  EXPECT_THAT(Abs(positions[100].coordinates().x), Lt(2 * SIUnit<Length>()));
-}
+  ephemeris.Prolong(t0_ + period);
 
-TEST_F(EphemerisTest, Test) {
-  ephemeris_.Prolong(t0_ + 2 * Second);
+  ContinuousTrajectory<EarthMoonOrbitPlane> const& earth_trajectory =
+      ephemeris.trajectory(bodies[0].get());
+  ContinuousTrajectory<EarthMoonOrbitPlane> const& moon_trajectory =
+      ephemeris.trajectory(bodies[1].get());
+
+  ContinuousTrajectory<EarthMoonOrbitPlane>::Hint hint;
+  std::vector<Displacement<EarthMoonOrbitPlane>> earth_positions;
+  for (int i = 0; i <= 100; ++i) {
+    earth_positions.push_back(
+      earth_trajectory.EvaluatePosition(t0_ + i * period, &hint) -
+          centre_of_mass);
+  }
+  EXPECT_THAT(earth_positions.size(), Eq(101));
+  EXPECT_THAT(Abs(earth_positions[25].coordinates().y), Lt(3E-2 * Metre));
+  EXPECT_THAT(Abs(earth_positions[50].coordinates().x), Lt(3E-2 * Metre));
+  EXPECT_THAT(Abs(earth_positions[75].coordinates().y), Lt(3E-2 * Metre));
+  EXPECT_THAT(Abs(earth_positions[100].coordinates().x), Lt(3E-2 * Metre));
+
+  std::vector<Displacement<EarthMoonOrbitPlane>> moon_positions;
+  for (int i = 0; i <= 100; ++i) {
+    moon_positions.push_back(
+      moon_trajectory.EvaluatePosition(t0_ + i * period, &hint) -
+          centre_of_mass);
+  }
+  EXPECT_THAT(moon_positions.size(), Eq(101));
+  EXPECT_THAT(Abs(moon_positions[25].coordinates().y), Lt(2 * Metre));
+  EXPECT_THAT(Abs(moon_positions[50].coordinates().x), Lt(2 * Metre));
+  EXPECT_THAT(Abs(moon_positions[75].coordinates().y), Lt(2 * Metre));
+  EXPECT_THAT(Abs(moon_positions[100].coordinates().x), Lt(2 * Metre));
 }
 
 }  // namespace physics

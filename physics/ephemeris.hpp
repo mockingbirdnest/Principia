@@ -50,7 +50,7 @@ class Ephemeris {
       Length const& high_fitting_tolerance);
 
   ContinuousTrajectory<Frame> const& trajectory(
-      not_null<MassiveBody const*>) const;
+      not_null<MassiveBody const*> body) const;
 
   // The maximum of the |t_min|s of the trajectories.
   Instant t_min() const;

@@ -87,8 +87,8 @@ Ephemeris<Frame>::Ephemeris(
 
   last_state_.time = initial_time;
 
-  for (int i = 0; i < bodies_.size(); ++i) {
-    auto& body = bodies_[i];
+  for (int i = 0; i < bodies.size(); ++i) {
+    auto& body = bodies[i];
     DegreesOfFreedom<Frame> const& degrees_of_freedom = initial_state[i];
 
     auto const inserted = bodies_to_trajectories_.emplace(
@@ -128,7 +128,7 @@ Ephemeris<Frame>::Ephemeris(
 
 template<typename Frame>
 ContinuousTrajectory<Frame> const& Ephemeris<Frame>::trajectory(
-    not_null<MassiveBody const*>) const {
+    not_null<MassiveBody const*> body) const {
   return FindOrDie(bodies_to_trajectories_, body);
 }
 
