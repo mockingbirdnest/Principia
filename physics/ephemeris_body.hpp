@@ -1,21 +1,70 @@
-#pragma once
+﻿#pragma once
 
 #include "physics/ephemeris.hpp"
 
 #include <functional>
 
 #include "base/map_util.hpp"
+#include "geometry/r3_element.hpp"
 #include "physics/continuous_trajectory.hpp"
+#include "quantities/named_quantities.hpp"
+#include "quantities/quantities.hpp"
 
 namespace principia {
 
 using base::FindOrDie;
+using geometry::R3Element;
 using integrators::IntegrationProblem;
+using quantities::Exponentiation;
 using ::std::placeholders::_1;
 using ::std::placeholders::_2;
 using ::std::placeholders::_3;
 
 namespace physics {
+
+namespace {
+
+template<typename B>
+std::enable_if_t<std::is_base_of<Body, B>::value, not_null<B const*>>
+ConvertTo(not_null<Body const*> const body) {
+// Dynamic casting is expensive, as in 3x slower for the benchmarks.  Do that in
+// debug mode to catch bugs, but not in optimized mode where we want all the
+// performance we can get.
+#ifdef _DEBUG
+  return dynamic_cast<B const*>(static_cast<Body const*>(body));
+#else
+  return static_cast<not_null<B const*>>(body);
+#endif
+}
+
+// If j is a unit vector along the axis of rotation, and r is the separation
+// between the bodies, the acceleration computed here is:
+//
+//   -(J2 / |r|^5) (3 j (r.j) + r (3 - 15 (r.j)^2 / |r|^2) / 2)
+//
+// Where |r| is the norm of r and r.j is the inner product.
+template<typename Frame>
+FORCE_INLINE typename Ephemeris<Frame>::NewtonianMotionEquation::Acceleration
+    Order2ZonalAcceleration(
+        OblateBody<Frame> const& body,
+        Position<Frame> const& r,
+        Exponentiation<Length, -2> const& one_over_r_squared,
+        Exponentiation<Length, -3> const& one_over_r_cubed) {
+  Vector<double, Frame> const& axis = body.axis();
+  Length const r_axis_projection = InnerProduct(axis, r);
+  auto const j2_over_r_fifth =
+      body.j2() * one_over_r_cubed * one_over_r_squared;
+  typename Ephemeris<Frame>::NewtonianMotionEquation::Acceleration const& axis_acceleration =
+      (-3 * j2_over_r_fifth * r_axis_projection) * axis;
+  typename Ephemeris<Frame>::NewtonianMotionEquation::Acceleration const& radial_acceleration =
+      (j2_over_r_fifth *
+           (-1.5 +
+            7.5 * r_axis_projection *
+                  r_axis_projection * one_over_r_squared)) * r;
+  return axis_acceleration + radial_acceleration;
+}
+
+}  // namespace
 
 template<typename Frame>
 Ephemeris<Frame>::Ephemeris(
@@ -52,18 +101,22 @@ Ephemeris<Frame>::Ephemeris(
 
     if (body->is_oblate()) {
       // Inserting at the beginning of the vectors is O(N).
+      oblate_bodies_.insert(oblate_bodies_.begin(), body.get());
       bodies_.insert(bodies_.begin(), std::move(body));
       oblate_trajectories_.insert(oblate_trajectories_.begin(), trajectory);
       last_state_.positions.insert(last_state_.positions.begin(),
                                    degrees_of_freedom.position());
       last_state_.velocities.insert(last_state_.velocities.begin(),
                                     degrees_of_freedom.velocity());
+      ++number_of_oblate_bodies_;
     } else {
       // Inserting at the end of the vectors is O(1).
+      spherical_bodies_.push_back(body.get());
       bodies_.push_back(std::move(body));
       spherical_trajectories_.push_back(trajectory);
       last_state_.positions.push_back(degrees_of_freedom.position());
       last_state_.velocities.push_back(degrees_of_freedom.velocity());
+      ++number_of_spherical_bodies_;
     }
   }
 
@@ -152,11 +205,128 @@ void Ephemeris<Frame>::AppendState(
 }
 
 template<typename Frame>
+template<bool body1_is_oblate,
+         bool body2_is_oblate>
+inline void Ephemeris<Frame>::ComputeOneBodyGravitationalAcceleration(
+    MassiveBody const& body1,
+    size_t const b1,
+    std::vector<not_null<MassiveBody const*>> const& bodies2,
+    size_t const b2_begin,
+    size_t const b2_end,
+    std::vector<Position<Frame>> const& positions,
+    not_null<std::vector<typename NewtonianMotionEquation::Acceleration>*>
+        const accelerations) {
+  // NOTE(phl): Declaring variables for values like 3 * b1 + 1, 3 * b2 + 1, etc.
+  // in the code below brings no performance advantage as it seems that the
+  // compiler is smart enough to figure common subexpressions.
+  GravitationalParameter const& body1_gravitational_parameter =
+      body1.gravitational_parameter();
+  std::size_t const three_b1 = 3 * b1;
+  for (std::size_t b2 = std::max(b1 + 1, b2_begin); b2 < b2_end; ++b2) {
+    std::size_t const three_b2 = 3 * b2;
+    Length const Δq0 = positions[three_b1] - positions[three_b2];
+    Length const Δq1 = positions[three_b1 + 1] - positions[three_b2 + 1];
+    Length const Δq2 = positions[three_b1 + 2] - positions[three_b2 + 2];
+
+    Exponentiation<Length, 2> const r_squared =
+        Δq0 * Δq0 + Δq1 * Δq1 + Δq2 * Δq2;
+    // NOTE(phl): Don't try to compute one_over_r_squared here, it makes the
+    // non-oblate path slower.
+    Exponentiation<Length, -3> const one_over_r_cubed =
+        Sqrt(r_squared) / (r_squared * r_squared);
+
+    auto const μ1_over_r_cubed =
+        body1_gravitational_parameter * one_over_r_cubed;
+    (*accelerations)[three_b2] += Δq0 * μ1_over_r_cubed;
+    (*accelerations)[three_b2 + 1] += Δq1 * μ1_over_r_cubed;
+    (*accelerations)[three_b2 + 2] += Δq2 * μ1_over_r_cubed;
+
+    // Lex. III. Actioni contrariam semper & æqualem esse reactionem:
+    // sive corporum duorum actiones in se mutuo semper esse æquales &
+    // in partes contrarias dirigi.
+    MassiveBody const& body2 = *bodies2[b2 - b2_begin];
+    GravitationalParameter const& body2_gravitational_parameter =
+        body2->gravitational_parameter();
+    auto const μ2_over_r_cubed =
+        body2_gravitational_parameter * one_over_r_cubed;
+    (*accelerations)[three_b1] -= Δq0 * μ2_over_r_cubed;
+    (*accelerations)[three_b1 + 1] -= Δq1 * μ2_over_r_cubed;
+    (*accelerations)[three_b1 + 2] -= Δq2 * μ2_over_r_cubed;
+
+    if (body1_is_oblate || body2_is_oblate) {
+      Exponentiation<Length, -2> const one_over_r_squared = 1 / r_squared;
+      Vector<Length, Frame> const Δq({Δq0, Δq1, Δq2});
+      if (body1_is_oblate) {
+        R3Element<quantities::Acceleration> const order_2_zonal_acceleration1 =
+            Order2ZonalAcceleration<Frame>(
+                static_cast<OblateBody<Frame> const &>(body1),
+                Δq,
+                one_over_r_squared,
+                one_over_r_cubed).coordinates();
+        (*accelerations)[three_b2] += order_2_zonal_acceleration1.x;
+        (*accelerations)[three_b2 + 1] += order_2_zonal_acceleration1.y;
+        (*accelerations)[three_b2 + 2] += order_2_zonal_acceleration1.z;
+      }
+      if (body2_is_oblate) {
+        R3Element<quantities::Acceleration> const order_2_zonal_acceleration2 =
+            Order2ZonalAcceleration<Frame>(
+                static_cast<OblateBody<Frame> const&>(body2),
+                Δq,
+                one_over_r_squared,
+                one_over_r_cubed).coordinates();
+        (*accelerations)[three_b1] -= order_2_zonal_acceleration2.x;
+        (*accelerations)[three_b1 + 1] -= order_2_zonal_acceleration2.y;
+        (*accelerations)[three_b1 + 2] -= order_2_zonal_acceleration2.z;
+      }
+    }
+  }
+}
+
+template<typename Frame>
 void Ephemeris<Frame>::ComputeGravitationalAccelerations(
     Instant const& t,
     std::vector<Position<Frame>> const& positions,
     not_null<std::vector<typename NewtonianMotionEquation::Acceleration>*>
         const accelerations) {
+  accelerations->assign(accelerations->size(),
+                        typename NewtonianMotionEquation::Acceleration());
+
+  for (std::size_t b1 = 0; b1 < number_of_oblate_bodies_; ++b1) {
+    MassiveBody const& body1 = *oblate_bodies_[b1];
+    ComputeOneBodyGravitationalAcceleration<true /*body1_is_oblate*/,
+                                            true /*body2_is_oblate*/>(
+        body1, b1,
+        oblate_bodies_ /*bodies2*/,
+        0 /*b2_begin*/,
+        number_of_oblate_bodies_ /*b2_end*/,
+        positions,
+        accelerations);
+    ComputeOneBodyGravitationalAcceleration<true /*body1_is_oblate*/,
+                                            false /*body2_is_oblate*/>(
+        body1, b1,
+        spherical_bodies_ /*bodies2*/,
+        number_of_oblate_bodies_ /*b2_begin*/,
+        number_of_oblate_bodies_ +
+            number_of_spherical_bodies_ /*b2_end*/,
+        positions,
+        accelerations);
+  }
+  for (std::size_t b1 = number_of_oblate_bodies_;
+       b1 < number_of_oblate_bodies_ +
+            number_of_spherical_bodies_;
+       ++b1) {
+    MassiveBody const& body1 =
+        *spherical_bodies_[b1 - number_of_oblate_bodies_];
+    ComputeOneBodyGravitationalAcceleration<false /*body1_is_oblate*/,
+                                            false /*body2_is_oblate*/>(
+        body1, b1,
+        spherical_bodies_ /*bodies2*/,
+        number_of_oblate_bodies_ /*b2_begin*/,
+        number_of_oblate_bodies_ +
+            number_of_spherical_bodies_ /*b2_end*/,
+        positions,
+        accelerations);
+  }
 }
 
 }  // namespace physics

@@ -10,6 +10,7 @@
 #include "integrators/ordinary_differential_equations.hpp"
 #include "physics/continuous_trajectory.hpp"
 #include "physics/massive_body.hpp"
+#include "physics/oblate_body.hpp"
 #include "physics/trajectory.hpp"
 
 namespace principia {
@@ -80,6 +81,22 @@ class Ephemeris {
  private:
   void AppendState(typename NewtonianMotionEquation::SystemState const& state);
 
+  // Computes the acceleration due to one body, |body1| (with index |b1| in the
+  // |positions| and |accelerations| arrays) on the bodies with indices
+  // [b2_begin, b2_end[ in |body2_trajectories|.  The template parameters
+  // specify what we know about the bodies, and therefore what forces apply.
+  template<bool body1_is_oblate,
+           bool body2_is_oblate>
+  static void ComputeOneBodyGravitationalAcceleration(
+      MassiveBody const& body1,
+      size_t const b1,
+      std::vector<not_null<MassiveBody const*>> const& bodies2,
+      size_t const b2_begin,
+      size_t const b2_end,
+      std::vector<Position<Frame>> const& positions,
+      not_null<std::vector<typename NewtonianMotionEquation::Acceleration>*>
+          const accelerations);
+
   void ComputeGravitationalAccelerations(
       Instant const& t,
       std::vector<Position<Frame>> const& positions,
@@ -89,6 +106,12 @@ class Ephemeris {
   // The oblate bodies precede the spherical bodies in this vector.  The system
   // state is indexed in the same order.
   std::vector<not_null<std::unique_ptr<MassiveBody>>> bodies_;
+
+  // The indices in |bodies_| correspond to those in |oblate_bodies_| and
+  // |spherical_bodies_|, in sequence.  The elements of |oblate_bodies_| are
+  // really |OblateBody<Frame>| but it's inconvenient to express.
+  std::vector<not_null<MassiveBody const*>> oblate_bodies_;
+  std::vector<not_null<MassiveBody const*>> spherical_bodies_;
 
   // The indices in |bodies_| correspond to those in |oblate_trajectories_| and
   // |spherical_trajectories_|, in sequence.
