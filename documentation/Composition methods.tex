@@ -12,5 +12,71 @@ Documentation for the symplectic methods%
 }
 \author{Robin~Leroy (eggrobin)}
 \begin{document}
+\maketitle
+This document expands on the comments at the beginning of\\
+\texttt{\small integrators/symplectic\_runge\_kutta\_nyström\_integrator.hpp}.
+
+\section{Differential equations.}
+Recall that the equations solved by this class are
+\begin{align}
+\tuple{\vq,\vp}\der &=
+\vX\of{\vq, \vp, t} = \vA\of{\vq, \vp} + \vB\of{\vq, \vp, t}
+\quad\parbox{.4\linewidth}{with $\exp h\vA$ and $\exp h\vB$ known and
+$\commutator{\vB}{\commutator{\vB}{\commutator{\vB}{\vA}}}=\nullvec$;} \\
+&\text{the above equation, with $\exp h\vA = h\vA$, $\exp h\vB = h\vB$,
+and $\vA$ and $\vB$ known;} \\
+\vq\dder &= -\matM^{-1} \grad_\vq V\of{\vq, t}\text. \label{rkn}
+\end{align}
+
+\section{Relation to Hamiltonian mechanics.}
+The third equation above is a reformulation of Hamilton's
+equations with a Hamiltonian of the form
+\begin{equation}
+H\of{\vq,\vp,t} = \frac{1}{2}\Transpose{\vp}\matM^{-1}\vp + V\of{\vq, t}\text,
+\end{equation}
+where $\vp = \matM\vq\der$.
+
+\section{A remark on non-autonomy.}
+Most treatments of these integrators write these differential equations as well
+as the corresponding Hamiltonian in an autonomous version, thus
+$\vX = \vA(\vq, \vp) + \vB(\vq, \vp)$ and
+$H\of{\vq,\vp,t} = \frac{1}{2}\Transpose{\vp}\matM^{-1}\vp + V\of{\vq}$.
+It is however possible to incorporate time, by considering it as an
+additional variable:\[
+\tuple{\vq,\vp,t}\der =
+\vX\of{\vq, \vp, t} =
+\tuple{\vA\of{\vq, \vp}, 1} +
+\tuple{\vB\of{\vq, \vp, t}, 0}\text.\]
+		
+For equations of the form (\ref{rkn}) it remains to be shown that Hamilton's
+equations with quadratic kinetic energy and a time-dependent potential satisfy
+$\commutator{\vB}{\commutator{\vB}{\commutator{\vB}{\vA}}}=\nullvec$.
+We introduce $t$ and its conjugate momentum $\gcp$ to the phase space,
+and write
+\[
+\tilde\vq=\tuple{\vq, t}\text,\quad
+\tilde\vp=\tuple{\vp, \gcp}\text,\quad
+L\of{\tilde\vp} = \frac{1}{2}\Transpose{\vp}\matM^{-1}\vp + \gcp\text.
+\]
+(\ref{rkn}) follows from Hamilton's equations with\[
+H\of{\tilde\vq,\tilde\vp} =
+L\of{\tilde\vp} + V\of{\tilde\vq} =
+\frac{1}{2}\Transpose{\vp}\matM^{-1}\vp + \gcp + V\of{\vq, t}
+\]		
+since we then get $t\der = 1$.		
+The desired property follows from the following lemma:
+\begin{lemma}
+Let $H\of{\tilde\vq,\tilde\vp}=L\of{\tilde\vp} + V\of{\tilde\vq}$ be a
+Hamiltonian, with $L$ a quadratic polynomial in $\tilde\vp$, and
+$\vA=\Poisson\placeholder L$, $\vB=\Poisson\placeholder V$.
+Then\[
+\commutator{\vB}{\commutator{\vB}{\commutator{\vB}{\vA}}}=\nullvec\text.\]
+\end{lemma}
+\begin{proof}
+It suffices to show that $\Poisson V{\Poisson V{\Poisson L V}} = 0$. It is
+immediate that every term in that expression will contain a third order
+partial derivative of $L$, and since $L$ is quadratic all such derivatives
+vanish.
+\end{proof}
 
 \end{document}
