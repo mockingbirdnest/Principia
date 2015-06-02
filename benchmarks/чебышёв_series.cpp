@@ -1,5 +1,5 @@
 ﻿
-// .\Release\benchmarks.exe --benchmark_filter=Evaluate
+// .\Release\benchmarks.exe --benchmark_repetitions=3 --benchmark_filter=Evaluate  // NOLINT(whitespace/line_length)
 // Benchmarking on 1 X 3310 MHz CPU
 // 2015/05/15-18:21:37
 // Benchmark              Time(ns)    CPU(ns) Iterations
@@ -12,7 +12,7 @@
 // BM_EvaluateDouble/18      49399      49519      10396
 // BM_EvaluateDouble/19      54013      54121       9512
 
-// .\Release\benchmarks.exe --benchmark_filter=Newhall --benchmark_iterations=2000000  // NOLINT(whitespace/line_length)
+// .\Release\benchmarks.exe --benchmark_repetitions=10 --benchmark_min_time=2 --benchmark_filter=Newhall  // NOLINT(whitespace/line_length)
 // Benchmarking on 1 X 3310 MHz CPU
 // 2015/05/24-13:16:32
 // Benchmark                    Time(ns)    CPU(ns) Iterations
