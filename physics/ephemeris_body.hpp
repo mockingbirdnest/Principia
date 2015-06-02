@@ -217,9 +217,13 @@ inline void Ephemeris<Frame>::ComputeOneBodyGravitationalAcceleration(
     size_t const b2_end,
     std::vector<Position<Frame>> const& positions,
     not_null<std::vector<Vector<Acceleration, Frame>>*> const accelerations) {
-  GravitationalParameter const& body1_gravitational_parameter =
+  GravitationalParameter const& μ1 =
       body1.gravitational_parameter();
   for (std::size_t b2 = std::max(b1 + 1, b2_begin); b2 < b2_end; ++b2) {
+    MassiveBody const& body2 = *bodies2[b2 - b2_begin];
+    GravitationalParameter const& μ2 =
+        body2.gravitational_parameter();
+
     Displacement<Frame> const Δq = positions[b1] - positions[b2];
 
     Exponentiation<Length, 2> const Δq_squared = InnerProduct(Δq, Δq);
@@ -228,18 +232,13 @@ inline void Ephemeris<Frame>::ComputeOneBodyGravitationalAcceleration(
     Exponentiation<Length, -3> const one_over_Δq_cubed =
         Sqrt(Δq_squared) / (Δq_squared * Δq_squared);
 
-    auto const μ1_over_Δq_cubed =
-        body1_gravitational_parameter * one_over_Δq_cubed;
+    auto const μ1_over_Δq_cubed = μ1 * one_over_Δq_cubed;
     (*accelerations)[b2] += Δq * μ1_over_Δq_cubed;
 
     // Lex. III. Actioni contrariam semper & æqualem esse reactionem:
     // sive corporum duorum actiones in se mutuo semper esse æquales &
     // in partes contrarias dirigi.
-    MassiveBody const& body2 = *bodies2[b2 - b2_begin];
-    GravitationalParameter const& body2_gravitational_parameter =
-        body2.gravitational_parameter();
-    auto const μ2_over_Δq_cubed =
-        body2_gravitational_parameter * one_over_Δq_cubed;
+    auto const μ2_over_Δq_cubed = μ2 * one_over_Δq_cubed;
     (*accelerations)[b1] -= Δq * μ2_over_Δq_cubed;
 
     if (body1_is_oblate || body2_is_oblate) {
