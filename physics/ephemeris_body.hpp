@@ -94,8 +94,7 @@ Ephemeris<Frame>::Ephemeris(
     auto const inserted = bodies_to_trajectories_.emplace(
                               std::piecewise_construct,
                               std::forward_as_tuple(body.get()),
-                              std::forward_as_tuple(body.get(),
-                                                    step_,
+                              std::forward_as_tuple(step_,
                                                     low_fitting_tolerance_,
                                                     high_fitting_tolerance_));
     CHECK(inserted.second);

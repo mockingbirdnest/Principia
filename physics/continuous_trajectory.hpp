@@ -6,7 +6,6 @@
 #include "geometry/named_quantities.hpp"
 #include "numerics/чебышёв_series.hpp"
 #include "physics/degrees_of_freedom.hpp"
-#include "physics/massive_body.hpp"
 #include "quantities/quantities.hpp"
 
 namespace principia {
@@ -35,10 +34,8 @@ class ContinuousTrajectory {
   // the coefficient of highest degree is less than |high_tolerance|.  If
   // possible we also make the coefficient of highest degree greater than
   // |low_tolerance| (this may not always be possible if the two tolerances are
-  // too close).  |body| must live longer than the trajectory; if it is oblate
-  // it must be expressed in the same frame as the trajectory.
-  ContinuousTrajectory(not_null<MassiveBody const*> const body,
-                       Time const& step,
+  // too close).
+  ContinuousTrajectory(Time const& step,
                        Length const& low_tolerance,
                        Length const& high_tolerance);
   ~ContinuousTrajectory() = default;
@@ -47,12 +44,6 @@ class ContinuousTrajectory {
   ContinuousTrajectory(ContinuousTrajectory&&) = delete;
   ContinuousTrajectory& operator=(ContinuousTrajectory const&) = delete;
   ContinuousTrajectory& operator=(ContinuousTrajectory&&) = delete;
-
-  // The body to which this trajectory pertains.  The body is cast to the type
-  // B.  An error occurs in debug mode if the cast fails.
-  template<typename B>
-  std::enable_if_t<std::is_base_of<Body, B>::value,
-                   not_null<B const*>> body() const;
 
   // Returns true iff this trajectory cannot be evaluated for any time.
   bool empty() const;
@@ -106,7 +97,6 @@ class ContinuousTrajectory {
   bool MayUseHint(Instant const& time, Hint* const hint) const;
 
   // Construction parameters;
-  not_null<MassiveBody const*> const body_;
   Time const step_;
   Length const low_tolerance_;
   Length const high_tolerance_;
