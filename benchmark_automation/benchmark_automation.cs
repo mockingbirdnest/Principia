@@ -17,7 +17,7 @@ class BenchmarkAutomation {
     DirectoryInfo mathematica_directory = new DirectoryInfo(args[1]);
     DirectoryInfo jenkins_directory = new DirectoryInfo(args[2]);
     DateTime date = DateTime.UtcNow;
-    String mathematica_date = date.ToString("{yyyy, M, d, H, m, s.fffffff}");
+    String mathematica_date = date.ToString("{yyyy, M, d, H, m, s.fffffff},");
     String mathematica_output_file =
         Path.Combine(mathematica_directory.FullName,
                      "principia_benchmark_results_" +
@@ -35,88 +35,81 @@ class BenchmarkAutomation {
     foreach (FileInfo file in files) {
       StreamReader stream = file.OpenText();
       String command_line;
-      do {
+      while (!stream.EndOfStream) {
         command_line = stream.ReadLine();
-      } while (command_line == "");
-      if (command_line.StartsWith("// " + benchmark_executable)) {
-        // Get rid of the // NOLINT comments and of the actual command, leaving
-        // only the arguments.
-        command_line =
-            command_line.Split(
-                separator : new String[]{benchmark_executable, "//"},
-                options   : StringSplitOptions.None)[2].Trim();
-        bool has_repetitions = command_line.Contains("--benchmark_repetitions");
-        Console.WriteLine(
-            "Running benchmarks with arguments from " + file.Name);
-        Console.WriteLine(command_line);
-        Process process = new Process {
-          StartInfo = new ProcessStartInfo {
-            FileName = benchmark_executable,
-            Arguments = command_line,
-            UseShellExecute = false,
-            RedirectStandardOutput = true,
-            CreateNoWindow = true
-          }
-        };
-        process.Start();
-        while (!process.StandardOutput.EndOfStream) {
-          String line = process.StandardOutput.ReadLine();
-          String[] words =
-              line.Split(separator : new Char[]{' '},
-                         options   : StringSplitOptions.RemoveEmptyEntries);
-          if (has_repetitions) {
+        if (command_line.StartsWith("// " + benchmark_executable)) {
+          // Get rid of the // NOLINT comments and of the actual command,
+          // leaving only the arguments.
+          command_line =
+              command_line.Split(
+                  separator : new String[]{benchmark_executable, "//"},
+                  options   : StringSplitOptions.None)[2].Trim();
+          bool has_repetitions =
+              command_line.Contains("--benchmark_repetitions");
+          Console.WriteLine(
+              "Running benchmarks with arguments from " + file.Name);
+          Console.WriteLine(command_line);
+          Process process = new Process {
+            StartInfo = new ProcessStartInfo {
+              FileName = benchmark_executable,
+              Arguments = command_line,
+              UseShellExecute = false,
+              RedirectStandardOutput = true,
+              CreateNoWindow = true
+            }
+          };
+          process.Start();
+          String last_benchmark_name = "";
+          while (!process.StandardOutput.EndOfStream) {
+            String line = process.StandardOutput.ReadLine();
+            String[] words =
+                line.Split(separator : new Char[]{' '},
+                           options   : StringSplitOptions.RemoveEmptyEntries);
             const String mean_postfix = "_mean";
             const String stddev_postfix = "_stddev";
-            if (words[0].EndsWith(mean_postfix)) {
-              String benchmark_name =
-                  words[0].Substring(
-                      startIndex : 0,
-                      length     : words[0].Length - mean_postfix.Length);
-              Int64 μ = Int64.Parse(words[1]);
-              Console.WriteLine(benchmark_name + ": μ = " + μ + " ns");
-              mathematica_stream.WriteLine(",");
-              mathematica_stream.WriteLine("{");
-              mathematica_stream.WriteLine("\"" + benchmark_name + "\",");
-              mathematica_stream.WriteLine(μ + ",");
-              CommaSeparatedAppend(
-                  ref csv_benchmark_names,
-                  "\"" + benchmark_name.Replace("\"", "\"\"") + "\"");
-              CommaSeparatedAppend(ref csv_means, μ.ToString());
-            } else if (words[0].EndsWith(stddev_postfix)) {
-              String benchmark_name =
-                  words[0].Substring(
-                      startIndex : 0,
-                      length     : words[0].Length - stddev_postfix.Length);
-              Int64 σ = Int64.Parse(words[1]);
-              Console.WriteLine(benchmark_name + ": σ = " + σ + " ns");
-              mathematica_stream.WriteLine(σ);
-              mathematica_stream.WriteLine("}");
-              mathematica_stream.Flush();
+            if (words[0].StartsWith("BM_")) {
+              if (has_repetitions && words[0].EndsWith(mean_postfix)) {
+                String benchmark_name =
+                    words[0].Substring(
+                        startIndex : 0,
+                        length     : words[0].Length - mean_postfix.Length);
+                Int64 μ = Int64.Parse(words[1]);
+                Console.WriteLine(benchmark_name + ": μ = " + μ + " ns");
+                CommaSeparatedAppend(
+                    ref csv_benchmark_names,
+                    "\"" + benchmark_name.Replace("\"", "\"\"") + "\"");
+                CommaSeparatedAppend(ref csv_means, μ.ToString());
+              } else if (!has_repetitions) {
+                String benchmark_name = words[0];
+                Int64 μ = Int64.Parse(words[1]);
+                CommaSeparatedAppend(
+                    ref csv_benchmark_names,
+                    "\"" + benchmark_name.Replace("\"", "\"\"") + "\"");
+                CommaSeparatedAppend(ref csv_means, μ.ToString());
+                Console.WriteLine(benchmark_name + ": μ = " + μ + " ns");
+              }
+              if (!words[0].EndsWith(stddev_postfix) &&
+                  !words[0].EndsWith(mean_postfix)) {
+                String benchmark_name = words[0];
+                if (last_benchmark_name != benchmark_name) {
+                  if (last_benchmark_name != "") {
+                    mathematica_stream.WriteLine("}},");
+                  }
+                  last_benchmark_name = benchmark_name;
+                  mathematica_stream.Flush();
+                  mathematica_stream.Write("{");
+                  mathematica_stream.Write("\"" + benchmark_name + "\", {");
+                } else {
+                  mathematica_stream.Write(", ");
+                }
+                mathematica_stream.Write(Int64.Parse(words[1]));
+              }
             }
-          } else if (words[0].StartsWith("BM")) {
-            String benchmark_name = words[0];
-            Int64 μ = Int64.Parse(words[1]);
-            Int64 σ = 0;
-            CommaSeparatedAppend(
-                ref csv_benchmark_names,
-                "\"" + benchmark_name.Replace("\"", "\"\"") + "\"");
-            CommaSeparatedAppend(ref csv_means, μ.ToString());
-            Console.WriteLine(benchmark_name + ": μ = " + μ + " ns");
-            Console.WriteLine(benchmark_name + ": σ = " + σ + " ns");
-            mathematica_stream.WriteLine(",");
-            mathematica_stream.WriteLine("{");
-            mathematica_stream.WriteLine("\"" + words[0] + "\",");
-            mathematica_stream.WriteLine(μ + ",");
-            mathematica_stream.WriteLine(σ);
-            mathematica_stream.WriteLine("}");
-            mathematica_stream.Flush();
           }
         }
-      } else {
-        Console.WriteLine("No benchmark command found at the beginning of " +
-                          file.Name);
       }
     }
+    mathematica_stream.WriteLine("}}");
     mathematica_stream.WriteLine("}");
     mathematica_stream.Close();
     File.WriteAllText(
