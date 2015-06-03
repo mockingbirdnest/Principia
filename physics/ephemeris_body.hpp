@@ -99,6 +99,7 @@ Ephemeris<Frame>::Ephemeris(
                                                     high_fitting_tolerance_));
     CHECK(inserted.second);
     ContinuousTrajectory<Frame>* const trajectory = &inserted.first->second;
+    trajectory->Append(initial_time, degrees_of_freedom);
 
     if (body->is_oblate()) {
       // Inserting at the beginning of the vectors is O(N).
@@ -134,9 +135,9 @@ ContinuousTrajectory<Frame> const& Ephemeris<Frame>::trajectory(
 
 template<typename Frame>
 Instant Ephemeris<Frame>::t_min() const {
-  Time t_min;
-  for (auto const& pair : trajectories_) {
-    ContinuousTrajectory<Frame> const& trajectory = pair.first;
+  Instant t_min;
+  for (auto const& pair : bodies_to_trajectories_) {
+    ContinuousTrajectory<Frame> const& trajectory = pair.second;
     t_min = std::max(t_min, trajectory.t_min());
   }
   return t_min;
@@ -144,9 +145,9 @@ Instant Ephemeris<Frame>::t_min() const {
 
 template<typename Frame>
 Instant Ephemeris<Frame>::t_max() const {
-  Time t_max = trajectories_.begin()->first.t_max();
-  for (auto const& pair : trajectories_) {
-    ContinuousTrajectory<Frame> const& trajectory = pair.first;
+  Instant t_max = bodies_to_trajectories_.begin()->second.t_max();
+  for (auto const& pair : bodies_to_trajectories_) {
+    ContinuousTrajectory<Frame> const& trajectory = pair.second;
     t_max = std::min(t_max, trajectory.t_max());
   }
   return t_max;
@@ -154,8 +155,8 @@ Instant Ephemeris<Frame>::t_max() const {
 
 template<typename Frame>
 void Ephemeris<Frame>::ForgetBefore(Instant const& t) {
-  for (auto const& pair : trajectories_) {
-    ContinuousTrajectory<Frame>& trajectory = pair.first;
+  for (auto const& pair : bodies_to_trajectories_) {
+    ContinuousTrajectory<Frame>& trajectory = pair.second;
     trajectory.ForgetBefore(t);
   }
 }
@@ -168,9 +169,13 @@ void Ephemeris<Frame>::Prolong(Instant const& t) {
   problem.t_final = t;
   problem.initial_state = &last_state_;
 
-  planetary_integrator_.Solve(problem, step_);
-
-  //TODO(phl): Ensure that t_max has reached t.
+  // Perform the integration.  Note that we may have to iterate until |t_max()|
+  // actually reaches |t| because the last series may not be fully determined
+  // after the first integration.
+  do {
+    planetary_integrator_.Solve(problem, step_);
+    problem.t_final += step_;
+  } while (t_max() < t);
 }
 
 template<typename Frame>

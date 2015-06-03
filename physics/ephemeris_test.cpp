@@ -79,6 +79,9 @@ TEST_F(EphemerisTest, EarthMoon) {
   Time period;
   SetUpEarthMoonSystem(&bodies, &initial_state, &centre_of_mass, &period);
 
+  MassiveBody* const earth = bodies[0].get();
+  MassiveBody* const moon = bodies[1].get();
+
   Ephemeris<EarthMoonOrbitPlane>
       ephemeris(
           std::move(bodies),
@@ -92,15 +95,15 @@ TEST_F(EphemerisTest, EarthMoon) {
   ephemeris.Prolong(t0_ + period);
 
   ContinuousTrajectory<EarthMoonOrbitPlane> const& earth_trajectory =
-      ephemeris.trajectory(bodies[0].get());
+      ephemeris.trajectory(earth);
   ContinuousTrajectory<EarthMoonOrbitPlane> const& moon_trajectory =
-      ephemeris.trajectory(bodies[1].get());
+      ephemeris.trajectory(moon);
 
   ContinuousTrajectory<EarthMoonOrbitPlane>::Hint hint;
   std::vector<Displacement<EarthMoonOrbitPlane>> earth_positions;
   for (int i = 0; i <= 100; ++i) {
     earth_positions.push_back(
-      earth_trajectory.EvaluatePosition(t0_ + i * period, &hint) -
+      earth_trajectory.EvaluatePosition(t0_ + i * period / 100, &hint) -
           centre_of_mass);
   }
   EXPECT_THAT(earth_positions.size(), Eq(101));
@@ -112,7 +115,7 @@ TEST_F(EphemerisTest, EarthMoon) {
   std::vector<Displacement<EarthMoonOrbitPlane>> moon_positions;
   for (int i = 0; i <= 100; ++i) {
     moon_positions.push_back(
-      moon_trajectory.EvaluatePosition(t0_ + i * period, &hint) -
+      moon_trajectory.EvaluatePosition(t0_ + i * period / 100, &hint) -
           centre_of_mass);
   }
   EXPECT_THAT(moon_positions.size(), Eq(101));

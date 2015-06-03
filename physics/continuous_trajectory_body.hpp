@@ -153,6 +153,8 @@ template<typename Frame>
 Position<Frame> ContinuousTrajectory<Frame>::EvaluatePosition(
     Instant const& time,
     Hint* const hint) const {
+  CHECK_LE(t_min(), time);
+  CHECK_GE(t_max(), time);
   if (MayUseHint(time, hint)) {
     return series_[hint->index_].Evaluate(time) + Frame::origin;
   } else {
@@ -168,6 +170,8 @@ template<typename Frame>
 Velocity<Frame> ContinuousTrajectory<Frame>::EvaluateVelocity(
     Instant const& time,
     Hint* const hint) const {
+  CHECK_LE(t_min(), time);
+  CHECK_GE(t_max(), time);
   if (MayUseHint(time, hint)) {
     return series_[hint->index_].EvaluateDerivative(time);
   } else {
@@ -183,6 +187,8 @@ template<typename Frame>
 DegreesOfFreedom<Frame> ContinuousTrajectory<Frame>::EvaluateDegreesOfFreedom(
     Instant const& time,
     Hint* const hint) const {
+  CHECK_LE(t_min(), time);
+  CHECK_GE(t_max(), time);
   if (MayUseHint(time, hint)) {
     ЧебышёвSeries<Displacement<Frame>> const& series = series_[hint->index_];
     return DegreesOfFreedom<Frame>(series.Evaluate(time) + Frame::origin,
@@ -206,11 +212,13 @@ typename std::vector<ЧебышёвSeries<Displacement<Frame>>>::const_iterator
 ContinuousTrajectory<Frame>::FindSeriesForInstant(Instant const& time) const {
   // Need to use |lower_bound|, not |upper_bound|, because it allows
   // heterogeneous arguments.
-  return std::lower_bound(series_.begin(), series_.end(), time,
-                          [](ЧебышёвSeries<Displacement<Frame>> const& left,
-                             Instant const& right) {
-                            return left.t_max() < right;
-                          });
+  auto const it = std::lower_bound(series_.begin(), series_.end(), time,
+                      [](ЧебышёвSeries<Displacement<Frame>> const& left,
+                         Instant const& right) {
+                        return left.t_max() < right;
+                      });
+  CHECK(it != series_.end());
+  return it;
 }
 
 template<typename Frame>
