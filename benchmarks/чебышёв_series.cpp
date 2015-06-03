@@ -1,4 +1,5 @@
-﻿// .\Release\benchmarks.exe --benchmark_filter=Evaluate
+﻿
+// .\Release\benchmarks.exe --benchmark_repetitions=3 --benchmark_filter=Evaluate  // NOLINT(whitespace/line_length)
 // Benchmarking on 1 X 3310 MHz CPU
 // 2015/05/15-18:21:37
 // Benchmark              Time(ns)    CPU(ns) Iterations
@@ -11,7 +12,7 @@
 // BM_EvaluateDouble/18      49399      49519      10396
 // BM_EvaluateDouble/19      54013      54121       9512
 
-// .\Release\benchmarks.exe --benchmark_filter=Newhall --benchmark_iterations=2000000  // NOLINT(whitespace/line_length)
+// .\Release\benchmarks.exe --benchmark_repetitions=10 --benchmark_min_time=2 --benchmark_filter=Newhall  // NOLINT(whitespace/line_length)
 // Benchmarking on 1 X 3310 MHz CPU
 // 2015/05/24-13:16:32
 // Benchmark                    Time(ns)    CPU(ns) Iterations
@@ -21,6 +22,7 @@
 // BM_NewhallApproximation/16        754        741    2000000
 
 #include <random>
+#include <vector>
 
 #include "quantities/si.hpp"
 #include "numerics/чебышёв_series.hpp"
@@ -39,7 +41,7 @@ namespace {
 int const kEvaluationsPerIteration = 1000;
 }  // namespace
 
-void BM_EvaluateDouble(benchmark::State& state) {
+void BM_EvaluateDouble(benchmark::State& state) {  // NOLINT(runtime/references)
   state.PauseTiming();
   int const degree = state.range_x();
   std::mt19937_64 random(42);
@@ -69,7 +71,8 @@ void BM_EvaluateDouble(benchmark::State& state) {
   state.SetLabel(std::to_string(result).substr(0, 0));
 }
 
-void BM_NewhallApproximation(benchmark::State& state) {
+void BM_NewhallApproximation(
+    benchmark::State& state) {  // NOLINT(runtime/references)
   state.PauseTiming();
   int const degree = state.range_x();
   std::mt19937_64 random(42);

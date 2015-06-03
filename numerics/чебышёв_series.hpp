@@ -30,9 +30,9 @@ class ЧебышёвSeries {
   ЧебышёвSeries(std::vector<Vector> const& coefficients,
                 Instant const& t_min,
                 Instant const& t_max);
-  ЧебышёвSeries(ЧебышёвSeries&& other);
+  ЧебышёвSeries(ЧебышёвSeries&& other);  // NOLINT(build/c++11)
 
-  ЧебышёвSeries& operator=(ЧебышёвSeries&& other);
+  ЧебышёвSeries& operator=(ЧебышёвSeries&& other);  // NOLINT(build/c++11)
 
   bool operator==(ЧебышёвSeries const& right) const;
   bool operator!=(ЧебышёвSeries const& right) const;

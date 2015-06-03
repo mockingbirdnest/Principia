@@ -3,6 +3,7 @@
 
 #include <algorithm>
 #include <cmath>
+#include <vector>
 
 #include "geometry/named_quantities.hpp"
 #include "gtest/gtest.h"
