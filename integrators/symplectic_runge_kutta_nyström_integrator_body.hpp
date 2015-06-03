@@ -41,7 +41,7 @@ SymplecticRungeKuttaNyströmIntegrator(FixedVector<double, stages_> const& a,
           CHECK_EQ(b_[i + 1], b_[stages_ - 1 - i]);
         }
         break;
-       case kBAB:
+      case kBAB:
         for (int i = 0; i < stages_ - 1; ++i) {
           CHECK_EQ(b_[i], a_[stages_ - 2 - i]);
         }
