@@ -36,12 +36,16 @@ SymplecticRungeKuttaNyströmIntegrator(FixedVector<double, stages_> const& a,
       case kABA:
         for (int i = 0; i < stages_; ++i) {
           CHECK_EQ(a_[i], a_[stages_ - 1 - i]);
+        }
+        for (int i = 0; i < stages_ - 1; ++i) {
           CHECK_EQ(b_[i + 1], b_[stages_ - 1 - i]);
         }
         break;
-      case kBAB:
-        for (int i = 0; i < stages_; ++i) {
+       case kBAB:
+        for (int i = 0; i < stages_ - 1; ++i) {
           CHECK_EQ(b_[i], a_[stages_ - 2 - i]);
+        }
+        for (int i = 0; i < stages_; ++i) {
           CHECK_EQ(b_[i], b_[stages_ - 1 - i]);
         }
         break;
