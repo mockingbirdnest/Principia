@@ -176,6 +176,9 @@ void Ephemeris<Frame>::Prolong(Instant const& t) {
   // after the first integration.
   do {
     planetary_integrator_.Solve(problem, step_);
+    // Here |problem.initial_state| still points at |last_state_|, which is the
+    // state at the end of the previous call to |Solve|.  It is therefore the
+    // right initial state for the next call to |Solve|, if any.
     problem.t_final += step_;
   } while (t_max() < t);
 }
@@ -257,6 +260,10 @@ inline void Ephemeris<Frame>::ComputeOneBodyGravitationalAcceleration(
                 one_over_Δq_squared,
                 one_over_Δq_cubed);
         (*accelerations)[b2] += order_2_zonal_acceleration1;
+        // Don't update |(*accelerations)[b1]| here: we exempt ourselves from
+        // Newton's third law because the oblate bodies are generally much
+        // bigger than the other bodies, so the ratio of the masses makes the
+        // opposite acceleration very small.
       }
       if (body2_is_oblate) {
         Vector<Acceleration, Frame> const order_2_zonal_acceleration2 =
@@ -266,6 +273,7 @@ inline void Ephemeris<Frame>::ComputeOneBodyGravitationalAcceleration(
                 one_over_Δq_squared,
                 one_over_Δq_cubed);
         (*accelerations)[b1] -= order_2_zonal_acceleration2;
+        // Yet another exemption from Newton's third law.
       }
     }
   }
