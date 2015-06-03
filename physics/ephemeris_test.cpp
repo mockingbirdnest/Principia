@@ -9,6 +9,7 @@
 #include "quantities/elementary_functions.hpp"
 #include "quantities/si.hpp"
 #include "serialization/geometry.pb.h"
+#include "testing_utilities/almost_equals.hpp"
 
 namespace principia {
 
@@ -20,6 +21,7 @@ using si::Kilogram;
 using si::Metre;
 using si::Milli;
 using si::Second;
+using testing_utilities::AlmostEquals;
 using ::testing::Eq;
 using ::testing::Lt;
 
@@ -125,6 +127,63 @@ TEST_F(EphemerisTest, EarthMoon) {
   EXPECT_THAT(Abs(moon_positions[50].coordinates().x), Lt(6E-1 * Metre));
   EXPECT_THAT(Abs(moon_positions[75].coordinates().y), Lt(2 * Metre));
   EXPECT_THAT(Abs(moon_positions[100].coordinates().x), Lt(2 * Metre));
+}
+
+// The Moon alone.  It moves in straight line.
+TEST_F(EphemerisTest, Moon) {
+  Position<EarthMoonOrbitPlane> const reference_position;
+  std::vector<not_null<std::unique_ptr<MassiveBody>>> bodies;
+  std::vector<DegreesOfFreedom<EarthMoonOrbitPlane>> initial_state;
+  Position<EarthMoonOrbitPlane> centre_of_mass;
+  Time period;
+  SetUpEarthMoonSystem(&bodies, &initial_state, &centre_of_mass, &period);
+
+  bodies.erase(bodies.begin());
+  initial_state.erase(initial_state.begin());
+
+  MassiveBody* const moon = bodies[0].get();
+
+  Ephemeris<EarthMoonOrbitPlane>
+      ephemeris(
+          std::move(bodies),
+          initial_state,
+          t0_,
+          McLachlanAtela1992Order5Optimal<Position<EarthMoonOrbitPlane>>(),
+          period / 100,
+          0.1 * Milli(Metre),
+          5 * Milli(Metre));
+
+  ephemeris.Prolong(t0_ + period);
+
+  ContinuousTrajectory<EarthMoonOrbitPlane> const& moon_trajectory =
+      ephemeris.trajectory(moon);
+
+  ContinuousTrajectory<EarthMoonOrbitPlane>::Hint hint;
+  DegreesOfFreedom<EarthMoonOrbitPlane> const moon_degrees_of_freedom =
+      moon_trajectory.EvaluateDegreesOfFreedom(t0_ + period, &hint);
+  Length const q = (moon_degrees_of_freedom.position() -
+                    reference_position).coordinates().y;
+  Speed const v = moon_degrees_of_freedom.velocity().coordinates().x;
+  std::vector<Displacement<EarthMoonOrbitPlane>> moon_positions;
+  for (int i = 0; i <= 100; ++i) {
+    moon_positions.push_back(
+        moon_trajectory.EvaluatePosition(t0_ + i * period / 100, &hint) -
+            reference_position);
+  }
+
+  EXPECT_THAT(moon_positions.size(), Eq(101));
+  EXPECT_THAT(moon_positions[25].coordinates().x,
+              AlmostEquals(0.25 * period * v, 13));
+  EXPECT_THAT(moon_positions[25].coordinates().y, Eq(q));
+  EXPECT_THAT(moon_positions[50].coordinates().x,
+              AlmostEquals(0.50 * period * v, 14));
+  EXPECT_THAT(moon_positions[50].coordinates().y, Eq(q));
+  EXPECT_THAT(moon_positions[75].coordinates().x,
+              AlmostEquals(0.75 * period * v, 19));
+  EXPECT_THAT(moon_positions[75].coordinates().y, Eq(q));
+  EXPECT_THAT(moon_positions[100].coordinates().x,
+              AlmostEquals(1.00 * period * v, 13));
+  EXPECT_THAT(moon_positions[100].coordinates().y, Eq(q));
 }
 
 }  // namespace physics
