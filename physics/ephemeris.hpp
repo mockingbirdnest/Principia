@@ -6,13 +6,18 @@
 #include <vector>
 
 #include "base/not_null.hpp"
+#include "geometry/grassmann.hpp"
+#include "geometry/named_quantities.hpp"
 #include "integrators/ordinary_differential_equations.hpp"
 #include "physics/continuous_trajectory.hpp"
 #include "physics/massive_body.hpp"
+#include "physics/oblate_body.hpp"
 #include "physics/trajectory.hpp"
 
 namespace principia {
 
+using geometry::Position;
+using geometry::Vector;
 using integrators::AdaptiveStepSizeIntegrator;
 using integrators::FixedStepSizeIntegrator;
 using integrators::SpecialSecondOrderDifferentialEquation;
@@ -25,25 +30,27 @@ class Ephemeris {
 
  public:
   // The equation describing the motion of the |bodies_|.
-  using PlanetaryMotion =
+  using NewtonianMotionEquation =
       SpecialSecondOrderDifferentialEquation<Position<Frame>>;
-  // We don't specify non-autonomy in PlanetaryMotion since there isn't a type
-  // for that at this time, so time-dependent intrinsic acceleration yields the
-  // same type of map.
-  using TimedBurnMotion = PlanetaryMotion;
+  // We don't specify non-autonomy in NewtonianMotionEquation since there isn't
+  // a type for that at this time, so time-dependent intrinsic acceleration
+  // yields the same type of map.
+  using TimedBurnMotion = NewtonianMotionEquation;
 
-  // Constructs an Ephemeris that owns the |bodies|.
+  // Constructs an Ephemeris that owns the |bodies|.  The elements of vectors
+  // |bodies| and |initial_state| correspond to one another.
   Ephemeris(
       std::vector<not_null<std::unique_ptr<MassiveBody>>> bodies,
       std::vector<DegreesOfFreedom<Frame>> initial_state,
       Instant const& initial_time,
-      FixedStepSizeIntegrator<PlanetaryMotion> const& planetary_integrator,
-      Time const& step_size,
+      FixedStepSizeIntegrator<NewtonianMotionEquation> const&
+          planetary_integrator,
+      Time const& step,
       Length const& low_fitting_tolerance,
       Length const& high_fitting_tolerance);
 
   ContinuousTrajectory<Frame> const& trajectory(
-      not_null<MassiveBody const*>) const;
+      not_null<MassiveBody const*> body) const;
 
   // The maximum of the |t_min|s of the trajectories.
   Instant t_min() const;
@@ -62,6 +69,7 @@ class Ephemeris {
   // If |t > t_max()|, calls |Prolong(t)| beforehand.
   // The |length_| and |speed_integration_tolerance|s are used to compute the
   // |tolerance_to_error_ratio| for step size control.
+  // TODO(phl): Remove intrinsic_acceleration?  It is in the trajectory.
   void Flow(
       not_null<Trajectory<Frame>*> const trajectory,
       std::function<
@@ -73,17 +81,61 @@ class Ephemeris {
       Instant const& t);
 
  private:
+  void AppendState(typename NewtonianMotionEquation::SystemState const& state);
+
+  // Computes the acceleration due to one body, |body1| (with index |b1| in the
+  // |positions| and |accelerations| arrays) on the bodies |bodies2| (with
+  // indices [b2_begin, b2_end[ in the |positions| and |accelerations| arrays).
+  // The template parameters specify what we know about the bodies, and
+  // therefore what forces apply.
+  template<bool body1_is_oblate,
+           bool body2_is_oblate>
+  static void ComputeOneBodyGravitationalAcceleration(
+      MassiveBody const& body1,
+      size_t const b1,
+      std::vector<not_null<MassiveBody const*>> const& bodies2,
+      size_t const b2_begin,
+      size_t const b2_end,
+      std::vector<Position<Frame>> const& positions,
+      not_null<std::vector<Vector<Acceleration, Frame>>*> const accelerations);
+
+  void ComputeGravitationalAccelerations(
+      Instant const& t,
+      std::vector<Position<Frame>> const& positions,
+      not_null<std::vector<Vector<Acceleration, Frame>>*> const accelerations);
+
+  // The oblate bodies precede the spherical bodies in this vector.  The system
+  // state is indexed in the same order.
   std::vector<not_null<std::unique_ptr<MassiveBody>>> bodies_;
-  std::map<not_null<MassiveBody const*>,
-           ContinuousTrajectory<Frame>> trajectories_;
+
+  // The indices in |bodies_| correspond to those in |oblate_bodies_| and
+  // |spherical_bodies_|, in sequence.  The elements of |oblate_bodies_| are
+  // really |OblateBody<Frame>| but it's inconvenient to express.
+  std::vector<not_null<MassiveBody const*>> oblate_bodies_;
+  std::vector<not_null<MassiveBody const*>> spherical_bodies_;
+
+  // The indices in |bodies_| correspond to those in |oblate_trajectories_| and
+  // |spherical_trajectories_|, in sequence.
+  std::vector<not_null<ContinuousTrajectory<Frame>*>> oblate_trajectories_;
+  std::vector<not_null<ContinuousTrajectory<Frame>*>> spherical_trajectories_;
+
+  std::map<not_null<MassiveBody const*>, ContinuousTrajectory<Frame>>
+      bodies_to_trajectories_;
 
   // This will refer to a static object returned by a factory.
-  FixedStepSizeIntegrator<PlanetaryMotion> const& planetary_integrator_;
-  Time const step_size_;
+  FixedStepSizeIntegrator<NewtonianMotionEquation> const& planetary_integrator_;
+  Time const step_;
   Length const low_fitting_tolerance_;
   Length const high_fitting_tolerance_;
-  PlanetaryMotion::SystemState last_state_;
+  typename NewtonianMotionEquation::SystemState last_state_;
+
+  int number_of_spherical_bodies_ = 0;
+  int number_of_oblate_bodies_ = 0;
+
+  NewtonianMotionEquation equation_;
 };
 
 }  // namespace physics
 }  // namespace principia
+
+#include "physics/ephemeris_body.hpp"

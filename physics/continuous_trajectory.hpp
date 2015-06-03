@@ -98,8 +98,8 @@ class ContinuousTrajectory {
 
   // Construction parameters;
   Time const step_;
-  Length const high_tolerance_;
   Length const low_tolerance_;
+  Length const high_tolerance_;
 
   // The degree of the approximation.
   int degree_;
