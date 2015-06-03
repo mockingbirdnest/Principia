@@ -107,9 +107,9 @@ TEST_F(EphemerisTest, EarthMoon) {
           centre_of_mass);
   }
   EXPECT_THAT(earth_positions.size(), Eq(101));
-  EXPECT_THAT(Abs(earth_positions[25].coordinates().y), Lt(3E-2 * Metre));
-  EXPECT_THAT(Abs(earth_positions[50].coordinates().x), Lt(3E-2 * Metre));
-  EXPECT_THAT(Abs(earth_positions[75].coordinates().y), Lt(3E-2 * Metre));
+  EXPECT_THAT(Abs(earth_positions[25].coordinates().y), Lt(6E-4 * Metre));
+  EXPECT_THAT(Abs(earth_positions[50].coordinates().x), Lt(6E-3 * Metre));
+  EXPECT_THAT(Abs(earth_positions[75].coordinates().y), Lt(2E-2 * Metre));
   EXPECT_THAT(Abs(earth_positions[100].coordinates().x), Lt(3E-2 * Metre));
 
   std::vector<Displacement<EarthMoonOrbitPlane>> moon_positions;
@@ -119,8 +119,8 @@ TEST_F(EphemerisTest, EarthMoon) {
           centre_of_mass);
   }
   EXPECT_THAT(moon_positions.size(), Eq(101));
-  EXPECT_THAT(Abs(moon_positions[25].coordinates().y), Lt(2 * Metre));
-  EXPECT_THAT(Abs(moon_positions[50].coordinates().x), Lt(2 * Metre));
+  EXPECT_THAT(Abs(moon_positions[25].coordinates().y), Lt(5E-2 * Metre));
+  EXPECT_THAT(Abs(moon_positions[50].coordinates().x), Lt(6E-1 * Metre));
   EXPECT_THAT(Abs(moon_positions[75].coordinates().y), Lt(2 * Metre));
   EXPECT_THAT(Abs(moon_positions[100].coordinates().x), Lt(2 * Metre));
 }
