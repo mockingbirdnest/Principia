@@ -81,7 +81,7 @@ TEST_F(EphemerisTest, EarthMoon) {
 
   Ephemeris<EarthMoonOrbitPlane>
       ephemeris(
-          bodies,
+          std::move(bodies),
           initial_state,
           t0_,
           McLachlanAtela1992Order5Optimal<Position<EarthMoonOrbitPlane>>(),
