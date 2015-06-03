@@ -2,7 +2,9 @@
 
 #include "physics/ephemeris.hpp"
 
+#include <algorithm>
 #include <functional>
+#include <vector>
 
 #include "base/map_util.hpp"
 #include "geometry/grassmann.hpp"

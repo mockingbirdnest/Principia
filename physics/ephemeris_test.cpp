@@ -1,5 +1,7 @@
 ﻿#include "physics/ephemeris.hpp"
 
+#include <vector>
+
 #include "geometry/frame.hpp"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"

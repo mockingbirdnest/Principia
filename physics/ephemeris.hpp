@@ -69,7 +69,7 @@ class Ephemeris {
   // If |t > t_max()|, calls |Prolong(t)| beforehand.
   // The |length_| and |speed_integration_tolerance|s are used to compute the
   // |tolerance_to_error_ratio| for step size control.
-  //TODO(phl):Remove intrinsic_acceleration?
+  // TODO(phl):Remove intrinsic_acceleration?  It is in the trajectory.
   void Flow(
       not_null<Trajectory<Frame>*> const trajectory,
       std::function<
