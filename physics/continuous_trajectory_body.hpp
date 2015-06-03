@@ -5,8 +5,12 @@
 #include <vector>
 
 #include "physics/continuous_trajectory.hpp"
+#include "testing_utilities/numerics.hpp"
 
 namespace principia {
+
+using testing_utilities::ULPDistance;
+
 namespace physics {
 
 namespace {
@@ -55,7 +59,11 @@ void ContinuousTrajectory<Frame>::Append(
   if (first_time_ == nullptr) {
     first_time_ = std::make_unique<Instant>(time);
   } else {
-    CHECK_EQ(last_points_.back().first + step_, time)
+    Instant const t0;
+    CHECK_GE(1,
+             ULPDistance((last_points_.back().first + step_ - t0) /
+                             SIUnit<Time>(),
+                         (time - t0) / SIUnit<Time>()))
         << "Append at times that are not equally spaced";
   }
 
