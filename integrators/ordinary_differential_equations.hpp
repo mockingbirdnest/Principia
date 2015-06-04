@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 #include <functional>
 #include <vector>
@@ -18,10 +18,15 @@ using quantities::Variation;
 
 namespace integrators {
 
+// A differential equation of the form q″ = f(q, t).
+// |Position| is the type of q.
 template<typename Position>
 struct SpecialSecondOrderDifferentialEquation {
+  // The type of Δq.
   using Displacement = Difference<Position>;
+  // The type of q′.
   using Velocity = Variation<Position>;
+  // The type of q″.
   using Acceleration = Variation<Velocity>;
   using RightHandSideComputation =
       std::function<
@@ -37,9 +42,13 @@ struct SpecialSecondOrderDifferentialEquation {
     std::vector<Displacement> position_error;
     std::vector<Velocity> velocity_error;
   };
+  // A functor that computes f(q, t) and stores it in |*accelerations|.
+  // |*accelerations| must have the same size as |positions|.
   RightHandSideComputation compute_acceleration;
 };
 
+// An initial value problem, together with a final time for the solution
+// and a callback for processing solution points.
 template<typename ODE>
 struct IntegrationProblem {
   ODE equation;
@@ -48,6 +57,9 @@ struct IntegrationProblem {
   std::function<void(typename ODE::SystemState const& state)> append_state;
 };
 
+// Settings for for adaptive step size integration.
+// The step size will be scaled so that the estimated new tolerance to error
+// ratio becomes |safety_factor|.
 template<typename ODE>
 struct AdaptiveStepSize {
   using ToleranceToErrorRatio =
@@ -59,12 +71,18 @@ struct AdaptiveStepSize {
   ToleranceToErrorRatio tolerance_to_error_ratio;
 };
 
+// A base class for integrators.
 template<typename DifferentialEquation>
 class Integrator {
  public:
   using ODE = DifferentialEquation;
 };
 
+// An integrator using a fixed step size.
+// The |problem| will be solved until the instant of the form
+// |problem.t_final + n * step| in [problem.t_final, problem.t_final + step[.
+// |problem.append_state| will be called with |state.time|s at intervals varying
+// by at most one unit roundoff.
 template<typename DifferentialEquation>
 class FixedStepSizeIntegrator : public Integrator<DifferentialEquation> {
  public:
@@ -72,6 +90,8 @@ class FixedStepSizeIntegrator : public Integrator<DifferentialEquation> {
                      Time const& step) const = 0;
 };
 
+// An integrator using a fixed step size.
+// The |problem| will be solved until exactly |problem.t_final|.
 template<typename DifferentialEquation>
 class AdaptiveStepSizeIntegrator : public Integrator<DifferentialEquation> {
  public:
