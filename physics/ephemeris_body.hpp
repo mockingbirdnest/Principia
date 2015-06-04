@@ -111,7 +111,7 @@ Ephemeris<Frame>::Ephemeris(
     }
   }
 
-  equation_.compute_acceleration =
+  massive_bodies_equation_.compute_acceleration =
       std::bind(&Ephemeris::ComputeGravitationalAccelerations,
                 this, _1, _2, _3);
 }
@@ -153,8 +153,9 @@ void Ephemeris<Frame>::ForgetBefore(Instant const& t) {
 template<typename Frame>
 void Ephemeris<Frame>::Prolong(Instant const& t) {
   IntegrationProblem<NewtonianMotionEquation> problem;
-  problem.equation = equation_;
-  problem.append_state = std::bind(&Ephemeris::AppendState, this, _1);
+  problem.equation = massive_bodies_equation_;
+  problem.append_state =
+      std::bind(&Ephemeris::AppendMassiveBodiesState, this, _1);
   problem.t_final = t;
   problem.initial_state = &last_state_;
 
@@ -173,16 +174,34 @@ void Ephemeris<Frame>::Prolong(Instant const& t) {
 template<typename Frame>
 void Ephemeris<Frame>::Flow(
     not_null<Trajectory<Frame>*> const trajectory,
-    std::function<
-        Vector<Acceleration, Frame>(
-            Instant const&)> intrinsic_acceleration,
     Length const& length_integration_tolerance,
     Speed const& speed_integration_tolerance,
-    AdaptiveStepSizeIntegrator<TimedBurnMotion> integrator,
-    Instant const& t) {}
+    AdaptiveStepSizeIntegrator<NewtonianMotionEquation> integrator,
+    Instant const& t) {
+  if (t > t_max()) {
+    Prolong(t);
+  }
+
+  typename NewtonianMotionEquation::SystemState initial_state;
+  auto const trajectory_last = trajectory->last();
+  auto const last_degrees_of_freedom = last.degrees_of_freedom();
+  initial_state.time = last.time();
+  initial_state.positions.push_back(last_degrees_of_freedom.position());
+  initial_state.velocity.push_back(last_degrees_of_freedom.velocity());
+
+  IntegrationProblem<NewtonianMotionEquation> problem;
+  problem.equation = massless_body_equation_;
+  problem.append_state =
+      std::bind(&Ephemeris::AppendMasslessBodyState, this, _1);
+  problem.t_final = t;
+  problem.initial_state = &initial_state;
+
+  AdaptiveStepSize<NewtonianMotionEquation> step_size;
+  integrator.Solve(problem, step_size);
+}
 
 template<typename Frame>
-void Ephemeris<Frame>::AppendState(
+void Ephemeris<Frame>::AppendMassiveBodiesState(
     typename NewtonianMotionEquation::SystemState const& state) {
   last_state_ = state;
   int index = 0;
@@ -200,6 +219,15 @@ void Ephemeris<Frame>::AppendState(
                                 state.velocities[index].value));
     ++index;
   }
+}
+
+template<typename Frame>
+void Ephemeris<Frame>::AppendMasslessBodyState(
+      typename NewtonianMotionEquation::SystemState const& state,
+      not_null<Trajectory<Frame>*> const trajectory) {
+  trajectory->Append(state.time,
+                     DegreesOfFreedom<Frame>(state.positions[0].value,
+                                             state.velocity[0].value));
 }
 
 template<typename Frame>

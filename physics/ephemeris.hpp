@@ -32,10 +32,6 @@ class Ephemeris {
   // The equation describing the motion of the |bodies_|.
   using NewtonianMotionEquation =
       SpecialSecondOrderDifferentialEquation<Position<Frame>>;
-  // We don't specify non-autonomy in NewtonianMotionEquation since there isn't
-  // a type for that at this time, so time-dependent intrinsic acceleration
-  // yields the same type of map.
-  using TimedBurnMotion = NewtonianMotionEquation;
 
   // Constructs an Ephemeris that owns the |bodies|.  The elements of vectors
   // |bodies| and |initial_state| correspond to one another.
@@ -69,18 +65,18 @@ class Ephemeris {
   // The |length_| and |speed_integration_tolerance|s are used to compute the
   // |tolerance_to_error_ratio| for step size control.
   // TODO(phl): Remove intrinsic_acceleration?  It is in the trajectory.
-  void Flow(
-      not_null<Trajectory<Frame>*> const trajectory,
-      std::function<
-          Vector<Acceleration, Frame>(
-              Instant const&)> intrinsic_acceleration,
-      Length const& length_integration_tolerance,
-      Speed const& speed_integration_tolerance,
-      AdaptiveStepSizeIntegrator<TimedBurnMotion> integrator,
-      Instant const& t);
+  void Flow(not_null<Trajectory<Frame>*> const trajectory,
+            Length const& length_integration_tolerance,
+            Speed const& speed_integration_tolerance,
+            AdaptiveStepSizeIntegrator<NewtonianMotionEquation> integrator,
+            Instant const& t);
 
  private:
-  void AppendState(typename NewtonianMotionEquation::SystemState const& state);
+  void AppendMassiveBodiesState(
+      typename NewtonianMotionEquation::SystemState const& state);
+  void AppendMasslessBodyState(
+      typename NewtonianMotionEquation::SystemState const& state,
+      not_null<Trajectory<Frame>*> const trajectory);
 
   // Computes the acceleration due to one body, |body1| (with index |b1| in the
   // |positions| and |accelerations| arrays) on the bodies |bodies2| (with
@@ -131,7 +127,8 @@ class Ephemeris {
   int number_of_spherical_bodies_ = 0;
   int number_of_oblate_bodies_ = 0;
 
-  NewtonianMotionEquation equation_;
+  NewtonianMotionEquation massive_bodies_equation_;
+  NewtonianMotionEquation massless_body_equation_;
 };
 
 }  // namespace physics
