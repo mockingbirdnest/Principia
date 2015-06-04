@@ -18,6 +18,7 @@ namespace principia {
 using base::FindOrDie;
 using geometry::InnerProduct;
 using geometry::R3Element;
+using integrators::AdaptiveStepSize;
 using integrators::IntegrationProblem;
 using quantities::Exponentiation;
 using ::std::placeholders::_1;
@@ -184,10 +185,10 @@ void Ephemeris<Frame>::Flow(
 
   typename NewtonianMotionEquation::SystemState initial_state;
   auto const trajectory_last = trajectory->last();
-  auto const last_degrees_of_freedom = last.degrees_of_freedom();
-  initial_state.time = last.time();
+  auto const last_degrees_of_freedom = trajectory_last.degrees_of_freedom();
+  initial_state.time = trajectory_last.time();
   initial_state.positions.push_back(last_degrees_of_freedom.position());
-  initial_state.velocity.push_back(last_degrees_of_freedom.velocity());
+  initial_state.velocities.push_back(last_degrees_of_freedom.velocity());
 
   IntegrationProblem<NewtonianMotionEquation> problem;
   problem.equation = massless_body_equation_;
