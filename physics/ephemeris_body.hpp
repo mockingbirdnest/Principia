@@ -113,7 +113,10 @@ Ephemeris<Frame>::Ephemeris(
   }
 
   massive_bodies_equation_.compute_acceleration =
-      std::bind(&Ephemeris::ComputeGravitationalAccelerations,
+      std::bind(&Ephemeris::ComputeMassiveBodiesGravitationalAccelerations,
+                this, _1, _2, _3);
+  massless_body_equation_.compute_acceleration =
+      std::bind(&Ephemeris::ComputeMasslessBodyGravitationalAccelerations,
                 this, _1, _2, _3);
 }
 
@@ -177,7 +180,7 @@ void Ephemeris<Frame>::Flow(
     not_null<Trajectory<Frame>*> const trajectory,
     Length const& length_integration_tolerance,
     Speed const& speed_integration_tolerance,
-    AdaptiveStepSizeIntegrator<NewtonianMotionEquation> integrator,
+    AdaptiveStepSizeIntegrator<NewtonianMotionEquation> const& integrator,
     Instant const& t) {
   if (t > t_max()) {
     Prolong(t);
@@ -193,7 +196,7 @@ void Ephemeris<Frame>::Flow(
   IntegrationProblem<NewtonianMotionEquation> problem;
   problem.equation = massless_body_equation_;
   problem.append_state =
-      std::bind(&Ephemeris::AppendMasslessBodyState, this, _1);
+      std::bind(&Ephemeris::AppendMasslessBodyState, _1, trajectory);
   problem.t_final = t;
   problem.initial_state = &initial_state;
 
@@ -226,15 +229,15 @@ template<typename Frame>
 void Ephemeris<Frame>::AppendMasslessBodyState(
       typename NewtonianMotionEquation::SystemState const& state,
       not_null<Trajectory<Frame>*> const trajectory) {
-  trajectory->Append(state.time,
+  trajectory->Append(state.time.value,
                      DegreesOfFreedom<Frame>(state.positions[0].value,
-                                             state.velocity[0].value));
+                                             state.velocities[0].value));
 }
 
 template<typename Frame>
 template<bool body1_is_oblate,
          bool body2_is_oblate>
-inline void Ephemeris<Frame>::ComputeOneBodyGravitationalAcceleration(
+inline void Ephemeris<Frame>::ComputeOneMassiveBodyGravitationalAcceleration(
     MassiveBody const& body1,
     size_t const b1,
     std::vector<not_null<MassiveBody const*>> const& bodies2,
@@ -296,7 +299,7 @@ inline void Ephemeris<Frame>::ComputeOneBodyGravitationalAcceleration(
 }
 
 template<typename Frame>
-void Ephemeris<Frame>::ComputeGravitationalAccelerations(
+void Ephemeris<Frame>::ComputeMassiveBodiesGravitationalAccelerations(
     Instant const& t,
     std::vector<Position<Frame>> const& positions,
     not_null<std::vector<Vector<Acceleration, Frame>>*> const accelerations) {
@@ -304,16 +307,16 @@ void Ephemeris<Frame>::ComputeGravitationalAccelerations(
 
   for (std::size_t b1 = 0; b1 < number_of_oblate_bodies_; ++b1) {
     MassiveBody const& body1 = *oblate_bodies_[b1];
-    ComputeOneBodyGravitationalAcceleration<true /*body1_is_oblate*/,
-                                            true /*body2_is_oblate*/>(
+    ComputeOneMassiveBodyGravitationalAcceleration<true /*body1_is_oblate*/,
+                                                   true /*body2_is_oblate*/>(
         body1, b1,
         oblate_bodies_ /*bodies2*/,
         0 /*b2_begin*/,
         number_of_oblate_bodies_ /*b2_end*/,
         positions,
         accelerations);
-    ComputeOneBodyGravitationalAcceleration<true /*body1_is_oblate*/,
-                                            false /*body2_is_oblate*/>(
+    ComputeOneMassiveBodyGravitationalAcceleration<true /*body1_is_oblate*/,
+                                                   false /*body2_is_oblate*/>(
         body1, b1,
         spherical_bodies_ /*bodies2*/,
         number_of_oblate_bodies_ /*b2_begin*/,
@@ -328,8 +331,8 @@ void Ephemeris<Frame>::ComputeGravitationalAccelerations(
        ++b1) {
     MassiveBody const& body1 =
         *spherical_bodies_[b1 - number_of_oblate_bodies_];
-    ComputeOneBodyGravitationalAcceleration<false /*body1_is_oblate*/,
-                                            false /*body2_is_oblate*/>(
+    ComputeOneMassiveBodyGravitationalAcceleration<false /*body1_is_oblate*/,
+                                                   false /*body2_is_oblate*/>(
         body1, b1,
         spherical_bodies_ /*bodies2*/,
         number_of_oblate_bodies_ /*b2_begin*/,
@@ -338,6 +341,13 @@ void Ephemeris<Frame>::ComputeGravitationalAccelerations(
         positions,
         accelerations);
   }
+}
+
+template<typename Frame>
+void Ephemeris<Frame>::ComputeMasslessBodyGravitationalAccelerations(
+      Instant const& t,
+      std::vector<Position<Frame>> const& positions,
+      not_null<std::vector<Vector<Acceleration, Frame>>*> const accelerations) {
 }
 
 }  // namespace physics

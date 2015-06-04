@@ -68,13 +68,14 @@ class Ephemeris {
   void Flow(not_null<Trajectory<Frame>*> const trajectory,
             Length const& length_integration_tolerance,
             Speed const& speed_integration_tolerance,
-            AdaptiveStepSizeIntegrator<NewtonianMotionEquation> integrator,
+            AdaptiveStepSizeIntegrator<NewtonianMotionEquation> const&
+                integrator,
             Instant const& t);
 
  private:
   void AppendMassiveBodiesState(
       typename NewtonianMotionEquation::SystemState const& state);
-  void AppendMasslessBodyState(
+  static void AppendMasslessBodyState(
       typename NewtonianMotionEquation::SystemState const& state,
       not_null<Trajectory<Frame>*> const trajectory);
 
@@ -85,7 +86,7 @@ class Ephemeris {
   // therefore what forces apply.
   template<bool body1_is_oblate,
            bool body2_is_oblate>
-  static void ComputeOneBodyGravitationalAcceleration(
+  static void ComputeOneMassiveBodyGravitationalAcceleration(
       MassiveBody const& body1,
       size_t const b1,
       std::vector<not_null<MassiveBody const*>> const& bodies2,
@@ -94,7 +95,12 @@ class Ephemeris {
       std::vector<Position<Frame>> const& positions,
       not_null<std::vector<Vector<Acceleration, Frame>>*> const accelerations);
 
-  void ComputeGravitationalAccelerations(
+  void ComputeMassiveBodiesGravitationalAccelerations(
+      Instant const& t,
+      std::vector<Position<Frame>> const& positions,
+      not_null<std::vector<Vector<Acceleration, Frame>>*> const accelerations);
+
+  void ComputeMasslessBodyGravitationalAccelerations(
       Instant const& t,
       std::vector<Position<Frame>> const& positions,
       not_null<std::vector<Vector<Acceleration, Frame>>*> const accelerations);
