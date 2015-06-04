@@ -79,22 +79,24 @@ class Integrator {
 };
 
 // An integrator using a fixed step size.
-// The |problem| will be solved until the instant of the form
-// |problem.t_final + n * step| in [problem.t_final, problem.t_final + step[.
-// |problem.append_state| will be called with |state.time|s at intervals varying
-// by at most one unit roundoff.
 template<typename DifferentialEquation>
 class FixedStepSizeIntegrator : public Integrator<DifferentialEquation> {
  public:
+  // The call to |problem.append_state| have a |state.time.value| equal to the
+  // unique |Instant|of the form |problem.t_final + n * step| in
+  // [problem.t_final, problem.t_final + step[.
+  // |problem.append_state| will be called with |state.time.values|s at
+  // intervals differing from |step| by at most one ULP.
   virtual void Solve(IntegrationProblem<ODE> const& problem,
                      Time const& step) const = 0;
 };
 
 // An integrator using a fixed step size.
-// The |problem| will be solved until exactly |problem.t_final|.
 template<typename DifferentialEquation>
 class AdaptiveStepSizeIntegrator : public Integrator<DifferentialEquation> {
  public:
+  // The call to |problem.append_state| will have
+  // |state.time.value == problem.t_final|.
   virtual void Solve(IntegrationProblem<ODE> const& problem,
                      AdaptiveStepSize<ODE> const& adaptive_step_size) const = 0;
 };
