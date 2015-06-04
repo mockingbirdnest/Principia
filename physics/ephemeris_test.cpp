@@ -19,8 +19,8 @@ namespace principia {
 
 using integrators::McLachlanAtela1992Order5Optimal;
 using quantities::Abs;
-using quantities::Area;
 using quantities::ArcTan;
+using quantities::Area;
 using quantities::Pow;
 using quantities::Sqrt;
 using si::Kilogram;
