@@ -86,7 +86,7 @@ class Ephemeris {
   // therefore what forces apply.
   template<bool body1_is_oblate,
            bool body2_is_oblate>
-  static void ComputeOneMassiveBodyGravitationalAcceleration(
+  static void ComputeGravitationalAccelerationByMassiveBodyOnMassiveBodies(
       MassiveBody const& body1,
       size_t const b1,
       std::vector<not_null<MassiveBody const*>> const& bodies2,
@@ -94,6 +94,13 @@ class Ephemeris {
       size_t const b2_end,
       std::vector<Position<Frame>> const& positions,
       not_null<std::vector<Vector<Acceleration, Frame>>*> const accelerations);
+
+  template<bool body1_is_oblate>
+  void ComputeGravitationalAccelerationByMassiveBodyOnMasslessBody(
+      MassiveBody const& body1,
+      size_t const b1,
+      Position<Frame> const& position,
+      not_null<Acceleration*> const acceleration);
 
   void ComputeMassiveBodiesGravitationalAccelerations(
       Instant const& t,
