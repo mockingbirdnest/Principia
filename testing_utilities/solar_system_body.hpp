@@ -88,7 +88,7 @@ Vector<double, ICRFJ2000Equator> Direction(Angle const& right_ascension,
 
 }  // namespace
 
-not_null<std::unique_ptr<SolarSystem>> SolarSystem::AtСпутник1Launch(
+inline not_null<std::unique_ptr<SolarSystem>> SolarSystem::AtСпутник1Launch(
     Accuracy const accuracy) {
   // Number of days since the JD epoch. JD2436116.3115 is the time of the launch
   // of Простейший Спутник-1.
@@ -514,7 +514,7 @@ not_null<std::unique_ptr<SolarSystem>> SolarSystem::AtСпутник1Launch(
   return std::move(solar_system);
 }
 
-not_null<std::unique_ptr<SolarSystem>> SolarSystem::AtСпутник2Launch(
+inline not_null<std::unique_ptr<SolarSystem>> SolarSystem::AtСпутник2Launch(
     Accuracy const accuracy) {
   // Number of days since the JD epoch. JD2436145.60417 is the time of the
   // launch of Простейший Спутник-2.
@@ -941,7 +941,7 @@ not_null<std::unique_ptr<SolarSystem>> SolarSystem::AtСпутник2Launch(
   return std::move(solar_system);
 }
 
-SolarSystem::SolarSystem(Accuracy const accuracy) {
+inline SolarSystem::SolarSystem(Accuracy const accuracy) {
   // All data is from the Jet Propulsion Laboratory's HORIZONS system unless
   // otherwise specified.
 
@@ -1095,11 +1095,11 @@ SolarSystem::SolarSystem(Accuracy const accuracy) {
   }
 }
 
-SolarSystem::Bodies SolarSystem::massive_bodies() {
+inline SolarSystem::Bodies SolarSystem::massive_bodies() {
   return std::move(massive_bodies_);
 }
 
-physics::NBodySystem<ICRFJ2000Ecliptic>::Trajectories
+inline physics::NBodySystem<ICRFJ2000Ecliptic>::Trajectories
 SolarSystem::trajectories() const {
   physics::NBodySystem<ICRFJ2000Ecliptic>::Trajectories result;
   for (auto const& trajectory : trajectories_) {
@@ -1108,7 +1108,7 @@ SolarSystem::trajectories() const {
   return result;
 }
 
-std::vector<DegreesOfFreedom<ICRFJ2000Ecliptic>> SolarSystem::
+inline std::vector<DegreesOfFreedom<ICRFJ2000Ecliptic>> SolarSystem::
 initial_state() const {
   std::vector<DegreesOfFreedom<ICRFJ2000Ecliptic>> result;
   for (auto const& trajectory : trajectories_) {
@@ -1117,11 +1117,11 @@ initial_state() const {
   return result;
 }
 
-Instant const& SolarSystem::time() const {
+inline Instant const& SolarSystem::time() const {
   return trajectories_.front()->last().time();
 }
 
-int SolarSystem::parent(int const index) {
+inline int SolarSystem::parent(int const index) {
   switch (index) {
     case kSun:
       LOG(FATAL) << FUNCTION_SIGNATURE << "The Sun has no parent";
@@ -1165,7 +1165,7 @@ int SolarSystem::parent(int const index) {
   }
 }
 
-std::string SolarSystem::name(int const index) {
+inline std::string SolarSystem::name(int const index) {
 #define BODY_NAME(name) case k##name: return #name
   switch (index) {
     BODY_NAME(Sun);

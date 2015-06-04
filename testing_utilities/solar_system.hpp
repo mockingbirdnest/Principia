@@ -48,10 +48,11 @@ using ICRFJ2000Equator =
 // Rotation around the common x axis mapping equatorial coordinates to ecliptic
 // coordinates.  The angle is the one defined by the XVIth General Assembly of
 // the International Astronomical Union.
-geometry::Rotation<ICRFJ2000Equator, ICRFJ2000Ecliptic> kEquatorialToEcliptic =
-    geometry::Rotation<ICRFJ2000Equator, ICRFJ2000Ecliptic>(
-        23 * si::Degree + 26 * si::ArcMinute + 21.448 * si::ArcSecond,
-        geometry::Bivector<double, ICRFJ2000Equator>({-1, 0, 0}));
+geometry::Rotation<ICRFJ2000Equator, ICRFJ2000Ecliptic> const
+    kEquatorialToEcliptic =
+        geometry::Rotation<ICRFJ2000Equator, ICRFJ2000Ecliptic>(
+            23 * si::Degree + 26 * si::ArcMinute + 21.448 * si::ArcSecond,
+            geometry::Bivector<double, ICRFJ2000Equator>({-1, 0, 0}));
 
 geometry::Position<ICRFJ2000Ecliptic> const kSolarSystemBarycentre;
 

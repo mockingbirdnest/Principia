@@ -7,15 +7,19 @@
 #include "gtest/gtest.h"
 #include "integrators/symplectic_runge_kutta_nyström_integrator.hpp"
 #include "quantities/elementary_functions.hpp"
+#include "quantities/named_quantities.hpp"
 #include "quantities/si.hpp"
 #include "serialization/geometry.pb.h"
 #include "testing_utilities/almost_equals.hpp"
+#include "testing_utilities/numerics.hpp"
 #include "testing_utilities/solar_system.hpp"
 
 namespace principia {
 
 using integrators::McLachlanAtela1992Order5Optimal;
 using quantities::Abs;
+using quantities::Area;
+using quantities::ArcTan;
 using quantities::Pow;
 using quantities::Sqrt;
 using si::Kilogram;
@@ -25,8 +29,11 @@ using si::Minute;
 using si::Second;
 using testing_utilities::AlmostEquals;
 using testing_utilities::ICRFJ2000Ecliptic;
+using testing_utilities::kSolarSystemBarycentre;
+using testing_utilities::RelativeError;
 using testing_utilities::SolarSystem;
 using ::testing::Eq;
+using ::testing::Gt;
 using ::testing::Lt;
 
 namespace physics {
@@ -37,14 +44,14 @@ class EphemerisTest : public testing::Test {
                                     serialization::Frame::TEST, true>;
 
   void SetUpEarthMoonSystem(
-      not_null<std::vector<not_null<std::unique_ptr<MassiveBody>>>*> const
+      not_null<std::vector<not_null<std::unique_ptr<MassiveBody const>>>*> const
           bodies,
       not_null<std::vector<DegreesOfFreedom<EarthMoonOrbitPlane>>*> const
           initial_state,
       not_null<Position<EarthMoonOrbitPlane>*> const centre_of_mass,
       not_null<Time*> const period) {
-    auto earth = std::make_unique<MassiveBody>(6E24 * Kilogram);
-    auto moon = std::make_unique<MassiveBody>(7E22 * Kilogram);
+    auto earth = std::make_unique<MassiveBody const>(6E24 * Kilogram);
+    auto moon = std::make_unique<MassiveBody const>(7E22 * Kilogram);
 
     // The Earth-Moon system, roughly, with a circular orbit with velocities
     // in the centre-of-mass frame.
@@ -81,14 +88,14 @@ class EphemerisTest : public testing::Test {
 
 // The canonical Earth-Moon system, tuned to produce circular orbits.
 TEST_F(EphemerisTest, EarthMoon) {
-  std::vector<not_null<std::unique_ptr<MassiveBody>>> bodies;
+  std::vector<not_null<std::unique_ptr<MassiveBody const>>> bodies;
   std::vector<DegreesOfFreedom<EarthMoonOrbitPlane>> initial_state;
   Position<EarthMoonOrbitPlane> centre_of_mass;
   Time period;
   SetUpEarthMoonSystem(&bodies, &initial_state, &centre_of_mass, &period);
 
-  MassiveBody* const earth = bodies[0].get();
-  MassiveBody* const moon = bodies[1].get();
+  MassiveBody const * const earth = bodies[0].get();
+  MassiveBody const * const moon = bodies[1].get();
 
   Ephemeris<EarthMoonOrbitPlane>
       ephemeris(
@@ -136,7 +143,7 @@ TEST_F(EphemerisTest, EarthMoon) {
 // The Moon alone.  It moves in straight line.
 TEST_F(EphemerisTest, Moon) {
   Position<EarthMoonOrbitPlane> const reference_position;
-  std::vector<not_null<std::unique_ptr<MassiveBody>>> bodies;
+  std::vector<not_null<std::unique_ptr<MassiveBody const>>> bodies;
   std::vector<DegreesOfFreedom<EarthMoonOrbitPlane>> initial_state;
   Position<EarthMoonOrbitPlane> centre_of_mass;
   Time period;
@@ -145,7 +152,7 @@ TEST_F(EphemerisTest, Moon) {
   bodies.erase(bodies.begin());
   initial_state.erase(initial_state.begin());
 
-  MassiveBody* const moon = bodies[0].get();
+  MassiveBody const * const moon = bodies[0].get();
 
   Ephemeris<EarthMoonOrbitPlane>
       ephemeris(
@@ -203,28 +210,22 @@ TEST_F(EphemerisTest, Sputnik1ToSputnik2) {
   std::vector<DegreesOfFreedom<ICRFJ2000Ecliptic>> const initial_state =
       at_спутник_1_launch->initial_state();
 
-  MassiveBody* const earth = bodies[0].get();
-  MassiveBody* const moon = bodies[1].get();
+  std::vector<not_null<MassiveBody const*>> unowned_bodies;
+  for (auto const& body : bodies) {
+    unowned_bodies.push_back(body.get());
+  }
 
-  Ephemeris<EarthMoonOrbitPlane>
+  Ephemeris<ICRFJ2000Ecliptic>
       ephemeris(
           std::move(bodies),
           initial_state,
-          t0_,
-          McLachlanAtela1992Order5Optimal<Position<EarthMoonOrbitPlane>>(),
+          at_спутник_1_launch->time(),
+          McLachlanAtela1992Order5Optimal<Position<ICRFJ2000Ecliptic>>(),
           45 * Minute,
           0.1 * Milli(Metre),
           5 * Milli(Metre));
 
-    ephemeris.Prolong(t0_ + period);
-
-  system.Integrate(
-      *integrator_,
-      at_спутник_2_launch->trajectories().front()->last().time(),  // tmax
-      45 * Minute,  // Δt
-      0,  // sampling_period
-      true,  // tmax_is_exact
-      evolved_system->trajectories());  // trajectories
+    ephemeris.Prolong(at_спутник_2_launch->time());
 
   // Upper bounds, tight to the nearest order of magnitude.
   static std::map<SolarSystem::Index, Angle> const expected_angle_error = {{}};
@@ -315,18 +316,19 @@ TEST_F(EphemerisTest, Sputnik1ToSputnik2) {
       {SolarSystem::kVenus, 1E-7},
       {SolarSystem::kMars, 1E-8}};
 
-  for (std::size_t i = 0; i < evolved_system->trajectories().size(); ++i) {
+  std::vector<DegreesOfFreedom<ICRFJ2000Ecliptic>> const final_state =
+      at_спутник_2_launch->initial_state();
+  for (std::size_t i = 0; i < unowned_bodies.size(); ++i) {
     SolarSystem::Index const index = static_cast<SolarSystem::Index>(i);
+    ContinuousTrajectory<ICRFJ2000Ecliptic> const& trajectory =
+        ephemeris.trajectory(unowned_bodies[i]);
     double const position_error = RelativeError(
-        at_спутник_2_launch->trajectories()[i]->
-            last().degrees_of_freedom().position() - kSolarSystemBarycentre,
-        evolved_system->trajectories()[i]->
-            last().degrees_of_freedom().position() - kSolarSystemBarycentre);
+        final_state[i].position() - kSolarSystemBarycentre,
+        trajectory.EvaluatePosition(at_спутник_2_launch->time(), nullptr) -
+            kSolarSystemBarycentre);
     double const velocity_error = RelativeError(
-        at_спутник_2_launch->trajectories()[i]->
-            last().degrees_of_freedom().velocity(),
-        evolved_system->trajectories()[i]->
-            last().degrees_of_freedom().velocity());
+        final_state[i].velocity(),
+        trajectory.EvaluateVelocity(at_спутник_2_launch->time(), nullptr));
     EXPECT_THAT(position_error, Lt(expected_position_error.at(index)))
         << SolarSystem::name(i);
     EXPECT_THAT(position_error, Gt(expected_position_error.at(index) / 10.0))
@@ -343,10 +345,9 @@ TEST_F(EphemerisTest, Sputnik1ToSputnik2) {
           at_спутник_2_launch->trajectories()[SolarSystem::parent(i)]->
               last().degrees_of_freedom().position();
       Vector<Length, ICRFJ2000Ecliptic> actual =
-          evolved_system->trajectories()[i]->
-              last().degrees_of_freedom().position() -
-          evolved_system->trajectories()[SolarSystem::parent(i)]->
-              last().degrees_of_freedom().position();
+          trajectory.EvaluatePosition(at_спутник_2_launch->time(), nullptr) -
+          ephemeris.trajectory(unowned_bodies[SolarSystem::parent(i)]).
+              EvaluatePosition(at_спутник_2_launch->time(), nullptr);
       if (expected_angle_error.find(index) != expected_angle_error.end()) {
         Area const product_of_norms = expected.Norm() * actual.Norm();
         Angle const angle = ArcTan(
