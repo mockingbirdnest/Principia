@@ -39,15 +39,14 @@ class Ephemeris {
 
   // Constructs an Ephemeris that owns the |bodies|.  The elements of vectors
   // |bodies| and |initial_state| correspond to one another.
-  Ephemeris(
-      std::vector<not_null<std::unique_ptr<MassiveBody>>> bodies,
-      std::vector<DegreesOfFreedom<Frame>> initial_state,
-      Instant const& initial_time,
-      FixedStepSizeIntegrator<NewtonianMotionEquation> const&
-          planetary_integrator,
-      Time const& step,
-      Length const& low_fitting_tolerance,
-      Length const& high_fitting_tolerance);
+  Ephemeris(std::vector<not_null<std::unique_ptr<MassiveBody const>>> bodies,
+            std::vector<DegreesOfFreedom<Frame>> const& initial_state,
+            Instant const& initial_time,
+            FixedStepSizeIntegrator<NewtonianMotionEquation> const&
+                planetary_integrator,
+            Time const& step,
+            Length const& low_fitting_tolerance,
+            Length const& high_fitting_tolerance);
 
   ContinuousTrajectory<Frame> const& trajectory(
       not_null<MassiveBody const*> body) const;
@@ -106,7 +105,7 @@ class Ephemeris {
 
   // The oblate bodies precede the spherical bodies in this vector.  The system
   // state is indexed in the same order.
-  std::vector<not_null<std::unique_ptr<MassiveBody>>> bodies_;
+  std::vector<not_null<std::unique_ptr<MassiveBody const>>> bodies_;
 
   // The indices in |bodies_| correspond to those in |oblate_bodies_| and
   // |spherical_bodies_|, in sequence.  The elements of |oblate_bodies_| are
