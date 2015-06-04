@@ -1108,6 +1108,19 @@ SolarSystem::trajectories() const {
   return result;
 }
 
+std::vector<DegreesOfFreedom<ICRFJ2000Ecliptic>> SolarSystem::
+initial_state() const {
+  std::vector<DegreesOfFreedom<ICRFJ2000Ecliptic>> result;
+  for (auto const& trajectory : trajectories_) {
+    result.push_back(trajectory->last().degrees_of_freedom());
+  }
+  return result;
+}
+
+Instant const& SolarSystem::time() const {
+  return trajectories_.front()->last().time();
+}
+
 int SolarSystem::parent(int const index) {
   switch (index) {
     case kSun:

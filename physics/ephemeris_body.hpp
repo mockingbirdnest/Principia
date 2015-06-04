@@ -28,19 +28,6 @@ namespace physics {
 
 namespace {
 
-template<typename B>
-std::enable_if_t<std::is_base_of<Body, B>::value, not_null<B const*>>
-ConvertTo(not_null<Body const*> const body) {
-// Dynamic casting is expensive, as in 3x slower for the benchmarks.  Do that in
-// debug mode to catch bugs, but not in optimized mode where we want all the
-// performance we can get.
-#ifdef _DEBUG
-  return dynamic_cast<B const*>(static_cast<Body const*>(body));
-#else
-  return static_cast<not_null<B const*>>(body);
-#endif
-}
-
 // If j is a unit vector along the axis of rotation, and r is the separation
 // between the bodies, the acceleration computed here is:
 //
@@ -72,8 +59,8 @@ FORCE_INLINE Vector<Acceleration, Frame>
 
 template<typename Frame>
 Ephemeris<Frame>::Ephemeris(
-    std::vector<not_null<std::unique_ptr<MassiveBody>>> bodies,
-    std::vector<DegreesOfFreedom<Frame>> initial_state,
+    std::vector<not_null<std::unique_ptr<MassiveBody const>>> bodies,
+    std::vector<DegreesOfFreedom<Frame>> const& initial_state,
     Instant const& initial_time,
     FixedStepSizeIntegrator<NewtonianMotionEquation> const&
         planetary_integrator,

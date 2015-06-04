@@ -8,6 +8,7 @@
 #include "geometry/frame.hpp"
 #include "geometry/named_quantities.hpp"
 #include "geometry/rotation.hpp"
+#include "physics/degrees_of_freedom.hpp"
 #include "physics/n_body_system.hpp"
 #include "quantities/quantities.hpp"
 #include "quantities/si.hpp"
@@ -17,6 +18,7 @@ namespace principia {
 
 using base::not_null;
 using geometry::Frame;
+using physics::DegreesOfFreedom;
 
 namespace testing_utilities {
 
@@ -123,6 +125,10 @@ class SolarSystem {
 
   // This class retains ownership of the trajectories.
   physics::NBodySystem<ICRFJ2000Ecliptic>::Trajectories trajectories() const;
+
+  std::vector<DegreesOfFreedom<ICRFJ2000Ecliptic>> initial_state() const;
+
+  Instant const& time() const;
 
   // Returns the index of the parent of the body with the given |index|.
   // Because enums are broken in C++ we use ints.  Sigh.
