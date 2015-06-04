@@ -1,5 +1,6 @@
 ﻿#include "physics/ephemeris.hpp"
 
+#include <map>
 #include <vector>
 
 #include "geometry/frame.hpp"
