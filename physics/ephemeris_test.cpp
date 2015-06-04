@@ -94,8 +94,8 @@ TEST_F(EphemerisTest, EarthMoon) {
   Time period;
   SetUpEarthMoonSystem(&bodies, &initial_state, &centre_of_mass, &period);
 
-  MassiveBody const * const earth = bodies[0].get();
-  MassiveBody const * const moon = bodies[1].get();
+  MassiveBody const* const earth = bodies[0].get();
+  MassiveBody const* const moon = bodies[1].get();
 
   Ephemeris<EarthMoonOrbitPlane>
       ephemeris(
@@ -152,7 +152,7 @@ TEST_F(EphemerisTest, Moon) {
   bodies.erase(bodies.begin());
   initial_state.erase(initial_state.begin());
 
-  MassiveBody const * const moon = bodies[0].get();
+  MassiveBody const* const moon = bodies[0].get();
 
   Ephemeris<EarthMoonOrbitPlane>
       ephemeris(
