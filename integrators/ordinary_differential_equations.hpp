@@ -43,7 +43,9 @@ struct SpecialSecondOrderDifferentialEquation {
     std::vector<Velocity> velocity_error;
   };
   // A functor that computes f(q, t) and stores it in |*accelerations|.
-  // |*accelerations| must have the same size as |positions|.
+  // This functor must be called with |accelerations->size()| equal to
+  // |positions->size()|, but there is no requirement on the values in
+  // |*acceleration|.
   RightHandSideComputation compute_acceleration;
 };
 
@@ -58,16 +60,24 @@ struct IntegrationProblem {
 };
 
 // Settings for for adaptive step size integration.
-// The step size will be scaled so that the estimated new tolerance to error
-// ratio becomes |safety_factor|.
 template<typename ODE>
 struct AdaptiveStepSize {
   using ToleranceToErrorRatio =
       std::function<
           double(Time const& current_step_size,
                  typename ODE::SystemStateError const& error)>;
+  // The first time step tried by the integrator. It must have the same sign as
+  // |problem.t_final - initial_state.time.value|.
   Time first_time_step;
+  // This number must be in ]0, 1[.
   double safety_factor;
+  // This functor is called at each step, with the |current_step_size| used by
+  // the integrator and the estimated |error| on that step.  It returns the
+  // ratio of a tolerance to some norm of the error.  The step is recomputed
+  // with a smaller step size if the result is less than 1, and accepted
+  // otherwise.
+  // In both cases, the new step size is chosen so as to try and make the result
+  // of the next call to |tolerance_to_error_ratio| close to |safety_factor|.
   ToleranceToErrorRatio tolerance_to_error_ratio;
 };
 
@@ -82,8 +92,8 @@ class Integrator {
 template<typename DifferentialEquation>
 class FixedStepSizeIntegrator : public Integrator<DifferentialEquation> {
  public:
-  // The last call to |problem.append_state| have a |state.time.value| equal to
-  // the unique |Instant|of the form |problem.t_final + n * step| in
+  // The last call to |problem.append_state| has a |state.time.value| equal to
+  // the unique |Instant| of the form |problem.t_final + n * step| in
   // [problem.t_final, problem.t_final + step[.
   // |problem.append_state| will be called with |state.time.values|s at
   // intervals differing from |step| by at most one ULP.
