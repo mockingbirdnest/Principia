@@ -95,6 +95,10 @@ class Ephemeris {
       std::vector<Position<Frame>> const& positions,
       not_null<std::vector<Vector<Acceleration, Frame>>*> const accelerations);
 
+  // Computes the acceleration due to one body, |body1| (with index |b1| in the
+  // |hints|, |bodies_| and |trajectories_| arrays) on a massless body at the
+  // given |position|.  The template parameter specifies what we know about the
+  // massive body, and therefore what forces apply.
   template<bool body1_is_oblate>
   void ComputeGravitationalAccelerationByMassiveBodyOnMasslessBody(
       Instant const& t,
@@ -105,11 +109,17 @@ class Ephemeris {
       not_null<std::vector<typename ContinuousTrajectory<Frame>::Hint>*>
           const hints);
 
+  // Computes the accelerations between all the massive bodies in |bodies_|.
   void ComputeMassiveBodiesGravitationalAccelerations(
       Instant const& t,
       std::vector<Position<Frame>> const& positions,
       not_null<std::vector<Vector<Acceleration, Frame>>*> const accelerations);
 
+  // Computes the acceleration exerted by the massive bodies in |bodies_| on a
+  // massless body.  The massless body may have an intrinsic acceleration
+  // described in its |trajectory| object.  The |hints| are passed to
+  // ComputeGravitationalAccelerationByMassiveBodyOnMasslessBody for efficient
+  // computation of the positions of the massive bodies.
   void ComputeMasslessBodyGravitationalAccelerations(
       not_null<Trajectory<Frame> const*> const trajectory,
       Instant const& t,
@@ -118,6 +128,7 @@ class Ephemeris {
       not_null<std::vector<typename ContinuousTrajectory<Frame>::Hint>*>
           const hints);
 
+  // Computes an estimate of the ratio |tolerance / error|.
   static double ToleranceToErrorRatio(
       Length const& length_integration_tolerance,
       Speed const& speed_integration_tolerance,
