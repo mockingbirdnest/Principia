@@ -10,6 +10,7 @@
 #include "geometry/grassmann.hpp"
 #include "geometry/r3_element.hpp"
 #include "physics/continuous_trajectory.hpp"
+#include "quantities/elementary_functions.hpp"
 #include "quantities/named_quantities.hpp"
 #include "quantities/quantities.hpp"
 
@@ -20,6 +21,7 @@ using geometry::InnerProduct;
 using geometry::R3Element;
 using integrators::AdaptiveStepSize;
 using integrators::IntegrationProblem;
+using quantities::Abs;
 using quantities::Exponentiation;
 using ::std::placeholders::_1;
 using ::std::placeholders::_2;
@@ -204,6 +206,13 @@ void Ephemeris<Frame>::Flow(
   problem.initial_state = &initial_state;
 
   AdaptiveStepSize<NewtonianMotionEquation> step_size;
+  step_size.first_time_step = problem.t_final - initial_state.time.value;
+  step_size.safety_factor = 0.9;
+  step_size.tolerance_to_error_ratio =
+      std::bind(&Ephemeris<Frame>::ToleranceToErrorRatio,
+                std::cref(length_integration_tolerance),
+                std::cref(speed_integration_tolerance),
+                _1, _2);
   integrator.Solve(problem, step_size);
 }
 
@@ -424,6 +433,26 @@ void Ephemeris<Frame>::ComputeMasslessBodyGravitationalAccelerations(
         trajectory->evaluate_intrinsic_acceleration(t);
     acceleration += intrinsic_acceleration;
   }
+}
+
+template<typename Frame>
+double Ephemeris<Frame>::ToleranceToErrorRatio(
+    Length const& length_integration_tolerance,
+    Speed const& speed_integration_tolerance,
+    Time const& current_step_size,
+    typename NewtonianMotionEquation::SystemStateError const& error) {
+  Length position_error_max;
+  Speed velocity_error_max;
+  for (auto const& position_error : error.position_error) {
+    position_error_max = std::max(position_error_max,
+                                  position_error.Norm());
+  }
+  for (auto const& velocity_error : error.velocity_error) {
+    velocity_error_max = std::max(velocity_error_max,
+                                  velocity_error.Norm());
+  }
+  return std::max(length_integration_tolerance / position_error_max,
+                  speed_integration_tolerance / velocity_error_max);
 }
 
 }  // namespace physics

@@ -118,6 +118,12 @@ class Ephemeris {
       not_null<std::vector<typename ContinuousTrajectory<Frame>::Hint>*>
           const hints);
 
+  static double ToleranceToErrorRatio(
+      Length const& length_integration_tolerance,
+      Speed const& speed_integration_tolerance,
+      Time const& current_step_size,
+      typename NewtonianMotionEquation::SystemStateError const& error);
+
   // The oblate bodies precede the spherical bodies in this vector.  The system
   // state is indexed in the same order.
   std::vector<not_null<std::unique_ptr<MassiveBody const>>> bodies_;
