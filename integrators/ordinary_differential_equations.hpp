@@ -69,7 +69,8 @@ struct AdaptiveStepSize {
   // The first time step tried by the integrator. It must have the same sign as
   // |problem.t_final - initial_state.time.value|.
   Time first_time_step;
-  // This number must be in ]0, 1[.
+  // This number must be in ]0, 1[.  Higher values increase the chance of step
+  // rejection, lower values yield smaller steps.
   double safety_factor;
   // This functor is called at each step, with the |current_step_size| used by
   // the integrator and the estimated |error| on that step.  It returns the
