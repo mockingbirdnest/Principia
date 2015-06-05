@@ -40,7 +40,7 @@ namespace {
 // Where |r| is the norm of r and r.j is the inner product.
 template<typename Frame>
 FORCE_INLINE Vector<Acceleration, Frame>
-    Order2ZonalAcceleration(
+    Order2ZonalAccelerationLegacy(
         OblateBody<Frame> const& body,
         Vector<Length, Frame> const& r,
         Exponentiation<Length, -2> const& one_over_r_squared,
@@ -252,7 +252,7 @@ inline void NBodySystem<Frame>::ComputeOneBodyGravitationalAcceleration(
       Vector<Length, Frame> const Δq({Δq0, Δq1, Δq2});
       if (body1_is_oblate) {
         R3Element<Acceleration> const order_2_zonal_acceleration1 =
-            Order2ZonalAcceleration<Frame>(
+            Order2ZonalAccelerationLegacy<Frame>(
                 static_cast<OblateBody<Frame> const &>(body1),
                 Δq,
                 one_over_r_squared,
@@ -264,7 +264,7 @@ inline void NBodySystem<Frame>::ComputeOneBodyGravitationalAcceleration(
       if (body2_is_oblate) {
         // |body2| was set in the |body2_is_massive| branch above.
         R3Element<Acceleration> const order_2_zonal_acceleration2 =
-            Order2ZonalAcceleration<Frame>(
+            Order2ZonalAccelerationLegacy<Frame>(
                 *CHECK_NOTNULL(static_cast<OblateBody<Frame> const*>(body2)),
                 Δq,
                 one_over_r_squared,

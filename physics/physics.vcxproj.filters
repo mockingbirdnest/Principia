@@ -80,6 +80,9 @@
     <ClInclude Include="ephemeris.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="ephemeris_body.hpp">
+      <Filter>Source Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="n_body_system_test.cpp">
@@ -98,6 +101,9 @@
       <Filter>Test Files</Filter>
     </ClCompile>
     <ClCompile Include="continuous_trajectory_test.cpp">
+      <Filter>Test Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ephemeris_test.cpp">
       <Filter>Test Files</Filter>
     </ClCompile>
   </ItemGroup>

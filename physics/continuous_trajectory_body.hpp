@@ -5,8 +5,12 @@
 #include <vector>
 
 #include "physics/continuous_trajectory.hpp"
+#include "testing_utilities/numerics.hpp"
 
 namespace principia {
+
+using testing_utilities::ULPDistance;
+
 namespace physics {
 
 namespace {
@@ -55,7 +59,11 @@ void ContinuousTrajectory<Frame>::Append(
   if (first_time_ == nullptr) {
     first_time_ = std::make_unique<Instant>(time);
   } else {
-    CHECK_EQ(last_points_.back().first + step_, time)
+    Instant const t0;
+    CHECK_GE(1,
+             ULPDistance((last_points_.back().first + step_ - t0) /
+                             SIUnit<Time>(),
+                         (time - t0) / SIUnit<Time>()))
         << "Append at times that are not equally spaced";
   }
 
@@ -145,6 +153,8 @@ template<typename Frame>
 Position<Frame> ContinuousTrajectory<Frame>::EvaluatePosition(
     Instant const& time,
     Hint* const hint) const {
+  CHECK_LE(t_min(), time);
+  CHECK_GE(t_max(), time);
   if (MayUseHint(time, hint)) {
     return series_[hint->index_].Evaluate(time) + Frame::origin;
   } else {
@@ -160,6 +170,8 @@ template<typename Frame>
 Velocity<Frame> ContinuousTrajectory<Frame>::EvaluateVelocity(
     Instant const& time,
     Hint* const hint) const {
+  CHECK_LE(t_min(), time);
+  CHECK_GE(t_max(), time);
   if (MayUseHint(time, hint)) {
     return series_[hint->index_].EvaluateDerivative(time);
   } else {
@@ -175,6 +187,8 @@ template<typename Frame>
 DegreesOfFreedom<Frame> ContinuousTrajectory<Frame>::EvaluateDegreesOfFreedom(
     Instant const& time,
     Hint* const hint) const {
+  CHECK_LE(t_min(), time);
+  CHECK_GE(t_max(), time);
   if (MayUseHint(time, hint)) {
     ЧебышёвSeries<Displacement<Frame>> const& series = series_[hint->index_];
     return DegreesOfFreedom<Frame>(series.Evaluate(time) + Frame::origin,
@@ -198,11 +212,13 @@ typename std::vector<ЧебышёвSeries<Displacement<Frame>>>::const_iterator
 ContinuousTrajectory<Frame>::FindSeriesForInstant(Instant const& time) const {
   // Need to use |lower_bound|, not |upper_bound|, because it allows
   // heterogeneous arguments.
-  return std::lower_bound(series_.begin(), series_.end(), time,
-                          [](ЧебышёвSeries<Displacement<Frame>> const& left,
-                             Instant const& right) {
-                            return left.t_max() < right;
-                          });
+  auto const it = std::lower_bound(series_.begin(), series_.end(), time,
+                      [](ЧебышёвSeries<Displacement<Frame>> const& left,
+                         Instant const& right) {
+                        return left.t_max() < right;
+                      });
+  CHECK(it != series_.end());
+  return it;
 }
 
 template<typename Frame>
