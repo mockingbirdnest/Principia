@@ -97,10 +97,13 @@ class Ephemeris {
 
   template<bool body1_is_oblate>
   void ComputeGravitationalAccelerationByMassiveBodyOnMasslessBody(
+      Instant const& t,
       MassiveBody const& body1,
       size_t const b1,
       Position<Frame> const& position,
-      not_null<Acceleration*> const acceleration);
+      not_null<Vector<Acceleration, Frame>*> const acceleration,
+      not_null<std::vector<typename ContinuousTrajectory<Frame>::Hint>*>
+          const hints);
 
   void ComputeMassiveBodiesGravitationalAccelerations(
       Instant const& t,
@@ -108,9 +111,12 @@ class Ephemeris {
       not_null<std::vector<Vector<Acceleration, Frame>>*> const accelerations);
 
   void ComputeMasslessBodyGravitationalAccelerations(
+      not_null<Trajectory<Frame> const*> const trajectory,
       Instant const& t,
       std::vector<Position<Frame>> const& positions,
-      not_null<std::vector<Vector<Acceleration, Frame>>*> const accelerations);
+      not_null<std::vector<Vector<Acceleration, Frame>>*> const accelerations,
+      not_null<std::vector<typename ContinuousTrajectory<Frame>::Hint>*>
+          const hints);
 
   // The oblate bodies precede the spherical bodies in this vector.  The system
   // state is indexed in the same order.
@@ -122,10 +128,8 @@ class Ephemeris {
   std::vector<not_null<MassiveBody const*>> oblate_bodies_;
   std::vector<not_null<MassiveBody const*>> spherical_bodies_;
 
-  // The indices in |bodies_| correspond to those in |oblate_trajectories_| and
-  // |spherical_trajectories_|, in sequence.
-  std::vector<not_null<ContinuousTrajectory<Frame>*>> oblate_trajectories_;
-  std::vector<not_null<ContinuousTrajectory<Frame>*>> spherical_trajectories_;
+  // The indices in |bodies_| correspond to those in |trajectories_|.
+  std::vector<not_null<ContinuousTrajectory<Frame>*>> trajectories_;
 
   std::map<not_null<MassiveBody const*>, ContinuousTrajectory<Frame>>
       bodies_to_trajectories_;
@@ -141,7 +145,6 @@ class Ephemeris {
   int number_of_oblate_bodies_ = 0;
 
   NewtonianMotionEquation massive_bodies_equation_;
-  NewtonianMotionEquation massless_body_equation_;
 };
 
 }  // namespace physics
