@@ -126,6 +126,17 @@ ContinuousTrajectory<Frame> const& Ephemeris<Frame>::trajectory(
 }
 
 template<typename Frame>
+bool Ephemeris<Frame>::empty() const {
+  for (auto const& pair : bodies_to_trajectories_) {
+    ContinuousTrajectory<Frame> const& trajectory = pair.second;
+    if (trajectory.empty()) {
+      return true;
+    }
+  }
+  return false;
+}
+
+template<typename Frame>
 Instant Ephemeris<Frame>::t_min() const {
   Instant t_min;
   for (auto const& pair : bodies_to_trajectories_) {
@@ -181,7 +192,7 @@ void Ephemeris<Frame>::Flow(
     Speed const& speed_integration_tolerance,
     AdaptiveStepSizeIntegrator<NewtonianMotionEquation> const& integrator,
     Instant const& t) {
-  if (t > t_max()) {
+  if (empty() || t > t_max()) {
     Prolong(t);
   }
 

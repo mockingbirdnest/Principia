@@ -47,6 +47,9 @@ class Ephemeris {
   ContinuousTrajectory<Frame> const& trajectory(
       not_null<MassiveBody const*> body) const;
 
+  // Returns true if at least one of the trajectories is empty.
+  bool empty() const;
+
   // The maximum of the |t_min|s of the trajectories.
   Instant t_min() const;
   // The mimimum of the |t_max|s of the trajectories.
