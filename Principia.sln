@@ -76,6 +76,12 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "numerics", "numerics\numeri
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "benchmark_automation", "benchmark_automation\benchmark_automation.csproj", "{5498EE37-1A80-4DA8-8D81-01892C4C8EEB}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{8EF5AB3D-F63B-48B9-80A0-B789A830413C}"
+	ProjectSection(SolutionItems) = preProject
+		profiling\BM_EphemerisSolarSystemMajorBodiesOnly.psess = profiling\BM_EphemerisSolarSystemMajorBodiesOnly.psess
+		profiling\BM_SolarSystemMajorBodiesOnly.psess = profiling\BM_SolarSystemMajorBodiesOnly.psess
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU

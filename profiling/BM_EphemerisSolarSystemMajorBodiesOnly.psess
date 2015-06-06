@@ -36,7 +36,7 @@
   </PostinstrumentEvent>
   <Binaries>
     <ProjBinary>
-      <Path>Release\benchmarks.exe</Path>
+      <Path>..\Release\benchmarks.exe</Path>
       <ArgumentTimestamp>01/01/0001 00:00:00</ArgumentTimestamp>
       <Instrument>true</Instrument>
       <Sample>true</Sample>
@@ -50,7 +50,7 @@
       <LaunchMethod>Executable</LaunchMethod>
       <ExecutablePath>Release\benchmarks.exe</ExecutablePath>
       <StartupDirectory>benchmarks\</StartupDirectory>
-      <Arguments>--benchmark_filter=Evaluate --benchmark_repetitions=10</Arguments>
+      <Arguments>--benchmark_filter=BM_EphemerisSolarSystemMajorBodiesOnly</Arguments>
       <NetAppHost>IIS</NetAppHost>
       <NetBrowser>InternetExplorer</NetBrowser>
       <ExcludeSmallFuncs>true</ExcludeSmallFuncs>
@@ -62,10 +62,18 @@
         <InstrEventExclude>false</InstrEventExclude>
       </PostinstrumentEvent>
       <ProjRef>{7B174B21-0837-4BEE-864E-08AD3C74046A}|benchmarks\benchmarks.vcxproj</ProjRef>
-      <ProjPath>benchmarks\benchmarks.vcxproj</ProjPath>
+      <ProjPath>..\benchmarks\benchmarks.vcxproj</ProjPath>
       <ProjName>benchmarks</ProjName>
     </ProjBinary>
   </Binaries>
+  <Reports>
+    <Report>
+      <Path>BM_EphemerisSolarSystemMajorBodiesOnly20150606-1855.vsp</Path>
+    </Report>
+    <Report>
+      <Path>BM_EphemerisSolarSystemMajorBodiesOnly20150606-2010.vsp</Path>
+    </Report>
+  </Reports>
   <Launches>
     <ProjBinary>
       <Path>:PB:{7B174B21-0837-4BEE-864E-08AD3C74046A}|benchmarks\benchmarks.vcxproj</Path>

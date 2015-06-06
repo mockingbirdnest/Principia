@@ -393,28 +393,32 @@ template<typename Scalar, typename Frame, int rank>
 inline Multivector<Scalar, Frame, rank>& operator+=(
     Multivector<Scalar, Frame, rank>& left,  // NOLINT(runtime/references)
     Multivector<Scalar, Frame, rank> const& right) {
-  return left = left + right;
+  left.coordinates_ += right.coordinates_;
+  return left;
 }
 
 template<typename Scalar, typename Frame, int rank>
 inline Multivector<Scalar, Frame, rank>& operator-=(
     Multivector<Scalar, Frame, rank>& left,  // NOLINT(runtime/references)
     Multivector<Scalar, Frame, rank> const& right) {
-  return left = left - right;
+  left.coordinates_ -= right.coordinates_;
+  return left;
 }
 
 template<typename Scalar, typename Frame, int rank>
 inline Multivector<Scalar, Frame, rank>& operator*=(
     Multivector<Scalar, Frame, rank>& left,  // NOLINT(runtime/references)
     double const right) {
-  return left = left * right;
+  left.coordinates_ *= right;
+  return left;
 }
 
 template<typename Scalar, typename Frame, int rank>
 inline Multivector<Scalar, Frame, rank>& operator/=(
     Multivector<Scalar, Frame, rank>& left,  // NOLINT(runtime/references)
     double const right) {
-  return left = left / right;
+  left.coordinates_ /= right;
+  return left;
 }
 
 template<typename Scalar, typename Frame, int rank>
