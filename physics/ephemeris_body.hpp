@@ -196,7 +196,7 @@ void Ephemeris<Frame>::Flow(
     Prolong(t);
   }
 
-  std::vector<typename ContinuousTrajectory<Frame>::Hint> hints;
+  std::vector<typename ContinuousTrajectory<Frame>::Hint> hints(bodies_.size());
   NewtonianMotionEquation massless_body_equation;
   massless_body_equation.compute_acceleration =
       std::bind(&Ephemeris::ComputeMasslessBodyGravitationalAccelerations,
@@ -224,6 +224,7 @@ void Ephemeris<Frame>::Flow(
                 std::cref(length_integration_tolerance),
                 std::cref(speed_integration_tolerance),
                 _1, _2);
+
   integrator.Solve(problem, step_size);
 }
 
@@ -452,18 +453,18 @@ double Ephemeris<Frame>::ToleranceToErrorRatio(
     Speed const& speed_integration_tolerance,
     Time const& current_step_size,
     typename NewtonianMotionEquation::SystemStateError const& error) {
-  Length position_error_max;
-  Speed velocity_error_max;
+  Length max_length_error;
+  Speed max_speed_error;
   for (auto const& position_error : error.position_error) {
-    position_error_max = std::max(position_error_max,
-                                  position_error.Norm());
+    max_length_error = std::max(max_length_error,
+                                position_error.Norm());
   }
   for (auto const& velocity_error : error.velocity_error) {
-    velocity_error_max = std::max(velocity_error_max,
+    max_speed_error = std::max(max_speed_error,
                                   velocity_error.Norm());
   }
-  return std::max(length_integration_tolerance / position_error_max,
-                  speed_integration_tolerance / velocity_error_max);
+  return std::min(length_integration_tolerance / max_length_error,
+                  speed_integration_tolerance / max_speed_error);
 }
 
 }  // namespace physics

@@ -246,8 +246,8 @@ TEST_F(EphemerisTest, EarthProbe) {
          0 * SIUnit<Acceleration>()});});
 
   ephemeris.Flow(&trajectory,
-                 1 * Metre,
-                 1 * Metre / Second,
+                 1E-9 * Metre,
+                 1E-15 * Metre / Second,
                  DormandElMikkawyPrince1986RKN434FM<
                      Position<EarthMoonOrbitPlane>>(),
                  t0_ + period);
@@ -290,19 +290,11 @@ TEST_F(EphemerisTest, EarthProbe) {
   for (auto const it : trajectory.Positions()) {
     probe_positions.push_back(it.second - reference_position);
   }
-  EXPECT_THAT(probe_positions.size(), Eq(101));
-  EXPECT_THAT(probe_positions[25].coordinates().x,
-              AlmostEquals(0.25 * period * v_probe, 1));
-  EXPECT_THAT(probe_positions[25].coordinates().y, AlmostEquals(q_probe, 0));
-  EXPECT_THAT(probe_positions[50].coordinates().x,
-              AlmostEquals(0.50 * period * v_probe, 1));
-  EXPECT_THAT(probe_positions[50].coordinates().y, AlmostEquals(q_probe, 0));
-  EXPECT_THAT(probe_positions[75].coordinates().x,
-              AlmostEquals(0.75 * period * v_probe, 1, 2));
-  EXPECT_THAT(probe_positions[75].coordinates().y, AlmostEquals(q_probe, 0));
-  EXPECT_THAT(probe_positions[100].coordinates().x,
+  EXPECT_THAT(probe_positions.size(), Eq(10));
+  EXPECT_THAT(probe_positions.back().coordinates().x,
               AlmostEquals(1.00 * period * v_probe, 1));
-  EXPECT_THAT(probe_positions[100].coordinates().y, Eq(q_probe));
+  EXPECT_THAT(probe_positions.back().coordinates().y,
+              Eq(q_probe));
 }
 
 TEST_F(EphemerisTest, Sputnik1ToSputnik2) {
