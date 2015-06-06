@@ -68,10 +68,10 @@
   </Binaries>
   <Reports>
     <Report>
-      <Path>BM_EphemerisSolarSystemMajorBodiesOnly150606-1855.vsp</Path>
+      <Path>BM_EphemerisSolarSystemMajorBodiesOnly20150606-1855.vsp</Path>
     </Report>
     <Report>
-      <Path>BM_EphemerisSolarSystemMajorBodiesOnly150606-2010.vsp</Path>
+      <Path>BM_EphemerisSolarSystemMajorBodiesOnly20150606-2010.vsp</Path>
     </Report>
   </Reports>
   <Launches>
