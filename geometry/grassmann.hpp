@@ -32,7 +32,6 @@ class Multivector<Scalar, Frame, 1> {
   explicit Multivector(R3Element<Scalar> const& coordinates);
   ~Multivector() = default;
 
-  R3Element<Scalar>& coordinates();
   R3Element<Scalar> const& coordinates() const;
   Scalar Norm() const;
 
@@ -48,6 +47,23 @@ class Multivector<Scalar, Frame, 1> {
 
   template<typename S, typename F, int r>
   friend class Multivector;
+
+  template<typename Scalar, typename Frame, int rank>
+  friend Multivector<Scalar, Frame, rank>& operator+=(
+      Multivector<Scalar, Frame, rank>& left,  // NOLINT(runtime/references)
+      Multivector<Scalar, Frame, rank> const& right);
+  template<typename Scalar, typename Frame, int rank>
+  friend Multivector<Scalar, Frame, rank>& operator-=(
+      Multivector<Scalar, Frame, rank>& left,  // NOLINT(runtime/references)
+      Multivector<Scalar, Frame, rank> const& right);
+  template<typename Scalar, typename Frame, int rank>
+  friend Multivector<Scalar, Frame, rank>& operator*=(
+      Multivector<Scalar, Frame, rank>& left,  // NOLINT(runtime/references)
+      double const right);
+  template<typename Scalar, typename Frame, int rank>
+  friend Multivector<Scalar, Frame, rank>& operator/=(
+      Multivector<Scalar, Frame, rank>& left,  // NOLINT(runtime/references)
+      double const right);
 };
 
 template<typename Scalar, typename Frame>
@@ -57,7 +73,6 @@ class Multivector<Scalar, Frame, 2> {
   explicit Multivector(R3Element<Scalar> const& coordinates);
   ~Multivector() = default;
 
-  R3Element<Scalar>& coordinates();
   R3Element<Scalar> const& coordinates() const;
   Scalar Norm() const;
 
@@ -70,6 +85,23 @@ class Multivector<Scalar, Frame, 2> {
 
  private:
   R3Element<Scalar> coordinates_;
+
+  template<typename Scalar, typename Frame, int rank>
+  friend Multivector<Scalar, Frame, rank>& operator+=(
+      Multivector<Scalar, Frame, rank>& left,  // NOLINT(runtime/references)
+      Multivector<Scalar, Frame, rank> const& right);
+  template<typename Scalar, typename Frame, int rank>
+  friend Multivector<Scalar, Frame, rank>& operator-=(
+      Multivector<Scalar, Frame, rank>& left,  // NOLINT(runtime/references)
+      Multivector<Scalar, Frame, rank> const& right);
+  template<typename Scalar, typename Frame, int rank>
+  friend Multivector<Scalar, Frame, rank>& operator*=(
+      Multivector<Scalar, Frame, rank>& left,  // NOLINT(runtime/references)
+      double const right);
+  template<typename Scalar, typename Frame, int rank>
+  friend Multivector<Scalar, Frame, rank>& operator/=(
+      Multivector<Scalar, Frame, rank>& left,  // NOLINT(runtime/references)
+      double const right);
 };
 
 template<typename Scalar, typename Frame>
@@ -79,7 +111,6 @@ class Multivector<Scalar, Frame, 3> {
   explicit Multivector(Scalar const& coordinates);
   ~Multivector() = default;
 
-  Scalar& coordinates();
   Scalar const& coordinates() const;
   Scalar Norm() const;
 
@@ -89,6 +120,23 @@ class Multivector<Scalar, Frame, 3> {
 
  private:
   Scalar coordinates_;
+
+  template<typename Scalar, typename Frame, int rank>
+  friend Multivector<Scalar, Frame, rank>& operator+=(
+      Multivector<Scalar, Frame, rank>& left,  // NOLINT(runtime/references)
+      Multivector<Scalar, Frame, rank> const& right);
+  template<typename Scalar, typename Frame, int rank>
+  friend Multivector<Scalar, Frame, rank>& operator-=(
+      Multivector<Scalar, Frame, rank>& left,  // NOLINT(runtime/references)
+      Multivector<Scalar, Frame, rank> const& right);
+  template<typename Scalar, typename Frame, int rank>
+  friend Multivector<Scalar, Frame, rank>& operator*=(
+      Multivector<Scalar, Frame, rank>& left,  // NOLINT(runtime/references)
+      double const right);
+  template<typename Scalar, typename Frame, int rank>
+  friend Multivector<Scalar, Frame, rank>& operator/=(
+      Multivector<Scalar, Frame, rank>& left,  // NOLINT(runtime/references)
+      double const right);
 };
 
 template<typename Scalar, typename Frame>

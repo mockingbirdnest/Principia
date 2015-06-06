@@ -75,29 +75,14 @@ Multivector<Scalar, Frame, 3>::Multivector(Scalar const& coordinates)
     : coordinates_(coordinates) {}
 
 template<typename Scalar, typename Frame>
-inline R3Element<Scalar>& Multivector<Scalar, Frame, 1>::coordinates() {
-  return coordinates_;
-}
-
-template<typename Scalar, typename Frame>
 inline R3Element<Scalar> const&
 Multivector<Scalar, Frame, 1>::coordinates() const {
   return coordinates_;
 }
 
 template<typename Scalar, typename Frame>
-inline R3Element<Scalar>& Multivector<Scalar, Frame, 2>::coordinates() {
-  return coordinates_;
-}
-
-template<typename Scalar, typename Frame>
 inline R3Element<Scalar> const&
 Multivector<Scalar, Frame, 2>::coordinates() const {
-  return coordinates_;
-}
-
-template<typename Scalar, typename Frame>
-inline Scalar& Multivector<Scalar, Frame, 3>::coordinates() {
   return coordinates_;
 }
 
@@ -408,7 +393,7 @@ template<typename Scalar, typename Frame, int rank>
 inline Multivector<Scalar, Frame, rank>& operator+=(
     Multivector<Scalar, Frame, rank>& left,  // NOLINT(runtime/references)
     Multivector<Scalar, Frame, rank> const& right) {
-  left.coordinates() += right.coordinates();
+  left.coordinates_ += right.coordinates_;
   return left;
 }
 
@@ -416,21 +401,24 @@ template<typename Scalar, typename Frame, int rank>
 inline Multivector<Scalar, Frame, rank>& operator-=(
     Multivector<Scalar, Frame, rank>& left,  // NOLINT(runtime/references)
     Multivector<Scalar, Frame, rank> const& right) {
-  return left = left - right;
+  left.coordinates_ -= right.coordinates_;
+  return left;
 }
 
 template<typename Scalar, typename Frame, int rank>
 inline Multivector<Scalar, Frame, rank>& operator*=(
     Multivector<Scalar, Frame, rank>& left,  // NOLINT(runtime/references)
     double const right) {
-  return left = left * right;
+  left.coordinates_ *= right.coordinates_;
+  return left;
 }
 
 template<typename Scalar, typename Frame, int rank>
 inline Multivector<Scalar, Frame, rank>& operator/=(
     Multivector<Scalar, Frame, rank>& left,  // NOLINT(runtime/references)
     double const right) {
-  return left = left / right;
+  left.coordinates_ /= right.coordinates_;
+  return left;
 }
 
 template<typename Scalar, typename Frame, int rank>
