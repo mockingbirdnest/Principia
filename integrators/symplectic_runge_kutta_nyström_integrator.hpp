@@ -21,11 +21,11 @@ namespace integrators {
 // of (1), and for an explanation of the relation to Hamiltonian mechanics.
 
 // Each step of size h is computed using the composition of evolutions
-//   exp(b₀ h B) exp(a₀ h A) ... exp(bᵣ₋₁ h B) exp(aᵣ₋₁ h A);
+//   exp(aᵣ₋₁ h A) exp(bᵣ₋₁ h B) ... exp(a₀ h A)exp(b₀ h B);
 // the integrator thus is a composition method.  If the appropriate coefficients
 // vanish, the above can be reformulated as either
-//   exp(a₀ h A) exp(b₁ h B) ... exp(bᵣ₋₁ h B) exp(aᵣ₋₁ h A) or
-//   exp(b₀ h B) exp(a₀ h A) ... exp(aᵣ₋₂ h A) exp(bᵣ₋₁ h B).
+//   exp(aᵣ₋₁ h A) exp(bᵣ₋₁ h B) ... exp(b₁ h B) exp(a₀ h A)  or
+//   exp(bᵣ₋₁ h B) exp(aᵣ₋₂ h A) ... exp(a₀ h A) exp(b₀ h B).
 // The former is called type ABA, the latter type BAB, following the conventions
 // used in Blanes, Casas and Ros (2001),
 // New Families of Symplectic Runge-Kutta-Nyström Integration Methods,
