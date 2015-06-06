@@ -58,7 +58,10 @@ inline Scalar const& R3Element<Scalar>::operator[](int const index) const {
 template<typename Scalar>
 inline R3Element<Scalar>& R3Element<Scalar>::operator+=(
     R3Element<Scalar> const& right) {
-  return *this = *this + right;
+  this->x += right.x;
+  this->y += right.y;
+  this->z += right.z;
+  return *this;
 }
 
 template<typename Scalar>

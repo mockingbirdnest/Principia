@@ -32,6 +32,7 @@ class Multivector<Scalar, Frame, 1> {
   explicit Multivector(R3Element<Scalar> const& coordinates);
   ~Multivector() = default;
 
+  R3Element<Scalar>& coordinates();
   R3Element<Scalar> const& coordinates() const;
   Scalar Norm() const;
 
@@ -56,6 +57,7 @@ class Multivector<Scalar, Frame, 2> {
   explicit Multivector(R3Element<Scalar> const& coordinates);
   ~Multivector() = default;
 
+  R3Element<Scalar>& coordinates();
   R3Element<Scalar> const& coordinates() const;
   Scalar Norm() const;
 
@@ -77,6 +79,7 @@ class Multivector<Scalar, Frame, 3> {
   explicit Multivector(Scalar const& coordinates);
   ~Multivector() = default;
 
+  Scalar& coordinates();
   Scalar const& coordinates() const;
   Scalar Norm() const;
 
