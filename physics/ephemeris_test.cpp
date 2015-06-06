@@ -6,6 +6,7 @@
 #include "geometry/frame.hpp"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
+#include "integrators/embedded_explicit_runge_kutta_nyström_integrator.hpp"
 #include "integrators/symplectic_runge_kutta_nyström_integrator.hpp"
 #include "quantities/elementary_functions.hpp"
 #include "quantities/named_quantities.hpp"
@@ -17,6 +18,7 @@
 
 namespace principia {
 
+using integrators::DormandElMikkawyPrince1986RKN434FM;
 using integrators::McLachlanAtela1992Order5Optimal;
 using quantities::Abs;
 using quantities::ArcTan;
@@ -196,6 +198,103 @@ TEST_F(EphemerisTest, Moon) {
   EXPECT_THAT(moon_positions[100].coordinates().x,
               AlmostEquals(1.00 * period * v, 13));
   EXPECT_THAT(moon_positions[100].coordinates().y, Eq(q));
+}
+
+// The Earth and a massless probe 1 billion meters away, with the same velocity,
+// and an acceleration which exactly compensates gravitational attraction.  Both
+// bodies move in straight lines.
+TEST_F(EphemerisTest, EarthProbe) {
+  Position<EarthMoonOrbitPlane> const reference_position;
+  Length const kDistance = 1E9 * Metre;
+  std::vector<not_null<std::unique_ptr<MassiveBody const>>> bodies;
+  std::vector<DegreesOfFreedom<EarthMoonOrbitPlane>> initial_state;
+  Position<EarthMoonOrbitPlane> centre_of_mass;
+  Time period;
+  SetUpEarthMoonSystem(&bodies, &initial_state, &centre_of_mass, &period);
+
+  bodies.erase(bodies.begin() + 1);
+  initial_state.erase(initial_state.begin() + 1);
+
+  MassiveBody const* const earth = bodies[0].get();
+  Position<EarthMoonOrbitPlane> const earth_position =
+      initial_state[0].position();
+  Velocity<EarthMoonOrbitPlane> const earth_velocity =
+      initial_state[0].velocity();
+
+  Ephemeris<EarthMoonOrbitPlane>
+      ephemeris(
+          std::move(bodies),
+          initial_state,
+          t0_,
+          McLachlanAtela1992Order5Optimal<Position<EarthMoonOrbitPlane>>(),
+          period / 100,
+          0.1 * Milli(Metre),
+          5 * Milli(Metre));
+
+  MasslessBody probe;
+  Trajectory<EarthMoonOrbitPlane> trajectory(&probe);
+  trajectory.Append(t0_,
+                    DegreesOfFreedom<EarthMoonOrbitPlane>(
+                        earth_position + Vector<Length, EarthMoonOrbitPlane>(
+                            {0 * Metre, kDistance, 0 * Metre}),
+                        earth_velocity));
+  trajectory.set_intrinsic_acceleration(
+      [earth, kDistance](Instant const& t) {
+    return Vector<Acceleration, EarthMoonOrbitPlane>(
+        {0 * SIUnit<Acceleration>(),
+         earth->gravitational_parameter() / (kDistance * kDistance),
+         0 * SIUnit<Acceleration>()});});
+
+  ephemeris.Flow(&trajectory,
+                 1E-9 * Metre,
+                 1E-15 * Metre / Second,
+                 DormandElMikkawyPrince1986RKN434FM<
+                     Position<EarthMoonOrbitPlane>>(),
+                 t0_ + period);
+
+  ContinuousTrajectory<EarthMoonOrbitPlane> const& earth_trajectory =
+      ephemeris.trajectory(earth);
+
+  ContinuousTrajectory<EarthMoonOrbitPlane>::Hint hint;
+  DegreesOfFreedom<EarthMoonOrbitPlane> const earth_degrees_of_freedom =
+      earth_trajectory.EvaluateDegreesOfFreedom(t0_ + period, &hint);
+  Length const q_earth = (earth_degrees_of_freedom.position() -
+                          reference_position).coordinates().y;
+  Speed const v_earth = earth_degrees_of_freedom.velocity().coordinates().x;
+  std::vector<Displacement<EarthMoonOrbitPlane>> earth_positions;
+  for (int i = 0; i <= 100; ++i) {
+    earth_positions.push_back(
+        earth_trajectory.EvaluatePosition(t0_ + i * period / 100, &hint) -
+            reference_position);
+  }
+
+  EXPECT_THAT(earth_positions.size(), Eq(101));
+  EXPECT_THAT(earth_positions[25].coordinates().x,
+              AlmostEquals(0.25 * period * v_earth, 10));
+  EXPECT_THAT(earth_positions[25].coordinates().y, Eq(q_earth));
+  EXPECT_THAT(earth_positions[50].coordinates().x,
+              AlmostEquals(0.50 * period * v_earth, 11));
+  EXPECT_THAT(earth_positions[50].coordinates().y, Eq(q_earth));
+  EXPECT_THAT(earth_positions[75].coordinates().x,
+              AlmostEquals(0.75 * period * v_earth, 6));
+  EXPECT_THAT(earth_positions[75].coordinates().y, Eq(q_earth));
+  EXPECT_THAT(earth_positions[100].coordinates().x,
+              AlmostEquals(1.00 * period * v_earth, 9));
+  EXPECT_THAT(earth_positions[100].coordinates().y, Eq(q_earth));
+
+  Length const q_probe = (trajectory.last().degrees_of_freedom().position() -
+                     reference_position).coordinates().y;
+  Speed const v_probe =
+      trajectory.last().degrees_of_freedom().velocity().coordinates().x;
+  std::vector<Displacement<EarthMoonOrbitPlane>> probe_positions;
+  for (auto const it : trajectory.Positions()) {
+    probe_positions.push_back(it.second - reference_position);
+  }
+  EXPECT_THAT(probe_positions.size(), Eq(10));
+  EXPECT_THAT(probe_positions.back().coordinates().x,
+              AlmostEquals(1.00 * period * v_probe, 1));
+  EXPECT_THAT(probe_positions.back().coordinates().y,
+              Eq(q_probe));
 }
 
 TEST_F(EphemerisTest, Sputnik1ToSputnik2) {

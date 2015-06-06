@@ -32,10 +32,6 @@ class Ephemeris {
   // The equation describing the motion of the |bodies_|.
   using NewtonianMotionEquation =
       SpecialSecondOrderDifferentialEquation<Position<Frame>>;
-  // We don't specify non-autonomy in NewtonianMotionEquation since there isn't
-  // a type for that at this time, so time-dependent intrinsic acceleration
-  // yields the same type of map.
-  using TimedBurnMotion = NewtonianMotionEquation;
 
   // Constructs an Ephemeris that owns the |bodies|.  The elements of vectors
   // |bodies| and |initial_state| correspond to one another.
@@ -50,6 +46,9 @@ class Ephemeris {
 
   ContinuousTrajectory<Frame> const& trajectory(
       not_null<MassiveBody const*> body) const;
+
+  // Returns true if at least one of the trajectories is empty.
+  bool empty() const;
 
   // The maximum of the |t_min|s of the trajectories.
   Instant t_min() const;
@@ -69,18 +68,19 @@ class Ephemeris {
   // The |length_| and |speed_integration_tolerance|s are used to compute the
   // |tolerance_to_error_ratio| for step size control.
   // TODO(phl): Remove intrinsic_acceleration?  It is in the trajectory.
-  void Flow(
-      not_null<Trajectory<Frame>*> const trajectory,
-      std::function<
-          Vector<Acceleration, Frame>(
-              Instant const&)> intrinsic_acceleration,
-      Length const& length_integration_tolerance,
-      Speed const& speed_integration_tolerance,
-      AdaptiveStepSizeIntegrator<TimedBurnMotion> integrator,
-      Instant const& t);
+  void Flow(not_null<Trajectory<Frame>*> const trajectory,
+            Length const& length_integration_tolerance,
+            Speed const& speed_integration_tolerance,
+            AdaptiveStepSizeIntegrator<NewtonianMotionEquation> const&
+                integrator,
+            Instant const& t);
 
  private:
-  void AppendState(typename NewtonianMotionEquation::SystemState const& state);
+  void AppendMassiveBodiesState(
+      typename NewtonianMotionEquation::SystemState const& state);
+  static void AppendMasslessBodyState(
+      typename NewtonianMotionEquation::SystemState const& state,
+      not_null<Trajectory<Frame>*> const trajectory);
 
   // Computes the acceleration due to one body, |body1| (with index |b1| in the
   // |positions| and |accelerations| arrays) on the bodies |bodies2| (with
@@ -89,7 +89,7 @@ class Ephemeris {
   // therefore what forces apply.
   template<bool body1_is_oblate,
            bool body2_is_oblate>
-  static void ComputeOneBodyGravitationalAcceleration(
+  static void ComputeGravitationalAccelerationByMassiveBodyOnMassiveBodies(
       MassiveBody const& body1,
       size_t const b1,
       std::vector<not_null<MassiveBody const*>> const& bodies2,
@@ -98,10 +98,45 @@ class Ephemeris {
       std::vector<Position<Frame>> const& positions,
       not_null<std::vector<Vector<Acceleration, Frame>>*> const accelerations);
 
-  void ComputeGravitationalAccelerations(
+  // Computes the acceleration due to one body, |body1| (with index |b1| in the
+  // |hints|, |bodies_| and |trajectories_| arrays) on a massless body at the
+  // given |position|.  The template parameter specifies what we know about the
+  // massive body, and therefore what forces apply.
+  template<bool body1_is_oblate>
+  void ComputeGravitationalAccelerationByMassiveBodyOnMasslessBody(
+      Instant const& t,
+      MassiveBody const& body1,
+      size_t const b1,
+      Position<Frame> const& position,
+      not_null<Vector<Acceleration, Frame>*> const acceleration,
+      not_null<std::vector<typename ContinuousTrajectory<Frame>::Hint>*>
+          const hints);
+
+  // Computes the accelerations between all the massive bodies in |bodies_|.
+  void ComputeMassiveBodiesGravitationalAccelerations(
       Instant const& t,
       std::vector<Position<Frame>> const& positions,
       not_null<std::vector<Vector<Acceleration, Frame>>*> const accelerations);
+
+  // Computes the acceleration exerted by the massive bodies in |bodies_| on a
+  // massless body.  The massless body may have an intrinsic acceleration
+  // described in its |trajectory| object.  The |hints| are passed to
+  // ComputeGravitationalAccelerationByMassiveBodyOnMasslessBody for efficient
+  // computation of the positions of the massive bodies.
+  void ComputeMasslessBodyGravitationalAccelerations(
+      not_null<Trajectory<Frame> const*> const trajectory,
+      Instant const& t,
+      std::vector<Position<Frame>> const& positions,
+      not_null<std::vector<Vector<Acceleration, Frame>>*> const accelerations,
+      not_null<std::vector<typename ContinuousTrajectory<Frame>::Hint>*>
+          const hints);
+
+  // Computes an estimate of the ratio |tolerance / error|.
+  static double ToleranceToErrorRatio(
+      Length const& length_integration_tolerance,
+      Speed const& speed_integration_tolerance,
+      Time const& current_step_size,
+      typename NewtonianMotionEquation::SystemStateError const& error);
 
   // The oblate bodies precede the spherical bodies in this vector.  The system
   // state is indexed in the same order.
@@ -113,10 +148,8 @@ class Ephemeris {
   std::vector<not_null<MassiveBody const*>> oblate_bodies_;
   std::vector<not_null<MassiveBody const*>> spherical_bodies_;
 
-  // The indices in |bodies_| correspond to those in |oblate_trajectories_| and
-  // |spherical_trajectories_|, in sequence.
-  std::vector<not_null<ContinuousTrajectory<Frame>*>> oblate_trajectories_;
-  std::vector<not_null<ContinuousTrajectory<Frame>*>> spherical_trajectories_;
+  // The indices in |bodies_| correspond to those in |trajectories_|.
+  std::vector<not_null<ContinuousTrajectory<Frame>*>> trajectories_;
 
   std::map<not_null<MassiveBody const*>, ContinuousTrajectory<Frame>>
       bodies_to_trajectories_;
@@ -131,7 +164,7 @@ class Ephemeris {
   int number_of_spherical_bodies_ = 0;
   int number_of_oblate_bodies_ = 0;
 
-  NewtonianMotionEquation equation_;
+  NewtonianMotionEquation massive_bodies_equation_;
 };
 
 }  // namespace physics
