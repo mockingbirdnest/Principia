@@ -409,7 +409,7 @@ template<typename Scalar, typename Frame, int rank>
 inline Multivector<Scalar, Frame, rank>& operator*=(
     Multivector<Scalar, Frame, rank>& left,  // NOLINT(runtime/references)
     double const right) {
-  left.coordinates_ *= right.coordinates_;
+  left.coordinates_ *= right;
   return left;
 }
 
@@ -417,7 +417,7 @@ template<typename Scalar, typename Frame, int rank>
 inline Multivector<Scalar, Frame, rank>& operator/=(
     Multivector<Scalar, Frame, rank>& left,  // NOLINT(runtime/references)
     double const right) {
-  left.coordinates_ /= right.coordinates_;
+  left.coordinates_ /= right;
   return left;
 }
 

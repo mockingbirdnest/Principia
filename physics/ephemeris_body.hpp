@@ -264,13 +264,11 @@ ComputeGravitationalAccelerationByMassiveBodyOnMassiveBodies(
     std::vector<Position<Frame>> const& positions,
     not_null<std::vector<Vector<Acceleration, Frame>>*> const accelerations) {
   Vector<Acceleration, Frame>& acceleration1 = (*accelerations)[b1];
-  GravitationalParameter const& μ1 =
-      body1.gravitational_parameter();
+  GravitationalParameter const& μ1 = body1.gravitational_parameter();
   for (std::size_t b2 = std::max(b1 + 1, b2_begin); b2 < b2_end; ++b2) {
     Vector<Acceleration, Frame>& acceleration2 = (*accelerations)[b2];
     MassiveBody const& body2 = *bodies2[b2 - b2_begin];
-    GravitationalParameter const& μ2 =
-        body2.gravitational_parameter();
+    GravitationalParameter const& μ2 = body2.gravitational_parameter();
 
     Displacement<Frame> const Δq = positions[b1] - positions[b2];
 
