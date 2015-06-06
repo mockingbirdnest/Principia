@@ -32,6 +32,9 @@
     <ClCompile Include="sprk_integrator.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="ephemeris.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="quantities.hpp">
