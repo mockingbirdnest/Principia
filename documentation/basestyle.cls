@@ -30,7 +30,7 @@
 \setmainfont[
   Mapping=tex-text, 
   Numbers={OldStyle, Proportional}, 
-  Ligatures={TeX, Common, Historical}, 
+  Ligatures={TeX, Common, Discretionary, Historical}, 
 %  SmallCapsFont={Linux Libertine Capitals O},
   SmallCapsFeatures={Letters=SmallCaps},
   Contextuals=WordFinal,
@@ -46,7 +46,7 @@
   Numbers={OldStyle, Proportional}, 
   SmallCapsFont={Linux Libertine O},
   SmallCapsFeatures={Letters=SmallCaps},
-  Ligatures={TeX, Common, Historical}, 
+  Ligatures={TeX, Common, Discretionary, Historical}, 
   Contextuals=WordFinal
                         ]{Linux Libertine Display O}
 \newfontface\textsfshadow[
