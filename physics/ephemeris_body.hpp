@@ -461,7 +461,7 @@ double Ephemeris<Frame>::ToleranceToErrorRatio(
   }
   for (auto const& velocity_error : error.velocity_error) {
     max_speed_error = std::max(max_speed_error,
-                                  velocity_error.Norm());
+                               velocity_error.Norm());
   }
   return std::min(length_integration_tolerance / max_length_error,
                   speed_integration_tolerance / max_speed_error);
