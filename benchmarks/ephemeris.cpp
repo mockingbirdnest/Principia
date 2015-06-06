@@ -66,7 +66,6 @@ void EphemerisSolarSystemBenchmark(SolarSystem::Accuracy const accuracy,
     Instant final_time = at_спутник_1_launch->time() + 100 * JulianYear;
     state->ResumeTiming();
     ephemeris.Prolong(final_time);
-    LOG(ERROR)<<"Done";
     state->PauseTiming();
     error = (ephemeris.trajectory(unowned_bodies[SolarSystem::kSun]).
                  EvaluatePosition(final_time, nullptr) -
