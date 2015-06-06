@@ -204,6 +204,7 @@ TEST_F(EphemerisTest, Moon) {
 // and an acceleration which exactly compensates gravitational attraction.  Both
 // bodies move in straight lines.
 TEST_F(EphemerisTest, EarthProbe) {
+  Position<EarthMoonOrbitPlane> const reference_position;
   Length const kDistance = 1E9 * Metre;
   std::vector<not_null<std::unique_ptr<MassiveBody const>>> bodies;
   std::vector<DegreesOfFreedom<EarthMoonOrbitPlane>> initial_state;
@@ -251,47 +252,57 @@ TEST_F(EphemerisTest, EarthProbe) {
                      Position<EarthMoonOrbitPlane>>(),
                  t0_ + period);
 
-  //Length const q1 = (trajectory1_->last().degrees_of_freedom().position() -
-  //                   reference_position).coordinates().y;
-  //Speed const v1 =
-  //    trajectory1_->last().degrees_of_freedom().velocity().coordinates().x;
-  //std::vector<Vector<Length, EarthMoonOrbitPlane>> const positions1 =
-  //    ValuesOf(trajectory1_->Positions(), reference_position);
-  //LOG(INFO) << ToMathematicaString(positions1);
-  //EXPECT_THAT(positions1.size(), Eq(101));
-  //EXPECT_THAT(positions1[25].coordinates().x,
-  //            AlmostEquals(0.25 * period_ * v1, 1));
-  //EXPECT_THAT(positions1[25].coordinates().y, Eq(q1));
-  //EXPECT_THAT(positions1[50].coordinates().x,
-  //            AlmostEquals(0.50 * period_ * v1, 1));
-  //EXPECT_THAT(positions1[50].coordinates().y, Eq(q1));
-  //EXPECT_THAT(positions1[75].coordinates().x,
-  //            AlmostEquals(0.75 * period_ * v1, 1, 2));
-  //EXPECT_THAT(positions1[75].coordinates().y, Eq(q1));
-  //EXPECT_THAT(positions1[100].coordinates().x,
-  //            AlmostEquals(1.00 * period_ * v1, 1));
-  //EXPECT_THAT(positions1[100].coordinates().y, Eq(q1));
+  ContinuousTrajectory<EarthMoonOrbitPlane> const& earth_trajectory =
+      ephemeris.trajectory(earth);
 
-  //Length const q3 = (trajectory3_->last().degrees_of_freedom().position() -
-  //                   reference_position).coordinates().y;
-  //Speed const v3 =
-  //    trajectory3_->last().degrees_of_freedom().velocity().coordinates().x;
-  //std::vector<Vector<Length, EarthMoonOrbitPlane>> const positions3 =
-  //    ValuesOf(trajectory3_->Positions(), reference_position);
-  //LOG(INFO) << ToMathematicaString(positions3);
-  //EXPECT_THAT(positions3.size(), Eq(101));
-  //EXPECT_THAT(positions3[25].coordinates().x,
-  //            AlmostEquals(0.25 * period_ * v3, 1));
-  //EXPECT_THAT(positions3[25].coordinates().y, AlmostEquals(q3, 2));
-  //EXPECT_THAT(positions3[50].coordinates().x,
-  //            AlmostEquals(0.50 * period_ * v3, 1));
-  //EXPECT_THAT(positions3[50].coordinates().y, AlmostEquals(q3, 2));
-  //EXPECT_THAT(positions3[75].coordinates().x,
-  //            AlmostEquals(0.75 * period_ * v3, 1, 2));
-  //EXPECT_THAT(positions3[75].coordinates().y, AlmostEquals(q3, 1));
-  //EXPECT_THAT(positions3[100].coordinates().x,
-  //            AlmostEquals(1.00 * period_ * v3, 1));
-  //EXPECT_THAT(positions3[100].coordinates().y, Eq(q3));
+  ContinuousTrajectory<EarthMoonOrbitPlane>::Hint hint;
+  DegreesOfFreedom<EarthMoonOrbitPlane> const earth_degrees_of_freedom =
+      earth_trajectory.EvaluateDegreesOfFreedom(t0_ + period, &hint);
+  Length const q_earth = (earth_degrees_of_freedom.position() -
+                          reference_position).coordinates().y;
+  Speed const v_earth = earth_degrees_of_freedom.velocity().coordinates().x;
+  std::vector<Displacement<EarthMoonOrbitPlane>> earth_positions;
+  for (int i = 0; i <= 100; ++i) {
+    earth_positions.push_back(
+        earth_trajectory.EvaluatePosition(t0_ + i * period / 100, &hint) -
+            reference_position);
+  }
+
+  EXPECT_THAT(earth_positions.size(), Eq(101));
+  EXPECT_THAT(earth_positions[25].coordinates().x,
+              AlmostEquals(0.25 * period * v_earth, 10));
+  EXPECT_THAT(earth_positions[25].coordinates().y, Eq(q_earth));
+  EXPECT_THAT(earth_positions[50].coordinates().x,
+              AlmostEquals(0.50 * period * v_earth, 11));
+  EXPECT_THAT(earth_positions[50].coordinates().y, Eq(q_earth));
+  EXPECT_THAT(earth_positions[75].coordinates().x,
+              AlmostEquals(0.75 * period * v_earth, 6));
+  EXPECT_THAT(earth_positions[75].coordinates().y, Eq(q_earth));
+  EXPECT_THAT(earth_positions[100].coordinates().x,
+              AlmostEquals(1.00 * period * v_earth, 9));
+  EXPECT_THAT(earth_positions[100].coordinates().y, Eq(q_earth));
+
+  Length const q_probe = (trajectory.last().degrees_of_freedom().position() -
+                     reference_position).coordinates().y;
+  Speed const v_probe =
+      trajectory.last().degrees_of_freedom().velocity().coordinates().x;
+  std::vector<Displacement<EarthMoonOrbitPlane>> probe_positions;
+  for (auto const it : trajectory.Positions()) {
+    probe_positions.push_back(it.second - reference_position);
+  }
+  EXPECT_THAT(probe_positions.size(), Eq(101));
+  EXPECT_THAT(probe_positions[25].coordinates().x,
+              AlmostEquals(0.25 * period * v_probe, 1));
+  EXPECT_THAT(probe_positions[25].coordinates().y, AlmostEquals(q_probe, 0));
+  EXPECT_THAT(probe_positions[50].coordinates().x,
+              AlmostEquals(0.50 * period * v_probe, 1));
+  EXPECT_THAT(probe_positions[50].coordinates().y, AlmostEquals(q_probe, 0));
+  EXPECT_THAT(probe_positions[75].coordinates().x,
+              AlmostEquals(0.75 * period * v_probe, 1, 2));
+  EXPECT_THAT(probe_positions[75].coordinates().y, AlmostEquals(q_probe, 0));
+  EXPECT_THAT(probe_positions[100].coordinates().x,
+              AlmostEquals(1.00 * period * v_probe, 1));
+  EXPECT_THAT(probe_positions[100].coordinates().y, Eq(q_probe));
 }
 
 TEST_F(EphemerisTest, Sputnik1ToSputnik2) {
