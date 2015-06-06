@@ -1,0 +1,128 @@
+\documentclass[10pt, a4paper, oneside]{basestyle}
+\usepackage[Mathematics]{semtex}
+
+%%%% Shorthands.
+
+%%%% Title and authors.
+
+\title{%
+\textdisplay{%
+Documentation for the symplectic methods%
+}%
+}
+\author{Robin~Leroy (eggrobin)}
+\begin{document}
+\maketitle
+This document expands on the comments at the beginning of\\
+\texttt{integrators/symplectic\_runge\_kutta\_nyström\_integrator.hpp}.
+
+\section{Differential equations.}
+Recall that the equations solved by this class are
+\begin{align}
+\tuple{\vq,\vp}\der &=
+\vX\of{\vq, \vp, t} = \vA\of{\vq, \vp} + \vB\of{\vq, \vp, t}
+\quad\parbox{.4\linewidth}{with $\exp h\vA$ and $\exp h\vB$ known and
+$\commutator{\vB}{\commutator{\vB}{\commutator{\vB}{\vA}}}=\nullvec$;}
+\label{general}\\
+&\quad\text{the above equation, with $\exp h\vA = \Identity+h\vA$,
+$\exp h\vB = \Identity+h\vB$,
+and $\vA$ and $\vB$ known;}
+\label{linear}\\
+\vq\dder &= -\matM^{-1} \grad_\vq V\of{\vq, t}\text. \label{rkn}
+\end{align}
+
+\section{Relation to Hamiltonian mechanics.}
+The third equation above is a reformulation of Hamilton's
+equations with a Hamiltonian of the form
+\begin{equation}
+H\of{\vq,\vp,t} = \frac{1}{2}\Transpose{\vp}\matM^{-1}\vp + V\of{\vq, t}\text,
+\end{equation}
+where $\vp = \matM\vq\der$.
+
+\section{A remark on non-autonomy.}
+Most treatments of these integrators write these differential equations as well
+as the corresponding Hamiltonian in an autonomous version, thus
+$\vX = \vA(\vq, \vp) + \vB(\vq, \vp)$ and
+$H\of{\vq,\vp,t} = \frac{1}{2}\Transpose{\vp}\matM^{-1}\vp + V\of{\vq}$.
+It is however possible to incorporate time, by considering it as an
+additional variable:\[
+\tuple{\vq,\vp,t}\der =
+\vX\of{\vq, \vp, t} =
+\tuple{\vA\of{\vq, \vp}, 1} +
+\tuple{\vB\of{\vq, \vp, t}, 0}\text.\]
+
+For equations of the form (\ref{rkn}) it remains to be shown that Hamilton's
+equations with quadratic kinetic energy and a time-dependent potential satisfy
+$\commutator{\vB}{\commutator{\vB}{\commutator{\vB}{\vA}}}=\nullvec$.
+We introduce $t$ and its conjugate momentum $\gcp$ to the phase space,
+and write
+\[
+\tilde\vq=\tuple{\vq, t}\text,\quad
+\tilde\vp=\tuple{\vp, \gcp}\text,\quad
+L\of{\tilde\vp} = \frac{1}{2}\Transpose{\vp}\matM^{-1}\vp + \gcp\text.
+\]
+(\ref{rkn}) follows from Hamilton's equations with\[
+H\of{\tilde\vq,\tilde\vp} =
+L\of{\tilde\vp} + V\of{\tilde\vq} =
+\frac{1}{2}\Transpose{\vp}\matM^{-1}\vp + \gcp + V\of{\vq, t}
+\]		
+since we then get $t\der = 1$.		
+The desired property follows from the following lemma:
+\begin{lemma}
+Let $L\of{\tilde\vq,\tilde\vp}$ be a quadratic polynomial in $\tilde\vp$,
+$V\of{\tilde\vq}$ a smooth function, $\vA=\Poisson\placeholder L$, and
+$\vB=\Poisson\placeholder V$.
+Then\[
+\commutator{\vB}{\commutator{\vB}{\commutator{\vB}{\vA}}}=\nullvec\text.\]
+\end{lemma}
+\begin{proof}
+It suffices to show that $\Poisson V{\Poisson V{\Poisson L V}} = 0$. It is
+immediate that every term in that expression will contain a third order
+partial derivative in the $\tilde p_i$ of $L$, and since $L$ is quadratic
+in $\tilde\vp$ all such derivatives vanish.
+\end{proof}
+See McLachlan and Quispel (2006), Geometric Integrators for ODEs, page 26,
+\url{http://www.massey.ac.nz/~rmclachl/JPAReview.pdf} for a detailed treatment
+of non-autonomous Hamiltonians using an extended phase space.
+
+See McLachlan (1993), Symplectic Integration of Wave Equations, page 8,
+\url{http://www.massey.ac.nz/~rmclachl/wave.ps} for a proof that
+$\Poisson V{\Poisson V{\Poisson L V}} = 0$ for arbitrary Poisson tensors.
+\section{Composition and first-same-as-last property}
+Recall from the comments that each step is computed as
+\begin{align*}
+\tuple{\vq_{n+1}, \vp_{n+1}} &=
+\exp a_{r-1}h\vA \exp b_{r-1}h\vB \dotsb \exp a_0h\vA \exp b_0h\vB 
+\tuple{\vq_n, \vp_n}
+\text,
+\intertext{thus, when $b_0$ vanishes (type $ABA$) or when $a_{r-1}$ does
+(type $BAB$),}
+\tuple{\vq_{n+1}, \vp_{n+1}} &=
+\exp a_{r-1}h\vA \exp b_{r-1}h\vB \dotsb \exp b_1h\vB \exp a_0h\vA
+\tuple{\vq_n, \vp_n}\text{, respectively}\\
+\tuple{\vq_{n+1}, \vp_{n+1}} &=
+\exp b_{r-1}h\vB \exp a_{r-2}h\vA \dotsb \exp a_0h\vA \exp b_0h\vB
+\tuple{\vq_n, \vp_n}\text.
+\end{align*}
+This leads to performance savings.
+
+Let us consider a method of type $BAB$. 
+Evidently, the evaluation of $\exp a_0h\vA$
+is not required, thus only $r-1$ evaluations of  $\exp \increment t\vA$ are
+required.
+Furthermore, if output is not needed at step $n$, the computation of
+the $\pa{n-1}$th step requires only $r-1$ evaluations of
+$\exp \increment t\vB$, since the consecutive evaluations of $\exp b_0h\vB$
+and $\exp b_rh\vB$ can be merged by the group property,\[
+\exp b_0h\vB\exp b_rh\vB=\exp \pa{b_0+b_r}h\vB\text.
+\]
+
+If the equation is of the form \ref{linear}, the latter saving can be achieved even
+for dense output, since only one evaluation of $\vB$ is needed to compute the
+increments $b_rh\vB$ and $b_0\vB$.
+
+The same arguments apply to type $ABA$.
+This motivates the name of the template
+parameter \texttt{evaluations}, equal to $r-1$ for methods of type $ABA$ and
+$BAB$, and $r$ otherwise.
+\end{document}
