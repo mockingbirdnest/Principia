@@ -44,6 +44,10 @@ class Ephemeris {
             Length const& low_fitting_tolerance,
             Length const& high_fitting_tolerance);
 
+  // Returns the bodies in the order in which they were given at construction.
+  std::vector<MassiveBody const*> const& bodies() const;
+
+  // Returns the trajectory for the given |body|.
   ContinuousTrajectory<Frame> const& trajectory(
       not_null<MassiveBody const*> body) const;
 
@@ -137,6 +141,9 @@ class Ephemeris {
       Speed const& speed_integration_tolerance,
       Time const& current_step_size,
       typename NewtonianMotionEquation::SystemStateError const& error);
+
+  // The bodies in the order in which they were given at construction.
+  std::vector<MassiveBody const*> unowned_bodies_;
 
   // The oblate bodies precede the spherical bodies in this vector.  The system
   // state is indexed in the same order.
