@@ -83,6 +83,8 @@ Ephemeris<Frame>::Ephemeris(
     auto& body = bodies[i];
     DegreesOfFreedom<Frame> const& degrees_of_freedom = initial_state[i];
 
+    unowned_bodies_.push_back(body.get());
+
     auto const inserted = bodies_to_trajectories_.emplace(
                               std::piecewise_construct,
                               std::forward_as_tuple(body.get()),
@@ -117,6 +119,11 @@ Ephemeris<Frame>::Ephemeris(
   massive_bodies_equation_.compute_acceleration =
       std::bind(&Ephemeris::ComputeMassiveBodiesGravitationalAccelerations,
                 this, _1, _2, _3);
+}
+
+template<typename Frame>
+std::vector<MassiveBody const*> const& Ephemeris<Frame>::bodies() const {
+  return unowned_bodies_;
 }
 
 template<typename Frame>

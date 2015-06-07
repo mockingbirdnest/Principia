@@ -24,9 +24,14 @@
 
 #include "base/not_null.hpp"
 #include "geometry/named_quantities.hpp"
+#include "geometry/quaternion.hpp"
+#include "geometry/rotation.hpp"
+#include "integrators/embedded_explicit_runge_kutta_nyström_integrator.hpp"
 #include "integrators/symplectic_runge_kutta_nyström_integrator.hpp"
 #include "physics/ephemeris.hpp"
+#include "physics/massless_body.hpp"
 #include "quantities/astronomy.hpp"
+#include "quantities/numbers.hpp"
 #include "quantities/quantities.hpp"
 #include "quantities/si.hpp"
 #include "testing_utilities/solar_system.hpp"
@@ -39,8 +44,12 @@ namespace principia {
 using astronomy::JulianYear;
 using base::not_null;
 using geometry::Position;
+using geometry::Quaternion;
+using geometry::Rotation;
+using integrators::DormandElMikkawyPrince1986RKN434FM;
 using integrators::McLachlanAtela1992Order5Optimal;
 using physics::Ephemeris;
+using physics::MasslessBody;
 using quantities::DebugString;
 using si::AstronomicalUnit;
 using si::Milli;
@@ -52,11 +61,8 @@ namespace benchmarks {
 
 namespace {
 
-void EphemerisSolarSystemBenchmark(SolarSystem::Accuracy const accuracy,
-                                   not_null<benchmark::State*> const state) {
-  Length error;
-  state->PauseTiming();
-  while (state->KeepRunning()) {
+std::unique_ptr<Ephemeris<ICRFJ2000Ecliptic>> EphemerisFactory(
+    SolarSystem::Accuracy const accuracy) {
     not_null<std::unique_ptr<SolarSystem>> const at_спутник_1_launch =
         SolarSystem::AtСпутник1Launch(accuracy);
     not_null<std::unique_ptr<SolarSystem>> const at_спутник_2_launch =
@@ -66,32 +72,106 @@ void EphemerisSolarSystemBenchmark(SolarSystem::Accuracy const accuracy,
     std::vector<DegreesOfFreedom<ICRFJ2000Ecliptic>> const initial_state =
         at_спутник_1_launch->initial_state();
 
-    std::vector<not_null<MassiveBody const*>> unowned_bodies;
-    for (auto const& body : bodies) {
-      unowned_bodies.push_back(body.get());
-    }
+    return std::make_unique<Ephemeris<ICRFJ2000Ecliptic>>(
+               std::move(bodies),
+               initial_state,
+               at_спутник_1_launch->time(),
+               McLachlanAtela1992Order5Optimal<Position<ICRFJ2000Ecliptic>>(),
+               45 * Minute,
+               0.1 * Milli(Metre),
+               5 * Milli(Metre));
+}
 
-    Ephemeris<ICRFJ2000Ecliptic>
-        ephemeris(
-            std::move(bodies),
-            initial_state,
-            at_спутник_1_launch->time(),
-            McLachlanAtela1992Order5Optimal<Position<ICRFJ2000Ecliptic>>(),
-            45 * Minute,
-            0.1 * Milli(Metre),
-            5 * Milli(Metre));
+void EphemerisSolarSystemBenchmark(SolarSystem::Accuracy const accuracy,
+                                   not_null<benchmark::State*> const state) {
+  state->PauseTiming();
+  Length error;
+  Instant const initial_time = SolarSystem::AtСпутник1Launch(accuracy)->time();
+  Instant const final_time = initial_time + 100 * JulianYear;
+  while (state->KeepRunning()) {
+    auto const ephemeris = EphemerisFactory(accuracy);
 
-    Instant final_time = at_спутник_1_launch->time() + 100 * JulianYear;
     state->ResumeTiming();
-    ephemeris.Prolong(final_time);
+    ephemeris->Prolong(final_time);
     state->PauseTiming();
-    error = (ephemeris.trajectory(unowned_bodies[SolarSystem::kSun]).
+    error = (ephemeris->trajectory(ephemeris->bodies()[SolarSystem::kSun]).
                  EvaluatePosition(final_time, nullptr) -
-             ephemeris.trajectory(unowned_bodies[SolarSystem::kEarth]).
+             ephemeris->trajectory(ephemeris->bodies()[SolarSystem::kEarth]).
                  EvaluatePosition(final_time, nullptr)).
                  Norm();
   }
   state->SetLabel(DebugString(error / AstronomicalUnit) + " ua");
+}
+
+void EphemerisL4ProbeBenchmark(SolarSystem::Accuracy const accuracy,
+                               not_null<benchmark::State*> const state) {
+  state->PauseTiming();
+  Instant const initial_time = SolarSystem::AtСпутник1Launch(accuracy)->time();
+  Instant const final_time = initial_time + 100 * JulianYear;
+
+  // Put the ephemeris in a 
+  static std::unique_ptr<Ephemeris<ICRFJ2000Ecliptic>> ephemeris = nullptr;
+  if (ephemeris == nullptr) {
+    ephemeris = EphemerisFactory(accuracy);
+    ephemeris->Prolong(final_time);
+  }
+
+  Length sun_error;
+  Length earth_error;
+  int steps;
+
+  while (state->KeepRunning()) {
+    // A probe near the L4 point of the Sun-Earth system.
+    MasslessBody probe;
+    Trajectory<ICRFJ2000Ecliptic> trajectory(&probe);
+    DegreesOfFreedom<ICRFJ2000Ecliptic> const sun_degrees_of_freedom =
+        ephemeris->trajectory(ephemeris->bodies()[SolarSystem::kSun]).
+            EvaluateDegreesOfFreedom(initial_time, nullptr);
+    DegreesOfFreedom<ICRFJ2000Ecliptic> const earth_degrees_of_freedom =
+        ephemeris->trajectory(ephemeris->bodies()[SolarSystem::kEarth]).
+            EvaluateDegreesOfFreedom(initial_time, nullptr);
+    Displacement<ICRFJ2000Ecliptic> const sun_earth_displacement =
+        earth_degrees_of_freedom.position() -
+        sun_degrees_of_freedom.position();
+    Rotation<ICRFJ2000Ecliptic, ICRFJ2000Ecliptic> const l4_rotation(
+        Quaternion(cos(π / 6), {0, 0, sin(π / 6)}));
+    Displacement<ICRFJ2000Ecliptic> const sun_l4_displacement =
+        l4_rotation(sun_earth_displacement);
+    Velocity<ICRFJ2000Ecliptic> const sun_earth_velocity =
+        earth_degrees_of_freedom.velocity() -
+        sun_degrees_of_freedom.velocity();
+    Velocity<ICRFJ2000Ecliptic> const sun_l4_velocity =
+        l4_rotation(sun_earth_velocity);
+    trajectory.Append(initial_time,
+                      DegreesOfFreedom<ICRFJ2000Ecliptic>(
+                          sun_degrees_of_freedom.position() +
+                              sun_l4_displacement,
+                          sun_degrees_of_freedom.velocity() + sun_l4_velocity));
+
+    state->ResumeTiming();
+    ephemeris->Flow(&trajectory,
+                     0.01 * Metre,
+                     1 * Metre / Second,
+                     DormandElMikkawyPrince1986RKN434FM<
+                         Position<ICRFJ2000Ecliptic>>(),
+                     final_time);
+    state->PauseTiming();
+    sun_error = (ephemeris->trajectory(ephemeris->bodies()[SolarSystem::kSun]).
+                     EvaluatePosition(final_time, nullptr) -
+                 trajectory.last().degrees_of_freedom().position()).
+                     Norm();
+    earth_error = (ephemeris->trajectory(
+                       ephemeris->bodies()[SolarSystem::kEarth]).
+                           EvaluatePosition(final_time, nullptr) -
+                   trajectory.last().degrees_of_freedom().position()).
+                       Norm();
+    steps = trajectory.Times().size();
+  }
+  std::stringstream ss;
+  ss << steps;
+  state->SetLabel(ss.str() + " steps, " +
+                  DebugString(sun_error / AstronomicalUnit) + " ua, " + 
+                  DebugString(earth_error / AstronomicalUnit) + " ua");
 }
 
 }  // namespace
@@ -114,9 +194,30 @@ void BM_EphemerisSolarSystemAllBodiesAndOblateness(
                                 &state);
 }
 
+void BM_EphemerisL4ProbeMajorBodiesOnly(
+    benchmark::State& state) {  // NOLINT(runtime/references)
+  EphemerisL4ProbeBenchmark(SolarSystem::Accuracy::kMajorBodiesOnly,
+                            &state);
+}
+
+void BM_EphemerisL4ProbeMinorAndMajorBodies(
+    benchmark::State& state) {  // NOLINT(runtime/references)
+  EphemerisL4ProbeBenchmark(SolarSystem::Accuracy::kMinorAndMajorBodies,
+                            &state);
+}
+
+void BM_EphemerisL4ProbeAllBodiesAndOblateness(
+    benchmark::State& state) {  // NOLINT(runtime/references)
+  EphemerisL4ProbeBenchmark(SolarSystem::Accuracy::kAllBodiesAndOblateness,
+                            &state);
+}
+
 BENCHMARK(BM_EphemerisSolarSystemMajorBodiesOnly);
 BENCHMARK(BM_EphemerisSolarSystemMinorAndMajorBodies);
 BENCHMARK(BM_EphemerisSolarSystemAllBodiesAndOblateness);
+BENCHMARK(BM_EphemerisL4ProbeMajorBodiesOnly);
+BENCHMARK(BM_EphemerisL4ProbeMinorAndMajorBodies);
+BENCHMARK(BM_EphemerisL4ProbeAllBodiesAndOblateness);
 
 }  // namespace benchmarks
 }  // namespace principia
