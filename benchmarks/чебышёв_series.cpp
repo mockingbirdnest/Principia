@@ -42,7 +42,6 @@ int const kEvaluationsPerIteration = 1000;
 }  // namespace
 
 void BM_EvaluateDouble(benchmark::State& state) {  // NOLINT(runtime/references)
-  state.PauseTiming();
   int const degree = state.range_x();
   std::mt19937_64 random(42);
   std::vector<double> coefficients;
@@ -57,14 +56,12 @@ void BM_EvaluateDouble(benchmark::State& state) {  // NOLINT(runtime/references)
   Time const ∆t = (t_max - t_min) * 1E-9;
   double result = 0.0;
 
-  state.ResumeTiming();
   while (state.KeepRunning()) {
     for (int i = 0; i < kEvaluationsPerIteration; ++i) {
       result += series.Evaluate(t);
       t += ∆t;
     }
   }
-  state.PauseTiming();
 
   // This weird call to |SetLabel| has no effect except that it uses |result|
   // and therefore prevents the loop from being optimized away.
@@ -73,7 +70,6 @@ void BM_EvaluateDouble(benchmark::State& state) {  // NOLINT(runtime/references)
 
 void BM_NewhallApproximation(
     benchmark::State& state) {  // NOLINT(runtime/references)
-  state.PauseTiming();
   int const degree = state.range_x();
   std::mt19937_64 random(42);
   std::vector<double> p;
@@ -82,6 +78,7 @@ void BM_NewhallApproximation(
   Instant const t_max = t_min + random() * Second;
 
   while (state.KeepRunning()) {
+    state.PauseTiming();
     p.clear();
     v.clear();
     for (int i = 0; i <= 8; ++i) {
@@ -91,7 +88,6 @@ void BM_NewhallApproximation(
     state.ResumeTiming();
     auto const series =
         ЧебышёвSeries<double>::NewhallApproximation(degree, p, v, t_min, t_max);
-    state.PauseTiming();
   }
 }
 

@@ -63,9 +63,9 @@ namespace {
 
 void EphemerisSolarSystemBenchmark(SolarSystem::Accuracy const accuracy,
                                    not_null<benchmark::State*> const state) {
-  state->PauseTiming();
   Length error;
   while (state->KeepRunning()) {
+    state->PauseTiming();
     not_null<std::unique_ptr<SolarSystem>> const at_спутник_1_launch =
         SolarSystem::AtСпутник1Launch(accuracy);
     std::vector<not_null<std::unique_ptr<MassiveBody const>>> bodies =
@@ -94,13 +94,13 @@ void EphemerisSolarSystemBenchmark(SolarSystem::Accuracy const accuracy,
              ephemeris.trajectory(ephemeris.bodies()[SolarSystem::kEarth]).
                  EvaluatePosition(final_time, nullptr)).
                  Norm();
+    state->ResumeTiming();
   }
   state->SetLabel(DebugString(error / AstronomicalUnit) + " ua");
 }
 
 void EphemerisL4ProbeBenchmark(SolarSystem::Accuracy const accuracy,
                                not_null<benchmark::State*> const state) {
-  state->PauseTiming();
   Length sun_error;
   Length earth_error;
   int steps;
@@ -128,6 +128,7 @@ void EphemerisL4ProbeBenchmark(SolarSystem::Accuracy const accuracy,
   ephemeris.Prolong(final_time);
 
   while (state->KeepRunning()) {
+    state->PauseTiming();
     // A probe near the L4 point of the Sun-Earth system.
     MasslessBody probe;
     Trajectory<ICRFJ2000Ecliptic> trajectory(&probe);
@@ -155,7 +156,7 @@ void EphemerisL4ProbeBenchmark(SolarSystem::Accuracy const accuracy,
 
     state->ResumeTiming();
     ephemeris.Flow(&trajectory,
-                   0.01 * Metre,
+                   1 * Metre,
                    1 * Metre / Second,
                    DormandElMikkawyPrince1986RKN434FM<
                        Position<ICRFJ2000Ecliptic>>(),
@@ -172,6 +173,7 @@ void EphemerisL4ProbeBenchmark(SolarSystem::Accuracy const accuracy,
                    trajectory.last().degrees_of_freedom().position()).
                        Norm();
     steps = trajectory.Times().size();
+    state->ResumeTiming();
   }
   std::stringstream ss;
   ss << steps;
