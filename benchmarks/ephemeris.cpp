@@ -203,8 +203,6 @@ void EphemerisL4ProbeBenchmark(SolarSystem::Accuracy const accuracy,
                   DebugString(earth_error / AstronomicalUnit) + " ua");
 }
 
-}  // namespace
-
 void EphemerisLEOProbeBenchmark(SolarSystem::Accuracy const accuracy,
                                 not_null<benchmark::State*> const state) {
   Length sun_error;
@@ -252,22 +250,27 @@ void EphemerisLEOProbeBenchmark(SolarSystem::Accuracy const accuracy,
         earth_degrees_of_freedom.velocity() -
         sun_degrees_of_freedom.velocity();
     Speed const earth_probe_speed =
-        1 / Sqrt(earth_probe_displacement.Norm() *
-                 ephemeris.bodies()[SolarSystem::kEarth]->
-                     gravitational_parameter());
+        Sqrt(ephemeris.bodies()[SolarSystem::kEarth]->
+                 gravitational_parameter() /
+                 earth_probe_displacement.Norm());
+    Velocity<ICRFJ2000Ecliptic> const earth_probe_velocity =
+        sun_earth_velocity *
+            (earth_probe_speed / sun_earth_velocity.Norm());
     trajectory.Append(initial_time,
                       DegreesOfFreedom<ICRFJ2000Ecliptic>(
-                          sun_degrees_of_freedom.position() +
-                              sun_l4_displacement,
-                          sun_degrees_of_freedom.velocity() + sun_l4_velocity));
+                          earth_degrees_of_freedom.position() +
+                              earth_probe_displacement,
+                          earth_degrees_of_freedom.velocity() +
+                              earth_probe_velocity));
 
     state->ResumeTiming();
+    LOG(ERROR)<<"Flow";
     ephemeris.Flow(&trajectory,
-                   1 * Metre,
+                   0.5 * Metre,
                    1 * Metre / Second,
                    DormandElMikkawyPrince1986RKN434FM<
                        Position<ICRFJ2000Ecliptic>>(),
-                   final_time);
+                   /*final_time*/ initial_time + 1 * JulianYear);
     state->PauseTiming();
 
     sun_error = (ephemeris.trajectory(ephemeris.bodies()[SolarSystem::kSun]).
@@ -286,7 +289,7 @@ void EphemerisLEOProbeBenchmark(SolarSystem::Accuracy const accuracy,
   ss << steps;
   state->SetLabel(ss.str() + " steps, " +
                   DebugString(sun_error / AstronomicalUnit) + " ua, " +
-                  DebugString(earth_error / AstronomicalUnit) + " ua");
+                  DebugString(earth_error / Kilo(Metre)) + " km");
 }
 
 }  // namespace
@@ -327,12 +330,33 @@ void BM_EphemerisL4ProbeAllBodiesAndOblateness(
                             &state);
 }
 
+void BM_EphemerisLEOProbeMajorBodiesOnly(
+    benchmark::State& state) {  // NOLINT(runtime/references)
+  EphemerisLEOProbeBenchmark(SolarSystem::Accuracy::kMajorBodiesOnly,
+                             &state);
+}
+
+void BM_EphemerisLEOProbeMinorAndMajorBodies(
+    benchmark::State& state) {  // NOLINT(runtime/references)
+  EphemerisLEOProbeBenchmark(SolarSystem::Accuracy::kMinorAndMajorBodies,
+                             &state);
+}
+
+void BM_EphemerisLEOProbeAllBodiesAndOblateness(
+    benchmark::State& state) {  // NOLINT(runtime/references)
+  EphemerisLEOProbeBenchmark(SolarSystem::Accuracy::kAllBodiesAndOblateness,
+                             &state);
+}
+
 BENCHMARK(BM_EphemerisSolarSystemMajorBodiesOnly);
 BENCHMARK(BM_EphemerisSolarSystemMinorAndMajorBodies);
 BENCHMARK(BM_EphemerisSolarSystemAllBodiesAndOblateness);
 BENCHMARK(BM_EphemerisL4ProbeMajorBodiesOnly);
 BENCHMARK(BM_EphemerisL4ProbeMinorAndMajorBodies);
 BENCHMARK(BM_EphemerisL4ProbeAllBodiesAndOblateness);
+BENCHMARK(BM_EphemerisLEOProbeMajorBodiesOnly);
+BENCHMARK(BM_EphemerisLEOProbeMinorAndMajorBodies);
+BENCHMARK(BM_EphemerisLEOProbeAllBodiesAndOblateness);
 
 }  // namespace benchmarks
 }  // namespace principia
