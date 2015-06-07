@@ -61,42 +61,37 @@ namespace benchmarks {
 
 namespace {
 
-std::unique_ptr<Ephemeris<ICRFJ2000Ecliptic>> EphemerisFactory(
-    SolarSystem::Accuracy const accuracy) {
+void EphemerisSolarSystemBenchmark(SolarSystem::Accuracy const accuracy,
+                                   not_null<benchmark::State*> const state) {
+  state->PauseTiming();
+  Length error;
+  while (state->KeepRunning()) {
     not_null<std::unique_ptr<SolarSystem>> const at_спутник_1_launch =
         SolarSystem::AtСпутник1Launch(accuracy);
-    not_null<std::unique_ptr<SolarSystem>> const at_спутник_2_launch =
-        SolarSystem::AtСпутник2Launch(accuracy);
     std::vector<not_null<std::unique_ptr<MassiveBody const>>> bodies =
         at_спутник_1_launch->massive_bodies();
     std::vector<DegreesOfFreedom<ICRFJ2000Ecliptic>> const initial_state =
         at_спутник_1_launch->initial_state();
 
-    return std::make_unique<Ephemeris<ICRFJ2000Ecliptic>>(
-               std::move(bodies),
-               initial_state,
-               at_спутник_1_launch->time(),
-               McLachlanAtela1992Order5Optimal<Position<ICRFJ2000Ecliptic>>(),
-               45 * Minute,
-               0.1 * Milli(Metre),
-               5 * Milli(Metre));
-}
+    Instant const initial_time = at_спутник_1_launch->time();
+    Instant const final_time = initial_time + 100 * JulianYear;
 
-void EphemerisSolarSystemBenchmark(SolarSystem::Accuracy const accuracy,
-                                   not_null<benchmark::State*> const state) {
-  state->PauseTiming();
-  Length error;
-  Instant const initial_time = SolarSystem::AtСпутник1Launch(accuracy)->time();
-  Instant const final_time = initial_time + 100 * JulianYear;
-  while (state->KeepRunning()) {
-    auto const ephemeris = EphemerisFactory(accuracy);
+    Ephemeris<ICRFJ2000Ecliptic>
+        ephemeris(
+            std::move(bodies),
+            initial_state,
+            at_спутник_1_launch->time(),
+            McLachlanAtela1992Order5Optimal<Position<ICRFJ2000Ecliptic>>(),
+            45 * Minute,
+            0.1 * Milli(Metre),
+            5 * Milli(Metre));
 
     state->ResumeTiming();
-    ephemeris->Prolong(final_time);
+    ephemeris.Prolong(final_time);
     state->PauseTiming();
-    error = (ephemeris->trajectory(ephemeris->bodies()[SolarSystem::kSun]).
+    error = (ephemeris.trajectory(ephemeris.bodies()[SolarSystem::kSun]).
                  EvaluatePosition(final_time, nullptr) -
-             ephemeris->trajectory(ephemeris->bodies()[SolarSystem::kEarth]).
+             ephemeris.trajectory(ephemeris.bodies()[SolarSystem::kEarth]).
                  EvaluatePosition(final_time, nullptr)).
                  Norm();
   }
@@ -106,30 +101,40 @@ void EphemerisSolarSystemBenchmark(SolarSystem::Accuracy const accuracy,
 void EphemerisL4ProbeBenchmark(SolarSystem::Accuracy const accuracy,
                                not_null<benchmark::State*> const state) {
   state->PauseTiming();
-  Instant const initial_time = SolarSystem::AtСпутник1Launch(accuracy)->time();
-  Instant const final_time = initial_time + 100 * JulianYear;
-
-  // Put the ephemeris in a 
-  static std::unique_ptr<Ephemeris<ICRFJ2000Ecliptic>> ephemeris = nullptr;
-  if (ephemeris == nullptr) {
-    ephemeris = EphemerisFactory(accuracy);
-    ephemeris->Prolong(final_time);
-  }
-
   Length sun_error;
   Length earth_error;
   int steps;
+
+  not_null<std::unique_ptr<SolarSystem>> const at_спутник_1_launch =
+      SolarSystem::AtСпутник1Launch(accuracy);
+  std::vector<not_null<std::unique_ptr<MassiveBody const>>> bodies =
+      at_спутник_1_launch->massive_bodies();
+  std::vector<DegreesOfFreedom<ICRFJ2000Ecliptic>> const initial_state =
+      at_спутник_1_launch->initial_state();
+
+  Instant const initial_time = at_спутник_1_launch->time();
+  Instant const final_time = initial_time + 100 * JulianYear;
+
+  Ephemeris<ICRFJ2000Ecliptic>
+      ephemeris(
+          std::move(bodies),
+          initial_state,
+          at_спутник_1_launch->time(),
+          McLachlanAtela1992Order5Optimal<Position<ICRFJ2000Ecliptic>>(),
+          45 * Minute,
+          0.1 * Milli(Metre),
+          5 * Milli(Metre));
+
+  ephemeris.Prolong(final_time);
 
   while (state->KeepRunning()) {
     // A probe near the L4 point of the Sun-Earth system.
     MasslessBody probe;
     Trajectory<ICRFJ2000Ecliptic> trajectory(&probe);
     DegreesOfFreedom<ICRFJ2000Ecliptic> const sun_degrees_of_freedom =
-        ephemeris->trajectory(ephemeris->bodies()[SolarSystem::kSun]).
-            EvaluateDegreesOfFreedom(initial_time, nullptr);
+        initial_state[SolarSystem::kSun];
     DegreesOfFreedom<ICRFJ2000Ecliptic> const earth_degrees_of_freedom =
-        ephemeris->trajectory(ephemeris->bodies()[SolarSystem::kEarth]).
-            EvaluateDegreesOfFreedom(initial_time, nullptr);
+        initial_state[SolarSystem::kEarth];
     Displacement<ICRFJ2000Ecliptic> const sun_earth_displacement =
         earth_degrees_of_freedom.position() -
         sun_degrees_of_freedom.position();
@@ -149,19 +154,20 @@ void EphemerisL4ProbeBenchmark(SolarSystem::Accuracy const accuracy,
                           sun_degrees_of_freedom.velocity() + sun_l4_velocity));
 
     state->ResumeTiming();
-    ephemeris->Flow(&trajectory,
-                     0.01 * Metre,
-                     1 * Metre / Second,
-                     DormandElMikkawyPrince1986RKN434FM<
-                         Position<ICRFJ2000Ecliptic>>(),
-                     final_time);
+    ephemeris.Flow(&trajectory,
+                   0.01 * Metre,
+                   1 * Metre / Second,
+                   DormandElMikkawyPrince1986RKN434FM<
+                       Position<ICRFJ2000Ecliptic>>(),
+                   final_time);
     state->PauseTiming();
-    sun_error = (ephemeris->trajectory(ephemeris->bodies()[SolarSystem::kSun]).
+
+    sun_error = (ephemeris.trajectory(ephemeris.bodies()[SolarSystem::kSun]).
                      EvaluatePosition(final_time, nullptr) -
                  trajectory.last().degrees_of_freedom().position()).
                      Norm();
-    earth_error = (ephemeris->trajectory(
-                       ephemeris->bodies()[SolarSystem::kEarth]).
+    earth_error = (ephemeris.trajectory(
+                       ephemeris.bodies()[SolarSystem::kEarth]).
                            EvaluatePosition(final_time, nullptr) -
                    trajectory.last().degrees_of_freedom().position()).
                        Norm();
