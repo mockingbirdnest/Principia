@@ -105,15 +105,15 @@ TEST_F(SymplecticRungeKuttaNyströmIntegratorTest,
   evaluations = 0;
   problem.initial_state = &initial_state;
   problem.t_final = t_final;
+  solution.clear();
   bab_integrator.Solve(problem, period / 10);
   EXPECT_THAT(AbsoluteError(x_initial, solution.back().positions[0].value),
-              AllOf(Ge(4E-15 * Metre), Le(5E-15 * Metre)));
+              AllOf(Ge(4E-14 * Metre), Le(5E-14 * Metre)));
   EXPECT_THAT(AbsoluteError(v_initial, solution.back().velocities[0].value),
               AllOf(Ge(3E-7 * Metre / Second), Le(4E-7 * Metre / Second)));
   EXPECT_EQ(t_final, solution.back().time.value);
   EXPECT_EQ(steps, solution.size());
   EXPECT_EQ(11 * steps + 1, evaluations);
-
 }
 
 }  // namespace integrators
