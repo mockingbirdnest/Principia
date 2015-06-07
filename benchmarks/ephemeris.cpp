@@ -47,6 +47,8 @@
 #include "physics/ephemeris.hpp"
 #include "physics/massless_body.hpp"
 #include "quantities/astronomy.hpp"
+#include "quantities/bipm.hpp"
+#include "quantities/elementary_functions.hpp"
 #include "quantities/numbers.hpp"
 #include "quantities/quantities.hpp"
 #include "quantities/si.hpp"
@@ -59,6 +61,7 @@ namespace principia {
 
 using astronomy::JulianYear;
 using base::not_null;
+using bipm::NauticalMile;
 using geometry::Position;
 using geometry::Quaternion;
 using geometry::Rotation;
@@ -67,7 +70,9 @@ using integrators::McLachlanAtela1992Order5Optimal;
 using physics::Ephemeris;
 using physics::MasslessBody;
 using quantities::DebugString;
+using quantities::Sqrt;
 using si::AstronomicalUnit;
+using si::Metre;
 using si::Milli;
 using si::Minute;
 using testing_utilities::ICRFJ2000Ecliptic;
@@ -164,6 +169,92 @@ void EphemerisL4ProbeBenchmark(SolarSystem::Accuracy const accuracy,
         sun_degrees_of_freedom.velocity();
     Velocity<ICRFJ2000Ecliptic> const sun_l4_velocity =
         l4_rotation(sun_earth_velocity);
+    trajectory.Append(initial_time,
+                      DegreesOfFreedom<ICRFJ2000Ecliptic>(
+                          sun_degrees_of_freedom.position() +
+                              sun_l4_displacement,
+                          sun_degrees_of_freedom.velocity() + sun_l4_velocity));
+
+    state->ResumeTiming();
+    ephemeris.Flow(&trajectory,
+                   1 * Metre,
+                   1 * Metre / Second,
+                   DormandElMikkawyPrince1986RKN434FM<
+                       Position<ICRFJ2000Ecliptic>>(),
+                   final_time);
+    state->PauseTiming();
+
+    sun_error = (ephemeris.trajectory(ephemeris.bodies()[SolarSystem::kSun]).
+                     EvaluatePosition(final_time, nullptr) -
+                 trajectory.last().degrees_of_freedom().position()).
+                     Norm();
+    earth_error = (ephemeris.trajectory(
+                       ephemeris.bodies()[SolarSystem::kEarth]).
+                           EvaluatePosition(final_time, nullptr) -
+                   trajectory.last().degrees_of_freedom().position()).
+                       Norm();
+    steps = trajectory.Times().size();
+    state->ResumeTiming();
+  }
+  std::stringstream ss;
+  ss << steps;
+  state->SetLabel(ss.str() + " steps, " +
+                  DebugString(sun_error / AstronomicalUnit) + " ua, " +
+                  DebugString(earth_error / AstronomicalUnit) + " ua");
+}
+
+}  // namespace
+
+void EphemerisLEOProbeBenchmark(SolarSystem::Accuracy const accuracy,
+                                not_null<benchmark::State*> const state) {
+  Length sun_error;
+  Length earth_error;
+  int steps;
+
+  not_null<std::unique_ptr<SolarSystem>> const at_спутник_1_launch =
+      SolarSystem::AtСпутник1Launch(accuracy);
+  std::vector<not_null<std::unique_ptr<MassiveBody const>>> bodies =
+      at_спутник_1_launch->massive_bodies();
+  std::vector<DegreesOfFreedom<ICRFJ2000Ecliptic>> const initial_state =
+      at_спутник_1_launch->initial_state();
+
+  Instant const initial_time = at_спутник_1_launch->time();
+  Instant const final_time = initial_time + 100 * JulianYear;
+
+  Ephemeris<ICRFJ2000Ecliptic>
+      ephemeris(
+          std::move(bodies),
+          initial_state,
+          at_спутник_1_launch->time(),
+          McLachlanAtela1992Order5Optimal<Position<ICRFJ2000Ecliptic>>(),
+          45 * Minute,
+          0.1 * Milli(Metre),
+          5 * Milli(Metre));
+
+  ephemeris.Prolong(final_time);
+
+  while (state->KeepRunning()) {
+    state->PauseTiming();
+    // A probe in low earth orbit.
+    MasslessBody probe;
+    Trajectory<ICRFJ2000Ecliptic> trajectory(&probe);
+    DegreesOfFreedom<ICRFJ2000Ecliptic> const sun_degrees_of_freedom =
+        initial_state[SolarSystem::kSun];
+    DegreesOfFreedom<ICRFJ2000Ecliptic> const earth_degrees_of_freedom =
+        initial_state[SolarSystem::kEarth];
+    Displacement<ICRFJ2000Ecliptic> const sun_earth_displacement =
+        earth_degrees_of_freedom.position() -
+        sun_degrees_of_freedom.position();
+    Displacement<ICRFJ2000Ecliptic> const earth_probe_displacement =
+        sun_earth_displacement * ((6371 * Kilo(Metre) + 100 * NauticalMile) /
+                                      sun_earth_displacement.Norm());
+    Velocity<ICRFJ2000Ecliptic> const sun_earth_velocity =
+        earth_degrees_of_freedom.velocity() -
+        sun_degrees_of_freedom.velocity();
+    Speed const earth_probe_speed =
+        1 / Sqrt(earth_probe_displacement.Norm() *
+                 ephemeris.bodies()[SolarSystem::kEarth]->
+                     gravitational_parameter());
     trajectory.Append(initial_time,
                       DegreesOfFreedom<ICRFJ2000Ecliptic>(
                           sun_degrees_of_freedom.position() +
