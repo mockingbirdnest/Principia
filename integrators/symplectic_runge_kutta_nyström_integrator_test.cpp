@@ -50,7 +50,7 @@ class SymplecticRungeKuttaNyströmIntegratorTest
 
 TEST_F(SymplecticRungeKuttaNyströmIntegratorTest,
        HarmonicOscillatorBackAndForth) {
-  FixedStepSizeIntegrator<ODE> const& integrator =
+  FixedStepSizeIntegrator<ODE> const& aba_integrator =
       BlanesMoan2002SRKN14A<Length>();
   Length const x_initial = 1 * Metre;
   Speed const v_initial = 0 * Metre / Second;
@@ -76,20 +76,20 @@ TEST_F(SymplecticRungeKuttaNyströmIntegratorTest,
     solution.push_back(state);
   };
 
-  integrator.Solve(problem, period / 10);
+  aba_integrator.Solve(problem, period / 10);
   EXPECT_THAT(AbsoluteError(x_initial, solution.back().positions[0].value),
               AllOf(Ge(3E-15 * Metre), Le(4E-15 * Metre)));
   EXPECT_THAT(AbsoluteError(v_initial, solution.back().velocities[0].value),
               AllOf(Ge(7E-8 * Metre / Second), Le(8E-8 * Metre / Second)));
   EXPECT_EQ(t_final, solution.back().time.value);
   EXPECT_EQ(steps, solution.size());
-  EXPECT_EQ(15 * steps, evaluations);
+  EXPECT_EQ(14 * steps, evaluations);
 
   evaluations = 0;
   problem.initial_state = &solution.back();
   problem.t_final = t_initial;
 
-  integrator.Solve(problem, -period / 10);
+  aba_integrator.Solve(problem, -period / 10);
   // The BlanesMoan2002SRKN14A method is reversible: running it backward with
   // the same step size yields the initial state up to roundoff error.
   EXPECT_EQ(x_initial, solution.back().positions[0].value);
@@ -97,7 +97,23 @@ TEST_F(SymplecticRungeKuttaNyströmIntegratorTest,
               VanishesBefore(1 * Metre / Second, 2));
   EXPECT_EQ(t_initial, solution.back().time.value);
   EXPECT_EQ(steps, solution.size() - steps);
-  EXPECT_EQ(15 * steps, evaluations);
+  EXPECT_EQ(14 * steps, evaluations);
+
+  // Integrate forward with a BAB integrator.
+  FixedStepSizeIntegrator<ODE> const& bab_integrator =
+      BlanesMoan2002SRKN11B<Length>();
+  evaluations = 0;
+  problem.initial_state = &initial_state;
+  problem.t_final = t_final;
+  bab_integrator.Solve(problem, period / 10);
+  EXPECT_THAT(AbsoluteError(x_initial, solution.back().positions[0].value),
+              AllOf(Ge(4E-15 * Metre), Le(5E-15 * Metre)));
+  EXPECT_THAT(AbsoluteError(v_initial, solution.back().velocities[0].value),
+              AllOf(Ge(3E-7 * Metre / Second), Le(4E-7 * Metre / Second)));
+  EXPECT_EQ(t_final, solution.back().time.value);
+  EXPECT_EQ(steps, solution.size());
+  EXPECT_EQ(11 * steps + 1, evaluations);
+
 }
 
 }  // namespace integrators

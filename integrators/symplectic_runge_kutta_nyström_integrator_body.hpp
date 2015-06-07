@@ -43,7 +43,7 @@ SymplecticRungeKuttaNyströmIntegrator(FixedVector<double, stages_> const& a,
         break;
       case kBAB:
         for (int i = 0; i < stages_ - 1; ++i) {
-          CHECK_EQ(b_[i], a_[stages_ - 2 - i]);
+          CHECK_EQ(a_[i], a_[stages_ - 2 - i]);
         }
         for (int i = 0; i < stages_; ++i) {
           CHECK_EQ(b_[i], b_[stages_ - 1 - i]);
@@ -108,7 +108,16 @@ void SymplecticRungeKuttaNyströmIntegrator<Position, order, time_reversible,
 
   bool at_end = false;
 
+  // The first full stage of the step, i.e. the first stage where
+  // exp(bᵢ h B) exp(aᵢ h A) must be entirely computed.
+  // Always 0 in the non-FSAL kBA case, always 1 in the kABA case since b₀ = 0,
+  // means the first stage is only exp(a₀ h A), and 1 after the first step
+  // in the kBAB case, since the last right-hand-side evaluation can be used for
+  // exp(bᵢ h B).
+  int first_stage = composition == kABA ? 1 : 0;
+
   for (;;) {
+    // Termination condition.
     Time const time_to_end = (problem.t_final - t.value) - t.error;
     at_end = integration_direction * h > integration_direction * time_to_end;
     if (at_end) {
@@ -117,18 +126,34 @@ void SymplecticRungeKuttaNyströmIntegrator<Position, order, time_reversible,
 
     std::fill(∆q.begin(), ∆q.end(), Displacement{});
     std::fill(∆v.begin(), ∆v.end(), Velocity{});
-    for (int i = 0; i < stages_; ++i) {
+
+    if (first_stage == 1) {
+      for (int k = 0; k < dimension; ++k) {
+        if (composition == kBAB) {
+          // exp(b₀ h B)
+          ∆v[k] += h * b_[0] * g[k];
+        }
+        // exp(a₀ h A)
+        ∆q[k] += h * a_[0] * (v[k].value + ∆v[k]);
+      }
+    }
+
+    for (int i = first_stage; i < stages_; ++i) {
       for (int k = 0; k < dimension; ++k) {
         q_stage[k] = q[k].value + ∆q[k];
       }
       problem.equation.compute_acceleration(t.value + c_[i] * h, q_stage, &g);
       for (int k = 0; k < dimension; ++k) {
-        // TODO(egg): reformulate to reduce roundoff error.
+        // exp(bᵢ h B)
         ∆v[k] += h * b_[i] * g[k];
+        // exp(aᵢ h A)
         ∆q[k] += h * a_[i] * (v[k].value + ∆v[k]);
       }
     }
-    // TODO(egg): handle the FSAL case (types ABA and BAB).
+
+    if (composition == kBAB) {
+      first_stage = 1;
+    }
 
     // Increment the solution.
     t.Increment(h);
