@@ -194,7 +194,7 @@ void EphemerisL4ProbeBenchmark(SolarSystem::Accuracy const accuracy,
   std::stringstream ss;
   ss << steps;
   state->SetLabel(ss.str() + " steps, " +
-                  DebugString(sun_error / AstronomicalUnit) + " ua, " + 
+                  DebugString(sun_error / AstronomicalUnit) + " ua, " +
                   DebugString(earth_error / AstronomicalUnit) + " ua");
 }
 
