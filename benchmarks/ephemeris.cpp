@@ -254,7 +254,6 @@ void EphemerisLEOProbeBenchmark(SolarSystem::Accuracy const accuracy,
                               earth_probe_velocity));
 
     state->ResumeTiming();
-    LOG(ERROR)<<"Flow";
     ephemeris.Flow(&trajectory,
                    1 * Metre,
                    1 * Metre / Second,
