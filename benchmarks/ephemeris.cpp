@@ -34,6 +34,21 @@
 // BM_EphemerisL4ProbeAllBodiesAndOblateness            3606213784 3572422900          1                                 154379 steps, +9.99375002831796140e-01 ua, +1.09612948296100400e+00 ua  // NOLINT(whitespace/line_length)
 // BM_EphemerisL4ProbeAllBodiesAndOblateness_mean       3591886576 3572422900          1                                 154379 steps, +9.99375002831796140e-01 ua, +1.09612948296100400e+00 ua  // NOLINT(whitespace/line_length)
 // BM_EphemerisL4ProbeAllBodiesAndOblateness_stddev       12095141          0          0                                 154379 steps, +9.99375002831796140e-01 ua, +1.09612948296100400e+00 ua  // NOLINT(whitespace/line_length)
+// BM_EphemerisLEOProbeMajorBodiesOnly                10688688970 10561267700          1                                 750001 steps, +9.99958256175519030e-01 ua, +9.99467610064657630e+01 nmi  // NOLINT(whitespace/line_length)
+// BM_EphemerisLEOProbeMajorBodiesOnly                10569486118 10576867800          1                                 750001 steps, +9.99958256175519030e-01 ua, +9.99467610064657630e+01 nmi  // NOLINT(whitespace/line_length)
+// BM_EphemerisLEOProbeMajorBodiesOnly                10597834802 10498867300          1                                 750001 steps, +9.99958256175519030e-01 ua, +9.99467610064657630e+01 nmi  // NOLINT(whitespace/line_length)
+// BM_EphemerisLEOProbeMajorBodiesOnly_mean           10618669963 10545667600          1                                 750001 steps, +9.99958256175519030e-01 ua, +9.99467610064657630e+01 nmi  // NOLINT(whitespace/line_length)
+// BM_EphemerisLEOProbeMajorBodiesOnly_stddev            50845570    33700068          0                                 750001 steps, +9.99958256175519030e-01 ua, +9.99467610064657630e+01 nmi  // NOLINT(whitespace/line_length)
+// BM_EphemerisLEOProbeMinorAndMajorBodies            17136606432 16957308700          1                                 750001 steps, +9.99958201625830930e-01 ua, +9.99467157003521010e+01 nmi  // NOLINT(whitespace/line_length)
+// BM_EphemerisLEOProbeMinorAndMajorBodies            17104295946 16957308700          1                                 750001 steps, +9.99958201625830930e-01 ua, +9.99467157003521010e+01 nmi  // NOLINT(whitespace/line_length)
+// BM_EphemerisLEOProbeMinorAndMajorBodies            17051381088 17004109000          1                                 750001 steps, +9.99958201625830930e-01 ua, +9.99467157003521010e+01 nmi  // NOLINT(whitespace/line_length)
+// BM_EphemerisLEOProbeMinorAndMajorBodies_mean       17097427822 16972908800          1                                 750001 steps, +9.99958201625830930e-01 ua, +9.99467157003521010e+01 nmi  // NOLINT(whitespace/line_length)
+// BM_EphemerisLEOProbeMinorAndMajorBodies_stddev        35130406    22061873          0                                 750001 steps, +9.99958201625830930e-01 ua, +9.99467157003521010e+01 nmi  // NOLINT(whitespace/line_length)
+// BM_EphemerisLEOProbeAllBodiesAndOblateness         17494721866 17206910300          1                                 750001 steps, +9.99958313425507670e-01 ua, +9.99469266237663870e+01 nmi  // NOLINT(whitespace/line_length)
+// BM_EphemerisLEOProbeAllBodiesAndOblateness         17647014833 17128909800          1                                 750001 steps, +9.99958313425507670e-01 ua, +9.99469266237663870e+01 nmi  // NOLINT(whitespace/line_length)
+// BM_EphemerisLEOProbeAllBodiesAndOblateness         17464009262 17253710600          1                                 750001 steps, +9.99958313425507670e-01 ua, +9.99469266237663870e+01 nmi  // NOLINT(whitespace/line_length)
+// BM_EphemerisLEOProbeAllBodiesAndOblateness_mean    17535248654 17196510233          1                                 750001 steps, +9.99958313425507670e-01 ua, +9.99469266237663870e+01 nmi  // NOLINT(whitespace/line_length)
+// BM_EphemerisLEOProbeAllBodiesAndOblateness_stddev     80019061    51477704          0                                 750001 steps, +9.99958313425507670e-01 ua, +9.99469266237663870e+01 nmi  // NOLINT(whitespace/line_length)
 
 #include <memory>
 #include <vector>
