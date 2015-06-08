@@ -26,6 +26,7 @@
 
 #include "quantities/si.hpp"
 #include "numerics/чебышёв_series.hpp"
+#include "testing_utilities/solar_system.hpp"
 
 // Must come last to avoid conflicts when defining the CHECK macros.
 #include "benchmark/benchmark.h"
@@ -34,6 +35,7 @@ namespace principia {
 
 using numerics::ЧебышёвSeries;
 using si::Second;
+using testing_utilities::ICRFJ2000Ecliptic;
 
 namespace benchmarks {
 
@@ -55,6 +57,36 @@ void BM_EvaluateDouble(benchmark::State& state) {  // NOLINT(runtime/references)
   Instant t = t_min;
   Time const ∆t = (t_max - t_min) * 1E-9;
   double result = 0.0;
+
+  while (state.KeepRunning()) {
+    for (int i = 0; i < kEvaluationsPerIteration; ++i) {
+      result += series.Evaluate(t);
+      t += ∆t;
+    }
+  }
+
+  // This weird call to |SetLabel| has no effect except that it uses |result|
+  // and therefore prevents the loop from being optimized away.
+  state.SetLabel(std::to_string(result).substr(0, 0));
+}
+
+void BM_EvaluateDisplacement(benchmark::State& state) {  // NOLINT(runtime/references)
+  int const degree = state.range_x();
+  std::mt19937_64 random(42);
+  std::vector<Displacement<ICRFJ2000Ecliptic>> coefficients;
+  for (int i = 0; i <= degree; ++i) {
+    coefficients.push_back({static_cast<double>(random()),
+                            static_cast<double>(random()),
+                            static_cast<double>(random())});
+  }
+  Instant const t_min(random() * Second);
+  Instant const t_max = t_min + random() * Second;
+  ЧебышёвSeries<Displacement<ICRFJ2000Ecliptic>> const series(
+      coefficients, t_min, t_max);
+
+  Instant t = t_min;
+  Time const ∆t = (t_max - t_min) * 1E-9;
+  Displacement<ICRFJ2000Ecliptic> result{};
 
   while (state.KeepRunning()) {
     for (int i = 0; i < kEvaluationsPerIteration; ++i) {

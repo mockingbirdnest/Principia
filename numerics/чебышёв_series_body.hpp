@@ -86,8 +86,8 @@ Vector ЧебышёвSeries<Vector>::Evaluate(Instant const& t) const {
   double const two_scaled_t = scaled_t + scaled_t;
   // We have to allow |scaled_t| to go slightly out of [-1, 1] because of
   // computation errors.  But if it goes too far, something is broken.
-  CHECK_LE(scaled_t, 1.1);
-  CHECK_GE(scaled_t, -1.1);
+  DCHECK_LE(scaled_t, 1.1);
+  DCHECK_GE(scaled_t, -1.1);
 
   Vector b_kplus2{};
   Vector b_kplus1{};
