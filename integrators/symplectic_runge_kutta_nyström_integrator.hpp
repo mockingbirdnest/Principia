@@ -57,8 +57,8 @@ enum CompositionMethod {
   kBAB,  // aᵣ = 0.
 };
 
-template<typename Position, int order, bool time_reversible, int evaluations,
-         CompositionMethod composition>
+template<typename Position, int order_, bool time_reversible_, int evaluations_,
+         CompositionMethod composition_>
 class SymplecticRungeKuttaNyströmIntegrator
     : public FixedStepSizeIntegrator<
                  SpecialSecondOrderDifferentialEquation<Position>> {
@@ -69,6 +69,11 @@ class SymplecticRungeKuttaNyströmIntegrator
 
   void Solve(IntegrationProblem<ODE> const& problem,
              Time const& step) const override;
+
+  static int const order = order_;
+  static bool const time_reversible = time_reversible_;
+  static int const evaluations = evaluations_;
+  static CompositionMethod const composition = composition_;
 
  private:
   FixedVector<double, stages_> a_;

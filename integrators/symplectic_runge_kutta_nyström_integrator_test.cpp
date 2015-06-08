@@ -50,8 +50,7 @@ class SymplecticRungeKuttaNyströmIntegratorTest
 
 TEST_F(SymplecticRungeKuttaNyströmIntegratorTest,
        HarmonicOscillatorBackAndForth) {
-  FixedStepSizeIntegrator<ODE> const& aba_integrator =
-      BlanesMoan2002SRKN14A<Length>();
+  auto const& aba_integrator = BlanesMoan2002SRKN14A<Length>();
   Length const x_initial = 1 * Metre;
   Speed const v_initial = 0 * Metre / Second;
   Time const period = 2 * π * Second;
