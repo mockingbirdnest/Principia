@@ -125,15 +125,19 @@ Variation<Vector> ЧебышёвSeries<Vector>::EvaluateDerivative(
   CHECK_GE(scaled_t, -1.1);
 #endif
 
-  Vector b_kplus2{};
-  Vector b_kplus1{};
-  Vector b_k{};
+  Vector b_kplus2_vector{};
+  Vector b_kplus1_vector{};
+  Vector* b_kplus2 = &b_kplus2_vector;
+  Vector* b_kplus1 = &b_kplus1_vector;
+  Vector* const& b_k = b_kplus2;  // An overlay.
   for (int k = degree_ - 1; k >= 1; --k) {
-    b_k = coefficients_[k + 1] * (k + 1) + two_scaled_t * b_kplus1 - b_kplus2;
+    *b_k = coefficients_[k + 1] * (k + 1) +
+           two_scaled_t * *b_kplus1 - *b_kplus2;
+    Vector* const last_b_k = b_k;
     b_kplus2 = b_kplus1;
-    b_kplus1 = b_k;
+    b_kplus1 = last_b_k;
   }
-  return (coefficients_[1] + two_scaled_t * b_kplus1 - b_kplus2) *
+  return (coefficients_[1] + two_scaled_t * *b_kplus1 - *b_kplus2) *
              two_over_duration_;
 }
 
