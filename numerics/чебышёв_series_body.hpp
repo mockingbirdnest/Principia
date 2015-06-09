@@ -93,15 +93,21 @@ Vector ЧебышёвSeries<Vector>::Evaluate(Instant const& t) const {
   CHECK_GE(scaled_t, -1.1);
 #endif
 
+  // This code is tricky for performance reasons.  Naively we would have three
+  // |Vector|s, |b_k|, |b_kplus1| and |b_kplus2| and we would copy them in the
+  // loop below.  But it's more efficient to copy pointers than |Vector|s.
+  // Also, we can save some memory by noticing that |b_k| and |b_kplus2| are
+  // never needed at the same time and overlaying them.
   Vector b_kplus2_vector{};
   Vector b_kplus1_vector{};
   Vector* b_kplus2 = &b_kplus2_vector;
   Vector* b_kplus1 = &b_kplus1_vector;
+  Vector* const& b_k = b_kplus2;  // An overlay.
   for (int k = degree_; k >= 1; --k) {
-    Vector* const b_k = b_kplus2;
     *b_k = coefficients_[k] + two_scaled_t * *b_kplus1 - *b_kplus2;
+    Vector* const last_b_k = b_k;
     b_kplus2 = b_kplus1;
-    b_kplus1 = b_k;
+    b_kplus1 = last_b_k;
   }
   return coefficients_[0] + scaled_t * *b_kplus1 - *b_kplus2;
 }

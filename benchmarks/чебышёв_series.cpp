@@ -1,16 +1,23 @@
 ﻿
 // .\Release\benchmarks.exe --benchmark_repetitions=3 --benchmark_filter=Evaluate  // NOLINT(whitespace/line_length)
 // Benchmarking on 1 X 3310 MHz CPU
-// 2015/05/15-18:21:37
-// Benchmark              Time(ns)    CPU(ns) Iterations
-// -----------------------------------------------------
-// BM_EvaluateDouble/4       11859      12009      42869
-// BM_EvaluateDouble/8       18978      19040      27038
-// BM_EvaluateDouble/15      40024      40119      12832
-// BM_EvaluateDouble/16      38326      38407      13404
-// BM_EvaluateDouble/17      43830      44042      11689
-// BM_EvaluateDouble/18      49399      49519      10396
-// BM_EvaluateDouble/19      54013      54121       9512
+// 2015/06/09-22:18:17
+// Benchmark                    Time(ns)    CPU(ns) Iterations
+// -----------------------------------------------------------
+// BM_EvaluateDouble/4              8031       8139      63254
+// BM_EvaluateDouble/8             15548      15602      32995
+// BM_EvaluateDouble/15            35945      36121      14252
+// BM_EvaluateDouble/16            36019      36104      14259
+// BM_EvaluateDouble/17            39483      39558      13014
+// BM_EvaluateDouble/18            42357      42413      12138
+// BM_EvaluateDouble/19            45989      44785      11495
+// BM_EvaluateDisplacement/4       52921      53034       9707
+// BM_EvaluateDisplacement/8      101641     101800       5057
+// BM_EvaluateDisplacement/15     186835     187269       2749
+// BM_EvaluateDisplacement/16     199863     200781       2564
+// BM_EvaluateDisplacement/17     211855     212203       2426
+// BM_EvaluateDisplacement/18     225181     225494       2283
+// BM_EvaluateDisplacement/19     236922     237237       2170
 
 // .\Release\benchmarks.exe --benchmark_repetitions=10 --benchmark_min_time=2 --benchmark_filter=Newhall  // NOLINT(whitespace/line_length)
 // Benchmarking on 1 X 3310 MHz CPU
