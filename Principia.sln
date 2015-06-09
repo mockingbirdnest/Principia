@@ -78,7 +78,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "benchmark_automation", "ben
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{8EF5AB3D-F63B-48B9-80A0-B789A830413C}"
 	ProjectSection(SolutionItems) = preProject
-		profiling\BM_EphemerisL4ProbeMajorBodiesOnly.psess = profiling\BM_EphemerisL4ProbeMajorBodiesOnly.psess
 		profiling\BM_EphemerisSolarSystemMajorBodiesOnly.psess = profiling\BM_EphemerisSolarSystemMajorBodiesOnly.psess
 		profiling\BM_SolarSystemMajorBodiesOnly.psess = profiling\BM_SolarSystemMajorBodiesOnly.psess
 	EndProjectSection
