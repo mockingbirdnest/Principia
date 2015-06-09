@@ -93,15 +93,17 @@ Vector ЧебышёвSeries<Vector>::Evaluate(Instant const& t) const {
   CHECK_GE(scaled_t, -1.1);
 #endif
 
-  Vector b_kplus2{};
-  Vector b_kplus1{};
-  Vector b_k{};
+  Vector b_kplus2_vector{};
+  Vector b_kplus1_vector{};
+  Vector* b_kplus2 = &b_kplus2_vector;
+  Vector* b_kplus1 = &b_kplus1_vector;
   for (int k = degree_; k >= 1; --k) {
-    b_k = coefficients_[k] + two_scaled_t * b_kplus1 - b_kplus2;
+    Vector* const b_k = b_kplus2;
+    *b_k = coefficients_[k] + two_scaled_t * *b_kplus1 - *b_kplus2;
     b_kplus2 = b_kplus1;
     b_kplus1 = b_k;
   }
-  return coefficients_[0] + scaled_t * b_kplus1 - b_kplus2;
+  return coefficients_[0] + scaled_t * *b_kplus1 - *b_kplus2;
 }
 
 template<typename Vector>
