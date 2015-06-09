@@ -86,18 +86,30 @@ Vector ЧебышёвSeries<Vector>::Evaluate(Instant const& t) const {
   double const two_scaled_t = scaled_t + scaled_t;
   // We have to allow |scaled_t| to go slightly out of [-1, 1] because of
   // computation errors.  But if it goes too far, something is broken.
+  // TODO(phl): This should use DCHECK but these macros don't work because the
+  // Principia projects don't define NDEBUG.
+#ifdef _DEBUG
   CHECK_LE(scaled_t, 1.1);
   CHECK_GE(scaled_t, -1.1);
+#endif
 
-  Vector b_kplus2{};
-  Vector b_kplus1{};
-  Vector b_k{};
+  // This code is tricky for performance reasons.  Naively we would have three
+  // |Vector|s, |b_k|, |b_kplus1| and |b_kplus2| and we would copy them in the
+  // loop below.  But it's more efficient to copy pointers than |Vector|s.
+  // Also, we can save some memory by noticing that |b_k| and |b_kplus2| are
+  // never needed at the same time and overlaying them.
+  Vector b_kplus2_vector{};
+  Vector b_kplus1_vector{};
+  Vector* b_kplus2 = &b_kplus2_vector;
+  Vector* b_kplus1 = &b_kplus1_vector;
+  Vector* const& b_k = b_kplus2;  // An overlay.
   for (int k = degree_; k >= 1; --k) {
-    b_k = coefficients_[k] + two_scaled_t * b_kplus1 - b_kplus2;
+    *b_k = coefficients_[k] + two_scaled_t * *b_kplus1 - *b_kplus2;
+    Vector* const last_b_k = b_k;
     b_kplus2 = b_kplus1;
-    b_kplus1 = b_k;
+    b_kplus1 = last_b_k;
   }
-  return coefficients_[0] + scaled_t * b_kplus1 - b_kplus2;
+  return coefficients_[0] + scaled_t * *b_kplus1 - *b_kplus2;
 }
 
 template<typename Vector>
@@ -107,18 +119,25 @@ Variation<Vector> ЧебышёвSeries<Vector>::EvaluateDerivative(
   double const two_scaled_t = scaled_t + scaled_t;
   // We have to allow |scaled_t| to go slightly out of [-1, 1] because of
   // computation errors.  But if it goes too far, something is broken.
+  // TODO(phl): See above.
+#ifdef _DEBUG
   CHECK_LE(scaled_t, 1.1);
   CHECK_GE(scaled_t, -1.1);
+#endif
 
-  Vector b_kplus2{};
-  Vector b_kplus1{};
-  Vector b_k{};
+  Vector b_kplus2_vector{};
+  Vector b_kplus1_vector{};
+  Vector* b_kplus2 = &b_kplus2_vector;
+  Vector* b_kplus1 = &b_kplus1_vector;
+  Vector* const& b_k = b_kplus2;  // An overlay.
   for (int k = degree_ - 1; k >= 1; --k) {
-    b_k = coefficients_[k + 1] * (k + 1) + two_scaled_t * b_kplus1 - b_kplus2;
+    *b_k = coefficients_[k + 1] * (k + 1) +
+           two_scaled_t * *b_kplus1 - *b_kplus2;
+    Vector* const last_b_k = b_k;
     b_kplus2 = b_kplus1;
-    b_kplus1 = b_k;
+    b_kplus1 = last_b_k;
   }
-  return (coefficients_[1] + two_scaled_t * b_kplus1 - b_kplus2) *
+  return (coefficients_[1] + two_scaled_t * *b_kplus1 - *b_kplus2) *
              two_over_duration_;
 }
 

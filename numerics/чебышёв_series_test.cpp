@@ -115,6 +115,7 @@ TEST_F(ЧебышёвSeriesTest, ConstructionErrors) {
 }
 
 TEST_F(ЧебышёвSeriesTest, EvaluationErrors) {
+#ifdef _DEBUG
   EXPECT_DEATH({
     ЧебышёвSeries<double> p({1}, t_min_, t_max_);
     p.Evaluate(t_min_ - 10 * Second);
@@ -123,6 +124,7 @@ TEST_F(ЧебышёвSeriesTest, EvaluationErrors) {
     ЧебышёвSeries<double> p({1}, t_min_, t_max_);
     p.Evaluate(t_max_ + 10 * Second);
   }, "<= 1.1");
+#endif
 }
 
 TEST_F(ЧебышёвSeriesTest, T0) {
