@@ -86,8 +86,12 @@ Vector ЧебышёвSeries<Vector>::Evaluate(Instant const& t) const {
   double const two_scaled_t = scaled_t + scaled_t;
   // We have to allow |scaled_t| to go slightly out of [-1, 1] because of
   // computation errors.  But if it goes too far, something is broken.
-  DCHECK_LE(scaled_t, 1.1);
-  DCHECK_GE(scaled_t, -1.1);
+  // TODO(phl): This should use DCHECK but these macros don't work because the
+  // Principia projects don't define NDEBUG.
+#ifdef _DEBUG
+  CHECK_LE(scaled_t, 1.1);
+  CHECK_GE(scaled_t, -1.1);
+#endif
 
   Vector b_kplus2{};
   Vector b_kplus1{};
@@ -107,8 +111,11 @@ Variation<Vector> ЧебышёвSeries<Vector>::EvaluateDerivative(
   double const two_scaled_t = scaled_t + scaled_t;
   // We have to allow |scaled_t| to go slightly out of [-1, 1] because of
   // computation errors.  But if it goes too far, something is broken.
+  // TODO(phl): See above.
+#ifdef _DEBUG
   CHECK_LE(scaled_t, 1.1);
   CHECK_GE(scaled_t, -1.1);
+#endif
 
   Vector b_kplus2{};
   Vector b_kplus1{};

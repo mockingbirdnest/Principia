@@ -305,7 +305,7 @@ operator/(Quantity<LDimensions> const& left,
 }
 
 template<typename RDimensions>
-inline Quantity<RDimensions> operator*(double const left,
+FORCE_INLINE Quantity<RDimensions> operator*(double const left,
                                        Quantity<RDimensions> const& right) {
   return Quantity<RDimensions>(left * right.magnitude_);
 }

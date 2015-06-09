@@ -75,9 +75,10 @@ void BM_EvaluateDisplacement(benchmark::State& state) {  // NOLINT(runtime/refer
   std::mt19937_64 random(42);
   std::vector<Displacement<ICRFJ2000Ecliptic>> coefficients;
   for (int i = 0; i <= degree; ++i) {
-    coefficients.push_back({static_cast<double>(random()),
-                            static_cast<double>(random()),
-                            static_cast<double>(random())});
+    coefficients.push_back(
+        Displacement<ICRFJ2000Ecliptic>({random() * Metre,
+                                         random() * Metre,
+                                         random() * Metre}));
   }
   Instant const t_min(random() * Second);
   Instant const t_max = t_min + random() * Second;
@@ -97,7 +98,9 @@ void BM_EvaluateDisplacement(benchmark::State& state) {  // NOLINT(runtime/refer
 
   // This weird call to |SetLabel| has no effect except that it uses |result|
   // and therefore prevents the loop from being optimized away.
-  state.SetLabel(std::to_string(result).substr(0, 0));
+  std::stringstream ss;
+  ss << result;
+  state.SetLabel(ss.str().substr(0, 0));
 }
 
 void BM_NewhallApproximation(
@@ -124,6 +127,8 @@ void BM_NewhallApproximation(
 }
 
 BENCHMARK(BM_EvaluateDouble)->
+    Arg(4)->Arg(8)->Arg(15)->Arg(16)->Arg(17)->Arg(18)->Arg(19);
+BENCHMARK(BM_EvaluateDisplacement)->
     Arg(4)->Arg(8)->Arg(15)->Arg(16)->Arg(17)->Arg(18)->Arg(19);
 BENCHMARK(BM_NewhallApproximation)->
     Arg(4)->Arg(8)->Arg(16);
