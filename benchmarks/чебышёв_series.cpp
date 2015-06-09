@@ -77,7 +77,8 @@ void BM_EvaluateDouble(benchmark::State& state) {  // NOLINT(runtime/references)
   state.SetLabel(std::to_string(result).substr(0, 0));
 }
 
-void BM_EvaluateDisplacement(benchmark::State& state) {  // NOLINT(runtime/references)
+void BM_EvaluateDisplacement(
+    benchmark::State& state) {  // NOLINT(runtime/references)
   int const degree = state.range_x();
   std::mt19937_64 random(42);
   std::vector<Displacement<ICRFJ2000Ecliptic>> coefficients;
