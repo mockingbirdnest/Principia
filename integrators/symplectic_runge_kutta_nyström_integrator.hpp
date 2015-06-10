@@ -62,7 +62,8 @@ template<typename Position, int order_, bool time_reversible_, int evaluations_,
 class SymplecticRungeKuttaNyströmIntegrator
     : public FixedStepSizeIntegrator<
                  SpecialSecondOrderDifferentialEquation<Position>> {
-  static int const stages_ = composition == kBA ? evaluations : evaluations + 1;
+  static int const stages_ = composition_ == kBA ? evaluations_
+                                                 : evaluations_ + 1;
  public:
   SymplecticRungeKuttaNyströmIntegrator(FixedVector<double, stages_> const& a,
                                         FixedVector<double, stages_> const& b);
