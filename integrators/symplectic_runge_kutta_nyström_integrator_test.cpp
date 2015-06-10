@@ -282,6 +282,8 @@ void TestSymplecticity(Integrator const& integrator,
   Time const period = 2 * π * Second;
   Instant const t_initial;
   Instant const t_final = t_initial + 500 * Second;
+  Time const step = 0.2 * Second;
+
   Mass const m = 1 * Kilogram;
   Stiffness const k = SIUnit<Stiffness>();
   Energy const initial_energy = 
@@ -300,6 +302,8 @@ void TestSymplecticity(Integrator const& integrator,
   problem.append_state = [&solution](ODE::SystemState const& state) {
     solution.push_back(state);
   };
+
+  integrator.Solve(problem, step);
 
   std::size_t const length = solution.size();
   std::vector<Energy> energy_error(length);
