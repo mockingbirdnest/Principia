@@ -337,20 +337,20 @@ std::vector<SimpleHarmonicMotionTestInstance> Instances() {
                    +1.88491583452687910e-13 * Metre / Second,
                    +7.52285331973023830e-07 * Joule),
           INSTANCE(McLachlan1995SB3A4,
-                   1.1 * Second,
+                   1.0 * Second,
                    0 * Metre,
                    0 * Metre / Second,
-                   0 * Joule),
+                   +2.52639347009253610e-06 * Joule),
           INSTANCE(McLachlan1995SB3A5,
-                   1.1 * Second,
+                   1.0 * Second,
                    0 * Metre,
                    0 * Metre / Second,
-                   0 * Joule),
+                   +1.70551544109720510e-07 * Joule),
           INSTANCE(BlanesMoan2002SRKN6B,
-                   1.1 * Second,
+                   1.0 * Second,
                    0 * Metre,
                    0 * Metre / Second,
-                   0 * Joule),
+                   +1.55706381121945010e-09 * Joule),
           INSTANCE(McLachlanAtela1992Order5Optimal,
                    1.1 * Second,
                    +7.51005160837259210e-14 * Metre,
@@ -360,23 +360,28 @@ std::vector<SimpleHarmonicMotionTestInstance> Instances() {
                    1.1 * Second,
                    0 * Metre,
                    0 * Metre / Second,
-                   0 * Joule),
+                   +2.28626773068896230e-09 * Joule),
           INSTANCE(BlanesMoan2002SRKN11B,
-                   1.1 * Second,
+                   1.0 * Second,
                    0 * Metre,
                    0 * Metre / Second,
-                   0 * Joule),
+                   +9.14945896823837760e-12 * Joule),
           INSTANCE(BlanesMoan2002SRKN14A,
-                   1.1 * Second,
+                   1.0 * Second,
                    0 * Metre,
                    0 * Metre / Second,
-                   0 * Joule)};
+                   +6.29052365752613700e-13 * Joule)};
 }
 
 }  // namespace
 
 class SymplecticRungeKuttaNyströmIntegratorTest
-    : public ::testing::TestWithParam<SimpleHarmonicMotionTestInstance> {};
+    : public ::testing::TestWithParam<SimpleHarmonicMotionTestInstance> {
+ public:
+  SymplecticRungeKuttaNyströmIntegratorTest() {
+    google::LogToStderr();
+  }
+};
 
 INSTANTIATE_TEST_CASE_P(SymplecticRungeKuttaNyströmIntegratorTests,
                         SymplecticRungeKuttaNyströmIntegratorTest,

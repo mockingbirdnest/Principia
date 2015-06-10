@@ -5,10 +5,12 @@
 #include <vector>
 
 #include "geometry/sign.hpp"
+#include "testing_utilities/numerics.hpp"
 
 namespace principia {
 
 using geometry::Sign;
+using testing_utilities::ULPDistance;
 
 namespace integrators {
 
@@ -25,7 +27,7 @@ SymplecticRungeKuttaNyströmIntegrator(FixedVector<double, stages_> const& a,
     c_[i] = c_i.value;
     c_i.Increment(a_[i]);
   }
-  CHECK_EQ(1.0, c_i.value);
+  CHECK_LE(ULPDistance(1.0, c_i.value), 2);
   if (composition == kABA) {
     CHECK_EQ(0.0, b_[0]);
   } else if (composition == kBAB) {
