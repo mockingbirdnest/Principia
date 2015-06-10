@@ -352,7 +352,18 @@ INSTANTIATE_TEST_CASE_P(SymplecticRungeKuttaNyströmIntegratorTests,
                         ValuesIn(Instances()));
 
 TEST_P(SymplecticRungeKuttaNyströmIntegratorTest, Symplecticity) {
+  LOG(INFO) << GetParam();
   GetParam().RunSymplecticity();
+}
+
+TEST_P(SymplecticRungeKuttaNyströmIntegratorTest, Convergence) {
+  LOG(INFO) << GetParam();
+  GetParam().RunConvergence();
+}
+
+TEST_P(SymplecticRungeKuttaNyströmIntegratorTest, LongIntegration) {
+  LOG(INFO) << GetParam();
+  GetParam().Run1000SecondsAt1Millisecond();
 }
 
 }  // namespace integrators
