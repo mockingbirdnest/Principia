@@ -462,6 +462,7 @@ void Ephemeris<Frame>::ComputeMasslessBodiesGravitationalAccelerations(
           const hints) {
   CHECK_EQ(trajectories.size(), positions.size());
   CHECK_EQ(trajectories.size(), accelerations->size());
+  accelerations->assign(accelerations->size(), Vector<Acceleration, Frame>());
 
   for (std::size_t b1 = 0; b1 < number_of_oblate_bodies_; ++b1) {
     MassiveBody const& body1 = *oblate_bodies_[b1];
