@@ -187,7 +187,7 @@ McLachlan1995SB3A4() {
   static SymplecticRungeKuttaNyströmIntegrator<
              Position, 4, true, 4, kABA> const integrator(
       { 0.18819521776883821787,
-        0.021528551102171551201,
+       -0.021528551102171551201,
         0.66666666666666666667,
        -0.021528551102171551201,
         0.18819521776883821787},
