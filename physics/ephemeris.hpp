@@ -66,18 +66,25 @@ class Ephemeris {
   void Prolong(Instant const& t);
 
   // Integrates, until exactly |t|, the |trajectory| followed by a massless body
-  // in the gravitational potential described by |*this|, and subject to the
-  // given |intrinsic_acceleration|.
-  // If |t > t_max()|, calls |Prolong(t)| beforehand.
-  // The |length_| and |speed_integration_tolerance|s are used to compute the
+  // in the gravitational potential described by |*this|.  If |t > t_max()|,
+  // calls |Prolong(t)| beforehand.  The |length_| and
+  // |speed_integration_tolerance|s are used to compute the
   // |tolerance_to_error_ratio| for step size control.
-  // TODO(phl): Remove intrinsic_acceleration?  It is in the trajectory.
-  void Flow(not_null<Trajectory<Frame>*> const trajectory,
-            Length const& length_integration_tolerance,
-            Speed const& speed_integration_tolerance,
-            AdaptiveStepSizeIntegrator<NewtonianMotionEquation> const&
-                integrator,
-            Instant const& t);
+  void FlowWithAdaptiveStep(
+      not_null<Trajectory<Frame>*> const trajectory,
+      Length const& length_integration_tolerance,
+      Speed const& speed_integration_tolerance,
+      AdaptiveStepSizeIntegrator<NewtonianMotionEquation> const& integrator,
+      Instant const& t);
+
+  // Integrates, until at least |t|, the |trajectories| followed by massless
+  // bodies in the gravitational potential described by |*this|.  The integrator
+  // passed at construction is used with the given |step|.  If |t > t_max()|,
+  // calls |Prolong(t)| beforehand.
+  void FlowWithFixedStep(
+      std::vector<not_null<Trajectory<Frame>*>> const& trajectories,
+      Time const& step,
+      Instant const& t);
 
  private:
   void AppendMassiveBodiesState(

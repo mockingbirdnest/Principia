@@ -245,12 +245,12 @@ TEST_F(EphemerisTest, EarthProbe) {
          earth->gravitational_parameter() / (kDistance * kDistance),
          0 * SIUnit<Acceleration>()});});
 
-  ephemeris.Flow(&trajectory,
-                 1E-9 * Metre,
-                 1E-15 * Metre / Second,
-                 DormandElMikkawyPrince1986RKN434FM<
-                     Position<EarthMoonOrbitPlane>>(),
-                 t0_ + period);
+  ephemeris.FlowWithAdaptiveStep(&trajectory,
+                                 1E-9 * Metre,
+                                 1E-15 * Metre / Second,
+                                 DormandElMikkawyPrince1986RKN434FM<
+                                     Position<EarthMoonOrbitPlane>>(),
+                                 t0_ + period);
 
   ContinuousTrajectory<EarthMoonOrbitPlane> const& earth_trajectory =
       ephemeris.trajectory(earth);

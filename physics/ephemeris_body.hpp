@@ -193,7 +193,7 @@ void Ephemeris<Frame>::Prolong(Instant const& t) {
 }
 
 template<typename Frame>
-void Ephemeris<Frame>::Flow(
+void Ephemeris<Frame>::FlowWithAdaptiveStep(
     not_null<Trajectory<Frame>*> const trajectory,
     Length const& length_integration_tolerance,
     Speed const& speed_integration_tolerance,
@@ -233,6 +233,40 @@ void Ephemeris<Frame>::Flow(
                 _1, _2);
 
   integrator.Solve(problem, step_size);
+}
+
+template<typename Frame>
+void Ephemeris<Frame>::FlowWithFixedStep(
+    std::vector<not_null<Trajectory<Frame>*>> const& trajectories,
+    Time const& step,
+    Instant const& t) {
+  if (empty() || t > t_max()) {
+    Prolong(t);
+  }
+
+  std::vector<typename ContinuousTrajectory<Frame>::Hint> hints(bodies_.size());
+  NewtonianMotionEquation massless_body_equation;
+  massless_body_equation.compute_acceleration =
+      std::bind(&Ephemeris::ComputeMasslessBodyGravitationalAccelerations,
+                this, trajectory, _1, _2, _3, &hints);
+
+  typename NewtonianMotionEquation::SystemState initial_state;
+    for (auto const& trajectory : trajectories) {
+    auto const trajectory_last = trajectory->last();
+    auto const last_degrees_of_freedom = trajectory_last.degrees_of_freedom();
+    initial_state.time = trajectory_last.time();
+    initial_state.positions.push_back(last_degrees_of_freedom.position());
+    initial_state.velocities.push_back(last_degrees_of_freedom.velocity());
+  }
+
+  IntegrationProblem<NewtonianMotionEquation> problem;
+  problem.equation = massless_body_equation;
+  problem.append_state =
+      std::bind(&Ephemeris::AppendMasslessBodiesState, _1, trajectories;
+  problem.t_final = t;
+  problem.initial_state = &initial_state;
+
+  planetary_integrator_.Solve(problem, step);
 }
 
 template<typename Frame>
