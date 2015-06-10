@@ -236,9 +236,9 @@ void TestConvergence(Integrator const& integrator,
     Length const& q = final_state.positions[0].value;
     Speed const& v = final_state.velocities[0].value;
     double const log_q_error = std::log10(
-        std::abs(q / q_initial - Cos(ω * t)));
+        AbsoluteError(q / q_initial, Cos(ω * t)));
     double const log_p_error = std::log10(
-        std::abs(v / v_amplitude + Sin(ω * t)));
+        AbsoluteError(v / v_amplitude, -Sin(ω * t)));
     if (log_q_error <= -13 || log_p_error <= -13) {
       // If we keep going the effects of finite precision will drown out
       // convergence.
@@ -313,8 +313,9 @@ void TestSymplecticity(Integrator const& integrator,
     Length const q_i   = solution[i].positions[0].value;
     Speed const v_i = solution[i].velocities[0].value;
     time[i] = solution[i].time.value - t_initial;
-    energy_error[i] = Abs(0.5 * m * Pow<2>(v_i) + 0.5 * k * Pow<2>(q_i) -
-                          initial_energy);
+    energy_error[i] =
+        AbsoluteError(initial_energy,
+                      0.5 * m * Pow<2>(v_i) + 0.5 * k * Pow<2>(q_i));
     max_energy_error = std::max(energy_error[i], max_energy_error);
   }
   double const correlation =
