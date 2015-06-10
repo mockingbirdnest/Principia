@@ -146,7 +146,7 @@ void Test1000SecondsAt1Millisecond(
   Instant const t_initial;
   Instant const t_final = t_initial + 1000 * Second;
   Time const step = 1 * Milli(Second);
-  int const steps = static_cast<int>((t_final - t_initial) / step);
+  int const steps = static_cast<int>((t_final - t_initial) / step) - 1;
 
   int evaluations = 0;
 
@@ -187,7 +187,7 @@ void Test1000SecondsAt1Millisecond(
     EXPECT_THAT(t, AlmostEquals(i * step, 0));
     // TODO(egg): we may need decent trig functions for this sort of thing.
     q_error = std::max(q_error, AbsoluteError(q_initial * Cos(ω * t), q));
-    v_error = std::max(v_error, AbsoluteError(v_amplitude * Sin(ω * t), v));
+    v_error = std::max(v_error, AbsoluteError(-v_amplitude * Sin(ω * t), v));
   }
   EXPECT_EQ(expected_position_error, q_error);
   EXPECT_EQ(expected_velocity_error, v_error);
