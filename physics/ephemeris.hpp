@@ -89,9 +89,9 @@ class Ephemeris {
  private:
   void AppendMassiveBodiesState(
       typename NewtonianMotionEquation::SystemState const& state);
-  static void AppendMasslessBodyState(
+  static void AppendMasslessBodiesState(
       typename NewtonianMotionEquation::SystemState const& state,
-      not_null<Trajectory<Frame>*> const trajectory);
+      std::vector<not_null<Trajectory<Frame>*>> const& trajectories);
 
   // Computes the acceleration due to one body, |body1| (with index |b1| in the
   // |positions| and |accelerations| arrays) on the bodies |bodies2| (with
@@ -109,17 +109,17 @@ class Ephemeris {
       std::vector<Position<Frame>> const& positions,
       not_null<std::vector<Vector<Acceleration, Frame>>*> const accelerations);
 
-  // Computes the acceleration due to one body, |body1| (with index |b1| in the
-  // |hints|, |bodies_| and |trajectories_| arrays) on a massless body at the
-  // given |position|.  The template parameter specifies what we know about the
+  // Computes the accelerations due to one body, |body1| (with index |b1| in the
+  // |hints|, |bodies_| and |trajectories_| arrays) on massless bodies at the
+  // given |positions|.  The template parameter specifies what we know about the
   // massive body, and therefore what forces apply.
   template<bool body1_is_oblate>
-  void ComputeGravitationalAccelerationByMassiveBodyOnMasslessBody(
+  void ComputeGravitationalAccelerationByMassiveBodyOnMasslessBodies(
       Instant const& t,
       MassiveBody const& body1,
       size_t const b1,
-      Position<Frame> const& position,
-      not_null<Vector<Acceleration, Frame>*> const acceleration,
+      std::vector<Position<Frame>> const& positions,
+      not_null<std::vector<Vector<Acceleration, Frame>>*> const accelerations,
       not_null<std::vector<typename ContinuousTrajectory<Frame>::Hint>*>
           const hints);
 
@@ -134,8 +134,8 @@ class Ephemeris {
   // described in its |trajectory| object.  The |hints| are passed to
   // ComputeGravitationalAccelerationByMassiveBodyOnMasslessBody for efficient
   // computation of the positions of the massive bodies.
-  void ComputeMasslessBodyGravitationalAccelerations(
-      not_null<Trajectory<Frame> const*> const trajectory,
+  void ComputeMasslessBodiesGravitationalAccelerations(
+      std::vector<not_null<Trajectory<Frame>*>> const& trajectories,
       Instant const& t,
       std::vector<Position<Frame>> const& positions,
       not_null<std::vector<Vector<Acceleration, Frame>>*> const accelerations,
