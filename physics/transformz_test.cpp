@@ -100,15 +100,15 @@ class TransformzTest : public testing::Test {
                                       8 * i * Metre / Second,
                                       16 * i * Metre / Second})));
       body1_to_.Append(
-          Instant(i * Second),
+          Instant(i * SIUnit<Time>()),
                   DegreesOfFreedom<To>(
                       Position<To>(
-                          Displacement<To>({1 * i * Metre,
-                                            2 * i * Metre,
-                                            3 * i * Metre})),
-                      Velocity<To>({4 * i * Metre / Second,
-                                    8 * i * Metre / Second,
-                                    16 * i * Metre / Second})));
+                          Displacement<To>({3 * i * Metre,
+                                            1 * i * Metre,
+                                            2 * i * Metre})),
+                      Velocity<To>({16 * i * Metre / Second,
+                                    4 * i * Metre / Second,
+                                    8 * i * Metre / Second})));
       body2_from_.Append(
           Instant(i * Second),
                   DegreesOfFreedom<From>(
@@ -120,15 +120,15 @@ class TransformzTest : public testing::Test {
                                       8 * i * Metre / Second,
                                       -16 * i * Metre / Second})));
       body2_to_.Append(
-          Instant(i * Second),
+          Instant(i * SIUnit<Time>()),
                   DegreesOfFreedom<To>(
                       Position<To>(
-                          Displacement<To>({-1 * i * Metre,
-                                            -2 * i * Metre,
-                                            3 * i * Metre})),
-                      Velocity<To>({-4 * i * Metre / Second,
-                                    8 * i * Metre / Second,
-                                    -16 * i * Metre / Second})));
+                          Displacement<To>({3 * i * Metre,
+                                           -1 * i * Metre,
+                                           -2 * i * Metre})),
+                      Velocity<To>({-16 * i * Metre / Second,
+                                    4 * i * Metre / Second,
+                                    8 * i * Metre / Second})));
       satellite_from_->Append(
           Instant(i * Second),
                   DegreesOfFreedom<From>(
@@ -173,11 +173,13 @@ TEST_F(TransformzTest, BodyCentredNonRotating) {
                     AlmostEquals(Through::origin + Displacement<Through>(
                         {9 * i * Metre,
                          -22 * i * Metre,
-                         27 * i * Metre}), 0, 384),
+                         27 * i * Metre}),
+                        0, 384),
                     AlmostEquals(Velocity<Through>(
                         {36 * i * Metre / Second,
                          -88 * i * Metre / Second,
-                         144 * i * Metre / Second}), 0, 720))) << i;
+                         144 * i * Metre / Second}),
+                        0, 720))) << i;
     satellite_through_->Append(Instant(i * Second), degrees_of_freedom);
   }
 
@@ -185,17 +187,6 @@ TEST_F(TransformzTest, BodyCentredNonRotating) {
   for (auto it = transforms->second(*satellite_through_);
        !it.at_end();
        ++it, ++i) {
-    satellite_to_->Append(
-        Instant(i * Second),
-                DegreesOfFreedom<To>(
-                    Position<To>(
-                        Displacement<To>({3 * i * Metre,
-                                          1 * i * Metre,
-                                          2 * i * Metre})),
-                    Velocity<To>({16 * i * Metre / Second,
-                                  4 * i * Metre / Second,
-                                  8 * i * Metre / Second})));
-
     DegreesOfFreedom<To> const degrees_of_freedom =
         it.degrees_of_freedom();
     EXPECT_THAT(degrees_of_freedom,
@@ -203,11 +194,13 @@ TEST_F(TransformzTest, BodyCentredNonRotating) {
                     AlmostEquals(To::origin + Displacement<To>(
                         {12 * i * Metre,
                          -21 * i * Metre,
-                         29 * i * Metre}), 0),
+                         29 * i * Metre}),
+                        0),
                     AlmostEquals(Velocity<To>(
                         {36 * i * Metre / Second,
                          -88 * i * Metre / Second,
-                         144 * i * Metre / Second}), 2, 720))) << i;
+                         144 * i * Metre / Second}),
+                        0, 720))) << i;
   }
   auto const identity = Rotation<To, To>::Identity();
   EXPECT_EQ(identity.quaternion(),
@@ -228,18 +221,18 @@ TEST_F(TransformzTest, SatelliteBarycentricRotating) {
        ++it, ++i) {
     DegreesOfFreedom<Through> const degrees_of_freedom =
         it.degrees_of_freedom();
-    EXPECT_THAT(degrees_of_freedom.position() - Position<Through>(),
-                AlmostEquals(Displacement<Through>(
-                    {-5.5 * sqrt(5.0) * i * Metre,
-                     62.0 * sqrt(5.0 / 21.0) * i * Metre,
-                     53.0 / sqrt(21.0) * i * Metre}),
-                    1, 8)) << i;
-    EXPECT_THAT(degrees_of_freedom.velocity(),
-                AlmostEquals(Velocity<Through>(
-                    {(362.0 / sqrt(5.0)) * i * Metre / Second,
-                     (2776.0 / sqrt(105.0)) * i * Metre / Second,
-                     176.0 / sqrt(21.0) * i * Metre / Second}),
-                    1, 10)) << i;
+    EXPECT_THAT(degrees_of_freedom,
+                Componentwise(
+                    AlmostEquals(Through::origin + Displacement<Through>(
+                        {-5.5 * sqrt(5.0) * i * Metre,
+                         62.0 * sqrt(5.0 / 21.0) * i * Metre,
+                         53.0 / sqrt(21.0) * i * Metre}),
+                        2, 4607),
+                    AlmostEquals(Velocity<Through>(
+                        {(362.0 / sqrt(5.0)) * i * Metre / Second,
+                         (2776.0 / sqrt(105.0)) * i * Metre / Second,
+                         176.0 / sqrt(21.0) * i * Metre / Second}),
+                        8, 51340))) << i;
     satellite_through.Append(Instant(i * Second), degrees_of_freedom);
   }
 
@@ -249,19 +242,18 @@ TEST_F(TransformzTest, SatelliteBarycentricRotating) {
        ++it, ++i) {
     DegreesOfFreedom<To> const degrees_of_freedom =
         it.degrees_of_freedom();
-    EXPECT_THAT(degrees_of_freedom.position() - To::origin,
-                AlmostEquals(Displacement<To>(
-                    {(3.0 + 62.0 * sqrt(5.0 / 21.0)) * i * Metre,
-                     (-6.0 + 106.0 / sqrt(105.0)) * i * Metre,
-                     (-12.0 - 53.0 / sqrt(105.0)) * i * Metre}),
-                    3, 21))
-        << i;
-    EXPECT_THAT(degrees_of_freedom.velocity(),
-                AlmostEquals(Velocity<To>(
-                    {2776.0 / sqrt(105.0) * i * Metre / Second,
-                     (72.4 + 352.0 / sqrt(105.0)) * i * Metre / Second,
-                     (144.8 - 176.0 / sqrt(105.0)) * i * Metre / Second}),
-                    1, 8)) << i;
+    EXPECT_THAT(degrees_of_freedom,
+                Componentwise(
+                    AlmostEquals(To::origin + Displacement<To>(
+                        {(3.0 + 62.0 * sqrt(5.0 / 21.0)) * i * Metre,
+                         (-6.0 + 106.0 / sqrt(105.0)) * i * Metre,
+                         (-12.0 - 53.0 / sqrt(105.0)) * i * Metre}),
+                        0),
+                    AlmostEquals(Velocity<To>(
+                        {2776.0 / sqrt(105.0) * i * Metre / Second,
+                         (72.4 + 352.0 / sqrt(105.0)) * i * Metre / Second,
+                         (144.8 - 176.0 / sqrt(105.0)) * i * Metre / Second}),
+                        349, 22568))) << i;
   }
 }
 
