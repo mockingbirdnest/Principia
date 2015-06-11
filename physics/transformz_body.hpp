@@ -2,7 +2,7 @@
 
 #include <algorithm>
 
-#include "physics/transforms.hpp"
+#include "physics/transformz.hpp"
 
 #include "base/not_null.hpp"
 #include "geometry/affine_map.hpp"
@@ -105,18 +105,18 @@ void FromStandardBasisToBasisOfLastBarycentricFrame(
 
 template<typename Mobile,
          typename FromFrame, typename ThroughFrame, typename ToFrame>
-not_null<std::unique_ptr<Transforms<Mobile, FromFrame, ThroughFrame, ToFrame>>>
-Transforms<Mobile, FromFrame, ThroughFrame, ToFrame>::BodyCentredNonRotating(
+not_null<std::unique_ptr<Transformz<Mobile, FromFrame, ThroughFrame, ToFrame>>>
+Transformz<Mobile, FromFrame, ThroughFrame, ToFrame>::BodyCentredNonRotating(
     Mobile const& centre,
     LazyTrajectory<ToFrame> const& to_trajectory) {
-  not_null<std::unique_ptr<Transforms>> transforms =
-      make_not_null_unique<Transforms>();
+  not_null<std::unique_ptr<Transformz>> transforms =
+      make_not_null_unique<Transformz>();
 
   transforms->coordinate_frame_ = CoordinateFrame<ToFrame>();
 
   // From the perspective of the lambda the following variable is really |this|,
   // hence the name.
-  not_null<Transforms*> that = transforms.get();
+  not_null<Transformz*> that = transforms.get();
   transforms->first_ =
       [&centre, that](
           LazyTrajectory<FromFrame> const& from_trajectory,
@@ -186,13 +186,13 @@ Transforms<Mobile, FromFrame, ThroughFrame, ToFrame>::BodyCentredNonRotating(
 
 template<typename Mobile,
          typename FromFrame, typename ThroughFrame, typename ToFrame>
-not_null<std::unique_ptr<Transforms<Mobile, FromFrame, ThroughFrame, ToFrame>>>
-Transforms<Mobile, FromFrame, ThroughFrame, ToFrame>::BarycentricRotating(
+not_null<std::unique_ptr<Transformz<Mobile, FromFrame, ThroughFrame, ToFrame>>>
+Transformz<Mobile, FromFrame, ThroughFrame, ToFrame>::BarycentricRotating(
     Mobile const& primary,
     Mobile const& secondary,
     LazyTrajectory<ToFrame> const& to_trajectory) {
-  not_null<std::unique_ptr<Transforms>> transforms =
-      make_not_null_unique<Transforms>();
+  not_null<std::unique_ptr<Transformz>> transforms =
+      make_not_null_unique<Transformz>();
 
   transforms->coordinate_frame_ =
       [&primary, &secondary, to_trajectory](
@@ -213,7 +213,7 @@ Transforms<Mobile, FromFrame, ThroughFrame, ToFrame>::BarycentricRotating(
 
   // From the perspective of the lambda the following variable is really |this|,
   // hence the name.
-  not_null<Transforms*> that = transforms.get();
+  not_null<Transformz*> that = transforms.get();
   transforms->first_ =
       [&primary, &secondary, that](
           LazyTrajectory<FromFrame> const& from_trajectory,
@@ -321,14 +321,14 @@ Transforms<Mobile, FromFrame, ThroughFrame, ToFrame>::BarycentricRotating(
 
 template<typename Mobile,
          typename FromFrame, typename ThroughFrame, typename ToFrame>
-not_null<std::unique_ptr<Transforms<Mobile, FromFrame, ThroughFrame, ToFrame>>>
-Transforms<Mobile, FromFrame, ThroughFrame, ToFrame>::DummyForTesting() {
-  return make_not_null_unique<Transforms>();
+not_null<std::unique_ptr<Transformz<Mobile, FromFrame, ThroughFrame, ToFrame>>>
+Transformz<Mobile, FromFrame, ThroughFrame, ToFrame>::DummyForTesting() {
+  return make_not_null_unique<Transformz>();
 }
 
 template<typename Mobile,
          typename FromFrame, typename ThroughFrame, typename ToFrame>
-void Transforms<Mobile, FromFrame, ThroughFrame, ToFrame>::set_cacheable(
+void Transformz<Mobile, FromFrame, ThroughFrame, ToFrame>::set_cacheable(
     LazyTrajectory<FromFrame> const& trajectory) {
   cacheable_.push_back(trajectory);
 }
@@ -336,7 +336,7 @@ void Transforms<Mobile, FromFrame, ThroughFrame, ToFrame>::set_cacheable(
 template<typename Mobile,
          typename FromFrame, typename ThroughFrame, typename ToFrame>
 typename Trajectory<FromFrame>::template TransformingIterator<ThroughFrame>
-Transforms<Mobile, FromFrame, ThroughFrame, ToFrame>::first(
+Transformz<Mobile, FromFrame, ThroughFrame, ToFrame>::first(
     Mobile const& mobile,
     LazyTrajectory<FromFrame> const& from_trajectory) {
   typename Trajectory<FromFrame>::template Transform<ThroughFrame> const first =
@@ -347,7 +347,7 @@ Transforms<Mobile, FromFrame, ThroughFrame, ToFrame>::first(
 template<typename Mobile,
          typename FromFrame, typename ThroughFrame, typename ToFrame>
 typename Trajectory<FromFrame>::template TransformingIterator<ThroughFrame>
-Transforms<Mobile, FromFrame, ThroughFrame, ToFrame>::first_on_or_after(
+Transformz<Mobile, FromFrame, ThroughFrame, ToFrame>::first_on_or_after(
     Mobile const& mobile,
     LazyTrajectory<FromFrame> const& from_trajectory,
     Instant const& time) {
@@ -359,7 +359,7 @@ Transforms<Mobile, FromFrame, ThroughFrame, ToFrame>::first_on_or_after(
 template<typename Mobile,
          typename FromFrame, typename ThroughFrame, typename ToFrame>
 typename Trajectory<ThroughFrame>::template TransformingIterator<ToFrame>
-Transforms<Mobile, FromFrame, ThroughFrame, ToFrame>::second(
+Transformz<Mobile, FromFrame, ThroughFrame, ToFrame>::second(
     Trajectory<ThroughFrame> const& through_trajectory) {
   return through_trajectory.first_with_transform(second_);
 }
@@ -367,7 +367,7 @@ Transforms<Mobile, FromFrame, ThroughFrame, ToFrame>::second(
 template<typename Mobile,
          typename FromFrame, typename ThroughFrame, typename ToFrame>
 FrameField<ToFrame>
-Transforms<Mobile, FromFrame, ThroughFrame, ToFrame>::coordinate_frame() const {
+Transformz<Mobile, FromFrame, ThroughFrame, ToFrame>::coordinate_frame() const {
   return coordinate_frame_;
 }
 
@@ -375,7 +375,7 @@ template<typename Mobile,
          typename FromFrame, typename ThroughFrame, typename ToFrame>
 template<typename Frame1, typename Frame2>
 bool
-Transforms<Mobile, FromFrame, ThroughFrame, ToFrame>::Cache<Frame1, Frame2>::
+Transformz<Mobile, FromFrame, ThroughFrame, ToFrame>::Cache<Frame1, Frame2>::
 Lookup(not_null<Trajectory<Frame1> const*> const trajectory,
        Instant const& time,
        not_null<DegreesOfFreedom<Frame2>**> degrees_of_freedom) {
@@ -397,7 +397,7 @@ template<typename Mobile,
          typename FromFrame, typename ThroughFrame, typename ToFrame>
 template<typename Frame1, typename Frame2>
 void
-Transforms<Mobile, FromFrame, ThroughFrame, ToFrame>::Cache<Frame1, Frame2>::
+Transformz<Mobile, FromFrame, ThroughFrame, ToFrame>::Cache<Frame1, Frame2>::
 Insert(not_null<Trajectory<Frame1> const*> const trajectory,
        Instant const& time,
        DegreesOfFreedom<Frame2> const& degrees_of_freedom) {

@@ -23,7 +23,7 @@ namespace physics {
 // holds one or more trajectories which are selected using a |LazyTrajectory|.
 template<typename Mobile,
          typename FromFrame, typename ThroughFrame, typename ToFrame>
-class Transforms {
+class Transformz {
   static_assert(FromFrame::is_inertial && ToFrame::is_inertial,
                 "Both FromFrame and ToFrame must be inertial");
 
@@ -42,7 +42,7 @@ class Transforms {
   // A factory method where |ThroughFrame| is defined as follows: it has the
   // same axes as |FromFrame| and the body of |centre_trajectory| is the origin
   // of |ThroughFrame|.
-  static not_null<std::unique_ptr<Transforms>> BodyCentredNonRotating(
+  static not_null<std::unique_ptr<Transformz>> BodyCentredNonRotating(
       Mobile const& centre,
       LazyTrajectory<ToFrame> const& to_trajectory);
 
@@ -52,13 +52,13 @@ class Transforms {
   // side of the X axis as the velocity of the primary body, its Z axis is such
   // that it is right-handed.  The barycentre of the bodies is the origin of
   // |ThroughFrame|.
-  static not_null<std::unique_ptr<Transforms>> BarycentricRotating(
+  static not_null<std::unique_ptr<Transformz>> BarycentricRotating(
       Mobile const& primary,
       Mobile const& secondary,
       LazyTrajectory<ToFrame> const& to_trajectory);
 
   // Use this only for testing!
-  static not_null<std::unique_ptr<Transforms>> DummyForTesting();
+  static not_null<std::unique_ptr<Transformz>> DummyForTesting();
 
   // Indicates that the given |trajectory| is cacheable (for all |Mobile|
   // objects).  By default, lazy trajectories are not cacheable.
@@ -128,4 +128,4 @@ class Transforms {
 }  // namespace physics
 }  // namespace principia
 
-#include "physics/transforms_body.hpp"
+#include "physics/transformz_body.hpp"
