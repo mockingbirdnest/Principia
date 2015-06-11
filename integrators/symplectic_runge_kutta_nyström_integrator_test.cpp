@@ -98,28 +98,36 @@ struct SimpleHarmonicMotionTestInstance {
           std::bind(TestSymplecticity<Integrator>,
                     integrator,
                     expected_energy_error)),
+      test_time_reversibility_(
+          std::bind(TestTimeReversibility<Integrator>,
+                    integrator)),
       name_(name) {};
 
   std::string const& name() const {
     return name_;
-  };
+  }
 
   void Run1000SecondsAt1Millisecond() const {
     test_1000_seconds_at_1_millisecond_();
-  };
+  }
 
   void RunConvergence() const {
     test_convergence_();
-  };
+  }
 
   void RunSymplecticity()  const {
     test_symplecticity_();
-  };
+  }
+
+  void RunTimeReversibility() const {
+    test_time_reversibility_();
+  }
 
  private:
   std::function<void()> test_1000_seconds_at_1_millisecond_;
   std::function<void()> test_convergence_;
   std::function<void()> test_symplecticity_;
+  std::function<void()> test_time_reversibility_;
   std::string name_;
 };
 
@@ -330,6 +338,58 @@ void TestSymplecticity(Integrator const& integrator,
   EXPECT_EQ(expected_energy_error, max_energy_error);
 }
 
+// If the integrator is time-reversible, checks that integrating back and
+// forth with a large time step yields the initial value.  If it is not, checks
+// that there is an error when integrating back and forth.
+template<typename Integrator>
+void TestTimeReversibility(Integrator const& integrator) {
+  Length const q_initial = 1 * Metre;
+  Speed const v_initial = 0 * Metre / Second;
+  Speed const v_amplitude = 1 * Metre / Second;
+  AngularFrequency const ω = 1 * Radian / Second;
+  Time const period = 2 * π * Second;
+  Instant const t_initial;
+  Instant const t_final = t_initial + 100 * Second;
+  Time const step = 1 * Second;
+
+  std::vector<ODE::SystemState> solution;
+  ODE harmonic_oscillator;
+  harmonic_oscillator.compute_acceleration =
+      std::bind(ComputeHarmonicOscillatorAcceleration,
+                _1, _2, _3, nullptr);
+  IntegrationProblem<ODE> problem;
+  problem.equation = harmonic_oscillator;
+  ODE::SystemState const initial_state = {{q_initial}, {v_initial}, t_initial};
+  ODE::SystemState final_state;
+  problem.initial_state = &initial_state;
+  problem.t_final = t_final;
+  problem.append_state = [&final_state](ODE::SystemState const& state) {
+    final_state = state;
+  };
+
+  integrator.Solve(problem, step);
+
+  problem.initial_state = &final_state;
+  problem.t_final = t_initial;
+
+  integrator.Solve(problem, -step);
+
+  EXPECT_EQ(t_initial, final_state.time.value);
+  if (integrator.time_reversible) {
+    EXPECT_THAT(final_state.positions[0].value,
+                AlmostEquals(q_initial, 0, 8));
+    EXPECT_THAT(final_state.velocities[0].value,
+                VanishesBefore(v_amplitude, 0, 16));
+  } else {
+    EXPECT_THAT(AbsoluteError(q_initial,
+                              final_state.positions[0].value),
+                Gt(1E-4 * Metre));
+    EXPECT_THAT(AbsoluteError(v_initial,
+                              final_state.velocities[0].value),
+                Gt(1E-4 * Metre / Second));
+  }
+}
+
 std::vector<SimpleHarmonicMotionTestInstance> Instances() {
   return {INSTANCE(McLachlanAtela1992Order4Optimal,
                    1.0 * Second,
@@ -338,18 +398,18 @@ std::vector<SimpleHarmonicMotionTestInstance> Instances() {
                    +7.52285331973023830e-07 * Joule),
           INSTANCE(McLachlan1995SB3A4,
                    1.0 * Second,
-                   0 * Metre,
-                   0 * Metre / Second,
+                   +1.21597176772070270e-13 * Metre,
+                   +1.21782792183999790e-13 * Metre / Second,
                    +2.52639347009253610e-06 * Joule),
           INSTANCE(McLachlan1995SB3A5,
                    1.0 * Second,
-                   0 * Metre,
-                   0 * Metre / Second,
+                   +1.37754391227318250e-13 * Metre,
+                   +1.37848066295021000e-13 * Metre / Second,
                    +1.70551544109720510e-07 * Joule),
           INSTANCE(BlanesMoan2002SRKN6B,
                    1.0 * Second,
-                   0 * Metre,
-                   0 * Metre / Second,
+                   +1.18405285576272950e-13 * Metre,
+                   +1.18564880136062810e-13 * Metre / Second,
                    +1.55706381121945010e-09 * Joule),
           INSTANCE(McLachlanAtela1992Order5Optimal,
                    1.1 * Second,
@@ -358,18 +418,18 @@ std::vector<SimpleHarmonicMotionTestInstance> Instances() {
                    +3.06327349042234690e-08 * Joule),
           INSTANCE(OkunborSkeel1994Order6Method13,
                    1.1 * Second,
-                   0 * Metre,
-                   0 * Metre / Second,
+                   +1.54723456269323380e-13 * Metre,
+                   +1.54959378662056220e-13 * Metre / Second,
                    +2.28626773068896230e-09 * Joule),
           INSTANCE(BlanesMoan2002SRKN11B,
                    1.0 * Second,
-                   0 * Metre,
-                   0 * Metre / Second,
+                   +1.11972930927350940e-13 * Metre,
+                   +1.12035380972486110e-13 * Metre / Second,
                    +9.14945896823837760e-12 * Joule),
           INSTANCE(BlanesMoan2002SRKN14A,
                    1.0 * Second,
-                   0 * Metre,
-                   0 * Metre / Second,
+                   +1.11001485780803930e-13 * Metre,
+                   +1.11063935825939100e-13 * Metre / Second,
                    +6.29052365752613700e-13 * Joule)};
 }
 
@@ -386,6 +446,11 @@ class SymplecticRungeKuttaNyströmIntegratorTest
 INSTANTIATE_TEST_CASE_P(SymplecticRungeKuttaNyströmIntegratorTests,
                         SymplecticRungeKuttaNyströmIntegratorTest,
                         ValuesIn(Instances()));
+
+TEST_P(SymplecticRungeKuttaNyströmIntegratorTest, TimeReversibility) {
+  LOG(INFO) << GetParam();
+  GetParam().RunTimeReversibility();
+}
 
 TEST_P(SymplecticRungeKuttaNyströmIntegratorTest, Symplecticity) {
   LOG(INFO) << GetParam();
