@@ -89,56 +89,51 @@ class TransformzTest : public testing::Test {
     // about physics.  Also, the trajectories were chosen so that we are not in
     // any "special case" with respect to the positions or the velocities.
     for (int i = 1; i <= kNumberOfPoints; ++i) {
-      body1_from_.Append(
-          Instant(i * Second),
-                  DegreesOfFreedom<From>(
-                      Position<From>(
-                          Displacement<From>({1 * i * Metre,
-                                              2 * i * Metre,
-                                              3 * i * Metre})),
-                      Velocity<From>({4 * i * Metre / Second,
-                                      8 * i * Metre / Second,
-                                      16 * i * Metre / Second})));
-      body1_to_.Append(
-          Instant(i * SIUnit<Time>()),
-                  DegreesOfFreedom<To>(
-                      Position<To>(
-                          Displacement<To>({3 * i * Metre,
-                                            1 * i * Metre,
-                                            2 * i * Metre})),
-                      Velocity<To>({16 * i * Metre / Second,
-                                    4 * i * Metre / Second,
-                                    8 * i * Metre / Second})));
-      body2_from_.Append(
-          Instant(i * Second),
-                  DegreesOfFreedom<From>(
-                      Position<From>(
-                          Displacement<From>({-1 * i * Metre,
-                                              -2 * i * Metre,
-                                              3 * i * Metre})),
-                      Velocity<From>({-4 * i * Metre / Second,
-                                      8 * i * Metre / Second,
-                                      -16 * i * Metre / Second})));
-      body2_to_.Append(
-          Instant(i * SIUnit<Time>()),
-                  DegreesOfFreedom<To>(
-                      Position<To>(
-                          Displacement<To>({3 * i * Metre,
-                                           -1 * i * Metre,
-                                           -2 * i * Metre})),
-                      Velocity<To>({-16 * i * Metre / Second,
-                                    4 * i * Metre / Second,
-                                    8 * i * Metre / Second})));
-      satellite_from_->Append(
-          Instant(i * Second),
-                  DegreesOfFreedom<From>(
-                      Position<From>(
-                          Displacement<From>({10 * i * Metre,
-                                              -20 * i * Metre,
-                                              30 * i * Metre})),
-                      Velocity<From>({40 * i * Metre / Second,
-                                      -80 * i * Metre / Second,
-                                      160 * i * Metre / Second})));
+      body1_from_.Append(Instant(i * Second),
+                         DegreesOfFreedom<From>(
+                             Position<From>(
+                                 Displacement<From>({1 * i * Metre,
+                                                     2 * i * Metre,
+                                                     3 * i * Metre})),
+                             Velocity<From>({4 * i * Metre / Second,
+                                             8 * i * Metre / Second,
+                                             16 * i * Metre / Second})));
+      body1_to_.Append(Instant(i * Second),
+                       DegreesOfFreedom<To>(
+                           Position<To>(
+                               Displacement<To>({3 * i * Metre,
+                                                 1 * i * Metre,
+                                                 2 * i * Metre})),
+                           Velocity<To>({16 * i * Metre / Second,
+                                         4 * i * Metre / Second,
+                                         8 * i * Metre / Second})));
+      body2_from_.Append(Instant(i * Second),
+                         DegreesOfFreedom<From>(
+                             Position<From>(
+                                 Displacement<From>({-1 * i * Metre,
+                                                     -2 * i * Metre,
+                                                     3 * i * Metre})),
+                             Velocity<From>({-4 * i * Metre / Second,
+                                             8 * i * Metre / Second,
+                                             -16 * i * Metre / Second})));
+      body2_to_.Append(Instant(i * Second),
+                       DegreesOfFreedom<To>(
+                           Position<To>(
+                               Displacement<To>({3 * i * Metre,
+                                                -1 * i * Metre,
+                                                -2 * i * Metre})),
+                           Velocity<To>({-16 * i * Metre / Second,
+                                         4 * i * Metre / Second,
+                                         8 * i * Metre / Second})));
+      satellite_from_->Append(Instant(i * Second),
+                              DegreesOfFreedom<From>(
+                                  Position<From>(
+                                      Displacement<From>({10 * i * Metre,
+                                                          -20 * i * Metre,
+                                                          30 * i * Metre})),
+                                  Velocity<From>({40 * i * Metre / Second,
+                                                  -80 * i * Metre / Second,
+                                                  160 * i * Metre / Second})));
     }
   }
 
