@@ -42,9 +42,8 @@ namespace {
 
 // Fills |*rotation| with the rotation that maps the basis of the barycentric
 // frame to the standard basis.  Fills |*angular_frequency| with the
-// corresponding angular velocity.  These pointers must be nonnull, and there is
-// no transfer of ownership.  |barycentre_degrees_of_freedom| must be a convex
-// combination of the two other degrees of freedom.
+// corresponding angular velocity.  |barycentre_degrees_of_freedom| must be a
+// convex combination of the two other degrees of freedom.
 template<typename FromFrame, typename ToFrame>
 void FromBasisOfBarycentricFrameToStandardBasis(
     DegreesOfFreedom<FromFrame> const& barycentre_degrees_of_freedom,

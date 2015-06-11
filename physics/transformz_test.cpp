@@ -41,7 +41,7 @@ using ::testing::Lt;
 namespace physics {
 
 namespace {
-const int kNumberOfPoints = 32;
+const int kNumberOfPoints = 33;
 const Time kStep = 1 * Second;
 const Length kLowTolerance = 0.001 * Metre;
 const Length kHighTolerance = 0.01 * Metre;
@@ -67,7 +67,7 @@ class TransformzTest : public testing::Test {
   static void SetUpTestCase() {
     // This will need to change if we ever have continuous trajectories with
     // more than 8 divisions.
-    CHECK_EQ(0, kNumberOfPoints % 8);
+    CHECK_EQ(1, kNumberOfPoints % 8);
   }
 
   TransformzTest()
@@ -170,13 +170,14 @@ TEST_F(TransformzTest, BodyCentredNonRotating) {
         it.degrees_of_freedom();
     EXPECT_THAT(degrees_of_freedom,
                 Componentwise(
-                    Eq(Through::origin +
-                       Displacement<Through>({9 * i * Metre,
-                                              -22 * i * Metre,
-                                              27 * i * Metre})),
-                    Eq(Velocity<Through>({36 * i * Metre / Second,
-                                          -88 * i * Metre / Second,
-                                          144 * i * Metre / Second})))) << i;
+                    AlmostEquals(Through::origin + Displacement<Through>(
+                        {9 * i * Metre,
+                         -22 * i * Metre,
+                         27 * i * Metre}), 0, 384),
+                    AlmostEquals(Velocity<Through>(
+                        {36 * i * Metre / Second,
+                         -88 * i * Metre / Second,
+                         144 * i * Metre / Second}), 0, 720))) << i;
     satellite_through_->Append(Instant(i * Second), degrees_of_freedom);
   }
 
@@ -199,13 +200,14 @@ TEST_F(TransformzTest, BodyCentredNonRotating) {
         it.degrees_of_freedom();
     EXPECT_THAT(degrees_of_freedom,
                 Componentwise(
-                    Eq(To::origin +
-                        Displacement<To>({12 * i * Metre,
-                                          -21 * i * Metre,
-                                          29 * i * Metre})),
-                    Eq(Velocity<To>({36 * i * Metre / Second,
-                                      -88 * i * Metre / Second,
-                                      144 * i * Metre / Second})))) << i;
+                    AlmostEquals(To::origin + Displacement<To>(
+                        {12 * i * Metre,
+                         -21 * i * Metre,
+                         29 * i * Metre}), 0),
+                    AlmostEquals(Velocity<To>(
+                        {36 * i * Metre / Second,
+                         -88 * i * Metre / Second,
+                         144 * i * Metre / Second}), 2, 720))) << i;
   }
   auto const identity = Rotation<To, To>::Identity();
   EXPECT_EQ(identity.quaternion(),

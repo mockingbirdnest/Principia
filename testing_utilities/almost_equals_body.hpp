@@ -193,6 +193,24 @@ bool AlmostEqualsMatcher<T>::MatchAndExplain(
 }
 
 template<typename T>
+template<typename Vector>
+bool AlmostEqualsMatcher<T>::MatchAndExplain(
+    geometry::Point<Vector> const& actual,
+    testing::MatchResultListener* listener) const {
+  // Check that the types are equality-comparable up to implicit casts.
+  if (actual == expected_) {
+    return MatchAndExplainIdentical(listener);
+  }
+  geometry::Point<Vector> const origin;
+  return AlmostEqualsMatcher<Vector>(expected_ - origin,
+                                     min_ulps_,
+                                     max_ulps_).MatchAndExplain(
+                                         actual - origin,
+                                         listener);
+}
+
+
+template<typename T>
 void AlmostEqualsMatcher<T>::DescribeTo(std::ostream* out) const {
   *out << "is within "<< min_ulps_
        << " to " << max_ulps_ << " ULPs of " << expected_;
