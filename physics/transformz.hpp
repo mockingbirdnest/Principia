@@ -7,6 +7,7 @@
 #include <vector>
 
 #include "base/not_null.hpp"
+#include "physics/continuous_trajectory.hpp"
 #include "physics/frame_field.hpp"
 #include "physics/trajectory.hpp"
 
@@ -31,7 +32,7 @@ class Transformz {
   // The trajectories are evaluated lazily because they may be extended or
   // deallocated/reallocated between the time when the transforms are created
   // and the time when they are applied.  Thus, the lambdas couldn't capture the
-  // trajectories by value nor by reference.  Instead, they capture an |Mobile|
+  // trajectories by value nor by reference.  Instead, they capture a |Mobile|
   // by reference and a pointer-to-member function by copy.
   // This technique also makes it possible to dynamically select the trajectory
   // that's used for the |Mobile|: it is the one denoted by the same member
@@ -43,8 +44,9 @@ class Transformz {
   // same axes as |FromFrame| and the body of |centre_trajectory| is the origin
   // of |ThroughFrame|.
   static not_null<std::unique_ptr<Transformz>> BodyCentredNonRotating(
-      Mobile const& centre,
-      LazyTrajectory<ToFrame> const& to_trajectory);
+      MassiveBody const& centre,
+      ContinuousTrajectory<FromFrame> const& from_centre_trajectory,
+      ContinuousTrajectory<ToFrame> const& to_centre_trajectory);
 
   // A factory method where |ThroughFrame| is defined as follows: its X axis
   // goes from the primary to the secondary bodies, its Y axis is in the plane
@@ -53,9 +55,12 @@ class Transformz {
   // that it is right-handed.  The barycentre of the bodies is the origin of
   // |ThroughFrame|.
   static not_null<std::unique_ptr<Transformz>> BarycentricRotating(
-      Mobile const& primary,
-      Mobile const& secondary,
-      LazyTrajectory<ToFrame> const& to_trajectory);
+      MassiveBody const& primary,
+      ContinuousTrajectory<FromFrame> const& from_primary_trajectory,
+      ContinuousTrajectory<ToFrame> const& to_primary_trajectory,
+      MassiveBody const& secondary,
+      ContinuousTrajectory<FromFrame> const& from_secondary_trajectory,
+      ContinuousTrajectory<ToFrame> const& to_secondary_trajectory);
 
   // Use this only for testing!
   static not_null<std::unique_ptr<Transformz>> DummyForTesting();
