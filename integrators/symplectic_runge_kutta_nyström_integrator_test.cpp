@@ -101,7 +101,7 @@ struct SimpleHarmonicMotionTestInstance {
       test_time_reversibility_(
           std::bind(TestTimeReversibility<Integrator>,
                     integrator)),
-      name_(name) {};
+      name_(name) {}
 
   std::string const& name() const {
     return name_;
@@ -176,15 +176,15 @@ void Test1000SecondsAt1Millisecond(
 
   EXPECT_EQ(steps, solution.size());
   switch (integrator.composition) {
-   case kBA:
-   case kABA:
-    EXPECT_EQ(steps * integrator.evaluations, evaluations);
-    break;
-   case kBAB:
-    EXPECT_EQ(steps * integrator.evaluations + 1, evaluations);
-    break;
-  default:
-    LOG(FATAL) << "Invalid composition";
+    case kBA:
+    case kABA:
+      EXPECT_EQ(steps * integrator.evaluations, evaluations);
+      break;
+    case kBAB:
+      EXPECT_EQ(steps * integrator.evaluations + 1, evaluations);
+      break;
+    default:
+      LOG(FATAL) << "Invalid composition";
   }
   Length q_error;
   Speed v_error;
