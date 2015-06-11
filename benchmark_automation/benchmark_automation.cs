@@ -73,7 +73,7 @@ class BenchmarkAutomation {
                     words[0].Substring(
                         startIndex : 0,
                         length     : words[0].Length - mean_postfix.Length);
-                Int64 μ = Int64.Parse(words[2]);
+                Int64 μ = Int64.Parse(words[1]);
                 Console.WriteLine(benchmark_name + ": μ = " + μ + " ns");
                 CommaSeparatedAppend(
                     ref csv_benchmark_names,
@@ -81,7 +81,7 @@ class BenchmarkAutomation {
                 CommaSeparatedAppend(ref csv_means, μ.ToString());
               } else if (!has_repetitions) {
                 String benchmark_name = words[0];
-                Int64 μ = Int64.Parse(words[2]);
+                Int64 μ = Int64.Parse(words[1]);
                 CommaSeparatedAppend(
                     ref csv_benchmark_names,
                     "\"" + benchmark_name.Replace("\"", "\"\"") + "\"");
@@ -102,7 +102,7 @@ class BenchmarkAutomation {
                 } else {
                   mathematica_stream.Write(", ");
                 }
-                mathematica_stream.Write(Int64.Parse(words[2]));
+                mathematica_stream.Write(Int64.Parse(words[1]));
               }
             }
           }
