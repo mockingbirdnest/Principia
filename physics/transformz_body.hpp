@@ -71,23 +71,26 @@ void FromBasisOfBarycentricFrameToStandardBasis(
 
 template<typename ThroughFrame, typename ToFrame>
 void FromStandardBasisToBasisOfLastBarycentricFrame(
+    MassiveBody const& primary,
     ContinuousTrajectory<ToFrame> const& to_primary_trajectory,
+    MassiveBody const& secondary,
     ContinuousTrajectory<ToFrame> const& to_secondary_trajectory,
     not_null<Rotation<ThroughFrame, ToFrame>*> const rotation,
     not_null<DegreesOfFreedom<ToFrame>*> const
         last_barycentre_degrees_of_freedom) {
+  //TODO(phl):t_max, hint.
   DegreesOfFreedom<ToFrame> const& last_primary_degrees_of_freedom =
-      to_primary_trajectory.last().degrees_of_freedom();
+      to_primary_trajectory.EvaluateDegreesOfFreedom(
+          to_primary_trajectory.t_max(), nullptr);
   DegreesOfFreedom<ToFrame> const& last_secondary_degrees_of_freedom =
-      to_secondary_trajectory.last().degrees_of_freedom();
+      to_secondary_trajectory.EvaluateDegreesOfFreedom(
+          to_secondary_trajectory.t_max(), nullptr);
   *last_barycentre_degrees_of_freedom =
       Barycentre<ToFrame, GravitationalParameter>(
           {last_primary_degrees_of_freedom,
            last_secondary_degrees_of_freedom},
-          {to_primary_trajectory.template body<MassiveBody>()->
-               gravitational_parameter(),
-           to_secondary_trajectory.template body<MassiveBody>()->
-               gravitational_parameter()});
+          {primary.gravitational_parameter(),
+           secondary.gravitational_parameter()});
   Rotation<ToFrame, ThroughFrame>
       from_basis_of_last_barycentric_frame_to_standard_basis =
           Rotation<ToFrame, ThroughFrame>::Identity();
@@ -141,6 +144,7 @@ Transformz<Mobile, FromFrame, ThroughFrame, ToFrame>::BodyCentredNonRotating(
         {position_map(from_degrees_of_freedom.position()),
          velocity_map(from_degrees_of_freedom.velocity() -
                       centre_degrees_of_freedom.velocity())};
+    return through_degrees_of_freedom;
   };
 
   transforms->second_ =
@@ -180,14 +184,16 @@ Transformz<Mobile, FromFrame, ThroughFrame, ToFrame>::BarycentricRotating(
       make_not_null_unique<Transformz>();
 
   transforms->coordinate_frame_ =
-      [&to_primary_trajectory, &to_secondary_trajectory](
+      [&primary, &to_primary_trajectory, &secondary, &to_secondary_trajectory](
           Position<ToFrame> const& q) {
     Rotation<ThroughFrame, ToFrame>
         from_standard_basis_to_basis_of_last_barycentric_frame =
             Rotation<ThroughFrame, ToFrame>::Identity();
     DegreesOfFreedom<ToFrame> dummy = {ToFrame::origin, Velocity<ToFrame>()};
     FromStandardBasisToBasisOfLastBarycentricFrame<ThroughFrame, ToFrame>(
+        primary,
         to_primary_trajectory,
+        secondary,
         to_secondary_trajectory,
         &from_standard_basis_to_basis_of_last_barycentric_frame,
         &dummy);
@@ -218,8 +224,8 @@ Transformz<Mobile, FromFrame, ThroughFrame, ToFrame>::BarycentricRotating(
         Barycentre<FromFrame, GravitationalParameter>(
             {primary_degrees_of_freedom,
              secondary_degrees_of_freedom},
-            {primary->gravitational_parameter(),
-             secondary->gravitational_parameter()});
+            {primary.gravitational_parameter(),
+             secondary.gravitational_parameter()});
     Rotation<FromFrame, ThroughFrame>
         from_basis_of_barycentric_frame_to_standard_basis =
             Rotation<FromFrame, ThroughFrame>::Identity();
@@ -246,16 +252,11 @@ Transformz<Mobile, FromFrame, ThroughFrame, ToFrame>::BarycentricRotating(
                         angular_frequency *
                           (from_degrees_of_freedom.position() -
                            barycentre_degrees_of_freedom.position()) / Radian)};
-
-    // Cache the result before returning it.
-    if (cacheable) {
-      that->first_cache_.Insert(trajectory, t, through_degrees_of_freedom);
-    }
     return through_degrees_of_freedom;
   };
 
   transforms->second_ =
-      [&to_primary_trajectory, &to_secondary_trajectory](
+      [&primary, &to_primary_trajectory, &secondary, &to_secondary_trajectory](
           Instant const& t,
           DegreesOfFreedom<ThroughFrame> const& through_degrees_of_freedom,
           Trajectory<ThroughFrame> const* trajectory) ->
@@ -266,8 +267,10 @@ Transformz<Mobile, FromFrame, ThroughFrame, ToFrame>::BarycentricRotating(
     DegreesOfFreedom<ToFrame> last_barycentre_degrees_of_freedom =
         {ToFrame::origin, Velocity<ToFrame>()};
     FromStandardBasisToBasisOfLastBarycentricFrame<ThroughFrame, ToFrame>(
-        (primary.*to_trajectory)(),
-        (secondary.*to_trajectory)(),
+        primary,
+        to_primary_trajectory,
+        secondary,
+        to_secondary_trajectory,
         &from_standard_basis_to_basis_of_last_barycentric_frame,
         &last_barycentre_degrees_of_freedom);
 

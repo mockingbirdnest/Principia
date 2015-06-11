@@ -27,9 +27,9 @@ using geometry::Rotation;
 using quantities::Abs;
 using quantities::Length;
 using quantities::Mass;
-using quantities::SIUnit;
 using quantities::Speed;
 using quantities::Time;
+using si::Kilogram;
 using si::Metre;
 using si::Second;
 using testing_utilities::AlmostEquals;
@@ -71,7 +71,9 @@ class TransformzTest : public testing::Test {
   }
 
   TransformzTest()
-      : body1_from_(kStep, kLowTolerance, kHighTolerance),
+      : body1_(MassiveBody(1 * Kilogram)),
+        body2_(MassiveBody(3 * Kilogram)),
+        body1_from_(kStep, kLowTolerance, kHighTolerance),
         body1_to_(kStep, kLowTolerance, kHighTolerance),
         body2_from_(kStep, kLowTolerance, kHighTolerance),
         body2_to_(kStep, kLowTolerance, kHighTolerance),
@@ -140,6 +142,8 @@ class TransformzTest : public testing::Test {
     }
   }
 
+  MassiveBody body1_;
+  MassiveBody body2_;
   MasslessBody satellite_;
   ContinuousTrajectory<From> body1_from_;
   ContinuousTrajectory<To> body1_to_;
@@ -156,7 +160,7 @@ class TransformzTest : public testing::Test {
 TEST_F(TransformzTest, BodyCentredNonRotating) {
   auto const transforms =
       Transformz<Functors, From, Through, To>::BodyCentredNonRotating(
-          body1_from_, body1_to_);
+          body1_, body1_from_, body1_to_);
 
   int i = 1;
   for (auto it = transforms->first(satellite_fn_, &Functors::from_trajectory);
@@ -212,7 +216,8 @@ TEST_F(TransformzTest, BodyCentredNonRotating) {
 TEST_F(TransformzTest, SatelliteBarycentricRotating) {
   auto const transforms =
       Transformz<Functors, From, Through, To>::BarycentricRotating(
-          body1_from_, body1_to_, body2_from_, body2_to_);
+          body1_, body1_from_, body1_to_,
+          body2_, body2_from_, body2_to_);
   Trajectory<Through> satellite_through(&satellite_);
 
   int i = 1;
