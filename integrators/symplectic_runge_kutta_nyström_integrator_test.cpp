@@ -1,6 +1,8 @@
 ﻿#include "integrators/symplectic_runge_kutta_nyström_integrator.hpp"
 
+#include <algorithm>
 #include <vector>
+#include <string>
 
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
@@ -294,7 +296,7 @@ void TestSymplecticity(Integrator const& integrator,
 
   Mass const m = 1 * Kilogram;
   Stiffness const k = SIUnit<Stiffness>();
-  Energy const initial_energy = 
+  Energy const initial_energy =
       0.5 * m * Pow<2>(v_initial) + 0.5 * k * Pow<2>(q_initial);
 
   std::vector<ODE::SystemState> solution;
