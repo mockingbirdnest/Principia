@@ -240,10 +240,10 @@ TEST_F(TransformzTest, SatelliteBarycentricRotating) {
     EXPECT_THAT(degrees_of_freedom,
                 Componentwise(
                     AlmostEquals(To::origin + Displacement<To>(
-                        {(3.0 + 62.0 * sqrt(5.0 / 21.0)) * i * Metre,
-                         (-6.0 + 106.0 / sqrt(105.0)) * i * Metre,
-                         (-12.0 - 53.0 / sqrt(105.0)) * i * Metre}),
-                        0),
+                        {(99.0 + (62.0 * sqrt(5.0 / 21.0)) * i) * Metre,
+                         (-16.5 + (-5.5 + 106.0 / sqrt(105.0)) * i) * Metre,
+                         (-33.0 + (-11.0 - 53.0 / sqrt(105.0)) * i) * Metre}),
+                        129, 28312),
                     AlmostEquals(Velocity<To>(
                         {2776.0 / sqrt(105.0) * i * Metre / Second,
                          (72.4 + 352.0 / sqrt(105.0)) * i * Metre / Second,
