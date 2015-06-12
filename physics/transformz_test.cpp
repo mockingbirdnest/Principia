@@ -255,60 +255,78 @@ TEST_F(TransformzTest, SatelliteBarycentricRotating) {
 // Check that the bodies remain on the invariant line and at the right distance
 // from each other and from the barycentre, and that the barycentre is the
 // centre of the coordinates.
+TEST_F(TransformzTest, BodiesBarycentricRotating) {
+  auto const transforms =
+      Transformz<Functors, From, Through, To>::BarycentricRotating(
+          body1_, body1_from_, body1_to_,
+          body2_, body2_from_, body2_to_);
+
+  // Compute discrete trajectories from the continuous ones since we can only
+  // transform discrete trajectories.
+  Trajectory<From> discrete_body1_from(&body1_);
+  Trajectory<From> discrete_body2_from(&body2_);
+  for (int i = 1; i <= kNumberOfPoints; ++i) {
+    discrete_body1_from.Append(
+        Instant(i * Second),
+        body1_from_.EvaluateDegreesOfFreedom(Instant(i * Second),
+                                             nullptr /*hint*/));
+    discrete_body2_from.Append(
+        Instant(i * Second),
+        body2_from_.EvaluateDegreesOfFreedom(Instant(i * Second),
+                                             nullptr /*hint*/));
+  }
+
+  int i = 1;
+  for (auto it1 = transforms->first({&discrete_body1_from, nullptr /*to*/},
+                                    &Functors::from_trajectory),
+            it2 = transforms->first({&discrete_body2_from, nullptr /*to*/},
+                                    &Functors::from_trajectory);
+       !it1.at_end() && !it2.at_end();
+       ++it1, ++it2, ++i) {
+    Length const l = i * Metre;
+    Speed const s = i * Metre / Second;
+    DegreesOfFreedom<Through> const degrees_of_freedom1 =
+        it1.degrees_of_freedom();
+    DegreesOfFreedom<Through> const degrees_of_freedom2 =
+        it2.degrees_of_freedom();
+
+    EXPECT_THAT(degrees_of_freedom1.position() - Through::origin,
+                Componentwise(AlmostEquals(1.5 * sqrt(5.0) * l, 0, 2403),
+                              VanishesBefore(l, 0, 12),
+                              VanishesBefore(l, 0, 4)));
+    EXPECT_THAT(degrees_of_freedom2.position() - Through::origin,
+                Componentwise(AlmostEquals(-0.5 * sqrt(5.0) * l, 1, 1602),
+                              VanishesBefore(l, 0, 6),
+                              VanishesBefore(l, 0, 2)));
+    EXPECT_THAT(degrees_of_freedom1.velocity(),
+                Componentwise(AlmostEquals(6.0 / sqrt(5.0) * s, 6, 40219),
+                              VanishesBefore(s, 0, 80),
+                              VanishesBefore(s, 0, 10)));
+    EXPECT_THAT(degrees_of_freedom2.velocity(),
+                Componentwise(AlmostEquals(-2.0 / sqrt(5.0) * s, 4, 53633),
+                              VanishesBefore(s, 0, 20),
+                              VanishesBefore(s, 0, 13)));
+
+    DegreesOfFreedom<Through> const barycentre_degrees_of_freedom =
+        Barycentre<Through, Mass>({degrees_of_freedom1, degrees_of_freedom2},
+                                  {body1_.mass(), body2_.mass()});
+    EXPECT_THAT(barycentre_degrees_of_freedom.position() - Through::origin,
+                Componentwise(VanishesBefore(l, 0, 2),
+                              VanishesBefore(l, 0, 4),
+                              VanishesBefore(l, 0, 2)));
+    EXPECT_THAT(barycentre_degrees_of_freedom.velocity(),
+                Componentwise(VanishesBefore(s, 0, 35),
+                              VanishesBefore(s, 0, 18),
+                              VanishesBefore(s, 0, 9)));
+
+    Length const length = (degrees_of_freedom1.position() -
+                           degrees_of_freedom2.position()).Norm();
+    EXPECT_THAT(length,
+                AlmostEquals(2.0 * sqrt(5.0) * i * Metre, 0, 1602));
+  }
+}
+
 //TEST_F(TransformzTest, BodiesBarycentricRotating) {
-//  auto const transforms =
-//      Transformz<Functors, From, Through, To>::BarycentricRotating(
-//          body1_from_, body2_from_, &Functors::to_trajectory);
-//  Trajectory<Through> body1_through(&body1_);
-//  Trajectory<Through> body2_through(&body2_);
-//
-//  int i = 1;
-//  for (auto it1 = transforms->first(body1_from_, &Functors::from_trajectory),
-//            it2 = transforms->first(body2_from_, &Functors::from_trajectory);
-//       !it1.at_end() && !it2.at_end();
-//       ++it1, ++it2, ++i) {
-//    Length const l = i * Metre;
-//    Speed const s = i * Metre / Second;
-//    DegreesOfFreedom<Through> const degrees_of_freedom1 =
-//        it1.degrees_of_freedom();
-//    DegreesOfFreedom<Through> const degrees_of_freedom2 =
-//        it2.degrees_of_freedom();
-//
-//    EXPECT_THAT(degrees_of_freedom1.position() - Through::origin,
-//                Componentwise(AlmostEquals(1.5 * sqrt(5.0) * l, 0, 1),
-//                              VanishesBefore(l, 0, 4),
-//                              VanishesBefore(l, 0, 2)));
-//    EXPECT_THAT(degrees_of_freedom2.position() - Through::origin,
-//                Componentwise(AlmostEquals(-0.5 * sqrt(5.0) * l, 0, 2),
-//                              VanishesBefore(l, 0, 2),
-//                              VanishesBefore(l, 0, 1)));
-//    EXPECT_THAT(degrees_of_freedom1.velocity(),
-//                Componentwise(AlmostEquals(6.0 / sqrt(5.0) * s, 0, 7),
-//                              VanishesBefore(s, 0, 34),
-//                              VanishesBefore(s, 0, 2)));
-//    EXPECT_THAT(degrees_of_freedom2.velocity(),
-//                Componentwise(AlmostEquals(-2.0 / sqrt(5.0) * s, 0, 14),
-//                              VanishesBefore(s, 0, 16),
-//                              VanishesBefore(s, 0, 1)));
-//
-//    DegreesOfFreedom<Through> const barycentre_degrees_of_freedom =
-//        Barycentre<Through, Mass>({degrees_of_freedom1, degrees_of_freedom2},
-//                                  {body1_.mass(), body2_.mass()});
-//    EXPECT_THAT(barycentre_degrees_of_freedom.position() - Through::origin,
-//                Componentwise(VanishesBefore(l, 0, 1),
-//                              VanishesBefore(l, 0, 2),
-//                              VanishesBefore(l, 0, 1)));
-//    EXPECT_THAT(barycentre_degrees_of_freedom.velocity(),
-//                Componentwise(VanishesBefore(s, 0, 14),
-//                              VanishesBefore(s, 0, 7),
-//                              VanishesBefore(s, 0, 1)));
-//
-//    Length const length = (degrees_of_freedom1.position() -
-//                           degrees_of_freedom2.position()).Norm();
-//    EXPECT_THAT(length,
-//                AlmostEquals(2.0 * sqrt(5.0) * i * Metre, 0, 2));
-//  }
-//
 //  body1_to_->Append(
 //      Instant(i * Second),
 //              DegreesOfFreedom<To>(
