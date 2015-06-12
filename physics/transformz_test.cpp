@@ -179,7 +179,8 @@ TEST_F(TransformzTest, BodyCentredNonRotating) {
   }
 
   i = 1;
-  for (auto it = transforms->second(*satellite_through_);
+  for (auto it = transforms->second(Instant(kNumberOfPoints * Second),
+                                    *satellite_through_);
        !it.at_end();
        ++it, ++i) {
     DegreesOfFreedom<To> const degrees_of_freedom =
@@ -197,9 +198,6 @@ TEST_F(TransformzTest, BodyCentredNonRotating) {
                          144 * i * Metre / Second}),
                         0, 720))) << i;
   }
-  auto const identity = Rotation<To, To>::Identity();
-  EXPECT_EQ(identity.quaternion(),
-            transforms->coordinate_frame()(To::origin).quaternion());
 }
 
 // Check that the computations we do match those done using Mathematica.
@@ -232,7 +230,8 @@ TEST_F(TransformzTest, SatelliteBarycentricRotating) {
   }
 
   i = 1;
-  for (auto it = transforms->second(satellite_through);
+  for (auto it = transforms->second(Instant(kNumberOfPoints * Second),
+                                    satellite_through);
        !it.at_end();
        ++it, ++i) {
     DegreesOfFreedom<To> const degrees_of_freedom =
@@ -327,38 +326,45 @@ TEST_F(TransformzTest, BodiesBarycentricRotating) {
 }
 
 TEST_F(TransformzTest, CoordinateFrame) {
-  auto const transforms =
-      Transformz<Functors, From, Through, To>::BarycentricRotating(
-          body1_, body1_from_, body1_to_,
-          body2_, body2_from_, body2_to_);
+  Instant const t(kNumberOfPoints * Second);
+  {
+    auto const transforms =
+        Transformz<Functors, From, Through, To>::BodyCentredNonRotating(
+            body1_, body1_from_, body1_to_);
+    auto const identity = Rotation<To, To>::Identity();
+    EXPECT_EQ(identity.quaternion(),
+              transforms->coordinate_frame(t)(To::origin).quaternion());
+  }
+  {
+    auto const transforms =
+        Transformz<Functors, From, Through, To>::BarycentricRotating(
+            body1_, body1_from_, body1_to_,
+            body2_, body2_from_, body2_to_);
 
-  Vector<double, To> const x({1, 0, 0});
-  Vector<double, To> const y({0, 1, 0});
-  Vector<double, To> const z({0, 0, 1});
-  Vector<double, To> const body1_body2 =
-      Normalize(
-          body1_to_.EvaluatePosition(
-              Instant(kNumberOfPoints * Second), nullptr /*hint*/) -
-          body2_to_.EvaluatePosition(
-              Instant(kNumberOfPoints * Second), nullptr /*hint*/));
-  EXPECT_THAT(
-      transforms->coordinate_frame()(To::origin)(x),
-      Componentwise(VanishesBefore(1, 666),
-                    AlmostEquals(body1_body2.coordinates().y, 1),
-                    AlmostEquals(body1_body2.coordinates().z, 1)));
-  EXPECT_GT(
-      InnerProduct(
-          transforms->coordinate_frame()(To::origin)(y),
-          Normalize(body1_to_.EvaluateVelocity(
-                        Instant(kNumberOfPoints * Second), nullptr /*hint*/))),
-      0);
-  EXPECT_THAT(
-      InnerProduct(
-              transforms->coordinate_frame()(To::origin)(z),
-              Normalize(
-                  body1_to_.EvaluateVelocity(
-                      Instant(kNumberOfPoints * Second), nullptr /*hint*/))),
-      VanishesBefore(1, 0));
+    Vector<double, To> const x({1, 0, 0});
+    Vector<double, To> const y({0, 1, 0});
+    Vector<double, To> const z({0, 0, 1});
+    Vector<double, To> const body1_body2 =
+        Normalize(
+            body1_to_.EvaluatePosition(t, nullptr /*hint*/) -
+            body2_to_.EvaluatePosition(t, nullptr /*hint*/));
+    EXPECT_THAT(
+        transforms->coordinate_frame(t)(To::origin)(x),
+        Componentwise(VanishesBefore(1, 666),
+                      AlmostEquals(body1_body2.coordinates().y, 1),
+                      AlmostEquals(body1_body2.coordinates().z, 1)));
+    EXPECT_GT(
+        InnerProduct(
+            transforms->coordinate_frame(t)(To::origin)(y),
+            Normalize(body1_to_.EvaluateVelocity(t, nullptr /*hint*/))),
+        0);
+    EXPECT_THAT(
+        InnerProduct(
+                transforms->coordinate_frame(t)(To::origin)(z),
+                Normalize(
+                    body1_to_.EvaluateVelocity(t, nullptr /*hint*/))),
+        VanishesBefore(1, 0));
+  }
 }
 
 }  // namespace physics

@@ -79,11 +79,12 @@ class Transformz {
                     Instant const& time);
 
   typename Trajectory<ThroughFrame>:: template TransformingIterator<ToFrame>
-  second(Trajectory<ThroughFrame> const& through_trajectory);
+  second(Instant const& last,
+         Trajectory<ThroughFrame> const& through_trajectory);
 
   // The coordinate frame of |ThroughFrame|, expressed in the coordinates of
-  // |ToFrame| at the current time.
-  FrameField<ToFrame> coordinate_frame() const;
+  // |ToFrame| at time |last|.
+  FrameField<ToFrame> coordinate_frame(Instant const& last) const;
 
  private:
   // Just like a |Trajectory::Transform|, except that the first parameter is
@@ -94,9 +95,17 @@ class Transformz {
                             Instant const&,
                             DegreesOfFreedom<Frame1> const&,
                             not_null<Trajectory<Frame1> const*> const)>;
-
   LazyTransform<FromFrame, ThroughFrame> first_;
-  typename Trajectory<ThroughFrame>::template Transform<ToFrame> second_;
+
+  // Just like a |Trajectory::Transform|, except that the first parameter is
+  // only bound when we know at what time (|now|) the transform must be applied.
+  template<typename Frame1, typename Frame2>
+  using LastTimeTransform = std::function<DegreesOfFreedom<Frame2>(
+                                Instant const& last,
+                                Instant const& t,
+                                DegreesOfFreedom<Frame1> const&,
+                                not_null<Trajectory<Frame1> const*> const)>;
+  LastTimeTransform<ThroughFrame, ToFrame> second_;
 
   // A simple cache with no eviction, which monitors the hit rate.
   template<typename Frame1, typename Frame2>
@@ -127,7 +136,10 @@ class Transformz {
   // freedom.
   Cache<FromFrame, ThroughFrame> first_cache_;
 
-  FrameField<ToFrame> coordinate_frame_;
+  // Same as FrameField<ToFrame>, but the time is only bound when
+  // |coordinate_frame| is called.
+  std::function<Rotation<ToFrame, ToFrame>(
+      Instant const& last, Position<ToFrame> const& q)> coordinate_frame_;
 };
 
 }  // namespace physics

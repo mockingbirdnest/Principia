@@ -70,6 +70,7 @@ void FromBasisOfBarycentricFrameToStandardBasis(
 
 template<typename ThroughFrame, typename ToFrame>
 void FromStandardBasisToBasisOfLastBarycentricFrame(
+    Instant const& last,
     MassiveBody const& primary,
     ContinuousTrajectory<ToFrame> const& to_primary_trajectory,
     MassiveBody const& secondary,
@@ -79,11 +80,9 @@ void FromStandardBasisToBasisOfLastBarycentricFrame(
         last_barycentre_degrees_of_freedom) {
   //TODO(phl):t_max, hint.
   DegreesOfFreedom<ToFrame> const& last_primary_degrees_of_freedom =
-      to_primary_trajectory.EvaluateDegreesOfFreedom(
-          to_primary_trajectory.t_max(), nullptr);
+      to_primary_trajectory.EvaluateDegreesOfFreedom(last, nullptr);
   DegreesOfFreedom<ToFrame> const& last_secondary_degrees_of_freedom =
-      to_secondary_trajectory.EvaluateDegreesOfFreedom(
-          to_secondary_trajectory.t_max(), nullptr);
+      to_secondary_trajectory.EvaluateDegreesOfFreedom(last, nullptr);
   *last_barycentre_degrees_of_freedom =
       Barycentre<ToFrame, GravitationalParameter>(
           {last_primary_degrees_of_freedom,
@@ -115,7 +114,11 @@ Transformz<Mobile, FromFrame, ThroughFrame, ToFrame>::BodyCentredNonRotating(
   not_null<std::unique_ptr<Transformz>> transforms =
       make_not_null_unique<Transformz>();
 
-  transforms->coordinate_frame_ = CoordinateFrame<ToFrame>();
+  transforms->coordinate_frame_ =
+      [](Instant const& last,
+         Position<ToFrame> const& q) {
+    return CoordinateFrame<ToFrame>()(q);
+  };
 
   // From the perspective of the lambda the following variable is really |this|,
   // hence the name.
@@ -148,14 +151,14 @@ Transformz<Mobile, FromFrame, ThroughFrame, ToFrame>::BodyCentredNonRotating(
 
   transforms->second_ =
       [&to_centre_trajectory](
+          Instant const last,
           Instant const& t,
           DegreesOfFreedom<ThroughFrame> const& through_degrees_of_freedom,
           Trajectory<ThroughFrame> const* trajectory) ->
       DegreesOfFreedom<ToFrame> {
-    //TODO(phl):t_max is wrong, hint.
+    //TODO(phl): hint.
     DegreesOfFreedom<ToFrame> const& last_centre_degrees_of_freedom =
-        to_centre_trajectory.EvaluateDegreesOfFreedom(
-            to_centre_trajectory.t_max(), nullptr);
+        to_centre_trajectory.EvaluateDegreesOfFreedom(last, nullptr);
 
     AffineMap<ThroughFrame, ToFrame, Length, Identity> const position_map(
         ThroughFrame::origin,
@@ -184,6 +187,7 @@ Transformz<Mobile, FromFrame, ThroughFrame, ToFrame>::BarycentricRotating(
 
   transforms->coordinate_frame_ =
       [&primary, &to_primary_trajectory, &secondary, &to_secondary_trajectory](
+          Instant const& last,
           Position<ToFrame> const& q) ->
       Rotation<ToFrame, ToFrame> {
     Rotation<ThroughFrame, ToFrame>
@@ -191,6 +195,7 @@ Transformz<Mobile, FromFrame, ThroughFrame, ToFrame>::BarycentricRotating(
             Rotation<ThroughFrame, ToFrame>::Identity();
     DegreesOfFreedom<ToFrame> dummy = {ToFrame::origin, Velocity<ToFrame>()};
     FromStandardBasisToBasisOfLastBarycentricFrame<ThroughFrame, ToFrame>(
+        last,
         primary,
         to_primary_trajectory,
         secondary,
@@ -257,6 +262,7 @@ Transformz<Mobile, FromFrame, ThroughFrame, ToFrame>::BarycentricRotating(
 
   transforms->second_ =
       [&primary, &to_primary_trajectory, &secondary, &to_secondary_trajectory](
+          Instant const& last,
           Instant const& t,
           DegreesOfFreedom<ThroughFrame> const& through_degrees_of_freedom,
           Trajectory<ThroughFrame> const* trajectory) ->
@@ -267,6 +273,7 @@ Transformz<Mobile, FromFrame, ThroughFrame, ToFrame>::BarycentricRotating(
     DegreesOfFreedom<ToFrame> last_barycentre_degrees_of_freedom =
         {ToFrame::origin, Velocity<ToFrame>()};
     FromStandardBasisToBasisOfLastBarycentricFrame<ThroughFrame, ToFrame>(
+        last,
         primary,
         to_primary_trajectory,
         secondary,
@@ -328,15 +335,19 @@ template<typename Mobile,
          typename FromFrame, typename ThroughFrame, typename ToFrame>
 typename Trajectory<ThroughFrame>::template TransformingIterator<ToFrame>
 Transformz<Mobile, FromFrame, ThroughFrame, ToFrame>::second(
+    Instant const& last,
     Trajectory<ThroughFrame> const& through_trajectory) {
-  return through_trajectory.first_with_transform(second_);
+  typename Trajectory<ThroughFrame>::template Transform<ToFrame> second =
+      std::bind(second_, last, _1, _2, _3);
+  return through_trajectory.first_with_transform(second);
 }
 
 template<typename Mobile,
          typename FromFrame, typename ThroughFrame, typename ToFrame>
 FrameField<ToFrame>
-Transformz<Mobile, FromFrame, ThroughFrame, ToFrame>::coordinate_frame() const {
-  return coordinate_frame_;
+Transformz<Mobile, FromFrame, ThroughFrame, ToFrame>::coordinate_frame(
+    Instant const& last) const {
+  return std::bind(coordinate_frame_, last, _1);
 }
 
 template<typename Mobile,
