@@ -326,49 +326,40 @@ TEST_F(TransformzTest, BodiesBarycentricRotating) {
   }
 }
 
-//TEST_F(TransformzTest, BodiesBarycentricRotating) {
-//  body1_to_->Append(
-//      Instant(i * Second),
-//              DegreesOfFreedom<To>(
-//                  Position<To>(
-//                      Displacement<To>({1 * Metre,
-//                                        -1 * Metre,
-//                                        2 * Metre})),
-//                  Velocity<To>({-3 * Metre / Second,
-//                                5 * Metre / Second,
-//                                -8 * Metre / Second})));
-//
-//  body2_to_->Append(
-//      Instant(i * Second),
-//              DegreesOfFreedom<To>(
-//                  Position<To>(
-//                      Displacement<To>({13 * Metre,
-//                                        -21 * Metre,
-//                                        34 * Metre})),
-//                  Velocity<To>({-55 * Metre / Second,
-//                                89 * Metre / Second,
-//                                -144 * Metre / Second})));
-//
-//  Vector<double, To> const x({1, 0, 0});
-//  Vector<double, To> const y({0, 1, 0});
-//  Vector<double, To> const z({0, 0, 1});
-//  EXPECT_THAT(
-//      transforms->coordinate_frame()(To::origin)(x),
-//      AlmostEquals(
-//          Normalize(body1_to_->last().degrees_of_freedom().position() -
-//                    body2_to_->last().degrees_of_freedom().position()),
-//          118));
-//  EXPECT_GT(
-//      InnerProduct(
-//          transforms->coordinate_frame()(To::origin)(y),
-//          Normalize(body1_to_->last().degrees_of_freedom().velocity())),
-//      0);
-//  EXPECT_THAT(
-//      InnerProduct(
-//              transforms->coordinate_frame()(To::origin)(z),
-//              Normalize(body1_to_->last().degrees_of_freedom().velocity())),
-//      VanishesBefore(1, 8));
-//}
+TEST_F(TransformzTest, CoordinateFrame) {
+  auto const transforms =
+      Transformz<Functors, From, Through, To>::BarycentricRotating(
+          body1_, body1_from_, body1_to_,
+          body2_, body2_from_, body2_to_);
+
+  Vector<double, To> const x({1, 0, 0});
+  Vector<double, To> const y({0, 1, 0});
+  Vector<double, To> const z({0, 0, 1});
+  Vector<double, To> const body1_body2 =
+      Normalize(
+          body1_to_.EvaluatePosition(
+              Instant(kNumberOfPoints * Second), nullptr /*hint*/) -
+          body2_to_.EvaluatePosition(
+              Instant(kNumberOfPoints * Second), nullptr /*hint*/));
+  EXPECT_THAT(
+      transforms->coordinate_frame()(To::origin)(x),
+      Componentwise(VanishesBefore(1, 666),
+                    AlmostEquals(body1_body2.coordinates().y, 1),
+                    AlmostEquals(body1_body2.coordinates().z, 1)));
+  EXPECT_GT(
+      InnerProduct(
+          transforms->coordinate_frame()(To::origin)(y),
+          Normalize(body1_to_.EvaluateVelocity(
+                        Instant(kNumberOfPoints * Second), nullptr /*hint*/))),
+      0);
+  EXPECT_THAT(
+      InnerProduct(
+              transforms->coordinate_frame()(To::origin)(z),
+              Normalize(
+                  body1_to_.EvaluateVelocity(
+                      Instant(kNumberOfPoints * Second), nullptr /*hint*/))),
+      VanishesBefore(1, 0));
+}
 
 }  // namespace physics
 }  // namespace principia

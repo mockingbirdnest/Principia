@@ -184,7 +184,8 @@ Transformz<Mobile, FromFrame, ThroughFrame, ToFrame>::BarycentricRotating(
 
   transforms->coordinate_frame_ =
       [&primary, &to_primary_trajectory, &secondary, &to_secondary_trajectory](
-          Position<ToFrame> const& q) {
+          Position<ToFrame> const& q) ->
+      Rotation<ToFrame, ToFrame> {
     Rotation<ThroughFrame, ToFrame>
         from_standard_basis_to_basis_of_last_barycentric_frame =
             Rotation<ThroughFrame, ToFrame>::Identity();
