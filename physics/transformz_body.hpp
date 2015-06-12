@@ -78,7 +78,7 @@ void FromStandardBasisToBasisOfLastBarycentricFrame(
     not_null<Rotation<ThroughFrame, ToFrame>*> const rotation,
     not_null<DegreesOfFreedom<ToFrame>*> const
         last_barycentre_degrees_of_freedom) {
-  //TODO(phl):t_max, hint.
+  // TODO(phl): Add hinting.
   DegreesOfFreedom<ToFrame> const& last_primary_degrees_of_freedom =
       to_primary_trajectory.EvaluateDegreesOfFreedom(last, nullptr);
   DegreesOfFreedom<ToFrame> const& last_secondary_degrees_of_freedom =
@@ -130,9 +130,7 @@ Transformz<Mobile, FromFrame, ThroughFrame, ToFrame>::BodyCentredNonRotating(
           DegreesOfFreedom<FromFrame> const& from_degrees_of_freedom,
           not_null<Trajectory<FromFrame> const*> const trajectory) ->
       DegreesOfFreedom<ThroughFrame> {
-    //TODO(phl): caching
-
-    //TODO(phl):hint
+    // TODO(phl): Add hinting, caching.
     DegreesOfFreedom<FromFrame> const& centre_degrees_of_freedom =
         from_centre_trajectory.EvaluateDegreesOfFreedom(t, nullptr);
 
@@ -156,7 +154,7 @@ Transformz<Mobile, FromFrame, ThroughFrame, ToFrame>::BodyCentredNonRotating(
           DegreesOfFreedom<ThroughFrame> const& through_degrees_of_freedom,
           Trajectory<ThroughFrame> const* trajectory) ->
       DegreesOfFreedom<ToFrame> {
-    //TODO(phl): hint.
+    // TODO(phl): Add hinting.
     DegreesOfFreedom<ToFrame> const& last_centre_degrees_of_freedom =
         to_centre_trajectory.EvaluateDegreesOfFreedom(last, nullptr);
 
@@ -218,9 +216,7 @@ Transformz<Mobile, FromFrame, ThroughFrame, ToFrame>::BarycentricRotating(
           DegreesOfFreedom<FromFrame> const& from_degrees_of_freedom,
           not_null<Trajectory<FromFrame> const*> const trajectory) ->
       DegreesOfFreedom<ThroughFrame> {
-    //TODO(phl):caching
-
-    //TODO(phl):hints
+    // TODO(phl): Add hinting, caching.
     DegreesOfFreedom<FromFrame> const& primary_degrees_of_freedom =
         from_primary_trajectory.EvaluateDegreesOfFreedom(t, nullptr);
     DegreesOfFreedom<FromFrame> const& secondary_degrees_of_freedom =
