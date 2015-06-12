@@ -18,11 +18,11 @@ using quantities::Acceleration;
 using quantities::AngularFrequency;
 using quantities::Cos;
 using quantities::Energy;
-using quantities::Sin;
 using quantities::Length;
 using quantities::Mass;
 using quantities::Pow;
 using quantities::Power;
+using quantities::Sin;
 using si::Joule;
 using si::Kilogram;
 using si::Metre;
@@ -47,17 +47,17 @@ using ::testing::Le;
 using ::testing::Lt;
 using ::testing::ValuesIn;
 
-#define INSTANCE(integrator,                                    \
-                 beginning_of_convergence,                      \
-                 expected_position_error,                       \
-                 expected_velocity_error,                       \
-                 expected_energy_error)                         \
-    SimpleHarmonicMotionTestInstance(integrator<Length>(),      \
-                                     #integrator,               \
-                                     beginning_of_convergence,  \
-                                     expected_position_error,   \
-                                     expected_velocity_error,   \
-                                     expected_energy_error)
+#define INSTANCE(integrator,                                      \
+                 beginning_of_convergence,                        \
+                 expected_position_error,                         \
+                 expected_velocity_error,                         \
+                 expected_energy_error)                           \
+    SimpleHarmonicMotionTestInstance(integrator<Length>(),        \
+                                     #integrator,                 \
+                                     (beginning_of_convergence),  \
+                                     (expected_position_error),   \
+                                     (expected_velocity_error),   \
+                                     (expected_energy_error))
 
 namespace integrators {
 
@@ -67,6 +67,7 @@ namespace {
 
 // TODO(egg): use the one from testing_utilities/integration again when everyone
 // uses |Instant|s.
+// Increments |*evaluations| if |evaluations| is not null.
 void ComputeHarmonicOscillatorAcceleration(
     Instant const& t,
     std::vector<Length> const& q,
@@ -87,23 +88,23 @@ struct SimpleHarmonicMotionTestInstance {
                                    Length const& expected_position_error,
                                    Speed const& expected_velocity_error,
                                    Energy const& expected_energy_error)
-    : test_1000_seconds_at_1_millisecond_(
-          std::bind(Test1000SecondsAt1Millisecond<Integrator>,
-                    integrator,
-                    expected_position_error,
-                    expected_velocity_error)),
-      test_convergence_(
-          std::bind(TestConvergence<Integrator>,
-                    integrator,
-                    beginning_of_convergence)),
-      test_symplecticity_(
-          std::bind(TestSymplecticity<Integrator>,
-                    integrator,
-                    expected_energy_error)),
-      test_time_reversibility_(
-          std::bind(TestTimeReversibility<Integrator>,
-                    integrator)),
-      name_(name) {}
+      : test_1000_seconds_at_1_millisecond_(
+            std::bind(Test1000SecondsAt1Millisecond<Integrator>,
+                      integrator,
+                      expected_position_error,
+                      expected_velocity_error)),
+        test_convergence_(
+            std::bind(TestConvergence<Integrator>,
+                      integrator,
+                      beginning_of_convergence)),
+        test_symplecticity_(
+            std::bind(TestSymplecticity<Integrator>,
+                      integrator,
+                      expected_energy_error)),
+        test_time_reversibility_(
+            std::bind(TestTimeReversibility<Integrator>,
+                      integrator)),
+        name_(name) {}
 
   std::string const& name() const {
     return name_;
@@ -190,11 +191,11 @@ void Test1000SecondsAt1Millisecond(
   }
   Length q_error;
   Speed v_error;
-  for (int i = 1; i <= steps; ++i) {
-    Length const q = solution[i - 1].positions[0].value;
-    Speed const v = solution[i - 1].velocities[0].value;
-    Time const t = solution[i - 1].time.value - t_initial;
-    EXPECT_THAT(t, AlmostEquals(i * step, 0));
+  for (int i = 0; i < steps; ++i) {
+    Length const q = solution[i].positions[0].value;
+    Speed const v = solution[i].velocities[0].value;
+    Time const t = solution[i].time.value - t_initial;
+    EXPECT_THAT(t, AlmostEquals((i + 1) * step, 0));
     // TODO(egg): we may need decent trig functions for this sort of thing.
     q_error = std::max(q_error, AbsoluteError(q_initial * Cos(ω * t), q));
     v_error = std::max(v_error, AbsoluteError(-v_amplitude * Sin(ω * t), v));
@@ -229,7 +230,7 @@ void TestConvergence(Integrator const& integrator,
   ODE harmonic_oscillator;
   harmonic_oscillator.compute_acceleration =
       std::bind(ComputeHarmonicOscillatorAcceleration,
-                _1, _2, _3, nullptr);
+                _1, _2, _3, nullptr /*evaluations*/);
   IntegrationProblem<ODE> problem;
   problem.equation = harmonic_oscillator;
   ODE::SystemState const initial_state = {{q_initial}, {v_initial}, t_initial};
@@ -274,9 +275,9 @@ void TestConvergence(Integrator const& integrator,
   LOG(INFO) << "Correlation            : " << v_correlation;
   // SPRKs with odd convergence order have a higher convergence order in p.
   EXPECT_THAT(
-     RelativeError(((integrator.order + 1) / 2) * 2,
-                   v_convergence_order),
-     Lt(0.02));
+      RelativeError(integrator.order + (integrator.order % 2),
+                    v_convergence_order),
+      Lt(0.02));
   EXPECT_THAT(v_correlation, AllOf(Gt(0.99), Lt(1.01)));
 }
 
@@ -303,7 +304,7 @@ void TestSymplecticity(Integrator const& integrator,
   ODE harmonic_oscillator;
   harmonic_oscillator.compute_acceleration =
       std::bind(ComputeHarmonicOscillatorAcceleration,
-                _1, _2, _3, nullptr);
+                _1, _2, _3, nullptr /*evaluations*/);
   IntegrationProblem<ODE> problem;
   problem.equation = harmonic_oscillator;
   ODE::SystemState const initial_state = {{q_initial}, {v_initial}, t_initial};
@@ -358,7 +359,7 @@ void TestTimeReversibility(Integrator const& integrator) {
   ODE harmonic_oscillator;
   harmonic_oscillator.compute_acceleration =
       std::bind(ComputeHarmonicOscillatorAcceleration,
-                _1, _2, _3, nullptr);
+                _1, _2, _3, nullptr /*evaluations*/);
   IntegrationProblem<ODE> problem;
   problem.equation = harmonic_oscillator;
   ODE::SystemState const initial_state = {{q_initial}, {v_initial}, t_initial};

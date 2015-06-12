@@ -37,7 +37,7 @@ namespace integrators {
 
 // As above, we follow the most widespread notation, calling the position
 // weights a and the momentum weights b.  Note that our indices are 0-based.
-// The following notations appear in the litterature:
+// The following notations appear in the literature:
 //   (a, b) in most treatments of the subject;
 //   (d, c) in Ruth, Yoshida, as well as Forest and Ruth;
 //   (B, b) in Sofroniou and Spaletta;
