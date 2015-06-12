@@ -187,10 +187,10 @@ TEST_F(TransformzTest, BodyCentredNonRotating) {
     EXPECT_THAT(degrees_of_freedom,
                 Componentwise(
                     AlmostEquals(To::origin + Displacement<To>(
-                        {12 * i * Metre,
-                         -21 * i * Metre,
-                         29 * i * Metre}),
-                        0),
+                        {(99 + 9 * i) * Metre,
+                         (33 -22 * i) * Metre,
+                         (66 + 27 * i) * Metre}),
+                        2, 1036),
                     AlmostEquals(Velocity<To>(
                         {36 * i * Metre / Second,
                          -88 * i * Metre / Second,
