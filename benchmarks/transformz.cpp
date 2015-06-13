@@ -1,37 +1,23 @@
 ﻿
-// .\Release\benchmarks.exe --benchmark_filter=Rotating --benchmark_repetitions=5  // NOLINT(whitespace/line_length)
+// .\release\benchmarks.exe --benchmark_filter=Transformz --benchmark_repetitions=5          // NOLINT(whitespace/line_length)
 // Benchmarking on 1 X 3310 MHz CPU
-// 2015/05/10-18:34:50
-// Benchmark                                       Time(ns)    CPU(ns) Iterations  // NOLINT(whitespace/line_length)
-// ------------------------------------------------------------------------------  // NOLINT(whitespace/line_length)
-// BM_TransformzBodyCentredNonRotating<false>/1000k         917631126  920405900          1  // NOLINT(whitespace/line_length)
-// BM_TransformzBodyCentredNonRotating<false>/1000k         912086225  920405900          1  // NOLINT(whitespace/line_length)
-// BM_TransformzBodyCentredNonRotating<false>/1000k         907597519  904805800          1  // NOLINT(whitespace/line_length)
-// BM_TransformzBodyCentredNonRotating<false>/1000k         910571075  904805800          1  // NOLINT(whitespace/line_length)
-// BM_TransformzBodyCentredNonRotating<false>/1000k         911085821  904805800          1  // NOLINT(whitespace/line_length)
-// BM_TransformzBodyCentredNonRotating<false>/1000k_mean    911794353  911045840          1  // NOLINT(whitespace/line_length)
-// BM_TransformzBodyCentredNonRotating<false>/1000k_stddev    3279175    7642457          0  // NOLINT(whitespace/line_length)
-// BM_TransformzBodyCentredNonRotating<true>/1000k         1338898397 1341608600          1  // NOLINT(whitespace/line_length)
-// BM_TransformzBodyCentredNonRotating<true>/1000k          740065075  748804800          1  // NOLINT(whitespace/line_length)
-// BM_TransformzBodyCentredNonRotating<true>/1000k          731354452  717604600          1  // NOLINT(whitespace/line_length)
-// BM_TransformzBodyCentredNonRotating<true>/1000k          734778858  748804800          1  // NOLINT(whitespace/line_length)
-// BM_TransformzBodyCentredNonRotating<true>/1000k          732065655  717604600          1  // NOLINT(whitespace/line_length)
-// BM_TransformzBodyCentredNonRotating<true>/1000k_mean     855432487  854885480          1  // NOLINT(whitespace/line_length)
-// BM_TransformzBodyCentredNonRotating<true>/1000k_stddev   241752335  243761234          0  // NOLINT(whitespace/line_length)
-// BM_TransformzBarycentricRotating<false>/1000k           2622258640 2636416900          1  // NOLINT(whitespace/line_length)
-// BM_TransformzBarycentricRotating<false>/1000k           2613256193 2605216700          1  // NOLINT(whitespace/line_length)
-// BM_TransformzBarycentricRotating<false>/1000k           2611253000 2605216700          1  // NOLINT(whitespace/line_length)
-// BM_TransformzBarycentricRotating<false>/1000k           2608254171 2620816800          1  // NOLINT(whitespace/line_length)
-// BM_TransformzBarycentricRotating<false>/1000k           2611253477 2574016500          1  // NOLINT(whitespace/line_length)
-// BM_TransformzBarycentricRotating<false>/1000k_mean      2613255096 2608336720          1  // NOLINT(whitespace/line_length)
-// BM_TransformzBarycentricRotating<false>/1000k_stddev       4776776   20695871          0  // NOLINT(whitespace/line_length)
-// BM_TransformzBarycentricRotating<true>/1000k            3042849995 3010819300          1  // NOLINT(whitespace/line_length)
-// BM_TransformzBarycentricRotating<true>/1000k            1525146700 1528809800          1  // NOLINT(whitespace/line_length)
-// BM_TransformzBarycentricRotating<true>/1000k            1526143528 1528809800          1  // NOLINT(whitespace/line_length)
-// BM_TransformzBarycentricRotating<true>/1000k            1526144958 1528809800          1  // NOLINT(whitespace/line_length)
-// BM_TransformzBarycentricRotating<true>/1000k            1526146866 1528809800          1  // NOLINT(whitespace/line_length)
-// BM_TransformzBarycentricRotating<true>/1000k_mean       1829286409 1825211700          1  // NOLINT(whitespace/line_length)
-// BM_TransformzBarycentricRotating<true>/1000k_stddev      606781916  592803800          0  // NOLINT(whitespace/line_length)
+// 2015/06/13-12:07:14
+// Benchmark                                                 Time(ns)    CPU(ns) Iterations  // NOLINT(whitespace/line_length)
+// ----------------------------------------------------------------------------------------  // NOLINT(whitespace/line_length)
+// BM_TransformzBodyCentredNonRotating<false>/1000k         955475068  951606100          1  // NOLINT(whitespace/line_length)
+// BM_TransformzBodyCentredNonRotating<false>/1000k         948088622  951606100          1  // NOLINT(whitespace/line_length)
+// BM_TransformzBodyCentredNonRotating<false>/1000k         952087140  951606100          1  // NOLINT(whitespace/line_length)
+// BM_TransformzBodyCentredNonRotating<false>/1000k         946380353  936006000          1  // NOLINT(whitespace/line_length)
+// BM_TransformzBodyCentredNonRotating<false>/1000k         941796279  951606100          1  // NOLINT(whitespace/line_length)
+// BM_TransformzBodyCentredNonRotating<false>/1000k_mean    948765493  948486080          1  // NOLINT(whitespace/line_length)
+// BM_TransformzBodyCentredNonRotating<false>/1000k_stddev    4706777    6240040          0  // NOLINT(whitespace/line_length)
+// BM_TransformzBarycentricRotating<false>/1000k           2595259881 2574016500          1  // NOLINT(whitespace/line_length)
+// BM_TransformzBarycentricRotating<false>/1000k           2576251245 2574016500          1  // NOLINT(whitespace/line_length)
+// BM_TransformzBarycentricRotating<false>/1000k           2571251369 2574016500          1  // NOLINT(whitespace/line_length)
+// BM_TransformzBarycentricRotating<false>/1000k           2572251773 2558416400          1  // NOLINT(whitespace/line_length)
+// BM_TransformzBarycentricRotating<false>/1000k           2594253755 2589616600          1  // NOLINT(whitespace/line_length)
+// BM_TransformzBarycentricRotating<false>/1000k_mean      2581853605 2574016500          1  // NOLINT(whitespace/line_length)
+// BM_TransformzBarycentricRotating<false>/1000k_stddev      10672216    9866370          0  // NOLINT(whitespace/line_length)
 
 #include <memory>
 #include <utility>
@@ -322,12 +308,12 @@ void BM_TransformzBarycentricRotating(
   }
 }
 
-int const kIter = 1000 << 10 + 1;
+int const kIter = (1000 << 10) + 1;
 
 BENCHMARK_TEMPLATE(BM_TransformzBodyCentredNonRotating, false)->Arg(kIter);
-BENCHMARK_TEMPLATE(BM_TransformzBodyCentredNonRotating, true)->Arg(kIter);
+// BENCHMARK_TEMPLATE(BM_TransformzBodyCentredNonRotating, true)->Arg(kIter);
 BENCHMARK_TEMPLATE(BM_TransformzBarycentricRotating, false)->Arg(kIter);
-BENCHMARK_TEMPLATE(BM_TransformzBarycentricRotating, true)->Arg(kIter);
+// BENCHMARK_TEMPLATE(BM_TransformzBarycentricRotating, true)->Arg(kIter);
 
 }  // namespace benchmarks
 }  // namespace principia
