@@ -1,6 +1,7 @@
 #pragma once
 
 #include <algorithm>
+#include <list>
 
 #include "physics/transformz.hpp"
 
@@ -73,16 +74,24 @@ void FromStandardBasisToBasisOfLastBarycentricFrame(
     Instant const& last,
     MassiveBody const& primary,
     ContinuousTrajectory<ToFrame> const& to_primary_trajectory,
+    typename std::list<
+        typename ContinuousTrajectory<ToFrame>::Hint>::iterator const
+        to_primary_hint,
     MassiveBody const& secondary,
     ContinuousTrajectory<ToFrame> const& to_secondary_trajectory,
+    typename std::list<
+        typename ContinuousTrajectory<ToFrame>::Hint>::iterator const
+        to_secondary_hint,
     not_null<Rotation<ThroughFrame, ToFrame>*> const rotation,
     not_null<DegreesOfFreedom<ToFrame>*> const
         last_barycentre_degrees_of_freedom) {
   // TODO(phl): Add hinting.
   DegreesOfFreedom<ToFrame> const& last_primary_degrees_of_freedom =
-      to_primary_trajectory.EvaluateDegreesOfFreedom(last, nullptr);
+      to_primary_trajectory.EvaluateDegreesOfFreedom(
+          last, &*to_primary_hint);
   DegreesOfFreedom<ToFrame> const& last_secondary_degrees_of_freedom =
-      to_secondary_trajectory.EvaluateDegreesOfFreedom(last, nullptr);
+      to_secondary_trajectory.EvaluateDegreesOfFreedom(
+          last, &*to_secondary_hint);
   *last_barycentre_degrees_of_freedom =
       Barycentre<ToFrame, GravitationalParameter>(
           {last_primary_degrees_of_freedom,
@@ -113,6 +122,10 @@ Transformz<Mobile, FromFrame, ThroughFrame, ToFrame>::BodyCentredNonRotating(
     ContinuousTrajectory<ToFrame> const& to_centre_trajectory) {
   not_null<std::unique_ptr<Transformz>> transforms =
       make_not_null_unique<Transformz>();
+  transforms->from_hints_.emplace_front();
+  transforms->to_hints_.emplace_front();
+  auto const from_centre_hint = transforms->from_hints_.begin();
+  auto const to_centre_hint = transforms->to_hints_.begin();
 
   transforms->coordinate_frame_ =
       [](Instant const& last,
@@ -124,15 +137,15 @@ Transformz<Mobile, FromFrame, ThroughFrame, ToFrame>::BodyCentredNonRotating(
   // hence the name.
   not_null<Transformz*> that = transforms.get();
   transforms->first_ =
-      [&from_centre_trajectory, that](
+      [&from_centre_trajectory, from_centre_hint, that](
           LazyTrajectory<FromFrame> const& from_trajectory,
           Instant const& t,
           DegreesOfFreedom<FromFrame> const& from_degrees_of_freedom,
           not_null<Trajectory<FromFrame> const*> const trajectory) ->
       DegreesOfFreedom<ThroughFrame> {
-    // TODO(phl): Add hinting, caching.
+    // TODO(phl): Add caching.
     DegreesOfFreedom<FromFrame> const& centre_degrees_of_freedom =
-        from_centre_trajectory.EvaluateDegreesOfFreedom(t, nullptr);
+        from_centre_trajectory.EvaluateDegreesOfFreedom(t, &*from_centre_hint);
 
     AffineMap<FromFrame, ThroughFrame, Length, Identity> const position_map(
         centre_degrees_of_freedom.position(),
@@ -148,15 +161,14 @@ Transformz<Mobile, FromFrame, ThroughFrame, ToFrame>::BodyCentredNonRotating(
   };
 
   transforms->second_ =
-      [&to_centre_trajectory](
+      [&to_centre_trajectory, to_centre_hint](
           Instant const last,
           Instant const& t,
           DegreesOfFreedom<ThroughFrame> const& through_degrees_of_freedom,
           Trajectory<ThroughFrame> const* trajectory) ->
       DegreesOfFreedom<ToFrame> {
-    // TODO(phl): Add hinting.
     DegreesOfFreedom<ToFrame> const& last_centre_degrees_of_freedom =
-        to_centre_trajectory.EvaluateDegreesOfFreedom(last, nullptr);
+        to_centre_trajectory.EvaluateDegreesOfFreedom(last, &*to_centre_hint);
 
     AffineMap<ThroughFrame, ToFrame, Length, Identity> const position_map(
         ThroughFrame::origin,
@@ -182,9 +194,18 @@ Transformz<Mobile, FromFrame, ThroughFrame, ToFrame>::BarycentricRotating(
     ContinuousTrajectory<ToFrame> const& to_secondary_trajectory) {
   not_null<std::unique_ptr<Transformz>> transforms =
       make_not_null_unique<Transformz>();
+  transforms->from_hints_.emplace_front();
+  transforms->to_hints_.emplace_front();
+  auto const from_primary_hint = transforms->from_hints_.begin();
+  auto const to_primary_hint = transforms->to_hints_.begin();
+  transforms->from_hints_.emplace_front();
+  transforms->to_hints_.emplace_front();
+  auto const from_secondary_hint = transforms->from_hints_.begin();
+  auto const to_secondary_hint = transforms->to_hints_.begin();
 
   transforms->coordinate_frame_ =
-      [&primary, &to_primary_trajectory, &secondary, &to_secondary_trajectory](
+      [&primary, &to_primary_trajectory, to_primary_hint,
+       &secondary, &to_secondary_trajectory, to_secondary_hint](
           Instant const& last,
           Position<ToFrame> const& q) ->
       Rotation<ToFrame, ToFrame> {
@@ -196,8 +217,10 @@ Transformz<Mobile, FromFrame, ThroughFrame, ToFrame>::BarycentricRotating(
         last,
         primary,
         to_primary_trajectory,
+        to_primary_hint,
         secondary,
         to_secondary_trajectory,
+        to_secondary_hint,
         &from_standard_basis_to_basis_of_last_barycentric_frame,
         &dummy);
 
@@ -209,18 +232,20 @@ Transformz<Mobile, FromFrame, ThroughFrame, ToFrame>::BarycentricRotating(
   // hence the name.
   not_null<Transformz*> that = transforms.get();
   transforms->first_ =
-      [&primary, &from_primary_trajectory,
-       &secondary, &from_secondary_trajectory, that](
+      [&primary, &from_primary_trajectory, from_primary_hint,
+       &secondary, &from_secondary_trajectory, from_secondary_hint, that](
           LazyTrajectory<FromFrame> const& from_trajectory,
           Instant const& t,
           DegreesOfFreedom<FromFrame> const& from_degrees_of_freedom,
           not_null<Trajectory<FromFrame> const*> const trajectory) ->
       DegreesOfFreedom<ThroughFrame> {
-    // TODO(phl): Add hinting, caching.
+    // TODO(phl): Add caching.
     DegreesOfFreedom<FromFrame> const& primary_degrees_of_freedom =
-        from_primary_trajectory.EvaluateDegreesOfFreedom(t, nullptr);
+        from_primary_trajectory.EvaluateDegreesOfFreedom(
+            t, &*from_primary_hint);
     DegreesOfFreedom<FromFrame> const& secondary_degrees_of_freedom =
-        from_secondary_trajectory.EvaluateDegreesOfFreedom(t, nullptr);
+        from_secondary_trajectory.EvaluateDegreesOfFreedom(
+            t, &*from_secondary_hint);
     DegreesOfFreedom<FromFrame> const barycentre_degrees_of_freedom =
         Barycentre<FromFrame, GravitationalParameter>(
             {primary_degrees_of_freedom,
@@ -257,7 +282,8 @@ Transformz<Mobile, FromFrame, ThroughFrame, ToFrame>::BarycentricRotating(
   };
 
   transforms->second_ =
-      [&primary, &to_primary_trajectory, &secondary, &to_secondary_trajectory](
+      [&primary, &to_primary_trajectory, to_primary_hint,
+       &secondary, &to_secondary_trajectory, to_secondary_hint](
           Instant const& last,
           Instant const& t,
           DegreesOfFreedom<ThroughFrame> const& through_degrees_of_freedom,
@@ -272,8 +298,10 @@ Transformz<Mobile, FromFrame, ThroughFrame, ToFrame>::BarycentricRotating(
         last,
         primary,
         to_primary_trajectory,
+        to_primary_hint,
         secondary,
         to_secondary_trajectory,
+        to_secondary_hint,
         &from_standard_basis_to_basis_of_last_barycentric_frame,
         &last_barycentre_degrees_of_freedom);
 
