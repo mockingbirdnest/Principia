@@ -1,6 +1,7 @@
 #pragma once
 
 #include <functional>
+#include <list>
 #include <map>
 #include <memory>
 #include <utility>
@@ -140,6 +141,10 @@ class Transformz {
   // |coordinate_frame| is called.
   std::function<Rotation<ToFrame, ToFrame>(
       Instant const& last, Position<ToFrame> const& q)> coordinate_frame_;
+
+  // Hints for the continuous trajectories.
+  std::list<typename ContinuousTrajectory<FromFrame>::Hint> from_hints_;
+  std::list<typename ContinuousTrajectory<ToFrame>::Hint> to_hints_;
 };
 
 }  // namespace physics

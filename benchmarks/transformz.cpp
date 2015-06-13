@@ -1,23 +1,23 @@
 ﻿
 // .\release\benchmarks.exe --benchmark_filter=Transformz --benchmark_repetitions=5          // NOLINT(whitespace/line_length)
 // Benchmarking on 1 X 3310 MHz CPU
-// 2015/06/13-12:07:14
+// 2015/06/13-16:59:51
 // Benchmark                                                 Time(ns)    CPU(ns) Iterations  // NOLINT(whitespace/line_length)
 // ----------------------------------------------------------------------------------------  // NOLINT(whitespace/line_length)
-// BM_TransformzBodyCentredNonRotating<false>/1000k         955475068  951606100          1  // NOLINT(whitespace/line_length)
-// BM_TransformzBodyCentredNonRotating<false>/1000k         948088622  951606100          1  // NOLINT(whitespace/line_length)
-// BM_TransformzBodyCentredNonRotating<false>/1000k         952087140  951606100          1  // NOLINT(whitespace/line_length)
-// BM_TransformzBodyCentredNonRotating<false>/1000k         946380353  936006000          1  // NOLINT(whitespace/line_length)
-// BM_TransformzBodyCentredNonRotating<false>/1000k         941796279  951606100          1  // NOLINT(whitespace/line_length)
-// BM_TransformzBodyCentredNonRotating<false>/1000k_mean    948765493  948486080          1  // NOLINT(whitespace/line_length)
-// BM_TransformzBodyCentredNonRotating<false>/1000k_stddev    4706777    6240040          0  // NOLINT(whitespace/line_length)
-// BM_TransformzBarycentricRotating<false>/1000k           2595259881 2574016500          1  // NOLINT(whitespace/line_length)
-// BM_TransformzBarycentricRotating<false>/1000k           2576251245 2574016500          1  // NOLINT(whitespace/line_length)
-// BM_TransformzBarycentricRotating<false>/1000k           2571251369 2574016500          1  // NOLINT(whitespace/line_length)
-// BM_TransformzBarycentricRotating<false>/1000k           2572251773 2558416400          1  // NOLINT(whitespace/line_length)
-// BM_TransformzBarycentricRotating<false>/1000k           2594253755 2589616600          1  // NOLINT(whitespace/line_length)
-// BM_TransformzBarycentricRotating<false>/1000k_mean      2581853605 2574016500          1  // NOLINT(whitespace/line_length)
-// BM_TransformzBarycentricRotating<false>/1000k_stddev      10672216    9866370          0  // NOLINT(whitespace/line_length)
+// BM_TransformzBodyCentredNonRotating<false>/1000k         786032176  780005000          1  // NOLINT(whitespace/line_length)
+// BM_TransformzBodyCentredNonRotating<false>/1000k         786073899  795605100          1  // NOLINT(whitespace/line_length)
+// BM_TransformzBodyCentredNonRotating<false>/1000k         786113954  780005000          1  // NOLINT(whitespace/line_length)
+// BM_TransformzBodyCentredNonRotating<false>/1000k         781030154  780005000          1  // NOLINT(whitespace/line_length)
+// BM_TransformzBodyCentredNonRotating<false>/1000k         787456489  780005000          1  // NOLINT(whitespace/line_length)
+// BM_TransformzBodyCentredNonRotating<false>/1000k_mean    785341334  783125020          1  // NOLINT(whitespace/line_length)
+// BM_TransformzBodyCentredNonRotating<false>/1000k_stddev    2221306    6240040          0  // NOLINT(whitespace/line_length)
+// BM_TransformzBarycentricRotating<false>/1000k           2289228892 2293214700          1  // NOLINT(whitespace/line_length)
+// BM_TransformzBarycentricRotating<false>/1000k           2297225213 2277614600          1  // NOLINT(whitespace/line_length)
+// BM_TransformzBarycentricRotating<false>/1000k           2280222869 2277614600          1  // NOLINT(whitespace/line_length)
+// BM_TransformzBarycentricRotating<false>/1000k           2289222217 2277614600          1  // NOLINT(whitespace/line_length)
+// BM_TransformzBarycentricRotating<false>/1000k           2278222776 2277614600          1  // NOLINT(whitespace/line_length)
+// BM_TransformzBarycentricRotating<false>/1000k_mean      2286824393 2280734620          1  // NOLINT(whitespace/line_length)
+// BM_TransformzBarycentricRotating<false>/1000k_stddev       6888776    6240040          0  // NOLINT(whitespace/line_length)
 
 #include <memory>
 #include <utility>
