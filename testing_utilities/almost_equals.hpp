@@ -6,6 +6,7 @@
 #include <string>
 
 #include "geometry/grassmann.hpp"
+#include "geometry/point.hpp"
 #include "geometry/quaternion.hpp"
 #include "geometry/r3_element.hpp"
 #include "gmock/gmock.h"
@@ -59,6 +60,9 @@ class AlmostEqualsMatcher{
                        testing::MatchResultListener* listener) const;
   template<typename Scalar, typename Frame>
   bool MatchAndExplain(geometry::Trivector<Scalar, Frame> const& actual,
+                       testing::MatchResultListener* listener) const;
+  template<typename Vector>
+  bool MatchAndExplain(geometry::Point<Vector> const& actual,
                        testing::MatchResultListener* listener) const;
 
   void DescribeTo(std::ostream* out) const;

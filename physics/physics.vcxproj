@@ -152,6 +152,8 @@
     <ClInclude Include="trajectory_body.hpp" />
     <ClInclude Include="transforms.hpp" />
     <ClInclude Include="transforms_body.hpp" />
+    <ClInclude Include="transformz.hpp" />
+    <ClInclude Include="transformz_body.hpp" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="body_test.cpp" />
@@ -161,6 +163,7 @@
     <ClCompile Include="n_body_system_test.cpp" />
     <ClCompile Include="trajectory_test.cpp" />
     <ClCompile Include="transforms_test.cpp" />
+    <ClCompile Include="transformz_test.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\serialization\serialization.vcxproj">
