@@ -209,7 +209,6 @@ bool AlmostEqualsMatcher<T>::MatchAndExplain(
                                          listener);
 }
 
-
 template<typename T>
 void AlmostEqualsMatcher<T>::DescribeTo(std::ostream* out) const {
   *out << "is within "<< min_ulps_

@@ -66,25 +66,32 @@ class Ephemeris {
   void Prolong(Instant const& t);
 
   // Integrates, until exactly |t|, the |trajectory| followed by a massless body
-  // in the gravitational potential described by |*this|, and subject to the
-  // given |intrinsic_acceleration|.
-  // If |t > t_max()|, calls |Prolong(t)| beforehand.
-  // The |length_| and |speed_integration_tolerance|s are used to compute the
+  // in the gravitational potential described by |*this|.  If |t > t_max()|,
+  // calls |Prolong(t)| beforehand.  The |length_| and
+  // |speed_integration_tolerance|s are used to compute the
   // |tolerance_to_error_ratio| for step size control.
-  // TODO(phl): Remove intrinsic_acceleration?  It is in the trajectory.
-  void Flow(not_null<Trajectory<Frame>*> const trajectory,
-            Length const& length_integration_tolerance,
-            Speed const& speed_integration_tolerance,
-            AdaptiveStepSizeIntegrator<NewtonianMotionEquation> const&
-                integrator,
-            Instant const& t);
+  void FlowWithAdaptiveStep(
+      not_null<Trajectory<Frame>*> const trajectory,
+      Length const& length_integration_tolerance,
+      Speed const& speed_integration_tolerance,
+      AdaptiveStepSizeIntegrator<NewtonianMotionEquation> const& integrator,
+      Instant const& t);
+
+  // Integrates, until at least |t|, the |trajectories| followed by massless
+  // bodies in the gravitational potential described by |*this|.  The integrator
+  // passed at construction is used with the given |step|.  If |t > t_max()|,
+  // calls |Prolong(t)| beforehand.
+  void FlowWithFixedStep(
+      std::vector<not_null<Trajectory<Frame>*>> const& trajectories,
+      Time const& step,
+      Instant const& t);
 
  private:
   void AppendMassiveBodiesState(
       typename NewtonianMotionEquation::SystemState const& state);
-  static void AppendMasslessBodyState(
+  static void AppendMasslessBodiesState(
       typename NewtonianMotionEquation::SystemState const& state,
-      not_null<Trajectory<Frame>*> const trajectory);
+      std::vector<not_null<Trajectory<Frame>*>> const& trajectories);
 
   // Computes the acceleration due to one body, |body1| (with index |b1| in the
   // |positions| and |accelerations| arrays) on the bodies |bodies2| (with
@@ -102,17 +109,17 @@ class Ephemeris {
       std::vector<Position<Frame>> const& positions,
       not_null<std::vector<Vector<Acceleration, Frame>>*> const accelerations);
 
-  // Computes the acceleration due to one body, |body1| (with index |b1| in the
-  // |hints|, |bodies_| and |trajectories_| arrays) on a massless body at the
-  // given |position|.  The template parameter specifies what we know about the
+  // Computes the accelerations due to one body, |body1| (with index |b1| in the
+  // |hints|, |bodies_| and |trajectories_| arrays) on massless bodies at the
+  // given |positions|.  The template parameter specifies what we know about the
   // massive body, and therefore what forces apply.
   template<bool body1_is_oblate>
-  void ComputeGravitationalAccelerationByMassiveBodyOnMasslessBody(
+  void ComputeGravitationalAccelerationByMassiveBodyOnMasslessBodies(
       Instant const& t,
       MassiveBody const& body1,
       size_t const b1,
-      Position<Frame> const& position,
-      not_null<Vector<Acceleration, Frame>*> const acceleration,
+      std::vector<Position<Frame>> const& positions,
+      not_null<std::vector<Vector<Acceleration, Frame>>*> const accelerations,
       not_null<std::vector<typename ContinuousTrajectory<Frame>::Hint>*>
           const hints);
 
@@ -127,8 +134,8 @@ class Ephemeris {
   // described in its |trajectory| object.  The |hints| are passed to
   // ComputeGravitationalAccelerationByMassiveBodyOnMasslessBody for efficient
   // computation of the positions of the massive bodies.
-  void ComputeMasslessBodyGravitationalAccelerations(
-      not_null<Trajectory<Frame> const*> const trajectory,
+  void ComputeMasslessBodiesGravitationalAccelerations(
+      std::vector<not_null<Trajectory<Frame>*>> const& trajectories,
       Instant const& t,
       std::vector<Position<Frame>> const& positions,
       not_null<std::vector<Vector<Acceleration, Frame>>*> const accelerations,

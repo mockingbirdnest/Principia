@@ -37,7 +37,7 @@ namespace integrators {
 
 // As above, we follow the most widespread notation, calling the position
 // weights a and the momentum weights b.  Note that our indices are 0-based.
-// The following notations appear in the litterature:
+// The following notations appear in the literature:
 //   (a, b) in most treatments of the subject;
 //   (d, c) in Ruth, Yoshida, as well as Forest and Ruth;
 //   (B, b) in Sofroniou and Spaletta;
@@ -57,18 +57,24 @@ enum CompositionMethod {
   kBAB,  // aᵣ = 0.
 };
 
-template<typename Position, int order, bool time_reversible, int evaluations,
-         CompositionMethod composition>
+template<typename Position, int order_, bool time_reversible_, int evaluations_,
+         CompositionMethod composition_>
 class SymplecticRungeKuttaNyströmIntegrator
     : public FixedStepSizeIntegrator<
                  SpecialSecondOrderDifferentialEquation<Position>> {
-  static int const stages_ = composition == kBA ? evaluations : evaluations + 1;
+  static int const stages_ = composition_ == kBA ? evaluations_
+                                                 : evaluations_ + 1;
  public:
   SymplecticRungeKuttaNyströmIntegrator(FixedVector<double, stages_> const& a,
                                         FixedVector<double, stages_> const& b);
 
   void Solve(IntegrationProblem<ODE> const& problem,
              Time const& step) const override;
+
+  static int const order = order_;
+  static bool const time_reversible = time_reversible_;
+  static int const evaluations = evaluations_;
+  static CompositionMethod const composition = composition_;
 
  private:
   FixedVector<double, stages_> a_;
