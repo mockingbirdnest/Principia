@@ -107,7 +107,6 @@ TEST_F(EphemerisTest, EarthMoon) {
           t0_,
           McLachlanAtela1992Order5Optimal<Position<EarthMoonOrbitPlane>>(),
           period / 100,
-          0.1 * Milli(Metre),
           5 * Milli(Metre));
 
   ephemeris.Prolong(t0_ + period);
@@ -164,7 +163,6 @@ TEST_F(EphemerisTest, Moon) {
           t0_,
           McLachlanAtela1992Order5Optimal<Position<EarthMoonOrbitPlane>>(),
           period / 100,
-          0.1 * Milli(Metre),
           5 * Milli(Metre));
 
   ephemeris.Prolong(t0_ + period);
@@ -228,7 +226,6 @@ TEST_F(EphemerisTest, EarthProbe) {
           t0_,
           McLachlanAtela1992Order5Optimal<Position<EarthMoonOrbitPlane>>(),
           period / 100,
-          0.1 * Milli(Metre),
           5 * Milli(Metre));
 
   MasslessBody probe;
@@ -325,7 +322,6 @@ TEST_F(EphemerisTest, EarthTwoProbes) {
           t0_,
           McLachlanAtela1992Order5Optimal<Position<EarthMoonOrbitPlane>>(),
           period / 100,
-          0.1 * Milli(Metre),
           5 * Milli(Metre));
 
   MasslessBody probe1;
@@ -443,7 +439,6 @@ TEST_F(EphemerisTest, Sputnik1ToSputnik2) {
           at_спутник_1_launch->time(),
           McLachlanAtela1992Order5Optimal<Position<ICRFJ2000Ecliptic>>(),
           45 * Minute,
-          0.1 * Milli(Metre),
           5 * Milli(Metre));
 
   ephemeris.Prolong(at_спутник_2_launch->time());

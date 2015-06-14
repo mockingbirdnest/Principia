@@ -75,8 +75,7 @@ using si::Second;
 namespace benchmarks {
 
 namespace {
-const Length kLowTolerance = 0.001 * Metre;
-const Length kHighTolerance = 0.01 * Metre;
+const Length kTolerance = 0.01 * Metre;
 }  // namespace
 
 using World1 = Frame<serialization::Frame::TestTag,
@@ -184,8 +183,7 @@ void BM_TransformzBodyCentredNonRotating(
       AngularVelocity<World1>({0 * SIUnit<AngularFrequency>(),
                                0 * SIUnit<AngularFrequency>(),
                                2 * π * Radian / JulianYear});
-  ContinuousTrajectory<World1> earth_trajectory(
-      Δt, kLowTolerance, kHighTolerance);
+  ContinuousTrajectory<World1> earth_trajectory(Δt, kTolerance);
   FillCircularTrajectory<World1, ContinuousTrajectory>(center,
                                                        earth_initial_position,
                                                        earth_angular_velocity,
@@ -241,8 +239,7 @@ void BM_TransformzBarycentricRotating(
       AngularVelocity<World1>({0 * SIUnit<AngularFrequency>(),
                                0 * SIUnit<AngularFrequency>(),
                                2 * π * Radian / JulianYear});
-  ContinuousTrajectory<World1> earth_trajectory(
-      Δt, kLowTolerance, kHighTolerance);
+  ContinuousTrajectory<World1> earth_trajectory(Δt, kTolerance);
   FillCircularTrajectory<World1, ContinuousTrajectory>(earth_center,
                                                        earth_initial_position,
                                                        earth_angular_velocity,
@@ -263,8 +260,7 @@ void BM_TransformzBarycentricRotating(
       AngularVelocity<World1>({0 * SIUnit<AngularFrequency>(),
                                0 * SIUnit<AngularFrequency>(),
                                6 * Radian / JulianYear});
-  ContinuousTrajectory<World1> thera_trajectory(
-      Δt, kLowTolerance, kHighTolerance);
+  ContinuousTrajectory<World1> thera_trajectory(Δt, kTolerance);
   FillCircularTrajectory<World1, ContinuousTrajectory>(thera_center,
                                                        thera_initial_position,
                                                        thera_angular_velocity,

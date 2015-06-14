@@ -119,7 +119,6 @@ void EphemerisSolarSystemBenchmark(SolarSystem::Accuracy const accuracy,
             at_спутник_1_launch->time(),
             McLachlanAtela1992Order5Optimal<Position<ICRFJ2000Ecliptic>>(),
             45 * Minute,
-            0.1 * Milli(Metre),
             5 * Milli(Metre));
 
     state->ResumeTiming();
@@ -158,7 +157,6 @@ void EphemerisL4ProbeBenchmark(SolarSystem::Accuracy const accuracy,
           at_спутник_1_launch->time(),
           McLachlanAtela1992Order5Optimal<Position<ICRFJ2000Ecliptic>>(),
           45 * Minute,
-          0.1 * Milli(Metre),
           5 * Milli(Metre));
 
   ephemeris.Prolong(final_time);
@@ -241,7 +239,6 @@ void EphemerisLEOProbeBenchmark(SolarSystem::Accuracy const accuracy,
           at_спутник_1_launch->time(),
           McLachlanAtela1992Order5Optimal<Position<ICRFJ2000Ecliptic>>(),
           45 * Minute,
-          0.1 * Milli(Metre),
           5 * Milli(Metre));
 
   ephemeris.Prolong(final_time);

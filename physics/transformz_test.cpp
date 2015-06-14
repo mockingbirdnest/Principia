@@ -43,8 +43,7 @@ namespace physics {
 namespace {
 const int kNumberOfPoints = 33;
 const Time kStep = 1 * Second;
-const Length kLowTolerance = 0.001 * Metre;
-const Length kHighTolerance = 0.01 * Metre;  // Not used, see kDegree.
+const Length kTolerance = 0.01 * Metre;  // Not used, see kDegree.
 const int kDegree = 17;
 }  // namespace
 
@@ -74,10 +73,10 @@ class TransformzTest : public testing::Test {
   TransformzTest()
       : body1_(MassiveBody(1 * Kilogram)),
         body2_(MassiveBody(3 * Kilogram)),
-        body1_from_(kStep, kLowTolerance, kHighTolerance),
-        body1_to_(kStep, kLowTolerance, kHighTolerance),
-        body2_from_(kStep, kLowTolerance, kHighTolerance),
-        body2_to_(kStep, kLowTolerance, kHighTolerance),
+        body1_from_(kStep, kTolerance),
+        body1_to_(kStep, kTolerance),
+        body2_from_(kStep, kTolerance),
+        body2_to_(kStep, kTolerance),
         satellite_from_(make_not_null_unique<Trajectory<From>>(&satellite_)),
         satellite_through_(
             make_not_null_unique<Trajectory<Through>>(&satellite_)),

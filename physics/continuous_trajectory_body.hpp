@@ -26,10 +26,9 @@ int const kDivisions = 8;
 
 template<typename Frame>
 ContinuousTrajectory<Frame>::ContinuousTrajectory(Time const& step,
-                                                  Length const& low_tolerance,
-                                                  Length const& high_tolerance)
+                                                  Length const& tolerance)
     : step_(step),
-      tolerance_(high_tolerance),
+      tolerance_(tolerance),
       adjusted_tolerance_(tolerance_),
       is_unstable_(false),
       degree_(kMinDegree),

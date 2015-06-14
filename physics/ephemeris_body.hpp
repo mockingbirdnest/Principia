@@ -68,12 +68,10 @@ Ephemeris<Frame>::Ephemeris(
     FixedStepSizeIntegrator<NewtonianMotionEquation> const&
         planetary_integrator,
     Time const& step,
-    Length const& low_fitting_tolerance,
-    Length const& high_fitting_tolerance)
+    Length const& fitting_tolerance)
     : planetary_integrator_(planetary_integrator),
       step_(step),
-      low_fitting_tolerance_(low_fitting_tolerance),
-      high_fitting_tolerance_(high_fitting_tolerance) {
+      fitting_tolerance_(fitting_tolerance) {
   CHECK(!bodies.empty());
   CHECK_EQ(bodies.size(), initial_state.size());
 
@@ -89,8 +87,7 @@ Ephemeris<Frame>::Ephemeris(
                               std::piecewise_construct,
                               std::forward_as_tuple(body.get()),
                               std::forward_as_tuple(step_,
-                                                    low_fitting_tolerance_,
-                                                    high_fitting_tolerance_));
+                                                    fitting_tolerance_));
     CHECK(inserted.second);
     ContinuousTrajectory<Frame>* const trajectory = &inserted.first->second;
     trajectory->Append(initial_time, degrees_of_freedom);

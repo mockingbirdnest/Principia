@@ -108,7 +108,6 @@ TEST_F(ContinuousTrajectoryTest, BestNewhallApproximation) {
 
   trajectory_ = std::make_unique<ContinuousTrajectory<World>>(
                     kStep,
-                    0 * Metre /*low_tolerance*/,
                     kTolerance);
   trajectory_->Append(Instant(),
                       DegreesOfFreedom<World>(Position<World>(),
@@ -235,8 +234,7 @@ TEST_F(ContinuousTrajectoryTest, Polynomial) {
 
   trajectory_ = std::make_unique<ContinuousTrajectory<World>>(
                     kStep,
-                    0.05 * Metre /*low_tolerance*/,
-                    0.1 * Metre /*high_tolerance*/);
+                    0.1 * Metre /*tolerance*/);
 
   EXPECT_TRUE(trajectory_->empty());
   FillTrajectory(kNumberOfSteps, kStep, position_function, velocity_function);
@@ -301,8 +299,7 @@ TEST_F(ContinuousTrajectoryTest, Io) {
 
   trajectory_ = std::make_unique<ContinuousTrajectory<World>>(
                     kStep,
-                    1 * Milli(Metre) /*low_tolerance*/,
-                    5 * Milli(Metre) /*high_tolerance*/);
+                    5 * Milli(Metre) /*tolerance*/);
 
   EXPECT_TRUE(trajectory_->empty());
   FillTrajectory(kNumberOfSteps, kStep, position_function, velocity_function);

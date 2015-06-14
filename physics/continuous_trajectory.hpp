@@ -31,13 +31,9 @@ class ContinuousTrajectory {
   // truncating the infinite Чебышёв series to a finite degree are a small
   // multiple of the coefficient of highest degree (assuming that the series
   // converges reasonably well).  Thus, we pick the degree of the series so that
-  // the coefficient of highest degree is less than |high_tolerance|.  If
-  // possible we also make the coefficient of highest degree greater than
-  // |low_tolerance| (this may not always be possible if the two tolerances are
-  // too close).
+  // the coefficient of highest degree is less than |tolerance|.
   ContinuousTrajectory(Time const& step,
-                       Length const& low_tolerance,
-                       Length const& high_tolerance);
+                       Length const& tolerance);
   ~ContinuousTrajectory() = default;
 
   ContinuousTrajectory(ContinuousTrajectory const&) = delete;
