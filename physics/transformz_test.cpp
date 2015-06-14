@@ -44,7 +44,8 @@ namespace {
 const int kNumberOfPoints = 33;
 const Time kStep = 1 * Second;
 const Length kLowTolerance = 0.001 * Metre;
-const Length kHighTolerance = 0.01 * Metre;
+const Length kHighTolerance = 0.01 * Metre;  // Not used, see kDegree.
+const int kDegree = 17;
 }  // namespace
 
 class TransformzTest : public testing::Test {
@@ -82,17 +83,17 @@ class TransformzTest : public testing::Test {
             make_not_null_unique<Trajectory<Through>>(&satellite_)),
         satellite_to_(make_not_null_unique<Trajectory<To>>(&satellite_)),
         satellite_fn_({satellite_from_.get(), nullptr}) {
-    //TODO(phl):comment
-    body1_from_.degree_ = 17;
-    body1_to_.degree_ = 17;
-    body2_from_.degree_ = 17;
-    body2_to_.degree_ = 17;
-    // The various bodies move have both a position and a velocity that
-    // increases linearly with time.  This is not a situation that's physically
-    // possible, but we don't care, all we want is to make sure that the
-    // transforms are properly performed: |Transforms| doesn't know anything
-    // about physics.  Also, the trajectories were chosen so that we are not in
-    // any "special case" with respect to the positions or the velocities.
+    // For historical reasons (don't you just love that phrase?) the positions
+    // and velocities below are not physical (they both increase linearly and
+    // the velocities are not tangent to the trajectory).  This confuses the
+    // determination of the best degree for the approximation.  We force it to
+    // the maximum in the hope that the resulting errors will be small enough.
+    // TODO(phl): Fix this mess.
+    body1_from_.degree_ = kDegree;
+    body1_to_.degree_ = kDegree;
+    body2_from_.degree_ = kDegree;
+    body2_to_.degree_ = kDegree;
+
     for (int i = 1; i <= kNumberOfPoints; ++i) {
       body1_from_.Append(Instant(i * Second),
                          DegreesOfFreedom<From>(
@@ -225,12 +226,12 @@ TEST_F(TransformzTest, SatelliteBarycentricRotating) {
                         {-5.5 * sqrt(5.0) * i * Metre,
                          62.0 * sqrt(5.0 / 21.0) * i * Metre,
                          53.0 / sqrt(21.0) * i * Metre}),
-                        2, 4607),
+                        8, 4607),
                     AlmostEquals(Velocity<Through>(
                         {(362.0 / sqrt(5.0)) * i * Metre / Second,
                          (2776.0 / sqrt(105.0)) * i * Metre / Second,
                          176.0 / sqrt(21.0) * i * Metre / Second}),
-                        8, 51340))) << i;
+                        2, 10776))) << i;
     satellite_through.Append(Instant(i * Second), degrees_of_freedom);
   }
 
@@ -247,12 +248,12 @@ TEST_F(TransformzTest, SatelliteBarycentricRotating) {
                         {(99.0 + (62.0 * sqrt(5.0 / 21.0)) * i) * Metre,
                          (-16.5 + (-5.5 + 106.0 / sqrt(105.0)) * i) * Metre,
                          (-33.0 + (-11.0 - 53.0 / sqrt(105.0)) * i) * Metre}),
-                        129, 28312),
+                        118, 28312),
                     AlmostEquals(Velocity<To>(
                         {2776.0 / sqrt(105.0) * i * Metre / Second,
                          (72.4 + 352.0 / sqrt(105.0)) * i * Metre / Second,
                          (144.8 - 176.0 / sqrt(105.0)) * i * Metre / Second}),
-                        349, 22568))) << i;
+                        382, 22568))) << i;
   }
 }
 
