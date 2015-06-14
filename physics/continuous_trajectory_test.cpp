@@ -2,6 +2,8 @@
 
 #include <deque>
 #include <functional>
+#include <limits>
+#include <vector>
 
 #include "geometry/frame.hpp"
 #include "geometry/named_quantities.hpp"
