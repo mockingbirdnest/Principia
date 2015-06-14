@@ -52,15 +52,17 @@ class PhysicsBubble {
   // correct position.
   Displacement<World> DisplacementCorrection(
       BarycentricToWorldSun const& barycentric_to_world_sun,
-      Celestial const& reference_celestial,
-      Position<World> const& reference_celestial_world_position) const;
+      not_null<Celestial*> const reference_celestial,
+      Position<World> const& reference_celestial_world_position,
+      Instant const& current_time) const;
 
   // Computes and returns |current_->velocity_correction|.  This is the |World|
   // shift to be applied to the physics bubble in order for it to have the
   // correct velocity.
   Velocity<World> VelocityCorrection(
       BarycentricToWorldSun const& barycentric_to_world_sun,
-      Celestial const& reference_celestial) const;
+      not_null<Celestial*> const reference_celestial,
+      Instant const& current_time) const;
 
   // Returns |current_ == nullptr|.
   bool empty() const;
