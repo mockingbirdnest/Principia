@@ -15,8 +15,9 @@
 #include "ksp_plugin/frames.hpp"
 #include "ksp_plugin/physics_bubble.hpp"
 #include "ksp_plugin/vessel.hpp"
+#include "integrators/ordinary_differential_equations.hpp"
 #include "physics/body.hpp"
-#include "physics/n_body_system.hpp"
+#include "physics/ephemeris.hpp"
 #include "physics/trajectory.hpp"
 #include "physics/transforms.hpp"
 #include "quantities/quantities.hpp"
@@ -31,15 +32,18 @@ using geometry::Displacement;
 using geometry::Instant;
 using geometry::Point;
 using geometry::Rotation;
-using integrators::SPRKIntegrator;
+using integrators::FixedStepSizeIntegrator;
+using integrators::AdaptiveStepSizeIntegrator;
 using physics::Body;
 using physics::FrameField;
-using physics::NBodySystem;
+using physics::Ephemeris;
 using physics::Trajectory;
 using physics::Transforms;
 using quantities::Angle;
-using si::Second;
 using si::Hour;
+using si::Metre;
+using si::Milli;
+using si::Second;
 
 // The GUID of a vessel, obtained by |v.id.ToString()| in C#. We use this as a
 // key in an |std::map|.
@@ -276,6 +280,8 @@ class Plugin {
   using GUIDToUnownedVessel = std::map<GUID, not_null<Vessel*> const>;
   using IndexToOwnedCelestial =
       std::map<Index, not_null<std::unique_ptr<Celestial>>>;
+  using NewtonianMotionEquation =
+      Ephemeris<Barycentric>::NewtonianMotionEquation;
 
   // This constructor should only be used during deserialization.
   // |unsynchronized_vessels_| is initialized consistently.  All vessels are
@@ -365,8 +371,9 @@ class Plugin {
       not_null<RenderingTransforms*>const transforms,
       Position<World> const& sun_world_position) const;
 
-  // TODO(egg): Constant time step for now.
   Time const Δt_ = 10 * Second;
+  Length const prolongation_length_tolerance = 1 * Milli(Metre);
+  Speed const prolongation_speed_tolerance = 1 * Milli(Metre) / Second;
 
   GUIDToOwnedVessel vessels_;
   IndexToOwnedCelestial celestials_;
@@ -387,15 +394,22 @@ class Plugin {
   // Only one prediction for now, using constant timestep.
   Vessel* predicted_vessel_ = nullptr;
   Time prediction_length_ = 1 * Hour;
-  Time prediction_step_ = Δt_;
+  Length prediction_length_tolerance = 1 * Metre;
+  Speed prediction_speed_tolerance = 1 * Metre / Second;
 
   not_null<std::unique_ptr<PhysicsBubble>> const bubble_;
 
-  not_null<std::unique_ptr<NBodySystem<Barycentric>>> n_body_system_;
-  // The symplectic integrator computing the synchronized histories.
-  not_null<SRKNIntegrator const*> const history_integrator_;
+  // Null if and only if |initializing_|.
+  // TODO(egg): optional.
+  std::unique_ptr<Ephemeris<Barycentric>> n_body_system_;
+  // The integrator computing the synchronized histories of the vessels.
+  FixedStepSizeIntegrator<NewtonianMotionEquation> const& history_integrator_;
   // The integrator computing the prolongations.
-  not_null<SRKNIntegrator const*> const prolongation_integrator_;
+  AdaptiveStepSizeIntegrator<
+      NewtonianMotionEquation> const& prolongation_integrator_;
+  // The integrator computing the predictions.
+  AdaptiveStepSizeIntegrator<
+      NewtonianMotionEquation> const& prediction_integrator_;
 
   // Whether initialization is ongoing.
   base::Monostable initializing_;

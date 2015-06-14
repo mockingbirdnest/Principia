@@ -32,6 +32,7 @@ class Ephemeris {
   // The equation describing the motion of the |bodies_|.
   using NewtonianMotionEquation =
       SpecialSecondOrderDifferentialEquation<Position<Frame>>;
+  using Trajectories = std::vector<not_null<Trajectory<Frame>*>>;
 
   // Constructs an Ephemeris that owns the |bodies|.  The elements of vectors
   // |bodies| and |initial_state| correspond to one another.
@@ -81,17 +82,16 @@ class Ephemeris {
   // bodies in the gravitational potential described by |*this|.  The integrator
   // passed at construction is used with the given |step|.  If |t > t_max()|,
   // calls |Prolong(t)| beforehand.
-  void FlowWithFixedStep(
-      std::vector<not_null<Trajectory<Frame>*>> const& trajectories,
-      Time const& step,
-      Instant const& t);
+  void FlowWithFixedStep(Trajectories const& trajectories,
+                         Time const& step,
+                         Instant const& t);
 
  private:
   void AppendMassiveBodiesState(
       typename NewtonianMotionEquation::SystemState const& state);
   static void AppendMasslessBodiesState(
       typename NewtonianMotionEquation::SystemState const& state,
-      std::vector<not_null<Trajectory<Frame>*>> const& trajectories);
+      Trajectories const& trajectories);
 
   // Computes the acceleration due to one body, |body1| (with index |b1| in the
   // |positions| and |accelerations| arrays) on the bodies |bodies2| (with

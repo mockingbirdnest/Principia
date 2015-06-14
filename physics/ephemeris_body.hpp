@@ -238,10 +238,9 @@ void Ephemeris<Frame>::FlowWithAdaptiveStep(
 }
 
 template<typename Frame>
-void Ephemeris<Frame>::FlowWithFixedStep(
-    std::vector<not_null<Trajectory<Frame>*>> const& trajectories,
-    Time const& step,
-    Instant const& t) {
+void Ephemeris<Frame>::FlowWithFixedStep(Trajectories const& trajectories,
+                                         Time const& step,
+                                         Instant const& t) {
   if (empty() || t > t_max()) {
     Prolong(t);
   }
