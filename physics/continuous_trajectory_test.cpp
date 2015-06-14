@@ -164,7 +164,7 @@ TEST_F(ContinuousTrajectoryTest, Io) {
     Velocity<World> const actual_velocity =
         trajectory_->EvaluateVelocity(time, &hint);
     Velocity<World> const expected_velocity = velocity_function(time);
-    EXPECT_GT(0.492 * Milli(Metre),
+    EXPECT_GT(0.491 * Milli(Metre),
               AbsoluteError(expected_displacement, actual_displacement));
     EXPECT_GT(1.60E-7 * Metre / Second,
               AbsoluteError(expected_velocity, actual_velocity));

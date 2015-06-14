@@ -31,7 +31,9 @@ ContinuousTrajectory<Frame>::ContinuousTrajectory(Time const& step,
     : step_(step),
       tolerance_(high_tolerance),
       adjusted_tolerance_(tolerance_),
-      degree_(kMinDegree) {
+      is_unstable_(false),
+      degree_(kMinDegree),
+      degree_age_(0) {
   CHECK_LT(0 * Metre, tolerance_);
 }
 
@@ -184,6 +186,8 @@ void ContinuousTrajectory<Frame>::ComputeBestNewhallApproximation(
   // If the degree is too old, restart from the lowest degree.  This ensures
   // that we use the lowest possible degree at a small computational cost.
   if (degree_age_ > kMaxDegreeAge) {
+    LOG(ERROR) << "Lowering degree from " << degree_ << " to " << kMinDegree
+            << " because the approximation is too old";
     adjusted_tolerance_ = tolerance_;
     degree_ = kMinDegree;
     degree_age_ = 0;
@@ -201,10 +205,16 @@ void ContinuousTrajectory<Frame>::ComputeBestNewhallApproximation(
   // If we are in the zone of numerical instabilities and we exceeded the
   // tolerance, restart from the lowest degree.
   if (is_unstable_ && error_estimate > adjusted_tolerance_) {
+    LOG(ERROR) << "Lowering degree from " << degree_ << " to " << kMinDegree
+            << " because error estimate " << error_estimate
+            << " exceeds adjusted tolerance " << adjusted_tolerance_
+            << " and computations are unstable";
     is_unstable_ = false;
     adjusted_tolerance_ = tolerance_;
     degree_ = kMinDegree - 1;
     degree_age_ = 0;
+    previous_error_estimate = std::numeric_limits<double>::max() * Metre;
+    error_estimate = 0.5 * previous_error_estimate;
   }
 
   // Increase the degree if the approximation is not accurate enough.  Stop
@@ -214,7 +224,7 @@ void ContinuousTrajectory<Frame>::ComputeBestNewhallApproximation(
          error_estimate < previous_error_estimate &&
          degree_ < kMaxDegree) {
     ++degree_;
-    VLOG(1) << "Increasing degree for " << this << " to " <<degree_
+    LOG(ERROR) << "Increasing degree for " << this << " to " <<degree_
             << " because error estimate was " << error_estimate;
     series_.back() =
         newhall_approximation(
@@ -227,10 +237,18 @@ void ContinuousTrajectory<Frame>::ComputeBestNewhallApproximation(
   // point where the error was decreasing and nudge the tolerance since we
   // won't be able to reliably do better than that.
   if (error_estimate >= previous_error_estimate) {
+    LOG(ERROR) << "Reverting to degree " << degree_ << " for " << this
+            << " because error estimate increased (" << error_estimate
+            << " vs. " << previous_error_estimate << ")";
     is_unstable_ = true;
     error_estimate = previous_error_estimate;
+    if (degree_ > kMinDegree) {
     --degree_;
+    }
     adjusted_tolerance_ = std::max(adjusted_tolerance_, error_estimate);
+  } else {
+    LOG(ERROR) << "Using degree " << degree_ << " for " << this
+            << " with error estimate " << error_estimate;
   }
 
   ++degree_age_;
