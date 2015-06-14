@@ -6,7 +6,9 @@ namespace principia {
 namespace ksp_plugin {
 
 inline Celestial::Celestial(not_null<MassiveBody const*> body)
-    : body_(body) {}
+    : body_(body),
+      current_time_hint_(
+          make_not_null_unique<ContinuousTrajectory<Barycentric>::Hint>) {}
 
 inline bool Celestial::is_initialized() const {
   return trajectory_ != nullptr;
@@ -17,8 +19,8 @@ inline ContinuousTrajectory<Barycentric> const& Celestial::trajectory() const {
 }
 
 not_null<ContinuousTrajectory<Barycentric>::Hint*>
-Celestial::current_time_hint() {
-  return &current_time_hint_;
+Celestial::current_time_hint() const {
+  return current_time_hint_.get();
 }
 
 inline MassiveBody const& Celestial::body() const {

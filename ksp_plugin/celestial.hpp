@@ -34,7 +34,7 @@ class Celestial {
   // True if, and only if, |trajectory_| is not null.
   bool is_initialized() const;
   ContinuousTrajectory<Barycentric> const& trajectory() const;
-  not_null<ContinuousTrajectory<Barycentric>::Hint*> current_time_hint();
+  not_null<ContinuousTrajectory<Barycentric>::Hint*> current_time_hint() const;
 
   MassiveBody const& body() const;
   bool has_parent() const;
@@ -55,7 +55,9 @@ class Celestial {
   // be null for the sun.
   Celestial const* parent_ = nullptr;
   ContinuousTrajectory<Barycentric> const* trajectory_ = nullptr;
-  ContinuousTrajectory<Barycentric>::Hint current_time_hint_;
+  not_null<
+      std::unique_ptr<
+          ContinuousTrajectory<Barycentric>::Hint>> current_time_hint_;
 };
 
 }  // namespace ksp_plugin

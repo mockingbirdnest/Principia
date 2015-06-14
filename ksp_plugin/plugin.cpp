@@ -56,6 +56,8 @@ Plugin::Plugin(Instant const& initial_time,
                GravitationalParameter const& sun_gravitational_parameter,
                Angle const& planetarium_rotation)
     : bubble_(make_not_null_unique<PhysicsBubble>()),
+      bodies_(std::make_unique<CelestialToMassiveBody>()),
+      initial_state_(std::make_unique<CelestialToDegreesOfFreedom>()),
       history_integrator_(
           McLachlanAtela1992Order5Optimal<Position<Barycentric>>()),
       prolongation_integrator_(
@@ -63,16 +65,15 @@ Plugin::Plugin(Instant const& initial_time,
       prediction_integrator_(
           DormandElMikkawyPrince1986RKN434FM<Position<Barycentric>>()),
       planetarium_rotation_(planetarium_rotation),
-      current_time_(initial_time),
-      sun_(celestials_.emplace(sun_index,
-                               make_not_null_unique<Celestial>(
-                                   make_not_null_unique<MassiveBody>(
-                                       sun_gravitational_parameter))).
-               first->second.get()) {
-  sun_->CreateHistoryAndForkProlongation(
-      current_time_,
-      {Position<Barycentric>(), Velocity<Barycentric>()});
-  // NOTE(egg): perhaps a lower order would be appropriate.
+      current_time_(initial_time) {
+  auto sun_body = std::make_unique<MassiveBody>(sun_gravitational_parameter);
+  auto const inserted = celestials_.emplace(sun_index, sun_body.get());
+  sun_ = inserted.first->second.get();
+  bodies_->emplace(sun_, std::move(sun_body));
+  initial_state_->emplace(std::piecewise_construct,
+                          std::forward_as_tuple(sun_),
+                          std::forward_as_tuple(Position<Barycentric>(),
+                                                Velocity<Barycentric>()));
 }
 
 void Plugin::InsertCelestial(
@@ -84,10 +85,8 @@ void Plugin::InsertCelestial(
                        << "of initialization";
   not_null<Celestial const*> parent =
       FindOrDie(celestials_, parent_index).get();
-  auto const inserted = celestials_.emplace(
-      celestial_index,
-      make_not_null_unique<Celestial>(
-          make_not_null_unique<MassiveBody>(gravitational_parameter)));
+  auto const body = std::make_unique<MassiveBody>(gravitational_parameter);
+  auto const inserted = celestials_.emplace(celestial_index, body.get());
   CHECK(inserted.second) << "Body already exists at index " << celestial_index;
   LOG(INFO) << "Initial |{orbit.pos, orbit.vel}| for celestial at index "
             << celestial_index << ": " << from_parent;
@@ -95,10 +94,12 @@ void Plugin::InsertCelestial(
       PlanetariumRotation().Inverse()(from_parent);
   LOG(INFO) << "In barycentric coordinates: " << relative;
   not_null<Celestial*> const celestial = inserted.first->second.get();
+  bodies_->emplace(celestial, std::move(body));
   celestial->set_parent(parent);
-  celestial->CreateHistoryAndForkProlongation(
-      current_time_,
-      parent->history().last().degrees_of_freedom() + relative);
+  DegreesOfFreedom<Barycentric> const& parent_degrees_of_freedom =
+      FindOrDie(*initial_state_, parent);
+  initial_state_->emplace(celestial,
+                          parent_degrees_of_freedom + relative);
 }
 
 void Plugin::EndInitialization() {
@@ -150,7 +151,9 @@ void Plugin::SetVesselStateOffset(
   LOG(INFO) << "In barycentric coordinates: " << relative;
   vessel->CreateProlongation(
       current_time_,
-      vessel->parent()->prolongation().last().degrees_of_freedom() + relative);
+      vessel->parent()->trajectory().EvaluateDegreesOfFreedom(
+          current_time_,
+          vessel->parent()->current_time_hint()) + relative);
   auto const inserted = unsynchronized_vessels_.emplace(vessel.get());
   CHECK(inserted.second);
 }
@@ -184,11 +187,9 @@ void Plugin::AdvanceTime(Instant const& t, Angle const& planetarium_rotation) {
 }
 
 void Plugin::ForgetAllHistoriesBefore(Instant const& t) const {
+  CHECK(!initializing_);
   CHECK_LT(t, HistoryTime());
-  for (auto const& pair : celestials_) {
-    not_null<std::unique_ptr<Celestial>> const& celestial = pair.second;
-    celestial->mutable_history()->ForgetBefore(t);
-  }
+  n_body_system_->ForgetBefore(t);
   for (auto const& pair : vessels_) {
     not_null<std::unique_ptr<Vessel>> const& vessel = pair.second;
     // Only forget the synchronized vessels, the others don't have an history.
