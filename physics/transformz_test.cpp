@@ -82,6 +82,11 @@ class TransformzTest : public testing::Test {
             make_not_null_unique<Trajectory<Through>>(&satellite_)),
         satellite_to_(make_not_null_unique<Trajectory<To>>(&satellite_)),
         satellite_fn_({satellite_from_.get(), nullptr}) {
+    //TODO(phl):comment
+    body1_from_.degree_ = 17;
+    body1_to_.degree_ = 17;
+    body2_from_.degree_ = 17;
+    body2_to_.degree_ = 17;
     // The various bodies move have both a position and a velocity that
     // increases linearly with time.  This is not a situation that's physically
     // possible, but we don't care, all we want is to make sure that the
