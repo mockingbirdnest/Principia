@@ -208,7 +208,9 @@ RelativeDegreesOfFreedom<AliceSun> Plugin::VesselFromParent(
                                   << " was not given an initial state";
   RelativeDegreesOfFreedom<Barycentric> const barycentric_result =
       vessel->prolongation().last().degrees_of_freedom() -
-      vessel->parent()->prolongation().last().degrees_of_freedom();
+      vessel->parent()->trajectory().EvaluateDegreesOfFreedom(
+          current_time_,
+          vessel->parent()->current_time_hint()) + relative);
   RelativeDegreesOfFreedom<AliceSun> const result =
       PlanetariumRotation()(barycentric_result);
   VLOG(1) << "Vessel with GUID " << vessel_guid

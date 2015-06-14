@@ -8,7 +8,7 @@ namespace ksp_plugin {
 inline Celestial::Celestial(not_null<MassiveBody const*> body)
     : body_(body),
       current_time_hint_(
-          make_not_null_unique<ContinuousTrajectory<Barycentric>::Hint>) {}
+          make_not_null_unique<ContinuousTrajectory<Barycentric>::Hint>()) {}
 
 inline bool Celestial::is_initialized() const {
   return trajectory_ != nullptr;
