@@ -101,8 +101,15 @@ class ContinuousTrajectory {
   Length const low_tolerance_;
   Length const high_tolerance_;
 
-  // The degree of the approximation.
+  // Initially set to the construction parameters, and then adjusted when we
+  // choose the degree.
+  Length adjusted_low_tolerance_;
+  Length adjusted_high_tolerance_;
+
+  // The degree of the approximation and its age in number of Newhall
+  // approximations.
   int degree_;
+  int degree_age_;
 
   // The series are in increasing time order.  Their intervals are consecutive.
   std::vector<ЧебышёвSeries<Displacement<Frame>>> series_;
