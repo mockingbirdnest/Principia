@@ -193,7 +193,7 @@ TEST_F(ContinuousTrajectoryTest, BestNewhallApproximation) {
   EXPECT_FALSE(is_unstable());
 
   // Then we get low errors for a long time.
-  for (int i = 0; i < 100; ++i) {
+  for (int i = 0; i < 99; ++i) {
     ComputeBestNewhallApproximation(
         {Displacement<World>({0.1 * Metre, 0.1 * Metre, 0.1 * Metre})});
   }
