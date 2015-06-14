@@ -446,7 +446,7 @@ TEST_F(EphemerisTest, Sputnik1ToSputnik2) {
           0.1 * Milli(Metre),
           5 * Milli(Metre));
 
-    ephemeris.Prolong(at_спутник_2_launch->time());
+  ephemeris.Prolong(at_спутник_2_launch->time());
 
   // Upper bounds, tight to the nearest order of magnitude.
   static std::map<SolarSystem::Index, Angle> const expected_angle_error = {{}};

@@ -136,6 +136,8 @@ class ContinuousTrajectory {
   // nonempty trajectory.
   // |last_points_.begin()->first == series_.back().t_max()|
   std::vector<std::pair<Instant, DegreesOfFreedom<Frame>>> last_points_;
+
+  friend class ContinuousTrajectoryTest;
 };
 
 }  // namespace physics
