@@ -35,6 +35,10 @@ class Celestial {
   bool is_initialized() const;
   ContinuousTrajectory<Barycentric> const& trajectory() const;
   not_null<ContinuousTrajectory<Barycentric>::Hint*> current_time_hint() const;
+  DegreesOfFreedom<Barycentric> current_degrees_of_freedom(
+      Instant const& current_time) const;
+  Position<Barycentric> current_position(Instant const& current_time) const;
+  Velocity<Barycentric> current_velocity(Instant const& current_time) const;
 
   MassiveBody const& body() const;
   bool has_parent() const;

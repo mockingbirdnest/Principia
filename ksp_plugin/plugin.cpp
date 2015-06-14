@@ -151,9 +151,7 @@ void Plugin::SetVesselStateOffset(
   LOG(INFO) << "In barycentric coordinates: " << relative;
   vessel->CreateProlongation(
       current_time_,
-      vessel->parent()->trajectory().EvaluateDegreesOfFreedom(
-          current_time_,
-          vessel->parent()->current_time_hint()) + relative);
+      vessel->parent()->current_degrees_of_freedom(current_time_) + relative);
   auto const inserted = unsynchronized_vessels_.emplace(vessel.get());
   CHECK(inserted.second);
 }
@@ -208,9 +206,7 @@ RelativeDegreesOfFreedom<AliceSun> Plugin::VesselFromParent(
                                   << " was not given an initial state";
   RelativeDegreesOfFreedom<Barycentric> const barycentric_result =
       vessel->prolongation().last().degrees_of_freedom() -
-      vessel->parent()->trajectory().EvaluateDegreesOfFreedom(
-          current_time_,
-          vessel->parent()->current_time_hint()) + relative);
+      vessel->parent()->current_degrees_of_freedom(current_time_);
   RelativeDegreesOfFreedom<AliceSun> const result =
       PlanetariumRotation()(barycentric_result);
   VLOG(1) << "Vessel with GUID " << vessel_guid
@@ -226,8 +222,8 @@ RelativeDegreesOfFreedom<AliceSun> Plugin::CelestialFromParent(
   CHECK(celestial.has_parent())
       << "Body at index " << celestial_index << " is the sun";
   RelativeDegreesOfFreedom<Barycentric> const barycentric_result =
-      celestial.prolongation().last().degrees_of_freedom() -
-      celestial.parent()->prolongation().last().degrees_of_freedom();
+      celestial.current_degrees_of_freedom(current_time()) -
+      celestial.parent()->current_degrees_of_freedom(current_time());
   RelativeDegreesOfFreedom<AliceSun> const result =
       PlanetariumRotation()(barycentric_result);
   VLOG(1) << "Celestial at index " << celestial_index
@@ -300,11 +296,12 @@ not_null<std::unique_ptr<RenderingTransforms>>
 Plugin::NewBodyCentredNonRotatingTransforms(
     Index const reference_body_index) const {
   // TODO(egg): this should be const, use a custom comparator in the map.
-  not_null<Celestial*> reference_body =
-      FindOrDie(celestials_, reference_body_index).get();
+  Celestial const& reference_body =
+      *FindOrDie(celestials_, reference_body_index);
   auto transforms = RenderingTransforms::BodyCentredNonRotating(
-                        *reference_body,
-                        &MobileInterface::prolongation);
+                        reference_body.body(),
+                        reference_body.trajectory(),
+                        reference_body.trajectory());
   transforms->set_cacheable(&MobileInterface::history);
   return transforms;
 }
@@ -313,14 +310,15 @@ not_null<std::unique_ptr<RenderingTransforms>>
 Plugin::NewBarycentricRotatingTransforms(Index const primary_index,
                                          Index const secondary_index) const {
   // TODO(egg): these should be const, use a custom comparator in the map.
-  not_null<Celestial*> primary =
-      FindOrDie(celestials_, primary_index).get();
-  not_null<Celestial*> secondary =
-      FindOrDie(celestials_, secondary_index).get();
+  Celestial const& primary = *FindOrDie(celestials_, primary_index);
+  Celestial const& secondary = *FindOrDie(celestials_, secondary_index);
   auto transforms = RenderingTransforms::BarycentricRotating(
-                        *primary,
-                        *secondary,
-                        &MobileInterface::prolongation);
+                        primary.body(),
+                        primary.trajectory(),
+                        primary.trajectory(),
+                        secondary.body(),
+                        secondary.trajectory(),
+                        secondary.trajectory());
   transforms->set_cacheable(&MobileInterface::history);
   return transforms;
 }
@@ -345,7 +343,8 @@ Displacement<World> Plugin::BubbleDisplacementCorrection(
   VLOG(1) << __FUNCTION__ << '\n' << NAMED(sun_world_position);
   VLOG_AND_RETURN(1, bubble_->DisplacementCorrection(BarycentricToWorldSun(),
                                                      *sun_,
-                                                     sun_world_position));
+                                                     sun_world_position,
+                                                     current_time_));
 }
 
 Velocity<World> Plugin::BubbleVelocityCorrection(
@@ -354,7 +353,8 @@ Velocity<World> Plugin::BubbleVelocityCorrection(
   Celestial const& reference_body =
       *FindOrDie(celestials_, reference_body_index);
   VLOG_AND_RETURN(1, bubble_->VelocityCorrection(BarycentricToWorldSun(),
-                                                 reference_body));
+                                                 reference_body,
+                                                 current_time_));
 }
 
 FrameField<World> Plugin::Navball(
@@ -365,14 +365,15 @@ FrameField<World> Plugin::Navball(
   auto const positions_from_world =
       AffineMap<World, Barycentric, Length, OrthogonalMap>(
           sun_world_position,
-          sun_->prolongation().last().degrees_of_freedom().position(),
+          sun_->current_position(current_time_),
           to_world.Inverse());
-  return [transforms, to_world, positions_from_world](
+  return [transforms, to_world, positions_from_world, this](
       Position<World> const& q) -> Rotation<World, World> {
     // KSP's navball has x west, y up, z south.
     // we want x north, y west, z up.
     auto const orthogonal_map = to_world *
-        transforms->coordinate_frame()(positions_from_world(q)).Forget() *
+        transforms->coordinate_frame(current_time_)(
+            positions_from_world(q)).Forget() *
         Permutation<World, Barycentric>(
             Permutation<World, Barycentric>::XZY).Forget() *
         Rotation<World, World>(π / 2 * Radian,
@@ -393,7 +394,8 @@ Vector<double, World> Plugin::VesselTangent(
   Trajectory<Rendering> intermediate_trajectory(vessel.body());
   intermediate_trajectory.Append(actual_it.time(),
                                  actual_it.degrees_of_freedom());
-  auto const intermediate_it = transforms->second(intermediate_trajectory);
+  auto const intermediate_it = transforms->second(current_time_,
+                                                  intermediate_trajectory);
   Trajectory<Barycentric> apparent_trajectory(vessel.body());
   apparent_trajectory.Append(intermediate_it.time(),
                              intermediate_it.degrees_of_freedom());
@@ -555,25 +557,12 @@ bool Plugin::has_predicted_vessel() const {
 }
 
 bool Plugin::HasPredictions() const {
-  if (has_predicted_vessel()) {
-    bool const has_prediction = predicted_vessel_->has_prediction();
-    for (auto const& pair : celestials_) {
-      not_null<std::unique_ptr<Celestial>> const& celestial = pair.second;
-      CHECK_EQ(celestial->has_prediction(), has_prediction);
-    }
-    return has_prediction;
-  } else {
-    return false;
-  }
+  return has_predicted_vessel() && predicted_vessel_->has_prediction();
 }
 
 void Plugin::DeletePredictions() {
   if (HasPredictions()) {
     predicted_vessel_->DeletePrediction();
-    for (auto const& pair : celestials_) {
-      not_null<std::unique_ptr<Celestial>> const& celestial = pair.second;
-      celestial->DeletePrediction();
-    }
   }
 }
 
@@ -739,10 +728,6 @@ void Plugin::ResetProlongations() {
     not_null<std::unique_ptr<Vessel>> const& vessel = pair.second;
     vessel->ResetProlongation(HistoryTime());
   }
-  for (auto const& pair : celestials_) {
-    not_null<std::unique_ptr<Celestial>> const& celestial = pair.second;
-    celestial->ResetProlongation(HistoryTime());
-  }
   VLOG(1) << "Prolongations have been reset";
 }
 
@@ -805,7 +790,7 @@ RenderedTrajectory<World> Plugin::RenderTrajectory(
   RenderedTrajectory<World> result;
   auto const to_world =
       AffineMap<Barycentric, World, Length, OrthogonalMap>(
-          sun_->prolongation().last().degrees_of_freedom().position(),
+          sun_->current_position(current_time_),
           sun_world_position,
           OrthogonalMap<WorldSun, World>::Identity() * BarycentricToWorldSun());
 
@@ -817,7 +802,8 @@ RenderedTrajectory<World> Plugin::RenderTrajectory(
 
   // Then build the apparent trajectory using the second transform.
   Trajectory<Barycentric> apparent_trajectory(body);
-  for (auto intermediate_it = transforms->second(intermediate_trajectory);
+  for (auto intermediate_it =
+           transforms->second(current_time_, intermediate_trajectory);
        !intermediate_it.at_end();
        ++intermediate_it) {
     apparent_trajectory.Append(intermediate_it.time(),

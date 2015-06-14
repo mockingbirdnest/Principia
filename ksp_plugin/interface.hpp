@@ -6,11 +6,11 @@
 #include "base/pull_serializer.hpp"
 #include "base/push_deserializer.hpp"
 #include "ksp_plugin/plugin.hpp"
-#include "physics/transforms.hpp"
+#include "physics/transformz.hpp"
 
 namespace principia {
 
-using physics::Transforms;
+using physics::Transformz;
 
 namespace ksp_plugin {
 

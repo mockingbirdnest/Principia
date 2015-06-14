@@ -23,6 +23,22 @@ Celestial::current_time_hint() const {
   return current_time_hint_.get();
 }
 
+DegreesOfFreedom<Barycentric> Celestial::current_degrees_of_freedom(
+      Instant const& current_time) const {
+  return trajectory().EvaluateDegreesOfFreedom(current_time,
+                                               current_time_hint());
+}
+
+Position<Barycentric> Celestial::current_position(
+    Instant const& current_time) const {
+  return trajectory().EvaluatePosition(current_time, current_time_hint());
+}
+
+Velocity<Barycentric> Celestial::current_velocity(
+    Instant const& current_time) const {
+  return trajectory().EvaluateVelocity(current_time, current_time_hint());
+}
+
 inline MassiveBody const& Celestial::body() const {
   return *body_;
 }

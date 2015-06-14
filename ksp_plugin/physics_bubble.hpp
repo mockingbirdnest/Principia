@@ -52,7 +52,7 @@ class PhysicsBubble {
   // correct position.
   Displacement<World> DisplacementCorrection(
       BarycentricToWorldSun const& barycentric_to_world_sun,
-      not_null<Celestial*> const reference_celestial,
+      Celestial const& reference_celestial,
       Position<World> const& reference_celestial_world_position,
       Instant const& current_time) const;
 
@@ -61,7 +61,7 @@ class PhysicsBubble {
   // correct velocity.
   Velocity<World> VelocityCorrection(
       BarycentricToWorldSun const& barycentric_to_world_sun,
-      not_null<Celestial*> const reference_celestial,
+      Celestial const& reference_celestial,
       Instant const& current_time) const;
 
   // Returns |current_ == nullptr|.
