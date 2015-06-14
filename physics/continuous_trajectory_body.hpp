@@ -29,12 +29,10 @@ ContinuousTrajectory<Frame>::ContinuousTrajectory(Time const& step,
                                                   Length const& low_tolerance,
                                                   Length const& high_tolerance)
     : step_(step),
-      low_tolerance_(low_tolerance),
-      high_tolerance_(high_tolerance),
-      adjusted_low_tolerance_(low_tolerance_),
-      adjusted_high_tolencenc_(high_tolerance_),
+      tolerance_(high_tolerance),
+      adjusted_tolerance_(tolerance_),
       degree_(kMinDegree) {
-  CHECK_LT(low_tolerance_, high_tolerance_);
+  CHECK_LT(0 * Metre, tolerance_);
 }
 
 template<typename Frame>
@@ -86,62 +84,10 @@ void ContinuousTrajectory<Frame>::Append(
     q.push_back(degrees_of_freedom.position() - Frame::origin);
     v.push_back(degrees_of_freedom.velocity());
 
-    // If the |degree_| is too old, restart from the lowest degree.
-    if (degree_age_ > kMaxDegreeAge) {
-      degree = kMinDegree;
-      degree_age_ = 0;
-    }
+    ComputeBestNewhallApproximation(
+        time, q, v, &ЧебышёвSeries<Displacement<Frame>>::NewhallApproximation);
 
-    // Compute the approximation with the current |degree_|.
-    series_.push_back(
-        ЧебышёвSeries<Displacement<Frame>>::NewhallApproximation(
-            degree_, q, v, last_points_.cbegin()->first, time));
-
-    Length error_estimate = series_.back().last_coefficient().Norm();
-    Length previous_error_estimate = error_estimate + error_estimate;
-
-    // If we are in the zone of numerical instabilities and we exceeded the high
-    // tolerance, restart from the lowest degree.
-    if (is_unstable_ && error_estimate > adjusted_high_tolerance_) {
-      degree_ = kMinDegree - 1;
-      degree_age_ = 0;
-    }
-
-    // Increase the degree if the approximation is not accurate enough.  Stop
-    // when we reach the maximum degree or when the error estimate is not
-    // decreasing.
-    while (error_estimate > adjusted_high_tolerance_ &&
-           error_estimate < previous_error_estimate &&
-           degree_ < kMaxDegree) {
-      ++degree_;
-      VLOG(1) << "Increasing degree for " << this << " to " <<degree_
-              << " because error estimate was " << error_estimate;
-      series_.back() =
-          ЧебышёвSeries<Displacement<Frame>>::NewhallApproximation(
-              degree_, q, v, last_points_.cbegin()->first, time);
-      previous_error_estimate = error_estimate;
-      error_estimate = series_.back().last_coefficient().Norm();
-    }
-
-    if (error_estimate < high_tolerance_) {
-      adjusted_low_tolerance_ = std::min(adjusted_low_tolerance_,
-                                         error_estimate);
-    } else if (error_estimate >= previous_error_estimate) {
-      // We have entered the zone of numerical instability.  Go back to the
-      // point where the error was decreasing and nudge the high tolerance since
-      // we won't be able to reliably do better than that.
-      is_unstable_ = true;
-      error_estimate = previous_error_estimate;
-      --degree_;
-      adjusted_high_tolerance_ = std::max(adjusted_high_tolerance_,
-                                          error_estimate);
-    } else {
-      adjusted_low_tolerance_ 
-    }
-
-    ++degree_age_;
-
-    // Wipe-out the vector.
+    // Wipe-out the points that have just been incorporated in a series.
     last_points_.clear();
   }
 
@@ -222,6 +168,73 @@ DegreesOfFreedom<Frame> ContinuousTrajectory<Frame>::EvaluateDegreesOfFreedom(
 template<typename Frame>
 ContinuousTrajectory<Frame>::Hint::Hint()
     : index_(std::numeric_limits<int>::max()) {}
+
+  
+template<typename Frame>
+void ContinuousTrajectory<Frame>::ComputeBestNewhallApproximation(
+    Instant const& time,
+    std::vector<Displacement<Frame>> const& q,
+    std::vector<Velocity<Frame>> const& v,
+    ЧебышёвSeries<Displacement<Frame>> (*newhall_approximation)(
+        int const degree,
+        std::vector<Displacement<Frame>> const& q,
+        std::vector<Velocity<Frame>> const& v,
+        Instant const& t_min,
+        Instant const& t_max)) {
+  // If the degree is too old, restart from the lowest degree.  This ensures
+  // that we use the lowest possible degree at a small computational cost.
+  if (degree_age_ > kMaxDegreeAge) {
+    adjusted_tolerance_ = tolerance_;
+    degree_ = kMinDegree;
+    degree_age_ = 0;
+  }
+
+  // Compute the approximation with the current degree.
+  series_.push_back(
+      newhall_approximation(degree_, q, v, last_points_.cbegin()->first, time));
+
+  // Estimate the error.  For initializing |previous_error_estimate|, any value
+  // greater than |error_estimate| will do.
+  Length error_estimate = series_.back().last_coefficient().Norm();
+  Length previous_error_estimate = error_estimate + error_estimate;
+
+  // If we are in the zone of numerical instabilities and we exceeded the
+  // tolerance, restart from the lowest degree.
+  if (is_unstable_ && error_estimate > adjusted_tolerance_) {
+    is_unstable_ = false;
+    adjusted_tolerance_ = tolerance_;
+    degree_ = kMinDegree - 1;
+    degree_age_ = 0;
+  }
+
+  // Increase the degree if the approximation is not accurate enough.  Stop
+  // when we reach the maximum degree or when the error estimate is not
+  // decreasing.
+  while (error_estimate > adjusted_tolerance_ &&
+         error_estimate < previous_error_estimate &&
+         degree_ < kMaxDegree) {
+    ++degree_;
+    VLOG(1) << "Increasing degree for " << this << " to " <<degree_
+            << " because error estimate was " << error_estimate;
+    series_.back() =
+        newhall_approximation(
+            degree_, q, v, last_points_.cbegin()->first, time);
+    previous_error_estimate = error_estimate;
+    error_estimate = series_.back().last_coefficient().Norm();
+  }
+
+  // If we have entered the zone of numerical instability, go back to the
+  // point where the error was decreasing and nudge the tolerance since we
+  // won't be able to reliably do better than that.
+  if (error_estimate >= previous_error_estimate) {
+    is_unstable_ = true;
+    error_estimate = previous_error_estimate;
+    --degree_;
+    adjusted_tolerance_ = std::max(adjusted_tolerance_, error_estimate);
+  }
+
+  ++degree_age_;
+}
 
 template<typename Frame>
 typename std::vector<ЧебышёвSeries<Displacement<Frame>>>::const_iterator

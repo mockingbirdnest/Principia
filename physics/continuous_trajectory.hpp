@@ -86,6 +86,21 @@ class ContinuousTrajectory {
   };
 
  private:
+  // Computes the best Newhall approximation based on the desired tolerance.
+  // Adjust the |degree_| and other member variables to stay within the
+  // tolerance while minimizing the computational cost and avoiding numerical
+  // instabilities.
+  void ComputeBestNewhallApproximation(
+      Instant const& time,
+      std::vector<Displacement<Frame>> const& q,
+      std::vector<Velocity<Frame>> const& v,
+      ЧебышёвSeries<Displacement<Frame>> (*newhall_approximation)(
+          int const degree,
+          std::vector<Displacement<Frame>> const& q,
+          std::vector<Velocity<Frame>> const& v,
+          Instant const& t_min,
+          Instant const& t_max));
+
   // Returns an iterator to the series applicable for the given |time|, or
   // |begin()| if |time| is before the first series or |end()| if |time| is
   // after the last series.  Time complexity is O(N Log N).
@@ -98,13 +113,12 @@ class ContinuousTrajectory {
 
   // Construction parameters;
   Time const step_;
-  Length const low_tolerance_;
-  Length const high_tolerance_;
+  Length const tolerance_;
 
   // Initially set to the construction parameters, and then adjusted when we
   // choose the degree.
-  Length adjusted_low_tolerance_;
-  Length adjusted_high_tolerance_;
+  Length adjusted_tolerance_;
+  bool is_unstable_;
 
   // The degree of the approximation and its age in number of Newhall
   // approximations.
