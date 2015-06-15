@@ -69,7 +69,15 @@ class Transformz {
   FrameField<ToFrame> coordinate_frame(Instant const& last) const;
 
  private:
-  Trajectory<FromFrame>::Transform<ThroughFrame> first_;
+  // Just like a |Trajectory::Transform|, except that the first parameter is
+  // only bound when we know if we must cache.
+  template<typename Frame1, typename Frame2>
+  using FirstTransform = std::function<DegreesOfFreedom<Frame2>(
+                             bool const,
+                             Instant const&,
+                             DegreesOfFreedom<Frame1> const&,
+                             not_null<Trajectory<Frame1> const*> const)>;
+  FirstTransform<FromFrame, ThroughFrame> first_;
 
   // Just like a |Trajectory::Transform|, except that the first parameter is
   // only bound when we know at what time (|last|) the transform must be

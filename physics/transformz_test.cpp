@@ -266,8 +266,8 @@ TEST_F(TransformzTest, BodiesBarycentricRotating) {
   }
 
   int i = 1;
-  for (auto it1 = transforms->first(discrete_body1_from),
-            it2 = transforms->first(discrete_body2_from);
+  for (auto it1 = transforms->first_with_caching(&discrete_body1_from),
+            it2 = transforms->first_with_caching(&discrete_body2_from);
        !it1.at_end() && !it2.at_end();
        ++it1, ++it2, ++i) {
     Length const l = i * Metre;

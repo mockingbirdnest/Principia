@@ -137,11 +137,20 @@ Transformz<FromFrame, ThroughFrame, ToFrame>::BodyCentredNonRotating(
   not_null<Transformz*> that = transforms.get();
   transforms->first_ =
       [&from_centre_trajectory, from_centre_hint, that](
+          bool const cacheable,
           Instant const& t,
           DegreesOfFreedom<FromFrame> const& from_degrees_of_freedom,
           not_null<Trajectory<FromFrame> const*> const trajectory) ->
       DegreesOfFreedom<ThroughFrame> {
-    // TODO(phl): Add caching.
+    //TODO(phl): Not for first()!
+    // First check if the result is cached.
+    DegreesOfFreedom<ThroughFrame>* cached_through_degrees_of_freedom = nullptr;
+    if (cacheable &&
+        that->first_cache_.Lookup(trajectory, t,
+                                  &cached_through_degrees_of_freedom)) {
+      return *cached_through_degrees_of_freedom;
+    }
+
     DegreesOfFreedom<FromFrame> const& centre_degrees_of_freedom =
         from_centre_trajectory.EvaluateDegreesOfFreedom(t, &*from_centre_hint);
 
@@ -155,6 +164,11 @@ Transformz<FromFrame, ThroughFrame, ToFrame>::BodyCentredNonRotating(
         {position_map(from_degrees_of_freedom.position()),
          velocity_map(from_degrees_of_freedom.velocity() -
                       centre_degrees_of_freedom.velocity())};
+
+    // Cache the result before returning it.
+    if (cacheable) {
+      that->first_cache_.Insert(trajectory, t, through_degrees_of_freedom);
+    }
     return through_degrees_of_freedom;
   };
 
@@ -231,11 +245,19 @@ Transformz<FromFrame, ThroughFrame, ToFrame>::BarycentricRotating(
   transforms->first_ =
       [&primary, &from_primary_trajectory, from_primary_hint,
        &secondary, &from_secondary_trajectory, from_secondary_hint, that](
+          bool const cacheable,
           Instant const& t,
           DegreesOfFreedom<FromFrame> const& from_degrees_of_freedom,
           not_null<Trajectory<FromFrame> const*> const trajectory) ->
       DegreesOfFreedom<ThroughFrame> {
-    // TODO(phl): Add caching.
+    // First check if the result is cached.
+    DegreesOfFreedom<ThroughFrame>* cached_through_degrees_of_freedom = nullptr;
+    if (cacheable &&
+        that->first_cache_.Lookup(trajectory, t,
+                                  &cached_through_degrees_of_freedom)) {
+      return *cached_through_degrees_of_freedom;
+    }
+
     DegreesOfFreedom<FromFrame> const& primary_degrees_of_freedom =
         from_primary_trajectory.EvaluateDegreesOfFreedom(
             t, &*from_primary_hint);
@@ -274,6 +296,11 @@ Transformz<FromFrame, ThroughFrame, ToFrame>::BarycentricRotating(
                         angular_frequency *
                           (from_degrees_of_freedom.position() -
                            barycentre_degrees_of_freedom.position()) / Radian)};
+
+    // Cache the result before returning it.
+    if (cacheable) {
+      that->first_cache_.Insert(trajectory, t, through_degrees_of_freedom);
+    }
     return through_degrees_of_freedom;
   };
 
@@ -324,15 +351,18 @@ template<typename FromFrame, typename ThroughFrame, typename ToFrame>
 typename Trajectory<FromFrame>::template TransformingIterator<ThroughFrame>
 Transformz<FromFrame, ThroughFrame, ToFrame>::first(
     Trajectory<FromFrame> const& from_trajectory) {
-  return from_trajectory.first_with_transform(first_);
+  typename Trajectory<FromFrame>::template Transform<ThroughFrame> const first =
+      std::bind(first_, false /*cacheable*/, _1, _2, _3);
+  return from_trajectory.first_with_transform(first);
 }
 
 template<typename FromFrame, typename ThroughFrame, typename ToFrame>
 typename Trajectory<FromFrame>::template TransformingIterator<ThroughFrame>
 Transformz<FromFrame, ThroughFrame, ToFrame>::first_with_caching(
     not_null<Trajectory<FromFrame> const*> const from_trajectory) {
-  //TODO(phl):Caching
-  return from_trajectory->first_with_transform(first_);
+  typename Trajectory<FromFrame>::template Transform<ThroughFrame> const first =
+      std::bind(first_, true /*cacheable*/, _1, _2, _3);
+  return from_trajectory->first_with_transform(first);
 }
 
 template<typename FromFrame, typename ThroughFrame, typename ToFrame>
@@ -362,7 +392,7 @@ Lookup(not_null<Trajectory<Frame1> const*> const trajectory,
   bool found = false;
   ++number_of_lookups_[trajectory];
   auto const it1 = cache_.find(trajectory);
-  if (it1 != map_.end()) {
+  if (it1 != cache_.end()) {
     auto const it2 = it1->second.find(time);
     if (it2 != it1->second.end()) {
       ++number_of_hits_[trajectory];
@@ -383,7 +413,7 @@ Transformz<FromFrame, ThroughFrame, ToFrame>::Cache<Frame1, Frame2>::Insert(
     not_null<Trajectory<Frame1> const*> const trajectory,
        Instant const& time,
        DegreesOfFreedom<Frame2> const& degrees_of_freedom) {
-  cache_[trajectory][time] = degrees_of_freedom;
+  cache_[trajectory].emplace(std::make_pair(time, degrees_of_freedom));
 }
 
 template<typename FromFrame, typename ThroughFrame, typename ToFrame>
