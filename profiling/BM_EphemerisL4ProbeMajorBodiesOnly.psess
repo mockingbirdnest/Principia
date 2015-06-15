@@ -48,9 +48,9 @@
       <LaunchProject>false</LaunchProject>
       <OverrideProjectSettings>true</OverrideProjectSettings>
       <LaunchMethod>Executable</LaunchMethod>
-      <ExecutablePath>Release\benchmarks.exe</ExecutablePath>
-      <StartupDirectory>benchmarks\</StartupDirectory>
-      <Arguments>--benchmark_filter=BM_EphemerisL4ProbeMajorBodiesOnly</Arguments>
+      <ExecutablePath>..\Release\benchmarks.exe</ExecutablePath>
+      <StartupDirectory>..\benchmarks\</StartupDirectory>
+      <Arguments>--benchmark_filter=BM_Transformz</Arguments>
       <NetAppHost>IIS</NetAppHost>
       <NetBrowser>InternetExplorer</NetBrowser>
       <ExcludeSmallFuncs>true</ExcludeSmallFuncs>
@@ -69,6 +69,9 @@
   <Reports>
     <Report>
       <Path>BM_EphemerisL4ProbeMajorBodiesOnly20150607-1514.vsp</Path>
+    </Report>
+    <Report>
+      <Path>..\benchmarks150615.vsp</Path>
     </Report>
   </Reports>
   <Launches>

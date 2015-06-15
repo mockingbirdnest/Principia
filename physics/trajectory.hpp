@@ -66,7 +66,7 @@ class Trajectory {
 
   // Sets a callback to be run before this trajectory gets destroyed.
   void set_on_destroy(
-      std::function<void(not_null<Trajectory<Frame>const *> const)> on_destroy);
+      std::function<void(not_null<Trajectory<Frame>const*> const)> on_destroy);
 
   // Returns an iterator at the first point of the trajectory.  Complexity is
   // O(|depth|).  The result may be at end if the trajectory is empty.

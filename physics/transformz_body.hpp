@@ -359,7 +359,13 @@ Transformz<FromFrame, ThroughFrame, ToFrame>::first(
 template<typename FromFrame, typename ThroughFrame, typename ToFrame>
 typename Trajectory<FromFrame>::template TransformingIterator<ThroughFrame>
 Transformz<FromFrame, ThroughFrame, ToFrame>::first_with_caching(
-    not_null<Trajectory<FromFrame> const*> const from_trajectory) {
+    not_null<Trajectory<FromFrame>*> const from_trajectory) {
+  // Make sure that the cache entry is deleted when the trajectory is deleted.
+  from_trajectory->set_on_destroy(
+      [this](not_null<Trajectory<FromFrame>const*> const trajectory) {
+        first_cache_.Delete(trajectory);
+      });
+
   typename Trajectory<FromFrame>::template Transform<ThroughFrame> const first =
       std::bind(first_, true /*cacheable*/, _1, _2, _3);
   return from_trajectory->first_with_transform(first);
@@ -421,7 +427,7 @@ template<typename Frame1, typename Frame2>
 void
 Transformz<FromFrame, ThroughFrame, ToFrame>::Cache<Frame1, Frame2>::Delete(
     not_null<Trajectory<Frame1> const*> const trajectory) {
-  cache_.erase[trajectory];
+  cache_.erase(trajectory);
 }
 
 }  // namespace physics

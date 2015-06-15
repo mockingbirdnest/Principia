@@ -84,23 +84,6 @@ using World1 = Frame<serialization::Frame::TestTag,
 using World2 = Frame<serialization::Frame::TestTag,
                      serialization::Frame::TEST2, false>;
 
-class TrajectoryHolderz {
- public:
-  explicit TrajectoryHolderz(not_null<Trajectory<World1>*> trajectory);
-
-  Trajectory<World1> const& trajectory() const;
-
- private:
-  not_null<Trajectory<World1>*> trajectory_;
-};
-
-TrajectoryHolderz::TrajectoryHolderz(not_null<Trajectory<World1>*> trajectory)
-    : trajectory_(trajectory) {}
-
-Trajectory<World1> const& TrajectoryHolderz::trajectory() const {
-  return *trajectory_;
-}
-
 template<typename F, template<typename F> class T>
 void FillCircularTrajectory(Position<F> const& center,
                             Position<F> const& initial,
@@ -138,8 +121,7 @@ void FillLinearTrajectory(Position<F> const& initial,
 std::vector<std::pair<Position<World1>,
                       Position<World1>>> ApplyTransform(
     not_null<Body const*> const body,
-    not_null<Transformz<TrajectoryHolderz, World1, World2, World1>*> const
-        transforms,
+    not_null<Transformz<World1, World2, World1>*> const transforms,
     Trajectory<World1>::TransformingIterator<World2> const& actual_it) {
   std::vector<std::pair<Position<World1>,
                         Position<World1>>> result;
@@ -203,24 +185,25 @@ void BM_TransformzBodyCentredNonRotating(
                         100 * Kilo(Metre) / Second,
                         0 * SIUnit<Speed>()});
   Trajectory<World1> probe_trajectory(&probe);
-  TrajectoryHolderz probe_holder(&probe_trajectory);
   FillLinearTrajectory<World1, Trajectory>(probe_initial_position,
                                            probe_velocity,
                                            Δt,
                                            steps,
                                            &probe_trajectory);
 
-  auto transforms = Transformz<TrajectoryHolderz, World1, World2, World1>::
+  auto transforms = Transformz<World1, World2, World1>::
       BodyCentredNonRotating(earth, earth_trajectory, earth_trajectory);
-  if (cache) {
-    transforms->set_cacheable(&TrajectoryHolderz::trajectory);
-  }
-
   while (state.KeepRunning()) {
-    auto v = ApplyTransform(&probe,
+    if (cache) {
+      auto v = ApplyTransform(
+                   &probe,
                    transforms.get(),
-                   transforms->first(probe_holder,
-                                     &TrajectoryHolderz::trajectory));
+                   transforms->first_with_caching(&probe_trajectory));
+    } else {
+      auto v = ApplyTransform(&probe,
+                              transforms.get(),
+                              transforms->first(probe_trajectory));
+    }
   }
 }
 
@@ -282,38 +265,39 @@ void BM_TransformzBarycentricRotating(
                         100 * Kilo(Metre) / Second,
                         0 * SIUnit<Speed>()});
   Trajectory<World1> probe_trajectory(&probe);
-  TrajectoryHolderz probe_holder(&probe_trajectory);
   FillLinearTrajectory<World1, Trajectory>(probe_initial_position,
                                            probe_velocity,
                                            Δt,
                                            steps,
                                            &probe_trajectory);
 
-  auto transforms = Transformz<TrajectoryHolderz, World1, World2, World1>::
+  auto transforms = Transformz<World1, World2, World1>::
       BarycentricRotating(earth,
                           earth_trajectory,
                           earth_trajectory,
                           thera,
                           thera_trajectory,
                           thera_trajectory);
-  if (cache) {
-    transforms->set_cacheable(&TrajectoryHolderz::trajectory);
-  }
-
   while (state.KeepRunning()) {
-    auto v = ApplyTransform(&probe,
+    if (cache) {
+      auto v = ApplyTransform(
+                   &probe,
                    transforms.get(),
-                   transforms->first(probe_holder,
-                                     &TrajectoryHolderz::trajectory));
+                   transforms->first_with_caching(&probe_trajectory));
+    } else {
+      auto v = ApplyTransform(&probe,
+                              transforms.get(),
+                              transforms->first(probe_trajectory));
+    }
   }
 }
 
 int const kIter = (1000 << 10) + 1;
 
 BENCHMARK_TEMPLATE(BM_TransformzBodyCentredNonRotating, false)->Arg(kIter);
-// BENCHMARK_TEMPLATE(BM_TransformzBodyCentredNonRotating, true)->Arg(kIter);
+BENCHMARK_TEMPLATE(BM_TransformzBodyCentredNonRotating, true)->Arg(kIter);
 BENCHMARK_TEMPLATE(BM_TransformzBarycentricRotating, false)->Arg(kIter);
-// BENCHMARK_TEMPLATE(BM_TransformzBarycentricRotating, true)->Arg(kIter);
+BENCHMARK_TEMPLATE(BM_TransformzBarycentricRotating, true)->Arg(kIter);
 
 }  // namespace benchmarks
 }  // namespace principia
