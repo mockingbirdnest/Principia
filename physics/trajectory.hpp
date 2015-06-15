@@ -57,12 +57,16 @@ class Trajectory {
   // the trajectory holds a reference to it.  If |body| is oblate it must be
   // expressed in the same frame as the trajectory.
   explicit Trajectory(not_null<Body const*> const body);
-  ~Trajectory() = default;
+  ~Trajectory();
 
   Trajectory(Trajectory const&) = delete;
   Trajectory(Trajectory&&) = delete;
   Trajectory& operator=(Trajectory const&) = delete;
   Trajectory& operator=(Trajectory&&) = delete;
+
+  // Sets a callback to be run before this trajectory gets destroyed.
+  void set_on_destroy(
+      std::function<void(not_null<Trajectory<Frame>const *> const)> on_destroy);
 
   // Returns an iterator at the first point of the trajectory.  Complexity is
   // O(|depth|).  The result may be at end if the trajectory is empty.
@@ -279,6 +283,8 @@ class Trajectory {
   Timeline timeline_;
 
   std::unique_ptr<IntrinsicAcceleration> intrinsic_acceleration_;
+
+  std::function<void(not_null<Trajectory<Frame>const *> const)> on_destroy_;
 
   // For using the private constructor in maps.
   template<typename, typename>
