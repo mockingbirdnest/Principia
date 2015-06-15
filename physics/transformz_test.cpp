@@ -56,14 +56,6 @@ class TransformzTest : public testing::Test {
   using To = Frame<serialization::Frame::TestTag,
                    serialization::Frame::TO, true>;
 
-  struct Functors {
-    Trajectory<From> const& from_trajectory() const { return *from; }
-    Trajectory<To> const& to_trajectory() const { return *to; }
-
-    Trajectory<From>* from;
-    Trajectory<To>* to;
-  };
-
   static void SetUpTestCase() {
     // This will need to change if we ever have continuous trajectories with
     // more than 8 divisions.
@@ -80,8 +72,7 @@ class TransformzTest : public testing::Test {
         satellite_from_(make_not_null_unique<Trajectory<From>>(&satellite_)),
         satellite_through_(
             make_not_null_unique<Trajectory<Through>>(&satellite_)),
-        satellite_to_(make_not_null_unique<Trajectory<To>>(&satellite_)),
-        satellite_fn_({satellite_from_.get(), nullptr}) {
+        satellite_to_(make_not_null_unique<Trajectory<To>>(&satellite_)) {
     // The various bodies move have both a position and a velocity that
     // increases linearly with time.  This is not a situation that's physically
     // possible, but we don't care, all we want is to make sure that the
@@ -147,18 +138,17 @@ class TransformzTest : public testing::Test {
   not_null<std::unique_ptr<Trajectory<From>>> satellite_from_;
   not_null<std::unique_ptr<Trajectory<Through>>> satellite_through_;
   not_null<std::unique_ptr<Trajectory<To>>> satellite_to_;
-  Functors satellite_fn_;
 };
 
 // This transform is simple enough that we can compute its effect by hand.  This
 // test verifies that we get the expected result both in |Through| and in |To|.
 TEST_F(TransformzTest, BodyCentredNonRotating) {
   auto const transforms =
-      Transformz<Functors, From, Through, To>::BodyCentredNonRotating(
+      Transformz<From, Through, To>::BodyCentredNonRotating(
           body1_, body1_from_, body1_to_);
 
   int i = 1;
-  for (auto it = transforms->first(satellite_fn_, &Functors::from_trajectory);
+  for (auto it = transforms->first(*satellite_from_);
        !it.at_end();
        ++it, ++i) {
     DegreesOfFreedom<Through> const degrees_of_freedom =
@@ -203,13 +193,13 @@ TEST_F(TransformzTest, BodyCentredNonRotating) {
 // Check that the computations we do match those done using Mathematica.
 TEST_F(TransformzTest, SatelliteBarycentricRotating) {
   auto const transforms =
-      Transformz<Functors, From, Through, To>::BarycentricRotating(
+      Transformz<From, Through, To>::BarycentricRotating(
           body1_, body1_from_, body1_to_,
           body2_, body2_from_, body2_to_);
   Trajectory<Through> satellite_through(&satellite_);
 
   int i = 1;
-  for (auto it = transforms->first(satellite_fn_, &Functors::from_trajectory);
+  for (auto it = transforms->first(*satellite_from_);
        !it.at_end();
        ++it, ++i) {
     DegreesOfFreedom<Through> const degrees_of_freedom =
@@ -256,7 +246,7 @@ TEST_F(TransformzTest, SatelliteBarycentricRotating) {
 // centre of the coordinates.
 TEST_F(TransformzTest, BodiesBarycentricRotating) {
   auto const transforms =
-      Transformz<Functors, From, Through, To>::BarycentricRotating(
+      Transformz<From, Through, To>::BarycentricRotating(
           body1_, body1_from_, body1_to_,
           body2_, body2_from_, body2_to_);
 
@@ -276,10 +266,8 @@ TEST_F(TransformzTest, BodiesBarycentricRotating) {
   }
 
   int i = 1;
-  for (auto it1 = transforms->first({&discrete_body1_from, nullptr /*to*/},
-                                    &Functors::from_trajectory),
-            it2 = transforms->first({&discrete_body2_from, nullptr /*to*/},
-                                    &Functors::from_trajectory);
+  for (auto it1 = transforms->first(discrete_body1_from),
+            it2 = transforms->first(discrete_body2_from);
        !it1.at_end() && !it2.at_end();
        ++it1, ++it2, ++i) {
     Length const l = i * Metre;
@@ -329,7 +317,7 @@ TEST_F(TransformzTest, CoordinateFrame) {
   Instant const t(kNumberOfPoints * Second);
   {
     auto const transforms =
-        Transformz<Functors, From, Through, To>::BodyCentredNonRotating(
+        Transformz<From, Through, To>::BodyCentredNonRotating(
             body1_, body1_from_, body1_to_);
     auto const identity = Rotation<To, To>::Identity();
     EXPECT_EQ(identity.quaternion(),
@@ -337,7 +325,7 @@ TEST_F(TransformzTest, CoordinateFrame) {
   }
   {
     auto const transforms =
-        Transformz<Functors, From, Through, To>::BarycentricRotating(
+        Transformz<From, Through, To>::BarycentricRotating(
             body1_, body1_from_, body1_to_,
             body2_, body2_from_, body2_to_);
 
