@@ -142,7 +142,6 @@ Transformz<FromFrame, ThroughFrame, ToFrame>::BodyCentredNonRotating(
           DegreesOfFreedom<FromFrame> const& from_degrees_of_freedom,
           not_null<Trajectory<FromFrame> const*> const trajectory) ->
       DegreesOfFreedom<ThroughFrame> {
-    //TODO(phl): Not for first()!
     // First check if the result is cached.
     DegreesOfFreedom<ThroughFrame>* cached_through_degrees_of_freedom = nullptr;
     if (cacheable &&
