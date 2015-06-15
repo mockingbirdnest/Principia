@@ -165,7 +165,7 @@ Instant Ephemeris<Frame>::t_max() const {
 
 template<typename Frame>
 void Ephemeris<Frame>::ForgetBefore(Instant const& t) {
-  for (auto const& pair : bodies_to_trajectories_) {
+  for (auto& pair : bodies_to_trajectories_) {
     ContinuousTrajectory<Frame>& trajectory = pair.second;
     trajectory.ForgetBefore(t);
   }

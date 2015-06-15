@@ -65,9 +65,12 @@ Plugin::Plugin(Instant const& initial_time,
       prediction_integrator_(
           DormandElMikkawyPrince1986RKN434FM<Position<Barycentric>>()),
       planetarium_rotation_(planetarium_rotation),
-      current_time_(initial_time) {
+      current_time_(initial_time),
+      history_time_(initial_time) {
   auto sun_body = std::make_unique<MassiveBody>(sun_gravitational_parameter);
-  auto const inserted = celestials_.emplace(sun_index, sun_body.get());
+  auto const inserted =
+      celestials_.emplace(sun_index,
+                          std::make_unique<Celestial>(sun_body.get()));
   sun_ = inserted.first->second.get();
   bodies_->emplace(sun_, std::move(sun_body));
   initial_state_->emplace(std::piecewise_construct,
@@ -85,8 +88,10 @@ void Plugin::InsertCelestial(
                        << "of initialization";
   not_null<Celestial const*> parent =
       FindOrDie(celestials_, parent_index).get();
-  auto const body = std::make_unique<MassiveBody>(gravitational_parameter);
-  auto const inserted = celestials_.emplace(celestial_index, body.get());
+  auto body = std::make_unique<MassiveBody>(gravitational_parameter);
+  auto const inserted =
+      celestials_.emplace(celestial_index,
+                          std::make_unique<Celestial>(body.get()));
   CHECK(inserted.second) << "Body already exists at index " << celestial_index;
   LOG(INFO) << "Initial |{orbit.pos, orbit.vel}| for celestial at index "
             << celestial_index << ": " << from_parent;
@@ -163,7 +168,7 @@ void Plugin::AdvanceTime(Instant const& t, Angle const& planetarium_rotation) {
   CHECK_GT(t, current_time_);
   CleanUpVessels();
   bubble_->Prepare(BarycentricToWorldSun(), current_time_, t);
-  if (HistoryTime() + Δt_ < t) {
+  if (history_time_ + Δt_ < t) {
     // The histories are far enough behind that we can advance them at least one
     // step and reset the prolongations.
     EvolveHistories(t);
@@ -186,7 +191,7 @@ void Plugin::AdvanceTime(Instant const& t, Angle const& planetarium_rotation) {
 
 void Plugin::ForgetAllHistoriesBefore(Instant const& t) const {
   CHECK(!initializing_);
-  CHECK_LT(t, HistoryTime());
+  CHECK_LT(t, history_time_);
   n_body_system_->ForgetBefore(t);
   for (auto const& pair : vessels_) {
     not_null<std::unique_ptr<Vessel>> const& vessel = pair.second;
@@ -566,9 +571,9 @@ void Plugin::DeletePredictions() {
   }
 }
 
-Instant const& Plugin::HistoryTime() const {
-  return sun_->history().last().time();
-}
+//Instant const& Plugin::HistoryTime() const {
+//  return sun_->history().last().time();
+//}
 
 // The map between the vector spaces of |Barycentric| and |AliceSun| at
 // |current_time_|.
@@ -617,12 +622,12 @@ void Plugin::CheckVesselInvariants(
   // |current_time_ == HistoryTime()| (that only happens before the first call
   // to |AdvanceTime|) its first step is unsynchronized. This is convenient to
   // test code paths, but it means the invariant is GE, rather than GT.
-  CHECK_GE(vessel->prolongation().last().time(), HistoryTime());
+  CHECK_GE(vessel->prolongation().last().time(), history_time_);
   if (unsynchronized_vessels_.count(vessel.get()) > 0) {
     CHECK(!vessel->is_synchronized());
   } else {
     CHECK(vessel->is_synchronized());
-    CHECK_EQ(vessel->history().last().time(), HistoryTime());
+    CHECK_EQ(vessel->history().last().time(), history_time_);
   }
 }
 
@@ -642,15 +647,16 @@ void Plugin::EvolveHistories(Instant const& t) {
     }
   }
   VLOG(1) << "Starting the evolution of the histories" << '\n'
-          << "from : " << HistoryTime();
+          << "from : " << history_time_;
   // We integrate until at least |t - Δt_|, and therefore until at most
   // |t|.
   n_body_system_->FlowWithFixedStep(trajectories,
                                     Δt_,
                                     t - Δt_);
-  CHECK_GE(HistoryTime(), current_time_);
+  history_time_ = trajectories.front()->last().time();
+  CHECK_GE(history_time_, current_time_);
   VLOG(1) << "Evolved the histories" << '\n'
-          << "to   : " << HistoryTime();
+          << "to   : " << history_time_;
 }
 
 void Plugin::SynchronizeNewVesselsAndCleanDirtyVessels() {
@@ -677,7 +683,7 @@ void Plugin::SynchronizeNewVesselsAndCleanDirtyVessels() {
                                          prolongation_length_tolerance,
                                          prolongation_speed_tolerance,
                                          prolongation_integrator_,
-                                         HistoryTime());
+                                         history_time_);
   }
   if (!bubble_->empty()) {
     SynchronizeBubbleHistories();
@@ -685,7 +691,7 @@ void Plugin::SynchronizeNewVesselsAndCleanDirtyVessels() {
   for (not_null<Vessel*> const vessel : unsynchronized_vessels_) {
     CHECK(!bubble_->contains(vessel));
     vessel->CreateHistoryAndForkProlongation(
-        HistoryTime(),
+        history_time_,
         vessel->prolongation().last().degrees_of_freedom());
     dirty_vessels_.erase(vessel);
   }
@@ -693,7 +699,7 @@ void Plugin::SynchronizeNewVesselsAndCleanDirtyVessels() {
   for (not_null<Vessel*> const vessel : dirty_vessels_) {
     CHECK(!bubble_->contains(vessel));
     vessel->mutable_history()->Append(
-        HistoryTime(),
+        history_time_,
         vessel->prolongation().last().degrees_of_freedom());
   }
   dirty_vessels_.clear();
@@ -710,11 +716,11 @@ void Plugin::SynchronizeBubbleHistories() {
         bubble_->from_centre_of_mass(vessel);
     if (vessel->is_synchronized()) {
       vessel->mutable_history()->Append(
-          HistoryTime(),
+          history_time_,
           centre_of_mass + from_centre_of_mass);
     } else {
       vessel->CreateHistoryAndForkProlongation(
-          HistoryTime(),
+          history_time_,
           centre_of_mass + from_centre_of_mass);
       CHECK(unsynchronized_vessels_.erase(vessel));
     }
@@ -726,7 +732,7 @@ void Plugin::ResetProlongations() {
   VLOG(1) << __FUNCTION__;
   for (auto const& pair : vessels_) {
     not_null<std::unique_ptr<Vessel>> const& vessel = pair.second;
-    vessel->ResetProlongation(HistoryTime());
+    vessel->ResetProlongation(history_time_);
   }
   VLOG(1) << "Prolongations have been reset";
 }

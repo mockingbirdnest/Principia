@@ -316,7 +316,7 @@ class Plugin {
 
   // The common last time of the histories of synchronized vessels and
   // celestials.
-  Instant const& HistoryTime() const;
+  //Instant const& HistoryTime() const;
 
   // The rotation between the |AliceWorld| basis at |current_time_| and the
   // |Barycentric| axes. Since |AliceSun| is not a rotating reference frame,
@@ -425,6 +425,8 @@ class Plugin {
   Angle planetarium_rotation_;
   // The current in-game universal time.
   Instant current_time_;
+  // The common last time of the histories of synchronized vessels.
+  Instant history_time_;
 
   Celestial* sun_;  // Not owning, not null after construction.
 
