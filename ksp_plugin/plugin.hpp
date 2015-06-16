@@ -70,7 +70,7 @@ template<typename Frame>
 using RenderedTrajectory = std::vector<LineSegment<Frame>>;
 
 using RenderingTransforms =
-    Transformz<MobileInterface, Barycentric, Rendering, Barycentric>;
+    Transformz<Barycentric, Rendering, Barycentric>;
 
 class Plugin {
  public:
