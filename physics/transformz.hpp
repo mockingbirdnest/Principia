@@ -59,6 +59,10 @@ class Transformz {
   typename Trajectory<FromFrame>::template TransformingIterator<ThroughFrame>
   first_with_caching(not_null<Trajectory<FromFrame>*> const from_trajectory);
 
+  typename Trajectory<FromFrame>::template TransformingIterator<ThroughFrame>
+  first_on_or_after(Trajectory<FromFrame> const& from_trajectory,
+                    Instant const& time);
+
   typename Trajectory<ThroughFrame>:: template TransformingIterator<ToFrame>
   second(Instant const& last,
          Trajectory<ThroughFrame> const& through_trajectory);
