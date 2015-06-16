@@ -43,8 +43,8 @@ namespace physics {
 namespace {
 const int kNumberOfPoints = 33;
 const Time kStep = 1 * Second;
-const Length kLowTolerance = 0.001 * Metre;
-const Length kHighTolerance = 0.01 * Metre;
+const Length kTolerance = 0.01 * Metre;  // Not used, see kDegree.
+const int kDegree = 17;
 }  // namespace
 
 class TransformzTest : public testing::Test {
@@ -56,14 +56,6 @@ class TransformzTest : public testing::Test {
   using To = Frame<serialization::Frame::TestTag,
                    serialization::Frame::TO, true>;
 
-  struct Functors {
-    Trajectory<From> const& from_trajectory() const { return *from; }
-    Trajectory<To> const& to_trajectory() const { return *to; }
-
-    Trajectory<From>* from;
-    Trajectory<To>* to;
-  };
-
   static void SetUpTestCase() {
     // This will need to change if we ever have continuous trajectories with
     // more than 8 divisions.
@@ -73,21 +65,25 @@ class TransformzTest : public testing::Test {
   TransformzTest()
       : body1_(MassiveBody(1 * Kilogram)),
         body2_(MassiveBody(3 * Kilogram)),
-        body1_from_(kStep, kLowTolerance, kHighTolerance),
-        body1_to_(kStep, kLowTolerance, kHighTolerance),
-        body2_from_(kStep, kLowTolerance, kHighTolerance),
-        body2_to_(kStep, kLowTolerance, kHighTolerance),
+        body1_from_(kStep, kTolerance),
+        body1_to_(kStep, kTolerance),
+        body2_from_(kStep, kTolerance),
+        body2_to_(kStep, kTolerance),
         satellite_from_(make_not_null_unique<Trajectory<From>>(&satellite_)),
         satellite_through_(
             make_not_null_unique<Trajectory<Through>>(&satellite_)),
-        satellite_to_(make_not_null_unique<Trajectory<To>>(&satellite_)),
-        satellite_fn_({satellite_from_.get(), nullptr}) {
-    // The various bodies move have both a position and a velocity that
-    // increases linearly with time.  This is not a situation that's physically
-    // possible, but we don't care, all we want is to make sure that the
-    // transforms are properly performed: |Transforms| doesn't know anything
-    // about physics.  Also, the trajectories were chosen so that we are not in
-    // any "special case" with respect to the positions or the velocities.
+        satellite_to_(make_not_null_unique<Trajectory<To>>(&satellite_)) {
+    // For historical reasons (don't you just love that phrase?) the positions
+    // and velocities below are not physical (they both increase linearly and
+    // the velocities are not tangent to the trajectory).  This confuses the
+    // determination of the best degree for the approximation.  We force it to
+    // the maximum in the hope that the resulting errors will be small enough.
+    // TODO(phl): Fix this mess.
+    body1_from_.degree_ = kDegree;
+    body1_to_.degree_ = kDegree;
+    body2_from_.degree_ = kDegree;
+    body2_to_.degree_ = kDegree;
+
     for (int i = 1; i <= kNumberOfPoints; ++i) {
       body1_from_.Append(Instant(i * Second),
                          DegreesOfFreedom<From>(
@@ -147,18 +143,17 @@ class TransformzTest : public testing::Test {
   not_null<std::unique_ptr<Trajectory<From>>> satellite_from_;
   not_null<std::unique_ptr<Trajectory<Through>>> satellite_through_;
   not_null<std::unique_ptr<Trajectory<To>>> satellite_to_;
-  Functors satellite_fn_;
 };
 
 // This transform is simple enough that we can compute its effect by hand.  This
 // test verifies that we get the expected result both in |Through| and in |To|.
 TEST_F(TransformzTest, BodyCentredNonRotating) {
   auto const transforms =
-      Transformz<Functors, From, Through, To>::BodyCentredNonRotating(
+      Transformz<From, Through, To>::BodyCentredNonRotating(
           body1_, body1_from_, body1_to_);
 
   int i = 1;
-  for (auto it = transforms->first(satellite_fn_, &Functors::from_trajectory);
+  for (auto it = transforms->first(*satellite_from_);
        !it.at_end();
        ++it, ++i) {
     DegreesOfFreedom<Through> const degrees_of_freedom =
@@ -203,13 +198,13 @@ TEST_F(TransformzTest, BodyCentredNonRotating) {
 // Check that the computations we do match those done using Mathematica.
 TEST_F(TransformzTest, SatelliteBarycentricRotating) {
   auto const transforms =
-      Transformz<Functors, From, Through, To>::BarycentricRotating(
+      Transformz<From, Through, To>::BarycentricRotating(
           body1_, body1_from_, body1_to_,
           body2_, body2_from_, body2_to_);
   Trajectory<Through> satellite_through(&satellite_);
 
   int i = 1;
-  for (auto it = transforms->first(satellite_fn_, &Functors::from_trajectory);
+  for (auto it = transforms->first(*satellite_from_);
        !it.at_end();
        ++it, ++i) {
     DegreesOfFreedom<Through> const degrees_of_freedom =
@@ -220,12 +215,12 @@ TEST_F(TransformzTest, SatelliteBarycentricRotating) {
                         {-5.5 * sqrt(5.0) * i * Metre,
                          62.0 * sqrt(5.0 / 21.0) * i * Metre,
                          53.0 / sqrt(21.0) * i * Metre}),
-                        2, 4607),
+                        8, 4607),
                     AlmostEquals(Velocity<Through>(
                         {(362.0 / sqrt(5.0)) * i * Metre / Second,
                          (2776.0 / sqrt(105.0)) * i * Metre / Second,
                          176.0 / sqrt(21.0) * i * Metre / Second}),
-                        8, 51340))) << i;
+                        2, 10776))) << i;
     satellite_through.Append(Instant(i * Second), degrees_of_freedom);
   }
 
@@ -242,12 +237,12 @@ TEST_F(TransformzTest, SatelliteBarycentricRotating) {
                         {(99.0 + (62.0 * sqrt(5.0 / 21.0)) * i) * Metre,
                          (-16.5 + (-5.5 + 106.0 / sqrt(105.0)) * i) * Metre,
                          (-33.0 + (-11.0 - 53.0 / sqrt(105.0)) * i) * Metre}),
-                        129, 28312),
+                        118, 28312),
                     AlmostEquals(Velocity<To>(
                         {2776.0 / sqrt(105.0) * i * Metre / Second,
                          (72.4 + 352.0 / sqrt(105.0)) * i * Metre / Second,
                          (144.8 - 176.0 / sqrt(105.0)) * i * Metre / Second}),
-                        349, 22568))) << i;
+                        382, 22568))) << i;
   }
 }
 
@@ -256,7 +251,7 @@ TEST_F(TransformzTest, SatelliteBarycentricRotating) {
 // centre of the coordinates.
 TEST_F(TransformzTest, BodiesBarycentricRotating) {
   auto const transforms =
-      Transformz<Functors, From, Through, To>::BarycentricRotating(
+      Transformz<From, Through, To>::BarycentricRotating(
           body1_, body1_from_, body1_to_,
           body2_, body2_from_, body2_to_);
 
@@ -276,10 +271,8 @@ TEST_F(TransformzTest, BodiesBarycentricRotating) {
   }
 
   int i = 1;
-  for (auto it1 = transforms->first({&discrete_body1_from, nullptr /*to*/},
-                                    &Functors::from_trajectory),
-            it2 = transforms->first({&discrete_body2_from, nullptr /*to*/},
-                                    &Functors::from_trajectory);
+  for (auto it1 = transforms->first_with_caching(&discrete_body1_from),
+            it2 = transforms->first_with_caching(&discrete_body2_from);
        !it1.at_end() && !it2.at_end();
        ++it1, ++it2, ++i) {
     Length const l = i * Metre;
@@ -329,7 +322,7 @@ TEST_F(TransformzTest, CoordinateFrame) {
   Instant const t(kNumberOfPoints * Second);
   {
     auto const transforms =
-        Transformz<Functors, From, Through, To>::BodyCentredNonRotating(
+        Transformz<From, Through, To>::BodyCentredNonRotating(
             body1_, body1_from_, body1_to_);
     auto const identity = Rotation<To, To>::Identity();
     EXPECT_EQ(identity.quaternion(),
@@ -337,7 +330,7 @@ TEST_F(TransformzTest, CoordinateFrame) {
   }
   {
     auto const transforms =
-        Transformz<Functors, From, Through, To>::BarycentricRotating(
+        Transformz<From, Through, To>::BarycentricRotating(
             body1_, body1_from_, body1_to_,
             body2_, body2_from_, body2_to_);
 

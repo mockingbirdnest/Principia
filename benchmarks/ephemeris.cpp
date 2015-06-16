@@ -1,54 +1,54 @@
 ﻿
 // .\Release\benchmarks.exe  --benchmark_repetitions=3 --benchmark_filter=Ephemeris                                                                     // NOLINT(whitespace/line_length)
 // Benchmarking on 1 X 3310 MHz CPU
-// 2015/06/07-19:13:02
+// 2015/06/14-18:27:09
 // Benchmark                                              Time(ns)    CPU(ns) Iterations                                                                // NOLINT(whitespace/line_length)
 // -------------------------------------------------------------------------------------                                                                // NOLINT(whitespace/line_length)
-// BM_EphemerisSolarSystemMajorBodiesOnly               32262829042 32042605400          1                                 +1.00027592626789170e+00 ua  // NOLINT(whitespace/line_length)
-// BM_EphemerisSolarSystemMajorBodiesOnly               32159141040 31980205000          1                                 +1.00027592626789170e+00 ua  // NOLINT(whitespace/line_length)
-// BM_EphemerisSolarSystemMajorBodiesOnly               32102733827 31886604400          1                                 +1.00027592626789170e+00 ua  // NOLINT(whitespace/line_length)
-// BM_EphemerisSolarSystemMajorBodiesOnly_mean          32174901303 31969804933          1                                 +1.00027592626789170e+00 ua  // NOLINT(whitespace/line_length)
-// BM_EphemerisSolarSystemMajorBodiesOnly_stddev           66301880    64110317          0                                 +1.00027592626789170e+00 ua  // NOLINT(whitespace/line_length)
-// BM_EphemerisSolarSystemMinorAndMajorBodies           64563697791 64007210300          1                                 +1.00027592631378660e+00 ua  // NOLINT(whitespace/line_length)
-// BM_EphemerisSolarSystemMinorAndMajorBodies           63800743318 63554807400          1                                 +1.00027592631378660e+00 ua  // NOLINT(whitespace/line_length)
-// BM_EphemerisSolarSystemMinorAndMajorBodies           63677407003 63445606700          1                                 +1.00027592631378660e+00 ua  // NOLINT(whitespace/line_length)
-// BM_EphemerisSolarSystemMinorAndMajorBodies_mean      64013949371 63669208133          1                                 +1.00027592631378660e+00 ua  // NOLINT(whitespace/line_length)
-// BM_EphemerisSolarSystemMinorAndMajorBodies_stddev      391978278   243125889          0                                 +1.00027592631378660e+00 ua  // NOLINT(whitespace/line_length)
-// BM_EphemerisSolarSystemAllBodiesAndOblateness        72713847613 72462464500          1                                 +1.00027592630007800e+00 ua  // NOLINT(whitespace/line_length)
-// BM_EphemerisSolarSystemAllBodiesAndOblateness        72730153299 72446864400          1                                 +1.00027592630007800e+00 ua  // NOLINT(whitespace/line_length)
-// BM_EphemerisSolarSystemAllBodiesAndOblateness        72495137429 72150462500          1                                 +1.00027592630007800e+00 ua  // NOLINT(whitespace/line_length)
-// BM_EphemerisSolarSystemAllBodiesAndOblateness_mean   72646379447 72353263800          1                                 +1.00027592630007800e+00 ua  // NOLINT(whitespace/line_length)
-// BM_EphemerisSolarSystemAllBodiesAndOblateness_stddev   107151232   143543527          0                                 +1.00027592630007800e+00 ua  // NOLINT(whitespace/line_length)
-// BM_EphemerisL4ProbeMajorBodiesOnly                   2180058694 2184014000          1                                 154379 steps, +9.99375002672519890e-01 ua, +1.09612948155357200e+00 ua  // NOLINT(whitespace/line_length)
-// BM_EphemerisL4ProbeMajorBodiesOnly                   2201188541 2199614100          1                                 154379 steps, +9.99375002672519890e-01 ua, +1.09612948155357200e+00 ua  // NOLINT(whitespace/line_length)
-// BM_EphemerisL4ProbeMajorBodiesOnly                   2175151324 2152813800          1                                 154379 steps, +9.99375002672519890e-01 ua, +1.09612948155357200e+00 ua  // NOLINT(whitespace/line_length)
-// BM_EphemerisL4ProbeMajorBodiesOnly_mean              2185466186 2178813967          1                                 154379 steps, +9.99375002672519890e-01 ua, +1.09612948155357200e+00 ua  // NOLINT(whitespace/line_length)
-// BM_EphemerisL4ProbeMajorBodiesOnly_stddev              11296456   19456743          0                                 154379 steps, +9.99375002672519890e-01 ua, +1.09612948155357200e+00 ua  // NOLINT(whitespace/line_length)
-// BM_EphemerisL4ProbeMinorAndMajorBodies               3570523477 3541222700          1                                 154379 steps, +9.99375002971591540e-01 ua, +1.09612948399728950e+00 ua  // NOLINT(whitespace/line_length)
-// BM_EphemerisL4ProbeMinorAndMajorBodies               3555268979 3541222700          1                                 154379 steps, +9.99375002971591540e-01 ua, +1.09612948399728950e+00 ua  // NOLINT(whitespace/line_length)
-// BM_EphemerisL4ProbeMinorAndMajorBodies               3584791637 3556822800          1                                 154379 steps, +9.99375002971591540e-01 ua, +1.09612948399728950e+00 ua  // NOLINT(whitespace/line_length)
-// BM_EphemerisL4ProbeMinorAndMajorBodies_mean          3570194698 3546422733          1                                 154379 steps, +9.99375002971591540e-01 ua, +1.09612948399728950e+00 ua  // NOLINT(whitespace/line_length)
-// BM_EphemerisL4ProbeMinorAndMajorBodies_stddev          12054816    7353958          0                                 154379 steps, +9.99375002971591540e-01 ua, +1.09612948399728950e+00 ua  // NOLINT(whitespace/line_length)
-// BM_EphemerisL4ProbeAllBodiesAndOblateness            3592815375 3572422900          1                                 154379 steps, +9.99375002831796140e-01 ua, +1.09612948296100400e+00 ua  // NOLINT(whitespace/line_length)
-// BM_EphemerisL4ProbeAllBodiesAndOblateness            3576630569 3572422900          1                                 154379 steps, +9.99375002831796140e-01 ua, +1.09612948296100400e+00 ua  // NOLINT(whitespace/line_length)
-// BM_EphemerisL4ProbeAllBodiesAndOblateness            3606213784 3572422900          1                                 154379 steps, +9.99375002831796140e-01 ua, +1.09612948296100400e+00 ua  // NOLINT(whitespace/line_length)
-// BM_EphemerisL4ProbeAllBodiesAndOblateness_mean       3591886576 3572422900          1                                 154379 steps, +9.99375002831796140e-01 ua, +1.09612948296100400e+00 ua  // NOLINT(whitespace/line_length)
-// BM_EphemerisL4ProbeAllBodiesAndOblateness_stddev       12095141          0          0                                 154379 steps, +9.99375002831796140e-01 ua, +1.09612948296100400e+00 ua  // NOLINT(whitespace/line_length)
-// BM_EphemerisLEOProbeMajorBodiesOnly                10688688970 10561267700          1                                 750001 steps, +9.99958256175519030e-01 ua, +9.99467610064657630e+01 nmi  // NOLINT(whitespace/line_length)
-// BM_EphemerisLEOProbeMajorBodiesOnly                10569486118 10576867800          1                                 750001 steps, +9.99958256175519030e-01 ua, +9.99467610064657630e+01 nmi  // NOLINT(whitespace/line_length)
-// BM_EphemerisLEOProbeMajorBodiesOnly                10597834802 10498867300          1                                 750001 steps, +9.99958256175519030e-01 ua, +9.99467610064657630e+01 nmi  // NOLINT(whitespace/line_length)
-// BM_EphemerisLEOProbeMajorBodiesOnly_mean           10618669963 10545667600          1                                 750001 steps, +9.99958256175519030e-01 ua, +9.99467610064657630e+01 nmi  // NOLINT(whitespace/line_length)
-// BM_EphemerisLEOProbeMajorBodiesOnly_stddev            50845570    33700068          0                                 750001 steps, +9.99958256175519030e-01 ua, +9.99467610064657630e+01 nmi  // NOLINT(whitespace/line_length)
-// BM_EphemerisLEOProbeMinorAndMajorBodies            17136606432 16957308700          1                                 750001 steps, +9.99958201625830930e-01 ua, +9.99467157003521010e+01 nmi  // NOLINT(whitespace/line_length)
-// BM_EphemerisLEOProbeMinorAndMajorBodies            17104295946 16957308700          1                                 750001 steps, +9.99958201625830930e-01 ua, +9.99467157003521010e+01 nmi  // NOLINT(whitespace/line_length)
-// BM_EphemerisLEOProbeMinorAndMajorBodies            17051381088 17004109000          1                                 750001 steps, +9.99958201625830930e-01 ua, +9.99467157003521010e+01 nmi  // NOLINT(whitespace/line_length)
-// BM_EphemerisLEOProbeMinorAndMajorBodies_mean       17097427822 16972908800          1                                 750001 steps, +9.99958201625830930e-01 ua, +9.99467157003521010e+01 nmi  // NOLINT(whitespace/line_length)
-// BM_EphemerisLEOProbeMinorAndMajorBodies_stddev        35130406    22061873          0                                 750001 steps, +9.99958201625830930e-01 ua, +9.99467157003521010e+01 nmi  // NOLINT(whitespace/line_length)
-// BM_EphemerisLEOProbeAllBodiesAndOblateness         17494721866 17206910300          1                                 750001 steps, +9.99958313425507670e-01 ua, +9.99469266237663870e+01 nmi  // NOLINT(whitespace/line_length)
-// BM_EphemerisLEOProbeAllBodiesAndOblateness         17647014833 17128909800          1                                 750001 steps, +9.99958313425507670e-01 ua, +9.99469266237663870e+01 nmi  // NOLINT(whitespace/line_length)
-// BM_EphemerisLEOProbeAllBodiesAndOblateness         17464009262 17253710600          1                                 750001 steps, +9.99958313425507670e-01 ua, +9.99469266237663870e+01 nmi  // NOLINT(whitespace/line_length)
-// BM_EphemerisLEOProbeAllBodiesAndOblateness_mean    17535248654 17196510233          1                                 750001 steps, +9.99958313425507670e-01 ua, +9.99469266237663870e+01 nmi  // NOLINT(whitespace/line_length)
-// BM_EphemerisLEOProbeAllBodiesAndOblateness_stddev     80019061    51477704          0                                 750001 steps, +9.99958313425507670e-01 ua, +9.99469266237663870e+01 nmi  // NOLINT(whitespace/line_length)
+// BM_EphemerisSolarSystemMajorBodiesOnly               23768936371 23540550900          1                                 +1.00027592626789170e+00 ua  // NOLINT(whitespace/line_length)
+// BM_EphemerisSolarSystemMajorBodiesOnly               23454743838 23368949800          1                                 +1.00027592626789170e+00 ua  // NOLINT(whitespace/line_length)
+// BM_EphemerisSolarSystemMajorBodiesOnly               24137182211 24070954300          1                                 +1.00027592626789170e+00 ua  // NOLINT(whitespace/line_length)
+// BM_EphemerisSolarSystemMajorBodiesOnly_mean          23786954140 23660151667          1                                 +1.00027592626789170e+00 ua  // NOLINT(whitespace/line_length)
+// BM_EphemerisSolarSystemMajorBodiesOnly_stddev          278895456   298809680          0                                 +1.00027592626789170e+00 ua  // NOLINT(whitespace/line_length)
+// BM_EphemerisSolarSystemMinorAndMajorBodies           50229173397 50123121300          1                                 +1.00027592631378660e+00 ua  // NOLINT(whitespace/line_length)
+// BM_EphemerisSolarSystemMinorAndMajorBodies           48035647129 47892307000          1                                 +1.00027592631378660e+00 ua  // NOLINT(whitespace/line_length)
+// BM_EphemerisSolarSystemMinorAndMajorBodies           47750342106 47611505200          1                                 +1.00027592631378660e+00 ua  // NOLINT(whitespace/line_length)
+// BM_EphemerisSolarSystemMinorAndMajorBodies_mean      48671720878 48542311167          1                                 +1.00027592631378660e+00 ua  // NOLINT(whitespace/line_length)
+// BM_EphemerisSolarSystemMinorAndMajorBodies_stddev     1107427500  1123664517          0                                 +1.00027592631378660e+00 ua  // NOLINT(whitespace/line_length)
+// BM_EphemerisSolarSystemAllBodiesAndOblateness        59442244744 59202379500          1                                 +1.00027592630007800e+00 ua  // NOLINT(whitespace/line_length)
+// BM_EphemerisSolarSystemAllBodiesAndOblateness        59101695275 58781176800          1                                 +1.00027592630007800e+00 ua  // NOLINT(whitespace/line_length)
+// BM_EphemerisSolarSystemAllBodiesAndOblateness        59863012289 59545581700          1                                 +1.00027592630007800e+00 ua  // NOLINT(whitespace/line_length)
+// BM_EphemerisSolarSystemAllBodiesAndOblateness_mean   59468984103 59176379333          1                                 +1.00027592630007800e+00 ua  // NOLINT(whitespace/line_length)
+// BM_EphemerisSolarSystemAllBodiesAndOblateness_stddev   311380950   312608082          0                                 +1.00027592630007800e+00 ua  // NOLINT(whitespace/line_length)
+// BM_EphemerisL4ProbeMajorBodiesOnly                   1450373864 1404009000          1                                 154379 steps, +9.99375002672520880e-01 ua, +1.09612948155355540e+00 ua  // NOLINT(whitespace/line_length)
+// BM_EphemerisL4ProbeMajorBodiesOnly                   1389765715 1357208700          1                                 154379 steps, +9.99375002672520880e-01 ua, +1.09612948155355540e+00 ua  // NOLINT(whitespace/line_length)
+// BM_EphemerisL4ProbeMajorBodiesOnly                   1367264723 1372808800          1                                 154379 steps, +9.99375002672520880e-01 ua, +1.09612948155355540e+00 ua  // NOLINT(whitespace/line_length)
+// BM_EphemerisL4ProbeMajorBodiesOnly_mean              1402468101 1378008833          1                                 154379 steps, +9.99375002672520880e-01 ua, +1.09612948155355540e+00 ua  // NOLINT(whitespace/line_length)
+// BM_EphemerisL4ProbeMajorBodiesOnly_stddev              35097913   19456743          0                                 154379 steps, +9.99375002672520880e-01 ua, +1.09612948155355540e+00 ua  // NOLINT(whitespace/line_length)
+// BM_EphemerisL4ProbeMinorAndMajorBodies               2176579451 2184014000          1                                 154379 steps, +9.99375002971591320e-01 ua, +1.09612948399733350e+00 ua  // NOLINT(whitespace/line_length)
+// BM_EphemerisL4ProbeMinorAndMajorBodies               2166758513 2168413900          1                                 154379 steps, +9.99375002971591320e-01 ua, +1.09612948399733350e+00 ua  // NOLINT(whitespace/line_length)
+// BM_EphemerisL4ProbeMinorAndMajorBodies               2167771077 2168413900          1                                 154379 steps, +9.99375002971591320e-01 ua, +1.09612948399733350e+00 ua  // NOLINT(whitespace/line_length)
+// BM_EphemerisL4ProbeMinorAndMajorBodies_mean          2170369680 2173613933          1                                 154379 steps, +9.99375002971591320e-01 ua, +1.09612948399733350e+00 ua  // NOLINT(whitespace/line_length)
+// BM_EphemerisL4ProbeMinorAndMajorBodies_stddev           4410386    7353958          0                                 154379 steps, +9.99375002971591320e-01 ua, +1.09612948399733350e+00 ua  // NOLINT(whitespace/line_length)
+// BM_EphemerisL4ProbeAllBodiesAndOblateness            2190737223 2184014000          1                                 154379 steps, +9.99375002831793260e-01 ua, +1.09612948296115050e+00 ua  // NOLINT(whitespace/line_length)
+// BM_EphemerisL4ProbeAllBodiesAndOblateness            2176962828 2168413900          1                                 154379 steps, +9.99375002831793260e-01 ua, +1.09612948296115050e+00 ua  // NOLINT(whitespace/line_length)
+// BM_EphemerisL4ProbeAllBodiesAndOblateness            2180941796 2184014000          1                                 154379 steps, +9.99375002831793260e-01 ua, +1.09612948296115050e+00 ua  // NOLINT(whitespace/line_length)
+// BM_EphemerisL4ProbeAllBodiesAndOblateness_mean       2182880616 2178813967          1                                 154379 steps, +9.99375002831793260e-01 ua, +1.09612948296115050e+00 ua  // NOLINT(whitespace/line_length)
+// BM_EphemerisL4ProbeAllBodiesAndOblateness_stddev        5788077    7353958          0                                 154379 steps, +9.99375002831793260e-01 ua, +1.09612948296115050e+00 ua  // NOLINT(whitespace/line_length)
+// BM_EphemerisLEOProbeMajorBodiesOnly                  6446595644 6442841300          1                                 750001 steps, +9.99958305820235370e-01 ua, +9.99469624847801300e+01 nmi  // NOLINT(whitespace/line_length)
+// BM_EphemerisLEOProbeMajorBodiesOnly                  6440181708 6442841300          1                                 750001 steps, +9.99958305820235370e-01 ua, +9.99469624847801300e+01 nmi  // NOLINT(whitespace/line_length)
+// BM_EphemerisLEOProbeMajorBodiesOnly                  6433291172 6442841300          1                                 750001 steps, +9.99958305820235370e-01 ua, +9.99469624847801300e+01 nmi  // NOLINT(whitespace/line_length)
+// BM_EphemerisLEOProbeMajorBodiesOnly_mean             6440022841 6442841300          1                                 750001 steps, +9.99958305820235370e-01 ua, +9.99469624847801300e+01 nmi  // NOLINT(whitespace/line_length)
+// BM_EphemerisLEOProbeMajorBodiesOnly_stddev              5432689          0          0                                 750001 steps, +9.99958305820235370e-01 ua, +9.99469624847801300e+01 nmi  // NOLINT(whitespace/line_length)
+// BM_EphemerisLEOProbeMinorAndMajorBodies              10039601302 10046464400          1                                 750001 steps, +9.99958284539249060e-01 ua, +9.99470138411926710e+01 nmi  // NOLINT(whitespace/line_length)
+// BM_EphemerisLEOProbeMinorAndMajorBodies              10045879816 10030864300          1                                 750001 steps, +9.99958284539249060e-01 ua, +9.99470138411926710e+01 nmi  // NOLINT(whitespace/line_length)
+// BM_EphemerisLEOProbeMinorAndMajorBodies              10041628813 10046464400          1                                 750001 steps, +9.99958284539249060e-01 ua, +9.99470138411926710e+01 nmi  // NOLINT(whitespace/line_length)
+// BM_EphemerisLEOProbeMinorAndMajorBodies_mean         10042369977 10041264367          1                                 750001 steps, +9.99958284539249060e-01 ua, +9.99470138411926710e+01 nmi  // NOLINT(whitespace/line_length)
+// BM_EphemerisLEOProbeMinorAndMajorBodies_stddev           2616222     7353958          0                                 750001 steps, +9.99958284539249060e-01 ua, +9.99470138411926710e+01 nmi  // NOLINT(whitespace/line_length)
+// BM_EphemerisLEOProbeAllBodiesAndOblateness           10186283326 10186865300          1                                 750001 steps, +9.99958277683878570e-01 ua, +9.99468831450655270e+01 nmi  // NOLINT(whitespace/line_length)
+// BM_EphemerisLEOProbeAllBodiesAndOblateness           10175492739 10186865300          1                                 750001 steps, +9.99958277683878570e-01 ua, +9.99468831450655270e+01 nmi  // NOLINT(whitespace/line_length)
+// BM_EphemerisLEOProbeAllBodiesAndOblateness           10179186081 10155665100          1                                 750001 steps, +9.99958277683878570e-01 ua, +9.99468831450655270e+01 nmi  // NOLINT(whitespace/line_length)
+// BM_EphemerisLEOProbeAllBodiesAndOblateness_mean      10180320715 10176465233          1                                 750001 steps, +9.99958277683878570e-01 ua, +9.99468831450655270e+01 nmi  // NOLINT(whitespace/line_length)
+// BM_EphemerisLEOProbeAllBodiesAndOblateness_stddev        4477703    14707915          0                                 750001 steps, +9.99958277683878570e-01 ua, +9.99468831450655270e+01 nmi  // NOLINT(whitespace/line_length)
 
 #include <memory>
 #include <vector>
@@ -119,7 +119,6 @@ void EphemerisSolarSystemBenchmark(SolarSystem::Accuracy const accuracy,
             at_спутник_1_launch->time(),
             McLachlanAtela1992Order5Optimal<Position<ICRFJ2000Ecliptic>>(),
             45 * Minute,
-            0.1 * Milli(Metre),
             5 * Milli(Metre));
 
     state->ResumeTiming();
@@ -158,7 +157,6 @@ void EphemerisL4ProbeBenchmark(SolarSystem::Accuracy const accuracy,
           at_спутник_1_launch->time(),
           McLachlanAtela1992Order5Optimal<Position<ICRFJ2000Ecliptic>>(),
           45 * Minute,
-          0.1 * Milli(Metre),
           5 * Milli(Metre));
 
   ephemeris.Prolong(final_time);
@@ -241,7 +239,6 @@ void EphemerisLEOProbeBenchmark(SolarSystem::Accuracy const accuracy,
           at_спутник_1_launch->time(),
           McLachlanAtela1992Order5Optimal<Position<ICRFJ2000Ecliptic>>(),
           45 * Minute,
-          0.1 * Milli(Metre),
           5 * Milli(Metre));
 
   ephemeris.Prolong(final_time);

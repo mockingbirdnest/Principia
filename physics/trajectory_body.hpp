@@ -26,6 +26,19 @@ Trajectory<Frame>::Trajectory(not_null<Body const*> const body)
 }
 
 template<typename Frame>
+Trajectory<Frame>::~Trajectory() {
+  if (on_destroy_) {
+    on_destroy_(this);
+  }
+}
+
+template<typename Frame>
+void Trajectory<Frame>::set_on_destroy(
+    std::function<void(not_null<Trajectory<Frame>const *> const)> on_destroy) {
+  on_destroy_ = on_destroy;
+}
+
+template<typename Frame>
 typename Trajectory<Frame>::NativeIterator Trajectory<Frame>::first() const {
   NativeIterator it;
   it.InitializeFirst(this);

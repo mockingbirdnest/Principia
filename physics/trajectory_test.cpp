@@ -133,6 +133,20 @@ TEST_F(TrajectoryDeathTest, Construction) {
   }, "not in the same frame");
 }
 
+TEST_F(TrajectoryTest, Destruction) {
+  int i = 1;
+  {
+    Trajectory<World> massive_trajectory(&massive_body_);
+  }
+  EXPECT_EQ(1, i);
+  {
+    Trajectory<World> massive_trajectory(&massive_body_);
+    massive_trajectory.set_on_destroy(
+        [&i](not_null<Trajectory<World>const*> const) { ++i; });
+  }
+  EXPECT_EQ(2, i);
+}
+
 TEST_F(TrajectoryDeathTest, AppendError) {
   EXPECT_DEATH({
     massive_trajectory_->Append(t2_, d2_);

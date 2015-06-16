@@ -42,8 +42,7 @@ class Ephemeris {
             FixedStepSizeIntegrator<NewtonianMotionEquation> const&
                 planetary_integrator,
             Time const& step,
-            Length const& low_fitting_tolerance,
-            Length const& high_fitting_tolerance);
+            Length const& fitting_tolerance);
 
   // Returns the bodies in the order in which they were given at construction.
   std::vector<MassiveBody const*> const& bodies() const;
@@ -171,8 +170,7 @@ class Ephemeris {
   // This will refer to a static object returned by a factory.
   FixedStepSizeIntegrator<NewtonianMotionEquation> const& planetary_integrator_;
   Time const step_;
-  Length const low_fitting_tolerance_;
-  Length const high_fitting_tolerance_;
+  Length const fitting_tolerance_;
   typename NewtonianMotionEquation::SystemState last_state_;
 
   int number_of_spherical_bodies_ = 0;
