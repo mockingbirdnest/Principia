@@ -31,13 +31,9 @@ class ContinuousTrajectory {
   // truncating the infinite Чебышёв series to a finite degree are a small
   // multiple of the coefficient of highest degree (assuming that the series
   // converges reasonably well).  Thus, we pick the degree of the series so that
-  // the coefficient of highest degree is less than |high_tolerance|.  If
-  // possible we also make the coefficient of highest degree greater than
-  // |low_tolerance| (this may not always be possible if the two tolerances are
-  // too close).
+  // the coefficient of highest degree is less than |tolerance|.
   ContinuousTrajectory(Time const& step,
-                       Length const& low_tolerance,
-                       Length const& high_tolerance);
+                       Length const& tolerance);
   ~ContinuousTrajectory() = default;
 
   ContinuousTrajectory(ContinuousTrajectory const&) = delete;
@@ -86,6 +82,21 @@ class ContinuousTrajectory {
   };
 
  private:
+  // Computes the best Newhall approximation based on the desired tolerance.
+  // Adjust the |degree_| and other member variables to stay within the
+  // tolerance while minimizing the computational cost and avoiding numerical
+  // instabilities.
+  void ComputeBestNewhallApproximation(
+      Instant const& time,
+      std::vector<Displacement<Frame>> const& q,
+      std::vector<Velocity<Frame>> const& v,
+      ЧебышёвSeries<Displacement<Frame>> (*newhall_approximation)(
+          int const degree,
+          std::vector<Displacement<Frame>> const& q,
+          std::vector<Velocity<Frame>> const& v,
+          Instant const& t_min,
+          Instant const& t_max));
+
   // Returns an iterator to the series applicable for the given |time|, or
   // |begin()| if |time| is before the first series or |end()| if |time| is
   // after the last series.  Time complexity is O(N Log N).
@@ -98,11 +109,17 @@ class ContinuousTrajectory {
 
   // Construction parameters;
   Time const step_;
-  Length const low_tolerance_;
-  Length const high_tolerance_;
+  Length const tolerance_;
 
-  // The degree of the approximation.
+  // Initially set to the construction parameters, and then adjusted when we
+  // choose the degree.
+  Length adjusted_tolerance_;
+  bool is_unstable_;
+
+  // The degree of the approximation and its age in number of Newhall
+  // approximations.
   int degree_;
+  int degree_age_;
 
   // The series are in increasing time order.  Their intervals are consecutive.
   std::vector<ЧебышёвSeries<Displacement<Frame>>> series_;
@@ -115,6 +132,9 @@ class ContinuousTrajectory {
   // nonempty trajectory.
   // |last_points_.begin()->first == series_.back().t_max()|
   std::vector<std::pair<Instant, DegreesOfFreedom<Frame>>> last_points_;
+
+  friend class ContinuousTrajectoryTest;
+  friend class TransformzTest;
 };
 
 }  // namespace physics
