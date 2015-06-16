@@ -25,7 +25,7 @@ message ContinuousTrajectory {
   required int32 degree = 5;
   required int32 degree_age = 6;
   repeated ChebyshevSeries series = 7;
-  optional Quantity first_time = 8;
+  optional Point first_time = 8;
   repeated InstantaneousDegreesOfFreedom last_points = 9;
 }
 

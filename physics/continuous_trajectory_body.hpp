@@ -180,13 +180,38 @@ void ContinuousTrajectory<Frame>::WriteToMessage(
   }
   first_time_->WriteToMessage(message->mutable_first_time());
   for (auto const& l : last_points_) {
-    l.WriteToMessage(message->add_last_point());
+    Instant const& instant = l.first;
+    DegreesOfFreedom<Frame> degrees_of_freedom = l.second;
+    not_null<
+        serialization::ContinuousTrajectory::InstantaneousDegreesOfFreedom*>
+        const instantaneous_degrees_of_freedom = message->add_last_point();
+    instant.WriteToMessage(instantaneous_degrees_of_freedom->mutable_instant());
+    degrees_of_freedom.WriteToMessage(
+        instantaneous_degrees_of_freedom->mutable_degrees_of_freedom());
   }
 }
 
 template<typename Frame>
 ContinuousTrajectory<Frame> ContinuousTrajectory<Frame>::ReadFromMessage(
       serialization::ContinuousTrajectory const& message) {
+  ContinuousTrajectory continuous_trajectory;
+  continuous_trajectory.step_ = Time::ReadFromMessage(message.step());
+  continuous_trajectory.tolerance_ = Length::ReadFromMessage(message.tolerance());
+  continuous_trajectory.adjusted_tolerance_ =
+      Length::ReadFromMessage(message.adjusted_tolerance());
+  continuous_trajectory.is_unstable_ = message.is_unstable();
+  continuous_trajectory.degree_ = message.degree();
+  continuous_trajectory.degree_age_ = message.degree_age();
+  for (auto const& s : message.series()) {
+    continuous_trajectory.push_back(
+        ЧебышёвSeries<Displacement<Frame>::ReadFromMessage(s));
+  }
+  continuous_trajectory.first_time_ = Instant::ReadFromMessage(message.first_time());
+  for (auto const& l : message.last_point()) {
+    continuous_trajectory.last_points_.push_back(
+        {Instant::ReadFromMessage(l.first),
+         DegreesOfFreedom<Frame>::ReadFromMessage(l.second)});
+  }
 }
 
 template<typename Frame>
