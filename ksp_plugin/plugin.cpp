@@ -255,8 +255,7 @@ RenderedTrajectory<World> Plugin::RenderedVesselTrajectory(
 
   // Compute the apparent trajectory using the given |transforms|.
   return RenderTrajectory(vessel->body(),
-                          transforms->first(*vessel,
-                                            &MobileInterface::history),
+                          transforms->first(vessel->history()),
                           transforms,
                           sun_world_position);
 }
@@ -271,8 +270,7 @@ RenderedTrajectory<World> Plugin::RenderedPrediction(
   RenderedTrajectory<World> result =
       RenderTrajectory(predicted_vessel_->body(),
                        transforms->first_on_or_after(
-                           *predicted_vessel_,
-                           &MobileInterface::prediction,
+                           predicted_vessel_->prediction(),
                            *predicted_vessel_->prediction().fork_time()),
                        transforms,
                        sun_world_position);
