@@ -63,7 +63,7 @@ class Transformz {
   first_on_or_after(Trajectory<FromFrame> const& from_trajectory,
                     Instant const& time);
 
-   typename Trajectory<ThroughFrame>:: template TransformingIterator<ToFrame>
+  typename Trajectory<ThroughFrame>:: template TransformingIterator<ToFrame>
   second(Instant const& last,
          Trajectory<ThroughFrame> const& through_trajectory);
 
