@@ -371,6 +371,16 @@ Transformz<FromFrame, ThroughFrame, ToFrame>::first_with_caching(
 }
 
 template<typename FromFrame, typename ThroughFrame, typename ToFrame>
+typename Trajectory<FromFrame>::template TransformingIterator<ThroughFrame>
+Transformz<FromFrame, ThroughFrame, ToFrame>::first_on_or_after(
+    Trajectory<FromFrame> const& from_trajectory,
+    Instant const& time) {
+  typename Trajectory<FromFrame>::template Transform<ThroughFrame> const first =
+      std::bind(first_, false /*cacheable*/, _1, _2, _3);
+  return from_trajectory.on_or_after_with_transform(time, first);
+}
+
+template<typename FromFrame, typename ThroughFrame, typename ToFrame>
 typename Trajectory<ThroughFrame>::template TransformingIterator<ToFrame>
 Transformz<FromFrame, ThroughFrame, ToFrame>::second(
     Instant const& last,
