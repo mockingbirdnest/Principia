@@ -70,6 +70,11 @@ class ContinuousTrajectory {
   DegreesOfFreedom<Frame> EvaluateDegreesOfFreedom(Instant const& time,
                                                    Hint* const hint) const;
 
+  void WriteToMessage(
+      not_null<serialization::ContinuousTrajectory*> const message) const;
+  static ContinuousTrajectory ReadFromMessage(
+      serialization::ContinuousTrajectory const& message);
+
   // The only thing that clients may do with |Hint| objects is to
   // default-initialize them.
   class Hint {

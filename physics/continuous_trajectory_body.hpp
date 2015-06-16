@@ -167,6 +167,16 @@ DegreesOfFreedom<Frame> ContinuousTrajectory<Frame>::EvaluateDegreesOfFreedom(
 }
 
 template<typename Frame>
+void ContinuousTrajectory<Frame>::WriteToMessage(
+      not_null<serialization::ContinuousTrajectory*> const message) const {
+}
+
+template<typename Frame>
+ContinuousTrajectory<Frame> ContinuousTrajectory<Frame>::ReadFromMessage(
+      serialization::ContinuousTrajectory const& message) {
+}
+
+template<typename Frame>
 ContinuousTrajectory<Frame>::Hint::Hint()
     : index_(std::numeric_limits<int>::max()) {}
 

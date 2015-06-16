@@ -12,6 +12,22 @@ message Body {
   }
 }
 
+message ContinuousTrajectory {
+  message InstantaneousDegreesOfFreedom {
+    required Point instant = 1;
+    required Pair degrees_of_freedom = 2;
+  }
+  required Quantity step = 1;
+  required Quantity tolerance = 2;
+  required Quantity adjusted_tolerance = 3;
+  required bool is_unstable = 4;
+  required int32 degree = 5;
+  required int32 degree_age = 6;
+  repeated ChebyshevSeries series = 7;
+  optional Quantity first_time = 8;
+  repeated InstantaneousDegreesOfFreedom last_points = 9;
+}
+
 message MassiveBody {
   required Quantity gravitational_parameter = 1;
   extensions 2000 to 2999;  // Last used: 2001.
