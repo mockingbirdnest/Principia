@@ -1,10 +1,14 @@
 ﻿#include "physics/continuous_trajectory.hpp"
 
+#include <deque>
 #include <functional>
+#include <limits>
+#include <vector>
 
 #include "geometry/frame.hpp"
 #include "geometry/named_quantities.hpp"
 #include "gtest/gtest.h"
+#include "numerics/чебышёв_series.hpp"
 #include "physics/degrees_of_freedom.hpp"
 #include "quantities/astronomy.hpp"
 #include "quantities/numbers.hpp"
@@ -20,6 +24,7 @@ using astronomy::JulianYear;
 using geometry::Displacement;
 using geometry::Frame;
 using geometry::Velocity;
+using numerics::ЧебышёвSeries;
 using quantities::Angle;
 using quantities::AngularFrequency;
 using quantities::Time;
@@ -34,9 +39,21 @@ using testing_utilities::AlmostEquals;
 namespace physics {
 
 class ContinuousTrajectoryTest : public testing::Test {
- protected:
+ public:
   using World = Frame<serialization::Frame::TestTag,
                       serialization::Frame::TEST1, true>;
+
+ protected:
+  static ЧебышёвSeries<Displacement<World>> SimulatedNewhallApproximation(
+      int const degree,
+      std::vector<Displacement<World>> const& q,
+      std::vector<Velocity<World>> const& v,
+      Instant const& t_min,
+      Instant const& t_max) {
+    Displacement<World> const error_estimate = error_estimates_->front();
+    error_estimates_->pop_front();
+    return ЧебышёвSeries<Displacement<World>>({error_estimate}, t_min, t_max);
+  }
 
   void FillTrajectory(
       int const number_of_steps,
@@ -52,9 +69,151 @@ class ContinuousTrajectoryTest : public testing::Test {
     }
   }
 
+  void ComputeBestNewhallApproximation(
+      std::deque<Displacement<World>> const& error_estimates) {
+    delete error_estimates_;
+    error_estimates_ = new std::deque<Displacement<World>>(error_estimates);
+
+    Instant const t(1 * Second);
+    std::vector<Displacement<World>> const q;
+    std::vector<Velocity<World>> const v;
+    trajectory_->ComputeBestNewhallApproximation(
+        t, q, v, &SimulatedNewhallApproximation);
+  }
+
+  int degree() const {
+    return trajectory_->degree_;
+  }
+
+  Length adjusted_tolerance() const {
+    return trajectory_->adjusted_tolerance_;
+  }
+
+  bool is_unstable() const {
+    return trajectory_->is_unstable_;
+  }
+
+  void ResetBestNewhallApproximation() {
+    trajectory_->degree_age_ = std::numeric_limits<int>::max();
+  }
+
+  static std::deque<Displacement<World>>* error_estimates_;
   std::unique_ptr<ContinuousTrajectory<World>> trajectory_;
 };
 
+std::deque<Displacement<ContinuousTrajectoryTest::World>>*
+ContinuousTrajectoryTest::error_estimates_ = nullptr;
+
+TEST_F(ContinuousTrajectoryTest, BestNewhallApproximation) {
+  Time const kStep = 1 * Second;
+  Length const kTolerance = 1 * Metre;
+
+  trajectory_ = std::make_unique<ContinuousTrajectory<World>>(
+                    kStep,
+                    kTolerance);
+  trajectory_->Append(Instant(),
+                      DegreesOfFreedom<World>(Position<World>(),
+                                              Velocity<World>()));
+
+  // A case where the errors smoothly decrease.
+  ComputeBestNewhallApproximation(
+      {Displacement<World>({3 * Metre, 4 * Metre, 5 * Metre}),
+       Displacement<World>({2 * Metre, 1 * Metre, 2 * Metre}),
+       Displacement<World>({0.1 * Metre, 2 * Metre, 0 * Metre}),
+       Displacement<World>({0.5 * Metre, 0.5 * Metre, 0.1 * Metre})});
+  EXPECT_EQ(6, degree());
+  EXPECT_EQ(kTolerance, adjusted_tolerance());
+  EXPECT_FALSE(is_unstable());
+  ResetBestNewhallApproximation();
+
+  // A case where the errors increase at the end, but after we have reached the
+  // desired tolerance.
+  ComputeBestNewhallApproximation(
+      {Displacement<World>({3 * Metre, 4 * Metre, 5 * Metre}),
+       Displacement<World>({2 * Metre, 1 * Metre, 2 * Metre}),
+       Displacement<World>({0.1 * Metre, 2 * Metre, 0 * Metre}),
+       Displacement<World>({0.5 * Metre, 0.5 * Metre, 0.1 * Metre}),
+       Displacement<World>({1 * Metre, 3 * Metre, 1 * Metre})});
+  EXPECT_EQ(6, degree());
+  EXPECT_EQ(kTolerance, adjusted_tolerance());
+  EXPECT_FALSE(is_unstable());
+  ResetBestNewhallApproximation();
+
+  // A case where the errors increase before we have reach the desired
+  // tolerance...
+  ComputeBestNewhallApproximation(
+      {Displacement<World>({3 * Metre, 4 * Metre, 5 * Metre}),
+       Displacement<World>({2 * Metre, 1 * Metre, 2 * Metre}),
+       Displacement<World>({0.1 * Metre, 2 * Metre, 0 * Metre}),
+       Displacement<World>({1 * Metre, 3 * Metre, 1 * Metre}),
+       Displacement<World>({0.5 * Metre, 0.5 * Metre, 0.1 * Metre})});
+  EXPECT_EQ(5, degree());
+  EXPECT_EQ(sqrt(4.01) * Metre, adjusted_tolerance());
+  EXPECT_TRUE(is_unstable());
+
+  // ... then the error decreases...
+  ComputeBestNewhallApproximation(
+      {Displacement<World>({0.1 * Metre, 1.5 * Metre, 0 * Metre})});
+  EXPECT_EQ(5, degree());
+  EXPECT_EQ(sqrt(4.01) * Metre, adjusted_tolerance());
+  EXPECT_TRUE(is_unstable());
+
+  // ... then the error increases forcing us to go back to square one...
+  ComputeBestNewhallApproximation(
+      {Displacement<World>({0.1 * Metre, 2 * Metre, 0.5 * Metre}),
+       Displacement<World>({3 * Metre, 4 * Metre, 5 * Metre}),
+       Displacement<World>({2 * Metre, 1 * Metre, 2 * Metre}),
+       Displacement<World>({1 * Metre, 2 * Metre, 1 * Metre}),
+       Displacement<World>({1 * Metre, 1.5 * Metre, 1 * Metre}),
+       Displacement<World>({1 * Metre, 1.2 * Metre, 1 * Metre}),
+       Displacement<World>({1 * Metre, 1.3 * Metre, 1 * Metre})});
+  EXPECT_EQ(7, degree());
+  EXPECT_EQ(sqrt(3.44) * Metre, adjusted_tolerance());
+  EXPECT_TRUE(is_unstable());
+
+  // ... it does it again but then the computation becomes stable.
+  ComputeBestNewhallApproximation(
+      {Displacement<World>({1 * Metre, 1.3 * Metre, 1 * Metre}),
+       Displacement<World>({3 * Metre, 4 * Metre, 5 * Metre}),
+       Displacement<World>({0.1 * Metre, 0.5 * Metre, 0.2 * Metre})});
+  EXPECT_EQ(4, degree());
+  EXPECT_EQ(kTolerance, adjusted_tolerance());
+  EXPECT_FALSE(is_unstable());
+  ResetBestNewhallApproximation();
+
+  // Check that the degree is properly lowered when the age of the approximation
+  // exceeds the limit.
+  // First, the errors force usage of degree 6.
+  ComputeBestNewhallApproximation(
+      {Displacement<World>({3 * Metre, 3 * Metre, 3 * Metre}),
+       Displacement<World>({2 * Metre, 2 * Metre, 2 * Metre}),
+       Displacement<World>({1 * Metre, 1 * Metre, 1 * Metre}),
+       Displacement<World>({0.1 * Metre, 0.1 * Metre, 0.1 * Metre})});
+  EXPECT_EQ(6, degree());
+  EXPECT_EQ(kTolerance, adjusted_tolerance());
+  EXPECT_FALSE(is_unstable());
+
+  // Then we get low errors for a long time.
+  for (int i = 0; i < 99; ++i) {
+    ComputeBestNewhallApproximation(
+        {Displacement<World>({0.1 * Metre, 0.1 * Metre, 0.1 * Metre})});
+  }
+  EXPECT_EQ(6, degree());
+  EXPECT_EQ(kTolerance, adjusted_tolerance());
+  EXPECT_FALSE(is_unstable());
+
+  // Finally we try all the degrees again and discover that degree 5 works.
+  ComputeBestNewhallApproximation(
+      {Displacement<World>({3 * Metre, 3 * Metre, 3 * Metre}),
+       Displacement<World>({2 * Metre, 2 * Metre, 2 * Metre}),
+       Displacement<World>({0.2 * Metre, 0.2 * Metre, 0.2 * Metre})});
+  EXPECT_EQ(5, degree());
+  EXPECT_EQ(kTolerance, adjusted_tolerance());
+  EXPECT_FALSE(is_unstable());
+  ResetBestNewhallApproximation();
+}
+
+// A trajectory defined by a degree-1 polynomial.
 TEST_F(ContinuousTrajectoryTest, Polynomial) {
   int const kNumberOfSteps = 20;
   int const kNumberOfSubsteps = 50;
@@ -77,8 +236,7 @@ TEST_F(ContinuousTrajectoryTest, Polynomial) {
 
   trajectory_ = std::make_unique<ContinuousTrajectory<World>>(
                     kStep,
-                    0.05 * Metre /*low_tolerance*/,
-                    0.1 * Metre /*high_tolerance*/);
+                    0.1 * Metre /*tolerance*/);
 
   EXPECT_TRUE(trajectory_->empty());
   FillTrajectory(kNumberOfSteps, kStep, position_function, velocity_function);
@@ -143,8 +301,7 @@ TEST_F(ContinuousTrajectoryTest, Io) {
 
   trajectory_ = std::make_unique<ContinuousTrajectory<World>>(
                     kStep,
-                    1 * Milli(Metre) /*low_tolerance*/,
-                    5 * Milli(Metre) /*high_tolerance*/);
+                    5 * Milli(Metre) /*tolerance*/);
 
   EXPECT_TRUE(trajectory_->empty());
   FillTrajectory(kNumberOfSteps, kStep, position_function, velocity_function);
@@ -164,7 +321,7 @@ TEST_F(ContinuousTrajectoryTest, Io) {
     Velocity<World> const actual_velocity =
         trajectory_->EvaluateVelocity(time, &hint);
     Velocity<World> const expected_velocity = velocity_function(time);
-    EXPECT_GT(0.492 * Milli(Metre),
+    EXPECT_GT(0.491 * Milli(Metre),
               AbsoluteError(expected_displacement, actual_displacement));
     EXPECT_GT(1.60E-7 * Metre / Second,
               AbsoluteError(expected_velocity, actual_velocity));
