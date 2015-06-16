@@ -169,6 +169,19 @@ DegreesOfFreedom<Frame> ContinuousTrajectory<Frame>::EvaluateDegreesOfFreedom(
 template<typename Frame>
 void ContinuousTrajectory<Frame>::WriteToMessage(
       not_null<serialization::ContinuousTrajectory*> const message) const {
+  step_.WriteToMessage(message->mutable_step());
+  tolerance_.WriteToMessage(message->mutable_tolerance());
+  adjusted_tolerance_->WriteToMessage(message->mutable_adjusted_tolerance());
+  message->set_is_unstable(is_unstable_);
+  message->set_degree(degree_);
+  message->set_degree_age(degree_age_);
+  for (auto const& s : series) {
+    s.WriteToMessage(message->add_series());
+  }
+  first_time_->WriteToMessage(message->mutable_first_time());
+  for (auto const& l : last_points_) {
+    l.WriteToMessage(message->add_last_point());
+  }
 }
 
 template<typename Frame>

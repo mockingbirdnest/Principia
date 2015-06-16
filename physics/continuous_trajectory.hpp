@@ -7,6 +7,7 @@
 #include "numerics/чебышёв_series.hpp"
 #include "physics/degrees_of_freedom.hpp"
 #include "quantities/quantities.hpp"
+#include "serialization/physics.pb.h"
 
 namespace principia {
 
