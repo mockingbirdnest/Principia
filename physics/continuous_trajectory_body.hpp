@@ -9,6 +9,7 @@
 
 namespace principia {
 
+using si::Metre;
 using testing_utilities::ULPDistance;
 
 namespace physics {
