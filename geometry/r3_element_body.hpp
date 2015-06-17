@@ -10,8 +10,8 @@
 
 namespace principia {
 
+using quantities::DoubleOrQuantitySerializer;
 using quantities::Quantity;
-using quantities::QuantityOrDoubleSerializer;
 using quantities::SIUnit;
 
 namespace geometry {

@@ -12,9 +12,8 @@ namespace quantities {
 //     Quantity quantity = 2;
 //   }
 // }
-
 template<typename T, typename Message>
-class QuantityOrDoubleSerializer {};
+class DoubleOrQuantitySerializer {};
 
 }  // namespace quantities
 }  // namespace principia
