@@ -15,6 +15,7 @@
 #include "quantities/quantities.hpp"
 #include "quantities/si.hpp"
 #include "serialization/geometry.pb.h"
+#include "serialization/physics.pb.h"
 #include "testing_utilities/almost_equals.hpp"
 #include "testing_utilities/numerics.hpp"
 
@@ -347,6 +348,50 @@ TEST_F(ContinuousTrajectoryTest, Io) {
     EXPECT_GT(1.60E-7 * Metre / Second,
               AbsoluteError(expected_velocity, actual_velocity));
   }
+}
+
+TEST_F(ContinuousTrajectoryTest, Serialization) {
+  int const kNumberOfSteps = 20;
+  int const kNumberOfSubsteps = 50;
+  Time const kStep = 0.01 * Second;
+  Length const kTolerance = 0.1 * Metre;
+  Instant const t0;
+
+  auto position_function =
+      [t0](Instant const t) {
+        return World::origin +
+            Displacement<World>({(t - t0) * 3 * Metre / Second,
+                                 (t - t0) * 5 * Metre / Second,
+                                 (t - t0) * (-2) * Metre / Second});
+      };
+  auto velocity_function =
+      [t0](Instant const t) {
+        return Velocity<World>({3 * Metre / Second,
+                                5 * Metre / Second,
+                                -2 * Metre / Second});
+      };
+
+  trajectory_ = std::make_unique<ContinuousTrajectory<World>>(
+                    kStep, kTolerance);
+
+  EXPECT_TRUE(trajectory_->empty());
+  FillTrajectory(kNumberOfSteps, kStep, position_function, velocity_function);
+
+  serialization::ContinuousTrajectory message;
+  trajectory_->WriteToMessage(&message);
+  EXPECT_EQ(kStep / Second, message.step().magnitude());
+  EXPECT_EQ(kTolerance / Metre, message.tolerance().magnitude());
+  EXPECT_GE(message.adjusted_tolerance().magnitude(),
+            message.tolerance().magnitude());
+  EXPECT_TRUE(message.has_is_unstable());
+  EXPECT_EQ(1, message.degree());
+  EXPECT_LE(100, message.degree_age());
+  EXPECT_EQ(2, message.series_size());
+  EXPECT_TRUE(message.has_first_time());
+  EXPECT_EQ(0, message.last_point_size());
+
+  ContinuousTrajectory<World> const trajectory =
+      ContinuousTrajectory<World>::ReadFromMessage(message);
 }
 
 }  // namespace physics

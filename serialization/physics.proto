@@ -26,7 +26,7 @@ message ContinuousTrajectory {
   required int32 degree_age = 6;
   repeated ChebyshevSeries series = 7;
   optional Point first_time = 8;
-  repeated InstantaneousDegreesOfFreedom last_points = 9;
+  repeated InstantaneousDegreesOfFreedom last_point = 9;
 }
 
 message MassiveBody {

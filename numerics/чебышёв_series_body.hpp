@@ -6,7 +6,6 @@
 #include "glog/logging.h"
 #include "numerics/fixed_arrays.hpp"
 #include "numerics/newhall.mathematica.cpp"
-#include "quantities/serialization.hpp"
 
 namespace principia {
 
@@ -144,11 +143,8 @@ Variation<Vector> ЧебышёвSeries<Vector>::EvaluateDerivative(
 template<typename Vector>
 void ЧебышёвSeries<Vector>::WriteToMessage(
     not_null<serialization::ЧебышёвSeries*> const message) const {
-  using Serializer =
-      QuantityOrDoubleSerializer<Vector,
-                                 serialization::ЧебышёвSeries::Coefficient>;
   for (auto const& coefficient : coefficients_) {
-    Serializer::WriteToMessage(coefficient, message->add_coefficient());
+    coefficient.WriteToMessage(message->add_coefficient());
   }
   t_min_.WriteToMessage(message->mutable_t_min());
   t_max_.WriteToMessage(message->mutable_t_max());
@@ -157,13 +153,10 @@ void ЧебышёвSeries<Vector>::WriteToMessage(
 template<typename Vector>
 ЧебышёвSeries<Vector> ЧебышёвSeries<Vector>::ReadFromMessage(
     serialization::ЧебышёвSeries const& message) {
-  using Serializer =
-      QuantityOrDoubleSerializer<Vector,
-                                 serialization::ЧебышёвSeries::Coefficient>;
   std::vector<Vector> coefficients;
   coefficients.reserve(message.coefficient_size());
   for (auto const& coefficient : message.coefficient()) {
-    coefficients.push_back(Serializer::ReadFromMessage(coefficient));
+    coefficients.push_back(Vector::ReadFromMessage(coefficient));
   }
   return ЧебышёвSeries(coefficients,
                        Instant::ReadFromMessage(message.t_min()),

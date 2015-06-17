@@ -171,14 +171,16 @@ void ContinuousTrajectory<Frame>::WriteToMessage(
       not_null<serialization::ContinuousTrajectory*> const message) const {
   step_.WriteToMessage(message->mutable_step());
   tolerance_.WriteToMessage(message->mutable_tolerance());
-  adjusted_tolerance_->WriteToMessage(message->mutable_adjusted_tolerance());
+  adjusted_tolerance_.WriteToMessage(message->mutable_adjusted_tolerance());
   message->set_is_unstable(is_unstable_);
   message->set_degree(degree_);
   message->set_degree_age(degree_age_);
-  for (auto const& s : series) {
+  for (auto const& s : series_) {
     s.WriteToMessage(message->add_series());
   }
-  first_time_->WriteToMessage(message->mutable_first_time());
+  if (first_time_ != nullptr) {
+    first_time_->WriteToMessage(message->mutable_first_time());
+  }
   for (auto const& l : last_points_) {
     Instant const& instant = l.first;
     DegreesOfFreedom<Frame> degrees_of_freedom = l.second;
@@ -194,24 +196,28 @@ void ContinuousTrajectory<Frame>::WriteToMessage(
 template<typename Frame>
 ContinuousTrajectory<Frame> ContinuousTrajectory<Frame>::ReadFromMessage(
       serialization::ContinuousTrajectory const& message) {
-  ContinuousTrajectory continuous_trajectory;
-  continuous_trajectory.step_ = Time::ReadFromMessage(message.step());
-  continuous_trajectory.tolerance_ = Length::ReadFromMessage(message.tolerance());
+  ContinuousTrajectory continuous_trajectory(
+      Time::ReadFromMessage(message.step()),
+      Length::ReadFromMessage(message.tolerance()));
   continuous_trajectory.adjusted_tolerance_ =
       Length::ReadFromMessage(message.adjusted_tolerance());
   continuous_trajectory.is_unstable_ = message.is_unstable();
   continuous_trajectory.degree_ = message.degree();
   continuous_trajectory.degree_age_ = message.degree_age();
   for (auto const& s : message.series()) {
-    continuous_trajectory.push_back(
-        ЧебышёвSeries<Displacement<Frame>::ReadFromMessage(s));
+    continuous_trajectory.series_.push_back(
+        ЧебышёвSeries<Displacement<Frame>>::ReadFromMessage(s));
   }
-  continuous_trajectory.first_time_ = Instant::ReadFromMessage(message.first_time());
+  if (message.has_first_time()) {
+    continuous_trajectory.first_time_ = std::make_unique<Instant>(
+        Instant::ReadFromMessage(message.first_time()));
+  }
   for (auto const& l : message.last_point()) {
     continuous_trajectory.last_points_.push_back(
-        {Instant::ReadFromMessage(l.first),
-         DegreesOfFreedom<Frame>::ReadFromMessage(l.second)});
+        {Instant::ReadFromMessage(l.instant()),
+         DegreesOfFreedom<Frame>::ReadFromMessage(l.degrees_of_freedom())});
   }
+  return std::move(continuous_trajectory);
 }
 
 template<typename Frame>
