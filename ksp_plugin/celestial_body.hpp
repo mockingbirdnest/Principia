@@ -66,6 +66,7 @@ inline std::unique_ptr<Celestial> Celestial::ReadFromMessage(
     serialization::Celestial const& message) {
   // TODO(phl): implement.
   LOG(FATAL) << "Not yet implemented";
+  base::noreturn();
 }
 
 }  // namespace ksp_plugin

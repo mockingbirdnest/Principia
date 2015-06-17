@@ -216,9 +216,6 @@ class Plugin {
 
   virtual void set_prediction_length(Time const& t);
 
-  // The step used when computing the prediction.
-  virtual void set_prediction_step(Time const& t);
-
   virtual bool has_vessel(GUID const& vessel_guid) const;
 
   virtual not_null<std::unique_ptr<RenderingTransforms>>

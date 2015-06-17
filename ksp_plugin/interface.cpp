@@ -333,11 +333,6 @@ void principia__set_prediction_length(Plugin* const plugin,
   CHECK_NOTNULL(plugin)->set_prediction_length(t * Second);
 }
 
-void principia__set_prediction_step(Plugin* const plugin,
-                                    double const t) {
-  CHECK_NOTNULL(plugin)->set_prediction_step(t * Second);
-}
-
 bool principia__has_vessel(Plugin* const plugin,
                            char const* vessel_guid) {
   return CHECK_NOTNULL(plugin)->has_vessel(vessel_guid);
