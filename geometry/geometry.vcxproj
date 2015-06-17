@@ -157,6 +157,8 @@
     <ClInclude Include="r3_element.hpp" />
     <ClInclude Include="rotation_body.hpp" />
     <ClInclude Include="rotation.hpp" />
+    <ClInclude Include="serialization.hpp" />
+    <ClInclude Include="serialization_body.hpp" />
     <ClInclude Include="sign_body.hpp" />
     <ClInclude Include="sign.hpp" />
   </ItemGroup>

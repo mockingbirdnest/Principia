@@ -8,9 +8,6 @@
 #include "numerics/newhall.mathematica.cpp"
 
 namespace principia {
-
-using quantities::QuantityOrDoubleSerializer;
-
 namespace numerics {
 
 template<typename Vector>
