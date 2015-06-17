@@ -37,6 +37,8 @@ using geometry::Sign;
 using integrators::DormandElMikkawyPrince1986RKN434FM;
 using integrators::McLachlanAtela1992Order5Optimal;
 using quantities::Force;
+using si::Milli;
+using si::Minute;
 using si::Radian;
 
 namespace {
@@ -109,6 +111,22 @@ void Plugin::InsertCelestial(
 
 void Plugin::EndInitialization() {
   initializing_.Flop();
+  std::vector<not_null<std::unique_ptr<MassiveBody const>>> bodies;
+  std::vector<DegreesOfFreedom<Barycentric>> initial_state;
+  for (auto&& body : *bodies_) {
+    bodies.emplace_back(std::move(body.second));
+  }
+  bodies_.reset();
+  for (auto const& state : *initial_state_) {
+    initial_state.emplace_back(state.second);
+  }
+  initial_state_.reset();
+  n_body_system_ = std::make_unique<Ephemeris<Barycentric>>(std::move(bodies),
+                                                            initial_state,
+                                                            current_time_,
+                                                            history_integrator_,
+                                                            45 * Minute,
+                                                            1 * Milli(Metre));
 }
 
 void Plugin::UpdateCelestialHierarchy(Index const celestial_index,
