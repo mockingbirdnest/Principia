@@ -339,10 +339,12 @@ class Plugin {
   // |HistoryTime()|, and that if it |is_synchronized()|, its
   // |history().last().time()| is exactly |HistoryTime()|.
   void CheckVesselInvariants(GUIDToOwnedVessel::const_iterator const it) const;
-  // Evolves the histories of the |celestials_| and of the synchronized vessels
-  // up to at most |t|. |t| must be large enough that at least one step of
-  // size |Δt_| can fit between |current_time_| and |t|.
-  void EvolveHistories(Instant const& t);
+  // Returns the histories of the synchronized vessels.
+  Ephemeris<Barycentric>::Trajectories SynchronizedHistories() const;
+  // Evolves the histories in |histories|. |t| must be large enough that at
+  // least one step of size |Δt_| can fit between |current_time_| and |t|.
+  void EvolveHistories(Instant const& t,
+                       Ephemeris<Barycentric>::Trajectories const& histories);
   // Synchronizes the |unsynchronized_vessels_|, clears
   // |unsynchronized_vessels_|.  Prolongs the histories of the vessels in the
   // physics bubble by evolving the trajectory of the |current_physics_bubble_|

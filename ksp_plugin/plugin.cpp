@@ -168,10 +168,20 @@ void Plugin::AdvanceTime(Instant const& t, Angle const& planetarium_rotation) {
   CHECK_GT(t, current_time_);
   CleanUpVessels();
   bubble_->Prepare(BarycentricToWorldSun(), current_time_, t);
-  if (history_time_ + Δt_ < t) {
+  Ephemeris<Barycentric>::Trajectories synchronized_histories =
+      SynchronizedHistories();
+  bool advanced_history_time = false;
+  if (synchronized_histories.empty()) {
+    // Synchronize everything now, nothing is currently synchronized.
+    history_time_ = t;
+    advanced_history_time = true;
+  } else if (history_time_ + Δt_ < t) {
     // The histories are far enough behind that we can advance them at least one
     // step and reset the prolongations.
-    EvolveHistories(t);
+    EvolveHistories(t, synchronized_histories);
+    advanced_history_time = true;
+  }
+  if (advanced_history_time) {
     // TODO(egg): I think |!bubble_->empty()| => |has_dirty_vessels()|.
     if (has_unsynchronized_vessels() ||
         has_dirty_vessels() ||
@@ -624,9 +634,7 @@ void Plugin::CheckVesselInvariants(
   }
 }
 
-void Plugin::EvolveHistories(Instant const& t) {
-  VLOG(1) << __FUNCTION__ << '\n' << NAMED(t);
-  // Integration with a constant step.
+Ephemeris<Barycentric>::Trajectories Plugin::SynchronizedHistories() const {
   Ephemeris<Barycentric>::Trajectories trajectories;
   // NOTE(egg): This may be too large, vessels that are not new and in the
   // physics bubble or dirty will not be added.
@@ -639,14 +647,22 @@ void Plugin::EvolveHistories(Instant const& t) {
       trajectories.push_back(vessel->mutable_history());
     }
   }
+  return trajectories;
+}
+
+void Plugin::EvolveHistories(
+    Instant const& t,
+    Ephemeris<Barycentric>::Trajectories const& histories) {
+  VLOG(1) << __FUNCTION__ << '\n' << NAMED(t);
+  // Integration with a constant step.{
   VLOG(1) << "Starting the evolution of the histories" << '\n'
           << "from : " << history_time_;
   // We integrate until at least |t - Δt_|, and therefore until at most
   // |t|.
-  n_body_system_->FlowWithFixedStep(trajectories,
+  n_body_system_->FlowWithFixedStep(histories,
                                     Δt_,
                                     t - Δt_);
-  history_time_ = trajectories.front()->last().time();
+  history_time_ = histories.front()->last().time();
   CHECK_GE(history_time_, current_time_);
   VLOG(1) << "Evolved the histories" << '\n'
           << "to   : " << history_time_;
