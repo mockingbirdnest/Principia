@@ -384,14 +384,21 @@ TEST_F(ContinuousTrajectoryTest, Serialization) {
   EXPECT_GE(message.adjusted_tolerance().magnitude(),
             message.tolerance().magnitude());
   EXPECT_TRUE(message.has_is_unstable());
-  EXPECT_EQ(1, message.degree());
-  EXPECT_LE(100, message.degree_age());
+  EXPECT_EQ(3, message.degree());
+  EXPECT_GE(100, message.degree_age());
   EXPECT_EQ(2, message.series_size());
   EXPECT_TRUE(message.has_first_time());
-  EXPECT_EQ(0, message.last_point_size());
+  EXPECT_EQ(4, message.last_point_size());
 
-  ContinuousTrajectory<World> const trajectory =
-      ContinuousTrajectory<World>::ReadFromMessage(message);
+  auto const trajectory = ContinuousTrajectory<World>::ReadFromMessage(message);
+  EXPECT_EQ(trajectory->t_min(), trajectory_->t_min());
+  EXPECT_EQ(trajectory->t_max(), trajectory_->t_max());
+  for (Instant time = trajectory_->t_min();
+       time <= trajectory_->t_max();
+       time += kStep / kNumberOfSubsteps) {
+    EXPECT_EQ(trajectory->EvaluateDegreesOfFreedom(time, nullptr /*hint*/),
+              trajectory_->EvaluateDegreesOfFreedom(time, nullptr /*hint*/));
+  }
 }
 
 }  // namespace physics
