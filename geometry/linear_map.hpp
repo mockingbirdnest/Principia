@@ -33,8 +33,8 @@ class LinearMap {
 //   virtual Trivector<Scalar, ToFrame> operator()(
 //       Trivector<Scalar, FromFrame> const& trivector) const = 0;
 //
-//  template<typename T>
-//  typename base::Mappable<LinearMap, T>::type operator()(T const& t) const;
+//   template<typename T>
+//   typename base::Mappable<LinearMap, T>::type operator()(T const& t) const;
 //
  protected:
   // Serialization of the frames.  These are just helper functions for

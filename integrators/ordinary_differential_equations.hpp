@@ -109,6 +109,18 @@ class FixedStepSizeIntegrator : public Integrator<DifferentialEquation> {
   // intervals differing from |step| by at most one ULP.
   virtual void Solve(IntegrationProblem<ODE> const& problem,
                      Time const& step) const = 0;
+
+  void WriteToMessage(
+      not_null<serialization::FixedStepSizeIntegrator*> const message) const;
+  static FixedStepSizeIntegrator const& ReadFromMessage(
+      serialization::FixedStepSizeIntegrator const& message);
+
+ protected:
+  explicit FixedStepSizeIntegrator(
+      serialization::FixedStepSizeIntegrator::Kind const kind);
+
+ private:
+  serialization::FixedStepSizeIntegrator::Kind const kind_;
 };
 
 // An integrator using a fixed step size.
@@ -119,6 +131,18 @@ class AdaptiveStepSizeIntegrator : public Integrator<DifferentialEquation> {
   // |state.time.value == problem.t_final|.
   virtual void Solve(IntegrationProblem<ODE> const& problem,
                      AdaptiveStepSize<ODE> const& adaptive_step_size) const = 0;
+
+  void WriteToMessage(
+      not_null<serialization::AdaptiveStepSizeIntegrator*> const message) const;
+  static AdaptiveStepSizeIntegrator const& ReadFromMessage(
+      serialization::AdaptiveStepSizeIntegrator const& message);
+
+ protected:
+  explicit AdaptiveStepSizeIntegrator(
+      serialization::AdaptiveStepSizeIntegrator::Kind const kind);
+
+ private:
+  serialization::AdaptiveStepSizeIntegrator::Kind const kind_;
 };
 
 }  // namespace integrators

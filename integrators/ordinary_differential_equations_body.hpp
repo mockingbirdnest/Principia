@@ -19,7 +19,7 @@ SpecialSecondOrderDifferentialEquation<Position>::SystemState::WriteToMessage(
 }
 
 template<typename Position>
-SpecialSecondOrderDifferentialEquation<Position>::SystemState
+typename SpecialSecondOrderDifferentialEquation<Position>::SystemState
 SpecialSecondOrderDifferentialEquation<Position>::SystemState::ReadFromMessage(
         serialization::SystemState const& message) {
   for (auto const p : message.position()) {
