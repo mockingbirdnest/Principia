@@ -33,6 +33,8 @@ class Celestial {
 
   // True if, and only if, |trajectory_| is not null.
   bool is_initialized() const;
+  void set_trajectory(
+      not_null<ContinuousTrajectory<Barycentric> const*> const trajectory);
   ContinuousTrajectory<Barycentric> const& trajectory() const;
   not_null<ContinuousTrajectory<Barycentric>::Hint*> current_time_hint() const;
   DegreesOfFreedom<Barycentric> current_degrees_of_freedom(
