@@ -1,6 +1,7 @@
 syntax = "proto2";
 
 import "serialization/geometry.proto";
+import "serialization/integrators.proto";
 import "serialization/numerics.proto";
 import "serialization/quantities.proto";
 
@@ -35,7 +36,7 @@ message Ephemeris {
   required FixedStepSizeIntegrator planetary_integrator = 3;
   required Point step = 4;
   required Quantity fitting_tolerance = 5;
-  required SpecialSecondOrderDifferentialEquationSystemState last_state = 6;
+  required SystemState last_state = 6;
 }
 
 message MassiveBody {

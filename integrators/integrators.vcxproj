@@ -133,6 +133,7 @@
     <ClInclude Include="embedded_explicit_runge_kutta_nyström_integrator_body.hpp" />
     <ClInclude Include="motion_integrator.hpp" />
     <ClInclude Include="ordinary_differential_equations.hpp" />
+    <ClInclude Include="ordinary_differential_equations_body.hpp" />
     <ClInclude Include="sprk_integrator.hpp" />
     <ClInclude Include="sprk_integrator_body.hpp" />
     <ClInclude Include="srkn_integrator.hpp" />

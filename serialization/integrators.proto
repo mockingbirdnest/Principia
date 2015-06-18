@@ -1,5 +1,7 @@
 syntax = "proto2";
 
+import "serialization/numerics.proto";
+
 package principia.serialization;
 
 message AdaptiveStepSizeIntegrator {
@@ -33,8 +35,8 @@ message Integrator {
   extensions 3000 to 3999;  // Last used: 3001.
 }
 
-message SpecialSecondOrderDifferentialEquationSystemState {
+message SystemState {
   repeated DoublePrecision position = 1;
-  repeated Point velocity = 2;
-  required Point time = 3;
+  repeated DoublePrecision velocity = 2;
+  required DoublePrecision time = 3;
 }

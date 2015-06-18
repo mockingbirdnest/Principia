@@ -7,6 +7,7 @@
 #include "geometry/named_quantities.hpp"
 #include "numerics/double_precision.hpp"
 #include "quantities/named_quantities.hpp"
+#include "serialization/integrators.pb.h"
 
 namespace principia {
 
@@ -33,15 +34,23 @@ struct SpecialSecondOrderDifferentialEquation {
           void(Instant const& t,
                std::vector<Position> const& positions,
                not_null<std::vector<Acceleration>*> const accelerations)>;
+
   struct SystemState {
     std::vector<DoublePrecision<Position>> positions;
     std::vector<DoublePrecision<Velocity>> velocities;
     DoublePrecision<Instant> time;
+
+    void WriteToMessage(
+        not_null<serialization::SystemState*> const message) const;
+    static SystemState ReadFromMessage(
+        serialization::SystemState const& message);
   };
+
   struct SystemStateError {
     std::vector<Displacement> position_error;
     std::vector<Velocity> velocity_error;
   };
+
   // A functor that computes f(q, t) and stores it in |*accelerations|.
   // This functor must be called with |accelerations->size()| equal to
   // |positions->size()|, but there is no requirement on the values in
@@ -114,3 +123,5 @@ class AdaptiveStepSizeIntegrator : public Integrator<DifferentialEquation> {
 
 }  // namespace integrators
 }  // namespace principia
+
+#include "integrators/ordinary_differential_equations_body.hpp"
