@@ -86,9 +86,9 @@ class Ephemeris {
       Instant const& t);
 
   void WriteToMessage(
-      not_null<serialization::ContinuousTrajectory*> const message) const;
-  static std::unique_ptr<ContinuousTrajectory> ReadFromMessage(
-      serialization::ContinuousTrajectory const& message);
+      not_null<serialization::Ephemeris*> const message) const;
+  static std::unique_ptr<Ephemeris> ReadFromMessage(
+      serialization::Ephemeris const& message);
 
  private:
   void AppendMassiveBodiesState(

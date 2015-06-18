@@ -23,5 +23,19 @@ FORCE_INLINE void DoublePrecision<T>::Increment(
   error = (temp - value) + y;
 }
 
+template<typename T>
+void DoublePrecision<T>::WriteToMessage(
+    not_null<serialization::DoublePrecision*> const message) const {
+  value.WriteToMessage(message->mutable_value());
+  error.WriteToMessage(message->mutable_error());
+}
+
+template<typename T>
+DoublePrecision<T> DoublePrecision<T>::ReadFromMessage(
+    serialization::DoublePrecision const& message) {
+  value = T::ReadFromMessage(message.value());
+  error = T::ReadFromMessage(message.error());
+}
+
 }  // namespace numerics
 }  // namespace principia
