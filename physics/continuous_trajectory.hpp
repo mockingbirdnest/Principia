@@ -7,6 +7,7 @@
 #include "numerics/чебышёв_series.hpp"
 #include "physics/degrees_of_freedom.hpp"
 #include "quantities/quantities.hpp"
+#include "serialization/physics.pb.h"
 
 namespace principia {
 
@@ -69,6 +70,11 @@ class ContinuousTrajectory {
                                    Hint* const hint) const;
   DegreesOfFreedom<Frame> EvaluateDegreesOfFreedom(Instant const& time,
                                                    Hint* const hint) const;
+
+  void WriteToMessage(
+      not_null<serialization::ContinuousTrajectory*> const message) const;
+  static std::unique_ptr<ContinuousTrajectory> ReadFromMessage(
+      serialization::ContinuousTrajectory const& message);
 
   // The only thing that clients may do with |Hint| objects is to
   // default-initialize them.
