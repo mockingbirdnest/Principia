@@ -1,0 +1,40 @@
+syntax = "proto2";
+
+package principia.serialization;
+
+message AdaptiveStepSizeIntegrator {
+  extend Integrator {
+    optional AdaptiveStepSizeIntegrator adaptive_step_size_integrator = 3000;
+  }
+  enum Kind {
+    DORMAND_ELMIKKAWY_PRINCE_1986_RKN_434FM = 1;
+  }
+  required Kind kind = 1;
+}
+
+message FixedStepSizeIntegrator {
+  extend Integrator {
+    optional FixedStepSizeIntegrator fixed_step_size_integrator = 3001;
+  }
+  enum Kind {
+    BLANES_MOAN_2002_SRKN_6B = 1;
+    BLANES_MOAN_2002_SRKN_11B = 2;
+    BLANES_MOAN_2002_SRKN_14A = 3;
+    MCLACHLAN_1995_SB3A_4 = 4;
+    MCLACHLAN_1995_SB3A_5 = 5;
+    MCLACHLAN_ATELA_1992_ORDER_4_OPTIMAL = 6;
+    MCLACHLAN_ATELA_1992_ORDER_5_OPTIMAL = 7;
+    OKUNBOR_SKEEL_1994_ORDER_6_METHOD_13 = 8;
+  }
+  required Kind kind = 1;
+}
+
+message Integrator {
+  extensions 3000 to 3999;  // Last used: 3001.
+}
+
+message SpecialSecondOrderDifferentialEquationSystemState {
+  repeated DoublePrecision position = 1;
+  repeated Point velocity = 2;
+  required Point time = 3;
+}

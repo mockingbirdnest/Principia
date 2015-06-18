@@ -29,6 +29,15 @@ message ContinuousTrajectory {
   repeated InstantaneousDegreesOfFreedom last_point = 9;
 }
 
+message Ephemeris {
+  repeated MassiveBody body = 1;
+  repeated ContinuousTrajectory trajectory = 2;
+  required FixedStepSizeIntegrator planetary_integrator = 3;
+  required Point step = 4;
+  required Quantity fitting_tolerance = 5;
+  required SpecialSecondOrderDifferentialEquationSystemState last_state = 6;
+}
+
 message MassiveBody {
   required Quantity gravitational_parameter = 1;
   extensions 2000 to 2999;  // Last used: 2001.

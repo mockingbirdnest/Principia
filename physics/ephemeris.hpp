@@ -85,6 +85,11 @@ class Ephemeris {
       Time const& step,
       Instant const& t);
 
+  void WriteToMessage(
+      not_null<serialization::ContinuousTrajectory*> const message) const;
+  static std::unique_ptr<ContinuousTrajectory> ReadFromMessage(
+      serialization::ContinuousTrajectory const& message);
+
  private:
   void AppendMassiveBodiesState(
       typename NewtonianMotionEquation::SystemState const& state);

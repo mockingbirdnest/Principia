@@ -15,6 +15,7 @@
     <CustomBuild Include="quantities.proto" />
     <CustomBuild Include="physics.proto" />
     <CustomBuild Include="ksp_plugin.proto" />
+    <CustomBuild Include="numerics.proto" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="geometry.pb.h">
@@ -51,6 +52,6 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <None Include="numerics.proto" />
+    <None Include="integrators.proto" />
   </ItemGroup>
 </Project>
