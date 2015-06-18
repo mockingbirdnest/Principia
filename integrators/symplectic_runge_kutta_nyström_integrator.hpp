@@ -65,6 +65,8 @@ class SymplecticRungeKuttaNyströmIntegrator
   static int const stages_ = composition_ == kBA ? evaluations_
                                                  : evaluations_ + 1;
  public:
+  using ODE = SpecialSecondOrderDifferentialEquation<Position>;
+
   SymplecticRungeKuttaNyströmIntegrator(FixedVector<double, stages_> const& a,
                                         FixedVector<double, stages_> const& b);
 
