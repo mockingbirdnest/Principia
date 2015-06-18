@@ -1,6 +1,6 @@
 #!/bin/bash
 
-echo "Required prerequisites for build: build-essential clang libc++-dev monodevelop subversion git"
+echo "Required prerequisites for build: build-essential clang libc++-dev libc++abi-dev monodevelop subversion git"
 echo "Required runtime dependencies: libc++1"
 
 #sudo apt-get install clang git unzip wget libc++-dev binutils make automake libtool curl cmake subversion
@@ -35,13 +35,13 @@ git am "../../documentation/Setup Files/protobuf.patch"
 if [ "$PLATFORM" == "Linux" ]; then
     ./autogen.sh # Really definitely needs to run twice on Linux for some reason.
 fi
-./configure CC=clang CXX=clang++ CXXFLAGS="$CXX_FLAGS" LDFLAGS="$LD_FLAGS"
+./configure CC=clang CXX=clang++ CXXFLAGS="$CXX_FLAGS" LDFLAGS="$LD_FLAGS" LIBS="-lc++"
 make -j8
 popd
 
 git clone https://github.com/Norgg/glog
 pushd glog
-./configure CC=clang CXX=clang++ CFLAGS="$C_FLAGS" CXXFLAGS="$CXX_FLAGS" LDFLAGS="$LD_FLAGS"
+./configure CC=clang CXX=clang++ CFLAGS="$C_FLAGS" CXXFLAGS="$CXX_FLAGS" LDFLAGS="$LD_FLAGS" LIBS="-lc++"
 make -j8
 popd
 

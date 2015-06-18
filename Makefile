@@ -22,7 +22,7 @@ LIB_DIR := $(FINAL_PRODUCTS_DIR)/GameData/Principia
 LIB := $(LIB_DIR)/principia.so
 
 DEP_DIR := deps
-LIBS := $(DEP_DIR)/protobuf/src/.libs/libprotobuf.a $(DEP_DIR)/glog/.libs/libglog.a -lpthread
+LIBS := $(DEP_DIR)/protobuf/src/.libs/libprotobuf.a $(DEP_DIR)/glog/.libs/libglog.a -lpthread -lc++
 TEST_INCLUDES := -I$(DEP_DIR)/gmock/include -I$(DEP_DIR)/gtest/include -I$(DEP_DIR)/gmock -I$(DEP_DIR)/gtest
 INCLUDES := -I. -I$(DEP_DIR)/glog/src -I$(DEP_DIR)/protobuf/src -I$(DEP_DIR)/benchmark/include $(TEST_INCLUDES)
 SHARED_ARGS := -std=c++1y -stdlib=libc++ -O3 -g -fPIC -fexceptions -ferror-limit=0 -fno-omit-frame-pointer -Wall -Wpedantic 
@@ -30,8 +30,8 @@ SHARED_ARGS := -std=c++1y -stdlib=libc++ -O3 -g -fPIC -fexceptions -ferror-limit
 # detect OS
 UNAME_S := $(shell uname -s)
 ifeq ($(UNAME_S),Linux)
-    UNAME_P := $(shell uname -p)
-    ifeq ($(UNAME_P),x86_64)
+    UNAME_M := $(shell uname -m)
+    ifeq ($(UNAME_M),x86_64)
         SHARED_ARGS += -m64
     else
         SHARED_ARGS += -m32
