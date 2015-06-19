@@ -31,5 +31,13 @@ SpecialSecondOrderDifferentialEquation<Position>::SystemState::ReadFromMessage(
   time = Instant::ReadFromMessage(message.time());
 }
 
+template<typename DifferentialEquation>
+FixedStepSizeIntegrator<DifferentialEquation>::FixedStepSizeIntegrator(
+    serialization::FixedStepSizeIntegrator::Kind const kind) : kind_(kind) {}
+
+template<typename DifferentialEquation>
+AdaptiveStepSizeIntegrator<DifferentialEquation>::AdaptiveStepSizeIntegrator(
+    serialization::AdaptiveStepSizeIntegrator::Kind const kind) : kind_(kind) {}
+
 }  // namespace integrators
 }  // namespace principia

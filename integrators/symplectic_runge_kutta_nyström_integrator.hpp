@@ -65,8 +65,10 @@ class SymplecticRungeKuttaNyströmIntegrator
   static int const stages_ = composition_ == kBA ? evaluations_
                                                  : evaluations_ + 1;
  public:
-  SymplecticRungeKuttaNyströmIntegrator(FixedVector<double, stages_> const& a,
-                                        FixedVector<double, stages_> const& b);
+  SymplecticRungeKuttaNyströmIntegrator(
+      serialization::FixedStepSizeIntegrator::Kind const kind,
+      FixedVector<double, stages_> const& a,
+      FixedVector<double, stages_> const& b);
 
   void Solve(IntegrationProblem<ODE> const& problem,
              Time const& step) const override;
