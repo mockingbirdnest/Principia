@@ -62,13 +62,13 @@ void BM_EvaluateDouble(benchmark::State& state) {  // NOLINT(runtime/references)
   ЧебышёвSeries<double> const series(coefficients, t_min, t_max);
 
   Instant t = t_min;
-  Time const ∆t = (t_max - t_min) * 1E-9;
+  Time const Δt = (t_max - t_min) * 1E-9;
   double result = 0.0;
 
   while (state.KeepRunning()) {
     for (int i = 0; i < kEvaluationsPerIteration; ++i) {
       result += series.Evaluate(t);
-      t += ∆t;
+      t += Δt;
     }
   }
 
@@ -94,13 +94,13 @@ void BM_EvaluateDisplacement(
       coefficients, t_min, t_max);
 
   Instant t = t_min;
-  Time const ∆t = (t_max - t_min) * 1E-9;
+  Time const Δt = (t_max - t_min) * 1E-9;
   Displacement<ICRFJ2000Ecliptic> result{};
 
   while (state.KeepRunning()) {
     for (int i = 0; i < kEvaluationsPerIteration; ++i) {
       result += series.Evaluate(t);
-      t += ∆t;
+      t += Δt;
     }
   }
 
