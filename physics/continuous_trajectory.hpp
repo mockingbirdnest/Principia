@@ -83,8 +83,7 @@ class ContinuousTrajectory {
     Hint();
    private:
     int index_;
-    template<typename Frame>
-    friend class ContinuousTrajectory;
+    friend class ContinuousTrajectory<Frame>;
   };
 
  private:

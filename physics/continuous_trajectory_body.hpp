@@ -5,10 +5,12 @@
 #include <vector>
 
 #include "physics/continuous_trajectory.hpp"
+#include "quantities/si.hpp"
 #include "testing_utilities/numerics.hpp"
 
 namespace principia {
 
+using si::Metre;
 using testing_utilities::ULPDistance;
 
 namespace physics {
