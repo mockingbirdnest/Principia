@@ -73,7 +73,7 @@ class ContinuousTrajectory {
 
   void WriteToMessage(
       not_null<serialization::ContinuousTrajectory*> const message) const;
-  static std::unique_ptr<ContinuousTrajectory> ReadFromMessage(
+  static not_null<std::unique_ptr<ContinuousTrajectory>> ReadFromMessage(
       serialization::ContinuousTrajectory const& message);
 
   // The only thing that clients may do with |Hint| objects is to

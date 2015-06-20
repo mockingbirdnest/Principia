@@ -1,6 +1,7 @@
 syntax = "proto2";
 
 import "serialization/geometry.proto";
+import "serialization/integrators.proto";
 import "serialization/numerics.proto";
 import "serialization/quantities.proto";
 
@@ -27,6 +28,15 @@ message ContinuousTrajectory {
   repeated ChebyshevSeries series = 7;
   optional Point first_time = 8;
   repeated InstantaneousDegreesOfFreedom last_point = 9;
+}
+
+message Ephemeris {
+  repeated MassiveBody body = 1;
+  repeated ContinuousTrajectory trajectory = 2;
+  required FixedStepSizeIntegrator planetary_integrator = 3;
+  required Quantity step = 4;
+  required Quantity fitting_tolerance = 5;
+  required SystemState last_state = 6;
 }
 
 message MassiveBody {

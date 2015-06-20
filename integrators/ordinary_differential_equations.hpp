@@ -7,6 +7,7 @@
 #include "geometry/named_quantities.hpp"
 #include "numerics/double_precision.hpp"
 #include "quantities/named_quantities.hpp"
+#include "serialization/integrators.pb.h"
 
 namespace principia {
 
@@ -20,8 +21,9 @@ namespace integrators {
 
 // A differential equation of the form q″ = f(q, t).
 // |Position| is the type of q.
-template<typename Position>
+template<typename Position_>
 struct SpecialSecondOrderDifferentialEquation {
+  using Position = Position_;
   // The type of Δq.
   using Displacement = Difference<Position>;
   // The type of q′.
@@ -33,15 +35,23 @@ struct SpecialSecondOrderDifferentialEquation {
           void(Instant const& t,
                std::vector<Position> const& positions,
                not_null<std::vector<Acceleration>*> const accelerations)>;
+
   struct SystemState {
     std::vector<DoublePrecision<Position>> positions;
     std::vector<DoublePrecision<Velocity>> velocities;
     DoublePrecision<Instant> time;
+
+    void WriteToMessage(
+        not_null<serialization::SystemState*> const message) const;
+    static SystemState ReadFromMessage(
+        serialization::SystemState const& message);
   };
+
   struct SystemStateError {
     std::vector<Displacement> position_error;
     std::vector<Velocity> velocity_error;
   };
+
   // A functor that computes f(q, t) and stores it in |*accelerations|.
   // This functor must be called with |accelerations->size()| equal to
   // |positions->size()|, but there is no requirement on the values in
@@ -101,6 +111,18 @@ class FixedStepSizeIntegrator : public Integrator<DifferentialEquation> {
   // intervals differing from |step| by at most one ULP.
   virtual void Solve(IntegrationProblem<ODE> const& problem,
                      Time const& step) const = 0;
+
+  void WriteToMessage(
+      not_null<serialization::FixedStepSizeIntegrator*> const message) const;
+  static FixedStepSizeIntegrator const& ReadFromMessage(
+      serialization::FixedStepSizeIntegrator const& message);
+
+ protected:
+  explicit FixedStepSizeIntegrator(
+      serialization::FixedStepSizeIntegrator::Kind const kind);
+
+ private:
+  serialization::FixedStepSizeIntegrator::Kind const kind_;
 };
 
 // An integrator using a fixed step size.
@@ -112,7 +134,21 @@ class AdaptiveStepSizeIntegrator : public Integrator<DifferentialEquation> {
   // |state.time.value == problem.t_final|.
   virtual void Solve(IntegrationProblem<ODE> const& problem,
                      AdaptiveStepSize<ODE> const& adaptive_step_size) const = 0;
+
+  void WriteToMessage(
+      not_null<serialization::AdaptiveStepSizeIntegrator*> const message) const;
+  static AdaptiveStepSizeIntegrator const& ReadFromMessage(
+      serialization::AdaptiveStepSizeIntegrator const& message);
+
+ protected:
+  explicit AdaptiveStepSizeIntegrator(
+      serialization::AdaptiveStepSizeIntegrator::Kind const kind);
+
+ private:
+  serialization::AdaptiveStepSizeIntegrator::Kind const kind_;
 };
 
 }  // namespace integrators
 }  // namespace principia
+
+#include "integrators/ordinary_differential_equations_body.hpp"

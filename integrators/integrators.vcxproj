@@ -133,6 +133,7 @@
     <ClInclude Include="embedded_explicit_runge_kutta_nyström_integrator_body.hpp" />
     <ClInclude Include="motion_integrator.hpp" />
     <ClInclude Include="ordinary_differential_equations.hpp" />
+    <ClInclude Include="ordinary_differential_equations_body.hpp" />
     <ClInclude Include="sprk_integrator.hpp" />
     <ClInclude Include="sprk_integrator_body.hpp" />
     <ClInclude Include="srkn_integrator.hpp" />
@@ -146,6 +147,11 @@
     <ClCompile Include="sprk_integrator_test.cpp" />
     <ClCompile Include="srkn_integrator_test.cpp" />
     <ClCompile Include="symplectic_runge_kutta_nyström_integrator_test.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\serialization\serialization.vcxproj">
+      <Project>{5c482c18-bbae-484d-a211-a25c86370061}</Project>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

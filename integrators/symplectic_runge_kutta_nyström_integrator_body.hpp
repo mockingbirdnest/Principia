@@ -18,9 +18,13 @@ template<typename Position, int order, bool time_reversible, int evaluations,
          CompositionMethod composition>
 SymplecticRungeKuttaNyströmIntegrator<Position, order, time_reversible,
                                       evaluations, composition>::
-SymplecticRungeKuttaNyströmIntegrator(FixedVector<double, stages_> const& a,
-                                      FixedVector<double, stages_> const& b)
-    : a_(a),
+SymplecticRungeKuttaNyströmIntegrator(
+    serialization::FixedStepSizeIntegrator::Kind const kind,
+    FixedVector<double, stages_> const& a,
+    FixedVector<double, stages_> const& b)
+    : FixedStepSizeIntegrator<
+          SpecialSecondOrderDifferentialEquation<Position>>(kind),
+      a_(a),
       b_(b) {
   DoublePrecision<double> c_i = 0.0;
   for (int i = 0; i < stages_; ++i) {
@@ -172,6 +176,8 @@ SymplecticRungeKuttaNyströmIntegrator<Position, 4, false, 4, kBA> const&
 McLachlanAtela1992Order4Optimal() {
   static SymplecticRungeKuttaNyströmIntegrator<
              Position, 4, false, 4, kBA> const integrator(
+      serialization::FixedStepSizeIntegrator::
+          MCLACHLAN_ATELA_1992_ORDER_4_OPTIMAL,
       { 0.5153528374311229364,
        -0.085782019412973646,
         0.4415830236164665242,
@@ -188,6 +194,7 @@ SymplecticRungeKuttaNyströmIntegrator<Position, 4, true, 4, kABA> const&
 McLachlan1995SB3A4() {
   static SymplecticRungeKuttaNyströmIntegrator<
              Position, 4, true, 4, kABA> const integrator(
+      serialization::FixedStepSizeIntegrator::MCLACHLAN_1995_SB3A_4,
       { 0.18819521776883821787,
        -0.021528551102171551201,
         0.66666666666666666667,
@@ -206,6 +213,7 @@ SymplecticRungeKuttaNyströmIntegrator<Position, 4, true, 5, kABA> const&
 McLachlan1995SB3A5() {
   static SymplecticRungeKuttaNyströmIntegrator<
              Position, 4, true, 5, kABA> const integrator(
+      serialization::FixedStepSizeIntegrator::MCLACHLAN_1995_SB3A_5,
       { 0.4051886183952522772,
        -0.2871440408165240890,
         0.3819554224212718118,
@@ -226,6 +234,7 @@ SymplecticRungeKuttaNyströmIntegrator<Position, 4, true, 6, kBAB> const&
 BlanesMoan2002SRKN6B() {
   static SymplecticRungeKuttaNyströmIntegrator<
              Position, 4, true, 6, kBAB> const integrator(
+      serialization::FixedStepSizeIntegrator::BLANES_MOAN_2002_SRKN_6B,
       { 0.24529895718427100,
         0.60487266571108000,
        -0.35017162289535100,
@@ -248,6 +257,8 @@ SymplecticRungeKuttaNyströmIntegrator<Position, 5, false, 6, kBA> const&
 McLachlanAtela1992Order5Optimal() {
   static SymplecticRungeKuttaNyströmIntegrator<
              Position, 5, false, 6, kBA> const integrator(
+      serialization::FixedStepSizeIntegrator::
+          MCLACHLAN_ATELA_1992_ORDER_5_OPTIMAL,
       { 0.339839625839110000,
        -0.088601336903027329,
         0.5858564768259621188,
@@ -268,6 +279,8 @@ SymplecticRungeKuttaNyströmIntegrator<Position, 6, true, 7, kABA> const&
 OkunborSkeel1994Order6Method13() {
   static SymplecticRungeKuttaNyströmIntegrator<
              Position, 6, true, 7, kABA> const integrator(
+      serialization::FixedStepSizeIntegrator::
+          OKUNBOR_SKEEL_1994_ORDER_6_METHOD_13,
       {-1.0130879789171747298,
         1.1874295737325427070,
        -0.018335852096460590340,
@@ -292,6 +305,7 @@ SymplecticRungeKuttaNyströmIntegrator<Position, 6, true, 11, kBAB> const&
 BlanesMoan2002SRKN11B() {
   static SymplecticRungeKuttaNyströmIntegrator<
              Position, 6, true, 11, kBAB> const integrator(
+      serialization::FixedStepSizeIntegrator::BLANES_MOAN_2002_SRKN_11B,
       { 0.12322977594627100,
         0.29055379779955800,
        -0.12704921262541700,
@@ -324,6 +338,7 @@ SymplecticRungeKuttaNyströmIntegrator<Position, 6, true, 14, kABA> const&
 BlanesMoan2002SRKN14A() {
   static SymplecticRungeKuttaNyströmIntegrator<
              Position, 6, true, 14, kABA> const integrator(
+      serialization::FixedStepSizeIntegrator::BLANES_MOAN_2002_SRKN_14A,
       { 0.037859319840611600,
         0.10263563310243500,
        -0.025867888266558700,

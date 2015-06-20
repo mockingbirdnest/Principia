@@ -44,6 +44,9 @@
     <ClInclude Include="symplectic_runge_kutta_nyström_integrator_body.hpp">
       <Filter>Source Files</Filter>
     </ClInclude>
+    <ClInclude Include="ordinary_differential_equations_body.hpp">
+      <Filter>Source Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="simple_harmonic_motion.cpp">

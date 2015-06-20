@@ -12,6 +12,7 @@
 #include "quantities/named_quantities.hpp"
 #include "quantities/si.hpp"
 #include "serialization/geometry.pb.h"
+#include "serialization/physics.pb.h"
 #include "testing_utilities/almost_equals.hpp"
 #include "testing_utilities/numerics.hpp"
 #include "testing_utilities/solar_system.hpp"
@@ -82,8 +83,8 @@ class EphemerisTest : public testing::Test {
 
     bodies->push_back(std::move(earth));
     bodies->push_back(std::move(moon));
-    initial_state->push_back(DegreesOfFreedom<EarthMoonOrbitPlane>(q1, v1));
-    initial_state->push_back(DegreesOfFreedom<EarthMoonOrbitPlane>(q2, v2));
+    initial_state->emplace_back(q1, v1);
+    initial_state->emplace_back(q2, v2);
   }
 
   Instant t0_;
@@ -598,6 +599,51 @@ TEST_F(EphemerisTest, Sputnik1ToSputnik2) {
             << SolarSystem::name(i);
       }
     }
+  }
+}
+
+TEST_F(EphemerisTest, Serialization) {
+  std::vector<not_null<std::unique_ptr<MassiveBody const>>> bodies;
+  std::vector<DegreesOfFreedom<EarthMoonOrbitPlane>> initial_state;
+  Position<EarthMoonOrbitPlane> centre_of_mass;
+  Time period;
+  SetUpEarthMoonSystem(&bodies, &initial_state, &centre_of_mass, &period);
+
+  MassiveBody const* const earth = bodies[0].get();
+  MassiveBody const* const moon = bodies[1].get();
+
+  Ephemeris<EarthMoonOrbitPlane>
+      ephemeris(
+          std::move(bodies),
+          initial_state,
+          t0_,
+          McLachlanAtela1992Order5Optimal<Position<EarthMoonOrbitPlane>>(),
+          period / 100,
+          5 * Milli(Metre));
+  ephemeris.Prolong(t0_ + period);
+
+  serialization::Ephemeris message;
+  ephemeris.WriteToMessage(&message);
+
+  auto const ephemeris_read =
+      Ephemeris<EarthMoonOrbitPlane>::ReadFromMessage(message);
+  MassiveBody const* const earth_read = ephemeris_read->bodies()[0];
+  MassiveBody const* const moon_read = ephemeris_read->bodies()[1];
+
+
+  EXPECT_EQ(ephemeris.t_min(), ephemeris_read->t_min());
+  EXPECT_EQ(ephemeris.t_max(), ephemeris_read->t_max());
+  for (Instant time = ephemeris.t_min();
+       time <= ephemeris.t_max();
+       time += (ephemeris.t_max() - ephemeris.t_min()) / 100) {
+    EXPECT_EQ(ephemeris.trajectory(earth).EvaluateDegreesOfFreedom(
+                  time, nullptr /*hint*/),
+              ephemeris_read->trajectory(earth_read).EvaluateDegreesOfFreedom(
+                  time, nullptr /*hint*/));
+    EXPECT_EQ(ephemeris.trajectory(moon).EvaluateDegreesOfFreedom(
+                  time, nullptr /*hint*/),
+              ephemeris_read->trajectory(moon_read).EvaluateDegreesOfFreedom(
+                  time, nullptr /*hint*/));
   }
 }
 

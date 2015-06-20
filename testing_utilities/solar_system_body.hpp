@@ -12,7 +12,6 @@
 #include "geometry/named_quantities.hpp"
 #include "geometry/point.hpp"
 #include "physics/massive_body.hpp"
-#include "physics/n_body_system.hpp"
 #include "physics/oblate_body.hpp"
 #include "physics/trajectory.hpp"
 #include "quantities/named_quantities.hpp"
@@ -31,7 +30,6 @@ using geometry::Point;
 using geometry::Rotation;
 using geometry::Vector;
 using physics::MassiveBody;
-using physics::NBodySystem;
 using physics::OblateBody;
 using physics::Trajectory;
 using quantities::Angle;
@@ -1099,9 +1097,9 @@ inline SolarSystem::Bodies SolarSystem::massive_bodies() {
   return std::move(massive_bodies_);
 }
 
-inline physics::NBodySystem<ICRFJ2000Ecliptic>::Trajectories
+inline std::vector<not_null<Trajectory<ICRFJ2000Ecliptic>*>>
 SolarSystem::trajectories() const {
-  physics::NBodySystem<ICRFJ2000Ecliptic>::Trajectories result;
+  std::vector<not_null<Trajectory<ICRFJ2000Ecliptic>*>> result;
   for (auto const& trajectory : trajectories_) {
     result.push_back(trajectory.get());
   }

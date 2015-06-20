@@ -19,3 +19,20 @@ message ChebyshevSeries {
   required Point t_min = 2;
   required Point t_max = 3;
 }
+
+message DoublePrecision {
+  message Error {
+    oneof error {
+      Quantity quantity = 1;
+      Multivector multivector = 2;
+    }
+  }
+  message Value {
+    oneof value {
+      Point point = 1;
+      Multivector multivector = 2;
+    }
+  }
+  required Value value = 1;
+  required Error error = 2;
+}

@@ -9,7 +9,7 @@
 #include "geometry/named_quantities.hpp"
 #include "geometry/rotation.hpp"
 #include "physics/degrees_of_freedom.hpp"
-#include "physics/n_body_system.hpp"
+#include "physics/trajectory.hpp"
 #include "quantities/quantities.hpp"
 #include "quantities/si.hpp"
 #include "serialization/geometry.pb.h"
@@ -19,6 +19,7 @@ namespace principia {
 using base::not_null;
 using geometry::Frame;
 using physics::DegreesOfFreedom;
+using physics::Trajectory;
 
 namespace testing_utilities {
 
@@ -125,7 +126,7 @@ class SolarSystem {
   Bodies massive_bodies();
 
   // This class retains ownership of the trajectories.
-  physics::NBodySystem<ICRFJ2000Ecliptic>::Trajectories trajectories() const;
+  std::vector<not_null<Trajectory<ICRFJ2000Ecliptic>*>> trajectories() const;
 
   std::vector<DegreesOfFreedom<ICRFJ2000Ecliptic>> initial_state() const;
 

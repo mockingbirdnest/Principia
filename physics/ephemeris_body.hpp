@@ -84,12 +84,12 @@ Ephemeris<Frame>::Ephemeris(
     unowned_bodies_.push_back(body.get());
 
     auto const inserted = bodies_to_trajectories_.emplace(
-                              std::piecewise_construct,
-                              std::forward_as_tuple(body.get()),
-                              std::forward_as_tuple(step_,
-                                                    fitting_tolerance_));
+                              body.get(),
+                              std::make_unique<ContinuousTrajectory<Frame>>(
+                                  step_, fitting_tolerance_));
     CHECK(inserted.second);
-    ContinuousTrajectory<Frame>* const trajectory = &inserted.first->second;
+    ContinuousTrajectory<Frame>* const trajectory =
+        inserted.first->second.get();
     trajectory->Append(initial_time, degrees_of_freedom);
 
     if (body->is_oblate()) {
@@ -126,14 +126,14 @@ std::vector<MassiveBody const*> const& Ephemeris<Frame>::bodies() const {
 template<typename Frame>
 ContinuousTrajectory<Frame> const& Ephemeris<Frame>::trajectory(
     not_null<MassiveBody const*> body) const {
-  return FindOrDie(bodies_to_trajectories_, body);
+  return *FindOrDie(bodies_to_trajectories_, body);
 }
 
 template<typename Frame>
 bool Ephemeris<Frame>::empty() const {
   for (auto const& pair : bodies_to_trajectories_) {
-    ContinuousTrajectory<Frame> const& trajectory = pair.second;
-    if (trajectory.empty()) {
+    auto const& trajectory = pair.second;
+    if (trajectory->empty()) {
       return true;
     }
   }
@@ -144,18 +144,18 @@ template<typename Frame>
 Instant Ephemeris<Frame>::t_min() const {
   Instant t_min;
   for (auto const& pair : bodies_to_trajectories_) {
-    ContinuousTrajectory<Frame> const& trajectory = pair.second;
-    t_min = std::max(t_min, trajectory.t_min());
+    auto const& trajectory = pair.second;
+    t_min = std::max(t_min, trajectory->t_min());
   }
   return t_min;
 }
 
 template<typename Frame>
 Instant Ephemeris<Frame>::t_max() const {
-  Instant t_max = bodies_to_trajectories_.begin()->second.t_max();
+  Instant t_max = bodies_to_trajectories_.begin()->second->t_max();
   for (auto const& pair : bodies_to_trajectories_) {
-    ContinuousTrajectory<Frame> const& trajectory = pair.second;
-    t_max = std::min(t_max, trajectory.t_max());
+    auto const& trajectory = pair.second;
+    t_max = std::min(t_max, trajectory->t_max());
   }
   return t_max;
 }
@@ -270,8 +270,71 @@ void Ephemeris<Frame>::FlowWithFixedStep(
 }
 
 template<typename Frame>
+void Ephemeris<Frame>::WriteToMessage(
+    not_null<serialization::Ephemeris*> const message) const {
+  // The bodies are serialized in the order in which they were given at
+  // construction.
+  for (auto const& unowned_body : unowned_bodies_) {
+    unowned_body->WriteToMessage(message->add_body());
+  }
+  // The trajectories are serialized in the order resulting from the separation
+  // between oblate and spherical bodies.
+  for (auto const& trajectory : trajectories_) {
+    trajectory->WriteToMessage(message->add_trajectory());
+  }
+  planetary_integrator_.WriteToMessage(message->mutable_planetary_integrator());
+  step_.WriteToMessage(message->mutable_step());
+  fitting_tolerance_.WriteToMessage(message->mutable_fitting_tolerance());
+  last_state_.WriteToMessage(message->mutable_last_state());
+}
+
+template<typename Frame>
+not_null<std::unique_ptr<Ephemeris<Frame>>> Ephemeris<Frame>::ReadFromMessage(
+    serialization::Ephemeris const& message) {
+  std::vector<not_null<std::unique_ptr<MassiveBody const>>> bodies;
+  for (auto const& body : message.body()) {
+    bodies.push_back(MassiveBody::ReadFromMessage(body));
+  }
+  auto const& planetary_integrator =
+      FixedStepSizeIntegrator<NewtonianMotionEquation>::ReadFromMessage(
+          message.planetary_integrator());
+  auto const step = Time::ReadFromMessage(message.step());
+  auto const fitting_tolerance =
+      Length::ReadFromMessage(message.fitting_tolerance());
+
+  // Dummy initial state and time.  We'll overwrite them later.
+  std::vector<DegreesOfFreedom<Frame>> const initial_state(
+      bodies.size(),
+      DegreesOfFreedom<Frame>(Position<Frame>(), Velocity<Frame>()));
+  Instant const initial_time;
+  not_null<std::unique_ptr<Ephemeris<Frame>>> ephemeris =
+      std::make_unique<Ephemeris<Frame>>(std::move(bodies),
+                                         initial_state,
+                                         initial_time,
+                                         planetary_integrator,
+                                         step,
+                                         fitting_tolerance);
+  ephemeris->last_state_ =
+      NewtonianMotionEquation::SystemState::ReadFromMessage(
+          message.last_state());
+  int index = 0;
+  ephemeris->bodies_to_trajectories_.clear();
+  for (auto const& trajectory : message.trajectory()) {
+    not_null<MassiveBody const*> const body = ephemeris->bodies_[index].get();
+    not_null<std::unique_ptr<ContinuousTrajectory<Frame>>>
+        deserialized_trajectory =
+            ContinuousTrajectory<Frame>::ReadFromMessage(trajectory);
+    ephemeris->trajectories_.push_back(deserialized_trajectory.get());
+    ephemeris->bodies_to_trajectories_.emplace(
+        body, std::move(deserialized_trajectory));
+    ++index;
+  }
+  return ephemeris;
+}
+
+template<typename Frame>
 void Ephemeris<Frame>::AppendMassiveBodiesState(
-         typename NewtonianMotionEquation::SystemState const& state) {
+    typename NewtonianMotionEquation::SystemState const& state) {
   last_state_ = state;
   int index = 0;
   for (auto& trajectory : trajectories_) {
@@ -285,8 +348,8 @@ void Ephemeris<Frame>::AppendMassiveBodiesState(
 
 template<typename Frame>
 void Ephemeris<Frame>::AppendMasslessBodiesState(
-         typename NewtonianMotionEquation::SystemState const& state,
-         std::vector<not_null<Trajectory<Frame>*>> const& trajectories) {
+    typename NewtonianMotionEquation::SystemState const& state,
+    std::vector<not_null<Trajectory<Frame>*>> const& trajectories) {
   int index = 0;
   for (auto& trajectory : trajectories) {
     trajectory->Append(
