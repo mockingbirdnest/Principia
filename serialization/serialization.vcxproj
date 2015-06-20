@@ -96,6 +96,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="geometry.pb.h" />
+    <ClInclude Include="integrators.pb.h" />
     <ClInclude Include="ksp_plugin.pb.h" />
     <ClInclude Include="numerics.pb.h" />
     <ClInclude Include="physics.pb.h" />
@@ -103,6 +104,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="geometry.pb.cc" />
+    <ClCompile Include="integrators.pb.cc" />
     <ClCompile Include="ksp_plugin.pb.cc" />
     <ClCompile Include="numerics.pb.cc" />
     <ClCompile Include="physics.pb.cc" />

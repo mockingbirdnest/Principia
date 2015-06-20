@@ -16,6 +16,7 @@
     <CustomBuild Include="physics.proto" />
     <CustomBuild Include="ksp_plugin.proto" />
     <CustomBuild Include="numerics.proto" />
+    <CustomBuild Include="integrators.proto" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="geometry.pb.h">
@@ -31,6 +32,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="numerics.pb.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="integrators.pb.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -50,8 +54,8 @@
     <ClCompile Include="numerics.pb.cc">
       <Filter>Source Files</Filter>
     </ClCompile>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="integrators.proto" />
+    <ClCompile Include="integrators.pb.cc">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>
