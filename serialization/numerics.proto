@@ -12,6 +12,7 @@ message ChebyshevSeries {
     oneof coefficient {
       double double = 1;
       Quantity quantity = 2;
+      Multivector multivector = 3;
     }
   }
   repeated Coefficient coefficient = 1;

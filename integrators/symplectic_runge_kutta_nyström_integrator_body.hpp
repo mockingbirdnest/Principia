@@ -93,9 +93,9 @@ void SymplecticRungeKuttaNyströmIntegrator<Position, order, time_reversible,
   DoublePrecision<Instant>& t = current_state.time;
 
   // Position increment.
-  std::vector<Displacement> ∆q(dimension);
+  std::vector<Displacement> Δq(dimension);
   // Velocity increment.
-  std::vector<Velocity> ∆v(dimension);
+  std::vector<Velocity> Δv(dimension);
   // Current position.  This is a non-const reference whose purpose is to make
   // the equations more readable.
   std::vector<DoublePrecision<Position>>& q = current_state.positions;
@@ -126,30 +126,30 @@ void SymplecticRungeKuttaNyströmIntegrator<Position, order, time_reversible,
       break;
     }
 
-    std::fill(∆q.begin(), ∆q.end(), Displacement{});
-    std::fill(∆v.begin(), ∆v.end(), Velocity{});
+    std::fill(Δq.begin(), Δq.end(), Displacement{});
+    std::fill(Δv.begin(), Δv.end(), Velocity{});
 
     if (first_stage == 1) {
       for (int k = 0; k < dimension; ++k) {
         if (composition == kBAB) {
           // exp(b₀ h B)
-          ∆v[k] += h * b_[0] * g[k];
+          Δv[k] += h * b_[0] * g[k];
         }
         // exp(a₀ h A)
-        ∆q[k] += h * a_[0] * (v[k].value + ∆v[k]);
+        Δq[k] += h * a_[0] * (v[k].value + Δv[k]);
       }
     }
 
     for (int i = first_stage; i < stages_; ++i) {
       for (int k = 0; k < dimension; ++k) {
-        q_stage[k] = q[k].value + ∆q[k];
+        q_stage[k] = q[k].value + Δq[k];
       }
       problem.equation.compute_acceleration(t.value + c_[i] * h, q_stage, &g);
       for (int k = 0; k < dimension; ++k) {
         // exp(bᵢ h B)
-        ∆v[k] += h * b_[i] * g[k];
+        Δv[k] += h * b_[i] * g[k];
         // exp(aᵢ h A)
-        ∆q[k] += h * a_[i] * (v[k].value + ∆v[k]);
+        Δq[k] += h * a_[i] * (v[k].value + Δv[k]);
       }
     }
 
@@ -160,8 +160,8 @@ void SymplecticRungeKuttaNyströmIntegrator<Position, order, time_reversible,
     // Increment the solution.
     t.Increment(h);
     for (int k = 0; k < dimension; ++k) {
-      q[k].Increment(∆q[k]);
-      v[k].Increment(∆v[k]);
+      q[k].Increment(Δq[k]);
+      v[k].Increment(Δv[k]);
     }
     problem.append_state(current_state);
   }

@@ -10,8 +10,8 @@
 
 namespace principia {
 
+using quantities::DoubleOrQuantitySerializer;
 using quantities::Quantity;
-using quantities::QuantityOrDoubleSerializer;
 using quantities::SIUnit;
 
 namespace geometry {
@@ -108,7 +108,7 @@ template<typename Scalar>
 void R3Element<Scalar>::WriteToMessage(
     not_null<serialization::R3Element*> const message) const {
   using Serializer =
-      QuantityOrDoubleSerializer<Scalar, serialization::R3Element::Coordinate>;
+      DoubleOrQuantitySerializer<Scalar, serialization::R3Element::Coordinate>;
   Serializer::WriteToMessage(x, message->mutable_x());
   Serializer::WriteToMessage(y, message->mutable_y());
   Serializer::WriteToMessage(z, message->mutable_z());
@@ -118,7 +118,7 @@ template<typename Scalar>
 R3Element<Scalar> R3Element<Scalar>::ReadFromMessage(
     serialization::R3Element const& message) {
   using Serializer =
-      QuantityOrDoubleSerializer<Scalar, serialization::R3Element::Coordinate>;
+      DoubleOrQuantitySerializer<Scalar, serialization::R3Element::Coordinate>;
   return {Serializer::ReadFromMessage(message.x()),
           Serializer::ReadFromMessage(message.y()),
           Serializer::ReadFromMessage(message.z())};
