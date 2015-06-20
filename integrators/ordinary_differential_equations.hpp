@@ -21,8 +21,9 @@ namespace integrators {
 
 // A differential equation of the form q″ = f(q, t).
 // |Position| is the type of q.
-template<typename Position>
+template<typename Position_>
 struct SpecialSecondOrderDifferentialEquation {
+  using Position = Position_;
   // The type of Δq.
   using Displacement = Difference<Position>;
   // The type of q′.

@@ -26,6 +26,7 @@ namespace physics {
 template<typename Frame>
 class DegreesOfFreedom : public Pair<Position<Frame>, Velocity<Frame>> {
  public:
+   DegreesOfFreedom();
   DegreesOfFreedom(Position<Frame> const& position,
                    Velocity<Frame> const& velocity);
 

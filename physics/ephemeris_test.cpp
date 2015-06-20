@@ -83,8 +83,8 @@ class EphemerisTest : public testing::Test {
 
     bodies->push_back(std::move(earth));
     bodies->push_back(std::move(moon));
-    initial_state->push_back(DegreesOfFreedom<EarthMoonOrbitPlane>(q1, v1));
-    initial_state->push_back(DegreesOfFreedom<EarthMoonOrbitPlane>(q2, v2));
+    initial_state->emplace_back(q1, v1);
+    initial_state->emplace_back(q2, v2);
   }
 
   Instant t0_;
@@ -608,9 +608,6 @@ TEST_F(EphemerisTest, Serialization) {
   Position<EarthMoonOrbitPlane> centre_of_mass;
   Time period;
   SetUpEarthMoonSystem(&bodies, &initial_state, &centre_of_mass, &period);
-
-  MassiveBody const* const earth = bodies[0].get();
-  MassiveBody const* const moon = bodies[1].get();
 
   Ephemeris<EarthMoonOrbitPlane>
       ephemeris(

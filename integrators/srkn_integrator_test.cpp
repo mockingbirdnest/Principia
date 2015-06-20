@@ -113,7 +113,6 @@ TEST_P(SRKNTest, ConsistentWeights) {
   // integrating uniform linear motion.
   // We check this for all schemes.
   Speed const v = 1 * Metre / Second;
-  Mass const m = 1 * Kilogram;
   auto compute_acceleration = [v](
       Time const& t,
       std::vector<Length> const& q,

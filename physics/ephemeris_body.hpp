@@ -84,10 +84,9 @@ Ephemeris<Frame>::Ephemeris(
     unowned_bodies_.push_back(body.get());
 
     auto const inserted = bodies_to_trajectories_.emplace(
-                              std::piecewise_construct,
-                              std::forward_as_tuple(body.get()),
-                              std::forward_as_tuple(step_,
-                                                    fitting_tolerance_));
+                              body.get(),
+                              std::make_unique<ContinuousTrajectory<Frame>>(
+                                  step_, fitting_tolerance_));
     CHECK(inserted.second);
     ContinuousTrajectory<Frame>* const trajectory =
         inserted.first->second.get();
@@ -307,7 +306,7 @@ not_null<std::unique_ptr<Ephemeris<Frame>>> Ephemeris<Frame>::ReadFromMessage(
   std::vector<DegreesOfFreedom<Frame>> const initial_state(bodies.size());
   Instant const initial_time;
   not_null<std::unique_ptr<Ephemeris<Frame>>> ephemeris =
-      std::make_unique<Ephemeris<Frame>>(bodies,
+      std::make_unique<Ephemeris<Frame>>(std::move(bodies),
                                          initial_state,
                                          initial_time,
                                          planetary_integrator,
@@ -317,12 +316,15 @@ not_null<std::unique_ptr<Ephemeris<Frame>>> Ephemeris<Frame>::ReadFromMessage(
       NewtonianMotionEquation::SystemState::ReadFromMessage(
           message.last_state());
   int index = 0;
+  ephemeris->bodies_to_trajectories_.clear();
   for (auto const& trajectory : message.trajectory()) {
     not_null<MassiveBody const*> const body = ephemeris->bodies_[index].get();
-    auto deserialized_trajectory =
-        ContinuousTrajectory<Frame>::ReadFromMessage(trajectory);
+    not_null<std::unique_ptr<ContinuousTrajectory<Frame>>>
+        deserialized_trajectory =
+            ContinuousTrajectory<Frame>::ReadFromMessage(trajectory);
     ephemeris->trajectories_.push_back(deserialized_trajectory.get());
-    swap(deserialized_trajectory, ephemeris->bodies_to_trajectories_[body]);
+    ephemeris->bodies_to_trajectories_.emplace(
+        body, std::move(deserialized_trajectory));
     ++index;
   }
   return ephemeris;

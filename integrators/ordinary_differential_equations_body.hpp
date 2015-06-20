@@ -54,21 +54,24 @@ FixedStepSizeIntegrator<DifferentialEquation>::ReadFromMessage(
   using FSSI = serialization::FixedStepSizeIntegrator;
   switch (message.kind()) {
     case FSSI::BLANES_MOAN_2002_SRKN_6B:
-      return BlanesMoan2002SRKN6B();
+      return BlanesMoan2002SRKN6B<typename DifferentialEquation::Position>();
     case FSSI::BLANES_MOAN_2002_SRKN_11B:
-      return BlanesMoan2002SRKN11B();
+      return BlanesMoan2002SRKN11B<typename DifferentialEquation::Position>();
     case FSSI::BLANES_MOAN_2002_SRKN_14A:
-      return BlanesMoan2002SRKN14A();
+      return BlanesMoan2002SRKN14A<typename DifferentialEquation::Position>();
     case FSSI::MCLACHLAN_1995_SB3A_4:
-      return McLachlan1995SB3A4();
+      return McLachlan1995SB3A4<typename DifferentialEquation::Position>();
     case FSSI::MCLACHLAN_1995_SB3A_5:
-      return McLachlan1995SB3A5();
+      return McLachlan1995SB3A5<typename DifferentialEquation::Position>();
     case FSSI::MCLACHLAN_ATELA_1992_ORDER_4_OPTIMAL:
-      return McLachlanAtela1992Order4Optimal();
+      return McLachlanAtela1992Order4Optimal<
+                 typename DifferentialEquation::Position>();
     case FSSI::MCLACHLAN_ATELA_1992_ORDER_5_OPTIMAL:
-      return McLachlanAtela1992Order5Optimal();
+      return McLachlanAtela1992Order5Optimal<
+                 typename DifferentialEquation::Position>();
     case FSSI::OKUNBOR_SKEEL_1994_ORDER_6_METHOD_13:
-      return OkunborSkeel1994Order6Method13();
+      return OkunborSkeel1994Order6Method13<
+                 typename DifferentialEquation::Position>();
   }
 }
 
@@ -89,7 +92,8 @@ AdaptiveStepSizeIntegrator<DifferentialEquation>::ReadFromMessage(
   using ASSI = serialization::AdaptiveStepSizeIntegrator;
   switch (message.kind()) {
     case ASSI::DORMAND_ELMIKKAWY_PRINCE_1986_RKN_434FM:
-      return DormandElMikkawyPrince1986RKN434FM();
+      return DormandElMikkawyPrince1986RKN434FM<
+                 typename DifferentialEquation::Position>();
   }
 }
 
