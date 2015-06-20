@@ -295,7 +295,7 @@ std::unique_ptr<Ephemeris<Frame>> Ephemeris<Frame>::ReadFromMessage(
   for (auto const& body : message.body()) {
     bodies.push_back(MassiveBody::ReadFromMessage(body));
   }
-  auto const planetary_integrator =
+  auto const& planetary_integrator =
       FixedStepSizeIntegrator<NewtonianMotionEquation>::ReadFromMessage(
           message.planetary_integrator());
   auto const step = Time::ReadFromMessage(message.step());
@@ -304,19 +304,21 @@ std::unique_ptr<Ephemeris<Frame>> Ephemeris<Frame>::ReadFromMessage(
 
   // A dummy initial state.  We'll overwrite it later.
   std::vector<DegreesOfFreedom<Frame>> const initial_state(bodies.size());
-  auto const ephemeris =
+  auto ephemeris =
       std::make_unique<Ephemeris<Frame>>(bodies,
                                          initial_state,
                                          planetary_integrator,
                                          step,
                                          fitting_tolerance);
-  ephemeris_->last_state =
+  ephemeris->last_state_ =
       NewtonianMotionEquation::SystemState::ReadFromMessage(
           message.last_state());
   for (auto const& trajectory : message.trajectory()) {
-    ephemeris_->trajectories_.push_back(
-        ContinuousTrajectory<Frame>::ReadFromMessage(trajectory));
+    ephemeris->trajectories_.push_back(
+        ContinuousTrajectory<Frame>::ReadFromMessage(trajectory).get());
+    //TODO(phl):The map!
   }
+  return ephemeris;
 }
 
 template<typename Frame>

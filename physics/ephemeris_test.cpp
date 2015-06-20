@@ -623,6 +623,9 @@ TEST_F(EphemerisTest, Serialization) {
 
   serialization::Ephemeris message;
   ephemeris.WriteToMessage(&message);
+
+  auto const ephemeris_read =
+      Ephemeris<EarthMoonOrbitPlane>::ReadFromMessage(message);
 }
 
 }  // namespace physics

@@ -22,13 +22,17 @@ template<typename Position>
 typename SpecialSecondOrderDifferentialEquation<Position>::SystemState
 SpecialSecondOrderDifferentialEquation<Position>::SystemState::ReadFromMessage(
         serialization::SystemState const& message) {
+  SystemState system_state;
   for (auto const p : message.position()) {
-    positions.push_back(DoublePrecision<Position>::ReadFromMessage(p));
+    system_state.positions.push_back(
+        DoublePrecision<Position>::ReadFromMessage(p));
   }
   for (auto const v : message.velocity()) {
-    velocities.push_back(DoublePrecision<Velocity>::ReadFromMessage(v));
+    system_state.velocities.push_back(
+        DoublePrecision<Velocity>::ReadFromMessage(v));
   }
-  time = Instant::ReadFromMessage(message.time());
+  system_state.time = DoublePrecision<Instant>::ReadFromMessage(message.time());
+  return system_state;
 }
 
 template<typename DifferentialEquation>
