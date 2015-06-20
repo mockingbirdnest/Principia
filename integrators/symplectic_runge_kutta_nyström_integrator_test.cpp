@@ -17,6 +17,7 @@ namespace principia {
 using quantities::Acceleration;
 using quantities::AngularFrequency;
 using quantities::Cos;
+using quantities::Energy;
 using quantities::Length;
 using quantities::Mass;
 using quantities::Pow;
@@ -89,7 +90,6 @@ void Test1000SecondsAt1Millisecond(
   Speed const v_initial = 0 * Metre / Second;
   Speed const v_amplitude = 1 * Metre / Second;
   AngularFrequency const ω = 1 * Radian / Second;
-  Time const period = 2 * π * Second;
   Instant const t_initial;
   Instant const t_final = t_initial + 1000 * Second;
   Time const step = 1 * Milli(Second);
@@ -148,7 +148,6 @@ void TestConvergence(Integrator const& integrator,
   Speed const v_initial = 0 * Metre / Second;
   Speed const v_amplitude = 1 * Metre / Second;
   AngularFrequency const ω = 1 * Radian / Second;
-  Time const period = 2 * π * Second;
   Instant const t_initial;
   Instant const t_final = t_initial + 100 * Second;
 
@@ -224,9 +223,6 @@ void TestSymplecticity(Integrator const& integrator,
                        Energy const& expected_energy_error) {
   Length const q_initial = 1 * Metre;
   Speed const v_initial = 0 * Metre / Second;
-  Speed const v_amplitude = 1 * Metre / Second;
-  AngularFrequency const ω = 1 * Radian / Second;
-  Time const period = 2 * π * Second;
   Instant const t_initial;
   Instant const t_final = t_initial + 500 * Second;
   Time const step = 0.2 * Second;
@@ -285,15 +281,12 @@ void TestTimeReversibility(Integrator const& integrator) {
   Length const q_initial = 1 * Metre;
   Speed const v_initial = 0 * Metre / Second;
   Speed const v_amplitude = 1 * Metre / Second;
-  AngularFrequency const ω = 1 * Radian / Second;
-  Time const period = 2 * π * Second;
   Instant const t_initial;
   Instant const t_final = t_initial + 100 * Second;
   Time const step = 1 * Second;
 
   std::vector<ODE::SystemState> solution;
   ODE harmonic_oscillator;
-  harmonic_oscillator.compute_acceleration =
       std::bind(ComputeHarmonicOscillatorAcceleration,
                 _1, _2, _3, nullptr /*evaluations*/);
   IntegrationProblem<ODE> problem;
@@ -437,6 +430,13 @@ std::vector<SimpleHarmonicMotionTestInstance> Instances() {
 
 }  // namespace
 
+// Beware!  Unicode minefield ahead!
+// The name of this class and subsequent tests is not what you think.  It turns
+// out that if we use a 'LATIN SMALL LETTER O WITH DIAERESIS' (U+00F6) some of
+// the tools that process tests interpret it as a 'DIVISION SIGN' (U+00F7) and
+// fail.  To avoid these problems, we use a 'LATIN SMALL LETTER O' (U+006F)
+// followed by a 'COMBINING DIAERESIS' (U+0308) as it seems that the code points
+// in the "upper half" are those that cause trouble.
 class SymplecticRungeKuttaNyströmIntegratorTest
     : public ::testing::TestWithParam<SimpleHarmonicMotionTestInstance> {
  public:
