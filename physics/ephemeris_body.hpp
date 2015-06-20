@@ -89,7 +89,8 @@ Ephemeris<Frame>::Ephemeris(
                               std::forward_as_tuple(step_,
                                                     fitting_tolerance_));
     CHECK(inserted.second);
-    ContinuousTrajectory<Frame>* const trajectory = &inserted.first->second;
+    ContinuousTrajectory<Frame>* const trajectory =
+        inserted.first->second.get();
     trajectory->Append(initial_time, degrees_of_freedom);
 
     if (body->is_oblate()) {
@@ -126,14 +127,14 @@ std::vector<MassiveBody const*> const& Ephemeris<Frame>::bodies() const {
 template<typename Frame>
 ContinuousTrajectory<Frame> const& Ephemeris<Frame>::trajectory(
     not_null<MassiveBody const*> body) const {
-  return FindOrDie(bodies_to_trajectories_, body);
+  return *FindOrDie(bodies_to_trajectories_, body);
 }
 
 template<typename Frame>
 bool Ephemeris<Frame>::empty() const {
   for (auto const& pair : bodies_to_trajectories_) {
-    ContinuousTrajectory<Frame> const& trajectory = pair.second;
-    if (trajectory.empty()) {
+    auto const& trajectory = pair.second;
+    if (trajectory->empty()) {
       return true;
     }
   }
@@ -152,10 +153,10 @@ Instant Ephemeris<Frame>::t_min() const {
 
 template<typename Frame>
 Instant Ephemeris<Frame>::t_max() const {
-  Instant t_max = bodies_to_trajectories_.begin()->second.t_max();
+  Instant t_max = bodies_to_trajectories_.begin()->second->t_max();
   for (auto const& pair : bodies_to_trajectories_) {
-    ContinuousTrajectory<Frame> const& trajectory = pair.second;
-    t_max = std::min(t_max, trajectory.t_max());
+    auto const& trajectory = pair.second;
+    t_max = std::min(t_max, trajectory->t_max());
   }
   return t_max;
 }
@@ -289,7 +290,7 @@ void Ephemeris<Frame>::WriteToMessage(
 }
 
 template<typename Frame>
-std::unique_ptr<Ephemeris<Frame>> Ephemeris<Frame>::ReadFromMessage(
+not_null<std::unique_ptr<Ephemeris<Frame>>> Ephemeris<Frame>::ReadFromMessage(
     serialization::Ephemeris const& message) {
   std::vector<not_null<std::unique_ptr<MassiveBody const>>> bodies;
   for (auto const& body : message.body()) {
@@ -305,7 +306,7 @@ std::unique_ptr<Ephemeris<Frame>> Ephemeris<Frame>::ReadFromMessage(
   // Dummy initial state and time.  We'll overwrite them later.
   std::vector<DegreesOfFreedom<Frame>> const initial_state(bodies.size());
   Instant const initial_time;
-  auto ephemeris =
+  not_null<std::unique_ptr<Ephemeris<Frame>>> ephemeris =
       std::make_unique<Ephemeris<Frame>>(bodies,
                                          initial_state,
                                          initial_time,
@@ -315,10 +316,14 @@ std::unique_ptr<Ephemeris<Frame>> Ephemeris<Frame>::ReadFromMessage(
   ephemeris->last_state_ =
       NewtonianMotionEquation::SystemState::ReadFromMessage(
           message.last_state());
+  int index = 0;
   for (auto const& trajectory : message.trajectory()) {
-    ephemeris->trajectories_.push_back(
-        ContinuousTrajectory<Frame>::ReadFromMessage(trajectory).get());
-    //TODO(phl):The map!
+    not_null<MassiveBody const*> const body = ephemeris->bodies_[index].get();
+    auto deserialized_trajectory =
+        ContinuousTrajectory<Frame>::ReadFromMessage(trajectory);
+    ephemeris->trajectories_.push_back(deserialized_trajectory.get());
+    swap(deserialized_trajectory, ephemeris->bodies_to_trajectories_[body]);
+    ++index;
   }
   return ephemeris;
 }
