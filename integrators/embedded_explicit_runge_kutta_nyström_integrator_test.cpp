@@ -59,10 +59,10 @@ double HarmonicOscillatorToleranceRatio(
 
 }  // namespace
 
-class EmbeddedExplicitRungeKuttaNyströmIntegratorTest
+class EmbeddedExplicitRungeKuttaNyströmIntegratorTest
     : public ::testing::Test {};
 
-TEST_F(EmbeddedExplicitRungeKuttaNyströmIntegratorTest,
+TEST_F(EmbeddedExplicitRungeKuttaNyströmIntegratorTest,
        HarmonicOscillatorBackAndForth) {
   AdaptiveStepSizeIntegrator<ODE> const& integrator =
       DormandElMikkawyPrince1986RKN434FM<Length>();

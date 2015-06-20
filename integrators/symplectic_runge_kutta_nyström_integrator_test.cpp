@@ -17,7 +17,6 @@ namespace principia {
 using quantities::Acceleration;
 using quantities::AngularFrequency;
 using quantities::Cos;
-using quantities::Energy;
 using quantities::Length;
 using quantities::Mass;
 using quantities::Pow;
@@ -438,34 +437,34 @@ std::vector<SimpleHarmonicMotionTestInstance> Instances() {
 
 }  // namespace
 
-class SymplecticRungeKuttaNyströmIntegratorTest
+class SymplecticRungeKuttaNyströmIntegratorTest
     : public ::testing::TestWithParam<SimpleHarmonicMotionTestInstance> {
  public:
-  SymplecticRungeKuttaNyströmIntegratorTest() {
+  SymplecticRungeKuttaNyströmIntegratorTest() {
     google::LogToStderr();
   }
 };
 
-INSTANTIATE_TEST_CASE_P(SymplecticRungeKuttaNyströmIntegratorTests,
-                        SymplecticRungeKuttaNyströmIntegratorTest,
+INSTANTIATE_TEST_CASE_P(SymplecticRungeKuttaNyströmIntegratorTests,
+                        SymplecticRungeKuttaNyströmIntegratorTest,
                         ValuesIn(Instances()));
 
-TEST_P(SymplecticRungeKuttaNyströmIntegratorTest, TimeReversibility) {
+TEST_P(SymplecticRungeKuttaNyströmIntegratorTest, TimeReversibility) {
   LOG(INFO) << GetParam();
   GetParam().RunTimeReversibility();
 }
 
-TEST_P(SymplecticRungeKuttaNyströmIntegratorTest, Symplecticity) {
+TEST_P(SymplecticRungeKuttaNyströmIntegratorTest, Symplecticity) {
   LOG(INFO) << GetParam();
   GetParam().RunSymplecticity();
 }
 
-TEST_P(SymplecticRungeKuttaNyströmIntegratorTest, Convergence) {
+TEST_P(SymplecticRungeKuttaNyströmIntegratorTest, Convergence) {
   LOG(INFO) << GetParam();
   GetParam().RunConvergence();
 }
 
-TEST_P(SymplecticRungeKuttaNyströmIntegratorTest, LongIntegration) {
+TEST_P(SymplecticRungeKuttaNyströmIntegratorTest, LongIntegration) {
   LOG(INFO) << GetParam();
   GetParam().Run1000SecondsAt1Millisecond();
 }
