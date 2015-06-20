@@ -623,6 +623,19 @@ TEST_F(EphemerisTest, Serialization) {
 
   auto const ephemeris_read =
       Ephemeris<EarthMoonOrbitPlane>::ReadFromMessage(message);
+
+  EXPECT_EQ(ephemeris.t_min(), ephemeris_read->t_min());
+  EXPECT_EQ(ephemeris.t_max(), ephemeris_read->t_max());
+  for (Instant time = ephemeris.t_min();
+       time <= ephemeris.t_max();
+       time += (ephemeris.t_max() - ephemeris.t_min()) / 100) {
+    for (auto const& body : ephemeris.bodies()) {
+      EXPECT_EQ(ephemeris.trajectory(body).EvaluateDegreesOfFreedom(
+                    time, nullptr /*hint*/),
+                ephemeris_read->trajectory(body).EvaluateDegreesOfFreedom(
+                    time, nullptr /*hint*/));
+    }
+  }
 }
 
 }  // namespace physics

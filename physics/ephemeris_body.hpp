@@ -144,8 +144,8 @@ template<typename Frame>
 Instant Ephemeris<Frame>::t_min() const {
   Instant t_min;
   for (auto const& pair : bodies_to_trajectories_) {
-    ContinuousTrajectory<Frame> const& trajectory = pair.second;
-    t_min = std::max(t_min, trajectory.t_min());
+    auto const& trajectory = pair.second;
+    t_min = std::max(t_min, trajectory->t_min());
   }
   return t_min;
 }
