@@ -456,6 +456,7 @@ void Plugin::WriteToMessage(
       celestial_message->set_parent_index(parent_index);
     }
   }
+  // TODO(egg): rewrite.
   std::map<not_null<Vessel const*>, GUID const> vessel_to_guid;
   for (auto const& guid_vessel : vessels_) {
     std::string const& guid = guid_vessel.first;
