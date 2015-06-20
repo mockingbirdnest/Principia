@@ -75,7 +75,7 @@ Ephemeris<Frame>::Ephemeris(
   CHECK(!bodies.empty());
   CHECK_EQ(bodies.size(), initial_state.size());
 
-  last_state_.time.value = initial_time;
+  last_state_.time = initial_time;
 
   for (int i = 0; i < bodies.size(); ++i) {
     auto& body = bodies[i];
