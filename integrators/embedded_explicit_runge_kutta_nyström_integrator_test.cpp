@@ -59,10 +59,17 @@ double HarmonicOscillatorToleranceRatio(
 
 }  // namespace
 
-class EmbeddedExplicitRungeKuttaNyströmIntegratorTest
+// Beware!  Unicode minefield ahead!
+// The name of this class and subsequent tests is not what you think.  It turns
+// out that if we use a 'LATIN SMALL LETTER O WITH DIAERESIS' (U+00F6) some of
+// the tools that process tests interpret it as a 'DIVISION SIGN' (U+00F7) and
+// fail.  To avoid these problems, we use a 'LATIN SMALL LETTER O' (U+006F)
+// followed by a 'COMBINING DIAERESIS' (U+0308) as it seems that the code points
+// in the "upper half" are those that cause trouble.
+class EmbeddedExplicitRungeKuttaNyströmIntegratorTest
     : public ::testing::Test {};
 
-TEST_F(EmbeddedExplicitRungeKuttaNyströmIntegratorTest,
+TEST_F(EmbeddedExplicitRungeKuttaNyströmIntegratorTest,
        HarmonicOscillatorBackAndForth) {
   AdaptiveStepSizeIntegrator<ODE> const& integrator =
       DormandElMikkawyPrince1986RKN434FM<Length>();
