@@ -34,7 +34,7 @@ message Ephemeris {
   repeated MassiveBody body = 1;
   repeated ContinuousTrajectory trajectory = 2;
   required FixedStepSizeIntegrator planetary_integrator = 3;
-  required Point step = 4;
+  required Quantity step = 4;
   required Quantity fitting_tolerance = 5;
   required SystemState last_state = 6;
 }

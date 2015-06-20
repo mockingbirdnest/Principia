@@ -75,7 +75,7 @@ Ephemeris<Frame>::Ephemeris(
   CHECK(!bodies.empty());
   CHECK_EQ(bodies.size(), initial_state.size());
 
-  last_state_.time = initial_time;
+  last_state_.time.value = initial_time;
 
   for (int i = 0; i < bodies.size(); ++i) {
     auto& body = bodies[i];
@@ -291,6 +291,32 @@ void Ephemeris<Frame>::WriteToMessage(
 template<typename Frame>
 std::unique_ptr<Ephemeris<Frame>> Ephemeris<Frame>::ReadFromMessage(
     serialization::Ephemeris const& message) {
+  std::vector<not_null<std::unique_ptr<MassiveBody const>>> bodies;
+  for (auto const& body : message.body()) {
+    bodies.push_back(MassiveBody::ReadFromMessage(body));
+  }
+  auto const planetary_integrator =
+      FixedStepSizeIntegrator<NewtonianMotionEquation>::ReadFromMessage(
+          message.planetary_integrator());
+  auto const step = Time::ReadFromMessage(message.step());
+  auto const fitting_tolerance =
+      Length::ReadFromMessage(message.fitting_tolerance());
+
+  // A dummy initial state.  We'll overwrite it later.
+  std::vector<DegreesOfFreedom<Frame>> const initial_state(bodies.size());
+  auto const ephemeris =
+      std::make_unique<Ephemeris<Frame>>(bodies,
+                                         initial_state,
+                                         planetary_integrator,
+                                         step,
+                                         fitting_tolerance);
+  ephemeris_->last_state =
+      NewtonianMotionEquation::SystemState::ReadFromMessage(
+          message.last_state());
+  for (auto const& trajectory : message.trajectory()) {
+    ephemeris_->trajectories_.push_back(
+        ContinuousTrajectory<Frame>::ReadFromMessage(trajectory));
+  }
 }
 
 template<typename Frame>

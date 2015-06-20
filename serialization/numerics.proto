@@ -21,12 +21,18 @@ message ChebyshevSeries {
 }
 
 message DoublePrecision {
-  message SinglePrecision {
-    oneof single_precision {
+  message Error {
+    oneof error {
+      Quantity quantity = 1;
+      Multivector multivector = 2;
+    }
+  }
+  message Value {
+    oneof value {
       Point point = 1;
       Multivector multivector = 2;
     }
   }
-  required SinglePrecision value = 1;
-  required SinglePrecision error = 2;
+  required Value value = 1;
+  required Error error = 2;
 }

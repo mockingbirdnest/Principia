@@ -3,8 +3,13 @@
 #include "numerics/double_precision.hpp"
 
 #include "base/macros.hpp"
+#include "geometry/serialization.hpp"
 
 namespace principia {
+
+using geometry::PointOrMultivectorSerializer;
+using geometry::QuantityOrMultivectorSerializer;
+
 namespace numerics {
 
 template<typename T>
@@ -26,15 +31,25 @@ FORCE_INLINE void DoublePrecision<T>::Increment(
 template<typename T>
 void DoublePrecision<T>::WriteToMessage(
     not_null<serialization::DoublePrecision*> const message) const {
-  value.WriteToMessage(message->mutable_value());
-  error.WriteToMessage(message->mutable_error());
+  using ValueSerializer = PointOrMultivectorSerializer<
+                              T, serialization::DoublePrecision::Value>;
+  using ErrorSerializer = QuantityOrMultivectorSerializer<
+                              Difference<T>,
+                              serialization::DoublePrecision::Error>;
+  ValueSerializer::WriteToMessage(value, message->mutable_value());
+  ErrorSerializer::WriteToMessage(error, message->mutable_error());
 }
 
 template<typename T>
 DoublePrecision<T> DoublePrecision<T>::ReadFromMessage(
     serialization::DoublePrecision const& message) {
-  value = T::ReadFromMessage(message.value());
-  error = T::ReadFromMessage(message.error());
+  using ValueSerializer = PointOrMultivectorSerializer<
+                              T, serialization::DoublePrecision::Value>;
+  using ErrorSerializer = QuantityOrMultivectorSerializer<
+                              Difference<T>,
+                              serialization::DoublePrecision::Error>;
+  value = ValueSerializer::ReadFromMessage(message.value());
+  error = ErrorSerializer::ReadFromMessage(message.error());
 }
 
 }  // namespace numerics
