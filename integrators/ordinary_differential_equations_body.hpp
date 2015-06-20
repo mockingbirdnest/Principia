@@ -1,5 +1,6 @@
 ﻿#pragma once
 
+#include "base/macros.hpp"
 #include "integrators/embedded_explicit_runge_kutta_nyström_integrator.hpp"
 #include "integrators/ordinary_differential_equations.hpp"
 #include "integrators/symplectic_runge_kutta_nyström_integrator.hpp"
@@ -72,6 +73,9 @@ FixedStepSizeIntegrator<DifferentialEquation>::ReadFromMessage(
     case FSSI::OKUNBOR_SKEEL_1994_ORDER_6_METHOD_13:
       return OkunborSkeel1994Order6Method13<
                  typename DifferentialEquation::Position>();
+    default:
+      LOG(FATAL) << message.kind();
+      base::noreturn();
   }
 }
 
@@ -94,6 +98,9 @@ AdaptiveStepSizeIntegrator<DifferentialEquation>::ReadFromMessage(
     case ASSI::DORMAND_ELMIKKAWY_PRINCE_1986_RKN_434FM:
       return DormandElMikkawyPrince1986RKN434FM<
                  typename DifferentialEquation::Position>();
+    default:
+      LOG(FATAL) << message.kind();
+      base::noreturn();
   }
 }
 

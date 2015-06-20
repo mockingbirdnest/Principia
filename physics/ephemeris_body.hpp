@@ -303,7 +303,9 @@ not_null<std::unique_ptr<Ephemeris<Frame>>> Ephemeris<Frame>::ReadFromMessage(
       Length::ReadFromMessage(message.fitting_tolerance());
 
   // Dummy initial state and time.  We'll overwrite them later.
-  std::vector<DegreesOfFreedom<Frame>> const initial_state(bodies.size());
+  std::vector<DegreesOfFreedom<Frame>> const initial_state(
+      bodies.size(),
+      DegreesOfFreedom<Frame>(Position<Frame>(), Velocity<Frame>()));
   Instant const initial_time;
   not_null<std::unique_ptr<Ephemeris<Frame>>> ephemeris =
       std::make_unique<Ephemeris<Frame>>(std::move(bodies),
