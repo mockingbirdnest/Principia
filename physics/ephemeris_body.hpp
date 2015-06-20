@@ -270,8 +270,32 @@ void Ephemeris<Frame>::FlowWithFixedStep(
 }
 
 template<typename Frame>
+void Ephemeris<Frame>::WriteToMessage(
+    not_null<serialization::Ephemeris*> const message) const {
+  // The bodies are serialized in the order in which they were given at
+  // construction.
+  for (auto const& unowned_body : unowned_bodies_) {
+    unowned_body->WriteToMessage(message->add_body());
+  }
+  // The trajectories are serialized in the order resulting from the separation
+  // between oblate and spherical bodies.
+  for (auto const& trajectory : trajectories_) {
+    trajectory->WriteToMessage(message->add_trajectory());
+  }
+  planetary_integrator_.WriteToMessage(message->mutable_planetary_integrator());
+  step_.WriteToMessage(message->mutable_step());
+  fitting_tolerance_.WriteToMessage(message->mutable_fitting_tolerance());
+  last_state_.WriteToMessage(message->mutable_last_state());
+}
+
+template<typename Frame>
+std::unique_ptr<Ephemeris<Frame>> Ephemeris<Frame>::ReadFromMessage(
+    serialization::Ephemeris const& message) {
+}
+
+template<typename Frame>
 void Ephemeris<Frame>::AppendMassiveBodiesState(
-         typename NewtonianMotionEquation::SystemState const& state) {
+    typename NewtonianMotionEquation::SystemState const& state) {
   last_state_ = state;
   int index = 0;
   for (auto& trajectory : trajectories_) {
@@ -285,8 +309,8 @@ void Ephemeris<Frame>::AppendMassiveBodiesState(
 
 template<typename Frame>
 void Ephemeris<Frame>::AppendMasslessBodiesState(
-         typename NewtonianMotionEquation::SystemState const& state,
-         std::vector<not_null<Trajectory<Frame>*>> const& trajectories) {
+    typename NewtonianMotionEquation::SystemState const& state,
+    std::vector<not_null<Trajectory<Frame>*>> const& trajectories) {
   int index = 0;
   for (auto& trajectory : trajectories) {
     trajectory->Append(
