@@ -1,6 +1,8 @@
-#pragma once
+﻿#pragma once
 
+#include "integrators/embedded_explicit_runge_kutta_nyström_integrator.hpp"
 #include "integrators/ordinary_differential_equations.hpp"
+#include "integrators/symplectic_runge_kutta_nyström_integrator.hpp"
 
 namespace principia {
 namespace integrators {

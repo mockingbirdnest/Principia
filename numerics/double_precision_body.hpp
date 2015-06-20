@@ -48,8 +48,10 @@ DoublePrecision<T> DoublePrecision<T>::ReadFromMessage(
   using ErrorSerializer = QuantityOrMultivectorSerializer<
                               Difference<T>,
                               serialization::DoublePrecision::Error>;
-  value = ValueSerializer::ReadFromMessage(message.value());
-  error = ErrorSerializer::ReadFromMessage(message.error());
+  DoublePrecision double_precision;
+  double_precision.value = ValueSerializer::ReadFromMessage(message.value());
+  double_precision.error = ErrorSerializer::ReadFromMessage(message.error());
+  return double_precision;
 }
 
 }  // namespace numerics

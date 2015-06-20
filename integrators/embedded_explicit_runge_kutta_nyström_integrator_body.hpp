@@ -56,7 +56,8 @@ EmbeddedExplicitRungeKuttaNyströmIntegrator(
     FixedVector<double, stages> const& b_prime_hat,
     FixedVector<double, stages> const& b,
     FixedVector<double, stages> const& b_prime)
-    : AdaptiveStepSizeIntegrator(kind),
+    : AdaptiveStepSizeIntegrator<
+          SpecialSecondOrderDifferentialEquation<Position>>(kind),
       c_(c),
       a_(a),
       b_hat_(b_hat),

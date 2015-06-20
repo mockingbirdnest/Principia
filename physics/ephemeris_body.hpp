@@ -302,11 +302,13 @@ std::unique_ptr<Ephemeris<Frame>> Ephemeris<Frame>::ReadFromMessage(
   auto const fitting_tolerance =
       Length::ReadFromMessage(message.fitting_tolerance());
 
-  // A dummy initial state.  We'll overwrite it later.
+  // Dummy initial state and time.  We'll overwrite them later.
   std::vector<DegreesOfFreedom<Frame>> const initial_state(bodies.size());
+  Instant const initial_time;
   auto ephemeris =
       std::make_unique<Ephemeris<Frame>>(bodies,
                                          initial_state,
+                                         initial_time,
                                          planetary_integrator,
                                          step,
                                          fitting_tolerance);

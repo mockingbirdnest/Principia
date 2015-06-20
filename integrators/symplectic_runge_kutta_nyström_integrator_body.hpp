@@ -22,7 +22,8 @@ SymplecticRungeKuttaNyströmIntegrator(
     serialization::FixedStepSizeIntegrator::Kind const kind,
     FixedVector<double, stages_> const& a,
     FixedVector<double, stages_> const& b)
-    : FixedStepSizeIntegrator(kind),
+    : FixedStepSizeIntegrator<
+          SpecialSecondOrderDifferentialEquation<Position>>(kind),
       a_(a),
       b_(b) {
   DoublePrecision<double> c_i = 0.0;
