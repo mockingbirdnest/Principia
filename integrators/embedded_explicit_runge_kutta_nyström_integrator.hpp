@@ -46,6 +46,8 @@ class EmbeddedExplicitRungeKuttaNyströmIntegrator
     : public AdaptiveStepSizeIntegrator<
                  SpecialSecondOrderDifferentialEquation<Position>> {
  public:
+  using ODE = SpecialSecondOrderDifferentialEquation<Position>;
+
   EmbeddedExplicitRungeKuttaNyströmIntegrator(
       serialization::AdaptiveStepSizeIntegrator::Kind const kind,
       FixedVector<double, stages> const& c,

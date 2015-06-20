@@ -79,69 +79,6 @@ void ComputeHarmonicOscillatorAcceleration(
   }
 }
 
-struct SimpleHarmonicMotionTestInstance {
- public:
-  template<typename Integrator>
-  SimpleHarmonicMotionTestInstance(Integrator const& integrator,
-                                   std::string const& name,
-                                   Time const& beginning_of_convergence,
-                                   Length const& expected_position_error,
-                                   Speed const& expected_velocity_error,
-                                   Energy const& expected_energy_error)
-      : test_1000_seconds_at_1_millisecond_(
-            std::bind(Test1000SecondsAt1Millisecond<Integrator>,
-                      integrator,
-                      expected_position_error,
-                      expected_velocity_error)),
-        test_convergence_(
-            std::bind(TestConvergence<Integrator>,
-                      integrator,
-                      beginning_of_convergence)),
-        test_symplecticity_(
-            std::bind(TestSymplecticity<Integrator>,
-                      integrator,
-                      expected_energy_error)),
-        test_time_reversibility_(
-            std::bind(TestTimeReversibility<Integrator>,
-                      integrator)),
-        name_(name) {}
-
-  std::string const& name() const {
-    return name_;
-  }
-
-  void Run1000SecondsAt1Millisecond() const {
-    test_1000_seconds_at_1_millisecond_();
-  }
-
-  void RunConvergence() const {
-    test_convergence_();
-  }
-
-  void RunSymplecticity()  const {
-    test_symplecticity_();
-  }
-
-  void RunTimeReversibility() const {
-    test_time_reversibility_();
-  }
-
- private:
-  std::function<void()> test_1000_seconds_at_1_millisecond_;
-  std::function<void()> test_convergence_;
-  std::function<void()> test_symplecticity_;
-  std::function<void()> test_time_reversibility_;
-  std::string name_;
-};
-
-// This allows the test output to be legible, i.e.,
-// "where GetParam() = Leapfrog" rather than
-// "where GetParam() = n-byte object <hex>"
-std::ostream& operator<<(std::ostream& stream,
-                         SimpleHarmonicMotionTestInstance instance) {
-  return stream << instance.name();
-}
-
 // Long integration, change detector.  Also tests the number of steps, their
 // spacing, and the number of evaluations.
 template<typename Integrator>
@@ -391,6 +328,69 @@ void TestTimeReversibility(Integrator const& integrator) {
                               final_state.velocities[0].value),
                 Gt(1E-4 * Metre / Second));
   }
+}
+
+struct SimpleHarmonicMotionTestInstance {
+ public:
+  template<typename Integrator>
+  SimpleHarmonicMotionTestInstance(Integrator const& integrator,
+                                   std::string const& name,
+                                   Time const& beginning_of_convergence,
+                                   Length const& expected_position_error,
+                                   Speed const& expected_velocity_error,
+                                   Energy const& expected_energy_error)
+      : test_1000_seconds_at_1_millisecond_(
+            std::bind(Test1000SecondsAt1Millisecond<Integrator>,
+                      integrator,
+                      expected_position_error,
+                      expected_velocity_error)),
+        test_convergence_(
+            std::bind(TestConvergence<Integrator>,
+                      integrator,
+                      beginning_of_convergence)),
+        test_symplecticity_(
+            std::bind(TestSymplecticity<Integrator>,
+                      integrator,
+                      expected_energy_error)),
+        test_time_reversibility_(
+            std::bind(TestTimeReversibility<Integrator>,
+                      integrator)),
+        name_(name) {}
+
+  std::string const& name() const {
+    return name_;
+  }
+
+  void Run1000SecondsAt1Millisecond() const {
+    test_1000_seconds_at_1_millisecond_();
+  }
+
+  void RunConvergence() const {
+    test_convergence_();
+  }
+
+  void RunSymplecticity()  const {
+    test_symplecticity_();
+  }
+
+  void RunTimeReversibility() const {
+    test_time_reversibility_();
+  }
+
+ private:
+  std::function<void()> test_1000_seconds_at_1_millisecond_;
+  std::function<void()> test_convergence_;
+  std::function<void()> test_symplecticity_;
+  std::function<void()> test_time_reversibility_;
+  std::string name_;
+};
+
+// This allows the test output to be legible, i.e.,
+// "where GetParam() = Leapfrog" rather than
+// "where GetParam() = n-byte object <hex>"
+std::ostream& operator<<(std::ostream& stream,
+                         SimpleHarmonicMotionTestInstance instance) {
+  return stream << instance.name();
 }
 
 std::vector<SimpleHarmonicMotionTestInstance> Instances() {

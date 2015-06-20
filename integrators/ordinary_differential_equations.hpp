@@ -102,6 +102,7 @@ class Integrator {
 template<typename DifferentialEquation>
 class FixedStepSizeIntegrator : public Integrator<DifferentialEquation> {
  public:
+  using ODE = DifferentialEquation;
   // The last call to |problem.append_state| has a |state.time.value| equal to
   // the unique |Instant| of the form |problem.t_final + n * step| in
   // [problem.t_final, problem.t_final + step[.
@@ -127,6 +128,7 @@ class FixedStepSizeIntegrator : public Integrator<DifferentialEquation> {
 template<typename DifferentialEquation>
 class AdaptiveStepSizeIntegrator : public Integrator<DifferentialEquation> {
  public:
+  using ODE = DifferentialEquation;
   // The last call to |problem.append_state| will have
   // |state.time.value == problem.t_final|.
   virtual void Solve(IntegrationProblem<ODE> const& problem,

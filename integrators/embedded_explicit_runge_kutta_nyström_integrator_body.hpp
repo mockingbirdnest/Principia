@@ -116,9 +116,9 @@ void EmbeddedExplicitRungeKuttaNyströmIntegrator<Position,
   DoublePrecision<Instant>& t = current_state.time;
 
   // Position increment (high-order).
-  std::vector<Displacement> ∆q_hat(dimension);
+  std::vector<Displacement> Δq_hat(dimension);
   // Velocity increment (high-order).
-  std::vector<Velocity> ∆v_hat(dimension);
+  std::vector<Velocity> Δv_hat(dimension);
   // Current position.  This is a non-const reference whose purpose is to make
   // the equations more readable.
   std::vector<DoublePrecision<Position>>& q_hat = current_state.positions;
@@ -176,38 +176,38 @@ void EmbeddedExplicitRungeKuttaNyströmIntegrator<Position,
       for (int i = first_stage; i < stages; ++i) {
         Instant const t_stage = t.value + c_[i] * h;
         for (int k = 0; k < dimension; ++k) {
-          Acceleration ∑j_a_ij_g_jk{};
+          Acceleration Σj_a_ij_g_jk{};
           for (int j = 0; j < i; ++j) {
-            ∑j_a_ij_g_jk += a_[i][j] * g[j][k];
+            Σj_a_ij_g_jk += a_[i][j] * g[j][k];
           }
           q_stage[k] = q_hat[k].value +
-                           h * (c_[i] * v_hat[k].value + h * ∑j_a_ij_g_jk);
+                           h * (c_[i] * v_hat[k].value + h * Σj_a_ij_g_jk);
         }
         problem.equation.compute_acceleration(t_stage, q_stage, &g[i]);
       }
 
       // Increment computation and step size control.
       for (int k = 0; k < dimension; ++k) {
-        Acceleration ∑i_b_hat_i_g_ik{};
-        Acceleration ∑i_b_i_g_ik{};
-        Acceleration ∑i_b_prime_hat_i_g_ik{};
-        Acceleration ∑i_b_prime_i_g_ik{};
+        Acceleration Σi_b_hat_i_g_ik{};
+        Acceleration Σi_b_i_g_ik{};
+        Acceleration Σi_b_prime_hat_i_g_ik{};
+        Acceleration Σi_b_prime_i_g_ik{};
         // Please keep the eight assigments below aligned, they become illegible
         // otherwise.
         for (int i = 0; i < stages; ++i) {
-          ∑i_b_hat_i_g_ik       += b_hat_[i] * g[i][k];
-          ∑i_b_i_g_ik           += b_[i] * g[i][k];
-          ∑i_b_prime_hat_i_g_ik += b_prime_hat_[i] * g[i][k];
-          ∑i_b_prime_i_g_ik     += b_prime_[i] * g[i][k];
+          Σi_b_hat_i_g_ik       += b_hat_[i] * g[i][k];
+          Σi_b_i_g_ik           += b_[i] * g[i][k];
+          Σi_b_prime_hat_i_g_ik += b_prime_hat_[i] * g[i][k];
+          Σi_b_prime_i_g_ik     += b_prime_[i] * g[i][k];
         }
-        // The hat-less ∆q and ∆v are the low-order increments.
-        ∆q_hat[k]               = h * (h * (∑i_b_hat_i_g_ik) + v_hat[k].value);
-        Displacement const ∆q_k = h * (h * (∑i_b_i_g_ik) + v_hat[k].value);
-        ∆v_hat[k]               = h * ∑i_b_prime_hat_i_g_ik;
-        Velocity const ∆v_k     = h * ∑i_b_prime_i_g_ik;
+        // The hat-less Δq and Δv are the low-order increments.
+        Δq_hat[k]               = h * (h * (Σi_b_hat_i_g_ik) + v_hat[k].value);
+        Displacement const Δq_k = h * (h * (Σi_b_i_g_ik) + v_hat[k].value);
+        Δv_hat[k]               = h * Σi_b_prime_hat_i_g_ik;
+        Velocity const Δv_k     = h * Σi_b_prime_i_g_ik;
 
-        error_estimate.position_error[k] = ∆q_k - ∆q_hat[k];
-        error_estimate.velocity_error[k] = ∆v_k - ∆v_hat[k];
+        error_estimate.position_error[k] = Δq_k - Δq_hat[k];
+        error_estimate.velocity_error[k] = Δv_k - Δv_hat[k];
       }
       tolerance_to_error_ratio =
           adaptive_step_size.tolerance_to_error_ratio(h, error_estimate);
@@ -222,8 +222,8 @@ void EmbeddedExplicitRungeKuttaNyströmIntegrator<Position,
     // Increment the solution with the high-order approximation.
     t.Increment(h);
     for (int k = 0; k < dimension; ++k) {
-      q_hat[k].Increment(∆q_hat[k]);
-      v_hat[k].Increment(∆v_hat[k]);
+      q_hat[k].Increment(Δq_hat[k]);
+      v_hat[k].Increment(Δv_hat[k]);
     }
     problem.append_state(current_state);
   }
