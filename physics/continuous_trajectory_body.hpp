@@ -196,10 +196,10 @@ void ContinuousTrajectory<Frame>::WriteToMessage(
 }
 
 template<typename Frame>
-std::unique_ptr<ContinuousTrajectory<Frame>>
+not_null<std::unique_ptr<ContinuousTrajectory<Frame>>>
 ContinuousTrajectory<Frame>::ReadFromMessage(
       serialization::ContinuousTrajectory const& message) {
-  auto continuous_trajectory =
+  not_null<std::unique_ptr<ContinuousTrajectory<Frame>>> continuous_trajectory =
       std::make_unique<ContinuousTrajectory<Frame>>(
           Time::ReadFromMessage(message.step()),
           Length::ReadFromMessage(message.tolerance()));

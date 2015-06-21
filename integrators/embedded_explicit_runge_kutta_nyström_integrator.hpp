@@ -7,6 +7,7 @@
 #include "numerics/fixed_arrays.hpp"
 #include "integrators/ordinary_differential_equations.hpp"
 #include "quantities/named_quantities.hpp"
+#include "serialization/integrators.pb.h"
 
 namespace principia {
 
@@ -48,6 +49,7 @@ class EmbeddedExplicitRungeKuttaNyströmIntegrator
   using ODE = SpecialSecondOrderDifferentialEquation<Position>;
 
   EmbeddedExplicitRungeKuttaNyströmIntegrator(
+      serialization::AdaptiveStepSizeIntegrator::Kind const kind,
       FixedVector<double, stages> const& c,
       FixedStrictlyLowerTriangularMatrix<double, stages> const& a,
       FixedVector<double, stages> const& b_hat,

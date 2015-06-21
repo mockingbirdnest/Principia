@@ -1,6 +1,7 @@
 #pragma once
 
 #include "quantities/quantities.hpp"
+#include "serialization/numerics.pb.h"
 
 namespace principia {
 
@@ -17,6 +18,11 @@ struct DoublePrecision {
   DoublePrecision(T const& value);  // NOLINT(runtime/explicit)
 
   void Increment(Difference<T> const& increment);
+
+  void WriteToMessage(
+      not_null<serialization::DoublePrecision*> const message) const;
+  static DoublePrecision ReadFromMessage(
+      serialization::DoublePrecision const& message);
 
   T value;
   Difference<T> error;

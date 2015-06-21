@@ -16,7 +16,6 @@ using geometry::Bivector;
 using geometry::Wedge;
 using physics::RelativeDegreesOfFreedom;
 using physics::Body;
-using physics::NBodySystem;
 using quantities::SpecificAngularMomentum;
 using quantities::SpecificEnergy;
 using quantities::GravitationalParameter;
@@ -142,7 +141,7 @@ TEST_F(SolarSystemTest, Parent) {
 TEST_F(SolarSystemTest, HierarchyAtSputnik1Launch) {
   auto const solar_system = SolarSystem::AtСпутник1Launch(
       SolarSystem::Accuracy::kMinorAndMajorBodies);
-  NBodySystem<ICRFJ2000Ecliptic>::Trajectories trajectories =
+  std::vector<not_null<Trajectory<ICRFJ2000Ecliptic>*>> trajectories =
       solar_system->trajectories();
   auto const& sun      = *trajectories[SolarSystem::kSun];
   auto const& jupiter  = *trajectories[SolarSystem::kJupiter];
@@ -213,7 +212,7 @@ TEST_F(SolarSystemTest, HierarchyAtSputnik1Launch) {
 TEST_F(SolarSystemTest, HierarchyAtSputnik2Launch) {
   auto const solar_system = SolarSystem::AtСпутник2Launch(
       SolarSystem::Accuracy::kMinorAndMajorBodies);
-  NBodySystem<ICRFJ2000Ecliptic>::Trajectories trajectories =
+  std::vector<not_null<Trajectory<ICRFJ2000Ecliptic>*>> trajectories =
       solar_system->trajectories();
   auto const& sun      = *trajectories[SolarSystem::kSun];
   auto const& jupiter  = *trajectories[SolarSystem::kJupiter];

@@ -24,6 +24,8 @@ EmbeddedExplicitRungeKuttaNyströmIntegrator<Position, 4, 3, 4, true> const&
 DormandElMikkawyPrince1986RKN434FM() {
   static EmbeddedExplicitRungeKuttaNyströmIntegrator<
              Position, 4, 3, 4, true> const integrator(
+      serialization::AdaptiveStepSizeIntegrator::
+          DORMAND_ELMIKKAWY_PRINCE_1986_RKN_434FM,
       // c
       { 0.0         ,   1.0 /   4.0,   7.0 /  10.0,  1.0},
       // a
@@ -47,13 +49,16 @@ template<typename Position, int higher_order, int lower_order, int stages,
 EmbeddedExplicitRungeKuttaNyströmIntegrator<Position, higher_order, lower_order,
                                             stages, first_same_as_last>::
 EmbeddedExplicitRungeKuttaNyströmIntegrator(
+    serialization::AdaptiveStepSizeIntegrator::Kind const kind,
     FixedVector<double, stages> const& c,
     FixedStrictlyLowerTriangularMatrix<double, stages> const& a,
     FixedVector<double, stages> const& b_hat,
     FixedVector<double, stages> const& b_prime_hat,
     FixedVector<double, stages> const& b,
     FixedVector<double, stages> const& b_prime)
-    : c_(c),
+    : AdaptiveStepSizeIntegrator<
+          SpecialSecondOrderDifferentialEquation<Position>>(kind),
+      c_(c),
       a_(a),
       b_hat_(b_hat),
       b_prime_hat_(b_prime_hat),

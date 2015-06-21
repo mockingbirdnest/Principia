@@ -85,6 +85,11 @@ class Ephemeris {
                          Time const& step,
                          Instant const& t);
 
+  void WriteToMessage(
+      not_null<serialization::Ephemeris*> const message) const;
+  static not_null<std::unique_ptr<Ephemeris>> ReadFromMessage(
+      serialization::Ephemeris const& message);
+
  private:
   void AppendMassiveBodiesState(
       typename NewtonianMotionEquation::SystemState const& state);
@@ -164,7 +169,8 @@ class Ephemeris {
   // The indices in |bodies_| correspond to those in |trajectories_|.
   std::vector<not_null<ContinuousTrajectory<Frame>*>> trajectories_;
 
-  std::map<not_null<MassiveBody const*>, ContinuousTrajectory<Frame>>
+  std::map<not_null<MassiveBody const*>,
+           not_null<std::unique_ptr<ContinuousTrajectory<Frame>>>>
       bodies_to_trajectories_;
 
   // This will refer to a static object returned by a factory.
