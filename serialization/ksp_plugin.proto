@@ -64,6 +64,8 @@ message Plugin {
   repeated CelestialAndProperties celestial = 2;
   required PhysicsBubble bubble = 3;
   required Ephemeris ephemeris = 7;
+  required AdaptiveStepSizeIntegrator prolongation_integrator = 8;
+  required AdaptiveStepSizeIntegrator prediction_integrator = 9;
   required Quantity planetarium_rotation = 4;
   required Point current_time = 5;
   required int32 sun_index = 6;
