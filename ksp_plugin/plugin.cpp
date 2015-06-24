@@ -449,7 +449,6 @@ void Plugin::WriteToMessage(
     not_null<Celestial const*> const celestial = index_celestial.second.get();
     auto const celestial_message = message->add_celestial();
     celestial_message->set_index(index);
-    celestial->WriteToMessage(celestial_message->mutable_celestial());
     if (celestial->has_parent()) {
       Index const parent_index =
           FindOrDie(celestial_to_index, celestial->parent());
@@ -485,12 +484,19 @@ void Plugin::WriteToMessage(
 std::unique_ptr<Plugin> Plugin::ReadFromMessage(
     serialization::Plugin const& message) {
   LOG(INFO) << __FUNCTION__;
+  auto ephemeris = Ephemeris<Barycentric>::ReadFromMessage(message.ephemeris());
+  auto const& bodies = ephemeris->bodies();
+  auto bodies_it = bodies.begin();
   IndexToOwnedCelestial celestials;
   for (auto const& celestial_message : message.celestial()) {
-    celestials.emplace(
-        celestial_message.index(),
-        Celestial::ReadFromMessage(celestial_message.celestial()));
+    auto const inserted =
+        celestials.emplace(celestial_message.index(),
+                           make_not_null_unique<Celestial>(*bodies_it));
+    CHECK(inserted.second);
+    inserted.first->second->set_trajectory(ephemeris->trajectory(*bodies_it));
+    ++bodies_it;
   }
+  CHECK_EQ(bodies.end(), bodies_it);
   for (auto const& celestial_message : message.celestial()) {
     if (celestial_message.has_parent_index()) {
       not_null<std::unique_ptr<Celestial>> const& celestial =

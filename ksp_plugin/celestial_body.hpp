@@ -66,19 +66,5 @@ inline void Celestial::set_parent(not_null<Celestial const*> const parent) {
   parent_ = parent;
 }
 
-inline void Celestial::WriteToMessage(
-    not_null<serialization::Celestial*> const message) const {
-  CHECK(is_initialized());
-  body_->WriteToMessage(message->mutable_body());
-  // TODO(phl): implement.
-}
-
-inline std::unique_ptr<Celestial> Celestial::ReadFromMessage(
-    serialization::Celestial const& message) {
-  // TODO(phl): implement.
-  LOG(FATAL) << "Not yet implemented";
-  base::noreturn();
-}
-
 }  // namespace ksp_plugin
 }  // namespace principia

@@ -61,8 +61,13 @@ message Plugin {
     required Celestial celestial = 2;
     optional int32 parent_index = 3;
   }
+  message CelestialParenthood {
+    required int32 index = 1;
+    optional  int32 parent_index = 2;
+  }
   repeated VesselAndProperties vessel = 1;
-  repeated CelestialAndProperties celestial = 2;
+  repeated CelestialAndProperties old_celestial = 2;
+  repeated CelestialParenthood celestial = 10;
   required PhysicsBubble bubble = 3;
   required Ephemeris ephemeris = 7;
   required AdaptiveStepSizeIntegrator prolongation_integrator = 8;

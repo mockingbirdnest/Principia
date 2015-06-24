@@ -47,14 +47,6 @@ class Celestial {
   Celestial const* parent() const;  // Null for the Sun.
   void set_parent(not_null<Celestial const*> const parent);
 
-  // The celestial must satisfy |is_initialized()|.
-  void WriteToMessage(not_null<serialization::Celestial*> const message) const;
-  // NOTE(egg): This should return a |not_null|, but we can't do that until
-  // |not_null<std::unique_ptr<T>>| is convertible to |std::unique_ptr<T>|, and
-  // that requires a VS 2015 feature (rvalue references for |*this|).
-  static std::unique_ptr<Celestial> ReadFromMessage(
-      serialization::Celestial const& message);
-
  private:
   not_null<MassiveBody const*> body_;
   // The parent body for the 2-body approximation. Not owning, must only
