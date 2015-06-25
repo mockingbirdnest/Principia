@@ -48,22 +48,5 @@ TEST_F(CelestialTest, Initialization) {
   EXPECT_TRUE(celestial_->is_initialized());
 }
 
-TEST_F(CelestialDeathTest, SerializationError) {
-  EXPECT_DEATH({
-    serialization::Celestial message;
-    celestial_->WriteToMessage(&message);
-  }, "is_initialized");
-}
-
-TEST_F(CelestialTest, SerializationSuccess) {
-  serialization::Celestial message;
-  celestial_->set_trajectory(&trajectory_);
-  celestial_->WriteToMessage(&message);
-  EXPECT_TRUE(message.has_history_and_prolongation());
-  celestial_ = Celestial::ReadFromMessage(message);
-  EXPECT_TRUE(celestial_->is_initialized());
-  // TODO(egg): check something here.
-}
-
 }  // namespace ksp_plugin
 }  // namespace principia

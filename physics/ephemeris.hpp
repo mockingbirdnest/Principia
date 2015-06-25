@@ -59,6 +59,9 @@ class Ephemeris {
   // The mimimum of the |t_max|s of the trajectories.
   Instant t_max() const;
 
+  FixedStepSizeIntegrator<NewtonianMotionEquation> const&
+  planetary_integrator() const;
+
   // Calls |ForgetBefore| on all trajectories.
   void ForgetBefore(Instant const& t);
 
@@ -87,7 +90,7 @@ class Ephemeris {
 
   void WriteToMessage(
       not_null<serialization::Ephemeris*> const message) const;
-  static not_null<std::unique_ptr<Ephemeris>> ReadFromMessage(
+  static std::unique_ptr<Ephemeris> ReadFromMessage(
       serialization::Ephemeris const& message);
 
  private:

@@ -161,6 +161,13 @@ Instant Ephemeris<Frame>::t_max() const {
 }
 
 template<typename Frame>
+FixedStepSizeIntegrator<
+    typename Ephemeris<Frame>::NewtonianMotionEquation> const&
+Ephemeris<Frame>::planetary_integrator() const {
+  return planetary_integrator_;
+}
+
+template<typename Frame>
 void Ephemeris<Frame>::ForgetBefore(Instant const& t) {
   for (auto& pair : bodies_to_trajectories_) {
     ContinuousTrajectory<Frame>& trajectory = *pair.second;
@@ -288,7 +295,7 @@ void Ephemeris<Frame>::WriteToMessage(
 }
 
 template<typename Frame>
-not_null<std::unique_ptr<Ephemeris<Frame>>> Ephemeris<Frame>::ReadFromMessage(
+std::unique_ptr<Ephemeris<Frame>> Ephemeris<Frame>::ReadFromMessage(
     serialization::Ephemeris const& message) {
   std::vector<not_null<std::unique_ptr<MassiveBody const>>> bodies;
   for (auto const& body : message.body()) {
@@ -306,7 +313,7 @@ not_null<std::unique_ptr<Ephemeris<Frame>>> Ephemeris<Frame>::ReadFromMessage(
       bodies.size(),
       DegreesOfFreedom<Frame>(Position<Frame>(), Velocity<Frame>()));
   Instant const initial_time;
-  not_null<std::unique_ptr<Ephemeris<Frame>>> ephemeris =
+  std::unique_ptr<Ephemeris<Frame>> ephemeris =
       std::make_unique<Ephemeris<Frame>>(std::move(bodies),
                                          initial_state,
                                          initial_time,

@@ -291,6 +291,11 @@ class Plugin {
          IndexToOwnedCelestial celestials,
          std::set<not_null<Vessel*> const> dirty_vessels,
          not_null<std::unique_ptr<PhysicsBubble>> bubble,
+         std::unique_ptr<Ephemeris<Barycentric>> n_body_system,
+         AdaptiveStepSizeIntegrator<
+             NewtonianMotionEquation> const& prolongation_integrator,
+         AdaptiveStepSizeIntegrator<
+             NewtonianMotionEquation> const& prediction_integrator,
          Angle planetarium_rotation,
          Instant current_time,
          Index sun_index);

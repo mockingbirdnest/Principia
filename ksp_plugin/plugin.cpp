@@ -531,12 +531,21 @@ std::unique_ptr<Plugin> Plugin::ReadFromMessage(
             return FindOrDie(vessels, guid).get();
           },
           message.bubble());
+  auto const& prolongation_integrator =
+      AdaptiveStepSizeIntegrator<NewtonianMotionEquation>::ReadFromMessage(
+          message.prolongation_integrator());
+  auto const& prediction_integrator =
+      AdaptiveStepSizeIntegrator<NewtonianMotionEquation>::ReadFromMessage(
+          message.prediction_integrator());
   // Can't use |make_unique| here without implementation-dependent friendships.
   return std::unique_ptr<Plugin>(
       new Plugin(std::move(vessels),
                  std::move(celestials),
                  std::move(dirty_vessels),
                  std::move(bubble),
+                 std::move(ephemeris),
+                 prolongation_integrator,
+                 prediction_integrator,
                  Angle::ReadFromMessage(message.planetarium_rotation()),
                  Instant::ReadFromMessage(message.current_time()),
                  message.sun_index()));
@@ -546,6 +555,11 @@ Plugin::Plugin(GUIDToOwnedVessel vessels,
                IndexToOwnedCelestial celestials,
                std::set<not_null<Vessel*> const> dirty_vessels,
                not_null<std::unique_ptr<PhysicsBubble>> bubble,
+               std::unique_ptr<Ephemeris<Barycentric>> n_body_system,
+               AdaptiveStepSizeIntegrator<
+                   NewtonianMotionEquation> const& prolongation_integrator,
+               AdaptiveStepSizeIntegrator<
+                   NewtonianMotionEquation> const& prediction_integrator,
                Angle planetarium_rotation,
                Instant current_time,
                Index sun_index)
@@ -553,12 +567,10 @@ Plugin::Plugin(GUIDToOwnedVessel vessels,
       celestials_(std::move(celestials)),
       dirty_vessels_(std::move(dirty_vessels)),
       bubble_(std::move(bubble)),
-      history_integrator_(
-          McLachlanAtela1992Order5Optimal<Position<Barycentric>>()),
-      prolongation_integrator_(
-          DormandElMikkawyPrince1986RKN434FM<Position<Barycentric>>()),
-      prediction_integrator_(
-          DormandElMikkawyPrince1986RKN434FM<Position<Barycentric>>()),
+      n_body_system_(std::move(n_body_system)),
+      history_integrator_(n_body_system_->planetary_integrator()),
+      prolongation_integrator_(prolongation_integrator),
+      prediction_integrator_(prediction_integrator),
       planetarium_rotation_(planetarium_rotation),
       current_time_(current_time),
       sun_(FindOrDie(celestials_, sun_index).get()) {
