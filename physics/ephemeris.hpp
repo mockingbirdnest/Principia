@@ -48,7 +48,7 @@ class Ephemeris {
   std::vector<MassiveBody const*> const& bodies() const;
 
   // Returns the trajectory for the given |body|.
-  ContinuousTrajectory<Frame> const& trajectory(
+  not_null<ContinuousTrajectory<Frame> const*> trajectory(
       not_null<MassiveBody const*> body) const;
 
   // Returns true if at least one of the trajectories is empty.

@@ -124,9 +124,9 @@ std::vector<MassiveBody const*> const& Ephemeris<Frame>::bodies() const {
 }
 
 template<typename Frame>
-ContinuousTrajectory<Frame> const& Ephemeris<Frame>::trajectory(
+not_null<ContinuousTrajectory<Frame> const*> Ephemeris<Frame>::trajectory(
     not_null<MassiveBody const*> body) const {
-  return *FindOrDie(bodies_to_trajectories_, body);
+  return FindOrDie(bodies_to_trajectories_, body).get();
 }
 
 template<typename Frame>
@@ -163,7 +163,7 @@ Instant Ephemeris<Frame>::t_max() const {
 template<typename Frame>
 void Ephemeris<Frame>::ForgetBefore(Instant const& t) {
   for (auto& pair : bodies_to_trajectories_) {
-    ContinuousTrajectory<Frame>& trajectory = pair.second;
+    ContinuousTrajectory<Frame>& trajectory = *pair.second;
     trajectory.ForgetBefore(t);
   }
 }

@@ -455,7 +455,6 @@ void Plugin::WriteToMessage(
       celestial_message->set_parent_index(parent_index);
     }
   }
-  // TODO(egg): rewrite.
   std::map<not_null<Vessel const*>, GUID const> vessel_to_guid;
   for (auto const& guid_vessel : vessels_) {
     std::string const& guid = guid_vessel.first;
@@ -468,6 +467,12 @@ void Plugin::WriteToMessage(
     vessel_message->set_parent_index(parent_index);
     vessel_message->set_dirty(is_dirty(vessel));
   }
+
+  n_body_system_->WriteToMessage(message->mutable_ephemeris());
+  prolongation_integrator_.WriteToMessage(
+      message->mutable_prolongation_integrator());
+  prediction_integrator_.WriteToMessage(
+      message->mutable_prediction_integrator());
 
   bubble_->WriteToMessage(
       [&vessel_to_guid](not_null<Vessel const*> const vessel) -> GUID {
@@ -496,7 +501,7 @@ std::unique_ptr<Plugin> Plugin::ReadFromMessage(
     inserted.first->second->set_trajectory(ephemeris->trajectory(*bodies_it));
     ++bodies_it;
   }
-  CHECK_EQ(bodies.end(), bodies_it);
+  CHECK_EQ(bodies.end() - bodies.begin(), bodies_it - bodies.begin());
   for (auto const& celestial_message : message.celestial()) {
     if (celestial_message.has_parent_index()) {
       not_null<std::unique_ptr<Celestial>> const& celestial =
