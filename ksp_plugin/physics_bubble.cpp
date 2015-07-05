@@ -126,8 +126,7 @@ void PhysicsBubble::Prepare(
 Displacement<World> PhysicsBubble::DisplacementCorrection(
     BarycentricToWorldSun const& barycentric_to_world_sun,
     Celestial const& reference_celestial,
-    Position<World> const& reference_celestial_world_position,
-    Instant const& current_time) const {
+    Position<World> const& reference_celestial_world_position) const {
   VLOG(1) << __FUNCTION__ << '\n'
           << NAMED(&reference_celestial) << '\n'
           << NAMED(reference_celestial_world_position);
@@ -138,7 +137,8 @@ Displacement<World> PhysicsBubble::DisplacementCorrection(
           Identity<WorldSun, World>()(barycentric_to_world_sun(
               current_->centre_of_mass_trajectory->
                   last().degrees_of_freedom().position() -
-              reference_celestial.current_position(current_time))) +
+              reference_celestial.current_position(
+                  current_->centre_of_mass_trajectory->last().time()))) +
           reference_celestial_world_position -
               current_->centre_of_mass->position());
   }
@@ -147,8 +147,7 @@ Displacement<World> PhysicsBubble::DisplacementCorrection(
 
 Velocity<World> PhysicsBubble::VelocityCorrection(
     BarycentricToWorldSun const& barycentric_to_world_sun,
-    Celestial const& reference_celestial,
-    Instant const& current_time) const {
+    Celestial const& reference_celestial) const {
   VLOG(1) << __FUNCTION__ << '\n' << NAMED(&reference_celestial);
   CHECK(!empty()) << "Empty bubble";
   if (current_->velocity_correction == nullptr) {
@@ -157,7 +156,8 @@ Velocity<World> PhysicsBubble::VelocityCorrection(
             Identity<WorldSun, World>()(barycentric_to_world_sun(
                 current_->centre_of_mass_trajectory->
                     last().degrees_of_freedom().velocity() -
-                reference_celestial.current_velocity(current_time))) -
+                reference_celestial.current_velocity(
+                    current_->centre_of_mass_trajectory->last().time()))) -
             current_->centre_of_mass->velocity());
   }
   VLOG_AND_RETURN(1, *current_->velocity_correction);

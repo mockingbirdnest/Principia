@@ -15,11 +15,11 @@ namespace ksp_plugin {
 class CelestialTest : public testing::Test {
  protected:
   CelestialTest()
-      : celestial_(
-            make_not_null_unique<Celestial>(
-                make_not_null_unique<MassiveBody>(1 * Kilogram))),
+      : body_(1 * Kilogram),
+        celestial_(make_not_null_unique<Celestial>(&body_)),
         trajectory_(1 * Second, 1 * Metre) {}
 
+  MassiveBody body_;
   not_null<std::unique_ptr<Celestial>> celestial_;
   ContinuousTrajectory<Barycentric> trajectory_;
 };

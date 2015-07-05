@@ -29,6 +29,7 @@ using quantities::Speed;
 using quantities::SIUnit;
 using quantities::Time;
 using si::Degree;
+using si::Second;
 using testing_utilities::AlmostEquals;
 using testing_utilities::Componentwise;
 using testing_utilities::VanishesBefore;
@@ -66,7 +67,9 @@ class PhysicsBubbleTest : public testing::Test {
             Velocity<Barycentric>({204 * SIUnit<Speed>(),
                                    205 * SIUnit<Speed>(),
                                    206 * SIUnit<Speed>()})),
-      celestial_(make_not_null_unique<MassiveBody>(100 * SIUnit<Mass>())),
+      body_(100 * SIUnit<Mass>()),
+      celestial_(&body_),
+      celestial_trajectory_(1 * Second, 1 * Metre),
       celestial_world_position_(Position<World>(Displacement<World>(
                                     {99 * SIUnit<Length>(),
                                      98 * SIUnit<Length>(),
@@ -76,7 +79,10 @@ class PhysicsBubbleTest : public testing::Test {
       t1_(1 * SIUnit<Time>()),
       t2_(1.5 * SIUnit<Time>()),
       t3_(2 * SIUnit<Time>()) {
-    celestial_.CreateHistoryAndForkProlongation(t1_, celestial_dof_);
+    celestial_.set_trajectory(&celestial_trajectory_);
+    for (int i = 0; i < 9; ++i) {
+      celestial_trajectory_.Append(t1_ + i * Second, celestial_dof_);
+    }
     vessel1_.CreateProlongation(t1_, dof1_);
     vessel2_.CreateProlongation(t1_, dof2_);
 
@@ -266,7 +272,9 @@ class PhysicsBubbleTest : public testing::Test {
   std::unique_ptr<Part<World>> p2a_;
   std::unique_ptr<Part<World>> p2b_;
   std::unique_ptr<Part<World>> p2c_;
+  MassiveBody body_;
   Celestial celestial_;
+  ContinuousTrajectory<Barycentric> celestial_trajectory_;
   Position<World> celestial_world_position_;
   Vessel vessel1_;
   Vessel vessel2_;
@@ -291,7 +299,9 @@ TEST_F(PhysicsBubbleDeathTest, EmptyError) {
     bubble_.mutable_centre_of_mass_trajectory();
   }, "Empty bubble");
   EXPECT_DEATH({
-    bubble_.DisplacementCorrection(rotation_, celestial_, Position<World>());
+    bubble_.DisplacementCorrection(rotation_,
+                                   celestial_,
+                                   Position<World>());
   }, "Empty bubble");
   EXPECT_DEATH({
     bubble_.VelocityCorrection(rotation_, celestial_);

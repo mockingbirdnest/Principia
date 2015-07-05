@@ -370,8 +370,7 @@ Displacement<World> Plugin::BubbleDisplacementCorrection(
   VLOG(1) << __FUNCTION__ << '\n' << NAMED(sun_world_position);
   VLOG_AND_RETURN(1, bubble_->DisplacementCorrection(BarycentricToWorldSun(),
                                                      *sun_,
-                                                     sun_world_position,
-                                                     current_time_));
+                                                     sun_world_position));
 }
 
 Velocity<World> Plugin::BubbleVelocityCorrection(
@@ -380,8 +379,7 @@ Velocity<World> Plugin::BubbleVelocityCorrection(
   Celestial const& reference_body =
       *FindOrDie(celestials_, reference_body_index);
   VLOG_AND_RETURN(1, bubble_->VelocityCorrection(BarycentricToWorldSun(),
-                                                 reference_body,
-                                                 current_time_));
+                                                 reference_body));
 }
 
 FrameField<World> Plugin::Navball(
