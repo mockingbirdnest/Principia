@@ -92,31 +92,24 @@ MATCHER_P(HasNonvanishingIntrinsicAccelerationAt, t, "") {
 
 class TestablePlugin : public Plugin {
  public:
-  // Takes ownership of |n_body_system|.
-  // TODO(phl): We'd like to pass a |unique_ptr<>| but that seems to confuse
-  // gMock.
   TestablePlugin(Instant const& initial_time,
                  Index const sun_index,
                  GravitationalParameter const& sun_gravitational_parameter,
-                 Angle const& planetarium_rotation,
-                 not_null<MockNBodySystem<Barycentric>*> const n_body_system)
+                 Angle const& planetarium_rotation)
       : Plugin(initial_time,
                sun_index,
                sun_gravitational_parameter,
-               planetarium_rotation) {
-    n_body_system_.reset(n_body_system);
+               planetarium_rotation) {}
+
+  void EndInitialization() override {
+    auto mock_n_body_system = std::make_unique<MockNBodySystem<Barycentric>>();
+    // TODO(egg): check things here.
+    Plugin::EndInitialization();
+    n_body_system_ = std::move(mock_n_body_system);
   }
 
   Time const& Δt() const {
     return Δt_;
-  }
-
-  SRKNIntegrator const& prolongation_integrator() const {
-    return *prolongation_integrator_;
-  }
-
-  SRKNIntegrator const& history_integrator() const {
-    return *history_integrator_;
   }
 };
 

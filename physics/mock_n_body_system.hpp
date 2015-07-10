@@ -1,6 +1,6 @@
 ﻿#pragma once
 
-#include "physics/n_body_system.hpp"
+#include "physics/ephemeris.hpp"
 
 #include "gmock/gmock.h"
 
@@ -8,19 +8,11 @@ namespace principia {
 namespace physics {
 
 template<typename InertialFrame>
-class MockNBodySystem : public NBodySystem<InertialFrame> {
+class MockNBodySystem : public Ephemeris<InertialFrame> {
  public:
-  MockNBodySystem() = default;
+  MockNBodySystem() {}
 
-  MOCK_CONST_METHOD6_T(
-      Integrate,
-      void(SRKNIntegrator const& integrator,
-           Instant const& tmax,
-           Time const& Δt,
-           int const sampling_period,
-           bool const tmax_is_exact,
-           typename NBodySystem<InertialFrame>::Trajectories const&
-               trajectories));
+  // TODO(egg): MOCK_ALL_THE_THINGS
 };
 
 }  // namespace physics
