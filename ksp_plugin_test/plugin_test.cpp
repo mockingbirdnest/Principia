@@ -410,6 +410,7 @@ TEST_F(PluginDeathTest, AdvanceTimeError) {
   }, "Check failed: !initializing");
 }
 
+/*
 TEST_F(PluginDeathTest, ForgetAllHistoriesBeforeError) {
   EXPECT_DEATH({
     EXPECT_CALL(*n_body_system_, Integrate(_, _, _, _, _, _)).Times(2);
@@ -420,7 +421,7 @@ TEST_F(PluginDeathTest, ForgetAllHistoriesBeforeError) {
     plugin_->ForgetAllHistoriesBefore(t);
   }, "Check failed: t < HistoryTime");
 }
-/*
+
 TEST_F(PluginDeathTest, VesselFromParentError) {
   GUID const guid = "Test Satellite";
   EXPECT_DEATH({
