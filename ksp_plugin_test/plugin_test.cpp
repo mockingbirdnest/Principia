@@ -420,7 +420,7 @@ TEST_F(PluginDeathTest, ForgetAllHistoriesBeforeError) {
     plugin_->ForgetAllHistoriesBefore(t);
   }, "Check failed: t < HistoryTime");
 }
-
+/*
 TEST_F(PluginDeathTest, VesselFromParentError) {
   GUID const guid = "Test Satellite";
   EXPECT_DEATH({
@@ -1220,6 +1220,6 @@ TEST_F(PluginTest, SerializationCompatibility) {
   Trivector<Length, Barycentric> const expected_u(7 * Metre);
   EXPECT_EQ(expected_u, u);
 }
-
+*/
 }  // namespace ksp_plugin
 }  // namespace principia
