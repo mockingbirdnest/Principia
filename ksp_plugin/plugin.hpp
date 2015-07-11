@@ -279,10 +279,10 @@ class Plugin {
       std::map<Index, not_null<std::unique_ptr<Celestial>>>;
   using NewtonianMotionEquation =
       Ephemeris<Barycentric>::NewtonianMotionEquation;
-  using CelestialToMassiveBody =
-      std::map<Celestial const*, std::unique_ptr<MassiveBody const>>;
-  using CelestialToDegreesOfFreedom =
-      std::map<Celestial const*, DegreesOfFreedom<Barycentric>>;
+  using IndexToMassiveBody =
+      std::map<Index, std::unique_ptr<MassiveBody const>>;
+  using IndexToDegreesOfFreedom =
+      std::map<Index, DegreesOfFreedom<Barycentric>>;
 
   // This constructor should only be used during deserialization.
   // |unsynchronized_vessels_| is initialized consistently.  All vessels are
@@ -409,8 +409,8 @@ class Plugin {
 
   // |bodies_| and |initial_state_| are null if and only if |!initializing_|.
   // TODO(egg): optional.
-  std::unique_ptr<CelestialToMassiveBody> bodies_;
-  std::unique_ptr<CelestialToDegreesOfFreedom> initial_state_;
+  std::unique_ptr<IndexToMassiveBody> bodies_;
+  std::unique_ptr<IndexToDegreesOfFreedom> initial_state_;
   // Null if and only if |initializing_|.
   // TODO(egg): optional.
   std::unique_ptr<Ephemeris<Barycentric>> n_body_system_;

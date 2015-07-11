@@ -58,8 +58,8 @@ Plugin::Plugin(Instant const& initial_time,
                GravitationalParameter const& sun_gravitational_parameter,
                Angle const& planetarium_rotation)
     : bubble_(make_not_null_unique<PhysicsBubble>()),
-      bodies_(std::make_unique<CelestialToMassiveBody>()),
-      initial_state_(std::make_unique<CelestialToDegreesOfFreedom>()),
+      bodies_(std::make_unique<IndexToMassiveBody>()),
+      initial_state_(std::make_unique<IndexToDegreesOfFreedom>()),
       history_integrator_(
           McLachlanAtela1992Order5Optimal<Position<Barycentric>>()),
       prolongation_integrator_(
@@ -74,9 +74,9 @@ Plugin::Plugin(Instant const& initial_time,
       celestials_.emplace(sun_index,
                           std::make_unique<Celestial>(sun_body.get()));
   sun_ = inserted.first->second.get();
-  bodies_->emplace(sun_, std::move(sun_body));
+  bodies_->emplace(sun_index, std::move(sun_body));
   initial_state_->emplace(std::piecewise_construct,
-                          std::forward_as_tuple(sun_),
+                          std::forward_as_tuple(sun_index),
                           std::forward_as_tuple(Position<Barycentric>(),
                                                 Velocity<Barycentric>()));
 }
@@ -101,11 +101,11 @@ void Plugin::InsertCelestial(
       PlanetariumRotation().Inverse()(from_parent);
   LOG(INFO) << "In barycentric coordinates: " << relative;
   not_null<Celestial*> const celestial = inserted.first->second.get();
-  bodies_->emplace(celestial, std::move(body));
+  bodies_->emplace(celestial_index, std::move(body));
   celestial->set_parent(parent);
   DegreesOfFreedom<Barycentric> const& parent_degrees_of_freedom =
       FindOrDie(*initial_state_, parent);
-  initial_state_->emplace(celestial,
+  initial_state_->emplace(celestial_index,
                           parent_degrees_of_freedom + relative);
 }
 
@@ -127,6 +127,11 @@ void Plugin::EndInitialization() {
                                                             history_integrator_,
                                                             45 * Minute,
                                                             1 * Milli(Metre));
+  for (auto const& index_celestial : celestials_) {
+    auto& celestial = *index_celestial.second;
+    // TODO(egg): unorthodox address of reference.
+    celestial.set_trajectory(n_body_system_->trajectory(&celestial.body()));
+  }
 }
 
 void Plugin::UpdateCelestialHierarchy(Index const celestial_index,
@@ -579,7 +584,7 @@ Plugin::Plugin(GUIDToOwnedVessel vessels,
       unsynchronized_vessels_.emplace(vessel.get());
     }
   }
-  EndInitialization();
+  initializing_.Flop();
 }
 
 not_null<std::unique_ptr<Vessel>> const& Plugin::find_vessel_by_guid_or_die(

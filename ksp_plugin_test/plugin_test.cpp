@@ -1,4 +1,4 @@
-﻿
+﻿/*
 #include "ksp_plugin/plugin.hpp"
 
 #include <algorithm>
@@ -102,10 +102,24 @@ class TestablePlugin : public Plugin {
                planetarium_rotation) {}
 
   void EndInitialization() override {
-    auto mock_n_body_system = std::make_unique<MockNBodySystem<Barycentric>>();
-    // TODO(egg): check things here.
-    Plugin::EndInitialization();
-    n_body_system_ = std::move(mock_n_body_system);
+    initializing_.Flop();
+    std::vector<not_null<std::unique_ptr<MassiveBody const>>> bodies;
+    std::vector<DegreesOfFreedom<Barycentric>> initial_state;
+    for (auto&& body : *bodies_) {
+      bodies.emplace_back(std::move(body.second));
+    }
+    bodies_.reset();
+    for (auto const& state : *initial_state_) {
+      initial_state.emplace_back(state.second);
+    }
+    initial_state_.reset();
+    n_body_system_ =
+        std::make_unique<MockNBodySystem<Barycentric>>(std::move(bodies),
+                                                       initial_state,
+                                                       current_time_,
+                                                       history_integrator_,
+                                                       45 * Minute,
+                                                       1 * Milli(Metre));
   }
 
   Time const& Δt() const {
@@ -227,8 +241,6 @@ TEST_F(PluginDeathTest, SerializationError) {
   }, "!initializing");
 }
 
-// TODO(egg): fix
-/*
 TEST_F(PluginTest, Serialization) {
   GUID const satellite = "satellite";
   // We need an actual |Plugin| here rather than a |TestablePlugin|, since
@@ -288,7 +300,6 @@ TEST_F(PluginTest, Serialization) {
             vessel_0_history.timeline(0).instant().scalar().magnitude());
   EXPECT_FALSE(message.bubble().has_current());
 }
-*/
 
 TEST_F(PluginTest, Initialization) {
   InsertAllSolarSystemBodies();
@@ -1221,6 +1232,7 @@ TEST_F(PluginTest, SerializationCompatibility) {
   Trivector<Length, Barycentric> const expected_u(7 * Metre);
   EXPECT_EQ(expected_u, u);
 }
-*/
+
 }  // namespace ksp_plugin
 }  // namespace principia
+*/
