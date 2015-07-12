@@ -81,7 +81,10 @@ class PhysicsBubbleTest : public testing::Test {
       t3_(2 * SIUnit<Time>()) {
     celestial_.set_trajectory(&celestial_trajectory_);
     for (int i = 0; i < 9; ++i) {
-      celestial_trajectory_.Append(t1_ + i * Second, celestial_dof_);
+      celestial_trajectory_.Append(t1_ + i * Second,
+                                   {celestial_dof_.position() +
+                                        i * Second * celestial_dof_.velocity(),
+                                    celestial_dof_.velocity()});
     }
     vessel1_.CreateProlongation(t1_, dof1_);
     vessel2_.CreateProlongation(t1_, dof2_);
