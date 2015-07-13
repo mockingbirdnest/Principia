@@ -19,6 +19,7 @@ message FixedStepSizeIntegrator {
     optional FixedStepSizeIntegrator fixed_step_size_integrator = 3001;
   }
   enum Kind {
+    DUMMY = 0;  // For testing.
     BLANES_MOAN_2002_SRKN_6B = 1;
     BLANES_MOAN_2002_SRKN_11B = 2;
     BLANES_MOAN_2002_SRKN_14A = 3;

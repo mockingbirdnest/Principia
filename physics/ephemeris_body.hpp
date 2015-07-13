@@ -63,7 +63,10 @@ template<typename Frame>
 class DummyIntegrator
     : public FixedStepSizeIntegrator<
                  typename Ephemeris<Frame>::NewtonianMotionEquation> {
-  DummyIntegrator() = default;
+  using ODE = typename Ephemeris<Frame>::NewtonianMotionEquation;
+  //TODO
+  DummyIntegrator() : FixedStepSizeIntegrator<ODE>(
+      serialization::FixedStepSizeIntegrator::DUMMY) {}
 
  public:
   void Solve(IntegrationProblem<ODE> const& problem,
