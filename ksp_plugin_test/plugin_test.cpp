@@ -1,5 +1,4 @@
-﻿/*
-#include "ksp_plugin/plugin.hpp"
+﻿#include "ksp_plugin/plugin.hpp"
 
 #include <algorithm>
 #include <cmath>
@@ -241,6 +240,7 @@ TEST_F(PluginDeathTest, SerializationError) {
   }, "!initializing");
 }
 
+#if 0 //TODO
 TEST_F(PluginTest, Serialization) {
   GUID const satellite = "satellite";
   // We need an actual |Plugin| here rather than a |TestablePlugin|, since
@@ -300,6 +300,7 @@ TEST_F(PluginTest, Serialization) {
             vessel_0_history.timeline(0).instant().scalar().magnitude());
   EXPECT_FALSE(message.bubble().has_current());
 }
+#endif
 
 TEST_F(PluginTest, Initialization) {
   InsertAllSolarSystemBodies();
@@ -324,6 +325,7 @@ TEST_F(PluginTest, Initialization) {
   }
 }
 
+#if 0 //TODO
 TEST_F(PluginDeathTest, InsertCelestialError) {
   RelativeDegreesOfFreedom<AliceSun> const from_parent = looking_glass_(
       solar_system_->trajectories().front()->last().degrees_of_freedom() -
@@ -421,7 +423,7 @@ TEST_F(PluginDeathTest, AdvanceTimeError) {
   }, "Check failed: !initializing");
 }
 
-/*
+
 TEST_F(PluginDeathTest, ForgetAllHistoriesBeforeError) {
   EXPECT_DEATH({
     EXPECT_CALL(*n_body_system_, Integrate(_, _, _, _, _, _)).Times(2);
@@ -1232,7 +1234,7 @@ TEST_F(PluginTest, SerializationCompatibility) {
   Trivector<Length, Barycentric> const expected_u(7 * Metre);
   EXPECT_EQ(expected_u, u);
 }
+#endif
 
 }  // namespace ksp_plugin
 }  // namespace principia
-*/

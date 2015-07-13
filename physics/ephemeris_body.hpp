@@ -29,7 +29,7 @@ using ::std::placeholders::_3;
 
 namespace physics {
 
-namespace {
+namespace {  // TODO(egg): this should be a named namespace (internal)
 
 // If j is a unit vector along the axis of rotation, and r is the separation
 // between the bodies, the acceleration computed here is:
@@ -57,6 +57,23 @@ FORCE_INLINE Vector<Acceleration, Frame>
                   r_axis_projection * one_over_r_squared)) * r;
   return axis_acceleration + radial_acceleration;
 }
+
+// For mocking purposes.
+class DummyIntegrator
+    : public FixedStepSizeIntegrator<NewtonianMotionEquation> {
+  DummyIntegrator() = default;
+
+ public:
+  void Solve(IntegrationProblem<ODE> const& problem,
+             Time const& step) const override {
+    LOG(FATAL) << "dummy";
+  }
+
+  static DummyIntegrator const& Instance() {
+    static DummyIntegrator const instance;
+    return instance;
+  }
+};
 
 }  // namespace
 
@@ -337,6 +354,10 @@ std::unique_ptr<Ephemeris<Frame>> Ephemeris<Frame>::ReadFromMessage(
   }
   return ephemeris;
 }
+
+template <typename Frame>
+Ephemeris<Frame>::Ephemeris()
+    : planetary_integrator_(internal::DummyIntegrator::Instance()) {}
 
 template<typename Frame>
 void Ephemeris<Frame>::AppendMassiveBodiesState(
