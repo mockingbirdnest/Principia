@@ -136,8 +136,7 @@ class PluginTest : public testing::Test {
                     initial_time_,
                     SolarSystem::kSun,
                     sun_gravitational_parameter_,
-                    planetarium_rotation_,
-                    n_body_system_)) {
+                    planetarium_rotation_)) {
     satellite_initial_displacement_ =
         Displacement<AliceSun>({3111.0 * Kilo(Metre),
                                 4400.0 * Kilo(Metre),
