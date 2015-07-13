@@ -90,6 +90,7 @@ MATCHER_P(HasNonvanishingIntrinsicAccelerationAt, t, "") {
 }  // namespace
 
 class TestablePlugin : public Plugin {
+  std::map<Index, ContinuousTrajectory<Barycentric>> trajectories_;
  public:
   TestablePlugin(Instant const& initial_time,
                  Index const sun_index,
@@ -104,15 +105,26 @@ class TestablePlugin : public Plugin {
     initializing_.Flop();
     std::vector<not_null<std::unique_ptr<MassiveBody const>>> bodies;
     std::vector<DegreesOfFreedom<Barycentric>> initial_state;
-    for (auto&& body : *bodies_) {
-      bodies.emplace_back(std::move(body.second));
+    auto bodies_it = bodies_->begin();
+    for (auto const& index_state : *initial_state_) {
+      EXPECT_EQ(index_state.first, bodies_it->first);
+      auto const inserted = 
+          trajectories_.emplace(std::piecewise_construct,
+                                std::forward_as_tuple(index_state.first),
+                                std::forward_as_tuple(45 * Minute,
+                                                      1 * Milli(Metre)));
+      EXPECT_TRUE(inserted.second);
+      inserted.first->second.Append(current_time_, index_state.second);
+      ++bodies_it;
     }
     bodies_.reset();
-    for (auto const& state : *initial_state_) {
-      initial_state.emplace_back(state.second);
-    }
     initial_state_.reset();
     n_body_system_ = std::make_unique<MockNBodySystem<Barycentric>>();
+    for (auto const& index_celestial : celestials_) {
+      auto const& index = index_celestial.first;
+      auto& celestial = *index_celestial.second;
+      celestial.set_trajectory(&FindOrDie(trajectories_, index));
+    }
   }
 
   Time const& Δt() const {
