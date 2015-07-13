@@ -59,8 +59,10 @@ FORCE_INLINE Vector<Acceleration, Frame>
 }
 
 // For mocking purposes.
+template<typename Frame>
 class DummyIntegrator
-    : public FixedStepSizeIntegrator<NewtonianMotionEquation> {
+    : public FixedStepSizeIntegrator<
+                 typename Ephemeris<Frame>::NewtonianMotionEquation> {
   DummyIntegrator() = default;
 
  public:
@@ -357,7 +359,7 @@ std::unique_ptr<Ephemeris<Frame>> Ephemeris<Frame>::ReadFromMessage(
 
 template <typename Frame>
 Ephemeris<Frame>::Ephemeris()
-    : planetary_integrator_(internal::DummyIntegrator::Instance()) {}
+    : planetary_integrator_(DummyIntegrator<Frame>::Instance()) {}
 
 template<typename Frame>
 void Ephemeris<Frame>::AppendMassiveBodiesState(

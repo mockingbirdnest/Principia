@@ -93,6 +93,11 @@ class Ephemeris {
   static std::unique_ptr<Ephemeris> ReadFromMessage(
       serialization::Ephemeris const& message);
 
+ protected:
+  // For mocking purposes, leaves everything uninitialized and uses a dummy
+  // integrator that crashes when used.
+  Ephemeris();
+
  private:
   void AppendMassiveBodiesState(
       typename NewtonianMotionEquation::SystemState const& state);

@@ -112,13 +112,7 @@ class TestablePlugin : public Plugin {
       initial_state.emplace_back(state.second);
     }
     initial_state_.reset();
-    n_body_system_ =
-        std::make_unique<MockNBodySystem<Barycentric>>(std::move(bodies),
-                                                       initial_state,
-                                                       current_time_,
-                                                       history_integrator_,
-                                                       45 * Minute,
-                                                       1 * Milli(Metre));
+    n_body_system_ = std::make_unique<MockNBodySystem<Barycentric>>();
   }
 
   Time const& Δt() const {
