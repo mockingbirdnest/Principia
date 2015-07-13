@@ -104,7 +104,7 @@ void Plugin::InsertCelestial(
   bodies_->emplace(celestial_index, std::move(body));
   celestial->set_parent(parent);
   DegreesOfFreedom<Barycentric> const& parent_degrees_of_freedom =
-      FindOrDie(*initial_state_, parent);
+      FindOrDie(*initial_state_, parent_index);
   initial_state_->emplace(celestial_index,
                           parent_degrees_of_freedom + relative);
 }
