@@ -75,6 +75,12 @@ TEST_F(DegreesOfFreedomDeathTest, BarycentreError) {
   }, "Empty BarycentreCalculator");
 }
 
+TEST_F(DegreesOfFreedomTest, Output) {
+  testing::MockLog l;
+  LOG(ERROR) << d1_;
+  LOG(ERROR) << d1_ - d2_;
+}
+
 TEST_F(DegreesOfFreedomTest, Barycentre) {
   DegreesOfFreedom<World> const barycentre =
       Barycentre<World, Entropy>({d1_, d2_, d3_},

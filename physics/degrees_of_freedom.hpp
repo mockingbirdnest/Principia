@@ -68,6 +68,11 @@ template<typename Frame>
 std::ostream& operator<<(std::ostream& out,
                          DegreesOfFreedom<Frame> const& degrees_of_freedom);
 
+template<typename Frame>
+std::ostream& operator<<(
+    std::ostream& out,
+    RelativeDegreesOfFreedom<Frame> const& relative_degrees_of_freedom);
+
 }  // namespace physics
 
 // Reopen the base namespace to make RelativeDegreesOfFreedom mappable.

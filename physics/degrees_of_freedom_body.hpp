@@ -80,6 +80,15 @@ std::ostream& operator<<(std::ostream& out,
   return out;
 }
 
+template<typename Frame>
+std::ostream& operator<<(
+    std::ostream& out,
+    RelativeDegreesOfFreedom<Frame> const& relative_degrees_of_freedom) {
+  out << "{" << relative_degrees_of_freedom.displacement() << ", "
+      << relative_degrees_of_freedom.velocity() << "}";
+  return out;
+}
+
 }  // namespace physics
 
 namespace base {
