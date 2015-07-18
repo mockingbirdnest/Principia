@@ -114,7 +114,13 @@ class TestablePlugin : public Plugin {
                                 std::forward_as_tuple(45 * Minute,
                                                       1 * Milli(Metre)));
       EXPECT_TRUE(inserted.second);
-      inserted.first->second.Append(current_time_, index_state.second);
+      for (int i = 0; i < 9; ++i) {
+        inserted.first->second.Append(
+            current_time_ + i * 45 * Minute,
+            {index_state.second.position() +
+                 i * 45 * Minute * index_state.second.velocity(),
+             index_state.second.velocity()});
+      }
       ++bodies_it;
     }
     bodies_.reset();
