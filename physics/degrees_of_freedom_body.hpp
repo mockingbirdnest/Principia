@@ -73,10 +73,22 @@ DegreesOfFreedom<Frame> Barycentre(
 }
 
 template<typename Frame>
+std::string DebugString(DegreesOfFreedom<Frame> const& degrees_of_freedom) {
+  return "{" + DebugString(degrees_of_freedom.position()) + ", " +
+         DebugString(degrees_of_freedom.velocity()) + "}";
+}
+
+template<typename Frame>
+std::string DebugString(
+    RelativeDegreesOfFreedom<Frame> const& relative_degrees_of_freedom) {
+  return "{" + DebugString(relative_degrees_of_freedom.displacement()) + ", " +
+         DebugString(relative_degrees_of_freedom.velocity()) + "}";
+}
+
+template<typename Frame>
 std::ostream& operator<<(std::ostream& out,
                          DegreesOfFreedom<Frame> const& degrees_of_freedom) {
-  out << "{" << degrees_of_freedom.position() << ", "
-      << degrees_of_freedom.velocity() << "}";
+  out << DebugString(degrees_of_freedom);
   return out;
 }
 
@@ -84,8 +96,7 @@ template<typename Frame>
 std::ostream& operator<<(
     std::ostream& out,
     RelativeDegreesOfFreedom<Frame> const& relative_degrees_of_freedom) {
-  out << "{" << relative_degrees_of_freedom.displacement() << ", "
-      << relative_degrees_of_freedom.velocity() << "}";
+  out << DebugString(relative_degrees_of_freedom);
   return out;
 }
 

@@ -65,6 +65,13 @@ DegreesOfFreedom<Frame> Barycentre(
     std::vector<Weight> const& weights);
 
 template<typename Frame>
+std::string DebugString(DegreesOfFreedom<Frame> const& degrees_of_freedom);
+
+template<typename Frame>
+std::string DebugString(
+    RelativeDegreesOfFreedom<Frame> const& relative_degrees_of_freedom);
+
+template<typename Frame>
 std::ostream& operator<<(std::ostream& out,
                          DegreesOfFreedom<Frame> const& degrees_of_freedom);
 

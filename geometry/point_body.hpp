@@ -155,8 +155,13 @@ typename std::enable_if_t<is_quantity<Vector>::value, bool> operator>(
 }
 
 template<typename Vector>
+std::string DebugString(Point<Vector> const& point) {
+  return DebugString(point.coordinates_);
+}
+
+template<typename Vector>
 std::ostream& operator<<(std::ostream& out, Point<Vector> const& point) {
-  return out << point.coordinates_;
+  return out << DebugString(point);
 }
 
 template<typename Vector, typename Weight>

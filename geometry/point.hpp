@@ -72,7 +72,7 @@ class Point {
       Point<V> const& left, Point<V> const& right);
 
   template<typename V>
-  friend std::ostream& operator<<(std::ostream& out, Point<V> const& vector);
+  friend std::string DebugString(Point<V> const& point);
 
   template<typename V, typename Weight>
   friend Point<V> Barycentre(std::vector<Point<V>> const& points,
@@ -100,7 +100,10 @@ typename std::enable_if_t<is_quantity<Vector>::value, bool> operator>(
     Point<Vector> const& left, Point<Vector> const& right);
 
 template<typename Vector>
-std::ostream& operator<<(std::ostream& out, Point<Vector> const& vector);
+std::string DebugString(Point<Vector> const& point);
+
+template<typename Vector>
+std::ostream& operator<<(std::ostream& out, Point<Vector> const& point);
 
 template<typename Vector, typename Weight>
 Point<Vector> Barycentre(std::vector<Point<Vector>> const& points,
