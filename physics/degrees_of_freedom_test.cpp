@@ -75,6 +75,24 @@ TEST_F(DegreesOfFreedomDeathTest, BarycentreError) {
   }, "Empty BarycentreCalculator");
 }
 
+TEST_F(DegreesOfFreedomTest, Output) {\
+  EXPECT_EQ(DebugString(d1_),
+    "{{+1.00000000000000000e+00 m, "
+    "+2.00000000000000000e+00 m, "
+    "+3.00000000000000000e+00 m}, "
+    "{+1.00000000000000000e+01 m s^-1, "
+    "+2.00000000000000000e+01 m s^-1, "
+    "+3.00000000000000000e+01 m s^-1}}");
+  RelativeDegreesOfFreedom<World> relative_degrees_of_freedom = d1_ - d2_;
+  EXPECT_EQ(DebugString(relative_degrees_of_freedom),
+    "{{-3.00000000000000000e+00 m, "
+    "+7.00000000000000000e+00 m, "
+    "-3.00000000000000000e+00 m}, "
+    "{-3.00000000000000000e+01 m s^-1, "
+    "-3.00000000000000000e+01 m s^-1, "
+    "+9.00000000000000000e+01 m s^-1}}");
+}
+
 TEST_F(DegreesOfFreedomTest, Barycentre) {
   DegreesOfFreedom<World> const barycentre =
       Barycentre<World, Entropy>({d1_, d2_, d3_},

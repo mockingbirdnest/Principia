@@ -405,13 +405,17 @@ inline std::string DebugString(double const number, int const precision) {
   char result[50];
 #if OS_WIN
   unsigned int old_exponent_format = _set_output_format(_TWO_DIGIT_EXPONENT);
-  sprintf_s(result, ("%+." + std::to_string(precision) + "e").c_str(), number);
+  int const size = sprintf_s(result,
+                             ("%+." + std::to_string(precision) + "e").c_str(),
+                             number);
   _set_output_format(old_exponent_format);
 #else
-  snprintf(result, sizeof(result),
-           ("%+." + std::to_string(precision) + "e").c_str(), number);
+  int const size = snprintf(result, sizeof(result),
+                            ("%+." + std::to_string(precision) + "e").c_str(),
+                            number);
 #endif
-  return result;
+  CHECK_LE(0, size);
+  return std::string(result, size);
 }
 
 template<typename D>
