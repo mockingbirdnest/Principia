@@ -156,6 +156,7 @@ typename std::enable_if_t<is_quantity<Vector>::value, bool> operator>(
 
 template<typename Vector>
 std::string DebugString(Point<Vector> const& point) {
+  using quantities::DebugString;
   return DebugString(point.coordinates_);
 }
 
