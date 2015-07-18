@@ -76,7 +76,6 @@ TEST_F(DegreesOfFreedomDeathTest, BarycentreError) {
 }
 
 TEST_F(DegreesOfFreedomTest, Output) {
-  testing::MockLog l;
   LOG(ERROR) << d1_;
   LOG(ERROR) << d1_ - d2_;
 }
