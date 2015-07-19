@@ -921,7 +921,6 @@ TEST_F(PluginTest, UpdateCelestialHierarchy) {
   }
 }
 
-#if 0 //OOTD
 TEST_F(PluginTest, BodyCentredNonrotatingRenderingIntegration) {
   GUID const satellite = "satellite";
   // This is an integration test, so we need a plugin that will actually
@@ -1132,6 +1131,7 @@ TEST_F(PluginTest, BarycentricRotatingRenderingIntegration) {
 #endif
 }
 
+#if 0 //TODO
 // Checks that we correctly predict a full circular orbit around a massive body
 // with unit gravitational parameter at unit distance, in 8 steps.  Since
 // predictions are only computed on |AdvanceTime()|, we advance time by a small
