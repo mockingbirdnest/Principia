@@ -483,7 +483,6 @@ TEST_F(PluginDeathTest, CelestialFromParentError) {
   }, "is the sun");
 }
 
-#if 0 //OTDO
 TEST_F(PluginTest, VesselInsertionAtInitialization) {
   GUID const guid = "Test Satellite";
   InsertAllSolarSystemBodies();
@@ -501,6 +500,7 @@ TEST_F(PluginTest, VesselInsertionAtInitialization) {
                   AlmostEquals(satellite_initial_velocity_, 3)));
 }
 
+#if 0 //OTDO
 // Checks that the plugin correctly uses its 10-second-step history even when
 // advanced with smaller timesteps.
 TEST_F(PluginTest, AdvanceTimeWithCelestialsOnly) {
