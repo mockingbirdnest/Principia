@@ -13,6 +13,7 @@ class MockNBodySystem : public Ephemeris<InertialFrame> {
   MockNBodySystem() : Ephemeris() {}
 
   // TODO(egg): MOCK_ALL_THE_THINGS
+  MOCK_METHOD1(Prolong, void(Instant const& t));
 };
 
 }  // namespace physics

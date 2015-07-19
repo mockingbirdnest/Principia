@@ -66,7 +66,7 @@ class Ephemeris {
   void ForgetBefore(Instant const& t);
 
   // Prolongs the ephemeris up to at least |t|.  After the call, |t_max() >= t|.
-  void Prolong(Instant const& t);
+  virtual void Prolong(Instant const& t);
 
   // Integrates, until exactly |t|, the |trajectory| followed by a massless body
   // in the gravitational potential described by |*this|.  If |t > t_max()|,

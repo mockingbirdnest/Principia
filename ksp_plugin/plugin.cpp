@@ -177,6 +177,7 @@ void Plugin::SetVesselStateOffset(
   RelativeDegreesOfFreedom<Barycentric> const relative =
       PlanetariumRotation().Inverse()(from_parent);
   LOG(INFO) << "In barycentric coordinates: " << relative;
+  n_body_system_->Prolong(current_time_);
   vessel->CreateProlongation(
       current_time_,
       vessel->parent()->current_degrees_of_freedom(current_time_) + relative);

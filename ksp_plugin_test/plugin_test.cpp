@@ -91,6 +91,7 @@ MATCHER_P(HasNonvanishingIntrinsicAccelerationAt, t, "") {
 
 class TestablePlugin : public Plugin {
   std::map<Index, ContinuousTrajectory<Barycentric>> trajectories_;
+  std::unique_ptr<MockNBodySystem<Barycentric>> mock_n_body_system_;
  public:
   TestablePlugin(Instant const& initial_time,
                  Index const sun_index,
@@ -99,7 +100,8 @@ class TestablePlugin : public Plugin {
       : Plugin(initial_time,
                sun_index,
                sun_gravitational_parameter,
-               planetarium_rotation) {}
+               planetarium_rotation),
+        mock_n_body_system_(std::make_unique<MockNBodySystem<Barycentric>>()) {}
 
   void EndInitialization() override {
     initializing_.Flop();
@@ -125,7 +127,7 @@ class TestablePlugin : public Plugin {
     }
     bodies_.reset();
     initial_state_.reset();
-    n_body_system_ = std::make_unique<MockNBodySystem<Barycentric>>();
+    n_body_system_ = std::move(mock_n_body_system_);
     for (auto const& index_celestial : celestials_) {
       auto const& index = index_celestial.first;
       auto& celestial = *index_celestial.second;
@@ -136,13 +138,16 @@ class TestablePlugin : public Plugin {
   Time const& Δt() const {
     return Δt_;
   }
+
+  MockNBodySystem<Barycentric>* mock_n_body_system() const {
+    return mock_n_body_system_.get();
+  }
 };
 
 class PluginTest : public testing::Test {
  protected:
   PluginTest()
       : looking_glass_(Permutation<ICRFJ2000Ecliptic, AliceSun>::XZY),
-        n_body_system_(new MockNBodySystem<Barycentric>()),
         solar_system_(SolarSystem::AtСпутник1Launch(
             SolarSystem::Accuracy::kMajorBodiesOnly)),
         bodies_(solar_system_->massive_bodies()),
@@ -155,6 +160,7 @@ class PluginTest : public testing::Test {
                     SolarSystem::kSun,
                     sun_gravitational_parameter_,
                     planetarium_rotation_)) {
+    mock_n_body_system_ = plugin_->mock_n_body_system();
     satellite_initial_displacement_ =
         Displacement<AliceSun>({3111.0 * Kilo(Metre),
                                 4400.0 * Kilo(Metre),
@@ -222,7 +228,7 @@ class PluginTest : public testing::Test {
   }
 
   Permutation<ICRFJ2000Ecliptic, AliceSun> looking_glass_;
-  not_null<MockNBodySystem<Barycentric>*> n_body_system_;  // Not owned.
+  MockNBodySystem<Barycentric>* mock_n_body_system_;
   not_null<std::unique_ptr<SolarSystem>> solar_system_;
   SolarSystem::Bodies bodies_;
   Instant initial_time_;
@@ -490,6 +496,7 @@ TEST_F(PluginTest, VesselInsertionAtInitialization) {
   bool const inserted = plugin_->InsertOrKeepVessel(guid,
                                                     SolarSystem::kEarth);
   EXPECT_TRUE(inserted);
+  EXPECT_CALL(*mock_n_body_system_, Prolong(initial_time_));
   plugin_->SetVesselStateOffset(guid,
                                 RelativeDegreesOfFreedom<AliceSun>(
                                     satellite_initial_displacement_,
