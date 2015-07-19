@@ -336,7 +336,6 @@ TEST_F(PluginTest, Initialization) {
   }
 }
 
-#if 0 //TODO
 TEST_F(PluginDeathTest, InsertCelestialError) {
   RelativeDegreesOfFreedom<AliceSun> const from_parent = looking_glass_(
       solar_system_->trajectories().front()->last().degrees_of_freedom() -
@@ -365,6 +364,7 @@ TEST_F(PluginDeathTest, InsertCelestialError) {
   }, "Body already exists");
 }
 
+#if 0 //OTDO
 TEST_F(PluginDeathTest, UpdateCelestialHierarchyError) {
   EXPECT_DEATH({
     InsertAllSolarSystemBodies();
