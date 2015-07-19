@@ -364,7 +364,6 @@ TEST_F(PluginDeathTest, InsertCelestialError) {
   }, "Body already exists");
 }
 
-#if 0 //OTDO
 TEST_F(PluginDeathTest, UpdateCelestialHierarchyError) {
   EXPECT_DEATH({
     InsertAllSolarSystemBodies();
@@ -435,6 +434,7 @@ TEST_F(PluginDeathTest, AdvanceTimeError) {
 }
 
 
+#if 0 //OTDO
 TEST_F(PluginDeathTest, ForgetAllHistoriesBeforeError) {
   EXPECT_DEATH({
     EXPECT_CALL(*n_body_system_, Integrate(_, _, _, _, _, _)).Times(2);
@@ -445,6 +445,7 @@ TEST_F(PluginDeathTest, ForgetAllHistoriesBeforeError) {
     plugin_->ForgetAllHistoriesBefore(t);
   }, "Check failed: t < HistoryTime");
 }
+#endif
 
 TEST_F(PluginDeathTest, VesselFromParentError) {
   GUID const guid = "Test Satellite";
@@ -482,6 +483,7 @@ TEST_F(PluginDeathTest, CelestialFromParentError) {
   }, "is the sun");
 }
 
+#if 0 //OTDO
 TEST_F(PluginTest, VesselInsertionAtInitialization) {
   GUID const guid = "Test Satellite";
   InsertAllSolarSystemBodies();
