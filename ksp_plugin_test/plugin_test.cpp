@@ -329,10 +329,10 @@ TEST_F(PluginTest, Initialization) {
                 Componentwise(
                     AlmostEquals(looking_glass_.Inverse()(
                             plugin_->CelestialFromParent(index).displacement()),
-                        1, 216320),
+                        1, 278784),
                     AlmostEquals(looking_glass_.Inverse()(
                             plugin_->CelestialFromParent(index).velocity()),
-                        0, 936)));
+                        0, 1643885)));
   }
 }
 
