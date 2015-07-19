@@ -893,6 +893,7 @@ TEST_F(PluginTest, PhysicsBubble) {
     }
   }
 }
+#endif
 
 TEST_F(PluginTest, UpdateCelestialHierarchy) {
   InsertAllSolarSystemBodies();
@@ -920,6 +921,7 @@ TEST_F(PluginTest, UpdateCelestialHierarchy) {
   }
 }
 
+#if 0 //OOTD
 TEST_F(PluginTest, BodyCentredNonrotatingRenderingIntegration) {
   GUID const satellite = "satellite";
   // This is an integration test, so we need a plugin that will actually
