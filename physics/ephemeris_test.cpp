@@ -112,16 +112,21 @@ TEST_F(EphemerisTest, ProlongSpecialCases) {
 
   EXPECT_EQ(t0_ - std::numeric_limits<double>::infinity() * Second,
             ephemeris.t_max());
+  EXPECT_EQ(t0_ + std::numeric_limits<double>::infinity() * Second,
+            ephemeris.t_min());
 
   ephemeris.Prolong(t0_ + period);
+  EXPECT_EQ(t0_, ephemeris.t_min());
   EXPECT_LE(t0_ + period, ephemeris.t_max());
   Instant const t_max = ephemeris.t_max();
 
   ephemeris.Prolong(t0_ + period / 2);
   EXPECT_EQ(t_max, ephemeris.t_max());
 
-  ephemeris.Prolong(t0_ + period + period / 10);
-  EXPECT_LE(t0_ + period + period / 10, ephemeris.t_max());
+  Instant const last_t =
+      geometry::Barycentre<Time, double>({t0_ + period, t_max}, {0.5, 0.5});
+  ephemeris.Prolong(last_t);
+  EXPECT_EQ(t_max, ephemeris.t_max());
 }
 
 // The canonical Earth-Moon system, tuned to produce circular orbits.
