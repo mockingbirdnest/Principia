@@ -194,7 +194,7 @@ void Ephemeris<Frame>::Prolong(Instant const& t) {
     // state at the end of the previous call to |Solve|.  It is therefore the
     // right initial state for the next call to |Solve|, if any.
     problem.t_final += step_;
-  };
+  }
 }
 
 template<typename Frame>
