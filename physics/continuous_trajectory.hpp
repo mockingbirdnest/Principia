@@ -46,7 +46,8 @@ class ContinuousTrajectory {
   bool empty() const;
 
   // The time range for which the trajectory can be evaluated.  Note that
-  // |t_max| may be less than the last time passed to Append.
+  // |t_max| may be less than the last time passed to Append.  For an empty
+  // trajectory, an infinity with the proper sign is returned.
   Instant t_min() const;
   Instant t_max() const;
 
