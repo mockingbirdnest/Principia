@@ -1,5 +1,6 @@
 ﻿#include "physics/ephemeris.hpp"
 
+#include <limits>
 #include <map>
 #include <vector>
 
@@ -89,6 +90,39 @@ class EphemerisTest : public testing::Test {
 
   Instant t0_;
 };
+
+TEST_F(EphemerisTest, ProlongSpecialCases) {
+  std::vector<not_null<std::unique_ptr<MassiveBody const>>> bodies;
+  std::vector<DegreesOfFreedom<EarthMoonOrbitPlane>> initial_state;
+  Position<EarthMoonOrbitPlane> centre_of_mass;
+  Time period;
+  SetUpEarthMoonSystem(&bodies, &initial_state, &centre_of_mass, &period);
+
+  MassiveBody const* const earth = bodies[0].get();
+  MassiveBody const* const moon = bodies[1].get();
+
+  Ephemeris<EarthMoonOrbitPlane>
+      ephemeris(
+          std::move(bodies),
+          initial_state,
+          t0_,
+          McLachlanAtela1992Order5Optimal<Position<EarthMoonOrbitPlane>>(),
+          period / 100,
+          5 * Milli(Metre));
+
+  EXPECT_EQ(t0_ - std::numeric_limits<double>::infinity() * Second,
+            ephemeris.t_max());
+
+  ephemeris.Prolong(t0_ + period);
+  EXPECT_LE(t0_ + period, ephemeris.t_max());
+  Instant const t_max = ephemeris.t_max();
+
+  ephemeris.Prolong(t0_ + period / 2);
+  EXPECT_EQ(t_max, ephemeris.t_max());
+
+  ephemeris.Prolong(t0_ + period + period / 10);
+  EXPECT_LE(t0_ + period + period / 10, ephemeris.t_max());
+}
 
 // The canonical Earth-Moon system, tuned to produce circular orbits.
 TEST_F(EphemerisTest, EarthMoon) {
