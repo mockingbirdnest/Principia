@@ -174,19 +174,27 @@ void Ephemeris<Frame>::Prolong(Instant const& t) {
   problem.equation = massive_bodies_equation_;
   problem.append_state =
       std::bind(&Ephemeris::AppendMassiveBodiesState, this, _1);
-  problem.t_final = t;
+
+  // Note that |t| may be before the last time that we integrated and still
+  // after |t_max()|.  In this case we want to make sure that the integrator
+  // makes progress.
   problem.initial_state = &last_state_;
+  if (t <= last_state_.time.value) {
+    problem.t_final = last_state_.time.value + step_;
+  } else {
+    problem.t_final = t;
+  }
 
   // Perform the integration.  Note that we may have to iterate until |t_max()|
   // actually reaches |t| because the last series may not be fully determined
   // after the first integration.
-  do {
+  while (t_max() < t) {
     planetary_integrator_.Solve(problem, step_);
     // Here |problem.initial_state| still points at |last_state_|, which is the
     // state at the end of the previous call to |Solve|.  It is therefore the
     // right initial state for the next call to |Solve|, if any.
     problem.t_final += step_;
-  } while (t_max() < t);
+  }
 }
 
 template<typename Frame>

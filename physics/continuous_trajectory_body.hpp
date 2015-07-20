@@ -11,6 +11,7 @@
 namespace principia {
 
 using si::Metre;
+using si::Second;
 using testing_utilities::ULPDistance;
 
 namespace physics {
@@ -45,13 +46,17 @@ bool ContinuousTrajectory<Frame>::empty() const {
 
 template<typename Frame>
 Instant ContinuousTrajectory<Frame>::t_min() const {
-  CHECK(!empty()) << "Empty trajectory";
+  if (empty()) {
+    return Instant(std::numeric_limits<double>::infinity() * Second);
+  }
   return *first_time_;
 }
 
 template<typename Frame>
 Instant ContinuousTrajectory<Frame>::t_max() const {
-  CHECK(!empty()) << "Empty trajectory";
+  if (empty()) {
+    return Instant(-std::numeric_limits<double>::infinity() * Second);
+  }
   return series_.back().t_max();
 }
 
