@@ -421,6 +421,7 @@ TEST_F(PluginDeathTest, SetVesselStateOffsetError) {
     InsertAllSolarSystemBodies();
     plugin_->EndInitialization();
     plugin_->InsertOrKeepVessel(guid, SolarSystem::kSun);
+    EXPECT_CALL(*mock_n_body_system_, Prolong(initial_time_));
     plugin_->SetVesselStateOffset(guid,
                                   RelativeDegreesOfFreedom<AliceSun>(
                                       satellite_initial_displacement_,
