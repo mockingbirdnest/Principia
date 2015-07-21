@@ -214,7 +214,9 @@ void Plugin::AdvanceTime(Instant const& t, Angle const& planetarium_rotation) {
     }
     ResetProlongations();
   }
-  EvolveProlongationsAndBubble(t);
+  if (history_time_ < t) {
+    EvolveProlongationsAndBubble(t);
+  }
   VLOG(1) << "Time has been advanced" << '\n'
           << "from : " << current_time_ << '\n'
           << "to   : " << t;
@@ -709,7 +711,7 @@ void Plugin::EvolveHistories(
                                     Δt_,
                                     t - Δt_);
   history_time_ = histories.front()->last().time();
-  CHECK_GE(history_time_, current_time_);
+  CHECK_GE(history_time_, t);
   VLOG(1) << "Evolved the histories" << '\n'
           << "to   : " << history_time_;
 }
