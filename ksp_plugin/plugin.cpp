@@ -707,11 +707,13 @@ void Plugin::EvolveHistories(
           << "from : " << history_time_;
   // We integrate until at least |t - Δt_|, and therefore until at most
   // |t|.
+  LOG(ERROR)<<histories.front()->last().time();
   n_body_system_->FlowWithFixedStep(histories,
                                     Δt_,
                                     t - Δt_);
   history_time_ = histories.front()->last().time();
-  CHECK_GE(history_time_, t);
+  LOG(ERROR)<<history_time_;
+  CHECK_GE(history_time_, current_time_);
   VLOG(1) << "Evolved the histories" << '\n'
           << "to   : " << history_time_;
 }
