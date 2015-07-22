@@ -90,8 +90,7 @@ void TestTermination(
   Instant const t_initial;
   Instant const t_final = t_initial + 163 * Second;
   Time const step = 42 * Second;
-  int const steps =
-      static_cast<int>(std::ceil((t_final - t_initial) / step)) - 1;
+  int const steps = static_cast<int>(std::floor((t_final - t_initial) / step));
 
   int evaluations = 0;
 
@@ -113,7 +112,7 @@ void TestTermination(
 
   EXPECT_EQ(steps, solution.size());
   EXPECT_THAT(solution.back().time.value,
-              AllOf(Ge(t_final), Lt(t_final + step)));
+              AllOf(Gt(t_final - step), Le(t_final)));
   switch (integrator.composition) {
     case kBA:
     case kABA:
