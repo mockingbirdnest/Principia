@@ -112,8 +112,6 @@ void SymplecticRungeKuttaNyströmIntegrator<Position, order, time_reversible,
   // Accelerations at the current stage.
   std::vector<Acceleration> g(dimension);
 
-  bool at_end = false;
-
   // The first full stage of the step, i.e. the first stage where
   // exp(bᵢ h B) exp(aᵢ h A) must be entirely computed.
   // Always 0 in the non-FSAL kBA case, always 1 in the kABA case since b₀ = 0,
@@ -122,13 +120,8 @@ void SymplecticRungeKuttaNyströmIntegrator<Position, order, time_reversible,
   // exp(bᵢ h B).
   int first_stage = composition == kABA ? 1 : 0;
 
-  for (;;) {
-    // Termination condition.
-    Time const time_to_end = (problem.t_final - t.value) - t.error;
-    at_end = integration_direction * h > integration_direction * time_to_end;
-    if (at_end) {
-      break;
-    }
+  while (integration_direction * h <=
+         integration_direction * ((problem.t_final - t.value) - t.error)) {
 
     std::fill(Δq.begin(), Δq.end(), Displacement{});
     std::fill(Δv.begin(), Δv.end(), Velocity{});
