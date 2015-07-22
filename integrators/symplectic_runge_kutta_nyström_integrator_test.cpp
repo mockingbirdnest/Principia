@@ -79,6 +79,60 @@ void ComputeHarmonicOscillatorAcceleration(
   }
 }
 
+template<typename Integrator>
+void TestTermination(
+    Integrator const& integrator) {
+  Length const q_initial = 1 * Metre;
+  Speed const v_initial = 0 * Metre / Second;
+  Speed const v_amplitude = 1 * Metre / Second;
+  AngularFrequency const ω = 1 * Radian / Second;
+  Time const period = 2 * π * Second;
+  Instant const t_initial;
+  Instant const t_final = t_initial + 163 * Second;
+  Time const step = 42 * Second;
+  int const steps =
+      static_cast<int>(std::ceil((t_final - t_initial) / step)) - 1;
+
+  int evaluations = 0;
+
+  std::vector<ODE::SystemState> solution;
+  ODE harmonic_oscillator;
+  harmonic_oscillator.compute_acceleration =
+      std::bind(ComputeHarmonicOscillatorAcceleration,
+                _1, _2, _3, &evaluations);
+  IntegrationProblem<ODE> problem;
+  problem.equation = harmonic_oscillator;
+  ODE::SystemState const initial_state = {{q_initial}, {v_initial}, t_initial};
+  problem.initial_state = &initial_state;
+  problem.t_final = t_final;
+  problem.append_state = [&solution](ODE::SystemState const& state) {
+    solution.push_back(state);
+  };
+
+  integrator.Solve(problem, step);
+
+  EXPECT_EQ(steps, solution.size());
+  EXPECT_THAT(solution.back().time.value,
+              AllOf(Ge(t_final), Lt(t_final + step)));
+  switch (integrator.composition) {
+    case kBA:
+    case kABA:
+      EXPECT_EQ(steps * integrator.evaluations, evaluations);
+      break;
+    case kBAB:
+      EXPECT_EQ(steps * integrator.evaluations + 1, evaluations);
+      break;
+    default:
+      LOG(FATAL) << "Invalid composition";
+  }
+  Length q_error;
+  Speed v_error;
+  for (int i = 0; i < steps; ++i) {
+    Time const t = solution[i].time.value - t_initial;
+    EXPECT_THAT(t, AlmostEquals((i + 1) * step, 0));
+  }
+}
+
 // Long integration, change detector.  Also tests the number of steps, their
 // spacing, and the number of evaluations.
 template<typename Integrator>
@@ -339,7 +393,8 @@ struct SimpleHarmonicMotionTestInstance {
                                    Length const& expected_position_error,
                                    Speed const& expected_velocity_error,
                                    Energy const& expected_energy_error)
-      : test_1000_seconds_at_1_millisecond_(
+      : test_termination_(std::bind(TestTermination<Integrator>, integrator)),
+        test_1000_seconds_at_1_millisecond_(
             std::bind(Test1000SecondsAt1Millisecond<Integrator>,
                       integrator,
                       expected_position_error,
@@ -361,6 +416,10 @@ struct SimpleHarmonicMotionTestInstance {
     return name_;
   }
 
+  void RunTermination() const {
+    test_termination_();
+  }
+
   void Run1000SecondsAt1Millisecond() const {
     test_1000_seconds_at_1_millisecond_();
   }
@@ -378,6 +437,7 @@ struct SimpleHarmonicMotionTestInstance {
   }
 
  private:
+  std::function<void()> test_termination_;
   std::function<void()> test_1000_seconds_at_1_millisecond_;
   std::function<void()> test_convergence_;
   std::function<void()> test_symplecticity_;
@@ -463,6 +523,11 @@ TEST_P(SymplecticRungeKuttaNyströmIntegratorTest, Symplecticity) {
 TEST_P(SymplecticRungeKuttaNyströmIntegratorTest, Convergence) {
   LOG(INFO) << GetParam();
   GetParam().RunConvergence();
+}
+
+TEST_P(SymplecticRungeKuttaNyströmIntegratorTest, Termination) {
+  LOG(INFO) << GetParam();
+  GetParam().RunTermination();
 }
 
 TEST_P(SymplecticRungeKuttaNyströmIntegratorTest, LongIntegration) {
