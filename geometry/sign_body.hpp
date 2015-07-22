@@ -19,6 +19,14 @@ inline void Sign::WriteToMessage(
   message->set_negative(negative_);
 }
 
+inline bool Sign::operator==(Sign const& right) const {
+  return negative_ == right.negative_;
+}
+
+inline bool Sign::operator!=(Sign const& right) const {
+  return negative_ != right.negative_;
+}
+
 inline Sign Sign::ReadFromMessage(serialization::Sign const& message) {
   return Sign(message.negative() ? -1 : 1);
 }

@@ -125,7 +125,7 @@ void SymplecticRungeKuttaNyströmIntegrator<Position, order, time_reversible,
   for (;;) {
     // Termination condition.
     Time const time_to_end = (problem.t_final - t.value) - t.error;
-    at_end = integration_direction * h > integration_direction * time_to_end;
+    at_end = Sign(time_to_end) != integration_direction;
     if (at_end) {
       break;
     }

@@ -91,7 +91,7 @@ void TestTermination(
   Instant const t_final = t_initial + 163 * Second;
   Time const step = 42 * Second;
   int const steps =
-      static_cast<int>(std::ceil((t_final - t_initial) / step)) - 1;
+      static_cast<int>(std::ceil((t_final - t_initial) / step));
 
   int evaluations = 0;
 
@@ -148,7 +148,8 @@ void Test1000SecondsAt1Millisecond(
   Instant const t_initial;
   Instant const t_final = t_initial + 1000 * Second;
   Time const step = 1 * Milli(Second);
-  int const steps = static_cast<int>((t_final - t_initial) / step) - 1;
+  int const steps =
+      static_cast<int>(std::ceil((t_final - t_initial) / step));
 
   int evaluations = 0;
 
@@ -226,13 +227,13 @@ void TestConvergence(Integrator const& integrator,
   problem.equation = harmonic_oscillator;
   ODE::SystemState const initial_state = {{q_initial}, {v_initial}, t_initial};
   problem.initial_state = &initial_state;
-  problem.t_final = t_final;
   ODE::SystemState final_state;
   problem.append_state = [&final_state](ODE::SystemState const& state) {
     final_state = state;
   };
 
   for (int i = 0; i < step_sizes; ++i, step /= step_reduction) {
+    problem.t_final = t_final - step;
     integrator.Solve(problem, step);
     Time const t = final_state.time.value - t_initial;
     Length const& q = final_state.positions[0].value;
@@ -343,7 +344,7 @@ void TestTimeReversibility(Integrator const& integrator) {
   AngularFrequency const ω = 1 * Radian / Second;
   Time const period = 2 * π * Second;
   Instant const t_initial;
-  Instant const t_final = t_initial + 100 * Second;
+  Instant const t_final = t_initial + 99 * Second;
   Time const step = 1 * Second;
 
   std::vector<ODE::SystemState> solution;

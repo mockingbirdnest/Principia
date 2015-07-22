@@ -22,6 +22,9 @@ class Sign {
   void WriteToMessage(not_null<serialization::Sign*> const message) const;
   static Sign ReadFromMessage(serialization::Sign const& message);
 
+  bool operator==(Sign const& right) const;
+  bool operator!=(Sign const& right) const;
+
  private:
   bool negative_;
   friend Sign operator*(Sign const& left, Sign const& right);
