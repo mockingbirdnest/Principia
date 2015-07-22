@@ -122,7 +122,6 @@ void SymplecticRungeKuttaNyströmIntegrator<Position, order, time_reversible,
 
   while (integration_direction * h <=
          integration_direction * ((problem.t_final - t.value) - t.error)) {
-
     std::fill(Δq.begin(), Δq.end(), Displacement{});
     std::fill(Δv.begin(), Δv.end(), Velocity{});
 
