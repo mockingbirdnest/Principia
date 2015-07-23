@@ -142,6 +142,14 @@ class TestablePlugin : public Plugin {
   MockNBodySystem<Barycentric>* mock_n_body_system() const {
     return mock_n_body_system_.get();
   }
+
+  ~TestablePlugin() {
+    LOG(ERROR)<<FUNCTION_SIGNATURE;
+    LOG(ERROR)<<NAMED(this);
+    LOG(ERROR)<<NAMED(mock_n_body_system_.get());
+    LOG(ERROR)<<NAMED(n_body_system_.get());
+  }
+
 };
 
 class PluginTest : public testing::Test {
