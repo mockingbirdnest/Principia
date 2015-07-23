@@ -214,6 +214,7 @@ Transforms<Mobile, FromFrame, ThroughFrame, ToFrame>::BarycentricRotating(
   // From the perspective of the lambda the following variable is really |this|,
   // hence the name.
   not_null<Transforms*> that = transforms.get();
+
   transforms->first_ =
       [&primary, &secondary, that](
           LazyTrajectory<FromFrame> const& from_trajectory,
@@ -251,9 +252,9 @@ Transforms<Mobile, FromFrame, ThroughFrame, ToFrame>::BarycentricRotating(
         Barycentre<FromFrame, GravitationalParameter>(
             {primary_degrees_of_freedom,
              secondary_degrees_of_freedom},
-            {(primary.*from_trajectory)().template body<MassiveBody>()->
+            {(primary.*from_trajectory)().TEMPLATE body<MassiveBody>()->
                  gravitational_parameter(),
-             (secondary.*from_trajectory)().template body<MassiveBody>()->
+             (secondary.*from_trajectory)().TEMPLATE body<MassiveBody>()->
                  gravitational_parameter()});
     Rotation<FromFrame, ThroughFrame>
         from_basis_of_barycentric_frame_to_standard_basis =
