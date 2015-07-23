@@ -44,6 +44,8 @@ class Ephemeris {
             Time const& step,
             Length const& fitting_tolerance);
 
+  virtual ~Ephemeris() = default;
+
   // Returns the bodies in the order in which they were given at construction.
   std::vector<MassiveBody const*> const& bodies() const;
 

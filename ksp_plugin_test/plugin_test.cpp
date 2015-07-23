@@ -148,7 +148,6 @@ class TestablePlugin : public Plugin {
     LOG(ERROR)<<NAMED(this);
     LOG(ERROR)<<NAMED(mock_n_body_system_.get());
     LOG(ERROR)<<NAMED(n_body_system_.get());
-    n_body_system_.reset();
   }
 
 };
