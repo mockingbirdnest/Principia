@@ -149,7 +149,7 @@ inline void noreturn() { std::exit(0); }
 
 // A workaround for a MSVC bug wherein a |typename| is required by the standard
 // and by clang but forbidden by MSVC.
-#if PRINCIPIA_COMPILER_MSVC
+#if PRINCIPIA_COMPILER_MSVC && (_MSC_VER < 1900)
 #  define TYPENAME
 #else
 #  define TYPENAME typename
