@@ -705,12 +705,8 @@ void Plugin::EvolveHistories(
   // Integration with a constant step.{
   VLOG(1) << "Starting the evolution of the histories" << '\n'
           << "from : " << history_time_;
-  // We integrate until at least |t - Δt_|, and therefore until at most
-  // |t|.
   LOG(ERROR)<<histories.front()->last().time();
-  n_body_system_->FlowWithFixedStep(histories,
-                                    Δt_,
-                                    t - Δt_);
+  n_body_system_->FlowWithFixedStep(histories, Δt_, t);
   history_time_ = histories.front()->last().time();
   LOG(ERROR)<<history_time_;
   CHECK_GE(history_time_, current_time_);
