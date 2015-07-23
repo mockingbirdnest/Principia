@@ -404,7 +404,7 @@ inline std::string FormatUnit(std::string const& name, int const exponent) {
 
 inline std::string DebugString(double const number, int const precision) {
   char result[50];
-#if OS_WIN
+#if OS_WIN && PRINCIPIA_COMPILER_MSVC && (_MSC_VER < 1900)
   unsigned int old_exponent_format = _set_output_format(_TWO_DIGIT_EXPONENT);
   int const size = sprintf_s(result,
                              ("%+." + std::to_string(precision) + "e").c_str(),
