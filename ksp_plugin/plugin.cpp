@@ -397,6 +397,7 @@ FrameField<World> Plugin::Navball(
     Position<World> const& sun_world_position) const {
   auto const to_world =
       OrthogonalMap<WorldSun, World>::Identity() * BarycentricToWorldSun();
+  n_body_system_->Prolong(current_time_);
   auto const positions_from_world =
       AffineMap<World, Barycentric, Length, OrthogonalMap>(
           sun_world_position,
