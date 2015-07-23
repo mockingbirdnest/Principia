@@ -705,10 +705,8 @@ void Plugin::EvolveHistories(
   // Integration with a constant step.{
   VLOG(1) << "Starting the evolution of the histories" << '\n'
           << "from : " << history_time_;
-  LOG(ERROR)<<histories.front()->last().time();
   n_body_system_->FlowWithFixedStep(histories, Δt_, t);
   history_time_ = histories.front()->last().time();
-  LOG(ERROR)<<history_time_;
   CHECK_GE(history_time_, current_time_);
   VLOG(1) << "Evolved the histories" << '\n'
           << "to   : " << history_time_;
