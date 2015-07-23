@@ -282,7 +282,7 @@ class Plugin {
   // added to |kept_vessels_|  The resulting plugin is not |initializing_|.
   Plugin(GUIDToOwnedVessel vessels,
          IndexToOwnedCelestial celestials,
-         std::set<not_null<Vessel*> const> dirty_vessels,
+         std::set<not_null<Vessel*>> dirty_vessels,
          not_null<std::unique_ptr<PhysicsBubble>> bubble,
          Angle planetarium_rotation,
          Instant current_time,
@@ -374,15 +374,15 @@ class Plugin {
   // The vessels which have been inserted after |HistoryTime()|.  These are the
   // vessels which do not satisfy |is_synchronized()|, i.e., they do not have a
   // history.  The pointers are not owning.
-  std::set<not_null<Vessel*> const> unsynchronized_vessels_;
+  std::set<not_null<Vessel*>> unsynchronized_vessels_;
   // The vessels that have been added to the physics bubble after
   // |HistoryTime()|.  For these vessels, the prolongation contains information
   // that may not be discarded, and the history will be advanced using the
   // prolongation.  The pointers are not owning.
-  std::set<not_null<Vessel*> const> dirty_vessels_;
+  std::set<not_null<Vessel*>> dirty_vessels_;
 
   // The vessels that will be kept during the next call to |AdvanceTime|.
-  std::set<not_null<Vessel const*> const> kept_vessels_;
+  std::set<not_null<Vessel const*>> kept_vessels_;
 
   // Only one prediction for now, using constant timestep.
   Vessel* predicted_vessel_ = nullptr;
