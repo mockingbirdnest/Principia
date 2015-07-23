@@ -106,7 +106,7 @@ class FixedStepSizeIntegrator : public Integrator<DifferentialEquation> {
   using ODE = DifferentialEquation;
   // The last call to |problem.append_state| has a |state.time.value| equal to
   // the unique |Instant| of the form |problem.t_final + n * step| in
-  // [problem.t_final, problem.t_final + step[.
+  // ]problem.t_final - step, problem.t_final].
   // |problem.append_state| will be called with |state.time.values|s at
   // intervals differing from |step| by at most one ULP.
   virtual void Solve(IntegrationProblem<ODE> const& problem,
