@@ -1184,6 +1184,7 @@ TEST_F(PluginTest, Prediction) {
   }
   plugin.clear_predicted_vessel();
 }
+#endif
 
 TEST_F(PluginTest, Navball) {
   // Create a plugin with planetarium rotation 0.
@@ -1191,6 +1192,7 @@ TEST_F(PluginTest, Navball) {
                 SolarSystem::kSun,
                 sun_gravitational_parameter_,
                 0 * Radian);
+  plugin.EndInitialization();
   not_null<std::unique_ptr<RenderingTransforms>> const heliocentric =
           plugin.NewBodyCentredNonRotatingTransforms(SolarSystem::kSun);
   Vector<double, World> x({1, 0, 0});
@@ -1228,6 +1230,7 @@ TEST_F(PluginTest, Frenet) {
               AlmostEquals(t, 7));
 }
 
+#if 0
 TEST_F(PluginTest, SerializationCompatibility) {
   serialization::Multivector message;
 

@@ -334,6 +334,7 @@ bool Plugin::has_vessel(GUID const& vessel_guid) const {
 not_null<std::unique_ptr<RenderingTransforms>>
 Plugin::NewBodyCentredNonRotatingTransforms(
     Index const reference_body_index) const {
+  CHECK(!initializing_);
   // TODO(egg): this should be const, use a custom comparator in the map.
   Celestial const& reference_body =
       *FindOrDie(celestials_, reference_body_index);
@@ -346,6 +347,7 @@ Plugin::NewBodyCentredNonRotatingTransforms(
 not_null<std::unique_ptr<RenderingTransforms>>
 Plugin::NewBarycentricRotatingTransforms(Index const primary_index,
                                          Index const secondary_index) const {
+  CHECK(!initializing_);
   // TODO(egg): these should be const, use a custom comparator in the map.
   Celestial const& primary = *FindOrDie(celestials_, primary_index);
   Celestial const& secondary = *FindOrDie(celestials_, secondary_index);
