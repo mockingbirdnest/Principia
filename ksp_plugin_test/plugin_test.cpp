@@ -441,10 +441,9 @@ TEST_F(PluginDeathTest, AdvanceTimeError) {
 }
 
 
-#if 0 //OTDO
 TEST_F(PluginDeathTest, ForgetAllHistoriesBeforeError) {
   EXPECT_DEATH({
-    EXPECT_CALL(*n_body_system_, Integrate(_, _, _, _, _, _)).Times(2);
+    //EXPECT_CALL(*n_body_system_, Integrate(_, _, _, _, _, _)).Times(2);
     Instant const t(1 * Second);
     InsertAllSolarSystemBodies();
     plugin_->EndInitialization();
@@ -452,7 +451,6 @@ TEST_F(PluginDeathTest, ForgetAllHistoriesBeforeError) {
     plugin_->ForgetAllHistoriesBefore(t);
   }, "Check failed: t < HistoryTime");
 }
-#endif
 
 TEST_F(PluginDeathTest, VesselFromParentError) {
   GUID const guid = "Test Satellite";
