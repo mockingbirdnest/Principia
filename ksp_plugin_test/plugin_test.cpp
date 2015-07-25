@@ -509,11 +509,14 @@ TEST_F(PluginTest, VesselInsertionAtInitialization) {
 
 // Checks that the plugin correctly uses its 10-second-step history even when
 // advanced with smaller timesteps.
+// NOTE(egg): this now checks that we don't use the ephemeris when there are no
+// vessels.
 TEST_F(PluginTest, AdvanceTimeWithCelestialsOnly) {
   InsertAllSolarSystemBodies();
   plugin_->EndInitialization();
   Time const δt = 0.02 * Second;
   Angle const planetarium_rotation = 42 * Radian;
+      /**/EXPECT_CALL(*mock_n_body_system_, Prolong(_));
   for (int step = 0; step < 10; ++step) {
     for (Instant t = HistoryTime(step) + 2 * δt;
          t <= HistoryTime(step + 1);
