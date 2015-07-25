@@ -516,7 +516,6 @@ TEST_F(PluginTest, AdvanceTimeWithCelestialsOnly) {
   plugin_->EndInitialization();
   Time const δt = 0.02 * Second;
   Angle const planetarium_rotation = 42 * Radian;
-      /**/EXPECT_CALL(*mock_n_body_system_, Prolong(_));
   for (int step = 0; step < 10; ++step) {
     for (Instant t = HistoryTime(step) + 2 * δt;
          t <= HistoryTime(step + 1);
