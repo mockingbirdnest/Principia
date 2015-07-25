@@ -507,7 +507,6 @@ TEST_F(PluginTest, VesselInsertionAtInitialization) {
                   AlmostEquals(satellite_initial_velocity_, 3)));
 }
 
-#if 0 //OTDO
 // Checks that the plugin correctly uses its 10-second-step history even when
 // advanced with smaller timesteps.
 TEST_F(PluginTest, AdvanceTimeWithCelestialsOnly) {
@@ -520,29 +519,31 @@ TEST_F(PluginTest, AdvanceTimeWithCelestialsOnly) {
          t <= HistoryTime(step + 1);
          t += δt) {
       // Called to compute the prolongations.
-      EXPECT_CALL(*n_body_system_,
-                  Integrate(Ref(plugin_->prolongation_integrator()), t,
-                            plugin_->Δt(), 0, true, SizeIs(bodies_.size())))
-          .RetiresOnSaturation();
+      //EXPECT_CALL(*n_body_system_,
+      //          Integrate(Ref(plugin_->prolongation_integrator()), t,
+      //                    plugin_->Δt(), 0, true, SizeIs(bodies_.size())))
+      //  .RetiresOnSaturation();
       plugin_->AdvanceTime(t, planetarium_rotation);
     }
     // Called to advance the synchronized histories.
-    EXPECT_CALL(*n_body_system_,
-                Integrate(Ref(plugin_->history_integrator()),
-                          HistoryTime(step + 1) + δt,
-                          plugin_->Δt(), 0, false,
-                          SizeIs(bodies_.size())))
-        .WillOnce(AppendTimeToTrajectories<5>(HistoryTime(step + 1)))
-        .RetiresOnSaturation();
+    //EXPECT_CALL(*n_body_system_,
+    //          Integrate(Ref(plugin_->history_integrator()),
+    //                    HistoryTime(step + 1) + δt,
+    //                    plugin_->Δt(), 0, false,
+    //                    SizeIs(bodies_.size())))
+    //  .WillOnce(AppendTimeToTrajectories<5>(HistoryTime(step + 1)))
+    //  .RetiresOnSaturation();
     // Called to compute the prolongations.
-    EXPECT_CALL(*n_body_system_,
-                Integrate(Ref(plugin_->prolongation_integrator()),
-                          HistoryTime(step + 1) + δt, plugin_->Δt(), 0, true,
-                          SizeIs(bodies_.size())))
-        .RetiresOnSaturation();
+    //EXPECT_CALL(*n_body_system_,
+    //          Integrate(Ref(plugin_->prolongation_integrator()),
+    //                    HistoryTime(step + 1) + δt, plugin_->Δt(), 0, true,
+    //                    SizeIs(bodies_.size())))
+    //  .RetiresOnSaturation();
     plugin_->AdvanceTime(HistoryTime(step + 1) + δt, planetarium_rotation);
   }
 }
+
+#if 0
 
 // Checks that the plugin correctly advances the history of newly inserted
 // vessels with the prolongation integrator (using small steps), then switches
