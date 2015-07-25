@@ -449,7 +449,7 @@ TEST_F(PluginDeathTest, ForgetAllHistoriesBeforeError) {
     plugin_->EndInitialization();
     plugin_->AdvanceTime(t, Angle());
     plugin_->ForgetAllHistoriesBefore(t);
-  }, "Check failed: t < HistoryTime");
+  }, "Check failed: t < history_time_");
 }
 
 TEST_F(PluginDeathTest, VesselFromParentError) {
