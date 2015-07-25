@@ -91,7 +91,7 @@ MATCHER_P(HasNonvanishingIntrinsicAccelerationAt, t, "") {
 
 class TestablePlugin : public Plugin {
   std::map<Index, ContinuousTrajectory<Barycentric>> trajectories_;
-  std::unique_ptr<MockNBodySystem<Barycentric>> mock_n_body_system_;
+  std::unique_ptr<StrictMock<MockNBodySystem<Barycentric>>> mock_n_body_system_;
  public:
   TestablePlugin(Instant const& initial_time,
                  Index const sun_index,
@@ -101,7 +101,8 @@ class TestablePlugin : public Plugin {
                sun_index,
                sun_gravitational_parameter,
                planetarium_rotation),
-        mock_n_body_system_(std::make_unique<MockNBodySystem<Barycentric>>()) {}
+        mock_n_body_system_(
+            std::make_unique<StrictMock<MockNBodySystem<Barycentric>>>()) {}
 
   void EndInitialization() override {
     initializing_.Flop();
@@ -139,7 +140,7 @@ class TestablePlugin : public Plugin {
     return Δt_;
   }
 
-  MockNBodySystem<Barycentric>* mock_n_body_system() const {
+  StrictMock<MockNBodySystem<Barycentric>>* mock_n_body_system() const {
     return mock_n_body_system_.get();
   }
 };
@@ -155,7 +156,7 @@ class PluginTest : public testing::Test {
         sun_gravitational_parameter_(
             bodies_[SolarSystem::kSun]->gravitational_parameter()),
         planetarium_rotation_(1 * Radian),
-        plugin_(make_not_null_unique<StrictMock<TestablePlugin>>(
+        plugin_(make_not_null_unique<TestablePlugin>(
                     initial_time_,
                     SolarSystem::kSun,
                     sun_gravitational_parameter_,
@@ -228,14 +229,14 @@ class PluginTest : public testing::Test {
   }
 
   Permutation<ICRFJ2000Ecliptic, AliceSun> looking_glass_;
-  MockNBodySystem<Barycentric>* mock_n_body_system_;
+  StrictMock<MockNBodySystem<Barycentric>>* mock_n_body_system_;
   not_null<std::unique_ptr<SolarSystem>> solar_system_;
   SolarSystem::Bodies bodies_;
   Instant initial_time_;
   GravitationalParameter sun_gravitational_parameter_;
   Angle planetarium_rotation_;
 
-  not_null<std::unique_ptr<StrictMock<TestablePlugin>>> plugin_;
+  not_null<std::unique_ptr<TestablePlugin>> plugin_;
 
   // These initial conditions will yield a low circular orbit around Earth.
   Displacement<AliceSun> satellite_initial_displacement_;
@@ -443,7 +444,7 @@ TEST_F(PluginDeathTest, AdvanceTimeError) {
 
 TEST_F(PluginDeathTest, ForgetAllHistoriesBeforeError) {
   EXPECT_DEATH({
-    //EXPECT_CALL(*n_body_system_, Integrate(_, _, _, _, _, _)).Times(2);
+    //TODO EXPECT_CALL
     Instant const t(1 * Second);
     InsertAllSolarSystemBodies();
     plugin_->EndInitialization();
