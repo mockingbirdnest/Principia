@@ -545,8 +545,6 @@ TEST_F(PluginTest, AdvanceTimeWithCelestialsOnly) {
   }
 }
 
-#if 0
-
 // Checks that the plugin correctly advances the history of newly inserted
 // vessels with the prolongation integrator (using small steps), then switches
 // to the history integrator.  Also tests the removal of vessels.
@@ -606,13 +604,13 @@ TEST_F(PluginTest, AdvanceTimeWithVessels) {
       }
       // Called to compute the prolongations and advance the unsynchronized
       // histories.
-      EXPECT_CALL(*n_body_system_,
+      /*EXPECT_CALL(*n_body_system_,
                   Integrate(Ref(plugin_->prolongation_integrator()), t,
                             plugin_->Δt(), 0, true,
                             SizeIs(bodies_.size() +
                                        expected_number_of_old_vessels +
                                        expected_number_of_new_vessels)))
-          .RetiresOnSaturation();
+          .RetiresOnSaturation();*/
       plugin_->AdvanceTime(t, planetarium_rotation);
       if (AbsoluteError(t - HistoryTime(0), a_while) < ε_δt) {
         InsertVessel(enterprise_d, &expected_number_of_new_vessels);
@@ -633,34 +631,34 @@ TEST_F(PluginTest, AdvanceTimeWithVessels) {
       KeepVessel(constantinople);
     }
     // Called to advance the synchronized histories.
-    EXPECT_CALL(*n_body_system_,
+    /*EXPECT_CALL(*n_body_system_,
                 Integrate(Ref(plugin_->history_integrator()),
                           HistoryTime(step + 1) + δt,
                           plugin_->Δt(), 0, false,
                           SizeIs(bodies_.size() +
                                      expected_number_of_old_vessels)))
         .WillOnce(AppendTimeToTrajectories<5>(HistoryTime(step + 1)))
-        .RetiresOnSaturation();
+        .RetiresOnSaturation();*/
     if (expected_number_of_new_vessels > 0) {
       // Called to synchronize the new histories.
-      EXPECT_CALL(*n_body_system_,
+      /*EXPECT_CALL(*n_body_system_,
                   Integrate(Ref(plugin_->prolongation_integrator()),
                             HistoryTime(step + 1),
                             plugin_->Δt(), 0, true,
                             SizeIs(bodies_.size() +
                                        expected_number_of_new_vessels)))
           .WillOnce(AppendTimeToTrajectories<5>(HistoryTime(step + 1)))
-          .RetiresOnSaturation();
+          .RetiresOnSaturation();*/
     }
     expected_number_of_old_vessels += expected_number_of_new_vessels;
     expected_number_of_new_vessels = 0;
     // Called to compute the prolongations.
-    EXPECT_CALL(*n_body_system_,
+    /*EXPECT_CALL(*n_body_system_,
                 Integrate(Ref(plugin_->prolongation_integrator()),
                           HistoryTime(step + 1) + δt, plugin_->Δt(), 0, true,
                           SizeIs(bodies_.size() +
                                      expected_number_of_old_vessels)))
-        .RetiresOnSaturation();
+        .RetiresOnSaturation();*/
     plugin_->AdvanceTime(HistoryTime(step + 1) + δt, planetarium_rotation);
     if (step == 2) {
       InsertVessel(constantinople, &expected_number_of_new_vessels);
@@ -670,6 +668,8 @@ TEST_F(PluginTest, AdvanceTimeWithVessels) {
     }
   }
 }
+
+#if 0
 
 // Checks that the plugin correctly advances the history of newly inserted
 // vessels with the prolongation integrator (using small steps), then switches
