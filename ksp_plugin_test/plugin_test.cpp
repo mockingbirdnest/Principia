@@ -217,10 +217,12 @@ class PluginTest : public testing::Test {
   // Increments the counter |*number_of_new_vessels|.  |number_of_new_vessels|
   // must not be null.
   void InsertVessel(GUID const& guid,
-                    std::size_t* const number_of_new_vessels) {
+                    std::size_t* const number_of_new_vessels,
+                    Instant const& time) {
     bool const inserted = plugin_->InsertOrKeepVessel(guid,
                                                       SolarSystem::kEarth);
     EXPECT_TRUE(inserted) << guid;
+    EXPECT_CALL(*mock_n_body_system_, Prolong(time)).RetiresOnSaturation();
     plugin_->SetVesselStateOffset(guid,
                                   RelativeDegreesOfFreedom<AliceSun>(
                                       satellite_initial_displacement_,
@@ -576,7 +578,7 @@ TEST_F(PluginTest, AdvanceTimeWithVessels) {
   std::size_t expected_number_of_new_vessels = 0;
   std::size_t expected_number_of_old_vessels = 0;
   EXPECT_FALSE(plugin_->has_vessel(enterprise));
-  InsertVessel(enterprise, &expected_number_of_new_vessels);
+  InsertVessel(enterprise, &expected_number_of_new_vessels, initial_time_);
   EXPECT_TRUE(plugin_->has_vessel(enterprise));
   for (int step = 0; step < 10; ++step) {
     for (Instant t = HistoryTime(step) + 2 * δt;
@@ -613,10 +615,10 @@ TEST_F(PluginTest, AdvanceTimeWithVessels) {
           .RetiresOnSaturation();*/
       plugin_->AdvanceTime(t, planetarium_rotation);
       if (AbsoluteError(t - HistoryTime(0), a_while) < ε_δt) {
-        InsertVessel(enterprise_d, &expected_number_of_new_vessels);
+        InsertVessel(enterprise_d, &expected_number_of_new_vessels, t);
       } else if (AbsoluteError(t - HistoryTime(1), a_while) < ε_δt) {
-        InsertVessel(stargazer, &expected_number_of_new_vessels);
-        InsertVessel(bradbury, &expected_number_of_new_vessels);
+        InsertVessel(stargazer, &expected_number_of_new_vessels, t);
+        InsertVessel(bradbury, &expected_number_of_new_vessels, t);
       }
     }
     // Keep the vessels for the history-advancing step.
@@ -661,7 +663,9 @@ TEST_F(PluginTest, AdvanceTimeWithVessels) {
         .RetiresOnSaturation();*/
     plugin_->AdvanceTime(HistoryTime(step + 1) + δt, planetarium_rotation);
     if (step == 2) {
-      InsertVessel(constantinople, &expected_number_of_new_vessels);
+      InsertVessel(constantinople,
+                   &expected_number_of_new_vessels,
+                   HistoryTime(step));
     } else if (step == 3) {
       // We will be removing |enterprise|.
       --expected_number_of_old_vessels;
