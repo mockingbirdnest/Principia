@@ -593,7 +593,7 @@ TEST_F(PluginTest, AdvanceTimeWithVessels) {
   sync_time = HistoryTime(sync_time, 0) + δt;
   for (int step = 0; step < 10; ++step) {
     for (Instant t = HistoryTime(sync_time, step) + 2 * δt;
-         t <= HistoryTime(sync_time, step + 1);
+         t < HistoryTime(sync_time, step + 1);
          t += δt) {
       // Keep our vessels.  Make sure we're not inserting new ones.
       if (step <= 3) {
