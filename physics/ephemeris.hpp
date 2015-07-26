@@ -82,7 +82,7 @@ class Ephemeris {
       AdaptiveStepSizeIntegrator<NewtonianMotionEquation> const& integrator,
       Instant const& t);
 
-  // Integrates, until at least |t|, the |trajectories| followed by massless
+  // Integrates, until at most |t|, the |trajectories| followed by massless
   // bodies in the gravitational potential described by |*this|.  The integrator
   // passed at construction is used with the given |step|.  If |t > t_max()|,
   // calls |Prolong(t)| beforehand.

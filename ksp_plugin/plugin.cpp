@@ -191,6 +191,8 @@ void Plugin::AdvanceTime(Instant const& t, Angle const& planetarium_rotation) {
   CHECK(!initializing_);
   CHECK_GT(t, current_time_);
   CleanUpVessels();
+  LOG(ERROR)<<NAMED(history_time_);
+  LOG(ERROR)<<NAMED(t);
   bubble_->Prepare(BarycentricToWorldSun(), current_time_, t);
   Ephemeris<Barycentric>::Trajectories synchronized_histories =
       SynchronizedHistories();
@@ -199,22 +201,27 @@ void Plugin::AdvanceTime(Instant const& t, Angle const& planetarium_rotation) {
     // Synchronize everything now, nothing is currently synchronized.
     history_time_ = t;
     advanced_history_time = true;
-  } else if (history_time_ + Δt_ < t) {
+    LOG(ERROR)<<"CREATESYNC";
+  } else if (history_time_ + Δt_ <= t) {
     // The histories are far enough behind that we can advance them at least one
     // step and reset the prolongations.
+    LOG(ERROR)<<"ADVANCESYNC";
     EvolveHistories(t, synchronized_histories);
     advanced_history_time = true;
   }
   if (advanced_history_time) {
+    LOG(ERROR)<<"ADVANCEDHISTORYTIME";
     // TODO(egg): I think |!bubble_->empty()| => |has_dirty_vessels()|.
     if (has_unsynchronized_vessels() ||
         has_dirty_vessels() ||
         !bubble_->empty()) {
+      LOG(ERROR)<<"SYNCNEW";
       SynchronizeNewVesselsAndCleanDirtyVessels();
     }
     ResetProlongations();
   }
   if (history_time_ < t) {
+    LOG(ERROR)<<"EVELOVEPROLONG";
     EvolveProlongationsAndBubble(t);
   }
   VLOG(1) << "Time has been advanced" << '\n'
