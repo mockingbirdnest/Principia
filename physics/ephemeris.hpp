@@ -47,25 +47,25 @@ class Ephemeris {
   virtual ~Ephemeris() = default;
 
   // Returns the bodies in the order in which they were given at construction.
-  std::vector<MassiveBody const*> const& bodies() const;
+  virtual std::vector<MassiveBody const*> const& bodies() const;
 
   // Returns the trajectory for the given |body|.
-  not_null<ContinuousTrajectory<Frame> const*> trajectory(
+  virtual not_null<ContinuousTrajectory<Frame> const*> trajectory(
       not_null<MassiveBody const*> body) const;
 
   // Returns true if at least one of the trajectories is empty.
-  bool empty() const;
+  virtual bool empty() const;
 
   // The maximum of the |t_min|s of the trajectories.
-  Instant t_min() const;
+  virtual Instant t_min() const;
   // The mimimum of the |t_max|s of the trajectories.
-  Instant t_max() const;
+  virtual Instant t_max() const;
 
-  FixedStepSizeIntegrator<NewtonianMotionEquation> const&
-  planetary_integrator() const;
+  virtual FixedStepSizeIntegrator<NewtonianMotionEquation> const&
+  virtual planetary_integrator() const;
 
   // Calls |ForgetBefore| on all trajectories.
-  void ForgetBefore(Instant const& t);
+  virtual void ForgetBefore(Instant const& t);
 
   // Prolongs the ephemeris up to at least |t|.  After the call, |t_max() >= t|.
   virtual void Prolong(Instant const& t);
@@ -75,7 +75,7 @@ class Ephemeris {
   // calls |Prolong(t)| beforehand.  The |length_| and
   // |speed_integration_tolerance|s are used to compute the
   // |tolerance_to_error_ratio| for step size control.
-  void FlowWithAdaptiveStep(
+  virtual void FlowWithAdaptiveStep(
       not_null<Trajectory<Frame>*> const trajectory,
       Length const& length_integration_tolerance,
       Speed const& speed_integration_tolerance,
@@ -86,11 +86,11 @@ class Ephemeris {
   // bodies in the gravitational potential described by |*this|.  The integrator
   // passed at construction is used with the given |step|.  If |t > t_max()|,
   // calls |Prolong(t)| beforehand.
-  void FlowWithFixedStep(Trajectories const& trajectories,
-                         Time const& step,
-                         Instant const& t);
+  virtual void FlowWithFixedStep(Trajectories const& trajectories,
+                                 Time const& step,
+                                 Instant const& t);
 
-  void WriteToMessage(
+  virtual void WriteToMessage(
       not_null<serialization::Ephemeris*> const message) const;
   static std::unique_ptr<Ephemeris> ReadFromMessage(
       serialization::Ephemeris const& message);
