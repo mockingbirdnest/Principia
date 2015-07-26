@@ -562,9 +562,9 @@ TEST_F(PluginTest, AdvanceTimeWithCelestialsOnly) {
 // * |HistoryTime(2)|               : Insert |constantinople|.
 // * |HistoryTime(3)|               : Remove |enterprise|.
 TEST_F(PluginTest, AdvanceTimeWithVessels) {
-  Time const δt = 0.02 * Second;
-  Time const a_while = 10 * δt;
-  Time const half_a_step = 250 * δt;
+  Time const δt = 1 * Second;
+  Time const a_while = 2 * δt;
+  Time const half_a_step = 5 * δt;
   Time const ε_δt = 0.1 * δt;
   EXPECT_THAT(half_a_step, Eq(plugin_->Δt() / 2));
   GUID const enterprise = "NCC-1701";
