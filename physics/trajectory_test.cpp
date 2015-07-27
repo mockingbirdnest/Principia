@@ -244,6 +244,7 @@ TEST_F(TrajectoryTest, ForkAtLast) {
   EXPECT_EQ(q3_, fork2->last().degrees_of_freedom().position());
   EXPECT_EQ(p3_, fork2->last().degrees_of_freedom().velocity());
   EXPECT_EQ(t3_, fork2->last().time());
+  EXPECT_EQ(t3_, *fork2->fork_time());
 
   std::vector<Instant> after;
   for (auto it = fork3->on_or_after(t3_); !it.at_end(); ++it) {
@@ -265,6 +266,7 @@ TEST_F(TrajectoryTest, ForkAtLast) {
   EXPECT_EQ(q3_, fork2->last().degrees_of_freedom().position());
   EXPECT_EQ(p3_, fork2->last().degrees_of_freedom().velocity());
   EXPECT_EQ(t3_, fork2->last().time());
+  EXPECT_EQ(t3_, *fork2->fork_time());
 
   after.clear();
   for (auto it = fork2->on_or_after(t3_); !it.at_end(); ++it) {
@@ -286,6 +288,7 @@ TEST_F(TrajectoryTest, ForkAtLast) {
   EXPECT_EQ(q3_, fork2->last().degrees_of_freedom().position());
   EXPECT_EQ(p3_, fork2->last().degrees_of_freedom().velocity());
   EXPECT_EQ(t3_, fork2->last().time());
+  EXPECT_EQ(t3_, *fork2->fork_time());
 
   after.clear();
   for (auto it = fork1->on_or_after(t3_); !it.at_end(); ++it) {
@@ -306,6 +309,7 @@ TEST_F(TrajectoryTest, ForkAtLast) {
   EXPECT_EQ(q3_, fork3->last().degrees_of_freedom().position());
   EXPECT_EQ(p3_, fork3->last().degrees_of_freedom().velocity());
   EXPECT_EQ(t3_, fork3->last().time());
+  EXPECT_EQ(t3_, *fork3->fork_time());
 
   fork2->Append(t4_, d4_);
   after.clear();
