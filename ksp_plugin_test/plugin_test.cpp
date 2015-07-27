@@ -1212,6 +1212,7 @@ TEST_F(PluginTest, Prediction) {
   plugin.AdvanceTime(Instant(1e-10 * Second), 0 * Radian);
   RenderedTrajectory<World> rendered_prediction =
       plugin.RenderedPrediction(transforms.get(), World::origin);
+  LOG(ERROR)<<rendered_prediction.size();
   EXPECT_EQ(n, rendered_prediction.size());
   Angle const α = 2 * π * Radian / n;
   for (int k = 0; k < n; ++k) {
