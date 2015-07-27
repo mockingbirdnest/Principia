@@ -392,7 +392,8 @@ void Trajectory<Frame>::Iterator::InitializeOnOrAfter(
   Instant const& time, not_null<Trajectory const*> const trajectory) {
   not_null<Trajectory const*> ancestor = trajectory;
   while (ancestor->fork_ != nullptr &&
-         time <= ancestor->fork_->timeline->first) {
+         (ancestor->fork_->timeline == ancestor->parent_->timeline_.end() ||
+          time <= ancestor->fork_->timeline->first)) {
     ancestry_.push_front(ancestor);
     forks_.push_front(*ancestor->fork_);
     ancestor = ancestor->parent_;

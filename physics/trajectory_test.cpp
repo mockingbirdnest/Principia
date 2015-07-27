@@ -245,6 +245,12 @@ TEST_F(TrajectoryTest, ForkAtLast) {
   EXPECT_EQ(p3_, fork2->last().degrees_of_freedom().velocity());
   EXPECT_EQ(t3_, fork2->last().time());
 
+  std::vector<Instant> after;
+  for (auto it = fork3->on_or_after(t3_); !it.at_end(); ++it) {
+    after.push_back(it.time());
+  }
+  EXPECT_THAT(after, ElementsAre(t3_));
+
   fork2->ForgetAfter(t3_);
   positions = fork2->Positions();
   velocities = fork2->Velocities();
@@ -259,6 +265,12 @@ TEST_F(TrajectoryTest, ForkAtLast) {
   EXPECT_EQ(q3_, fork2->last().degrees_of_freedom().position());
   EXPECT_EQ(p3_, fork2->last().degrees_of_freedom().velocity());
   EXPECT_EQ(t3_, fork2->last().time());
+
+  after.clear();
+  for (auto it = fork2->on_or_after(t3_); !it.at_end(); ++it) {
+    after.push_back(it.time());
+  }
+  EXPECT_THAT(after, ElementsAre(t3_));
 
   fork1->Append(t4_, d4_);
   positions = fork2->Positions();
@@ -275,6 +287,12 @@ TEST_F(TrajectoryTest, ForkAtLast) {
   EXPECT_EQ(p3_, fork2->last().degrees_of_freedom().velocity());
   EXPECT_EQ(t3_, fork2->last().time());
 
+  after.clear();
+  for (auto it = fork1->on_or_after(t3_); !it.at_end(); ++it) {
+    after.push_back(it.time());
+  }
+  EXPECT_THAT(after, ElementsAre(t3_, t4_));
+
   positions = fork3->Positions();
   velocities = fork3->Velocities();
   times = fork3->Times();
@@ -288,6 +306,26 @@ TEST_F(TrajectoryTest, ForkAtLast) {
   EXPECT_EQ(q3_, fork3->last().degrees_of_freedom().position());
   EXPECT_EQ(p3_, fork3->last().degrees_of_freedom().velocity());
   EXPECT_EQ(t3_, fork3->last().time());
+
+  fork2->Append(t4_, d4_);
+  after.clear();
+  for (auto it = fork2->on_or_after(t3_); !it.at_end(); ++it) {
+    after.push_back(it.time());
+  }
+  EXPECT_THAT(after, ElementsAre(t3_, t4_));
+
+  fork3->Append(t4_, d4_);
+  after.clear();
+  for (auto it = fork3->on_or_after(t3_); !it.at_end(); ++it) {
+    after.push_back(it.time());
+  }
+  EXPECT_THAT(after, ElementsAre(t3_, t4_));
+
+  after.clear();
+  for (auto it = fork3->on_or_after(t2_); !it.at_end(); ++it) {
+    after.push_back(it.time());
+  }
+  EXPECT_THAT(after, ElementsAre(t2_, t3_, t4_));
 }
 
 TEST_F(TrajectoryTest, IteratorSerializationSuccess) {
