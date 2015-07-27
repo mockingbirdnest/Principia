@@ -447,7 +447,7 @@ TEST_F(PluginDeathTest, AdvanceTimeError) {
 TEST_F(PluginDeathTest, ForgetAllHistoriesBeforeError) {
   EXPECT_DEATH({
     //TODO EXPECT_CALL
-    Instant const t(1 * Second);
+    Instant const t = initial_time_ + 100 * Second;
     InsertAllSolarSystemBodies();
     plugin_->EndInitialization();
     plugin_->AdvanceTime(t, Angle());
