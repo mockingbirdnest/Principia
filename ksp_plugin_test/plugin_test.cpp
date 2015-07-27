@@ -578,12 +578,17 @@ TEST_F(PluginTest, AdvanceTimeWithVessels) {
   Angle const planetarium_rotation = 42 * Radian;
   std::size_t expected_number_of_new_vessels = 0;
   std::size_t expected_number_of_old_vessels = 0;
+  InSequence in_sequence;
   EXPECT_FALSE(plugin_->has_vessel(enterprise));
   Instant sync_time = initial_time_;
   InsertVessel(enterprise,
                &expected_number_of_new_vessels,
                HistoryTime(sync_time, 0));
   EXPECT_TRUE(plugin_->has_vessel(enterprise));
+  // Called to compute the prolongation.
+  EXPECT_CALL(*mock_n_body_system_,
+              FlowWithAdaptiveStep(_, _, _, _, HistoryTime(sync_time, 0) + δt))
+      .RetiresOnSaturation();
   // Therer are no old vessels, this will make all the new vessels old
   // instantly without performing any computations.
   plugin_->AdvanceTime(HistoryTime(sync_time, 0) + δt,
@@ -617,15 +622,15 @@ TEST_F(PluginTest, AdvanceTimeWithVessels) {
         KeepVessel(constantinople);
       }
       LOG(ERROR)<<"SUBSTEP";
-      // Called to compute the prolongations and advance the unsynchronized
-      // histories.
-      /*EXPECT_CALL(*n_body_system_,
-                  Integrate(Ref(plugin_->prolongation_integrator()), t,
-                            plugin_->Δt(), 0, true,
-                            SizeIs(bodies_.size() +
-                                       expected_number_of_old_vessels +
-                                       expected_number_of_new_vessels)))
-          .RetiresOnSaturation();*/
+      for (int i = 0;
+           i < expected_number_of_new_vessels + expected_number_of_old_vessels;
+           ++i) {
+        // Called to compute the prolongations and advance the unsynchronized
+        // histories.
+        EXPECT_CALL(*mock_n_body_system_,
+                    FlowWithAdaptiveStep(_, _, _, _, t))
+              .RetiresOnSaturation();
+      }
       plugin_->AdvanceTime(t, planetarium_rotation);
       if (AbsoluteError(t - HistoryTime(sync_time, 0), a_while) < ε_δt) {
         InsertVessel(enterprise_d, &expected_number_of_new_vessels, t);
@@ -656,43 +661,40 @@ TEST_F(PluginTest, AdvanceTimeWithVessels) {
                           10 * Second,
                           HistoryTime(sync_time, step + 1) + δt))
         .WillOnce(
-             AppendTimeToTrajectories<0>(HistoryTime(sync_time, step + 1) + δt))
+             AppendTimeToTrajectories<0>(HistoryTime(sync_time, step + 1)))
         .RetiresOnSaturation();
     }
-    /*EXPECT_CALL(*n_body_system_,
-                Integrate(Ref(plugin_->history_integrator()),
-                          HistoryTime(sync_time, step + 1) + δt,
-                          plugin_->Δt(), 0, false,
-                          SizeIs(bodies_.size() +
-                                     expected_number_of_old_vessels)))
-        .WillOnce(AppendTimeToTrajectories<5>(HistoryTime(sync_time, step + 1)))
-        .RetiresOnSaturation();*/
-    if (expected_number_of_new_vessels > 0) {
+    for (int i = 0; i < expected_number_of_new_vessels; ++i) {
       // Called to synchronize the new histories.
-      /*EXPECT_CALL(*n_body_system_,
-                  Integrate(Ref(plugin_->prolongation_integrator()),
-                            HistoryTime(sync_time, step + 1),
-                            plugin_->Δt(), 0, true,
-                            SizeIs(bodies_.size() +
-                                       expected_number_of_new_vessels)))
-          .WillOnce(AppendTimeToTrajectories<5>(HistoryTime(sync_time, step + 1)))
-          .RetiresOnSaturation();*/
+      EXPECT_CALL(
+          *mock_n_body_system_,
+          FlowWithAdaptiveStep(_,
+                               _,
+                               _,
+                               _,
+                               HistoryTime(sync_time, step + 1)))
+          .RetiresOnSaturation();
     }
     expected_number_of_old_vessels += expected_number_of_new_vessels;
     expected_number_of_new_vessels = 0;
-    // Called to compute the prolongations.
-    /*EXPECT_CALL(*n_body_system_,
-                Integrate(Ref(plugin_->prolongation_integrator()),
-                          HistoryTime(sync_time, step + 1) + δt, plugin_->Δt(), 0, true,
-                          SizeIs(bodies_.size() +
-                                     expected_number_of_old_vessels)))
-        .RetiresOnSaturation();*/
+    for (int i = 0; i < expected_number_of_old_vessels; ++i) {
+      // Called to compute the prolongations.
+      EXPECT_CALL(
+          *mock_n_body_system_,
+          FlowWithAdaptiveStep(_,
+                               _,
+                               _,
+                               _,
+                               HistoryTime(sync_time, step + 1) + δt))
+          .RetiresOnSaturation();
+    }
     LOG(ERROR)<<"STEP"<<step;
-    plugin_->AdvanceTime(HistoryTime(sync_time, step + 1) + δt, planetarium_rotation);
+    plugin_->AdvanceTime(HistoryTime(sync_time, step + 1) + δt,
+                         planetarium_rotation);
     if (step == 2) {
       InsertVessel(constantinople,
                    &expected_number_of_new_vessels,
-                   HistoryTime(sync_time, step));
+                   HistoryTime(sync_time, step + 1) + δt);
     } else if (step == 3) {
       // We will be removing |enterprise|.
       --expected_number_of_old_vessels;
