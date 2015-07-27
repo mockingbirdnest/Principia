@@ -1187,9 +1187,8 @@ TEST_F(PluginTest, BarycentricRotatingRenderingIntegration) {
 #endif
 }
 
-#if 0 //TODO
 // Checks that we correctly predict a full circular orbit around a massive body
-// with unit gravitational parameter at unit distance, in 8 steps.  Since
+// with unit gravitational parameter at unit distance.  Since
 // predictions are only computed on |AdvanceTime()|, we advance time by a small
 // amount.
 TEST_F(PluginTest, Prediction) {
@@ -1210,7 +1209,6 @@ TEST_F(PluginTest, Prediction) {
            {0 * Metre / Second, 1 * Metre / Second, 0 * Metre / Second})});
   plugin.set_predicted_vessel(satellite);
   plugin.set_prediction_length(2 * π * Second);
-  plugin.set_prediction_step(2 * π / n * Second);
   plugin.AdvanceTime(Instant(1e-10 * Second), 0 * Radian);
   RenderedTrajectory<World> rendered_prediction =
       plugin.RenderedPrediction(transforms.get(), World::origin);
@@ -1232,7 +1230,6 @@ TEST_F(PluginTest, Prediction) {
   }
   plugin.clear_predicted_vessel();
 }
-#endif
 
 TEST_F(PluginTest, Navball) {
   // Create a plugin with planetarium rotation 0.
