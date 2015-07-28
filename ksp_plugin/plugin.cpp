@@ -334,6 +334,14 @@ void Plugin::set_prediction_length(Time const& t) {
   prediction_length_ = t;
 }
 
+void Plugin::set_prediction_length_tolerance(Length const& l) {
+  prediction_length_tolerance = l;
+}
+
+void Plugin::set_prediction_speed_tolerance(Speed const& v) {
+  prediction_speed_tolerance = v;
+}
+
 bool Plugin::has_vessel(GUID const& vessel_guid) const {
   return vessels_.find(vessel_guid) != vessels_.end();
 }

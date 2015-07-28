@@ -216,6 +216,9 @@ class Plugin {
 
   virtual void set_prediction_length(Time const& t);
 
+  virtual void set_prediction_length_tolerance(Length const& l);
+  virtual void set_prediction_speed_tolerance(Speed const& v);
+
   virtual bool has_vessel(GUID const& vessel_guid) const;
 
   virtual not_null<std::unique_ptr<RenderingTransforms>>
@@ -402,8 +405,8 @@ class Plugin {
   // Only one prediction for now, using constant timestep.
   Vessel* predicted_vessel_ = nullptr;
   Time prediction_length_ = 1 * Hour;
-  Length prediction_length_tolerance = 1E-3 * Metre;
-  Speed prediction_speed_tolerance = 1E-3 * Metre / Second;
+  Length prediction_length_tolerance = 1 * Metre;
+  Speed prediction_speed_tolerance = 1 * Metre / Second;
 
   not_null<std::unique_ptr<PhysicsBubble>> const bubble_;
 

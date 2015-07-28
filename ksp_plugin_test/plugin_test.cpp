@@ -1194,7 +1194,6 @@ TEST_F(PluginTest, BarycentricRotatingRenderingIntegration) {
 TEST_F(PluginTest, Prediction) {
   GUID const satellite = "satellite";
   Index const celestial = 0;
-  int const n = 8;
   Plugin plugin(Instant(),
                 celestial,
                 SIUnit<GravitationalParameter>(),
@@ -1209,26 +1208,32 @@ TEST_F(PluginTest, Prediction) {
            {0 * Metre / Second, 1 * Metre / Second, 0 * Metre / Second})});
   plugin.set_predicted_vessel(satellite);
   plugin.set_prediction_length(2 * π * Second);
+  plugin.set_prediction_length_tolerance(1 * Milli(Metre));
+  plugin.set_prediction_speed_tolerance(1 * Milli(Metre) / Second);
   plugin.AdvanceTime(Instant(1e-10 * Second), 0 * Radian);
   RenderedTrajectory<World> rendered_prediction =
       plugin.RenderedPrediction(transforms.get(), World::origin);
-  LOG(ERROR)<<rendered_prediction.size();
-  EXPECT_EQ(n, rendered_prediction.size());
-  Angle const α = 2 * π * Radian / n;
-  for (int k = 0; k < n; ++k) {
+  EXPECT_EQ(14, rendered_prediction.size());
+  for (int i = 0; i < rendered_prediction.size(); ++i) {
+    auto const& segment = rendered_prediction[i];
     EXPECT_THAT(
-        RelativeError(rendered_prediction[k].begin - World::origin,
-                      Displacement<World>({Cos(k * α) * Metre,
-                                           0 * Metre,
-                                           Sin(k * α) * Metre})),
-        Lt(0.011));
-    EXPECT_THAT(
-        RelativeError(rendered_prediction[k].end - World::origin,
-                      Displacement<World>({Cos((k + 1) * α) * Metre,
-                                           0 * Metre,
-                                           Sin((k + 1) * α) * Metre})),
-        Lt(0.011));
+        AbsoluteError((segment.begin - World::origin).Norm(), 1 * Metre),
+        Lt(0.5 * Milli(Metre)));
+    EXPECT_THAT(AbsoluteError((segment.end - World::origin).Norm(), 1 * Metre),
+                Lt(0.5 * Milli(Metre)));
+    if (i >= 5) {
+      EXPECT_THAT(
+          AbsoluteError((segment.begin - World::origin).Norm(), 1 * Metre),
+          Gt(0.1 * Milli(Metre)));
+      EXPECT_THAT(
+          AbsoluteError((segment.end - World::origin).Norm(), 1 * Metre),
+          Gt(0.1 * Milli(Metre)));
+    }
   }
+  EXPECT_THAT(
+      AbsoluteError(rendered_prediction.back().end - World::origin,
+                    Displacement<World>({1 * Metre, 0 * Metre, 0 * Metre})),
+      AllOf(Gt(2 * Milli(Metre)), Lt(3 * Milli(Metre))));
   plugin.clear_predicted_vessel();
 }
 
