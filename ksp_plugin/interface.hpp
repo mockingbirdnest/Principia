@@ -266,6 +266,14 @@ void CDECL principia__set_prediction_length(Plugin* const plugin,
                                             double const t);
 
 extern "C" DLLEXPORT
+void CDECL principia__set_prediction_length_tolerance(Plugin* const plugin,
+                                                      double const t);
+
+extern "C" DLLEXPORT
+void CDECL principia__set_prediction_speed_tolerance(Plugin* const plugin,
+                                                     double const t);
+
+extern "C" DLLEXPORT
 bool CDECL principia__has_vessel(Plugin* const plugin,
                                  char const* vessel_guid);
 

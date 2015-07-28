@@ -124,9 +124,9 @@ void EphemerisSolarSystemBenchmark(SolarSystem::Accuracy const accuracy,
     state->ResumeTiming();
     ephemeris.Prolong(final_time);
     state->PauseTiming();
-    error = (ephemeris.trajectory(ephemeris.bodies()[SolarSystem::kSun]).
+    error = (ephemeris.trajectory(ephemeris.bodies()[SolarSystem::kSun])->
                  EvaluatePosition(final_time, nullptr) -
-             ephemeris.trajectory(ephemeris.bodies()[SolarSystem::kEarth]).
+             ephemeris.trajectory(ephemeris.bodies()[SolarSystem::kEarth])->
                  EvaluatePosition(final_time, nullptr)).
                  Norm();
     state->ResumeTiming();
@@ -197,12 +197,12 @@ void EphemerisL4ProbeBenchmark(SolarSystem::Accuracy const accuracy,
                                    final_time);
     state->PauseTiming();
 
-    sun_error = (ephemeris.trajectory(ephemeris.bodies()[SolarSystem::kSun]).
+    sun_error = (ephemeris.trajectory(ephemeris.bodies()[SolarSystem::kSun])->
                      EvaluatePosition(final_time, nullptr) -
                  trajectory.last().degrees_of_freedom().position()).
                      Norm();
     earth_error = (ephemeris.trajectory(
-                       ephemeris.bodies()[SolarSystem::kEarth]).
+                       ephemeris.bodies()[SolarSystem::kEarth])->
                            EvaluatePosition(final_time, nullptr) -
                    trajectory.last().degrees_of_freedom().position()).
                        Norm();
@@ -274,12 +274,12 @@ void EphemerisLEOProbeBenchmark(SolarSystem::Accuracy const accuracy,
                                    final_time);
     state->PauseTiming();
 
-    sun_error = (ephemeris.trajectory(ephemeris.bodies()[SolarSystem::kSun]).
+    sun_error = (ephemeris.trajectory(ephemeris.bodies()[SolarSystem::kSun])->
                      EvaluatePosition(final_time, nullptr) -
                  trajectory.last().degrees_of_freedom().position()).
                      Norm();
     earth_error = (ephemeris.trajectory(
-                       ephemeris.bodies()[SolarSystem::kEarth]).
+                       ephemeris.bodies()[SolarSystem::kEarth])->
                            EvaluatePosition(final_time, nullptr) -
                    trajectory.last().degrees_of_freedom().position()).
                        Norm();
