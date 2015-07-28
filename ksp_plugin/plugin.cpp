@@ -191,8 +191,7 @@ void Plugin::AdvanceTime(Instant const& t, Angle const& planetarium_rotation) {
   CHECK(!initializing_);
   CHECK_GT(t, current_time_);
   CleanUpVessels();
-  LOG(ERROR)<<NAMED(history_time_);
-  LOG(ERROR)<<NAMED(t);
+  n_body_system_->Prolong(t);
   bubble_->Prepare(BarycentricToWorldSun(), current_time_, t);
   Ephemeris<Barycentric>::Trajectories synchronized_histories =
       SynchronizedHistories();
@@ -201,27 +200,22 @@ void Plugin::AdvanceTime(Instant const& t, Angle const& planetarium_rotation) {
     // Synchronize everything now, nothing is currently synchronized.
     history_time_ = t;
     advanced_history_time = true;
-    LOG(ERROR)<<"CREATESYNC";
   } else if (history_time_ + Δt_ <= t) {
     // The histories are far enough behind that we can advance them at least one
     // step and reset the prolongations.
-    LOG(ERROR)<<"ADVANCESYNC";
     EvolveHistories(t, synchronized_histories);
     advanced_history_time = true;
   }
   if (advanced_history_time) {
-    LOG(ERROR)<<"ADVANCEDHISTORYTIME";
     // TODO(egg): I think |!bubble_->empty()| => |has_dirty_vessels()|.
     if (has_unsynchronized_vessels() ||
         has_dirty_vessels() ||
         !bubble_->empty()) {
-      LOG(ERROR)<<"SYNCNEW";
       SynchronizeNewVesselsAndCleanDirtyVessels();
     }
     ResetProlongations();
   }
   if (history_time_ < t) {
-    LOG(ERROR)<<"EVELOVEPROLONG";
     EvolveProlongationsAndBubble(t);
   }
   VLOG(1) << "Time has been advanced" << '\n'
@@ -506,6 +500,7 @@ void Plugin::WriteToMessage(
 
   planetarium_rotation_.WriteToMessage(message->mutable_planetarium_rotation());
   current_time_.WriteToMessage(message->mutable_current_time());
+  history_time_.WriteToMessage(message->mutable_history_time());
   Index const sun_index = FindOrDie(celestial_to_index, sun_);
   message->set_sun_index(sun_index);
 }
@@ -572,6 +567,7 @@ std::unique_ptr<Plugin> Plugin::ReadFromMessage(
                  prediction_integrator,
                  Angle::ReadFromMessage(message.planetarium_rotation()),
                  Instant::ReadFromMessage(message.current_time()),
+                 Instant::ReadFromMessage(message.history_time()),
                  message.sun_index()));
 }
 
@@ -586,6 +582,7 @@ Plugin::Plugin(GUIDToOwnedVessel vessels,
                    NewtonianMotionEquation> const& prediction_integrator,
                Angle planetarium_rotation,
                Instant current_time,
+               Instant history_time,
                Index sun_index)
     : vessels_(std::move(vessels)),
       celestials_(std::move(celestials)),
@@ -597,6 +594,7 @@ Plugin::Plugin(GUIDToOwnedVessel vessels,
       prediction_integrator_(prediction_integrator),
       planetarium_rotation_(planetarium_rotation),
       current_time_(current_time),
+      history_time_(history_time),
       sun_(FindOrDie(celestials_, sun_index).get()) {
   for (auto const& guid_vessel : vessels_) {
     auto const& vessel = guid_vessel.second;

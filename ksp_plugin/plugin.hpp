@@ -301,6 +301,7 @@ class Plugin {
              NewtonianMotionEquation> const& prediction_integrator,
          Angle planetarium_rotation,
          Instant current_time,
+         Instant history_time,
          Index sun_index);
 
   not_null<std::unique_ptr<Vessel>> const& find_vessel_by_guid_or_die(
@@ -433,6 +434,9 @@ class Plugin {
   // The current in-game universal time.
   Instant current_time_;
   // The common last time of the histories of synchronized vessels.
+  // TODO(egg): test the serialization of that guy, found out that it wasn't
+  // serialized thanks to vessel invariant violation.  Perhaps check that
+  // a deserialized plugin still functions normally.
   Instant history_time_;
 
   Celestial* sun_;  // Not owning, not null after construction.
