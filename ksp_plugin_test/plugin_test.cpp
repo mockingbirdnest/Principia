@@ -294,7 +294,7 @@ TEST_F(PluginTest, Serialization) {
   // Sync.
   plugin->AdvanceTime(sync_time, Angle());
 
-  // Add a couple of points to the history and then forget some of them.  This
+  // Add a handful of points to the history and then forget some of them.  This
   // is the most convenient way to check that forgetting works as expected.
   plugin->InsertOrKeepVessel(satellite, SolarSystem::kEarth);
   plugin->AdvanceTime(HistoryTime(sync_time, 3), Angle());
@@ -313,20 +313,21 @@ TEST_F(PluginTest, Serialization) {
   LOG(ERROR)<<"EQ";
   EXPECT_EQ(message.SerializeAsString(), second_message.SerializeAsString());
   EXPECT_EQ(bodies_.size(), message.celestial_size());
-  /*
-  auto const& celestial_0_history =
-      message.celestial(0).celestial().history_and_prolongation().history();
-  EXPECT_EQ(1, celestial_0_history.timeline_size());
-  EXPECT_EQ((HistoryTime(sync_time, 6) - Instant()) / (1 * Second),
-            celestial_0_history.timeline(0).instant().scalar().magnitude());
-            */
+
+  EXPECT_FALSE(message.celestial(0).has_parent_index());
+  EXPECT_EQ(message.celestial(0).index(), message.celestial(1).parent_index());
+
+  EXPECT_EQ(
+      HistoryTime(sync_time, 3),
+      Instant::ReadFromMessage(message.ephemeris().trajectory(0).first_time()));
+
   EXPECT_EQ(1, message.vessel_size());
   EXPECT_EQ(SolarSystem::kEarth, message.vessel(0).parent_index());
   EXPECT_TRUE(message.vessel(0).vessel().has_history_and_prolongation());
   auto const& vessel_0_history =
       message.vessel(0).vessel().history_and_prolongation().history();
-  EXPECT_EQ(1, vessel_0_history.timeline_size());
-  EXPECT_EQ((HistoryTime(sync_time, 6) - Instant()) / (1 * Second),
+  EXPECT_EQ(3, vessel_0_history.timeline_size());
+  EXPECT_EQ((HistoryTime(sync_time, 4) - Instant()) / (1 * Second),
             vessel_0_history.timeline(0).instant().scalar().magnitude());
   EXPECT_FALSE(message.bubble().has_current());
 }
