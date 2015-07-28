@@ -234,10 +234,15 @@ not_null<Trajectory<Frame>*> Trajectory<Frame>::root() {
 
 template<typename Frame>
 Instant const* Trajectory<Frame>::fork_time() const {
-  if (parent_ == nullptr) {
+  not_null<Trajectory const*> ancestor = this;
+  while (ancestor->parent_ != nullptr &&
+         ancestor->fork_->timeline == ancestor->parent_->timeline_.end()) {
+    ancestor = ancestor->parent_;
+  }
+  if (ancestor->parent_ == nullptr) {
     return nullptr;
   } else {
-    return &(fork_->timeline->first);
+    return &(ancestor->fork_->timeline->first);
   }
 }
 
@@ -391,8 +396,9 @@ template<typename Frame>
 void Trajectory<Frame>::Iterator::InitializeOnOrAfter(
   Instant const& time, not_null<Trajectory const*> const trajectory) {
   not_null<Trajectory const*> ancestor = trajectory;
-  while (ancestor->fork_ != nullptr &&
-         time <= ancestor->fork_->timeline->first) {
+  while (ancestor->parent_ != nullptr &&
+         (ancestor->fork_->timeline == ancestor->parent_->timeline_.end() ||
+          time <= ancestor->fork_->timeline->first)) {
     ancestry_.push_front(ancestor);
     forks_.push_front(*ancestor->fork_);
     ancestor = ancestor->parent_;
