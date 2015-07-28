@@ -4,6 +4,7 @@
 #include <list>
 #include <map>
 #include <string>
+#include <vector>
 
 #include "body.hpp"
 #include "geometry/frame.hpp"
