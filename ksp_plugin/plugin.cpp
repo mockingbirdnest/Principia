@@ -503,6 +503,7 @@ void Plugin::WriteToMessage(
   history_time_.WriteToMessage(message->mutable_history_time());
   Index const sun_index = FindOrDie(celestial_to_index, sun_);
   message->set_sun_index(sun_index);
+  LOG(INFO) << NAMED(message->ByteSize());
 }
 
 std::unique_ptr<Plugin> Plugin::ReadFromMessage(

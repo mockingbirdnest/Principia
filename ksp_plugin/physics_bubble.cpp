@@ -132,9 +132,6 @@ Displacement<World> PhysicsBubble::DisplacementCorrection(
           << NAMED(reference_celestial_world_position);
   CHECK(!empty()) << "Empty bubble";
   if (current_->displacement_correction == nullptr) {
-    LOG(ERROR)<<current_->centre_of_mass_trajectory->last().time();
-    LOG(ERROR)<<reference_celestial.current_position(
-                  current_->centre_of_mass_trajectory->last().time());
     current_->displacement_correction =
         std::make_unique<Displacement<World>>(
           Identity<WorldSun, World>()(barycentric_to_world_sun(
