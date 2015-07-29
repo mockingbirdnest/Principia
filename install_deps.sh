@@ -33,15 +33,15 @@ pushd protobuf
 git am "../../documentation/Setup Files/protobuf.patch"
 ./autogen.sh
 if [ "$PLATFORM" == "Linux" ]; then
-    ./autogen.sh # Really definitely needs to run twice on Linux for some reason.
+    ./autogen.sh # Really definitely needs to run twice on Ubuntu for some reason.
 fi
-./configure CC=clang CXX=clang++ CXXFLAGS="$CXX_FLAGS" LDFLAGS="$LD_FLAGS" LIBS="-lc++"
+./configure CC=clang CXX=clang++ CXXFLAGS="$CXX_FLAGS" LDFLAGS="$LD_FLAGS" LIBS="-lc++ -lc++abi"
 make -j8
 popd
 
 git clone https://github.com/Norgg/glog
 pushd glog
-./configure CC=clang CXX=clang++ CFLAGS="$C_FLAGS" CXXFLAGS="$CXX_FLAGS" LDFLAGS="$LD_FLAGS" LIBS="-lc++"
+./configure CC=clang CXX=clang++ CFLAGS="$C_FLAGS" CXXFLAGS="$CXX_FLAGS" LDFLAGS="$LD_FLAGS" LIBS="-lc++ -lc++abi"
 make -j8
 popd
 
