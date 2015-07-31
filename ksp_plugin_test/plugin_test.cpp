@@ -23,7 +23,7 @@ namespace principia {
 using geometry::Bivector;
 using geometry::Permutation;
 using geometry::Trivector;
-using physics::MockNBodySystem;
+using physics::MockEphemeris;
 using quantities::Abs;
 using quantities::ArcTan;
 using quantities::Cos;
@@ -61,7 +61,7 @@ int const kNotABody = 1729;
 
 // Appends a |DegreesOfFreedom| equal to the last one at the given |time| to
 // each |Trajectory| in the |k|th parameter of the expected call.
-// This parameter must be an |NBodySystem<Barycentric>::Trajectories|, |time|
+// This parameter must be an |Ephemeris<Barycentric>::Trajectories|, |time|
 // must be an |Instant|.
 ACTION_TEMPLATE(AppendTimeToTrajectories,
                 HAS_1_TEMPLATE_PARAMS(int, k),
@@ -91,7 +91,8 @@ MATCHER_P(HasNonvanishingIntrinsicAccelerationAt, t, "") {
 
 class TestablePlugin : public Plugin {
   std::map<Index, ContinuousTrajectory<Barycentric>> trajectories_;
-  std::unique_ptr<StrictMock<MockNBodySystem<Barycentric>>> mock_ephemeris_;
+  std::unique_ptr<StrictMock<MockEphemeris<Barycentric>>> mock_ephemeris_;
+
  public:
   TestablePlugin(Instant const& initial_time,
                  Index const sun_index,
@@ -102,7 +103,7 @@ class TestablePlugin : public Plugin {
                sun_gravitational_parameter,
                planetarium_rotation),
         mock_ephemeris_(
-            std::make_unique<StrictMock<MockNBodySystem<Barycentric>>>()) {}
+            std::make_unique<StrictMock<MockEphemeris<Barycentric>>>()) {}
 
   void EndInitialization() override {
     initializing_.Flop();
@@ -111,7 +112,7 @@ class TestablePlugin : public Plugin {
     auto bodies_it = bodies_->begin();
     for (auto const& index_state : *initial_state_) {
       EXPECT_EQ(index_state.first, bodies_it->first);
-      auto const inserted = 
+      auto const inserted =
           trajectories_.emplace(std::piecewise_construct,
                                 std::forward_as_tuple(index_state.first),
                                 std::forward_as_tuple(45 * Minute,
@@ -140,7 +141,7 @@ class TestablePlugin : public Plugin {
     return Δt_;
   }
 
-  StrictMock<MockNBodySystem<Barycentric>>* mock_ephemeris() const {
+  StrictMock<MockEphemeris<Barycentric>>* mock_ephemeris() const {
     return mock_ephemeris_.get();
   }
 };
@@ -231,7 +232,7 @@ class PluginTest : public testing::Test {
   }
 
   Permutation<ICRFJ2000Ecliptic, AliceSun> looking_glass_;
-  StrictMock<MockNBodySystem<Barycentric>>* mock_ephemeris_;
+  StrictMock<MockEphemeris<Barycentric>>* mock_ephemeris_;
   not_null<std::unique_ptr<SolarSystem>> solar_system_;
   SolarSystem::Bodies bodies_;
   Instant initial_time_;
@@ -303,14 +304,10 @@ TEST_F(PluginTest, Serialization) {
   plugin->ForgetAllHistoriesBefore(HistoryTime(sync_time, 3));
 
   serialization::Plugin message;
-  LOG(ERROR)<<"W1";
   plugin->WriteToMessage(&message);
-  LOG(ERROR)<<"R1";
   plugin = Plugin::ReadFromMessage(message);
   serialization::Plugin second_message;
-  LOG(ERROR)<<"W2";
   plugin->WriteToMessage(&second_message);
-  LOG(ERROR)<<"EQ";
   EXPECT_EQ(message.SerializeAsString(), second_message.SerializeAsString());
   EXPECT_EQ(bodies_.size(), message.celestial_size());
 
@@ -456,7 +453,6 @@ TEST_F(PluginDeathTest, AdvanceTimeError) {
 
 TEST_F(PluginDeathTest, ForgetAllHistoriesBeforeError) {
   EXPECT_DEATH({
-    //TODO EXPECT_CALL
     Instant const t = initial_time_ + 100 * Second;
     InsertAllSolarSystemBodies();
     plugin_->EndInitialization();
@@ -614,7 +610,6 @@ TEST_F(PluginTest, AdvanceTimeWithVessels) {
       if (step > 2) {
         KeepVessel(constantinople);
       }
-      LOG(ERROR)<<"SUBSTEP";
       for (int i = 0;
            i < expected_number_of_new_vessels + expected_number_of_old_vessels;
            ++i) {
@@ -671,7 +666,6 @@ TEST_F(PluginTest, AdvanceTimeWithVessels) {
                                        HistoryTime(sync_time, step + 1) + δt))
           .RetiresOnSaturation();
     }
-    LOG(ERROR)<<"STEP"<<step;
     plugin_->AdvanceTime(HistoryTime(sync_time, step + 1) + δt,
                          planetarium_rotation);
     if (step == 2) {
@@ -857,7 +851,8 @@ TEST_F(PluginTest, PhysicsBubble) {
                      &expected_number_of_new_off_rails_vessels,
                      t);
         --expected_number_of_new_off_rails_vessels;
-      } else if (AbsoluteError(t - HistoryTime(sync_time, 1), half_a_step) < ε_δt) {
+      } else if (AbsoluteError(t - HistoryTime(sync_time, 1),
+                               half_a_step) < ε_δt) {
         InsertVessel(enterprise_d_saucer,
                      &expected_number_of_new_off_rails_vessels,
                      t);
@@ -898,11 +893,7 @@ TEST_F(PluginTest, PhysicsBubble) {
       // Called to synchronize the new histories.
       EXPECT_CALL(
           *mock_ephemeris_,
-          FlowWithAdaptiveStep(_,
-                               _,
-                               _,
-                               _,
-                               HistoryTime(sync_time, step + 1)))
+          FlowWithAdaptiveStep(_, _, _, _, HistoryTime(sync_time, step + 1)))
           .RetiresOnSaturation();
     }
     expected_number_of_clean_old_vessels +=
@@ -918,10 +909,7 @@ TEST_F(PluginTest, PhysicsBubble) {
       // Called to compute the prolongations.
       EXPECT_CALL(
           *mock_ephemeris_,
-          FlowWithAdaptiveStep(_,
-                               _,
-                               _,
-                               _,
+          FlowWithAdaptiveStep(_, _, _, _,
                                HistoryTime(sync_time, step + 1) + δt))
           .RetiresOnSaturation();
     }

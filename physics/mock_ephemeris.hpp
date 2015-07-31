@@ -8,9 +8,9 @@ namespace principia {
 namespace physics {
 
 template<typename Frame>
-class MockNBodySystem : public Ephemeris<Frame> {
+class MockEphemeris : public Ephemeris<Frame> {
  public:
-  MockNBodySystem() : Ephemeris() {}
+  MockEphemeris() : Ephemeris() {}
 
   MOCK_CONST_METHOD0_T(bodies, std::vector<MassiveBody const*> const&());
   MOCK_CONST_METHOD1_T(
