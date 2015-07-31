@@ -294,7 +294,7 @@ class Plugin {
          IndexToOwnedCelestial celestials,
          std::set<not_null<Vessel*> const> dirty_vessels,
          not_null<std::unique_ptr<PhysicsBubble>> bubble,
-         std::unique_ptr<Ephemeris<Barycentric>> n_body_system,
+         std::unique_ptr<Ephemeris<Barycentric>> ephemeris,
          AdaptiveStepSizeIntegrator<
              NewtonianMotionEquation> const& prolongation_integrator,
          AdaptiveStepSizeIntegrator<
@@ -417,7 +417,7 @@ class Plugin {
   std::unique_ptr<IndexToDegreesOfFreedom> initial_state_;
   // Null if and only if |initializing_|.
   // TODO(egg): optional.
-  std::unique_ptr<Ephemeris<Barycentric>> n_body_system_;
+  std::unique_ptr<Ephemeris<Barycentric>> ephemeris_;
   // The integrator computing the synchronized histories of the vessels.
   FixedStepSizeIntegrator<NewtonianMotionEquation> const& history_integrator_;
   // The integrator computing the prolongations.
