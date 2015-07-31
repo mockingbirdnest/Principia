@@ -113,7 +113,7 @@ void Plugin::EndInitialization() {
   initializing_.Flop();
   std::vector<not_null<std::unique_ptr<MassiveBody const>>> bodies;
   std::vector<DegreesOfFreedom<Barycentric>> initial_state;
-  for (auto&& body : *bodies_) {
+  for (auto& body : *bodies_) {
     bodies.emplace_back(std::move(body.second));
   }
   bodies_.reset();
@@ -638,10 +638,6 @@ void Plugin::DeletePredictions() {
     predicted_vessel_->DeletePrediction();
   }
 }
-
-//Instant const& Plugin::HistoryTime() const {
-//  return sun_->history().last().time();
-//}
 
 // The map between the vector spaces of |Barycentric| and |AliceSun| at
 // |current_time_|.
