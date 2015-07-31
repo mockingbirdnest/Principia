@@ -517,8 +517,7 @@ TEST_F(PluginTest, VesselInsertionAtInitialization) {
 
 // Checks that the plugin correctly uses its 10-second-step history even when
 // advanced with smaller timesteps.
-// NOTE(egg): this now checks that we don't use the ephemeris when there are no
-// vessels.
+// This now checks that we do nothing but prolong, since there are no vessels.
 TEST_F(PluginTest, AdvanceTimeWithCelestialsOnly) {
   InsertAllSolarSystemBodies();
   plugin_->EndInitialization();
@@ -528,10 +527,12 @@ TEST_F(PluginTest, AdvanceTimeWithCelestialsOnly) {
     for (Instant t = HistoryTime(initial_time_, step) + 2 * δt;
          t <= HistoryTime(initial_time_, step + 1);
          t += δt) {
-      // Called to compute the prolongations.
+      EXPECT_CALL(*mock_ephemeris_, Prolong(t)).RetiresOnSaturation();
       plugin_->AdvanceTime(t, planetarium_rotation);
     }
-    // Called to advance the synchronized histories.
+    EXPECT_CALL(*mock_ephemeris_,
+                Prolong(HistoryTime(initial_time_, step + 1) + δt))
+        .RetiresOnSaturation();
     plugin_->AdvanceTime(HistoryTime(initial_time_, step + 1) + δt,
                          planetarium_rotation);
   }
@@ -574,6 +575,9 @@ TEST_F(PluginTest, AdvanceTimeWithVessels) {
                &expected_number_of_new_vessels,
                HistoryTime(sync_time, 0));
   EXPECT_TRUE(plugin_->has_vessel(enterprise));
+  EXPECT_CALL(*mock_ephemeris_,
+              Prolong(HistoryTime(sync_time, 0) + δt))
+      .RetiresOnSaturation();
   // Called to compute the prolongation.
   EXPECT_CALL(*mock_ephemeris_,
               FlowWithAdaptiveStep(_, _, _, _, HistoryTime(sync_time, 0) + δt))
@@ -610,6 +614,7 @@ TEST_F(PluginTest, AdvanceTimeWithVessels) {
       if (step > 2) {
         KeepVessel(constantinople);
       }
+      EXPECT_CALL(*mock_ephemeris_, Prolong(t)).RetiresOnSaturation();
       for (int i = 0;
            i < expected_number_of_new_vessels + expected_number_of_old_vessels;
            ++i) {
@@ -637,18 +642,21 @@ TEST_F(PluginTest, AdvanceTimeWithVessels) {
     if (step > 2) {
       KeepVessel(constantinople);
     }
+    EXPECT_CALL(*mock_ephemeris_,
+                Prolong(HistoryTime(sync_time, step + 1) + δt))
+        .RetiresOnSaturation();
     if (expected_number_of_old_vessels == 0) {
       expected_number_of_old_vessels = expected_number_of_new_vessels;
       expected_number_of_new_vessels = 0;
     } else {
-    // Called to advance the synchronized histories.
-    EXPECT_CALL(*mock_ephemeris_,
-                FlowWithFixedStep(SizeIs(expected_number_of_old_vessels),
-                                  10 * Second,
-                                  HistoryTime(sync_time, step + 1) + δt))
-        .WillOnce(
-             AppendTimeToTrajectories<0>(HistoryTime(sync_time, step + 1)))
-        .RetiresOnSaturation();
+      // Called to advance the synchronized histories.
+      EXPECT_CALL(*mock_ephemeris_,
+                  FlowWithFixedStep(SizeIs(expected_number_of_old_vessels),
+                                    10 * Second,
+                                    HistoryTime(sync_time, step + 1) + δt))
+          .WillOnce(
+               AppendTimeToTrajectories<0>(HistoryTime(sync_time, step + 1)))
+          .RetiresOnSaturation();
     }
     for (int i = 0; i < expected_number_of_new_vessels; ++i) {
       // Called to synchronize the new histories.
@@ -768,6 +776,9 @@ TEST_F(PluginTest, PhysicsBubble) {
       .RetiresOnSaturation();
   // Therer are no old vessels, this will make all the new vessels old
   // instantly without performing any syncing computations.
+  EXPECT_CALL(*mock_ephemeris_,
+              Prolong(HistoryTime(sync_time, 0) + δt))
+      .RetiresOnSaturation();
   plugin_->AdvanceTime(HistoryTime(sync_time, 0) + δt,
                        planetarium_rotation);
   sync_time = HistoryTime(sync_time, 0) + δt;
@@ -841,6 +852,7 @@ TEST_F(PluginTest, PhysicsBubble) {
                   FlowWithAdaptiveStep(_, _, _, _, t))
             .RetiresOnSaturation();
       }
+      EXPECT_CALL(*mock_ephemeris_, Prolong(t)).RetiresOnSaturation();
       plugin_->AdvanceTime(t, planetarium_rotation);
       if (expect_to_have_physics_bubble) {
         plugin_->BubbleDisplacementCorrection(World::origin);
@@ -913,6 +925,9 @@ TEST_F(PluginTest, PhysicsBubble) {
                                HistoryTime(sync_time, step + 1) + δt))
           .RetiresOnSaturation();
     }
+    EXPECT_CALL(*mock_ephemeris_,
+                Prolong(HistoryTime(sync_time, step + 1) + δt))
+        .RetiresOnSaturation();
     plugin_->AdvanceTime(HistoryTime(sync_time, step + 1) + δt,
                          planetarium_rotation);
     if (expect_to_have_physics_bubble) {
