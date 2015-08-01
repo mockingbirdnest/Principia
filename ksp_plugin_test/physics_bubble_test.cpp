@@ -327,7 +327,7 @@ TEST_F(PhysicsBubbleDeathTest, EmptyError) {
 
 TEST_F(PhysicsBubbleTest, EmptySuccess) {
   EXPECT_TRUE(bubble_.empty());
-  EXPECT_EQ(0, bubble_.size());
+  EXPECT_EQ(0, bubble_.count());
   EXPECT_EQ(0, bubble_.number_of_vessels());
   EXPECT_FALSE(bubble_.contains(&vessel1_));
   // Check that the following doesn't fail.  It does mostly nothing.

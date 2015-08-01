@@ -472,6 +472,10 @@ TEST_F(InterfaceTest, PredictionGettersAndSetters) {
   principia__clear_predicted_vessel(plugin_.get());
   EXPECT_CALL(*plugin_, set_prediction_length(42 * Second));
   principia__set_prediction_length(plugin_.get(), 42);
+  EXPECT_CALL(*plugin_, set_prediction_length_tolerance(1729 * Metre));
+  principia__set_prediction_length_tolerance(plugin_.get(), 1729);
+  EXPECT_CALL(*plugin_, set_prediction_speed_tolerance(163 * Metre / Second));
+  principia__set_prediction_speed_tolerance(plugin_.get(), 163);
 }
 
 TEST_F(InterfaceTest, PhysicsBubble) {

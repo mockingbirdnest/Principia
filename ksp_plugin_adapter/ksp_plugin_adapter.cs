@@ -728,7 +728,7 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
     rendered_trajectory_.layer = 31;
     rendered_prediction_ = new VectorLine(
         lineName     : "rendered_prediction_",
-        linePoints   : new UnityEngine.Vector3[1000],  // TODO
+        linePoints   : new UnityEngine.Vector3[1000],  // TODO(egg): constant.
         lineMaterial : MapView.OrbitLinesMaterial,
         color        : XKCDColors.Fuchsia,
         width        : 5,

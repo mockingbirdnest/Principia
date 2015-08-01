@@ -14,10 +14,9 @@ class MockEphemeris : public Ephemeris<Frame> {
   MockEphemeris() : Ephemeris() {}
 
   MOCK_CONST_METHOD0_T(bodies, std::vector<MassiveBody const*> const&());
-  MOCK_CONST_METHOD1_T(
-      trajectory,
-      not_null<ContinuousTrajectory<Frame> const*>(
-          not_null<MassiveBody const*> body));
+  MOCK_CONST_METHOD1_T(trajectory,
+                       not_null<ContinuousTrajectory<Frame> const*>(
+                           not_null<MassiveBody const*> body));
   MOCK_CONST_METHOD0_T(empty, bool());
   MOCK_CONST_METHOD0_T(t_min, Instant());
   MOCK_CONST_METHOD0_T(t_max, Instant());
@@ -34,10 +33,11 @@ class MockEphemeris : public Ephemeris<Frame> {
                       AdaptiveStepSizeIntegrator<
                           NewtonianMotionEquation> const& integrator,
                       Instant const& t));
-  MOCK_METHOD3_T(FlowWithFixedStep,
-                 void(Trajectories const& trajectories,
-                      Time const& step,
-                      Instant const& t));
+  MOCK_METHOD3_T(
+      FlowWithFixedStep,
+      void(std::vector<not_null<Trajectory<Frame>*>> const& trajectories,
+           Time const& step,
+           Instant const& t));
 
   MOCK_CONST_METHOD1_T(WriteToMessage,
                        void(not_null<serialization::Ephemeris*> const message));

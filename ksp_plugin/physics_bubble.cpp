@@ -167,7 +167,7 @@ bool PhysicsBubble::empty() const {
   return current_ == nullptr;
 }
 
-std::size_t PhysicsBubble::size() const {
+std::size_t PhysicsBubble::count() const {
   return empty() ? 0 : 1;
 }
 

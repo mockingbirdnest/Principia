@@ -61,13 +61,13 @@ int const kNotABody = 1729;
 
 // Appends a |DegreesOfFreedom| equal to the last one at the given |time| to
 // each |Trajectory| in the |k|th parameter of the expected call.
-// This parameter must be an |Ephemeris<Barycentric>::Trajectories|, |time|
-// must be an |Instant|.
+// This parameter must be a |Trajectories|, |time| must be an |Instant|.
 ACTION_TEMPLATE(AppendTimeToTrajectories,
                 HAS_1_TEMPLATE_PARAMS(int, k),
                 AND_1_VALUE_PARAMS(time)) {
-  for (auto trajectory : static_cast<Ephemeris<Barycentric>::Trajectories>(
-                             std::tr1::get<k>(args))) {
+  for (auto trajectory :
+          static_cast<std::vector<not_null<Trajectory<Barycentric>*>>>(
+              std::tr1::get<k>(args))) {
     trajectory->Append(time, trajectory->last().degrees_of_freedom());
   }
 }
@@ -105,6 +105,9 @@ class TestablePlugin : public Plugin {
         mock_ephemeris_(
             std::make_unique<StrictMock<MockEphemeris<Barycentric>>>()) {}
 
+  // We need to override |EndInitialization in order to create a |MockEphemeris|
+  // rather than an |Ephemeris|, and in order to fill in the continuous
+  // trajectories ourselves.
   void EndInitialization() override {
     initializing_.Flop();
     std::vector<not_null<std::unique_ptr<MassiveBody const>>> bodies;
@@ -584,8 +587,7 @@ TEST_F(PluginTest, AdvanceTimeWithVessels) {
       .RetiresOnSaturation();
   // Therer are no old vessels, this will make all the new vessels old
   // instantly without performing any syncing computations.
-  plugin_->AdvanceTime(HistoryTime(sync_time, 0) + δt,
-                       planetarium_rotation);
+  plugin_->AdvanceTime(HistoryTime(sync_time, 0) + δt, planetarium_rotation);
   expected_number_of_old_vessels = expected_number_of_new_vessels;
   expected_number_of_new_vessels = 0;
   sync_time = HistoryTime(sync_time, 0) + δt;
@@ -774,8 +776,8 @@ TEST_F(PluginTest, PhysicsBubble) {
   EXPECT_CALL(*mock_ephemeris_,
               FlowWithAdaptiveStep(_, _, _, _, HistoryTime(sync_time, 0) + δt))
       .RetiresOnSaturation();
-  // Therer are no old vessels, this will make all the new vessels old
-  // instantly without performing any syncing computations.
+  // There are no old vessels, this will make all the new vessels old instantly
+  // without performing any syncing computations.
   EXPECT_CALL(*mock_ephemeris_,
               Prolong(HistoryTime(sync_time, 0) + δt))
       .RetiresOnSaturation();
@@ -1174,9 +1176,8 @@ TEST_F(PluginTest, BarycentricRotatingRenderingIntegration) {
 }
 
 // Checks that we correctly predict a full circular orbit around a massive body
-// with unit gravitational parameter at unit distance.  Since
-// predictions are only computed on |AdvanceTime()|, we advance time by a small
-// amount.
+// with unit gravitational parameter at unit distance.  Since predictions are
+// only computed on |AdvanceTime()|, we advance time by a small amount.
 TEST_F(PluginTest, Prediction) {
   GUID const satellite = "satellite";
   Index const celestial = 0;

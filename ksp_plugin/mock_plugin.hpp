@@ -71,7 +71,9 @@ class MockPlugin : public Plugin {
 
   MOCK_METHOD1(set_prediction_length, void(Time const& t));
 
-  MOCK_METHOD1(set_prediction_step, void(Time const& t));
+  MOCK_METHOD1(set_prediction_length_tolerance, void(Length const& t));
+
+  MOCK_METHOD1(set_prediction_speed_tolerance, void(Speed const& t));
 
   MOCK_CONST_METHOD1(has_vessel, bool(GUID const& vessel_guid));
 

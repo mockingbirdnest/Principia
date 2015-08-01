@@ -35,8 +35,8 @@ using geometry::Rotation;
 using integrators::FixedStepSizeIntegrator;
 using integrators::AdaptiveStepSizeIntegrator;
 using physics::Body;
-using physics::FrameField;
 using physics::Ephemeris;
+using physics::FrameField;
 using physics::Trajectory;
 using physics::Transformz;
 using quantities::Angle;
@@ -286,6 +286,7 @@ class Plugin {
       std::map<Index, std::unique_ptr<MassiveBody const>>;
   using IndexToDegreesOfFreedom =
       std::map<Index, DegreesOfFreedom<Barycentric>>;
+  using Trajectories = std::vector<not_null<Trajectory<Barycentric>*>>;
 
   // This constructor should only be used during deserialization.
   // |unsynchronized_vessels_| is initialized consistently.  All vessels are
@@ -342,11 +343,11 @@ class Plugin {
   // |history().last().time()| is exactly |HistoryTime()|.
   void CheckVesselInvariants(GUIDToOwnedVessel::const_iterator const it) const;
   // Returns the histories of the synchronized vessels.
-  Ephemeris<Barycentric>::Trajectories SynchronizedHistories() const;
+  Trajectories SynchronizedHistories() const;
   // Evolves the histories in |histories|. |t| must be large enough that at
   // least one step of size |Δt_| can fit between |current_time_| and |t|.
   void EvolveHistories(Instant const& t,
-                       Ephemeris<Barycentric>::Trajectories const& histories);
+                       Trajectories const& histories);
   // Synchronizes the |unsynchronized_vessels_|, clears
   // |unsynchronized_vessels_|.  Prolongs the histories of the vessels in the
   // physics bubble by evolving the trajectory of the |current_physics_bubble_|
@@ -380,8 +381,8 @@ class Plugin {
       Position<World> const& sun_world_position) const;
 
   Time const Δt_ = 10 * Second;
-  Length const prolongation_length_tolerance = 1 * Milli(Metre);
-  Speed const prolongation_speed_tolerance = 1 * Milli(Metre) / Second;
+  Length const prolongation_length_tolerance_ = 1 * Milli(Metre);
+  Speed const prolongation_speed_tolerance_ = 1 * Milli(Metre) / Second;
 
   GUIDToOwnedVessel vessels_;
   IndexToOwnedCelestial celestials_;
@@ -402,8 +403,8 @@ class Plugin {
   // Only one prediction for now, using constant timestep.
   Vessel* predicted_vessel_ = nullptr;
   Time prediction_length_ = 1 * Hour;
-  Length prediction_length_tolerance = 1 * Metre;
-  Speed prediction_speed_tolerance = 1 * Metre / Second;
+  Length prediction_length_tolerance_ = 1 * Metre;
+  Speed prediction_speed_tolerance_ = 1 * Metre / Second;
 
   not_null<std::unique_ptr<PhysicsBubble>> const bubble_;
 

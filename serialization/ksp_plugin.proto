@@ -63,7 +63,7 @@ message Plugin {
   }
   message CelestialParenthood {
     required int32 index = 1;
-    optional  int32 parent_index = 2;
+    optional int32 parent_index = 2;
   }
   repeated VesselAndProperties vessel = 1;
   repeated CelestialAndProperties old_celestial = 2;

@@ -113,22 +113,24 @@ void Plugin::EndInitialization() {
   initializing_.Flop();
   std::vector<not_null<std::unique_ptr<MassiveBody const>>> bodies;
   std::vector<DegreesOfFreedom<Barycentric>> initial_state;
-  for (auto& body : *bodies_) {
-    bodies.emplace_back(std::move(body.second));
+  for (auto& pair : *bodies_) {
+    auto& body = pair.second;
+    bodies.emplace_back(std::move(body));
   }
   bodies_.reset();
   for (auto const& state : *initial_state_) {
     initial_state.emplace_back(state.second);
   }
   initial_state_.reset();
-  ephemeris_ = std::make_unique<Ephemeris<Barycentric>>(std::move(bodies),
-                                                        initial_state,
-                                                        current_time_,
-                                                        history_integrator_,
-                                                        45 * Minute,
-                                                        1 * Milli(Metre));
-  for (auto const& index_celestial : celestials_) {
-    auto& celestial = *index_celestial.second;
+  ephemeris_ = std::make_unique<Ephemeris<Barycentric>>(
+      std::move(bodies),
+      initial_state,
+      current_time_,
+      history_integrator_,
+      45 * Minute /*step*/,
+      1 * Milli(Metre) /*fitting_tolerance*/);
+  for (auto const& pair : celestials_) {
+    auto& celestial = *pair.second;
     // TODO(egg): unorthodox address of reference.
     celestial.set_trajectory(ephemeris_->trajectory(&celestial.body()));
   }
@@ -193,7 +195,7 @@ void Plugin::AdvanceTime(Instant const& t, Angle const& planetarium_rotation) {
   CleanUpVessels();
   ephemeris_->Prolong(t);
   bubble_->Prepare(BarycentricToWorldSun(), current_time_, t);
-  Ephemeris<Barycentric>::Trajectories synchronized_histories =
+  Trajectories synchronized_histories =
       SynchronizedHistories();
   bool advanced_history_time = false;
   if (synchronized_histories.empty()) {
@@ -329,11 +331,11 @@ void Plugin::set_prediction_length(Time const& t) {
 }
 
 void Plugin::set_prediction_length_tolerance(Length const& l) {
-  prediction_length_tolerance = l;
+  prediction_length_tolerance_ = l;
 }
 
 void Plugin::set_prediction_speed_tolerance(Speed const& v) {
-  prediction_speed_tolerance = v;
+  prediction_speed_tolerance_ = v;
 }
 
 bool Plugin::has_vessel(GUID const& vessel_guid) const {
@@ -344,7 +346,6 @@ not_null<std::unique_ptr<RenderingTransforms>>
 Plugin::NewBodyCentredNonRotatingTransforms(
     Index const reference_body_index) const {
   CHECK(!initializing_);
-  // TODO(egg): this should be const, use a custom comparator in the map.
   Celestial const& reference_body =
       *FindOrDie(celestials_, reference_body_index);
   return RenderingTransforms::BodyCentredNonRotating(
@@ -465,7 +466,7 @@ void Plugin::WriteToMessage(
   for (auto const& index_celestial : celestials_) {
     Index const index = index_celestial.first;
     not_null<Celestial const*> const celestial = index_celestial.second.get();
-    auto const celestial_message = message->add_celestial();
+    auto* const celestial_message = message->add_celestial();
     celestial_message->set_index(index);
     if (celestial->has_parent()) {
       Index const parent_index =
@@ -696,8 +697,8 @@ void Plugin::CheckVesselInvariants(
   }
 }
 
-Ephemeris<Barycentric>::Trajectories Plugin::SynchronizedHistories() const {
-  Ephemeris<Barycentric>::Trajectories trajectories;
+Plugin::Trajectories Plugin::SynchronizedHistories() const {
+  Trajectories trajectories;
   // NOTE(egg): This may be too large, vessels that are not new and in the
   // physics bubble or dirty will not be added.
   trajectories.reserve(vessels_.size() - unsynchronized_vessels_.size());
@@ -712,9 +713,7 @@ Ephemeris<Barycentric>::Trajectories Plugin::SynchronizedHistories() const {
   return trajectories;
 }
 
-void Plugin::EvolveHistories(
-    Instant const& t,
-    Ephemeris<Barycentric>::Trajectories const& histories) {
+void Plugin::EvolveHistories(Instant const& t, Trajectories const& histories) {
   VLOG(1) << __FUNCTION__ << '\n' << NAMED(t);
   // Integration with a constant step.{
   VLOG(1) << "Starting the evolution of the histories" << '\n'
@@ -728,8 +727,8 @@ void Plugin::EvolveHistories(
 
 void Plugin::SynchronizeNewVesselsAndCleanDirtyVessels() {
   VLOG(1) << __FUNCTION__;
-  Ephemeris<Barycentric>::Trajectories trajectories;
-  trajectories.reserve(unsynchronized_vessels_.size() + bubble_->size());
+  Trajectories trajectories;
+  trajectories.reserve(unsynchronized_vessels_.size() + bubble_->count());
   for (not_null<Vessel*> const vessel : unsynchronized_vessels_) {
     if (!bubble_->contains(vessel)) {
       trajectories.push_back(vessel->mutable_prolongation());
@@ -747,8 +746,8 @@ void Plugin::SynchronizeNewVesselsAndCleanDirtyVessels() {
           << (bubble_->empty() ? "" : " and of the bubble");
   for (auto const& trajectory : trajectories) {
     ephemeris_->FlowWithAdaptiveStep(trajectory,
-                                     prolongation_length_tolerance,
-                                     prolongation_speed_tolerance,
+                                     prolongation_length_tolerance_,
+                                     prolongation_speed_tolerance_,
                                      prolongation_integrator_,
                                      history_time_);
   }
@@ -806,9 +805,12 @@ void Plugin::ResetProlongations() {
 
 void Plugin::EvolveProlongationsAndBubble(Instant const& t) {
   VLOG(1) << __FUNCTION__ << '\n' << NAMED(t);
-  Ephemeris<Barycentric>::Trajectories trajectories;
-  trajectories.reserve(vessels_.size() -
-                       bubble_->number_of_vessels() + bubble_->size());
+  Trajectories trajectories;
+
+  std::size_t const number_of_vessels_not_in_physics_bubble =
+      vessels_.size() - bubble_->number_of_vessels();
+  trajectories.reserve(number_of_vessels_not_in_physics_bubble +
+                       bubble_->count());
   for (auto const& pair : vessels_) {
     not_null<Vessel*> const vessel = pair.second.get();
     if (!bubble_->contains(vessel)) {
@@ -824,8 +826,8 @@ void Plugin::EvolveProlongationsAndBubble(Instant const& t) {
           << "to   : " << t;
   for (auto const& trajectory : trajectories) {
     ephemeris_->FlowWithAdaptiveStep(trajectory,
-                                     prolongation_length_tolerance,
-                                     prolongation_speed_tolerance,
+                                     prolongation_length_tolerance_,
+                                     prolongation_speed_tolerance_,
                                      prolongation_integrator_,
                                      t);
   }
@@ -847,8 +849,8 @@ void Plugin::UpdatePredictions() {
   if (has_predicted_vessel()) {
     predicted_vessel_->ForkPrediction();
     ephemeris_->FlowWithAdaptiveStep(predicted_vessel_->mutable_prediction(),
-                                     prediction_length_tolerance,
-                                     prediction_speed_tolerance,
+                                     prediction_length_tolerance_,
+                                     prediction_speed_tolerance_,
                                      prediction_integrator_,
                                      current_time_ + prediction_length_);
   }

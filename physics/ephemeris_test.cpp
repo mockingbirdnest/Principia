@@ -683,7 +683,6 @@ TEST_F(EphemerisTest, Serialization) {
                   time, nullptr /*hint*/),
               ephemeris_read->trajectory(moon_read)->EvaluateDegreesOfFreedom(
                   time, nullptr /*hint*/));
-
   }
 
   serialization::Ephemeris other_message;
