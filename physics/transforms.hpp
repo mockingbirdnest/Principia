@@ -23,7 +23,7 @@ namespace physics {
 // |ThroughFrame|.  Note that the trajectory in |ToFrame| is not the trajectory
 // of a body since its past changes from moment to moment.
 template<typename FromFrame, typename ThroughFrame, typename ToFrame>
-class Transformz {
+class Transforms {
   static_assert(FromFrame::is_inertial && ToFrame::is_inertial,
                 "Both FromFrame and ToFrame must be inertial");
 
@@ -31,7 +31,7 @@ class Transformz {
   // A factory method where |ThroughFrame| is defined as follows: it has the
   // same axes as |FromFrame| and the body of |centre_trajectory| is the origin
   // of |ThroughFrame|.
-  static not_null<std::unique_ptr<Transformz>> BodyCentredNonRotating(
+  static not_null<std::unique_ptr<Transforms>> BodyCentredNonRotating(
       MassiveBody const& centre,
       ContinuousTrajectory<FromFrame> const& from_centre_trajectory,
       ContinuousTrajectory<ToFrame> const& to_centre_trajectory);
@@ -42,7 +42,7 @@ class Transformz {
   // side of the X axis as the velocity of the primary body, its Z axis is such
   // that it is right-handed.  The barycentre of the bodies is the origin of
   // |ThroughFrame|.
-  static not_null<std::unique_ptr<Transformz>> BarycentricRotating(
+  static not_null<std::unique_ptr<Transforms>> BarycentricRotating(
       MassiveBody const& primary,
       ContinuousTrajectory<FromFrame> const& from_primary_trajectory,
       ContinuousTrajectory<ToFrame> const& to_primary_trajectory,
@@ -51,7 +51,7 @@ class Transformz {
       ContinuousTrajectory<ToFrame> const& to_secondary_trajectory);
 
   // Use this only for testing!
-  static not_null<std::unique_ptr<Transformz>> DummyForTesting();
+  static not_null<std::unique_ptr<Transforms>> DummyForTesting();
 
   typename Trajectory<FromFrame>::template TransformingIterator<ThroughFrame>
   first(Trajectory<FromFrame> const& from_trajectory);
@@ -134,4 +134,4 @@ class Transformz {
 }  // namespace physics
 }  // namespace principia
 
-#include "physics/transformz_body.hpp"
+#include "physics/transforms_body.hpp"

@@ -1,37 +1,37 @@
 ﻿
-// .\release\benchmarks.exe --benchmark_filter=Transformz --benchmark_repetitions=5          // NOLINT(whitespace/line_length)
+// .\release\benchmarks.exe --benchmark_filter=Transforms --benchmark_repetitions=5          // NOLINT(whitespace/line_length)
 // Benchmarking on 1 X 3310 MHz CPU
 // 2015/06/15-22:32:50
 // Benchmark                                                 Time(ns)    CPU(ns) Iterations  // NOLINT(whitespace/line_length)
 // ----------------------------------------------------------------------------------------  // NOLINT(whitespace/line_length)
-// BM_TransformzBodyCentredNonRotating<false>/1000k         824031091  826805300          1  // NOLINT(whitespace/line_length)
-// BM_TransformzBodyCentredNonRotating<false>/1000k         816129422  826805300          1  // NOLINT(whitespace/line_length)
-// BM_TransformzBodyCentredNonRotating<false>/1000k         815476394  811205200          1  // NOLINT(whitespace/line_length)
-// BM_TransformzBodyCentredNonRotating<false>/1000k         812676406  811205200          1  // NOLINT(whitespace/line_length)
-// BM_TransformzBodyCentredNonRotating<false>/1000k         816075301  811205200          1  // NOLINT(whitespace/line_length)
-// BM_TransformzBodyCentredNonRotating<false>/1000k_mean    816877723  817445240          1  // NOLINT(whitespace/line_length)
-// BM_TransformzBodyCentredNonRotating<false>/1000k_stddev    3794451    7642457          0  // NOLINT(whitespace/line_length)
-// BM_TransformzBodyCentredNonRotating<true>/1000k         1144107318 1154407400          1  // NOLINT(whitespace/line_length)
-// BM_TransformzBodyCentredNonRotating<true>/1000k          741064286  733204700          1  // NOLINT(whitespace/line_length)
-// BM_TransformzBodyCentredNonRotating<true>/1000k          736331439  733204700          1  // NOLINT(whitespace/line_length)
-// BM_TransformzBodyCentredNonRotating<true>/1000k          738806224  748804800          1  // NOLINT(whitespace/line_length)
-// BM_TransformzBodyCentredNonRotating<true>/1000k          749920821  733204700          1  // NOLINT(whitespace/line_length)
-// BM_TransformzBodyCentredNonRotating<true>/1000k_mean     822046018  820565260          1  // NOLINT(whitespace/line_length)
-// BM_TransformzBodyCentredNonRotating<true>/1000k_stddev   161095883  167030381          0  // NOLINT(whitespace/line_length)
-// BM_TransformzBarycentricRotating<false>/1000k           2293228841 2293214700          1  // NOLINT(whitespace/line_length)
-// BM_TransformzBarycentricRotating<false>/1000k           2287223315 2277614600          1  // NOLINT(whitespace/line_length)
-// BM_TransformzBarycentricRotating<false>/1000k           2289223647 2293214700          1  // NOLINT(whitespace/line_length)
-// BM_TransformzBarycentricRotating<false>/1000k           2286221957 2293214700          1  // NOLINT(whitespace/line_length)
-// BM_TransformzBarycentricRotating<false>/1000k           2282223678 2277614600          1  // NOLINT(whitespace/line_length)
-// BM_TransformzBarycentricRotating<false>/1000k_mean      2287624288 2286974660          1  // NOLINT(whitespace/line_length)
-// BM_TransformzBarycentricRotating<false>/1000k_stddev       3612834    7642457          0  // NOLINT(whitespace/line_length)
-// BM_TransformzBarycentricRotating<true>/1000k            2650264955 2652017000          1  // NOLINT(whitespace/line_length)
-// BM_TransformzBarycentricRotating<true>/1000k            1487141109 1466409400          1  // NOLINT(whitespace/line_length)
-// BM_TransformzBarycentricRotating<true>/1000k            1486144519 1482009500          1  // NOLINT(whitespace/line_length)
-// BM_TransformzBarycentricRotating<true>/1000k            1487141824 1482009500          1  // NOLINT(whitespace/line_length)
-// BM_TransformzBarycentricRotating<true>/1000k            1488141275 1482009500          1  // NOLINT(whitespace/line_length)
-// BM_TransformzBarycentricRotating<true>/1000k_mean       1719766736 1712890980          1  // NOLINT(whitespace/line_length)
-// BM_TransformzBarycentricRotating<true>/1000k_stddev      465249538  469601879          0  // NOLINT(whitespace/line_length)
+// BM_TransformsBodyCentredNonRotating<false>/1000k         824031091  826805300          1  // NOLINT(whitespace/line_length)
+// BM_TransformsBodyCentredNonRotating<false>/1000k         816129422  826805300          1  // NOLINT(whitespace/line_length)
+// BM_TransformsBodyCentredNonRotating<false>/1000k         815476394  811205200          1  // NOLINT(whitespace/line_length)
+// BM_TransformsBodyCentredNonRotating<false>/1000k         812676406  811205200          1  // NOLINT(whitespace/line_length)
+// BM_TransformsBodyCentredNonRotating<false>/1000k         816075301  811205200          1  // NOLINT(whitespace/line_length)
+// BM_TransformsBodyCentredNonRotating<false>/1000k_mean    816877723  817445240          1  // NOLINT(whitespace/line_length)
+// BM_TransformsBodyCentredNonRotating<false>/1000k_stddev    3794451    7642457          0  // NOLINT(whitespace/line_length)
+// BM_TransformsBodyCentredNonRotating<true>/1000k         1144107318 1154407400          1  // NOLINT(whitespace/line_length)
+// BM_TransformsBodyCentredNonRotating<true>/1000k          741064286  733204700          1  // NOLINT(whitespace/line_length)
+// BM_TransformsBodyCentredNonRotating<true>/1000k          736331439  733204700          1  // NOLINT(whitespace/line_length)
+// BM_TransformsBodyCentredNonRotating<true>/1000k          738806224  748804800          1  // NOLINT(whitespace/line_length)
+// BM_TransformsBodyCentredNonRotating<true>/1000k          749920821  733204700          1  // NOLINT(whitespace/line_length)
+// BM_TransformsBodyCentredNonRotating<true>/1000k_mean     822046018  820565260          1  // NOLINT(whitespace/line_length)
+// BM_TransformsBodyCentredNonRotating<true>/1000k_stddev   161095883  167030381          0  // NOLINT(whitespace/line_length)
+// BM_TransformsBarycentricRotating<false>/1000k           2293228841 2293214700          1  // NOLINT(whitespace/line_length)
+// BM_TransformsBarycentricRotating<false>/1000k           2287223315 2277614600          1  // NOLINT(whitespace/line_length)
+// BM_TransformsBarycentricRotating<false>/1000k           2289223647 2293214700          1  // NOLINT(whitespace/line_length)
+// BM_TransformsBarycentricRotating<false>/1000k           2286221957 2293214700          1  // NOLINT(whitespace/line_length)
+// BM_TransformsBarycentricRotating<false>/1000k           2282223678 2277614600          1  // NOLINT(whitespace/line_length)
+// BM_TransformsBarycentricRotating<false>/1000k_mean      2287624288 2286974660          1  // NOLINT(whitespace/line_length)
+// BM_TransformsBarycentricRotating<false>/1000k_stddev       3612834    7642457          0  // NOLINT(whitespace/line_length)
+// BM_TransformsBarycentricRotating<true>/1000k            2650264955 2652017000          1  // NOLINT(whitespace/line_length)
+// BM_TransformsBarycentricRotating<true>/1000k            1487141109 1466409400          1  // NOLINT(whitespace/line_length)
+// BM_TransformsBarycentricRotating<true>/1000k            1486144519 1482009500          1  // NOLINT(whitespace/line_length)
+// BM_TransformsBarycentricRotating<true>/1000k            1487141824 1482009500          1  // NOLINT(whitespace/line_length)
+// BM_TransformsBarycentricRotating<true>/1000k            1488141275 1482009500          1  // NOLINT(whitespace/line_length)
+// BM_TransformsBarycentricRotating<true>/1000k_mean       1719766736 1712890980          1  // NOLINT(whitespace/line_length)
+// BM_TransformsBarycentricRotating<true>/1000k_stddev      465249538  469601879          0  // NOLINT(whitespace/line_length)
 
 #include <memory>
 #include <utility>
@@ -52,7 +52,7 @@
 #include "physics/massive_body.hpp"
 #include "physics/massless_body.hpp"
 #include "physics/trajectory.hpp"
-#include "physics/transformz.hpp"
+#include "physics/transforms.hpp"
 #include "serialization/geometry.pb.h"
 
 // This must come last because apparently it redefines CDECL.
@@ -78,7 +78,7 @@ using physics::DegreesOfFreedom;
 using physics::MassiveBody;
 using physics::MasslessBody;
 using physics::Trajectory;
-using physics::Transformz;
+using physics::Transforms;
 using si::AstronomicalUnit;
 using si::Hour;
 using si::Kilo;
@@ -134,7 +134,7 @@ void FillLinearTrajectory(Position<F> const& initial,
 std::vector<std::pair<Position<World1>,
                       Position<World1>>> ApplyTransform(
     not_null<Body const*> const body,
-    not_null<Transformz<World1, World2, World1>*> const transforms,
+    not_null<Transforms<World1, World2, World1>*> const transforms,
     Trajectory<World1>::TransformingIterator<World2> const& actual_it) {
   std::vector<std::pair<Position<World1>,
                         Position<World1>>> result;
@@ -163,7 +163,7 @@ std::vector<std::pair<Position<World1>,
 }
 
 template<bool cache>
-void BM_TransformzBodyCentredNonRotating(
+void BM_TransformsBodyCentredNonRotating(
     benchmark::State& state) {  // NOLINT(runtime/references)
 
   Time const Δt = 1 * Hour;
@@ -203,7 +203,7 @@ void BM_TransformzBodyCentredNonRotating(
                                            steps,
                                            &probe_trajectory);
 
-  auto transforms = Transformz<World1, World2, World1>::
+  auto transforms = Transforms<World1, World2, World1>::
       BodyCentredNonRotating(earth, earth_trajectory, earth_trajectory);
   while (state.KeepRunning()) {
     if (cache) {
@@ -220,7 +220,7 @@ void BM_TransformzBodyCentredNonRotating(
 }
 
 template<bool cache>
-void BM_TransformzBarycentricRotating(
+void BM_TransformsBarycentricRotating(
     benchmark::State& state) {  // NOLINT(runtime/references)
 
   Time const Δt = 1 * Hour;
@@ -281,7 +281,7 @@ void BM_TransformzBarycentricRotating(
                                            steps,
                                            &probe_trajectory);
 
-  auto transforms = Transformz<World1, World2, World1>::
+  auto transforms = Transforms<World1, World2, World1>::
       BarycentricRotating(earth,
                           earth_trajectory,
                           earth_trajectory,
@@ -304,10 +304,10 @@ void BM_TransformzBarycentricRotating(
 
 int const kIter = (1000 << 10) + 1;
 
-BENCHMARK_TEMPLATE(BM_TransformzBodyCentredNonRotating, false)->Arg(kIter);
-BENCHMARK_TEMPLATE(BM_TransformzBodyCentredNonRotating, true)->Arg(kIter);
-BENCHMARK_TEMPLATE(BM_TransformzBarycentricRotating, false)->Arg(kIter);
-BENCHMARK_TEMPLATE(BM_TransformzBarycentricRotating, true)->Arg(kIter);
+BENCHMARK_TEMPLATE(BM_TransformsBodyCentredNonRotating, false)->Arg(kIter);
+BENCHMARK_TEMPLATE(BM_TransformsBodyCentredNonRotating, true)->Arg(kIter);
+BENCHMARK_TEMPLATE(BM_TransformsBarycentricRotating, false)->Arg(kIter);
+BENCHMARK_TEMPLATE(BM_TransformsBarycentricRotating, true)->Arg(kIter);
 
 }  // namespace benchmarks
 }  // namespace principia

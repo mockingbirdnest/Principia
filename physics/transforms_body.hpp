@@ -3,7 +3,7 @@
 #include <algorithm>
 #include <list>
 
-#include "physics/transformz.hpp"
+#include "physics/transforms.hpp"
 
 #include "base/not_null.hpp"
 #include "geometry/affine_map.hpp"
@@ -114,13 +114,13 @@ void FromStandardBasisToBasisOfLastBarycentricFrame(
 }  // namespace
 
 template<typename FromFrame, typename ThroughFrame, typename ToFrame>
-not_null<std::unique_ptr<Transformz<FromFrame, ThroughFrame, ToFrame>>>
-Transformz<FromFrame, ThroughFrame, ToFrame>::BodyCentredNonRotating(
+not_null<std::unique_ptr<Transforms<FromFrame, ThroughFrame, ToFrame>>>
+Transforms<FromFrame, ThroughFrame, ToFrame>::BodyCentredNonRotating(
     MassiveBody const& centre,
     ContinuousTrajectory<FromFrame> const& from_centre_trajectory,
     ContinuousTrajectory<ToFrame> const& to_centre_trajectory) {
-  not_null<std::unique_ptr<Transformz>> transforms =
-      make_not_null_unique<Transformz>();
+  not_null<std::unique_ptr<Transforms>> transforms =
+      make_not_null_unique<Transforms>();
   transforms->from_hints_.emplace_front();
   transforms->to_hints_.emplace_front();
   auto const from_centre_hint = transforms->from_hints_.begin();
@@ -134,7 +134,7 @@ Transformz<FromFrame, ThroughFrame, ToFrame>::BodyCentredNonRotating(
 
   // From the perspective of the lambda the following variable is really |this|,
   // hence the name.
-  not_null<Transformz*> that = transforms.get();
+  not_null<Transforms*> that = transforms.get();
   transforms->first_ =
       [&from_centre_trajectory, from_centre_hint, that](
           bool const cacheable,
@@ -194,16 +194,16 @@ Transformz<FromFrame, ThroughFrame, ToFrame>::BodyCentredNonRotating(
 }
 
 template<typename FromFrame, typename ThroughFrame, typename ToFrame>
-not_null<std::unique_ptr<Transformz<FromFrame, ThroughFrame, ToFrame>>>
-Transformz<FromFrame, ThroughFrame, ToFrame>::BarycentricRotating(
+not_null<std::unique_ptr<Transforms<FromFrame, ThroughFrame, ToFrame>>>
+Transforms<FromFrame, ThroughFrame, ToFrame>::BarycentricRotating(
     MassiveBody const& primary,
     ContinuousTrajectory<FromFrame> const& from_primary_trajectory,
     ContinuousTrajectory<ToFrame> const& to_primary_trajectory,
     MassiveBody const& secondary,
     ContinuousTrajectory<FromFrame> const& from_secondary_trajectory,
     ContinuousTrajectory<ToFrame> const& to_secondary_trajectory) {
-  not_null<std::unique_ptr<Transformz>> transforms =
-      make_not_null_unique<Transformz>();
+  not_null<std::unique_ptr<Transforms>> transforms =
+      make_not_null_unique<Transforms>();
   transforms->from_hints_.emplace_front();
   transforms->to_hints_.emplace_front();
   auto const from_primary_hint = transforms->from_hints_.begin();
@@ -240,7 +240,7 @@ Transformz<FromFrame, ThroughFrame, ToFrame>::BarycentricRotating(
 
   // From the perspective of the lambda the following variable is really |this|,
   // hence the name.
-  not_null<Transformz*> that = transforms.get();
+  not_null<Transforms*> that = transforms.get();
   transforms->first_ =
       [&primary, &from_primary_trajectory, from_primary_hint,
        &secondary, &from_secondary_trajectory, from_secondary_hint, that](
@@ -341,14 +341,14 @@ Transformz<FromFrame, ThroughFrame, ToFrame>::BarycentricRotating(
 }
 
 template<typename FromFrame, typename ThroughFrame, typename ToFrame>
-not_null<std::unique_ptr<Transformz<FromFrame, ThroughFrame, ToFrame>>>
-Transformz<FromFrame, ThroughFrame, ToFrame>::DummyForTesting() {
-  return make_not_null_unique<Transformz>();
+not_null<std::unique_ptr<Transforms<FromFrame, ThroughFrame, ToFrame>>>
+Transforms<FromFrame, ThroughFrame, ToFrame>::DummyForTesting() {
+  return make_not_null_unique<Transforms>();
 }
 
 template<typename FromFrame, typename ThroughFrame, typename ToFrame>
 typename Trajectory<FromFrame>::template TransformingIterator<ThroughFrame>
-Transformz<FromFrame, ThroughFrame, ToFrame>::first(
+Transforms<FromFrame, ThroughFrame, ToFrame>::first(
     Trajectory<FromFrame> const& from_trajectory) {
   typename Trajectory<FromFrame>::template Transform<ThroughFrame> const first =
       std::bind(first_, false /*cacheable*/, _1, _2, _3);
@@ -357,7 +357,7 @@ Transformz<FromFrame, ThroughFrame, ToFrame>::first(
 
 template<typename FromFrame, typename ThroughFrame, typename ToFrame>
 typename Trajectory<FromFrame>::template TransformingIterator<ThroughFrame>
-Transformz<FromFrame, ThroughFrame, ToFrame>::first_with_caching(
+Transforms<FromFrame, ThroughFrame, ToFrame>::first_with_caching(
     not_null<Trajectory<FromFrame>*> const from_trajectory) {
   // Make sure that the cache entry is deleted when the trajectory is deleted.
   from_trajectory->set_on_destroy(
@@ -372,7 +372,7 @@ Transformz<FromFrame, ThroughFrame, ToFrame>::first_with_caching(
 
 template<typename FromFrame, typename ThroughFrame, typename ToFrame>
 typename Trajectory<FromFrame>::template TransformingIterator<ThroughFrame>
-Transformz<FromFrame, ThroughFrame, ToFrame>::first_on_or_after(
+Transforms<FromFrame, ThroughFrame, ToFrame>::first_on_or_after(
     Trajectory<FromFrame> const& from_trajectory,
     Instant const& time) {
   typename Trajectory<FromFrame>::template Transform<ThroughFrame> const first =
@@ -382,7 +382,7 @@ Transformz<FromFrame, ThroughFrame, ToFrame>::first_on_or_after(
 
 template<typename FromFrame, typename ThroughFrame, typename ToFrame>
 typename Trajectory<ThroughFrame>::template TransformingIterator<ToFrame>
-Transformz<FromFrame, ThroughFrame, ToFrame>::second(
+Transforms<FromFrame, ThroughFrame, ToFrame>::second(
     Instant const& last,
     Trajectory<ThroughFrame> const& through_trajectory) {
   typename Trajectory<ThroughFrame>::template Transform<ToFrame> second =
@@ -392,7 +392,7 @@ Transformz<FromFrame, ThroughFrame, ToFrame>::second(
 
 template<typename FromFrame, typename ThroughFrame, typename ToFrame>
 FrameField<ToFrame>
-Transformz<FromFrame, ThroughFrame, ToFrame>::coordinate_frame(
+Transforms<FromFrame, ThroughFrame, ToFrame>::coordinate_frame(
     Instant const& last) const {
   return std::bind(coordinate_frame_, last, _1);
 }
@@ -400,7 +400,7 @@ Transformz<FromFrame, ThroughFrame, ToFrame>::coordinate_frame(
 template<typename FromFrame, typename ThroughFrame, typename ToFrame>
 template<typename Frame1, typename Frame2>
 bool
-Transformz<FromFrame, ThroughFrame, ToFrame>::Cache<Frame1, Frame2>::
+Transforms<FromFrame, ThroughFrame, ToFrame>::Cache<Frame1, Frame2>::
 Lookup(not_null<Trajectory<Frame1> const*> const trajectory,
        Instant const& time,
        not_null<DegreesOfFreedom<Frame2>**> degrees_of_freedom) {
@@ -424,7 +424,7 @@ Lookup(not_null<Trajectory<Frame1> const*> const trajectory,
 template<typename FromFrame, typename ThroughFrame, typename ToFrame>
 template<typename Frame1, typename Frame2>
 void
-Transformz<FromFrame, ThroughFrame, ToFrame>::Cache<Frame1, Frame2>::Insert(
+Transforms<FromFrame, ThroughFrame, ToFrame>::Cache<Frame1, Frame2>::Insert(
     not_null<Trajectory<Frame1> const*> const trajectory,
        Instant const& time,
        DegreesOfFreedom<Frame2> const& degrees_of_freedom) {
@@ -434,7 +434,7 @@ Transformz<FromFrame, ThroughFrame, ToFrame>::Cache<Frame1, Frame2>::Insert(
 template<typename FromFrame, typename ThroughFrame, typename ToFrame>
 template<typename Frame1, typename Frame2>
 void
-Transformz<FromFrame, ThroughFrame, ToFrame>::Cache<Frame1, Frame2>::Delete(
+Transforms<FromFrame, ThroughFrame, ToFrame>::Cache<Frame1, Frame2>::Delete(
     not_null<Trajectory<Frame1> const*> const trajectory) {
   cache_.erase(trajectory);
 }

@@ -68,14 +68,14 @@
     <ClInclude Include="ephemeris_body.hpp">
       <Filter>Source Files</Filter>
     </ClInclude>
-    <ClInclude Include="transformz.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="transformz_body.hpp">
-      <Filter>Source Files</Filter>
-    </ClInclude>
     <ClInclude Include="mock_ephemeris.hpp">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="transforms.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="transforms_body.hpp">
+      <Filter>Source Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -94,7 +94,7 @@
     <ClCompile Include="ephemeris_test.cpp">
       <Filter>Test Files</Filter>
     </ClCompile>
-    <ClCompile Include="transformz_test.cpp">
+    <ClCompile Include="transforms_test.cpp">
       <Filter>Test Files</Filter>
     </ClCompile>
   </ItemGroup>

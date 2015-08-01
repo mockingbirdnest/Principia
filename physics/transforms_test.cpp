@@ -1,4 +1,4 @@
-#include "physics/transformz.hpp"
+#include "physics/transforms.hpp"
 
 #include <limits>
 
@@ -47,7 +47,7 @@ const Length kTolerance = 0.01 * Metre;  // Not used, see kDegree.
 const int kDegree = 17;
 }  // namespace
 
-class TransformzTest : public testing::Test {
+class TransformsTest : public testing::Test {
  protected:
   using From = Frame<serialization::Frame::TestTag,
                      serialization::Frame::FROM, true>;
@@ -62,7 +62,7 @@ class TransformzTest : public testing::Test {
     CHECK_EQ(1, kNumberOfPoints % 8);
   }
 
-  TransformzTest()
+  TransformsTest()
       : body1_(MassiveBody(1 * Kilogram)),
         body2_(MassiveBody(3 * Kilogram)),
         body1_from_(kStep, kTolerance),
@@ -147,9 +147,9 @@ class TransformzTest : public testing::Test {
 
 // This transform is simple enough that we can compute its effect by hand.  This
 // test verifies that we get the expected result both in |Through| and in |To|.
-TEST_F(TransformzTest, BodyCentredNonRotating) {
+TEST_F(TransformsTest, BodyCentredNonRotating) {
   auto const transforms =
-      Transformz<From, Through, To>::BodyCentredNonRotating(
+      Transforms<From, Through, To>::BodyCentredNonRotating(
           body1_, body1_from_, body1_to_);
 
   int i = 1;
@@ -196,9 +196,9 @@ TEST_F(TransformzTest, BodyCentredNonRotating) {
 }
 
 // Check that the computations we do match those done using Mathematica.
-TEST_F(TransformzTest, SatelliteBarycentricRotating) {
+TEST_F(TransformsTest, SatelliteBarycentricRotating) {
   auto const transforms =
-      Transformz<From, Through, To>::BarycentricRotating(
+      Transforms<From, Through, To>::BarycentricRotating(
           body1_, body1_from_, body1_to_,
           body2_, body2_from_, body2_to_);
   Trajectory<Through> satellite_through(&satellite_);
@@ -249,9 +249,9 @@ TEST_F(TransformzTest, SatelliteBarycentricRotating) {
 // Check that the bodies remain on the invariant line and at the right distance
 // from each other and from the barycentre, and that the barycentre is the
 // centre of the coordinates.
-TEST_F(TransformzTest, BodiesBarycentricRotating) {
+TEST_F(TransformsTest, BodiesBarycentricRotating) {
   auto const transforms =
-      Transformz<From, Through, To>::BarycentricRotating(
+      Transforms<From, Through, To>::BarycentricRotating(
           body1_, body1_from_, body1_to_,
           body2_, body2_from_, body2_to_);
 
@@ -318,11 +318,11 @@ TEST_F(TransformzTest, BodiesBarycentricRotating) {
   }
 }
 
-TEST_F(TransformzTest, CoordinateFrame) {
+TEST_F(TransformsTest, CoordinateFrame) {
   Instant const t(kNumberOfPoints * Second);
   {
     auto const transforms =
-        Transformz<From, Through, To>::BodyCentredNonRotating(
+        Transforms<From, Through, To>::BodyCentredNonRotating(
             body1_, body1_from_, body1_to_);
     auto const identity = Rotation<To, To>::Identity();
     EXPECT_EQ(identity.quaternion(),
@@ -330,7 +330,7 @@ TEST_F(TransformzTest, CoordinateFrame) {
   }
   {
     auto const transforms =
-        Transformz<From, Through, To>::BarycentricRotating(
+        Transforms<From, Through, To>::BarycentricRotating(
             body1_, body1_from_, body1_to_,
             body2_, body2_from_, body2_to_);
 

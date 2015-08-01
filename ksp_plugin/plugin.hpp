@@ -19,7 +19,7 @@
 #include "physics/body.hpp"
 #include "physics/ephemeris.hpp"
 #include "physics/trajectory.hpp"
-#include "physics/transformz.hpp"
+#include "physics/transforms.hpp"
 #include "quantities/quantities.hpp"
 #include "quantities/named_quantities.hpp"
 #include "quantities/si.hpp"
@@ -38,7 +38,7 @@ using physics::Body;
 using physics::Ephemeris;
 using physics::FrameField;
 using physics::Trajectory;
-using physics::Transformz;
+using physics::Transforms;
 using quantities::Angle;
 using si::Hour;
 using si::Metre;
@@ -70,7 +70,7 @@ template<typename Frame>
 using RenderedTrajectory = std::vector<LineSegment<Frame>>;
 
 using RenderingTransforms =
-    Transformz<Barycentric, Rendering, Barycentric>;
+    Transforms<Barycentric, Rendering, Barycentric>;
 
 class Plugin {
  public:

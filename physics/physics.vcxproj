@@ -148,8 +148,8 @@
     <ClInclude Include="oblate_body_body.hpp" />
     <ClInclude Include="trajectory.hpp" />
     <ClInclude Include="trajectory_body.hpp" />
-    <ClInclude Include="transformz.hpp" />
-    <ClInclude Include="transformz_body.hpp" />
+    <ClInclude Include="transforms.hpp" />
+    <ClInclude Include="transforms_body.hpp" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="body_test.cpp" />
@@ -157,7 +157,7 @@
     <ClCompile Include="degrees_of_freedom_test.cpp" />
     <ClCompile Include="ephemeris_test.cpp" />
     <ClCompile Include="trajectory_test.cpp" />
-    <ClCompile Include="transformz_test.cpp" />
+    <ClCompile Include="transforms_test.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\serialization\serialization.vcxproj">
