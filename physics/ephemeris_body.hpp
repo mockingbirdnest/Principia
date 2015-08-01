@@ -64,7 +64,6 @@ class DummyIntegrator
     : public FixedStepSizeIntegrator<
                  typename Ephemeris<Frame>::NewtonianMotionEquation> {
   using ODE = typename Ephemeris<Frame>::NewtonianMotionEquation;
-  //TODO
   DummyIntegrator() : FixedStepSizeIntegrator<ODE>(
       serialization::FixedStepSizeIntegrator::DUMMY) {}
 

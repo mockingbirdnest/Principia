@@ -1,8 +1,9 @@
 ﻿#pragma once
 
-#include "physics/ephemeris.hpp"
+#include <vector>
 
 #include "gmock/gmock.h"
+#include "physics/ephemeris.hpp"
 
 namespace principia {
 namespace physics {
