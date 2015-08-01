@@ -122,7 +122,7 @@ void Plugin::EndInitialization() {
     initial_state.emplace_back(state.second);
   }
   initial_state_.reset();
-  ephemeris_ = std::make_unique<Ephemeris<Barycentric> >(
+  ephemeris_ = std::make_unique<Ephemeris<Barycentric>>(
       std::move(bodies),
       initial_state,
       current_time_,
