@@ -144,14 +144,10 @@
     <ClInclude Include="massless_body.hpp" />
     <ClInclude Include="massless_body_body.hpp" />
     <ClInclude Include="mock_ephemeris.hpp" />
-    <ClInclude Include="n_body_system.hpp" />
-    <ClInclude Include="n_body_system_body.hpp" />
     <ClInclude Include="oblate_body.hpp" />
     <ClInclude Include="oblate_body_body.hpp" />
     <ClInclude Include="trajectory.hpp" />
     <ClInclude Include="trajectory_body.hpp" />
-    <ClInclude Include="transforms.hpp" />
-    <ClInclude Include="transforms_body.hpp" />
     <ClInclude Include="transformz.hpp" />
     <ClInclude Include="transformz_body.hpp" />
   </ItemGroup>
@@ -160,9 +156,7 @@
     <ClCompile Include="continuous_trajectory_test.cpp" />
     <ClCompile Include="degrees_of_freedom_test.cpp" />
     <ClCompile Include="ephemeris_test.cpp" />
-    <ClCompile Include="n_body_system_test.cpp" />
     <ClCompile Include="trajectory_test.cpp" />
-    <ClCompile Include="transforms_test.cpp" />
     <ClCompile Include="transformz_test.cpp" />
   </ItemGroup>
   <ItemGroup>
