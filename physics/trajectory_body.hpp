@@ -296,8 +296,12 @@ Vector<Acceleration, Frame> Trajectory<Frame>::evaluate_intrinsic_acceleration(
 template<typename Frame>
 void Trajectory<Frame>::WriteToMessage(
     not_null<serialization::Trajectory*> const message) const {
+  LOG(INFO) << __FUNCTION__;
   CHECK(is_root());
   WriteSubTreeToMessage(message);
+  LOG(INFO) << NAMED(this);
+  LOG(INFO) << NAMED(message->SpaceUsed());
+  LOG(INFO) << NAMED(message->ByteSize());
 }
 
 template<typename Frame>
