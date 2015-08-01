@@ -152,9 +152,9 @@ TEST_F(EphemerisTest, EarthMoon) {
   ephemeris.Prolong(t0_ + period);
 
   ContinuousTrajectory<EarthMoonOrbitPlane> const& earth_trajectory =
-      ephemeris.trajectory(earth);
+      *ephemeris.trajectory(earth);
   ContinuousTrajectory<EarthMoonOrbitPlane> const& moon_trajectory =
-      ephemeris.trajectory(moon);
+      *ephemeris.trajectory(moon);
 
   ContinuousTrajectory<EarthMoonOrbitPlane>::Hint hint;
   std::vector<Displacement<EarthMoonOrbitPlane>> earth_positions;
@@ -208,7 +208,7 @@ TEST_F(EphemerisTest, Moon) {
   ephemeris.Prolong(t0_ + period);
 
   ContinuousTrajectory<EarthMoonOrbitPlane> const& moon_trajectory =
-      ephemeris.trajectory(moon);
+      *ephemeris.trajectory(moon);
 
   ContinuousTrajectory<EarthMoonOrbitPlane>::Hint hint;
   DegreesOfFreedom<EarthMoonOrbitPlane> const moon_degrees_of_freedom =
@@ -290,7 +290,7 @@ TEST_F(EphemerisTest, EarthProbe) {
                                  t0_ + period);
 
   ContinuousTrajectory<EarthMoonOrbitPlane> const& earth_trajectory =
-      ephemeris.trajectory(earth);
+      *ephemeris.trajectory(earth);
 
   ContinuousTrajectory<EarthMoonOrbitPlane>::Hint hint;
   DegreesOfFreedom<EarthMoonOrbitPlane> const earth_degrees_of_freedom =
@@ -397,7 +397,7 @@ TEST_F(EphemerisTest, EarthTwoProbes) {
                               t0_ + period);
 
   ContinuousTrajectory<EarthMoonOrbitPlane> const& earth_trajectory =
-      ephemeris.trajectory(earth);
+      *ephemeris.trajectory(earth);
 
   ContinuousTrajectory<EarthMoonOrbitPlane>::Hint hint;
   DegreesOfFreedom<EarthMoonOrbitPlane> const earth_degrees_of_freedom =
@@ -577,7 +577,7 @@ TEST_F(EphemerisTest, Sputnik1ToSputnik2) {
   for (std::size_t i = 0; i < unowned_bodies.size(); ++i) {
     SolarSystem::Index const index = static_cast<SolarSystem::Index>(i);
     ContinuousTrajectory<ICRFJ2000Ecliptic> const& trajectory =
-        ephemeris.trajectory(unowned_bodies[i]);
+        *ephemeris.trajectory(unowned_bodies[i]);
     double const position_error = RelativeError(
         final_state[i].position() - kSolarSystemBarycentre,
         trajectory.EvaluatePosition(at_спутник_2_launch->time(), nullptr) -
@@ -602,7 +602,7 @@ TEST_F(EphemerisTest, Sputnik1ToSputnik2) {
               last().degrees_of_freedom().position();
       Vector<Length, ICRFJ2000Ecliptic> actual =
           trajectory.EvaluatePosition(at_спутник_2_launch->time(), nullptr) -
-          ephemeris.trajectory(unowned_bodies[SolarSystem::parent(i)]).
+          ephemeris.trajectory(unowned_bodies[SolarSystem::parent(i)])->
               EvaluatePosition(at_спутник_2_launch->time(), nullptr);
       if (expected_angle_error.find(index) != expected_angle_error.end()) {
         Area const product_of_norms = expected.Norm() * actual.Norm();
@@ -675,13 +675,13 @@ TEST_F(EphemerisTest, Serialization) {
   for (Instant time = ephemeris.t_min();
        time <= ephemeris.t_max();
        time += (ephemeris.t_max() - ephemeris.t_min()) / 100) {
-    EXPECT_EQ(ephemeris.trajectory(earth).EvaluateDegreesOfFreedom(
+    EXPECT_EQ(ephemeris.trajectory(earth)->EvaluateDegreesOfFreedom(
                   time, nullptr /*hint*/),
-              ephemeris_read->trajectory(earth_read).EvaluateDegreesOfFreedom(
+              ephemeris_read->trajectory(earth_read)->EvaluateDegreesOfFreedom(
                   time, nullptr /*hint*/));
-    EXPECT_EQ(ephemeris.trajectory(moon).EvaluateDegreesOfFreedom(
+    EXPECT_EQ(ephemeris.trajectory(moon)->EvaluateDegreesOfFreedom(
                   time, nullptr /*hint*/),
-              ephemeris_read->trajectory(moon_read).EvaluateDegreesOfFreedom(
+              ephemeris_read->trajectory(moon_read)->EvaluateDegreesOfFreedom(
                   time, nullptr /*hint*/));
   }
 

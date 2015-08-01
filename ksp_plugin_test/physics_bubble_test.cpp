@@ -1,4 +1,4 @@
-#include "ksp_plugin/physics_bubble.hpp"
+﻿#include "ksp_plugin/physics_bubble.hpp"
 
 #include <map>
 #include <string>
@@ -29,6 +29,7 @@ using quantities::Speed;
 using quantities::SIUnit;
 using quantities::Time;
 using si::Degree;
+using si::Second;
 using testing_utilities::AlmostEquals;
 using testing_utilities::Componentwise;
 using testing_utilities::VanishesBefore;
@@ -66,7 +67,9 @@ class PhysicsBubbleTest : public testing::Test {
             Velocity<Barycentric>({204 * SIUnit<Speed>(),
                                    205 * SIUnit<Speed>(),
                                    206 * SIUnit<Speed>()})),
-      celestial_(make_not_null_unique<MassiveBody>(100 * SIUnit<Mass>())),
+      body_(100 * SIUnit<Mass>()),
+      celestial_(&body_),
+      celestial_trajectory_(1 * Second, 1 * Metre),
       celestial_world_position_(Position<World>(Displacement<World>(
                                     {99 * SIUnit<Length>(),
                                      98 * SIUnit<Length>(),
@@ -76,7 +79,13 @@ class PhysicsBubbleTest : public testing::Test {
       t1_(1 * SIUnit<Time>()),
       t2_(1.5 * SIUnit<Time>()),
       t3_(2 * SIUnit<Time>()) {
-    celestial_.CreateHistoryAndForkProlongation(t1_, celestial_dof_);
+    celestial_.set_trajectory(&celestial_trajectory_);
+    for (int i = 0; i < 9; ++i) {
+      celestial_trajectory_.Append(t1_ + i * Second,
+                                   {celestial_dof_.position() +
+                                        i * Second * celestial_dof_.velocity(),
+                                    celestial_dof_.velocity()});
+    }
     vessel1_.CreateProlongation(t1_, dof1_);
     vessel2_.CreateProlongation(t1_, dof2_);
 
@@ -181,11 +190,25 @@ class PhysicsBubbleTest : public testing::Test {
         bubble.mutable_centre_of_mass_trajectory();
     EXPECT_EQ(dof1_, mutable_trajectory->last().degrees_of_freedom());
 
-    EXPECT_THAT(bubble.DisplacementCorrection(
-                    rotation_, celestial_, celestial_world_position_),
-                AlmostEquals(Displacement<World>({-25 * SIUnit<Length>(),
-                                                  191 * SIUnit<Length>(),
-                                                  193 * SIUnit<Length>()}), 8));
+    if (mutable_trajectory->last().time() == t1_) {
+      EXPECT_THAT(bubble_.DisplacementCorrection(
+                      rotation_, celestial_, celestial_world_position_),
+                  AlmostEquals(
+                      Displacement<World>({-25 * SIUnit<Length>(),
+                                           191 * SIUnit<Length>(),
+                                           193 * SIUnit<Length>()}),
+                      8));;
+    } else if (mutable_trajectory->last().time() == t2_) {
+      EXPECT_THAT(bubble_.DisplacementCorrection(
+                      rotation_, celestial_, celestial_world_position_),
+                  AlmostEquals(
+                      Displacement<World>({-27.5 * SIUnit<Length>(),
+                                           193 * SIUnit<Length>(),
+                                           196 * SIUnit<Length>()}),
+                      8));
+    } else {
+      ADD_FAILURE() << "unexpected last time";
+    }
     EXPECT_THAT(bubble.VelocityCorrection(rotation_, celestial_),
                 AlmostEquals(Velocity<World>(
                     {(-110.0 - 2742.0 / 23.0) * SIUnit<Speed>(),
@@ -266,7 +289,9 @@ class PhysicsBubbleTest : public testing::Test {
   std::unique_ptr<Part<World>> p2a_;
   std::unique_ptr<Part<World>> p2b_;
   std::unique_ptr<Part<World>> p2c_;
+  MassiveBody body_;
   Celestial celestial_;
+  ContinuousTrajectory<Barycentric> celestial_trajectory_;
   Position<World> celestial_world_position_;
   Vessel vessel1_;
   Vessel vessel2_;
@@ -291,7 +316,9 @@ TEST_F(PhysicsBubbleDeathTest, EmptyError) {
     bubble_.mutable_centre_of_mass_trajectory();
   }, "Empty bubble");
   EXPECT_DEATH({
-    bubble_.DisplacementCorrection(rotation_, celestial_, Position<World>());
+    bubble_.DisplacementCorrection(rotation_,
+                                   celestial_,
+                                   Position<World>());
   }, "Empty bubble");
   EXPECT_DEATH({
     bubble_.VelocityCorrection(rotation_, celestial_);
@@ -300,7 +327,7 @@ TEST_F(PhysicsBubbleDeathTest, EmptyError) {
 
 TEST_F(PhysicsBubbleTest, EmptySuccess) {
   EXPECT_TRUE(bubble_.empty());
-  EXPECT_EQ(0, bubble_.size());
+  EXPECT_EQ(0, bubble_.count());
   EXPECT_EQ(0, bubble_.number_of_vessels());
   EXPECT_FALSE(bubble_.contains(&vessel1_));
   // Check that the following doesn't fail.  It does mostly nothing.
@@ -427,9 +454,9 @@ TEST_F(PhysicsBubbleTest, OneVesselPartRemoved) {
   // bit more precise (probably because we do less computations).
   EXPECT_THAT(bubble_.DisplacementCorrection(
                   rotation_, celestial_, celestial_world_position_),
-              AlmostEquals(Displacement<World>({-25 * SIUnit<Length>(),
-                                                191 * SIUnit<Length>(),
-                                                193 * SIUnit<Length>()}), 8));
+              AlmostEquals(Displacement<World>({-27.5 * SIUnit<Length>(),
+                                                193 * SIUnit<Length>(),
+                                                196 * SIUnit<Length>()}), 8));
   EXPECT_THAT(bubble_.VelocityCorrection(rotation_, celestial_),
               AlmostEquals(Velocity<World>(
                   {(-110.0 - 2742.0 / 23.0) * SIUnit<Speed>(),
@@ -485,9 +512,9 @@ TEST_F(PhysicsBubbleTest, OneVesselPartAdded) {
 
   EXPECT_THAT(bubble_.DisplacementCorrection(
                   rotation_, celestial_, celestial_world_position_),
-              AlmostEquals(Displacement<World>({-25 * SIUnit<Length>(),
-                                                191 * SIUnit<Length>(),
-                                                193 * SIUnit<Length>()}), 8));
+              AlmostEquals(Displacement<World>({-27.5 * SIUnit<Length>(),
+                                                193 * SIUnit<Length>(),
+                                                196 * SIUnit<Length>()}), 8));
   EXPECT_THAT(bubble_.VelocityCorrection(rotation_, celestial_),
               AlmostEquals(Velocity<World>(
                   {-234 * SIUnit<Speed>(),

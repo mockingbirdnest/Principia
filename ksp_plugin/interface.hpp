@@ -6,11 +6,11 @@
 #include "base/pull_serializer.hpp"
 #include "base/push_deserializer.hpp"
 #include "ksp_plugin/plugin.hpp"
-#include "physics/transforms.hpp"
+#include "physics/transformz.hpp"
 
 namespace principia {
 
-using physics::Transforms;
+using physics::Transformz;
 
 namespace ksp_plugin {
 
@@ -266,8 +266,12 @@ void CDECL principia__set_prediction_length(Plugin* const plugin,
                                             double const t);
 
 extern "C" DLLEXPORT
-void CDECL principia__set_prediction_step(Plugin* const plugin,
-                                          double const t);
+void CDECL principia__set_prediction_length_tolerance(Plugin* const plugin,
+                                                      double const t);
+
+extern "C" DLLEXPORT
+void CDECL principia__set_prediction_speed_tolerance(Plugin* const plugin,
+                                                     double const t);
 
 extern "C" DLLEXPORT
 bool CDECL principia__has_vessel(Plugin* const plugin,

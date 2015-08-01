@@ -15,9 +15,11 @@ namespace ksp_plugin {
 class VesselTest : public testing::Test {
  protected:
   VesselTest()
-      : parent_(make_not_null_unique<MassiveBody>(1 * Kilogram)),
+      : body_(1 * Kilogram),
+        parent_(&body_),
         vessel_(make_not_null_unique<Vessel>(&parent_)) {}
 
+  MassiveBody body_;
   Celestial parent_;
   not_null<std::unique_ptr<Vessel>> vessel_;
   DegreesOfFreedom<Barycentric> d1_ =

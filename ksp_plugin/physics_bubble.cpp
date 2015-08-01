@@ -137,8 +137,8 @@ Displacement<World> PhysicsBubble::DisplacementCorrection(
           Identity<WorldSun, World>()(barycentric_to_world_sun(
               current_->centre_of_mass_trajectory->
                   last().degrees_of_freedom().position() -
-              reference_celestial.prolongation().
-                  last().degrees_of_freedom().position())) +
+              reference_celestial.current_position(
+                  current_->centre_of_mass_trajectory->last().time()))) +
           reference_celestial_world_position -
               current_->centre_of_mass->position());
   }
@@ -156,8 +156,8 @@ Velocity<World> PhysicsBubble::VelocityCorrection(
             Identity<WorldSun, World>()(barycentric_to_world_sun(
                 current_->centre_of_mass_trajectory->
                     last().degrees_of_freedom().velocity() -
-                reference_celestial.prolongation().
-                    last().degrees_of_freedom().velocity())) -
+                reference_celestial.current_velocity(
+                    current_->centre_of_mass_trajectory->last().time()))) -
             current_->centre_of_mass->velocity());
   }
   VLOG_AND_RETURN(1, *current_->velocity_correction);
@@ -167,7 +167,7 @@ bool PhysicsBubble::empty() const {
   return current_ == nullptr;
 }
 
-std::size_t PhysicsBubble::size() const {
+std::size_t PhysicsBubble::count() const {
   return empty() ? 0 : 1;
 }
 

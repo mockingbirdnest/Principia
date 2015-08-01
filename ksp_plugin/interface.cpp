@@ -333,9 +333,14 @@ void principia__set_prediction_length(Plugin* const plugin,
   CHECK_NOTNULL(plugin)->set_prediction_length(t * Second);
 }
 
-void principia__set_prediction_step(Plugin* const plugin,
-                                    double const t) {
-  CHECK_NOTNULL(plugin)->set_prediction_step(t * Second);
+void principia__set_prediction_length_tolerance(Plugin* const plugin,
+                                                double const t) {
+  CHECK_NOTNULL(plugin)->set_prediction_length_tolerance(t * Metre);
+}
+
+void principia__set_prediction_speed_tolerance(Plugin* const plugin,
+                                               double const t) {
+  CHECK_NOTNULL(plugin)->set_prediction_speed_tolerance(t * Metre / Second);
 }
 
 bool principia__has_vessel(Plugin* const plugin,

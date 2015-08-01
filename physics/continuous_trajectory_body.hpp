@@ -107,6 +107,11 @@ void ContinuousTrajectory<Frame>::Append(
 
 template<typename Frame>
 void ContinuousTrajectory<Frame>::ForgetBefore(Instant const& time) {
+  if (time < t_min()) {
+    // TODO(phl): test for this case, it yielded a check failure in
+    // |FindSeriesForInstant|.
+    return;
+  }
   series_.erase(series_.begin(), FindSeriesForInstant(time));
 
   // If there are no |series_| left, clear everything.  Otherwise, update the

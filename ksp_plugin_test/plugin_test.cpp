@@ -1,5 +1,4 @@
-﻿
-#include "ksp_plugin/plugin.hpp"
+﻿#include "ksp_plugin/plugin.hpp"
 
 #include <algorithm>
 #include <cmath>
@@ -12,7 +11,7 @@
 #include "geometry/permutation.hpp"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
-#include "physics/mock_n_body_system.hpp"
+#include "physics/mock_ephemeris.hpp"
 #include "quantities/si.hpp"
 #include "testing_utilities/almost_equals.hpp"
 #include "testing_utilities/componentwise.hpp"
@@ -24,7 +23,7 @@ namespace principia {
 using geometry::Bivector;
 using geometry::Permutation;
 using geometry::Trivector;
-using physics::MockNBodySystem;
+using physics::MockEphemeris;
 using quantities::Abs;
 using quantities::ArcTan;
 using quantities::Cos;
@@ -62,13 +61,13 @@ int const kNotABody = 1729;
 
 // Appends a |DegreesOfFreedom| equal to the last one at the given |time| to
 // each |Trajectory| in the |k|th parameter of the expected call.
-// This parameter must be an |NBodySystem<Barycentric>::Trajectories|, |time|
-// must be an |Instant|.
+// This parameter must be a |Trajectories|, |time| must be an |Instant|.
 ACTION_TEMPLATE(AppendTimeToTrajectories,
                 HAS_1_TEMPLATE_PARAMS(int, k),
                 AND_1_VALUE_PARAMS(time)) {
-  for (auto trajectory : static_cast<NBodySystem<Barycentric>::Trajectories>(
-                             std::tr1::get<k>(args))) {
+  for (auto trajectory :
+          static_cast<std::vector<not_null<Trajectory<Barycentric>*>>>(
+              std::tr1::get<k>(args))) {
     trajectory->Append(time, trajectory->last().degrees_of_freedom());
   }
 }
@@ -76,12 +75,12 @@ ACTION_TEMPLATE(AppendTimeToTrajectories,
 MATCHER_P(HasNonvanishingIntrinsicAccelerationAt, t, "") {
   if (arg->has_intrinsic_acceleration()) {
     if (arg->evaluate_intrinsic_acceleration(t) ==
-        Vector<Acceleration, Barycentric>()) {
-       *result_listener << "has vanishing intrinsic acceleration at";
-       return false;
+            Vector<Acceleration, Barycentric>()) {
+      *result_listener << "has vanishing intrinsic acceleration at";
+      return false;
     } else {
-       *result_listener << "has nonvanishing intrinsic acceleration at";
-       return true;
+      *result_listener << "has nonvanishing intrinsic acceleration at";
+      return true;
     }
   }
   *result_listener << "has no intrinsic acceleration";
@@ -91,32 +90,62 @@ MATCHER_P(HasNonvanishingIntrinsicAccelerationAt, t, "") {
 }  // namespace
 
 class TestablePlugin : public Plugin {
+  std::map<Index, ContinuousTrajectory<Barycentric>> trajectories_;
+  std::unique_ptr<StrictMock<MockEphemeris<Barycentric>>> mock_ephemeris_;
+
  public:
-  // Takes ownership of |n_body_system|.
-  // TODO(phl): We'd like to pass a |unique_ptr<>| but that seems to confuse
-  // gMock.
   TestablePlugin(Instant const& initial_time,
                  Index const sun_index,
                  GravitationalParameter const& sun_gravitational_parameter,
-                 Angle const& planetarium_rotation,
-                 not_null<MockNBodySystem<Barycentric>*> const n_body_system)
+                 Angle const& planetarium_rotation)
       : Plugin(initial_time,
                sun_index,
                sun_gravitational_parameter,
-               planetarium_rotation) {
-    n_body_system_.reset(n_body_system);
+               planetarium_rotation),
+        mock_ephemeris_(
+            std::make_unique<StrictMock<MockEphemeris<Barycentric>>>()) {}
+
+  // We need to override |EndInitialization in order to create a |MockEphemeris|
+  // rather than an |Ephemeris|, and in order to fill in the continuous
+  // trajectories ourselves.
+  void EndInitialization() override {
+    initializing_.Flop();
+    std::vector<not_null<std::unique_ptr<MassiveBody const>>> bodies;
+    std::vector<DegreesOfFreedom<Barycentric>> initial_state;
+    auto bodies_it = bodies_->begin();
+    for (auto const& index_state : *initial_state_) {
+      EXPECT_EQ(index_state.first, bodies_it->first);
+      auto const inserted =
+          trajectories_.emplace(std::piecewise_construct,
+                                std::forward_as_tuple(index_state.first),
+                                std::forward_as_tuple(45 * Minute,
+                                                      1 * Milli(Metre)));
+      EXPECT_TRUE(inserted.second);
+      for (int i = 0; i < 9; ++i) {
+        inserted.first->second.Append(
+            current_time_ + i * 45 * Minute,
+            {index_state.second.position() +
+                 i * 45 * Minute * index_state.second.velocity(),
+             index_state.second.velocity()});
+      }
+      ++bodies_it;
+    }
+    bodies_.reset();
+    initial_state_.reset();
+    ephemeris_ = std::move(mock_ephemeris_);
+    for (auto const& index_celestial : celestials_) {
+      auto const& index = index_celestial.first;
+      auto& celestial = *index_celestial.second;
+      celestial.set_trajectory(&FindOrDie(trajectories_, index));
+    }
   }
 
   Time const& Δt() const {
     return Δt_;
   }
 
-  SRKNIntegrator const& prolongation_integrator() const {
-    return *prolongation_integrator_;
-  }
-
-  SRKNIntegrator const& history_integrator() const {
-    return *history_integrator_;
+  StrictMock<MockEphemeris<Barycentric>>* mock_ephemeris() const {
+    return mock_ephemeris_.get();
   }
 };
 
@@ -124,20 +153,19 @@ class PluginTest : public testing::Test {
  protected:
   PluginTest()
       : looking_glass_(Permutation<ICRFJ2000Ecliptic, AliceSun>::XZY),
-        n_body_system_(new MockNBodySystem<Barycentric>()),
         solar_system_(SolarSystem::AtСпутник1Launch(
             SolarSystem::Accuracy::kMajorBodiesOnly)),
         bodies_(solar_system_->massive_bodies()),
-        initial_time_(solar_system_->trajectories().front()->last().time()),
+        initial_time_(42 * Second),
         sun_gravitational_parameter_(
             bodies_[SolarSystem::kSun]->gravitational_parameter()),
         planetarium_rotation_(1 * Radian),
-        plugin_(make_not_null_unique<StrictMock<TestablePlugin>>(
+        plugin_(make_not_null_unique<TestablePlugin>(
                     initial_time_,
                     SolarSystem::kSun,
                     sun_gravitational_parameter_,
-                    planetarium_rotation_,
-                    n_body_system_)) {
+                    planetarium_rotation_)) {
+    mock_ephemeris_ = plugin_->mock_ephemeris();
     satellite_initial_displacement_ =
         Displacement<AliceSun>({3111.0 * Kilo(Metre),
                                 4400.0 * Kilo(Metre),
@@ -175,8 +203,8 @@ class PluginTest : public testing::Test {
 
   // The time of the |step|th synchronized history step of |plugin_|.
   // |HistoryTime(0)| is |initial_time_|.
-  Instant HistoryTime(int const step) {
-    return initial_time_ + step * plugin_->Δt();
+  Instant HistoryTime(Instant const sync_time, int const step) {
+    return sync_time + step * plugin_->Δt();
   }
 
   // Keeps the vessel with the given |guid| during the next call to
@@ -193,26 +221,28 @@ class PluginTest : public testing::Test {
   // Increments the counter |*number_of_new_vessels|.  |number_of_new_vessels|
   // must not be null.
   void InsertVessel(GUID const& guid,
-                    std::size_t* const number_of_new_vessels) {
+                    not_null<std::size_t*> const number_of_new_vessels,
+                    Instant const& time) {
     bool const inserted = plugin_->InsertOrKeepVessel(guid,
                                                       SolarSystem::kEarth);
     EXPECT_TRUE(inserted) << guid;
+    EXPECT_CALL(*mock_ephemeris_, Prolong(time)).RetiresOnSaturation();
     plugin_->SetVesselStateOffset(guid,
                                   RelativeDegreesOfFreedom<AliceSun>(
                                       satellite_initial_displacement_,
                                       satellite_initial_velocity_));
-    ++*CHECK_NOTNULL(number_of_new_vessels);
+    ++*number_of_new_vessels;
   }
 
   Permutation<ICRFJ2000Ecliptic, AliceSun> looking_glass_;
-  not_null<MockNBodySystem<Barycentric>*> n_body_system_;  // Not owned.
+  StrictMock<MockEphemeris<Barycentric>>* mock_ephemeris_;
   not_null<std::unique_ptr<SolarSystem>> solar_system_;
   SolarSystem::Bodies bodies_;
   Instant initial_time_;
   GravitationalParameter sun_gravitational_parameter_;
   Angle planetarium_rotation_;
 
-  not_null<std::unique_ptr<StrictMock<TestablePlugin>>> plugin_;
+  not_null<std::unique_ptr<TestablePlugin>> plugin_;
 
   // These initial conditions will yield a low circular orbit around Earth.
   Displacement<AliceSun> satellite_initial_displacement_;
@@ -264,12 +294,17 @@ TEST_F(PluginTest, Serialization) {
                                    satellite_initial_displacement_,
                                    satellite_initial_velocity_));
 
-  // Add a couple of points to the history and then forget some of them.  This
+  Instant const& sync_time = initial_time_ + 1 * Second;
+  // Sync.
+  plugin->AdvanceTime(sync_time, Angle());
+
+  // Add a handful of points to the history and then forget some of them.  This
   // is the most convenient way to check that forgetting works as expected.
-  plugin->AdvanceTime(HistoryTime(3), Angle());
   plugin->InsertOrKeepVessel(satellite, SolarSystem::kEarth);
-  plugin->AdvanceTime(HistoryTime(6), Angle());
-  plugin->ForgetAllHistoriesBefore(HistoryTime(3));
+  plugin->AdvanceTime(HistoryTime(sync_time, 3), Angle());
+  plugin->InsertOrKeepVessel(satellite, SolarSystem::kEarth);
+  plugin->AdvanceTime(HistoryTime(sync_time, 6), Angle());
+  plugin->ForgetAllHistoriesBefore(HistoryTime(sync_time, 3));
 
   serialization::Plugin message;
   plugin->WriteToMessage(&message);
@@ -278,18 +313,21 @@ TEST_F(PluginTest, Serialization) {
   plugin->WriteToMessage(&second_message);
   EXPECT_EQ(message.SerializeAsString(), second_message.SerializeAsString());
   EXPECT_EQ(bodies_.size(), message.celestial_size());
-  auto const& celestial_0_history =
-      message.celestial(0).celestial().history_and_prolongation().history();
-  EXPECT_EQ(1, celestial_0_history.timeline_size());
-  EXPECT_EQ((HistoryTime(6) - Instant()) / (1 * Second),
-            celestial_0_history.timeline(0).instant().scalar().magnitude());
+
+  EXPECT_FALSE(message.celestial(0).has_parent_index());
+  EXPECT_EQ(message.celestial(0).index(), message.celestial(1).parent_index());
+
+  EXPECT_EQ(
+      HistoryTime(sync_time, 3),
+      Instant::ReadFromMessage(message.ephemeris().trajectory(0).first_time()));
+
   EXPECT_EQ(1, message.vessel_size());
   EXPECT_EQ(SolarSystem::kEarth, message.vessel(0).parent_index());
   EXPECT_TRUE(message.vessel(0).vessel().has_history_and_prolongation());
   auto const& vessel_0_history =
       message.vessel(0).vessel().history_and_prolongation().history();
-  EXPECT_EQ(1, vessel_0_history.timeline_size());
-  EXPECT_EQ((HistoryTime(6) - Instant()) / (1 * Second),
+  EXPECT_EQ(3, vessel_0_history.timeline_size());
+  EXPECT_EQ((HistoryTime(sync_time, 4) - Instant()) / (1 * Second),
             vessel_0_history.timeline(0).instant().scalar().magnitude());
   EXPECT_FALSE(message.bubble().has_current());
 }
@@ -310,10 +348,10 @@ TEST_F(PluginTest, Initialization) {
                 Componentwise(
                     AlmostEquals(looking_glass_.Inverse()(
                             plugin_->CelestialFromParent(index).displacement()),
-                        1, 216320),
+                        1, 278784),
                     AlmostEquals(looking_glass_.Inverse()(
                             plugin_->CelestialFromParent(index).velocity()),
-                        0, 936)));
+                        0, 1643885)));
   }
 }
 
@@ -396,6 +434,7 @@ TEST_F(PluginDeathTest, SetVesselStateOffsetError) {
     InsertAllSolarSystemBodies();
     plugin_->EndInitialization();
     plugin_->InsertOrKeepVessel(guid, SolarSystem::kSun);
+    EXPECT_CALL(*mock_ephemeris_, Prolong(initial_time_));
     plugin_->SetVesselStateOffset(guid,
                                   RelativeDegreesOfFreedom<AliceSun>(
                                       satellite_initial_displacement_,
@@ -414,15 +453,15 @@ TEST_F(PluginDeathTest, AdvanceTimeError) {
   }, "Check failed: !initializing");
 }
 
+
 TEST_F(PluginDeathTest, ForgetAllHistoriesBeforeError) {
   EXPECT_DEATH({
-    EXPECT_CALL(*n_body_system_, Integrate(_, _, _, _, _, _)).Times(2);
-    Instant const t(1 * Second);
+    Instant const t = initial_time_ + 100 * Second;
     InsertAllSolarSystemBodies();
     plugin_->EndInitialization();
     plugin_->AdvanceTime(t, Angle());
     plugin_->ForgetAllHistoriesBefore(t);
-  }, "Check failed: t < HistoryTime");
+  }, "Check failed: t < history_time_");
 }
 
 TEST_F(PluginDeathTest, VesselFromParentError) {
@@ -468,6 +507,7 @@ TEST_F(PluginTest, VesselInsertionAtInitialization) {
   bool const inserted = plugin_->InsertOrKeepVessel(guid,
                                                     SolarSystem::kEarth);
   EXPECT_TRUE(inserted);
+  EXPECT_CALL(*mock_ephemeris_, Prolong(initial_time_));
   plugin_->SetVesselStateOffset(guid,
                                 RelativeDegreesOfFreedom<AliceSun>(
                                     satellite_initial_displacement_,
@@ -480,37 +520,24 @@ TEST_F(PluginTest, VesselInsertionAtInitialization) {
 
 // Checks that the plugin correctly uses its 10-second-step history even when
 // advanced with smaller timesteps.
+// This now checks that we do nothing but prolong, since there are no vessels.
 TEST_F(PluginTest, AdvanceTimeWithCelestialsOnly) {
   InsertAllSolarSystemBodies();
   plugin_->EndInitialization();
   Time const δt = 0.02 * Second;
   Angle const planetarium_rotation = 42 * Radian;
   for (int step = 0; step < 10; ++step) {
-    for (Instant t = HistoryTime(step) + 2 * δt;
-         t <= HistoryTime(step + 1);
+    for (Instant t = HistoryTime(initial_time_, step) + 2 * δt;
+         t <= HistoryTime(initial_time_, step + 1);
          t += δt) {
-      // Called to compute the prolongations.
-      EXPECT_CALL(*n_body_system_,
-                  Integrate(Ref(plugin_->prolongation_integrator()), t,
-                            plugin_->Δt(), 0, true, SizeIs(bodies_.size())))
-          .RetiresOnSaturation();
+      EXPECT_CALL(*mock_ephemeris_, Prolong(t)).RetiresOnSaturation();
       plugin_->AdvanceTime(t, planetarium_rotation);
     }
-    // Called to advance the synchronized histories.
-    EXPECT_CALL(*n_body_system_,
-                Integrate(Ref(plugin_->history_integrator()),
-                          HistoryTime(step + 1) + δt,
-                          plugin_->Δt(), 0, false,
-                          SizeIs(bodies_.size())))
-        .WillOnce(AppendTimeToTrajectories<5>(HistoryTime(step + 1)))
+    EXPECT_CALL(*mock_ephemeris_,
+                Prolong(HistoryTime(initial_time_, step + 1) + δt))
         .RetiresOnSaturation();
-    // Called to compute the prolongations.
-    EXPECT_CALL(*n_body_system_,
-                Integrate(Ref(plugin_->prolongation_integrator()),
-                          HistoryTime(step + 1) + δt, plugin_->Δt(), 0, true,
-                          SizeIs(bodies_.size())))
-        .RetiresOnSaturation();
-    plugin_->AdvanceTime(HistoryTime(step + 1) + δt, planetarium_rotation);
+    plugin_->AdvanceTime(HistoryTime(initial_time_, step + 1) + δt,
+                         planetarium_rotation);
   }
 }
 
@@ -529,9 +556,9 @@ TEST_F(PluginTest, AdvanceTimeWithCelestialsOnly) {
 // * |HistoryTime(2)|               : Insert |constantinople|.
 // * |HistoryTime(3)|               : Remove |enterprise|.
 TEST_F(PluginTest, AdvanceTimeWithVessels) {
-  Time const δt = 0.02 * Second;
-  Time const a_while = 10 * δt;
-  Time const half_a_step = 250 * δt;
+  Time const δt = 1 * Second;
+  Time const a_while = 2 * δt;
+  Time const half_a_step = 5 * δt;
   Time const ε_δt = 0.1 * δt;
   EXPECT_THAT(half_a_step, Eq(plugin_->Δt() / 2));
   GUID const enterprise = "NCC-1701";
@@ -544,48 +571,66 @@ TEST_F(PluginTest, AdvanceTimeWithVessels) {
   Angle const planetarium_rotation = 42 * Radian;
   std::size_t expected_number_of_new_vessels = 0;
   std::size_t expected_number_of_old_vessels = 0;
+  InSequence in_sequence;
   EXPECT_FALSE(plugin_->has_vessel(enterprise));
-  InsertVessel(enterprise, &expected_number_of_new_vessels);
+  Instant sync_time = initial_time_;
+  InsertVessel(enterprise,
+               &expected_number_of_new_vessels,
+               HistoryTime(sync_time, 0));
   EXPECT_TRUE(plugin_->has_vessel(enterprise));
+  EXPECT_CALL(*mock_ephemeris_,
+              Prolong(HistoryTime(sync_time, 0) + δt))
+      .RetiresOnSaturation();
+  // Called to compute the prolongation.
+  EXPECT_CALL(*mock_ephemeris_,
+              FlowWithAdaptiveStep(_, _, _, _, HistoryTime(sync_time, 0) + δt))
+      .RetiresOnSaturation();
+  // Therer are no old vessels, this will make all the new vessels old
+  // instantly without performing any syncing computations.
+  plugin_->AdvanceTime(HistoryTime(sync_time, 0) + δt, planetarium_rotation);
+  expected_number_of_old_vessels = expected_number_of_new_vessels;
+  expected_number_of_new_vessels = 0;
+  sync_time = HistoryTime(sync_time, 0) + δt;
   for (int step = 0; step < 10; ++step) {
-    for (Instant t = HistoryTime(step) + 2 * δt;
-         t <= HistoryTime(step + 1);
+    for (Instant t = HistoryTime(sync_time, step) + 2 * δt;
+         t < HistoryTime(sync_time, step + 1);
          t += δt) {
       // Keep our vessels.  Make sure we're not inserting new ones.
       if (step <= 3) {
         KeepVessel(enterprise);
       }
-      if (t > HistoryTime(0) + a_while + ε_δt) {
+      if (t > HistoryTime(sync_time, 0) + a_while + ε_δt) {
         KeepVessel(enterprise_d);
       }
-      if (t > HistoryTime(1) + a_while + ε_δt) {
+      if (t > HistoryTime(sync_time, 1) + a_while + ε_δt) {
         KeepVessel(stargazer);
       }
-      if (t > HistoryTime(1) + a_while + ε_δt &&
-          t < HistoryTime(1) + half_a_step - ε_δt) {
+      if (t > HistoryTime(sync_time, 1) + a_while + ε_δt &&
+          t < HistoryTime(sync_time, 1) + half_a_step - ε_δt) {
         KeepVessel(bradbury);
-      } else if (AbsoluteError(t - HistoryTime(1), half_a_step) < ε_δt) {
+      } else if (AbsoluteError(t - HistoryTime(sync_time, 1),
+                               half_a_step) < ε_δt) {
         // We will be removing |bradbury| in this step.
         --expected_number_of_new_vessels;
       }
       if (step > 2) {
         KeepVessel(constantinople);
       }
-      // Called to compute the prolongations and advance the unsynchronized
-      // histories.
-      EXPECT_CALL(*n_body_system_,
-                  Integrate(Ref(plugin_->prolongation_integrator()), t,
-                            plugin_->Δt(), 0, true,
-                            SizeIs(bodies_.size() +
-                                       expected_number_of_old_vessels +
-                                       expected_number_of_new_vessels)))
-          .RetiresOnSaturation();
+      EXPECT_CALL(*mock_ephemeris_, Prolong(t)).RetiresOnSaturation();
+      for (int i = 0;
+           i < expected_number_of_new_vessels + expected_number_of_old_vessels;
+           ++i) {
+        // Called to compute the prolongations and advance the unsynchronized
+        // histories.
+        EXPECT_CALL(*mock_ephemeris_,
+                    FlowWithAdaptiveStep(_, _, _, _, t)).RetiresOnSaturation();
+      }
       plugin_->AdvanceTime(t, planetarium_rotation);
-      if (AbsoluteError(t - HistoryTime(0), a_while) < ε_δt) {
-        InsertVessel(enterprise_d, &expected_number_of_new_vessels);
-      } else if (AbsoluteError(t - HistoryTime(1), a_while) < ε_δt) {
-        InsertVessel(stargazer, &expected_number_of_new_vessels);
-        InsertVessel(bradbury, &expected_number_of_new_vessels);
+      if (AbsoluteError(t - HistoryTime(sync_time, 0), a_while) < ε_δt) {
+        InsertVessel(enterprise_d, &expected_number_of_new_vessels, t);
+      } else if (AbsoluteError(t - HistoryTime(sync_time, 1), a_while) < ε_δt) {
+        InsertVessel(stargazer, &expected_number_of_new_vessels, t);
+        InsertVessel(bradbury, &expected_number_of_new_vessels, t);
       }
     }
     // Keep the vessels for the history-advancing step.
@@ -599,38 +644,44 @@ TEST_F(PluginTest, AdvanceTimeWithVessels) {
     if (step > 2) {
       KeepVessel(constantinople);
     }
-    // Called to advance the synchronized histories.
-    EXPECT_CALL(*n_body_system_,
-                Integrate(Ref(plugin_->history_integrator()),
-                          HistoryTime(step + 1) + δt,
-                          plugin_->Δt(), 0, false,
-                          SizeIs(bodies_.size() +
-                                     expected_number_of_old_vessels)))
-        .WillOnce(AppendTimeToTrajectories<5>(HistoryTime(step + 1)))
+    EXPECT_CALL(*mock_ephemeris_,
+                Prolong(HistoryTime(sync_time, step + 1) + δt))
         .RetiresOnSaturation();
-    if (expected_number_of_new_vessels > 0) {
+    if (expected_number_of_old_vessels == 0) {
+      expected_number_of_old_vessels = expected_number_of_new_vessels;
+      expected_number_of_new_vessels = 0;
+    } else {
+      // Called to advance the synchronized histories.
+      EXPECT_CALL(*mock_ephemeris_,
+                  FlowWithFixedStep(SizeIs(expected_number_of_old_vessels),
+                                    10 * Second,
+                                    HistoryTime(sync_time, step + 1) + δt))
+          .WillOnce(
+               AppendTimeToTrajectories<0>(HistoryTime(sync_time, step + 1)))
+          .RetiresOnSaturation();
+    }
+    for (int i = 0; i < expected_number_of_new_vessels; ++i) {
       // Called to synchronize the new histories.
-      EXPECT_CALL(*n_body_system_,
-                  Integrate(Ref(plugin_->prolongation_integrator()),
-                            HistoryTime(step + 1),
-                            plugin_->Δt(), 0, true,
-                            SizeIs(bodies_.size() +
-                                       expected_number_of_new_vessels)))
-          .WillOnce(AppendTimeToTrajectories<5>(HistoryTime(step + 1)))
+      EXPECT_CALL(*mock_ephemeris_,
+                  FlowWithAdaptiveStep(_, _, _, _,
+                                       HistoryTime(sync_time, step + 1)))
           .RetiresOnSaturation();
     }
     expected_number_of_old_vessels += expected_number_of_new_vessels;
     expected_number_of_new_vessels = 0;
-    // Called to compute the prolongations.
-    EXPECT_CALL(*n_body_system_,
-                Integrate(Ref(plugin_->prolongation_integrator()),
-                          HistoryTime(step + 1) + δt, plugin_->Δt(), 0, true,
-                          SizeIs(bodies_.size() +
-                                     expected_number_of_old_vessels)))
-        .RetiresOnSaturation();
-    plugin_->AdvanceTime(HistoryTime(step + 1) + δt, planetarium_rotation);
+    for (int i = 0; i < expected_number_of_old_vessels; ++i) {
+      // Called to compute the prolongations.
+      EXPECT_CALL(*mock_ephemeris_,
+                  FlowWithAdaptiveStep(_, _, _, _,
+                                       HistoryTime(sync_time, step + 1) + δt))
+          .RetiresOnSaturation();
+    }
+    plugin_->AdvanceTime(HistoryTime(sync_time, step + 1) + δt,
+                         planetarium_rotation);
     if (step == 2) {
-      InsertVessel(constantinople, &expected_number_of_new_vessels);
+      InsertVessel(constantinople,
+                   &expected_number_of_new_vessels,
+                   HistoryTime(sync_time, step + 1) + δt);
     } else if (step == 3) {
       // We will be removing |enterprise|.
       --expected_number_of_old_vessels;
@@ -654,14 +705,15 @@ TEST_F(PluginTest, AdvanceTimeWithVessels) {
 //                                    and |enterprise_d_saucer|.
 // * |HistoryTime(2 + half_a_step)| : Physics bubble ends.
 TEST_F(PluginTest, PhysicsBubble) {
-  Time const δt = 0.02 * Second;
-  Time const a_while = 10 * δt;
-  Time const half_a_step = 250 * δt;
+  Time const δt = 1 * Second;
+  Time const a_while = 2 * δt;
+  Time const half_a_step = 5 * δt;
   Time const ε_δt = 0.1 * δt;
   EXPECT_THAT(half_a_step, Eq(plugin_->Δt() / 2));
   GUID const enterprise = "NCC-1701";
   GUID const enterprise_d = "NCC-1701-D";
   GUID const enterprise_d_saucer = "NCC-1701-D (saucer)";
+  GUID const constantinople = "NCC-43622";
   auto const make_enterprise_whole_ship = []() {
     return std::make_pair(
         PartId(0U),
@@ -715,20 +767,42 @@ TEST_F(PluginTest, PhysicsBubble) {
   std::vector<IdAndOwnedPart> parts;
   bool expect_to_have_physics_bubble = true;
   bool expect_intrinsic_acceleration = false;
-  InsertVessel(enterprise, &expected_number_of_new_off_rails_vessels);
+  Instant sync_time = initial_time_;
+  // The synchronizer vessel.
+  InsertVessel(constantinople,
+               &expected_number_of_clean_old_vessels,
+               HistoryTime(sync_time, 0));
+  // Called to compute the prolongation.
+  EXPECT_CALL(*mock_ephemeris_,
+              FlowWithAdaptiveStep(_, _, _, _, HistoryTime(sync_time, 0) + δt))
+      .RetiresOnSaturation();
+  // There are no old vessels, this will make all the new vessels old instantly
+  // without performing any syncing computations.
+  EXPECT_CALL(*mock_ephemeris_,
+              Prolong(HistoryTime(sync_time, 0) + δt))
+      .RetiresOnSaturation();
+  plugin_->AdvanceTime(HistoryTime(sync_time, 0) + δt,
+                       planetarium_rotation);
+  sync_time = HistoryTime(sync_time, 0) + δt;
+
+  InsertVessel(enterprise,
+               &expected_number_of_new_off_rails_vessels,
+               HistoryTime(sync_time, 0));
   --expected_number_of_new_off_rails_vessels;
   for (int step = 0; step < 10; ++step) {
-    for (Instant t = HistoryTime(step) + 2 * δt;
-         t <= HistoryTime(step + 1);
+    for (Instant t = HistoryTime(sync_time, step) + 2 * δt;
+         t < HistoryTime(sync_time, step + 1);
          t += δt) {
+      // Keep the synchronizer.
+      KeepVessel(constantinople);
       // Keep our vessels.  Make sure we're not inserting new ones.
-      if (t < HistoryTime(0) + a_while + ε_δt) {
+      if (t < HistoryTime(sync_time, 0) + a_while + ε_δt) {
         KeepVessel(enterprise);
         parts.clear();
         parts.emplace_back(std::move(make_enterprise_whole_ship()));
         plugin_->AddVesselToNextPhysicsBubble(enterprise, std::move(parts));
-      } else if (t > HistoryTime(0) + a_while + ε_δt &&
-                 t < HistoryTime(1) + half_a_step + ε_δt) {
+      } else if (t > HistoryTime(sync_time, 0) + a_while + ε_δt &&
+                 t < HistoryTime(sync_time, 1) + half_a_step + ε_δt) {
         KeepVessel(enterprise_d);
         parts.clear();
         parts.emplace_back(std::move(make_enterprise_d_engineering_section()));
@@ -738,8 +812,8 @@ TEST_F(PluginTest, PhysicsBubble) {
         parts.clear();
         parts.emplace_back(std::move(make_enterprise_whole_ship()));
         plugin_->AddVesselToNextPhysicsBubble(enterprise, std::move(parts));
-      } else if (t > HistoryTime(1) + half_a_step - ε_δt &&
-                 t < HistoryTime(2) + ε_δt) {
+      } else if (t > HistoryTime(sync_time, 1) + half_a_step - ε_δt &&
+                 t < HistoryTime(sync_time, 2) + ε_δt) {
         KeepVessel(enterprise_d);
         parts.clear();
         parts.emplace_back(std::move(make_enterprise_d_engineering_section()));
@@ -753,8 +827,8 @@ TEST_F(PluginTest, PhysicsBubble) {
         parts.clear();
         parts.emplace_back(std::move(make_enterprise_whole_ship()));
         plugin_->AddVesselToNextPhysicsBubble(enterprise, std::move(parts));
-      } else if (t > HistoryTime(2) - ε_δt &&
-                 t < HistoryTime(2) + half_a_step - ε_δt) {
+      } else if (t > HistoryTime(sync_time, 2) - ε_δt &&
+                 t < HistoryTime(sync_time, 2) + half_a_step - ε_δt) {
         KeepVessel(enterprise_d);
         parts.clear();
         parts.emplace_back(std::move(make_enterprise_d_engineering_section()));
@@ -763,54 +837,46 @@ TEST_F(PluginTest, PhysicsBubble) {
       } else {
         KeepVessel(enterprise_d);
       }
-      if (AbsoluteError(t - HistoryTime(2), half_a_step) < ε_δt) {
+      if (AbsoluteError(t - HistoryTime(sync_time, 2), half_a_step) < ε_δt) {
         ++expected_number_of_dirty_old_on_rails_vessels;
         expect_to_have_physics_bubble = false;
       }
       expect_intrinsic_acceleration &= expect_to_have_physics_bubble;
       // Called to compute the prolongations and advance the unsynchronized
       // histories.
-      if (expect_intrinsic_acceleration) {
-        EXPECT_CALL(
-            *n_body_system_,
-            Integrate(Ref(plugin_->prolongation_integrator()), t,
-                      plugin_->Δt(), 0, true,
-                      AllOf(
-                          SizeIs(bodies_.size() +
-                                 expected_number_of_clean_old_vessels +
-                                 expected_number_of_new_off_rails_vessels +
-                                 expected_number_of_dirty_old_on_rails_vessels +
-                                 (expect_to_have_physics_bubble ? 1 : 0)),
-                          Contains(HasNonvanishingIntrinsicAccelerationAt(t)))))
-            .RetiresOnSaturation();
-      } else {
-        EXPECT_CALL(
-            *n_body_system_,
-            Integrate(Ref(plugin_->prolongation_integrator()), t,
-                      plugin_->Δt(), 0, true,
-                      SizeIs(bodies_.size() +
-                             expected_number_of_clean_old_vessels +
-                             expected_number_of_new_off_rails_vessels +
-                             expected_number_of_dirty_old_on_rails_vessels +
-                             (expect_to_have_physics_bubble ? 1 : 0))))
+      for (int i = 0;
+           i < expected_number_of_clean_old_vessels +
+               expected_number_of_new_off_rails_vessels +
+               expected_number_of_dirty_old_on_rails_vessels +
+               (expect_to_have_physics_bubble ? 1 : 0);
+           ++i) {
+      EXPECT_CALL(*mock_ephemeris_,
+                  FlowWithAdaptiveStep(_, _, _, _, t))
             .RetiresOnSaturation();
       }
+      EXPECT_CALL(*mock_ephemeris_, Prolong(t)).RetiresOnSaturation();
       plugin_->AdvanceTime(t, planetarium_rotation);
       if (expect_to_have_physics_bubble) {
         plugin_->BubbleDisplacementCorrection(World::origin);
         plugin_->BubbleVelocityCorrection(SolarSystem::kSaturn);
       }
-      if (AbsoluteError(t - HistoryTime(0), a_while) < ε_δt) {
-        InsertVessel(enterprise_d, &expected_number_of_new_off_rails_vessels);
+      if (AbsoluteError(t - HistoryTime(sync_time, 0), a_while) < ε_δt) {
+        InsertVessel(enterprise_d,
+                     &expected_number_of_new_off_rails_vessels,
+                     t);
         --expected_number_of_new_off_rails_vessels;
-      } else if (AbsoluteError(t - HistoryTime(1), half_a_step) < ε_δt) {
+      } else if (AbsoluteError(t - HistoryTime(sync_time, 1),
+                               half_a_step) < ε_δt) {
         InsertVessel(enterprise_d_saucer,
-                     &expected_number_of_new_off_rails_vessels);
+                     &expected_number_of_new_off_rails_vessels,
+                     t);
         --expected_number_of_new_off_rails_vessels;
       }
       expect_intrinsic_acceleration = expect_to_have_physics_bubble;
     }
     // Keep the vessels for the history-advancing step.
+    // Keep the synchronizer.
+    KeepVessel(constantinople);
     if (step <= 0) {
       KeepVessel(enterprise);
       parts.clear();
@@ -826,28 +892,22 @@ TEST_F(PluginTest, PhysicsBubble) {
     }
     // Called to advance the synchronized histories.
     EXPECT_CALL(
-        *n_body_system_,
-        Integrate(Ref(plugin_->history_integrator()),
-                      HistoryTime(step + 1) + δt,
-                      plugin_->Δt(), 0, false,
-                      SizeIs(bodies_.size() +
-                             expected_number_of_clean_old_vessels)))
-        .WillOnce(AppendTimeToTrajectories<5>(HistoryTime(step + 1)))
+        *mock_ephemeris_,
+        FlowWithFixedStep(SizeIs(expected_number_of_clean_old_vessels),
+                          10 * Second,
+                          HistoryTime(sync_time, step + 1) + δt))
+        .WillOnce(
+             AppendTimeToTrajectories<0>(HistoryTime(sync_time, step + 1)))
         .RetiresOnSaturation();
-    if (expected_number_of_new_off_rails_vessels > 0 ||
-        expected_number_of_dirty_old_on_rails_vessels > 0 ||
-        expect_to_have_physics_bubble) {
+     for (int i = 0;
+          i < expected_number_of_new_off_rails_vessels +
+              expected_number_of_dirty_old_on_rails_vessels +
+              (expect_to_have_physics_bubble ? 1 : 0);
+          ++i) {
       // Called to synchronize the new histories.
       EXPECT_CALL(
-          *n_body_system_,
-          Integrate(Ref(plugin_->prolongation_integrator()),
-                        HistoryTime(step + 1),
-                        plugin_->Δt(), 0, true,
-                        SizeIs(bodies_.size() +
-                               expected_number_of_new_off_rails_vessels +
-                               expected_number_of_dirty_old_on_rails_vessels +
-                               (expect_to_have_physics_bubble ? 1 : 0))))
-          .WillOnce(AppendTimeToTrajectories<5>(HistoryTime(step + 1)))
+          *mock_ephemeris_,
+          FlowWithAdaptiveStep(_, _, _, _, HistoryTime(sync_time, step + 1)))
           .RetiresOnSaturation();
     }
     expected_number_of_clean_old_vessels +=
@@ -856,14 +916,22 @@ TEST_F(PluginTest, PhysicsBubble) {
     expected_number_of_new_off_rails_vessels = 0;
     expected_number_of_dirty_old_on_rails_vessels = 0;
     // Called to compute the prolongations.
-    EXPECT_CALL(*n_body_system_,
-                Integrate(Ref(plugin_->prolongation_integrator()),
-                          HistoryTime(step + 1) + δt, plugin_->Δt(), 0, true,
-                          SizeIs(bodies_.size() +
-                                     expected_number_of_clean_old_vessels +
-                                     (expect_to_have_physics_bubble ? 1 : 0))))
+    for (int i = 0;
+         i < expected_number_of_clean_old_vessels +
+             (expect_to_have_physics_bubble ? 1 : 0);
+         ++i) {
+      // Called to compute the prolongations.
+      EXPECT_CALL(
+          *mock_ephemeris_,
+          FlowWithAdaptiveStep(_, _, _, _,
+                               HistoryTime(sync_time, step + 1) + δt))
+          .RetiresOnSaturation();
+    }
+    EXPECT_CALL(*mock_ephemeris_,
+                Prolong(HistoryTime(sync_time, step + 1) + δt))
         .RetiresOnSaturation();
-    plugin_->AdvanceTime(HistoryTime(step + 1) + δt, planetarium_rotation);
+    plugin_->AdvanceTime(HistoryTime(sync_time, step + 1) + δt,
+                         planetarium_rotation);
     if (expect_to_have_physics_bubble) {
       plugin_->BubbleDisplacementCorrection(World::origin);
       plugin_->BubbleVelocityCorrection(SolarSystem::kSaturn);
@@ -893,7 +961,7 @@ TEST_F(PluginTest, UpdateCelestialHierarchy) {
             AlmostEquals(looking_glass_.Inverse()(
                 plugin_->CelestialFromParent(index).displacement()), 1, 5056),
             AlmostEquals(looking_glass_.Inverse()(
-                plugin_->CelestialFromParent(index).velocity()), 1, 936)));
+                plugin_->CelestialFromParent(index).velocity()), 1, 1643885)));
   }
 }
 
@@ -1108,13 +1176,11 @@ TEST_F(PluginTest, BarycentricRotatingRenderingIntegration) {
 }
 
 // Checks that we correctly predict a full circular orbit around a massive body
-// with unit gravitational parameter at unit distance, in 8 steps.  Since
-// predictions are only computed on |AdvanceTime()|, we advance time by a small
-// amount.
+// with unit gravitational parameter at unit distance.  Since predictions are
+// only computed on |AdvanceTime()|, we advance time by a small amount.
 TEST_F(PluginTest, Prediction) {
   GUID const satellite = "satellite";
   Index const celestial = 0;
-  int const n = 8;
   Plugin plugin(Instant(),
                 celestial,
                 SIUnit<GravitationalParameter>(),
@@ -1129,26 +1195,32 @@ TEST_F(PluginTest, Prediction) {
            {0 * Metre / Second, 1 * Metre / Second, 0 * Metre / Second})});
   plugin.set_predicted_vessel(satellite);
   plugin.set_prediction_length(2 * π * Second);
-  plugin.set_prediction_step(2 * π / n * Second);
+  plugin.set_prediction_length_tolerance(1 * Milli(Metre));
+  plugin.set_prediction_speed_tolerance(1 * Milli(Metre) / Second);
   plugin.AdvanceTime(Instant(1e-10 * Second), 0 * Radian);
   RenderedTrajectory<World> rendered_prediction =
       plugin.RenderedPrediction(transforms.get(), World::origin);
-  EXPECT_EQ(n, rendered_prediction.size());
-  Angle const α = 2 * π * Radian / n;
-  for (int k = 0; k < n; ++k) {
+  EXPECT_EQ(14, rendered_prediction.size());
+  for (int i = 0; i < rendered_prediction.size(); ++i) {
+    auto const& segment = rendered_prediction[i];
     EXPECT_THAT(
-        RelativeError(rendered_prediction[k].begin - World::origin,
-                      Displacement<World>({Cos(k * α) * Metre,
-                                           0 * Metre,
-                                           Sin(k * α) * Metre})),
-        Lt(0.011));
-    EXPECT_THAT(
-        RelativeError(rendered_prediction[k].end - World::origin,
-                      Displacement<World>({Cos((k + 1) * α) * Metre,
-                                           0 * Metre,
-                                           Sin((k + 1) * α) * Metre})),
-        Lt(0.011));
+        AbsoluteError((segment.begin - World::origin).Norm(), 1 * Metre),
+        Lt(0.5 * Milli(Metre)));
+    EXPECT_THAT(AbsoluteError((segment.end - World::origin).Norm(), 1 * Metre),
+                Lt(0.5 * Milli(Metre)));
+    if (i >= 5) {
+      EXPECT_THAT(
+          AbsoluteError((segment.begin - World::origin).Norm(), 1 * Metre),
+          Gt(0.1 * Milli(Metre)));
+      EXPECT_THAT(
+          AbsoluteError((segment.end - World::origin).Norm(), 1 * Metre),
+          Gt(0.1 * Milli(Metre)));
+    }
   }
+  EXPECT_THAT(
+      AbsoluteError(rendered_prediction.back().end - World::origin,
+                    Displacement<World>({1 * Metre, 0 * Metre, 0 * Metre})),
+      AllOf(Gt(2 * Milli(Metre)), Lt(3 * Milli(Metre))));
   plugin.clear_predicted_vessel();
 }
 
@@ -1158,6 +1230,7 @@ TEST_F(PluginTest, Navball) {
                 SolarSystem::kSun,
                 sun_gravitational_parameter_,
                 0 * Radian);
+  plugin.EndInitialization();
   not_null<std::unique_ptr<RenderingTransforms>> const heliocentric =
           plugin.NewBodyCentredNonRotatingTransforms(SolarSystem::kSun);
   Vector<double, World> x({1, 0, 0});
@@ -1195,6 +1268,7 @@ TEST_F(PluginTest, Frenet) {
               AlmostEquals(t, 7));
 }
 
+#if 0
 TEST_F(PluginTest, SerializationCompatibility) {
   serialization::Multivector message;
 
@@ -1224,6 +1298,7 @@ TEST_F(PluginTest, SerializationCompatibility) {
   Trivector<Length, Barycentric> const expected_u(7 * Metre);
   EXPECT_EQ(expected_u, u);
 }
+#endif
 
 }  // namespace ksp_plugin
 }  // namespace principia

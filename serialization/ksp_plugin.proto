@@ -1,6 +1,7 @@
 syntax = "proto2";
 
 import "serialization/geometry.proto";
+import "serialization/integrators.proto";
 import "serialization/physics.proto";
 import "serialization/quantities.proto";
 
@@ -60,11 +61,20 @@ message Plugin {
     required Celestial celestial = 2;
     optional int32 parent_index = 3;
   }
+  message CelestialParenthood {
+    required int32 index = 1;
+    optional int32 parent_index = 2;
+  }
   repeated VesselAndProperties vessel = 1;
-  repeated CelestialAndProperties celestial = 2;
+  repeated CelestialAndProperties old_celestial = 2;
+  repeated CelestialParenthood celestial = 10;
   required PhysicsBubble bubble = 3;
+  required Ephemeris ephemeris = 7;
+  required AdaptiveStepSizeIntegrator prolongation_integrator = 8;
+  required AdaptiveStepSizeIntegrator prediction_integrator = 9;
   required Quantity planetarium_rotation = 4;
   required Point current_time = 5;
+  required Point history_time = 11;
   required int32 sun_index = 6;
 }
 
