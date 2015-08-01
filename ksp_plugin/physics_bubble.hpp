@@ -66,7 +66,7 @@ class PhysicsBubble {
   bool empty() const;
 
   // Returns 0 if |empty()|, 1 otherwise.
-  std::size_t size() const;
+  std::size_t count() const;
 
   // Returns |current_->vessels.size()|, or 0 if |empty()|.
   std::size_t number_of_vessels() const;

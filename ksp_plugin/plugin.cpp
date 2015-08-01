@@ -113,22 +113,24 @@ void Plugin::EndInitialization() {
   initializing_.Flop();
   std::vector<not_null<std::unique_ptr<MassiveBody const>>> bodies;
   std::vector<DegreesOfFreedom<Barycentric>> initial_state;
-  for (auto& body : *bodies_) {
-    bodies.emplace_back(std::move(body.second));
+  for (auto& pair : *bodies_) {
+    auto& body = pair.second;
+    bodies.emplace_back(std::move(body));
   }
   bodies_.reset();
   for (auto const& state : *initial_state_) {
     initial_state.emplace_back(state.second);
   }
   initial_state_.reset();
-  ephemeris_ = std::make_unique<Ephemeris<Barycentric>>(std::move(bodies),
-                                                        initial_state,
-                                                        current_time_,
-                                                        history_integrator_,
-                                                        45 * Minute,
-                                                        1 * Milli(Metre));
-  for (auto const& index_celestial : celestials_) {
-    auto& celestial = *index_celestial.second;
+  ephemeris_ = std::make_unique<Ephemeris<Barycentric> >(
+      std::move(bodies),
+      initial_state,
+      current_time_,
+      history_integrator_,
+      45 * Minute /*step*/,
+      1 * Milli(Metre) /*fitting_tolerance*/);
+  for (auto const& pair : celestials_) {
+    auto& celestial = *pair.second;
     // TODO(egg): unorthodox address of reference.
     celestial.set_trajectory(ephemeris_->trajectory(&celestial.body()));
   }
@@ -344,7 +346,6 @@ not_null<std::unique_ptr<RenderingTransforms>>
 Plugin::NewBodyCentredNonRotatingTransforms(
     Index const reference_body_index) const {
   CHECK(!initializing_);
-  // TODO(egg): this should be const, use a custom comparator in the map.
   Celestial const& reference_body =
       *FindOrDie(celestials_, reference_body_index);
   return RenderingTransforms::BodyCentredNonRotating(
@@ -465,7 +466,7 @@ void Plugin::WriteToMessage(
   for (auto const& index_celestial : celestials_) {
     Index const index = index_celestial.first;
     not_null<Celestial const*> const celestial = index_celestial.second.get();
-    auto const celestial_message = message->add_celestial();
+    auto* const celestial_message = message->add_celestial();
     celestial_message->set_index(index);
     if (celestial->has_parent()) {
       Index const parent_index =
@@ -726,7 +727,7 @@ void Plugin::EvolveHistories(Instant const& t, Trajectories const& histories) {
 void Plugin::SynchronizeNewVesselsAndCleanDirtyVessels() {
   VLOG(1) << __FUNCTION__;
   Trajectories trajectories;
-  trajectories.reserve(unsynchronized_vessels_.size() + bubble_->size());
+  trajectories.reserve(unsynchronized_vessels_.size() + bubble_->count());
   for (not_null<Vessel*> const vessel : unsynchronized_vessels_) {
     if (!bubble_->contains(vessel)) {
       trajectories.push_back(vessel->mutable_prolongation());
@@ -804,8 +805,11 @@ void Plugin::ResetProlongations() {
 void Plugin::EvolveProlongationsAndBubble(Instant const& t) {
   VLOG(1) << __FUNCTION__ << '\n' << NAMED(t);
   Trajectories trajectories;
-  trajectories.reserve(vessels_.size() -
-                       bubble_->number_of_vessels() + bubble_->size());
+
+  std::size_t const number_of_vessels_not_in_physics_bubble =
+      vessels_.size() - bubble_->number_of_vessels();
+  trajectories.reserve(number_of_vessels_not_in_physics_bubble +
+                       bubble_->count());
   for (auto const& pair : vessels_) {
     not_null<Vessel*> const vessel = pair.second.get();
     if (!bubble_->contains(vessel)) {
