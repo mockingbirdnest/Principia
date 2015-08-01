@@ -275,6 +275,7 @@ void Ephemeris<Frame>::FlowWithFixedStep(
     std::vector<not_null<Trajectory<Frame>*>> const& trajectories,
     Time const& step,
     Instant const& t) {
+  LOG(INFO) << __FUNCTION__;
   if (empty() || t > t_max()) {
     Prolong(t);
   }
@@ -308,6 +309,7 @@ void Ephemeris<Frame>::FlowWithFixedStep(
 template<typename Frame>
 void Ephemeris<Frame>::WriteToMessage(
     not_null<serialization::Ephemeris*> const message) const {
+  LOG(INFO) << __FUNCTION__;
   // The bodies are serialized in the order in which they were given at
   // construction.
   for (auto const& unowned_body : unowned_bodies_) {
@@ -322,6 +324,8 @@ void Ephemeris<Frame>::WriteToMessage(
   step_.WriteToMessage(message->mutable_step());
   fitting_tolerance_.WriteToMessage(message->mutable_fitting_tolerance());
   last_state_.WriteToMessage(message->mutable_last_state());
+  LOG(INFO) << NAMED(message->SpaceUsed());
+  LOG(INFO) << NAMED(message->ByteSize());
 }
 
 template<typename Frame>

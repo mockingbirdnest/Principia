@@ -216,6 +216,7 @@ PhysicsBubble::mutable_centre_of_mass_trajectory() const {
 void PhysicsBubble::WriteToMessage(
     std::function<std::string(not_null<Vessel const*>)> const guid,
     not_null<serialization::PhysicsBubble*> const message) const {
+  LOG(INFO) << __FUNCTION__;
   body_.WriteToMessage(message->mutable_body());
   if (current_ != nullptr) {
     // An inverted map for obtaining part ids.
@@ -262,6 +263,8 @@ void PhysicsBubble::WriteToMessage(
     CHECK_NOTNULL(current_->velocity_correction.get())->WriteToMessage(
         full_state->mutable_velocity_correction());
   }
+  LOG(INFO) << NAMED(message->SpaceUsed());
+  LOG(INFO) << NAMED(message->ByteSize());
 }
 
 std::unique_ptr<PhysicsBubble> PhysicsBubble::ReadFromMessage(
