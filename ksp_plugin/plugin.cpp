@@ -193,7 +193,7 @@ void Plugin::AdvanceTime(Instant const& t, Angle const& planetarium_rotation) {
   CleanUpVessels();
   ephemeris_->Prolong(t);
   bubble_->Prepare(BarycentricToWorldSun(), current_time_, t);
-  Ephemeris<Barycentric>::Trajectories synchronized_histories =
+  Trajectories synchronized_histories =
       SynchronizedHistories();
   bool advanced_history_time = false;
   if (synchronized_histories.empty()) {
@@ -329,11 +329,11 @@ void Plugin::set_prediction_length(Time const& t) {
 }
 
 void Plugin::set_prediction_length_tolerance(Length const& l) {
-  prediction_length_tolerance = l;
+  prediction_length_tolerance_ = l;
 }
 
 void Plugin::set_prediction_speed_tolerance(Speed const& v) {
-  prediction_speed_tolerance = v;
+  prediction_speed_tolerance_ = v;
 }
 
 bool Plugin::has_vessel(GUID const& vessel_guid) const {
@@ -695,8 +695,8 @@ void Plugin::CheckVesselInvariants(
   }
 }
 
-Ephemeris<Barycentric>::Trajectories Plugin::SynchronizedHistories() const {
-  Ephemeris<Barycentric>::Trajectories trajectories;
+Plugin::Trajectories Plugin::SynchronizedHistories() const {
+  Trajectories trajectories;
   // NOTE(egg): This may be too large, vessels that are not new and in the
   // physics bubble or dirty will not be added.
   trajectories.reserve(vessels_.size() - unsynchronized_vessels_.size());
@@ -711,9 +711,7 @@ Ephemeris<Barycentric>::Trajectories Plugin::SynchronizedHistories() const {
   return trajectories;
 }
 
-void Plugin::EvolveHistories(
-    Instant const& t,
-    Ephemeris<Barycentric>::Trajectories const& histories) {
+void Plugin::EvolveHistories(Instant const& t, Trajectories const& histories) {
   VLOG(1) << __FUNCTION__ << '\n' << NAMED(t);
   // Integration with a constant step.{
   VLOG(1) << "Starting the evolution of the histories" << '\n'
@@ -727,7 +725,7 @@ void Plugin::EvolveHistories(
 
 void Plugin::SynchronizeNewVesselsAndCleanDirtyVessels() {
   VLOG(1) << __FUNCTION__;
-  Ephemeris<Barycentric>::Trajectories trajectories;
+  Trajectories trajectories;
   trajectories.reserve(unsynchronized_vessels_.size() + bubble_->size());
   for (not_null<Vessel*> const vessel : unsynchronized_vessels_) {
     if (!bubble_->contains(vessel)) {
@@ -746,8 +744,8 @@ void Plugin::SynchronizeNewVesselsAndCleanDirtyVessels() {
           << (bubble_->empty() ? "" : " and of the bubble");
   for (auto const& trajectory : trajectories) {
     ephemeris_->FlowWithAdaptiveStep(trajectory,
-                                     prolongation_length_tolerance,
-                                     prolongation_speed_tolerance,
+                                     prolongation_length_tolerance_,
+                                     prolongation_speed_tolerance_,
                                      prolongation_integrator_,
                                      history_time_);
   }
@@ -805,7 +803,7 @@ void Plugin::ResetProlongations() {
 
 void Plugin::EvolveProlongationsAndBubble(Instant const& t) {
   VLOG(1) << __FUNCTION__ << '\n' << NAMED(t);
-  Ephemeris<Barycentric>::Trajectories trajectories;
+  Trajectories trajectories;
   trajectories.reserve(vessels_.size() -
                        bubble_->number_of_vessels() + bubble_->size());
   for (auto const& pair : vessels_) {
@@ -823,8 +821,8 @@ void Plugin::EvolveProlongationsAndBubble(Instant const& t) {
           << "to   : " << t;
   for (auto const& trajectory : trajectories) {
     ephemeris_->FlowWithAdaptiveStep(trajectory,
-                                     prolongation_length_tolerance,
-                                     prolongation_speed_tolerance,
+                                     prolongation_length_tolerance_,
+                                     prolongation_speed_tolerance_,
                                      prolongation_integrator_,
                                      t);
   }
@@ -846,8 +844,8 @@ void Plugin::UpdatePredictions() {
   if (has_predicted_vessel()) {
     predicted_vessel_->ForkPrediction();
     ephemeris_->FlowWithAdaptiveStep(predicted_vessel_->mutable_prediction(),
-                                     prediction_length_tolerance,
-                                     prediction_speed_tolerance,
+                                     prediction_length_tolerance_,
+                                     prediction_speed_tolerance_,
                                      prediction_integrator_,
                                      current_time_ + prediction_length_);
   }

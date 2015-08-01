@@ -61,13 +61,13 @@ int const kNotABody = 1729;
 
 // Appends a |DegreesOfFreedom| equal to the last one at the given |time| to
 // each |Trajectory| in the |k|th parameter of the expected call.
-// This parameter must be an |Ephemeris<Barycentric>::Trajectories|, |time|
-// must be an |Instant|.
+// This parameter must be a |Trajectories|, |time| must be an |Instant|.
 ACTION_TEMPLATE(AppendTimeToTrajectories,
                 HAS_1_TEMPLATE_PARAMS(int, k),
                 AND_1_VALUE_PARAMS(time)) {
-  for (auto trajectory : static_cast<Ephemeris<Barycentric>::Trajectories>(
-                             std::tr1::get<k>(args))) {
+  for (auto trajectory :
+          static_cast<std::vector<not_null<Trajectory<Barycentric>*>>>(
+              std::tr1::get<k>(args))) {
     trajectory->Append(time, trajectory->last().degrees_of_freedom());
   }
 }

@@ -37,8 +37,10 @@ TEST_F(CelestialDeathTest, Uninitialized) {
 
 TEST_F(CelestialDeathTest, OverlyInitialized) {
   EXPECT_DEATH({
-      celestial_->set_trajectory(&trajectory_);
-      celestial_->set_trajectory(&trajectory_);}, "!is_initialized");
+    celestial_->set_trajectory(&trajectory_);
+    celestial_->set_trajectory(&trajectory_);
+  },
+  "!is_initialized");
 }
 
 TEST_F(CelestialTest, Initialization) {
