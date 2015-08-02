@@ -1,9 +1,9 @@
-#Instructions for building Principia
+#Instructions for building Principia on Windows
 
-These instructions are for Visual Studio 2013, using the git
+These instructions are for Visual Studio 2015, using the git
 Powershell provided by [GitHub for Windows](https://windows.github.com/).
 
-We assume a working installation of Kerbal Space Program version 0.25.0 is
+We assume a working installation of Kerbal Space Program version 1.0.4 is
 found in `<KSP directory>`.
 
 The repository is found at https://github.com/mockingbirdnest/Principia.git.
@@ -14,30 +14,34 @@ This directory should not contain any of the following subfolders:
 - `KSP Assemblies`;
 - `Google`.
 
-In `<root>`, run `git clone https://github.com/mockingbirdnest/Principia.git`.
-
 This project depends upon:
-- The KSP assemblies `Assembly-CSharp.dll` and `Assembly-CSharp-firstpass.dll`,
+- the KSP assemblies `Assembly-CSharp.dll` and `Assembly-CSharp-firstpass.dll`,
   found in `<KSP directory>\KSP_Data\Managed`;
-- The Unity assembly `UnityEngine.dll`, found in
+- the Unity assembly `UnityEngine.dll`, found in
   `<KSP directory>\KSP_Data\Managed`;
-- The Google [glog 0.3.3](https://code.google.com/p/google-glog/downloads/list)
-  library, *modified according to the instructions below*;
-- Parts of the Chromium codebase (for stack tracing support in glog on Windows),
-  *modified according to the instructions below*;
-- The Google [gmock/gtest 1.7.0](https://code.google.com/p/googlemock
-/downloads/list) libraries, *modified according to the instructions below*;
-- our [fork](https://github.com/mockingbirdnest/benchmark) of the Google benchmark
-  library.
+- our [fork](https://github.com/mockingbirdnest/benchmark) of the Google glog
+  library;
+- our [fork](https://github.com/mockingbirdnest/gmock) of the Google gmock
+  library;
+- our [fork](https://github.com/mockingbirdnest/benchmark) of the Google
+  protobuf library;
+- our [fork](https://github.com/mockingbirdnest/benchmark) of the Google
+  benchmark library;
+- parts of the Chromium codebase (for stack tracing support in glog on Windows),
+  *modified according to the instructions below*.
 
-The following instructions should be followed before opening the repository, so
-that all dependencies are found.
-##KSP and Unity assemblies.
-Those assemblies should be copied to the directory `<root>\KSP Assemblies`.
-##Google projects.
-0. In `<root>\Google`, run
-
-  ```powershell
+##Installation steps.
+###Dowloading Principia.
+In `<root>`, run `git clone https://github.com/mockingbirdnest/Principia.git`.
+###KSP and Unity assemblies.
+Copy these assemblies to the directory `<root>\KSP Assemblies`.
+###Downloading the Google libraries.
+In `<root>\Google`, run the following commands.
+```powershell
+git clone "https://github.com/mockingbirdnest/glog.git"
+git clone "https://github.com/mockingbirdnest/gmock.git"
+git clone "https://github.com/mockingbirdnest/protobuf.git"
+git clone "https://github.com/mockingbirdnest/benchmark.git"
 git clone "https://chromium.googlesource.com/chromium/src.git" chromium -n --depth 1 -b "40.0.2193.1"
 $GitPromptSettings.RepositoriesInWhichToDisableFileStatus += join-path  (gi -path .).FullName chromium
 cd chromium
@@ -47,68 +51,30 @@ git checkout
 copy "..\..\Principia\documentation\setup files\chromium.patch"
 git am "chromium.patch"
 rm "chromium.patch"
-  ```
-0. Download [glog 0.3.3](https://code.google.com/p/google-glog/downloads/list),
-  and unpack into `<root>\Google`.
-  There should be a file at `<root>\Google\glog-0.3.3\README` if the unpacking
-  was done correctly.
-0. Download [gmock/gtest 1.7.0]
-  (https://code.google.com/p/googlemock/downloads/list), and unpack into
-  `<root>\Google`. There should be a file at `<root>\Google\gmock-1.7.0\README`
-  if the unpacking was done correctly.
-0. In `<root>\Google\glog-0.3.3`, run the following:
-  
-  ```powershell
-git init
-copy "..\..\Principia\.gitattributes"
-copy "..\..\Principia\.gitignore"
-git add ".gitattributes"
-git add ".gitignore"
-git commit -m "git files"
-git add -A
-git commit -m "add glog"
-copy "..\..\Principia\documentation\setup files\glog.patch"
-git am "glog.patch"
-rm "glog.patch"
-  ```
-0. In `<root>\Google\gmock-1.7.0`, run the following:
-  
-  ```powershell
-git init
-copy "..\..\Principia\.gitattributes"
-copy "..\..\Principia\.gitignore"
-git add ".gitattributes"
-git add ".gitignore"
-git commit -m "git files"
-git add -A
-git commit -m "add gmock"
-copy "..\..\Principia\documentation\setup files\gmock.patch"
-git am "gmock.patch"
-rm "gmock.patch"
-  ```
-0. In `<root>\Google`, run the following:
+cd ..
+```
 
-  ```powershell
-git clone "https://github.com/mockingbirdnest/protobuf.git"
-git rm --cached -r .
-git reset --hard
-  ```
-0. In `<root>\Google`, run:
+###Building the Google libraries.
+In `<root>\Google`, run the following commands.  The replication of the protobuf
+build commands is *not* a mistake.
+```powershell
+$msbuild = join-path -path (Get-ItemProperty "HKLM:\software\Microsoft\MSBuild\ToolsVersions\14.0")."MSBuildToolsPath" -childpath "msbuild.exe"
+&$msbuild /t:Build /m /property:Configuration=Debug .\glog\google-glog.sln
+&$msbuild /t:Build /m /property:Configuration=Release .\glog\google-glog.sln
+&$msbuild /t:Build /m /property:Configuration=Debug .\gmock\msvc\2010\gmock.sln
+&$msbuild /t:Build /m /property:Configuration=Release .\gmock\msvc\2010\gmock.sln
+&$msbuild /t:Build /m /property:Configuration=Debug .\protobuf\vsprojects\protobuf.sln
+&$msbuild /t:Build /m /property:Configuration=Debug .\protobuf\vsprojects\protobuf.sln
+&$msbuild /t:Build /m /property:Configuration=Release .\protobuf\vsprojects\protobuf.sln
+&$msbuild /t:Build /m /property:Configuration=Release .\protobuf\vsprojects\protobuf.sln
+&$msbuild /t:Build /m /property:Configuration=Debug .\benchmark\msvc\google-benchmark.sln
+&$msbuild /t:Build /m /property:Configuration=Release .\benchmark\msvc\google-benchmark.sln
+```
 
-  ```powershell
-git clone "https://github.com/mockingbirdnest/benchmark.git"
-  ```
-0. Open `<root>\Google\glog-0.3.3\google-glog.sln` with Visual Studio 2013.
-  Build for Debug and Release. Ignore any warnings. Close the solution.
-0. Open `<root>\Google\gmock-1.7.0\msvc\2010\gmock.sln` with Visual
-  Studio 2013. Build for Debug and Release. Ignore any warnings. Close the
-  solution.
-0. Open `<root>\Google\protobuf\vsprojects\protobuf.sln` with Visual
-  Studio 2013. Build for Debug and Release, twice (the first attempt should
-  fail with one error). Close the solution.
-0. Open `<root>\Google\benchmark\msvc\google-benchmark.sln` with Visual
-  Studio 2013. Build for Debug and Release. Ignore any warnings. Close the
-  solution.
-
-You are now done with the setup of the dependencies.
-Open `<root>\Principia\Principia.sln` and build.
+###Building Principia.
+In `<root>\Principia`, run the following commands.
+```powershell
+$msbuild = join-path -path (Get-ItemProperty "HKLM:\software\Microsoft\MSBuild\ToolsVersions\14.0")."MSBuildToolsPath" -childpath "msbuild.exe"
+&$msbuild /t:Build /m /property:Configuration=Debug .\Principia.sln
+&$msbuild /t:Build /m /property:Configuration=Release .\Principia.sln
+```
