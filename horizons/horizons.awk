@@ -1,0 +1,22 @@
+/^Target body name:/ {
+  print "body = " body
+        " x=" x
+        "y=" y
+  "z=" z
+  " vx=" vx
+  "vy=" vy
+  " vz=" vz;
+  body = $0;
+  sub(/ \(.*/, "", body);
+  sub(/.*: /, "", body)
+}
+/^ *X = / {
+  x = $3;
+  y = $6;
+  z = $9
+}
+/^ *VX=/ {
+  vx = $2;
+  vy = $4;
+  vz = $6
+}
