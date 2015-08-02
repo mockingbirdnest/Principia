@@ -284,7 +284,7 @@ TEST_F(EphemerisTest, EarthProbe) {
 
   ephemeris.FlowWithAdaptiveStep(&trajectory,
                                  1E-9 * Metre,
-                                 1E-15 * Metre / Second,
+                                 2.6E-15 * Metre / Second,
                                  DormandElMikkawyPrince1986RKN434FM<
                                      Position<EarthMoonOrbitPlane>>(),
                                  t0_ + period);
@@ -307,20 +307,20 @@ TEST_F(EphemerisTest, EarthProbe) {
 
   EXPECT_THAT(earth_positions.size(), Eq(101));
   EXPECT_THAT(earth_positions[25].coordinates().x,
-              AlmostEquals(0.25 * period * v_earth, 10));
+              AlmostEquals(0.25 * period * v_earth, 15));
   EXPECT_THAT(earth_positions[25].coordinates().y, Eq(q_earth));
   EXPECT_THAT(earth_positions[50].coordinates().x,
-              AlmostEquals(0.50 * period * v_earth, 11));
+              AlmostEquals(0.50 * period * v_earth, 16));
   EXPECT_THAT(earth_positions[50].coordinates().y, Eq(q_earth));
   EXPECT_THAT(earth_positions[75].coordinates().x,
-              AlmostEquals(0.75 * period * v_earth, 6));
+              AlmostEquals(0.75 * period * v_earth, 10));
   EXPECT_THAT(earth_positions[75].coordinates().y, Eq(q_earth));
   EXPECT_THAT(earth_positions[100].coordinates().x,
-              AlmostEquals(1.00 * period * v_earth, 9));
+              AlmostEquals(1.00 * period * v_earth, 14));
   EXPECT_THAT(earth_positions[100].coordinates().y, Eq(q_earth));
 
   Length const q_probe = (trajectory.last().degrees_of_freedom().position() -
-                     reference_position).coordinates().y;
+                         reference_position).coordinates().y;
   Speed const v_probe =
       trajectory.last().degrees_of_freedom().velocity().coordinates().x;
   std::vector<Displacement<EarthMoonOrbitPlane>> probe_positions;
@@ -414,16 +414,16 @@ TEST_F(EphemerisTest, EarthTwoProbes) {
 
   EXPECT_THAT(earth_positions.size(), Eq(101));
   EXPECT_THAT(earth_positions[25].coordinates().x,
-              AlmostEquals(0.25 * period * v_earth, 10));
+              AlmostEquals(0.25 * period * v_earth, 15));
   EXPECT_THAT(earth_positions[25].coordinates().y, Eq(q_earth));
   EXPECT_THAT(earth_positions[50].coordinates().x,
-              AlmostEquals(0.50 * period * v_earth, 11));
+              AlmostEquals(0.50 * period * v_earth, 16));
   EXPECT_THAT(earth_positions[50].coordinates().y, Eq(q_earth));
   EXPECT_THAT(earth_positions[75].coordinates().x,
-              AlmostEquals(0.75 * period * v_earth, 6));
+              AlmostEquals(0.75 * period * v_earth, 10));
   EXPECT_THAT(earth_positions[75].coordinates().y, Eq(q_earth));
   EXPECT_THAT(earth_positions[100].coordinates().x,
-              AlmostEquals(1.00 * period * v_earth, 9));
+              AlmostEquals(1.00 * period * v_earth, 14));
   EXPECT_THAT(earth_positions[100].coordinates().y, Eq(q_earth));
 
   Length const q_probe1 = (trajectory1.last().degrees_of_freedom().position() -
@@ -445,9 +445,9 @@ TEST_F(EphemerisTest, EarthTwoProbes) {
   EXPECT_THAT(probe1_positions.size(), Eq(1001));
   EXPECT_THAT(probe2_positions.size(), Eq(1001));
   EXPECT_THAT(probe1_positions.back().coordinates().x,
-              AlmostEquals(1.00 * period * v_probe1, 1));
+              AlmostEquals(1.00 * period * v_probe1, 2));
   EXPECT_THAT(probe2_positions.back().coordinates().x,
-              AlmostEquals(1.00 * period * v_probe2, 2));
+              AlmostEquals(1.00 * period * v_probe2, 1));
   EXPECT_THAT(probe1_positions.back().coordinates().y,
               Eq(q_probe1));
   EXPECT_THAT(probe2_positions.back().coordinates().y,
