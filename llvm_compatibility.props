@@ -9,7 +9,7 @@
       <WarningLevel>EnableAllWarnings</WarningLevel>
     </ClCompile>
     <Link>
-      <AdditionalLibraryDirectories>$(SolutionDir)\..\Google\benchmark\msvc\Release;$(SolutionDir)\..\Google\glog-0.3.3\Release;$(SolutionDir)\..\Google\gmock-1.7.0\msvc\2010\Release;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(SolutionDir)\..\Google\benchmark\msvc\Release;$(SolutionDir)\..\Google\glog\Release;$(SolutionDir)\..\Google\gmock\msvc\2010\Release;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
