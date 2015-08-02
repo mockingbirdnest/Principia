@@ -534,7 +534,7 @@ std::unique_ptr<Plugin> Plugin::ReadFromMessage(
     }
   }
   GUIDToOwnedVessel vessels;
-  std::set<not_null<Vessel*> const> dirty_vessels;
+  std::set<not_null<Vessel*>> dirty_vessels;
   for (auto const& vessel_message : message.vessel()) {
     not_null<Celestial const*> const parent =
         FindOrDie(celestials, vessel_message.parent_index()).get();
@@ -576,7 +576,7 @@ std::unique_ptr<Plugin> Plugin::ReadFromMessage(
 
 Plugin::Plugin(GUIDToOwnedVessel vessels,
                IndexToOwnedCelestial celestials,
-               std::set<not_null<Vessel*> const> dirty_vessels,
+               std::set<not_null<Vessel*>> dirty_vessels,
                not_null<std::unique_ptr<PhysicsBubble>> bubble,
                std::unique_ptr<Ephemeris<Barycentric>> ephemeris,
                AdaptiveStepSizeIntegrator<
