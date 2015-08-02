@@ -1,6 +1,3 @@
-BEGIN {
-  print "principia_initial_state {"
-}
 function print_body() {
   print "  body {"
   print "    name = " body;
@@ -11,6 +8,10 @@ function print_body() {
   print "    vy = " vy;
   print "    vz = " vz;
   print "  }"
+}
+
+BEGIN {
+  print "principia_initial_state {"
 }
 /^Target body name:/ {
   body = $0;
