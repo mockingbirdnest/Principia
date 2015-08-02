@@ -1,6 +1,7 @@
 #pragma once
 
 #include <algorithm>
+#include <list>
 
 #include "physics/transforms.hpp"
 
@@ -42,9 +43,8 @@ namespace {
 
 // Fills |*rotation| with the rotation that maps the basis of the barycentric
 // frame to the standard basis.  Fills |*angular_frequency| with the
-// corresponding angular velocity.  These pointers must be nonnull, and there is
-// no transfer of ownership.  |barycentre_degrees_of_freedom| must be a convex
-// combination of the two other degrees of freedom.
+// corresponding angular velocity.  |barycentre_degrees_of_freedom| must be a
+// convex combination of the two other degrees of freedom.
 template<typename FromFrame, typename ToFrame>
 void FromBasisOfBarycentricFrameToStandardBasis(
     DegreesOfFreedom<FromFrame> const& barycentre_degrees_of_freedom,
@@ -71,23 +71,33 @@ void FromBasisOfBarycentricFrameToStandardBasis(
 
 template<typename ThroughFrame, typename ToFrame>
 void FromStandardBasisToBasisOfLastBarycentricFrame(
-    Trajectory<ToFrame> const& to_primary_trajectory,
-    Trajectory<ToFrame> const& to_secondary_trajectory,
+    Instant const& last,
+    MassiveBody const& primary,
+    ContinuousTrajectory<ToFrame> const& to_primary_trajectory,
+    typename std::list<
+        typename ContinuousTrajectory<ToFrame>::Hint>::iterator const
+        to_primary_hint,
+    MassiveBody const& secondary,
+    ContinuousTrajectory<ToFrame> const& to_secondary_trajectory,
+    typename std::list<
+        typename ContinuousTrajectory<ToFrame>::Hint>::iterator const
+        to_secondary_hint,
     not_null<Rotation<ThroughFrame, ToFrame>*> const rotation,
     not_null<DegreesOfFreedom<ToFrame>*> const
         last_barycentre_degrees_of_freedom) {
+  // TODO(phl): Add hinting.
   DegreesOfFreedom<ToFrame> const& last_primary_degrees_of_freedom =
-      to_primary_trajectory.last().degrees_of_freedom();
+      to_primary_trajectory.EvaluateDegreesOfFreedom(
+          last, &*to_primary_hint);
   DegreesOfFreedom<ToFrame> const& last_secondary_degrees_of_freedom =
-      to_secondary_trajectory.last().degrees_of_freedom();
+      to_secondary_trajectory.EvaluateDegreesOfFreedom(
+          last, &*to_secondary_hint);
   *last_barycentre_degrees_of_freedom =
       Barycentre<ToFrame, GravitationalParameter>(
           {last_primary_degrees_of_freedom,
            last_secondary_degrees_of_freedom},
-          {to_primary_trajectory.template body<MassiveBody>()->
-               gravitational_parameter(),
-           to_secondary_trajectory.template body<MassiveBody>()->
-               gravitational_parameter()});
+          {primary.gravitational_parameter(),
+           secondary.gravitational_parameter()});
   Rotation<ToFrame, ThroughFrame>
       from_basis_of_last_barycentric_frame_to_standard_basis =
           Rotation<ToFrame, ThroughFrame>::Identity();
@@ -103,32 +113,36 @@ void FromStandardBasisToBasisOfLastBarycentricFrame(
 
 }  // namespace
 
-template<typename Mobile,
-         typename FromFrame, typename ThroughFrame, typename ToFrame>
-not_null<std::unique_ptr<Transforms<Mobile, FromFrame, ThroughFrame, ToFrame>>>
-Transforms<Mobile, FromFrame, ThroughFrame, ToFrame>::BodyCentredNonRotating(
-    Mobile const& centre,
-    LazyTrajectory<ToFrame> const& to_trajectory) {
+template<typename FromFrame, typename ThroughFrame, typename ToFrame>
+not_null<std::unique_ptr<Transforms<FromFrame, ThroughFrame, ToFrame>>>
+Transforms<FromFrame, ThroughFrame, ToFrame>::BodyCentredNonRotating(
+    MassiveBody const& centre,
+    ContinuousTrajectory<FromFrame> const& from_centre_trajectory,
+    ContinuousTrajectory<ToFrame> const& to_centre_trajectory) {
   not_null<std::unique_ptr<Transforms>> transforms =
       make_not_null_unique<Transforms>();
+  transforms->from_hints_.emplace_front();
+  transforms->to_hints_.emplace_front();
+  auto const from_centre_hint = transforms->from_hints_.begin();
+  auto const to_centre_hint = transforms->to_hints_.begin();
 
-  transforms->coordinate_frame_ = CoordinateFrame<ToFrame>();
+  transforms->coordinate_frame_ =
+      [](Instant const& last,
+         Position<ToFrame> const& q) {
+    return CoordinateFrame<ToFrame>()(q);
+  };
 
   // From the perspective of the lambda the following variable is really |this|,
   // hence the name.
   not_null<Transforms*> that = transforms.get();
   transforms->first_ =
-      [&centre, that](
-          LazyTrajectory<FromFrame> const& from_trajectory,
+      [&from_centre_trajectory, from_centre_hint, that](
+          bool const cacheable,
           Instant const& t,
           DegreesOfFreedom<FromFrame> const& from_degrees_of_freedom,
           not_null<Trajectory<FromFrame> const*> const trajectory) ->
       DegreesOfFreedom<ThroughFrame> {
     // First check if the result is cached.
-    bool const cacheable =
-        std::find(that->cacheable_.begin(),
-                  that->cacheable_.end(),
-                  from_trajectory) !=  that->cacheable_.end();
     DegreesOfFreedom<ThroughFrame>* cached_through_degrees_of_freedom = nullptr;
     if (cacheable &&
         that->first_cache_.Lookup(trajectory, t,
@@ -136,14 +150,8 @@ Transforms<Mobile, FromFrame, ThroughFrame, ToFrame>::BodyCentredNonRotating(
       return *cached_through_degrees_of_freedom;
     }
 
-    // on_or_after() is Ln(N), but it doesn't matter unless the map gets very
-    // big, in which case we'll have cache misses anyway.
-    TYPENAME Trajectory<FromFrame>::NativeIterator const centre_it =
-        (centre.*from_trajectory)().on_or_after(t);
-    CHECK_EQ(centre_it.time(), t)
-        << "Time " << t << " not in centre trajectory";
     DegreesOfFreedom<FromFrame> const& centre_degrees_of_freedom =
-        centre_it.degrees_of_freedom();
+        from_centre_trajectory.EvaluateDegreesOfFreedom(t, &*from_centre_hint);
 
     AffineMap<FromFrame, ThroughFrame, Length, Identity> const position_map(
         centre_degrees_of_freedom.position(),
@@ -164,13 +172,14 @@ Transforms<Mobile, FromFrame, ThroughFrame, ToFrame>::BodyCentredNonRotating(
   };
 
   transforms->second_ =
-      [&centre, to_trajectory](
+      [&to_centre_trajectory, to_centre_hint](
+          Instant const last,
           Instant const& t,
           DegreesOfFreedom<ThroughFrame> const& through_degrees_of_freedom,
           Trajectory<ThroughFrame> const* trajectory) ->
       DegreesOfFreedom<ToFrame> {
     DegreesOfFreedom<ToFrame> const& last_centre_degrees_of_freedom =
-        (centre.*to_trajectory)().last().degrees_of_freedom();
+        to_centre_trajectory.EvaluateDegreesOfFreedom(last, &*to_centre_hint);
 
     AffineMap<ThroughFrame, ToFrame, Length, Identity> const position_map(
         ThroughFrame::origin,
@@ -184,26 +193,44 @@ Transforms<Mobile, FromFrame, ThroughFrame, ToFrame>::BodyCentredNonRotating(
   return transforms;
 }
 
-template<typename Mobile,
-         typename FromFrame, typename ThroughFrame, typename ToFrame>
-not_null<std::unique_ptr<Transforms<Mobile, FromFrame, ThroughFrame, ToFrame>>>
-Transforms<Mobile, FromFrame, ThroughFrame, ToFrame>::BarycentricRotating(
-    Mobile const& primary,
-    Mobile const& secondary,
-    LazyTrajectory<ToFrame> const& to_trajectory) {
+template<typename FromFrame, typename ThroughFrame, typename ToFrame>
+not_null<std::unique_ptr<Transforms<FromFrame, ThroughFrame, ToFrame>>>
+Transforms<FromFrame, ThroughFrame, ToFrame>::BarycentricRotating(
+    MassiveBody const& primary,
+    ContinuousTrajectory<FromFrame> const& from_primary_trajectory,
+    ContinuousTrajectory<ToFrame> const& to_primary_trajectory,
+    MassiveBody const& secondary,
+    ContinuousTrajectory<FromFrame> const& from_secondary_trajectory,
+    ContinuousTrajectory<ToFrame> const& to_secondary_trajectory) {
   not_null<std::unique_ptr<Transforms>> transforms =
       make_not_null_unique<Transforms>();
+  transforms->from_hints_.emplace_front();
+  transforms->to_hints_.emplace_front();
+  auto const from_primary_hint = transforms->from_hints_.begin();
+  auto const to_primary_hint = transforms->to_hints_.begin();
+  transforms->from_hints_.emplace_front();
+  transforms->to_hints_.emplace_front();
+  auto const from_secondary_hint = transforms->from_hints_.begin();
+  auto const to_secondary_hint = transforms->to_hints_.begin();
 
   transforms->coordinate_frame_ =
-      [&primary, &secondary, to_trajectory](
-          Position<ToFrame> const& q) {
+      [&primary, &to_primary_trajectory, to_primary_hint,
+       &secondary, &to_secondary_trajectory, to_secondary_hint](
+          Instant const& last,
+          Position<ToFrame> const& q) ->
+      Rotation<ToFrame, ToFrame> {
     Rotation<ThroughFrame, ToFrame>
         from_standard_basis_to_basis_of_last_barycentric_frame =
             Rotation<ThroughFrame, ToFrame>::Identity();
     DegreesOfFreedom<ToFrame> dummy = {ToFrame::origin, Velocity<ToFrame>()};
     FromStandardBasisToBasisOfLastBarycentricFrame<ThroughFrame, ToFrame>(
-        (primary.*to_trajectory)(),
-        (secondary.*to_trajectory)(),
+        last,
+        primary,
+        to_primary_trajectory,
+        to_primary_hint,
+        secondary,
+        to_secondary_trajectory,
+        to_secondary_hint,
         &from_standard_basis_to_basis_of_last_barycentric_frame,
         &dummy);
 
@@ -215,17 +242,14 @@ Transforms<Mobile, FromFrame, ThroughFrame, ToFrame>::BarycentricRotating(
   // hence the name.
   not_null<Transforms*> that = transforms.get();
   transforms->first_ =
-      [&primary, &secondary, that](
-          LazyTrajectory<FromFrame> const& from_trajectory,
+      [&primary, &from_primary_trajectory, from_primary_hint,
+       &secondary, &from_secondary_trajectory, from_secondary_hint, that](
+          bool const cacheable,
           Instant const& t,
           DegreesOfFreedom<FromFrame> const& from_degrees_of_freedom,
           not_null<Trajectory<FromFrame> const*> const trajectory) ->
       DegreesOfFreedom<ThroughFrame> {
     // First check if the result is cached.
-    bool const cacheable =
-        std::find(that->cacheable_.begin(),
-                  that->cacheable_.end(),
-                  from_trajectory) !=  that->cacheable_.end();
     DegreesOfFreedom<ThroughFrame>* cached_through_degrees_of_freedom = nullptr;
     if (cacheable &&
         that->first_cache_.Lookup(trajectory, t,
@@ -233,28 +257,18 @@ Transforms<Mobile, FromFrame, ThroughFrame, ToFrame>::BarycentricRotating(
       return *cached_through_degrees_of_freedom;
     }
 
-    // |on_or_after()| is Ln(N).
-    TYPENAME Trajectory<FromFrame>::NativeIterator const primary_it =
-        (primary.*from_trajectory)().on_or_after(t);
-    CHECK_EQ(primary_it.time(), t)
-        << "Time " << t << " not in primary trajectory";
-    TYPENAME Trajectory<FromFrame>::NativeIterator secondary_it =
-        (secondary.*from_trajectory)().on_or_after(t);
-    CHECK_EQ(secondary_it.time(), t)
-        << "Time " << t << " not in secondary trajectory";
-
     DegreesOfFreedom<FromFrame> const& primary_degrees_of_freedom =
-        primary_it.degrees_of_freedom();
+        from_primary_trajectory.EvaluateDegreesOfFreedom(
+            t, &*from_primary_hint);
     DegreesOfFreedom<FromFrame> const& secondary_degrees_of_freedom =
-        secondary_it.degrees_of_freedom();
+        from_secondary_trajectory.EvaluateDegreesOfFreedom(
+            t, &*from_secondary_hint);
     DegreesOfFreedom<FromFrame> const barycentre_degrees_of_freedom =
         Barycentre<FromFrame, GravitationalParameter>(
             {primary_degrees_of_freedom,
              secondary_degrees_of_freedom},
-            {(primary.*from_trajectory)().template body<MassiveBody>()->
-                 gravitational_parameter(),
-             (secondary.*from_trajectory)().template body<MassiveBody>()->
-                 gravitational_parameter()});
+            {primary.gravitational_parameter(),
+             secondary.gravitational_parameter()});
     Rotation<FromFrame, ThroughFrame>
         from_basis_of_barycentric_frame_to_standard_basis =
             Rotation<FromFrame, ThroughFrame>::Identity();
@@ -290,7 +304,9 @@ Transforms<Mobile, FromFrame, ThroughFrame, ToFrame>::BarycentricRotating(
   };
 
   transforms->second_ =
-      [&primary, &secondary, to_trajectory](
+      [&primary, &to_primary_trajectory, to_primary_hint,
+       &secondary, &to_secondary_trajectory, to_secondary_hint](
+          Instant const& last,
           Instant const& t,
           DegreesOfFreedom<ThroughFrame> const& through_degrees_of_freedom,
           Trajectory<ThroughFrame> const* trajectory) ->
@@ -301,8 +317,13 @@ Transforms<Mobile, FromFrame, ThroughFrame, ToFrame>::BarycentricRotating(
     DegreesOfFreedom<ToFrame> last_barycentre_degrees_of_freedom =
         {ToFrame::origin, Velocity<ToFrame>()};
     FromStandardBasisToBasisOfLastBarycentricFrame<ThroughFrame, ToFrame>(
-        (primary.*to_trajectory)(),
-        (secondary.*to_trajectory)(),
+        last,
+        primary,
+        to_primary_trajectory,
+        to_primary_hint,
+        secondary,
+        to_secondary_trajectory,
+        to_secondary_hint,
         &from_standard_basis_to_basis_of_last_barycentric_frame,
         &last_barycentre_degrees_of_freedom);
 
@@ -319,73 +340,80 @@ Transforms<Mobile, FromFrame, ThroughFrame, ToFrame>::BarycentricRotating(
   return transforms;
 }
 
-template<typename Mobile,
-         typename FromFrame, typename ThroughFrame, typename ToFrame>
-not_null<std::unique_ptr<Transforms<Mobile, FromFrame, ThroughFrame, ToFrame>>>
-Transforms<Mobile, FromFrame, ThroughFrame, ToFrame>::DummyForTesting() {
+template<typename FromFrame, typename ThroughFrame, typename ToFrame>
+not_null<std::unique_ptr<Transforms<FromFrame, ThroughFrame, ToFrame>>>
+Transforms<FromFrame, ThroughFrame, ToFrame>::DummyForTesting() {
   return make_not_null_unique<Transforms>();
 }
 
-template<typename Mobile,
-         typename FromFrame, typename ThroughFrame, typename ToFrame>
-void Transforms<Mobile, FromFrame, ThroughFrame, ToFrame>::set_cacheable(
-    LazyTrajectory<FromFrame> const& trajectory) {
-  cacheable_.push_back(trajectory);
-}
-
-template<typename Mobile,
-         typename FromFrame, typename ThroughFrame, typename ToFrame>
+template<typename FromFrame, typename ThroughFrame, typename ToFrame>
 typename Trajectory<FromFrame>::template TransformingIterator<ThroughFrame>
-Transforms<Mobile, FromFrame, ThroughFrame, ToFrame>::first(
-    Mobile const& mobile,
-    LazyTrajectory<FromFrame> const& from_trajectory) {
+Transforms<FromFrame, ThroughFrame, ToFrame>::first(
+    Trajectory<FromFrame> const& from_trajectory) {
   typename Trajectory<FromFrame>::template Transform<ThroughFrame> const first =
-      std::bind(first_, from_trajectory, _1, _2, _3);
-  return (mobile.*from_trajectory)().first_with_transform(first);
+      std::bind(first_, false /*cacheable*/, _1, _2, _3);
+  return from_trajectory.first_with_transform(first);
 }
 
-template<typename Mobile,
-         typename FromFrame, typename ThroughFrame, typename ToFrame>
+template<typename FromFrame, typename ThroughFrame, typename ToFrame>
 typename Trajectory<FromFrame>::template TransformingIterator<ThroughFrame>
-Transforms<Mobile, FromFrame, ThroughFrame, ToFrame>::first_on_or_after(
-    Mobile const& mobile,
-    LazyTrajectory<FromFrame> const& from_trajectory,
+Transforms<FromFrame, ThroughFrame, ToFrame>::first_with_caching(
+    not_null<Trajectory<FromFrame>*> const from_trajectory) {
+  // Make sure that the cache entry is deleted when the trajectory is deleted.
+  from_trajectory->set_on_destroy(
+      [this](not_null<Trajectory<FromFrame>const*> const trajectory) {
+        first_cache_.Delete(trajectory);
+      });
+
+  typename Trajectory<FromFrame>::template Transform<ThroughFrame> const first =
+      std::bind(first_, true /*cacheable*/, _1, _2, _3);
+  return from_trajectory->first_with_transform(first);
+}
+
+template<typename FromFrame, typename ThroughFrame, typename ToFrame>
+typename Trajectory<FromFrame>::template TransformingIterator<ThroughFrame>
+Transforms<FromFrame, ThroughFrame, ToFrame>::first_on_or_after(
+    Trajectory<FromFrame> const& from_trajectory,
     Instant const& time) {
   typename Trajectory<FromFrame>::template Transform<ThroughFrame> const first =
-      std::bind(first_, from_trajectory, _1, _2, _3);
-  return (mobile.*from_trajectory)().on_or_after_with_transform(time, first);
+      std::bind(first_, false /*cacheable*/, _1, _2, _3);
+  return from_trajectory.on_or_after_with_transform(time, first);
 }
 
-template<typename Mobile,
-         typename FromFrame, typename ThroughFrame, typename ToFrame>
+template<typename FromFrame, typename ThroughFrame, typename ToFrame>
 typename Trajectory<ThroughFrame>::template TransformingIterator<ToFrame>
-Transforms<Mobile, FromFrame, ThroughFrame, ToFrame>::second(
+Transforms<FromFrame, ThroughFrame, ToFrame>::second(
+    Instant const& last,
     Trajectory<ThroughFrame> const& through_trajectory) {
-  return through_trajectory.first_with_transform(second_);
+  typename Trajectory<ThroughFrame>::template Transform<ToFrame> second =
+      std::bind(second_, last, _1, _2, _3);
+  return through_trajectory.first_with_transform(second);
 }
 
-template<typename Mobile,
-         typename FromFrame, typename ThroughFrame, typename ToFrame>
+template<typename FromFrame, typename ThroughFrame, typename ToFrame>
 FrameField<ToFrame>
-Transforms<Mobile, FromFrame, ThroughFrame, ToFrame>::coordinate_frame() const {
-  return coordinate_frame_;
+Transforms<FromFrame, ThroughFrame, ToFrame>::coordinate_frame(
+    Instant const& last) const {
+  return std::bind(coordinate_frame_, last, _1);
 }
 
-template<typename Mobile,
-         typename FromFrame, typename ThroughFrame, typename ToFrame>
+template<typename FromFrame, typename ThroughFrame, typename ToFrame>
 template<typename Frame1, typename Frame2>
 bool
-Transforms<Mobile, FromFrame, ThroughFrame, ToFrame>::Cache<Frame1, Frame2>::
+Transforms<FromFrame, ThroughFrame, ToFrame>::Cache<Frame1, Frame2>::
 Lookup(not_null<Trajectory<Frame1> const*> const trajectory,
        Instant const& time,
        not_null<DegreesOfFreedom<Frame2>**> degrees_of_freedom) {
   bool found = false;
   ++number_of_lookups_[trajectory];
-  auto const it = map_.find(std::make_pair(trajectory, time));
-  if (it != map_.end()) {
-    ++number_of_hits_[trajectory];
-    *degrees_of_freedom = &it->second;
-    found = true;
+  auto const it1 = cache_.find(trajectory);
+  if (it1 != cache_.end()) {
+    auto const it2 = it1->second.find(time);
+    if (it2 != it1->second.end()) {
+      ++number_of_hits_[trajectory];
+      *degrees_of_freedom = &it2->second;
+      found = true;
+    }
   }
   VLOG_EVERY_N(1, 1000) << "Hit ratio for trajectory " << trajectory << " is "
                         << static_cast<double>(number_of_hits_[trajectory]) /
@@ -393,15 +421,22 @@ Lookup(not_null<Trajectory<Frame1> const*> const trajectory,
   return found;
 }
 
-template<typename Mobile,
-         typename FromFrame, typename ThroughFrame, typename ToFrame>
+template<typename FromFrame, typename ThroughFrame, typename ToFrame>
 template<typename Frame1, typename Frame2>
 void
-Transforms<Mobile, FromFrame, ThroughFrame, ToFrame>::Cache<Frame1, Frame2>::
-Insert(not_null<Trajectory<Frame1> const*> const trajectory,
+Transforms<FromFrame, ThroughFrame, ToFrame>::Cache<Frame1, Frame2>::Insert(
+    not_null<Trajectory<Frame1> const*> const trajectory,
        Instant const& time,
        DegreesOfFreedom<Frame2> const& degrees_of_freedom) {
-  map_.emplace(std::make_pair(trajectory, time), degrees_of_freedom);
+  cache_[trajectory].emplace(std::make_pair(time, degrees_of_freedom));
+}
+
+template<typename FromFrame, typename ThroughFrame, typename ToFrame>
+template<typename Frame1, typename Frame2>
+void
+Transforms<FromFrame, ThroughFrame, ToFrame>::Cache<Frame1, Frame2>::Delete(
+    not_null<Trajectory<Frame1> const*> const trajectory) {
+  cache_.erase(trajectory);
 }
 
 }  // namespace physics

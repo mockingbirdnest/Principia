@@ -143,16 +143,12 @@
     <ClCompile Include="ephemeris.cpp" />
     <ClCompile Include="hexadecimal.cpp" />
     <ClCompile Include="main.cpp" />
-    <ClCompile Include="n_body_system.cpp" />
     <ClCompile Include="quantities.cpp" />
     <ClCompile Include="sprk_integrator.cpp" />
     <ClCompile Include="transforms.cpp" />
-    <ClCompile Include="transformz.cpp" />
     <ClCompile Include="чебышёв_series.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="n_body_system.hpp" />
-    <ClInclude Include="n_body_system_body.hpp" />
     <ClInclude Include="quantities.hpp" />
     <ClInclude Include="quantities_body.hpp" />
   </ItemGroup>
