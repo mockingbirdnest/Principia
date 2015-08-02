@@ -1,7 +1,7 @@
 BEGIN {
   print "principia_initial_state {"
 }
-/^Target body name:/ {
+function print_body() {
   print "  body {"
   print "    name = " body;
   print "    x = " x;
@@ -11,6 +11,8 @@ BEGIN {
   print "    vy = " vy;
   print "    vz = " vz;
   print "  }"
+}
+/^Target body name:/ {
   body = $0;
   sub(/ \(.*/, "", body);
   sub(/.*: /, "", body)
@@ -23,8 +25,10 @@ BEGIN {
 /^ *VX=/ {
   vx = $2;
   vy = $4;
-  vz = $6
+  vz = $6;
+  print_body()
 }
 END {
+  print_body();
   print "}"
 }
