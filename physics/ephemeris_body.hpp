@@ -189,6 +189,10 @@ Ephemeris<Frame>::planetary_integrator() const {
 }
 
 template<typename Frame>
+void Ephemeris<Frame>::ForgetAfter(Instant const & t) {
+}
+
+template<typename Frame>
 void Ephemeris<Frame>::ForgetBefore(Instant const& t) {
   for (auto& pair : bodies_to_trajectories_) {
     ContinuousTrajectory<Frame>& trajectory = *pair.second;
