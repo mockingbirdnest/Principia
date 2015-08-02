@@ -137,8 +137,8 @@ Displacement<World> PhysicsBubble::DisplacementCorrection(
           Identity<WorldSun, World>()(barycentric_to_world_sun(
               current_->centre_of_mass_trajectory->
                   last().degrees_of_freedom().position() -
-              reference_celestial.prolongation().
-                  last().degrees_of_freedom().position())) +
+              reference_celestial.current_position(
+                  current_->centre_of_mass_trajectory->last().time()))) +
           reference_celestial_world_position -
               current_->centre_of_mass->position());
   }
@@ -156,8 +156,8 @@ Velocity<World> PhysicsBubble::VelocityCorrection(
             Identity<WorldSun, World>()(barycentric_to_world_sun(
                 current_->centre_of_mass_trajectory->
                     last().degrees_of_freedom().velocity() -
-                reference_celestial.prolongation().
-                    last().degrees_of_freedom().velocity())) -
+                reference_celestial.current_velocity(
+                    current_->centre_of_mass_trajectory->last().time()))) -
             current_->centre_of_mass->velocity());
   }
   VLOG_AND_RETURN(1, *current_->velocity_correction);
@@ -167,7 +167,7 @@ bool PhysicsBubble::empty() const {
   return current_ == nullptr;
 }
 
-std::size_t PhysicsBubble::size() const {
+std::size_t PhysicsBubble::count() const {
   return empty() ? 0 : 1;
 }
 
@@ -216,6 +216,7 @@ PhysicsBubble::mutable_centre_of_mass_trajectory() const {
 void PhysicsBubble::WriteToMessage(
     std::function<std::string(not_null<Vessel const*>)> const guid,
     not_null<serialization::PhysicsBubble*> const message) const {
+  LOG(INFO) << __FUNCTION__;
   body_.WriteToMessage(message->mutable_body());
   if (current_ != nullptr) {
     // An inverted map for obtaining part ids.
@@ -262,6 +263,8 @@ void PhysicsBubble::WriteToMessage(
     CHECK_NOTNULL(current_->velocity_correction.get())->WriteToMessage(
         full_state->mutable_velocity_correction());
   }
+  LOG(INFO) << NAMED(message->SpaceUsed());
+  LOG(INFO) << NAMED(message->ByteSize());
 }
 
 std::unique_ptr<PhysicsBubble> PhysicsBubble::ReadFromMessage(

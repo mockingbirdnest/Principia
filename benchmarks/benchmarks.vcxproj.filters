@@ -17,13 +17,7 @@
     <ClCompile Include="quantities.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="n_body_system.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="hexadecimal.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="transforms.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="чебышёв_series.cpp">
@@ -35,7 +29,7 @@
     <ClCompile Include="ephemeris.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="transformz.cpp">
+    <ClCompile Include="transforms.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -44,12 +38,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="quantities_body.hpp">
-      <Filter>Source Files</Filter>
-    </ClInclude>
-    <ClInclude Include="n_body_system.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="n_body_system_body.hpp">
       <Filter>Source Files</Filter>
     </ClInclude>
   </ItemGroup>

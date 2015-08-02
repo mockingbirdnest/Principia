@@ -1,37 +1,37 @@
 ﻿
-// .\Release\benchmarks.exe --benchmark_filter=Rotating --benchmark_repetitions=5  // NOLINT(whitespace/line_length)
+// .\release\benchmarks.exe --benchmark_filter=Transforms --benchmark_repetitions=5          // NOLINT(whitespace/line_length)
 // Benchmarking on 1 X 3310 MHz CPU
-// 2015/05/10-18:34:50
-// Benchmark                                       Time(ns)    CPU(ns) Iterations  // NOLINT(whitespace/line_length)
-// ------------------------------------------------------------------------------  // NOLINT(whitespace/line_length)
-// BM_BodyCentredNonRotating<false>/1000k         917631126  920405900          1  // NOLINT(whitespace/line_length)
-// BM_BodyCentredNonRotating<false>/1000k         912086225  920405900          1  // NOLINT(whitespace/line_length)
-// BM_BodyCentredNonRotating<false>/1000k         907597519  904805800          1  // NOLINT(whitespace/line_length)
-// BM_BodyCentredNonRotating<false>/1000k         910571075  904805800          1  // NOLINT(whitespace/line_length)
-// BM_BodyCentredNonRotating<false>/1000k         911085821  904805800          1  // NOLINT(whitespace/line_length)
-// BM_BodyCentredNonRotating<false>/1000k_mean    911794353  911045840          1  // NOLINT(whitespace/line_length)
-// BM_BodyCentredNonRotating<false>/1000k_stddev    3279175    7642457          0  // NOLINT(whitespace/line_length)
-// BM_BodyCentredNonRotating<true>/1000k         1338898397 1341608600          1  // NOLINT(whitespace/line_length)
-// BM_BodyCentredNonRotating<true>/1000k          740065075  748804800          1  // NOLINT(whitespace/line_length)
-// BM_BodyCentredNonRotating<true>/1000k          731354452  717604600          1  // NOLINT(whitespace/line_length)
-// BM_BodyCentredNonRotating<true>/1000k          734778858  748804800          1  // NOLINT(whitespace/line_length)
-// BM_BodyCentredNonRotating<true>/1000k          732065655  717604600          1  // NOLINT(whitespace/line_length)
-// BM_BodyCentredNonRotating<true>/1000k_mean     855432487  854885480          1  // NOLINT(whitespace/line_length)
-// BM_BodyCentredNonRotating<true>/1000k_stddev   241752335  243761234          0  // NOLINT(whitespace/line_length)
-// BM_BarycentricRotating<false>/1000k           2622258640 2636416900          1  // NOLINT(whitespace/line_length)
-// BM_BarycentricRotating<false>/1000k           2613256193 2605216700          1  // NOLINT(whitespace/line_length)
-// BM_BarycentricRotating<false>/1000k           2611253000 2605216700          1  // NOLINT(whitespace/line_length)
-// BM_BarycentricRotating<false>/1000k           2608254171 2620816800          1  // NOLINT(whitespace/line_length)
-// BM_BarycentricRotating<false>/1000k           2611253477 2574016500          1  // NOLINT(whitespace/line_length)
-// BM_BarycentricRotating<false>/1000k_mean      2613255096 2608336720          1  // NOLINT(whitespace/line_length)
-// BM_BarycentricRotating<false>/1000k_stddev       4776776   20695871          0  // NOLINT(whitespace/line_length)
-// BM_BarycentricRotating<true>/1000k            3042849995 3010819300          1  // NOLINT(whitespace/line_length)
-// BM_BarycentricRotating<true>/1000k            1525146700 1528809800          1  // NOLINT(whitespace/line_length)
-// BM_BarycentricRotating<true>/1000k            1526143528 1528809800          1  // NOLINT(whitespace/line_length)
-// BM_BarycentricRotating<true>/1000k            1526144958 1528809800          1  // NOLINT(whitespace/line_length)
-// BM_BarycentricRotating<true>/1000k            1526146866 1528809800          1  // NOLINT(whitespace/line_length)
-// BM_BarycentricRotating<true>/1000k_mean       1829286409 1825211700          1  // NOLINT(whitespace/line_length)
-// BM_BarycentricRotating<true>/1000k_stddev      606781916  592803800          0  // NOLINT(whitespace/line_length)
+// 2015/06/15-22:32:50
+// Benchmark                                                 Time(ns)    CPU(ns) Iterations  // NOLINT(whitespace/line_length)
+// ----------------------------------------------------------------------------------------  // NOLINT(whitespace/line_length)
+// BM_TransformsBodyCentredNonRotating<false>/1000k         824031091  826805300          1  // NOLINT(whitespace/line_length)
+// BM_TransformsBodyCentredNonRotating<false>/1000k         816129422  826805300          1  // NOLINT(whitespace/line_length)
+// BM_TransformsBodyCentredNonRotating<false>/1000k         815476394  811205200          1  // NOLINT(whitespace/line_length)
+// BM_TransformsBodyCentredNonRotating<false>/1000k         812676406  811205200          1  // NOLINT(whitespace/line_length)
+// BM_TransformsBodyCentredNonRotating<false>/1000k         816075301  811205200          1  // NOLINT(whitespace/line_length)
+// BM_TransformsBodyCentredNonRotating<false>/1000k_mean    816877723  817445240          1  // NOLINT(whitespace/line_length)
+// BM_TransformsBodyCentredNonRotating<false>/1000k_stddev    3794451    7642457          0  // NOLINT(whitespace/line_length)
+// BM_TransformsBodyCentredNonRotating<true>/1000k         1144107318 1154407400          1  // NOLINT(whitespace/line_length)
+// BM_TransformsBodyCentredNonRotating<true>/1000k          741064286  733204700          1  // NOLINT(whitespace/line_length)
+// BM_TransformsBodyCentredNonRotating<true>/1000k          736331439  733204700          1  // NOLINT(whitespace/line_length)
+// BM_TransformsBodyCentredNonRotating<true>/1000k          738806224  748804800          1  // NOLINT(whitespace/line_length)
+// BM_TransformsBodyCentredNonRotating<true>/1000k          749920821  733204700          1  // NOLINT(whitespace/line_length)
+// BM_TransformsBodyCentredNonRotating<true>/1000k_mean     822046018  820565260          1  // NOLINT(whitespace/line_length)
+// BM_TransformsBodyCentredNonRotating<true>/1000k_stddev   161095883  167030381          0  // NOLINT(whitespace/line_length)
+// BM_TransformsBarycentricRotating<false>/1000k           2293228841 2293214700          1  // NOLINT(whitespace/line_length)
+// BM_TransformsBarycentricRotating<false>/1000k           2287223315 2277614600          1  // NOLINT(whitespace/line_length)
+// BM_TransformsBarycentricRotating<false>/1000k           2289223647 2293214700          1  // NOLINT(whitespace/line_length)
+// BM_TransformsBarycentricRotating<false>/1000k           2286221957 2293214700          1  // NOLINT(whitespace/line_length)
+// BM_TransformsBarycentricRotating<false>/1000k           2282223678 2277614600          1  // NOLINT(whitespace/line_length)
+// BM_TransformsBarycentricRotating<false>/1000k_mean      2287624288 2286974660          1  // NOLINT(whitespace/line_length)
+// BM_TransformsBarycentricRotating<false>/1000k_stddev       3612834    7642457          0  // NOLINT(whitespace/line_length)
+// BM_TransformsBarycentricRotating<true>/1000k            2650264955 2652017000          1  // NOLINT(whitespace/line_length)
+// BM_TransformsBarycentricRotating<true>/1000k            1487141109 1466409400          1  // NOLINT(whitespace/line_length)
+// BM_TransformsBarycentricRotating<true>/1000k            1486144519 1482009500          1  // NOLINT(whitespace/line_length)
+// BM_TransformsBarycentricRotating<true>/1000k            1487141824 1482009500          1  // NOLINT(whitespace/line_length)
+// BM_TransformsBarycentricRotating<true>/1000k            1488141275 1482009500          1  // NOLINT(whitespace/line_length)
+// BM_TransformsBarycentricRotating<true>/1000k_mean       1719766736 1712890980          1  // NOLINT(whitespace/line_length)
+// BM_TransformsBarycentricRotating<true>/1000k_stddev      465249538  469601879          0  // NOLINT(whitespace/line_length)
 
 #include <memory>
 #include <utility>
@@ -47,6 +47,7 @@
 #include "quantities/quantities.hpp"
 #include "quantities/si.hpp"
 #include "physics/body.hpp"
+#include "physics/continuous_trajectory.hpp"
 #include "physics/degrees_of_freedom.hpp"
 #include "physics/massive_body.hpp"
 #include "physics/massless_body.hpp"
@@ -72,6 +73,7 @@ using quantities::AngularFrequency;
 using quantities::SIUnit;
 using quantities::Time;
 using physics::Body;
+using physics::ContinuousTrajectory;
 using physics::DegreesOfFreedom;
 using physics::MassiveBody;
 using physics::MasslessBody;
@@ -86,78 +88,53 @@ using si::Second;
 
 namespace benchmarks {
 
+namespace {
+const Length kTolerance = 0.01 * Metre;
+}  // namespace
+
 using World1 = Frame<serialization::Frame::TestTag,
                      serialization::Frame::TEST1, true>;
 using World2 = Frame<serialization::Frame::TestTag,
                      serialization::Frame::TEST2, false>;
 
-class TrajectoryHolder {
- public:
-  explicit TrajectoryHolder(
-      not_null<std::unique_ptr<Trajectory<World1>>> trajectory);
-
-  Trajectory<World1> const& trajectory() const;
-
- private:
-  std::unique_ptr<Trajectory<World1>> trajectory_;
-};
-
-TrajectoryHolder::TrajectoryHolder(
-    not_null<std::unique_ptr<Trajectory<World1>>> trajectory)
-    // TODO(phl): Y U NO MOV!
-    : trajectory_(trajectory.release()) {}
-
-Trajectory<World1> const& TrajectoryHolder::trajectory() const {
-  return *trajectory_;
-}
-
-not_null<std::unique_ptr<Trajectory<World1>>> NewCircularTrajectory(
-    not_null<Body const*> const body,
-    Position<World1> const& center,
-    Position<World1> const& initial,
-    AngularVelocity<World1> const& angular_velocity,
-    Time const& Δt,
-    int const steps) {
-  not_null<std::unique_ptr<Trajectory<World1>>> trajectory =
-      std::make_unique<Trajectory<World1>>(body);
-  Displacement<World1> const radius = initial - center;
+template<typename F, template<typename F> class T>
+void FillCircularTrajectory(Position<F> const& center,
+                            Position<F> const& initial,
+                            AngularVelocity<F> const& angular_velocity,
+                            Time const& Δt,
+                            int const steps,
+                            not_null<T<F>*> const trajectory) {
+  Displacement<F> const radius = initial - center;
   for (int i = 0; i < steps; ++i) {
     Time const t_i = i * Δt;
-    Displacement<World1> const displacement_i =
-        Exp(angular_velocity * t_i)(radius);
-    Velocity<World1> const velocity_i =
-        angular_velocity * displacement_i / Radian;
+    Displacement<F> const displacement_i = Exp(angular_velocity * t_i)(radius);
+    Velocity<F> const velocity_i = angular_velocity * displacement_i / Radian;
     trajectory->Append(Instant(t_i),
-                       DegreesOfFreedom<World1>(initial + displacement_i,
-                                                velocity_i));
+                       DegreesOfFreedom<F>(initial + displacement_i,
+                                           velocity_i));
   }
-  return trajectory;
 }
 
-not_null<std::unique_ptr<Trajectory<World1>>> NewLinearTrajectory(
-    not_null<Body const*> const body,
-    Position<World1> const& initial,
-    Velocity<World1> const& velocity,
-    Time const& Δt,
-    int const steps) {
-  not_null<std::unique_ptr<Trajectory<World1>>> trajectory =
-      std::make_unique<Trajectory<World1>>(body);
+template<typename F, template<typename F> class T>
+void FillLinearTrajectory(Position<F> const& initial,
+                          Velocity<F> const& velocity,
+                          Time const& Δt,
+                          int const steps,
+                          not_null<T<F>*> const trajectory) {
   for (int i = 0; i < steps; ++i) {
     Time const t_i = i * Δt;
-    Displacement<World1> const displacement_i = velocity * t_i;
+    Displacement<F> const displacement_i = velocity * t_i;
     trajectory->Append(Instant(t_i),
-                       DegreesOfFreedom<World1>(initial + displacement_i,
-                                                velocity));
+                       DegreesOfFreedom<F>(initial + displacement_i,
+                                           velocity));
   }
-  return trajectory;
 }
 
 // This code is derived from Plugin::RenderTrajectory.
 std::vector<std::pair<Position<World1>,
                       Position<World1>>> ApplyTransform(
     not_null<Body const*> const body,
-    not_null<Transforms<TrajectoryHolder, World1, World2, World1>*> const
-        transforms,
+    not_null<Transforms<World1, World2, World1>*> const transforms,
     Trajectory<World1>::TransformingIterator<World2> const& actual_it) {
   std::vector<std::pair<Position<World1>,
                         Position<World1>>> result;
@@ -170,7 +147,8 @@ std::vector<std::pair<Position<World1>,
 
   // Then build the final result using the second transform.
   std::unique_ptr<Position<World1>> last_position;  // std::optional.
-  for (auto it = transforms->second(intermediate_trajectory);
+  for (auto it = transforms->second(intermediate_trajectory.last().time(),
+                                    intermediate_trajectory);
        !it.at_end();
        ++it) {
     Position<World1> const& position = it.degrees_of_freedom().position();
@@ -185,7 +163,7 @@ std::vector<std::pair<Position<World1>,
 }
 
 template<bool cache>
-void BM_BodyCentredNonRotating(
+void BM_TransformsBodyCentredNonRotating(
     benchmark::State& state) {  // NOLINT(runtime/references)
 
   Time const Δt = 1 * Hour;
@@ -201,12 +179,13 @@ void BM_BodyCentredNonRotating(
       AngularVelocity<World1>({0 * SIUnit<AngularFrequency>(),
                                0 * SIUnit<AngularFrequency>(),
                                2 * π * Radian / JulianYear});
-  TrajectoryHolder earth_holder(NewCircularTrajectory(&earth,
-                                                      center,
-                                                      earth_initial_position,
-                                                      earth_angular_velocity,
-                                                      Δt,
-                                                      steps));
+  ContinuousTrajectory<World1> earth_trajectory(Δt, kTolerance);
+  FillCircularTrajectory<World1, ContinuousTrajectory>(center,
+                                                       earth_initial_position,
+                                                       earth_angular_velocity,
+                                                       Δt,
+                                                       steps,
+                                                       &earth_trajectory);
 
   MasslessBody probe;
   Position<World1> probe_initial_position =
@@ -217,29 +196,31 @@ void BM_BodyCentredNonRotating(
       Velocity<World1>({0 * SIUnit<Speed>(),
                         100 * Kilo(Metre) / Second,
                         0 * SIUnit<Speed>()});
-  TrajectoryHolder probe_holder(NewLinearTrajectory(&probe,
-                                                    probe_initial_position,
-                                                    probe_velocity,
-                                                    Δt,
-                                                    steps));
+  Trajectory<World1> probe_trajectory(&probe);
+  FillLinearTrajectory<World1, Trajectory>(probe_initial_position,
+                                           probe_velocity,
+                                           Δt,
+                                           steps,
+                                           &probe_trajectory);
 
-  auto transforms = Transforms<TrajectoryHolder, World1, World2, World1>::
-      BodyCentredNonRotating(earth_holder,
-                             &TrajectoryHolder::trajectory);
-  if (cache) {
-    transforms->set_cacheable(&TrajectoryHolder::trajectory);
-  }
-
+  auto transforms = Transforms<World1, World2, World1>::
+      BodyCentredNonRotating(earth, earth_trajectory, earth_trajectory);
   while (state.KeepRunning()) {
-    auto v = ApplyTransform(&probe,
+    if (cache) {
+      auto v = ApplyTransform(
+                   &probe,
                    transforms.get(),
-                   transforms->first(probe_holder,
-                                     &TrajectoryHolder::trajectory));
+                   transforms->first_with_caching(&probe_trajectory));
+    } else {
+      auto v = ApplyTransform(&probe,
+                              transforms.get(),
+                              transforms->first(probe_trajectory));
+    }
   }
 }
 
 template<bool cache>
-void BM_BarycentricRotating(
+void BM_TransformsBarycentricRotating(
     benchmark::State& state) {  // NOLINT(runtime/references)
 
   Time const Δt = 1 * Hour;
@@ -255,12 +236,13 @@ void BM_BarycentricRotating(
       AngularVelocity<World1>({0 * SIUnit<AngularFrequency>(),
                                0 * SIUnit<AngularFrequency>(),
                                2 * π * Radian / JulianYear});
-  TrajectoryHolder earth_holder(NewCircularTrajectory(&earth,
-                                                      earth_center,
-                                                      earth_initial_position,
-                                                      earth_angular_velocity,
-                                                      Δt,
-                                                      steps));
+  ContinuousTrajectory<World1> earth_trajectory(Δt, kTolerance);
+  FillCircularTrajectory<World1, ContinuousTrajectory>(earth_center,
+                                                       earth_initial_position,
+                                                       earth_angular_velocity,
+                                                       Δt,
+                                                       steps,
+                                                       &earth_trajectory);
 
   MassiveBody thera(astronomy::EarthMass);
   Position<World1> thera_center =
@@ -275,12 +257,13 @@ void BM_BarycentricRotating(
       AngularVelocity<World1>({0 * SIUnit<AngularFrequency>(),
                                0 * SIUnit<AngularFrequency>(),
                                6 * Radian / JulianYear});
-  TrajectoryHolder thera_holder(NewCircularTrajectory(&thera,
-                                                      thera_center,
-                                                      thera_initial_position,
-                                                      thera_angular_velocity,
-                                                      Δt,
-                                                      steps));
+  ContinuousTrajectory<World1> thera_trajectory(Δt, kTolerance);
+  FillCircularTrajectory<World1, ContinuousTrajectory>(thera_center,
+                                                       thera_initial_position,
+                                                       thera_angular_velocity,
+                                                       Δt,
+                                                       steps,
+                                                       &thera_trajectory);
 
   MasslessBody probe;
   Position<World1> probe_initial_position =
@@ -291,34 +274,40 @@ void BM_BarycentricRotating(
       Velocity<World1>({0 * SIUnit<Speed>(),
                         100 * Kilo(Metre) / Second,
                         0 * SIUnit<Speed>()});
-  TrajectoryHolder probe_holder(NewLinearTrajectory(&probe,
-                                                    probe_initial_position,
-                                                    probe_velocity,
-                                                    Δt,
-                                                    steps));
+  Trajectory<World1> probe_trajectory(&probe);
+  FillLinearTrajectory<World1, Trajectory>(probe_initial_position,
+                                           probe_velocity,
+                                           Δt,
+                                           steps,
+                                           &probe_trajectory);
 
-  auto transforms = Transforms<TrajectoryHolder, World1, World2, World1>::
-      BarycentricRotating(earth_holder,
-                          thera_holder,
-                          &TrajectoryHolder::trajectory);
-  if (cache) {
-    transforms->set_cacheable(&TrajectoryHolder::trajectory);
-  }
-
+  auto transforms = Transforms<World1, World2, World1>::
+      BarycentricRotating(earth,
+                          earth_trajectory,
+                          earth_trajectory,
+                          thera,
+                          thera_trajectory,
+                          thera_trajectory);
   while (state.KeepRunning()) {
-    auto v = ApplyTransform(&probe,
+    if (cache) {
+      auto v = ApplyTransform(
+                   &probe,
                    transforms.get(),
-                   transforms->first(probe_holder,
-                                     &TrajectoryHolder::trajectory));
+                   transforms->first_with_caching(&probe_trajectory));
+    } else {
+      auto v = ApplyTransform(&probe,
+                              transforms.get(),
+                              transforms->first(probe_trajectory));
+    }
   }
 }
 
-int const kIter = 1000 << 10;
+int const kIter = (1000 << 10) + 1;
 
-BENCHMARK_TEMPLATE(BM_BodyCentredNonRotating, false)->Arg(kIter);
-BENCHMARK_TEMPLATE(BM_BodyCentredNonRotating, true)->Arg(kIter);
-BENCHMARK_TEMPLATE(BM_BarycentricRotating, false)->Arg(kIter);
-BENCHMARK_TEMPLATE(BM_BarycentricRotating, true)->Arg(kIter);
+BENCHMARK_TEMPLATE(BM_TransformsBodyCentredNonRotating, false)->Arg(kIter);
+BENCHMARK_TEMPLATE(BM_TransformsBodyCentredNonRotating, true)->Arg(kIter);
+BENCHMARK_TEMPLATE(BM_TransformsBarycentricRotating, false)->Arg(kIter);
+BENCHMARK_TEMPLATE(BM_TransformsBarycentricRotating, true)->Arg(kIter);
 
 }  // namespace benchmarks
 }  // namespace principia

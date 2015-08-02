@@ -27,7 +27,7 @@ This project depends upon:
   *modified according to the instructions below*;
 - The Google [gmock/gtest 1.7.0](https://code.google.com/p/googlemock
 /downloads/list) libraries, *modified according to the instructions below*;
-- pleroy's [fork](https://github.com/pleroy/benchmark) of the Google benchmark
+- our [fork](https://github.com/mockingbirdnest/benchmark) of the Google benchmark
   library.
 
 The following instructions should be followed before opening the repository, so
@@ -89,18 +89,14 @@ rm "gmock.patch"
 0. In `<root>\Google`, run the following:
 
   ```powershell
-git clone "https://github.com/google/protobuf.git" --depth 1 -b "v3.0.0-alpha-1"
-cd protobuf
-copy "..\..\Principia\documentation\setup files\protobuf.patch"
-git am "protobuf.patch"
-rm "protobuf.patch"
+git clone "https://github.com/mockingbirdnest/protobuf.git"
 git rm --cached -r .
 git reset --hard
   ```
 0. In `<root>\Google`, run:
 
   ```powershell
-git clone "https://github.com/pleroy/benchmark.git"
+git clone "https://github.com/mockingbirdnest/benchmark.git"
   ```
 0. Open `<root>\Google\glog-0.3.3\google-glog.sln` with Visual Studio 2013.
   Build for Debug and Release. Ignore any warnings. Close the solution.

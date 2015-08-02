@@ -107,6 +107,11 @@ void ContinuousTrajectory<Frame>::Append(
 
 template<typename Frame>
 void ContinuousTrajectory<Frame>::ForgetBefore(Instant const& time) {
+  if (time < t_min()) {
+    // TODO(phl): test for this case, it yielded a check failure in
+    // |FindSeriesForInstant|.
+    return;
+  }
   series_.erase(series_.begin(), FindSeriesForInstant(time));
 
   // If there are no |series_| left, clear everything.  Otherwise, update the
@@ -176,6 +181,7 @@ DegreesOfFreedom<Frame> ContinuousTrajectory<Frame>::EvaluateDegreesOfFreedom(
 template<typename Frame>
 void ContinuousTrajectory<Frame>::WriteToMessage(
       not_null<serialization::ContinuousTrajectory*> const message) const {
+  LOG(INFO) << __FUNCTION__;
   step_.WriteToMessage(message->mutable_step());
   tolerance_.WriteToMessage(message->mutable_tolerance());
   adjusted_tolerance_.WriteToMessage(message->mutable_adjusted_tolerance());
@@ -198,6 +204,9 @@ void ContinuousTrajectory<Frame>::WriteToMessage(
     degrees_of_freedom.WriteToMessage(
         instantaneous_degrees_of_freedom->mutable_degrees_of_freedom());
   }
+  LOG(INFO) << NAMED(this);
+  LOG(INFO) << NAMED(message->SpaceUsed());
+  LOG(INFO) << NAMED(message->ByteSize());
 }
 
 template<typename Frame>

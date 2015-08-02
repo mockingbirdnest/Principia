@@ -29,7 +29,7 @@ using ::std::placeholders::_3;
 
 namespace physics {
 
-namespace {
+namespace {  // TODO(egg): this should be a named namespace (internal)
 
 // If j is a unit vector along the axis of rotation, and r is the separation
 // between the bodies, the acceleration computed here is:
@@ -57,6 +57,27 @@ FORCE_INLINE Vector<Acceleration, Frame>
                   r_axis_projection * one_over_r_squared)) * r;
   return axis_acceleration + radial_acceleration;
 }
+
+// For mocking purposes.
+template<typename Frame>
+class DummyIntegrator
+    : public FixedStepSizeIntegrator<
+                 typename Ephemeris<Frame>::NewtonianMotionEquation> {
+  using ODE = typename Ephemeris<Frame>::NewtonianMotionEquation;
+  DummyIntegrator() : FixedStepSizeIntegrator<ODE>(
+      serialization::FixedStepSizeIntegrator::DUMMY) {}
+
+ public:
+  void Solve(IntegrationProblem<ODE> const& problem,
+             Time const& step) const override {
+    LOG(FATAL) << "dummy";
+  }
+
+  static DummyIntegrator const& Instance() {
+    static DummyIntegrator const instance;
+    return instance;
+  }
+};
 
 }  // namespace
 
@@ -124,9 +145,9 @@ std::vector<MassiveBody const*> const& Ephemeris<Frame>::bodies() const {
 }
 
 template<typename Frame>
-ContinuousTrajectory<Frame> const& Ephemeris<Frame>::trajectory(
+not_null<ContinuousTrajectory<Frame> const*> Ephemeris<Frame>::trajectory(
     not_null<MassiveBody const*> body) const {
-  return *FindOrDie(bodies_to_trajectories_, body);
+  return FindOrDie(bodies_to_trajectories_, body).get();
 }
 
 template<typename Frame>
@@ -161,9 +182,16 @@ Instant Ephemeris<Frame>::t_max() const {
 }
 
 template<typename Frame>
+FixedStepSizeIntegrator<
+    typename Ephemeris<Frame>::NewtonianMotionEquation> const&
+Ephemeris<Frame>::planetary_integrator() const {
+  return planetary_integrator_;
+}
+
+template<typename Frame>
 void Ephemeris<Frame>::ForgetBefore(Instant const& t) {
-  for (auto const& pair : bodies_to_trajectories_) {
-    ContinuousTrajectory<Frame>& trajectory = pair.second;
+  for (auto& pair : bodies_to_trajectories_) {
+    ContinuousTrajectory<Frame>& trajectory = *pair.second;
     trajectory.ForgetBefore(t);
   }
 }
@@ -247,6 +275,7 @@ void Ephemeris<Frame>::FlowWithFixedStep(
     std::vector<not_null<Trajectory<Frame>*>> const& trajectories,
     Time const& step,
     Instant const& t) {
+  LOG(INFO) << __FUNCTION__;
   if (empty() || t > t_max()) {
     Prolong(t);
   }
@@ -280,6 +309,7 @@ void Ephemeris<Frame>::FlowWithFixedStep(
 template<typename Frame>
 void Ephemeris<Frame>::WriteToMessage(
     not_null<serialization::Ephemeris*> const message) const {
+  LOG(INFO) << __FUNCTION__;
   // The bodies are serialized in the order in which they were given at
   // construction.
   for (auto const& unowned_body : unowned_bodies_) {
@@ -294,10 +324,12 @@ void Ephemeris<Frame>::WriteToMessage(
   step_.WriteToMessage(message->mutable_step());
   fitting_tolerance_.WriteToMessage(message->mutable_fitting_tolerance());
   last_state_.WriteToMessage(message->mutable_last_state());
+  LOG(INFO) << NAMED(message->SpaceUsed());
+  LOG(INFO) << NAMED(message->ByteSize());
 }
 
 template<typename Frame>
-not_null<std::unique_ptr<Ephemeris<Frame>>> Ephemeris<Frame>::ReadFromMessage(
+std::unique_ptr<Ephemeris<Frame>> Ephemeris<Frame>::ReadFromMessage(
     serialization::Ephemeris const& message) {
   std::vector<not_null<std::unique_ptr<MassiveBody const>>> bodies;
   for (auto const& body : message.body()) {
@@ -315,7 +347,7 @@ not_null<std::unique_ptr<Ephemeris<Frame>>> Ephemeris<Frame>::ReadFromMessage(
       bodies.size(),
       DegreesOfFreedom<Frame>(Position<Frame>(), Velocity<Frame>()));
   Instant const initial_time;
-  not_null<std::unique_ptr<Ephemeris<Frame>>> ephemeris =
+  std::unique_ptr<Ephemeris<Frame>> ephemeris =
       std::make_unique<Ephemeris<Frame>>(std::move(bodies),
                                          initial_state,
                                          initial_time,
@@ -327,6 +359,7 @@ not_null<std::unique_ptr<Ephemeris<Frame>>> Ephemeris<Frame>::ReadFromMessage(
           message.last_state());
   int index = 0;
   ephemeris->bodies_to_trajectories_.clear();
+  ephemeris->trajectories_.clear();
   for (auto const& trajectory : message.trajectory()) {
     not_null<MassiveBody const*> const body = ephemeris->bodies_[index].get();
     not_null<std::unique_ptr<ContinuousTrajectory<Frame>>>
@@ -339,6 +372,10 @@ not_null<std::unique_ptr<Ephemeris<Frame>>> Ephemeris<Frame>::ReadFromMessage(
   }
   return ephemeris;
 }
+
+template <typename Frame>
+Ephemeris<Frame>::Ephemeris()
+    : planetary_integrator_(DummyIntegrator<Frame>::Instance()) {}
 
 template<typename Frame>
 void Ephemeris<Frame>::AppendMassiveBodiesState(

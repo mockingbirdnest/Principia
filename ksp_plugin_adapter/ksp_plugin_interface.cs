@@ -219,9 +219,15 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
   private static extern void set_prediction_length(IntPtr plugin, double t);
 
   [DllImport(dllName           : kDllPath,
-             EntryPoint        = "principia__set_prediction_step",
+             EntryPoint        = "principia__set_prediction_length_tolerance",
              CallingConvention = CallingConvention.Cdecl)]
-  private static extern void set_prediction_step(IntPtr plugin, double t);
+  private static extern void set_prediction_length_tolerance(IntPtr plugin,
+                                                             double t);
+  [DllImport(dllName           : kDllPath,
+             EntryPoint        = "principia__set_prediction_speed_tolerance",
+             CallingConvention = CallingConvention.Cdecl)]
+  private static extern void set_prediction_speed_tolerance(IntPtr plugin,
+                                                            double t);
 
   [DllImport(dllName             : kDllPath,
              EntryPoint =        "principia__has_vessel",

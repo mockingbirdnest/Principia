@@ -60,12 +60,10 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
   [KSPField(isPersistant = true)]
   private bool fix_navball_in_plotting_frame_ = true;
 
-  private readonly double[] prediction_step_sizes_ =
-      {1 << 4, 1 << 5, 1 << 6, 1 << 7, 1 << 8, 1 << 9, 1 << 10, 1 << 11,
-       1 << 12, 1 << 13, 1 << 14, 1 << 15, 1 << 16, 1 << 17, 1 << 18, 1 << 19,
-       1 << 20, 1 << 21, 1 << 22};
+  private readonly double[] prediction_length_tolerances_ =
+      {1E-3, 1E-2, 1E0, 1E1, 1E2, 1E3, 1E4};
   [KSPField(isPersistant = true)]
-  private int prediction_step_index_ = 1;
+  private int prediction_length_tolerance_index_ = 1;
   private readonly double[] prediction_lengths_ =
       {1 << 10, 1 << 11, 1 << 12, 1 << 13, 1 << 14, 1 << 15, 1 << 16, 1 << 17,
        1 << 18, 1 << 19, 1 << 20, 1 << 21, 1 << 22, 1 << 23, 1 << 24, 1 << 25,
@@ -567,9 +565,13 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
           has_vessel(plugin_, active_vessel.id.ToString());
       if (ready_to_draw_active_vessel_trajectory) {
         set_predicted_vessel(plugin_, active_vessel.id.ToString());
-        set_prediction_step(
+        set_prediction_length_tolerance(
             plugin_,
-            prediction_step_sizes_[prediction_step_index_]);
+            prediction_length_tolerances_[prediction_length_tolerance_index_]);
+        // TODO(egg): make the speed tolerance independent.
+        set_prediction_speed_tolerance(
+            plugin_,
+            prediction_length_tolerances_[prediction_length_tolerance_index_]);
         set_prediction_length(plugin_,
                               prediction_lengths_[prediction_length_index_]);
       } else {
@@ -726,13 +728,7 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
     rendered_trajectory_.layer = 31;
     rendered_prediction_ = new VectorLine(
         lineName     : "rendered_prediction_",
-        linePoints   : new UnityEngine.Vector3[
-                           Math.Min(
-                               kMaxVectorLinePoints,
-                               2 * (int)(prediction_lengths_[
-                                             prediction_length_index_] /
-                                         prediction_step_sizes_[
-                                             prediction_step_index_]))],
+        linePoints   : new UnityEngine.Vector3[1000],  // TODO(egg): constant.
         lineMaterial : MapView.OrbitLinesMaterial,
         color        : XKCDColors.Fuchsia,
         width        : 5,
@@ -973,21 +969,17 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
                                      text  : "Display patched conics");
 
     bool changed_settings = false;
-    Selector(prediction_step_sizes_,
-             ref prediction_step_index_,
+    Selector(prediction_length_tolerances_,
+             ref prediction_length_tolerance_index_,
              "Step size",
              ref changed_settings,
-             "{0:0.00e0} s");
+             "{0:0.00e0} m");
     Selector(prediction_lengths_,
              ref prediction_length_index_,
              "Length",
              ref changed_settings,
              "{0:0.00e0} s");
     if (changed_settings) {
-      while (prediction_lengths_[prediction_length_index_] <
-             prediction_step_sizes_[prediction_step_index_]) {
-        ++prediction_length_index_;
-      }
       ResetRenderedTrajectory();
     }
   }
