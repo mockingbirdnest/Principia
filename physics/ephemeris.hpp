@@ -63,10 +63,11 @@ class Ephemeris {
   virtual FixedStepSizeIntegrator<NewtonianMotionEquation> const&
   planetary_integrator() const;
 
-  //TODO(phl):comment
+  // Calls |ForgetAfter| on all trajectories for a time which is greater than or
+  // equal to |t|, and less than 6 months after |t|.  On return |t_max() >= t|.
   virtual void ForgetAfter(Instant const& t);
 
-  // Calls |ForgetBefore| on all trajectories.  Sets |t_min| to |t|.
+  // Calls |ForgetBefore| on all trajectories.  On return |t_min() == t|.
   virtual void ForgetBefore(Instant const& t);
 
   // Prolongs the ephemeris up to at least |t|.  After the call, |t_max() >= t|.
@@ -192,6 +193,12 @@ class Ephemeris {
   Time const step_;
   Length const fitting_tolerance_;
   typename NewtonianMotionEquation::SystemState last_state_;
+
+  // These are the states other that the last which we preserve in order to be
+  // to implement ForgetAfter.  The |state.time.value| are |t_max()| values for
+  // all the underlying trajectories.
+  std::vector<typename NewtonianMotionEquation::SystemState>
+      intermediate_states_;
 
   int number_of_spherical_bodies_ = 0;
   int number_of_oblate_bodies_ = 0;

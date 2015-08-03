@@ -13,6 +13,7 @@
 #include "quantities/elementary_functions.hpp"
 #include "quantities/named_quantities.hpp"
 #include "quantities/quantities.hpp"
+#include "quantities/si.hpp"
 
 namespace principia {
 
@@ -23,6 +24,8 @@ using integrators::AdaptiveStepSize;
 using integrators::IntegrationProblem;
 using quantities::Abs;
 using quantities::Exponentiation;
+using quantities::Time;
+using si::Day;
 using ::std::placeholders::_1;
 using ::std::placeholders::_2;
 using ::std::placeholders::_3;
@@ -30,6 +33,8 @@ using ::std::placeholders::_3;
 namespace physics {
 
 namespace {  // TODO(egg): this should be a named namespace (internal)
+
+Time const kMaxTimeBetweenIntermediateStates = 180 * Day;
 
 // If j is a unit vector along the axis of rotation, and r is the separation
 // between the bodies, the acceleration computed here is:
@@ -190,6 +195,20 @@ Ephemeris<Frame>::planetary_integrator() const {
 
 template<typename Frame>
 void Ephemeris<Frame>::ForgetAfter(Instant const & t) {
+  auto it = std::lower_bound(
+                intermediate_states_.begin(), intermediate_states_.end(), t,
+                [](typename NewtonianMotionEquation::SystemState const& left,
+                   Instant const& right) {
+                  return left.time.value < right;
+                });
+  CHECK_LE(t, it->time.value);
+
+  for (auto& pair : bodies_to_trajectories_) {
+    ContinuousTrajectory<Frame>& trajectory = *pair.second;
+    trajectory.ForgetAfter(it->time.value);
+  }
+  last_state_ = *it;
+  intermediate_states_.erase(it, intermediate_states.end());
 }
 
 template<typename Frame>
@@ -392,6 +411,18 @@ void Ephemeris<Frame>::AppendMassiveBodiesState(
         DegreesOfFreedom<Frame>(state.positions[index].value,
                                 state.velocities[index].value));
     ++index;
+  }
+
+  // Record an intermediate state if we haven't done so for too long.
+  CHECK(!trajectories_.empty());
+  Instant const t_max = trajectories_.front()->t_max();
+  Instant const t_last_intermediate_state =
+      intermediate_states_.empty()
+          ? Instant(std::numeric_limits<double>::min() * Second)
+          : intermediate_states_.back().time.value;
+  if (t_max - t_last_intermediate_state > kMaxTimeBetweenIntermediateStates) {
+    CHECK_EQ(t_max, state.time.value);
+    intermediate_states_.push_back(state);
   }
 }
 

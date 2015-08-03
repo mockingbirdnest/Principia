@@ -343,7 +343,8 @@ ContinuousTrajectory<Frame>::FindSeriesForInstant(Instant const& time) const {
   // Need to use |lower_bound|, not |upper_bound|, because it allows
   // heterogeneous arguments.  This returns the first series |s| such that
   // |time <= s.t_max()|.
-  auto const it = std::lower_bound(series_.begin(), series_.end(), time,
+  auto const it = std::lower_bound(
+                      series_.begin(), series_.end(), time,
                       [](ЧебышёвSeries<Displacement<Frame>> const& left,
                          Instant const& right) {
                         return left.t_max() < right;
