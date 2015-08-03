@@ -13,7 +13,7 @@ BEGIN {
     print "    z    = " z " km";
     print "    vx   = " vx " km/s";
     print "    vy   = " vy " km/s";
-    print "    vz   = " vz "km/s";
+    print "    vz   = " vz " km/s";
     print "  }"
   }
   body = $0;
