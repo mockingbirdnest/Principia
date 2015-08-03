@@ -106,6 +106,18 @@ void ContinuousTrajectory<Frame>::Append(
 }
 
 template<typename Frame>
+void ContinuousTrajectory<Frame>::ForgetAfter(Instant const & time) {
+  if (time > t_max()) {
+    return;
+  }
+  auto it = FindSeriesForInstant(time);
+  if (it != series_.end()) {
+    CHECK_EQ(time, it->t_max());
+    series_.erase(++it, series_.end());
+  }
+}
+
+template<typename Frame>
 void ContinuousTrajectory<Frame>::ForgetBefore(Instant const& time) {
   if (time < t_min()) {
     // TODO(phl): test for this case, it yielded a check failure in
@@ -329,7 +341,8 @@ template<typename Frame>
 typename std::vector<ЧебышёвSeries<Displacement<Frame>>>::const_iterator
 ContinuousTrajectory<Frame>::FindSeriesForInstant(Instant const& time) const {
   // Need to use |lower_bound|, not |upper_bound|, because it allows
-  // heterogeneous arguments.
+  // heterogeneous arguments.  This returns the first series |s| such that
+  // |time <= s.t_max()|.
   auto const it = std::lower_bound(series_.begin(), series_.end(), time,
                       [](ЧебышёвSeries<Displacement<Frame>> const& left,
                          Instant const& right) {
