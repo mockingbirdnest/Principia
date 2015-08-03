@@ -1,10 +1,10 @@
 BEGIN {
   print "principia_initial_state {";
-  first_pass = true
+  first_pass = 1
 }
 /^Target body name:/ {
   if (first_pass) {
-    first_pass = false
+    first_pass = 0
   } else {
     print "  body {";
     print "    name = " body;
