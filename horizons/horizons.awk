@@ -1,12 +1,12 @@
 function print_body() {
   print "  body {"
   print "    name = " body;
-  print "    x = " x;
-  print "    y = " y;
-  print "    z = " z;
-  print "    vx = " vx;
-  print "    vy = " vy;
-  print "    vz = " vz;
+  print "    x    = " x;
+  print "    y    = " y;
+  print "    z    = " z;
+  print "    vx   = " vx;
+  print "    vy   = " vy;
+  print "    vz   = " vz;
   print "  }"
 }
 

@@ -1,1 +1,1 @@
-sed 's/=-/= -/g' HORIZONS.mbox | awk -f horizons.awk > horizons.cfg
+sed 's/= /= +/g;s/=-/= -/g' HORIZONS.mbox | awk -f horizons.awk > horizons.cfg
