@@ -59,7 +59,7 @@
               '999'
 ! Principia: 22; RSS: YES; Charon
               '901'
-! Principia: 16; RSS: NO; Eris
+! Principia: 16; RSS:  NO; Eris
               '136199'
  OBJ_DATA    = 'NO'
  MAKE_EPHEM  = 'YES'
