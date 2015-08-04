@@ -182,6 +182,52 @@ TEST_F(EphemerisTest, EarthMoon) {
   EXPECT_THAT(Abs(moon_positions[100].coordinates().x), Lt(2 * Metre));
 }
 
+// Test the behavior of ForgetAfter on the Earth-Moon system.
+TEST_F(EphemerisTest, ForgetAfter) {
+  std::vector<not_null<std::unique_ptr<MassiveBody const>>> bodies;
+  std::vector<DegreesOfFreedom<EarthMoonOrbitPlane>> initial_state;
+  Position<EarthMoonOrbitPlane> centre_of_mass;
+  Time period;
+  SetUpEarthMoonSystem(&bodies, &initial_state, &centre_of_mass, &period);
+
+  MassiveBody const* const earth = bodies[0].get();
+  MassiveBody const* const moon = bodies[1].get();
+
+  Ephemeris<EarthMoonOrbitPlane>
+    ephemeris(
+      std::move(bodies),
+      initial_state,
+      t0_,
+      McLachlanAtela1992Order5Optimal<Position<EarthMoonOrbitPlane>>(),
+      period / 10,
+      5 * Milli(Metre));
+
+  ephemeris.Prolong(t0_ + 16 * period);
+
+  ContinuousTrajectory<EarthMoonOrbitPlane> const& earth_trajectory =
+    *ephemeris.trajectory(earth);
+  ContinuousTrajectory<EarthMoonOrbitPlane> const& moon_trajectory =
+    *ephemeris.trajectory(moon);
+
+  Instant t_max = ephemeris.t_max();
+  EXPECT_EQ(t0_ + 16 * period, t_max);
+  EXPECT_EQ(t_max, earth_trajectory.t_max());
+  EXPECT_EQ(t_max, moon_trajectory.t_max());
+
+  ephemeris.ForgetAfter(t0_ + 7 * period);
+  t_max = ephemeris.t_max();
+  EXPECT_LE(t0_ + 7 * period, t_max);
+  EXPECT_GE(t0_ + 7 * period + 180 * Day, t_max);
+  EXPECT_EQ(t_max, earth_trajectory.t_max());
+  EXPECT_EQ(t_max, moon_trajectory.t_max());
+
+  ephemeris.Prolong(t0_ + 16 * period);
+  t_max = ephemeris.t_max();
+  EXPECT_EQ(t_max, t0_ + 16 * period);
+  EXPECT_EQ(t_max, earth_trajectory.t_max());
+  EXPECT_EQ(t_max, moon_trajectory.t_max());
+}
+
 // The Moon alone.  It moves in straight line.
 TEST_F(EphemerisTest, Moon) {
   Position<EarthMoonOrbitPlane> const reference_position;

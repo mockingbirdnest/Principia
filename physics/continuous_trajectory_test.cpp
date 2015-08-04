@@ -350,7 +350,10 @@ TEST_F(ContinuousTrajectoryTest, Io) {
   }
 
   Instant const kForgetAfterTime = t0 + 25 * kStep;
-  trajectory_->ForgetAfter(kForgetAfterTime);
+  trajectory_->ForgetAfter(
+      kForgetAfterTime,
+      trajectory_->EvaluateDegreesOfFreedom(kForgetAfterTime,
+                                            nullptr /*hint*/));
   EXPECT_EQ(kForgetBeforeTime, trajectory_->t_min());
   EXPECT_EQ(kForgetAfterTime, trajectory_->t_max());
   for (Instant time = trajectory_->t_min();

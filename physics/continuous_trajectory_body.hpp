@@ -106,13 +106,17 @@ void ContinuousTrajectory<Frame>::Append(
 }
 
 template<typename Frame>
-void ContinuousTrajectory<Frame>::ForgetAfter(Instant const & time) {
+void ContinuousTrajectory<Frame>::ForgetAfter(
+    Instant const & time,
+    DegreesOfFreedom<Frame> const & degrees_of_freedom) {
   if (time > t_max()) {
     return;
   }
   auto it = FindSeriesForInstant(time);
   if (it != series_.end()) {
     CHECK_EQ(time, it->t_max());
+    last_points_.clear();
+    last_points_.emplace_back(time, degrees_of_freedom);
     series_.erase(++it, series_.end());
   }
 }

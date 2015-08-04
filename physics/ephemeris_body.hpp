@@ -203,12 +203,17 @@ void Ephemeris<Frame>::ForgetAfter(Instant const & t) {
                 });
   CHECK_LE(t, it->time.value);
 
+  int index = 0;
   for (auto& pair : bodies_to_trajectories_) {
     ContinuousTrajectory<Frame>& trajectory = *pair.second;
-    trajectory.ForgetAfter(it->time.value);
+    trajectory.ForgetAfter(
+        it->time.value, 
+        DegreesOfFreedom<Frame>(it->positions[index].value,
+                                it->velocities[index].value));
+    ++index;
   }
   last_state_ = *it;
-  intermediate_states_.erase(it, intermediate_states.end());
+  intermediate_states_.erase(it, intermediate_states_.end());
 }
 
 template<typename Frame>
@@ -413,16 +418,19 @@ void Ephemeris<Frame>::AppendMassiveBodiesState(
     ++index;
   }
 
-  // Record an intermediate state if we haven't done so for too long.
+  // Record an intermediate state if we haven't done so for too long and this
+  // time is a |t_max|.
   CHECK(!trajectories_.empty());
   Instant const t_max = trajectories_.front()->t_max();
-  Instant const t_last_intermediate_state =
-      intermediate_states_.empty()
-          ? Instant(std::numeric_limits<double>::min() * Second)
-          : intermediate_states_.back().time.value;
-  if (t_max - t_last_intermediate_state > kMaxTimeBetweenIntermediateStates) {
-    CHECK_EQ(t_max, state.time.value);
-    intermediate_states_.push_back(state);
+  if (t_max == state.time.value) {
+    Instant const t_last_intermediate_state =
+        intermediate_states_.empty()
+            ? Instant(-std::numeric_limits<double>::infinity() * Second)
+            : intermediate_states_.back().time.value;
+    CHECK_LE(t_last_intermediate_state, t_max);
+    if (t_max - t_last_intermediate_state > kMaxTimeBetweenIntermediateStates) {
+      intermediate_states_.push_back(state);
+    }
   }
 }
 
