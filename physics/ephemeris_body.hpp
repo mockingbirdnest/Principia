@@ -4,6 +4,7 @@
 
 #include <algorithm>
 #include <functional>
+#include <limits>
 #include <vector>
 
 #include "base/map_util.hpp"
@@ -13,6 +14,7 @@
 #include "quantities/elementary_functions.hpp"
 #include "quantities/named_quantities.hpp"
 #include "quantities/quantities.hpp"
+#include "quantities/si.hpp"
 
 namespace principia {
 
@@ -23,6 +25,8 @@ using integrators::AdaptiveStepSize;
 using integrators::IntegrationProblem;
 using quantities::Abs;
 using quantities::Exponentiation;
+using quantities::Time;
+using si::Day;
 using ::std::placeholders::_1;
 using ::std::placeholders::_2;
 using ::std::placeholders::_3;
@@ -30,6 +34,8 @@ using ::std::placeholders::_3;
 namespace physics {
 
 namespace {  // TODO(egg): this should be a named namespace (internal)
+
+Time const kMaxTimeBetweenIntermediateStates = 180 * Day;
 
 // If j is a unit vector along the axis of rotation, and r is the separation
 // between the bodies, the acceleration computed here is:
@@ -186,6 +192,29 @@ FixedStepSizeIntegrator<
     typename Ephemeris<Frame>::NewtonianMotionEquation> const&
 Ephemeris<Frame>::planetary_integrator() const {
   return planetary_integrator_;
+}
+
+template<typename Frame>
+void Ephemeris<Frame>::ForgetAfter(Instant const & t) {
+  auto it = std::lower_bound(
+                intermediate_states_.begin(), intermediate_states_.end(), t,
+                [](typename NewtonianMotionEquation::SystemState const& left,
+                   Instant const& right) {
+                  return left.time.value < right;
+                });
+  CHECK_LE(t, it->time.value);
+
+  int index = 0;
+  for (auto& pair : bodies_to_trajectories_) {
+    ContinuousTrajectory<Frame>& trajectory = *pair.second;
+    trajectory.ForgetAfter(
+        it->time.value,
+        DegreesOfFreedom<Frame>(it->positions[index].value,
+                                it->velocities[index].value));
+    ++index;
+  }
+  last_state_ = *it;
+  intermediate_states_.erase(it, intermediate_states_.end());
 }
 
 template<typename Frame>
@@ -388,6 +417,21 @@ void Ephemeris<Frame>::AppendMassiveBodiesState(
         DegreesOfFreedom<Frame>(state.positions[index].value,
                                 state.velocities[index].value));
     ++index;
+  }
+
+  // Record an intermediate state if we haven't done so for too long and this
+  // time is a |t_max|.
+  CHECK(!trajectories_.empty());
+  Instant const t_max = trajectories_.front()->t_max();
+  if (t_max == state.time.value) {
+    Instant const t_last_intermediate_state =
+        intermediate_states_.empty()
+            ? Instant(-std::numeric_limits<double>::infinity() * Second)
+            : intermediate_states_.back().time.value;
+    CHECK_LE(t_last_intermediate_state, t_max);
+    if (t_max - t_last_intermediate_state > kMaxTimeBetweenIntermediateStates) {
+      intermediate_states_.push_back(state);
+    }
   }
 }
 

@@ -58,6 +58,13 @@ class ContinuousTrajectory {
   void Append(Instant const& time,
               DegreesOfFreedom<Frame> const& degrees_of_freedom);
 
+  // Removes all data for times strictly greater than |time|.  |time| must
+  // either be greater that |t_max()| or be a value returned by a previous call
+  // to |t_max()|.  The |degrees_of_freedom| must be the ones originally passed
+  // to Append for the given |time|.
+  void ForgetAfter(Instant const& time,
+                   DegreesOfFreedom<Frame> const& degrees_of_freedom);
+
   // Removes all data for times strictly less than |time|.
   void ForgetBefore(Instant const& time);
 
@@ -131,7 +138,7 @@ class ContinuousTrajectory {
   std::vector<ЧебышёвSeries<Displacement<Frame>>> series_;
 
   // The time at which this trajectory starts.  Set for a nonempty trajectory.
-  // |first_time_ >= series_.front().t_min()|
+  // |*first_time_ >= series_.front().t_min()|
   std::unique_ptr<Instant> first_time_;  // std::optional.
 
   // The points that have not yet been incorporated in a series.  Nonempty for a
