@@ -4,6 +4,7 @@
 
 #include <algorithm>
 #include <functional>
+#include <limits>
 #include <vector>
 
 #include "base/map_util.hpp"
@@ -207,7 +208,7 @@ void Ephemeris<Frame>::ForgetAfter(Instant const & t) {
   for (auto& pair : bodies_to_trajectories_) {
     ContinuousTrajectory<Frame>& trajectory = *pair.second;
     trajectory.ForgetAfter(
-        it->time.value, 
+        it->time.value,
         DegreesOfFreedom<Frame>(it->positions[index].value,
                                 it->velocities[index].value));
     ++index;
