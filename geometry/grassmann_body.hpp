@@ -42,7 +42,7 @@ bool CompatibilityHelper<Multivector, Frame, Tag>::MustFlip(
 template<typename Multivector, typename Frame>
 bool CompatibilityHelper<Multivector, Frame, serialization::Frame::PluginTag>::
     MustFlip(serialization::Frame const& frame) {
-  if (frame.tag() == serialization::Frame::OLD_BARYCENTRIC &&
+  if (frame.tag() == serialization::Frame::PRE_BOREL_BARYCENTRIC &&
       Frame::tag == serialization::Frame::BARYCENTRIC) {
     return true;
   } else {

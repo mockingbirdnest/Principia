@@ -511,28 +511,37 @@ void Plugin::WriteToMessage(
 std::unique_ptr<Plugin> Plugin::ReadFromMessage(
     serialization::Plugin const& message) {
   LOG(INFO) << __FUNCTION__;
-  auto ephemeris = Ephemeris<Barycentric>::ReadFromMessage(message.ephemeris());
-  auto const& bodies = ephemeris->bodies();
-  auto bodies_it = bodies.begin();
+  bool const is_pre_bourbaki = message.pre_bourbaki_celestial_size() > 0;
+  std::unique_ptr<Ephemeris<Barycentric>> ephemeris;
   IndexToOwnedCelestial celestials;
-  for (auto const& celestial_message : message.celestial()) {
-    auto const inserted =
-        celestials.emplace(celestial_message.index(),
-                           make_not_null_unique<Celestial>(*bodies_it));
-    CHECK(inserted.second);
-    inserted.first->second->set_trajectory(ephemeris->trajectory(*bodies_it));
-    ++bodies_it;
-  }
-  CHECK_EQ(bodies.end() - bodies.begin(), bodies_it - bodies.begin());
-  for (auto const& celestial_message : message.celestial()) {
-    if (celestial_message.has_parent_index()) {
-      not_null<std::unique_ptr<Celestial>> const& celestial =
-          FindOrDie(celestials, celestial_message.index());
-      not_null<Celestial const*> const parent =
-          FindOrDie(celestials, celestial_message.parent_index()).get();
-      celestial->set_parent(parent);
+
+  if (is_pre_bourbaki) {
+    ephemeris = Ephemeris<Barycentric>::ReadFromPreBourbakiMessages(
+        message.pre_bourbaki_celestial());
+  } else {
+    ephemeris = Ephemeris<Barycentric>::ReadFromMessage(message.ephemeris());
+    auto const& bodies = ephemeris->bodies();
+    auto bodies_it = bodies.begin();
+    for (auto const& celestial_message : message.celestial()) {
+      auto const inserted =
+          celestials.emplace(celestial_message.index(),
+                             make_not_null_unique<Celestial>(*bodies_it));
+      CHECK(inserted.second);
+      inserted.first->second->set_trajectory(ephemeris->trajectory(*bodies_it));
+      ++bodies_it;
+    }
+    CHECK_EQ(bodies.end() - bodies.begin(), bodies_it - bodies.begin());
+    for (auto const& celestial_message : message.celestial()) {
+      if (celestial_message.has_parent_index()) {
+        not_null<std::unique_ptr<Celestial>> const& celestial =
+            FindOrDie(celestials, celestial_message.index());
+        not_null<Celestial const*> const parent =
+            FindOrDie(celestials, celestial_message.parent_index()).get();
+        celestial->set_parent(parent);
+      }
     }
   }
+
   GUIDToOwnedVessel vessels;
   std::set<not_null<Vessel*>> dirty_vessels;
   for (auto const& vessel_message : message.vessel()) {

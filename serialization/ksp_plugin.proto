@@ -66,7 +66,7 @@ message Plugin {
     optional int32 parent_index = 2;
   }
   repeated VesselAndProperties vessel = 1;
-  repeated CelestialAndProperties old_celestial = 2;
+  repeated CelestialAndProperties pre_bourbaki_celestial = 2;
   repeated CelestialParenthood celestial = 10;
   required PhysicsBubble bubble = 3;
   required Ephemeris ephemeris = 7;

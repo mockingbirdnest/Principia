@@ -358,6 +358,25 @@ void Ephemeris<Frame>::WriteToMessage(
 }
 
 template<typename Frame>
+std::unique_ptr<Ephemeris<Frame>> Ephemeris<Frame>::ReadFromPreBourbakiMessages(
+    google::protobuf::RepeatedPtrField<
+        serialization::Plugin::CelestialAndProperties> const& messages) {
+  std::vector<not_null<std::unique_ptr<MassiveBody const>>> bodies;
+  for (auto const& message : messages) {
+    serialization::Celestial const& celestial = message.celestial();
+    bodies.emplace_back(MassiveBody::ReadFromMessage(celestial.body()));
+    auto history = Trajectory<Frame>::ReadFromMessage(
+                       celestial.history_and_prolongation().history(),
+                       bodies.back().get());
+    // Probably not needed:
+    auto prolongation =
+        Trajectory<Frame>::ReadPointerFromMessage(
+            celestial.history_and_prolongation().prolongation(),
+            history.get());
+  }
+}
+
+template<typename Frame>
 std::unique_ptr<Ephemeris<Frame>> Ephemeris<Frame>::ReadFromMessage(
     serialization::Ephemeris const& message) {
   std::vector<not_null<std::unique_ptr<MassiveBody const>>> bodies;

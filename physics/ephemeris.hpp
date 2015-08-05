@@ -8,11 +8,13 @@
 #include "base/not_null.hpp"
 #include "geometry/grassmann.hpp"
 #include "geometry/named_quantities.hpp"
+#include "google/protobuf/repeated_field.h"
 #include "integrators/ordinary_differential_equations.hpp"
 #include "physics/continuous_trajectory.hpp"
 #include "physics/massive_body.hpp"
 #include "physics/oblate_body.hpp"
 #include "physics/trajectory.hpp"
+#include "serialization/ksp_plugin.pb.h"
 
 namespace principia {
 
@@ -96,6 +98,9 @@ class Ephemeris {
 
   virtual void WriteToMessage(
       not_null<serialization::Ephemeris*> const message) const;
+  static std::unique_ptr<Ephemeris> ReadFromPreBourbakiMessages(
+      google::protobuf::RepeatedPtrField<
+          serialization::Plugin::CelestialAndProperties> const& messages);
   // Should be |not_null| once we have move conversion.
   static std::unique_ptr<Ephemeris> ReadFromMessage(
       serialization::Ephemeris const& message);
