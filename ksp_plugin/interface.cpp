@@ -1,5 +1,7 @@
 #include "ksp_plugin/interface.hpp"
 
+#include <cctype>
+#include <cstring>
 #include <string>
 #include <utility>
 #include <vector>
@@ -31,7 +33,10 @@ using base::UniqueBytes;
 using geometry::Displacement;
 using geometry::Quaternion;
 using quantities::Pow;
+using si::AstronomicalUnit;
+using si::Day;
 using si::Degree;
+using si::Kilo;
 using si::Metre;
 using si::Second;
 using si::Tonne;
@@ -75,6 +80,84 @@ WXYZ ToWXYZ(Quaternion const& quaternion) {
           quaternion.imaginary_part().x,
           quaternion.imaginary_part().y,
           quaternion.imaginary_part().z};
+}
+
+// Similar to std::stod, but uses LOG(FATAL) instead of exceptions.
+double ParseDouble(std::string const& s, not_null<size_t*> size) {
+  char* interpreted_end;
+  char const* const c_string = s.c_str();
+  double result = std::strtod(c_string, &interpreted_end);
+  *size = interpreted_end - c_string;
+  CHECK_GT(*size, 0) << "invalid floating-point number" << s;
+}
+
+double ParseQuantity(std::string const& s, not_null<std::string*> unit) {
+  size_t i;
+  double magnitude = ParseDouble(s, &i);
+  for (*unit = ""; i < s.length(); ++i) {
+    if (!std::isspace(s[i])) {
+      *unit += s[i];
+    }
+  }
+  return magnitude;
+}
+
+Length ParseLength(std::string const& s) {
+  std::string unit;
+  double magnitude = ParseQuantity(s, &unit);
+  if (unit == "m") {
+    return magnitude * Metre;
+  } else if (unit == "km") {
+    return magnitude * Kilo(Metre);
+  } else if (unit == "au") {
+    return magnitude * AstronomicalUnit;
+  } else {
+    LOG(FATAL) << "unsupported unit of length" << unit;
+  }
+}
+
+Speed ParseSpeed(std::string const& s) {
+  std::string unit;
+  double magnitude = ParseQuantity(s, &unit);
+  if (unit == "m/s") {
+    return magnitude * Metre / Second;
+  } else if (unit == "km/s") {
+    return magnitude * Kilo(Metre) / Second;
+  } else if (unit == "km/d") {
+    return magnitude * Kilo(Metre) / Day;
+  } else if (unit == "au/d") {
+    return magnitude * AstronomicalUnit / Day;
+  } else {
+    LOG(FATAL) << "unsupported unit of speed" << unit;
+  }
+}
+
+Angle ParseAngle(std::string const& s) {
+  std::string unit;
+  double magnitude = ParseQuantity(s, &unit);
+  if (unit == "deg") {
+    return magnitude * Degree;
+  } else if (unit == "rad") {
+    return magnitude * Radian;
+  } else {
+    LOG(FATAL) << "unsupported unit of angle" << unit;
+  }
+}
+
+GravitationalParameter ParseGravitationalParameter(std::string const& s) {
+  std::string unit;
+  double magnitude = ParseQuantity(s, &unit);
+  if (unit == "m^3/s^2") {
+    return magnitude * Pow<3>(Metre) / Pow<2>(Second);
+  } else if (unit == "km^3/s^2") {
+    return magnitude * Pow<3>(Kilo(Metre)) / Pow<2>(Second);
+  } else if (unit == "km^3/d^2") {
+    return magnitude * Pow<3>(Kilo(Metre)) / Pow<2>(Day);
+  } else if (unit == "au^3/d^2") {
+    return magnitude * Pow<3>(AstronomicalUnit) / Pow<2>(Day);
+  } else {
+    LOG(FATAL) << "unsupported unit of gravitational parameter" << unit;
+  }
 }
 
 }  // namespace
@@ -194,6 +277,34 @@ void principia__DeletePlugin(Plugin const** const plugin) {
   }
   LOG(INFO) << "Plugin destroyed";
 }
+
+void principia__DirectlyInsertMassiveCelestial(
+    Plugin* const plugin,
+    int const celestial_index,
+    int const parent_index,
+    char const* gravitational_parameter,
+    char const* x,
+    char const* y,
+    char const* z,
+    char const* vx,
+    char const* vy,
+    char const* vz) {}
+
+void principia__DirectlyInsertOblateCelestial(
+    Plugin* const plugin,
+    int const celestial_index,
+    int const parent_index,
+    char const* gravitational_parameter,
+    char const* axis_right_ascension,
+    char const* axis_declination,
+    char const* j2,
+    char const* reference_radius,
+    char const* x,
+    char const* y,
+    char const* z,
+    char const* vx,
+    char const* vy,
+    char const* vz) {}
 
 // NOTE(egg): The |* (Metre / Second)| might be slower than |* SIUnit<Speed>()|,
 // but it is more readable. This will be resolved once we have constexpr.
