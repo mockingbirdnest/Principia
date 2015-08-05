@@ -51,6 +51,9 @@ Permutation<World, AliceWorld> const kWorldLookingGlass(
 Permutation<WorldSun, AliceSun> const kSunLookingGlass(
     Permutation<WorldSun, AliceSun>::CoordinatePermutation::XZY);
 
+Time const kStep = 45 * Minute;
+Length const kFittingTolerance = 1 * Milli(Metre);
+
 }  // namespace
 
 Plugin::Plugin(Instant const& initial_time,
@@ -127,8 +130,8 @@ void Plugin::EndInitialization() {
       initial_state,
       current_time_,
       history_integrator_,
-      45 * Minute /*step*/,
-      1 * Milli(Metre) /*fitting_tolerance*/);
+      kStep,
+      kFittingTolerance);
   for (auto const& pair : celestials_) {
     auto& celestial = *pair.second;
     // TODO(egg): unorthodox address of reference.
@@ -517,7 +520,11 @@ std::unique_ptr<Plugin> Plugin::ReadFromMessage(
 
   if (is_pre_bourbaki) {
     ephemeris = Ephemeris<Barycentric>::ReadFromPreBourbakiMessages(
-        message.pre_bourbaki_celestial());
+        message.pre_bourbaki_celestial(),
+        McLachlanAtela1992Order5Optimal<Position<Barycentric>>(),
+        kStep,
+        kFittingTolerance);
+    //TODO(phl): Construct the celestial tree and set any "new" field.
   } else {
     ephemeris = Ephemeris<Barycentric>::ReadFromMessage(message.ephemeris());
     auto const& bodies = ephemeris->bodies();

@@ -98,12 +98,18 @@ class Ephemeris {
 
   virtual void WriteToMessage(
       not_null<serialization::Ephemeris*> const message) const;
-  static std::unique_ptr<Ephemeris> ReadFromPreBourbakiMessages(
-      google::protobuf::RepeatedPtrField<
-          serialization::Plugin::CelestialAndProperties> const& messages);
   // Should be |not_null| once we have move conversion.
   static std::unique_ptr<Ephemeris> ReadFromMessage(
       serialization::Ephemeris const& message);
+
+  // Compatibility method for construction an ephemeris from pre-Bourbaki data.
+  static std::unique_ptr<Ephemeris> ReadFromPreBourbakiMessages(
+      google::protobuf::RepeatedPtrField<
+          serialization::Plugin::CelestialAndProperties> const& messages,
+      FixedStepSizeIntegrator<NewtonianMotionEquation> const&
+          planetary_integrator,
+      Time const& step,
+      Length const& fitting_tolerance);
 
  protected:
   // For mocking purposes, leaves everything uninitialized and uses a dummy
