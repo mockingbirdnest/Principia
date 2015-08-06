@@ -88,25 +88,38 @@ void Plugin::InsertCelestial(
     RelativeDegreesOfFreedom<AliceSun> const& from_parent) {
   CHECK(initializing_) << "Celestial bodies should be inserted before the end "
                        << "of initialization";
-  not_null<Celestial const*> parent =
-      FindOrDie(celestials_, parent_index).get();
   auto body = std::make_unique<MassiveBody>(gravitational_parameter);
-  auto const inserted =
-      celestials_.emplace(celestial_index,
-                          std::make_unique<Celestial>(body.get()));
-  CHECK(inserted.second) << "Body already exists at index " << celestial_index;
   LOG(INFO) << "Initial |{orbit.pos, orbit.vel}| for celestial at index "
             << celestial_index << ": " << from_parent;
-  auto const relative =
-      PlanetariumRotation().Inverse()(from_parent);
+  auto const relative = PlanetariumRotation().Inverse()(from_parent);
   LOG(INFO) << "In barycentric coordinates: " << relative;
+  DegreesOfFreedom<Barycentric> const& parent_degrees_of_freedom =
+      FindOrDie(*initial_state_, parent_index);
+  DirectlyInsertCelestial(celestial_index,
+                          parent_index,
+                          parent_degrees_of_freedom + relative,
+                          std::move(body));
+}
+
+void Plugin::DirectlyInsertCelestial(
+    Index const celestial_index,
+    Index const parent_index,
+    DegreesOfFreedom<Barycentric> const& initial_state,
+    std::unique_ptr<MassiveBody> body) {
+  CHECK(initializing_) << "Celestial bodies should be inserted before the end "
+                       << "of initialization";
+  not_null<Celestial const*> parent =
+      FindOrDie(celestials_, parent_index).get();
+  auto const inserted =
+    celestials_.emplace(celestial_index,
+                        std::make_unique<Celestial>(body.get()));
+  CHECK(inserted.second) << "Body already exists at index " << celestial_index;
   not_null<Celestial*> const celestial = inserted.first->second.get();
   bodies_->emplace(celestial_index, std::move(body));
   celestial->set_parent(parent);
   DegreesOfFreedom<Barycentric> const& parent_degrees_of_freedom =
       FindOrDie(*initial_state_, parent_index);
-  initial_state_->emplace(celestial_index,
-                          parent_degrees_of_freedom + relative);
+  initial_state_->emplace(celestial_index, initial_state);
 }
 
 void Plugin::EndInitialization() {

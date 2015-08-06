@@ -114,6 +114,12 @@ class Plugin {
     Index const parent_index,
     RelativeDegreesOfFreedom<AliceSun> const& from_parent);
 
+  virtual void DirectlyInsertCelestial(
+    Index const celestial_index,
+    Index const parent_index,
+    DegreesOfFreedom<Barycentric> const& initial_state,
+    std::unique_ptr<MassiveBody> body);
+
   // Ends initialization.
   virtual void EndInitialization();
 

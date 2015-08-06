@@ -32,6 +32,8 @@ using base::PushDeserializer;
 using base::UniqueBytes;
 using geometry::Displacement;
 using geometry::Quaternion;
+using physics::MassiveBody;
+using physics::OblateBody;
 using quantities::Pow;
 using si::AstronomicalUnit;
 using si::Day;
@@ -102,6 +104,8 @@ double ParseQuantity(std::string const& s, not_null<std::string*> unit) {
   return magnitude;
 }
 
+// TODO(egg): actual parser.
+
 Length ParseLength(std::string const& s) {
   std::string unit;
   double magnitude = ParseQuantity(s, &unit);
@@ -135,7 +139,7 @@ Speed ParseSpeed(std::string const& s) {
 Angle ParseAngle(std::string const& s) {
   std::string unit;
   double magnitude = ParseQuantity(s, &unit);
-  if (unit == "deg") {
+  if (unit == "deg" || unit == "°") {
     return magnitude * Degree;
   } else if (unit == "rad") {
     return magnitude * Radian;
@@ -158,6 +162,33 @@ GravitationalParameter ParseGravitationalParameter(std::string const& s) {
   } else {
     LOG(FATAL) << "unsupported unit of gravitational parameter" << unit;
   }
+}
+
+double ParseDimensionless(std::string const& s) {
+  std::string unit;
+  double magnitude = ParseQuantity(s, &unit);
+  CHECK_EQ(unit, "");
+  return magnitude;
+}
+
+// Returns a unit vector pointing in the direction defined by |right_ascension|
+// and |declination|, assuming the reference system is as follows:
+// xy-plane: plane of the Earth's mean equator at the reference epoch
+// x-axis  : out along ascending node of instantaneous plane of the Earth's
+//           orbit and the Earth's mean equator at the reference epoch
+// z-axis  : along the Earth mean north pole at the reference epoch
+Vector<double, Barycentric> Direction(Angle const& right_ascension,
+                                           Angle const& declination) {
+  // Positive angles map {1, 0, 0} to the positive z hemisphere, which is north.
+  // An angle of 0 keeps {1, 0, 0} on the equator.
+  auto const decline = Rotation<Barycentric, Barycentric>(
+                           declination,
+                           Bivector<double, ICRFJ2000Equator>({0, -1, 0}));
+  // Rotate counterclockwise around {0, 0, 1} (north), i.e., eastward.
+  auto const ascend = Rotation<Barycentric, Barycentric>(
+                          right_ascension,
+                          Bivector<double, Barycentric>({0, 0, 1}));
+  return ascend(decline(Vector<double, Barycentric>({1, 0, 0})));
 }
 
 }  // namespace
@@ -288,7 +319,20 @@ void principia__DirectlyInsertMassiveCelestial(
     char const* z,
     char const* vx,
     char const* vy,
-    char const* vz) {}
+    char const* vz) {
+  CHECK_NOTNULL(plugin)->
+      DirectlyInsertCelestial(
+          celestial_index,
+          parent_index,
+          {Barycentric::origin +
+               Displacement<Barycentric>({ParseLength(x),
+                                          ParseLength(y),
+                                          ParseLength(z)}),
+               Velocity<Barycentric>({ParseSpeed(x),
+                                      ParseSpeed(y),
+                                      ParseSpeed(z)})},
+          std::make_unique<MassiveBody>(gravitational_parameter));
+}
 
 void principia__DirectlyInsertOblateCelestial(
     Plugin* const plugin,
@@ -304,7 +348,24 @@ void principia__DirectlyInsertOblateCelestial(
     char const* z,
     char const* vx,
     char const* vy,
-    char const* vz) {}
+    char const* vz) {
+  CHECK_NOTNULL(plugin)->
+    DirectlyInsertCelestial(
+      celestial_index,
+      parent_index,
+      {Barycentric::origin +
+       Displacement<Barycentric>({ParseLength(x),
+                                  ParseLength(y),
+                                  ParseLength(z)}),
+       Velocity<Barycentric>({ParseSpeed(x),
+                              ParseSpeed(y),
+                              ParseSpeed(z)})},
+      std::make_unique<OblateBody>(gravitational_parameter,
+                                   ParseDimensionless(j2),
+                                   ParseLength(reference_radius),
+                                   Direction(ParseAngle(axis_right_ascension),
+                                             ParseAngle(axis_declination))));
+}
 
 // NOTE(egg): The |* (Metre / Second)| might be slower than |* SIUnit<Speed>()|,
 // but it is more readable. This will be resolved once we have constexpr.
