@@ -380,6 +380,13 @@ class Plugin {
       not_null<RenderingTransforms*>const transforms,
       Position<World> const& sun_world_position) const;
 
+  //TODO(phl):comment
+  template<typename T>
+  static void ReadCelestialsFromMessages(
+    Ephemeris<Barycentric> const& ephemeris,
+    google::protobuf::RepeatedPtrField<T> const& celestial_messages,
+    not_null<IndexToOwnedCelestial*> const celestials);
+
   Time const Δt_ = 10 * Second;
   Length const prolongation_length_tolerance_ = 1 * Milli(Metre);
   Speed const prolongation_speed_tolerance_ = 1 * Milli(Metre) / Second;
@@ -440,6 +447,33 @@ class Plugin {
 
   friend class TestablePlugin;
 };
+
+template<typename T>
+void Plugin::ReadCelestialsFromMessages(
+    Ephemeris<Barycentric> const& ephemeris,
+    google::protobuf::RepeatedPtrField<T> const& celestial_messages,
+    not_null<IndexToOwnedCelestial*> const celestials) {
+  auto const& bodies = ephemeris.bodies();
+  auto bodies_it = bodies.begin();
+  for (auto const& celestial_message : celestial_messages) {
+    auto const inserted =
+        celestials->emplace(celestial_message.index(),
+                             make_not_null_unique<Celestial>(*bodies_it));
+    CHECK(inserted.second);
+    inserted.first->second->set_trajectory(ephemeris.trajectory(*bodies_it));
+    ++bodies_it;
+  }
+  CHECK_EQ(bodies.end() - bodies.begin(), bodies_it - bodies.begin());
+  for (auto const& celestial_message : celestial_messages) {
+    if (celestial_message.has_parent_index()) {
+      not_null<std::unique_ptr<Celestial>> const& celestial =
+          FindOrDie(celestials, celestial_message.index());
+      not_null<Celestial const*> const parent =
+          FindOrDie(celestials, celestial_message.parent_index()).get();
+      celestial->set_parent(parent);
+    }
+  }
+}
 
 }  // namespace ksp_plugin
 }  // namespace principia

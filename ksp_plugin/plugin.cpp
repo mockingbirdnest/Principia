@@ -524,29 +524,14 @@ std::unique_ptr<Plugin> Plugin::ReadFromMessage(
         McLachlanAtela1992Order5Optimal<Position<Barycentric>>(),
         kStep,
         kFittingTolerance);
-    //TODO(phl): Construct the celestial tree and set any "new" field.
+    ReadCelestialsFromMessages(*ephemeris,
+                               message.pre_bourbaki_celestial(),
+                               &celestials);
   } else {
     ephemeris = Ephemeris<Barycentric>::ReadFromMessage(message.ephemeris());
-    auto const& bodies = ephemeris->bodies();
-    auto bodies_it = bodies.begin();
-    for (auto const& celestial_message : message.celestial()) {
-      auto const inserted =
-          celestials.emplace(celestial_message.index(),
-                             make_not_null_unique<Celestial>(*bodies_it));
-      CHECK(inserted.second);
-      inserted.first->second->set_trajectory(ephemeris->trajectory(*bodies_it));
-      ++bodies_it;
-    }
-    CHECK_EQ(bodies.end() - bodies.begin(), bodies_it - bodies.begin());
-    for (auto const& celestial_message : message.celestial()) {
-      if (celestial_message.has_parent_index()) {
-        not_null<std::unique_ptr<Celestial>> const& celestial =
-            FindOrDie(celestials, celestial_message.index());
-        not_null<Celestial const*> const parent =
-            FindOrDie(celestials, celestial_message.parent_index()).get();
-        celestial->set_parent(parent);
-      }
-    }
+    ReadCelestialsFromMessages(*ephemeris,
+                               message.celestial(),
+                               &celestials);
   }
 
   GUIDToOwnedVessel vessels;
@@ -570,11 +555,19 @@ std::unique_ptr<Plugin> Plugin::ReadFromMessage(
           },
           message.bubble());
   auto const& prolongation_integrator =
-      AdaptiveStepSizeIntegrator<NewtonianMotionEquation>::ReadFromMessage(
-          message.prolongation_integrator());
+      is_pre_bourbaki ?
+          DormandElMikkawyPrince1986RKN434FM<Position<Barycentric>>() :
+          AdaptiveStepSizeIntegrator<NewtonianMotionEquation>::ReadFromMessage(
+              message.prolongation_integrator());
   auto const& prediction_integrator =
-      AdaptiveStepSizeIntegrator<NewtonianMotionEquation>::ReadFromMessage(
-          message.prediction_integrator());
+      is_pre_bourbaki ?
+          DormandElMikkawyPrince1986RKN434FM<Position<Barycentric>>() :
+          AdaptiveStepSizeIntegrator<NewtonianMotionEquation>::ReadFromMessage(
+              message.prediction_integrator());
+  Instant const history_time =
+      is_pre_bourbaki ?
+    :
+    Instant::ReadFromMessage(message.history_time();
   // Can't use |make_unique| here without implementation-dependent friendships.
   return std::unique_ptr<Plugin>(
       new Plugin(std::move(vessels),
@@ -586,7 +579,7 @@ std::unique_ptr<Plugin> Plugin::ReadFromMessage(
                  prediction_integrator,
                  Angle::ReadFromMessage(message.planetarium_rotation()),
                  Instant::ReadFromMessage(message.current_time()),
-                 Instant::ReadFromMessage(message.history_time()),
+                 history_time,
                  message.sun_index()));
 }
 
