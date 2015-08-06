@@ -443,12 +443,23 @@ std::unique_ptr<Ephemeris<Frame>> Ephemeris<Frame>::ReadFromPreBourbakiMessages(
 
   // Extend the continuous trajectories using the data from the discrete
   // trajectories.
+  std::set<Instant> last_state_time;
   for (int i = 0; i < histories.size(); ++i) {
     auto* const body = ephemeris->unowned_bodies_[i];
     auto const& history = histories[i];
-    auto continuous_trajectory =
-        FindOrDie(ephemeris->bodies_to_trajectories_, body).get();
-    auto it = history.first();
+
+    // Apologies about the linear search here but we need the index |j| to fill
+    // |last_state_| and I don't feel like introducing another data structure
+    // just to speed up the compatibility case.
+    int j = 0;
+    for (; j < ephemeris->bodies_.size(); ++j) {
+      if (body == ephemeris->bodies_[j].get()) {
+        break;
+      }
+    }
+    auto continuous_trajectory = ephemeris->trajectories_[j];
+
+    auto it = history->first();
     Instant last_time = it.time();
     DegreesOfFreedom<Frame> last_degrees_of_freedom = it.degrees_of_freedom();
     while (!it.at_end()) {
@@ -456,7 +467,7 @@ std::unique_ptr<Ephemeris<Frame>> Ephemeris<Frame>::ReadFromPreBourbakiMessages(
       if (duration_since_last_time == step) {
         // A time in the discrete trajectory that is aligned on the continuous
         // trajectory.
-        last_time = t;
+        last_time = it.time();
         last_degrees_of_freedom = it.degrees_of_freedom();
         continuous_trajectory->Append(last_time, last_degrees_of_freedom);
         ++it;
@@ -467,11 +478,15 @@ std::unique_ptr<Ephemeris<Frame>> Ephemeris<Frame>::ReadFromPreBourbakiMessages(
         break;
       }
     }
-    //TODO(phl): need to compute j.
-    last_state_.time = last_time;
-    last_state_.positions[j] = last_degrees_of_freedom.position();
-    last_state_.velocities[j] = last_degrees_of_freedom.velocity();
+
+    // Fill the |last_state_| for this body.  It will be the starting state for
+    // Prolong.
+    last_state_time.insert(last_time);
+    ephemeris->last_state_.positions[j] = last_degrees_of_freedom.position();
+    ephemeris->last_state_.velocities[j] = last_degrees_of_freedom.velocity();
   }
+  CHECK_EQ(1, last_state_time.size());
+  ephemeris->last_state_.time = *last_state_time.cbegin();
 
   // Prolong the ephemeris to the final time.  This might create discrepancies
   // from the discrete trajectories.

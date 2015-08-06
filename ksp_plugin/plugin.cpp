@@ -504,7 +504,6 @@ void Plugin::WriteToMessage(
 
   planetarium_rotation_.WriteToMessage(message->mutable_planetarium_rotation());
   current_time_.WriteToMessage(message->mutable_current_time());
-  history_time_.WriteToMessage(message->mutable_history_time());
   Index const sun_index = FindOrDie(celestial_to_index, sun_);
   message->set_sun_index(sun_index);
   LOG(INFO) << NAMED(message->SpaceUsed());
@@ -564,10 +563,17 @@ std::unique_ptr<Plugin> Plugin::ReadFromMessage(
           DormandElMikkawyPrince1986RKN434FM<Position<Barycentric>>() :
           AdaptiveStepSizeIntegrator<NewtonianMotionEquation>::ReadFromMessage(
               message.prediction_integrator());
-  Instant const history_time =
-      is_pre_bourbaki ?
-    :
-    Instant::ReadFromMessage(message.history_time();
+
+  Instant const current_time = Instant::ReadFromMessage(message.current_time());
+  Instant history_time = current_time;
+  for (auto const& pair : vessels) {
+    auto const& vessel = pair.second;
+    if (vessel->is_synchronized()) {
+      history_time = vessel->history().last().time();
+      break;
+    }
+  }
+
   // Can't use |make_unique| here without implementation-dependent friendships.
   return std::unique_ptr<Plugin>(
       new Plugin(std::move(vessels),
@@ -578,7 +584,7 @@ std::unique_ptr<Plugin> Plugin::ReadFromMessage(
                  prolongation_integrator,
                  prediction_integrator,
                  Angle::ReadFromMessage(message.planetarium_rotation()),
-                 Instant::ReadFromMessage(message.current_time()),
+                 current_time,
                  history_time,
                  message.sun_index()));
 }

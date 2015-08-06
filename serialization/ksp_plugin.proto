@@ -74,7 +74,6 @@ message Plugin {
   required AdaptiveStepSizeIntegrator prediction_integrator = 9;
   required Quantity planetarium_rotation = 4;
   required Point current_time = 5;
-  required Point history_time = 11;
   required int32 sun_index = 6;
 }
 

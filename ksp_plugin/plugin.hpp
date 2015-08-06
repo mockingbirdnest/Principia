@@ -380,7 +380,8 @@ class Plugin {
       not_null<RenderingTransforms*>const transforms,
       Position<World> const& sun_world_position) const;
 
-  //TODO(phl):comment
+  // Fill |celestials| using the |index| and |parent_index| fields found in
+  // |celestial_messages| (which may be pre- or post-Bourbaki).
   template<typename T>
   static void ReadCelestialsFromMessages(
     Ephemeris<Barycentric> const& ephemeris,
@@ -467,9 +468,9 @@ void Plugin::ReadCelestialsFromMessages(
   for (auto const& celestial_message : celestial_messages) {
     if (celestial_message.has_parent_index()) {
       not_null<std::unique_ptr<Celestial>> const& celestial =
-          FindOrDie(celestials, celestial_message.index());
+          FindOrDie(*celestials, celestial_message.index());
       not_null<Celestial const*> const parent =
-          FindOrDie(celestials, celestial_message.parent_index()).get();
+          FindOrDie(*celestials, celestial_message.parent_index()).get();
       celestial->set_parent(parent);
     }
   }
