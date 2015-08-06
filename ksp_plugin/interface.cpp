@@ -331,7 +331,8 @@ void principia__DirectlyInsertMassiveCelestial(
                Velocity<Barycentric>({ParseSpeed(x),
                                       ParseSpeed(y),
                                       ParseSpeed(z)})},
-          std::make_unique<MassiveBody>(gravitational_parameter));
+          std::make_unique<MassiveBody>(
+              ParseGravitationalParameter(gravitational_parameter)));
 }
 
 void principia__DirectlyInsertOblateCelestial(
@@ -360,11 +361,12 @@ void principia__DirectlyInsertOblateCelestial(
        Velocity<Barycentric>({ParseSpeed(x),
                               ParseSpeed(y),
                               ParseSpeed(z)})},
-      std::make_unique<OblateBody>(gravitational_parameter,
-                                   ParseDimensionless(j2),
-                                   ParseLength(reference_radius),
-                                   Direction(ParseAngle(axis_right_ascension),
-                                             ParseAngle(axis_declination))));
+      std::make_unique<OblateBody<Barycentric>>(
+          ParseGravitationalParameter(gravitational_parameter),
+          ParseDimensionless(j2),
+          ParseLength(reference_radius),
+          Direction(ParseAngle(axis_right_ascension),
+                    ParseAngle(axis_declination))));
 }
 
 // NOTE(egg): The |* (Metre / Second)| might be slower than |* SIUnit<Speed>()|,
