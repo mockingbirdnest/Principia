@@ -442,28 +442,40 @@ std::unique_ptr<Ephemeris<Frame>> Ephemeris<Frame>::ReadFromPreBourbakiMessages(
                                                       fitting_tolerance);
 
   // Extend the continuous trajectories using the data from the discrete
-  // trajectories.  Note that this only works because the step of the discrete
-  // trajectories (10 seconds) divides |step| (45 minutes).
+  // trajectories.
   for (int i = 0; i < histories.size(); ++i) {
     auto* const body = ephemeris->unowned_bodies_[i];
     auto const& history = histories[i];
     auto continuous_trajectory =
         FindOrDie(ephemeris->bodies_to_trajectories_, body).get();
-    Instant last_time = *initial_time.cbegin();
-    for (auto it = history->first(); !it.at_end(); ++it) {
-      Instant const t = it.time();
-      if (t - last_time >= step) {
-        CHECK_EQ(t, last_time + step) << "Misaligned discrete trajectory";
-        continuous_trajectory->Append(t, it.degrees_of_freedom());
+    auto it = history.first();
+    Instant last_time = it.time();
+    DegreesOfFreedom<Frame> last_degrees_of_freedom = it.degrees_of_freedom();
+    while (!it.at_end()) {
+      Time const duration_since_last_time = it.time() - last_time;
+      if (duration_since_last_time == step) {
+        // A time in the discrete trajectory that is aligned on the continuous
+        // trajectory.
         last_time = t;
+        last_degrees_of_freedom = it.degrees_of_freedom();
+        continuous_trajectory->Append(last_time, last_degrees_of_freedom);
+        ++it;
+      } else if (duration_since_last_time > step) {
+        // A time in the discrete trajectory that is not aligned on the
+        // continuous trajectory.  Stop here, we'll use prolong to recompute the
+        // rest.
+        break;
       }
     }
+    //TODO(phl): need to compute j.
+    last_state_.time = last_time;
+    last_state_.positions[j] = last_degrees_of_freedom.position();
+    last_state_.velocities[j] = last_degrees_of_freedom.velocity();
   }
 
-  // Prolong the ephemeris to the final time.  This integrates on at most |step|
-  // so it should not create significant discrepancies from the discrete
-  // trajectories.
-  ephemeris->Prolong(*final_time.crbegin());
+  // Prolong the ephemeris to the final time.  This might create discrepancies
+  // from the discrete trajectories.
+  ephemeris->Prolong(*final_time.cbegin());
 
   return ephemeris;
 }
