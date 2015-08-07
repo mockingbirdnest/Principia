@@ -91,6 +91,7 @@ double ParseDouble(std::string const& s, not_null<size_t*> size) {
   double result = std::strtod(c_string, &interpreted_end);
   *size = interpreted_end - c_string;
   CHECK_GT(*size, 0) << "invalid floating-point number" << s;
+  return result;
 }
 
 double ParseQuantity(std::string const& s, not_null<std::string*> unit) {
@@ -183,7 +184,7 @@ Vector<double, Barycentric> Direction(Angle const& right_ascension,
   // An angle of 0 keeps {1, 0, 0} on the equator.
   auto const decline = Rotation<Barycentric, Barycentric>(
                            declination,
-                           Bivector<double, ICRFJ2000Equator>({0, -1, 0}));
+                           Bivector<double, Barycentric>({0, -1, 0}));
   // Rotate counterclockwise around {0, 0, 1} (north), i.e., eastward.
   auto const ascend = Rotation<Barycentric, Barycentric>(
                           right_ascension,
@@ -312,7 +313,7 @@ void principia__DeletePlugin(Plugin const** const plugin) {
 void principia__DirectlyInsertMassiveCelestial(
     Plugin* const plugin,
     int const celestial_index,
-    int const parent_index,
+    int const* parent_index,
     char const* gravitational_parameter,
     char const* x,
     char const* y,
@@ -338,7 +339,7 @@ void principia__DirectlyInsertMassiveCelestial(
 void principia__DirectlyInsertOblateCelestial(
     Plugin* const plugin,
     int const celestial_index,
-    int const parent_index,
+    int const* parent_index,
     char const* gravitational_parameter,
     char const* axis_right_ascension,
     char const* axis_declination,
@@ -384,6 +385,14 @@ void principia__InsertCelestial(Plugin* const plugin,
       RelativeDegreesOfFreedom<AliceSun>(
           Displacement<AliceSun>(ToR3Element(from_parent.q) * Metre),
           Velocity<AliceSun>(ToR3Element(from_parent.p) * (Metre / Second))));
+}
+
+void principia__InsertSun(Plugin* const plugin,
+                          int const celestial_index,
+                          double const gravitational_parameter) {
+  CHECK_NOTNULL(plugin)->InsertSun(
+      celestial_index,
+      gravitational_parameter * SIUnit<GravitationalParameter>());
 }
 
 void principia__UpdateCelestialHierarchy(Plugin const* const plugin,

@@ -96,29 +96,43 @@ void Plugin::InsertCelestial(
   DegreesOfFreedom<Barycentric> const& parent_degrees_of_freedom =
       FindOrDie(*initial_state_, parent_index);
   DirectlyInsertCelestial(celestial_index,
-                          parent_index,
+                          &parent_index,
                           parent_degrees_of_freedom + relative,
+                          std::move(body));
+}
+
+void Plugin::InsertSun(Index const celestial_index,
+                       GravitationalParameter const& gravitational_parameter) {
+  CHECK(initializing_) << "Celestial bodies should be inserted before the end "
+                       << "of initialization";
+  auto body = std::make_unique<MassiveBody>(gravitational_parameter);
+  DirectlyInsertCelestial(celestial_index,
+                          nullptr,
+                          {Barycentric::origin, Velocity<Barycentric>()},
                           std::move(body));
 }
 
 void Plugin::DirectlyInsertCelestial(
     Index const celestial_index,
-    Index const parent_index,
+    Index const* parent_index,
     DegreesOfFreedom<Barycentric> const& initial_state,
     std::unique_ptr<MassiveBody> body) {
   CHECK(initializing_) << "Celestial bodies should be inserted before the end "
                        << "of initialization";
-  not_null<Celestial const*> parent =
-      FindOrDie(celestials_, parent_index).get();
   auto const inserted =
     celestials_.emplace(celestial_index,
                         std::make_unique<Celestial>(body.get()));
   CHECK(inserted.second) << "Body already exists at index " << celestial_index;
   not_null<Celestial*> const celestial = inserted.first->second.get();
   bodies_->emplace(celestial_index, std::move(body));
-  celestial->set_parent(parent);
-  DegreesOfFreedom<Barycentric> const& parent_degrees_of_freedom =
-      FindOrDie(*initial_state_, parent_index);
+  if (parent_index == nullptr) {
+    CHECK(sun_ == nullptr);
+    sun_ = celestial;
+  } else {
+    not_null<Celestial const*> parent =
+        FindOrDie(celestials_, *parent_index).get();
+    celestial->set_parent(parent);
+  }
   initial_state_->emplace(celestial_index, initial_state);
 }
 

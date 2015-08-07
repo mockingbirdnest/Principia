@@ -136,7 +136,7 @@ extern "C" DLLEXPORT
 void CDECL principia__DirectlyInsertMassiveCelestial(
     Plugin* const plugin,
     int const celestial_index,
-    int const parent_index,
+    int const* parent_index,
     char const* gravitational_parameter,
     char const* x,
     char const* y,
@@ -149,7 +149,7 @@ extern "C" DLLEXPORT
 void CDECL principia__DirectlyInsertOblateCelestial(
   Plugin* const plugin,
   int const celestial_index,
-  int const parent_index,
+  int const* parent_index,
   char const* gravitational_parameter,
   char const* axis_right_ascension,
   char const* axis_declination,
@@ -170,6 +170,11 @@ void CDECL principia__InsertCelestial(Plugin* const plugin,
                                       double const gravitational_parameter,
                                       int const parent_index,
                                       QP const from_parent);
+
+extern "C" DLLEXPORT
+void CDECL principia__InsertSun(Plugin* const plugin,
+                                int const celestial_index,
+                                double const gravitational_parameter);
 
 // Calls |plugin->UpdateCelestialHierarchy| with the arguments given.
 // |plugin| must not be null.  No transfer of ownership.
