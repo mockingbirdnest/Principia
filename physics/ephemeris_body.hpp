@@ -5,6 +5,7 @@
 #include <algorithm>
 #include <functional>
 #include <limits>
+#include <set>
 #include <vector>
 
 #include "base/map_util.hpp"
@@ -399,6 +400,104 @@ std::unique_ptr<Ephemeris<Frame>> Ephemeris<Frame>::ReadFromMessage(
         body, std::move(deserialized_trajectory));
     ++index;
   }
+  return ephemeris;
+}
+
+template<typename Frame>
+std::unique_ptr<Ephemeris<Frame>> Ephemeris<Frame>::ReadFromPreBourbakiMessages(
+    google::protobuf::RepeatedPtrField<
+        serialization::Plugin::CelestialAndProperties> const& messages,
+    FixedStepSizeIntegrator<NewtonianMotionEquation> const&
+        planetary_integrator,
+    Time const& step,
+    Length const& fitting_tolerance) {
+  LOG(INFO) << "Reading "<< messages.SpaceUsedExcludingSelf()
+            << " bytes in pre-Bourbaki compatibility mode ";
+  std::vector<not_null<std::unique_ptr<MassiveBody const>>> bodies;
+  std::vector<DegreesOfFreedom<Frame>> initial_state;
+  std::vector<std::unique_ptr<Trajectory<Frame>>> histories;
+  std::set<Instant> initial_time;
+  std::set<Instant> final_time;
+  for (auto const& message : messages) {
+    serialization::Celestial const& celestial = message.celestial();
+    bodies.emplace_back(MassiveBody::ReadFromMessage(celestial.body()));
+    histories.emplace_back(Trajectory<Frame>::ReadFromMessage(
+        celestial.history_and_prolongation().history(),
+        bodies.back().get()));
+    auto const prolongation =
+        Trajectory<Frame>::ReadPointerFromMessage(
+            celestial.history_and_prolongation().prolongation(),
+            histories.back().get());
+    initial_state.push_back(histories.back()->first().degrees_of_freedom());
+    initial_time.insert(histories.back()->first().time());
+    final_time.insert(prolongation->last().time());
+  }
+  CHECK_EQ(1, initial_time.size());
+  CHECK_EQ(1, final_time.size());
+  LOG(INFO) << "Initial time is " << *initial_time.cbegin()
+            << ", final time is " << *final_time.cbegin();
+
+  // Construct a new ephemeris using the bodies and initial states and time
+  // extracted from the serialized celestials.
+  auto ephemeris = std::make_unique<Ephemeris<Frame>>(std::move(bodies),
+                                                      initial_state,
+                                                      *initial_time.cbegin(),
+                                                      planetary_integrator,
+                                                      step,
+                                                      fitting_tolerance);
+
+  // Extend the continuous trajectories using the data from the discrete
+  // trajectories.
+  std::set<Instant> last_state_time;
+  for (int i = 0; i < histories.size(); ++i) {
+    auto* const body = ephemeris->unowned_bodies_[i];
+    auto const& history = histories[i];
+
+    // Apologies about the linear search here but we need the index |j| to fill
+    // |last_state_| and I don't feel like introducing another data structure
+    // just to speed up the compatibility case.
+    int j = 0;
+    for (; j < ephemeris->bodies_.size(); ++j) {
+      if (body == ephemeris->bodies_[j].get()) {
+        break;
+      }
+    }
+    auto continuous_trajectory = ephemeris->trajectories_[j];
+
+    auto it = history->first();
+    Instant last_time = it.time();
+    DegreesOfFreedom<Frame> last_degrees_of_freedom = it.degrees_of_freedom();
+    for (; !it.at_end(); ++it) {
+      Time const duration_since_last_time = it.time() - last_time;
+      if (duration_since_last_time == step) {
+        // A time in the discrete trajectory that is aligned on the continuous
+        // trajectory.
+        last_time = it.time();
+        last_degrees_of_freedom = it.degrees_of_freedom();
+        continuous_trajectory->Append(last_time, last_degrees_of_freedom);
+      } else if (duration_since_last_time > step) {
+        // A time in the discrete trajectory that is not aligned on the
+        // continuous trajectory.  Stop here, we'll use prolong to recompute the
+        // rest.
+        break;
+      }
+    }
+
+    // Fill the |last_state_| for this body.  It will be the starting state for
+    // Prolong.
+    last_state_time.insert(last_time);
+    ephemeris->last_state_.positions[j] = last_degrees_of_freedom.position();
+    ephemeris->last_state_.velocities[j] = last_degrees_of_freedom.velocity();
+  }
+  CHECK_EQ(1, last_state_time.size());
+  ephemeris->last_state_.time = *last_state_time.cbegin();
+  LOG(INFO) << "Last time in discrete trajectories is "
+            << *last_state_time.cbegin();
+
+  // Prolong the ephemeris to the final time.  This might create discrepancies
+  // from the discrete trajectories.
+  ephemeris->Prolong(*final_time.cbegin());
+
   return ephemeris;
 }
 

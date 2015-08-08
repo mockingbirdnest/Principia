@@ -44,5 +44,13 @@
     <ClCompile Include="celestial_test.cpp">
       <Filter>Test Files</Filter>
     </ClCompile>
+    <ClCompile Include="plugin_compatibility_test.cpp">
+      <Filter>Test Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="pre_bourbaki.proto.hex">
+      <Filter>Test Files</Filter>
+    </None>
   </ItemGroup>
 </Project>

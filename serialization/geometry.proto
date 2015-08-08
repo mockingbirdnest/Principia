@@ -134,7 +134,7 @@ message Frame {
     ALICE_SUN = 1;
     ALICE_WORLD = 2;
     BARYCENTRIC = 7;
-    OLD_BARYCENTRIC = 3;
+    PRE_BOREL_BARYCENTRIC = 3;
     RENDERING = 4;
     WORLD = 5;
     WORLD_SUN = 6;

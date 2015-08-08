@@ -380,6 +380,14 @@ class Plugin {
       not_null<RenderingTransforms*>const transforms,
       Position<World> const& sun_world_position) const;
 
+  // Fill |celestials| using the |index| and |parent_index| fields found in
+  // |celestial_messages| (which may be pre- or post-Bourbaki).
+  template<typename T>
+  static void ReadCelestialsFromMessages(
+    Ephemeris<Barycentric> const& ephemeris,
+    google::protobuf::RepeatedPtrField<T> const& celestial_messages,
+    not_null<IndexToOwnedCelestial*> const celestials);
+
   Time const Δt_ = 10 * Second;
   Length const prolongation_length_tolerance_ = 1 * Milli(Metre);
   Speed const prolongation_speed_tolerance_ = 1 * Milli(Metre) / Second;

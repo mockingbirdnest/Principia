@@ -8,11 +8,13 @@
 #include "base/not_null.hpp"
 #include "geometry/grassmann.hpp"
 #include "geometry/named_quantities.hpp"
+#include "google/protobuf/repeated_field.h"
 #include "integrators/ordinary_differential_equations.hpp"
 #include "physics/continuous_trajectory.hpp"
 #include "physics/massive_body.hpp"
 #include "physics/oblate_body.hpp"
 #include "physics/trajectory.hpp"
+#include "serialization/ksp_plugin.pb.h"
 
 namespace principia {
 
@@ -99,6 +101,15 @@ class Ephemeris {
   // Should be |not_null| once we have move conversion.
   static std::unique_ptr<Ephemeris> ReadFromMessage(
       serialization::Ephemeris const& message);
+
+  // Compatibility method for construction an ephemeris from pre-Bourbaki data.
+  static std::unique_ptr<Ephemeris> ReadFromPreBourbakiMessages(
+      google::protobuf::RepeatedPtrField<
+          serialization::Plugin::CelestialAndProperties> const& messages,
+      FixedStepSizeIntegrator<NewtonianMotionEquation> const&
+          planetary_integrator,
+      Time const& step,
+      Length const& fitting_tolerance);
 
  protected:
   // For mocking purposes, leaves everything uninitialized and uses a dummy
