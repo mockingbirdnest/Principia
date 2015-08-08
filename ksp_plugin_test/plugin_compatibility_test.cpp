@@ -88,11 +88,17 @@ TEST_F(PluginCompatibilityTest, PreBourbaki) {
   // Construct a protocol buffer from the binary data.
   google::protobuf::io::CodedInputStream coded_input_stream(
       bin.data.get(), static_cast<int>(bin.size));
-  serialization::Plugin serialized_plugin;
-  CHECK(serialized_plugin.MergeFromCodedStream(&coded_input_stream));
+  serialization::Plugin pre_bourbaki_serialized_plugin;
+  CHECK(pre_bourbaki_serialized_plugin.MergeFromCodedStream(
+            &coded_input_stream));
 
   // Construct a plugin from the protocol buffer.
-  auto plugin = Plugin::ReadFromMessage(serialized_plugin);
+  auto plugin = Plugin::ReadFromMessage(pre_bourbaki_serialized_plugin);
+
+  // Serialize and deserialize in the new format.
+  serialization::Plugin post_bourbaki_serialized_plugin;
+  plugin->WriteToMessage(&post_bourbaki_serialized_plugin);
+  plugin = Plugin::ReadFromMessage(post_bourbaki_serialized_plugin);
 }
 
 }  // namespace ksp_plugin
