@@ -203,6 +203,17 @@ TEST_F(InterfaceTest, InsertCelestial) {
                              kParentRelativeDegreesOfFreedom);
 }
 
+TEST_F(InterfaceTest, InsertSun) {
+  EXPECT_CALL(*plugin_,
+              InsertSun(
+                  kCelestialIndex,
+                  kGravitationalParameter * SIUnit<GravitationalParameter>()));
+  principia__InsertSun(plugin_.get(),
+                       kCelestialIndex,
+                       kGravitationalParameter);
+}
+
+
 TEST_F(InterfaceTest, DirectlyInsertMassiveCelestial) {
   EXPECT_CALL(
       *plugin_,
