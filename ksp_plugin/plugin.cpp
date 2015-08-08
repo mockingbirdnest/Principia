@@ -476,6 +476,7 @@ void Plugin::WriteToMessage(
     not_null<serialization::Plugin*> const message) const {
   LOG(INFO) << __FUNCTION__;
   CHECK(!initializing_);
+  ephemeris_->Prolong(current_time_);
   ephemeris_->ForgetAfter(current_time_);
   std::map<not_null<Celestial const*>, Index const> celestial_to_index;
   for (auto const& index_celestial : celestials_) {
