@@ -1,4 +1,5 @@
 #include <fstream>
+#include <string>
 
 #include "base/array.hpp"
 #include "base/hexadecimal.hpp"

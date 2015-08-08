@@ -5,6 +5,7 @@
 #include <algorithm>
 #include <functional>
 #include <limits>
+#include <set>
 #include <vector>
 
 #include "base/map_util.hpp"
