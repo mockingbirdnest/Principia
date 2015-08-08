@@ -1241,7 +1241,8 @@ TEST_F(PluginTest, Frenet) {
   // Create a plugin with planetarium rotation 0.
   Plugin plugin(initial_time_,
                 0 * Radian);
-  plugin.InsertSun(SolarSystem::kSun, sun_gravitational_parameter_);
+  plugin.InsertSun(SolarSystem::kEarth,
+                   bodies_[SolarSystem::kEarth]->gravitational_parameter());
   plugin.EndInitialization();
   Permutation<AliceSun, World> const alice_sun_to_world =
       Permutation<AliceSun, World>(Permutation<AliceSun, World>::XZY);
