@@ -12,9 +12,6 @@
     <Filter Include="Test Files">
       <UniqueIdentifier>{0faba8e9-2063-4801-98f0-1f32c1e084ec}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Data Files">
-      <UniqueIdentifier>{9d377b0e-85b3-4dd8-9e95-16d4b6052afe}</UniqueIdentifier>
-    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="plugin_test.cpp">
@@ -47,13 +44,5 @@
     <ClCompile Include="celestial_test.cpp">
       <Filter>Test Files</Filter>
     </ClCompile>
-    <ClCompile Include="plugin_compatibility_test.cpp">
-      <Filter>Test Files</Filter>
-    </ClCompile>
-  </ItemGroup>
-  <ItemGroup>
-    <Xsd Include="pre_bourbaki.proto.hex">
-      <Filter>Data Files</Filter>
-    </Xsd>
   </ItemGroup>
 </Project>

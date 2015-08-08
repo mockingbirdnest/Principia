@@ -23,7 +23,6 @@
     <ClCompile Include="interface_test.cpp" />
     <ClCompile Include="part_test.cpp" />
     <ClCompile Include="physics_bubble_test.cpp" />
-    <ClCompile Include="plugin_compatibility_test.cpp" />
     <ClCompile Include="plugin_test.cpp" />
     <ClCompile Include="vessel_test.cpp" />
   </ItemGroup>
@@ -31,14 +30,6 @@
     <ProjectReference Include="..\serialization\serialization.vcxproj">
       <Project>{5c482c18-bbae-484d-a211-a25c86370061}</Project>
     </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
-    <Text Include="pre_bourbaki.proto.hex">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release_LLVM|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
-      <FileType>XSD</FileType>
-    </Text>
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{A942ADF0-62F4-435C-85B2-934D5B666DB8}</ProjectGuid>
