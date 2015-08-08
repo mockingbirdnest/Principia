@@ -8,11 +8,13 @@
 #include "base/not_null.hpp"
 #include "geometry/grassmann.hpp"
 #include "geometry/named_quantities.hpp"
+#include "google/protobuf/repeated_field.h"
 #include "integrators/ordinary_differential_equations.hpp"
 #include "physics/continuous_trajectory.hpp"
 #include "physics/massive_body.hpp"
 #include "physics/oblate_body.hpp"
 #include "physics/trajectory.hpp"
+#include "serialization/ksp_plugin.pb.h"
 
 namespace principia {
 
@@ -63,7 +65,11 @@ class Ephemeris {
   virtual FixedStepSizeIntegrator<NewtonianMotionEquation> const&
   planetary_integrator() const;
 
-  // Calls |ForgetBefore| on all trajectories.
+  // Calls |ForgetAfter| on all trajectories for a time which is greater than or
+  // equal to |t|, and less than 6 months after |t|.  On return |t_max() >= t|.
+  virtual void ForgetAfter(Instant const& t);
+
+  // Calls |ForgetBefore| on all trajectories.  On return |t_min() == t|.
   virtual void ForgetBefore(Instant const& t);
 
   // Prolongs the ephemeris up to at least |t|.  After the call, |t_max() >= t|.
@@ -95,6 +101,15 @@ class Ephemeris {
   // Should be |not_null| once we have move conversion.
   static std::unique_ptr<Ephemeris> ReadFromMessage(
       serialization::Ephemeris const& message);
+
+  // Compatibility method for construction an ephemeris from pre-Bourbaki data.
+  static std::unique_ptr<Ephemeris> ReadFromPreBourbakiMessages(
+      google::protobuf::RepeatedPtrField<
+          serialization::Plugin::CelestialAndProperties> const& messages,
+      FixedStepSizeIntegrator<NewtonianMotionEquation> const&
+          planetary_integrator,
+      Time const& step,
+      Length const& fitting_tolerance);
 
  protected:
   // For mocking purposes, leaves everything uninitialized and uses a dummy
@@ -189,6 +204,12 @@ class Ephemeris {
   Time const step_;
   Length const fitting_tolerance_;
   typename NewtonianMotionEquation::SystemState last_state_;
+
+  // These are the states other that the last which we preserve in order to be
+  // to implement ForgetAfter.  The |state.time.value| are |t_max()| values for
+  // all the underlying trajectories.
+  std::vector<typename NewtonianMotionEquation::SystemState>
+      intermediate_states_;
 
   int number_of_spherical_bodies_ = 0;
   int number_of_oblate_bodies_ = 0;

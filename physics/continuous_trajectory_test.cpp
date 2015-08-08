@@ -328,9 +328,9 @@ TEST_F(ContinuousTrajectoryTest, Io) {
               AbsoluteError(expected_velocity, actual_velocity));
   }
 
-  Instant const kForgetTime = t0 + 44444 * Second;
-  trajectory_->ForgetBefore(kForgetTime);
-  EXPECT_EQ(kForgetTime, trajectory_->t_min());
+  Instant const kForgetBeforeTime = t0 + 44444 * Second;
+  trajectory_->ForgetBefore(kForgetBeforeTime);
+  EXPECT_EQ(kForgetBeforeTime, trajectory_->t_min());
   EXPECT_EQ(t0 + (((kNumberOfSteps - 1) / 8) * 8 + 1) * kStep,
             trajectory_->t_max());
   for (Instant time = trajectory_->t_min();
@@ -342,6 +342,29 @@ TEST_F(ContinuousTrajectoryTest, Io) {
         position_function(time) - World::origin;
     Velocity<World> const actual_velocity =
         trajectory_->EvaluateVelocity(time, &hint);
+    Velocity<World> const expected_velocity = velocity_function(time);
+    EXPECT_GT(0.492 * Milli(Metre),
+              AbsoluteError(expected_displacement, actual_displacement));
+    EXPECT_GT(1.60E-7 * Metre / Second,
+              AbsoluteError(expected_velocity, actual_velocity));
+  }
+
+  Instant const kForgetAfterTime = t0 + 25 * kStep;
+  trajectory_->ForgetAfter(
+      kForgetAfterTime,
+      trajectory_->EvaluateDegreesOfFreedom(kForgetAfterTime,
+                                            nullptr /*hint*/));
+  EXPECT_EQ(kForgetBeforeTime, trajectory_->t_min());
+  EXPECT_EQ(kForgetAfterTime, trajectory_->t_max());
+  for (Instant time = trajectory_->t_min();
+       time <= trajectory_->t_max();
+       time += kStep / kNumberOfSubsteps) {
+    Displacement<World> const actual_displacement =
+      trajectory_->EvaluatePosition(time, &hint) - World::origin;
+    Displacement<World> const expected_displacement =
+      position_function(time) - World::origin;
+    Velocity<World> const actual_velocity =
+      trajectory_->EvaluateVelocity(time, &hint);
     Velocity<World> const expected_velocity = velocity_function(time);
     EXPECT_GT(0.492 * Milli(Metre),
               AbsoluteError(expected_displacement, actual_displacement));

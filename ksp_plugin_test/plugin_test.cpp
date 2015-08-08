@@ -1267,37 +1267,5 @@ TEST_F(PluginTest, Frenet) {
               AlmostEquals(t, 7));
 }
 
-#if 0
-TEST_F(PluginTest, SerializationCompatibility) {
-  serialization::Multivector message;
-
-  Vector<Length, Barycentric> const v({-1 * Metre, 2 * Metre, 3 * Metre});
-  v.WriteToMessage(&message);
-  message.mutable_frame()->set_tag(serialization::Frame::OLD_BARYCENTRIC);
-  Vector<Length, Barycentric> const w =
-      Vector<Length, Barycentric>::ReadFromMessage(message);
-  Vector<Length, Barycentric> const expected_w(
-      {-1 * Metre, 3 * Metre, 2 * Metre});
-  EXPECT_EQ(expected_w, w);
-
-  Bivector<Length, Barycentric> const b({4 * Metre, 5 * Metre, -6 * Metre});
-  b.WriteToMessage(&message);
-  message.mutable_frame()->set_tag(serialization::Frame::OLD_BARYCENTRIC);
-  Bivector<Length, Barycentric> const c =
-      Bivector<Length, Barycentric>::ReadFromMessage(message);
-  Bivector<Length, Barycentric> const expected_c(
-      {-4 * Metre, 6 * Metre, -5 * Metre});
-  EXPECT_EQ(expected_c, c);
-
-  Trivector<Length, Barycentric> const t(-7 * Metre);
-  t.WriteToMessage(&message);
-  message.mutable_frame()->set_tag(serialization::Frame::OLD_BARYCENTRIC);
-  Trivector<Length, Barycentric> const u =
-      Trivector<Length, Barycentric>::ReadFromMessage(message);
-  Trivector<Length, Barycentric> const expected_u(7 * Metre);
-  EXPECT_EQ(expected_u, u);
-}
-#endif
-
 }  // namespace ksp_plugin
 }  // namespace principia

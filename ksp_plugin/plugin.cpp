@@ -51,6 +51,9 @@ Permutation<World, AliceWorld> const kWorldLookingGlass(
 Permutation<WorldSun, AliceSun> const kSunLookingGlass(
     Permutation<WorldSun, AliceSun>::CoordinatePermutation::XZY);
 
+Time const kStep = 45 * Minute;
+Length const kFittingTolerance = 1 * Milli(Metre);
+
 }  // namespace
 
 Plugin::Plugin(Instant const& initial_time,
@@ -142,8 +145,8 @@ void Plugin::EndInitialization() {
       initial_state,
       current_time_,
       history_integrator_,
-      45 * Minute /*step*/,
-      1 * Milli(Metre) /*fitting_tolerance*/);
+      kStep,
+      kFittingTolerance);
   for (auto const& pair : celestials_) {
     auto& celestial = *pair.second;
     // TODO(egg): unorthodox address of reference.
@@ -516,7 +519,6 @@ void Plugin::WriteToMessage(
 
   planetarium_rotation_.WriteToMessage(message->mutable_planetarium_rotation());
   current_time_.WriteToMessage(message->mutable_current_time());
-  history_time_.WriteToMessage(message->mutable_history_time());
   Index const sun_index = FindOrDie(celestial_to_index, sun_);
   message->set_sun_index(sun_index);
   LOG(INFO) << NAMED(message->SpaceUsed());
@@ -526,28 +528,26 @@ void Plugin::WriteToMessage(
 std::unique_ptr<Plugin> Plugin::ReadFromMessage(
     serialization::Plugin const& message) {
   LOG(INFO) << __FUNCTION__;
-  auto ephemeris = Ephemeris<Barycentric>::ReadFromMessage(message.ephemeris());
-  auto const& bodies = ephemeris->bodies();
-  auto bodies_it = bodies.begin();
+  bool const is_pre_bourbaki = message.pre_bourbaki_celestial_size() > 0;
+  std::unique_ptr<Ephemeris<Barycentric>> ephemeris;
   IndexToOwnedCelestial celestials;
-  for (auto const& celestial_message : message.celestial()) {
-    auto const inserted =
-        celestials.emplace(celestial_message.index(),
-                           make_not_null_unique<Celestial>(*bodies_it));
-    CHECK(inserted.second);
-    inserted.first->second->set_trajectory(ephemeris->trajectory(*bodies_it));
-    ++bodies_it;
+
+  if (is_pre_bourbaki) {
+    ephemeris = Ephemeris<Barycentric>::ReadFromPreBourbakiMessages(
+        message.pre_bourbaki_celestial(),
+        McLachlanAtela1992Order5Optimal<Position<Barycentric>>(),
+        kStep,
+        kFittingTolerance);
+    ReadCelestialsFromMessages(*ephemeris,
+                               message.pre_bourbaki_celestial(),
+                               &celestials);
+  } else {
+    ephemeris = Ephemeris<Barycentric>::ReadFromMessage(message.ephemeris());
+    ReadCelestialsFromMessages(*ephemeris,
+                               message.celestial(),
+                               &celestials);
   }
-  CHECK_EQ(bodies.end() - bodies.begin(), bodies_it - bodies.begin());
-  for (auto const& celestial_message : message.celestial()) {
-    if (celestial_message.has_parent_index()) {
-      not_null<std::unique_ptr<Celestial>> const& celestial =
-          FindOrDie(celestials, celestial_message.index());
-      not_null<Celestial const*> const parent =
-          FindOrDie(celestials, celestial_message.parent_index()).get();
-      celestial->set_parent(parent);
-    }
-  }
+
   GUIDToOwnedVessel vessels;
   std::set<not_null<Vessel*>> dirty_vessels;
   for (auto const& vessel_message : message.vessel()) {
@@ -569,11 +569,26 @@ std::unique_ptr<Plugin> Plugin::ReadFromMessage(
           },
           message.bubble());
   auto const& prolongation_integrator =
-      AdaptiveStepSizeIntegrator<NewtonianMotionEquation>::ReadFromMessage(
-          message.prolongation_integrator());
+      is_pre_bourbaki ?
+          DormandElMikkawyPrince1986RKN434FM<Position<Barycentric>>() :
+          AdaptiveStepSizeIntegrator<NewtonianMotionEquation>::ReadFromMessage(
+              message.prolongation_integrator());
   auto const& prediction_integrator =
-      AdaptiveStepSizeIntegrator<NewtonianMotionEquation>::ReadFromMessage(
-          message.prediction_integrator());
+      is_pre_bourbaki ?
+          DormandElMikkawyPrince1986RKN434FM<Position<Barycentric>>() :
+          AdaptiveStepSizeIntegrator<NewtonianMotionEquation>::ReadFromMessage(
+              message.prediction_integrator());
+
+  Instant const current_time = Instant::ReadFromMessage(message.current_time());
+  Instant history_time = current_time;
+  for (auto const& pair : vessels) {
+    auto const& vessel = pair.second;
+    if (vessel->is_synchronized()) {
+      history_time = vessel->history().last().time();
+      break;
+    }
+  }
+
   // Can't use |make_unique| here without implementation-dependent friendships.
   return std::unique_ptr<Plugin>(
       new Plugin(std::move(vessels),
@@ -584,8 +599,8 @@ std::unique_ptr<Plugin> Plugin::ReadFromMessage(
                  prolongation_integrator,
                  prediction_integrator,
                  Angle::ReadFromMessage(message.planetarium_rotation()),
-                 Instant::ReadFromMessage(message.current_time()),
-                 Instant::ReadFromMessage(message.history_time()),
+                 current_time,
+                 history_time,
                  message.sun_index()));
 }
 
@@ -911,6 +926,33 @@ RenderedTrajectory<World> Plugin::RenderTrajectory(
   }
   VLOG(1) << "Returning a " << result.size() << "-segment trajectory";
   return result;
+}
+
+template<typename T>
+void Plugin::ReadCelestialsFromMessages(
+  Ephemeris<Barycentric> const& ephemeris,
+  google::protobuf::RepeatedPtrField<T> const& celestial_messages,
+  not_null<IndexToOwnedCelestial*> const celestials) {
+  auto const& bodies = ephemeris.bodies();
+  auto bodies_it = bodies.begin();
+  for (auto const& celestial_message : celestial_messages) {
+    auto const inserted =
+      celestials->emplace(celestial_message.index(),
+                          make_not_null_unique<Celestial>(*bodies_it));
+    CHECK(inserted.second);
+    inserted.first->second->set_trajectory(ephemeris.trajectory(*bodies_it));
+    ++bodies_it;
+  }
+  CHECK_EQ(bodies.end() - bodies.begin(), bodies_it - bodies.begin());
+  for (auto const& celestial_message : celestial_messages) {
+    if (celestial_message.has_parent_index()) {
+      not_null<std::unique_ptr<Celestial>> const& celestial =
+        FindOrDie(*celestials, celestial_message.index());
+      not_null<Celestial const*> const parent =
+        FindOrDie(*celestials, celestial_message.parent_index()).get();
+      celestial->set_parent(parent);
+    }
+  }
 }
 
 }  // namespace ksp_plugin
