@@ -67,14 +67,80 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
              CallingConvention = CallingConvention.Cdecl)]
   private static extern IntPtr NewPlugin(
       double initial_time,
-      int sun_index,
-      double sun_gravitational_parameter,
       double planetarium_rotation_in_degrees);
 
   [DllImport(dllName           : kDllPath,
              EntryPoint        = "principia__DeletePlugin",
              CallingConvention = CallingConvention.Cdecl)]
   private static extern void DeletePlugin(ref IntPtr plugin);
+
+  [DllImport(dllName           : kDllPath,
+             EntryPoint        = "principia__DirectlyInsertMassiveCelestial",
+             CallingConvention = CallingConvention.Cdecl)]
+  private static extern void DirectlyInsertMassiveCelestial(
+      IntPtr plugin,
+      int celestial_index,
+      ref int parent_index,
+      [MarshalAs(UnmanagedType.LPStr)] String  gravitational_parameter,
+      [MarshalAs(UnmanagedType.LPStr)] String  x,
+      [MarshalAs(UnmanagedType.LPStr)] String  y,
+      [MarshalAs(UnmanagedType.LPStr)] String  z,
+      [MarshalAs(UnmanagedType.LPStr)] String  vx,
+      [MarshalAs(UnmanagedType.LPStr)] String  vy,
+      [MarshalAs(UnmanagedType.LPStr)] String  vz);
+
+  [DllImport(dllName           : kDllPath,
+             EntryPoint        = "principia__DirectlyInsertOblateCelestial",
+             CallingConvention = CallingConvention.Cdecl)]
+  private static extern void DirectlyInsertOblateCelestial(
+      IntPtr plugin,
+      int celestial_index,
+      ref int parent_index,
+      [MarshalAs(UnmanagedType.LPStr)] String gravitational_parameter,
+      [MarshalAs(UnmanagedType.LPStr)] String axis_right_ascension,
+      [MarshalAs(UnmanagedType.LPStr)] String axis_declination,
+      [MarshalAs(UnmanagedType.LPStr)] String j2,
+      [MarshalAs(UnmanagedType.LPStr)] String reference_radius,
+      [MarshalAs(UnmanagedType.LPStr)] String x,
+      [MarshalAs(UnmanagedType.LPStr)] String y,
+      [MarshalAs(UnmanagedType.LPStr)] String z,
+      [MarshalAs(UnmanagedType.LPStr)] String vx,
+      [MarshalAs(UnmanagedType.LPStr)] String vy,
+      [MarshalAs(UnmanagedType.LPStr)] String vz);
+
+  [DllImport(dllName           : kDllPath,
+             EntryPoint        = "principia__DirectlyInsertMassiveCelestial",
+             CallingConvention = CallingConvention.Cdecl)]
+  private static extern void DirectlyInsertMassiveCelestial(
+      IntPtr plugin,
+      int celestial_index,
+      IntPtr parent_index,
+      [MarshalAs(UnmanagedType.LPStr)] String  gravitational_parameter,
+      [MarshalAs(UnmanagedType.LPStr)] String  x,
+      [MarshalAs(UnmanagedType.LPStr)] String  y,
+      [MarshalAs(UnmanagedType.LPStr)] String  z,
+      [MarshalAs(UnmanagedType.LPStr)] String  vx,
+      [MarshalAs(UnmanagedType.LPStr)] String  vy,
+      [MarshalAs(UnmanagedType.LPStr)] String  vz);
+
+  [DllImport(dllName           : kDllPath,
+             EntryPoint        = "principia__DirectlyInsertOblateCelestial",
+             CallingConvention = CallingConvention.Cdecl)]
+  private static extern void DirectlyInsertOblateCelestial(
+      IntPtr plugin,
+      int celestial_index,
+      IntPtr parent_index,
+      [MarshalAs(UnmanagedType.LPStr)] String gravitational_parameter,
+      [MarshalAs(UnmanagedType.LPStr)] String axis_right_ascension,
+      [MarshalAs(UnmanagedType.LPStr)] String axis_declination,
+      [MarshalAs(UnmanagedType.LPStr)] String j2,
+      [MarshalAs(UnmanagedType.LPStr)] String reference_radius,
+      [MarshalAs(UnmanagedType.LPStr)] String x,
+      [MarshalAs(UnmanagedType.LPStr)] String y,
+      [MarshalAs(UnmanagedType.LPStr)] String z,
+      [MarshalAs(UnmanagedType.LPStr)] String vx,
+      [MarshalAs(UnmanagedType.LPStr)] String vy,
+      [MarshalAs(UnmanagedType.LPStr)] String vz);
 
   [DllImport(dllName           : kDllPath,
              EntryPoint        = "principia__InsertCelestial",
@@ -85,6 +151,14 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
       double gravitational_parameter,
       int parent_index,
       QP from_parent);
+
+  [DllImport(dllName           : kDllPath,
+             EntryPoint        = "principia__InsertSun",
+             CallingConvention = CallingConvention.Cdecl)]
+  private static extern void InsertSun(
+      IntPtr plugin,
+      int celestial_index,
+      double gravitational_parameter);
 
   [DllImport(dllName           : kDllPath,
              EntryPoint        = "principia__EndInitialization",

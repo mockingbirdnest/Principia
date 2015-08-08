@@ -15,6 +15,8 @@ namespace ksp_plugin_adapter {
 public partial class PrincipiaPluginAdapter : ScenarioModule {
 
   private const String kPrincipiaKey = "serialized_plugin";
+  private const String kPrincipiaInitialState = "principia_initial_state";
+  private const String kPrincipiaGravityModels = "principia_gravity_models";
   private const double kΔt = 10;
 
   // The number of points in a |VectorLine| can be at most 32766, since
@@ -91,7 +93,13 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
   private bool time_is_advancing_;
 
   private DateTime plugin_construction_;
-  private bool plugin_from_save_;
+
+  private enum PluginSource {
+   SAVED_STATE,
+   ORBITAL_ELEMENTS,
+   CARTESIAN_CONFIG,
+  }
+  private PluginSource plugin_source_;
 
   private Krakensbane krakensbane_;
   private NavBall navball_;
@@ -400,7 +408,7 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
 
       UpdateRenderingFrame();
       plugin_construction_ = DateTime.Now;
-      plugin_from_save_ = true;
+      plugin_source_ = PluginSource.SAVED_STATE;
     } else {
       Log.Warning("No principia state found, creating one");
       ResetPlugin();
@@ -798,10 +806,21 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
     if (!PluginRunning()) {
       last_reset_information = "";
     } else {
+      String plugin_source = "";
+      switch (plugin_source_) {
+        case (PluginSource.SAVED_STATE):
+           plugin_source = "from a saved state";
+          break;
+        case (PluginSource.ORBITAL_ELEMENTS):
+           plugin_source = "from a KSP orbital elements";
+          break;
+        case (PluginSource.CARTESIAN_CONFIG):
+           plugin_source = "from a cartesian configuration file";
+          break;
+      }
       last_reset_information =
           "Plugin was constructed at " +
-          plugin_construction_.ToUniversalTime().ToString("O") +
-          (plugin_from_save_ ? " from a saved state" : " from scratch");
+          plugin_construction_.ToUniversalTime().ToString("O") + plugin_source;
     }
     UnityEngine.GUILayout.TextArea(last_reset_information);
     bool changed_history_length = false;
@@ -1099,20 +1118,126 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
     SetRotatingFrameThresholds();
     ResetRenderedTrajectory();
     plugin_construction_ = DateTime.Now;
-    plugin_from_save_ = false;
-    plugin_ = NewPlugin(Planetarium.GetUniversalTime(),
-                        Planetarium.fetch.Sun.flightGlobalsIndex,
-                        Planetarium.fetch.Sun.gravParameter,
-                        Planetarium.InverseRotAngle);
-    BodyProcessor insert_body = body => {
-      Log.Info("Inserting " + body.name + "...");
-      InsertCelestial(plugin_,
-                      body.flightGlobalsIndex,
-                      body.gravParameter,
-                      body.orbit.referenceBody.flightGlobalsIndex,
-                      new QP{q = (XYZ)body.orbit.pos, p = (XYZ)body.orbit.vel});
-    };
-    ApplyToBodyTree(insert_body);
+    if (GameDatabase.Instance.ExistsConfigNode(kPrincipiaInitialState)) {
+      plugin_source_ = PluginSource.CARTESIAN_CONFIG;
+      if (!GameDatabase.Instance.ExistsConfigNode(kPrincipiaGravityModels)) {
+        Log.Fatal("missing gravity models");
+      }
+      try {
+        ConfigNode initial_states =
+            GameDatabase.Instance.GetConfigNode(kPrincipiaInitialState);
+        ConfigNode gravity_models =
+            GameDatabase.Instance.GetConfigNode(kPrincipiaGravityModels);
+        plugin_ = NewPlugin(initial_states.GetValue("epoch"),
+                            Planetarium.InverseRotAngle);
+        var name_to_initial_state = new Dictionary<String, ConfigNode>();
+        var name_to_gravity_model = new Dictionary<String, ConfigNode>();
+        foreach (ConfigNode node in initial_states.GetNodes("body")) {
+          name_to_initial_state.Add(node.GetValue("name"), node);
+        }
+        foreach (ConfigNode node in gravity_models.GetNodes("body")) {
+          name_to_gravity_model.Add(node.GetValue("name"), node);
+        }
+        ConfigNode sun_gravity_model =
+            name_to_gravity_model[Planetarium.fetch.Sun.name];
+        ConfigNode sun_initial_state =
+            name_to_initial_state[Planetarium.fetch.Sun.name];
+        if (sun_gravity_model.HasValue("j2")) {
+          DirectlyInsertOblateCelestial(
+              plugin: plugin_,
+              celestial_index: Planetarium.fetch.Sun.flightGlobalsIndex,
+              parent_index: IntPtr.Zero,
+              gravitational_parameter:
+                  sun_gravity_model.GetValue("gravitational_parameter"),
+              axis_right_ascension:
+                  sun_gravity_model.GetValue("axis_right_ascension"),
+              axis_declination:
+                  sun_gravity_model.GetValue("axis_declination"),
+              j2: sun_gravity_model.GetValue("j2"),
+              reference_radius: 
+                  sun_gravity_model.GetValue("reference_radius"),
+              x: sun_initial_state.GetValue("x"),
+              y: sun_initial_state.GetValue("y"),
+              z: sun_initial_state.GetValue("z"),
+              vx: sun_initial_state.GetValue("vx"),
+              vy: sun_initial_state.GetValue("vy"),
+              vz: sun_initial_state.GetValue("vz"));
+        } else {
+          DirectlyInsertMassiveCelestial(
+              plugin: plugin_,
+              celestial_index: Planetarium.fetch.Sun.flightGlobalsIndex,
+              parent_index: IntPtr.Zero,
+              gravitational_parameter:
+                  sun_gravity_model.GetValue("gravitational_parameter"),
+              x: sun_initial_state.GetValue("x"),
+              y: sun_initial_state.GetValue("y"),
+              z: sun_initial_state.GetValue("z"),
+              vx: sun_initial_state.GetValue("vx"),
+              vy: sun_initial_state.GetValue("vy"),
+              vz: sun_initial_state.GetValue("vz"));
+        }
+        BodyProcessor insert_body = body => {
+          Log.Info("Inserting " + body.name + "...");
+          ConfigNode gravity_model = name_to_gravity_model[body.name];
+          ConfigNode initial_state = name_to_initial_state[body.name];
+          int parent_index = body.orbit.referenceBody.flightGlobalsIndex;
+          if (gravity_model.HasValue("j2")) {
+            DirectlyInsertOblateCelestial(
+                plugin: plugin_,
+                celestial_index: body.flightGlobalsIndex,
+                parent_index: ref parent_index,
+                gravitational_parameter:
+                    gravity_model.GetValue("gravitational_parameter"),
+                axis_right_ascension:
+                    gravity_model.GetValue("axis_right_ascension"),
+                axis_declination:
+                    gravity_model.GetValue("axis_declination"),
+                j2: gravity_model.GetValue("j2"),
+                reference_radius: 
+                    gravity_model.GetValue("reference_radius"),
+                x: initial_state.GetValue("x"),
+                y: initial_state.GetValue("y"),
+                z: initial_state.GetValue("z"),
+                vx: initial_state.GetValue("vx"),
+                vy: initial_state.GetValue("vy"),
+                vz: initial_state.GetValue("vz"));
+          } else {
+            DirectlyInsertMassiveCelestial(
+                plugin: plugin_,
+                celestial_index: body.flightGlobalsIndex,
+                parent_index: ref parent_index,
+                gravitational_parameter:
+                    gravity_model.GetValue("gravitational_parameter"),
+                x: initial_state.GetValue("x"),
+                y: initial_state.GetValue("y"),
+                z: initial_state.GetValue("z"),
+                vx: initial_state.GetValue("vx"),
+                vy: initial_state.GetValue("vy"),
+                vz: initial_state.GetValue("vz"));
+          }
+        };
+        ApplyToBodyTree(insert_body);
+      } catch (Exception e) {
+        Log.Fatal("Exception while reading initial state: " + e.ToString());
+      }
+    } else {
+      plugin_source_ = PluginSource.ORBITAL_ELEMENTS;
+      plugin_ = NewPlugin(Planetarium.GetUniversalTime(),
+                          Planetarium.InverseRotAngle);
+      InsertSun(plugin_,
+                Planetarium.fetch.Sun.flightGlobalsIndex,
+                Planetarium.fetch.Sun.gravParameter);
+      BodyProcessor insert_body = body => {
+        Log.Info("Inserting " + body.name + "...");
+        InsertCelestial(plugin_,
+                        body.flightGlobalsIndex,
+                        body.gravParameter,
+                        body.orbit.referenceBody.flightGlobalsIndex,
+                        new QP{q = (XYZ)body.orbit.pos,
+                               p = (XYZ)body.orbit.vel});
+      };
+      ApplyToBodyTree(insert_body);
+    }
     EndInitialization(plugin_);
     UpdateRenderingFrame();
     VesselProcessor insert_vessel = vessel => {
