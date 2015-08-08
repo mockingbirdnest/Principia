@@ -11,6 +11,17 @@ MockPlugin::MockPlugin()
     : Plugin(Instant(),
       Angle()) {}
 
+void MockPlugin::DirectlyInsertCelestial(
+    Index const celestial_index,
+    Index const* parent_index,
+    DegreesOfFreedom<Barycentric> const & initial_state,
+    std::unique_ptr<MassiveBody> body) {
+  DirectlyInsertCelestialConstRef(celestial_index,
+                                  parent_index,
+                                  initial_state,
+                                  body);
+}
+
 not_null<std::unique_ptr<RenderingTransforms>>
 MockPlugin::NewBodyCentredNonRotatingTransforms(
     Index const reference_body_index) const {

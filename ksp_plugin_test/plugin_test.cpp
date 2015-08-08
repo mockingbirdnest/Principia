@@ -379,6 +379,13 @@ TEST_F(PluginDeathTest, InsertCelestialError) {
   }, "Body already exists");
 }
 
+TEST_F(PluginDeathTest, SunError) {
+  EXPECT_DEATH({
+    plugin_->InsertSun(42, bodies_.front()->gravitational_parameter());
+    plugin_->InsertSun(43, bodies_.front()->gravitational_parameter());
+  }, "sun_ == nullptr");
+}
+
 TEST_F(PluginDeathTest, UpdateCelestialHierarchyError) {
   EXPECT_DEATH({
     InsertAllSolarSystemBodies();

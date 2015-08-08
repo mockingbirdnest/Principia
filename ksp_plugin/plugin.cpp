@@ -124,6 +124,7 @@ void Plugin::DirectlyInsertCelestial(
 }
 
 void Plugin::EndInitialization() {
+  CHECK_NOTNULL(sun_);
   initializing_.Flop();
   std::vector<not_null<std::unique_ptr<MassiveBody const>>> bodies;
   std::vector<DegreesOfFreedom<Barycentric>> initial_state;

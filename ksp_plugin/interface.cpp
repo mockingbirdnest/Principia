@@ -90,7 +90,7 @@ double ParseDouble(std::string const& s, not_null<size_t*> size) {
   char const* const c_string = s.c_str();
   double result = std::strtod(c_string, &interpreted_end);
   *size = interpreted_end - c_string;
-  CHECK_GT(*size, 0) << "invalid floating-point number" << s;
+  CHECK_GT(*size, 0) << "invalid floating-point number " << s;
   return result;
 }
 
@@ -117,7 +117,7 @@ Length ParseLength(std::string const& s) {
   } else if (unit == "au") {
     return magnitude * AstronomicalUnit;
   } else {
-    LOG(FATAL) << "unsupported unit of length" << unit;
+    LOG(FATAL) << "unsupported unit of length " << unit;
   }
 }
 
@@ -133,7 +133,7 @@ Speed ParseSpeed(std::string const& s) {
   } else if (unit == "au/d") {
     return magnitude * AstronomicalUnit / Day;
   } else {
-    LOG(FATAL) << "unsupported unit of speed" << unit;
+    LOG(FATAL) << "unsupported unit of speed " << unit;
   }
 }
 
@@ -145,7 +145,7 @@ Angle ParseAngle(std::string const& s) {
   } else if (unit == "rad") {
     return magnitude * Radian;
   } else {
-    LOG(FATAL) << "unsupported unit of angle" << unit;
+    LOG(FATAL) << "unsupported unit of angle " << unit;
   }
 }
 
@@ -161,7 +161,7 @@ GravitationalParameter ParseGravitationalParameter(std::string const& s) {
   } else if (unit == "au^3/d^2") {
     return magnitude * Pow<3>(AstronomicalUnit) / Pow<2>(Day);
   } else {
-    LOG(FATAL) << "unsupported unit of gravitational parameter" << unit;
+    LOG(FATAL) << "unsupported unit of gravitational parameter " << unit;
   }
 }
 
@@ -325,9 +325,9 @@ void principia__DirectlyInsertMassiveCelestial(
                Displacement<Barycentric>({ParseLength(x),
                                           ParseLength(y),
                                           ParseLength(z)}),
-               Velocity<Barycentric>({ParseSpeed(x),
-                                      ParseSpeed(y),
-                                      ParseSpeed(z)})},
+               Velocity<Barycentric>({ParseSpeed(vx),
+                                      ParseSpeed(vy),
+                                      ParseSpeed(vz)})},
           std::make_unique<MassiveBody>(
               ParseGravitationalParameter(gravitational_parameter)));
 }
@@ -355,9 +355,9 @@ void principia__DirectlyInsertOblateCelestial(
        Displacement<Barycentric>({ParseLength(x),
                                   ParseLength(y),
                                   ParseLength(z)}),
-       Velocity<Barycentric>({ParseSpeed(x),
-                              ParseSpeed(y),
-                              ParseSpeed(z)})},
+       Velocity<Barycentric>({ParseSpeed(vx),
+                              ParseSpeed(vy),
+                              ParseSpeed(vz)})},
       std::make_unique<OblateBody<Barycentric>>(
           ParseGravitationalParameter(gravitational_parameter),
           ParseDimensionless(j2),

@@ -87,8 +87,8 @@ class Plugin {
   Plugin(Instant const& initial_time, Angle const& planetarium_rotation);
 
   // Inserts a new celestial body with index |celestial_index| and gravitational
-  // parameter |gravitational_parameter|. No body with index |celestial_index|
-  // must already have been inserted. The parent of the new body is the body
+  // parameter |gravitational_parameter|.  No body with index |celestial_index|
+  // must already have been inserted.  The parent of the new body is the body
   // at index |parent_index|, which must already have been inserted. The state
   // of the new body at current time is given by |AliceSun| offsets from the
   // parent. Must only be called during initialization.
@@ -103,17 +103,25 @@ class Plugin {
     Index const parent_index,
     RelativeDegreesOfFreedom<AliceSun> const& from_parent);
 
+  // Inserts a celestial body with index |celestial_index| and gravitational
+  // parameter |gravitational_parameter|.  No body with index |celestial_index|
+  // must already have been inserted.  The new body has no parent.
   virtual void InsertSun(
     Index const celestial_index,
     GravitationalParameter const& gravitational_parameter);
 
+  // Inserts a celestial body with index |celestial_index| body |body|,
+  // giving it the initial state |initial_state|.
+  // If |parent_index| is null, inserts the sun, otherwise the parent of the new
+  // body is the body with index |*parent_index|, which must already have been
+  // inserted.
   virtual void DirectlyInsertCelestial(
     Index const celestial_index,
     Index const* parent_index,
     DegreesOfFreedom<Barycentric> const& initial_state,
     std::unique_ptr<MassiveBody> body);
 
-  // Ends initialization.
+  // Ends initialization.  The sun must have been inserted.
   virtual void EndInitialization();
 
   // Sets the parent of the celestial body with index |celestial_index| to the

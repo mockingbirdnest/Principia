@@ -25,6 +25,22 @@ class MockPlugin : public Plugin {
                     Index const parent_index,
                     RelativeDegreesOfFreedom<AliceSun> const& from_parent));
 
+  MOCK_METHOD2(InsertSun,
+               void(Index const celestial_index,
+                    GravitationalParameter const& gravitational_parameter));
+
+  void DirectlyInsertCelestial(
+      Index const celestial_index,
+      Index const* parent_index,
+      DegreesOfFreedom<Barycentric> const& initial_state,
+      std::unique_ptr<MassiveBody> body) override;
+
+  MOCK_METHOD4(DirectlyInsertCelestialConstRef,
+               void(Index const celestial_index,
+                    Index const* parent_index,
+                    DegreesOfFreedom<Barycentric> const& initial_state,
+                    std::unique_ptr<MassiveBody> const& body));
+
   MOCK_METHOD0(EndInitialization,
                void());
 
