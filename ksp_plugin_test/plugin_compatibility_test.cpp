@@ -22,9 +22,34 @@ using geometry::Bivector;
 using geometry::Trivector;
 using geometry::Vector;
 using quantities::Length;
+using si::Hour;
 using si::Metre;
+using si::Radian;
+using si::Second;
 
 namespace ksp_plugin {
+
+class TestablePlugin : public Plugin {
+ public:
+  void KeepAllVessels();
+
+  static std::unique_ptr<TestablePlugin> ReadFromMessage(
+    serialization::Plugin const& message);
+};
+
+void TestablePlugin::KeepAllVessels() {
+  for (auto const& pair : vessels_) {
+    auto const& vessel = pair.second;
+    kept_vessels_.insert(vessel.get());
+  }
+}
+
+std::unique_ptr<TestablePlugin> TestablePlugin::ReadFromMessage(
+  serialization::Plugin const& message) {
+  auto plugin = Plugin::ReadFromMessage(message);
+  return std::unique_ptr<TestablePlugin>(
+    reinterpret_cast<TestablePlugin*>(plugin.release()));
+}
 
 class PluginCompatibilityTest : public testing::Test {
 };
@@ -93,12 +118,17 @@ TEST_F(PluginCompatibilityTest, PreBourbaki) {
             &coded_input_stream));
 
   // Construct a plugin from the protocol buffer.
-  auto plugin = Plugin::ReadFromMessage(pre_bourbaki_serialized_plugin);
+  auto plugin = TestablePlugin::ReadFromMessage(pre_bourbaki_serialized_plugin);
 
-  // Serialize and deserialize in the new format.
+  // Do some operations on the plugin.
+  plugin->KeepAllVessels();
+  plugin->AdvanceTime(plugin->current_time() + 1 * Second, 2 * Radian);
+  plugin->AdvanceTime(plugin->current_time() + 1 * Hour, 3 * Radian);
+
+  // Serialize and deserialize it in the new format.
   serialization::Plugin post_bourbaki_serialized_plugin;
   plugin->WriteToMessage(&post_bourbaki_serialized_plugin);
-  plugin = Plugin::ReadFromMessage(post_bourbaki_serialized_plugin);
+  plugin = TestablePlugin::ReadFromMessage(post_bourbaki_serialized_plugin);
 }
 
 }  // namespace ksp_plugin
