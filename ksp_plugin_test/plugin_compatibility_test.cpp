@@ -3,6 +3,7 @@
 #include "base/array.hpp"
 #include "base/hexadecimal.hpp"
 #include "ksp_plugin/frames.hpp"
+#include "ksp_plugin/plugin.hpp"
 #include "geometry/grassmann.hpp"
 #include "glog/logging.h"
 #include "google/protobuf/io/coded_stream.h"
@@ -84,8 +85,10 @@ TEST_F(PluginCompatibilityTest, PreBourbaki) {
   // Construct a protocol buffer from the binary data.
   google::protobuf::io::CodedInputStream coded_input_stream(
       bin.data.get(), static_cast<int>(bin.size));
-  serialization::Plugin plugin;
-  CHECK(plugin.MergeFromCodedStream(&coded_input_stream));
+  serialization::Plugin serialized_plugin;
+  CHECK(serialized_plugin.MergeFromCodedStream(&coded_input_stream));
+
+  auto plugin = Plugin::ReadFromMessage(serialized_plugin);
 
   file.close();
 }

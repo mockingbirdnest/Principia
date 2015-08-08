@@ -462,7 +462,7 @@ std::unique_ptr<Ephemeris<Frame>> Ephemeris<Frame>::ReadFromPreBourbakiMessages(
     auto it = history->first();
     Instant last_time = it.time();
     DegreesOfFreedom<Frame> last_degrees_of_freedom = it.degrees_of_freedom();
-    while (!it.at_end()) {
+    for (; !it.at_end(); ++it) {
       Time const duration_since_last_time = it.time() - last_time;
       if (duration_since_last_time == step) {
         // A time in the discrete trajectory that is aligned on the continuous
@@ -470,7 +470,6 @@ std::unique_ptr<Ephemeris<Frame>> Ephemeris<Frame>::ReadFromPreBourbakiMessages(
         last_time = it.time();
         last_degrees_of_freedom = it.degrees_of_freedom();
         continuous_trajectory->Append(last_time, last_degrees_of_freedom);
-        ++it;
       } else if (duration_since_last_time > step) {
         // A time in the discrete trajectory that is not aligned on the
         // continuous trajectory.  Stop here, we'll use prolong to recompute the
