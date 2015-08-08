@@ -88,6 +88,7 @@ TEST_F(PluginCompatibilityTest, PreBourbaki) {
   serialization::Plugin serialized_plugin;
   CHECK(serialized_plugin.MergeFromCodedStream(&coded_input_stream));
 
+  // Construct a plugin from the protocol buffer.
   auto plugin = Plugin::ReadFromMessage(serialized_plugin);
 
   file.close();

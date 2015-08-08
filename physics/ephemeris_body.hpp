@@ -410,6 +410,8 @@ std::unique_ptr<Ephemeris<Frame>> Ephemeris<Frame>::ReadFromPreBourbakiMessages(
         planetary_integrator,
     Time const& step,
     Length const& fitting_tolerance) {
+  LOG(INFO) << "Reading "<< messages.SpaceUsedExcludingSelf()
+            << " bytes in pre-Bourbaki compatibility mode ";
   std::vector<not_null<std::unique_ptr<MassiveBody const>>> bodies;
   std::vector<DegreesOfFreedom<Frame>> initial_state;
   std::vector<std::unique_ptr<Trajectory<Frame>>> histories;
@@ -431,6 +433,8 @@ std::unique_ptr<Ephemeris<Frame>> Ephemeris<Frame>::ReadFromPreBourbakiMessages(
   }
   CHECK_EQ(1, initial_time.size());
   CHECK_EQ(1, final_time.size());
+  LOG(INFO) << "Initial time is " << *initial_time.cbegin()
+            << ", final time is " << *final_time.cbegin();
 
   // Construct a new ephemeris using the bodies and initial states and time
   // extracted from the serialized celestials.
@@ -486,6 +490,8 @@ std::unique_ptr<Ephemeris<Frame>> Ephemeris<Frame>::ReadFromPreBourbakiMessages(
   }
   CHECK_EQ(1, last_state_time.size());
   ephemeris->last_state_.time = *last_state_time.cbegin();
+  LOG(INFO) << "Last time in discrete trajectories is "
+            << *last_state_time.cbegin();
 
   // Prolong the ephemeris to the final time.  This might create discrepancies
   // from the discrete trajectories.
