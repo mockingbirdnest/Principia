@@ -34,14 +34,15 @@ BEGIN {
   print "  }"
 }
 END {
-  print "  // The time of the initial state, in KSP universal time."
-  print "  // The state in this file is from JD " jd " TDB."
+  print "  // The time of the initial state, in seconds from the beginning of";
+  print "  // the game.  The state in this file is from";
+  print "  // JD " jd " TDB.";
   if (jd == "2433282.500000000") {
     print "  // This is 1950-01-01T00:00:00 TDB, we set the epoch one non-leap";
     print "  // year in the past for RSS, no that RSS begins on";
     print "  // 1951-01-01T00:00:00 TDB.";
     print "  epoch = -31536000"
-  else {
+  } else {
     print "ERROR: unexpected epoch";
     exit 1
   }

@@ -1128,7 +1128,7 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
             GameDatabase.Instance.GetConfigNode(kPrincipiaInitialState);
         ConfigNode gravity_models =
             GameDatabase.Instance.GetConfigNode(kPrincipiaGravityModels);
-        plugin_ = NewPlugin(initial_states.GetValue("epoch"),
+        plugin_ = NewPlugin(double.Parse(initial_states.GetValue("epoch")),
                             Planetarium.InverseRotAngle);
         var name_to_initial_state = new Dictionary<String, ConfigNode>();
         var name_to_gravity_model = new Dictionary<String, ConfigNode>();
