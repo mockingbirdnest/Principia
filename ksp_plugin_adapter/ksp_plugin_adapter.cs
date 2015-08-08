@@ -812,7 +812,7 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
            plugin_source = "from a saved state";
           break;
         case (PluginSource.ORBITAL_ELEMENTS):
-           plugin_source = "from a KSP orbital elements";
+           plugin_source = "from KSP orbital elements";
           break;
         case (PluginSource.CARTESIAN_CONFIG):
            plugin_source = "from a cartesian configuration file";
@@ -1118,16 +1118,22 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
     SetRotatingFrameThresholds();
     ResetRenderedTrajectory();
     plugin_construction_ = DateTime.Now;
-    if (GameDatabase.Instance.ExistsConfigNode(kPrincipiaInitialState)) {
+    if (GameDatabase.Instance.GetConfigs(kPrincipiaInitialState).Length > 0) {
       plugin_source_ = PluginSource.CARTESIAN_CONFIG;
-      if (!GameDatabase.Instance.ExistsConfigNode(kPrincipiaGravityModels)) {
+      if (GameDatabase.Instance.GetConfigs(
+              kPrincipiaGravityModels).Length == 0) {
         Log.Fatal("missing gravity models");
+      }
+      if (GameDatabase.Instance.GetConfigs(kPrincipiaInitialState).Length > 1 ||
+          GameDatabase.Instance.GetConfigs(
+              kPrincipiaGravityModels).Length > 1) {
+        Log.Fatal("too many configs");
       }
       try {
         ConfigNode initial_states =
-            GameDatabase.Instance.GetConfigNode(kPrincipiaInitialState);
+            GameDatabase.Instance.GetConfigs(kPrincipiaInitialState)[0].config;
         ConfigNode gravity_models =
-            GameDatabase.Instance.GetConfigNode(kPrincipiaGravityModels);
+            GameDatabase.Instance.GetConfigs(kPrincipiaGravityModels)[0].config;
         plugin_ = NewPlugin(double.Parse(initial_states.GetValue("epoch")),
                             Planetarium.InverseRotAngle);
         var name_to_initial_state = new Dictionary<String, ConfigNode>();
