@@ -122,8 +122,6 @@ void CDECL principia__LogFatal(char const* message);
 extern "C" DLLEXPORT
 Plugin* CDECL principia__NewPlugin(
     double const initial_time,
-    int const sun_index,
-    double const sun_gravitational_parameter,
     double const planetarium_rotation_in_degrees);
 
 // Deletes and nulls |*plugin|.

@@ -9,8 +9,6 @@ namespace ksp_plugin {
 
 MockPlugin::MockPlugin()
     : Plugin(Instant(),
-      Index(0),
-      1 * SIUnit<GravitationalParameter>(),
       Angle()) {}
 
 not_null<std::unique_ptr<RenderingTransforms>>

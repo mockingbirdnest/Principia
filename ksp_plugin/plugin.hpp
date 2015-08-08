@@ -83,19 +83,8 @@ class Plugin {
 
   // Constructs a |Plugin|. The current time of that instance is |initial_time|.
   // The angle between the axes of |World| and |Barycentric| at |initial_time|
-  // is set to |planetarium_rotation|. Inserts a celestial body with an
-  // arbitrary position, index |sun_index| and gravitational parameter
-  // |sun_gravitational_parameter|.
-  // Starts initialization.
-  // The arguments correspond to KSP's
-  // |Planetarium.GetUniversalTime()|,
-  // |Planetarium.fetch.Sun.flightGlobalsIndex|,
-  // |Planetarium.fetch.Sun.gravParameter|,
-  // |Planetarium.InverseRotAngle|.
-  Plugin(Instant const& initial_time,
-         Index const sun_index,
-         GravitationalParameter const& sun_gravitational_parameter,
-         Angle const& planetarium_rotation);
+  // is set to |planetarium_rotation|.
+  Plugin(Instant const& initial_time, Angle const& planetarium_rotation);
 
   // Inserts a new celestial body with index |celestial_index| and gravitational
   // parameter |gravitational_parameter|. No body with index |celestial_index|
@@ -446,7 +435,7 @@ class Plugin {
   // a deserialized plugin still functions normally.
   Instant history_time_;
 
-  Celestial* sun_;  // Not owning, not null after construction.
+  Celestial* sun_ = nullptr;  // Not owning, not null after InsertSun is called.
 
   friend class TestablePlugin;
 };

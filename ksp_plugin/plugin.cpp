@@ -54,8 +54,6 @@ Permutation<WorldSun, AliceSun> const kSunLookingGlass(
 }  // namespace
 
 Plugin::Plugin(Instant const& initial_time,
-               Index const sun_index,
-               GravitationalParameter const& sun_gravitational_parameter,
                Angle const& planetarium_rotation)
     : bubble_(make_not_null_unique<PhysicsBubble>()),
       bodies_(std::make_unique<IndexToMassiveBody>()),
@@ -68,18 +66,7 @@ Plugin::Plugin(Instant const& initial_time,
           DormandElMikkawyPrince1986RKN434FM<Position<Barycentric>>()),
       planetarium_rotation_(planetarium_rotation),
       current_time_(initial_time),
-      history_time_(initial_time) {
-  auto sun_body = std::make_unique<MassiveBody>(sun_gravitational_parameter);
-  auto const inserted =
-      celestials_.emplace(sun_index,
-                          std::make_unique<Celestial>(sun_body.get()));
-  sun_ = inserted.first->second.get();
-  bodies_->emplace(sun_index, std::move(sun_body));
-  initial_state_->emplace(std::piecewise_construct,
-                          std::forward_as_tuple(sun_index),
-                          std::forward_as_tuple(Position<Barycentric>(),
-                                                Velocity<Barycentric>()));
-}
+      history_time_(initial_time) {}
 
 void Plugin::InsertCelestial(
     Index const celestial_index,

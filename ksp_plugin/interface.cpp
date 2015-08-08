@@ -287,14 +287,10 @@ void principia__LogFatal(char const* message) {
 }
 
 Plugin* principia__NewPlugin(double const initial_time,
-                             int const sun_index,
-                             double const sun_gravitational_parameter,
                              double const planetarium_rotation_in_degrees) {
   LOG(INFO) << "Constructing Principia plugin";
   not_null<std::unique_ptr<Plugin>> result = make_not_null_unique<Plugin>(
       Instant(initial_time * Second),
-      sun_index,
-      sun_gravitational_parameter * SIUnit<GravitationalParameter>(),
       planetarium_rotation_in_degrees * Degree);
   LOG(INFO) << "Plugin constructed";
   return result.release();

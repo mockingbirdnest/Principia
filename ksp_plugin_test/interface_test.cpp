@@ -165,8 +165,6 @@ TEST_F(InterfaceTest, Log) {
 TEST_F(InterfaceTest, NewPlugin) {
   std::unique_ptr<Plugin> plugin(principia__NewPlugin(
                                      kTime,
-                                     kParentIndex /*sun_index*/,
-                                     kGravitationalParameter,
                                      kPlanetariumRotation));
   EXPECT_THAT(plugin, Not(IsNull()));
 }
