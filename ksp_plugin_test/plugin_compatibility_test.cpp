@@ -60,10 +60,12 @@ TEST_F(PluginCompatibilityTest, PreBorel) {
 }
 
 TEST_F(PluginCompatibilityTest, PreBourbaki) {
-  std::fstream file = std::fstream("pre_bourbaki.proto.hex");
-  CHECK(file.good());
-
   // Read the entire hex data.
+  std::string path;
+  path.append(PROJECT_DIR);
+  path.append("pre_bourbaki.proto.hex");
+  std::fstream file = std::fstream(path);
+  CHECK(file.good());
   std::string hex;
   while (!file.eof()) {
     std::string line;
@@ -74,6 +76,7 @@ TEST_F(PluginCompatibilityTest, PreBourbaki) {
       }
     }
   }
+  file.close();
 
   // Parse it and convert to binary data.
   UniqueBytes bin(hex.size() / 2);
@@ -90,8 +93,6 @@ TEST_F(PluginCompatibilityTest, PreBourbaki) {
 
   // Construct a plugin from the protocol buffer.
   auto plugin = Plugin::ReadFromMessage(serialized_plugin);
-
-  file.close();
 }
 
 }  // namespace ksp_plugin
