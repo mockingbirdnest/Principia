@@ -15,6 +15,7 @@
 #include "testing_utilities/almost_equals.hpp"
 #include "testing_utilities/numerics.hpp"
 #include "testing_utilities/vanishes_before.hpp"
+
 namespace principia {
 
 using astronomy::EarthMass;
@@ -225,6 +226,18 @@ TEST_F(QuantitiesDeathTest, SerializationError) {
     message.set_magnitude(1.0);
     Speed const speed_of_light = Speed::ReadFromMessage(message);
   }, "representation.*dimensions");
+}
+
+TEST_F(QuantitiesDeathTest, SerializationError2) {
+  EXPECT_DEATH({
+    google::protobuf::SetLogHandler([](google::protobuf::LogLevel level, const char* filename, int line,
+                                       const std::string& message) {
+      LOG_AT_LEVEL(level) << message;
+    });
+    serialization::Quantity message;
+    message.set_magnitude(1.0);
+    message.CheckInitialized();
+  }, "missing required field");
 }
 
 TEST_F(QuantitiesTest, SerializationSuccess) {
