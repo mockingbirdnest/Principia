@@ -85,6 +85,15 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
   private bool show_prediction_settings_ = true;
   [KSPField(isPersistant = true)]
   private bool show_logging_settings_ = false;
+
+  [KSPField(isPersistant = true)]
+  private int verbose_logging_ = 0;
+  [KSPField(isPersistant = true)]
+  private int suppressed_logging_ = 0;
+  [KSPField(isPersistant = true)]
+  private int stderr_logging_ = 2;
+  [KSPField(isPersistant = true)]
+  private int buffered_logging_ = 0;
 #if CRASH_BUTTON
   [KSPField(isPersistant = true)]
   private bool show_crash_options_ = false;
@@ -392,6 +401,10 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
     if (node.HasValue(kPrincipiaKey)) {
       Cleanup();
       SetRotatingFrameThresholds();
+      Log.SetBufferedLogging(buffered_logging_);
+      Log.SetSuppressedLogging(suppressed_logging_);
+      Log.SetStderrLogging(stderr_logging_);
+      Log.SetVerboseLogging(verbose_logging_);
 
       IntPtr deserializer = IntPtr.Zero;
       String[] serializations = node.GetValues(kPrincipiaKey);
@@ -1009,7 +1022,8 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
     if (UnityEngine.GUILayout.Button(
             text    : "←",
             options : UnityEngine.GUILayout.Width(50))) {
-      Log.SetVerboseLogging(Math.Max(Log.GetVerboseLogging() - 1, 0));
+      Log.SetVerboseLogging(Math.Max(verbose_logging_ - 1, 0));
+      verbose_logging_ = Log.GetVerboseLogging();
     }
     UnityEngine.GUILayout.TextArea(
         text    : Log.GetVerboseLogging().ToString(),
@@ -1017,7 +1031,8 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
     if (UnityEngine.GUILayout.Button(
             text    : "→",
             options : UnityEngine.GUILayout.Width(50))) {
-      Log.SetVerboseLogging(Math.Min(Log.GetVerboseLogging() + 1, 4));
+      Log.SetVerboseLogging(Math.Min(verbose_logging_ + 1, 4));
+      verbose_logging_ = Log.GetVerboseLogging();
     }
     UnityEngine.GUILayout.EndHorizontal();
     int column_width = 75;
@@ -1038,17 +1053,20 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
     if (UnityEngine.GUILayout.Button(
             text    : "↑",
             options : UnityEngine.GUILayout.Width(column_width))) {
-      Log.SetSuppressedLogging(Math.Max(Log.GetSuppressedLogging() - 1, 0));
+      Log.SetSuppressedLogging(Math.Max(suppressed_logging_ - 1, 0));
+      suppressed_logging_ = Log.GetSuppressedLogging();
     }
     if (UnityEngine.GUILayout.Button(
             text    : "↑",
             options : UnityEngine.GUILayout.Width(column_width))) {
-      Log.SetStderrLogging(Math.Max(Log.GetStderrLogging() - 1, 0));
+      Log.SetStderrLogging(Math.Max(stderr_logging_ - 1, 0));
+      stderr_logging_ = Log.GetStderrLogging();
     }
     if (UnityEngine.GUILayout.Button(
             text    : "↑",
             options : UnityEngine.GUILayout.Width(column_width))) {
-      Log.SetBufferedLogging(Math.Max(Log.GetBufferedLogging() - 1, -1));
+      Log.SetBufferedLogging(Math.Max(buffered_logging_ - 1, -1));
+      buffered_logging_ = Log.GetBufferedLogging();
     }
     UnityEngine.GUILayout.EndHorizontal();
     for (int severity = 0; severity <= 3; ++severity) {
@@ -1075,17 +1093,20 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
     if (UnityEngine.GUILayout.Button(
             text    : "↓",
             options : UnityEngine.GUILayout.Width(column_width))) {
-      Log.SetSuppressedLogging(Math.Min(Log.GetSuppressedLogging() + 1, 3));
+      Log.SetSuppressedLogging(Math.Min(suppressed_logging_ + 1, 3));
+      suppressed_logging_ = Log.GetSuppressedLogging();
     }
     if (UnityEngine.GUILayout.Button(
             text    : "↓",
             options : UnityEngine.GUILayout.Width(column_width))) {
-      Log.SetStderrLogging(Math.Min(Log.GetStderrLogging() + 1, 3));
+      Log.SetStderrLogging(Math.Min(stderr_logging_ + 1, 3));
+      stderr_logging_ = Log.GetStderrLogging();
     }
     if (UnityEngine.GUILayout.Button(
             text    : "↓",
             options : UnityEngine.GUILayout.Width(column_width))) {
-      Log.SetBufferedLogging(Math.Min(Log.GetBufferedLogging() + 1, 3));
+      Log.SetBufferedLogging(Math.Min(buffered_logging_ + 1, 3));
+      buffered_logging_ = Log.GetBufferedLogging();
     }
     UnityEngine.GUILayout.EndHorizontal();
   }
