@@ -121,6 +121,9 @@ Ephemeris<Frame>::Ephemeris(
         inserted.first->second.get();
     trajectory->Append(initial_time, degrees_of_freedom);
 
+    VLOG(1) << "Constructed trajectory " << trajectory
+      << " for body with mass " << body->mass();
+
     if (body->is_oblate()) {
       // Inserting at the beginning of the vectors is O(N).
       oblate_bodies_.insert(oblate_bodies_.begin(), body.get());
