@@ -118,6 +118,7 @@ Length ParseLength(std::string const& s) {
     return magnitude * AstronomicalUnit;
   } else {
     LOG(FATAL) << "unsupported unit of length " << unit;
+    base::noreturn();
   }
 }
 
@@ -134,6 +135,7 @@ Speed ParseSpeed(std::string const& s) {
     return magnitude * AstronomicalUnit / Day;
   } else {
     LOG(FATAL) << "unsupported unit of speed " << unit;
+    base::noreturn();
   }
 }
 
@@ -146,6 +148,7 @@ Angle ParseAngle(std::string const& s) {
     return magnitude * Radian;
   } else {
     LOG(FATAL) << "unsupported unit of angle " << unit;
+    base::noreturn();
   }
 }
 
@@ -162,6 +165,7 @@ GravitationalParameter ParseGravitationalParameter(std::string const& s) {
     return magnitude * Pow<3>(AstronomicalUnit) / Pow<2>(Day);
   } else {
     LOG(FATAL) << "unsupported unit of gravitational parameter " << unit;
+    base::noreturn();
   }
 }
 
