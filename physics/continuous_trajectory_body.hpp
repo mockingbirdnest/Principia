@@ -275,7 +275,7 @@ void ContinuousTrajectory<Frame>::ComputeBestNewhallApproximation(
   // If the degree is too old, restart from the lowest degree.  This ensures
   // that we use the lowest possible degree at a small computational cost.
   if (degree_age_ >= kMaxDegreeAge) {
-    VLOG(1) << "Lowering degree for " << this <<" from " << degree_ 
+    VLOG(1) << "Lowering degree for " << this <<" from " << degree_
             << " to " << kMinDegree << " because the approximation is too old";
     is_unstable_ = false;
     adjusted_tolerance_ = tolerance_;
@@ -295,7 +295,7 @@ void ContinuousTrajectory<Frame>::ComputeBestNewhallApproximation(
   // If we are in the zone of numerical instabilities and we exceeded the
   // tolerance, restart from the lowest degree.
   if (is_unstable_ && error_estimate > adjusted_tolerance_) {
-    VLOG(1) << "Lowering degree for " << this << " from " << degree_ 
+    VLOG(1) << "Lowering degree for " << this << " from " << degree_
             << " to " << kMinDegree
             << " because error estimate " << error_estimate
             << " exceeds adjusted tolerance " << adjusted_tolerance_
