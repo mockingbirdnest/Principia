@@ -122,7 +122,7 @@ Ephemeris<Frame>::Ephemeris(
     trajectory->Append(initial_time, degrees_of_freedom);
 
     VLOG(1) << "Constructed trajectory " << trajectory
-      << " for body with mass " << body->mass();
+            << " for body with mass " << body->mass();
 
     if (body->is_oblate()) {
       // Inserting at the beginning of the vectors is O(N).
@@ -213,9 +213,8 @@ void Ephemeris<Frame>::ForgetAfter(Instant const & t) {
   CHECK_LE(t, it->time.value);
 
   int index = 0;
-  for (auto& pair : bodies_to_trajectories_) {
-    ContinuousTrajectory<Frame>& trajectory = *pair.second;
-    trajectory.ForgetAfter(
+  for (auto const& trajectory : trajectories_) {
+    trajectory->ForgetAfter(
         it->time.value,
         DegreesOfFreedom<Frame>(it->positions[index].value,
                                 it->velocities[index].value));
@@ -312,7 +311,7 @@ void Ephemeris<Frame>::FlowWithFixedStep(
     std::vector<not_null<Trajectory<Frame>*>> const& trajectories,
     Time const& step,
     Instant const& t) {
-  LOG(INFO) << __FUNCTION__;
+  VLOG(1) << __FUNCTION__ << " " << NAMED(step) << " " << NAMED(t);
   if (empty() || t > t_max()) {
     Prolong(t);
   }
@@ -382,6 +381,7 @@ void Ephemeris<Frame>::WriteToMessage(
 template<typename Frame>
 std::unique_ptr<Ephemeris<Frame>> Ephemeris<Frame>::ReadFromMessage(
     serialization::Ephemeris const& message) {
+  LOG(INFO)<<"Reading from message:\n"<<message.DebugString();
   std::vector<not_null<std::unique_ptr<MassiveBody const>>> bodies;
   for (auto const& body : message.body()) {
     bodies.push_back(MassiveBody::ReadFromMessage(body));
@@ -432,8 +432,6 @@ std::unique_ptr<Ephemeris<Frame>> Ephemeris<Frame>::ReadFromPreBourbakiMessages(
         planetary_integrator,
     Time const& step,
     Length const& fitting_tolerance) {
-  LOG(INFO) << "Reading "<< messages.SpaceUsedExcludingSelf()
-            << " bytes in pre-Bourbaki compatibility mode ";
   std::vector<not_null<std::unique_ptr<MassiveBody const>>> bodies;
   std::vector<DegreesOfFreedom<Frame>> initial_state;
   std::vector<std::unique_ptr<Trajectory<Frame>>> histories;
