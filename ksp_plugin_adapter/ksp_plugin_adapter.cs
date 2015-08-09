@@ -1002,7 +1002,7 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
     bool changed_settings = false;
     Selector(prediction_length_tolerances_,
              ref prediction_length_tolerance_index_,
-             "Step size",
+             "Tolerance",
              ref changed_settings,
              "{0:0.00e0} m");
     Selector(prediction_lengths_,
