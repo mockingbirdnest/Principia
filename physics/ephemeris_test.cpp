@@ -56,8 +56,10 @@ class EphemerisTest : public testing::Test {
           initial_state,
       not_null<Position<EarthMoonOrbitPlane>*> const centre_of_mass,
       not_null<Time*> const period) {
-    auto earth = std::make_unique<MassiveBody const>(6E24 * Kilogram);
+    // Create the Moon before the Earth to exercise a bug caused by the order of
+    // pointers differing from the order of bodies (don't ask).
     auto moon = std::make_unique<MassiveBody const>(7E22 * Kilogram);
+    auto earth = std::make_unique<MassiveBody const>(6E24 * Kilogram);
 
     // The Earth-Moon system, roughly, with a circular orbit with velocities
     // in the centre-of-mass frame.

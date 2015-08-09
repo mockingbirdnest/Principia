@@ -121,6 +121,9 @@ Ephemeris<Frame>::Ephemeris(
         inserted.first->second.get();
     trajectory->Append(initial_time, degrees_of_freedom);
 
+    VLOG(1) << "Constructed trajectory " << trajectory
+            << " for body with mass " << body->mass();
+
     if (body->is_oblate()) {
       // Inserting at the beginning of the vectors is O(N).
       oblate_bodies_.insert(oblate_bodies_.begin(), body.get());
@@ -210,9 +213,8 @@ void Ephemeris<Frame>::ForgetAfter(Instant const & t) {
   CHECK_LE(t, it->time.value);
 
   int index = 0;
-  for (auto& pair : bodies_to_trajectories_) {
-    ContinuousTrajectory<Frame>& trajectory = *pair.second;
-    trajectory.ForgetAfter(
+  for (auto const& trajectory : trajectories_) {
+    trajectory->ForgetAfter(
         it->time.value,
         DegreesOfFreedom<Frame>(it->positions[index].value,
                                 it->velocities[index].value));
@@ -309,7 +311,7 @@ void Ephemeris<Frame>::FlowWithFixedStep(
     std::vector<not_null<Trajectory<Frame>*>> const& trajectories,
     Time const& step,
     Instant const& t) {
-  LOG(INFO) << __FUNCTION__;
+  VLOG(1) << __FUNCTION__ << " " << NAMED(step) << " " << NAMED(t);
   if (empty() || t > t_max()) {
     Prolong(t);
   }

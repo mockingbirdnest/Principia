@@ -4,6 +4,7 @@
 #include <limits>
 #include <vector>
 
+#include "glog/stl_logging.h"
 #include "physics/continuous_trajectory.hpp"
 #include "quantities/si.hpp"
 #include "testing_utilities/numerics.hpp"
@@ -269,11 +270,13 @@ void ContinuousTrajectory<Frame>::ComputeBestNewhallApproximation(
         std::vector<Velocity<Frame>> const& v,
         Instant const& t_min,
         Instant const& t_max)) {
+  Length const previous_adjusted_tolerance = adjusted_tolerance_;
+
   // If the degree is too old, restart from the lowest degree.  This ensures
   // that we use the lowest possible degree at a small computational cost.
   if (degree_age_ >= kMaxDegreeAge) {
-    VLOG(1) << "Lowering degree from " << degree_ << " to " << kMinDegree
-            << " because the approximation is too old";
+    VLOG(1) << "Lowering degree for " << this << " from " << degree_
+            << " to " << kMinDegree << " because the approximation is too old";
     is_unstable_ = false;
     adjusted_tolerance_ = tolerance_;
     degree_ = kMinDegree;
@@ -292,7 +295,8 @@ void ContinuousTrajectory<Frame>::ComputeBestNewhallApproximation(
   // If we are in the zone of numerical instabilities and we exceeded the
   // tolerance, restart from the lowest degree.
   if (is_unstable_ && error_estimate > adjusted_tolerance_) {
-    VLOG(1) << "Lowering degree from " << degree_ << " to " << kMinDegree
+    VLOG(1) << "Lowering degree for " << this << " from " << degree_
+            << " to " << kMinDegree
             << " because error estimate " << error_estimate
             << " exceeds adjusted tolerance " << adjusted_tolerance_
             << " and computations are unstable";
@@ -337,6 +341,12 @@ void ContinuousTrajectory<Frame>::ComputeBestNewhallApproximation(
     VLOG(1) << "Using degree " << degree_ << " for " << this
             << " with error estimate " << error_estimate;
   }
+
+  // A check that the tolerance did not explode.
+  CHECK_LT(adjusted_tolerance_, 1E6 * previous_adjusted_tolerance)
+      << "Apocalypse occurred at " << time
+      << ", displacements are: " << q
+      << ", velocities are: " << v;
 
   ++degree_age_;
 }
