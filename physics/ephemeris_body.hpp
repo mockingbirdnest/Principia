@@ -204,6 +204,9 @@ void Ephemeris<Frame>::ForgetAfter(Instant const & t) {
                    Instant const& right) {
                   return left.time.value < right;
                 });
+  if (it == intermediate_states_.end()) {
+    return;
+  }
   CHECK_LE(t, it->time.value);
 
   int index = 0;

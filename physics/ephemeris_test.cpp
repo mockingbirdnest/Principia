@@ -227,6 +227,12 @@ TEST_F(EphemerisTest, ForgetAfter) {
   EXPECT_EQ(t_max, t0_ + 16 * period);
   EXPECT_EQ(t_max, earth_trajectory.t_max());
   EXPECT_EQ(t_max, moon_trajectory.t_max());
+
+  ephemeris.ForgetAfter(t0_ + 18 * period);
+  t_max = ephemeris.t_max();
+  EXPECT_EQ(t_max, t0_ + 16 * period);
+  EXPECT_EQ(t_max, earth_trajectory.t_max());
+  EXPECT_EQ(t_max, moon_trajectory.t_max());
 }
 
 // The Moon alone.  It moves in straight line.
