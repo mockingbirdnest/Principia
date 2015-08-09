@@ -213,9 +213,8 @@ void Ephemeris<Frame>::ForgetAfter(Instant const & t) {
   CHECK_LE(t, it->time.value);
 
   int index = 0;
-  for (auto& pair : bodies_to_trajectories_) {
-    ContinuousTrajectory<Frame>& trajectory = *pair.second;
-    trajectory.ForgetAfter(
+  for (auto const& trajectory : trajectories_) {
+    trajectory->ForgetAfter(
         it->time.value,
         DegreesOfFreedom<Frame>(it->positions[index].value,
                                 it->velocities[index].value));
@@ -433,8 +432,6 @@ std::unique_ptr<Ephemeris<Frame>> Ephemeris<Frame>::ReadFromPreBourbakiMessages(
         planetary_integrator,
     Time const& step,
     Length const& fitting_tolerance) {
-  LOG(INFO) << "Reading "<< messages.SpaceUsedExcludingSelf()
-            << " bytes in pre-Bourbaki compatibility mode ";
   std::vector<not_null<std::unique_ptr<MassiveBody const>>> bodies;
   std::vector<DegreesOfFreedom<Frame>> initial_state;
   std::vector<std::unique_ptr<Trajectory<Frame>>> histories;
