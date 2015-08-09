@@ -8,6 +8,7 @@
 #include <set>
 #include <vector>
 
+#include "base/macros.hpp"
 #include "base/map_util.hpp"
 #include "geometry/grassmann.hpp"
 #include "geometry/r3_element.hpp"
@@ -203,6 +204,9 @@ void Ephemeris<Frame>::ForgetAfter(Instant const & t) {
                    Instant const& right) {
                   return left.time.value < right;
                 });
+  if (it == intermediate_states_.end()) {
+    return;
+  }
   CHECK_LE(t, it->time.value);
 
   int index = 0;
@@ -327,13 +331,27 @@ void Ephemeris<Frame>::FlowWithFixedStep(
 
   IntegrationProblem<NewtonianMotionEquation> problem;
   problem.equation = massless_body_equation;
+
+#if defined(WE_LOVE_228)
+  typename NewtonianMotionEquation::SystemState last_state;
+  problem.append_state =
+      [&last_state](
+          typename NewtonianMotionEquation::SystemState const& state) {
+        last_state = state;
+      };
+#else
   problem.append_state =
       std::bind(&Ephemeris::AppendMasslessBodiesState,
                 _1, std::cref(trajectories));
+#endif
   problem.t_final = t;
   problem.initial_state = &initial_state;
 
   planetary_integrator_.Solve(problem, step);
+
+#if defined(WE_LOVE_228)
+  AppendMasslessBodiesState(last_state, trajectories);
+#endif
 }
 
 template<typename Frame>

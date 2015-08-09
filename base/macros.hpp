@@ -171,5 +171,9 @@ inline void noreturn() { std::exit(0); }
 
 #define NAMED(expression) #expression << ": " << (expression)
 
+// We preserve issue #228 in Bourbaki because we don't have trajectory
+// decimation yet.
+#define WE_LOVE_228
+
 }  // namespace base
 }  // namespace principia

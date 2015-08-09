@@ -8,6 +8,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/macros.hpp"
 #include "geometry/permutation.hpp"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
@@ -322,9 +323,15 @@ TEST_F(PluginTest, Serialization) {
   EXPECT_TRUE(message.vessel(0).vessel().has_history_and_prolongation());
   auto const& vessel_0_history =
       message.vessel(0).vessel().history_and_prolongation().history();
+#if defined(WE_LOVE_228)
+  EXPECT_EQ(1, vessel_0_history.timeline_size());
+  EXPECT_EQ((HistoryTime(sync_time, 6) - Instant()) / (1 * Second),
+            vessel_0_history.timeline(0).instant().scalar().magnitude());
+#else
   EXPECT_EQ(3, vessel_0_history.timeline_size());
   EXPECT_EQ((HistoryTime(sync_time, 4) - Instant()) / (1 * Second),
             vessel_0_history.timeline(0).instant().scalar().magnitude());
+#endif
   EXPECT_FALSE(message.bubble().has_current());
 }
 

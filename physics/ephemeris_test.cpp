@@ -4,6 +4,7 @@
 #include <map>
 #include <vector>
 
+#include "base/macros.hpp"
 #include "geometry/frame.hpp"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
@@ -222,6 +223,12 @@ TEST_F(EphemerisTest, ForgetAfter) {
   EXPECT_EQ(t_max, moon_trajectory.t_max());
 
   ephemeris.Prolong(t0_ + 16 * period);
+  t_max = ephemeris.t_max();
+  EXPECT_EQ(t_max, t0_ + 16 * period);
+  EXPECT_EQ(t_max, earth_trajectory.t_max());
+  EXPECT_EQ(t_max, moon_trajectory.t_max());
+
+  ephemeris.ForgetAfter(t0_ + 18 * period);
   t_max = ephemeris.t_max();
   EXPECT_EQ(t_max, t0_ + 16 * period);
   EXPECT_EQ(t_max, earth_trajectory.t_max());
@@ -488,8 +495,13 @@ TEST_F(EphemerisTest, EarthTwoProbes) {
   for (auto const it : trajectory2.Positions()) {
     probe2_positions.push_back(it.second - reference_position);
   }
+#if defined(WE_LOVE_228)
+  EXPECT_THAT(probe1_positions.size(), Eq(2));
+  EXPECT_THAT(probe2_positions.size(), Eq(2));
+#else
   EXPECT_THAT(probe1_positions.size(), Eq(1001));
   EXPECT_THAT(probe2_positions.size(), Eq(1001));
+#endif
   EXPECT_THAT(probe1_positions.back().coordinates().x,
               AlmostEquals(1.00 * period * v_probe1, 2));
   EXPECT_THAT(probe2_positions.back().coordinates().x,
