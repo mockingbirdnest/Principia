@@ -84,7 +84,11 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
   [KSPField(isPersistant = true)]
   private bool show_prediction_settings_ = true;
   [KSPField(isPersistant = true)]
+  private bool show_ksp_features_ = false;
+  [KSPField(isPersistant = true)]
   private bool show_logging_settings_ = false;
+  [KSPField(isPersistant = true)]
+  private bool show_reset_button_ = false;
 
   [KSPField(isPersistant = true)]
   private int verbose_logging_ = 0;
@@ -796,15 +800,6 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
   private void DrawMainWindow(int window_id) {
     UnityEngine.GUILayout.BeginVertical();
     String plugin_state;
-    if (PluginRunning()) {
-      if (UnityEngine.GUILayout.Button(text : "Force Stop")) {
-        Cleanup();
-      }
-    } else {
-      if (UnityEngine.GUILayout.Button(text : "Force Start")) {
-        ResetPlugin();
-      }
-    }
     if (!PluginRunning()) {
       plugin_state = "not started";
     } else if (!time_is_advancing_) {
@@ -833,7 +828,8 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
       }
       last_reset_information =
           "Plugin was constructed at " +
-          plugin_construction_.ToUniversalTime().ToString("O") + plugin_source;
+          plugin_construction_.ToUniversalTime().ToString("O") + " " +
+          plugin_source;
     }
     UnityEngine.GUILayout.TextArea(last_reset_information);
     bool changed_history_length = false;
@@ -851,9 +847,15 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
     ToggleableSection(name   : "Prediction Settings",
                       show   : ref show_prediction_settings_,
                       render : PredictionSettings);
+    ToggleableSection(name   : "KSP features",
+                      show   : ref show_ksp_features_,
+                      render : KSPFeatures);
     ToggleableSection(name   : "Logging Settings",
                       show   : ref show_logging_settings_,
                       render : LoggingSettings);
+    ToggleableSection(name   : "Reset Principia",
+                      show   : ref show_reset_button_,
+                      render : ResetButton);
 #if CRASH_BUTTON
     ToggleableSection(name   : "CRASH",
                       show   : ref show_crash_options_,
@@ -996,9 +998,6 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
   }
 
   private void PredictionSettings() {
-    display_patched_conics_ =
-        UnityEngine.GUILayout.Toggle(value : display_patched_conics_,
-                                     text  : "Display patched conics");
 
     bool changed_settings = false;
     Selector(prediction_length_tolerances_,
@@ -1014,6 +1013,15 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
     if (changed_settings) {
       ResetRenderedTrajectory();
     }
+  }
+
+  private void KSPFeatures() {
+    display_patched_conics_ =
+        UnityEngine.GUILayout.Toggle(value : display_patched_conics_,
+                                     text  : "Display patched conics");
+    Sun.Instance.sunFlare.enabled =
+        UnityEngine.GUILayout.Toggle(value : Sun.Instance.sunFlare.enabled,
+                                     text  : "Enable Sun lens flare");
   }
 
   private void LoggingSettings() {
@@ -1109,6 +1117,18 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
       buffered_logging_ = Log.GetBufferedLogging();
     }
     UnityEngine.GUILayout.EndHorizontal();
+  }
+
+  private void ResetButton() {
+    if (PluginRunning()) {
+      if (UnityEngine.GUILayout.Button(text : "Force Stop")) {
+        Cleanup();
+      }
+    } else {
+      if (UnityEngine.GUILayout.Button(text : "Force Start")) {
+        ResetPlugin();
+      }
+    }
   }
 
   private void ShrinkMainWindow() {
