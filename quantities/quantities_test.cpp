@@ -2,6 +2,7 @@
 #include <functional>
 #include <string>
 
+#include "google/protobuf/stubs/common.h"
 #include "glog/logging.h"
 #include "gtest/gtest.h"
 #include "quantities/astronomy.hpp"
@@ -228,18 +229,6 @@ TEST_F(QuantitiesDeathTest, SerializationError) {
   }, "representation.*dimensions");
 }
 
-TEST_F(QuantitiesDeathTest, SerializationError2) {
-  EXPECT_DEATH({
-    google::protobuf::SetLogHandler([](google::protobuf::LogLevel level, const char* filename, int line,
-                                       const std::string& message) {
-      LOG_AT_LEVEL(level) << message;
-    });
-    serialization::Quantity message;
-    message.set_magnitude(1.0);
-    message.CheckInitialized();
-  }, "missing required field");
-}
-
 TEST_F(QuantitiesTest, SerializationSuccess) {
   serialization::Quantity message;
   SpeedOfLight.WriteToMessage(&message);
@@ -247,6 +236,25 @@ TEST_F(QuantitiesTest, SerializationSuccess) {
   EXPECT_EQ(299792458.0, message.magnitude());
   Speed const speed_of_light = Speed::ReadFromMessage(message);
   EXPECT_EQ(SpeedOfLight, speed_of_light);
+}
+
+// This check verifies that setting a log handler causes the protobuf library to
+// report its errors using glog.  It doesn't have much too do with quantities,
+// except that it's a convention protobuf for this test.
+TEST_F(QuantitiesDeathTest, SerializationLogHandler) {
+  EXPECT_DEATH({
+    google::protobuf::SetLogHandler(
+        [](google::protobuf::LogLevel level,
+           const char* filename,
+           int line,
+           const std::string& message) {
+          LOG_AT_LEVEL(level) << "[" << filename << ":" << line << "] "
+                              << message;
+        });
+  serialization::Quantity message;
+  message.set_magnitude(1.0);
+  message.CheckInitialized();
+  }, "missing required fields");
 }
 
 }  // namespace quantities
