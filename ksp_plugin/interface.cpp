@@ -1,4 +1,4 @@
-#include "ksp_plugin/interface.hpp"
+﻿#include "ksp_plugin/interface.hpp"
 
 #include <cctype>
 #include <cstring>
@@ -142,7 +142,7 @@ Speed ParseSpeed(std::string const& s) {
 Angle ParseAngle(std::string const& s) {
   std::string unit;
   double magnitude = ParseQuantity(s, &unit);
-  if (unit == "deg" || unit == "�") {
+  if (unit == "deg" || unit == "°") {
     return magnitude * Degree;
   } else if (unit == "rad") {
     return magnitude * Radian;
