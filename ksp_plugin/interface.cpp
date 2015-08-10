@@ -85,7 +85,7 @@ WXYZ ToWXYZ(Quaternion const& quaternion) {
 }
 
 // Similar to std::stod, but uses LOG(FATAL) instead of exceptions.
-double ParseDouble(std::string const& s, not_null<size_t*> size) {
+double ParseDouble(std::string const& s, not_null<std::size_t*> size) {
   char* interpreted_end;
   char const* const c_string = s.c_str();
   double result = std::strtod(c_string, &interpreted_end);
@@ -95,17 +95,16 @@ double ParseDouble(std::string const& s, not_null<size_t*> size) {
 }
 
 double ParseQuantity(std::string const& s, not_null<std::string*> unit) {
-  size_t i;
+  std::size_t i;
   double magnitude = ParseDouble(s, &i);
-  for (*unit = ""; i < s.length(); ++i) {
+  unit->clear();
+  for (; i < s.length(); ++i) {
     if (!std::isspace(s[i])) {
       *unit += s[i];
     }
   }
   return magnitude;
 }
-
-// TODO(egg): actual parser.
 
 Length ParseLength(std::string const& s) {
   std::string unit;
@@ -172,7 +171,7 @@ GravitationalParameter ParseGravitationalParameter(std::string const& s) {
 double ParseDimensionless(std::string const& s) {
   std::string unit;
   double magnitude = ParseQuantity(s, &unit);
-  CHECK_EQ(unit, "");
+  CHECK(unit.empty()) << unit;
   return magnitude;
 }
 
@@ -183,7 +182,7 @@ double ParseDimensionless(std::string const& s) {
 //           orbit and the Earth's mean equator at the reference epoch
 // z-axis  : along the Earth mean north pole at the reference epoch
 Vector<double, Barycentric> Direction(Angle const& right_ascension,
-                                           Angle const& declination) {
+                                      Angle const& declination) {
   // Positive angles map {1, 0, 0} to the positive z hemisphere, which is north.
   // An angle of 0 keeps {1, 0, 0} on the equator.
   auto const decline = Rotation<Barycentric, Barycentric>(

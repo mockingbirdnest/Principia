@@ -184,7 +184,7 @@ class PluginTest : public testing::Test {
   }
 
   void InsertAllSolarSystemBodies() {
-  plugin_->InsertSun(SolarSystem::kSun, sun_gravitational_parameter_);
+    plugin_->InsertSun(SolarSystem::kSun, sun_gravitational_parameter_);
     for (std::size_t index = SolarSystem::kSun + 1;
          index < bodies_.size();
          ++index) {

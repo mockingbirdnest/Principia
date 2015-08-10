@@ -117,7 +117,7 @@ class Plugin {
   // inserted.
   virtual void DirectlyInsertCelestial(
     Index const celestial_index,
-    Index const* parent_index,
+    Index const* const parent_index,
     DegreesOfFreedom<Barycentric> const& initial_state,
     std::unique_ptr<MassiveBody> body);
 

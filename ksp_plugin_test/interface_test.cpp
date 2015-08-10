@@ -224,12 +224,12 @@ TEST_F(InterfaceTest, DirectlyInsertMassiveCelestial) {
               Barycentric::origin +
               Displacement<Barycentric>(
                   {0 * Metre,
-                    23.456E-7 * Kilo(Metre),
-                    -1 * AstronomicalUnit}),
+                   23.456E-7 * Kilo(Metre),
+                   -1 * AstronomicalUnit}),
               Velocity<Barycentric>(
                   {1 * AstronomicalUnit / Day,
-                    1 * Kilo(Metre) / Second,
-                    1 * Metre / Second})),
+                   1 * Kilo(Metre) / Second,
+                   1 * Metre / Second})),
           Pointee(
               AllOf(Property(&MassiveBody::is_oblate, false),
                     Property(&MassiveBody::gravitational_parameter,
@@ -256,17 +256,17 @@ TEST_F(InterfaceTest, DirectlyInsertOblateCelestial) {
               Barycentric::origin +
               Displacement<Barycentric>(
                   {0 * Metre,
-                    23.456E-7 * Kilo(Metre),
-                    -1 * AstronomicalUnit}),
+                   23.456E-7 * Kilo(Metre),
+                   -1 * AstronomicalUnit}),
               Velocity<Barycentric>(
                   {1 * AstronomicalUnit / Day,
-                    1 * Kilo(Metre) / Second,
-                    1 * Metre / Second})),
+                   1 * Kilo(Metre) / Second,
+                   1 * Metre / Second})),
           Pointee(
               AllOf(Property(&MassiveBody::is_oblate, true),
                     Property(&MassiveBody::gravitational_parameter,
                              1.2345E6 *
-                                Pow<3>(Kilo(Metre)) / Pow<2>(Second))))));
+                                 Pow<3>(Kilo(Metre)) / Pow<2>(Second))))));
   principia__DirectlyInsertOblateCelestial(plugin_.get(),
                                            kCelestialIndex,
                                            &kParentIndex,

@@ -31,13 +31,13 @@ class MockPlugin : public Plugin {
 
   void DirectlyInsertCelestial(
       Index const celestial_index,
-      Index const* parent_index,
+      Index const* const parent_index,
       DegreesOfFreedom<Barycentric> const& initial_state,
       std::unique_ptr<MassiveBody> body) override;
 
   MOCK_METHOD4(DirectlyInsertCelestialConstRef,
                void(Index const celestial_index,
-                    Index const* parent_index,
+                    Index const* const parent_index,
                     DegreesOfFreedom<Barycentric> const& initial_state,
                     std::unique_ptr<MassiveBody> const& body));
 

@@ -97,14 +97,14 @@ void Plugin::InsertSun(Index const celestial_index,
                        << "of initialization";
   auto body = std::make_unique<MassiveBody>(gravitational_parameter);
   DirectlyInsertCelestial(celestial_index,
-                          nullptr,
+                          nullptr /*parent_index*/,
                           {Barycentric::origin, Velocity<Barycentric>()},
                           std::move(body));
 }
 
 void Plugin::DirectlyInsertCelestial(
     Index const celestial_index,
-    Index const* parent_index,
+    Index const* const parent_index,
     DegreesOfFreedom<Barycentric> const& initial_state,
     std::unique_ptr<MassiveBody> body) {
   CHECK(initializing_) << "Celestial bodies should be inserted before the end "

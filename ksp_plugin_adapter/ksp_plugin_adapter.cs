@@ -817,18 +817,18 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
       String plugin_source = "";
       switch (plugin_source_) {
         case (PluginSource.SAVED_STATE):
-           plugin_source = "from a saved state";
+           plugin_source = "a saved state";
           break;
         case (PluginSource.ORBITAL_ELEMENTS):
-           plugin_source = "from KSP orbital elements";
+           plugin_source = "KSP orbital elements";
           break;
         case (PluginSource.CARTESIAN_CONFIG):
-           plugin_source = "from a cartesian configuration file";
+           plugin_source = "a cartesian configuration file";
           break;
       }
       last_reset_information =
           "Plugin was constructed at " +
-          plugin_construction_.ToUniversalTime().ToString("O") + " " +
+          plugin_construction_.ToUniversalTime().ToString("O") + " from " +
           plugin_source;
     }
     UnityEngine.GUILayout.TextArea(last_reset_information);
