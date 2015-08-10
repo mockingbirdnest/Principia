@@ -240,20 +240,20 @@ TEST_F(QuantitiesTest, SerializationSuccess) {
 
 // This check verifies that setting a log handler causes the protobuf library to
 // report its errors using glog.  It doesn't have much too do with quantities,
-// except that it's a convention protobuf for this test.
+// except that it's a convenient protobuf for this test.
 TEST_F(QuantitiesDeathTest, SerializationLogHandler) {
   EXPECT_DEATH({
     google::protobuf::SetLogHandler(
         [](google::protobuf::LogLevel const level,
-           const char* const filename,
+           char const* const filename,
            int const line,
            std::string const& message) {
           LOG_AT_LEVEL(level) << "[" << filename << ":" << line << "] "
                               << message;
         });
-  serialization::Quantity message;
-  message.set_magnitude(1.0);
-  message.CheckInitialized();
+    serialization::Quantity message;
+    message.set_magnitude(1.0);
+    message.CheckInitialized();
   }, "missing required fields");
 }
 

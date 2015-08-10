@@ -97,7 +97,7 @@ void principia__InitGoogleLogging() {
 
     google::protobuf::SetLogHandler(
         [](google::protobuf::LogLevel const level,
-           const char* const filename,
+           char const* const filename,
            int const line,
            std::string const& message) {
           LOG_AT_LEVEL(level) << "[" << filename << ":" << line << "] "
