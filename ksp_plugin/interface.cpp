@@ -94,6 +94,16 @@ void principia__InitGoogleLogging() {
     google::SetLogDestination(google::WARNING, "glog/Principia/WARNING.");
     google::SetLogDestination(google::INFO, "glog/Principia/INFO.");
     google::InitGoogleLogging("Principia");
+
+    google::protobuf::SetLogHandler(
+        [](google::protobuf::LogLevel const level,
+           char const* const filename,
+           int const line,
+           std::string const& message) {
+          LOG_AT_LEVEL(level) << "[" << filename << ":" << line << "] "
+                              << message;
+        });
+
     LOG(INFO) << "Initialized Google logging for Principia";
     LOG(INFO) << "Principia version " << principia::base::kVersion
               << " built on " << principia::base::kBuildDate

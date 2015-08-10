@@ -2,6 +2,7 @@
 #include <functional>
 #include <string>
 
+#include "google/protobuf/stubs/common.h"
 #include "glog/logging.h"
 #include "gtest/gtest.h"
 #include "quantities/astronomy.hpp"
@@ -15,6 +16,7 @@
 #include "testing_utilities/almost_equals.hpp"
 #include "testing_utilities/numerics.hpp"
 #include "testing_utilities/vanishes_before.hpp"
+
 namespace principia {
 
 using astronomy::EarthMass;
@@ -234,6 +236,25 @@ TEST_F(QuantitiesTest, SerializationSuccess) {
   EXPECT_EQ(299792458.0, message.magnitude());
   Speed const speed_of_light = Speed::ReadFromMessage(message);
   EXPECT_EQ(SpeedOfLight, speed_of_light);
+}
+
+// This check verifies that setting a log handler causes the protobuf library to
+// report its errors using glog.  It doesn't have much too do with quantities,
+// except that it's a convenient protobuf for this test.
+TEST_F(QuantitiesDeathTest, SerializationLogHandler) {
+  EXPECT_DEATH({
+    google::protobuf::SetLogHandler(
+        [](google::protobuf::LogLevel const level,
+           char const* const filename,
+           int const line,
+           std::string const& message) {
+          LOG_AT_LEVEL(level) << "[" << filename << ":" << line << "] "
+                              << message;
+        });
+    serialization::Quantity message;
+    message.set_magnitude(1.0);
+    message.CheckInitialized();
+  }, "missing required fields");
 }
 
 }  // namespace quantities
