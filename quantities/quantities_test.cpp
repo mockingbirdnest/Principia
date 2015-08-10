@@ -244,10 +244,10 @@ TEST_F(QuantitiesTest, SerializationSuccess) {
 TEST_F(QuantitiesDeathTest, SerializationLogHandler) {
   EXPECT_DEATH({
     google::protobuf::SetLogHandler(
-        [](google::protobuf::LogLevel level,
-           const char* filename,
-           int line,
-           const std::string& message) {
+        [](google::protobuf::LogLevel const level,
+           const char* const filename,
+           int const line,
+           std::string const& message) {
           LOG_AT_LEVEL(level) << "[" << filename << ":" << line << "] "
                               << message;
         });
