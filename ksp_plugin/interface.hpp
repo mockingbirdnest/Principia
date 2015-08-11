@@ -122,8 +122,6 @@ void CDECL principia__LogFatal(char const* message);
 extern "C" DLLEXPORT
 Plugin* CDECL principia__NewPlugin(
     double const initial_time,
-    int const sun_index,
-    double const sun_gravitational_parameter,
     double const planetarium_rotation_in_degrees);
 
 // Deletes and nulls |*plugin|.
@@ -131,6 +129,36 @@ Plugin* CDECL principia__NewPlugin(
 // ownership of |**plugin|.
 extern "C" DLLEXPORT
 void CDECL principia__DeletePlugin(Plugin const** const plugin);
+
+extern "C" DLLEXPORT
+void CDECL principia__DirectlyInsertMassiveCelestial(
+    Plugin* const plugin,
+    int const celestial_index,
+    int const* parent_index,
+    char const* gravitational_parameter,
+    char const* x,
+    char const* y,
+    char const* z,
+    char const* vx,
+    char const* vy,
+    char const* vz);
+
+extern "C" DLLEXPORT
+void CDECL principia__DirectlyInsertOblateCelestial(
+  Plugin* const plugin,
+  int const celestial_index,
+  int const* parent_index,
+  char const* gravitational_parameter,
+  char const* axis_right_ascension,
+  char const* axis_declination,
+  char const* j2,
+  char const* reference_radius,
+  char const* x,
+  char const* y,
+  char const* z,
+  char const* vx,
+  char const* vy,
+  char const* vz);
 
 // Calls |plugin->InsertCelestial| with the arguments given.
 // |plugin| must not be null.  No transfer of ownership.
@@ -140,6 +168,11 @@ void CDECL principia__InsertCelestial(Plugin* const plugin,
                                       double const gravitational_parameter,
                                       int const parent_index,
                                       QP const from_parent);
+
+extern "C" DLLEXPORT
+void CDECL principia__InsertSun(Plugin* const plugin,
+                                int const celestial_index,
+                                double const gravitational_parameter);
 
 // Calls |plugin->UpdateCelestialHierarchy| with the arguments given.
 // |plugin| must not be null.  No transfer of ownership.

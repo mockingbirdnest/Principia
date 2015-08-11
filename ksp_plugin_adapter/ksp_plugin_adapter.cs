@@ -15,6 +15,8 @@ namespace ksp_plugin_adapter {
 public partial class PrincipiaPluginAdapter : ScenarioModule {
 
   private const String kPrincipiaKey = "serialized_plugin";
+  private const String kPrincipiaInitialState = "principia_initial_state";
+  private const String kPrincipiaGravityModels = "principia_gravity_models";
   private const double kΔt = 10;
 
   // The number of points in a |VectorLine| can be at most 32766, since
@@ -82,7 +84,20 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
   [KSPField(isPersistant = true)]
   private bool show_prediction_settings_ = true;
   [KSPField(isPersistant = true)]
+  private bool show_ksp_features_ = false;
+  [KSPField(isPersistant = true)]
   private bool show_logging_settings_ = false;
+  [KSPField(isPersistant = true)]
+  private bool show_reset_button_ = false;
+
+  [KSPField(isPersistant = true)]
+  private int verbose_logging_ = 0;
+  [KSPField(isPersistant = true)]
+  private int suppressed_logging_ = 0;
+  [KSPField(isPersistant = true)]
+  private int stderr_logging_ = 2;
+  [KSPField(isPersistant = true)]
+  private int buffered_logging_ = 0;
 #if CRASH_BUTTON
   [KSPField(isPersistant = true)]
   private bool show_crash_options_ = false;
@@ -91,7 +106,13 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
   private bool time_is_advancing_;
 
   private DateTime plugin_construction_;
-  private bool plugin_from_save_;
+
+  private enum PluginSource {
+   SAVED_STATE,
+   ORBITAL_ELEMENTS,
+   CARTESIAN_CONFIG,
+  }
+  private PluginSource plugin_source_;
 
   private Krakensbane krakensbane_;
   private NavBall navball_;
@@ -384,6 +405,10 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
     if (node.HasValue(kPrincipiaKey)) {
       Cleanup();
       SetRotatingFrameThresholds();
+      Log.SetBufferedLogging(buffered_logging_);
+      Log.SetSuppressedLogging(suppressed_logging_);
+      Log.SetStderrLogging(stderr_logging_);
+      Log.SetVerboseLogging(verbose_logging_);
 
       IntPtr deserializer = IntPtr.Zero;
       String[] serializations = node.GetValues(kPrincipiaKey);
@@ -400,7 +425,7 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
 
       UpdateRenderingFrame();
       plugin_construction_ = DateTime.Now;
-      plugin_from_save_ = true;
+      plugin_source_ = PluginSource.SAVED_STATE;
     } else {
       Log.Warning("No principia state found, creating one");
       ResetPlugin();
@@ -775,15 +800,6 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
   private void DrawMainWindow(int window_id) {
     UnityEngine.GUILayout.BeginVertical();
     String plugin_state;
-    if (PluginRunning()) {
-      if (UnityEngine.GUILayout.Button(text : "Force Stop")) {
-        Cleanup();
-      }
-    } else {
-      if (UnityEngine.GUILayout.Button(text : "Force Start")) {
-        ResetPlugin();
-      }
-    }
     if (!PluginRunning()) {
       plugin_state = "not started";
     } else if (!time_is_advancing_) {
@@ -798,10 +814,22 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
     if (!PluginRunning()) {
       last_reset_information = "";
     } else {
+      String plugin_source = "";
+      switch (plugin_source_) {
+        case (PluginSource.SAVED_STATE):
+           plugin_source = "a saved state";
+          break;
+        case (PluginSource.ORBITAL_ELEMENTS):
+           plugin_source = "KSP orbital elements";
+          break;
+        case (PluginSource.CARTESIAN_CONFIG):
+           plugin_source = "a cartesian configuration file";
+          break;
+      }
       last_reset_information =
           "Plugin was constructed at " +
-          plugin_construction_.ToUniversalTime().ToString("O") +
-          (plugin_from_save_ ? " from a saved state" : " from scratch");
+          plugin_construction_.ToUniversalTime().ToString("O") + " from " +
+          plugin_source;
     }
     UnityEngine.GUILayout.TextArea(last_reset_information);
     bool changed_history_length = false;
@@ -819,9 +847,15 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
     ToggleableSection(name   : "Prediction Settings",
                       show   : ref show_prediction_settings_,
                       render : PredictionSettings);
+    ToggleableSection(name   : "KSP features",
+                      show   : ref show_ksp_features_,
+                      render : KSPFeatures);
     ToggleableSection(name   : "Logging Settings",
                       show   : ref show_logging_settings_,
                       render : LoggingSettings);
+    ToggleableSection(name   : "Reset Principia",
+                      show   : ref show_reset_button_,
+                      render : ResetButton);
 #if CRASH_BUTTON
     ToggleableSection(name   : "CRASH",
                       show   : ref show_crash_options_,
@@ -964,14 +998,11 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
   }
 
   private void PredictionSettings() {
-    display_patched_conics_ =
-        UnityEngine.GUILayout.Toggle(value : display_patched_conics_,
-                                     text  : "Display patched conics");
 
     bool changed_settings = false;
     Selector(prediction_length_tolerances_,
              ref prediction_length_tolerance_index_,
-             "Step size",
+             "Tolerance",
              ref changed_settings,
              "{0:0.00e0} m");
     Selector(prediction_lengths_,
@@ -984,13 +1015,23 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
     }
   }
 
+  private void KSPFeatures() {
+    display_patched_conics_ =
+        UnityEngine.GUILayout.Toggle(value : display_patched_conics_,
+                                     text  : "Display patched conics");
+    Sun.Instance.sunFlare.enabled =
+        UnityEngine.GUILayout.Toggle(value : Sun.Instance.sunFlare.enabled,
+                                     text  : "Enable Sun lens flare");
+  }
+
   private void LoggingSettings() {
     UnityEngine.GUILayout.BeginHorizontal();
     UnityEngine.GUILayout.Label(text : "Verbose level:");
     if (UnityEngine.GUILayout.Button(
             text    : "←",
             options : UnityEngine.GUILayout.Width(50))) {
-      Log.SetVerboseLogging(Math.Max(Log.GetVerboseLogging() - 1, 0));
+      Log.SetVerboseLogging(Math.Max(verbose_logging_ - 1, 0));
+      verbose_logging_ = Log.GetVerboseLogging();
     }
     UnityEngine.GUILayout.TextArea(
         text    : Log.GetVerboseLogging().ToString(),
@@ -998,7 +1039,8 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
     if (UnityEngine.GUILayout.Button(
             text    : "→",
             options : UnityEngine.GUILayout.Width(50))) {
-      Log.SetVerboseLogging(Math.Min(Log.GetVerboseLogging() + 1, 4));
+      Log.SetVerboseLogging(Math.Min(verbose_logging_ + 1, 4));
+      verbose_logging_ = Log.GetVerboseLogging();
     }
     UnityEngine.GUILayout.EndHorizontal();
     int column_width = 75;
@@ -1019,17 +1061,20 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
     if (UnityEngine.GUILayout.Button(
             text    : "↑",
             options : UnityEngine.GUILayout.Width(column_width))) {
-      Log.SetSuppressedLogging(Math.Max(Log.GetSuppressedLogging() - 1, 0));
+      Log.SetSuppressedLogging(Math.Max(suppressed_logging_ - 1, 0));
+      suppressed_logging_ = Log.GetSuppressedLogging();
     }
     if (UnityEngine.GUILayout.Button(
             text    : "↑",
             options : UnityEngine.GUILayout.Width(column_width))) {
-      Log.SetStderrLogging(Math.Max(Log.GetStderrLogging() - 1, 0));
+      Log.SetStderrLogging(Math.Max(stderr_logging_ - 1, 0));
+      stderr_logging_ = Log.GetStderrLogging();
     }
     if (UnityEngine.GUILayout.Button(
             text    : "↑",
             options : UnityEngine.GUILayout.Width(column_width))) {
-      Log.SetBufferedLogging(Math.Max(Log.GetBufferedLogging() - 1, -1));
+      Log.SetBufferedLogging(Math.Max(buffered_logging_ - 1, -1));
+      buffered_logging_ = Log.GetBufferedLogging();
     }
     UnityEngine.GUILayout.EndHorizontal();
     for (int severity = 0; severity <= 3; ++severity) {
@@ -1056,19 +1101,34 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
     if (UnityEngine.GUILayout.Button(
             text    : "↓",
             options : UnityEngine.GUILayout.Width(column_width))) {
-      Log.SetSuppressedLogging(Math.Min(Log.GetSuppressedLogging() + 1, 3));
+      Log.SetSuppressedLogging(Math.Min(suppressed_logging_ + 1, 3));
+      suppressed_logging_ = Log.GetSuppressedLogging();
     }
     if (UnityEngine.GUILayout.Button(
             text    : "↓",
             options : UnityEngine.GUILayout.Width(column_width))) {
-      Log.SetStderrLogging(Math.Min(Log.GetStderrLogging() + 1, 3));
+      Log.SetStderrLogging(Math.Min(stderr_logging_ + 1, 3));
+      stderr_logging_ = Log.GetStderrLogging();
     }
     if (UnityEngine.GUILayout.Button(
             text    : "↓",
             options : UnityEngine.GUILayout.Width(column_width))) {
-      Log.SetBufferedLogging(Math.Min(Log.GetBufferedLogging() + 1, 3));
+      Log.SetBufferedLogging(Math.Min(buffered_logging_ + 1, 3));
+      buffered_logging_ = Log.GetBufferedLogging();
     }
     UnityEngine.GUILayout.EndHorizontal();
+  }
+
+  private void ResetButton() {
+    if (PluginRunning()) {
+      if (UnityEngine.GUILayout.Button(text : "Force Stop")) {
+        Cleanup();
+      }
+    } else {
+      if (UnityEngine.GUILayout.Button(text : "Force Start")) {
+        ResetPlugin();
+      }
+    }
   }
 
   private void ShrinkMainWindow() {
@@ -1099,20 +1159,132 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
     SetRotatingFrameThresholds();
     ResetRenderedTrajectory();
     plugin_construction_ = DateTime.Now;
-    plugin_from_save_ = false;
-    plugin_ = NewPlugin(Planetarium.GetUniversalTime(),
-                        Planetarium.fetch.Sun.flightGlobalsIndex,
-                        Planetarium.fetch.Sun.gravParameter,
-                        Planetarium.InverseRotAngle);
-    BodyProcessor insert_body = body => {
-      Log.Info("Inserting " + body.name + "...");
-      InsertCelestial(plugin_,
-                      body.flightGlobalsIndex,
-                      body.gravParameter,
-                      body.orbit.referenceBody.flightGlobalsIndex,
-                      new QP{q = (XYZ)body.orbit.pos, p = (XYZ)body.orbit.vel});
-    };
-    ApplyToBodyTree(insert_body);
+    if (GameDatabase.Instance.GetConfigs(kPrincipiaInitialState).Length > 0) {
+      plugin_source_ = PluginSource.CARTESIAN_CONFIG;
+      if (GameDatabase.Instance.GetConfigs(
+              kPrincipiaGravityModels).Length == 0) {
+        Log.Fatal("missing gravity models");
+      }
+      if (GameDatabase.Instance.GetConfigs(kPrincipiaInitialState).Length > 1 ||
+          GameDatabase.Instance.GetConfigs(
+              kPrincipiaGravityModels).Length > 1) {
+        Log.Fatal("too many configs");
+      }
+      try {
+        ConfigNode initial_states =
+            GameDatabase.Instance.GetConfigs(kPrincipiaInitialState)[0].config;
+        ConfigNode gravity_models =
+            GameDatabase.Instance.GetConfigs(kPrincipiaGravityModels)[0].config;
+        plugin_ = NewPlugin(double.Parse(initial_states.GetValue("epoch")),
+                            Planetarium.InverseRotAngle);
+        var name_to_initial_state = new Dictionary<String, ConfigNode>();
+        var name_to_gravity_model = new Dictionary<String, ConfigNode>();
+        foreach (ConfigNode node in initial_states.GetNodes("body")) {
+          name_to_initial_state.Add(node.GetValue("name"), node);
+        }
+        foreach (ConfigNode node in gravity_models.GetNodes("body")) {
+          name_to_gravity_model.Add(node.GetValue("name"), node);
+        }
+        ConfigNode sun_gravity_model =
+            name_to_gravity_model[Planetarium.fetch.Sun.name];
+        ConfigNode sun_initial_state =
+            name_to_initial_state[Planetarium.fetch.Sun.name];
+        if (sun_gravity_model.HasValue("j2")) {
+          DirectlyInsertOblateCelestial(
+              plugin: plugin_,
+              celestial_index: Planetarium.fetch.Sun.flightGlobalsIndex,
+              parent_index: IntPtr.Zero,
+              gravitational_parameter:
+                  sun_gravity_model.GetValue("gravitational_parameter"),
+              axis_right_ascension:
+                  sun_gravity_model.GetValue("axis_right_ascension"),
+              axis_declination:
+                  sun_gravity_model.GetValue("axis_declination"),
+              j2: sun_gravity_model.GetValue("j2"),
+              reference_radius: 
+                  sun_gravity_model.GetValue("reference_radius"),
+              x: sun_initial_state.GetValue("x"),
+              y: sun_initial_state.GetValue("y"),
+              z: sun_initial_state.GetValue("z"),
+              vx: sun_initial_state.GetValue("vx"),
+              vy: sun_initial_state.GetValue("vy"),
+              vz: sun_initial_state.GetValue("vz"));
+        } else {
+          DirectlyInsertMassiveCelestial(
+              plugin: plugin_,
+              celestial_index: Planetarium.fetch.Sun.flightGlobalsIndex,
+              parent_index: IntPtr.Zero,
+              gravitational_parameter:
+                  sun_gravity_model.GetValue("gravitational_parameter"),
+              x: sun_initial_state.GetValue("x"),
+              y: sun_initial_state.GetValue("y"),
+              z: sun_initial_state.GetValue("z"),
+              vx: sun_initial_state.GetValue("vx"),
+              vy: sun_initial_state.GetValue("vy"),
+              vz: sun_initial_state.GetValue("vz"));
+        }
+        BodyProcessor insert_body = body => {
+          Log.Info("Inserting " + body.name + "...");
+          ConfigNode gravity_model = name_to_gravity_model[body.name];
+          ConfigNode initial_state = name_to_initial_state[body.name];
+          int parent_index = body.orbit.referenceBody.flightGlobalsIndex;
+          if (gravity_model.HasValue("j2")) {
+            DirectlyInsertOblateCelestial(
+                plugin: plugin_,
+                celestial_index: body.flightGlobalsIndex,
+                parent_index: ref parent_index,
+                gravitational_parameter:
+                    gravity_model.GetValue("gravitational_parameter"),
+                axis_right_ascension:
+                    gravity_model.GetValue("axis_right_ascension"),
+                axis_declination:
+                    gravity_model.GetValue("axis_declination"),
+                j2: gravity_model.GetValue("j2"),
+                reference_radius: 
+                    gravity_model.GetValue("reference_radius"),
+                x: initial_state.GetValue("x"),
+                y: initial_state.GetValue("y"),
+                z: initial_state.GetValue("z"),
+                vx: initial_state.GetValue("vx"),
+                vy: initial_state.GetValue("vy"),
+                vz: initial_state.GetValue("vz"));
+          } else {
+            DirectlyInsertMassiveCelestial(
+                plugin: plugin_,
+                celestial_index: body.flightGlobalsIndex,
+                parent_index: ref parent_index,
+                gravitational_parameter:
+                    gravity_model.GetValue("gravitational_parameter"),
+                x: initial_state.GetValue("x"),
+                y: initial_state.GetValue("y"),
+                z: initial_state.GetValue("z"),
+                vx: initial_state.GetValue("vx"),
+                vy: initial_state.GetValue("vy"),
+                vz: initial_state.GetValue("vz"));
+          }
+        };
+        ApplyToBodyTree(insert_body);
+      } catch (Exception e) {
+        Log.Fatal("Exception while reading initial state: " + e.ToString());
+      }
+    } else {
+      plugin_source_ = PluginSource.ORBITAL_ELEMENTS;
+      plugin_ = NewPlugin(Planetarium.GetUniversalTime(),
+                          Planetarium.InverseRotAngle);
+      InsertSun(plugin_,
+                Planetarium.fetch.Sun.flightGlobalsIndex,
+                Planetarium.fetch.Sun.gravParameter);
+      BodyProcessor insert_body = body => {
+        Log.Info("Inserting " + body.name + "...");
+        InsertCelestial(plugin_,
+                        body.flightGlobalsIndex,
+                        body.gravParameter,
+                        body.orbit.referenceBody.flightGlobalsIndex,
+                        new QP{q = (XYZ)body.orbit.pos,
+                               p = (XYZ)body.orbit.vel});
+      };
+      ApplyToBodyTree(insert_body);
+    }
     EndInitialization(plugin_);
     UpdateRenderingFrame();
     VesselProcessor insert_vessel = vessel => {

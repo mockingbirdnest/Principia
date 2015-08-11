@@ -57,8 +57,6 @@ Length const kFittingTolerance = 1 * Milli(Metre);
 }  // namespace
 
 Plugin::Plugin(Instant const& initial_time,
-               Index const sun_index,
-               GravitationalParameter const& sun_gravitational_parameter,
                Angle const& planetarium_rotation)
     : bubble_(make_not_null_unique<PhysicsBubble>()),
       bodies_(std::make_unique<IndexToMassiveBody>()),
@@ -71,18 +69,7 @@ Plugin::Plugin(Instant const& initial_time,
           DormandElMikkawyPrince1986RKN434FM<Position<Barycentric>>()),
       planetarium_rotation_(planetarium_rotation),
       current_time_(initial_time),
-      history_time_(initial_time) {
-  auto sun_body = std::make_unique<MassiveBody>(sun_gravitational_parameter);
-  auto const inserted =
-      celestials_.emplace(sun_index,
-                          std::make_unique<Celestial>(sun_body.get()));
-  sun_ = inserted.first->second.get();
-  bodies_->emplace(sun_index, std::move(sun_body));
-  initial_state_->emplace(std::piecewise_construct,
-                          std::forward_as_tuple(sun_index),
-                          std::forward_as_tuple(Position<Barycentric>(),
-                                                Velocity<Barycentric>()));
-}
+      history_time_(initial_time) {}
 
 void Plugin::InsertCelestial(
     Index const celestial_index,
@@ -91,28 +78,56 @@ void Plugin::InsertCelestial(
     RelativeDegreesOfFreedom<AliceSun> const& from_parent) {
   CHECK(initializing_) << "Celestial bodies should be inserted before the end "
                        << "of initialization";
-  not_null<Celestial const*> parent =
-      FindOrDie(celestials_, parent_index).get();
   auto body = std::make_unique<MassiveBody>(gravitational_parameter);
-  auto const inserted =
-      celestials_.emplace(celestial_index,
-                          std::make_unique<Celestial>(body.get()));
-  CHECK(inserted.second) << "Body already exists at index " << celestial_index;
   LOG(INFO) << "Initial |{orbit.pos, orbit.vel}| for celestial at index "
             << celestial_index << ": " << from_parent;
-  auto const relative =
-      PlanetariumRotation().Inverse()(from_parent);
+  auto const relative = PlanetariumRotation().Inverse()(from_parent);
   LOG(INFO) << "In barycentric coordinates: " << relative;
-  not_null<Celestial*> const celestial = inserted.first->second.get();
-  bodies_->emplace(celestial_index, std::move(body));
-  celestial->set_parent(parent);
   DegreesOfFreedom<Barycentric> const& parent_degrees_of_freedom =
       FindOrDie(*initial_state_, parent_index);
-  initial_state_->emplace(celestial_index,
-                          parent_degrees_of_freedom + relative);
+  DirectlyInsertCelestial(celestial_index,
+                          &parent_index,
+                          parent_degrees_of_freedom + relative,
+                          std::move(body));
+}
+
+void Plugin::InsertSun(Index const celestial_index,
+                       GravitationalParameter const& gravitational_parameter) {
+  CHECK(initializing_) << "Celestial bodies should be inserted before the end "
+                       << "of initialization";
+  auto body = std::make_unique<MassiveBody>(gravitational_parameter);
+  DirectlyInsertCelestial(celestial_index,
+                          nullptr /*parent_index*/,
+                          {Barycentric::origin, Velocity<Barycentric>()},
+                          std::move(body));
+}
+
+void Plugin::DirectlyInsertCelestial(
+    Index const celestial_index,
+    Index const* const parent_index,
+    DegreesOfFreedom<Barycentric> const& initial_state,
+    std::unique_ptr<MassiveBody> body) {
+  CHECK(initializing_) << "Celestial bodies should be inserted before the end "
+                       << "of initialization";
+  auto const inserted =
+    celestials_.emplace(celestial_index,
+                        std::make_unique<Celestial>(body.get()));
+  CHECK(inserted.second) << "Body already exists at index " << celestial_index;
+  not_null<Celestial*> const celestial = inserted.first->second.get();
+  bodies_->emplace(celestial_index, std::move(body));
+  if (parent_index == nullptr) {
+    CHECK(sun_ == nullptr);
+    sun_ = celestial;
+  } else {
+    not_null<Celestial const*> parent =
+        FindOrDie(celestials_, *parent_index).get();
+    celestial->set_parent(parent);
+  }
+  initial_state_->emplace(celestial_index, initial_state);
 }
 
 void Plugin::EndInitialization() {
+  CHECK_NOTNULL(sun_);
   initializing_.Flop();
   std::vector<not_null<std::unique_ptr<MassiveBody const>>> bodies;
   std::vector<DegreesOfFreedom<Barycentric>> initial_state;
@@ -461,6 +476,8 @@ void Plugin::WriteToMessage(
     not_null<serialization::Plugin*> const message) const {
   LOG(INFO) << __FUNCTION__;
   CHECK(!initializing_);
+  ephemeris_->Prolong(current_time_);
+  ephemeris_->ForgetAfter(current_time_);
   std::map<not_null<Celestial const*>, Index const> celestial_to_index;
   for (auto const& index_celestial : celestials_) {
     celestial_to_index.emplace(index_celestial.second.get(),

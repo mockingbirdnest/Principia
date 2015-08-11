@@ -19,12 +19,18 @@ using base::PullSerializer;
 using base::PushDeserializer;
 using geometry::Displacement;
 using geometry::kUnixEpoch;
+using quantities::Pow;
+using si::AstronomicalUnit;
+using si::Day;
 using si::Degree;
-using si::Milli;
+using si::Kilo;
+using si::Metre;
 using si::Second;
 using si::Tonne;
+using ::testing::AllOf;
 using ::testing::ElementsAre;
 using ::testing::Eq;
+using ::testing::Property;
 using ::testing::ExitedWithCode;
 using ::testing::IsNull;
 using ::testing::NotNull;
@@ -165,8 +171,6 @@ TEST_F(InterfaceTest, Log) {
 TEST_F(InterfaceTest, NewPlugin) {
   std::unique_ptr<Plugin> plugin(principia__NewPlugin(
                                      kTime,
-                                     kParentIndex /*sun_index*/,
-                                     kGravitationalParameter,
                                      kPlanetariumRotation));
   EXPECT_THAT(plugin, Not(IsNull()));
 }
@@ -197,6 +201,86 @@ TEST_F(InterfaceTest, InsertCelestial) {
                              kGravitationalParameter,
                              kParentIndex,
                              kParentRelativeDegreesOfFreedom);
+}
+
+TEST_F(InterfaceTest, InsertSun) {
+  EXPECT_CALL(*plugin_,
+              InsertSun(
+                  kCelestialIndex,
+                  kGravitationalParameter * SIUnit<GravitationalParameter>()));
+  principia__InsertSun(plugin_.get(),
+                       kCelestialIndex,
+                       kGravitationalParameter);
+}
+
+
+TEST_F(InterfaceTest, DirectlyInsertMassiveCelestial) {
+  EXPECT_CALL(
+      *plugin_,
+      DirectlyInsertCelestialConstRef(
+          kCelestialIndex,
+          &kParentIndex,
+          DegreesOfFreedom<Barycentric>(
+              Barycentric::origin +
+              Displacement<Barycentric>(
+                  {0 * Metre,
+                   23.456E-7 * Kilo(Metre),
+                   -1 * AstronomicalUnit}),
+              Velocity<Barycentric>(
+                  {1 * AstronomicalUnit / Day,
+                   1 * Kilo(Metre) / Second,
+                   1 * Metre / Second})),
+          Pointee(
+              AllOf(Property(&MassiveBody::is_oblate, false),
+                    Property(&MassiveBody::gravitational_parameter,
+                             1.2345E6 * SIUnit<GravitationalParameter>())))));
+  principia__DirectlyInsertMassiveCelestial(plugin_.get(),
+                                            kCelestialIndex,
+                                            &kParentIndex,
+                                            "1.2345E6  m^3/s^2",
+                                            "0 m",
+                                            "23.456E-7 km",
+                                            "-1 au",
+                                            "1 au / d",
+                                            "  1 km/s",
+                                            "1  m / s");
+}
+
+TEST_F(InterfaceTest, DirectlyInsertOblateCelestial) {
+  EXPECT_CALL(
+      *plugin_,
+      DirectlyInsertCelestialConstRef(
+          kCelestialIndex,
+          &kParentIndex,
+          DegreesOfFreedom<Barycentric>(
+              Barycentric::origin +
+              Displacement<Barycentric>(
+                  {0 * Metre,
+                   23.456E-7 * Kilo(Metre),
+                   -1 * AstronomicalUnit}),
+              Velocity<Barycentric>(
+                  {1 * AstronomicalUnit / Day,
+                   1 * Kilo(Metre) / Second,
+                   1 * Metre / Second})),
+          Pointee(
+              AllOf(Property(&MassiveBody::is_oblate, true),
+                    Property(&MassiveBody::gravitational_parameter,
+                             1.2345E6 *
+                                 Pow<3>(Kilo(Metre)) / Pow<2>(Second))))));
+  principia__DirectlyInsertOblateCelestial(plugin_.get(),
+                                           kCelestialIndex,
+                                           &kParentIndex,
+                                           "1.2345E6  km^3 / s^2",
+                                           "42 deg",
+                                           "8°",
+                                           "123e-6",
+                                           "1000 km",
+                                           "0 m",
+                                           "23.456E-7 km",
+                                           "-1 au",
+                                           "1 au / d",
+                                           "  1 km/s",
+                                           "1  m / s");
 }
 
 TEST_F(InterfaceTest, UpdateCelestialHierarchy) {

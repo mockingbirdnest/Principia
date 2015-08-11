@@ -100,8 +100,6 @@ class TestablePlugin : public Plugin {
                  GravitationalParameter const& sun_gravitational_parameter,
                  Angle const& planetarium_rotation)
       : Plugin(initial_time,
-               sun_index,
-               sun_gravitational_parameter,
                planetarium_rotation),
         mock_ephemeris_(
             std::make_unique<StrictMock<MockEphemeris<Barycentric>>>()) {}
@@ -186,6 +184,7 @@ class PluginTest : public testing::Test {
   }
 
   void InsertAllSolarSystemBodies() {
+    plugin_->InsertSun(SolarSystem::kSun, sun_gravitational_parameter_);
     for (std::size_t index = SolarSystem::kSun + 1;
          index < bodies_.size();
          ++index) {
@@ -257,8 +256,6 @@ TEST_F(PluginDeathTest, SerializationError) {
     auto plugin =
         make_not_null_unique<Plugin>(
             initial_time_,
-            SolarSystem::kSun,
-            sun_gravitational_parameter_,
             planetarium_rotation_);
     serialization::Plugin message;
     plugin->WriteToMessage(&message);
@@ -271,9 +268,8 @@ TEST_F(PluginTest, Serialization) {
   // that's what |ReadFromMessage| returns.
   auto plugin = make_not_null_unique<Plugin>(
                     initial_time_,
-                    SolarSystem::kSun,
-                    sun_gravitational_parameter_,
                     planetarium_rotation_);
+  plugin->InsertSun(SolarSystem::kSun, sun_gravitational_parameter_);
   for (std::size_t index = SolarSystem::kSun + 1;
        index < bodies_.size();
        ++index) {
@@ -388,6 +384,13 @@ TEST_F(PluginDeathTest, InsertCelestialError) {
                              SolarSystem::kSun,
                              from_parent);
   }, "Body already exists");
+}
+
+TEST_F(PluginDeathTest, SunError) {
+  EXPECT_DEATH({
+    plugin_->InsertSun(42, bodies_.front()->gravitational_parameter());
+    plugin_->InsertSun(43, bodies_.front()->gravitational_parameter());
+  }, "sun_ == nullptr");
 }
 
 TEST_F(PluginDeathTest, UpdateCelestialHierarchyError) {
@@ -977,9 +980,8 @@ TEST_F(PluginTest, BodyCentredNonrotatingRenderingIntegration) {
   // This is an integration test, so we need a plugin that will actually
   // integrate.
   Plugin plugin(initial_time_,
-                SolarSystem::kSun,
-                sun_gravitational_parameter_,
                 planetarium_rotation_);
+  plugin.InsertSun(SolarSystem::kSun, sun_gravitational_parameter_);
   for (std::size_t index = SolarSystem::kSun + 1;
        index < bodies_.size();
        ++index) {
@@ -1066,9 +1068,8 @@ TEST_F(PluginTest, BarycentricRotatingRenderingIntegration) {
   // This is an integration test, so we need a plugin that will actually
   // integrate.
   Plugin plugin(initial_time_,
-                SolarSystem::kSun,
-                sun_gravitational_parameter_,
                 planetarium_rotation_);
+  plugin.InsertSun(SolarSystem::kSun, sun_gravitational_parameter_);
   for (std::size_t index = SolarSystem::kSun + 1;
        index < bodies_.size();
        ++index) {
@@ -1189,9 +1190,8 @@ TEST_F(PluginTest, Prediction) {
   GUID const satellite = "satellite";
   Index const celestial = 0;
   Plugin plugin(Instant(),
-                celestial,
-                SIUnit<GravitationalParameter>(),
                 0 * Radian);
+  plugin.InsertSun(celestial, SIUnit<GravitationalParameter>());
   plugin.EndInitialization();
   EXPECT_TRUE(plugin.InsertOrKeepVessel(satellite, celestial));
   auto transforms = plugin.NewBodyCentredNonRotatingTransforms(celestial);
@@ -1234,9 +1234,8 @@ TEST_F(PluginTest, Prediction) {
 TEST_F(PluginTest, Navball) {
   // Create a plugin with planetarium rotation 0.
   Plugin plugin(initial_time_,
-                SolarSystem::kSun,
-                sun_gravitational_parameter_,
                 0 * Radian);
+  plugin.InsertSun(SolarSystem::kSun, sun_gravitational_parameter_);
   plugin.EndInitialization();
   not_null<std::unique_ptr<RenderingTransforms>> const heliocentric =
           plugin.NewBodyCentredNonRotatingTransforms(SolarSystem::kSun);
@@ -1255,9 +1254,9 @@ TEST_F(PluginTest, Navball) {
 TEST_F(PluginTest, Frenet) {
   // Create a plugin with planetarium rotation 0.
   Plugin plugin(initial_time_,
-                SolarSystem::kEarth,
-                sun_gravitational_parameter_,
                 0 * Radian);
+  plugin.InsertSun(SolarSystem::kEarth,
+                   bodies_[SolarSystem::kEarth]->gravitational_parameter());
   plugin.EndInitialization();
   Permutation<AliceSun, World> const alice_sun_to_world =
       Permutation<AliceSun, World>(Permutation<AliceSun, World>::XZY);
