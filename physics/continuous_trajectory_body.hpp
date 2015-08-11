@@ -4,6 +4,7 @@
 #include <limits>
 #include <vector>
 
+#include "glog/stl_logging.h"
 #include "physics/continuous_trajectory.hpp"
 #include "quantities/si.hpp"
 #include "testing_utilities/numerics.hpp"
@@ -24,21 +25,6 @@ int const kMaxDegreeAge = 100;
 
 // Only supports 8 divisions for now.
 int const kDivisions = 8;
-
-template<typename T>
-std::string VectorDebugString(std::vector<T> const& v) {
-  std::string debug_string;
-  for (int i = 0; i < v.size(); ++i) {
-    if (i > 0) {
-      debug_string.append(", ");
-    }
-    debug_string.append("[");
-    debug_string.append(std::to_string(i));
-    debug_string.append("] = ");
-    debug_string.append(DebugString(v[i]));
-  }
-  return debug_string;
-}
 
 }  // namespace
 
@@ -289,7 +275,7 @@ void ContinuousTrajectory<Frame>::ComputeBestNewhallApproximation(
   // If the degree is too old, restart from the lowest degree.  This ensures
   // that we use the lowest possible degree at a small computational cost.
   if (degree_age_ >= kMaxDegreeAge) {
-    VLOG(1) << "Lowering degree for " << this <<" from " << degree_ 
+    VLOG(1) << "Lowering degree for " << this << " from " << degree_
             << " to " << kMinDegree << " because the approximation is too old";
     is_unstable_ = false;
     adjusted_tolerance_ = tolerance_;
@@ -309,7 +295,7 @@ void ContinuousTrajectory<Frame>::ComputeBestNewhallApproximation(
   // If we are in the zone of numerical instabilities and we exceeded the
   // tolerance, restart from the lowest degree.
   if (is_unstable_ && error_estimate > adjusted_tolerance_) {
-    VLOG(1) << "Lowering degree for " << this << " from " << degree_ 
+    VLOG(1) << "Lowering degree for " << this << " from " << degree_
             << " to " << kMinDegree
             << " because error estimate " << error_estimate
             << " exceeds adjusted tolerance " << adjusted_tolerance_
@@ -358,9 +344,9 @@ void ContinuousTrajectory<Frame>::ComputeBestNewhallApproximation(
 
   // A check that the tolerance did not explode.
   CHECK_LT(adjusted_tolerance_, 1E6 * previous_adjusted_tolerance)
-    << "Apocalypse occurred at " << time
-    << ", displacements are: " << VectorDebugString(q)
-    << ", velocities are: " << VectorDebugString(v);
+      << "Apocalypse occurred at " << time
+      << ", displacements are: " << q
+      << ", velocities are: " << v;
 
   ++degree_age_;
 }

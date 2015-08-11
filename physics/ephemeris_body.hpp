@@ -381,7 +381,6 @@ void Ephemeris<Frame>::WriteToMessage(
 template<typename Frame>
 std::unique_ptr<Ephemeris<Frame>> Ephemeris<Frame>::ReadFromMessage(
     serialization::Ephemeris const& message) {
-  LOG(INFO)<<"Reading from message:\n"<<message.DebugString();
   std::vector<not_null<std::unique_ptr<MassiveBody const>>> bodies;
   for (auto const& body : message.body()) {
     bodies.push_back(MassiveBody::ReadFromMessage(body));
@@ -432,6 +431,8 @@ std::unique_ptr<Ephemeris<Frame>> Ephemeris<Frame>::ReadFromPreBourbakiMessages(
         planetary_integrator,
     Time const& step,
     Length const& fitting_tolerance) {
+  LOG(INFO) << "Reading "<< messages.SpaceUsedExcludingSelf()
+            << " bytes in pre-Bourbaki compatibility mode ";
   std::vector<not_null<std::unique_ptr<MassiveBody const>>> bodies;
   std::vector<DegreesOfFreedom<Frame>> initial_state;
   std::vector<std::unique_ptr<Trajectory<Frame>>> histories;
