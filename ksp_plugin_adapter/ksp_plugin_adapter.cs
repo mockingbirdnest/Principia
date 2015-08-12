@@ -61,6 +61,8 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
   private bool display_patched_conics_ = false;
   [KSPField(isPersistant = true)]
   private bool fix_navball_in_plotting_frame_ = true;
+  [KSPField(isPersistant = true)]
+  private bool force_2d_trajectories_ = false;
 
   private readonly double[] prediction_length_tolerances_ =
       {1E-3, 1E-2, 1E0, 1E1, 1E2, 1E3, 1E4};
@@ -678,7 +680,7 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
                                   (XYZ)Planetarium.fetch.Sun.position);
         RenderAndDeleteTrajectory(ref trajectory_iterator,
                                   rendered_prediction_);
-        if (MapView.Draw3DLines) {
+        if (MapView.Draw3DLines && !force_2d_trajectories_) {
           Vector.DrawLine3D(rendered_trajectory_);
           Vector.DrawLine3D(rendered_prediction_);
         } else {
@@ -841,6 +843,9 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
     if (changed_history_length) {
       ResetRenderedTrajectory();
     }
+    force_2d_trajectories_ =
+        UnityEngine.GUILayout.Toggle(force_2d_trajectories_,
+                                     "Force 2D trajectories");
     ToggleableSection(name   : "Reference Frame Selection",
                       show   : ref show_reference_frame_selection_,
                       render : ReferenceFrameSelection);
@@ -1004,7 +1009,7 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
              ref prediction_length_tolerance_index_,
              "Tolerance",
              ref changed_settings,
-             "{0:0.00e0} m");
+             "{0:0.0e0} m");
     Selector(prediction_lengths_,
              ref prediction_length_index_,
              "Length",
