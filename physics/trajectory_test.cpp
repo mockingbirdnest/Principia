@@ -732,7 +732,7 @@ TEST_F(TrajectoryDeathTest, IntrinsicAccelerationError) {
   }, "already has.* acceleration");
 }
 
-TEST_F(TrajectoryDeathTest, IntrinsicAccelerationSuccess) {
+TEST_F(TrajectoryTest, IntrinsicAccelerationSuccess) {
   massless_trajectory_->Append(t1_, d1_);
   massless_trajectory_->Append(t2_, d2_);
   massless_trajectory_->Append(t3_, d3_);
