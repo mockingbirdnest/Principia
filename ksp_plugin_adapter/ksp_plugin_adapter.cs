@@ -1269,6 +1269,10 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
           }
         };
         ApplyToBodyTree(insert_body);
+        EndInitialization(plugin_);
+        AdvanceTime(plugin_,
+                    Planetarium.GetUniversalTime(),
+                    Planetarium.InverseRotAngle);
       } catch (Exception e) {
         Log.Fatal("Exception while reading initial state: " + e.ToString());
       }
@@ -1289,8 +1293,8 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
                                p = (XYZ)body.orbit.vel});
       };
       ApplyToBodyTree(insert_body);
+      EndInitialization(plugin_);
     }
-    EndInitialization(plugin_);
     UpdateRenderingFrame();
     VesselProcessor insert_vessel = vessel => {
       Log.Info("Inserting " + vessel.name + "...");
