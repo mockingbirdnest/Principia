@@ -8,6 +8,7 @@ BEGIN {
 }
 /^Target body name:/ {
   body = $0;
+  sub(/ +\{.*/, "", body);
   sub(/ \(.*/, "", body);
   sub(/.*: ([0-9]+ )?/, "", body)
 }

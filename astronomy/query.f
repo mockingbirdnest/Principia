@@ -51,6 +51,8 @@
               '703'
 ! Principia: 19; RSS:  NO; Oberon
               '704'
+! Principia: NO; RSS:  EXPANSION; Miranda
+              '705'
 ! Principia:  3; RSS: YES; Neptune
               '899'
 ! Principia: 15; RSS: YES; Triton
@@ -60,7 +62,11 @@
 ! Principia: 22; RSS: YES; Charon
               '901'
 ! Principia: 16; RSS:  NO; Eris
-              '136199'
+              'Eris'
+! Principia: NO; RSS:  EXPANSION; Ceres
+              'Ceres'
+! Principia: NO; RSS:  EXPANSION; Vesta
+              'Vesta'
  OBJ_DATA    = 'NO'
  MAKE_EPHEM  = 'YES'
  TABLE_TYPE  = 'VECTORS'
