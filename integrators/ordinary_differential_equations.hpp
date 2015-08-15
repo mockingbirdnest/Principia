@@ -1,4 +1,5 @@
-﻿#pragma once
+﻿#ifndef PRINCIPIA_INTEGRATORS_ORDINARY_DIFFERENTIAL_EQUATIONS_HPP_
+#define PRINCIPIA_INTEGRATORS_ORDINARY_DIFFERENTIAL_EQUATIONS_HPP_
 
 #include <functional>
 #include <vector>
@@ -152,3 +153,5 @@ class AdaptiveStepSizeIntegrator : public Integrator<DifferentialEquation> {
 }  // namespace principia
 
 #include "integrators/ordinary_differential_equations_body.hpp"
+
+#endif  // PRINCIPIA_INTEGRATORS_ORDINARY_DIFFERENTIAL_EQUATIONS_HPP_

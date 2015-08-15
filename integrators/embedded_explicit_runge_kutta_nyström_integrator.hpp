@@ -1,4 +1,12 @@
-﻿#pragma once
+﻿// The files containing the tree of of child classes of |Integrator| must be
+// included in the order of inheritance to avoid circular dependencies.  This
+// class will end up being reincluded as part of the implementation of its
+//  parent.
+#ifndef PRINCIPIA_INTEGRATORS_ORDINARY_DIFFERENTIAL_EQUATIONS_HPP_
+#include "integrators/ordinary_differential_equations.hpp"
+#else
+#ifndef PRINCIPIA_INTEGRATORS_EMBEDDED_EXPLICIT_RUNGE_KUTTA_NYSTRÖM_INTEGRATOR_HPP_
+#define PRINCIPIA_INTEGRATORS_EMBEDDED_EXPLICIT_RUNGE_KUTTA_NYSTRÖM_INTEGRATOR_HPP_
 
 #include <functional>
 #include <vector>
@@ -96,3 +104,6 @@ DormandElMikkawyPrince1986RKN434FM();
 }  // namespace principia
 
 #include "integrators/embedded_explicit_runge_kutta_nyström_integrator_body.hpp"
+
+#endif  // PRINCIPIA_INTEGRATORS_EMBEDDED_EXPLICIT_RUNGE_KUTTA_NYSTRÖM_INTEGRATOR_HPP_
+#endif  // PRINCIPIA_INTEGRATORS_ORDINARY_DIFFERENTIAL_EQUATIONS_HPP_
