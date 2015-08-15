@@ -4,7 +4,7 @@
 # name of the relevant |Celestial| in KSP, the other values are double-precision
 # floating point numbers followed by an appropriate unit.
 BEGIN {
-  print "principia_initial_state {"
+  print "principia_initial_state:NEEDS[RealSolarSystem] {"
 }
 /^Target body name:/ {
   body = $0;
