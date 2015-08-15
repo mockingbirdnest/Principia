@@ -1,7 +1,8 @@
-﻿// The files containing the tree of of child classes of |Integrator| must be
+﻿
+// The files containing the tree of of child classes of |Integrator| must be
 // included in the order of inheritance to avoid circular dependencies.  This
 // class will end up being reincluded as part of the implementation of its
-//  parent.
+// parent.
 #ifndef PRINCIPIA_INTEGRATORS_ORDINARY_DIFFERENTIAL_EQUATIONS_HPP_
 #include "integrators/ordinary_differential_equations.hpp"
 #else
