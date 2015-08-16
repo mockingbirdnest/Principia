@@ -109,6 +109,8 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
 
   private DateTime plugin_construction_;
 
+  private MapRenderer map_renderer;
+
   private enum PluginSource {
    SAVED_STATE,
    ORBITAL_ELEMENTS,
@@ -481,6 +483,10 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
   }
 
   private void Update() {
+    if (MapView.MapIsEnabled && map_renderer == null) {
+      map_renderer = MapView.MapCamera.gameObject.AddComponent<MapRenderer>();
+      map_renderer.render_on_pre_cull = RenderTrajectories;
+    }
     override_rsas_target_ = false;
     Vessel active_vessel = FlightGlobals.ActiveVessel;
     if (active_vessel != null &&
@@ -626,70 +632,6 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
         krakensbane_.setOffset(displacement_offset);
         krakensbane_.FrameVel += velocity_offset;
       }
-      if (ready_to_draw_active_vessel_trajectory) {
-        active_vessel.patchedConicRenderer.relativityMode =
-            PatchRendering.RelativityMode.RELATIVE;
-        if (active_vessel.orbitDriver.Renderer.drawMode !=
-                OrbitRenderer.DrawMode.OFF ||
-            active_vessel.orbitDriver.Renderer.drawIcons !=
-                OrbitRenderer.DrawIcons.OBJ) {
-          Log.Info("Removing orbit rendering for the active vessel");
-          active_vessel.orbitDriver.Renderer.drawMode =
-              OrbitRenderer.DrawMode.OFF;
-          active_vessel.orbitDriver.Renderer.drawIcons =
-              OrbitRenderer.DrawIcons.OBJ;
-        }
-        if (display_patched_conics_) {
-          foreach (PatchRendering patch_rendering in
-                   active_vessel.patchedConicRenderer.patchRenders) {
-            patch_rendering.visible = true;
-          }
-          // For reasons that are unlikely to become clear again at this time,
-          // I think the first element of |flightPlanRenders| should not be
-          // visible.
-          for (int i = 1;
-               i < active_vessel.patchedConicRenderer.flightPlanRenders.Count;
-               ++i) {
-            active_vessel.patchedConicRenderer.flightPlanRenders[i].visible =
-                true;
-          }
-        } else {
-          foreach (PatchRendering patch_rendering in
-                   active_vessel.patchedConicRenderer.patchRenders) {
-            patch_rendering.visible = false;
-          }
-          foreach (PatchRendering patch_rendering in
-                   active_vessel.patchedConicRenderer.flightPlanRenders) {
-            patch_rendering.visible = false;
-          }
-        }
-        if (rendered_trajectory_ == null || rendered_prediction_ == null) {
-          ResetRenderedTrajectory();
-        }
-        IntPtr trajectory_iterator = IntPtr.Zero;
-        trajectory_iterator = RenderedVesselTrajectory(
-                                  plugin_,
-                                  active_vessel.id.ToString(),
-                                  transforms_,
-                                  (XYZ)Planetarium.fetch.Sun.position);
-        RenderAndDeleteTrajectory(ref trajectory_iterator,
-                                  rendered_trajectory_);
-        trajectory_iterator = RenderedPrediction(
-                                  plugin_,
-                                  transforms_,
-                                  (XYZ)Planetarium.fetch.Sun.position);
-        RenderAndDeleteTrajectory(ref trajectory_iterator,
-                                  rendered_prediction_);
-        if (MapView.Draw3DLines && !force_2d_trajectories_) {
-          Vector.DrawLine3D(rendered_trajectory_);
-          Vector.DrawLine3D(rendered_prediction_);
-        } else {
-          Vector.DrawLine(rendered_trajectory_);
-          Vector.DrawLine(rendered_prediction_);
-        }
-      } else {
-        DestroyRenderedTrajectory();
-      }
     }
   }
 
@@ -702,6 +644,80 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
   }
 
   #endregion
+
+  private void RenderTrajectories() {
+    if (!PluginRunning()) {
+      return;
+    }
+    Vessel active_vessel = FlightGlobals.ActiveVessel;
+    bool ready_to_draw_active_vessel_trajectory =
+        draw_active_vessel_trajectory() &&
+        has_vessel(plugin_, active_vessel.id.ToString()); 
+    if (ready_to_draw_active_vessel_trajectory) {
+      active_vessel.patchedConicRenderer.relativityMode =
+          PatchRendering.RelativityMode.RELATIVE;
+      if (active_vessel.orbitDriver.Renderer.drawMode !=
+              OrbitRenderer.DrawMode.OFF ||
+          active_vessel.orbitDriver.Renderer.drawIcons !=
+              OrbitRenderer.DrawIcons.OBJ) {
+        Log.Info("Removing orbit rendering for the active vessel");
+        active_vessel.orbitDriver.Renderer.drawMode =
+            OrbitRenderer.DrawMode.OFF;
+        active_vessel.orbitDriver.Renderer.drawIcons =
+            OrbitRenderer.DrawIcons.OBJ;
+      }
+      if (display_patched_conics_) {
+        foreach (PatchRendering patch_rendering in
+                  active_vessel.patchedConicRenderer.patchRenders) {
+          patch_rendering.visible = true;
+        }
+        // For reasons that are unlikely to become clear again at this time,
+        // I think the first element of |flightPlanRenders| should not be
+        // visible.
+        for (int i = 1;
+              i < active_vessel.patchedConicRenderer.flightPlanRenders.Count;
+              ++i) {
+          active_vessel.patchedConicRenderer.flightPlanRenders[i].visible =
+              true;
+        }
+      } else {
+        foreach (PatchRendering patch_rendering in
+                  active_vessel.patchedConicRenderer.patchRenders) {
+          patch_rendering.visible = false;
+        }
+        foreach (PatchRendering patch_rendering in
+                  active_vessel.patchedConicRenderer.flightPlanRenders) {
+          patch_rendering.visible = false;
+        }
+      }
+      if (rendered_trajectory_ == null || rendered_prediction_ == null) {
+        ResetRenderedTrajectory();
+      }
+      IntPtr trajectory_iterator = IntPtr.Zero;
+      trajectory_iterator = RenderedVesselTrajectory(
+                                plugin_,
+                                active_vessel.id.ToString(),
+                                transforms_,
+                                (XYZ)Planetarium.fetch.Sun.position);
+      RenderAndDeleteTrajectory(ref trajectory_iterator,
+                                rendered_trajectory_);
+      trajectory_iterator = RenderedPrediction(
+                                plugin_,
+                                transforms_,
+                                (XYZ)Planetarium.fetch.Sun.position);
+      RenderAndDeleteTrajectory(ref trajectory_iterator,
+                                rendered_prediction_);
+      if (MapView.Draw3DLines && !force_2d_trajectories_) {
+        Vector.DrawLine3D(rendered_trajectory_);
+        Vector.DrawLine3D(rendered_prediction_);
+      } else {
+        Vector.DrawLine(rendered_trajectory_);
+        Vector.DrawLine(rendered_prediction_);
+      }
+    } else {
+      DestroyRenderedTrajectory();
+    }
+  }
 
   private void RenderAndDeleteTrajectory(ref IntPtr trajectory_iterator,
                                          VectorLine vector_line) {
@@ -777,6 +793,8 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
   }
 
   private void Cleanup() {
+    UnityEngine.Object.Destroy(map_renderer);
+    map_renderer = null;
     DeletePlugin(ref plugin_);
     DeleteTransforms(ref transforms_);
     DestroyRenderedTrajectory();
