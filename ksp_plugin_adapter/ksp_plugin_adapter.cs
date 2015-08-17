@@ -733,6 +733,7 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
         FetchAndIncrement(trajectory_iterator);
         index_in_line_points += 2;
       }
+      vector_line.minDrawIndex = index_in_line_points;
       while (!AtEnd(trajectory_iterator)) {
         segment = FetchAndIncrement(trajectory_iterator);
         // TODO(egg): should we do the |LocalToScaledSpace| conversion in
