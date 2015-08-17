@@ -755,11 +755,7 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
     DestroyRenderedTrajectory();
     rendered_trajectory_ = new VectorLine(
         lineName     : "rendered_trajectory_",
-        linePoints   : new UnityEngine.Vector3[
-                           Math.Min(
-                               kMaxVectorLinePoints,
-                               2 * (int)(history_lengths_[
-                                             history_length_index_] / kΔt))],
+        linePoints   : new UnityEngine.Vector3[kMaxVectorLinePoints],
         lineMaterial : MapView.OrbitLinesMaterial,
         color        : XKCDColors.AcidGreen,
         width        : 5,
@@ -771,7 +767,7 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
     rendered_trajectory_.layer = 31;
     rendered_prediction_ = new VectorLine(
         lineName     : "rendered_prediction_",
-        linePoints   : new UnityEngine.Vector3[1000],  // TODO(egg): constant.
+        linePoints   : new UnityEngine.Vector3[kMaxVectorLinePoints],
         lineMaterial : MapView.OrbitLinesMaterial,
         color        : XKCDColors.Fuchsia,
         width        : 5,
@@ -858,9 +854,6 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
              "Max history length",
              ref changed_history_length,
              "{0:0.00e00} s");
-    if (changed_history_length) {
-      ResetRenderedTrajectory();
-    }
     force_2d_trajectories_ =
         UnityEngine.GUILayout.Toggle(force_2d_trajectories_,
                                      "Force 2D trajectories");
@@ -1021,7 +1014,6 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
   }
 
   private void PredictionSettings() {
-
     bool changed_settings = false;
     Selector(prediction_length_tolerances_,
              ref prediction_length_tolerance_index_,
@@ -1033,9 +1025,6 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
              "Length",
              ref changed_settings,
              "{0:0.00e0} s");
-    if (changed_settings) {
-      ResetRenderedTrajectory();
-    }
   }
 
   private void KSPFeatures() {
