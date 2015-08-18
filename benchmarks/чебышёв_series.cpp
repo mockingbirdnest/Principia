@@ -57,8 +57,8 @@ void BM_EvaluateDouble(benchmark::State& state) {  // NOLINT(runtime/references)
   for (int i = 0; i <= degree; ++i) {
     coefficients.push_back(static_cast<double>(random()));
   }
-  Instant const t_min(random() * Second);
-  Instant const t_max = t_min + random() * Second;
+  Instant const t_min(static_cast<double>(random()) * Second);
+  Instant const t_max = t_min + static_cast<double>(random()) * Second;
   ЧебышёвSeries<double> const series(coefficients, t_min, t_max);
 
   Instant t = t_min;
@@ -84,12 +84,13 @@ void BM_EvaluateDisplacement(
   std::vector<Displacement<ICRFJ2000Ecliptic>> coefficients;
   for (int i = 0; i <= degree; ++i) {
     coefficients.push_back(
-        Displacement<ICRFJ2000Ecliptic>({random() * Metre,
-                                         random() * Metre,
-                                         random() * Metre}));
+        Displacement<ICRFJ2000Ecliptic>(
+            {static_cast<double>(random()) * Metre,
+             static_cast<double>(random()) * Metre,
+             static_cast<double>(random()) * Metre}));
   }
-  Instant const t_min(random() * Second);
-  Instant const t_max = t_min + random() * Second;
+  Instant const t_min(static_cast<double>(random()) * Second);
+  Instant const t_max = t_min + static_cast<double>(random()) * Second;
   ЧебышёвSeries<Displacement<ICRFJ2000Ecliptic>> const series(
       coefficients, t_min, t_max);
 
@@ -117,16 +118,16 @@ void BM_NewhallApproximation(
   std::mt19937_64 random(42);
   std::vector<double> p;
   std::vector<Variation<double>> v;
-  Instant const t_min(random() * Second);
-  Instant const t_max = t_min + random() * Second;
+  Instant const t_min(static_cast<double>(random()) * Second);
+  Instant const t_max = t_min + static_cast<double>(random()) * Second;
 
   while (state.KeepRunning()) {
     state.PauseTiming();
     p.clear();
     v.clear();
     for (int i = 0; i <= 8; ++i) {
-      p.push_back(static_cast<double>(random()));
-      v.push_back(static_cast<double>(random()) / Second);
+      p.push_back(static_cast<double>(static_cast<double>(random())));
+      v.push_back(static_cast<double>(static_cast<double>(random())) / Second);
     }
     state.ResumeTiming();
     auto const series =
