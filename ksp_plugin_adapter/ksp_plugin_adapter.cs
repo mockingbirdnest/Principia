@@ -707,13 +707,6 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
                                 (XYZ)Planetarium.fetch.Sun.position);
       RenderAndDeleteTrajectory(ref trajectory_iterator,
                                 rendered_prediction_);
-      if (MapView.Draw3DLines && !force_2d_trajectories_) {
-        Vector.DrawLine3D(rendered_trajectory_);
-        Vector.DrawLine3D(rendered_prediction_);
-      } else {
-        Vector.DrawLine(rendered_trajectory_);
-        Vector.DrawLine(rendered_prediction_);
-      }
     } else {
       DestroyRenderedTrajectory();
     }
@@ -721,19 +714,22 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
 
   private void RenderAndDeleteTrajectory(ref IntPtr trajectory_iterator,
                                          VectorLine vector_line) {
+    int new_min_draw_index = 0;
     try {
       LineSegment segment;
       int index_in_line_points = vector_line.points3.Length -
           2 * NumberOfSegments(trajectory_iterator);
       // If the |VectorLine| is too big, make sure we're not keeping garbage.
-      for (int i = 0; i < index_in_line_points; ++i) {
+      for (int i = vector_line.minDrawIndex; i < index_in_line_points; ++i) {
         vector_line.points3[i] = UnityEngine.Vector3.zero;
       }
       while (index_in_line_points < 0) {
         FetchAndIncrement(trajectory_iterator);
         index_in_line_points += 2;
       }
-      vector_line.minDrawIndex = index_in_line_points;
+      new_min_draw_index = index_in_line_points;
+      vector_line.minDrawIndex = Math.Min(vector_line.minDrawIndex,
+                                          new_min_draw_index);
       while (!AtEnd(trajectory_iterator)) {
         segment = FetchAndIncrement(trajectory_iterator);
         // TODO(egg): should we do the |LocalToScaledSpace| conversion in
@@ -750,6 +746,12 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
     } finally {
       DeleteLineAndIterator(ref trajectory_iterator);
     }
+    if (MapView.Draw3DLines && !force_2d_trajectories_) {
+      Vector.DrawLine3D(vector_line);
+    } else {
+      Vector.DrawLine(vector_line);
+    }
+    vector_line.minDrawIndex = new_min_draw_index;
   }
 
   private void ResetRenderedTrajectory() {
