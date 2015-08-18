@@ -109,7 +109,7 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
 
   private DateTime plugin_construction_;
 
-  private MapRenderer map_renderer;
+  private MapRenderer map_renderer_;
 
   private enum PluginSource {
    SAVED_STATE,
@@ -483,9 +483,9 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
   }
 
   private void Update() {
-    if (MapView.MapIsEnabled && map_renderer == null) {
-      map_renderer = MapView.MapCamera.gameObject.AddComponent<MapRenderer>();
-      map_renderer.render_on_pre_cull = RenderTrajectories;
+    if (MapView.MapIsEnabled && map_renderer_ == null) {
+      map_renderer_ = MapView.MapCamera.gameObject.AddComponent<MapRenderer>();
+      map_renderer_.render_on_pre_cull = RenderTrajectories;
     }
     override_rsas_target_ = false;
     Vessel active_vessel = FlightGlobals.ActiveVessel;
@@ -792,8 +792,8 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
   }
 
   private void Cleanup() {
-    UnityEngine.Object.Destroy(map_renderer);
-    map_renderer = null;
+    UnityEngine.Object.Destroy(map_renderer_);
+    map_renderer_ = null;
     DeletePlugin(ref plugin_);
     DeleteTransforms(ref transforms_);
     DestroyRenderedTrajectory();
