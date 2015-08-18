@@ -48,35 +48,42 @@
   </ImportGroup>
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
-    <Import Project="..\google_test_framework.props" />
-    <Import Project="..\google_protobuf.props" />
-    <Import Project="..\include_solution.props" />
-    <Import Project="..\google_benchmark.props" />
-    <Import Project="..\suppress_useless_warnings.props" />
     <Import Project="..\warnings_as_errors.props" />
+    <Import Project="..\suppress_useless_warnings.props" />
     <Import Project="..\profiling.props" />
+    <Import Project="..\include_solution.props" />
+    <Import Project="..\google_protobuf.props" />
+    <Import Project="..\google_googletest.props" />
+    <Import Project="..\google_googlemock.props" />
+    <Import Project="..\google_glog.props" />
+    <Import Project="..\google_benchmark.props" />
     <Import Project="..\generate_version_header.props" />
   </ImportGroup>
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
-    <Import Project="..\google_test_framework.props" />
-    <Import Project="..\google_protobuf.props" />
-    <Import Project="..\include_solution.props" />
-    <Import Project="..\google_benchmark.props" />
-    <Import Project="..\suppress_useless_warnings.props" />
     <Import Project="..\warnings_as_errors.props" />
+    <Import Project="..\suppress_useless_warnings.props" />
     <Import Project="..\profiling.props" />
+    <Import Project="..\include_solution.props" />
+    <Import Project="..\google_protobuf.props" />
+    <Import Project="..\google_googletest.props" />
+    <Import Project="..\google_googlemock.props" />
+    <Import Project="..\google_glog.props" />
+    <Import Project="..\google_benchmark.props" />
     <Import Project="..\generate_version_header.props" />
   </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release_LLVM|Win32'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
-    <Import Project="..\google_test_framework.props" />
-    <Import Project="..\include_solution.props" />
-    <Import Project="..\google_benchmark.props" />
-    <Import Project="..\llvm_compatibility.props" />
+    <Import Project="..\warnings_as_errors.props" />
     <Import Project="..\profiling.props" />
-    <Import Project="..\generate_version_header.props" />
+    <Import Project="..\include_solution.props" />
+    <Import Project="..\llvm_compatibility.props" />
     <Import Project="..\google_protobuf.props" />
+    <Import Project="..\google_googletest.props" />
+    <Import Project="..\google_googlemock.props" />
+    <Import Project="..\google_glog.props" />
+    <Import Project="..\google_benchmark.props" />
+    <Import Project="..\generate_version_header.props" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" />
