@@ -49,9 +49,13 @@
     <Import Project="..\suppress_useless_warnings.props" />
     <Import Project="..\profiling.props" />
     <Import Project="..\include_solution.props" />
+    <Import Project="..\..\Google\protobuf\vsprojects\portability_macros.props" />
     <Import Project="..\google_protobuf.props" />
+    <Import Project="..\..\Google\googletest\msvc\portability_macros.props" />
     <Import Project="..\google_googletest.props" />
-    <Import Project="..\google_googlemock.props" />
+    <Import Project="..\google_googlemock_main.props" />
+    <Import Project="..\..\Google\glog\vsprojects\static_linking.props" />
+    <Import Project="..\..\Google\glog\vsprojects\portability_macros.props" />
     <Import Project="..\google_glog.props" />
     <Import Project="..\generate_version_header.props" />
   </ImportGroup>
@@ -61,9 +65,13 @@
     <Import Project="..\suppress_useless_warnings.props" />
     <Import Project="..\profiling.props" />
     <Import Project="..\include_solution.props" />
+    <Import Project="..\..\Google\protobuf\vsprojects\portability_macros.props" />
     <Import Project="..\google_protobuf.props" />
+    <Import Project="..\..\Google\googletest\msvc\portability_macros.props" />
     <Import Project="..\google_googletest.props" />
-    <Import Project="..\google_googlemock.props" />
+    <Import Project="..\google_googlemock_main.props" />
+    <Import Project="..\..\Google\glog\vsprojects\static_linking.props" />
+    <Import Project="..\..\Google\glog\vsprojects\portability_macros.props" />
     <Import Project="..\google_glog.props" />
     <Import Project="..\generate_version_header.props" />
   </ImportGroup>
@@ -73,9 +81,13 @@
     <Import Project="..\suppress_useless_warnings.props" />
     <Import Project="..\llvm_compatibility.props" />
     <Import Project="..\include_solution.props" />
+    <Import Project="..\..\Google\protobuf\vsprojects\portability_macros.props" />
     <Import Project="..\google_protobuf.props" />
+    <Import Project="..\..\Google\googletest\msvc\portability_macros.props" />
     <Import Project="..\google_googletest.props" />
-    <Import Project="..\google_googlemock.props" />
+    <Import Project="..\google_googlemock_main.props" />
+    <Import Project="..\..\Google\glog\vsprojects\static_linking.props" />
+    <Import Project="..\..\Google\glog\vsprojects\portability_macros.props" />
     <Import Project="..\google_glog.props" />
     <Import Project="..\generate_version_header.props" />
   </ImportGroup>
