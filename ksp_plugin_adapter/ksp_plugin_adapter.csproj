@@ -58,6 +58,7 @@
     <Compile Include="ksp_plugin_adapter.cs" />
     <Compile Include="ksp_plugin_interface.cs" />
     <Compile Include="logging.cs" />
+    <Compile Include="map_renderer.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
