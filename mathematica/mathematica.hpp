@@ -4,10 +4,14 @@
 #include <tuple>
 #include <vector>
 
+#include "geometry/grassmann.hpp"
+#include "geometry/point.hpp"
 #include "quantities/quantities.hpp"
 
 namespace principia {
 
+using geometry::Point;
+using geometry::Vector;
 using quantities::Quantity;
 
 namespace mathematica {
@@ -33,6 +37,12 @@ std::string ToMathematica(double const& real);
 
 template<typename D>
 std::string ToMathematica(Quantity<D> const& quantity);
+
+template<typename S, typename F>
+std::string ToMathematica(Vector<S, F> const& vector);
+
+template<typename V>
+std::string ToMathematica(Point<V> const& point);
 
 template<typename... Types>
 std::string ToMathematica(std::tuple<Types...> const& tuple);

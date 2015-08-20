@@ -105,6 +105,21 @@ std::string ToMathematica(Quantity<D> const& quantity) {
       {Apply("Quantity", {number, units}), "MachinePrecision"});
 }
 
+template<typename S, typename F>
+std::string ToMathematica(Vector<S, F> const & vector) {
+  auto const& coordinates = vector.coordinates();
+  std::vector<std::string> expressions;
+  expressions.emplace_back(coordinates.x);
+  expressions.emplace_back(coordinates.y);
+  expressions.emplace_back(coordinates.z);
+  return Apply("List", expressions);
+}
+
+template<typename V>
+std::string ToMathematica(Point<V> const & point) {
+  return ToMathematica(point - Point<V>());
+}
+
 template<typename... Types>
 std::string ToMathematica(std::tuple<Types...> const& tuple) {
   std::vector<std::string> expressions;

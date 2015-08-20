@@ -12,7 +12,7 @@
 #include "base/map_util.hpp"
 #include "geometry/grassmann.hpp"
 #include "geometry/r3_element.hpp"
-#include "glog/stl_logging.h"
+#include "mathematica/mathematica.hpp"
 #include "physics/continuous_trajectory.hpp"
 #include "quantities/elementary_functions.hpp"
 #include "quantities/named_quantities.hpp"
@@ -567,13 +567,30 @@ void Ephemeris<Frame>::AppendMasslessBodiesState(
   int index = 0;
   for (auto& trajectory : trajectories) {
     if (trajectory->AppendWouldFail(state.time.value)) {
+      std::vector<std::string> strings;
       LOG(ERROR) << "state.time.value = " << state.time.value;
+
+      strings.clear();
       auto const times = trajectory->Times();
-      LOG(ERROR) << "times = " << times;
+      for (const auto& time : times) {
+        strings.push_back(mathematica::ToMathematica(time));
+      }
+      LOG(ERROR) << "times = " << mathematica::Apply("List", strings);
+
+      strings.clear();
       auto const positions = trajectory->Positions();
-      LOG(ERROR) << "positions = " << positions;
+      for (const auto& position : positions) {
+        strings.push_back(mathematica::ToMathematica(positions))
+      }
+      LOG(ERROR) << "positions = " << mathematica::Apply("List", strings);
+
+      strings.clear();
       auto const velocities = trajectory->Velocities();
-      LOG(ERROR) << "velocities = " << velocities;
+      for (const auto& velocity : velocities) {
+        strings.push_back(mathematica::ToMathematica(velocity))
+      }
+      LOG(ERROR) << "velocities = " << mathematica::Apply("List", strings);
+
       IntegrationProblem<NewtonianMotionEquation>* problem =
           reinterpret_cast<IntegrationProblem<NewtonianMotionEquation>*>(debug1);
       AdaptiveStepSize<NewtonianMotionEquation>* step_size =
