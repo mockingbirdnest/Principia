@@ -109,9 +109,9 @@ template<typename S, typename F>
 std::string ToMathematica(Vector<S, F> const & vector) {
   auto const& coordinates = vector.coordinates();
   std::vector<std::string> expressions;
-  expressions.emplace_back(coordinates.x);
-  expressions.emplace_back(coordinates.y);
-  expressions.emplace_back(coordinates.z);
+  expressions.emplace_back(ToMathematica(coordinates.x));
+  expressions.emplace_back(ToMathematica(coordinates.y));
+  expressions.emplace_back(ToMathematica(coordinates.z));
   return Apply("List", expressions);
 }
 

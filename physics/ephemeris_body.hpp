@@ -579,15 +579,15 @@ void Ephemeris<Frame>::AppendMasslessBodiesState(
 
       strings.clear();
       auto const positions = trajectory->Positions();
-      for (const auto& position : positions) {
-        strings.push_back(mathematica::ToMathematica(positions))
+      for (const auto& pair : positions) {
+        strings.push_back(mathematica::ToMathematica(pair.second));
       }
       LOG(ERROR) << "positions = " << mathematica::Apply("List", strings);
 
       strings.clear();
       auto const velocities = trajectory->Velocities();
-      for (const auto& velocity : velocities) {
-        strings.push_back(mathematica::ToMathematica(velocity))
+      for (const auto& pair : velocities) {
+        strings.push_back(mathematica::ToMathematica(pair.second));
       }
       LOG(ERROR) << "velocities = " << mathematica::Apply("List", strings);
 
