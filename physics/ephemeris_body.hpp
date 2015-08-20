@@ -12,6 +12,7 @@
 #include "base/map_util.hpp"
 #include "geometry/grassmann.hpp"
 #include "geometry/r3_element.hpp"
+#include "glog/stl_logging.h"
 #include "physics/continuous_trajectory.hpp"
 #include "quantities/elementary_functions.hpp"
 #include "quantities/named_quantities.hpp"
@@ -261,6 +262,9 @@ void Ephemeris<Frame>::Prolong(Instant const& t) {
   }
 }
 
+static void* debug1;
+static void* debug2;
+
 template<typename Frame>
 void Ephemeris<Frame>::FlowWithAdaptiveStep(
     not_null<Trajectory<Frame>*> const trajectory,
@@ -293,6 +297,7 @@ void Ephemeris<Frame>::FlowWithAdaptiveStep(
                 _1, std::cref(trajectories));
   problem.t_final = t;
   problem.initial_state = &initial_state;
+  debug1 = &problem;
 
   AdaptiveStepSize<NewtonianMotionEquation> step_size;
   step_size.first_time_step = problem.t_final - initial_state.time.value;
@@ -302,6 +307,7 @@ void Ephemeris<Frame>::FlowWithAdaptiveStep(
                 std::cref(length_integration_tolerance),
                 std::cref(speed_integration_tolerance),
                 _1, _2);
+  debug2 = &step_size;
 
   integrator.Solve(problem, step_size);
 }
@@ -560,6 +566,28 @@ void Ephemeris<Frame>::AppendMasslessBodiesState(
     std::vector<not_null<Trajectory<Frame>*>> const& trajectories) {
   int index = 0;
   for (auto& trajectory : trajectories) {
+    if (trajectory->AppendWouldFail(state.time.value)) {
+      LOG(ERROR) << "state.time.value = " << state.time.value;
+      auto const times = trajectory->Times();
+      LOG(ERROR) << "times = " << times;
+      auto const positions = trajectory->Positions();
+      LOG(ERROR) << "positions = " << positions;
+      auto const velocities = trajectory->Velocities();
+      LOG(ERROR) << "velocities = " << velocities;
+      IntegrationProblem<NewtonianMotionEquation>* problem =
+          reinterpret_cast<IntegrationProblem<NewtonianMotionEquation>*>(debug1);
+      AdaptiveStepSize<NewtonianMotionEquation>* step_size =
+          reinterpret_cast< AdaptiveStepSize<NewtonianMotionEquation>*>(debug2);
+      LOG(ERROR) << "problem->t_final = " << problem->t_final;
+      LOG(ERROR) << "problem->initial_state->time = "
+          << problem->initial_state->time;
+      LOG(ERROR) << "problem->initial_state->positions = "
+          << problem->initial_state->positions;
+      LOG(ERROR) << "problem->initial_state->velocities = "
+          << problem->initial_state->velocities;
+      LOG(ERROR) << "step_size->first_time_step = " << step_size->first_time_step;
+      LOG(ERROR) << "step_size->safety_factor = " << step_size->safety_factor;
+    }
     trajectory->Append(
         state.time.value,
         DegreesOfFreedom<Frame>(state.positions[index].value,
