@@ -568,28 +568,16 @@ void Ephemeris<Frame>::AppendMasslessBodiesState(
   for (auto& trajectory : trajectories) {
     if (trajectory->AppendWouldFail(state.time.value)) {
       std::vector<std::string> strings;
-      LOG(ERROR) << "state.time.value = " << state.time.value;
+      LOG(ERROR) << "state.time = " << state.time;
 
       strings.clear();
       auto const times = trajectory->Times();
-      for (const auto& time : times) {
+      std::vector<Instant> vtimes(times.begin(), times.end());
+      for (int i = vtimes.size() - 20; i < vtimes.size(); ++i) {
+        auto const time = vtimes[i];
         strings.push_back(mathematica::ToMathematica(time));
       }
       LOG(ERROR) << "times = " << mathematica::Apply("List", strings);
-
-      strings.clear();
-      auto const positions = trajectory->Positions();
-      for (const auto& pair : positions) {
-        strings.push_back(mathematica::ToMathematica(pair.second));
-      }
-      LOG(ERROR) << "positions = " << mathematica::Apply("List", strings);
-
-      strings.clear();
-      auto const velocities = trajectory->Velocities();
-      for (const auto& pair : velocities) {
-        strings.push_back(mathematica::ToMathematica(pair.second));
-      }
-      LOG(ERROR) << "velocities = " << mathematica::Apply("List", strings);
 
       IntegrationProblem<NewtonianMotionEquation>* problem =
           reinterpret_cast<IntegrationProblem<NewtonianMotionEquation>*>(debug1);
