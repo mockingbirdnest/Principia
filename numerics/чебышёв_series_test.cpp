@@ -105,7 +105,7 @@ class ЧебышёвSeriesTest : public ::testing::Test {
 
 using ЧебышёвSeriesDeathTest = ЧебышёвSeriesTest;
 
-TEST_F(ЧебышёвSeriesTest, ConstructionErrors) {
+TEST_F(ЧебышёвSeriesDeathTest, ConstructionErrors) {
   EXPECT_DEATH({
     ЧебышёвSeries<double> p({}, t_min_, t_max_);
   }, "at least 0");
@@ -114,7 +114,7 @@ TEST_F(ЧебышёвSeriesTest, ConstructionErrors) {
   }, "not be empty");
 }
 
-TEST_F(ЧебышёвSeriesTest, EvaluationErrors) {
+TEST_F(ЧебышёвSeriesDeathTest, EvaluationErrors) {
 #ifdef _DEBUG
   EXPECT_DEATH({
     ЧебышёвSeries<double> p({1}, t_min_, t_max_);

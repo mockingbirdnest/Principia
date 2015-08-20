@@ -11,7 +11,7 @@
     </ClCompile>
     <Link>
       <AdditionalDependencies>google-benchmark.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>$(SolutionDir)\..\Google\benchmark\msvc\$(Configuration);$(SolutionDir)\..\Google\glog\$(ConfigurationName);$(SolutionDir)\..\Google\gmock\msvc\2010\$(ConfigurationName);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(SolutionDir)..\Google\benchmark\msvc\$(Configuration);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup />

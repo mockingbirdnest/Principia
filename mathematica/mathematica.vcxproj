@@ -17,57 +17,79 @@
   <PropertyGroup Label="Globals">
     <ProjectGuid>{83A31DA7-3F62-464D-9F6B-09CCE07A865A}</ProjectGuid>
     <RootNamespace>mathematica</RootNamespace>
+    <WindowsTargetPlatformVersion>8.1</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
     <PlatformToolset>v140</PlatformToolset>
-    <CharacterSet>MultiByte</CharacterSet>
+    <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
     <PlatformToolset>v140</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
-    <CharacterSet>MultiByte</CharacterSet>
+    <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release_LLVM|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
     <PlatformToolset>LLVM-vs2013</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
-    <CharacterSet>MultiByte</CharacterSet>
+    <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings">
   </ImportGroup>
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
-    <Import Project="..\google_test_framework.props" />
-    <Import Project="..\include_solution.props" />
-    <Import Project="..\suppress_useless_warnings.props" />
-    <Import Project="..\generate_version_header.props" />
-    <Import Project="..\google_protobuf.props" />
     <Import Project="..\warnings_as_errors.props" />
+    <Import Project="..\suppress_useless_warnings.props" />
+    <Import Project="..\profiling.props" />
+    <Import Project="..\include_solution.props" />
+    <Import Project="..\..\Google\protobuf\vsprojects\portability_macros.props" />
+    <Import Project="..\google_protobuf.props" />
+    <Import Project="..\..\Google\googletest\msvc\portability_macros.props" />
+    <Import Project="..\google_googletest.props" />
+    <Import Project="..\google_googlemock_main.props" />
+    <Import Project="..\..\Google\glog\vsprojects\static_linking.props" />
+    <Import Project="..\..\Google\glog\vsprojects\portability_macros.props" />
+    <Import Project="..\google_glog.props" />
+    <Import Project="..\generate_version_header.props" />
   </ImportGroup>
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
-    <Import Project="..\google_test_framework.props" />
-    <Import Project="..\include_solution.props" />
-    <Import Project="..\suppress_useless_warnings.props" />
-    <Import Project="..\generate_version_header.props" />
-    <Import Project="..\google_protobuf.props" />
     <Import Project="..\warnings_as_errors.props" />
+    <Import Project="..\suppress_useless_warnings.props" />
+    <Import Project="..\profiling.props" />
+    <Import Project="..\include_solution.props" />
+    <Import Project="..\..\Google\protobuf\vsprojects\portability_macros.props" />
+    <Import Project="..\google_protobuf.props" />
+    <Import Project="..\..\Google\googletest\msvc\portability_macros.props" />
+    <Import Project="..\google_googletest.props" />
+    <Import Project="..\google_googlemock_main.props" />
+    <Import Project="..\..\Google\glog\vsprojects\static_linking.props" />
+    <Import Project="..\..\Google\glog\vsprojects\portability_macros.props" />
+    <Import Project="..\google_glog.props" />
+    <Import Project="..\generate_version_header.props" />
   </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release_LLVM|Win32'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
-    <Import Project="..\google_test_framework.props" />
-    <Import Project="..\include_solution.props" />
+    <Import Project="..\warnings_as_errors.props" />
     <Import Project="..\suppress_useless_warnings.props" />
-    <Import Project="..\generate_version_header.props" />
-    <Import Project="..\google_protobuf.props" />
     <Import Project="..\llvm_compatibility.props" />
+    <Import Project="..\include_solution.props" />
+    <Import Project="..\..\Google\protobuf\vsprojects\portability_macros.props" />
+    <Import Project="..\google_protobuf.props" />
+    <Import Project="..\..\Google\googletest\msvc\portability_macros.props" />
+    <Import Project="..\google_googletest.props" />
+    <Import Project="..\google_googlemock_main.props" />
+    <Import Project="..\..\Google\glog\vsprojects\static_linking.props" />
+    <Import Project="..\..\Google\glog\vsprojects\portability_macros.props" />
+    <Import Project="..\google_glog.props" />
+    <Import Project="..\generate_version_header.props" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
