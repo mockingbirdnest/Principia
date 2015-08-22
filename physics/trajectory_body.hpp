@@ -124,7 +124,7 @@ template<typename Frame>
 void Trajectory<Frame>::Append(
     Instant const& time,
     DegreesOfFreedom<Frame> const& degrees_of_freedom) {
-  CHECK(first().at_end() || last().time() != time)
+  LOG_IF(WARNING, first().at_end() || last().time() != time)
       << "Append at existing time " << time
       << ", time range = [" << Times().front() << ", "
       << Times().back() << "]";
