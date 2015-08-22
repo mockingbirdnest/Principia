@@ -29,13 +29,8 @@ struct DoublePrecision {
 };
 
 template<typename T>
-std::ostream& operator<<(std::ostream& os, const DoublePrecision<T>& double_precision)
-{
-    os << double_precision.value << "|" << double_precision.error;
-    return os;
-}
-
-
+std::ostream& operator<<(std::ostream& os,
+                         const DoublePrecision<T>& double_precision);
 
 }  // namespace numerics
 }  // namespace principia
