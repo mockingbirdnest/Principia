@@ -6,13 +6,26 @@
 
 namespace principia {
 
+using quantities::Abs;
+using quantities::ArcTan;
+using quantities::Cos;
+using quantities::Sin;
+using quantities::Sqrt;
+using si::Day;
+using si::Hour;
+using si::Minute;
+using si::Radian;
+using si::AstronomicalUnit;
 using testing_utilities::SolarSystem;
 using testing_utilities::ICRFJ2000Ecliptic;
+using ::testing::AllOf;
 using ::testing::Eq;
 using ::testing::Ge;
 using ::testing::Gt;
 using ::testing::Le;
 using ::testing::Lt;
+using testing_utilities::AbsoluteError;
+using testing_utilities::RelativeError;
 
 namespace ksp_plugin {
 
@@ -29,9 +42,8 @@ class PluginIntegrationTest : public testing::Test {
         planetarium_rotation_(1 * Radian),
         plugin_(make_not_null_unique<Plugin>(
                     initial_time_,
-                    SolarSystem::kSun,
-                    sun_gravitational_parameter_,
                     planetarium_rotation_)) {
+    plugin_->InsertSun(SolarSystem::kSun, sun_gravitational_parameter_);
     satellite_initial_displacement_ =
         Displacement<AliceSun>({3111.0 * Kilo(Metre),
                                 4400.0 * Kilo(Metre),
@@ -83,25 +95,25 @@ class PluginIntegrationTest : public testing::Test {
   Velocity<AliceSun> satellite_initial_velocity_;
 };
 
-// Checks that the plugin correctly uses its 10-second-step history even when
-// advanced with smaller timesteps.
-// This now checks that we do nothing but prolong, since there are no vessels.
 TEST_F(PluginIntegrationTest, AdvanceTimeWithCelestialsOnly) {
   InsertAllSolarSystemBodies();
   plugin_->EndInitialization();
   Time const δt = 0.02 * Second;
   Angle const planetarium_rotation = 42 * Radian;
+  // We step for long enough that we will find a new segment.  This would
+  // probably exercise apocalypse-type bugs.
   for (int step = 0; step < 10; ++step) {
-    for (Instant t = HistoryTime(initial_time_, step) + 2 * δt;
-         t <= HistoryTime(initial_time_, step + 1);
+    for (Instant t = initial_time_ + δt;
+         t <= initial_time_ + 10 * 45 * Minute;
          t += δt) {
       plugin_->AdvanceTime(t, planetarium_rotation);
+      EXPECT_THAT(plugin_->CelestialFromParent(SolarSystem::kEarth),
+                  Eq(1 * AstronomicalUnit));
     }
-    plugin_->AdvanceTime(HistoryTime(initial_time_, step + 1) + δt,
-                         planetarium_rotation);
   }
 }
 
+#if 0
 // Checks that the plugin correctly advances the history of newly inserted
 // vessels with the prolongation integrator (using small steps), then switches
 // to the history integrator.  Also tests the removal of vessels.
@@ -394,6 +406,7 @@ TEST_F(PluginIntegrationTest, PhysicsBubble) {
     }
   }
 }
+#endif
 
 TEST_F(PluginIntegrationTest, BodyCentredNonrotatingRenderingIntegration) {
   GUID const satellite = "satellite";
