@@ -108,8 +108,6 @@ class Trajectory {
   std::map<Instant, Velocity<Frame>> Velocities() const;
   std::list<Instant> Times() const;
 
-  bool AppendWouldFail(Instant const& time) const;
-
   // Appends one point to the trajectory.
   void Append(Instant const& time,
               DegreesOfFreedom<Frame> const& degrees_of_freedom);

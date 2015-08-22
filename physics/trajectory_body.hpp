@@ -121,11 +121,6 @@ std::list<Instant> Trajectory<Frame>::Times() const {
 }
 
 template<typename Frame>
-inline bool Trajectory<Frame>::AppendWouldFail(Instant const & time) const {
-  return !(first().at_end() || last().time() != time);
-}
-
-template<typename Frame>
 void Trajectory<Frame>::Append(
     Instant const& time,
     DegreesOfFreedom<Frame> const& degrees_of_freedom) {

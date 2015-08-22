@@ -12,7 +12,6 @@
 #include "base/map_util.hpp"
 #include "geometry/grassmann.hpp"
 #include "geometry/r3_element.hpp"
-#include "mathematica/mathematica.hpp"
 #include "physics/continuous_trajectory.hpp"
 #include "quantities/elementary_functions.hpp"
 #include "quantities/named_quantities.hpp"
@@ -262,9 +261,6 @@ void Ephemeris<Frame>::Prolong(Instant const& t) {
   }
 }
 
-static void* debug1;
-static void* debug2;
-
 template<typename Frame>
 void Ephemeris<Frame>::FlowWithAdaptiveStep(
     not_null<Trajectory<Frame>*> const trajectory,
@@ -297,7 +293,6 @@ void Ephemeris<Frame>::FlowWithAdaptiveStep(
                 _1, std::cref(trajectories));
   problem.t_final = t;
   problem.initial_state = &initial_state;
-  debug1 = &problem;
 
   AdaptiveStepSize<NewtonianMotionEquation> step_size;
   step_size.first_time_step = problem.t_final - initial_state.time.value;
@@ -307,7 +302,6 @@ void Ephemeris<Frame>::FlowWithAdaptiveStep(
                 std::cref(length_integration_tolerance),
                 std::cref(speed_integration_tolerance),
                 _1, _2);
-  debug2 = &step_size;
 
   integrator.Solve(problem, step_size);
 }
@@ -566,33 +560,6 @@ void Ephemeris<Frame>::AppendMasslessBodiesState(
     std::vector<not_null<Trajectory<Frame>*>> const& trajectories) {
   int index = 0;
   for (auto& trajectory : trajectories) {
-    if (trajectory->AppendWouldFail(state.time.value)) {
-      std::vector<std::string> strings;
-      LOG(ERROR) << "state.time = " << state.time;
-
-      strings.clear();
-      auto const times = trajectory->Times();
-      std::vector<Instant> vtimes(times.begin(), times.end());
-      for (int i = vtimes.size() - 20; i < vtimes.size(); ++i) {
-        auto const time = vtimes[i];
-        strings.push_back(mathematica::ToMathematica(time));
-      }
-      LOG(ERROR) << "times = " << mathematica::Apply("List", strings);
-
-      IntegrationProblem<NewtonianMotionEquation>* problem =
-          reinterpret_cast<IntegrationProblem<NewtonianMotionEquation>*>(debug1);
-      AdaptiveStepSize<NewtonianMotionEquation>* step_size =
-          reinterpret_cast< AdaptiveStepSize<NewtonianMotionEquation>*>(debug2);
-      LOG(ERROR) << "problem->t_final = " << problem->t_final;
-      LOG(ERROR) << "problem->initial_state->time = "
-          << problem->initial_state->time;
-      LOG(ERROR) << "problem->initial_state->positions = "
-          << problem->initial_state->positions;
-      LOG(ERROR) << "problem->initial_state->velocities = "
-          << problem->initial_state->velocities;
-      LOG(ERROR) << "step_size->first_time_step = " << step_size->first_time_step;
-      LOG(ERROR) << "step_size->safety_factor = " << step_size->safety_factor;
-    }
     trajectory->Append(
         state.time.value,
         DegreesOfFreedom<Frame>(state.positions[index].value,
