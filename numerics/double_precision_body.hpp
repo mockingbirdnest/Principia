@@ -54,5 +54,12 @@ DoublePrecision<T> DoublePrecision<T>::ReadFromMessage(
   return double_precision;
 }
 
+template<typename T>
+std::ostream& operator<<(std::ostream& os,
+                         const DoublePrecision<T>& double_precision) {
+  os << double_precision.value << "|" << double_precision.error;
+  return os;
+}
+
 }  // namespace numerics
 }  // namespace principia

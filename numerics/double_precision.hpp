@@ -28,6 +28,10 @@ struct DoublePrecision {
   Difference<T> error;
 };
 
+template<typename T>
+std::ostream& operator<<(std::ostream& os,
+                         const DoublePrecision<T>& double_precision);
+
 }  // namespace numerics
 }  // namespace principia
 
