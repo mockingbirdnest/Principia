@@ -32,18 +32,20 @@ namespace ksp_plugin {
 class PluginIntegrationTest : public testing::Test {
  protected:
   PluginIntegrationTest()
-      : looking_glass_(Permutation<ICRFJ2000Ecliptic, AliceSun>::XZY),
+      : icrf_to_barycentric_positions_(ICRFJ2000Ecliptic::origin,
+                                       Barycentric::origin,
+                                       ircf_to_barycentric_linear_),
+        looking_glass_(Permutation<ICRFJ2000Ecliptic, AliceSun>::XZY),
         solar_system_(SolarSystem::AtСпутник1Launch(
-                      SolarSystem::Accuracy::kMajorBodiesOnly)),
-        bodies_(solar_system_->massive_bodies()),
+                      SolarSystem::Accuracy::kAllBodiesAndOblateness)),
         initial_time_(42 * Second),
-        sun_gravitational_parameter_(
-            bodies_[SolarSystem::kSun]->gravitational_parameter()),
         planetarium_rotation_(1 * Radian),
         plugin_(make_not_null_unique<Plugin>(
                     initial_time_,
-                    planetarium_rotation_)) {
-    plugin_->InsertSun(SolarSystem::kSun, sun_gravitational_parameter_);
+                    planetarium_rotation_)),
+        bodies_(solar_system_->massive_bodies()) {
+    sun_gravitational_parameter_ =
+        bodies_[SolarSystem::kSun]->gravitational_parameter();
     satellite_initial_displacement_ =
         Displacement<AliceSun>({3111.0 * Kilo(Metre),
                                 4400.0 * Kilo(Metre),
@@ -62,28 +64,41 @@ class PluginIntegrationTest : public testing::Test {
                  satellite_initial_displacement_.Norm()) * unit_tangent;
   }
 
+  DegreesOfFreedom<Barycentric> ICRFToBarycentric(
+      DegreesOfFreedom<ICRFJ2000Ecliptic> const& degrees_of_freedom) {
+    return {icrf_to_barycentric_positions_(degrees_of_freedom.position()),
+            ircf_to_barycentric_linear_(degrees_of_freedom.velocity())};
+  }
+
   void InsertAllSolarSystemBodies() {
-    plugin_->InsertSun(SolarSystem::kSun, sun_gravitational_parameter_);
-    for (std::size_t index = SolarSystem::kSun + 1;
+    for (std::size_t index = SolarSystem::kSun;
          index < bodies_.size();
          ++index) {
-      Index const parent_index = SolarSystem::parent(index);
-      RelativeDegreesOfFreedom<AliceSun> const from_parent = looking_glass_(
-          solar_system_->trajectories()[index]->
-              last().degrees_of_freedom() -
-          solar_system_->trajectories()[parent_index]->
-              last().degrees_of_freedom());
-      plugin_->InsertCelestial(index,
-                               bodies_[index]->gravitational_parameter(),
-                               parent_index,
-                               from_parent);
+      std::unique_ptr<Index> parent_index =
+          index == SolarSystem::kSun
+              ? nullptr
+              : std::make_unique<Index>(SolarSystem::parent(index));
+      DegreesOfFreedom<Barycentric> const initial_state =
+          ICRFToBarycentric(solar_system_->trajectories()[index]->
+                            last().degrees_of_freedom());
+    // barf_cast, to be fixed when we have rvalue conversion.
+    plugin_->DirectlyInsertCelestial(
+        index,
+        parent_index.get(),
+        initial_state,
+        std::move(
+            *reinterpret_cast<std::unique_ptr<MassiveBody>*>(
+                &bodies_[index])));
     }
   }
 
-  
+  Identity<ICRFJ2000Ecliptic, Barycentric> ircf_to_barycentric_linear_;
+  AffineMap<ICRFJ2000Ecliptic,
+            Barycentric,
+            Length,
+            Identity> icrf_to_barycentric_positions_;
   Permutation<ICRFJ2000Ecliptic, AliceSun> looking_glass_;
   not_null<std::unique_ptr<SolarSystem>> solar_system_;
-  SolarSystem::Bodies bodies_;
   Instant initial_time_;
   GravitationalParameter sun_gravitational_parameter_;
   Angle planetarium_rotation_;
@@ -93,6 +108,9 @@ class PluginIntegrationTest : public testing::Test {
   // These initial conditions will yield a low circular orbit around Earth.
   Displacement<AliceSun> satellite_initial_displacement_;
   Velocity<AliceSun> satellite_initial_velocity_;
+
+ private:
+  SolarSystem::Bodies bodies_;
 };
 
 TEST_F(PluginIntegrationTest, AdvanceTimeWithCelestialsOnly) {
@@ -100,17 +118,31 @@ TEST_F(PluginIntegrationTest, AdvanceTimeWithCelestialsOnly) {
   plugin_->EndInitialization();
   Time const δt = 0.02 * Second;
   Angle const planetarium_rotation = 42 * Radian;
-  // We step for long enough that we will find a new segment.  This would
-  // probably exercise apocalypse-type bugs.
-  for (int step = 0; step < 10; ++step) {
-    for (Instant t = initial_time_ + δt;
-         t <= initial_time_ + 10 * 45 * Minute;
-         t += δt) {
-      plugin_->AdvanceTime(t, planetarium_rotation);
-      EXPECT_THAT(plugin_->CelestialFromParent(SolarSystem::kEarth),
-                  Eq(1 * AstronomicalUnit));
-    }
+  // We step for long enough that we will find a new segment.
+  Instant t = initial_time_;
+  for (t += δt; t < initial_time_ + 10 * 45 * Minute; t += δt) {
+    plugin_->AdvanceTime(t, planetarium_rotation);
   }
+  EXPECT_THAT(
+      RelativeError(
+          plugin_->
+              CelestialFromParent(SolarSystem::kEarth).displacement().Norm(),
+          1 * AstronomicalUnit),
+      Lt(0.01));
+  serialization::Plugin plugin_message;
+  plugin_->WriteToMessage(&plugin_message);
+  plugin_ = Plugin::ReadFromMessage(plugin_message);
+  // Having saved and loaded, we compute a new segment again, this probably
+  // exercises apocalypse-type bugs.
+  for (; t < initial_time_ + 20 * 45 * Minute; t += δt) {
+    plugin_->AdvanceTime(t, planetarium_rotation);
+  }
+  EXPECT_THAT(
+      RelativeError(
+          plugin_->
+              CelestialFromParent(SolarSystem::kEarth).displacement().Norm(),
+          1 * AstronomicalUnit),
+      Lt(0.01));
 }
 
 #if 0
@@ -409,34 +441,16 @@ TEST_F(PluginIntegrationTest, PhysicsBubble) {
 #endif
 
 TEST_F(PluginIntegrationTest, BodyCentredNonrotatingRenderingIntegration) {
+  InsertAllSolarSystemBodies();
+  plugin_->EndInitialization();
   GUID const satellite = "satellite";
-  // This is an integration test, so we need a plugin that will actually
-  // integrate.
-  Plugin plugin(initial_time_,
-                planetarium_rotation_);
-  plugin.InsertSun(SolarSystem::kSun, sun_gravitational_parameter_);
-  for (std::size_t index = SolarSystem::kSun + 1;
-       index < bodies_.size();
-       ++index) {
-    Index const parent_index = SolarSystem::parent(index);
-    RelativeDegreesOfFreedom<AliceSun> const from_parent = looking_glass_(
-        solar_system_->trajectories()[index]->
-            last().degrees_of_freedom() -
-        solar_system_->trajectories()[parent_index]->
-            last().degrees_of_freedom());
-    plugin.InsertCelestial(index,
-                           bodies_[index]->gravitational_parameter(),
-                           parent_index,
-                           from_parent);
-  }
-  plugin.EndInitialization();
-  plugin.InsertOrKeepVessel(satellite, SolarSystem::kEarth);
-  plugin.SetVesselStateOffset(satellite,
-                              RelativeDegreesOfFreedom<AliceSun>(
-                                  satellite_initial_displacement_,
-                                  satellite_initial_velocity_));
+  plugin_->InsertOrKeepVessel(satellite, SolarSystem::kEarth);
+  plugin_->SetVesselStateOffset(satellite,
+                                RelativeDegreesOfFreedom<AliceSun>(
+                                    satellite_initial_displacement_,
+                                    satellite_initial_velocity_));
   not_null<std::unique_ptr<RenderingTransforms>> const geocentric =
-      plugin.NewBodyCentredNonRotatingTransforms(SolarSystem::kEarth);
+      plugin_->NewBodyCentredNonRotatingTransforms(SolarSystem::kEarth);
   // We'll check that our orbit is rendered as circular (actually, we only check
   // that it is rendered within a thin spherical shell around the Earth).
   Length perigee = std::numeric_limits<double>::infinity() * Metre;
@@ -450,20 +464,20 @@ TEST_F(PluginIntegrationTest, BodyCentredNonrotatingRenderingIntegration) {
   // Exercise #267 by having small time steps at the beginning of the trajectory
   // that are not synchronized with those of the Earth.
   for (; t < initial_time_ + δt_long; t += δt_short) {
-    plugin.AdvanceTime(t,
-                       1 * Radian / Pow<2>(Minute) * Pow<2>(t - initial_time_));
-    plugin.InsertOrKeepVessel(satellite, SolarSystem::kEarth);
+    plugin_->AdvanceTime(t,
+                         1 * Radian / Pow<2>(Minute) * Pow<2>(t - initial_time_));
+    plugin_->InsertOrKeepVessel(satellite, SolarSystem::kEarth);
   }
 #else
   Instant t = initial_time_ + δt_long;
-  plugin.AdvanceTime(t, 0 * Radian);  // This ensures the history is nonempty.
-  plugin.InsertOrKeepVessel(satellite, SolarSystem::kEarth);
+  plugin_->AdvanceTime(t, 0 * Radian);  // This ensures the history is nonempty.
+  plugin_->InsertOrKeepVessel(satellite, SolarSystem::kEarth);
   t += δt_long;
 #endif
   for (; t < initial_time_ + 12 * Hour; t += δt_long) {
-    plugin.AdvanceTime(t,
+    plugin_->AdvanceTime(t,
                        1 * Radian / Pow<2>(Minute) * Pow<2>(t - initial_time_));
-    plugin.InsertOrKeepVessel(satellite, SolarSystem::kEarth);
+    plugin_->InsertOrKeepVessel(satellite, SolarSystem::kEarth);
     // We give the sun an arbitrary nonzero velocity in |World|.
     Position<World> const sun_world_position =
         World::origin + Velocity<World>(
@@ -471,12 +485,12 @@ TEST_F(PluginIntegrationTest, BodyCentredNonrotatingRenderingIntegration) {
              -1.0 * AstronomicalUnit / Hour,
               0.0 * AstronomicalUnit / Hour}) * (t - initial_time_);
     RenderedTrajectory<World> const rendered_trajectory =
-        plugin.RenderedVesselTrajectory(satellite,
+        plugin_->RenderedVesselTrajectory(satellite,
                                         geocentric.get(),
                                         sun_world_position);
     Position<World> const earth_world_position =
         sun_world_position + alice_sun_to_world(
-            plugin.CelestialFromParent(SolarSystem::kEarth).displacement());
+            plugin_->CelestialFromParent(SolarSystem::kEarth).displacement());
     for (auto const segment : rendered_trajectory) {
       Length const l_min =
           std::min((segment.begin - earth_world_position).Norm(),
@@ -492,57 +506,33 @@ TEST_F(PluginIntegrationTest, BodyCentredNonrotatingRenderingIntegration) {
       EXPECT_THAT(rendered_trajectory[i].end,
                   Eq(rendered_trajectory[i + 1].begin));
     }
-    EXPECT_THAT(Abs(apogee - perigee), Lt(1.1 * Metre));
+    EXPECT_THAT(Abs(apogee - perigee), Lt(3 * Metre));
   }
 }
 
 TEST_F(PluginIntegrationTest, BarycentricRotatingRenderingIntegration) {
+  InsertAllSolarSystemBodies();
+  plugin_->EndInitialization();
   GUID const satellite = "satellite";
-  // This is an integration test, so we need a plugin that will actually
-  // integrate.
-  Plugin plugin(initial_time_,
-                planetarium_rotation_);
-  plugin.InsertSun(SolarSystem::kSun, sun_gravitational_parameter_);
-  for (std::size_t index = SolarSystem::kSun + 1;
-       index < bodies_.size();
-       ++index) {
-    Index const parent_index = SolarSystem::parent(index);
-    RelativeDegreesOfFreedom<AliceSun> const from_parent = looking_glass_(
-        solar_system_->trajectories()[index]->
-            last().degrees_of_freedom() -
-        solar_system_->trajectories()[parent_index]->
-            last().degrees_of_freedom());
-    plugin.InsertCelestial(index,
-                           bodies_[index]->gravitational_parameter(),
-                           parent_index,
-                           from_parent);
-  }
-  plugin.EndInitialization();
-  plugin.InsertOrKeepVessel(satellite, SolarSystem::kEarth);
+  plugin_->InsertOrKeepVessel(satellite, SolarSystem::kEarth);
   // A vessel at the Lagrange point L₅.
-  RelativeDegreesOfFreedom<ICRFJ2000Ecliptic> const from_the_earth_to_the_moon =
-      solar_system_->trajectories()[SolarSystem::kMoon]->
-          last().degrees_of_freedom() -
-      solar_system_->trajectories()[SolarSystem::kEarth]->
-          last().degrees_of_freedom();
-  Displacement<ICRFJ2000Ecliptic> const from_the_earth_to_l5 =
+  RelativeDegreesOfFreedom<AliceSun> const from_the_earth_to_the_moon =
+      plugin_->CelestialFromParent(SolarSystem::kMoon);
+  Displacement<AliceSun> const from_the_earth_to_l5 =
       from_the_earth_to_the_moon.displacement() / 2 -
           Normalize(from_the_earth_to_the_moon.velocity()) *
               from_the_earth_to_the_moon.displacement().Norm() * Sqrt(3) / 2;
-  Velocity<ICRFJ2000Ecliptic> const initial_velocity =
-      Rotation<ICRFJ2000Ecliptic, ICRFJ2000Ecliptic>(
+  Velocity<AliceSun> const initial_velocity =
+      Rotation<AliceSun, AliceSun>(
           π / 3 * Radian,
           Wedge(from_the_earth_to_the_moon.velocity(),
                 from_the_earth_to_the_moon.displacement()))(
               from_the_earth_to_the_moon.velocity());
-  plugin.SetVesselStateOffset(satellite,
-                              looking_glass_(
-                                  RelativeDegreesOfFreedom<ICRFJ2000Ecliptic>(
-                                      from_the_earth_to_l5,
-                                      initial_velocity)));
+  plugin_->SetVesselStateOffset(satellite,
+                                {from_the_earth_to_l5, initial_velocity});
   not_null<std::unique_ptr<RenderingTransforms>> const earth_moon_barycentric =
-      plugin.NewBarycentricRotatingTransforms(SolarSystem::kEarth,
-                                              SolarSystem::kMoon);
+      plugin_->NewBarycentricRotatingTransforms(SolarSystem::kEarth,
+                                                SolarSystem::kMoon);
   Permutation<AliceSun, World> const alice_sun_to_world =
       Permutation<AliceSun, World>(Permutation<AliceSun, World>::XZY);
   Time const δt_long = 1 * Hour;
@@ -556,19 +546,21 @@ TEST_F(PluginIntegrationTest, BarycentricRotatingRenderingIntegration) {
   // Exercise #267 by having small time steps at the beginning of the trajectory
   // that are not synchronized with those of the Earth and Moon.
   for (; t < initial_time_ + δt_long; t += δt_short) {
-    plugin.AdvanceTime(t,
-                       1 * Radian / Pow<2>(Minute) * Pow<2>(t - initial_time_));
-    plugin.InsertOrKeepVessel(satellite, SolarSystem::kEarth);
+    plugin_->AdvanceTime(
+        t,
+        1 * Radian / Pow<2>(Minute) * Pow<2>(t - initial_time_));
+    plugin_->InsertOrKeepVessel(satellite, SolarSystem::kEarth);
   }
 #endif
   for (; t < initial_time_ + duration; t += δt_long) {
-    plugin.AdvanceTime(t,
-                       1 * Radian / Pow<2>(Minute) * Pow<2>(t - initial_time_));
-    plugin.InsertOrKeepVessel(satellite, SolarSystem::kEarth);
+    plugin_->AdvanceTime(
+        t,
+        1 * Radian / Pow<2>(Minute) * Pow<2>(t - initial_time_));
+    plugin_->InsertOrKeepVessel(satellite, SolarSystem::kEarth);
   }
-  plugin.AdvanceTime(t,
-                     1 * Radian / Pow<2>(Minute) * Pow<2>(t - initial_time_));
-  plugin.InsertOrKeepVessel(satellite, SolarSystem::kEarth);
+  plugin_->AdvanceTime(t,
+                       1 * Radian / Pow<2>(Minute) * Pow<2>(t - initial_time_));
+  plugin_->InsertOrKeepVessel(satellite, SolarSystem::kEarth);
   // We give the sun an arbitrary nonzero velocity in |World|.
   Position<World> const sun_world_position =
       World::origin + Velocity<World>(
@@ -576,15 +568,17 @@ TEST_F(PluginIntegrationTest, BarycentricRotatingRenderingIntegration) {
            -1.0 * AstronomicalUnit / Hour,
             0.0 * AstronomicalUnit / Hour}) * (t - initial_time_);
   RenderedTrajectory<World> const rendered_trajectory =
-      plugin.RenderedVesselTrajectory(satellite,
+      plugin_->RenderedVesselTrajectory(satellite,
                                       earth_moon_barycentric.get(),
                                       sun_world_position);
   Position<World> const earth_world_position =
-      sun_world_position + alice_sun_to_world(
-          plugin.CelestialFromParent(SolarSystem::kEarth).displacement());
+      sun_world_position +
+      alice_sun_to_world(
+          plugin_->CelestialFromParent(SolarSystem::kEarth).displacement());
   Position<World> const moon_world_position =
-      earth_world_position + alice_sun_to_world(
-          plugin.CelestialFromParent(SolarSystem::kMoon).displacement());
+      earth_world_position +
+      alice_sun_to_world(
+          plugin_->CelestialFromParent(SolarSystem::kMoon).displacement());
   Length const earth_moon =
       (moon_world_position - earth_world_position).Norm();
   for (auto const segment : rendered_trajectory) {

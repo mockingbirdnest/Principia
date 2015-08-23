@@ -280,6 +280,7 @@ RelativeDegreesOfFreedom<AliceSun> Plugin::VesselFromParent(
 RelativeDegreesOfFreedom<AliceSun> Plugin::CelestialFromParent(
     Index const celestial_index) const {
   CHECK(!initializing_);
+  ephemeris_->Prolong(current_time_);
   Celestial const& celestial = *FindOrDie(celestials_, celestial_index);
   CHECK(celestial.has_parent())
       << "Body at index " << celestial_index << " is the sun";
