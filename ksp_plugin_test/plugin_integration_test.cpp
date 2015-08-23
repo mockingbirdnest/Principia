@@ -145,301 +145,6 @@ TEST_F(PluginIntegrationTest, AdvanceTimeWithCelestialsOnly) {
       Lt(0.01));
 }
 
-#if 0
-// Checks that the plugin correctly advances the history of newly inserted
-// vessels with the prolongation integrator (using small steps), then switches
-// to the history integrator.  Also tests the removal of vessels.
-// The sequence of additions and removals is as follows (using the constants
-// defined below; recall that |initial_time_ == HistoryTime(0)|).
-// * |HistoryTime(0)|               : Insert |enterprise|.
-// * |HistoryTime(0) + a_while|     : Insert |enterprise_d|.
-// * |HistoryTime(1) + a_while|     : Insert |stargazer| and |bradbury|.
-// * |HistoryTime(1) + half_a_step| : Remove |bradbury| (it is present at
-//                                    |HistoryTime(1) + half_a_step|, but not at
-//                                    |HistoryTime(1) + half_a_step + δt|).
-//                                    It is thus removed while unsynchronized.
-// * |HistoryTime(2)|               : Insert |constantinople|.
-// * |HistoryTime(3)|               : Remove |enterprise|.
-TEST_F(PluginIntegrationTest, AdvanceTimeWithVessels) {
-  Time const δt = 1 * Second;
-  Time const a_while = 2 * δt;
-  Time const half_a_step = 5 * δt;
-  Time const ε_δt = 0.1 * δt;
-  EXPECT_THAT(half_a_step, Eq(plugin_->Δt() / 2));
-  GUID const enterprise = "NCC-1701";
-  GUID const enterprise_d = "NCC-1701-D";
-  GUID const stargazer = "NCC-2893";
-  GUID const bradbury = "NX-72307";
-  GUID const constantinople = "NCC-43622";
-  InsertAllSolarSystemBodies();
-  plugin_->EndInitialization();
-  Angle const planetarium_rotation = 42 * Radian;
-  std::size_t expected_number_of_new_vessels = 0;
-  std::size_t expected_number_of_old_vessels = 0;
-  InSequence in_sequence;
-  EXPECT_FALSE(plugin_->has_vessel(enterprise));
-  Instant sync_time = initial_time_;
-  InsertVessel(enterprise,
-               &expected_number_of_new_vessels,
-               HistoryTime(sync_time, 0));
-  EXPECT_TRUE(plugin_->has_vessel(enterprise));
-  // Therer are no old vessels, this will make all the new vessels old
-  // instantly without performing any syncing computations.
-  plugin_->AdvanceTime(HistoryTime(sync_time, 0) + δt, planetarium_rotation);
-  expected_number_of_old_vessels = expected_number_of_new_vessels;
-  expected_number_of_new_vessels = 0;
-  sync_time = HistoryTime(sync_time, 0) + δt;
-  for (int step = 0; step < 10; ++step) {
-    for (Instant t = HistoryTime(sync_time, step) + 2 * δt;
-         t < HistoryTime(sync_time, step + 1);
-         t += δt) {
-      // Keep our vessels.  Make sure we're not inserting new ones.
-      if (step <= 3) {
-        KeepVessel(enterprise);
-      }
-      if (t > HistoryTime(sync_time, 0) + a_while + ε_δt) {
-        KeepVessel(enterprise_d);
-      }
-      if (t > HistoryTime(sync_time, 1) + a_while + ε_δt) {
-        KeepVessel(stargazer);
-      }
-      if (t > HistoryTime(sync_time, 1) + a_while + ε_δt &&
-          t < HistoryTime(sync_time, 1) + half_a_step - ε_δt) {
-        KeepVessel(bradbury);
-      } else if (AbsoluteError(t - HistoryTime(sync_time, 1),
-                               half_a_step) < ε_δt) {
-        // We will be removing |bradbury| in this step.
-        --expected_number_of_new_vessels;
-      }
-      if (step > 2) {
-        KeepVessel(constantinople);
-      }
-      plugin_->AdvanceTime(t, planetarium_rotation);
-      if (AbsoluteError(t - HistoryTime(sync_time, 0), a_while) < ε_δt) {
-        InsertVessel(enterprise_d, &expected_number_of_new_vessels, t);
-      } else if (AbsoluteError(t - HistoryTime(sync_time, 1), a_while) < ε_δt) {
-        InsertVessel(stargazer, &expected_number_of_new_vessels, t);
-        InsertVessel(bradbury, &expected_number_of_new_vessels, t);
-      }
-    }
-    // Keep the vessels for the history-advancing step.
-    if (step <= 3) {
-      KeepVessel(enterprise);
-    }
-    KeepVessel(enterprise_d);
-    if (step >= 1) {
-      KeepVessel(stargazer);
-    }
-    if (step > 2) {
-      KeepVessel(constantinople);
-    }
-
-    plugin_->AdvanceTime(HistoryTime(sync_time, step + 1) + δt,
-                         planetarium_rotation);
-    if (step == 2) {
-      InsertVessel(constantinople,
-                   &expected_number_of_new_vessels,
-                   HistoryTime(sync_time, step + 1) + δt);
-    } else if (step == 3) {
-      // We will be removing |enterprise|.
-      --expected_number_of_old_vessels;
-    }
-  }
-}
-
-// Checks that the plugin correctly advances the history of newly inserted
-// vessels with the prolongation integrator (using small steps), then switches
-// to the history integrator.  Also tests the removal of vessels.
-// The sequence of additions and removals is as follows (using the constants
-// defined below; recall that |initial_time_ == HistoryTime(0)|).
-// * |HistoryTime(0)|               : Insert |enterprise|, insert into bubble
-//                                    (1 part).
-// * |HistoryTime(0) + a_while|     : Insert |enterprise_d|.
-// * |HistoryTime(1) + a_while|     : Insert |enterprise_d| into bubble
-//                                    (2 parts).
-// * |HistoryTime(1) + half_a_step| : Split |enterprise_d|, yielding
-//                                    |enterprise_d_saucer|.
-// * |HistoryTime(2)|               : Remove |enterprise|, merge |enterprise_d|
-//                                    and |enterprise_d_saucer|.
-// * |HistoryTime(2 + half_a_step)| : Physics bubble ends.
-TEST_F(PluginIntegrationTest, PhysicsBubble) {
-  Time const δt = 1 * Second;
-  Time const a_while = 2 * δt;
-  Time const half_a_step = 5 * δt;
-  Time const ε_δt = 0.1 * δt;
-  EXPECT_THAT(half_a_step, Eq(plugin_->Δt() / 2));
-  GUID const enterprise = "NCC-1701";
-  GUID const enterprise_d = "NCC-1701-D";
-  GUID const enterprise_d_saucer = "NCC-1701-D (saucer)";
-  GUID const constantinople = "NCC-43622";
-  auto const make_enterprise_whole_ship = []() {
-    return std::make_pair(
-        PartId(0U),
-        make_not_null_unique<Part<World>>(
-            DegreesOfFreedom<World>(
-                World::origin,
-                Velocity<World>({1 * Metre / Second,
-                                 0 * Metre / Second,
-                                 0 * Metre / Second})),
-            1 * Kilogram,
-            Vector<Acceleration, World>({1 * Metre / Pow<2>(Second),
-                                         0 * Metre / Pow<2>(Second),
-                                         0 * Metre / Pow<2>(Second)})));
-  };
-  auto const make_enterprise_d_engineering_section = []() {
-    return std::make_pair(
-        PartId(1U),
-        make_not_null_unique<Part<World>>(
-            DegreesOfFreedom<World>(
-                World::origin +
-                    Displacement<World>({1 * Metre, 0 * Metre, 0 * Metre}),
-                Velocity<World>({0 * Metre / Second,
-                                 1 * Metre / Second,
-                                 0 * Metre / Second})),
-            3 * Kilogram,
-            Vector<Acceleration, World>({1 * Metre / Pow<2>(Second),
-                                         0 * Metre / Pow<2>(Second),
-                                         0 * Metre / Pow<2>(Second)})));
-  };
-  auto const make_enterprise_d_saucer_section = []() {
-    return std::make_pair(
-        PartId(2U),
-        make_not_null_unique<Part<World>>(
-            DegreesOfFreedom<World>(
-                World::origin -
-                    Displacement<World>({1 * Metre, 0 * Metre, 0 * Metre}),
-                -Velocity<World>({0 * Metre / Second,
-                                  1 * Metre / Second,
-                                  0 * Metre / Second})),
-            5 * Kilogram,
-            Vector<Acceleration, World>({1 * Metre / Pow<2>(Second),
-                                         0 * Metre / Pow<2>(Second),
-                                         0 * Metre / Pow<2>(Second)})));
-  };
-  InsertAllSolarSystemBodies();
-  plugin_->EndInitialization();
-  Angle const planetarium_rotation = 42 * Radian;
-  std::size_t expected_number_of_new_off_rails_vessels = 0;
-  std::size_t expected_number_of_dirty_old_on_rails_vessels = 0;
-  std::size_t expected_number_of_clean_old_vessels = 0;
-  std::vector<IdAndOwnedPart> parts;
-  bool expect_to_have_physics_bubble = true;
-  bool expect_intrinsic_acceleration = false;
-  Instant sync_time = initial_time_;
-  // The synchronizer vessel.
-  InsertVessel(constantinople,
-               &expected_number_of_clean_old_vessels,
-               HistoryTime(sync_time, 0));
-  plugin_->AdvanceTime(HistoryTime(sync_time, 0) + δt,
-                       planetarium_rotation);
-  sync_time = HistoryTime(sync_time, 0) + δt;
-
-  InsertVessel(enterprise,
-               &expected_number_of_new_off_rails_vessels,
-               HistoryTime(sync_time, 0));
-  --expected_number_of_new_off_rails_vessels;
-  for (int step = 0; step < 10; ++step) {
-    for (Instant t = HistoryTime(sync_time, step) + 2 * δt;
-         t < HistoryTime(sync_time, step + 1);
-         t += δt) {
-      // Keep the synchronizer.
-      KeepVessel(constantinople);
-      // Keep our vessels.  Make sure we're not inserting new ones.
-      if (t < HistoryTime(sync_time, 0) + a_while + ε_δt) {
-        KeepVessel(enterprise);
-        parts.clear();
-        parts.emplace_back(std::move(make_enterprise_whole_ship()));
-        plugin_->AddVesselToNextPhysicsBubble(enterprise, std::move(parts));
-      } else if (t > HistoryTime(sync_time, 0) + a_while + ε_δt &&
-                 t < HistoryTime(sync_time, 1) + half_a_step + ε_δt) {
-        KeepVessel(enterprise_d);
-        parts.clear();
-        parts.emplace_back(std::move(make_enterprise_d_engineering_section()));
-        parts.emplace_back(std::move(make_enterprise_d_saucer_section()));
-        plugin_->AddVesselToNextPhysicsBubble(enterprise_d, std::move(parts));
-        KeepVessel(enterprise);
-        parts.clear();
-        parts.emplace_back(std::move(make_enterprise_whole_ship()));
-        plugin_->AddVesselToNextPhysicsBubble(enterprise, std::move(parts));
-      } else if (t > HistoryTime(sync_time, 1) + half_a_step - ε_δt &&
-                 t < HistoryTime(sync_time, 2) + ε_δt) {
-        KeepVessel(enterprise_d);
-        parts.clear();
-        parts.emplace_back(std::move(make_enterprise_d_engineering_section()));
-        plugin_->AddVesselToNextPhysicsBubble(enterprise_d, std::move(parts));
-        KeepVessel(enterprise_d_saucer);
-        parts.clear();
-        parts.emplace_back(std::move(make_enterprise_d_saucer_section()));
-        plugin_->AddVesselToNextPhysicsBubble(enterprise_d_saucer,
-                                              std::move(parts));
-        KeepVessel(enterprise);
-        parts.clear();
-        parts.emplace_back(std::move(make_enterprise_whole_ship()));
-        plugin_->AddVesselToNextPhysicsBubble(enterprise, std::move(parts));
-      } else if (t > HistoryTime(sync_time, 2) - ε_δt &&
-                 t < HistoryTime(sync_time, 2) + half_a_step - ε_δt) {
-        KeepVessel(enterprise_d);
-        parts.clear();
-        parts.emplace_back(std::move(make_enterprise_d_engineering_section()));
-        parts.emplace_back(std::move(make_enterprise_d_saucer_section()));
-        plugin_->AddVesselToNextPhysicsBubble(enterprise_d, std::move(parts));
-      } else {
-        KeepVessel(enterprise_d);
-      }
-      if (AbsoluteError(t - HistoryTime(sync_time, 2), half_a_step) < ε_δt) {
-        ++expected_number_of_dirty_old_on_rails_vessels;
-        expect_to_have_physics_bubble = false;
-      }
-      plugin_->AdvanceTime(t, planetarium_rotation);
-      if (expect_to_have_physics_bubble) {
-        plugin_->BubbleDisplacementCorrection(World::origin);
-        plugin_->BubbleVelocityCorrection(SolarSystem::kSaturn);
-      }
-      if (AbsoluteError(t - HistoryTime(sync_time, 0), a_while) < ε_δt) {
-        InsertVessel(enterprise_d,
-                     &expected_number_of_new_off_rails_vessels,
-                     t);
-        --expected_number_of_new_off_rails_vessels;
-      } else if (AbsoluteError(t - HistoryTime(sync_time, 1),
-                               half_a_step) < ε_δt) {
-        InsertVessel(enterprise_d_saucer,
-                     &expected_number_of_new_off_rails_vessels,
-                     t);
-        --expected_number_of_new_off_rails_vessels;
-      }
-      expect_intrinsic_acceleration = expect_to_have_physics_bubble;
-    }
-    // Keep the vessels for the history-advancing step.
-    // Keep the synchronizer.
-    KeepVessel(constantinople);
-    if (step <= 0) {
-      KeepVessel(enterprise);
-      parts.clear();
-      parts.emplace_back(std::move(make_enterprise_whole_ship()));
-      plugin_->AddVesselToNextPhysicsBubble(enterprise, std::move(parts));
-    }
-    KeepVessel(enterprise_d);
-    if (step <= 1) {
-      parts.clear();
-      parts.emplace_back(std::move(make_enterprise_d_engineering_section()));
-      parts.emplace_back(std::move(make_enterprise_d_saucer_section()));
-      plugin_->AddVesselToNextPhysicsBubble(enterprise_d, std::move(parts));
-    }
-    expected_number_of_clean_old_vessels +=
-        expected_number_of_new_off_rails_vessels +
-        expected_number_of_dirty_old_on_rails_vessels;
-    expected_number_of_new_off_rails_vessels = 0;
-    expected_number_of_dirty_old_on_rails_vessels = 0;
-    plugin_->AdvanceTime(HistoryTime(sync_time, step + 1) + δt,
-                         planetarium_rotation);
-    if (expect_to_have_physics_bubble) {
-      plugin_->BubbleDisplacementCorrection(World::origin);
-      plugin_->BubbleVelocityCorrection(SolarSystem::kSaturn);
-    }
-  }
-}
-#endif
-
 TEST_F(PluginIntegrationTest, BodyCentredNonrotatingRenderingIntegration) {
   InsertAllSolarSystemBodies();
   plugin_->EndInitialization();
@@ -608,6 +313,270 @@ TEST_F(PluginIntegrationTest, BarycentricRotatingRenderingIntegration) {
                  rendered_trajectory[i + 1].end).Norm()) / 1.5)) << i;
   }
 #endif
+}
+
+// The Enterprise D is a low orbit around a massive body with unit gravitational
+// parameter, enters the physics bubble, separates, the saucer section reverses
+// the direction of its orbit, the physics bubble ends, the two sections meet
+// again on the other side of the body, the main section matches its velocity
+// with that of the saucer, they are reunited, the physics bubble ends again.
+TEST_F(PluginIntegrationTest, PhysicsBubble) {
+  //FLAGS_v = 1;
+  //google::SetStderrLogging(google::INFO);
+  GUID const enterprise_d = "NCC-1701-D";
+  GUID const enterprise_d_saucer = "NCC-1701-D (saucer)";
+  GUID const constantinople = "NCC-43622";
+  PartId const engineering_section = 0;
+  PartId const saucer_section = 1;
+  Index const celestial = 0;
+  Time const period = 2 * π * Second;
+  Time const δt = period * 1E-8;
+  Instant t;
+  Plugin plugin(t, 0 * Radian);
+  plugin.InsertSun(celestial, SIUnit<GravitationalParameter>());
+  plugin.EndInitialization();
+  // First step: insert the Enterprise.
+  t += δt;
+  plugin.InsertOrKeepVessel(enterprise_d, celestial);
+  plugin.SetVesselStateOffset(
+      enterprise_d,
+      {Displacement<AliceSun>({1 * Metre, 0 * Metre, 0 * Metre}),
+       Velocity<AliceSun>(
+           {0 * Metre / Second, 1 * Metre / Second, 0 * Metre / Second})});
+  plugin.AdvanceTime(t, 0 * Radian);
+  // Step 2: physics bubble starts.
+  t += δt;
+  plugin.InsertOrKeepVessel(enterprise_d, celestial);
+  {
+    std::vector<IdAndOwnedPart> parts;
+    parts.emplace_back(
+        engineering_section,
+        make_not_null_unique<Part<World>>(
+             DegreesOfFreedom<World>(
+                 {World::origin +
+                      Displacement<World>({1 * Metre, 0 * Metre, 0 * Metre}),
+                  Velocity<World>({0 * Metre / Second,
+                                   0 * Metre / Second,
+                                   1 * Metre / Second})}),
+             1 * Kilogram,
+             Vector<Acceleration, World>()));
+    parts.emplace_back(
+        saucer_section,
+        make_not_null_unique<Part<World>>(
+             DegreesOfFreedom<World>(
+                 {World::origin +
+                      Displacement<World>({1 * Metre, 0 * Metre, 0 * Metre}),
+                  Velocity<World>({0 * Metre / Second,
+                                   0 * Metre / Second,
+                                   1 * Metre / Second})}),
+             1 * Kilogram,
+             Vector<Acceleration, World>()));
+    plugin.AddVesselToNextPhysicsBubble(enterprise_d, std::move(parts));
+  }
+  plugin.AdvanceTime(t, 0 * Radian);
+  LOG(ERROR)<<plugin.BubbleDisplacementCorrection(World::origin);
+  LOG(ERROR)<<plugin.BubbleVelocityCorrection(celestial);
+  // Step 3: separation and saucer burn.
+  t += δt;
+  plugin.InsertOrKeepVessel(enterprise_d, celestial);
+  plugin.InsertOrKeepVessel(enterprise_d_saucer, celestial);
+  // The value of the offset here should be irrelevant, make sure we notice it
+  // if it has an influence.
+  plugin.SetVesselStateOffset(
+      enterprise_d_saucer,
+      {Displacement<AliceSun>(
+          {std::numeric_limits<double>::quiet_NaN() * Metre,
+           std::numeric_limits<double>::quiet_NaN() * Metre,
+           std::numeric_limits<double>::quiet_NaN() * Metre}),
+       Velocity<AliceSun>(
+           {std::numeric_limits<double>::quiet_NaN() * Metre / Second,
+            std::numeric_limits<double>::quiet_NaN() * Metre / Second,
+            std::numeric_limits<double>::quiet_NaN() * Metre / Second})});
+  {
+    std::vector<IdAndOwnedPart> parts;
+    parts.emplace_back(
+        engineering_section,
+        make_not_null_unique<Part<World>>(
+             DegreesOfFreedom<World>(
+                 {World::origin +
+                      Displacement<World>({1 * Metre, 0 * Metre, 0 * Metre}),
+                  Velocity<World>({0 * Metre / Second,
+                                   0 * Metre / Second,
+                                   1 * Metre / Second})}),
+             1 * Kilogram,
+             Vector<Acceleration, World>()));
+    plugin.AddVesselToNextPhysicsBubble(enterprise_d, std::move(parts));
+  }
+  {
+    std::vector<IdAndOwnedPart> parts;
+    parts.emplace_back(
+        saucer_section,
+        make_not_null_unique<Part<World>>(
+             DegreesOfFreedom<World>(
+                 {World::origin +
+                      Displacement<World>({1 * Metre, 0 * Metre, 0 * Metre}),
+                  Velocity<World>({0 * Metre / Second,
+                                   0 * Metre / Second,
+                                   -1 * Metre / Second})}),
+             1 * Kilogram,
+             Vector<Acceleration, World>()));
+    plugin.AddVesselToNextPhysicsBubble(enterprise_d_saucer, std::move(parts));
+  }
+  plugin.AdvanceTime(t, 0 * Radian);
+  LOG(ERROR)<<plugin.BubbleDisplacementCorrection(World::origin);
+  LOG(ERROR)<<plugin.BubbleVelocityCorrection(celestial);
+  // Step 4: end of physics bubble.
+  t += δt;
+  plugin.InsertOrKeepVessel(enterprise_d, celestial);
+  plugin.InsertOrKeepVessel(enterprise_d_saucer, celestial);
+  plugin.AdvanceTime(t, 0 * Radian);
+  LOG(ERROR)<<plugin.VesselFromParent(enterprise_d);
+  LOG(ERROR)<<plugin.VesselFromParent(enterprise_d_saucer);
+  // Step 5: end of physics bubble.
+  t += δt;
+  plugin.InsertOrKeepVessel(enterprise_d, celestial);
+  plugin.InsertOrKeepVessel(enterprise_d_saucer, celestial);
+  plugin.AdvanceTime(t, 0 * Radian);
+  LOG(ERROR)<<plugin.VesselFromParent(enterprise_d);
+  LOG(ERROR)<<plugin.VesselFromParent(enterprise_d_saucer);
+  // Step 6: coming together on the other side.
+  t = 0.5 * period;
+  plugin.InsertOrKeepVessel(enterprise_d, celestial);
+  plugin.InsertOrKeepVessel(enterprise_d_saucer, celestial);
+  plugin.AdvanceTime(t, 0 * Radian);
+  LOG(ERROR)<<plugin.VesselFromParent(enterprise_d);
+  LOG(ERROR)<<plugin.VesselFromParent(enterprise_d_saucer);
+  // Step 7: reopen physics bubble.
+  t += δt;
+  plugin.InsertOrKeepVessel(enterprise_d, celestial);
+  plugin.InsertOrKeepVessel(enterprise_d_saucer, celestial);
+  // The absoltue world positions don't matter, at least one vessel (indeed all)
+  // are pre-existing. exercise this.
+  {
+    std::vector<IdAndOwnedPart> parts;
+    parts.emplace_back(
+        engineering_section,
+        make_not_null_unique<Part<World>>(
+             DegreesOfFreedom<World>(
+                 {World::origin +
+                      Displacement<World>({1729 * Metre, 0 * Metre, 0 * Metre}),
+                  Velocity<World>({0 * Metre / Second,
+                                   0 * Metre / Second,
+                                   -1 * Metre / Second})}),
+             1 * Kilogram,
+             Vector<Acceleration, World>()));
+    plugin.AddVesselToNextPhysicsBubble(enterprise_d, std::move(parts));
+  }
+  {
+    std::vector<IdAndOwnedPart> parts;
+    parts.emplace_back(
+        saucer_section,
+        make_not_null_unique<Part<World>>(
+             DegreesOfFreedom<World>(
+                 {World::origin +
+                      Displacement<World>({1729 * Metre, 0 * Metre, 0 * Metre}),
+                  Velocity<World>({0 * Metre / Second,
+                                   0 * Metre / Second,
+                                   1 * Metre / Second})}),
+             1 * Kilogram,
+             Vector<Acceleration, World>()));
+    plugin.AddVesselToNextPhysicsBubble(enterprise_d_saucer, std::move(parts));
+  }
+  plugin.AdvanceTime(t, 0 * Radian);
+  LOG(ERROR)<<plugin.BubbleDisplacementCorrection(World::origin);
+  LOG(ERROR)<<plugin.BubbleVelocityCorrection(celestial);
+  // Step 8: match velocities.
+  t += δt;
+  plugin.InsertOrKeepVessel(enterprise_d, celestial);
+  plugin.InsertOrKeepVessel(enterprise_d_saucer, celestial);
+  // The absoltue world positions don't matter, at least one vessel (indeed all)
+  // are pre-existing. exercise this.
+  {
+    std::vector<IdAndOwnedPart> parts;
+    parts.emplace_back(
+        engineering_section,
+        make_not_null_unique<Part<World>>(
+             DegreesOfFreedom<World>(
+                 {World::origin,
+                  Velocity<World>({0 * Metre / Second,
+                                   0 * Metre / Second,
+                                   1 * Metre / Second})}),
+             1 * Kilogram,
+             Vector<Acceleration, World>()));
+    plugin.AddVesselToNextPhysicsBubble(enterprise_d, std::move(parts));
+  }
+  {
+    std::vector<IdAndOwnedPart> parts;
+    parts.emplace_back(
+        saucer_section,
+        make_not_null_unique<Part<World>>(
+             DegreesOfFreedom<World>(
+                 {World::origin,
+                  Velocity<World>({0 * Metre / Second,
+                                   0 * Metre / Second,
+                                   1 * Metre / Second})}),
+             1 * Kilogram,
+             Vector<Acceleration, World>()));
+    plugin.AddVesselToNextPhysicsBubble(enterprise_d_saucer, std::move(parts));
+  }
+  plugin.AdvanceTime(t, 0 * Radian);
+  LOG(ERROR)<<plugin.BubbleDisplacementCorrection(World::origin);
+  LOG(ERROR)<<plugin.BubbleVelocityCorrection(celestial);
+  // Step 8: close physics bubble.
+  t += δt;
+  plugin.InsertOrKeepVessel(enterprise_d, celestial);
+  plugin.InsertOrKeepVessel(enterprise_d_saucer, celestial);
+  plugin.AdvanceTime(t, 0 * Radian);
+  LOG(ERROR)<<plugin.BubbleDisplacementCorrection(World::origin);
+  LOG(ERROR)<<plugin.BubbleVelocityCorrection(celestial);
+}
+
+// Checks that we correctly predict a full circular orbit around a massive body
+// with unit gravitational parameter at unit distance.  Since predictions are
+// only computed on |AdvanceTime()|, we advance time by a small amount.
+TEST_F(PluginIntegrationTest, Prediction) {
+  GUID const satellite = "satellite";
+  Index const celestial = 0;
+  Plugin plugin(Instant(),
+                0 * Radian);
+  plugin.InsertSun(celestial, SIUnit<GravitationalParameter>());
+  plugin.EndInitialization();
+  EXPECT_TRUE(plugin.InsertOrKeepVessel(satellite, celestial));
+  auto transforms = plugin.NewBodyCentredNonRotatingTransforms(celestial);
+  plugin.SetVesselStateOffset(
+      satellite,
+      {Displacement<AliceSun>({1 * Metre, 0 * Metre, 0 * Metre}),
+       Velocity<AliceSun>(
+           {0 * Metre / Second, 1 * Metre / Second, 0 * Metre / Second})});
+  plugin.set_predicted_vessel(satellite);
+  plugin.set_prediction_length(2 * π * Second);
+  plugin.set_prediction_length_tolerance(1 * Milli(Metre));
+  plugin.set_prediction_speed_tolerance(1 * Milli(Metre) / Second);
+  plugin.AdvanceTime(Instant(1e-10 * Second), 0 * Radian);
+  RenderedTrajectory<World> rendered_prediction =
+      plugin.RenderedPrediction(transforms.get(), World::origin);
+  EXPECT_EQ(14, rendered_prediction.size());
+  for (int i = 0; i < rendered_prediction.size(); ++i) {
+    auto const& segment = rendered_prediction[i];
+    EXPECT_THAT(
+        AbsoluteError((segment.begin - World::origin).Norm(), 1 * Metre),
+        Lt(0.5 * Milli(Metre)));
+    EXPECT_THAT(AbsoluteError((segment.end - World::origin).Norm(), 1 * Metre),
+                Lt(0.5 * Milli(Metre)));
+    if (i >= 5) {
+      EXPECT_THAT(
+          AbsoluteError((segment.begin - World::origin).Norm(), 1 * Metre),
+          Gt(0.1 * Milli(Metre)));
+      EXPECT_THAT(
+          AbsoluteError((segment.end - World::origin).Norm(), 1 * Metre),
+          Gt(0.1 * Milli(Metre)));
+    }
+  }
+  EXPECT_THAT(
+      AbsoluteError(rendered_prediction.back().end - World::origin,
+                    Displacement<World>({1 * Metre, 0 * Metre, 0 * Metre})),
+      AllOf(Gt(2 * Milli(Metre)), Lt(3 * Milli(Metre))));
+  plugin.clear_predicted_vessel();
 }
 
 }  // namespace ksp_plugin
