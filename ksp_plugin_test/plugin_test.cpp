@@ -596,5 +596,53 @@ TEST_F(PluginTest, Frenet) {
               AlmostEquals(t, 7));
 }
 
+// Checks that we correctly predict a full circular orbit around a massive body
+// with unit gravitational parameter at unit distance.  Since predictions are
+// only computed on |AdvanceTime()|, we advance time by a small amount.
+TEST_F(PluginIntegrationTest, Prediction) {
+  GUID const satellite = "satellite";
+  Index const celestial = 0;
+  Plugin plugin(Instant(),
+                0 * Radian);
+  plugin.InsertSun(celestial, SIUnit<GravitationalParameter>());
+  plugin.EndInitialization();
+  EXPECT_TRUE(plugin.InsertOrKeepVessel(satellite, celestial));
+  auto transforms = plugin.NewBodyCentredNonRotatingTransforms(celestial);
+  plugin.SetVesselStateOffset(
+      satellite,
+      {Displacement<AliceSun>({1 * Metre, 0 * Metre, 0 * Metre}),
+       Velocity<AliceSun>(
+           {0 * Metre / Second, 1 * Metre / Second, 0 * Metre / Second})});
+  plugin.set_predicted_vessel(satellite);
+  plugin.set_prediction_length(2 * π * Second);
+  plugin.set_prediction_length_tolerance(1 * Milli(Metre));
+  plugin.set_prediction_speed_tolerance(1 * Milli(Metre) / Second);
+  plugin.AdvanceTime(Instant(1e-10 * Second), 0 * Radian);
+  RenderedTrajectory<World> rendered_prediction =
+      plugin.RenderedPrediction(transforms.get(), World::origin);
+  EXPECT_EQ(14, rendered_prediction.size());
+  for (int i = 0; i < rendered_prediction.size(); ++i) {
+    auto const& segment = rendered_prediction[i];
+    EXPECT_THAT(
+        AbsoluteError((segment.begin - World::origin).Norm(), 1 * Metre),
+        Lt(0.5 * Milli(Metre)));
+    EXPECT_THAT(AbsoluteError((segment.end - World::origin).Norm(), 1 * Metre),
+                Lt(0.5 * Milli(Metre)));
+    if (i >= 5) {
+      EXPECT_THAT(
+          AbsoluteError((segment.begin - World::origin).Norm(), 1 * Metre),
+          Gt(0.1 * Milli(Metre)));
+      EXPECT_THAT(
+          AbsoluteError((segment.end - World::origin).Norm(), 1 * Metre),
+          Gt(0.1 * Milli(Metre)));
+    }
+  }
+  EXPECT_THAT(
+      AbsoluteError(rendered_prediction.back().end - World::origin,
+                    Displacement<World>({1 * Metre, 0 * Metre, 0 * Metre})),
+      AllOf(Gt(2 * Milli(Metre)), Lt(3 * Milli(Metre))));
+  plugin.clear_predicted_vessel();
+}
+
 }  // namespace ksp_plugin
 }  // namespace principia
