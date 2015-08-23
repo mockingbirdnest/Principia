@@ -80,6 +80,9 @@
     <ClInclude Include="forkable.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="forkable_body.hpp">
+      <Filter>Source Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="trajectory_test.cpp">

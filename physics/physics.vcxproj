@@ -159,6 +159,7 @@
     <ClInclude Include="ephemeris.hpp" />
     <ClInclude Include="ephemeris_body.hpp" />
     <ClInclude Include="forkable.hpp" />
+    <ClInclude Include="forkable_body.hpp" />
     <ClInclude Include="frame_field.hpp" />
     <ClInclude Include="frame_field_body.hpp" />
     <ClInclude Include="massive_body.hpp" />
