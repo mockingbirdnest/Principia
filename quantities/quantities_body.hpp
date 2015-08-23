@@ -222,12 +222,12 @@ inline Quantity<D> Quantity<D>::operator-() const {
 }
 
 template<typename D>
-inline Quantity<D> Quantity<D>::operator+(Quantity const& right) const {
+FORCE_INLINE Quantity<D> Quantity<D>::operator+(Quantity const& right) const {
   return Quantity(magnitude_ + right.magnitude_);
 }
 
 template<typename D>
-inline Quantity<D> Quantity<D>::operator-(Quantity const& right) const {
+FORCE_INLINE Quantity<D> Quantity<D>::operator-(Quantity const& right) const {
   return Quantity(magnitude_ - right.magnitude_);
 }
 
