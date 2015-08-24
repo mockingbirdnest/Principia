@@ -25,7 +25,7 @@ class Forkable {
   not_null<Forkable const*> root() const;
   not_null<Forkable*> root();
 
-  bool ContainsTime(Instant const& time) const;
+  bool ContainsTime(Instant const& time) const;  //TODO(phl):Useful?
 
   Instant const* ForkTime() const;  // optional
 
@@ -50,12 +50,23 @@ class Forkable {
   };
 
  protected:
-  virtual bool timeline_contains(Instant const& time) = 0;
+  virtual typename Tr4jectory::TimelineConstIterator timeline_end() = 0;
+  virtual typename Tr4jectory::TimelineConstIterator timeline_find(
+      Instant const& time) = 0;
+  virtual void timeline_insert(
+      typename Tr4jectory::TimelineConstIterator begin,
+      typename Tr4jectory::TimelineConstIterator end) = 0;
   virtual bool timeline_is_empty() const = 0;
 
  private:
   // There may be several forks starting from the same time, hence the multimap.
   using Children = std::multimap<Instant, Forkable>;
+
+  // A constructor for creating a child object during forking.
+  Forkable(not_null<Forkable*> const parent,
+           typename Children::const_iterator position_in_parent_children,
+           typename Tr4jectory::TimelineConstIterator
+               position_in_parent_timeline);
 
   // Null for a root.
   Forkable* const parent_;

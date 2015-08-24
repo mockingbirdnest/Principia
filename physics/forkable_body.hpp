@@ -11,21 +11,27 @@ not_null<Forkable<Tr4jectory>*> Forkable<Tr4jectory>::NewFork(
     Instant const & time) {
   CHECK(ContainsTime(time)) << "NewFork at nonexistent time " << time;
 
-  // May be at |end()|.
-  auto fork_it = timeline_.find(time);
+  // May be at |timeline_end()|.
+  auto const timeline_it = timeline_find(time);
 
-  // We cannot know the iterator into children_ until after we have done the
-  // insertion in children_.
-  Fork const fork = {children_.end(), fork_it};
+  // We cannot know the iterator into |this->children_| that the child object
+  // will hold until after we have inserted it in |this->children_|.
   auto const child_it = children_.emplace(
       std::piecewise_construct,
       std::forward_as_tuple(time),
-      std::forward_as_tuple(body_, this /*parent*/, fork));
-  if (fork_it != timeline_.end()) {
-    child_it->second.timeline_.insert(++fork_it, timeline_.end());
+      std::forward_as_tuple(this /*parent*/,
+                            children_.end(), /*position_in_parent_children*/
+                            timeline_it /*position_in_parent_timeline*/));
+
+  // Now set the iterator into |this->children_| in the child object.
+  Forkable& child_forkable = child_it->second;
+  child_forkable.position_in_parent_children = child_it;
+
+  // Copy the tail of the trajectory in the child object.
+  if (timeline_it != timeline_end()) {
+    child_forkable.timeline_insert(++timeline_it, timeline_end());
   }
-  child_it->second.fork_->children = child_it;
-  return &child_it->second;
+  return &child_forkable;
 }
 
 template<typename Tr4jectory>
@@ -69,8 +75,8 @@ not_null<Forkable<Tr4jectory>*> Forkable<Tr4jectory>::root() {
 }
 
 template<typename Tr4jectory>
-inline bool Forkable<Tr4jectory>::ContainsTime(Instant const & time) const {
-  if (timeline_contains(time)) {
+bool Forkable<Tr4jectory>::ContainsTime(Instant const & time) const {
+  if (timeline_find(time) != timeline_end()) {
     return true
   } else if (is_root()) {
     return false;
@@ -114,6 +120,13 @@ Iterator Forkable<Tr4jectory>::Iterator::New(
     typename Tr4jectory::TimelineConstIterator const
         position_in_ancestor_timeline) {
   return Iterator();
+}
+
+template<typename Tr4jectory>
+Forkable<Tr4jectory>::Forkable(
+    not_null<Forkable*> const parent,
+    typename Children::const_iterator position_in_parent_children,
+    typename Tr4jectory::TimelineConstIterator position_in_parent_timeline) {
 }
 
 }  // namespace physics
