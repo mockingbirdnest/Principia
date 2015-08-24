@@ -440,7 +440,7 @@ TEST_F(PluginIntegrationTest, PhysicsBubble) {
   LOG(ERROR)<<plugin.VesselFromParent(enterprise_d);
   LOG(ERROR)<<plugin.VesselFromParent(enterprise_d_saucer);
   // Step 6: coming together on the other side.
-  t = 0.5 * period;
+  t += 0.5 * period;
   plugin.InsertOrKeepVessel(enterprise_d, celestial);
   plugin.InsertOrKeepVessel(enterprise_d_saucer, celestial);
   plugin.AdvanceTime(t, 0 * Radian);
@@ -522,13 +522,41 @@ TEST_F(PluginIntegrationTest, PhysicsBubble) {
   plugin.AdvanceTime(t, 0 * Radian);
   LOG(ERROR)<<plugin.BubbleDisplacementCorrection(World::origin);
   LOG(ERROR)<<plugin.BubbleVelocityCorrection(celestial);
-  // Step 8: close physics bubble.
+  // Step 9: docking.
   t += δt;
   plugin.InsertOrKeepVessel(enterprise_d, celestial);
-  plugin.InsertOrKeepVessel(enterprise_d_saucer, celestial);
+  {
+    std::vector<IdAndOwnedPart> parts;
+    parts.emplace_back(
+        engineering_section,
+        make_not_null_unique<Part<World>>(
+             DegreesOfFreedom<World>(
+                 {World::origin,
+                  Velocity<World>({0 * Metre / Second,
+                                   0 * Metre / Second,
+                                   1 * Metre / Second})}),
+             1 * Kilogram,
+             Vector<Acceleration, World>()));
+    parts.emplace_back(
+        saucer_section,
+        make_not_null_unique<Part<World>>(
+             DegreesOfFreedom<World>(
+                 {World::origin,
+                  Velocity<World>({0 * Metre / Second,
+                                   0 * Metre / Second,
+                                   1 * Metre / Second})}),
+             1 * Kilogram,
+             Vector<Acceleration, World>()));
+    plugin.AddVesselToNextPhysicsBubble(enterprise_d, std::move(parts));
+  }
   plugin.AdvanceTime(t, 0 * Radian);
   LOG(ERROR)<<plugin.BubbleDisplacementCorrection(World::origin);
   LOG(ERROR)<<plugin.BubbleVelocityCorrection(celestial);
+  // Step 10: close physics bubble.
+  t += δt;
+  plugin.InsertOrKeepVessel(enterprise_d, celestial);
+  plugin.AdvanceTime(t, 0 * Radian);
+  LOG(ERROR)<<plugin.VesselFromParent(enterprise_d);
 }
 
 // Checks that we correctly predict a full circular orbit around a massive body
