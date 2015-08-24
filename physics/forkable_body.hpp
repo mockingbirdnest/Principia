@@ -9,9 +9,7 @@ namespace physics {
 template<typename Tr4jectory>
 not_null<Forkable<Tr4jectory>*> Forkable<Tr4jectory>::NewFork(
     Instant const & time) {
-  CHECK(timeline_.find(time) != timeline_.end() ||
-        (!is_root() && time == ForkTime()))
-      << "NewFork at nonexistent time " << time;
+  CHECK(ContainsTime(time)) << "NewFork at nonexistent time " << time;
 
   // May be at |end()|.
   auto fork_it = timeline_.find(time);
@@ -71,7 +69,18 @@ not_null<Forkable<Tr4jectory>*> Forkable<Tr4jectory>::root() {
 }
 
 template<typename Tr4jectory>
-Instant const* Forkable<Tr4jectory>::fork_time() const {
+inline bool Forkable<Tr4jectory>::ContainsTime(Instant const & time) const {
+  if (timeline_contains(time)) {
+    return true
+  } else if (is_root()) {
+    return false;
+  } else {
+    return time == *ForkTime();
+  }
+}
+
+template<typename Tr4jectory>
+Instant const* Forkable<Tr4jectory>::ForkTime() const {
   not_null<Forkable const*> ancestor = this;
   while (ancestor->parent_ != nullptr) {
     if (!ancestor->parent_->timeline_is_empty()) {

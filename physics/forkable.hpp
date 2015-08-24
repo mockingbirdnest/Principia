@@ -25,7 +25,9 @@ class Forkable {
   not_null<Forkable const*> root() const;
   not_null<Forkable*> root();
 
-  Instant const* fork_time() const;  // optional
+  bool ContainsTime(Instant const& time) const;
+
+  Instant const* ForkTime() const;  // optional
 
   class Iterator {
    public:
@@ -48,6 +50,7 @@ class Forkable {
   };
 
  protected:
+  virtual bool timeline_contains(Instant const& time) = 0;
   virtual bool timeline_is_empty() const = 0;
 
  private:
