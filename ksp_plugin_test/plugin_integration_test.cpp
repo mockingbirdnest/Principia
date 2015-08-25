@@ -556,6 +556,17 @@ TEST_F(PluginIntegrationTest, PhysicsBubble) {
   EXPECT_THAT(RelativeError(Velocity<AliceSun>({0 * v0, v0, 0 * v0}),
                             plugin.VesselFromParent(enterprise_d).velocity()),
               Lt(100 * ε));
+  // Orbit a bit.
+  t += period;
+  plugin.InsertOrKeepVessel(enterprise_d, celestial);
+  plugin.AdvanceTime(t, 0 * Radian);
+  EXPECT_THAT(
+      RelativeError(Displacement<AliceSun>({-a, 0 * a, 0 * a}),
+                    plugin.VesselFromParent(enterprise_d).displacement()),
+      Lt(100 * ε));
+  EXPECT_THAT(RelativeError(Velocity<AliceSun>({0 * v0, v0, 0 * v0}),
+                            plugin.VesselFromParent(enterprise_d).velocity()),
+              Lt(100 * ε));
 }
 
 // Checks that we correctly predict a full circular orbit around a massive body
