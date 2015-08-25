@@ -25,8 +25,6 @@ class Forkable {
   not_null<Forkable const*> root() const;
   not_null<Forkable*> root();
 
-  bool ContainsTime(Instant const& time) const;  //TODO(phl):Useful?
-
   Instant const* ForkTime() const;  // optional
 
   class Iterator {

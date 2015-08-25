@@ -9,7 +9,9 @@ namespace physics {
 template<typename Tr4jectory>
 not_null<Forkable<Tr4jectory>*> Forkable<Tr4jectory>::NewFork(
     Instant const & time) {
-  CHECK(ContainsTime(time)) << "NewFork at nonexistent time " << time;
+  CHECK(timeline_find(time) != timeline_end() ||
+        (!is_root() && time == position_in_parent_children->first))
+      << "NewFork at nonexistent time " << time;
 
   // May be at |timeline_end()|.
   auto const timeline_it = timeline_find(time);
@@ -75,17 +77,6 @@ not_null<Forkable<Tr4jectory>*> Forkable<Tr4jectory>::root() {
 }
 
 template<typename Tr4jectory>
-bool Forkable<Tr4jectory>::ContainsTime(Instant const & time) const {
-  if (timeline_find(time) != timeline_end()) {
-    return true
-  } else if (is_root()) {
-    return false;
-  } else {
-    return time == *ForkTime();
-  }
-}
-
-template<typename Tr4jectory>
 Instant const* Forkable<Tr4jectory>::ForkTime() const {
   if (is_root()) {
     return nullptr;
@@ -128,7 +119,7 @@ Forkable<Tr4jectory>::Iterator Forkable<Tr4jectory>::Iterator::New(
   // Go up the ancestry chain until we find |ancestor| and set |current_| to
   // |position_in_ancestor_timeline|.  The ancestry has |forkable|
   // at the back, and the object containing |current_| at the front.  If
-  // |ancestor| is not found in the ancestry, stops at the root.
+  // |ancestor| is not found in the ancestry, stop at the root.
   not_null<Forkable const*> ancest0r = forkable;
   do {
     iterator.ancestry_.push_front(ancest0r);
