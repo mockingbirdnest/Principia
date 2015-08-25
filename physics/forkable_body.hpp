@@ -148,12 +148,10 @@ Forkable<Tr4jectory>::Iterator& Forkable<Tr4jectory>::Iterator::operator++() {
   CHECK(!ancestry_.empty());
   CHECK(current_ != ancestry_.front().end());
 
+  // Check if there is a next child in the ancestry.
   auto ancestry_it = ++ancestry_.begin();
-  if (ancestry_it == ancestry_.end()) {
-    // No more children, just move |current_| until the end.
-    ++current_;
-  } else {
-    // See if we reached the fork time of the next child.
+  if (ancestry_it != ancestry_.end()) {
+    // There is a next child.  See if we reached its fork time.
     not_null<Forkable const*> child = *ancestry_it;
     Instant const& current_time = current_->first;
     Instant const& child_fork_time = child->position_in_ancestor_children;
@@ -162,11 +160,11 @@ Forkable<Tr4jectory>::Iterator& Forkable<Tr4jectory>::Iterator::operator++() {
       // ancestor.
       current_ = child->timeline_first();
       ancestry_.pop_front();
-    } else {
-      // Nothing to see, keep moving.
-      ++current_;
+      return *this;
     }
   }
+  // Business as usual, keep moving along the same timeline.
+  ++current_;
 
   return *this;
 }
