@@ -35,20 +35,20 @@ not_null<Forkable<Tr4jectory>*> Forkable<Tr4jectory>::NewFork(
 }
 
 template<typename Tr4jectory>
-void Forkable<Tr4jectory>::DeleteFork(not_null<Forkable**> const fork) {
-  CHECK_NOTNULL(*fork);
-  Instant const* const fork_time = (*fork)->fork_time();
+void Forkable<Tr4jectory>::DeleteFork(not_null<Forkable**> const forkable) {
+  CHECK_NOTNULL(*forkable);
+  Instant const* const fork_time = (*forkable)->ForkTime();
   CHECK_NOTNULL(fork_time);
-  // Find the position of |*fork| among our children and remove it.
+  // Find the position of |*forkable| among our children and remove it.
   auto const range = children_.equal_range(*fork_time);
   for (auto it = range.first; it != range.second; ++it) {
-    if (&it->second == *fork) {
+    if (&it->second == *forkable) {
       children_.erase(it);
-      *fork = nullptr;
+      *forkable = nullptr;
       return;
     }
   }
-  LOG(FATAL) << "fork is not a child of this trajectory";
+  LOG(FATAL) << "argument is not a child of this forkable";
 }
 
 template<typename Tr4jectory>
@@ -98,36 +98,36 @@ Instant const* Forkable<Tr4jectory>::ForkTime() const {
 }
 
 template<typename Tr4jectory>
-Iterator Forkable<Tr4jectory>::Iterator::New(
+Forkable<Tr4jectory>::Iterator Forkable<Tr4jectory>::Iterator::New(
     not_null<Forkable*> const forkable, Instant const & time) {
+  Iterator iterator;
   not_null<Forkable const*> ancestor = forkable;
-  while (ancestor->parent_ != nullptr &&
-         (ancestor->fork_->timeline == ancestor->parent_->timeline_.end() ||
-          time <= ancestor->fork_->timeline->first)) {
-    ancestry_.push_front(ancestor);
-    forks_.push_front(*ancestor->fork_);
+  do {
+    iterator.ancestry_.push_front(ancestor);
+    if (!ancestor->timeline_is_empty() && time >= ancestor->timeline_front()) {
+      iterator.current_ = ancestor->timeline_find(time);  // May be at end.
+      break;
+    }
     ancestor = ancestor->parent_;
-  }
-  ancestry_.push_front(ancestor);
-  current_ = ancestor->timeline_.lower_bound(time);
-  CHECK(!current_is_misplaced());
+  } while (ancestor != nullptr);
 }
 
 template<typename Tr4jectory>
-Iterator Forkable<Tr4jectory>::Iterator::New(
+Forkable<Tr4jectory>::Iterator Forkable<Tr4jectory>::Iterator::New(
     not_null<Forkable*> const forkable,
     not_null<Forkable*> const ancestor,
     typename Tr4jectory::TimelineConstIterator const
         position_in_ancestor_timeline) {
-  return Iterator();
 }
 
 template<typename Tr4jectory>
 Forkable<Tr4jectory>::Forkable(
     not_null<Forkable*> const parent,
     typename Children::const_iterator position_in_parent_children,
-    typename Tr4jectory::TimelineConstIterator position_in_parent_timeline) {
-}
+    typename Tr4jectory::TimelineConstIterator position_in_parent_timeline)
+    : parent_(parent),
+      position_in_parent_children_(position_in_parent_children),
+      position_in_parent_timeline_(position_in_parent_timeline) {}
 
 }  // namespace physics
 }  // namespace principia

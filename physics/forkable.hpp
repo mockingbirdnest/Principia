@@ -18,7 +18,7 @@ class Forkable {
 
   not_null<Forkable*> NewFork(Instant const& time);
 
-  void DeleteFork(not_null<Forkable**> const fork);
+  void DeleteFork(not_null<Forkable**> const forkable);
 
   bool is_root() const;
 
