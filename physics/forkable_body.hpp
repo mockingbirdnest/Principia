@@ -101,15 +101,23 @@ template<typename Tr4jectory>
 Forkable<Tr4jectory>::Iterator Forkable<Tr4jectory>::Iterator::New(
     not_null<Forkable*> const forkable, Instant const & time) {
   Iterator iterator;
+
+  // Go up the ancestry chain until we find a timeline that covers |time| (that
+  // is, |time| is after the first time of the timeline).  Set |current_| to
+  // the location of |time|, which may be |end()|.  The ancestry has |forkable|
+  // at the back, and the object containing |current_| at the front.
   not_null<Forkable const*> ancestor = forkable;
   do {
     iterator.ancestry_.push_front(ancestor);
-    if (!ancestor->timeline_is_empty() && time >= ancestor->timeline_front()) {
+    if (!ancestor->timeline_is_empty() && ancestor->timeline_front() <= time) {
       iterator.current_ = ancestor->timeline_find(time);  // May be at end.
       break;
     }
+    iterator.current_ = ancestor->timeline_end();
     ancestor = ancestor->parent_;
   } while (ancestor != nullptr);
+
+  return iterator;
 }
 
 template<typename Tr4jectory>
@@ -118,6 +126,28 @@ Forkable<Tr4jectory>::Iterator Forkable<Tr4jectory>::Iterator::New(
     not_null<Forkable*> const ancestor,
     typename Tr4jectory::TimelineConstIterator const
         position_in_ancestor_timeline) {
+  Iterator iterator;
+
+  // Go up the ancestry chain until we find |ancestor| and set |current_| to
+  // |position_in_ancestor_timeline|.  The ancestry has |forkable|
+  // at the back, and the object containing |current_| at the front.  If
+  // |ancestor| is not found in the ancestry, stops at the root.
+  not_null<Forkable const*> ancest0r = forkable;
+  do {
+    iterator.ancestry_.push_front(ancest0r);
+    if (ancestor == ancest0r) {
+      iterator.current_ = position_in_ancestor_timeline;  // May be at end.
+      break;
+    }
+    iterator.current_ = ancest0r->timeline_end();
+    ancest0r = ancest0r->parent_;
+  } while (ancest0r != nullptr);
+  return iterator;
+}
+
+
+template<typename Tr4jectory>
+Forkable<Tr4jectory>::Iterator& Forkable<Tr4jectory>::Iterator::operator++() {
 }
 
 template<typename Tr4jectory>
