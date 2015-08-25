@@ -339,6 +339,7 @@ TEST_F(PluginIntegrationTest, PhysicsBubble) {
   Plugin plugin(t, 0 * Radian);
   plugin.InsertSun(celestial, 1 * Pow<3>(Kilo(Metre)) / Pow<2>(Day));
   plugin.EndInitialization();
+
   // First step: insert the Enterprise.
   t += δt;
   plugin.InsertOrKeepVessel(enterprise_d, celestial);
@@ -347,6 +348,7 @@ TEST_F(PluginIntegrationTest, PhysicsBubble) {
       {Displacement<AliceSun>({a, 0 * a, 0 * a}),
        Velocity<AliceSun>({0 * v0, v0, 0 * v0})});
   plugin.AdvanceTime(t, 0 * Radian);
+
   // Step 2: physics bubble starts.
   t += δt;
   plugin.InsertOrKeepVessel(enterprise_d, celestial);
@@ -373,6 +375,7 @@ TEST_F(PluginIntegrationTest, PhysicsBubble) {
               Lt(100 * ε * a));
   EXPECT_THAT(plugin.BubbleVelocityCorrection(celestial).Norm(),
               Lt(100 * ε * v0));
+
   // Step 3: separation and saucer burn.
   t += δt;
   plugin.InsertOrKeepVessel(enterprise_d, celestial);
@@ -414,6 +417,7 @@ TEST_F(PluginIntegrationTest, PhysicsBubble) {
               Lt(100 * ε * a));
   EXPECT_THAT(plugin.BubbleVelocityCorrection(celestial).Norm(),
               Lt(100 * ε * v0));
+
   // Step 4: end of physics bubble.
   t += δt;
   plugin.InsertOrKeepVessel(enterprise_d, celestial);
@@ -434,6 +438,7 @@ TEST_F(PluginIntegrationTest, PhysicsBubble) {
       RelativeError(Velocity<AliceSun>({0 * v0, -v0, 0 * v0}),
                     plugin.VesselFromParent(enterprise_d_saucer).velocity()),
       Lt(100 * ε));
+
   // Step 5: coming together on the other side.
   t += 0.5 * period;
   plugin.InsertOrKeepVessel(enterprise_d, celestial);
@@ -454,6 +459,7 @@ TEST_F(PluginIntegrationTest, PhysicsBubble) {
       RelativeError(Velocity<AliceSun>({0 * v0, v0, 0 * v0}),
                     plugin.VesselFromParent(enterprise_d_saucer).velocity()),
       Lt(100 * ε));
+
   // Step 6: reopen physics bubble.
   t += δt;
   plugin.InsertOrKeepVessel(enterprise_d, celestial);
@@ -488,6 +494,7 @@ TEST_F(PluginIntegrationTest, PhysicsBubble) {
               Lt(100 * ε));
   EXPECT_THAT(plugin.BubbleVelocityCorrection(celestial).Norm(),
               Lt(100 * ε * v0));
+
   // Step 7: match velocities.
   t += δt;
   plugin.InsertOrKeepVessel(enterprise_d, celestial);
@@ -519,6 +526,7 @@ TEST_F(PluginIntegrationTest, PhysicsBubble) {
       Lt(100 * ε * a));
   EXPECT_THAT(plugin.BubbleVelocityCorrection(celestial).Norm(),
               Lt(100 * ε * v0));
+
   // Step 8: docking.
   t += δt;
   plugin.InsertOrKeepVessel(enterprise_d, celestial);
@@ -545,6 +553,7 @@ TEST_F(PluginIntegrationTest, PhysicsBubble) {
       Lt(100 * ε * a));
   EXPECT_THAT(plugin.BubbleVelocityCorrection(celestial).Norm(),
               Lt(100 * ε * v0));
+
   // Step 9: close physics bubble.
   t += δt;
   plugin.InsertOrKeepVessel(enterprise_d, celestial);
@@ -556,6 +565,7 @@ TEST_F(PluginIntegrationTest, PhysicsBubble) {
   EXPECT_THAT(RelativeError(Velocity<AliceSun>({0 * v0, v0, 0 * v0}),
                             plugin.VesselFromParent(enterprise_d).velocity()),
               Lt(100 * ε));
+
   // Orbit a bit.
   t += period;
   plugin.InsertOrKeepVessel(enterprise_d, celestial);
