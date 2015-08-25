@@ -148,6 +148,29 @@ Forkable<Tr4jectory>::Iterator Forkable<Tr4jectory>::Iterator::New(
 
 template<typename Tr4jectory>
 Forkable<Tr4jectory>::Iterator& Forkable<Tr4jectory>::Iterator::operator++() {
+  CHECK(!ancestry_.empty());
+  CHECK(current_ != ancestry_.front().end());
+
+  auto ancestry_it = ++ancestry_.begin();
+  if (ancestry_it == ancestry_.end()) {
+    // No more children, just move |current_| until the end.
+    ++current_;
+  } else {
+    // See if we reached the fork time of the next child.
+    not_null<Forkable const*> child = ancestry_it;
+    Instant const& current_time = current_->first;
+    Instant const& child_fork_time = child->position_in_ancestor_children;
+    if (current_time == child_fork_time) {
+      // Start iterating over the child timeline.  Drop the leading ancestor.
+      current_ = child->timeline_first();
+      ancestry_.pop_front();
+    } else {
+      // Nothing to see, keep moving.
+      ++current_;
+    }
+  }
+
+  return *this;
 }
 
 template<typename Tr4jectory>

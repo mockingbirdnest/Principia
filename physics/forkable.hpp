@@ -77,7 +77,7 @@ class Forkable {
   // swapped.
   // At |end()| for a root.
   typename Children::const_iterator position_in_parent_children_;
-  typename Tr4jectory::TimelineConstIterator position_in_parent_timeline_;
+  typename Tr4jectory::TimelineConstIterator position_in_parent_timeline_;  // May be at end.
 
   Children children_;
 };
