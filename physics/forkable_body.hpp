@@ -87,14 +87,11 @@ bool Forkable<Tr4jectory>::ContainsTime(Instant const & time) const {
 
 template<typename Tr4jectory>
 Instant const* Forkable<Tr4jectory>::ForkTime() const {
-  not_null<Forkable const*> ancestor = this;
-  while (ancestor->parent_ != nullptr) {
-    if (!ancestor->parent_->timeline_is_empty()) {
-      return &(ancestor->position_in_parent_timeline_->first);
-    }
-    ancestor = ancestor->parent_;
+  if (is_root()) {
+    return nullptr;
+  } else {
+    return position_in_parent_children_->first;
   }
-  return nullptr;
 }
 
 template<typename Tr4jectory>
@@ -157,11 +154,12 @@ Forkable<Tr4jectory>::Iterator& Forkable<Tr4jectory>::Iterator::operator++() {
     ++current_;
   } else {
     // See if we reached the fork time of the next child.
-    not_null<Forkable const*> child = ancestry_it;
+    not_null<Forkable const*> child = *ancestry_it;
     Instant const& current_time = current_->first;
     Instant const& child_fork_time = child->position_in_ancestor_children;
     if (current_time == child_fork_time) {
-      // Start iterating over the child timeline.  Drop the leading ancestor.
+      // Start iterating over the next child timeline.  Drop the leading
+      // ancestor.
       current_ = child->timeline_first();
       ancestry_.pop_front();
     } else {

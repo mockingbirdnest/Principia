@@ -71,13 +71,12 @@ class Forkable {
   // Null for a root.
   Forkable* const parent_;
 
-  // The two iterators denote entries in the containers of the parent.
-  // |timeline| is past the end if the fork happened at the fork point of the
-  // grandparent.  Note that this implies that the containers should not be
-  // swapped.
-  // At |end()| for a root.
+  // This iterator is only at |end()| for a root.
   typename Children::const_iterator position_in_parent_children_;
-  typename Tr4jectory::TimelineConstIterator position_in_parent_timeline_;  // May be at end.
+
+  // This iterator is at |end()| if the parent's timeline is empty, or if this
+  // object is a root.
+  typename Tr4jectory::TimelineConstIterator position_in_parent_timeline_;
 
   Children children_;
 };
