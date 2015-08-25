@@ -170,6 +170,12 @@ Forkable<Tr4jectory>::Iterator& Forkable<Tr4jectory>::Iterator::operator++() {
 }
 
 template<typename Tr4jectory>
+typename Tr4jectory::TimelineConstIterator
+Forkable<Tr4jectory>::current() const {
+  return current_;
+}
+
+template<typename Tr4jectory>
 Forkable<Tr4jectory>::Forkable(
     not_null<Forkable*> const parent,
     typename Children::const_iterator position_in_parent_children,

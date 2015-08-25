@@ -40,6 +40,8 @@ class Forkable {
 
     Iterator& operator++();
 
+    typename Tr4jectory::TimelineConstIterator current() const;
+
    private:
     // |ancestry_| has one more element than |forks_|.  The first element in
     // |ancestry_| is the root.  There is no element in |forks_| for the root.
