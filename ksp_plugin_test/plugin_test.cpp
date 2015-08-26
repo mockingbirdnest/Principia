@@ -42,6 +42,7 @@ using testing_utilities::ICRFJ2000Ecliptic;
 using testing_utilities::RelativeError;
 using testing_utilities::SolarSystem;
 using ::testing::AllOf;
+using ::testing::AnyNumber;
 using ::testing::Contains;
 using ::testing::Eq;
 using ::testing::Ge;
@@ -338,6 +339,7 @@ TEST_F(PluginTest, Serialization) {
 TEST_F(PluginTest, Initialization) {
   InsertAllSolarSystemBodies();
   plugin_->EndInitialization();
+  EXPECT_CALL(*mock_ephemeris_, Prolong(_)).Times(AnyNumber());
   for (std::size_t index = SolarSystem::kSun + 1;
        index < bodies_.size();
        ++index) {
@@ -517,7 +519,7 @@ TEST_F(PluginTest, VesselInsertionAtInitialization) {
   bool const inserted = plugin_->InsertOrKeepVessel(guid,
                                                     SolarSystem::kEarth);
   EXPECT_TRUE(inserted);
-  EXPECT_CALL(*mock_ephemeris_, Prolong(initial_time_));
+  EXPECT_CALL(*mock_ephemeris_, Prolong(initial_time_)).Times(AnyNumber());
   plugin_->SetVesselStateOffset(guid,
                                 RelativeDegreesOfFreedom<AliceSun>(
                                     satellite_initial_displacement_,
@@ -531,6 +533,7 @@ TEST_F(PluginTest, VesselInsertionAtInitialization) {
 TEST_F(PluginTest, UpdateCelestialHierarchy) {
   InsertAllSolarSystemBodies();
   plugin_->EndInitialization();
+  EXPECT_CALL(*mock_ephemeris_, Prolong(_)).Times(AnyNumber());
   for (std::size_t index = SolarSystem::kSun + 1;
        index < bodies_.size();
        ++index) {
