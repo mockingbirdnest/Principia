@@ -1,4 +1,4 @@
-#include "trajectory.hpp"
+#include "physices/trajectory.hpp"
 
 #include <functional>
 #include <list>

@@ -46,17 +46,16 @@ class Forkable {
     // It is therefore empty for a root trajectory.
     typename Tr4jectory::TimelineConstIterator current_;
     std::list<not_null<Forkable const*>> ancestry_;  // Pointers not owned.
-    std::list<Fork> forks_;
   };
 
  protected:
-  virtual typename Tr4jectory::TimelineConstIterator timeline_end() = 0;
+  virtual typename Tr4jectory::TimelineConstIterator timeline_end() const = 0;
   virtual typename Tr4jectory::TimelineConstIterator timeline_find(
-      Instant const& time) = 0;
+      Instant const& time) const = 0;
   virtual void timeline_insert(
       typename Tr4jectory::TimelineConstIterator begin,
       typename Tr4jectory::TimelineConstIterator end) = 0;
-  virtual bool timeline_is_empty() const = 0;
+  virtual bool timeline_empty() const = 0;
 
  private:
   // There may be several forks starting from the same time, hence the multimap.

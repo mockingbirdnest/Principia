@@ -179,6 +179,7 @@
     <ClCompile Include="continuous_trajectory_test.cpp" />
     <ClCompile Include="degrees_of_freedom_test.cpp" />
     <ClCompile Include="ephemeris_test.cpp" />
+    <ClCompile Include="forkable_test.cpp" />
     <ClCompile Include="trajectory_test.cpp" />
     <ClCompile Include="transforms_test.cpp" />
   </ItemGroup>

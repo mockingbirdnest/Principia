@@ -103,5 +103,8 @@
     <ClCompile Include="transforms_test.cpp">
       <Filter>Test Files</Filter>
     </ClCompile>
+    <ClCompile Include="forkable_test.cpp">
+      <Filter>Test Files</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

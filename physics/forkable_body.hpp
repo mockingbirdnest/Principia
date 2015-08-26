@@ -86,7 +86,7 @@ Instant const* Forkable<Tr4jectory>::ForkTime() const {
 }
 
 template<typename Tr4jectory>
-Forkable<Tr4jectory>::Iterator Forkable<Tr4jectory>::Iterator::New(
+typename Forkable<Tr4jectory>::Iterator Forkable<Tr4jectory>::Iterator::New(
     not_null<Forkable*> const forkable, Instant const & time) {
   Iterator iterator;
 
@@ -109,7 +109,7 @@ Forkable<Tr4jectory>::Iterator Forkable<Tr4jectory>::Iterator::New(
 }
 
 template<typename Tr4jectory>
-Forkable<Tr4jectory>::Iterator Forkable<Tr4jectory>::Iterator::New(
+typename Forkable<Tr4jectory>::Iterator Forkable<Tr4jectory>::Iterator::New(
     not_null<Forkable*> const forkable,
     not_null<Forkable*> const ancestor,
     typename Tr4jectory::TimelineConstIterator const
