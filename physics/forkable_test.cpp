@@ -9,9 +9,8 @@ using geometry::Instant;
 
 namespace physics {
 
-class FakeTrajectory : public Forkable<FakeTrajectory> {
+class FakeTrajectory : public Forkable<std::vector<Instant>::const_iterator> {
  public:
-  using TimelineConstIterator = std::vector<Instant>::const_iterator;
 
  protected:
   TimelineConstIterator timeline_end() const override;
@@ -36,12 +35,13 @@ FakeTrajectory::TimelineConstIterator FakeTrajectory::timeline_find(
       return it;
     }
   }
+  return timeline_.end();
 }
 
 void FakeTrajectory::timeline_insert(TimelineConstIterator begin,
                                      TimelineConstIterator end) {
   CHECK(timeline_empty());
-  timeline_.insert(begin, end);
+  timeline_.insert(timeline_.end(), begin, end);
 }
 
 bool FakeTrajectory::timeline_empty() const {

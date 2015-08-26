@@ -13,8 +13,10 @@ using geometry::Instant;
 namespace physics {
 
 //TODO(phl): Fix all the comments.
-template<typename Tr4jectory>
+template<typename TimelineConstIterator_>
 class Forkable {
+ public:
+  using TimelineConstIterator = TimelineConstIterator_;
 
   not_null<Forkable*> NewFork(Instant const& time);
 
@@ -33,28 +35,26 @@ class Forkable {
                         Instant const& time);
     static Iterator New(not_null<Forkable*> const forkable,
                         not_null<Forkable*> const ancestor,
-                        typename Tr4jectory::TimelineConstIterator const
+                        TimelineConstIterator const 
                             position_in_ancestor_timeline);
 
     Iterator& operator++();
 
-    typename Tr4jectory::TimelineConstIterator current() const;
+    TimelineConstIterator current() const;
 
    private:
     // |ancestry_| has one more element than |forks_|.  The first element in
     // |ancestry_| is the root.  There is no element in |forks_| for the root.
     // It is therefore empty for a root trajectory.
-    typename Tr4jectory::TimelineConstIterator current_;
+    TimelineConstIterator current_;
     std::list<not_null<Forkable const*>> ancestry_;  // Pointers not owned.
   };
 
  protected:
-  virtual typename Tr4jectory::TimelineConstIterator timeline_end() const = 0;
-  virtual typename Tr4jectory::TimelineConstIterator timeline_find(
-      Instant const& time) const = 0;
-  virtual void timeline_insert(
-      typename Tr4jectory::TimelineConstIterator begin,
-      typename Tr4jectory::TimelineConstIterator end) = 0;
+  virtual TimelineConstIterator timeline_end() const = 0;
+  virtual TimelineConstIterator timeline_find(Instant const& time) const = 0;
+  virtual void timeline_insert(TimelineConstIterator begin,
+                               TimelineConstIterator end) = 0;
   virtual bool timeline_empty() const = 0;
 
  private:
@@ -64,8 +64,7 @@ class Forkable {
   // A constructor for creating a child object during forking.
   Forkable(not_null<Forkable*> const parent,
            typename Children::const_iterator position_in_parent_children,
-           typename Tr4jectory::TimelineConstIterator
-               position_in_parent_timeline);
+           TimelineConstIterator position_in_parent_timeline);
 
   // Null for a root.
   Forkable* const parent_;
@@ -75,7 +74,7 @@ class Forkable {
 
   // This iterator is at |end()| if the parent's timeline is empty, or if this
   // object is a root.
-  typename Tr4jectory::TimelineConstIterator position_in_parent_timeline_;
+  TimelineConstIterator position_in_parent_timeline_;
 
   Children children_;
 };
