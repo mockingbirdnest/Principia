@@ -18,6 +18,8 @@ class Forkable {
  public:
   using TimelineConstIterator = TimelineConstIterator_;
 
+  Forkable();
+
   not_null<Forkable*> NewFork(Instant const& time);
 
   void DeleteFork(not_null<Forkable**> const forkable);

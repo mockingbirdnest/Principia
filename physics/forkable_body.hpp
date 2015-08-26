@@ -7,6 +7,9 @@ namespace principia {
 namespace physics {
 
 template<typename TimelineConstIterator_>
+Forkable<TimelineConstIterator_>::Forkable() {}
+
+template<typename TimelineConstIterator_>
 not_null<Forkable<TimelineConstIterator_>*>
 Forkable<TimelineConstIterator_>::NewFork(Instant const & time) {
   CHECK(timeline_find(time) != timeline_end() ||
