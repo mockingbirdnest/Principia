@@ -98,7 +98,7 @@ run_tests: tests
 
 TEST_LIBS=$(DEP_DIR)/protobuf/src/.libs/libprotobuf.a $(DEP_DIR)/glog/.libs/libglog.a -lpthread
 
-GMOCK_SOURCE=$(DEP_DIR)/gmock/src/gmock-all.cc $(DEP_DIR)/gmock/src/gmock_main.cc $(DEP_DIR)/gtest/src/gtest-all.cc
+GMOCK_SOURCE=$(DEP_DIR)/gmock/src/gmock-all.cc $(DEP_DIR)/gmock/src/gmock_main.cc $(DEP_DIR)/gmock/gtest/src/gtest-all.cc
 GMOCK_OBJECTS=$(GMOCK_SOURCE:.cc=.o)
 
 test_objects = $(patsubst %.cpp,%.o,$(wildcard $*/*.cpp))

@@ -28,7 +28,7 @@ CXX_FLAGS="-std=c++1y $LD_FLAGS"
 mkdir -p deps
 cd deps
 
-git clone "https://github.com/mockingbirdnest/protobuf.git"
+git clone "https://github.com/mockingbirdnest/protobuf"
 pushd protobuf
 ./autogen.sh
 if [ "$PLATFORM" == "Linux" ]; then
@@ -38,7 +38,7 @@ fi
 make -j8
 popd
 
-git clone "https://github.com/Norgg/glog"
+git clone "https://github.com/mockingbirdnest/glog"
 pushd glog
 ./configure CC=clang CXX=clang++ CFLAGS="$C_FLAGS" CXXFLAGS="$CXX_FLAGS" LDFLAGS="$LD_FLAGS" LIBS="-lc++ -lc++abi"
 make -j8
