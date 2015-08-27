@@ -395,7 +395,7 @@ void Plugin::AddVesselToNextPhysicsBubble(
   VLOG(1) << __FUNCTION__ << '\n' << NAMED(vessel_guid) << '\n' << NAMED(parts);
   not_null<std::unique_ptr<Vessel>> const& vessel =
       find_vessel_by_guid_or_die(vessel_guid);
-  CHECK(kept_vessels_.count(vessel.get()) > 0);
+  CHECK_GT(kept_vessels_.count(vessel.get()), 0);
   dirty_vessels_.insert(vessel.get());
   bubble_->AddVesselToNext(vessel.get(), std::move(parts));
 }

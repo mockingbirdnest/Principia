@@ -1,5 +1,9 @@
 ﻿#include "ksp_plugin/plugin.hpp"
 
+#include <algorithm>
+#include <limits>
+#include <vector>
+
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "testing_utilities/solar_system.hpp"
@@ -169,8 +173,9 @@ TEST_F(PluginIntegrationTest, BodyCentredNonrotatingRenderingIntegration) {
   // Exercise #267 by having small time steps at the beginning of the trajectory
   // that are not synchronized with those of the Earth.
   for (; t < initial_time_ + δt_long; t += δt_short) {
-    plugin_->AdvanceTime(t,
-                         1 * Radian / Pow<2>(Minute) * Pow<2>(t - initial_time_));
+    plugin_->AdvanceTime(
+        t,
+        1 * Radian / Pow<2>(Minute) * Pow<2>(t - initial_time_));
     plugin_->InsertOrKeepVessel(satellite, SolarSystem::kEarth);
   }
 #else
@@ -321,8 +326,6 @@ TEST_F(PluginIntegrationTest, BarycentricRotatingRenderingIntegration) {
 // again on the other side of the body, the main section matches its velocity
 // with that of the saucer, they are reunited, the physics bubble ends again.
 TEST_F(PluginIntegrationTest, PhysicsBubble) {
-  //FLAGS_v = 1;
-  //google::SetStderrLogging(google::INFO);
   GUID const enterprise_d = "NCC-1701-D";
   GUID const enterprise_d_saucer = "NCC-1701-D (saucer)";
   PartId const engineering_section = 0;
