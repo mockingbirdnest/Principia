@@ -8,6 +8,7 @@ namespace physics {
 
 template<typename Tr4jectory, typename TimelineConstIterator_>
 Forkable<Tr4jectory, TimelineConstIterator_>::Forkable() : parent_(nullptr) {}
+//TODO(phl): And the other fields?
 
 template<typename Tr4jectory, typename TimelineConstIterator_>
 not_null<Tr4jectory*>
@@ -19,21 +20,21 @@ Forkable<Tr4jectory, TimelineConstIterator_>::NewFork(Instant const & time) {
   // May be at |timeline_end()|.
   auto timeline_it = timeline_find(time);
 
-  // We cannot know the iterator into |this->children_| that the child object
-  // will hold until after we have inserted it in |this->children_|.
+  // First create a child in the multimap.
   auto const child_it = children_.emplace(
       std::piecewise_construct,
       std::forward_as_tuple(time),
-      std::forward_as_tuple(this /*parent*/,
-                            children_.end(), /*position_in_parent_children*/
-                            timeline_it /*position_in_parent_timeline*/));
+      std::forward_as_tuple());
 
   // Now set the iterator into |this->children_| in the child object.
   auto& child_forkable = child_it->second;
+  child_forkable.parent_ = this;
   child_forkable.position_in_parent_children_ = child_it;
+  child_forkable.position_in_parent_timeline_ = timeline_it;
 
   // Copy the tail of the trajectory in the child object.
   if (timeline_it != timeline_end()) {
+    //TODO(phl): Ugly cast.
     static_cast<Forkable&>(child_forkable).timeline_insert(++timeline_it,
                                                            timeline_end());
   }
@@ -175,15 +176,6 @@ typename Forkable<Tr4jectory, TimelineConstIterator_>::TimelineConstIterator
 Forkable<Tr4jectory, TimelineConstIterator_>::Iterator::current() const {
   return current_;
 }
-
-template<typename Tr4jectory, typename TimelineConstIterator_>
-Forkable<Tr4jectory, TimelineConstIterator_>::Forkable(
-    not_null<Forkable*> const parent,
-    typename Children::const_iterator position_in_parent_children,
-    TimelineConstIterator position_in_parent_timeline)
-    : parent_(parent),
-      position_in_parent_children_(position_in_parent_children),
-      position_in_parent_timeline_(position_in_parent_timeline) {}
 
 }  // namespace physics
 }  // namespace principia

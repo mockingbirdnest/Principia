@@ -38,7 +38,7 @@ class Forkable {
                         Instant const& time);
     static Iterator New(not_null<Forkable*> const forkable,
                         not_null<Forkable*> const ancestor,
-                        TimelineConstIterator const 
+                        TimelineConstIterator const
                             position_in_ancestor_timeline);
 
     Iterator& operator++();
@@ -54,14 +54,6 @@ class Forkable {
   };
 
  protected:
-  // There may be several forks starting from the same time, hence the multimap.
-  using Children = std::multimap<Instant, Tr4jectory>;
-
-  // A constructor for creating a child object during forking.
-  Forkable(not_null<Forkable*> const parent,
-           typename Children::const_iterator position_in_parent_children,
-           TimelineConstIterator position_in_parent_timeline);
-
   virtual TimelineConstIterator timeline_end() const = 0;
   virtual TimelineConstIterator timeline_find(Instant const& time) const = 0;
   virtual void timeline_insert(TimelineConstIterator begin,
@@ -69,11 +61,14 @@ class Forkable {
   virtual bool timeline_empty() const = 0;
 
  private:
+  // There may be several forks starting from the same time, hence the multimap.
+  using Children = std::multimap<Instant, Tr4jectory>;
+
   // Null for a root.
-  Forkable* const parent_;
+  Forkable* parent_;
 
   // This iterator is only at |end()| for a root.
-  //TODO(phl): const? (2x)
+  //TODO(phl): const? (3x)
   typename Children::const_iterator position_in_parent_children_;
 
   // This iterator is at |end()| if the parent's timeline is empty, or if this
