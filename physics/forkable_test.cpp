@@ -11,11 +11,18 @@ using si::Second;
 
 namespace physics {
 
-class FakeTrajectory : public Forkable<std::vector<Instant>::const_iterator> {
+class FakeTrajectory : public Forkable<FakeTrajectory,
+                                       std::vector<Instant>::const_iterator> {
  public:
   FakeTrajectory();
 
   void push_back(Instant const& time);
+
+ public://FIXME
+  // A constructor for creating a child object during forking.
+  FakeTrajectory(not_null<Forkable*> const parent,
+                 Children::const_iterator position_in_parent_children,
+                 TimelineConstIterator position_in_parent_timeline);
 
  protected:
   TimelineConstIterator timeline_end() const override;
@@ -29,11 +36,20 @@ class FakeTrajectory : public Forkable<std::vector<Instant>::const_iterator> {
 };
 
 FakeTrajectory::FakeTrajectory()
-    : Forkable<std::vector<Instant>::const_iterator>() {}
+    : Forkable<FakeTrajectory,
+               std::vector<Instant>::const_iterator>() {}
 
 void FakeTrajectory::push_back(Instant const& time) {
   timeline_.push_back(time);
 }
+
+FakeTrajectory::FakeTrajectory(
+    not_null<Forkable*> const parent,
+    Children::const_iterator position_in_parent_children,
+    TimelineConstIterator position_in_parent_timeline)
+    : Forkable(parent,
+               position_in_parent_children,
+               position_in_parent_timeline) {}
 
 FakeTrajectory::TimelineConstIterator FakeTrajectory::timeline_end() const {
   return timeline_.end();
