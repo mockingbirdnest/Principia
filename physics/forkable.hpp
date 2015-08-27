@@ -2,6 +2,7 @@
 
 #include <list>
 #include <map>
+#include <memory>
 
 #include "base/not_null.hpp"
 #include "geometry/named_quantities.hpp"
@@ -61,7 +62,7 @@ class Forkable {
 
  private:
   // There may be several forks starting from the same time, hence the multimap.
-  using Children = std::multimap<Instant, Forkable>;
+  using Children = std::multimap<Instant, std::unique_ptr<Forkable>>;
 
   // A constructor for creating a child object during forking.
   Forkable(not_null<Forkable*> const parent,
@@ -72,6 +73,7 @@ class Forkable {
   Forkable* const parent_;
 
   // This iterator is only at |end()| for a root.
+  //TODO(phl): const? (2x)
   typename Children::const_iterator position_in_parent_children_;
 
   // This iterator is at |end()| if the parent's timeline is empty, or if this

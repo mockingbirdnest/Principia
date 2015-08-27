@@ -7,36 +7,35 @@ namespace principia {
 namespace physics {
 
 template<typename TimelineConstIterator_>
-Forkable<TimelineConstIterator_>::Forkable() {}
+Forkable<TimelineConstIterator_>::Forkable() : parent_(nullptr) {}
 
 template<typename TimelineConstIterator_>
 not_null<Forkable<TimelineConstIterator_>*>
 Forkable<TimelineConstIterator_>::NewFork(Instant const & time) {
   CHECK(timeline_find(time) != timeline_end() ||
-        (!is_root() && time == position_in_parent_children->first))
+        (!is_root() && time == position_in_parent_children_->first))
       << "NewFork at nonexistent time " << time;
 
   // May be at |timeline_end()|.
-  auto const timeline_it = timeline_find(time);
+  auto timeline_it = timeline_find(time);
 
   // We cannot know the iterator into |this->children_| that the child object
   // will hold until after we have inserted it in |this->children_|.
   auto const child_it = children_.emplace(
-      std::piecewise_construct,
-      std::forward_as_tuple(time),
-      std::forward_as_tuple(this /*parent*/,
-                            children_.end(), /*position_in_parent_children*/
-                            timeline_it /*position_in_parent_timeline*/));
+      time,
+      new Forkable(this /*parent*/,
+                   children_.end(), /*position_in_parent_children*/
+                   timeline_it /*position_in_parent_timeline*/));
 
   // Now set the iterator into |this->children_| in the child object.
-  Forkable& child_forkable = child_it->second;
-  child_forkable.position_in_parent_children = child_it;
+  auto const& child_forkable = child_it->second;
+  child_forkable->position_in_parent_children_ = child_it;
 
   // Copy the tail of the trajectory in the child object.
   if (timeline_it != timeline_end()) {
-    child_forkable.timeline_insert(++timeline_it, timeline_end());
+    child_forkable->timeline_insert(++timeline_it, timeline_end());
   }
-  return &child_forkable;
+  return child_forkable.get();
 }
 
 template<typename TimelineConstIterator_>
