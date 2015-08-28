@@ -57,6 +57,7 @@ class Forkable {
   virtual not_null<Tr4jectory*> that() = 0;
   virtual not_null<Tr4jectory const*> that() const = 0;
 
+  virtual TimelineConstIterator timeline_begin() const = 0;
   virtual TimelineConstIterator timeline_end() const = 0;
   virtual TimelineConstIterator timeline_find(Instant const& time) const = 0;
   virtual void timeline_insert(TimelineConstIterator begin,

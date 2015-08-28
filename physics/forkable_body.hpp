@@ -154,7 +154,7 @@ Forkable<Tr4jectory, TimelineConstIterator_>::Iterator::operator++() {
     if (current_time == child_fork_time) {
       // Start iterating over the next child timeline.  Drop the leading
       // ancestor.
-      current_ = child->timeline_first();
+      current_ = child->timeline_begin();
       ancestry_.pop_front();
       return *this;
     }

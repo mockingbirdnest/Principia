@@ -27,6 +27,7 @@ class FakeTrajectory : public Forkable<FakeTrajectory,
   not_null<FakeTrajectory*> that() override;
   not_null<FakeTrajectory const*> that() const override;
 
+  TimelineConstIterator timeline_begin() const override;
   TimelineConstIterator timeline_end() const override;
   TimelineConstIterator timeline_find(Instant const& time) const override;
   void timeline_insert(TimelineConstIterator begin,
@@ -38,6 +39,8 @@ class FakeTrajectory : public Forkable<FakeTrajectory,
 
   template<typename Tr4jectory, typename TimelineConstIterator_>
   friend class Forkable;
+  template<typename Tr4jectory, typename TimelineConstIterator_>
+  friend class Forkable<Tr4jectory, TimelineConstIterator_>::Iterator;
 };
 
 FakeTrajectory::FakeTrajectory()
@@ -62,6 +65,10 @@ not_null<FakeTrajectory*> FakeTrajectory::that() {
 
 not_null<FakeTrajectory const*> FakeTrajectory::that() const {
   return this;
+}
+
+FakeTrajectory::TimelineConstIterator FakeTrajectory::timeline_begin() const {
+  return timeline_.begin();
 }
 
 FakeTrajectory::TimelineConstIterator FakeTrajectory::timeline_end() const {
