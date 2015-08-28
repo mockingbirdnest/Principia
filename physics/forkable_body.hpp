@@ -150,7 +150,7 @@ Forkable<Tr4jectory, TimelineConstIterator_>::Iterator::operator++() {
     // There is a next child.  See if we reached its fork time.
     not_null<Tr4jectory const*> child = *ancestry_it;
     Instant const& current_time = *current_/*->first*/;///Traits?
-    Instant const& child_fork_time = child->position_in_ancestor_children_;
+    Instant const& child_fork_time = child->position_in_parent_children_->first;
     if (current_time == child_fork_time) {
       // Start iterating over the next child timeline.  Drop the leading
       // ancestor.

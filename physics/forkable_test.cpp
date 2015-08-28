@@ -116,6 +116,7 @@ class ForkableTest : public testing::Test {
     for (; it.current() != trajectory->end(); ++it) {
       times.push_back(*it.current());
     }
+    return times;
   }
 
   FakeTrajectory trajectory_;
