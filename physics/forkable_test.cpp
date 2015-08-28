@@ -27,6 +27,9 @@ class FakeTrajectory : public Forkable<FakeTrajectory,
 
  private:
   std::vector<Instant> timeline_;
+
+  template<typename Tr4jectory, typename TimelineConstIterator_>
+  friend class Forkable;
 };
 
 FakeTrajectory::FakeTrajectory()

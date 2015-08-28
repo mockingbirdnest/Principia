@@ -21,12 +21,9 @@ Forkable<Tr4jectory, TimelineConstIterator_>::NewFork(Instant const & time) {
   auto timeline_it = timeline_find(time);
 
   // First create a child in the multimap.
-  auto const child_it = children_.emplace(
-      std::piecewise_construct,
-      std::forward_as_tuple(time),
-      std::forward_as_tuple());
+  auto const child_it = children_.emplace(time, Tr4jectory());
 
-  // Now set the iterator into |this->children_| in the child object.
+  // Now set the members of the child object.
   auto& child_forkable = child_it->second;
   child_forkable.parent_ = this;
   child_forkable.position_in_parent_children_ = child_it;
@@ -34,9 +31,7 @@ Forkable<Tr4jectory, TimelineConstIterator_>::NewFork(Instant const & time) {
 
   // Copy the tail of the trajectory in the child object.
   if (timeline_it != timeline_end()) {
-    //TODO(phl): Ugly cast.
-    static_cast<Forkable&>(child_forkable).timeline_insert(++timeline_it,
-                                                           timeline_end());
+    child_forkable.timeline_insert(++timeline_it, timeline_end());
   }
   return &child_forkable;
 }
