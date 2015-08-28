@@ -25,7 +25,7 @@ Forkable<Tr4jectory, TimelineConstIterator_>::NewFork(Instant const & time) {
 
   // Now set the members of the child object.
   auto& child_forkable = child_it->second;
-  child_forkable.parent_ = this;
+  child_forkable.parent_ = that();
   child_forkable.position_in_parent_children_ = child_it;
   child_forkable.position_in_parent_timeline_ = timeline_it;
 
@@ -62,7 +62,7 @@ bool Forkable<Tr4jectory, TimelineConstIterator_>::is_root() const {
 template<typename Tr4jectory, typename TimelineConstIterator_>
 not_null<Tr4jectory const*>
 Forkable<Tr4jectory, TimelineConstIterator_>::root() const {
-  Forkable const* ancestor = this;
+  Tr4jectory const* ancestor = that();
   while (ancestor->parent_ != nullptr) {
     ancestor = ancestor->parent_;
   }
@@ -72,7 +72,7 @@ Forkable<Tr4jectory, TimelineConstIterator_>::root() const {
 template<typename Tr4jectory, typename TimelineConstIterator_>
 not_null<Tr4jectory*>
 Forkable<Tr4jectory, TimelineConstIterator_>::root() {
-  Forkable* ancestor = this;
+  Tr4jectory* ancestor = that();
   while (ancestor->parent_ != nullptr) {
     ancestor = ancestor->parent_;
   }
@@ -91,7 +91,7 @@ Instant const* Forkable<Tr4jectory, TimelineConstIterator_>::ForkTime() const {
 template<typename Tr4jectory, typename TimelineConstIterator_>
 typename Forkable<Tr4jectory, TimelineConstIterator_>::Iterator
 Forkable<Tr4jectory, TimelineConstIterator_>::Iterator::New(
-    not_null<Forkable*> const forkable, Instant const & time) {
+    not_null<Tr4jectory const*> const forkable, Instant const & time) {
   Iterator iterator;
 
   // Go up the ancestry chain until we find a timeline that covers |time| (that
@@ -115,17 +115,16 @@ Forkable<Tr4jectory, TimelineConstIterator_>::Iterator::New(
 template<typename Tr4jectory, typename TimelineConstIterator_>
 typename Forkable<Tr4jectory, TimelineConstIterator_>::Iterator
 Forkable<Tr4jectory, TimelineConstIterator_>::Iterator::New(
-    not_null<Forkable*> const forkable,
-    not_null<Forkable*> const ancestor,
-    TimelineConstIterator const
-        position_in_ancestor_timeline) {
+    not_null<Tr4jectory const*> const forkable,
+    not_null<Tr4jectory const*> const ancestor,
+    TimelineConstIterator const position_in_ancestor_timeline) {
   Iterator iterator;
 
   // Go up the ancestry chain until we find |ancestor| and set |current_| to
   // |position_in_ancestor_timeline|.  The ancestry has |forkable|
   // at the back, and the object containing |current_| at the front.  If
   // |ancestor| is not found in the ancestry, stop at the root.
-  not_null<Forkable const*> ancest0r = forkable;
+  not_null<Tr4jectory const*> ancest0r = forkable;
   do {
     iterator.ancestry_.push_front(ancest0r);
     if (ancestor == ancest0r) {
@@ -143,15 +142,15 @@ template<typename Tr4jectory, typename TimelineConstIterator_>
 typename Forkable<Tr4jectory, TimelineConstIterator_>::Iterator&
 Forkable<Tr4jectory, TimelineConstIterator_>::Iterator::operator++() {
   CHECK(!ancestry_.empty());
-  CHECK(current_ != ancestry_.front().end());
+  CHECK(current_ != ancestry_.front()->timeline_end());
 
   // Check if there is a next child in the ancestry.
   auto ancestry_it = ++ancestry_.begin();
   if (ancestry_it != ancestry_.end()) {
     // There is a next child.  See if we reached its fork time.
-    not_null<Forkable const*> child = *ancestry_it;
-    Instant const& current_time = current_->first;
-    Instant const& child_fork_time = child->position_in_ancestor_children;
+    not_null<Tr4jectory const*> child = *ancestry_it;
+    Instant const& current_time = *current_/*->first*/;///Traits?
+    Instant const& child_fork_time = child->position_in_ancestor_children_;
     if (current_time == child_fork_time) {
       // Start iterating over the next child timeline.  Drop the leading
       // ancestor.

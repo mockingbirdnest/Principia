@@ -34,10 +34,10 @@ class Forkable {
 
   class Iterator {
    public:
-    static Iterator New(not_null<Forkable*> const forkable,
+    static Iterator New(not_null<const Tr4jectory*> const forkable,
                         Instant const& time);
-    static Iterator New(not_null<Forkable*> const forkable,
-                        not_null<Forkable*> const ancestor,
+    static Iterator New(not_null<const Tr4jectory*> const forkable,
+                        not_null<const Tr4jectory*> const ancestor,
                         TimelineConstIterator const
                             position_in_ancestor_timeline);
 
@@ -50,10 +50,13 @@ class Forkable {
     // |ancestry_| is the root.  There is no element in |forks_| for the root.
     // It is therefore empty for a root trajectory.
     TimelineConstIterator current_;
-    std::list<not_null<Forkable const*>> ancestry_;  // Pointers not owned.
+    std::list<not_null<Tr4jectory const*>> ancestry_;  // Pointers not owned.
   };
 
  protected:
+  virtual not_null<Tr4jectory*> that() = 0;
+  virtual not_null<Tr4jectory const*> that() const = 0;
+
   virtual TimelineConstIterator timeline_end() const = 0;
   virtual TimelineConstIterator timeline_find(Instant const& time) const = 0;
   virtual void timeline_insert(TimelineConstIterator begin,
@@ -65,7 +68,7 @@ class Forkable {
   using Children = std::multimap<Instant, Tr4jectory>;
 
   // Null for a root.
-  Forkable* parent_;
+  Tr4jectory* parent_;
 
   // This iterator is only at |end()| for a root.
   //TODO(phl): const? (3x)
