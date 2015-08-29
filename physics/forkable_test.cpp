@@ -105,9 +105,31 @@ class ForkableTest : public testing::Test {
     t3_(t0_ + 27 * Second),
     t4_(t0_ + 37 * Second) {}
 
+  static std::vector<Instant> After(
+      not_null<FakeTrajectory const*> const trajectory,
+      Instant const& time) {
+    std::vector<Instant> after;
+    FakeTrajectory::Iterator it =
+        FakeTrajectory::Iterator::New(trajectory, time);
+    for (; it.current() != trajectory->end(); ++it) {
+      after.push_back(*it.current());
+    }
+    return after;
+  }
+
+  static Instant const& LastTime(
+      not_null<FakeTrajectory const*> const trajectory) {
+    //TODO(phl): Not very nice, incorrect --end().
+    FakeTrajectory::Iterator it =
+        FakeTrajectory::Iterator::New(trajectory,
+                                      trajectory,
+                                      --trajectory->end());
+    return *it.current();
+  }
+
   static std::vector<Instant> Times(
       not_null<FakeTrajectory const*> const trajectory) {
-    //TODO(phl): Not very nice.
+    //TODO(phl): Not very nice, incorrect comparison to end().
     std::vector<Instant> times;
     FakeTrajectory::Iterator it =
         FakeTrajectory::Iterator::New(trajectory,
@@ -117,15 +139,6 @@ class ForkableTest : public testing::Test {
       times.push_back(*it.current());
     }
     return times;
-  }
-
-  static Instant const& LastTime(
-      not_null<FakeTrajectory const*> const trajectory) {
-    FakeTrajectory::Iterator it =
-        FakeTrajectory::Iterator::New(trajectory,
-                                      trajectory,
-                                      --trajectory->end());
-    return *it.current();
   }
 
   FakeTrajectory trajectory_;
@@ -169,89 +182,31 @@ TEST_F(ForkableTest, ForkAtLast) {
   EXPECT_EQ(t3_, LastTime(fork2));
   EXPECT_EQ(t3_, *fork2->ForkTime());
 
-  std::vector<Instant> after;
-  for (auto it = fork3->on_or_after(t3_); !it.at_end(); ++it) {
-    after.push_back(it.time());
-  }
+  auto after = After(fork3, t3_);
   EXPECT_THAT(after, ElementsAre(t3_));
 
-  fork2->ForgetAfter(t3_);
-  positions = fork2->Positions();
-  velocities = fork2->Velocities();
-  times = fork2->Times();
-  EXPECT_THAT(positions, ElementsAre(testing::Pair(t1_, q1_),
-                                     testing::Pair(t2_, q2_),
-                                     testing::Pair(t3_, q3_)));
-  EXPECT_THAT(velocities, ElementsAre(testing::Pair(t1_, p1_),
-                                      testing::Pair(t2_, p2_),
-                                      testing::Pair(t3_, p3_)));
-  EXPECT_THAT(times, ElementsAre(t1_, t2_, t3_));
-  EXPECT_EQ(q3_, fork2->last().degrees_of_freedom().position());
-  EXPECT_EQ(p3_, fork2->last().degrees_of_freedom().velocity());
-  EXPECT_EQ(t3_, fork2->last().time());
-  EXPECT_EQ(t3_, *fork2->fork_time());
-
-  after.clear();
-  for (auto it = fork2->on_or_after(t3_); !it.at_end(); ++it) {
-    after.push_back(it.time());
-  }
+  after = After(fork2, t3_);
   EXPECT_THAT(after, ElementsAre(t3_));
 
-  fork1.push_back(t4_);
-  positions = fork2->Positions();
-  velocities = fork2->Velocities();
-  times = fork2->Times();
-  EXPECT_THAT(positions, ElementsAre(testing::Pair(t1_, q1_),
-                                     testing::Pair(t2_, q2_),
-                                     testing::Pair(t3_, q3_)));
-  EXPECT_THAT(velocities, ElementsAre(testing::Pair(t1_, p1_),
-                                      testing::Pair(t2_, p2_),
-                                      testing::Pair(t3_, p3_)));
+  fork1->push_back(t4_);
+  times = Times(fork2);
   EXPECT_THAT(times, ElementsAre(t1_, t2_, t3_));
-  EXPECT_EQ(q3_, fork2->last().degrees_of_freedom().position());
-  EXPECT_EQ(p3_, fork2->last().degrees_of_freedom().velocity());
-  EXPECT_EQ(t3_, fork2->last().time());
-  EXPECT_EQ(t3_, *fork2->fork_time());
 
-  after.clear();
-  for (auto it = fork1->on_or_after(t3_); !it.at_end(); ++it) {
-    after.push_back(it.time());
-  }
+  after = After(fork1, t3_);
   EXPECT_THAT(after, ElementsAre(t3_, t4_));
 
-  positions = fork3->Positions();
-  velocities = fork3->Velocities();
-  times = fork3->Times();
-  EXPECT_THAT(positions, ElementsAre(testing::Pair(t1_, q1_),
-                                     testing::Pair(t2_, q2_),
-                                     testing::Pair(t3_, q3_)));
-  EXPECT_THAT(velocities, ElementsAre(testing::Pair(t1_, p1_),
-                                      testing::Pair(t2_, p2_),
-                                      testing::Pair(t3_, p3_)));
+  times = Times(fork3);
   EXPECT_THAT(times, ElementsAre(t1_, t2_, t3_));
-  EXPECT_EQ(q3_, fork3->last().degrees_of_freedom().position());
-  EXPECT_EQ(p3_, fork3->last().degrees_of_freedom().velocity());
-  EXPECT_EQ(t3_, fork3->last().time());
-  EXPECT_EQ(t3_, *fork3->fork_time());
 
-  fork2.push_back(t4_);
-  after.clear();
-  for (auto it = fork2->on_or_after(t3_); !it.at_end(); ++it) {
-    after.push_back(it.time());
-  }
+  fork2->push_back(t4_);
+  after = After(fork2, t3_);
   EXPECT_THAT(after, ElementsAre(t3_, t4_));
 
-  fork3.push_back(t4_);
-  after.clear();
-  for (auto it = fork3->on_or_after(t3_); !it.at_end(); ++it) {
-    after.push_back(it.time());
-  }
+  fork3->push_back(t4_);
+  after = After(fork3, t3_);
   EXPECT_THAT(after, ElementsAre(t3_, t4_));
 
-  after.clear();
-  for (auto it = fork3->on_or_after(t2_); !it.at_end(); ++it) {
-    after.push_back(it.time());
-  }
+  after = After(fork3, t2_);
   EXPECT_THAT(after, ElementsAre(t2_, t3_, t4_));
 }
 

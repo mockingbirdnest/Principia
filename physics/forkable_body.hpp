@@ -84,7 +84,7 @@ Instant const* Forkable<Tr4jectory, TimelineConstIterator_>::ForkTime() const {
   if (is_root()) {
     return nullptr;
   } else {
-    return position_in_parent_children_->first;
+    return &position_in_parent_children_->first;
   }
 }
 
@@ -98,10 +98,11 @@ Forkable<Tr4jectory, TimelineConstIterator_>::Iterator::New(
   // is, |time| is after the first time of the timeline).  Set |current_| to
   // the location of |time|, which may be |end()|.  The ancestry has |forkable|
   // at the back, and the object containing |current_| at the front.
-  not_null<Forkable const*> ancestor = forkable;
+  not_null<Tr4jectory const*> ancestor = forkable;
   do {
     iterator.ancestry_.push_front(ancestor);
-    if (!ancestor->timeline_is_empty() && ancestor->timeline_front() <= time) {
+    if (!ancestor->timeline_empty() &&
+        *ancestor->timeline_begin()/*->first*/ <= time) {
       iterator.current_ = ancestor->timeline_find(time);  // May be at end.
       break;
     }
