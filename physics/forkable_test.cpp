@@ -18,9 +18,6 @@ class FakeTrajectory : public Forkable<FakeTrajectory,
  public:
   FakeTrajectory();
 
-  std::vector<Instant>::const_iterator begin() const;
-  std::vector<Instant>::const_iterator end() const;
-
   void push_back(Instant const& time);
 
  protected:
@@ -46,14 +43,6 @@ class FakeTrajectory : public Forkable<FakeTrajectory,
 FakeTrajectory::FakeTrajectory()
     : Forkable<FakeTrajectory,
                std::vector<Instant>::const_iterator>() {}
-
-std::vector<Instant>::const_iterator FakeTrajectory::begin() const {
-  return timeline_.begin();
-}
-
-std::vector<Instant>::const_iterator FakeTrajectory::end() const {
-  return timeline_.end();
-}
 
 void FakeTrajectory::push_back(Instant const& time) {
   timeline_.push_back(time);
@@ -118,9 +107,7 @@ class ForkableTest : public testing::Test {
 
   static Instant const& LastTime(
       not_null<FakeTrajectory const*> const trajectory) {
-    //TODO(phl): Not very nice, incorrect --end().  --> operator--
-    FakeTrajectory::Iterator it = trajectory->Wrap(trajectory,
-                                                   trajectory->end());
+    FakeTrajectory::Iterator it = trajectory->End();
     --it;
     return *it.current();
   }
@@ -128,9 +115,7 @@ class ForkableTest : public testing::Test {
   static std::vector<Instant> Times(
       not_null<FakeTrajectory const*> const trajectory) {
     std::vector<Instant> times;
-    FakeTrajectory::Iterator it = trajectory->Wrap(
-                                      trajectory->root(),
-                                      trajectory->root()->begin());
+    FakeTrajectory::Iterator it = trajectory->Begin();
     for (; it != trajectory->End(); ++it) {
       times.push_back(*it.current());
     }
@@ -206,21 +191,21 @@ TEST_F(ForkableTest, ForkAtLast) {
   EXPECT_THAT(after, ElementsAre(t2_, t3_, t4_));
 }
 
-//TEST_F(TrajectoryDeathTest, DeleteForkError) {
-//  EXPECT_DEATH({
-//    trajectory_.push_back(t1_);
-//    FakeTrajectory* root = trajectory_.get();
-//    trajectory_.DeleteFork(&root);
-//  }, "'fork_time'.* non NULL");
-//  EXPECT_DEATH({
-//    trajectory_.push_back(t1_);
-//    FakeTrajectory* fork1 = trajectory_.NewFork(t1_);
-//    fork1.push_back(t2_);
-//    FakeTrajectory* fork2 = fork1->NewFork(t2_);
-//    trajectory_.DeleteFork(&fork2);
-//  }, "not a child");
-//}
-//
+TEST_F(ForkableDeathTest, DeleteForkError) {
+  EXPECT_DEATH({
+    trajectory_.push_back(t1_);
+    FakeTrajectory* root = &trajectory_;
+    trajectory_.DeleteFork(&root);
+  }, "'fork_time'.* non NULL");
+  EXPECT_DEATH({
+    trajectory_.push_back(t1_);
+    FakeTrajectory* fork1 = trajectory_.NewFork(t1_);
+    fork1->push_back(t2_);
+    FakeTrajectory* fork2 = fork1->NewFork(t2_);
+    trajectory_.DeleteFork(&fork2);
+  }, "not a child");
+}
+
 //TEST_F(ForkableDeathTest, DeleteForkSuccess) {
 //  trajectory_.push_back(t1_);
 //  trajectory_.push_back(t2_);

@@ -23,7 +23,7 @@ class Forkable {
 
   not_null<Tr4jectory*> NewFork(Instant const& time);
 
-  void DeleteFork(not_null<Forkable**> const forkable);
+  void DeleteFork(not_null<Tr4jectory**> const trajectory);
 
   bool is_root() const;
 
@@ -55,6 +55,7 @@ class Forkable {
     friend class Forkable;
   };
 
+  Iterator Begin() const;
   Iterator End() const;
 
   Iterator Find(Instant const& time) const;

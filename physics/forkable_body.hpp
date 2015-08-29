@@ -38,20 +38,20 @@ Forkable<Tr4jectory, TimelineConstIterator_>::NewFork(Instant const & time) {
 
 template<typename Tr4jectory, typename TimelineConstIterator_>
 void Forkable<Tr4jectory, TimelineConstIterator_>::DeleteFork(
-    not_null<Forkable**> const forkable) {
-  CHECK_NOTNULL(*forkable);
-  Instant const* const fork_time = (*forkable)->ForkTime();
+    not_null<Tr4jectory**> const trajectory) {
+  CHECK_NOTNULL(*trajectory);
+  Instant const* const fork_time = (*trajectory)->ForkTime();
   CHECK_NOTNULL(fork_time);
   // Find the position of |*forkable| among our children and remove it.
   auto const range = children_.equal_range(*fork_time);
   for (auto it = range.first; it != range.second; ++it) {
-    if (&it->second == *forkable) {
+    if (&it->second == *trajectory) {
       children_.erase(it);
-      *forkable = nullptr;
+      *trajectory = nullptr;
       return;
     }
   }
-  LOG(FATAL) << "argument is not a child of this forkable";
+  LOG(FATAL) << "argument is not a child of this trajectory";
 }
 
 template<typename Tr4jectory, typename TimelineConstIterator_>
@@ -180,12 +180,16 @@ bool Forkable<Tr4jectory, TimelineConstIterator_>::Iterator::at_end() const {
 
 template<typename Tr4jectory, typename TimelineConstIterator_>
 typename Forkable<Tr4jectory, TimelineConstIterator_>::Iterator
+Forkable<Tr4jectory, TimelineConstIterator_>::Begin() const {
+  not_null<Tr4jectory const*> ancestor = root();
+  return Wrap(ancestor, ancestor->timeline_begin());
+}
+
+template<typename Tr4jectory, typename TimelineConstIterator_>
+typename Forkable<Tr4jectory, TimelineConstIterator_>::Iterator
 Forkable<Tr4jectory, TimelineConstIterator_>::End() const {
-  Iterator iterator;
   not_null<Tr4jectory const*> ancestor = that();
-  iterator.ancestry_.push_front(ancestor);
-  iterator.current_ = ancestor->timeline_end();
-  return iterator;
+  return Wrap(ancestor, ancestor->timeline_end());
 }
 
 template<typename Tr4jectory, typename TimelineConstIterator_>
