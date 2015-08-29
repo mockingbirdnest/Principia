@@ -38,6 +38,7 @@ class Forkable {
     bool operator!=(Iterator const& right) const;
 
     Iterator& operator++();
+    Iterator& operator--();
 
     TimelineConstIterator current() const;
 

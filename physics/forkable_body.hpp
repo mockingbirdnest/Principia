@@ -148,6 +148,28 @@ Forkable<Tr4jectory, TimelineConstIterator_>::Iterator::operator++() {
 }
 
 template<typename Tr4jectory, typename TimelineConstIterator_>
+typename Forkable<Tr4jectory, TimelineConstIterator_>::Iterator&
+Forkable<Tr4jectory, TimelineConstIterator_>::Iterator::operator--() {
+  CHECK(!ancestry_.empty());
+
+  not_null<Tr4jectory const*> ancestor = ancestry_.front();
+  if (current_ == ancestor->timeline_begin()) {
+    CHECK_NOTNULL(ancestor->parent_);
+    current_ = ancestor->position_in_parent_timeline_;
+    ancestor = ancestor->parent_;
+    while (ancestor != nullptr && ancestor->timeline_empty()) {
+      ancestry_.push_front(ancestor);
+      current_ = ancestor->position_in_parent_timeline_;
+      ancestor = ancestor->parent_;
+    }
+    return *this;
+  }
+
+  --current_;
+  return *this;
+}
+
+template<typename Tr4jectory, typename TimelineConstIterator_>
 typename Forkable<Tr4jectory, TimelineConstIterator_>::TimelineConstIterator
 Forkable<Tr4jectory, TimelineConstIterator_>::Iterator::current() const {
   return current_;

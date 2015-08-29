@@ -120,7 +120,8 @@ class ForkableTest : public testing::Test {
       not_null<FakeTrajectory const*> const trajectory) {
     //TODO(phl): Not very nice, incorrect --end().  --> operator--
     FakeTrajectory::Iterator it = trajectory->Wrap(trajectory,
-                                                   --trajectory->end());
+                                                   trajectory->end());
+    --it;
     return *it.current();
   }
 
