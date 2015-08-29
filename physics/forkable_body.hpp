@@ -155,10 +155,11 @@ Forkable<Tr4jectory, TimelineConstIterator_>::Iterator::operator--() {
     CHECK_NOTNULL(ancestor->parent_);
     current_ = ancestor->position_in_parent_timeline_;
     ancestor = ancestor->parent_;
-    while (ancestor != nullptr && ancestor->timeline_empty()) {
-      ancestry_.push_front(ancestor);
+    ancestry_.push_front(ancestor);
+    while (ancestor->timeline_empty() && ancestor->parent_ != nullptr) {
       current_ = ancestor->position_in_parent_timeline_;
       ancestor = ancestor->parent_;
+      ancestry_.push_front(ancestor);
     }
     return *this;
   }

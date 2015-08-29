@@ -14,7 +14,7 @@ using ::testing::ElementsAre;
 namespace physics {
 
 class FakeTrajectory : public Forkable<FakeTrajectory,
-                                       std::vector<Instant>::const_iterator> {
+                                       std::list<Instant>::const_iterator> {
  public:
   FakeTrajectory();
 
@@ -32,7 +32,8 @@ class FakeTrajectory : public Forkable<FakeTrajectory,
   bool timeline_empty() const override;
 
  private:
-  std::vector<Instant> timeline_;
+  // Use list<> because we want the iterators to remain valid across operations.
+  std::list<Instant> timeline_;
 
   template<typename Tr4jectory, typename TimelineConstIterator_>
   friend class Forkable;
@@ -42,7 +43,7 @@ class FakeTrajectory : public Forkable<FakeTrajectory,
 
 FakeTrajectory::FakeTrajectory()
     : Forkable<FakeTrajectory,
-               std::vector<Instant>::const_iterator>() {}
+               std::list<Instant>::const_iterator>() {}
 
 void FakeTrajectory::push_back(Instant const& time) {
   timeline_.push_back(time);
@@ -246,21 +247,41 @@ TEST_F(ForkableDeathTest, DeleteForkError) {
 //  trajectory_.reset();
 //}
 //
-//TEST_F(TrajectoryDeathTest, LastError) {
-//  EXPECT_DEATH({
-//    trajectory_.last();
-//  }, "Empty trajectory");
-//}
-//
-//TEST_F(ForkableDeathTest, LastSuccess) {
-//  trajectory_.push_back(t1_);
-//  trajectory_.push_back(t2_);
-//  trajectory_.push_back(t3_);
-//  EXPECT_EQ(q3_, trajectory_.last().degrees_of_freedom().position());
-//  EXPECT_EQ(p3_, trajectory_.last().degrees_of_freedom().velocity());
-//  EXPECT_EQ(t3_, trajectory_.last().time());
-//}
-//
+TEST_F(ForkableDeathTest, IteratorDecrementError) {
+  EXPECT_DEATH({
+    auto it = trajectory_.End();
+    --it;
+  }, "parent_.*non NULL");
+}
+
+TEST_F(ForkableTest, IteratorDecrementNoForkSuccess) {
+  trajectory_.push_back(t1_);
+  trajectory_.push_back(t2_);
+  trajectory_.push_back(t3_);
+  auto it = trajectory_.End();
+  --it;
+  EXPECT_EQ(t3_, *it.current());
+  --it;
+  EXPECT_EQ(t2_, *it.current());
+  --it;
+  EXPECT_EQ(t1_, *it.current());
+}
+
+TEST_F(ForkableTest, IteratorDecrementForkSuccess) {
+  trajectory_.push_back(t1_);
+  trajectory_.push_back(t2_);
+  auto fork = trajectory_.NewFork(t1_);
+  trajectory_.push_back(t4_);
+  fork->push_back(t3_);
+  auto it = fork->End();
+  --it;
+  EXPECT_EQ(t3_, *it.current());
+  --it;
+  EXPECT_EQ(t2_, *it.current());
+  --it;
+  EXPECT_EQ(t1_, *it.current());
+}
+
 //TEST_F(ForkableDeathTest, Root) {
 //  trajectory_.push_back(t1_);
 //  trajectory_.push_back(t2_);
