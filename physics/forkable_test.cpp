@@ -13,8 +13,14 @@ using ::testing::ElementsAre;
 
 namespace physics {
 
-class FakeTrajectory : public Forkable<FakeTrajectory,
-                                       std::list<Instant>::const_iterator> {
+class FakeTrajectory;
+
+template<>
+struct ForkableTraits<FakeTrajectory> {
+  using TimelineConstIterator = std::list<Instant>::const_iterator;
+};
+
+class FakeTrajectory : public Forkable<FakeTrajectory> {
  public:
   FakeTrajectory();
 
@@ -35,15 +41,12 @@ class FakeTrajectory : public Forkable<FakeTrajectory,
   // Use list<> because we want the iterators to remain valid across operations.
   std::list<Instant> timeline_;
 
-  template<typename Tr4jectory, typename TimelineConstIterator_>
+  template<typename Tr4jectory>
   friend class Forkable;
-  template<typename Tr4jectory, typename TimelineConstIterator_>
-  friend class Forkable<Tr4jectory, TimelineConstIterator_>::Iterator;
 };
 
 FakeTrajectory::FakeTrajectory()
-    : Forkable<FakeTrajectory,
-               std::list<Instant>::const_iterator>() {}
+    : Forkable<FakeTrajectory>() {}
 
 void FakeTrajectory::push_back(Instant const& time) {
   timeline_.push_back(time);

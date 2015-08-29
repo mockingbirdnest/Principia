@@ -13,11 +13,15 @@ using geometry::Instant;
 
 namespace physics {
 
+template<typename Tr4jectory>
+struct ForkableTraits;
+
 //TODO(phl): Fix all the comments.
-template<typename Tr4jectory, typename TimelineConstIterator_>
+template<typename Tr4jectory>
 class Forkable {
  public:
-  using TimelineConstIterator = TimelineConstIterator_;
+  using TimelineConstIterator =
+      typename ForkableTraits<Tr4jectory>::TimelineConstIterator;
 
   Forkable();
 
@@ -51,7 +55,7 @@ class Forkable {
     TimelineConstIterator current_;
     std::list<not_null<Tr4jectory const*>> ancestry_;  // Pointers not owned.
 
-    template<typename Tr4jectory, typename TimelineConstIterator_>
+    template<typename Tr4jectory>
     friend class Forkable;
   };
 
