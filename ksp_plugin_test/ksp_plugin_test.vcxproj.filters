@@ -47,6 +47,9 @@
     <ClCompile Include="plugin_compatibility_test.cpp">
       <Filter>Test Files</Filter>
     </ClCompile>
+    <ClCompile Include="plugin_integration_test.cpp">
+      <Filter>Test Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="pre_bourbaki.proto.hex">

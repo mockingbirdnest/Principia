@@ -24,6 +24,7 @@
     <ClCompile Include="part_test.cpp" />
     <ClCompile Include="physics_bubble_test.cpp" />
     <ClCompile Include="plugin_compatibility_test.cpp" />
+    <ClCompile Include="plugin_integration_test.cpp" />
     <ClCompile Include="plugin_test.cpp" />
     <ClCompile Include="vessel_test.cpp" />
   </ItemGroup>

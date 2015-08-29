@@ -280,6 +280,7 @@ RelativeDegreesOfFreedom<AliceSun> Plugin::VesselFromParent(
 RelativeDegreesOfFreedom<AliceSun> Plugin::CelestialFromParent(
     Index const celestial_index) const {
   CHECK(!initializing_);
+  ephemeris_->Prolong(current_time_);
   Celestial const& celestial = *FindOrDie(celestials_, celestial_index);
   CHECK(celestial.has_parent())
       << "Body at index " << celestial_index << " is the sun";
@@ -394,6 +395,7 @@ void Plugin::AddVesselToNextPhysicsBubble(
   VLOG(1) << __FUNCTION__ << '\n' << NAMED(vessel_guid) << '\n' << NAMED(parts);
   not_null<std::unique_ptr<Vessel>> const& vessel =
       find_vessel_by_guid_or_die(vessel_guid);
+  CHECK_LT(0, kept_vessels_.count(vessel.get()));
   dirty_vessels_.insert(vessel.get());
   bubble_->AddVesselToNext(vessel.get(), std::move(parts));
 }
