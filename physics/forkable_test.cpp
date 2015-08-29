@@ -259,6 +259,39 @@ TEST_F(ForkableTest, IteratorDecrementForkSuccess) {
   EXPECT_EQ(t1_, *it.current());
 }
 
+TEST_F(ForkableDeathTest, IteratorIncrementError) {
+  EXPECT_DEATH({
+    auto it = trajectory_.Begin();
+    ++it;
+  }, "!at_end");
+}
+
+TEST_F(ForkableTest, IteratorIncrementNoForkSuccess) {
+  trajectory_.push_back(t1_);
+  trajectory_.push_back(t2_);
+  trajectory_.push_back(t3_);
+  auto it = trajectory_.Begin();
+  EXPECT_EQ(t1_, *it.current());
+  ++it;
+  EXPECT_EQ(t2_, *it.current());
+  ++it;
+  EXPECT_EQ(t3_, *it.current());
+}
+
+TEST_F(ForkableTest, IteratorIncrementForkSuccess) {
+  trajectory_.push_back(t1_);
+  trajectory_.push_back(t2_);
+  auto fork = trajectory_.NewFork(t1_);
+  trajectory_.push_back(t4_);
+  fork->push_back(t3_);
+  auto it = fork->Begin();
+  EXPECT_EQ(t1_, *it.current());
+  ++it;
+  EXPECT_EQ(t2_, *it.current());
+  ++it;
+  EXPECT_EQ(t3_, *it.current());
+}
+
 TEST_F(ForkableTest, Root) {
   trajectory_.push_back(t1_);
   trajectory_.push_back(t2_);
