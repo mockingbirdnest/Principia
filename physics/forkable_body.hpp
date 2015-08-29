@@ -7,10 +7,6 @@ namespace principia {
 namespace physics {
 
 template<typename Tr4jectory>
-Forkable<Tr4jectory>::Forkable() : parent_(nullptr) {}
-//TODO(phl): And the other fields?
-
-template<typename Tr4jectory>
 not_null<Tr4jectory*>
 Forkable<Tr4jectory>::NewFork(Instant const & time) {
   CHECK(timeline_find(time) != timeline_end() ||

@@ -23,7 +23,7 @@ struct ForkableTraits<FakeTrajectory> {
 
 class FakeTrajectory : public Forkable<FakeTrajectory> {
  public:
-  FakeTrajectory();
+  FakeTrajectory() = default;
 
   void push_back(Instant const& time);
 
@@ -50,9 +50,6 @@ Instant const& ForkableTraits<FakeTrajectory>::time(
   TimelineConstIterator const it) {
   return *it;
 }
-
-FakeTrajectory::FakeTrajectory()
-    : Forkable<FakeTrajectory>() {}
 
 void FakeTrajectory::push_back(Instant const& time) {
   timeline_.push_back(time);
