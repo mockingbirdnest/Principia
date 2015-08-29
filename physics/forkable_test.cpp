@@ -209,44 +209,21 @@ TEST_F(ForkableDeathTest, DeleteForkError) {
   }, "not a child");
 }
 
-//TEST_F(ForkableDeathTest, DeleteForkSuccess) {
-//  trajectory_.push_back(t1_);
-//  trajectory_.push_back(t2_);
-//  trajectory_.push_back(t3_);
-//  not_null<FakeTrajectory*> const fork1 = trajectory_.NewFork(t2_);
-//  FakeTrajectory* fork2 = trajectory_.NewFork(t2_);
-//  fork1.push_back(t4_);
-//  trajectory_.DeleteFork(&fork2);
-//  EXPECT_EQ(nullptr, fork2);
-//  std::map<Instant, Position<World>> positions =
-//      trajectory_.Positions();
-//  std::map<Instant, Velocity<World>> velocities =
-//      trajectory_.Velocities();
-//  std::list<Instant> times = trajectory_.Times();
-//  EXPECT_THAT(positions, ElementsAre(testing::Pair(t1_, q1_),
-//                                     testing::Pair(t2_, q2_),
-//                                     testing::Pair(t3_, q3_)));
-//  EXPECT_THAT(velocities, ElementsAre(testing::Pair(t1_, p1_),
-//                                      testing::Pair(t2_, p2_),
-//                                      testing::Pair(t3_, p3_)));
-//  EXPECT_THAT(times, ElementsAre(t1_, t2_, t3_));
-//  EXPECT_THAT(fork1->body<MassiveBody>(), Eq(&massive_body_));
-//  positions = fork1->Positions();
-//  velocities = fork1->Velocities();
-//  times = fork1->Times();
-//  EXPECT_THAT(positions, ElementsAre(testing::Pair(t1_, q1_),
-//                                     testing::Pair(t2_, q2_),
-//                                     testing::Pair(t3_, q3_),
-//                                     testing::Pair(t4_, q4_)));
-//  EXPECT_THAT(velocities, ElementsAre(testing::Pair(t1_, p1_),
-//                                      testing::Pair(t2_, p2_),
-//                                      testing::Pair(t3_, p3_),
-//                                      testing::Pair(t4_, p4_)));
-//  EXPECT_THAT(times, ElementsAre(t1_, t2_, t3_, t4_));
-//  EXPECT_THAT(fork1->body<MassiveBody>(), Eq(&massive_body_));
-//  trajectory_.reset();
-//}
-//
+TEST_F(ForkableTest, DeleteForkSuccess) {
+  trajectory_.push_back(t1_);
+  trajectory_.push_back(t2_);
+  trajectory_.push_back(t3_);
+  not_null<FakeTrajectory*> const fork1 = trajectory_.NewFork(t2_);
+  FakeTrajectory* fork2 = trajectory_.NewFork(t2_);
+  fork1->push_back(t4_);
+  trajectory_.DeleteFork(&fork2);
+  EXPECT_EQ(nullptr, fork2);
+  auto times = Times(&trajectory_);
+  EXPECT_THAT(times, ElementsAre(t1_, t2_, t3_));
+  times = Times(fork1);
+  EXPECT_THAT(times, ElementsAre(t1_, t2_, t3_, t4_));
+}
+
 TEST_F(ForkableDeathTest, IteratorDecrementError) {
   EXPECT_DEATH({
     auto it = trajectory_.End();
