@@ -295,87 +295,69 @@ TEST_F(ForkableTest, Root) {
   EXPECT_EQ(t2_, *fork->ForkTime());
 }
 
-TEST_F(ForkableTest, IteratorEmpty) {
-  auto it1 = trajectory_.Begin();
-  auto it2 = trajectory_.End();
-  EXPECT_EQ(it1, it2);
+TEST_F(ForkableTest, IteratorBeginSuccess) {
+  auto it = trajectory_.Begin();
+  EXPECT_EQ(it, trajectory_.End());
+
+  trajectory_.push_back(t1_);
+  trajectory_.push_back(t2_);
+  trajectory_.push_back(t3_);
+
+  it = trajectory_.Begin();
+  EXPECT_NE(it, trajectory_.End());
+  EXPECT_EQ(t1_, *it.current());
+  ++it;
+  EXPECT_EQ(t2_, *it.current());
+  ++it;
+  EXPECT_EQ(t3_, *it.current());
+  ++it;
+  EXPECT_EQ(it, trajectory_.End());
+
+  not_null<FakeTrajectory*> const fork = trajectory_.NewFork(t2_);
+  fork->push_back(t4_);
+
+  it = fork->Begin();
+  EXPECT_NE(it, trajectory_.End());
+  EXPECT_EQ(t1_, *it.current());
+  ++it;
+  EXPECT_EQ(t2_, *it.current());
+  ++it;
+  EXPECT_EQ(t3_, *it.current());
+  ++it;
+  EXPECT_EQ(t4_, *it.current());
+  ++it;
+  EXPECT_EQ(it, trajectory_.End());
 }
 
-//TEST_F(ForkableDeathTest, NativeIteratorSuccess) {
-//  FakeTrajectory::NativeIterator it = trajectory_.first();
-//  EXPECT_TRUE(it.at_end());
-//
-//  massless_trajectory_.push_back(t1_);
-//  massless_trajectory_.push_back(t2_);
-//  massless_trajectory_.push_back(t3_);
-//
-//  it = massless_trajectory_.first();
-//  EXPECT_FALSE(it.at_end());
-//  EXPECT_EQ(t1_, it.time());
-//  EXPECT_EQ(d1_, it.degrees_of_freedom());
-//  ++it;
-//  EXPECT_EQ(t2_, it.time());
-//  EXPECT_EQ(d2_, it.degrees_of_freedom());
-//  ++it;
-//  EXPECT_EQ(t3_, it.time());
-//  EXPECT_EQ(d3_, it.degrees_of_freedom());
-//  ++it;
-//  EXPECT_TRUE(it.at_end());
-//
-//  not_null<FakeTrajectory*> const fork = massless_trajectory_.NewFork(t2_);
-//  fork.push_back(t4_);
-//
-//  it = fork->first();
-//  EXPECT_FALSE(it.at_end());
-//  EXPECT_EQ(t1_, it.time());
-//  EXPECT_EQ(d1_, it.degrees_of_freedom());
-//  ++it;
-//  EXPECT_EQ(t2_, it.time());
-//  EXPECT_EQ(d2_, it.degrees_of_freedom());
-//  ++it;
-//  EXPECT_EQ(t3_, it.time());
-//  EXPECT_EQ(d3_, it.degrees_of_freedom());
-//  ++it;
-//  EXPECT_EQ(t4_, it.time());
-//  EXPECT_EQ(d4_, it.degrees_of_freedom());
-//  ++it;
-//  EXPECT_TRUE(it.at_end());
-//}
-//
-//TEST_F(ForkableDeathTest, NativeIteratorOnOrAfterSuccess) {
-//  FakeTrajectory::NativeIterator it = trajectory_.on_or_after(t0_);
-//  EXPECT_TRUE(it.at_end());
-//
-//  massless_trajectory_.push_back(t1_);
-//  massless_trajectory_.push_back(t2_);
-//  massless_trajectory_.push_back(t3_);
-//
-//  it = massless_trajectory_.on_or_after(t0_);
-//  EXPECT_FALSE(it.at_end());
-//  EXPECT_EQ(t1_, it.time());
-//  EXPECT_EQ(d1_, it.degrees_of_freedom());
-//  it = massless_trajectory_.on_or_after(t2_);
-//  EXPECT_EQ(t2_, it.time());
-//  EXPECT_EQ(d2_, it.degrees_of_freedom());
-//  it = massless_trajectory_.on_or_after(t4_);
-//  EXPECT_TRUE(it.at_end());
-//
-//  not_null<FakeTrajectory*> const fork = massless_trajectory_.NewFork(t2_);
-//  fork.push_back(t4_);
-//
-//  it = fork->on_or_after(t0_);
-//  EXPECT_FALSE(it.at_end());
-//  EXPECT_EQ(t1_, it.time());
-//  EXPECT_EQ(d1_, it.degrees_of_freedom());
-//  it = fork->on_or_after(t2_);
-//  EXPECT_EQ(t2_, it.time());
-//  EXPECT_EQ(d2_, it.degrees_of_freedom());
-//  it = fork->on_or_after(t4_);
-//  EXPECT_EQ(t4_, it.time());
-//  EXPECT_EQ(d4_, it.degrees_of_freedom());
-//  it = fork->on_or_after(t4_ + 1 * Second);
-//  EXPECT_TRUE(it.at_end());
-//}
+TEST_F(ForkableTest, IteratorFindSuccess) {
+  auto it = trajectory_.Find(t0_);
+  EXPECT_EQ(it, trajectory_.End());
+
+  trajectory_.push_back(t1_);
+  trajectory_.push_back(t2_);
+  trajectory_.push_back(t3_);
+
+  it = trajectory_.Find(t1_);
+  EXPECT_NE(it, trajectory_.End());
+  EXPECT_EQ(t1_, *it.current());
+  it = trajectory_.Find(t2_);
+  EXPECT_EQ(t2_, *it.current());
+  it = trajectory_.Find(t4_);
+  EXPECT_EQ(it, trajectory_.End());
+
+  not_null<FakeTrajectory*> const fork = trajectory_.NewFork(t2_);
+  fork->push_back(t4_);
+
+  it = fork->Find(t1_);
+  EXPECT_NE(it, trajectory_.End());
+  EXPECT_EQ(t1_, *it.current());
+  it = fork->Find(t2_);
+  EXPECT_EQ(t2_, *it.current());
+  it = fork->Find(t4_);
+  EXPECT_EQ(t4_, *it.current());
+  it = fork->Find(t4_ + 1 * Second);
+  EXPECT_EQ(it, trajectory_.End());
+}
 
 }  // namespace physics
 }  // namespace principia

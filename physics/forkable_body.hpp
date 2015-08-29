@@ -202,7 +202,7 @@ Forkable<Tr4jectory, TimelineConstIterator_>::Find(Instant const& time) const {
   // is, |time| is after the first time of the timeline).  Set |current_| to
   // the location of |time|, which may be |end()|.  The ancestry has |forkable|
   // at the back, and the object containing |current_| at the front.
-  not_null<Tr4jectory const*> ancestor = that();
+  Tr4jectory const* ancestor = that();
   do {
     iterator.ancestry_.push_front(ancestor);
     if (!ancestor->timeline_empty() &&
