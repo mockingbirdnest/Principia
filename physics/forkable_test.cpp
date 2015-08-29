@@ -110,7 +110,7 @@ class ForkableTest : public testing::Test {
       Instant const& time) {
     std::vector<Instant> after;
     FakeTrajectory::Iterator it = trajectory->Find(time);
-    for (; it.current() != trajectory->end(); ++it) {
+    for (; it != trajectory->End(); ++it) {
       after.push_back(*it.current());
     }
     return after;

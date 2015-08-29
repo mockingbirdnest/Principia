@@ -89,10 +89,30 @@ Instant const* Forkable<Tr4jectory, TimelineConstIterator_>::ForkTime() const {
 }
 
 template<typename Tr4jectory, typename TimelineConstIterator_>
+bool Forkable<Tr4jectory, TimelineConstIterator_>::Iterator::operator==(
+    Iterator const & right) const {
+  bool const this_at_end = at_end();
+  bool const right_at_end = right.at_end();
+  if (this_at_end != right_at_end) {
+    return false;
+  } else if (this_at_end) {
+    return true;
+  } else {
+    return ancestry_ == right.ancestry_ && current_ == right.current_;
+  }
+}
+
+template<typename Tr4jectory, typename TimelineConstIterator_>
+bool Forkable<Tr4jectory, TimelineConstIterator_>::Iterator::operator!=(
+    Iterator const & right) const {
+  return !(*this == right);
+}
+
+template<typename Tr4jectory, typename TimelineConstIterator_>
 typename Forkable<Tr4jectory, TimelineConstIterator_>::Iterator&
 Forkable<Tr4jectory, TimelineConstIterator_>::Iterator::operator++() {
   CHECK(!ancestry_.empty());
-  CHECK(current_ != ancestry_.front()->timeline_end());
+  CHECK(!at_end());
 
   // Check if there is a next child in the ancestry.
   auto ancestry_it = ++ancestry_.begin();
@@ -105,6 +125,7 @@ Forkable<Tr4jectory, TimelineConstIterator_>::Iterator::operator++() {
       // Start iterating over the next child timeline.  Drop the leading
       // ancestor.
       current_ = child->timeline_begin();
+      //TODO(phl): Wrong, current may be at end!
       ancestry_.pop_front();
       return *this;
     }
@@ -119,6 +140,21 @@ template<typename Tr4jectory, typename TimelineConstIterator_>
 typename Forkable<Tr4jectory, TimelineConstIterator_>::TimelineConstIterator
 Forkable<Tr4jectory, TimelineConstIterator_>::Iterator::current() const {
   return current_;
+}
+
+template<typename Tr4jectory, typename TimelineConstIterator_>
+bool Forkable<Tr4jectory, TimelineConstIterator_>::Iterator::at_end() const {
+  return current_ == ancestry_.front()->timeline_end();
+}
+
+template<typename Tr4jectory, typename TimelineConstIterator_>
+typename Forkable<Tr4jectory, TimelineConstIterator_>::Iterator
+Forkable<Tr4jectory, TimelineConstIterator_>::End() const {
+  Iterator iterator;
+  not_null<Tr4jectory const*> ancestor = that();
+  iterator.ancestry_.push_front(ancestor);
+  iterator.current_ = ancestor->timeline_end();
+  return iterator;
 }
 
 template<typename Tr4jectory, typename TimelineConstIterator_>

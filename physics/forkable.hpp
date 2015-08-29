@@ -34,11 +34,16 @@ class Forkable {
 
   class Iterator {
    public:
+    bool operator==(Iterator const& right) const;
+    bool operator!=(Iterator const& right) const;
+
     Iterator& operator++();
 
     TimelineConstIterator current() const;
 
    private:
+    bool at_end() const;
+
     // |ancestry_| has one more element than |forks_|.  The first element in
     // |ancestry_| is the root.  There is no element in |forks_| for the root.
     // It is therefore empty for a root trajectory.
@@ -48,6 +53,8 @@ class Forkable {
     template<typename Tr4jectory, typename TimelineConstIterator_>
     friend class Forkable;
   };
+
+  Iterator End() const;
 
   Iterator Find(Instant const& time) const;
 
