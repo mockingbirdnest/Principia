@@ -20,16 +20,16 @@ using si::Hour;
 using si::Minute;
 using si::Radian;
 using si::AstronomicalUnit;
-using testing_utilities::SolarSystem;
+using testing_utilities::AbsoluteError;
 using testing_utilities::ICRFJ2000Ecliptic;
+using testing_utilities::RelativeError;
+using testing_utilities::SolarSystem;
 using ::testing::AllOf;
 using ::testing::Eq;
 using ::testing::Ge;
 using ::testing::Gt;
 using ::testing::Le;
 using ::testing::Lt;
-using testing_utilities::AbsoluteError;
-using testing_utilities::RelativeError;
 
 namespace ksp_plugin {
 
@@ -44,9 +44,8 @@ class PluginIntegrationTest : public testing::Test {
                       SolarSystem::Accuracy::kAllBodiesAndOblateness)),
         initial_time_(42 * Second),
         planetarium_rotation_(1 * Radian),
-        plugin_(make_not_null_unique<Plugin>(
-                    initial_time_,
-                    planetarium_rotation_)),
+        plugin_(make_not_null_unique<Plugin>(initial_time_,
+                                             planetarium_rotation_)),
         bodies_(solar_system_->massive_bodies()) {
     sun_gravitational_parameter_ =
         bodies_[SolarSystem::kSun]->gravitational_parameter();
@@ -90,9 +89,8 @@ class PluginIntegrationTest : public testing::Test {
         index,
         parent_index.get(),
         initial_state,
-        std::move(
-            *reinterpret_cast<std::unique_ptr<MassiveBody>*>(
-                &bodies_[index])));
+        std::move(*reinterpret_cast<std::unique_ptr<MassiveBody>*>(
+            &bodies_[index])));
     }
   }
 
@@ -185,8 +183,9 @@ TEST_F(PluginIntegrationTest, BodyCentredNonrotatingRenderingIntegration) {
   t += δt_long;
 #endif
   for (; t < initial_time_ + 12 * Hour; t += δt_long) {
-    plugin_->AdvanceTime(t,
-                       1 * Radian / Pow<2>(Minute) * Pow<2>(t - initial_time_));
+    plugin_->AdvanceTime(
+        t,
+        1 * Radian / Pow<2>(Minute) * Pow<2>(t - initial_time_));
     plugin_->InsertOrKeepVessel(satellite, SolarSystem::kEarth);
     // We give the sun an arbitrary nonzero velocity in |World|.
     Position<World> const sun_world_position =
@@ -196,8 +195,8 @@ TEST_F(PluginIntegrationTest, BodyCentredNonrotatingRenderingIntegration) {
               0.0 * AstronomicalUnit / Hour}) * (t - initial_time_);
     RenderedTrajectory<World> const rendered_trajectory =
         plugin_->RenderedVesselTrajectory(satellite,
-                                        geocentric.get(),
-                                        sun_world_position);
+                                          geocentric.get(),
+                                          sun_world_position);
     Position<World> const earth_world_position =
         sun_world_position + alice_sun_to_world(
             plugin_->CelestialFromParent(SolarSystem::kEarth).displacement());
@@ -279,8 +278,8 @@ TEST_F(PluginIntegrationTest, BarycentricRotatingRenderingIntegration) {
             0.0 * AstronomicalUnit / Hour}) * (t - initial_time_);
   RenderedTrajectory<World> const rendered_trajectory =
       plugin_->RenderedVesselTrajectory(satellite,
-                                      earth_moon_barycentric.get(),
-                                      sun_world_position);
+                                        earth_moon_barycentric.get(),
+                                        sun_world_position);
   Position<World> const earth_world_position =
       sun_world_position +
       alice_sun_to_world(
@@ -289,13 +288,11 @@ TEST_F(PluginIntegrationTest, BarycentricRotatingRenderingIntegration) {
       earth_world_position +
       alice_sun_to_world(
           plugin_->CelestialFromParent(SolarSystem::kMoon).displacement());
-  Length const earth_moon =
-      (moon_world_position - earth_world_position).Norm();
+  Length const earth_moon = (moon_world_position - earth_world_position).Norm();
   for (auto const segment : rendered_trajectory) {
     Length const satellite_earth =
         (segment.begin - earth_world_position).Norm();
-    Length const satellite_moon =
-        (segment.begin - moon_world_position).Norm();
+    Length const satellite_moon = (segment.begin - moon_world_position).Norm();
     EXPECT_THAT(RelativeError(earth_moon, satellite_earth), Lt(0.0907));
     EXPECT_THAT(RelativeError(earth_moon, satellite_moon), Lt(0.131));
     EXPECT_THAT(RelativeError(satellite_moon, satellite_earth), Lt(0.148));
@@ -343,7 +340,7 @@ TEST_F(PluginIntegrationTest, PhysicsBubble) {
   plugin.InsertSun(celestial, 1 * Pow<3>(Kilo(Metre)) / Pow<2>(Day));
   plugin.EndInitialization();
 
-  // First step: insert the Enterprise.
+  // Step 1: insert the Enterprise.
   t += δt;
   plugin.InsertOrKeepVessel(enterprise_d, celestial);
   plugin.SetVesselStateOffset(
@@ -569,7 +566,7 @@ TEST_F(PluginIntegrationTest, PhysicsBubble) {
                             plugin.VesselFromParent(enterprise_d).velocity()),
               Lt(100 * ε));
 
-  // Orbit a bit.
+  // Step 10: orbit a bit.
   t += period;
   plugin.InsertOrKeepVessel(enterprise_d, celestial);
   plugin.AdvanceTime(t, 0 * Radian);
@@ -588,8 +585,7 @@ TEST_F(PluginIntegrationTest, PhysicsBubble) {
 TEST_F(PluginIntegrationTest, Prediction) {
   GUID const satellite = "satellite";
   Index const celestial = 0;
-  Plugin plugin(Instant(),
-                0 * Radian);
+  Plugin plugin(Instant(), 0 * Radian);
   plugin.InsertSun(celestial, SIUnit<GravitationalParameter>());
   plugin.EndInitialization();
   EXPECT_TRUE(plugin.InsertOrKeepVessel(satellite, celestial));
