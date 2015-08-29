@@ -122,22 +122,20 @@ Forkable<Tr4jectory, TimelineConstIterator_>::Iterator::operator++() {
     // There is a next child.  See if we reached its fork time.
     Instant const& current_time = *current_/*->first*/;///Traits?
     not_null<Tr4jectory const*> child = *ancestry_it;
-    Instant const& child_fork_time = child->position_in_parent_children_->first;
+    Instant child_fork_time = child->position_in_parent_children_->first;
     if (current_time == child_fork_time) {
-      // We have reached the fork time of the next child.  Drop the leading
-      // ancestor.
-      ancestry_.pop_front();
-      // We'd like to iterate over the timeline of the next child, but that
-      // timeline may be empty.  So we must skip any empty timeline until either
-      // we find a non-empty one or we reach the last child.  All children with
-      // empty timelines should fork at the same time.
-      while (child->timeline_empty() && ++ancestry_it != ancestry_.end()) {
-        child = *ancestry_it;
+      // We have reached the fork time of the next child.  There may be several
+      // forks at that time so we must skip them until we find a fork that is at
+      // a different time or the end of the children.
+      do {
+        current_ = child->timeline_begin();  // May be at end.
         ancestry_.pop_front();
-        CHECK_EQ(child_fork_time, child->position_in_parent_children_->first);
-      }
-      // Start iterating over the next child timeline.
-      current_ = child->timeline_begin();
+        if (++ancestry_it == ancestry_.end()) {
+          break;
+        }
+        child = *ancestry_it;
+        child_fork_time = child->position_in_parent_children_->first;
+      } while (current_time == child_fork_time);
       return *this;
     }
   }
