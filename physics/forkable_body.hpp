@@ -91,31 +91,6 @@ Instant const* Forkable<Tr4jectory, TimelineConstIterator_>::ForkTime() const {
 template<typename Tr4jectory, typename TimelineConstIterator_>
 typename Forkable<Tr4jectory, TimelineConstIterator_>::Iterator
 Forkable<Tr4jectory, TimelineConstIterator_>::Iterator::New(
-    not_null<Tr4jectory const*> const forkable, Instant const & time) {
-  Iterator iterator;
-
-  // Go up the ancestry chain until we find a timeline that covers |time| (that
-  // is, |time| is after the first time of the timeline).  Set |current_| to
-  // the location of |time|, which may be |end()|.  The ancestry has |forkable|
-  // at the back, and the object containing |current_| at the front.
-  not_null<Tr4jectory const*> ancestor = forkable;
-  do {
-    iterator.ancestry_.push_front(ancestor);
-    if (!ancestor->timeline_empty() &&
-        *ancestor->timeline_begin()/*->first*/ <= time) {
-      iterator.current_ = ancestor->timeline_find(time);  // May be at end.
-      break;
-    }
-    iterator.current_ = ancestor->timeline_end();
-    ancestor = ancestor->parent_;
-  } while (ancestor != nullptr);
-
-  return iterator;
-}
-
-template<typename Tr4jectory, typename TimelineConstIterator_>
-typename Forkable<Tr4jectory, TimelineConstIterator_>::Iterator
-Forkable<Tr4jectory, TimelineConstIterator_>::Iterator::New(
     not_null<Tr4jectory const*> const forkable,
     not_null<Tr4jectory const*> const ancestor,
     TimelineConstIterator const position_in_ancestor_timeline) {
@@ -170,6 +145,30 @@ template<typename Tr4jectory, typename TimelineConstIterator_>
 typename Forkable<Tr4jectory, TimelineConstIterator_>::TimelineConstIterator
 Forkable<Tr4jectory, TimelineConstIterator_>::Iterator::current() const {
   return current_;
+}
+
+template<typename Tr4jectory, typename TimelineConstIterator_>
+typename Forkable<Tr4jectory, TimelineConstIterator_>::Iterator
+Forkable<Tr4jectory, TimelineConstIterator_>::Find(Instant const& time) const {
+  Iterator iterator;
+
+  // Go up the ancestry chain until we find a timeline that covers |time| (that
+  // is, |time| is after the first time of the timeline).  Set |current_| to
+  // the location of |time|, which may be |end()|.  The ancestry has |forkable|
+  // at the back, and the object containing |current_| at the front.
+  not_null<Tr4jectory const*> ancestor = that();
+  do {
+    iterator.ancestry_.push_front(ancestor);
+    if (!ancestor->timeline_empty() &&
+        *ancestor->timeline_begin()/*->first*/ <= time) {
+      iterator.current_ = ancestor->timeline_find(time);  // May be at end.
+      break;
+    }
+    iterator.current_ = ancestor->timeline_end();
+    ancestor = ancestor->parent_;
+  } while (ancestor != nullptr);
+
+  return iterator;
 }
 
 }  // namespace physics

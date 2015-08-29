@@ -109,8 +109,7 @@ class ForkableTest : public testing::Test {
       not_null<FakeTrajectory const*> const trajectory,
       Instant const& time) {
     std::vector<Instant> after;
-    FakeTrajectory::Iterator it =
-        FakeTrajectory::Iterator::New(trajectory, time);
+    FakeTrajectory::Iterator it = trajectory->Find(time);
     for (; it.current() != trajectory->end(); ++it) {
       after.push_back(*it.current());
     }
@@ -119,7 +118,7 @@ class ForkableTest : public testing::Test {
 
   static Instant const& LastTime(
       not_null<FakeTrajectory const*> const trajectory) {
-    //TODO(phl): Not very nice, incorrect --end().
+    //TODO(phl): Not very nice, incorrect --end().  --> operator--
     FakeTrajectory::Iterator it =
         FakeTrajectory::Iterator::New(trajectory,
                                       trajectory,
@@ -129,7 +128,7 @@ class ForkableTest : public testing::Test {
 
   static std::vector<Instant> Times(
       not_null<FakeTrajectory const*> const trajectory) {
-    //TODO(phl): Not very nice, incorrect comparison to end().
+    //TODO(phl): Not very nice, incorrect comparison to end(). --> End()
     std::vector<Instant> times;
     FakeTrajectory::Iterator it =
         FakeTrajectory::Iterator::New(trajectory,

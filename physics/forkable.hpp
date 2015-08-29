@@ -35,8 +35,6 @@ class Forkable {
   class Iterator {
    public:
     static Iterator New(not_null<const Tr4jectory*> const forkable,
-                        Instant const& time);
-    static Iterator New(not_null<const Tr4jectory*> const forkable,
                         not_null<const Tr4jectory*> const ancestor,
                         TimelineConstIterator const
                             position_in_ancestor_timeline);
@@ -51,7 +49,12 @@ class Forkable {
     // It is therefore empty for a root trajectory.
     TimelineConstIterator current_;
     std::list<not_null<Tr4jectory const*>> ancestry_;  // Pointers not owned.
+
+    template<typename Tr4jectory, typename TimelineConstIterator_>
+    friend class Forkable;
   };
+
+  Iterator Find(Instant const& time) const;
 
  protected:
   virtual not_null<Tr4jectory*> that() = 0;
