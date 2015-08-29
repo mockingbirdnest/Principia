@@ -154,6 +154,8 @@
     <ClInclude Include="celestial.hpp" />
     <ClInclude Include="celestial_body.hpp" />
     <ClInclude Include="frames.hpp" />
+    <ClInclude Include="manœuvre.hpp" />
+    <ClInclude Include="manœuvre_body.hpp" />
     <ClInclude Include="mobile_interface.hpp" />
     <ClInclude Include="mock_plugin.hpp" />
     <ClInclude Include="part.hpp" />

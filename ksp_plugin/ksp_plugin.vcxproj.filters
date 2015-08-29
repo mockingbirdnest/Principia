@@ -47,6 +47,12 @@
     <ClInclude Include="mobile_interface.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="manœuvre.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="manœuvre_body.hpp">
+      <Filter>Source Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="interface.cpp">
