@@ -114,8 +114,6 @@ Forkable<Tr4jectory, TimelineConstIterator_>::Iterator::operator++() {
   CHECK(!ancestry_.empty());
   CHECK(!at_end());
 
-  Instant const& current_time = *current_/*->first*/;///Traits?
-
   // Check if there is a next child in the ancestry.
   auto ancestry_it = ancestry_.begin();
   if (++ancestry_it != ancestry_.end()) {
@@ -153,14 +151,14 @@ Forkable<Tr4jectory, TimelineConstIterator_>::Iterator::operator--() {
   not_null<Tr4jectory const*> ancestor = ancestry_.front();
   if (current_ == ancestor->timeline_begin()) {
     CHECK_NOTNULL(ancestor->parent_);
-    current_ = ancestor->position_in_parent_timeline_;
-    ancestor = ancestor->parent_;
-    ancestry_.push_front(ancestor);
-    while (ancestor->timeline_empty() && ancestor->parent_ != nullptr) {
+    // At the beginning of the first timeline.  Push the parent in front of the
+    // ancestry and set |current_| to the fork point.  If the timeline is empty,
+    // keep going until we find a non-empty one or the root.
+    do {
       current_ = ancestor->position_in_parent_timeline_;
       ancestor = ancestor->parent_;
       ancestry_.push_front(ancestor);
-    }
+    } while (ancestor->timeline_empty() && ancestor->parent_ != nullptr);
     return *this;
   }
 
