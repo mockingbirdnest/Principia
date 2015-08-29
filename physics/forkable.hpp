@@ -34,11 +34,6 @@ class Forkable {
 
   class Iterator {
    public:
-    static Iterator New(not_null<const Tr4jectory*> const forkable,
-                        not_null<const Tr4jectory*> const ancestor,
-                        TimelineConstIterator const
-                            position_in_ancestor_timeline);
-
     Iterator& operator++();
 
     TimelineConstIterator current() const;
@@ -55,6 +50,10 @@ class Forkable {
   };
 
   Iterator Find(Instant const& time) const;
+
+  Iterator Wrap(
+      not_null<const Tr4jectory*> const ancestor,
+      TimelineConstIterator const position_in_ancestor_timeline) const;
 
  protected:
   virtual not_null<Tr4jectory*> that() = 0;

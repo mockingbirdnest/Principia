@@ -119,10 +119,8 @@ class ForkableTest : public testing::Test {
   static Instant const& LastTime(
       not_null<FakeTrajectory const*> const trajectory) {
     //TODO(phl): Not very nice, incorrect --end().  --> operator--
-    FakeTrajectory::Iterator it =
-        FakeTrajectory::Iterator::New(trajectory,
-                                      trajectory,
-                                      --trajectory->end());
+    FakeTrajectory::Iterator it = trajectory->Wrap(trajectory,
+                                                   --trajectory->end());
     return *it.current();
   }
 
@@ -130,8 +128,7 @@ class ForkableTest : public testing::Test {
       not_null<FakeTrajectory const*> const trajectory) {
     //TODO(phl): Not very nice, incorrect comparison to end(). --> End()
     std::vector<Instant> times;
-    FakeTrajectory::Iterator it =
-        FakeTrajectory::Iterator::New(trajectory,
+    FakeTrajectory::Iterator it = trajectory->Wrap(
                                       trajectory->root(),
                                       trajectory->root()->begin());
     for (; it.current() != trajectory->end(); ++it) {

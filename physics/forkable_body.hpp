@@ -89,32 +89,6 @@ Instant const* Forkable<Tr4jectory, TimelineConstIterator_>::ForkTime() const {
 }
 
 template<typename Tr4jectory, typename TimelineConstIterator_>
-typename Forkable<Tr4jectory, TimelineConstIterator_>::Iterator
-Forkable<Tr4jectory, TimelineConstIterator_>::Iterator::New(
-    not_null<Tr4jectory const*> const forkable,
-    not_null<Tr4jectory const*> const ancestor,
-    TimelineConstIterator const position_in_ancestor_timeline) {
-  Iterator iterator;
-
-  // Go up the ancestry chain until we find |ancestor| and set |current_| to
-  // |position_in_ancestor_timeline|.  The ancestry has |forkable|
-  // at the back, and the object containing |current_| at the front.  If
-  // |ancestor| is not found in the ancestry, stop at the root.
-  not_null<Tr4jectory const*> ancest0r = forkable;
-  do {
-    iterator.ancestry_.push_front(ancest0r);
-    if (ancestor == ancest0r) {
-      iterator.current_ = position_in_ancestor_timeline;  // May be at end.
-      break;
-    }
-    iterator.current_ = ancest0r->timeline_end();
-    ancest0r = ancest0r->parent_;
-  } while (ancest0r != nullptr);
-  return iterator;
-}
-
-
-template<typename Tr4jectory, typename TimelineConstIterator_>
 typename Forkable<Tr4jectory, TimelineConstIterator_>::Iterator&
 Forkable<Tr4jectory, TimelineConstIterator_>::Iterator::operator++() {
   CHECK(!ancestry_.empty());
@@ -168,6 +142,31 @@ Forkable<Tr4jectory, TimelineConstIterator_>::Find(Instant const& time) const {
     ancestor = ancestor->parent_;
   } while (ancestor != nullptr);
 
+  return iterator;
+}
+
+
+template<typename Tr4jectory, typename TimelineConstIterator_>
+typename Forkable<Tr4jectory, TimelineConstIterator_>::Iterator
+Forkable<Tr4jectory, TimelineConstIterator_>::Wrap(
+    not_null<const Tr4jectory*> const ancestor,
+    TimelineConstIterator const position_in_ancestor_timeline) const {
+  Iterator iterator;
+
+  // Go up the ancestry chain until we find |ancestor| and set |current_| to
+  // |position_in_ancestor_timeline|.  The ancestry has |forkable|
+  // at the back, and the object containing |current_| at the front.  If
+  // |ancestor| is not found in the ancestry, stop at the root.
+  not_null<Tr4jectory const*> ancest0r = that();
+  do {
+    iterator.ancestry_.push_front(ancest0r);
+    if (ancestor == ancest0r) {
+      iterator.current_ = position_in_ancestor_timeline;  // May be at end.
+      break;
+    }
+    iterator.current_ = ancest0r->timeline_end();
+    ancest0r = ancest0r->parent_;
+  } while (ancest0r != nullptr);
   return iterator;
 }
 
