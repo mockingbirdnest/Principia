@@ -126,12 +126,11 @@ class ForkableTest : public testing::Test {
 
   static std::vector<Instant> Times(
       not_null<FakeTrajectory const*> const trajectory) {
-    //TODO(phl): Not very nice, incorrect comparison to end(). --> End()
     std::vector<Instant> times;
     FakeTrajectory::Iterator it = trajectory->Wrap(
                                       trajectory->root(),
                                       trajectory->root()->begin());
-    for (; it.current() != trajectory->end(); ++it) {
+    for (; it != trajectory->End(); ++it) {
       times.push_back(*it.current());
     }
     return times;
