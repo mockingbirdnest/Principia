@@ -35,9 +35,9 @@ class Forkable {
   // than or equal to |time|, and is an exact copy of the current trajectory for
   // times greater than |time|.  It may be changed independently from the
   // parent trajectory for any time (strictly) greater than |time|.  The child
-  // trajectory is owned by its parent trajectory.Deleting the parent trajectory
-  // deletes all child trajectories.  |time| must be one of the times of this
-  // trajectory, and must be at or after the fork time, if any.
+  // trajectory is owned by its parent trajectory.  Deleting the parent
+  // trajectory deletes all child trajectories.  |time| must be one of the times
+  // of this trajectory, and must be at or after the fork time, if any.
   not_null<Tr4jectory*> NewFork(Instant const& time);
 
   // Deletes the child trajectory denoted by |*fork|, which must be a pointer
