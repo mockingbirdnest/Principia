@@ -118,7 +118,7 @@ Forkable<Tr4jectory>::Iterator::operator++() {
   auto ancestry_it = ancestry_.begin();
   if (++ancestry_it != ancestry_.end()) {
     // There is a next child.  See if we reached its fork time.
-    Instant const& current_time = *current_/*->first*/;///Traits?
+    Instant const& current_time = ForkableTraits<Tr4jectory>::time(current_);
     not_null<Tr4jectory const*> child = *ancestry_it;
     Instant child_fork_time = child->position_in_parent_children_->first;
     if (current_time == child_fork_time) {
@@ -204,7 +204,7 @@ Forkable<Tr4jectory>::Find(Instant const& time) const {
   do {
     iterator.ancestry_.push_front(ancestor);
     if (!ancestor->timeline_empty() &&
-        *ancestor->timeline_begin()/*->first*/ <= time) {
+        ForkableTraits<Tr4jectory>::time(ancestor->timeline_begin()) <= time) {
       iterator.current_ = ancestor->timeline_find(time);  // May be at end.
       break;
     }

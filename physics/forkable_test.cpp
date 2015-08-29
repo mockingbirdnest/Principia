@@ -18,6 +18,7 @@ class FakeTrajectory;
 template<>
 struct ForkableTraits<FakeTrajectory> {
   using TimelineConstIterator = std::list<Instant>::const_iterator;
+  static Instant const& time(TimelineConstIterator const it);
 };
 
 class FakeTrajectory : public Forkable<FakeTrajectory> {
@@ -44,6 +45,11 @@ class FakeTrajectory : public Forkable<FakeTrajectory> {
   template<typename Tr4jectory>
   friend class Forkable;
 };
+
+Instant const& ForkableTraits<FakeTrajectory>::time(
+  TimelineConstIterator const it) {
+  return *it;
+}
 
 FakeTrajectory::FakeTrajectory()
     : Forkable<FakeTrajectory>() {}
