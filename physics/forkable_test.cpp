@@ -282,29 +282,25 @@ TEST_F(ForkableTest, IteratorDecrementForkSuccess) {
   EXPECT_EQ(t1_, *it.current());
 }
 
-//TEST_F(ForkableDeathTest, Root) {
-//  trajectory_.push_back(t1_);
-//  trajectory_.push_back(t2_);
-//  trajectory_.push_back(t3_);
-//  not_null<FakeTrajectory*> const fork = trajectory_.NewFork(t2_);
-//  EXPECT_TRUE(trajectory_.is_root());
-//  EXPECT_FALSE(fork->is_root());
-//  EXPECT_EQ(trajectory_.get(), trajectory_.root());
-//  EXPECT_EQ(trajectory_.get(), fork->root());
-//  EXPECT_EQ(nullptr, trajectory_.fork_time());
-//  EXPECT_EQ(t2_, *fork->fork_time());
-//}
-//
-//TEST_F(TrajectoryDeathTest, NativeIteratorError) {
-//  EXPECT_DEATH({
-//    FakeTrajectory::NativeIterator it = trajectory_.last();
-//  }, "Empty trajectory");
-//  EXPECT_DEATH({
-//    FakeTrajectory::NativeIterator it = trajectory_.first();
-//    ++it;
-//  }, "beyond end");
-//}
-//
+TEST_F(ForkableTest, Root) {
+  trajectory_.push_back(t1_);
+  trajectory_.push_back(t2_);
+  trajectory_.push_back(t3_);
+  not_null<FakeTrajectory*> const fork = trajectory_.NewFork(t2_);
+  EXPECT_TRUE(trajectory_.is_root());
+  EXPECT_FALSE(fork->is_root());
+  EXPECT_EQ(&trajectory_, trajectory_.root());
+  EXPECT_EQ(&trajectory_, fork->root());
+  EXPECT_EQ(nullptr, trajectory_.ForkTime());
+  EXPECT_EQ(t2_, *fork->ForkTime());
+}
+
+TEST_F(ForkableTest, IteratorEmpty) {
+  auto it1 = trajectory_.Begin();
+  auto it2 = trajectory_.End();
+  EXPECT_EQ(it1, it2);
+}
+
 //TEST_F(ForkableDeathTest, NativeIteratorSuccess) {
 //  FakeTrajectory::NativeIterator it = trajectory_.first();
 //  EXPECT_TRUE(it.at_end());
