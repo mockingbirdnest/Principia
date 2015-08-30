@@ -148,7 +148,7 @@ TEST_F(ForkableDeathTest, ForkError) {
   }, "nonexistent time");
 }
 
-TEST_F(ForkableDeathTest, ForkSuccess) {
+TEST_F(ForkableTest, ForkSuccess) {
   trajectory_.push_back(t1_);
   trajectory_.push_back(t2_);
   trajectory_.push_back(t3_);
@@ -268,6 +268,22 @@ TEST_F(ForkableTest, IteratorDecrementForkSuccess) {
   EXPECT_EQ(t1_, *it.current());
 }
 
+TEST_F(ForkableTest, IteratorDecrementMultipleForksSuccess) {
+  trajectory_.push_back(t1_);
+  trajectory_.push_back(t2_);
+  auto fork1 = trajectory_.NewFork(t2_);
+  auto fork2 = fork1->NewFork(t2_);
+  auto fork3 = fork2->NewFork(t2_);
+  fork2->push_back(t3_);
+  auto it = fork3->End();
+  --it;
+  EXPECT_EQ(t2_, *it.current());
+  ++it;
+  EXPECT_EQ(t1_, *it.current());
+  ++it;
+  EXPECT_EQ(it, fork3->Begin());
+}
+
 TEST_F(ForkableDeathTest, IteratorIncrementError) {
   EXPECT_DEATH({
     auto it = trajectory_.Begin();
@@ -299,6 +315,39 @@ TEST_F(ForkableTest, IteratorIncrementForkSuccess) {
   EXPECT_EQ(t2_, *it.current());
   ++it;
   EXPECT_EQ(t3_, *it.current());
+}
+
+TEST_F(ForkableTest, IteratorIncrementMultipleForksSuccess) {
+  trajectory_.push_back(t1_);
+  trajectory_.push_back(t2_);
+  auto fork1 = trajectory_.NewFork(t2_);
+  auto fork2 = fork1->NewFork(t2_);
+  auto fork3 = fork2->NewFork(t2_);
+  auto it = fork3->Begin();
+  EXPECT_EQ(t1_, *it.current());
+  ++it;
+  EXPECT_EQ(t2_, *it.current());
+  ++it;
+  EXPECT_EQ(it, trajectory_.End());
+  fork3->push_back(t3_);
+  it = fork3->Begin();
+  EXPECT_EQ(t1_, *it.current());
+  ++it;
+  EXPECT_EQ(t2_, *it.current());
+  ++it;
+  EXPECT_EQ(t3_, *it.current());
+  ++it;
+  EXPECT_EQ(it, trajectory_.End());
+}
+
+TEST_F(ForkableTest, IteratorEndEquality) {
+  trajectory_.push_back(t1_);
+  trajectory_.push_back(t2_);
+  auto fork1 = trajectory_.NewFork(t1_);
+  auto fork2 = trajectory_.NewFork(t2_);
+  auto it1 = fork1->End();
+  auto it2 = fork2->End();
+  EXPECT_NE(it1, it2);
 }
 
 TEST_F(ForkableTest, Root) {

@@ -79,8 +79,9 @@ class Forkable {
    private:
     Iterator() = default;
 
-    // Returns true iff this iterator is at the end of the trajectory
-    bool at_end() const;
+    //TODO(phl):
+    void NormalizeIfEnd();
+    void CheckNormalizedIfEnd();
 
     // |ancestry_| is never empty.  |current_| is an iterator in the timeline
     // for |ancestry_.front()|.  |current_| may be at end.

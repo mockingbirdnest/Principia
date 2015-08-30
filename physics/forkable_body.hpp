@@ -84,15 +84,7 @@ Instant const* Forkable<Tr4jectory>::ForkTime() const {
 
 template<typename Tr4jectory>
 bool Forkable<Tr4jectory>::Iterator::operator==(Iterator const& right) const {
-  bool const this_at_end = at_end();
-  bool const right_at_end = right.at_end();
-  if (this_at_end != right_at_end) {
-    return false;
-  } else if (this_at_end) {
-    return true;
-  } else {
-    return ancestry_ == right.ancestry_ && current_ == right.current_;
-  }
+  return ancestry_ == right.ancestry_ && current_ == right.current_;
 }
 
 template<typename Tr4jectory>
@@ -104,7 +96,7 @@ template<typename Tr4jectory>
 typename Forkable<Tr4jectory>::Iterator&
 Forkable<Tr4jectory>::Iterator::operator++() {
   CHECK(!ancestry_.empty());
-  CHECK(!at_end());
+  CHECK(current_ != ancestry_.front()->timeline_end());
 
   // Check if there is a next child in the ancestry.
   auto ancestry_it = ancestry_.begin();
@@ -126,12 +118,15 @@ Forkable<Tr4jectory>::Iterator::operator++() {
         child = *ancestry_it;
         child_fork_time = child->position_in_parent_children_->first;
       } while (current_time == child_fork_time);
+
+      CheckNormalizedIfEnd();
       return *this;
     }
   }
   // Business as usual, keep moving along the same timeline.
   ++current_;
 
+  CheckNormalizedIfEnd();
   return *this;
 }
 
@@ -165,8 +160,18 @@ Forkable<Tr4jectory>::Iterator::current() const {
 }
 
 template<typename Tr4jectory>
-bool Forkable<Tr4jectory>::Iterator::at_end() const {
-  return current_ == ancestry_.front()->timeline_end();
+void Forkable<Tr4jectory>::Iterator::NormalizeIfEnd() {
+  CHECK(!ancestry_.empty());
+  if (current_ == ancestry_.front()->timeline_end() &&
+      ancestry_.size() > 1) {
+    ancestry_.erase(ancestry_.begin(), --ancestry_.end());
+  }
+}
+
+template<typename Tr4jectory>
+void Forkable<Tr4jectory>::Iterator::CheckNormalizedIfEnd() {
+  CHECK(current_ != ancestry_.front()->timeline_end() ||
+        ancestry_.size() == 1);
 }
 
 template<typename Tr4jectory>
@@ -204,6 +209,7 @@ Forkable<Tr4jectory>::Find(Instant const& time) const {
     ancestor = ancestor->parent_;
   } while (ancestor != nullptr);
 
+  iterator.NormalizeIfEnd();
   return iterator;
 }
 
@@ -223,6 +229,7 @@ Forkable<Tr4jectory>::Wrap(
     iterator.ancestry_.push_front(ancest0r);
     if (ancestor == ancest0r) {
       iterator.current_ = position_in_ancestor_timeline;  // May be at end.
+      iterator.NormalizeIfEnd();
       return iterator;
     }
     iterator.current_ = ancest0r->timeline_end();
