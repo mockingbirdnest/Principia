@@ -13,12 +13,20 @@ using geometry::Instant;
 
 namespace physics {
 
+// This traits class must export declarations similar to the following:
+//
+// using TimelineConstIterator = ...;
+// static Instant const& time(TimelineConstIterator const it);
+//
+// TimelineConstIterator must be an STL-like iterator in the timeline of
+// Tr4jectory.  |time()| must return the corresponding time.
 template<typename Tr4jectory>
 struct ForkableTraits;
 
 // This template represents a trajectory which is forkable and iterable.  It
-// uses CRTP to make sure that the return type in the concrete class doesn't
-// involve Forkable.
+// uses CRTP to achive static polymorphism on the return type of the member
+// functions: we want them to return Tr4jectory, not Forkable, so that the
+// clients don't have to down_cast.
 template<typename Tr4jectory>
 class Forkable {
  public:
@@ -124,7 +132,8 @@ class Forkable {
   // This iterator is never at |end()|.
   typename Children::const_iterator position_in_parent_children_;
 
-  // This iterator is never at |end()| if the parent's timeline is empty.
+  // This iterator is at |end()| if the fork time is not in the parent timeline,
+  // i.e. is the parent timeline's own fork time.
   TimelineConstIterator position_in_parent_timeline_;
 
   Children children_;

@@ -1,4 +1,3 @@
-#include "forkable.hpp"
 #pragma once
 
 #include "physics/forkable.hpp"
@@ -7,13 +6,13 @@ namespace principia {
 namespace physics {
 
 template<typename Tr4jectory>
-not_null<Tr4jectory*>
-Forkable<Tr4jectory>::NewFork(Instant const & time) {
+not_null<Tr4jectory*> Forkable<Tr4jectory>::NewFork(Instant const & time) {
+  Instant const* const fork_time = ForkTime();
   CHECK(timeline_find(time) != timeline_end() ||
-        (!is_root() && time == position_in_parent_children_->first))
+        (fork_time != nullptr && time == *fork_time))
       << "NewFork at nonexistent time " << time;
 
-  // May be at |timeline_end()|.
+  // May be at |timeline_end()| if |time| is the fork time of this object.
   auto timeline_it = timeline_find(time);
 
   // First create a child in the multimap.
@@ -33,8 +32,7 @@ Forkable<Tr4jectory>::NewFork(Instant const & time) {
 }
 
 template<typename Tr4jectory>
-void Forkable<Tr4jectory>::DeleteFork(
-    not_null<Tr4jectory**> const trajectory) {
+void Forkable<Tr4jectory>::DeleteFork(not_null<Tr4jectory**> const trajectory) {
   CHECK_NOTNULL(*trajectory);
   Instant const* const fork_time = (*trajectory)->ForkTime();
   CHECK_NOTNULL(fork_time);
@@ -58,7 +56,7 @@ bool Forkable<Tr4jectory>::is_root() const {
 template<typename Tr4jectory>
 not_null<Tr4jectory const*>
 Forkable<Tr4jectory>::root() const {
-  Tr4jectory const* ancestor = that();
+  not_null<Tr4jectory const*> ancestor = that();
   while (ancestor->parent_ != nullptr) {
     ancestor = ancestor->parent_;
   }
@@ -68,7 +66,7 @@ Forkable<Tr4jectory>::root() const {
 template<typename Tr4jectory>
 not_null<Tr4jectory*>
 Forkable<Tr4jectory>::root() {
-  Tr4jectory* ancestor = that();
+  not_null<Tr4jectory*> ancestor = that();
   while (ancestor->parent_ != nullptr) {
     ancestor = ancestor->parent_;
   }
@@ -85,8 +83,7 @@ Instant const* Forkable<Tr4jectory>::ForkTime() const {
 }
 
 template<typename Tr4jectory>
-bool Forkable<Tr4jectory>::Iterator::operator==(
-    Iterator const & right) const {
+bool Forkable<Tr4jectory>::Iterator::operator==(Iterator const& right) const {
   bool const this_at_end = at_end();
   bool const right_at_end = right.at_end();
   if (this_at_end != right_at_end) {
@@ -99,8 +96,7 @@ bool Forkable<Tr4jectory>::Iterator::operator==(
 }
 
 template<typename Tr4jectory>
-bool Forkable<Tr4jectory>::Iterator::operator!=(
-    Iterator const & right) const {
+bool Forkable<Tr4jectory>::Iterator::operator!=(Iterator const& right) const {
   return !(*this == right);
 }
 
@@ -221,19 +217,20 @@ Forkable<Tr4jectory>::Wrap(
 
   // Go up the ancestry chain until we find |ancestor| and set |current_| to
   // |position_in_ancestor_timeline|.  The ancestry has |forkable|
-  // at the back, and the object containing |current_| at the front.  If
-  // |ancestor| is not found in the ancestry, stop at the root.
+  // at the back, and the object containing |current_| at the front.
   not_null<Tr4jectory const*> ancest0r = that();
   do {
     iterator.ancestry_.push_front(ancest0r);
     if (ancestor == ancest0r) {
       iterator.current_ = position_in_ancestor_timeline;  // May be at end.
-      break;
+      return iterator;
     }
     iterator.current_ = ancest0r->timeline_end();
     ancest0r = ancest0r->parent_;
   } while (ancest0r != nullptr);
-  return iterator;
+
+  LOG(FATAL) << "The ancestor parameter is not an ancestor of this trajectory";
+  return iterator;  // To make the compiler happy.
 }
 
 }  // namespace physics
