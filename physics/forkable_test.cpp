@@ -1,5 +1,8 @@
 #include "physics/forkable.hpp"
 
+#include <list>
+#include <vector>
+
 #include "geometry/named_quantities.hpp"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
