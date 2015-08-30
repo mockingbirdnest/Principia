@@ -61,13 +61,14 @@ void Manœuvre<Frame>::set_duration(Time const & duration) {
 
 template<typename Frame>
 void Manœuvre<Frame>::set_Δv(Speed const& Δv) {
-  final_time_ = initial_time_ + duration;
+  set_duration(initial_mass() * effective_exhaust_velocity() *
+               (1 - std::exp(-Δv / effective_exhaust_velocity())) / thrust());
 }
 
 template<typename Frame>
 Speed Manœuvre<Frame>::Δv() const {
   // Циолко́вский's equation.
-  return effective_exhaust_velocity_ * std::log(initial_mass() / final_mass());
+  return effective_exhaust_velocity() * std::log(initial_mass() / final_mass());
 }
 
 template<typename Frame>
@@ -117,7 +118,7 @@ typename Trajectory<Frame>::IntrinsicAcceleration
     initial_mass = this->initial_mass(),
     mass_flow = this->mass_flow()
   ](Instant const& time) -> Vector<Acceleration, Frame> {
-    if (time > initial_time && time < final_time) {
+    if (time >= initial_time && time <= final_time) {
       return direction * thrust /
              (initial_mass - (time - initial_time) * mass_flow);
     } else {

@@ -63,6 +63,7 @@ class Manœuvre {
   // Intensity and timing must have been set.
   Instant time_of_half_Δv() const;
 
+  // Intensity and timing must have been set.
   typename Trajectory<Frame>::IntrinsicAcceleration acceleration() const;
  private:
   Vector<double, Frame> const direction_;
