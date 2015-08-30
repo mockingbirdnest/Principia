@@ -45,7 +45,7 @@ void Manœuvre<Frame>::set_initial_time(Instant const & initial_time) {
 
 template <typename Frame>
 void Manœuvre<Frame>::set_time_of_half_Δv(Instant const& time_of_half_Δv) {
-  initial_time_ = time_of_half_Δv - time_to_half_Δv();
+  set_initial_time(time_of_half_Δv - time_to_half_Δv());
 }
 
 template<typename Frame>

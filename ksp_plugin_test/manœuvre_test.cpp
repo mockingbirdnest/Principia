@@ -31,12 +31,15 @@ TEST_F(ManœuvreTest, TimedBurn) {
   EXPECT_EQ(1 * Metre / Second, manœuvre.effective_exhaust_velocity());
   EXPECT_EQ(e_y, manœuvre.direction());
   EXPECT_EQ(1 * Kilogram / Second, manœuvre.mass_flow());
+
   manœuvre.set_duration(1 * Second);
   EXPECT_EQ(1 * Second, manœuvre.duration());
   EXPECT_EQ(std::log(2) * Metre / Second, manœuvre.Δv());
   EXPECT_EQ((2 - Sqrt(2)) * Second, manœuvre.time_to_half_Δv());
   EXPECT_EQ(1 * Kilogram, manœuvre.final_mass());
+
   manœuvre.set_initial_time(t0);
+  EXPECT_EQ(t0, manœuvre.initial_time());
   EXPECT_EQ(t0 + 1 * Second, manœuvre.final_time());
   EXPECT_EQ(t0 + (2 - Sqrt(2)) * Second, manœuvre.time_of_half_Δv());
   EXPECT_EQ(
@@ -61,21 +64,24 @@ TEST_F(ManœuvreTest, TargetΔv) {
   EXPECT_EQ(1 * Metre / Second, manœuvre.effective_exhaust_velocity());
   EXPECT_EQ(e_y, manœuvre.direction());
   EXPECT_EQ(1 * Kilogram / Second, manœuvre.mass_flow());
+
   manœuvre.set_Δv(1 * Metre / Second);
   EXPECT_EQ(1 * Metre / Second, manœuvre.Δv());
   EXPECT_EQ((2 - 2 / e) * Second, manœuvre.duration());
   EXPECT_EQ((2 - 2 / Sqrt(e)) * Second, manœuvre.time_to_half_Δv());
   EXPECT_EQ((2 / e) * Kilogram, manœuvre.final_mass());
-  manœuvre.set_initial_time(t0);
-  EXPECT_EQ(t0 + (2 - 2 / e) * Second, manœuvre.final_time());
-  EXPECT_EQ(t0 + (2 - 2 / Sqrt(e)) * Second, manœuvre.time_of_half_Δv());
+
+  manœuvre.set_time_of_half_Δv(t0);
+  EXPECT_EQ(t0 - (2 - 2 / Sqrt(e)) * Second, manœuvre.initial_time());
+  EXPECT_EQ(t0 + (2 / Sqrt(e) - 2 / e) * Second, manœuvre.final_time());
+  EXPECT_EQ(t0, manœuvre.time_of_half_Δv());
   EXPECT_EQ(
       0 * Metre / Pow<2>(Second),
       manœuvre.acceleration()(manœuvre.initial_time() - 1 * Second).Norm());
   EXPECT_EQ(0.5 * Metre / Pow<2>(Second),
             manœuvre.acceleration()(manœuvre.initial_time()).Norm());
-  EXPECT_THAT(manœuvre.acceleration()(manœuvre.time_of_half_Δv()).Norm(),
-              AlmostEquals(Sqrt(0.5) * Metre / Pow<2>(Second), 1));
+  EXPECT_EQ(Sqrt(e) / 2 * Metre / Pow<2>(Second),
+            manœuvre.acceleration()(manœuvre.time_of_half_Δv()).Norm());
   EXPECT_EQ((e / 2) * Metre / Pow<2>(Second),
             manœuvre.acceleration()(manœuvre.final_time()).Norm());
   EXPECT_EQ(0 * Metre / Pow<2>(Second),
