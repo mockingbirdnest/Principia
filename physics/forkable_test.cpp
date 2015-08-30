@@ -329,6 +329,8 @@ TEST_F(ForkableTest, IteratorIncrementMultipleForksSuccess) {
   ++it;
   EXPECT_EQ(it, fork3->End());
   fork3->push_back(t3_);
+  --it;
+  EXPECT_EQ(t3_, *it.current());
   it = fork3->Begin();
   EXPECT_EQ(t1_, *it.current());
   ++it;

@@ -230,7 +230,7 @@ Forkable<Tr4jectory>::Wrap(
     iterator.ancestry_.push_front(ancest0r);
     if (ancestor == ancest0r) {
       iterator.current_ = position_in_ancestor_timeline;  // May be at end.
-      iterator.NormalizeIfEnd();
+      iterator.CheckNormalizedIfEnd();
       return iterator;
     }
     iterator.current_ = ancest0r->timeline_end();
@@ -238,7 +238,7 @@ Forkable<Tr4jectory>::Wrap(
   } while (ancest0r != nullptr);
 
   LOG(FATAL) << "The ancestor parameter is not an ancestor of this trajectory";
-  return iterator;  // To make the compiler happy.
+  base::noreturn();
 }
 
 }  // namespace physics

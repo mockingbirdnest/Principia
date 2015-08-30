@@ -24,7 +24,7 @@ template<typename Tr4jectory>
 struct ForkableTraits;
 
 // This template represents a trajectory which is forkable and iterable.  It
-// uses CRTP to achive static polymorphism on the return type of the member
+// uses CRTP to achieve static polymorphism on the return type of the member
 // functions: we want them to return Tr4jectory, not Forkable, so that the
 // clients don't have to down_cast.
 template<typename Tr4jectory>
@@ -82,8 +82,8 @@ class Forkable {
     // We want a single representation for an end iterator.  In various places
     // we may end up with |current_| at the end of its timeline, but that
     // timeline is not the "most forked" one.  This function normalizes this
-    // object so that there is only one entry in the ancestry (the "most forked"
-    // one) and current is at its end.
+    // object so that there is only one entry in the |ancestry_| (the "most
+    // forked" one) and |current_| is at its end.
     void NormalizeIfEnd();
 
     // Checks that this object verifies the invariants enforced by
@@ -107,7 +107,8 @@ class Forkable {
   // Constructs an Iterator by wrapping the timeline iterator
   // |position_in_ancestor_timeline| which must be an iterator in the timeline
   // of |ancestor|.  |ancestor| must be an ancestor of this trajectory
-  // (including the trajectory itself).
+  // (it may be this object).  |position_in_ancestor_timeline| may only be at
+  // end if it is an iterator in this object (and ancestor is this object).
   Iterator Wrap(
       not_null<const Tr4jectory*> const ancestor,
       TimelineConstIterator const position_in_ancestor_timeline) const;
