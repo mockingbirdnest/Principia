@@ -145,7 +145,8 @@ Forkable<Tr4jectory>::Iterator::operator--() {
       current_ = ancestor->position_in_parent_timeline_;
       ancestor = ancestor->parent_;
       ancestry_.push_front(ancestor);
-    } while (ancestor->timeline_empty() && ancestor->parent_ != nullptr);
+    } while (current_ == ancestor->timeline_end() &&
+             ancestor->parent_ != nullptr);
     return *this;
   }
 

@@ -278,9 +278,8 @@ TEST_F(ForkableTest, IteratorDecrementMultipleForksSuccess) {
   auto it = fork3->End();
   --it;
   EXPECT_EQ(t2_, *it.current());
-  ++it;
+  --it;
   EXPECT_EQ(t1_, *it.current());
-  ++it;
   EXPECT_EQ(it, fork3->Begin());
 }
 
@@ -288,7 +287,7 @@ TEST_F(ForkableDeathTest, IteratorIncrementError) {
   EXPECT_DEATH({
     auto it = trajectory_.Begin();
     ++it;
-  }, "!at_end");
+  }, "current.*!=.*end");
 }
 
 TEST_F(ForkableTest, IteratorIncrementNoForkSuccess) {
@@ -328,7 +327,7 @@ TEST_F(ForkableTest, IteratorIncrementMultipleForksSuccess) {
   ++it;
   EXPECT_EQ(t2_, *it.current());
   ++it;
-  EXPECT_EQ(it, trajectory_.End());
+  EXPECT_EQ(it, fork3->End());
   fork3->push_back(t3_);
   it = fork3->Begin();
   EXPECT_EQ(t1_, *it.current());
@@ -337,7 +336,7 @@ TEST_F(ForkableTest, IteratorIncrementMultipleForksSuccess) {
   ++it;
   EXPECT_EQ(t3_, *it.current());
   ++it;
-  EXPECT_EQ(it, trajectory_.End());
+  EXPECT_EQ(it, fork3->End());
 }
 
 TEST_F(ForkableTest, IteratorEndEquality) {
@@ -385,7 +384,7 @@ TEST_F(ForkableTest, IteratorBeginSuccess) {
   fork->push_back(t4_);
 
   it = fork->Begin();
-  EXPECT_NE(it, trajectory_.End());
+  EXPECT_NE(it, fork->End());
   EXPECT_EQ(t1_, *it.current());
   ++it;
   EXPECT_EQ(t2_, *it.current());
@@ -394,7 +393,7 @@ TEST_F(ForkableTest, IteratorBeginSuccess) {
   ++it;
   EXPECT_EQ(t4_, *it.current());
   ++it;
-  EXPECT_EQ(it, trajectory_.End());
+  EXPECT_EQ(it, fork->End());
 }
 
 TEST_F(ForkableTest, IteratorFindSuccess) {
@@ -417,14 +416,14 @@ TEST_F(ForkableTest, IteratorFindSuccess) {
   fork->push_back(t4_);
 
   it = fork->Find(t1_);
-  EXPECT_NE(it, trajectory_.End());
+  EXPECT_NE(it, fork->End());
   EXPECT_EQ(t1_, *it.current());
   it = fork->Find(t2_);
   EXPECT_EQ(t2_, *it.current());
   it = fork->Find(t4_);
   EXPECT_EQ(t4_, *it.current());
   it = fork->Find(t4_ + 1 * Second);
-  EXPECT_EQ(it, trajectory_.End());
+  EXPECT_EQ(it, fork->End());
 }
 
 }  // namespace physics

@@ -79,8 +79,15 @@ class Forkable {
    private:
     Iterator() = default;
 
-    //TODO(phl):
+    // We want a single representation for an end iterator.  In various places
+    // we may end up with |current_| at the end of its timeline, but that
+    // timeline is not the "most forked" one.  This function normalizes this
+    // object so that there is only one entry in the ancestry (the "most forked"
+    // one) and current is at its end.
     void NormalizeIfEnd();
+
+    // Checks that this object verifies the invariants enforced by
+    // NormalizeIfEnd and dies if it doesn't.
     void CheckNormalizedIfEnd();
 
     // |ancestry_| is never empty.  |current_| is an iterator in the timeline
