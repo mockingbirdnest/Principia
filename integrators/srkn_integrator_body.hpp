@@ -221,7 +221,7 @@ inline SRKNIntegrator::SRKNIntegrator(std::vector<double> const& a,
   } else if (a.back() == 0.0) {
     vanishing_coefficients_ = kLastAVanishes;
     first_same_as_last_ = std::experimental::make_optional<FirstSameAsLast>(
-                              {b.front(), b.back(),});
+                              {b.front(), b.back()});
     a_ = std::vector<double>(a.begin(), a.end() - 1);
     b_ = std::vector<double>(b.begin(), b.end() - 1);
     b_.front() += first_same_as_last_->last;

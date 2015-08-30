@@ -1,7 +1,8 @@
 ﻿#pragma once
 
-#include <functional>
 #include <optional.hpp>
+
+#include <functional>
 #include <vector>
 
 #include "base/not_null.hpp"
