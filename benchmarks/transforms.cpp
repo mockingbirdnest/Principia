@@ -34,6 +34,7 @@
 // BM_TransformsBarycentricRotating<true>/1000k_stddev      465249538  469601879          0  // NOLINT(whitespace/line_length)
 
 #include <memory>
+#include <optional.hpp>
 #include <utility>
 #include <vector>
 
@@ -146,18 +147,16 @@ std::vector<std::pair<Position<World1>,
   }
 
   // Then build the final result using the second transform.
-  std::unique_ptr<Position<World1>> last_position;  // std::optional.
+  std::experimental::optional<Position<World1>> last_position;
   for (auto it = transforms->second(intermediate_trajectory.last().time(),
                                     intermediate_trajectory);
        !it.at_end();
        ++it) {
     Position<World1> const& position = it.degrees_of_freedom().position();
-    if (last_position == nullptr) {
-      last_position = std::make_unique<Position<World1>>(position);
-    } else {
+    if (last_position) {
       result.emplace_back(*last_position, position);
-      *last_position = position;
     }
+    last_position = position;
   }
   return result;
 }

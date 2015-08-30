@@ -1,6 +1,7 @@
 ﻿#pragma once
 
 #include <functional>
+#include <optional.hpp>
 #include <vector>
 
 #include "base/not_null.hpp"
@@ -91,8 +92,7 @@ class SRKNIntegrator : public MotionIntegrator {
   // and last b coefficients.
   // These are used to desynchronize and synchronize first-same-as-last
   // integrators.
-  // NOTE(egg): should be std::optional.
-  std::unique_ptr<FirstSameAsLast> first_same_as_last_;
+  std::experimental::optional<FirstSameAsLast> first_same_as_last_;
 
   int stages_;
 
