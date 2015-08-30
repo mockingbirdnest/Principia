@@ -12,33 +12,62 @@ using quantities::Sqrt;
 
 namespace ksp_plugin {
 
+template <typename Frame>
+Manœuvre<Frame>::Manœuvre(Force thrust,
+                          Mass initial_mass,
+                          Speed effective_exhaust_velocity,
+                          Vector<double, Frame> direction)
+    : thrust_(thrust),
+      initial_mass_(initial_mass),
+      effective_exhaust_velocity_(effective_exhaust_velocity),
+      direction_(direction) {}
+
 template<typename Frame>
-Instant Manœuvre<Frame>::start_time() const {
-  return start_time_;
+Instant Manœuvre<Frame>::initial_time() const {
+  CHECK(initial_time_ != nullptr);
+  return *initial_time_;
 }
 
 template<typename Frame>
-inline Instant Manœuvre<Frame>::half_?v() const {
-  double sqrt_mass_ratio = Sqrt(mass_ratio());
-  return start_time_ +
-         exhaust_velocity_ * initial_mass_ * (sqrt_mass_ratio - 1) /
-             (thrust_ * sqrt_mass_ratio);
+inline Instant Manœuvre<Frame>::time_of_half_Δv() const {
+  return initial_time() + time_to_half_Δv();
 }
 
 template<typename Frame>
-Instant Manœuvre<Frame>::end_time() const {
-  return end_time_;
+Instant Manœuvre<Frame>::final_time() const {
+  return initial_time() + duration();
+}
+
+template<typename Frame>
+void Manœuvre<Frame>::set_initial_time(Instant const & initial_time) {
+  initial_time_ = std::make_unique<Instant>(initial_time);
+}
+
+template <typename Frame>
+void Manœuvre<Frame>::set_time_of_half_Δv(Instant const& time_of_half_Δv) {
+  initial_time_ = time_of_half_Δv - time_to_half_Δv();
 }
 
 template<typename Frame>
 inline Time Manœuvre<Frame>::duration() const {
-  return end_time_ - start_time_;
+  CHECK(duration_ != nullptr);
+  return *duration_;
 }
 
 template<typename Frame>
-Speed Manœuvre<Frame>::?v() const {
+void Manœuvre<Frame>::set_duration(Time const & duration) {
+  duration_ = std::make_unique<Time>(duration);
+}
+
+template<typename Frame>
+void Manœuvre<Frame>::set_Δv(Speed const& Δv) {
+  final_time_ = initial_time_ + duration;
+}
+
+template<typename Frame>
+Speed Manœuvre<Frame>::Δv() const {
   // Циолко́вский's equation.
-  return exhaust_velocity_ * std::log(mass_ratio());
+  return effective_exhaust_velocity_ * std::log(initial_mass() / final_mass());
 }
 
 template<typename Frame>
@@ -47,8 +76,8 @@ Vector<double, Frame> Manœuvre<Frame>::direction() const {
 }
 
 template<typename Frame>
-Speed Manœuvre<Frame>::exhaust_velocity() const {
-  return exhaust_velocity_;
+Speed Manœuvre<Frame>::effective_exhaust_velocity() const {
+  return effective_exhaust_velocity_;
 }
 
 template<typename Frame>
@@ -63,7 +92,7 @@ Mass Manœuvre<Frame>::initial_mass() const {
 
 template<typename Frame>
 Variation<Mass> Manœuvre<Frame>::mass_flow() const {
-  return thrust_ / exhaust_velocity_;
+  return thrust_ / effective_exhaust_velocity_;
 }
 
 template<typename Frame>
@@ -72,24 +101,25 @@ Mass Manœuvre<Frame>::final_mass() const {
 }
 
 template<typename Frame>
-inline double Manœuvre<Frame>::mass_ratio() const {
-  return initial_mass() / final_mass();
+Time Manœuvre<Frame>::time_to_half_Δv() const {
+  return effective_exhaust_velocity() * initial_mass() *
+         (1 - std::sqrt(final_mass() / initial_mass())) / thrust();
 }
 
 template <typename Frame>
 typename Trajectory<Frame>::IntrinsicAcceleration
     Manœuvre<Frame>::acceleration() const {
   return [
-    direction = direction_,
-    start_time = start_time_,
-    end_time = end_time_,
-    thrust = thrust_,
-    initial_mass = initial_mass_,
+    direction = this->direction(),
+    initial_time = this->initial_time(),
+    final_time = this->final_time(),
+    thrust = this->thrust(),
+    initial_mass = this->initial_mass(),
     mass_flow = this->mass_flow()
-  ](Instant const& time) {
-    if (time > start_time && time < end_time) {
+  ](Instant const& time) -> Vector<Acceleration, Frame> {
+    if (time > initial_time && time < final_time) {
       return direction * thrust /
-             (initial_mass - (time - start_time) * mass_flow);
+             (initial_mass - (time - initial_time) * mass_flow);
     } else {
       return Vector<Acceleration, Frame>();
     }
