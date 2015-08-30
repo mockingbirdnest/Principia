@@ -158,6 +158,8 @@
     <ClInclude Include="degrees_of_freedom_body.hpp" />
     <ClInclude Include="ephemeris.hpp" />
     <ClInclude Include="ephemeris_body.hpp" />
+    <ClInclude Include="forkable.hpp" />
+    <ClInclude Include="forkable_body.hpp" />
     <ClInclude Include="frame_field.hpp" />
     <ClInclude Include="frame_field_body.hpp" />
     <ClInclude Include="massive_body.hpp" />
@@ -177,6 +179,7 @@
     <ClCompile Include="continuous_trajectory_test.cpp" />
     <ClCompile Include="degrees_of_freedom_test.cpp" />
     <ClCompile Include="ephemeris_test.cpp" />
+    <ClCompile Include="forkable_test.cpp" />
     <ClCompile Include="trajectory_test.cpp" />
     <ClCompile Include="transforms_test.cpp" />
   </ItemGroup>
