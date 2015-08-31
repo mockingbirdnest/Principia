@@ -3,18 +3,18 @@
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "quantities/numbers.hpp"
-#include "quantities/uk.hpp"
 #include "testing_utilities/almost_equals.hpp"
+#include "testing_utilities/numerics.hpp"
 
 namespace principia {
 
 using quantities::Pow;
+using si::Kilo;
 using si::Kilogram;
 using si::Metre;
 using si::Newton;
 using si::Second;
-using uk::Pound;
-using uk::PoundForce;
+using testing_utilities::RelativeError;
 using testing_utilities::AlmostEquals;
 using ::testing::AllOf;
 using ::testing::Gt;
@@ -131,27 +131,77 @@ TEST_F(ManœuvreTest, Apollo8SIVB) {
   Mass total_vehicle_at_s_ivb_2nd_90_percent_thrust = 126780 * Kilogram;
   Mass total_vehicle_at_s_ivb_2nd_eco               =  59285 * Kilogram;
 
+  // An arbitrary direction, we're not testing this.
   Vector<double, World> e_y({0, 1, 0});
+
   Manœuvre<World> first_burn(thrust_1st,
                              total_vehicle_at_s_ivb_1st_90_percent_thrust,
                              specific_impulse_1st, e_y);
-  EXPECT_EQ(lox_flowrate_1st + fuel_flowrate_1st, first_burn.mass_flow());
+  EXPECT_THAT(RelativeError(lox_flowrate_1st + fuel_flowrate_1st,
+                            first_burn.mass_flow()),
+              Lt(1E-4));
 
   first_burn.set_duration(s_ivb_1st_eco - s_ivb_1st_90_percent_thrust);
-  EXPECT_EQ(total_vehicle_at_s_ivb_1st_eco, first_burn.final_mass());
-  EXPECT_EQ(1 * Metre / Second, first_burn.Δv());
+  EXPECT_THAT(
+      RelativeError(total_vehicle_at_s_ivb_1st_eco, first_burn.final_mass()),
+      Lt(1E-3));
 
   first_burn.set_initial_time(s_ivb_1st_90_percent_thrust);
   EXPECT_EQ(s_ivb_1st_eco, first_burn.final_time());
+
+  // Accelerations from Figure 4-4. Ascent Trajectory Acceleration Comparison.
+  // Final acceleration from Table 4-2. Comparison of Significant Trajectory
+  // Events.
   EXPECT_THAT(
       first_burn.acceleration()(first_burn.initial_time()).Norm(),
       AllOf(Gt(5 * Metre / Pow<2>(Second)), Lt(6.25 * Metre / Pow<2>(Second))));
-  EXPECT_THAT(first_burn.acceleration()(first_burn.initial_time()).Norm(),
-              AllOf(Gt(6.25 * Metre / Pow<2>(Second)),
-                    Lt(7.5 * Metre / Pow<2>(Second))));
   EXPECT_THAT(first_burn.acceleration()(range_zero + 600 * Second).Norm(),
-              AllOf(Gt(6.25 * Metre / Pow<2>(Second)),
-                    Lt(6.25 * Metre / Pow<2>(Second))));
+              AllOf(Gt(6.15 * Metre / Pow<2>(Second)),
+                    Lt(6.35 * Metre / Pow<2>(Second))));
+  EXPECT_THAT(first_burn.acceleration()(first_burn.final_time()).Norm(),
+              AllOf(Gt(7.03 * Metre / Pow<2>(Second)),
+                    Lt(7.05 * Metre / Pow<2>(Second))));
+
+  Manœuvre<World> second_burn(thrust_2nd,
+                              total_vehicle_at_s_ivb_2nd_90_percent_thrust,
+                              specific_impulse_2nd, e_y);
+  EXPECT_THAT(RelativeError(lox_flowrate_2nd + fuel_flowrate_2nd,
+                            second_burn.mass_flow()),
+              Lt(2E-4));
+
+  second_burn.set_duration(s_ivb_2nd_eco - s_ivb_2nd_90_percent_thrust);
+  EXPECT_THAT(
+      RelativeError(total_vehicle_at_s_ivb_2nd_eco, second_burn.final_mass()),
+      Lt(2E-3));
+
+  second_burn.set_initial_time(s_ivb_2nd_90_percent_thrust);
+  EXPECT_EQ(s_ivb_2nd_eco, second_burn.final_time());
+
+  // Accelerations from Figure 4-9. Injection Phase Acceleration Comparison.
+  // Final acceleration from Table 4-2. Comparison of Significant Trajectory
+  // Events.
+  EXPECT_THAT(second_burn.acceleration()(second_burn.initial_time()).Norm(),
+              AllOf(Gt(7 * Metre / Pow<2>(Second)),
+                    Lt(7.5 * Metre / Pow<2>(Second))));
+  EXPECT_THAT(second_burn.acceleration()(t6 + 650 * Second).Norm(),
+              AllOf(Gt(8 * Metre / Pow<2>(Second)),
+                    Lt(8.02 * Metre / Pow<2>(Second))));
+  EXPECT_THAT(second_burn.acceleration()(t6 + 700 * Second).Norm(),
+              AllOf(Gt(8.8 * Metre / Pow<2>(Second)),
+                    Lt(9 * Metre / Pow<2>(Second))));
+  EXPECT_THAT(second_burn.acceleration()(t6 + 750 * Second).Norm(),
+              AllOf(Gt(9.9 * Metre / Pow<2>(Second)),
+                    Lt(10 * Metre / Pow<2>(Second))));
+  EXPECT_THAT(second_burn.acceleration()(t6 + 850 * Second).Norm(),
+              AllOf(Gt(12.97 * Metre / Pow<2>(Second)),
+                    Lt(13 * Metre / Pow<2>(Second))));
+  EXPECT_THAT(second_burn.acceleration()(second_burn.final_time()).Norm(),
+              AllOf(Gt(15.12 * Metre / Pow<2>(Second)),
+                    Lt(15.17 * Metre / Pow<2>(Second))));
+
+  EXPECT_THAT(second_burn.Δv(),
+              AllOf(Gt(3 * Kilo(Metre) / Second),
+                    Lt(3.25 * Kilo(Metre) / Second)));
 }
 
 }  // namespace ksp_plugin
