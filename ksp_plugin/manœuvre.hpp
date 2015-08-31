@@ -33,7 +33,7 @@ class Manœuvre {
   // This is defined as the ratio of thrust to mass flow.
   // If the burn is done with a single engine (in a vacuum), this will be its
   // exhaust velocity.  For several engines, this is the total thrust divided
-  // by the sum of the indivitual mass flows (where each mass flow is the
+  // by the sum of the individual mass flows (where each mass flow is the
   // individual thrust divided by the exhaust velocity).
   Speed effective_exhaust_velocity() const;
   Vector<double, Frame> direction() const;

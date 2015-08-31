@@ -93,7 +93,7 @@ Mass Manœuvre<Frame>::initial_mass() const {
 
 template<typename Frame>
 Variation<Mass> Manœuvre<Frame>::mass_flow() const {
-  return thrust_ / effective_exhaust_velocity_;
+  return thrust() / effective_exhaust_velocity();
 }
 
 template<typename Frame>
