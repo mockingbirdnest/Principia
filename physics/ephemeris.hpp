@@ -34,6 +34,7 @@ class Ephemeris {
   // The acceleration due to the engines of a massless body.
   using IntrinsicAcceleration =
       std::function<Vector<Acceleration, Frame>(Instant const& time)>;
+  static std::nullptr_t constexpr kNoIntrinsicAcceleration = nullptr;
 
   // The equation describing the motion of the |bodies_|.
   using NewtonianMotionEquation =

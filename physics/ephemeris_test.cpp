@@ -330,14 +330,16 @@ TEST_F(EphemerisTest, EarthProbe) {
                         earth_position + Vector<Length, EarthMoonOrbitPlane>(
                             {0 * Metre, kDistance, 0 * Metre}),
                         earth_velocity));
-  trajectory.set_intrinsic_acceleration(
+  auto const intrinsic_acceleration =
       [earth, kDistance](Instant const& t) {
-    return Vector<Acceleration, EarthMoonOrbitPlane>(
-        {0 * SIUnit<Acceleration>(),
-         earth->gravitational_parameter() / (kDistance * kDistance),
-         0 * SIUnit<Acceleration>()});});
+        return Vector<Acceleration, EarthMoonOrbitPlane>(
+            {0 * SIUnit<Acceleration>(),
+              earth->gravitational_parameter() / (kDistance * kDistance),
+              0 * SIUnit<Acceleration>()});
+       };
 
-  ephemeris.FlowWithAdaptiveStep(&trajectory,
+  ephemeris.FlowWithAdaptiveStep(intrinsic_acceleration,
+                                 &trajectory,
                                  1E-9 * Metre,
                                  2.6E-15 * Metre / Second,
                                  DormandElMikkawyPrince1986RKN434FM<
