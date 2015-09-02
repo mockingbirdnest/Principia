@@ -239,6 +239,46 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
   private static extern void DeleteTransforms(ref IntPtr transforms);
 
   [DllImport(dllName           : kDllPath,
+             EntryPoint        = "principia__ManœuvreCount",
+             CallingConvention = CallingConvention.Cdecl)]
+  private static extern int ManœuvreCount(
+      IntPtr plugin,
+      [MarshalAs(UnmanagedType.LPStr)] String vessel_guid);
+
+  [DllImport(dllName           : kDllPath,
+             EntryPoint        = "principia__VesselManœuvre",
+             CallingConvention = CallingConvention.Cdecl)]
+  private static extern IntPtr VesselManœuvre(
+      IntPtr plugin,
+      [MarshalAs(UnmanagedType.LPStr)] String vessel_guid,
+      int index);
+
+  [DllImport(dllName           : kDllPath,
+             EntryPoint        = "principia__SetVesselManœuvre",
+             CallingConvention = CallingConvention.Cdecl)]
+  private static extern void SetVesselManœuvre(
+      IntPtr plugin,
+      [MarshalAs(UnmanagedType.LPStr)] String vessel_guid,
+      int index,
+      ref IntPtr manœuvre);
+
+  [DllImport(dllName           : kDllPath,
+             EntryPoint        = "principia__InsertVesselManœuvre",
+             CallingConvention = CallingConvention.Cdecl)]
+  private static extern void InsertVesselManœuvre(
+      IntPtr plugin,
+      [MarshalAs(UnmanagedType.LPStr)] String vessel_guid,
+      int index,
+      ref IntPtr manœuvre);
+
+  [DllImport(dllName           : kDllPath,
+             EntryPoint        = "principia__UpdatePrediction",
+             CallingConvention = CallingConvention.Cdecl)]
+  private static extern void UpdatePrediction(
+      IntPtr plugin,
+      [MarshalAs(UnmanagedType.LPStr)] String vessel_guid);
+
+  [DllImport(dllName           : kDllPath,
              EntryPoint        = "principia__RenderedVesselTrajectory",
              CallingConvention = CallingConvention.Cdecl)]
   private static extern IntPtr RenderedVesselTrajectory(
@@ -248,10 +288,19 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
       XYZ sun_world_position);
 
   [DllImport(dllName           : kDllPath,
+             EntryPoint        = "principia__PredictionCount",
+             CallingConvention = CallingConvention.Cdecl)]
+  private static extern int PredictionCount(
+      IntPtr plugin,
+      [MarshalAs(UnmanagedType.LPStr)] String vessel_guid);
+
+  [DllImport(dllName           : kDllPath,
              EntryPoint        = "principia__RenderedPrediction",
              CallingConvention = CallingConvention.Cdecl)]
   private static extern IntPtr RenderedPrediction(
       IntPtr plugin,
+      [MarshalAs(UnmanagedType.LPStr)] String vessel_guid,
+      int prediction_index,
       IntPtr transforms,
       XYZ sun_world_position);
 
@@ -274,18 +323,6 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
              EntryPoint        = "principia__DeleteLineAndIterator",
              CallingConvention = CallingConvention.Cdecl)]
   private static extern void DeleteLineAndIterator(ref IntPtr line);
-
-  [DllImport(dllName           : kDllPath,
-             EntryPoint        = "principia__set_predicted_vessel",
-             CallingConvention = CallingConvention.Cdecl)]
-  private static extern void set_predicted_vessel(
-      IntPtr plugin,
-      [MarshalAs(UnmanagedType.LPStr)] String vessel_guid);
-
-  [DllImport(dllName           : kDllPath,
-             EntryPoint        = "principia__clear_predicted_vessel",
-             CallingConvention = CallingConvention.Cdecl)]
-  private static extern void clear_predicted_vessel(IntPtr plugin);
 
   [DllImport(dllName           : kDllPath,
              EntryPoint        = "principia__set_prediction_length",
@@ -379,6 +416,27 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
       ref IntPtr deserializer,
       ref IntPtr plugin);
 
+  [DllImport(dllName           : kDllPath,
+             EntryPoint        = "NewManœuvreIspByWeight",
+             CallingConvention = CallingConvention.Cdecl)]
+  private static extern IntPtr NewManœuvreIspByWeight(
+      double thrust,
+      double initial_mass,
+      double specific_impulse_by_weight,
+      double right_ascension,
+      double declination);
+
+  [DllImport(dllName           : kDllPath,
+             EntryPoint        = "principia__set_duration",
+             CallingConvention = CallingConvention.Cdecl)]
+  private static extern IntPtr set_duration(IntPtr manœuvre,
+                                            double duration);
+
+  [DllImport(dllName           : kDllPath,
+             EntryPoint        = "principia__set_initial_time",
+             CallingConvention = CallingConvention.Cdecl)]
+  private static extern IntPtr set_initial_time(IntPtr manœuvre,
+                                                double initial_time);
 }
 
 }  // namespace ksp_plugin_adapter

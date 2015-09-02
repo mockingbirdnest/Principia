@@ -537,9 +537,9 @@ int principia__PredictionCount(Plugin const* const plugin,
 }
 
 LineAndIterator* principia__RenderedPrediction(
+    Plugin* const plugin,
     char const* vessel_guid,
     int const prediction_index,
-    Plugin* const plugin,
     RenderingTransforms* const transforms,
     XYZ const sun_world_position) {
   RenderedTrajectory<World> rendered_trajectory =

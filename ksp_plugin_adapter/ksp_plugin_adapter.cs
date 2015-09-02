@@ -48,7 +48,7 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
 
   private IntPtr plugin_ = IntPtr.Zero;
   // TODO(egg): rendering only one trajectory at the moment.
-  private VectorLine rendered_prediction_;
+  private VectorLine[] rendered_prediction_;
   private VectorLine rendered_trajectory_;
   private IntPtr transforms_ = IntPtr.Zero;
 
@@ -91,6 +91,17 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
   private bool show_logging_settings_ = false;
   [KSPField(isPersistant = true)]
   private bool show_reset_button_ = false;
+  [KSPField(isPersistant = true)]
+  private bool show_manœuvre_ = false;
+
+  // TODO(egg): the manœuvre setting UI needs its own class.
+  string thrust_;
+  string initial_mass_;
+  string specific_impulse_by_weight_;
+  string right_ascension_;
+  string declination_;
+  string duration_;
+  string initial_time_;
 
   [KSPField(isPersistant = true)]
   private int verbose_logging_ = 0;
@@ -596,8 +607,8 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
       bool ready_to_draw_active_vessel_trajectory =
           draw_active_vessel_trajectory() &&
           has_vessel(plugin_, active_vessel.id.ToString());
+      AdvanceTime(plugin_, universal_time, Planetarium.InverseRotAngle);
       if (ready_to_draw_active_vessel_trajectory) {
-        set_predicted_vessel(plugin_, active_vessel.id.ToString());
         set_prediction_length_tolerance(
             plugin_,
             prediction_length_tolerances_[prediction_length_tolerance_index_]);
@@ -607,10 +618,8 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
             prediction_length_tolerances_[prediction_length_tolerance_index_]);
         set_prediction_length(plugin_,
                               prediction_lengths_[prediction_length_index_]);
-      } else {
-        clear_predicted_vessel(plugin_);
+        UpdatePrediction(plugin_, active_vessel.id.ToString());
       }
-      AdvanceTime(plugin_, universal_time, Planetarium.InverseRotAngle);
       ForgetAllHistoriesBefore(
           plugin_,
           universal_time - history_lengths_[history_length_index_]);
@@ -701,12 +710,19 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
                                 (XYZ)Planetarium.fetch.Sun.position);
       RenderAndDeleteTrajectory(ref trajectory_iterator,
                                 rendered_trajectory_);
-      trajectory_iterator = RenderedPrediction(
-                                plugin_,
-                                transforms_,
-                                (XYZ)Planetarium.fetch.Sun.position);
-      RenderAndDeleteTrajectory(ref trajectory_iterator,
-                                rendered_prediction_);
+
+      for (int i = 0;
+           i < PredictionCount(plugin_, active_vessel.id.ToString());
+           ++i) {
+        trajectory_iterator = RenderedPrediction(
+                                  plugin_,
+                                  active_vessel.id.ToString(),
+                                  i,
+                                  transforms_,
+                                  (XYZ)Planetarium.fetch.Sun.position);
+        RenderAndDeleteTrajectory(ref trajectory_iterator,
+                                  rendered_prediction_[i]);
+      }
     } else {
       DestroyRenderedTrajectory();
     }
@@ -768,18 +784,23 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
     rendered_trajectory_.vectorObject.renderer.castShadows = false;
     rendered_trajectory_.vectorObject.renderer.receiveShadows = false;
     rendered_trajectory_.layer = 31;
-    rendered_prediction_ = new VectorLine(
-        lineName     : "rendered_prediction_",
-        linePoints   : new UnityEngine.Vector3[kMaxVectorLinePoints],
-        lineMaterial : MapView.OrbitLinesMaterial,
-        color        : XKCDColors.Fuchsia,
-        width        : 5,
-        lineType     : LineType.Discrete);
-    rendered_prediction_.vectorObject.transform.parent =
-        ScaledSpace.Instance.transform;
-    rendered_prediction_.vectorObject.renderer.castShadows = false;
-    rendered_prediction_.vectorObject.renderer.receiveShadows = false;
-    rendered_prediction_.layer = 31;
+    rendered_prediction_ = new VectorLine[2];
+    UnityEngine.Color[] colours = {XKCDColors.Fuchsia, XKCDColors.FrenchBlue};
+    for (int i = 0; i < rendered_prediction_.Length; ++i) {
+      rendered_prediction_[i] =
+          new VectorLine(
+                  lineName     : "rendered_prediction_",
+                  linePoints   : new UnityEngine.Vector3[kMaxVectorLinePoints],
+                  lineMaterial : MapView.OrbitLinesMaterial,
+                  color        : colours[i],
+                  width        : 5,
+                  lineType     : LineType.Discrete);
+      rendered_prediction_[i].vectorObject.transform.parent =
+          ScaledSpace.Instance.transform;
+      rendered_prediction_[i].vectorObject.renderer.castShadows = false;
+      rendered_prediction_[i].vectorObject.renderer.receiveShadows = false;
+      rendered_prediction_[i].layer = 31;
+    }
   }
 
   private void DestroyRenderedTrajectory() {
@@ -787,7 +808,10 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
       Vector.DestroyLine(ref rendered_trajectory_);
     }
     if (rendered_prediction_ != null) {
-      Vector.DestroyLine(ref rendered_prediction_);
+      for(int i = 0; i < rendered_prediction_.Length; ++i) {
+        Vector.DestroyLine(ref rendered_prediction_[i]);
+      }
+      rendered_prediction_ = null;
     }
   }
 
@@ -866,6 +890,9 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
     ToggleableSection(name   : "Prediction Settings",
                       show   : ref show_prediction_settings_,
                       render : PredictionSettings);
+    ToggleableSection(name   : "Manœuvre",
+                      show   : ref show_manœuvre_,
+                      render : ManœuvreSettings);
     ToggleableSection(name   : "KSP features",
                       show   : ref show_ksp_features_,
                       render : KSPFeatures);
@@ -1028,6 +1055,80 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
              "Length",
              ref changed_settings,
              "{0:0.00e0} s");
+  }
+
+  private void ManœuvreSettings() {
+    UnityEngine.GUILayout.BeginHorizontal();
+    UnityEngine.GUILayout.Label(text    : "F = ");
+    thrust_ = UnityEngine.GUILayout.TextField(thrust_,
+                                              UnityEngine.GUILayout.Width(75));
+    UnityEngine.GUILayout.Label(text : "N");
+    UnityEngine.GUILayout.EndHorizontal();
+    UnityEngine.GUILayout.BeginHorizontal();
+    UnityEngine.GUILayout.Label(text    : "m_0 = ");
+    initial_mass_ =
+        UnityEngine.GUILayout.TextField(initial_mass_,
+                                        UnityEngine.GUILayout.Width(75));
+    UnityEngine.GUILayout.Label(text : "kg");
+    UnityEngine.GUILayout.EndHorizontal();
+    UnityEngine.GUILayout.BeginHorizontal();
+    UnityEngine.GUILayout.Label(text    : "I_sp = ");
+    specific_impulse_by_weight_ =
+        UnityEngine.GUILayout.TextField(specific_impulse_by_weight_,
+                                        UnityEngine.GUILayout.Width(75));
+    UnityEngine.GUILayout.Label(text : "s g_0");
+    UnityEngine.GUILayout.EndHorizontal();
+    UnityEngine.GUILayout.BeginHorizontal();
+    UnityEngine.GUILayout.Label(text    : "α = ");
+    right_ascension_ =
+        UnityEngine.GUILayout.TextField(right_ascension_,
+                                        UnityEngine.GUILayout.Width(75));
+    UnityEngine.GUILayout.Label(text : "°");
+    UnityEngine.GUILayout.EndHorizontal();
+    UnityEngine.GUILayout.BeginHorizontal();
+    UnityEngine.GUILayout.Label(text    : "δ = ");
+    declination_ =
+        UnityEngine.GUILayout.TextField(declination_,
+                                        UnityEngine.GUILayout.Width(75));
+    UnityEngine.GUILayout.Label(text : "°");
+    UnityEngine.GUILayout.EndHorizontal();
+    UnityEngine.GUILayout.BeginHorizontal();
+    UnityEngine.GUILayout.Label(text    : "Δt = ");
+    duration_ =
+        UnityEngine.GUILayout.TextField(duration_,
+                                        UnityEngine.GUILayout.Width(75));
+    UnityEngine.GUILayout.Label(text : "s");
+    UnityEngine.GUILayout.EndHorizontal();
+    UnityEngine.GUILayout.Label(text    : "t_0 = ");
+    initial_time_ =
+        UnityEngine.GUILayout.TextField(initial_time_,
+                                        UnityEngine.GUILayout.Width(75));
+    UnityEngine.GUILayout.Label(text : "s from now.");
+    UnityEngine.GUILayout.EndHorizontal();
+    if (UnityEngine.GUILayout.Button(
+            text    : "Update",
+            options : UnityEngine.GUILayout.Width(100))) {
+      try {
+        double thrust = double.Parse(thrust_);
+        double initial_mass = double.Parse(initial_mass_);
+        double specific_impulse_by_weight =
+            double.Parse(specific_impulse_by_weight_);
+        double right_ascension = double.Parse(right_ascension_);
+        double declination = double.Parse(declination_);
+        double duration = double.Parse(duration_);
+        double initial_time = double.Parse(initial_time_) +
+                              Planetarium.GetUniversalTime();
+        IntPtr manœuvre = NewManœuvreIspByWeight(thrust,
+                                                 initial_mass,
+                                                 specific_impulse_by_weight,
+                                                 right_ascension,
+                                                 declination);
+        set_duration(manœuvre, duration);
+        set_initial_time(manœuvre, initial_time);
+      } catch (FormatException) {
+      } catch (OverflowException) {
+      }
+    }
   }
 
   private void KSPFeatures() {
