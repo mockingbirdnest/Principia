@@ -31,6 +31,10 @@ class Ephemeris {
   static_assert(Frame::is_inertial, "Frame must be inertial");
 
  public:
+  // The acceleration due to the engines of a massless body.
+  using IntrinsicAcceleration =
+      std::function<Vector<Acceleration, Frame>(Instant const& time)>;
+
   // The equation describing the motion of the |bodies_|.
   using NewtonianMotionEquation =
       SpecialSecondOrderDifferentialEquation<Position<Frame>>;
@@ -81,6 +85,7 @@ class Ephemeris {
   // |speed_integration_tolerance|s are used to compute the
   // |tolerance_to_error_ratio| for step size control.
   virtual void FlowWithAdaptiveStep(
+      IntrinsicAcceleration const intrinsic_acceleration,
       not_null<Trajectory<Frame>*> const trajectory,
       Length const& length_integration_tolerance,
       Speed const& speed_integration_tolerance,

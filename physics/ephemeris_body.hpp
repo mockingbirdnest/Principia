@@ -263,12 +263,12 @@ void Ephemeris<Frame>::Prolong(Instant const& t) {
 
 template<typename Frame>
 void Ephemeris<Frame>::FlowWithAdaptiveStep(
+    IntrinsicAcceleration const intrinsic_acceleration,
     not_null<Trajectory<Frame>*> const trajectory,
     Length const& length_integration_tolerance,
     Speed const& speed_integration_tolerance,
     AdaptiveStepSizeIntegrator<NewtonianMotionEquation> const& integrator,
     Instant const& t) {
-  std::vector<not_null<Trajectory<Frame>*>> const trajectories = {trajectory};
   if (empty() || t > t_max()) {
     Prolong(t);
   }
@@ -276,8 +276,19 @@ void Ephemeris<Frame>::FlowWithAdaptiveStep(
   std::vector<typename ContinuousTrajectory<Frame>::Hint> hints(bodies_.size());
   NewtonianMotionEquation massless_body_equation;
   massless_body_equation.compute_acceleration =
-      std::bind(&Ephemeris::ComputeMasslessBodiesGravitationalAccelerations,
-                this, std::cref(trajectories), _1, _2, _3, &hints);
+      [this, &hints, trajectory](
+          Instant const& t,
+          std::vector<Position<Frame>> const& positions,
+          not_null<std::vector<Vector<Acceleration, Frame>>*> const
+              accelerations) {
+          // First, the acceleration due to the gravitational field of the
+          // massive bodies.
+          ComputeMasslessBodiesGravitationalAccelerations(
+              {trajectory}, t, positions, accelerations, &hints);
+          // Then, the intrinsic acceleration.
+          CHECK_EQ(1, accelerations->size());
+          (*accelerations)[0] += intrinsic_acceleration(t);
+  };
 
   typename NewtonianMotionEquation::SystemState initial_state;
   auto const trajectory_last = trajectory->last();
@@ -755,15 +766,6 @@ void Ephemeris<Frame>::ComputeMasslessBodiesGravitationalAccelerations(
         positions,
         accelerations,
         hints);
-  }
-  // Finally, take into account the intrinsic accelerations.
-  for (std::size_t b2 = 0; b2 < trajectories.size(); ++b2) {
-    auto const& trajectory = trajectories[b2];
-    if (trajectory->has_intrinsic_acceleration()) {
-      Vector<Acceleration, Frame> const intrinsic_acceleration =
-          trajectory->evaluate_intrinsic_acceleration(t);
-      (*accelerations)[b2] += intrinsic_acceleration;
-    }
   }
 }
 
