@@ -1,11 +1,14 @@
 #pragma once
 
 #include <memory>
+#include <vector>
 
 #include "ksp_plugin/celestial.hpp"
+#include "ksp_plugin/manœuvre.hpp"
 #include "ksp_plugin/mobile_interface.hpp"
 #include "ksp_plugin/vessel.hpp"
 #include "ksp_plugin/part.hpp"
+#include "physics/ephemeris.hpp"
 #include "physics/massless_body.hpp"
 #include "physics/trajectory.hpp"
 #include "quantities/named_quantities.hpp"
@@ -13,6 +16,7 @@
 
 namespace principia {
 
+using physics::Ephemeris;
 using physics::MasslessBody;
 using physics::Trajectory;
 using quantities::GravitationalParameter;
@@ -22,6 +26,9 @@ namespace ksp_plugin {
 // Represents a KSP |Vessel|.
 class Vessel : public MobileInterface {
  public:
+  using Manœuvres =
+      std::vector<not_null<std::unique_ptr<Manœuvre<Barycentric> const>>>;
+
   Vessel() = delete;
   Vessel(Vessel const&) = delete;
   Vessel(Vessel&&) = delete;
@@ -54,11 +61,12 @@ class Vessel : public MobileInterface {
   Trajectory<Barycentric> const& prolongation() const override;
   not_null<Trajectory<Barycentric>*> mutable_prolongation() override;
 
-  // Both accessors require |is_initialized()|.  In addition the first one
-  // requires |has_prediction()|.
-  Trajectory<Barycentric> const& prediction() const override;
-  Trajectory<Barycentric>* mutable_prediction() override;
-  bool has_prediction() const override;
+  // Requires |is_initialized()|.
+  std::vector<not_null<Trajectory<Barycentric>*>> const& predictions() const;
+  bool has_predictions() const;
+
+  Manœuvres const& manœuvres() const;
+  not_null<Manœuvres*> mutable_manœuvres();
 
   // Creates an |owned_prolongation_| for this vessel and appends a point with
   // the given |time| and |degrees_of_freedom|.  The vessel must not satisfy
@@ -84,12 +92,23 @@ class Vessel : public MobileInterface {
   // |owned_prolongation_| must be null.
   void ResetProlongation(Instant const& time);
 
-  // Creates a |prediction_| forked at the end of the |prolongation_|.
-  // Requires |is_initialized()| and |!has_prediction()|.
-  void ForkPrediction();
+  // Fills |predictions_| with predictions using the given |ephemeris| for
+  // successive manœuvres, with the given prediction tolerances for the coasting
+  // phases, and the given prolongation tolerances for the manœuvres.  Uses the
+  // given |integrator|.
+  // Deletes any pre-existing predictions.
+  void UpdatePredictions(
+      not_null<Ephemeris<Barycentric>*> ephemeris,
+      AdaptiveStepSizeIntegrator<
+          Ephemeris<Barycentric>::NewtonianMotionEquation> const& integrator,
+      Instant const& last_time,
+      Length const& predictions_length_tolerance,
+      Speed const& predictions_speed_tolerance,
+      Length const& prolongation_length_tolerance,
+      Speed const& prolongation_speed_tolerance);
 
-  // Deletes the |prediction_|.
-  void DeletePrediction();
+  // Deletes the |predictions_|.  Performs no action unless |has_predictions()|.
+  void DeletePredictions();
 
   // The vessel must satisfy |is_initialized()|.
   void WriteToMessage(not_null<serialization::Vessel*> const message) const;
@@ -118,8 +137,10 @@ class Vessel : public MobileInterface {
   // and celestials, there is no |history_|.  The prolongation is directly owned
   // during that time.  Null if, and only if, |history_| is not null.
   std::unique_ptr<Trajectory<Barycentric>> owned_prolongation_;
-  // A child trajectory of |*prolongation_|.
-  Trajectory<Barycentric>* prediction_ = nullptr;
+  // Child trajectories of |prolongation_|.  Each element is a child of the
+  // previous one, corresponding to successive manœuvres.
+  std::vector<not_null<Trajectory<Barycentric>*>> predictions_;
+  Manœuvres manœuvres_;
 };
 
 }  // namespace ksp_plugin

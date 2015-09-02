@@ -16,10 +16,6 @@ class MobileInterface {
 
   virtual Trajectory<Barycentric> const& prolongation() const = 0;
   virtual not_null<Trajectory<Barycentric>*> mutable_prolongation() = 0;
-
-  virtual Trajectory<Barycentric> const& prediction() const = 0;
-  virtual Trajectory<Barycentric>* mutable_prediction() = 0;
-  virtual bool has_prediction() const = 0;
 };
 
 }  // namespace ksp_plugin

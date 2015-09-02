@@ -13,6 +13,7 @@
 #include "gtest/gtest.h"
 #include "ksp_plugin/celestial.hpp"
 #include "ksp_plugin/frames.hpp"
+#include "ksp_plugin/manœuvre.hpp"
 #include "ksp_plugin/physics_bubble.hpp"
 #include "ksp_plugin/vessel.hpp"
 #include "integrators/ordinary_differential_equations.hpp"
@@ -194,6 +195,21 @@ class Plugin {
   virtual RelativeDegreesOfFreedom<AliceSun> CelestialFromParent(
       Index const celestial_index) const;
 
+  int ManœuvreCount(GUID const& vessel_guid) const;
+  Manœuvre<Barycentric> const& VesselManœuvre(GUID const& vessel_guid,
+                                              int const index) const;
+  void SetVesselManœuvre(
+      GUID const& vessel_guid,
+      int const index,
+      not_null<std::unique_ptr<Manœuvre<Barycentric> const>> manœuvre) const;
+  void InsertVesselManœuvre(
+      GUID const& vessel_guid,
+      int const index,
+      not_null<std::unique_ptr<Manœuvre<Barycentric> const>> manœuvre) const;
+
+  // Updates the prediction for the vessel with guid |vessel_guid|.
+  void UpdatePrediction(GUID const& vessel_guid) const;
+
   // Returns a polygon in |World| space depicting the trajectory of the vessel
   // with the given |GUID| in the frame defined by |transforms|.
   // |sun_world_position| is the current position of the sun in |World| space as
@@ -203,6 +219,8 @@ class Plugin {
       GUID const& vessel_guid,
       not_null<RenderingTransforms*> const transforms,
       Position<World> const& sun_world_position) const;
+
+  int PredictionCount(GUID const& vessel_guid) const;
 
   // Returns a polygon in |World| space depicting the trajectory of
   // |predicted_vessel_| from |current_time()| to
@@ -214,12 +232,10 @@ class Plugin {
   // called after |predicted_vessel_| was set.  Not const because of the stupid
   // global variable |transforms_are_operating_on_predictions_|.
   virtual RenderedTrajectory<World> RenderedPrediction(
+      GUID const& vessel_guid,
+      int const prediction_index,
       not_null<RenderingTransforms*> const transforms,
       Position<World> const& sun_world_position);
-
-  virtual void set_predicted_vessel(GUID const& vessel_guid);
-  // Calls |DeletePredictions()| and nulls |predicted_vessel_|.
-  virtual void clear_predicted_vessel();
 
   virtual void set_prediction_length(Time const& t);
 
@@ -321,12 +337,6 @@ class Plugin {
   bool has_unsynchronized_vessels() const;
   // Returns |dirty_vessels_.count(vessel) > 0|.
   bool is_dirty(not_null<Vessel*> const vessel) const;
-  // Returns |predicted_vessel_ != nullptr|.
-  bool has_predicted_vessel() const;
-  // Returns true if there is a |predicted_vessel_| and it has a prediction.
-  bool HasPredictions() const;
-  // Deletes all the predictions.
-  void DeletePredictions();
 
   // The rotation between the |AliceWorld| basis at |current_time_| and the
   // |Barycentric| axes. Since |AliceSun| is not a rotating reference frame,
@@ -373,10 +383,6 @@ class Plugin {
   // instant |t|.  Also evolves the trajectory of the |current_physics_bubble_|
   // if there is one.
   void EvolveProlongationsAndBubble(Instant const& t);
-  // Calls |DeletePredictions()|.  If |has_predicted_vessel()|, computes
-  // |system_predictions_| and |prediction_| for the |predicted_vessel_|
-  // according to |prediction_length_| and |prediction_step_|.
-  void UpdatePredictions();
 
   // A utility for |RenderedPrediction| and |RenderedVesselTrajectory|,
   // returns a |RenderedTrajectory| as computed by the given |transforms|
@@ -415,8 +421,6 @@ class Plugin {
   // The vessels that will be kept during the next call to |AdvanceTime|.
   std::set<not_null<Vessel const*>> kept_vessels_;
 
-  // Only one prediction for now, using constant timestep.
-  Vessel* predicted_vessel_ = nullptr;
   Time prediction_length_ = 1 * Hour;
   Length prediction_length_tolerance_ = 1 * Metre;
   Speed prediction_speed_tolerance_ = 1 * Metre / Second;

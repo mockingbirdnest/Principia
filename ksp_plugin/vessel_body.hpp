@@ -57,18 +57,22 @@ inline not_null<Trajectory<Barycentric>*> Vessel::mutable_prolongation() {
   return prolongation_;
 }
 
-inline Trajectory<Barycentric> const& Vessel::prediction() const {
+inline std::vector<not_null<Trajectory<Barycentric>*>> const&
+Vessel::predictions() const {
   CHECK(is_initialized());
-  return *CHECK_NOTNULL(prediction_);
+  return predictions_;
 }
 
-inline Trajectory<Barycentric>* Vessel::mutable_prediction() {
-  CHECK(is_initialized());
-  return prediction_;
+inline bool Vessel::has_predictions() const {
+  return !predictions_.empty();
 }
 
-inline bool Vessel::has_prediction() const {
-  return prediction_ != nullptr;
+inline Vessel::Manœuvres const& Vessel::manœuvres() const {
+  return manœuvres_;
+}
+
+inline not_null<Vessel::Manœuvres*> Vessel::mutable_manœuvres() {
+  return &manœuvres_;
 }
 
 inline void Vessel::CreateProlongation(
@@ -100,13 +104,45 @@ inline void Vessel::ResetProlongation(Instant const& time) {
   prolongation_ = history_->NewFork(time);
 }
 
-inline void Vessel::ForkPrediction() {
-  CHECK(prediction_ == nullptr);
-  prediction_ = mutable_prolongation()->NewFork(prolongation().last().time());
+inline void Vessel::UpdatePredictions(
+    not_null<Ephemeris<Barycentric>*> ephemeris,
+    AdaptiveStepSizeIntegrator<
+        Ephemeris<Barycentric>::NewtonianMotionEquation> const& integrator,
+    Instant const& last_time,
+    Length const& predictions_length_tolerance,
+    Speed const& predictions_speed_tolerance,
+    Length const& prolongation_length_tolerance,
+    Speed const& prolongation_speed_tolerance) {
+  DeletePredictions();
+  predictions_.emplace_back(
+      mutable_prolongation()->NewFork(prolongation().last().time()));
+  for (auto const& manœuvre : manœuvres_) {
+    not_null<Trajectory<Barycentric>*> parent_trajectory = predictions_.back();
+    ephemeris->FlowWithAdaptiveStep(
+        parent_trajectory, predictions_length_tolerance,
+        predictions_speed_tolerance, integrator, manœuvre->initial_time());
+    predictions_.emplace_back(
+        mutable_prolongation()->NewFork(parent_trajectory->last().time()));
+    not_null<Trajectory<Barycentric>*> child_trajectory = predictions_.back();
+    child_trajectory->set_intrinsic_acceleration(manœuvre->acceleration());
+    ephemeris->FlowWithAdaptiveStep(
+        child_trajectory, prolongation_length_tolerance,
+        prolongation_speed_tolerance, integrator, manœuvre->final_time());
+    ephemeris->FlowWithAdaptiveStep(
+        parent_trajectory, predictions_length_tolerance,
+        predictions_speed_tolerance, integrator, last_time);
+  }
+  ephemeris->FlowWithAdaptiveStep(
+      predictions_.back(), predictions_length_tolerance,
+      predictions_speed_tolerance, integrator, last_time);
 }
 
-inline void Vessel::DeletePrediction() {
-  prolongation_->DeleteFork(&prediction_);
+inline void Vessel::DeletePredictions() {
+  if (has_predictions()) {
+    Trajectory<Barycentric>* prediction_root = predictions_.front();
+    predictions_.clear();
+    prolongation_->DeleteFork(&prediction_root);
+  }
 }
 
 inline void Vessel::WriteToMessage(
