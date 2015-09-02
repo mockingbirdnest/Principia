@@ -66,15 +66,15 @@ void ContinuousTrajectory<Frame>::Append(
     Instant const& time,
     DegreesOfFreedom<Frame> const& degrees_of_freedom) {
   // Consistency checks.
-  if (first_time_ == nullptr) {
-    first_time_ = std::make_unique<Instant>(time);
-  } else {
+  if (first_time_) {
     Instant const t0;
     CHECK_GE(1,
              ULPDistance((last_points_.back().first + step_ - t0) /
                              SIUnit<Time>(),
                          (time - t0) / SIUnit<Time>()))
         << "Append at times that are not equally spaced";
+  } else {
+    first_time_ = time;
   }
 
   if (last_points_.size() == kDivisions) {
@@ -134,10 +134,10 @@ void ContinuousTrajectory<Frame>::ForgetBefore(Instant const& time) {
   // If there are no |series_| left, clear everything.  Otherwise, update the
   // first time.
   if (series_.empty()) {
-    first_time_.reset();
+    first_time_ = std::experimental::nullopt;
     last_points_.clear();
   } else {
-    *first_time_ = time;
+    first_time_ = time;
   }
 }
 
@@ -208,7 +208,7 @@ void ContinuousTrajectory<Frame>::WriteToMessage(
   for (auto const& s : series_) {
     s.WriteToMessage(message->add_series());
   }
-  if (first_time_ != nullptr) {
+  if (first_time_) {
     first_time_->WriteToMessage(message->mutable_first_time());
   }
   for (auto const& l : last_points_) {
@@ -244,8 +244,8 @@ ContinuousTrajectory<Frame>::ReadFromMessage(
         ЧебышёвSeries<Displacement<Frame>>::ReadFromMessage(s));
   }
   if (message.has_first_time()) {
-    continuous_trajectory->first_time_ = std::make_unique<Instant>(
-        Instant::ReadFromMessage(message.first_time()));
+    continuous_trajectory->first_time_ =
+        Instant::ReadFromMessage(message.first_time());
   }
   for (auto const& l : message.last_point()) {
     continuous_trajectory->last_points_.push_back(
