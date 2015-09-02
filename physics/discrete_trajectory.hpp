@@ -33,7 +33,7 @@ class DiscreteTrajectory;
 template<typename Frame>
 struct ForkableTraits<DiscreteTrajectory<Frame>> {
   using TimelineConstIterator = 
-      std::map<Instant, DegreesOfFreedom<Frame>>::const_iterator;
+      typename std::map<Instant, DegreesOfFreedom<Frame>>::const_iterator;
   static Instant const& time(TimelineConstIterator const it);
 };
 
@@ -55,6 +55,7 @@ class DiscreteTrajectory : public Forkable<DiscreteTrajectory<Frame>> {
   // No transfer of ownership.  |body| must live longer than the trajectory as
   // the trajectory holds a reference to it.  If |body| is oblate it must be
   // expressed in the same frame as the trajectory.
+  DiscreteTrajectory() : DiscreteTrajectory(nullptr) {}  //TODO(phl):nonono
   explicit DiscreteTrajectory(not_null<Body const*> const body);
   ~DiscreteTrajectory();
 
@@ -206,6 +207,17 @@ class DiscreteTrajectory : public Forkable<DiscreteTrajectory<Frame>> {
     friend class DiscreteTrajectory;
   };
 
+ protected:
+  not_null<DiscreteTrajectory*> that() override;
+  not_null<DiscreteTrajectory const*> that() const override;
+
+  TimelineConstIterator timeline_begin() const override;
+  TimelineConstIterator timeline_end() const override;
+  TimelineConstIterator timeline_find(Instant const& time) const override;
+  void timeline_insert(TimelineConstIterator begin,
+                       TimelineConstIterator end) override;
+  bool timeline_empty() const override;
+
  private:
   // This trajectory need not be a root.
   void WriteSubTreeToMessage(
@@ -221,6 +233,9 @@ class DiscreteTrajectory : public Forkable<DiscreteTrajectory<Frame>> {
 
   std::function<void(not_null<DiscreteTrajectory<Frame>const *> const)>
       on_destroy_;
+
+  template<typename Tr4jectory>
+  friend class Forkable;
 
   // For using the private constructor in maps.
   template<typename, typename>

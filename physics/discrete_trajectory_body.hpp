@@ -345,6 +345,46 @@ DiscreteTrajectory<Frame>::TransformingIterator<ToFrame>::TransformingIterator(
       transform_(transform) {}
 
 template<typename Frame>
+not_null<DiscreteTrajectory<Frame>*> DiscreteTrajectory<Frame>::that() {
+  return this;
+}
+
+template<typename Frame>
+not_null<DiscreteTrajectory<Frame> const*>
+DiscreteTrajectory<Frame>::that() const {
+  return this;
+}
+
+template<typename Frame>
+typename DiscreteTrajectory<Frame>::TimelineConstIterator
+DiscreteTrajectory<Frame>::timeline_begin() const {
+  return timeline_.begin();
+}
+
+template<typename Frame>
+typename DiscreteTrajectory<Frame>::TimelineConstIterator
+DiscreteTrajectory<Frame>::timeline_end() const {
+  return timeline_.end();
+}
+
+template<typename Frame>
+typename DiscreteTrajectory<Frame>::TimelineConstIterator
+DiscreteTrajectory<Frame>::timeline_find(Instant const& time) const {
+  return timeline_.find(time);
+}
+
+template<typename Frame>
+void DiscreteTrajectory<Frame>::timeline_insert(TimelineConstIterator begin,
+                                                TimelineConstIterator end) {
+  return timeline_.insert(begin, end);
+}
+
+template<typename Frame>
+bool DiscreteTrajectory<Frame>::timeline_empty() const {
+  return timeline_.empty();
+}
+
+template<typename Frame>
 void DiscreteTrajectory<Frame>::WriteSubTreeToMessage(
     not_null<serialization::DiscreteTrajectory*> const message) const {
   Instant last_instant;
