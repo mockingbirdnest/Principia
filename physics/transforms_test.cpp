@@ -69,10 +69,9 @@ class TransformsTest : public testing::Test {
         body1_to_(kStep, kTolerance),
         body2_from_(kStep, kTolerance),
         body2_to_(kStep, kTolerance),
-        satellite_from_(make_not_null_unique<Trajectory<From>>(&satellite_)),
-        satellite_through_(
-            make_not_null_unique<Trajectory<Through>>(&satellite_)),
-        satellite_to_(make_not_null_unique<Trajectory<To>>(&satellite_)) {
+        satellite_from_(make_not_null_unique<Trajectory<From>>()),
+        satellite_through_(make_not_null_unique<Trajectory<Through>>()),
+        satellite_to_(make_not_null_unique<Trajectory<To>>()) {
     // For historical reasons (don't you just love that phrase?) the positions
     // and velocities below are not physical (they both increase linearly and
     // the velocities are not tangent to the trajectory).  This confuses the

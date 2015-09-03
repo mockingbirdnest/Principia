@@ -82,8 +82,8 @@ class TrajectoryTest : public testing::Test {
     t3_ = t0_ + 27 * Second;
     t4_ = t0_ + 37 * Second;
 
-    massive_trajectory_ = std::make_unique<Trajectory<World>>(&massive_body_);
-    massless_trajectory_ = std::make_unique<Trajectory<World>>(&massless_body_);
+    massive_trajectory_ = std::make_unique<Trajectory<World>>();
+    massless_trajectory_ = std::make_unique<Trajectory<World>>();
 
     transform_ = [](
         Instant const& t,
