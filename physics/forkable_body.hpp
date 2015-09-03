@@ -16,7 +16,9 @@ not_null<Tr4jectory*> Forkable<Tr4jectory>::NewFork(Instant const & time) {
   auto timeline_it = timeline_find(time);
 
   // First create a child in the multimap.
-  auto const child_it = children_.emplace(time, Tr4jectory());
+  auto const child_it = children_.emplace(std::piecewise_construct,
+                                          std::forward_as_tuple(time),
+                                          std::forward_as_tuple());
 
   // Now set the members of the child object.
   auto& child_forkable = child_it->second;

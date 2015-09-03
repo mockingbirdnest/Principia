@@ -6,7 +6,6 @@
 #include <string>
 #include <vector>
 
-#include "body.hpp"
 #include "geometry/frame.hpp"
 #include "geometry/grassmann.hpp"
 #include "geometry/named_quantities.hpp"
@@ -14,9 +13,6 @@
 #include "geometry/r3_element.hpp"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
-#include "physics/massive_body.hpp"
-#include "physics/massless_body.hpp"
-#include "physics/oblate_body.hpp"
 #include "quantities/quantities.hpp"
 #include "quantities/si.hpp"
 
@@ -51,8 +47,7 @@ class DiscreteTrajectoryTest : public testing::Test {
                       serialization::Frame::TEST1, true>;
 
   DiscreteTrajectoryTest()
-      : massive_body_(MassiveBody(1 * SIUnit<Mass>())),
-        q1_(Position<World>(
+      : q1_(Position<World>(
             Vector<Length, World>({1 * Metre, 2 * Metre, 3 * Metre}))),
         q2_(Position<World>(
             Vector<Length, World>({11 * Metre, 12 * Metre, 13 * Metre}))),
@@ -82,8 +77,8 @@ class DiscreteTrajectoryTest : public testing::Test {
     t3_ = t0_ + 27 * Second;
     t4_ = t0_ + 37 * Second;
 
-    massive_trajectory_ = std::make_unique<DiscreteTrajectory<World>>(&massive_body_);
-    massless_trajectory_ = std::make_unique<DiscreteTrajectory<World>>(&massless_body_);
+    massive_trajectory_ = std::make_unique<DiscreteTrajectory<World>>();
+    massless_trajectory_ = std::make_unique<DiscreteTrajectory<World>>();
 
     transform_ = [](
         Instant const& t,
@@ -104,8 +99,6 @@ class DiscreteTrajectoryTest : public testing::Test {
         std::bind(transform_, _1, _2, _3, massless_trajectory_.get());
   }
 
-  MassiveBody massive_body_;
-  MasslessBody massless_body_;
   Position<World> q1_, q2_, q3_, q4_;
   Velocity<World> p1_, p2_, p3_, p4_;
   DegreesOfFreedom<World> d1_, d2_, d3_, d4_;
@@ -122,26 +115,14 @@ class DiscreteTrajectoryTest : public testing::Test {
 
 using DiscreteTrajectoryDeathTest = DiscreteTrajectoryTest;
 
-TEST_F(DiscreteTrajectoryDeathTest, Construction) {
-  using OtherWorld = Frame<serialization::Frame::TestTag,
-                           serialization::Frame::TEST2, true>;
-  EXPECT_DEATH({
-    OblateBody<OtherWorld> body(1 * SIUnit<GravitationalParameter>(),
-                                1.0 /*j2*/,
-                                1 * SIUnit<Length>(),
-                                Vector<double, OtherWorld>({0, 1, 0}));
-    DiscreteTrajectory<World> trajectory(&body);
-  }, "not in the same frame");
-}
-
 TEST_F(DiscreteTrajectoryTest, Destruction) {
   int i = 1;
   {
-    DiscreteTrajectory<World> massive_trajectory(&massive_body_);
+    DiscreteTrajectory<World> massive_trajectory;
   }
   EXPECT_EQ(1, i);
   {
-    DiscreteTrajectory<World> massive_trajectory(&massive_body_);
+    DiscreteTrajectory<World> massive_trajectory;
     massive_trajectory.set_on_destroy(
         [&i](not_null<DiscreteTrajectory<World>const*> const) { ++i; });
   }
@@ -176,7 +157,6 @@ TEST_F(DiscreteTrajectoryTest, AppendSuccess) {
                                       testing::Pair(t2_, p2_),
                                       testing::Pair(t3_, p3_)));
   EXPECT_THAT(times, ElementsAre(t1_, t2_, t3_));
-  EXPECT_THAT(massive_trajectory_->body<MassiveBody>(), Eq(&massive_body_));
 }
 
 TEST_F(DiscreteTrajectoryDeathTest, ForkError) {
@@ -205,7 +185,6 @@ TEST_F(DiscreteTrajectoryTest, ForkSuccess) {
                                       testing::Pair(t2_, p2_),
                                       testing::Pair(t3_, p3_)));
   EXPECT_THAT(times, ElementsAre(t1_, t2_, t3_));
-  EXPECT_THAT(fork->body<MassiveBody>(), Eq(&massive_body_));
   positions = fork->Positions();
   velocities = fork->Velocities();
   times = fork->Times();
@@ -218,7 +197,6 @@ TEST_F(DiscreteTrajectoryTest, ForkSuccess) {
                                       testing::Pair(t3_, p3_),
                                       testing::Pair(t4_, p4_)));
   EXPECT_THAT(times, ElementsAre(t1_, t2_, t3_, t4_));
-  EXPECT_THAT(fork->body<MassiveBody>(), Eq(&massive_body_));
 }
 
 TEST_F(DiscreteTrajectoryTest, ForkAtLast) {
@@ -445,7 +423,7 @@ TEST_F(DiscreteTrajectoryTest, PointerSerializationSuccess) {
                 root_it,
                 massive_trajectory_.get()));
   not_null<std::unique_ptr<DiscreteTrajectory<World>>> const massive_trajectory =
-      DiscreteTrajectory<World>::ReadFromMessage(root, &massive_body_);
+      DiscreteTrajectory<World>::ReadFromMessage(root);
   EXPECT_EQ(massive_trajectory.get(),
             DiscreteTrajectory<World>::ReadPointerFromMessage(
                 root_it, massive_trajectory.get()));
@@ -474,7 +452,7 @@ TEST_F(DiscreteTrajectoryTest, TrajectorySerializationSuccess) {
   massive_trajectory_->WriteToMessage(&message);
   massive_trajectory_->WriteToMessage(&reference_message);
   not_null<std::unique_ptr<DiscreteTrajectory<World>>> const deserialized_trajectory =
-      DiscreteTrajectory<World>::ReadFromMessage(message, &massive_body_);
+      DiscreteTrajectory<World>::ReadFromMessage(message);
   message.Clear();
   deserialized_trajectory->WriteToMessage(&message);
   EXPECT_EQ(reference_message.SerializeAsString(), message.SerializeAsString());
@@ -566,7 +544,6 @@ TEST_F(DiscreteTrajectoryTest, DeleteForkSuccess) {
                                       testing::Pair(t2_, p2_),
                                       testing::Pair(t3_, p3_)));
   EXPECT_THAT(times, ElementsAre(t1_, t2_, t3_));
-  EXPECT_THAT(fork1->body<MassiveBody>(), Eq(&massive_body_));
   positions = fork1->Positions();
   velocities = fork1->Velocities();
   times = fork1->Times();
@@ -579,7 +556,6 @@ TEST_F(DiscreteTrajectoryTest, DeleteForkSuccess) {
                                       testing::Pair(t3_, p3_),
                                       testing::Pair(t4_, p4_)));
   EXPECT_THAT(times, ElementsAre(t1_, t2_, t3_, t4_));
-  EXPECT_THAT(fork1->body<MassiveBody>(), Eq(&massive_body_));
   massive_trajectory_.reset();
 }
 
@@ -721,10 +697,6 @@ TEST_F(DiscreteTrajectoryTest, ForgetBeforeSuccess) {
 }
 
 TEST_F(DiscreteTrajectoryDeathTest, IntrinsicAccelerationError) {
-  EXPECT_DEATH({
-    massive_trajectory_->set_intrinsic_acceleration(
-        [](Instant const& t) { return Vector<Acceleration, World>(); } );
-  }, "massive body");
   EXPECT_DEATH({
     massless_trajectory_->set_intrinsic_acceleration(
         [](Instant const& t) { return Vector<Acceleration, World>(); } );

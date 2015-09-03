@@ -99,8 +99,8 @@ class DiscreteTrajectory : public Forkable<DiscreteTrajectory<Frame>> {
       Transform<ToFrame> const& transform) const;
 
   // These functions return the series of positions/velocities/times for the
-  // trajectory of the body.  All three containers are guaranteed to have the
-  // same size.  These functions are O(|depth| + |length|).
+  // trajectory.  All three containers are guaranteed to have the same size.
+  // These functions are O(|depth| + |length|).
   std::map<Instant, Position<Frame>> Positions() const;
   std::map<Instant, Velocity<Frame>> Velocities() const;
   std::list<Instant> Times() const;
@@ -118,12 +118,6 @@ class DiscreteTrajectory : public Forkable<DiscreteTrajectory<Frame>> {
   // child trajectories forked at times less than or equal to |time|.  This
   // trajectory must be a root.
   void ForgetBefore(Instant const& time);
-
-  // The body to which this trajectory pertains.  The body is cast to the type
-  // B.  An error occurs in debug mode if the cast fails.
-  template<typename B>
-  std::enable_if_t<std::is_base_of<Body, B>::value,
-                   not_null<B const*>> body() const;
 
   // This function represents the intrinsic acceleration of a body, irrespective
   // of any external field.  It can be due e.g., to an engine burn.
@@ -156,15 +150,14 @@ class DiscreteTrajectory : public Forkable<DiscreteTrajectory<Frame>> {
       Instant const& time) const;
 
   // This trajectory must be a root.  The intrinsic acceleration is not
-  // serialized.  The body is not owned, and therefore is not serialized.
+  // serialized.
   void WriteToMessage(not_null<serialization::Trajectory*> const message) const;
 
   // NOTE(egg): This should return a |not_null|, but we can't do that until
   // |not_null<std::unique_ptr<T>>| is convertible to |std::unique_ptr<T>|, and
   // that requires a VS 2015 feature (rvalue references for |*this|).
   static std::unique_ptr<DiscreteTrajectory> ReadFromMessage(
-      serialization::Trajectory const& message,
-      not_null<Body const*> const body);
+      serialization::Trajectory const& message);
 
   void WritePointerToMessage(
       not_null<serialization::Trajectory::Pointer*> const message) const;
@@ -220,8 +213,6 @@ class DiscreteTrajectory : public Forkable<DiscreteTrajectory<Frame>> {
       not_null<serialization::Trajectory*> const message) const;
 
   void FillSubTreeFromMessage(serialization::Trajectory const& message);
-
-  not_null<Body const*> const body_;
 
   Timeline timeline_;
 

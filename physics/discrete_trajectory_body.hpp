@@ -8,7 +8,6 @@
 
 #include "geometry/named_quantities.hpp"
 #include "glog/logging.h"
-#include "physics/oblate_body.hpp"
 
 namespace principia {
 
@@ -16,13 +15,6 @@ using base::make_not_null_unique;
 using geometry::Instant;
 
 namespace physics {
-
-template<typename Frame>
-DiscreteTrajectory<Frame>::DiscreteTrajectory(not_null<Body const*> const body)
-    : body_(body) {
-  CHECK(body_->is_compatible_with<Frame>())
-      << "Oblate body not in the same frame as the trajectory";
-}
 
 template<typename Frame>
 DiscreteTrajectory<Frame>::~DiscreteTrajectory() {
@@ -178,23 +170,8 @@ void DiscreteTrajectory<Frame>::ForgetBefore(Instant const& time) {
 }
 
 template<typename Frame>
-template<typename B>
-std::enable_if_t<std::is_base_of<Body, B>::value, not_null<B const*>>
-DiscreteTrajectory<Frame>::body() const {
-// Dynamic casting is expensive, as in 3x slower for the benchmarks.  Do that in
-// debug mode to catch bugs, but not in optimized mode where we want all the
-// performance we can get.
-#ifdef _DEBUG
-  return dynamic_cast<B const*>(static_cast<Body const*>(body_));
-#else
-  return static_cast<not_null<B const*>>(body_);
-#endif
-}
-
-template<typename Frame>
 void DiscreteTrajectory<Frame>::set_intrinsic_acceleration(
     IntrinsicAcceleration const acceleration) {
-  CHECK(body_->is_massless()) << "DiscreteTrajectory is for a massive body";
   CHECK(intrinsic_acceleration_ == nullptr)
       << "DiscreteTrajectory already has an intrinsic acceleration";
   intrinsic_acceleration_ =
@@ -239,9 +216,8 @@ void DiscreteTrajectory<Frame>::WriteToMessage(
 template<typename Frame>
 std::unique_ptr<DiscreteTrajectory<Frame>>
 DiscreteTrajectory<Frame>::ReadFromMessage(
-    serialization::DiscreteTrajectory const& message,
-    not_null<Body const*> const body) {
-  auto trajectory = std::make_unique<DiscreteTrajectory>(body);
+    serialization::DiscreteTrajectory const& message) {
+  auto trajectory = std::make_unique<DiscreteTrajectory>();
   trajectory->FillSubTreeFromMessage(message);
   return trajectory;
 }
