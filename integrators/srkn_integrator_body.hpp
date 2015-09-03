@@ -211,9 +211,8 @@ inline SRKNIntegrator::SRKNIntegrator(std::vector<double> const& a,
       b_(b) {
   if (b.front() == 0.0) {
     vanishing_coefficients_ = kFirstBVanishes;
-    first_same_as_last_ = std::make_unique<FirstSameAsLast>();
-    first_same_as_last_->first = a.front();
-    first_same_as_last_->last = a.back();
+    first_same_as_last_ = std::experimental::make_optional<FirstSameAsLast>(
+                              {a.front(), a.back()});
     a_ = std::vector<double>(a.begin() + 1, a.end());
     b_ = std::vector<double>(b.begin() + 1, b.end());
     a_.back() += first_same_as_last_->first;
@@ -221,9 +220,8 @@ inline SRKNIntegrator::SRKNIntegrator(std::vector<double> const& a,
     CHECK_EQ(stages_, a_.size());
   } else if (a.back() == 0.0) {
     vanishing_coefficients_ = kLastAVanishes;
-    first_same_as_last_ = std::make_unique<FirstSameAsLast>();
-    first_same_as_last_->first = b.front();
-    first_same_as_last_->last = b.back();
+    first_same_as_last_ = std::experimental::make_optional<FirstSameAsLast>(
+                              {b.front(), b.back()});
     a_ = std::vector<double>(a.begin(), a.end() - 1);
     b_ = std::vector<double>(b.begin(), b.end() - 1);
     b_.front() += first_same_as_last_->last;
@@ -231,7 +229,7 @@ inline SRKNIntegrator::SRKNIntegrator(std::vector<double> const& a,
     CHECK_EQ(stages_, a_.size());
   } else {
     vanishing_coefficients_ = kNone;
-    first_same_as_last_.reset();
+    first_same_as_last_ = std::experimental::nullopt;
     a_ = a;
     b_ = b;
     stages_ = b_.size();

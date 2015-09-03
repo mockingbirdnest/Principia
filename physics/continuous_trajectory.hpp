@@ -1,5 +1,6 @@
 ﻿#pragma once
 
+#include <optional.hpp>
 #include <vector>
 #include <utility>
 
@@ -139,7 +140,7 @@ class ContinuousTrajectory {
 
   // The time at which this trajectory starts.  Set for a nonempty trajectory.
   // |*first_time_ >= series_.front().t_min()|
-  std::unique_ptr<Instant> first_time_;  // std::optional.
+  std::experimental::optional<Instant> first_time_;
 
   // The points that have not yet been incorporated in a series.  Nonempty for a
   // nonempty trajectory.
