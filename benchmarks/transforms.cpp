@@ -142,7 +142,7 @@ std::vector<std::pair<Position<World1>,
                         Position<World1>>> result;
 
   // First build the trajectory resulting from the first transform.
-  Trajectory<World2> intermediate_trajectory(body);
+  Trajectory<World2> intermediate_trajectory;
   for (auto it = actual_it; !it.at_end(); ++it) {
     intermediate_trajectory.Append(it.time(), it.degrees_of_freedom());
   }
@@ -196,7 +196,7 @@ void BM_TransformsBodyCentredNonRotating(
       Velocity<World1>({0 * SIUnit<Speed>(),
                         100 * Kilo(Metre) / Second,
                         0 * SIUnit<Speed>()});
-  Trajectory<World1> probe_trajectory(&probe);
+  Trajectory<World1> probe_trajectory;
   FillLinearTrajectory<World1, Trajectory>(probe_initial_position,
                                            probe_velocity,
                                            Δt,
@@ -274,7 +274,7 @@ void BM_TransformsBarycentricRotating(
       Velocity<World1>({0 * SIUnit<Speed>(),
                         100 * Kilo(Metre) / Second,
                         0 * SIUnit<Speed>()});
-  Trajectory<World1> probe_trajectory(&probe);
+  Trajectory<World1> probe_trajectory;
   FillLinearTrajectory<World1, Trajectory>(probe_initial_position,
                                            probe_velocity,
                                            Δt,
