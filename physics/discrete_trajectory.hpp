@@ -52,11 +52,7 @@ class DiscreteTrajectory : public Forkable<DiscreteTrajectory<Frame>> {
                         DegreesOfFreedom<Frame> const&,
                         not_null<DiscreteTrajectory<Frame> const*> const)>;
 
-  // No transfer of ownership.  |body| must live longer than the trajectory as
-  // the trajectory holds a reference to it.  If |body| is oblate it must be
-  // expressed in the same frame as the trajectory.
-  DiscreteTrajectory() : DiscreteTrajectory(nullptr) {}  //TODO(phl):nonono
-  explicit DiscreteTrajectory(not_null<Body const*> const body);
+  DiscreteTrajectory() = default;
   ~DiscreteTrajectory();
 
   DiscreteTrajectory(DiscreteTrajectory const&) = delete;
