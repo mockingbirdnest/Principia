@@ -100,6 +100,9 @@ inline void Vessel::ResetProlongation(Instant const& time) {
   CHECK(is_initialized());
   CHECK(is_synchronized());
   CHECK(owned_prolongation_ == nullptr);
+  // The predictions are forked from the prolongation, delete them lest they
+  // become dangling references.
+  DeletePredictions();
   history_->DeleteFork(&prolongation_);
   prolongation_ = history_->NewFork(time);
 }
@@ -122,7 +125,7 @@ inline void Vessel::UpdatePredictions(
         parent_trajectory, predictions_length_tolerance,
         predictions_speed_tolerance, integrator, manœuvre->initial_time());
     predictions_.emplace_back(
-        mutable_prolongation()->NewFork(parent_trajectory->last().time()));
+        parent_trajectory->NewFork(parent_trajectory->last().time()));
     not_null<Trajectory<Barycentric>*> child_trajectory = predictions_.back();
     child_trajectory->set_intrinsic_acceleration(manœuvre->acceleration());
     ephemeris->FlowWithAdaptiveStep(

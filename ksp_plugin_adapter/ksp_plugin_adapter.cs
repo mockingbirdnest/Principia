@@ -95,13 +95,13 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
   private bool show_manœuvre_ = false;
 
   // TODO(egg): the manœuvre setting UI needs its own class.
-  string thrust_;
-  string initial_mass_;
-  string specific_impulse_by_weight_;
-  string right_ascension_;
-  string declination_;
-  string duration_;
-  string initial_time_;
+  string thrust_ = "1.0";
+  string initial_mass_ = "100.0";
+  string specific_impulse_by_weight_ = "1.0";
+  string right_ascension_ = "0.0";
+  string declination_ = "0.0";
+  string duration_ = "1.0";
+  string initial_time_ = "10.0";
 
   [KSPField(isPersistant = true)]
   private int verbose_logging_ = 0;
@@ -1099,6 +1099,7 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
                                         UnityEngine.GUILayout.Width(75));
     UnityEngine.GUILayout.Label(text : "s");
     UnityEngine.GUILayout.EndHorizontal();
+    UnityEngine.GUILayout.BeginHorizontal();
     UnityEngine.GUILayout.Label(text    : "t_0 = ");
     initial_time_ =
         UnityEngine.GUILayout.TextField(initial_time_,
@@ -1125,6 +1126,14 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
                                                  declination);
         set_duration(manœuvre, duration);
         set_initial_time(manœuvre, initial_time);
+        if (FlightGlobals.ActiveVessel != null) {
+          string active_vessel = FlightGlobals.ActiveVessel.id.ToString();
+          if (ManœuvreCount(plugin_, active_vessel) > 0) {
+            SetVesselManœuvre(plugin_, active_vessel, 0, ref manœuvre);
+          } else {
+            InsertVesselManœuvre(plugin_, active_vessel, 0, ref manœuvre);
+          }
+        }
       } catch (FormatException) {
       } catch (OverflowException) {
       }

@@ -417,7 +417,7 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
       ref IntPtr plugin);
 
   [DllImport(dllName           : kDllPath,
-             EntryPoint        = "NewManœuvreIspByWeight",
+             EntryPoint        = "principia__NewManœuvreIspByWeight",
              CallingConvention = CallingConvention.Cdecl)]
   private static extern IntPtr NewManœuvreIspByWeight(
       double thrust,

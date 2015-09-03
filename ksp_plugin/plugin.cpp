@@ -331,7 +331,7 @@ void Plugin::UpdatePrediction(GUID const & vessel_guid) const {
   find_vessel_by_guid_or_die(vessel_guid)->UpdatePredictions(
       ephemeris_.get(),
       prediction_integrator_,
-      current_time_,
+      current_time_ + prediction_length_,
       prediction_length_tolerance_,
       prediction_speed_tolerance_,
       prolongation_length_tolerance_,
