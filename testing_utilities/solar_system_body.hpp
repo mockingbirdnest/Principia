@@ -99,8 +99,7 @@ inline not_null<std::unique_ptr<SolarSystem>> SolarSystem::AtСпутник1Laun
   // All data is from the Jet Propulsion Laboratory's HORIZONS system.
 
   // Star.
-  auto sun_trajectory = make_not_null_unique<Trajectory<ICRFJ2000Ecliptic>>(
-                            solar_system->massive_bodies_[kSun].get());
+  auto sun_trajectory = make_not_null_unique<Trajectory<ICRFJ2000Ecliptic>>();
   sun_trajectory->Append(
       kСпутник1LaunchTime,
       {kSolarSystemBarycentre + Displacement<ICRFJ2000Ecliptic>(

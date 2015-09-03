@@ -122,18 +122,6 @@ class TrajectoryTest : public testing::Test {
 
 using TrajectoryDeathTest = TrajectoryTest;
 
-TEST_F(TrajectoryDeathTest, Construction) {
-  using OtherWorld = Frame<serialization::Frame::TestTag,
-                           serialization::Frame::TEST2, true>;
-  EXPECT_DEATH({
-    OblateBody<OtherWorld> body(1 * SIUnit<GravitationalParameter>(),
-                                1.0 /*j2*/,
-                                1 * SIUnit<Length>(),
-                                Vector<double, OtherWorld>({0, 1, 0}));
-    Trajectory<World> trajectory(&body);
-  }, "not in the same frame");
-}
-
 TEST_F(TrajectoryTest, Destruction) {
   int i = 1;
   {

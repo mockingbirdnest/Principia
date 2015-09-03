@@ -301,7 +301,7 @@ std::unique_ptr<PhysicsBubble> PhysicsBubble::ReadFromMessage(
         DegreesOfFreedom<World>::ReadFromMessage(full_state.centre_of_mass()));
     current->centre_of_mass_trajectory =
         Trajectory<Barycentric>::ReadFromMessage(
-            full_state.centre_of_mass_trajectory(), &bubble->body_);
+            full_state.centre_of_mass_trajectory());
     current->from_centre_of_mass =
         std::make_unique<std::map<not_null<Vessel const*> const,
                          RelativeDegreesOfFreedom<Barycentric>>>();

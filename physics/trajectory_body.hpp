@@ -8,7 +8,6 @@
 
 #include "geometry/named_quantities.hpp"
 #include "glog/logging.h"
-#include "physics/oblate_body.hpp"
 
 namespace principia {
 
@@ -18,12 +17,8 @@ using geometry::Instant;
 namespace physics {
 
 template<typename Frame>
-Trajectory<Frame>::Trajectory(not_null<Body const*> const body)
-    : body_(body),
-      parent_(nullptr) {
-  CHECK(body_->is_compatible_with<Frame>())
-      << "Oblate body not in the same frame as the trajectory";
-}
+Trajectory<Frame>::Trajectory()
+    : parent_(nullptr) {}
 
 template<typename Frame>
 Trajectory<Frame>::~Trajectory() {
@@ -185,7 +180,7 @@ not_null<Trajectory<Frame>*> Trajectory<Frame>::NewFork(Instant const& time) {
   auto const child_it = children_.emplace(
       std::piecewise_construct,
       std::forward_as_tuple(time),
-      std::forward_as_tuple(body_, this /*parent*/, fork));
+      std::forward_as_tuple(this /*parent*/, fork));
   if (fork_it != timeline_.end()) {
     child_it->second.timeline_.insert(++fork_it, timeline_.end());
   }
@@ -249,23 +244,8 @@ Instant const* Trajectory<Frame>::fork_time() const {
 }
 
 template<typename Frame>
-template<typename B>
-std::enable_if_t<std::is_base_of<Body, B>::value, not_null<B const*>>
-Trajectory<Frame>::body() const {
-// Dynamic casting is expensive, as in 3x slower for the benchmarks.  Do that in
-// debug mode to catch bugs, but not in optimized mode where we want all the
-// performance we can get.
-#ifdef _DEBUG
-  return dynamic_cast<B const*>(static_cast<Body const*>(body_));
-#else
-  return static_cast<not_null<B const*>>(body_);
-#endif
-}
-
-template<typename Frame>
 void Trajectory<Frame>::set_intrinsic_acceleration(
     IntrinsicAcceleration const acceleration) {
-  CHECK(body_->is_massless()) << "Trajectory is for a massive body";
   CHECK(intrinsic_acceleration_ == nullptr)
       << "Trajectory already has an intrinsic acceleration";
   intrinsic_acceleration_ =
@@ -308,9 +288,8 @@ void Trajectory<Frame>::WriteToMessage(
 
 template<typename Frame>
 std::unique_ptr<Trajectory<Frame>> Trajectory<Frame>::ReadFromMessage(
-    serialization::Trajectory const& message,
-    not_null<Body const*> const body) {
-  auto trajectory = std::make_unique<Trajectory>(body);
+    serialization::Trajectory const& message) {
+  auto trajectory = std::make_unique<Trajectory>();
   trajectory->FillSubTreeFromMessage(message);
   return trajectory;
 }
@@ -478,11 +457,9 @@ Trajectory<Frame>::TransformingIterator<ToFrame>::TransformingIterator(
       transform_(transform) {}
 
 template<typename Frame>
-Trajectory<Frame>::Trajectory(not_null<Body const*> const body,
-                              not_null<Trajectory*> const parent,
+Trajectory<Frame>::Trajectory(not_null<Trajectory*> const parent,
                               Fork const& fork)
-    : body_(body),
-      fork_(new Fork(fork)),
+    : fork_(new Fork(fork)),
       parent_(parent) {}
 
 template<typename Frame>

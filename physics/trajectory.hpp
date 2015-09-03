@@ -53,10 +53,7 @@ class Trajectory {
                         DegreesOfFreedom<Frame> const&,
                         not_null<Trajectory<Frame> const*> const)>;
 
-  // No transfer of ownership.  |body| must live longer than the trajectory as
-  // the trajectory holds a reference to it.  If |body| is oblate it must be
-  // expressed in the same frame as the trajectory.
-  explicit Trajectory(not_null<Body const*> const body);
+  Trajectory();
   ~Trajectory();
 
   Trajectory(Trajectory const&) = delete;
@@ -102,8 +99,8 @@ class Trajectory {
       Transform<ToFrame> const& transform) const;
 
   // These functions return the series of positions/velocities/times for the
-  // trajectory of the body.  All three containers are guaranteed to have the
-  // same size.  These functions are O(|depth| + |length|).
+  // trajectory.  All three containers are guaranteed to have the same size.
+  // These functions are O(|depth| + |length|).
   std::map<Instant, Position<Frame>> Positions() const;
   std::map<Instant, Velocity<Frame>> Velocities() const;
   std::list<Instant> Times() const;
@@ -150,12 +147,6 @@ class Trajectory {
   // trajectory.
   Instant const* fork_time() const;
 
-  // The body to which this trajectory pertains.  The body is cast to the type
-  // B.  An error occurs in debug mode if the cast fails.
-  template<typename B>
-  std::enable_if_t<std::is_base_of<Body, B>::value,
-                   not_null<B const*>> body() const;
-
   // This function represents the intrinsic acceleration of a body, irrespective
   // of any external field.  It can be due e.g., to an engine burn.
   using IntrinsicAcceleration =
@@ -187,15 +178,14 @@ class Trajectory {
       Instant const& time) const;
 
   // This trajectory must be a root.  The intrinsic acceleration is not
-  // serialized.  The body is not owned, and therefore is not serialized.
+  // serialized.
   void WriteToMessage(not_null<serialization::Trajectory*> const message) const;
 
   // NOTE(egg): This should return a |not_null|, but we can't do that until
   // |not_null<std::unique_ptr<T>>| is convertible to |std::unique_ptr<T>|, and
   // that requires a VS 2015 feature (rvalue references for |*this|).
   static std::unique_ptr<Trajectory> ReadFromMessage(
-      serialization::Trajectory const& message,
-      not_null<Body const*> const body);
+      serialization::Trajectory const& message);
 
   void WritePointerToMessage(
       not_null<serialization::Trajectory::Pointer*> const message) const;
@@ -260,8 +250,7 @@ class Trajectory {
 
  private:
   // A constructor for creating a child trajectory during forking.
-  Trajectory(not_null<Body const*> const body,
-             not_null<Trajectory*> const parent,
+  Trajectory(not_null<Trajectory*> const parent,
              Fork const& fork);
 
   // Returns the fork time of this trajectory, which must not be a root.
@@ -272,8 +261,6 @@ class Trajectory {
       not_null<serialization::Trajectory*> const message) const;
 
   void FillSubTreeFromMessage(serialization::Trajectory const& message);
-
-  not_null<Body const*> const body_;
 
   // Both of these members are null for a root trajectory.
   std::unique_ptr<Fork> fork_;
