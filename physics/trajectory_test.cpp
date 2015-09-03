@@ -705,10 +705,6 @@ TEST_F(TrajectoryTest, ForgetBeforeSuccess) {
 
 TEST_F(TrajectoryDeathTest, IntrinsicAccelerationError) {
   EXPECT_DEATH({
-    massive_trajectory_->set_intrinsic_acceleration(
-        [](Instant const& t) { return Vector<Acceleration, World>(); } );
-  }, "massive body");
-  EXPECT_DEATH({
     massless_trajectory_->set_intrinsic_acceleration(
         [](Instant const& t) { return Vector<Acceleration, World>(); } );
     massless_trajectory_->set_intrinsic_acceleration(
