@@ -17,6 +17,12 @@ using geometry::Instant;
 namespace physics {
 
 template<typename Frame>
+Instant const& ForkableTraits<DiscreteTrajectory<Frame>>::time(
+    TimelineConstIterator const it) {
+  return it->first
+}
+
+template<typename Frame>
 DiscreteTrajectory<Frame>::~DiscreteTrajectory() {
   if (on_destroy_) {
     on_destroy_(this);
@@ -33,23 +39,21 @@ void DiscreteTrajectory<Frame>::set_on_destroy(
 template<typename Frame>
 typename DiscreteTrajectory<Frame>::NativeIterator
 DiscreteTrajectory<Frame>::first() const {
-  NativeIterator it = Begin();
-  return it;
+  return NativeIterator(Begin());
 }
 
 template<typename Frame>
 typename DiscreteTrajectory<Frame>::NativeIterator
 DiscreteTrajectory<Frame>::on_or_after(
     Instant const& time) const {
-  NativeIterator it = Find(time);//TODO(phl):Not quite the same.
-  return it;
+  return NativeIterator(Find(time));//TODO(phl):Not quite the same.
 }
 
 template<typename Frame>
 typename DiscreteTrajectory<Frame>::NativeIterator
 DiscreteTrajectory<Frame>::last() const {
-  NativeIterator it = End();
-  return --it;
+  auto it = End();
+  return NativeIterator(--it);
 }
 
 template<typename Frame>
@@ -57,9 +61,7 @@ template<typename ToFrame>
 typename DiscreteTrajectory<Frame>::TEMPLATE TransformingIterator<ToFrame>
 DiscreteTrajectory<Frame>::first_with_transform(
     Transform<ToFrame> const& transform) const {
-  TransformingIterator<ToFrame> it(transform);
-  it.InitializeFirst(this);
-  return it;
+  return TransformingIterator<ToFrame>(Begin(), transform);
 }
 
 template<typename Frame>
@@ -68,9 +70,7 @@ typename DiscreteTrajectory<Frame>::TEMPLATE TransformingIterator<ToFrame>
 DiscreteTrajectory<Frame>::on_or_after_with_transform(
     Instant const& time,
     Transform<ToFrame> const& transform) const {
-  TransformingIterator<ToFrame> it(transform);
-  it.InitializeOnOrAfter(time, this);
-  return it;
+  return TransformingIterator<ToFrame>(Find(time), transform);//TODO(phl):Not quite the same.
 }
 
 template<typename Frame>
@@ -78,9 +78,8 @@ template<typename ToFrame>
 typename DiscreteTrajectory<Frame>::TEMPLATE TransformingIterator<ToFrame>
 DiscreteTrajectory<Frame>::last_with_transform(
     Transform<ToFrame> const& transform) const {
-  TransformingIterator<ToFrame> it(transform);
-  it.InitializeLast(this);
-  return it;
+  auto it = End();
+  return TransformingIterator<ToFrame>(--it, transform);
 }
 
 template<typename Frame>
@@ -142,7 +141,7 @@ void DiscreteTrajectory<Frame>::ForgetAfter(Instant const& time) {
   // it.  This preserve any entry with time == |time|.
   {
     auto const it = timeline_.upper_bound(time);
-    CHECK(is_root() || time >= ForkTime())
+    CHECK(is_root() || time >= *ForkTime())
         << "ForgetAfter before the fork time";
     timeline_.erase(it, timeline_.end());
   }
@@ -193,7 +192,7 @@ Vector<Acceleration, Frame>
 DiscreteTrajectory<Frame>::evaluate_intrinsic_acceleration(
     Instant const& time) const {
   if (intrinsic_acceleration_ != nullptr &&
-      (fork_ == nullptr || time > fork_->timeline->first)) {
+      (is_root() || time >= *ForkTime())) {
     return (*intrinsic_acceleration_)(time);
   } else {
     return Vector<Acceleration, Frame>({0 * SIUnit<Acceleration>(),
@@ -204,7 +203,7 @@ DiscreteTrajectory<Frame>::evaluate_intrinsic_acceleration(
 
 template<typename Frame>
 void DiscreteTrajectory<Frame>::WriteToMessage(
-    not_null<serialization::DiscreteTrajectory*> const message) const {
+    not_null<serialization::Trajectory*> const message) const {
   LOG(INFO) << __FUNCTION__;
   CHECK(is_root());
   WriteSubTreeToMessage(message);
@@ -216,7 +215,7 @@ void DiscreteTrajectory<Frame>::WriteToMessage(
 template<typename Frame>
 std::unique_ptr<DiscreteTrajectory<Frame>>
 DiscreteTrajectory<Frame>::ReadFromMessage(
-    serialization::DiscreteTrajectory const& message) {
+    serialization::Trajectory const& message) {
   auto trajectory = std::make_unique<DiscreteTrajectory>();
   trajectory->FillSubTreeFromMessage(message);
   return trajectory;
@@ -224,7 +223,7 @@ DiscreteTrajectory<Frame>::ReadFromMessage(
 
 template<typename Frame>
 void DiscreteTrajectory<Frame>::WritePointerToMessage(
-    not_null<serialization::DiscreteTrajectory::Pointer*> const message) const {
+    not_null<serialization::Trajectory::Pointer*> const message) const {
   not_null<DiscreteTrajectory const*> ancestor = this;
   while (ancestor->parent_ != nullptr) {
     Fork const& fork = *ancestor->fork_;
@@ -242,7 +241,7 @@ void DiscreteTrajectory<Frame>::WritePointerToMessage(
 template<typename Frame>
 not_null<DiscreteTrajectory<Frame>*>
 DiscreteTrajectory<Frame>::ReadPointerFromMessage(
-    serialization::DiscreteTrajectory::Pointer const& message,
+    serialization::Trajectory::Pointer const& message,
     not_null<DiscreteTrajectory*> const trajectory) {
   CHECK(trajectory->is_root());
   not_null<DiscreteTrajectory*> descendant = trajectory;
@@ -260,65 +259,52 @@ DiscreteTrajectory<Frame>::ReadPointerFromMessage(
 }
 
 template<typename Frame>
-typename DiscreteTrajectory<Frame>::Iterator&
-DiscreteTrajectory<Frame>::Iterator::operator++() {
-  if (!forks_.empty() && current_ == forks_.front().timeline) {
-    // Skip over any timeline where the fork is at |end()|.  These are the ones
-    // that were forked at the fork point of their parent.  Looking at the
-    // |begin()| of the parent would be wrong (the fork would see changes to its
-    // parent after the fork point).
-    do {
-      ancestry_.pop_front();
-      forks_.pop_front();
-    } while (!forks_.empty() &&
-             forks_.front().timeline == ancestry_.front()->timeline_.end());
-    current_ = ancestry_.front()->timeline_.begin();
-  } else {
-    CHECK(current_ != ancestry_.front()->timeline_.end())
-        << "Incrementing beyond end of trajectory";
-    ++current_;
-  }
-  CHECK(!current_is_misplaced());
-  return *this;
+bool DiscreteTrajectory<Frame>::NativeIterator::at_end() const {
+  return *this == this->End();
 }
 
 template<typename Frame>
-bool DiscreteTrajectory<Frame>::Iterator::at_end() const {
-  return forks_.empty() && current_ == ancestry_.front()->timeline_.end();
+Instant const& DiscreteTrajectory<Frame>::NativeIterator::time() const {
+  return current()->first;
 }
 
 template<typename Frame>
-Instant const& DiscreteTrajectory<Frame>::Iterator::time() const {
-  return current_->first;
-}
-
-template<typename Frame>
-not_null<DiscreteTrajectory<Frame> const*>
-DiscreteTrajectory<Frame>::Iterator::trajectory() const {
-  return ancestry_.back();
-}
-
-template<typename Frame>
-DegreesOfFreedom<Frame> const&
+typename DegreesOfFreedom<Frame> const&
 DiscreteTrajectory<Frame>::NativeIterator::degrees_of_freedom() const {
-  return this->current()->second;
+  return current()->second;
+}
+
+template<typename Frame>
+DiscreteTrajectory<Frame>::NativeIterator::NativeIterator(Iterator it)
+    : Iterator(std::move(it)) {}
+
+template<typename Frame>
+template<typename ToFrame>
+bool DiscreteTrajectory<Frame>::TransformingIterator<ToFrame>::at_end() const {
+  return *this == End();
 }
 
 template<typename Frame>
 template<typename ToFrame>
-DegreesOfFreedom<ToFrame>
+Instant const&
+DiscreteTrajectory<Frame>::TransformingIterator<ToFrame>::time() const {
+  return current()->first;
+}
+template<typename Frame>
+template<typename ToFrame>
+typename DegreesOfFreedom<ToFrame>
 DiscreteTrajectory<Frame>::
 TransformingIterator<ToFrame>::degrees_of_freedom() const {
-  auto it = this->current();
+  auto it = current();
   return transform_(it->first, it->second, this->trajectory());
 }
 
 template<typename Frame>
 template<typename ToFrame>
 DiscreteTrajectory<Frame>::TransformingIterator<ToFrame>::TransformingIterator(
-    Transform<ToFrame> const& transform)
-    : Iterator(),
-      transform_(transform) {}
+    Iterator it, Transform<ToFrame> transform)
+    : Iterator(std::move(it)),
+      transform_(std::move(transform)) {}
 
 template<typename Frame>
 not_null<DiscreteTrajectory<Frame>*> DiscreteTrajectory<Frame>::that() {
@@ -362,7 +348,7 @@ bool DiscreteTrajectory<Frame>::timeline_empty() const {
 
 template<typename Frame>
 void DiscreteTrajectory<Frame>::WriteSubTreeToMessage(
-    not_null<serialization::DiscreteTrajectory*> const message) const {
+    not_null<serialization::Trajectory*> const message) const {
   Instant last_instant;
   bool is_first = true;
   serialization::DiscreteTrajectory::Litter* litter = nullptr;
@@ -389,7 +375,7 @@ void DiscreteTrajectory<Frame>::WriteSubTreeToMessage(
 
 template<typename Frame>
 void DiscreteTrajectory<Frame>::FillSubTreeFromMessage(
-    serialization::DiscreteTrajectory const& message) {
+    serialization::Trajectory const& message) {
   auto timeline_it = message.timeline().begin();
   for (serialization::DiscreteTrajectory::Litter const& litter : message.children()) {
     Instant const fork_time = Instant::ReadFromMessage(litter.fork_time());

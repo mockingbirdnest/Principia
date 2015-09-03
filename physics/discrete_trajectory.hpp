@@ -178,7 +178,7 @@ class DiscreteTrajectory : public Forkable<DiscreteTrajectory<Frame>> {
     DegreesOfFreedom<Frame> const& degrees_of_freedom() const;
 
    private:
-    NativeIterator() = default;
+    explicit NativeIterator(Iterator it);
     friend class DiscreteTrajectory;
   };
 
@@ -191,7 +191,7 @@ class DiscreteTrajectory : public Forkable<DiscreteTrajectory<Frame>> {
     DegreesOfFreedom<ToFrame> degrees_of_freedom() const;
 
    private:
-    explicit TransformingIterator(Transform<ToFrame> const& transform);
+    TransformingIterator(Iterator it, Transform<ToFrame> transform);
     Transform<ToFrame> transform_;
     friend class DiscreteTrajectory;
   };
@@ -232,4 +232,4 @@ class DiscreteTrajectory : public Forkable<DiscreteTrajectory<Frame>> {
 }  // namespace physics
 }  // namespace principia
 
-#include "trajectory_body.hpp"
+#include "discrete_trajectory_body.hpp"
