@@ -19,7 +19,7 @@ namespace physics {
 template<typename Frame>
 Instant const& ForkableTraits<DiscreteTrajectory<Frame>>::time(
     TimelineConstIterator const it) {
-  return it->first
+  return it->first;
 }
 
 template<typename Frame>
@@ -132,40 +132,6 @@ void DiscreteTrajectory<Frame>::Append(
                                    time,
                                    degrees_of_freedom);
   CHECK(timeline_.end() == ++it) << "Append out of order";
-}
-
-template<typename Frame>
-void DiscreteTrajectory<Frame>::ForgetAfter(Instant const& time) {
-  // Each of these blocks gets an iterator denoting the first entry with
-  // time > |time|.  It then removes that entry and all the entries that follow
-  // it.  This preserve any entry with time == |time|.
-  {
-    auto const it = timeline_.upper_bound(time);
-    CHECK(is_root() || time >= *ForkTime())
-        << "ForgetAfter before the fork time";
-    timeline_.erase(it, timeline_.end());
-  }
-  {
-    auto const it = children_.upper_bound(time);
-    children_.erase(it, children_.end());
-  }
-}
-
-template<typename Frame>
-void DiscreteTrajectory<Frame>::ForgetBefore(Instant const& time) {
-  // Check that this is a root.
-  CHECK(is_root()) << "ForgetBefore on a nonroot trajectory";
-  // Each of these blocks gets an iterator denoting the first entry with
-  // time > |time|.  It then removes that all the entries that precede it.  This
-  // removes any entry with time == |time|.
-  {
-    auto it = timeline_.upper_bound(time);
-    timeline_.erase(timeline_.begin(), it);
-  }
-  {
-    auto it = children_.upper_bound(time);
-    children_.erase(children_.begin(), it);
-  }
 }
 
 template<typename Frame>
@@ -299,9 +265,21 @@ DiscreteTrajectory<Frame>::timeline_find(Instant const& time) const {
 }
 
 template<typename Frame>
+typename DiscreteTrajectory<Frame>::TimelineConstIterator
+DiscreteTrajectory<Frame>::timeline_upper_bound(Instant const& time) const {
+  return timeline_.upper_bound(time);
+}
+
+template<typename Frame>
+void DiscreteTrajectory<Frame>::timeline_erase(TimelineConstIterator begin,
+                                               TimelineConstIterator end) {
+  timeline_.erase(begin, end);
+}
+
+template<typename Frame>
 void DiscreteTrajectory<Frame>::timeline_insert(TimelineConstIterator begin,
                                                 TimelineConstIterator end) {
-  return timeline_.insert(begin, end);
+  timeline_.insert(begin, end);
 }
 
 template<typename Frame>
@@ -314,7 +292,7 @@ void DiscreteTrajectory<Frame>::WriteSubTreeToMessage(
     not_null<serialization::Trajectory*> const message) const {
   Instant last_instant;
   bool is_first = true;
-  serialization::DiscreteTrajectory::Litter* litter = nullptr;
+  serialization::Trajectory::Litter* litter = nullptr;
   for (auto const& pair : children_) {
     Instant const& fork_time = pair.first;
     DiscreteTrajectory const& child = pair.second;
@@ -340,7 +318,7 @@ template<typename Frame>
 void DiscreteTrajectory<Frame>::FillSubTreeFromMessage(
     serialization::Trajectory const& message) {
   auto timeline_it = message.timeline().begin();
-  for (serialization::DiscreteTrajectory::Litter const& litter : message.children()) {
+  for (serialization::Trajectory::Litter const& litter : message.children()) {
     Instant const fork_time = Instant::ReadFromMessage(litter.fork_time());
     for (;
          timeline_it != message.timeline().end() &&
@@ -350,7 +328,7 @@ void DiscreteTrajectory<Frame>::FillSubTreeFromMessage(
              DegreesOfFreedom<Frame>::ReadFromMessage(
                  timeline_it->degrees_of_freedom()));
     }
-    for (serialization::DiscreteTrajectory const& child : litter.trajectories()) {
+    for (serialization::Trajectory const& child : litter.trajectories()) {
       NewFork(fork_time)->FillSubTreeFromMessage(child);
     }
   }
