@@ -6,6 +6,7 @@
 
 #include "base/not_null.hpp"
 #include "geometry/named_quantities.hpp"
+#include "serialization/physics.pb.h"
 
 namespace principia {
 
@@ -76,6 +77,9 @@ class Forkable {
     // Returns the point in the timeline that is denoted by this iterator.
     TimelineConstIterator current() const;
 
+    // Returns the (most forked) trajectory to which this iterator applies.
+    not_null<Tr4jectory const*> trajectory() const;
+
    private:
     Iterator() = default;
 
@@ -112,6 +116,14 @@ class Forkable {
   Iterator Wrap(
       not_null<const Tr4jectory*> const ancestor,
       TimelineConstIterator const position_in_ancestor_timeline) const;
+
+  void WritePointerToMessage(
+      not_null<serialization::Trajectory::Pointer*> const message) const;
+
+  // |trajectory| must be a root.
+  static not_null<Tr4jectory*> ReadPointerFromMessage(
+      serialization::Trajectory::Pointer const& message,
+      not_null<Tr4jectory*> const trajectory);
 
  protected:
   // The API that must be implemented by subclasses.

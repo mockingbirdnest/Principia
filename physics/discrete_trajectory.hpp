@@ -159,14 +159,6 @@ class DiscreteTrajectory : public Forkable<DiscreteTrajectory<Frame>> {
   static std::unique_ptr<DiscreteTrajectory> ReadFromMessage(
       serialization::Trajectory const& message);
 
-  void WritePointerToMessage(
-      not_null<serialization::Trajectory::Pointer*> const message) const;
-
-  // |trajectory| must be a root.
-  static not_null<DiscreteTrajectory*> ReadPointerFromMessage(
-      serialization::Trajectory::Pointer const& message,
-      not_null<DiscreteTrajectory*> const trajectory);
-
   // A base class for iterating over the timeline of a trajectory, taking forks
   // into account.  Objects of this class cannot be created.
   // An iterator which returns the coordinates in the native frame of the

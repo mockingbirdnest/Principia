@@ -163,6 +163,12 @@ Forkable<Tr4jectory>::Iterator::current() const {
 }
 
 template<typename Tr4jectory>
+not_null<Tr4jectory const*> Forkable<Tr4jectory>::Iterator::trajectory() const {
+  CHECK(!ancestry_.empty());
+  return ancestry_.back();
+}
+
+template<typename Tr4jectory>
 void Forkable<Tr4jectory>::Iterator::NormalizeIfEnd() {
   CHECK(!ancestry_.empty());
   if (current_ == ancestry_.front()->timeline_end() &&
@@ -241,6 +247,42 @@ Forkable<Tr4jectory>::Wrap(
 
   LOG(FATAL) << "The ancestor parameter is not an ancestor of this trajectory";
   base::noreturn();
+}
+
+template<typename Tr4jectory>
+void Forkable<Tr4jectory>::WritePointerToMessage(
+    not_null<serialization::Trajectory::Pointer*> const message) const {
+  not_null<Tr4jectory const*> ancestor = that();
+  while (ancestor->parent_ != nullptr) {
+    auto const position_in_parent_children = position_in_parent_children_;
+    auto const position_in_parent_timeline = position_in_parent_timeline_;
+    ancestor = ancestor->parent_;
+    int const children_distance =
+        std::distance(ancestor->children_.begin(), position_in_parent_children);
+    int const timeline_distance =
+        std::distance(ancestor->timeline_begin(), position_in_parent_timeline);
+    auto* const fork_message = message->add_fork();
+    fork_message->set_children_distance(children_distance);
+    fork_message->set_timeline_distance(timeline_distance);
+  }
+}
+
+template<typename Tr4jectory>
+not_null<Tr4jectory*> Forkable<Tr4jectory>::ReadPointerFromMessage(
+    serialization::Trajectory::Pointer const& message,
+    not_null<Tr4jectory*> const trajectory) {
+  CHECK(trajectory->is_root());
+  not_null<Tr4jectory*> descendant = trajectory;
+  for (auto const& fork_message : message.fork()) {
+    int const children_distance = fork_message.children_distance();
+    int const timeline_distance = fork_message.timeline_distance();
+    auto children_it = descendant->children_.begin();
+    auto timeline_it = descendant->timeline_begin();
+    std::advance(children_it, children_distance);
+    std::advance(timeline_it, timeline_distance);
+    descendant = &children_it->second;
+  }
+  return descendant;
 }
 
 }  // namespace physics

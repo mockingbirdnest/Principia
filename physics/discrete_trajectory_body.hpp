@@ -222,45 +222,8 @@ DiscreteTrajectory<Frame>::ReadFromMessage(
 }
 
 template<typename Frame>
-void DiscreteTrajectory<Frame>::WritePointerToMessage(
-    not_null<serialization::Trajectory::Pointer*> const message) const {
-  not_null<DiscreteTrajectory const*> ancestor = this;
-  while (ancestor->parent_ != nullptr) {
-    Fork const& fork = *ancestor->fork_;
-    ancestor = ancestor->parent_;
-    int const children_distance =
-        std::distance(ancestor->children_.begin(), fork.children);
-    int const timeline_distance =
-        std::distance(ancestor->timeline_.begin(), fork.timeline);
-    auto* const fork_message = message->add_fork();
-    fork_message->set_children_distance(children_distance);
-    fork_message->set_timeline_distance(timeline_distance);
-  }
-}
-
-template<typename Frame>
-not_null<DiscreteTrajectory<Frame>*>
-DiscreteTrajectory<Frame>::ReadPointerFromMessage(
-    serialization::Trajectory::Pointer const& message,
-    not_null<DiscreteTrajectory*> const trajectory) {
-  CHECK(trajectory->is_root());
-  not_null<DiscreteTrajectory*> descendant = trajectory;
-  for (int i = 0; i < message.fork_size(); ++i) {
-    auto const& fork_message = message.fork(i);
-    int const children_distance = fork_message.children_distance();
-    int const timeline_distance = fork_message.timeline_distance();
-    auto children_it = descendant->children_.begin();
-    auto timeline_it = descendant->timeline_.begin();
-    std::advance(children_it, children_distance);
-    std::advance(timeline_it, timeline_distance);
-    descendant = &children_it->second;
-  }
-  return descendant;
-}
-
-template<typename Frame>
 bool DiscreteTrajectory<Frame>::NativeIterator::at_end() const {
-  return *this == this->End();
+  return *this == trajectory()->End();
 }
 
 template<typename Frame>
@@ -281,7 +244,7 @@ DiscreteTrajectory<Frame>::NativeIterator::NativeIterator(Iterator it)
 template<typename Frame>
 template<typename ToFrame>
 bool DiscreteTrajectory<Frame>::TransformingIterator<ToFrame>::at_end() const {
-  return *this == End();
+  return *this == trajectory()->End();
 }
 
 template<typename Frame>
@@ -296,7 +259,7 @@ typename DegreesOfFreedom<ToFrame>
 DiscreteTrajectory<Frame>::
 TransformingIterator<ToFrame>::degrees_of_freedom() const {
   auto it = current();
-  return transform_(it->first, it->second, this->trajectory());
+  return transform_(it->first, it->second, trajectory());
 }
 
 template<typename Frame>
