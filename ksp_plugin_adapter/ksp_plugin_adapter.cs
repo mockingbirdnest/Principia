@@ -831,10 +831,13 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
       Vector.DestroyLine(ref rendered_trajectory_);
     }
     if (rendered_prediction_ != null) {
+      Vector.DestroyLine(ref rendered_prediction_);
+    }
+    if (rendered_flight_plan_ != null) {
       for(int i = 0; i < rendered_flight_plan_.Length; ++i) {
         Vector.DestroyLine(ref rendered_flight_plan_[i]);
       }
-      rendered_prediction_ = null;
+      rendered_flight_plan_ = null;
     }
   }
 
