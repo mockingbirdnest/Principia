@@ -279,6 +279,13 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
       [MarshalAs(UnmanagedType.LPStr)] String vessel_guid);
 
   [DllImport(dllName           : kDllPath,
+             EntryPoint        = "principia__UpdateFlightPlan",
+             CallingConvention = CallingConvention.Cdecl)]
+  private static extern void UpdateFlightPlan(
+      IntPtr plugin,
+      [MarshalAs(UnmanagedType.LPStr)] String vessel_guid);
+
+  [DllImport(dllName           : kDllPath,
              EntryPoint        = "principia__RenderedVesselTrajectory",
              CallingConvention = CallingConvention.Cdecl)]
   private static extern IntPtr RenderedVesselTrajectory(
@@ -288,9 +295,16 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
       XYZ sun_world_position);
 
   [DllImport(dllName           : kDllPath,
-             EntryPoint        = "principia__PredictionCount",
+             EntryPoint        = "principia__HasPrediction",
              CallingConvention = CallingConvention.Cdecl)]
-  private static extern int PredictionCount(
+  private static extern bool HasPrediction(
+      IntPtr plugin,
+      [MarshalAs(UnmanagedType.LPStr)] String vessel_guid);
+
+  [DllImport(dllName           : kDllPath,
+             EntryPoint        = "principia__FlightPlanSize",
+             CallingConvention = CallingConvention.Cdecl)]
+  private static extern int FlightPlanSize(
       IntPtr plugin,
       [MarshalAs(UnmanagedType.LPStr)] String vessel_guid);
 
@@ -300,7 +314,16 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
   private static extern IntPtr RenderedPrediction(
       IntPtr plugin,
       [MarshalAs(UnmanagedType.LPStr)] String vessel_guid,
-      int prediction_index,
+      IntPtr transforms,
+      XYZ sun_world_position);
+
+  [DllImport(dllName           : kDllPath,
+             EntryPoint        = "principia__RenderedFlightPlan",
+             CallingConvention = CallingConvention.Cdecl)]
+  private static extern IntPtr RenderedFlightPlan(
+      IntPtr plugin,
+      [MarshalAs(UnmanagedType.LPStr)] String vessel_guid,
+      int plan_phase,
       IntPtr transforms,
       XYZ sun_world_position);
 

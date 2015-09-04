@@ -514,6 +514,11 @@ void principia__UpdatePrediction(Plugin const* const plugin,
   CHECK_NOTNULL(plugin)->UpdatePrediction(vessel_guid);
 }
 
+void principia__UpdateFlightPlan(Plugin const* const plugin,
+                                 char const* const vessel_guid) {
+  CHECK_NOTNULL(plugin)->UpdateFlightPlan(vessel_guid);
+}
+
 LineAndIterator* principia__RenderedVesselTrajectory(
     Plugin const* const plugin,
     char const* vessel_guid,
@@ -531,21 +536,43 @@ LineAndIterator* principia__RenderedVesselTrajectory(
   return result.release();
 }
 
-int principia__PredictionCount(Plugin const* const plugin,
-                               char const* const vessel_guid) {
-  return CHECK_NOTNULL(plugin)->PredictionCount(vessel_guid);
+bool principia__HasPrediction(Plugin const* const plugin,
+                              char const* const vessel_guid) {
+  return CHECK_NOTNULL(plugin)->HasPrediction(vessel_guid);
 }
 
 LineAndIterator* principia__RenderedPrediction(
     Plugin* const plugin,
     char const* vessel_guid,
-    int const prediction_index,
+    RenderingTransforms* const transforms,
+    XYZ const sun_world_position) {
+  RenderedTrajectory<World> rendered_trajectory = CHECK_NOTNULL(plugin)->
+      RenderedPrediction(
+          vessel_guid,
+          transforms,
+          World::origin + Displacement<World>(
+                              ToR3Element(sun_world_position) * Metre));
+  not_null<std::unique_ptr<LineAndIterator>> result =
+      make_not_null_unique<LineAndIterator>(std::move(rendered_trajectory));
+  result->it = result->rendered_trajectory.begin();
+  return result.release();
+}
+
+int principia__FlightPlanSize(Plugin const* const plugin,
+                              char const* const vessel_guid) {
+  return CHECK_NOTNULL(plugin)->FlightPlanSize(vessel_guid);
+}
+
+LineAndIterator* principia__RenderedFlightPlan(
+    Plugin* const plugin,
+    char const* vessel_guid,
+    int const plan_phase,
     RenderingTransforms* const transforms,
     XYZ const sun_world_position) {
   RenderedTrajectory<World> rendered_trajectory =
-      CHECK_NOTNULL(plugin)->RenderedPrediction(
+      CHECK_NOTNULL(plugin)->RenderedFlightPlan(
           vessel_guid,
-          prediction_index,
+          plan_phase,
           transforms,
           World::origin + Displacement<World>(
                               ToR3Element(sun_world_position) * Metre));

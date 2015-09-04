@@ -268,6 +268,10 @@ extern "C" DLLEXPORT
 void principia__UpdatePrediction(Plugin const* const plugin,
                                  char const* const vessel_guid);
 
+extern "C" DLLEXPORT
+void principia__UpdateFlightPlan(Plugin const* const plugin,
+                                 char const* const vessel_guid);
+
 // Returns the result of |plugin->RenderedVesselTrajectory| called with the
 // arguments given, together with an iterator to its beginning.
 // |plugin| must not be null.  No transfer of ownership of |plugin|.  The caller
@@ -281,14 +285,25 @@ LineAndIterator* CDECL principia__RenderedVesselTrajectory(
     XYZ const sun_world_position);
 
 extern "C" DLLEXPORT
-int principia__PredictionCount(Plugin const* const plugin,
-                               char const* const vessel_guid);
+bool principia__HasPrediction(Plugin const* const plugin,
+                              char const* const vessel_guid);
 
 extern "C" DLLEXPORT
 LineAndIterator* CDECL principia__RenderedPrediction(
     Plugin* const plugin,
     char const* vessel_guid,
-    int const prediction_index,
+    RenderingTransforms* const transforms,
+    XYZ const sun_world_position);
+
+extern "C" DLLEXPORT
+int principia__FlightPlanSize(Plugin const* const plugin,
+                              char const* const vessel_guid);
+
+extern "C" DLLEXPORT
+LineAndIterator* CDECL principia__RenderedFlightPlan(
+    Plugin* const plugin,
+    char const* vessel_guid,
+    int const plan_phase,
     RenderingTransforms* const transforms,
     XYZ const sun_world_position);
 

@@ -133,7 +133,9 @@ void Trajectory<Frame>::Append(
   auto it = timeline_.emplace_hint(timeline_.end(),
                                    time,
                                    degrees_of_freedom);
-  CHECK(timeline_.end() == ++it) << "Append out of order";
+  CHECK(timeline_.end() == ++it) << "Append out of order at time " << time
+                                 << ", time range = [" << Times().front()
+                                 << ", " << Times().back() << "]";
 }
 
 template<typename Frame>

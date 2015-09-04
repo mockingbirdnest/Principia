@@ -328,7 +328,17 @@ void Plugin::InsertVesselManœuvre(
 
 void Plugin::UpdatePrediction(GUID const & vessel_guid) const {
   CHECK(!initializing_);
-  find_vessel_by_guid_or_die(vessel_guid)->UpdatePredictions(
+  find_vessel_by_guid_or_die(vessel_guid)->UpdatePrediction(
+      ephemeris_.get(),
+      prediction_integrator_,
+      current_time_ + prediction_length_,
+      prediction_length_tolerance_,
+      prediction_speed_tolerance_);
+}
+
+void Plugin::UpdateFlightPlan(GUID const & vessel_guid) const {
+  CHECK(!initializing_);
+  find_vessel_by_guid_or_die(vessel_guid)->UpdateFlightPlan(
       ephemeris_.get(),
       prediction_integrator_,
       current_time_ + prediction_length_,
@@ -361,21 +371,41 @@ RenderedTrajectory<World> Plugin::RenderedVesselTrajectory(
                           sun_world_position);
 }
 
-int Plugin::PredictionCount(GUID const & vessel_guid) const {
+int Plugin::FlightPlanSize(GUID const & vessel_guid) const {
   CHECK(!initializing_);
-  return find_vessel_by_guid_or_die(vessel_guid)->predictions().size();
+  return find_vessel_by_guid_or_die(vessel_guid)->flight_plan().size();
+}
+
+bool Plugin::HasPrediction(GUID const & vessel_guid) const {
+  return find_vessel_by_guid_or_die(vessel_guid)->has_prediction();
 }
 
 RenderedTrajectory<World> Plugin::RenderedPrediction(
     GUID const& vessel_guid,
-    int const prediction_index,
+    not_null<RenderingTransforms*> const transforms,
+    Position<World> const& sun_world_position) {
+  CHECK(!initializing_);
+  Vessel const& vessel = *find_vessel_by_guid_or_die(vessel_guid);
+  RenderedTrajectory<World> result =
+      RenderTrajectory(vessel.body(),
+                       transforms->first_on_or_after(
+                           vessel.prediction(),
+                           *vessel.prediction().fork_time()),
+                       transforms,
+                       sun_world_position);
+  return result;
+}
+
+RenderedTrajectory<World> Plugin::RenderedFlightPlan(
+    GUID const& vessel_guid,
+    int const plan_phase,
     not_null<RenderingTransforms*> const transforms,
     Position<World> const& sun_world_position) {
   CHECK(!initializing_); 
   Vessel const& vessel = *find_vessel_by_guid_or_die(vessel_guid);
-  CHECK_GT(vessel.predictions().size(), prediction_index);
+  CHECK_GT(vessel.flight_plan().size(), plan_phase);
   Trajectory<Barycentric> const& prediction =
-      *vessel.predictions()[prediction_index];
+      *vessel.flight_plan()[plan_phase];
   RenderedTrajectory<World> result =
       RenderTrajectory(vessel.body(),
                        transforms->first_on_or_after(

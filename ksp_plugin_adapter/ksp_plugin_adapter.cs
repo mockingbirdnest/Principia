@@ -48,7 +48,8 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
 
   private IntPtr plugin_ = IntPtr.Zero;
   // TODO(egg): rendering only one trajectory at the moment.
-  private VectorLine[] rendered_prediction_;
+  private VectorLine rendered_prediction_;
+  private VectorLine[] rendered_flight_plan_;
   private VectorLine rendered_trajectory_;
   private IntPtr transforms_ = IntPtr.Zero;
 
@@ -711,17 +712,27 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
       RenderAndDeleteTrajectory(ref trajectory_iterator,
                                 rendered_trajectory_);
 
-      for (int i = 0;
-           i < PredictionCount(plugin_, active_vessel.id.ToString());
-           ++i) {
+      if (HasPrediction(plugin_, active_vessel.id.ToString())) {
         trajectory_iterator = RenderedPrediction(
+                                  plugin_,
+                                  active_vessel.id.ToString(),
+                                  transforms_,
+                                  (XYZ)Planetarium.fetch.Sun.position);
+        RenderAndDeleteTrajectory(ref trajectory_iterator,
+                                  rendered_prediction_);
+      }
+
+      for (int i = 0;
+           i < FlightPlanSize(plugin_, active_vessel.id.ToString());
+           ++i) {
+        trajectory_iterator = RenderedFlightPlan(
                                   plugin_,
                                   active_vessel.id.ToString(),
                                   i,
                                   transforms_,
                                   (XYZ)Planetarium.fetch.Sun.position);
         RenderAndDeleteTrajectory(ref trajectory_iterator,
-                                  rendered_prediction_[i]);
+                                  rendered_flight_plan_[i]);
       }
     } else {
       DestroyRenderedTrajectory();
@@ -784,22 +795,34 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
     rendered_trajectory_.vectorObject.renderer.castShadows = false;
     rendered_trajectory_.vectorObject.renderer.receiveShadows = false;
     rendered_trajectory_.layer = 31;
-    rendered_prediction_ = new VectorLine[2];
-    UnityEngine.Color[] colours = {XKCDColors.Fuchsia, XKCDColors.FrenchBlue};
-    for (int i = 0; i < rendered_prediction_.Length; ++i) {
-      rendered_prediction_[i] =
+    rendered_prediction_ = new VectorLine(
+        lineName     : "rendered_prediction_",
+        linePoints   : new UnityEngine.Vector3[kMaxVectorLinePoints],
+        lineMaterial : MapView.OrbitLinesMaterial,
+        color        : XKCDColors.Fuchsia,
+        width        : 5,
+        lineType     : LineType.Discrete);
+    rendered_prediction_.vectorObject.transform.parent =
+        ScaledSpace.Instance.transform;
+    rendered_prediction_.vectorObject.renderer.castShadows = false;
+    rendered_prediction_.vectorObject.renderer.receiveShadows = false;
+    rendered_prediction_.layer = 31;
+    rendered_flight_plan_ = new VectorLine[3];
+    for (int i = 0; i < rendered_flight_plan_.Length; ++i) {
+      rendered_flight_plan_[i] =
           new VectorLine(
-                  lineName     : "rendered_prediction_",
+                  lineName     : "rendered_flight_plan_",
                   linePoints   : new UnityEngine.Vector3[kMaxVectorLinePoints],
                   lineMaterial : MapView.OrbitLinesMaterial,
-                  color        : colours[i],
+                  color        : (i % 2 == 0 ? XKCDColors.FrenchBlue
+                                             : XKCDColors.OrangeRed),
                   width        : 5,
                   lineType     : LineType.Discrete);
-      rendered_prediction_[i].vectorObject.transform.parent =
+      rendered_flight_plan_[i].vectorObject.transform.parent =
           ScaledSpace.Instance.transform;
-      rendered_prediction_[i].vectorObject.renderer.castShadows = false;
-      rendered_prediction_[i].vectorObject.renderer.receiveShadows = false;
-      rendered_prediction_[i].layer = 31;
+      rendered_flight_plan_[i].vectorObject.renderer.castShadows = false;
+      rendered_flight_plan_[i].vectorObject.renderer.receiveShadows = false;
+      rendered_flight_plan_[i].layer = 31;
     }
   }
 
@@ -808,8 +831,8 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
       Vector.DestroyLine(ref rendered_trajectory_);
     }
     if (rendered_prediction_ != null) {
-      for(int i = 0; i < rendered_prediction_.Length; ++i) {
-        Vector.DestroyLine(ref rendered_prediction_[i]);
+      for(int i = 0; i < rendered_flight_plan_.Length; ++i) {
+        Vector.DestroyLine(ref rendered_flight_plan_[i]);
       }
       rendered_prediction_ = null;
     }
@@ -1104,38 +1127,44 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
     initial_time_ =
         UnityEngine.GUILayout.TextField(initial_time_,
                                         UnityEngine.GUILayout.Width(75));
-    UnityEngine.GUILayout.Label(text : "s from now.");
+    UnityEngine.GUILayout.Label(text : "s after launch.");
     UnityEngine.GUILayout.EndHorizontal();
     if (UnityEngine.GUILayout.Button(
             text    : "Update",
             options : UnityEngine.GUILayout.Width(100))) {
-      try {
-        double thrust = double.Parse(thrust_);
-        double initial_mass = double.Parse(initial_mass_);
-        double specific_impulse_by_weight =
-            double.Parse(specific_impulse_by_weight_);
-        double right_ascension = double.Parse(right_ascension_);
-        double declination = double.Parse(declination_);
-        double duration = double.Parse(duration_);
-        double initial_time = double.Parse(initial_time_) +
-                              Planetarium.GetUniversalTime();
-        IntPtr manœuvre = NewManœuvreIspByWeight(thrust,
-                                                 initial_mass,
-                                                 specific_impulse_by_weight,
-                                                 right_ascension,
-                                                 declination);
-        set_duration(manœuvre, duration);
-        set_initial_time(manœuvre, initial_time);
-        if (FlightGlobals.ActiveVessel != null) {
+        if (FlightGlobals.ActiveVessel != null &&
+            PluginRunning() &&
+            has_vessel(plugin_, FlightGlobals.ActiveVessel.id.ToString())) {
           string active_vessel = FlightGlobals.ActiveVessel.id.ToString();
-          if (ManœuvreCount(plugin_, active_vessel) > 0) {
-            SetVesselManœuvre(plugin_, active_vessel, 0, ref manœuvre);
+        try {
+          double thrust = double.Parse(thrust_);
+          double initial_mass = double.Parse(initial_mass_);
+          double specific_impulse_by_weight =
+              double.Parse(specific_impulse_by_weight_);
+          double right_ascension = double.Parse(right_ascension_);
+          double declination = double.Parse(declination_);
+          double duration = double.Parse(duration_);
+          double initial_time = double.Parse(initial_time_) +
+                                FlightGlobals.ActiveVessel.launchTime;
+          if (initial_time <= Planetarium.GetUniversalTime()) {
+            // TODO(egg): give some feedback.
           } else {
-            InsertVesselManœuvre(plugin_, active_vessel, 0, ref manœuvre);
+            IntPtr manœuvre = NewManœuvreIspByWeight(thrust,
+                                                     initial_mass,
+                                                     specific_impulse_by_weight,
+                                                     right_ascension,
+                                                     declination);
+            set_duration(manœuvre, duration);
+            set_initial_time(manœuvre, initial_time);
+            if (ManœuvreCount(plugin_, active_vessel) > 0) {
+              SetVesselManœuvre(plugin_, active_vessel, 0, ref manœuvre);
+            } else {
+              InsertVesselManœuvre(plugin_, active_vessel, 0, ref manœuvre);
+            }
+            UpdateFlightPlan(plugin_, active_vessel);
           }
-        }
-      } catch (FormatException) {
-      } catch (OverflowException) {
+        } catch (FormatException) {
+        } catch (OverflowException) {}
       }
     }
   }

@@ -58,13 +58,22 @@ inline not_null<Trajectory<Barycentric>*> Vessel::mutable_prolongation() {
 }
 
 inline std::vector<not_null<Trajectory<Barycentric>*>> const&
-Vessel::predictions() const {
+Vessel::flight_plan() const {
   CHECK(is_initialized());
-  return predictions_;
+  return flight_plan_;
 }
 
-inline bool Vessel::has_predictions() const {
-  return !predictions_.empty();
+inline bool Vessel::has_flight_plan() const {
+  return !flight_plan_.empty();
+}
+
+inline Trajectory<Barycentric> const& Vessel::prediction() const {
+  CHECK(has_prediction());
+  return *prediction_;
+}
+
+inline bool Vessel::has_prediction() const {
+  return prediction_ != nullptr;
 }
 
 inline Vessel::Manœuvres const& Vessel::manœuvres() const {
@@ -100,51 +109,89 @@ inline void Vessel::ResetProlongation(Instant const& time) {
   CHECK(is_initialized());
   CHECK(is_synchronized());
   CHECK(owned_prolongation_ == nullptr);
-  // The predictions are forked from the prolongation, delete them lest they
-  // become dangling references.
-  DeletePredictions();
   history_->DeleteFork(&prolongation_);
   prolongation_ = history_->NewFork(time);
 }
 
-inline void Vessel::UpdatePredictions(
+inline void Vessel::UpdateFlightPlan(
     not_null<Ephemeris<Barycentric>*> ephemeris,
     AdaptiveStepSizeIntegrator<
         Ephemeris<Barycentric>::NewtonianMotionEquation> const& integrator,
     Instant const& last_time,
-    Length const& predictions_length_tolerance,
-    Speed const& predictions_speed_tolerance,
+    Length const& prediction_length_tolerance,
+    Speed const& prediction_speed_tolerance,
     Length const& prolongation_length_tolerance,
     Speed const& prolongation_speed_tolerance) {
-  DeletePredictions();
-  predictions_.emplace_back(
-      mutable_prolongation()->NewFork(prolongation().last().time()));
-  for (auto const& manœuvre : manœuvres_) {
-    not_null<Trajectory<Barycentric>*> parent_trajectory = predictions_.back();
-    ephemeris->FlowWithAdaptiveStep(
-        parent_trajectory, predictions_length_tolerance,
-        predictions_speed_tolerance, integrator, manœuvre->initial_time());
-    predictions_.emplace_back(
-        parent_trajectory->NewFork(parent_trajectory->last().time()));
-    not_null<Trajectory<Barycentric>*> child_trajectory = predictions_.back();
-    child_trajectory->set_intrinsic_acceleration(manœuvre->acceleration());
-    ephemeris->FlowWithAdaptiveStep(
-        child_trajectory, prolongation_length_tolerance,
-        prolongation_speed_tolerance, integrator, manœuvre->final_time());
-    ephemeris->FlowWithAdaptiveStep(
-        parent_trajectory, predictions_length_tolerance,
-        predictions_speed_tolerance, integrator, last_time);
+  if (!is_synchronized()) {
+    return;
   }
-  ephemeris->FlowWithAdaptiveStep(
-      predictions_.back(), predictions_length_tolerance,
-      predictions_speed_tolerance, integrator, last_time);
+  DeleteFlightPlan();
+  flight_plan_.emplace_back(
+      mutable_history()->NewFork(history().last().time()));
+  // If prolongation has no additional points this will do nothing (although it
+  // might warn).
+  flight_plan_.back()->Append(prolongation().last().time(),
+                              prolongation().last().degrees_of_freedom());
+  for (auto const& manœuvre : manœuvres_) {
+    not_null<Trajectory<Barycentric>*> coast_trajectory = flight_plan_.back();
+    ephemeris->FlowWithAdaptiveStep(coast_trajectory,
+                                    prediction_length_tolerance,
+                                    prediction_speed_tolerance,
+                                    integrator,
+                                    manœuvre->initial_time());
+    flight_plan_.emplace_back(
+        coast_trajectory->NewFork(coast_trajectory->last().time()));
+    not_null<Trajectory<Barycentric>*> burn_trajectory = flight_plan_.back();
+    burn_trajectory->set_intrinsic_acceleration(manœuvre->acceleration());
+    ephemeris->FlowWithAdaptiveStep(burn_trajectory,
+                                    prolongation_length_tolerance,
+                                    prolongation_speed_tolerance,
+                                    integrator,
+                                    manœuvre->final_time());
+    flight_plan_.emplace_back(
+        burn_trajectory->NewFork(burn_trajectory->last().time()));
+  }
+  ephemeris->FlowWithAdaptiveStep(flight_plan_.back(),
+                                  prediction_length_tolerance,
+                                  prediction_speed_tolerance,
+                                  integrator,
+                                  last_time);
 }
 
-inline void Vessel::DeletePredictions() {
-  if (has_predictions()) {
-    Trajectory<Barycentric>* prediction_root = predictions_.front();
-    predictions_.clear();
-    prolongation_->DeleteFork(&prediction_root);
+inline void Vessel::DeleteFlightPlan() {
+  if (has_flight_plan()) {
+    Trajectory<Barycentric>* flight_plan_root = flight_plan_.front();
+    flight_plan_.clear();
+    history_->DeleteFork(&flight_plan_root);
+  }
+}
+
+inline void Vessel::UpdatePrediction(
+    not_null<Ephemeris<Barycentric>*> ephemeris,
+    AdaptiveStepSizeIntegrator<
+        Ephemeris<Barycentric>::NewtonianMotionEquation> const& integrator,
+    Instant const& last_time,
+    Length const& prediction_length_tolerance,
+    Speed const& prediction_speed_tolerance) {
+  if (!is_synchronized()) {
+    return;
+  }
+  DeletePrediction();
+  prediction_ = mutable_history()->NewFork(history().last().time());
+  // If prolongation has no additional points this will do nothing (although it
+  // might warn).
+  prediction_->Append(prolongation().last().time(),
+                      prolongation().last().degrees_of_freedom());
+  ephemeris->FlowWithAdaptiveStep(prediction_,
+                                  prediction_length_tolerance,
+                                  prediction_speed_tolerance,
+                                  integrator,
+                                  last_time);
+}
+
+inline void Vessel::DeletePrediction() {
+  if (has_prediction()) {
+    mutable_history()->DeleteFork(&prediction_);
   }
 }
 

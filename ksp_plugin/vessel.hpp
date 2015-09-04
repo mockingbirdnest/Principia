@@ -62,8 +62,12 @@ class Vessel : public MobileInterface {
   not_null<Trajectory<Barycentric>*> mutable_prolongation() override;
 
   // Requires |is_initialized()|.
-  std::vector<not_null<Trajectory<Barycentric>*>> const& predictions() const;
-  bool has_predictions() const;
+  std::vector<not_null<Trajectory<Barycentric>*>> const& flight_plan() const;
+  bool has_flight_plan() const;
+
+  // Requires |has_prediction()|.
+  Trajectory<Barycentric> const& prediction() const;
+  bool has_prediction() const;
 
   Manœuvres const& manœuvres() const;
   not_null<Manœuvres*> mutable_manœuvres();
@@ -92,23 +96,38 @@ class Vessel : public MobileInterface {
   // |owned_prolongation_| must be null.
   void ResetProlongation(Instant const& time);
 
-  // Fills |predictions_| with predictions using the given |ephemeris| for
+  // Fills |flight_plan_| with predictions using the given |ephemeris| for
   // successive manœuvres, with the given prediction tolerances for the coasting
   // phases, and the given prolongation tolerances for the manœuvres.  Uses the
   // given |integrator|.
   // Deletes any pre-existing predictions.
-  void UpdatePredictions(
+  // Does nothing unless |is_synchronized()|, pending the removal of
+  // synchronization.
+  // TODO(egg): struct containing (integrator, length tol, speed tol) so we
+  // don't need that many parameters...
+  void UpdateFlightPlan(
       not_null<Ephemeris<Barycentric>*> ephemeris,
       AdaptiveStepSizeIntegrator<
           Ephemeris<Barycentric>::NewtonianMotionEquation> const& integrator,
       Instant const& last_time,
-      Length const& predictions_length_tolerance,
-      Speed const& predictions_speed_tolerance,
+      Length const& prediction_length_tolerance,
+      Speed const& prediction_speed_tolerance,
       Length const& prolongation_length_tolerance,
       Speed const& prolongation_speed_tolerance);
 
-  // Deletes the |predictions_|.  Performs no action unless |has_predictions()|.
-  void DeletePredictions();
+  // Deletes the |flight_plan_|.  Performs no action unless |has_flight_plan()|.
+  void DeleteFlightPlan();
+
+  void UpdatePrediction(
+      not_null<Ephemeris<Barycentric>*> ephemeris,
+      AdaptiveStepSizeIntegrator<
+          Ephemeris<Barycentric>::NewtonianMotionEquation> const& integrator,
+      Instant const& last_time,
+      Length const& prediction_length_tolerance,
+      Speed const& prediction_speed_tolerance);
+
+  // Deletes the |prediction_|.  Performs no action unless |has_prediction()|.
+  void DeletePrediction();
 
   // The vessel must satisfy |is_initialized()|.
   void WriteToMessage(not_null<serialization::Vessel*> const message) const;
@@ -137,9 +156,12 @@ class Vessel : public MobileInterface {
   // and celestials, there is no |history_|.  The prolongation is directly owned
   // during that time.  Null if, and only if, |history_| is not null.
   std::unique_ptr<Trajectory<Barycentric>> owned_prolongation_;
-  // Child trajectories of |prolongation_|.  Each element is a child of the
-  // previous one, corresponding to successive manœuvres.
-  std::vector<not_null<Trajectory<Barycentric>*>> predictions_;
+  // Child trajectory of |history_|.
+  Trajectory<Barycentric>* prediction_ = nullptr;
+  // Child trajectories of |history_|.  Each element is a child of the
+  // previous one, corresponding to successive manœuvres.  Trajectories at even
+  // indices are burns, trajectories at odd indices are coast phases.
+  std::vector<not_null<Trajectory<Barycentric>*>> flight_plan_;
   Manœuvres manœuvres_;
 };
 

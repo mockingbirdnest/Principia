@@ -209,6 +209,7 @@ class Plugin {
 
   // Updates the prediction for the vessel with guid |vessel_guid|.
   void UpdatePrediction(GUID const& vessel_guid) const;
+  void UpdateFlightPlan(GUID const& vessel_guid) const;
 
   // Returns a polygon in |World| space depicting the trajectory of the vessel
   // with the given |GUID| in the frame defined by |transforms|.
@@ -220,7 +221,8 @@ class Plugin {
       not_null<RenderingTransforms*> const transforms,
       Position<World> const& sun_world_position) const;
 
-  int PredictionCount(GUID const& vessel_guid) const;
+  int FlightPlanSize(GUID const& vessel_guid) const;
+  bool HasPrediction(GUID const& vessel_guid) const;
 
   // Returns a polygon in |World| space depicting the trajectory of
   // |predicted_vessel_| from |current_time()| to
@@ -233,7 +235,12 @@ class Plugin {
   // global variable |transforms_are_operating_on_predictions_|.
   virtual RenderedTrajectory<World> RenderedPrediction(
       GUID const& vessel_guid,
-      int const prediction_index,
+      not_null<RenderingTransforms*> const transforms,
+      Position<World> const& sun_world_position);
+
+  virtual RenderedTrajectory<World> RenderedFlightPlan(
+      GUID const& vessel_guid,
+      int const plan_phase,
       not_null<RenderingTransforms*> const transforms,
       Position<World> const& sun_world_position);
 
