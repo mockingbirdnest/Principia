@@ -290,20 +290,7 @@ bool DiscreteTrajectory<Frame>::timeline_empty() const {
 template<typename Frame>
 void DiscreteTrajectory<Frame>::WriteSubTreeToMessage(
     not_null<serialization::Trajectory*> const message) const {
-  Instant last_instant;
-  bool is_first = true;
-  serialization::Trajectory::Litter* litter = nullptr;
-  for (auto const& pair : children_) {
-    Instant const& fork_time = pair.first;
-    DiscreteTrajectory const& child = pair.second;
-    if (is_first || fork_time != last_instant) {
-      is_first = false;
-      last_instant = fork_time;
-      litter = message->add_children();
-      fork_time.WriteToMessage(litter->mutable_fork_time());
-    }
-    child.WriteSubTreeToMessage(litter->add_trajectories());
-  }
+  Forkable<DiscreteTrajectory>::WriteSubTreeToMessage(message);
   for (auto const& pair : timeline_) {
     Instant const& instant = pair.first;
     DegreesOfFreedom<Frame> const& degrees_of_freedom = pair.second;

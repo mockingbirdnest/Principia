@@ -135,8 +135,15 @@ class Forkable {
       serialization::Trajectory::Pointer const& message,
       not_null<Tr4jectory*> const trajectory);
 
+  // This trajectory need not be a root.
+  void WriteSubTreeToMessage(
+      not_null<serialization::Trajectory*> const message) const;
+
  protected:
   // The API that must be implemented by subclasses.
+  // TODO(phl): Try to reduce this API.  A lot of these functions are needed
+  // because Forkable knows too much about the timeline.  Candidates for
+  // removal: insert, erase, upper_bound.
 
   // Must return |this| of the proper type
   virtual not_null<Tr4jectory*> that() = 0;
