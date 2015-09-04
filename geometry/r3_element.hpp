@@ -11,6 +11,7 @@
 namespace principia {
 
 using base::not_null;
+using quantities::Angle;
 
 namespace geometry {
 
@@ -20,7 +21,6 @@ namespace geometry {
 template<typename Scalar>
 struct R3Element {
  public:
-  R3Element();
   R3Element(Scalar const& x, Scalar const& y, Scalar const& z);
 
   Scalar&       operator[](int const index);
@@ -45,6 +45,24 @@ struct R3Element {
   Scalar y;
   Scalar z;
 };
+
+template<typename Scalar>
+struct SphericalCoordinates {
+  // Default, but prevents aggregate initialization of |SphericalCoordinates| to
+  // obviate confusion over the order of |latitude| and |longitude|.
+  SphericalCoordinates();
+  Angle longitude;
+  Angle latitude;
+  Scalar radius;
+};
+
+template<typename Scalar>
+SphericalCoordinates<Scalar> RadiusLatitudeLongitude(Scalar const& radius,
+                                                     Angle const& latitude,
+                                                     Angle const& longitude);
+
+template<typename Scalar>
+R3Element<Scalar> ToCartesian(SphericalCoordinates<Scalar> const& coordinates);
 
 template<typename Scalar>
 R3Element<Scalar> operator+(R3Element<Scalar> const& right);

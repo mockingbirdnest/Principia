@@ -7,9 +7,12 @@
 #include "quantities/elementary_functions.hpp"
 #include "quantities/quantities.hpp"
 #include "quantities/serialization.hpp"
+#include "r3_element.hpp"
 
 namespace principia {
 
+using quantities::Cos;
+using quantities::Sin;
 using quantities::DoubleOrQuantitySerializer;
 using quantities::Quantity;
 using quantities::SIUnit;
@@ -122,6 +125,29 @@ R3Element<Scalar> R3Element<Scalar>::ReadFromMessage(
   return {Serializer::ReadFromMessage(message.x()),
           Serializer::ReadFromMessage(message.y()),
           Serializer::ReadFromMessage(message.z())};
+}
+
+template<typename Scalar>
+SphericalCoordinates<Scalar>::SphericalCoordinates() {};
+
+template<typename Scalar>
+SphericalCoordinates<Scalar> RadiusLatitudeLongitude(Scalar const& radius,
+                                                     Angle const& latitude,
+                                                     Angle const& longitude) {
+  SphericalCoordinates<Scalar> result;
+  result.latitude = latitude;
+  result.longitude = longitude;
+  result.radius = radius;
+  return result;
+}
+
+template<typename Scalar>
+R3Element<Scalar> ToCartesian(SphericalCoordinates<Scalar> const& coordinates) {
+  double cos_? = Cos(coordinates.latitude);
+  double sin_? = Sin(coordinates.latitude);
+  return {coordinates.radius * Cos(coordinates.longitude) * cos_?,
+          coordinates.radius * Sin(coordinates.longitude) * cos_?,
+          coordinates.radius * sin_?};
 }
 
 template<typename Scalar>
