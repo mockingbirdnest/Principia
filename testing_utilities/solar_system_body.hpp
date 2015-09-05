@@ -27,6 +27,7 @@ using geometry::Displacement;
 using geometry::Instant;
 using geometry::JulianDate;
 using geometry::Point;
+using geometry::RadiusLatitudeLongitude;
 using geometry::Rotation;
 using geometry::Vector;
 using physics::MassiveBody;
@@ -72,16 +73,8 @@ not_null<std::unique_ptr<MassiveBody>> NewBody(
 // and |declination|.
 Vector<double, ICRFJ2000Equator> Direction(Angle const& right_ascension,
                                            Angle const& declination) {
-  // Positive angles map {1, 0, 0} to the positive z hemisphere, which is north.
-  // An angle of 0 keeps {1, 0, 0} on the equator.
-  auto const decline = Rotation<ICRFJ2000Equator, ICRFJ2000Equator>(
-                           declination,
-                           Bivector<double, ICRFJ2000Equator>({0, -1, 0}));
-  // Rotate counterclockwise around {0, 0, 1} (north), i.e., eastward.
-  auto const ascend = Rotation<ICRFJ2000Equator, ICRFJ2000Equator>(
-                          right_ascension,
-                          Bivector<double, ICRFJ2000Equator>({0, 0, 1}));
-  return ascend(decline(Vector<double, ICRFJ2000Equator>({1, 0, 0})));
+  return Vector<double, ICRFJ2000Equator>(
+      RadiusLatitudeLongitude(1.0, declination, right_ascension).ToCartesian());
 }
 
 }  // namespace
