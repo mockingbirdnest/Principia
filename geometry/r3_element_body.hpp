@@ -139,7 +139,7 @@ R3Element<Scalar> R3Element<Scalar>::ReadFromMessage(
 }
 
 template<typename Scalar>
-SphericalCoordinates<Scalar>::SphericalCoordinates() {};
+SphericalCoordinates<Scalar>::SphericalCoordinates() {}
 
 template<typename Scalar>
 R3Element<Scalar> SphericalCoordinates<Scalar>::ToCartesian() {
