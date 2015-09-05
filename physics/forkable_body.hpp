@@ -207,6 +207,7 @@ void Forkable<Tr4jectory>::Iterator::NormalizeIfEnd() {
   if (current_ == ancestry_.front()->timeline_end() &&
       ancestry_.size() > 1) {
     ancestry_.erase(ancestry_.begin(), --ancestry_.end());
+    current_ = ancestry_.front()->timeline_end();
   }
 }
 
