@@ -129,7 +129,6 @@ class SolarSystemTest : public testing::Test {
                            std::experimental::nullopt /*tertiary*/,
                            message);
   }
-
 };
 
 using SolarSystemDeathTest = SolarSystemTest;
