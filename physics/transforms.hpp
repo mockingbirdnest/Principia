@@ -10,6 +10,7 @@
 #include "base/not_null.hpp"
 #include "physics/continuous_trajectory.hpp"
 #include "physics/frame_field.hpp"
+#include "physics/massive_body.hpp"
 #include "physics/trajectory.hpp"
 
 namespace principia {

@@ -456,12 +456,12 @@ Vector<double, World> Plugin::VesselTangent(
   auto const actual_it =
       transforms->first_on_or_after(vessel.prolongation(),
                                     vessel.prolongation().last().time());
-  Trajectory<Rendering> intermediate_trajectory(vessel.body());
+  Trajectory<Rendering> intermediate_trajectory;
   intermediate_trajectory.Append(actual_it.time(),
                                  actual_it.degrees_of_freedom());
   auto const intermediate_it = transforms->second(current_time_,
                                                   intermediate_trajectory);
-  Trajectory<Barycentric> apparent_trajectory(vessel.body());
+  Trajectory<Barycentric> apparent_trajectory;
   apparent_trajectory.Append(intermediate_it.time(),
                              intermediate_it.degrees_of_freedom());
   return Normalize(
@@ -903,13 +903,13 @@ RenderedTrajectory<World> Plugin::RenderTrajectory(
           OrthogonalMap<WorldSun, World>::Identity() * BarycentricToWorldSun());
 
   // First build the trajectory resulting from the first transform.
-  Trajectory<Rendering> intermediate_trajectory(body);
+  Trajectory<Rendering> intermediate_trajectory;
   for (auto it = actual_it; !it.at_end(); ++it) {
     intermediate_trajectory.Append(it.time(), it.degrees_of_freedom());
   }
 
   // Then build the apparent trajectory using the second transform.
-  Trajectory<Barycentric> apparent_trajectory(body);
+  Trajectory<Barycentric> apparent_trajectory;
   for (auto intermediate_it =
            transforms->second(current_time_, intermediate_trajectory);
        !intermediate_it.at_end();

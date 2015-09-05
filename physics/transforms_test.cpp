@@ -69,10 +69,9 @@ class TransformsTest : public testing::Test {
         body1_to_(kStep, kTolerance),
         body2_from_(kStep, kTolerance),
         body2_to_(kStep, kTolerance),
-        satellite_from_(make_not_null_unique<Trajectory<From>>(&satellite_)),
-        satellite_through_(
-            make_not_null_unique<Trajectory<Through>>(&satellite_)),
-        satellite_to_(make_not_null_unique<Trajectory<To>>(&satellite_)) {
+        satellite_from_(make_not_null_unique<Trajectory<From>>()),
+        satellite_through_(make_not_null_unique<Trajectory<Through>>()),
+        satellite_to_(make_not_null_unique<Trajectory<To>>()) {
     // For historical reasons (don't you just love that phrase?) the positions
     // and velocities below are not physical (they both increase linearly and
     // the velocities are not tangent to the trajectory).  This confuses the
@@ -201,7 +200,7 @@ TEST_F(TransformsTest, SatelliteBarycentricRotating) {
       Transforms<From, Through, To>::BarycentricRotating(
           body1_, body1_from_, body1_to_,
           body2_, body2_from_, body2_to_);
-  Trajectory<Through> satellite_through(&satellite_);
+  Trajectory<Through> satellite_through;
 
   int i = 1;
   for (auto it = transforms->first(*satellite_from_);
@@ -257,8 +256,8 @@ TEST_F(TransformsTest, BodiesBarycentricRotating) {
 
   // Compute discrete trajectories from the continuous ones since we can only
   // transform discrete trajectories.
-  Trajectory<From> discrete_body1_from(&body1_);
-  Trajectory<From> discrete_body2_from(&body2_);
+  Trajectory<From> discrete_body1_from;
+  Trajectory<From> discrete_body2_from;
   for (int i = 1; i <= kNumberOfPoints; ++i) {
     discrete_body1_from.Append(
         Instant(i * Second),

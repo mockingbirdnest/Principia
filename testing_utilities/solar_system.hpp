@@ -9,6 +9,7 @@
 #include "geometry/named_quantities.hpp"
 #include "geometry/rotation.hpp"
 #include "physics/degrees_of_freedom.hpp"
+#include "physics/massive_body.hpp"
 #include "physics/trajectory.hpp"
 #include "quantities/quantities.hpp"
 #include "quantities/si.hpp"
@@ -19,6 +20,7 @@ namespace principia {
 using base::not_null;
 using geometry::Frame;
 using physics::DegreesOfFreedom;
+using physics::MassiveBody;
 using physics::Trajectory;
 
 namespace testing_utilities {

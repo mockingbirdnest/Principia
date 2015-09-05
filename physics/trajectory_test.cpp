@@ -82,8 +82,8 @@ class TrajectoryTest : public testing::Test {
     t3_ = t0_ + 27 * Second;
     t4_ = t0_ + 37 * Second;
 
-    massive_trajectory_ = std::make_unique<Trajectory<World>>(&massive_body_);
-    massless_trajectory_ = std::make_unique<Trajectory<World>>(&massless_body_);
+    massive_trajectory_ = std::make_unique<Trajectory<World>>();
+    massless_trajectory_ = std::make_unique<Trajectory<World>>();
 
     transform_ = [](
         Instant const& t,
@@ -122,26 +122,14 @@ class TrajectoryTest : public testing::Test {
 
 using TrajectoryDeathTest = TrajectoryTest;
 
-TEST_F(TrajectoryDeathTest, Construction) {
-  using OtherWorld = Frame<serialization::Frame::TestTag,
-                           serialization::Frame::TEST2, true>;
-  EXPECT_DEATH({
-    OblateBody<OtherWorld> body(1 * SIUnit<GravitationalParameter>(),
-                                1.0 /*j2*/,
-                                1 * SIUnit<Length>(),
-                                Vector<double, OtherWorld>({0, 1, 0}));
-    Trajectory<World> trajectory(&body);
-  }, "not in the same frame");
-}
-
 TEST_F(TrajectoryTest, Destruction) {
   int i = 1;
   {
-    Trajectory<World> massive_trajectory(&massive_body_);
+    Trajectory<World> massive_trajectory;
   }
   EXPECT_EQ(1, i);
   {
-    Trajectory<World> massive_trajectory(&massive_body_);
+    Trajectory<World> massive_trajectory;
     massive_trajectory.set_on_destroy(
         [&i](not_null<Trajectory<World>const*> const) { ++i; });
   }
@@ -176,7 +164,6 @@ TEST_F(TrajectoryTest, AppendSuccess) {
                                       testing::Pair(t2_, p2_),
                                       testing::Pair(t3_, p3_)));
   EXPECT_THAT(times, ElementsAre(t1_, t2_, t3_));
-  EXPECT_THAT(massive_trajectory_->body<MassiveBody>(), Eq(&massive_body_));
 }
 
 TEST_F(TrajectoryDeathTest, ForkError) {
@@ -205,7 +192,6 @@ TEST_F(TrajectoryTest, ForkSuccess) {
                                       testing::Pair(t2_, p2_),
                                       testing::Pair(t3_, p3_)));
   EXPECT_THAT(times, ElementsAre(t1_, t2_, t3_));
-  EXPECT_THAT(fork->body<MassiveBody>(), Eq(&massive_body_));
   positions = fork->Positions();
   velocities = fork->Velocities();
   times = fork->Times();
@@ -218,7 +204,6 @@ TEST_F(TrajectoryTest, ForkSuccess) {
                                       testing::Pair(t3_, p3_),
                                       testing::Pair(t4_, p4_)));
   EXPECT_THAT(times, ElementsAre(t1_, t2_, t3_, t4_));
-  EXPECT_THAT(fork->body<MassiveBody>(), Eq(&massive_body_));
 }
 
 TEST_F(TrajectoryTest, ForkAtLast) {
@@ -445,7 +430,7 @@ TEST_F(TrajectoryTest, PointerSerializationSuccess) {
                 root_it,
                 massive_trajectory_.get()));
   not_null<std::unique_ptr<Trajectory<World>>> const massive_trajectory =
-      Trajectory<World>::ReadFromMessage(root, &massive_body_);
+      Trajectory<World>::ReadFromMessage(root);
   EXPECT_EQ(massive_trajectory.get(),
             Trajectory<World>::ReadPointerFromMessage(
                 root_it, massive_trajectory.get()));
@@ -474,7 +459,7 @@ TEST_F(TrajectoryTest, TrajectorySerializationSuccess) {
   massive_trajectory_->WriteToMessage(&message);
   massive_trajectory_->WriteToMessage(&reference_message);
   not_null<std::unique_ptr<Trajectory<World>>> const deserialized_trajectory =
-      Trajectory<World>::ReadFromMessage(message, &massive_body_);
+      Trajectory<World>::ReadFromMessage(message);
   message.Clear();
   deserialized_trajectory->WriteToMessage(&message);
   EXPECT_EQ(reference_message.SerializeAsString(), message.SerializeAsString());
@@ -566,7 +551,6 @@ TEST_F(TrajectoryTest, DeleteForkSuccess) {
                                       testing::Pair(t2_, p2_),
                                       testing::Pair(t3_, p3_)));
   EXPECT_THAT(times, ElementsAre(t1_, t2_, t3_));
-  EXPECT_THAT(fork1->body<MassiveBody>(), Eq(&massive_body_));
   positions = fork1->Positions();
   velocities = fork1->Velocities();
   times = fork1->Times();
@@ -579,7 +563,6 @@ TEST_F(TrajectoryTest, DeleteForkSuccess) {
                                       testing::Pair(t3_, p3_),
                                       testing::Pair(t4_, p4_)));
   EXPECT_THAT(times, ElementsAre(t1_, t2_, t3_, t4_));
-  EXPECT_THAT(fork1->body<MassiveBody>(), Eq(&massive_body_));
   massive_trajectory_.reset();
 }
 
@@ -721,10 +704,6 @@ TEST_F(TrajectoryTest, ForgetBeforeSuccess) {
 }
 
 TEST_F(TrajectoryDeathTest, IntrinsicAccelerationError) {
-  EXPECT_DEATH({
-    massive_trajectory_->set_intrinsic_acceleration(
-        [](Instant const& t) { return Vector<Acceleration, World>(); } );
-  }, "massive body");
   EXPECT_DEATH({
     massless_trajectory_->set_intrinsic_acceleration(
         [](Instant const& t) { return Vector<Acceleration, World>(); } );

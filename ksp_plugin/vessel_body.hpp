@@ -77,7 +77,7 @@ inline void Vessel::CreateProlongation(
   CHECK(!is_synchronized());
   CHECK(!is_initialized());
   CHECK(owned_prolongation_ == nullptr);
-  owned_prolongation_ = std::make_unique<Trajectory<Barycentric>>(&body_);
+  owned_prolongation_ = std::make_unique<Trajectory<Barycentric>>();
   owned_prolongation_->Append(time, degrees_of_freedom);
   prolongation_ = owned_prolongation_.get();
 }
@@ -86,7 +86,7 @@ inline void Vessel::CreateHistoryAndForkProlongation(
     Instant const& time,
     DegreesOfFreedom<Barycentric> const& degrees_of_freedom) {
   CHECK(!is_synchronized());
-  history_ = std::make_unique<Trajectory<Barycentric>>(&body_);
+  history_ = std::make_unique<Trajectory<Barycentric>>();
   history_->Append(time, degrees_of_freedom);
   prolongation_ = history_->NewFork(time);
   owned_prolongation_.reset();
@@ -132,15 +132,14 @@ inline std::unique_ptr<Vessel> Vessel::ReadFromMessage(
   if (message.has_history_and_prolongation()) {
     vessel->history_ =
         Trajectory<Barycentric>::ReadFromMessage(
-            message.history_and_prolongation().history(), &vessel->body_);
+            message.history_and_prolongation().history());
     vessel->prolongation_ =
         Trajectory<Barycentric>::ReadPointerFromMessage(
             message.history_and_prolongation().prolongation(),
             vessel->history_.get());
   } else if (message.has_owned_prolongation()) {
     vessel->owned_prolongation_ =
-        Trajectory<Barycentric>::ReadFromMessage(message.owned_prolongation(),
-                                                 &vessel->body_);
+        Trajectory<Barycentric>::ReadFromMessage(message.owned_prolongation());
     vessel->prolongation_ = vessel->owned_prolongation_.get();
   } else {
     LOG(FATAL) << "message does not represent an initialized Vessel";
