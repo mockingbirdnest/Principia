@@ -439,6 +439,8 @@ TEST_F(ForkableTest, IteratorFindSuccess) {
   trajectory_.push_back(t2_);
   trajectory_.push_back(t3_);
 
+  it = trajectory_.Find(t0_);
+  EXPECT_EQ(it, trajectory_.End());
   it = trajectory_.Find(t1_);
   EXPECT_NE(it, trajectory_.End());
   EXPECT_EQ(t1_, *it.current());
@@ -450,6 +452,8 @@ TEST_F(ForkableTest, IteratorFindSuccess) {
   not_null<FakeTrajectory*> const fork = trajectory_.NewFork(t2_);
   fork->push_back(t4_);
 
+  it = fork->Find(t0_);
+  EXPECT_EQ(it, trajectory_.End());
   it = fork->Find(t1_);
   EXPECT_NE(it, fork->End());
   EXPECT_EQ(t1_, *it.current());
@@ -458,6 +462,39 @@ TEST_F(ForkableTest, IteratorFindSuccess) {
   it = fork->Find(t4_);
   EXPECT_EQ(t4_, *it.current());
   it = fork->Find(t4_ + 1 * Second);
+  EXPECT_EQ(it, fork->End());
+}
+
+TEST_F(ForkableTest, IteratorLowerBoundSuccess) {
+  auto it = trajectory_.LowerBound(t0_);
+  EXPECT_EQ(it, trajectory_.End());
+
+  trajectory_.push_back(t1_);
+  trajectory_.push_back(t2_);
+  trajectory_.push_back(t3_);
+
+  it = trajectory_.LowerBound(t0_);
+  EXPECT_EQ(t1_, *it.current());
+  it = trajectory_.LowerBound(t1_);
+  EXPECT_EQ(t1_, *it.current());
+  it = trajectory_.LowerBound(t2_);
+  EXPECT_EQ(t2_, *it.current());
+  it = trajectory_.LowerBound(t4_);
+  EXPECT_EQ(it, trajectory_.End());
+
+  not_null<FakeTrajectory*> const fork = trajectory_.NewFork(t2_);
+  fork->push_back(t4_);
+
+  it = fork->LowerBound(t0_);
+  EXPECT_EQ(t1_, *it.current());
+  it = fork->LowerBound(t1_);
+  EXPECT_NE(it, fork->End());
+  EXPECT_EQ(t1_, *it.current());
+  it = fork->LowerBound(t2_);
+  EXPECT_EQ(t2_, *it.current());
+  it = fork->LowerBound(t4_);
+  EXPECT_EQ(t4_, *it.current());
+  it = fork->LowerBound(t4_ + 1 * Second);
   EXPECT_EQ(it, fork->End());
 }
 
