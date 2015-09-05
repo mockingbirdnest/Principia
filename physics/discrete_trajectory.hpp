@@ -30,7 +30,7 @@ class DiscreteTrajectory;
 
 template<typename Frame>
 struct ForkableTraits<DiscreteTrajectory<Frame>> {
-  using TimelineConstIterator = 
+  using TimelineConstIterator =
       typename std::map<Instant, DegreesOfFreedom<Frame>>::const_iterator;
   static Instant const& time(TimelineConstIterator const it);
 };
@@ -38,6 +38,7 @@ struct ForkableTraits<DiscreteTrajectory<Frame>> {
 template<typename Frame>
 class DiscreteTrajectory : public Forkable<DiscreteTrajectory<Frame>> {
   using Timeline = std::map<Instant, DegreesOfFreedom<Frame>>;
+
  public:
   class NativeIterator;
   template<typename ToFrame>

@@ -270,7 +270,8 @@ Forkable<Tr4jectory>::LowerBound(Instant const& time) const {
     iterator.ancestry_.push_front(ancestor);
     if (!ancestor->timeline_empty() &&
         ForkableTraits<Tr4jectory>::time(ancestor->timeline_begin()) <= time) {
-      iterator.current_ = ancestor->timeline_lower_bound(time);  // May be at end.
+      iterator.current_ =
+          ancestor->timeline_lower_bound(time);  // May be at end.
       break;
     }
     iterator.current_ = ancestor->timeline_begin();
