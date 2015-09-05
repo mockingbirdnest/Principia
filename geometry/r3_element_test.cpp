@@ -11,6 +11,8 @@
 #include "quantities/named_quantities.hpp"
 #include "quantities/uk.hpp"
 #include "testing_utilities/algebra.hpp"
+#include "testing_utilities/componentwise.hpp"
+#include "testing_utilities/vanishes_before.hpp"
 
 namespace principia {
 
@@ -29,10 +31,13 @@ using si::Kilo;
 using si::Metre;
 using si::Minute;
 using si::Second;
+using testing_utilities::Componentwise;
 using testing_utilities::AlmostEquals;
+using testing_utilities::VanishesBefore;
 using uk::Furlong;
 using uk::Mile;
 using uk::Rod;
+using ::testing::Eq;
 
 namespace geometry {
 
@@ -201,6 +206,20 @@ TEST_F(R3ElementTest, SphericalCoordinates) {
   EXPECT_EQ(-60 * Degree, v.ToSpherical().latitude);
   EXPECT_EQ(-45 * Degree, v.ToSpherical().longitude);
   EXPECT_THAT(v.ToSpherical().radius, AlmostEquals(Sqrt(8) * Metre, 1));
+
+  EXPECT_EQ(x, RadiusLatitudeLongitude(1 * Metre, 0 * Degree, 0 * Degree)
+                   .ToCartesian());
+  EXPECT_THAT(
+      RadiusLatitudeLongitude(1 * Metre, 0 * Degree, 90 * Degree).ToCartesian(),
+      Componentwise(VanishesBefore(1 * Metre, 0),
+                    Eq(1 * Metre),
+                    Eq(0 * Metre)));
+  EXPECT_THAT(RadiusLatitudeLongitude(1 * Metre,
+                                      90 * Degree,
+                                      42 * Degree).ToCartesian(),
+              Componentwise(VanishesBefore(1 * Metre, 0),
+                            VanishesBefore(1 * Metre, 0),
+                            Eq(1 * Metre)));
 }
 
 }  // namespace geometry

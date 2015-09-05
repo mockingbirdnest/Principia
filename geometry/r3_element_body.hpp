@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 #include <string>
 
@@ -143,7 +143,7 @@ SphericalCoordinates<Scalar>::SphericalCoordinates() {};
 
 template<typename Scalar>
 R3Element<Scalar> SphericalCoordinates<Scalar>::ToCartesian() {
-  double cos_? = Cos(latitude);
+  double cos_latitude = Cos(latitude);
   return {radius * Cos(longitude) * cos_latitude,
           radius * Sin(longitude) * cos_latitude,
           radius * Sin(latitude)};
