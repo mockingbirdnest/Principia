@@ -81,8 +81,8 @@ class SolarSystemTest : public testing::Test {
       MassiveBody const& secondary_body,
       DiscreteTrajectory<ICRFJ2000Ecliptic> const& secondary,
       std::experimental::optional<MassiveBody const&> const& primary_body,
-      std::experimental::optional<DiscreteTrajectory<ICRFJ2000Ecliptic> const&> const
-          primary,
+      std::experimental::optional<
+          DiscreteTrajectory<ICRFJ2000Ecliptic> const&> const primary,
       std::string message) {
     GravitationalParameter const μ =
         tertiary_body.gravitational_parameter() +

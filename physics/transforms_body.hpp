@@ -347,7 +347,8 @@ Transforms<FromFrame, ThroughFrame, ToFrame>::DummyForTesting() {
 }
 
 template<typename FromFrame, typename ThroughFrame, typename ToFrame>
-typename DiscreteTrajectory<FromFrame>::template TransformingIterator<ThroughFrame>
+typename DiscreteTrajectory<FromFrame>::
+template TransformingIterator<ThroughFrame>
 Transforms<FromFrame, ThroughFrame, ToFrame>::first(
     DiscreteTrajectory<FromFrame> const& from_trajectory) {
   typename DiscreteTrajectory<FromFrame>::template Transform<ThroughFrame> const
@@ -356,7 +357,8 @@ Transforms<FromFrame, ThroughFrame, ToFrame>::first(
 }
 
 template<typename FromFrame, typename ThroughFrame, typename ToFrame>
-typename DiscreteTrajectory<FromFrame>::template TransformingIterator<ThroughFrame>
+typename DiscreteTrajectory<FromFrame>::
+template TransformingIterator<ThroughFrame>
 Transforms<FromFrame, ThroughFrame, ToFrame>::first_with_caching(
     not_null<DiscreteTrajectory<FromFrame>*> const from_trajectory) {
   // Make sure that the cache entry is deleted when the trajectory is deleted.
@@ -371,7 +373,8 @@ Transforms<FromFrame, ThroughFrame, ToFrame>::first_with_caching(
 }
 
 template<typename FromFrame, typename ThroughFrame, typename ToFrame>
-typename DiscreteTrajectory<FromFrame>::template TransformingIterator<ThroughFrame>
+typename DiscreteTrajectory<FromFrame>::
+template TransformingIterator<ThroughFrame>
 Transforms<FromFrame, ThroughFrame, ToFrame>::first_on_or_after(
     DiscreteTrajectory<FromFrame> const& from_trajectory,
     Instant const& time) {
@@ -381,7 +384,8 @@ Transforms<FromFrame, ThroughFrame, ToFrame>::first_on_or_after(
 }
 
 template<typename FromFrame, typename ThroughFrame, typename ToFrame>
-typename DiscreteTrajectory<ThroughFrame>::template TransformingIterator<ToFrame>
+typename DiscreteTrajectory<ThroughFrame>::
+template TransformingIterator<ToFrame>
 Transforms<FromFrame, ThroughFrame, ToFrame>::second(
     Instant const& last,
     DiscreteTrajectory<ThroughFrame> const& through_trajectory) {

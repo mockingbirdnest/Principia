@@ -140,7 +140,8 @@ inline std::unique_ptr<Vessel> Vessel::ReadFromMessage(
             vessel->history_.get());
   } else if (message.has_owned_prolongation()) {
     vessel->owned_prolongation_ =
-        DiscreteTrajectory<Barycentric>::ReadFromMessage(message.owned_prolongation());
+        DiscreteTrajectory<Barycentric>::ReadFromMessage(
+            message.owned_prolongation());
     vessel->prolongation_ = vessel->owned_prolongation_.get();
   } else {
     LOG(FATAL) << "message does not represent an initialized Vessel";
