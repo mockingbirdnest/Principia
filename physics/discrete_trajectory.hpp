@@ -25,8 +25,6 @@ using quantities::Speed;
 
 namespace physics {
 
-class Body;
-
 template<typename Frame>
 class DiscreteTrajectory;
 
@@ -64,6 +62,9 @@ class DiscreteTrajectory : public Forkable<DiscreteTrajectory<Frame>> {
   void set_on_destroy(
       std::function<void(not_null<DiscreteTrajectory<Frame>const*> const)>
           on_destroy);
+
+  // TODO(phl): Many/most of the iterator functions are obsolete.  Remove them
+  // and use the ones from Forkable.
 
   // Returns an iterator at the first point of the trajectory.  Complexity is
   // O(|depth|).  The result may be at end if the trajectory is empty.
@@ -149,8 +150,6 @@ class DiscreteTrajectory : public Forkable<DiscreteTrajectory<Frame>> {
   static std::unique_ptr<DiscreteTrajectory> ReadFromMessage(
       serialization::Trajectory const& message);
 
-  // A base class for iterating over the timeline of a trajectory, taking forks
-  // into account.  Objects of this class cannot be created.
   // An iterator which returns the coordinates in the native frame of the
   // trajectory, i.e., |Frame|.
   class NativeIterator : public Iterator {
@@ -164,7 +163,7 @@ class DiscreteTrajectory : public Forkable<DiscreteTrajectory<Frame>> {
     friend class DiscreteTrajectory;
   };
 
-  // An iterator which returns the coordinates in another frame.
+  // An iterator which returns the coordinates in another frame, |ToFrame|.
   template<typename ToFrame>
   class TransformingIterator : public Iterator {
    public:
@@ -179,12 +178,15 @@ class DiscreteTrajectory : public Forkable<DiscreteTrajectory<Frame>> {
   };
 
  protected:
+  // The API inherited from Forkable.
   not_null<DiscreteTrajectory*> that() override;
   not_null<DiscreteTrajectory const*> that() const override;
 
   TimelineConstIterator timeline_begin() const override;
   TimelineConstIterator timeline_end() const override;
   TimelineConstIterator timeline_find(Instant const& time) const override;
+  TimelineConstIterator timeline_lower_bound(
+                            Instant const& time) const override;
   TimelineConstIterator timeline_upper_bound(
                             Instant const& time) const override;
   void timeline_erase(TimelineConstIterator begin,

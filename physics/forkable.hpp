@@ -117,6 +117,7 @@ class Forkable {
   Iterator End() const;
 
   Iterator Find(Instant const& time) const;
+  Iterator LowerBound(Instant const& time) const;
 
   // Constructs an Iterator by wrapping the timeline iterator
   // |position_in_ancestor_timeline| which must be an iterator in the timeline
@@ -141,9 +142,8 @@ class Forkable {
 
  protected:
   // The API that must be implemented by subclasses.
-  // TODO(phl): Try to reduce this API.  A lot of these functions are needed
-  // because Forkable knows too much about the timeline.  Candidates for
-  // removal: insert, erase, upper_bound.
+  // TODO(phl): Try to reduce this API.  Forkable should probably not modify the
+  // timeline.
 
   // Must return |this| of the proper type
   virtual not_null<Tr4jectory*> that() = 0;
@@ -153,6 +153,8 @@ class Forkable {
   virtual TimelineConstIterator timeline_begin() const = 0;
   virtual TimelineConstIterator timeline_end() const = 0;
   virtual TimelineConstIterator timeline_find(Instant const& time) const = 0;
+  virtual TimelineConstIterator timeline_lower_bound(
+                                    Instant const& time) const = 0;
   virtual TimelineConstIterator timeline_upper_bound(
                                     Instant const& time) const = 0;
   virtual void timeline_insert(TimelineConstIterator begin,

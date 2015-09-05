@@ -46,7 +46,7 @@ template<typename Frame>
 typename DiscreteTrajectory<Frame>::NativeIterator
 DiscreteTrajectory<Frame>::on_or_after(
     Instant const& time) const {
-  return NativeIterator(Find(time));//TODO(phl):Not quite the same.
+  return NativeIterator(LowerBound(time));
 }
 
 template<typename Frame>
@@ -70,7 +70,7 @@ typename DiscreteTrajectory<Frame>::TEMPLATE TransformingIterator<ToFrame>
 DiscreteTrajectory<Frame>::on_or_after_with_transform(
     Instant const& time,
     Transform<ToFrame> const& transform) const {
-  return TransformingIterator<ToFrame>(Find(time), transform);//TODO(phl):Not quite the same.
+  return TransformingIterator<ToFrame>(LowerBound(time), transform);
 }
 
 template<typename Frame>
@@ -96,10 +96,11 @@ DiscreteTrajectory<Frame>::Positions() const {
 }
 
 template<typename Frame>
-std::map<Instant, Velocity<Frame>> DiscreteTrajectory<Frame>::Velocities() const {
+std::map<Instant, Velocity<Frame>>
+DiscreteTrajectory<Frame>::Velocities() const {
   std::map<Instant, Velocity<Frame>> result;
   for (auto it = Begin(); it != End(); ++it) {
-    auto timeline_it = it.current();
+    auto const timeline_it = it.current();
     Instant const& time = timeline_it->first;
     DegreesOfFreedom<Frame> const& degrees_of_freedom = timeline_it->second;
     result.emplace_hint(result.end(), time, degrees_of_freedom.velocity());
@@ -111,7 +112,7 @@ template<typename Frame>
 std::list<Instant> DiscreteTrajectory<Frame>::Times() const {
   std::list<Instant> result;
   for (auto it = Begin(); it != End(); ++it) {
-    auto timeline_it = it.current();
+    auto const timeline_it = it.current();
     Instant const& time = timeline_it->first;
     result.push_back(time);
   }
@@ -158,7 +159,7 @@ Vector<Acceleration, Frame>
 DiscreteTrajectory<Frame>::evaluate_intrinsic_acceleration(
     Instant const& time) const {
   if (intrinsic_acceleration_ != nullptr &&
-      (is_root() || time >= *ForkTime())) {
+      (is_root() || time > *ForkTime())) {
     return (*intrinsic_acceleration_)(time);
   } else {
     return Vector<Acceleration, Frame>({0 * SIUnit<Acceleration>(),
@@ -262,6 +263,12 @@ template<typename Frame>
 typename DiscreteTrajectory<Frame>::TimelineConstIterator
 DiscreteTrajectory<Frame>::timeline_find(Instant const& time) const {
   return timeline_.find(time);
+}
+
+template<typename Frame>
+typename DiscreteTrajectory<Frame>::TimelineConstIterator
+DiscreteTrajectory<Frame>::timeline_lower_bound(Instant const& time) const {
+  return timeline_.lower_bound(time);
 }
 
 template<typename Frame>

@@ -255,6 +255,30 @@ Forkable<Tr4jectory>::Find(Instant const& time) const {
   return iterator;
 }
 
+template<typename Tr4jectory>
+typename Forkable<Tr4jectory>::Iterator
+Forkable<Tr4jectory>::LowerBound(Instant const& time) const {
+  Iterator iterator;
+
+  // Go up the ancestry chain until we find a timeline that covers |time| (that
+  // is, |time| is after the first time of the timeline).  Set |current_| to
+  // the location of |time|, which may be |end()|.  The ancestry has |forkable|
+  // at the back, and the object containing |current_| at the front.
+  Tr4jectory const* ancestor = that();
+  do {
+    iterator.ancestry_.push_front(ancestor);
+    if (!ancestor->timeline_empty() &&
+        ForkableTraits<Tr4jectory>::time(ancestor->timeline_begin()) <= time) {
+      iterator.current_ = ancestor->timeline_lower_bound(time);  // May be at end.
+      break;
+    }
+    iterator.current_ = ancestor->timeline_begin();
+    ancestor = ancestor->parent_;
+  } while (ancestor != nullptr);
+
+  iterator.NormalizeIfEnd();
+  return iterator;
+}
 
 template<typename Tr4jectory>
 typename Forkable<Tr4jectory>::Iterator
