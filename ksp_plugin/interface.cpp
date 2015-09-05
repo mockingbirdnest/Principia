@@ -32,6 +32,7 @@ using base::PushDeserializer;
 using base::UniqueBytes;
 using geometry::Displacement;
 using geometry::Quaternion;
+using geometry::RadiusLatitudeLongitude;
 using physics::MassiveBody;
 using physics::OblateBody;
 using quantities::Pow;
@@ -173,26 +174,6 @@ double ParseDimensionless(std::string const& s) {
   double magnitude = ParseQuantity(s, &unit);
   CHECK(unit.empty()) << unit;
   return magnitude;
-}
-
-// Returns a unit vector pointing in the direction defined by |right_ascension|
-// and |declination|, assuming the reference system is as follows:
-// xy-plane: plane of the Earth's mean equator at the reference epoch
-// x-axis  : out along ascending node of instantaneous plane of the Earth's
-//           orbit and the Earth's mean equator at the reference epoch
-// z-axis  : along the Earth mean north pole at the reference epoch
-Vector<double, Barycentric> Direction(Angle const& right_ascension,
-                                      Angle const& declination) {
-  // Positive angles map {1, 0, 0} to the positive z hemisphere, which is north.
-  // An angle of 0 keeps {1, 0, 0} on the equator.
-  auto const decline = Rotation<Barycentric, Barycentric>(
-                           declination,
-                           Bivector<double, Barycentric>({0, -1, 0}));
-  // Rotate counterclockwise around {0, 0, 1} (north), i.e., eastward.
-  auto const ascend = Rotation<Barycentric, Barycentric>(
-                          right_ascension,
-                          Bivector<double, Barycentric>({0, 0, 1}));
-  return ascend(decline(Vector<double, Barycentric>({1, 0, 0})));
 }
 
 }  // namespace
@@ -375,8 +356,11 @@ void principia__DirectlyInsertOblateCelestial(
           ParseGravitationalParameter(gravitational_parameter),
           ParseDimensionless(j2),
           ParseLength(reference_radius),
-          Direction(ParseAngle(axis_right_ascension),
-                    ParseAngle(axis_declination))));
+          Vector<double, Barycentric>(
+              RadiusLatitudeLongitude(
+                  1.0,
+                  ParseAngle(axis_declination),
+                  ParseAngle(axis_right_ascension)).ToCartesian())));
 }
 
 // NOTE(egg): The |* (Metre / Second)| might be slower than |* SIUnit<Speed>()|,
