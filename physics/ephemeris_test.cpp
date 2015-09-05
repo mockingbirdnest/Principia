@@ -324,7 +324,7 @@ TEST_F(EphemerisTest, EarthProbe) {
           5 * Milli(Metre));
 
   MasslessBody probe;
-  Trajectory<EarthMoonOrbitPlane> trajectory(&probe);
+  Trajectory<EarthMoonOrbitPlane> trajectory;
   trajectory.Append(t0_,
                     DegreesOfFreedom<EarthMoonOrbitPlane>(
                         earth_position + Vector<Length, EarthMoonOrbitPlane>(
@@ -420,7 +420,7 @@ TEST_F(EphemerisTest, EarthTwoProbes) {
           5 * Milli(Metre));
 
   MasslessBody probe1;
-  Trajectory<EarthMoonOrbitPlane> trajectory1(&probe1);
+  Trajectory<EarthMoonOrbitPlane> trajectory1;
   trajectory1.Append(t0_,
                      DegreesOfFreedom<EarthMoonOrbitPlane>(
                          earth_position + Vector<Length, EarthMoonOrbitPlane>(
@@ -434,7 +434,7 @@ TEST_F(EphemerisTest, EarthTwoProbes) {
          0 * SIUnit<Acceleration>()});});
 
   MasslessBody probe2;
-  Trajectory<EarthMoonOrbitPlane> trajectory2(&probe2);
+  Trajectory<EarthMoonOrbitPlane> trajectory2;
   trajectory2.Append(t0_,
                      DegreesOfFreedom<EarthMoonOrbitPlane>(
                          earth_position + Vector<Length, EarthMoonOrbitPlane>(

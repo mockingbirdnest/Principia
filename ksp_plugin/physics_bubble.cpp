@@ -301,7 +301,7 @@ std::unique_ptr<PhysicsBubble> PhysicsBubble::ReadFromMessage(
         DegreesOfFreedom<World>::ReadFromMessage(full_state.centre_of_mass()));
     current->centre_of_mass_trajectory =
         Trajectory<Barycentric>::ReadFromMessage(
-            full_state.centre_of_mass_trajectory(), &bubble->body_);
+            full_state.centre_of_mass_trajectory());
     current->from_centre_of_mass =
         std::make_unique<std::map<not_null<Vessel const*> const,
                          RelativeDegreesOfFreedom<Barycentric>>>();
@@ -391,7 +391,7 @@ void PhysicsBubble::RestartNext(Instant const& current_time,
     }
   }
   next->centre_of_mass_trajectory =
-      std::make_unique<Trajectory<Barycentric>>(&body_);
+      std::make_unique<Trajectory<Barycentric>>();
   next->centre_of_mass_trajectory->Append(current_time,
                                           bubble_calculator.Get());
 }
@@ -477,7 +477,7 @@ void PhysicsBubble::Shift(BarycentricToWorldSun const& barycentric_to_world_sun,
   DegreesOfFreedom<Barycentric> const& current_centre_of_mass =
       current_->centre_of_mass_trajectory->last().degrees_of_freedom();
   next->centre_of_mass_trajectory =
-      std::make_unique<Trajectory<Barycentric>>(&body_);
+      std::make_unique<Trajectory<Barycentric>>();
   // Using the identity as the map |World| -> |WorldSun| is valid for
   // velocities too since we assume |World| is currently nonrotating, i.e.,
   // it is stationary with respect to |WorldSun|.

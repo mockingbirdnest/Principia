@@ -165,7 +165,7 @@ void EphemerisL4ProbeBenchmark(SolarSystem::Accuracy const accuracy,
     state->PauseTiming();
     // A probe near the L4 point of the Sun-Earth system.
     MasslessBody probe;
-    Trajectory<ICRFJ2000Ecliptic> trajectory(&probe);
+    Trajectory<ICRFJ2000Ecliptic> trajectory;
     DegreesOfFreedom<ICRFJ2000Ecliptic> const sun_degrees_of_freedom =
         initial_state[SolarSystem::kSun];
     DegreesOfFreedom<ICRFJ2000Ecliptic> const earth_degrees_of_freedom =
@@ -247,7 +247,7 @@ void EphemerisLEOProbeBenchmark(SolarSystem::Accuracy const accuracy,
     state->PauseTiming();
     // A probe in low earth orbit.
     MasslessBody probe;
-    Trajectory<ICRFJ2000Ecliptic> trajectory(&probe);
+    Trajectory<ICRFJ2000Ecliptic> trajectory;
     DegreesOfFreedom<ICRFJ2000Ecliptic> const earth_degrees_of_freedom =
         initial_state[SolarSystem::kEarth];
     Displacement<ICRFJ2000Ecliptic> const earth_probe_displacement(
