@@ -6,6 +6,7 @@
 
 #include "base/not_null.hpp"
 #include "geometry/named_quantities.hpp"
+#include "serialization/physics.pb.h"
 
 namespace principia {
 
@@ -37,6 +38,7 @@ class Forkable {
       typename ForkableTraits<Tr4jectory>::TimelineConstIterator;
 
   Forkable() = default;
+  virtual ~Forkable() = default;
 
   // Creates a new child trajectory forked at time |time|, and returns it.  The
   // child trajectory shares its data with the current trajectory for times less
@@ -48,9 +50,20 @@ class Forkable {
   // of this trajectory, and must be at or after the fork time, if any.
   not_null<Tr4jectory*> NewFork(Instant const& time);
 
-  // Deletes the child trajectory denoted by |*fork|, which must be a pointer
-  // previously returned by NewFork for this object.  Nulls |*fork|.
+  // Deletes the child trajectory denoted by |*trajectory|, which must be a
+  // pointer previously returned by NewFork for this object.  Nulls
+  // |*trajectory|.
   void DeleteFork(not_null<Tr4jectory**> const trajectory);
+
+  // Removes all data for times (strictly) greater than |time|, as well as all
+  // child trajectories forked at times (strictly) greater than |time|.  |time|
+  // must be at or after the fork time, if any.
+  void ForgetAfter(Instant const& time);
+
+  // Removes all data for times less than or equal to |time|, as well as all
+  // child trajectories forked at times less than or equal to |time|.  This
+  // trajectory must be a root.
+  void ForgetBefore(Instant const& time);
 
   // Returns true if this is a root trajectory.
   bool is_root() const;
@@ -75,6 +88,9 @@ class Forkable {
 
     // Returns the point in the timeline that is denoted by this iterator.
     TimelineConstIterator current() const;
+
+    // Returns the (most forked) trajectory to which this iterator applies.
+    not_null<Tr4jectory const*> trajectory() const;
 
    private:
     Iterator() = default;
@@ -103,6 +119,7 @@ class Forkable {
   Iterator End() const;
 
   Iterator Find(Instant const& time) const;
+  Iterator LowerBound(Instant const& time) const;
 
   // Constructs an Iterator by wrapping the timeline iterator
   // |position_in_ancestor_timeline| which must be an iterator in the timeline
@@ -113,8 +130,22 @@ class Forkable {
       not_null<const Tr4jectory*> const ancestor,
       TimelineConstIterator const position_in_ancestor_timeline) const;
 
+  void WritePointerToMessage(
+      not_null<serialization::Trajectory::Pointer*> const message) const;
+
+  // |trajectory| must be a root.
+  static not_null<Tr4jectory*> ReadPointerFromMessage(
+      serialization::Trajectory::Pointer const& message,
+      not_null<Tr4jectory*> const trajectory);
+
+  // This trajectory need not be a root.
+  void WriteSubTreeToMessage(
+      not_null<serialization::Trajectory*> const message) const;
+
  protected:
   // The API that must be implemented by subclasses.
+  // TODO(phl): Try to reduce this API.  Forkable should probably not modify the
+  // timeline.
 
   // Must return |this| of the proper type
   virtual not_null<Tr4jectory*> that() = 0;
@@ -124,8 +155,14 @@ class Forkable {
   virtual TimelineConstIterator timeline_begin() const = 0;
   virtual TimelineConstIterator timeline_end() const = 0;
   virtual TimelineConstIterator timeline_find(Instant const& time) const = 0;
+  virtual TimelineConstIterator timeline_lower_bound(
+                                    Instant const& time) const = 0;
+  virtual TimelineConstIterator timeline_upper_bound(
+                                    Instant const& time) const = 0;
   virtual void timeline_insert(TimelineConstIterator begin,
                                TimelineConstIterator end) = 0;
+  virtual void timeline_erase(TimelineConstIterator begin,
+                              TimelineConstIterator end) = 0;
   virtual bool timeline_empty() const = 0;
 
  private:

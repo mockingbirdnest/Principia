@@ -83,6 +83,12 @@
     <ClInclude Include="forkable_body.hpp">
       <Filter>Source Files</Filter>
     </ClInclude>
+    <ClInclude Include="discrete_trajectory.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="discrete_trajectory_body.hpp">
+      <Filter>Source Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="trajectory_test.cpp">
@@ -104,6 +110,9 @@
       <Filter>Test Files</Filter>
     </ClCompile>
     <ClCompile Include="forkable_test.cpp">
+      <Filter>Test Files</Filter>
+    </ClCompile>
+    <ClCompile Include="discrete_trajectory_test.cpp">
       <Filter>Test Files</Filter>
     </ClCompile>
   </ItemGroup>
