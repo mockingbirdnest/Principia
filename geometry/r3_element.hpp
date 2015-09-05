@@ -64,9 +64,9 @@ struct SphericalCoordinates {
   // the equator, and the z-axis as the north pole.
   R3Element<Scalar> ToCartesian();
 
-  Angle longitude;
-  Angle latitude;
   Scalar radius;
+  Angle latitude;
+  Angle longitude;
 };
 
 template<typename Scalar>

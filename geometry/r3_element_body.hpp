@@ -1,5 +1,7 @@
 ﻿#pragma once
 
+#include "geometry/r3_element.hpp"
+
 #include <string>
 
 #include "base/macros.hpp"
@@ -7,16 +9,15 @@
 #include "quantities/elementary_functions.hpp"
 #include "quantities/quantities.hpp"
 #include "quantities/serialization.hpp"
-#include "r3_element.hpp"
 
 namespace principia {
 
 using quantities::ArcSin;
 using quantities::ArcTan;
 using quantities::Cos;
-using quantities::Sin;
 using quantities::DoubleOrQuantitySerializer;
 using quantities::Quantity;
+using quantities::Sin;
 using quantities::SIUnit;
 
 namespace geometry {
@@ -143,7 +144,7 @@ SphericalCoordinates<Scalar>::SphericalCoordinates() {}
 
 template<typename Scalar>
 R3Element<Scalar> SphericalCoordinates<Scalar>::ToCartesian() {
-  double cos_latitude = Cos(latitude);
+  double const cos_latitude = Cos(latitude);
   return {radius * Cos(longitude) * cos_latitude,
           radius * Sin(longitude) * cos_latitude,
           radius * Sin(latitude)};
