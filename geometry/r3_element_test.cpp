@@ -20,8 +20,10 @@ using bipm::Knot;
 using constants::SpeedOfLight;
 using quantities::Length;
 using quantities::Speed;
+using quantities::Sqrt;
 using quantities::Time;
 using si::Day;
+using si::Degree;
 using si::Hour;
 using si::Kilo;
 using si::Metre;
@@ -175,6 +177,30 @@ TEST_F(R3ElementTest, SerializationSuccess) {
   EXPECT_EQ(5.0, message.z().double_());
   R3Element<double> const d2 = R3Element<double>::ReadFromMessage(message);
   EXPECT_EQ(d1, d2);
+}
+
+TEST_F(R3ElementTest, SphericalCoordinates) {
+  R3Element<Length> x{1 * Metre, 0 * Metre, 0 * Metre};
+  R3Element<Length> y{0 * Metre, 1 * Metre, 0 * Metre};
+  R3Element<Length> z{0 * Metre, 0 * Metre, 1 * Metre};
+  R3Element<Length> v{1 * Metre, -1 * Metre, -Sqrt(6) * Metre};
+
+  EXPECT_EQ(0 * Degree, x.ToSpherical().latitude);
+  EXPECT_EQ(0 * Degree, x.ToSpherical().longitude);
+  EXPECT_EQ(1 * Metre, x.ToSpherical().radius);
+
+  EXPECT_EQ(0 * Degree, y.ToSpherical().latitude);
+  EXPECT_EQ(90 * Degree, y.ToSpherical().longitude);
+  EXPECT_EQ(1 * Metre, y.ToSpherical().radius);
+
+  EXPECT_EQ(90 * Degree, z.ToSpherical().latitude);
+  // The x and y coordinates are both +0, so the angle is +0, see Kahan (1986).
+  EXPECT_EQ(0 * Degree, z.ToSpherical().longitude);
+  EXPECT_EQ(1 * Metre, z.ToSpherical().radius);
+
+  EXPECT_EQ(-60 * Degree, v.ToSpherical().latitude);
+  EXPECT_EQ(-45 * Degree, v.ToSpherical().longitude);
+  EXPECT_THAT(v.ToSpherical().radius, AlmostEquals(Sqrt(8) * Metre, 1));
 }
 
 }  // namespace geometry
