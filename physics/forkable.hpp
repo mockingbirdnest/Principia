@@ -49,8 +49,9 @@ class Forkable {
   // of this trajectory, and must be at or after the fork time, if any.
   not_null<Tr4jectory*> NewFork(Instant const& time);
 
-  // Deletes the child trajectory denoted by |*fork|, which must be a pointer
-  // previously returned by NewFork for this object.  Nulls |*fork|.
+  // Deletes the child trajectory denoted by |*trajectory|, which must be a
+  // pointer previously returned by NewFork for this object.  Nulls
+  // |*trajectory|.
   void DeleteFork(not_null<Tr4jectory**> const trajectory);
 
   // Removes all data for times (strictly) greater than |time|, as well as all
