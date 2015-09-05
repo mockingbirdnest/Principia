@@ -11,9 +11,9 @@
 #include "geometry/grassmann.hpp"
 #include "geometry/named_quantities.hpp"
 #include "geometry/point.hpp"
+#include "physics/discrete_trajectory.hpp"
 #include "physics/massive_body.hpp"
 #include "physics/oblate_body.hpp"
-#include "physics/trajectory.hpp"
 #include "quantities/named_quantities.hpp"
 #include "quantities/quantities.hpp"
 #include "quantities/si.hpp"
@@ -29,9 +29,9 @@ using geometry::JulianDate;
 using geometry::Point;
 using geometry::Rotation;
 using geometry::Vector;
+using physics::DiscreteTrajectory;
 using physics::MassiveBody;
 using physics::OblateBody;
-using physics::Trajectory;
 using quantities::Angle;
 using quantities::GravitationalParameter;
 using quantities::Pow;
@@ -99,7 +99,8 @@ inline not_null<std::unique_ptr<SolarSystem>> SolarSystem::AtСпутник1Laun
   // All data is from the Jet Propulsion Laboratory's HORIZONS system.
 
   // Star.
-  auto sun_trajectory = make_not_null_unique<Trajectory<ICRFJ2000Ecliptic>>();
+  auto sun_trajectory =
+      make_not_null_unique<DiscreteTrajectory<ICRFJ2000Ecliptic>>();
   sun_trajectory->Append(
       kСпутник1LaunchTime,
       {kSolarSystemBarycentre + Displacement<ICRFJ2000Ecliptic>(
@@ -115,7 +116,7 @@ inline not_null<std::unique_ptr<SolarSystem>> SolarSystem::AtСпутник1Laun
 
   // Gas giants.
   auto jupiter_trajectory =
-      make_not_null_unique<Trajectory<ICRFJ2000Ecliptic>>();
+      make_not_null_unique<DiscreteTrajectory<ICRFJ2000Ecliptic>>();
   jupiter_trajectory->Append(
       kСпутник1LaunchTime,
       {kSolarSystemBarycentre + Displacement<ICRFJ2000Ecliptic>(
@@ -127,7 +128,7 @@ inline not_null<std::unique_ptr<SolarSystem>> SolarSystem::AtСпутник1Laun
             -1.213073724288562E+01 * Kilo(Metre) / Second,
             -1.088748435062713E-02 * Kilo(Metre) / Second})});
   auto saturn_trajectory =
-      make_not_null_unique<Trajectory<ICRFJ2000Ecliptic>>();
+      make_not_null_unique<DiscreteTrajectory<ICRFJ2000Ecliptic>>();
   saturn_trajectory->Append(
       kСпутник1LaunchTime,
       {kSolarSystemBarycentre + Displacement<ICRFJ2000Ecliptic>(
@@ -139,7 +140,7 @@ inline not_null<std::unique_ptr<SolarSystem>> SolarSystem::AtСпутник1Laun
             -2.466058486223613E+00 * Kilo(Metre) / Second,
             -3.068419809533604E-01 * Kilo(Metre) / Second})});
   auto neptune_trajectory =
-      make_not_null_unique<Trajectory<ICRFJ2000Ecliptic>>();
+      make_not_null_unique<DiscreteTrajectory<ICRFJ2000Ecliptic>>();
   neptune_trajectory->Append(
       kСпутник1LaunchTime,
       {kSolarSystemBarycentre + Displacement<ICRFJ2000Ecliptic>(
@@ -151,7 +152,7 @@ inline not_null<std::unique_ptr<SolarSystem>> SolarSystem::AtСпутник1Laun
             -4.535247383721019E+00 * Kilo(Metre) / Second,
              2.589759251085161E-02 * Kilo(Metre) / Second})});
   auto uranus_trajectory =
-      make_not_null_unique<Trajectory<ICRFJ2000Ecliptic>>();
+      make_not_null_unique<DiscreteTrajectory<ICRFJ2000Ecliptic>>();
   uranus_trajectory->Append(
       kСпутник1LaunchTime,
       {kSolarSystemBarycentre + Displacement<ICRFJ2000Ecliptic>(
@@ -164,7 +165,8 @@ inline not_null<std::unique_ptr<SolarSystem>> SolarSystem::AtСпутник1Laun
              5.261322980347850E-02 * Kilo(Metre) / Second})});
 
   // Telluric planets.
-  auto earth_trajectory = make_not_null_unique<Trajectory<ICRFJ2000Ecliptic>>();
+  auto earth_trajectory =
+      make_not_null_unique<DiscreteTrajectory<ICRFJ2000Ecliptic>>();
   earth_trajectory->Append(
       kСпутник1LaunchTime,
       {kSolarSystemBarycentre + Displacement<ICRFJ2000Ecliptic>(
@@ -175,7 +177,8 @@ inline not_null<std::unique_ptr<SolarSystem>> SolarSystem::AtСпутник1Laun
            {-6.635753510543799E+00 * Kilo(Metre) / Second,
              2.904321639216012E+01 * Kilo(Metre) / Second,
              3.125252418990812E-03 * Kilo(Metre) / Second})});
-  auto venus_trajectory = make_not_null_unique<Trajectory<ICRFJ2000Ecliptic>>();
+  auto venus_trajectory =
+      make_not_null_unique<DiscreteTrajectory<ICRFJ2000Ecliptic>>();
   venus_trajectory->Append(
       kСпутник1LaunchTime,
       {kSolarSystemBarycentre + Displacement<ICRFJ2000Ecliptic>(
@@ -186,7 +189,8 @@ inline not_null<std::unique_ptr<SolarSystem>> SolarSystem::AtСпутник1Laun
            { 2.903958257174759E+01 * Kilo(Metre) / Second,
              1.910383147602264E+01 * Kilo(Metre) / Second,
             -1.418780340302349E+00 * Kilo(Metre) / Second})});
-  auto mars_trajectory = make_not_null_unique<Trajectory<ICRFJ2000Ecliptic>>();
+  auto mars_trajectory =
+      make_not_null_unique<DiscreteTrajectory<ICRFJ2000Ecliptic>>();
   mars_trajectory->Append(
       kСпутник1LaunchTime,
       {kSolarSystemBarycentre + Displacement<ICRFJ2000Ecliptic>(
@@ -198,7 +202,7 @@ inline not_null<std::unique_ptr<SolarSystem>> SolarSystem::AtСпутник1Laun
             -2.206625841382794E+01 * Kilo(Metre) / Second,
             -5.348179460834037E-01 * Kilo(Metre) / Second})});
   auto mercury_trajectory =
-      make_not_null_unique<Trajectory<ICRFJ2000Ecliptic>>();
+      make_not_null_unique<DiscreteTrajectory<ICRFJ2000Ecliptic>>();
   mercury_trajectory->Append(
       kСпутник1LaunchTime,
       {kSolarSystemBarycentre + Displacement<ICRFJ2000Ecliptic>(
@@ -214,7 +218,7 @@ inline not_null<std::unique_ptr<SolarSystem>> SolarSystem::AtСпутник1Laun
 
   // Satellite of Jupiter.
   auto ganymede_trajectory =
-      make_not_null_unique<Trajectory<ICRFJ2000Ecliptic>>();
+      make_not_null_unique<DiscreteTrajectory<ICRFJ2000Ecliptic>>();
   ganymede_trajectory->Append(
       kСпутник1LaunchTime,
       {kSolarSystemBarycentre + Displacement<ICRFJ2000Ecliptic>(
@@ -227,7 +231,8 @@ inline not_null<std::unique_ptr<SolarSystem>> SolarSystem::AtСпутник1Laun
              1.326192167761359E-01 * Kilo(Metre) / Second})});
 
   // Satellite of Saturn.
-  auto titan_trajectory = make_not_null_unique<Trajectory<ICRFJ2000Ecliptic>>();
+  auto titan_trajectory =
+      make_not_null_unique<DiscreteTrajectory<ICRFJ2000Ecliptic>>();
   titan_trajectory->Append(
       kСпутник1LaunchTime,
       {kSolarSystemBarycentre + Displacement<ICRFJ2000Ecliptic>(
@@ -241,7 +246,7 @@ inline not_null<std::unique_ptr<SolarSystem>> SolarSystem::AtСпутник1Laun
 
   // Satellites of Jupiter.
   auto callisto_trajectory =
-      make_not_null_unique<Trajectory<ICRFJ2000Ecliptic>>();
+      make_not_null_unique<DiscreteTrajectory<ICRFJ2000Ecliptic>>();
   callisto_trajectory->Append(
       kСпутник1LaunchTime,
       {kSolarSystemBarycentre + Displacement<ICRFJ2000Ecliptic>(
@@ -252,7 +257,8 @@ inline not_null<std::unique_ptr<SolarSystem>> SolarSystem::AtСпутник1Laun
            { 1.091928199422218E+01 * Kilo(Metre) / Second,
             -1.278098875182818E+01 * Kilo(Metre) / Second,
              5.878649120351949E-02 * Kilo(Metre) / Second})});
-  auto io_trajectory = make_not_null_unique<Trajectory<ICRFJ2000Ecliptic>>();
+  auto io_trajectory =
+      make_not_null_unique<DiscreteTrajectory<ICRFJ2000Ecliptic>>();
   io_trajectory->Append(
       kСпутник1LaunchTime,
       {kSolarSystemBarycentre + Displacement<ICRFJ2000Ecliptic>(
@@ -265,7 +271,8 @@ inline not_null<std::unique_ptr<SolarSystem>> SolarSystem::AtСпутник1Laun
              5.469177855959977E-01 * Kilo(Metre) / Second})});
 
   // Satellite of Earth.
-  auto moon_trajectory = make_not_null_unique<Trajectory<ICRFJ2000Ecliptic>>();
+  auto moon_trajectory =
+      make_not_null_unique<DiscreteTrajectory<ICRFJ2000Ecliptic>>();
   moon_trajectory->Append(
       kСпутник1LaunchTime,
       {kSolarSystemBarycentre + Displacement<ICRFJ2000Ecliptic>(
@@ -279,7 +286,7 @@ inline not_null<std::unique_ptr<SolarSystem>> SolarSystem::AtСпутник1Laun
 
   // Satellite of Jupiter.
   auto europa_trajectory =
-      make_not_null_unique<Trajectory<ICRFJ2000Ecliptic>>();
+      make_not_null_unique<DiscreteTrajectory<ICRFJ2000Ecliptic>>();
   europa_trajectory->Append(
       kСпутник1LaunchTime,
       {kSolarSystemBarycentre + Displacement<ICRFJ2000Ecliptic>(
@@ -293,7 +300,7 @@ inline not_null<std::unique_ptr<SolarSystem>> SolarSystem::AtСпутник1Laun
 
   // Satellite of Neptune.
   auto triton_trajectory =
-      make_not_null_unique<Trajectory<ICRFJ2000Ecliptic>>();
+      make_not_null_unique<DiscreteTrajectory<ICRFJ2000Ecliptic>>();
   triton_trajectory->Append(
       kСпутник1LaunchTime,
       {kSolarSystemBarycentre + Displacement<ICRFJ2000Ecliptic>(
@@ -306,7 +313,8 @@ inline not_null<std::unique_ptr<SolarSystem>> SolarSystem::AtСпутник1Laun
              1.914469843538767E+00 * Kilo(Metre) / Second})});
 
   // Dwarf planet (scattered disc object).
-  auto eris_trajectory = make_not_null_unique<Trajectory<ICRFJ2000Ecliptic>>();
+  auto eris_trajectory =
+      make_not_null_unique<DiscreteTrajectory<ICRFJ2000Ecliptic>>();
   eris_trajectory->Append(
       kСпутник1LaunchTime,
       {kSolarSystemBarycentre + Displacement<ICRFJ2000Ecliptic>(
@@ -319,7 +327,8 @@ inline not_null<std::unique_ptr<SolarSystem>> SolarSystem::AtСпутник1Laun
              1.227093842948539E+00 * Kilo(Metre) / Second})});
 
   // Dwarf planet (Kuiper belt object).
-  auto pluto_trajectory = make_not_null_unique<Trajectory<ICRFJ2000Ecliptic>>();
+  auto pluto_trajectory =
+      make_not_null_unique<DiscreteTrajectory<ICRFJ2000Ecliptic>>();
   pluto_trajectory->Append(
       kСпутник1LaunchTime,
       {kSolarSystemBarycentre + Displacement<ICRFJ2000Ecliptic>(
@@ -353,7 +362,7 @@ inline not_null<std::unique_ptr<SolarSystem>> SolarSystem::AtСпутник1Laun
   if (accuracy > Accuracy::kMajorBodiesOnly) {
     // Satellites of Uranus.
     auto titania_trajectory =
-        make_not_null_unique<Trajectory<ICRFJ2000Ecliptic>>();
+        make_not_null_unique<DiscreteTrajectory<ICRFJ2000Ecliptic>>();
     titania_trajectory->Append(
         kСпутник1LaunchTime,
         {kSolarSystemBarycentre + Displacement<ICRFJ2000Ecliptic>(
@@ -365,7 +374,7 @@ inline not_null<std::unique_ptr<SolarSystem>> SolarSystem::AtСпутник1Laun
               -4.794586046464699E+00 * Kilo(Metre) / Second,
               -3.377964153317895E+00 * Kilo(Metre) / Second})});
     auto oberon_trajectory =
-        make_not_null_unique<Trajectory<ICRFJ2000Ecliptic>>();
+        make_not_null_unique<DiscreteTrajectory<ICRFJ2000Ecliptic>>();
     oberon_trajectory->Append(
         kСпутник1LaunchTime,
         {kSolarSystemBarycentre + Displacement<ICRFJ2000Ecliptic>(
@@ -379,7 +388,7 @@ inline not_null<std::unique_ptr<SolarSystem>> SolarSystem::AtСпутник1Laun
 
     // Satellites of Saturn.
     auto rhea_trajectory =
-        make_not_null_unique<Trajectory<ICRFJ2000Ecliptic>>();
+        make_not_null_unique<DiscreteTrajectory<ICRFJ2000Ecliptic>>();
     rhea_trajectory->Append(
         kСпутник1LaunchTime,
         {kSolarSystemBarycentre + Displacement<ICRFJ2000Ecliptic>(
@@ -391,7 +400,7 @@ inline not_null<std::unique_ptr<SolarSystem>> SolarSystem::AtСпутник1Laun
                3.972546870497955E-01 * Kilo(Metre) / Second,
               -1.060361115947588E+00 * Kilo(Metre) / Second})});
     auto iapetus_trajectory =
-        make_not_null_unique<Trajectory<ICRFJ2000Ecliptic>>();
+        make_not_null_unique<DiscreteTrajectory<ICRFJ2000Ecliptic>>();
     iapetus_trajectory->Append(
         kСпутник1LaunchTime,
         {kSolarSystemBarycentre + Displacement<ICRFJ2000Ecliptic>(
@@ -405,7 +414,7 @@ inline not_null<std::unique_ptr<SolarSystem>> SolarSystem::AtСпутник1Laun
 
     // Satellite of Pluto.
     auto charon_trajectory =
-        make_not_null_unique<Trajectory<ICRFJ2000Ecliptic>>();
+        make_not_null_unique<DiscreteTrajectory<ICRFJ2000Ecliptic>>();
     charon_trajectory->Append(
         kСпутник1LaunchTime,
         {kSolarSystemBarycentre + Displacement<ICRFJ2000Ecliptic>(
@@ -419,7 +428,7 @@ inline not_null<std::unique_ptr<SolarSystem>> SolarSystem::AtСпутник1Laun
 
     // Satellites of Uranus.
     auto ariel_trajectory =
-        make_not_null_unique<Trajectory<ICRFJ2000Ecliptic>>();
+        make_not_null_unique<DiscreteTrajectory<ICRFJ2000Ecliptic>>();
     ariel_trajectory->Append(
         kСпутник1LaunchTime,
         {kSolarSystemBarycentre + Displacement<ICRFJ2000Ecliptic>(
@@ -431,7 +440,7 @@ inline not_null<std::unique_ptr<SolarSystem>> SolarSystem::AtСпутник1Laun
               -3.682977487897364E+00 * Kilo(Metre) / Second,
                5.440031145983448E+00 * Kilo(Metre) / Second})});
     auto umbriel_trajectory =
-        make_not_null_unique<Trajectory<ICRFJ2000Ecliptic>>();
+        make_not_null_unique<DiscreteTrajectory<ICRFJ2000Ecliptic>>();
     umbriel_trajectory->Append(
         kСпутник1LaunchTime,
         {kSolarSystemBarycentre + Displacement<ICRFJ2000Ecliptic>(
@@ -445,7 +454,7 @@ inline not_null<std::unique_ptr<SolarSystem>> SolarSystem::AtСпутник1Laun
 
     // Satellites of Saturn.
     auto dione_trajectory =
-        make_not_null_unique<Trajectory<ICRFJ2000Ecliptic>>();
+        make_not_null_unique<DiscreteTrajectory<ICRFJ2000Ecliptic>>();
     dione_trajectory->Append(
         kСпутник1LaunchTime,
         {kSolarSystemBarycentre + Displacement<ICRFJ2000Ecliptic>(
@@ -457,7 +466,7 @@ inline not_null<std::unique_ptr<SolarSystem>> SolarSystem::AtСпутник1Laun
               -9.857333255400615E+00 * Kilo(Metre) / Second,
                2.994635825207214E+00 * Kilo(Metre) / Second})});
     auto tethys_trajectory =
-        make_not_null_unique<Trajectory<ICRFJ2000Ecliptic>>();
+        make_not_null_unique<DiscreteTrajectory<ICRFJ2000Ecliptic>>();
     tethys_trajectory->Append(
         kСпутник1LaunchTime,
         {kSolarSystemBarycentre + Displacement<ICRFJ2000Ecliptic>(
@@ -496,7 +505,8 @@ inline not_null<std::unique_ptr<SolarSystem>> SolarSystem::AtСпутник2Laun
   // All data is from the Jet Propulsion Laboratory's HORIZONS system.
 
   // Star.
-  auto sun_trajectory = make_not_null_unique<Trajectory<ICRFJ2000Ecliptic>>();
+  auto sun_trajectory =
+      make_not_null_unique<DiscreteTrajectory<ICRFJ2000Ecliptic>>();
   sun_trajectory->Append(
       kСпутник2LaunchTime,
       {kSolarSystemBarycentre + Displacement<ICRFJ2000Ecliptic>(
@@ -512,7 +522,7 @@ inline not_null<std::unique_ptr<SolarSystem>> SolarSystem::AtСпутник2Laun
 
   // Gas giants.
   auto jupiter_trajectory =
-      make_not_null_unique<Trajectory<ICRFJ2000Ecliptic>>();
+      make_not_null_unique<DiscreteTrajectory<ICRFJ2000Ecliptic>>();
   jupiter_trajectory->Append(
       kСпутник2LaunchTime,
       {kSolarSystemBarycentre + Displacement<ICRFJ2000Ecliptic>(
@@ -524,7 +534,7 @@ inline not_null<std::unique_ptr<SolarSystem>> SolarSystem::AtСпутник2Laun
             -1.200823909873311E+01 * Kilo(Metre) / Second,
             -2.224995144931441E-02 * Kilo(Metre) / Second})});
   auto saturn_trajectory =
-      make_not_null_unique<Trajectory<ICRFJ2000Ecliptic>>();
+      make_not_null_unique<DiscreteTrajectory<ICRFJ2000Ecliptic>>();
   saturn_trajectory->Append(
       kСпутник2LaunchTime,
       {kSolarSystemBarycentre + Displacement<ICRFJ2000Ecliptic>(
@@ -536,7 +546,7 @@ inline not_null<std::unique_ptr<SolarSystem>> SolarSystem::AtСпутник2Laun
             -2.320374389288883E+00 * Kilo(Metre) / Second,
             -3.114483488133248E-01 * Kilo(Metre) / Second})});
   auto neptune_trajectory =
-      make_not_null_unique<Trajectory<ICRFJ2000Ecliptic>>();
+      make_not_null_unique<DiscreteTrajectory<ICRFJ2000Ecliptic>>();
   neptune_trajectory->Append(
       kСпутник2LaunchTime,
       {kSolarSystemBarycentre + Displacement<ICRFJ2000Ecliptic>(
@@ -548,7 +558,7 @@ inline not_null<std::unique_ptr<SolarSystem>> SolarSystem::AtСпутник2Laun
             -4.526307194625022E+00 * Kilo(Metre) / Second,
              2.545268709706176E-02 * Kilo(Metre) / Second})});
   auto uranus_trajectory =
-      make_not_null_unique<Trajectory<ICRFJ2000Ecliptic>>();
+      make_not_null_unique<DiscreteTrajectory<ICRFJ2000Ecliptic>>();
   uranus_trajectory->Append(
       kСпутник2LaunchTime,
       {kSolarSystemBarycentre + Displacement<ICRFJ2000Ecliptic>(
@@ -562,7 +572,7 @@ inline not_null<std::unique_ptr<SolarSystem>> SolarSystem::AtСпутник2Laun
 
   // Telluric planets.
   auto earth_trajectory =
-      make_not_null_unique<Trajectory<ICRFJ2000Ecliptic>>();
+      make_not_null_unique<DiscreteTrajectory<ICRFJ2000Ecliptic>>();
   earth_trajectory->Append(
       kСпутник2LaunchTime,
       {kSolarSystemBarycentre + Displacement<ICRFJ2000Ecliptic>(
@@ -573,7 +583,8 @@ inline not_null<std::unique_ptr<SolarSystem>> SolarSystem::AtСпутник2Laun
            {-2.003713675265280E+01 * Kilo(Metre) / Second,
              2.237299122930724E+01 * Kilo(Metre) / Second,
              2.796170626009044E-03 * Kilo(Metre) / Second})});
-  auto venus_trajectory = make_not_null_unique<Trajectory<ICRFJ2000Ecliptic>>();
+  auto venus_trajectory =
+      make_not_null_unique<DiscreteTrajectory<ICRFJ2000Ecliptic>>();
   venus_trajectory->Append(
       kСпутник2LaunchTime,
       {kSolarSystemBarycentre + Displacement<ICRFJ2000Ecliptic>(
@@ -584,7 +595,8 @@ inline not_null<std::unique_ptr<SolarSystem>> SolarSystem::AtСпутник2Laun
            { 6.105839497257745E+00 * Kilo(Metre) / Second,
              3.430628991145717E+01 * Kilo(Metre) / Second,
              1.117436366138174E-01 * Kilo(Metre) / Second})});
-  auto mars_trajectory = make_not_null_unique<Trajectory<ICRFJ2000Ecliptic>>();
+  auto mars_trajectory =
+      make_not_null_unique<DiscreteTrajectory<ICRFJ2000Ecliptic>>();
   mars_trajectory->Append(
       kСпутник2LaunchTime,
       {kSolarSystemBarycentre + Displacement<ICRFJ2000Ecliptic>(
@@ -596,7 +608,7 @@ inline not_null<std::unique_ptr<SolarSystem>> SolarSystem::AtСпутник2Laun
             -2.095334664935562E+01 * Kilo(Metre) / Second,
             -6.470034479976146E-01 * Kilo(Metre) / Second})});
   auto mercury_trajectory =
-      make_not_null_unique<Trajectory<ICRFJ2000Ecliptic>>();
+      make_not_null_unique<DiscreteTrajectory<ICRFJ2000Ecliptic>>();
   mercury_trajectory->Append(
       kСпутник2LaunchTime,
       {kSolarSystemBarycentre + Displacement<ICRFJ2000Ecliptic>(
@@ -612,7 +624,7 @@ inline not_null<std::unique_ptr<SolarSystem>> SolarSystem::AtСпутник2Laun
 
   // Satellite of Jupiter.
   auto ganymede_trajectory =
-      make_not_null_unique<Trajectory<ICRFJ2000Ecliptic>>();
+      make_not_null_unique<DiscreteTrajectory<ICRFJ2000Ecliptic>>();
   ganymede_trajectory->Append(
       kСпутник2LaunchTime,
       {kSolarSystemBarycentre + Displacement<ICRFJ2000Ecliptic>(
@@ -625,7 +637,8 @@ inline not_null<std::unique_ptr<SolarSystem>> SolarSystem::AtСпутник2Laun
             -9.540419435645386E-02 * Kilo(Metre) / Second})});
 
   // Satellite of Saturn.
-  auto titan_trajectory = make_not_null_unique<Trajectory<ICRFJ2000Ecliptic>>();
+  auto titan_trajectory =
+      make_not_null_unique<DiscreteTrajectory<ICRFJ2000Ecliptic>>();
   titan_trajectory->Append(
       kСпутник2LaunchTime,
       {kSolarSystemBarycentre + Displacement<ICRFJ2000Ecliptic>(
@@ -639,7 +652,7 @@ inline not_null<std::unique_ptr<SolarSystem>> SolarSystem::AtСпутник2Laun
 
   // Satellites of Jupiter.
   auto callisto_trajectory =
-      make_not_null_unique<Trajectory<ICRFJ2000Ecliptic>>();
+      make_not_null_unique<DiscreteTrajectory<ICRFJ2000Ecliptic>>();
   callisto_trajectory->Append(
       kСпутник2LaunchTime,
       {kSolarSystemBarycentre + Displacement<ICRFJ2000Ecliptic>(
@@ -650,7 +663,8 @@ inline not_null<std::unique_ptr<SolarSystem>> SolarSystem::AtСпутник2Laun
            { 2.841233795859193E+00 * Kilo(Metre) / Second,
             -2.014928300738163E+01 * Kilo(Metre) / Second,
             -3.092683314888902E-01 * Kilo(Metre) / Second})});
-  auto io_trajectory = make_not_null_unique<Trajectory<ICRFJ2000Ecliptic>>();
+  auto io_trajectory =
+      make_not_null_unique<DiscreteTrajectory<ICRFJ2000Ecliptic>>();
   io_trajectory->Append(
       kСпутник2LaunchTime,
       {kSolarSystemBarycentre + Displacement<ICRFJ2000Ecliptic>(
@@ -663,7 +677,8 @@ inline not_null<std::unique_ptr<SolarSystem>> SolarSystem::AtСпутник2Laun
             -4.221293967140784E-01 * Kilo(Metre) / Second})});
 
   // Satellite of Earth.
-  auto moon_trajectory = make_not_null_unique<Trajectory<ICRFJ2000Ecliptic>>();
+  auto moon_trajectory =
+      make_not_null_unique<DiscreteTrajectory<ICRFJ2000Ecliptic>>();
   moon_trajectory->Append(
       kСпутник2LaunchTime,
       {kSolarSystemBarycentre + Displacement<ICRFJ2000Ecliptic>(
@@ -677,7 +692,7 @@ inline not_null<std::unique_ptr<SolarSystem>> SolarSystem::AtСпутник2Laun
 
   // Satellite of Jupiter.
   auto europa_trajectory =
-      make_not_null_unique<Trajectory<ICRFJ2000Ecliptic>>();
+      make_not_null_unique<DiscreteTrajectory<ICRFJ2000Ecliptic>>();
   europa_trajectory->Append(
       kСпутник2LaunchTime,
       {kSolarSystemBarycentre + Displacement<ICRFJ2000Ecliptic>(
@@ -691,7 +706,7 @@ inline not_null<std::unique_ptr<SolarSystem>> SolarSystem::AtСпутник2Laun
 
   // Satellite of Neptune.
   auto triton_trajectory =
-      make_not_null_unique<Trajectory<ICRFJ2000Ecliptic>>();
+      make_not_null_unique<DiscreteTrajectory<ICRFJ2000Ecliptic>>();
   triton_trajectory->Append(
       kСпутник2LaunchTime,
       {kSolarSystemBarycentre + Displacement<ICRFJ2000Ecliptic>(
@@ -704,7 +719,8 @@ inline not_null<std::unique_ptr<SolarSystem>> SolarSystem::AtСпутник2Laun
              1.656135195284262E+00 * Kilo(Metre) / Second})});
 
   // Dwarf planet (scattered disc object).
-  auto eris_trajectory = make_not_null_unique<Trajectory<ICRFJ2000Ecliptic>>();
+  auto eris_trajectory =
+      make_not_null_unique<DiscreteTrajectory<ICRFJ2000Ecliptic>>();
   eris_trajectory->Append(
       kСпутник2LaunchTime,
       {kSolarSystemBarycentre + Displacement<ICRFJ2000Ecliptic>(
@@ -717,7 +733,8 @@ inline not_null<std::unique_ptr<SolarSystem>> SolarSystem::AtСпутник2Laun
              1.227720820942441E+00 * Kilo(Metre) / Second})});
 
   // Dwarf planet (Kuiper belt object).
-  auto pluto_trajectory = make_not_null_unique<Trajectory<ICRFJ2000Ecliptic>>();
+  auto pluto_trajectory =
+      make_not_null_unique<DiscreteTrajectory<ICRFJ2000Ecliptic>>();
   pluto_trajectory->Append(
       kСпутник2LaunchTime,
       {kSolarSystemBarycentre + Displacement<ICRFJ2000Ecliptic>(
@@ -751,7 +768,7 @@ inline not_null<std::unique_ptr<SolarSystem>> SolarSystem::AtСпутник2Laun
   if (accuracy > Accuracy::kMajorBodiesOnly) {
     // Satellites of Uranus.
     auto titania_trajectory =
-        make_not_null_unique<Trajectory<ICRFJ2000Ecliptic>>();
+        make_not_null_unique<DiscreteTrajectory<ICRFJ2000Ecliptic>>();
     titania_trajectory->Append(
         kСпутник2LaunchTime,
         {kSolarSystemBarycentre + Displacement<ICRFJ2000Ecliptic>(
@@ -763,7 +780,7 @@ inline not_null<std::unique_ptr<SolarSystem>> SolarSystem::AtСпутник2Laun
               -3.797291350751153E+00 * Kilo(Metre) / Second,
                3.166248684554561E+00 * Kilo(Metre) / Second})});
     auto oberon_trajectory =
-        make_not_null_unique<Trajectory<ICRFJ2000Ecliptic>>();
+        make_not_null_unique<DiscreteTrajectory<ICRFJ2000Ecliptic>>();
     oberon_trajectory->Append(
         kСпутник2LaunchTime,
         {kSolarSystemBarycentre + Displacement<ICRFJ2000Ecliptic>(
@@ -777,7 +794,7 @@ inline not_null<std::unique_ptr<SolarSystem>> SolarSystem::AtСпутник2Laun
 
     // Satellites of Saturn.
     auto rhea_trajectory =
-        make_not_null_unique<Trajectory<ICRFJ2000Ecliptic>>();
+        make_not_null_unique<DiscreteTrajectory<ICRFJ2000Ecliptic>>();
     rhea_trajectory->Append(
         kСпутник2LaunchTime,
         {kSolarSystemBarycentre + Displacement<ICRFJ2000Ecliptic>(
@@ -789,7 +806,7 @@ inline not_null<std::unique_ptr<SolarSystem>> SolarSystem::AtСпутник2Laun
               -5.870586279416220E+00 * Kilo(Metre) / Second,
                8.369964139554196E-01 * Kilo(Metre) / Second})});
     auto iapetus_trajectory =
-        make_not_null_unique<Trajectory<ICRFJ2000Ecliptic>>();
+        make_not_null_unique<DiscreteTrajectory<ICRFJ2000Ecliptic>>();
     iapetus_trajectory->Append(
         kСпутник2LaunchTime,
         {kSolarSystemBarycentre + Displacement<ICRFJ2000Ecliptic>(
@@ -803,7 +820,7 @@ inline not_null<std::unique_ptr<SolarSystem>> SolarSystem::AtСпутник2Laun
 
     // Satellite of Pluto.
     auto charon_trajectory =
-        make_not_null_unique<Trajectory<ICRFJ2000Ecliptic>>();
+        make_not_null_unique<DiscreteTrajectory<ICRFJ2000Ecliptic>>();
     charon_trajectory->Append(
         kСпутник2LaunchTime,
         {kSolarSystemBarycentre + Displacement<ICRFJ2000Ecliptic>(
@@ -817,7 +834,7 @@ inline not_null<std::unique_ptr<SolarSystem>> SolarSystem::AtСпутник2Laun
 
     // Satellites of Uranus.
     auto ariel_trajectory =
-        make_not_null_unique<Trajectory<ICRFJ2000Ecliptic>>();
+        make_not_null_unique<DiscreteTrajectory<ICRFJ2000Ecliptic>>();
     ariel_trajectory->Append(
         kСпутник2LaunchTime,
         {kSolarSystemBarycentre + Displacement<ICRFJ2000Ecliptic>(
@@ -829,7 +846,7 @@ inline not_null<std::unique_ptr<SolarSystem>> SolarSystem::AtСпутник2Laun
               -4.517951101991714E+00 * Kilo(Metre) / Second,
               -4.406982500749494E+00 * Kilo(Metre) / Second})});
     auto umbriel_trajectory =
-        make_not_null_unique<Trajectory<ICRFJ2000Ecliptic>>();
+        make_not_null_unique<DiscreteTrajectory<ICRFJ2000Ecliptic>>();
     umbriel_trajectory->Append(
         kСпутник2LaunchTime,
         {kSolarSystemBarycentre + Displacement<ICRFJ2000Ecliptic>(
@@ -843,7 +860,7 @@ inline not_null<std::unique_ptr<SolarSystem>> SolarSystem::AtСпутник2Laun
 
     // Satellites of Saturn.
     auto dione_trajectory =
-        make_not_null_unique<Trajectory<ICRFJ2000Ecliptic>>();
+        make_not_null_unique<DiscreteTrajectory<ICRFJ2000Ecliptic>>();
     dione_trajectory->Append(
         kСпутник2LaunchTime,
         {kSolarSystemBarycentre + Displacement<ICRFJ2000Ecliptic>(
@@ -855,7 +872,7 @@ inline not_null<std::unique_ptr<SolarSystem>> SolarSystem::AtСпутник2Laun
               -4.868620315848084E+00 * Kilo(Metre) / Second,
                1.933469386798133E+00 * Kilo(Metre) / Second})});
     auto tethys_trajectory =
-        make_not_null_unique<Trajectory<ICRFJ2000Ecliptic>>();
+        make_not_null_unique<DiscreteTrajectory<ICRFJ2000Ecliptic>>();
     tethys_trajectory->Append(
         kСпутник2LaunchTime,
         {kSolarSystemBarycentre + Displacement<ICRFJ2000Ecliptic>(
@@ -1039,9 +1056,9 @@ inline SolarSystem::Bodies SolarSystem::massive_bodies() {
   return std::move(massive_bodies_);
 }
 
-inline std::vector<not_null<Trajectory<ICRFJ2000Ecliptic>*>>
+inline std::vector<not_null<DiscreteTrajectory<ICRFJ2000Ecliptic>*>>
 SolarSystem::trajectories() const {
-  std::vector<not_null<Trajectory<ICRFJ2000Ecliptic>*>> result;
+  std::vector<not_null<DiscreteTrajectory<ICRFJ2000Ecliptic>*>> result;
   for (auto const& trajectory : trajectories_) {
     result.push_back(trajectory.get());
   }

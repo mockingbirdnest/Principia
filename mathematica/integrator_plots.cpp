@@ -316,7 +316,7 @@ void GenerateSolarSystemPlanetsWorkErrorGraph() {
     SolarSystem::Bodies const solar_system_bodies =
         solar_system->massive_bodies();
     for (int i = 0; i <= last_planet; ++i) {
-      Trajectory<ICRFJ2000Ecliptic> const& trajectory =
+      DiscreteTrajectory<ICRFJ2000Ecliptic> const& trajectory =
           *solar_system->trajectories()[i];
       bodies.emplace_back(*solar_system_bodies[i]);
       MassiveBody const& body = bodies.back();

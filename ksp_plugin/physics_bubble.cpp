@@ -201,13 +201,13 @@ PhysicsBubble::from_centre_of_mass(not_null<Vessel const*> const vessel) const {
   return FindOrDie(*current_->from_centre_of_mass, vessel);
 }
 
-Trajectory<Barycentric> const&
+DiscreteTrajectory<Barycentric> const&
 PhysicsBubble::centre_of_mass_trajectory() const {
   CHECK(!empty()) << "Empty bubble";
   return *current_->centre_of_mass_trajectory;
 }
 
-not_null<Trajectory<Barycentric>*>
+not_null<DiscreteTrajectory<Barycentric>*>
 PhysicsBubble::mutable_centre_of_mass_trajectory() const {
   CHECK(!empty()) << "Empty bubble";
   return current_->centre_of_mass_trajectory.get();
@@ -300,7 +300,7 @@ std::unique_ptr<PhysicsBubble> PhysicsBubble::ReadFromMessage(
     current->centre_of_mass = std::make_unique<DegreesOfFreedom<World>>(
         DegreesOfFreedom<World>::ReadFromMessage(full_state.centre_of_mass()));
     current->centre_of_mass_trajectory =
-        Trajectory<Barycentric>::ReadFromMessage(
+        DiscreteTrajectory<Barycentric>::ReadFromMessage(
             full_state.centre_of_mass_trajectory());
     current->from_centre_of_mass =
         std::make_unique<std::map<not_null<Vessel const*> const,
@@ -391,7 +391,7 @@ void PhysicsBubble::RestartNext(Instant const& current_time,
     }
   }
   next->centre_of_mass_trajectory =
-      std::make_unique<Trajectory<Barycentric>>();
+      std::make_unique<DiscreteTrajectory<Barycentric>>();
   next->centre_of_mass_trajectory->Append(current_time,
                                           bubble_calculator.Get());
 }
@@ -477,7 +477,7 @@ void PhysicsBubble::Shift(BarycentricToWorldSun const& barycentric_to_world_sun,
   DegreesOfFreedom<Barycentric> const& current_centre_of_mass =
       current_->centre_of_mass_trajectory->last().degrees_of_freedom();
   next->centre_of_mass_trajectory =
-      std::make_unique<Trajectory<Barycentric>>();
+      std::make_unique<DiscreteTrajectory<Barycentric>>();
   // Using the identity as the map |World| -> |WorldSun| is valid for
   // velocities too since we assume |World| is currently nonrotating, i.e.,
   // it is stationary with respect to |WorldSun|.
