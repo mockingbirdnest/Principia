@@ -329,7 +329,7 @@ RenderedTrajectory<World> Plugin::RenderedPrediction(
       RenderTrajectory(predicted_vessel_->body(),
                        transforms->first_on_or_after(
                            predicted_vessel_->prediction(),
-                           *predicted_vessel_->prediction().fork_time()),
+                           *predicted_vessel_->prediction().ForkTime()),
                        transforms,
                        sun_world_position);
   return result;
