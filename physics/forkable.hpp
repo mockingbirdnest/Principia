@@ -38,6 +38,7 @@ class Forkable {
       typename ForkableTraits<Tr4jectory>::TimelineConstIterator;
 
   Forkable() = default;
+  virtual ~Forkable() = default;
 
   // Creates a new child trajectory forked at time |time|, and returns it.  The
   // child trajectory shares its data with the current trajectory for times less

@@ -51,7 +51,7 @@ class DiscreteTrajectory : public Forkable<DiscreteTrajectory<Frame>> {
                         not_null<DiscreteTrajectory<Frame> const*> const)>;
 
   DiscreteTrajectory() = default;
-  ~DiscreteTrajectory();
+  ~DiscreteTrajectory() override;
 
   DiscreteTrajectory(DiscreteTrajectory const&) = delete;
   DiscreteTrajectory(DiscreteTrajectory&&) = delete;
