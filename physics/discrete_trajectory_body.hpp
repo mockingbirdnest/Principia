@@ -308,6 +308,9 @@ void DiscreteTrajectory<Frame>::WriteSubTreeToMessage(
   }
 }
 
+// TODO(phl): The deserialization of the children tree should be moved to
+// Forkable.  But this cannot be done while Forkable copies the timeline after
+// the fork point.
 template<typename Frame>
 void DiscreteTrajectory<Frame>::FillSubTreeFromMessage(
     serialization::Trajectory const& message) {

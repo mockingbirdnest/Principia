@@ -24,7 +24,6 @@ using geometry::Point;
 using geometry::R3Element;
 using geometry::Vector;
 using quantities::Length;
-using quantities::Mass;
 using quantities::Speed;
 using quantities::SIUnit;
 using si::Metre;
@@ -105,10 +104,11 @@ class DiscreteTrajectoryTest : public testing::Test {
   Instant t0_, t1_, t2_, t3_, t4_;
   std::unique_ptr<DiscreteTrajectory<World>> massive_trajectory_;
   std::unique_ptr<DiscreteTrajectory<World>> massless_trajectory_;
-  std::function<DegreesOfFreedom<World>(Instant const&,
-                                        DegreesOfFreedom<World> const&,
-                                        DiscreteTrajectory<World> const*,
-                                        DiscreteTrajectory<World> const*)> transform_;
+  std::function<DegreesOfFreedom<World>(
+      Instant const&,
+      DegreesOfFreedom<World> const&,
+      DiscreteTrajectory<World> const*,
+      DiscreteTrajectory<World> const*)> transform_;
   DiscreteTrajectory<World>::Transform<World> massive_transform_;
   DiscreteTrajectory<World>::Transform<World> massless_transform_;
 };
@@ -163,9 +163,12 @@ TEST_F(DiscreteTrajectoryTest, IteratorSerializationSuccess) {
   massive_trajectory_->Append(t1_, d1_);
   massive_trajectory_->Append(t2_, d2_);
   massive_trajectory_->Append(t3_, d3_);
-  not_null<DiscreteTrajectory<World>*> const fork1 = massive_trajectory_->NewFork(t2_);
-  not_null<DiscreteTrajectory<World>*> const fork2 = massive_trajectory_->NewFork(t2_);
-  not_null<DiscreteTrajectory<World>*> const fork3 = massive_trajectory_->NewFork(t3_);
+  not_null<DiscreteTrajectory<World>*> const fork1 =
+      massive_trajectory_->NewFork(t2_);
+  not_null<DiscreteTrajectory<World>*> const fork2 =
+      massive_trajectory_->NewFork(t2_);
+  not_null<DiscreteTrajectory<World>*> const fork3 =
+      massive_trajectory_->NewFork(t3_);
   fork2->ForgetAfter(t2_);
   fork3->Append(t4_, d4_);
 
@@ -250,10 +253,13 @@ TEST_F(DiscreteTrajectoryTest, PointerSerializationSuccess) {
   massive_trajectory_->Append(t1_, d1_);
   massive_trajectory_->Append(t2_, d2_);
   massive_trajectory_->Append(t3_, d3_);
-  not_null<DiscreteTrajectory<World>*> const fork1 = massive_trajectory_->NewFork(t2_);
-  not_null<DiscreteTrajectory<World>*> const fork2 = massive_trajectory_->NewFork(t2_);
+  not_null<DiscreteTrajectory<World>*> const fork1 =
+      massive_trajectory_->NewFork(t2_);
+  not_null<DiscreteTrajectory<World>*> const fork2 =
+      massive_trajectory_->NewFork(t2_);
   fork2->Append(t4_, d4_);
-  not_null<DiscreteTrajectory<World>*> const fork3 = massive_trajectory_->NewFork(t3_);
+  not_null<DiscreteTrajectory<World>*> const fork3 =
+      massive_trajectory_->NewFork(t3_);
   fork3->Append(t4_, d4_);
   serialization::Trajectory root;
   serialization::Trajectory::Pointer root_it;
@@ -269,8 +275,8 @@ TEST_F(DiscreteTrajectoryTest, PointerSerializationSuccess) {
             DiscreteTrajectory<World>::ReadPointerFromMessage(
                 root_it,
                 massive_trajectory_.get()));
-  not_null<std::unique_ptr<DiscreteTrajectory<World>>> const massive_trajectory =
-      DiscreteTrajectory<World>::ReadFromMessage(root);
+  not_null<std::unique_ptr<DiscreteTrajectory<World>>> const
+      massive_trajectory = DiscreteTrajectory<World>::ReadFromMessage(root);
   EXPECT_EQ(massive_trajectory.get(),
             DiscreteTrajectory<World>::ReadPointerFromMessage(
                 root_it, massive_trajectory.get()));
@@ -279,7 +285,8 @@ TEST_F(DiscreteTrajectoryTest, PointerSerializationSuccess) {
 TEST_F(DiscreteTrajectoryDeathTest, TrajectorySerializationError) {
   EXPECT_DEATH({
     massive_trajectory_->Append(t1_, d1_);
-    not_null<DiscreteTrajectory<World>*> const fork = massive_trajectory_->NewFork(t1_);
+    not_null<DiscreteTrajectory<World>*> const fork =
+        massive_trajectory_->NewFork(t1_);
     serialization::Trajectory message;
     fork->WriteToMessage(&message);
   }, "is_root");
@@ -289,17 +296,21 @@ TEST_F(DiscreteTrajectoryTest, TrajectorySerializationSuccess) {
   massive_trajectory_->Append(t1_, d1_);
   massive_trajectory_->Append(t2_, d2_);
   massive_trajectory_->Append(t3_, d3_);
-  not_null<DiscreteTrajectory<World>*> const fork1 = massive_trajectory_->NewFork(t2_);
-  not_null<DiscreteTrajectory<World>*> const fork2 = massive_trajectory_->NewFork(t2_);
+  not_null<DiscreteTrajectory<World>*> const fork1 =
+      massive_trajectory_->NewFork(t2_);
+  not_null<DiscreteTrajectory<World>*> const fork2 =
+      massive_trajectory_->NewFork(t2_);
   fork2->Append(t4_, d4_);
-  not_null<DiscreteTrajectory<World>*> const fork3 = massive_trajectory_->NewFork(t3_);
+  not_null<DiscreteTrajectory<World>*> const fork3 =
+      massive_trajectory_->NewFork(t3_);
   fork3->Append(t4_, d4_);
   serialization::Trajectory message;
   serialization::Trajectory reference_message;
   massive_trajectory_->WriteToMessage(&message);
   massive_trajectory_->WriteToMessage(&reference_message);
-  not_null<std::unique_ptr<DiscreteTrajectory<World>>> const deserialized_trajectory =
-      DiscreteTrajectory<World>::ReadFromMessage(message);
+  not_null<std::unique_ptr<DiscreteTrajectory<World>>> const
+      deserialized_trajectory =
+          DiscreteTrajectory<World>::ReadFromMessage(message);
   message.Clear();
   deserialized_trajectory->WriteToMessage(&message);
   EXPECT_EQ(reference_message.SerializeAsString(), message.SerializeAsString());
@@ -374,7 +385,8 @@ TEST_F(DiscreteTrajectoryDeathTest, ForgetAfterError) {
   EXPECT_DEATH({
     massive_trajectory_->Append(t1_, d1_);
     massive_trajectory_->Append(t2_, d2_);
-    not_null<DiscreteTrajectory<World>*> const fork = massive_trajectory_->NewFork(t2_);
+    not_null<DiscreteTrajectory<World>*> const fork =
+        massive_trajectory_->NewFork(t2_);
     fork->ForgetAfter(t1_);
   }, "before the fork time");
 }
@@ -383,7 +395,8 @@ TEST_F(DiscreteTrajectoryTest, ForgetAfterSuccess) {
   massive_trajectory_->Append(t1_, d1_);
   massive_trajectory_->Append(t2_, d2_);
   massive_trajectory_->Append(t3_, d3_);
-  not_null<DiscreteTrajectory<World>*> const fork = massive_trajectory_->NewFork(t2_);
+  not_null<DiscreteTrajectory<World>*> const fork =
+      massive_trajectory_->NewFork(t2_);
   fork->Append(t4_, d4_);
 
   fork->ForgetAfter(t3_ + (t4_ - t3_) / 2);
@@ -435,7 +448,8 @@ TEST_F(DiscreteTrajectoryTest, ForgetAfterSuccess) {
 TEST_F(DiscreteTrajectoryDeathTest, ForgetBeforeError) {
   EXPECT_DEATH({
     massive_trajectory_->Append(t1_, d1_);
-    not_null<DiscreteTrajectory<World>*> const fork = massive_trajectory_->NewFork(t1_);
+    not_null<DiscreteTrajectory<World>*> const fork =
+        massive_trajectory_->NewFork(t1_);
     fork->ForgetBefore(t1_);
   }, "nonroot");
 }
@@ -444,7 +458,8 @@ TEST_F(DiscreteTrajectoryTest, ForgetBeforeSuccess) {
   massive_trajectory_->Append(t1_, d1_);
   massive_trajectory_->Append(t2_, d2_);
   massive_trajectory_->Append(t3_, d3_);
-  not_null<DiscreteTrajectory<World>*> const fork = massive_trajectory_->NewFork(t2_);
+  not_null<DiscreteTrajectory<World>*> const fork =
+      massive_trajectory_->NewFork(t2_);
   fork->Append(t4_, d4_);
 
   massive_trajectory_->ForgetBefore(t1_ + (t2_ - t1_) / 2);
@@ -492,7 +507,8 @@ TEST_F(DiscreteTrajectoryTest, IntrinsicAccelerationSuccess) {
   massless_trajectory_->Append(t1_, d1_);
   massless_trajectory_->Append(t2_, d2_);
   massless_trajectory_->Append(t3_, d3_);
-  not_null<DiscreteTrajectory<World>*> const fork = massless_trajectory_->NewFork(t2_);
+  not_null<DiscreteTrajectory<World>*> const fork =
+      massless_trajectory_->NewFork(t2_);
   fork->Append(t4_, d4_);
 
   EXPECT_FALSE(massless_trajectory_->has_intrinsic_acceleration());
@@ -566,7 +582,8 @@ TEST_F(DiscreteTrajectoryTest, NativeIteratorSuccess) {
   ++it;
   EXPECT_TRUE(it.at_end());
 
-  not_null<DiscreteTrajectory<World>*> const fork = massless_trajectory_->NewFork(t2_);
+  not_null<DiscreteTrajectory<World>*> const fork =
+      massless_trajectory_->NewFork(t2_);
   fork->Append(t4_, d4_);
 
   it = fork->first();
@@ -624,7 +641,8 @@ TEST_F(DiscreteTrajectoryTest, TransformingIteratorSuccess) {
   ++it;
   EXPECT_TRUE(it.at_end());
 
-  not_null<DiscreteTrajectory<World>*> const fork = massless_trajectory_->NewFork(t2_);
+  not_null<DiscreteTrajectory<World>*> const fork =
+      massless_trajectory_->NewFork(t2_);
   fork->Append(t4_, d4_);
   DiscreteTrajectory<World>::Transform<World> const fork_transform =
       std::bind(transform_, _1, _2, _3, fork);
@@ -660,7 +678,8 @@ TEST_F(DiscreteTrajectoryTest, TransformingIteratorSuccess) {
 }
 
 TEST_F(DiscreteTrajectoryTest, NativeIteratorOnOrAfterSuccess) {
-  DiscreteTrajectory<World>::NativeIterator it = massive_trajectory_->on_or_after(t0_);
+  DiscreteTrajectory<World>::NativeIterator it =
+      massive_trajectory_->on_or_after(t0_);
   EXPECT_TRUE(it.at_end());
 
   massless_trajectory_->Append(t1_, d1_);
@@ -677,7 +696,8 @@ TEST_F(DiscreteTrajectoryTest, NativeIteratorOnOrAfterSuccess) {
   it = massless_trajectory_->on_or_after(t4_);
   EXPECT_TRUE(it.at_end());
 
-  not_null<DiscreteTrajectory<World>*> const fork = massless_trajectory_->NewFork(t2_);
+  not_null<DiscreteTrajectory<World>*> const fork =
+      massless_trajectory_->NewFork(t2_);
   fork->Append(t4_, d4_);
 
   it = fork->on_or_after(t0_);
@@ -722,7 +742,8 @@ TEST_F(DiscreteTrajectoryTest, TransformingIteratorOnOrAfterSuccess) {
                                                         massless_transform_);
   EXPECT_TRUE(it.at_end());
 
-  not_null<DiscreteTrajectory<World>*> const fork = massless_trajectory_->NewFork(t2_);
+  not_null<DiscreteTrajectory<World>*> const fork =
+      massless_trajectory_->NewFork(t2_);
   fork->Append(t4_, d4_);
   DiscreteTrajectory<World>::Transform<World> const fork_transform =
       std::bind(transform_, _1, _2, _3, fork);
