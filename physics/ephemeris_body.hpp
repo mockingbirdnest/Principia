@@ -363,7 +363,20 @@ Vector<Acceleration, Frame> Ephemeris<Frame>::ComputeGravitationalAcceleration(
     Instant const & t) {
   auto const it = trajectory->Find(t);
   DegreesOfFreedom<Frame> const& degrees_of_freedom = it.current()->second;
-  return Vector<Acceleration, Frame>();
+
+  // To avoid intrinsic accelerations.
+  DiscreteTrajectory<Frame> empty_trajectory;
+
+  std::vector<Vector<Acceleration, Frame>> accelerations(1);
+  std::vector<typename ContinuousTrajectory<Frame>::Hint> hints(bodies_.size());
+  ComputeMasslessBodiesGravitationalAccelerations(
+      {&empty_trajectory},
+      t,
+      {degrees_of_freedom.position()},
+      &accelerations,
+      &hints);
+
+  return accelerations[0];
 }
 
 template<typename Frame>
