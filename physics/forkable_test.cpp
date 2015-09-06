@@ -175,7 +175,7 @@ TEST_F(ForkableTest, ForkSuccess) {
   auto times = Times(&trajectory_);
   EXPECT_THAT(times, ElementsAre(t1_, t2_, t3_));
   times = Times(fork);
-  EXPECT_THAT(times, ElementsAre(t1_, t2_, t3_, t4_));
+  EXPECT_THAT(times, ElementsAre(t1_, t2_, t4_));
 }
 
 TEST_F(ForkableTest, ForkAtLast) {
@@ -248,7 +248,7 @@ TEST_F(ForkableTest, DeleteForkSuccess) {
   auto times = Times(&trajectory_);
   EXPECT_THAT(times, ElementsAre(t1_, t2_, t3_));
   times = Times(fork1);
-  EXPECT_THAT(times, ElementsAre(t1_, t2_, t3_, t4_));
+  EXPECT_THAT(times, ElementsAre(t1_, t2_, t4_));
 }
 
 TEST_F(ForkableDeathTest, DeleteAllForksAfterError) {
@@ -269,18 +269,18 @@ TEST_F(ForkableTest, DeleteAllForksAfterSuccess) {
 
   fork->DeleteAllForksAfter(t3_ + (t4_ - t3_) / 2);
   auto times = Times(fork);
-  EXPECT_THAT(times, ElementsAre(t1_, t2_, t3_));
+  EXPECT_THAT(times, ElementsAre(t1_, t2_, t4_));
 
   fork->DeleteAllForksAfter(t2_);
   times = Times(fork);
-  EXPECT_THAT(times, ElementsAre(t1_, t2_));
+  EXPECT_THAT(times, ElementsAre(t1_, t2_, t4_));
 
   times = Times(&trajectory_);
   EXPECT_THAT(times, ElementsAre(t1_, t2_, t3_));
 
   trajectory_.DeleteAllForksAfter(t1_);
   times = Times(&trajectory_);
-  EXPECT_THAT(times, ElementsAre(t1_));
+  EXPECT_THAT(times, ElementsAre(t1_, t2_, t3_));
   // Don't use fork, it is dangling.
 }
 
@@ -301,13 +301,13 @@ TEST_F(ForkableTest, DeleteAllForksBeforeSuccess) {
 
   trajectory_.DeleteAllForksBefore(t1_ + (t2_ - t1_) / 2);
   auto times = Times(&trajectory_);
-  EXPECT_THAT(times, ElementsAre(t2_, t3_));
+  EXPECT_THAT(times, ElementsAre(t1_, t2_, t3_));
   times = Times(fork);
-  EXPECT_THAT(times, ElementsAre(t2_, t3_, t4_));
+  EXPECT_THAT(times, ElementsAre(t1_, t2_, t4_));
 
   trajectory_.DeleteAllForksBefore(t2_);
   times = Times(&trajectory_);
-  EXPECT_THAT(times, ElementsAre(t3_));
+  EXPECT_THAT(times, ElementsAre(t1_, t2_, t3_));
   // Don't use fork, it is dangling.
 }
 
@@ -340,8 +340,6 @@ TEST_F(ForkableTest, IteratorDecrementForkSuccess) {
   auto it = fork->End();
   --it;
   EXPECT_EQ(t3_, *it.current());
-  --it;
-  EXPECT_EQ(t2_, *it.current());
   --it;
   EXPECT_EQ(t1_, *it.current());
 }
@@ -389,9 +387,9 @@ TEST_F(ForkableTest, IteratorIncrementForkSuccess) {
   auto it = fork->Begin();
   EXPECT_EQ(t1_, *it.current());
   ++it;
-  EXPECT_EQ(t2_, *it.current());
-  ++it;
   EXPECT_EQ(t3_, *it.current());
+  ++it;
+  EXPECT_EQ(it, fork->End());
 }
 
 TEST_F(ForkableTest, IteratorIncrementMultipleForksSuccess) {
@@ -468,8 +466,6 @@ TEST_F(ForkableTest, IteratorBeginSuccess) {
   EXPECT_EQ(t1_, *it.current());
   ++it;
   EXPECT_EQ(t2_, *it.current());
-  ++it;
-  EXPECT_EQ(t3_, *it.current());
   ++it;
   EXPECT_EQ(t4_, *it.current());
   ++it;
@@ -581,8 +577,6 @@ TEST_F(ForkableTest, IteratorSerializationSuccess) {
     EXPECT_EQ(t1_, *it.current());
     ++it;
     EXPECT_EQ(t2_, *it.current());
-    ++it;
-    EXPECT_EQ(t3_, *it.current());
     ++it;
     EXPECT_EQ(it, trajectory->End());
   }
