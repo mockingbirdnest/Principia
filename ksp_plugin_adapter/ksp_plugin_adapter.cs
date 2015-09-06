@@ -1104,6 +1104,40 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
                                         UnityEngine.GUILayout.Width(75));
     UnityEngine.GUILayout.Label(text : "s g_0");
     UnityEngine.GUILayout.EndHorizontal();
+    if (UnityEngine.GUILayout.Button(
+            text    : "Auto",
+            options : UnityEngine.GUILayout.Width(100)) &&
+        FlightGlobals.fetch.activeVessel != null) {
+      Vessel active_vessel = FlightGlobals.fetch.activeVessel;
+      ModuleEngines[] active_engines =
+          (from part in active_vessel.parts
+           select (from PartModule module in part.Modules
+                   where module is ModuleEngines &&
+                         (module as ModuleEngines).EngineIgnited
+                   select module as ModuleEngines))
+              .SelectMany(x => x)
+              .ToArray();
+      Vector3d reference_direction = active_vessel.ReferenceTransform.forward;
+      double[] thrusts =
+          (from engine in active_engines
+           select engine.maxThrust * 1000 *
+                  (from transform in engine.thrustTransforms
+                   select Vector3d.Dot(reference_direction,
+                                       -transform.forward)).Average())
+              .ToArray();
+      double total_thrust = thrusts.Sum();
+      thrust_ = total_thrust.ToString();
+
+      // This would use zip if we had 4.0 or later.  We loop for now.
+      double Σ_f_over_i_sp = 0;
+      for (int i = 0; i < active_engines.Count(); ++i) {
+        Σ_f_over_i_sp += thrusts[i] /
+                         active_engines[i].atmosphereCurve.Evaluate(0);
+      }
+      specific_impulse_by_weight_ = (total_thrust / Σ_f_over_i_sp).ToString();
+
+      initial_mass_ = (active_vessel.GetTotalMass() * 1000).ToString();
+    }
     UnityEngine.GUILayout.BeginHorizontal();
     UnityEngine.GUILayout.Label(text    : "α = ");
     right_ascension_ =
@@ -1166,6 +1200,8 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
             }
             UpdateFlightPlan(plugin_, active_vessel);
           }
+        // TODO(egg): instead of using the exception-throwing versions, use the
+        // bool-returning versions, and give feedback.
         } catch (FormatException) {
         } catch (OverflowException) {}
       }
