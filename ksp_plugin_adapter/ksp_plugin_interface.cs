@@ -456,6 +456,11 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
                                             double duration);
 
   [DllImport(dllName           : kDllPath,
+             EntryPoint        = "principia__set_Δv",
+             CallingConvention = CallingConvention.Cdecl)]
+  private static extern IntPtr set_Δv(IntPtr manœuvre, double Δv);
+
+  [DllImport(dllName           : kDllPath,
              EntryPoint        = "principia__set_initial_time",
              CallingConvention = CallingConvention.Cdecl)]
   private static extern IntPtr set_initial_time(IntPtr manœuvre,

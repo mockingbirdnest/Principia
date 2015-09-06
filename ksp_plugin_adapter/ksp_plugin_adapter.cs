@@ -101,7 +101,7 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
   string specific_impulse_by_weight_ = "1.0";
   string right_ascension_ = "0.0";
   string declination_ = "0.0";
-  string duration_ = "1.0";
+  string Δv_ = "1.0";
   string initial_time_ = "10.0";
 
   [KSPField(isPersistant = true)]
@@ -1085,20 +1085,23 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
 
   private void ManœuvreSettings() {
     UnityEngine.GUILayout.BeginHorizontal();
-    UnityEngine.GUILayout.Label(text    : "F = ");
+    UnityEngine.GUILayout.Label(text    : "F = ",
+                                options : UnityEngine.GUILayout.Width(75));
     thrust_ = UnityEngine.GUILayout.TextField(thrust_,
                                               UnityEngine.GUILayout.Width(75));
     UnityEngine.GUILayout.Label(text : "N");
     UnityEngine.GUILayout.EndHorizontal();
     UnityEngine.GUILayout.BeginHorizontal();
-    UnityEngine.GUILayout.Label(text    : "m_0 = ");
+    UnityEngine.GUILayout.Label(text    : "m_0 = ",
+                                options : UnityEngine.GUILayout.Width(75));
     initial_mass_ =
         UnityEngine.GUILayout.TextField(initial_mass_,
                                         UnityEngine.GUILayout.Width(75));
     UnityEngine.GUILayout.Label(text : "kg");
     UnityEngine.GUILayout.EndHorizontal();
     UnityEngine.GUILayout.BeginHorizontal();
-    UnityEngine.GUILayout.Label(text    : "I_sp = ");
+    UnityEngine.GUILayout.Label(text    : "I_sp = ",
+                                options : UnityEngine.GUILayout.Width(75));
     specific_impulse_by_weight_ =
         UnityEngine.GUILayout.TextField(specific_impulse_by_weight_,
                                         UnityEngine.GUILayout.Width(75));
@@ -1117,7 +1120,7 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
                    select module as ModuleEngines))
               .SelectMany(x => x)
               .ToArray();
-      Vector3d reference_direction = active_vessel.ReferenceTransform.forward;
+      Vector3d reference_direction = active_vessel.ReferenceTransform.up;
       double[] thrusts =
           (from engine in active_engines
            select engine.maxThrust * 1000 *
@@ -1139,28 +1142,31 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
       initial_mass_ = (active_vessel.GetTotalMass() * 1000).ToString();
     }
     UnityEngine.GUILayout.BeginHorizontal();
-    UnityEngine.GUILayout.Label(text    : "α = ");
+    UnityEngine.GUILayout.Label(text    : "α = ",
+                                options : UnityEngine.GUILayout.Width(75));
     right_ascension_ =
         UnityEngine.GUILayout.TextField(right_ascension_,
                                         UnityEngine.GUILayout.Width(75));
     UnityEngine.GUILayout.Label(text : "°");
     UnityEngine.GUILayout.EndHorizontal();
     UnityEngine.GUILayout.BeginHorizontal();
-    UnityEngine.GUILayout.Label(text    : "δ = ");
+    UnityEngine.GUILayout.Label(text    : "δ = ",
+                                options : UnityEngine.GUILayout.Width(75));
     declination_ =
         UnityEngine.GUILayout.TextField(declination_,
                                         UnityEngine.GUILayout.Width(75));
     UnityEngine.GUILayout.Label(text : "°");
     UnityEngine.GUILayout.EndHorizontal();
     UnityEngine.GUILayout.BeginHorizontal();
-    UnityEngine.GUILayout.Label(text    : "Δt = ");
-    duration_ =
-        UnityEngine.GUILayout.TextField(duration_,
-                                        UnityEngine.GUILayout.Width(75));
-    UnityEngine.GUILayout.Label(text : "s");
+    UnityEngine.GUILayout.Label(text    : "Δv = ",
+                                options : UnityEngine.GUILayout.Width(75));
+    Δv_ = UnityEngine.GUILayout.TextField(Δv_,
+                                         UnityEngine.GUILayout.Width(75));
+    UnityEngine.GUILayout.Label(text : "m/s");
     UnityEngine.GUILayout.EndHorizontal();
     UnityEngine.GUILayout.BeginHorizontal();
-    UnityEngine.GUILayout.Label(text    : "t_0 = ");
+    UnityEngine.GUILayout.Label(text    : "t_0 = ",
+                                options : UnityEngine.GUILayout.Width(75));
     initial_time_ =
         UnityEngine.GUILayout.TextField(initial_time_,
                                         UnityEngine.GUILayout.Width(75));
@@ -1180,7 +1186,7 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
               double.Parse(specific_impulse_by_weight_);
           double right_ascension = double.Parse(right_ascension_);
           double declination = double.Parse(declination_);
-          double duration = double.Parse(duration_);
+          double Δv = double.Parse(Δv_);
           double initial_time = double.Parse(initial_time_) +
                                 FlightGlobals.ActiveVessel.launchTime;
           if (initial_time <= Planetarium.GetUniversalTime()) {
@@ -1191,7 +1197,7 @@ public partial class PrincipiaPluginAdapter : ScenarioModule {
                                                      specific_impulse_by_weight,
                                                      right_ascension,
                                                      declination);
-            set_duration(manœuvre, duration);
+            set_Δv(manœuvre, Δv);
             set_initial_time(manœuvre, initial_time);
             if (ManœuvreCount(plugin_, active_vessel) > 0) {
               SetVesselManœuvre(plugin_, active_vessel, 0, ref manœuvre);
