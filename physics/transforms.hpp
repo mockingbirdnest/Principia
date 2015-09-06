@@ -9,9 +9,9 @@
 
 #include "base/not_null.hpp"
 #include "physics/continuous_trajectory.hpp"
+#include "physics/discrete_trajectory.hpp"
 #include "physics/frame_field.hpp"
 #include "physics/massive_body.hpp"
-#include "physics/trajectory.hpp"
 
 namespace principia {
 
@@ -54,44 +54,50 @@ class Transforms {
   // Use this only for testing!
   static not_null<std::unique_ptr<Transforms>> DummyForTesting();
 
-  typename Trajectory<FromFrame>::template TransformingIterator<ThroughFrame>
-  first(Trajectory<FromFrame> const& from_trajectory);
+  typename DiscreteTrajectory<FromFrame>::
+  template TransformingIterator<ThroughFrame> first(
+      DiscreteTrajectory<FromFrame> const& from_trajectory);
 
-  typename Trajectory<FromFrame>::template TransformingIterator<ThroughFrame>
-  first_with_caching(not_null<Trajectory<FromFrame>*> const from_trajectory);
+  typename DiscreteTrajectory<FromFrame>::
+  template TransformingIterator<ThroughFrame> first_with_caching(
+      not_null<DiscreteTrajectory<FromFrame>*> const from_trajectory);
 
-  typename Trajectory<FromFrame>::template TransformingIterator<ThroughFrame>
-  first_on_or_after(Trajectory<FromFrame> const& from_trajectory,
-                    Instant const& time);
+  typename DiscreteTrajectory<FromFrame>::
+  template TransformingIterator<ThroughFrame> first_on_or_after(
+      DiscreteTrajectory<FromFrame> const& from_trajectory,
+      Instant const& time);
 
-  typename Trajectory<ThroughFrame>:: template TransformingIterator<ToFrame>
-  second(Instant const& last,
-         Trajectory<ThroughFrame> const& through_trajectory);
+  typename DiscreteTrajectory<ThroughFrame>::
+  template TransformingIterator<ToFrame> second(
+      Instant const& last,
+      DiscreteTrajectory<ThroughFrame> const& through_trajectory);
 
   // The coordinate frame of |ThroughFrame|, expressed in the coordinates of
   // |ToFrame| at time |last|.
   FrameField<ToFrame> coordinate_frame(Instant const& last) const;
 
  private:
-  // Just like a |Trajectory::Transform|, except that the first parameter is
-  // only bound when we know if we must cache.
+  // Just like a |DiscreteTrajectory::Transform|, except that the first
+  // parameter is only bound when we know if we must cache.
   template<typename Frame1, typename Frame2>
   using FirstTransform = std::function<DegreesOfFreedom<Frame2>(
                              bool const,
                              Instant const&,
                              DegreesOfFreedom<Frame1> const&,
-                             not_null<Trajectory<Frame1> const*> const)>;
+                             not_null<
+                                 DiscreteTrajectory<Frame1> const*> const)>;
   FirstTransform<FromFrame, ThroughFrame> first_;
 
-  // Just like a |Trajectory::Transform|, except that the first parameter is
-  // only bound when we know at what time (|last|) the transform must be
-  // applied.
+  // Just like a |DiscreteTrajectory::Transform|, except that the first
+  // parameter is only bound when we know at what time (|last|) the transform
+  // must be applied.
   template<typename Frame1, typename Frame2>
   using SecondTransform = std::function<DegreesOfFreedom<Frame2>(
                               Instant const& last,
                               Instant const& t,
                               DegreesOfFreedom<Frame1> const&,
-                              not_null<Trajectory<Frame1> const*> const)>;
+                              not_null<
+                                  DiscreteTrajectory<Frame1> const*> const)>;
   SecondTransform<ThroughFrame, ToFrame> second_;
 
   // A simple cache which monitors the hit rate.  Keyed by a pointer, so it
@@ -99,22 +105,23 @@ class Transforms {
   template<typename Frame1, typename Frame2>
   class Cache {
    public:
-    bool Lookup(not_null<Trajectory<Frame1> const*> const trajectory,
+    bool Lookup(not_null<DiscreteTrajectory<Frame1> const*> const trajectory,
                 Instant const& time,
                 not_null<DegreesOfFreedom<Frame2>**> degrees_of_freedom);
 
-    void Insert(not_null<Trajectory<Frame1> const*> const trajectory,
+    void Insert(not_null<DiscreteTrajectory<Frame1> const*> const trajectory,
                 Instant const& time,
                 DegreesOfFreedom<Frame2> const& degrees_of_freedom);
 
-    void Delete(not_null<Trajectory<Frame1> const*> const trajectory);
+    void Delete(not_null<DiscreteTrajectory<Frame1> const*> const trajectory);
 
    private:
-    std::map<not_null<Trajectory<Frame1> const*>,
+    std::map<not_null<DiscreteTrajectory<Frame1> const*>,
              std::map<Instant, DegreesOfFreedom<Frame2>>> cache_;
-    std::map<not_null<Trajectory<Frame1> const*>, std::int64_t>
-        number_of_lookups_;
-    std::map<not_null<Trajectory<Frame1> const*>, std::int64_t> number_of_hits_;
+    std::map<not_null<DiscreteTrajectory<Frame1> const*>,
+             std::int64_t> number_of_lookups_;
+    std::map<not_null<DiscreteTrajectory<Frame1> const*>,
+             std::int64_t> number_of_hits_;
   };
 
   // A cache for the result of the |first_| transform.  This cache assumes that

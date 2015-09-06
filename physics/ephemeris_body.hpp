@@ -263,12 +263,13 @@ void Ephemeris<Frame>::Prolong(Instant const& t) {
 
 template<typename Frame>
 void Ephemeris<Frame>::FlowWithAdaptiveStep(
-    not_null<Trajectory<Frame>*> const trajectory,
+    not_null<DiscreteTrajectory<Frame>*> const trajectory,
     Length const& length_integration_tolerance,
     Speed const& speed_integration_tolerance,
     AdaptiveStepSizeIntegrator<NewtonianMotionEquation> const& integrator,
     Instant const& t) {
-  std::vector<not_null<Trajectory<Frame>*>> const trajectories = {trajectory};
+  std::vector<not_null<DiscreteTrajectory<Frame>*>> const trajectories =
+      {trajectory};
   if (empty() || t > t_max()) {
     Prolong(t);
   }
@@ -308,7 +309,7 @@ void Ephemeris<Frame>::FlowWithAdaptiveStep(
 
 template<typename Frame>
 void Ephemeris<Frame>::FlowWithFixedStep(
-    std::vector<not_null<Trajectory<Frame>*>> const& trajectories,
+    std::vector<not_null<DiscreteTrajectory<Frame>*>> const& trajectories,
     Time const& step,
     Instant const& t) {
   VLOG(1) << __FUNCTION__ << " " << NAMED(step) << " " << NAMED(t);
@@ -435,16 +436,16 @@ std::unique_ptr<Ephemeris<Frame>> Ephemeris<Frame>::ReadFromPreBourbakiMessages(
             << " bytes in pre-Bourbaki compatibility mode ";
   std::vector<not_null<std::unique_ptr<MassiveBody const>>> bodies;
   std::vector<DegreesOfFreedom<Frame>> initial_state;
-  std::vector<std::unique_ptr<Trajectory<Frame>>> histories;
+  std::vector<std::unique_ptr<DiscreteTrajectory<Frame>>> histories;
   std::set<Instant> initial_time;
   std::set<Instant> final_time;
   for (auto const& message : messages) {
     serialization::Celestial const& celestial = message.celestial();
     bodies.emplace_back(MassiveBody::ReadFromMessage(celestial.body()));
-    histories.emplace_back(Trajectory<Frame>::ReadFromMessage(
+    histories.emplace_back(DiscreteTrajectory<Frame>::ReadFromMessage(
         celestial.history_and_prolongation().history()));
     auto const prolongation =
-        Trajectory<Frame>::ReadPointerFromMessage(
+        DiscreteTrajectory<Frame>::ReadPointerFromMessage(
             celestial.history_and_prolongation().prolongation(),
             histories.back().get());
     initial_state.push_back(histories.back()->first().degrees_of_freedom());
@@ -556,7 +557,7 @@ void Ephemeris<Frame>::AppendMassiveBodiesState(
 template<typename Frame>
 void Ephemeris<Frame>::AppendMasslessBodiesState(
     typename NewtonianMotionEquation::SystemState const& state,
-    std::vector<not_null<Trajectory<Frame>*>> const& trajectories) {
+    std::vector<not_null<DiscreteTrajectory<Frame>*>> const& trajectories) {
   int index = 0;
   for (auto& trajectory : trajectories) {
     trajectory->Append(
@@ -721,7 +722,7 @@ void Ephemeris<Frame>::ComputeMassiveBodiesGravitationalAccelerations(
 
 template<typename Frame>
 void Ephemeris<Frame>::ComputeMasslessBodiesGravitationalAccelerations(
-      std::vector<not_null<Trajectory<Frame>*>> const& trajectories,
+      std::vector<not_null<DiscreteTrajectory<Frame>*>> const& trajectories,
       Instant const& t,
       std::vector<Position<Frame>> const& positions,
       not_null<std::vector<Vector<Acceleration, Frame>>*> const accelerations,

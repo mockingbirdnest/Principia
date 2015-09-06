@@ -173,8 +173,6 @@
     <ClInclude Include="mock_ephemeris.hpp" />
     <ClInclude Include="oblate_body.hpp" />
     <ClInclude Include="oblate_body_body.hpp" />
-    <ClInclude Include="trajectory.hpp" />
-    <ClInclude Include="trajectory_body.hpp" />
     <ClInclude Include="transforms.hpp" />
     <ClInclude Include="transforms_body.hpp" />
   </ItemGroup>
@@ -185,7 +183,6 @@
     <ClCompile Include="discrete_trajectory_test.cpp" />
     <ClCompile Include="ephemeris_test.cpp" />
     <ClCompile Include="forkable_test.cpp" />
-    <ClCompile Include="trajectory_test.cpp" />
     <ClCompile Include="transforms_test.cpp" />
   </ItemGroup>
   <ItemGroup>
