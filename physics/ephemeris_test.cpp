@@ -58,8 +58,8 @@ class EphemerisTest : public testing::Test {
       not_null<Time*> const period) {
     // Create the Moon before the Earth to exercise a bug caused by the order of
     // pointers differing from the order of bodies (don't ask).
-    auto moon = std::make_unique<MassiveBody const>(7E22 * Kilogram);
-    auto earth = std::make_unique<MassiveBody const>(6E24 * Kilogram);
+    auto moon = std::make_unique<MassiveBody const>(7.3459E22 * Kilogram);
+    auto earth = std::make_unique<MassiveBody const>(5.9721986E24 * Kilogram);
 
     // The Earth-Moon system, roughly, with a circular orbit with velocities
     // in the centre-of-mass frame.
@@ -168,7 +168,7 @@ TEST_F(EphemerisTest, EarthMoon) {
   }
   EXPECT_THAT(earth_positions.size(), Eq(101));
   EXPECT_THAT(Abs(earth_positions[25].coordinates().y), Lt(6E-4 * Metre));
-  EXPECT_THAT(Abs(earth_positions[50].coordinates().x), Lt(6E-3 * Metre));
+  EXPECT_THAT(Abs(earth_positions[50].coordinates().x), Lt(7E-3 * Metre));
   EXPECT_THAT(Abs(earth_positions[75].coordinates().y), Lt(2E-2 * Metre));
   EXPECT_THAT(Abs(earth_positions[100].coordinates().x), Lt(3E-2 * Metre));
 
@@ -280,13 +280,13 @@ TEST_F(EphemerisTest, Moon) {
 
   EXPECT_THAT(moon_positions.size(), Eq(101));
   EXPECT_THAT(moon_positions[25].coordinates().x,
-              AlmostEquals(0.25 * period * v, 13));
+              AlmostEquals(0.25 * period * v, 12));
   EXPECT_THAT(moon_positions[25].coordinates().y, Eq(q));
   EXPECT_THAT(moon_positions[50].coordinates().x,
-              AlmostEquals(0.50 * period * v, 14));
+              AlmostEquals(0.50 * period * v, 11));
   EXPECT_THAT(moon_positions[50].coordinates().y, Eq(q));
   EXPECT_THAT(moon_positions[75].coordinates().x,
-              AlmostEquals(0.75 * period * v, 19));
+              AlmostEquals(0.75 * period * v, 18));
   EXPECT_THAT(moon_positions[75].coordinates().y, Eq(q));
   EXPECT_THAT(moon_positions[100].coordinates().x,
               AlmostEquals(1.00 * period * v, 13));
@@ -362,16 +362,16 @@ TEST_F(EphemerisTest, EarthProbe) {
 
   EXPECT_THAT(earth_positions.size(), Eq(101));
   EXPECT_THAT(earth_positions[25].coordinates().x,
-              AlmostEquals(0.25 * period * v_earth, 15));
+              AlmostEquals(0.25 * period * v_earth, 9));
   EXPECT_THAT(earth_positions[25].coordinates().y, Eq(q_earth));
   EXPECT_THAT(earth_positions[50].coordinates().x,
-              AlmostEquals(0.50 * period * v_earth, 16));
+              AlmostEquals(0.50 * period * v_earth, 9));
   EXPECT_THAT(earth_positions[50].coordinates().y, Eq(q_earth));
   EXPECT_THAT(earth_positions[75].coordinates().x,
-              AlmostEquals(0.75 * period * v_earth, 10));
+              AlmostEquals(0.75 * period * v_earth, 4));
   EXPECT_THAT(earth_positions[75].coordinates().y, Eq(q_earth));
   EXPECT_THAT(earth_positions[100].coordinates().x,
-              AlmostEquals(1.00 * period * v_earth, 14));
+              AlmostEquals(1.00 * period * v_earth, 6));
   EXPECT_THAT(earth_positions[100].coordinates().y, Eq(q_earth));
 
   Length const q_probe = (trajectory.last().degrees_of_freedom().position() -
@@ -382,7 +382,7 @@ TEST_F(EphemerisTest, EarthProbe) {
   for (auto const it : trajectory.Positions()) {
     probe_positions.push_back(it.second - reference_position);
   }
-  EXPECT_THAT(probe_positions.size(), Eq(10));
+  EXPECT_THAT(probe_positions.size(), Eq(11));
   EXPECT_THAT(probe_positions.back().coordinates().x,
               AlmostEquals(1.00 * period * v_probe, 1));
   EXPECT_THAT(probe_positions.back().coordinates().y,
@@ -469,16 +469,16 @@ TEST_F(EphemerisTest, EarthTwoProbes) {
 
   EXPECT_THAT(earth_positions.size(), Eq(101));
   EXPECT_THAT(earth_positions[25].coordinates().x,
-              AlmostEquals(0.25 * period * v_earth, 15));
+              AlmostEquals(0.25 * period * v_earth, 9));
   EXPECT_THAT(earth_positions[25].coordinates().y, Eq(q_earth));
   EXPECT_THAT(earth_positions[50].coordinates().x,
-              AlmostEquals(0.50 * period * v_earth, 16));
+              AlmostEquals(0.50 * period * v_earth, 9));
   EXPECT_THAT(earth_positions[50].coordinates().y, Eq(q_earth));
   EXPECT_THAT(earth_positions[75].coordinates().x,
-              AlmostEquals(0.75 * period * v_earth, 10));
+              AlmostEquals(0.75 * period * v_earth, 4));
   EXPECT_THAT(earth_positions[75].coordinates().y, Eq(q_earth));
   EXPECT_THAT(earth_positions[100].coordinates().x,
-              AlmostEquals(1.00 * period * v_earth, 14));
+              AlmostEquals(1.00 * period * v_earth, 6));
   EXPECT_THAT(earth_positions[100].coordinates().y, Eq(q_earth));
 
   Length const q_probe1 = (trajectory1.last().degrees_of_freedom().position() -
@@ -507,7 +507,7 @@ TEST_F(EphemerisTest, EarthTwoProbes) {
   EXPECT_THAT(probe1_positions.back().coordinates().x,
               AlmostEquals(1.00 * period * v_probe1, 2));
   EXPECT_THAT(probe2_positions.back().coordinates().x,
-              AlmostEquals(1.00 * period * v_probe2, 1));
+              AlmostEquals(1.00 * period * v_probe2, 2));
   EXPECT_THAT(probe1_positions.back().coordinates().y,
               Eq(q_probe1));
   EXPECT_THAT(probe2_positions.back().coordinates().y,
@@ -749,6 +749,78 @@ TEST_F(EphemerisTest, Serialization) {
   ephemeris_read->WriteToMessage(&other_message);
 
   EXPECT_EQ(other_message.SerializeAsString(), message.SerializeAsString());
+}
+
+// The gravitational acceleration on at elephant located at the pole.
+TEST_F(EphemerisTest, ComputeGravitationalAcceleration) {
+  Position<EarthMoonOrbitPlane> const reference_position;
+  Length const kDistance = 6356.8 * Kilo(Metre);
+  Time const kDuration = 1 * Second;
+  std::vector<not_null<std::unique_ptr<MassiveBody const>>> bodies;
+  std::vector<DegreesOfFreedom<EarthMoonOrbitPlane>> initial_state;
+  Position<EarthMoonOrbitPlane> centre_of_mass;
+  Time period;
+  SetUpEarthMoonSystem(&bodies, &initial_state, &centre_of_mass, &period);
+
+  bodies.erase(bodies.begin() + 1);
+  initial_state.erase(initial_state.begin() + 1);
+
+  MassiveBody const* const earth = bodies[0].get();
+  Position<EarthMoonOrbitPlane> const earth_position =
+      initial_state[0].position();
+  Velocity<EarthMoonOrbitPlane> const earth_velocity =
+      initial_state[0].velocity();
+
+  Ephemeris<EarthMoonOrbitPlane>
+      ephemeris(
+          std::move(bodies),
+          initial_state,
+          t0_,
+          McLachlanAtela1992Order5Optimal<Position<EarthMoonOrbitPlane>>(),
+          kDuration / 100,
+          5 * Milli(Metre));
+
+  MasslessBody elephant;
+  DiscreteTrajectory<EarthMoonOrbitPlane> trajectory;
+  trajectory.Append(t0_,
+                    DegreesOfFreedom<EarthMoonOrbitPlane>(
+                        earth_position + Vector<Length, EarthMoonOrbitPlane>(
+                            {0 * Metre, kDistance, 0 * Metre}),
+                        earth_velocity));
+
+  ephemeris.FlowWithAdaptiveStep(&trajectory,
+                                 1E-9 * Metre,
+                                 2.6E-15 * Metre / Second,
+                                 DormandElMikkawyPrince1986RKN434FM<
+                                     Position<EarthMoonOrbitPlane>>(),
+                                 t0_ + kDuration);
+
+  Speed const v_elephant =
+      trajectory.last().degrees_of_freedom().velocity().coordinates().x;
+  std::vector<Displacement<EarthMoonOrbitPlane>> elephant_positions;
+  for (auto const pair : trajectory.Positions()) {
+    elephant_positions.push_back(pair.second - reference_position);
+  }
+  EXPECT_THAT(elephant_positions.size(), Eq(8));
+  EXPECT_THAT(elephant_positions.back().coordinates().x,
+              AlmostEquals(kDuration * v_elephant, 0));
+  EXPECT_LT(RelativeError(elephant_positions.back().coordinates().y,
+                          kDistance), 8E-7);
+
+  std::vector<Vector<Acceleration, EarthMoonOrbitPlane>> elephant_accelerations;
+  for (auto const& t : trajectory.Times()) {
+    elephant_accelerations.push_back(
+        ephemeris.ComputeGravitationalAcceleration(&trajectory, t));
+  }
+  EXPECT_THAT(elephant_accelerations.size(), Eq(8));
+  EXPECT_THAT(elephant_accelerations.back().coordinates().x,
+              AlmostEquals(0 * SIUnit<Acceleration>(), 0));
+  // 9.832 m/s^2 is the nominal acceleration at the pole, but this elephant is
+  // very heavy so it gets 9.864 m/s^2.
+  EXPECT_LT(RelativeError(elephant_accelerations.back().coordinates().y,
+                          -9.832 * SIUnit<Acceleration>()), 3.2E-3);
+  EXPECT_THAT(elephant_accelerations.back().coordinates().z,
+              AlmostEquals(0 * SIUnit<Acceleration>(), 0));
 }
 
 }  // namespace physics
