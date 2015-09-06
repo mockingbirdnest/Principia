@@ -96,6 +96,13 @@ class Ephemeris {
       Time const& step,
       Instant const& t);
 
+  // Returns the gravitational acceleration on the massless body having the
+  // given |trajectory| at time |t|.  |t| must be one of the times of the
+  // |trajectory|.
+  virtual Vector<Acceleration, Frame> ComputeGravitationalAcceleration(
+      not_null<DiscreteTrajectory<Frame>*> const trajectory,
+      Instant const& t);
+
   virtual void WriteToMessage(
       not_null<serialization::Ephemeris*> const message) const;
   // Should be |not_null| once we have move conversion.

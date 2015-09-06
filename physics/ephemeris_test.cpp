@@ -751,5 +751,76 @@ TEST_F(EphemerisTest, Serialization) {
   EXPECT_EQ(other_message.SerializeAsString(), message.SerializeAsString());
 }
 
+TEST_F(EphemerisTest, ComputeGravitationalAcceleration) {
+  Position<EarthMoonOrbitPlane> const reference_position;
+  Length const kDistance = 6371 * Kilo(Metre);
+  Time const kDuration = 1 * Second;
+  std::vector<not_null<std::unique_ptr<MassiveBody const>>> bodies;
+  std::vector<DegreesOfFreedom<EarthMoonOrbitPlane>> initial_state;
+  Position<EarthMoonOrbitPlane> centre_of_mass;
+  Time period;
+  SetUpEarthMoonSystem(&bodies, &initial_state, &centre_of_mass, &period);
+
+  bodies.erase(bodies.begin() + 1);
+  initial_state.erase(initial_state.begin() + 1);
+
+  MassiveBody const* const earth = bodies[0].get();
+  Position<EarthMoonOrbitPlane> const earth_position =
+      initial_state[0].position();
+  Velocity<EarthMoonOrbitPlane> const earth_velocity =
+      initial_state[0].velocity();
+
+  Ephemeris<EarthMoonOrbitPlane>
+      ephemeris(
+          std::move(bodies),
+          initial_state,
+          t0_,
+          McLachlanAtela1992Order5Optimal<Position<EarthMoonOrbitPlane>>(),
+          kDuration / 100,
+          5 * Milli(Metre));
+
+  MasslessBody elephant;
+  DiscreteTrajectory<EarthMoonOrbitPlane> trajectory;
+  trajectory.Append(t0_,
+                    DegreesOfFreedom<EarthMoonOrbitPlane>(
+                        earth_position + Vector<Length, EarthMoonOrbitPlane>(
+                            {0 * Metre, kDistance, 0 * Metre}),
+                        earth_velocity));
+
+  ephemeris.FlowWithAdaptiveStep(&trajectory,
+                                 1E-9 * Metre,
+                                 2.6E-15 * Metre / Second,
+                                 DormandElMikkawyPrince1986RKN434FM<
+                                     Position<EarthMoonOrbitPlane>>(),
+                                 t0_ + kDuration);
+
+  Length const q_elephant = (trajectory.last().degrees_of_freedom().position() -
+                            reference_position).coordinates().y;
+  Speed const v_elephant =
+      trajectory.last().degrees_of_freedom().velocity().coordinates().x;
+  std::vector<Displacement<EarthMoonOrbitPlane>> elephant_positions;
+  for (auto const pair : trajectory.Positions()) {
+    elephant_positions.push_back(pair.second - reference_position);
+  }
+  EXPECT_THAT(elephant_positions.size(), Eq(10));
+  EXPECT_THAT(elephant_positions.back().coordinates().x,
+              AlmostEquals(1.00 * kDuration * v_elephant, 1));
+  EXPECT_THAT(elephant_positions.back().coordinates().y,
+              Eq(q_elephant));
+
+  std::vector<Vector<Acceleration, EarthMoonOrbitPlane>> elephant_accelerations;
+  for (auto const& t : trajectory.Times()) {
+    elephant_accelerations.push_back(
+        ephemeris.ComputeGravitationalAcceleration(&trajectory, t));
+  }
+  EXPECT_THAT(elephant_accelerations.size(), Eq(10));
+  EXPECT_THAT(elephant_accelerations.back().coordinates().x,
+              AlmostEquals(0 * SIUnit<Acceleration>(), 1));
+  EXPECT_THAT(elephant_accelerations.back().coordinates().y,
+              AlmostEquals(0 * SIUnit<Acceleration>(), 1));
+  EXPECT_THAT(elephant_accelerations.back().coordinates().z,
+              AlmostEquals(0 * SIUnit<Acceleration>(), 1));
+}
+
 }  // namespace physics
 }  // namespace principia
