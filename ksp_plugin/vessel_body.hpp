@@ -89,7 +89,7 @@ inline void Vessel::CreateHistoryAndForkProlongation(
   CHECK(!is_synchronized());
   history_ = std::make_unique<DiscreteTrajectory<Barycentric>>();
   history_->Append(time, degrees_of_freedom);
-  prolongation_ = history_->NewFork(time);
+  prolongation_ = history_->NewForkWithCopy(time);
   owned_prolongation_.reset();
 }
 
@@ -98,12 +98,13 @@ inline void Vessel::ResetProlongation(Instant const& time) {
   CHECK(is_synchronized());
   CHECK(owned_prolongation_ == nullptr);
   history_->DeleteFork(&prolongation_);
-  prolongation_ = history_->NewFork(time);
+  prolongation_ = history_->NewForkWithCopy(time);
 }
 
 inline void Vessel::ForkPrediction() {
   CHECK(prediction_ == nullptr);
-  prediction_ = mutable_prolongation()->NewFork(prolongation().last().time());
+  prediction_ =
+      mutable_prolongation()->NewForkWithCopy(prolongation().last().time());
 }
 
 inline void Vessel::DeletePrediction() {

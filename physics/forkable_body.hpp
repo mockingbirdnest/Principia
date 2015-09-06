@@ -6,34 +6,6 @@ namespace principia {
 namespace physics {
 
 template<typename Tr4jectory>
-not_null<Tr4jectory*> Forkable<Tr4jectory>::NewFork(Instant const & time) {
-  Instant const* const fork_time = ForkTime();
-  CHECK(timeline_find(time) != timeline_end() ||
-        (fork_time != nullptr && time == *fork_time))
-      << "NewFork at nonexistent time " << time;
-
-  // May be at |timeline_end()| if |time| is the fork time of this object.
-  auto timeline_it = timeline_find(time);
-
-  // First create a child in the multimap.
-  auto const child_it = children_.emplace(std::piecewise_construct,
-                                          std::forward_as_tuple(time),
-                                          std::forward_as_tuple());
-
-  // Now set the members of the child object.
-  auto& child_forkable = child_it->second;
-  child_forkable.parent_ = that();
-  child_forkable.position_in_parent_children_ = child_it;
-  child_forkable.position_in_parent_timeline_ = timeline_it;
-
-  // Copy the tail of the trajectory in the child object.
-  if (timeline_it != timeline_end()) {
-    child_forkable.timeline_insert(++timeline_it, timeline_end());
-  }
-  return &child_forkable;
-}
-
-template<typename Tr4jectory>
 void Forkable<Tr4jectory>::DeleteFork(not_null<Tr4jectory**> const trajectory) {
   CHECK_NOTNULL(*trajectory);
   Instant const* const fork_time = (*trajectory)->ForkTime();
@@ -50,39 +22,6 @@ void Forkable<Tr4jectory>::DeleteFork(not_null<Tr4jectory**> const trajectory) {
   LOG(FATAL) << "argument is not a child of this trajectory";
 }
 
-template<typename Tr4jectory>
-void Forkable<Tr4jectory>::ForgetAfter(Instant const& time) {
-  // Each of these blocks gets an iterator denoting the first entry with
-  // time > |time|.  It then removes that entry and all the entries that follow
-  // it.  This preserve any entry with time == |time|.
-  {
-    auto const it = timeline_upper_bound(time);
-    CHECK(is_root() || time >= *ForkTime())
-        << "ForgetAfter before the fork time";
-    timeline_erase(it, timeline_end());
-  }
-  {
-    auto const it = children_.upper_bound(time);
-    children_.erase(it, children_.end());
-  }
-}
-
-template<typename Tr4jectory>
-void Forkable<Tr4jectory>::ForgetBefore(Instant const& time) {
-  // Check that this is a root.
-  CHECK(is_root()) << "ForgetBefore on a nonroot trajectory";
-  // Each of these blocks gets an iterator denoting the first entry with
-  // time > |time|.  It then removes that all the entries that precede it.  This
-  // removes any entry with time == |time|.
-  {
-    auto it = timeline_upper_bound(time);
-    timeline_erase(timeline_begin(), it);
-  }
-  {
-    auto it = children_.upper_bound(time);
-    children_.erase(children_.begin(), it);
-  }
-}
 template<typename Tr4jectory>
 bool Forkable<Tr4jectory>::is_root() const {
   return parent_ == nullptr;
@@ -345,6 +284,50 @@ not_null<Tr4jectory*> Forkable<Tr4jectory>::ReadPointerFromMessage(
 }
 
 template<typename Tr4jectory>
+not_null<Tr4jectory*> Forkable<Tr4jectory>::NewFork(Instant const & time) {
+  Instant const* const fork_time = ForkTime();
+  CHECK(timeline_find(time) != timeline_end() ||
+        (fork_time != nullptr && time == *fork_time))
+      << "NewFork at nonexistent time " << time;
+
+  // May be at |timeline_end()| if |time| is the fork time of this object.
+  auto timeline_it = timeline_find(time);
+
+  // First create a child in the multimap.
+  auto const child_it = children_.emplace(std::piecewise_construct,
+                                          std::forward_as_tuple(time),
+                                          std::forward_as_tuple());
+
+  // Now set the members of the child object.
+  auto& child_forkable = child_it->second;
+  child_forkable.parent_ = that();
+  child_forkable.position_in_parent_children_ = child_it;
+  child_forkable.position_in_parent_timeline_ = timeline_it;
+
+  return &child_forkable;
+}
+
+template<typename Tr4jectory>
+void Forkable<Tr4jectory>::DeleteAllForksAfter(Instant const& time) {
+  // Get an iterator denoting the first entry with time > |time|.  Remove that
+  // entry and all the entries that follow it.  This preserve any entry with
+  // time == |time|.
+  CHECK(is_root() || time >= *ForkTime())
+      << "DeleteAllForksAfter before the fork time";
+  auto const it = children_.upper_bound(time);
+  children_.erase(it, children_.end());
+}
+
+template<typename Tr4jectory>
+void Forkable<Tr4jectory>::DeleteAllForksBefore(Instant const& time) {
+  CHECK(is_root()) << "DeleteAllForksBefore on a nonroot trajectory";
+  // Get an iterator denoting the first entry with time > |time|.  Remove all
+  // the entries that precede it.  This removes any entry with time == |time|.
+  auto it = children_.upper_bound(time);
+  children_.erase(children_.begin(), it);
+}
+
+template<typename Tr4jectory>
 void Forkable<Tr4jectory>::WriteSubTreeToMessage(
     not_null<serialization::Trajectory*> const message) const {
   Instant last_instant;  // optional.
@@ -360,6 +343,17 @@ void Forkable<Tr4jectory>::WriteSubTreeToMessage(
       fork_time.WriteToMessage(litter->mutable_fork_time());
     }
     child.WriteSubTreeToMessage(litter->add_trajectories());
+  }
+}
+
+template<typename Tr4jectory>
+void Forkable<Tr4jectory>::FillSubTreeFromMessage(
+    serialization::Trajectory const& message) {
+  for (serialization::Trajectory::Litter const& litter : message.children()) {
+    Instant const fork_time = Instant::ReadFromMessage(litter.fork_time());
+    for (serialization::Trajectory const& child : litter.trajectories()) {
+      NewFork(fork_time)->FillSubTreeFromMessage(child);
+    }
   }
 }
 

@@ -30,6 +30,10 @@ class FakeTrajectory : public Forkable<FakeTrajectory> {
 
   void push_back(Instant const& time);
 
+  using Forkable<FakeTrajectory>::NewFork;
+  using Forkable<FakeTrajectory>::DeleteAllForksAfter;
+  using Forkable<FakeTrajectory>::DeleteAllForksBefore;
+
  protected:
   not_null<FakeTrajectory*> that() override;
   not_null<FakeTrajectory const*> that() const override;
@@ -41,10 +45,6 @@ class FakeTrajectory : public Forkable<FakeTrajectory> {
                             Instant const& time) const override;
   TimelineConstIterator timeline_upper_bound(
                             Instant const& time) const override;
-  void timeline_erase(TimelineConstIterator begin,
-                      TimelineConstIterator end) override;
-  void timeline_insert(TimelineConstIterator begin,
-                       TimelineConstIterator end) override;
   bool timeline_empty() const override;
 
  private:
@@ -113,17 +113,6 @@ FakeTrajectory::TimelineConstIterator FakeTrajectory::timeline_upper_bound(
   return timeline_.end();
 }
 
-void FakeTrajectory::timeline_erase(TimelineConstIterator begin,
-                                    TimelineConstIterator end) {
-  timeline_.erase(begin, end);
-}
-
-void FakeTrajectory::timeline_insert(TimelineConstIterator begin,
-                                     TimelineConstIterator end) {
-  CHECK(timeline_empty());
-  timeline_.insert(timeline_.end(), begin, end);
-}
-
 bool FakeTrajectory::timeline_empty() const {
   return timeline_.empty();
 }
@@ -190,7 +179,7 @@ TEST_F(ForkableTest, ForkSuccess) {
   auto times = Times(&trajectory_);
   EXPECT_THAT(times, ElementsAre(t1_, t2_, t3_));
   times = Times(fork);
-  EXPECT_THAT(times, ElementsAre(t1_, t2_, t3_, t4_));
+  EXPECT_THAT(times, ElementsAre(t1_, t2_, t4_));
 }
 
 TEST_F(ForkableTest, ForkAtLast) {
@@ -263,66 +252,66 @@ TEST_F(ForkableTest, DeleteForkSuccess) {
   auto times = Times(&trajectory_);
   EXPECT_THAT(times, ElementsAre(t1_, t2_, t3_));
   times = Times(fork1);
-  EXPECT_THAT(times, ElementsAre(t1_, t2_, t3_, t4_));
+  EXPECT_THAT(times, ElementsAre(t1_, t2_, t4_));
 }
 
-TEST_F(ForkableDeathTest, ForgetAfterError) {
+TEST_F(ForkableDeathTest, DeleteAllForksAfterError) {
   EXPECT_DEATH({
     trajectory_.push_back(t1_);
     trajectory_.push_back(t2_);
     not_null<FakeTrajectory*> const fork = trajectory_.NewFork(t2_);
-    fork->ForgetAfter(t1_);
+    fork->DeleteAllForksAfter(t1_);
   }, "before the fork time");
 }
 
-TEST_F(ForkableTest, ForgetAfterSuccess) {
+TEST_F(ForkableTest, DeleteAllForksAfterSuccess) {
   trajectory_.push_back(t1_);
   trajectory_.push_back(t2_);
   trajectory_.push_back(t3_);
   not_null<FakeTrajectory*> const fork = trajectory_.NewFork(t2_);
   fork->push_back(t4_);
 
-  fork->ForgetAfter(t3_ + (t4_ - t3_) / 2);
+  fork->DeleteAllForksAfter(t3_ + (t4_ - t3_) / 2);
   auto times = Times(fork);
-  EXPECT_THAT(times, ElementsAre(t1_, t2_, t3_));
+  EXPECT_THAT(times, ElementsAre(t1_, t2_, t4_));
 
-  fork->ForgetAfter(t2_);
+  fork->DeleteAllForksAfter(t2_);
   times = Times(fork);
-  EXPECT_THAT(times, ElementsAre(t1_, t2_));
+  EXPECT_THAT(times, ElementsAre(t1_, t2_, t4_));
 
   times = Times(&trajectory_);
   EXPECT_THAT(times, ElementsAre(t1_, t2_, t3_));
 
-  trajectory_.ForgetAfter(t1_);
+  trajectory_.DeleteAllForksAfter(t1_);
   times = Times(&trajectory_);
-  EXPECT_THAT(times, ElementsAre(t1_));
+  EXPECT_THAT(times, ElementsAre(t1_, t2_, t3_));
   // Don't use fork, it is dangling.
 }
 
-TEST_F(ForkableDeathTest, ForgetBeforeError) {
+TEST_F(ForkableDeathTest, DeleteAllForksBeforeError) {
   EXPECT_DEATH({
     trajectory_.push_back(t1_);
     not_null<FakeTrajectory*> const fork = trajectory_.NewFork(t1_);
-    fork->ForgetBefore(t1_);
+    fork->DeleteAllForksBefore(t1_);
   }, "nonroot");
 }
 
-TEST_F(ForkableTest, ForgetBeforeSuccess) {
+TEST_F(ForkableTest, DeleteAllForksBeforeSuccess) {
   trajectory_.push_back(t1_);
   trajectory_.push_back(t2_);
   trajectory_.push_back(t3_);
   not_null<FakeTrajectory*> const fork = trajectory_.NewFork(t2_);
   fork->push_back(t4_);
 
-  trajectory_.ForgetBefore(t1_ + (t2_ - t1_) / 2);
+  trajectory_.DeleteAllForksBefore(t1_ + (t2_ - t1_) / 2);
   auto times = Times(&trajectory_);
-  EXPECT_THAT(times, ElementsAre(t2_, t3_));
+  EXPECT_THAT(times, ElementsAre(t1_, t2_, t3_));
   times = Times(fork);
-  EXPECT_THAT(times, ElementsAre(t2_, t3_, t4_));
+  EXPECT_THAT(times, ElementsAre(t1_, t2_, t4_));
 
-  trajectory_.ForgetBefore(t2_);
+  trajectory_.DeleteAllForksBefore(t2_);
   times = Times(&trajectory_);
-  EXPECT_THAT(times, ElementsAre(t3_));
+  EXPECT_THAT(times, ElementsAre(t1_, t2_, t3_));
   // Don't use fork, it is dangling.
 }
 
@@ -355,8 +344,6 @@ TEST_F(ForkableTest, IteratorDecrementForkSuccess) {
   auto it = fork->End();
   --it;
   EXPECT_EQ(t3_, *it.current());
-  --it;
-  EXPECT_EQ(t2_, *it.current());
   --it;
   EXPECT_EQ(t1_, *it.current());
 }
@@ -404,9 +391,9 @@ TEST_F(ForkableTest, IteratorIncrementForkSuccess) {
   auto it = fork->Begin();
   EXPECT_EQ(t1_, *it.current());
   ++it;
-  EXPECT_EQ(t2_, *it.current());
-  ++it;
   EXPECT_EQ(t3_, *it.current());
+  ++it;
+  EXPECT_EQ(it, fork->End());
 }
 
 TEST_F(ForkableTest, IteratorIncrementMultipleForksSuccess) {
@@ -483,8 +470,6 @@ TEST_F(ForkableTest, IteratorBeginSuccess) {
   EXPECT_EQ(t1_, *it.current());
   ++it;
   EXPECT_EQ(t2_, *it.current());
-  ++it;
-  EXPECT_EQ(t3_, *it.current());
   ++it;
   EXPECT_EQ(t4_, *it.current());
   ++it;
@@ -565,7 +550,7 @@ TEST_F(ForkableTest, IteratorSerializationSuccess) {
   not_null<FakeTrajectory*> const fork1 = trajectory_.NewFork(t2_);
   not_null<FakeTrajectory*> const fork2 = trajectory_.NewFork(t2_);
   not_null<FakeTrajectory*> const fork3 = trajectory_.NewFork(t3_);
-  fork2->ForgetAfter(t2_);
+  fork2->DeleteAllForksAfter(t2_);
   fork3->push_back(t4_);
 
   {
@@ -596,8 +581,6 @@ TEST_F(ForkableTest, IteratorSerializationSuccess) {
     EXPECT_EQ(t1_, *it.current());
     ++it;
     EXPECT_EQ(t2_, *it.current());
-    ++it;
-    EXPECT_EQ(t3_, *it.current());
     ++it;
     EXPECT_EQ(it, trajectory->End());
   }
