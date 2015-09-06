@@ -358,6 +358,28 @@ void Ephemeris<Frame>::FlowWithFixedStep(
 }
 
 template<typename Frame>
+Vector<Acceleration, Frame> Ephemeris<Frame>::ComputeGravitationalAcceleration(
+    not_null<DiscreteTrajectory<Frame>*> const trajectory,
+    Instant const & t) {
+  auto const it = trajectory->Find(t);
+  DegreesOfFreedom<Frame> const& degrees_of_freedom = it.current()->second;
+
+  // To avoid intrinsic accelerations.
+  DiscreteTrajectory<Frame> empty_trajectory;
+
+  std::vector<Vector<Acceleration, Frame>> accelerations(1);
+  std::vector<typename ContinuousTrajectory<Frame>::Hint> hints(bodies_.size());
+  ComputeMasslessBodiesGravitationalAccelerations(
+      {&empty_trajectory},
+      t,
+      {degrees_of_freedom.position()},
+      &accelerations,
+      &hints);
+
+  return accelerations[0];
+}
+
+template<typename Frame>
 void Ephemeris<Frame>::WriteToMessage(
     not_null<serialization::Ephemeris*> const message) const {
   LOG(INFO) << __FUNCTION__;

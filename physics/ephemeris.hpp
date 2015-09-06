@@ -96,6 +96,13 @@ class Ephemeris {
       Time const& step,
       Instant const& t);
 
+  // Returns the gravitational acceleration on the massless body having the
+  // given |trajectory| at time |t|.  |t| must be one of the times of the
+  // |trajectory|.
+  virtual Vector<Acceleration, Frame> ComputeGravitationalAcceleration(
+      not_null<DiscreteTrajectory<Frame>*> const trajectory,
+      Instant const& t);
+
   virtual void WriteToMessage(
       not_null<serialization::Ephemeris*> const message) const;
   // Should be |not_null| once we have move conversion.
@@ -159,9 +166,10 @@ class Ephemeris {
       std::vector<Position<Frame>> const& positions,
       not_null<std::vector<Vector<Acceleration, Frame>>*> const accelerations);
 
-  // Computes the acceleration exerted by the massive bodies in |bodies_| on a
-  // massless body.  The massless body may have an intrinsic acceleration
-  // described in its |trajectory| object.  The |hints| are passed to
+  // Computes the acceleration exerted by the massive bodies in |bodies_| on
+  // massless bodies.  The massless bodies are at the given |positions| and may
+  // have an intrinsic acceleration described in their |trajectories| object.
+  // The |hints| are passed to
   // ComputeGravitationalAccelerationByMassiveBodyOnMasslessBody for efficient
   // computation of the positions of the massive bodies.
   void ComputeMasslessBodiesGravitationalAccelerations(
