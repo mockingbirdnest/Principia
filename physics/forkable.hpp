@@ -40,30 +40,10 @@ class Forkable {
   Forkable() = default;
   virtual ~Forkable() = default;
 
-  // Creates a new child trajectory forked at time |time|, and returns it.  The
-  // child trajectory shares its data with the current trajectory for times less
-  // than or equal to |time|, and is an exact copy of the current trajectory for
-  // times greater than |time|.  It may be changed independently from the
-  // parent trajectory for any time (strictly) greater than |time|.  The child
-  // trajectory is owned by its parent trajectory.  Deleting the parent
-  // trajectory deletes all child trajectories.  |time| must be one of the times
-  // of this trajectory, and must be at or after the fork time, if any.
-  not_null<Tr4jectory*> NewFork(Instant const& time);
-
   // Deletes the child trajectory denoted by |*trajectory|, which must be a
   // pointer previously returned by NewFork for this object.  Nulls
   // |*trajectory|.
   void DeleteFork(not_null<Tr4jectory**> const trajectory);
-
-  // Removes all data for times (strictly) greater than |time|, as well as all
-  // child trajectories forked at times (strictly) greater than |time|.  |time|
-  // must be at or after the fork time, if any.
-  void ForgetAfter(Instant const& time);
-
-  // Removes all data for times less than or equal to |time|, as well as all
-  // child trajectories forked at times less than or equal to |time|.  This
-  // trajectory must be a root.
-  void ForgetBefore(Instant const& time);
 
   // Returns true if this is a root trajectory.
   bool is_root() const;
@@ -138,10 +118,6 @@ class Forkable {
       serialization::Trajectory::Pointer const& message,
       not_null<Tr4jectory*> const trajectory);
 
-  // This trajectory need not be a root.
-  void WriteSubTreeToMessage(
-      not_null<serialization::Trajectory*> const message) const;
-
  protected:
   // The API that must be implemented by subclasses.
   // TODO(phl): Try to reduce this API.  Forkable should probably not modify the
@@ -159,11 +135,33 @@ class Forkable {
                                     Instant const& time) const = 0;
   virtual TimelineConstIterator timeline_upper_bound(
                                     Instant const& time) const = 0;
-  virtual void timeline_insert(TimelineConstIterator begin,
-                               TimelineConstIterator end) = 0;
-  virtual void timeline_erase(TimelineConstIterator begin,
-                              TimelineConstIterator end) = 0;
   virtual bool timeline_empty() const = 0;
+
+ protected:
+  // The API that subclasses may use to implement their public operations.
+
+  // Creates a new child trajectory forked at time |time|, and returns it.  The
+  // child trajectory shares its data with the current trajectory for times less
+  // than or equal to |time|.  It may be changed independently from the parent
+  // trajectory for any time (strictly) greater than |time|.  The child
+  // trajectory is owned by its parent trajectory.  Deleting the parent
+  // trajectory deletes all child trajectories.  |time| must be one of the times
+  // of this trajectory, and must be at or after the fork time, if any.
+  not_null<Tr4jectory*> NewFork(Instant const& time);
+
+  // Deletes all forks for times (strictly) greater than |time|.  |time| must be
+  // at or after the fork time of this trajectory, if any.
+  void DeleteAllForksAfter(Instant const& time);
+
+  // Deletes all forks for times less than or equal to |time|.  This trajectory
+  // must be a root.
+  void DeleteAllForksBefore(Instant const& time);
+
+  // This trajectory need not be a root.
+  void WriteSubTreeToMessage(
+      not_null<serialization::Trajectory*> const message) const;
+
+  void FillSubTreeFromMessage(serialization::Trajectory const& message);
 
  private:
   // There may be several forks starting from the same time, hence the multimap.

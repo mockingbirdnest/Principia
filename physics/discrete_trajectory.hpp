@@ -107,9 +107,29 @@ class DiscreteTrajectory : public Forkable<DiscreteTrajectory<Frame>> {
   std::map<Instant, Velocity<Frame>> Velocities() const;
   std::list<Instant> Times() const;
 
+  // Creates a new child trajectory forked at time |time|, and returns it.  The
+  // child trajectory shares its data with the current trajectory for times less
+  // than or equal to |time|, and is an exact copy of the current trajectory for
+  // times greater than |time|.  It may be changed independently from the
+  // parent trajectory for any time (strictly) greater than |time|.  The child
+  // trajectory is owned by its parent trajectory.  Deleting the parent
+  // trajectory deletes all child trajectories.  |time| must be one of the times
+  // of this trajectory, and must be at or after the fork time, if any.
+  not_null<DiscreteTrajectory<Frame>*> NewForkWithCopy(Instant const& time);
+
   // Appends one point to the trajectory.
   void Append(Instant const& time,
               DegreesOfFreedom<Frame> const& degrees_of_freedom);
+
+  // Removes all data for times (strictly) greater than |time|, as well as all
+  // child trajectories forked at times (strictly) greater than |time|.  |time|
+  // must be at or after the fork time, if any.
+  void ForgetAfter(Instant const& time);
+
+  // Removes all data for times less than or equal to |time|, as well as all
+  // child trajectories forked at times less than or equal to |time|.  This
+  // trajectory must be a root.
+  void ForgetBefore(Instant const& time);
 
   // This function represents the intrinsic acceleration of a body, irrespective
   // of any external field.  It can be due e.g., to an engine burn.
@@ -190,10 +210,6 @@ class DiscreteTrajectory : public Forkable<DiscreteTrajectory<Frame>> {
                             Instant const& time) const override;
   TimelineConstIterator timeline_upper_bound(
                             Instant const& time) const override;
-  void timeline_erase(TimelineConstIterator begin,
-                      TimelineConstIterator end) override;
-  void timeline_insert(TimelineConstIterator begin,
-                       TimelineConstIterator end) override;
   bool timeline_empty() const override;
 
  private:
