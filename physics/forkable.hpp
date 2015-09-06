@@ -157,8 +157,6 @@ class Forkable {
                                     Instant const& time) const = 0;
   virtual TimelineConstIterator timeline_upper_bound(
                                     Instant const& time) const = 0;
-  virtual void timeline_insert(TimelineConstIterator begin,
-                               TimelineConstIterator end) = 0;
   virtual bool timeline_empty() const = 0;
 
  private:

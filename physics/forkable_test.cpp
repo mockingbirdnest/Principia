@@ -41,8 +41,6 @@ class FakeTrajectory : public Forkable<FakeTrajectory> {
                             Instant const& time) const override;
   TimelineConstIterator timeline_upper_bound(
                             Instant const& time) const override;
-  void timeline_insert(TimelineConstIterator begin,
-                       TimelineConstIterator end) override;
   bool timeline_empty() const override;
 
  private:
@@ -109,12 +107,6 @@ FakeTrajectory::TimelineConstIterator FakeTrajectory::timeline_upper_bound(
     }
   }
   return timeline_.end();
-}
-
-void FakeTrajectory::timeline_insert(TimelineConstIterator begin,
-                                     TimelineConstIterator end) {
-  CHECK(timeline_empty());
-  timeline_.insert(timeline_.end(), begin, end);
 }
 
 bool FakeTrajectory::timeline_empty() const {

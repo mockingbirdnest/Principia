@@ -314,12 +314,6 @@ DiscreteTrajectory<Frame>::timeline_upper_bound(Instant const& time) const {
 }
 
 template<typename Frame>
-void DiscreteTrajectory<Frame>::timeline_insert(TimelineConstIterator begin,
-                                                TimelineConstIterator end) {
-  timeline_.insert(begin, end);
-}
-
-template<typename Frame>
 bool DiscreteTrajectory<Frame>::timeline_empty() const {
   return timeline_.empty();
 }
