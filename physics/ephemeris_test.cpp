@@ -795,8 +795,6 @@ TEST_F(EphemerisTest, ComputeGravitationalAcceleration) {
                                      Position<EarthMoonOrbitPlane>>(),
                                  t0_ + kDuration);
 
-  Length const q_elephant = (trajectory.last().degrees_of_freedom().position() -
-                            reference_position).coordinates().y;
   Speed const v_elephant =
       trajectory.last().degrees_of_freedom().velocity().coordinates().x;
   std::vector<Displacement<EarthMoonOrbitPlane>> elephant_positions;
@@ -806,8 +804,8 @@ TEST_F(EphemerisTest, ComputeGravitationalAcceleration) {
   EXPECT_THAT(elephant_positions.size(), Eq(8));
   EXPECT_THAT(elephant_positions.back().coordinates().x,
               AlmostEquals(kDuration * v_elephant, 0));
-  EXPECT_THAT(elephant_positions.back().coordinates().y,
-              Eq(q_elephant));
+  EXPECT_LT(RelativeError(elephant_positions.back().coordinates().y,
+                          kDistance), 8E-7);
 
   std::vector<Vector<Acceleration, EarthMoonOrbitPlane>> elephant_accelerations;
   for (auto const& t : trajectory.Times()) {
@@ -819,7 +817,7 @@ TEST_F(EphemerisTest, ComputeGravitationalAcceleration) {
               AlmostEquals(0 * SIUnit<Acceleration>(), 0));
   // 9.832 m/s^2 is the nominal acceleration at the pole, but this elephant is
   // very heavy so it gets 9.864 m/s^2.
-  EXPECT_LE(RelativeError(elephant_accelerations.back().coordinates().y,
+  EXPECT_LT(RelativeError(elephant_accelerations.back().coordinates().y,
                           -9.832 * SIUnit<Acceleration>()), 3.2E-3);
   EXPECT_THAT(elephant_accelerations.back().coordinates().z,
               AlmostEquals(0 * SIUnit<Acceleration>(), 0));
