@@ -30,6 +30,10 @@ class FakeTrajectory : public Forkable<FakeTrajectory> {
 
   void push_back(Instant const& time);
 
+  using Forkable<FakeTrajectory>::NewFork;
+  using Forkable<FakeTrajectory>::DeleteAllForksAfter;
+  using Forkable<FakeTrajectory>::DeleteAllForksBefore;
+
  protected:
   not_null<FakeTrajectory*> that() override;
   not_null<FakeTrajectory const*> that() const override;
